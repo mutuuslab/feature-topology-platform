@@ -205,7 +205,7 @@ export function IncidentDetail() {
         <div>Severity</div><div><span className="badge" style={{ background: i.severity === 'high' ? 'var(--fail)' : 'var(--pending)' }}>{i.severity}</span></div>
         <div>Root Cause</div><div>{i.cause}</div>
         <div>Linked CR</div><div className="mono">{i.linkedCR}</div>
-        <div>액션</div><div><button className="btn danger" onClick={() => toast('Rollback 실행 — 직전 정상 정책 복귀', 'warn')}>Rollback</button> <button className="btn" onClick={() => nav('/ops/' + i.feature)}>Kill Switch →</button></div>
+        <div>액션</div><div><button className="btn danger" onClick={() => { dispatch({ t: 'RECOVER', feature: i.feature }); dispatch({ t: 'INCIDENT_STATUS', id: i.id, status: 'resolved' }); dispatch({ t: 'AUDIT', entry: { ts: '2026-06-05 09:35', actor: state.role, action: 'ROLLBACK', target: i.feature, detail: `${i.id} 직전 정상 정책 복귀` } }); toast('Rollback 실행 — runtime 복구·인시던트 해소', 'ok'); }}>Rollback (복구)</button> <button className="btn" onClick={() => nav('/ops/' + i.feature)}>Kill Switch →</button></div>
       </div></div>
     </div>
   );

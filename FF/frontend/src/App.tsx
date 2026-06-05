@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { NavLink, Route, Routes, useNavigate } from 'react-router-dom';
 import { useApp, roleHome } from './store';
 import { NotFound } from './components/patterns';
@@ -6,7 +6,7 @@ import { roles } from './data/refdata';
 import { NAV as NAVI18N, useT } from './i18n';
 import Catalog from './pages/Catalog';
 import FeatureDetail from './pages/FeatureDetail';
-import Topology from './pages/Topology';
+const Topology = lazy(() => import('./pages/Topology')); // cytoscape 지연 로딩(초기 번들 분리)
 import ImpactCenter from './pages/ImpactCenter';
 import ReleaseReadiness from './pages/ReleaseReadiness';
 import OpsDashboard from './pages/OpsDashboard';
@@ -81,6 +81,7 @@ export default function App() {
         ))}
       </nav>
       <main className="main" id="main">
+        <Suspense fallback={<div className="card">로딩 중…</div>}>
         <Routes>
           <Route path="/" element={<RoleHome />} />
           <Route path="/login" element={<Login />} />
@@ -170,6 +171,7 @@ export default function App() {
           <Route path="/spec/security" element={<Security />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </main>
     </div>
   );

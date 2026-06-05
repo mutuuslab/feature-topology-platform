@@ -1,7 +1,9 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { changeSets } from '../data/model';
 import { useApp, useToast } from '../store';
 import { Donut, Bars, Steps, Timeline, tally, dist } from '../components/charts';
+
+const CR_FLOW = ['Draft', 'Analyzed', 'Reviewed', 'Approved', 'Implemented', 'Closed'];
 
 export function CRList() {
   const nav = useNavigate();
@@ -30,22 +32,35 @@ export function CRList() {
 
 export function CRDetail() {
   const nav = useNavigate();
-  const { can } = useApp();
+  const { id } = useParams();
+  const { state, dispatch, can } = useApp();
   const toast = useToast();
+  const cr = state.crs.find(c => c.id === id) || state.crs[0];
+  if (!cr) return <div className="card">CR 없음</div>;
+  const rejected = cr.status === 'Rejected';
+  const idx = CR_FLOW.indexOf(cr.status);
+  const set = (status: string) => { dispatch({ t: 'SET_CR_STATUS', id: cr.id, status }); dispatch({ t: 'AUDIT', entry: { ts: '2026-06-05 09:30', actor: state.role, action: 'CR_STATUS', target: cr.id, detail: `→ ${status}` } }); };
+  const approve = () => set(idx < 0 ? 'Approved' : idx < CR_FLOW.length - 1 ? CR_FLOW[Math.max(3, idx + 1)] : 'Closed');
   return (
     <div>
       <div className="breadcrumb">변경관리 ▸ CR Detail</div>
-      <h1 className="page-title">CR-2026-0142 · FEAT-BDC-001</h1>
+      <h1 className="page-title">{cr.id} · <span className="mono">{cr.feature}</span></h1>
       <div className="row">
         <div className="col card"><b>상태 진행</b>
-          <Steps steps={['Draft','Analyzed','Reviewed','Approved','Implemented','Closed']} current={3} />
-          <p className="small mt">변경: Targeting Rule (SWC/API 무변경) → Policy-only</p>
-          <button className="btn primary mt" onClick={()=>nav('/decisions/report')}>DecisionReport 보기</button>
+          <Steps steps={CR_FLOW} current={rejected ? undefined : (idx < 0 ? 0 : idx)} done={cr.status === 'Closed'} />
+          {rejected && <div className="decision HOLD mt">반려됨 (Rejected) — 재작업 필요</div>}
+          <p className="small mt">유형: {cr.type} · Risk {cr.risk} · Owner {cr.owner}</p>
+          <button className="btn primary mt" onClick={() => nav('/decisions/report')}>DecisionReport 보기</button>
         </div>
-        <div className="col card"><b>승인</b><p className="small">승인자: 정하늘(Admin)</p>
+        <div className="col card"><b>승인</b><p className="small">현재 상태: <span className="pill">{cr.status}</span></p>
           {can('approve')
-            ? <><button className="btn primary" onClick={() => toast('CR 승인됨 → Implemented', 'ok')}>승인 / Approve</button> <button className="btn" onClick={() => toast('CR 반려됨', 'warn')}>반려</button></>
+            ? <div className="row" style={{ gap: 8 }}>
+                <button className="btn primary" disabled={cr.status === 'Closed' || rejected} onClick={approve}>승인 → {idx < CR_FLOW.length - 1 && idx >= 0 ? CR_FLOW[Math.max(3, idx + 1)] : 'Closed'}</button>
+                <button className="btn danger" disabled={rejected} onClick={() => set('Rejected')}>반려</button>
+                {(rejected || cr.status === 'Closed') && <button className="btn" onClick={() => set('Reviewed')}>재오픈</button>}
+              </div>
             : <span className="btn" style={{ opacity: .45, cursor: 'not-allowed' }} title="권한 필요: approve">🔒 승인 권한 없음</span>}
+          <p className="small muted mt">상태 변경은 store에 저장 — 새로고침해도 유지(CR List에 반영).</p>
         </div>
       </div>
     </div>

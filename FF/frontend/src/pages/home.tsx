@@ -93,6 +93,13 @@ export function RoleHome() {
         ))}
       </div>
       <RoleDashboardBody role={role} state={state} nav={nav} />
+      <div className="card mt"><b>내 위젯 (커스터마이즈 반영)</b>
+        <div className="row mt" style={{ gap: 6 }}>
+          {state.homeWidgets.filter((w: any) => w.on).map((w: any) => <span key={w.id} className="pill">⠿ {w.id}</span>)}
+          {!state.homeWidgets.some((w: any) => w.on) && <span className="muted small">표시할 위젯 없음</span>}
+        </div>
+        <p className="small muted mt">표시/순서는 <button className="btn" onClick={() => nav('/home/customize')}>홈 커스터마이즈</button>에서 저장(새로고침 유지).</p>
+      </div>
       <div className="card mt"><b>바로가기 (역할 권한 반영)</b>
         <div className="row mt">
           {QUICK.map(([l, to, verb]) => verbs.includes(verb)
@@ -331,14 +338,31 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
 }
 
 export function HomeCustomize() {
-  const widgets = ['KPI Tiles','My Work','Alerts','Recent','Pinned Features','Telemetry'];
+  const nav = useNavigate();
+  const { state, dispatch } = useApp();
+  const [items, setItems] = useState(state.homeWidgets);
+  const move = (i: number, dir: -1 | 1) => { const j = i + dir; if (j < 0 || j >= items.length) return; const next = [...items];[next[i], next[j]] = [next[j], next[i]]; setItems(next); };
+  const toggle = (i: number) => setItems(items.map((w, k) => k === i ? { ...w, on: !w.on } : w));
+  const dirty = JSON.stringify(items) !== JSON.stringify(state.homeWidgets);
   return (
     <div>
       <div className="breadcrumb">홈 ▸ 커스터마이즈</div>
       <h1 className="page-title">홈 커스터마이즈</h1>
-      <div className="card"><p className="muted">위젯을 드래그하여 배치(프로토타입)</p>
-        <div className="row">{widgets.map(w => <span key={w} className="pill" style={{ padding: '8px 12px' }}>⠿ {w}</span>)}</div>
-        <button className="btn primary mt">레이아웃 저장</button>
+      <div className="card"><p className="muted small">위젯 표시 여부·순서를 설정하고 저장하면 새로고침 후에도 유지됩니다(홈 "내 위젯"에 반영).</p>
+        {items.map((w, i) => (
+          <div className="evt" key={w.id} style={{ alignItems: 'center' }}>
+            <input type="checkbox" checked={w.on} onChange={() => toggle(i)} />
+            <b style={{ flex: 1, opacity: w.on ? 1 : 0.5 }}>⠿ {w.id}</b>
+            <span className="pill" style={{ background: w.on ? 'var(--pass)' : 'var(--surface-3)', color: w.on ? '#fff' : 'var(--muted)' }}>{w.on ? '표시' : '숨김'}</span>
+            <button className="btn" disabled={i === 0} onClick={() => move(i, -1)}>▲</button>
+            <button className="btn" disabled={i === items.length - 1} onClick={() => move(i, 1)}>▼</button>
+          </div>
+        ))}
+        <div className="row mt">
+          <button className="btn primary" disabled={!dirty} onClick={() => { dispatch({ t: 'SET_HOME_WIDGETS', widgets: items }); }}>레이아웃 저장</button>
+          <button className="btn" disabled={!dirty} onClick={() => setItems(state.homeWidgets)}>되돌리기</button>
+          <button className="btn" onClick={() => nav('/')}>홈에서 확인 →</button>
+        </div>
       </div>
     </div>
   );

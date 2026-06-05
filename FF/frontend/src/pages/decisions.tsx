@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { impact, verification, deploy, supplier, buildDecisionPackage, fmtWon } from '../data/engine';
-import { useToast } from '../store';
+import { useToast, useApp } from '../store';
 import { Donut, Bars, RadialProgress, Steps, GroupedBars } from '../components/charts';
 
 const FID = 'FEAT-BDC-001';
@@ -93,6 +93,17 @@ export function DecisionReport() {
   const imp = impact(FID), v = verification(FID), d = deploy(['Targeting/Policy Rule 변경']), s = supplier(FID);
   const pkg = buildDecisionPackage(FID, 'Targeting/Policy Rule 변경', ['Targeting/Policy Rule 변경']);
   const toast = useToast();
+  const nav = useNavigate();
+  const { state, dispatch } = useApp();
+  const newCrId = () => `CR-2026-0${143 + state.crs.filter(c => c.id.startsWith('CR-2026')).length}`;
+  const attach = () => { const id = newCrId(); dispatch({ t: 'CREATE_CR', cr: { id, feature: FID, type: 'DecisionReport 첨부', status: 'Analyzed', owner: state.role, risk: d.deployType === 'Binary' ? 'High' : 'Low' } }); dispatch({ t: 'AUDIT', entry: { ts: '2026-06-05 09:40', actor: state.role, action: 'DECISION_ATTACH', target: id, detail: pkg.decisionId } }); toast(`${id}에 ${pkg.decisionId} 첨부됨`, 'ok'); nav('/change/cr/' + id); };
+  const submit = () => { const id = newCrId(); dispatch({ t: 'CREATE_CR', cr: { id, feature: FID, type: '승인 요청', status: 'Reviewed', owner: state.role, risk: 'Low' } }); toast(`${id} 승인 요청 제출 (Reviewed)`, 'ok'); nav('/change/cr/' + id); };
+  const exportReport = () => {
+    const md = `# DecisionReport ${pkg.decisionId}\n\n- Feature: ${FID}\n- Impact: ${imp.features.length} Features / ${imp.swcs.length} SWC / ${imp.suppliers.length} Supplier / ${imp.tests.length} Tests\n- Verify: Gate ${v.gateResult} (Missing ${v.missingEvidence.join(', ') || '없음'})\n- Deploy: ${d.deployType} (${d.confidence}) · reason ${d.reasonCodes.join(', ')}\n- Supplier: ${s.supplierScope.join(', ')} · Gap ${s.contractGap}\n- graph_snapshot: ${pkg.graphSnapshotId}\n- required_gates: ${pkg.requiredGates.join(' · ')}\n- cost_impact: ${pkg.costImpact ? `${pkg.costImpact.changeWon} (절감 ${pkg.costImpact.savingsWon})` : '-'}\n`;
+    const url = URL.createObjectURL(new Blob([md], { type: 'text/markdown;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = `${pkg.decisionId}.md`; a.click(); URL.revokeObjectURL(url);
+    toast('DecisionReport 내보내기(.md)', 'ok');
+  };
   return (
     <div>
       <div className="breadcrumb">의사결정 ▸ DecisionReport</div>
@@ -124,7 +135,7 @@ export function DecisionReport() {
             <div>cost_impact</div><div className="mono">{pkg.costImpact ? `${fmtWon(pkg.costImpact.changeWon)} (Binary 대비 절감 ${fmtWon(pkg.costImpact.savingsWon)})` : '-'}</div>
           </div>
         </div>
-        <div className="mt"><button className="btn" onClick={() => toast(`${pkg.decisionId} → CR 첨부됨`)}>Attach to CR</button> <button className="btn" onClick={() => toast('DecisionReport PDF Export')}>Export PDF</button> <button className="btn primary" onClick={() => toast('승인 요청 제출', 'ok')}>Submit for Approval</button></div>
+        <div className="mt"><button className="btn" onClick={attach}>Attach to CR</button> <button className="btn" onClick={exportReport}>Export (.md)</button> <button className="btn primary" onClick={submit}>Submit for Approval</button></div>
       </div>
     </div>
   );

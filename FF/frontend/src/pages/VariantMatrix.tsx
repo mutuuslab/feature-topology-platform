@@ -1,14 +1,23 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { variantMatrix } from '../data/model';
 import SpecLink from '../components/SpecLink';
-import { useToast } from '../store';
+import { useToast, useApp } from '../store';
 import { RightPanel } from '../components/patterns';
 import TopoLink from '../components/TopoLink';
 import { Donut, tally, dist } from '../components/charts';
 
 export default function VariantMatrix() {
   const toast = useToast();
+  const nav = useNavigate();
+  const { state, dispatch } = useApp();
   const [sel, setSel] = useState<any>(null);
+  const exportPolicy = () => {
+    const id = `POLICY-BDC-VAR-${state.policies.length + 1}`;
+    dispatch({ t: 'ADD_POLICY', policy: { id, feature: 'FEAT-BDC-001', stage: 'Draft', approver: '-', rollout: 0, version: 1 } });
+    toast(`${id} 등록 → Policy Lifecycle(Draft)`, 'ok');
+    nav('/ops/policy');
+  };
   return (
     <div>
       <div className="breadcrumb">배포·운영 ▸ Variant Matrix & Rule Builder</div>
@@ -45,7 +54,7 @@ AND  bdc.sw.version >= 3.2.0
 THEN applicability = allowed
 ELSE applicability = blocked`}</pre>
           <div className="mt"><span className="pill">Cohort: 142,300대</span> <span className="pill">Conflict: 0</span></div>
-          <button className="btn primary mt" onClick={() => toast('Variant Rule → Runtime Policy 변환·Export (Policy Lifecycle Draft 등록)')}>Export to Runtime Policy</button>
+          <button className="btn primary mt" onClick={exportPolicy}>Export to Runtime Policy</button>
         </div>
       </div>
       <RightPanel open={!!sel} onClose={() => setSel(null)} title={sel ? `${sel.platform}·MY${sel.my}·${sel.region}` : ''}>

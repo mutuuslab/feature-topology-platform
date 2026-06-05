@@ -46,6 +46,8 @@ export function TaxonomyBrowser() {
 
 export function TaxonomyEditor() {
   const toast = useToast();
+  const { state, dispatch } = useApp();
+  const save = () => { dispatch({ t: 'AUDIT', entry: { ts: '2026-06-05 09:45', actor: state.role, action: 'TAXONOMY_SAVE', target: 'TAX-node', detail: 'T-001~004 규칙 검증 통과' } }); toast('Taxonomy 노드 저장 — T-001~004 검증 통과 (Audit 기록)'); };
   return (
     <div>
       <div className="breadcrumb">기준정보 ▸ Taxonomy Editor</div>
@@ -59,7 +61,7 @@ export function TaxonomyEditor() {
           <div>Display Name</div><div><input placeholder="고객/차량 관점 명칭" style={{padding:6,width:'100%'}}/></div>
         </div>
         <p className="small muted mt">저장 시 T-001~T-004 규칙 검증 (예: L4 Control Point는 L2/L3 귀속 필수)</p>
-        <button className="btn primary" onClick={() => toast('Taxonomy 노드 저장 — T-001~004 검증 통과')}>저장 (규칙 검증)</button>
+        <button className="btn primary" onClick={save}>저장 (규칙 검증)</button>
       </div>
     </div>
   );

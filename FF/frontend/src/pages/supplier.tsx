@@ -58,6 +58,7 @@ export function APIReleasePackage() {
   const statusCounts = tally(PKG_ITEMS, ([, s]) => s);
   const statusSegments = dist(statusCounts, { valid: '#1F9D55', partial: '#D9822B' });
   const toast = useToast();
+  const nav = useNavigate();
   return (
     <div>
       <div className="breadcrumb">협력사 ▸ API Release Package</div>
@@ -79,7 +80,7 @@ export function APIReleasePackage() {
         {(() => { const sc = supplierCost('SUP-BDC-A'); return sc && (
           <p className="small mt">💰 협력사 개발비(추정): {sc.contractMM} M/M · <b className="mono">{fmtWon(sc.contractWon)}</b> <span className="muted">— {sc.note}</span></p>
         ); })()}
-        <button className="btn mt" onClick={() => toast(`패키지 검증: ${incomplete}건 미완 → Supplier Gate 불통과`, incomplete ? 'warn' : 'ok')}>Validate</button> <button className="btn primary mt" onClick={() => toast('Supplier Engine 실행 → SUP-BDC-A 책임범위 산출')}>Run Supplier Engine</button>
+        <button className="btn mt" onClick={() => toast(incomplete ? `패키지 검증: ${incomplete}건 미완 → Supplier Gate 불통과` : '패키지 검증 통과 → Supplier Gate 통과', incomplete ? 'warn' : 'ok')}>Validate</button> <button className="btn primary mt" onClick={() => nav('/decisions/supplier')}>Run Supplier Engine →</button>
       </div>
     </div>
   );

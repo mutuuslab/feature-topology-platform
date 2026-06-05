@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -10,5 +11,20 @@ export default defineConfig({
     port: 9001,
     host: true,
     // proxy: { '/api': 'http://localhost:9101' }, // 백엔드 연동 시 주석 해제
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          cytoscape: ['cytoscape'],
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
+    },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.ts',
   },
 });

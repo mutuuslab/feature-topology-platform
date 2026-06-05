@@ -1,9 +1,10 @@
-# GitHub Pages 배포 (프론트 FF/frontend). Pages 활성화(공개 repo 또는 Pro) 시 동작.
-# 활성화: 저장소 Settings ▸ Pages ▸ Source = GitHub Actions.
+# GitHub Pages 배포 (프론트 FF/frontend). 기본 배포는 Cloudflare(cloudflare.yml).
+# 이 워크플로는 비활성(수동 실행 전용) — Pages 미활성 상태에서 매 push마다 deploy 404로
+# 실패하던 문제를 막기 위해 push 자동 트리거 제거.
+# GitHub Pages 사용 시: Settings ▸ Pages ▸ Source = GitHub Actions(private repo는 Pro/Team 필요)
+#   후 Actions 탭에서 'Run workflow'로 수동 실행.
 name: Deploy Frontend to Pages
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read

@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useApp, roleHome } from './store';
 import { NotFound } from './components/patterns';
@@ -55,6 +55,13 @@ export default function App() {
   const [navOpen, setNavOpen] = useState(false);
   const [activeDomain, setActiveDomain] = useState(() => domainOfPath(loc.pathname));
   useEffect(() => { setActiveDomain(domainOfPath(loc.pathname)); }, [loc.pathname]);
+  // 사이트 최초 진입 시 기본 랜딩 = 현재 역할의 홈(기획 P1 → Feature Catalog). 이후 앱 내 '내 대시보드'로 이동 가능.
+  const didLand = useRef(false);
+  useEffect(() => {
+    if (didLand.current) return;
+    didLand.current = true;
+    if (loc.pathname === '/') nav(roleHome[state.role] || '/catalog', { replace: true });
+  }, []);
   const roleDomain = domainOfPath(roleHome[state.role] || '/');
   const dom = DOMAINS.find(d => d.key === activeDomain) || DOMAINS[0];
   // 부서별 보기

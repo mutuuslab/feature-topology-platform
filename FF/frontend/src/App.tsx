@@ -26,6 +26,8 @@ import { Reports, AuditLog, Glossary } from './pages/insights';
 import { UsersRoles, PermissionsMatrix, OrgDomains, ApprovalWorkflow, Settings, NotificationsCenter, GlobalSearch } from './pages/admin';
 import Cost from './pages/cost';
 import Fleet from './pages/fleet';
+import Activation from './pages/activation';
+import Lifecycle from './pages/lifecycle';
 import { SpecOverview, SpecExplorer, SpecCoverage, SpecChangeLog, SpecGlossary } from './pages/spec';
 import { Experiment, Conflict, Exception, Compliance, Scenario, CICD, Billing, Business, Security } from './pages/specnew';
 
@@ -125,6 +127,8 @@ export default function App() {
           <Route path="/ops/incident" element={<IncidentManager />} />
           <Route path="/ops/incident/:id" element={<IncidentDetail />} />
           <Route path="/fleet" element={<Fleet />} />
+          <Route path="/activation" element={<Activation />} />
+          <Route path="/lifecycle" element={<Lifecycle />} />
           <Route path="/ops/:id" element={<OpsDashboard />} />
           <Route path="/variants/:id" element={<VariantMatrix />} />
 

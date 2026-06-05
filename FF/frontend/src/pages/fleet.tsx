@@ -10,11 +10,11 @@ const fmtM = (n: number) => (n / 1e6).toFixed(2) + 'M';
 
 export default function Fleet() {
   const nav = useNavigate();
-  const live = useApp().state.live;
+  const { live, activation } = useApp().state;
   const [vin, setVin] = useState('');
   const [veh, setVeh] = useState<Vehicle | null>(null);
   const [sel, setSel] = useState<any>(null);
-  const states = veh ? vehicleFeatureStates(veh) : [];
+  const states = veh ? vehicleFeatureStates(veh, activation) : [];
   const lookup = (q: string) => { const v = sampleVehicles.find(x => x.vin.toLowerCase() === q.trim().toLowerCase()) || sampleVehicles.find(x => x.vin.toLowerCase().includes(q.trim().toLowerCase())); setVeh(v || null); };
 
   return (
@@ -61,7 +61,7 @@ export default function Fleet() {
       {veh && (
         <div className="card">
           <div className="row" style={{ justifyContent: 'space-between' }}>
-            <b className="mono">{veh.vin}</b>
+            <b className="mono">{veh.vin} · <span style={{ color: 'var(--brand)' }}>{veh.model}</span></b>
             <span className="small muted">{veh.region} · MY{veh.my} · {veh.trim} · {veh.hw} · SW {veh.sw} · cohort {veh.cohort}</span>
           </div>
           <div className="table-wrap mt"><table><thead><tr><th>Feature</th><th>Deploy</th><th>상태</th><th>사유</th></tr></thead>

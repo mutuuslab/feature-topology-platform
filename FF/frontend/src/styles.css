@@ -69,8 +69,27 @@ tbody tr:hover{background:var(--surface-3);cursor:pointer}
 /* 그래프 */
 .graph{height:clamp(360px,58vh,560px);border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
 @keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}100%{opacity:1;transform:scale(1)}}
-.topo-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid var(--brand);color:var(--brand);border-radius:20px;padding:3px 10px;cursor:pointer;background:transparent}
-.topo-link:hover{background:var(--surface-3)}
+.topo-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid var(--brand);color:var(--brand);border-radius:20px;padding:3px 10px;cursor:pointer;background:transparent;transition:all .15s}
+.topo-link:hover{background:var(--brand);color:#fff}
+
+/* ── 시각 폴리시 ── */
+.main{animation:fadein .28s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{transition:box-shadow .18s, transform .18s, border-color .18s}
+.card:hover{box-shadow:0 4px 18px rgba(20,40,80,.08)}
+.kpi{transition:transform .15s, box-shadow .15s; position:relative; overflow:hidden}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(20,40,80,.10)}
+.kpi .v:not([style*="color"]){background:linear-gradient(90deg,var(--brand),#0EA5E9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.page-title{position:relative;padding-left:12px}
+.page-title::before{content:'';position:absolute;left:0;top:3px;bottom:3px;width:4px;border-radius:3px;background:linear-gradient(180deg,var(--brand),#0EA5E9)}
+.btn{transition:background .14s, border-color .14s, transform .06s}
+.btn:active{transform:translateY(1px)}
+tbody tr{transition:background .12s}
+.badge,.pill{transition:background .15s}
+.kpi .v, .v{font-variant-numeric:tabular-nums}
+/* 상태 행 강조 */
+tbody tr[role="button"]:hover{background:var(--surface-3)}
+[data-theme="dark"] .card:hover{box-shadow:0 4px 18px rgba(0,0,0,.4)}
 .legend{font-size:11px;color:var(--muted);margin:8px 0;display:flex;gap:14px;flex-wrap:wrap}
 
 /* gate matrix */

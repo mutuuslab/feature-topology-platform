@@ -1,8 +1,50 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { byFamily, familyName } from '../data/spec';
 import { coverageOf, STATUS_COLOR } from '../data/specCoverage';
-import { useToast } from '../store';
+import { useToast, useApp } from '../store';
 import TopoLink from '../components/TopoLink';
+
+// ── 실동작 위젯 (store 연동) ──
+function ExperimentWidget() {
+  const { state, dispatch } = useApp();
+  return (
+    <div><b>실험 (store 연동)</b>
+      <div className="row mt"><button className="btn primary" onClick={() => dispatch({ t: 'ADD_EXPERIMENT', exp: { id: `EXP-${1000 + state.experiments.length}`, feature: 'FEAT-BDC-001', variant: '신규 A/B', metric: '활성화율', status: 'Draft', uplift: 0 } })}>+ 실험 생성</button></div>
+      <div className="table-wrap mt"><table><thead><tr><th>ID</th><th>Feature</th><th>Variant</th><th>Metric</th><th>Uplift</th><th>상태</th><th>제어</th></tr></thead>
+        <tbody>{state.experiments.map(e => (<tr key={e.id}><td className="mono">{e.id}</td><td className="mono">{e.feature}</td><td>{e.variant}</td><td>{e.metric}</td>
+          <td style={{ color: e.uplift > 0 ? 'var(--pass)' : 'var(--muted)' }}>{e.uplift ? '+' + e.uplift + '%' : '-'}</td>
+          <td><span className="badge" style={{ background: e.status === 'Running' ? 'var(--pass)' : e.status === 'Stopped' ? 'var(--fail)' : 'var(--pending)' }}>{e.status}</span></td>
+          <td>{e.status !== 'Running' ? <button className="btn" onClick={() => dispatch({ t: 'EXP_STATUS', id: e.id, status: 'Running' })}>▶ 시작</button> : <button className="btn danger" onClick={() => dispatch({ t: 'EXP_STATUS', id: e.id, status: 'Stopped' })}>■ 중단</button>}</td></tr>))}</tbody></table></div>
+      <p className="small muted mt">안전 기준 미충족 시 실험 운영 차단(FR-EXP-003). 변경은 저장·유지됩니다.</p>
+    </div>
+  );
+}
+function ExceptionWidget() {
+  const { state, dispatch } = useApp();
+  return (
+    <div><b>예외 정책 (긴급 우회·만료 관리)</b>
+      <div className="row mt"><button className="btn primary" onClick={() => dispatch({ t: 'ADD_EXCEPTION', exc: { id: `EXC-2026-${100 + state.exceptions.length}`, feature: 'FEAT-BDC-001', reason: '긴급 우회', approver: state.role, expiry: '2026-06-20', active: true } })}>+ 예외 승인 요청</button></div>
+      <div className="table-wrap mt"><table><thead><tr><th>ID</th><th>Feature</th><th>사유</th><th>승인자</th><th>만료</th><th>상태</th><th></th></tr></thead>
+        <tbody>{state.exceptions.map(e => (<tr key={e.id}><td className="mono">{e.id}</td><td className="mono">{e.feature}</td><td>{e.reason}</td><td>{e.approver}</td><td>{e.expiry}</td>
+          <td><span className="badge" style={{ background: e.active ? 'var(--pending)' : 'var(--muted)' }}>{e.active ? 'Active' : 'Revoked'}</span></td>
+          <td>{e.active && <button className="btn" onClick={() => dispatch({ t: 'EXC_REVOKE', id: e.id })}>해제</button>}</td></tr>))}</tbody></table></div>
+    </div>
+  );
+}
+function ConflictWidget() {
+  const { state } = useApp();
+  const conflicts = state.edges.filter(e => e.type === 'excludes' || e.type === 'overrides');
+  return (
+    <div><b>정책 충돌 탐지 (excludes/overrides 자동 산출)</b>
+      <div className="table-wrap mt"><table><thead><tr><th>Source</th><th>Type</th><th>Target</th><th>해소</th></tr></thead>
+        <tbody>{conflicts.map(c => (<tr key={c.id}><td className="mono">{c.source}</td>
+          <td><span className="badge" style={{ background: 'var(--fail)' }}>{c.type}</span></td><td className="mono">{c.target}</td>
+          <td className="small">{c.type === 'overrides' ? '우선순위 상위 적용' : '동시활성 차단 → 배포 Gate 차단'}</td></tr>))}
+          {!conflicts.length && <tr><td colSpan={4} className="muted">충돌 없음</td></tr>}</tbody></table></div>
+      <p className="small muted mt">Edge Editor에서 excludes/overrides 추가 시 즉시 반영 (FR-CON · Topology Consistency).</p>
+    </div>
+  );
+}
 
 // 공통: spec 기반 신규 화면 — family FR 목록 + 대표 위젯 + 시뮬레이션 실행
 function SpecScreen({ crumb, title, sub, families, widget }:
@@ -43,21 +85,11 @@ const W = (rows: [string, string][]) => (
   <table><tbody>{rows.map(([k, v], i) => <tr key={i}><td style={{ width: 180, color: 'var(--muted)' }}>{k}</td><td>{v}</td></tr>)}</tbody></table>
 );
 
-export const Experiment = () => <SpecScreen crumb="의사결정 ▸ 실험·효과검증" title="실험 · 효과 검증 (Experiments)" sub="타겟팅 · 효과 측정 · 안전 기준 기반 실험 운영 (FR-EXP)" families={['FR-EXP']}
-  widget={<div><b>활성 실험</b>
-    <div className="evt"><span className="pill">EXP-BDC-01</span><span>BDC Policy A/B · KR Premium · 효과지표 활성화율</span><span className="badge" style={{ background: 'var(--pass)', marginLeft: 'auto' }}>Running</span></div>
-    <div className="evt"><span className="pill">EXP-LIGHT-02</span><span>Welcome Light · cohort 5%</span><span className="badge" style={{ background: 'var(--pending)', marginLeft: 'auto' }}>Draft</span></div>
-    <p className="small muted mt">안전 기준 미충족 시 실험 운영 차단(FR-EXP-003 · Topology Safety Gate 연계)</p>
-  </div>} />;
+export const Experiment = () => <SpecScreen crumb="의사결정 ▸ 실험·효과검증" title="실험 · 효과 검증 (Experiments)" sub="타겟팅 · 효과 측정 · 안전 기준 기반 실험 운영 (FR-EXP)" families={['FR-EXP']} widget={<ExperimentWidget />} />;
 
-export const Conflict = () => <SpecScreen crumb="의사결정 ▸ 정책 충돌" title="정책 충돌 탐지·해소 (Policy Conflict)" sub="중복·충돌 정책 자동 탐지 + 우선순위 해소 (FR-CON · Topology Consistency Rule 연계)" families={['FR-CON']}
-  widget={<div><b>충돌 탐지 결과</b>
-    <table className="mt"><thead><tr><th>정책 A</th><th>정책 B</th><th>유형</th><th>해소</th></tr></thead>
-      <tbody><tr><td>POLICY-BDC-ENABLE</td><td>POLICY-BDC-KILL</td><td><span className="badge" style={{ background: 'var(--fail)' }}>excludes</span></td><td>우선순위: Kill &gt; Enable</td></tr></tbody></table>
-  </div>} />;
+export const Conflict = () => <SpecScreen crumb="의사결정 ▸ 정책 충돌" title="정책 충돌 탐지·해소 (Policy Conflict)" sub="중복·충돌 정책 자동 탐지 + 우선순위 해소 (FR-CON · Topology Consistency Rule 연계)" families={['FR-CON']} widget={<ConflictWidget />} />;
 
-export const Exception = () => <SpecScreen crumb="의사결정 ▸ 예외 정책" title="예외 정책 관리 (Exception Policy)" sub="긴급 예외 승인 · 임시 우회 · 만료 자동 관리 (FR-EXC)" families={['FR-EXC']}
-  widget={W([['적용 중 예외', 'EXC-2026-004 · FEAT-CONN-001 임시 우회'], ['승인자', '정하늘(Admin)'], ['만료', '2026-06-12 자동 해제'], ['상태', 'Active']])} />;
+export const Exception = () => <SpecScreen crumb="의사결정 ▸ 예외 정책" title="예외 정책 관리 (Exception Policy)" sub="긴급 예외 승인 · 임시 우회 · 만료 자동 관리 (FR-EXC)" families={['FR-EXC']} widget={<ExceptionWidget />} />;
 
 export const Compliance = () => <SpecScreen crumb="검증 ▸ 컴플라이언스" title="컴플라이언스 룰 체커 (Compliance)" sub="지역 법규·개인정보·안전/보안 룰 → 배포 전 자동 검증·차단 (FR-CRC)" families={['FR-CRC']}
   widget={<div><b>지역별 룰 체크 · FEAT-BDC-001</b>

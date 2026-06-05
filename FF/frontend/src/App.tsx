@@ -1,9 +1,9 @@
-import { useState, lazy, Suspense } from 'react';
-import { NavLink, Route, Routes, useNavigate } from 'react-router-dom';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useApp, roleHome } from './store';
 import { NotFound } from './components/patterns';
 import { roles } from './data/refdata';
-import { NAV as NAVI18N, useT } from './i18n';
+import { DOMAINS, domainOfPath, useT } from './i18n';
 import Catalog from './pages/Catalog';
 import FeatureDetail from './pages/FeatureDetail';
 const Topology = lazy(() => import('./pages/Topology')); // cytoscape 지연 로딩(초기 번들 분리)
@@ -49,9 +49,14 @@ const NAV: { group: string; items: [string, string][] }[] = [
 
 export default function App() {
   const nav = useNavigate();
+  const loc = useLocation();
   const { state, dispatch } = useApp();
-  const { t, navGroup, navItem } = useT();
+  const { t, navGroup, navItem, navDomain } = useT();
   const [navOpen, setNavOpen] = useState(false);
+  const [activeDomain, setActiveDomain] = useState(() => domainOfPath(loc.pathname));
+  useEffect(() => { setActiveDomain(domainOfPath(loc.pathname)); }, [loc.pathname]);
+  const roleDomain = domainOfPath(roleHome[state.role] || '/');
+  const dom = DOMAINS.find(d => d.key === activeDomain) || DOMAINS[0];
   const [q, setQ] = useState('');
   const submitSearch = () => { if (q.trim()) { nav('/catalog?q=' + encodeURIComponent(q.trim())); setNavOpen(false); } };
   const changeRole = (r: string) => { dispatch({ t: 'ROLE', role: r }); nav(roleHome[r] || '/'); };
@@ -72,13 +77,25 @@ export default function App() {
         <button className="icon-btn" title="theme" aria-label="theme" onClick={() => dispatch({ t: 'THEME', theme: state.theme === 'light' ? 'dark' : 'light' })}>{state.theme === 'light' ? '🌙' : '☀'}</button>
         <button className="icon-btn" title="notifications" aria-label="notifications" onClick={() => nav('/admin/notifications')}>🔔</button>
       </div>
-      <nav className="sidebar" aria-label="primary" onClick={() => setNavOpen(false)}>
-        {NAVI18N.map(g => (
-          <div key={g.ko}>
-            <div className="group">{navGroup(g)}</div>
-            {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
-          </div>
-        ))}
+      <nav className="nav" aria-label="primary">
+        <div className="rail">
+          {DOMAINS.map(d => (
+            <button key={d.key} className={'rail-btn' + (d.key === activeDomain ? ' active' : '')} title={navDomain(d)} aria-label={navDomain(d)} aria-current={d.key === activeDomain} onClick={() => setActiveDomain(d.key)}>
+              <span className="ic">{d.icon}</span>
+              <span className="lb">{navDomain(d)}</span>
+              {d.key === roleDomain && <span className="role-dot" title="현재 역할 기본 영역" />}
+            </button>
+          ))}
+        </div>
+        <div className="subnav" onClick={() => setNavOpen(false)}>
+          <div className="subnav-head">{dom.icon} {navDomain(dom)}</div>
+          {dom.groups.map(g => (
+            <div key={g.ko}>
+              <div className="group">{navGroup(g)}</div>
+              {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
+            </div>
+          ))}
+        </div>
       </nav>
       <main className="main" id="main">
         <Suspense fallback={<div className="card">로딩 중…</div>}>

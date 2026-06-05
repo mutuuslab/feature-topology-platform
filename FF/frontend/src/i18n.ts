@@ -4,51 +4,64 @@ import { useApp } from './store';
 type Lang = 'ko' | 'en';
 export interface NavItem { to: string; ko: string; en: string }
 export interface NavGroup { ko: string; en: string; items: NavItem[] }
+export interface NavDomain { key: string; icon: string; ko: string; en: string; groups: NavGroup[] }
 
-export const NAV: NavGroup[] = [
-  { ko: 'G0 홈', en: 'G0 Home', items: [
-    { to: '/', ko: '내 대시보드', en: 'My Dashboard' }, { to: '/home/customize', ko: '홈 커스터마이즈', en: 'Customize Home' },
-    { to: '/login', ko: 'Login·SSO', en: 'Login·SSO' }, { to: '/onboarding', ko: 'Onboarding', en: 'Onboarding' } ] },
-  { ko: 'G1 기준정보', en: 'G1 Master Data', items: [
-    { to: '/catalog', ko: 'Feature Catalog', en: 'Feature Catalog' }, { to: '/master/define', ko: 'Feature 등록(7-criteria)', en: 'Feature Definition (7-criteria)' },
-    { to: '/master/taxonomy', ko: 'Taxonomy Browser', en: 'Taxonomy Browser' }, { to: '/master/taxonomy/edit', ko: 'Taxonomy Editor', en: 'Taxonomy Editor' },
-    { to: '/master/bom', ko: 'BOM Editor', en: 'BOM Editor' }, { to: '/master/artifacts', ko: 'Artifact Catalog', en: 'Artifact Catalog' },
-    { to: '/master/control-points', ko: 'Control Point Catalog', en: 'Control Point Catalog' } ] },
-  { ko: 'G2 관계', en: 'G2 Topology', items: [
-    { to: '/topology/FEAT-BDC-001', ko: 'Topology Graph', en: 'Topology Graph' }, { to: '/topology/edge', ko: 'Edge Editor', en: 'Edge Editor' },
-    { to: '/metamodel', ko: 'Metamodel Viewer', en: 'Metamodel Viewer' }, { to: '/consistency', ko: 'Consistency Console', en: 'Consistency Console' },
-    { to: '/consistency/violation', ko: 'Violation Detail', en: 'Violation Detail' } ] },
-  { ko: 'G3 의사결정', en: 'G3 Decisions', items: [
-    { to: '/decisions/center', ko: 'Decision Center', en: 'Decision Center' }, { to: '/impact', ko: 'Impact Analysis', en: 'Impact Analysis' },
-    { to: '/decisions/verification', ko: 'Verification Scope', en: 'Verification Scope' }, { to: '/decisions/deploy', ko: 'Deployment Decision', en: 'Deployment Decision' },
-    { to: '/decisions/supplier', ko: 'Supplier Scope', en: 'Supplier Scope' }, { to: '/decisions/report', ko: 'DecisionReport', en: 'DecisionReport' },
-    { to: '/spec/experiment', ko: '실험·효과검증', en: 'Experiments' }, { to: '/spec/conflict', ko: '정책 충돌', en: 'Policy Conflict' }, { to: '/spec/exception', ko: '예외 정책', en: 'Exception Policy' } ] },
-  { ko: 'G4 변경관리', en: 'G4 Change', items: [
-    { to: '/lifecycle', ko: 'Lifecycle 관리', en: 'Lifecycle Mgmt' },
-    { to: '/change/cr', ko: 'CR List', en: 'CR List' }, { to: '/cr-wizard', ko: 'CR Wizard', en: 'CR Wizard' },
-    { to: '/change/changeset', ko: 'ChangeSet', en: 'ChangeSet' }, { to: '/change/baseline', ko: 'Baseline Diff', en: 'Baseline Diff' }, { to: '/change/timeline', ko: 'Version Timeline', en: 'Version Timeline' } ] },
-  { ko: 'G5 검증', en: 'G5 Verification', items: [
-    { to: '/verify/evidence', ko: 'Test Evidence Manager', en: 'Test Evidence Manager' }, { to: '/readiness/FEAT-BDC-001', ko: 'Release Readiness', en: 'Release Readiness' },
-    { to: '/spec/compliance', ko: '컴플라이언스 룰', en: 'Compliance' }, { to: '/spec/scenario', ko: '시나리오 검증', en: 'Scenario Test' } ] },
-  { ko: 'G6 배포·운영', en: 'G6 Deploy & Ops', items: [
-    { to: '/ops/FEAT-BDC-001', ko: 'Ops · Kill Switch', en: 'Ops · Kill Switch' }, { to: '/ops/campaign', ko: 'OTA Campaign', en: 'OTA Campaign' },
-    { to: '/ops/policy', ko: 'Policy Lifecycle', en: 'Policy Lifecycle' }, { to: '/ops/telemetry', ko: 'Telemetry Explorer', en: 'Telemetry Explorer' },
-    { to: '/ops/incident', ko: 'Incident', en: 'Incident' }, { to: '/ops/runtime', ko: 'Runtime Sim', en: 'Runtime Sim' }, { to: '/fleet', ko: 'Fleet · 차량 상태', en: 'Fleet · Vehicles' }, { to: '/activation', ko: 'Activation · 차종 제어', en: 'Activation Control' }, { to: '/variants/FEAT-BDC-001', ko: 'Variant Matrix', en: 'Variant Matrix' }, { to: '/spec/cicd', ko: 'CI/CD 파이프라인', en: 'CI/CD Pipeline' } ] },
-  { ko: 'G7 협력사', en: 'G7 Supplier', items: [
-    { to: '/supplier/portal', ko: 'Supplier Portal', en: 'Supplier Portal' }, { to: '/supplier/package', ko: 'API Release Package', en: 'API Release Package' } ] },
-  { ko: 'G8 연동', en: 'G8 Integration', items: [
-    { to: '/integration/connectors', ko: 'Connector Hub', en: 'Connector Hub' }, { to: '/integration/sync', ko: 'Sync Logs', en: 'Sync Logs' }, { to: '/spec/billing', ko: '과금 연계', en: 'Billing' } ] },
-  { ko: 'G9 분석·감사', en: 'G9 Insights', items: [
-    { to: '/insights/reports', ko: 'Reports', en: 'Reports' }, { to: '/cost', ko: 'SW 개발비 / Cost', en: 'SW Cost' }, { to: '/insights/audit', ko: 'Audit Log', en: 'Audit Log' },
-    { to: '/insights/glossary', ko: 'Glossary', en: 'Glossary' }, { to: '/spec/business', ko: '글로벌·현장·사업', en: 'Global·Field·Biz' } ] },
-  { ko: 'G10 관리자', en: 'G10 Admin', items: [
-    { to: '/admin/users', ko: 'Users & Roles', en: 'Users & Roles' }, { to: '/admin/permissions', ko: 'Permissions Matrix', en: 'Permissions Matrix' },
-    { to: '/admin/org', ko: 'Org & Domains', en: 'Org & Domains' }, { to: '/admin/approval', ko: 'Approval Workflow', en: 'Approval Workflow' },
-    { to: '/admin/settings', ko: 'Settings', en: 'Settings' }, { to: '/admin/notifications', ko: 'Notifications', en: 'Notifications' }, { to: '/spec/security', ko: '보안 운영', en: 'Security Ops' } ] },
-  { ko: 'G11 기능명세', en: 'G11 Spec', items: [
-    { to: '/spec', ko: 'Overview', en: 'Overview' }, { to: '/spec/explorer', ko: 'FR Explorer', en: 'FR Explorer' }, { to: '/spec/coverage', ko: 'Coverage', en: 'Coverage' },
-    { to: '/spec/changelog', ko: 'Change Log', en: 'Change Log' }, { to: '/spec/glossary', ko: '용어집', en: 'Glossary' } ] },
+// 그룹 정의 (기존 G0~G11) — 라우트/항목 변경 없음
+const G0: NavGroup = { ko: '홈', en: 'Home', items: [
+  { to: '/', ko: '내 대시보드', en: 'My Dashboard' }, { to: '/home/customize', ko: '홈 커스터마이즈', en: 'Customize Home' },
+  { to: '/login', ko: 'Login·SSO', en: 'Login·SSO' }, { to: '/onboarding', ko: 'Onboarding', en: 'Onboarding' } ] };
+const G1: NavGroup = { ko: '기준정보', en: 'Master Data', items: [
+  { to: '/catalog', ko: 'Feature Catalog', en: 'Feature Catalog' }, { to: '/master/define', ko: 'Feature 등록(7-criteria)', en: 'Feature Definition (7-criteria)' },
+  { to: '/master/taxonomy', ko: 'Taxonomy Browser', en: 'Taxonomy Browser' }, { to: '/master/taxonomy/edit', ko: 'Taxonomy Editor', en: 'Taxonomy Editor' },
+  { to: '/master/bom', ko: 'BOM Editor', en: 'BOM Editor' }, { to: '/master/artifacts', ko: 'Artifact Catalog', en: 'Artifact Catalog' },
+  { to: '/master/control-points', ko: 'Control Point Catalog', en: 'Control Point Catalog' } ] };
+const G2: NavGroup = { ko: '관계', en: 'Topology', items: [
+  { to: '/topology/FEAT-BDC-001', ko: 'Topology Graph', en: 'Topology Graph' }, { to: '/topology/edge', ko: 'Edge Editor', en: 'Edge Editor' },
+  { to: '/metamodel', ko: 'Metamodel Viewer', en: 'Metamodel Viewer' }, { to: '/consistency', ko: 'Consistency Console', en: 'Consistency Console' },
+  { to: '/consistency/violation', ko: 'Violation Detail', en: 'Violation Detail' } ] };
+const G11: NavGroup = { ko: '기능명세', en: 'Spec', items: [
+  { to: '/spec', ko: 'Overview', en: 'Overview' }, { to: '/spec/explorer', ko: 'FR Explorer', en: 'FR Explorer' }, { to: '/spec/coverage', ko: 'Coverage', en: 'Coverage' },
+  { to: '/spec/changelog', ko: 'Change Log', en: 'Change Log' }, { to: '/spec/glossary', ko: '용어집', en: 'Glossary' } ] };
+const G3: NavGroup = { ko: '의사결정', en: 'Decisions', items: [
+  { to: '/decisions/center', ko: 'Decision Center', en: 'Decision Center' }, { to: '/impact', ko: 'Impact Analysis', en: 'Impact Analysis' },
+  { to: '/decisions/verification', ko: 'Verification Scope', en: 'Verification Scope' }, { to: '/decisions/deploy', ko: 'Deployment Decision', en: 'Deployment Decision' },
+  { to: '/decisions/supplier', ko: 'Supplier Scope', en: 'Supplier Scope' }, { to: '/decisions/report', ko: 'DecisionReport', en: 'DecisionReport' },
+  { to: '/spec/experiment', ko: '실험·효과검증', en: 'Experiments' }, { to: '/spec/conflict', ko: '정책 충돌', en: 'Policy Conflict' }, { to: '/spec/exception', ko: '예외 정책', en: 'Exception Policy' } ] };
+const G4: NavGroup = { ko: '변경관리', en: 'Change', items: [
+  { to: '/lifecycle', ko: 'Lifecycle 관리', en: 'Lifecycle Mgmt' },
+  { to: '/change/cr', ko: 'CR List', en: 'CR List' }, { to: '/cr-wizard', ko: 'CR Wizard', en: 'CR Wizard' },
+  { to: '/change/changeset', ko: 'ChangeSet', en: 'ChangeSet' }, { to: '/change/baseline', ko: 'Baseline Diff', en: 'Baseline Diff' }, { to: '/change/timeline', ko: 'Version Timeline', en: 'Version Timeline' } ] };
+const G5: NavGroup = { ko: '검증', en: 'Verification', items: [
+  { to: '/verify/evidence', ko: 'Test Evidence Manager', en: 'Test Evidence Manager' }, { to: '/readiness/FEAT-BDC-001', ko: 'Release Readiness', en: 'Release Readiness' },
+  { to: '/spec/compliance', ko: '컴플라이언스 룰', en: 'Compliance' }, { to: '/spec/scenario', ko: '시나리오 검증', en: 'Scenario Test' } ] };
+const G6: NavGroup = { ko: '배포·운영', en: 'Deploy & Ops', items: [
+  { to: '/ops/FEAT-BDC-001', ko: 'Ops · Kill Switch', en: 'Ops · Kill Switch' }, { to: '/ops/campaign', ko: 'OTA Campaign', en: 'OTA Campaign' },
+  { to: '/ops/policy', ko: 'Policy Lifecycle', en: 'Policy Lifecycle' }, { to: '/ops/telemetry', ko: 'Telemetry Explorer', en: 'Telemetry Explorer' },
+  { to: '/ops/incident', ko: 'Incident', en: 'Incident' }, { to: '/ops/runtime', ko: 'Runtime Sim', en: 'Runtime Sim' }, { to: '/fleet', ko: 'Fleet · 차량 상태', en: 'Fleet · Vehicles' }, { to: '/activation', ko: 'Activation · 차종 제어', en: 'Activation Control' }, { to: '/variants/FEAT-BDC-001', ko: 'Variant Matrix', en: 'Variant Matrix' }, { to: '/spec/cicd', ko: 'CI/CD 파이프라인', en: 'CI/CD Pipeline' } ] };
+const G8: NavGroup = { ko: '연동', en: 'Integration', items: [
+  { to: '/integration/connectors', ko: 'Connector Hub', en: 'Connector Hub' }, { to: '/integration/sync', ko: 'Sync Logs', en: 'Sync Logs' }, { to: '/spec/billing', ko: '과금 연계', en: 'Billing' } ] };
+const G9: NavGroup = { ko: '분석·감사', en: 'Insights', items: [
+  { to: '/insights/reports', ko: 'Reports', en: 'Reports' }, { to: '/cost', ko: 'SW 개발비 / Cost', en: 'SW Cost' }, { to: '/insights/audit', ko: 'Audit Log', en: 'Audit Log' },
+  { to: '/insights/glossary', ko: 'Glossary', en: 'Glossary' }, { to: '/spec/business', ko: '글로벌·현장·사업', en: 'Global·Field·Biz' } ] };
+const G7: NavGroup = { ko: '협력사', en: 'Supplier', items: [
+  { to: '/supplier/portal', ko: 'Supplier Portal', en: 'Supplier Portal' }, { to: '/supplier/package', ko: 'API Release Package', en: 'API Release Package' } ] };
+const G10: NavGroup = { ko: '관리자', en: 'Admin', items: [
+  { to: '/admin/users', ko: 'Users & Roles', en: 'Users & Roles' }, { to: '/admin/permissions', ko: 'Permissions Matrix', en: 'Permissions Matrix' },
+  { to: '/admin/org', ko: 'Org & Domains', en: 'Org & Domains' }, { to: '/admin/approval', ko: 'Approval Workflow', en: 'Approval Workflow' },
+  { to: '/admin/settings', ko: 'Settings', en: 'Settings' }, { to: '/admin/notifications', ko: 'Notifications', en: 'Notifications' }, { to: '/spec/security', ko: '보안 운영', en: 'Security Ops' } ] };
+
+// 상위 도메인 (12그룹 → 6도메인 통합)
+export const DOMAINS: NavDomain[] = [
+  { key: 'home', icon: '🏠', ko: '홈', en: 'Home', groups: [G0] },
+  { key: 'feature', icon: '📦', ko: 'Feature', en: 'Feature', groups: [G1, G2, G11] },
+  { key: 'lifecycle', icon: '⚖️', ko: '라이프사이클', en: 'Lifecycle', groups: [G3, G4, G5] },
+  { key: 'operate', icon: '🚀', ko: '운영', en: 'Operate', groups: [G6, G8] },
+  { key: 'insights', icon: '📊', ko: '분석·감사', en: 'Insights', groups: [G9] },
+  { key: 'governance', icon: '🛡️', ko: '거버넌스', en: 'Governance', groups: [G7, G10] },
 ];
+
+// 하위호환: 평탄화된 그룹 목록
+export const NAV: NavGroup[] = DOMAINS.flatMap(d => d.groups);
 
 const COMMON: Record<string, { ko: string; en: string }> = {
   search: { ko: '🔍 검색 · ⌘K  (예: FEAT-BDC-001)', en: '🔍 Search · ⌘K  (e.g. FEAT-BDC-001)' },
@@ -62,6 +75,22 @@ const COMMON: Record<string, { ko: string; en: string }> = {
   skip: { ko: '본문 바로가기', en: 'Skip to content' },
 };
 
+// 라우트 첫 세그먼트 → 도메인 key (NAV 항목에서 파생 + 파라미터 라우트 수동 보강)
+const SEG_TO_DOMAIN: Record<string, string> = (() => {
+  const m: Record<string, string> = {};
+  DOMAINS.forEach(d => d.groups.forEach(g => g.items.forEach(it => {
+    const seg = it.to.split('/')[1] || '';
+    if (seg && !(seg in m)) m[seg] = d.key;
+  })));
+  m['feature'] = 'feature';   // /feature/:id (Feature Detail)
+  return m;
+})();
+
+export function domainOfPath(pathname: string): string {
+  const seg = pathname.split('/')[1] || '';
+  return SEG_TO_DOMAIN[seg] || 'home';
+}
+
 export function useT() {
   const { state } = useApp();
   const lang = (state?.lang || 'ko') as Lang;
@@ -70,5 +99,6 @@ export function useT() {
     t: (k: string) => COMMON[k]?.[lang] ?? COMMON[k]?.ko ?? k,
     navGroup: (g: NavGroup) => (lang === 'en' ? g.en : g.ko),
     navItem: (i: NavItem) => (lang === 'en' ? i.en : i.ko),
+    navDomain: (d: NavDomain) => (lang === 'en' ? d.en : d.ko),
   };
 }

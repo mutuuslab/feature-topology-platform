@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { roles, permMatrix, users, campaigns } from '../data/refdata';
+import { roles, permMatrix, users, campaigns, profileOf } from '../data/refdata';
 import { useApp, roleHome } from '../store';
 import { StatTile, AreaChart, Donut, Bars, RadialProgress, LiveDot, Timeline, tally, dist } from '../components/charts';
 import { fleetStats } from '../data/fleet';
@@ -26,7 +26,7 @@ export function Login() {
 
 export function Onboarding() {
   const nav = useNavigate();
-  const [role, setRole] = useState('운영 P7');
+  const [role, setRole] = useState('기획 P1');
   return (
     <div style={{ maxWidth: 480, margin: '40px auto' }}>
       <h1 className="page-title">온보딩 / Onboarding</h1>
@@ -69,7 +69,7 @@ export function RoleHome() {
       <div className="hero">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <div><h1 className="page-title">Feature Topology Platform <LiveDot /></h1>
-            <div className="sub">현대자동차 SDV · {fleetStats.total.toLocaleString()}대 운영 · 현재 역할 <b>{role}</b> · 기본 랜딩 {roleHome[role]}</div></div>
+            <div className="sub">현대자동차 SDV · {fleetStats.total.toLocaleString()}대 운영 · 접속자 <b>{profileOf(role).name}</b> (사번 {profileOf(role).empNo}) · 소속 {profileOf(role).org} · 역할 <b>{role}</b></div></div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
             <label className="small" style={{ opacity: .9 }}>부서/역할 전환</label>
             <select value={role} onChange={e => change(e.target.value)} style={{ padding: 6, borderRadius: 6, border: 'none', minWidth: 140 }}>{roles.map(r => <option key={r} value={r}>{r}</option>)}</select>

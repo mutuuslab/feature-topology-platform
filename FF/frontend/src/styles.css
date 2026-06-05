@@ -146,6 +146,12 @@ table.heatmap th{background:transparent}
 
 /* 상단바 컨트롤 */
 .topbar .role-sel{padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-size:12px}
+.user-chip{display:flex;align-items:center;gap:8px;padding:3px 10px 3px 4px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2)}
+.user-chip .avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:700;font-size:12px}
+.user-chip .meta{display:flex;flex-direction:column;line-height:1.15}
+.user-chip .meta b{font-size:12px}
+.user-chip .meta .muted{font-size:10px;color:var(--muted)}
+@media (max-width:900px){ .user-chip .meta{display:none} }
 .icon-btn{padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer;font-size:12px}
 .icon-btn:hover{background:var(--surface-3)}
 .hamburger{display:none;background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink)}

@@ -129,7 +129,7 @@ const SEED_SEC: SecurityState = {
 export const initial: AppState = {
   features: M.features, edges: M.edges, relations: M.relations,
   crs: SEED_CRS, runtime: { 'FEAT-BDC-001': 'enabled' }, audit: [],
-  role: '운영 P7', theme: 'light', lang: 'ko', live: initialLive,
+  role: '기획 P1', theme: 'light', lang: 'ko', live: initialLive,
   activation: SEED_ACT, experiments: SEED_EXP, exceptions: SEED_EXC,
   compliance: [], scenarios: [
     { id: 'SCN-KR-PREM', name: 'KR · Premium · Gen3', total: 48, pass: 0, fail: 0, status: 'idle', step: 0 },
@@ -346,7 +346,7 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, scenarios, pipeline, subscriptions, syncLogs, campaigns,
         live: { tick: t, activation: Number(activation.toFixed(1)), failRate, rollback, p95: Math.round(p95), series, events } };
     }
-    case 'RESET': { localStorage.removeItem('fp.state.v1'); return { ...initial }; }
+    case 'RESET': { localStorage.removeItem('fp.state.v2'); return { ...initial }; }
     default: return s;
   }
 }
@@ -356,7 +356,7 @@ function nowish() { try { return new Date().toISOString().slice(0, 16).replace('
 
 function load(): AppState {
   try {
-    const raw = localStorage.getItem('fp.state.v1');
+    const raw = localStorage.getItem('fp.state.v2');
     if (raw) { const p = JSON.parse(raw); return { ...initial, ...p, toast: null }; }
   } catch {}
   return initial;
@@ -372,7 +372,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setDB({ features: state.features, edges: state.edges, relations: state.relations });
     const { toast, live, ...persist } = state;
-    try { localStorage.setItem('fp.state.v1', JSON.stringify(persist)); } catch {}
+    try { localStorage.setItem('fp.state.v2', JSON.stringify(persist)); } catch {}
     document.documentElement.setAttribute('data-theme', state.theme);
     document.documentElement.lang = state.lang;
   }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors, state.supplierAcceptance, state.homeWidgets, state.navMode]);

@@ -9,6 +9,19 @@ export const users = [
 ];
 
 export const roles = ['기획 P1','시스템 P2','SW P3','검증 P4','OTA P5','협력사 P6','운영 P7','Admin'];
+
+// 접속 사용자 프로필 (역할/부서 → 사번·이름·소속). 역할 전환 시 함께 변경.
+export const userProfiles: Record<string, { empNo: string; name: string; org: string }> = {
+  '기획 P1': { empNo: 'HMC-1042', name: '김지원', org: '상품기획팀' },
+  '시스템 P2': { empNo: 'HMC-2087', name: '박서준', org: '시스템엔지니어링팀' },
+  'SW P3': { empNo: 'HMC-3120', name: '박민준', org: 'SW플랫폼팀' },
+  '검증 P4': { empNo: 'HMC-4055', name: '이서연', org: '검증팀(ADAS)' },
+  'OTA P5': { empNo: 'HMC-5063', name: '최민준', org: 'OTA배포팀' },
+  '협력사 P6': { empNo: 'SUP-A-201', name: '최지우', org: '협력사 SUP-BDC-A' },
+  '운영 P7': { empNo: 'HMC-7099', name: '김태호', org: '운영팀(Body)' },
+  'Admin': { empNo: 'HMC-0001', name: '정하늘', org: '플랫폼 거버넌스' },
+};
+export const profileOf = (role: string) => userProfiles[role] || { empNo: 'HMC-0000', name: '게스트', org: '-' };
 export const verbs = ['view','create','edit','approve','run-engine','deploy','kill','rollback','admin'];
 // 권한 매트릭스 (role × verb)
 export const permMatrix: Record<string, string[]> = {

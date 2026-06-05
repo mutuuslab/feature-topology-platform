@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useApp, roleHome } from './store';
 import { NotFound } from './components/patterns';
-import { roles } from './data/refdata';
+import { roles, profileOf } from './data/refdata';
 import { DOMAINS, DEPT_NAV, ITEM, domainOfPath, useT } from './i18n';
 import Catalog from './pages/Catalog';
 import FeatureDetail from './pages/FeatureDetail';
@@ -75,6 +75,12 @@ export default function App() {
           <input aria-label="search" placeholder={t('search')} value={q}
             onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') submitSearch(); }} />
         </div>
+        {(() => { const me = profileOf(state.role); return (
+          <div className="user-chip" title={`${me.name} · 사번 ${me.empNo} · ${me.org}`}>
+            <span className="avatar">{me.name.slice(0, 1)}</span>
+            <span className="meta"><b>{me.name}</b><span className="muted">{me.empNo} · {me.org}</span></span>
+          </div>
+        ); })()}
         <select className="role-sel" aria-label={t('role')} value={state.role} onChange={e => changeRole(e.target.value)}>
           {roles.map(r => <option key={r}>{r}</option>)}
         </select>

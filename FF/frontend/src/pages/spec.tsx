@@ -15,13 +15,37 @@ export function SpecOverview() {
     <div>
       <div className="breadcrumb">기능명세 / Functional Spec ▸ Overview</div>
       <h1 className="page-title">기능명세서 Overview</h1>
-      <p className="page-sub">Feature Flag 플랫폼 기능명세서 2차 revision · {S.counts.requirements} FR · {S.counts.components} 컴포넌트 · {S.counts.families} family</p>
+      <p className="page-sub">Feature Flag 플랫폼 기능명세서 (v0.3 · 플랫폼 구현 반영) · {S.counts.requirements} FR · {S.counts.components} 컴포넌트 · {S.counts.families} family</p>
       <div className="kpis">
         <div className="kpi"><div className="v">{S.counts.requirements}</div><div className="l">요구사항(FR)</div></div>
         <div className="kpi"><div className="v">{S.counts.components}</div><div className="l">컴포넌트</div></div>
         <div className="kpi"><div className="v">{S.counts.families}</div><div className="l">FR Family</div></div>
         <div className="kpi"><div className="v">6</div><div className="l">기능 카테고리</div></div>
       </div>
+
+      {(() => {
+        const st = S.families.map(f => coverageOf(f).status);
+        const cnt = (x: CovStatus) => st.filter(s => s === x).length;
+        const done = cnt('완료'), part = cnt('부분');
+        const pct = Math.round((done + part * 0.5) / (S.families.length || 1) * 100);
+        const frDone = S.families.filter(f => coverageOf(f).status === '완료').reduce((a, f) => a + S.byFamily(f).length, 0);
+        return (
+          <div className="row analytics-strip">
+            <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>플랫폼 구현 반영률</b>
+              <RadialProgress size={120} color="#1F9D55" value={pct} label={`완료 ${done}/${S.families.length} family`} />
+              <div className="small muted mt">FR 기준 완료 {frDone}/{S.counts.requirements}</div>
+            </div>
+            <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>family 구현 상태</b>
+              <Donut size={130} center={`${S.families.length}`} segments={(['완료', '부분', '백엔드', '미구현'] as CovStatus[]).map(s => ({ label: s, value: cnt(s), color: STATUS_COLOR[s] }))} />
+            </div>
+            <div className="col card" style={{ justifyContent: 'center' }}>
+              <b>구현 현황 (v0.3 반영)</b>
+              <p className="small mt">전 family 동작/시뮬 구현 완료 — 부분·백엔드·미구현 0. 화면별 매핑은 Coverage에서 확인.</p>
+              <div className="row mt"><button className="btn primary" onClick={() => nav('/spec/coverage')}>구현 커버리지 →</button><button className="btn" onClick={() => nav('/spec/changelog')}>Change Log →</button></div>
+            </div>
+          </div>
+        );
+      })()}
       {cats.map(cat => (
         <div className="card" key={cat}>
           <b>{cat}</b>

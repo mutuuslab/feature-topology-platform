@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as S from '../data/spec';
 import { coverage, coverageOf, howOf, STATUS_COLOR, CovStatus } from '../data/specCoverage';
+import { platformGlossary } from '../data/platformGlossary';
 import { RightPanel } from '../components/patterns';
 import { RadialProgress, Donut } from '../components/charts';
 
@@ -210,12 +211,27 @@ export function SpecChangeLog() {
   );
 }
 export function SpecGlossary() {
+  const [q, setQ] = useState('');
+  // 명세(spec.json) + 플랫폼 용어 병합 — term 기준 dedupe(명세 우선), 정렬
+  const merged = useMemo(() => {
+    const map = new Map<string, { term: string; def: string; src: '명세' | '플랫폼' }>();
+    platformGlossary.forEach(g => map.set(g.term.toLowerCase(), { ...g, src: '플랫폼' }));
+    S.glossary.forEach(g => map.set(g.term.toLowerCase(), { term: g.term, def: g.def, src: '명세' }));
+    return [...map.values()].sort((a, b) => a.term.localeCompare(b.term));
+  }, []);
+  const rows = merged.filter(g => !q || g.term.toLowerCase().includes(q.toLowerCase()) || g.def.toLowerCase().includes(q.toLowerCase()));
   return (
     <div>
       <div className="breadcrumb">기능명세 ▸ Glossary</div>
-      <h1 className="page-title">용어집 ({S.glossary.length})</h1>
-      <div className="card"><table><thead><tr><th>용어</th><th>정의</th></tr></thead>
-        <tbody>{S.glossary.map((g, i) => <tr key={i}><td><b>{g.term}</b></td><td className="small">{g.def}</td></tr>)}</tbody></table></div>
+      <h1 className="page-title">용어집 ({merged.length})</h1>
+      <p className="page-sub">기능명세 + Feature 플랫폼 용어 통합 · 플랫폼 {platformGlossary.length} · 명세 {S.glossary.length}</p>
+      <div className="card">
+        <input placeholder="🔍 용어·정의 검색" value={q} onChange={e => setQ(e.target.value)} style={{ width: '100%', maxWidth: 360, padding: 8, border: '1px solid var(--line)', borderRadius: 6, marginBottom: 10 }} />
+        <div className="table-wrap"><table><thead><tr><th>용어</th><th>정의</th><th>출처</th></tr></thead>
+          <tbody>{rows.map((g, i) => <tr key={i}><td><b>{g.term}</b></td><td className="small">{g.def}</td>
+            <td><span className="pill" style={{ background: g.src === '플랫폼' ? 'var(--info)' : 'var(--surface-3)', color: g.src === '플랫폼' ? '#fff' : 'var(--ink)' }}>{g.src}</span></td></tr>)}</tbody></table></div>
+        {!rows.length && <p className="muted small mt">검색 결과 없음</p>}
+      </div>
     </div>
   );
 }

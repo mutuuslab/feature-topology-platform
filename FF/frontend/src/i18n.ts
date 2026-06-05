@@ -63,6 +63,50 @@ export const DOMAINS: NavDomain[] = [
 // 하위호환: 평탄화된 그룹 목록
 export const NAV: NavGroup[] = DOMAINS.flatMap(d => d.groups);
 
+// 경로 → NavItem 룩업 (부서별 보기에서 라벨 i18n 재사용)
+export const ITEM: Record<string, NavItem> = (() => {
+  const m: Record<string, NavItem> = {};
+  NAV.forEach(g => g.items.forEach(it => { if (!(it.to in m)) m[it.to] = it; }));
+  return m;
+})();
+
+// ── 부서별 보기 (역할 P1~P7+Admin → 담당 메뉴 큐레이션) ──
+export interface DeptSection { ko: string; en: string; paths: string[] }
+export interface Dept { role: string; icon: string; ko: string; en: string; sections: DeptSection[] }
+export const DEPT_NAV: Dept[] = [
+  { role: '기획 P1', icon: '📋', ko: '기획', en: 'Planning', sections: [
+    { ko: '정의', en: 'Define', paths: ['/catalog', '/master/define', '/master/taxonomy'] },
+    { ko: '명세', en: 'Spec', paths: ['/spec', '/spec/explorer', '/spec/coverage'] },
+    { ko: '분석', en: 'Insights', paths: ['/insights/reports', '/cost', '/spec/business'] } ] },
+  { role: '시스템 P2', icon: '🔗', ko: '시스템', en: 'System', sections: [
+    { ko: '아키텍처', en: 'Architecture', paths: ['/topology/FEAT-BDC-001', '/topology/edge', '/metamodel'] },
+    { ko: '정합성', en: 'Consistency', paths: ['/consistency', '/consistency/violation'] },
+    { ko: 'BOM', en: 'BOM', paths: ['/master/bom', '/master/artifacts', '/master/control-points'] },
+    { ko: '영향', en: 'Impact', paths: ['/impact'] } ] },
+  { role: 'SW P3', icon: '💻', ko: 'SW', en: 'SW', sections: [
+    { ko: '의사결정', en: 'Decisions', paths: ['/decisions/center', '/impact', '/decisions/deploy', '/decisions/report'] },
+    { ko: '변경', en: 'Change', paths: ['/change/cr', '/cr-wizard', '/change/changeset'] },
+    { ko: '구현', en: 'Build', paths: ['/master/bom', '/spec/cicd'] } ] },
+  { role: '검증 P4', icon: '✅', ko: '검증', en: 'Verification', sections: [
+    { ko: '게이트', en: 'Gate', paths: ['/readiness/FEAT-BDC-001', '/verify/evidence'] },
+    { ko: '규정', en: 'Compliance', paths: ['/spec/compliance', '/spec/scenario'] },
+    { ko: '추적', en: 'Traceability', paths: ['/spec/coverage', '/lifecycle'] } ] },
+  { role: 'OTA P5', icon: '🚀', ko: 'OTA', en: 'OTA', sections: [
+    { ko: '캠페인', en: 'Campaign', paths: ['/ops/campaign', '/ops/policy', '/activation'] },
+    { ko: '파이프라인', en: 'Pipeline', paths: ['/spec/cicd'] },
+    { ko: '모니터', en: 'Monitor', paths: ['/ops/telemetry', '/variants/FEAT-BDC-001'] } ] },
+  { role: '협력사 P6', icon: '🤝', ko: '협력사', en: 'Supplier', sections: [
+    { ko: '패키지', en: 'Package', paths: ['/supplier/portal', '/supplier/package'] },
+    { ko: '연동', en: 'Integration', paths: ['/integration/connectors', '/integration/sync', '/spec/billing'] } ] },
+  { role: '운영 P7', icon: '🛠', ko: '운영', en: 'Operations', sections: [
+    { ko: '운영', en: 'Ops', paths: ['/ops/FEAT-BDC-001', '/ops/incident', '/ops/runtime'] },
+    { ko: 'Fleet', en: 'Fleet', paths: ['/fleet', '/activation'] },
+    { ko: '감사', en: 'Audit', paths: ['/insights/audit'] } ] },
+  { role: 'Admin', icon: '⚙️', ko: '관리', en: 'Admin', sections: [
+    { ko: '관리', en: 'Admin', paths: ['/admin/users', '/admin/permissions', '/admin/org', '/admin/approval', '/admin/settings', '/admin/notifications'] },
+    { ko: '보안', en: 'Security', paths: ['/spec/security'] } ] },
+];
+
 const COMMON: Record<string, { ko: string; en: string }> = {
   search: { ko: '🔍 검색 · ⌘K  (예: FEAT-BDC-001)', en: '🔍 Search · ⌘K  (e.g. FEAT-BDC-001)' },
   role: { ko: '역할', en: 'Role' },
@@ -100,5 +144,6 @@ export function useT() {
     navGroup: (g: NavGroup) => (lang === 'en' ? g.en : g.ko),
     navItem: (i: NavItem) => (lang === 'en' ? i.en : i.ko),
     navDomain: (d: NavDomain) => (lang === 'en' ? d.en : d.ko),
+    deptLabel: (d: Dept | DeptSection) => (lang === 'en' ? d.en : d.ko),
   };
 }

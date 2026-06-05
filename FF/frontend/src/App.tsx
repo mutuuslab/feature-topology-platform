@@ -3,7 +3,7 @@ import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-d
 import { useApp, roleHome } from './store';
 import { NotFound } from './components/patterns';
 import { roles } from './data/refdata';
-import { DOMAINS, domainOfPath, useT } from './i18n';
+import { DOMAINS, DEPT_NAV, ITEM, domainOfPath, useT } from './i18n';
 import Catalog from './pages/Catalog';
 import FeatureDetail from './pages/FeatureDetail';
 const Topology = lazy(() => import('./pages/Topology')); // cytoscape 지연 로딩(초기 번들 분리)
@@ -51,12 +51,17 @@ export default function App() {
   const nav = useNavigate();
   const loc = useLocation();
   const { state, dispatch } = useApp();
-  const { t, navGroup, navItem, navDomain } = useT();
+  const { t, navGroup, navItem, navDomain, deptLabel } = useT();
   const [navOpen, setNavOpen] = useState(false);
   const [activeDomain, setActiveDomain] = useState(() => domainOfPath(loc.pathname));
   useEffect(() => { setActiveDomain(domainOfPath(loc.pathname)); }, [loc.pathname]);
   const roleDomain = domainOfPath(roleHome[state.role] || '/');
   const dom = DOMAINS.find(d => d.key === activeDomain) || DOMAINS[0];
+  // 부서별 보기
+  const navMode = state.navMode || 'function';
+  const [activeDept, setActiveDept] = useState(state.role);
+  useEffect(() => { setActiveDept(state.role); }, [state.role]);
+  const deptObj = DEPT_NAV.find(d => d.role === activeDept) || DEPT_NAV[0];
   const [q, setQ] = useState('');
   const submitSearch = () => { if (q.trim()) { nav('/catalog?q=' + encodeURIComponent(q.trim())); setNavOpen(false); } };
   const changeRole = (r: string) => { dispatch({ t: 'ROLE', role: r }); nav(roleHome[r] || '/'); };
@@ -78,23 +83,48 @@ export default function App() {
         <button className="icon-btn" title="notifications" aria-label="notifications" onClick={() => nav('/admin/notifications')}>🔔</button>
       </div>
       <nav className="nav" aria-label="primary">
-        <div className="rail">
-          {DOMAINS.map(d => (
-            <button key={d.key} className={'rail-btn' + (d.key === activeDomain ? ' active' : '')} title={navDomain(d)} aria-label={navDomain(d)} aria-current={d.key === activeDomain} onClick={() => setActiveDomain(d.key)}>
-              <span className="ic">{d.icon}</span>
-              <span className="lb">{navDomain(d)}</span>
-              {d.key === roleDomain && <span className="role-dot" title="현재 역할 기본 영역" />}
-            </button>
-          ))}
+        <div className="nav-mode">
+          <button className={navMode === 'function' ? 'active' : ''} onClick={() => dispatch({ t: 'SET_NAV_MODE', mode: 'function' })}>기능별</button>
+          <button className={navMode === 'dept' ? 'active' : ''} onClick={() => dispatch({ t: 'SET_NAV_MODE', mode: 'dept' })}>부서별</button>
         </div>
-        <div className="subnav" onClick={() => setNavOpen(false)}>
-          <div className="subnav-head">{dom.icon} {navDomain(dom)}</div>
-          {dom.groups.map(g => (
-            <div key={g.ko}>
-              <div className="group">{navGroup(g)}</div>
-              {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
+        <div className="nav-body">
+          {navMode === 'function' ? <>
+            <div className="rail">
+              {DOMAINS.map(d => (
+                <button key={d.key} className={'rail-btn' + (d.key === activeDomain ? ' active' : '')} title={navDomain(d)} aria-label={navDomain(d)} aria-current={d.key === activeDomain} onClick={() => setActiveDomain(d.key)}>
+                  <span className="ic">{d.icon}</span><span className="lb">{navDomain(d)}</span>
+                  {d.key === roleDomain && <span className="role-dot" title="현재 역할 기본 영역" />}
+                </button>
+              ))}
             </div>
-          ))}
+            <div className="subnav" onClick={() => setNavOpen(false)}>
+              <div className="subnav-head">{dom.icon} {navDomain(dom)}</div>
+              {dom.groups.map(g => (
+                <div key={g.ko}>
+                  <div className="group">{navGroup(g)}</div>
+                  {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
+                </div>
+              ))}
+            </div>
+          </> : <>
+            <div className="rail">
+              {DEPT_NAV.map(d => (
+                <button key={d.role} className={'rail-btn' + (d.role === activeDept ? ' active' : '')} title={deptLabel(d)} aria-label={deptLabel(d)} aria-current={d.role === activeDept} onClick={() => setActiveDept(d.role)}>
+                  <span className="ic">{d.icon}</span><span className="lb">{deptLabel(d)}</span>
+                  {d.role === state.role && <span className="role-dot" title="현재 역할" />}
+                </button>
+              ))}
+            </div>
+            <div className="subnav" onClick={() => setNavOpen(false)}>
+              <div className="subnav-head">{deptObj.icon} {deptLabel(deptObj)} <span className="muted small">({deptObj.role})</span></div>
+              {deptObj.sections.map(sec => (
+                <div key={sec.ko}>
+                  <div className="group">{deptLabel(sec)}</div>
+                  {sec.paths.map(p => ITEM[p] ? <NavLink key={p} to={p} end={p === '/'}>{navItem(ITEM[p])}</NavLink> : null)}
+                </div>
+              ))}
+            </div>
+          </>}
         </div>
       </nav>
       <main className="main" id="main">

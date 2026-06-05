@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { severityMeta, SeverityBadge } from '../components/ui';
 import { Steps } from '../components/charts';
-import { domainOfPath, DOMAINS } from '../i18n';
+import { domainOfPath, DOMAINS, DEPT_NAV, ITEM } from '../i18n';
+import { platformGlossary } from '../data/platformGlossary';
 
 describe('네비 도메인 매핑 (안 B)', () => {
   it('라우트 첫 세그먼트 → 올바른 도메인', () => {
@@ -18,6 +19,23 @@ describe('네비 도메인 매핑 (안 B)', () => {
     expect(domainOfPath('/insights/audit')).toBe('insights');
   });
   it('도메인은 6개', () => { expect(DOMAINS.length).toBe(6); });
+});
+
+describe('부서별 보기 (안 2)', () => {
+  it('부서는 8개(P1~P7+Admin)', () => { expect(DEPT_NAV.length).toBe(8); });
+  it('부서 메뉴 경로가 모두 실제 NAV 항목으로 해석된다', () => {
+    DEPT_NAV.forEach(d => d.sections.forEach(s => s.paths.forEach(p => {
+      expect(ITEM[p], `${d.role} ${p}`).toBeTruthy();
+    })));
+  });
+});
+
+describe('플랫폼 Glossary 보강', () => {
+  it('핵심 용어 포함 + 항목 충분', () => {
+    expect(platformGlossary.length).toBeGreaterThanOrEqual(40);
+    const terms = platformGlossary.map(g => g.term);
+    ['Kill Switch', 'Safe Default', 'OTA', 'Variant', '9-Gate'].forEach(t => expect(terms).toContain(t));
+  });
 });
 
 describe('회귀 — Consistency severity 정규화', () => {

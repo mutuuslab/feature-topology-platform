@@ -76,6 +76,7 @@ export interface AppState {
   syncLogs: SyncLog[];
   supplierAcceptance: SupplierItem[];
   homeWidgets: { id: string; on: boolean }[];
+  navMode: 'function' | 'dept';
   toast?: { msg: string; kind: 'ok' | 'warn' | 'err' } | null;
 }
 
@@ -152,6 +153,7 @@ export const initial: AppState = {
     { id: 'KPI Tiles', on: true }, { id: 'My Work', on: true }, { id: 'Alerts', on: true },
     { id: 'Recent', on: false }, { id: 'Pinned Features', on: false }, { id: 'Telemetry', on: true },
   ],
+  navMode: 'function',
   toast: null,
 };
 
@@ -190,6 +192,7 @@ type Action =
   | { t: 'ACCEPT_SUPPLIER'; feature: string; item: string }
   | { t: 'ADD_POLICY'; policy: Policy }
   | { t: 'SET_HOME_WIDGETS'; widgets: { id: string; on: boolean }[] }
+  | { t: 'SET_NAV_MODE'; mode: 'function' | 'dept' }
   | { t: 'LIVE_TICK' }
   | { t: 'RESET' };
 
@@ -298,6 +301,7 @@ export function reducer(s: AppState, a: Action): AppState {
       audit: [{ ts: nowish(), actor: s.role, action: 'POLICY_CREATE', target: a.policy.id, detail: `${a.policy.feature} · ${a.policy.stage}` }, ...s.audit],
       toast: { msg: `${a.policy.id} 정책 등록 (Draft)`, kind: 'ok' } };
     case 'SET_HOME_WIDGETS': return { ...s, homeWidgets: a.widgets, toast: { msg: '홈 레이아웃 저장됨', kind: 'ok' } };
+    case 'SET_NAV_MODE': return { ...s, navMode: a.mode };
     case 'LIVE_TICK': {
       const t = s.live.tick + 1;
       const activation = Math.max(90, Math.min(99.9, s.live.activation + (Math.random() - 0.5) * 1.4));
@@ -371,7 +375,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem('fp.state.v1', JSON.stringify(persist)); } catch {}
     document.documentElement.setAttribute('data-theme', state.theme);
     document.documentElement.lang = state.lang;
-  }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors, state.supplierAcceptance, state.homeWidgets]);
+  }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors, state.supplierAcceptance, state.homeWidgets, state.navMode]);
 
   // 실시간 시뮬레이션 틱 (2초)
   useEffect(() => {

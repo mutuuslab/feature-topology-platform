@@ -19,9 +19,12 @@ const G2: NavGroup = { ko: '관계', en: 'Topology', items: [
   { to: '/topology/FEAT-BDC-001', ko: 'Topology Graph', en: 'Topology Graph' }, { to: '/topology/edge', ko: 'Edge Editor', en: 'Edge Editor' },
   { to: '/metamodel', ko: 'Metamodel Viewer', en: 'Metamodel Viewer' }, { to: '/consistency', ko: 'Consistency Console', en: 'Consistency Console' },
   { to: '/consistency/violation', ko: 'Violation Detail', en: 'Violation Detail' } ] };
-const G11: NavGroup = { ko: '기능명세', en: 'Spec', items: [
-  { to: '/spec', ko: 'Overview', en: 'Overview' }, { to: '/spec/explorer', ko: 'FR Explorer', en: 'FR Explorer' }, { to: '/spec/coverage', ko: 'Coverage', en: 'Coverage' },
+// 기능명세 — 참조성(변경이력·용어집)은 Feature 도메인에 유지
+const G11: NavGroup = { ko: '기능명세 (참조)', en: 'Spec (Ref)', items: [
   { to: '/spec/changelog', ko: 'Change Log', en: 'Change Log' }, { to: '/spec/glossary', ko: '용어집', en: 'Glossary' } ] };
+// 기능명세 — Overview/FR Explorer/Coverage는 관리(거버넌스) 도메인으로 이동
+const G11M: NavGroup = { ko: '기능명세 관리', en: 'Spec Mgmt', items: [
+  { to: '/spec', ko: 'Overview', en: 'Overview' }, { to: '/spec/explorer', ko: 'FR Explorer', en: 'FR Explorer' }, { to: '/spec/coverage', ko: 'Coverage', en: 'Coverage' } ] };
 const G3: NavGroup = { ko: '의사결정', en: 'Decisions', items: [
   { to: '/decisions/center', ko: 'Decision Center', en: 'Decision Center' }, { to: '/impact', ko: 'Impact Analysis', en: 'Impact Analysis' },
   { to: '/decisions/verification', ko: 'Verification Scope', en: 'Verification Scope' }, { to: '/decisions/deploy', ko: 'Deployment Decision', en: 'Deployment Decision' },
@@ -57,7 +60,7 @@ export const DOMAINS: NavDomain[] = [
   { key: 'lifecycle', icon: '⚖️', ko: '라이프사이클', en: 'Lifecycle', groups: [G3, G4, G5] },
   { key: 'operate', icon: '🚀', ko: '운영', en: 'Operate', groups: [G6, G8] },
   { key: 'insights', icon: '📊', ko: '분석·감사', en: 'Insights', groups: [G9] },
-  { key: 'governance', icon: '🛡️', ko: '거버넌스', en: 'Governance', groups: [G7, G10] },
+  { key: 'governance', icon: '🛡️', ko: '거버넌스', en: 'Governance', groups: [G7, G10, G11M] },
 ];
 
 // 하위호환: 평탄화된 그룹 목록
@@ -119,7 +122,12 @@ const COMMON: Record<string, { ko: string; en: string }> = {
   skip: { ko: '본문 바로가기', en: 'Skip to content' },
 };
 
-// 라우트 첫 세그먼트 → 도메인 key (NAV 항목에서 파생 + 파라미터 라우트 수동 보강)
+// 정확 경로 → 도메인 (모호한 /spec/* 등 정확 매핑) + 첫 세그먼트 폴백
+const EXACT_TO_DOMAIN: Record<string, string> = (() => {
+  const m: Record<string, string> = {};
+  DOMAINS.forEach(d => d.groups.forEach(g => g.items.forEach(it => { if (!(it.to in m)) m[it.to] = d.key; })));
+  return m;
+})();
 const SEG_TO_DOMAIN: Record<string, string> = (() => {
   const m: Record<string, string> = {};
   DOMAINS.forEach(d => d.groups.forEach(g => g.items.forEach(it => {
@@ -131,6 +139,7 @@ const SEG_TO_DOMAIN: Record<string, string> = (() => {
 })();
 
 export function domainOfPath(pathname: string): string {
+  if (EXACT_TO_DOMAIN[pathname]) return EXACT_TO_DOMAIN[pathname];
   const seg = pathname.split('/')[1] || '';
   return SEG_TO_DOMAIN[seg] || 'home';
 }

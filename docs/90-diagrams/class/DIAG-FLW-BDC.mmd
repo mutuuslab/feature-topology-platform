@@ -1,0 +1,14 @@
+%% DIAG-FLW-BDC — FEAT-BDC-001 중심 Topology (Typed Edges)
+flowchart LR
+  BDC["FEAT-BDC-001<br/>BDC Policy Control (L2)"]
+  BODY["FEAT-BODY-001<br/>Body Comfort"]
+  RUN["FEAT-RUNTIME-001<br/>Policy Agent"]
+  MAN["FEAT-MANUAL-001<br/>Manual Override"]
+  PREV["POLICY-BDC-PREV<br/>Previous Stable"]
+  LEG["FEAT-BDC-002<br/>Legacy Logic"]
+
+  BODY -->|parent_of| BDC
+  BDC -->|requires| RUN
+  BDC -->|excludes| MAN
+  BDC -->|fallback_to| PREV
+  BDC -->|replaces| LEG

@@ -1,0 +1,79 @@
+# 99-10-bdc-topology.yaml — FEAT-BDC-001 전체 토폴로지 (모델 전수 검증용 worked example)
+# 18 Entity · 10 Edge · 12 Rule · 4 Engine · 9 Gate 를 모두 행사한다.
+
+feature:
+  id: FEAT-BDC-001
+  level: L2
+  display_name: "BDC Policy Control"
+  internal_alias: { 기획: "스마트 도어 잠금", 시스템: "Remote Door Lock Command", SW: "BDC_PolicyControl_v3" }
+  owner_org: "Body Platform Team"
+  domain: BDC
+  lifecycle: Approved
+  safety_level: QM
+  security_level: Medium
+  deploy_type: Policy-only
+  baseline_ver: "v1.1"
+
+bom:                       # 11 영역
+  requirement:   [SYS-BODY-001, SWE-BDC-010, SEC-POLICY-004]
+  architecture:  [ECU-BDC, ECU-CCU, SWC-BDC-ADAPTER, SWC-POLICY-EVALUATOR]
+  interface:     [API-BDC-POLICY-CONTROL@v1.5, SIG-DOOR-LOCK, DTC-BDC-POLICY-FAIL]
+  variant:       ["KR/EU", "MY2027+", "Premium", "Gen3", "SW>=3.2.0"]
+  control:       [POLICY-BDC-ENABLE, CP-BDC-001-KILL]
+  deployment:    [DEP-BDC-001 (Policy-only, PKG-POLICY-BDC-2027)]
+  verification:  [HIL-BDC-001, OTA-RB-002, TEL-BDC-001]
+  supplier:      [SUP-BDC-A, BDC_FUNC_032]
+  safety_security: { asil: QM, cybersecurity: Medium }
+  operation:     [TEL-BDC-001, "Audit Log"]
+
+edges:                     # Typed Edges
+  - { source: FEAT-BODY-001, target: FEAT-BDC-001, type: parent_of }
+  - { source: FEAT-BDC-001, target: FEAT-RUNTIME-001, type: requires, criticality: high }
+  - { source: FEAT-BDC-001, target: FEAT-MANUAL-001, type: excludes }
+  - { source: FEAT-BDC-001, target: POLICY-BDC-PREV, type: fallback_to, runtime: { safe_default: disabled } }
+  - { source: FEAT-BDC-001, target: FEAT-BDC-002, type: replaces }
+
+control:
+  variant_rule: "region IN[KR,EU] AND modelYear>=2027 AND trim IN[Premium] AND hw==Gen3 AND sw>=3.2.0 → allowed"
+  control_gate: { policy: POLICY-BDC-ENABLE=true, rollout_pct: 100, kill_switch: OFF }
+  safe_default: disabled
+  rollback_plan: RB-BDC-001 (→ previous stable policy)
+
+decision_report:          # 4 엔진 출력 (PPT S20/S21/S31)
+  impact:   { features: 2, swcs: 1, ecus: 1, suppliers: 1, tests: 3, variants: 4 }
+  verify:   { mandatory: [HIL-BDC-001, OTA-RB-002, TEL-BDC-001], missing: [OTA-RB-002], gate: PENDING }
+  deploy:   { type: Policy-only, confidence: High, required_gates: [Policy, Variant, Rollback, Telemetry] }
+  supplier: { scope: SUP-BDC-A, contract_gap: none, evidence: "2/2", api_impact: none }
+
+readiness:                # 9 Gate (PPT S25) → HOLD
+  G1_feature: PASS
+  G2_requirement: PASS
+  G3_variant: PASS
+  G4_control: PASS
+  G5_verification: PENDING   # OTA-RB-002 미완
+  G6_supplier: PASS
+  G7_safety_security: PASS
+  G8_ota: PASS
+  G9_operations: PASS
+  decision: HOLD
+
+operations:               # 운영 (PPT S17)
+  activation_success: 0.987
+  policy_apply_fail: "12/10K"
+  rollback_count: 3
+  recent_events: [POLICY_APPLY_SUCCESS, POLICY_APPLY_FAIL(ECU version mismatch), POLICY_ROLLBACK]
+
+rules_exercised:          # 12 Consistency + 4 Edge quality 가 모두 적용되는지
+  - RULE-R01  # L2→Requirement(3개) ✓
+  - RULE-R02  # Owner ✓
+  - RULE-R03  # Released 아님(Approved) — 미적용 N/A
+  - RULE-R04  # Safe Default=disabled ✓
+  - RULE-R05  # Policy-only → Rollback Plan ✓
+  - RULE-R06  # Supplier Function ID(BDC_FUNC_032) ✓
+  - RULE-R07  # Variant Rule 존재 ✓
+  - RULE-R08  # Safety QM → Gate N/A
+  - RULE-R09  # Security Medium → Gate 재검토
+  - RULE-R10  # Deprecated 아님 N/A
+  - RULE-R11  # API v1.4→v1.5 → 자동 Impact ✓
+  - RULE-R12  # Baseline v1.0→v1.1 ChangeSet ✓
+  - RULE-EQ1..EQ4  # No-Cycle/Dependency/Conflict/Recovery ✓

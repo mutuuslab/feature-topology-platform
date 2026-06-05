@@ -1,0 +1,185 @@
+# id-registry.yaml — 전역 ID 레지스트리 (단일 진실 원천)
+# 모든 docs/ 문서의 frontmatter.id 는 여기에 등록되어야 하며, traces 의 모든 참조는 여기서 해석된다.
+# 검증기는 (1) orphan(미등록 참조) 0, (2) 양방향 무결성, (3) FR↔SCR↔TC 커버리지를 강제한다.
+
+registry_version: "1.0"
+last_updated: 2026-06-05
+
+prefixes:
+  FR:   "기능 요구사항 / Functional Requirement"
+  NFR:  "비기능 요구사항 / Non-Functional Requirement"
+  ARC:  "아키텍처 결정/뷰 / Architecture"
+  ENT:  "엔티티 / Entity (18)"
+  EDG:  "타입 엣지 / Typed Edge (10)"
+  REL:  "명명 관계 / Named Relationship (9)"
+  RULE: "정합성 규칙 / Consistency Rule (12) + Edge 품질규칙"
+  ENG:  "의사결정 엔진 / Decision Engine (4)"
+  GATE: "Release Readiness Gate (9)"
+  LCS:  "라이프사이클 상태 / Lifecycle State (6)"
+  SCR:  "화면 / Screen (60)"
+  FLW:  "플로 / Flow"
+  INT:  "연동 / Integration"
+  DIAG: "다이어그램 / Diagram (DIAG-<TYPE>-)"
+  TC:   "테스트 케이스 / Test Case"
+  FEAT: "피처 공통키 / Feature key"
+  PAT:  "UI 공통 패턴 / Cross-cutting Pattern"
+  DS:   "디자인 시스템 토큰/컴포넌트 / Design System"
+
+# ── 요구사항 (FR-1..FR-30) ────────────────────────────────
+requirements:
+  module_A_master_data:
+    FR-1:  "Feature Definition — 등록 단위·7 Criteria·제외 기준"
+    FR-2:  "Feature Taxonomy — L0~L5·L2 기준·ID 규칙·T-001~004"
+    FR-3:  "Feature BOM — 11영역·공통 Schema·R1~R4"
+    FR-4:  "Feature Catalog — 검색·필터·Health·집계"
+  module_B_topology:
+    FR-5:  "Relationship Edge — 10종 Typed Edge·Edge 품질규칙"
+    FR-6:  "Topology Graph — 관계 그래프 시각화·5 산출물"
+    FR-7:  "Metamodel — 18 Entity / 4 Group"
+    FR-8:  "Consistency Rules — 12종·실행시점"
+  module_C_variant_runtime:
+    FR-9:  "Variant Filter — 구조적 적용가능성"
+    FR-10: "Control Gate — 운영시점 활성화"
+    FR-11: "Runtime State — enabled/disabled/degraded/blocked/..."
+    FR-12: "활성화 판단 — Variant∧Control∧Runtime, 3중 Guard"
+  module_D_deploy_verify:
+    FR-13: "Deployment Decision — Binary/Policy-only/Calibration/Manual"
+    FR-14: "Verification Scope — 필수 Test·Missing Evidence·Gate"
+  module_E_ops:
+    FR-15: "Operations/Telemetry/Audit — 추적 6종·Event-to-Action"
+    FR-16: "Kill Switch / Rollback — Safe Default·단계 복구"
+  module_F_engines:
+    FR-17: "Impact Analysis Engine"
+    FR-18: "Verification Scope Engine"
+    FR-19: "Deployment Decision Engine"
+    FR-20: "Supplier Responsibility Engine"
+  module_G_governance:
+    FR-21: "Feature Lifecycle — 6 상태·전이 가드"
+    FR-22: "Release Readiness — 9 Gates"
+    FR-23: "Baseline & ChangeSet"
+    FR-24: "Audit Log"
+  module_H_integration:
+    FR-25: "외부 도구 연동 — Codebeamer/PLM/Unleash/OTA (REST/Webhook)"
+    FR-26: "Supplier API Release Package — 10 항목"
+  module_I_ui:
+    FR-27: "Dashboard/Catalog UI"
+    FR-28: "Feature Detail UI — 11 탭"
+    FR-29: "Impact Analysis Center UI"
+    FR-30: "Release Readiness Center UI"
+  non_functional:
+    NFR-1: "성능 — Impact 그래프 쿼리 응답 목표"
+    NFR-2: "보안 — RBAC·R155/21434 정합"
+    NFR-3: "가용성·복원력"
+    NFR-4: "감사 보존·불변성"
+    NFR-5: "확장성 — 엔티티/엣지 규모 증가 대응"
+    NFR-6: "국제화 — 한/영 라벨·KO-primary"
+    NFR-7: "접근성 — WCAG 2.1 AA"
+
+# ── 엔티티 (18, 4 그룹) ────────────────────────────────────
+entities:
+  master:        [ENT-TAXONOMYNODE, ENT-FEATUREBOM, ENT-BOMITEM, ENT-REQUIREMENT, ENT-FEATURE]
+  arch_if:       [ENT-SWCOMPONENT, ENT-ECU, ENT-APISERVICE, ENT-SIGNAL, ENT-DTC]
+  control_deploy:[ENT-VARIANTRULE, ENT-CONTROLPOINT, ENT-DEPLOYMENTUNIT, ENT-ROLLBACKPLAN]
+  verify_ops:    [ENT-TESTCASE, ENT-TESTEVIDENCE, ENT-SUPPLIERFUNCTION, ENT-TELEMETRYEVENT]
+
+# ── 타입 엣지 (10) ─────────────────────────────────────────
+edges:
+  [EDG-PARENT-OF, EDG-CHILD-OF, EDG-COMPOSED-OF, EDG-REQUIRES, EDG-EXCLUDES,
+   EDG-OVERRIDES, EDG-FALLBACK-TO, EDG-DEGRADES-TO, EDG-REPLACES, EDG-DUPLICATES]
+
+# ── 명명 관계 (9) ──────────────────────────────────────────
+relationships:
+  [REL-DERIVES, REL-IMPLEMENTED-BY, REL-USES-API, REL-APPLIES-TO, REL-CONTROLLED-BY,
+   REL-DEPLOYED-AS, REL-VERIFIED-BY, REL-REALIZED-BY, REL-EMITS-EVENT]
+
+# ── 정합성 규칙 (12) + Edge 품질규칙 ──────────────────────
+rules:
+  consistency:
+    RULE-R01: "L2 Feature → ≥1 Requirement"
+    RULE-R02: "L2 Feature → Owner 필수"
+    RULE-R03: "Released Feature → ≥1 Test Evidence"
+    RULE-R04: "Runtime Control → Safe Default 필수"
+    RULE-R05: "Policy-only → Rollback Plan 필수"
+    RULE-R06: "Supplier 구현 → Supplier Function ID 연결"
+    RULE-R07: "Variant Rule 없으면 Production 활성화 불가"
+    RULE-R08: "Safety Impact → Safety Gate 통과"
+    RULE-R09: "Security Impact → Security Gate 통과"
+    RULE-R10: "Deprecated → 신규 Control Point 생성 차단"
+    RULE-R11: "API Contract 변경 → 영향 Feature 자동 산출"
+    RULE-R12: "BOM Baseline 변경 → ChangeSet 기록"
+  edge_quality:
+    RULE-EQ1: "No Cycle (parent_of/requires 순환 금지)"
+    RULE-EQ2: "Dependency Gate (requires 대상 Approved/Released)"
+    RULE-EQ3: "Conflict Gate (excludes/overrides 충돌 시 배포 차단)"
+    RULE-EQ4: "Recovery Gate (Runtime Control → fallback_to/Safe Default)"
+
+# ── 의사결정 엔진 (4) ─────────────────────────────────────
+engines:
+  ENG-IMPACT:   "영향도 분석"
+  ENG-VERIFY:   "검증범위 도출"
+  ENG-DEPLOY:   "배포방식 판단"
+  ENG-SUPPLIER: "협력사 책임 분석"
+
+# ── Release Readiness Gates (9) ───────────────────────────
+gates:
+  GATE-G1: "Feature Gate"
+  GATE-G2: "Requirement Gate"
+  GATE-G3: "Variant Gate"
+  GATE-G4: "Control Gate"
+  GATE-G5: "Verification Gate"
+  GATE-G6: "Supplier Gate"
+  GATE-G7: "Safety/Security Gate"
+  GATE-G8: "OTA Gate"
+  GATE-G9: "Operations Gate"
+
+# ── 라이프사이클 상태 (6) ─────────────────────────────────
+lifecycle_states:
+  [LCS-PROPOSED, LCS-APPROVED, LCS-DEVELOPING, LCS-VERIFIED, LCS-RELEASED, LCS-RETIRED]
+
+# ── 화면 (60) ─────────────────────────────────────────────
+screens:
+  G0_home:        [SCR-000, SCR-001, SCR-010, SCR-011]
+  G1_master:      [SCR-100, SCR-101, SCR-110, SCR-111, SCR-120, SCR-130, SCR-140, SCR-141]
+  G2_topology:    [SCR-200, SCR-210, SCR-220, SCR-221, SCR-230]
+  G3_decisions:   [SCR-300, SCR-310, SCR-320, SCR-330, SCR-340, SCR-341]
+  G4_change:      [SCR-400, SCR-401, SCR-410, SCR-420, SCR-421, SCR-422]
+  G5_verify:      [SCR-500, SCR-501, SCR-510]
+  G6_deploy_ops:  [SCR-600, SCR-601, SCR-610, SCR-620, SCR-630, SCR-640, SCR-641, SCR-650]
+  G7_supplier:    [SCR-700, SCR-710, SCR-711]
+  G8_integration: [SCR-800, SCR-801, SCR-810]
+  G9_insights:    [SCR-900, SCR-910, SCR-920]
+  G10_admin:      [SCR-A00, SCR-A01, SCR-A10, SCR-A20, SCR-A30, SCR-A40, SCR-A50]
+  patterns:       [PAT-EMPTY, PAT-LOAD, PAT-ERROR, PAT-NOPERM, PAT-RPANEL, PAT-QA]
+
+# ── 플로 ──────────────────────────────────────────────────
+flows:
+  FLW-FEATURE-REGISTER: "Feature 등록(7-criteria)"
+  FLW-CHANGE-REQUEST:   "CR→Topology→Impact→Verify→Deploy→Supplier→Report"
+  FLW-RELEASE-READINESS:"9-Gate→HOLD/RELEASE"
+  FLW-VARIANT-AUTHOR:   "Variant 규칙 작성→Export to Policy"
+  FLW-KILLSWITCH:       "Kill Switch→Safe Default→단계 복구"
+  FLW-SUPPLIER-INTAKE:  "Supplier 패키지 인수→Gate"
+  FLW-CHANGESET-IMPACT: "ChangeSet→Baseline Diff→자동 Impact"
+
+# ── 연동 ──────────────────────────────────────────────────
+integrations:
+  INT-CODEBEAMER: "ALM (ReqIF 1.2 / REST)"
+  INT-PLM:        "PLM"
+  INT-UNLEASH:    "Feature Flag (OpenFeature provider)"
+  INT-OTA:        "OTA 플랫폼 (ISO 24089 / R156)"
+  INT-MQTT:       "Telemetry / Policy 배포 (MQTT 5.0)"
+  INT-SUPPLIER-PKG:"Supplier API Release Package (OpenAPI 3.2)"
+
+# ── 다이어그램 타입 ───────────────────────────────────────
+diagram_types: [ERD, CLS, STA, SEQ, FLW, C4, JNY]
+
+# ── 페르소나 / RBAC verbs ─────────────────────────────────
+personas: [P1-planning, P2-systems, P3-software, P4-verification, P5-ota, P6-supplier, P7-operations, Admin]
+rbac_verbs: [view, create, edit, delete, approve, run-engine, deploy, kill, rollback, admin]
+
+# ── 표준 register (요약; 상세는 _glossary/standards-register.md) ──
+standards:
+  [ISO/IEC/IEEE-29148:2018, OMG-SysML-2.0, OMG-ReqIF-1.2, ISO-24089:2023,
+   UNECE-R155, UNECE-R156, ISO-26262:2018, ISO/SAE-21434:2021, OMG-DMN-1.5,
+   OMG-BPMN-2.0.2, OpenAPI-3.2.0, OpenFeature, Unleash, MQTT-5.0,
+   AUTOSAR-Adaptive, MBSE-ASoT, Uptane]

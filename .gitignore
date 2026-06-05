@@ -1,0 +1,20 @@
+# dependencies / build
+node_modules/
+dist/
+build/
+.vite/
+
+# logs / temp
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# editor
+.idea/
+.vscode/
+*.swp
+
+# env
+.env
+.env.local

@@ -1,0 +1,52 @@
+# frontmatter-schema.yaml
+# 모든 docs/ 문서의 YAML 프런트매터가 따라야 하는 계약(contract).
+# 검증: _meta/id-registry.yaml 의 ID 와 cross-link 무결성을 함께 만족해야 한다.
+
+$schema: "feature-topology/frontmatter/1.0"
+
+required_fields:
+  id:        # 전역 유일 ID. id-registry.yaml 의 prefix 규칙 준수.
+    type: string
+    pattern: "^(FR|NFR|ARC|ENT|EDG|REL|RULE|ENG|GATE|LCS|SCR|FLW|INT|DIAG|TC|FEAT|PAT|DS)-[A-Z0-9-]+$"
+  type:
+    type: enum
+    values: [overview, requirement, nfr, architecture, entity, edge, relationship,
+             rule, engine, gate, lifecycle, screen, flow, integration, diagram,
+             reference, design-system, glossary, meta, template]
+  title:     { type: string, note: "한글 / English 병기 권장" }
+  status:    { type: enum, values: [draft, in-review, approved, baselined, deprecated] }
+  version:   { type: semver, example: "0.1.0" }
+  owner:     { type: enum, values: [feature-architect, requirements-engineer,
+               variant-deploy-manager, verification-safety, operations-sre,
+               supplier-liaison, governance] }
+  cycle:     { type: int, note: "이 문서를 생산/소유한 실행 사이클 번호" }
+  last_updated: { type: date, format: "YYYY-MM-DD" }
+
+optional_fields:
+  standards: { type: list, item: string, note: "예: [ISO/IEC/IEEE-29148, OMG-DMN]" }
+  reviewers: { type: list, item: owner-enum }
+  diagrams:  { type: list, item: "DIAG-* id" }
+  related:   { type: list, item: "any id" }
+  rbac:
+    visible_to: { type: list, item: persona }
+    edit:       { type: list, item: persona }
+
+# traces: 추적성의 단일 진실 원천(single source of truth).
+# 문서 본문의 "추적성" 섹션은 이 블록에서 생성된다.
+traces_block:
+  satisfies:        { item: "FR-* / NFR-*", note: "이 문서가 실현하는 요구사항" }
+  refines:          { item: "FR-*",         note: "상위 요구사항을 구체화" }
+  implemented_by:   { item: "ENT-/EDG-/RULE-/ENG-/ARC-*" }
+  realized_in_screen: { item: "SCR-*" }
+  verified_by:      { item: "TC-*" }
+  depends_on:       { item: "any id" }
+  uses_diagram:     { item: "DIAG-*" }
+
+# 무결성 규칙 (id-registry 검증기가 강제)
+integrity_rules:
+  - "모든 id 는 전역 유일하며 prefix 규칙을 만족한다."
+  - "traces 의 모든 참조 id 는 실재하는 문서를 가리킨다 (no orphan)."
+  - "양방향: A.satisfies=[B] 이면 B.realized_by 또는 B.implemented_by 에 A 가 존재."
+  - "모든 FR-* 는 최소 1개의 SCR-* (realized_in_screen) 와 1개의 TC-* (verified_by) 를 가진다."
+  - "모든 SCR-* 는 최소 1개의 FR-* 에 매핑된다."
+  - "deprecated 문서는 새 문서에서 depends_on 될 수 없다."

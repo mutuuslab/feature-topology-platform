@@ -1,0 +1,55 @@
+%% DIAG-ERD-METAMODEL — 18 Entity / 4 Group + 대표 Relationship
+erDiagram
+  TAXONOMYNODE ||--o{ FEATURE : classifies
+  FEATURE ||--o{ FEATURE : parent_of
+  FEATURE ||--|| FEATUREBOM : has
+  FEATUREBOM ||--o{ BOMITEM : contains
+  REQUIREMENT }o--o{ FEATURE : derives
+  FEATURE }o--o{ SWCOMPONENT : implemented_by
+  SWCOMPONENT }o--|| ECU : deployed_on
+  FEATURE }o--o{ APISERVICE : uses_api
+  APISERVICE ||--o{ SIGNAL : exposes
+  APISERVICE ||--o{ DTC : reports
+  FEATURE }o--o{ VARIANTRULE : applies_to
+  FEATURE }o--o{ CONTROLPOINT : controlled_by
+  FEATURE }o--o{ DEPLOYMENTUNIT : deployed_as
+  CONTROLPOINT ||--o| ROLLBACKPLAN : recovers_with
+  FEATURE }o--o{ TESTCASE : verified_by
+  TESTCASE ||--o{ TESTEVIDENCE : produces
+  FEATURE }o--o{ SUPPLIERFUNCTION : realized_by
+  SUPPLIERFUNCTION }o--|| SWCOMPONENT : implements
+  FEATURE ||--o{ TELEMETRYEVENT : emits_event
+
+  FEATURE {
+    string id PK "FEAT-{DOMAIN}-{NNN}"
+    enum level "L0..L5 (L2=baseline)"
+    string display_name
+    map internal_alias
+    id_ref owner_org
+    enum lifecycle "Proposed..Retired"
+    enum safety_level "QM|ASIL-A..D"
+    enum security_level "Low|Medium|High"
+    enum deploy_type "Binary|Policy-only|Calibration|Manual|TBD"
+  }
+  BOMITEM {
+    string bom_item_id PK
+    string feature_id FK
+    enum domain "11 areas"
+    string artifact_type
+    string artifact_id
+    string source_system
+    string relationship_type
+    enum criticality
+    string variant_scope
+    enum lifecycle_status
+    string baseline_ver
+    uri evidence_uri
+    enum verification_status
+    datetime last_sync_at
+  }
+  CONTROLPOINT {
+    string id PK "CP-{FEATURE}-{TYPE}"
+    enum type "POLICY|FLAG|PARAM|KILL|SAFE"
+    string safe_default
+    id_ref rollback_plan
+  }

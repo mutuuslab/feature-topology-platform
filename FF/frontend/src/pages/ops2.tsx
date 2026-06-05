@@ -21,12 +21,13 @@ export function OTACampaign() {
         <div className="col card" style={{ flex: 2 }}><b>Campaign Rollout % <LiveDot /></b>
           <div className="mt"><Bars data={Object.fromEntries(campaigns.map(c => [c.id, c.rollout]))} fmt={n => n + '%'} /></div></div>
       </div>
-      <div className="card"><table><thead><tr><th>Campaign</th><th>Feature</th><th>Type</th><th>Cohort</th><th>Rollout</th><th>Status</th><th>단계 진행</th></tr></thead>
+      <div className="card"><table><thead><tr><th>Campaign</th><th>Feature</th><th>Type</th><th>Cohort</th><th>Rollout</th><th>Status</th><th>단계 진행</th><th>자동 배포</th></tr></thead>
         <tbody>{campaigns.map(c => (<tr key={c.id}>
           <td className="mono" style={{ cursor: 'pointer' }} onClick={() => nav('/ops/campaign/' + c.id)}>{c.id}</td><td className="mono">{c.feature}</td><td><span className="pill">{c.type}</span></td>
           <td>{c.cohort}</td><td><b>{c.rollout}%</b></td><td><span className="pill">{c.status}</span></td>
-          <td><button className="btn" disabled={c.rollout >= 100} onClick={() => dispatch({ t: 'CAMPAIGN_ADVANCE', id: c.id })}>{c.rollout >= 100 ? '완료' : `▶ ${ROLLOUT_STEPS[c.step + 1] || 100}%`}</button></td></tr>))}</tbody></table>
-        <p className="small muted mt">실패율(live) 5% 초과 시 단계 진행이 자동 차단됩니다(telemetry guard). 현재 실패율 {state.live.failRate}%.</p>
+          <td><button className="btn" disabled={c.rollout >= 100 || c.auto} onClick={() => dispatch({ t: 'CAMPAIGN_ADVANCE', id: c.id })}>{c.rollout >= 100 ? '완료' : `▶ ${ROLLOUT_STEPS[c.step + 1] || 100}%`}</button></td>
+          <td><button className={'btn' + (c.auto ? ' primary' : '')} disabled={c.rollout >= 100} onClick={() => dispatch({ t: 'CAMPAIGN_AUTO', id: c.id })}>{c.auto ? '🟢 AUTO' : 'AUTO'}</button></td></tr>))}</tbody></table>
+        <p className="small muted mt">수동: telemetry 가드(실패율 &lt;5%) 통과 시 단계 진행. <b>AUTO</b>: 메트릭 기반 자동 승급(실패율 ≤5%)·자동 롤백(실패율 &gt;8%). 현재 실패율 {state.live.failRate}% (FR-ROL/PDA).</p>
       </div>
     </div>
   );
@@ -103,8 +104,19 @@ export function PolicyLifecycle() {
 }
 
 export function TelemetryExplorer() {
-  const live = useApp().state.live;
+  const { state, dispatch } = useApp();
+  const live = state.live;
+  const toast = useToast();
   const [sel, setSel] = useState<any>(null);
+  const openInc = state.incidents.filter(i => i.status !== 'resolved').length;
+  // FR-QFL 품질 피드백 루프: 실시간 지표·VOC → 개선 액션 도출
+  const feedback = [
+    live.failRate > 2 && { k: '정책 적용 실패', d: `실패율 ${live.failRate}% — 타겟팅 룰 단순화/검증 강화`, feature: 'FEAT-BDC-001' },
+    live.rollback > 3 && { k: '롤백 빈발', d: `롤백 ${live.rollback}회 — Safe Default·가드 임계 점검`, feature: 'FEAT-BDC-001' },
+    live.p95 > 60 && { k: '지연 상승', d: `p95 ${live.p95}ms — 정책 평가 경로 최적화`, feature: 'FEAT-BDC-001' },
+    openInc > 0 && { k: 'VOC/인시던트', d: `미해소 인시던트 ${openInc}건 — 원인분석→개선 반영`, feature: 'FEAT-CONN-001' },
+  ].filter(Boolean) as { k: string; d: string; feature: string }[];
+  const toCR = (f: any) => { const n = 143 + state.crs.filter(c => c.id.startsWith('CR-2026')).length; dispatch({ t: 'CREATE_CR', cr: { id: `CR-2026-0${n}`, feature: f.feature, type: `품질개선: ${f.k}`, status: 'Draft', owner: state.role, risk: 'Low' } }); dispatch({ t: 'AUDIT', entry: { ts: '2026-06-05 09:20', actor: state.role, action: 'QFL_FEEDBACK', target: f.feature, detail: f.d } }); toast('품질 피드백 → CR 생성됨', 'ok'); };
   return (
     <div>
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -123,6 +135,14 @@ export function TelemetryExplorer() {
               <span className="pill">{e.type}</span><span className="muted">{e.detail}</span><span className="muted small" style={{ marginLeft: 'auto' }}>{e.ts}</span></div>))}
         </div>
       </div>
+      <div className="card mt"><b>품질 피드백 루프 (VOC·품질 데이터 → 개선) <LiveDot /></b>
+        <p className="small muted">실시간 지표·인시던트에서 개선 액션을 도출해 변경요청(CR)으로 반영 (FR-QFL)</p>
+        {feedback.length ? feedback.map((f, i) => (
+          <div className="evt" key={i}><span className="pill" style={{ background: 'var(--pending)', color: '#fff' }}>{f.k}</span><span className="muted small">{f.d}</span>
+            <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => toCR(f)}>CR로 반영 →</button></div>
+        )) : <div className="evt"><span className="muted small">현재 임계 초과 항목 없음 — 품질 양호 ✓</span></div>}
+      </div>
+
       <RightPanel open={!!sel} onClose={() => setSel(null)} title={sel?.type || ''}>
         {sel && <div className="kv">
           <div>Event</div><div className="mono">{sel.type}</div>

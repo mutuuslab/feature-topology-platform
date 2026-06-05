@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { readiness, getFeature } from '../data/engine';
+import { readiness, getFeature, verification, relationsOf } from '../data/engine';
 import { GateBadge } from '../components/ui';
 import SpecLink from '../components/SpecLink';
 import { useApp, useToast } from '../store';
-import { Donut, RadialProgress } from '../components/charts';
+import { Donut, RadialProgress, Steps } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 
 const GATE_FLOW: Record<string, string[]> = {
@@ -77,6 +77,31 @@ export default function ReleaseReadiness() {
           {sim === 9 && <div className={`decision ${r.decision}`}>시뮬레이션 완료 → {r.passCount}/9 PASS · {r.decision}</div>}
         </div>
       </div>
+
+      {(() => {
+        const v = verification(id);
+        const reqLinks = relationsOf(id).filter(rl => rl.type === 'derives');
+        const covered = v.mandatoryTests.length - v.missingEvidence.length;
+        const tracePct = Math.round(covered / (v.mandatoryTests.length || 1) * 100);
+        return (
+          <div className="row">
+            <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>설계→검증 추적성 (DSV)</b>
+              <RadialProgress size={120} color={v.missingEvidence.length ? '#D9822B' : '#1F9D55'} value={tracePct} label={`${covered}/${v.mandatoryTests.length} 증적 매핑`} />
+              <div className="small muted mt">요구사항(derives) {reqLinks.length}건 연결</div>
+            </div>
+            <div className="col card" style={{ flex: 2 }}><b>설계 검증 추적 매트릭스 (요구 ↔ 테스트 ↔ 증적)</b>
+              <div className="mt"><Steps steps={['요구사항', '설계', '검증 케이스', '증적', 'Gate']} current={v.missingEvidence.length ? 3 : undefined} done={!v.missingEvidence.length} /></div>
+              <div className="table-wrap mt"><table><thead><tr><th>Mandatory Test</th><th>증적</th><th>Gate 기여</th></tr></thead>
+                <tbody>{v.mandatoryTests.map(t => { const miss = v.missingEvidence.includes(t); return (
+                  <tr key={t}><td className="mono">{t}</td>
+                    <td><span className="badge" style={{ background: miss ? 'var(--pending)' : 'var(--pass)' }}>{miss ? 'Missing' : '확보'}</span></td>
+                    <td className="small muted">{miss ? 'G5 Verification PENDING 원인' : 'G5 기여'}</td></tr>); })}</tbody></table></div>
+              {v.missingEvidence.length > 0 && <div className="decision HOLD mt">미매핑 증적 {v.missingEvidence.length}건 → 설계검증(DSV) 미완 · G5 PENDING</div>}
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="card">
         <div className="gates">
           {r.gates.map((g, i) => (

@@ -19,7 +19,8 @@ export interface SecurityState { signing: boolean; certs: { name: string; expiry
 export const PIPELINE_STAGES = ['Build', 'Verify', 'Package', 'Quality Gate', 'Staged Deploy', 'Release'];
 // Phase B — 부분 화면 store화
 export interface Policy { id: string; feature: string; stage: string; approver: string; rollout: number; version: number }
-export interface Campaign { id: string; feature: string; type: string; cohort: string; rollout: number; status: string; step: number }
+export interface Campaign { id: string; feature: string; type: string; cohort: string; rollout: number; status: string; step: number; auto: boolean }
+export interface SupplierItem { feature: string; item: string; owner: 'OEM' | 'Supplier'; status: 'pending' | 'accepted' }
 export interface Incident { id: string; feature: string; title: string; severity: string; status: string; cause: string; linkedCR: string }
 export interface Connector { id: string; name: string; proto: string; dir: string; status: string; lastSync: string; enabled: boolean }
 export interface SyncLog { ts: string; conn: string; event: string; status: string }
@@ -73,6 +74,7 @@ export interface AppState {
   incidents: Incident[];
   connectors: Connector[];
   syncLogs: SyncLog[];
+  supplierAcceptance: SupplierItem[];
   toast?: { msg: string; kind: 'ok' | 'warn' | 'err' } | null;
 }
 
@@ -134,10 +136,17 @@ const initial: AppState = {
   ], pipeline: { stage: -1, status: 'idle', logs: [] },
   subscriptions: SEED_SUBS, security: SEED_SEC,
   policies: SEED_POL.map(p => ({ ...p, version: 1 })),
-  campaigns: SEED_CMP.map(c => ({ ...c, step: ROLLOUT_STEPS.indexOf(c.rollout) >= 0 ? ROLLOUT_STEPS.indexOf(c.rollout) : (c.rollout >= 100 ? 3 : c.rollout >= 50 ? 2 : c.rollout >= 20 ? 1 : 0) })),
+  campaigns: SEED_CMP.map(c => ({ ...c, auto: false, step: ROLLOUT_STEPS.indexOf(c.rollout) >= 0 ? ROLLOUT_STEPS.indexOf(c.rollout) : (c.rollout >= 100 ? 3 : c.rollout >= 50 ? 2 : c.rollout >= 20 ? 1 : 0) })),
   incidents: SEED_INC.map(i => ({ id: i.id, feature: i.feature, title: i.title, severity: i.severity, status: i.status, cause: i.cause, linkedCR: i.linkedCR })),
   connectors: SEED_CONN.map(c => ({ ...c, enabled: c.status !== 'failed' })),
   syncLogs: SEED_SYNC.map(s => ({ ...s })),
+  supplierAcceptance: [
+    { feature: 'FEAT-BDC-001', item: 'API Contract 준수(OpenFeature)', owner: 'Supplier', status: 'accepted' },
+    { feature: 'FEAT-BDC-001', item: 'Policy Apply 단위 검증(HIL)', owner: 'Supplier', status: 'pending' },
+    { feature: 'FEAT-BDC-001', item: 'Rollback/Safe Default 보장', owner: 'OEM', status: 'accepted' },
+    { feature: 'FEAT-BDC-001', item: '인수 테스트 증적 제출', owner: 'Supplier', status: 'pending' },
+    { feature: 'FEAT-ADAS-001', item: 'ASIL-B 안전요구 추적', owner: 'Supplier', status: 'pending' },
+  ],
   toast: null,
 };
 
@@ -170,8 +179,10 @@ type Action =
   | { t: 'ACK_VULN'; id: string; status: 'open' | 'ack' | 'patched' }
   | { t: 'PROMOTE_POLICY'; id: string; actor: string }
   | { t: 'CAMPAIGN_ADVANCE'; id: string }
+  | { t: 'CAMPAIGN_AUTO'; id: string }
   | { t: 'INCIDENT_STATUS'; id: string; status: string }
   | { t: 'CONNECTOR_TOGGLE'; id: string }
+  | { t: 'ACCEPT_SUPPLIER'; feature: string; item: string }
   | { t: 'LIVE_TICK' }
   | { t: 'RESET' };
 
@@ -271,6 +282,11 @@ function reducer(s: AppState, a: Action): AppState {
       toast: { msg: `${a.id} → ${a.status}`, kind: a.status === 'resolved' ? 'ok' : 'warn' } };
     case 'CONNECTOR_TOGGLE': return { ...s, connectors: s.connectors.map(c => c.id === a.id ? { ...c, enabled: !c.enabled, status: !c.enabled ? 'connected' : 'disabled' } : c),
       toast: { msg: `${a.id} ${s.connectors.find(c => c.id === a.id)?.enabled ? '중지' : '연결'}`, kind: 'ok' } };
+    case 'CAMPAIGN_AUTO': return { ...s, campaigns: s.campaigns.map(c => c.id === a.id ? { ...c, auto: !c.auto } : c),
+      toast: { msg: `${a.id} 자동 배포 ${s.campaigns.find(c => c.id === a.id)?.auto ? 'OFF' : 'ON'}`, kind: 'ok' } };
+    case 'ACCEPT_SUPPLIER': return { ...s, supplierAcceptance: s.supplierAcceptance.map(x => x.feature === a.feature && x.item === a.item ? { ...x, status: 'accepted' } : x),
+      audit: [{ ts: nowish(), actor: s.role, action: 'SUPPLIER_ACCEPT', target: a.feature, detail: a.item }, ...s.audit],
+      toast: { msg: '인수 기준 승인', kind: 'ok' } };
     case 'LIVE_TICK': {
       const t = s.live.tick + 1;
       const activation = Math.max(90, Math.min(99.9, s.live.activation + (Math.random() - 0.5) * 1.4));
@@ -301,8 +317,19 @@ function reducer(s: AppState, a: Action): AppState {
         const on = s.connectors.filter(c => c.enabled);
         if (on.length) { const c = on[t % on.length]; syncLogs = [{ ts: clock().slice(0, 5), conn: c.id, event: `${c.name} 동기화 x${40 + (t % 60)}건`, status: t % 9 === 0 ? 'retry' : 'ok' }, ...s.syncLogs].slice(0, 12); }
       }
-      return { ...s, scenarios, pipeline, subscriptions, syncLogs,
-        live: { tick: t, activation: Number(activation.toFixed(1)), failRate: Number((100 - activation).toFixed(1)), rollback, p95: Math.round(p95), series, events } };
+      // 단계적 배포 자동화(FR-PDA): auto 캠페인은 실패율 가드로 자동 승급/롤백
+      const failRate = Number((100 - activation).toFixed(1));
+      let campaigns = s.campaigns;
+      if (t % 3 === 0 && s.campaigns.some(c => c.auto && c.rollout < 100)) {
+        campaigns = s.campaigns.map(c => {
+          if (!c.auto || c.rollout >= 100) return c;
+          if (failRate <= 5 && c.step < ROLLOUT_STEPS.length - 1) { const step = c.step + 1; return { ...c, step, rollout: ROLLOUT_STEPS[step], status: ROLLOUT_STEPS[step] >= 100 ? 'monitored' : 'rolling' }; }
+          if (failRate > 8 && c.step > 0) { const step = c.step - 1; return { ...c, step, rollout: ROLLOUT_STEPS[step], status: 'rolling' }; }  // 메트릭 기반 자동 롤백
+          return c;
+        });
+      }
+      return { ...s, scenarios, pipeline, subscriptions, syncLogs, campaigns,
+        live: { tick: t, activation: Number(activation.toFixed(1)), failRate, rollback, p95: Math.round(p95), series, events } };
     }
     case 'RESET': { localStorage.removeItem('fp.state.v1'); return { ...initial }; }
     default: return s;
@@ -333,7 +360,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem('fp.state.v1', JSON.stringify(persist)); } catch {}
     document.documentElement.setAttribute('data-theme', state.theme);
     document.documentElement.lang = state.lang;
-  }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors]);
+  }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors, state.supplierAcceptance]);
 
   // 실시간 시뮬레이션 틱 (2초)
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import SpecLink from '../components/SpecLink';
 import { supplierCost, fmtWon } from '../data/engine';
-import { useToast } from '../store';
+import { useToast, useApp } from '../store';
 import { RadialProgress, Donut, Steps, tally, dist } from '../components/charts';
 
 const PKG_ITEMS = [
@@ -14,20 +14,38 @@ const PKG_ITEMS = [
 
 export function SupplierPortal() {
   const nav = useNavigate();
+  const { state, dispatch } = useApp();
   const validCount = PKG_ITEMS.filter(([, s]) => s === 'valid').length;
   const pct = Math.round((validCount / (PKG_ITEMS.length || 1)) * 100);
+  const acc = state.supplierAcceptance;
+  const accepted = acc.filter(a => a.status === 'accepted').length;
+  const accPct = Math.round(accepted / (acc.length || 1) * 100);
   return (
     <div>
       <div className="breadcrumb">협력사 ▸ Supplier Portal</div>
       <h1 className="page-title">Supplier Portal · SUP-BDC-A</h1>
       <p className="page-sub">협력사 전용 워크스페이스 (RBAC 외부 스코프)</p>
       <div className="row analytics-strip">
-        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>패키지 준비율</b>
-          <RadialProgress size={120} color={pct >= 100 ? '#1F9D55' : '#D9822B'} value={pct} label={`${validCount}/${PKG_ITEMS.length} 항목 valid`} /></div>
+        <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>패키지 준비율</b>
+          <RadialProgress size={120} color={pct >= 100 ? '#1F9D55' : '#D9822B'} value={pct} label={`${validCount}/${PKG_ITEMS.length} valid`} /></div>
+        <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>책임·인수 승인율</b>
+          <RadialProgress size={120} color={accPct >= 100 ? '#1F9D55' : '#D9822B'} value={accPct} label={`${accepted}/${acc.length} 승인`} /></div>
+        <div className="col card"><b>담당 Feature</b><div className="evt"><span className="mono">FEAT-BDC-001</span><span className="muted">BDC Policy Control · BDC_FUNC_032</span></div>
+          <button className="btn primary mt" onClick={() => nav('/supplier/package')}>패키지 인수 →</button></div>
       </div>
-      <div className="row">
-        <div className="col card"><b>담당 Feature</b><div className="evt"><span className="mono">FEAT-BDC-001</span><span className="muted">BDC Policy Control · BDC_FUNC_032</span></div></div>
-        <div className="col card"><b>패키지 상태</b><p>2/10 항목 미완 → Supplier Gate 불통과</p><button className="btn primary" onClick={()=>nav('/supplier/package')}>패키지 인수 →</button></div>
+
+      <div className="card">
+        <b>책임 범위 · 인수 기준 (FR-SUP)</b>
+        <p className="small muted">OEM/Supplier 책임 구분 · 인수 기준 승인 흐름 (승인은 Audit 기록·저장)</p>
+        <div className="table-wrap mt"><table><thead><tr><th>Feature</th><th>인수 기준 항목</th><th>책임</th><th>상태</th><th>승인</th></tr></thead>
+          <tbody>{acc.map((a, i) => (<tr key={i}>
+            <td className="mono">{a.feature}</td><td>{a.item}</td>
+            <td><span className="pill" style={{ background: a.owner === 'Supplier' ? 'var(--brand)' : 'var(--surface-3)', color: a.owner === 'Supplier' ? '#fff' : 'var(--ink)' }}>{a.owner}</span></td>
+            <td><span className="badge" style={{ background: a.status === 'accepted' ? 'var(--pass)' : 'var(--pending)' }}>{a.status === 'accepted' ? '승인' : '대기'}</span></td>
+            <td>{a.status === 'pending' ? <button className="btn" onClick={() => dispatch({ t: 'ACCEPT_SUPPLIER', feature: a.feature, item: a.item })}>승인</button> : '✓'}</td></tr>))}</tbody></table></div>
+        {accepted < acc.length
+          ? <div className="decision HOLD mt">미승인 {acc.length - accepted}건 → Supplier Gate 불통과</div>
+          : <div className="decision RELEASE mt" style={{ background: '#EAF2FF', color: 'var(--brand)', border: '1px solid var(--brand)' }}>전 항목 승인 완료 → Supplier Gate 통과</div>}
       </div>
     </div>
   );

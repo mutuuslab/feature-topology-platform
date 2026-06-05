@@ -18,24 +18,24 @@ export const coverage: Record<string, Cov> = {
   'FR-AUD':  { status: '완료', screens: [{ to: '/insights/audit', label: 'Audit Log' }] },
   // 02 차량 런타임
   'FR-VAR':  { status: '완료', screens: [{ to: '/variants/FEAT-BDC-001', label: 'Variant Matrix' }] },
-  'FR-SUP':  { status: '부분', screens: [{ to: '/feature/FEAT-BDC-001', label: 'Feature Detail(Control)' }] },
+  'FR-SUP':  { status: '완료', screens: [{ to: '/supplier/portal', label: 'Supplier Portal(책임·인수)' }, { to: '/supplier/package', label: 'API Package' }] },
   'FR-TGT':  { status: '완료', screens: [{ to: '/variants/FEAT-BDC-001', label: 'Variant Matrix' }, { to: '/ops/campaign', label: 'Campaign' }] },
   'FR-RTE':  { status: '완료', screens: [{ to: '/ops/runtime', label: 'Runtime Sim' }] },
   'FR-LPC':  { status: '완료', screens: [{ to: '/ops/runtime', label: 'Runtime Sim' }] },
   'FR-SFD':  { status: '완료', screens: [{ to: '/ops/FEAT-BDC-001', label: 'Kill Switch·Safe Default' }] },
   // 03 안전·검증
   'FR-CRC':  { status: '완료', screens: [{ to: '/spec/compliance', label: '컴플라이언스' }] },
-  'FR-DSV':  { status: '부분', screens: [{ to: '/readiness/FEAT-BDC-001', label: 'Release Readiness' }] },
+  'FR-DSV':  { status: '완료', screens: [{ to: '/readiness/FEAT-BDC-001', label: 'Release Readiness(DSV 추적)' }] },
   'FR-KSW':  { status: '완료', screens: [{ to: '/ops/FEAT-BDC-001', label: 'Kill Switch' }] },
   'FR-RBK':  { status: '완료', screens: [{ to: '/ops/FEAT-BDC-001', label: 'Rollback(단계복구)' }] },
   // 04 배포·운영·데이터
   'FR-OPD':  { status: '완료', screens: [{ to: '/ops/telemetry', label: 'Telemetry' }, { to: '/ops/FEAT-BDC-001', label: 'Ops' }] },
-  'FR-QFL':  { status: '부분', screens: [{ to: '/ops/telemetry', label: 'Telemetry' }] },
+  'FR-QFL':  { status: '완료', screens: [{ to: '/ops/telemetry', label: 'Telemetry(품질 피드백)' }] },
   'FR-EVT':  { status: '완료', screens: [{ to: '/ops/telemetry', label: 'Telemetry' }, { to: '/insights/audit', label: 'Audit' }] },
   'FR-VOC':  { status: '완료', screens: [{ to: '/ops/incident', label: 'Incident' }] },
   'FR-RDD':  { status: '완료', screens: [{ to: '/spec/cicd', label: 'CI/CD' }] },
   'FR-CICD': { status: '완료', screens: [{ to: '/spec/cicd', label: 'CI/CD' }] },
-  'FR-PDA':  { status: '부분', screens: [{ to: '/ops/campaign', label: 'Campaign' }, { to: '/spec/cicd', label: 'CI/CD' }] },
+  'FR-PDA':  { status: '완료', screens: [{ to: '/ops/campaign', label: 'Campaign(자동배포)' }, { to: '/spec/cicd', label: 'CI/CD' }] },
   'FR-QGV':  { status: '완료', screens: [{ to: '/spec/cicd', label: '품질 Gate' }] },
   // 05 시스템 연계·확장
   'FR-AGW':  { status: '완료', screens: [{ to: '/integration/connectors', label: 'Connector Hub' }] },

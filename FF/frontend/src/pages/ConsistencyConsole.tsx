@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { consistency } from '../data/engine';
 import { Donut, Bars, RadialProgress, tally, dist } from '../components/charts';
+import { SeverityBadge, SeverityLegend, severityMeta } from '../components/ui';
+
+const SEV_COLOR = { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' };
 
 export default function ConsistencyConsole() {
   const nav = useNavigate();
   const v = consistency();
-  const blocking = v.filter(x => x.severity === 'blocking').length;
+  const blocking = v.filter(x => x.severity === 'B').length;
   const RULES_TOTAL = 12;
   return (
     <div>
@@ -13,9 +16,11 @@ export default function ConsistencyConsole() {
       <h1 className="page-title">Consistency Rule Console</h1>
       <p className="page-sub">12 Rules 자동 평가 · Violation Inbox {v.length}건</p>
 
+      <div className="card"><b>Severity 범례 — 무슨 의미이고 왜 이 등급인가</b><div className="mt"><SeverityLegend /></div></div>
+
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>Severity 분포</b>
-          <Donut size={120} center={`${v.length}`} segments={dist(tally(v, x => x.severity), { blocking: '#D64545', warning: '#D9822B', info: '#3B82F6' })} />
+          <Donut size={120} center={`${v.length}`} segments={dist(tally(v, x => severityMeta(x.severity).label), SEV_COLOR)} />
         </div>
         <div className="col card" style={{ flex: 2 }}><b>Rule별 위반 건수</b><div className="mt"><Bars data={tally(v, x => x.rule)} /></div></div>
         <div className="col card" style={{ maxWidth: 200, alignItems: 'center' }}><b>정합성 점수</b>
@@ -28,7 +33,7 @@ export default function ConsistencyConsole() {
           <tbody>{v.map((x,i)=>(
             <tr key={i} onClick={()=>x.featureId.startsWith('FEAT')&&nav(`/feature/${x.featureId}`)}>
               <td className="mono">{x.rule}</td><td className="mono">{x.featureId}</td>
-              <td><span className="badge" style={{background:x.severity==='blocking'?'var(--fail)':'var(--pending)'}}>{x.severity}</span></td>
+              <td><SeverityBadge code={x.severity} /></td>
               <td>{x.message}</td>
             </tr>
           ))}</tbody></table>

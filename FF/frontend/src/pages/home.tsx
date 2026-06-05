@@ -5,6 +5,7 @@ import { useApp, roleHome } from '../store';
 import { StatTile, AreaChart, Donut, Bars, RadialProgress, LiveDot, Timeline, tally, dist } from '../components/charts';
 import { fleetStats } from '../data/fleet';
 import { catalogStats, costSummary, fmtWon, consistency, readiness } from '../data/engine';
+import { SeverityBadge, severityMeta } from '../components/ui';
 
 const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
 
@@ -142,7 +143,7 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
   // ── 시스템 P2: 토폴로지·정합성 ──
   if (role === '시스템 P2') {
     const vios = consistency();
-    const blocking = vios.filter((v: any) => v.severity === 'blocking');
+    const blocking = vios.filter((v: any) => v.severity === 'B');
     const RULES = 12;
     return (<>
       <div className="kpis reveal">
@@ -153,14 +154,14 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
       </div>
       <div className="row">
         <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>위반 Severity</b>
-          <Donut size={130} center={`${vios.length}`} segments={dist(tally(vios, (v: any) => v.severity), { blocking: '#D64545', warning: '#D9822B', info: '#3B82F6' })} /></div>
+          <Donut size={130} center={`${vios.length}`} segments={dist(tally(vios, (v: any) => severityMeta(v.severity).label), { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' })} /></div>
         <div className="col card" style={{ flex: 2 }}><b>Rule별 위반</b><div className="mt"><Bars data={tally(vios, (v: any) => v.rule)} /></div></div>
         <div className="col card" style={{ maxWidth: 200, alignItems: 'center' }}><b>정합성 점수</b>
           <RadialProgress size={110} color={blocking.length ? '#D64545' : '#1F9D55'} value={Math.round((RULES - new Set(vios.map((v: any) => v.rule)).size) / RULES * 100)} label={`${RULES - new Set(vios.map((v: any) => v.rule)).size}/${RULES} Rule`} /></div>
       </div>
       <div className="row mt">
         <div className="col card"><b>경고 / Blocking 위반</b>
-          {(blocking.length ? blocking : vios).slice(0, 4).map((v: any, i: number) => <div className="evt" key={i} role="button" onClick={() => nav('/consistency')}><span className="pill" style={{ background: v.severity === 'blocking' ? 'var(--fail)' : 'var(--pending)', color: '#fff' }}>{v.rule}</span><span className="muted small">{v.message}</span></div>)}
+          {(blocking.length ? blocking : vios).slice(0, 4).map((v: any, i: number) => <div className="evt" key={i} role="button" onClick={() => nav('/consistency')}><span className="pill" style={{ background: severityMeta(v.severity).color, color: '#fff' }}>{v.rule}</span><SeverityBadge code={v.severity} /><span className="muted small">{v.message}</span></div>)}
         </div>
       </div>
     </>);

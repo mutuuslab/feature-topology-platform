@@ -5,6 +5,9 @@ import { consistency, wouldCycle } from '../data/engine';
 import { useApp } from '../store';
 import { RightPanel } from '../components/patterns';
 import { Donut, Bars, tally, dist } from '../components/charts';
+import { SeverityBadge, SeverityLegend, severityMeta } from '../components/ui';
+
+const SEV_COLOR = { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' };
 
 const ENT_DESC: Record<string, { group: string; desc: string; attrs: string; rel: string }> = {
   Feature: { group: 'Master', desc: '고객/차량 동작 기능 단위(기준 L2)', attrs: 'id·level·owner·lifecycle·safety·deployType', rel: 'parent_of·implemented_by·verified_by…' },
@@ -77,15 +80,16 @@ export function ViolationDetail() {
       <h1 className="page-title">Violation Detail</h1>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>전체 위반 Severity</b>
-          <Donut size={120} center={`${all.length}`} segments={dist(tally(all, x => x.severity), { blocking: '#D64545', warning: '#D9822B', info: '#3B82F6' })} />
+          <Donut size={120} center={`${all.length}`} segments={dist(tally(all, x => severityMeta(x.severity).label), SEV_COLOR)} />
         </div>
         <div className="col card"><b>Rule별 위반</b><div className="mt"><Bars data={tally(all, x => x.rule)} /></div></div>
       </div>
+      <div className="card"><b>Severity 범례</b><div className="mt"><SeverityLegend /></div></div>
       <div className="card">
         {v ? <div className="kv">
           <div>Rule</div><div className="mono">{v.rule}</div>
           <div>Feature</div><div className="mono">{v.featureId}</div>
-          <div>Severity</div><div><span className="badge" style={{background:v.severity==='blocking'?'var(--fail)':'var(--pending)'}}>{v.severity}</span></div>
+          <div>Severity</div><div><SeverityBadge code={v.severity} /> <span className="muted small">— {severityMeta(v.severity).why}</span></div>
           <div>Message</div><div>{v.message}</div>
           <div>해소</div><div><button className="btn">Open Feature</button> <button className="btn primary">Resolve</button></div>
         </div> : <p className="muted">위반 없음</p>}

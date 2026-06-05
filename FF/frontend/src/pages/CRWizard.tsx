@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { impact, verification, deploy, supplier, buildDecisionPackage, fmtWon } from '../data/engine';
 import { useApp } from '../store';
+import { Steps, Bars } from '../components/charts';
 
 const STEPS = ['Define', 'Topology Lookup', 'Run Decisions', 'Review Report', 'Submit'];
 
@@ -34,11 +35,8 @@ export default function CRWizard() {
       <p className="page-sub">변경 요청 → Topology → Impact → Verify → Deploy → Supplier → Submit</p>
 
       <div className="card">
-        <div style={{ display:'flex', gap:8, marginBottom:16, flexWrap:'wrap' }}>
-          {STEPS.map((s,i)=>(
-            <span key={s} className="pill" style={{ background: i===step?'var(--brand)':i<step?'var(--pass)':'', color:(i<=step)?'#fff':'' }}>{i+1}. {s}</span>
-          ))}
-        </div>
+        <Steps steps={STEPS} current={step} />
+        <div style={{ marginBottom: 12 }} />
 
         {step===0 && <div>
           <div className="kv" style={{maxWidth:520}}>
@@ -52,9 +50,9 @@ export default function CRWizard() {
         </div>}
 
         {step===1 && <div>
-          <b>Topology Lookup</b>
-          <p className="small mt">영향 미리보기: Features {imp.features.length} · SWC {imp.swcs.length} · Supplier {imp.suppliers.length} · Tests {imp.tests.length}</p>
-          <div className="mono small">{[...imp.features, ...imp.swcs, ...imp.suppliers].join(' · ')}</div>
+          <b>Topology Lookup · 영향 미리보기</b>
+          <div className="mt" style={{ maxWidth: 460 }}><Bars data={{ Features: imp.features.length, SWC: imp.swcs.length, Supplier: imp.suppliers.length, Test: imp.tests.length }} /></div>
+          <div className="mono small mt">{[...imp.features, ...imp.swcs, ...imp.suppliers].join(' · ')}</div>
         </div>}
 
         {step===2 && <div>

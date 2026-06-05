@@ -35,12 +35,25 @@ export function Onboarding() {
   );
 }
 
+const ROLE_FOCUS: Record<string, { title: string; desc: string; views: [string, string][] }> = {
+  '기획 P1': { title: '기획 · 카탈로그/요구사항 중심', desc: 'Feature 정의·우선순위·기대효과', views: [['Catalog', '/catalog'], ['Feature 등록', '/master/define'], ['Reports', '/insights/reports']] },
+  '시스템 P2': { title: '시스템 · 토폴로지/정합성 중심', desc: '아키텍처 관계·일관성 규칙', views: [['Topology', '/topology/FEAT-BDC-001'], ['Consistency', '/consistency'], ['Metamodel', '/metamodel']] },
+  'SW P3': { title: 'SW · 의사결정/영향분석 중심', desc: '변경 영향·배포방식 결정·BOM', views: [['Decision Center', '/decisions/center'], ['Impact', '/impact'], ['BOM Editor', '/master/bom']] },
+  '검증 P4': { title: '검증 · Gate/증적 중심', desc: 'Release Readiness·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['Coverage', '/spec/coverage']] },
+  'OTA P5': { title: 'OTA · 캠페인/정책 중심', desc: '롤아웃·정책 생애주기·활성화', views: [['OTA Campaign', '/ops/campaign'], ['Policy Lifecycle', '/ops/policy'], ['Activation', '/activation']] },
+  '협력사 P6': { title: '협력사 · 패키지/인수 중심', desc: 'API 릴리스 패키지·인수 기준', views: [['Supplier Portal', '/supplier/portal'], ['Release Package', '/supplier/package']] },
+  '운영 P7': { title: '운영 · Kill Switch/텔레메트리 중심', desc: '실시간 운영·인시던트·Fleet', views: [['Ops Dashboard', '/ops/FEAT-BDC-001'], ['Telemetry', '/ops/telemetry'], ['Incident', '/ops/incident'], ['Fleet', '/fleet']] },
+  'Admin': { title: '관리자 · 권한/감사 중심', desc: '사용자·권한·감사 로그', views: [['Permissions', '/admin/permissions'], ['Users', '/admin/users'], ['Audit', '/insights/audit']] },
+};
+
 export function RoleHome() {
   const nav = useNavigate();
   const { state, dispatch } = useApp();
   const role = state.role;
   const verbs = permMatrix[role] || [];
-  const change = (r: string) => { dispatch({ t: 'ROLE', role: r }); nav(roleHome[r] || '/'); };
+  // 대시보드에서는 역할만 전환하고 화면을 유지 — 부서를 바꾸면 대시보드 내용이 그 역할에 맞게 갱신됨
+  const change = (r: string) => dispatch({ t: 'ROLE', role: r });
+  const focus = ROLE_FOCUS[role] || ROLE_FOCUS['기획 P1'];
   const QUICK: [string, string, string][] = [
     ['Catalog', '/catalog', 'view'], ['Topology', '/topology/FEAT-BDC-001', 'view'],
     ['Impact', '/impact', 'run-engine'], ['Release', '/readiness/FEAT-BDC-001', 'approve'],
@@ -52,8 +65,21 @@ export function RoleHome() {
       <div className="hero">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <div><h1 className="page-title">Feature Topology Platform <LiveDot /></h1>
-            <div className="sub">현대자동차 SDV · {fleetStats.total.toLocaleString()}대 운영 · 현재 역할 <b>{role}</b> → 랜딩 {roleHome[role]}</div></div>
-          <select value={role} onChange={e => change(e.target.value)} style={{ padding: 6, borderRadius: 6, border: 'none' }}>{roles.map(r => <option key={r}>{r}</option>)}</select>
+            <div className="sub">현대자동차 SDV · {fleetStats.total.toLocaleString()}대 운영 · 현재 역할 <b>{role}</b> · 기본 랜딩 {roleHome[role]}</div></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+            <label className="small" style={{ opacity: .9 }}>부서/역할 전환</label>
+            <select value={role} onChange={e => change(e.target.value)} style={{ padding: 6, borderRadius: 6, border: 'none', minWidth: 140 }}>{roles.map(r => <option key={r} value={r}>{r}</option>)}</select>
+            <button className="btn" style={{ background: 'rgba(255,255,255,.18)', color: '#fff', border: '1px solid rgba(255,255,255,.4)' }} onClick={() => nav(roleHome[role] || '/')}>내 워크스페이스로 이동 →</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ borderLeft: '4px solid var(--brand)' }}>
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <div><b>{focus.title}</b><div className="muted small">{focus.desc}</div></div>
+          <div className="row" style={{ gap: 6 }}>
+            {focus.views.map(([l, to]) => <button key={to} className="btn" onClick={() => nav(to)}>{l} →</button>)}
+          </div>
         </div>
       </div>
       <div className="card" style={{ padding: '10px 14px' }}>

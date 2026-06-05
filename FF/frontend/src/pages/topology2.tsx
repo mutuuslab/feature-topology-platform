@@ -4,6 +4,7 @@ import { metamodel, relationshipsList } from '../data/refdata';
 import { consistency, wouldCycle } from '../data/engine';
 import { useApp } from '../store';
 import { RightPanel } from '../components/patterns';
+import { Donut, Bars, tally, dist } from '../components/charts';
 
 const ENT_DESC: Record<string, { group: string; desc: string; attrs: string; rel: string }> = {
   Feature: { group: 'Master', desc: '고객/차량 동작 기능 단위(기준 L2)', attrs: 'id·level·owner·lifecycle·safety·deployType', rel: 'parent_of·implemented_by·verified_by…' },
@@ -60,16 +61,26 @@ export function EdgeEditor() {
         <button className="btn primary mt" onClick={save}>엣지 저장 (품질 규칙 검증)</button>
         <p className="small muted mt">예: FEAT-RUNTIME-001 → requires → FEAT-BDC-001 추가 시 순환 차단됨</p>
       </div>
+      <div className="card"><b>현재 등록된 관계 타입 분포 ({state.edges.length})</b>
+        <div className="mt"><Bars data={tally(state.edges, (e: any) => e.type)} /></div>
+      </div>
     </div>
   );
 }
 
 export function ViolationDetail() {
-  const v = consistency()[0];
+  const all = consistency();
+  const v = all[0];
   return (
     <div>
       <div className="breadcrumb">관계 ▸ Consistency ▸ Violation</div>
       <h1 className="page-title">Violation Detail</h1>
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>전체 위반 Severity</b>
+          <Donut size={120} center={`${all.length}`} segments={dist(tally(all, x => x.severity), { blocking: '#D64545', warning: '#D9822B', info: '#3B82F6' })} />
+        </div>
+        <div className="col card"><b>Rule별 위반</b><div className="mt"><Bars data={tally(all, x => x.rule)} /></div></div>
+      </div>
       <div className="card">
         {v ? <div className="kv">
           <div>Rule</div><div className="mono">{v.rule}</div>
@@ -91,6 +102,14 @@ export function MetamodelViewer() {
       <div className="breadcrumb">관계 ▸ Metamodel Viewer</div>
       <h1 className="page-title">Metamodel — 18 Entity / 4 Group</h1>
       <p className="page-sub">엔티티 클릭 → 속성·관계 상세</p>
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>그룹별 엔티티</b>
+          <Donut size={130} center={`${Object.values(metamodel).flat().length}`} segments={dist(Object.fromEntries(Object.entries(metamodel).map(([g, e]) => [g, (e as string[]).length])))} />
+        </div>
+        <div className="col card" style={{ flex: 2 }}><b>그룹별 엔티티 수</b>
+          <div className="mt"><Bars data={Object.fromEntries(Object.entries(metamodel).map(([g, e]) => [g, (e as string[]).length]))} /></div>
+        </div>
+      </div>
       <div className="row">
         {Object.entries(metamodel).map(([group, ents]) => (
           <div className="col card" key={group}>

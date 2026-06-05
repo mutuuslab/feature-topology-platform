@@ -5,6 +5,7 @@ import { LifecycleBadge } from '../components/ui';
 import { readiness } from '../data/engine';
 import TopoLink from '../components/TopoLink';
 import SpecLink from '../components/SpecLink';
+import { Steps, RadialProgress, Donut, tally, dist } from '../components/charts';
 
 const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
 
@@ -40,13 +41,8 @@ export default function Lifecycle() {
           <span style={{ marginLeft: 'auto' }}><LifecycleBadge value={f.lifecycle} /></span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, margin: '18px 0', flexWrap: 'wrap' }}>
-          {LIFECYCLE_ORDER.map((st, i) => (
-            <span key={st} style={{ display: 'flex', alignItems: 'center' }}>
-              <span className="pill" style={{ background: i <= idx ? LC_COLOR[st] : 'var(--surface-3)', color: i <= idx ? '#fff' : 'var(--muted)', fontWeight: i === idx ? 700 : 400, padding: '4px 12px' }}>{st}</span>
-              {i < LIFECYCLE_ORDER.length - 1 && <span style={{ color: 'var(--muted)', margin: '0 2px' }}>→</span>}
-            </span>
-          ))}
+        <div style={{ margin: '18px 0' }}>
+          <Steps steps={LIFECYCLE_ORDER as unknown as string[]} current={idx} />
         </div>
 
         <div className="row">
@@ -67,6 +63,15 @@ export default function Lifecycle() {
                 <td><span className="badge" style={{ background: chk.ok ? 'var(--pass)' : 'var(--pending)' }}>{chk.ok ? 'PASS' : 'PENDING'}</span></td></tr>); })}
           </tbody></table></div>
         <p className="small muted mt">Released 전이는 9-Gate({r.passCount}/9 PASS·{r.decision}) 통과 필요 — <button className="btn" onClick={() => nav(`/readiness/${fid}`)}>Release Readiness →</button></p>
+      </div>
+
+      <div className="row">
+        <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>현재 9-Gate 진척</b>
+          <RadialProgress size={120} color={r.decision === 'RELEASE' ? '#1F9D55' : '#D9822B'} value={Math.round(r.passCount / 9 * 100)} label={`${r.passCount}/9 PASS`} />
+        </div>
+        <div className="col card" style={{ alignItems: 'center', maxWidth: 240 }}><b>전 Feature Lifecycle 분포</b>
+          <Donut size={130} center={`${state.features.length}`} segments={dist(tally(state.features, x => x.lifecycle), LC_COLOR)} />
+        </div>
       </div>
 
       <div className="card">

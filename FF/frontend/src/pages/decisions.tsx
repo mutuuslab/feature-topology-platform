@@ -2,19 +2,29 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { impact, verification, deploy, supplier, buildDecisionPackage, fmtWon } from '../data/engine';
 import { useToast } from '../store';
+import { Donut, Bars, RadialProgress, Steps, GroupedBars } from '../components/charts';
 
 const FID = 'FEAT-BDC-001';
 
 export function VerificationScope() {
   const v = verification(FID);
+  const covered = v.mandatoryTests.length - v.missingEvidence.length;
   return (
     <div>
       <div className="breadcrumb">의사결정 ▸ Verification Scope</div>
       <h1 className="page-title">Verification Scope</h1>
-      <div className="card">
-        <p>Mandatory Tests: {v.mandatoryTests.map(t=><span key={t} className="pill" style={{marginRight:4}}>{t}</span>)}</p>
-        <p>Missing Evidence: <b style={{color:'var(--pending)'}}>{v.missingEvidence.join(', ')||'없음'}</b></p>
-        <p>Gate Result: <span className={`badge status-${v.gateResult}`}>{v.gateResult}</span></p>
+      <div className="row">
+        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>증적 커버리지</b>
+          <RadialProgress size={120} color={v.gateResult === 'PASS' ? '#1F9D55' : '#D9822B'} value={Math.round(covered / (v.mandatoryTests.length || 1) * 100)} label={`${covered}/${v.mandatoryTests.length} 증적`} />
+        </div>
+        <div className="col card" style={{ alignItems: 'center', maxWidth: 220 }}><b>증적 상태</b>
+          <Donut size={120} segments={[{ label: '확보', value: covered, color: '#1F9D55' }, { label: 'Missing', value: v.missingEvidence.length, color: '#D9822B' }]} />
+        </div>
+        <div className="col card">
+          <p>Mandatory Tests: {v.mandatoryTests.map(t=><span key={t} className="pill" style={{marginRight:4}}>{t}</span>)}</p>
+          <p>Missing Evidence: <b style={{color:'var(--pending)'}}>{v.missingEvidence.join(', ')||'없음'}</b></p>
+          <p>Gate Result: <span className={`badge status-${v.gateResult}`}>{v.gateResult}</span></p>
+        </div>
       </div>
     </div>
   );
@@ -31,8 +41,9 @@ export function DeploymentDecision() {
       <div className="card">
         <select value={ct} onChange={e=>setCt(e.target.value)} style={{padding:8}}>{opts.map(o=><option key={o}>{o}</option>)}</select>
         <div className="decision RELEASE mt" style={{background:'#EAF2FF',color:'var(--brand)',border:'1px solid var(--brand)'}}>
-          배포 방식: <b>{d.deployType}</b> ({d.confidence}) · 필요 Gate: {d.requiredGates.join(' · ')}
+          배포 방식: <b>{d.deployType}</b> ({d.confidence})
         </div>
+        {d.requiredGates.length > 0 && <div className="mt"><b className="small">필요 Gate</b><Steps steps={d.requiredGates} current={0} /></div>}
         <ul className="small mt">{d.rationale.map((r,i)=><li key={i}>✓ {r}</li>)}</ul>
       </div>
     </div>
@@ -63,7 +74,11 @@ export function DecisionCenter() {
       <h1 className="page-title">Decision Center · FEAT-BDC-001</h1>
       <p className="page-sub">Pipeline: Change → Lookup → ①Impact → ②Verify → ③Deploy → ④Supplier → Report</p>
       <div className="card">
-        <div className="row">
+        <Steps steps={['Change', 'Lookup', '① Impact', '② Verify', '③ Deploy', '④ Supplier', 'Report']} current={1} />
+      </div>
+      <div className="card">
+        <b>단계별 바로가기</b>
+        <div className="row mt">
           {['① Impact','② Verification','③ Deploy','④ Supplier'].map((s,i)=>(
             <button key={s} className="btn" onClick={()=>nav(['/impact','/decisions/verification','/decisions/deploy','/decisions/supplier'][i])}>{s}</button>
           ))}
@@ -82,6 +97,18 @@ export function DecisionReport() {
     <div>
       <div className="breadcrumb">의사결정 ▸ DecisionReport</div>
       <h1 className="page-title">DecisionReport (통합)</h1>
+      <div className="card">
+        <Steps steps={['Impact', 'Verify', 'Deploy', 'Supplier', 'Package']} done />
+      </div>
+      <div className="row">
+        <div className="col card"><b>① Impact 영향 범위</b>
+          <div className="mt"><Bars data={{ Features: imp.features.length, SWC: imp.swcs.length, Supplier: imp.suppliers.length, Test: imp.tests.length }} /></div>
+        </div>
+        {pkg.costImpact && <div className="col card"><b>💰 비용 (Binary → {d.deployType})</b>
+          <div className="mt"><GroupedBars rows={[{ label: '변경 개발비', a: pkg.costImpact.binaryWon, b: pkg.costImpact.changeWon }]} fmt={fmtWon} /></div>
+          <p className="small">절감 <b className="mono" style={{ color: 'var(--pass)' }}>{fmtWon(pkg.costImpact.savingsWon)}</b></p>
+        </div>}
+      </div>
       <div className="card">
         <p><b>① Impact</b> — {imp.features.length} Features · {imp.swcs.length} SWC · {imp.suppliers.length} Supplier · {imp.tests.length} Tests</p>
         <p><b>② Verify</b> — Gate {v.gateResult} · Missing {v.missingEvidence.join(', ')||'없음'}</p>

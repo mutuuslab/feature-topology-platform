@@ -4,6 +4,7 @@ import SpecLink from '../components/SpecLink';
 import { useToast } from '../store';
 import { RightPanel } from '../components/patterns';
 import TopoLink from '../components/TopoLink';
+import { Donut, tally, dist } from '../components/charts';
 
 export default function VariantMatrix() {
   const toast = useToast();
@@ -17,6 +18,14 @@ export default function VariantMatrix() {
       </div>
       <p className="page-sub">구조적 적용가능성 (Variant ≠ Control) · 행 클릭 → 판정 상세</p>
       <SpecLink families={['FR-VAR', 'FR-TGT']} />
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>적용성 Status 분포</b>
+          <Donut size={120} center={`${variantMatrix.length}`}
+            segments={dist(tally(variantMatrix, r => r.status), { Allowed: 'var(--pass)', Review: 'var(--pending)', Blocked: 'var(--fail)' })} /></div>
+        <div className="col card" style={{ flex: 2, justifyContent: 'center' }}>
+          <div className="small muted">총 {variantMatrix.length}개 Variant 조합 중 Allowed {variantMatrix.filter(r => r.status === 'Allowed').length} · Review {variantMatrix.filter(r => r.status === 'Review').length} · Blocked {variantMatrix.filter(r => r.status === 'Blocked').length}</div>
+        </div>
+      </div>
       <div className="row">
         <div className="col card">
           <b>Applicability Matrix</b>

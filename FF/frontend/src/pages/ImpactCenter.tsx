@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { impact, deploy, verification, supplier, buildDecisionPackage, changeCost, fmtWon } from '../data/engine';
 
 import TopoLink from '../components/TopoLink';
+import { Bars, GroupedBars, Steps } from '../components/charts';
 
 const TARGETS = ['API-BDC-POLICY-CONTROL','FEAT-BDC-001','SWC-BDC-ADAPTER'];
 const TRACE = ['Feature Master','BOM Baseline','Topology Snapshot','Decision Package','Operations Evidence'];
@@ -31,6 +32,7 @@ export default function ImpactCenter() {
       {res && <div className="row">
         <div className="col card">
           <b>Impact Summary</b> <span className="pill">Confidence: {res.impact.confidence}</span>
+          <div className="mt"><Bars data={{ Features: res.impact.features.length, SWC: res.impact.swcs.length, ECU: res.impact.ecus.length, Supplier: res.impact.suppliers.length, Test: res.impact.tests.length, Variant: res.impact.variants.length }} /></div>
           <table className="mt"><tbody>
             <tr><td>Impacted Features</td><td>{res.impact.features.length}</td><td className="mono small">{res.impact.features.join(', ')}</td></tr>
             <tr><td>SWCs</td><td>{res.impact.swcs.length}</td><td className="mono small">{res.impact.swcs.join(', ')}</td></tr>
@@ -61,20 +63,15 @@ export default function ImpactCenter() {
           {(() => { const cc = changeCost(res.impact, res.deploy.deployType); return (
             <div className="card" style={{ background:'var(--surface-2)' }}>
               <b>💰 비용 영향 (SW 개발비, 추정)</b>
-              <div className="kv small mt">
-                <div>변경 개발비</div><div className="mono"><b>{fmtWon(cc.changeWon)}</b> ({res.deploy.deployType})</div>
-                <div>Binary OTA 가정 시</div><div className="mono">{fmtWon(cc.binaryWon)}</div>
-                <div>절감액</div><div className="mono" style={{ color:'var(--pass)' }}><b>{fmtWon(cc.savingsWon)}</b> (Policy-only 전환)</div>
-              </div>
+              <div className="mt"><GroupedBars rows={[{ label: '변경 개발비 (Binary → 선택방식)', a: cc.binaryWon, b: cc.changeWon }]} fmt={fmtWon} /></div>
+              <p className="small mt">절감액 <b className="mono" style={{ color:'var(--pass)' }}>{fmtWon(cc.savingsWon)}</b> (Policy-only 전환)</p>
             </div>); })()}
         </div>
       </div>}
 
       <div className="card">
         <b>E2E Trace Chain (S20)</b>
-        <div style={{ display:'flex', gap:8, marginTop:10, flexWrap:'wrap' }}>
-          {TRACE.map((t,i)=>(<span key={t} className="pill" style={{ background: res?'var(--pass)':'', color: res?'#fff':'' }}>{i+1}. {t}{i<TRACE.length-1?' →':''}</span>))}
-        </div>
+        <Steps steps={TRACE} done={!!res} current={res ? undefined : -1} />
         <div className="mt small">{AC.map(a=>(<div key={a} className="evt">{res?'✅':'⬜'} {a}</div>))}</div>
       </div>
     </div>

@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { connectors, syncLogs } from '../data/refdata';
 import { RightPanel } from '../components/patterns';
+import { Donut, Timeline, tally, dist } from '../components/charts';
+
+const CONN_STATUS_COLORS = { connected: '#1F9D55', degraded: '#D9822B', failed: '#D64545' };
+const SYNC_STATUS_COLORS = { ok: '#1F9D55', retry: '#D9822B', failed: '#D64545' };
 
 export function ConnectorHub() {
   const nav = useNavigate();
@@ -9,6 +13,10 @@ export function ConnectorHub() {
     <div>
       <div className="breadcrumb">연동 ▸ Connector Hub</div>
       <h1 className="page-title">Connector Hub</h1>
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Connector 상태</b>
+          <Donut size={120} center={`${connectors.length}`} segments={dist(tally(connectors, c => c.status), CONN_STATUS_COLORS)} /></div>
+      </div>
       <div className="row">{connectors.map(c=>(
         <div className="col card" key={c.id} style={{minWidth:240}} onClick={()=>nav('/integration/connector/'+c.id)}>
           <div style={{display:'flex',justifyContent:'space-between'}}><b>{c.name}</b>
@@ -27,6 +35,10 @@ export function ConnectorDetail() {
     <div>
       <div className="breadcrumb">연동 ▸ Connector Detail</div>
       <h1 className="page-title">{c.name}</h1>
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>전체 Connector 상태</b>
+          <Donut size={120} center={`${connectors.length}`} segments={dist(tally(connectors, x => x.status), CONN_STATUS_COLORS)} /></div>
+      </div>
       <div className="card"><div className="kv">
         <div>Protocol</div><div>{c.proto}</div><div>Direction</div><div>{c.dir}</div>
         <div>Auth</div><div>OAuth2</div><div>Field Mapping</div><div>Requirement ↔ BOM(Requirement 영역)</div>
@@ -43,6 +55,12 @@ export function SyncLogs() {
       <div className="breadcrumb">연동 ▸ Sync Logs</div>
       <h1 className="page-title">Sync Logs</h1>
       <p className="page-sub">양방향 동기화 이력 · 행 클릭 → 상세</p>
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Sync 상태</b>
+          <Donut size={120} center={`${syncLogs.length}`} segments={dist(tally(syncLogs, l => l.status), SYNC_STATUS_COLORS)} /></div>
+        <div className="col card"><b>최근 동기화 이벤트</b>
+          <Timeline items={syncLogs.map(l => ({ ts: l.ts, title: l.event, detail: l.conn, tag: l.status, color: l.status === 'ok' ? '#1F9D55' : l.status === 'retry' ? '#D9822B' : '#D64545' }))} /></div>
+      </div>
       <div className="card"><div className="table-wrap"><table><thead><tr><th>Time</th><th>Connector</th><th>Event</th><th>Status</th></tr></thead>
         <tbody>{syncLogs.map((l, i) => (<tr key={i} role="button" tabIndex={0} onClick={() => setSel(l)} onKeyDown={e => { if (e.key === 'Enter') setSel(l); }}><td>{l.ts}</td><td className="mono">{l.conn}</td><td>{l.event}</td>
           <td><span className="badge" style={{ background: l.status === 'ok' ? 'var(--pass)' : 'var(--pending)' }}>{l.status}</span></td></tr>))}</tbody></table></div></div>

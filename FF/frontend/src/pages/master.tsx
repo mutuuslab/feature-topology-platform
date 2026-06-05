@@ -4,6 +4,7 @@ import { taxonomyTree } from '../data/refdata';
 import { artifacts, relations } from '../data/model';
 import { useApp, useToast } from '../store';
 import { RightPanel } from '../components/patterns';
+import { Donut, Bars, RadialProgress, Steps, tally, dist } from '../components/charts';
 
 const ID_RULE: Record<string, string> = {
   L0: 'TAX-{DOMAIN}', L1: 'Feature Cluster', L2: 'FEAT-{DOMAIN}-{NNN}', L3: 'FEAT-{DOMAIN}-{SW}-{NNN}',
@@ -17,6 +18,10 @@ export function TaxonomyBrowser() {
       <div className="breadcrumb">기준정보 ▸ Taxonomy Browser</div>
       <h1 className="page-title">Taxonomy Browser (L0~L5)</h1>
       <p className="page-sub">기준 Feature = L2. 레벨 경계·ID 규칙 · 노드 클릭 → 상세</p>
+      <div className="card">
+        <b>레벨 경계 (L0 → L5) · 기준 Feature = L2</b>
+        <Steps steps={['L0 분류', 'L1 클러스터', 'L2 기준 Feature', 'L3 구현', 'L4 Control', 'L5 Artifact']} current={2} />
+      </div>
       <div className="card">
         {taxonomyTree.map((nn, i) => (
           <div key={nn.level} role="button" tabIndex={0} onClick={() => setSel(i)} onKeyDown={e => { if (e.key === 'Enter') setSel(i); }}
@@ -46,7 +51,9 @@ export function TaxonomyEditor() {
       <div className="breadcrumb">기준정보 ▸ Taxonomy Editor</div>
       <h1 className="page-title">Taxonomy Editor</h1>
       <div className="card">
-        <div className="kv" style={{ maxWidth: 520 }}>
+        <b>귀속 경로</b>
+        <Steps steps={['L1 클러스터', 'L2 Parent', 'L3 신규 노드']} current={2} />
+        <div className="kv mt" style={{ maxWidth: 520 }}>
           <div>Level</div><div><select style={{padding:6}}><option>L2</option><option>L3</option><option>L4</option></select></div>
           <div>Parent</div><div><input defaultValue="FEAT-BODY-001" style={{padding:6,width:'100%'}}/></div>
           <div>Display Name</div><div><input placeholder="고객/차량 관점 명칭" style={{padding:6,width:'100%'}}/></div>
@@ -94,6 +101,15 @@ export function BOMEditor() {
     <div>
       <div className="breadcrumb">기준정보 ▸ BOM Editor ▸ FEAT-BDC-001</div>
       <h1 className="page-title">Feature BOM Editor (11 영역)</h1>
+      <div className="card analytics-strip">
+        <b>영역별 BOM 항목 수</b>
+        <div className="mt"><Bars data={Object.fromEntries(areas.map(a => {
+          const k = AREA_KINDS[a];
+          const baseN = relations.map(r => artifacts.find(x => x.id === r.target)).filter((x: any) => x && k.includes(x.kind)).length;
+          return [a, baseN + (added[a]?.length || 0)];
+        }).filter(([, v]) => (v as number) > 0))} /></div>
+        {pending.length > 0 && <p className="small" style={{ color: 'var(--pass)' }}>대기 변경 {pending.length}건 (미저장)</p>}
+      </div>
       <div className="tabs">{areas.map(a => <button key={a} className={active === a ? 'active' : ''} onClick={() => setActive(a)}>{a} {AREA_KINDS[a].length ? '' : '·'}</button>)}</div>
       <div className="card">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -132,9 +148,13 @@ export function DefinitionWizard() {
       <div className="breadcrumb">기준정보 ▸ Feature Definition Wizard</div>
       <h1 className="page-title">Feature 등록 (7-criteria)</h1>
       <div className="card">
-        <div style={{display:'flex',gap:8,marginBottom:12}}>{['Candidate','7 Criteria','필수 속성','등록 결정'].map((s,i)=><span key={s} className="pill" style={{background:i===step?'var(--brand)':i<step?'var(--pass)':'',color:i<=step?'#fff':''}}>{i+1}. {s}</span>)}</div>
+        <Steps steps={['Candidate', '7 Criteria', '필수 속성', '등록 결정']} current={step} />
+        <div className="mt" />
         {step===0 && <input placeholder="후보 기능명 (예: BDC Policy Control)" value={name} onChange={e=>setName(e.target.value)} style={{width:'100%',padding:8,border:'1px solid var(--line)',borderRadius:6}}/>}
-        {step===1 && <div>{criteria.map((c,i)=>(<label key={c} style={{display:'block',padding:'4px 0'}}><input type="checkbox" checked={checked[i]} onChange={()=>setChecked(p=>p.map((v,j)=>j===i?!v:v))}/> {c}</label>))}<p className="small">충족 {cnt}/7 {cnt>=4?'✅ Feature 후보':'— BOM 하위/보류'}</p></div>}
+        {step===1 && <div className="row" style={{ alignItems: 'center' }}>
+          <div style={{ flex: 1 }}>{criteria.map((c,i)=>(<label key={c} style={{display:'block',padding:'4px 0'}}><input type="checkbox" checked={checked[i]} onChange={()=>setChecked(p=>p.map((v,j)=>j===i?!v:v))}/> {c}</label>))}<p className="small">충족 {cnt}/7 {cnt>=4?'✅ Feature 후보':'— BOM 하위/보류'}</p></div>
+          <div style={{ textAlign: 'center' }}><RadialProgress size={120} color={cnt>=4?'#1F9D55':'#D9822B'} value={Math.round(cnt/7*100)} label={`${cnt}/7 기준`} /></div>
+        </div>}
         {step===2 && <div className="kv" style={{maxWidth:480}}><div>Owner</div><div><input value={owner} onChange={e=>setOwner(e.target.value)} style={{padding:6,width:'100%'}}/></div><div>Verification</div><div><input defaultValue="HIL" style={{padding:6,width:'100%'}}/></div><div>Applicability</div><div><input defaultValue="KR" style={{padding:6,width:'100%'}}/></div></div>}
         {step===3 && <div>
           <div className="decision RELEASE" style={{background:'#EAF2FF',color:'var(--brand)',border:'1px solid var(--brand)'}}>{cnt>=4?`Feature 등록 가능 (Lifecycle=Proposed) — "${name||'신규'}"`:'기준 미달 → BOM 하위요소 / 보류'}</div>
@@ -158,6 +178,12 @@ export function ArtifactCatalog() {
       <div className="breadcrumb">기준정보 ▸ Artifact Catalog</div>
       <h1 className="page-title">Artifact Catalog</h1>
       <p className="page-sub">행 클릭 → 산출물 상세·연결 Feature</p>
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 250, alignItems: 'center' }}><b>Kind 분포</b>
+          <Donut size={130} center={`${rows.length}`} segments={dist(tally(rows, a => a.kind))} />
+        </div>
+        <div className="col card" style={{ flex: 2 }}><b>Kind별 산출물 수</b><div className="mt"><Bars data={tally(rows, a => a.kind)} /></div></div>
+      </div>
       <div className="card"><div className="table-wrap"><table><thead><tr><th>ID</th><th>Kind</th><th>Name</th></tr></thead>
         <tbody>{rows.map(a => (
           <tr key={a.id} role="button" tabIndex={0} onClick={() => setSel(a)} onKeyDown={e => { if (e.key === 'Enter') setSel(a); }}><td className="mono">{a.id}</td><td>{a.kind}</td><td>{a.displayName}</td></tr>))}</tbody></table></div></div>
@@ -184,6 +210,12 @@ export function ControlPointCatalog() {
       <div className="breadcrumb">기준정보 ▸ Control Point Catalog</div>
       <h1 className="page-title">Control Point Catalog</h1>
       <p className="page-sub">Flag·Policy·Kill·Safe Default — 행 클릭 → 상세</p>
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 250, alignItems: 'center' }}><b>Control Point 유형</b>
+          <Donut size={130} center={`${rows.length}`} segments={dist(tally(rows, c => c.type), { KILL: '#D64545', POLICY: '#0EA5E9', SAFE: '#1F9D55' })} />
+        </div>
+        <div className="col card" style={{ flex: 2 }}><b>유형별 수</b><div className="mt"><Bars data={tally(rows, c => c.type)} /></div></div>
+      </div>
       <div className="card"><div className="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Name</th></tr></thead>
         <tbody>{rows.map(c => (
           <tr key={c.id} role="button" tabIndex={0} onClick={() => setSel(c)} onKeyDown={e => { if (e.key === 'Enter') setSel(c); }}><td className="mono">{c.id}</td><td><span className="pill">{c.type}</span></td><td>{c.name}</td></tr>))}</tbody></table></div></div>

@@ -190,3 +190,27 @@ table.heatmap th{background:transparent}
 [data-theme="dark"] .decision.INFO{background:#11233f}
 [data-theme="dark"] .skel{background:linear-gradient(90deg,#1E2735 25%,#0F141C 37%,#1E2735 63%)}
 @media (max-width:900px){ table{font-size:12px} .kpis{grid-template-columns:repeat(2,1fr)} }
+
+/* ── Steps: 가로 파이프라인 ── */
+.steps{display:flex;flex-wrap:wrap;gap:0;margin:6px 0}
+.steps .step{position:relative;display:flex;flex-direction:column;align-items:center;flex:1;min-width:64px;padding:0 4px}
+.steps .step .dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;background:var(--surface-3);color:var(--muted);border:2px solid var(--line);z-index:1;transition:.3s}
+.steps .step .lbl{font-size:11px;margin-top:5px;text-align:center;color:var(--muted);max-width:90px}
+.steps .step .bar{position:absolute;top:14px;left:50%;width:100%;height:3px;background:var(--line);z-index:0}
+.steps .step.done .dot{background:var(--pass);color:#fff;border-color:var(--pass)}
+.steps .step.done .bar{background:var(--pass)}
+.steps .step.done .lbl{color:var(--ink)}
+.steps .step.active .dot{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 25%,transparent);animation:pulse 1.6s infinite}
+.steps .step.active .lbl{color:var(--brand);font-weight:700}
+
+/* ── Timeline: 세로 타임라인 ── */
+.timeline{position:relative;padding-left:18px;margin-top:6px}
+.timeline:before{content:'';position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--line)}
+.tl-item{position:relative;padding:0 0 12px 14px}
+.tl-node{position:absolute;left:-16px;top:3px;width:11px;height:11px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.tl-item.latest .tl-node{box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 25%,transparent);animation:pulse 1.6s infinite}
+.tl-head{display:flex;align-items:center;gap:6px}
+.tl-body{background:var(--surface-2);border-radius:6px;padding:6px 9px}
+.analytics-strip{margin-bottom:4px}
+[data-theme="dark"] .steps .step .dot{background:#1E2735}
+[data-theme="dark"] .tl-body{background:#161d28}

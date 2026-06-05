@@ -5,6 +5,9 @@ import { catalogStats, health, impact } from '../data/engine';
 import { LifecycleBadge, DeployBadge, Health } from '../components/ui';
 import { RightPanel } from '../components/patterns';
 import SpecLink from '../components/SpecLink';
+import { Donut, Bars, RadialProgress, CountUp, tally, dist } from '../components/charts';
+
+const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
 
 type SortKey = 'id' | 'displayName' | 'level' | 'lifecycle' | 'health';
 const PAGE = 6;
@@ -55,6 +58,19 @@ export default function Catalog() {
       <h1 className="page-title">Feature Catalog</h1>
       <p className="page-sub">전체 {all.length} Feature · 검색·필터·정렬·대량작업·Health</p>
       <SpecLink families={['FR-REG', 'FR-CAT']} />
+
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Lifecycle 분포</b>
+          <Donut size={120} center={`${all.length}`} segments={dist(tally(all, x => x.lifecycle), LC_COLOR)} />
+        </div>
+        <div className="col card" style={{ flex: 2 }}><b>도메인별 Feature 수</b>
+          <div className="mt"><Bars data={tally(all, x => x.domain)} /></div>
+        </div>
+        <div className="col card" style={{ maxWidth: 200, alignItems: 'center' }}><b>Health 정상 비율</b>
+          <RadialProgress size={110} color="#1F9D55" value={Math.round(all.filter(x => health(x.id) >= 80).length / (all.length || 1) * 100)} label={`${all.filter(x => health(x.id) >= 80).length}/${all.length} ≥80`} />
+        </div>
+      </div>
+
       <div className="card">
         <div className="row" style={{ alignItems: 'center' }}>
           <input placeholder="🔍 Search ID/Name…" value={q} onChange={e => { setQ(e.target.value); setPage(0); }} style={{ flex: 1, minWidth: 200, padding: 8, border: '1px solid var(--line)', borderRadius: 6 }} />
@@ -102,7 +118,7 @@ export default function Catalog() {
           </tbody>
         </table>
         <div className="row mt" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <span className="muted small">Total {stats.total} · Approved {stats.approved} · Developing {stats.developing} · Released {stats.released} · Missing Trace {stats.missingTrace}</span>
+          <span className="muted small">Total <b><CountUp value={stats.total} /></b> · Approved {stats.approved} · Developing {stats.developing} · Released {stats.released} · Missing Trace {stats.missingTrace}</span>
           <span>
             <button className="btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}>←</button>
             <span className="small" style={{ margin: '0 8px' }}>{page + 1} / {pages}</span>

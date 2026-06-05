@@ -4,6 +4,7 @@ import * as M from '../data/model';
 import * as E from '../data/engine';
 import { LifecycleBadge, DeployBadge, Health } from '../components/ui';
 import TopoLink from '../components/TopoLink';
+import { GaugeArc, RadialProgress, Donut } from '../components/charts';
 
 const TABS = ['Summary','Taxonomy','BOM','Topology','Variants','Control','Deploy','Verify','Supplier','Ops','History'];
 
@@ -49,10 +50,15 @@ export default function FeatureDetail() {
             {tab==='Variants' && <div><button className="btn" onClick={()=>nav(`/variants/${id}`)}>Variant Matrix 열기 →</button><p className="small mt">KR/EU · MY2027+ · Premium · Gen3 · SW≥3.2.0</p></div>}
             {tab==='Control' && <div className="kv"><div>Policy</div><div>POLICY-BDC-ENABLE</div><div>Kill Switch</div><div>CP-BDC-001-KILL</div><div>Safe Default</div><div>disabled</div></div>}
             {tab==='Deploy' && <div>현재 Deploy Type: <DeployBadge value={f.deployType}/> · <button className="btn" onClick={()=>nav('/impact')}>Deployment Decision →</button></div>}
-            {tab==='Verify' && <div>Coverage {v.mandatoryTests.length-v.missingEvidence.length}/{v.mandatoryTests.length} · Missing: {v.missingEvidence.join(', ')||'없음'}
-              <div className="mt"><button className="btn" onClick={()=>nav(`/readiness/${id}`)}>Release Readiness →</button></div></div>}
+            {tab==='Verify' && <div className="row" style={{ alignItems: 'center' }}>
+              <div style={{ textAlign: 'center' }}><RadialProgress size={110} color="#0EA5E9" value={Math.round((v.mandatoryTests.length-v.missingEvidence.length)/(v.mandatoryTests.length||1)*100)} label="검증 커버리지" /></div>
+              <div style={{ flex: 1 }}>Coverage {v.mandatoryTests.length-v.missingEvidence.length}/{v.mandatoryTests.length} · Missing: {v.missingEvidence.join(', ')||'없음'}
+              <div className="mt"><button className="btn" onClick={()=>nav(`/readiness/${id}`)}>Release Readiness →</button></div></div></div>}
             {tab==='Supplier' && <div className="kv"><div>Supplier</div><div>{E.supplier(id).supplierScope.join(', ')}</div><div>Contract Gap</div><div>{E.supplier(id).contractGap}</div><div>Evidence</div><div>{E.supplier(id).evidenceStatus}</div></div>}
-            {tab==='Ops' && (tel ? <div className="kv"><div>Activation</div><div>{(tel.activationSuccess*100).toFixed(1)}%</div><div>Fail</div><div>{tel.policyApplyFail}</div><div>Rollback</div><div>{tel.rollbackCount}</div><div></div><div><button className="btn" onClick={()=>nav(`/ops/${id}`)}>Ops Dashboard →</button></div></div> : <span className="muted">운영 데이터 없음</span>)}
+            {tab==='Ops' && (tel ? <div className="row" style={{ alignItems: 'center' }}>
+              <GaugeArc value={+(tel.activationSuccess*100).toFixed(1)} size={130} label="활성화율" />
+              <div style={{ flex: 1 }}><div className="kv"><div>Activation</div><div>{(tel.activationSuccess*100).toFixed(1)}%</div><div>Fail</div><div>{tel.policyApplyFail}</div><div>Rollback</div><div>{tel.rollbackCount}</div></div>
+              <button className="btn mt" onClick={()=>nav(`/ops/${id}`)}>Ops Dashboard →</button></div></div> : <span className="muted">운영 데이터 없음</span>)}
             {tab==='History' && <table><thead><tr><th>Type</th><th>Area</th><th>변경</th></tr></thead><tbody>
               {(M.changeSets[id]||[]).map((c,i)=><tr key={i}><td>{c.type}</td><td>{c.area}</td><td>{c.detail}</td></tr>)}
             </tbody></table>}
@@ -67,9 +73,10 @@ export default function FeatureDetail() {
               <button className="btn" onClick={()=>nav(`/ops/${id}`)}>Ops · Kill Switch</button>
             </div>
           </div>
-          <div className="card">
-            <b>Traceability Health</b> <Health n={E.health(id)} />
-            <div className="mt small">
+          <div className="card" style={{ textAlign: 'center' }}>
+            <b style={{ display: 'block', textAlign: 'left' }}>Traceability Health</b>
+            <GaugeArc value={E.health(id)} size={140} label="Health" />
+            <div className="mt small" style={{ textAlign: 'left' }}>
               {[['Requirement', rels.some(r=>r.type==='derives')],['Test', v.gateResult==='PASS'],['Supplier', rels.some(r=>r.type==='realized_by')],['Variant', rels.some(r=>r.type==='applies_to')],['Rollback', E.edgesOf(id).some(e=>e.type==='fallback_to')],['Telemetry', !!tel]].map(([k,ok])=>(
                 <div key={k as string}>{ok?'✅':'⚠️'} {k}</div>
               ))}

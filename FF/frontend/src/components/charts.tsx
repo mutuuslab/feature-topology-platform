@@ -202,3 +202,74 @@ export function LiveDot() {
   return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--pass)' }}>
     <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--pass)', animation: 'pulse 1.4s infinite' }} /> LIVE</span>;
 }
+
+// ── 색 팔레트 + 집계 유틸 ──
+export const PALETTE = ['#0B5FFF', '#16A34A', '#D9822B', '#9333EA', '#D64545', '#0891B2', '#CA8A04', '#DB2777', '#2563EB', '#059669'];
+
+export function tally<T>(items: T[], keyFn: (x: T) => string): Record<string, number> {
+  const r: Record<string, number> = {};
+  items.forEach(x => { const k = keyFn(x) || '기타'; r[k] = (r[k] || 0) + 1; });
+  return r;
+}
+
+// 집계 → Donut segments 헬퍼 (색 자동 배정, 색맵 옵션)
+export function dist(counts: Record<string, number>, colorMap?: Record<string, string>) {
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])
+    .map(([label, value], i) => ({ label, value, color: colorMap?.[label] || PALETTE[i % PALETTE.length] }));
+}
+
+// ── Steps: 가로 파이프라인 (현재 단계 강조) ──
+export function Steps({ steps, current, done }: { steps: string[]; current?: number; done?: boolean }) {
+  return (
+    <div className="steps">
+      {steps.map((s, i) => {
+        const state = done || (current != null && i < current) ? 'done' : current === i ? 'active' : 'todo';
+        return (
+          <div key={s} className={`step ${state}`}>
+            <span className="dot">{state === 'done' ? '✓' : i + 1}</span>
+            <span className="lbl">{s}</span>
+            {i < steps.length - 1 && <span className="bar" />}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Timeline: 세로 타임라인 (최신 강조) ──
+export function Timeline({ items }: { items: { ts: string; title: string; detail?: string; tag?: string; color?: string }[] }) {
+  return (
+    <div className="timeline">
+      {items.map((it, i) => (
+        <div className={`tl-item${i === 0 ? ' latest' : ''}`} key={i}>
+          <span className="tl-node" style={{ background: it.color || (i === 0 ? 'var(--brand)' : 'var(--line)') }} />
+          <div className="tl-body">
+            <div className="tl-head">{it.tag && <span className="pill">{it.tag}</span>}<b className="small">{it.title}</b><span className="muted small" style={{ marginLeft: 'auto' }}>{it.ts}</span></div>
+            {it.detail && <div className="muted small">{it.detail}</div>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── GroupedBars: Before/After 등 2계열 비교 ──
+export function GroupedBars({ rows, fmt }: { rows: { label: string; a: number; b: number }[]; fmt?: (n: number) => string }) {
+  const max = Math.max(1, ...rows.flatMap(r => [r.a, r.b]));
+  const f = fmt || ((n: number) => String(n));
+  return (
+    <div>{rows.map(r => (
+      <div key={r.label} style={{ margin: '8px 0' }}>
+        <div className="small" style={{ marginBottom: 3 }}>{r.label}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4, height: 12 }}><div style={{ width: `${r.a / max * 100}%`, height: 12, borderRadius: 4, background: '#9AA7B8', transition: 'width .7s' }} /></div>
+          <span className="small mono muted" style={{ width: 64, textAlign: 'right' }}>{f(r.a)}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4, height: 12 }}><div style={{ width: `${r.b / max * 100}%`, height: 12, borderRadius: 4, background: 'linear-gradient(90deg,#0B5FFF,#16A34A)', transition: 'width .7s' }} /></div>
+          <span className="small mono" style={{ width: 64, textAlign: 'right' }}>{f(r.b)}</span>
+        </div>
+      </div>
+    ))}<div className="small muted" style={{ marginTop: 4 }}><span style={{ color: '#9AA7B8' }}>■</span> Before · <span style={{ color: '#16A34A' }}>■</span> After</div></div>
+  );
+}

@@ -4,7 +4,7 @@ import { campaigns, policies, policyStages, incidents } from '../data/refdata';
 import { telemetry } from '../data/model';
 import { useToast, useApp } from '../store';
 import { RightPanel } from '../components/patterns';
-import { AreaChart, GaugeArc, LiveDot } from '../components/charts';
+import { AreaChart, GaugeArc, LiveDot, Donut, Bars, Steps, tally, dist } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 
 export function OTACampaign() {
@@ -13,6 +13,12 @@ export function OTACampaign() {
     <div>
       <div className="breadcrumb">배포·운영 ▸ OTA Campaign</div>
       <h1 className="page-title">OTA Campaign Manager</h1>
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Status 분포</b>
+          <Donut size={120} center={`${campaigns.length}`} segments={dist(tally(campaigns, c => c.status))} /></div>
+        <div className="col card" style={{ flex: 2 }}><b>Campaign Rollout %</b>
+          <div className="mt"><Bars data={Object.fromEntries(campaigns.map(c => [c.id, c.rollout]))} fmt={n => n + '%'} /></div></div>
+      </div>
       <div className="card"><table><thead><tr><th>Campaign</th><th>Feature</th><th>Type</th><th>Cohort</th><th>Rollout</th><th>Status</th></tr></thead>
         <tbody>{campaigns.map(c=>(<tr key={c.id} onClick={()=>nav('/ops/campaign/'+c.id)}>
           <td className="mono">{c.id}</td><td className="mono">{c.feature}</td><td><span className="pill">{c.type}</span></td>
@@ -26,6 +32,12 @@ export function CampaignDetail() {
     <div>
       <div className="breadcrumb">배포·운영 ▸ Campaign Detail</div>
       <h1 className="page-title">CMP-BDC-2027-01</h1>
+      {(() => {
+        const c = campaigns.find(x => x.id === 'CMP-BDC-2027-01') || campaigns[0];
+        const stages = ['5%', '20%', '100%'];
+        const cur = c.rollout >= 100 ? 2 : c.rollout >= 20 ? 1 : 0;
+        return <div className="card"><b>단계 Rollout 파이프라인</b><div className="mt"><Steps steps={stages} current={cur} done={c.rollout >= 100} /></div></div>;
+      })()}
       <div className="card"><div className="kv">
         <div>Feature</div><div className="mono">FEAT-BDC-001</div><div>Type</div><div>Policy-only</div>
         <div>단계 Rollout</div><div>{[5,20,100].map(p=><span key={p} className="pill" style={{marginRight:4,background:'var(--pass)',color:'#fff'}}>{p}%</span>)}</div>
@@ -42,6 +54,8 @@ export function PolicyLifecycle() {
       <div className="breadcrumb">배포·운영 ▸ Policy Lifecycle</div>
       <h1 className="page-title">Policy Lifecycle Board</h1>
       <p className="page-sub">Draft → Review → Approved → Deployed → Monitored · 카드 클릭 → 상세</p>
+      <div className="card"><b>단계별 정책 수</b>
+        <div className="mt"><Bars data={Object.fromEntries(policyStages.map(s => [s, policies.filter(p => p.stage === s).length]))} /></div></div>
       <div className="row">{policyStages.map(stage => (
         <div className="col card" key={stage} style={{ minWidth: 180 }}>
           <b>{stage}</b>
@@ -106,6 +120,12 @@ export function IncidentManager() {
     <div>
       <div className="breadcrumb">배포·운영 ▸ Incident</div>
       <h1 className="page-title">Incident Manager</h1>
+      <div className="row analytics-strip">
+        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Severity 분포</b>
+          <Donut size={120} center={`${incidents.length}`} segments={dist(tally(incidents, i => i.severity))} /></div>
+        <div className="col card" style={{ flex: 2 }}><b>Status 분포</b>
+          <div className="mt"><Bars data={tally(incidents, i => i.status)} /></div></div>
+      </div>
       <div className="card"><table><thead><tr><th>ID</th><th>Feature</th><th>Title</th><th>Severity</th><th>Status</th></tr></thead>
         <tbody>{incidents.map(i=>(<tr key={i.id} onClick={()=>nav('/ops/incident/'+i.id)}>
           <td className="mono">{i.id}</td><td className="mono">{i.feature}</td><td>{i.title}</td>
@@ -123,6 +143,8 @@ export function IncidentDetail() {
     <div>
       <div className="breadcrumb">배포·운영 ▸ Incident Detail</div>
       <h1 className="page-title">{i.id}</h1>
+      <div className="card" style={{ alignItems: 'center' }}><b>전체 Incident Severity</b>
+        <Donut size={120} center={`${incidents.length}`} segments={dist(tally(incidents, x => x.severity))} /></div>
       <div className="card"><div className="kv">
         <div>Feature</div><div className="mono">{i.feature}</div>
         <div>Title</div><div>{i.title}</div>

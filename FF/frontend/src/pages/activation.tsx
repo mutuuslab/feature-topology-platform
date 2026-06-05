@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store';
 import { MODELS, sampleVehicles } from '../data/fleet';
-import { Gauge } from '../components/charts';
+import { Gauge, Heatmap } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 import SpecLink from '../components/SpecLink';
 
@@ -33,6 +33,15 @@ export default function Activation() {
           <span className="pill" style={{ marginLeft: 'auto' }}>{enabledModels}/{MODELS.length} 차종 활성</span>
           <button className="btn" onClick={() => nav('/fleet')}>Fleet에서 확인 →</button>
         </div>
+      </div>
+
+      <div className="card">
+        <b>전체 Feature × 차종 활성화 Heatmap</b>
+        <Heatmap rows={feats.slice(0, 10).map(f => f.id)} cols={MODELS}
+          cell={(fidR, m) => { const a = state.activation[`${fidR}@${m}`]; if (!a) return { v: null, label: '–' };
+            if (a.killed) return { v: 0.06, label: '⛔', title: 'Kill' };
+            return a.enabled ? { v: Math.max(0.3, a.rollout / 100), label: a.rollout + '%', title: `ON ${a.rollout}%` } : { v: 0.12, label: 'off' }; }}
+          legend="색 진할수록 rollout↑ · ⛔ Kill · – 정책 없음 · 행 클릭 대신 위 셀렉터로 편집" />
       </div>
 
       <div className="card">

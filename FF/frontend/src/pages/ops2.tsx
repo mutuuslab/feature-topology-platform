@@ -4,7 +4,7 @@ import { campaigns, policies, policyStages, incidents } from '../data/refdata';
 import { telemetry } from '../data/model';
 import { useToast, useApp } from '../store';
 import { RightPanel } from '../components/patterns';
-import { Sparkline, LiveDot } from '../components/charts';
+import { AreaChart, GaugeArc, LiveDot } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 
 export function OTACampaign() {
@@ -77,9 +77,9 @@ export function TelemetryExplorer() {
       </div>
       <div className="breadcrumb">배포·운영 ▸ Telemetry Explorer · 실시간 수집(MQTT 시뮬)</div>
       <div className="row">
-        <div className="col card"><b>Activation Success Rate (실시간)</b>
-          <Sparkline data={live.series} height={120} min={88} max={100} />
-          <div className="muted small">현재 {live.activation}% · 실패 {live.failRate}% · p95 {live.p95}ms</div>
+        <div className="col card" style={{ flex: 2 }}><b>Activation Success Rate (실시간) <LiveDot /></b>
+          <AreaChart data={live.series} height={150} min={88} max={100} fmt={n => n.toFixed(0) + '%'} />
+          <div style={{ display: 'flex', gap: 24, marginTop: 8 }}><GaugeArc value={live.activation} size={120} label="활성화" /><div><div className="kv small"><div>실패율</div><div>{live.failRate}%</div><div>p95</div><div>{live.p95}ms</div><div>rollback</div><div>{live.rollback}</div></div></div></div>
         </div>
         <div className="col card"><b>Recent Events <LiveDot /></b>
           {live.events.map((e: any, i: number) => (

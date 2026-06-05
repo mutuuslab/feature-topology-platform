@@ -1,21 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { costSummary, fmtWon, changeCost, impact } from '../data/engine';
 import { DeployBadge } from '../components/ui';
+import { Bars, Donut, CountUp } from '../components/charts';
 
-function Bars({ data }: { data: Record<string, number> }) {
-  const max = Math.max(1, ...Object.values(data));
-  return (
-    <div>{Object.entries(data).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
-      <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0' }}>
-        <span className="small" style={{ width: 110 }}>{k}</span>
-        <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4 }}>
-          <div style={{ width: `${(v / max) * 100}%`, background: 'var(--brand)', height: 14, borderRadius: 4 }} />
-        </div>
-        <span className="small mono" style={{ width: 90, textAlign: 'right' }}>{fmtWon(v)}</span>
-      </div>
-    ))}</div>
-  );
-}
+const PIE = ['#0B5FFF', '#16A34A', '#D9822B', '#9333EA', '#D64545', '#0891B2'];
 
 export default function Cost() {
   const nav = useNavigate();
@@ -31,16 +19,19 @@ export default function Cost() {
       <h1 className="page-title">SW 개발비 / Development Cost</h1>
       <p className="page-sub">공수(M/M)→금액(₩) 환산 · 모든 값은 <b>추정/가설</b> (요율 ₩12M/MM)</p>
 
-      <div className="kpis">
+      <div className="kpis reveal">
         <div className="kpi"><div className="v">{fmtWon(c.totalEst)}</div><div className="l">총 예상 개발비</div></div>
         <div className="kpi"><div className="v">{fmtWon(c.totalActual)}</div><div className="l">총 실적 개발비</div></div>
         <div className="kpi"><div className="v" style={{ color: c.totalActual > c.totalEst ? 'var(--fail)' : 'var(--pass)' }}>{fmtWon(c.totalActual - c.totalEst)}</div><div className="l">예실 차이</div></div>
         <div className="kpi"><div className="v" style={{ color: 'var(--pass)' }}>{fmtWon(roiSaving)}</div><div className="l">연간 절감(ROI, 가설)</div></div>
+        <div className="kpi"><div className="v"><CountUp value={c.rows.length} /></div><div className="l">집계 Feature 수</div></div>
       </div>
 
       <div className="row">
-        <div className="col card"><b>도메인별 예상 개발비</b><div className="mt"><Bars data={c.byDomain} /></div></div>
-        <div className="col card"><b>배포방식별 예상 개발비</b><div className="mt"><Bars data={c.byDeploy} /></div></div>
+        <div className="col card" style={{ flex: 2 }}><b>도메인별 예상 개발비</b><div className="mt"><Bars data={c.byDomain} fmt={fmtWon} /></div></div>
+        <div className="col card"><b>배포방식별 비중</b>
+          <Donut size={130} center={fmtWon(c.totalEst)} segments={Object.entries(c.byDeploy).sort((a, b) => b[1] - a[1]).map(([k, v], i) => ({ label: k, value: v, color: PIE[i % PIE.length] }))} />
+        </div>
       </div>
 
       <div className="card">

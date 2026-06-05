@@ -30,12 +30,20 @@ export default function GraphCanvas({ elements, layout = 'concentric', onNodeCli
           label: 'data(label)', color: ink, 'font-size': 10, 'text-wrap': 'wrap', 'text-max-width': '110px',
           'text-valign': 'bottom', 'text-margin-y': 4, width: 26, height: 26,
         } },
-        { selector: 'node[type="feature-center"]', style: { width: 46, height: 46, 'font-size': 12, 'font-weight': 'bold', 'border-width': 3, 'border-color': '#0B5FFF' } },
+        { selector: 'node[type="feature-center"]', style: {
+          width: 52, height: 52, 'font-size': 13, 'font-weight': 'bold', 'border-width': 3, 'border-color': '#ffffff',
+          'background-fill': 'radial-gradient', 'background-gradient-stop-colors': ['#5B9BFF', '#0B5FFF', '#073BB3'],
+          'background-gradient-stop-positions': [0, 55, 100],
+          'underlay-color': '#0B5FFF', 'underlay-opacity': 0.35, 'underlay-padding': 12, 'underlay-shape': 'ellipse',
+        } },
+        { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#0B5FFF', 'underlay-color': '#0B5FFF', 'underlay-opacity': 0.25, 'underlay-padding': 8 } },
         { selector: 'edge', style: {
           width: 1.5, 'line-color': '#B6C0CE', 'target-arrow-color': '#B6C0CE', 'target-arrow-shape': 'triangle',
           'curve-style': 'bezier', label: 'data(label)', 'font-size': 8, color: '#8895A7', 'text-rotation': 'autorotate',
           'text-background-color': surface, 'text-background-opacity': 1, 'text-background-padding': '2px',
+          'arrow-scale': 0.9, 'line-opacity': 0.85,
         } },
+        { selector: 'edge:selected', style: { width: 2.5, 'line-color': '#0B5FFF', 'target-arrow-color': '#0B5FFF' } },
       ],
       layout: layoutOpts,
     });

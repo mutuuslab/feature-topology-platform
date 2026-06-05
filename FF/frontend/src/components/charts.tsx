@@ -1,57 +1,188 @@
-// 의존성 없는 SVG 차트 — Sparkline / Donut / Bars / Gauge
-export function Sparkline({ data, height = 60, color = 'var(--brand)', min, max }:
-  { data: number[]; height?: number; color?: string; min?: number; max?: number }) {
+import { useEffect, useRef, useState } from 'react';
+
+// ── 카운트업 훅 ──
+export function useCountUp(target: number, dur = 900) {
+  const [v, setV] = useState(0);
+  const ref = useRef(0);
+  useEffect(() => {
+    const from = ref.current; const start = performance.now();
+    let raf = 0;
+    const step = (t: number) => {
+      const p = Math.min(1, (t - start) / dur);
+      const e = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      const cur = from + (target - from) * e;
+      setV(cur); ref.current = cur;
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, dur]);
+  return v;
+}
+
+export function CountUp({ value, decimals = 0, suffix = '', prefix = '' }: { value: number; decimals?: number; suffix?: string; prefix?: string }) {
+  const v = useCountUp(value);
+  return <>{prefix}{v.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}</>;
+}
+
+// 부드러운 곡선 path (Catmull-Rom → bezier)
+function smoothPath(pts: [number, number][]) {
+  if (pts.length < 2) return '';
+  let d = `M ${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += ` C ${c1x},${c1y} ${c2x},${c2y} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+
+// ── AreaChart: 그라디언트 면적 + 격자 + Y축 + hover 툴팁 ──
+export function AreaChart({ data, height = 160, color = '#0B5FFF', min, max, fmt }:
+  { data: number[]; height?: number; color?: string; min?: number; max?: number; fmt?: (n: number) => string }) {
+  const [hi, setHi] = useState<number | null>(null);
+  const W = 320, H = height, padL = 4, padB = 16, padT = 8;
   if (!data.length) return null;
-  const lo = min ?? Math.min(...data), hi = max ?? Math.max(...data);
-  const span = hi - lo || 1;
-  const w = 100;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${height - ((v - lo) / span) * (height - 8) - 4}`).join(' ');
-  const area = `0,${height} ${pts} ${w},${height}`;
+  const lo = min ?? Math.min(...data), up = max ?? Math.max(...data);
+  const span = up - lo || 1;
+  const x = (i: number) => padL + (i / (data.length - 1)) * (W - padL * 2);
+  const y = (v: number) => padT + (1 - (v - lo) / span) * (H - padT - padB);
+  const pts = data.map((v, i) => [x(i), y(v)] as [number, number]);
+  const line = smoothPath(pts);
+  const area = `${line} L ${x(data.length - 1)},${H - padB} L ${x(0)},${H - padB} Z`;
+  const gid = 'ag' + color.replace(/[^a-z0-9]/gi, '');
+  const grid = [0, 0.25, 0.5, 0.75, 1];
   return (
-    <svg viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" style={{ width: '100%', height }}>
-      <polygon points={area} fill={color} opacity={0.12} />
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
-      <circle cx={w} cy={height - ((data[data.length - 1] - lo) / span) * (height - 8) - 4} r={2.5} fill={color} />
-    </svg>
+    <div style={{ position: 'relative' }} onMouseLeave={() => setHi(null)}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H }}
+        onMouseMove={e => { const r = (e.currentTarget as SVGSVGElement).getBoundingClientRect(); const rel = (e.clientX - r.left) / r.width * W; setHi(Math.max(0, Math.min(data.length - 1, Math.round((rel - padL) / ((W - padL * 2) / (data.length - 1)))))); }}>
+        <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.35" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient></defs>
+        {grid.map((g, i) => { const yy = padT + g * (H - padT - padB); const val = up - g * span; return (
+          <g key={i}><line x1={padL} y1={yy} x2={W - padL} y2={yy} stroke="var(--line)" strokeWidth="0.5" strokeDasharray="3 3" />
+            <text x={W - padL} y={yy - 2} textAnchor="end" fontSize="8" fill="var(--muted)">{fmt ? fmt(val) : val.toFixed(0)}</text></g>); })}
+        <path d={area} fill={`url(#${gid})`} />
+        <path className="draw" d={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        {hi != null && <><line x1={x(hi)} y1={padT} x2={x(hi)} y2={H - padB} stroke={color} strokeWidth="0.7" strokeDasharray="2 2" />
+          <circle cx={x(hi)} cy={y(data[hi])} r="3.5" fill={color} stroke="#fff" strokeWidth="1.5" /></>}
+        <circle cx={x(data.length - 1)} cy={y(data[data.length - 1])} r="3" fill={color}><animate attributeName="opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite" /></circle>
+      </svg>
+      {hi != null && <div className="chart-tip" style={{ left: `${(x(hi) / W) * 100}%` }}>{fmt ? fmt(data[hi]) : data[hi]}</div>}
+    </div>
   );
 }
 
-export function Donut({ segments, size = 120 }: { segments: { label: string; value: number; color: string }[]; size?: number }) {
+// 기존 호환 Sparkline (면적 + 그라디언트)
+export function Sparkline({ data, height = 60, color = 'var(--brand)', min, max }:
+  { data: number[]; height?: number; color?: string; min?: number; max?: number }) {
+  return <AreaChart data={data} height={height} color={color === 'var(--brand)' ? '#0B5FFF' : color} min={min} max={max} fmt={(n) => n.toFixed(0)} />;
+}
+
+// ── Donut (드로잉 애니메이션 + 중앙 라벨) ──
+export function Donut({ segments, size = 130, center }: { segments: { label: string; value: number; color: string }[]; size?: number; center?: string }) {
   const total = segments.reduce((s, x) => s + x.value, 0) || 1;
-  const r = size / 2 - 10, c = 2 * Math.PI * r;
+  const r = size / 2 - 12, c = 2 * Math.PI * r;
   let off = 0;
   return (
-    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--surface-3)" strokeWidth={14} />
         <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
-          {segments.map((s, i) => {
-            const len = (s.value / total) * c;
-            const el = <circle key={i} cx={size / 2} cy={size / 2} r={r} fill="none" stroke={s.color} strokeWidth={14}
-              strokeDasharray={`${len} ${c - len}`} strokeDashoffset={-off} />;
-            off += len; return el;
-          })}
+          {segments.map((s, i) => { const len = (s.value / total) * c; const el = (
+            <circle key={i} cx={size / 2} cy={size / 2} r={r} fill="none" stroke={s.color} strokeWidth={14} strokeLinecap="round"
+              strokeDasharray={`${len} ${c - len}`} strokeDashoffset={-off}
+              style={{ transition: 'stroke-dasharray .8s ease, stroke-dashoffset .8s ease' }} />); off += len; return el; })}
         </g>
-        <text x="50%" y="50%" textAnchor="middle" dy="0.35em" fontSize="20" fontWeight="700" fill="var(--ink)">{total}</text>
+        <text x="50%" y="46%" textAnchor="middle" dy="0.35em" fontSize="22" fontWeight="800" fill="var(--ink)">{center ?? total}</text>
+        <text x="50%" y="62%" textAnchor="middle" fontSize="8" fill="var(--muted)">TOTAL</text>
       </svg>
       <div className="small">{segments.map(s => (
-        <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '2px 0' }}>
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: s.color, display: 'inline-block' }} />{s.label} <b>{s.value}</b>
+        <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '3px 0' }}>
+          <span style={{ width: 10, height: 10, borderRadius: 3, background: s.color, display: 'inline-block' }} />{s.label} <b>{s.value}</b>
         </div>))}</div>
     </div>
   );
 }
 
+// ── Bars (그라디언트 + 성장 애니메이션) ──
 export function Bars({ data, fmt }: { data: Record<string, number>; fmt?: (n: number) => string }) {
   const max = Math.max(1, ...Object.values(data));
   return (
     <div>{Object.entries(data).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
-      <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0' }}>
+      <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '5px 0' }}>
         <span className="small" style={{ width: 120 }}>{k}</span>
-        <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4 }}>
-          <div style={{ width: `${(v / max) * 100}%`, background: 'var(--brand)', height: 14, borderRadius: 4 }} />
+        <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 5, overflow: 'hidden' }}>
+          <div style={{ width: `${(v / max) * 100}%`, background: 'linear-gradient(90deg,#0B5FFF,#0EA5E9)', height: 16, borderRadius: 5, transition: 'width .8s ease' }} />
         </div>
-        <span className="small mono" style={{ width: 90, textAlign: 'right' }}>{fmt ? fmt(v) : v}</span>
+        <span className="small mono" style={{ width: 92, textAlign: 'right' }}>{fmt ? fmt(v) : v}</span>
       </div>))}</div>
+  );
+}
+
+// ── GaugeArc (반원 아크 게이지) ──
+export function GaugeArc({ value, label, size = 150 }: { value: number; label?: string; size?: number }) {
+  const v = Math.max(0, Math.min(100, value));
+  const r = size / 2 - 12, cx = size / 2, cy = size / 2;
+  const ang = Math.PI * (1 - v / 100);
+  const ex = cx + r * Math.cos(ang), ey = cy - r * Math.sin(ang);
+  const color = v >= 95 ? '#1F9D55' : v >= 80 ? '#D9822B' : '#D64545';
+  const arc = (a0: number, a1: number) => `M ${cx + r * Math.cos(a0)},${cy - r * Math.sin(a0)} A ${r} ${r} 0 0 1 ${cx + r * Math.cos(a1)},${cy - r * Math.sin(a1)}`;
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <svg width={size} height={size / 2 + 16} viewBox={`0 0 ${size} ${size / 2 + 16}`}>
+        <path d={arc(Math.PI, 0)} fill="none" stroke="var(--surface-3)" strokeWidth="12" strokeLinecap="round" />
+        <path d={arc(Math.PI, ang)} fill="none" stroke={color} strokeWidth="12" strokeLinecap="round" style={{ transition: 'all .6s' }} />
+        <circle cx={ex} cy={ey} r="6" fill={color} stroke="#fff" strokeWidth="2" />
+        <text x={cx} y={cy} textAnchor="middle" fontSize="22" fontWeight="800" fill="var(--ink)">{v.toFixed(1)}%</text>
+      </svg>
+      {label && <div className="small muted">{label}</div>}
+    </div>
+  );
+}
+
+// ── RadialProgress (링) ──
+export function RadialProgress({ value, size = 92, color = '#0B5FFF', label }: { value: number; size?: number; color?: string; label?: string }) {
+  const r = size / 2 - 8, c = 2 * Math.PI * r, v = Math.max(0, Math.min(100, value));
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--surface-3)" strokeWidth="8" />
+        <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
+            strokeDasharray={`${(v / 100) * c} ${c}`} style={{ transition: 'stroke-dasharray .8s ease' }} />
+        </g>
+        <text x="50%" y="50%" textAnchor="middle" dy="0.35em" fontSize="18" fontWeight="800" fill="var(--ink)">{Math.round(v)}%</text>
+      </svg>
+      {label && <div className="small muted">{label}</div>}
+    </div>
+  );
+}
+
+// ── Heatmap (rows × cols, value 0..1 또는 null) ──
+export function Heatmap({ rows, cols, cell, legend }:
+  { rows: string[]; cols: string[]; cell: (r: string, c: string) => { v: number | null; title?: string; label?: string }; legend?: string }) {
+  const color = (v: number | null) => v == null ? 'var(--surface-2)' : `color-mix(in srgb, #0B5FFF ${Math.round(20 + v * 75)}%, var(--surface))`;
+  return (
+    <div className="table-wrap">
+      <table className="heatmap"><thead><tr><th></th>{cols.map(c => <th key={c} style={{ fontSize: 11 }}>{c}</th>)}</tr></thead>
+        <tbody>{rows.map(r => (<tr key={r}><td className="mono" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{r}</td>
+          {cols.map(c => { const x = cell(r, c); return (
+            <td key={c} title={x.title || ''} style={{ background: color(x.v), textAlign: 'center', color: (x.v ?? 0) > 0.55 ? '#fff' : 'var(--muted)', fontSize: 10, cursor: 'default' }}>{x.label ?? ''}</td>); })}
+        </tr>))}</tbody></table>
+      {legend && <div className="small muted mt">{legend}</div>}
+    </div>
+  );
+}
+
+// ── StatTile (카운트업 + delta + 미니 sparkline) ──
+export function StatTile({ label, value, decimals = 0, suffix = '', prefix = '', delta, data, color = '#0B5FFF' }:
+  { label: string; value: number; decimals?: number; suffix?: string; prefix?: string; delta?: number; data?: number[]; color?: string }) {
+  return (
+    <div className="kpi stat-tile">
+      <div className="v"><CountUp value={value} decimals={decimals} suffix={suffix} prefix={prefix} /></div>
+      <div className="l">{label} {delta != null && <span style={{ color: delta >= 0 ? 'var(--pass)' : 'var(--fail)', fontWeight: 700 }}>{delta >= 0 ? '▲' : '▼'}{Math.abs(delta)}</span>}</div>
+      {data && <div style={{ marginTop: 6, opacity: .9 }}><Sparkline data={data} height={34} color={color} /></div>}
+    </div>
   );
 }
 

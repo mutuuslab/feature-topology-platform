@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fleetStats, sampleVehicles, vehicleFeatureStates, STATE_COLOR, Vehicle } from '../data/fleet';
+import { fleetStats, sampleVehicles, vehicleFeatureStates, STATE_COLOR, Vehicle, MODELS } from '../data/fleet';
 import { useApp } from '../store';
-import { Donut, Bars, Sparkline, LiveDot } from '../components/charts';
+import { Donut, Bars, AreaChart, LiveDot, CountUp, Heatmap } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 import { RightPanel } from '../components/patterns';
+import { features } from '../data/model';
 
 const fmtM = (n: number) => (n / 1e6).toFixed(2) + 'M';
 
@@ -25,11 +26,20 @@ export default function Fleet() {
       </div>
       <p className="page-sub">현대자동차 SDV 전사 운영 — <b>{fleetStats.total.toLocaleString()}대</b> 규모 · 차량(VIN) 단위 Feature 상태 조회</p>
 
-      <div className="kpis">
-        <div className="kpi"><div className="v">{fmtM(fleetStats.total)}</div><div className="l">총 차량 (대)</div></div>
-        <div className="kpi"><div className="v">{Math.round(fleetStats.onlineRate * 100)}%</div><div className="l">온라인 차량</div></div>
-        <div className="kpi"><div className="v">{live.activation}%</div><div className="l">Fleet 활성화 성공(실시간)</div></div>
-        <div className="kpi"><div className="v">{live.failRate}%</div><div className="l">정책 적용 실패(실시간)</div></div>
+      <div className="kpis reveal">
+        <div className="kpi"><div className="v"><CountUp value={10.24} decimals={2} suffix="M" /></div><div className="l">총 차량 (대)</div></div>
+        <div className="kpi"><div className="v"><CountUp value={Math.round(fleetStats.onlineRate * 100)} suffix="%" /></div><div className="l">온라인 차량</div></div>
+        <div className="kpi"><div className="v" style={{ color: 'var(--pass)' }}>{live.activation}%</div><div className="l">Fleet 활성화(실시간)</div></div>
+        <div className="kpi"><div className="v" style={{ color: 'var(--fail)' }}>{live.failRate}%</div><div className="l">정책 적용 실패(실시간)</div></div>
+      </div>
+
+      <div className="card">
+        <b>차종 × Feature 활성화 Heatmap</b>
+        <Heatmap rows={features.slice(0, 8).map(f => f.id)} cols={MODELS}
+          cell={(fid, m) => { const a = activation[`${fid}@${m}`]; if (!a) return { v: null, label: '–' };
+            if (a.killed) return { v: 0.05, label: '⛔', title: 'Kill' };
+            return a.enabled ? { v: Math.max(0.3, a.rollout / 100), label: a.rollout + '%', title: `ON ${a.rollout}%` } : { v: 0.12, label: 'off' }; }}
+          legend="색 진할수록 rollout↑ · ⛔ Kill · – 정책 없음 (Activation Control에서 설정)" />
       </div>
 
       <div className="row">
@@ -43,7 +53,7 @@ export default function Fleet() {
           <p className="small muted">단위 10만대</p>
         </div>
         <div className="col card"><b>배포방식별 차량</b><div className="mt"><Bars data={fleetStats.byDeploy} fmt={fmtM} /></div></div>
-        <div className="col card"><b>Fleet 활성화율(실시간)</b><Sparkline data={live.series} height={80} min={88} max={100} /><div className="muted small">현재 {live.activation}%</div></div>
+        <div className="col card"><b>Fleet 활성화율(실시간) <LiveDot /></b><AreaChart data={live.series} height={120} min={88} max={100} fmt={n => n.toFixed(0) + '%'} /><div className="muted small">현재 {live.activation}%</div></div>
       </div>
 
       <div className="card">

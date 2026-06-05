@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { roles, permMatrix } from '../data/refdata';
 import { useApp, roleHome } from '../store';
+import { StatTile, AreaChart, Donut, LiveDot } from '../components/charts';
+import { fleetStats } from '../data/fleet';
 
 export function Login() {
   const nav = useNavigate();
@@ -47,22 +49,36 @@ export function RoleHome() {
   return (
     <div>
       <div className="breadcrumb">홈 / Home ▸ 내 대시보드</div>
-      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">내 대시보드 / Role Home</h1>
-        <select value={role} onChange={e => change(e.target.value)} style={{ padding: 6 }}>{roles.map(r => <option key={r}>{r}</option>)}</select>
+      <div className="hero">
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <div><h1 className="page-title">Feature Topology Platform <LiveDot /></h1>
+            <div className="sub">현대자동차 SDV · {fleetStats.total.toLocaleString()}대 운영 · 현재 역할 <b>{role}</b> → 랜딩 {roleHome[role]}</div></div>
+          <select value={role} onChange={e => change(e.target.value)} style={{ padding: 6, borderRadius: 6, border: 'none' }}>{roles.map(r => <option key={r}>{r}</option>)}</select>
+        </div>
       </div>
-      <p className="page-sub">현재 역할 <b>{role}</b> → 기본 랜딩 <span className="mono">{roleHome[role]}</span></p>
       <div className="card" style={{ padding: '10px 14px' }}>
         <b>이 역할의 권한(verb)</b>{' '}
         {['view', 'create', 'edit', 'approve', 'run-engine', 'deploy', 'kill', 'rollback', 'admin'].map(v => (
           <span key={v} className="pill" style={{ marginRight: 4, opacity: verbs.includes(v) ? 1 : 0.35 }}>{verbs.includes(v) ? '✓' : '✕'} {v}</span>
         ))}
       </div>
-      <div className="kpis">
-        <div className="kpi"><div className="v">10.24M</div><div className="l">Fleet 차량</div></div>
-        <div className="kpi"><div className="v">8/9</div><div className="l">BDC Gates PASS</div></div>
-        <div className="kpi"><div className="v">Policy-only</div><div className="l">BDC Deploy</div></div>
-        <div className="kpi"><div className="v" style={{ color: 'var(--pass)' }}>{state.live.activation}%</div><div className="l">활성화(실시간)</div></div>
+      <div className="kpis reveal">
+        <StatTile label="Fleet 차량" value={10.24} decimals={2} suffix="M" delta={2} />
+        <StatTile label="활성화(실시간)" value={state.live.activation} decimals={1} suffix="%" data={state.live.series} color="#1F9D55" delta={+(state.live.activation - 97).toFixed(1)} />
+        <StatTile label="정책 적용 실패" value={state.live.failRate} decimals={1} suffix="%" color="#D64545" />
+        <StatTile label="p95 Latency" value={state.live.p95} suffix="ms" color="#D9822B" />
+      </div>
+      <div className="row">
+        <div className="col card" style={{ flex: 2 }}><b>Fleet 활성화율 (실시간) <LiveDot /></b>
+          <AreaChart data={state.live.series} height={150} min={88} max={100} fmt={n => n.toFixed(0) + '%'} /></div>
+        <div className="col card"><b>권역별 차량</b>
+          <Donut size={120} center="10.2M" segments={[
+            { label: 'KR', value: Math.round(fleetStats.byRegion.KR / 1e5), color: '#0B5FFF' },
+            { label: 'EU', value: Math.round(fleetStats.byRegion.EU / 1e5), color: '#16A34A' },
+            { label: 'US', value: Math.round(fleetStats.byRegion.US / 1e5), color: '#D9822B' },
+            { label: 'ETC', value: Math.round(fleetStats.byRegion.ETC / 1e5), color: '#9333EA' }]} /></div>
+        <div className="col card ticker"><b>실시간 이벤트 <LiveDot /></b>
+          {state.live.events.slice(0, 5).map((e, i) => <div className="evt" key={e.ts + i}><span className="pill">{e.type}</span><span className="muted small">{e.ts}</span></div>)}</div>
       </div>
       <div className="row mt">
         <div className="col card"><b>내 작업 / My Work</b>

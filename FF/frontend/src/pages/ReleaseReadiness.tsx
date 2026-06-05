@@ -4,7 +4,7 @@ import { readiness, getFeature } from '../data/engine';
 import { GateBadge } from '../components/ui';
 import SpecLink from '../components/SpecLink';
 import { useApp, useToast } from '../store';
-import { Donut } from '../components/charts';
+import { Donut, RadialProgress } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 
 const GATE_FLOW: Record<string, string[]> = {
@@ -42,13 +42,15 @@ export default function ReleaseReadiness() {
       </div>
 
       <div className="row">
-        <div className="col card" style={{ maxWidth: 320 }}>
+        <div className="col card" style={{ maxWidth: 360 }}>
           <b>9-Gate 요약</b>
-          <Donut size={120} segments={[
-            { label: 'PASS', value: counts.PASS, color: 'var(--pass)' },
-            { label: 'PENDING', value: counts.PENDING, color: 'var(--pending)' },
-            { label: 'FAIL', value: counts.FAIL, color: 'var(--fail)' },
-          ]} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <RadialProgress value={Math.round(r.passCount / 9 * 100)} size={96} color={r.decision === 'RELEASE' ? '#1F9D55' : '#D9822B'} label={`${r.passCount}/9 PASS`} />
+            <Donut size={110} center={`${r.passCount}/9`} segments={[
+              { label: 'PASS', value: counts.PASS, color: '#1F9D55' },
+              { label: 'PENDING', value: counts.PENDING, color: '#D9822B' },
+              { label: 'FAIL', value: counts.FAIL, color: '#D64545' },
+            ]} /></div>
         </div>
         <div className="col card">
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>

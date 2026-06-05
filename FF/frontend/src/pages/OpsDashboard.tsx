@@ -6,7 +6,7 @@ import { opsTriggerRules } from '../data/refdata';
 import { useApp } from '../store';
 import { GButton } from '../components/patterns';
 import SpecLink from '../components/SpecLink';
-import { Sparkline, LiveDot } from '../components/charts';
+import { AreaChart, GaugeArc, LiveDot } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 
 export default function OpsDashboard() {
@@ -42,10 +42,12 @@ export default function OpsDashboard() {
         <div className="kpi"><div className="v" style={{ color: killed ? 'var(--fail)' : 'var(--pass)' }}>{killed ? 'KILLED' : 'OK'}</div><div className="l">Kill Switch</div></div>
       </div>
 
-      <div className="card">
-        <b>Activation Success Rate (실시간) <LiveDot /></b>
-        <Sparkline data={killed && !recovering ? live.series.map(() => 0) : live.series} height={80} min={88} max={100} />
-        <div className="muted small">최근 {live.series.length} 배치 · 현재 {killed && !recovering ? 0 : live.activation}%</div>
+      <div className="row">
+        <div className="col card" style={{ flex: 2 }}><b>Activation Success Rate (실시간) <LiveDot /></b>
+          <AreaChart data={killed && !recovering ? live.series.map(() => 0) : live.series} height={150} min={88} max={100} fmt={n => n.toFixed(0) + '%'} />
+          <div className="muted small">최근 {live.series.length} 배치 · p95 {live.p95}ms</div></div>
+        <div className="col card" style={{ maxWidth: 220 }}><b>활성화율</b>
+          <GaugeArc value={killed && !recovering ? 0 : live.activation} label="실시간 Activation" /></div>
       </div>
 
       <div className="row mt">

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as S from '../data/spec';
 import { coverage, coverageOf, STATUS_COLOR, CovStatus } from '../data/specCoverage';
 import { RightPanel } from '../components/patterns';
+import { RadialProgress, Donut } from '../components/charts';
 
 // ── 개요 (시트 00) ─────────────────────────────
 export function SpecOverview() {
@@ -120,10 +121,36 @@ export function SpecCoverage() {
       <div className="breadcrumb">기능명세 ▸ Coverage</div>
       <h1 className="page-title">구현 커버리지 / Traceability</h1>
       <p className="page-sub">{allFams.length} FR family · 구현상태 매핑</p>
-      <div className="kpis">
+      <div className="kpis reveal">
         {(Object.keys(tally) as CovStatus[]).map(s => (
           <div className="kpi" key={s}><div className="v" style={{ color: STATUS_COLOR[s] }}>{tally[s]}</div><div className="l">{s} family</div></div>
         ))}
+      </div>
+      <div className="row">
+        <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>전체 구현 진척</b>
+          <RadialProgress size={120} color="#1F9D55"
+            value={Math.round((tally['완료'] + tally['부분'] * 0.5) / allFams.length * 100)}
+            label={`완료+부분 / ${allFams.length}`} />
+        </div>
+        <div className="col card" style={{ alignItems: 'center' }}><b>상태 분포</b>
+          <Donut size={140} center={`${allFams.length}`} segments={(Object.keys(tally) as CovStatus[]).map(s => ({ label: s, value: tally[s], color: STATUS_COLOR[s] }))} />
+        </div>
+        <div className="col card"><b>카테고리별 구현률</b>
+          <div className="mt">{Object.entries(fbc).map(([cat, fams]) => {
+            const done = fams.filter(f => coverageOf(f).status === '완료').length;
+            const part = fams.filter(f => coverageOf(f).status === '부분').length;
+            const pct = Math.round((done + part * 0.5) / fams.length * 100);
+            return (
+              <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '5px 0' }}>
+                <span className="small" style={{ width: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={cat}>{cat}</span>
+                <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4, height: 12 }}>
+                  <div style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#0B5FFF,#16A34A)', height: 12, borderRadius: 4, transition: 'width .8s ease' }} />
+                </div>
+                <span className="small mono" style={{ width: 38, textAlign: 'right' }}>{pct}%</span>
+              </div>
+            );
+          })}</div>
+        </div>
       </div>
       {Object.entries(fbc).map(([cat, fams]) => (
         <div className="card" key={cat}>

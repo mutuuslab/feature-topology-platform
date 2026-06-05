@@ -9,6 +9,14 @@ export interface AuditEntry { ts: string; actor: string; action: string; target:
 export interface ActState { enabled: boolean; rollout: number; killed: boolean }   // 차종(모델)별 활성화
 export interface Experiment { id: string; feature: string; variant: string; metric: string; status: 'Draft' | 'Running' | 'Stopped'; uplift: number }
 export interface Exception { id: string; feature: string; reason: string; approver: string; expiry: string; active: boolean }
+// Phase A — 신규 화면 동작용 슬라이스
+export interface ComplianceCheck { region: string; ruleId: string; feature: string; status: 'PASS' | 'BLOCK' | 'PENDING'; reason: string; ts: string }
+export interface Scenario { id: string; name: string; total: number; pass: number; fail: number; status: 'idle' | 'running' | 'done'; step: number }
+export interface PipelineState { stage: number; status: 'idle' | 'running' | 'done' | 'blocked'; logs: string[] }
+export interface Subscription { feature: string; right: string; plan: string; qty: number; revenueWon: number }
+export interface Vuln { id: string; severity: 'B' | 'W' | 'I'; feature: string; title: string; status: 'open' | 'ack' | 'patched' }
+export interface SecurityState { signing: boolean; certs: { name: string; expiry: string }[]; vulns: Vuln[] }
+export const PIPELINE_STAGES = ['Build', 'Verify', 'Package', 'Quality Gate', 'Staged Deploy', 'Release'];
 
 export const LIFECYCLE_ORDER: M.Lifecycle[] = ['Proposed', 'Approved', 'Developing', 'Verified', 'Released', 'Retired'];
 
@@ -47,6 +55,11 @@ export interface AppState {
   activation: Record<string, ActState>;   // key `${featureId}@${model}`
   experiments: Experiment[];
   exceptions: Exception[];
+  compliance: ComplianceCheck[];
+  scenarios: Scenario[];
+  pipeline: PipelineState;
+  subscriptions: Subscription[];
+  security: SecurityState;
   toast?: { msg: string; kind: 'ok' | 'warn' | 'err' } | null;
 }
 
@@ -79,12 +92,34 @@ const SEED_EXP: Experiment[] = [
 const SEED_EXC: Exception[] = [
   { id: 'EXC-2026-004', feature: 'FEAT-CONN-001', reason: '긴급 우회(현장 이슈)', approver: '정하늘', expiry: '2026-06-12', active: true },
 ];
+const SEED_SUBS: Subscription[] = [
+  { feature: 'FEAT-BDC-001', right: '구독', plan: 'Premium', qty: 142300, revenueWon: 142300 * 3900 },
+  { feature: 'FEAT-ADAS-001', right: '옵션', plan: 'ADAS Pack', qty: 38200, revenueWon: 38200 * 12000 },
+  { feature: 'FEAT-LIGHT-001', right: '무료', plan: 'Standard', qty: 0, revenueWon: 0 },
+];
+const SEED_SEC: SecurityState = {
+  signing: true,
+  certs: [
+    { name: 'Policy Signing Cert', expiry: '2027-01-31' },
+    { name: 'OTA TLS Cert', expiry: '2026-09-15' },
+    { name: 'Device Attestation CA', expiry: '2028-03-01' },
+  ],
+  vulns: [
+    { id: 'VUL-2026-014', severity: 'W', feature: 'FEAT-CONN-001', title: '의존 라이브러리 CVE-2026-xxxx (Medium)', status: 'open' },
+  ],
+};
 
 const initial: AppState = {
   features: M.features, edges: M.edges, relations: M.relations,
   crs: SEED_CRS, runtime: { 'FEAT-BDC-001': 'enabled' }, audit: [],
   role: '운영 P7', theme: 'light', lang: 'ko', live: initialLive,
-  activation: SEED_ACT, experiments: SEED_EXP, exceptions: SEED_EXC, toast: null,
+  activation: SEED_ACT, experiments: SEED_EXP, exceptions: SEED_EXC,
+  compliance: [], scenarios: [
+    { id: 'SCN-KR-PREM', name: 'KR · Premium · Gen3', total: 48, pass: 0, fail: 0, status: 'idle', step: 0 },
+    { id: 'SCN-EU-STD', name: 'EU · Standard · Gen2', total: 40, pass: 0, fail: 0, status: 'idle', step: 0 },
+    { id: 'SCN-US-ADAS', name: 'US · ADAS Pack · Gen3', total: 40, pass: 0, fail: 0, status: 'idle', step: 0 },
+  ], pipeline: { stage: -1, status: 'idle', logs: [] },
+  subscriptions: SEED_SUBS, security: SEED_SEC, toast: null,
 };
 
 function clock() { try { return new Date().toTimeString().slice(0, 8); } catch { return '08:25:00'; } }
@@ -108,8 +143,33 @@ type Action =
   | { t: 'EXP_STATUS'; id: string; status: 'Draft' | 'Running' | 'Stopped' }
   | { t: 'ADD_EXCEPTION'; exc: Exception }
   | { t: 'EXC_REVOKE'; id: string }
+  | { t: 'RUN_COMPLIANCE' }
+  | { t: 'RUN_SCENARIO'; id: string }
+  | { t: 'RUN_PIPELINE' }
+  | { t: 'PIPELINE_STEP' }
+  | { t: 'ADD_SUBSCRIPTION'; sub: Subscription }
+  | { t: 'ACK_VULN'; id: string; status: 'open' | 'ack' | 'patched' }
   | { t: 'LIVE_TICK' }
   | { t: 'RESET' };
+
+// 파이프라인 단계 진행 (force=관리자 우회로 Quality Gate 통과)
+function advancePipeline(s: AppState, force: boolean): AppState {
+  const p = s.pipeline;
+  if (p.status === 'done') return s;
+  if (p.status === 'idle') return s;
+  if (p.status === 'blocked' && !force) return s;
+  const logs = [...p.logs];
+  let stage = p.stage;
+  // Quality Gate 가드: 9-Gate 미통과 시 차단 (force면 우회)
+  if (PIPELINE_STAGES[stage] === 'Quality Gate' && !force) {
+    const r = readiness('FEAT-BDC-001');
+    if (r.decision !== 'RELEASE') return { ...s, pipeline: { stage, status: 'blocked', logs: [...logs, `⛔ Quality Gate 차단 — 9-Gate ${r.passCount}/9`] } };
+  }
+  if (p.status === 'blocked' && force) logs.push('✅ Quality Gate 관리자 승인 우회');
+  stage += 1;
+  if (stage >= PIPELINE_STAGES.length) return { ...s, pipeline: { stage: PIPELINE_STAGES.length - 1, status: 'done', logs: [...logs, '🎉 Release 완료 (SW배포≠Feature출시 분리)'] } };
+  return { ...s, pipeline: { stage, status: 'running', logs: [...logs, `▶ ${PIPELINE_STAGES[stage]} 진행`] } };
+}
 
 function reducer(s: AppState, a: Action): AppState {
   switch (a.t) {
@@ -143,6 +203,26 @@ function reducer(s: AppState, a: Action): AppState {
     case 'EXP_STATUS': return { ...s, experiments: s.experiments.map(e => e.id === a.id ? { ...e, status: a.status } : e), toast: { msg: `실험 ${a.id} → ${a.status}`, kind: 'ok' } };
     case 'ADD_EXCEPTION': return { ...s, exceptions: [a.exc, ...s.exceptions], toast: { msg: `${a.exc.id} 예외정책 승인`, kind: 'ok' } };
     case 'EXC_REVOKE': return { ...s, exceptions: s.exceptions.map(e => e.id === a.id ? { ...e, active: false } : e), toast: { msg: `${a.id} 해제`, kind: 'warn' } };
+    case 'RUN_COMPLIANCE': {
+      const regions = ['KR', 'EU', 'US', 'CN'];
+      const ts = nowish();
+      const out: ComplianceCheck[] = [];
+      s.features.slice(0, 4).forEach(f => regions.forEach(region => {
+        let status: ComplianceCheck['status'] = 'PASS'; let reason = '법규·개인정보 요건 충족';
+        if (region === 'US' && f.deployType !== 'Policy-only') { status = 'BLOCK'; reason = 'US 미인증 구성 — Variant Blocked'; }
+        else if (region === 'EU' && (f.safety || '').startsWith('ASIL')) { status = 'PENDING'; reason = 'UNECE R156 추가 심사 필요'; }
+        else if (region === 'CN') { status = 'PENDING'; reason = '현지 데이터 규정(PIPL) 검토 중'; }
+        else if (region === 'EU') reason = 'GDPR · UNECE R156 충족';
+        out.push({ region, ruleId: `${region}-REG`, feature: f.id, status, reason, ts });
+      }));
+      return { ...s, compliance: out, audit: [{ ts, actor: s.role, action: 'COMPLIANCE_RUN', target: '-', detail: `${out.length}건 검증` }, ...s.audit], toast: { msg: '컴플라이언스 검증 완료', kind: 'ok' } };
+    }
+    case 'RUN_SCENARIO':
+      return { ...s, scenarios: s.scenarios.map(sc => sc.id === a.id ? { ...sc, status: 'running', step: 0, pass: 0, fail: 0 } : sc), toast: { msg: `${a.id} 시나리오 실행`, kind: 'ok' } };
+    case 'RUN_PIPELINE': return { ...s, pipeline: { stage: 0, status: 'running', logs: [`▶ ${PIPELINE_STAGES[0]} 시작`] } };
+    case 'PIPELINE_STEP': return advancePipeline(s, true);
+    case 'ADD_SUBSCRIPTION': return { ...s, subscriptions: [a.sub, ...s.subscriptions], toast: { msg: `${a.sub.feature} 구독 추가`, kind: 'ok' } };
+    case 'ACK_VULN': return { ...s, security: { ...s.security, vulns: s.security.vulns.map(v => v.id === a.id ? { ...v, status: a.status } : v) }, toast: { msg: `${a.id} → ${a.status}`, kind: a.status === 'patched' ? 'ok' : 'warn' } };
     case 'LIVE_TICK': {
       const t = s.live.tick + 1;
       const activation = Math.max(90, Math.min(99.9, s.live.activation + (Math.random() - 0.5) * 1.4));
@@ -155,7 +235,20 @@ function reducer(s: AppState, a: Action): AppState {
         if (k[0] === 'POLICY_ROLLBACK') rollback += 1;
         events = [{ type: k[0], detail: k[1], ts: clock() }, ...s.live.events].slice(0, 8);
       }
-      return { ...s, live: { tick: t, activation: Number(activation.toFixed(1)), failRate: Number((100 - activation).toFixed(1)), rollback, p95: Math.round(p95), series, events } };
+      // 시나리오 진행(5스텝 → 완료, ~5% 실패), 파이프라인 자동 진행, 구독 사용량 증가, 실험 uplift 미세 변동
+      let scenarios = s.scenarios;
+      if (scenarios.some(sc => sc.status === 'running')) {
+        scenarios = scenarios.map(sc => {
+          if (sc.status !== 'running') return sc;
+          const step = sc.step + 1;
+          if (step >= 5) { const fail = Math.round(sc.total * 0.05); return { ...sc, step: 5, status: 'done' as const, fail, pass: sc.total - fail }; }
+          return { ...sc, step };
+        });
+      }
+      const pipeline = s.pipeline.status === 'running' ? advancePipeline(s, false).pipeline : s.pipeline;
+      const subscriptions = s.subscriptions.map(su => su.qty > 0 ? { ...su, qty: su.qty + Math.round(su.qty * 0.0004), revenueWon: Math.round(su.revenueWon * 1.0004) } : su);
+      return { ...s, scenarios, pipeline, subscriptions,
+        live: { tick: t, activation: Number(activation.toFixed(1)), failRate: Number((100 - activation).toFixed(1)), rollback, p95: Math.round(p95), series, events } };
     }
     case 'RESET': { localStorage.removeItem('fp.state.v1'); return { ...initial }; }
     default: return s;
@@ -186,7 +279,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem('fp.state.v1', JSON.stringify(persist)); } catch {}
     document.documentElement.setAttribute('data-theme', state.theme);
     document.documentElement.lang = state.lang;
-  }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions]);
+  }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security]);
 
   // 실시간 시뮬레이션 틱 (2초)
   useEffect(() => {

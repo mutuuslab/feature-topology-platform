@@ -20,6 +20,7 @@ import { VerificationScope, DeploymentDecision, SupplierScope, DecisionCenter, D
 import { CRList, CRDetail, ChangeSetList, BaselineDiff, VersionTimeline } from './pages/change';
 import { TestEvidenceManager, EvidenceDetail } from './pages/verify';
 import { OTACampaign, CampaignDetail, PolicyLifecycle, TelemetryExplorer, IncidentManager, IncidentDetail } from './pages/ops2';
+import RuntimeSim from './pages/runtime';
 import { SupplierPortal, APIReleasePackage, PackageDetail } from './pages/supplier';
 import { ConnectorHub, ConnectorDetail, SyncLogs } from './pages/integration';
 import { Reports, AuditLog, Glossary } from './pages/insights';
@@ -38,7 +39,7 @@ const NAV: { group: string; items: [string, string][] }[] = [
   { group: 'G3 의사결정 / Decisions', items: [['/decisions/center', 'Decision Center'], ['/impact', 'Impact Analysis'], ['/decisions/verification', 'Verification Scope'], ['/decisions/deploy', 'Deployment Decision'], ['/decisions/supplier', 'Supplier Scope'], ['/decisions/report', 'DecisionReport'], ['/spec/experiment', '실험·효과검증'], ['/spec/conflict', '정책 충돌'], ['/spec/exception', '예외 정책']] },
   { group: 'G4 변경관리 / Change', items: [['/change/cr', 'CR List'], ['/cr-wizard', 'CR Wizard'], ['/change/changeset', 'ChangeSet'], ['/change/baseline', 'Baseline Diff'], ['/change/timeline', 'Version Timeline']] },
   { group: 'G5 검증 / Verification', items: [['/verify/evidence', 'Test Evidence Manager'], ['/readiness/FEAT-BDC-001', 'Release Readiness'], ['/spec/compliance', '컴플라이언스 룰'], ['/spec/scenario', '시나리오 검증']] },
-  { group: 'G6 배포·운영 / Ops', items: [['/ops/FEAT-BDC-001', 'Ops · Kill Switch'], ['/ops/campaign', 'OTA Campaign'], ['/ops/policy', 'Policy Lifecycle'], ['/ops/telemetry', 'Telemetry Explorer'], ['/ops/incident', 'Incident'], ['/variants/FEAT-BDC-001', 'Variant Matrix'], ['/spec/cicd', 'CI/CD 파이프라인']] },
+  { group: 'G6 배포·운영 / Ops', items: [['/ops/FEAT-BDC-001', 'Ops · Kill Switch'], ['/ops/campaign', 'OTA Campaign'], ['/ops/policy', 'Policy Lifecycle'], ['/ops/telemetry', 'Telemetry Explorer'], ['/ops/incident', 'Incident'], ['/ops/runtime', 'Runtime Sim'], ['/variants/FEAT-BDC-001', 'Variant Matrix'], ['/spec/cicd', 'CI/CD 파이프라인']] },
   { group: 'G7 협력사 / Supplier', items: [['/supplier/portal', 'Supplier Portal'], ['/supplier/package', 'API Release Package']] },
   { group: 'G8 연동 / Integration', items: [['/integration/connectors', 'Connector Hub'], ['/integration/sync', 'Sync Logs'], ['/spec/billing', '과금 연계']] },
   { group: 'G9 분석·감사 / Insights', items: [['/insights/reports', 'Reports'], ['/cost', 'SW 개발비 / Cost'], ['/insights/audit', 'Audit Log'], ['/insights/glossary', 'Glossary'], ['/spec/business', '글로벌·현장·사업']] },
@@ -126,6 +127,7 @@ export default function App() {
           <Route path="/ops/telemetry" element={<TelemetryExplorer />} />
           <Route path="/ops/incident" element={<IncidentManager />} />
           <Route path="/ops/incident/:id" element={<IncidentDetail />} />
+          <Route path="/ops/runtime" element={<RuntimeSim />} />
           <Route path="/fleet" element={<Fleet />} />
           <Route path="/activation" element={<Activation />} />
           <Route path="/lifecycle" element={<Lifecycle />} />

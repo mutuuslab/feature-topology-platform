@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useReducer, type Dispatch, type ReactNode } from 'react';
 import * as M from './data/model';
-import { permMatrix } from './data/refdata';
+import { permMatrix, policies as SEED_POL, policyStages as POL_STAGES, campaigns as SEED_CMP, incidents as SEED_INC, connectors as SEED_CONN, syncLogs as SEED_SYNC } from './data/refdata';
 import { setDB, readiness, relationsOf, edgesOf } from './data/engine';
 
 // ── 상태 ──────────────────────────────────────────────
@@ -17,6 +17,14 @@ export interface Subscription { feature: string; right: string; plan: string; qt
 export interface Vuln { id: string; severity: 'B' | 'W' | 'I'; feature: string; title: string; status: 'open' | 'ack' | 'patched' }
 export interface SecurityState { signing: boolean; certs: { name: string; expiry: string }[]; vulns: Vuln[] }
 export const PIPELINE_STAGES = ['Build', 'Verify', 'Package', 'Quality Gate', 'Staged Deploy', 'Release'];
+// Phase B — 부분 화면 store화
+export interface Policy { id: string; feature: string; stage: string; approver: string; rollout: number; version: number }
+export interface Campaign { id: string; feature: string; type: string; cohort: string; rollout: number; status: string; step: number }
+export interface Incident { id: string; feature: string; title: string; severity: string; status: string; cause: string; linkedCR: string }
+export interface Connector { id: string; name: string; proto: string; dir: string; status: string; lastSync: string; enabled: boolean }
+export interface SyncLog { ts: string; conn: string; event: string; status: string }
+export const POLICY_STAGES = POL_STAGES as string[];
+export const ROLLOUT_STEPS = [5, 20, 50, 100];
 
 export const LIFECYCLE_ORDER: M.Lifecycle[] = ['Proposed', 'Approved', 'Developing', 'Verified', 'Released', 'Retired'];
 
@@ -60,6 +68,11 @@ export interface AppState {
   pipeline: PipelineState;
   subscriptions: Subscription[];
   security: SecurityState;
+  policies: Policy[];
+  campaigns: Campaign[];
+  incidents: Incident[];
+  connectors: Connector[];
+  syncLogs: SyncLog[];
   toast?: { msg: string; kind: 'ok' | 'warn' | 'err' } | null;
 }
 
@@ -119,7 +132,13 @@ const initial: AppState = {
     { id: 'SCN-EU-STD', name: 'EU · Standard · Gen2', total: 40, pass: 0, fail: 0, status: 'idle', step: 0 },
     { id: 'SCN-US-ADAS', name: 'US · ADAS Pack · Gen3', total: 40, pass: 0, fail: 0, status: 'idle', step: 0 },
   ], pipeline: { stage: -1, status: 'idle', logs: [] },
-  subscriptions: SEED_SUBS, security: SEED_SEC, toast: null,
+  subscriptions: SEED_SUBS, security: SEED_SEC,
+  policies: SEED_POL.map(p => ({ ...p, version: 1 })),
+  campaigns: SEED_CMP.map(c => ({ ...c, step: ROLLOUT_STEPS.indexOf(c.rollout) >= 0 ? ROLLOUT_STEPS.indexOf(c.rollout) : (c.rollout >= 100 ? 3 : c.rollout >= 50 ? 2 : c.rollout >= 20 ? 1 : 0) })),
+  incidents: SEED_INC.map(i => ({ id: i.id, feature: i.feature, title: i.title, severity: i.severity, status: i.status, cause: i.cause, linkedCR: i.linkedCR })),
+  connectors: SEED_CONN.map(c => ({ ...c, enabled: c.status !== 'failed' })),
+  syncLogs: SEED_SYNC.map(s => ({ ...s })),
+  toast: null,
 };
 
 function clock() { try { return new Date().toTimeString().slice(0, 8); } catch { return '08:25:00'; } }
@@ -149,6 +168,10 @@ type Action =
   | { t: 'PIPELINE_STEP' }
   | { t: 'ADD_SUBSCRIPTION'; sub: Subscription }
   | { t: 'ACK_VULN'; id: string; status: 'open' | 'ack' | 'patched' }
+  | { t: 'PROMOTE_POLICY'; id: string; actor: string }
+  | { t: 'CAMPAIGN_ADVANCE'; id: string }
+  | { t: 'INCIDENT_STATUS'; id: string; status: string }
+  | { t: 'CONNECTOR_TOGGLE'; id: string }
   | { t: 'LIVE_TICK' }
   | { t: 'RESET' };
 
@@ -223,6 +246,31 @@ function reducer(s: AppState, a: Action): AppState {
     case 'PIPELINE_STEP': return advancePipeline(s, true);
     case 'ADD_SUBSCRIPTION': return { ...s, subscriptions: [a.sub, ...s.subscriptions], toast: { msg: `${a.sub.feature} 구독 추가`, kind: 'ok' } };
     case 'ACK_VULN': return { ...s, security: { ...s.security, vulns: s.security.vulns.map(v => v.id === a.id ? { ...v, status: a.status } : v) }, toast: { msg: `${a.id} → ${a.status}`, kind: a.status === 'patched' ? 'ok' : 'warn' } };
+    case 'PROMOTE_POLICY': {
+      const cur = s.policies.find(p => p.id === a.id); if (!cur) return s;
+      const i = POLICY_STAGES.indexOf(cur.stage);
+      if (i >= POLICY_STAGES.length - 1) return { ...s, toast: { msg: '이미 최종 단계(Monitored)', kind: 'warn' } };
+      const to = POLICY_STAGES[i + 1];
+      const rollout = to === 'Deployed' || to === 'Monitored' ? 100 : cur.rollout;
+      return { ...s, policies: s.policies.map(p => p.id === a.id ? { ...p, stage: to, rollout, version: cur.version + (to === 'Deployed' ? 1 : 0) } : p),
+        audit: [{ ts: nowish(), actor: a.actor, action: 'POLICY_PROMOTE', target: a.id, detail: `${cur.stage} → ${to}` }, ...s.audit],
+        toast: { msg: `${a.id} → ${to}`, kind: 'ok' } };
+    }
+    case 'CAMPAIGN_ADVANCE': {
+      const cur = s.campaigns.find(c => c.id === a.id); if (!cur) return s;
+      if (cur.step >= ROLLOUT_STEPS.length - 1) return { ...s, campaigns: s.campaigns.map(c => c.id === a.id ? { ...c, status: 'monitored' } : c), toast: { msg: `${a.id} 100% 완료 → monitored`, kind: 'ok' } };
+      // telemetry 가드: 실패율 임계 초과 시 단계 진행 차단
+      if (s.live.failRate > 5) return { ...s, toast: { msg: `Telemetry 가드: 실패율 ${s.live.failRate}% > 5% — 단계 진행 차단`, kind: 'warn' } };
+      const step = cur.step + 1; const rollout = ROLLOUT_STEPS[step];
+      return { ...s, campaigns: s.campaigns.map(c => c.id === a.id ? { ...c, step, rollout, status: rollout >= 100 ? 'monitored' : 'rolling' } : c),
+        audit: [{ ts: nowish(), actor: s.role, action: 'CAMPAIGN_ADVANCE', target: a.id, detail: `rollout ${rollout}%` }, ...s.audit],
+        toast: { msg: `${a.id} → ${rollout}% (telemetry guard 통과)`, kind: 'ok' } };
+    }
+    case 'INCIDENT_STATUS': return { ...s, incidents: s.incidents.map(i => i.id === a.id ? { ...i, status: a.status } : i),
+      audit: [{ ts: nowish(), actor: s.role, action: 'INCIDENT', target: a.id, detail: `→ ${a.status}` }, ...s.audit],
+      toast: { msg: `${a.id} → ${a.status}`, kind: a.status === 'resolved' ? 'ok' : 'warn' } };
+    case 'CONNECTOR_TOGGLE': return { ...s, connectors: s.connectors.map(c => c.id === a.id ? { ...c, enabled: !c.enabled, status: !c.enabled ? 'connected' : 'disabled' } : c),
+      toast: { msg: `${a.id} ${s.connectors.find(c => c.id === a.id)?.enabled ? '중지' : '연결'}`, kind: 'ok' } };
     case 'LIVE_TICK': {
       const t = s.live.tick + 1;
       const activation = Math.max(90, Math.min(99.9, s.live.activation + (Math.random() - 0.5) * 1.4));
@@ -247,7 +295,13 @@ function reducer(s: AppState, a: Action): AppState {
       }
       const pipeline = s.pipeline.status === 'running' ? advancePipeline(s, false).pipeline : s.pipeline;
       const subscriptions = s.subscriptions.map(su => su.qty > 0 ? { ...su, qty: su.qty + Math.round(su.qty * 0.0004), revenueWon: Math.round(su.revenueWon * 1.0004) } : su);
-      return { ...s, scenarios, pipeline, subscriptions,
+      // 연결된 커넥터에서 주기적으로 sync 로그 유입(동기화 시뮬)
+      let syncLogs = s.syncLogs;
+      if (t % 3 === 0) {
+        const on = s.connectors.filter(c => c.enabled);
+        if (on.length) { const c = on[t % on.length]; syncLogs = [{ ts: clock().slice(0, 5), conn: c.id, event: `${c.name} 동기화 x${40 + (t % 60)}건`, status: t % 9 === 0 ? 'retry' : 'ok' }, ...s.syncLogs].slice(0, 12); }
+      }
+      return { ...s, scenarios, pipeline, subscriptions, syncLogs,
         live: { tick: t, activation: Number(activation.toFixed(1)), failRate: Number((100 - activation).toFixed(1)), rollback, p95: Math.round(p95), series, events } };
     }
     case 'RESET': { localStorage.removeItem('fp.state.v1'); return { ...initial }; }
@@ -279,7 +333,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem('fp.state.v1', JSON.stringify(persist)); } catch {}
     document.documentElement.setAttribute('data-theme', state.theme);
     document.documentElement.lang = state.lang;
-  }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security]);
+  }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors]);
 
   // 실시간 시뮬레이션 틱 (2초)
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as S from '../data/spec';
-import { coverage, coverageOf, STATUS_COLOR, CovStatus } from '../data/specCoverage';
+import { coverage, coverageOf, howOf, STATUS_COLOR, CovStatus } from '../data/specCoverage';
 import { RightPanel } from '../components/patterns';
 import { RadialProgress, Donut } from '../components/charts';
 
@@ -121,9 +121,12 @@ export function SpecExplorer() {
             <div>시트</div><div className="small">{sel.sheet}</div>
           </div>
           <p className="mt"><b>상세설명</b><br />{sel.desc}</p>
-          {sel.impl && <p><b>구현방식</b><br />{sel.impl}</p>}
+          {sel.impl && <p><b>명세상 구현방식</b><br />{sel.impl}</p>}
           {sel.note && <p className="small muted"><b>비고</b> · {sel.note}</p>}
-          <div className="mt"><b>구현 화면</b>
+          <div className="mt card" style={{ background: 'var(--surface-2)' }}>
+            <div><b>플랫폼 반영 현황</b> <span className="badge" style={{ background: STATUS_COLOR[coverageOf(sel.family).status] }}>{coverageOf(sel.family).status}</span></div>
+            <p className="small mt"><b>어디에</b> — {coverageOf(sel.family).screens.map(s => s.label).join(' · ')}</p>
+            <p className="small"><b>어떻게</b> — {howOf(sel.family)}</p>
             <div className="row mt">{coverageOf(sel.family).screens.map(s => <button key={s.to} className="btn" onClick={() => nav(s.to)}>{s.label} →</button>)}</div>
           </div>
         </div>}
@@ -179,13 +182,14 @@ export function SpecCoverage() {
       {Object.entries(fbc).map(([cat, fams]) => (
         <div className="card" key={cat}>
           <b>{cat}</b>
-          <table className="mt"><thead><tr><th>Family</th><th>컴포넌트</th><th>FR수</th><th>상태</th><th>구현 화면</th></tr></thead>
+          <table className="mt"><thead><tr><th>Family</th><th>컴포넌트</th><th>FR수</th><th>상태</th><th>구현 화면</th><th>반영 방식 (어떻게)</th></tr></thead>
             <tbody>{fams.map(f => {
               const cov = coverageOf(f);
               return (<tr key={f}>
                 <td className="mono">{f}</td><td className="small">{S.familyName(f)}</td><td>{S.byFamily(f).length}</td>
                 <td><span className="badge" style={{ background: STATUS_COLOR[cov.status] }}>{cov.status}</span></td>
                 <td>{cov.screens.map(s => <span key={s.to} className="pill" style={{ cursor: 'pointer', marginRight: 4 }} onClick={() => nav(s.to)}>{s.label}</span>)}</td>
+                <td className="small muted">{howOf(f)}</td>
               </tr>);
             })}</tbody></table>
         </div>

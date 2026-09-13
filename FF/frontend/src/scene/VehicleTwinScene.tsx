@@ -9,9 +9,9 @@
  * 모든 모션은 `clock.simTimeMs` / `clock.simTick` / `clock.rate` 로만 구동한다.
  * `clock.rate === 0` 이면 부품 펄스 · 흐름 패킷 · 카메라 투어가 전부 멈춘다.
  */
-import { Component, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Environment, Lightformer, ContactShadows } from '@react-three/drei';
+import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Twin, Lang } from '../data/twin/types';
 import { pick } from '../data/twin/types';
@@ -33,6 +33,7 @@ import {
 import {
   SimClockContext,
   SceneFloor,
+  ProceduralEnv,
   CarShell,
   BatteryPackNode,
   HeaterPadNode,
@@ -45,6 +46,8 @@ import {
   CoolantLoop,
   FlowEdgeView,
 } from './vehicleGeometry';
+import CarModel, { JOINTS_CLOSED, type ArticulationKey, type JointState } from './CarModel';
+import { ARTICULATIONS, CAR_CONCEPT, CAR_CONCEPT_SURVEY, CAR_CONCEPT_SPEC_LINE, STUDIO_HDRI } from './vehicleAsset';
 import { LabelManager } from './labels';
 import './vehicleTwin.css';
 
@@ -69,6 +72,12 @@ export interface VehicleTwinSceneProps {
 /* ------------------------------------------------------------------ */
 
 type LayerFilter = Layer | 'ALL';
+
+/** 차체 렌더 소스 — 실 glTF 자산 또는 절차적 셸(§17.4). */
+export type BodyMode = 'asset' | 'procedural';
+
+/** 환경맵 소스 — 실 HDRI 또는 절차적 라이트포머. */
+export type EnvMode = 'hdri' | 'procedural';
 
 const LAYER_CHIPS: Array<{ id: LayerFilter; label: string }> = [
   { id: 'ALL', label: '전체' },
@@ -168,19 +177,20 @@ function explodeOffset(anchor: [number, number, number], factor: number): [numbe
 /* ------------------------------------------------------------------ */
 
 function VehicleModel({
+  shell,
   parts,
   selected,
   onSelect,
-  xray,
   flowing,
   explode,
   layerActive,
   lang,
 }: {
+  /** 차체 슬롯 — 실 glTF 모델 또는 절차적 셸. 로딩/실패 폴백은 부모가 결정한다(§17.4). */
+  shell: ReactNode;
   parts: VehiclePart[];
   selected: PartId;
   onSelect: (id: PartId) => void;
-  xray: boolean;
   flowing: boolean;
   explode: number;
   layerActive: (layer: Layer) => boolean;
@@ -208,7 +218,7 @@ function VehicleModel({
 
   return (
     <group>
-      <CarShell xray={xray} />
+      {shell}
       {byId.battery && <BatteryPackNode part={byId.battery} selected={selected === 'battery'} onSelect={onSelect} dim={dim('battery')} explode={off('battery')} />}
       {byId.heater && <HeaterPadNode part={byId.heater} selected={selected === 'heater'} onSelect={onSelect} dim={dim('heater')} explode={off('heater')} />}
       {byId.bms && <EcuBoxNode part={byId.bms} selected={selected === 'bms'} onSelect={onSelect} dim={dim('bms')} explode={off('bms')} />}
@@ -279,6 +289,14 @@ function Hud({
   touring,
   onToggleTour,
   paused,
+  bodyMode,
+  setBodyMode,
+  assetFailed,
+  envMode,
+  setEnvMode,
+  joints,
+  toggleJoint,
+  closeJoints,
 }: {
   parts: VehiclePart[];
   selected: PartId;
@@ -296,6 +314,16 @@ function Hud({
   touring: boolean;
   onToggleTour: () => void;
   paused: boolean;
+  /** 차체 렌더 소스 — 실 glTF 자산 또는 절차적 셸(§17.4). */
+  bodyMode: BodyMode;
+  setBodyMode: (m: BodyMode) => void;
+  /** 실 자산 로드가 실패해 폴백으로 내려갔는가. */
+  assetFailed: boolean;
+  envMode: EnvMode;
+  setEnvMode: (m: EnvMode) => void;
+  joints: JointState;
+  toggleJoint: (key: ArticulationKey) => void;
+  closeJoints: () => void;
 }) {
   return (
     <div className="veh-hud" data-testid="veh-hud">
@@ -359,6 +387,46 @@ function Hud({
         )}
       </div>
 
+      <div className="veh-hud-row" role="group" aria-label="차체 모델">
+        <span className="veh-hud-label">차체 모델</span>
+        <button type="button" className="veh-chip" aria-pressed={bodyMode === 'asset'} onClick={() => setBodyMode('asset')}>
+          실 모델 · Car Concept
+        </button>
+        <button type="button" className="veh-chip" aria-pressed={bodyMode === 'procedural'} onClick={() => setBodyMode('procedural')}>
+          절차적 X-ray 골격
+        </button>
+        {assetFailed && <span className="veh-hud-note">⚠ glTF 로드 실패 — 폴백 렌더 중</span>}
+      </div>
+
+      <div className="veh-hud-row" role="group" aria-label="환경">
+        <span className="veh-hud-label">환경</span>
+        <button type="button" className="veh-chip" aria-pressed={envMode === 'hdri'} onClick={() => setEnvMode('hdri')}>
+          실 HDRI 스튜디오
+        </button>
+        <button type="button" className="veh-chip" aria-pressed={envMode === 'procedural'} onClick={() => setEnvMode('procedural')}>
+          절차적 라이트포머
+        </button>
+      </div>
+
+      <div className="veh-hud-row" role="group" aria-label="차체 관절">
+        <span className="veh-hud-label">관절</span>
+        {ARTICULATIONS.map((a) => (
+          <button
+            key={a.key}
+            type="button"
+            className="veh-chip"
+            aria-pressed={joints[a.key]}
+            title={a.note}
+            onClick={() => toggleJoint(a.key)}
+          >
+            {a.label} {joints[a.key] ? '열림' : '닫힘'}
+          </button>
+        ))}
+        <button type="button" className="veh-toggle" onClick={closeJoints}>
+          전부 닫기
+        </button>
+      </div>
+
       <div className="veh-hud-row veh-part-list" role="group" aria-label="부품 목록">
         {parts.map((p) => (
           <button
@@ -390,6 +458,21 @@ function Hud({
         </span>
         <span className="veh-legend-item">
           <span className="veh-legend-line blocked" style={{ borderTopColor: '#D64545' }} /> 차단(사유 코드 표시)
+        </span>
+      </div>
+
+      {/* CC BY 4.0 자산은 저작자 표시가 의무다 — 화면에 그대로 노출한다(§17.4). */}
+      <div className="veh-credit" data-testid="veh-credit">
+        <span>
+          차체 <a href={CAR_CONCEPT.sourceUrl} target="_blank" rel="noreferrer noopener">{CAR_CONCEPT.name}</a> © {CAR_CONCEPT.author} ·{' '}
+          <a href={CAR_CONCEPT.licenseUrl} target="_blank" rel="noreferrer noopener">{CAR_CONCEPT.license}</a> — Khronos glTF Sample Assets
+        </span>
+        <span>
+          환경 <a href={STUDIO_HDRI.sourceUrl} target="_blank" rel="noreferrer noopener">{STUDIO_HDRI.name}</a> © {STUDIO_HDRI.author} ·{' '}
+          <a href={STUDIO_HDRI.licenseUrl} target="_blank" rel="noreferrer noopener">{STUDIO_HDRI.license}</a> — Poly Haven
+        </span>
+        <span>
+          {CAR_CONCEPT_SPEC_LINE} · {(CAR_CONCEPT_SURVEY.bytes / 1024 / 1024).toFixed(1)} MB · 디코더 wasm 불필요
         </span>
       </div>
     </div>
@@ -444,6 +527,37 @@ export default function VehicleTwinScene({
   const [xray, setXray] = useState(false);
   const [manualPreset, setManualPreset] = useState<CameraPreset>('exterior');
   const [touring, setTouring] = useState(false);
+
+  /* §17.4 — 실 자산(glTF/HDRI) 렌더 상태. 로드 실패는 절차적 폴백으로 내려간다. */
+  const [bodyMode, setBodyMode] = useState<BodyMode>('asset');
+  const [envMode, setEnvMode] = useState<EnvMode>('hdri');
+  const [assetFailed, setAssetFailed] = useState(false);
+  const [assetTry, setAssetTry] = useState(0);
+  const [joints, setJoints] = useState<JointState>(JOINTS_CLOSED);
+  const toggleJoint = useCallback((key: ArticulationKey) => setJoints((prev) => ({ ...prev, [key]: !prev[key] })), []);
+  const closeJoints = useCallback(() => setJoints(JOINTS_CLOSED), []);
+  const markAssetFailed = useCallback(() => setAssetFailed(true), []);
+  const selectBodyMode = useCallback(
+    (mode: BodyMode) => {
+      setBodyMode(mode);
+      // 실패 후 다시 실 모델을 고르면 경계를 새로 만들어 재시도한다(성공 시엔 재마운트 없음).
+      if (mode === 'asset' && assetFailed) {
+        setAssetFailed(false);
+        setAssetTry((t) => t + 1);
+      }
+    },
+    [assetFailed],
+  );
+  const useAsset = bodyMode === 'asset' && !assetFailed;
+  const shell = useAsset ? (
+    <SceneBoundary key={assetTry} fallback={<CarShell xray={xray} />} onSceneFail={markAssetFailed}>
+      <Suspense fallback={<CarShell xray={xray} />}>
+        <CarModel xray={xray} joints={joints} />
+      </Suspense>
+    </SceneBoundary>
+  ) : (
+    <CarShell xray={xray} />
+  );
 
   const activePreset = touring ? CAMERA_TOUR[Math.floor(clock.simTimeMs / TOUR_DWELL_MS) % CAMERA_TOUR.length] : manualPreset;
   const selectPreset = useCallback((p: CameraPreset) => {
@@ -510,23 +624,26 @@ export default function VehicleTwinScene({
                 shadow-bias={-0.0006}
               />
               <directionalLight position={[-6, 4, -5]} intensity={0.5} color="#9fc0ff" />
-              {/* 환경맵은 절차적 라이트포머로만 만든다 — 네트워크 HDR 자산을 쓰지 않고,
-                  금속 페인트·유리가 반사할 "무언가"를 제공하는 것이 품질의 핵심이다. */}
-              <Environment resolution={128} frames={1}>
-                <Lightformer form="rect" intensity={2.6} color="#ffffff" position={[0, 6, -1]} rotation={[Math.PI / 2, 0, 0]} scale={[14, 4, 1]} />
-                <Lightformer form="rect" intensity={1.7} color="#cfe0ff" position={[-7, 3, 1]} rotation={[0, Math.PI / 2, 0]} scale={[10, 5, 1]} />
-                <Lightformer form="rect" intensity={1.7} color="#cfe0ff" position={[7, 3, 1]} rotation={[0, -Math.PI / 2, 0]} scale={[10, 5, 1]} />
-                <Lightformer form="rect" intensity={2.2} color="#ffffff" position={[0, 4, -8]} scale={[10, 4, 1]} />
-                <Lightformer form="rect" intensity={0.35} color="#1a2436" position={[0, -4, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[16, 16, 1]} />
-              </Environment>
+              {/* 환경맵 — 실 HDRI(Poly Haven studio_small_09, CC0)를 우선 쓰고,
+                  로드 실패 시에만 절차적 라이트포머로 폴백한다. 둘 다 금속 페인트·유리가
+                  반사할 "무언가"를 제공하는 것이 품질의 핵심이다(§17.4). */}
+              {envMode === 'hdri' ? (
+                <SceneBoundary fallback={<ProceduralEnv />}>
+                  <Suspense fallback={null}>
+                    <Environment files={STUDIO_HDRI.file} environmentIntensity={0.85} background={false} />
+                  </Suspense>
+                </SceneBoundary>
+              ) : (
+                <ProceduralEnv />
+              )}
               <SceneFloor />
               {/* 접촉 그림자 — 바퀴와 차체 하부의 접지를 강화한다 */}
               <ContactShadows position={[0, 0.002, 0]} opacity={0.62} scale={16} blur={2.4} far={3.2} resolution={512} color="#000000" />
               <VehicleModel
+                shell={shell}
                 parts={parts}
                 selected={activeSelected}
                 onSelect={handleSelect}
-                xray={xray}
                 flowing={flowing && !paused}
                 explode={explode}
                 layerActive={layerActive}
@@ -555,6 +672,14 @@ export default function VehicleTwinScene({
         touring={touring}
         onToggleTour={toggleTour}
         paused={paused}
+        bodyMode={useAsset ? 'asset' : 'procedural'}
+        setBodyMode={selectBodyMode}
+        assetFailed={assetFailed}
+        envMode={envMode}
+        setEnvMode={setEnvMode}
+        joints={joints}
+        toggleJoint={toggleJoint}
+        closeJoints={closeJoints}
       />
     </div>
   );

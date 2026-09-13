@@ -9,6 +9,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import { vi } from 'vitest';
+import * as THREE from 'three';
 import { MockTwinProvider } from '../data/twin/simulator';
 import {
   buildVehicleParts,
@@ -18,6 +19,8 @@ import {
   type PartId,
 } from '../scene/vehicleParts';
 import VehicleTwinScene from '../scene/VehicleTwinScene';
+import { prepareScene } from '../scene/CarModel';
+import { ARTICULATIONS, CAR_CONCEPT, CAR_CONCEPT_SPEC_LINE, STUDIO_HDRI, WHEEL_NODES } from '../scene/vehicleAsset';
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children?: ReactNode }) => <div data-testid="veh-canvas">{children}</div>,
@@ -38,16 +41,22 @@ vi.mock('@react-three/fiber', () => ({
     }),
 }));
 
-vi.mock('@react-three/drei', () => ({
-  Html: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-  OrbitControls: () => null,
-  Line: () => null,
-  RoundedBox: ({ children }: { children?: ReactNode }) => <mesh>{children}</mesh>,
-  Grid: () => null,
-  Environment: ({ children }: { children?: ReactNode }) => <group>{children}</group>,
-  Lightformer: () => null,
-  ContactShadows: () => null,
-}));
+// 팩토리가 import 바인딩을 직접 참조하면 호이스팅과 TDZ 가 충돌한다 → 동적 import 로 분리한다.
+vi.mock('@react-three/drei', async () => {
+  const { useGltfStub } = await import('../test/gltfStub');
+  return {
+    Html: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
+    OrbitControls: () => null,
+    Line: () => null,
+    RoundedBox: ({ children }: { children?: ReactNode }) => <mesh>{children}</mesh>,
+    Grid: () => null,
+    Environment: ({ children }: { children?: ReactNode }) => <group>{children}</group>,
+    Lightformer: () => null,
+    ContactShadows: () => null,
+    // §17.4 — 실 glTF 자산 대역(jsdom 은 WebGL/텍스처를 로드할 수 없다).
+    useGLTF: useGltfStub(),
+  };
+});
 
 const ALL_PART_IDS: PartId[] = ['body', 'battery', 'heater', 'bms', 'vcu', 'cgw', 'hvac', 'guard', 'charge', 'antenna'];
 
@@ -251,5 +260,151 @@ describe('scene/VehicleTwinScene — HUD 계약', () => {
     expect(within(legend).getByText(/Desired/)).toBeInTheDocument();
     expect(within(legend).getByText(/Reported/)).toBeInTheDocument();
     expect(within(legend).getByText('차단(사유 코드 표시)')).toBeInTheDocument();
+  });
+
+  /* §17.4 — 실 자산(Car Concept) + 실 HDRI 배선 계약. */
+
+  it('기본값은 실 모델·실 HDRI 이고, 강등하면 절차적 차체로 바뀐다', () => {
+    const snap = buildSnapshot(1);
+    const { container } = render(
+      <VehicleTwinScene twin={snap.twins[0]} verdict={snap.verdicts[0]} clock={snap.clock} lang="ko" webgl />,
+    );
+    const hud = screen.getByTestId('veh-hud');
+    const bodyGroup = within(hud).getByRole('group', { name: '차체 모델' });
+    const assetChip = within(bodyGroup).getByRole('button', { name: /실 모델/ });
+    const shellChip = within(bodyGroup).getByRole('button', { name: /절차적 X-ray/ });
+    expect(assetChip).toHaveAttribute('aria-pressed', 'true');
+    expect(shellChip).toHaveAttribute('aria-pressed', 'false');
+    expect(container.querySelector('primitive')).toBeInTheDocument();
+
+    fireEvent.click(shellChip);
+    expect(shellChip).toHaveAttribute('aria-pressed', 'true');
+    expect(assetChip).toHaveAttribute('aria-pressed', 'false');
+    expect(container.querySelector('primitive')).not.toBeInTheDocument();
+
+    const envGroup = within(hud).getByRole('group', { name: '환경' });
+    expect(within(envGroup).getByRole('button', { name: /실 HDRI/ })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(within(envGroup).getByRole('button', { name: /절차적 라이트포머/ }));
+    expect(within(envGroup).getByRole('button', { name: /실 HDRI/ })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('관절 4종(도어·후드·리어 클램셸)을 열고 전부 닫을 수 있다', () => {
+    const snap = buildSnapshot(1);
+    render(<VehicleTwinScene twin={snap.twins[0]} verdict={snap.verdicts[0]} clock={snap.clock} lang="ko" webgl />);
+    const hud = screen.getByTestId('veh-hud');
+    const joints = within(hud).getByRole('group', { name: '차체 관절' });
+    expect(within(joints).getAllByRole('button', { name: /닫힘/ })).toHaveLength(ARTICULATIONS.length);
+
+    const door = within(joints).getByRole('button', { name: /운전석 도어/ });
+    expect(door).toHaveAttribute('title', ARTICULATIONS.find((a) => a.key === 'doorL')!.note);
+    fireEvent.click(door);
+    expect(door).toHaveAttribute('aria-pressed', 'true');
+    expect(door).toHaveTextContent('열림');
+
+    fireEvent.click(within(joints).getByRole('button', { name: '전부 닫기' }));
+    expect(within(joints).getAllByRole('button', { name: /닫힘/ })).toHaveLength(ARTICULATIONS.length);
+    expect(door).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('출처 표기가 자산·라이선스·실측 스펙을 함께 노출한다(CC BY 4.0 의무 이행)', () => {
+    const snap = buildSnapshot(1);
+    render(<VehicleTwinScene twin={snap.twins[0]} verdict={snap.verdicts[0]} clock={snap.clock} lang="ko" webgl />);
+    const credit = screen.getByTestId('veh-credit');
+    expect(credit).toHaveTextContent(CAR_CONCEPT.author);
+    expect(credit).toHaveTextContent('CC BY 4.0');
+    expect(credit).toHaveTextContent(STUDIO_HDRI.author);
+    expect(credit).toHaveTextContent('CC0 1.0');
+    expect(credit).toHaveTextContent('162,766');
+    expect(within(credit).getByRole('link', { name: /Car Concept/ })).toHaveAttribute('href', CAR_CONCEPT.sourceUrl);
+    expect(within(credit).getByRole('link', { name: /Studio Small 09/ })).toHaveAttribute('href', STUDIO_HDRI.sourceUrl);
+    expect(CAR_CONCEPT_SPEC_LINE).toContain('정점 162,766');
+  });
+});
+
+describe('scene/CarModel — prepareScene(실 glTF 후처리)', () => {
+  /** 실제 자산의 노드 이름 규칙(§17.4): 차체 패널 = `Body*`, 실내 = `Interior*`, 휠 = `Wheel*`. */
+  const buildAssetLikeScene = () => {
+    const root = new THREE.Object3D();
+    root.name = 'BodyUnderside';
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ name: 'Paint' }));
+    panel.name = 'BodyPanelsColor2';
+    const interior = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ name: 'Trim' }));
+    interior.name = 'InteriorSeatsColor1';
+    root.add(panel, interior);
+    const pivots: THREE.Object3D[] = [];
+    for (const spec of ARTICULATIONS) {
+      const pivot = new THREE.Object3D();
+      pivot.name = spec.node;
+      pivot.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.25);
+      root.add(pivot);
+      pivots.push(pivot);
+    }
+    for (const name of WHEEL_NODES) {
+      const wheel = new THREE.Object3D();
+      wheel.name = name;
+      root.add(wheel);
+    }
+    return { root, panel, interior, pivots };
+  };
+
+  it('원본 씬을 변형하지 않고 복제본만 손본다(useGLTF 캐시 오염 방지)', () => {
+    const { root, panel, pivots } = buildAssetLikeScene();
+    const prepared = prepareScene(root);
+
+    expect(prepared.scene).not.toBe(root);
+    expect(panel.castShadow).toBe(false);
+    expect(panel.material.name).toBe('Paint');
+    const clonedPanel = prepared.scene.getObjectByName('BodyPanelsColor2') as THREE.Mesh;
+    expect(clonedPanel.castShadow).toBe(true);
+    expect(clonedPanel.receiveShadow).toBe(true);
+    expect(clonedPanel.material).not.toBe(panel.material);
+    expect(prepared.scene.getObjectByName('BodyDoorLColor1')).not.toBe(pivots[0]);
+  });
+
+  it('재질을 (원본 재질 × 패널 여부)당 1회만 복제한다 — 공유 재질은 공유로 남는다', () => {
+    const { root, panel, interior } = buildAssetLikeScene();
+    const shared = new THREE.MeshStandardMaterial({ name: 'Shared' });
+    const second = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), shared);
+    second.name = 'BodyGaskets';
+    panel.material = shared;
+    root.add(second);
+
+    const prepared = prepareScene(root);
+    expect(prepared.materials).toHaveLength(2);
+    const panelEntry = prepared.materials.filter((m) => m.panel);
+    expect(panelEntry).toHaveLength(1);
+    expect(panelEntry[0].material.name).toBe('Shared');
+    expect(prepared.materials.filter((m) => !m.panel).map((m) => m.material.name)).toEqual(['Trim']);
+    expect(prepared.materials.every((m) => m.material.opacity === 1 && m.material.transparent === false)).toBe(true);
+    expect(panelEntry[0].base).toEqual({ opacity: 1, transparent: false, depthWrite: true });
+
+    // 공유 재질을 쓰는 두 패널은 복제 후에도 같은 인스턴스를 쓴다(드로우콜 증가 없음).
+    const first = prepared.scene.getObjectByName('BodyPanelsColor2') as THREE.Mesh;
+    const other = prepared.scene.getObjectByName('BodyGaskets') as THREE.Mesh;
+    expect(first.material).toBe(other.material);
+    expect(first.material).not.toBe(shared);
+    expect(interior.material.name).toBe('Trim');
+  });
+
+  it('관절/휠 피벗을 이름으로 찾아 자산 실측 축·각도·기준 회전을 보관한다', () => {
+    const { root, pivots } = buildAssetLikeScene();
+    const prepared = prepareScene(root);
+
+    expect(prepared.joints.map((j) => j.key)).toEqual(ARTICULATIONS.map((a) => a.key));
+    for (const [index, joint] of prepared.joints.entries()) {
+      const spec = ARTICULATIONS[index];
+      expect(joint.openDeg).toBe(spec.openDeg);
+      expect(joint.axis.toArray()).toEqual([spec.axis === 'x' ? 1 : 0, spec.axis === 'y' ? 1 : 0, spec.axis === 'z' ? 1 : 0]);
+      expect(joint.base.equals(pivots[index].quaternion)).toBe(true);
+    }
+    expect(prepared.wheels.map((w) => w.node.name)).toEqual([...WHEEL_NODES]);
+  });
+
+  it('관절을 열어도 원본 피벗 회전은 그대로다', () => {
+    const { root, pivots } = buildAssetLikeScene();
+    const prepared = prepareScene(root);
+    const door = prepared.joints[0];
+    door.node.quaternion.copy(door.base).multiply(new THREE.Quaternion().setFromAxisAngle(door.axis, 0.7));
+    expect(pivots[0].quaternion.equals(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.25))).toBe(true);
   });
 });

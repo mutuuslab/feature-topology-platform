@@ -62,16 +62,21 @@ vi.mock('@react-three/fiber', () => ({
     }),
 }));
 
-vi.mock('@react-three/drei', () => ({
-  Html: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-  OrbitControls: () => null,
-  Line: () => null,
-  RoundedBox: ({ children }: { children?: ReactNode }) => <mesh>{children}</mesh>,
-  Grid: () => null,
-  Environment: ({ children }: { children?: ReactNode }) => <group>{children}</group>,
-  Lightformer: () => null,
-  ContactShadows: () => null,
-}));
+vi.mock('@react-three/drei', async () => {
+  const { useGltfStub } = await import('../test/gltfStub');
+  return {
+    Html: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
+    OrbitControls: () => null,
+    Line: () => null,
+    RoundedBox: ({ children }: { children?: ReactNode }) => <mesh>{children}</mesh>,
+    Grid: () => null,
+    Environment: ({ children }: { children?: ReactNode }) => <group>{children}</group>,
+    Lightformer: () => null,
+    ContactShadows: () => null,
+    // §17.4 — VehicleTwinScene 을 거쳐 CarModel 이 실 glTF 자산을 요구한다.
+    useGLTF: useGltfStub(),
+  };
+});
 
 /* --------------------------------------------------------------- 공용 헬퍼 */
 

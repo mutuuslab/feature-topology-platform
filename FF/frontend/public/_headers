@@ -1,2 +1,10 @@
 /*
   X-Robots-Tag: noindex, nofollow
+
+# §17.4.6 — 실 자산(glTF 10 MB · HDRI 1.6 MB)은 내용 해시 없이 파일명이 고정이다.
+# 길게 캐시하면 자산을 교체했을 때 브라우저가 옛 파일을 계속 쓰므로 짧은 TTL + 재검증으로 둔다.
+/models/*
+  Cache-Control: public, max-age=600, must-revalidate
+
+/env/*
+  Cache-Control: public, max-age=600, must-revalidate

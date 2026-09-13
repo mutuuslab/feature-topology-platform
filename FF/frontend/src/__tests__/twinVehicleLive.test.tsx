@@ -302,6 +302,33 @@ describe('§12.4 차량 상세의 live 구성', () => {
     expect(screen.getByTestId('vehicle-3dbox')).toBeInTheDocument();
     expect(screen.getByTestId('vehicle-3d-fallback')).toBeInTheDocument();
   });
+
+  it('3D 시각화는 탭 아래에 있으므로 헤더에서 바로 내려갈 수 있어야 한다', () => {
+    localStorage.setItem('fp.twin.v1', JSON.stringify({ rate: 0 }));
+    renderTwin(<TwinVehicle />, { route: '/twin/vehicle/:vin', initial: '/twin/vehicle/VIN-DEMO-017' });
+
+    const box = screen.getByTestId('vehicle-3dbox');
+    const jump = vi.fn();
+    (box as unknown as { scrollIntoView: unknown }).scrollIntoView = jump;
+    const btn = screen.getByRole('button', { name: /차량 3D 보기/ });
+
+    fireEvent.click(btn);
+    expect(jump).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
+
+    // prefers-reduced-motion 이면 긴 스크롤 애니메이션을 쓰지 않는다
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes('reduced-motion'),
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+    fireEvent.click(btn);
+    expect(jump).toHaveBeenLastCalledWith({ behavior: 'auto', block: 'center' });
+  });
 });
 
 /* ------------------------------------------------------------------ */

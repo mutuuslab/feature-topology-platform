@@ -4,7 +4,7 @@
  * 상세 화면은 Feature 정의를 복사하지 않는다 — Feature ID / Topology Version /
  * Policy Version 을 참조하고 Topology 화면으로 링크한다.
  */
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '../store';
 import { useTwin, useTwinVerdict } from '../state/twinStore';
@@ -162,6 +162,17 @@ export function TwinVehicle() {
     [provider, vin, snapshot.revision],
   );
 
+  /**
+   * 3D 시각화는 탭 아래에 있다 — 1366×768 에서 화면 밖이라 값을 먼저 본 뒤 스크롤해야 한다.
+   * 헤더에서 한 번에 내려갈 수 있게 한다(jsdom 에는 scrollIntoView 가 없다).
+   * 긴 거리 이동이므로 prefers-reduced-motion 이면 애니메이션 없이 이동한다.
+   */
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const jumpToScene = useCallback(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
+    sceneRef.current?.scrollIntoView?.({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  }, []);
+
   if (!verdict || !vin) {
     return (
       <EmptyState
@@ -187,6 +198,7 @@ export function TwinVehicle() {
           Vehicle Twin · <span className="mono">{twin.vin}</span> <LiveDot />
         </h1>
         <div className="row" style={{ gap: 8 }}>
+          <button className="btn" onClick={jumpToScene}>차량 3D 보기 ↓</button>
           <button className="btn" onClick={() => nav('/twin/fleet')}>← Fleet</button>
           <Link className="btn" to="/twin/impact">Impact Preview</Link>
           <Link className="btn" to="/twin/incident">Closed-Loop</Link>
@@ -653,7 +665,7 @@ export function TwinVehicle() {
             부품 색 = 이 차량의 Desired → Reported → Effective → Guard 결과 · 모든 모션은 시뮬레이터 시계에서만 파생
           </span>
         </div>
-        <div className="twin-3dbox mt" data-testid="vehicle-3dbox">
+        <div className="twin-3dbox mt" data-testid="vehicle-3dbox" ref={sceneRef}>
           {webgl ? (
             <Suspense fallback={<p className="muted small">3D 씬을 불러오는 중…</p>}>
               <VehicleTwinScene

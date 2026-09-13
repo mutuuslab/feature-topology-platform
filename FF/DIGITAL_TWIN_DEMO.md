@@ -363,9 +363,11 @@ npm install          # 최초 1회
 npm run dev          # http://localhost:9001
 ```
 
-- 테스트: `npm test` (vitest, 18 files / 354 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
-  `specBom.test.tsx` 가 §7.3 UI04, `specTopology.test.tsx` 가 §7.3 UI05 담당)
+- 테스트: `npm test` (vitest, 18 files / 362 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
+  `specBom.test.tsx` 가 §7.3 UI04, `specTopology.test.tsx` 가 §7.3 UI05, `twinVehicleScene.test.tsx` · `twinVehicleLive.test.tsx` 가 §17.4 차량 3D 담당)
+- 테스트 로그가 커지면 `src/test/setup.ts` 의 노이즈 가드를 먼저 확인한다(§17.4.9). 가드가 없으면 38 MB 로그 · 일부 파일 스킵으로 재현된다.
 - 빌드: `npm run build` (`tsc -b && vite build`)
+- 3D 자산(`public/models`, `public/env`)은 저장소에 포함되어 별도 내려받기가 필요 없다. 라이선스와 출처 표기 의무는 §17.4.1.
 - 화면 확인 시 역할을 **Admin**으로 두어야 활성화/Kill-Switch/승인이 가능하다(기본 역할 `기획 P1`은 조회만 가능).
 
 ---
@@ -438,7 +440,12 @@ swiftshader 소프트웨어 렌더링 측정이므로 실 GPU 에서는 절대�
   위반 14건의 코드·대상, 조건 Profile 판정 4종, Master·Configured·Effective 파생, 승인 게이트 순서(409 → 422 → 403 → 412),
   KPI 10칸, S01 필터와 S06 명령 반영을 검증한다. `specTopology.test.tsx`(UI05, 31 tests)는 Snapshot hash · 관계 사전 ·
   파이프라인 6단계 · 영향 경로를 검증한다.
-- 회귀 확인: `npm test` 로 전체 스위트, `npx tsc --noEmit` 로 타입. 라이브 확인은 `probe-f.mjs`(20개 항목 생존 확인).
+- 차량 3D 는 자산 계약과 강등 경로를 고정한다. `twinVehicleScene.test.tsx`(22 tests)는 HUD 계약과 `prepareScene`
+  (외판 선택 · 재질 복제 풀 · 관절 탐색 · 시계 종속 휠 스핀)을, `twinVehicleLive.test.tsx`(17 tests)는 크레딧 노출 ·
+  폴백 표시 · 헤더에서 3D 로 내려가는 이동(reduced-motion 분기 포함)을 검증한다.
+  절차적 셸과 실 자산은 서로 다른 렌더 경로이므로, 어느 한쪽 계약만 통과하는 변경은 회귀로 취급한다.
+- 회귀 확인: `npm test` 로 전체 스위트(18 files / 362 tests, ≈25 s), `npx tsc --noEmit` 로 타입. 라이브 확인은 `probe-f.mjs`(20개 항목 생존 확인).
+  3D 는 픽셀 근거까지 필요할 때 `verify-veh.mjs`(5개 상태 캡처 + 자산 16건 응답 코드)를 쓴다(§17.4.5 · §17.4.8).
 
 ---
 
@@ -473,7 +480,9 @@ swiftshader 소프트웨어 렌더링 측정이므로 실 GPU 에서는 절대�
 
 ---
 
-## 17. 차량 Twin 3D 렌더 품질 — Option A (절차적 스튜디오 환경)
+## 17. 차량 Twin 3D 렌더 품질
+
+두 경로를 같은 절에서 다룬다. **17.1~17.3 = Option A**(절차적 도형 — 지금은 자산 로딩 실패 시 폴백으로 남아 있다), **17.4 = Option B**(실 glTF 자산 + HDRI — 기본 렌더 경로).
 
 ### 17.1 문제
 
@@ -507,3 +516,153 @@ swiftshader 소프트웨어 렌더링 측정이므로 실 GPU 에서는 절대�
 | 휘도 > 40 픽셀 비율 | 2.2 % | 10.0 % | ×4.5 |
 
 배경 픽셀(휘도 < 6) 비율은 0.6 % 로 양쪽 동일하다 — 배경이 아니라 **차체 구간만** 밝아졌다는 뜻이고, 반사 성분이 실제로 더해졌다는 증거다.
+
+### 17.4 실 glTF 자산 + HDRI (Option B)
+
+Option A(17.1~17.3)는 절차적 도형이라 실루엣이 "둥근 상자" 수준이다. 17.4 는 **실제 자동차 자산**으로 교체한 결과다.
+
+#### 17.4.1 채택 자산과 라이선스
+
+| 용도 | 자산 | 출처 | 라이선스 | 크기 |
+|---|---|---|---|---|
+| 차체 | `CarConcept.gltf` (+ `.bin`, 텍스처 13장) | Khronos glTF Sample Assets — 저자 Eric Chadwick (Darmstadt Graphics Group GmbH) | **CC BY 4.0** | 10,025,560 B (9.6 MB) |
+| 환경 | `studio_small_09_1k.hdr` | Poly Haven — 저자 Sergej Majboroda | CC0 1.0 | 1.6 MB |
+
+- 두 자산 모두 `public/models/CarConcept/`, `public/env/` 에 **자체 호스팅**한다(런타임 외부 의존 0).
+- **CC BY 4.0 은 출처 표기가 의무다.** 씬 HUD 하단에 저자·원본·라이선스를 상시 노출한다(`CarModel` 의 credit 행, `vehicleAsset.ts:CAR_CONCEPT.credit`).
+  표기를 지우면 배포물이 라이선스 위반이 된다 — 이 행은 UI 취향이 아니라 **법적 요구사항**이므로 제거 금지.
+- glTF-JPG 변형을 골랐다. KTX2/BasisU·Draco 변형은 디코더 wasm(~500 KB)을 같이 배포해야 하고, 사내망·오프라인 검증 환경에서 로더 초기화 실패 위험이 생긴다.
+  대신 VRAM 이 늘어난다(§17.4.6).
+
+#### 17.4.2 자산 실측 (추정 아님, 파일에서 측정)
+
+| 항목 | 값 |
+|---|---|
+| 정점 / 삼각형 | 162,766 / 213,347 |
+| 메시 / 노드 / 재질 / 이미지 / 텍스처 | 97 / 101 / 29 / 14 / 15 |
+| 정점 속성 | POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1 |
+| 스킨 · 애니메이션 | 없음 (관절은 코드로 회전시킨다 — §17.4.4) |
+| `extensionsUsed` | `KHR_materials_clearcoat` · `emissive_strength` · `iridescence` · `transmission` · `materials_variants` · `texture_transform` |
+| 사용 확장 중 디코더 필요 | **없음** |
+| 루트 | 단일 노드 `BodyUnderside`(matrix + 자식 39) |
+| 월드 bbox (Y-up) | min `(-1.3633, -0.1593, -1.9402)`, max `(1.3529, 1.1487, 2.4172)` → 2.716 × 1.308 × 4.357 m |
+| 배치 | 전장 4.357 m 이므로 축소 없이 실차 스케일. `MODEL_TRANSFORM = position [0.0052, 0.1593, -0.2385], scale 1` |
+| 휠 | 반경 0.384 m, 축 로컬 X(월드 틸트 0), 앞 z 1.4857 / 뒤 z −1.3141 → **축거 2.80 m** |
+| 차량 방향 | 전방 = **+Z** |
+
+- 노드 이름 접두사로 부품군을 판별한다: `Body*` = 외판(패널), `Interior*` = 실내, 그 외 `Engine` · `Axles` · `Wheel*` · `License Plate`.
+  X-ray 는 `PANEL_PREFIX = 'Body'` 로 **외판만** 반투명 처리한다 — 실내까지 뚫리면 각이 안 보인다.
+- `KHR_materials_variants` 는 three.js 로더가 적용하지 않는다 → 기본 도장(Carmine)으로 렌더된다. 색상 선택 UI 를 붙이려면 별도 처리 필요(미구현).
+
+#### 17.4.3 로딩과 강등(fallback) 정책
+
+운영 화면이므로 **자산 하나가 안 뜬다고 3D 영역이 비면 안 된다.** 두 축을 독립적으로 강등한다.
+
+| 축 | 정상 | 강등 |
+|---|---|---|
+| 차체 (`BodyMode`) | `asset` — 실 glTF | `procedural` — `CarShell`(절차적 X-ray 골격) |
+| 환경 (`EnvMode`) | `hdri` — 실 HDR | `procedural` — `<Environment>` + `<Lightformer>` 5장 |
+
+- 실패 감지: 로딩·파싱·GPU 업로드 중 던져진 예외를 `SceneBoundary`(React error boundary)가 잡으면 `assetFailed` 를 세우고
+  HUD 에 `veh-hud-note`("실 모델을 불러오지 못해 절차적 골격으로 대체했습니다")를 띄운 뒤 `CarShell` 로 그린다.
+- 로딩 중에는 `Suspense fallback={<CarShell xray />}` → **흰 화면 구간이 없다.** 로딩과 실패의 시각 상태가 같아 깜빡임도 없다.
+- 재시도: `selectBodyMode` 가 `assetTry` 를 증가시켜 `SceneBoundary key` 를 리마운트한다(`useGLTF` 캐시가 오염된 경우까지 회복).
+- 기본값은 `asset` + `hdri` 다. 강등 상태는 사용자가 HUD 칩에서 명시적으로 고르거나 실패 시에만 진입한다.
+- HDRI 는 **배경으로 그리지 않는다**(`background` 미지정, `environmentIntensity 0.85` / 절차적 경로 1.0).
+  배경은 앱 배색과 어울리도록 검정(`#080a0f`)을 유지한다 — 배경까지 HDRI 로 채우면 페이지 톤과 충돌한다.
+
+#### 17.4.4 관절(articulation) — 축·부호는 실측으로 확정
+
+로컬 축/부호를 눈으로 추측하면 문이 차체를 뚫는다. 자산에서 실제로 돌려 확인한 값을 코드에 상수로 박았다.
+
+| 부품 | 노드 | 로컬 축 | 각도(부호) | HUD 라벨 |
+|---|---|---|---|---|
+| 운전석 도어 | doorL | Z | **−58°** | 운전석 도어 |
+| 동승석 도어 | doorR | Z | **+58°** | 동승석 도어 |
+| 프런트 후드 | hood | X | **+32°** | 프런트 후드 |
+| 리어 클램셸 | rear | X | **−30°** | 리어 클램셸 |
+
+- 좌우 도어의 **부호가 반대**다(같은 축 Z, 미러 배치). 부호를 맞추면 한쪽이 안으로 접힌다.
+- 열림/닫힘은 값이 아니라 **목표 각도에 대한 보간**이다. `전부 닫기` 는 네 관절을 동시에 닫는다.
+- 바퀴 회전은 `wheelSpinDeg(clock.current) = simTimeMs * 420 / 1000` — 각도가 시뮬레이터 시각의 함수이므로
+  `rate 0`(일시정지)에서 즉시 멈추고, 되감으면 같은 위치로 돌아온다. `Math.random()` · `Date.now()` · `performance.now()` 를 쓰지 않는다.
+
+#### 17.4.5 시각적 검증 (합성 아님, 실제 브라우저 픽셀)
+
+`verify-veh.mjs` 가 앱의 **"차량 3D 보기" 버튼을 실제로 눌러** 캔버스를 뷰포트에 넣고 5개 상태를 촬영한 뒤,
+픽셀 통계는 C# `System.Drawing.LockBits`(`px-analyze.ps1` · `px-car.ps1`)로 계산한다.
+캔버스는 `1024×460` 이며 크롭 사각형은 캔버스 자체다.
+
+| 상태 | 캡처 | 전체 평균 | 배경(#000) 비중 | 색 수 | 차체 픽셀 | 차체 평균 휘도 | 휘도>90 | 채도>20 % |
+|---|---|---|---|---|---|---|---|---|
+| 1. 실 모델 + 실 HDRI (기본) | `veh-optb-1-asset.png` | 39.7 | 69.4 % | 879 | 144,227 | **110.0** | 41.3 % | 43.1 % |
+| 2. 실 모델 + X-ray 차체 ON | `veh-optb-2-xray.png` | 38.5 | 69.4 % | 646 | 144,025 | 106.0 | 38.0 % | 43.3 % |
+| 3. 관절 열림(도어·후드·클램셸) | `veh-optb-3-joints.png` | 39.5 | 68.9 % | 880 | 146,707 | 107.7 | 40.0 % | 42.7 % |
+| 4. 절차적 환경(HDRI 강등 경로) | `veh-optb-4-proc-env.png` | 42.6 | **41.6 %** | 873 | 275,076 | 65.7 | 20.9 % | 40.4 % |
+| 5. 절차적 셸(자산 폴백 경로) | `veh-optb-5-proc-shell.png` | 42.5 | 41.6 % | **567** | 274,960 | 65.7 | 20.4 % | 39.8 % |
+
+프레임 차이(휘도차 > 18 을 "변화"로 계수):
+
+| 비교 | 평균 절대차 | 변화 픽셀 |
+|---|---|---|
+| 1 → 2 (X-ray) | 1.40 | 1.9 % |
+| 1 → 3 (관절) | 2.27 | 2.4 % |
+| 1 → 4 (절차적 환경) | 5.58 | 2.3 % |
+| 1 → 5 (절차적 셸) | 6.26 | 3.1 % |
+
+해석 — 각 토글이 **실제로 렌더 결과를 바꾼다**는 증거다:
+
+- 1번에서 차체 픽셀 144,227개의 평균 휘도가 **110.0**, 그 중 **41.3 % 가 휘도>90**, **43.1 % 가 채도>20 %** 다.
+  검은 배경 위의 실루엣(휘도 0 근처)이 아니라 **조명을 받아 색이 칠해진 물체**라는 뜻이다. 이것이 Option A→B 의 핵심 개선이다.
+- 1→2 에서 색 수가 879 → 646 으로 줄고 차체 평균 휘도가 소폭 내려간다 = 외판이 반투명해져 뒤 텍스처가 섞이는 정상 동작.
+- 1→3 에서 차체 픽셀이 144,227 → 146,707 로 **증가**한다 = 문·후드가 실루엣 밖으로 실제로 열렸다. 색만 바뀐 게 아니다.
+- 1→4/1→5 는 배경 비중이 69.4 % → 41.6 % 로 떨어진다 = 절차적 환경이 배경 사각형을 추가로 그린다.
+- 4번과 5번의 색 수(873 vs **567**)가 크게 다르다 = 폴백 경로는 실 모델과 **다른 단순 렌더**를 쓴다(강등이 실제로 동작).
+- 네트워크: 자산 요청 **16/16 = 200**(gltf 1, bin 1, 텍스처 13, HDR 1), 실패 요청 0, 콘솔 에러 0. GL 은 `WebGL 2.0`(SwiftShader 소프트웨어 래스터).
+
+#### 17.4.6 비용과 트레이드오프
+
+- **VRAM**: glTF-JPG 는 디코드 후 이미지를 그대로 올려 **≈48.8 MB** 다. KTX2/BasisU 로 가면 **≈14.9 MB**(약 1/3)로 줄지만 디코더 wasm 배포가 필요하다.
+  현재는 사내망·오프라인 재현성을 우선해 디코더 없는 변형을 유지한다. 자산을 여러 대 동시에 띄우는 화면이 생기면 KTX2 로 전환한다.
+- **전송량**: 10.0 MB + 1.6 MB 를 첫 진입에서 받는다. `public/_headers` 로 `/models/*` · `/env/*` 를
+  `Cache-Control: public, max-age=600, must-revalidate` 로 잡아 10분 캐시 + 만료 시 **재검증 후** 사용하도록 했다.
+  완전 몰입 캐시(immutable)를 쓰지 않는 이유는 자산을 교체할 때 파일명 해시를 관리해야 하기 때문이고,
+  지금은 해시 없는 경로(`/models/CarConcept/CarConcept.gltf`)를 유지한다. `stale-while-revalidate` 도 쓰지 않는다 —
+  자산을 갈아끼운 직후 한 번 더 옛 차체가 그려지는 것보다, 한 번 더 왕복하는 편이 운영 화면에 맞다.
+- **삼각형 213,347 개**는 3D 뷰포트 1개 기준으로 충분히 감당 가능하다(§12의 렌더 경계 분리가 전제).
+- 자산이 무거우므로 `useGLTF.preload` 는 실 모델을 고른 뒤에만 호출한다 — 절차적 셸만 보는 사용자에게 10 MB 를 강제하지 않는다.
+
+#### 17.4.7 UX — 3D 가 화면 밖에 있다는 문제
+
+1366×768 에서 3D 박스는 문서 y≈1150(뷰포트 최상단 기준)에 있어 **첫 화면에 보이지 않는다**(스크롤 컨테이너 `main.main` 의 scrollHeight 2037 / clientHeight 716).
+자산이 아무리 좋아도 도달하지 못하면 없는 것과 같다.
+
+- 헤더에 **`차량 3D 보기 ↓`** 버튼을 추가해 `scrollIntoView({ behavior:'smooth', block:'center' })` 로 3D 박스 중앙으로 이동한다.
+- `prefers-reduced-motion: reduce` 이면 `behavior:'auto'` 로 즉시 이동한다(1221 px 급 스크롤 애니메이션은 멀미 유발).
+- 훅 순서 주의: 이 버튼은 `verdict`/`vin` 조회 **이후**의 early return 대상이 아니라, 훅이 early return **위**에 있어야 한다.
+  아래로 옮기면 데이터가 늦게 도착하는 경로에서 React 의 훅 순서 규칙을 깬다.
+- 검증 하네스도 같은 버튼을 쓴다(`verify-veh.mjs:focus3d`). 즉 **캡처 경로 = 사용자 경로**다.
+
+#### 17.4.8 캡처 함정 — "흰 화면"은 렌더 실패가 아니었다
+
+Option B 착수 직후 1번 스크린샷의 평균 휘도가 **242.8**(거의 흰색)로 나와 렌더 실패로 보였다. 원인은 렌더가 아니었다.
+
+- 이 앱에서 스크롤되는 것은 **문서가 아니라 `main.main`** 이다(`document.scrollHeight === innerHeight === 768`). `window.scrollTo(0,0)` 는 아무 일도 하지 않는다.
+- 페이지가 최상단에 있으면 뷰포트에 잡히는 것은 **밝은 앱 배색(배경 `rgb(244,246,249)`) 영역**이고, 캔버스는 y≈1152~1221 아래에 있다.
+  즉 242.8 은 3D 가 흰색으로 그려진 값이 아니라 **3D 를 한 번도 촬영하지 못한 값**이었다.
+- 캔버스 자체는 처음부터 정상이었다: 페이지 내부에서 `requestAnimationFrame` + `drawImage` 로 캔버스 픽셀을 직접 샘플링하면 평균 휘도 15.4~15.5 였다.
+  화면 캡처와 캔버스 내부 샘플이 다르면 **캡처 경로를 먼저 의심**해야 한다.
+- 부드러운 스크롤은 swiftshader 환경에서 **~2 초** 걸린다(실측: +900 ms 시점 scrollTop 0, +2000 ms 시점 1221 도달).
+  고정 대기(1.5 s)로 촬영하면 프레임에 따라 미도달 상태가 찍힌다 → `focus3d()` 는 **캔버스가 뷰포트에 들어올 때까지 폴링**한다.
+- 교훈: 3D 화면의 자동 캡처는 (1) 스크롤 컨테이너가 무엇인지 확인하고, (2) 애니메이션 완료를 시간이 아니라 **조건으로** 기다린다.
+
+#### 17.4.9 테스트와 회귀
+
+- `twinVehicleScene.test.tsx`(22 tests): HUD 계약 + `prepareScene` 단위 검증(패널 선택 · 재질 복제 풀 · 관절 탐색 · 휠 스핀).
+- `twinVehicleLive.test.tsx`(17 tests): 탭 구성, 자산 크레딧 노출, 강등 경로, `차량 3D 보기` 이동(reduced-motion 포함).
+- drei 를 스텁하는 테스트가 늘어 `src/test/gltfStub.ts` 로 `useGLTF` 스텁을 공유한다.
+  `vi.mock` 팩터리는 호이스팅되므로 **정적 import 금지** — `vi.mock('@react-three/drei', async () => { const { useGltfStub } = await import('../test/gltfStub'); … })` 형태로만 쓴다.
+- `src/test/setup.ts` 에 노이즈 가드 2종을 넣었다: (1) jsdom 에 없는 캔버스 `getContext` 를 `null` 로 고정,
+  (2) three.js 프로퍼티가 DOM 속성으로 새는 `is using incorrect casing` 경고만 필터.
+  결과적으로 전체 스위트가 118 s · 38.9 MB 로그(18개 중 17개 파일만 통과) → **25 s · 0.14 MB(18/18 통과)** 로 정상화됐다.
+

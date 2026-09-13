@@ -205,6 +205,32 @@
   border-top-style: dashed;
 }
 
+/* ------------------------------------------- 자산 출처 표기(CC BY 4.0 의무) */
+
+.veh-credit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding-top: 5px;
+  border-top: 1px solid var(--veh-line);
+  color: var(--veh-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.veh-credit a {
+  color: var(--veh-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.veh-hud-note {
+  color: #ffb4b4;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* ----------------------------------------------------------------- 기타 */
 
 .veh-cloud-tag,

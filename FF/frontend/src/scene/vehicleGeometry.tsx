@@ -11,7 +11,7 @@
  */
 import { createContext, useContext, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html, Line, RoundedBox } from '@react-three/drei';
+import { Environment, Html, Lightformer, Line, RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import { Label } from './labels';
 import {
@@ -123,6 +123,26 @@ export function SceneFloor() {
       </mesh>
       <gridHelper args={[30, 30, '#233047', '#161c27']} />
     </group>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* 환경맵 — 금속 페인트/유리가 반사할 "무언가"                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * §17.4 — 네트워크 HDR 없이 큐브 카메라로 굽는 절차적 스튜디오(폴백 겸 비교용).
+ * 실 HDRI(`STUDIO_HDRI`)를 쓸 수 없을 때 이 리그가 그대로 대신한다.
+ */
+export function ProceduralEnv() {
+  return (
+    <Environment resolution={128} frames={1}>
+      <Lightformer form="rect" intensity={2.6} color="#ffffff" position={[0, 6, -1]} rotation={[Math.PI / 2, 0, 0]} scale={[14, 4, 1]} />
+      <Lightformer form="rect" intensity={1.7} color="#cfe0ff" position={[-7, 3, 1]} rotation={[0, Math.PI / 2, 0]} scale={[10, 5, 1]} />
+      <Lightformer form="rect" intensity={1.7} color="#cfe0ff" position={[7, 3, 1]} rotation={[0, -Math.PI / 2, 0]} scale={[10, 5, 1]} />
+      <Lightformer form="rect" intensity={2.2} color="#ffffff" position={[0, 4, -8]} scale={[10, 4, 1]} />
+      <Lightformer form="rect" intensity={0.35} color="#1a2436" position={[0, -4, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[16, 16, 1]} />
+    </Environment>
   );
 }
 

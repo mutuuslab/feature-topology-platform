@@ -33,16 +33,21 @@ vi.mock('@react-three/fiber', () => ({
     }),
 }));
 
-vi.mock('@react-three/drei', () => ({
-  Html: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-  OrbitControls: () => null,
-  Line: () => null,
-  RoundedBox: ({ children }: { children?: ReactNode }) => <mesh>{children}</mesh>,
-  Grid: () => null,
-  Environment: ({ children }: { children?: ReactNode }) => <group>{children}</group>,
-  Lightformer: () => null,
-  ContactShadows: () => null,
-}));
+vi.mock('@react-three/drei', async () => {
+  const { useGltfStub } = await import('../test/gltfStub');
+  return {
+    Html: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
+    OrbitControls: () => null,
+    Line: () => null,
+    RoundedBox: ({ children }: { children?: ReactNode }) => <mesh>{children}</mesh>,
+    Grid: () => null,
+    Environment: ({ children }: { children?: ReactNode }) => <group>{children}</group>,
+    Lightformer: () => null,
+    ContactShadows: () => null,
+    // §17.4 — 실 glTF 자산 대역(jsdom 은 WebGL/텍스처를 로드할 수 없다).
+    useGLTF: useGltfStub(),
+  };
+});
 
 function RoleSetter({ role }: { role: string }) {
   const { dispatch } = useApp();

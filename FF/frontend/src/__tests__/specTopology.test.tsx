@@ -21,12 +21,16 @@ import {
   REL_BY_ID,
   REL_UNMAPPED_HINT,
   REL_VOCAB,
+  TP_MAX_ROWS,
+  TP_STAGE_INPUTS,
   TP_STAGE_META,
   TP_STAGE_ORDER,
-  TP_VIEW_H,
-  TP_VIEW_W,
+  TP_STAGE_SHORT,
+  CORE_LEGEND,
   TopologyArch,
   baseId,
+  bindingConflicts,
+  bomScopeFeatureIds,
   buildSnapshots,
   buildTopologyGraph,
   buildTopologyModel,
@@ -42,6 +46,7 @@ import {
   stageOfArea,
   validateTopology,
   walkGraph,
+  walkImpact,
   type TopologyGraph,
   type TopologyInput,
 } from '../pages/topologyArch';
@@ -96,15 +101,33 @@ describe('UI05 관계 사전', () => {
     }
   });
 
-  it('엔진 단계는 6개이고 순서·근거 Core 가 고정되어 있다', () => {
+  it('엔진 단계는 6개이고 순서·근거 Core·입력 의존이 고정되어 있다', () => {
     expect(TP_STAGE_ORDER).toEqual(['registry', 'graph', 'validate', 'snapshot', 'capability', 'impact']);
     for (const id of TP_STAGE_ORDER) {
       expect(TP_STAGE_META[id].ko).toBeTruthy();
       expect(TP_STAGE_META[id].core).toMatch(/^C\d{2}$/);
       expect(TP_STAGE_META[id].refs).toBeTruthy();
     }
-    expect(TP_VIEW_W).toBe(20 * 2 + 6 * 168 + 5 * 34);
-    expect(TP_VIEW_H).toBe(46 + 5 * 30 + 18);
+    expect(TP_STAGE_INPUTS.graph).toEqual(['registry']);
+    expect(TP_STAGE_INPUTS.validate).toEqual(['graph']);
+    expect(TP_STAGE_INPUTS.snapshot).toEqual(['graph']);
+    expect(TP_STAGE_INPUTS.capability).toEqual(['graph']);
+    expect(TP_STAGE_INPUTS.impact).toEqual(['capability']);
+    expect(TP_STAGE_INPUTS.registry).toEqual([]);
+  });
+
+  it('범례는 Core 기준으로 묶는다 — 6단계 · 4 Core, 중복 없음', () => {
+    expect(CORE_LEGEND.map(g => g.core)).toEqual(['C01', 'C03', 'C14', 'C43']);
+    // 축약명은 전 단계를 한 번씩만 덮는다 — 헤더·범례가 같은 Core 를 반복하지 않는다.
+    const covered = CORE_LEGEND.flatMap(g => g.stages);
+    expect(covered).toHaveLength(TP_STAGE_ORDER.length);
+    expect(new Set(covered).size).toBe(TP_STAGE_ORDER.length);
+    for (const g of CORE_LEGEND) {
+      expect(g.name, `${g.core} 이름`).toBeTruthy();
+      expect(g.stages.length).toBeGreaterThan(0);
+    }
+    // C14 는 검증 · 동결 · Capability 3단계가 공유한다.
+    expect(CORE_LEGEND.find(g => g.core === 'C14')?.stages).toEqual(['관계 검증', 'Snapshot 동결', 'Capability']);
   });
 
   it('영역 → 강조 단계 매핑', () => {
@@ -132,8 +155,11 @@ describe('UI05 그래프 적재', () => {
     }
     expect(REAL_GRAPH.nodes.get('FEAT-BDC-001')?.kind).toBe('Feature');
     expect(REAL_GRAPH.nodes.get('SWC-BDC-ADAPTER')?.kind).toBe('Artifact');
-    // Registry·Artifact 어디에도 없는 참조는 External 로 남는다(자동 생성 금지).
-    expect(REAL_GRAPH.nodes.get('POLICY-BDC-PREV')?.kind).toBe('External');
+    // 버전이 붙은 참조는 기준 ID 로 정규화하므로 유령 노드를 만들지 않는다.
+    expect(REAL_GRAPH.links.every(l => !l.source.includes('@') && !l.target.includes('@'))).toBe(true);
+    expect(REAL_GRAPH.links.find(l => l.id === 'K1')?.pin).toBe('3.2.1');
+    // 실측 정본 데이터에는 어디에도 없는 참조가 없다 — External 노드 0건.
+    expect([...REAL_GRAPH.nodes.values()].filter(n => n.kind === 'External')).toHaveLength(0);
     expect(REAL_GRAPH.nodes.get('SYS-BODY-001')?.kind).toBe('Artifact');
   });
 
@@ -168,16 +194,67 @@ describe('UI05 그래프 적재', () => {
 // ════════════════════════════════════════════════════════════════════════════
 
 describe('UI05 규칙 검증', () => {
+  it('해석되지 않는 참조는 External 노드로 남기고 적재 차단으로 낸다', () => {
+    const { g, graph } = synth();
+    expect(graph.nodes.get('T-HIL-1')?.kind).toBe('External');
+    const findings = validateTopology(graph, g, []);
+    const hit = findings.find(f => f.code === 'DANGLING_REFERENCE');
+    expect(hit).toBeDefined();
+    expect(hit!.subject).toBe('T-HIL-1');
+    expect(hit!.severity).toBe('BLOCKING');
+    // 실측 정본 데이터에는 해석 불가 참조·고아 노드가 0건이어야 한다.
+    const real = validateTopology(REAL_GRAPH, REAL_INPUT, initial.bomBaselines);
+    expect(real.filter(f => f.code === 'DANGLING_REFERENCE')).toHaveLength(0);
+    expect(real.filter(f => f.code === 'ORPHAN_NODE')).toHaveLength(0);
+  });
+
   it('실측 데이터의 위반을 숨기지 않고 코드·대상·보완 안내로 낸다', () => {
     const findings = validateTopology(REAL_GRAPH, REAL_INPUT, initial.bomBaselines);
     const codes = new Set(findings.map(f => f.code));
-    expect(codes.has('DANGLING_REFERENCE')).toBe(true);
     expect(codes.has('UNMAPPED_RELATION_TYPE')).toBe(true);
-    expect(findings.some(f => f.subject === 'POLICY-BDC-PREV')).toBe(true);
+    expect(findings.some(f => f.subject === 'FEAT-CONN-001 → API-BDC-POLICY-CONTROL')).toBe(true);
     expect(findings.every(f => f.remedy && f.refs && f.stage && f.detail)).toBe(true);
-    expect(countSeverity(findings, 'BLOCKING')).toBeGreaterThan(0);
+    // 사전 매핑 누락은 경고로만 남는다 — 정본 15종이 아니라고 해서 적재를 막지는 않는다.
+    expect(countSeverity(findings.filter(f => f.code === 'UNMAPPED_RELATION_TYPE'), 'WARNING'))
+      .toBe(M.relations.filter(r => !REL_BY_ID.has(r.type)).length);
     expect(countSeverity(findings, 'BLOCKING') + countSeverity(findings, 'WARNING') + countSeverity(findings, 'INFO'))
       .toBe(findings.length);
+  });
+
+  it('기준선 밖 node 는 하나로 묶어 경고하고 판정 근거를 남긴다', () => {
+    const scope = bomScopeFeatureIds(initial.bomBaselines);
+    const findings = validateTopology(REAL_GRAPH, REAL_INPUT, initial.bomBaselines, scope);
+    const drift = findings.filter(f => f.code === 'NODE_SET_SCOPE_DRIFT');
+    expect(drift).toHaveLength(1);
+    expect(drift[0].severity).toBe('WARNING');
+    expect(drift[0].stage).toBe('graph');
+    const outside = M.features.filter(f => !scope.includes(f.id)).map(f => f.id);
+    for (const id of outside) expect(drift[0].detail).toContain(id);
+    // 범위를 주지 않으면 판정하지 않는다 — 없는 범위를 지어내지 않는다.
+    expect(validateTopology(REAL_GRAPH, REAL_INPUT, initial.bomBaselines).some(f => f.code === 'NODE_SET_SCOPE_DRIFT')).toBe(false);
+  });
+
+  it('정확 버전 pin 은 구현·시험·관측·통제 결속에만 요구한다', () => {
+    const unpinned = REAL_INPUT.relations
+      .filter(r => ['implemented_by', 'verified_by', 'observed_by', 'governed_by'].includes(r.type))
+      .map(r => ({ ...r, target: baseId(r.target) }));
+    const g: TopologyInput = { ...REAL_INPUT, relations: unpinned };
+    const graph = buildTopologyGraph(g);
+    const hits = validateTopology(graph, g, initial.bomBaselines).filter(f => f.code === 'UNPINNED_VERSION');
+    expect(hits).toHaveLength(unpinned.length);
+    // 실측 정본 데이터는 전부 pin 이 붙어 있다.
+    expect(validateTopology(REAL_GRAPH, REAL_INPUT, initial.bomBaselines).some(f => f.code === 'UNPINNED_VERSION')).toBe(false);
+  });
+
+  it('제어점 결속 중복은 그래프가 판정하지 않고 UI03 정본 검사로 넘긴다', () => {
+    const dup = bindingConflicts();
+    expect(dup.length).toBeGreaterThan(0);
+    for (const d of dup) {
+      expect(d.key).toContain('|');
+      expect(d.first).not.toBe(d.second);
+    }
+    const findings = validateTopology(REAL_GRAPH, REAL_INPUT, initial.bomBaselines);
+    expect(findings.some(f => (f.code as string) === 'BINDING_CONFLICT')).toBe(false);
   });
 
   it('순환·자기참조·중복·requires↔excludes 충돌을 찾아낸다', () => {
@@ -258,6 +335,35 @@ describe('UI05 영향 경로와 Capability', () => {
     expect(rows.every(r => r.depth <= 5)).toBe(true);
   });
 
+  it('탐색은 방문 한계에서 멈추면 숨기지 않고 frontier 로 남긴다', () => {
+    const { graph } = synth();
+    const done = walkImpact(graph, 'A', 5);
+    expect(done.complete).toBe(true);
+    expect(done.frontier).toEqual([]);
+    expect(done.maxHops).toBeGreaterThanOrEqual(1);
+
+    const capped = walkImpact(REAL_GRAPH, 'FEAT-BDC-001', 1);
+    expect(capped.maxHops).toBe(1);
+    expect(capped.rows.every(r => r.depth === 1)).toBe(true);
+    expect(capped.complete).toBe(false);
+    expect(capped.frontier.length).toBeGreaterThan(0);
+    // 재개 지점은 실제 그래프 노드여야 한다 — 없는 노드를 지어내지 않는다.
+    for (const id of capped.frontier) expect(REAL_GRAPH.nodes.has(id)).toBe(true);
+    // 행 반환 계약은 완전 탐색과 동일하다.
+    expect(walkGraph(REAL_GRAPH, 'FEAT-BDC-001', 1)).toEqual(capped.rows);
+  });
+
+  it('Capability 는 범위 밖 Feature 를 SELECTED 로 세지 않는다', () => {
+    const scope = bomScopeFeatureIds(initial.bomBaselines);
+    expect(scope).toEqual(['FEAT-ADAS-001', 'FEAT-BDC-001', 'FEAT-LIGHT-001']);
+    const scoped = evaluateCapability(REAL_GRAPH, REAL_INPUT, scope);
+    expect([...scoped.map(c => c.root)].sort()).toEqual(scope);
+    expect(scoped.every(c => c.missing.length === 0)).toBe(true);
+    expect(scoped.every(c => c.outcome === 'SELECTED')).toBe(true);
+    // 범위 밖 Feature 는 평가 자체를 하지 않는다.
+    expect(new Set(evaluateCapability(REAL_GRAPH, REAL_INPUT).map(c => c.root)).size).toBe(M.features.length);
+  });
+
   it('Capability 는 역할의 존재를 보고 누락을 남긴다', () => {
     const cap = evaluateCapability(REAL_GRAPH, REAL_INPUT);
     expect(cap).toHaveLength(M.features.length);
@@ -266,7 +372,9 @@ describe('UI05 영향 경로와 Capability', () => {
     expect(bdc.roles.impl).toContain('SWC-BDC-ADAPTER');
     expect(bdc.roles.impl).toContain('SUP-BDC-A');
     expect(bdc.roles.verify).toContain('HIL-BDC-001');
-    expect(bdc.roles.control).toContain('POLICY-BDC-ENABLE');
+    // 통제 대상은 Rule 이다 — DD-03-5 `governed_by` = 대상 → Rule.
+    expect(bdc.roles.control).toEqual(['RULE-BDC-VARIANT']);
+    expect(bdc.roles.observe).toEqual(['OBS-BDC-FLEET']);
     expect(bdc.missing).toHaveLength(0);
     expect(bdc.outcome).toBe('SELECTED');
     expect(capabilityRoots(REAL_GRAPH, 'FEAT-BDC-001')).toEqual(bdc.from);
@@ -276,11 +384,15 @@ describe('UI05 영향 경로와 Capability', () => {
     const roots = capabilityRoots(REAL_GRAPH, 'FEAT-BDC-001');
     const tests = selectTests(REAL_GRAPH, roots);
     expect(tests).toEqual([...tests].sort());
-    expect(tests).toEqual(['HIL-BDC-001', 'OTA-RB-002', 'TEL-BDC-001']);
+    expect(tests).toEqual(expect.arrayContaining(['HIL-BDC-001', 'OTA-RB-002', 'TEL-BDC-001']));
+    // 고른 대상은 전부 verified_by 의 대상이다 — 후보를 지어내지 않는다.
+    const verified = new Set(REAL_GRAPH.links.filter(l => l.type === 'verified_by').map(l => l.target));
+    for (const t of tests) expect(verified.has(t), `${t} 검증 근거`).toBe(true);
     // 영향 노드로 되돌아오는 `in` 행(verified_by)의 주체는 Feature 이므로 시험 후보가 아니다.
     expect(tests.some(t => roots.includes(t))).toBe(false);
     // 영향 경로를 거쳐 도달하는 시험도 포함한다(전이 결속).
-    expect(selectTests(REAL_GRAPH, ['FEAT-RUNTIME-001'])).toEqual(['HIL-BDC-001', 'OTA-RB-002', 'TEL-BDC-001']);
+    expect(selectTests(REAL_GRAPH, ['FEAT-RUNTIME-001']))
+      .toEqual(expect.arrayContaining(['HIL-BDC-001', 'OTA-RB-002', 'TEL-BDC-001']));
     // 근거가 없으면 빈 목록 — 후보를 지어내지 않는다.
     expect(selectTests(REAL_GRAPH, [])).toEqual([]);
   });
@@ -291,47 +403,67 @@ describe('UI05 영향 경로와 Capability', () => {
 // ════════════════════════════════════════════════════════════════════════════
 
 describe('UI05 파이프라인 모델', () => {
-  const findings = validateTopology(REAL_GRAPH, REAL_INPUT, initial.bomBaselines);
-  const capability = evaluateCapability(REAL_GRAPH, REAL_INPUT);
+  const scope = bomScopeFeatureIds(initial.bomBaselines);
+  const findings = validateTopology(REAL_GRAPH, REAL_INPUT, initial.bomBaselines, scope);
+  const capability = evaluateCapability(REAL_GRAPH, REAL_INPUT, scope);
   const snapshots = buildSnapshots(REAL_GRAPH, initial.bomBaselines, '2026-09-13T10:00:00Z');
   const tests = selectTests(REAL_GRAPH, capabilityRoots(REAL_GRAPH, 'FEAT-BDC-001'));
   const model = buildTopologyModel({
     g: REAL_INPUT, graph: REAL_GRAPH, baselines: initial.bomBaselines,
-    snapshots, findings, capability, root: 'FEAT-BDC-001', tests,
+    snapshots, findings, capability, root: 'FEAT-BDC-001', tests, scope,
   });
 
   it('6단계를 정본 순서·제목으로 만들고 단계마다 5개 실측 행을 낸다', () => {
     expect(model.stages.map(s => s.id)).toEqual(TP_STAGE_ORDER);
-    expect(model.width).toBe(TP_VIEW_W);
-    expect(model.height).toBe(TP_VIEW_H);
     for (const s of model.stages) {
       expect(s.rows).toHaveLength(5);
+      expect(s.rows.length).toBeLessThanOrEqual(TP_MAX_ROWS);
       expect(s.title).toBe(TP_STAGE_META[s.id].ko);
+      expect(s.short).toBe(TP_STAGE_SHORT[s.id]);
+      // 흐름 상자 폭에 맞는 축약명이어야 한다 — 6열 파이프라인에서 잘리면 안 된다.
+      expect([...s.short].length, `${s.id} 축약명 길이`).toBeLessThanOrEqual(14);
       expect(s.core).toBe(TP_STAGE_META[s.id].core);
+      expect(s.summary, `${s.id} 요약`).toBeTruthy();
+      expect(s.inputs).toEqual(TP_STAGE_INPUTS[s.id]);
       expect(['pass', 'pending', 'fail', 'info', 'muted']).toContain(s.tone);
-    }
-    expect(model.stages[0].total).toBe(M.features.length);
-    expect(model.stages[1].total).toBe(REAL_GRAPH.nodes.size);
-  });
-
-  it('앞 단계가 실패하면 뒤 단계는 그 단계로 차단된다', () => {
-    for (let i = 1; i < model.stages.length; i++) {
-      const prev = model.stages[i - 1];
-      const cur = model.stages[i];
-      if (prev.tone === 'fail') {
-        expect(cur.blockedBy).toBe(prev.id);
-        expect(cur.blockedReason).toContain(prev.title);
-        expect(cur.tone).toBe('fail');
-      } else {
-        expect(cur.blockedBy).toBeUndefined();
+      for (const r of s.rows) {
+        expect(r.label).toBeTruthy();
+        expect(r.value).toBeTruthy();
+        expect(['pass', 'pending', 'fail', 'info', 'muted']).toContain(r.tone);
       }
     }
+    // 판정 근거는 단계 메타가 아니라 계산 결과에서 온다.
+    expect(model.stages[0].summary).toContain(String(M.features.length));
+    expect(model.stages[1].summary).toContain(String(REAL_GRAPH.nodes.size));
+  });
+
+  it('차단은 앞 단계가 아니라 실제 입력 의존을 따라 전파된다', () => {
+    for (const s of model.stages) {
+      if (s.blockedBy) {
+        // 막는 단계는 반드시 이 단계의 입력이어야 한다 — 이웃 단계 전체가 아니다.
+        expect(TP_STAGE_INPUTS[s.id], `${s.id} 입력`).toContain(s.blockedBy);
+        expect(s.tone).toBe('fail');
+        expect(s.blockedReason).toContain(TP_STAGE_SHORT[s.blockedBy]);
+      } else {
+        expect(s.blockedReason).toBeUndefined();
+      }
+    }
+    // 그래프 적재가 성공했으면 검증이 경고만 남겨도 동결·Capability 는 진행된다.
+    const stage = (id: string) => model.stages.find(s => s.id === id)!;
+    expect(stage('graph').tone).not.toBe('fail');
+    expect(stage('validate').blockedBy).toBeUndefined();
+    expect(stage('snapshot').blockedBy).toBeUndefined();
+    expect(stage('capability').blockedBy).toBeUndefined();
+    expect(stage('impact').blockedBy).toBeUndefined();
+    expect(stage('validate').tone).toBe('pending');   // 경고만 남은 상태
+    // BLOCKING 이 남으면 동결은 진행하되 '보류' 로 표시한다 — 지어내지 않는다.
+    expect(stage('snapshot').heldBy).toBe(stage('snapshot').heldReason ? 'validate' : undefined);
   });
 
   it('registry 단계는 Feature 가 없으면 실패한다', () => {
     const empty = buildTopologyModel({
       g: { features: [], edges: [], relations: [] }, graph: buildTopologyGraph({ features: [], edges: [], relations: [] }, []),
-      baselines: [], snapshots: [], findings: [], capability: [], root: 'X', tests: [],
+      baselines: [], snapshots: [], findings: [], capability: [], root: 'X', tests: [], scope: [],
     });
     expect(empty.stages[0].tone).toBe('fail');
     expect(empty.stages[1].blockedBy).toBe('registry');

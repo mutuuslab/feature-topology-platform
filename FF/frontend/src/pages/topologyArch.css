@@ -77,36 +77,84 @@
 .tpa-note { font-size: 12px; color: var(--muted); line-height: 1.55; }
 .tpa-note b { color: var(--ink); }
 
-/* -------------------------------------------------- Feature Topology 엔진 SVG */
+/* ----------------------------------------- Feature Topology 엔진 파이프라인 */
+/* 고정 픽셀 SVG 를 쓰지 않는다 — 열 폭은 컨테이너가 정하고 긴 텍스트는 말줄임으로 버틴다. */
 
-.tpa-svg { display: block; width: 100%; min-width: 1218px; height: auto; }
-.tpa-band-bg { fill: var(--surface-2); stroke: var(--line); }
-.tpa-band-bg.blocked { stroke: var(--fail); stroke-width: 1.6; }
-.tpa-band-bg.active { stroke: var(--brand); }
-.tpa-stage-title { font-size: 12.5px; font-weight: 700; fill: var(--ink); }
-.tpa-stage-core { font-family: var(--mono); font-size: 9.5px; fill: var(--muted); }
-.tpa-row-label { font-size: 10.5px; fill: var(--ink); }
-.tpa-row-value { font-family: var(--mono); font-size: 9.5px; fill: var(--muted); }
-.tpa-more { font-size: 9.5px; fill: var(--muted); }
-.tpa-flow-line { stroke: var(--line); stroke-width: 2; fill: none; stroke-dasharray: 6 5; animation: tpa-dash-flow 3.2s linear infinite; }
-.tpa-flow-line.blocked { stroke: var(--fail); animation-play-state: paused; }
-.tpa-packet { animation-name: tpa-packet-flow; animation-timing-function: linear; animation-iteration-count: infinite; }
-@keyframes tpa-dash-flow { to { stroke-dashoffset: -22; } }
-@keyframes tpa-packet-flow {
-  0% { transform: translate(0px, 0px); opacity: 0; }
-  8% { opacity: 1; }
-  92% { opacity: 1; }
-  100% { transform: translate(var(--tpa-dx), 0px); opacity: 0; }
+.tpa-flow { display: flex; align-items: stretch; }
+.tpa-stage {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  overflow: hidden;
 }
-.tpa-root[data-paused='true'] .tpa-flow-line,
+.tpa-stage.active { border-color: var(--brand); }
+.tpa-stage.blocked { border-color: var(--fail); }
+.tpa-stage-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; min-width: 0; }
+.tpa-stage-title { flex: 1 1 auto; min-width: 0; font-size: 12.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tpa-stage-core { flex: none; font-size: 9.5px; color: var(--muted); white-space: nowrap; }
+.tpa-stage-rows { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tpa-row { display: grid; grid-template-columns: 7px minmax(0, 1fr) minmax(0, auto); align-items: center; gap: 5px; min-width: 0; }
+.tpa-row .tpa-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.tpa-row-label { min-width: 0; font-size: 10.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tpa-row-value { min-width: 0; font-family: var(--mono); font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+.tpa-stage-foot {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 4px; min-width: 0;
+  margin-top: auto; padding-top: 4px; border-top: 1px dashed var(--line);
+}
+.tpa-stage-count { min-width: 0; margin-left: auto; font-family: var(--mono); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+.tpa-stage-status { flex: none; font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; }
+.tpa-stage-blocked, .tpa-stage-held { font-size: 10px; font-weight: 700; line-height: 1.3; }
+.tpa-stage-blocked { color: var(--fail); }
+.tpa-stage-held { color: var(--pending); }
+
+/* 단계 사이 흐름 — 레일과 패킷 */
+.tpa-arrow { position: relative; flex: 0 0 18px; align-self: stretch; }
+.tpa-arrow::after {
+  content: '';
+  position: absolute; right: 0; top: 50%; margin-top: -3px;
+  border-left: 4px solid var(--line);
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+}
+.tpa-arrow.blocked::after { border-left-color: var(--fail); }
+.tpa-arrow-rail {
+  position: absolute; left: 0; right: 5px; top: 50%; height: 2px;
+  background-image: linear-gradient(90deg, var(--line) 60%, transparent 0);
+  background-size: 9px 2px;
+  animation: tpa-dash-flow 3.2s linear infinite;
+}
+.tpa-arrow.blocked .tpa-arrow-rail { background-image: linear-gradient(90deg, var(--fail) 60%, transparent 0); animation-play-state: paused; }
+.tpa-packet {
+  position: absolute; top: 50%; left: 0; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%;
+  animation-name: tpa-packet-flow; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+@keyframes tpa-dash-flow { to { background-position-x: -18px; } }
+@keyframes tpa-packet-flow {
+  0% { left: 0; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { left: calc(100% - 4px); opacity: 0; }
+}
+.tpa-root[data-paused='true'] .tpa-arrow-rail,
 .tpa-root[data-paused='true'] .tpa-packet { animation-play-state: paused; }
-.tpa-tone-pass { fill: var(--pass); }
-.tpa-tone-pending { fill: var(--pending); }
-.tpa-tone-fail { fill: var(--fail); }
-.tpa-tone-info { fill: var(--info); }
-.tpa-tone-muted { fill: var(--muted); }
-.tpa-stage-count { font-family: var(--mono); font-size: 9.5px; }
-.tpa-stage-blocked { font-size: 9.5px; fill: var(--fail); font-weight: 700; }
+.tpa-tone-pass { color: var(--pass); }
+.tpa-tone-pending { color: var(--pending); }
+.tpa-tone-fail { color: var(--fail); }
+.tpa-tone-info { color: var(--info); }
+.tpa-tone-muted { color: var(--muted); }
+
+.tpa-legend { display: flex; flex-direction: column; gap: 2px; margin-top: 9px; font-size: 10.5px; color: var(--muted); }
+.tpa-legend-item { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.tpa-legend-item b { flex: none; color: var(--ink); font-size: 10.5px; }
+.tpa-legend-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tpa-legend-stages { flex: none; color: var(--info); }
+.tpa-legend-refs { flex: none; font-size: 9.5px; opacity: 0.7; }
 
 /* ------------------------------------------------------------ 요약 스트립 */
 

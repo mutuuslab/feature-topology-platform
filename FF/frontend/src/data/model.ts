@@ -20,7 +20,20 @@ export interface DecisionPackage {
 }
 export type GateStatus = 'PASS' | 'PENDING' | 'FAIL';
 export type EdgeType = 'parent_of'|'child_of'|'composed_of'|'requires'|'excludes'|'overrides'|'fallback_to'|'degrades_to'|'replaces'|'duplicates';
-export type RelType = 'derives'|'implemented_by'|'uses_api'|'applies_to'|'controlled_by'|'deployed_as'|'verified_by'|'realized_by'|'emits_event';
+// 정본 관계 사전(DD-03-5)의 15종을 모두 담는다. 앞 9종은 정본 이름이고,
+// `derives`/`uses_api`/`applies_to`/`controlled_by`/`deployed_as`/`realized_by` 는 초기 모델의
+// 원천 이름으로 남긴 이관 대상(GAP-03)이다 — 자동 변환하지 않고 화면에서 별칭으로 드러낸다.
+export type RelType =
+  | 'parent_of'|'composed_of'|'requires'|'excludes'|'overrides'|'fallback_to'|'degrades_to'|'replaces'|'duplicates'
+  | 'implemented_by'|'verified_by'|'observed_by'|'deployed_on'|'governed_by'|'emits'
+  | 'derives'|'uses_api'|'applies_to'|'controlled_by'|'deployed_as'|'realized_by';
+
+/** `FEAT-BDC-001@1.1.0` → `FEAT-BDC-001` — 정확 버전 pin 을 떼어낸 기준 ID. */
+export const baseRef = (ref: string): string => {
+  const s = String(ref);
+  const at = s.indexOf('@');
+  return at < 0 ? s : s.slice(0, at);
+};
 
 export interface Feature {
   id: string; level: Level; displayName: string; domain: string; ownerOrg: string;
@@ -48,8 +61,20 @@ export const edges: Edge[] = [
   { id:'E1', source:'FEAT-BODY-001', target:'FEAT-BDC-001', type:'parent_of' },
   { id:'E2', source:'FEAT-BDC-001', target:'FEAT-RUNTIME-001', type:'requires', criticality:'high' },
   { id:'E3', source:'FEAT-BDC-001', target:'FEAT-MANUAL-001', type:'excludes' },
-  { id:'E4', source:'FEAT-BDC-001', target:'POLICY-BDC-PREV', type:'fallback_to', safeDefault:'disabled' },
+  // 정본 `fallback_to` 는 Feature → Feature 다. 미등록 참조(POLICY-BDC-PREV)는 Import 검사
+  // 표본(DEFAULT_IMPORT)에만 남겨 적재 시점 차단이 계속 보이도록 한다.
+  { id:'E4', source:'FEAT-BDC-001', target:'FEAT-BDC-002', type:'fallback_to', safeDefault:'disabled' },
   { id:'E5', source:'FEAT-BDC-001', target:'FEAT-BDC-002', type:'replaces' },
+  { id:'E6', source:'FEAT-BODY-001', target:'FEAT-MANUAL-001', type:'composed_of' },
+  { id:'E7', source:'FEAT-BODY-001', target:'FEAT-SEAT-001', type:'composed_of' },
+  { id:'E8', source:'FEAT-BODY-001', target:'FEAT-LIGHT-001', type:'composed_of' },
+  { id:'E9', source:'FEAT-MANUAL-001', target:'FEAT-BDC-001', type:'overrides' },
+  { id:'E10', source:'FEAT-ADAS-001', target:'FEAT-MANUAL-001', type:'degrades_to' },
+  { id:'E11', source:'FEAT-CONN-001', target:'FEAT-BDC-001', type:'duplicates' },
+  { id:'E12', source:'FEAT-ADAS-001', target:'FEAT-PARK-001', type:'composed_of' },
+  { id:'E13', source:'FEAT-SEAT-001', target:'FEAT-RUNTIME-001', type:'requires' },
+  { id:'E14', source:'FEAT-LIGHT-001', target:'FEAT-RUNTIME-001', type:'requires' },
+  { id:'E15', source:'FEAT-PARK-001', target:'FEAT-RUNTIME-001', type:'requires' },
 ];
 
 export const artifacts: ArtifactNode[] = [
@@ -69,19 +94,75 @@ export const artifacts: ArtifactNode[] = [
   { id:'OTA-RB-002', kind:'TestCase', displayName:'OTA Rollback Test' },
   { id:'TEL-BDC-001', kind:'TestCase', displayName:'Telemetry Test' },
   { id:'SUP-BDC-A', kind:'SupplierFunction', displayName:'Supplier A (BDC_FUNC_032)' },
+  { id:'RULE-BDC-VARIANT', kind:'Rule', displayName:'KR/EU Variant Rule' },
+  { id:'OBS-BDC-FLEET', kind:'ObservationPoint', displayName:'BDC Fleet Observation' },
+  // ADAS — AEB 종방향 보조(ASIL-D)
+  { id:'SWC-ADAS-AEB', kind:'SWComponent', displayName:'AEB Controller' },
+  { id:'API-ADAS-AEB', kind:'APIService', displayName:'AEB Policy API (v3.1)' },
+  { id:'ECU-ADAS', kind:'ECU', displayName:'ADAS Domain ECU' },
+  { id:'DTC-ADAS-AEB-FAIL', kind:'DTC', displayName:'AEB Suppress DTC' },
+  { id:'HIL-ADAS-001', kind:'TestCase', displayName:'HIL-ADAS-07' },
+  { id:'OBS-ADAS-FLEET', kind:'ObservationPoint', displayName:'ADAS Fleet Observation' },
+  { id:'RULE-ADAS-ASIL', kind:'Rule', displayName:'ASIL-B Trim Rule' },
+  // Body Comfort — Welcome Light
+  { id:'SWC-LIGHT-ANIM', kind:'SWComponent', displayName:'Light Animation' },
+  { id:'API-LIGHT-CTRL', kind:'APIService', displayName:'Light Choreography API (v2.1)' },
+  { id:'ECU-BCM', kind:'ECU', displayName:'Body Control Module' },
+  { id:'SIG-LIGHT-STATE', kind:'Signal', displayName:'Light State Signal' },
+  { id:'HIL-LIGHT-003', kind:'TestCase', displayName:'HIL-LIGHT-03' },
+  { id:'OBS-LIGHT-FLEET', kind:'ObservationPoint', displayName:'Light Fleet Observation' },
+  { id:'RULE-LIGHT-LIFECYCLE', kind:'Rule', displayName:'Light Lifecycle Rule' },
+  { id:'CP-LIGHT-001', kind:'ControlPoint', displayName:'Light Animation Switch' },
+  // ADAS — Remote Parking
+  { id:'SWC-PARK-AEB-ACT', kind:'SWComponent', displayName:'Parking Actuator Adapter' },
 ];
 
+/**
+ * 정본 15종 + 이관 대상 원천 이름. 모든 관계는 그래프 노드 안에서 해석되며,
+ * `derives`/`uses_api`/`applies_to`/`controlled_by`/`deployed_as`/`realized_by` 6종은
+ * GAP-03 이관 backlog 로 남긴 실제 원천 이름이다(사전 밖 타입이 0건이 되면 이관 완료).
+ */
 export const relations: Relation[] = [
+  // ── 이관 대상(사전 밖 원천 이름) — 화면 UI05-S03 의 "사전 외" 표본
   { id:'R1', source:'SYS-BODY-001', target:'FEAT-BDC-001', type:'derives' },
-  { id:'R2', source:'FEAT-BDC-001', target:'SWC-BDC-ADAPTER', type:'implemented_by' },
-  { id:'R3', source:'FEAT-BDC-001', target:'API-BDC-POLICY-CONTROL', type:'uses_api' },
-  { id:'R4', source:'FEAT-BDC-001', target:'VAR-BDC-001', type:'applies_to' },
-  { id:'R5', source:'FEAT-BDC-001', target:'POLICY-BDC-ENABLE', type:'controlled_by' },
-  { id:'R6', source:'FEAT-BDC-001', target:'DEP-BDC-001', type:'deployed_as' },
-  { id:'R7', source:'FEAT-BDC-001', target:'HIL-BDC-001', type:'verified_by' },
-  { id:'R8', source:'FEAT-BDC-001', target:'OTA-RB-002', type:'verified_by' },
-  { id:'R9', source:'FEAT-BDC-001', target:'TEL-BDC-001', type:'verified_by' },
-  { id:'R10', source:'FEAT-BDC-001', target:'SUP-BDC-A', type:'realized_by' },
+  { id:'R2', source:'FEAT-BDC-001', target:'VAR-BDC-001', type:'applies_to' },
+  { id:'R3', source:'FEAT-CONN-001', target:'API-BDC-POLICY-CONTROL', type:'uses_api' },
+  { id:'R4', source:'FEAT-LIGHT-001', target:'CP-LIGHT-001', type:'controlled_by' },
+  { id:'R5', source:'FEAT-BDC-001', target:'DEP-BDC-001', type:'deployed_as' },
+  { id:'R6', source:'FEAT-BDC-001', target:'SUP-BDC-A', type:'realized_by' },
+  // ── FEAT-BDC-001 (BOM 멤버 · BL-BDC-2027.1)
+  { id:'K1', source:'FEAT-BDC-001', target:'SWC-BDC-ADAPTER@3.2.1', type:'implemented_by' },
+  { id:'K2', source:'FEAT-BDC-001', target:'API-BDC-POLICY-CONTROL@1.5.0', type:'implemented_by' },
+  { id:'K3', source:'FEAT-BDC-001', target:'HIL-BDC-001@2027.4', type:'verified_by' },
+  { id:'K4', source:'FEAT-BDC-001', target:'OTA-RB-002@2027.4', type:'verified_by' },
+  { id:'K5', source:'FEAT-BDC-001', target:'TEL-BDC-001@2027.4', type:'verified_by' },
+  { id:'K6', source:'FEAT-BDC-001', target:'OBS-BDC-FLEET@1.2.0', type:'observed_by' },
+  { id:'K7', source:'FEAT-BDC-001', target:'RULE-BDC-VARIANT@2.0.0', type:'governed_by' },
+  { id:'K8', source:'API-BDC-POLICY-CONTROL', target:'ECU-BDC', type:'deployed_on' },
+  { id:'K9', source:'API-BDC-POLICY-CONTROL', target:'SIG-DOOR-LOCK', type:'emits' },
+  { id:'K10', source:'API-BDC-POLICY-CONTROL', target:'DTC-BDC-POLICY-FAIL', type:'emits' },
+  { id:'K11', source:'POLICY-BDC-ENABLE', target:'RULE-BDC-VARIANT@2.0.0', type:'governed_by' },
+  { id:'K12', source:'CP-BDC-001-KILL', target:'RULE-BDC-VARIANT@2.0.0', type:'governed_by' },
+  { id:'K13', source:'SWE-BDC-010', target:'RULE-BDC-VARIANT@2.0.0', type:'governed_by' },
+  { id:'K14', source:'SEC-POLICY-004', target:'RULE-BDC-VARIANT@2.0.0', type:'governed_by' },
+  // ── FEAT-ADAS-001 (BOM 멤버 · BL-LIGHT-ADAS-2027.1)
+  { id:'K15', source:'FEAT-ADAS-001', target:'SWC-ADAS-AEB@2.4.0', type:'implemented_by' },
+  { id:'K16', source:'FEAT-ADAS-001', target:'API-ADAS-AEB@3.1.0', type:'implemented_by' },
+  { id:'K17', source:'FEAT-ADAS-001', target:'HIL-ADAS-001@2027.4', type:'verified_by' },
+  { id:'K18', source:'FEAT-ADAS-001', target:'OBS-ADAS-FLEET@1.2.0', type:'observed_by' },
+  { id:'K19', source:'FEAT-ADAS-001', target:'RULE-ADAS-ASIL@4.0.0', type:'governed_by' },
+  { id:'K20', source:'API-ADAS-AEB', target:'ECU-ADAS', type:'deployed_on' },
+  { id:'K21', source:'API-ADAS-AEB', target:'DTC-ADAS-AEB-FAIL', type:'emits' },
+  // ── FEAT-LIGHT-001 (BOM 멤버 · BL-LIGHT-2027.1)
+  { id:'K22', source:'FEAT-LIGHT-001', target:'SWC-LIGHT-ANIM@2.0.0', type:'implemented_by' },
+  { id:'K23', source:'FEAT-LIGHT-001', target:'API-LIGHT-CTRL@2.1.0', type:'implemented_by' },
+  { id:'K24', source:'FEAT-LIGHT-001', target:'HIL-LIGHT-003@2027.4', type:'verified_by' },
+  { id:'K25', source:'FEAT-LIGHT-001', target:'OBS-LIGHT-FLEET@1.2.0', type:'observed_by' },
+  { id:'K26', source:'FEAT-LIGHT-001', target:'RULE-LIGHT-LIFECYCLE@1.4.0', type:'governed_by' },
+  { id:'K27', source:'API-LIGHT-CTRL', target:'ECU-BCM', type:'deployed_on' },
+  { id:'K28', source:'API-LIGHT-CTRL', target:'SIG-LIGHT-STATE', type:'emits' },
+  // ── 범위 외 노드 — Topology node 집합과 BOM 멤버의 차이를 그대로 드러낸다
+  { id:'K29', source:'FEAT-PARK-001', target:'SWC-PARK-AEB-ACT@1.0.0', type:'implemented_by' },
 ];
 
 export const evidence = [

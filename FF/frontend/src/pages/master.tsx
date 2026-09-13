@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { taxonomyTree } from '../data/refdata';
-import { artifacts, relations } from '../data/model';
+import { artifacts, baseRef, relations } from '../data/model';
 import {
   ARTIFACT_RECORDS, BOM_AREAS, BOM_AREA_KO, CONTROL_POINTS, FLAG_BINDINGS, FLAG_PURPOSES, IMPLEMENTATION_BOMS, RUNTIME_BINDINGS,
   SOURCE_SYNC, VIOLATIONS, artifactStats, controlPointStats, deliveryLabel, kindLabel, roleLabel,
@@ -77,7 +77,7 @@ const AREA_KINDS: Record<string, string[]> = {
   'Feature Master': ['Feature'], Requirement: ['Requirement'], Architecture: ['SWComponent', 'ECU'],
   Interface: ['APIService', 'Signal', 'DTC'], Variant: ['VariantRule'], Control: ['ControlPoint'],
   Deployment: ['DeploymentUnit'], Verification: ['TestCase', 'TestEvidence'], Supplier: ['SupplierFunction'],
-  'Safety/Security': [], Operation: ['TelemetryEvent'],
+  'Safety/Security': ['Rule'], Operation: ['TelemetryEvent', 'ObservationPoint'],
 };
 
 export function BOMEditor() {
@@ -89,7 +89,7 @@ export function BOMEditor() {
   const [pending, setPending] = useState<{ type: string; area: string; detail: string }[]>([]);
 
   const kinds = AREA_KINDS[active] || [];
-  const base = relations.map(r => artifacts.find(a => a.id === r.target)).filter((a: any) => a && kinds.includes(a.kind)) as any[];
+  const base = relations.map(r => artifacts.find(a => a.id === baseRef(r.target))).filter((a: any) => a && kinds.includes(a.kind)) as any[];
   const extra = (added[active] || []).map(id => ({ id, kind: kinds[0] || '-', _new: true }));
   const items = [...base, ...extra];
 
@@ -113,7 +113,7 @@ export function BOMEditor() {
         <b>영역별 BOM 항목 수</b>
         <div className="mt"><Bars data={Object.fromEntries(areas.map(a => {
           const k = AREA_KINDS[a];
-          const baseN = relations.map(r => artifacts.find(x => x.id === r.target)).filter((x: any) => x && k.includes(x.kind)).length;
+          const baseN = relations.map(r => artifacts.find(x => x.id === baseRef(r.target))).filter((x: any) => x && k.includes(x.kind)).length;
           return [a, baseN + (added[a]?.length || 0)];
         }).filter(([, v]) => (v as number) > 0))} /></div>
         {pending.length > 0 && <p className="small" style={{ color: 'var(--pass)' }}>대기 변경 {pending.length}건 (미저장)</p>}
@@ -268,7 +268,11 @@ export function ArtifactCatalog() {
             : <p className="small" style={{ color: 'var(--pass)' }}>✓ 위반 없음 — 승인 참조 가능</p>}
 
           <p className="mt small"><b>연결 Feature</b></p>
-          {[...new Set(relations.filter(r => r.target === sel.id || r.source === sel.id).map(r => (r.source.startsWith('FEAT') ? r.source : r.target)))].map(f => (
+          {[...new Set(relations
+            .filter(r => baseRef(r.target) === sel.id || r.source === sel.id)
+            // 산출물끼리의 관계도 있으므로 양 끝점을 모두 보고 Feature 쪽만 고른다.
+            .map(r => (r.source.startsWith('FEAT') ? r.source : baseRef(r.target)))
+            .filter(f => f.startsWith('FEAT')))].map(f => (
             <button key={f} className="btn" onClick={() => nav(`/feature/${f}`)}>{f} →</button>
           ))}
         </div>}

@@ -135,12 +135,12 @@ export function Donut({ segments, size = 130, center }: { segments: { label: str
 }
 
 // ── Bars (그라디언트 + 성장 애니메이션) ──
-export function Bars({ data, fmt }: { data: Record<string, number>; fmt?: (n: number) => string }) {
+export function Bars({ data, fmt, labelWidth = 120 }: { data: Record<string, number>; fmt?: (n: number) => string; labelWidth?: number }) {
   const max = Math.max(1, ...Object.values(data));
   return (
     <div>{Object.entries(data).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
       <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '5px 0' }}>
-        <span className="small" style={{ width: 120 }}>{k}</span>
+        <span className="small" title={k} style={{ flex: `0 0 ${labelWidth}px`, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k}</span>
         <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 5, overflow: 'hidden' }}>
           <div style={{ width: `${(v / max) * 100}%`, background: 'linear-gradient(90deg,#0B5FFF,#0EA5E9)', height: 16, borderRadius: 5, transition: 'width .8s ease' }} />
         </div>

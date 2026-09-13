@@ -21,8 +21,8 @@
  * 이름이 다른 항목이 있으므로 **별칭으로 자동 변환하지 않고** 별칭/미매핑을 그대로 드러낸다
  * (UI05-S07 "의미가 다른 관계의 자동 변환 금지").
  */
-import type { CSSProperties, JSX } from 'react';
-import { useMemo, useState } from 'react';
+import type { JSX } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { Bars, Donut } from '../components/charts';
 import { simClockLabel } from '../components/liveMonitor';
 import { SpecAreaFacts } from '../components/SpecAreaFacts';
@@ -87,12 +87,12 @@ const VOCAB_SEED: Omit<RelationVocab, 'id'>[] = [
   { ko: '성능 저하 대체 동작', dir: '대상 → 저하 모드', stage: 'CONDITIONAL', from: ['degrades_to'], gate: 'R04' },
   { ko: '버전·모델 대체', dir: '신 → 구', stage: 'REQUIRED', from: ['replaces'], gate: 'R05' },
   { ko: '중복 존재(정리 대상)', dir: '원본 ↔ 중복', stage: 'ADVISORY', from: ['duplicates'], gate: 'R05' },
-  { ko: '구현 산출물 결속', dir: 'Feature → 산출물', stage: 'REQUIRED', from: ['implemented_by'], gate: 'R06' },
-  { ko: '시험·증적 결속', dir: 'Feature → 시험', stage: 'REQUIRED', from: ['verified_by'], gate: 'R07' },
-  { ko: '운행 관측 결속', dir: 'Feature → 관측점', stage: 'ADVISORY', from: [], gate: 'R07' },
-  { ko: '배포 대상 결속', dir: 'Feature → ECU/배포 단위', stage: 'REQUIRED', from: ['deployed_as'], aliasOf: 'deployed_as', gate: 'R08' },
-  { ko: '정책·제어점 통제', dir: 'Feature → 제어점', stage: 'REQUIRED', from: ['controlled_by'], aliasOf: 'controlled_by', gate: 'R09' },
-  { ko: '신호·이벤트 방출', dir: 'Feature → 신호', stage: 'CONDITIONAL', from: ['emits_event'], aliasOf: 'emits_event', gate: 'R10' },
+  { ko: '구현 산출물 결속', dir: 'Feature → 구현 Artifact', stage: 'REQUIRED', from: ['implemented_by'], gate: 'R06' },
+  { ko: '시험·증적 결속', dir: 'Feature → 시험 증적', stage: 'REQUIRED', from: ['verified_by'], gate: 'R07' },
+  { ko: '운행 관측 결속', dir: 'Feature → 관측 요소', stage: 'ADVISORY', from: ['observed_by'], gate: 'R07' },
+  { ko: '배포 위치 결속', dir: 'SW API → DeploymentNode', stage: 'REQUIRED', from: ['deployed_on', 'deployed_as'], aliasOf: 'deployed_as', gate: 'R08' },
+  { ko: '규칙 적용 결속', dir: '대상 → Rule', stage: 'REQUIRED', from: ['governed_by', 'controlled_by'], aliasOf: 'controlled_by', gate: 'R09' },
+  { ko: '신호·이벤트 방출', dir: 'SW API → Event·Signal', stage: 'CONDITIONAL', from: ['emits', 'emits_event'], aliasOf: 'emits_event', gate: 'R10' },
 ];
 
 /**
@@ -142,8 +142,14 @@ export interface TpNode {
 export interface TpLink {
   key: string;
   id: string;
+  /** 정규화된 기준 ID (`@version` 제거) */
   source: string;
   target: string;
+  /** 원문 참조 — 정확 버전 pin 이 붙어 있으면 그대로 보존한다 */
+  sourceRef: string;
+  targetRef: string;
+  /** 원문 target 에 붙은 정확 버전 */
+  pin?: string;
   type: string;
   origin: 'edge' | 'relation';
   criticality?: string;
@@ -178,15 +184,20 @@ export function buildTopologyGraph(g: TopologyInput, artifacts: M.ArtifactNode[]
   }
   const ensure = (id: string): TpNode => {
     let n = nodes.get(id);
-    if (!n) { n = { id, kind: 'External', label: id }; nodes.set(id, n); }
+    if (!n) { n = { id, kind: 'External', label: id }; nodes.set(id, n) }
     return n;
   };
 
   const links: TpLink[] = [];
   const add = (p: { id: string; source: string; target: string; type: string; origin: 'edge' | 'relation'; criticality?: string; safeDefault?: string }) => {
+    // 끝점은 기준 ID 로 정규화해 노드 집합과 맞춘다. 정확 버전 pin 은 관계에 그대로 보존하므로
+    // `TARGET@1.0.0` 참조가 유령 노드를 만들지 않는다.
+    const source = baseId(p.source);
+    const target = baseId(p.target);
     links.push({
-      ...p,
-      key: `${p.source}|${p.type}|${p.target}`,
+      ...p, source, target,
+      sourceRef: p.source, targetRef: p.target, pin: refVersion(p.target) || undefined,
+      key: `${source}|${p.type}|${target}`,
       mapped: REL_BY_ID.has(p.type),
       hint: REL_UNMAPPED_HINT[p.type],
     });
@@ -225,13 +236,24 @@ export function capabilityRoots(graph: TopologyGraph, featureId: string): string
   return [...new Set(roots)];
 }
 
-/** 구현·배포·시험·통제 역할 — 값이 아니라 **역할의 존재**를 본다(DD-03-5). */
+/** 구현·배포·시험·통제·관측 역할 — 값이 아니라 **역할의 존재**를 본다(DD-03-5). */
 export const CAPABILITY_ROLES: { id: string; ko: string; types: string[] }[] = [
   { id: 'impl', ko: '구현', types: ['implemented_by', 'realized_by'] },
-  { id: 'deploy', ko: '배포', types: ['deployed_as', 'deployed_on'] },
+  { id: 'deploy', ko: '배포', types: ['deployed_as'] },
   { id: 'verify', ko: '시험', types: ['verified_by'] },
   { id: 'control', ko: '통제', types: ['controlled_by', 'governed_by'] },
+  { id: 'observe', ko: '관측', types: ['observed_by'] },
 ];
+
+/** BOM 멤버의 기준선 버전 참조에서 Capability 평가 범위(Feature 기준 ID)를 만든다. */
+export function bomScopeFeatureIds(baselines: BomBaseline[]): string[] {
+  const ids = new Set<string>();
+  for (const b of baselines) {
+    if (b.state === 'REVOKED') continue;
+    for (const m of b.members) ids.add(baseId(m.featureVersionRef));
+  }
+  return [...ids].sort();
+}
 
 export interface CapabilityRow {
   root: string;
@@ -244,15 +266,23 @@ export interface CapabilityRow {
   reason: string;
 }
 
-export function evaluateCapability(graph: TopologyGraph, g: TopologyInput): CapabilityRow[] {
-  return g.features.map(f => {
+/**
+ * 범위(scopeIds)는 BOM 멤버 집합이 정한다 — 범위 밖 Feature 를 SELECTED 로 세면
+ * Capability 판정이 BOM 과 어긋난다. 범위를 주지 않으면 Registry 전체를 평가한다.
+ */
+export function evaluateCapability(graph: TopologyGraph, g: TopologyInput, scopeIds?: string[]): CapabilityRow[] {
+  const scope = scopeIds ? new Set(scopeIds) : null;
+  return g.features.filter(f => !scope || scope.has(f.id)).map(f => {
     const from = capabilityRoots(graph, f.id);
     const byRole: Record<string, string[]> = {};
     for (const name of CAPABILITY_ROLES) byRole[name.id] = [];
+    const push = (role: string, id: string) => { if (!byRole[role].includes(id)) byRole[role].push(id) };
     for (const root of from) {
       for (const l of graph.out.get(root) ?? []) {
-        for (const name of CAPABILITY_ROLES) {
-          if (name.types.includes(l.type) && !byRole[name.id].includes(l.target)) byRole[name.id].push(l.target);
+        for (const name of CAPABILITY_ROLES) if (name.types.includes(l.type)) push(name.id, l.target);
+        // 배포 위치는 구현 산출물 한 단계 아래에 있다 — 구현 Artifact → DeploymentNode(deployed_on).
+        if (graph.nodes.get(l.target)?.kind === 'Artifact') {
+          for (const inner of graph.out.get(l.target) ?? []) if (inner.type === 'deployed_on') push('deploy', inner.target);
         }
       }
     }
@@ -264,7 +294,7 @@ export function evaluateCapability(graph: TopologyGraph, g: TopologyInput): Capa
       ? 'NOT_SUPPORTED'
       : conflict ? 'CONFIG_CONFLICT' : missing.length > 0 ? 'UNVERIFIED' : 'SELECTED';
     const reason = outcome === 'SELECTED'
-      ? `역할 ${CAPABILITY_ROLES.length}종 모두 결속 · 구현 참조 ${targets.length}건`
+      ? `역할 ${CAPABILITY_ROLES.length}종 모두 결속 · 참조 ${targets.length}건`
       : outcome === 'NOT_SUPPORTED'
         ? '구현 결속 관계 없음(implemented_by 부재)'
         : outcome === 'CONFIG_CONFLICT'
@@ -295,12 +325,12 @@ const FINDING_META: Record<string, { severity: Severity; remedy: string; refs: s
   RELATION_CONFLICT: { severity: 'BLOCKING', remedy: 'requires/excludes 를 조건 Profile 로 분리', refs: 'TD 4.6', stage: 'validate' },
   CYCLE: { severity: 'BLOCKING', remedy: '순환 참조 해소 — 계층 관계는 DAG 여야 함', refs: 'TD 4.6 · SW DD-03-4', stage: 'validate' },
   UNMAPPED_RELATION_TYPE: { severity: 'WARNING', remedy: '사전 항목으로 사람이 확인 후 재입력(자동 변환 금지)', refs: 'TD 4.4 · GAP-03', stage: 'validate' },
-  UNPINNED_VERSION: { severity: 'WARNING', remedy: '정확 버전 pin 지정 — latest·범위 표현 금지', refs: 'TD 4.5', stage: 'validate' },
+  UNPINNED_VERSION: { severity: 'WARNING', remedy: '정확 버전 pin 지정 — latest·범위 표현 금지', refs: 'TD 4.6', stage: 'validate' },
   MISSING_REQUIRED_RELATION: { severity: 'BLOCKING', remedy: '누락 관계 등록 후 단계 전환', refs: 'TD 4.2 · C14', stage: 'capability' },
   ORPHAN_NODE: { severity: 'WARNING', remedy: '관계 미연결 노드 — 등록 취소 또는 결속 추가', refs: 'TD 4.3', stage: 'graph' },
   RETIRED_REFERENCED: { severity: 'WARNING', remedy: 'Retired 노드 참조는 replaces/fallback_to 로만 허용', refs: 'TD 4.2', stage: 'validate' },
   SNAPSHOT_NODE_MISSING: { severity: 'BLOCKING', remedy: '기준선 BOM_Topology_MISMATCH 해소 후 동결', refs: 'TD 4.5 · C03', stage: 'snapshot' },
-  BINDING_CONFLICT: { severity: 'BLOCKING', remedy: '동일 제어점·동일 적용 조건의 두 번째 Binding 제거', refs: 'DD-03-4 · BD-06', stage: 'capability' },
+  NODE_SET_SCOPE_DRIFT: { severity: 'WARNING', remedy: 'BOM 멤버 확정 또는 node 제거 — graph node 집합과 BOM 멤버를 맞춘다', refs: 'DD-03-5', stage: 'graph' },
 };
 
 const mkFinding = (code: string, subject: string, detail: string): TpFinding => {
@@ -311,7 +341,25 @@ const mkFinding = (code: string, subject: string, detail: string): TpFinding => 
 /** 사전에 있는 계층 관계 — 순환 판정 대상. */
 const LAYER_REL_TYPES = ['parent_of', 'composed_of', 'child_of', 'derives', 'requires'];
 
-export function validateTopology(graph: TopologyGraph, g: TopologyInput, baselines: BomBaseline[]): TpFinding[] {
+/**
+ * 정확 버전 pin 이 필수인 결속 관계. 구조 관계(parent_of/composed_of/requires/excludes)는
+ * Feature 자체의 개정으로 버전이 결정되므로 여기서 pin 을 요구하지 않는다.
+ */
+const PIN_REQUIRED = ['implemented_by', 'verified_by', 'observed_by', 'governed_by'];
+
+/** 같은 제어점·같은 적용 조건을 두 Binding 이 점유한 경우 — 정본 판정은 UI03 이 소유한다. */
+export function bindingConflicts(): { key: string; first: string; second: string }[] {
+  const seen = new Map<string, string>();
+  const dup: { key: string; first: string; second: string }[] = [];
+  for (const fb of FLAG_BINDINGS) {
+    const k = `${fb.controlPointRef}|${fb.applicabilityRef}`;
+    const prev = seen.get(k);
+    if (prev) dup.push({ key: k, first: prev, second: fb.id }); else seen.set(k, fb.id);
+  }
+  return dup;
+}
+
+export function validateTopology(graph: TopologyGraph, g: TopologyInput, baselines: BomBaseline[], scopeIds?: string[]): TpFinding[] {
   const out: TpFinding[] = [];
 
   // (1) 그래프 적재 — 해석 불가 참조 / 고아 노드
@@ -369,7 +417,7 @@ export function validateTopology(graph: TopologyGraph, g: TopologyInput, baselin
 
   // (5) 정확 버전 pin · Retired 참조
   for (const l of graph.links) {
-    if (refVersion(l.target) === '' && graph.nodes.get(l.target)?.kind === 'Feature') {
+    if (PIN_REQUIRED.includes(l.type) && !l.pin) {
       out.push(mkFinding('UNPINNED_VERSION', `${l.source} → ${l.target}`, `\`${l.type}\` 대상에 정확 버전 없음`));
     }
     const t = graph.nodes.get(l.target);
@@ -387,17 +435,19 @@ export function validateTopology(graph: TopologyGraph, g: TopologyInput, baselin
     }
   }
 
-  // (7) Binding 충돌 — 같은 제어점·같은 적용 조건에 두 번째 Binding
-  const fbKey = new Map<string, string>();
-  for (const fb of FLAG_BINDINGS) {
-    const k = `${fb.controlPointRef}|${fb.applicabilityRef}`;
-    if (fbKey.has(k)) {
-      out.push(mkFinding('BINDING_CONFLICT', k, `${fbKey.get(k)} 와 ${fb.id} 가 같은 제어점·같은 적용 조건을 점유`));
-    } else fbKey.set(k, fb.id);
+  // (7) node 집합 정합 — graph 의 Feature 는 BOM 멤버와 일치해야 한다(DD-03-5)
+  const scope = new Set(scopeIds ?? g.features.map(f => f.id));
+  const drift = [...graph.nodes.values()]
+    .filter(n => n.kind === 'Feature' && !scope.has(n.id))
+    .map(n => n.id)
+    .sort();
+  if (drift.length > 0) {
+    out.push(mkFinding('NODE_SET_SCOPE_DRIFT', `${drift.length} node`,
+      `BOM 멤버 밖 Feature node — ${drift.join(', ')}`));
   }
 
-  // (8) Capability 필수 역할 누락
-  for (const row of evaluateCapability(graph, g)) {
+  // (8) Capability 필수 역할 누락 — 평가 범위는 BOM 멤버 집합이 정한다
+  for (const row of evaluateCapability(graph, g, scopeIds)) {
     if (row.missing.length > 0) {
       out.push(mkFinding('MISSING_REQUIRED_RELATION', row.root, `역할 누락 ${row.missing.join(', ')} — ${row.outcome}`));
     }
@@ -516,12 +566,32 @@ export function diffSnapshots(a: TpSnapshot, b: TpSnapshot, graph: TopologyGraph
 
 export interface WalkRow { id: string; depth: number; via: string; type: string; direction: 'out' | 'in'; kind: TpNode['kind'] }
 
-export function walkGraph(graph: TopologyGraph, root: string, maxDepth = 3): WalkRow[] {
+export interface ImpactWalk {
+  rows: WalkRow[];
+  /** 방문 단위를 모두 소진했으면 true. false 면 중단 한계에 걸린 것 */
+  complete: boolean;
+  /** 중단 시점의 미확장 노드 — 재개 지점(frontier) */
+  frontier: string[];
+  maxHops: number;
+}
+
+/** 한 번의 탐색이 만들 수 있는 최대 행 수 — 넘으면 complete=false 로 남긴다. */
+export const WALK_ROW_LIMIT = 400;
+
+/**
+ * 영향 경로 탐색 — 방문 단위는 `(node, direction, relationType)`.
+ * `maxHops` 또는 행 한계로 중단하면 지어내지 않고 `complete=false` + `frontier` 를 반환한다(DD-03-5).
+ */
+export function walkImpact(graph: TopologyGraph, root: string, maxHops = 3): ImpactWalk {
   const seen = new Set<string>([root]);
   const rows: WalkRow[] = [];
   const dedupe = new Set<string>();
   let frontier = [root];
-  for (let d = 1; d <= maxDepth && frontier.length > 0 && rows.length < 400; d++) {
+  let depth = 1;
+  let capped = false;
+  for (; depth <= maxHops; depth++) {
+    if (frontier.length === 0) break;
+    if (rows.length >= WALK_ROW_LIMIT) { capped = true; break; }
     const next: string[] = [];
     for (const cur of frontier) {
       const step = [
@@ -532,7 +602,7 @@ export function walkGraph(graph: TopologyGraph, root: string, maxDepth = 3): Wal
         const k = `${cur}|${s.type}|${s.id}|${s.direction}`;
         if (dedupe.has(k)) continue;
         dedupe.add(k);
-        rows.push({ id: s.id, depth: d, via: cur, type: s.type, direction: s.direction, kind: graph.nodes.get(s.id)?.kind ?? 'External' });
+        rows.push({ id: s.id, depth, via: cur, type: s.type, direction: s.direction, kind: graph.nodes.get(s.id)?.kind ?? 'External' });
         if (!seen.has(s.id) && (graph.nodes.get(s.id)?.kind === 'Feature' || graph.nodes.get(s.id)?.kind === 'Artifact')) {
           seen.add(s.id);
           next.push(s.id);
@@ -541,7 +611,12 @@ export function walkGraph(graph: TopologyGraph, root: string, maxDepth = 3): Wal
     }
     frontier = next;
   }
-  return rows;
+  const complete = !capped && frontier.length === 0;
+  return { rows, complete, frontier: complete ? [] : frontier, maxHops };
+}
+
+export function walkGraph(graph: TopologyGraph, root: string, maxDepth = 3): WalkRow[] {
+  return walkImpact(graph, root, maxDepth).rows;
 }
 
 /**
@@ -610,28 +685,66 @@ export interface TpStageRow { label: string; value: string; tone: Tone }
 export interface TpStage {
   id: TpStageId;
   index: number;
+  /** 정본 한국어 단계명 (TP_STAGE_META) */
   title: string;
+  /** 흐름 상자에 들어가는 축약명 — 6열 파이프라인 폭에서 잘리지 않는 길이 */
+  short: string;
   core: string;
   refs: string;
   rows: TpStageRow[];
-  total: number;
   tone: Tone;
-  blockedBy?: string;
+  /** 개수 chip — `27 노드 · 50 관계` 처럼 무엇을 몇 개 읽었는지 보여준다. */
+  summary: string;
+  /** 이 단계가 실제로 읽는 앞 단계 산출물 */
+  inputs: TpStageId[];
+  /** 입력이 실패해 진행 자체가 막힌 경우 */
+  blockedBy?: TpStageId;
   blockedReason?: string;
+  /** 입력 실패는 아니지만 판정을 보류한 경우 (예: 검증 BLOCKING 잔존 → 동결 보류) */
+  heldBy?: TpStageId;
+  heldReason?: string;
 }
-export interface TpModel { stages: TpStage[]; width: number; height: number }
+export interface TpModel { stages: TpStage[] }
 
-export const TP_COL_W = 168;
-export const TP_COL_GAP = 34;
-export const TP_PAD = 20;
-export const TP_HEAD_H = 46;
-export const TP_ROW_H = 30;
-export const TP_BOTTOM_H = 18;
+/** 단계별 입력 — 연속 차단이 아니라 실제 데이터 의존을 따른다. */
+export const TP_STAGE_INPUTS: Record<TpStageId, TpStageId[]> = {
+  registry: [],
+  graph: ['registry'],
+  validate: ['graph'],
+  snapshot: ['graph'],
+  capability: ['graph'],
+  impact: ['capability'],
+};
+
+/** 단계마다 내는 실측 행 수 — 화면 행 계약. */
 export const TP_MAX_ROWS = 5;
-export const TP_VIEW_W = TP_PAD * 2 + 6 * TP_COL_W + 5 * TP_COL_GAP;
-export const TP_VIEW_H = TP_HEAD_H + TP_MAX_ROWS * TP_ROW_H + TP_BOTTOM_H;
-export const tpColX = (i: number): number => TP_PAD + i * (TP_COL_W + TP_COL_GAP);
-export const TP_ROW_Y = TP_HEAD_H + 14;
+
+/** 흐름 상자용 축약명 — 정본 단계명은 `title` 에 그대로 남는다. */
+export const TP_STAGE_SHORT: Record<TpStageId, string> = {
+  registry: 'Registry',
+  graph: '그래프 적재',
+  validate: '관계 검증',
+  snapshot: 'Snapshot 동결',
+  capability: 'Capability',
+  impact: '영향 · 시험',
+};
+
+/** 같은 Core(정본 기능)를 공유하는 단계는 한 줄로 묶는다 — 6단계 · 4 Core. */
+export const CORE_LEGEND = (() => {
+  const m = new Map<string, { core: string; name: string; stages: string[]; refs: string[] }>();
+  for (const id of TP_STAGE_ORDER) {
+    const meta = TP_STAGE_META[id];
+    const label = SPEC_CORE_LABEL[meta.core] ?? meta.core;
+    const name = label.startsWith(`${meta.core} `) ? label.slice(meta.core.length + 1) : label;
+    const cur = m.get(meta.core) ?? { core: meta.core, name, stages: [], refs: [] };
+    cur.stages.push(TP_STAGE_SHORT[id]);
+    for (const r of meta.refs.split('·').map(x => x.trim())) {
+      if (r && !cur.refs.includes(r)) cur.refs.push(r);
+    }
+    m.set(meta.core, cur);
+  }
+  return [...m.values()];
+})();
 
 export function buildTopologyModel(args: {
   g: TopologyInput;
@@ -642,8 +755,9 @@ export function buildTopologyModel(args: {
   capability: CapabilityRow[];
   root: string;
   tests: string[];
+  scope: string[];
 }): TpModel {
-  const { graph, g, snapshots, findings, capability, root, tests } = args;
+  const { graph, g, snapshots, findings, capability, root, tests, scope } = args;
 
   const blocking = countSeverity(findings, 'BLOCKING');
   const warning = countSeverity(findings, 'WARNING');
@@ -652,38 +766,42 @@ export function buildTopologyModel(args: {
   const dups = findings.filter(f => f.code === 'DUPLICATE_RELATION').length;
   const unmapped = findings.filter(f => f.code === 'UNMAPPED_RELATION_TYPE').length;
   const orphan = findings.filter(f => f.code === 'ORPHAN_NODE').length;
+  const drift = findings.filter(f => f.code === 'NODE_SET_SCOPE_DRIFT').length;
   const missingPins = snapshots.reduce((n, s) => n + s.missing.length, 0);
   const frozen = snapshots.filter(s => s.kind === 'BASELINE' && s.state === 'APPROVED').length;
+  const artifacts = [...graph.nodes.values()].filter(n => n.kind === 'Artifact').length;
   const byOutcome = (o: ProfileOutcome) => capability.filter(c => c.outcome === o).length;
-  const capRoot = capability.find(c => c.root === root);
-  const impactRows = walkGraph(graph, root, 3);
+  const walk = walkImpact(graph, root, 3);
+  const impactRows = walk.rows;
   const impactFeatures = [...new Set(impactRows.filter(r => r.kind === 'Feature').map(r => r.id))];
 
-  const stageSeed: Array<Omit<TpStage, 'title' | 'core' | 'refs'>> = [
+  const stageSeed: Array<Omit<TpStage, 'title' | 'short' | 'core' | 'refs' | 'inputs'>> = [
     {
-      id: 'registry', index: 0, tone: g.features.length > 0 ? 'pass' : 'fail', total: g.features.length,
+      id: 'registry', index: 0, tone: g.features.length > 0 ? 'pass' : 'fail',
+      summary: `${g.features.length} Feature · 범위 ${scope.length}`,
       rows: [
         { label: 'Feature 정의', value: `${g.features.length}건`, tone: g.features.length > 0 ? 'pass' : 'fail' },
-        { label: 'Lifecycle', value: [...new Set(g.features.map(f => f.lifecycle))].length + '종', tone: 'info' },
+        { label: 'Lifecycle', value: `${[...new Set(g.features.map(f => f.lifecycle))].length}종`, tone: 'info' },
         { label: '정확 버전 pin', value: `${g.features.filter(f => f.baselineVer).length}건`, tone: 'info' },
         { label: 'Retired', value: `${g.features.filter(f => f.lifecycle === 'Retired').length}건`, tone: 'pending' },
         { label: 'Registry 계약', value: 'SW 4.2', tone: 'muted' },
       ],
     },
     {
-      id: 'graph', index: 1, tone: dangling > 0 ? 'fail' : 'pass', total: graph.nodes.size,
+      id: 'graph', index: 1, tone: dangling > 0 ? 'fail' : 'pass',
+      summary: `${graph.nodes.size} 노드 · ${graph.links.length} 관계`,
       rows: [
         { label: '노드', value: `${graph.nodes.size}개`, tone: 'pass' },
         { label: '관계', value: `${graph.links.length}건`, tone: 'pass' },
-        { label: '해석 불가 참조', value: `${dangling}건`, tone: dangling > 0 ? 'fail' : 'pass' },
-        { label: '미연결 노드', value: `${orphan}건`, tone: orphan > 0 ? 'pending' : 'pass' },
-        { label: 'Artifact', value: `${[...graph.nodes.values()].filter(n => n.kind === 'Artifact').length}개`, tone: 'info' },
+        { label: '해석 불가', value: `${dangling}건`, tone: dangling > 0 ? 'fail' : 'pass' },
+        { label: '미연결', value: `${orphan}건`, tone: orphan > 0 ? 'pending' : 'pass' },
+        { label: 'Artifact', value: `${artifacts}개`, tone: 'info' },
       ],
     },
     {
       id: 'validate', index: 2,
       tone: blocking > 0 ? 'fail' : warning > 0 ? 'pending' : 'pass',
-      total: blocking + warning,
+      summary: `BLOCK ${blocking} · WARN ${warning}`,
       rows: [
         { label: 'BLOCKING', value: `${blocking}건`, tone: blocking > 0 ? 'fail' : 'pass' },
         { label: 'WARNING', value: `${warning}건`, tone: warning > 0 ? 'pending' : 'pass' },
@@ -693,10 +811,11 @@ export function buildTopologyModel(args: {
       ],
     },
     {
-      id: 'snapshot', index: 3, tone: missingPins > 0 ? 'fail' : 'pass', total: snapshots.length,
+      id: 'snapshot', index: 3, tone: missingPins > 0 ? 'fail' : 'pass',
+      summary: `${snapshots.length} Snapshot · 미해석 ${missingPins}`,
       rows: [
         { label: 'Snapshot', value: `${snapshots.length}건`, tone: 'pass' },
-        { label: '동결(APPROVED)', value: `${frozen}건`, tone: 'info' },
+        { label: '동결', value: `${frozen}건`, tone: 'info' },
         { label: '작업본 노드', value: `${snapshots[0]?.nodes.length ?? 0}개`, tone: 'info' },
         { label: '미해석 pin', value: `${missingPins}건`, tone: missingPins > 0 ? 'fail' : 'pass' },
         { label: 'LIVE hash', value: shortDigest(snapshots[0]?.hash ?? '', 10), tone: 'muted' },
@@ -705,45 +824,56 @@ export function buildTopologyModel(args: {
     {
       id: 'capability', index: 4,
       tone: byOutcome('CONFIG_CONFLICT') > 0 ? 'fail' : byOutcome('UNVERIFIED') > 0 ? 'pending' : 'pass',
-      total: capability.length,
+      summary: `${byOutcome('SELECTED')}/${capability.length} SELECTED`,
       rows: [
         { label: 'SELECTED', value: `${byOutcome('SELECTED')}건`, tone: 'pass' },
         { label: 'UNVERIFIED', value: `${byOutcome('UNVERIFIED')}건`, tone: byOutcome('UNVERIFIED') > 0 ? 'pending' : 'pass' },
-        { label: 'CONFIG_CONFLICT', value: `${byOutcome('CONFIG_CONFLICT')}건`, tone: byOutcome('CONFIG_CONFLICT') > 0 ? 'fail' : 'pass' },
-        { label: 'NOT_SUPPORTED', value: `${byOutcome('NOT_SUPPORTED')}건`, tone: byOutcome('NOT_SUPPORTED') > 0 ? 'pending' : 'pass' },
-        { label: '평가 대상', value: root, tone: capRoot?.outcome === 'SELECTED' ? 'pass' : 'pending' },
+        { label: '조건 충돌', value: `${byOutcome('CONFIG_CONFLICT')}건`, tone: byOutcome('CONFIG_CONFLICT') > 0 ? 'fail' : 'pass' },
+        { label: '미지원', value: `${byOutcome('NOT_SUPPORTED')}건`, tone: byOutcome('NOT_SUPPORTED') > 0 ? 'pending' : 'pass' },
+        { label: '평가 범위', value: `${capability.length} Feature`, tone: drift > 0 ? 'pending' : 'pass' },
       ],
     },
     {
-      id: 'impact', index: 5, tone: tests.length > 0 ? 'pass' : 'pending', total: impactRows.length,
+      id: 'impact', index: 5, tone: tests.length > 0 ? 'pass' : 'pending',
+      summary: `영향 ${impactRows.length} · 시험 ${tests.length}`,
       rows: [
         { label: '영향 노드', value: `${impactRows.length}개`, tone: 'info' },
         { label: '영향 Feature', value: `${impactFeatures.length}개`, tone: 'info' },
         { label: '선택 시험', value: `${tests.length}건`, tone: tests.length > 0 ? 'pass' : 'pending' },
-        { label: '경로 깊이', value: '≤3', tone: 'muted' },
-        { label: '근거', value: 'TD 4.7', tone: 'muted' },
+        { label: '경로 깊이', value: `≤${walk.maxHops}`, tone: 'muted' },
+        { label: '탐색 완결', value: walk.complete ? '완전' : `잔여 ${walk.frontier.length}`, tone: walk.complete ? 'pass' : 'pending' },
       ],
     },
   ];
 
   const stages: TpStage[] = stageSeed.map((s) => ({
     ...s,
+    inputs: TP_STAGE_INPUTS[s.id],
     title: TP_STAGE_META[s.id].ko,
+    short: TP_STAGE_SHORT[s.id],
     core: TP_STAGE_META[s.id].core,
     refs: TP_STAGE_META[s.id].refs,
   }));
 
-  // 실패 단계 뒤의 단계는 진행하지 않는다 — 앞 단계 산출물을 입력으로 쓰기 때문이다.
-  for (let i = 1; i < stages.length; i++) {
-    const prev = stages[i - 1];
-    if (prev.tone === 'fail') {
-      stages[i].blockedBy = prev.id;
-      stages[i].blockedReason = `${TP_STAGE_META[prev.id].ko} 실패 — 입력 미확정`;
-      stages[i].tone = 'fail';
+  // 실제 데이터 의존만 본다 — 입력 단계가 실패하면 그 단계로 막히고, 아니면 끝까지 진행한다.
+  const byId = new Map(stages.map(s => [s.id, s]));
+  for (const st of stages) {
+    const bad = st.inputs.map(id => byId.get(id)!).find(x => x.tone === 'fail');
+    if (bad) {
+      st.tone = 'fail';
+      st.blockedBy = bad.id;
+      st.blockedReason = `${bad.short} 실패 — 입력 미확정`;
     }
   }
+  // 검증 BLOCKING 이 남으면 동결은 판정을 보류한다 — 실패가 아니라 보류다.
+  const validateStage = byId.get('validate')!;
+  const snapshotStage = byId.get('snapshot')!;
+  if (!snapshotStage.blockedBy && validateStage.tone === 'fail') {
+    snapshotStage.heldBy = 'validate';
+    snapshotStage.heldReason = `검증 BLOCKING ${blocking}건 — 동결 보류`;
+  }
 
-  return { stages, width: TP_VIEW_W, height: TP_VIEW_H };
+  return { stages };
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -874,18 +1004,21 @@ export function TopologyArch(): JSX.Element {
   // ── 순수 계산 — 모두 실측 state 를 입력으로 쓴다 ──────────────────────────
   const input = useMemo<TopologyInput>(() => ({ features: state.features, edges: state.edges, relations: state.relations }), [state.features, state.edges, state.relations]);
   const graph = useMemo(() => buildTopologyGraph(input), [input]);
+  // Capability 평가 범위는 BOM 멤버 집합이 정한다 — Registry 전체로 평가하면 BOM 을 벗어난 판정이 나온다.
+  const scope = useMemo(() => bomScopeFeatureIds(state.bomBaselines), [state.bomBaselines]);
   const usage = useMemo(() => relationUsage(graph), [graph]);
   const snapshots = useMemo(() => buildSnapshots(graph, state.bomBaselines, state.audit[0]?.ts ?? '—'), [graph, state.bomBaselines, state.audit]);
-  const findings = useMemo(() => validateTopology(graph, input, state.bomBaselines), [graph, input, state.bomBaselines]);
-  const capability = useMemo(() => evaluateCapability(graph, input), [graph, input]);
+  const findings = useMemo(() => validateTopology(graph, input, state.bomBaselines, scope), [graph, input, state.bomBaselines, scope]);
+  const capability = useMemo(() => evaluateCapability(graph, input, scope), [graph, input, scope]);
   const tests = useMemo(() => selectTests(graph, capabilityRoots(graph, root)), [graph, root]);
   const walked = useMemo(() => walkGraph(graph, root, 3), [graph, root]);
   const model = useMemo(
-    () => buildTopologyModel({ g: input, graph, baselines: state.bomBaselines, snapshots, findings, capability, root, tests }),
-    [input, graph, state.bomBaselines, snapshots, findings, capability, root, tests],
+    () => buildTopologyModel({ g: input, graph, baselines: state.bomBaselines, snapshots, findings, capability, root, tests, scope }),
+    [input, graph, state.bomBaselines, snapshots, findings, capability, root, tests, scope],
   );
   const imports = useMemo(() => parseImport(importText, graph), [importText, graph]);
   const dupConditions = useMemo(() => duplicateConditionPairs(), []);
+  const bindDup = useMemo(() => bindingConflicts(), []);
   const activeSnap = snapshots.find(s => s.id === snapA) ?? snapshots[0];
   const otherSnap = snapshots.find(s => s.id === snapB) ?? snapshots[1] ?? snapshots[0];
   const diff = useMemo(() => diffSnapshots(activeSnap, otherSnap, graph), [activeSnap, otherSnap, graph]);
@@ -940,7 +1073,7 @@ export function TopologyArch(): JSX.Element {
         <div className="tpa-head-title">
           <h2>Topology 동작 메커니즘</h2>
           <span className="tpa-head-sub">
-            UI05 · 구성과 PLM · C14 Feature Topology · 정본 Feature_Topology_Definition v0.8 / SW DD-03-5
+            UI05 · 구성과 PLM · 정본 Feature_Topology_Definition v0.8 / SW DD-03-5
           </span>
         </div>
         <span className={`tpa-badge ${paused ? 'paused' : 'live'}`} role="status">
@@ -963,66 +1096,81 @@ export function TopologyArch(): JSX.Element {
       <section className="tpa-panel" data-testid="topology-engine">
         <header>
           <h3>Feature Topology 엔진 — Registry SoT → ImpactSet</h3>
-          <span className="tpa-ref">{TP_STAGE_ORDER.map(s => SPEC_CORE_LABEL[TP_STAGE_META[s].core]).filter(Boolean).join(' · ')}</span>
+          <span className="tpa-chip" title="작업본 TopologySnapshot 내용 hash — 동결본이 아니다">
+            <b className="mono">{shortDigest(snapshots[0]?.hash ?? '', 10)}</b>LIVE snapshot hash
+          </span>
+          <span className="tpa-ref">{CORE_LEGEND.map(g => g.core).join(' · ')}</span>
         </header>
-        <div className="tpa-scroll">
-          <svg className="tpa-svg" viewBox={`0 0 ${model.width} ${model.height}`} role="img" aria-label="Feature Topology 엔진 파이프라인">
-            {model.stages.map((st, i) => {
-              const x = tpColX(i);
-              const active = tab.startsWith('UI05-') && TP_STAGE_ORDER[i] === stageOfArea(tab);
-              return (
-                <g key={st.id} data-testid={`tp-stage-${st.id}`} data-tone={st.tone} data-blocked={Boolean(st.blockedBy)} transform={`translate(${x},0)`}>
-                  <rect className={`tpa-band-bg ${st.tone === 'fail' ? 'blocked' : ''} ${active ? 'active' : ''}`} x={0} y={0} width={TP_COL_W} height={TP_VIEW_H} rx={10} />
-                  <text className="tpa-stage-title" x={12} y={20}>{st.title}</text>
-                  <text className="tpa-stage-core" x={12} y={34}>{SPEC_CORE_LABEL[st.core] ?? st.core} · {st.refs}</text>
-                  {st.rows.map((r, ri) => (
-                    <g key={r.label} transform={`translate(12,${TP_ROW_Y + ri * TP_ROW_H})`}>
-                      <circle className={`tpa-tone-${r.tone}`} cx={4} cy={-4} r={3.4} />
-                      <text className="tpa-row-label" x={14} y={0}>{r.label}</text>
-                      <text className="tpa-row-value" x={14} y={12}>{r.value}</text>
-                    </g>
-                  ))}
-                  <text className={`tpa-stage-count tpa-tone-${st.tone}`} x={12} y={TP_VIEW_H - 6}>
-                    {st.total}건 · {st.tone === 'pass' ? 'PASS' : st.tone === 'pending' ? 'REVIEW' : 'BLOCK'}
-                  </text>
-                  {st.blockedBy && (
-                    <text className="tpa-stage-blocked" x={12} y={TP_VIEW_H - 18}>⛔ {st.blockedReason}</text>
-                  )}
-                </g>
-              );
-            })}
-            {model.stages.slice(0, -1).map((st, i) => {
-              const x1 = tpColX(i) + TP_COL_W;
-              const x2 = tpColX(i + 1);
-              const next = model.stages[i + 1];
-              const blocked = Boolean(next.blockedBy);
-              return (
-                <g key={`link-${st.id}`} data-testid={`tp-link-${st.id}-${next.id}`} data-blocked={blocked}>
-                  <line className={`tpa-flow-line ${blocked ? 'blocked' : ''}`} x1={x1} y1={TP_ROW_Y + 6} x2={x2} y2={TP_ROW_Y + 6} />
-                  <circle
-                    className={`tpa-packet tpa-tone-${next.tone}`}
-                    cx={x1} cy={TP_ROW_Y + 6} r={3.6}
-                    data-paused={paused} data-blocked={blocked}
-                    style={{
-                      '--tpa-dx': `${x2 - x1}px`,
-                      animationDuration: `${paused ? 0 : 900 / Math.max(1, snapshot.clock.rate)}ms`,
-                      animationDelay: `${i * 120}ms`,
-                      animationPlayState: blocked ? 'paused' : paused ? 'paused' : 'running',
-                    } as CSSProperties}
-                  />
-                </g>
-              );
-            })}
-          </svg>
+        <div className="tpa-flow">
+          {model.stages.map((st, i) => {
+            const active = tab.startsWith('UI05-') && st.id === stageOfArea(tab);
+            const status = st.tone === 'pass' ? 'PASS' : st.tone === 'pending' ? 'REVIEW' : st.tone === 'fail' ? 'BLOCK' : 'INFO';
+            const prev = model.stages[i - 1];
+            return (
+              <Fragment key={st.id}>
+                {prev && (
+                  <div
+                    className={`tpa-arrow ${st.blockedBy ? 'blocked' : ''}`}
+                    data-testid={`tp-link-${prev.id}-${st.id}`}
+                    data-blocked={Boolean(st.blockedBy)}
+                    title={st.blockedBy
+                      ? `${prev.title} → ${st.title}: 입력 미확정`
+                      : `${prev.title} → ${st.title}`}
+                  >
+                    <span className="tpa-arrow-rail" aria-hidden />
+                    <span
+                      className={`tpa-packet tpa-tone-${st.tone}`}
+                      data-paused={paused}
+                      data-blocked={Boolean(st.blockedBy)}
+                      aria-hidden
+                      style={{
+                        animationDuration: `${paused ? 0 : 900 / Math.max(1, snapshot.clock.rate)}ms`,
+                        animationDelay: `${(i - 1) * 120}ms`,
+                        animationPlayState: st.blockedBy || paused ? 'paused' : 'running',
+                      }}
+                    />
+                  </div>
+                )}
+                <article
+                  className={`tpa-stage ${st.tone === 'fail' ? 'blocked' : ''} ${active ? 'active' : ''}`}
+                  data-testid={`tp-stage-${st.id}`}
+                  data-tone={st.tone}
+                  data-blocked={Boolean(st.blockedBy)}
+                  title={`${st.title} · ${st.refs}`}
+                >
+                  <header className="tpa-stage-head">
+                    <span className="tpa-stage-title" title={st.title}>{st.short}</span>
+                    <span className="tpa-stage-core mono" title={SPEC_CORE_LABEL[st.core] ?? st.core}>{st.core}</span>
+                  </header>
+                  <div className="tpa-stage-rows">
+                    {st.rows.map(r => (
+                      <div key={r.label} className="tpa-row" title={`${r.label} ${r.value}`}>
+                        <span className={`tpa-dot tpa-tone-${r.tone}`} aria-hidden />
+                        <span className="tpa-row-label">{r.label}</span>
+                        <span className="tpa-row-value">{r.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="tpa-stage-foot">
+                    <span className={`tpa-stage-status tpa-tone-${st.tone}`}>{status}</span>
+                    <span className={`tpa-stage-count tpa-tone-${st.tone}`} title={st.summary}>{st.summary}</span>
+                  </div>
+                  {st.blockedBy && <div className="tpa-stage-blocked">⛔ {st.blockedReason}</div>}
+                  {st.heldBy && <div className="tpa-stage-held">⏸ {st.heldReason}</div>}
+                </article>
+              </Fragment>
+            );
+          })}
         </div>
-        <div className="tpa-strip">
-          <span className="tpa-chip"><b>{graph.nodes.size}</b>노드</span>
-          <span className="tpa-chip"><b>{graph.links.length}</b>관계</span>
-          <span className={`tpa-chip ${blocking > 0 ? 'fail' : 'pass'}`}><b>{blocking}</b>BLOCKING</span>
-          <span className={`tpa-chip ${warning > 0 ? 'pending' : 'pass'}`}><b>{warning}</b>WARNING</span>
-          <span className="tpa-chip"><b>{capability.filter(c => c.outcome === 'SELECTED').length}</b>Capability SELECTED</span>
-          <span className="tpa-chip"><b>{tests.length}</b>선택 시험</span>
-          <span className="tpa-chip"><b>{shortDigest(snapshots[0]?.hash ?? '', 10)}</b>LIVE snapshot hash</span>
+        <div className="tpa-legend">
+          {CORE_LEGEND.map(g => (
+            <span key={g.core} className="tpa-legend-item" title={`${g.core} ${g.name} — ${g.refs.join(' · ')}`}>
+              <b className="mono">{g.core}</b>
+              <span className="tpa-legend-name">{g.name}</span>
+              <span className="tpa-legend-stages">{g.stages.join(' · ')}</span>
+              <span className="tpa-legend-refs mono">{g.refs.join(' · ')}</span>
+            </span>
+          ))}
         </div>
       </section>
 
@@ -1300,10 +1448,11 @@ export function TopologyArch(): JSX.Element {
             <div className="tpa-2col">
               <div className="card">
                 <h3 style={{ marginTop: 0, fontSize: 15 }}>순환 · 누락 · 충돌 (S04-A02)</h3>
-                <Bars data={findings.reduce<Record<string, number>>((acc, f) => { acc[f.code] = (acc[f.code] ?? 0) + 1; return acc; }, {})} />
+                <Bars labelWidth={180} data={findings.reduce<Record<string, number>>((acc, f) => { acc[f.code] = (acc[f.code] ?? 0) + 1; return acc; }, {})} />
                 <p className="tpa-note mt">
-                  BLOCKING <b>{blocking}</b>건 / WARNING <b>{warning}</b>건 — BLOCKING 이 남아 있으면 상단 파이프라인의
-                  Snapshot 동결·Capability 평가 단계가 진행되지 않는다.
+                  BLOCKING <b>{blocking}</b>건 / WARNING <b>{warning}</b>건 — 상단 파이프라인은 실제 입력 의존만 본다.
+                  그래프 적재가 실패하면 검증·동결·Capability 가 그 입력으로 막히고, 적재가 성공하면 검증이 경고만 남겨도
+                  동결·평가는 진행된다(BLOCKING 잔존 시 동결은 <b>보류</b>로 표시).
                 </p>
               </div>
               <div className="card">
@@ -1319,8 +1468,40 @@ export function TopologyArch(): JSX.Element {
                 <div className="tpa-strip">
                   <span className="tpa-chip fail"><b>{findings.filter(f => f.code === 'DANGLING_REFERENCE').length}</b>미해석 참조 → 적재 차단</span>
                   <span className="tpa-chip pending"><b>{findings.filter(f => f.code === 'UNMAPPED_RELATION_TYPE').length}</b>사전 외 → 경고</span>
+                  <span className="tpa-chip pending"><b>{findings.filter(f => f.code === 'NODE_SET_SCOPE_DRIFT').length}</b>BOM 범위 밖 node → 경고</span>
                 </div>
               </div>
+            </div>
+
+            <div className="card">
+              <h3 style={{ marginTop: 0, fontSize: 15 }}>제어점 Binding 교차 확인 — 정본 판정은 UI03 이 소유한다</h3>
+              <p className="tpa-sub">
+                같은 제어점을 같은 적용 조건으로 두 Binding 이 점유하면 어느 쪽이 이기는지 그래프가 결정할 수 없다(DD-03-4 · BD-06).
+                이 화면은 결속 <b>횟수</b>만 세지 않고 그 사실을 그대로 인용한다 — 판정은 Feature BOM 화면(UI03)에서 한다.
+              </p>
+              <div className="tpa-strip">
+                <span className="tpa-chip"><b>{FLAG_BINDINGS.length}</b>FlagBinding</span>
+                <span className={`tpa-chip ${bindDup.length > 0 ? 'fail' : 'pass'}`}><b>{bindDup.length}</b>제어점·조건 중복</span>
+                <span className="tpa-chip"><b>{CONTROL_POINTS.length}</b>Feature 제어점</span>
+              </div>
+              {bindDup.length > 0 && (
+                <div className="tpa-scroll mt">
+                  <table className="tpa-table">
+                    <thead><tr><th>제어점 · 적용 조건</th><th>선행 Binding</th><th>충돌 Binding</th><th>판정 위치</th></tr></thead>
+                    <tbody>
+                      {bindDup.map(d => (
+                        <tr key={d.key}>
+                          <td className="mono">{d.key}</td>
+                          <td className="mono">{d.first}</td>
+                          <td className="mono">{d.second}</td>
+                          <td>UI03 Feature BOM — 같은 코드로 차단</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {bindDup.length === 0 && <div className="tpa-empty">제어점·적용 조건 중복 0건 — 인용할 충돌이 없다.</div>}
             </div>
 
             <div className="card">

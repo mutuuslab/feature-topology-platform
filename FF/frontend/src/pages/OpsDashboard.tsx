@@ -5,7 +5,6 @@ import { getFeature } from '../data/engine';
 import { opsTriggerRules } from '../data/refdata';
 import { useApp } from '../store';
 import { GButton } from '../components/patterns';
-import SpecLink from '../components/SpecLink';
 import { AreaChart, GaugeArc, LiveDot } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 
@@ -31,7 +30,6 @@ export default function OpsDashboard() {
         <TopoLink id={id} />
       </div>
       <p className="page-sub">{f?.displayName} — Runtime: {killed && !recovering ? 'disabled (Safe Default)' : recovering ? `recovering ${rate}%` : 'enabled'} · 실시간 시뮬레이션(2s)</p>
-      <SpecLink families={['FR-RTE', 'FR-KSW', 'FR-RBK', 'FR-OPD']} />
 
       <div className="kpis">
         <div className="kpi"><div className="v">{killed && !recovering ? '0%' : `${live.activation}%`}</div><div className="l">Activation Success</div></div>

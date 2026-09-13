@@ -29,7 +29,7 @@ import Cost from './pages/cost';
 import Fleet from './pages/fleet';
 import Activation from './pages/activation';
 import Lifecycle from './pages/lifecycle';
-import { SpecOverview, SpecExplorer, SpecCoverage, SpecChangeLog, SpecGlossary } from './pages/spec';
+import { SpecChangeLog, SpecGlossary } from './pages/reference';
 import { Experiment, Conflict, Exception, Compliance, Scenario, CICD, Billing, Business, Security } from './pages/specnew';
 // Digital Twin 계층은 초기 번들에서 분리한다(엔진 + 시뮬레이터 데이터 계층이 큼).
 const TwinFleet = lazy(() => import('./pages/twin').then((m) => ({ default: m.TwinFleet })));
@@ -51,7 +51,6 @@ const NAV: { group: string; items: [string, string][] }[] = [
   { group: 'G8 연동 / Integration', items: [['/integration/connectors', 'Connector Hub'], ['/integration/sync', 'Sync Logs'], ['/spec/billing', '과금 연계']] },
   { group: 'G9 분석·감사 / Insights', items: [['/insights/reports', 'Reports'], ['/cost', 'SW 개발비 / Cost'], ['/insights/audit', 'Audit Log'], ['/insights/glossary', 'Glossary'], ['/spec/business', '글로벌·현장·사업']] },
   { group: 'G10 관리자 / Admin', items: [['/admin/users', 'Users & Roles'], ['/admin/permissions', 'Permissions Matrix'], ['/admin/org', 'Org & Domains'], ['/admin/approval', 'Approval Workflow'], ['/admin/settings', 'Settings'], ['/admin/notifications', 'Notifications'], ['/spec/security', '보안 운영']] },
-  { group: 'G11 기능명세 / Spec', items: [['/spec', 'Overview'], ['/spec/explorer', 'FR Explorer'], ['/spec/coverage', 'Coverage'], ['/spec/changelog', 'Change Log'], ['/spec/glossary', '용어집']] },
   { group: 'G12 Digital Twin', items: [['/twin/live', 'Live Visual Twin (3D)'], ['/twin/fleet', 'Twin Fleet'], ['/twin/impact', 'Twin Impact Preview'], ['/twin/simulation', 'What-if Simulation'], ['/twin/incident', 'Closed-Loop Incident'], ['/twin/vehicle/VIN-DEMO-017', 'Vehicle Twin 상세']] },
 ];
 
@@ -223,9 +222,6 @@ export default function App() {
           <Route path="/admin/settings" element={<Settings />} />
           <Route path="/admin/notifications" element={<NotificationsCenter />} />
 
-          <Route path="/spec" element={<SpecOverview />} />
-          <Route path="/spec/explorer" element={<SpecExplorer />} />
-          <Route path="/spec/coverage" element={<SpecCoverage />} />
           <Route path="/spec/changelog" element={<SpecChangeLog />} />
           <Route path="/spec/glossary" element={<SpecGlossary />} />
           <Route path="/spec/experiment" element={<Experiment />} />

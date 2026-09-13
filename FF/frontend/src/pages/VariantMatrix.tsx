@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { variantMatrix } from '../data/model';
-import SpecLink from '../components/SpecLink';
 import { useToast, useApp } from '../store';
 import { RightPanel } from '../components/patterns';
 import TopoLink from '../components/TopoLink';
@@ -26,7 +25,6 @@ export default function VariantMatrix() {
         <TopoLink />
       </div>
       <p className="page-sub">구조적 적용가능성 (Variant ≠ Control) · 행 클릭 → 판정 상세</p>
-      <SpecLink families={['FR-VAR', 'FR-TGT']} />
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>적용성 Status 분포</b>
           <Donut size={120} center={`${variantMatrix.length}`}

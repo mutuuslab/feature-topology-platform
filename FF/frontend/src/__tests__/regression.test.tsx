@@ -9,8 +9,10 @@ describe('네비 도메인 매핑 (안 B)', () => {
   it('라우트 첫 세그먼트 → 올바른 도메인', () => {
     expect(domainOfPath('/')).toBe('home');
     expect(domainOfPath('/catalog')).toBe('feature');
-    expect(domainOfPath('/spec/changelog')).toBe('feature');   // 참조(명세)는 Feature 유지
-    expect(domainOfPath('/spec/coverage')).toBe('governance'); // 명세 관리 → 거버넌스로 이동
+    expect(domainOfPath('/spec/changelog')).toBe('feature');   // 참조(기준 문서)는 Feature 유지
+    expect(ITEM['/spec']).toBeUndefined();                     // 604 FR 기능명세 Overview 제거
+    expect(ITEM['/spec/explorer']).toBeUndefined();             // FR Explorer 제거
+    expect(ITEM['/spec/coverage']).toBeUndefined();             // Coverage 제거
     expect(domainOfPath('/feature/FEAT-BDC-001')).toBe('feature');
     expect(domainOfPath('/impact')).toBe('lifecycle');
     expect(domainOfPath('/ops/FEAT-BDC-001')).toBe('operate');

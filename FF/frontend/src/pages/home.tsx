@@ -43,7 +43,7 @@ const ROLE_FOCUS: Record<string, { title: string; desc: string; views: [string, 
   '기획 P1': { title: '기획 · 카탈로그/요구사항 중심', desc: 'Feature 정의·우선순위·기대효과', views: [['Catalog', '/catalog'], ['Feature 등록', '/master/define'], ['Reports', '/insights/reports']] },
   '시스템 P2': { title: '시스템 · 토폴로지/정합성 중심', desc: '아키텍처 관계·일관성 규칙', views: [['Topology', '/topology/FEAT-BDC-001'], ['Consistency', '/consistency'], ['Metamodel', '/metamodel']] },
   'SW P3': { title: 'SW · 의사결정/영향분석 중심', desc: '변경 영향·배포방식 결정·BOM', views: [['Decision Center', '/decisions/center'], ['Impact', '/impact'], ['BOM Editor', '/master/bom']] },
-  '검증 P4': { title: '검증 · Gate/증적 중심', desc: 'Release Readiness·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['Coverage', '/spec/coverage']] },
+  '검증 P4': { title: '검증 · Gate/증적 중심', desc: 'Release Readiness·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['Compliance', '/spec/compliance']] },
   'OTA P5': { title: 'OTA · 캠페인/정책 중심', desc: '롤아웃·정책 생애주기·활성화', views: [['OTA Campaign', '/ops/campaign'], ['Policy Lifecycle', '/ops/policy'], ['Activation', '/activation']] },
   '협력사 P6': { title: '협력사 · 패키지/인수 중심', desc: 'API 릴리스 패키지·인수 기준', views: [['Supplier Portal', '/supplier/portal'], ['Release Package', '/supplier/package']] },
   '운영 P7': { title: '운영 · Kill Switch/텔레메트리 중심', desc: '실시간 운영·인시던트·Fleet', views: [['Ops Dashboard', '/ops/FEAT-BDC-001'], ['Telemetry', '/ops/telemetry'], ['Incident', '/ops/incident'], ['Fleet', '/fleet']] },
@@ -220,7 +220,7 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
         <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>Gate 상태 분포</b>
           <Donut size={130} segments={[{ label: 'PASS', value: counts.PASS, color: '#1F9D55' }, { label: 'PENDING', value: counts.PENDING, color: '#D9822B' }, { label: 'FAIL', value: counts.FAIL, color: '#D64545' }]} /></div>
         <div className="col card"><b>바로가기</b>
-          <div className="row mt"><button className="btn" onClick={() => nav('/readiness/FEAT-BDC-001')}>Release Readiness →</button><button className="btn" onClick={() => nav('/verify/evidence')}>Test Evidence →</button><button className="btn" onClick={() => nav('/spec/coverage')}>Coverage →</button></div>
+          <div className="row mt"><button className="btn" onClick={() => nav('/readiness/FEAT-BDC-001')}>Release Readiness →</button><button className="btn" onClick={() => nav('/verify/evidence')}>Test Evidence →</button><button className="btn" onClick={() => nav('/spec/compliance')}>Compliance →</button></div>
         </div>
       </div>
       <div className="row mt">

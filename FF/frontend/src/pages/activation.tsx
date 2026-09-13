@@ -4,7 +4,6 @@ import { useApp } from '../store';
 import { MODELS, sampleVehicles } from '../data/fleet';
 import { Gauge, Heatmap } from '../components/charts';
 import TopoLink from '../components/TopoLink';
-import SpecLink from '../components/SpecLink';
 
 export default function Activation() {
   const nav = useNavigate();
@@ -23,8 +22,7 @@ export default function Activation() {
         <h1 className="page-title">Activation Control · 차종별 활성/비활성</h1>
         <TopoLink id={fid} />
       </div>
-      <p className="page-sub">특정 차종(모델)에 대해 Feature를 ON/OFF·롤아웃%·Kill — Fleet 차량 상태에 즉시 반영 (FR-POL/ROL/TGT)</p>
-      <SpecLink families={['FR-POL', 'FR-ROL', 'FR-TGT']} />
+      <p className="page-sub">특정 차종(모델)에 대해 Feature를 ON/OFF·롤아웃%·Kill — Fleet 차량 상태에 즉시 반영</p>
 
       <div className="card">
         <div className="row" style={{ alignItems: 'center' }}>

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { readiness, getFeature, verification, relationsOf } from '../data/engine';
 import { GateBadge } from '../components/ui';
-import SpecLink from '../components/SpecLink';
 import { useApp, useToast } from '../store';
 import { useTwinOptional } from '../state/twinStore';
 import { RecBadge, KvRow } from '../components/twin';
@@ -42,7 +41,6 @@ export default function ReleaseReadiness() {
       <h1 className="page-title">Release Readiness Center</h1>
       <p className="page-sub">{f?.displayName} — {r.passCount}/9 PASS</p>
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <SpecLink families={['FR-REG', 'FR-DSV']} />
         <TopoLink id={id} />
       </div>
 

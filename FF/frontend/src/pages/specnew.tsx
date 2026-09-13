@@ -1,7 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { byFamily, familyName } from '../data/spec';
-import { coverageOf, STATUS_COLOR } from '../data/specCoverage';
 import { useToast, useApp, PIPELINE_STAGES } from '../store';
 import { costSummary, fmtWon, readiness } from '../data/engine';
 import { fleetStats } from '../data/fleet';
@@ -241,9 +239,9 @@ function SecurityWidget() {
   );
 }
 
-// 공통: spec 기반 신규 화면 — 동작 위젯 + family FR 목록
-function SpecScreen({ crumb, title, sub, families, widget }:
-  { crumb: string; title: string; sub: string; families: string[]; widget?: ReactNode }) {
+// 공통: 기준 화면 래퍼 — 동작 위젯
+function SpecScreen({ crumb, title, sub, widget }:
+  { crumb: string; title: string; sub: string; widget?: ReactNode }) {
   return (
     <div>
       <div className="breadcrumb">{crumb}</div>
@@ -253,28 +251,16 @@ function SpecScreen({ crumb, title, sub, families, widget }:
       </div>
       <p className="page-sub">{sub}</p>
       {widget && <div className="card">{widget}</div>}
-      {families.map(f => {
-        const reqs = byFamily(f);
-        if (!reqs.length) return null;
-        const cov = coverageOf(f);
-        return (
-          <div className="card" key={f}>
-            <b>{f} · {familyName(f)}</b> <span className="badge" style={{ background: STATUS_COLOR[cov.status] }}>{cov.status}</span> <span className="muted small">{reqs.length}건</span>
-            <table className="mt"><thead><tr><th>FR ID</th><th>요구사항명</th><th>영역</th></tr></thead>
-              <tbody>{reqs.map(r => <tr key={r.id}><td className="mono">{r.id}</td><td>{r.name}<div className="small muted">{r.desc}</div></td><td><span className="pill">{r.area || '-'}</span></td></tr>)}</tbody></table>
-          </div>
-        );
-      })}
     </div>
   );
 }
 
-export const Experiment = () => <SpecScreen crumb="의사결정 ▸ 실험·효과검증" title="실험 · 효과 검증 (Experiments)" sub="타겟팅 · 효과 측정 · 안전 기준 기반 실험 운영 (FR-EXP)" families={['FR-EXP']} widget={<ExperimentWidget />} />;
-export const Conflict = () => <SpecScreen crumb="의사결정 ▸ 정책 충돌" title="정책 충돌 탐지·해소 (Policy Conflict)" sub="중복·충돌 정책 자동 탐지 + 우선순위 해소 (FR-CON · Topology Consistency 연계)" families={['FR-CON']} widget={<ConflictWidget />} />;
-export const Exception = () => <SpecScreen crumb="의사결정 ▸ 예외 정책" title="예외 정책 관리 (Exception Policy)" sub="긴급 예외 승인 · 임시 우회 · 만료 자동 관리 (FR-EXC)" families={['FR-EXC']} widget={<ExceptionWidget />} />;
-export const Compliance = () => <SpecScreen crumb="검증 ▸ 컴플라이언스" title="컴플라이언스 룰 체커 (Compliance)" sub="지역 법규·개인정보·안전/보안 룰 → 배포 전 자동 검증·차단 (FR-CRC)" families={['FR-CRC']} widget={<ComplianceWidget />} />;
-export const Scenario = () => <SpecScreen crumb="검증 ▸ 시나리오 검증" title="차량 시나리오 검증 (Scenario)" sub="차종·상태·권한 조합 대량 시나리오 사전 실행 (FR-SCN · FR-SVL)" families={['FR-SCN', 'FR-SVL']} widget={<ScenarioWidget />} />;
-export const CICD = () => <SpecScreen crumb="배포·운영 ▸ CI/CD" title="CI/CD 파이프라인 · 품질 Gate" sub="SW배포/Feature출시 분리 · 단계적 배포 · 품질 Gate (FR-RDD/CICD/PDA/QGV)" families={['FR-RDD', 'FR-CICD', 'FR-PDA', 'FR-QGV']} widget={<CICDWidget />} />;
-export const Billing = () => <SpecScreen crumb="연동 ▸ 과금" title="과금 시스템 연계 (Billing)" sub="구독·옵션 과금 · 사용량 정산 연계 (FR-BIL)" families={['FR-BIL']} widget={<BillingWidget />} />;
-export const Business = () => <SpecScreen crumb="분석 ▸ 글로벌·현장·사업" title="글로벌 출시 · 현장 지원 · 사업 지표" sub="권역/법규/브랜드 차등 · 판매·정비 포털 · 사업 KPI (FR-GLB/FSP/BIZ)" families={['FR-GLB', 'FR-FSP', 'FR-BIZ']} widget={<BusinessWidget />} />;
-export const Security = () => <SpecScreen crumb="관리자 ▸ 보안 운영" title="보안 운영 (Security Ops)" sub="안전 요구사항 추적 · 보안 배포 · 인증·키 · 취약점 · 이상징후 (보안 family)" families={['FR-SRT', 'FR-SDM', 'FR-CIV', 'FR-VHM', 'FR-SVS', 'FR-PVL']} widget={<SecurityWidget />} />;
+export const Experiment = () => <SpecScreen crumb="의사결정 ▸ 실험·효과검증" title="실험 · 효과 검증 (Experiments)" sub="타겟팅 · 효과 측정 · 안전 기준 기반 실험 운영" widget={<ExperimentWidget />} />;
+export const Conflict = () => <SpecScreen crumb="의사결정 ▸ 정책 충돌" title="정책 충돌 탐지·해소 (Policy Conflict)" sub="중복·충돌 정책 자동 탐지 + 우선순위 해소 (Topology Consistency 연계)" widget={<ConflictWidget />} />;
+export const Exception = () => <SpecScreen crumb="의사결정 ▸ 예외 정책" title="예외 정책 관리 (Exception Policy)" sub="긴급 예외 승인 · 임시 우회 · 만료 자동 관리" widget={<ExceptionWidget />} />;
+export const Compliance = () => <SpecScreen crumb="검증 ▸ 컴플라이언스" title="컴플라이언스 룰 체커 (Compliance)" sub="지역 법규·개인정보·안전/보안 룰 → 배포 전 자동 검증·차단" widget={<ComplianceWidget />} />;
+export const Scenario = () => <SpecScreen crumb="검증 ▸ 시나리오 검증" title="차량 시나리오 검증 (Scenario)" sub="차종·상태·권한 조합 대량 시나리오 사전 실행" widget={<ScenarioWidget />} />;
+export const CICD = () => <SpecScreen crumb="배포·운영 ▸ CI/CD" title="CI/CD 파이프라인 · 품질 Gate" sub="SW배포/Feature출시 분리 · 단계적 배포 · 품질 Gate" widget={<CICDWidget />} />;
+export const Billing = () => <SpecScreen crumb="연동 ▸ 과금" title="과금 시스템 연계 (Billing)" sub="구독·옵션 과금 · 사용량 정산 연계" widget={<BillingWidget />} />;
+export const Business = () => <SpecScreen crumb="분석 ▸ 글로벌·현장·사업" title="글로벌 출시 · 현장 지원 · 사업 지표" sub="권역/법규/브랜드 차등 · 판매·정비 포털 · 사업 KPI" widget={<BusinessWidget />} />;
+export const Security = () => <SpecScreen crumb="관리자 ▸ 보안 운영" title="보안 운영 (Security Ops)" sub="안전 요구사항 추적 · 보안 배포 · 인증·키 · 취약점 · 이상징후" widget={<SecurityWidget />} />;

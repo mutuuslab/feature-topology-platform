@@ -34,12 +34,11 @@ npm run dev          # http://localhost:9001   (포트 8000 금지)
 - Readiness: **8/9 PASS, G5 Verification PENDING(OTA-RB-002) → HOLD**
 - Kill Switch → Safe Default(disabled) → 단계 복구
 
-## 기능명세서(엑셀) 반영 — G11 기능명세
-`Feature Flag 플랫폼_기능명세서` 엑셀(9시트·604 FR·47 family)을 프론트에 적재·연결.
-- **적재**: `python scripts/ingest_spec.py "<xlsx 경로>"` → `src/data/spec.json` 재생성(커밋).
-- **G11 기능명세**: Overview(48 컴포넌트)·**FR Explorer**(검색·필터·트리·상세 패널)·**Coverage**(family→화면 구현상태 완료/부분/백엔드/미구현)·Change Log·용어집.
-- **추적성**: 기존 화면(Catalog·Topology·Variant·Readiness·Ops·Supplier)에 "관련 FR" 칩 → Explorer 필터 이동.
-- **신규 spec-driven 화면**: 실험·정책충돌·예외정책·컴플라이언스·시나리오검증·CI/CD·과금·글로벌/현장/사업·보안 운영.
+## 기준 문서 참조 — Change Log · 용어집 (참조 그룹)
+기준 패키지 **FP-DETAILED-1.1 / MENU 1.3**(2026-09-13)의 참조성 문서만 남긴다.
+- `/spec/changelog` — 기준 개정 이력(문서 버전 AR 4.5 · SW 4.6 · UX 4.6 · TD 0.8 · UI 3.9 · MENU 1.3 · FRI 1.3 · OPA 1.1 · AAOS 1.6 + 기준선).
+- `/spec/glossary` — 플랫폼 용어집(검색).
+- 이전 데모의 **604 FR / 47 family "기능명세서"**(Overview·FR Explorer·Coverage, `src/data/spec.json`)는 기준 패키지에 없는 자체 문서이므로 제거했다. 요구사양·상세설계는 기준 패키지를 그대로 참조한다.
 
 ## 백엔드 연동 (나중)
 `frontend/src/data/engine.ts` 의 함수를 `fetch('/api/...')` 로 교체하고 `vite.config.ts` 의 `/api` proxy 주석 해제 → `backend`(포트 9101) 기동. 백엔드의 `GraphPort` 를 PostgreSQL+Apache AGE 어댑터로 교체하면 대안 A 완성(AGE는 Windows 네이티브 미지원 → docker 권장).

@@ -4,7 +4,6 @@ import { topology, getFeature, artifact } from '../data/engine';
 import { features } from '../data/model';
 import GraphCanvas from '../components/GraphCanvas';
 import { RightPanel } from '../components/patterns';
-import SpecLink from '../components/SpecLink';
 
 const NODE_TYPES = ['feature','requirement','sw_component','ecu','api_service','signal','variant_rule','control_point','deployment_unit','test_case','supplier_function','telemetry_event'];
 const EDGE_TYPES = ['parent_of','requires','excludes','overrides','fallback_to','degrades_to','replaces','composed_of','child_of','duplicates'];
@@ -40,7 +39,6 @@ export default function Topology() {
       <div className="breadcrumb">관계 / Topology ▸ <span className="mono">{id}</span></div>
       <h1 className="page-title">Topology Graph</h1>
       <p className="page-sub">{f?.displayName} 중심 관계 그래프 — Node 12종 / Edge 10종 (S12 Graph 스키마)</p>
-      <SpecLink families={['FR-DEP']} />
 
       <div className="card" style={{ padding: 10 }}>
         <div className="row" style={{ alignItems: 'center' }}>

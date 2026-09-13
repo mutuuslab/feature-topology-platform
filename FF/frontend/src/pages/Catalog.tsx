@@ -4,7 +4,6 @@ import { useApp } from '../store';
 import { catalogStats, health, impact } from '../data/engine';
 import { LifecycleBadge, DeployBadge, Health } from '../components/ui';
 import { RightPanel } from '../components/patterns';
-import SpecLink from '../components/SpecLink';
 import { Donut, Bars, RadialProgress, CountUp, tally, dist } from '../components/charts';
 
 const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
@@ -57,7 +56,6 @@ export default function Catalog() {
       <div className="breadcrumb">기준정보 / Master ▸ Catalog</div>
       <h1 className="page-title">Feature Catalog</h1>
       <p className="page-sub">전체 {all.length} Feature · 검색·필터·정렬·대량작업·Health</p>
-      <SpecLink families={['FR-REG', 'FR-CAT']} />
 
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Lifecycle 분포</b>

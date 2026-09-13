@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import SpecLink from '../components/SpecLink';
 import { supplierCost, fmtWon } from '../data/engine';
 import { useToast, useApp } from '../store';
 import { RadialProgress, Donut, Steps, tally, dist } from '../components/charts';
@@ -70,7 +69,6 @@ export function APIReleasePackage() {
         <div className="col card"><b>항목 상태 분포</b>
           <Donut segments={statusSegments} center={String(PKG_ITEMS.length)} /></div>
       </div>
-      <SpecLink families={['FR-SPM']} />
       <div className="card">
         {PKG_ITEMS.map(([name,status])=>(
           <div className="evt" key={name}><span style={{flex:1}}>{name}</span>

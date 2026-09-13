@@ -4,7 +4,6 @@ import { useApp, useToast, LIFECYCLE_ORDER, canTransition } from '../store';
 import { LifecycleBadge } from '../components/ui';
 import { readiness } from '../data/engine';
 import TopoLink from '../components/TopoLink';
-import SpecLink from '../components/SpecLink';
 import { Steps, RadialProgress, Donut, tally, dist } from '../components/charts';
 
 const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
@@ -31,8 +30,7 @@ export default function Lifecycle() {
         <h1 className="page-title">Feature Lifecycle 관리</h1>
         <TopoLink id={fid} />
       </div>
-      <p className="page-sub">Proposed → Approved → Developing → Verified → Released → Retired · 전이 시 구조 완전성·9-Gate 검증 (FR-REG-002/005)</p>
-      <SpecLink families={['FR-REG']} />
+      <p className="page-sub">Proposed → Approved → Developing → Verified → Released → Retired · 전이 시 구조 완전성·9-Gate 검증</p>
 
       <div className="card">
         <div className="row" style={{ alignItems: 'center' }}>

@@ -525,7 +525,7 @@ Option A(17.1~17.3)는 절차적 도형이라 실루엣이 "둥근 상자" 수�
 
 | 용도 | 자산 | 출처 | 라이선스 | 크기 |
 |---|---|---|---|---|
-| 차체 | `CarConcept.gltf` (+ `.bin`, 텍스처 13장) | Khronos glTF Sample Assets — 저자 Eric Chadwick (Darmstadt Graphics Group GmbH) | **CC BY 4.0** | 10,025,560 B (9.6 MB) |
+| 차체 | `CarConcept.gltf` (+ `.bin`, 이미지 14개 중 13개 사용) | Khronos glTF Sample Assets — 저자 Eric Chadwick (Darmstadt Graphics Group GmbH) | **CC BY 4.0** | 10,025,560 B (9.6 MB) |
 | 환경 | `studio_small_09_1k.hdr` | Poly Haven — 저자 Sergej Majboroda | CC0 1.0 | 1.6 MB |
 
 - 두 자산 모두 `public/models/CarConcept/`, `public/env/` 에 **자체 호스팅**한다(런타임 외부 의존 0).
@@ -539,7 +539,7 @@ Option A(17.1~17.3)는 절차적 도형이라 실루엣이 "둥근 상자" 수�
 | 항목 | 값 |
 |---|---|
 | 정점 / 삼각형 | 162,766 / 213,347 |
-| 메시 / 노드 / 재질 / 이미지 / 텍스처 | 97 / 101 / 29 / 14 / 15 |
+| 메시 / 노드 / 재질 / 이미지 / 텍스처 | 97 / 101 / 29 / 14 / 15 (기본 프리미티브 재질 23, 변형 전용 6) |
 | 정점 속성 | POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1 |
 | 스킨 · 애니메이션 | 없음 (관절은 코드로 회전시킨다 — §17.4.4) |
 | `extensionsUsed` | `KHR_materials_clearcoat` · `emissive_strength` · `iridescence` · `transmission` · `materials_variants` · `texture_transform` |
@@ -552,7 +552,9 @@ Option A(17.1~17.3)는 절차적 도형이라 실루엣이 "둥근 상자" 수�
 
 - 노드 이름 접두사로 부품군을 판별한다: `Body*` = 외판(패널), `Interior*` = 실내, 그 외 `Engine` · `Axles` · `Wheel*` · `License Plate`.
   X-ray 는 `PANEL_PREFIX = 'Body'` 로 **외판만** 반투명 처리한다 — 실내까지 뚫리면 각이 안 보인다.
-- `KHR_materials_variants` 는 three.js 로더가 적용하지 않는다 → 기본 도장(Carmine)으로 렌더된다. 색상 선택 UI 를 붙이려면 별도 처리 필요(미구현).
+- `KHR_materials_variants` 는 three.js 로더가 적용하지 않는다 → 기본 도장(붉은 계열)으로 렌더된다. 색상 선택 UI 를 붙이려면 별도 처리 필요(미구현).
+  그 결과 **변형 전용 재질은 프리미티브에 붙지 않아 텍스처도 요청되지 않는다** — `Paint 1 Pearl` 의 `Thickness.jpg` 가 그것이고,
+  실측 자산 요청이 "이미지 14개 중 13개 + gltf + bin + HDR = 16건" 인 이유다(§17.4.5). 파일은 저장소에 있지만 전송되지 않는다.
 
 #### 17.4.3 로딩과 강등(fallback) 정책
 
@@ -619,6 +621,9 @@ Option A(17.1~17.3)는 절차적 도형이라 실루엣이 "둥근 상자" 수�
 - 1→4/1→5 는 배경 비중이 69.4 % → 41.6 % 로 떨어진다 = 절차적 환경이 배경 사각형을 추가로 그린다.
 - 4번과 5번의 색 수(873 vs **567**)가 크게 다르다 = 폴백 경로는 실 모델과 **다른 단순 렌더**를 쓴다(강등이 실제로 동작).
 - 네트워크: 자산 요청 **16/16 = 200**(gltf 1, bin 1, 텍스처 13, HDR 1), 실패 요청 0, 콘솔 에러 0. GL 은 `WebGL 2.0`(SwiftShader 소프트웨어 래스터).
+- **배포본 동일성**: 같은 하네스를 배포 URL(`https://feature-topology.pages.dev` — `VEH_BASE` · `VEH_PREFIX` 로 대상/접두사 교체)에 돌려도
+  자산 16/16 = 200, 콘솔 에러 0, 1번 캡처가 `carPx=144,227 · carMean=110.0 · 휘도>90 41.3 %` 로 개발 서버와 **같은 값**이 나온다.
+  즉 이 렌더는 환경 차이가 아니라 결정적 입력(자산 + 카메라 프리셋 + `simTimeMs`)의 함수다.
 
 #### 17.4.6 비용과 트레이드오프
 

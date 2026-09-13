@@ -5,6 +5,7 @@ import { useToast, useApp, ROLLOUT_STEPS, POLICY_STAGES } from '../store';
 import { RightPanel } from '../components/patterns';
 import { AreaChart, GaugeArc, LiveDot, Donut, Bars, Steps, tally, dist } from '../components/charts';
 import TopoLink from '../components/TopoLink';
+import { useTwinOptional } from '../state/twinStore';
 
 export function OTACampaign() {
   const nav = useNavigate();
@@ -160,10 +161,33 @@ const INC_FLOW = ['open', 'investigating', 'resolved'];
 export function IncidentManager() {
   const nav = useNavigate();
   const incidents = useApp().state.incidents;
+  const twin = useTwinOptional();
+  const twinIncidents = twin?.snapshot.incidents ?? [];
   return (
     <div>
       <div className="breadcrumb">배포·운영 ▸ Incident</div>
       <h1 className="page-title">Incident Manager</h1>
+      {twin && (
+        <div className="card">
+          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <b>Digital Twin Closed Loop Incident ({twinIncidents.length})</b>
+            <button className="btn primary" onClick={() => nav('/twin/incident')}>Twin Incident 콘솔 →</button>
+          </div>
+          <p className="small muted mt">차량 이상은 VIN 단위 Twin 상태에서 먼저 감지된다. 원인 분석 → Rollout 중단 → Kill-Switch/부분 복구 → 재수렴 확인까지 12단계 Closed Loop 로 처리한다.</p>
+          {twinIncidents.length ? (
+            <div className="table-wrap mt"><table><thead><tr><th>Incident</th><th>Feature</th><th>심각도</th><th>상태</th><th>영향 VIN</th><th>원인</th></tr></thead>
+              <tbody>{twinIncidents.map(i => (
+                <tr key={i.incidentId} role="button" tabIndex={0} onClick={() => nav('/twin/incident')} onKeyDown={e => { if (e.key === 'Enter') nav('/twin/incident'); }}>
+                  <td className="mono">{i.incidentId}</td>
+                  <td className="mono">{i.featureId}</td>
+                  <td><span className="badge" style={{ background: i.severity === 'SEV-1' ? 'var(--fail)' : i.severity === 'SEV-2' ? 'var(--pending)' : 'var(--info)' }}>{i.severity}</span></td>
+                  <td><span className="pill">{i.status}</span></td>
+                  <td>{i.affectedVins.length}대</td>
+                  <td className="small mono">{i.fault}</td>
+                </tr>))}</tbody></table></div>
+          ) : <p className="small muted mt">현재 Open Twin Incident 없음 — Fault Injection 으로 Closed Loop 를 시연할 수 있다.</p>}
+        </div>
+      )}
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Severity 분포</b>
           <Donut size={120} center={`${incidents.length}`} segments={dist(tally(incidents, i => i.severity), { high: '#D64545', med: '#D9822B', low: '#1F9D55' })} /></div>

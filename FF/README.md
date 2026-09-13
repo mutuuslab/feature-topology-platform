@@ -1,4 +1,4 @@
-# Feature Topology — 동작 프로토타입 (FF/)
+# Feature Platform — 동작 프로토타입 (FF/)
 
 `docs/` 상세 설계를 입력으로 한 UI/UX 동작 프로토타입. BDC 시드(FEAT-BDC-001)로 E2E 검증.
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useReducer, type Dispatch, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type Dispatch, type ReactNode } from 'react';
 import * as M from './data/model';
 import { permMatrix, policies as SEED_POL, policyStages as POL_STAGES, campaigns as SEED_CMP, incidents as SEED_INC, connectors as SEED_CONN, syncLogs as SEED_SYNC } from './data/refdata';
 import { setDB, readiness, relationsOf, edgesOf } from './data/engine';
@@ -363,7 +363,19 @@ function load(): AppState {
 }
 
 interface Ctx { state: AppState; dispatch: Dispatch<Action>; can: (verb: string) => boolean; }
+/** 액션·권한만 노출하는 컨텍스트 — 2초 LIVE_TICK 마다 값이 바뀌지 않는다. */
+interface ApiCtx { dispatch: Dispatch<Action>; can: (verb: string) => boolean; }
+/** 화면 전체가 참조하는 '안정 슬라이스'. 실시간 데이터(live/scenarios/…)는 의도적으로 제외한다. */
+interface ShellCtx { role: string; navMode: 'function' | 'dept'; lang: string; theme: string; }
+
 const AppCtx = createContext<Ctx>(null as any);
+const AppApiCtx = createContext<ApiCtx>({ dispatch: () => {}, can: () => false });
+const AppShellCtx = createContext<ShellCtx>({
+  role: initial.role,
+  navMode: (initial.navMode || 'function') as 'function' | 'dept',
+  lang: initial.lang,
+  theme: initial.theme,
+});
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, load);
@@ -383,15 +395,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(id);
   }, []);
 
-  const can = (verb: string) => (permMatrix[state.role] || []).includes(verb);
-  return <AppCtx.Provider value={{ state, dispatch, can }}>{children}</AppCtx.Provider>;
+  const can = useCallback((verb: string) => (permMatrix[state.role] || []).includes(verb), [state.role]);
+  const api = useMemo<ApiCtx>(() => ({ dispatch, can }), [can]);
+  const shell = useMemo<ShellCtx>(
+    () => ({ role: state.role, navMode: (state.navMode || 'function') as 'function' | 'dept', lang: state.lang, theme: state.theme }),
+    [state.role, state.navMode, state.lang, state.theme],
+  );
+  return (
+    <AppApiCtx.Provider value={api}>
+      <AppShellCtx.Provider value={shell}>
+        <AppCtx.Provider value={{ state, dispatch, can }}>{children}</AppCtx.Provider>
+      </AppShellCtx.Provider>
+    </AppApiCtx.Provider>
+  );
 }
 
 export const useApp = () => useContext(AppCtx);
 
+/** 액션·권한 전용 — 실시간 틱과 분리된 구독(2초마다 리렌더되지 않는다). */
+export const useAppApi = () => useContext(AppApiCtx);
+
+/** 언어·테마·역할·네비 모드 전용 — 실시간 슬라이스와 분리된 구독. */
+export const useAppShell = () => useContext(AppShellCtx);
+
 // 간편 토스트 — 비동작 버튼에 피드백 부여
 export const useToast = () => {
-  const { dispatch } = useApp();
+  const { dispatch } = useAppApi();
   return (msg: string, kind: 'ok' | 'warn' | 'err' = 'ok') => dispatch({ t: 'TOAST', toast: { msg, kind } });
 };
 

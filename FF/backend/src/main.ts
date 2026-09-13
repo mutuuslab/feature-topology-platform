@@ -10,6 +10,6 @@ async function bootstrap() {
   app.enableCors({ origin: true });
   await app.listen(PORT);
   // eslint-disable-next-line no-console
-  console.log(`Feature Topology backend → http://localhost:${PORT}/api/catalog`);
+  console.log(`Feature Platform backend → http://localhost:${PORT}/api/catalog`);
 }
 bootstrap();

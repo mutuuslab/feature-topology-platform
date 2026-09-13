@@ -1,7 +1,7 @@
 {
   "name": "feature-topology-backend",
   "version": "0.1.0",
-  "description": "Feature Topology Registry — NestJS backend (in-memory GraphPort default)",
+  "description": "Feature Platform — NestJS backend (in-memory GraphPort default)",
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsc -p tsconfig.json",

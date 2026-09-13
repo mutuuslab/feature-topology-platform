@@ -14,7 +14,7 @@ export function Login() {
   return (
     <div style={{ maxWidth: 380, margin: '60px auto' }}>
       <div className="card" style={{ textAlign: 'center' }}>
-        <h2 style={{ color: 'var(--brand)' }}>▣ Feature Topology</h2>
+        <h2 style={{ color: 'var(--brand)' }}>▣ Feature Platform</h2>
         <p className="muted small">SDV Feature Lifecycle & 통제 관리</p>
         <button className="btn primary" style={{ width: '100%', marginTop: 12 }} onClick={() => nav('/onboarding')}>Hyundai SSO 로그인</button>
         <input className="mt" placeholder="MFA 코드" style={{ width: '100%', padding: 8, border: '1px solid var(--line)', borderRadius: 6 }} />
@@ -68,7 +68,7 @@ export function RoleHome() {
       <div className="breadcrumb">홈 / Home ▸ 내 대시보드</div>
       <div className="hero">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <div><h1 className="page-title">Feature Topology Platform <LiveDot /></h1>
+          <div><h1 className="page-title">Feature Platform <LiveDot /></h1>
             <div className="sub">현대자동차 SDV · {fleetStats.total.toLocaleString()}대 운영 · 접속자 <b>{profileOf(role).name}</b> (사번 {profileOf(role).empNo}) · 소속 {profileOf(role).org} · 역할 <b>{role}</b></div></div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
             <label className="small" style={{ opacity: .9 }}>부서/역할 전환</label>

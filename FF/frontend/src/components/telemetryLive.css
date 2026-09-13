@@ -1,0 +1,50 @@
+/* §17.5 — 실시간 텔레메트리 카드 (차량 상세). 플랫폼 라이트 테마 변수만 사용한다. */
+
+.vtel{
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);
+  padding:10px 12px;margin-top:10px;
+}
+.vtel[data-streaming="false"]{border-color:#F0C9A8;background:linear-gradient(180deg,#FFFBF6,var(--surface) 60px)}
+
+.vtel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px dashed var(--line);padding-bottom:8px}
+.vtel-title{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13px}
+.vtel-dot{width:8px;height:8px;border-radius:50%;background:var(--pass);animation:vtel-pulse 1.4s ease-in-out infinite}
+.vtel-dot[data-streaming="false"]{background:var(--pending);animation:none}
+@keyframes vtel-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+.vtel-summary{font-size:12px;color:var(--ink);background:var(--surface-3);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+.vtel-clock{margin-left:auto}
+.vtel-gate{font-size:12px;color:var(--muted)}
+.vtel-gate[data-streaming="true"]{color:var(--pass)}
+.vtel-gate[data-streaming="false"]{color:var(--pending)}
+
+.vtel-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:10px}
+@media (max-width:1100px){.vtel-grid{grid-template-columns:minmax(0,1fr)}}
+.vtel-col{min-width:0}
+.vtel-sub{margin:0 0 6px;font-size:12px;font-weight:700;color:var(--ink);display:flex;align-items:baseline;gap:4px}
+
+.vtel-sig{display:grid;grid-template-columns:minmax(0,1fr) 96px 92px 46px 44px;align-items:center;gap:8px;padding:3px 0}
+.vtel-sig+.vtel-sig{border-top:1px solid var(--surface-3)}
+.vtel-sig-nm{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vtel-vss{margin-left:6px;font-size:10px;color:var(--muted)}
+.vtel-sig-val{font-size:12px;text-align:right}
+.vtel-sig-remain{font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.vtel-sig[data-stale="true"] .vtel-sig-remain{color:var(--fail);font-weight:700}
+.vtel-q{font-size:10px;text-align:right;color:var(--muted)}
+.vtel-q[data-q="GOOD"]{color:var(--pass)}
+.vtel-q[data-q="BAD"]{color:var(--fail)}
+.vtel-q[data-q="MISSING"]{color:var(--pending)}
+
+.vtel-gauge{display:block;height:6px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.vtel-gauge>i{display:block;height:100%;background:var(--pass);transition:width .9s linear,background .3s}
+.vtel-gauge>i[data-stale="true"]{background:var(--fail)}
+
+.vtel-stream{max-height:196px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2);padding:4px 6px}
+.vtel-empty{margin:6px 4px}
+.vtel-line{display:flex;align-items:center;gap:8px;padding:2px 2px;font-size:11px;border-bottom:1px solid var(--surface-3)}
+.vtel-line:last-child{border-bottom:0}
+.vtel-line:first-child{background:linear-gradient(90deg,rgba(31,157,85,.10),transparent)}
+.vtel-badge{margin-left:auto;font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px}
+.vtel-badge.ok{color:var(--pass);background:rgba(31,157,85,.12)}
+.vtel-badge.warn{color:var(--fail);background:rgba(214,69,69,.12)}
+.vtel-foot{margin:6px 0 0}
+.vtel-warn{color:var(--fail);font-weight:700}

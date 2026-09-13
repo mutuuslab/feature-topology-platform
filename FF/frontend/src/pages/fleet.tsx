@@ -5,6 +5,9 @@ import { useApp } from '../store';
 import { Donut, Bars, AreaChart, LiveDot, CountUp, Heatmap } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 import { RightPanel } from '../components/patterns';
+import { useTwinOptional } from '../state/twinStore';
+import { RecBadge, DreFlow } from '../components/twin';
+import { FEATURE_ID } from '../data/twin/types';
 import { features } from '../data/model';
 
 const fmtM = (n: number) => (n / 1e6).toFixed(2) + 'M';
@@ -16,6 +19,9 @@ export default function Fleet() {
   const [veh, setVeh] = useState<Vehicle | null>(null);
   const [sel, setSel] = useState<any>(null);
   const states = veh ? vehicleFeatureStates(veh, activation) : [];
+  const twin = useTwinOptional();
+  const twinVerdict = veh && twin ? twin.snapshot.verdicts.find((v) => v.twin.vin === veh.vin) ?? null : null;
+  const inst = twinVerdict?.twin.featureInstances[FEATURE_ID];
   const lookup = (q: string) => { const v = sampleVehicles.find(x => x.vin.toLowerCase() === q.trim().toLowerCase()) || sampleVehicles.find(x => x.vin.toLowerCase().includes(q.trim().toLowerCase())); setVeh(v || null); };
 
   return (
@@ -31,6 +37,29 @@ export default function Fleet() {
         <div className="kpi"><div className="v"><CountUp value={Math.round(fleetStats.onlineRate * 100)} suffix="%" /></div><div className="l">온라인 차량</div></div>
         <div className="kpi"><div className="v" style={{ color: 'var(--pass)' }}>{live.activation}%</div><div className="l">Fleet 활성화(실시간)</div></div>
         <div className="kpi"><div className="v" style={{ color: 'var(--fail)' }}>{live.failRate}%</div><div className="l">정책 적용 실패(실시간)</div></div>
+      </div>
+
+      <div className="card">
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <b>Digital Twin 연계 — VIN 단위 사실(Fact) 확인</b>
+          <div>
+            <button className="btn" onClick={() => nav('/twin/fleet')}>Twin Fleet →</button>{' '}
+            <button className="btn" onClick={() => nav('/twin/impact')}>Twin Impact Preview</button>
+          </div>
+        </div>
+        <p className="small muted mt">이 화면은 Fleet 집계다. 차량별 As-Built·As-Deployed·Desired·Reported·Effective 사실과 수렴 상태는 Digital Twin 에서 확인한다(Deployment ≠ Release, Desired ≠ Effective).</p>
+        {twin && (
+          <div className="row mt" style={{ gap: 16 }}>
+            <span className="small">Twin 차량 <b>{twin.snapshot.stats.total}</b>대</span>
+            <span className="small">수렴률 <b>{(twin.snapshot.convergence.convergenceRate * 100).toFixed(1)}%</b> (기준 {(twin.snapshot.convergence.threshold * 100).toFixed(0)}%)</span>
+            <span className="small">Drift <b>{twin.snapshot.stats.reconciliationCounts.CRITICAL_DRIFT ?? 0}</b>대</span>
+            <span className="small">Unknown <b>{twin.snapshot.stats.reconciliationCounts.UNKNOWN ?? 0}</b>대</span>
+            <span className="small">Rollout <b>{twin.snapshot.rollout.active ? twin.snapshot.rollout.scope : '미활성'}{twin.snapshot.rollout.paused ? ' · PAUSED' : ''}</b></span>
+            {twin.snapshot.incidents.length > 0 && (
+              <button className="btn danger" onClick={() => nav('/twin/incident')}>Open Incident {twin.snapshot.incidents.length}건</button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="card">
@@ -81,6 +110,20 @@ export default function Fleet() {
                 <td><span className="badge" style={{ background: STATE_COLOR[s.state] }}>{s.state}</span></td>
                 <td className="small muted">{s.reason}</td></tr>))}</tbody></table></div>
           <p className="small muted mt">활성 {states.filter(s => s.state === 'enabled').length} · 차단 {states.filter(s => s.state === 'blocked').length} · 저하 {states.filter(s => s.state === 'degraded').length} · 실패 {states.filter(s => s.state === 'apply_fail').length}</p>
+          {twin && (
+            <div className="row mt" style={{ gap: 12, alignItems: 'center' }}>
+              <span className="small muted">Digital Twin:</span>
+              {inst ? (
+                <>
+                  <DreFlow desired={inst.desired.state} reported={inst.reported.state} effective={inst.effective.state} reconciliation={twinVerdict!.reconciliation.result} />
+                  <span className="small muted">Health {twinVerdict!.health}</span>
+                </>
+              ) : (
+                <span className="small muted">이 VIN은 Digital Twin 데모 Cohort 에 없습니다(As-Built 미등록).</span>
+              )}
+              <button className="btn" onClick={() => nav(`/twin/vehicle/${veh.vin}`)}>Twin 상세 →</button>
+            </div>
+          )}
         </div>
       )}
 

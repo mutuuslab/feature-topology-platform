@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
-import { useApp, roleHome } from './store';
+import { useAppShell, useAppApi, roleHome } from './store';
 import { NotFound } from './components/patterns';
 import { roles, profileOf } from './data/refdata';
 import { DOMAINS, DEPT_NAV, ITEM, domainOfPath, useT } from './i18n';
@@ -31,6 +31,13 @@ import Activation from './pages/activation';
 import Lifecycle from './pages/lifecycle';
 import { SpecOverview, SpecExplorer, SpecCoverage, SpecChangeLog, SpecGlossary } from './pages/spec';
 import { Experiment, Conflict, Exception, Compliance, Scenario, CICD, Billing, Business, Security } from './pages/specnew';
+// Digital Twin 계층은 초기 번들에서 분리한다(엔진 + 시뮬레이터 데이터 계층이 큼).
+const TwinFleet = lazy(() => import('./pages/twin').then((m) => ({ default: m.TwinFleet })));
+const TwinImpact = lazy(() => import('./pages/twin').then((m) => ({ default: m.TwinImpact })));
+const TwinSimulation = lazy(() => import('./pages/twin').then((m) => ({ default: m.TwinSimulation })));
+const TwinVehicle = lazy(() => import('./pages/twinOps').then((m) => ({ default: m.TwinVehicle })));
+const TwinIncident = lazy(() => import('./pages/twinOps').then((m) => ({ default: m.TwinIncident })));
+const TwinLive = lazy(() => import('./pages/twinLive').then((m) => ({ default: m.TwinLive })));
 
 const NAV: { group: string; items: [string, string][] }[] = [
   { group: 'G0 홈 / Home', items: [['/', '내 대시보드'], ['/home/customize', '홈 커스터마이즈'], ['/login', 'Login·SSO'], ['/onboarding', 'Onboarding']] },
@@ -45,12 +52,14 @@ const NAV: { group: string; items: [string, string][] }[] = [
   { group: 'G9 분석·감사 / Insights', items: [['/insights/reports', 'Reports'], ['/cost', 'SW 개발비 / Cost'], ['/insights/audit', 'Audit Log'], ['/insights/glossary', 'Glossary'], ['/spec/business', '글로벌·현장·사업']] },
   { group: 'G10 관리자 / Admin', items: [['/admin/users', 'Users & Roles'], ['/admin/permissions', 'Permissions Matrix'], ['/admin/org', 'Org & Domains'], ['/admin/approval', 'Approval Workflow'], ['/admin/settings', 'Settings'], ['/admin/notifications', 'Notifications'], ['/spec/security', '보안 운영']] },
   { group: 'G11 기능명세 / Spec', items: [['/spec', 'Overview'], ['/spec/explorer', 'FR Explorer'], ['/spec/coverage', 'Coverage'], ['/spec/changelog', 'Change Log'], ['/spec/glossary', '용어집']] },
+  { group: 'G12 Digital Twin', items: [['/twin/live', 'Live Visual Twin (3D)'], ['/twin/fleet', 'Twin Fleet'], ['/twin/impact', 'Twin Impact Preview'], ['/twin/simulation', 'What-if Simulation'], ['/twin/incident', 'Closed-Loop Incident'], ['/twin/vehicle/VIN-DEMO-017', 'Vehicle Twin 상세']] },
 ];
 
 export default function App() {
   const nav = useNavigate();
   const loc = useLocation();
-  const { state, dispatch } = useApp();
+  const { role, navMode, lang, theme } = useAppShell();
+  const { dispatch } = useAppApi();
   const { t, navGroup, navItem, navDomain, deptLabel } = useT();
   const [navOpen, setNavOpen] = useState(false);
   const [activeDomain, setActiveDomain] = useState(() => domainOfPath(loc.pathname));
@@ -60,14 +69,13 @@ export default function App() {
   useEffect(() => {
     if (didLand.current) return;
     didLand.current = true;
-    if (loc.pathname === '/') nav(roleHome[state.role] || '/catalog', { replace: true });
+    if (loc.pathname === '/') nav(roleHome[role] || '/catalog', { replace: true });
   }, []);
-  const roleDomain = domainOfPath(roleHome[state.role] || '/');
+  const roleDomain = domainOfPath(roleHome[role] || '/');
   const dom = DOMAINS.find(d => d.key === activeDomain) || DOMAINS[0];
   // 부서별 보기
-  const navMode = state.navMode || 'function';
-  const [activeDept, setActiveDept] = useState(state.role);
-  useEffect(() => { setActiveDept(state.role); }, [state.role]);
+  const [activeDept, setActiveDept] = useState(role);
+  useEffect(() => { setActiveDept(role); }, [role]);
   const deptObj = DEPT_NAV.find(d => d.role === activeDept) || DEPT_NAV[0];
   const [q, setQ] = useState('');
   const submitSearch = () => { if (q.trim()) { nav('/catalog?q=' + encodeURIComponent(q.trim())); setNavOpen(false); } };
@@ -77,22 +85,22 @@ export default function App() {
       <a className="skip" href="#main">{t('skip')}</a>
       <div className="topbar">
         <button className="hamburger" aria-label="menu" onClick={() => setNavOpen(o => !o)}>☰</button>
-        <span className="logo" style={{ cursor: 'pointer' }} onClick={() => nav('/')}>▣ FEATURE TOPOLOGY</span>
+        <span className="logo" style={{ cursor: 'pointer' }} onClick={() => nav('/')}>▣ FEATURE PLATFORM</span>
         <div className="search">
           <input aria-label="search" placeholder={t('search')} value={q}
             onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') submitSearch(); }} />
         </div>
-        {(() => { const me = profileOf(state.role); return (
+        {(() => { const me = profileOf(role); return (
           <div className="user-chip" title={`${me.name} · 사번 ${me.empNo} · ${me.org}`}>
             <span className="avatar">{me.name.slice(0, 1)}</span>
             <span className="meta"><b>{me.name}</b><span className="muted">{me.empNo} · {me.org}</span></span>
           </div>
         ); })()}
-        <select className="role-sel" aria-label={t('role')} value={state.role} onChange={e => changeRole(e.target.value)}>
+        <select className="role-sel" aria-label={t('role')} value={role} onChange={e => changeRole(e.target.value)}>
           {roles.map(r => <option key={r}>{r}</option>)}
         </select>
-        <button className="icon-btn" title="language" aria-label="language" onClick={() => dispatch({ t: 'LANG', lang: state.lang === 'ko' ? 'en' : 'ko' })}>{state.lang.toUpperCase()}</button>
-        <button className="icon-btn" title="theme" aria-label="theme" onClick={() => dispatch({ t: 'THEME', theme: state.theme === 'light' ? 'dark' : 'light' })}>{state.theme === 'light' ? '🌙' : '☀'}</button>
+        <button className="icon-btn" title="language" aria-label="language" onClick={() => dispatch({ t: 'LANG', lang: lang === 'ko' ? 'en' : 'ko' })}>{lang.toUpperCase()}</button>
+        <button className="icon-btn" title="theme" aria-label="theme" onClick={() => dispatch({ t: 'THEME', theme: theme === 'light' ? 'dark' : 'light' })}>{theme === 'light' ? '🌙' : '☀'}</button>
         <button className="icon-btn" title="notifications" aria-label="notifications" onClick={() => nav('/admin/notifications')}>🔔</button>
       </div>
       <nav className="nav" aria-label="primary">
@@ -124,7 +132,7 @@ export default function App() {
               {DEPT_NAV.map(d => (
                 <button key={d.role} className={'rail-btn' + (d.role === activeDept ? ' active' : '')} title={deptLabel(d)} aria-label={deptLabel(d)} aria-current={d.role === activeDept} onClick={() => setActiveDept(d.role)}>
                   <span className="ic">{d.icon}</span><span className="lb">{deptLabel(d)}</span>
-                  {d.role === state.role && <span className="role-dot" title="현재 역할" />}
+                  {d.role === role && <span className="role-dot" title="현재 역할" />}
                 </button>
               ))}
             </div>
@@ -229,6 +237,13 @@ export default function App() {
           <Route path="/spec/billing" element={<Billing />} />
           <Route path="/spec/business" element={<Business />} />
           <Route path="/spec/security" element={<Security />} />
+
+          <Route path="/twin/live" element={<TwinLive />} />
+          <Route path="/twin/fleet" element={<TwinFleet />} />
+          <Route path="/twin/impact" element={<TwinImpact />} />
+          <Route path="/twin/simulation" element={<TwinSimulation />} />
+          <Route path="/twin/incident" element={<TwinIncident />} />
+          <Route path="/twin/vehicle/:vin" element={<TwinVehicle />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>

@@ -1,0 +1,195 @@
+/* §18.10 독립 Twin 콘솔 — 중앙 뷰 전용 스타일.
+   셸(twinShell.css)이 `--brand/--ink/...` 토큰을 다시 선언하므로
+   여기서는 색을 직접 박지 않고 토큰만 참조한다. */
+
+/* 뷰 공통 컨테이너 --------------------------------------------------- */
+.tsview-pad {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  padding: 8px 10px 10px;
+}
+
+.tsview-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.tsview-grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 8px;
+}
+
+.tsview-grid3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
+  gap: 8px;
+}
+
+.tsview-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tsview-kv {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+/* 도구 모음 --------------------------------------------------------- */
+.tbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.tbtn:hover {
+  background: var(--surface-3);
+  border-color: var(--brand);
+}
+.tbtn.is-on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.tbtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.toolbar-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 폼 컨트롤 --------------------------------------------------------- */
+.tselect,
+.tinput {
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.tselect:hover,
+.tinput:hover {
+  border-color: var(--brand);
+}
+.tinput {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+.tinput::placeholder {
+  color: var(--muted);
+}
+
+.tsview-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 6px;
+}
+.tsview-input {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.tsview-input input {
+  padding: 4px 7px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+/* 태그 / 표 행 상태 -------------------------------------------------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px;
+  padding: 1px 5px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 4px;
+  color: #fff;
+  background: var(--muted);
+}
+.tag-fail {
+  background: var(--fail);
+}
+
+.twin-table tr.row-fail td {
+  background: rgba(223, 91, 91, 0.14);
+}
+.twin-table tr.row-pending td {
+  background: rgba(240, 173, 78, 0.12);
+}
+
+/* Closed-Loop 헤더 / 액션 -------------------------------------------- */
+.tsloop-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+
+.tsloop-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+/* Revision SoT 카드 -------------------------------------------------- */
+.tsrev-card {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+/* 공장 뷰가 스테이지를 가득 채우도록 -------------------------------- */
+.tshell-plant .tshell-stage.is-fill {
+  min-height: 320px;
+  flex: 1 1 auto;
+}
+
+@media (max-width: 1100px) {
+  .tsview-pad {
+    padding: 6px;
+  }
+}

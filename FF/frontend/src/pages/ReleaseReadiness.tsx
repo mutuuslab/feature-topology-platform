@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { readiness, getFeature, verification, relationsOf } from '../data/engine';
 import { GateBadge } from '../components/ui';
 import SpecLink from '../components/SpecLink';
 import { useApp, useToast } from '../store';
+import { useTwinOptional } from '../state/twinStore';
+import { RecBadge, KvRow } from '../components/twin';
+import { FEATURE_ID, FEATURE_VERSION } from '../data/twin/types';
 import { Donut, RadialProgress, Steps } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 
@@ -25,6 +28,8 @@ export default function ReleaseReadiness() {
   const r = readiness(id);
   const { can } = useApp();
   const toast = useToast();
+  const twin = useTwinOptional();
+  const nav = useNavigate();
   const [sim, setSim] = useState(-1); // -1 idle, 0..8 running, 9 done
   useEffect(() => { if (sim >= 0 && sim < 9) { const t = setTimeout(() => setSim(sim + 1), 800); return () => clearTimeout(t); } }, [sim]);
   const counts = { PASS: r.gates.filter(g => g.status === 'PASS').length, PENDING: r.gates.filter(g => g.status === 'PENDING').length, FAIL: r.gates.filter(g => g.status === 'FAIL').length };
@@ -76,6 +81,34 @@ export default function ReleaseReadiness() {
           )}
           {sim === 9 && <div className={`decision ${r.decision}`}>시뮬레이션 완료 → {r.passCount}/9 PASS · {r.decision}</div>}
         </div>
+        {twin && (() => {
+          const gates = twin.simResult.qualityGates;
+          const failed = gates.filter(g => g.status === 'FAIL');
+          const warns = gates.filter(g => g.status === 'WARN');
+          const status: 'PASS' | 'WARN' | 'FAIL' | 'NOT_RUN' = failed.length ? 'FAIL' : warns.length ? 'WARN' : twin.impact.gate.qualityGatePassed ? 'PASS' : 'NOT_RUN';
+          const bg = status === 'PASS' ? 'var(--pass)' : status === 'FAIL' ? 'var(--fail)' : status === 'WARN' ? 'var(--pending)' : 'var(--surface-3)';
+          const col = status === 'NOT_RUN' ? 'var(--muted)' : '#fff';
+          return (
+            <div className="col card">
+              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <b>Twin What-if Gate <span className="badge" style={{ background: bg, color: col }}>{status}</span></b>
+                <div>
+                  <button className="btn" onClick={() => nav('/twin/simulation')}>What-if Simulation →</button>{' '}
+                  <button className="btn" onClick={() => nav('/twin/impact')}>Twin Impact Preview</button>
+                </div>
+              </div>
+              <p className="small muted mt">Simulation Twin 이 실제 차량과 동일한 Policy Evaluator · Local Guard 로 What-if 를 수행한 결과다. 이 Gate 를 통과하지 않으면 Production 승격 대상이 아니다.</p>
+              <div className="kv mt">
+                <KvRow k="Simulation ID"><span className="mono">{twin.simResult.simulationId}</span></KvRow>
+                <KvRow k="Feature">{FEATURE_ID} v{FEATURE_VERSION}</KvRow>
+                <KvRow k="입력 Policy Version"><span className="mono small">{twin.simResult.inputs.policyVersion}</span></KvRow>
+                <KvRow k="최종 판정"><RecBadge value={twin.simResult.reconciliation} /> <span className="small muted">{twin.simResult.reasonCode.code}</span></KvRow>
+                <KvRow k="Quality Gate">{gates.filter(g => g.status === 'PASS').length}/{gates.length} PASS{failed.length ? ` · FAIL ${failed.length}` : ''}{warns.length ? ` · WARN ${warns.length}` : ''}</KvRow>
+                <KvRow k="증적"><span className="small">{twin.simResult.evidence.length}건 ({twin.simResult.evidence.map(e => e.kind).join(', ')})</span></KvRow>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {(() => {

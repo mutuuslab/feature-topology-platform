@@ -1,28 +1,58 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-// ── 카운트업 훅 ──
-export function useCountUp(target: number, dur = 900) {
-  const [v, setV] = useState(0);
-  const ref = useRef(0);
-  useEffect(() => {
-    const from = ref.current; const start = performance.now();
-    let raf = 0;
-    const step = (t: number) => {
-      const p = Math.min(1, (t - start) / dur);
-      const e = 1 - Math.pow(1 - p, 3); // easeOutCubic
-      const cur = from + (target - from) * e;
-      setV(cur); ref.current = cur;
-      if (p < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [target, dur]);
-  return v;
+// ── 카운트업 ──
+// 애니메이션 값은 React state 가 아니라 DOM 텍스트로 직접 쓴다.
+// 프레임마다 setState 하면 KPI 카드 수십 개가 매 프레임 커밋되어
+// 시뮬레이션 틱과 겹칠 때 메인스레드를 잠근다.
+const easeOutCubic = (p: number) => 1 - Math.pow(1 - p, 3);
+
+function fmtCount(v: number, decimals: number) {
+  return v.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
-export function CountUp({ value, decimals = 0, suffix = '', prefix = '' }: { value: number; decimals?: number; suffix?: string; prefix?: string }) {
-  const v = useCountUp(value);
-  return <>{prefix}{v.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}</>;
+export function CountUp({
+  value,
+  decimals = 0,
+  suffix = '',
+  prefix = '',
+  dur = 900,
+}: {
+  value: number;
+  decimals?: number;
+  suffix?: string;
+  prefix?: string;
+  dur?: number;
+}) {
+  const node = useRef<HTMLSpanElement>(null);
+  const shown = useRef(0);
+
+  // 첫 프레임부터 값이 보이도록 마운트 시점에 즉시 0 → 텍스트를 채운다(paint 이전).
+  useLayoutEffect(() => {
+    const el = node.current;
+    shown.current = 0;
+    if (el) el.textContent = `${prefix}${fmtCount(0, decimals)}${suffix}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const el = node.current;
+    const from = shown.current;
+    const write = (v: number) => { if (el) el.textContent = `${prefix}${fmtCount(v, decimals)}${suffix}`; };
+    if (!el || from === value) { shown.current = value; write(value); return; }
+    const start = performance.now();
+    let raf = requestAnimationFrame(function step(t) {
+      const p = Math.min(1, (t - start) / dur);
+      const cur = from + (value - from) * easeOutCubic(p);
+      shown.current = cur;
+      write(cur);
+      if (p < 1) raf = requestAnimationFrame(step);
+      else { shown.current = value; write(value); }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [value, decimals, prefix, suffix, dur]);
+
+  // 자식은 React 가 관리하지 않는다 — 위 effect 가 textContent 를 소유한다.
+  return <span ref={node} />;
 }
 
 // 부드러운 곡선 path (Catmull-Rom → bezier)

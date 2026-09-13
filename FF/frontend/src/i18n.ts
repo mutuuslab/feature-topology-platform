@@ -1,4 +1,4 @@
-import { useApp } from './store';
+import { useAppShell } from './store';
 
 // 한/영 사전 — 네비게이션 셸 + 공통 UI. (페이지 본문은 점진 적용)
 type Lang = 'ko' | 'en';
@@ -46,6 +46,15 @@ const G8: NavGroup = { ko: '연동', en: 'Integration', items: [
 const G9: NavGroup = { ko: '분석·감사', en: 'Insights', items: [
   { to: '/insights/reports', ko: 'Reports', en: 'Reports' }, { to: '/cost', ko: 'SW 개발비 / Cost', en: 'SW Cost' }, { to: '/insights/audit', ko: 'Audit Log', en: 'Audit Log' },
   { to: '/insights/glossary', ko: 'Glossary', en: 'Glossary' }, { to: '/spec/business', ko: '글로벌·현장·사업', en: 'Global·Field·Biz' } ] };
+// G12 — Digital Twin (운영 도메인 하위 그룹). 신규 도메인이 아니라 기존 6도메인 안에 배치한다.
+const G12: NavGroup = { ko: 'Digital Twin', en: 'Digital Twin', items: [
+  { to: '/twin/live', ko: 'Live Visual Twin (3D)', en: 'Live Visual Twin (3D)' },
+  { to: '/twin/fleet', ko: 'Twin Fleet', en: 'Twin Fleet' },
+  { to: '/twin/impact', ko: 'Impact Preview', en: 'Impact Preview' },
+  { to: '/twin/simulation', ko: 'What-if Simulation', en: 'What-if Simulation' },
+  { to: '/twin/incident', ko: 'Closed-Loop Incident', en: 'Closed-Loop Incident' },
+  { to: '/twin/vehicle/VIN-DEMO-017', ko: 'Vehicle Twin 상세', en: 'Vehicle Twin Detail' } ] };
+
 const G7: NavGroup = { ko: '협력사', en: 'Supplier', items: [
   { to: '/supplier/portal', ko: 'Supplier Portal', en: 'Supplier Portal' }, { to: '/supplier/package', ko: 'API Release Package', en: 'API Release Package' } ] };
 const G10: NavGroup = { ko: '관리자', en: 'Admin', items: [
@@ -58,7 +67,7 @@ export const DOMAINS: NavDomain[] = [
   { key: 'home', icon: '🏠', ko: '홈', en: 'Home', groups: [G0] },
   { key: 'feature', icon: '📦', ko: 'Feature', en: 'Feature', groups: [G1, G2, G11] },
   { key: 'lifecycle', icon: '⚖️', ko: '라이프사이클', en: 'Lifecycle', groups: [G3, G4, G5] },
-  { key: 'operate', icon: '🚀', ko: '운영', en: 'Operate', groups: [G6, G8] },
+  { key: 'operate', icon: '🚀', ko: '운영', en: 'Operate', groups: [G6, G8, G12] },
   { key: 'insights', icon: '📊', ko: '분석·감사', en: 'Insights', groups: [G9] },
   { key: 'governance', icon: '🛡️', ko: '거버넌스', en: 'Governance', groups: [G7, G10, G11M] },
 ];
@@ -91,18 +100,20 @@ export const DEPT_NAV: Dept[] = [
     { ko: '변경', en: 'Change', paths: ['/change/cr', '/cr-wizard', '/change/changeset'] },
     { ko: '구현', en: 'Build', paths: ['/master/bom', '/spec/cicd'] } ] },
   { role: '검증 P4', icon: '✅', ko: '검증', en: 'Verification', sections: [
-    { ko: '게이트', en: 'Gate', paths: ['/readiness/FEAT-BDC-001', '/verify/evidence'] },
+    { ko: '게이트', en: 'Gate', paths: ['/readiness/FEAT-BDC-001', '/verify/evidence', '/twin/simulation'] },
     { ko: '규정', en: 'Compliance', paths: ['/spec/compliance', '/spec/scenario'] },
     { ko: '추적', en: 'Traceability', paths: ['/spec/coverage', '/lifecycle'] } ] },
   { role: 'OTA P5', icon: '🚀', ko: 'OTA', en: 'OTA', sections: [
     { ko: '캠페인', en: 'Campaign', paths: ['/ops/campaign', '/ops/policy', '/activation'] },
     { ko: '파이프라인', en: 'Pipeline', paths: ['/spec/cicd'] },
+    { ko: 'Twins', en: 'Twins', paths: ['/twin/fleet', '/twin/impact'] },
     { ko: '모니터', en: 'Monitor', paths: ['/ops/telemetry', '/variants/FEAT-BDC-001'] } ] },
   { role: '협력사 P6', icon: '🤝', ko: '협력사', en: 'Supplier', sections: [
     { ko: '패키지', en: 'Package', paths: ['/supplier/portal', '/supplier/package'] },
     { ko: '연동', en: 'Integration', paths: ['/integration/connectors', '/integration/sync', '/spec/billing'] } ] },
   { role: '운영 P7', icon: '🛠', ko: '운영', en: 'Operations', sections: [
     { ko: '운영', en: 'Ops', paths: ['/ops/FEAT-BDC-001', '/ops/incident', '/ops/runtime'] },
+    { ko: 'Twin', en: 'Twin', paths: ['/twin/fleet', '/twin/incident', '/twin/vehicle/VIN-DEMO-017'] },
     { ko: 'Fleet', en: 'Fleet', paths: ['/fleet', '/activation'] },
     { ko: '감사', en: 'Audit', paths: ['/insights/audit'] } ] },
   { role: 'Admin', icon: '⚙️', ko: '관리', en: 'Admin', sections: [
@@ -145,8 +156,10 @@ export function domainOfPath(pathname: string): string {
 }
 
 export function useT() {
-  const { state } = useApp();
-  const lang = (state?.lang || 'ko') as Lang;
+  // 라벨은 UI 언어에만 의존한다 — 전체 state 를 구독하면 2초 LIVE_TICK 마다
+  // useT() 를 쓰는 모든 컴포넌트가 함께 리렌더된다.
+  const { lang: raw = 'ko' } = useAppShell();
+  const lang = (raw || 'ko') as Lang;
   return {
     lang,
     t: (k: string) => COMMON[k]?.[lang] ?? COMMON[k]?.ko ?? k,

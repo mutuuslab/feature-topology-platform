@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -14,6 +15,11 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
+      // 두 개의 독립 엔트리: 플랫폼(index.html)과 Twin 콘솔(twin.html).
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        twin: fileURLToPath(new URL('./twin.html', import.meta.url)),
+      },
       output: {
         manualChunks: {
           cytoscape: ['cytoscape'],

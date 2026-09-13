@@ -363,7 +363,8 @@ npm install          # 최초 1회
 npm run dev          # http://localhost:9001
 ```
 
-- 테스트: `npm test` (vitest, 15 files — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합을 담당)
+- 테스트: `npm test` (vitest, 18 files / 354 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
+  `specBom.test.tsx` 가 §7.3 UI04, `specTopology.test.tsx` 가 §7.3 UI05 담당)
 - 빌드: `npm run build` (`tsc -b && vite build`)
 - 화면 확인 시 역할을 **Admin**으로 두어야 활성화/Kill-Switch/승인이 가능하다(기본 역할 `기획 P1`은 조회만 가능).
 
@@ -433,6 +434,10 @@ swiftshader 소프트웨어 렌더링 측정이므로 실 GPU 에서는 절대�
 - Twin UI 스모크(`src/__tests__/twinUi.test.tsx`)에 **Fleet → VIN 상세 이동** 통합 테스트가 있다.
   두 페이지 모두 lazy 라우트이므로 청크 로드 + Suspense 재시도 + 무거운 페이지 마운트가 겹치면 기본 1000ms 를 넘길 수 있어
   해당 단언에만 여유 timeout 을 준다(검증 대상은 '이동'이지 '지연'이 아니다).
+- 정본 IA 화면은 엔진 계약과 화면 계약을 함께 고정한다. `specBom.test.tsx`(UI04, 55 tests)는 contentHash 정규 직렬화,
+  위반 14건의 코드·대상, 조건 Profile 판정 4종, Master·Configured·Effective 파생, 승인 게이트 순서(409 → 422 → 403 → 412),
+  KPI 10칸, S01 필터와 S06 명령 반영을 검증한다. `specTopology.test.tsx`(UI05, 31 tests)는 Snapshot hash · 관계 사전 ·
+  파이프라인 6단계 · 영향 경로를 검증한다.
 - 회귀 확인: `npm test` 로 전체 스위트, `npx tsc --noEmit` 로 타입. 라이브 확인은 `probe-f.mjs`(20개 항목 생존 확인).
 
 ---

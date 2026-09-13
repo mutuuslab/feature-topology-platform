@@ -208,7 +208,9 @@
   "TD06.svg",
   "UI02_Applicability_Wireframe.svg",
   "UI02_Registration_Wireframe.svg",
-  "UI02_Registry_Architecture.svg"
+  "UI02_Registry_Architecture.svg",
+  "UNLEASH_OSS_Deployment_Integration.svg",
+  "UNLEASH_OSS_Flag_Lifecycle_Flow.svg"
  ],
  "aaos": [
   "FP_AAOS_SYSML_IBD_Integrated_Architecture.svg",

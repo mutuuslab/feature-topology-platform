@@ -19,6 +19,7 @@
     "three": "^0.169.0"
   },
   "devDependencies": {
+    "@gltf-transform/cli": "^4.5.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/cytoscape": "^3.21.8",

@@ -418,7 +418,29 @@ swiftshader 소프트웨어 렌더링 측정이므로 실 GPU 에서는 절대�
 
 ---
 
-## 15. 참고 — 외부 표준
+## 15. 공유 · 배포 — 공개 URL 과 링크 한정 정책
+
+| 용도 | 주소 |
+|---|---|
+| 앱 (권장 공유 주소) | `https://feature-topology.pages.dev` |
+| 앱 — GitHub Pages 미러 | `https://mutuuslab.github.io/feature-topology-platform/` |
+| 독립 Digital Twin 콘솔 | `https://feature-topology.pages.dev/twin` |
+| 소스 저장소 | `https://github.com/mutuuslab/feature-topology-platform` |
+
+- **배포 경로**: `main` push → Actions `cloudflare.yml` → Cloudflare Pages 프로젝트 `feature-topology`.
+  GitHub Pages(`pages.yml`)는 수동 실행 전용이며 동일 산출물을 `GITHUB_PAGES=1` base 로 다시 빌드한다.
+- **딥링크**: Cloudflare Pages 는 `public/_redirects`(`/*  /index.html  200`)로 SPA fallback 을 처리해
+  `/twin/fleet` 같은 하위 경로가 그대로 열린다. GitHub Pages 미러는 `dist/404.html` 로 대체되므로 하위 경로는 404 상태코드로 응답하되 화면은 뜬다.
+- **링크 한정(주소를 아는 사람만)**: `public/robots.txt`(`Disallow: /`), `public/_headers`(`X-Robots-Tag: noindex, nofollow`),
+  두 HTML 엔트리의 `<meta name="robots" content="noindex, nofollow">` 로 검색엔진 수집을 차단한다.
+  (GitHub Pages 는 `_headers` 를 지원하지 않아 meta 태그가 그 역할을 대신한다.)
+  로그인·비밀번호 게이트가 아니므로 **주소를 아는 사람은 누구나 열람**할 수 있다는 점을 전제로 공유한다.
+- **진짜 접근 제어가 필요하면**: Cloudflare Zero Trust(Access) 정책으로 이메일 OTP 를 요구해야 한다. 현재는 미적용.
+- 방문자 기본 역할은 `기획 P1`(읽기 전용). 배포·Kill-Switch·승인 시연은 좌상단 역할 스위치를 **Admin** 으로 바꾼 뒤 진행한다.
+
+---
+
+## 16. 참고 — 외부 표준
 
 - AWS IoT Device Shadow: Desired/Reported/Delta 문서 구조의 표준 사례
 - Eclipse Ditto: Digital Twin 상태 저장소(Thing/Feature/desired/reported)

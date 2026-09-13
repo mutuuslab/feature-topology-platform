@@ -65,6 +65,12 @@ vi.mock('@react-three/fiber', () => ({
 vi.mock('@react-three/drei', () => ({
   Html: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   OrbitControls: () => null,
+  Line: () => null,
+  RoundedBox: ({ children }: { children?: ReactNode }) => <mesh>{children}</mesh>,
+  Grid: () => null,
+  Environment: ({ children }: { children?: ReactNode }) => <group>{children}</group>,
+  Lightformer: () => null,
+  ContactShadows: () => null,
 }));
 
 /* --------------------------------------------------------------- 공용 헬퍼 */
@@ -112,7 +118,7 @@ function renderLive() {
   return render(
     <MemoryRouter initialEntries={['/twin/live']}>
       <AppProvider>
-        <RoleSetter role="Admin" />
+        <RoleSetter role="integrator" />
         <TwinProvider>
           <Routes>
             <Route path="/twin/live" element={<TwinLive />} />

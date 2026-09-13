@@ -12,7 +12,7 @@ import { TwinFleet, TwinImpact, TwinSimulation } from '../pages/twin';
 import { TwinVehicle, TwinIncident } from '../pages/twinOps';
 import App from '../App';
 
-/** 장애 주입(deploy)·Kill-Switch(kill)·승인(approve)은 권한이 필요하다 → 스모크는 Admin 으로 실행. */
+/** 장애 주입(deploy)·Kill-Switch(kill)·승인(approve)은 권한이 필요하다 → 스모크는 전체 verb 를 가진 integrator 로 실행. */
 function RoleSetter({ role }: { role: string }) {
   const { dispatch } = useApp();
   useEffect(() => {
@@ -25,7 +25,7 @@ function renderTwin(ui: ReactNode, opts: { route?: string; initial?: string; rol
   return render(
     <MemoryRouter initialEntries={[opts.initial ?? '/']}>
       <AppProvider>
-        <RoleSetter role={opts.role ?? 'Admin'} />
+        <RoleSetter role={opts.role ?? 'integrator'} />
         <TwinProvider>
           {opts.route ? (
             <Routes>
@@ -236,7 +236,7 @@ describe('§12.5 / §15 / §18 Closed-Loop 화면', () => {
 });
 
 describe('라우팅·네비게이션 통합', () => {
-  it('Digital Twin 메뉴(운영 도메인)로 Twin Fleet → VIN 상세까지 이동한다', async () => {
+  it('기준 화면(차량 운영) → 연결 구현 화면 → Twin Fleet → VIN 상세까지 이동한다', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <AppProvider>
@@ -247,9 +247,10 @@ describe('라우팅·네비게이션 통합', () => {
       </MemoryRouter>,
     );
 
-    // G12 그룹은 신규 도메인이 아니라 기존 '운영' 도메인 안에 배치된다 (§13)
-    fireEvent.click(await screen.findByRole('button', { name: '운영' }));
-    fireEvent.click(await screen.findByRole('link', { name: 'Twin Fleet' }));
+    // 1차 IA 레일은 기준 7 업무 그룹이다. '차량 운영' 그룹의 UI11 이 Twin Fleet 구현 화면과 연결된다.
+    fireEvent.click(await screen.findByRole('button', { name: '차량 운영' }));
+    fireEvent.click(await screen.findByRole('link', { name: /UI11 차량 운영 현황/ }));
+    fireEvent.click(await screen.findByRole('link', { name: 'Twin Fleet' }, { timeout: 5000 }));
     // 두 페이지 모두 lazy 라우트다. 청크 로드 + Suspense 재시도 + 무거운 페이지 마운트가
     // 겹치면 기본 1000ms 를 넘길 수 있으므로(머신 부하에 따라 편차가 큼) 여유를 준다.
     // 검증 대상은 '이동'이지 '지연'이 아니다.

@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useAppShell, useAppApi, roleHome } from './store';
 import { NotFound } from './components/patterns';
-import { roles, profileOf } from './data/refdata';
-import { DOMAINS, DEPT_NAV, ITEM, domainOfPath, useT } from './i18n';
+import { roles, profileOf, roleLabel } from './data/refdata';
+import { DOMAINS, DEMO_GROUPS, DEPT_NAV, PLANE_NAV, ITEM, domainOfPath, useT } from './i18n';
+import { specPlaneOfPath } from './data/specPlanesNav';
 import Catalog from './pages/Catalog';
 import FeatureDetail from './pages/FeatureDetail';
 const Topology = lazy(() => import('./pages/Topology')); // cytoscape 지연 로딩(초기 번들 분리)
@@ -14,7 +15,7 @@ import VariantMatrix from './pages/VariantMatrix';
 import ConsistencyConsole from './pages/ConsistencyConsole';
 import CRWizard from './pages/CRWizard';
 import { Login, Onboarding, RoleHome, HomeCustomize } from './pages/home';
-import { TaxonomyBrowser, TaxonomyEditor, BOMEditor, DefinitionWizard, ArtifactCatalog, ControlPointCatalog } from './pages/master';
+import { TaxonomyBrowser, TaxonomyEditor, BOMEditor, ArtifactCatalog, ControlPointCatalog } from './pages/master';
 import { EdgeEditor, ViolationDetail, MetamodelViewer } from './pages/topology2';
 import { VerificationScope, DeploymentDecision, SupplierScope, DecisionCenter, DecisionReport } from './pages/decisions';
 import { CRList, CRDetail, ChangeSetList, BaselineDiff, VersionTimeline } from './pages/change';
@@ -38,21 +39,15 @@ const TwinSimulation = lazy(() => import('./pages/twin').then((m) => ({ default:
 const TwinVehicle = lazy(() => import('./pages/twinOps').then((m) => ({ default: m.TwinVehicle })));
 const TwinIncident = lazy(() => import('./pages/twinOps').then((m) => ({ default: m.TwinIncident })));
 const TwinLive = lazy(() => import('./pages/twinLive').then((m) => ({ default: m.TwinLive })));
-
-const NAV: { group: string; items: [string, string][] }[] = [
-  { group: 'G0 홈 / Home', items: [['/', '내 대시보드'], ['/home/customize', '홈 커스터마이즈'], ['/login', 'Login·SSO'], ['/onboarding', 'Onboarding']] },
-  { group: 'G1 기준정보 / Master', items: [['/catalog', 'Feature Catalog'], ['/master/define', 'Feature 등록(7-criteria)'], ['/master/taxonomy', 'Taxonomy Browser'], ['/master/taxonomy/edit', 'Taxonomy Editor'], ['/master/bom', 'BOM Editor'], ['/master/artifacts', 'Artifact Catalog'], ['/master/control-points', 'Control Point Catalog']] },
-  { group: 'G2 관계 / Topology', items: [['/topology/FEAT-BDC-001', 'Topology Graph'], ['/topology/edge', 'Edge Editor'], ['/metamodel', 'Metamodel Viewer'], ['/consistency', 'Consistency Console'], ['/consistency/violation', 'Violation Detail']] },
-  { group: 'G3 의사결정 / Decisions', items: [['/decisions/center', 'Decision Center'], ['/impact', 'Impact Analysis'], ['/decisions/verification', 'Verification Scope'], ['/decisions/deploy', 'Deployment Decision'], ['/decisions/supplier', 'Supplier Scope'], ['/decisions/report', 'DecisionReport'], ['/spec/experiment', '실험·효과검증'], ['/spec/conflict', '정책 충돌'], ['/spec/exception', '예외 정책']] },
-  { group: 'G4 변경관리 / Change', items: [['/change/cr', 'CR List'], ['/cr-wizard', 'CR Wizard'], ['/change/changeset', 'ChangeSet'], ['/change/baseline', 'Baseline Diff'], ['/change/timeline', 'Version Timeline']] },
-  { group: 'G5 검증 / Verification', items: [['/verify/evidence', 'Test Evidence Manager'], ['/readiness/FEAT-BDC-001', 'Release Readiness'], ['/spec/compliance', '컴플라이언스 룰'], ['/spec/scenario', '시나리오 검증']] },
-  { group: 'G6 배포·운영 / Ops', items: [['/ops/FEAT-BDC-001', 'Ops · Kill Switch'], ['/ops/campaign', 'OTA Campaign'], ['/ops/policy', 'Policy Lifecycle'], ['/ops/telemetry', 'Telemetry Explorer'], ['/ops/incident', 'Incident'], ['/ops/runtime', 'Runtime Sim'], ['/variants/FEAT-BDC-001', 'Variant Matrix'], ['/spec/cicd', 'CI/CD 파이프라인']] },
-  { group: 'G7 협력사 / Supplier', items: [['/supplier/portal', 'Supplier Portal'], ['/supplier/package', 'API Release Package']] },
-  { group: 'G8 연동 / Integration', items: [['/integration/connectors', 'Connector Hub'], ['/integration/sync', 'Sync Logs'], ['/spec/billing', '과금 연계']] },
-  { group: 'G9 분석·감사 / Insights', items: [['/insights/reports', 'Reports'], ['/cost', 'SW 개발비 / Cost'], ['/insights/audit', 'Audit Log'], ['/insights/glossary', 'Glossary'], ['/spec/business', '글로벌·현장·사업']] },
-  { group: 'G10 관리자 / Admin', items: [['/admin/users', 'Users & Roles'], ['/admin/permissions', 'Permissions Matrix'], ['/admin/org', 'Org & Domains'], ['/admin/approval', 'Approval Workflow'], ['/admin/settings', 'Settings'], ['/admin/notifications', 'Notifications'], ['/spec/security', '보안 운영']] },
-  { group: 'G12 Digital Twin', items: [['/twin/live', 'Live Visual Twin (3D)'], ['/twin/fleet', 'Twin Fleet'], ['/twin/impact', 'Twin Impact Preview'], ['/twin/simulation', 'What-if Simulation'], ['/twin/incident', 'Closed-Loop Incident'], ['/twin/vehicle/VIN-DEMO-017', 'Vehicle Twin 상세']] },
-];
+// 기준 화면(MENU 1.3) · 아키텍처 문서는 기준 데이터(JSON·생성 모듈)를 쓰므로 초기 번들에서 분리한다.
+const SpecScreenIndex = lazy(() => import('./pages/specScreen').then((m) => ({ default: m.SpecScreenIndex })));
+const SpecScreen = lazy(() => import('./pages/specScreen').then((m) => ({ default: m.SpecScreen })));
+const SpecArchitecture = lazy(() => import('./pages/arch').then((m) => ({ default: m.SpecArchitecture })));
+// Feature 등록은 Revision 규칙·등록 사전(R0 48 · 필수 20)을 쓰므로 초기 번들에서 분리한다.
+const DefineRevision = lazy(() => import('./pages/defineRevision').then((m) => ({ default: m.DefineRevision })));
+const FeatureBom = lazy(() => import('./pages/featureBom').then((m) => ({ default: m.FeatureBom })));
+// UI05 Topology 동작 메커니즘은 그래프 엔진 + Twin 런타임을 함께 쓰므로 초기 번들에서 분리한다.
+const TopologyArch = lazy(() => import('./pages/topologyArch').then((m) => ({ default: m.TopologyArch })));
 
 export default function App() {
   const nav = useNavigate();
@@ -72,10 +67,21 @@ export default function App() {
   }, []);
   const roleDomain = domainOfPath(roleHome[role] || '/');
   const dom = DOMAINS.find(d => d.key === activeDomain) || DOMAINS[0];
+  // 업무 그룹에 속하지 않는 경로(예: /arch)에서는 레일 하이라이트 없이 기준 참조 목록을 보여준다.
+  const refMode = !DOMAINS.some(d => d.key === activeDomain);
   // 부서별 보기
   const [activeDept, setActiveDept] = useState(role);
   useEffect(() => { setActiveDept(role); }, [role]);
   const deptObj = DEPT_NAV.find(d => d.role === activeDept) || DEPT_NAV[0];
+  // Plane별 보기 — 대표 Plane은 경로가 정하고, 경로가 Plane 밖이면 현재 역할 기본 화면의 Plane을 쓴다.
+  const planeDefault = () => specPlaneOfPath(loc.pathname) || specPlaneOfPath(roleHome[role] || '') || 'control';
+  const [activePlane, setActivePlane] = useState(planeDefault);
+  useEffect(() => { const p = specPlaneOfPath(loc.pathname); if (p) setActivePlane(p); }, [loc.pathname]);
+  const planeObj = PLANE_NAV.find(p => p.key === activePlane) || PLANE_NAV[0];
+  const setMode = (mode: 'function' | 'dept' | 'plane') => {
+    dispatch({ t: 'SET_NAV_MODE', mode });
+    if (mode === 'plane') setActivePlane(planeDefault());
+  };
   const [q, setQ] = useState('');
   const submitSearch = () => { if (q.trim()) { nav('/catalog?q=' + encodeURIComponent(q.trim())); setNavOpen(false); } };
   const changeRole = (r: string) => { dispatch({ t: 'ROLE', role: r }); nav(roleHome[r] || '/'); };
@@ -96,7 +102,7 @@ export default function App() {
           </div>
         ); })()}
         <select className="role-sel" aria-label={t('role')} value={role} onChange={e => changeRole(e.target.value)}>
-          {roles.map(r => <option key={r}>{r}</option>)}
+          {roles.map(r => <option key={r} value={r}>{roleLabel(r)}</option>)}
         </select>
         <button className="icon-btn" title="language" aria-label="language" onClick={() => dispatch({ t: 'LANG', lang: lang === 'ko' ? 'en' : 'ko' })}>{lang.toUpperCase()}</button>
         <button className="icon-btn" title="theme" aria-label="theme" onClick={() => dispatch({ t: 'THEME', theme: theme === 'light' ? 'dark' : 'light' })}>{theme === 'light' ? '🌙' : '☀'}</button>
@@ -104,27 +110,83 @@ export default function App() {
       </div>
       <nav className="nav" aria-label="primary">
         <div className="nav-mode">
-          <button className={navMode === 'function' ? 'active' : ''} onClick={() => dispatch({ t: 'SET_NAV_MODE', mode: 'function' })}>기능별</button>
-          <button className={navMode === 'dept' ? 'active' : ''} onClick={() => dispatch({ t: 'SET_NAV_MODE', mode: 'dept' })}>부서별</button>
+          <button className={navMode === 'function' ? 'active' : ''} onClick={() => setMode('function')}>기능별</button>
+          <button className={navMode === 'dept' ? 'active' : ''} onClick={() => setMode('dept')}>부서별</button>
+          <button className={navMode === 'plane' ? 'active' : ''} onClick={() => setMode('plane')}>Plane별</button>
         </div>
         <div className="nav-body">
-          {navMode === 'function' ? <>
+          {navMode === 'plane' ? <>
             <div className="rail">
+              {PLANE_NAV.map(p => (
+                <button key={p.key} className={'rail-btn' + (p.key === activePlane ? ' active' : '')} title={p.fullKo} aria-label={p.fullKo} aria-current={p.key === activePlane} onClick={() => setActivePlane(p.key)}>
+                  <span className="ic">{p.icon}</span><span className="lb">{navDomain(p)}</span>
+                </button>
+              ))}
+            </div>
+            <div className="subnav" onClick={() => setNavOpen(false)}>
+              <div className="subnav-head">{planeObj.icon} {navDomain({ ko: planeObj.fullKo, en: planeObj.fullEn })}</div>
+              <div className="plane-meta">
+                {planeObj.shared ? (
+                  <div className="plane-row"><span className="muted small">기준</span> Knowledge Foundation — {planeObj.contract}</div>
+                ) : (
+                  <>
+                    <div className="plane-row"><span className="muted small">산출물</span> {planeObj.produces}</div>
+                    <div className="plane-row"><span className="muted small">계약</span> {planeObj.contract}</div>
+                    <NavLink className="plane-link" to="/arch">기준 아키텍처에서 Core 배분 보기 →</NavLink>
+                  </>
+                )}
+                <p className="muted small plane-note">{planeObj.note}</p>
+              </div>
+              {planeObj.groups.map(g => (
+                <div key={g.ko}>
+                  <div className="group">{navGroup(g)}</div>
+                  {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
+                </div>
+              ))}
+            </div>
+          </> : navMode === 'function' ? <>
+            <div className="rail">
+              <button className="rail-btn" title="홈 · 내 대시보드" aria-label="홈 · 내 대시보드" onClick={() => nav('/')}>
+                <span className="ic">🏠</span><span className="lb">홈</span>
+              </button>
               {DOMAINS.map(d => (
                 <button key={d.key} className={'rail-btn' + (d.key === activeDomain ? ' active' : '')} title={navDomain(d)} aria-label={navDomain(d)} aria-current={d.key === activeDomain} onClick={() => setActiveDomain(d.key)}>
                   <span className="ic">{d.icon}</span><span className="lb">{navDomain(d)}</span>
                   {d.key === roleDomain && <span className="role-dot" title="현재 역할 기본 영역" />}
                 </button>
               ))}
+              <button className={'rail-btn' + (loc.pathname.startsWith('/arch') ? ' active' : '')} title="기준 아키텍처" aria-label="기준 아키텍처" onClick={() => nav('/arch')}>
+                <span className="ic">🧱</span><span className="lb">아키텍처</span>
+              </button>
             </div>
             <div className="subnav" onClick={() => setNavOpen(false)}>
-              <div className="subnav-head">{dom.icon} {navDomain(dom)}</div>
-              {dom.groups.map(g => (
-                <div key={g.ko}>
-                  <div className="group">{navGroup(g)}</div>
-                  {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
-                </div>
-              ))}
+              {refMode ? (
+                <>
+                  <div className="subnav-head">📚 기준 참조</div>
+                  <div className="group">기준 문서</div>
+                  <NavLink to="/arch">기준 아키텍처 (4 Plane·Core·C01)</NavLink>
+                  <NavLink to="/ui">기준 화면 전체 (30)</NavLink>
+                  <NavLink to="/spec/changelog">기준 개정 이력</NavLink>
+                  <NavLink to="/spec/glossary">용어집</NavLink>
+                  <div className="group">구현 데모 화면</div>
+                  {DEMO_GROUPS.map(g => (
+                    <div key={g.ko}>
+                      <div className="group">{navGroup(g)}</div>
+                      {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <div className="subnav-head">{dom.icon} {navDomain(dom)}</div>
+                  {dom.groups.map(g => (
+                    <div key={g.ko}>
+                      <div className="group">{navGroup(g)}</div>
+                      {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </> : <>
             <div className="rail">
@@ -158,10 +220,11 @@ export default function App() {
 
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/feature/:id" element={<FeatureDetail />} />
-          <Route path="/master/define" element={<DefinitionWizard />} />
+          <Route path="/master/define" element={<DefineRevision />} />
           <Route path="/master/taxonomy" element={<TaxonomyBrowser />} />
           <Route path="/master/taxonomy/edit" element={<TaxonomyEditor />} />
-          <Route path="/master/bom" element={<BOMEditor />} />
+          <Route path="/master/bom" element={<FeatureBom />} />
+          <Route path="/master/bom/items" element={<BOMEditor />} />
           <Route path="/master/artifacts" element={<ArtifactCatalog />} />
           <Route path="/master/control-points" element={<ControlPointCatalog />} />
 
@@ -224,6 +287,13 @@ export default function App() {
 
           <Route path="/spec/changelog" element={<SpecChangeLog />} />
           <Route path="/spec/glossary" element={<SpecGlossary />} />
+
+          {/* 기준 화면(MENU 1.3) · 아키텍처 — 기준 패키지 정의를 그대로 노출 */}
+          <Route path="/ui" element={<SpecScreenIndex />} />
+          <Route path="/ui/:uiId" element={<SpecScreen />} />
+          <Route path="/ui/:uiId/:areaId" element={<SpecScreen />} />
+          <Route path="/arch" element={<SpecArchitecture />} />
+          <Route path="/arch/topology" element={<TopologyArch />} />
           <Route path="/spec/experiment" element={<Experiment />} />
           <Route path="/spec/conflict" element={<Conflict />} />
           <Route path="/spec/exception" element={<Exception />} />

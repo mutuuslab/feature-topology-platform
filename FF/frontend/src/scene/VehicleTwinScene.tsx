@@ -11,7 +11,7 @@
  */
 import { Component, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Environment, Lightformer, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Twin, Lang } from '../data/twin/types';
 import { pick } from '../data/twin/types';
@@ -479,17 +479,49 @@ export default function VehicleTwinScene({
           <Canvas
             data-testid="veh-canvas"
             dpr={[1, 2]}
+            shadows
             camera={{ position: CAMERA_PRESETS[activePreset].pos, fov: 42 }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
-            onCreated={({ gl }) => gl.setClearColor('#0a0d13')}
+            onCreated={({ gl }) => {
+              gl.setClearColor('#080a0f');
+              gl.toneMapping = THREE.ACESFilmicToneMapping;
+              gl.toneMappingExposure = 1.05;
+            }}
           >
             <SimClockContext.Provider value={clockNode.current}>
               <ClockDriver clock={clock} node={clockNode.current} />
               <CameraRig preset={activePreset} />
-              <ambientLight intensity={0.55} />
-              <directionalLight position={[6, 9, 5]} intensity={0.95} />
-              <hemisphereLight args={['#3a4a66', '#05070b', 0.4]} />
+              <ambientLight intensity={0.5} />
+              <hemisphereLight args={['#3a4a66', '#05070b', 0.35]} />
+              {/* 키 라이트가 그림자를 만든다 — 차체가 바닥에서 떠 보이지 않게 하는 접지감의 근원 */}
+              <directionalLight
+                castShadow
+                position={[5.5, 8.5, 4.5]}
+                intensity={2.3}
+                color="#fff6ea"
+                shadow-mapSize-width={1024}
+                shadow-mapSize-height={1024}
+                shadow-camera-near={1}
+                shadow-camera-far={26}
+                shadow-camera-left={-6}
+                shadow-camera-right={6}
+                shadow-camera-top={6}
+                shadow-camera-bottom={-6}
+                shadow-bias={-0.0006}
+              />
+              <directionalLight position={[-6, 4, -5]} intensity={0.5} color="#9fc0ff" />
+              {/* 환경맵은 절차적 라이트포머로만 만든다 — 네트워크 HDR 자산을 쓰지 않고,
+                  금속 페인트·유리가 반사할 "무언가"를 제공하는 것이 품질의 핵심이다. */}
+              <Environment resolution={128} frames={1}>
+                <Lightformer form="rect" intensity={2.6} color="#ffffff" position={[0, 6, -1]} rotation={[Math.PI / 2, 0, 0]} scale={[14, 4, 1]} />
+                <Lightformer form="rect" intensity={1.7} color="#cfe0ff" position={[-7, 3, 1]} rotation={[0, Math.PI / 2, 0]} scale={[10, 5, 1]} />
+                <Lightformer form="rect" intensity={1.7} color="#cfe0ff" position={[7, 3, 1]} rotation={[0, -Math.PI / 2, 0]} scale={[10, 5, 1]} />
+                <Lightformer form="rect" intensity={2.2} color="#ffffff" position={[0, 4, -8]} scale={[10, 4, 1]} />
+                <Lightformer form="rect" intensity={0.35} color="#1a2436" position={[0, -4, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[16, 16, 1]} />
+              </Environment>
               <SceneFloor />
+              {/* 접촉 그림자 — 바퀴와 차체 하부의 접지를 강화한다 */}
+              <ContactShadows position={[0, 0.002, 0]} opacity={0.62} scale={16} blur={2.4} far={3.2} resolution={512} color="#000000" />
               <VehicleModel
                 parts={parts}
                 selected={activeSelected}

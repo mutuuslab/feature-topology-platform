@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type Dispatch, type ReactNode } from 'react';
 import * as M from './data/model';
-import { permMatrix, policies as SEED_POL, policyStages as POL_STAGES, campaigns as SEED_CMP, incidents as SEED_INC, connectors as SEED_CONN, syncLogs as SEED_SYNC } from './data/refdata';
+import { permMatrix, roles, policies as SEED_POL, policyStages as POL_STAGES, campaigns as SEED_CMP, incidents as SEED_INC, connectors as SEED_CONN, syncLogs as SEED_SYNC } from './data/refdata';
 import { setDB, readiness, relationsOf, edgesOf } from './data/engine';
+import { sameRevision, type RevisionRecord } from './data/revision';
+import { BOM_BASELINES, type BomBaseline } from './data/featureBom';
 
 // ── 상태 ──────────────────────────────────────────────
 export interface CR { id: string; feature: string; type: string; status: string; owner: string; risk: string; }
@@ -34,7 +36,7 @@ export function canTransition(f: M.Feature, to: M.Lifecycle): { ok: boolean; rea
   const rels = relationsOf(f.id);
   const has = (t: string) => rels.some(r => r.type === t);
   if (to === 'Approved' && !has('derives')) return { ok: false, reason: 'R01: 연결된 Requirement 없음' };
-  if (to === 'Developing' && !has('controlled_by')) return { ok: false, reason: 'Control Point(Flag) 미연결' };
+  if (to === 'Developing' && !has('controlled_by')) return { ok: false, reason: 'Feature 제어점(Flag) 미연결' };
   if (to === 'Verified' && !has('verified_by')) return { ok: false, reason: 'Test Evidence 미등록' };
   if (to === 'Released') { const r = readiness(f.id); if (r.decision !== 'RELEASE') return { ok: false, reason: `9-Gate 미통과 (${r.passCount}/9)` }; }
   return { ok: true, reason: '' };
@@ -55,6 +57,8 @@ export interface AppState {
   edges: M.Edge[];
   relations: M.Relation[];
   crs: CR[];
+  revisions: RevisionRecord[];           // Feature 등록 Revision 레지스트리 (기준 C01 / UI02-S07 이력)
+  bomBaselines: BomBaseline[];           // Feature BOM 기준선 레지스트리 (기준 C03 / UI04)
   runtime: Record<string, string>;        // featureId → runtime state
   audit: AuditEntry[];
   role: string;
@@ -76,7 +80,7 @@ export interface AppState {
   syncLogs: SyncLog[];
   supplierAcceptance: SupplierItem[];
   homeWidgets: { id: string; on: boolean }[];
-  navMode: 'function' | 'dept';
+  navMode: 'function' | 'dept' | 'plane';
   toast?: { msg: string; kind: 'ok' | 'warn' | 'err' } | null;
 }
 
@@ -128,8 +132,8 @@ const SEED_SEC: SecurityState = {
 
 export const initial: AppState = {
   features: M.features, edges: M.edges, relations: M.relations,
-  crs: SEED_CRS, runtime: { 'FEAT-BDC-001': 'enabled' }, audit: [],
-  role: '기획 P1', theme: 'light', lang: 'ko', live: initialLive,
+  crs: SEED_CRS, revisions: [], bomBaselines: BOM_BASELINES, runtime: { 'FEAT-BDC-001': 'enabled' }, audit: [],
+  role: 'author', theme: 'light', lang: 'ko', live: initialLive,
   activation: SEED_ACT, experiments: SEED_EXP, exceptions: SEED_EXC,
   compliance: [], scenarios: [
     { id: 'SCN-KR-PREM', name: 'KR · Premium · Gen3', total: 48, pass: 0, fail: 0, status: 'idle', step: 0 },
@@ -164,6 +168,9 @@ type Action =
   | { t: 'ADD_FEATURE'; f: M.Feature }
   | { t: 'ADD_EDGE'; e: M.Edge }
   | { t: 'CREATE_CR'; cr: CR }
+  | { t: 'REVISION_SAVE'; r: RevisionRecord }
+  | { t: 'BOM_SAVE'; b: BomBaseline }
+  | { t: 'TOPOLOGY_REL_SAVE'; r: M.Relation; replaces?: string }
   | { t: 'KILL'; feature: string; actor: string }
   | { t: 'RECOVER'; feature: string }
   | { t: 'AUDIT'; entry: AuditEntry }
@@ -192,7 +199,7 @@ type Action =
   | { t: 'ACCEPT_SUPPLIER'; feature: string; item: string }
   | { t: 'ADD_POLICY'; policy: Policy }
   | { t: 'SET_HOME_WIDGETS'; widgets: { id: string; on: boolean }[] }
-  | { t: 'SET_NAV_MODE'; mode: 'function' | 'dept' }
+  | { t: 'SET_NAV_MODE'; mode: 'function' | 'dept' | 'plane' }
   | { t: 'LIVE_TICK' }
   | { t: 'RESET' };
 
@@ -220,6 +227,33 @@ export function reducer(s: AppState, a: Action): AppState {
     case 'ADD_FEATURE': return { ...s, features: [...s.features, a.f], toast: { msg: `${a.f.id} 등록됨`, kind: 'ok' } };
     case 'ADD_EDGE': return { ...s, edges: [...s.edges, a.e], toast: { msg: `엣지 추가: ${a.e.type}`, kind: 'ok' } };
     case 'CREATE_CR': return { ...s, crs: [a.cr, ...s.crs], toast: { msg: `${a.cr.id} 생성됨`, kind: 'ok' } };
+    case 'REVISION_SAVE':
+      return {
+        ...s,
+        revisions: s.revisions.some(r => sameRevision(r, a.r))
+          ? s.revisions.map(r => (sameRevision(r, a.r) ? a.r : r))
+          : [a.r, ...s.revisions],
+        toast: { msg: `${a.r.id}@${a.r.version} · ${a.r.state} (rev ${a.r.recordRevision})`, kind: a.r.state === 'CHANGES_REQUESTED' ? 'warn' : 'ok' },
+      };
+    case 'BOM_SAVE': {
+      const same = (x: BomBaseline) => x.id === a.b.id && x.version === a.b.version;
+      return {
+        ...s,
+        bomBaselines: s.bomBaselines.some(same) ? s.bomBaselines.map(x => (same(x) ? a.b : x)) : [a.b, ...s.bomBaselines],
+        toast: { msg: `기준선 ${a.b.id}@${a.b.version} · ${a.b.state} (hash ${a.b.contentHash.slice(0, 12)}…)`, kind: a.b.state === 'REVOKED' || a.b.state === 'CHANGES_REQUESTED' ? 'warn' : 'ok' },
+      };
+    }
+    case 'TOPOLOGY_REL_SAVE': {
+      const next = a.replaces
+        ? s.relations.map(x => (x.id === a.replaces ? a.r : x))
+        : (s.relations.some(x => x.id === a.r.id) ? s.relations.map(x => (x.id === a.r.id ? a.r : x)) : [...s.relations, a.r]);
+      return {
+        ...s,
+        relations: next,
+        audit: [{ ts: nowish(), actor: s.role, action: 'TOPOLOGY_REL_SAVE', target: `${a.r.source} → ${a.r.target}`, detail: a.r.type }, ...s.audit],
+        toast: { msg: `관계 ${a.r.type} 저장 — ${a.r.source} → ${a.r.target}`, kind: 'ok' },
+      };
+    }
     case 'KILL': return { ...s, runtime: { ...s.runtime, [a.feature]: 'disabled' },
       audit: [{ ts: nowish(), actor: a.actor, action: 'KILL', target: a.feature, detail: 'Safe Default=disabled' }, ...s.audit],
       toast: { msg: `${a.feature} Kill 실행 → Safe Default`, kind: 'warn' } };
@@ -357,7 +391,13 @@ function nowish() { try { return new Date().toISOString().slice(0, 16).replace('
 function load(): AppState {
   try {
     const raw = localStorage.getItem('fp.state.v2');
-    if (raw) { const p = JSON.parse(raw); return { ...initial, ...p, toast: null }; }
+    if (raw) {
+      const p = JSON.parse(raw);
+      // 저장된 역할이 기준 9역할 키가 아니면(구버전 라벨) 최소 역할로 정규화한다 —
+      // 권한 게이트는 permMatrix[역할키] 로만 판정하므로 라벨이 남으면 전 동작이 차단된다.
+      const role = roles.includes(p?.role) ? p.role : initial.role;
+      return { ...initial, ...p, role, toast: null };
+    }
   } catch {}
   return initial;
 }
@@ -366,13 +406,13 @@ interface Ctx { state: AppState; dispatch: Dispatch<Action>; can: (verb: string)
 /** 액션·권한만 노출하는 컨텍스트 — 2초 LIVE_TICK 마다 값이 바뀌지 않는다. */
 interface ApiCtx { dispatch: Dispatch<Action>; can: (verb: string) => boolean; }
 /** 화면 전체가 참조하는 '안정 슬라이스'. 실시간 데이터(live/scenarios/…)는 의도적으로 제외한다. */
-interface ShellCtx { role: string; navMode: 'function' | 'dept'; lang: string; theme: string; }
+interface ShellCtx { role: string; navMode: 'function' | 'dept' | 'plane'; lang: string; theme: string; }
 
 const AppCtx = createContext<Ctx>(null as any);
 const AppApiCtx = createContext<ApiCtx>({ dispatch: () => {}, can: () => false });
 const AppShellCtx = createContext<ShellCtx>({
   role: initial.role,
-  navMode: (initial.navMode || 'function') as 'function' | 'dept',
+  navMode: (initial.navMode || 'function') as 'function' | 'dept' | 'plane',
   lang: initial.lang,
   theme: initial.theme,
 });
@@ -387,7 +427,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem('fp.state.v2', JSON.stringify(persist)); } catch {}
     document.documentElement.setAttribute('data-theme', state.theme);
     document.documentElement.lang = state.lang;
-  }, [state.features, state.edges, state.relations, state.crs, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors, state.supplierAcceptance, state.homeWidgets, state.navMode]);
+  }, [state.features, state.edges, state.relations, state.crs, state.revisions, state.bomBaselines, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors, state.supplierAcceptance, state.homeWidgets, state.navMode]);
 
   // 실시간 시뮬레이션 틱 (2초)
   useEffect(() => {
@@ -398,7 +438,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const can = useCallback((verb: string) => (permMatrix[state.role] || []).includes(verb), [state.role]);
   const api = useMemo<ApiCtx>(() => ({ dispatch, can }), [can]);
   const shell = useMemo<ShellCtx>(
-    () => ({ role: state.role, navMode: (state.navMode || 'function') as 'function' | 'dept', lang: state.lang, theme: state.theme }),
+    () => ({ role: state.role, navMode: (state.navMode || 'function') as 'function' | 'dept' | 'plane', lang: state.lang, theme: state.theme }),
     [state.role, state.navMode, state.lang, state.theme],
   );
   return (
@@ -424,14 +464,5 @@ export const useToast = () => {
   return (msg: string, kind: 'ok' | 'warn' | 'err' = 'ok') => dispatch({ t: 'TOAST', toast: { msg, kind } });
 };
 
-// 역할별 기본 랜딩(프리셋) — 역할 변경 시 이 화면으로 이동
-export const roleHome: Record<string, string> = {
-  '기획 P1': '/catalog',
-  '시스템 P2': '/topology/FEAT-BDC-001',
-  'SW P3': '/decisions/center',
-  '검증 P4': '/readiness/FEAT-BDC-001',
-  'OTA P5': '/ops/campaign',
-  '협력사 P6': '/supplier/portal',
-  '운영 P7': '/ops/FEAT-BDC-001',
-  'Admin': '/admin/permissions',
-};
+// 역할별 기본 착지 화면 — 기준 30화면 중 그 역할의 첫 담당 화면 (specMenu.SPEC_ROLE_HOME)
+export { SPEC_ROLE_HOME as roleHome } from './data/specMenu';

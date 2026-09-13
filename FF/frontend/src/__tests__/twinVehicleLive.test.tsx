@@ -44,7 +44,7 @@ function renderTwin(ui: ReactNode, opts: { route: string; initial: string; role?
   return render(
     <MemoryRouter initialEntries={[opts.initial]}>
       <AppProvider>
-        <RoleSetter role={opts.role ?? 'Admin'} />
+        <RoleSetter role={opts.role ?? 'integrator'} />
         <TwinProvider>
           <Routes>
             <Route path={opts.route} element={<>{ui}</>} />

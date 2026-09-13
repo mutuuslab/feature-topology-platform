@@ -23,14 +23,15 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/feature/FEAT-BDC-001', label: 'Feature 상세 · 이력' },
   ] },
   UI03: { screenId: 'UI03', intent: 'Feature별 구현 구성과 Variant 범위', links: [
-    { path: '/master/bom', label: 'BOM Editor' },
+    { path: '/master/bom/items', label: 'Feature별 구현 구성 (11개 영역)' },
     { path: '/variants/FEAT-BDC-001', label: 'Variant Matrix' },
   ] },
   UI04: { screenId: 'UI04', intent: 'Feature BOM 기준선과 승인 버전', links: [
-    { path: '/master/bom', label: 'BOM Editor' },
+    { path: '/master/bom', label: 'Feature BOM 기준선' },
     { path: '/change/baseline', label: 'Baseline Diff' },
   ] },
   UI05: { screenId: 'UI05', intent: 'Topology 관계와 변경 영향', links: [
+    { path: '/arch/topology', label: 'Topology 동작 메커니즘' },
     { path: '/topology/FEAT-BDC-001', label: 'Topology Graph' },
     { path: '/topology/edge', label: 'Edge Editor' },
     { path: '/impact', label: 'Impact Analysis' },
@@ -97,7 +98,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   ] },
   UI21: { screenId: 'UI21', intent: 'UPG와 UPG VC 구성', links: [
     { path: '/master/artifacts', label: 'Artifact Catalog' },
-    { path: '/master/control-points', label: 'Control Point Catalog' },
+    { path: '/master/control-points', label: 'Feature 제어점' },
   ] },
   UI22: { screenId: 'UI22', intent: 'SW Structure 정의', links: [
     { path: '/master/artifacts', label: 'Artifact Catalog' },
@@ -109,7 +110,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   ] },
   UI24: { screenId: 'UI24', intent: '제품사양과 HW Variant', links: [
     { path: '/variants/FEAT-BDC-001', label: 'Variant Matrix' },
-    { path: '/master/control-points', label: 'Control Point Catalog' },
+    { path: '/master/control-points', label: 'Feature 제어점' },
   ] },
   UI25: { screenId: 'UI25', intent: '협의와 개발 이관', links: [
     { path: '/decisions/center', label: 'Decision Center' },

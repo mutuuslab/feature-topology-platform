@@ -18,6 +18,7 @@ import * as E from '../data/twin/engine';
 import { ClassificationBanner } from '../components/twin';
 import { simClockLabel } from '../components/liveMonitor';
 import { webglSupported } from '../scene/webgl';
+import { roles, roleLabel } from '../data/refdata';
 import { TwinBottomBar, TwinLeftPanel, TwinRightPanel } from '../components/twinPanels';
 import {
   ArchView,
@@ -56,7 +57,8 @@ const VIEWS: ViewDef[] = [
   { id: 'revision', ko: 'Revision SoT', en: 'Revision', glyph: '🧬', Component: RevisionView },
 ];
 
-const ROLES = ['Admin', 'OTA P5', '운영 P7', '기획 P1'] as const;
+// 기준 패키지 9 역할 (refdata.roles) — 콘솔의 권한 게이트도 이 키를 쓴다.
+const ROLES = roles;
 
 /* ================================================================== */
 
@@ -188,7 +190,7 @@ export default function TwinStandalone() {
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>
-                    {r}
+                    {roleLabel(r)}
                   </option>
                 ))}
               </select>

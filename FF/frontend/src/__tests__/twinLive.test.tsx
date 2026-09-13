@@ -36,6 +36,12 @@ vi.mock('@react-three/fiber', () => ({
 vi.mock('@react-three/drei', () => ({
   Html: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   OrbitControls: () => null,
+  Line: () => null,
+  RoundedBox: ({ children }: { children?: ReactNode }) => <mesh>{children}</mesh>,
+  Grid: () => null,
+  Environment: ({ children }: { children?: ReactNode }) => <group>{children}</group>,
+  Lightformer: () => null,
+  ContactShadows: () => null,
 }));
 
 function RoleSetter({ role }: { role: string }) {
@@ -50,7 +56,7 @@ function renderLive(opts: { role?: string; withRoutes?: boolean; initial?: strin
   return render(
     <MemoryRouter initialEntries={[opts.initial ?? '/twin/live']}>
       <AppProvider>
-        <RoleSetter role={opts.role ?? 'Admin'} />
+        <RoleSetter role={opts.role ?? 'integrator'} />
         <TwinProvider>
           {opts.withRoutes === false ? (
             <TwinLive />
@@ -404,6 +410,8 @@ describe('§12.6 Live Visual Twin — 공장 뷰 Feature Flag 로그 터미널',
 });
 
 describe('§12.6 Live Visual Twin — 라우팅 통합', () => {
+  // 공장 뷰가 기본 탭이라 jsdom 초기 마운트가 무겁다 → 이 테스트만 개별 타임아웃을 준다
+  // (전역 testTimeout 5000ms가 먼저 걸리면 안쪽 findBy 타임아웃은 의미가 없다)
   it('App 의 /twin/live 라우트와 G12 메뉴로 진입할 수 있다', async () => {
     render(
       <MemoryRouter initialEntries={['/twin/live']}>
@@ -414,10 +422,9 @@ describe('§12.6 Live Visual Twin — 라우팅 통합', () => {
         </AppProvider>
       </MemoryRouter>,
     );
-    // 공장 뷰가 기본 탭이라 jsdom 에서 초기 마운트가 무겁다 → 타임아웃을 넉넉히 준다
-    expect(await screen.findByRole('heading', { name: /Live Visual Twin/ }, { timeout: 8000 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Live Visual Twin/ }, { timeout: 15000 })).toBeInTheDocument();
 
-    fireEvent.click(await screen.findByRole('button', { name: '운영' }, { timeout: 8000 }));
-    expect(await screen.findByRole('link', { name: 'Live Visual Twin (3D)' }, { timeout: 8000 })).toBeInTheDocument();
-  });
+    fireEvent.click(await screen.findByRole('button', { name: '차량 운영' }, { timeout: 15000 }));
+    expect(await screen.findByRole('link', { name: 'Live Visual Twin (3D)' }, { timeout: 15000 })).toBeInTheDocument();
+  }, 60000);
 });

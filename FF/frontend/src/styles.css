@@ -28,6 +28,13 @@ code,.mono{font-family:var(--mono)}
 .nav-mode{display:flex;gap:4px;padding:8px;border-bottom:1px solid var(--line)}
 .nav-mode button{flex:1;padding:6px 4px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;color:var(--muted)}
 .nav-mode button.active{background:var(--brand);border-color:var(--brand);color:#fff}
+/* Plane별 보기 — 대표 Plane의 산출물·계약·배정 근거를 서브내비 머리에 붙인다. */
+.plane-meta{padding:8px 16px 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.plane-meta .plane-row{display:flex;gap:6px;font-size:12px;line-height:1.45;margin-bottom:3px;color:var(--ink)}
+.plane-meta .plane-row .small{flex:0 0 32px;color:var(--muted)}
+.plane-meta .plane-note{margin:6px 0 0;line-height:1.45}
+.subnav a.plane-link{display:block;padding:3px 0;border-left:none;font-size:12px;font-weight:600;color:var(--brand)}
+.subnav a.plane-link:hover{background:none;text-decoration:underline}
 .nav-body{display:flex;flex:1;min-height:0}
 .rail{width:64px;flex:0 0 64px;display:flex;flex-direction:column;gap:2px;padding:8px 0;background:var(--surface-2);border-right:1px solid var(--line);overflow-y:auto}
 .rail-btn{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px;background:none;border:none;border-left:3px solid transparent;cursor:pointer;color:var(--muted);font:inherit}

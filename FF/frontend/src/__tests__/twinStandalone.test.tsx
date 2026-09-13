@@ -20,7 +20,7 @@ import { createTwinProvider } from '../state/twinStore';
 function RoleSetter() {
   const { dispatch } = useApp();
   useEffect(() => {
-    dispatch({ t: 'ROLE', role: 'Admin' });
+    dispatch({ t: 'ROLE', role: 'integrator' });
   }, [dispatch]);
   return null;
 }

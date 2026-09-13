@@ -44,6 +44,9 @@ vi.mock('@react-three/drei', () => ({
   Line: () => null,
   RoundedBox: ({ children }: { children?: ReactNode }) => <mesh>{children}</mesh>,
   Grid: () => null,
+  Environment: ({ children }: { children?: ReactNode }) => <group>{children}</group>,
+  Lightformer: () => null,
+  ContactShadows: () => null,
 }));
 
 const ALL_PART_IDS: PartId[] = ['body', 'battery', 'heater', 'bms', 'vcu', 'cgw', 'hvac', 'guard', 'charge', 'antenna'];

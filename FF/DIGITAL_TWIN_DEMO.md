@@ -228,6 +228,24 @@ RFTwin(로봇 공장) 씬 아키텍처 — 라벨 LOD, 공유 머티리얼, 카�
   `src/scene/plantProps.tsx`, 씬은 `src/scene/PlantScene.tsx`, 라벨 시스템은 `src/scene/labels.tsx` 이다.
   셀 좌표·station 배치·프리셋·AMR 경로를 바꾸려면 `plantLayout.ts` 만 고치면 된다.
 
+### 7.3 정본 IA 화면 — Feature 등록 · Feature BOM · Topology
+
+Twin 화면과 같은 셸에서 열린다. 세 화면 모두 각 영역 하단에 **정본 영역 계약**(`src/components/SpecAreaFacts.tsx`)을 붙여,
+Task · 입력/검증 · API · 역할 정책 · 인수 조건을 기준 문서 원문 그대로 노출한다.
+
+| 화면 | 경로 | 영역 수 | 정본 |
+|---|---|---|---|
+| Feature 등록 (Revision 기준) | `/master/define` | 7 | Detailed Screen & API Reference v1.1 `UI02` |
+| Feature BOM | `/master/bom` | 6 | v1.1 `UI04` |
+| Topology와 변경 영향 | `/arch/topology` | 7 | Feature Topology Definition v0.8 · SW Detailed Design v4.6 `UI05` |
+
+- **UI05 엔진**: 관계 사전 15종 → 그래프 → 규칙 검증 → Snapshot 동결(SHA-256) → Capability 평가 → 변경 영향 경로.
+  상단은 6단계 파이프라인(단계마다 `pass`/`fail`/`blocked` 톤), 하단은 Twin 런타임 아키텍처 뷰다.
+  두 뷰는 **같은 시뮬레이터 시계**를 쓴다 — `0×` 로 두면 패킷 애니메이션이 함께 멈춘다(`data-paused`).
+- **관계 저장 게이트 판정 순서**: 역할 `403` → 형식 `422` → 중복 `409` → 기준선 동결 `412` → `202`.
+- **정직한 실패 노출**: 현재 시드 데이터에서는 사전 외 관계형(`derives`/`uses_api`/`applies_to`/`realized_by`)과
+  미해결 참조(`POLICY-BDC-PREV`), 중복 조건행이 실제로 검출되어 일부 단계가 `fail` 로 표시된다. 이는 연출이 아니라 검증 결과다.
+
 ---
 
 ## 8. Simulator 사용법
@@ -446,3 +464,40 @@ swiftshader 소프트웨어 렌더링 측정이므로 실 GPU 에서는 절대�
 - Eclipse Ditto: Digital Twin 상태 저장소(Thing/Feature/desired/reported)
 - COVESA VSS / Eclipse KUKSA: 차량 신호 정규화와 Target Value 처리
 - FMI 3.0: vECU FMU 패키징과 Co-Simulation
+
+---
+
+## 17. 차량 Twin 3D 렌더 품질 — Option A (절차적 스튜디오 환경)
+
+### 17.1 문제
+
+`/twin/vehicle/<VIN>` 의 차량이 "둥근 상자 두 개"로 보였다. 원인은 **형상이 아니라 재질과 조명**이다.
+
+1. **환경맵 부재** — `MeshStandardMaterial(metalness 0.55)` 은 반사할 대상이 없으면 거의 검게 렌더된다. 이것이 주 원인이다.
+2. **광원 2개 + 그림자 없음** — ambient 0.55 · directional 0.95 뿐이라 차체가 바닥에서 떠 보였다.
+3. **유리가 보이지 않음** — 불투명 캐빈 박스가 유리 박스를 완전히 포함해 창이 아예 그려지지 않았다.
+4. **바퀴 = 실린더 + 납작한 상자 5개** — 타이어 단면 · 스포크 · 제동 질량이 없었다.
+
+### 17.2 적용한 구조
+
+- **재질**: 페인트 · 유리 · 림을 `MeshPhysicalMaterial`(clearcoat / envMapIntensity) 로 승격. 유리는 불투명도 0.62 로 낮추고 반사를 우선했다.
+- **환경**: `drei` `<Environment>` 안에 `<Lightformer>` 5장(천장 스트립 · 좌우 소프트박스 · 후면 림 · 바닥)을 넣어 **절차적으로** 환경맵을 만든다.
+  네트워크 HDR 자산을 받지 않으므로 오프라인 · 사내망에서도 동일하게 렌더된다.
+- **접지**: 키 라이트 `castShadow` + `<ContactShadows>` + `ACESFilmicToneMapping`(exposure 1.05).
+- **형상**: 그린하우스(유리) + 루프 패널 + A/B/C 필러 + 후드 · 테일게이트 · 사이드 실 · 범퍼 · 휠 아치(토러스),
+  휠은 토러스 타이어 + 림 배럴 + 5-스포크 + 허브 + 브레이크 디스크 · 캘리퍼.
+- **불변 조건**: 모든 모션은 여전히 `clock.rate` / `clock.simTick` 파생값뿐이다. `rate 0` → 부품 펄스 · 흐름 패킷 · 카메라 투어 정지.
+- **테스트**: drei 를 통째로 스텁하는 테스트는 새로 쓴 export(`Environment` / `Lightformer` / `ContactShadows`)까지 스텁해야 한다.
+  빠지면 vitest 가 "No export is defined on the mock" 으로 실패한다.
+
+### 17.3 측정 (1366×768, swiftshader, 동일 카메라 프리셋, 캔버스 픽셀만)
+
+| 지표 | 이전 | 이후 | 배수 |
+|---|---|---|---|
+| 평균 휘도 | 9.46 | 18.97 | ×2.0 |
+| 중앙값(차체 면) | 3 | 13 | ×4.3 |
+| p90 | 14 | 40 | ×2.9 |
+| p99(하이라이트) | 97 | 127 | ×1.3 |
+| 휘도 > 40 픽셀 비율 | 2.2 % | 10.0 % | ×4.5 |
+
+배경 픽셀(휘도 < 6) 비율은 0.6 % 로 양쪽 동일하다 — 배경이 아니라 **차체 구간만** 밝아졌다는 뜻이고, 반사 성분이 실제로 더해졌다는 증거다.

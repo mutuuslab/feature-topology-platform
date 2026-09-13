@@ -103,7 +103,7 @@ describe('§17.4 수렴 모니터 — 순수 모델', () => {
 function RoleSetter() {
   const { dispatch } = useApp();
   useEffect(() => {
-    dispatch({ t: 'ROLE', role: 'Admin' });
+    dispatch({ t: 'ROLE', role: 'integrator' });
   }, [dispatch]);
   return null;
 }

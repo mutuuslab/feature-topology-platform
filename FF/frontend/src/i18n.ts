@@ -1,4 +1,7 @@
 import { useAppShell } from './store';
+import { SPEC_MENU, SPEC_MENU_ITEM, SPEC_MENU_GROUP_OF_SCREEN, SPEC_ROLE_HOME } from './data/specMenu';
+import { SCREEN_LINKS } from './data/uiLinks';
+import { SPEC_PLANE_NAV } from './data/specPlanesNav';
 
 // 한/영 사전 — 네비게이션 셸 + 공통 UI. (페이지 본문은 점진 적용)
 type Lang = 'ko' | 'en';
@@ -6,15 +9,19 @@ export interface NavItem { to: string; ko: string; en: string }
 export interface NavGroup { ko: string; en: string; items: NavItem[] }
 export interface NavDomain { key: string; icon: string; ko: string; en: string; groups: NavGroup[] }
 
-// 그룹 정의 (기존 G0~G11) — 라우트/항목 변경 없음
-const G0: NavGroup = { ko: '홈', en: 'Home', items: [
+// ── 1차 IA = 기준 패키지의 7 업무 그룹 · 30 화면 (FP-DETAILED-1.1 / MENU 1.3) ──
+// 각 업무 그룹의 서브내비 = 그 그룹의 기준 화면 + 같은 업무 영역의 구현 화면(DEMO_DOMAIN).
+// 구현 화면 그룹(D0·G1·G2 …)은 아래에서 정의하고, 마지막에 DOMAINS로 묶는다.
+
+// ── 구현 데모 화면 (기준 화면이 아니라 시뮬레이션 구현) — 기준 화면에서 연결한다 ──
+const D0: NavGroup = { ko: '홈', en: 'Home', items: [
   { to: '/', ko: '내 대시보드', en: 'My Dashboard' }, { to: '/home/customize', ko: '홈 커스터마이즈', en: 'Customize Home' },
   { to: '/login', ko: 'Login·SSO', en: 'Login·SSO' }, { to: '/onboarding', ko: 'Onboarding', en: 'Onboarding' } ] };
 const G1: NavGroup = { ko: '기준정보', en: 'Master Data', items: [
-  { to: '/catalog', ko: 'Feature Catalog', en: 'Feature Catalog' }, { to: '/master/define', ko: 'Feature 등록(7-criteria)', en: 'Feature Definition (7-criteria)' },
+  { to: '/catalog', ko: 'Feature Catalog', en: 'Feature Catalog' }, { to: '/master/define', ko: 'Feature 등록(Revision)', en: 'Feature Registration (Revision)' },
   { to: '/master/taxonomy', ko: 'Taxonomy Browser', en: 'Taxonomy Browser' }, { to: '/master/taxonomy/edit', ko: 'Taxonomy Editor', en: 'Taxonomy Editor' },
-  { to: '/master/bom', ko: 'BOM Editor', en: 'BOM Editor' }, { to: '/master/artifacts', ko: 'Artifact Catalog', en: 'Artifact Catalog' },
-  { to: '/master/control-points', ko: 'Control Point Catalog', en: 'Control Point Catalog' } ] };
+  { to: '/master/bom', ko: 'Feature BOM 기준선', en: 'Feature BOM Baseline' }, { to: '/master/bom/items', ko: 'BOM Editor', en: 'BOM Editor' }, { to: '/master/artifacts', ko: 'Artifact Catalog', en: 'Artifact Catalog' },
+  { to: '/master/control-points', ko: 'Feature 제어점', en: 'Feature ControlPoint' } ] };
 const G2: NavGroup = { ko: '관계', en: 'Topology', items: [
   { to: '/topology/FEAT-BDC-001', ko: 'Topology Graph', en: 'Topology Graph' }, { to: '/topology/edge', ko: 'Edge Editor', en: 'Edge Editor' },
   { to: '/metamodel', ko: 'Metamodel Viewer', en: 'Metamodel Viewer' }, { to: '/consistency', ko: 'Consistency Console', en: 'Consistency Console' },
@@ -59,64 +66,122 @@ const G10: NavGroup = { ko: '관리자', en: 'Admin', items: [
   { to: '/admin/org', ko: 'Org & Domains', en: 'Org & Domains' }, { to: '/admin/approval', ko: 'Approval Workflow', en: 'Approval Workflow' },
   { to: '/admin/settings', ko: 'Settings', en: 'Settings' }, { to: '/admin/notifications', ko: 'Notifications', en: 'Notifications' }, { to: '/spec/security', ko: '보안 운영', en: 'Security Ops' } ] };
 
-// 상위 도메인 (12그룹 → 6도메인 통합)
-export const DOMAINS: NavDomain[] = [
-  { key: 'home', icon: '🏠', ko: '홈', en: 'Home', groups: [G0] },
-  { key: 'feature', icon: '📦', ko: 'Feature', en: 'Feature', groups: [G1, G2, G11] },
-  { key: 'lifecycle', icon: '⚖️', ko: '라이프사이클', en: 'Lifecycle', groups: [G3, G4, G5] },
-  { key: 'operate', icon: '🚀', ko: '운영', en: 'Operate', groups: [G6, G8, G12] },
-  { key: 'insights', icon: '📊', ko: '분석·감사', en: 'Insights', groups: [G9] },
-  { key: 'governance', icon: '🛡️', ko: '거버넌스', en: 'Governance', groups: [G7, G10] },
-];
+// 구현 데모 화면 묶음 — 1차 메뉴(기준 7그룹)에서 빠지지만 라우트는 살아 있다.
+// 각 기준 화면 페이지의 '연결 구현 화면'과 홈의 '구현 데모 화면' 인덱스가 이 목록을 쓴다.
+export const DEMO_GROUPS: NavGroup[] = [D0, G1, G2, G11, G3, G4, G5, G6, G8, G9, G12, G7, G10];
 
-// 하위호환: 평탄화된 그룹 목록
+// 업무 그룹(기준 7그룹) → 그 업무 영역의 구현 화면 묶음.
+// 기준 화면(무엇을 해야 하는가)과 구현 화면(지금 돌아가는 화면)을 한 자리에서 보게 한다.
+// 13개 구현 묶음은 정확히 한 업무 그룹에만 들어간다(specData.test.ts 에서 검증).
+const DEMO_DOMAIN: Record<string, NavGroup[]> = {
+  work: [D0],
+  feature: [G1, G4],
+  config: [G2, G7],
+  release: [G3],
+  vehicle: [G12, G6],
+  quality: [G5, G9],
+  admin: [G8, G10, G11],
+};
+
+export const DOMAINS: NavDomain[] = SPEC_MENU.map(g => ({
+  key: g.id, icon: g.icon, ko: g.ko, en: g.en,
+  groups: [
+    { ko: '기준 화면', en: 'Spec Screens', items: g.items.map(it => ({
+      to: `/ui/${it.id}`, ko: `${it.id} ${it.ko}`, en: `${it.id} ${it.en}`,
+    })) },
+    ...(DEMO_DOMAIN[g.id] || []).map(dg => ({ ...dg, ko: `구현 · ${dg.ko}`, en: `Impl · ${dg.en}` })),
+  ],
+}));
+
+
+// 하위호환: 평탄화된 그룹 목록 (기준 7업무 그룹)
 export const NAV: NavGroup[] = DOMAINS.flatMap(d => d.groups);
 
 // 경로 → NavItem 룩업 (부서별 보기에서 라벨 i18n 재사용)
 export const ITEM: Record<string, NavItem> = (() => {
   const m: Record<string, NavItem> = {};
-  NAV.forEach(g => g.items.forEach(it => { if (!(it.to in m)) m[it.to] = it; }));
+  [...NAV, ...DEMO_GROUPS].forEach(g => g.items.forEach(it => { if (!(it.to in m)) m[it.to] = it; }));
+  // 기준 화면 ID 로도 조회할 수 있게 별칭을 둔다 (/ui/UI02 ↔ UI02)
+  Object.entries(SPEC_MENU_ITEM).forEach(([id, it]) => { m[id] = { to: `/ui/${id}`, ko: `${id} ${it.ko}`, en: `${id} ${it.en}` }; });
   return m;
 })();
 
-// ── 부서별 보기 (역할 P1~P7+Admin → 담당 메뉴 큐레이션) ──
+// ── 3차 IA = 4 Plane 보기 (FP Architecture v4.5 Core 귀속 축) ──
+// Plane은 업무 그룹과 다른 축이다. 기준 화면 ID와 데모 경로는 그대로 두고 대표 Plane으로 다시 묶는다.
+// 배정 근거와 화면 목록은 data/specPlanesNav.ts 가 원천이고, 여기서는 셸이 쓰는 라벨 형태로 바꾼다.
+export interface PlaneNavDomain extends NavDomain {
+  /** Plane 전체 이름 (레일 라벨은 상속된 ko/en 짧은 이름을 쓴다) */
+  fullKo: string;
+  fullEn: string;
+  /** Plane 산출물 (specArch.SPEC_PLANES 원천) */
+  produces: string;
+  /** Plane 계약 (specArch.SPEC_PLANES 원천) */
+  contract: string;
+  /** 대표 Plane 배정 근거 */
+  note: string;
+  /** 4 Plane에 속하지 않는 공유 기반(Knowledge Foundation) */
+  shared: boolean;
+}
+
+export const PLANE_NAV: PlaneNavDomain[] = SPEC_PLANE_NAV.map(p => ({
+  key: p.id, icon: p.icon, ko: p.shortKo, en: p.shortEn,
+  fullKo: p.ko, fullEn: p.en,
+  produces: p.produces, contract: p.contract, note: p.note, shared: !!p.shared,
+  groups: [
+    ...p.screenGroups.map(g => ({
+      ko: g.ko, en: g.en,
+      items: g.screens.map(id => {
+        const it = SPEC_MENU_ITEM[id];
+        return it ? { to: `/ui/${id}`, ko: `${id} ${it.ko}`, en: `${id} ${it.en}` } : { to: `/ui/${id}`, ko: id, en: id };
+      }),
+    })),
+    ...p.demos.map(g => ({
+      ko: g.ko, en: g.en,
+      items: g.routes.map(r => ITEM[r] || { to: r, ko: r, en: r }),
+    })),
+  ],
+}));
+
+// ── 부서별 보기 (기준 패키지의 9 역할 → 담당 화면 큐레이션) ──
 export interface DeptSection { ko: string; en: string; paths: string[] }
 export interface Dept { role: string; icon: string; ko: string; en: string; sections: DeptSection[] }
-export const DEPT_NAV: Dept[] = [
-  { role: '기획 P1', icon: '📋', ko: '기획', en: 'Planning', sections: [
-    { ko: '정의', en: 'Define', paths: ['/catalog', '/master/define', '/master/taxonomy'] },
-    { ko: '참조', en: 'Reference', paths: ['/spec/changelog', '/spec/glossary'] },
-    { ko: '분석', en: 'Insights', paths: ['/insights/reports', '/cost', '/spec/business'] } ] },
-  { role: '시스템 P2', icon: '🔗', ko: '시스템', en: 'System', sections: [
-    { ko: '아키텍처', en: 'Architecture', paths: ['/topology/FEAT-BDC-001', '/topology/edge', '/metamodel'] },
-    { ko: '정합성', en: 'Consistency', paths: ['/consistency', '/consistency/violation'] },
-    { ko: 'BOM', en: 'BOM', paths: ['/master/bom', '/master/artifacts', '/master/control-points'] },
-    { ko: '영향', en: 'Impact', paths: ['/impact'] } ] },
-  { role: 'SW P3', icon: '💻', ko: 'SW', en: 'SW', sections: [
-    { ko: '의사결정', en: 'Decisions', paths: ['/decisions/center', '/impact', '/decisions/deploy', '/decisions/report'] },
-    { ko: '변경', en: 'Change', paths: ['/change/cr', '/cr-wizard', '/change/changeset'] },
-    { ko: '구현', en: 'Build', paths: ['/master/bom', '/spec/cicd'] } ] },
-  { role: '검증 P4', icon: '✅', ko: '검증', en: 'Verification', sections: [
-    { ko: '게이트', en: 'Gate', paths: ['/readiness/FEAT-BDC-001', '/verify/evidence', '/twin/simulation'] },
-    { ko: '규정', en: 'Compliance', paths: ['/spec/compliance', '/spec/scenario'] },
-    { ko: '추적', en: 'Traceability', paths: ['/lifecycle', '/spec/changelog'] } ] },
-  { role: 'OTA P5', icon: '🚀', ko: 'OTA', en: 'OTA', sections: [
-    { ko: '캠페인', en: 'Campaign', paths: ['/ops/campaign', '/ops/policy', '/activation'] },
-    { ko: '파이프라인', en: 'Pipeline', paths: ['/spec/cicd'] },
-    { ko: 'Twins', en: 'Twins', paths: ['/twin/fleet', '/twin/impact'] },
-    { ko: '모니터', en: 'Monitor', paths: ['/ops/telemetry', '/variants/FEAT-BDC-001'] } ] },
-  { role: '협력사 P6', icon: '🤝', ko: '협력사', en: 'Supplier', sections: [
-    { ko: '패키지', en: 'Package', paths: ['/supplier/portal', '/supplier/package'] },
-    { ko: '연동', en: 'Integration', paths: ['/integration/connectors', '/integration/sync', '/spec/billing'] } ] },
-  { role: '운영 P7', icon: '🛠', ko: '운영', en: 'Operations', sections: [
-    { ko: '운영', en: 'Ops', paths: ['/ops/FEAT-BDC-001', '/ops/incident', '/ops/runtime'] },
-    { ko: 'Twin', en: 'Twin', paths: ['/twin/fleet', '/twin/incident', '/twin/vehicle/VIN-DEMO-017'] },
-    { ko: 'Fleet', en: 'Fleet', paths: ['/fleet', '/activation'] },
-    { ko: '감사', en: 'Audit', paths: ['/insights/audit'] } ] },
-  { role: 'Admin', icon: '⚙️', ko: '관리', en: 'Admin', sections: [
-    { ko: '관리', en: 'Admin', paths: ['/admin/users', '/admin/permissions', '/admin/org', '/admin/approval', '/admin/settings', '/admin/notifications'] },
-    { ko: '보안', en: 'Security', paths: ['/spec/security'] } ] },
-];
+
+/** 기준 화면 ID → 그 화면이 구현된 데모 경로들 (uiLinks 기준, 중복 제거 + 실제 네비게이션 가능 경로만) */
+const implPathsOf = (screenIds: string[]) => {
+  const seen = new Set<string>();
+  screenIds.forEach(id => {
+    const e = SCREEN_LINKS[id];
+    (e?.links || []).forEach(l => { if (ITEM[l.path] && !l.path.includes(':')) seen.add(l.path); });
+  });
+  return [...seen];
+};
+
+const ROLE_ICON: Record<string, string> = {
+  author: '✍️', approver: '🏛', quality: '✅', operator: '🚚', steward: '🧩',
+  commerce: '💳', integrator: '🔗', coordinator: '🤝', viewer: '👁',
+};
+const ROLE_KO: Record<string, string> = {
+  author: 'Feature 설계', approver: '구성 승인', quality: '품질 검토', operator: '차량 운영', steward: 'PLM 기준정보',
+  commerce: '상품 권리', integrator: '시스템 연계', coordinator: '협의·개발 이관', viewer: '조회',
+};
+const ROLE_EN: Record<string, string> = {
+  author: 'Feature Design', approver: 'Configuration Approval', quality: 'Quality Review', operator: 'Vehicle Operations', steward: 'PLM Master Data',
+  commerce: 'Product Rights', integrator: 'System Integration', coordinator: 'Alignment & Handoff', viewer: 'Read-only',
+};
+/** 담당 화면이 없는 역할을 위한 공통 참조 화면 (내 업무·검토함·감사·추적) */
+const COMMON_SCREENS = ['UI01', 'UI06', 'UI14', 'UI30'];
+
+export const DEPT_NAV: Dept[] = Object.keys(ROLE_KO).map(role => {
+  const owned = SPEC_MENU.flatMap(g => g.items.filter(it => it.owner === role).map(it => it.id));
+  const sections: DeptSection[] = [
+    { ko: '담당 화면', en: 'Owned screens', paths: owned.map(id => `/ui/${id}`) },
+    { ko: '구현 화면', en: 'Implemented screens', paths: implPathsOf(owned) },
+  ];
+  const common = COMMON_SCREENS.filter(id => !owned.includes(id));
+  if (common.length) sections.push({ ko: '공통 참조', en: 'Shared', paths: common.map(id => `/ui/${id}`) });
+  return { role, icon: ROLE_ICON[role] || '👤', ko: ROLE_KO[role] || role, en: ROLE_EN[role] || role, sections: sections.filter(s => s.paths.length) };
+});
+
 
 const COMMON: Record<string, { ko: string; en: string }> = {
   search: { ko: '🔍 검색 · ⌘K  (예: FEAT-BDC-001)', en: '🔍 Search · ⌘K  (e.g. FEAT-BDC-001)' },
@@ -130,27 +195,56 @@ const COMMON: Record<string, { ko: string; en: string }> = {
   skip: { ko: '본문 바로가기', en: 'Skip to content' },
 };
 
-// 정확 경로 → 도메인 (모호한 /spec/* 등 정확 매핑) + 첫 세그먼트 폴백
+// 정확 경로 → 업무 그룹. 기준 화면(/ui/UIxx)은 소속 그룹, 구현 데모 화면은
+// uiLinks 의 연결(기준 화면 ↔ 구현 화면)을 따라 같은 그룹으로 묶는다.
+// 기준 문서 참조 영역(/arch, /spec/*)은 7개 업무 그룹 밖이므로 제외한다.
+const REF_SEGS = ['arch', 'spec'];
+const isGroupPath = (p: string) => p !== '/' && !p.includes(':') && !REF_SEGS.includes(p.split('/')[1] || '');
+// 기준 화면 연결(uiLinks)이 정본이다 — 구현 데모 화면이 어느 업무 그룹인지는
+// 그 화면이 연결된 기준 화면의 소속 그룹으로 정한다. 레거시 구현 묶음(DEMO_GROUPS)은
+// 기준 연결이 없는 경로의 보조 수단으로만 쓴다.
 const EXACT_TO_DOMAIN: Record<string, string> = (() => {
   const m: Record<string, string> = {};
-  DOMAINS.forEach(d => d.groups.forEach(g => g.items.forEach(it => { if (!(it.to in m)) m[it.to] = d.key; })));
+  Object.values(SCREEN_LINKS).forEach(s => {
+    const key = SPEC_MENU_GROUP_OF_SCREEN[s.screenId];
+    if (!key) return;
+    s.links.forEach(l => { if (isGroupPath(l.path) && !(l.path in m)) m[l.path] = key; });
+  });
+  DOMAINS.forEach(d => d.groups.forEach(g => g.items.forEach(it => {
+    if (isGroupPath(it.to) && !(it.to in m)) m[it.to] = d.key;
+  })));
   return m;
 })();
 const SEG_TO_DOMAIN: Record<string, string> = (() => {
   const m: Record<string, string> = {};
+  Object.values(SCREEN_LINKS).forEach(s => {
+    const key = SPEC_MENU_GROUP_OF_SCREEN[s.screenId];
+    if (!key) return;
+    s.links.forEach(l => {
+      const seg = l.path.split('/')[1] || '';
+      if (seg && !REF_SEGS.includes(seg) && !(seg in m)) m[seg] = key;
+    });
+  });
   DOMAINS.forEach(d => d.groups.forEach(g => g.items.forEach(it => {
     const seg = it.to.split('/')[1] || '';
-    if (seg && !(seg in m)) m[seg] = d.key;
+    if (seg && !REF_SEGS.includes(seg) && !(seg in m)) m[seg] = d.key;
   })));
-  m['feature'] = 'feature';   // /feature/:id (Feature Detail)
   return m;
 })();
 
+/** 현재 경로가 속한 업무 그룹 키 (레일 하이라이트). 매핑이 없으면 '' — 기준 참조 화면. */
 export function domainOfPath(pathname: string): string {
   if (EXACT_TO_DOMAIN[pathname]) return EXACT_TO_DOMAIN[pathname];
+  const screen = /^\/ui\/(UI\d\d)/.exec(pathname);
+  if (screen && SPEC_MENU_GROUP_OF_SCREEN[screen[1]]) return SPEC_MENU_GROUP_OF_SCREEN[screen[1]];
   const seg = pathname.split('/')[1] || '';
-  return SEG_TO_DOMAIN[seg] || 'home';
+  if (!seg) return '';            // 홈(내 대시보드)은 업무 그룹 밖 — 레일은 홈 버튼이 담당
+  return SEG_TO_DOMAIN[seg] || '';
 }
+
+/** 역할별 기본 착지 경로 (기준 30화면 안) */
+export const roleHomePath = (role: string) => SPEC_ROLE_HOME[role] || '/ui/UI01';
+
 
 export function useT() {
   // 라벨은 UI 언어에만 의존한다 — 전체 state 를 구독하면 2초 LIVE_TICK 마다
@@ -162,7 +256,7 @@ export function useT() {
     t: (k: string) => COMMON[k]?.[lang] ?? COMMON[k]?.ko ?? k,
     navGroup: (g: NavGroup) => (lang === 'en' ? g.en : g.ko),
     navItem: (i: NavItem) => (lang === 'en' ? i.en : i.ko),
-    navDomain: (d: NavDomain) => (lang === 'en' ? d.en : d.ko),
+    navDomain: (d: { ko: string; en: string }) => (lang === 'en' ? d.en : d.ko),
     deptLabel: (d: Dept | DeptSection) => (lang === 'en' ? d.en : d.ko),
   };
 }

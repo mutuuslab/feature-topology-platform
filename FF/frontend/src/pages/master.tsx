@@ -2,8 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { taxonomyTree } from '../data/refdata';
 import { artifacts, relations } from '../data/model';
+import {
+  ARTIFACT_RECORDS, BOM_AREAS, BOM_AREA_KO, CONTROL_POINTS, FLAG_BINDINGS, FLAG_PURPOSES, IMPLEMENTATION_BOMS, RUNTIME_BINDINGS,
+  SOURCE_SYNC, VIOLATIONS, artifactStats, controlPointStats, deliveryLabel, kindLabel, roleLabel,
+  type ArtifactRecord, type ControlPointRecord,
+} from '../data/implementation';
+import { groupDigest, shortDigest } from '../data/sha256';
 import { useApp, useToast } from '../store';
-import { RightPanel } from '../components/patterns';
+import { GButton, RightPanel } from '../components/patterns';
 import { Donut, Bars, RadialProgress, Steps, tally, dist } from '../components/charts';
 
 const ID_RULE: Record<string, string> = {
@@ -127,107 +133,291 @@ export function BOMEditor() {
   );
 }
 
-export function DefinitionWizard() {
-  const { state, dispatch } = useApp();
+// ── UI03 Feature별 구현 구성 — 구현 Artifact 레지스트리 ──
+// 화면 계약: MODEL Artifact 필수 필드를 그대로 보여주고, 위반은 필드에서 계산한다(설명문 아님).
+export function ArtifactCatalog() {
   const nav = useNavigate();
-  const [step, setStep] = useState(0);
-  const [name, setName] = useState('');
-  const [owner, setOwner] = useState('Body Platform Team');
-  const criteria = ['고객/차량 가치','요구사항화 가능','독립 검증 가능','적용 조건 존재','배포/활성화 제어','Owner 지정','운영 모니터링'];
-  const [checked, setChecked] = useState<boolean[]>(Array(7).fill(false));
-  const cnt = checked.filter(Boolean).length;
+  const toast = useToast();
+  const { state, dispatch } = useApp();
+  const [sel, setSel] = useState<ArtifactRecord | null>(null);
+  const [kind, setKind] = useState('ALL');
+  const [res, setRes] = useState('ALL');
+  const [sys, setSys] = useState('ALL');
+  const [q, setQ] = useState('');
 
-  const register = () => {
-    const n = state.features.filter(f => f.id.startsWith('FEAT-NEW')).length + 1;
-    const id = `FEAT-NEW-${String(n).padStart(3, '0')}`;
-    dispatch({ t: 'ADD_FEATURE', f: { id, level: 'L2', displayName: name || '신규 Feature', domain: 'Body', ownerOrg: owner, lifecycle: 'Proposed', safety: 'QM', security: 'Low', deployType: 'TBD' } });
-    dispatch({ t: 'AUDIT', entry: { ts: '2026-06-05 08:30', actor: state.role, action: 'REGISTER', target: id, detail: `7-criteria ${cnt}/7` } });
-    nav('/catalog');
+  const rows = ARTIFACT_RECORDS.filter(a =>
+    (kind === 'ALL' || a.artifactKind === kind)
+    && (res === 'ALL' || a.resolution === res)
+    && (sys === 'ALL' || a.sourceRef.system === sys)
+    && (!q || `${a.id} ${a.name} ${a.artifactId} ${a.version}`.toLowerCase().includes(q.toLowerCase())));
+
+  const st = artifactStats(ARTIFACT_RECORDS);
+  const violationsOf = (id: string) => VIOLATIONS.filter(v => v.target === id);
+
+  const reResolve = () => {
+    dispatch({ t: 'AUDIT', entry: { ts: '2026-09-13 10:12', actor: state.role, action: 'ARTIFACT_RESOLVE', target: `${sys === 'ALL' ? 'ALM·PLM·Git·CI' : sys}`, detail: `원천 재해석 요청 ${rows.length}건` } });
+    toast(`원천 재해석 요청 접수 — ${rows.length}건 (미해석 ${rows.filter(a => a.resolution === 'UNRESOLVED').length}건 포함)`);
   };
 
   return (
     <div>
-      <div className="breadcrumb">기준정보 ▸ Feature Definition Wizard</div>
-      <h1 className="page-title">Feature 등록 (7-criteria)</h1>
-      <div className="card">
-        <Steps steps={['Candidate', '7 Criteria', '필수 속성', '등록 결정']} current={step} />
-        <div className="mt" />
-        {step===0 && <input placeholder="후보 기능명 (예: BDC Policy Control)" value={name} onChange={e=>setName(e.target.value)} style={{width:'100%',padding:8,border:'1px solid var(--line)',borderRadius:6}}/>}
-        {step===1 && <div className="row" style={{ alignItems: 'center' }}>
-          <div style={{ flex: 1 }}>{criteria.map((c,i)=>(<label key={c} style={{display:'block',padding:'4px 0'}}><input type="checkbox" checked={checked[i]} onChange={()=>setChecked(p=>p.map((v,j)=>j===i?!v:v))}/> {c}</label>))}<p className="small">충족 {cnt}/7 {cnt>=4?'✅ Feature 후보':'— BOM 하위/보류'}</p></div>
-          <div style={{ textAlign: 'center' }}><RadialProgress size={120} color={cnt>=4?'#1F9D55':'#D9822B'} value={Math.round(cnt/7*100)} label={`${cnt}/7 기준`} /></div>
-        </div>}
-        {step===2 && <div className="kv" style={{maxWidth:480}}><div>Owner</div><div><input value={owner} onChange={e=>setOwner(e.target.value)} style={{padding:6,width:'100%'}}/></div><div>Verification</div><div><input defaultValue="HIL" style={{padding:6,width:'100%'}}/></div><div>Applicability</div><div><input defaultValue="KR" style={{padding:6,width:'100%'}}/></div></div>}
-        {step===3 && <div>
-          <div className="decision RELEASE" style={{background:'#EAF2FF',color:'var(--brand)',border:'1px solid var(--brand)'}}>{cnt>=4?`Feature 등록 가능 (Lifecycle=Proposed) — "${name||'신규'}"`:'기준 미달 → BOM 하위요소 / 보류'}</div>
-          {cnt>=4 && (name.trim()
-            ? <button className="btn primary mt" onClick={register}>등록 확정 → Catalog</button>
-            : <p className="small mt" style={{color:'var(--fail)'}}>※ Candidate 단계에서 기능명 입력 필수</p>)}
-        </div>}
-        <div className="mt"><button className="btn" disabled={step===0} onClick={()=>setStep(s=>s-1)}>← 이전</button>{' '}<button className="btn primary" disabled={step===3} onClick={()=>setStep(s=>s+1)}>다음 →</button></div>
-      </div>
-    </div>
-  );
-}
+      <div className="breadcrumb">구성과 PLM ▸ UI03 Feature별 구현 구성 ▸ Artifact 레지스트리</div>
+      <h1 className="page-title">Artifact 레지스트리 — FEAT-BDC-001@1.1.0</h1>
+      <p className="page-sub">
+        정확 버전·digest·배치 기준 구성 — 승인 차단 <b style={{ color: 'var(--fail)' }}>{VIOLATIONS.filter(v => v.blocking && v.code === 'UNRESOLVED_ARTIFACT').length}건</b> (미해석 Artifact)
+      </p>
 
-export function ArtifactCatalog() {
-  const nav = useNavigate();
-  const [sel, setSel] = useState<any>(null);
-  const rows = artifacts.filter(a => ['Requirement', 'SWComponent', 'ECU', 'APIService', 'Signal', 'DTC'].includes(a.kind));
-  const linkedFeatures = (id: string) => relations.filter(r => r.target === id || r.source === id).map(r => (r.source.startsWith('FEAT') ? r.source : r.target));
-  return (
-    <div>
-      <div className="breadcrumb">기준정보 ▸ Artifact Catalog</div>
-      <h1 className="page-title">Artifact Catalog</h1>
-      <p className="page-sub">행 클릭 → 산출물 상세·연결 Feature</p>
-      <div className="row analytics-strip">
-        <div className="col card" style={{ maxWidth: 250, alignItems: 'center' }}><b>Kind 분포</b>
-          <Donut size={130} center={`${rows.length}`} segments={dist(tally(rows, a => a.kind))} />
-        </div>
-        <div className="col card" style={{ flex: 2 }}><b>Kind별 산출물 수</b><div className="mt"><Bars data={tally(rows, a => a.kind)} /></div></div>
+      <div className="card" style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'center' }}>
+        <b className="small">원천 동기화</b>
+        {SOURCE_SYNC.map(s => (
+          <span key={s.system} className="small">
+            <span className="pill" style={s.state === 'STALE' ? { background: 'var(--pending)', color: '#fff' } : {}}>{s.system}</span>{' '}
+            {s.detail} <span className="muted">· {s.at}</span>
+          </span>
+        ))}
+        {SOURCE_SYNC.some(s => s.state === 'STALE') && <span className="small" style={{ color: 'var(--pending)' }}>⚠ CI 원천 지연 — 승인 참조 시 재수집 필요</span>}
       </div>
-      <div className="card"><div className="table-wrap"><table><thead><tr><th>ID</th><th>Kind</th><th>Name</th></tr></thead>
-        <tbody>{rows.map(a => (
-          <tr key={a.id} role="button" tabIndex={0} onClick={() => setSel(a)} onKeyDown={e => { if (e.key === 'Enter') setSel(a); }}><td className="mono">{a.id}</td><td>{a.kind}</td><td>{a.displayName}</td></tr>))}</tbody></table></div></div>
-      <RightPanel open={!!sel} onClose={() => setSel(null)} title={sel?.id || ''}>
-        {sel && <div><div className="kv">
-          <div>Kind</div><div>{sel.kind}</div><div>Name</div><div>{sel.displayName}</div>
-          <div>source_system</div><div>ALM/PLM</div><div>verification</div><div><span className="pill">linked</span></div>
-          {sel.meta?.version && <><div>version</div><div className="mono">{sel.meta.version}</div></>}
+
+      <div className="kpis mt">
+        <div className="kpi"><div className="v">{st.total}</div><div className="l">Artifact 전체</div></div>
+        <div className="kpi"><div className="v">{st.resolved}</div><div className="l">RESOLVED (승인 가능)</div></div>
+        <div className="kpi"><div className="v" style={{ color: 'var(--fail)' }}>{st.unresolved}</div><div className="l">UNRESOLVED → 승인 차단</div></div>
+        <div className="kpi"><div className="v">{st.deployable}</div><div className="l">배포 콘텐츠</div></div>
+        <div className="kpi"><div className="v">{st.physical}</div><div className="l">물리 설치 (HW)</div></div>
+      </div>
+
+      <div className="card mt">
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <select value={sys} onChange={e => setSys(e.target.value)} style={{ padding: 6 }} aria-label="원천 시스템">
+            <option value="ALL">원천 전체</option>
+            {['ALM', 'PLM', 'Git', 'CI'].map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <select value={kind} onChange={e => setKind(e.target.value)} style={{ padding: 6 }} aria-label="Artifact kind">
+            <option value="ALL">kind 전체</option>
+            {[...new Set(ARTIFACT_RECORDS.map(a => a.artifactKind))].map(k => <option key={k} value={k}>{k}</option>)}
+          </select>
+          <select value={res} onChange={e => setRes(e.target.value)} style={{ padding: 6 }} aria-label="resolution">
+            <option value="ALL">resolution 전체</option>
+            <option value="RESOLVED">RESOLVED</option>
+            <option value="UNRESOLVED">UNRESOLVED</option>
+          </select>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Artifact ID · artifactId · 이름 · 버전" style={{ padding: 6, minWidth: 240 }} />
+          <span className="muted small">{rows.length} / {ARTIFACT_RECORDS.length}건</span>
+          <span style={{ flex: 1 }} />
+          <GButton verb="edit" onClick={reResolve}>원천 재해석 실행</GButton>
+          <GButton verb="approve" onClick={() => nav('/ui/UI04')}>BOM 기준선에서 승인 심사 →</GButton>
         </div>
+      </div>
+
+      <div className="card mt"><div className="table-wrap"><table>
+        <thead><tr>
+          <th>Artifact</th><th>artifactKind</th><th>정확 version</th><th>resolution</th>
+          <th>contentDigest</th><th>delivery</th><th>배포 콘텐츠</th><th>sourceRef</th><th>위반</th>
+        </tr></thead>
+        <tbody>{rows.map(a => {
+          const vs = violationsOf(a.id);
+          return (
+            <tr key={a.id} role="button" tabIndex={0} onClick={() => setSel(a)} onKeyDown={e => { if (e.key === 'Enter') setSel(a); }}>
+              <td><div className="mono">{a.id}</div><div className="muted small">{a.name}</div></td>
+              <td><span className="pill">{a.artifactKind}</span></td>
+              <td className="mono">{a.version}</td>
+              <td><span className="pill" style={a.resolution === 'UNRESOLVED' ? { background: 'var(--fail)', color: '#fff' } : { background: 'var(--pass)', color: '#fff' }}>{a.resolution}</span></td>
+              <td className="mono small" title={a.contentDigest}>{shortDigest(a.contentDigest)}</td>
+              <td className="small">{a.delivery === 'PHYSICAL_INSTALL' ? '물리 설치' : a.delivery === 'OTA' ? 'OTA' : '참조 전용'}</td>
+              <td>{a.deploymentContent ? '예' : '아니오'}</td>
+              <td className="small muted">{a.sourceRef.system} · {a.sourceRef.object}@{a.sourceRef.version}</td>
+              <td>{vs.length ? <span className="pill" style={{ background: vs.some(v => v.blocking) ? 'var(--fail)' : 'var(--pending)', color: '#fff' }}>{vs.length}</span> : <span className="muted small">—</span>}</td>
+            </tr>
+          );
+        })}</tbody>
+      </table></div></div>
+
+      <RightPanel open={!!sel} onClose={() => setSel(null)} title={sel?.id || ''}>
+        {sel && <div>
+          <div className="kv">
+            <div>id</div><div className="mono">{sel.id}</div>
+            <div>artifactId</div><div className="mono">{sel.artifactId} <span className="muted small">— 공유 재사용 가능</span></div>
+            <div>version</div><div className="mono">{sel.version} <span className="muted small">— 정확 버전(latest·범위 금지)</span></div>
+            <div>artifactKind</div><div>{sel.artifactKind}</div>
+            <div>resolution</div><div>{sel.resolution}{sel.resolution === 'UNRESOLVED' && <span className="small" style={{ color: 'var(--fail)' }}> → 이 구성을 포함한 승인 차단</span>}</div>
+            <div>sourceRef</div><div className="mono small">{sel.sourceRef.system} / {sel.sourceRef.object} / {sel.sourceRef.version}</div>
+            <div>delivery</div><div>{deliveryLabel[sel.delivery]}{sel.artifactKind === 'HW' && <span className="small" style={{ color: 'var(--fail)' }}> · OTA 전송 대상 지정 금지</span>}</div>
+            <div>배포 콘텐츠</div><div>{sel.deploymentContent ? '예 — 실행 패키지에 포함' : '아니오 — 참조 전용'}</div>
+            <div>Feature 버전</div><div className="mono">{sel.featureVersionRef}</div>
+          </div>
+          <p className="mt small"><b>contentDigest (SHA-256 · 64자리 원문)</b></p>
+          <div className="mono small" style={{ wordBreak: 'break-all', background: 'var(--surface-2)', padding: 8, borderRadius: 6 }}>{groupDigest(sel.contentDigest)}</div>
+
+          <p className="mt small"><b>구현 구성 참조</b></p>
+          {IMPLEMENTATION_BOMS.filter(b => b.artifactRefs.includes(`${sel.id}@${sel.version}`)).map(b => (
+            <div key={b.id} className="small">
+              <span className="mono">{b.id}</span> v{b.version} · sourceProfile {b.sourceProfile} · 항목 {b.items.filter(i => i.presence === 'PRESENT').length}/{BOM_AREAS.length} 영역 해당
+              {b.predecessor && <span className="muted"> · predecessor {b.predecessor}</span>}
+            </div>
+          ))}
+          {!IMPLEMENTATION_BOMS.some(b => b.artifactRefs.includes(`${sel.id}@${sel.version}`)) && (
+            <p className="small" style={{ color: 'var(--fail)' }}>IMPLEMENTATION_ITEM_DRIFT — 어느 구현 구성도 이 정확 버전을 참조하지 않음</p>
+          )}
+
+          <p className="mt small"><b>검증 결과</b></p>
+          {violationsOf(sel.id).length
+            ? violationsOf(sel.id).map(v => (
+              <div key={v.code} className="small" style={{ color: v.blocking ? 'var(--fail)' : 'var(--pending)' }}>
+                {v.blocking ? '⛔' : '⚠'} <span className="mono">{v.code}</span> — {v.detail}
+              </div>))
+            : <p className="small" style={{ color: 'var(--pass)' }}>✓ 위반 없음 — 승인 참조 가능</p>}
+
           <p className="mt small"><b>연결 Feature</b></p>
-          {[...new Set(linkedFeatures(sel.id))].map(f => <button key={f} className="btn" onClick={() => nav(`/feature/${f}`)}>{f} →</button>)}
+          {[...new Set(relations.filter(r => r.target === sel.id || r.source === sel.id).map(r => (r.source.startsWith('FEAT') ? r.source : r.target)))].map(f => (
+            <button key={f} className="btn" onClick={() => nav(`/feature/${f}`)}>{f} →</button>
+          ))}
         </div>}
       </RightPanel>
     </div>
   );
 }
 
+// ── UI02-S04 구현과 제어 — ControlPoint 레지스트리 ──
+// FeatureVersion → ControlPoint → FlagBinding → RuntimeBinding 을 연결하고, 제어 계약 필수 필드와
+// Guard/Binding 위반을 필드에서 계산해 보여준다. 활성화 기본값을 OFF 로 두는 규칙은 없다.
 export function ControlPointCatalog() {
-  const [sel, setSel] = useState<any>(null);
-  const rows = [...artifacts.filter(a => a.kind === 'ControlPoint').map(a => ({ id: a.id, type: a.id.includes('KILL') ? 'KILL' : 'POLICY', name: a.displayName })),
-    { id: 'CP-BDC-001-SAFE', type: 'SAFE', name: 'Safe Default: disabled' }];
+  const nav = useNavigate();
+  const toast = useToast();
+  const { state, dispatch } = useApp();
+  const [sel, setSel] = useState<ControlPointRecord | null>(null);
+  const [kind, setKind] = useState('ALL');
+
+  const rows = CONTROL_POINTS.filter(c => kind === 'ALL' || c.kind === kind);
+  const st = controlPointStats();
+  const violationsOf = (id: string) => VIOLATIONS.filter(v => v.target === id || v.target.includes(id));
+
+  const verify = () => {
+    dispatch({ t: 'AUDIT', entry: { ts: '2026-09-13 10:14', actor: state.role, action: 'CP_CONTRACT_VERIFY', target: `CP ${rows.length}건`, detail: `계약 필드 검증 · Guard/Binding 위반 ${VIOLATIONS.length}건` } });
+    toast(`제어 계약 검증 완료 — 위반 ${VIOLATIONS.length}건 (차단 ${st.blocking}건)`);
+  };
+  const publish = () => {
+    dispatch({ t: 'AUDIT', entry: { ts: '2026-09-13 10:15', actor: state.role, action: 'POLICY_PUBLISH_REQUEST', target: 'FEAT-BDC-001@1.1.0', detail: `ControlPoint ${CONTROL_POINTS.length}건 · FlagBinding ${st.flags}건 발행 요청` } });
+    toast('정책 발행 요청 — 위반 해소 전에는 발행되지 않습니다', 'warn');
+  };
+
   return (
     <div>
-      <div className="breadcrumb">기준정보 ▸ Control Point Catalog</div>
-      <h1 className="page-title">Control Point Catalog</h1>
-      <p className="page-sub">Flag·Policy·Kill·Safe Default — 행 클릭 → 상세</p>
-      <div className="row analytics-strip">
-        <div className="col card" style={{ maxWidth: 250, alignItems: 'center' }}><b>Control Point 유형</b>
-          <Donut size={130} center={`${rows.length}`} segments={dist(tally(rows, c => c.type), { KILL: '#D64545', POLICY: '#0EA5E9', SAFE: '#1F9D55' })} />
-        </div>
-        <div className="col card" style={{ flex: 2 }}><b>유형별 수</b><div className="mt"><Bars data={tally(rows, c => c.type)} /></div></div>
+      <div className="breadcrumb">Feature 관리 ▸ UI02 Feature Registry ▸ UI02-S04 구현과 제어</div>
+      <h1 className="page-title">Feature 제어점 · 실행 구성 — FEAT-BDC-001@1.1.0</h1>
+      <p className="page-sub">
+        FeatureVersion → ControlPoint → FlagBinding → RuntimeBinding · 호출 계약 <span className="mono small">/api/ui/v1/features/FEAT-BDC-001@1.1.0/control-points</span>
+      </p>
+
+      <div className="kpis">
+        <div className="kpi"><div className="v">{st.total}</div><div className="l">제어점 전체</div></div>
+        <div className="kpi"><div className="v">{st.kinds}</div><div className="l">종 구분 (FLAG·PARAM·SIGNAL·DTC·API)</div></div>
+        <div className="kpi"><div className="v">{st.writeGuarded}/{st.write}</div><div className="l">쓰기 요청 · Guard 보유</div></div>
+        <div className="kpi"><div className="v">{st.observe}</div><div className="l">관측 (제어 권한 없음)</div></div>
+        <div className="kpi"><div className="v">{st.flags}</div><div className="l">FlagBinding</div></div>
+        <div className="kpi"><div className="v">{st.runtimes}</div><div className="l">RuntimeBinding</div></div>
+        <div className="kpi"><div className="v" style={{ color: 'var(--fail)' }}>{st.blocking}</div><div className="l">차단 위반 (발행 불가)</div></div>
       </div>
-      <div className="card"><div className="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Name</th></tr></thead>
+
+      <div className="card mt">
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="tabs">{['ALL', ...Object.keys(kindLabel)].map(k => (
+            <button key={k} className={kind === k ? 'active' : ''} onClick={() => setKind(k)}>{k === 'ALL' ? '전체' : k}</button>
+          ))}</div>
+          <span style={{ flex: 1 }} />
+          <GButton verb="run-engine" onClick={verify}>제어 계약 검증 실행</GButton>
+          <GButton verb="deploy" onClick={publish}>정책 발행 요청</GButton>
+        </div>
+        <p className="small muted mt">
+          Guard 확인 대상: 현재 차량 상태 · 사용 권리 · 서명 · TTL. RuntimeBinding 은 actuator 직접 쓰기 인터페이스를 제공하지 않는다.
+        </p>
+      </div>
+
+      {VIOLATIONS.length > 0 && (
+        <div className="card mt" style={{ borderColor: 'var(--fail)' }}>
+          <b>발행 차단 사유 ({VIOLATIONS.length})</b>
+          <div className="table-wrap mt"><table>
+            <thead><tr><th>코드</th><th>대상</th><th>내용</th><th>차단</th></tr></thead>
+            <tbody>{VIOLATIONS.map((v, i) => (
+              <tr key={`${v.code}-${i}`}>
+                <td className="mono small">{v.code}</td><td className="small">{v.target}</td>
+                <td className="small">{v.detail}</td>
+                <td><span className="pill" style={v.blocking ? { background: 'var(--fail)', color: '#fff' } : { background: 'var(--pending)', color: '#fff' }}>{v.blocking ? '차단' : '경고'}</span></td>
+              </tr>
+            ))}</tbody>
+          </table></div>
+        </div>
+      )}
+
+      <div className="card mt"><div className="table-wrap"><table>
+        <thead><tr>
+          <th>제어점</th><th>kind</th><th>role</th><th>valueType</th><th>단위 · 허용 범위</th>
+          <th>accessMode</th><th>bindingRef (정확 버전)</th><th>guardRef</th><th>flagClass</th><th>현재 관측값</th>
+        </tr></thead>
         <tbody>{rows.map(c => (
-          <tr key={c.id} role="button" tabIndex={0} onClick={() => setSel(c)} onKeyDown={e => { if (e.key === 'Enter') setSel(c); }}><td className="mono">{c.id}</td><td><span className="pill">{c.type}</span></td><td>{c.name}</td></tr>))}</tbody></table></div></div>
+          <tr key={c.id} role="button" tabIndex={0} onClick={() => setSel(c)} onKeyDown={e => { if (e.key === 'Enter') setSel(c); }}>
+            <td className="mono">{c.id}</td>
+            <td><span className="pill">{c.kind}</span></td>
+            <td className="small">{roleLabel[c.role]}</td>
+            <td className="small">{c.valueType}</td>
+            <td className="small">{c.unit ? `${c.unit} · ${c.allowedRange ? `${c.allowedRange[0]}~${c.allowedRange[1]}` : '범위 미지정'}` : <span className="muted">—</span>}</td>
+            <td className="small">{c.accessMode}</td>
+            <td className="mono small">{c.bindingRef}</td>
+            <td className="small">{c.guardRef ? <span className="mono">{c.guardRef}</span> : (c.role === 'WRITE_REQUEST' ? <span style={{ color: 'var(--fail)' }}>누락</span> : <span className="muted">—</span>)}</td>
+            <td className="small">{c.flagClass ? <span className="pill">{c.flagClass.purpose}</span> : <span className="muted">—</span>}</td>
+            <td className="mono small">{String(c.observedValue)}</td>
+          </tr>
+        ))}</tbody>
+      </table></div></div>
+
       <RightPanel open={!!sel} onClose={() => setSel(null)} title={sel?.id || ''}>
-        {sel && <div className="kv">
-          <div>Type</div><div>{sel.type}</div><div>Name</div><div>{sel.name}</div>
-          <div>귀속 Feature</div><div className="mono">FEAT-BDC-001 (T-002)</div>
-          <div>Safe Default</div><div>disabled</div>
-          <div>Rollback</div><div>RB-BDC-001 → previous stable</div>
-          <div>비고</div><div className="small">{sel.type === 'KILL' ? '긴급 즉시 비활성화' : sel.type === 'SAFE' ? '평가 실패/오프라인 기본값' : '정책 기반 활성화 제어'}</div>
+        {sel && <div>
+          <div className="kv">
+            <div>kind</div><div>{sel.kind} <span className="muted small">— {kindLabel[sel.kind]}</span></div>
+            <div>role</div><div>{roleLabel[sel.role]}</div>
+            <div>valueType</div><div>{sel.valueType}</div>
+            <div>unit</div><div>{sel.unit || <span className="muted">수치 아님</span>}</div>
+            <div>allowedRange</div><div>{sel.allowedRange ? `${sel.allowedRange[0]} ~ ${sel.allowedRange[1]} ${sel.unit || ''}` : <span className="muted">—</span>}</div>
+            <div>accessMode</div><div>{sel.accessMode}{sel.role === 'OBSERVE' && <span className="muted small"> — 관측 항목에 실행 제어 권한 부여 금지</span>}</div>
+            <div>bindingRef</div><div className="mono small">{sel.bindingRef}</div>
+            <div>guardRef</div><div className="mono small">{sel.guardRef || <span style={{ color: 'var(--fail)' }}>없음 — 쓰기 요청에 필수</span>}</div>
+            <div>Feature 버전</div><div className="mono">{sel.featureVersionRef}</div>
+            <div>현재 관측값</div><div className="mono">{String(sel.observedValue)}{sel.unit ? ` ${sel.unit}` : ''}</div>
+          </div>
+
+          {sel.flagClass ? (
+            <>
+              <p className="mt small"><b>flagClass (UL-009 FlagTypePolicy 6종)</b></p>
+              <div className="kv">
+                <div>purpose</div><div><span className="pill">{sel.flagClass.purpose}</span> {FLAG_PURPOSES.find(p => p.purpose === sel.flagClass!.purpose)?.ko}</div>
+                <div>lifetimeDays</div><div>{sel.flagClass.lifetimeDays}{sel.flagClass.lifetimeDays === 0 && <span className="muted small"> — 기한 없음(정책 서명 만료 면제 아님)</span>}</div>
+                <div>reviewDueAt</div><div className="mono">{sel.flagClass.reviewDueAt}</div>
+                <div>ownerRef</div><div className="mono">{sel.flagClass.ownerRef}</div>
+              </div>
+            </>
+          ) : <p className="mt small muted">Flag 가 아니므로 flagClass 없음 (수명·검토기한 미적용)</p>}
+
+          <p className="mt small"><b>Binding 연결</b></p>
+          {FLAG_BINDINGS.filter(f => f.controlPointRef === sel.id).map(f => (
+            <div key={f.id} className="small" style={{ marginBottom: 6 }}>
+              <div><span className="mono">{f.id}</span> · flagVersion <span className="mono">{f.flagVersionRef}</span> · tool <span className="mono">{f.toolBindingRef}</span></div>
+              <div className="muted">적용 조건 <span className="mono">{f.applicabilityRef}</span> · 도구 기본 수명 {f.toolDefaultLifetimeDays}일 <span className="muted small">(OEM 값으로 승격 금지)</span></div>
+              {RUNTIME_BINDINGS.filter(r => r.flagBindingRef === f.id).map(r => (
+                <div key={r.id} className="muted">↳ <span className="mono">{r.id}</span> · bom <span className="mono">{r.bomRef}</span> · topology <span className="mono">{r.topologyRef}</span></div>
+              ))}
+            </div>
+          ))}
+          {!FLAG_BINDINGS.some(f => f.controlPointRef === sel.id) && <p className="small muted">FlagBinding 없음 — 관측·평가 전용 제어점</p>}
+
+          <p className="mt small"><b>검증 결과</b></p>
+          {violationsOf(sel.id).length
+            ? violationsOf(sel.id).map(v => (
+              <div key={v.code} className="small" style={{ color: v.blocking ? 'var(--fail)' : 'var(--pending)' }}>
+                {v.blocking ? '⛔' : '⚠'} <span className="mono">{v.code}</span> — {v.detail}
+              </div>))
+            : <p className="small" style={{ color: 'var(--pass)' }}>✓ 계약 위반 없음</p>}
+
+          <p className="mt small"><b>연결 화면</b></p>
+          <button className="btn" onClick={() => nav('/ui/UI02/UI02-S04')}>UI02-S04 구현과 제어 →</button>
         </div>}
       </RightPanel>
     </div>

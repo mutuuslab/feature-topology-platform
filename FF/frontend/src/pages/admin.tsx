@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { users, roles, verbs, permMatrix, orgs, domains, notifications, uiActions, uiRoles, uiPermMatrix } from '../data/refdata';
+import { users, roles, verbs, permMatrix, roleKeyOf, orgs, domains, notifications, uiActions, uiRoles, uiPermMatrix } from '../data/refdata';
 import { features } from '../data/model';
 import { RightPanel } from '../components/patterns';
 
 export function UsersRoles() {
   const [sel, setSel] = useState<any>(null);
-  const roleKey = (r: string) => (Object.keys(permMatrix).find(k => r.includes(k.split(' ')[0])) || 'Admin');
+  const roleKey = roleKeyOf;
   return (
     <div>
       <div className="breadcrumb">관리자 ▸ Users & Roles</div>

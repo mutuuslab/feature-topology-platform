@@ -76,11 +76,32 @@ function usePulseMaterial(color: string, pulse: boolean, selected: boolean, opac
 /* ------------------------------------------------------------------ */
 
 export const MAT = {
-  shell: new THREE.MeshStandardMaterial({ color: '#232a36', metalness: 0.55, roughness: 0.32 }),
-  shellDark: new THREE.MeshStandardMaterial({ color: '#171c26', metalness: 0.5, roughness: 0.4 }),
-  glass: new THREE.MeshStandardMaterial({ color: '#8fb4d6', metalness: 0.1, roughness: 0.12, transparent: true, opacity: 0.3 }),
-  tyre: new THREE.MeshStandardMaterial({ color: '#111318', roughness: 0.92 }),
-  rim: new THREE.MeshStandardMaterial({ color: '#c3c9d2', metalness: 0.8, roughness: 0.25 }),
+  // 페인트 — 클리어코트를 가진 2코트 금속 도장. 하이라이트의 모양은 환경맵이 만든다.
+  shell: new THREE.MeshPhysicalMaterial({
+    color: '#2c3444', metalness: 0.72, roughness: 0.26,
+    clearcoat: 0.9, clearcoatRoughness: 0.1, envMapIntensity: 1.15,
+  }),
+  shellDark: new THREE.MeshPhysicalMaterial({
+    color: '#171c26', metalness: 0.6, roughness: 0.34,
+    clearcoat: 0.5, clearcoatRoughness: 0.2, envMapIntensity: 1,
+  }),
+  // 유리 — 어두운 관제실에서 실제 유리처럼 읽히려면 투명도보다 "반사"가 지배적이어야 한다.
+  glass: new THREE.MeshPhysicalMaterial({
+    color: '#0e1622', metalness: 0.16, roughness: 0.05,
+    clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 2.1,
+    transparent: true, opacity: 0.62, side: THREE.DoubleSide,
+  }),
+  tyre: new THREE.MeshStandardMaterial({ color: '#0d0f13', roughness: 0.86, metalness: 0.05 }),
+  rim: new THREE.MeshPhysicalMaterial({
+    color: '#c9cfd8', metalness: 0.96, roughness: 0.2,
+    clearcoat: 0.7, clearcoatRoughness: 0.12, envMapIntensity: 1.3,
+  }),
+  disc: new THREE.MeshStandardMaterial({ color: '#8d949f', metalness: 0.85, roughness: 0.32 }),
+  caliper: new THREE.MeshStandardMaterial({ color: '#c1483f', metalness: 0.4, roughness: 0.45 }),
+  trim: new THREE.MeshPhysicalMaterial({
+    color: '#0f1218', metalness: 0.35, roughness: 0.46,
+    clearcoat: 0.3, clearcoatRoughness: 0.3, envMapIntensity: 0.9,
+  }),
   underbody: new THREE.MeshStandardMaterial({ color: '#12151b', metalness: 0.35, roughness: 0.55 }),
   frame: new THREE.MeshStandardMaterial({ color: '#2b323f', metalness: 0.4, roughness: 0.5 }),
   coolingPlate: new THREE.MeshStandardMaterial({ color: '#3a5670', metalness: 0.65, roughness: 0.28 }),
@@ -97,7 +118,7 @@ export const MAT = {
 export function SceneFloor() {
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} material={MAT.floor}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} material={MAT.floor} receiveShadow>
         <planeGeometry args={[30, 30]} />
       </mesh>
       <gridHelper args={[30, 30, '#233047', '#161c27']} />
@@ -117,19 +138,45 @@ const WHEEL_POS: Array<[number, number, number]> = [
 ];
 
 function Wheel({ position }: { position: [number, number, number] }) {
+  // 차체 바깥쪽에 림·스포크를, 안쪽에 디스크·캘리퍼를 둔다(실차 배치).
+  const out = position[0] >= 0 ? 1 : -1;
+  const faceX = out * 0.1;
+  const hubX = -out * 0.05;
   return (
-    <group position={position} rotation={[0, 0, Math.PI / 2]}>
-      <mesh material={MAT.tyre}>
-        <cylinderGeometry args={[0.37, 0.37, 0.26, 22]} />
+    <group position={position}>
+      {/* 트레드 — 원형 단면이라 정면/측면 어디에서 봐도 타이어로 읽힌다 */}
+      <mesh material={MAT.tyre} rotation={[0, Math.PI / 2, 0]} castShadow>
+        <torusGeometry args={[0.272, 0.1, 14, 36]} />
       </mesh>
-      <mesh material={MAT.rim} position={[0, 0, 0.01]}>
-        <cylinderGeometry args={[0.22, 0.22, 0.28, 12]} />
+      {/* 림 배럴 */}
+      <mesh material={MAT.rim} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.2, 0.2, 0.16, 28]} />
       </mesh>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <mesh key={i} material={MAT.rim} rotation={[0, 0, (i / 5) * Math.PI * 2]} position={[0, 0, 0.14]}>
-          <boxGeometry args={[0.04, 0.34, 0.03]} />
-        </mesh>
-      ))}
+      {/* 5-스포크 — 휠 축(X) 둘레로 방사형 배치 */}
+      {Array.from({ length: 5 }).map((_, i) => {
+        const a = (i / 5) * Math.PI * 2;
+        return (
+          <mesh
+            key={i}
+            material={MAT.rim}
+            position={[faceX, Math.cos(a) * 0.115, Math.sin(a) * 0.115]}
+            rotation={[a, 0, 0]}
+          >
+            <boxGeometry args={[0.045, 0.21, 0.055]} />
+          </mesh>
+        );
+      })}
+      {/* 허브 캡 */}
+      <mesh material={MAT.rim} position={[faceX, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.055, 0.055, 0.035, 18]} />
+      </mesh>
+      {/* 브레이크 디스크 · 캘리퍼 — 바퀴 안쪽이 비어 보이지 않게 하는 제동 질량 */}
+      <mesh material={MAT.disc} position={[hubX, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.165, 0.165, 0.02, 26]} />
+      </mesh>
+      <mesh material={MAT.caliper} position={[hubX, 0.105, 0.01]}>
+        <boxGeometry args={[0.05, 0.1, 0.075]} />
+      </mesh>
     </group>
   );
 }
@@ -176,28 +223,85 @@ function Mirror({ side }: { side: 1 | -1 }) {
 }
 
 export function CarShell({ xray }: { xray: boolean }) {
-  const shellOpacity = xray ? 0.2 : 1;
+  const shellOpacity = xray ? 0.18 : 1;
   const shellMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#232a36', metalness: 0.55, roughness: 0.32, transparent: xray, opacity: shellOpacity }),
+    () => new THREE.MeshPhysicalMaterial({
+      color: '#2c3444', metalness: 0.72, roughness: 0.26,
+      clearcoat: 0.9, clearcoatRoughness: 0.1, envMapIntensity: 1.15,
+      transparent: xray, opacity: shellOpacity,
+    }),
     [xray, shellOpacity],
   );
-  const cabinMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#1b212b', metalness: 0.55, roughness: 0.3, transparent: xray, opacity: shellOpacity }),
-    [xray, shellOpacity],
+  const trimMat = useMemo(
+    () => new THREE.MeshPhysicalMaterial({
+      color: '#141922', metalness: 0.5, roughness: 0.42,
+      clearcoat: 0.35, clearcoatRoughness: 0.3, envMapIntensity: 0.85,
+      transparent: xray, opacity: xray ? 0.16 : 1,
+    }),
+    [xray],
+  );
+  // X-ray 에서도 유리는 살아 있어야 차체와 구분된다 — 불투명도만 낮춘다.
+  const glassMat = useMemo(
+    () => new THREE.MeshPhysicalMaterial({
+      color: '#0e1622', metalness: 0.16, roughness: 0.05,
+      clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 2.1,
+      transparent: true, opacity: xray ? 0.12 : 0.62, side: THREE.DoubleSide,
+    }),
+    [xray],
   );
   return (
     <group>
       {/* 하부 차체 */}
-      <RoundedBox args={[2.0, 0.56, 4.4]} radius={0.14} smoothness={2} position={[0, 0.78, 0]} material={shellMat} />
-      {/* 캐빈/루프 */}
-      <RoundedBox args={[1.84, 0.5, 2.3]} radius={0.12} smoothness={2} position={[0, 1.22, -0.15]} material={cabinMat} />
-      {/* 그린하우스(유리) */}
-      <mesh position={[0, 1.28, -0.15]} material={MAT.glass}>
-        <boxGeometry args={[1.7, 0.34, 2.1]} />
+      <RoundedBox args={[2.0, 0.56, 4.4]} radius={0.14} smoothness={3} position={[0, 0.78, 0]} material={shellMat} castShadow />
+      {/* 후드 — 앞쪽이 낮아지는 실루엣을 만든다 */}
+      <RoundedBox args={[1.86, 0.2, 1.5]} radius={0.08} smoothness={3} position={[0, 1.09, 1.3]} material={shellMat} />
+      {/* 테일게이트 */}
+      <RoundedBox args={[1.86, 0.46, 0.9]} radius={0.1} smoothness={3} position={[0, 1.06, -1.86]} material={shellMat} />
+      {/* 루프 패널 — 유리가 차체에 묻히지 않도록 그린하우스 위를 덮는다 */}
+      <RoundedBox args={[1.74, 0.12, 2.18]} radius={0.05} smoothness={3} position={[0, 1.44, -0.15]} material={shellMat} />
+      {/* 그린하우스(유리) — 유리 상자 자체가 차체 상부의 형상이 된다 */}
+      <mesh position={[0, 1.2, -0.15]} material={glassMat}>
+        <boxGeometry args={[1.78, 0.44, 2.2]} />
+      </mesh>
+      {/* A/B/C 필러 — 유리 상자만으로는 승용차 실루엣이 되지 않는다 */}
+      {[1, -1].map((s) => (
+        <group key={s}>
+          <mesh position={[s * 0.87, 1.2, 0.98]} rotation={[0.34, 0, 0]} material={trimMat}>
+            <boxGeometry args={[0.1, 0.5, 0.12]} />
+          </mesh>
+          <mesh position={[s * 0.89, 1.2, -0.15]} material={trimMat}>
+            <boxGeometry args={[0.09, 0.5, 0.09]} />
+          </mesh>
+          <mesh position={[s * 0.87, 1.2, -1.26]} rotation={[-0.3, 0, 0]} material={trimMat}>
+            <boxGeometry args={[0.11, 0.5, 0.16]} />
+          </mesh>
+        </group>
+      ))}
+      {/* 윈드실드 · 리어 헤더 */}
+      <mesh position={[0, 1.41, 1.02]} material={trimMat}>
+        <boxGeometry args={[1.74, 0.09, 0.12]} />
+      </mesh>
+      <mesh position={[0, 1.41, -1.3]} material={trimMat}>
+        <boxGeometry args={[1.74, 0.09, 0.14]} />
       </mesh>
       <BodySeams />
       <Mirror side={1} />
       <Mirror side={-1} />
+      {/* 휠 아치 — 펜더 라인. 바퀴가 차체에 박혀 보이지 않게 한다 */}
+      {WHEEL_POS.map((p, i) => (
+        <mesh
+          key={`arch${i}`}
+          material={trimMat}
+          position={[p[0] > 0 ? 0.975 : -0.975, p[1], p[2]]}
+          rotation={[0, Math.PI / 2, 0.32]}
+        >
+          <torusGeometry args={[0.42, 0.055, 8, 20, 2.5]} />
+        </mesh>
+      ))}
+      {/* 사이드 실 · 전후 범퍼 하단 */}
+      <RoundedBox args={[2.02, 0.14, 2.9]} radius={0.05} smoothness={2} position={[0, 0.53, 0]} material={trimMat} />
+      <RoundedBox args={[1.78, 0.3, 0.24]} radius={0.06} smoothness={2} position={[0, 0.6, 2.22]} material={trimMat} />
+      <RoundedBox args={[1.78, 0.3, 0.24]} radius={0.06} smoothness={2} position={[0, 0.6, -2.22]} material={trimMat} />
       {/* 루프 핀(샤크핀 안테나 하우징) */}
       <mesh position={[0, 1.54, -1.0]} material={MAT.shellDark}>
         <coneGeometry args={[0.05, 0.1, 8]} />

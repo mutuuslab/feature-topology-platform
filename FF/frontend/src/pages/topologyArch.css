@@ -1,0 +1,194 @@
+/**
+ * UI05 Topology 와 변경 영향 — 동작 메커니즘 화면 전용 스타일.
+ *
+ * Only `.tpa-*` classes live here. 색은 `src/styles.css` 의 테마 토큰만 쓴다
+ * (--brand/--ink/--muted/--line/--surface*/--pass/--pending/--fail/--info) — 라이트/다크가
+ * 자동으로 따라온다.
+ *
+ * 모션 규칙: 상단 엔진 파이프라인과 하단 Twin 런타임은 **같은 시뮬레이터 클럭**을 쓴다.
+ * `clock.rate === 0` 이면 두 다이어그램이 동시에 멈춘다(`[data-paused="true"]`).
+ */
+
+.tpa-root {
+  --tpa-pass: var(--pass);
+  --tpa-pending: var(--pending);
+  --tpa-fail: var(--fail);
+  --tpa-info: var(--info);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: var(--sans);
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------ 헤더 */
+
+.tpa-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.tpa-head h2 { margin: 0; font-size: 18px; letter-spacing: -0.01em; }
+.tpa-head-title { display: flex; flex-direction: column; gap: 2px; }
+.tpa-head-sub { font-size: 12px; color: var(--muted); }
+.tpa-head-clock { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+.tpa-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+  border: 1px solid var(--line); background: var(--surface-2);
+}
+.tpa-badge.live { color: var(--pass); border-color: var(--pass); background: color-mix(in srgb, var(--pass) 14%, transparent); }
+.tpa-badge.paused { color: var(--muted); }
+.tpa-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.tpa-badge.live .tpa-dot { animation: tpa-blink 1.1s ease-in-out infinite; }
+@keyframes tpa-blink { 0%, 100% { opacity: 1 } 50% { opacity: 0.2 } }
+
+.tpa-rates { display: flex; gap: 4px; align-items: center; }
+.tpa-rates .tpa-lab { font-size: 11px; color: var(--muted); margin-right: 2px; }
+.tpa-rates button {
+  padding: 4px 9px; font-size: 12px; font-family: var(--mono);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); cursor: pointer;
+}
+.tpa-rates button.on { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 700; }
+
+/* ------------------------------------------------------------------ 패널 */
+
+.tpa-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.tpa-panel > header {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.tpa-panel h3 { margin: 0; font-size: 15px; }
+.tpa-panel .tpa-ref { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: auto; }
+.tpa-scroll { overflow-x: auto; }
+.tpa-note { font-size: 12px; color: var(--muted); line-height: 1.55; }
+.tpa-note b { color: var(--ink); }
+
+/* -------------------------------------------------- Feature Topology 엔진 SVG */
+
+.tpa-svg { display: block; width: 100%; min-width: 1218px; height: auto; }
+.tpa-band-bg { fill: var(--surface-2); stroke: var(--line); }
+.tpa-band-bg.blocked { stroke: var(--fail); stroke-width: 1.6; }
+.tpa-band-bg.active { stroke: var(--brand); }
+.tpa-stage-title { font-size: 12.5px; font-weight: 700; fill: var(--ink); }
+.tpa-stage-core { font-family: var(--mono); font-size: 9.5px; fill: var(--muted); }
+.tpa-row-label { font-size: 10.5px; fill: var(--ink); }
+.tpa-row-value { font-family: var(--mono); font-size: 9.5px; fill: var(--muted); }
+.tpa-more { font-size: 9.5px; fill: var(--muted); }
+.tpa-flow-line { stroke: var(--line); stroke-width: 2; fill: none; stroke-dasharray: 6 5; animation: tpa-dash-flow 3.2s linear infinite; }
+.tpa-flow-line.blocked { stroke: var(--fail); animation-play-state: paused; }
+.tpa-packet { animation-name: tpa-packet-flow; animation-timing-function: linear; animation-iteration-count: infinite; }
+@keyframes tpa-dash-flow { to { stroke-dashoffset: -22; } }
+@keyframes tpa-packet-flow {
+  0% { transform: translate(0px, 0px); opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { transform: translate(var(--tpa-dx), 0px); opacity: 0; }
+}
+.tpa-root[data-paused='true'] .tpa-flow-line,
+.tpa-root[data-paused='true'] .tpa-packet { animation-play-state: paused; }
+.tpa-tone-pass { fill: var(--pass); }
+.tpa-tone-pending { fill: var(--pending); }
+.tpa-tone-fail { fill: var(--fail); }
+.tpa-tone-info { fill: var(--info); }
+.tpa-tone-muted { fill: var(--muted); }
+.tpa-stage-count { font-family: var(--mono); font-size: 9.5px; }
+.tpa-stage-blocked { font-size: 9.5px; fill: var(--fail); font-weight: 700; }
+
+/* ------------------------------------------------------------ 요약 스트립 */
+
+.tpa-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.tpa-chip {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  padding: 3px 9px; border-radius: 999px; font-size: 11px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted);
+}
+.tpa-chip b { color: var(--ink); font-family: var(--mono); font-size: 12px; }
+.tpa-chip.fail { border-color: var(--fail); color: var(--fail); }
+.tpa-chip.fail b { color: var(--fail); }
+.tpa-chip.pending { border-color: var(--pending); color: var(--pending); }
+.tpa-chip.pending b { color: var(--pending); }
+.tpa-chip.pass { border-color: var(--pass); color: var(--pass); }
+.tpa-chip.pass b { color: var(--pass); }
+
+/* ------------------------------------------------------------------ 표 */
+
+.tpa-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tpa-table caption { text-align: left; font-size: 11px; color: var(--muted); padding-bottom: 6px; }
+.tpa-table th {
+  text-align: left; font-size: 11px; font-weight: 700; color: var(--muted);
+  border-bottom: 1px solid var(--line); padding: 6px 8px; white-space: nowrap;
+  background: var(--surface-2);
+}
+.tpa-table td { border-bottom: 1px solid var(--line); padding: 5px 8px; vertical-align: top; }
+.tpa-table tbody tr:hover { background: color-mix(in srgb, var(--brand) 6%, transparent); }
+.tpa-table tbody tr.sel { background: color-mix(in srgb, var(--brand) 12%, transparent); }
+.tpa-table tbody tr.click { cursor: pointer; }
+.tpa-table td.num { font-family: var(--mono); text-align: right; white-space: nowrap; }
+.tpa-table td.mono, .tpa-mono { font-family: var(--mono); font-size: 11px; }
+.tpa-table .wrap { white-space: normal; min-width: 200px; }
+.tpa-empty { padding: 18px; text-align: center; color: var(--muted); font-size: 12px; }
+
+/* ------------------------------------------------------------------ 폼 */
+
+.tpa-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; align-items: end; }
+.tpa-form label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); }
+.tpa-form select, .tpa-form input, .tpa-form textarea {
+  padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); font: inherit; font-size: 12.5px;
+}
+.tpa-form textarea { width: 100%; min-height: 132px; font-family: var(--mono); font-size: 11.5px; line-height: 1.5; }
+.tpa-form .full { grid-column: 1 / -1; }
+.tpa-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+.tpa-result {
+  margin-top: 10px; padding: 10px 12px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line); background: var(--surface-2); font-size: 12.5px;
+}
+.tpa-result.ok { border-color: var(--pass); background: color-mix(in srgb, var(--pass) 10%, transparent); }
+.tpa-result.bad { border-color: var(--fail); background: color-mix(in srgb, var(--fail) 10%, transparent); }
+.tpa-result .code { font-family: var(--mono); font-weight: 700; margin-right: 6px; }
+
+.tpa-tag {
+  display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10.5px;
+  font-family: var(--mono); border: 1px solid var(--line); background: var(--surface-2);
+}
+.tpa-tag.blocking { color: var(--fail); border-color: var(--fail); }
+.tpa-tag.warning { color: var(--pending); border-color: var(--pending); }
+.tpa-tag.info { color: var(--info); border-color: var(--info); }
+
+/* ------------------------------------------------------------------ 탭 */
+
+.tpa-area-body { display: flex; flex-direction: column; gap: 14px; }
+.tpa-sub { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.tpa-sub b { color: var(--ink); }
+.tpa-2col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+
+.tpa-vocab { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 8px; }
+.tpa-vocab-card { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 8px 10px; background: var(--surface-2); }
+.tpa-vocab-card .id { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.tpa-vocab-card .ko { font-size: 11.5px; margin-top: 2px; }
+.tpa-vocab-card .meta { font-size: 10.5px; color: var(--muted); margin-top: 4px; font-family: var(--mono); }
+.tpa-vocab-card.zero { opacity: 0.55; border-style: dashed; }
+
+.tpa-lane { margin-top: 8px; }
+.tpa-lane-row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; margin: 3px 0; }
+.tpa-lane-row .k { width: 108px; color: var(--muted); font-family: var(--mono); font-size: 10.5px; }
+.tpa-bar { height: 9px; border-radius: 5px; background: var(--brand); }
+.tpa-bar-wrap { flex: 1; background: var(--surface-3); border-radius: 5px; overflow: hidden; }
+
+.tpa-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11.5px; }
+.tpa-chain .node { font-family: var(--mono); font-size: 11px; padding: 3px 7px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface-2); }
+.tpa-chain .arrow { color: var(--muted); font-size: 11px; }

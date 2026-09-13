@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { roles, permMatrix, users, campaigns, profileOf } from '../data/refdata';
+import { roles, permMatrix, users, campaigns, profileOf, roleLabel } from '../data/refdata';
 import { useApp, roleHome } from '../store';
 import { StatTile, AreaChart, Donut, Bars, RadialProgress, LiveDot, Timeline, tally, dist } from '../components/charts';
 import { fleetStats } from '../data/fleet';
@@ -26,28 +26,31 @@ export function Login() {
 
 export function Onboarding() {
   const nav = useNavigate();
-  const [role, setRole] = useState('기획 P1');
+  const [role, setRole] = useState('author');
   return (
     <div style={{ maxWidth: 480, margin: '40px auto' }}>
       <h1 className="page-title">온보딩 / Onboarding</h1>
       <div className="card">
         <p>역할을 확인하세요. 역할별 기본 대시보드가 설정됩니다.</p>
-        <select value={role} onChange={e => setRole(e.target.value)} style={{ padding: 8, width: '100%' }}>{roles.map(r => <option key={r}>{r}</option>)}</select>
+        <select value={role} onChange={e => setRole(e.target.value)} style={{ padding: 8, width: '100%' }}>{roles.map(r => <option key={r} value={r}>{roleLabel(r)}</option>)}</select>
         <button className="btn primary mt" onClick={() => nav('/')}>시작하기 →</button>
       </div>
     </div>
   );
 }
 
+// 기준 패키지(FP-DETAILED-1.1)의 9 역할 → 역할별 대시보드 관점.
+// 데모 구현 화면 경로와 기준 화면(/ui/UIxx)을 함께 노출한다.
 const ROLE_FOCUS: Record<string, { title: string; desc: string; views: [string, string][] }> = {
-  '기획 P1': { title: '기획 · 카탈로그/요구사항 중심', desc: 'Feature 정의·우선순위·기대효과', views: [['Catalog', '/catalog'], ['Feature 등록', '/master/define'], ['Reports', '/insights/reports']] },
-  '시스템 P2': { title: '시스템 · 토폴로지/정합성 중심', desc: '아키텍처 관계·일관성 규칙', views: [['Topology', '/topology/FEAT-BDC-001'], ['Consistency', '/consistency'], ['Metamodel', '/metamodel']] },
-  'SW P3': { title: 'SW · 의사결정/영향분석 중심', desc: '변경 영향·배포방식 결정·BOM', views: [['Decision Center', '/decisions/center'], ['Impact', '/impact'], ['BOM Editor', '/master/bom']] },
-  '검증 P4': { title: '검증 · Gate/증적 중심', desc: 'Release Readiness·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['Compliance', '/spec/compliance']] },
-  'OTA P5': { title: 'OTA · 캠페인/정책 중심', desc: '롤아웃·정책 생애주기·활성화', views: [['OTA Campaign', '/ops/campaign'], ['Policy Lifecycle', '/ops/policy'], ['Activation', '/activation']] },
-  '협력사 P6': { title: '협력사 · 패키지/인수 중심', desc: 'API 릴리스 패키지·인수 기준', views: [['Supplier Portal', '/supplier/portal'], ['Release Package', '/supplier/package']] },
-  '운영 P7': { title: '운영 · Kill Switch/텔레메트리 중심', desc: '실시간 운영·인시던트·Fleet', views: [['Ops Dashboard', '/ops/FEAT-BDC-001'], ['Telemetry', '/ops/telemetry'], ['Incident', '/ops/incident'], ['Fleet', '/fleet']] },
-  'Admin': { title: '관리자 · 권한/감사 중심', desc: '사용자·권한·감사 로그', views: [['Permissions', '/admin/permissions'], ['Users', '/admin/users'], ['Audit', '/insights/audit']] },
+  author: { title: 'Feature 설계 · 카탈로그/요구사항 중심', desc: 'Feature 정의·우선순위·기대효과', views: [['Catalog', '/catalog'], ['Feature 등록', '/master/define'], ['기준 화면 UI02', '/ui/UI02']] },
+  approver: { title: '구성 승인 · 검토/게이트 중심', desc: '검토 대기·승인 판단·Gate 판정', views: [['Approval', '/admin/approval'], ['Decision Center', '/decisions/center'], ['기준 화면 UI06', '/ui/UI06']] },
+  quality: { title: '품질 검토 · 검증 증적 중심', desc: 'Gate·커버리지·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['기준 화면 UI16', '/ui/UI16']] },
+  operator: { title: '차량 운영 · 실시간 수렴 중심', desc: '실시간 텔레메트리·인시던트·Fleet', views: [['Ops Dashboard', '/ops/FEAT-BDC-001'], ['Twin Fleet', '/twin/fleet'], ['기준 화면 UI11', '/ui/UI11']] },
+  steward: { title: 'PLM 기준정보 · 정합성 중심', desc: '아티팩트·토폴로지 관계·메타모델 정합', views: [['Topology', '/topology/FEAT-BDC-001'], ['Artifact Catalog', '/master/artifacts'], ['기준 화면 UI21', '/ui/UI21']] },
+  commerce: { title: '상품 권리 · 릴리스/과금 중심', desc: '상품 구성·사용 권리·과금 조건', views: [['Catalog', '/catalog'], ['Cost', '/cost'], ['기준 화면 UI07', '/ui/UI07']] },
+  integrator: { title: '시스템 연계 · 계약/인수 중심', desc: '연계 계약·API 릴리스 패키지 인수', views: [['Connector Hub', '/integration/connectors'], ['Sync Logs', '/integration/sync'], ['기준 화면 UI18', '/ui/UI18']] },
+  coordinator: { title: '협의·개발 이관 · 변경관리 중심', desc: '변경 영향·협의·개발 이관 결정', views: [['Decision Center', '/decisions/center'], ['CR List', '/change/cr'], ['기준 화면 UI25', '/ui/UI25']] },
+  viewer: { title: '조회 · 감사/추적 중심', desc: '권한·감사 로그·요구사항 추적 (읽기 전용)', views: [['Audit', '/insights/audit'], ['Reports', '/insights/reports'], ['기준 화면 UI30', '/ui/UI30']] },
 };
 
 export function RoleHome() {
@@ -57,7 +60,7 @@ export function RoleHome() {
   const verbs = permMatrix[role] || [];
   // 대시보드에서는 역할만 전환하고 화면을 유지 — 부서를 바꾸면 대시보드 내용이 그 역할에 맞게 갱신됨
   const change = (r: string) => dispatch({ t: 'ROLE', role: r });
-  const focus = ROLE_FOCUS[role] || ROLE_FOCUS['기획 P1'];
+  const focus = ROLE_FOCUS[role] || ROLE_FOCUS.author;
   const QUICK: [string, string, string][] = [
     ['Catalog', '/catalog', 'view'], ['Topology', '/topology/FEAT-BDC-001', 'view'],
     ['Impact', '/impact', 'run-engine'], ['Release', '/readiness/FEAT-BDC-001', 'approve'],
@@ -69,10 +72,10 @@ export function RoleHome() {
       <div className="hero">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <div><h1 className="page-title">Feature Platform <LiveDot /></h1>
-            <div className="sub">현대자동차 SDV · {fleetStats.total.toLocaleString()}대 운영 · 접속자 <b>{profileOf(role).name}</b> (사번 {profileOf(role).empNo}) · 소속 {profileOf(role).org} · 역할 <b>{role}</b></div></div>
+            <div className="sub">현대자동차 SDV · {fleetStats.total.toLocaleString()}대 운영 · 접속자 <b>{profileOf(role).name}</b> (사번 {profileOf(role).empNo}) · 소속 {profileOf(role).org} · 역할 <b>{roleLabel(role)}</b></div></div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
             <label className="small" style={{ opacity: .9 }}>부서/역할 전환</label>
-            <select value={role} onChange={e => change(e.target.value)} style={{ padding: 6, borderRadius: 6, border: 'none', minWidth: 140 }}>{roles.map(r => <option key={r} value={r}>{r}</option>)}</select>
+            <select value={role} onChange={e => change(e.target.value)} style={{ padding: 6, borderRadius: 6, border: 'none', minWidth: 140 }}>{roles.map(r => <option key={r} value={r}>{roleLabel(r)}</option>)}</select>
             <button className="btn" style={{ background: 'rgba(255,255,255,.18)', color: '#fff', border: '1px solid rgba(255,255,255,.4)' }} onClick={() => nav(roleHome[role] || '/')}>내 워크스페이스로 이동 →</button>
           </div>
         </div>
@@ -118,8 +121,8 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
   const feats = state.features;
   const crs = state.crs;
 
-  // ── 기획 P1: 카탈로그·요구사항·기대효과 ──
-  if (role === '기획 P1') {
+  // ── author: Feature 정의·카탈로그·요구사항 ──
+  if (role === 'author') {
     const cat = catalogStats();
     const cost = costSummary();
     return (<>
@@ -136,7 +139,7 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
       </div>
       <div className="row mt">
         <div className="col card"><b>내 작업 / My Work</b>
-          <div className="evt" role="button" onClick={() => nav('/master/define')}><span className="pill">등록</span> 신규 Feature 후보 7-criteria 검토</div>
+          <div className="evt" role="button" onClick={() => nav('/master/define')}><span className="pill">등록</span> 신규 Feature 등록 — Revision 초안(R0 필수) 검토</div>
           <div className="evt" role="button" onClick={() => nav('/catalog')}><span className="pill">우선순위</span> Proposed {feats.filter((f: any) => f.lifecycle === 'Proposed').length}건 검토 대기</div>
         </div>
         <div className="col card"><b>경고 / Alerts</b>
@@ -147,8 +150,8 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     </>);
   }
 
-  // ── 시스템 P2: 토폴로지·정합성 ──
-  if (role === '시스템 P2') {
+  // ── steward: 기준정보 정합(토폴로지·관계·메타모델) ──
+  if (role === 'steward') {
     const vios = consistency();
     const blocking = vios.filter((v: any) => v.severity === 'B');
     const RULES = 12;
@@ -174,8 +177,8 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     </>);
   }
 
-  // ── SW P3: 변경·영향·CR ──
-  if (role === 'SW P3') {
+  // ── coordinator: 변경 영향·협의·개발 이관 ──
+  if (role === 'coordinator') {
     const pend = crs.filter((c: any) => c.status !== 'Closed' && c.status !== 'Implemented');
     const high = crs.filter((c: any) => c.risk === 'High');
     return (<>
@@ -201,8 +204,8 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     </>);
   }
 
-  // ── 검증 P4: Gate·커버리지·증적 ──
-  if (role === '검증 P4') {
+  // ── quality / approver: Gate·커버리지·증적 (승인 판단의 근거 화면이 동일) ──
+  if (role === 'quality' || role === 'approver') {
     const r = readiness('FEAT-BDC-001');
     const counts = { PASS: 0, PENDING: 0, FAIL: 0 };
     (r.gates || []).forEach((g: any) => { counts[(g.status as 'PASS' | 'PENDING' | 'FAIL')] = (counts[(g.status as 'PASS' | 'PENDING' | 'FAIL')] || 0) + 1; });
@@ -231,8 +234,8 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     </>);
   }
 
-  // ── OTA P5: 캠페인·롤아웃·정책 ──
-  if (role === 'OTA P5') {
+  // ── commerce: 상품 구성·캠페인·롤아웃·정책 ──
+  if (role === 'commerce') {
     const avgRollout = Math.round(campaigns.reduce((s, c) => s + (c.rollout || 0), 0) / (campaigns.length || 1));
     return (<>
       <div className="kpis reveal">
@@ -258,8 +261,8 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     </>);
   }
 
-  // ── 협력사 P6: 패키지·인수 ──
-  if (role === '협력사 P6') {
+  // ── integrator: 연계 계약·패키지 인수 ──
+  if (role === 'integrator') {
     const valid = 8, total = 10; // API Release Package 체크리스트 기준
     return (<>
       <div className="kpis reveal">
@@ -280,8 +283,8 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     </>);
   }
 
-  // ── Admin: 권한·감사·사용자 ──
-  if (role === 'Admin') {
+  // ── viewer: 권한·감사·사용자 (조회 전용) ──
+  if (role === 'viewer') {
     const audit = state.audit || [];
     return (<>
       <div className="kpis reveal">
@@ -305,7 +308,7 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     </>);
   }
 
-  // ── 운영 P7 (기본): 실시간 텔레메트리·Fleet ──
+  // ── operator (기본): 실시간 텔레메트리·Fleet ──
   return (<>
     <div className="kpis reveal">
       <StatTile label="Fleet 차량" value={10.24} decimals={2} suffix="M" delta={2} />

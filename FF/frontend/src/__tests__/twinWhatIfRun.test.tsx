@@ -111,7 +111,7 @@ describe('§17.5 What-if 러너 — 순수 모델', () => {
 function RoleSetter() {
   const { dispatch } = useApp();
   useEffect(() => {
-    dispatch({ t: 'ROLE', role: 'Admin' });
+    dispatch({ t: 'ROLE', role: 'integrator' });
   }, [dispatch]);
   return null;
 }

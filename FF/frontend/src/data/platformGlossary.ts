@@ -15,7 +15,7 @@ export const platformGlossary: { term: string; def: string }[] = [
   { term: 'Canary', def: '소수 코호트에 먼저 배포해 위험을 조기에 감지하는 점진 배포 기법.' },
   { term: 'Cohort', def: '동일 조건(차종·지역·트림 등)으로 묶인 대상 차량 집단.' },
   { term: 'Variant', def: '구조적 적용 가능성(차종·MY·지역·트림·HW/SW 조건). 활성화(Control)와 구분.' },
-  { term: 'Control Point', def: 'Feature를 제어하는 지점(Flag·Policy·Kill·Safe Default).' },
+  { term: 'Feature 제어점 (Feature ControlPoint)', def: 'Feature를 제어·관측하는 정확 버전의 지점(FLAG·PARAMETER·SIGNAL·DTC·API). 읽기(EVALUATE·OBSERVE)와 쓰기 요청(WRITE_REQUEST, Guard 필수)을 구분한다.' },
   { term: 'Policy-only', def: 'SWC/바이너리 변경 없이 정책(룰)만으로 적용하는 배포 방식.' },
   { term: 'Binary OTA', def: '바이너리(SW) 자체를 무선으로 갱신하는 배포 방식.' },
   { term: 'Calibration', def: '파라미터/캘리브레이션 값 변경으로 동작을 조정하는 배포 방식.' },

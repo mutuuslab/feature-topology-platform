@@ -160,6 +160,75 @@ export interface SpecOpaField {
 
 export interface SpecOpaObject { object: string; count: number; fields: string[]; }
 
+// ------------------------------------------------ Feature 등록(Revision) 화면용 (specRegistration.ts)
+export interface SpecRegField {
+  id: string; key: string; label: string; type: string; required: string; entry: string;
+  accessMode: string; phase: string; phaseLabel: string; group: string; groupTitle: string;
+  description: string; changeRule: string; canonicalObject: string;
+}
+
+export interface SpecRegAction {
+  id: string; label: string; type: string; intent: string; roles: string[]; permission: string;
+  method: string; path: string; payloadFields: string[]; status: string; errors: string[];
+  idempotency: string; preconditions: string[]; result: string; failure: string;
+  acceptanceId: string; acceptanceSteps: string[]; canonicalObject: string; module: string;
+  impl: string; legacy: Partial<SpecLegacyMapping>;
+}
+
+export interface SpecRegArea {
+  id: string; name: string; type: string; owner: string; module: string; canonicalObject: string;
+  route: string; layoutName: string; tasks: string[]; columns: string[]; rules: string[];
+  acceptanceId: string; acceptanceCriteria: string[]; layout: string; detailTabs: string[];
+  stateRule: string; rolePolicy: Partial<SpecRolePolicy>; readApi: Partial<SpecReadApi>;
+  editable: boolean; coverage: string; implementation: string;
+  actions: SpecRegAction[]; inputFieldIds?: string[];
+}
+
+/** Feature 등록 속성 한 건 — FRI(등록 속성 184) + UI02 에 걸친 OPA 속성. */
+export interface SpecRegAttr {
+  id: string;
+  kind: 'FRI' | 'OPA';
+  key: string;
+  label: string;
+  section: string;
+  type: string;
+  phase: string;
+  required: string;
+  input: string;
+  /** EDITABLE(직접 입력) · REFERENCE(정확 참조) · DERIVED(자동·파생, 읽기 전용) */
+  responsibility: string;
+  owner: string;
+  canonical: string;
+  location: string;
+  meaning: string;
+  changeRule: string;
+  applyUnit: string;
+  api: string;
+  swRef: string;
+  topo: string;
+  basis: string;
+  schema: string;
+  viewApi: string;
+  rules: string[];
+  acceptance: string[];
+  verification: string;
+  /** 정본 영역 (UI02-S01 ~ UI02-S07) */
+  area: string;
+  /** 이 속성이 걸린 UI02 영역 전체 */
+  areas: string[];
+  /** UI02 밖 사용처 (UI30-S03 등) — 관계와 사용처 표시용 */
+  otherAreas: string[];
+  actionIds: string[];
+}
+
+export interface SpecRegScreen {
+  id: string; name: string; goal: string; owner: string; group: string; states: string[];
+  exception: string; acceptance: string[]; done: string; sourceRefs: string[];
+  defaultSubmenu: string; counts: { areas: number; tasks: number; actions: number };
+  designStatus: string; implementationStatus: string; firstScreen: SpecFirstScreen;
+  legacyForm: SpecLegacyFormField[];
+}
+
 export interface SpecCore {
   id: string; name: string; allocation: string; collaboration: string;
 }

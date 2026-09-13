@@ -243,8 +243,9 @@ Task · 입력/검증 · API · 역할 정책 · 인수 조건을 기준 문서 
   상단은 6단계 파이프라인(단계마다 `pass`/`fail`/`blocked` 톤), 하단은 Twin 런타임 아키텍처 뷰다.
   두 뷰는 **같은 시뮬레이터 시계**를 쓴다 — `0×` 로 두면 패킷 애니메이션이 함께 멈춘다(`data-paused`).
 - **관계 저장 게이트 판정 순서**: 역할 `403` → 형식 `422` → 중복 `409` → 기준선 동결 `412` → `202`.
-- **정직한 실패 노출**: 현재 시드 데이터에서는 사전 외 관계형(`derives`/`uses_api`/`applies_to`/`realized_by`)과
+- **정직한 실패 노출**: 현재 시드 데이터에서는 사전 외 관계형 6종(`derives`/`uses_api`/`applies_to`/`controlled_by`/`deployed_as`/`realized_by`)과
   미해결 참조(`POLICY-BDC-PREV`), 중복 조건행이 실제로 검출되어 일부 단계가 `fail` 로 표시된다. 이는 연출이 아니라 검증 결과다.
+  사전 외 타입은 의미상 후보(`parent_of`·`implemented_by`·`governed_by`·`deployed_on`)만 안내하고 **자동 변환하지 않는다** — 반영은 사람 확인 후 재입력으로만 이뤄진다.
 
 ---
 

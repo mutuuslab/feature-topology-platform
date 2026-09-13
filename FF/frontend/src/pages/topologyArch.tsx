@@ -112,7 +112,10 @@ export const REL_UNMAPPED_HINT: Record<string, string> = {
   derives: 'parent_of',
   uses_api: 'implemented_by',
   applies_to: 'governed_by',
+  controlled_by: 'governed_by',
+  deployed_as: 'deployed_on',
   realized_by: 'implemented_by',
+  emits_event: 'emits',
 };
 
 export const STAGE_KO: Record<Stage, string> = { REQUIRED: '필수', CONDITIONAL: '조건부', ADVISORY: '권고' };
@@ -541,13 +544,16 @@ export function walkGraph(graph: TopologyGraph, root: string, maxDepth = 3): Wal
   return rows;
 }
 
-/** 시험 선택 — 영향 노드에서 `verified_by` 로 도달하는 시험·증적 산출물. */
+/**
+ * 시험 선택 — 영향 노드에서 `verified_by` 로 도달하는 시험·증적 산출물.
+ * `in` 방향 행의 `id` 는 피검증 대상(Feature)이므로 시험으로 세지 않는다.
+ */
 export function selectTests(graph: TopologyGraph, roots: string[]): string[] {
   const hits = new Set<string>();
   for (const root of roots) {
     for (const l of graph.out.get(root) ?? []) if (l.type === 'verified_by') hits.add(l.target);
     for (const row of walkGraph(graph, root, 3)) {
-      if (row.type === 'verified_by') hits.add(row.id);
+      if (row.type === 'verified_by' && row.direction === 'out') hits.add(row.id);
     }
   }
   return [...hits].sort();

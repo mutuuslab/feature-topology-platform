@@ -235,9 +235,30 @@ Task · 입력/검증 · API · 역할 정책 · 인수 조건을 기준 문서 
 
 | 화면 | 경로 | 영역 수 | 정본 |
 |---|---|---|---|
-| Feature 등록 (Revision 기준) | `/master/define` | 7 | Detailed Screen & API Reference v1.1 `UI02` |
+| Feature 등록 (Revision 기준) | `/master/define` | 7 | Detailed Screen & API Reference v1.1 `UI02` · `UI02-R1`(2026-09-13) |
 | Feature BOM | `/master/bom` | 6 | v1.1 `UI04` |
 | Topology와 변경 영향 | `/arch/topology` | 7 | Feature Topology Definition v0.8 · SW Detailed Design v4.6 `UI05` |
+
+#### 7.3.1 UI02-R1 — 등록 심사 · 업무 Lifecycle (`RegistrationReviewPanel`)
+
+정본 `FP-UI-UX-DD v4.6` 의 **UI02-R1 절(2026-09-13)** 을 실제 동작 코드로 옮긴 패널이다. Feature 등록 화면의
+영역 탭 바로 아래에 붙고, 초안 입력값을 그대로 심사 근거로 쓴다. 값과 문구는 `src/data/specRegistrationR1.ts`
+(정본 DOCX `UI02-R1` 절에서 생성)에만 있고, 판정 로직은 `src/data/registrationReview.ts` 엔진이 담당한다.
+
+| 표시 영역 | 실제로 도는 것 |
+|---|---|
+| 7기준 심사 | `RC-01~RC-07` 충족 수 / 7, 임계 4 미만이면 `BOM 하위 Artifact 후보 또는 보류`, 감사 문구 `REGISTER {featureId} 7-criteria {n}/7` |
+| 심사 근거 연결 | Control Point(Flag) · 독립 검증 증적(`id@version`) · 운영 모니터링 연결 — 연결 건수가 곧 RC-05·RC-03·RC-07 판정 근거 |
+| 업무 Lifecycle | `LC-T01~LC-T09` 9전이 Guard. 버튼은 항상 `{상태} 로 전이` 로 표시하고 차단 시 사유를 `title` 과 사유 목록에 남긴다 |
+| 안전 등급 | 등록 시점 안전 관련성(`NON_SAFETY`/`RELATED`/`UNASSESSED`)과 4단계 등급(`QM`/`ASIL_IMPACT_NONE`/`ASIL_IMPACT_POSSIBLE`/`ASIL_IMPACT`)을 **별개 축**으로 계산. 미검토를 `QM` 으로 기본 확정하지 않는다 |
+| Taxonomy | `L2 원자 Feature` 가 최소 관리단위(`minUnit`)임을 실제 레벨 표와 함께 표시 |
+| 삭제 · 노후 | 차단 3조건 + tombstone `OPA-077`, 사용 중 정의는 Deprecated 전이. 기대 수명(`lifetimeDays`)·`reviewDueAt` 로 노후 후보 계산 |
+| 근거 · 무결성 | 추적 링크 4건 · FS 요구사항 · 인수 조건 24건 · UL 5건 |
+
+- **축 분리**: 이 패널의 Lifecycle 은 Revision 상태(`DRAFT`/`IN_REVIEW`/…, FRI-162)와 **다른 축**이다. 전이 버튼은 `Revision 상태` 를 바꾸지 않는다.
+- **증적 신원은 `id@version`**: 같은 HIL 시험의 `v1.3`/`v1.2` 가 모두 후보이므로 버전까지 포함해 연결 대상을 특정한다(`ARTIFACT_INDEX` 와 동일 규칙).
+- **소관 밖 전이는 차단만 한다**: `LC-T06`(→`Released`)은 Release Readiness 9 Gate 가 UI10·UI06 소관이라 상태를 바꾸지 않고 사유만 표시한다.
+- 검증: `src/__tests__/specRegistrationR1.test.tsx` 31건. 라이브 실측은 세션 워크스페이스의 `probe-ui02r1.cjs`(빈 초안 `1/7` → 예제값 `3/7` → Flag·증적(유효)·모니터링 연결 `6/7` `Feature 후보` → `LC-T01`→`LC-T03`→`LC-T04` → `LC-T06` 차단, `errs: []`).
 
 - **UI05 엔진**: 관계 사전 15종 → 그래프 → 규칙 검증 → Snapshot 동결(SHA-256) → Capability 평가 → 변경 영향 경로.
   상단은 6단계 파이프라인(단계마다 `pass`/`fail`/`blocked` 톤), 하단은 Twin 런타임 아키텍처 뷰다.
@@ -363,8 +384,9 @@ npm install          # 최초 1회
 npm run dev          # http://localhost:9001
 ```
 
-- 테스트: `npm test` (vitest, 18 files / 362 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
-  `specBom.test.tsx` 가 §7.3 UI04, `specTopology.test.tsx` 가 §7.3 UI05, `twinVehicleScene.test.tsx` · `twinVehicleLive.test.tsx` 가 §17.4 차량 3D 담당)
+- 테스트: `npm test` (vitest, 19 files / 400 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
+  `specBom.test.tsx` 가 §7.3 UI04, `specTopology.test.tsx` 가 §7.3 UI05, `specRegistrationR1.test.tsx` 가 §7.3.1 UI02-R1,
+  `twinVehicleScene.test.tsx` · `twinVehicleLive.test.tsx` 가 §17.4 차량 3D 담당)
 - 테스트 로그가 커지면 `src/test/setup.ts` 의 노이즈 가드를 먼저 확인한다(§17.4.9). 가드가 없으면 38 MB 로그 · 일부 파일 스킵으로 재현된다.
 - 빌드: `npm run build` (`tsc -b && vite build`)
 - 3D 자산(`public/models`, `public/env`)은 저장소에 포함되어 별도 내려받기가 필요 없다. 라이선스와 출처 표기 의무는 §17.4.1.
@@ -444,7 +466,7 @@ swiftshader 소프트웨어 렌더링 측정이므로 실 GPU 에서는 절대�
   (외판 선택 · 재질 복제 풀 · 관절 탐색 · 시계 종속 휠 스핀)을, `twinVehicleLive.test.tsx`(17 tests)는 크레딧 노출 ·
   폴백 표시 · 헤더에서 3D 로 내려가는 이동(reduced-motion 분기 포함)을 검증한다.
   절차적 셸과 실 자산은 서로 다른 렌더 경로이므로, 어느 한쪽 계약만 통과하는 변경은 회귀로 취급한다.
-- 회귀 확인: `npm test` 로 전체 스위트(18 files / 362 tests, ≈25 s), `npx tsc --noEmit` 로 타입. 라이브 확인은 `probe-f.mjs`(20개 항목 생존 확인).
+- 회귀 확인: `npm test` 로 전체 스위트(19 files / 400 tests, ≈24 s), `npx tsc --noEmit` 로 타입. 라이브 확인은 `probe-f.mjs`(20개 항목 생존 확인).
   3D 는 픽셀 근거까지 필요할 때 `verify-veh.mjs`(5개 상태 캡처 + 자산 16건 응답 코드)를 쓴다(§17.4.5 · §17.4.8).
 
 ---

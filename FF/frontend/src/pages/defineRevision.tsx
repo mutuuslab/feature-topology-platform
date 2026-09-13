@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { Bars, Donut, RadialProgress, Steps, tally } from '../components/charts';
 import { EmptyState } from '../components/patterns';
 import { SpecAreaFacts } from '../components/SpecAreaFacts';
+import { RegistrationReviewPanel } from '../components/registrationReview';
 import { SPEC_C01_SECTIONS, SPEC_CLOSURE } from '../data/specArch';
 import { SPEC_FRI_SCOPE, SPEC_P0_BASELINE, SPEC_REGISTRY_CONTRACT, SPEC_RULES } from '../data/specNav';
 import { SPEC_FRI_GROUP_TOTAL } from '../data/specFri';
@@ -515,6 +516,16 @@ export function DefineRevision() {
           })}
         </div>
       </div>
+
+      {/* ── UI02-R1 등록 심사 · 업무 Lifecycle (2026-09-13 정본 개정) ─── */}
+      <RegistrationReviewPanel
+        featureId={rec.id}
+        revisionState={rec.state}
+        filled={values}
+        conditions={conditions.length}
+        onJumpArea={id => { setAreaId(id); setSel(null); setDetailTab(0); }}
+        onEvent={setNotice}
+      />
 
       <div className="card">
         <div className="row">

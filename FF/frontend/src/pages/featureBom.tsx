@@ -20,8 +20,9 @@ import {
   deliveryLabel, kindLabel, type ArtifactRecord, type BomArea,
 } from '../data/implementation';
 import {
-  BASELINE_ACTION_KO, BASELINE_STATE_KO, BASELINE_STATES, BOM_BASELINES, BOM_CONDITION_PROFILES,
-  BOM_VIEW_KO, CONDITION_AXES, PROFILE_OUTCOME_KO, baselineTransition, baselineUsageOf, bomContentHash,
+  BASELINE_ACTION_KO, BASELINE_STATE_KO, BASELINE_STATES, BOM_APPROVAL_NON_CIRCULAR, BOM_APPROVAL_ORDER,
+  BOM_BASELINES, BOM_CONDITION_PROFILES, BOM_VIEW_KO, CONDITION_AXES, PROFILE_OUTCOME_KO,
+  baselineTransition, baselineUsageOf, bomContentHash,
   bomStats, buildBomViews, computeBaselineViolations, evaluateProfiles, implementationBomsOf, memberCheckReport,
   type BaselineAction, type BaselineMember, type BaselineState, type BomBaseline, type BomContext, type BomViolation,
   type ConditionAxis, type ProfileOutcome, type TransitionResult,
@@ -159,6 +160,20 @@ export function FeatureBom() {
   const hashNow = useMemo(() => (sel ? bomContentHash(sel) : ''), [sel]);
   const nodes = useMemo(() => baselineNodeJoin(sel, state.edges, state.relations), [sel, state.edges, state.relations]);
   const check = useMemo(() => approvalChecklist(sel, selViolations, nodes), [sel, selViolations, nodes]);
+
+  // 정본 §2.4 승인 순서 — 검사 결과를 순서에 묶는다. 순서를 건너뛴 승인은 남기지 않는다.
+  const approval = useMemo(() => {
+    const byKey = new Map(check.map(c => [c.key, c]));
+    return BOM_APPROVAL_ORDER.map(s => {
+      const rows = s.checks.flatMap(k => { const c = byKey.get(k); return c ? [c] : []; });
+      return { ...s, rows, ok: rows.every(r => r.ok), failed: rows.filter(r => !r.ok) };
+    });
+  }, [check]);
+  const stepOf = useMemo(() => {
+    const m = new Map<string, number>();
+    BOM_APPROVAL_ORDER.forEach(s => s.checks.forEach(k => m.set(k, s.no)));
+    return m;
+  }, []);
 
   const tabs = specAreas.length
     ? specAreas.map(a => ({ id: a.id, name: a.name, type: a.type }))
@@ -795,16 +810,53 @@ export function FeatureBom() {
 
   const renderS06 = () => (
     <>
+      <div className="card mt">
+        <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <b>승인 순서 — 정본 §2.4</b>
+          <span className="small muted">참조 해결 → Item 정합·hash 고정 → 검증 결과 결속 → 독립 승인·재평가</span>
+          <span style={{ flex: 1 }} />
+          <span className="small">{approval.filter(s => s.ok).length}/{approval.length} 단계 충족</span>
+        </div>
+        <div className="steps" data-testid="bom-approval-rail">
+          {approval.map((s, i) => (
+            <div key={s.no} className={`step ${s.ok ? 'done' : 'fail'}`} data-step={s.no} data-ok={s.ok}>
+              <span className="dot">{s.ok ? '✓' : s.no}</span>
+              <span className="lbl">{s.ko}</span>
+              {i < approval.length - 1 && <span className="bar" />}
+            </div>
+          ))}
+        </div>
+        <div className="table-wrap mt">
+          <table>
+            <thead><tr><th>순서</th><th>단계</th><th>확인 항목</th><th>상태</th></tr></thead>
+            <tbody>
+              {approval.map(s => (
+                <tr key={s.no} data-step={s.no} data-ok={s.ok}>
+                  <td className="mono small">{s.no}</td>
+                  <td className="small">{s.ko}<div className="muted">{s.what}</div></td>
+                  <td className="small">{s.rows.map(r => r.label).join(' · ')}</td>
+                  <td className="small" style={{ color: s.ok ? 'inherit' : 'var(--fail)' }}>
+                    {s.ok ? '충족' : `미충족 — ${s.failed.map(r => r.label).join(' · ')}`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="small muted mt" data-testid="bom-approval-noncircular">{BOM_APPROVAL_NON_CIRCULAR}</p>
+      </div>
+
       <div className="row mt" style={{ gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div className="card" style={{ flex: '1 1 420px' }}>
           <b>승인 전 검사 ({check.filter(c => c.ok).length}/{check.length} 통과)</b>
-          <div className="table-wrap mt">
+          <div className="table-wrap mt" data-testid="bom-approval-checks">
             <table>
-              <thead><tr><th></th><th>검사</th><th>근거</th></tr></thead>
+              <thead><tr><th></th><th>순서</th><th>검사</th><th>근거</th></tr></thead>
               <tbody>
                 {check.map(c => (
                   <tr key={c.key}>
                     <td className="small"><CheckIcon ok={c.ok} /></td>
+                    <td className="mono small">{stepOf.get(c.key) ?? '—'}</td>
                     <td className="small">{c.label}</td>
                     <td className="small" style={{ color: c.ok ? 'inherit' : 'var(--fail)' }}>{c.detail}</td>
                   </tr>

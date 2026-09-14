@@ -21,6 +21,8 @@ import {
   BASELINE_STATES,
   BASELINE_STATE_KO,
   BASELINE_STATE_TONE,
+  BOM_APPROVAL_NON_CIRCULAR,
+  BOM_APPROVAL_ORDER,
   BOM_BASELINES,
   BOM_CONDITION_PROFILES,
   BOM_VIOLATIONS,
@@ -734,6 +736,76 @@ describe('UI04 화면 계약', () => {
     // 접수만이 아니라 업무 상태가 바뀌었다 — 승인 버튼이 더 이상 가능하지 않다
     expect(button(/APPROVE/).disabled).toBe(true);
     expect(button(/REVOKE_BASELINE/).disabled).toBe(false);
+  });
+
+  it('승인 순서는 §2.4 4단계이고 11개 검사를 빠짐없이 한 번씩 묶는다', () => {
+    expect(BOM_APPROVAL_ORDER.map(s => s.no)).toEqual([1, 2, 3, 4]);
+    expect(BOM_APPROVAL_ORDER.map(s => s.ko)).toEqual([
+      '정확 참조 조회', 'Item 정합 후 hash 고정', '검증 결과와 승인 결속', '독립 승인과 재평가',
+    ]);
+    const all = BOM_APPROVAL_ORDER.flatMap(s => s.checks);
+    expect(all).toHaveLength(11);
+    expect([...all].sort()).toEqual([
+      'approvalHash', 'assessment', 'blocking', 'conflict', 'hash', 'independent',
+      'items', 'members', 'required', 'stray', 'topology',
+    ]);
+    // 같은 검사가 두 단계에 중복 배속되지 않는다
+    expect(new Set(all).size).toBe(all.length);
+    expect(BOM_APPROVAL_ORDER.every(s => s.what.length > 20)).toBe(true);
+    expect(BOM_APPROVAL_NON_CIRCULAR).toContain('Topology 는 승인 전 BOM 후보에 대해서도');
+    expect(BOM_APPROVAL_NON_CIRCULAR).toContain('순환 절차를 만들지 않는다');
+    expect(BOM_APPROVAL_NON_CIRCULAR).toContain('후보 BOM 의 정확 ref 와 hash');
+  });
+
+  it('승인 순서 rail 은 검사 결과를 단계별로 묶어 실제 데이터 그대로 표시한다', () => {
+    const { container } = renderBom();
+    fireEvent.click(screen.getByRole('button', { name: /UI04-S06/ }));
+
+    const rail = container.querySelector('[data-testid="bom-approval-rail"]') as HTMLElement;
+    expect(rail).not.toBeNull();
+    const railSteps = [...rail.querySelectorAll('.step')];
+    expect(railSteps.map(s => s.getAttribute('data-step'))).toEqual(['1', '2', '3', '4']);
+    expect(railSteps.map(s => s.querySelector('.lbl')!.textContent)).toEqual(BOM_APPROVAL_ORDER.map(s => s.ko));
+    expect(railSteps.map(s => (s.getAttribute('data-ok') === 'true' ? '✓' : s.getAttribute('data-step'))))
+      .toEqual(railSteps.map(s => s.querySelector('.dot')!.textContent));
+
+    // 검사 표의 실제 ✔/✖ 를 단계로 접어 rail 과 대조한다 — 두 렌더가 같은 계산을 쓴다
+    const table = container.querySelector('[data-testid="bom-approval-checks"]') as HTMLElement;
+    const rows = [...table.querySelectorAll('tbody tr')];
+    expect(rows).toHaveLength(11);
+    const byStep = new Map<string, boolean[]>();
+    for (const tr of rows) {
+      const tds = tr.querySelectorAll('td');
+      const no = tds[1].textContent!.trim();
+      expect(BOM_APPROVAL_ORDER.some(s => String(s.no) === no)).toBe(true);
+      byStep.set(no, [...(byStep.get(no) ?? []), tds[0].textContent === '✔']);
+    }
+    expect([...byStep.keys()].sort()).toEqual(['1', '2', '3', '4']);
+    for (const s of BOM_APPROVAL_ORDER) {
+      const cell = rail.querySelector(`.step[data-step="${s.no}"]`)!;
+      expect(cell.getAttribute('data-ok')).toBe(String(byStep.get(String(s.no))!.every(Boolean)));
+    }
+    // rail 자체가 비어 있지 않고, 요약은 실제 충족 단계 수와 맞는다
+    const okCount = railSteps.filter(s => s.getAttribute('data-ok') === 'true').length;
+    expect(container.textContent).toContain(`${okCount}/4 단계 충족`);
+  });
+
+  it('승인 순서 표는 단계·확인 항목·상태를 한 행에서 보여준다', () => {
+    const { container } = renderBom();
+    fireEvent.click(screen.getByRole('button', { name: /UI04-S06/ }));
+    const note = container.querySelector('[data-testid="bom-approval-noncircular"]') as HTMLElement;
+    expect(note.textContent).toBe(BOM_APPROVAL_NON_CIRCULAR);
+    const rows = [...(note.parentElement as HTMLElement).querySelectorAll('tbody tr')];
+    expect(rows).toHaveLength(4);
+    rows.forEach((tr, i) => {
+      const step = BOM_APPROVAL_ORDER[i];
+      const tds = [...tr.querySelectorAll('td')].map(td => td.textContent ?? '');
+      expect(tds[0]).toBe(String(step.no));
+      expect(tds[1]).toContain(step.ko);
+      expect(tds[1]).toContain(step.what);
+      expect(tds[2].length).toBeGreaterThan(0);
+      expect(tds[3]).toMatch(/^충족$|^미충족 — /);
+    });
   });
 
   it('차단 위반이 있는 기준선의 검토 요청은 422 코드를 그대로 보여주고 상태를 바꾸지 않는다', () => {

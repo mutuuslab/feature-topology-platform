@@ -187,7 +187,7 @@
 .tpa-table tbody tr.click { cursor: pointer; }
 .tpa-table td.num { font-family: var(--mono); text-align: right; white-space: nowrap; }
 .tpa-table td.mono, .tpa-mono { font-family: var(--mono); font-size: 11px; }
-.tpa-table .wrap { white-space: normal; min-width: 200px; }
+.tpa-table .wrap { white-space: normal; min-width: 140px; overflow-wrap: anywhere; }
 .tpa-empty { padding: 18px; text-align: center; color: var(--muted); font-size: 12px; }
 
 /* ------------------------------------------------------------------ 폼 */
@@ -240,3 +240,46 @@
 .tpa-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11.5px; }
 .tpa-chain .node { font-family: var(--mono); font-size: 11px; padding: 3px 7px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface-2); }
 .tpa-chain .arrow { color: var(--muted); font-size: 11px; }
+
+/* ------------------------------------------------- TD §4.4 관계 레코드 계약 */
+
+.tpa-fields { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tpa-field {
+  font-size: 10.5px; padding: 3px 7px; border-radius: 4px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted);
+}
+.tpa-field b { font-family: var(--mono); font-size: 10.5px; color: var(--ink); margin-right: 4px; }
+.tpa-field.req { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); color: var(--ink); }
+
+.tpa-vocab-card .meta.contract { color: var(--ink); }
+.tpa-vocab-exec { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 4px; }
+
+.tpa-list { margin: 6px 0 0; padding-left: 18px; font-size: 11.5px; color: var(--muted); line-height: 1.65; }
+
+/* ------------------------------------------------------ TD §4.6 검증 4단계 */
+
+.tpa-phases { display: flex; align-items: stretch; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.tpa-phase {
+  flex: 1 1 132px; min-width: 132px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface-2); padding: 8px 9px; display: flex; flex-direction: column; gap: 6px;
+}
+.tpa-phase.open { border-color: color-mix(in srgb, var(--pending) 55%, var(--line)); }
+.tpa-phase.clean { border-color: color-mix(in srgb, var(--pass) 50%, var(--line)); }
+.tpa-phase.frontier { border-style: dashed; }
+.tpa-phase-head { display: flex; align-items: baseline; gap: 6px; }
+.tpa-phase-head .idx { font-size: 10.5px; color: var(--muted); }
+.tpa-phase-head .name { font-size: 12px; font-weight: 700; }
+.tpa-phase-body { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tpa-phase-engine { font-size: 10px; color: var(--muted); margin-top: auto; }
+.tpa-phase-arrow { align-self: center; color: var(--muted); font-size: 12px; }
+
+/* ------------------------------------------------- TD §4.8 Segment 역탐색 */
+
+.tpa-impact { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-top: 8px; }
+.tpa-impact-row { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); padding: 8px 10px; }
+.tpa-impact-row.linked { border-color: color-mix(in srgb, var(--info) 45%, var(--line)); }
+.tpa-impact-row.open { border-style: dashed; }
+.tpa-impact-row .head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tpa-impact-row .head .stage { font-size: 10.5px; color: var(--muted); }
+.tpa-impact-row .head .ko { font-size: 12px; font-weight: 700; }
+.tpa-impact-row .body { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }

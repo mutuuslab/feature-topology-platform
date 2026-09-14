@@ -44,6 +44,68 @@ import {
   type ProfileOutcome,
 } from '../data/featureBom';
 import { sha256Hex, shortDigest } from '../data/sha256';
+import {
+  ALWAYS_CONDITION,
+  APPROVAL_SNAPSHOT_READS_LIVE_SEGMENT,
+  CONTRACT_BY_TYPE,
+  CONSTRAINT_SCOPE_KO,
+  CONSTRAINT_SCOPES,
+  CYCLE_POLICY_KO,
+  DICTIONARY_VERSION,
+  EXECUTION_SUPPORT_KO,
+  LEGACY_BY_SOURCE,
+  LEGACY_HANDLING_KO,
+  LEGACY_RELATION_MAP,
+  PHASE_KO,
+  RECORD_BY_EDGE,
+  RECORD_SCOPE_TYPES,
+  RELATION_CONTRACTS,
+  RELATION_RECORD_FIELDS,
+  RELATION_RECORDS,
+  REQUIRED_STATES,
+  REQUIRED_STATE_JUDGE,
+  REQUIRES_OUTCOME_KO,
+  SCOPE_VERDICT_KO,
+  SEGMENT_STAGE_KO,
+  TOOL_EDGE_CANDIDATES,
+  TOOL_EDGE_VERDICT_KO,
+  UNLEASH_TOOL_RELATION,
+  UNRECORDED_EDGE_IDS,
+  VERIFY_PHASES,
+  approvalHeldRecords,
+  auditRelationRecords,
+  evaluateScopeConflicts,
+  executionHoldsApproval,
+  formatRef,
+  missingRecordFields,
+  phaseCounts,
+  phaseOf,
+  recordFindings,
+  requiresPaths,
+  segmentImpact,
+  type RecordAuditRow,
+  type RequiresPath,
+  type ScopeEvaluation,
+  type VerifyPhase,
+} from '../data/topologyContract';
+import {
+  DEPENDENCY_SOT_COMPENSATION,
+  SOURCE_PROVENANCE,
+  UL_AUDIT_CHECK_COUNT,
+  UL_CRITERIA,
+  UL_DECISIONS,
+  UL_DIAGRAMS,
+  UL_FORBIDDEN_IN_UI,
+  UL_GAP_REF,
+  UL_INTERFACES,
+  UL_LIMITS,
+  UL_LINKED_DOCS,
+  UL_SUMMARY,
+  UL_UNRUN_NOTICE,
+  UL_VERIFICATION,
+  ULOSS_REVISION,
+  ULOSS_REVISION_DATE,
+} from '../data/unleashOss';
 import { SPEC_TOPOLOGY_RELATIONS } from '../data/specNav';
 import { SPEC_CORE_LABEL } from '../data/specPlanesGen';
 import * as M from '../data/model';
@@ -315,10 +377,26 @@ export interface TpFinding {
   detail: string;
   remedy: string;
   refs: string;
-  stage: 'graph' | 'validate' | 'snapshot' | 'capability';
+  stage: 'graph' | 'validate' | 'snapshot' | 'capability' | 'impact';
+  /** §4.6 검증 4단계 — ① 구조 ② 구성 ③ 의미 ④ 실행 계약. */
+  phase: VerifyPhase;
+  /** 승인·발행을 보류시키는 결함인가 (저장은 허용). */
+  blocksApproval?: boolean;
 }
 
-const FINDING_META: Record<string, { severity: Severity; remedy: string; refs: string; stage: TpFinding['stage'] }> = {
+interface FindingMeta {
+  severity: Severity;
+  remedy: string;
+  refs: string;
+  stage: TpFinding['stage'];
+  blocksApproval?: boolean;
+}
+
+/**
+ * 결함 코드 25종의 고정 속성. 새 코드는 §4.6 4단계(FINDING_PHASE)와 여기 양쪽에 있어야 한다.
+ * `blocksApproval` 은 승인만 보류하고 저장·검증은 계속하는 결함이다(§4.4 저장 우선).
+ */
+const FINDING_META: Record<string, FindingMeta> = {
   DANGLING_REFERENCE: { severity: 'BLOCKING', remedy: '원천 객체를 Registry 에 등록하거나 참조를 제거한 뒤 재적재', refs: 'TD 4.2 · IA-R06', stage: 'graph' },
   SELF_REFERENCE: { severity: 'BLOCKING', remedy: '자기 참조 관계 삭제', refs: 'TD 4.4', stage: 'validate' },
   DUPLICATE_RELATION: { severity: 'BLOCKING', remedy: '중복 선언 제거 — 같은 방향·같은 종류는 1건만', refs: 'TD 4.5', stage: 'validate' },
@@ -331,11 +409,25 @@ const FINDING_META: Record<string, { severity: Severity; remedy: string; refs: s
   RETIRED_REFERENCED: { severity: 'WARNING', remedy: 'Retired 노드 참조는 replaces/fallback_to 로만 허용', refs: 'TD 4.2', stage: 'validate' },
   SNAPSHOT_NODE_MISSING: { severity: 'BLOCKING', remedy: '기준선 BOM_Topology_MISMATCH 해소 후 동결', refs: 'TD 4.5 · C03', stage: 'snapshot' },
   NODE_SET_SCOPE_DRIFT: { severity: 'WARNING', remedy: 'BOM 멤버 확정 또는 node 제거 — graph node 집합과 BOM 멤버를 맞춘다', refs: 'DD-03-5', stage: 'graph' },
+  // ── §4.4 관계 레코드 — 저장은 허용하되 승인 근거가 없으면 승인만 보류한다 ──────
+  RECORD_MISSING: { severity: 'WARNING', blocksApproval: true, remedy: '관계 레코드(조건·제약 수준·근거) 등록 — 저장은 유지된다', refs: 'TD §4.4', stage: 'validate' },
+  RECORD_FIELD_MISSING: { severity: 'WARNING', blocksApproval: true, remedy: '필수 속성 채우기 — 관계 ID·정확 참조·사전 버전·조건·기수·유효성·근거', refs: 'TD §4.4', stage: 'validate' },
+  RECORD_ENDPOINT_MISMATCH: { severity: 'BLOCKING', remedy: '레코드 endpoint 를 그래프 관계와 일치시키기 — 다른 관계의 근거를 인용할 수 없다', refs: 'TD §4.4', stage: 'validate' },
+  CONDITION_UNDECLARED: { severity: 'WARNING', blocksApproval: true, remedy: '조건 Profile 등록 또는 무조건이면 ALWAYS 선언', refs: 'TD §4.4 · UI02-S03', stage: 'validate' },
+  SCOPE_UNDECLARED: { severity: 'WARNING', blocksApproval: true, remedy: '제약 수준 선언 — 배타 범위를 알 수 없으면 승인 기준선 판정을 보류한다', refs: 'TD §4.4 · §4.8', stage: 'validate' },
+  SCOPE_NOT_ALLOWED: { severity: 'WARNING', blocksApproval: true, remedy: '해당 관계 유형에 허용된 제약 수준으로 다시 선언', refs: 'TD §4.4', stage: 'validate' },
+  REQUIRED_STATE_MISSING: { severity: 'WARNING', blocksApproval: true, remedy: '요구 상태(INCLUDED·INSTALLED·EFFECTIVE) 선언 — 판정 시점이 정해져야 한다', refs: 'TD §4.4 · §12 UI02-S03', stage: 'validate' },
+  REQUIRED_STATE_UNSATISFIED: { severity: 'WARNING', blocksApproval: true, remedy: '기준선에 요구 대상을 편성하거나 요구 관계를 조건별로 분리', refs: 'TD §4.4', stage: 'validate' },
+  REQUIRES_PATH_INCOMPLETE: { severity: 'WARNING', remedy: '경로 위 미등록 참조 해소 — A requires B, B requires D 전체 경로를 본다', refs: 'TD §4.8', stage: 'validate' },
+  COEXISTENCE_CONFLICT: { severity: 'BLOCKING', remedy: 'BOM 공존 금지 위반 — 기준선에서 두 FeatureVersion 을 분리', refs: 'TD §4.8', stage: 'validate' },
+  EXECUTION_UNSUPPORTED: { severity: 'WARNING', blocksApproval: true, remedy: '저장 전용 관계다 — 차량 집행 계약을 별도로 선언하기 전에는 승인·발행 보류', refs: 'TD §4.4', stage: 'validate' },
+  TOOL_RELATION_NOT_TOPOLOGY: { severity: 'INFO', remedy: '도구 parent payload 는 미지원 후보로 보존 — FP 정본에서 관계를 다시 선언', refs: 'TD §4.8 · UL-OSS-04', stage: 'capability' },
+  SEGMENT_IMPACT_INCOMPLETE: { severity: 'WARNING', blocksApproval: true, remedy: 'Offering·Release 원천을 연결해 전체 영향 목록 확보 — 0건으로 간주하지 않는다', refs: 'TD §4.8', stage: 'impact' },
 };
 
 const mkFinding = (code: string, subject: string, detail: string): TpFinding => {
   const meta = FINDING_META[code];
-  return { code, subject, detail, ...meta };
+  return { code, subject, detail, ...meta, phase: phaseOf(code) };
 };
 
 /** 사전에 있는 계층 관계 — 순환 판정 대상. */
@@ -452,7 +544,76 @@ export function validateTopology(graph: TopologyGraph, g: TopologyInput, baselin
       out.push(mkFinding('MISSING_REQUIRED_RELATION', row.root, `역할 누락 ${row.missing.join(', ')} — ${row.outcome}`));
     }
   }
+
+  // ── §4.4–§4.8 계약 검증 — 저장은 막지 않고 승인·발행만 보류시킨다 ─────────────
+
+  const contractInput = { edges: g.edges, relations: g.relations };
+  const audit = auditRelationRecords(contractInput);
+
+  // (9) 관계 레코드 감사 — 조건·제약 수준·요구 상태·정확 참조
+  for (const f of recordFindings(audit)) out.push(mkFinding(f.code, f.subject, f.detail));
+
+  // (10) requires 전체 경로 — A requires B, B requires D 를 끝까지 본다
+  const requiresRows = requiresPaths({ ...contractInput, features: g.features }, baselines);
+  for (const p of requiresRows) {
+    if (p.outcome === 'INCOMPLETE') {
+      out.push(mkFinding('REQUIRES_PATH_INCOMPLETE', `${p.source} → ${p.target}`,
+        `경로 ${p.path.join(' → ')} · 미해석 ${p.unresolved.join(', ')}`));
+    } else if (p.outcome === 'UNSATISFIED') {
+      out.push(mkFinding('REQUIRED_STATE_UNSATISFIED', `${p.source} → ${p.target}`,
+        `${p.detail} (요구 상태 ${p.requiredState})`));
+    }
+  }
+
+  // (11) 제약 수준 대조 — 동시 활성 배타를 BOM 공존 금지로 확대하지 않는다
+  const scopeRows = evaluateScopeConflicts(contractInput, baselines);
+  for (const s of scopeRows) {
+    if (s.verdict === 'BLOCKING') out.push(mkFinding('COEXISTENCE_CONFLICT', `${s.source} ⇄ ${s.target}`, s.detail));
+  }
+
+  // (12) 실행 계약 — 관계 유형마다 지원 수준이 다르다. 저장 전용은 승인·발행 보류.
+  for (const r of audit) {
+    if (!r.contract || r.contract.execution !== 'STORAGE_ONLY') continue;
+    if (out.some(f => f.code === 'EXECUTION_UNSUPPORTED' && f.subject.startsWith(`${r.source} → ${r.target}`))) continue;
+    out.push(mkFinding('EXECUTION_UNSUPPORTED', `${r.source} → ${r.target}`,
+      `${EXECUTION_SUPPORT_KO[r.contract.execution].ko} — 저장은 허용하되 승인·발행은 보류한다`));
+  }
+  const rejected = TOOL_EDGE_CANDIDATES.filter(c => c.verdict === 'REJECT_UNSUPPORTED');
+  if (rejected.length > 0) {
+    out.push(mkFinding('TOOL_RELATION_NOT_TOPOLOGY', `Unleash parent ${rejected.length}건`,
+      `도구 단일 관계를 미지원 후보로 보존 — ${rejected.slice(0, 4).map(c => c.flag).join(', ')}${rejected.length > 4 ? ' 외' : ''}. Topology 관계로 승격하지 않는다`));
+  }
+
+  // (13) SegmentVersion 역탐색 — 전체 영향 목록을 확보하지 못하면 새 검토를 제출할 수 없다
+  const impact = segmentImpact(SEGMENT_REF);
+  if (!impact.complete) {
+    out.push(mkFinding('SEGMENT_IMPACT_INCOMPLETE', impact.segmentRef, impact.notice));
+  }
   return out;
+}
+
+/** 역탐색 기준 SegmentVersion — 정확 버전이 고정된 승인 후보. */
+export const SEGMENT_REF = 'SEG-KR-PREMIUM@2026.4';
+
+export interface TpContractView {
+  audit: RecordAuditRow[];
+  holdsApproval: RecordAuditRow[];
+  requires: RequiresPath[];
+  scopes: ScopeEvaluation[];
+  impact: ReturnType<typeof segmentImpact>;
+}
+
+/** 정본 계약 계층을 화면이 그대로 그릴 수 있게 한 묶음 — 순수 함수다. */
+export function buildContractView(g: TopologyInput, baselines: BomBaseline[], segmentRef = SEGMENT_REF): TpContractView {
+  const contractInput = { edges: g.edges, relations: g.relations };
+  const audit = auditRelationRecords(contractInput);
+  return {
+    audit,
+    holdsApproval: approvalHeldRecords(audit),
+    requires: requiresPaths({ ...contractInput, features: g.features }, baselines),
+    scopes: evaluateScopeConflicts(contractInput, baselines),
+    impact: segmentImpact(segmentRef),
+  };
 }
 
 export const countSeverity = (findings: TpFinding[], s: Severity) => findings.filter(f => f.severity === s).length;
@@ -1032,6 +1193,14 @@ export function TopologyArch(): JSX.Element {
   const blocking = countSeverity(findings, 'BLOCKING');
   const warning = countSeverity(findings, 'WARNING');
 
+  // ── 정본 계약 계층 (TD §4.4~§4.8) — 값은 모두 실측 state 에서 계산한다 ─────
+  const contract = useMemo(() => buildContractView(input, state.bomBaselines), [input, state.bomBaselines]);
+  const phases = useMemo(() => phaseCounts(findings), [findings]);
+  const recordRows = useMemo(
+    () => contract.audit.filter(r => RECORD_SCOPE_TYPES.includes(r.type)),
+    [contract],
+  );
+
   // ── S03 관계 저장 ────────────────────────────────────────────────────────
   const submitRelation = (): void => {
     if (!canEdit) {
@@ -1373,12 +1542,26 @@ export function TopologyArch(): JSX.Element {
                 {REL_VOCAB.map(v => {
                   const n = usage.counts.get(v.id) ?? 0;
                   const src = v.from.length > 0 ? v.from.join(', ') : '원천 없음';
+                  const c = CONTRACT_BY_TYPE.get(v.id);
                   return (
                     <div key={v.id} className={`tpa-vocab-card ${n === 0 ? 'zero' : ''}`} data-testid={`vocab-${v.id}`}>
                       <div className="id">{v.id}</div>
                       <div className="ko">{v.ko}</div>
                       <div className="meta">{v.dir} · {STAGE_KO[v.stage]} · 판정 {v.gate}</div>
                       <div className="meta">원천 {src}{v.aliasOf ? ` (별칭 ${v.aliasOf})` : ''} · 사용 {n}건</div>
+                      {c && (
+                        <div className="meta contract" title={`${CYCLE_POLICY_KO[c.cycle]} · 판정 책임 ${c.judge} · ${c.refs}`}>
+                          {c.symmetry === 'SYMMETRIC' ? '대칭' : '방향'} · {c.cardinality}
+                          {c.scopeRequired ? ' · 제약 수준 필수' : ''}
+                          {c.pinRequired ? ' · 정확 버전 필수' : ''}
+                          <div className="tpa-vocab-exec">
+                            <span className={`tpa-tag ${executionHoldsApproval(c.type) ? 'warning' : 'info'}`}>
+                              {EXECUTION_SUPPORT_KO[c.execution].ko}
+                            </span>
+                            {c.requiredStates && <span className="small muted">요구 상태 {c.requiredStates.join(' · ')}</span>}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1395,6 +1578,127 @@ export function TopologyArch(): JSX.Element {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="card" data-testid="tp-record-contract">
+              <h3 style={{ marginTop: 0, fontSize: 15 }}>관계 레코드 계약 (S03-A01 · TD §4.4) — 정본 필수 속성 {RELATION_RECORD_FIELDS.length}종</h3>
+              <p className="tpa-sub">
+                관계는 선만이 아니라 <b>레코드</b>다. 조건 참조는 무조건 관계도 <span className="mono">{ALWAYS_CONDITION}</span> 로
+                항상 참임을 명시하고, 출발·도착은 정확 버전과 contentHash 를 가진 객체 참조로 고정한다. 필수 속성이 비면
+                저장은 하되 <b>승인·발행은 보류</b>한다.
+              </p>
+              <div className="tpa-strip">
+                <span className="tpa-chip"><b>{recordRows.length}</b>계약 대상 관계</span>
+                <span className="tpa-chip"><b>{RELATION_RECORDS.length}</b>관계 레코드</span>
+                <span className={`tpa-chip ${contract.holdsApproval.length > 0 ? 'pending' : 'pass'}`}>
+                  <b>{contract.holdsApproval.length}</b>승인 보류
+                </span>
+                <span className="tpa-chip"><b className="mono">{DICTIONARY_VERSION}</b>사전 버전</span>
+                {UNRECORDED_EDGE_IDS.map(id => (
+                  <span key={id} className="tpa-chip pending"><b className="mono">{id}</b>레코드 없음</span>
+                ))}
+              </div>
+              <div className="tpa-fields">
+                {RELATION_RECORD_FIELDS.map(f => (
+                  <span key={String(f.id)} className={`tpa-field ${f.required ? 'req' : ''}`} title={f.note}>
+                    <b className="mono">{String(f.id)}</b>{f.ko}{f.required ? ' ·필수' : ' ·조건부'}
+                  </span>
+                ))}
+              </div>
+              <div className="tpa-scroll mt">
+                <table className="tpa-table">
+                  <thead>
+                    <tr>
+                      <th>관계</th><th>유형</th><th className="wrap">출발 참조</th><th className="wrap">도착 참조</th>
+                      <th>조건</th><th>제약 수준</th><th>요구 상태</th><th>실행 지원</th><th className="wrap">결함</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recordRows.map(r => {
+                      const rec = r.record;
+                      const exec = r.contract?.execution;
+                      return (
+                        <tr key={r.edgeId} data-testid={`tp-record-${r.edgeId}`}>
+                          <td className="mono">{r.edgeId}</td>
+                          <td className="mono">{r.type}</td>
+                          <td className="wrap mono">{rec ? formatRef(rec.sourceRef) : `${r.source} — 레코드 없음`}</td>
+                          <td className="wrap mono">{rec ? formatRef(rec.targetRef) : r.target}</td>
+                          <td className="mono">{rec?.conditionRef ?? '—'}</td>
+                          <td className="mono">
+                            {rec?.constraintScope
+                              ? <span title={CONSTRAINT_SCOPE_KO[rec.constraintScope].means}>{CONSTRAINT_SCOPE_KO[rec.constraintScope].ko}</span>
+                              : <span className="tpa-tag warning">미선언</span>}
+                          </td>
+                          <td className="mono">
+                            {rec?.requiredState
+                              ? <span title={`${REQUIRED_STATE_JUDGE[rec.requiredState].when} · ${REQUIRED_STATE_JUDGE[rec.requiredState].owner}`}>{rec.requiredState}</span>
+                              : (r.contract?.requiredStates ? <span className="tpa-tag warning">미선언</span> : '—')}
+                          </td>
+                          <td className="mono" title={exec ? EXECUTION_SUPPORT_KO[exec].judge : ''}>
+                            {exec ? EXECUTION_SUPPORT_KO[exec].ko : '—'}
+                          </td>
+                          <td className="wrap">
+                            {r.issues.length === 0
+                              ? <span className="tpa-tag info">계약 충족</span>
+                              : r.issues.map(i => (
+                                <span key={i.code} className={`tpa-tag ${i.blocksApproval ? 'warning' : 'info'}`} title={i.detail}>
+                                  {i.code}
+                                </span>
+                              ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <p className="tpa-note">
+                Artifact 결속 6종(implemented_by · verified_by · observed_by · deployed_on · governed_by · emits)의 정확 참조·
+                contentDigest·resolution 은 구현 Artifact 표(UI04)가 소유한다 — Topology 가 같은 값을 두 번 요구하지 않는다.
+              </p>
+            </div>
+
+            <div className="card" data-testid="tp-legacy-map">
+              <h3 style={{ marginTop: 0, fontSize: 15 }}>원문 관계명 이관 (TD §4.5 · GAP-03) — 자동 변환 금지</h3>
+              <p className="tpa-sub">
+                원문 표기를 대소문자만 보고 같은 계약으로 판단하지 않는다. <b>PRECEDES</b> 는 실행 선후를 표현하는 독립 관계로
+                보존하고 <b>requires 로 바꾸지 않으며</b>, <b>COMBI</b> 는 의미 확인 없이 requires 로 승격하지 않는다.
+              </p>
+              <table className="tpa-table">
+                <thead><tr><th>원문 관계명</th><th>이관 처리</th><th>통합 사전</th><th className="wrap">이유</th><th>실측</th></tr></thead>
+                <tbody>
+                  {LEGACY_RELATION_MAP.map(l => {
+                    const hit = usage.unmapped.get(l.source) ?? usage.counts.get(l.source) ?? 0;
+                    return (
+                      <tr key={l.source}>
+                        <td className="mono">{l.source}</td>
+                        <td>
+                          <span className={`tpa-tag ${l.handling === 'MAP' ? 'info' : l.handling === 'MANUAL_REVIEW' ? 'blocking' : 'warning'}`}>
+                            {LEGACY_HANDLING_KO[l.handling]}
+                          </span>
+                        </td>
+                        <td className="mono">
+                          {l.target ?? '—'}
+                          {l.handling === 'KEEP_SEPARATE' && <div className="small muted">사전 미등록 → 저장 전용</div>}
+                        </td>
+                        <td className="wrap">{l.note}</td>
+                        <td className="num">{hit}건</td>
+                      </tr>
+                    );
+                  })}
+                  {[...usage.unmapped.entries()]
+                    .filter(([t]) => !LEGACY_BY_SOURCE.has(t.toUpperCase()))
+                    .map(([t, n]) => (
+                      <tr key={t}>
+                        <td className="mono">{t}</td>
+                        <td><span className="tpa-tag blocking">사람이 의미 확인</span></td>
+                        <td className="mono">{REL_UNMAPPED_HINT[t] ?? '—'}</td>
+                        <td className="wrap">§4.5 표에 없는 원문 표기다 — 후보만 제시하고 사람이 확인해 재입력한다</td>
+                        <td className="num">{n}건</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
 
             <SpecAreaFacts uiId="UI05" areaId="UI05-S03" />
@@ -1544,11 +1848,17 @@ export function TopologyArch(): JSX.Element {
               <h3 style={{ marginTop: 0, fontSize: 15 }}>검증 결과 — 코드 · 대상 · 보완 안내</h3>
               <div className="tpa-scroll">
                 <table className="tpa-table">
-                  <thead><tr><th>단계</th><th>코드</th><th>대상</th><th className="wrap">상세</th><th className="wrap">보완 안내</th><th>근거</th></tr></thead>
+                  <thead><tr><th>단계</th><th>검증 단계</th><th>코드</th><th>대상</th><th className="wrap">상세</th><th className="wrap">보완 안내</th><th className="wrap">근거</th></tr></thead>
                   <tbody>
                     {findings.slice(0, 60).map((f, i) => (
-                      <tr key={`${f.code}-${i}`}>
+                      <tr key={`${f.code}-${i}`} data-hold={Boolean(f.blocksApproval)}>
                         <td className="mono">{f.stage}</td>
+                        <td>
+                          <span className={`tpa-tag ${f.blocksApproval ? 'warning' : 'info'}`} title={PHASE_KO[f.phase]}>
+                            {PHASE_KO[f.phase]}
+                          </span>
+                          {f.blocksApproval && <div className="small muted">승인 보류</div>}
+                        </td>
                         <td><span className={`tpa-tag ${SEV_CLASS[f.severity]}`}>{f.code}</span></td>
                         <td className="mono">{f.subject}</td>
                         <td className="wrap">{f.detail}</td>
@@ -1560,6 +1870,133 @@ export function TopologyArch(): JSX.Element {
                 </table>
               </div>
               {findings.length === 0 && <div className="tpa-empty">검증 위반 0건 — 그래프가 정본 규칙을 만족한다.</div>}
+            </div>
+
+            <div className="card" data-testid="tp-verify-phases">
+              <h3 style={{ marginTop: 0, fontSize: 15 }}>검증 4단계 (TD §4.6) — 결과는 「전체 통과」로 표시하지 않는다</h3>
+              <p className="tpa-sub">
+                정본은 검증을 <b>① 구조 → ② 구성 → ③ 의미 → ④ 평가기·차량 실행 계약</b> 네 단계로 나눈다.
+                뒤 단계는 앞 단계 입력이 확정되어야 판정할 수 있으므로, 결함이 남아 있으면
+                <span className="mono"> complete=false </span> 로 두고 미탐색 frontier 를 함께 밝힌다.
+              </p>
+              <div className={`tpa-phases ${findings.length === 0 ? 'clean' : 'open'}`} data-complete={findings.length === 0}>
+                {VERIFY_PHASES.map((ph, i) => {
+                  const n = phases[ph.id];
+                  const held = findings.some(f => f.phase === ph.id && f.blocksApproval);
+                  return (
+                    <Fragment key={ph.id}>
+                      {i > 0 && <span className="tpa-phase-arrow" aria-hidden>→</span>}
+                      <div className={`tpa-phase ${n > 0 ? 'open' : 'clean'}`} data-testid={`tp-phase-${ph.id}`} title={ph.what}>
+                        <div className="tpa-phase-head">
+                          <span className="idx mono">{ph.no}</span>
+                          <span className="name">{ph.ko}</span>
+                        </div>
+                        <div className="tpa-phase-body">
+                          <span className={`tpa-tag ${held ? 'warning' : n > 0 ? 'info' : 'pass'}`}>{n}건</span>
+                          <span className="small muted">
+                            {n === 0 ? '위반 없음' : held ? '승인 보류 항목 포함' : '판정 계속 진행'}
+                          </span>
+                        </div>
+                        <div className="tpa-phase-engine mono">{ph.engine}</div>
+                      </div>
+                    </Fragment>
+                  );
+                })}
+                <span className="tpa-phase-arrow" aria-hidden>·</span>
+                <div className="tpa-phase frontier" data-testid="tp-phase-frontier">
+                  <div className="tpa-phase-head"><span className="idx mono">!!</span><span className="name">complete</span></div>
+                  <div className="tpa-phase-body">
+                    <span className={`tpa-tag ${findings.length === 0 ? 'pass' : 'pending'}`}>
+                      {String(findings.length === 0)}
+                    </span>
+                    <span className="small muted">
+                      {findings.length === 0 ? '네 단계 모두 위반 0건' : `미해결 ${findings.length}건 — 전체 통과 아님`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="tpa-strip">
+                {VERIFY_PHASES.map(ph => (
+                  <span key={ph.id} className={`tpa-chip ${phases[ph.id] > 0 ? 'pending' : 'pass'}`}>
+                    <b>{phases[ph.id]}</b>{PHASE_KO[ph.id]}
+                  </span>
+                ))}
+                <span className={`tpa-chip ${blocking > 0 ? 'fail' : 'pass'}`}><b>{blocking}</b>BLOCKING</span>
+              </div>
+            </div>
+
+            <div className="card" data-testid="tp-requires-paths">
+              <h3 style={{ marginTop: 0, fontSize: 15 }}>requires 전체 경로와 요구 상태 판정 (S04-A03 · TD §4.4 · §4.8)</h3>
+              <p className="tpa-sub">
+                A requires B, B requires D 이면 <b>D 까지 전체 경로</b>를 본다. 요구 상태는 판정 <b>시점</b>을 함께 고정한다 —
+                INCLUDED 는 기준선 승인 시, INSTALLED 는 차량 탑재 확인 시, EFFECTIVE 는 실행 판정 시에만 판정한다.
+                시점이 오지 않은 경로는 성립으로 세지 않고 <b>판정 시점 미도달</b>로 남긴다.
+              </p>
+              <table className="tpa-table">
+                <thead><tr><th>관계</th><th className="wrap">요구 경로</th><th>hop</th><th>요구 상태</th><th className="wrap">판정 시점 · 책임</th><th>결과</th></tr></thead>
+                <tbody>
+                  {contract.requires.map(r => (
+                    <tr key={r.edgeId} data-testid={`tp-requires-${r.edgeId}`}>
+                      <td className="mono">{r.edgeId}<div className="small muted">{r.source} → {r.target}</div></td>
+                      <td className="wrap mono">{r.path.join(' → ')}</td>
+                      <td className="num">{r.hops}</td>
+                      <td className="mono">
+                        {r.requiredState
+                          ? <span title={REQUIRED_STATE_JUDGE[r.requiredState].evidence}>{r.requiredState} · {REQUIRED_STATE_JUDGE[r.requiredState].ko}</span>
+                          : <span className="muted">미선언 — 시점 판정 불가</span>}
+                      </td>
+                      <td className="wrap small">
+                        {r.requiredState ? `${REQUIRED_STATE_JUDGE[r.requiredState].when} · ${REQUIRED_STATE_JUDGE[r.requiredState].owner}` : '—'}
+                      </td>
+                      <td className="wrap">
+                        <span className={`tpa-tag ${r.outcome === 'COMPLETE' ? 'info' : r.outcome === 'UNSATISFIED' ? 'blocking' : 'warning'}`}>
+                          {REQUIRES_OUTCOME_KO[r.outcome]}
+                        </span>
+                        <div className="small muted">{r.detail}</div>
+                        {r.baselines.length > 0 && <div className="small muted">기준선 {r.baselines.join(', ')}</div>}
+                      </td>
+                    </tr>
+                  ))}
+                  {contract.requires.length === 0 && (
+                    <tr><td colSpan={6} className="muted">requires 관계가 없습니다.</td></tr>
+                  )}
+                </tbody>
+              </table>
+              <p className="tpa-note">
+                요구 상태별 확보 가능한 증적 — {REQUIRED_STATES.map(s => `${s}: ${REQUIRED_STATE_JUDGE[s].evidence}`).join(' / ')}
+              </p>
+            </div>
+
+            <div className="card" data-testid="tp-scope-verdicts">
+              <h3 style={{ marginTop: 0, fontSize: 15 }}>배타 제약 수준 판정 (TD §4.8) — 동시 활성 배타를 BOM 공존 금지로 확대하지 않는다</h3>
+              <p className="tpa-sub">
+                A excludes C 는 <b>동일 조건 + 동일 제약 수준</b>에서만 판정한다. 제약 수준은
+                {CONSTRAINT_SCOPES.map(s => ` ${CONSTRAINT_SCOPE_KO[s].ko}(${CONSTRAINT_SCOPE_KO[s].means})`).join(' / ')} 네 가지이며,
+                같은 승인 기준선에 두 FeatureVersion 이 함께 담겨 있는지를 실제 기준선 데이터로 대조한다.
+              </p>
+              <table className="tpa-table">
+                <thead><tr><th>쌍</th><th>제약 수준</th><th>함께 담긴 기준선</th><th>판정</th><th className="wrap">근거</th></tr></thead>
+                <tbody>
+                  {contract.scopes.map(s => (
+                    <tr key={s.edgeId} data-testid={`tp-scope-${s.edgeId}`}>
+                      <td className="mono">{s.pair}<div className="small muted">{s.edgeId}</div></td>
+                      <td className="mono">
+                        {s.scope ? CONSTRAINT_SCOPE_KO[s.scope].ko : <span className="tpa-tag warning">미선언</span>}
+                      </td>
+                      <td className="num">{s.coexisting.length === 0 ? '—' : s.coexisting.join(', ')}</td>
+                      <td>
+                        <span className={`tpa-tag ${s.verdict === 'BLOCKING' ? 'blocking' : s.verdict === 'SCOPE_UNKNOWN' ? 'warning' : 'info'}`}>
+                          {SCOPE_VERDICT_KO[s.verdict]}
+                        </span>
+                      </td>
+                      <td className="wrap">{s.detail}</td>
+                    </tr>
+                  ))}
+                  {contract.scopes.length === 0 && (
+                    <tr><td colSpan={5} className="muted">대칭(excludes · duplicates) 관계가 없습니다.</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
 
             <SpecAreaFacts uiId="UI05" areaId="UI05-S04" />
@@ -1750,6 +2187,184 @@ export function TopologyArch(): JSX.Element {
                   하단 런타임 토폴로지의 <b>command / report</b> 패킷이 이 경로다.
                 </p>
               </div>
+            </div>
+
+            <div className="card" data-testid="tp-unleash-boundary">
+              <h3 style={{ marginTop: 0, fontSize: 15 }}>
+                Unleash 도구 경계 (S06-A02 · TD §4.8) — 개정 <span className="mono">{ULOSS_REVISION}</span> · {ULOSS_REVISION_DATE}
+              </h3>
+              <p className="tpa-sub">
+                <b>{UNLEASH_TOOL_RELATION.tool}</b> 의 <span className="mono">{UNLEASH_TOOL_RELATION.wireType}</span> 는
+                <b> {UNLEASH_TOOL_RELATION.nature}</b> 다. {UNLEASH_TOOL_RELATION.rule}
+              </p>
+              <div className="tpa-strip">
+                <span className="tpa-chip"><b>{UL_SUMMARY.contracts}</b>계약 UL-OSS</span>
+                <span className="tpa-chip"><b>{UL_SUMMARY.interfaces}</b>인터페이스</span>
+                <span className={`tpa-chip ${UL_SUMMARY.unusedInterfaces > 0 ? 'pending' : 'pass'}`}>
+                  <b>{UL_SUMMARY.unusedInterfaces}</b>미사용 인터페이스
+                </span>
+                <span className="tpa-chip"><b>{UL_SUMMARY.limits}</b>무료 에디션 한계</span>
+                <span className="tpa-chip pending"><b>{UL_SUMMARY.notRun}</b>NOT_RUN</span>
+                <span className="tpa-chip pending"><b>{UL_SUMMARY.notRecorded}</b>NOT_RECORDED</span>
+              </div>
+              <table className="tpa-table mt">
+                <thead><tr><th>parent payload 후보</th><th>Flag</th><th className="wrap">도구 값</th><th>판정</th><th className="wrap">FP 조치</th></tr></thead>
+                <tbody>
+                  {TOOL_EDGE_CANDIDATES.map(c => (
+                    <tr key={c.id} data-testid={`tp-tool-candidate-${c.id}`}>
+                      <td className="mono">{c.id}</td>
+                      <td className="mono">{c.flag}</td>
+                      <td className="wrap mono">{c.payload}<div className="small muted">{c.reason}</div></td>
+                      <td><span className="tpa-tag warning">{TOOL_EDGE_VERDICT_KO[c.verdict]}</span></td>
+                      <td className="wrap">{c.fpAction}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="tpa-note">
+                {UNLEASH_TOOL_RELATION.evidence} · 근거 {UNLEASH_TOOL_RELATION.refs}
+              </p>
+              <div className="tpa-2col mt">
+                <div>
+                  <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>외부 인터페이스 {UL_INTERFACES.length}종 (IF-FF-01~07)</h4>
+                  <div className="tpa-scroll">
+                    <table className="tpa-table">
+                      <thead><tr><th>ID</th><th className="wrap">이름 · 방향</th><th>Core</th><th>단계</th><th className="wrap">인증 · 신선도</th></tr></thead>
+                      <tbody>
+                        {UL_INTERFACES.map(i => (
+                          <tr key={i.id} data-unused={Boolean(i.unused)}>
+                            <td className="mono">{i.id}</td>
+                            <td className="wrap">{i.name}<div className="small muted">{i.mode} · {i.direction}</div></td>
+                            <td className="mono">{i.core} {i.coreName}</td>
+                            <td>{i.stage}</td>
+                            <td className="wrap small">
+                              {i.auth}<div className="muted">신선도 {i.freshness} · {i.errorIdem}</div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>미실행 경계 — {UL_GAP_REF} · 결정 {UL_DECISIONS.join(' · ')}</h4>
+                  <table className="tpa-table">
+                    <thead><tr><th>항목</th><th>상태</th><th className="wrap">비고</th></tr></thead>
+                    <tbody>
+                      {UL_VERIFICATION.map(v => (
+                        <tr key={v.item}>
+                          <td>{v.ko}</td>
+                          <td><span className="tpa-tag warning mono">{v.state}</span></td>
+                          <td className="wrap small">{v.note}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p className="tpa-note">{UL_UNRUN_NOTICE}</p>
+                </div>
+              </div>
+              <div className="mt">
+                <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>무료 에디션 한계 {UL_LIMITS.length}건과 FP 보상 책임 — 의존 판정 정본은 도구가 아니라 FP 다</h4>
+                <div className="tpa-scroll">
+                  <table className="tpa-table">
+                    <thead><tr><th className="wrap">한계</th><th className="wrap">영향</th><th className="wrap">보상 책임 Core</th><th className="wrap">검증 증적</th></tr></thead>
+                    <tbody>
+                      {UL_LIMITS.map(l => (
+                        <tr key={l.limit}>
+                          <td className="wrap">{l.limit}</td>
+                          <td className="wrap">{l.impact}</td>
+                          <td className="wrap mono">{l.compensates}</td>
+                          <td className="wrap">{l.evidence}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="tpa-note">{DEPENDENCY_SOT_COMPENSATION}</p>
+                <ul className="tpa-list">
+                  {UL_FORBIDDEN_IN_UI.map(t => <li key={t}>{t}</li>)}
+                </ul>
+              </div>
+
+              <div className="tpa-2col mt">
+                <div data-testid="tp-ul-source">
+                  <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>출처 정본 — 수집한 정의의 실측 식별자 (QC-UL-02)</h4>
+                  <table className="tpa-table">
+                    <thead><tr><th className="wrap">항목</th><th className="wrap">값</th></tr></thead>
+                    <tbody>
+                      {SOURCE_PROVENANCE.map(r => (
+                        <tr key={r.ko}>
+                          <td>{r.ko}</td>
+                          <td className="wrap mono">
+                            {r.value}
+                            {r.value === 'NOT_RUN' || r.value === 'NOT_RECORDED'
+                              ? <span className="tpa-tag warning" style={{ marginLeft: 6 }}>{r.value}</span>
+                              : null}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div data-testid="tp-ul-criteria">
+                  <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>
+                    품질 기준 {UL_CRITERIA.length}건 · 감사 항목 {UL_AUDIT_CHECK_COUNT}건 (QC-UL-01~07)
+                  </h4>
+                  <ul className="tpa-list">
+                    {UL_CRITERIA.map(c => (
+                      <li key={c.id}>
+                        <span className="mono">{c.id}</span> <b>{c.ko}</b> — {c.condition}
+                        <span className="small muted"> 적용 {c.applies}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="tpa-note">
+                    연결 문서·도면 — {UL_LINKED_DOCS.map(d => `${d.ko} ${d.value}`).join(' · ')}
+                    {UL_DIAGRAMS.length > 0 ? ` · 도면 ${UL_DIAGRAMS.map(d => d.file.split('/').pop()).join(', ')}` : ''}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card" data-testid="tp-segment-impact">
+              <h3 style={{ marginTop: 0, fontSize: 15 }}>SegmentVersion 변경 영향역탐색 (TD §4.8) — FlagBinding → Policy → Offering → Release</h3>
+              <p className="tpa-sub">
+                SegmentVersion 이 바뀌면 그 값을 읽는 단계를 <b>역방향으로</b> 따라가 전체 영향 목록을 확보한다.
+                확보하지 못한 단계는 0건으로 지어내지 않고 <b>frontier</b> 로 남기며, 목록이 완전하지 않으면 새 검토를 제출하지 않는다.
+                승인 Snapshot 은 live Segment 를 읽지 않는다 —{' '}
+                <span className="mono">APPROVAL_SNAPSHOT_READS_LIVE_SEGMENT={String(APPROVAL_SNAPSHOT_READS_LIVE_SEGMENT)}</span>.
+              </p>
+              <div className="tpa-strip">
+                <span className="tpa-chip"><b className="mono">{contract.impact.segmentRef}</b>SegmentVersion</span>
+                <span className={`tpa-chip ${contract.impact.complete ? 'pass' : 'pending'}`}>
+                  <b>{String(contract.impact.complete)}</b>complete
+                </span>
+                <span className={`tpa-chip ${contract.impact.frontier.length > 0 ? 'pending' : 'pass'}`}>
+                  <b>{contract.impact.frontier.length}</b>frontier
+                </span>
+                {contract.impact.frontier.map(f => (
+                  <span key={f} className="tpa-chip pending"><b className="mono">{f}</b>{SEGMENT_STAGE_KO[f].ko} 미확보</span>
+                ))}
+              </div>
+              <div className="tpa-impact">
+                {contract.impact.rows.map(r => (
+                  <div key={r.stage} className={`tpa-impact-row ${r.linked ? 'linked' : 'open'}`} data-testid={`tp-segment-${r.stage}`}>
+                    <div className="head">
+                      <span className="stage mono">{r.stage}</span>
+                      <span className="ko">{SEGMENT_STAGE_KO[r.stage].ko}</span>
+                      <span className={`tpa-tag ${r.linked ? 'info' : 'warning'}`}>
+                        {r.linked ? `사용처 ${r.found.length}건` : '원천 미연결'}
+                      </span>
+                    </div>
+                    <div className="body">
+                      <div className="mono small">{r.found.length > 0 ? r.found.join(', ') : '—'}</div>
+                      <div className="small muted">책임 {SEGMENT_STAGE_KO[r.stage].owner}</div>
+                      <div className="small">{r.note}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="tpa-note">{contract.impact.notice}</p>
             </div>
 
             <SpecAreaFacts uiId="UI05" areaId="UI05-S06" />

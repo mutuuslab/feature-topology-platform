@@ -504,6 +504,49 @@ export function buildBomViews(b: BomBaseline, context: BomContext, observations:
   return [master, configured, effective];
 }
 
+// ── 승인 순서 (Feature_Topology_Definition v0.8 §2.4) ──
+// 순서를 데이터로 고정한다. 화면은 이 순서대로 검사 결과를 묶어 보여준다.
+export interface BomApprovalStep {
+  no: number;
+  ko: string;
+  what: string;
+  /** approvalChecklist 의 key — 이 단계가 확인하는 검사 */
+  checks: string[];
+}
+
+export const BOM_APPROVAL_ORDER: BomApprovalStep[] = [
+  {
+    no: 1,
+    ko: '정확 참조 조회',
+    what: '정확 FeatureVersion 과 구현 참조를 조회하고 11개 영역의 참조 해결 상태를 확인한다.',
+    checks: ['members', 'required', 'items'],
+  },
+  {
+    no: 2,
+    ko: 'Item 정합 후 hash 고정',
+    what: 'Item 합집합·중복·내용 drift 를 검사한 뒤 contentHash 를 고정한다.',
+    checks: ['stray', 'hash'],
+  },
+  {
+    no: 3,
+    ko: '검증 결과와 승인 결속',
+    what: '고정한 hash 에 연결된 Topology 검증·시험·평가 결과를 확인하고 승인 기록을 결속한다.',
+    checks: ['topology', 'assessment', 'approvalHash'],
+  },
+  {
+    no: 4,
+    ko: '독립 승인과 재평가',
+    what: '내용이 변경되면 이전 평가를 그대로 재사용하지 않고 필요한 범위의 재평가를 수행한다.',
+    checks: ['independent', 'conflict', 'blocking'],
+  },
+];
+
+/** 승인 순서는 BOM 과 Topology 를 서로의 선행 조건으로 만들지 않는다. */
+export const BOM_APPROVAL_NON_CIRCULAR =
+  'Topology 는 승인 전 BOM 후보에 대해서도 작성·검증할 수 있다. “Topology 승인 후에만 BOM 생성”과 '
+  + '“승인 BOM 이 있어야만 Topology 생성”을 동시에 요구하는 순환 절차를 만들지 않는다. '
+  + '후보 BOM 의 정확 ref 와 hash 를 기준으로 검증한 뒤 같은 내용을 승인한다.';
+
 // ── 승인 워크플로 (상태 전이·게이트) ──
 export type BaselineAction = 'submit' | 'approve' | 'requestChanges' | 'revise' | 'revoke';
 

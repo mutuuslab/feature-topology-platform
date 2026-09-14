@@ -260,6 +260,42 @@ Task · 입력/검증 · API · 역할 정책 · 인수 조건을 기준 문서 
 - **소관 밖 전이는 차단만 한다**: `LC-T06`(→`Released`)은 Release Readiness 9 Gate 가 UI10·UI06 소관이라 상태를 바꾸지 않고 사유만 표시한다.
 - 검증: `src/__tests__/specRegistrationR1.test.tsx` 31건. 라이브 실측은 세션 워크스페이스의 `probe-ui02r1.cjs`(빈 초안 `1/7` → 예제값 `3/7` → Flag·증적(유효)·모니터링 연결 `6/7` `Feature 후보` → `LC-T01`→`LC-T03`→`LC-T04` → `LC-T06` 차단, `errs: []`).
 
+#### 7.3.2 UI04 — 승인 순서 (정본 §2.4) 와 비순환 조건
+
+`Feature_Topology_Definition v0.8` §2.4 의 승인 순서를 S06 탭 첫 카드(`data-testid="bom-approval-rail"`)로 그대로 옮겼다.
+계약은 `src/data/featureBom.ts` 의 `BOM_APPROVAL_ORDER`(4단계) · `BOM_APPROVAL_NON_CIRCULAR` 에만 있고,
+화면은 승인 전 검사 11개 항목(`approvalChecklist`)을 `checks` 키로 접어 단계별 충족 수만 계산한다.
+
+| 순서 | 단계 | 묶는 검사 영역 |
+|---|---|---|
+| 1 | 정확 참조 조회 | `members` · `required` · `items` |
+| 2 | Item 정합 후 hash 고정 | `stray` · `hash` |
+| 3 | 검증 결과와 승인 결속 | `topology` · `assessment` · `approvalHash` |
+| 4 | 독립 승인과 재평가 | `independent` · `conflict` · `blocking` |
+
+- **순환 금지 문장도 화면에 있다**: `data-testid="bom-approval-noncircular"`. Topology 는 승인 전 BOM 후보에도 작성·검증할 수 있으므로
+  "Topology 승인 후에만 BOM 생성" 과 "승인 BOM 이 있어야만 Topology 생성" 을 동시에 요구하지 않는다. 후보 BOM 의 정확 ref 와 hash 로 검증한 뒤 같은 내용을 승인한다.
+- **미충족은 진행 중과 다르게 보인다**: 공용 `.steps` 컴포넌트에 `.step.fail` 상태를 추가해 브랜드색 펄스(`active`, 진행 중)와 구분한다.
+  색만으로 알리지 않고 순서 번호와 `data-ok` 를 유지한다.
+- **실측**: 기준선을 `BL-BDC-2027.1` 로 바꾸면 1/4 단계만 충족(2·3·4 미충족), `BL-LIGHT-ADAS-2027.1`·`BL-LIGHT-2027.1` 은 4/4. 검증은 `specBom.test.tsx` 3건이 담당한다.
+
+#### 7.3.3 UI05 — Topology Definition v0.8 계약과 UL-OSS-R1 경계
+
+`Feature_Topology_Definition v0.8` §4.4~§4.8 과 `FP_Unleash_OSS_Integration_Review v1.0` 을 데이터 계층으로 고정했다.
+표시 전용 요약이 아니라 검증이 돌아가는 계약이며, 화면은 이 계약의 결과만 그린다.
+
+- `src/data/topologyContract.ts` — 관계 레코드 필수 필드(`RELATION_RECORD_FIELDS`)와 감사(`auditRelationRecords`),
+  무조건 관계까지 `ALWAYS` 명시, `REQUIRES` 전체 경로(`requiresPaths`), 문맥별 `CONFLICTS` 분리(`evaluateScopeConflicts`),
+  검증 4단계(`VERIFY_PHASES`) → 결과 `complete`/`frontier`, Unleash `parent` 단일 관계 보존 후 거절, SegmentVersion 변경 역탐색(`segmentImpact`),
+  승인 Snapshot 의 live Segment 비의존(`APPROVAL_SNAPSHOT_READS_LIVE_SEGMENT = false`).
+- `src/data/unleashOss.ts` — `UL-OSS-R1 / 2026-09-13` 실측 정본: 태그·커밋 SHA·라이선스 출처(`SOURCE_PROVENANCE` 11건),
+  수용 기준(`UL_CRITERIA` 7건), 한계(`UL_LIMITS`)와 보상(`compensationCoreList`), 연결 문서 8건.
+- **S06 출처 정본 표**: 수집한 정의의 실측 식별자(64-hex 커밋 SHA·태그 객체·저장소 URL)를 카드 안에 그대로 노출한다(정본 `QC-UL-02`).
+- **레이아웃 규칙**: 긴 해시·코드는 잘라내지 않고 접는다(`.tpa-table .wrap { overflow-wrap: anywhere }`).
+  표 폭은 컨테이너가 정하고, 넘칠 때만 `.tpa-scroll` 이 가로 스크롤을 만든다 — 고정 픽셀 폭을 쓰지 않는다.
+- 검증: `specTopologyContract.test.tsx` 46건 + `specUlOss.test.tsx` 18건. 라이브 실측은 `probe-topo.cjs`
+  (7개 탭 `over: []` · `wideCards: 0` · `errs: []`, 검증 총계 `TOTAL 14 · BLOCKING 0 · WARNING 13 · INFO 1`).
+
 - **UI05 엔진**: 관계 사전 15종 → 그래프 → 규칙 검증 → Snapshot 동결(SHA-256) → Capability 평가 → 변경 영향 경로.
   상단은 6단계 파이프라인(단계마다 `pass`/`fail`/`blocked` 톤), 하단은 Twin 런타임 아키텍처 뷰다.
   두 뷰는 **같은 시뮬레이터 시계**를 쓴다 — `0×` 로 두면 패킷 애니메이션이 함께 멈춘다(`data-paused`).
@@ -384,8 +420,9 @@ npm install          # 최초 1회
 npm run dev          # http://localhost:9001
 ```
 
-- 테스트: `npm test` (vitest, 19 files / 400 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
-  `specBom.test.tsx` 가 §7.3 UI04, `specTopology.test.tsx` 가 §7.3 UI05, `specRegistrationR1.test.tsx` 가 §7.3.1 UI02-R1,
+- 테스트: `npm test` (vitest, 21 files / 467 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
+  `specBom.test.tsx` 가 §7.3 UI04 · §7.3.2 승인 순서, `specTopology.test.tsx` 가 §7.3 UI05, `specTopologyContract.test.tsx` · `specUlOss.test.tsx` 가 §7.3.3 TD v0.8 · UL-OSS-R1,
+  `specRegistrationR1.test.tsx` 가 §7.3.1 UI02-R1,
   `twinVehicleScene.test.tsx` · `twinVehicleLive.test.tsx` 가 §17.4 차량 3D 담당)
 - 테스트 로그가 커지면 `src/test/setup.ts` 의 노이즈 가드를 먼저 확인한다(§17.4.9). 가드가 없으면 38 MB 로그 · 일부 파일 스킵으로 재현된다.
 - 빌드: `npm run build` (`tsc -b && vite build`)
@@ -458,15 +495,16 @@ swiftshader 소프트웨어 렌더링 측정이므로 실 GPU 에서는 절대�
 - Twin UI 스모크(`src/__tests__/twinUi.test.tsx`)에 **Fleet → VIN 상세 이동** 통합 테스트가 있다.
   두 페이지 모두 lazy 라우트이므로 청크 로드 + Suspense 재시도 + 무거운 페이지 마운트가 겹치면 기본 1000ms 를 넘길 수 있어
   해당 단언에만 여유 timeout 을 준다(검증 대상은 '이동'이지 '지연'이 아니다).
-- 정본 IA 화면은 엔진 계약과 화면 계약을 함께 고정한다. `specBom.test.tsx`(UI04, 55 tests)는 contentHash 정규 직렬화,
+- 정본 IA 화면은 엔진 계약과 화면 계약을 함께 고정한다. `specBom.test.tsx`(UI04, 58 tests)는 contentHash 정규 직렬화,
   위반 14건의 코드·대상, 조건 Profile 판정 4종, Master·Configured·Effective 파생, 승인 게이트 순서(409 → 422 → 403 → 412),
-  KPI 10칸, S01 필터와 S06 명령 반영을 검증한다. `specTopology.test.tsx`(UI05, 31 tests)는 Snapshot hash · 관계 사전 ·
-  파이프라인 6단계 · 영향 경로를 검증한다.
+  §2.4 승인 순서 4단계와 비순환 조건, KPI 10칸, S01 필터와 S06 명령 반영을 검증한다. `specTopology.test.tsx`(UI05, 38 tests)는
+  Snapshot hash · 관계 사전 · 파이프라인 6단계 · 영향 경로를, `specTopologyContract.test.tsx`(46 tests)는 TD v0.8 §4.4~§4.8 관계 계약 ·
+  검증 4단계 · Unleash 경계를, `specUlOss.test.tsx`(18 tests)는 UL-OSS-R1 출처·수용 기준·한계를 검증한다.
 - 차량 3D 는 자산 계약과 강등 경로를 고정한다. `twinVehicleScene.test.tsx`(22 tests)는 HUD 계약과 `prepareScene`
   (외판 선택 · 재질 복제 풀 · 관절 탐색 · 시계 종속 휠 스핀)을, `twinVehicleLive.test.tsx`(17 tests)는 크레딧 노출 ·
   폴백 표시 · 헤더에서 3D 로 내려가는 이동(reduced-motion 분기 포함)을 검증한다.
   절차적 셸과 실 자산은 서로 다른 렌더 경로이므로, 어느 한쪽 계약만 통과하는 변경은 회귀로 취급한다.
-- 회귀 확인: `npm test` 로 전체 스위트(19 files / 400 tests, ≈24 s), `npx tsc --noEmit` 로 타입. 라이브 확인은 `probe-f.mjs`(20개 항목 생존 확인).
+- 회귀 확인: `npm test` 로 전체 스위트(21 files / 467 tests, ≈23 s), `npx tsc --noEmit` 로 타입. 라이브 확인은 `probe-f.mjs`(20개 항목 생존 확인).
   3D 는 픽셀 근거까지 필요할 때 `verify-veh.mjs`(5개 상태 캡처 + 자산 16건 응답 코드)를 쓴다(§17.4.5 · §17.4.8).
 
 ---

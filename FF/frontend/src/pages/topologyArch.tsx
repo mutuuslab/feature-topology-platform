@@ -90,8 +90,12 @@ import {
 } from '../data/topologyContract';
 import {
   DEPENDENCY_SOT_COMPENSATION,
+  OSS_COMPARISON_URL,
   SOURCE_PROVENANCE,
   UL_AUDIT_CHECK_COUNT,
+  UL_AUDIT_JSON,
+  UL_COLLECTION_OWNER,
+  UL_CONTRACTS,
   UL_CRITERIA,
   UL_DECISIONS,
   UL_DIAGRAMS,
@@ -100,11 +104,18 @@ import {
   UL_INTERFACES,
   UL_LIMITS,
   UL_LINKED_DOCS,
+  UL_SCREEN_BOUNDARIES,
   UL_SUMMARY,
   UL_UNRUN_NOTICE,
+  UL_USAGE,
   UL_VERIFICATION,
+  UL_WEBHOOK_USED,
+  ULOSS_BASELINE,
   ULOSS_REVISION,
   ULOSS_REVISION_DATE,
+  ULOSS_ROLE,
+  ulVerificationComplete,
+  type UlUsageVerdict,
 } from '../data/unleashOss';
 import { SPEC_TOPOLOGY_RELATIONS } from '../data/specNav';
 import { SPEC_CORE_LABEL } from '../data/specPlanesGen';
@@ -1132,6 +1143,15 @@ const SEV_CLASS: Record<Severity, string> = { BLOCKING: 'blocking', WARNING: 'wa
 
 const OUTCOME_TONE: Record<ProfileOutcome, Tone> = {
   SELECTED: 'pass', NOT_SUPPORTED: 'info', UNVERIFIED: 'pending', CONFIG_CONFLICT: 'fail',
+};
+
+/** 판정 태그 톤 — 미사용은 보상 책임이 붙는 경고가 아니라 차단색으로 구분한다. */
+const UL_USAGE_TONE: Record<UlUsageVerdict, string> = {
+  '사용': 'info',
+  '조건부 사용': 'warning',
+  '부트스트랩 한정': 'warning',
+  '미사용': 'blocking',
+  '미사용(기본 OFF)': 'blocking',
 };
 
 const DEFAULT_IMPORT = [
@@ -2195,13 +2215,18 @@ export function TopologyArch(): JSX.Element {
               </h3>
               <p className="tpa-sub">
                 <b>{UNLEASH_TOOL_RELATION.tool}</b> 의 <span className="mono">{UNLEASH_TOOL_RELATION.wireType}</span> 는
-                <b> {UNLEASH_TOOL_RELATION.nature}</b> 다. {UNLEASH_TOOL_RELATION.rule}
+                <b> {UNLEASH_TOOL_RELATION.nature}</b> 다. {UNLEASH_TOOL_RELATION.rule}{' '}
+                형상 기준 <span className="mono">{ULOSS_BASELINE}</span> 위에 버전 번호를 올리지 않고 개정 ID 로만 얹는다(QC-UL-01).
               </p>
               <div className="tpa-strip">
                 <span className="tpa-chip"><b>{UL_SUMMARY.contracts}</b>계약 UL-OSS</span>
                 <span className="tpa-chip"><b>{UL_SUMMARY.interfaces}</b>인터페이스</span>
                 <span className={`tpa-chip ${UL_SUMMARY.unusedInterfaces > 0 ? 'pending' : 'pass'}`}>
                   <b>{UL_SUMMARY.unusedInterfaces}</b>미사용 인터페이스
+                </span>
+                <span className="tpa-chip"><b>{UL_SUMMARY.usageRows}</b>사용 판정</span>
+                <span className={`tpa-chip ${UL_SUMMARY.unusedUsage > 0 ? 'pending' : 'pass'}`}>
+                  <b>{UL_SUMMARY.unusedUsage}</b>미사용 · 대체 Core 결속
                 </span>
                 <span className="tpa-chip"><b>{UL_SUMMARY.limits}</b>무료 에디션 한계</span>
                 <span className="tpa-chip pending"><b>{UL_SUMMARY.notRun}</b>NOT_RUN</span>
@@ -2224,6 +2249,35 @@ export function TopologyArch(): JSX.Element {
               <p className="tpa-note">
                 {UNLEASH_TOOL_RELATION.evidence} · 근거 {UNLEASH_TOOL_RELATION.refs}
               </p>
+              <div className="mt" data-testid="tp-ul-contracts">
+                <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>
+                  계약 {UL_CONTRACTS.length}건 (UL-OSS-01~14) ↔ 요구사항 FR-ULOSS-001~014 1:1 (QC-UL-04)
+                </h4>
+                <div className="tpa-scroll">
+                  <table className="tpa-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th><th className="wrap">계약</th><th className="wrap">정본 문장</th>
+                        <th className="wrap">책임 Core</th><th className="wrap">요구사항 · 검증</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {UL_CONTRACTS.map(c => (
+                        <tr key={c.id} data-fr={c.fr}>
+                          <td className="mono">{c.id}</td>
+                          <td className="wrap">{c.title}</td>
+                          <td className="wrap small">{c.requirement}</td>
+                          <td className="wrap mono small">{c.core}<div className="muted">{c.coreName}</div></td>
+                          <td className="wrap small">
+                            <span className="mono">{c.fr}</span>
+                            <div className="muted">{c.verify}</div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
               <div className="tpa-2col mt">
                 <div>
                   <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>외부 인터페이스 {UL_INTERFACES.length}종 (IF-FF-01~07)</h4>
@@ -2247,7 +2301,12 @@ export function TopologyArch(): JSX.Element {
                   </div>
                 </div>
                 <div>
-                  <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>미실행 경계 — {UL_GAP_REF} · 결정 {UL_DECISIONS.join(' · ')}</h4>
+                  <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>
+                    미실행 경계 — {UL_GAP_REF} · 결정 {UL_DECISIONS.join(' · ')}{' '}
+                    <span className={`tpa-tag ${ulVerificationComplete() ? 'info' : 'warning'}`} data-testid="tp-ul-verify-state">
+                      검증 완료 {String(ulVerificationComplete())}
+                    </span>
+                  </h4>
                   <table className="tpa-table">
                     <thead><tr><th>항목</th><th>상태</th><th className="wrap">비고</th></tr></thead>
                     <tbody>
@@ -2286,6 +2345,91 @@ export function TopologyArch(): JSX.Element {
                 </ul>
               </div>
 
+              <div className="mt" data-testid="tp-ul-usage">
+                <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>
+                  사용 · 미사용 판정 {UL_USAGE.length}건 — 미사용 {UL_SUMMARY.unusedUsage}건은 대체 소유 Core 로 보상한다
+                </h4>
+                <div className="tpa-scroll">
+                  <table className="tpa-table">
+                    <thead>
+                      <tr>
+                        <th className="wrap">기능</th><th className="wrap">무료 에디션</th><th>판정</th>
+                        <th className="wrap">근거</th><th className="wrap">대체 소유 Core</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {UL_USAGE.map(u => (
+                        <tr key={u.feature} data-verdict={u.verdict}>
+                          <td className="wrap">{u.feature}</td>
+                          <td className="wrap small">{u.edition}</td>
+                          <td><span className={`tpa-tag ${UL_USAGE_TONE[u.verdict]}`}>{u.verdict}</span></td>
+                          <td className="wrap small">{u.reason}</td>
+                          <td className="wrap mono small">{u.replacedBy ?? '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="tpa-note">
+                  무료·Enterprise 기능 차이 주장의 근거 — <span className="mono">{OSS_COMPARISON_URL}</span> (QC-UL-03)
+                </p>
+              </div>
+
+              <div className="tpa-2col mt">
+                <div data-testid="tp-ul-role">
+                  <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>역할 경계 — 도구는 보관소 · 평가값 제공자, 정본은 FP 다</h4>
+                  <table className="tpa-table">
+                    <thead><tr><th className="wrap">구분</th><th className="wrap">경계</th></tr></thead>
+                    <tbody>
+                      <tr>
+                        <td className="wrap">도구</td>
+                        <td className="wrap">{ULOSS_ROLE.tool}<div className="small muted">{ULOSS_ROLE.toolNote}</div></td>
+                      </tr>
+                      <tr>
+                        <td className="wrap">플랫폼</td>
+                        <td className="wrap">{ULOSS_ROLE.platform}<div className="small muted">{ULOSS_ROLE.platformNote}</div></td>
+                      </tr>
+                      <tr>
+                        <td className="wrap">평가 정본</td>
+                        <td className="wrap">{ULOSS_ROLE.evaluationSoT}</td>
+                      </tr>
+                      <tr>
+                        <td className="wrap">표시값 규칙</td>
+                        <td className="wrap">{ULOSS_ROLE.displayValueRule}</td>
+                      </tr>
+                      <tr>
+                        <td className="wrap">정의 수집</td>
+                        <td className="wrap">
+                          {UL_COLLECTION_OWNER}
+                          <div className="small muted">
+                            Webhook 사용 {String(UL_WEBHOOK_USED)} — 변경 통보 경로가 도구에서 오지 않는다
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div data-testid="tp-ul-boundaries">
+                  <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>
+                    화면 경계 {UL_SCREEN_BOUNDARIES.length}건 (QC-UL-07)
+                  </h4>
+                  <table className="tpa-table">
+                    <thead><tr><th className="wrap">화면</th><th className="wrap">이 화면이 보는 범위</th></tr></thead>
+                    <tbody>
+                      {UL_SCREEN_BOUNDARIES.map(b => (
+                        <tr key={b.screenId}>
+                          <td className="wrap">
+                            <span className="mono">{b.screenId}</span> {b.ko}
+                            <div className="small muted">{b.group}</div>
+                          </td>
+                          <td className="wrap small">{b.scope}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               <div className="tpa-2col mt">
                 <div data-testid="tp-ul-source">
                   <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>출처 정본 — 수집한 정의의 실측 식별자 (QC-UL-02)</h4>
@@ -2319,6 +2463,7 @@ export function TopologyArch(): JSX.Element {
                     ))}
                   </ul>
                   <p className="tpa-note">
+                    감사 항목 {UL_AUDIT_CHECK_COUNT}건 원본 <span className="mono">{UL_AUDIT_JSON}</span><br />
                     연결 문서·도면 — {UL_LINKED_DOCS.map(d => `${d.ko} ${d.value}`).join(' · ')}
                     {UL_DIAGRAMS.length > 0 ? ` · 도면 ${UL_DIAGRAMS.map(d => d.file.split('/').pop()).join(', ')}` : ''}
                   </p>

@@ -296,6 +296,29 @@ Task · 입력/검증 · API · 역할 정책 · 인수 조건을 기준 문서 
 - 검증: `specTopologyContract.test.tsx` 46건 + `specUlOss.test.tsx` 18건. 라이브 실측은 `probe-topo.cjs`
   (7개 탭 `over: []` · `wideCards: 0` · `errs: []`, 검증 총계 `TOTAL 14 · BLOCKING 0 · WARNING 13 · INFO 1`).
 
+#### 7.3.4 UI05-S06 — UL-OSS-R1 표면 완성 (계약 · 사용 판정 · 역할/화면 경계)
+
+`unleashOss.ts` 의 데이터를 **전부 화면에 올렸다**. 이전 개정에서 S06 은 한계·출처·기준만 그렸고
+계약 14건 · 사용 판정 10건 · 화면 경계 2건은 데이터로만 존재했다 — 값은 옳았지만 화면에서 검증할 수 없었다.
+
+- **계약 표**(`tp-ul-contracts`): `UL-OSS-01~14` 각 행에 계약명 · 정본 요구 문장 원문 · 책임 Core(`C## 이름`) ·
+  `FR-ULOSS-0nn` · 검증 방법(`Test`/`Inspection`/`Analysis`)을 그대로 싣고, 행에 `data-fr` 를 붙여 1:1 대응을 화면에서 확인할 수 있게 했다(QC-UL-04).
+- **사용 판정 표**(`tp-ul-usage`): `기능 · 무료 에디션 제공 여부 · 판정 · 근거 · 대체 소유 Core`.
+  판정 태그 톤은 `UL_USAGE_TONE` — `사용` 은 info, `조건부 사용`/`부트스트랩 한정` 은 warning,
+  `미사용`/`미사용(기본 OFF)` 은 **blocking(차단색)** 이다. 미사용 5건은 모두 대체 소유 Core 가 붙어 있고 빈칸(`—`)이 아니다.
+- **QC-UL-03 근거 URL**: 무료·Enterprise 차이를 주장하는 표 바로 아래에 `OSS_COMPARISON_URL` 을 명시한다.
+  기준 문서가 요구한 "주장에는 공식 비교표 URL 동반" 을 화면이 직접 이행한다.
+- **역할 표**(`tp-ul-role`): 도구=보관소·평가값 제공자 / 플랫폼=승인·발행·감사 정본 / 평가 정본=C17 서명 스냅샷+C16,
+  그리고 표시값은 판정 근거가 아니라는 규칙. 정의 수집 정본은 `UL_COLLECTION_OWNER`(C33 폴링)이고
+  `Webhook 사용 false` 가 함께 표시된다 — 도구가 변경을 통보하지 않는다는 계약을 화면이 숨기지 않는다.
+- **화면 경계 표**(`tp-ul-boundaries`): `UI18-S02`(Control · 도구 상태·연결만) · `UI30-S04`(Quality · 반영·호환성만).
+  이 앱이 도구 관리자 UI 를 대신하지 않는다는 선을 화면 ID 로 고정한다(QC-UL-07).
+- **미실행 표기**: 미실행 경계 머리에 `검증 완료 false`(`ulVerificationComplete()`) 태그가 붙고,
+  감사 원본 경로(`UL_AUDIT_JSON`)와 26건 수가 함께 표기된다. 완료 전 상태를 완료처럼 보이게 하지 않는다(QC-UL-05).
+- 검증: `specTopology.test.tsx` 의 화면 계약 1건이 S06 탭에서 위 4개 표의 행 수·`data-fr`·`data-verdict`·미사용행의 대체 Core·
+  URL·`검증 완료 false` 를 실제 DOM 에서 확인한다. `specUlOss.test.tsx` 는 같은 값을 데이터 계층에서 고정한다.
+- 라이브 실측: S06 `over: []` · `wideCards: 0` · `errs: []`, 계약 표 1028×727 / 사용 표 1028×393 / 역할 표 507×272 (1366×768).
+
 - **UI05 엔진**: 관계 사전 15종 → 그래프 → 규칙 검증 → Snapshot 동결(SHA-256) → Capability 평가 → 변경 영향 경로.
   상단은 6단계 파이프라인(단계마다 `pass`/`fail`/`blocked` 톤), 하단은 Twin 런타임 아키텍처 뷰다.
   두 뷰는 **같은 시뮬레이터 시계**를 쓴다 — `0×` 로 두면 패킷 애니메이션이 함께 멈춘다(`data-paused`).
@@ -420,8 +443,8 @@ npm install          # 최초 1회
 npm run dev          # http://localhost:9001
 ```
 
-- 테스트: `npm test` (vitest, 21 files / 467 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
-  `specBom.test.tsx` 가 §7.3 UI04 · §7.3.2 승인 순서, `specTopology.test.tsx` 가 §7.3 UI05, `specTopologyContract.test.tsx` · `specUlOss.test.tsx` 가 §7.3.3 TD v0.8 · UL-OSS-R1,
+- 테스트: `npm test` (vitest, 21 files / 468 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
+  `specBom.test.tsx` 가 §7.3 UI04 · §7.3.2 승인 순서, `specTopology.test.tsx` 가 §7.3 UI05 · §7.3.4 UL-OSS-R1 표면, `specTopologyContract.test.tsx` · `specUlOss.test.tsx` 가 §7.3.3 TD v0.8 · UL-OSS-R1,
   `specRegistrationR1.test.tsx` 가 §7.3.1 UI02-R1,
   `twinVehicleScene.test.tsx` · `twinVehicleLive.test.tsx` 가 §17.4 차량 3D 담당)
 - 테스트 로그가 커지면 `src/test/setup.ts` 의 노이즈 가드를 먼저 확인한다(§17.4.9). 가드가 없으면 38 MB 로그 · 일부 파일 스킵으로 재현된다.
@@ -497,14 +520,14 @@ swiftshader 소프트웨어 렌더링 측정이므로 실 GPU 에서는 절대�
   해당 단언에만 여유 timeout 을 준다(검증 대상은 '이동'이지 '지연'이 아니다).
 - 정본 IA 화면은 엔진 계약과 화면 계약을 함께 고정한다. `specBom.test.tsx`(UI04, 58 tests)는 contentHash 정규 직렬화,
   위반 14건의 코드·대상, 조건 Profile 판정 4종, Master·Configured·Effective 파생, 승인 게이트 순서(409 → 422 → 403 → 412),
-  §2.4 승인 순서 4단계와 비순환 조건, KPI 10칸, S01 필터와 S06 명령 반영을 검증한다. `specTopology.test.tsx`(UI05, 38 tests)는
-  Snapshot hash · 관계 사전 · 파이프라인 6단계 · 영향 경로를, `specTopologyContract.test.tsx`(46 tests)는 TD v0.8 §4.4~§4.8 관계 계약 ·
+  §2.4 승인 순서 4단계와 비순환 조건, KPI 10칸, S01 필터와 S06 명령 반영을 검증한다. `specTopology.test.tsx`(UI05, 39 tests)는
+  Snapshot hash · 관계 사전 · 파이프라인 6단계 · 영향 경로와 S06 의 UL-OSS-R1 표면(계약 14 · 사용 판정 10 · 화면 경계 2)을, `specTopologyContract.test.tsx`(46 tests)는 TD v0.8 §4.4~§4.8 관계 계약 ·
   검증 4단계 · Unleash 경계를, `specUlOss.test.tsx`(18 tests)는 UL-OSS-R1 출처·수용 기준·한계를 검증한다.
 - 차량 3D 는 자산 계약과 강등 경로를 고정한다. `twinVehicleScene.test.tsx`(22 tests)는 HUD 계약과 `prepareScene`
   (외판 선택 · 재질 복제 풀 · 관절 탐색 · 시계 종속 휠 스핀)을, `twinVehicleLive.test.tsx`(17 tests)는 크레딧 노출 ·
   폴백 표시 · 헤더에서 3D 로 내려가는 이동(reduced-motion 분기 포함)을 검증한다.
   절차적 셸과 실 자산은 서로 다른 렌더 경로이므로, 어느 한쪽 계약만 통과하는 변경은 회귀로 취급한다.
-- 회귀 확인: `npm test` 로 전체 스위트(21 files / 467 tests, ≈23 s), `npx tsc --noEmit` 로 타입. 라이브 확인은 `probe-f.mjs`(20개 항목 생존 확인).
+- 회귀 확인: `npm test` 로 전체 스위트(21 files / 468 tests, ≈23 s), `npx tsc --noEmit` 로 타입. 라이브 확인은 `probe-f.mjs`(20개 항목 생존 확인).
   3D 는 픽셀 근거까지 필요할 때 `verify-veh.mjs`(5개 상태 캡처 + 자산 16건 응답 코드)를 쓴다(§17.4.5 · §17.4.8).
 
 ---

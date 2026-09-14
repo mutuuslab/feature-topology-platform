@@ -695,7 +695,7 @@ export function DefineRevision() {
                   <thead><tr><th>원천</th><th>Artifact</th><th>버전</th><th>해석</th><th>digest</th></tr></thead>
                   <tbody>
                     {ARTIFACT_RECORDS.slice(0, 8).map(x => (
-                      <tr key={x.id}>
+                      <tr key={`${x.id}@${x.version}`}>
                         <td className="small"><span className="pill">{x.sourceRef.system}</span></td>
                         <td className="mono small">{x.artifactId}</td>
                         <td className="mono small">{x.version}</td>

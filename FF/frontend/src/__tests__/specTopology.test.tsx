@@ -17,6 +17,13 @@ import * as M from '../data/model';
 import { SPEC_TOPOLOGY_RELATIONS } from '../data/specNav';
 import { BOM_CONDITION_PROFILES, type ConditionRow } from '../data/featureBom';
 import {
+  OSS_COMPARISON_URL,
+  ULOSS_BASELINE,
+  UL_CONTRACTS,
+  UL_SCREEN_BOUNDARIES,
+  UL_USAGE,
+} from '../data/unleashOss';
+import {
   IMPORT_COLUMNS,
   REL_BY_ID,
   REL_UNMAPPED_HINT,
@@ -608,6 +615,44 @@ describe('UI05 화면 계약', () => {
 
     fireEvent.click(tabs[2]);
     expect(container.querySelectorAll('[data-testid^="vocab-"]')).toHaveLength(15);
+  });
+
+  it('S06 이 UL-OSS-R1 표면을 정본 데이터 그대로 그린다 — 계약 · 사용 판정 · 화면 경계', () => {
+    const { container } = renderArch();
+    fireEvent.click([...container.querySelectorAll('.tabs button')][5]);
+
+    const card = screen.getByTestId('tp-unleash-boundary');
+
+    const contractRows = [...screen.getByTestId('tp-ul-contracts').querySelectorAll('tbody tr')];
+    expect(contractRows).toHaveLength(UL_CONTRACTS.length);
+    expect(contractRows[0].getAttribute('data-fr')).toBe('FR-ULOSS-001');
+    expect(contractRows[0].textContent).toContain('UL-OSS-01');
+    expect(contractRows.at(-1)!.textContent).toContain(UL_CONTRACTS.at(-1)!.fr);
+    // 요구 문장이 데이터 그대로 실린다 — 표가 요약으로 값을 줄이지 않는다.
+    expect(card.textContent).toContain(UL_CONTRACTS[0].requirement);
+
+    const usageRows = [...screen.getByTestId('tp-ul-usage').querySelectorAll('tbody tr')];
+    expect(usageRows).toHaveLength(UL_USAGE.length);
+    const unused = usageRows.filter(r => (r.getAttribute('data-verdict') ?? '').startsWith('미사용'));
+    expect(unused).toHaveLength(5);
+    // 미사용 기능은 대체 소유 Core 로만 보상되고, 빈칸(`—`)으로 남지 않는다.
+    for (const r of unused) {
+      const last = r.lastElementChild!.textContent ?? '';
+      expect(last, `${r.getAttribute('data-verdict')} 대체 소유 Core`).toMatch(/C\d{2}/);
+      expect(last).not.toBe('—');
+    }
+    // 한계 주장의 근거 URL 이 화면에 있어야 한다 (QC-UL-03).
+    expect(card.textContent).toContain(OSS_COMPARISON_URL);
+    expect(card.textContent).toContain(ULOSS_BASELINE);
+
+    expect(screen.getByTestId('tp-ul-role').textContent).toContain('평가값 제공자');
+    expect(screen.getByTestId('tp-ul-role').textContent).toContain('Webhook 사용 false');
+
+    const boundaryRows = [...screen.getByTestId('tp-ul-boundaries').querySelectorAll('tbody tr')];
+    expect(boundaryRows.map(r => r.textContent!.slice(0, 8))).toEqual(UL_SCREEN_BOUNDARIES.map(b => b.screenId));
+
+    // NOT_RUN 이 남아 있는 동안 완료로 표기하지 않는다 (QC-UL-05).
+    expect(screen.getByTestId('tp-ul-verify-state').textContent).toContain('검증 완료 false');
   });
 
   it('클럭 ×0 이면 두 계층이 함께 멈춘다', () => {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fleetStats, sampleVehicles, vehicleFeatureStates, STATE_COLOR, Vehicle, MODELS } from '../data/fleet';
-import { useApp } from '../store';
+import { useApp, useLive } from '../store';
 import { Donut, Bars, AreaChart, LiveDot, CountUp, Heatmap } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 import { RightPanel } from '../components/patterns';
@@ -15,7 +15,8 @@ const fmtM = (n: number) => (n / 1e6).toFixed(2) + 'M';
 
 export default function Fleet() {
   const nav = useNavigate();
-  const { live, activation } = useApp().state;
+  const { activation } = useApp().state;
+  const live = useLive();
   const [vin, setVin] = useState('');
   const [veh, setVeh] = useState<Vehicle | null>(null);
   const [sel, setSel] = useState<any>(null);

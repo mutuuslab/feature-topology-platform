@@ -8,7 +8,7 @@
 // 검토 요청 이후 승인 원본의 hash 가 바뀌면 승인 효력이 사라지고 새 버전·재검토로 분기한다.
 // 제품 서버는 미연결(LOCAL_UI_ONLY)이며 리비전 레지스트리는 브라우저에 영속된다.
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Bars, Donut, RadialProgress, Steps, tally } from '../components/charts';
 import { EmptyState } from '../components/patterns';import { RegistrationReviewPanel, type ReviewSnapshot } from '../components/registrationReview';
 import { SPEC_C01_SECTIONS } from '../data/specArch';
@@ -34,6 +34,7 @@ import {
 } from '../data/revision';
 import { type SpecRegAction, type SpecRegArea, type SpecRegAttr } from '../data/specTypes';
 import { useApp, useAppShell } from '../store';
+import type { Proposal } from '../data/proposal';
 import {
   domains as REF_DOMAINS, orgs as REF_ORGS, permMatrix, profileOf, roleLabel, roleKeyOf, roles as REF_ROLES,
 } from '../data/refdata';
@@ -273,6 +274,34 @@ export function DefineRevision() {
       blocking: VIOLATIONS.filter(v => v.blocking).length,
     };
   }, []);
+
+  // ── Feature 제안(UI19)에서 이관된 등록 ──────────────────────────────────────
+  // 제안 화면은 Feature 를 만들지 않는다. 결정 단계에서 Feature ID 만 발급해 이 화면으로 넘기고,
+  // 실제 생성은 이 등록 폼(7기준 심사 + R0 필수 + Revision 기록)이 수행한다.
+  // 그래서 이관된 제안은 폼을 비워 두지 않고 원천 제안에서 채워 주고, 원천(FRI-037)도 함께 남긴다.
+  const [searchParams] = useSearchParams();
+  const handoffId = searchParams.get('from') ?? '';
+  const [handoff, setHandoff] = useState<Proposal | null>(null);
+
+  useEffect(() => {
+    if (!handoffId) return;
+    const src = (state.proposals as Proposal[]).find(p => p.id === handoffId && !!p.featureId);
+    const id = src?.featureId;
+    if (!src || !id) return;
+    setHandoff(src);
+    setDrafts(d => ({
+      ...d,
+      [`${id}@1.0.0`]: {
+        ...(d[`${id}@1.0.0`] ?? {}),
+        'FRI-005': src.title,
+        'FRI-025': src.org,
+        'FRI-028': src.category.split(/[·/(]/)[0].trim() || 'Body',
+        'FRI-037': src.id,
+      },
+    }));
+    setRec(r => ({ ...r, id, contentHash: contentHash(id) }));
+    setNotice(`${src.id} 에서 이관된 등록입니다 — 원천 제안을 FRI-037 에 기록했습니다. Feature 는 이 등록을 마쳐야 생성됩니다.`);
+  }, [handoffId]);
 
   /** 기준 액션 권한 검사 — actions.roles 는 기준 9역할 키다. */
   const permitted = (act: SpecRegAction) => act.roles.includes(roleKey);
@@ -687,6 +716,15 @@ export function DefineRevision() {
               항목·라벨·필수성·의미는 등록 속성 사전(FRI-###)에서만 오고, 화면이 임계를 새로 만들지 않습니다.
               Enter 로 등록 · Shift-Tab/Tab 으로 필드 이동 · Esc 로 오류 닫기(UI02-AC20).
             </p>
+            {handoff && (
+              <div className="card" style={{ background: 'var(--surface-2)', marginTop: 8 }} data-testid="ui02-handoff">
+                <b className="small">제안 {handoff.id} 에서 이관 — 원천 추적 유지</b>
+                <p className="small muted" style={{ margin: '4px 0 0' }}>
+                  발급된 Feature ID <span className="mono">{handoff.featureId}</span> · Feature 는 여기 등록을 마쳐야 생성된다
+                  (7기준 심사 · R0 필수 · Revision 기록). <Link to="/feature/propose">제안으로 돌아가기 ▸</Link>
+                </p>
+              </div>
+            )}
           </div>
           <div className="col">
             <div className="kv">

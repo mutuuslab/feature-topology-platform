@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import * as M from '../data/model';
 import { getFeature } from '../data/engine';
 import { opsTriggerRules } from '../data/refdata';
-import { useApp } from '../store';
+import { useApp, useLive } from '../store';
 import { GButton } from '../components/patterns';
 import { AreaChart, GaugeArc, LiveDot } from '../components/charts';
 import TopoLink from '../components/TopoLink';
@@ -14,7 +14,7 @@ export default function OpsDashboard() {
   const { state, dispatch } = useApp();
   const f = getFeature(id);
   const tel = M.telemetry[id];
-  const live = state.live;
+  const live = useLive();
   const killed = state.runtime[id] === 'disabled';
   const [stage, setStage] = useState<number | null>(null); // null=정상/킬, 0~2=복구중
   const [confirm, setConfirm] = useState('');

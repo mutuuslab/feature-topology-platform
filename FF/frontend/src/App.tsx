@@ -5,6 +5,7 @@ import { NotFound } from './components/patterns';
 import RouteBoundary from './components/RouteBoundary';
 import { roles, profileOf, roleLabel } from './data/refdata';
 import { DOMAINS, DEPT_NAV, PLANE_NAV, ITEM, domainOfPath, useT } from './i18n';
+import { useMotion } from './state/motion';
 import { specPlaneOfPath } from './data/specPlanesNav';
 import Catalog from './pages/Catalog';
 import FeatureDetail from './pages/FeatureDetail';
@@ -14,12 +15,19 @@ import ReleaseReadiness from './pages/ReleaseReadiness';
 import OpsDashboard from './pages/OpsDashboard';
 import VariantMatrix from './pages/VariantMatrix';
 import ConsistencyConsole from './pages/ConsistencyConsole';
-import CRWizard from './pages/CRWizard';
+const ProposalRegistryPage = lazy(() => import('./pages/propose').then((m) => ({ default: m.ProposalRegistry })));
+const OfferCompositionPage = lazy(() => import('./pages/plm').then((m) => ({ default: m.OfferComposition })));
+const UpgRegistryPage = lazy(() => import('./pages/plm').then((m) => ({ default: m.UpgRegistry })));
+const SwStructurePage = lazy(() => import('./pages/plm').then((m) => ({ default: m.SwStructure })));
+const SwEoChangePage = lazy(() => import('./pages/eo').then((m) => ({ default: m.SwEoChange })));
+const ProductSpecPage = lazy(() => import('./pages/eo').then((m) => ({ default: m.ProductSpec })));
+const IntegrationJobsPage = lazy(() => import('./pages/lineage').then((m) => ({ default: m.IntegrationJobs })));
+const DesignTracePage = lazy(() => import('./pages/lineage').then((m) => ({ default: m.DesignTrace })));
 import { Login, Onboarding, RoleHome, HomeCustomize } from './pages/home';
 import { TaxonomyBrowser, TaxonomyEditor, BOMEditor, ArtifactCatalog, ControlPointCatalog } from './pages/master';
-import { EdgeEditor, ViolationDetail, MetamodelViewer } from './pages/topology2';
+import { EdgeEditor, ViolationDetail } from './pages/topology2';
 import { VerificationScope, DeploymentDecision, SupplierScope, DecisionCenter, DecisionReport } from './pages/decisions';
-import { CRList, CRDetail, ChangeSetList, BaselineDiff, VersionTimeline } from './pages/change';
+import { CRList, CRDetail, BaselineDiff, VersionTimeline } from './pages/change';
 import { TestEvidenceManager, EvidenceDetail } from './pages/verify';
 import { OTACampaign, CampaignDetail, PolicyLifecycle, TelemetryExplorer, IncidentManager, IncidentDetail } from './pages/ops2';
 import RuntimeSim from './pages/runtime';
@@ -51,6 +59,13 @@ export default function App() {
   const { role, navMode, lang, theme } = useAppShell();
   const { dispatch } = useAppApi();
   const { t, navGroup, navItem, navDomain, deptLabel } = useT();
+  // 실시간 모션 제어 — 끄면 반복 애니메이션(커널·CSS·3D 렌더 루프)이 모두 멈춘다.
+  const motion = useMotion();
+  const motionTitle = motion.running
+    ? '실시간 모션 정지'
+    : motion.live
+      ? 'OS 모션 축소 설정이 켜져 있어 정지됨'
+      : '실시간 모션 시작';
   const [navOpen, setNavOpen] = useState(false);
   const [activeDomain, setActiveDomain] = useState(() => domainOfPath(loc.pathname));
   useEffect(() => { setActiveDomain(domainOfPath(loc.pathname)); }, [loc.pathname]);
@@ -99,6 +114,8 @@ export default function App() {
           {roles.map(r => <option key={r} value={r}>{roleLabel(r)}</option>)}
         </select>
         <button className="icon-btn" title="language" aria-label="language" onClick={() => dispatch({ t: 'LANG', lang: lang === 'ko' ? 'en' : 'ko' })}>{lang.toUpperCase()}</button>
+        <button className={'icon-btn motion-toggle' + (motion.running ? ' on' : '')} title={motionTitle} aria-label="live motion"
+          aria-pressed={motion.running} onClick={() => motion.setLive(!motion.live)}>{motion.running ? '⏸' : '▶'}</button>
         <button className="icon-btn" title="theme" aria-label="theme" onClick={() => dispatch({ t: 'THEME', theme: theme === 'light' ? 'dark' : 'light' })}>{theme === 'light' ? '🌙' : '☀'}</button>
         <button className="icon-btn" title="notifications" aria-label="notifications" onClick={() => nav('/admin/notifications')}>🔔</button>
       </div>
@@ -184,6 +201,7 @@ export default function App() {
 
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/feature/:id" element={<FeatureDetail />} />
+          <Route path="/feature/propose" element={<ProposalRegistryPage />} />
           <Route path="/master/define" element={<DefineRevision />} />
           <Route path="/master/taxonomy" element={<TaxonomyBrowser />} />
           <Route path="/master/taxonomy/edit" element={<TaxonomyEditor />} />
@@ -191,10 +209,13 @@ export default function App() {
           <Route path="/master/bom/items" element={<BOMEditor />} />
           <Route path="/master/artifacts" element={<ArtifactCatalog />} />
           <Route path="/master/control-points" element={<ControlPointCatalog />} />
+          <Route path="/master/upg" element={<UpgRegistryPage />} />
+          <Route path="/master/structure" element={<SwStructurePage />} />
+          <Route path="/master/product-spec" element={<ProductSpecPage />} />
 
           <Route path="/topology/edge" element={<EdgeEditor />} />
           <Route path="/topology/:id" element={<Topology />} />
-          <Route path="/metamodel" element={<MetamodelViewer />} />
+          <Route path="/trace/design" element={<DesignTracePage />} />
           <Route path="/consistency" element={<ConsistencyConsole />} />
           <Route path="/consistency/violation" element={<ViolationDetail />} />
 
@@ -207,8 +228,7 @@ export default function App() {
 
           <Route path="/change/cr" element={<CRList />} />
           <Route path="/change/cr/:id" element={<CRDetail />} />
-          <Route path="/cr-wizard" element={<CRWizard />} />
-          <Route path="/change/changeset" element={<ChangeSetList />} />
+          <Route path="/change/eo" element={<SwEoChangePage />} />
           <Route path="/change/baseline" element={<BaselineDiff />} />
           <Route path="/change/timeline" element={<VersionTimeline />} />
 
@@ -236,6 +256,7 @@ export default function App() {
           <Route path="/integration/connectors" element={<ConnectorHub />} />
           <Route path="/integration/connector/:id" element={<ConnectorDetail />} />
           <Route path="/integration/sync" element={<SyncLogs />} />
+          <Route path="/integration/jobs" element={<IntegrationJobsPage />} />
 
           <Route path="/insights/reports" element={<Reports />} />
           <Route path="/insights/audit" element={<AuditLog />} />
@@ -258,6 +279,7 @@ export default function App() {
           <Route path="/verify/compliance" element={<Compliance />} />
           <Route path="/verify/scenario" element={<Scenario />} />
           <Route path="/release/cicd" element={<CICD />} />
+          <Route path="/commerce/offer" element={<OfferCompositionPage />} />
           <Route path="/commerce/billing" element={<Billing />} />
           <Route path="/insights/business" element={<Business />} />
           <Route path="/admin/security" element={<Security />} />

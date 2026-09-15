@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useApp, useToast } from '../store';
+import { useApp, useLive, useToast } from '../store';
 import { sampleVehicles, vehicleFeatureStates, STATE_COLOR } from '../data/fleet';
 import { telemetry } from '../data/model';
 import { GaugeArc, Donut, Steps, LiveDot, tally, dist } from '../components/charts';
@@ -10,7 +10,7 @@ import { Breadcrumb } from '../components/Breadcrumb';
 export default function RuntimeSim() {
   const { state, dispatch } = useApp();
   const toast = useToast();
-  const live = state.live;
+  const live = useLive();
   const [fid, setFid] = useState('FEAT-BDC-001');
   const [policy, setPolicy] = useState('IF region IN (KR,EU) AND trim=Premium AND sw>=3.2.0 THEN enable');
   const [published, setPublished] = useState(false);

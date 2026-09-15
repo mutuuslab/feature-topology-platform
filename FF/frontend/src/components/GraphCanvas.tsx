@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
+import { useMotionTick } from '../state/motion';
 
 const COLOR: Record<string, string> = {
   'feature-center': '#0B5FFF', feature: '#3B82F6', requirement: '#6366F1',
@@ -18,6 +19,7 @@ const RING: Record<string, number> = {
 export default function GraphCanvas({ elements, layout = 'concentric', onNodeClick, onReady, live }:
   { elements: { nodes: any[]; edges: any[] }; layout?: string; onNodeClick?: (id: string) => void; onReady?: (cy: any) => void; live?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
+  const cyRef = useRef<any>(null);
   useEffect(() => {
     if (!ref.current) return;
     // cytoscape 는 없는 노드를 가리키는 간선을 만나면 던진다 — 화면 하나가 제품 전체를 비우지 않도록 간선 무결성을 먼저 보장한다.
@@ -58,13 +60,16 @@ export default function GraphCanvas({ elements, layout = 'concentric', onNodeCli
       layout: layoutOpts,
     });
     if (onNodeClick) cy.on('tap', 'node', (e: any) => onNodeClick(e.target.id()));
+    cyRef.current = cy;
     if (onReady) onReady(cy);
-    // 살아 움직이는 그래프: 미세한 호흡만 준다 — 크게 흔들면 라벨이 흔들려 읽기 어려워진다 (드래그는 기본 활성)
-    let iv: any;
-    if (live) iv = setInterval(() => {
-      cy.nodes().forEach((n: any) => { if (n.grabbed()) return; const p = n.position(); n.position({ x: p.x + (Math.random() - 0.5) * 2.4, y: p.y + (Math.random() - 0.5) * 2.4 }); });
-    }, 1800);
-    return () => { if (iv) clearInterval(iv); cy.destroy(); };
+    return () => { cy.destroy(); };
   }, [elements, layout, live]);
+  // 살아 움직이는 그래프: 미세한 호흡만 준다 — 크게 흔들면 라벨이 흔들려 읽기 어려워진다 (드래그는 기본 활성).
+  // 주기는 공용 모션 커널이 소유한다(창을 가리거나 모션을 멈추면 흔들림도 멈춘다).
+  useMotionTick(1800, () => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    cy.nodes().forEach((n: any) => { if (n.grabbed()) return; const p = n.position(); n.position({ x: p.x + (Math.random() - 0.5) * 2.4, y: p.y + (Math.random() - 0.5) * 2.4 }); });
+  }, !!live);
   return <div className="graph" ref={ref} aria-label="Topology 그래프 (드래그·줌 가능)" role="img" />;
 }

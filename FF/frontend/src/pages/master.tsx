@@ -102,8 +102,8 @@ export function BOMEditor() {
   const save = () => {
     if (!pending.length) { dispatch({ t: 'TOAST', toast: { msg: '변경 없음', kind: 'warn' } }); return; }
     dispatch({ t: 'AUDIT', entry: { ts: '2026-06-05 08:35', actor: state.role, action: 'CHANGESET', target: 'FEAT-BDC-001', detail: `BOM ${pending.length}건 (${pending.map(p => p.type).join(',')})` } });
-    dispatch({ t: 'TOAST', toast: { msg: `ChangeSet 생성 (${pending.length}건) → RULE-R12 Impact 트리거`, kind: 'ok' } });
-    nav('/change/changeset');
+    dispatch({ t: 'TOAST', toast: { msg: `SW EO 변경 (${pending.length}건) → RULE-R12 Impact 트리거`, kind: 'ok' } });
+    nav('/change/eo');
   };
 
   return (

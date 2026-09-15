@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { telemetry } from '../data/model';
-import { useToast, useApp, ROLLOUT_STEPS, POLICY_STAGES } from '../store';
+import { useToast, useApp, useLive, useLiveSlices, ROLLOUT_STEPS, POLICY_STAGES } from '../store';
 import { RightPanel } from '../components/patterns';
 import { AreaChart, GaugeArc, LiveDot, Donut, Bars, Steps, tally, dist } from '../components/charts';
 import TopoLink from '../components/TopoLink';
@@ -10,8 +10,9 @@ import { Breadcrumb } from '../components/Breadcrumb';
 
 export function OTACampaign() {
   const nav = useNavigate();
-  const { state, dispatch } = useApp();
-  const campaigns = state.campaigns;
+  const { dispatch } = useApp();
+  const live = useLive();
+  const { campaigns } = useLiveSlices();
   return (
     <div>
       <Breadcrumb />
@@ -29,7 +30,7 @@ export function OTACampaign() {
           <td>{c.cohort}</td><td><b>{c.rollout}%</b></td><td><span className="pill">{c.status}</span></td>
           <td><button className="btn" disabled={c.rollout >= 100 || c.auto} onClick={() => dispatch({ t: 'CAMPAIGN_ADVANCE', id: c.id })}>{c.rollout >= 100 ? '완료' : `▶ ${ROLLOUT_STEPS[c.step + 1] || 100}%`}</button></td>
           <td><button className={'btn' + (c.auto ? ' primary' : '')} disabled={c.rollout >= 100} onClick={() => dispatch({ t: 'CAMPAIGN_AUTO', id: c.id })}>{c.auto ? '🟢 AUTO' : 'AUTO'}</button></td></tr>))}</tbody></table>
-        <p className="small muted mt">수동: telemetry 가드(실패율 &lt;5%) 통과 시 단계 진행. <b>AUTO</b>: 메트릭 기반 자동 승급(실패율 ≤5%)·자동 롤백(실패율 &gt;8%). 현재 실패율 {state.live.failRate}% (FR-ROL/PDA).</p>
+        <p className="small muted mt">수동: telemetry 가드(실패율 &lt;5%) 통과 시 단계 진행. <b>AUTO</b>: 메트릭 기반 자동 승급(실패율 ≤5%)·자동 롤백(실패율 &gt;8%). 현재 실패율 {live.failRate}% (FR-ROL/PDA).</p>
       </div>
     </div>
   );
@@ -37,8 +38,10 @@ export function OTACampaign() {
 
 export function CampaignDetail() {
   const { id } = useParams();
-  const { state, dispatch } = useApp();
-  const c = state.campaigns.find(x => x.id === id) || state.campaigns[0];
+  const { dispatch } = useApp();
+  const live = useLive();
+  const { campaigns } = useLiveSlices();
+  const c = campaigns.find(x => x.id === id) || campaigns[0];
   if (!c) return <div className="card">캠페인 없음</div>;
   const labels = ROLLOUT_STEPS.map(r => r + '%');
   return (
@@ -49,7 +52,7 @@ export function CampaignDetail() {
         <div className="mt"><Steps steps={labels} current={c.rollout >= 100 ? undefined : c.step} done={c.rollout >= 100} /></div>
         <div className="row mt" style={{ alignItems: 'center' }}>
           <button className="btn primary" disabled={c.rollout >= 100} onClick={() => dispatch({ t: 'CAMPAIGN_ADVANCE', id: c.id })}>{c.rollout >= 100 ? '롤아웃 완료' : `다음 단계 → ${ROLLOUT_STEPS[c.step + 1] || 100}%`}</button>
-          <span className="muted small">실패율(live) {state.live.failRate}% · 가드 임계 5%</span>
+          <span className="muted small">실패율(live) {live.failRate}% · 가드 임계 5%</span>
         </div>
       </div>
       <div className="card"><div className="kv">
@@ -107,7 +110,7 @@ export function PolicyLifecycle() {
 
 export function TelemetryExplorer() {
   const { state, dispatch } = useApp();
-  const live = state.live;
+  const live = useLive();
   const toast = useToast();
   const [sel, setSel] = useState<any>(null);
   const openInc = state.incidents.filter(i => i.status !== 'resolved').length;

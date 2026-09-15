@@ -1,4 +1,4 @@
-/**
+﻿/**
  * §17.5 — "live 라벨이 실제로 움직이는가" 회귀 방지.
  *
  * 이 파일이 고정하는 단일 주장: 차량·폐루프 화면의 **모든 움직임은
@@ -347,7 +347,7 @@ describe('§12.5 Closed-Loop 진행의 live 파생', () => {
 
   it('rate 0 이면 진행률·카운트다운이 전혀 변하지 않는다', () => {
     localStorage.setItem('fp.twin.v1', JSON.stringify({ rate: 0 }));
-    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
 
     const view = renderTwin(<TwinIncident />, { route: '/', initial: '/' });
     fireEvent.click(screen.getByTestId('seed-incident'));
@@ -368,7 +368,7 @@ describe('§12.5 Closed-Loop 진행의 live 파생', () => {
 
   it('시계가 흐르면 12단계 진행률과 카운트다운이 실제로 전진한다', () => {
     localStorage.setItem('fp.twin.v1', JSON.stringify({ rate: 1 }));
-    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
 
     const view = renderTwin(<TwinIncident />, { route: '/', initial: '/' });
     fireEvent.click(screen.getByTestId('seed-incident'));

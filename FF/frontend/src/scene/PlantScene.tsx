@@ -20,6 +20,7 @@ import * as THREE from 'three';
 import type { TwinStoreSnapshot } from '../data/twin/port';
 import type { TwinVerdict } from '../data/twin/engine';
 import { Label, LabelManager, type LabelsMode } from './labels';
+import { useMotion } from '../state/motion';
 import {
   AMR_ROUTES,
   CELLS,
@@ -459,6 +460,9 @@ export function PlantScene({
   const verdicts = snapshot.verdicts ?? [];
   const clock = useRef(0);
   clock.current = snapshot.clock?.simTimeMs ?? 0;
+  // 정지 상태(rate 0 또는 사용자가 모션 정지)에서는 GPU 렌더 루프도 멈춘다 — 화면은 마지막 프레임으로 남는다.
+  const motion = useMotion();
+  const sceneLoop = (snapshot.clock?.rate ?? 1) === 0 || !motion.running ? 'demand' : 'always';
   const cellRows = CELLS.map((c) => ({ id: c.short, status: cellStatus(counts, c) }));
 
   const gridGeometry = useMemo(() => {
@@ -476,6 +480,7 @@ export function PlantScene({
         data-testid="plant-canvas"
         camera={{ position: preset.pos, fov: 45, near: 0.5, far: 460 }}
         dpr={[1, 1.6]}
+        frameloop={sceneLoop}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
         onCreated={() => {
           (globalThis as unknown as Record<string, unknown>).__plantSceneCreated = true;

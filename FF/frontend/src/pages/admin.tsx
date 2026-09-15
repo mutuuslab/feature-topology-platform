@@ -6,7 +6,7 @@ import { screensOfOwner } from '../data/specMenu';
 import { implementedPaths } from '../data/uiLinks';
 import { RightPanel, EmptyState } from '../components/patterns';
 import { Breadcrumb } from '../components/Breadcrumb';
-import { useApp, useAppShell, useToast, roleHome as ROLE_HOME } from '../store';
+import { useApp, useAppShell, useLive, useLiveSlices, useToast, roleHome as ROLE_HOME } from '../store';
 
 /** 데모 기준일 — 만료 임박 판정에 쓴다(시뮬레이터 시계와 별개인 달력 기준). */
 const DEMO_TODAY = '2026-06-05';
@@ -298,6 +298,7 @@ export function Settings() {
 
 export function NotificationsCenter() {
   const { state } = useApp();
+  const { live, syncLogs, pipeline } = useLiveSlices();
   const nav = useNavigate();
   const [filter, setFilter] = useState<'all' | 'alert' | 'task' | 'info'>('all');
   const items = useMemo(() => {
@@ -305,7 +306,7 @@ export function NotificationsCenter() {
     state.incidents.filter(i => i.status !== 'closed').forEach(i => out.push({
       ts: i.id, type: 'alert', text: `${i.feature} ${i.severity} 장애 — ${i.title}`, to: '/ops/incident',
     }));
-    if (state.live.failRate > 5) out.push({ ts: `tick ${state.live.tick}`, type: 'alert', text: `활성화 실패율 ${state.live.failRate}% — 임계 초과`, to: '/ops/telemetry' });
+    if (live.failRate > 5) out.push({ ts: `tick ${live.tick}`, type: 'alert', text: `활성화 실패율 ${live.failRate}% — 임계 초과`, to: '/ops/telemetry' });
     state.security.certs.filter(c => daysUntil(c.expiry) < 180).forEach(c => out.push({
       ts: `${daysUntil(c.expiry)}일 남음`, type: 'alert', text: `${c.name} 만료 ${c.expiry}`, to: '/admin/security',
     }));
@@ -318,13 +319,13 @@ export function NotificationsCenter() {
     state.exceptions.filter(e => e.active).forEach(e => out.push({
       ts: e.expiry, type: 'task', text: `${e.id} 예외 유효 — 만료 전 재심의`, to: '/policy/exception',
     }));
-    state.syncLogs.filter(l => l.status !== 'ok').forEach(l => out.push({
+    syncLogs.filter(l => l.status !== 'ok').forEach(l => out.push({
       ts: l.ts, type: 'info', text: `${l.conn} ${l.event}`, to: '/integration/sync',
     }));
-    const last = state.pipeline.logs[state.pipeline.logs.length - 1];
-    if (last) out.push({ ts: `stage ${state.pipeline.stage + 1}`, type: 'info', text: last, to: '/release/cicd' });
+    const last = pipeline.logs[pipeline.logs.length - 1];
+    if (last) out.push({ ts: `stage ${pipeline.stage + 1}`, type: 'info', text: last, to: '/release/cicd' });
     return out;
-  }, [state]);
+  }, [state, live, syncLogs, pipeline]);
   const shown = filter === 'all' ? items : items.filter(i => i.type === filter);
   const tone = (t: string) => (t === 'alert' ? 'var(--fail)' : t === 'task' ? 'var(--brand)' : '#6B7280');
 

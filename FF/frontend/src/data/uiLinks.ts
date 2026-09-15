@@ -47,8 +47,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
 
   // ── Feature 관리 ──
   UI19: { screenId: 'UI19', intent: 'Feature 제안과 중복 검사', links: [
-    { path: '/cr-wizard', label: 'CR Wizard', en: 'CR Wizard' },
-    { path: '/change/cr', label: 'CR List', en: 'CR List' },
+    { path: '/feature/propose', label: 'Feature 제안', en: 'Feature Proposal' },
   ] },
   UI02: { screenId: 'UI02', intent: 'Feature 정의·정확 버전과 등록(Revision) 흐름', links: [
     { path: '/catalog', label: 'Feature Catalog', en: 'Feature Catalog' },
@@ -59,7 +58,8 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/feature/:id', nav: '/feature/FEAT-BDC-001', label: 'Feature 상세 · 이력', en: 'Feature Detail & History' },
   ] },
   UI28: { screenId: 'UI28', intent: '변경요청과 Revision 비교', links: [
-    { path: '/change/changeset', label: 'ChangeSet', en: 'ChangeSet' },
+    { path: '/change/cr', label: '변경요청 (Revision 비교)', en: 'Change Request & Revision Compare' },
+    { path: '/change/cr/:id', nav: '/change/cr/CR-2026-0101', label: '변경요청 상세', en: 'Change Request Detail' },
     { path: '/change/timeline', label: 'Version Timeline', en: 'Version Timeline' },
   ] },
 
@@ -83,29 +83,25 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/consistency/violation', label: 'Violation Detail', en: 'Violation Detail' },
   ] },
   UI20: { screenId: 'UI20', intent: 'SW ID와 버전 관리', links: [
-    { path: '/master/artifacts', label: 'Artifact Catalog', en: 'Artifact Catalog' },
+    { path: '/master/artifacts', label: 'SW ID · 버전', en: 'SW ID & Version' },
   ] },
   UI21: { screenId: 'UI21', intent: 'UPG와 UPG VC 구성', links: [
-    { path: '/master/artifacts', label: 'SW ID · 버전', en: 'SW ID & Version' },
+    { path: '/master/upg', label: 'UPG · UPG VC', en: 'UPG & UPG VC' },
     { path: '/master/control-points', label: 'Feature 제어점', en: 'Feature ControlPoint' },
   ] },
   UI22: { screenId: 'UI22', intent: 'SW Structure 정의', links: [
-    { path: '/master/artifacts', label: 'SW Structure 산출물', en: 'SW Structure Artifacts' },
-    { path: '/metamodel', label: 'Metamodel Viewer', en: 'Metamodel Viewer' },
+    { path: '/master/structure', label: 'SW Structure', en: 'SW Structure' },
   ] },
   UI23: { screenId: 'UI23', intent: 'SW EO 변경관리', links: [
-    { path: '/change/cr', label: 'CR List', en: 'CR List' },
-    { path: '/change/changeset', label: 'ChangeSet', en: 'ChangeSet' },
+    { path: '/change/eo', label: 'SW EO 변경관리', en: 'SW EO Change Management' },
   ] },
   UI24: { screenId: 'UI24', intent: '제품사양과 HW Variant', links: [
-    { path: '/variants/:id', nav: '/variants/FEAT-BDC-001', label: 'HW Variant 조합', en: 'HW Variant Matrix' },
-    { path: '/master/control-points', label: 'Feature 제어점', en: 'Feature ControlPoint' },
+    { path: '/master/product-spec', label: '제품사양 · HW Variant', en: 'Product Spec & HW Variant' },
   ] },
 
   // ── 상품과 출시 ──
   UI07: { screenId: 'UI07', intent: 'Catalog 상품 구성과 판매 단위', links: [
-    { path: '/catalog', label: 'Catalog · 상품 구성', en: 'Catalog Offer' },
-    { path: '/variants/:id', nav: '/variants/FEAT-BDC-001', label: '상품 Variant 조합', en: 'Offer Variant Matrix' },
+    { path: '/commerce/offer', label: 'Catalog 상품 구성', en: 'Catalog Offer Configuration' },
   ] },
   UI09: { screenId: 'UI09', intent: '상품 사용 권리와 과금 조건', links: [
     { path: '/cost', label: 'SW 개발비 / Cost', en: 'SW Cost' },
@@ -146,11 +142,10 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/decisions/verification', label: 'Verification Scope', en: 'Verification Scope' },
   ] },
   UI30: { screenId: 'UI30', intent: '요구사항과 설계 추적', links: [
-    { path: '/metamodel', label: '요구 · 설계 추적', en: 'Requirement & Design Trace' },
+    { path: '/trace/design', label: '요구 · 설계 추적', en: 'Requirement & Design Trace' },
   ] },
   UI14: { screenId: 'UI14', intent: '감사 추적과 변경 이력 조회', links: [
     { path: '/insights/audit', label: 'Audit Log', en: 'Audit Log' },
-    { path: '/change/timeline', label: '변경 이력 조회', en: 'Change History' },
   ] },
 
   // ── 연계와 운영 기준 ──
@@ -161,8 +156,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/integration/connectors', label: 'Connector Hub', en: 'Connector Hub' },
   ] },
   UI26: { screenId: 'UI26', intent: '연계 작업과 재처리', links: [
-    { path: '/integration/connectors', label: '연계 작업', en: 'Integration Jobs' },
-    { path: '/integration/sync', label: '재처리 · 동기화', en: 'Reprocessing & Sync' },
+    { path: '/integration/jobs', label: '연계 작업 · 재처리', en: 'Integration Jobs & Reprocessing' },
   ] },
   UI17: { screenId: 'UI17', intent: '사용자 범위와 권한·직무 분리', links: [
     { path: '/login', label: 'Login · SSO', en: 'Login · SSO' },
@@ -177,7 +171,6 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/admin/security', label: '보안 운영', en: 'Security Ops' },
     { path: '/policy/exception', label: '예외 정책', en: 'Exception Policy' },
     { path: '/policy/conflict', label: '정책 충돌', en: 'Policy Conflict' },
-    { path: '/ops/telemetry', label: '운영 지표 · Telemetry', en: 'Ops Metrics · Telemetry' },
   ] },
 };
 
@@ -197,8 +190,8 @@ export const ROLE_HOME_IMPL: Record<string, string> = {
   approver: '/admin/approval', // UI06 검토함
   quality: '/verify/evidence', // UI16 품질 기준과 검증 증적
   operator: '/fleet', // UI11 차량 운영 현황
-  steward: '/master/artifacts', // UI21 UPG와 UPG VC
-  commerce: '/catalog', // UI07 상품 구성
+  steward: '/master/upg', // UI21 UPG와 UPG VC
+  commerce: '/commerce/offer', // UI07 Catalog 상품 구성
   integrator: '/integration/connectors', // UI18 외부 시스템 연계
   coordinator: '/decisions/report', // UI25 협의와 개발 이관
   viewer: '/insights/audit', // UI14 감사 추적

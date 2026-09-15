@@ -117,9 +117,13 @@ const DEFS: PlaneDef[] = [
           '/master/bom/items',
           '/master/artifacts',
           '/master/control-points',
+          '/master/upg',
+          '/master/structure',
+          '/master/product-spec',
           '/feature/FEAT-BDC-001',
+          '/feature/propose',
           '/variants/FEAT-BDC-001',
-          '/metamodel',
+          '/trace/design',
         ],
       },
       {
@@ -128,8 +132,8 @@ const DEFS: PlaneDef[] = [
         routes: [
           '/lifecycle',
           '/change/cr',
-          '/cr-wizard',
-          '/change/changeset',
+          '/change/cr/CR-2026-0101',
+          '/change/eo',
           '/change/baseline',
           '/change/timeline',
         ],
@@ -203,12 +207,12 @@ const DEFS: PlaneDef[] = [
       {
         ko: '연계 · 과금',
         en: 'Integration & Billing',
-        routes: ['/integration/connectors', '/integration/sync', '/commerce/billing'],
+        routes: ['/integration/connectors', '/integration/sync', '/integration/jobs', '/commerce/billing'],
       },
       {
         ko: '분석 · 감사',
         en: 'Insights & Audit',
-        routes: ['/insights/audit', '/insights/business', '/cost', '/admin/notifications'],
+        routes: ['/insights/audit', '/insights/business', '/cost', '/admin/notifications', '/commerce/offer'],
       },
       {
         ko: '관리자 · 보안',

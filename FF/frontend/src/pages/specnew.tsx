@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast, useApp, PIPELINE_STAGES } from '../store';
+import { useToast, useApp, useLiveSlices, PIPELINE_STAGES } from '../store';
 import { costSummary, fmtWon, readiness } from '../data/engine';
 import { fleetStats } from '../data/fleet';
 import { AreaChart, Donut, Bars, RadialProgress, Steps, Timeline, CountUp, LiveDot, tally, dist } from '../components/charts';
@@ -104,8 +104,8 @@ function ComplianceWidget() {
 // ── 시나리오 검증 (store 연동 · 단계 시뮬) ──
 const SCN_STEPS = ['초기화', '차종 조합', '권한 평가', '활성화 흐름', '결과 집계'];
 function ScenarioWidget() {
-  const { state, dispatch } = useApp();
-  const scs = state.scenarios;
+  const { dispatch } = useApp();
+  const { scenarios: scs } = useLiveSlices();
   const agg = scs.reduce((a, s) => ({ pass: a.pass + s.pass, fail: a.fail + s.fail }), { pass: 0, fail: 0 });
   const done = scs.filter(s => s.status === 'done').length;
   return (
@@ -131,9 +131,9 @@ function ScenarioWidget() {
 
 // ── CI/CD 파이프라인 (store 연동 · Quality Gate=9-Gate 가드) ──
 function CICDWidget() {
-  const { state, dispatch } = useApp();
+  const { dispatch } = useApp();
   const nav = useNavigate();
-  const p = state.pipeline;
+  const p = useLiveSlices().pipeline;
   const r = readiness('FEAT-BDC-001');
   return (
     <div>
@@ -157,9 +157,9 @@ function CICDWidget() {
 
 // ── 과금 (store 연동 · 사용량 실시간 정산) ──
 function BillingWidget() {
-  const { state, dispatch } = useApp();
+  const { dispatch } = useApp();
   const nav = useNavigate();
-  const subs = state.subscriptions;
+  const subs = useLiveSlices().subscriptions;
   const total = subs.reduce((a, s) => a + s.revenueWon, 0);
   return (
     <div>

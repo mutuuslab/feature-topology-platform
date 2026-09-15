@@ -1,12 +1,19 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type Dispatch, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type Dispatch, type ReactNode } from 'react';
 import * as M from './data/model';
 import { permMatrix, roles, policies as SEED_POL, policyStages as POL_STAGES, campaigns as SEED_CMP, incidents as SEED_INC, connectors as SEED_CONN, syncLogs as SEED_SYNC } from './data/refdata';
 import { setDB, readiness, relationsOf, edgesOf } from './data/engine';
 import { sameRevision, type RevisionRecord } from './data/revision';
 import { BOM_BASELINES, type BomBaseline } from './data/featureBom';
+import { SEED_PROPOSALS, proposalGate, type HandoffAck, type Proposal, type ProposalState } from './data/proposal';
+import { crGate, crStageOf, type CrStage } from './data/changeRequest';
+import { useMotionTick } from './state/motion';
 
 // ── 상태 ──────────────────────────────────────────────
-export interface CR { id: string; feature: string; type: string; status: string; owner: string; risk: string; }
+// 변경요청 — 정본 UI28 단계는 data/changeRequest.ts 가 정의하고, 여기서는 그 단계를 문자열로 보관한다.
+export interface CR {
+  id: string; feature: string; type: string; status: string; owner: string; risk: string;
+  reason?: string; baselineRev?: string; newRev?: string; impact?: string; evidence?: string[]; appliedBaseline?: string; due?: string;
+}
 export interface AuditEntry { ts: string; actor: string; action: string; target: string; detail: string; }
 export interface ActState { enabled: boolean; rollout: number; killed: boolean }   // 차종(모델)별 활성화
 export interface Experiment { id: string; feature: string; variant: string; metric: string; status: 'Draft' | 'Running' | 'Stopped'; uplift: number }
@@ -57,6 +64,7 @@ export interface AppState {
   edges: M.Edge[];
   relations: M.Relation[];
   crs: CR[];
+  proposals: Proposal[];                 // Feature 제안 레지스트리 (기준 C01 / UI19) — 아직 Feature 가 아닌 상류 후보
   revisions: RevisionRecord[];           // Feature 등록 Revision 레지스트리 (기준 C01 / UI02-S07 이력)
   bomBaselines: BomBaseline[];           // Feature BOM 기준선 레지스트리 (기준 C03 / UI04)
   runtime: Record<string, string>;        // featureId → runtime state
@@ -93,10 +101,16 @@ const initialLive: LiveData = {
   ],
 };
 
+// 변경요청 시드 — 정본 6단계(초안·영향 평가·검토·승인·반영·종료) 중 서로 다른 단계에 둔다.
 const SEED_CRS: CR[] = [
-  { id:'CR-2026-0142', feature:'FEAT-BDC-001', type:'Targeting Rule 변경', status:'Reviewed', owner:'박민준', risk:'Low' },
-  { id:'CR-2026-0138', feature:'FEAT-CONN-001', type:'Variant 추가', status:'Analyzed', owner:'정하늘', risk:'Med' },
-  { id:'CR-2026-0131', feature:'FEAT-ADAS-001', type:'SWC 변경', status:'Approved', owner:'이서연', risk:'High' },
+  { id:'CR-2026-0142', feature:'FEAT-BDC-001', type:'Targeting Rule 변경', status:'IN_REVIEW', owner:'박민준', risk:'Low',
+    reason:'KR Premium cohort 대상 조건이 마케팅 정의와 어긋나 재정의가 필요하다.', baselineRev:'v1.0', newRev:'v1.1',
+    impact:'Targeting Rule 1건 · 영향 VIN 142,300', evidence:['EVD-2026-0412'], due:'2026-09-30' },
+  { id:'CR-2026-0138', feature:'FEAT-CONN-001', type:'Variant 추가', status:'ASSESSED', owner:'정하늘', risk:'Med',
+    reason:'EU Gen2 차종 적용을 위한 Variant 조합이 누락되어 있다.', impact:'Variant 조건행 4건 추가 · EU 38,200대', due:'2026-10-10' },
+  { id:'CR-2026-0131', feature:'FEAT-ADAS-001', type:'SWC 변경', status:'APPROVED', owner:'이서연', risk:'High',
+    reason:'AEB 목표물 분류 확장에 따른 SWC 재배포가 필요하다.', baselineRev:'v1.0', newRev:'v1.1',
+    impact:'SWC 2건 · ASIL-D 안전 요구 3건 재추적', evidence:['EVD-2026-0388','EVD-2026-0390'], appliedBaseline:'BOM-BDC-2026.09@1.1', due:'2026-10-20' },
 ];
 
 const SEED_ACT: Record<string, ActState> = {
@@ -132,7 +146,7 @@ const SEED_SEC: SecurityState = {
 
 export const initial: AppState = {
   features: M.features, edges: M.edges, relations: M.relations,
-  crs: SEED_CRS, revisions: [], bomBaselines: BOM_BASELINES, runtime: { 'FEAT-BDC-001': 'enabled' }, audit: [],
+  crs: SEED_CRS, proposals: SEED_PROPOSALS, revisions: [], bomBaselines: BOM_BASELINES, runtime: { 'FEAT-BDC-001': 'enabled' }, audit: [],
   role: 'author', theme: 'light', lang: 'ko', live: initialLive,
   activation: SEED_ACT, experiments: SEED_EXP, exceptions: SEED_EXC,
   compliance: [], scenarios: [
@@ -181,6 +195,12 @@ type Action =
   | { t: 'SET_ACTIVATION'; key: string; patch: Partial<ActState>; actor?: string }
   | { t: 'SET_LIFECYCLE'; feature: string; to: M.Lifecycle; actor: string }
   | { t: 'SET_CR_STATUS'; id: string; status: string }
+  | { t: 'CR_SAVE'; cr: CR }
+  | { t: 'ADD_PROPOSAL'; p: Proposal }
+  | { t: 'PROPOSAL_PATCH'; id: string; patch: Partial<Proposal> }
+  | { t: 'PROPOSAL_STAGE'; id: string; to: ProposalState; note: string; actor: string }
+  | { t: 'PROPOSAL_HANDOFF'; id: string; ack: HandoffAck; actor: string }
+  | { t: 'PROPOSAL_CONVERT'; id: string; featureId: string; reason: string; actor: string }
   | { t: 'ADD_EXPERIMENT'; exp: Experiment }
   | { t: 'EXP_STATUS'; id: string; status: 'Draft' | 'Running' | 'Stopped' }
   | { t: 'ADD_EXCEPTION'; exc: Exception }
@@ -277,6 +297,60 @@ export function reducer(s: AppState, a: Action): AppState {
         toast: { msg: `${a.feature} → ${a.to}`, kind: 'ok' } };
     case 'SET_CR_STATUS':
       return { ...s, crs: s.crs.map(c => c.id === a.id ? { ...c, status: a.status } : c), toast: { msg: `${a.id} → ${a.status}`, kind: 'ok' } };
+    case 'CR_SAVE': {
+      const same = (c: CR) => c.id === a.cr.id;
+      return {
+        ...s,
+        crs: s.crs.some(same) ? s.crs.map(c => (same(c) ? a.cr : c)) : [a.cr, ...s.crs],
+        audit: [{ ts: nowish(), actor: s.role, action: 'CR_SAVE', target: a.cr.id, detail: `${a.cr.feature} · ${a.cr.status}` }, ...s.audit],
+        toast: { msg: `${a.cr.id} 저장 — ${a.cr.status}`, kind: 'ok' },
+      };
+    }
+    case 'ADD_PROPOSAL':
+      return { ...s, proposals: [a.p, ...s.proposals],
+        audit: [{ ts: nowish(), actor: s.role, action: 'PROPOSAL_CREATE', target: a.p.id, detail: `${a.p.kind} · ${a.p.form}` }, ...s.audit],
+        toast: { msg: `${a.p.id} 초안 생성 (DRAFT)`, kind: 'ok' } };
+    case 'PROPOSAL_PATCH':
+      return { ...s, proposals: s.proposals.map(p => p.id === a.id ? { ...p, ...a.patch } : p) };
+    case 'PROPOSAL_STAGE': {
+      const p = s.proposals.find(x => x.id === a.id);
+      if (!p) return s;
+      // 전이 가드는 리듀서에서 한 번 더 검사한다 — 화면은 사유만 보여주고 판정은 서버(여기)가 한다.
+      const g = proposalGate(p, a.to);
+      if (!g.ok) return { ...s, toast: { msg: `${a.id} 전이 거부 — ${g.reasons[0]}`, kind: 'warn' } };
+      const next: Proposal = {
+        ...p, stage: a.to,
+        history: [{ ts: nowish(), actor: a.actor, from: p.stage, to: a.to, note: a.note }, ...p.history],
+      };
+      return { ...s, proposals: s.proposals.map(x => x.id === a.id ? next : x),
+        audit: [{ ts: nowish(), actor: a.actor, action: 'PROPOSAL_STAGE', target: a.id, detail: `${p.stage} → ${a.to}` }, ...s.audit],
+        toast: { msg: `${a.id} → ${a.to}`, kind: 'ok' } };
+    }
+    case 'PROPOSAL_HANDOFF':
+      return { ...s, proposals: s.proposals.map(p => p.id === a.id ? { ...p, handoff: a.ack } : p),
+        audit: [{ ts: nowish(), actor: a.actor, action: 'PROPOSAL_HANDOFF', target: a.id, detail: `${a.ack.state} · ${a.ack.correlationId}` }, ...s.audit],
+        toast: { msg: a.ack.state === 'ACKED' ? `${a.id} 접수 확인 (ACK)` : `${a.id} 이관 요청 ${a.ack.correlationId}`, kind: a.ack.state === 'ACKED' ? 'ok' : 'warn' } };
+    case 'PROPOSAL_CONVERT': {
+      const p = s.proposals.find(x => x.id === a.id);
+      if (!p) return s;
+      // 전환은 **Feature 발급 + 정본 등록 이관**이다. 여기서 Feature 를 만들지 않는다 —
+      // Feature 를 만드는 곳은 UI02 등록(7기준 심사 + R0 필수 + Revision 기록) 하나뿐이므로,
+      // 제안 화면이 목록에 없는 Feature 를 만들면 정본과 리비전 추적이 어긋난다.
+      const requested: HandoffAck = {
+        correlationId: p.handoff?.correlationId || `corr-${a.id.slice(-4)}`,
+        commandId: p.handoff?.commandId || `cmd-${a.id.slice(-4)}`,
+        requestedAt: p.handoff?.requestedAt || nowish(), state: 'ACKED', ackAt: nowish(),
+        receiver: p.org, note: 'UI02 정본 등록으로 이관',
+      };
+      const converted: Proposal = {
+        ...p, stage: 'HANDOFF', route: 'FEATURE', featureId: a.featureId, decisionReason: a.reason, handoff: requested,
+        history: [{ ts: nowish(), actor: a.actor, from: p.stage, to: 'HANDOFF', note: `Feature ID ${a.featureId} 발급 — UI02 정본 등록으로 이관` }, ...p.history],
+      };
+      return { ...s,
+        proposals: s.proposals.map(x => x.id === a.id ? converted : x),
+        audit: [{ ts: nowish(), actor: a.actor, action: 'PROPOSAL_CONVERT', target: a.id, detail: `${a.featureId} 발급 · UI02 등록 이관(Feature 미생성)` }, ...s.audit],
+        toast: { msg: `${a.id} → ${a.featureId} 발급 · UI02 등록으로 이관 (착수 승인 아님)`, kind: 'ok' } };
+    }
     case 'ADD_EXPERIMENT': return { ...s, experiments: [a.exp, ...s.experiments], toast: { msg: `${a.exp.id} 실험 생성`, kind: 'ok' } };
     case 'EXP_STATUS': return { ...s, experiments: s.experiments.map(e => e.id === a.id ? { ...e, status: a.status } : e), toast: { msg: `실험 ${a.id} → ${a.status}`, kind: 'ok' } };
     case 'ADD_EXCEPTION': return { ...s, exceptions: [a.exc, ...s.exceptions], toast: { msg: `${a.exc.id} 예외정책 승인`, kind: 'ok' } };
@@ -417,8 +491,41 @@ const AppShellCtx = createContext<ShellCtx>({
   theme: initial.theme,
 });
 
+// ── 실시간 슬라이스 분리 ──────────────────────────────────────────────
+// 라이브 화면 몇 개만 2초마다 다시 그리면 되는데, 예전에는 AppCtx 값이 매 틱 새로 만들어져
+// **모든** 화면이 2초마다 리렌더됐다(목록이 길수록 프레임이 밀린다).
+// LIVE_TICK 이 매번 다시 쓰는 슬라이스를 별도 컨텍스트로 빼고, 구독자가 있을 때만 틱을 돌린다.
+/** LIVE_TICK 이 갱신하는 슬라이스 목록 — 이 키들은 AppCtx 정체성 비교에서 제외된다. */
+const LIVE_TICK_SLICES = ['live', 'scenarios', 'pipeline', 'subscriptions', 'syncLogs', 'campaigns'] as const;
+
+/** LIVE_TICK 이 다시 쓰는 슬라이스 묶음. useLiveSlices() 로만 최신값을 구독한다. */
+export interface LiveSlices {
+  live: LiveData;
+  scenarios: Scenario[];
+  pipeline: PipelineState;
+  subscriptions: Subscription[];
+  syncLogs: SyncLog[];
+  campaigns: Campaign[];
+}
+
+const LiveSlicesCtx = createContext<LiveSlices>(null as unknown as LiveSlices);
+/** 실시간 구독자 수 — 0이면 틱 자체를 만들지 않는다(빈 루프 0). */
+const LiveDemandCtx = createContext<{ use: () => () => void }>({ use: () => () => {} });
+
+/** LIVE_TICK 슬라이스를 제외한 모든 슬라이스가 그대로인가 — 참조 비교. 키를 손으로 나열하지 않아 슬라이스가 늘어도 안전하다. */
+function sameExceptTick(a: AppState, b: AppState): boolean {
+  const keys = Object.keys(a) as (keyof AppState)[];
+  if (keys.length !== Object.keys(b).length) return false;
+  for (const k of keys) {
+    if ((LIVE_TICK_SLICES as readonly string[]).includes(k)) continue;
+    if (!Object.is(a[k], b[k])) return false;
+  }
+  return true;
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, load);
+  const [liveDemand, setLiveDemand] = useState(0);
 
   // 엔진 DB 동기화 + 영속 + 테마/언어 DOM 반영 (live·toast 제외 영속)
   useEffect(() => {
@@ -427,13 +534,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem('fp.state.v2', JSON.stringify(persist)); } catch {}
     document.documentElement.setAttribute('data-theme', state.theme);
     document.documentElement.lang = state.lang;
-  }, [state.features, state.edges, state.relations, state.crs, state.revisions, state.bomBaselines, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors, state.supplierAcceptance, state.homeWidgets, state.navMode]);
+  }, [state.features, state.edges, state.relations, state.crs, state.proposals, state.revisions, state.bomBaselines, state.runtime, state.audit, state.role, state.theme, state.lang, state.activation, state.experiments, state.exceptions, state.compliance, state.security, state.policies, state.campaigns, state.incidents, state.connectors, state.supplierAcceptance, state.homeWidgets, state.navMode]);
 
-  // 실시간 시뮬레이션 틱 (2초)
-  useEffect(() => {
-    const id = setInterval(() => dispatch({ t: 'LIVE_TICK' }), 2000);
-    return () => clearInterval(id);
-  }, []);
+  // 실시간 시뮬레이션 틱 — 공용 모션 커널이 주기를 소유한다(창 숨김·모션 정지 시 자동 중단).
+  // 구독자가 없으면 틱도 돌리지 않는다.
+  useMotionTick(2000, () => dispatch({ t: 'LIVE_TICK' }), liveDemand > 0);
 
   const can = useCallback((verb: string) => (permMatrix[state.role] || []).includes(verb), [state.role]);
   const api = useMemo<ApiCtx>(() => ({ dispatch, can }), [can]);
@@ -441,10 +546,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     () => ({ role: state.role, navMode: (state.navMode || 'function') as 'function' | 'dept' | 'plane', lang: state.lang, theme: state.theme }),
     [state.role, state.navMode, state.lang, state.theme],
   );
+  // 실시간 슬라이스만 바뀐 렌더에서는 이전 상태 객체를 그대로 쓴다 → AppCtx 값 정체성이 유지되어
+  // 실시간 화면이 아닌 화면들은 틱마다 리렌더되지 않는다.
+  const stableRef = useRef(state);
+  if (!sameExceptTick(stableRef.current, state)) stableRef.current = state;
+  const appValue = useMemo<Ctx>(() => ({ state: stableRef.current, dispatch, can }), [stableRef.current, dispatch, can]);
+
+  const slices = useMemo<LiveSlices>(() => ({
+    live: state.live, scenarios: state.scenarios, pipeline: state.pipeline,
+    subscriptions: state.subscriptions, syncLogs: state.syncLogs, campaigns: state.campaigns,
+  }), [state.live, state.scenarios, state.pipeline, state.subscriptions, state.syncLogs, state.campaigns]);
+
+  const demand = useMemo(() => ({
+    use: () => { setLiveDemand(n => n + 1); return () => setLiveDemand(n => n - 1); },
+  }), []);
+
   return (
     <AppApiCtx.Provider value={api}>
       <AppShellCtx.Provider value={shell}>
-        <AppCtx.Provider value={{ state, dispatch, can }}>{children}</AppCtx.Provider>
+        <LiveDemandCtx.Provider value={demand}>
+          <LiveSlicesCtx.Provider value={slices}>
+            <AppCtx.Provider value={appValue}>{children}</AppCtx.Provider>
+          </LiveSlicesCtx.Provider>
+        </LiveDemandCtx.Provider>
       </AppShellCtx.Provider>
     </AppApiCtx.Provider>
   );
@@ -457,6 +581,23 @@ export const useAppApi = () => useContext(AppApiCtx);
 
 /** 언어·테마·역할·네비 모드 전용 — 실시간 슬라이스와 분리된 구독. */
 export const useAppShell = () => useContext(AppShellCtx);
+
+/**
+ * 실시간 슬라이스 전용 구독 — 이 훅을 쓰는 화면만 2초 틱을 받는다.
+ * 구독자가 있는 동안에만 LIVE_TICK 이 돌아가므로, 안 쓰는 화면에서는 시뮬레이션 자체가 멈춘다.
+ */
+export function useLiveSlices(): LiveSlices {
+  const slices = useContext(LiveSlicesCtx);
+  const demand = useContext(LiveDemandCtx);
+  const register = demand.use;
+  useEffect(() => register(), [register]);
+  return slices;
+}
+
+/** 실시간 지표만 필요할 때의 축약형. */
+export function useLive(): LiveData {
+  return useLiveSlices().live;
+}
 
 // 간편 토스트 — 비동작 버튼에 피드백 부여
 export const useToast = () => {

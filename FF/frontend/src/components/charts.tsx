@@ -1,9 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { animate } from '../state/motion';
 
 // ── 카운트업 ──
 // 애니메이션 값은 React state 가 아니라 DOM 텍스트로 직접 쓴다.
 // 프레임마다 setState 하면 KPI 카드 수십 개가 매 프레임 커밋되어
 // 시뮬레이션 틱과 겹칠 때 메인스레드를 잠근다.
+// 또한 rAF 를 인스턴스마다 만들지 않고 공용 모션 커널에 묶는다 —
+// 카드 수십 개가 동시에 갱신되어도 콜백 루프는 하나다.
 const easeOutCubic = (p: number) => 1 - Math.pow(1 - p, 3);
 
 function fmtCount(v: number, decimals: number) {
@@ -39,16 +42,11 @@ export function CountUp({
     const from = shown.current;
     const write = (v: number) => { if (el) el.textContent = `${prefix}${fmtCount(v, decimals)}${suffix}`; };
     if (!el || from === value) { shown.current = value; write(value); return; }
-    const start = performance.now();
-    let raf = requestAnimationFrame(function step(t) {
-      const p = Math.min(1, (t - start) / dur);
+    return animate(dur, p => {
       const cur = from + (value - from) * easeOutCubic(p);
       shown.current = cur;
       write(cur);
-      if (p < 1) raf = requestAnimationFrame(step);
-      else { shown.current = value; write(value); }
-    });
-    return () => cancelAnimationFrame(raf);
+    }, () => { shown.current = value; write(value); });
   }, [value, decimals, prefix, suffix, dur]);
 
   // 자식은 React 가 관리하지 않는다 — 위 effect 가 textContent 를 소유한다.

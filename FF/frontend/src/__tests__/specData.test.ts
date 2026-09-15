@@ -189,7 +189,10 @@ describe('기준 화면 ↔ 구현 화면 연결표', () => {
     expect(screenOfRoute('/twin/vehicle/VIN-DEMO-017')).toBe('UI12');
     expect(screenOfRoute('/master/define')).toBe('UI02');
     expect(screenOfRoute('/change/timeline')).toBe('UI28');   // UI28 변경요청과 Revision 비교
-    expect(screenOfRoute('/change/cr/CR-001')).toBe('UI19');  // 동적 하위 경로도 기준 화면을 되찾는다
+    expect(screenOfRoute('/change/cr/CR-001')).toBe('UI28');  // 동적 하위 경로도 기준 화면을 되찾는다
+    expect(screenOfRoute('/feature/propose')).toBe('UI19');   // Feature 제안은 변경요청 화면을 소유하지 않는다
+    expect(screenOfRoute('/change/eo')).toBe('UI23');
+    expect(screenOfRoute('/trace/design')).toBe('UI30');
   });
 
   it('연결한 구현 화면 경로가 실제 라우트로 존재한다', () => {

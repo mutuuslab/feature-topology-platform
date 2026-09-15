@@ -21,6 +21,7 @@ import type { RolloutState, TwinStoreSnapshot } from '../data/twin/port';
 import * as T from '../data/twin/types';
 import * as E from '../data/twin/engine';
 import { useAppApi, useAppShell } from '../store';
+import { useMotionTick } from './motion';
 
 /** 결정적 데모 기준 시각 — 시드 Fleet 의 상대 시각이 모두 여기서 파생된다. */
 export const TWIN_NOW_MS = Date.parse('2026-09-13T10:00:00Z');
@@ -125,13 +126,10 @@ export function TwinProvider({ children }: { children: ReactNode }) {
     E.runSimulation(persisted.simInputs ?? E.DEFAULT_SIM_INPUTS, TWIN_NOW_MS),
   );
 
-  // 실시간 시뮬레이션 — rate 0 이면 정지 (Step 버튼은 수동 진행)
-  useEffect(() => {
-    provider.setRate(rate);
-    if (rate === 0) return;
-    const id = setInterval(() => provider.tick(1000), 1000);
-    return () => clearInterval(id);
-  }, [provider, rate]);
+  // 실시간 시뮬레이션 — rate 0 이면 정지 (Step 버튼은 수동 진행).
+  // 주기는 공용 모션 커널이 소유한다: 창을 가리거나 모션을 멈추면 시뮬레이션도 멈춘다.
+  useEffect(() => { provider.setRate(rate); }, [provider, rate]);
+  useMotionTick(1000, () => provider.tick(1000), rate !== 0);
 
   useEffect(() => {
     try {

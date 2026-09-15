@@ -47,6 +47,7 @@ import {
   FlowEdgeView,
 } from './vehicleGeometry';
 import CarModel, { JOINTS_CLOSED, type ArticulationKey, type JointState } from './CarModel';
+import { useMotion } from '../state/motion';
 import { ARTICULATIONS, CAR_CONCEPT, CAR_CONCEPT_SURVEY, CAR_CONCEPT_SPEC_LINE, STUDIO_HDRI } from './vehicleAsset';
 import { LabelManager } from './labels';
 import './vehicleTwin.css';
@@ -572,6 +573,9 @@ export default function VehicleTwinScene({
   clockNode.current.rate = clock.rate;
 
   const paused = clock.rate === 0;
+  // 정지 상태(rate 0 또는 사용자가 모션 정지)에서는 GPU 렌더 루프도 멈춘다 — 화면은 마지막 프레임으로 남는다.
+  const motion = useMotion();
+  const sceneLoop = paused || !motion.running ? 'demand' : 'always';
 
   if (!webgl) {
     return (
@@ -594,6 +598,7 @@ export default function VehicleTwinScene({
             data-testid="veh-canvas"
             dpr={[1, 2]}
             shadows
+            frameloop={sceneLoop}
             camera={{ position: CAMERA_PRESETS[activePreset].pos, fov: 42 }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
             onCreated={({ gl }) => {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useApp } from '../store';
+import { useApp, useLiveSlices } from '../store';
 import { RightPanel } from '../components/patterns';
 import { Donut, Timeline, LiveDot, tally, dist } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
@@ -59,7 +59,7 @@ export function ConnectorDetail() {
 }
 
 export function SyncLogs() {
-  const syncLogs = useApp().state.syncLogs;
+  const { syncLogs } = useLiveSlices();
   const [sel, setSel] = useState<any>(null);
   return (
     <div>

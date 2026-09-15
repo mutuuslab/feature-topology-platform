@@ -38,6 +38,9 @@ npm run dev          # http://localhost:9001   (포트 8000 금지)
 제품 셸에는 **실제 구현된 화면만** 올린다. 요구사양 문서(기준 화면 정의서 `/ui/UIxx`, 기준 아키텍처 `/arch`,
 개정 이력 `/spec/changelog`, 용어집 `/spec/glossary`)는 제품 화면·메뉴·참조 링크 어디에도 없다 —
 정의서와 상세설계는 저장소 밖 기준 패키지에서 관리한다.
+문서 원문을 추출해 두었던 정적 자산(`public/spec`: 화면 JSON 30 · 설계 SVG 200+ · `fields.json`)도
+**저장소와 배포본에서 삭제**했다. 정적 파일 경로(`/spec/data/**` · `/spec/screens/**` · `/spec/arch/**`)로도
+열리지 않는다. (`/spec/experiment` 등 `/spec` 아래 남은 경로는 문서가 아니라 **구현된 제품 화면**이다.)
 - 1차(기능별) = 기준 7 업무 그룹, 부서별 = 기준 9 역할이 소유한 구현 화면, Plane별 = 구현된 4 Plane.
 - 이전 데모의 **604 FR / 47 family "기능명세서"**(Overview·FR Explorer·Coverage, `src/data/spec.json`)도 같은 이유로 제거했다.
 

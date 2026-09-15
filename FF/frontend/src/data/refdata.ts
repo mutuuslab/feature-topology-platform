@@ -108,14 +108,6 @@ export const policies = [
 ];
 export const policyStages = ['Draft','Review','Approved','Deployed','Monitored'];
 
-export const metamodel = {
-  master: ['TaxonomyNode','FeatureBOM','BOMItem','Requirement','Feature'],
-  'arch-if': ['SWComponent','ECU','APIService','Signal','DTC'],
-  'control-deploy': ['VariantRule','ControlPoint','DeploymentUnit','RollbackPlan'],
-  'verify-ops': ['TestCase','TestEvidence','SupplierFunction','TelemetryEvent'],
-};
-export const relationshipsList = ['derives','implemented_by','uses_api','applies_to','controlled_by','deployed_as','verified_by','realized_by','emits_event'];
-
 export const taxonomyTree = [
   { level:'L0', name:'Body Comfort', note:'Domain / Capability' },
   { level:'L1', name:'Remote Door Lock', note:'Customer / Business Feature' },

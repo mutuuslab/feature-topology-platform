@@ -2,7 +2,7 @@
  * UI05 Topology 와 변경 영향 — 동작 메커니즘 화면 전용 스타일.
  *
  * Only `.tpa-*` classes live here. 색은 `src/styles.css` 의 테마 토큰만 쓴다
- * (--brand/--ink/--muted/--line/--surface*/--pass/--pending/--fail/--info) — 라이트/다크가
+ * (--brand/--ink/--muted/--line/--surface/--pass/--pending/--fail/--info) — 라이트/다크가
  * 자동으로 따라온다.
  *
  * 모션 규칙: 상단 엔진 파이프라인과 하단 Twin 런타임은 **같은 시뮬레이터 클럭**을 쓴다.

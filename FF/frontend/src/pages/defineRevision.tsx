@@ -10,15 +10,13 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bars, Donut, RadialProgress, Steps, tally } from '../components/charts';
-import { EmptyState } from '../components/patterns';
-import { SpecAreaFacts } from '../components/SpecAreaFacts';
-import { RegistrationReviewPanel } from '../components/registrationReview';
-import { SPEC_C01_SECTIONS, SPEC_CLOSURE } from '../data/specArch';
-import { SPEC_FRI_SCOPE, SPEC_P0_BASELINE, SPEC_REGISTRY_CONTRACT, SPEC_RULES } from '../data/specNav';
+import { EmptyState } from '../components/patterns';import { RegistrationReviewPanel } from '../components/registrationReview';
+import { SPEC_C01_SECTIONS } from '../data/specArch';
+import { SPEC_FRI_SCOPE, SPEC_REGISTRY_CONTRACT, SPEC_RULES } from '../data/specNav';
 import { SPEC_FRI_GROUP_TOTAL } from '../data/specFri';
 import {
   SPEC_REG_APPROVAL, SPEC_REG_AREA_ATTRS, SPEC_REG_AREA_ATTR_COUNTS, SPEC_REG_AREAS, SPEC_REG_ATTRS,
-  SPEC_REG_R0_REQUIRED, SPEC_REG_SCREEN,
+  SPEC_REG_R0_REQUIRED,
 } from '../data/specRegistration';
 import {
   ARTIFACT_RECORDS, CONTROL_POINTS, FLAG_BINDINGS, IMPLEMENTATION_BOMS, RUNTIME_BINDINGS, VIOLATIONS,
@@ -36,6 +34,10 @@ import { roleLabel, roleKeyOf } from '../data/refdata';
 const ATTRS = SPEC_REG_ATTRS as Record<string, SpecRegAttr>;
 const AREA_IDS = SPEC_REG_AREAS.map(a => a.id);
 const ATTR_TOTAL = Object.keys(ATTRS).length;
+/** 영역별 Task 수 합계 — 화면이 실제로 수행하는 작업 목록 기준. */
+const TASK_TOTAL = SPEC_REG_AREAS.reduce((n, a) => n + a.tasks.length, 0);
+/** 리비전 레지스트리 표 머리글 — 아래 행이 실제로 렌더하는 값과 1:1로 맞춘다. */
+const REVISION_COLUMNS = ['Feature ID', '이름', '버전', 'scope', '상태', '담당자', '수정 시각'];
 const attrOf = (id: string) => ATTRS[id];
 const areaOf = (id: string) => SPEC_REG_AREAS.find(a => a.id === id)!;
 const rowIdsOf = (areaId: string) => SPEC_REG_AREA_ATTRS[areaId] ?? [];
@@ -328,10 +330,10 @@ export function DefineRevision() {
     if (detailTab === 2) return (
       <div>
         <div className="kv">
-          <div>소유 영역</div><div><Link to={`/ui/UI02/${areaId}`}>{areaId}</Link> {area.name}</div>
+          <div>소유 영역</div><div><span className="mono">{areaId}</span> {area.name}</div>
           <div>연결 영역</div><div className="small">{a.areas.join(' · ')}</div>
           <div>다른 화면 사용처</div><div className="small">{a.otherAreas.length ? a.otherAreas.map(o => (
-            <Link key={o} to={`/ui/${o.split('-')[0]}/${o}`} className="pill" style={{ marginRight: 4 }}>{o}</Link>
+            <span key={o} className="pill" style={{ marginRight: 4 }}>{o}</span>
           )) : <span className="muted">단일 화면 속성</span>}</div>
           <div>작업</div><div className="small">{a.actionIds.length ? a.actionIds.map(x => <span key={x} className="pill" style={{ marginRight: 4 }}>{x}</span>) : '—'}</div>
           <div>Topology 정의서</div><div className="mono small">{a.topo || '—'}</div>
@@ -389,13 +391,12 @@ export function DefineRevision() {
   return (
     <div>
       <div className="breadcrumb">기준정보 ▸ Feature 등록</div>
-      <h1 className="page-title">Feature 등록 — {SPEC_REG_SCREEN.id} {SPEC_REG_SCREEN.name}</h1>
+      <h1 className="page-title">Feature 등록</h1>
       <p className="page-sub">
-        {SPEC_REG_SCREEN.group} 그룹 · 담당 역할 {roleLabel('author')} · 상세 영역 {SPEC_REG_SCREEN.counts.areas}개 · 작업 {SPEC_REG_SCREEN.counts.tasks}개 ·
-        액션 {SPEC_REG_SCREEN.counts.actions}개 · 상태 필드 <span className="mono">{STATE_FIELD}</span> · 등록 기준선 {SPEC_P0_BASELINE} · 규칙 C01-R01~R19
+        담당 역할 {roleLabel('author')} · 상세 영역 {SPEC_REG_AREAS.length}개 · 작업 {TASK_TOTAL}개 ·
+        액션 {ALL_ACTIONS.length}개 · 업무 규칙 {SPEC_RULES.length}개 · 상태 필드 <span className="mono">{STATE_FIELD}</span>
       </p>
-      <p className="small muted">{SPEC_REG_SCREEN.goal}</p>
-      <p className="small muted">예외 처리 — {SPEC_REG_SCREEN.exception} / 완료 조건 — {SPEC_REG_SCREEN.done}</p>
+      <p className="small muted">정의는 새 업무 버전으로 분기하고, 업무 상태는 전이 액션으로만 진행합니다. 승인된 버전은 직접 수정할 수 없습니다.</p>
 
       <div className="kpis mt">
         <div className="kpi"><div className="v">{state.revisions.length}</div><div className="l">등록 Revision (영속)</div></div>
@@ -409,7 +410,7 @@ export function DefineRevision() {
       <p className="small muted">{SPEC_FRI_SCOPE}</p>
 
       <div className="card mt">
-        <p className="small muted">{SPEC_REG_SCREEN.firstScreen.layout} · 초기 조회 {SPEC_REG_SCREEN.firstScreen.initialQuery} · 선택 {SPEC_REG_SCREEN.firstScreen.selection}</p>
+        <p className="small muted">Feature ID 는 자동 채번되고, 새 Revision 은 이전 승인본의 값을 승계한 뒤 바뀐 항목만 기록합니다.</p>
         <div className="row mt">
           <div className="col" style={{ flex: 1, minWidth: 260 }}>
             <b>리비전 요약</b>
@@ -497,8 +498,8 @@ export function DefineRevision() {
 
       {/* ── 상세 메뉴 탭 — 기준 7개 영역 ───────────────────────────── */}
       <div className="card mt">
-        <b>상세 영역 {SPEC_REG_SCREEN.counts.areas}개</b>
-        <p className="small muted">{SPEC_REG_SCREEN.firstScreen.primaryAction} · 빈 목록: {SPEC_REG_SCREEN.firstScreen.emptyAction}</p>
+        <b>상세 영역 {SPEC_REG_AREAS.length}개</b>
+        <p className="small muted">영역을 고르면 그 영역의 속성·액션·인수 조건이 아래에 나옵니다.</p>
         <div className="mt" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {SPEC_REG_AREAS.map(a => {
             const c = countsOf(a.id);
@@ -538,7 +539,7 @@ export function DefineRevision() {
               <div>상태 규칙</div><div className="small">{area.stateRule}</div>
               <div>역할 정책</div><div className="small">조회 {area.rolePolicy.read} · 편집 {area.rolePolicy.edit} · 승인 {area.rolePolicy.approve} · 원천 {area.rolePolicy.sourceWrite}</div>
               <div>조회 API</div><div className="mono small">{area.readApi.profile} · {area.readApi.method} {area.readApi.path} → {area.readApi.projection} <span className="pill">{area.readApi.status}</span></div>
-              <div>영역 경로</div><div className="mono small">{area.route} <Link to={`/ui/${area.id.split('-')[0]}/${area.id}`} className="pill">상세 화면 열기</Link></div>
+              <div>영역 경로</div><div className="mono small">{area.route}</div>
               <div>구현 상태</div><div className="small">{area.coverage} · {area.implementation}</div>
             </div>
           </div>
@@ -567,7 +568,7 @@ export function DefineRevision() {
       <div className="card">
         <div className="row" style={{ alignItems: 'flex-start' }}>
           <div className="col" style={{ flex: 3, minWidth: 420 }}>
-            <b>등록 속성 {counts.total}개 — {SPEC_REG_SCREEN.firstScreen.title} 목록</b>
+            <b>등록 속성 {counts.total}개</b>
             <p className="small muted">입력 책임이 직접 입력인 항목만 값을 타이핑합니다. 정확 참조는 원천 객체를 선택하고, 자동·파생은 서버가 계산하므로 읽기 전용입니다(IA-R04 · IA-R13).</p>
             <div className="table-wrap mt">
               <table>
@@ -819,13 +820,13 @@ export function DefineRevision() {
         <div>
           <div className="card">
             <b>리비전 레지스트리 — 이력과 영속</b>
-            <p className="small muted">{SPEC_REG_SCREEN.firstScreen.columns.join(' · ')} · 승인 원본은 직접 수정하지 않고 새 업무 버전으로 분기합니다(IA-R06).</p>
+            <p className="small muted">승인 원본은 직접 수정하지 않고 새 업무 버전으로 분기합니다(IA-R06). 저장된 Revision 은 브라우저에 영속되며 새로고침 후에도 남습니다.</p>
             {state.revisions.length === 0 ? (
               <div className="mt"><EmptyState title="저장된 등록 Revision 이 없습니다. 초안 저장(SAVE_DRAFT)으로 첫 Revision 을 만드십시오." cta={<button className="btn primary mt" onClick={() => runAction('WF-DRAFT', actionOf('UI02-S01-A01')?.act)}>초안 저장</button>} /></div>
             ) : (
               <div className="table-wrap mt">
                 <table>
-                  <thead><tr>{SPEC_REG_SCREEN.firstScreen.columns.map(c => <th key={c}>{c}</th>)}<th>recordRevision</th><th>contentHash</th><th /></tr></thead>
+                  <thead><tr>{REVISION_COLUMNS.map(c => <th key={c}>{c}</th>)}<th>recordRevision</th><th>contentHash</th><th /></tr></thead>
                   <tbody>
                     {state.revisions.map(r => (
                       <tr key={`${r.id}@${r.version}`} style={{ background: key === `${r.id}@${r.version}` ? 'var(--bg-2)' : undefined }}>
@@ -939,7 +940,7 @@ export function DefineRevision() {
                       <td className="small">{a.editable ? '가능' : '조회'}</td>
                       <td className="small">{a.actions.map(x => x.intent).join(' · ')}</td>
                       <td className="small">{[...new Set(a.actions.flatMap(x => x.roles))].map(roleLabel).join(' / ')}</td>
-                      <td><Link className="pill" to={`/ui/${a.id.split('-')[0]}/${a.id}`}>{a.id}</Link></td>
+                      <td><span className="pill">{a.id}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -984,19 +985,16 @@ export function DefineRevision() {
         })}
       </div>
 
+      {/* ── 구현 범위 — 이 화면이 실제로 계산·영속하는 값 ─────────── */}
       <div className="card">
-        <b>기준 연결</b>
+        <b>구현 범위</b>
         <div className="kv mt">
-          <div>화면 정의서</div><div className="small">{SPEC_REG_SCREEN.sourceRefs.join(' · ')}</div>
-          <div>정의 상태</div><div className="small">{SPEC_REG_SCREEN.designStatus} · 구현 {SPEC_REG_SCREEN.implementationStatus}</div>
           <div>상태 사전</div><div className="small">{DEFINITION_STATES.join(' · ')} (RETIRED 포함 {DEFINITION_STATES.length}개)</div>
-          <div>OpenAPI 오퍼레이션</div><div className="small">{SPEC_CLOSURE.openApiOperations} · typed request {SPEC_CLOSURE.typedRequestCount} · 런타임 검증 {SPEC_CLOSURE.runtimeValidation}</div>
+          <div>업무 상태</div><div className="small">직접 수정 불가 — 전이 액션(WF-*)으로만 변경되고 전이 이력이 Revision 에 남습니다.</div>
+          <div>동시성</div><div className="small">If-Match(ETag) + Idempotency-Key 로 제어하며, 요청 hash 가 같으면 같은 결과를 재사용합니다.</div>
           <div>데모 범위</div><div className="small">제품 서버 미연결(LOCAL_UI_ONLY) — 상태 전이·멱등키·ETag·완전성 검사는 이 브라우저에서 실제로 계산되고 영속됩니다.</div>
         </div>
       </div>
-
-      {/* ── 정본 영역 계약 — 클릭한 영역의 Task·액션·API·인수 조건 원문 ── */}
-      <SpecAreaFacts uiId="UI02" areaId={areaId} />
     </div>
   );
 }

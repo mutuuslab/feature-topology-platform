@@ -230,8 +230,9 @@ RFTwin(로봇 공장) 씬 아키텍처 — 라벨 LOD, 공유 머티리얼, 카�
 
 ### 7.3 정본 IA 화면 — Feature 등록 · Feature BOM · Topology
 
-Twin 화면과 같은 셸에서 열린다. 세 화면 모두 각 영역 하단에 **정본 영역 계약**(`src/components/SpecAreaFacts.tsx`)을 붙여,
-Task · 입력/검증 · API · 역할 정책 · 인수 조건을 기준 문서 원문 그대로 노출한다.
+Twin 화면과 같은 셸에서 열린다. 세 화면 모두 **구현 데이터로 계산한 값만** 보여준다 —
+요구사양 문서(정의서 `/ui/UIxx` · 기준 아키텍처 `/arch`)와 문서 원문을 그대로 옮긴 패널은 제품에 없다.
+화면에 올라오는 진행률·판정·건수는 모두 화면이 실제로 쓰는 데이터(영역 · Task · 액션 · 업무 규칙 · 검사 항목)에서 계산한다.
 
 | 화면 | 경로 | 영역 수 | 정본 |
 |---|---|---|---|
@@ -443,7 +444,7 @@ npm install          # 최초 1회
 npm run dev          # http://localhost:9001
 ```
 
-- 테스트: `npm test` (vitest, 21 files / 468 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
+- 테스트: `npm test` (vitest, 21 files / 472 tests — `twinPlant.test.tsx` 가 §7.2 공장 뷰, `twinUi.test.tsx` 가 라우팅 통합,
   `specBom.test.tsx` 가 §7.3 UI04 · §7.3.2 승인 순서, `specTopology.test.tsx` 가 §7.3 UI05 · §7.3.4 UL-OSS-R1 표면, `specTopologyContract.test.tsx` · `specUlOss.test.tsx` 가 §7.3.3 TD v0.8 · UL-OSS-R1,
   `specRegistrationR1.test.tsx` 가 §7.3.1 UI02-R1,
   `twinVehicleScene.test.tsx` · `twinVehicleLive.test.tsx` 가 §17.4 차량 3D 담당)

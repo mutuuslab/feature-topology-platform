@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SPEC_SCREENS, SPEC_GROUPS, SPEC_COUNTS, SPEC_ROLES, SPEC_STATES, SPEC_SCREEN_BY_ID } from '../data/specNav';
 import type { SpecScreenDetail } from '../data/specTypes';
-import { SPEC_MENU, SPEC_ROLE_HOME, specScreenPath, specAreaPath } from '../data/specMenu';
-import { SCREEN_LINKS, screenOfRoute } from '../data/uiLinks';
+import { SPEC_MENU } from '../data/specMenu';
+import { ROLE_HOME_IMPL, SCREEN_LINKS, screenOfRoute } from '../data/uiLinks';
 import { specAsset, screenSvgUrl } from '../data/specAssets';
 import {
   SPEC_PLANE_CORE_OF_SCREEN, SPEC_KNOWLEDGE_FOUNDATION, SPEC_PLANE_NAV, SPEC_PLANE_OF_SCREEN,
@@ -108,25 +108,19 @@ describe('1차 메뉴 (specMenu) ↔ 기준 (specNav) 정합', () => {
 
   it('역할별 착지 화면이 모두 실재하는 화면이다', () => {
     SPEC_ROLES.forEach((r) => {
-      const path = SPEC_ROLE_HOME[r.key];
+      const path = ROLE_HOME_IMPL[r.key];
       expect(path, r.key).toBeTruthy();
-      const screenId = path.replace(/^\/ui\//, '');
-      expect(SPEC_SCREEN_BY_ID[screenId], r.key).toBeTruthy();
+      expect(path.startsWith('/ui'), r.key).toBe(false);
     });
-    expect(Object.keys(SPEC_ROLE_HOME)).toHaveLength(SPEC_ROLES.length);
+    expect(Object.keys(ROLE_HOME_IMPL)).toHaveLength(SPEC_ROLES.length);
   });
 });
 
-describe('기준 화면 페이지 경로', () => {
-  it('specScreenPath / specAreaPath 가 라우트와 맞는다', () => {
-    expect(specScreenPath('UI02')).toBe('/ui/UI02');
-    expect(specAreaPath('UI02', 'UI02-S01')).toBe('/ui/UI02/UI02-S01');
-  });
-
-  it('/ui 와 /arch 라우트가 등록되어 있다', () => {
+describe('요구사양 문서 화면은 제품에 없다', () => {
+  it('/ui · /arch · /spec/changelog · /spec/glossary 라우트가 등록되어 있지 않다', () => {
     const app = readFileSync(join(process.cwd(), 'src', 'App.tsx'), 'utf-8');
-    ['/ui', '/ui/:uiId', '/ui/:uiId/:areaId', '/arch'].forEach((p) => {
-      expect(app.includes(`path="${p}"`), p).toBe(true);
+    ['/ui', '/ui/:uiId', '/ui/:uiId/:areaId', '/arch', '/spec/changelog', '/spec/glossary'].forEach((p) => {
+      expect(app.includes(`path="${p}"`), p).toBe(false);
     });
   });
 });
@@ -236,8 +230,9 @@ describe('Plane별 보기 (4 Plane · 공유 기반)', () => {
     expect(app.includes("navMode === 'plane'")).toBe(true);
     const store = readFileSync(join(process.cwd(), 'src', 'store.tsx'), 'utf-8');
     expect(store.includes("'function' | 'dept' | 'plane'")).toBe(true);
-    // 레일 라벨은 5개(4 Plane + 공유 기반)이고, 모두 라벨·그룹을 갖는다.
-    expect(PLANE_NAV).toHaveLength(5);
+    // 레일 라벨은 구현된 4 Plane 뿐이다(공유 기반은 참조 영역과 함께 사라졌다). 라벨·그룹을 모두 갖는다.
+    expect(PLANE_NAV).toHaveLength(SPEC_PLANES.length);
+    expect(PLANE_NAV.some((p) => p.key === 'shared')).toBe(false);
     PLANE_NAV.forEach((p) => {
       expect(p.ko.length, p.key).toBeGreaterThan(0);
       expect(p.en.length, p.key).toBeGreaterThan(0);

@@ -134,9 +134,28 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/ops/telemetry', label: 'Telemetry Explorer' },
   ] },
   UI30: { screenId: 'UI30', intent: '요구사항과 설계 추적', links: [
-    { path: '/spec/changelog', label: '기준 개정 이력' },
     { path: '/metamodel', label: 'Metamodel Viewer' },
   ] },
+};
+
+/**
+ * 역할별 기본 착지 화면 — **구현 화면 경로만** 쓴다.
+ *
+ * 셸의 3개 보기(기능별·부서별·Plane별)는 실제 구현 화면만 메뉴에 올리므로 착지도 구현 화면이어야 한다.
+ * 각 값은 그 역할이 소유한 기준 화면(SPEC_MENU 의 owner)의 `SCREEN_LINKS` 구현 경로 중 하나이며,
+ * `regression.test.tsx` 가 (1) 소유 기준 화면과의 연결 (2) 메뉴에 실제로 있는 경로인지를 함께 검증한다.
+ * 기준 패키지의 화면 정의서(`/ui/UIxx`)로는 착지하지 않는다 — 그건 참조 영역의 문서다.
+ */
+export const ROLE_HOME_IMPL: Record<string, string> = {
+  author: '/master/define', // UI02 Feature Registry
+  approver: '/admin/approval', // UI06 검토함
+  quality: '/verify/evidence', // UI16 품질 기준과 검증 증적
+  operator: '/fleet', // UI11 차량 운영 현황
+  steward: '/master/artifacts', // UI21 UPG와 UPG VC
+  commerce: '/catalog', // UI07 상품 구성
+  integrator: '/integration/connectors', // UI18 외부 시스템 연계
+  coordinator: '/decisions/center', // UI25 협의와 개발 이관
+  viewer: '/insights/audit', // UI14 감사 추적
 };
 
 export function implementedLinks(screenId: string): ScreenLink {

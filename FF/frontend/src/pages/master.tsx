@@ -205,7 +205,7 @@ export function ArtifactCatalog() {
           <span className="muted small">{rows.length} / {ARTIFACT_RECORDS.length}건</span>
           <span style={{ flex: 1 }} />
           <GButton verb="edit" onClick={reResolve}>원천 재해석 실행</GButton>
-          <GButton verb="approve" onClick={() => nav('/ui/UI04')}>BOM 기준선에서 승인 심사 →</GButton>
+          <GButton verb="approve" onClick={() => nav('/master/bom')}>Feature BOM 승인 순서 →</GButton>
         </div>
       </div>
 
@@ -421,7 +421,7 @@ export function ControlPointCatalog() {
             : <p className="small" style={{ color: 'var(--pass)' }}>✓ 계약 위반 없음</p>}
 
           <p className="mt small"><b>연결 화면</b></p>
-          <button className="btn" onClick={() => nav('/ui/UI02/UI02-S04')}>UI02-S04 구현과 제어 →</button>
+          <button className="btn" onClick={() => nav('/master/define')}>Feature 등록 구현과 제어 →</button>
         </div>}
       </RightPanel>
     </div>

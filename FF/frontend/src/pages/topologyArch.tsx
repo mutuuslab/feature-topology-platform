@@ -25,7 +25,6 @@ import type { JSX } from 'react';
 import { Fragment, useMemo, useState } from 'react';
 import { Bars, Donut } from '../components/charts';
 import { simClockLabel } from '../components/liveMonitor';
-import { SpecAreaFacts } from '../components/SpecAreaFacts';
 import {
   ARTIFACT_RECORDS,
   CONTROL_POINTS,
@@ -1445,8 +1444,6 @@ export function TopologyArch(): JSX.Element {
               </div>
               {graph.links.length > 40 && <p className="tpa-note">관계 {graph.links.length}건 중 40건 표시 — 상단 파이프라인·S02 탐색에서 전체를 다룬다.</p>}
             </div>
-
-            <SpecAreaFacts uiId="UI05" areaId="UI05-S01" />
           </>
         )}
 
@@ -1512,8 +1509,6 @@ export function TopologyArch(): JSX.Element {
                 ))}
               </div>
             </div>
-
-            <SpecAreaFacts uiId="UI05" areaId="UI05-S02" />
           </>
         )}
 
@@ -1720,8 +1715,6 @@ export function TopologyArch(): JSX.Element {
                 </tbody>
               </table>
             </div>
-
-            <SpecAreaFacts uiId="UI05" areaId="UI05-S03" />
           </>
         )}
 
@@ -2018,8 +2011,6 @@ export function TopologyArch(): JSX.Element {
                 </tbody>
               </table>
             </div>
-
-            <SpecAreaFacts uiId="UI05" areaId="UI05-S04" />
           </>
         )}
 
@@ -2116,8 +2107,6 @@ export function TopologyArch(): JSX.Element {
                 {walked.length === 0 && <div className="tpa-empty">경로가 없습니다.</div>}
               </div>
             </div>
-
-            <SpecAreaFacts uiId="UI05" areaId="UI05-S05" />
           </>
         )}
 
@@ -2511,8 +2500,6 @@ export function TopologyArch(): JSX.Element {
               </div>
               <p className="tpa-note">{contract.impact.notice}</p>
             </div>
-
-            <SpecAreaFacts uiId="UI05" areaId="UI05-S06" />
           </>
         )}
 
@@ -2585,8 +2572,6 @@ export function TopologyArch(): JSX.Element {
                 </tbody>
               </table>
             </div>
-
-            <SpecAreaFacts uiId="UI05" areaId="UI05-S07" />
           </>
         )}
       </div>

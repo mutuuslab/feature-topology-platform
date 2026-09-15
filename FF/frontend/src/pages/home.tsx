@@ -40,17 +40,17 @@ export function Onboarding() {
 }
 
 // 기준 패키지(FP-DETAILED-1.1)의 9 역할 → 역할별 대시보드 관점.
-// 데모 구현 화면 경로와 기준 화면(/ui/UIxx)을 함께 노출한다.
+// 실제 구현 화면 경로만 노출한다 — 요구사양 문서 화면은 제품에 없다.
 const ROLE_FOCUS: Record<string, { title: string; desc: string; views: [string, string][] }> = {
-  author: { title: 'Feature 설계 · 카탈로그/요구사항 중심', desc: 'Feature 정의·우선순위·기대효과', views: [['Catalog', '/catalog'], ['Feature 등록', '/master/define'], ['기준 화면 UI02', '/ui/UI02']] },
-  approver: { title: '구성 승인 · 검토/게이트 중심', desc: '검토 대기·승인 판단·Gate 판정', views: [['Approval', '/admin/approval'], ['Decision Center', '/decisions/center'], ['기준 화면 UI06', '/ui/UI06']] },
-  quality: { title: '품질 검토 · 검증 증적 중심', desc: 'Gate·커버리지·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['기준 화면 UI16', '/ui/UI16']] },
-  operator: { title: '차량 운영 · 실시간 수렴 중심', desc: '실시간 텔레메트리·인시던트·Fleet', views: [['Ops Dashboard', '/ops/FEAT-BDC-001'], ['Twin Fleet', '/twin/fleet'], ['기준 화면 UI11', '/ui/UI11']] },
-  steward: { title: 'PLM 기준정보 · 정합성 중심', desc: '아티팩트·토폴로지 관계·메타모델 정합', views: [['Topology', '/topology/FEAT-BDC-001'], ['Artifact Catalog', '/master/artifacts'], ['기준 화면 UI21', '/ui/UI21']] },
-  commerce: { title: '상품 권리 · 릴리스/과금 중심', desc: '상품 구성·사용 권리·과금 조건', views: [['Catalog', '/catalog'], ['Cost', '/cost'], ['기준 화면 UI07', '/ui/UI07']] },
-  integrator: { title: '시스템 연계 · 계약/인수 중심', desc: '연계 계약·API 릴리스 패키지 인수', views: [['Connector Hub', '/integration/connectors'], ['Sync Logs', '/integration/sync'], ['기준 화면 UI18', '/ui/UI18']] },
-  coordinator: { title: '협의·개발 이관 · 변경관리 중심', desc: '변경 영향·협의·개발 이관 결정', views: [['Decision Center', '/decisions/center'], ['CR List', '/change/cr'], ['기준 화면 UI25', '/ui/UI25']] },
-  viewer: { title: '조회 · 감사/추적 중심', desc: '권한·감사 로그·요구사항 추적 (읽기 전용)', views: [['Audit', '/insights/audit'], ['Reports', '/insights/reports'], ['기준 화면 UI30', '/ui/UI30']] },
+  author: { title: 'Feature 설계 · 카탈로그/요구사항 중심', desc: 'Feature 정의·우선순위·기대효과', views: [['Catalog', '/catalog'], ['Feature 등록', '/master/define'], ['Feature BOM 기준선', '/master/bom']] },
+  approver: { title: '구성 승인 · 검토/게이트 중심', desc: '검토 대기·승인 판단·Gate 판정', views: [['Approval', '/admin/approval'], ['Decision Center', '/decisions/center'], ['Feature BOM 승인 순서', '/master/bom']] },
+  quality: { title: '품질 검토 · 검증 증적 중심', desc: 'Gate·커버리지·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['컴플라이언스 룰', '/spec/compliance']] },
+  operator: { title: '차량 운영 · 실시간 수렴 중심', desc: '실시간 텔레메트리·인시던트·Fleet', views: [['Ops Dashboard', '/ops/FEAT-BDC-001'], ['Twin Fleet', '/twin/fleet'], ['Incident', '/ops/incident']] },
+  steward: { title: 'PLM 기준정보 · 정합성 중심', desc: '아티팩트·토폴로지 관계·메타모델 정합', views: [['Topology', '/topology/FEAT-BDC-001'], ['Artifact Catalog', '/master/artifacts'], ['Feature 제어점', '/master/control-points']] },
+  commerce: { title: '상품 권리 · 릴리스/과금 중심', desc: '상품 구성·사용 권리·과금 조건', views: [['Catalog', '/catalog'], ['Cost', '/cost'], ['Variant Matrix', '/variants/FEAT-BDC-001']] },
+  integrator: { title: '시스템 연계 · 계약/인수 중심', desc: '연계 계약·API 릴리스 패키지 인수', views: [['Connector Hub', '/integration/connectors'], ['Sync Logs', '/integration/sync'], ['Metamodel Viewer', '/metamodel']] },
+  coordinator: { title: '협의·개발 이관 · 변경관리 중심', desc: '변경 영향·협의·개발 이관 결정', views: [['Decision Center', '/decisions/center'], ['CR List', '/change/cr'], ['DecisionReport', '/decisions/report']] },
+  viewer: { title: '조회 · 감사/추적 중심', desc: '권한·감사 로그·요구사항 추적 (읽기 전용)', views: [['Audit', '/insights/audit'], ['Reports', '/insights/reports'], ['Version Timeline', '/change/timeline']] },
 };
 
 export function RoleHome() {

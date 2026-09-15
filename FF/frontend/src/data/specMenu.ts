@@ -109,31 +109,6 @@ export const SPEC_MENU_GROUP_OF_SCREEN: Record<string, string> = (() => {
   return m;
 })();
 
-/** 기준 화면 경로 (/ui/UI02) */
-export const specScreenPath = (screenId: string) => `/ui/${screenId}`;
-/** 상세 영역 경로 (/ui/UI02/UI02-S01) */
-export const specAreaPath = (screenId: string, areaId: string) => `/ui/${screenId}/${areaId}`;
-
-/** 기준 화면 이름 (한/영) — 레거시 화면 라벨보다 우선한다. */
-export const specScreenLabel = (screenId: string, lang: 'ko' | 'en' = 'ko') => {
-  const it = SPEC_MENU_ITEM[screenId];
-  if (!it) return screenId;
-  return `${it.id} ${lang === 'en' ? it.en : it.ko}`;
-};
-
-/** 역할별 기본 착지 화면 — 그 역할이 소유한 첫 화면 (기준 30화면 안에서만 이동) */
-export const SPEC_ROLE_HOME: Record<string, string> = {
-  author: specScreenPath('UI02'),
-  approver: specScreenPath('UI06'),
-  quality: specScreenPath('UI16'),
-  operator: specScreenPath('UI11'),
-  steward: specScreenPath('UI21'),
-  commerce: specScreenPath('UI07'),
-  integrator: specScreenPath('UI18'),
-  coordinator: specScreenPath('UI25'),
-  viewer: specScreenPath('UI30'),
-};
-
 /** 역할이 소유한 기준 화면 ID 목록 (specNav owner 기준) */
 export const screensOfOwner = (owner: string) =>
   SPEC_MENU.flatMap((g) => g.items.filter((it) => it.owner === owner).map((it) => it.id));

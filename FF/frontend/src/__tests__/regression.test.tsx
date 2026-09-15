@@ -1,18 +1,16 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { severityMeta, SeverityBadge } from '../components/ui';
 import { Steps } from '../components/charts';
-import { domainOfPath, DOMAINS, DEPT_NAV, ITEM } from '../i18n';
-import { platformGlossary } from '../data/platformGlossary';
+import { domainOfPath, DOMAINS, DEPT_NAV, ITEM, PLANE_NAV, roleHomePath } from '../i18n';
+import { ROLE_HOME_IMPL, SCREEN_LINKS } from '../data/uiLinks';
+import { SPEC_MENU } from '../data/specMenu';
 
 describe('1차 IA = 기준 패키지 7 업무 그룹 (MENU 1.3)', () => {
   it('도메인은 7개 (기준 업무 그룹 순서)', () => {
     expect(DOMAINS.map(d => d.key)).toEqual(['work', 'feature', 'config', 'release', 'vehicle', 'quality', 'admin']);
-  });
-  it('기준 화면(/ui/UIxx)은 소속 업무 그룹으로 해석된다', () => {
-    expect(domainOfPath('/ui/UI02')).toBe('feature');
-    expect(domainOfPath('/ui/UI11')).toBe('vehicle');
-    expect(domainOfPath('/ui/UI30')).toBe('quality');
   });
   it('구현 데모 화면은 연결된 기준 화면의 업무 그룹으로 해석된다', () => {
     expect(domainOfPath('/catalog')).toBe('feature');              // UI02 / UI07
@@ -22,9 +20,8 @@ describe('1차 IA = 기준 패키지 7 업무 그룹 (MENU 1.3)', () => {
     expect(domainOfPath('/verify/evidence')).toBe('quality');      // UI16
     expect(domainOfPath('/admin/users')).toBe('admin');            // UI17
   });
-  it('업무 그룹 밖 경로는 그룹 없음 → 기준 참조 목록', () => {
+  it('업무 그룹 밖 경로는 그룹 없음 → 구현 화면 전체 목록', () => {
     expect(domainOfPath('/')).toBe('');
-    expect(domainOfPath('/arch')).toBe('');
     expect(domainOfPath('/spec/changelog')).toBe('');
     expect(ITEM['/spec']).toBeUndefined();                     // 604 FR 기능명세 Overview 제거
     expect(ITEM['/spec/explorer']).toBeUndefined();             // FR Explorer 제거
@@ -43,16 +40,69 @@ describe('부서별 보기 = 기준 9 역할', () => {
       expect(ITEM[p], `${d.role} ${p}`).toBeTruthy();
     })));
   });
-  it('담당 화면이 없는 역할도 공통 참조 화면을 갖는다', () => {
+  it('모든 역할이 구현 화면 섹션을 갖는다', () => {
     DEPT_NAV.forEach(d => expect(d.sections.length, d.role).toBeGreaterThan(0));
   });
 });
 
-describe('플랫폼 Glossary 보강', () => {
-  it('핵심 용어 포함 + 항목 충분', () => {
-    expect(platformGlossary.length).toBeGreaterThanOrEqual(40);
-    const terms = platformGlossary.map(g => g.term);
-    ['Kill Switch', 'Safe Default', 'OTA', 'Variant', '9-Gate'].forEach(t => expect(terms).toContain(t));
+// 제품에는 실제 구현된 화면만 올린다. 요구사양 문서(기준 화면 정의서 /ui/UIxx, 기준 아키텍처 /arch,
+// /spec/changelog, /spec/glossary)는 제품에 존재하지 않으므로 세 보기 어디에도 진입점이 없어야 한다.
+describe('메뉴에는 구현 화면만 있다', () => {
+  const menuItems = () => [
+    ...DOMAINS.flatMap(d => d.groups.flatMap(g => g.items.map(it => ({ where: `${d.key} / ${g.ko}`, to: it.to })))),
+    ...PLANE_NAV.flatMap(p => p.groups.flatMap(g => g.items.map(it => ({ where: `${p.key} / ${g.ko}`, to: it.to })))),
+    ...DEPT_NAV.flatMap(d => d.sections.flatMap(s => s.paths.map(to => ({ where: `${d.role} / ${s.ko}`, to })))),
+  ];
+
+  it('세 보기 어디에도 기준 화면 정의서가 메뉴로 올라오지 않는다', () => {
+    const leaked = menuItems().filter(i => /^\/ui\/UI\d\d/.test(i.to) || /^UI\d\d/.test(i.to));
+    expect(leaked, JSON.stringify(leaked)).toEqual([]);
+  });
+
+  it('참조 문서 경로(/ui · /arch · /spec/changelog · /spec/glossary)는 어느 보기에도 없다', () => {
+    const banned = new Set(['/ui', '/arch', '/spec/changelog', '/spec/glossary']);
+    const leaked = menuItems().filter(i => banned.has(i.to));
+    expect(leaked, JSON.stringify(leaked)).toEqual([]);
+  });
+  it('정의서를 참조하지만 메뉴에 없던 공백은 없다 (Plane 항목 라벨 보장)', () => {
+    PLANE_NAV.forEach(p => p.groups.forEach(g => g.items.forEach(it => {
+      expect(it.ko.startsWith('/'), `${p.key} / ${g.ko} → ${it.to}`).toBe(false);
+    })));
+  });
+
+  it('메뉴 항목이 모두 실제 라우트로 열린다', () => {
+    const app = readFileSync(join(process.cwd(), 'src', 'App.tsx'), 'utf-8');
+    const routes = [...app.matchAll(/<Route path="([^"]+)"/g)].map(m => m[1].split('/').filter(Boolean));
+    const matchesRoute = (path: string) => {
+      const segs = path.split('/').filter(Boolean);
+      if (segs.length === 0) return routes.some(r => r.length === 0);
+      return routes.some(r => r.length === segs.length
+        && r.every((rseg, i) => rseg.startsWith(':') || rseg.toLowerCase() === segs[i].toLowerCase()));
+    };
+    menuItems().forEach(i => expect(matchesRoute(i.to), `${i.where} → ${i.to}`).toBe(true));
+  });
+
+  it('Plane·부서별 보기는 1차 메뉴 경로만 쓴다', () => {
+    const implSet = new Set(DOMAINS.flatMap(d => d.groups.flatMap(g => g.items.map(it => it.to))));
+    PLANE_NAV.forEach(p => p.groups.forEach(g => g.items.forEach(it => {
+      expect(implSet.has(it.to), `${p.key} / ${g.ko} → ${it.to}`).toBe(true);
+    })));
+    DEPT_NAV.forEach(d => d.sections.forEach(s => s.paths.forEach(p => {
+      expect(implSet.has(p), `${d.role} → ${p}`).toBe(true);
+    })));
+  });
+
+  it('역할 기본 착지도 구현 화면이고, 그 역할이 소유한 기준 화면에 연결돼 있다', () => {
+    expect(Object.keys(ROLE_HOME_IMPL).sort()).toEqual(DEPT_NAV.map(d => d.role).sort());
+    Object.entries(ROLE_HOME_IMPL).forEach(([role, to]) => {
+      expect(to.startsWith('/ui'), role).toBe(false);
+      expect(ITEM[to], `${role} ${to}`).toBeTruthy();
+      expect(roleHomePath(role)).toBe(to);
+      const owned = SPEC_MENU.flatMap(g => g.items.filter(it => it.owner === role).map(it => it.id));
+      expect(owned.length, role).toBeGreaterThan(0);
+      const linked = owned.flatMap(id => SCREEN_LINKS[id].links.map(l => l.path));
+      expect(linked, `${role} ${to}`).toContain(to);
+    });
   });
 });
 

@@ -236,7 +236,7 @@ describe('§12.5 / §15 / §18 Closed-Loop 화면', () => {
 });
 
 describe('라우팅·네비게이션 통합', () => {
-  it('기준 화면(차량 운영) → 연결 구현 화면 → Twin Fleet → VIN 상세까지 이동한다', async () => {
+  it('구현 화면 메뉴(차량 운영 레일 → Twin Fleet)에서 VIN 상세까지 이동한다', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <AppProvider>
@@ -247,9 +247,10 @@ describe('라우팅·네비게이션 통합', () => {
       </MemoryRouter>,
     );
 
-    // 1차 IA 레일은 기준 7 업무 그룹이다. '차량 운영' 그룹의 UI11 이 Twin Fleet 구현 화면과 연결된다.
+    // 1차 IA 레일은 기준 7 업무 그룹이고, 서브내비에는 실제 구현 화면만 올라온다.
     fireEvent.click(await screen.findByRole('button', { name: '차량 운영' }));
-    fireEvent.click(await screen.findByRole('link', { name: /UI11 차량 운영 현황/ }));
+    // 기준 화면 정의서(UI11 차량 운영 현황)는 요구사양 문서라 제품 메뉴에 올라오지 않는다.
+    expect(screen.queryByRole('link', { name: /UI11 차량 운영 현황/ })).toBeNull();
     fireEvent.click(await screen.findByRole('link', { name: 'Twin Fleet' }, { timeout: 5000 }));
     // 두 페이지 모두 lazy 라우트다. 청크 로드 + Suspense 재시도 + 무거운 페이지 마운트가
     // 겹치면 기본 1000ms 를 넘길 수 있으므로(머신 부하에 따라 편차가 큼) 여유를 준다.

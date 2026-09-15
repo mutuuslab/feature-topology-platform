@@ -30,7 +30,6 @@ import Cost from './pages/cost';
 import Fleet from './pages/fleet';
 import Activation from './pages/activation';
 import Lifecycle from './pages/lifecycle';
-import { SpecChangeLog, SpecGlossary } from './pages/reference';
 import { Experiment, Conflict, Exception, Compliance, Scenario, CICD, Billing, Business, Security } from './pages/specnew';
 // Digital Twin 계층은 초기 번들에서 분리한다(엔진 + 시뮬레이터 데이터 계층이 큼).
 const TwinFleet = lazy(() => import('./pages/twin').then((m) => ({ default: m.TwinFleet })));
@@ -39,10 +38,6 @@ const TwinSimulation = lazy(() => import('./pages/twin').then((m) => ({ default:
 const TwinVehicle = lazy(() => import('./pages/twinOps').then((m) => ({ default: m.TwinVehicle })));
 const TwinIncident = lazy(() => import('./pages/twinOps').then((m) => ({ default: m.TwinIncident })));
 const TwinLive = lazy(() => import('./pages/twinLive').then((m) => ({ default: m.TwinLive })));
-// 기준 화면(MENU 1.3) · 아키텍처 문서는 기준 데이터(JSON·생성 모듈)를 쓰므로 초기 번들에서 분리한다.
-const SpecScreenIndex = lazy(() => import('./pages/specScreen').then((m) => ({ default: m.SpecScreenIndex })));
-const SpecScreen = lazy(() => import('./pages/specScreen').then((m) => ({ default: m.SpecScreen })));
-const SpecArchitecture = lazy(() => import('./pages/arch').then((m) => ({ default: m.SpecArchitecture })));
 // Feature 등록은 Revision 규칙·등록 사전(R0 48 · 필수 20)을 쓰므로 초기 번들에서 분리한다.
 const DefineRevision = lazy(() => import('./pages/defineRevision').then((m) => ({ default: m.DefineRevision })));
 const FeatureBom = lazy(() => import('./pages/featureBom').then((m) => ({ default: m.FeatureBom })));
@@ -126,15 +121,8 @@ export default function App() {
             <div className="subnav" onClick={() => setNavOpen(false)}>
               <div className="subnav-head">{planeObj.icon} {navDomain({ ko: planeObj.fullKo, en: planeObj.fullEn })}</div>
               <div className="plane-meta">
-                {planeObj.shared ? (
-                  <div className="plane-row"><span className="muted small">기준</span> Knowledge Foundation — {planeObj.contract}</div>
-                ) : (
-                  <>
-                    <div className="plane-row"><span className="muted small">산출물</span> {planeObj.produces}</div>
-                    <div className="plane-row"><span className="muted small">계약</span> {planeObj.contract}</div>
-                    <NavLink className="plane-link" to="/arch">기준 아키텍처에서 Core 배분 보기 →</NavLink>
-                  </>
-                )}
+                <div className="plane-row"><span className="muted small">산출물</span> {planeObj.produces}</div>
+                <div className="plane-row"><span className="muted small">계약</span> {planeObj.contract}</div>
                 <p className="muted small plane-note">{planeObj.note}</p>
               </div>
               {planeObj.groups.map(g => (
@@ -155,20 +143,11 @@ export default function App() {
                   {d.key === roleDomain && <span className="role-dot" title="현재 역할 기본 영역" />}
                 </button>
               ))}
-              <button className={'rail-btn' + (loc.pathname.startsWith('/arch') ? ' active' : '')} title="기준 아키텍처" aria-label="기준 아키텍처" onClick={() => nav('/arch')}>
-                <span className="ic">🧱</span><span className="lb">아키텍처</span>
-              </button>
             </div>
             <div className="subnav" onClick={() => setNavOpen(false)}>
               {refMode ? (
                 <>
-                  <div className="subnav-head">📚 기준 참조</div>
-                  <div className="group">기준 문서</div>
-                  <NavLink to="/arch">기준 아키텍처 (4 Plane·Core·C01)</NavLink>
-                  <NavLink to="/ui">기준 화면 전체 (30)</NavLink>
-                  <NavLink to="/spec/changelog">기준 개정 이력</NavLink>
-                  <NavLink to="/spec/glossary">용어집</NavLink>
-                  <div className="group">구현 데모 화면</div>
+                  <div className="subnav-head">▣ 구현 화면 전체</div>
                   {DEMO_GROUPS.map(g => (
                     <div key={g.ko}>
                       <div className="group">{navGroup(g)}</div>
@@ -285,14 +264,7 @@ export default function App() {
           <Route path="/admin/settings" element={<Settings />} />
           <Route path="/admin/notifications" element={<NotificationsCenter />} />
 
-          <Route path="/spec/changelog" element={<SpecChangeLog />} />
-          <Route path="/spec/glossary" element={<SpecGlossary />} />
-
-          {/* 기준 화면(MENU 1.3) · 아키텍처 — 기준 패키지 정의를 그대로 노출 */}
-          <Route path="/ui" element={<SpecScreenIndex />} />
-          <Route path="/ui/:uiId" element={<SpecScreen />} />
-          <Route path="/ui/:uiId/:areaId" element={<SpecScreen />} />
-          <Route path="/arch" element={<SpecArchitecture />} />
+          {/* UI05 Topology 동작 메커니즘 — 구현 화면(요구사양 문서 화면은 제품에 두지 않는다) */}
           <Route path="/arch/topology" element={<TopologyArch />} />
           <Route path="/spec/experiment" element={<Experiment />} />
           <Route path="/spec/conflict" element={<Conflict />} />

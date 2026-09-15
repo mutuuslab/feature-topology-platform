@@ -10,11 +10,10 @@
 //  · C03 Feature BOM · 구성·의존관계 관리 — 실패코드 IMPLEMENTATION_ITEM_DRIFT, UNRESOLVED_ARTIFACT.
 //
 // 이 화면은 문장을 쓰지 않는다. 승인 가능 여부·구현 선택·hash 결속은 data/featureBom.ts 의 계산 결과를
-// 그대로 노출하고, 사양서의 영역 계약(입력·조회·상태·권한·인수)은 SpecAreaFacts 가 기준 JSON 에서 읽어 붙인다.
+// 그대로 노출하고, 각 상세 영역의 탭은 아래 로컬 목록이 정의한다(요구사양서 원문은 제품에 두지 않는다).
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bars, Donut, Heatmap } from '../components/charts';
-import { SpecAreaFacts, useScreenAreas } from '../components/SpecAreaFacts';
 import {
   ARTIFACT_RECORDS, BOM_AREAS, BOM_AREA_KO, BOM_REQUIRED_AREAS, CONTROL_POINTS, IMPL_BOM_INDEX,
   deliveryLabel, kindLabel, type ArtifactRecord, type BomArea,
@@ -125,7 +124,6 @@ function HashCell({ hash, expected, label }: { hash: string; expected?: string; 
 export function FeatureBom() {
   const { state, dispatch } = useApp();
   const toast = useToast();
-  const { areas: specAreas } = useScreenAreas('UI04');
   const baselines = state.bomBaselines;
 
   const violations = useMemo(() => computeBaselineViolations(baselines), [baselines]);
@@ -175,16 +173,15 @@ export function FeatureBom() {
     return m;
   }, []);
 
-  const tabs = specAreas.length
-    ? specAreas.map(a => ({ id: a.id, name: a.name, type: a.type }))
-    : [
-      { id: 'UI04-S01', name: '기준선 목록과 상세', type: '표' },
-      { id: 'UI04-S02', name: 'Feature 구성원', type: '표' },
-      { id: 'UI04-S03', name: '구현 구성과 11개 영역', type: '표' },
-      { id: 'UI04-S04', name: 'Master·Configured·Effective', type: '비교' },
-      { id: 'UI04-S05', name: '조건과 Topology 검증', type: '검증' },
-      { id: 'UI04-S06', name: '기준선 승인과 이력', type: '승인' },
-    ];
+  // 상세 영역 탭 — 구현 화면이 실제로 가진 6개 영역.
+  const tabs = [
+    { id: 'UI04-S01', name: '기준선 목록과 상세', type: '표' },
+    { id: 'UI04-S02', name: 'Feature 구성원', type: '표' },
+    { id: 'UI04-S03', name: '구현 구성과 11개 영역', type: '표' },
+    { id: 'UI04-S04', name: 'Master·Configured·Effective', type: '비교' },
+    { id: 'UI04-S05', name: '조건과 Topology 검증', type: '검증' },
+    { id: 'UI04-S06', name: '기준선 승인과 이력', type: '승인' },
+  ];
 
   if (!sel) return <div className="card">기준선 데이터가 없습니다.</div>;
 
@@ -375,7 +372,6 @@ export function FeatureBom() {
           </>
         ) : <p className="small muted mt">비교 대상이 없으면 이 영역은 비어 있다. 승인 기준선을 고르면 차이표가 계산된다.</p>}
       </div>
-      <SpecAreaFacts uiId="UI04" areaId="UI04-S01" />
     </>
   );
 
@@ -467,7 +463,6 @@ export function FeatureBom() {
           </p>
         </div>
       </div>
-      <SpecAreaFacts uiId="UI04" areaId="UI04-S02" />
     </>
   );
 
@@ -579,7 +574,6 @@ export function FeatureBom() {
           </table>
         </div>
       </div>
-      <SpecAreaFacts uiId="UI04" areaId="UI04-S03" />
     </>
   );
 
@@ -681,7 +675,6 @@ export function FeatureBom() {
           값 변경은 정본 소유 화면에서 한다 — <Link to="/master/define">Feature 등록 (UI02)</Link> · <Link to="/master/control-points">Feature 제어점</Link>
         </p>
       </div>
-      <SpecAreaFacts uiId="UI04" areaId="UI04-S04" />
     </>
   );
 
@@ -804,7 +797,6 @@ export function FeatureBom() {
           <Bars data={Object.fromEntries([...new Set(violations.map(v => v.code))].map(c => [c, violations.filter(v => v.code === c).length]))} />
         </div>
       </div>
-      <SpecAreaFacts uiId="UI04" areaId="UI04-S05" />
     </>
   );
 
@@ -950,7 +942,6 @@ export function FeatureBom() {
         </div>
         <p className="small muted mt">이 화면의 조작은 저장소에 영속되고 다시 열어도 유지된다(BOM_SAVE). 서버 연계는 LOCAL_UI_ONLY 다.</p>
       </div>
-      <SpecAreaFacts uiId="UI04" areaId="UI04-S06" />
     </>
   );
 

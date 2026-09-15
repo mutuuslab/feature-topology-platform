@@ -34,11 +34,12 @@ npm run dev          # http://localhost:9001   (포트 8000 금지)
 - Readiness: **8/9 PASS, G5 Verification PENDING(OTA-RB-002) → HOLD**
 - Kill Switch → Safe Default(disabled) → 단계 복구
 
-## 기준 문서 참조 — Change Log · 용어집 (참조 그룹)
-기준 패키지 **FP-DETAILED-1.1 / MENU 1.3**(2026-09-13)의 참조성 문서만 남긴다.
-- `/spec/changelog` — 기준 개정 이력(문서 버전 AR 4.5 · SW 4.6 · UX 4.6 · TD 0.8 · UI 3.9 · MENU 1.3 · FRI 1.3 · OPA 1.1 · AAOS 1.6 + 기준선).
-- `/spec/glossary` — 플랫폼 용어집(검색).
-- 이전 데모의 **604 FR / 47 family "기능명세서"**(Overview·FR Explorer·Coverage, `src/data/spec.json`)는 기준 패키지에 없는 자체 문서이므로 제거했다. 요구사양·상세설계는 기준 패키지를 그대로 참조한다.
+## 구현 화면만 노출 (기준 패키지 FP-DETAILED-1.1 / MENU 1.3, 2026-09-13)
+제품 셸에는 **실제 구현된 화면만** 올린다. 요구사양 문서(기준 화면 정의서 `/ui/UIxx`, 기준 아키텍처 `/arch`,
+개정 이력 `/spec/changelog`, 용어집 `/spec/glossary`)는 제품 화면·메뉴·참조 링크 어디에도 없다 —
+정의서와 상세설계는 저장소 밖 기준 패키지에서 관리한다.
+- 1차(기능별) = 기준 7 업무 그룹, 부서별 = 기준 9 역할이 소유한 구현 화면, Plane별 = 구현된 4 Plane.
+- 이전 데모의 **604 FR / 47 family "기능명세서"**(Overview·FR Explorer·Coverage, `src/data/spec.json`)도 같은 이유로 제거했다.
 
 ## 백엔드 연동 (나중)
 `frontend/src/data/engine.ts` 의 함수를 `fetch('/api/...')` 로 교체하고 `vite.config.ts` 의 `/api` proxy 주석 해제 → `backend`(포트 9101) 기동. 백엔드의 `GraphPort` 를 PostgreSQL+Apache AGE 어댑터로 교체하면 대안 A 완성(AGE는 Windows 네이티브 미지원 → docker 권장).

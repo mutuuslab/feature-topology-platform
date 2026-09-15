@@ -464,5 +464,6 @@ export const useToast = () => {
   return (msg: string, kind: 'ok' | 'warn' | 'err' = 'ok') => dispatch({ t: 'TOAST', toast: { msg, kind } });
 };
 
-// 역할별 기본 착지 화면 — 기준 30화면 중 그 역할의 첫 담당 화면 (specMenu.SPEC_ROLE_HOME)
-export { SPEC_ROLE_HOME as roleHome } from './data/specMenu';
+// 역할별 기본 착지 화면 — 그 역할이 실제로 쓰는 구현 화면 (data/uiLinks.ROLE_HOME_IMPL).
+// 역할별 기본 착지 화면은 구현 화면 경로만 쓴다 (data/uiLinks.ROLE_HOME_IMPL).
+export { ROLE_HOME_IMPL as roleHome } from './data/uiLinks';

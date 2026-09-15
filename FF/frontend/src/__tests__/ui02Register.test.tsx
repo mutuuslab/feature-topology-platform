@@ -101,6 +101,14 @@ describe('UI02 신규 Feature 등록 — 폼은 기준 사전에서만 온다', 
     // 생성 권한은 있으므로 차단 사유는 명칭·Category·기준 임계·R0 누락 4건이다
     expect(within(form).getByText(/등록 차단 조건 4건/)).toBeTruthy();
   });
+
+  it('같은 동작을 하는 합성 예제 버튼을 화면에 하나만 둔다', () => {
+    const form = renderRegister();
+    const same = Array.from(document.querySelectorAll('button'))
+      .filter(b => (b.textContent || '').trim() === 'R0 합성 예제 값 채우기');
+    expect(same.length).toBe(1);
+    expect(form.contains(same[0])).toBe(true);
+  });
 });
 
 describe('UI02 신규 Feature 등록 — 게이트와 실제 기록', () => {

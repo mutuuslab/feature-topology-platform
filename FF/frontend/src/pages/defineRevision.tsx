@@ -887,7 +887,6 @@ export function DefineRevision() {
             </div>
             <div className="mt">
               <button className="btn primary" onClick={() => runAction('WF-DRAFT', actionOf('UI02-S01-A01')?.act)} disabled={locked}>초안 저장 (SAVE_DRAFT) · rev {rec.recordRevision}</button>{' '}
-              <button className="btn" onClick={fillSample} disabled={locked}>R0 합성 예제 값 채우기</button>{' '}
               <button className="btn" onClick={() => runAction('WF-DRAFT', undefined, { derivedWrite: true })} disabled={locked} title="IA-R04: 자동·원천 값은 입력하지 않는다">파생 값 직접 입력 시도 → 422</button>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { impact, deploy, verification, supplier, buildDecisionPackage, changeCos
 
 import TopoLink from '../components/TopoLink';
 import { Bars, GroupedBars, Steps } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const TARGETS = ['API-BDC-POLICY-CONTROL','FEAT-BDC-001','SWC-BDC-ADAPTER'];
 const TRACE = ['Feature Master','BOM Baseline','Topology Snapshot','Decision Package','Operations Evidence'];
@@ -15,7 +16,7 @@ export default function ImpactCenter() {
 
   return (
     <div>
-      <div className="breadcrumb">의사결정 / Decisions ▸ Impact Analysis</div>
+      <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="page-title">Impact Analysis Center</h1>
         <TopoLink />

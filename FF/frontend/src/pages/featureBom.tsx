@@ -28,6 +28,7 @@ import {
 } from '../data/featureBom';
 import { SPEC_TOPOLOGY_RELATIONS } from '../data/specNav';
 import { useApp, useToast } from '../store';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const ART_INDEX = new Map(ARTIFACT_RECORDS.map(a => [`${a.id}@${a.version}`, a]));
 const CP_INDEX = new Map(CONTROL_POINTS.map(c => [c.id, c]));
@@ -947,7 +948,7 @@ export function FeatureBom() {
 
   return (
     <>
-      <div className="breadcrumb">기준정보 ▸ <Link to="/master/define">Feature 등록</Link> ▸ Feature BOM 기준선</div>
+      <Breadcrumb />
       <h1 className="page-title">Feature BOM 기준선 <span className="pill">UI04</span> <span className="pill">C03</span></h1>
       <p className="small muted">
         승인 대상 Feature 버전 집합과 선택 구현 참조를 고정한 상위 구성 기준선이다. contentHash(SHA-256)가 승인·검증·증적을 결속하고,

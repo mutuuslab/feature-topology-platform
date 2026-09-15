@@ -8,6 +8,7 @@ import { RecBadge, KvRow } from '../components/twin';
 import { FEATURE_ID, FEATURE_VERSION } from '../data/twin/types';
 import { Donut, RadialProgress, Steps } from '../components/charts';
 import TopoLink from '../components/TopoLink';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const GATE_FLOW: Record<string, string[]> = {
   G1: ['Owner 확인', 'Lifecycle ≥ Approved'],
@@ -37,7 +38,7 @@ export default function ReleaseReadiness() {
     : <span className="btn" style={{ opacity: .45, cursor: 'not-allowed' }} title={`권한 필요: ${verb}`}>🔒 {label}</span>;
   return (
     <div>
-      <div className="breadcrumb">검증 / Verification ▸ Release Readiness ▸ <span className="mono">{id}</span></div>
+      <Breadcrumb title={id} />
       <h1 className="page-title">Release Readiness Center</h1>
       <p className="page-sub">{f?.displayName} — {r.passCount}/9 PASS</p>
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { reportEffects, auditLog, glossary } from '../data/refdata';
+import { reportEffects, auditLog } from '../data/refdata';
 import { useApp } from '../store';
 import { costSummary, fmtWon } from '../data/engine';
 import { RightPanel } from '../components/patterns';
 import { GroupedBars, Donut, Bars, Timeline, CountUp, tally, dist } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 // "15~20%" → 17.5, "<2%" → 2, "35%" → 35. 단위(%)가 명확한 경우만 숫자 반환.
 function parsePct(s: string): number | null {
@@ -25,7 +26,7 @@ export function Reports() {
       r.a != null && r.b != null && Number.isFinite(r.a) && Number.isFinite(r.b));
   return (
     <div>
-      <div className="breadcrumb">분석·감사 ▸ Reports</div>
+      <Breadcrumb />
       <h1 className="page-title">Reports / Analytics</h1>
       <p className="page-sub">정량 기대효과 (목표치 — PoC/Baseline 실측 검증 필요)</p>
       <div className="row">
@@ -55,7 +56,7 @@ export function AuditLog() {
   const [sel, setSel] = useState<any>(null);
   return (
     <div>
-      <div className="breadcrumb">분석·감사 ▸ Audit Log</div>
+      <Breadcrumb />
       <h1 className="page-title">Audit Log Explorer</h1>
       <p className="page-sub">불변(append-only) · Feature ID 귀속 · R156 SUMS 증적 · 세션 내 액션 실시간 반영 · 행 클릭 → 상세</p>
       <div className="row analytics-strip">
@@ -77,17 +78,6 @@ export function AuditLog() {
           <div>불변성</div><div className="small">append-only · 정정 시 별도 Record</div>
         </div>}
       </RightPanel>
-    </div>
-  );
-}
-
-export function Glossary() {
-  return (
-    <div>
-      <div className="breadcrumb">분석·감사 ▸ Glossary</div>
-      <h1 className="page-title">Glossary / 용어집 <span className="muted" style={{ fontWeight: 400 }}>(<CountUp value={glossary.length} />개 용어)</span></h1>
-      <div className="card"><table><thead><tr><th>용어</th><th>정의</th></tr></thead>
-        <tbody>{glossary.map(([t,d])=>(<tr key={t}><td><b>{t}</b></td><td>{d}</td></tr>))}</tbody></table></div>
     </div>
   );
 }

@@ -251,7 +251,7 @@ describe('라우팅·네비게이션 통합', () => {
     fireEvent.click(await screen.findByRole('button', { name: '차량 운영' }));
     // 기준 화면 정의서(UI11 차량 운영 현황)는 요구사양 문서라 제품 메뉴에 올라오지 않는다.
     expect(screen.queryByRole('link', { name: /UI11 차량 운영 현황/ })).toBeNull();
-    fireEvent.click(await screen.findByRole('link', { name: 'Twin Fleet' }, { timeout: 5000 }));
+    fireEvent.click(await screen.findByRole('link', { name: /Twin Fleet/ }, { timeout: 5000 }));
     // 두 페이지 모두 lazy 라우트다. 청크 로드 + Suspense 재시도 + 무거운 페이지 마운트가
     // 겹치면 기본 1000ms 를 넘길 수 있으므로(머신 부하에 따라 편차가 큼) 여유를 준다.
     // 검증 대상은 '이동'이지 '지연'이 아니다.

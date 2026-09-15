@@ -5,6 +5,7 @@ import { useToast, useApp } from '../store';
 import { RightPanel } from '../components/patterns';
 import TopoLink from '../components/TopoLink';
 import { Donut, tally, dist } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 export default function VariantMatrix() {
   const toast = useToast();
@@ -19,7 +20,7 @@ export default function VariantMatrix() {
   };
   return (
     <div>
-      <div className="breadcrumb">배포·운영 ▸ Variant Matrix & Rule Builder</div>
+      <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="page-title">Variant Matrix · FEAT-BDC-001</h1>
         <TopoLink />

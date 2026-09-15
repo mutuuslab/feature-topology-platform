@@ -22,6 +22,7 @@ import { webglSupported } from '../scene/webgl';
  */
 const VehicleTwinScene = lazy(() => import('../scene/VehicleTwinScene.tsx'));
 
+import { Breadcrumb } from '../components/Breadcrumb';
 import {
   ClassificationBanner,
   DreFlow,
@@ -193,6 +194,7 @@ export function TwinVehicle() {
     <div>
       <ClassificationBanner extra={`Twin v${twin.twinVersion}`} />
 
+      <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="page-title">
           Vehicle Twin · <span className="mono">{twin.vin}</span> <LiveDot />
@@ -746,6 +748,7 @@ export function TwinIncident() {
     <div>
       <ClassificationBanner extra="SIMULATED — 운영 데이터 아님" />
 
+      <Breadcrumb />
       <h1 className="page-title">Closed-Loop · Incident &amp; Kill-Switch <LiveDot /></h1>
       <p className="page-sub">
         장애 주입 → Twin 이상 감지 → Rollout 자동 일시정지 → 운영자 판단 → Kill-Switch → 차량 확인 → 재수렴 → Incident 종료의

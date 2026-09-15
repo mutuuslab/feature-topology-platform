@@ -4,6 +4,7 @@ import { useApp } from '../store';
 import { MODELS, sampleVehicles } from '../data/fleet';
 import { Gauge, Heatmap } from '../components/charts';
 import TopoLink from '../components/TopoLink';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 export default function Activation() {
   const nav = useNavigate();
@@ -18,6 +19,7 @@ export default function Activation() {
 
   return (
     <div>
+      <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="page-title">Activation Control · 차종별 활성/비활성</h1>
         <TopoLink id={fid} />

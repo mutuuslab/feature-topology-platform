@@ -38,6 +38,7 @@ import {
   domains as REF_DOMAINS, orgs as REF_ORGS, permMatrix, profileOf, roleLabel, roleKeyOf, roles as REF_ROLES,
 } from '../data/refdata';
 import type { Feature as ModelFeature, Lifecycle as ModelLifecycle } from '../data/model';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const ATTRS = SPEC_REG_ATTRS as Record<string, SpecRegAttr>;
 const AREA_IDS = SPEC_REG_AREAS.map(a => a.id);
@@ -645,7 +646,7 @@ export function DefineRevision() {
 
   return (
     <div>
-      <div className="breadcrumb">기준정보 ▸ Feature 등록</div>
+      <Breadcrumb />
       <h1 className="page-title">Feature 등록</h1>
       <p className="page-sub">
         담당 역할 {roleLabel('author')} · 상세 영역 {SPEC_REG_AREAS.length}개 · 작업 {TASK_TOTAL}개 ·

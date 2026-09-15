@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { impact, verification, deploy, supplier, buildDecisionPackage, fmtWon } from '../data/engine';
 import { useToast, useApp } from '../store';
 import { Donut, Bars, RadialProgress, Steps, GroupedBars } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const FID = 'FEAT-BDC-001';
 
@@ -11,7 +12,7 @@ export function VerificationScope() {
   const covered = v.mandatoryTests.length - v.missingEvidence.length;
   return (
     <div>
-      <div className="breadcrumb">의사결정 ▸ Verification Scope</div>
+      <Breadcrumb />
       <h1 className="page-title">Verification Scope</h1>
       <div className="row">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>증적 커버리지</b>
@@ -36,7 +37,7 @@ export function DeploymentDecision() {
   const opts = ['Targeting/Policy Rule 변경','Variant Rule 변경','SWC 코드 변경','API/Signal 변경','Calibration 변경'];
   return (
     <div>
-      <div className="breadcrumb">의사결정 ▸ Deployment Decision</div>
+      <Breadcrumb />
       <h1 className="page-title">Deployment Decision</h1>
       <div className="card">
         <select value={ct} onChange={e=>setCt(e.target.value)} style={{padding:8}}>{opts.map(o=><option key={o}>{o}</option>)}</select>
@@ -54,7 +55,7 @@ export function SupplierScope() {
   const s = supplier(FID);
   return (
     <div>
-      <div className="breadcrumb">의사결정 ▸ Supplier Scope</div>
+      <Breadcrumb />
       <h1 className="page-title">Supplier Responsibility</h1>
       <div className="card"><div className="kv">
         <div>Supplier Scope</div><div>{s.supplierScope.join(', ')}</div>
@@ -70,7 +71,7 @@ export function DecisionCenter() {
   const nav = useNavigate();
   return (
     <div>
-      <div className="breadcrumb">의사결정 ▸ Decision Center</div>
+      <Breadcrumb />
       <h1 className="page-title">Decision Center · FEAT-BDC-001</h1>
       <p className="page-sub">Pipeline: Change → Lookup → ①Impact → ②Verify → ③Deploy → ④Supplier → Report</p>
       <div className="card">
@@ -106,7 +107,7 @@ export function DecisionReport() {
   };
   return (
     <div>
-      <div className="breadcrumb">의사결정 ▸ DecisionReport</div>
+      <Breadcrumb />
       <h1 className="page-title">DecisionReport (통합)</h1>
       <div className="card">
         <Steps steps={['Impact', 'Verify', 'Deploy', 'Supplier', 'Package']} done />

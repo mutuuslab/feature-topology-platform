@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { impact, verification, deploy, supplier, buildDecisionPackage, fmtWon } from '../data/engine';
 import { useApp } from '../store';
 import { Steps, Bars } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const STEPS = ['Define', 'Topology Lookup', 'Run Decisions', 'Review Report', 'Submit'];
 
@@ -30,7 +31,7 @@ export default function CRWizard() {
 
   return (
     <div>
-      <div className="breadcrumb">변경관리 / Change Mgmt ▸ CR Wizard</div>
+      <Breadcrumb />
       <h1 className="page-title">Change Request Wizard</h1>
       <p className="page-sub">변경 요청 → Topology → Impact → Verify → Deploy → Supplier → Submit</p>
 

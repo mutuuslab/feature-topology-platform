@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { evidence } from '../data/model';
 import { RightPanel } from '../components/patterns';
 import { Donut, Bars, RadialProgress, dist, tally } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const TC_META: Record<string, { method: string; feature: string }> = {
   'HIL-BDC-001': { method: 'HIL', feature: 'FEAT-BDC-001' },
@@ -12,7 +13,7 @@ export function TestEvidenceManager() {
   const [sel, setSel] = useState<any>(null);
   return (
     <div>
-      <div className="breadcrumb">검증 ▸ Test Evidence Manager</div>
+      <Breadcrumb />
       <h1 className="page-title">Test Evidence Manager</h1>
       <p className="page-sub">행 클릭 → 증적 상세</p>
 
@@ -51,7 +52,7 @@ export function TestEvidenceManager() {
 export function EvidenceDetail() {
   return (
     <div>
-      <div className="breadcrumb">검증 ▸ Evidence Detail</div>
+      <Breadcrumb title="Evidence Detail" />
       <h1 className="page-title">Evidence · OTA-RB-002</h1>
       <div className="row">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>Coverage</b>

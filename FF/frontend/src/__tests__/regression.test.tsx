@@ -20,12 +20,33 @@ describe('1차 IA = 기준 패키지 7 업무 그룹 (MENU 1.3)', () => {
     expect(domainOfPath('/verify/evidence')).toBe('quality');      // UI16
     expect(domainOfPath('/admin/users')).toBe('admin');            // UI17
   });
-  it('업무 그룹 밖 경로는 그룹 없음 → 구현 화면 전체 목록', () => {
-    expect(domainOfPath('/')).toBe('');
-    expect(domainOfPath('/spec/changelog')).toBe('');
+  it('홈·업무 영역 밖 경로는 업무 그룹이 없다 (삭제된 참조 문서 경로 포함)', () => {
+    expect(domainOfPath('/')).toBe('work');                    // UI01 내 업무 = 홈
+    expect(domainOfPath('/home/customize')).toBe('work');
+    expect(domainOfPath('/spec/changelog')).toBe('');           // 기준 패키지 개정 이력 제거
+    expect(domainOfPath('/no-such-route')).toBe('');
     expect(ITEM['/spec']).toBeUndefined();                     // 604 FR 기능명세 Overview 제거
     expect(ITEM['/spec/explorer']).toBeUndefined();             // FR Explorer 제거
     expect(ITEM['/spec/coverage']).toBeUndefined();             // Coverage 제거
+  });
+
+  it('서브내비 항목 순서가 정본 MENU 1.3 화면 순서 그대로다', () => {
+    DOMAINS.forEach(d => {
+      const specGroup = SPEC_MENU.find(g => g.id === d.key);
+      expect(d.groups.map(g => g.ko), d.key).toEqual(
+        specGroup!.items.filter(it => d.groups.some(g => g.ko === it.ko)).map(it => it.ko));
+    });
+  });
+
+  it('경로 하나는 메뉴에서 한 영역에만 나온다', () => {
+    const paths = DOMAINS.flatMap(d => d.groups.flatMap(g => g.items.map(it => it.to)));
+    expect(paths).toHaveLength(new Set(paths).size);
+  });
+
+  it('메뉴 소속 영역과 레일 하이라이트가 같은 답을 낸다 (손으로 적은 그룹 이름 없음)', () => {
+    DOMAINS.forEach(d => d.groups.forEach(g => g.items.forEach(it => {
+      expect(domainOfPath(it.to), `${d.key} / ${g.ko} → ${it.to}`).toBe(d.key);
+    })));
   });
 });
 

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { supplierCost, fmtWon } from '../data/engine';
 import { useToast, useApp } from '../store';
 import { RadialProgress, Donut, Steps, tally, dist } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const PKG_ITEMS = [
   ['1 API Contract (OpenAPI/Protobuf)','valid'],['2 Human Documentation','valid'],
@@ -21,7 +22,7 @@ export function SupplierPortal() {
   const accPct = Math.round(accepted / (acc.length || 1) * 100);
   return (
     <div>
-      <div className="breadcrumb">협력사 ▸ Supplier Portal</div>
+      <Breadcrumb />
       <h1 className="page-title">Supplier Portal · SUP-BDC-A</h1>
       <p className="page-sub">협력사 전용 워크스페이스 (RBAC 외부 스코프)</p>
       <div className="row analytics-strip">
@@ -60,7 +61,7 @@ export function APIReleasePackage() {
   const nav = useNavigate();
   return (
     <div>
-      <div className="breadcrumb">협력사 ▸ API Release Package</div>
+      <Breadcrumb />
       <h1 className="page-title">API Release Package Intake (10항목)</h1>
       <p className="page-sub">Mapped: FEAT-BDC-001 ↔ BDC_FUNC_032</p>
       <div className="row analytics-strip">
@@ -87,7 +88,7 @@ export function APIReleasePackage() {
 export function PackageDetail() {
   return (
     <div>
-      <div className="breadcrumb">협력사 ▸ Package Detail</div>
+      <Breadcrumb title="Package Detail" />
       <h1 className="page-title">Package Detail · BDC_FUNC_032</h1>
       <div className="card"><b>매핑 경로</b>
         <Steps done steps={['FEAT-BDC-001', 'BDC_FUNC_032', 'SWC-BDC-ADAPTER', 'ECU-BDC', 'API-BDC-POLICY-CONTROL', 'HIL-BDC-001', 'Acceptance']} />

@@ -9,6 +9,7 @@ import { useTwinOptional } from '../state/twinStore';
 import { RecBadge, DreFlow } from '../components/twin';
 import { FEATURE_ID } from '../data/twin/types';
 import { features } from '../data/model';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const fmtM = (n: number) => (n / 1e6).toFixed(2) + 'M';
 
@@ -26,6 +27,7 @@ export default function Fleet() {
 
   return (
     <div>
+      <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="page-title">Fleet · 차량별 Feature 상태 <LiveDot /></h1>
         <TopoLink />

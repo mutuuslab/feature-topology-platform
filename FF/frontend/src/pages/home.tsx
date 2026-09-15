@@ -6,6 +6,7 @@ import { StatTile, AreaChart, Donut, Bars, RadialProgress, LiveDot, Timeline, ta
 import { fleetStats } from '../data/fleet';
 import { catalogStats, costSummary, fmtWon, consistency, readiness } from '../data/engine';
 import { SeverityBadge, severityMeta } from '../components/ui';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
 
@@ -14,7 +15,7 @@ export function Login() {
   return (
     <div style={{ maxWidth: 380, margin: '60px auto' }}>
       <div className="card" style={{ textAlign: 'center' }}>
-        <h2 style={{ color: 'var(--brand)' }}>▣ Feature Platform</h2>
+        <h1 style={{ color: 'var(--brand)', fontSize: 22, margin: '0 0 8px' }}>▣ Feature Platform</h1>
         <p className="muted small">SDV Feature Lifecycle & 통제 관리</p>
         <button className="btn primary" style={{ width: '100%', marginTop: 12 }} onClick={() => nav('/onboarding')}>Hyundai SSO 로그인</button>
         <input className="mt" placeholder="MFA 코드" style={{ width: '100%', padding: 8, border: '1px solid var(--line)', borderRadius: 6 }} />
@@ -44,7 +45,7 @@ export function Onboarding() {
 const ROLE_FOCUS: Record<string, { title: string; desc: string; views: [string, string][] }> = {
   author: { title: 'Feature 설계 · 카탈로그/요구사항 중심', desc: 'Feature 정의·우선순위·기대효과', views: [['Catalog', '/catalog'], ['Feature 등록', '/master/define'], ['Feature BOM 기준선', '/master/bom']] },
   approver: { title: '구성 승인 · 검토/게이트 중심', desc: '검토 대기·승인 판단·Gate 판정', views: [['Approval', '/admin/approval'], ['Decision Center', '/decisions/center'], ['Feature BOM 승인 순서', '/master/bom']] },
-  quality: { title: '품질 검토 · 검증 증적 중심', desc: 'Gate·커버리지·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['컴플라이언스 룰', '/spec/compliance']] },
+  quality: { title: '품질 검토 · 검증 증적 중심', desc: 'Gate·커버리지·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['컴플라이언스 룰', '/verify/compliance']] },
   operator: { title: '차량 운영 · 실시간 수렴 중심', desc: '실시간 텔레메트리·인시던트·Fleet', views: [['Ops Dashboard', '/ops/FEAT-BDC-001'], ['Twin Fleet', '/twin/fleet'], ['Incident', '/ops/incident']] },
   steward: { title: 'PLM 기준정보 · 정합성 중심', desc: '아티팩트·토폴로지 관계·메타모델 정합', views: [['Topology', '/topology/FEAT-BDC-001'], ['Artifact Catalog', '/master/artifacts'], ['Feature 제어점', '/master/control-points']] },
   commerce: { title: '상품 권리 · 릴리스/과금 중심', desc: '상품 구성·사용 권리·과금 조건', views: [['Catalog', '/catalog'], ['Cost', '/cost'], ['Variant Matrix', '/variants/FEAT-BDC-001']] },
@@ -68,7 +69,7 @@ export function RoleHome() {
   ];
   return (
     <div>
-      <div className="breadcrumb">홈 / Home ▸ 내 대시보드</div>
+      <Breadcrumb />
       <div className="hero">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <div><h1 className="page-title">Feature Platform <LiveDot /></h1>
@@ -223,7 +224,7 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
         <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>Gate 상태 분포</b>
           <Donut size={130} segments={[{ label: 'PASS', value: counts.PASS, color: '#1F9D55' }, { label: 'PENDING', value: counts.PENDING, color: '#D9822B' }, { label: 'FAIL', value: counts.FAIL, color: '#D64545' }]} /></div>
         <div className="col card"><b>바로가기</b>
-          <div className="row mt"><button className="btn" onClick={() => nav('/readiness/FEAT-BDC-001')}>Release Readiness →</button><button className="btn" onClick={() => nav('/verify/evidence')}>Test Evidence →</button><button className="btn" onClick={() => nav('/spec/compliance')}>Compliance →</button></div>
+          <div className="row mt"><button className="btn" onClick={() => nav('/readiness/FEAT-BDC-001')}>Release Readiness →</button><button className="btn" onClick={() => nav('/verify/evidence')}>Test Evidence →</button><button className="btn" onClick={() => nav('/verify/compliance')}>Compliance →</button></div>
         </div>
       </div>
       <div className="row mt">
@@ -349,7 +350,7 @@ export function HomeCustomize() {
   const dirty = JSON.stringify(items) !== JSON.stringify(state.homeWidgets);
   return (
     <div>
-      <div className="breadcrumb">홈 ▸ 커스터마이즈</div>
+      <Breadcrumb />
       <h1 className="page-title">홈 커스터마이즈</h1>
       <div className="card"><p className="muted small">위젯 표시 여부·순서를 설정하고 저장하면 새로고침 후에도 유지됩니다(홈 "내 위젯"에 반영).</p>
         {items.map((w, i) => (

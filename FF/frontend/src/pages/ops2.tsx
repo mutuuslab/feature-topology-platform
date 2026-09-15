@@ -6,6 +6,7 @@ import { RightPanel } from '../components/patterns';
 import { AreaChart, GaugeArc, LiveDot, Donut, Bars, Steps, tally, dist } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 import { useTwinOptional } from '../state/twinStore';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 export function OTACampaign() {
   const nav = useNavigate();
@@ -13,7 +14,7 @@ export function OTACampaign() {
   const campaigns = state.campaigns;
   return (
     <div>
-      <div className="breadcrumb">배포·운영 ▸ OTA Campaign</div>
+      <Breadcrumb />
       <h1 className="page-title">OTA Campaign Manager</h1>
       <p className="page-sub">단계적 롤아웃(5→20→50→100%) · 각 단계 telemetry 가드 통과 시 진행 (FR-ROL/TGT)</p>
       <div className="row analytics-strip">
@@ -42,7 +43,7 @@ export function CampaignDetail() {
   const labels = ROLLOUT_STEPS.map(r => r + '%');
   return (
     <div>
-      <div className="breadcrumb">배포·운영 ▸ Campaign Detail</div>
+      <Breadcrumb title="Campaign Detail" />
       <h1 className="page-title">{c.id}</h1>
       <div className="card"><b>단계 Rollout 파이프라인</b>
         <div className="mt"><Steps steps={labels} current={c.rollout >= 100 ? undefined : c.step} done={c.rollout >= 100} /></div>
@@ -68,7 +69,7 @@ export function PolicyLifecycle() {
   const promote = (id: string) => dispatch({ t: 'PROMOTE_POLICY', id, actor: state.role });
   return (
     <div>
-      <div className="breadcrumb">배포·운영 ▸ Policy Lifecycle</div>
+      <Breadcrumb />
       <h1 className="page-title">Policy Lifecycle Board</h1>
       <p className="page-sub">Draft → Review → Approved → Deployed → Monitored · 카드 승급(promote) (FR-POL/PVER)</p>
       <div className="card"><b>단계별 정책 수</b>
@@ -124,7 +125,7 @@ export function TelemetryExplorer() {
         <h1 className="page-title">Telemetry Explorer · FEAT-BDC-001 <LiveDot /></h1>
         <TopoLink />
       </div>
-      <div className="breadcrumb">배포·운영 ▸ Telemetry Explorer · 실시간 수집(MQTT 시뮬)</div>
+      <Breadcrumb />
       <div className="row">
         <div className="col card" style={{ flex: 2 }}><b>Activation Success Rate (실시간) <LiveDot /></b>
           <AreaChart data={live.series} height={150} min={88} max={100} fmt={n => n.toFixed(0) + '%'} />
@@ -165,7 +166,7 @@ export function IncidentManager() {
   const twinIncidents = twin?.snapshot.incidents ?? [];
   return (
     <div>
-      <div className="breadcrumb">배포·운영 ▸ Incident</div>
+      <Breadcrumb />
       <h1 className="page-title">Incident Manager</h1>
       {twin && (
         <div className="card">
@@ -213,7 +214,7 @@ export function IncidentDetail() {
   const idx = INC_FLOW.indexOf(i.status) < 0 ? 0 : INC_FLOW.indexOf(i.status);
   return (
     <div>
-      <div className="breadcrumb">배포·운영 ▸ Incident Detail</div>
+      <Breadcrumb title="Incident Detail" />
       <h1 className="page-title">{i.id}</h1>
       <div className="card"><b>대응 상태</b>
         <div className="mt"><Steps steps={['접수(open)', '조사(investigating)', '해소(resolved)']} current={i.status === 'resolved' ? undefined : idx} done={i.status === 'resolved'} /></div>

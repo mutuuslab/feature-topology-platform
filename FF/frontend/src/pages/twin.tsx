@@ -14,6 +14,7 @@ import * as T from '../data/twin/types';
 import * as E from '../data/twin/engine';
 import { Bars, CountUp, Donut, GaugeArc, LiveDot, Steps, Timeline, dist } from '../components/charts';
 import { EmptyState } from '../components/patterns';
+import { Breadcrumb } from '../components/Breadcrumb';
 import {
   ClassificationBanner,
   DreFlow,
@@ -416,6 +417,7 @@ function FleetFilterBlock() {
 export function TwinFleet() {
   return (
     <div>
+      <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <FleetTitle />
         <SimClockBar />
@@ -460,6 +462,7 @@ export function TwinImpact() {
 
   return (
     <div>
+      <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="page-title">Twin Impact Preview · 활성화 사전 영향분석</h1>
         <SimClockBar />
@@ -650,6 +653,7 @@ export function TwinSimulation() {
 
   return (
     <div>
+      <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="page-title">What-if Twin Simulation · 활성화 전 가상 검증</h1>
         <span className="small muted">Simulation Twin ID <code className="mono">{E.SIM_VIN}</code> · seed <code className="mono">{r.seed}</code></span>

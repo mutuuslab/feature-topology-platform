@@ -6,6 +6,7 @@ import { useApp } from '../store';
 import { RightPanel } from '../components/patterns';
 import { Donut, Bars, tally, dist } from '../components/charts';
 import { SeverityBadge, SeverityLegend, severityMeta } from '../components/ui';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const SEV_COLOR = { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' };
 
@@ -50,7 +51,7 @@ export function EdgeEditor() {
 
   return (
     <div>
-      <div className="breadcrumb">관계 ▸ Edge Editor</div>
+      <Breadcrumb />
       <h1 className="page-title">Edge Editor (Typed Edge)</h1>
       <div className="card">
         <div className="kv" style={{ maxWidth: 560 }}>
@@ -76,7 +77,7 @@ export function ViolationDetail() {
   const v = all[0];
   return (
     <div>
-      <div className="breadcrumb">관계 ▸ Consistency ▸ Violation</div>
+      <Breadcrumb />
       <h1 className="page-title">Violation Detail</h1>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>전체 위반 Severity</b>
@@ -103,7 +104,7 @@ export function MetamodelViewer() {
   const d = sel ? ENT_DESC[sel] : null;
   return (
     <div>
-      <div className="breadcrumb">관계 ▸ Metamodel Viewer</div>
+      <Breadcrumb />
       <h1 className="page-title">Metamodel — 18 Entity / 4 Group</h1>
       <p className="page-sub">엔티티 클릭 → 속성·관계 상세</p>
       <div className="row analytics-strip">

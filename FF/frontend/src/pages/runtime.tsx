@@ -4,6 +4,7 @@ import { sampleVehicles, vehicleFeatureStates, STATE_COLOR } from '../data/fleet
 import { telemetry } from '../data/model';
 import { GaugeArc, Donut, Steps, LiveDot, tally, dist } from '../components/charts';
 import TopoLink from '../components/TopoLink';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 // FR-AUTH(런타임 Authoring) · FR-RTE(런타임 평가) · FR-LPC(로컬 정책 캐시) — 차량/ECU 런타임 시뮬
 export default function RuntimeSim() {
@@ -36,7 +37,7 @@ export default function RuntimeSim() {
         <h1 className="page-title">Runtime 시뮬 · Authoring·평가·캐시 <LiveDot /></h1>
         <TopoLink id={fid} />
       </div>
-      <div className="breadcrumb">배포·운영 ▸ Runtime (FR-AUTH/RTE/LPC)</div>
+      <Breadcrumb />
       <div className="decision INFO" style={{ background: '#EAF2FF', border: '1px solid var(--brand)', color: 'var(--brand)' }}>
         ⓘ 차량/ECU 측 런타임 동작을 앱 안에서 재현한 시뮬레이터입니다. 실제 백엔드(정책 서명 서버·OTA·ECU) 연동 시 데이터 소스만 교체됩니다.
       </div>

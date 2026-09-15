@@ -9,7 +9,7 @@ import {
   SPEC_SCREEN_PLANE, specPlaneOfPath,
 } from '../data/specPlanesNav';
 import { SPEC_PLANES, SPEC_PLANE_NOTE } from '../data/specArch';
-import { PLANE_NAV, DEMO_GROUPS } from '../i18n';
+import { PLANE_NAV, DOMAINS } from '../i18n';
 
 describe('요구사양 문서는 제품에 없다', () => {
   it('문서 원문 자산(public/spec)이 배포 대상에 없다', () => {
@@ -126,12 +126,11 @@ describe('Plane별 보기 (4 Plane · 공유 기반)', () => {
   });
 
   it('구현 데모 화면이 빠짐없이 한 Plane에만 들어간다', () => {
-    const all = DEMO_GROUPS.flatMap((g) => g.items.map((it) => it.to));
+    // 메뉴(1차 IA)에 올라온 구현 경로 = Plane별 보기에 배치된 구현 경로 (같은 집합, 정확히 한 번씩)
+    const all = DOMAINS.flatMap((d) => d.groups.flatMap((g) => g.items.map((it) => it.to)));
     const placed = SPEC_PLANE_NAV.flatMap((p) => p.demos.flatMap((d) => d.routes));
     expect(placed).toHaveLength(new Set(placed).size);
-    all.forEach((r) => expect(placed, r).toContain(r));
-    expect(SPEC_PLANE_NAV.flatMap((p) => p.demos.flatMap((d) => d.routes)).length)
-      .toBeGreaterThanOrEqual(all.length);
+    expect(placed.slice().sort()).toEqual(all.slice().sort());
   });
 
   it('경로로 대표 Plane을 되찾을 수 있다', () => {
@@ -189,7 +188,8 @@ describe('기준 화면 ↔ 구현 화면 연결표', () => {
     });
     expect(screenOfRoute('/twin/vehicle/VIN-DEMO-017')).toBe('UI12');
     expect(screenOfRoute('/master/define')).toBe('UI02');
-    expect(screenOfRoute('/change/timeline')).toBe('UI14');
+    expect(screenOfRoute('/change/timeline')).toBe('UI28');   // UI28 변경요청과 Revision 비교
+    expect(screenOfRoute('/change/cr/CR-001')).toBe('UI19');  // 동적 하위 경로도 기준 화면을 되찾는다
   });
 
   it('연결한 구현 화면 경로가 실제 라우트로 존재한다', () => {

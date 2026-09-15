@@ -24,7 +24,15 @@ export function getDB() { return db; }
 export const getFeature = (id: string) => db.features.find(f => f.id === id);
 export const edgesOf = (id: string) => db.edges.filter(e => e.source === id || e.target === id);
 export const relationsOf = (id: string) => db.relations.filter(r => r.source === id || r.target === id);
-export const artifact = (id: string) => db.artifacts.find(a => a.id === id);
+/**
+ * 관계는 구현 참조를 `ID@version` 형태로 적는다(BOM 멤버의 정확 버전).
+ * 영향 분석·그래프는 버전 노드를 만들지 않으므로 참조는 객체 ID 로 정규화해 해석한다.
+ */
+export const refId = (ref: string) => ref.split('@')[0];
+export const artifact = (id: string) => {
+  const direct = db.artifacts.find(a => a.id === id);
+  return direct || db.artifacts.find(a => a.id === refId(id));
+};
 export const health = (id: string) => db.healthByFeature[id] ?? 0;
 
 export function catalogStats() {
@@ -56,9 +64,10 @@ export interface ImpactResult {
 }
 
 export function impact(changeTarget: string): ImpactResult {
+  const target = refId(changeTarget);
   const seeds: string[] = [];
-  if (getFeature(changeTarget)) seeds.push(changeTarget);
-  else db.features.forEach(f => { if (relationsOf(f.id).some(r => r.target === changeTarget || r.source === changeTarget)) seeds.push(f.id); });
+  if (getFeature(target)) seeds.push(target);
+  else db.features.forEach(f => { if (relationsOf(f.id).some(r => refId(r.target) === target || refId(r.source) === target)) seeds.push(f.id); });
   const frontier = new Set(seeds);
   seeds.forEach(s => edgesOf(s).forEach(e => { if (e.type === 'parent_of' || e.type === 'requires') { frontier.add(e.source); frontier.add(e.target); } }));
   const F = new Set<string>(), reqs = new Set<string>(), swcs = new Set<string>(), ecus = new Set<string>(),
@@ -218,19 +227,28 @@ export function consistency() {
 }
 
 export function topology(featureId: string) {
-  const nodes: any[] = []; const seen = new Set<string>();
+  const nodes: any[] = []; const seen = new Set<string>(); const edgeSeen = new Set<string>();
   const add = (id: string, label: string, type: string) => { if (!seen.has(id)) { seen.add(id); nodes.push({ data:{ id, label, type } }); } };
   const f = getFeature(featureId); if (f) add(f.id, f.displayName, 'feature-center');
   const cyEdges: any[] = [];
+  /** 양 끝점을 노드로 먼저 세운 뒤 간선을 붙인다 — 없는 노드를 가리키는 간선은 그래프를 깨뜨린다. */
+  const link = (id: string, source: string, target: string, label: string) => {
+    if (edgeSeen.has(id)) return;
+    edgeSeen.add(id); cyEdges.push({ data:{ id, source, target, label } });
+  };
   edgesOf(featureId).forEach(e => {
     add(e.source, getFeature(e.source)?.displayName||e.source, 'feature');
     add(e.target, getFeature(e.target)?.displayName||e.target, e.target.startsWith('FEAT')?'feature':'artifact');
-    cyEdges.push({ data:{ id:e.id, source:e.source, target:e.target, label:e.type } });
+    link(e.id, e.source, e.target, e.type);
   });
   relationsOf(featureId).forEach(r => {
-    const n = artifact(r.target)||artifact(r.source); const other = r.source===featureId?r.target:r.source;
-    if (n) add(n.id, n.displayName, n.kind.toLowerCase());
-    cyEdges.push({ data:{ id:r.id, source:featureId, target:other, label:r.type } });
+    const src = refId(r.source), tgt = refId(r.target);
+    [src, tgt].forEach(ref => {
+      if (ref === featureId) return;
+      const n = artifact(ref);
+      add(ref, n?.displayName || ref, n ? n.kind.toLowerCase() : 'artifact');
+    });
+    link(r.id, src, tgt, r.type);
   });
   return { nodes, edges: cyEdges };
 }

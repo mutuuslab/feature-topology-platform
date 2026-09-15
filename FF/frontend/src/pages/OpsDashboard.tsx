@@ -7,6 +7,7 @@ import { useApp } from '../store';
 import { GButton } from '../components/patterns';
 import { AreaChart, GaugeArc, LiveDot } from '../components/charts';
 import TopoLink from '../components/TopoLink';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 export default function OpsDashboard() {
   const { id = 'FEAT-BDC-001' } = useParams();
@@ -24,7 +25,7 @@ export default function OpsDashboard() {
 
   return (
     <div>
-      <div className="breadcrumb">배포·운영 / Ops ▸ <span className="mono">{id}</span></div>
+      <Breadcrumb title={id} />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="page-title">Operations Dashboard · Kill Switch <LiveDot /></h1>
         <TopoLink id={id} />

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { consistency } from '../data/engine';
 import { Donut, Bars, RadialProgress, tally, dist } from '../components/charts';
 import { SeverityBadge, SeverityLegend, severityMeta } from '../components/ui';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const SEV_COLOR = { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' };
 
@@ -12,7 +13,7 @@ export default function ConsistencyConsole() {
   const RULES_TOTAL = 12;
   return (
     <div>
-      <div className="breadcrumb">관계 / Topology ▸ Consistency Rule Console</div>
+      <Breadcrumb />
       <h1 className="page-title">Consistency Rule Console</h1>
       <p className="page-sub">12 Rules 자동 평가 · Violation Inbox {v.length}건</p>
 

@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useAppShell, useAppApi, roleHome } from './store';
 import { NotFound } from './components/patterns';
+import RouteBoundary from './components/RouteBoundary';
 import { roles, profileOf, roleLabel } from './data/refdata';
-import { DOMAINS, DEMO_GROUPS, DEPT_NAV, PLANE_NAV, ITEM, domainOfPath, useT } from './i18n';
+import { DOMAINS, DEPT_NAV, PLANE_NAV, ITEM, domainOfPath, useT } from './i18n';
 import { specPlaneOfPath } from './data/specPlanesNav';
 import Catalog from './pages/Catalog';
 import FeatureDetail from './pages/FeatureDetail';
@@ -24,8 +25,8 @@ import { OTACampaign, CampaignDetail, PolicyLifecycle, TelemetryExplorer, Incide
 import RuntimeSim from './pages/runtime';
 import { SupplierPortal, APIReleasePackage, PackageDetail } from './pages/supplier';
 import { ConnectorHub, ConnectorDetail, SyncLogs } from './pages/integration';
-import { Reports, AuditLog, Glossary } from './pages/insights';
-import { UsersRoles, PermissionsMatrix, OrgDomains, ApprovalWorkflow, Settings, NotificationsCenter, GlobalSearch } from './pages/admin';
+import { Reports, AuditLog } from './pages/insights';
+import { UsersRoles, PermissionsMatrix, OrgDomains, ApprovalWorkflow, Settings, NotificationsCenter } from './pages/admin';
 import Cost from './pages/cost';
 import Fleet from './pages/fleet';
 import Activation from './pages/activation';
@@ -62,8 +63,6 @@ export default function App() {
   }, []);
   const roleDomain = domainOfPath(roleHome[role] || '/');
   const dom = DOMAINS.find(d => d.key === activeDomain) || DOMAINS[0];
-  // 업무 그룹에 속하지 않는 경로(예: /arch)에서는 레일 하이라이트 없이 기준 참조 목록을 보여준다.
-  const refMode = !DOMAINS.some(d => d.key === activeDomain);
   // 부서별 보기
   const [activeDept, setActiveDept] = useState(role);
   useEffect(() => { setActiveDept(role); }, [role]);
@@ -145,27 +144,13 @@ export default function App() {
               ))}
             </div>
             <div className="subnav" onClick={() => setNavOpen(false)}>
-              {refMode ? (
-                <>
-                  <div className="subnav-head">▣ 구현 화면 전체</div>
-                  {DEMO_GROUPS.map(g => (
-                    <div key={g.ko}>
-                      <div className="group">{navGroup(g)}</div>
-                      {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
-                    </div>
-                  ))}
-                </>
-              ) : (
-                <>
-                  <div className="subnav-head">{dom.icon} {navDomain(dom)}</div>
-                  {dom.groups.map(g => (
-                    <div key={g.ko}>
-                      <div className="group">{navGroup(g)}</div>
-                      {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
-                    </div>
-                  ))}
-                </>
-              )}
+              <div className="subnav-head">{dom.icon} {navDomain(dom)}</div>
+              {dom.groups.map(g => (
+                <div key={g.ko}>
+                  <div className="group">{navGroup(g)}</div>
+                  {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
+                </div>
+              ))}
             </div>
           </> : <>
             <div className="rail">
@@ -189,13 +174,13 @@ export default function App() {
         </div>
       </nav>
       <main className="main" id="main">
+        <RouteBoundary key={loc.pathname}>
         <Suspense fallback={<div className="card">로딩 중…</div>}>
         <Routes>
           <Route path="/" element={<RoleHome />} />
           <Route path="/login" element={<Login />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/home/customize" element={<HomeCustomize />} />
-          <Route path="/search" element={<GlobalSearch />} />
 
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/feature/:id" element={<FeatureDetail />} />
@@ -254,7 +239,6 @@ export default function App() {
 
           <Route path="/insights/reports" element={<Reports />} />
           <Route path="/insights/audit" element={<AuditLog />} />
-          <Route path="/insights/glossary" element={<Glossary />} />
           <Route path="/cost" element={<Cost />} />
 
           <Route path="/admin/users" element={<UsersRoles />} />
@@ -266,15 +250,17 @@ export default function App() {
 
           {/* UI05 Topology 동작 메커니즘 — 구현 화면(요구사양 문서 화면은 제품에 두지 않는다) */}
           <Route path="/arch/topology" element={<TopologyArch />} />
-          <Route path="/spec/experiment" element={<Experiment />} />
-          <Route path="/spec/conflict" element={<Conflict />} />
-          <Route path="/spec/exception" element={<Exception />} />
-          <Route path="/spec/compliance" element={<Compliance />} />
-          <Route path="/spec/scenario" element={<Scenario />} />
-          <Route path="/spec/cicd" element={<CICD />} />
-          <Route path="/spec/billing" element={<Billing />} />
-          <Route path="/spec/business" element={<Business />} />
-          <Route path="/spec/security" element={<Security />} />
+
+          {/* 정본 MENU 1.3 업무 영역에 맞춘 경로 — 기준정보 화면은 각 영역의 구현 경로로 들어온다 */}
+          <Route path="/verify/experiment" element={<Experiment />} />
+          <Route path="/policy/conflict" element={<Conflict />} />
+          <Route path="/policy/exception" element={<Exception />} />
+          <Route path="/verify/compliance" element={<Compliance />} />
+          <Route path="/verify/scenario" element={<Scenario />} />
+          <Route path="/release/cicd" element={<CICD />} />
+          <Route path="/commerce/billing" element={<Billing />} />
+          <Route path="/insights/business" element={<Business />} />
+          <Route path="/admin/security" element={<Security />} />
 
           <Route path="/twin/live" element={<TwinLive />} />
           <Route path="/twin/fleet" element={<TwinFleet />} />
@@ -285,6 +271,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>
+        </RouteBoundary>
       </main>
     </div>
   );

@@ -126,6 +126,7 @@ import ArchitectureFlow from '../scene/ArchitectureFlow.tsx';
 import { useTwin } from '../state/twinStore';
 import { useApp, useAppShell, useToast } from '../store';
 import './topologyArch.css';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 // ════════════════════════════════════════════════════════════════════════════
 // 1. 관계 사전 — 정본 15종 + 앱 모델 원천 대응
@@ -1256,12 +1257,13 @@ export function TopologyArch(): JSX.Element {
 
   return (
     <div className="tpa-root" data-paused={paused} data-testid="topology-arch">
+      <Breadcrumb />
       {/* -------------------------------------------------------------- 헤더 */}
       <div className="tpa-head">
         <div className="tpa-head-title">
-          <h2>Topology 동작 메커니즘</h2>
+          <h1>Topology 동작 메커니즘</h1>
           <span className="tpa-head-sub">
-            UI05 · 구성과 PLM · 정본 Feature_Topology_Definition v0.8 / SW DD-03-5
+            구성과 PLM · 관계 사전 {SPEC_TOPOLOGY_RELATIONS.length}종 · 그래프 검증 4단계
           </span>
         </div>
         <span className={`tpa-badge ${paused ? 'paused' : 'live'}`} role="status">

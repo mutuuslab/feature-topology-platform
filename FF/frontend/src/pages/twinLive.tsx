@@ -62,6 +62,7 @@ import {
   type PartState,
   type VehiclePart,
 } from '../scene/vehicleParts';
+import { Breadcrumb } from '../components/Breadcrumb';
 import {
   CELLS,
   PLANT_PRESETS,
@@ -704,7 +705,7 @@ export function TwinLive() {
 
   return (
     <div className="twinlive">
-      <div className="breadcrumb">Digital Twin · Live Visual Twin</div>
+      <Breadcrumb />
       <h1 className="page-title">
         Live Visual Twin {rate > 0 ? <LiveDot /> : <span className="badge" style={{ background: 'var(--muted)', color: '#fff' }}>PAUSED</span>}
       </h1>

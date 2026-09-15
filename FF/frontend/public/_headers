@@ -10,6 +10,7 @@
   Cache-Control: public, max-age=600, must-revalidate
 
 # §20.2 — 기준 패키지에서 파생한 문서 자산은 제품에 포함하지 않는다.
-# 과거 배포에서 캐시된 응답이 남지 않도록 spec 경로는 캐시하지 않는다.
+# 삭제된 /spec/* 경로도 SPA 폴백으로 index.html 을 돌려주므로, 옛 배포에서 이 경로를
+# 이미 요청한 브라우저가 그 응답을 캐시하지 않도록 캐시 금지를 남겨 둔다.
 /spec/*
   Cache-Control: no-store

@@ -4,9 +4,8 @@ import { topology, getFeature, artifact } from '../data/engine';
 import { features } from '../data/model';
 import GraphCanvas from '../components/GraphCanvas';
 import { RightPanel } from '../components/patterns';
+import { Breadcrumb } from '../components/Breadcrumb';
 
-const NODE_TYPES = ['feature','requirement','sw_component','ecu','api_service','signal','variant_rule','control_point','deployment_unit','test_case','supplier_function','telemetry_event'];
-const EDGE_TYPES = ['parent_of','requires','excludes','overrides','fallback_to','degrades_to','replaces','composed_of','child_of','duplicates'];
 const QUERIES = [
   ['Q1', 'Change Impact'], ['Q2', 'Verification Scope'], ['Q3', 'Deploy Decision'], ['Q4', 'Release Readiness'], ['Q5', 'Recovery Path'],
 ];
@@ -23,6 +22,7 @@ export default function Topology() {
   const cyRef = useRef<any>(null);
   const raw = topology(id);
   const edgeLabels = [...new Set(raw.edges.map((e: any) => e.data.label))];
+  const nodeKinds = [...new Set(raw.nodes.map((n: any) => n.data.type))];
   const el = { nodes: raw.nodes, edges: raw.edges.filter((e: any) => !hidden.has(e.data.label)) };
   const toggle = (lbl: string) => setHidden(h => { const n = new Set(h); n.has(lbl) ? n.delete(lbl) : n.add(lbl); return n; });
   const exportPng = () => {
@@ -36,9 +36,9 @@ export default function Topology() {
 
   return (
     <div>
-      <div className="breadcrumb">관계 / Topology ▸ <span className="mono">{id}</span></div>
+      <Breadcrumb title={id} />
       <h1 className="page-title">Topology Graph</h1>
-      <p className="page-sub">{f?.displayName} 중심 관계 그래프 — Node 12종 / Edge 10종 (S12 Graph 스키마)</p>
+      <p className="page-sub">{f?.displayName} 중심 관계 그래프 — 노드 {raw.nodes.length}개 · 관계 {raw.edges.length}개</p>
 
       <div className="card" style={{ padding: 10 }}>
         <div className="row" style={{ alignItems: 'center' }}>
@@ -65,20 +65,10 @@ export default function Topology() {
         </div>
       </div>
 
-      <div className="legend">
-        <b>Edge:</b><span>─parent_of</span><span>⇢requires</span><span>⊘excludes</span><span>↩fallback_to</span><span>⇄replaces</span>
-        <span>· implemented_by · uses_api · verified_by · realized_by · controlled_by · deployed_as · derives · emits_event</span>
-      </div>
-
       <GraphCanvas elements={el} layout={layout} live={live} onNodeClick={setSel} onReady={cy => (cyRef.current = cy)} />
-      <p className="muted small mt">노드 {el.nodes.length} · 엣지 {el.edges.length} · 노드 클릭 → Inspector</p>
-
-      <div className="legend">
-        <b>Node 12종:</b> {NODE_TYPES.join(' · ')}
-      </div>
-      <div className="legend">
-        <b>Edge 10종:</b> {EDGE_TYPES.join(' · ')}
-      </div>
+      <p className="muted small mt">
+        노드 {el.nodes.length} · 엣지 {el.edges.length} · 노드 유형 {nodeKinds.length}종 · 노드 클릭 → Inspector
+      </p>
 
       <RightPanel open={!!sel} onClose={() => setSel(null)} title={sel ? `Inspector · ${sel}` : ''}>
         {selFeat && <div className="kv">

@@ -11,6 +11,7 @@ import { groupDigest, shortDigest } from '../data/sha256';
 import { useApp, useToast } from '../store';
 import { GButton, RightPanel } from '../components/patterns';
 import { Donut, Bars, RadialProgress, Steps, tally, dist } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const ID_RULE: Record<string, string> = {
   L0: 'TAX-{DOMAIN}', L1: 'Feature Cluster', L2: 'FEAT-{DOMAIN}-{NNN}', L3: 'FEAT-{DOMAIN}-{SW}-{NNN}',
@@ -21,7 +22,7 @@ export function TaxonomyBrowser() {
   const n = sel != null ? taxonomyTree[sel] : null;
   return (
     <div>
-      <div className="breadcrumb">기준정보 ▸ Taxonomy Browser</div>
+      <Breadcrumb />
       <h1 className="page-title">Taxonomy Browser (L0~L5)</h1>
       <p className="page-sub">기준 Feature = L2. 레벨 경계·ID 규칙 · 노드 클릭 → 상세</p>
       <div className="card">
@@ -56,7 +57,7 @@ export function TaxonomyEditor() {
   const save = () => { dispatch({ t: 'AUDIT', entry: { ts: '2026-06-05 09:45', actor: state.role, action: 'TAXONOMY_SAVE', target: 'TAX-node', detail: 'T-001~004 규칙 검증 통과' } }); toast('Taxonomy 노드 저장 — T-001~004 검증 통과 (Audit 기록)'); };
   return (
     <div>
-      <div className="breadcrumb">기준정보 ▸ Taxonomy Editor</div>
+      <Breadcrumb />
       <h1 className="page-title">Taxonomy Editor</h1>
       <div className="card">
         <b>귀속 경로</b>
@@ -107,7 +108,7 @@ export function BOMEditor() {
 
   return (
     <div>
-      <div className="breadcrumb">기준정보 ▸ BOM Editor ▸ FEAT-BDC-001</div>
+      <Breadcrumb />
       <h1 className="page-title">Feature BOM Editor (11 영역)</h1>
       <div className="card analytics-strip">
         <b>영역별 BOM 항목 수</b>
@@ -161,7 +162,7 @@ export function ArtifactCatalog() {
 
   return (
     <div>
-      <div className="breadcrumb">구성과 PLM ▸ UI03 Feature별 구현 구성 ▸ Artifact 레지스트리</div>
+      <Breadcrumb />
       <h1 className="page-title">Artifact 레지스트리 — FEAT-BDC-001@1.1.0</h1>
       <p className="page-sub">
         정확 버전·digest·배치 기준 구성 — 승인 차단 <b style={{ color: 'var(--fail)' }}>{VIOLATIONS.filter(v => v.blocking && v.code === 'UNRESOLVED_ARTIFACT').length}건</b> (미해석 Artifact)
@@ -306,7 +307,7 @@ export function ControlPointCatalog() {
 
   return (
     <div>
-      <div className="breadcrumb">Feature 관리 ▸ UI02 Feature Registry ▸ UI02-S04 구현과 제어</div>
+      <Breadcrumb />
       <h1 className="page-title">Feature 제어점 · 실행 구성 — FEAT-BDC-001@1.1.0</h1>
       <p className="page-sub">
         FeatureVersion → ControlPoint → FlagBinding → RuntimeBinding · 호출 계약 <span className="mono small">/api/ui/v1/features/FEAT-BDC-001@1.1.0/control-points</span>

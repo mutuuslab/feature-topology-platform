@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '../store';
 import { RightPanel } from '../components/patterns';
 import { Donut, Timeline, LiveDot, tally, dist } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const CONN_STATUS_COLORS = { connected: '#1F9D55', degraded: '#D9822B', failed: '#D64545', disabled: '#9CA3AF' };
 const SYNC_STATUS_COLORS = { ok: '#1F9D55', retry: '#D9822B', failed: '#D64545' };
@@ -13,7 +14,7 @@ export function ConnectorHub() {
   const connectors = state.connectors;
   return (
     <div>
-      <div className="breadcrumb">연동 ▸ Connector Hub</div>
+      <Breadcrumb />
       <h1 className="page-title">Connector Hub</h1>
       <p className="page-sub">ALM/PLM/Feature Flag/OTA 양방향 연계 · 연결 토글 · 동기화 시뮬 (FR-AGW/LGCY/DSYN/SDVI)</p>
       <div className="row analytics-strip">
@@ -41,7 +42,7 @@ export function ConnectorDetail() {
   if (!c) return <div className="card">커넥터 없음</div>;
   return (
     <div>
-      <div className="breadcrumb">연동 ▸ Connector Detail</div>
+      <Breadcrumb title="Connector Detail" />
       <h1 className="page-title">{c.name}</h1>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>전체 Connector 상태</b>
@@ -62,7 +63,7 @@ export function SyncLogs() {
   const [sel, setSel] = useState<any>(null);
   return (
     <div>
-      <div className="breadcrumb">연동 ▸ Sync Logs</div>
+      <Breadcrumb />
       <h1 className="page-title">Sync Logs <LiveDot /></h1>
       <p className="page-sub">양방향 동기화 이력 · 연결된 커넥터에서 실시간 유입 · 행 클릭 → 상세</p>
       <div className="row analytics-strip">

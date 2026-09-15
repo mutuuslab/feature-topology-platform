@@ -5,6 +5,7 @@ import { LifecycleBadge } from '../components/ui';
 import { readiness } from '../data/engine';
 import TopoLink from '../components/TopoLink';
 import { Steps, RadialProgress, Donut, tally, dist } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
 
@@ -27,7 +28,8 @@ export default function Lifecycle() {
   return (
     <div>
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">Feature Lifecycle 관리</h1>
+        <Breadcrumb />
+      <h1 className="page-title">Feature Lifecycle 관리</h1>
         <TopoLink id={fid} />
       </div>
       <p className="page-sub">Proposed → Approved → Developing → Verified → Released → Retired · 전이 시 구조 완전성·9-Gate 검증</p>

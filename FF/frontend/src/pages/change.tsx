@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { changeSets } from '../data/model';
 import { useApp, useToast } from '../store';
 import { Donut, Bars, Steps, Timeline, tally, dist } from '../components/charts';
+import { Breadcrumb } from '../components/Breadcrumb';
 
 const CR_FLOW = ['Draft', 'Analyzed', 'Reviewed', 'Approved', 'Implemented', 'Closed'];
 
@@ -10,7 +11,7 @@ export function CRList() {
   const CRS = useApp().state.crs;
   return (
     <div>
-      <div className="breadcrumb">변경관리 ▸ CR List</div>
+      <Breadcrumb />
       <h1 className="page-title">Change Request List</h1>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>Status 분포</b>
@@ -43,7 +44,7 @@ export function CRDetail() {
   const approve = () => set(idx < 0 ? 'Approved' : idx < CR_FLOW.length - 1 ? CR_FLOW[Math.max(3, idx + 1)] : 'Closed');
   return (
     <div>
-      <div className="breadcrumb">변경관리 ▸ CR Detail</div>
+      <Breadcrumb title="CR Detail" />
       <h1 className="page-title">{cr.id} · <span className="mono">{cr.feature}</span></h1>
       <div className="row">
         <div className="col card"><b>상태 진행</b>
@@ -71,7 +72,7 @@ export function ChangeSetList() {
   const cs = changeSets['FEAT-BDC-001'] || [];
   return (
     <div>
-      <div className="breadcrumb">변경관리 ▸ ChangeSet</div>
+      <Breadcrumb />
       <h1 className="page-title">ChangeSet · FEAT-BDC-001 (v1.0→v1.1)</h1>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>변경 유형</b>
@@ -91,7 +92,7 @@ export function BaselineDiff() {
   const cs = changeSets['FEAT-BDC-001'] || [];
   return (
     <div>
-      <div className="breadcrumb">변경관리 ▸ Baseline Diff</div>
+      <Breadcrumb />
       <h1 className="page-title">Baseline Diff — v1.0 ↔ v1.1</h1>
       <div className="card">{cs.map((c,i)=>(
         <div key={i} className="evt"><span className="pill" style={{background:c.type==='ADD'?'var(--pass)':'var(--pending)',color:'#fff'}}>{c.type==='ADD'?'➕':'✏'} {c.type}</span><b>{c.area}</b><span className="muted">{c.detail}</span></div>
@@ -103,7 +104,7 @@ export function BaselineDiff() {
 export function VersionTimeline() {
   return (
     <div>
-      <div className="breadcrumb">변경관리 ▸ Version Timeline</div>
+      <Breadcrumb />
       <h1 className="page-title">Version Timeline · FEAT-BDC-001</h1>
       <div className="card">
         <Timeline items={[

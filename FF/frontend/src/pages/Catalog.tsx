@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../store';
 import { catalogStats, health, impact } from '../data/engine';
 import { LifecycleBadge, DeployBadge, Health } from '../components/ui';
@@ -56,6 +56,12 @@ export default function Catalog() {
       <div className="breadcrumb">기준정보 / Master ▸ Catalog</div>
       <h1 className="page-title">Feature Catalog</h1>
       <p className="page-sub">전체 {all.length} Feature · 검색·필터·정렬·대량작업·Health</p>
+      <div className="row mt">
+        <Link className="btn primary" to="/master/define">＋ 신규 Feature 등록 (R0 최초 초안)</Link>
+        <span className="small muted">
+          등록은 R0 필수 입력과 7개 등록 기준을 통과해야 하며, Feature Registry 와 리비전 레지스트리에 같은 Revision 으로 기록됩니다.
+        </span>
+      </div>
 
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Lifecycle 분포</b>

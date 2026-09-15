@@ -7,10 +7,10 @@
 // 진행하고, 동시성은 If-Match(ETag) + Idempotency-Key 로 제어한다(IA-R01 · R06 · R07 · R10).
 // 검토 요청 이후 승인 원본의 hash 가 바뀌면 승인 효력이 사라지고 새 버전·재검토로 분기한다.
 // 제품 서버는 미연결(LOCAL_UI_ONLY)이며 리비전 레지스트리는 브라우저에 영속된다.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { Bars, Donut, RadialProgress, Steps, tally } from '../components/charts';
-import { EmptyState } from '../components/patterns';import { RegistrationReviewPanel } from '../components/registrationReview';
+import { EmptyState } from '../components/patterns';import { RegistrationReviewPanel, type ReviewSnapshot } from '../components/registrationReview';
 import { SPEC_C01_SECTIONS } from '../data/specArch';
 import { SPEC_FRI_SCOPE, SPEC_REGISTRY_CONTRACT, SPEC_RULES } from '../data/specNav';
 import { SPEC_FRI_GROUP_TOTAL } from '../data/specFri';
@@ -18,6 +18,11 @@ import {
   SPEC_REG_APPROVAL, SPEC_REG_AREA_ATTRS, SPEC_REG_AREA_ATTR_COUNTS, SPEC_REG_AREAS, SPEC_REG_ATTRS,
   SPEC_REG_R0_REQUIRED,
 } from '../data/specRegistration';
+import { SPEC_REG_CRITERIA, SPEC_REG_R1, SPEC_REG_TAXONOMY } from '../data/specRegistrationR1';
+import {
+  BUSINESS_STATE_KO, safetyAssessment, taxonomyCheck,
+  type BusinessState,
+} from '../data/registrationReview';
 import {
   ARTIFACT_RECORDS, CONTROL_POINTS, FLAG_BINDINGS, IMPLEMENTATION_BOMS, RUNTIME_BINDINGS, VIOLATIONS,
   kindLabel, roleLabel as cpRoleLabel,
@@ -29,7 +34,10 @@ import {
 } from '../data/revision';
 import { type SpecRegAction, type SpecRegArea, type SpecRegAttr } from '../data/specTypes';
 import { useApp, useAppShell } from '../store';
-import { roleLabel, roleKeyOf } from '../data/refdata';
+import {
+  domains as REF_DOMAINS, orgs as REF_ORGS, permMatrix, profileOf, roleLabel, roleKeyOf, roles as REF_ROLES,
+} from '../data/refdata';
+import type { Feature as ModelFeature, Lifecycle as ModelLifecycle } from '../data/model';
 
 const ATTRS = SPEC_REG_ATTRS as Record<string, SpecRegAttr>;
 const AREA_IDS = SPEC_REG_AREAS.map(a => a.id);
@@ -85,12 +93,17 @@ const labelOf = (id: string) => attrOf(id)?.label || id;
 
 /** 합성 예제 값 — 원천 사전 미연결 데모이므로 참조 유형별 예시 ID 를 쓴다(SYNTHETIC). */
 const SAMPLE: Record<string, string> = {
-  'FRI-004': 'SCOPE-KR-PROGRAM', 'FRI-024': 'ROLE-BODY-PLATFORM-OWNER', 'FRI-025': 'ORG-BODY-PLATFORM',
-  'FRI-028': 'BODY', 'FRI-029': 'TAXO-BODY-2027#L2', 'FRI-032': 'CUSTOMER', 'FRI-034': 'POL-ACCESS-P1',
-  'FRI-037': 'REQ-SYNTH-0171', 'FRI-038': 'REQ-SYNTH-0171@3', 'FRI-043': 'SRC-REQ-0171', 'FRI-045': 'alm://req/0171',
-  'FRI-048': 'sha256:7c1f…', 'FRI-049': 'SRC-PROP-2026-04', 'FRI-054': 'PROFILE-KR-A-2027', 'FRI-055': 'STATE-CONFIRMED',
-  'FRI-098': 'RELATION-REVIEW-OPEN', 'FRI-113': 'PLATFORM_MANAGED', 'FRI-120': '[0, 120]', 'FRI-129': 'SAFETY-RELATED',
-  'FRI-134': 'SEC-NONE', 'FRI-169': 'R0 최초 초안 등록', 'FRI-173': 'INTERNAL_DEFINITION',
+  'FRI-004': 'SCOPE-KR-PROGRAM', 'FRI-005': '원격 잠금 해제 요청 처리',
+  'FRI-011': '차량 잠금 해제 요청을 인증·권한 검사 후 실행하고, 실행 결과를 10초 내 원천 시스템에 회신한다.',
+  'FRI-012': '물리 키 없이 차량에 접근할 수 있게 하여 호출 실패율과 서비스 대응 시간을 줄인다.',
+  'FRI-015': 'KR 2027 A/B 트림 — 원격 잠금 해제 요청 처리',
+  'FRI-016': '물리 키 회전·기계식 시동 인터록은 제외', 'FRI-024': profileOf('author').empNo,
+  'FRI-025': 'Body Platform Team', 'FRI-028': 'Body', 'FRI-029': 'TAXO-BODY-2027#L2', 'FRI-032': 'CUSTOMER',
+  'FRI-034': 'POL-ACCESS-P1', 'FRI-037': 'NEW_PLAN', 'FRI-038': 'REQ-SYNTH-0171@3', 'FRI-043': 'SRC-REQ-0171',
+  'FRI-045': 'alm://req/0171', 'FRI-048': 'sha256:7c1f…', 'FRI-049': 'SRC-PROP-2026-04',
+  'FRI-054': 'PROFILE-KR-A-2027', 'FRI-055': 'STATE-CONFIRMED', 'FRI-098': 'RELATION-REVIEW-OPEN',
+  'FRI-113': 'ACTIVATION_CONTROL', 'FRI-120': '[0, 120]', 'FRI-129': 'SAFETY-RELATED', 'FRI-134': 'SEC-NONE',
+  'FRI-169': 'R0 최초 초안 등록', 'FRI-173': 'SYNTHETIC_EXAMPLE',
 };
 const sampleFor = (a: SpecRegAttr) => {
   if (SAMPLE[a.id]) return SAMPLE[a.id];
@@ -98,6 +111,68 @@ const sampleFor = (a: SpecRegAttr) => {
   if (a.type.startsWith('Text[]') || a.type.startsWith('LocaleText[]')) return 'KR-PROGRAM; BODY-PLATFORM';
   if (a.type === 'Text') return `${a.label} — 합성 예제`;
   return `SYNTH-${a.key}`;
+};
+
+// ── 신규 Feature 등록 폼 (R0 최초 초안) ──────────────────────────────────────
+// 항목·라벨·필수성·의미는 등록 속성 사전(SPEC_REG_ATTRS)에서만 온다. 화면이 자체 정의한
+// 항목은 없다. 여기서는 "사람이 채우는 항목"과 "선택 목록"만 정한다.
+const REG_FORM_IDS = [...R0_REQUIRED_INPUT, 'FRI-015', 'FRI-016', 'FRI-043'].filter(id => !!attrOf(id));
+
+/** 기준 속성의 section 순서를 그대로 섹션 순서로 쓴다 — 폼과 속성 사전이 갈라지지 않는다. */
+const REG_GROUPS = (() => {
+  const order: string[] = [];
+  const bySection: Record<string, string[]> = {};
+  REG_FORM_IDS.forEach(id => {
+    const s = attrOf(id)!.section || '기타';
+    if (!bySection[s]) { bySection[s] = []; order.push(s); }
+    bySection[s].push(id);
+  });
+  return order.map(section => ({ section, ids: bySection[section] }));
+})();
+
+const REG_TEXTAREA: Record<string, number> = { 'FRI-011': 3, 'FRI-012': 2, 'FRI-015': 2, 'FRI-016': 2 };
+const regOpt = (value: string, label: string) => ({ value, label });
+
+/** 참조 항목은 자유 입력 대신 기준 참조 값을 고른다 — 원천 사전 미연결 데모의 후보 목록. */
+const REG_OPTIONS: Record<string, { value: string; label: string }[]> = {
+  'FRI-004': [
+    regOpt('SCOPE-KR-PROGRAM', '한국 프로그램'), regOpt('SCOPE-EU-PROGRAM', 'EU 프로그램'),
+    regOpt('SCOPE-GLOBAL-PLATFORM', '전사 플랫폼 공통'),
+  ],
+  'FRI-024': REF_ROLES.map(r => regOpt(profileOf(r).empNo, `${profileOf(r).name} · ${roleLabel(r)} (${profileOf(r).empNo})`)),
+  'FRI-025': REF_ORGS.map(o => regOpt(o, o)),
+  'FRI-028': REF_DOMAINS.map(d => regOpt(d, d)),
+  'FRI-032': [regOpt('CUSTOMER', '고객 가치'), regOpt('PLATFORM', '플랫폼 제공')],
+  'FRI-034': [
+    regOpt('POL-ACCESS-P1', 'P1 사내 한정'), regOpt('POL-ACCESS-P2', 'P2 협력사 포함'),
+    regOpt('POL-ACCESS-DEFAULT', '기본 정책'),
+  ],
+  'FRI-037': [
+    regOpt('NEW_PLAN', '신규 기획'), regOpt('CUSTOMER_REQUEST', '고객 요구'),
+    regOpt('EXISTING_CHANGE', '기존 기능 변경'), regOpt('SUPPLIER_OFFERING', '공급사 기능'),
+  ],
+  'FRI-113': [
+    regOpt('ACTIVATION_CONTROL', '활성화 제어'), regOpt('CONFIG_CHANGE', '설정 변경'),
+    regOpt('OBSERVE', '관측 전용'), regOpt('CONTROL_REVIEW', '제어 필요성 검토 중'),
+  ],
+  'FRI-173': [
+    regOpt('PLAN_CANDIDATE', '기획 후보'), regOpt('SYNTHETIC_EXAMPLE', '합성 예제'),
+    regOpt('MIGRATED_DATA', '이관 데이터'), regOpt('REAL_SOURCE', '실제 원천'),
+  ],
+};
+
+/** Taxonomy 참조 후보는 대표 Domain 에 맞춘 6단계 — L2 만 등록 최소 관리단위다(7기준 AC). */
+const taxonomyOptions = (domain: string) => SPEC_REG_TAXONOMY.map(t =>
+  regOpt(`TAXO-${(domain || 'Body').toUpperCase()}-2027#${t.level}`, `${t.level} ${t.name}${t.minUnit ? ' · 최소 관리단위' : ''}`));
+const taxLevelOf = (ref: string) => /#(L[0-5])$/.exec(ref || '')?.[1] ?? '';
+
+/** 값이 선택 목록 밖이면 목록에 없는 정확 참조임을 표시한다(빈 칸으로 보이지 않게). */
+const regOptions = (id: string, domain: string, current: string) => {
+  const base = id === 'FRI-029' ? taxonomyOptions(domain) : REG_OPTIONS[id] ?? [];
+  if (!base.length) return base;
+  return current && !base.some(o => o.value === current)
+    ? [...base, regOpt(current, `${current} — 선택 목록 밖 정확 참조`)]
+    : base;
 };
 
 /** 적용조건 행 — 행 안은 AND, 행 사이는 OR(C01-R04). 교차곱을 자동 생성하지 않는다. */
@@ -110,6 +185,9 @@ const CONDITION_SEED: CondRow[] = [
 const CONDITION_COLORS: Record<string, string> = { CONFIRMED: '#1F9D55', DEFERRED: '#D9822B', REJECTED: '#D64545' };
 
 const nowTs = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
+
+/** 등록 폼 입력칸 공통 스타일 — 카드 안 입력 요소가 같은 모양을 쓴다. */
+const FIELD_STYLE: CSSProperties = { width: '100%', padding: 6, border: '1px solid var(--line)', borderRadius: 6 };
 
 function StateChip({ state }: { state: string }) {
   return <span className="badge" style={{ background: STATE_COLOR[state] || '#6B7280' }}>{state}</span>;
@@ -147,6 +225,14 @@ export function DefineRevision() {
   const [receipt, setReceipt] = useState<string | null>(null);
   const [error, setError] = useState<SpecError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  // 신규 등록 폼 — 심사 패널이 계산한 판정을 그대로 받아 등록 게이트로만 쓴다.
+  const [review, setReview] = useState<ReviewSnapshot | null>(null);
+  const [draftSeq, setDraftSeq] = useState(0);
+  const [hold, setHold] = useState({ reason: '', reopenAt: '' });
+  const [registered, setRegistered] = useState<{ id: string; ts: string; count: number; lifecycle: string } | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const [rec, setRec] = useState<RevisionRecord>(() => {
     const id = nextFeatureId([...state.features.map(f => f.id), ...state.revisions.map(r => r.id)]);
@@ -189,6 +275,174 @@ export function DefineRevision() {
 
   /** 기준 액션 권한 검사 — actions.roles 는 기준 9역할 키다. */
   const permitted = (act: SpecRegAction) => act.roles.includes(roleKey);
+
+  // ── 신규 Feature 등록 (R0 최초 초안) ────────────────────────────────────────
+  // 게이트는 기준에서만 온다: 7개 등록 기준 임계(SPEC_REG_R1.threshold.min), R0 필수 속성,
+  // Taxonomy 최소 관리단위(L2), 생성 권한. 화면이 새 임계를 만들지 않는다.
+  const minCriteria = SPEC_REG_R1.threshold.min;
+  const criteriaCount = review?.count ?? 0;
+  const criteriaTotal = review?.total ?? SPEC_REG_CRITERIA.length;
+  const categoryRef = values['FRI-029'] ?? '';
+  const categoryLevel = taxLevelOf(categoryRef);
+  const tax = taxonomyCheck(categoryLevel);
+  const r0 = registrationIssues(R0_REQUIRED_INPUT, values, unresolved, labelOf);
+  const hasCreate = (permMatrix[roleKey] ?? []).includes('create');
+  const dupId = state.features.some(f => f.id === rec.id) || state.revisions.some(r => r.id === rec.id);
+  const blockers = [
+    hasCreate ? '' : `현재 역할 ${roleLabel(roleKey)} 에 신규 생성(create) 권한이 없습니다 — Feature 등록은 Feature 설계·기준정보 담당입니다.`,
+    (values['FRI-005'] ?? '').trim() ? '' : 'FRI-005 Feature 명칭이 비어 있습니다.',
+    tax.ok ? '' : `FRI-029 대표 Category ${categoryLevel || '(미입력)'} — ${tax.verdict}`,
+    criteriaCount < minCriteria
+      ? `7개 등록 기준 ${criteriaCount}/${criteriaTotal} — ${minCriteria}개 미만은 Feature 후보가 아니므로 업무 Lifecycle 을 시작할 수 없습니다(BOM 하위 Artifact 또는 보류).`
+      : '',
+    r0.missing.length ? `R0 등록 필수 속성 누락 ${r0.missing.length}건 — ${r0.missing.join(', ')}` : '',
+  ].filter(Boolean);
+  const canRegister = blockers.length === 0 && r0.fieldErrors.length === 0;
+
+  const lifecycleMap = (b: BusinessState): ModelLifecycle => (b === 'Deprecated' ? 'Retired' : b);
+  const safetyLabel = !review || review.safetyRelevance === 'UNASSESSED'
+    ? 'UNASSESSED (미검토)'
+    : review.safetyRelevance === 'NON_SAFETY'
+      ? 'NON_SAFETY — 안전 무관'
+      : `${review.safetyGrade} · ${safetyAssessment(review.safetyGrade).label}`;
+
+  const focusField = (field?: string) => {
+    const el = field ? document.getElementById(`reg-${field}`) : null;
+    (el as HTMLInputElement | null)?.focus();
+    if (!el) formRef.current?.querySelector<HTMLElement>('input, select, textarea')?.focus();
+  };
+
+  /** ID 입력으로 초안 키가 바뀌므로 입력값을 새 키로 옮긴다 — 타이핑 중 값 유실 방지(AC22). */
+  const renameDraft = (next: string) => {
+    const id = next.trim();
+    if (id === rec.id) return;
+    setDrafts(d => {
+      const copy = { ...d };
+      const cur = copy[key];
+      delete copy[key];
+      if (cur) copy[`${id}@${rec.version}`] = cur;
+      return copy;
+    });
+    setRec({ ...rec, id, contentHash: contentHash(id) });
+    setError(null);
+  };
+
+  const register = () => {
+    if (blockers.length || r0.fieldErrors.length) {
+      setReceipt(null);
+      setError(specError(
+        422,
+        `등록 차단 조건 ${blockers.length}건 · 필수 누락 ${r0.fieldErrors.length}건 — 입력값은 보존합니다.`,
+        [...blockers, ...r0.fieldErrors],
+      ));
+      setNotice(null);
+      focusField(r0.missing[0] ?? 'FRI-005');
+      return;
+    }
+    if (!ifMatch) {
+      setReceipt(null);
+      setError(specError(428, '등록은 If-Match(최신 recordRevision) 또는 Idempotency-Key 를 요구합니다.'));
+      setNotice(null);
+      return;
+    }
+    if (dupId) {
+      setReceipt(null);
+      setError(specError(409, `${rec.id} 는 Feature Registry 또는 리비전 레지스트리에 이미 있습니다 — 입력값은 보존합니다.`));
+      setNotice(null);
+      return;
+    }
+    const lifecycle = lifecycleMap(review!.businessState);
+    const auditLine = review!.audit(rec.id);
+    const feat: ModelFeature = {
+      id: rec.id, level: 'L2', displayName: (values['FRI-005'] ?? '').trim(), domain: values['FRI-028'] || 'Body',
+      ownerOrg: values['FRI-025'] || '-', lifecycle, safety: safetyLabel,
+      security: 'UNASSESSED', deployType: 'TBD', baselineVer: rec.version,
+    };
+    const ts = nowTs();
+    const next: RevisionRecord = {
+      ...rec, actor: roleKey, ts, recordRevision: rec.recordRevision + 1, state: 'DRAFT',
+      contentHash: draftHash, name: feat.displayName, scope: values['FRI-004'] || rec.scope,
+      reason: `${auditLine} · Lifecycle ${lifecycle} · 안전 ${safetyLabel} · 원천 ${values['FRI-037'] || '-'}`,
+      unresolved,
+      history: [...rec.history, { ts, action: 'REGISTER', from: rec.state, to: 'DRAFT', actor: roleKey, hash: draftHash, note: `R0 최초 초안 등록 — 7기준 ${criteriaCount}/${criteriaTotal}` }],
+    };
+    dispatch({ t: 'ADD_FEATURE', f: feat });
+    dispatch({ t: 'REVISION_SAVE', r: next });
+    dispatch({ t: 'AUDIT', entry: { ts, actor: roleKey, action: 'REGISTER', target: `${rec.id}@${rec.version}`, detail: `${auditLine} · Lifecycle ${lifecycle} · 안전 ${safetyLabel}` } });
+    setRec(next);
+    setRegistered({ id: rec.id, ts, count: criteriaCount, lifecycle });
+    setReceipt(`${rec.id}@${rec.version} · 201 CREATED · ETag ${etagOf(next)} · Idempotency-Key ${idempotencyKey}`);
+    setError(null);
+    setNotice(`${rec.id} 등록됨 — Lifecycle ${lifecycle}(${BUSINESS_STATE_KO[review!.businessState]}) 으로 시작합니다. Feature Registry 와 리비전 레지스트리에 같은 Revision 으로 기록했습니다.`);
+  };
+
+  /** 7기준 미달 — Feature 가 아니라 BOM 하위 Artifact 후보 또는 보류로 구분한다(정본 threshold.fail). */
+  const markArtifact = () => {
+    const a = actionOf('UI02-S04-A01');
+    const ts = nowTs();
+    const next: RevisionRecord = {
+      ...rec, actor: roleKey, ts, recordRevision: rec.recordRevision + 1,
+      reason: `7기준 ${criteriaCount}/${criteriaTotal} 미달 — Feature 후보가 아니므로 BOM 하위 Artifact 후보로 구분(정본 threshold.fail). 미충족: ${(review?.missing ?? []).map(m => m.id).join(', ') || '-'}`,
+      history: [...rec.history, { ts, action: 'CLASSIFY_ARTIFACT', from: rec.state, to: rec.state, actor: roleKey, hash: draftHash, note: `${criteriaCount}/${criteriaTotal} — BOM 하위 Artifact 후보` }],
+    };
+    setRec(next);
+    dispatch({ t: 'REVISION_SAVE', r: next });
+    dispatch({ t: 'AUDIT', entry: { ts, actor: roleKey, action: 'CLASSIFY_ARTIFACT', target: `${rec.id}@${rec.version}`, detail: `7기준 ${criteriaCount}/${criteriaTotal} — Feature 등록하지 않고 BOM 하위 Artifact 후보로 표시` } });
+    setError(null);
+    setNotice(`${rec.id} 을 Feature 로 등록하지 않고 BOM 하위 Artifact 후보로 표시했습니다. Feature Registry 에는 추가하지 않았습니다. 다음 단계 영역 ${a?.area.name ?? 'UI02-S04'} 로 넘깁니다.`);
+    setAreaId('UI02-S04');
+    setSel(null);
+  };
+
+  /** 보류 등록 — 미정 항목(재심사 시점 필수)으로 남기고 Feature 는 만들지 않는다. */
+  const holdRegistration = () => {
+    if (!hold.reopenAt.trim()) {
+      setError(specError(422, '보류는 재심사 시점이 필요합니다 — 미정 항목의 책임·기한을 지정하기 전에는 승인 요청으로 넘길 수 없습니다(FRI-178~182).'));
+      setNotice(null);
+      focusField('reg-hold-due');
+      return;
+    }
+    const ts = nowTs();
+    const item: UnresolvedItem = {
+      field: `보류 ${rec.id} (7기준 ${criteriaCount}/${criteriaTotal})`,
+      reason: hold.reason.trim() || '등록 기준 미달 — 재심사 필요',
+      owner: values['FRI-024'] || '(미정)', due: hold.reopenAt.trim(),
+    };
+    const next: RevisionRecord = {
+      ...rec, actor: roleKey, ts, recordRevision: rec.recordRevision + 1,
+      unresolved: [item, ...unresolved],
+      history: [...rec.history, { ts, action: 'REGISTRATION_HOLD', from: rec.state, to: rec.state, actor: roleKey, hash: draftHash, note: item.reason }],
+    };
+    setUnresolved(next.unresolved);
+    setRec(next);
+    dispatch({ t: 'REVISION_SAVE', r: next });
+    dispatch({ t: 'AUDIT', entry: { ts, actor: roleKey, action: 'REGISTRATION_HOLD', target: `${rec.id}@${rec.version}`, detail: `${item.reason} · 재심사 ${item.due} · 책임 ${item.owner}` } });
+    setError(null);
+    setNotice(`${rec.id} 을 등록 보류로 기록했습니다 — Feature Registry 에는 추가하지 않았습니다. 미정 항목으로 남아 승인 요청 시 fieldErrors 로 표시됩니다.`);
+  };
+
+  /** 새 등록 초안 — 앞 초안 값은 이전 ID 키에 그대로 남는다(AC22). */
+  const startNewDraft = () => {
+    const id = nextFeatureId([...state.features.map(f => f.id), ...state.revisions.map(r => r.id)]);
+    const ts = nowTs();
+    setRec({
+      id, version: '1.0.0', recordRevision: 1, state: 'DRAFT', contentHash: contentHash(id),
+      actor: roleKey, ts, scope: values['FRI-004'] || 'KR-PROGRAM', unresolved: [], history: [],
+    });
+    setUnresolved([]);
+    setIssues(null);
+    setError(null);
+    setReceipt(null);
+    setRegistered(null);
+    setSel(null);
+    setHold({ reason: '', reopenAt: '' });
+    setDraftSeq(n => n + 1);
+    setNotice(`새 등록 초안 ${id} 을 열었습니다. 앞 초안의 입력값은 이전 ID 키에 남아 있어 잃지 않습니다.`);
+  };
+
+  useEffect(() => {
+    if (registered) resultRef.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [registered]);
 
   const runAction = (wfId: string, act?: SpecRegAction, extra: Partial<TransitionContext> = {}) => {
     if (act && !permitted(act)) {
@@ -238,7 +492,7 @@ export function DefineRevision() {
 
   const fillSample = () => {
     const filled: Record<string, string> = {};
-    R0_REQUIRED_INPUT.forEach(id => { const a = attrOf(id); if (a) filled[id] = sampleFor(a); });
+    REG_FORM_IDS.forEach(id => { const a = attrOf(id); if (a) filled[id] = sampleFor(a); });
     setDrafts(d => ({ ...d, [key]: { ...(d[key] ?? {}), ...filled } }));
     setError(null);
     setNotice(`합성 예제 값 ${Object.keys(filled).length}건을 채웠습니다 (SYNTHETIC · 실제 원천 아님)`);
@@ -259,6 +513,7 @@ export function DefineRevision() {
     setIssues(null);
     setError(null);
     setSel(null);
+    setDraftSeq(n => n + 1);
     setNotice(`레지스트리에서 ${r.id}@${r.version} (${r.state}) 을 열었습니다. 승인 원본은 덮어쓰지 않고 새 Revision 으로 분기합니다.`);
   };
 
@@ -409,6 +664,201 @@ export function DefineRevision() {
       </div>
       <p className="small muted">{SPEC_FRI_SCOPE}</p>
 
+      {/* ── 신규 Feature 등록 — 실제로 생성되는 유일한 경로 (Feature Registry + 리비전 레지스트리) ── */}
+      <div
+        className="card mt"
+        data-testid="ui02-register"
+        ref={formRef}
+        onKeyDown={e => {
+          if (e.key === 'Escape' && error) { setError(null); return; }
+          if (e.key !== 'Enter') return;
+          const tag = (e.target as HTMLElement).tagName;
+          if (tag === 'TEXTAREA' || tag === 'BUTTON' || tag === 'A') return;
+          e.preventDefault();
+          register();
+        }}
+      >
+        <div className="row">
+          <div className="col">
+            <b>신규 Feature 등록 (R0 최초 초안)</b>
+            <p className="small muted">
+              등록 폼 {REG_FORM_IDS.length}개 항목은 R0 사람 입력 필수 {R0_REQUIRED_INPUT.length}건과 심사 기준이 직접 참조하는 항목입니다.
+              항목·라벨·필수성·의미는 등록 속성 사전(FRI-###)에서만 오고, 화면이 임계를 새로 만들지 않습니다.
+              Enter 로 등록 · Shift-Tab/Tab 으로 필드 이동 · Esc 로 오류 닫기(UI02-AC20).
+            </p>
+          </div>
+          <div className="col">
+            <div className="kv">
+              <div>7개 등록 기준</div>
+              <div>
+                <b style={{ color: criteriaCount >= minCriteria ? 'var(--pass)' : 'var(--fail)' }}>{criteriaCount} / {criteriaTotal}</b>{' '}
+                <span className="muted small">임계 {minCriteria} 이상일 때만 후보 등록</span>
+              </div>
+              <div>R0 필수 입력</div>
+              <div>
+                {R0_REQUIRED_INPUT.length - r0.missing.length} / {R0_REQUIRED_INPUT.length}
+                {r0.missing.length > 0 && <span className="small" style={{ color: 'var(--fail)' }}> — 누락 {r0.missing.join(', ')}</span>}
+              </div>
+              <div>Taxonomy 최소 관리단위</div>
+              <div>{categoryLevel || '(미입력)'} <span className="pill" style={{ color: tax.ok ? 'var(--pass)' : 'var(--fail)' }}>L2 원자 Feature</span> <span className="small muted">{tax.verdict}</span></div>
+              <div>업무 Lifecycle</div>
+              <div>{review ? `${review.businessState} · ${BUSINESS_STATE_KO[review.businessState]}` : '—'} <span className="small muted">등록 시 Proposed 로 시작</span></div>
+              <div>안전 관련성</div>
+              <div>{safetyLabel} <span className="small muted">미검토를 QM 으로 기본 확정하지 않습니다</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="table-wrap mt">
+          <table>
+            <thead><tr><th>기준</th><th>심사 질문</th><th>판정</th><th>판정 근거</th><th>미충족 시 해소</th></tr></thead>
+            <tbody>
+              {(review?.rows ?? []).map(r => (
+                <tr key={r.id}>
+                  <td><b>{r.id}</b><div className="small muted">{r.name}</div></td>
+                  <td className="small">{r.question}</td>
+                  <td><span className="pill" style={{ color: r.met ? 'var(--pass)' : 'var(--fail)' }}>{r.met ? '충족' : '미충족'}</span></td>
+                  <td className="small">{r.why}</td>
+                  <td className="small muted">{r.missing || '—'}</td>
+                </tr>
+              ))}
+              {!review && <tr><td colSpan={5} className="small muted">심사 기준을 계산하는 중입니다.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="row mt">
+          <div className="col">
+            <label className="small" htmlFor="reg-id"><b>FRI-001</b> Feature ID <span className="pill">수동 입력 · 자동 채번 데모</span></label>
+            <input id="reg-id" value={rec.id} onChange={e => renameDraft(e.target.value)} style={FIELD_STYLE} />
+            <div className="small muted">
+              신규 ID 는 자동 채번 값에서 시작합니다. 이미 있는 ID 는 등록 시 409 IDENTITY_OR_STATE_CONFLICT 이며 입력값은 보존합니다.
+            </div>
+          </div>
+          <div className="col">
+            <label className="small" htmlFor="reg-version"><b>FRI-002</b> 업무 버전</label>
+            <input id="reg-version" value={rec.version} readOnly style={FIELD_STYLE} />
+            <div className="small muted">최초 등록은 1.0.0 이며 동시성 Revision({rec.recordRevision}) 과 분리됩니다.</div>
+          </div>
+          <div className="col">
+            <label className="small" htmlFor="reg-reason">등록 사유(reason) — 감사 이벤트에 결속</label>
+            <input id="reg-reason" value={reason} onChange={e => setReason(e.target.value)} style={FIELD_STYLE} />
+            <div className="small muted">감사 이벤트는 {review ? review.audit(rec.id) : `REGISTER ${rec.id} 7-criteria 0/7`} 형식으로 기록됩니다.</div>
+          </div>
+        </div>
+
+        {REG_GROUPS.map(g => (
+          <div className="mt" key={g.section}>
+            <b className="small">{g.section}</b>
+            <div className="row mt">
+              {g.ids.map(id => {
+                const a = attrOf(id)!;
+                const opts = regOptions(id, values['FRI-028'] ?? '', values[id] ?? '');
+                const isMissing = r0.missing.includes(id);
+                return (
+                  <div className="col" key={id} style={{ minWidth: 260 }}>
+                    <label className="small" htmlFor={`reg-${id}`}>
+                      <b>{id}</b> {a.label} <RequiredBadge value={a.required} /> <RespBadge value={a.responsibility} />
+                    </label>
+                    {REG_TEXTAREA[id] ? (
+                      <textarea id={`reg-${id}`} rows={REG_TEXTAREA[id]} value={values[id] ?? ''} onChange={e => setValue(id, e.target.value)} style={FIELD_STYLE} />
+                    ) : opts.length ? (
+                      <select id={`reg-${id}`} value={values[id] ?? ''} onChange={e => setValue(id, e.target.value)} style={FIELD_STYLE}>
+                        <option value="">— 선택 —</option>
+                        {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    ) : (
+                      <input id={`reg-${id}`} value={values[id] ?? ''} onChange={e => setValue(id, e.target.value)} style={FIELD_STYLE} />
+                    )}
+                    <div className="small muted">{a.meaning}</div>
+                    {isMissing && <div className="small" style={{ color: 'var(--fail)' }}>R0 등록 필수 항목 미입력</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        <div className="row mt">
+          <div className="col">
+            <b className="small">등록 · 보류 · Artifact 구분</b>
+            <div className="mt">
+              <button className="btn primary" onClick={register} disabled={!canRegister} data-testid="reg-submit">등록 (R0 최초 초안 · {criteriaCount}/7)</button>{' '}
+              <button className="btn" onClick={fillSample} disabled={locked}>R0 합성 예제 값 채우기</button>{' '}
+              <button className="btn" onClick={startNewDraft}>새 등록 초안 시작</button>{' '}
+              <button className="btn" onClick={markArtifact} disabled={criteriaCount >= minCriteria} title={criteriaCount >= minCriteria ? '후보이므로 Artifact 구분 대상이 아닙니다' : ''}>BOM 하위 Artifact 후보로 표시</button>
+            </div>
+            {!canRegister && (
+              <div className="mt">
+                <div className="small" style={{ color: 'var(--fail)' }}>등록 차단 조건 {blockers.length}건 — 버튼이 비활성인 사유입니다(입력값은 보존).</div>
+                <ul className="small" style={{ margin: '6px 0 0 18px' }}>
+                  {blockers.map(b => <li key={b}>{b}</li>)}
+                </ul>
+              </div>
+            )}
+          </div>
+          <div className="col">
+            <b className="small">보류 목록에 등록 (등록하지 않음)</b>
+            <div className="mt">
+              <label className="small" htmlFor="reg-hold-reason">보류 사유</label>
+              <input id="reg-hold-reason" value={hold.reason} onChange={e => setHold(h => ({ ...h, reason: e.target.value }))} placeholder="보류 사유" style={FIELD_STYLE} />
+              <label className="small" htmlFor="reg-hold-due">재심사 시점 (필수 — 없으면 422)</label>
+              <input id="reg-hold-due" className="mt" value={hold.reopenAt} onChange={e => setHold(h => ({ ...h, reopenAt: e.target.value }))} placeholder="재심사 시점 (예: 2026-11-30)" style={FIELD_STYLE} />
+              <button className="btn mt" onClick={holdRegistration} disabled={criteriaCount >= minCriteria} title={criteriaCount >= minCriteria ? '후보이므로 보류 대상이 아닙니다' : ''}>보류 등록 (미정 항목으로 남김)</button>
+              <div className="small muted">보류·Artifact 는 Feature Registry 에 Feature 를 만들지 않고, 리비전 사유와 감사 이벤트에만 근거를 남깁니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt">
+          <div className="col">
+            <b className="small">등록 전 검사 (클라이언트 완전성)</b>
+            <div className="small muted">
+              R0 입력 필수 {R0_REQUIRED_INPUT.length}건 · 필수 누락 {r0.missing.length}건 · 미정 항목 {unresolved.length}건 ·
+              판정 {r0.complete ? '통과' : '미충족'} · findings {r0.fieldErrors.length}건
+            </div>
+            {r0.fieldErrors.length > 0 && (
+              <ul className="small" style={{ margin: '6px 0 0 18px' }}>
+                {r0.fieldErrors.slice(0, 5).map(fe => <li key={fe}>{fe}</li>)}
+              </ul>
+            )}
+          </div>
+          <div className="col">
+            <b className="small">등록 시 서버가 다시 검사</b>
+            <div className="small muted">
+              If-Match(ETag) {ifMatch ? `포함 · ${etagOf(rec)}` : '미포함 → 428 PRECONDITION_REQUIRED'} · Idempotency-Key {idempotencyKey} ·
+              같은 ID·버전 재등록 → 409 · 오래된 Revision → 412 · 필수·기준 미달 → 422 fieldErrors(입력 보존)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {registered && (
+        <div className="card mt" ref={resultRef} data-testid="reg-result">
+          <div className="row">
+            <div className="col">
+              <b>{registered.id} 등록 완료</b>
+              <div className="kv mt">
+                <div>업무 Lifecycle</div><div><span className="pill" style={{ color: 'var(--pass)' }}>{registered.lifecycle}</span> <span className="small muted">정본 시작 상태 Provisional → Proposed</span></div>
+                <div>7개 등록 기준</div><div>{registered.count} / {criteriaTotal} — {SPEC_REG_R1.threshold.pass}</div>
+                <div>기록 시각</div><div className="mono">{registered.ts}</div>
+                <div>기록 위치</div><div>Feature Registry(<span className="mono">{registered.id}</span>) + 리비전 레지스트리(<span className="mono">{registered.id}@{rec.version}</span> rev {rec.recordRevision})</div>
+                <div>안전·보안</div><div>{safetyLabel} · 보안 등급 미검토(UNASSESSED) — 임의 확정하지 않습니다</div>
+                <div>배포 유형</div><div>TBD — Control Point(Flag) 연결 후 확정</div>
+              </div>
+            </div>
+            <div className="col">
+              <b className="small">다음</b>
+              <div className="small muted">등록 후에도 속성 입력과 초안 저장은 계속되며, 승인 요청(WF-SUBMIT)은 승인된 등록 정책의 단계별 필수 항목을 다시 검사합니다.</div>
+              <div className="row mt">
+                <button className="btn primary" onClick={startNewDraft}>새 등록 초안 시작</button>{' '}
+                <Link className="btn" to="/catalog">Feature Registry 에서 확인</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="card mt">
         <p className="small muted">Feature ID 는 자동 채번되고, 새 Revision 은 이전 승인본의 값을 승계한 뒤 바뀐 항목만 기록합니다.</p>
         <div className="row mt">
@@ -485,7 +935,7 @@ export function DefineRevision() {
       </div>
 
       {error && (
-        <div className="card" style={{ borderColor: 'var(--fail)' }}>
+        <div className="card" style={{ borderColor: 'var(--fail)' }} data-testid="ui02-error">
           <b style={{ color: 'var(--fail)' }}>{error.status} {error.reason}</b>
           <p className="small mt">{error.description}</p>
           {error.behavior && <p className="small muted">화면 상태: {error.behavior}</p>}
@@ -520,12 +970,14 @@ export function DefineRevision() {
 
       {/* ── UI02-R1 등록 심사 · 업무 Lifecycle (2026-09-13 정본 개정) ─── */}
       <RegistrationReviewPanel
+        key={`draft-${draftSeq}`}
         featureId={rec.id}
         revisionState={rec.state}
         filled={values}
         conditions={conditions.length}
         onJumpArea={id => { setAreaId(id); setSel(null); setDetailTab(0); }}
         onEvent={setNotice}
+        onReviewChange={setReview}
       />
 
       <div className="card">

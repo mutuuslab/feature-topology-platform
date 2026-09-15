@@ -8,3 +8,8 @@
 
 /env/*
   Cache-Control: public, max-age=600, must-revalidate
+
+# §20.2 — 기준 패키지에서 파생한 문서 자산은 제품에 포함하지 않는다.
+# 과거 배포에서 캐시된 응답이 남지 않도록 spec 경로는 캐시하지 않는다.
+/spec/*
+  Cache-Control: no-store

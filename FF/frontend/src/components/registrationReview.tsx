@@ -4,7 +4,7 @@
 //
 // 경계: 이 패널은 Revision 상태(DRAFT·IN_REVIEW·…)를 바꾸지 않는다. 업무 Lifecycle 은 별도 축이며
 // Release Readiness 9 Gate(UI10·UI06 소관)는 상태를 바꾸지 않고 차단 사유만 표시한다.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SPEC_REG_R1, SPEC_REG_SAFETY_GRADES, SPEC_REG_TAXONOMY, SPEC_REG_ACCEPTANCE, SPEC_REG_UL } from '../data/specRegistrationR1';
 import {
@@ -12,7 +12,8 @@ import {
   R1_SCREEN_CONTRACT, REVIEW_AT, SAFETY_RELEVANCE_NOTE, TAXONOMY_MIN_LEVEL, agingCandidates, agingSummary,
   deleteAlternative, deleteDecision, evaluateRegistration, evaluateTransitions, needsGradeBeforeDeveloping,
   r1CollabLabel, r1PlaneLabel, safetyAssessment, taxonomyCheck,
-  type BusinessState, type ReviewEvidence, type SafetyAssessment, type TransitionEvaluation,
+  type BusinessState, type CriterionEvaluation, type RegistrationOutcome, type ReviewEvidence,
+  type SafetyAssessment, type TransitionEvaluation,
 } from '../data/registrationReview';
 import { ARTIFACT_RECORDS, CONTROL_POINTS, kindLabel, roleLabel } from '../data/implementation';
 import { SPEC_REG_AREA_ATTRS, SPEC_REG_ATTRS } from '../data/specRegistration';
@@ -49,10 +50,34 @@ export interface RegistrationReviewPanelProps {
   onJumpArea?: (areaId: string) => void;
   /** 감사 이벤트·전이 기록을 화면 상단에 남긴다 */
   onEvent?: (text: string) => void;
+  /**
+   * 심사 결과를 상위 화면에 보고한다 — 등록 실행 버튼의 게이트가 이 값만 쓴다.
+   * 7기준 x/7 을 화면마다 따로 계산하면 판정 근거가 갈라지므로 패널 계산을 그대로 넘긴다.
+   */
+  onReviewChange?: (snapshot: ReviewSnapshot) => void;
+}
+
+/** 등록 실행 게이트가 쓰는 심사 스냅샷 — 근거·판정·두 축(업무 Lifecycle·안전)을 함께 넘긴다. */
+export interface ReviewSnapshot {
+  evidence: ReviewEvidence;
+  count: number;
+  total: number;
+  min: number;
+  outcome: RegistrationOutcome;
+  /** 정본 threshold.pass / fail 문구 — 등록 결과 카드가 그대로 인용한다. */
+  verdict: string;
+  /** 기준별 판정과 근거 — 등록 화면의 미충족 목록이 이 값을 그린다. */
+  rows: CriterionEvaluation[];
+  missing: { id: string; text: string }[];
+  /** 감사 이벤트 문구 — REGISTER {featureId} 7-criteria {n}/7 (정본 형식) */
+  audit: (featureId: string) => string;
+  safetyRelevance: 'NON_SAFETY' | 'RELATED' | 'UNASSESSED';
+  safetyGrade: SafetyAssessment;
+  businessState: BusinessState;
 }
 
 export function RegistrationReviewPanel({
-  featureId, revisionState, filled, conditions, onJumpArea, onEvent,
+  featureId, revisionState, filled, conditions, onJumpArea, onEvent, onReviewChange,
 }: RegistrationReviewPanelProps) {
   const [linkedFlags, setLinkedFlags] = useState<string[]>([]);
   const [linkedEvidence, setLinkedEvidence] = useState<string[]>([]);
@@ -129,6 +154,25 @@ export function RegistrationReviewPanel({
   };
 
   const candidate = review.outcome === 'FEATURE_CANDIDATE';
+
+  // 심사 결과를 상위 화면에 보고한다. 값이 실제로 바뀔 때만 알리고(매 렌더 새 객체를 만들지 않는다)
+  // 콜백 identity 변화로는 다시 알리지 않는다.
+  const reportRef = useRef(onReviewChange);
+  useEffect(() => { reportRef.current = onReviewChange; });
+  const snapshotKey = [
+    review.count, review.total, review.outcome,
+    evidence.filledAttrs.join(','), requirementRefs, evidence.evidenceRefs, evidence.monitorRefs,
+    evidence.applicabilityConditions, safetyGrade, relevance, business,
+  ].join('|');
+  useEffect(() => {
+    reportRef.current?.({
+      evidence, count: review.count, total: review.total, min: review.min, outcome: review.outcome,
+      verdict: review.verdict, rows: review.rows, missing: review.missing, audit: review.audit,
+      safetyRelevance: relevance, safetyGrade, businessState: business,
+    });
+    // snapshotKey 가 보고 대상 값 전체를 문자열로 담고 있어 의존성은 이 키 하나로 충분하다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshotKey]);
 
   return (
     <div className="card mt" data-testid="ui02-r1">

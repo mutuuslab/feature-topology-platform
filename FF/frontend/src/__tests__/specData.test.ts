@@ -9,7 +9,7 @@ import {
   SPEC_SCREEN_PLANE, specPlaneOfPath,
 } from '../data/specPlanesNav';
 import { SPEC_PLANES, SPEC_PLANE_NOTE } from '../data/specArch';
-import { PLANE_NAV, DOMAINS } from '../i18n';
+import { PLANE_NAV, DOMAINS, ITEM } from '../i18n';
 
 describe('요구사양 문서는 제품에 없다', () => {
   it('문서 원문 자산(public/spec)이 배포 대상에 없다', () => {
@@ -125,9 +125,16 @@ describe('Plane별 보기 (4 Plane · 공유 기반)', () => {
     }));
   });
 
-  it('구현 데모 화면이 빠짐없이 한 Plane에만 들어간다', () => {
-    // 메뉴(1차 IA)에 올라온 구현 경로 = Plane별 보기에 배치된 구현 경로 (같은 집합, 정확히 한 번씩)
-    const all = DOMAINS.flatMap((d) => d.groups.flatMap((g) => g.items.map((it) => it.to)));
+  it('기준 화면 30개가 빠짐없이 한 Plane에만 들어간다', () => {
+    const placed = SPEC_PLANE_NAV.flatMap((p) => p.screenGroups.flatMap((g) => g.screens));
+    expect(placed).toHaveLength(30);
+    expect(new Set(placed).size).toBe(30);
+    expect(placed.slice().sort()).toEqual(DOMAINS.flatMap((d) => d.screens.map((s) => s.id)).sort());
+  });
+
+  it('Plane별 구현 경로 배치가 구현 뷰 전체와 같다', () => {
+    // 메뉴는 이제 기준 화면 30줄뿐이므로, 배치 대상은 메뉴가 아니라 구현된 모든 뷰(ITEM)다.
+    const all = Object.keys(ITEM);
     const placed = SPEC_PLANE_NAV.flatMap((p) => p.demos.flatMap((d) => d.routes));
     expect(placed).toHaveLength(new Set(placed).size);
     expect(placed.slice().sort()).toEqual(all.slice().sort());
@@ -168,7 +175,7 @@ describe('Plane별 보기 (4 Plane · 공유 기반)', () => {
       expect(p.ko.length, p.key).toBeGreaterThan(0);
       expect(p.en.length, p.key).toBeGreaterThan(0);
       expect(p.groups.length, p.key).toBeGreaterThan(0);
-      p.groups.forEach((g) => expect(g.items.length, `${p.key}/${g.ko}`).toBeGreaterThan(0));
+      p.groups.forEach((g) => expect(g.screens.length, `${p.key}/${g.ko}`).toBeGreaterThan(0));
     });
   });
 });

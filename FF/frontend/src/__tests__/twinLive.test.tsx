@@ -430,6 +430,9 @@ describe('§12.6 Live Visual Twin — 라우팅 통합', () => {
     expect(await screen.findByRole('heading', { name: /Live Visual Twin/ }, { timeout: 15000 })).toBeInTheDocument();
 
     fireEvent.click(await screen.findByRole('button', { name: '차량 운영' }, { timeout: 15000 }));
-    expect(await screen.findByRole('link', { name: 'Live Visual Twin (3D)' }, { timeout: 15000 })).toBeInTheDocument();
+    // 메뉴에는 정본 화면 한 줄만 오르고, 그 화면의 구현 뷰(3D Twin)는 화면 안 「구현 뷰」 행에 있다.
+    expect(await screen.findByRole('link', { name: /^UI11 차량 운영 현황$/, }, { timeout: 15000 })).toBeInTheDocument();
+    const views = await screen.findByRole('navigation', { name: '구현 뷰' }, { timeout: 15000 });
+    expect(within(views).getByRole('link', { name: 'Live Visual Twin (3D)' })).toHaveAttribute('href', '/twin/live');
   }, 60000);
 });

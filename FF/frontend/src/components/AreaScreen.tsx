@@ -112,7 +112,7 @@ export function CanonicalScreen({ screenId, title, core, head, kpis, areas, tab 
       {head}
       <div className="tabs mt">
         {defs.map(d => (
-          <button key={d.id} className={d.id === active ? 'active' : ''} onClick={() => setLocal(d.id)} title={`${d.id} · ${d.name}${d.type ? ` · ${d.type}` : ''}`}>
+          <button key={d.id} className={d.id === active ? 'active' : ''} onClick={() => setLocal(d.id)} title={`${d.id} · ${d.name} · ${d.layout}`}>
             {d.name}{miss.includes(d.id) ? ' ⚠' : ''}
           </button>
         ))}
@@ -120,7 +120,7 @@ export function CanonicalScreen({ screenId, title, core, head, kpis, areas, tab 
       <div className="card">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
           <b>{def ? `${def.id} · ${def.name}` : screenId}</b>
-          {def?.type && <span className="pill">{def.type}</span>}
+          {def && <span className="pill">{def.layout}</span>}
         </div>
         <div className="mt">{def && areas[def.id] ? areas[def.id]() : <span className="muted small">영역 본문이 연결되지 않았다.</span>}</div>
       </div>

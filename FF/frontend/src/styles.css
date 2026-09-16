@@ -49,10 +49,24 @@ code,.mono{font-family:var(--mono)}
 .subnav a{display:block;padding:7px 16px 7px 22px;color:var(--ink);font-size:13px;border-left:3px solid transparent}
 .subnav a:hover{background:var(--surface-3)}
 .subnav a.active{background:var(--surface-3);border-left-color:var(--brand);font-weight:600}
+/* 서브내비 한 줄 = 기준 화면 하나 — 정본 화면 ID + 정본 화면 이름 (구현 뷰는 화면 안에서 이동) */
+.subnav a.nav-screen{display:flex;align-items:baseline;gap:8px;padding:7px 16px 7px 12px}
+.subnav a.nav-screen .nav-id{flex:0 0 34px;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.2px;color:var(--muted)}
+.subnav a.nav-screen .nav-lb{flex:1;min-width:0}
+.subnav a.nav-screen.active .nav-id{color:var(--brand)}
 .main{overflow:auto;padding:20px 24px}
 
 /* 공통 */
-.breadcrumb{font-size:12px;color:var(--muted);margin-bottom:10px}
+.crumb-block{margin-bottom:10px}
+.breadcrumb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px}
+.crumb-id{font-style:normal;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);color:var(--brand)}
+.crumb-area{font-size:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+/* 한 화면이 구현 경로를 여러 개 가질 때만 나오는 화면 안 뷰 전환 */
+.views{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.views-lb{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+.views a{padding:2px 9px;border:1px solid var(--line);border-radius:20px;font-size:11px;color:var(--muted);background:var(--surface)}
+.views a:hover{border-color:var(--brand);color:var(--brand)}
+.views a.active{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
 .page-title{font-size:20px;font-weight:700;margin:0 0 4px}
 .page-sub{color:var(--muted);margin:0 0 16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:16px}

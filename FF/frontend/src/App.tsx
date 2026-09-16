@@ -4,7 +4,7 @@ import { useAppShell, useAppApi, roleHome } from './store';
 import { NotFound } from './components/patterns';
 import RouteBoundary from './components/RouteBoundary';
 import { roles, profileOf, roleLabel } from './data/refdata';
-import { DOMAINS, DEPT_NAV, PLANE_NAV, ITEM, domainOfPath, useT } from './i18n';
+import { DOMAINS, DEPT_NAV, PLANE_NAV, domainOfPath, useT, type NavScreen } from './i18n';
 import { useMotion } from './state/motion';
 import { specPlaneOfPath } from './data/specPlanesNav';
 import Catalog from './pages/Catalog';
@@ -58,7 +58,7 @@ export default function App() {
   const loc = useLocation();
   const { role, navMode, lang, theme } = useAppShell();
   const { dispatch } = useAppApi();
-  const { t, navGroup, navItem, navDomain, deptLabel } = useT();
+  const { t, navScreen, navDomain, deptLabel } = useT();
   // 실시간 모션 제어 — 끄면 반복 애니메이션(커널·CSS·3D 렌더 루프)이 모두 멈춘다.
   const motion = useMotion();
   const motionTitle = motion.running
@@ -94,6 +94,19 @@ export default function App() {
   const [q, setQ] = useState('');
   const submitSearch = () => { if (q.trim()) { nav('/catalog?q=' + encodeURIComponent(q.trim())); setNavOpen(false); } };
   const changeRole = (r: string) => { dispatch({ t: 'ROLE', role: r }); nav(roleHome[r] || '/'); };
+  /** 서브내비 한 줄 = 기준 화면 하나. 그 화면의 나머지 구현 뷰는 화면 안 「구현 뷰」 행으로 내려간다. */
+  const screenRow = (s: NavScreen) => (
+    <NavLink
+      key={s.id}
+      to={s.to}
+      end={s.to === '/'}
+      className="nav-screen"
+      title={`${s.id} ${navScreen(s)} · 담당 ${s.owner}${s.plane ? ` · Plane ${s.plane}` : ''}`}
+    >
+      <em className="nav-id">{s.id}</em>
+      <span className="nav-lb">{navScreen(s)}</span>
+    </NavLink>
+  );
   return (
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
       <a className="skip" href="#main">{t('skip')}</a>
@@ -143,8 +156,8 @@ export default function App() {
               </div>
               {planeObj.groups.map(g => (
                 <div key={g.ko}>
-                  <div className="group">{navGroup(g)}</div>
-                  {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
+                  {g.screens.length > 1 && <div className="group">{navDomain({ ko: g.ko, en: g.en })}</div>}
+                  {g.screens.map(screenRow)}
                 </div>
               ))}
             </div>
@@ -162,12 +175,7 @@ export default function App() {
             </div>
             <div className="subnav" onClick={() => setNavOpen(false)}>
               <div className="subnav-head">{dom.icon} {navDomain(dom)}</div>
-              {dom.groups.map(g => (
-                <div key={g.ko}>
-                  <div className="group">{navGroup(g)}</div>
-                  {g.items.map(it => <NavLink key={it.to + it.ko} to={it.to} end={it.to === '/'}>{navItem(it)}</NavLink>)}
-                </div>
-              ))}
+              {dom.screens.map(screenRow)}
             </div>
           </> : <>
             <div className="rail">
@@ -180,12 +188,7 @@ export default function App() {
             </div>
             <div className="subnav" onClick={() => setNavOpen(false)}>
               <div className="subnav-head">{deptObj.icon} {deptLabel(deptObj)} <span className="muted small">({deptObj.role})</span></div>
-              {deptObj.sections.map(sec => (
-                <div key={sec.ko}>
-                  <div className="group">{deptLabel(sec)}</div>
-                  {sec.paths.map(p => ITEM[p] ? <NavLink key={p} to={p} end={p === '/'}>{navItem(ITEM[p])}</NavLink> : null)}
-                </div>
-              ))}
+              {deptObj.screens.map(screenRow)}
             </div>
           </>}
         </div>

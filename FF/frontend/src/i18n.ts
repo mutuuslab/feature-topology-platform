@@ -1,49 +1,104 @@
 import { useAppShell } from './store';
 import { SPEC_MENU } from './data/specMenu';
-import { ROLE_HOME_IMPL, SCREEN_LINKS, implementedPaths, navPathOfLink, screenOfRoute } from './data/uiLinks';
+import { canonAreaName } from './data/canonical';
+import { SCREEN_CANON_BY_ID } from './data/screenAreas';
+import {
+  ROLE_HOME_IMPL, SCREEN_ENTRY, SCREEN_LINKS, navPathOfLink, screenEntryOf, screenOfRoute,
+  type ImplementedLink,
+} from './data/uiLinks';
 import { SPEC_PLANE_NAV } from './data/specPlanesNav';
 
 // 한/영 사전 — 네비게이션 셸 + 공통 UI. (페이지 본문은 점진 적용)
 type Lang = 'ko' | 'en';
 export interface NavItem { to: string; ko: string; en: string }
-export interface NavGroup { ko: string; en: string; items: NavItem[] }
-export interface NavDomain { key: string; icon: string; ko: string; en: string; groups: NavGroup[] }
 
-// ── 1차 IA = 정본 MENU 1.3 의 7 업무 그룹 × 30 기준 화면 ──
+/** 기준 화면 하나 = 메뉴 항목 하나. 진입 경로는 그 화면이 구현된 경로 가운데 하나(`entry`)다. */
+export interface NavScreen {
+  /** 기준 화면 ID (UI01~UI30) */
+  id: string;
+  ko: string;
+  en: string;
+  /** 화면 진입 경로 */
+  to: string;
+  /** 담당 역할 키 (SPEC_MENU 의 owner) */
+  owner: string;
+  /** 대표 Plane 짧은 이름 */
+  plane: string;
+  /** 진입 뷰가 구현하는 정본 상세 영역 ID */
+  areaId?: string;
+  /** 그 화면의 구현 뷰 (진입 포함) — 화면 안 「구현 뷰」 이동에 쓴다 */
+  views: NavItem[];
+}
+
+/** 업무 그룹 하나 = 레일 항목 하나. 그룹 아래에는 정본 화면이 정본 순서로 놓인다. */
+export interface NavDomain { key: string; icon: string; ko: string; en: string; screens: NavScreen[] }
+/** Plane·부서별 보기에서 화면을 업무 그룹으로 묶을 때 쓰는 묶음. */
+export interface NavScreenGroup { ko: string; en: string; screens: NavScreen[] }
+
+// ── 1차 IA = 정본 MENU 1.3 의 **2단계 메뉴** (7 업무 그룹 → 30 기준 화면) ──
 // 제품에는 **실제 구현된 화면**만 올린다. 요구사양 문서 화면(/ui/UIxx · /arch · 용어집 · 개정 이력)은
 // 제품의 화면·메뉴·참조 링크 어디에도 두지 않는다.
 //
-// 서브내비 묶음 = 정본 업무 영역(기준 화면) 하나. 묶음 제목은 그 영역의 정본 이름을 쓰고,
-// 묶음 아래에는 그 영역이 실제로 구현된 화면 경로(uiLinks)만 넣는다. 구현 화면이 없는 영역은
-// 묶음을 만들지 않는다 — 메뉴는 화면 목록이므로 빈 영역을 올릴 수 없다.
+// 정본 런타임도 메뉴가 2단계다(그룹 → 화면). 그래서 서브내비는 **화면 목록**이고, 화면 안의 여러 구현
+// 경로는 메뉴가 아니라 화면 안 「구현 뷰」 행으로 내려간다(data/uiLinks 의 entry·areaId).
+// 메뉴 항목 이름은 정본 화면 이름을 그대로 쓰고, 구현 화면 이름은 화면 안에서만 보인다.
 //
-// 경로 → 소속 영역은 uiLinks 연결표 순서(= 정본 화면 순서)가 정한다. 그래서 메뉴 소속·레일 하이라이트·
-// 빵부스러기(screenOfRoute)가 모두 같은 답을 내며, 셋을 따로 손으로 적지 않는다.
+// 경로 → 소속 화면·영역은 uiLinks 연결표 순서(= 정본 화면 순서)가 정한다. 그래서 메뉴 소속·레일
+// 하이라이트·빵부스러기(screenOfRoute)가 모두 같은 답을 내며, 셋을 따로 손으로 적지 않는다.
 
-/** 기준 화면 ID → 정본 라벨 · 소속 업무 그룹 */
-const SCREEN_META: Record<string, { ko: string; en: string; domain: string }> = Object.fromEntries(
-  SPEC_MENU.flatMap(g => g.items.map(it => [it.id, { ko: it.ko, en: it.en, domain: g.id }])),
+/** 기준 화면 ID → 정본 라벨 · 소속 업무 그룹 · 담당 역할 */
+const SCREEN_META: Record<string, { ko: string; en: string; domain: string; owner: string }> = Object.fromEntries(
+  SPEC_MENU.flatMap(g => g.items.map(it => [it.id, { ko: it.ko, en: it.en, domain: g.id, owner: it.owner }])),
 );
 
-/** 이미 다른 영역이 가져간 경로 — 한 경로는 메뉴에서 한 곳에만 나온다. */
-const CLAIMED = new Set<string>();
 /** 경로 → 소속 업무 그룹 · 업무 영역 (메뉴 · 빵부스러기 · 레일 하이라이트의 단일 근거). */
 const PATH_SECTION: Record<string, { domain: string; screenId: string }> = {};
-
-/** 기준 화면 하나를 서브내비 묶음으로 바꾼다. 구현 경로가 없으면 null. */
-function sectionOfScreen(screenId: string): NavGroup | null {
-  const meta = SCREEN_META[screenId];
-  const entry = SCREEN_LINKS[screenId];
-  if (!meta || !entry) return null;
-  const items: NavItem[] = [];
-  entry.links.forEach((l) => {
+Object.values(SCREEN_LINKS).forEach((s) => {
+  const meta = SCREEN_META[s.screenId];
+  if (!meta) return;
+  s.links.forEach((l) => {
     const to = navPathOfLink(l);
-    if (!to.startsWith('/') || to.includes(':') || CLAIMED.has(to)) return;
-    CLAIMED.add(to);
-    PATH_SECTION[to] = { domain: meta.domain, screenId };
-    items.push({ to, ko: l.label, en: l.en });
+    if (!to.startsWith('/') || to.includes(':')) return;
+    if (!(to in PATH_SECTION)) PATH_SECTION[to] = { domain: meta.domain, screenId: s.screenId };
   });
-  return items.length ? { ko: meta.ko, en: meta.en, items } : null;
+});
+
+/**
+ * 구현 뷰의 표시 이름 — 정본 상세 영역 이름이 있으면 그 이름을 쓴다(메뉴·이동이 정본 용어를 쓰도록).
+ *
+ * 한 화면에서 두 뷰가 같은 정본 영역을 나눠 쓰면(예: UI11-S03 을 Fleet 3D 와 Live 3D 가 함께 씀)
+ * 정본 이름만으로는 구분되지 않으므로 구현 화면 이름을 그대로 남긴다.
+ */
+const VIEW_LABEL: Map<ImplementedLink, string> = (() => {
+  const m = new Map<ImplementedLink, string>();
+  Object.values(SCREEN_LINKS).forEach(s => {
+    const perArea = new Map<string, number>();
+    s.links.forEach(l => { if (l.areaId) perArea.set(l.areaId, (perArea.get(l.areaId) || 0) + 1); });
+    s.links.forEach(l => {
+      const canon = l.areaId ? canonAreaName(l.areaId) : undefined;
+      const shared = !!l.areaId && (perArea.get(l.areaId) || 0) > 1;
+      m.set(l, canon && !shared ? canon : l.label);
+    });
+  });
+  return m;
+})();
+
+function viewItem(link: ImplementedLink): NavItem {
+  return { to: navPathOfLink(link), ko: VIEW_LABEL.get(link) || link.label, en: link.en };
+}
+
+/** 기준 화면 하나를 메뉴 항목으로 바꾼다. 구현된 진입 경로가 없으면 null. */
+function screenOf(screenId: string): NavScreen | null {
+  const meta = SCREEN_META[screenId];
+  const link = SCREEN_LINKS[screenId];
+  const to = SCREEN_ENTRY[screenId];
+  if (!meta || !link || !to) return null;
+  return {
+    id: screenId, ko: meta.ko, en: meta.en, to, owner: meta.owner,
+    plane: SCREEN_CANON_BY_ID[screenId]?.plane || '',
+    areaId: screenEntryOf(screenId)?.areaId,
+    views: link.links.filter(l => !navPathOfLink(l).includes(':')).map(viewItem),
+  };
 }
 
 export const DOMAINS: NavDomain[] = SPEC_MENU.map(g => ({
@@ -51,16 +106,25 @@ export const DOMAINS: NavDomain[] = SPEC_MENU.map(g => ({
   icon: g.icon,
   ko: g.ko,
   en: g.en,
-  groups: g.items.map(it => sectionOfScreen(it.id)).filter((x): x is NavGroup => !!x),
+  screens: g.items.map(it => screenOf(it.id)).filter((x): x is NavScreen => !!x),
 }));
 
-// 하위호환: 평탄화된 묶음 목록 (정본 업무 영역 순)
-export const NAV: NavGroup[] = DOMAINS.flatMap(d => d.groups);
+/** 기준 화면 ID → 메뉴 항목 (Plane·부서별 보기가 같은 값을 재사용한다). */
+export const SCREEN_NAV: Record<string, NavScreen> = Object.fromEntries(
+  DOMAINS.flatMap(d => d.screens).map(s => [s.id, s]),
+);
 
-// 경로 → NavItem 룩업 (부서별·Plane별 보기에서 라벨 i18n 재사용)
+// 하위호환: 평탄화된 화면 목록 (정본 화면 순)
+export const NAV: NavScreen[] = DOMAINS.flatMap(d => d.screens);
+
+// 경로 → NavItem 룩업 — 메뉴에 오르지 않은 구현 뷰까지 **모두** 담는다(빵부스러기·화면 안 이동·부서별 보기).
 export const ITEM: Record<string, NavItem> = (() => {
   const m: Record<string, NavItem> = {};
-  NAV.forEach(g => g.items.forEach(it => { if (!(it.to in m)) m[it.to] = it; }));
+  Object.values(SCREEN_LINKS).forEach(s => s.links.forEach((l) => {
+    const to = navPathOfLink(l);
+    if (to.includes(':') || to in m) return;
+    m[to] = viewItem(l);
+  }));
   return m;
 })();
 
@@ -69,8 +133,13 @@ export const ITEM: Record<string, NavItem> = (() => {
 // (SPEC_PLANE_NAV · specPlaneOfPath 가 그대로 사용), 여기서는 셸이 쓰는 라벨 형태로 구현 화면만 바꾼다.
 // Knowledge Foundation(shared)은 4 Plane이 아니라 공유 기반이며, 참조 문서 화면만 갖고 있었으므로
 // 제품 레일에서는 제외한다 — 남는 레일은 실제 구현 화면을 가진 4 Plane뿐이다.
-export interface PlaneNavDomain extends NavDomain {
-  /** Plane 전체 이름 (레일 라벨은 상속된 ko/en 짧은 이름을 쓴다) */
+export interface PlaneNavDomain {
+  key: string;
+  icon: string;
+  /** 레일 라벨 — Plane 짧은 이름 */
+  ko: string;
+  en: string;
+  /** Plane 전체 이름 (레일 라벨은 ko/en 짧은 이름을 쓴다) */
   fullKo: string;
   fullEn: string;
   /** Plane 산출물 (specArch.SPEC_PLANES 원천) */
@@ -81,21 +150,21 @@ export interface PlaneNavDomain extends NavDomain {
   note: string;
   /** 4 Plane에 속하지 않는 공유 기반(Knowledge Foundation) */
   shared: boolean;
+  /** Plane 아래 화면 묶음 (업무 그룹 순서, 화면만 — 각 화면은 진입 경로 하나) */
+  groups: NavScreenGroup[];
 }
 
 export const PLANE_NAV: PlaneNavDomain[] = SPEC_PLANE_NAV.filter(p => !p.shared).map(p => ({
   key: p.id, icon: p.icon, ko: p.shortKo, en: p.shortEn,
   fullKo: p.ko, fullEn: p.en,
   produces: p.produces, contract: p.contract, note: p.note, shared: !!p.shared,
-  groups: p.demos.map(g => ({
-    ko: g.ko, en: g.en,
-    items: g.routes.map(r => ITEM[r] || { to: r, ko: r, en: r }),
-  })),
+  groups: p.screenGroups
+    .map(g => ({ ko: g.ko, en: g.en, screens: g.screens.map(id => SCREEN_NAV[id]).filter((x): x is NavScreen => !!x) }))
+    .filter(g => g.screens.length > 0),
 }));
 
-// ── 2차 IA = 부서별 보기 (정본 9 역할 → 담당 화면 큐레이션) ──
-export interface DeptSection { ko: string; en: string; paths: string[] }
-export interface Dept { role: string; icon: string; ko: string; en: string; sections: DeptSection[] }
+// ── 2차 IA = 부서별 보기 (정본 9 역할 → 담당 화면) ──
+export interface Dept { role: string; icon: string; ko: string; en: string; screens: NavScreen[] }
 
 const ROLE_ICON: Record<string, string> = {
   author: '✍️', approver: '🏛', quality: '✅', operator: '🚚', steward: '🧩',
@@ -110,24 +179,16 @@ const ROLE_EN: Record<string, string> = {
   commerce: 'Product Rights', integrator: 'System Integration', coordinator: 'Alignment & Handoff', viewer: 'Read-only',
 };
 
-// 부서별 보기 = 역할이 소유한 기준 화면(SPEC_MENU 의 owner) 하나를 묶음 하나로 보여준다.
-// 묶음 제목은 정본 업무 영역 이름, 내용은 그 영역이 구현된 메뉴 경로다.
-// 노출되는 것은 구현된 경로뿐이다 — 요구사양 문서 화면(/ui/UIxx)은 제품에 존재하지 않는다.
+// 부서별 보기 = 역할이 소유한 기준 화면(SPEC_MENU 의 owner)을 정본 순서 그대로 보여준다.
+// 노출되는 것은 구현된 화면뿐이다 — 요구사양 문서 화면(/ui/UIxx)은 제품에 존재하지 않는다.
 export const DEPT_NAV: Dept[] = Object.keys(ROLE_KO).map(role => {
   const owned = SPEC_MENU.flatMap(g => g.items.filter(it => it.owner === role).map(it => it.id));
-  const seen = new Set<string>();
-  const sections: DeptSection[] = owned.map(id => {
-    const meta = SCREEN_META[id];
-    const paths = implementedPaths(id).filter(p => ITEM[p] && !seen.has(p));
-    paths.forEach(p => seen.add(p));
-    return { ko: meta?.ko || id, en: meta?.en || id, paths };
-  }).filter(s => s.paths.length > 0);
   return {
     role,
     icon: ROLE_ICON[role] || '👤',
     ko: ROLE_KO[role] || role,
     en: ROLE_EN[role] || role,
-    sections,
+    screens: owned.map(id => SCREEN_NAV[id]).filter((x): x is NavScreen => !!x),
   };
 });
 
@@ -201,9 +262,9 @@ export function useT() {
   return {
     lang,
     t: (k: string) => COMMON[k]?.[lang] ?? COMMON[k]?.ko ?? k,
-    navGroup: (g: NavGroup) => (lang === 'en' ? g.en : g.ko),
+    navScreen: (s: NavScreen) => (lang === 'en' ? s.en : s.ko),
     navItem: (i: { ko: string; en: string }) => (lang === 'en' ? i.en : i.ko),
     navDomain: (d: { ko: string; en: string }) => (lang === 'en' ? d.en : d.ko),
-    deptLabel: (d: Dept | DeptSection) => (lang === 'en' ? d.en : d.ko),
+    deptLabel: (d: { ko: string; en: string }) => (lang === 'en' ? d.en : d.ko),
   };
 }

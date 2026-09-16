@@ -247,11 +247,15 @@ describe('라우팅·네비게이션 통합', () => {
       </MemoryRouter>,
     );
 
-    // 1차 IA 레일은 기준 7 업무 그룹이고, 서브내비에는 실제 구현 화면만 올라온다.
+    // 1차 IA 레일은 기준 7 업무 그룹이고, 서브내비에는 정본 화면 30개만 올라온다.
     fireEvent.click(await screen.findByRole('button', { name: '차량 운영' }));
-    // 기준 화면 정의서(UI11 차량 운영 현황)는 요구사양 문서라 제품 메뉴에 올라오지 않는다.
-    expect(screen.queryByRole('link', { name: /UI11 차량 운영 현황/ })).toBeNull();
-    fireEvent.click(await screen.findByRole('link', { name: /Twin Fleet/ }, { timeout: 5000 }));
+    // 메뉴 항목은 정본 화면(UI11 차량 운영 현황)이고, 기준 화면 정의서(/ui/UI11)는 제품에 없다.
+    const row = await screen.findByRole('link', { name: /^UI11 차량 운영 현황$/ }, { timeout: 5000 });
+    expect(document.querySelector('a[href^="/ui/UI"]')).toBeNull();
+    expect(row).toHaveAttribute('href', '/fleet');
+    fireEvent.click(row);
+    // 화면으로 들어가면 그 화면의 나머지 구현 뷰가 「구현 뷰」 행에 나타난다.
+    fireEvent.click(await screen.findByRole('link', { name: /Twin Fleet/, }, { timeout: 5000 }));
     // 두 페이지 모두 lazy 라우트다. 청크 로드 + Suspense 재시도 + 무거운 페이지 마운트가
     // 겹치면 기본 1000ms 를 넘길 수 있으므로(머신 부하에 따라 편차가 큼) 여유를 준다.
     // 검증 대상은 '이동'이지 '지연'이 아니다.
@@ -259,7 +263,8 @@ describe('라우팅·네비게이션 통합', () => {
 
     fireEvent.click(screen.getAllByRole('button', { name: '상세 →' })[0]);
     expect(await screen.findByRole('heading', { name: /Vehicle Twin ·/ }, { timeout: 5000 })).toBeInTheDocument();
-  });
+    // 레일 → 화면 → 구현 뷰 → 상세로 세 번 이동하므로 기본 5s 로는 부족하다(검증 대상은 이동 경로).
+  }, 20000);
 
   it('시뮬레이션 입력은 localStorage 에 저장되어 새로고침 후에도 유지된다', () => {
     const view = renderTwin(<TwinSimulation />);

@@ -5,6 +5,7 @@ import { MODELS, sampleVehicles } from '../data/fleet';
 import { Gauge, Heatmap } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 export default function Activation() {
   const nav = useNavigate();
@@ -21,7 +22,7 @@ export default function Activation() {
     <div>
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">Activation Control · 차종별 활성/비활성</h1>
+        <PageTitle fallback="Activation Control" detail="차종별 활성/비활성" />
         <TopoLink id={fid} />
       </div>
       <p className="page-sub">특정 차종(모델)에 대해 Feature를 ON/OFF·롤아웃%·Kill — Fleet 차량 상태에 즉시 반영</p>

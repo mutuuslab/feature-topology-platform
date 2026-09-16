@@ -15,6 +15,7 @@ import * as E from '../data/twin/engine';
 import { Bars, CountUp, Donut, GaugeArc, LiveDot, Steps, Timeline, dist } from '../components/charts';
 import { EmptyState } from '../components/patterns';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 import {
   ClassificationBanner,
   DreFlow,
@@ -126,10 +127,11 @@ function ConvergenceStack({ counts, total }: { counts: Record<T.Reconciliation, 
 function FleetTitle() {
   const { rate } = useTwinApi();
   return (
-    <h1 className="page-title">
-      Twin Fleet · 차량별 Twin 수렴 상태{' '}
-      {rate > 0 ? <LiveDot /> : <span className="badge" style={{ background: 'var(--pending)' }}>⏸ PAUSED</span>}
-    </h1>
+    <PageTitle
+      fallback="Twin Fleet"
+      detail="차량별 Twin 수렴 상태"
+      suffix={rate > 0 ? <LiveDot /> : <span className="badge" style={{ background: 'var(--pending)' }}>⏸ PAUSED</span>}
+    />
   );
 }
 
@@ -464,7 +466,7 @@ export function TwinImpact() {
     <div>
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">Twin Impact Preview · 활성화 사전 영향분석</h1>
+        <PageTitle fallback="Twin Impact Preview" detail="활성화 사전 영향분석" />
         <SimClockBar />
       </div>
       <p className="page-sub">
@@ -655,7 +657,7 @@ export function TwinSimulation() {
     <div>
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">What-if Twin Simulation · 활성화 전 가상 검증</h1>
+        <PageTitle fallback="What-if Twin Simulation" detail="활성화 전 가상 검증" />
         <span className="small muted">Simulation Twin ID <code className="mono">{E.SIM_VIN}</code> · seed <code className="mono">{r.seed}</code></span>
       </div>
       <p className="page-sub">

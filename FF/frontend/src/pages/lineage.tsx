@@ -160,7 +160,7 @@ export function IntegrationJobs() {
     { v: jobs.filter(j => j.stage === 'RETRY_READY' || j.stage === 'ACK_WAIT').length, l: '재처리 대상' },
     { v: jobs.reduce((n, j) => n + j.attempts, 0), l: '누적 시도' },
   ];
-  return <CanonicalScreen screenId="UI26" title="연계 작업과 재처리" core="C33 데이터 동기화" kpis={kpis} areas={areas} />;
+  return <CanonicalScreen screenId="UI26" core="C33 데이터 동기화" kpis={kpis} areas={areas} />;
 }
 
 // ═══════════════════════════════════ UI30 ═══════════════════════════════════
@@ -284,5 +284,5 @@ export function DesignTrace() {
     { v: st.review, l: '검토 필요' },
     { v: st.notRun + st.sourceOnly, l: '미연결' },
   ];
-  return <CanonicalScreen screenId="UI30" title="요구사항과 설계 추적" core="C45 안전 요구사항 추적" kpis={kpis} areas={areas} />;
+  return <CanonicalScreen screenId="UI30" core="C45 안전 요구사항 추적" kpis={kpis} areas={areas} />;
 }

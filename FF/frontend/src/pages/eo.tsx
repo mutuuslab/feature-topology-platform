@@ -187,7 +187,7 @@ export function SwEoChange() {
     { v: eos.filter(e => e.state === 'ACKED').length, l: '반영 확인' },
     { v: diff.added.length + diff.removed.length + diff.changed.length, l: '선택 EO 차이' },
   ];
-  return <CanonicalScreen screenId="UI23" title="SW EO 변경관리" core="C27 S/W 배포 기능 출시 분리" kpis={kpis} areas={areas} />;
+  return <CanonicalScreen screenId="UI23" core="C27 S/W 배포 기능 출시 분리" kpis={kpis} areas={areas} />;
 }
 
 // ═══════════════════════════════════ UI24 ═══════════════════════════════════
@@ -322,5 +322,5 @@ export function ProductSpec() {
     { v: st.deny, l: '판정 차단' },
     { v: st.unknown, l: '미정' },
   ];
-  return <CanonicalScreen screenId="UI24" title="제품사양과 HW Variant" core="C15 적용 대상 선정" kpis={kpis} areas={areas} />;
+  return <CanonicalScreen screenId="UI24" core="C15 적용 대상 선정" kpis={kpis} areas={areas} />;
 }

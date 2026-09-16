@@ -6,6 +6,7 @@ import { screensOfOwner } from '../data/specMenu';
 import { implementedPaths } from '../data/uiLinks';
 import { RightPanel, EmptyState } from '../components/patterns';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 import { useApp, useAppShell, useLive, useLiveSlices, useToast, roleHome as ROLE_HOME } from '../store';
 
 /** 데모 기준일 — 만료 임박 판정에 쓴다(시뮬레이터 시계와 별개인 달력 기준). */
@@ -18,7 +19,7 @@ export function UsersRoles() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Users &amp; Roles</h1>
+      <PageTitle fallback="Users & Roles" />
       <p className="page-sub">행 클릭 → 사용자 권한 상세</p>
       <div className="card"><div className="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Org</th><th>Status</th></tr></thead>
         <tbody>{users.map(u => (<tr key={u.id} role="button" tabIndex={0} onClick={() => setSel(u)} onKeyDown={e => { if (e.key === 'Enter') setSel(u); }}><td>{u.name}</td><td>{u.role}</td><td>{u.org}</td>
@@ -40,7 +41,7 @@ export function PermissionsMatrix() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Permissions Matrix (Role × Verb)</h1>
+      <PageTitle fallback="Permissions Matrix (Role × Verb)" />
       <p className="page-sub">현재 역할 <b>{roleLabel(role)}</b> — 자기 열을 확인하고, 변경은 감사 로그로 남긴다</p>
       <div className="card" style={{ overflowX: 'auto' }}>
         <table><thead><tr><th>Role \ Verb</th>{verbs.map(v=><th key={v}>{v}</th>)}</tr></thead>
@@ -76,7 +77,7 @@ export function OrgDomains() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Org &amp; Domains</h1>
+      <PageTitle fallback="Org & Domains" />
       <p className="page-sub">조직 · 역할군 · 담당 업무 영역과 적용 범위(scope)의 원천은 역할 정의 하나다</p>
       <div className="row">
         <div className="col card"><b>Orgs</b>
@@ -176,7 +177,7 @@ export function ApprovalWorkflow() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">검토함</h1>
+      <PageTitle fallback="검토함" />
       <p className="page-sub">내 판단을 기다리는 미결 객체 — 현재 역할 <b>{roleLabel(role)}</b> · {canApprove ? '승인 권한 있음' : '승인 권한 없음(조회만)'}</p>
       <div className="kpis">
         <div className="kpi"><div className="v">{items.length}</div><div className="l">검토 대기</div></div>
@@ -235,7 +236,7 @@ export function Settings() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Settings</h1>
+      <PageTitle fallback="Settings" />
       <p className="page-sub">이 설정은 즉시 셸에 적용된다 — 테마·언어는 상단 아이콘과 같은 값을 공유한다</p>
 
       <div className="row">
@@ -332,7 +333,7 @@ export function NotificationsCenter() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Notifications</h1>
+      <PageTitle fallback="Notifications" />
       <p className="page-sub">운영 중인 객체에서 파생한 알림 — 목록을 따로 저장하지 않으므로 원천이 바뀌면 즉시 따라온다</p>
       <div className="row mt" style={{ gap: 6 }}>
         {(['all', 'alert', 'task', 'info'] as const).map(f => (

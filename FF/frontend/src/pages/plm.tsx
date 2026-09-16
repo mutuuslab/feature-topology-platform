@@ -218,7 +218,7 @@ export function OfferComposition() {
     { v: offers.reduce((n, o) => n + o.items.length, 0), l: 'OfferingItem' },
     { v: conflicts.length, l: '구성 위반' },
   ];
-  return <CanonicalScreen screenId="UI07" title="Catalog 상품 구성" core="C15 적용 대상 선정" kpis={kpis} areas={areas} />;
+  return <CanonicalScreen screenId="UI07" core="C15 적용 대상 선정" kpis={kpis} areas={areas} />;
 }
 
 // ═══════════════════════════════════ UI21 ═══════════════════════════════════
@@ -335,7 +335,7 @@ export function UpgRegistry() {
     { v: upgs.filter(u => upgIdent(u.system, u.component, u.modelNo, u.modelCode, u.serial).ok).length, l: '식별 통과' },
     { v: relevantLogs.length, l: '원천 로그' },
   ];
-  return <CanonicalScreen screenId="UI21" title="UPG와 UPG VC" core="C32 Legacy 시스템 연계" kpis={kpis} areas={areas} />;
+  return <CanonicalScreen screenId="UI21" core="C32 Legacy 시스템 연계" kpis={kpis} areas={areas} />;
 }
 
 // ═══════════════════════════════════ UI22 ═══════════════════════════════════
@@ -457,5 +457,5 @@ export function SwStructure() {
     { v: rows.reduce((n, r) => n + r.members.length, 0), l: '구성원' },
     { v: check.issues.length, l: '선택 구조 오류' },
   ];
-  return <CanonicalScreen screenId="UI22" title="SW Structure" core="C03 Feature BOM" kpis={kpis} areas={areas} />;
+  return <CanonicalScreen screenId="UI22" core="C03 Feature BOM" kpis={kpis} areas={areas} />;
 }

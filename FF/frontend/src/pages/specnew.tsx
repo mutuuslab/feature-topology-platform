@@ -7,6 +7,7 @@ import { AreaChart, Donut, Bars, RadialProgress, Steps, Timeline, CountUp, LiveD
 import { SeverityBadge } from '../components/ui';
 import TopoLink from '../components/TopoLink';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const CMP_COLOR: Record<string, string> = { PASS: '#1F9D55', PENDING: '#D9822B', BLOCK: '#D64545' };
 
@@ -247,7 +248,7 @@ function SpecScreen({ title, sub, widget }:
     <div>
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">{title}</h1>
+        <PageTitle fallback={title} />
         <TopoLink />
       </div>
       <p className="page-sub">{sub}</p>

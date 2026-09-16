@@ -6,6 +6,7 @@ import { costSummary, fmtWon } from '../data/engine';
 import { RightPanel } from '../components/patterns';
 import { GroupedBars, Donut, Bars, Timeline, CountUp, tally, dist } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 // "15~20%" → 17.5, "<2%" → 2, "35%" → 35. 단위(%)가 명확한 경우만 숫자 반환.
 function parsePct(s: string): number | null {
@@ -27,7 +28,7 @@ export function Reports() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Reports / Analytics</h1>
+      <PageTitle fallback="Reports / Analytics" />
       <p className="page-sub">정량 기대효과 (목표치 — PoC/Baseline 실측 검증 필요)</p>
       <div className="row">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>정량 기대효과 지표</b>
@@ -57,7 +58,7 @@ export function AuditLog() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Audit Log Explorer</h1>
+      <PageTitle fallback="Audit Log Explorer" />
       <p className="page-sub">불변(append-only) · Feature ID 귀속 · R156 SUMS 증적 · 세션 내 액션 실시간 반영 · 행 클릭 → 상세</p>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 260, alignItems: 'center' }}><b>Action 분포</b>

@@ -3,6 +3,7 @@ import { costSummary, fmtWon, changeCost, impact } from '../data/engine';
 import { DeployBadge } from '../components/ui';
 import { Bars, Donut, CountUp } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const PIE = ['#0B5FFF', '#16A34A', '#D9822B', '#9333EA', '#D64545', '#0891B2'];
 
@@ -17,7 +18,7 @@ export default function Cost() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">SW 개발비 / Development Cost</h1>
+      <PageTitle fallback="SW 개발비 / Development Cost" />
       <p className="page-sub">공수(M/M)→금액(₩) 환산 · 모든 값은 <b>추정/가설</b> (요율 ₩12M/MM)</p>
 
       <div className="kpis reveal">

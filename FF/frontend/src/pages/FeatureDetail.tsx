@@ -6,6 +6,7 @@ import { LifecycleBadge, DeployBadge, Health } from '../components/ui';
 import TopoLink from '../components/TopoLink';
 import { GaugeArc, RadialProgress, Donut } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const TABS = ['Summary','Taxonomy','BOM','Topology','Variants','Control','Deploy','Verify','Supplier','Ops','History'];
 
@@ -23,7 +24,7 @@ export default function FeatureDetail() {
     <div>
       <Breadcrumb title={f.id} />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title"><span className="mono">{f.id}</span> · {f.displayName}</h1>
+        <PageTitle fallback={<span className="mono">{f.id}</span>} detail={f.displayName} />
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><TopoLink id={f.id} /><LifecycleBadge value={f.lifecycle} /></div>
       </div>
       <div className="row">

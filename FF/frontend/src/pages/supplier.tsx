@@ -3,6 +3,7 @@ import { supplierCost, fmtWon } from '../data/engine';
 import { useToast, useApp } from '../store';
 import { RadialProgress, Donut, Steps, tally, dist } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const PKG_ITEMS = [
   ['1 API Contract (OpenAPI/Protobuf)','valid'],['2 Human Documentation','valid'],
@@ -23,7 +24,7 @@ export function SupplierPortal() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Supplier Portal · SUP-BDC-A</h1>
+      <PageTitle fallback="Supplier Portal" detail="SUP-BDC-A" />
       <p className="page-sub">협력사 전용 워크스페이스 (RBAC 외부 스코프)</p>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>패키지 준비율</b>
@@ -62,7 +63,7 @@ export function APIReleasePackage() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">API Release Package Intake (10항목)</h1>
+      <PageTitle fallback="API Release Package Intake" detail="10항목" />
       <p className="page-sub">Mapped: FEAT-BDC-001 ↔ BDC_FUNC_032</p>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>인수 완료율</b>
@@ -89,7 +90,7 @@ export function PackageDetail() {
   return (
     <div>
       <Breadcrumb title="Package Detail" />
-      <h1 className="page-title">Package Detail · BDC_FUNC_032</h1>
+      <PageTitle fallback="Package Detail" detail="BDC_FUNC_032" />
       <div className="card"><b>매핑 경로</b>
         <Steps done steps={['FEAT-BDC-001', 'BDC_FUNC_032', 'SWC-BDC-ADAPTER', 'ECU-BDC', 'API-BDC-POLICY-CONTROL', 'HIL-BDC-001', 'Acceptance']} />
         <div className="mono small mt">FEAT-BDC-001 → BDC_FUNC_032 → SWC-BDC-ADAPTER → ECU-BDC → API-BDC-POLICY-CONTROL → HIL-BDC-001 → Acceptance(API v1.5 준수)</div>

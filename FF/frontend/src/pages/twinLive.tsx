@@ -1,4 +1,4 @@
-﻿/**
+/**
  * §12.6 Live Visual Twin — RFTwin(로봇 공장 3D 트윈) 스타일의 실시간 시각화.
  *
  * A. `3D 차량` 탭  : three.js(@react-three/fiber) 로 VIN 실차를 조립하고
@@ -63,6 +63,7 @@ import {
   type VehiclePart,
 } from '../scene/vehicleParts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 import {
   CELLS,
   PLANT_PRESETS,
@@ -706,9 +707,10 @@ export function TwinLive() {
   return (
     <div className="twinlive">
       <Breadcrumb />
-      <h1 className="page-title">
-        Live Visual Twin {rate > 0 ? <LiveDot /> : <span className="badge" style={{ background: 'var(--muted)', color: '#fff' }}>PAUSED</span>}
-      </h1>
+      <PageTitle
+        fallback="Live Visual Twin"
+        suffix={rate > 0 ? <LiveDot /> : <span className="badge" style={{ background: 'var(--muted)', color: '#fff' }}>PAUSED</span>}
+      />
       <p className="page-sub">
         VIN 실차를 3D 로 조립해 <b>Desired · Reported · Effective · Local Guard</b> 결과를 부품 단위로 보여주는 실시간 뷰입니다.
         화면의 모든 값은 DigitalTwinPort(트윈 계층)에서만 옵니다.

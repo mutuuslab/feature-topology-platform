@@ -8,6 +8,7 @@ import { GButton } from '../components/patterns';
 import { AreaChart, GaugeArc, LiveDot } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 export default function OpsDashboard() {
   const { id = 'FEAT-BDC-001' } = useParams();
@@ -27,7 +28,7 @@ export default function OpsDashboard() {
     <div>
       <Breadcrumb title={id} />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">Operations Dashboard · Kill Switch <LiveDot /></h1>
+        <PageTitle fallback="Operations Dashboard" detail="Kill Switch" suffix={<LiveDot />} />
         <TopoLink id={id} />
       </div>
       <p className="page-sub">{f?.displayName} — Runtime: {killed && !recovering ? 'disabled (Safe Default)' : recovering ? `recovering ${rate}%` : 'enabled'} · 실시간 시뮬레이션(2s)</p>

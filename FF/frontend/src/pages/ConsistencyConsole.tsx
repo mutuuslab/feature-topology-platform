@@ -3,6 +3,7 @@ import { consistency } from '../data/engine';
 import { Donut, Bars, RadialProgress, tally, dist } from '../components/charts';
 import { SeverityBadge, SeverityLegend, severityMeta } from '../components/ui';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const SEV_COLOR = { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' };
 
@@ -14,7 +15,7 @@ export default function ConsistencyConsole() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Consistency Rule Console</h1>
+      <PageTitle fallback="Consistency Rule Console" />
       <p className="page-sub">12 Rules 자동 평가 · Violation Inbox {v.length}건</p>
 
       <div className="card"><b>Severity 범례 — 무슨 의미이고 왜 이 등급인가</b><div className="mt"><SeverityLegend /></div></div>

@@ -8,6 +8,7 @@ import { changeSets } from '../data/model';
 import { useApp, useToast, type CR } from '../store';
 import { CanonicalScreen, FIELD, Gated, Reasons, StageRail, Table, type Kpi } from '../components/AreaScreen';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 import { Donut, Bars, Steps, Timeline, tally, dist } from '../components/charts';
 import { CR_STAGES, CR_STAGE_KO, crGate, crStageOf, type CrStage } from '../data/changeRequest';
 
@@ -236,7 +237,7 @@ export function CRList() {
     { v: crs.filter(c => crStageOf(c.status) === 'APPROVED').length, l: '승인' },
     { v: impact.length, l: '선택 영향' },
   ];
-  return <CanonicalScreen screenId="UI28" title="변경요청과 Revision 비교" core="C12 감사 이력 관리" kpis={kpis} areas={areas} />;
+  return <CanonicalScreen screenId="UI28" core="C12 감사 이력 관리" kpis={kpis} areas={areas} />;
 }
 
 export function CRDetail() {
@@ -259,7 +260,7 @@ export function CRDetail() {
   return (
     <div>
       <Breadcrumb title="변경요청 상세" />
-      <h1 className="page-title">{cr.id} · <span className="mono">{cr.feature}</span></h1>
+      <PageTitle fallback={cr.id} detail={<span className="mono">{cr.feature}</span>} />
       <div className="row">
         <div className="col card"><b>단계 진행</b>
           <Steps steps={CR_STAGES.map(s => CR_STAGE_KO[s])} current={idx} done={stage === 'CLOSED'} />
@@ -291,7 +292,7 @@ export function BaselineDiff() {
   return (
     <div>
       <Breadcrumb title="Baseline Diff" />
-      <h1 className="page-title">Baseline Diff — v1.0 ↔ v1.1</h1>
+      <PageTitle fallback="Baseline Diff" detail="v1.0 ↔ v1.1" />
       <div className="card">{cs.map((c, i) => (
         <div key={i} className="evt">
           <span className="pill" style={{ background: c.type === 'ADD' ? 'var(--pass)' : 'var(--pending)', color: '#fff' }}>{c.type === 'ADD' ? '➕' : '✏'} {c.type}</span>
@@ -306,7 +307,7 @@ export function VersionTimeline() {
   return (
     <div>
       <Breadcrumb title="Version Timeline" />
-      <h1 className="page-title">Version Timeline · FEAT-BDC-001</h1>
+      <PageTitle fallback="Version Timeline" detail="FEAT-BDC-001" />
       <div className="card">
         <Timeline items={[
           { ts: '2026.06', tag: 'v1.1', title: 'ADD 5 / MODIFY 2', detail: '자동 Impact Analysis 트리거 (RULE-R12)' },

@@ -4,7 +4,9 @@
 // 화면은 영역별 본문만 넘긴다. 제품에는 요구사양 문서를 두지 않으므로 여기서 문서 링크는 만들지 않는다.
 import { type CSSProperties, type ReactNode, useState } from 'react';
 import { Breadcrumb } from './Breadcrumb';
+import { PageTitle } from './PageTitle';
 import { CANON_AREAS } from '../data/canonical';
+import { SCREEN_NAV, useT } from '../i18n';
 
 export const FIELD: CSSProperties = {
   width: '100%', padding: '6px 8px', border: '1px solid var(--line)', borderRadius: 6,
@@ -81,9 +83,10 @@ export function StageRail({ steps, current, terminal, note }: { steps: { key: st
 }
 
 export interface CanonicalScreenProps {
-  /** 기준 화면 ID — 영역 표 조회와 화면 표식에 쓴다. */
+  /** 기준 화면 ID — 영역 표 조회·화면 제목·화면 표식에 쓴다. */
   screenId: string;
-  title: string;
+  /** 정본 화면 이름을 덮어쓸 때만 넘긴다(기본은 screenId 의 정본 이름). */
+  title?: string;
   core?: string;
   /** 머리 오른쪽에 두는 화면 고유 요약(선택) */
   head?: ReactNode;
@@ -95,6 +98,8 @@ export interface CanonicalScreenProps {
 }
 
 export function CanonicalScreen({ screenId, title, core, head, kpis, areas, tab }: CanonicalScreenProps) {
+  const { navScreen } = useT();
+  const nav = SCREEN_NAV[screenId];
   const defs = CANON_AREAS[screenId] || [];
   const [local, setLocal] = useState(defs[0]?.id || '');
   const active = tab && areas[tab] ? tab : (areas[local] ? local : defs[0]?.id || '');
@@ -105,7 +110,10 @@ export function CanonicalScreen({ screenId, title, core, head, kpis, areas, tab 
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">{title} <span className="pill">{screenId}</span>{core && <> <span className="pill">{core}</span></>}</h1>
+      <PageTitle
+        fallback={title ?? (nav ? navScreen(nav) : screenId)}
+        suffix={<><span className="pill">{screenId}</span>{core && <> <span className="pill">{core}</span></>}</>}
+      />
       <div className="kpis mt">
         {kpis.map(k => <div className="kpi" key={k.l}><div className="v">{k.v}</div><div className="l">{k.l}</div></div>)}
       </div>

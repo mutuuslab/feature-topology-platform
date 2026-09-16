@@ -127,6 +127,7 @@ import { useTwin } from '../state/twinStore';
 import { useApp, useAppShell, useToast } from '../store';
 import './topologyArch.css';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 // ════════════════════════════════════════════════════════════════════════════
 // 1. 관계 사전 — 정본 15종 + 앱 모델 원천 대응
@@ -1261,7 +1262,7 @@ export function TopologyArch(): JSX.Element {
       {/* -------------------------------------------------------------- 헤더 */}
       <div className="tpa-head">
         <div className="tpa-head-title">
-          <h1>Topology 동작 메커니즘</h1>
+          <PageTitle className="" fallback="Topology 동작 메커니즘" />
           <span className="tpa-head-sub">
             구성과 PLM · 관계 사전 {SPEC_TOPOLOGY_RELATIONS.length}종 · 그래프 검증 4단계
           </span>

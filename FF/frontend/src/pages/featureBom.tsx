@@ -29,6 +29,7 @@ import {
 import { SPEC_TOPOLOGY_RELATIONS } from '../data/specNav';
 import { useApp, useToast } from '../store';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const ART_INDEX = new Map(ARTIFACT_RECORDS.map(a => [`${a.id}@${a.version}`, a]));
 const CP_INDEX = new Map(CONTROL_POINTS.map(c => [c.id, c]));
@@ -949,7 +950,7 @@ export function FeatureBom() {
   return (
     <>
       <Breadcrumb />
-      <h1 className="page-title">Feature BOM 기준선 <span className="pill">UI04</span> <span className="pill">C03</span></h1>
+      <PageTitle fallback="Feature BOM 기준선" suffix={<><span className="pill">UI04</span> <span className="pill">C03</span></>} />
       <p className="small muted">
         승인 대상 Feature 버전 집합과 선택 구현 참조를 고정한 상위 구성 기준선이다. contentHash(SHA-256)가 승인·검증·증적을 결속하고,
         Approval 은 작성자와 다른 주체가 현재 hash 에 대해 남긴다. Master·Configured·Effective 는 파생 표현이며 원천 승인 데이터로 되쓰지 않는다.

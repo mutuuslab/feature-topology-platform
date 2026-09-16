@@ -10,6 +10,7 @@ import { RecBadge, DreFlow } from '../components/twin';
 import { FEATURE_ID } from '../data/twin/types';
 import { features } from '../data/model';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const fmtM = (n: number) => (n / 1e6).toFixed(2) + 'M';
 
@@ -30,7 +31,7 @@ export default function Fleet() {
     <div>
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">Fleet · 차량별 Feature 상태 <LiveDot /></h1>
+        <PageTitle fallback="Fleet" detail="차량별 Feature 상태" suffix={<LiveDot />} />
         <TopoLink />
       </div>
       <p className="page-sub">현대자동차 SDV 전사 운영 — <b>{fleetStats.total.toLocaleString()}대</b> 규모 · 차량(VIN) 단위 Feature 상태 조회</p>

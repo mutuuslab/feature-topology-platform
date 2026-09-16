@@ -4,6 +4,7 @@ import { impact, verification, deploy, supplier, buildDecisionPackage, fmtWon } 
 import { useToast, useApp } from '../store';
 import { Donut, Bars, RadialProgress, Steps, GroupedBars } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const FID = 'FEAT-BDC-001';
 
@@ -13,7 +14,7 @@ export function VerificationScope() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Verification Scope</h1>
+      <PageTitle fallback="Verification Scope" />
       <div className="row">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>증적 커버리지</b>
           <RadialProgress size={120} color={v.gateResult === 'PASS' ? '#1F9D55' : '#D9822B'} value={Math.round(covered / (v.mandatoryTests.length || 1) * 100)} label={`${covered}/${v.mandatoryTests.length} 증적`} />
@@ -38,7 +39,7 @@ export function DeploymentDecision() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Deployment Decision</h1>
+      <PageTitle fallback="Deployment Decision" />
       <div className="card">
         <select value={ct} onChange={e=>setCt(e.target.value)} style={{padding:8}}>{opts.map(o=><option key={o}>{o}</option>)}</select>
         <div className="decision RELEASE mt" style={{background:'#EAF2FF',color:'var(--brand)',border:'1px solid var(--brand)'}}>
@@ -56,7 +57,7 @@ export function SupplierScope() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Supplier Responsibility</h1>
+      <PageTitle fallback="Supplier Responsibility" />
       <div className="card"><div className="kv">
         <div>Supplier Scope</div><div>{s.supplierScope.join(', ')}</div>
         <div>Acceptance</div><div>{s.acceptanceCriteria}</div>
@@ -72,7 +73,7 @@ export function DecisionCenter() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Decision Center · FEAT-BDC-001</h1>
+      <PageTitle fallback="Decision Center" detail="FEAT-BDC-001" />
       <p className="page-sub">Pipeline: Change → Lookup → ①Impact → ②Verify → ③Deploy → ④Supplier → Report</p>
       <div className="card">
         <Steps steps={['Change', 'Lookup', '① Impact', '② Verify', '③ Deploy', '④ Supplier', 'Report']} current={1} />
@@ -108,7 +109,7 @@ export function DecisionReport() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">DecisionReport (통합)</h1>
+      <PageTitle fallback="DecisionReport (통합)" />
       <div className="card">
         <Steps steps={['Impact', 'Verify', 'Deploy', 'Supplier', 'Package']} done />
       </div>

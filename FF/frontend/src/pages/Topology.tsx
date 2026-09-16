@@ -5,6 +5,7 @@ import { features } from '../data/model';
 import GraphCanvas from '../components/GraphCanvas';
 import { RightPanel } from '../components/patterns';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const QUERIES = [
   ['Q1', 'Change Impact'], ['Q2', 'Verification Scope'], ['Q3', 'Deploy Decision'], ['Q4', 'Release Readiness'], ['Q5', 'Recovery Path'],
@@ -37,7 +38,7 @@ export default function Topology() {
   return (
     <div>
       <Breadcrumb title={id} />
-      <h1 className="page-title">Topology Graph</h1>
+      <PageTitle fallback="Topology Graph" />
       <p className="page-sub">{f?.displayName} 중심 관계 그래프 — 노드 {raw.nodes.length}개 · 관계 {raw.edges.length}개</p>
 
       <div className="card" style={{ padding: 10 }}>

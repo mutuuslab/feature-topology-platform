@@ -9,6 +9,7 @@ import { FEATURE_ID, FEATURE_VERSION } from '../data/twin/types';
 import { Donut, RadialProgress, Steps } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const GATE_FLOW: Record<string, string[]> = {
   G1: ['Owner 확인', 'Lifecycle ≥ Approved'],
@@ -39,7 +40,7 @@ export default function ReleaseReadiness() {
   return (
     <div>
       <Breadcrumb title={id} />
-      <h1 className="page-title">Release Readiness Center</h1>
+      <PageTitle fallback="Release Readiness Center" />
       <p className="page-sub">{f?.displayName} — {r.passCount}/9 PASS</p>
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <TopoLink id={id} />

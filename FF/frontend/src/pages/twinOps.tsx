@@ -23,6 +23,7 @@ import { webglSupported } from '../scene/webgl';
 const VehicleTwinScene = lazy(() => import('../scene/VehicleTwinScene.tsx'));
 
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 import {
   ClassificationBanner,
   DreFlow,
@@ -196,9 +197,11 @@ export function TwinVehicle() {
 
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">
-          Vehicle Twin · <span className="mono">{twin.vin}</span> <LiveDot />
-        </h1>
+        <PageTitle
+          fallback="Vehicle Twin"
+          detail={<span className="mono">{twin.vin}</span>}
+          suffix={<LiveDot />}
+        />
         <div className="row" style={{ gap: 8 }}>
           <button className="btn" onClick={jumpToScene}>차량 3D 보기 ↓</button>
           <button className="btn" onClick={() => nav('/twin/fleet')}>← Fleet</button>
@@ -749,7 +752,7 @@ export function TwinIncident() {
       <ClassificationBanner extra="SIMULATED — 운영 데이터 아님" />
 
       <Breadcrumb />
-      <h1 className="page-title">Closed-Loop · Incident &amp; Kill-Switch <LiveDot /></h1>
+      <PageTitle fallback="Closed-Loop" detail="Incident & Kill-Switch" suffix={<LiveDot />} />
       <p className="page-sub">
         장애 주입 → Twin 이상 감지 → Rollout 자동 일시정지 → 운영자 판단 → Kill-Switch → 차량 확인 → 재수렴 → Incident 종료의
         12단계 폐루프를 검증합니다.

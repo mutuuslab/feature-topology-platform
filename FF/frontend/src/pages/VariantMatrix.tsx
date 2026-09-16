@@ -6,6 +6,7 @@ import { RightPanel } from '../components/patterns';
 import TopoLink from '../components/TopoLink';
 import { Donut, tally, dist } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 export default function VariantMatrix() {
   const toast = useToast();
@@ -22,7 +23,7 @@ export default function VariantMatrix() {
     <div>
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">Variant Matrix · FEAT-BDC-001</h1>
+        <PageTitle fallback="Variant Matrix" detail="FEAT-BDC-001" />
         <TopoLink />
       </div>
       <p className="page-sub">구조적 적용가능성 (Variant ≠ Control) · 행 클릭 → 판정 상세</p>

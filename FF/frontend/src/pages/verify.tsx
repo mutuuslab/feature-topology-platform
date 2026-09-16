@@ -3,6 +3,7 @@ import { evidence } from '../data/model';
 import { RightPanel } from '../components/patterns';
 import { Donut, Bars, RadialProgress, dist, tally } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const TC_META: Record<string, { method: string; feature: string }> = {
   'HIL-BDC-001': { method: 'HIL', feature: 'FEAT-BDC-001' },
@@ -14,7 +15,7 @@ export function TestEvidenceManager() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Test Evidence Manager</h1>
+      <PageTitle fallback="Test Evidence Manager" />
       <p className="page-sub">행 클릭 → 증적 상세</p>
 
       <div className="row analytics-strip">
@@ -53,7 +54,7 @@ export function EvidenceDetail() {
   return (
     <div>
       <Breadcrumb title="Evidence Detail" />
-      <h1 className="page-title">Evidence · OTA-RB-002</h1>
+      <PageTitle fallback="Evidence" detail="OTA-RB-002" />
       <div className="row">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>Coverage</b>
           <RadialProgress size={120} color="#D9822B" value={0} label="OTA-RB-002" />

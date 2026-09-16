@@ -51,8 +51,9 @@ afterEach(() => {
 
 describe('§12.1 Twin Fleet 화면', () => {
   it('제목·KPI·VIN 표가 렌더된다', () => {
-    renderTwin(<TwinFleet />);
-    expect(screen.getByRole('heading', { name: /Twin Fleet/ })).toBeInTheDocument();
+    renderTwin(<TwinFleet />, { route: '/twin/fleet', initial: '/twin/fleet' });
+    // 화면 제목은 정본 이름을 쓴다 (구현 뷰 이름은 화면 안 「구현 뷰」 행과 같다).
+    expect(screen.getByRole('heading', { name: /Twin Fleet \(3D\)/ })).toBeInTheDocument();
     expect(screen.getByText('전체 Twin')).toBeInTheDocument();
     expect(screen.getByText('Local Guard 차단')).toBeInTheDocument();
     expect(screen.getByText('VIN-DEMO-001')).toBeInTheDocument();
@@ -94,8 +95,8 @@ describe('§12.1 Twin Fleet 화면', () => {
 
 describe('§12.2 Twin Impact Preview 화면', () => {
   it('대상 규모·활성화 전망·차단 사유가 렌더된다', () => {
-    renderTwin(<TwinImpact />);
-    expect(screen.getByRole('heading', { name: /Twin Impact Preview/ })).toBeInTheDocument();
+    renderTwin(<TwinImpact />, { route: '/twin/impact', initial: '/twin/impact' });
+    expect(screen.getByRole('heading', { name: /Impact Preview/ })).toBeInTheDocument();
     // DEMO_TARGET_RULE(KR · 2027 · EV) 매칭 25대 / 전체 30대
     expect(screen.getByText(/전체 Twin 30대 중 지역·차종·연식 조건 일치/)).toBeInTheDocument();
     expect(screen.getByText('Policy-only 가능')).toBeInTheDocument();
@@ -134,8 +135,8 @@ describe('§12.2 Twin Impact Preview 화면', () => {
 
 describe('§12.3 What-if Twin Simulation 화면', () => {
   it('프리셋 11개가 렌더되고 적용 시 결과가 재평가된다', () => {
-    const { container } = renderTwin(<TwinSimulation />);
-    expect(screen.getByRole('heading', { name: /What-if Twin Simulation/ })).toBeInTheDocument();
+    const { container } =     renderTwin(<TwinSimulation />, { route: '/twin/simulation', initial: '/twin/simulation' });
+    expect(screen.getByRole('heading', { name: /What-if Simulation/ })).toBeInTheDocument();
     expect(container.querySelectorAll('.twin-preset').length).toBe(11);
     expect(screen.getByText('실행 결과')).toBeInTheDocument();
 
@@ -169,7 +170,8 @@ describe('§12.3 What-if Twin Simulation 화면', () => {
 describe('§12.4 Vehicle Twin 상세 화면', () => {
   it('7단계 상태 스트립과 판정 요약이 렌더된다', () => {
     renderTwin(<TwinVehicle />, { route: '/twin/vehicle/:vin', initial: '/twin/vehicle/VIN-DEMO-017' });
-    expect(screen.getByRole('heading', { name: /Vehicle Twin/ })).toBeInTheDocument();
+    // UI12 정본 화면 이름 + 대상 VIN
+    expect(screen.getByRole('heading', { name: /차량별 적용 상태 · VIN-DEMO-017/ })).toBeInTheDocument();
     expect(screen.getByLabelText('VIN-DEMO-017 상태 단계')).toBeInTheDocument();
     expect(
       screen.getByText('As-Designed → As-Built → As-Deployed → Desired → Reported → Effective → Observed'),
@@ -193,8 +195,8 @@ describe('§12.4 Vehicle Twin 상세 화면', () => {
 
 describe('§12.5 / §15 / §18 Closed-Loop 화면', () => {
   it('초기에는 Incident 가 없고 장애 주입 시 12단계가 1-based 로 표시된다', () => {
-    renderTwin(<TwinIncident />);
-    expect(screen.getByRole('heading', { name: /Closed-Loop/ })).toBeInTheDocument();
+    renderTwin(<TwinIncident />, { route: '/twin/incident', initial: '/twin/incident' });
+    expect(screen.getByRole('heading', { name: /ECU별 조치와 결과/ })).toBeInTheDocument();
     // Incident 가 없어도 빈 화면이 아니라 "개시 대기" 상태 + 12단계 표를 보여준다
     expect(screen.getByText(/개시 대기/)).toBeInTheDocument();
     expect(screen.getByTestId('seed-incident')).toBeInTheDocument();

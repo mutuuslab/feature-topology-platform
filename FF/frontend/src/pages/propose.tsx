@@ -122,7 +122,7 @@ export function ProposalRegistry() {
     toast(`${p.id} → ${id} 발급 · UI02 정본 등록으로 이관 (제안 화면은 Feature 를 만들지 않는다)`, 'ok');
   };
 
-  if (!p) return <CanonicalScreen screenId="UI19" title="Feature 제안" core="C01" kpis={[]} areas={{}} />;
+  if (!p) return <CanonicalScreen screenId="UI19" core="C01" kpis={[]} areas={{}} />;
 
   const gReceive = gate('RECEIVED');
   const gReview = gate('REVIEWING');
@@ -368,7 +368,7 @@ export function ProposalRegistry() {
 
   return (
     <CanonicalScreen
-      screenId="UI19" title="Feature 제안" core="C01"
+      screenId="UI19" core="C01"
       kpis={[
         { v: stats.total, l: '전체 제안' },
         { v: stats.open, l: '진행 중' },

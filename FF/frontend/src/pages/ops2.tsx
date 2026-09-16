@@ -7,6 +7,7 @@ import { AreaChart, GaugeArc, LiveDot, Donut, Bars, Steps, tally, dist } from '.
 import TopoLink from '../components/TopoLink';
 import { useTwinOptional } from '../state/twinStore';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 export function OTACampaign() {
   const nav = useNavigate();
@@ -16,7 +17,7 @@ export function OTACampaign() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">OTA Campaign Manager</h1>
+      <PageTitle fallback="OTA Campaign Manager" />
       <p className="page-sub">단계적 롤아웃(5→20→50→100%) · 각 단계 telemetry 가드 통과 시 진행 (FR-ROL/TGT)</p>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Status 분포</b>
@@ -47,7 +48,7 @@ export function CampaignDetail() {
   return (
     <div>
       <Breadcrumb title="Campaign Detail" />
-      <h1 className="page-title">{c.id}</h1>
+      <PageTitle fallback={c.id} />
       <div className="card"><b>단계 Rollout 파이프라인</b>
         <div className="mt"><Steps steps={labels} current={c.rollout >= 100 ? undefined : c.step} done={c.rollout >= 100} /></div>
         <div className="row mt" style={{ alignItems: 'center' }}>
@@ -73,7 +74,7 @@ export function PolicyLifecycle() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Policy Lifecycle Board</h1>
+      <PageTitle fallback="Policy Lifecycle Board" />
       <p className="page-sub">Draft → Review → Approved → Deployed → Monitored · 카드 승급(promote) (FR-POL/PVER)</p>
       <div className="card"><b>단계별 정책 수</b>
         <div className="mt"><Bars data={Object.fromEntries(POLICY_STAGES.map(s => [s, policies.filter(p => p.stage === s).length]))} /></div></div>
@@ -125,7 +126,7 @@ export function TelemetryExplorer() {
   return (
     <div>
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">Telemetry Explorer · FEAT-BDC-001 <LiveDot /></h1>
+        <PageTitle fallback="Telemetry Explorer" detail="FEAT-BDC-001" suffix={<LiveDot />} />
         <TopoLink />
       </div>
       <Breadcrumb />
@@ -170,7 +171,7 @@ export function IncidentManager() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Incident Manager</h1>
+      <PageTitle fallback="Incident Manager" />
       {twin && (
         <div className="card">
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -218,7 +219,7 @@ export function IncidentDetail() {
   return (
     <div>
       <Breadcrumb title="Incident Detail" />
-      <h1 className="page-title">{i.id}</h1>
+      <PageTitle fallback={i.id} />
       <div className="card"><b>대응 상태</b>
         <div className="mt"><Steps steps={['접수(open)', '조사(investigating)', '해소(resolved)']} current={i.status === 'resolved' ? undefined : idx} done={i.status === 'resolved'} /></div>
         <div className="row mt">

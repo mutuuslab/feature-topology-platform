@@ -5,6 +5,7 @@ import { useApp } from '../store';
 import { Donut, Bars, tally, dist } from '../components/charts';
 import { SeverityBadge, SeverityLegend, severityMeta } from '../components/ui';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const SEV_COLOR = { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' };
 
@@ -30,7 +31,7 @@ export function EdgeEditor() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Edge Editor (Typed Edge)</h1>
+      <PageTitle fallback="Edge Editor (Typed Edge)" />
       <div className="card">
         <div className="kv" style={{ maxWidth: 560 }}>
           <div>Source</div><div><select value={source} onChange={e=>setSource(e.target.value)} style={{padding:6,width:'100%'}}>{state.features.map(f=><option key={f.id}>{f.id}</option>)}</select></div>
@@ -56,7 +57,7 @@ export function ViolationDetail() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Violation Detail</h1>
+      <PageTitle fallback="Violation Detail" />
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>전체 위반 Severity</b>
           <Donut size={120} center={`${all.length}`} segments={dist(tally(all, x => severityMeta(x.severity).label), SEV_COLOR)} />

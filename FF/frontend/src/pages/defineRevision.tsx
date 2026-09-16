@@ -40,6 +40,7 @@ import {
 } from '../data/refdata';
 import type { Feature as ModelFeature, Lifecycle as ModelLifecycle } from '../data/model';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const ATTRS = SPEC_REG_ATTRS as Record<string, SpecRegAttr>;
 const AREA_IDS = SPEC_REG_AREAS.map(a => a.id);
@@ -676,7 +677,7 @@ export function DefineRevision() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Feature 등록</h1>
+      <PageTitle fallback="Feature 등록" />
       <p className="page-sub">
         담당 역할 {roleLabel('author')} · 상세 영역 {SPEC_REG_AREAS.length}개 · 작업 {TASK_TOTAL}개 ·
         액션 {ALL_ACTIONS.length}개 · 업무 규칙 {SPEC_RULES.length}개 · 상태 필드 <span className="mono">{STATE_FIELD}</span>

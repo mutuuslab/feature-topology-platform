@@ -68,6 +68,8 @@ code,.mono{font-family:var(--mono)}
 .views a:hover{border-color:var(--brand);color:var(--brand)}
 .views a.active{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
 .page-title{font-size:20px;font-weight:700;margin:0 0 4px}
+/* 정본 제목 뒤에 붙는 좁은 대상 — 제목보다 한 단계 작게 둔다 */
+.title-detail{font-size:15px;font-weight:600;color:var(--muted)}
 .page-sub{color:var(--muted);margin:0 0 16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:16px}
 .row{display:flex;gap:16px;flex-wrap:wrap}

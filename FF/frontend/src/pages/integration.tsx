@@ -4,6 +4,7 @@ import { useApp, useLiveSlices } from '../store';
 import { RightPanel } from '../components/patterns';
 import { Donut, Timeline, LiveDot, tally, dist } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const CONN_STATUS_COLORS = { connected: '#1F9D55', degraded: '#D9822B', failed: '#D64545', disabled: '#9CA3AF' };
 const SYNC_STATUS_COLORS = { ok: '#1F9D55', retry: '#D9822B', failed: '#D64545' };
@@ -15,7 +16,7 @@ export function ConnectorHub() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Connector Hub</h1>
+      <PageTitle fallback="Connector Hub" />
       <p className="page-sub">ALM/PLM/Feature Flag/OTA 양방향 연계 · 연결 토글 · 동기화 시뮬 (FR-AGW/LGCY/DSYN/SDVI)</p>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Connector 상태</b>
@@ -43,7 +44,7 @@ export function ConnectorDetail() {
   return (
     <div>
       <Breadcrumb title="Connector Detail" />
-      <h1 className="page-title">{c.name}</h1>
+      <PageTitle fallback={c.name} />
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>전체 Connector 상태</b>
           <Donut size={120} center={`${connectors.length}`} segments={dist(tally(connectors, x => x.status), CONN_STATUS_COLORS)} /></div>
@@ -64,7 +65,7 @@ export function SyncLogs() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Sync Logs <LiveDot /></h1>
+      <PageTitle fallback="Sync Logs" suffix={<LiveDot />} />
       <p className="page-sub">양방향 동기화 이력 · 연결된 커넥터에서 실시간 유입 · 행 클릭 → 상세</p>
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Sync 상태</b>

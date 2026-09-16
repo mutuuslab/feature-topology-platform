@@ -5,6 +5,7 @@ import { telemetry } from '../data/model';
 import { GaugeArc, Donut, Steps, LiveDot, tally, dist } from '../components/charts';
 import TopoLink from '../components/TopoLink';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 // FR-AUTH(런타임 Authoring) · FR-RTE(런타임 평가) · FR-LPC(로컬 정책 캐시) — 차량/ECU 런타임 시뮬
 export default function RuntimeSim() {
@@ -34,7 +35,7 @@ export default function RuntimeSim() {
   return (
     <div>
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="page-title">Runtime 시뮬 · Authoring·평가·캐시 <LiveDot /></h1>
+        <PageTitle fallback="Runtime 시뮬" detail="Authoring·평가·캐시" suffix={<LiveDot />} />
         <TopoLink id={fid} />
       </div>
       <Breadcrumb />

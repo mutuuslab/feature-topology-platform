@@ -1,4 +1,4 @@
-﻿/**
+/**
  * §17.5 — "live 라벨이 실제로 움직이는가" 회귀 방지.
  *
  * 이 파일이 고정하는 단일 주장: 차량·폐루프 화면의 **모든 움직임은
@@ -291,7 +291,7 @@ describe('§12.4 차량 상세의 live 구성', () => {
     localStorage.setItem('fp.twin.v1', JSON.stringify({ rate: 0 }));
     renderTwin(<TwinVehicle />, { route: '/twin/vehicle/:vin', initial: '/twin/vehicle/VIN-DEMO-017' });
 
-    expect(screen.getByRole('heading', { name: /Vehicle Twin/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /차량별 적용 상태 · VIN-DEMO-017/ })).toBeInTheDocument();
     const card = screen.getByTestId('vehicle-telemetry-live');
     expect(card).toBeInTheDocument();
     expect(card).toHaveAttribute('data-paused', 'true');

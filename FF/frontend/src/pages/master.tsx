@@ -12,6 +12,7 @@ import { useApp, useToast } from '../store';
 import { GButton, RightPanel } from '../components/patterns';
 import { Donut, Bars, RadialProgress, Steps, tally, dist } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const ID_RULE: Record<string, string> = {
   L0: 'TAX-{DOMAIN}', L1: 'Feature Cluster', L2: 'FEAT-{DOMAIN}-{NNN}', L3: 'FEAT-{DOMAIN}-{SW}-{NNN}',
@@ -23,7 +24,7 @@ export function TaxonomyBrowser() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Taxonomy Browser (L0~L5)</h1>
+      <PageTitle fallback="Taxonomy Browser (L0~L5)" />
       <p className="page-sub">기준 Feature = L2. 레벨 경계·ID 규칙 · 노드 클릭 → 상세</p>
       <div className="card">
         <b>레벨 경계 (L0 → L5) · 기준 Feature = L2</b>
@@ -58,7 +59,7 @@ export function TaxonomyEditor() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Taxonomy Editor</h1>
+      <PageTitle fallback="Taxonomy Editor" />
       <div className="card">
         <b>귀속 경로</b>
         <Steps steps={['L1 클러스터', 'L2 Parent', 'L3 신규 노드']} current={2} />
@@ -109,7 +110,7 @@ export function BOMEditor() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Feature BOM Editor (11 영역)</h1>
+      <PageTitle fallback="Feature BOM Editor" detail="11 영역" />
       <div className="card analytics-strip">
         <b>영역별 BOM 항목 수</b>
         <div className="mt"><Bars data={Object.fromEntries(areas.map(a => {
@@ -163,7 +164,7 @@ export function ArtifactCatalog() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Artifact 레지스트리 — FEAT-BDC-001@1.1.0</h1>
+      <PageTitle fallback="Artifact 레지스트리" detail="FEAT-BDC-001@1.1.0" />
       <p className="page-sub">
         정확 버전·digest·배치 기준 구성 — 승인 차단 <b style={{ color: 'var(--fail)' }}>{VIOLATIONS.filter(v => v.blocking && v.code === 'UNRESOLVED_ARTIFACT').length}건</b> (미해석 Artifact)
       </p>
@@ -308,7 +309,7 @@ export function ControlPointCatalog() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Feature 제어점 · 실행 구성 — FEAT-BDC-001@1.1.0</h1>
+      <PageTitle fallback="Feature 제어점 · 실행 구성" detail="FEAT-BDC-001@1.1.0" />
       <p className="page-sub">
         FeatureVersion → ControlPoint → FlagBinding → RuntimeBinding · 호출 계약 <span className="mono small">/api/ui/v1/features/FEAT-BDC-001@1.1.0/control-points</span>
       </p>

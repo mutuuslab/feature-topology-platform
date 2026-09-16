@@ -15,7 +15,7 @@ import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Link, Route, Routes } from 'react-router-dom';
 import { AppProvider, useApp } from '../store';
-import { DOMAINS, ITEM, domainOfPath } from '../i18n';
+import { DOMAINS, ITEM, SCREEN_META, canonTitleOf, domainOfPath } from '../i18n';
 import { SPEC_MENU } from '../data/specMenu';
 import { SCREEN_ENTRY, SCREEN_LINKS, implementedPaths, navPathOfLink, screenOfRoute } from '../data/uiLinks';
 import { SCREEN_AREA_BY_ID, SCREEN_AREA_TOTAL, SCREEN_CANON, SCREEN_CANON_BY_ID } from '../data/screenAreas';
@@ -274,6 +274,39 @@ describe('메뉴 라벨은 정본 영역·화면 이름이고 구현 화면 이�
       const names = SCREEN_LINKS[id].links.map(l => ITEM[navPathOfLink(l)]?.ko);
       expect(new Set(names).size, `${id} ${names.join(' | ')}`).toBe(names.length);
     });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('화면 제목(h1)도 정본 이름을 쓴다', () => {
+  it('30개 진입 경로의 제목은 정본 화면 이름이다', () => {
+    screenIds.forEach(id => {
+      expect(canonTitleOf(SCREEN_ENTRY[id]), `${id} ${SCREEN_ENTRY[id]}`).toBe(koOf(id));
+    });
+  });
+
+  it('같은 화면의 나머지 구현 뷰는 정본 상세 영역 이름(또는 구현 이름)을 쓴다', () => {
+    Object.keys(SCREEN_LINKS).forEach(id => {
+      SCREEN_LINKS[id].links.map(navPathOfLink).forEach(p => {
+        if (p === SCREEN_ENTRY[id]) return;
+        expect(canonTitleOf(p), `${id} ${p}`).toBe(ITEM[p]?.ko);
+      });
+    });
+  });
+
+  it('영어 UI 는 정본 영문 이름을 쓴다', () => {
+    screenIds.forEach(id => expect(canonTitleOf(SCREEN_ENTRY[id], 'en'), id).toBe(SCREEN_META[id].en));
+  });
+
+  it('대상을 바꿔도 같은 화면이면 같은 정본 영역 이름이다 (예: Feature 상세 = UI02-S07)', () => {
+    expect(canonTitleOf('/feature/FEAT-BDC-001')).toBe(SCREEN_AREA_BY_ID['UI02-S07'].name);
+    expect(canonTitleOf('/change/cr/CR-2026-0101')).toBe(SCREEN_AREA_BY_ID['UI28-S02'].name);
+    expect(canonTitleOf('/topology/FEAT-BDC-001')).toBe(SCREEN_AREA_BY_ID['UI05-S02'].name);
+  });
+
+  it('표에 없는 대상 기록은 제목을 화면이 스스로 정한다 (null → 각 화면의 fallback)', () => {
+    ['/feature/OTHER-999', '/topology/OTHER-999', '/twin/vehicle/VIN-NOPE']
+      .forEach(p => expect(canonTitleOf(p), p).toBeNull());
   });
 });
 

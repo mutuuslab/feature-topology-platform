@@ -7,6 +7,7 @@ import { fleetStats } from '../data/fleet';
 import { catalogStats, costSummary, fmtWon, consistency, readiness } from '../data/engine';
 import { SeverityBadge, severityMeta } from '../components/ui';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
 
@@ -15,8 +16,8 @@ export function Login() {
   return (
     <div style={{ maxWidth: 380, margin: '60px auto' }}>
       <div className="card" style={{ textAlign: 'center' }}>
-        <h1 style={{ color: 'var(--brand)', fontSize: 22, margin: '0 0 8px' }}>▣ Feature Platform</h1>
-        <p className="muted small">SDV Feature Lifecycle & 통제 관리</p>
+        <PageTitle className="page-title" fallback="Login · SSO" />
+        <p className="muted small">▣ Feature Platform · SDV Feature Lifecycle & 통제 관리</p>
         <button className="btn primary" style={{ width: '100%', marginTop: 12 }} onClick={() => nav('/onboarding')}>Hyundai SSO 로그인</button>
         <input className="mt" placeholder="MFA 코드" style={{ width: '100%', padding: 8, border: '1px solid var(--line)', borderRadius: 6 }} />
         <p className="muted small mt">테넌트: HMC-Global</p>
@@ -30,7 +31,7 @@ export function Onboarding() {
   const [role, setRole] = useState('author');
   return (
     <div style={{ maxWidth: 480, margin: '40px auto' }}>
-      <h1 className="page-title">온보딩 / Onboarding</h1>
+      <PageTitle fallback="온보딩 / Onboarding" />
       <div className="card">
         <p>역할을 확인하세요. 역할별 기본 대시보드가 설정됩니다.</p>
         <select value={role} onChange={e => setRole(e.target.value)} style={{ padding: 8, width: '100%' }}>{roles.map(r => <option key={r} value={r}>{roleLabel(r)}</option>)}</select>
@@ -72,7 +73,7 @@ export function RoleHome() {
       <Breadcrumb />
       <div className="hero">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <div><h1 className="page-title">Feature Platform <LiveDot /></h1>
+          <div><PageTitle fallback="Feature Platform" suffix={<LiveDot />} />
             <div className="sub">현대자동차 SDV · {fleetStats.total.toLocaleString()}대 운영 · 접속자 <b>{profileOf(role).name}</b> (사번 {profileOf(role).empNo}) · 소속 {profileOf(role).org} · 역할 <b>{roleLabel(role)}</b></div></div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
             <label className="small" style={{ opacity: .9 }}>부서/역할 전환</label>
@@ -351,7 +352,7 @@ export function HomeCustomize() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">홈 커스터마이즈</h1>
+      <PageTitle fallback="홈 커스터마이즈" />
       <div className="card"><p className="muted small">위젯 표시 여부·순서를 설정하고 저장하면 새로고침 후에도 유지됩니다(홈 "내 위젯"에 반영).</p>
         {items.map((w, i) => (
           <div className="evt" key={w.id} style={{ alignItems: 'center' }}>

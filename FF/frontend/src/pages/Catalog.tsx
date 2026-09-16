@@ -6,6 +6,7 @@ import { LifecycleBadge, DeployBadge, Health } from '../components/ui';
 import { RightPanel } from '../components/patterns';
 import { Donut, Bars, RadialProgress, CountUp, tally, dist } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTitle } from '../components/PageTitle';
 
 const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
 
@@ -55,7 +56,7 @@ export default function Catalog() {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="page-title">Feature Catalog</h1>
+      <PageTitle fallback="Feature Catalog" />
       <p className="page-sub">전체 {all.length} Feature · 검색·필터·정렬·대량작업·Health</p>
       <div className="row mt">
         <Link className="btn primary" to="/master/define">＋ 신규 Feature 등록 (R0 최초 초안)</Link>

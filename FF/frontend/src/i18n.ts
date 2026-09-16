@@ -47,7 +47,7 @@ export interface NavScreenGroup { ko: string; en: string; screens: NavScreen[] }
 // 하이라이트·빵부스러기(screenOfRoute)가 모두 같은 답을 내며, 셋을 따로 손으로 적지 않는다.
 
 /** 기준 화면 ID → 정본 라벨 · 소속 업무 그룹 · 담당 역할 */
-const SCREEN_META: Record<string, { ko: string; en: string; domain: string; owner: string }> = Object.fromEntries(
+export const SCREEN_META: Record<string, { ko: string; en: string; domain: string; owner: string }> = Object.fromEntries(
   SPEC_MENU.flatMap(g => g.items.map(it => [it.id, { ko: it.ko, en: it.en, domain: g.id, owner: it.owner }])),
 );
 
@@ -249,6 +249,25 @@ export function locatePath(pathname: string): NavLocation | undefined {
     screen: { id: screenId, ko: meta.ko, en: meta.en },
     item: ITEM[p],
   };
+}
+
+/**
+ * 경로 → 화면 머리(h1)에 쓸 정본 제목.
+ *
+ * 진입 경로는 정본 **화면** 이름을, 같은 화면의 나머지 구현 뷰는 그 뷰의 정본 **상세 영역** 이름을 쓴다
+ * (영역 이름이 겹쳐 구분되지 않는 뷰는 구현 이름을 남긴다 — VIEW_LABEL 과 같은 규칙).
+ *
+ * 정적 경로 표(PATH_SECTION)에 없는 경로는 null 이다. `/feature/:id` 처럼 기록마다 대상이 달라지는
+ * 상세 화면의 제목은 그 화면이 스스로 정한다.
+ */
+export function canonTitleOf(pathname: string, lang: Lang = 'ko'): string | null {
+  const p = pathname.split('?')[0].replace(/\/+$/, '') || '/';
+  const section = PATH_SECTION[p];
+  const meta = section ? SCREEN_META[section.screenId] : undefined;
+  if (!meta) return null;
+  if (SCREEN_ENTRY[section.screenId] === p) return lang === 'en' ? meta.en : meta.ko;
+  const item = ITEM[p];
+  return item ? (lang === 'en' ? item.en : item.ko) : null;
 }
 
 /** 역할별 기본 착지 경로 — 구현 화면만 쓴다 (data/uiLinks.ROLE_HOME_IMPL). */

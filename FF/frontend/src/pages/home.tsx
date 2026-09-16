@@ -44,15 +44,15 @@ export function Onboarding() {
 // 기준 패키지(FP-DETAILED-1.1)의 9 역할 → 역할별 대시보드 관점.
 // 실제 구현 화면 경로만 노출한다 — 요구사양 문서 화면은 제품에 없다.
 const ROLE_FOCUS: Record<string, { title: string; desc: string; views: [string, string][] }> = {
-  author: { title: 'Feature 설계 · 카탈로그/요구사항 중심', desc: 'Feature 정의·우선순위·기대효과', views: [['Catalog', '/catalog'], ['Feature 등록', '/master/define'], ['Feature BOM 기준선', '/master/bom']] },
-  approver: { title: '구성 승인 · 검토/게이트 중심', desc: '검토 대기·승인 판단·Gate 판정', views: [['Approval', '/admin/approval'], ['Decision Center', '/decisions/center'], ['Feature BOM 승인 순서', '/master/bom']] },
-  quality: { title: '품질 검토 · 검증 증적 중심', desc: 'Gate·커버리지·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['Test Evidence', '/verify/evidence'], ['컴플라이언스 룰', '/verify/compliance']] },
-  operator: { title: '차량 운영 · 실시간 수렴 중심', desc: '실시간 텔레메트리·인시던트·Fleet', views: [['Ops Dashboard', '/ops/FEAT-BDC-001'], ['Twin Fleet', '/twin/fleet'], ['Incident', '/ops/incident']] },
-  steward: { title: 'PLM 기준정보 · 정합성 중심', desc: 'UPG·SW Structure·SW EO·제품사양 정합', views: [['UPG · UPG VC', '/master/upg'], ['SW EO 변경관리', '/change/eo'], ['제품사양 · HW Variant', '/master/product-spec']] },
+  author: { title: 'Feature 설계 · 카탈로그/요구사항 중심', desc: 'Feature 정의·우선순위·기대효과', views: [['Feature Registry', '/catalog'], ['Feature 등록', '/master/define'], ['Feature BOM 기준선', '/master/bom']] },
+  approver: { title: '구성 승인 · 검토/게이트 중심', desc: '검토 대기·승인 판단·Gate 판정', views: [['검토함', '/admin/approval'], ['Decision Center', '/decisions/center'], ['Feature BOM 승인 순서', '/master/bom']] },
+  quality: { title: '품질 검토 · 검증 증적 중심', desc: 'Gate·커버리지·테스트 증적', views: [['Release Readiness', '/readiness/FEAT-BDC-001'], ['품질 기준과 검증 증적', '/verify/evidence'], ['컴플라이언스 룰', '/verify/compliance']] },
+  operator: { title: '차량 운영 · 실시간 수렴 중심', desc: '실시간 텔레메트리·인시던트·Fleet', views: [['운영 인계와 조치', '/ops/FEAT-BDC-001'], ['차량 운영 현황', '/twin/fleet'], ['장애와 복구', '/ops/incident']] },
+  steward: { title: 'PLM 기준정보 · 정합성 중심', desc: 'UPG·SW Structure·SW EO·제품사양 정합', views: [['UPG와 UPG VC', '/master/upg'], ['SW EO 변경관리', '/change/eo'], ['제품사양과 HW Variant', '/master/product-spec']] },
   commerce: { title: '상품 권리 · 릴리스/과금 중심', desc: '상품 구성·사용 권리·과금 조건', views: [['Catalog 상품 구성', '/commerce/offer'], ['Cost', '/cost'], ['Feature 제어점', '/master/control-points']] },
-  integrator: { title: '시스템 연계 · 계약/인수 중심', desc: '연계 계약·연계 작업·재처리', views: [['Connector Hub', '/integration/connectors'], ['연계 작업 · 재처리', '/integration/jobs'], ['요구 · 설계 추적', '/trace/design']] },
+  integrator: { title: '시스템 연계 · 계약/인수 중심', desc: '연계 계약·연계 작업·재처리', views: [['외부 시스템 연계', '/integration/connectors'], ['연계 작업 · 재처리', '/integration/jobs'], ['요구 · 설계 추적', '/trace/design']] },
   coordinator: { title: '협의·개발 이관 · 변경관리 중심', desc: '변경 영향·협의·개발 이관 결정', views: [['Decision Center', '/decisions/center'], ['변경요청과 Revision 비교', '/change/cr'], ['DecisionReport', '/decisions/report']] },
-  viewer: { title: '조회 · 감사/추적 중심', desc: '권한·감사 로그·요구사항 추적 (읽기 전용)', views: [['Audit', '/insights/audit'], ['요구 · 설계 추적', '/trace/design'], ['Reports', '/insights/reports']] },
+  viewer: { title: '조회 · 감사/추적 중심', desc: '권한·감사 로그·요구사항 추적 (읽기 전용)', views: [['감사와 변경 이력', '/insights/audit'], ['요구 · 설계 추적', '/trace/design'], ['운영 기준과 지표', '/insights/reports']] },
 };
 
 export function RoleHome() {
@@ -225,7 +225,7 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
         <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>Gate 상태 분포</b>
           <Donut size={130} segments={[{ label: 'PASS', value: counts.PASS, color: '#1F9D55' }, { label: 'PENDING', value: counts.PENDING, color: '#D9822B' }, { label: 'FAIL', value: counts.FAIL, color: '#D64545' }]} /></div>
         <div className="col card"><b>바로가기</b>
-          <div className="row mt"><button className="btn" onClick={() => nav('/readiness/FEAT-BDC-001')}>Release Readiness →</button><button className="btn" onClick={() => nav('/verify/evidence')}>Test Evidence →</button><button className="btn" onClick={() => nav('/verify/compliance')}>Compliance →</button></div>
+          <div className="row mt"><button className="btn" onClick={() => nav('/readiness/FEAT-BDC-001')}>Release Readiness →</button><button className="btn" onClick={() => nav('/verify/evidence')}>품질 기준과 검증 증적 →</button><button className="btn" onClick={() => nav('/verify/compliance')}>Compliance →</button></div>
         </div>
       </div>
       <div className="row mt">
@@ -257,7 +257,7 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
           {campaigns.slice(0, 4).map(c => <div className="evt" key={c.id} role="button" onClick={() => nav('/ops/campaign')}><span className="pill">{c.status}</span><span className="mono small">{c.id}</span><span className="muted small">{c.rollout}% · {c.cohort}</span></div>)}
         </div>
         <div className="col card"><b>바로가기</b>
-          <div className="row mt"><button className="btn" onClick={() => nav('/ops/campaign')}>OTA Campaign →</button><button className="btn" onClick={() => nav('/ops/policy')}>Policy Lifecycle →</button><button className="btn" onClick={() => nav('/activation')}>Activation →</button></div>
+          <div className="row mt"><button className="btn" onClick={() => nav('/ops/campaign')}>출시와 차량 적용 →</button><button className="btn" onClick={() => nav('/ops/policy')}>Policy Lifecycle →</button><button className="btn" onClick={() => nav('/activation')}>Activation →</button></div>
         </div>
       </div>
     </>);

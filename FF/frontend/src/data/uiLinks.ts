@@ -123,7 +123,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/activation', label: 'Activation · 차종 제어', en: 'Activation Control', areaId: 'UI08-S03', entry: true },
   ] },
   UI10: { screenId: 'UI10', intent: '출시 판단과 차량 적용 실행', links: [
-    { path: '/ops/campaign', label: 'OTA Campaign', en: 'OTA Campaign', areaId: 'UI10-S01', entry: true },
+    { path: '/ops/campaign', label: '출시와 차량 적용', en: 'Release & Vehicle Application', areaId: 'UI10-S01', entry: true },
     { path: '/readiness/:id', nav: '/readiness/FEAT-BDC-001', label: 'Release Readiness', en: 'Release Readiness', areaId: 'UI10-S04' },
     { path: '/decisions/deploy', label: 'Deployment Decision', en: 'Deployment Decision', areaId: 'UI10-S04' },
     { path: '/release/cicd', label: 'CI/CD 파이프라인', en: 'CI/CD Pipeline', areaId: 'UI10-S05' },
@@ -137,7 +137,8 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/twin/live', label: 'Live Visual Twin (3D)', en: 'Live Visual Twin (3D)', areaId: 'UI11-S03' },
   ] },
   UI12: { screenId: 'UI12', intent: '차량별 적용 상태와 관측값', links: [
-    { path: '/twin/vehicle/:vin', nav: '/twin/vehicle/VIN-DEMO-017', label: 'Vehicle Twin 상세', en: 'Vehicle Twin Detail', areaId: 'UI12-S02', entry: true },
+    { path: '/twin/applied/:vin', nav: '/twin/applied/VIN-DEMO-017', label: '차량별 적용 상태', en: 'Vehicle Applied State', areaId: 'UI12-S01', entry: true },
+    { path: '/twin/vehicle/:vin', nav: '/twin/vehicle/VIN-DEMO-017', label: '목표와 보고 상태', en: 'Target vs Reported State', areaId: 'UI12-S02' },
     { path: '/ops/telemetry', label: 'Telemetry Explorer', en: 'Telemetry Explorer', areaId: 'UI12-S07' },
   ] },
   UI13: { screenId: 'UI13', intent: '장애·복구와 폐루프 조치', links: [
@@ -147,8 +148,9 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
 
   // ── 품질과 추적 ──
   UI16: { screenId: 'UI16', intent: '품질 기준과 검증 증적', links: [
-    { path: '/verify/evidence', label: 'Test Evidence Manager', en: 'Test Evidence Manager', areaId: 'UI16-S02', entry: true },
+    // 뷰 순서는 정본 상세 영역 순서(S01→S08)를 따른다. 진입 뷰는 `entry` 플래그로만 정한다.
     { path: '/decisions/verification', label: 'Verification Scope', en: 'Verification Scope', areaId: 'UI16-S01' },
+    { path: '/verify/evidence', label: 'Test Evidence Manager', en: 'Test Evidence Manager', areaId: 'UI16-S02', entry: true },
     { path: '/verify/compliance', label: '컴플라이언스 룰', en: 'Compliance Rules', areaId: 'UI16-S03' },
     { path: '/verify/scenario', label: '시나리오 검증', en: 'Scenario Verification', areaId: 'UI16-S05' },
     { path: '/verify/experiment', label: '실험 · 효과 검증', en: 'Experiments' },
@@ -178,9 +180,9 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/onboarding', label: 'Onboarding', en: 'Onboarding' },
   ] },
   UI29: { screenId: 'UI29', intent: '운영 기준과 지표', links: [
-    { path: '/insights/reports', label: 'Reports', en: 'Reports', areaId: 'UI29-S03', entry: true },
     { path: '/policy/exception', label: '예외 정책', en: 'Exception Policy', areaId: 'UI29-S01' },
     { path: '/policy/conflict', label: '정책 충돌', en: 'Policy Conflict', areaId: 'UI29-S01' },
+    { path: '/insights/reports', label: 'Reports', en: 'Reports', areaId: 'UI29-S03', entry: true },
     { path: '/admin/security', label: '보안 운영', en: 'Security Ops', areaId: 'UI29-S05' },
     { path: '/admin/settings', label: 'Settings', en: 'Settings', areaId: 'UI29-S06' },
   ] },

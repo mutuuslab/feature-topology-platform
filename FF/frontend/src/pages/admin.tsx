@@ -13,28 +13,6 @@ import { useApp, useAppShell, useLive, useLiveSlices, useToast, roleHome as ROLE
 const DEMO_TODAY = '2026-06-05';
 const daysUntil = (date: string) => Math.round((Date.parse(date) - Date.parse(DEMO_TODAY)) / 86400000);
 
-export function UsersRoles() {
-  const [sel, setSel] = useState<any>(null);
-  const roleKey = roleKeyOf;
-  return (
-    <div>
-      <Breadcrumb />
-      <PageTitle fallback="Users & Roles" />
-      <p className="page-sub">행 클릭 → 사용자 권한 상세</p>
-      <div className="card"><div className="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Org</th><th>Status</th></tr></thead>
-        <tbody>{users.map(u => (<tr key={u.id} role="button" tabIndex={0} onClick={() => setSel(u)} onKeyDown={e => { if (e.key === 'Enter') setSel(u); }}><td>{u.name}</td><td>{u.role}</td><td>{u.org}</td>
-          <td><span className="badge" style={{ background: u.status === 'active' ? 'var(--pass)' : 'var(--pending)' }}>{u.status}</span></td></tr>))}</tbody></table></div></div>
-      <RightPanel open={!!sel} onClose={() => setSel(null)} title={sel?.name || ''}>
-        {sel && <div>
-          <div className="kv"><div>Role</div><div>{sel.role}</div><div>Org</div><div>{sel.org}</div><div>Status</div><div>{sel.status}</div></div>
-          <p className="mt small"><b>권한(verb)</b></p>
-          <div>{verbs.map(v => <span key={v} className="pill" style={{ marginRight: 4, opacity: (permMatrix[roleKey(sel.role)] || []).includes(v) ? 1 : 0.3 }}>{v}</span>)}</div>
-        </div>}
-      </RightPanel>
-    </div>
-  );
-}
-
 export function PermissionsMatrix() {
   const { role } = useAppShell();
   const mine = permMatrix[role] || [];

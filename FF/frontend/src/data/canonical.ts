@@ -19,6 +19,7 @@ export interface CanonArea {
 /** 정본 영역 6개에 실제 구현 본문까지 갖춘 화면 — 영역 탭을 쓰는 화면 목록. */
 export const CANON_IMPLEMENTED_SCREENS: string[] = [
   'UI19', 'UI28', 'UI07', 'UI21', 'UI22', 'UI23', 'UI24', 'UI26', 'UI30',
+  'UI10', 'UI12', 'UI16', 'UI17', 'UI18',
 ];
 
 function toCanonArea(a: ScreenAreaCanon): CanonArea {

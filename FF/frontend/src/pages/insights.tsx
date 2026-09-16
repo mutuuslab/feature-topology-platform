@@ -7,6 +7,7 @@ import { RightPanel } from '../components/patterns';
 import { GroupedBars, Donut, Bars, Timeline, CountUp, tally, dist } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { PageTitle } from '../components/PageTitle';
+import { UlRules, ulWarns, type UlRule } from '../components/ulRules';
 
 // "15~20%" → 17.5, "<2%" → 2, "35%" → 35. 단위(%)가 명확한 경우만 숫자 반환.
 function parsePct(s: string): number | null {
@@ -55,6 +56,15 @@ export function AuditLog() {
   const live = useApp().state.audit.map(a => ({ ...a, reason: '-' }));
   const rows = [...live, ...auditLog];
   const [sel, setSel] = useState<any>(null);
+  // UL-045 — 감사 로그의 인과 추적과 Export 마스킹·보존은 FP 운영정책 승인 대상이다.
+  // 현재 행에는 인과 ID(correlationId/causationId)가 없으므로 Export 는 차단으로 남긴다.
+  const rules: UlRule[] = [{
+    ul: 'UL-045',
+    rule: '한 변경의 actor·변경 전후·허가·실패·시각을 인과 ID 로 추적하고, Export 는 마스킹·접근통제·보존/법적 보류 승인 후에만 허용한다',
+    verdict: 'WARN',
+    evidence: `행 ${rows.length}건에 시각·행위자·대상·상세는 있으나 인과 ID 컬럼 없음 — Export 마스킹 정책 미승인`,
+  }];
+  const blocks = ulWarns(rules);
   return (
     <div>
       <Breadcrumb />
@@ -71,6 +81,13 @@ export function AuditLog() {
       <div className="card"><div className="table-wrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
         <tbody>{rows.map((a, i) => (<tr key={i} role="button" tabIndex={0} onClick={() => setSel(a)} onKeyDown={e => { if (e.key === 'Enter') setSel(a); }}><td className="small">{a.ts}</td><td>{a.actor}</td>
           <td><span className="pill">{a.action}</span></td><td className="mono">{a.target}</td><td className="small muted">{a.detail}</td></tr>))}</tbody></table></div></div>
+      <div className="card"><b>감사 추적 · Export 규칙</b>
+        <div className="mt"><UlRules items={rules} /></div>
+        <div className="mt">
+          <button className="btn" disabled title={blocks.join(' / ')}>Export (마스킹·보존 승인 필요)</button>{' '}
+          <span className="small muted">{blocks[0]}</span>
+        </div>
+      </div>
       <RightPanel open={!!sel} onClose={() => setSel(null)} title={sel ? `${sel.action} · ${sel.target}` : ''}>
         {sel && <div className="kv">
           <div>Time</div><div>{sel.ts}</div><div>Actor</div><div>{sel.actor}</div>

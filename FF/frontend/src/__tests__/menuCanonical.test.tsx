@@ -9,7 +9,7 @@
  *     그래서 제안 화면은 Feature 도 Revision 도 만들지 않는다 — 결정 단계에서 ID 만 발급해 UI02 로 넘긴다.
  *  3. 전체 메뉴 순서 → 정본 MENU 1.3 의 30개 화면이 업무 그룹 순서대로 정확히 한 묶음씩, 자기 경로만 갖는다.
  *
- * 마지막으로 새로 구현한 9개 정본 화면이 6개 상세 영역을 모두 실제 본문으로 갖는지 확인한다.
+ * 마지막으로 새로 구현한 14개 정본 화면이 정본 상세 영역을 모두 실제 본문으로 갖는지 확인한다.
  */
 import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -27,6 +27,11 @@ import { CRList } from '../pages/change';
 import { OfferComposition, UpgRegistry, SwStructure } from '../pages/plm';
 import { SwEoChange, ProductSpec } from '../pages/eo';
 import { IntegrationJobs, DesignTrace } from '../pages/lineage';
+import { ReleaseOps } from '../pages/areas/ui10';
+import { VehicleApplied } from '../pages/areas/ui12';
+import { QualityEvidence } from '../pages/areas/ui16';
+import { AccessScope } from '../pages/areas/ui17';
+import { ExternalSystems } from '../pages/areas/ui18';
 
 beforeEach(() => { localStorage.clear(); });
 afterEach(() => { cleanup(); localStorage.clear(); });
@@ -241,6 +246,17 @@ describe('정본 화면·상세 영역 표 (screenAreas) 가 모든 화면을 �
     });
   });
 
+  it('화면 안 뷰 순서는 정본 상세 영역 순서(S01→S08)를 따른다', () => {
+    Object.keys(SCREEN_LINKS).forEach(id => {
+      const order = SCREEN_CANON_BY_ID[id].areas.map(a => a.id);
+      const idx = SCREEN_LINKS[id].links
+        .map(l => (l.areaId ? order.indexOf(l.areaId) : -1))
+        .filter(v => v >= 0);
+      expect(idx, `${id} ${SCREEN_LINKS[id].links.map(l => l.path).join(' ')}`)
+        .toEqual([...idx].sort((a, b) => a - b));
+    });
+  });
+
   it('화면마다 진입 뷰는 정확히 하나다', () => {
     screenIds.forEach(id => {
       const entries = SCREEN_LINKS[id].links.filter(l => l.entry);
@@ -311,8 +327,8 @@ describe('화면 제목(h1)도 정본 이름을 쓴다', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-describe('새 정본 화면은 6개 상세 영역을 모두 실제 본문으로 갖는다', () => {
-  const SCREENS: { id: string; path: string; el: React.ReactNode }[] = [
+describe('새 정본 화면은 정본 상세 영역을 모두 실제 본문으로 갖는다', () => {
+  const SCREENS: { id: string; path: string; enter?: string; el: React.ReactNode }[] = [
     { id: 'UI19', path: '/feature/propose', el: <ProposalRegistry /> },
     { id: 'UI28', path: '/change/cr', el: <CRList /> },
     { id: 'UI07', path: '/commerce/offer', el: <OfferComposition /> },
@@ -322,17 +338,24 @@ describe('새 정본 화면은 6개 상세 영역을 모두 실제 본문으로 
     { id: 'UI24', path: '/master/product-spec', el: <ProductSpec /> },
     { id: 'UI26', path: '/integration/jobs', el: <IntegrationJobs /> },
     { id: 'UI30', path: '/trace/design', el: <DesignTrace /> },
+    { id: 'UI10', path: '/ops/campaign', el: <ReleaseOps /> },
+    { id: 'UI12', path: '/twin/applied/:vin', enter: '/twin/applied/VIN-DEMO-017', el: <VehicleApplied /> },
+    { id: 'UI16', path: '/verify/evidence', el: <QualityEvidence /> },
+    { id: 'UI17', path: '/admin/users', el: <AccessScope /> },
+    { id: 'UI18', path: '/integration/connectors', el: <ExternalSystems /> },
   ];
 
-  it('영역 표에 9개 화면 × 6개 영역이 있다', () => {
+  it('영역 표에 14개 화면 × 정본 영역 수가 있다', () => {
     expect(SCREENS.map(s => s.id).sort()).toEqual(Object.keys(CANON_AREAS).sort());
-    Object.values(CANON_AREAS).forEach(a => expect(a).toHaveLength(6));
+    SCREENS.forEach(s =>
+      expect(CANON_AREAS[s.id].map(a => a.id), s.id)
+        .toEqual(SCREEN_CANON_BY_ID[s.id].areas.map(a => a.id)));
   });
 
-  SCREENS.forEach(({ id, path, el }) => {
-    it(`${id} 화면 — 영역 6개가 모두 채워져 있고 화면 ID·정본 영역 이름이 일치한다`, () => {
+  SCREENS.forEach(({ id, path, enter, el }) => {
+    it(`${id} 화면 — 영역 ${SCREEN_CANON_BY_ID[id].areas.length}개가 모두 채워져 있고 화면 ID·정본 영역 이름이 일치한다`, () => {
       render(
-        <MemoryRouter initialEntries={[path]}>
+        <MemoryRouter initialEntries={[enter || path]}>
           <AppProvider><Routes><Route path={path} element={el} /></Routes></AppProvider>
         </MemoryRouter>,
       );

@@ -170,8 +170,8 @@ describe('§12.3 What-if Twin Simulation 화면', () => {
 describe('§12.4 Vehicle Twin 상세 화면', () => {
   it('7단계 상태 스트립과 판정 요약이 렌더된다', () => {
     renderTwin(<TwinVehicle />, { route: '/twin/vehicle/:vin', initial: '/twin/vehicle/VIN-DEMO-017' });
-    // UI12 정본 화면 이름 + 대상 VIN
-    expect(screen.getByRole('heading', { name: /차량별 적용 상태 · VIN-DEMO-017/ })).toBeInTheDocument();
+    // UI12 정본 상세 영역 이름 + 대상 VIN
+    expect(screen.getByRole('heading', { name: /목표와 보고 상태 · VIN-DEMO-017/ })).toBeInTheDocument();
     expect(screen.getByLabelText('VIN-DEMO-017 상태 단계')).toBeInTheDocument();
     expect(
       screen.getByText('As-Designed → As-Built → As-Deployed → Desired → Reported → Effective → Observed'),

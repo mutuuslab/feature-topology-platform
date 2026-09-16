@@ -147,7 +147,7 @@ function CICDWidget() {
       </div>
       <div className="mt"><Steps steps={PIPELINE_STAGES} current={p.status === 'done' ? undefined : (p.stage < 0 ? undefined : p.stage)} done={p.status === 'done'} /></div>
       {p.status === 'blocked' && <div className="decision HOLD mt">⛔ Quality Gate 차단 — FEAT-BDC-001 9-Gate {r.passCount}/9 ({r.decision}). Gate 충족 또는 관리자 승인 우회 필요.</div>}
-      {p.status === 'done' && <div className="decision RELEASE mt" style={{ background: '#EAF2FF', color: 'var(--brand)', border: '1px solid var(--brand)' }}>🎉 Release 완료 — 단계적 출시는 <b style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => nav('/activation')}>Activation</b> / <b style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => nav('/ops/campaign')}>OTA Campaign</b>에서 제어.</div>}
+      {p.status === 'done' && <div className="decision RELEASE mt" style={{ background: '#EAF2FF', color: 'var(--brand)', border: '1px solid var(--brand)' }}>🎉 Release 완료 — 단계적 출시는 <b style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => nav('/activation')}>Activation</b> / <b style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => nav('/ops/campaign')}>출시와 차량 적용</b>에서 제어.</div>}
       <div className="card mt" style={{ background: 'var(--surface-2)' }}><b>실행 로그</b>
         {p.logs.length ? p.logs.map((l, i) => <div className="evt small" key={i}>{l}</div>) : <p className="muted small mt">파이프라인 실행 전</p>}
       </div>

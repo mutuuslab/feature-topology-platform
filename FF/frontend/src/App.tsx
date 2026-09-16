@@ -28,13 +28,13 @@ import { TaxonomyBrowser, TaxonomyEditor, BOMEditor, ArtifactCatalog, ControlPoi
 import { EdgeEditor, ViolationDetail } from './pages/topology2';
 import { VerificationScope, DeploymentDecision, SupplierScope, DecisionCenter, DecisionReport } from './pages/decisions';
 import { CRList, CRDetail, BaselineDiff, VersionTimeline } from './pages/change';
-import { TestEvidenceManager, EvidenceDetail } from './pages/verify';
-import { OTACampaign, CampaignDetail, PolicyLifecycle, TelemetryExplorer, IncidentManager, IncidentDetail } from './pages/ops2';
+import { EvidenceDetail } from './pages/verify';
+import { CampaignDetail, PolicyLifecycle, TelemetryExplorer, IncidentManager, IncidentDetail } from './pages/ops2';
 import RuntimeSim from './pages/runtime';
 import { SupplierPortal, APIReleasePackage, PackageDetail } from './pages/supplier';
-import { ConnectorHub, ConnectorDetail, SyncLogs } from './pages/integration';
+import { ConnectorDetail, SyncLogs } from './pages/integration';
 import { Reports, AuditLog } from './pages/insights';
-import { UsersRoles, PermissionsMatrix, OrgDomains, ApprovalWorkflow, Settings, NotificationsCenter } from './pages/admin';
+import { PermissionsMatrix, OrgDomains, ApprovalWorkflow, Settings, NotificationsCenter } from './pages/admin';
 import Cost from './pages/cost';
 import Fleet from './pages/fleet';
 import Activation from './pages/activation';
@@ -52,6 +52,12 @@ const DefineRevision = lazy(() => import('./pages/defineRevision').then((m) => (
 const FeatureBom = lazy(() => import('./pages/featureBom').then((m) => ({ default: m.FeatureBom })));
 // UI05 Topology 동작 메커니즘은 그래프 엔진 + Twin 런타임을 함께 쓰므로 초기 번들에서 분리한다.
 const TopologyArch = lazy(() => import('./pages/topologyArch').then((m) => ({ default: m.TopologyArch })));
+// 정본 상세 영역 본문이 붙는 화면 — 영역 6~9개를 모두 채우므로 진입 시점에 나눠 싣는다.
+const ReleaseOps = lazy(() => import('./pages/areas/ui10').then((m) => ({ default: m.ReleaseOps })));
+const VehicleApplied = lazy(() => import('./pages/areas/ui12').then((m) => ({ default: m.VehicleApplied })));
+const QualityEvidence = lazy(() => import('./pages/areas/ui16').then((m) => ({ default: m.QualityEvidence })));
+const AccessScope = lazy(() => import('./pages/areas/ui17').then((m) => ({ default: m.AccessScope })));
+const ExternalSystems = lazy(() => import('./pages/areas/ui18').then((m) => ({ default: m.ExternalSystems })));
 
 export default function App() {
   const nav = useNavigate();
@@ -235,11 +241,11 @@ export default function App() {
           <Route path="/change/baseline" element={<BaselineDiff />} />
           <Route path="/change/timeline" element={<VersionTimeline />} />
 
-          <Route path="/verify/evidence" element={<TestEvidenceManager />} />
+          <Route path="/verify/evidence" element={<QualityEvidence />} />
           <Route path="/verify/evidence/:id" element={<EvidenceDetail />} />
           <Route path="/readiness/:id" element={<ReleaseReadiness />} />
 
-          <Route path="/ops/campaign" element={<OTACampaign />} />
+          <Route path="/ops/campaign" element={<ReleaseOps />} />
           <Route path="/ops/campaign/:id" element={<CampaignDetail />} />
           <Route path="/ops/policy" element={<PolicyLifecycle />} />
           <Route path="/ops/telemetry" element={<TelemetryExplorer />} />
@@ -256,7 +262,7 @@ export default function App() {
           <Route path="/supplier/package" element={<APIReleasePackage />} />
           <Route path="/supplier/package/:id" element={<PackageDetail />} />
 
-          <Route path="/integration/connectors" element={<ConnectorHub />} />
+          <Route path="/integration/connectors" element={<ExternalSystems />} />
           <Route path="/integration/connector/:id" element={<ConnectorDetail />} />
           <Route path="/integration/sync" element={<SyncLogs />} />
           <Route path="/integration/jobs" element={<IntegrationJobsPage />} />
@@ -265,7 +271,7 @@ export default function App() {
           <Route path="/insights/audit" element={<AuditLog />} />
           <Route path="/cost" element={<Cost />} />
 
-          <Route path="/admin/users" element={<UsersRoles />} />
+          <Route path="/admin/users" element={<AccessScope />} />
           <Route path="/admin/permissions" element={<PermissionsMatrix />} />
           <Route path="/admin/org" element={<OrgDomains />} />
           <Route path="/admin/approval" element={<ApprovalWorkflow />} />
@@ -293,6 +299,8 @@ export default function App() {
           <Route path="/twin/simulation" element={<TwinSimulation />} />
           <Route path="/twin/incident" element={<TwinIncident />} />
           <Route path="/twin/vehicle/:vin" element={<TwinVehicle />} />
+          {/* UI12 차량별 적용 상태 — 정본 상세 영역 8개. 3D Twin 은 위 차량 상세가 맡는다. */}
+          <Route path="/twin/applied/:vin" element={<VehicleApplied />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>

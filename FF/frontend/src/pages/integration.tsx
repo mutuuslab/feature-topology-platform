@@ -9,32 +9,6 @@ import { PageTitle } from '../components/PageTitle';
 const CONN_STATUS_COLORS = { connected: '#1F9D55', degraded: '#D9822B', failed: '#D64545', disabled: '#9CA3AF' };
 const SYNC_STATUS_COLORS = { ok: '#1F9D55', retry: '#D9822B', failed: '#D64545' };
 
-export function ConnectorHub() {
-  const nav = useNavigate();
-  const { state, dispatch } = useApp();
-  const connectors = state.connectors;
-  return (
-    <div>
-      <Breadcrumb />
-      <PageTitle fallback="Connector Hub" />
-      <p className="page-sub">ALM/PLM/Feature Flag/OTA 양방향 연계 · 연결 토글 · 동기화 시뮬 (FR-AGW/LGCY/DSYN/SDVI)</p>
-      <div className="row analytics-strip">
-        <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Connector 상태</b>
-          <Donut size={120} center={`${connectors.length}`} segments={dist(tally(connectors, c => c.status), CONN_STATUS_COLORS)} /></div>
-      </div>
-      <div className="row">{connectors.map(c => (
-        <div className="col card" key={c.id} style={{ minWidth: 240 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}><b style={{ cursor: 'pointer' }} onClick={() => nav('/integration/connector/' + c.id)}>{c.name}</b>
-            <span className="dot" style={{ background: (CONN_STATUS_COLORS as any)[c.status] || 'var(--muted)' }} /></div>
-          <p className="small muted">{c.proto} · {c.dir}</p>
-          <p className="small">last sync: {c.lastSync} · <span className="pill">{c.status}</span></p>
-          <button className="btn" onClick={() => dispatch({ t: 'CONNECTOR_TOGGLE', id: c.id })}>{c.enabled ? '⏸ 연결 중지' : '▶ 연결'}</button>
-        </div>
-      ))}</div>
-    </div>
-  );
-}
-
 export function ConnectorDetail() {
   const { id } = useParams();
   const { state, dispatch } = useApp();

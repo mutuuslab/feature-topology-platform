@@ -246,6 +246,7 @@ const DEFS: PlaneDef[] = [
           '/twin/fleet',
           '/twin/impact',
           '/twin/simulation',
+          '/twin/applied/VIN-DEMO-017',
           '/twin/vehicle/VIN-DEMO-017',
         ],
       },

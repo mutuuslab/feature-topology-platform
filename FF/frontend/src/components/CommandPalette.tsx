@@ -20,7 +20,7 @@ export default function CommandPalette() {
   const items = useMemo(() => {
     const actions = [
       { label: 'Run Impact Analysis', to: '/impact' },
-      { label: '변경요청 등록 (UI28)', to: '/change/cr?new=1' },
+      { label: '변경요청 등록', to: '/change/cr?new=1' },
       { label: 'Release Readiness · FEAT-BDC-001', to: '/readiness/FEAT-BDC-001' },
       { label: 'Kill Switch · FEAT-BDC-001', to: '/ops/FEAT-BDC-001' },
       { label: 'Consistency Console', to: '/consistency' },

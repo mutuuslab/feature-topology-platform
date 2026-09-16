@@ -11,6 +11,7 @@ import { TwinProvider } from '../state/twinStore';
 import { TwinFleet, TwinImpact, TwinSimulation } from '../pages/twin';
 import { TwinVehicle, TwinIncident } from '../pages/twinOps';
 import App from '../App';
+import { DOMAINS } from '../i18n';
 
 /** 장애 주입(deploy)·Kill-Switch(kill)·승인(approve)은 권한이 필요하다 → 스모크는 전체 verb 를 가진 integrator 로 실행. */
 function RoleSetter({ role }: { role: string }) {
@@ -251,8 +252,9 @@ describe('라우팅·네비게이션 통합', () => {
 
     // 1차 IA 레일은 기준 7 업무 그룹이고, 서브내비에는 정본 화면 30개만 올라온다.
     fireEvent.click(await screen.findByRole('button', { name: '차량 운영' }));
-    // 메뉴 항목은 정본 화면(UI11 차량 운영 현황)이고, 기준 화면 정의서(/ui/UI11)는 제품에 없다.
-    const row = await screen.findByRole('link', { name: /^UI11 차량 운영 현황$/ }, { timeout: 5000 });
+    // 메뉴 항목 이름은 정본 화면 이름뿐이고(화면 ID 배지는 정본 업무 메뉴에 없다), 기준 화면 정의서(/ui/UI11)는 제품에 없다.
+    const row = await screen.findByRole('link', { name: /^차량 운영 현황$/ }, { timeout: 5000 });
+    expect(row.textContent).toBe('차량 운영 현황');
     expect(document.querySelector('a[href^="/ui/UI"]')).toBeNull();
     expect(row).toHaveAttribute('href', '/fleet');
     fireEvent.click(row);
@@ -266,6 +268,34 @@ describe('라우팅·네비게이션 통합', () => {
     fireEvent.click(screen.getAllByRole('button', { name: '상세 →' })[0]);
     expect(await screen.findByRole('heading', { name: /Vehicle Twin ·/ }, { timeout: 5000 })).toBeInTheDocument();
     // 레일 → 화면 → 구현 뷰 → 상세로 세 번 이동하므로 기본 5s 로는 부족하다(검증 대상은 이동 경로).
+  }, 20000);
+
+  /**
+   * 정본 업무 메뉴(FP_UI_Menu_Map_v1_3 의 「업무 메뉴」 판)는 그룹 이름과 화면 이름만 쓴다.
+   * 화면 ID 는 화면 헤더 pill(`UI10 · C46 …`)에만 남고 메뉴 줄에는 붙지 않아야 한다.
+   */
+  it('서브내비 줄에는 화면 ID 코드가 붙지 않는다 (이름만 남는다)', async () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <AppProvider>
+          <TwinProvider>
+            <App />
+          </TwinProvider>
+        </AppProvider>
+      </MemoryRouter>,
+    );
+    const ids = /(^|\s)UI\d\d(-S\d\d)?(\s|$)/;
+    for (const domain of DOMAINS) {
+      fireEvent.click(await screen.findByRole('button', { name: domain.ko }));
+      const subnav = document.querySelector('.subnav') as HTMLElement;
+      expect(subnav, domain.key).toBeTruthy();
+      const rows = domain.screens.map(s => within(subnav).getByRole('link', { name: s.ko }));
+      expect(rows).toHaveLength(domain.screens.length);
+      rows.forEach((row, i) => {
+        expect(row.textContent, domain.screens[i].id).toBe(domain.screens[i].ko);
+        expect(ids.test(row.textContent || ''), domain.screens[i].id).toBe(false);
+      });
+    }
   }, 20000);
 
   it('시뮬레이션 입력은 localStorage 에 저장되어 새로고침 후에도 유지된다', () => {

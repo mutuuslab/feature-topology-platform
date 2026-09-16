@@ -253,19 +253,25 @@ function segmentMatch(linkSeg: string, pathSeg: string): boolean {
 /**
  * 현재 경로가 어떤 기준 화면의 어떤 구현 뷰인지 역으로 찾는다.
  *
- * 가장 긴 일치를 먼저 보고, 길이가 같으면 `SCREEN_LINKS` 순서(= 정본 화면 순서)가 앞선 화면을 고른다.
+ * 고정 세그먼트가 많은 쪽을 먼저 본다(`/ops/campaign` = UI10-S01 이 `/ops/:id` = UI27-S04 을 이긴다).
+ * 다음으로 전체 길이가 긴 쪽, 마지막은 `SCREEN_LINKS` 순서(= 정본 화면 순서)가 앞선 화면이다.
  * 예: /twin/vehicle/VIN-DEMO-017 → UI12, /change/timeline → UI28(정본 순서가 앞선 화면)
  */
 export function viewOfRoute(pathname: string): { screenId: string; link: ImplementedLink } | undefined {
   const target = pathname.split('?')[0].split('/').filter(Boolean);
-  let best: { screenId: string; link: ImplementedLink; score: number } | undefined;
+  let best: { screenId: string; link: ImplementedLink; literal: number; score: number } | undefined;
   Object.values(SCREEN_LINKS).forEach((entry) => {
     entry.links.forEach((link) => {
       const segs = link.path.split('/').filter(Boolean);
-      if (segs.length === 0 || segs.length > target.length) return;
+      if (segs.length > target.length) return;
+      // '/' 는 세그먼트가 없다 — 뿌리 경로일 때만 성립한다.
+      if (segs.length === 0 && target.length > 0) return;
       if (!segs.every((s, i) => segmentMatch(s, target[i]))) return;
+      const literal = segs.filter(s => !s.startsWith(':')).length;
       const score = segs.length;
-      if (!best || score > best.score) best = { screenId: entry.screenId, link, score };
+      if (!best || literal > best.literal || (literal === best.literal && score > best.score)) {
+        best = { screenId: entry.screenId, link, literal, score };
+      }
     });
   });
   return best ? { screenId: best.screenId, link: best.link } : undefined;

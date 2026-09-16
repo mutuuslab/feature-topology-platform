@@ -17,7 +17,7 @@ import { MemoryRouter, Link, Route, Routes } from 'react-router-dom';
 import { AppProvider, useApp } from '../store';
 import { DOMAINS, ITEM, SCREEN_META, canonTitleOf, domainOfPath } from '../i18n';
 import { SPEC_MENU } from '../data/specMenu';
-import { SCREEN_ENTRY, SCREEN_LINKS, implementedPaths, navPathOfLink, screenOfRoute } from '../data/uiLinks';
+import { SCREEN_ENTRY, SCREEN_LINKS, areaIdOfRoute, implementedPaths, navPathOfLink, screenOfRoute } from '../data/uiLinks';
 import { SCREEN_AREA_BY_ID, SCREEN_AREA_TOTAL, SCREEN_CANON, SCREEN_CANON_BY_ID } from '../data/screenAreas';
 import { CANON_AREAS } from '../data/canonical';
 import { PROPOSAL_TRANSITIONS, SEED_PROPOSALS, proposalGate, type Proposal } from '../data/proposal';
@@ -92,6 +92,27 @@ describe('정본 메뉴 배치 — 30개 화면이 한 번씩, 자기 진입 경
     screenIds.forEach(id => rowsOf(id)[0].s.views.forEach(v => {
       expect(owner.get(v.to), `${id} → ${v.to}`).toBe(id);
     }));
+  });
+
+  /**
+   * 라우트 → 화면 역추적은 선언표와 같은 답을 내야 한다.
+   * `/ops/campaign`(UI10-S01)은 `/ops/:id`(UI27-S04)과 세그먼트 수가 같지만 고정 세그먼트가 더 많다.
+   */
+  it('경로에서 되찾은 화면·상세 영역이 그 경로를 선언한 화면·영역과 언제나 같다', () => {
+    screenIds.forEach(id => SCREEN_LINKS[id].links.forEach(l => {
+      const paths = [navPathOfLink(l), l.path].filter(p => !p.includes(':'));
+      paths.forEach(p => {
+        expect(screenOfRoute(p), `${id} ${p}`).toBe(id);
+        expect(areaIdOfRoute(p), `${id} ${p}`).toBe(l.areaId);
+      });
+    }));
+  });
+
+  it('/ops 캠페인·텔레메트리·인시던트는 각자의 정본 화면·영역으로 풀린다 (동적 /ops/:id 에 먹히지 않는다)', () => {
+    expect([screenOfRoute('/ops/campaign'), areaIdOfRoute('/ops/campaign')]).toEqual(['UI10', 'UI10-S01']);
+    expect([screenOfRoute('/ops/telemetry'), areaIdOfRoute('/ops/telemetry')]).toEqual(['UI12', 'UI12-S07']);
+    expect([screenOfRoute('/ops/incident'), areaIdOfRoute('/ops/incident')]).toEqual(['UI13', 'UI13-S01']);
+    expect(screenOfRoute('/ops/FEAT-BDC-001')).toBe('UI27');
   });
 });
 

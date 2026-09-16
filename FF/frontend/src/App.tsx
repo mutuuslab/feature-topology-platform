@@ -100,7 +100,10 @@ export default function App() {
   const [q, setQ] = useState('');
   const submitSearch = () => { if (q.trim()) { nav('/catalog?q=' + encodeURIComponent(q.trim())); setNavOpen(false); } };
   const changeRole = (r: string) => { dispatch({ t: 'ROLE', role: r }); nav(roleHome[r] || '/'); };
-  /** 서브내비 한 줄 = 기준 화면 하나. 그 화면의 나머지 구현 뷰는 화면 안 「구현 뷰」 행으로 내려간다. */
+  /**
+   * 서브내비 한 줄 = 기준 화면 하나. 그 화면의 나머지 구현 뷰는 화면 안 「구현 뷰」 행으로 내려간다.
+   * 정본 업무 메뉴와 같이 **이름만** 쓰고, 화면 ID는 툴팁과 화면 헤더 pill로만 남긴다.
+   */
   const screenRow = (s: NavScreen) => (
     <NavLink
       key={s.id}
@@ -109,7 +112,6 @@ export default function App() {
       className="nav-screen"
       title={`${s.id} ${navScreen(s)} · 담당 ${s.owner}${s.plane ? ` · Plane ${s.plane}` : ''}`}
     >
-      <em className="nav-id">{s.id}</em>
       <span className="nav-lb">{navScreen(s)}</span>
     </NavLink>
   );

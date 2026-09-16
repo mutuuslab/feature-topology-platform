@@ -49,11 +49,9 @@ code,.mono{font-family:var(--mono)}
 .subnav a{display:block;padding:7px 16px 7px 22px;color:var(--ink);font-size:13px;border-left:3px solid transparent}
 .subnav a:hover{background:var(--surface-3)}
 .subnav a.active{background:var(--surface-3);border-left-color:var(--brand);font-weight:600}
-/* 서브내비 한 줄 = 기준 화면 하나 — 정본 화면 ID + 정본 화면 이름 (구현 뷰는 화면 안에서 이동) */
+/* 서브내비 한 줄 = 기준 화면 하나 — 정본 업무 메뉴와 같이 화면 이름만 쓴다 (구현 뷰는 화면 안에서 이동) */
 .subnav a.nav-screen{display:flex;align-items:baseline;gap:8px;padding:7px 16px 7px 12px}
-.subnav a.nav-screen .nav-id{flex:0 0 34px;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.2px;color:var(--muted)}
 .subnav a.nav-screen .nav-lb{flex:1;min-width:0}
-.subnav a.nav-screen.active .nav-id{color:var(--brand)}
 .main{overflow:auto;padding:20px 24px}
 
 /* 공통 */

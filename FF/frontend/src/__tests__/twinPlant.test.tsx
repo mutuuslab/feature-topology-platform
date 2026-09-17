@@ -295,7 +295,7 @@ describe('§17.2 Plant Twin — 레이아웃 SoT', () => {
 
     expect(PLANT_STATUS_LABEL.SAFETY.ko).toContain('Kill-Switch');
     expect(cellReason(counts({ killActive: 2 }), cellOf('EOL_TEST')).ko).toContain('Kill-Switch 2건');
-    expect(cellReason(counts({ total: 30 }), cellOf('INBOUND')).ko).toBe('Twin 30대 등록');
+    expect(cellReason(counts({ total: 30 }), cellOf('INBOUND')).ko).toBe('차량 30대 등록');
   });
 
   it('plantCounts 는 적격성·수렴·건강도를 모두 집계한다', () => {
@@ -356,7 +356,7 @@ describe('§17.2 Plant Twin — 3D 공장 뷰 탭', () => {
 
   it('HUD 에 규모·Twin 수·프리셋·투어·라벨 모드·FPS 가 있고 캔버스가 마운트된다', () => {
     renderLive();
-    expect(screen.getByText(/116 m × 60 m · Twin 30대/)).toBeInTheDocument();
+    expect(screen.getByText(/116 m × 60 m · 차량 30대/)).toBeInTheDocument();
     expect(screen.getByTestId('plant-canvas')).toBeInTheDocument();
 
     const presets = within(presetGroup()).getAllByRole('button');

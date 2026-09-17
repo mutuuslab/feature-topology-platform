@@ -540,7 +540,7 @@ export const ARCHETYPES: ArchetypeDef[] = [
   },
   {
     id: 'STALE_CONTEXT',
-    label: { ko: 'Twin 정보 Stale', en: 'Twin context stale' },
+    label: { ko: '차량 정보 Stale', en: 'Vehicle state stale' },
     desc: { ko: '배터리 온도 신호 TTL 초과', en: 'Battery temperature signal past TTL' },
   },
   {
@@ -1072,7 +1072,7 @@ export const ELIGIBILITY_LABEL: Record<Eligibility, Localized> = {
   INCOMPATIBLE_HARDWARE: { ko: 'HW Capability 부족', en: 'Hardware incompatible' },
   INCOMPATIBLE_VARIANT: { ko: 'Variant Coding 불일치', en: 'Variant incompatible' },
   MISSING_ENTITLEMENT: { ko: 'Entitlement 없음', en: 'Entitlement missing' },
-  STALE_TWIN: { ko: 'Twin 정보 오래됨', en: 'Twin stale' },
+  STALE_TWIN: { ko: '차량 정보 오래됨', en: 'Vehicle state stale' },
   BLOCKED_BY_SAFETY_RULE: { ko: 'Safety Rule 차단', en: 'Blocked by safety rule' },
   UNKNOWN: { ko: '판단 불가', en: 'Unknown' },
 };
@@ -1088,7 +1088,7 @@ export const HEALTH_LABEL: Record<TwinHealth, Localized> = {
 
 export const UNKNOWN_CAUSE_LABEL: Record<UnknownCause, Localized> = {
   TELEMETRY_TIMEOUT: { ko: 'Telemetry 타임아웃', en: 'Telemetry timeout' },
-  TWIN_SNAPSHOT_MISSING: { ko: 'Twin 스냅샷 없음', en: 'Twin snapshot missing' },
+  TWIN_SNAPSHOT_MISSING: { ko: '차량 상태 스냅샷 없음', en: 'Vehicle state snapshot missing' },
   POLICY_VERSION_UNKNOWN: { ko: 'Policy Version 미확인', en: 'Policy version unknown' },
   VEHICLE_AGENT_VERSION_UNSUPPORTED: { ko: 'Vehicle Agent 버전 미지원', en: 'Vehicle agent version unsupported' },
   CONFIGURATION_MISMATCH: { ko: 'Configuration 불일치', en: 'Configuration mismatch' },
@@ -1099,8 +1099,8 @@ export const UNKNOWN_CAUSE_LABEL: Record<UnknownCause, Localized> = {
 
 export const UNKNOWN_CAUSE_ACTION: Record<UnknownCause, Localized> = {
   TELEMETRY_TIMEOUT: {
-    ko: '차량 텔레메트리 수집 주기와 게이트웨이 상태를 확인하고, 재수집 후 Twin을 갱신하세요.',
-    en: 'Check telemetry cadence and gateway, then refresh the twin snapshot.',
+    ko: '차량 텔레메트리 수집 주기와 게이트웨이 상태를 확인하고, 재수집 후 차량 상태를 갱신하세요.',
+    en: 'Check telemetry cadence and gateway, then refresh the vehicle state snapshot.',
   },
   TWIN_SNAPSHOT_MISSING: {
     ko: '해당 VIN의 EOL/배포 스냅샷을 재수집(Ingest) 한 뒤 재판정하세요.',
@@ -1123,8 +1123,8 @@ export const UNKNOWN_CAUSE_ACTION: Record<UnknownCause, Localized> = {
     en: 'Hold safety decisions until signal quality is known.',
   },
   BACKEND_PROCESSING_FAILURE: {
-    ko: 'Twin Reconciliation 파이프라인 실패 로그를 확인하고 재처리하세요.',
-    en: 'Inspect the reconciliation pipeline failure and reprocess.',
+    ko: '차량 상태 수렴 파이프라인 실패 로그를 확인하고 재처리하세요.',
+    en: 'Inspect the vehicle state reconciliation pipeline failure and reprocess.',
   },
   CAUSE_ANALYSIS_REQUIRED: {
     ko: '자동 분류가 불가합니다. 운영자가 원인 분석을 수행해야 합니다.',

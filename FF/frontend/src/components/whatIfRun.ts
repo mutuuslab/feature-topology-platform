@@ -88,7 +88,7 @@ const GROUP_OF: Record<TwinEventType, PhaseGroup> = {
 
 export const PHASE_META: Record<PhaseGroup, { title: Localized; hint: Localized }> = {
   AS_BUILT: {
-    title: { ko: 'Twin · As-Built 로드', en: 'Twin · as-built load' },
+    title: { ko: '차량 · As-Built 로드', en: 'Vehicle · as-built load' },
     hint: { ko: 'EOL 스냅샷·HW capability·variant coding 을 가상차량에 적재', en: 'Load EOL snapshot, HW capability and variant coding into the virtual vehicle' },
   },
   SAFETY: {
@@ -116,7 +116,7 @@ export const PHASE_META: Record<PhaseGroup, { title: Localized; hint: Localized 
     hint: { ko: 'Desired ≠ Reported ≠ Effective 를 분리해 기록한다', en: 'Record desired, reported and effective as separate facts' },
   },
   RECONCILE: {
-    title: { ko: 'Twin 수렴 재계산', en: 'Twin reconciliation' },
+    title: { ko: '차량 상태 수렴 재계산', en: 'Vehicle state reconciliation' },
     hint: { ko: '수렴·대기·차단·Drift·Unknown 을 다시 판정한다', en: 'Re-judge converged, pending, guarded, drift and unknown' },
   },
 };

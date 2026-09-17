@@ -396,7 +396,7 @@ describe('§12.6 Live Visual Twin — 공장 뷰 Feature Flag 로그 터미널',
     renderLive();
     const term = screen.getByTestId('flaglog');
     expect(term).toBeInTheDocument();
-    expect(within(term).getByText(/DigitalTwinPort\.journal/)).toBeInTheDocument();
+    expect(within(term).getByText(/VehicleStatePort\.journal/)).toBeInTheDocument();
     // t0 에도 시드 감사 로그가 있으므로 빈 화면이 아니다
     expect(within(term).getAllByTestId('flaglog-row').length).toBeGreaterThan(0);
     fireEvent.click(within(term).getByRole('button', { name: /^ERROR/ }));

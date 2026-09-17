@@ -64,7 +64,7 @@ export const LOG_CHANNEL_LABEL: Record<LogChannel, string> = {
   OTA: 'OTA',
   VEHICLE: 'VEH',
   GUARD: 'GUARD',
-  TWIN: 'TWIN',
+  TWIN: 'STATE',
   OBSERV: 'OBS',
   OPERATOR: 'OPS',
   SIM: 'SIM',

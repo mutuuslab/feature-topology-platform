@@ -123,8 +123,8 @@ export const EVENT_DEFS: Record<T.TwinEventType, EventDef> = {
     source: 'TWIN_SERVICE',
     severity: 'PENDING',
     desc: (e) => ({
-      ko: `Twin 데이터 노후화 감지 — ${String(e.payload?.reasonCode ?? '')}`,
-      en: `Twin data staleness detected — ${String(e.payload?.reasonCode ?? '')}`,
+      ko: `차량 상태 데이터 노후화 감지 — ${String(e.payload?.reasonCode ?? '')}`,
+      en: `Vehicle state data staleness detected — ${String(e.payload?.reasonCode ?? '')}`,
     }),
   },
   'twin.drift.detected': {

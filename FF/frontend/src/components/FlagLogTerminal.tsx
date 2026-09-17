@@ -137,7 +137,7 @@ export default function FlagLogTerminal({ snapshot, lang }: FlagLogTerminalProps
       </header>
 
       <div className="flaglog-src">
-        <span>datasource=DigitalTwinPort.journal + twins[].auditTrail</span>
+        <span>datasource=VehicleStatePort.journal + vehicles[].auditTrail</span>
         <span>sim_time={snapshot.clock.simTimeMs ? new Date(snapshot.clock.simTimeMs).toISOString() : '-'}</span>
         <span>
           {filtered ? `filtered ${shown.length}/${counts.total}` : `lines ${counts.total}`} · error {counts.error} ·
@@ -163,7 +163,7 @@ export default function FlagLogTerminal({ snapshot, lang }: FlagLogTerminalProps
               </span>
               <span className="flaglog-chan">{LOG_CHANNEL_LABEL[l.channel]}</span>
               <span className={`flaglog-vin${l.scope === 'FLEET' ? ' is-fleet' : ''}`}>{l.vin}</span>
-              <span className="flaglog-event">{l.event}</span>
+              <span className="flaglog-event">{l.event.replace(/^twin\./, 'vehicle-state.')}</span>
               <span className="flaglog-msg">{l.message[lang]}</span>
               {l.detail ? <span className="flaglog-detail">{l.detail}</span> : null}
             </p>

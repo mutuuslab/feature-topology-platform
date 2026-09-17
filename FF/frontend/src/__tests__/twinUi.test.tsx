@@ -157,7 +157,7 @@ describe('§12.3 What-if Twin Simulation 화면', () => {
     // 온도 신호 900초 경과 → TTL(120초) 초과로 Local Guard 가 차단한다
     fireEvent.change(screen.getByLabelText('telemetryAge'), { target: { value: '900' } });
     expect(screen.getAllByText('BATTERY_TEMP_SIGNAL_STALE').length).toBeGreaterThan(0);
-    expect(screen.getByText('Twin 정보 오래됨')).toBeInTheDocument();
+    expect(screen.getByText('차량 정보 오래됨')).toBeInTheDocument();
   });
 
   it('Local Guard 체크와 Quality Gate 10종이 표시된다', () => {

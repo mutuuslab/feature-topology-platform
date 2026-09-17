@@ -274,9 +274,9 @@ export function buildLayers(snapshot: TwinStoreSnapshot): ArchLayer[] {
     {
       id: 'vehicle',
       nodes: [
-        node('vehicle', 'twin-agent', { ko: 'Twin Agent', en: 'Twin Agent' }, String(stats.total), {
-          ko: '활성 Twin',
-          en: 'Active twins',
+        node('vehicle', 'twin-agent', { ko: 'Vehicle Agent', en: 'Vehicle Agent' }, String(stats.total), {
+          ko: '활성 차량',
+          en: 'Active vehicles',
         }, 'info'),
         node(
           'vehicle',

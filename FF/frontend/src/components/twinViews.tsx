@@ -116,9 +116,9 @@ export function PlantView({ lang, vin, onSelectVin, onOpenVehicle, webgl }: Twin
   return (
     <div className="tsview-pad tshell-plant" data-testid="tsview-plant">
       <div className="tshell-plant-hud">
-        <b>공장 스케일 Plant Twin</b>
+        <b>공장 스케일 차량 운영</b>
         <span className="small muted">
-          EOL · 출하 Plant 116 m × 60 m · Twin {counts.total}대 · 수렴 {counts.converged}대 · 미수렴 {counts.pending}대
+          EOL · 출하 Plant 116 m × 60 m · 차량 {counts.total}대 · 수렴 {counts.converged}대 · 미수렴 {counts.pending}대
         </span>
         <div className="toolbar-group" role="group" aria-label="공장 카메라 프리셋">
           {PLANT_PRESETS.map((p) => (
@@ -639,7 +639,7 @@ export function IncidentView({ lang, vin, onSelectVin, onOpenVehicle }: TwinView
           <section className="tblock">
             <h3 className="tsect">왜 먼저 Activate 인가</h3>
             <p className="small muted">
-              결함은 <b>이미 배포된 차량</b>에서만 관측될 수 있습니다. 활성 차량이 없으면 Twin 은
+              결함은 <b>이미 배포된 차량</b>에서만 관측될 수 있습니다. 활성 차량이 없으면 차량 상태는
               “영향 없음”이 정답이며, Incident 를 만들어내지 않습니다.
             </p>
           </section>
@@ -868,7 +868,7 @@ export function RevisionView({ lang, vin, onSelectVin }: TwinViewProps) {
             ['Feature', T.FEATURE_ID, T.FEATURE_VERSION],
             ['Policy (Release SoT)', T.DEMO_POLICY.policyId, T.DEMO_POLICY.policyVersion],
             ['Rollout', T.DEMO_ROLLOUT_ID, snapshot.rollout.scope],
-            ['Twin revision', `#${snapshot.revision}`, `tick ${snapshot.clock.simTick}`],
+            ['State revision', `#${snapshot.revision}`, `tick ${snapshot.clock.simTick}`],
           ] as Array<[string, string, string]>
         ).map(([k, a, b]) => (
           <div key={k} className="tblock tsrev-card">
@@ -884,7 +884,7 @@ export function RevisionView({ lang, vin, onSelectVin }: TwinViewProps) {
           <thead>
             <tr>
               <th>VIN</th>
-              <th>Twin Ver</th>
+              <th>State Ver</th>
               <th>정책(SoT)</th>
               <th>차량 수신</th>
               <th>seq</th>

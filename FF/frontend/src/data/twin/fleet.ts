@@ -173,7 +173,7 @@ function audit(spec: Spec, nowMs: number): T.TwinAuditEntry[] {
     {
       at: isoAt(nowMs - 90 * DAY),
       actor: 'EOL 시스템 (SIMULATED)',
-      action: { ko: 'As-Built 스냅샷 수신 — Twin 등록', en: 'As-built snapshot received — twin created' },
+      action: { ko: 'As-Built 스냅샷 수신 — 차량 상태 등록', en: 'As-built snapshot received — vehicle state created' },
       detail: `${spec.oneBinary} · BMS ${spec.bms}`,
     },
   ];
@@ -561,7 +561,7 @@ export function buildDerivedTwin(vin: string, nowMs: number): T.Twin {
     auditTrail: [
       {
         at: isoAt(nowMs),
-        actor: 'Digital Twin Adapter (SIMULATED)',
+        actor: 'Vehicle State Adapter (SIMULATED)',
         action: { ko: '미등록 VIN — 가상 Twin 파생 생성', en: 'Unregistered VIN — derived twin generated' },
         detail: `seed=${h}`,
       },

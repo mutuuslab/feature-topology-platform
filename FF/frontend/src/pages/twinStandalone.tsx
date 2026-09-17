@@ -96,7 +96,7 @@ export default function TwinStandalone() {
 
   return (
     <div className={`tshell ${paused ? 'is-paused' : ''}`} data-testid="twin-standalone" data-lang={lang}>
-      <ClassificationBanner extra={`DIGITAL TWIN CONSOLE · revision ${snapshot.revision} · tick ${clock.simTick}`} />
+      <ClassificationBanner extra={`VEHICLE FEATURE CONTROL · revision ${snapshot.revision} · tick ${clock.simTick}`} />
 
       {/* ------------------------------------------------------- 헤더 */}
       <header className="tshell-head">
@@ -105,8 +105,8 @@ export default function TwinStandalone() {
             ◈
           </span>
           <div className="tshell-title">
-            <span className="nm">Twin Control Room</span>
-            <span className="sub">Digital Twin 운영 콘솔 · Vehicle Feature Lifecycle</span>
+            <span className="nm">Vehicle Feature Control Room</span>
+            <span className="sub">차량 Feature 운영 콘솔 · Vehicle Feature Lifecycle</span>
           </div>
 
           <span className="tshell-idchips">
@@ -207,7 +207,7 @@ export default function TwinStandalone() {
         </div>
 
         {/* ------------------------------------------------ 뷰 전환바 */}
-        <div className="tshell-views" role="tablist" aria-label="Twin 뷰">
+        <div className="tshell-views" role="tablist" aria-label="운영 뷰">
           {VIEWS.map((v) => (
             <button
               key={v.id}

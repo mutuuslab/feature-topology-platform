@@ -212,8 +212,8 @@ export const REASON_CODES: Record<T.ReasonCode, T.ReasonCodeDef> = {
     'TWIN_SNAPSHOT_MISSING',
     'UNKNOWN',
     'FAIL',
-    { ko: 'Twin 스냅샷 없음', en: 'Twin snapshot missing' },
-    { ko: '해당 VIN의 As-Built/배포 스냅샷이 없어 Twin을 구성할 수 없습니다.', en: 'No as-built/deployment snapshot for this VIN, so the twin cannot be composed.' },
+    { ko: '차량 상태 스냅샷 없음', en: 'Vehicle state snapshot missing' },
+    { ko: '해당 VIN의 As-Built/배포 스냅샷이 없어 차량 상태를 구성할 수 없습니다.', en: 'No as-built/deployment snapshot for this VIN, so the vehicle state cannot be composed.' },
     { ko: 'EOL/Binary 스냅샷을 Ingest한 뒤 재판정하세요.', en: 'Ingest the EOL/binary snapshot and re-evaluate.' },
   ),
   POLICY_VERSION_UNKNOWN: R(
@@ -253,7 +253,7 @@ export const REASON_CODES: Record<T.ReasonCode, T.ReasonCodeDef> = {
     'UNKNOWN',
     'FAIL',
     { ko: '백엔드 처리 실패', en: 'Backend processing failure' },
-    { ko: 'Twin Reconciliation 파이프라인이 실패했습니다.', en: 'The twin reconciliation pipeline failed.' },
+    { ko: '차량 상태 수렴 파이프라인이 실패했습니다.', en: 'The vehicle state reconciliation pipeline failed.' },
     { ko: '파이프라인 실패 로그를 확인하고 재처리하세요.', en: 'Inspect the pipeline failure and reprocess.' },
   ),
   CAUSE_ANALYSIS_REQUIRED: R(
@@ -1175,13 +1175,13 @@ function impactGate(
   const blockReasons: T.Localized[] = [];
   if (!gate.impactReviewed)
     blockReasons.push({
-      ko: 'Twin Impact Preview를 아직 확인하지 않았습니다.',
-      en: 'The twin impact preview has not been reviewed yet.',
+      ko: '차량 영향도 사전 분석을 아직 확인하지 않았습니다.',
+      en: 'The vehicle impact preview has not been reviewed yet.',
     });
   if (!gate.qualityGatePassed)
     blockReasons.push({
-      ko: 'Twin Quality Gate(What-if Simulation)가 아직 PASS 되지 않았습니다.',
-      en: 'The twin quality gate (what-if simulation) has not passed yet.',
+      ko: '차량 품질 Gate(What-if Simulation)가 아직 PASS 되지 않았습니다.',
+      en: 'The vehicle quality gate (what-if simulation) has not passed yet.',
     });
   if (counts.ELIGIBLE_POLICY_ONLY === 0)
     blockReasons.push({
@@ -1421,8 +1421,8 @@ export function runSimulation(inputs: T.SimulationInputs, nowMs: number): T.Simu
     effective = 'OFF';
     overrideReason = 'KILL_SWITCH_ACTIVE';
     notes.push({
-      ko: 'Kill-Switch가 Target Rule·Entitlement보다 우선하여 Desired와 Effective를 OFF로 강제합니다. Twin은 액추에이터를 직접 제어하지 않습니다.',
-      en: 'The kill-switch outranks target rule and entitlement, forcing Desired and Effective to OFF. The twin never commands actuators directly.',
+      ko: 'Kill-Switch가 Target Rule·Entitlement보다 우선하여 Desired와 Effective를 OFF로 강제합니다. 차량 상태 모델은 액추에이터를 직접 제어하지 않습니다.',
+      en: 'The kill-switch outranks target rule and entitlement, forcing Desired and Effective to OFF. The vehicle state model never commands actuators directly.',
     });
   } else if (cacheExpired) {
     desired = 'OFF';
@@ -1585,7 +1585,7 @@ function buildEventLog(
       en: flags.guardPassed ? 'Effective ON confirmed' : 'Effective BLOCKED confirmed',
     }, flags.guardPassed ? 'PASS' : 'FAIL');
   }
-  push('twin.reconciliation.changed', { ko: 'Twin 수렴 상태 재계산', en: 'Twin reconciliation recomputed' });
+  push('twin.reconciliation.changed', { ko: '차량 상태 수렴 재계산', en: 'Vehicle state reconciliation recomputed' });
 
   return seq.map((s, i) => ({
     at: isoAt(flags.nowMs, i * 1000),
@@ -1699,7 +1699,7 @@ function buildEvidence(
   const out: T.SimEvidence[] = [
     { id: `EVD-SIM-POLICY-${nowMs}`, label: { ko: `Policy ${inputs.policyVersion} 서명·해시 기록`, en: `Policy ${inputs.policyVersion} signature/hash record` }, kind: 'POLICY', capturedAt: at },
     { id: `EVD-SIM-GUARD-${nowMs}`, label: { ko: `Local Guard 결과 ${recon.reasonCode}`, en: `Local guard result ${recon.reasonCode}` }, kind: 'GUARD', capturedAt: at },
-    { id: `EVD-SIM-IMPACT-${nowMs}`, label: { ko: 'Twin Impact Preview 결과 (대상 VIN 분류)', en: 'Twin impact preview result (target VIN classes)' }, kind: 'IMPACT', capturedAt: at },
+    { id: `EVD-SIM-IMPACT-${nowMs}`, label: { ko: '차량 영향도 사전 분석 결과 (대상 VIN 분류)', en: 'Vehicle impact preview result (target VIN classes)' }, kind: 'IMPACT', capturedAt: at },
   ];
   if (inputs.network !== 'ONLINE') {
     out.push({ id: `EVD-SIM-OFFLINE-${nowMs}`, label: { ko: '오프라인 캐시 TTL / Safe Default 검증', en: 'Offline cache TTL / safe default evidence' }, kind: 'OFFLINE', capturedAt: at });
@@ -1917,7 +1917,7 @@ export function applyContextRecovered(
 export const CLOSED_LOOP_STEPS: T.Localized[] = [
   { ko: '장애 주입', en: 'Fault injected' },
   { ko: 'Simulator 이벤트 전송', en: 'Simulator event sent' },
-  { ko: 'Digital Twin 갱신', en: 'Digital twin updated' },
+  { ko: '차량 상태 갱신', en: 'Vehicle state updated' },
   { ko: 'Reconciliation 상태 변화', en: 'Reconciliation state changed' },
   { ko: 'Incident 자동 생성', en: 'Incident created' },
   { ko: '신규 Rollout 자동 Pause', en: 'New rollout auto-paused' },

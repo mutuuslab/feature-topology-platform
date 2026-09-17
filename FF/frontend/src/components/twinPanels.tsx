@@ -293,7 +293,7 @@ export function TwinLeftPanel({
         </div>
       </Section>
 
-      <Section title="장애 주입 (Simulation Twin)" right={`${openIncidents.length}건 진행`}>
+      <Section title="장애 주입 (차량 시뮬레이션)" right={`${openIncidents.length}건 진행`}>
         <div className="trow gap">
           <select
             className="input small"
@@ -466,7 +466,7 @@ export function StageStrip({ verdict }: { verdict: E.TwinVerdict }) {
   };
 
   return (
-    <div className="tstrip" aria-label="7단계 Twin 상태">
+    <div className="tstrip" aria-label="7단계 차량 상태">
       {STAGES.map((s) => {
         const c = cells[s.id];
         return (
@@ -545,7 +545,7 @@ export function TwinRightPanel({
         right={
           verdict ? (
             <button className="btn small" onClick={onOpenVehicle}>
-              3D Twin →
+              3D 차량 →
             </button>
           ) : null
         }
@@ -581,7 +581,7 @@ export function TwinRightPanel({
               <KV k="Local Guard" v={verdict.guard.passed ? 'PASS' : 'FAIL'} mono />
               <KV k="차량 링크" v={twin?.link.online ? `ONLINE · ${twin?.link.vehicleAgentVersion}` : 'OFFLINE'} mono />
               <KV k="최근 텔레메트리" v={`${E.fmtDuration(E.secondsSince(inst?.observed.lastTelemetryAt, nowMs))} 전`} mono />
-              <KV k="Twin Version" v={`#${verdict.reconciliation.twinVersion}`} mono />
+              <KV k="상태 버전" v={`#${verdict.reconciliation.twinVersion}`} mono />
               <KV k="DTC" v={inst?.observed.dtcCodes.length ? inst.observed.dtcCodes.join(', ') : '없음'} mono />
             </div>
             <StageStrip verdict={verdict} />
@@ -606,12 +606,12 @@ export function TwinRightPanel({
                   .filter(Boolean)
                   .join(' ')}
                 onClick={() => e.vin && e.vin !== vin && onSelectVin(e.vin)}
-                title={`${e.source} · ${e.occurredAt}`}
+                title={`${e.source.replace('TWIN', 'VEHICLE_STATE')} · ${e.occurredAt}`}
               >
                 <span className="tevt-t">{e.occurredAt.slice(11, 19)}</span>
                 <span className="tdot" style={{ background: toneColor(eventTone(e.severity)) }} />
                 <span className="tevt-d">
-                  <span className="ty">{e.eventType}</span>
+                  <span className="ty">{e.eventType.replace(/^twin\./, 'vehicle-state.')}</span>
                   {loc(e.desc)}
                 </span>
               </div>
@@ -620,17 +620,17 @@ export function TwinRightPanel({
         )}
       </Section>
 
-      <Section title="VIN 감사 로그" right="DigitalTwinPort Journal">
+      <Section title="VIN 감사 로그" right="VehicleStatePort Journal">
         {audit.length === 0 ? (
           <div className="tempty">이 VIN 의 감사 로그가 없습니다.</div>
         ) : (
           <div className="tevt" data-testid="twin-audit">
             {audit.map((e) => (
-              <div key={e.eventId} className={`tevt-row tone-${eventTone(e.severity)}`} title={`${e.source} · ${e.occurredAt}`}>
+              <div key={e.eventId} className={`tevt-row tone-${eventTone(e.severity)}`} title={`${e.source.replace('TWIN', 'VEHICLE_STATE')} · ${e.occurredAt}`}>
                 <span className="tevt-t">{e.occurredAt.slice(11, 19)}</span>
                 <span className="tdot" style={{ background: toneColor(eventTone(e.severity)) }} />
                 <span className="tevt-d">
-                  <span className="ty">{e.eventType}</span>
+                  <span className="ty">{e.eventType.replace(/^twin\./, 'vehicle-state.')}</span>
                   {loc(e.desc)}
                 </span>
               </div>

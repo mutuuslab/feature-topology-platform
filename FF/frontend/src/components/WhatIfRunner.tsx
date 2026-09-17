@@ -141,7 +141,7 @@ export function WhatIfRunner({ result, simTimeMs, simTick, rate, onSetRate, onSt
               <ul className="wif-node-events">
                 {p.events.map((e, j) => (
                   <li key={j} className={j < revealed.length ? 'on' : ''}>
-                    <code className="mono">{e.eventType}</code>
+                    <code className="mono">{e.eventType.replace(/^twin\./, 'vehicle-state.')}</code>
                   </li>
                 ))}
               </ul>
@@ -187,7 +187,7 @@ export function WhatIfRunner({ result, simTimeMs, simTick, rate, onSetRate, onSt
               <li key={i} className="wif-line" data-severity={e.severity} style={{ ['--tone' as string]: toneColor(e.severity) }}>
                 <code className="mono">{e.at.slice(11, 19)}</code>
                 <span className="wif-sev">{e.severity}</span>
-                <code className="mono wif-type">{e.eventType}</code>
+                <code className="mono wif-type">{e.eventType.replace(/^twin\./, 'vehicle-state.')}</code>
                 <span className="wif-desc">{e.desc[lang]}</span>
               </li>
             ))}
@@ -206,7 +206,7 @@ export function WhatIfRunner({ result, simTimeMs, simTick, rate, onSetRate, onSt
             <span className={'wif-v ' + (result.localGuard.passed ? 'ok' : 'bad')}><b>{result.localGuard.passed ? 'PASS' : 'BLOCK'}</b> Local Guard</span>
             <span className={'wif-v ' + (failGates ? 'bad' : 'ok')}><b>{failGates} FAIL / {warnGates} WARN</b> Quality Gate</span>
             <span className="wif-v"><b>{result.evidence.length}</b> Evidence</span>
-            <span className="wif-v"><b>{result.twinVersionBefore} → {result.twinVersionAfter}</b> Twin Version</span>
+            <span className="wif-v"><b>{result.twinVersionBefore} → {result.twinVersionAfter}</b> State Version</span>
             <span className="wif-v"><b>{result.eventLog.length}</b> Events</span>
           </div>
         ) : (

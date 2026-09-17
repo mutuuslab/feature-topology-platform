@@ -772,9 +772,9 @@ export function TwinLive() {
             <div className="card plant-view" data-testid="plant-view">
               {/* 상단 HUD — RFTwin 의 카메라 프리셋 바와 동일한 구성 + 라벨 LOD + FPS */}
               <div className="plant-hud">
-                <b>공장 스케일 Plant Twin</b>
+                <b>공장 스케일 차량 운영</b>
                 <span className="small muted">
-                  EOL · 출하 Plant · 116 m × 60 m · Twin {counts.total}대
+                  EOL · 출하 Plant · 116 m × 60 m · 차량 {counts.total}대
                 </span>
                 <div className="plant-presets" role="group" aria-label="공장 카메라 프리셋">
                   {PLANT_PRESETS.map((p) => (

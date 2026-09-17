@@ -88,8 +88,8 @@ export const CELLS: PlantCell[] = [
     stage: 'CALIB',
     x: 2,
     stations: 4,
-    label: { ko: '캘리브레이션 / Twin 동기화', en: 'Calibration & Twin Sync' },
-    note: { ko: 'Twin 신선도(Stale) 점검', en: 'Twin freshness' },
+    label: { ko: '캘리브레이션 / 차량 상태 동기화', en: 'Calibration & Vehicle State Sync' },
+    note: { ko: '차량 상태 신선도(Stale) 점검', en: 'Vehicle state freshness' },
   },
   {
     id: 'CELL-EOL-TEST',
@@ -508,7 +508,7 @@ export function cellStatus(c: PlantCounts, cell: PlantCell): PlantStatus {
 export function cellReason(c: PlantCounts, cell: PlantCell): Localized {
   switch (cell.stage) {
     case 'INBOUND':
-      return { ko: `Twin ${c.total}대 등록`, en: `${c.total} twins registered` };
+      return { ko: `차량 ${c.total}대 등록`, en: `${c.total} vehicles registered` };
     case 'FLASH':
       return { ko: `Binary OTA 대상 ${c.binaryOta}대`, en: `${c.binaryOta} awaiting binary OTA` };
     case 'BATTERY':
@@ -517,7 +517,7 @@ export function cellReason(c: PlantCounts, cell: PlantCell): Localized {
         en: `HW ${c.hwMismatch} · Variant ${c.variantMismatch}`,
       };
     case 'CALIB':
-      return { ko: `Twin Stale ${c.stale}대`, en: `${c.stale} stale twins` };
+      return { ko: `상태 지연 ${c.stale}대`, en: `${c.stale} vehicles with stale state` };
     case 'EOL_TEST':
       return {
         ko: c.killActive > 0

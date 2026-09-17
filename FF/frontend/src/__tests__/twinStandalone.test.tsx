@@ -77,8 +77,34 @@ describe('§18 독립 Twin 콘솔 — 셸', () => {
     // 헤더에 버전/리비전 식별자가 있다.
     const head = document.querySelector('.tshell-head') as HTMLElement;
     expect(head).not.toBeNull();
-    expect(head.textContent).toContain('Twin Control Room');
+    expect(head.textContent).toContain('Vehicle Feature Control Room');
     expect(head.textContent).toMatch(/rev \d+/);
+  });
+
+  it('한국어·영어의 모든 운영 뷰에서 Digital Twin 용어를 사용자에게 노출하지 않는다', () => {
+    renderConsole();
+    const ids = ['factory', 'vehicle', 'fleet', 'arch', 'simulation', 'incident', 'revision'] as const;
+    const assertRemoved = () => {
+      const term = /\bdigital\s+twin\b|\btwin\b/i;
+      const visibleTerms = Array.from(document.body.querySelectorAll('*')).flatMap((element) =>
+        Array.from(element.childNodes)
+          .filter((node) => node.nodeType === Node.TEXT_NODE)
+          .map((node) => node.textContent?.trim() ?? '')
+          .filter((text) => term.test(text)),
+      );
+      expect(visibleTerms).toEqual([]);
+    };
+
+    ids.forEach((id) => {
+      fireEvent.click(screen.getByTestId(`tshell-view-${id}`));
+      assertRemoved();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '언어 전환' }));
+    ids.forEach((id) => {
+      fireEvent.click(screen.getByTestId(`tshell-view-${id}`));
+      assertRemoved();
+    });
   });
 
   it('7개 뷰 탭이 모두 있고, 탭을 누르면 중앙 스테이지가 실제로 교체된다', () => {

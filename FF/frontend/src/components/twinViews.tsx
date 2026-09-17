@@ -34,6 +34,7 @@ import {
   TOUR_DWELL_MS,
   cellReason,
   cellStatus,
+  followPreset,
   plantCounts,
   presetById,
   yardSlots,
@@ -103,7 +104,11 @@ export function PlantView({ lang, vin, onSelectVin, onOpenVehicle, webgl }: Twin
   /* 투어는 시뮬레이션 시계로 돈다 — 정지하면 투어도 멈춘다. */
   const effectivePresetId: PlantPresetId =
     follow && selectedPos ? 'yard' : tour ? PLANT_TOUR[tourRef.current % PLANT_TOUR.length] : presetId;
-  const preset = useMemo(() => presetById(effectivePresetId), [effectivePresetId]);
+  const preset = useMemo(() => {
+    const base = presetById(effectivePresetId);
+    if (!follow || !selectedPos || !selected) return base;
+    return followPreset(selected.vin, selectedPos);
+  }, [effectivePresetId, follow, selected, selectedPos]);
 
   const { simTimeMs, simTick, rate } = snapshot.clock;
   const clockText = simClockLabel(snapshot.clock).text;
@@ -125,7 +130,7 @@ export function PlantView({ lang, vin, onSelectVin, onOpenVehicle, webgl }: Twin
             <button
               key={p.id}
               type="button"
-              className={effectivePresetId === p.id && !tour ? 'tbtn is-on' : 'tbtn'}
+              className={effectivePresetId === p.id && !follow ? 'tbtn is-on' : 'tbtn'}
               onClick={() => {
                 setFollow(false);
                 setTour(false);
@@ -137,7 +142,9 @@ export function PlantView({ lang, vin, onSelectVin, onOpenVehicle, webgl }: Twin
           ))}
         </div>
         <button type="button" className={tour ? 'tbtn is-on' : 'tbtn'} aria-pressed={tour} onClick={() => setTour((v) => !v)}>
-          {tour ? '⏸ 투어 정지' : `▶ 투어 (${tourRef.current % PLANT_TOUR.length + 1}/${PLANT_TOUR.length})`}
+          {tour
+            ? `⏸ 투어 (${tourRef.current % PLANT_TOUR.length + 1}/${PLANT_TOUR.length}) 정지`
+            : `▶ 투어 (${tourRef.current % PLANT_TOUR.length + 1}/${PLANT_TOUR.length})`}
         </button>
         <button
           type="button"
@@ -175,6 +182,11 @@ export function PlantView({ lang, vin, onSelectVin, onOpenVehicle, webgl }: Twin
       </div>
 
       <div className="tshell-stage is-fill" data-testid="tsview-plant-stage">
+        <div className="plant-focus-readout" role="status" aria-live="polite" data-testid="plant-focus-readout">
+          <span>{lang === 'en' ? 'CURRENT FOCUS' : '현재 초점'}</span>
+          <b>{T.pick(preset.label, lang)}</b>
+          <small>{T.pick(preset.hint, lang)}</small>
+        </div>
         {webgl && !sceneFailed ? (
           <PlantScene
             snapshot={snapshot}

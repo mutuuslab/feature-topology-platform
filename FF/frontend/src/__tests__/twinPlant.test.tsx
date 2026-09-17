@@ -45,20 +45,29 @@ vi.mock('@react-three/fiber', () => ({
   useFrame: () => {},
   useThree: (
     selector: (s: {
-      camera: { position: { lerp: () => void; distanceTo: () => number }; lookAt: () => void };
-      controls: { target: { copy: () => void }; update: () => void };
+      camera: {
+        position: { lerp: () => void; distanceTo: () => number };
+        lookAt: () => void;
+        fov: number;
+        updateProjectionMatrix: () => void;
+      };
+      controls: { target: { x: number; y: number; z: number; copy: () => void }; update: () => void };
       scene: Record<string, never>;
       size: { width: number; height: number };
+      invalidate: () => void;
     }) => unknown,
   ) =>
     selector({
       camera: {
         position: { lerp: () => {}, distanceTo: () => 0 },
         lookAt: () => {},
+        fov: 45,
+        updateProjectionMatrix: () => {},
       },
-      controls: { target: { copy: () => {} }, update: () => {} },
+      controls: { target: { x: 0, y: 0, z: 0, copy: () => {} }, update: () => {} },
       scene: {},
       size: { width: 1366, height: 768 },
+      invalidate: () => {},
     }),
 }));
 
@@ -177,6 +186,30 @@ describe('§17.2 Plant Twin — 레이아웃 SoT', () => {
     expect(PLANT_PRESETS).toHaveLength(8);
     expect(PLANT_TOUR).toHaveLength(PLANT_PRESETS.length);
     expect(TOUR_DWELL_MS).toBe(7000);
+  });
+
+  it('공정 프리셋은 해당 셀을 중앙에 두고 근접 촬영하며 초점 범위를 제공한다', () => {
+    const cellPresets = PLANT_PRESETS.filter((p) => ['inbound', 'flash', 'battery', 'calib', 'eol'].includes(p.id));
+    expect(cellPresets).toHaveLength(CELLS.length);
+    cellPresets.forEach((preset, i) => {
+      expect(preset.target[0], preset.id).toBe(CELLS[i].x);
+      expect(Math.hypot(
+        preset.pos[0] - preset.target[0],
+        preset.pos[1] - preset.target[1],
+        preset.pos[2] - preset.target[2],
+      ), preset.id).toBeLessThan(20);
+      expect(preset.fov, preset.id).toBeLessThanOrEqual(38);
+      expect(preset.focusRadius, preset.id).toBeGreaterThan(0);
+      expect(preset.hint.ko, preset.id).not.toBe('');
+    });
+
+    const andon = PLANT_PRESETS.find((p) => p.id === 'andon')!;
+    expect(andon.fov).toBe(32);
+    expect(Math.hypot(
+      andon.pos[0] - andon.target[0],
+      andon.pos[1] - andon.target[1],
+      andon.pos[2] - andon.target[2],
+    )).toBeLessThan(14);
   });
 
   it('스테이션 좌표는 컨베이어(z=0)를 사이에 두고 station 수만큼만 나온다', () => {

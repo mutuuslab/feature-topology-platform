@@ -135,6 +135,31 @@ describe('§18 독립 Twin 콘솔 — 셸', () => {
     }
   });
 
+  it('공장 프리셋과 선택 VIN 추적은 현재 초점의 대상과 설명을 명시한다', () => {
+    renderConsole();
+    const presets = screen.getByRole('group', { name: '공장 카메라 프리셋' });
+    fireEvent.click(within(presets).getByRole('button', { name: '배터리' }));
+
+    const focus = screen.getByTestId('plant-focus-readout');
+    expect(focus).toHaveTextContent('현재 초점');
+    expect(focus).toHaveTextContent('배터리');
+    expect(focus).toHaveTextContent('HW Capability');
+
+    fireEvent.click(screen.getByRole('button', { name: /선택 VIN 추적/ }));
+    expect(focus).toHaveTextContent(/선택 VIN VIN-DEMO-\d{3}/);
+    expect(focus).toHaveTextContent('선택 차량을 출하 야드 중앙에 고정');
+  });
+
+  it('투어 중에는 현재 공정 프리셋과 투어 순번을 함께 강조한다', () => {
+    renderConsole();
+    const presets = screen.getByRole('group', { name: '공장 카메라 프리셋' });
+    fireEvent.click(screen.getByRole('button', { name: /▶ 투어/ }));
+
+    expect(screen.getByRole('button', { name: /⏸ 투어 \(1\/8\) 정지/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(presets).getByRole('button', { name: '전체 조망' }).className).toContain('is-on');
+    expect(screen.getByTestId('plant-focus-readout')).toHaveTextContent('전체 조망');
+  });
+
   it('3D 뷰는 WebGL 미지원을 알리되 뷰 자체를 가리지는 않는다', () => {
     const original = HTMLCanvasElement.prototype.getContext;
     // jsdom 에는 WebGL 컨텍스트가 없다 — 그 상황을 명시적으로 재현한다.

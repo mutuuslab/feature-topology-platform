@@ -75,6 +75,7 @@ import {
   TOUR_DWELL_MS,
   cellReason,
   cellStatus,
+  followPreset,
   plantCounts,
   presetById,
   yardSlots,
@@ -651,14 +652,7 @@ export function TwinLive() {
   const plantPreset = useMemo(() => {
     if (follow && vin) {
       const slot = yardSlots(snapshot.verdicts).find((s) => s.vin === vin);
-      if (slot) {
-        return {
-          id: 'overview' as PlantPresetId,
-          label: { ko: `추적 ${vin}`, en: `Follow ${vin}` },
-          pos: [slot.x + 2, 9, slot.z + 12] as [number, number, number],
-          target: [slot.x, 1.2, slot.z] as [number, number, number],
-        };
-      }
+      if (slot) return followPreset(vin, [slot.x, slot.z]);
     }
     return presetById(plantPresetId);
   }, [follow, vin, plantPresetId, snapshot.verdicts]);

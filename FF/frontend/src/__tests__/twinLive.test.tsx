@@ -19,17 +19,29 @@ vi.mock('@react-three/fiber', () => ({
   useFrame: () => {},
   useThree: (
     selector: (s: {
-      camera: { position: { lerp: () => void; distanceTo: () => number }; lookAt: () => void };
-      controls: { target: { copy: () => void }; update: () => void };
+      camera: {
+        position: { lerp: () => void; distanceTo: () => number };
+        lookAt: () => void;
+        fov: number;
+        updateProjectionMatrix: () => void;
+      };
+      controls: { target: { x: number; y: number; z: number; copy: () => void }; update: () => void };
       scene: Record<string, never>;
       size: { width: number; height: number };
+      invalidate: () => void;
     }) => unknown,
   ) =>
     selector({
-      camera: { position: { lerp: () => {}, distanceTo: () => 0 }, lookAt: () => {} },
-      controls: { target: { copy: () => {} }, update: () => {} },
+      camera: {
+        position: { lerp: () => {}, distanceTo: () => 0 },
+        lookAt: () => {},
+        fov: 45,
+        updateProjectionMatrix: () => {},
+      },
+      controls: { target: { x: 0, y: 0, z: 0, copy: () => {} }, update: () => {} },
       scene: {},
       size: { width: 1366, height: 768 },
+      invalidate: () => {},
     }),
 }));
 

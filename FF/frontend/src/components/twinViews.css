@@ -184,8 +184,41 @@
 
 /* 공장 뷰가 스테이지를 가득 채우도록 -------------------------------- */
 .tshell-plant .tshell-stage.is-fill {
+  position: relative;
   min-height: 320px;
   flex: 1 1 auto;
+}
+.plant-focus-readout {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  gap: 2px 8px;
+  max-width: min(420px, calc(100% - 24px));
+  padding: 8px 11px;
+  border: 1px solid rgba(56, 189, 248, 0.78);
+  border-left: 4px solid #38bdf8;
+  border-radius: 7px;
+  background: rgba(8, 15, 24, 0.9);
+  box-shadow: 0 5px 24px rgba(0, 0, 0, 0.45), 0 0 22px rgba(56, 189, 248, 0.12);
+  color: #e6f6ff;
+  pointer-events: none;
+}
+.plant-focus-readout > span {
+  color: #7dd3fc;
+  font: 700 10px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.08em;
+}
+.plant-focus-readout > b {
+  font-size: 13px;
+}
+.plant-focus-readout > small {
+  grid-column: 1 / -1;
+  color: #a8bac9;
+  font-size: 11px;
 }
 
 @media (max-width: 1100px) {

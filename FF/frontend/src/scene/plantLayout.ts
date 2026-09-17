@@ -295,19 +295,86 @@ export type PlantPresetId = 'overview' | 'inbound' | 'flash' | 'battery' | 'cali
 export interface PlantPreset {
   id: PlantPresetId;
   label: Localized;
+  hint: Localized;
   pos: [number, number, number];
   target: [number, number, number];
+  fov: number;
+  focusRadius: number;
 }
 
 export const PLANT_PRESETS: PlantPreset[] = [
-  { id: 'overview', label: { ko: '전체 조망', en: 'Overview' }, pos: [4, 46, 66], target: [0, 0, 2] },
-  { id: 'inbound', label: { ko: 'VIN 등록', en: 'VIN Reg' }, pos: [-50, 21, 25], target: [-50, 1.6, 0] },
-  { id: 'flash', label: { ko: '플래싱', en: 'Flash' }, pos: [-34, 19, 24], target: [-34, 1.6, 0] },
-  { id: 'battery', label: { ko: '배터리', en: 'Battery' }, pos: [-16, 19, 24], target: [-16, 1.6, 0] },
-  { id: 'calib', label: { ko: '캘리브레이션', en: 'Calibration' }, pos: [2, 19, 24], target: [2, 1.6, 0] },
-  { id: 'eol', label: { ko: 'EOL 시험', en: 'EOL Test' }, pos: [20, 17, 22], target: [20, 1.6, 0] },
-  { id: 'yard', label: { ko: '출하 야드', en: 'Outbound Yard' }, pos: [70, 27, 34], target: [46, 1.6, 0] },
-  { id: 'andon', label: { ko: 'Andon / Control', en: 'Andon' }, pos: [31, 14, 17], target: [31, 4.5, 0] },
+  {
+    id: 'overview',
+    label: { ko: '전체 조망', en: 'Overview' },
+    hint: { ko: 'VIN 등록부터 출하까지 전체 흐름', en: 'End-to-end flow from VIN registration to outbound' },
+    pos: [4, 48, 70],
+    target: [0, 0, 2],
+    fov: 46,
+    focusRadius: 0,
+  },
+  {
+    id: 'inbound',
+    label: { ko: 'VIN 등록', en: 'VIN Registration' },
+    hint: { ko: '입고 차량 식별과 As-Built 등록', en: 'Inbound vehicle identity and as-built registration' },
+    pos: [-50, 11.5, 15.5],
+    target: [-50, 1.6, 0],
+    fov: 38,
+    focusRadius: 7.8,
+  },
+  {
+    id: 'flash',
+    label: { ko: '플래싱', en: 'Flashing' },
+    hint: { ko: 'One-Binary 설치와 OTA 대상 확인', en: 'One-binary installation and OTA targeting' },
+    pos: [-34, 11.5, 15.5],
+    target: [-34, 1.6, 0],
+    fov: 38,
+    focusRadius: 7.8,
+  },
+  {
+    id: 'battery',
+    label: { ko: '배터리', en: 'Battery' },
+    hint: { ko: '배터리 HW Capability와 Variant 검증', en: 'Battery hardware capability and variant validation' },
+    pos: [-16, 11.5, 15.5],
+    target: [-16, 1.6, 0],
+    fov: 38,
+    focusRadius: 7.8,
+  },
+  {
+    id: 'calib',
+    label: { ko: '캘리브레이션', en: 'Calibration' },
+    hint: { ko: '차량 상태 동기화와 신선도 확인', en: 'Vehicle state synchronization and freshness' },
+    pos: [2, 11.5, 15.5],
+    target: [2, 1.6, 0],
+    fov: 38,
+    focusRadius: 7.8,
+  },
+  {
+    id: 'eol',
+    label: { ko: 'EOL 시험', en: 'EOL Test' },
+    hint: { ko: '최종 상태 수렴과 Guard 판정', en: 'Final state convergence and guard verdict' },
+    pos: [20, 10.5, 14],
+    target: [20, 1.6, 0],
+    fov: 36,
+    focusRadius: 6.5,
+  },
+  {
+    id: 'yard',
+    label: { ko: '출하 야드', en: 'Outbound Yard' },
+    hint: { ko: '출하 대기 차량 30대와 VIN별 상태', en: 'Thirty outbound vehicles and per-VIN state' },
+    pos: [63, 20, 29],
+    target: [46, 1.2, 0],
+    fov: 40,
+    focusRadius: 16,
+  },
+  {
+    id: 'andon',
+    label: { ko: 'Andon / Control', en: 'Andon / Control' },
+    hint: { ko: '공정별 상태 보드와 운영 제어 지점', en: 'Process status board and operational control point' },
+    pos: [31, 8.5, 11],
+    target: [31, 2.7, 0],
+    fov: 32,
+    focusRadius: 3.8,
+  },
 ];
 
 export function presetById(id: PlantPresetId): PlantPreset {
@@ -330,10 +397,13 @@ export const TOUR_DWELL_MS = 7000;
 /** 선택 차량 추적 프리셋(동적 계산). */
 export function followPreset(vin: string, pos: [number, number]): PlantPreset {
   return {
-    id: 'overview',
-    label: { ko: `추적 ${vin}`, en: `Follow ${vin}` },
-    pos: [pos[0] + 2, 9, pos[1] + 12],
-    target: [pos[0], 1.2, pos[1]],
+    id: 'yard',
+    label: { ko: `선택 VIN ${vin}`, en: `Selected VIN ${vin}` },
+    hint: { ko: '선택 차량을 출하 야드 중앙에 고정', en: 'Keep the selected vehicle centered in the outbound yard' },
+    pos: [pos[0] + 9, 8, pos[1] + 11],
+    target: [pos[0], 0.8, pos[1]],
+    fov: 34,
+    focusRadius: 3.3,
   };
 }
 

@@ -359,35 +359,47 @@ function Logistics() {
 /* -------------------------------------------------------------- 카메라 */
 
 function CameraRig({ preset }: { preset: PlantPreset }) {
-  const camera = useThree((s) => s.camera);
+  const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const controls = useThree((s) => s.controls) as unknown as
     | { target: THREE.Vector3; update?: () => void }
     | undefined;
+  const invalidate = useThree((s) => s.invalidate);
   const wantPos = useRef(new THREE.Vector3(preset.pos[0], preset.pos[1], preset.pos[2]));
   const wantTarget = useRef(new THREE.Vector3(preset.target[0], preset.target[1], preset.target[2]));
+  const wantFov = useRef(preset.fov);
   const armed = useRef(true);
   const target = useMemo(() => new THREE.Vector3(), []);
 
   useEffect(() => {
     wantPos.current.set(preset.pos[0], preset.pos[1], preset.pos[2]);
     wantTarget.current.set(preset.target[0], preset.target[1], preset.target[2]);
+    wantFov.current = preset.fov;
+    if (controls?.target) target.copy(controls.target);
     armed.current = true;
     (globalThis as unknown as Record<string, unknown>).__plantPreset = preset.id;
-  }, [preset]);
+    invalidate();
+  }, [controls, invalidate, preset, target]);
 
   useFrame((_, dt) => {
     if (!camera) return;
     if (armed.current) {
-      const k = Math.min(1, dt * 3.2);
+      const k = 1 - Math.exp(-dt * 5.2);
       camera.position.lerp(wantPos.current, k);
       target.lerp(wantTarget.current, k);
+      camera.fov = THREE.MathUtils.lerp(camera.fov, wantFov.current, k);
+      camera.updateProjectionMatrix();
       if (controls?.target) {
         controls.target.copy(target);
         controls.update?.();
       } else {
         camera.lookAt(target);
       }
-      if (camera.position.distanceTo(wantPos.current) < 0.12) armed.current = false;
+      const settled =
+        camera.position.distanceTo(wantPos.current) < 0.08 &&
+        target.distanceTo(wantTarget.current) < 0.08 &&
+        Math.abs(camera.fov - wantFov.current) < 0.05;
+      armed.current = !settled;
+      if (armed.current) invalidate();
     }
     (globalThis as unknown as Record<string, unknown>).__plantCamera = {
       x: Number(camera.position.x.toFixed(2)),
@@ -396,6 +408,37 @@ function CameraRig({ preset }: { preset: PlantPreset }) {
     };
   });
   return null;
+}
+
+function PresetFocus({ preset, lang }: { preset: PlantPreset; lang: PlantLang }) {
+  if (preset.id === 'overview' || preset.focusRadius <= 0) return null;
+  const radius = preset.focusRadius;
+  const label = lang === 'en' ? preset.label.en : preset.label.ko;
+  return (
+    <group position={[preset.target[0], 0, preset.target[2]]}>
+      <mesh position={[0, 0.025, 0]} rotation-x={-Math.PI / 2}>
+        <circleGeometry args={[radius, 64]} />
+        <meshBasicMaterial color="#38BDF8" transparent opacity={0.08} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0.04, 0]} rotation-x={-Math.PI / 2}>
+        <ringGeometry args={[radius * 0.9, radius, 64]} />
+        <meshBasicMaterial color="#38BDF8" transparent opacity={0.95} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, 0.055, 0]} rotation-x={-Math.PI / 2}>
+        <ringGeometry args={[radius * 0.68, radius * 0.71, 64]} />
+        <meshBasicMaterial color="#FFD166" transparent opacity={0.85} side={THREE.DoubleSide} />
+      </mesh>
+      <pointLight position={[0, 5, 0]} intensity={55} distance={Math.max(14, radius * 2.2)} color="#38BDF8" />
+      <Label
+        text={`${lang === 'en' ? 'FOCUS' : '현재 초점'} · ${label}`}
+        position={[0, Math.max(5.8, preset.target[1] + 4.3), 0]}
+        size={1.25}
+        tier={0}
+        priority={20}
+        color="#7DD3FC"
+      />
+    </group>
+  );
 }
 
 function FpsMeter({ node }: { node?: { current: HTMLElement | null } }) {
@@ -478,7 +521,7 @@ export function PlantScene({
     <SimClockContext.Provider value={clock}>
       <Canvas
         data-testid="plant-canvas"
-        camera={{ position: preset.pos, fov: 45, near: 0.5, far: 460 }}
+        camera={{ position: preset.pos, fov: preset.fov, near: 0.5, far: 460 }}
         dpr={[1, 1.6]}
         frameloop={sceneLoop}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
@@ -491,6 +534,7 @@ export function PlantScene({
           <fog attach="fog" args={['#151a20', 130, 320]} />
           <Lights />
           <Floor gridGeometry={gridGeometry} />
+          <PresetFocus preset={preset} lang={lang} />
           <Conveyor lang={lang} />
           <Yard
             verdicts={verdicts}
@@ -514,7 +558,7 @@ export function PlantScene({
           {AMR_ROUTES.map((r) => (
             <AmrProp key={r.id} route={r} />
           ))}
-          <AndonBoard x={31} z={0} yaw={-Math.PI / 2} rows={cellRows} />
+          <AndonBoard x={31} z={0} rows={cellRows} />
           <CameraRig preset={preset} />
           <OrbitControls
             makeDefault
@@ -523,7 +567,6 @@ export function PlantScene({
             minDistance={5}
             maxDistance={260}
             maxPolarAngle={Math.PI / 2.06}
-            target={preset.target}
           />
           <LabelManager mode={labels} />
           <FpsMeter node={fpsNode} />

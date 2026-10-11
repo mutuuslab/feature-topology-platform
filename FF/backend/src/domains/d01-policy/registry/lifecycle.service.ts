@@ -1,0 +1,127 @@
+// Feature Lifecycle 전이 — 규칙은 contracts(rules/lifecycle)의 표, 여기서는 실행·원자성·감사만 맡는다.
+// 상세설계서: 상태 전이와 Audit은 한 트랜잭션 / 실패한 승인도 기록 / RELEASED는 읽기 전용, 역전이 대신 새 Version.
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  autoTransition,
+  evaluateTransition,
+  nextTransitions,
+  ROLE_LABEL,
+  type Blocker,
+  type FeatureVersionRow,
+  type GateStatus,
+  type Lifecycle,
+  type TransitionContext,
+} from '@ff/contracts';
+import type { Actor } from '../../../kernel/actor';
+import { AuditService } from '../../../kernel/audit.service';
+import { PlatformComponent } from '../../../kernel/components';
+import { DB, type Db } from '../../../kernel/db';
+import { DomainError } from '../../../kernel/errors';
+import { EventService } from '../../../kernel/event.service';
+import { BaselineRepo, FeatureRepo, GateRepo, TopologyRepo } from '../repos';
+
+export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
+
+export interface TransitionOption {
+  to: Lifecycle;
+  ko: string;
+  auto: boolean;
+  roles: string[];
+  blockers: Blocker[];
+}
+
+@Injectable()
+@PlatformComponent('D01-01')
+export class LifecycleService {
+  constructor(
+    @Inject(DB) private readonly db: Db,
+    private readonly features: FeatureRepo,
+    private readonly gates: GateRepo,
+    private readonly topology: TopologyRepo,
+    private readonly baselines: BaselineRepo,
+    private readonly audit: AuditService,
+    private readonly events: EventService,
+  ) {}
+
+  require(featureId: string, version: string): FeatureVersionRow {
+    const f = this.features.get(featureId, version);
+    if (!f) throw new DomainError('NOT_FOUND', `${featureId} ${version}을(를) 찾을 수 없습니다.`);
+    return f;
+  }
+
+  context(f: FeatureVersionRow, extra: Partial<TransitionContext> = {}): TransitionContext {
+    const latest = this.gates.latest(f.featureId, f.version);
+    const latestGates = Object.fromEntries(Object.entries(latest).map(([g, r]) => [g, r!.status])) as Partial<Record<string, GateStatus>>;
+    return {
+      latestGates,
+      dependencies: this.topology.outgoing(f.featureId, f.version),
+      // 정책 저장소(D01-06)가 아직 없으면 0 — DEVELOPING→VERIFIED는 POLICY_MISSING으로 막힌다(P7에서 연결).
+      policyCoverage: 0,
+      createdBy: this.features.meta(f.featureId, f.version).createdBy,
+      ...extra,
+    };
+  }
+
+  /** 현재 상태에서 가능한 전이와 각각의 막힌 사유 (화면의 스테퍼·버튼 상태) */
+  options(f: FeatureVersionRow, actor?: Actor): TransitionOption[] {
+    return nextTransitions(f.lifecycle).map((r) => ({
+      to: r.to,
+      ko: r.ko,
+      auto: r.auto,
+      roles: r.roles.map((x) => ROLE_LABEL[x]),
+      blockers: evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview' } : {})).blockers,
+    }));
+  }
+
+  /** 사람이 실행하는 전이 */
+  transition(actor: Actor, featureId: string, version: string, to: Lifecycle, reason: string): FeatureVersionRow {
+    const f = this.require(featureId, version);
+    const { rule, blockers } = evaluateTransition(f, to, this.context(f, { actor, reason }));
+    const action = `FEATURE_TRANSITION ${f.lifecycle}→${to}`;
+    const target = `${featureId}@${version}`;
+    if (rule?.auto && actor.role !== 'SYSTEM') {
+      this.audit.failed(actor, action, target, '자동 전이는 직접 실행할 수 없습니다', 'D01-01');
+      throw new DomainError('CONFLICT', `${rule.ko}은(는) 조건이 갖춰지면 시스템이 자동으로 전이합니다.`, { blockers });
+    }
+    if (blockers.length) {
+      const reasonText = blockers.map((b) => b.message).join('; ');
+      this.audit.failed(actor, action, target, reasonText, 'D01-01');
+      const code = blockers.some((b) => b.code === 'SEPARATION_OF_DUTY') ? 'SEPARATION_OF_DUTY' : blockers.some((b) => b.code === 'ROLE') ? 'FORBIDDEN' : 'GUARD_FAILED';
+      throw new DomainError(code, `전이할 수 없습니다: ${reasonText}`, { blockers });
+    }
+    return this.db.tx(() => {
+      const next = this.apply(actor, f, to, reason);
+      return this.autoAdvance(next, actor.correlationId);
+    });
+  }
+
+  /** 자동 전이를 조건이 허락하는 만큼 연쇄 적용한다. 반드시 tx 안에서 호출. */
+  autoAdvance(f: FeatureVersionRow, correlationId: string): FeatureVersionRow {
+    let cur = f;
+    for (let i = 0; i < 4; i++) {
+      const rule = autoTransition(cur, this.context(cur));
+      if (!rule) break;
+      cur = this.apply(SYSTEM_ACTOR(correlationId), cur, rule.to, `자동 전이: ${rule.ko}`);
+    }
+    return cur;
+  }
+
+  private apply(actor: Actor, f: FeatureVersionRow, to: Lifecycle, reason: string): FeatureVersionRow {
+    const next: FeatureVersionRow = { ...f, lifecycle: to };
+    this.features.update(next);
+    // Baseline은 Lifecycle을 제외하고 불변 — Lifecycle만 따라간다.
+    if (f.baselineId) {
+      const bl = this.baselines.get(f.baselineId);
+      if (bl) this.baselines.setLifecycle(bl.baselineId, { ...bl.snapshot, lifecycle: to });
+    }
+    const target = `${f.featureId}@${f.version}`;
+    this.audit.record(actor, `FEATURE_TRANSITION ${f.lifecycle}→${to}`, target, { before: { lifecycle: f.lifecycle }, after: { lifecycle: to }, reason, componentId: 'D01-01' });
+    this.events.publish(
+      'feature.lifecycle.changed',
+      target,
+      { featureId: f.featureId, version: f.version, from: f.lifecycle, to, by: actor.id, auto: actor.role === 'SYSTEM', reason },
+      { componentId: 'D01-01', correlationId: actor.correlationId },
+    );
+    return next;
+  }
+}

@@ -53,7 +53,7 @@ describe('SqliteDb 트랜잭션', () => {
 
   it('마이그레이션은 한 번만 적용된다', () => {
     const db = new SqliteDb(':memory:');
-    expect(migrate(db, MIGRATIONS)).toEqual(['001_kernel', '002_dataset_v081']);
+    expect(migrate(db, MIGRATIONS)).toEqual(MIGRATIONS.map((m) => m.name));
     expect(migrate(db, MIGRATIONS)).toEqual([]);
   });
 });

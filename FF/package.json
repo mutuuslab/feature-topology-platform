@@ -25,9 +25,11 @@
     "dev:backend": "npm run start:dev -w feature-topology-backend",
     "dev:frontend": "npm run dev -w feature-topology-frontend",
     "data:import": "node tools/dataset/import.ts",
-    "data:check": "node tools/dataset/check.ts"
+    "data:check": "node tools/dataset/check.ts",
+    "openapi": "node tools/openapi.ts"
   },
   "devDependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.3.4",
     "jsdom": "^25.0.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },

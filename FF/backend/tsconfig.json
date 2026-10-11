@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "ES2021",
+    "target": "ES2022",
     "lib": [
-      "ES2021"
+      "ES2022"
     ],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -16,7 +16,8 @@
     "resolveJsonModule": true,
     "declaration": false,
     "sourceMap": false,
-    "noEmit": false
+    "noEmit": false,
+    "useDefineForClassFields": false
   },
   "include": [
     "src/**/*.ts",

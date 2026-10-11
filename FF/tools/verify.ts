@@ -24,6 +24,7 @@ const STEPS: Step[] = [
   { id: 'lint:tokens', title: '디자인 토큰 lint', cmd: `node tools/lint-tokens.ts` },
   { id: 'lint:copy', title: '문구 lint', cmd: `node tools/lint-copy.ts` },
   { id: 'data:check', title: '데이터셋 픽스처 정합', cmd: `node tools/dataset/check.ts`, when: () => existsSync(join(FF, 'tools', 'dataset', 'check.ts')) },
+  { id: 'openapi', title: 'OpenAPI 최신 여부', cmd: `node tools/openapi.ts --check` },
   { id: 'test:contracts', title: 'contracts 테스트', cmd: `${npm} test -w @ff/contracts` },
   { id: 'test:backend', title: '백엔드 테스트', cmd: `${npm} test -w feature-topology-backend` },
   { id: 'test:frontend', title: '프론트 테스트', cmd: `${npm} test -w feature-topology-frontend` },

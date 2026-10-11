@@ -26,19 +26,19 @@ export function seedDataset(db: Db, ds: Dataset, label = 'v0.81'): { seeded: boo
   if (existing) return { seeded: false, counts: {} };
   const j = (x: unknown) => JSON.stringify(x);
   db.tx(() => {
-    for (const f of ds.features) db.run('INSERT INTO feature_version VALUES (?, ?, ?, ?, ?)', f.featureId, f.version, f.lifecycle, f.baselineId, j(f));
-    for (const b of ds.bomItems) db.run('INSERT INTO baseline VALUES (?, ?, ?, ?, ?)', b.baselineId, b.featureId, b.version, null, j(b));
-    for (const p of ds.products) db.run('INSERT INTO product VALUES (?, ?, ?, ?)', p.catalogId, p.version, p.lifecycle, j(p));
+    for (const f of ds.features) db.run('INSERT INTO feature_version (feature_id, version, lifecycle, baseline_id, doc) VALUES (?, ?, ?, ?, ?)', f.featureId, f.version, f.lifecycle, f.baselineId, j(f));
+    for (const b of ds.bomItems) db.run('INSERT INTO baseline (baseline_id, feature_id, version, content_hash, doc) VALUES (?, ?, ?, ?, ?)', b.baselineId, b.featureId, b.version, null, j(b));
+    for (const p of ds.products) db.run('INSERT INTO product (catalog_id, version, lifecycle, doc) VALUES (?, ?, ?, ?)', p.catalogId, p.version, p.lifecycle, j(p));
     for (const d of ds.dependencies)
-      db.run('INSERT INTO dependency VALUES (?, ?, ?, ?, ?, ?, ?)', d.dependencyId, d.type, d.sourceFeatureId, d.sourceVersion, d.targetFeatureId, d.targetVersion, j(d));
+      db.run('INSERT INTO dependency (dependency_id, type, source_feature_id, source_version, target_feature_id, target_version, doc) VALUES (?, ?, ?, ?, ?, ?, ?)', d.dependencyId, d.type, d.sourceFeatureId, d.sourceVersion, d.targetFeatureId, d.targetVersion, j(d));
     for (const g of ds.gateRecords)
-      db.run('INSERT INTO gate_record VALUES (?, ?, ?, ?, ?, ?, ?)', g.gateRecordId, g.featureId, g.featureVersion, g.gate, g.status, g.judgedAt, j(g));
-    for (const e of ds.evidence) db.run('INSERT INTO evidence VALUES (?, ?, ?)', e.evidenceRef, e.gateRecordId, j(e));
-    for (const f of ds.featureFunctions) db.run('INSERT INTO feature_function VALUES (?, ?, ?, ?)', f.featureId, f.featureVersion, f.functionId, j(f));
-    for (const s of ds.swMaster) db.run('INSERT INTO sw_master VALUES (?, ?, ?, ?)', s.swId, s.version, s.ecuPno, j(s));
-    for (const e of ds.ecuMaster) db.run('INSERT INTO ecu_master VALUES (?, ?)', e.ecuPno, j(e));
-    for (const v of ds.versionRationale) db.run('INSERT INTO version_rationale VALUES (?, ?)', v.featureId, j(v));
-    for (const r of ds.precheckRules) db.run('INSERT INTO precheck_rule VALUES (?, ?)', r.ruleId, j(r));
+      db.run('INSERT INTO gate_record (gate_record_id, feature_id, feature_version, gate, status, judged_at, doc) VALUES (?, ?, ?, ?, ?, ?, ?)', g.gateRecordId, g.featureId, g.featureVersion, g.gate, g.status, g.judgedAt, j(g));
+    for (const e of ds.evidence) db.run('INSERT INTO evidence (evidence_ref, gate_record_id, doc) VALUES (?, ?, ?)', e.evidenceRef, e.gateRecordId, j(e));
+    for (const f of ds.featureFunctions) db.run('INSERT INTO feature_function (feature_id, feature_version, function_id, doc) VALUES (?, ?, ?, ?)', f.featureId, f.featureVersion, f.functionId, j(f));
+    for (const s of ds.swMaster) db.run('INSERT INTO sw_master (sw_id, version, ecu_pno, doc) VALUES (?, ?, ?, ?)', s.swId, s.version, s.ecuPno, j(s));
+    for (const e of ds.ecuMaster) db.run('INSERT INTO ecu_master (ecu_pno, doc) VALUES (?, ?)', e.ecuPno, j(e));
+    for (const v of ds.versionRationale) db.run('INSERT INTO version_rationale (feature_id, doc) VALUES (?, ?)', v.featureId, j(v));
+    for (const r of ds.precheckRules) db.run('INSERT INTO precheck_rule (rule_id, doc) VALUES (?, ?)', r.ruleId, j(r));
     db.run("INSERT INTO meta (key, value) VALUES ('seed', ?)", label);
   });
   const counts = Object.fromEntries(Object.entries(ds).map(([k, v]) => [k, (v as unknown[]).length]));

@@ -110,4 +110,24 @@ CREATE TABLE version_rationale (feature_id TEXT PRIMARY KEY, doc TEXT NOT NULL);
 CREATE TABLE precheck_rule (rule_id TEXT PRIMARY KEY, doc TEXT NOT NULL);
 `,
   },
+  {
+    name: '003_registry_bom',
+    sql: `
+ALTER TABLE feature_version ADD COLUMN created_by TEXT;
+ALTER TABLE feature_version ADD COLUMN created_at TEXT;
+ALTER TABLE baseline ADD COLUMN approved_by TEXT;
+ALTER TABLE baseline ADD COLUMN approved_at TEXT;
+ALTER TABLE baseline ADD COLUMN request_id TEXT;
+
+CREATE TABLE baseline_request (
+  request_id TEXT PRIMARY KEY,
+  feature_id TEXT NOT NULL, version TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('PENDING','APPROVED','REJECTED')),
+  requested_by TEXT NOT NULL, requested_at TEXT NOT NULL, reason TEXT NOT NULL,
+  decided_by TEXT, decided_at TEXT, decision_reason TEXT,
+  baseline_id TEXT
+);
+CREATE INDEX baseline_request_status ON baseline_request(status);
+`,
+  },
 ];

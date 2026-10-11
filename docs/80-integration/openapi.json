@@ -3608,6 +3608,495 @@
         }
       }
     },
+    "/api/vehicles/{vin}/requests": {
+      "get": {
+        "summary": "차량 발신 요청 기록 — 조회·보고·거부 사유, 보고 위치(bootId·sequence)",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "vehicleRequests",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/vehicle/v1/{vin}/flags": {
+      "post": {
+        "summary": "IF-10 차량 발신 전체 flag 조회 (OFREP 형식, ETag)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "vehicleQueryAll",
+        "description": "허용 역할: 차량 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "targetingKey": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "default": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/vehicle/v1/{vin}/flags/{key}": {
+      "post": {
+        "summary": "IF-10 차량 발신 단일 flag 조회 (OFREP 형식)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "vehicleQuery",
+        "description": "허용 역할: 차량 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "targetingKey": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "default": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/vehicle/v1/{vin}/reports": {
+      "post": {
+        "summary": "IF-06 차량 보고 — 재연결 대사·관측값·체험 수락·오류·회신 (Flag 직접 변경은 거부), 재평가 결과 응답",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "vehicleReport",
+        "description": "허용 역할: 차량 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "HELLO"
+                        ]
+                      },
+                      "bootId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "observedAt": {
+                        "type": "string",
+                        "minLength": 10
+                      },
+                      "highest": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "default": {}
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "bootId",
+                      "sequence",
+                      "observedAt"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "CONTEXT"
+                        ]
+                      },
+                      "bootId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "observedAt": {
+                        "type": "string",
+                        "minLength": 10
+                      },
+                      "set": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "bootId",
+                      "sequence",
+                      "observedAt",
+                      "set"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "TRIAL_ACCEPT"
+                        ]
+                      },
+                      "bootId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "observedAt": {
+                        "type": "string",
+                        "minLength": 10
+                      },
+                      "catalogId": {
+                        "type": "string",
+                        "pattern": "^CAT-\\d{5}$"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "bootId",
+                      "sequence",
+                      "observedAt",
+                      "catalogId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "FAULT"
+                        ]
+                      },
+                      "bootId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "observedAt": {
+                        "type": "string",
+                        "minLength": 10
+                      },
+                      "featureId": {
+                        "type": "string",
+                        "pattern": "^FEAT-\\d{5}$"
+                      },
+                      "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 60
+                      },
+                      "severity": {
+                        "type": "string",
+                        "enum": [
+                          "INFO",
+                          "WARNING",
+                          "CRITICAL"
+                        ]
+                      },
+                      "detail": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "bootId",
+                      "sequence",
+                      "observedAt",
+                      "featureId",
+                      "code",
+                      "severity"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "READBACK"
+                        ]
+                      },
+                      "bootId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "observedAt": {
+                        "type": "string",
+                        "minLength": 10
+                      },
+                      "readback": {
+                        "type": "object",
+                        "properties": {
+                          "publicationId": {
+                            "type": "string",
+                            "pattern": "^PUB-\\d{5}$"
+                          },
+                          "metricType": {
+                            "type": "string",
+                            "enum": [
+                              "READBACK",
+                              "ACK"
+                            ]
+                          },
+                          "policyHash": {
+                            "type": "string"
+                          },
+                          "featureVersion": {
+                            "type": "string"
+                          },
+                          "sequence": {
+                            "type": "integer"
+                          },
+                          "observed": {
+                            "type": "string"
+                          },
+                          "rejectReason": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "publicationId",
+                          "metricType",
+                          "policyHash",
+                          "featureVersion",
+                          "sequence",
+                          "observed"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "bootId",
+                      "sequence",
+                      "observedAt",
+                      "readback"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "OVERRIDE"
+                        ]
+                      },
+                      "bootId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "observedAt": {
+                        "type": "string",
+                        "minLength": 10
+                      },
+                      "flagKey": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "bootId",
+                      "sequence",
+                      "observedAt",
+                      "flagKey"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/gleo/status": {
       "get": {
         "summary": "GLEO Broker 연결·최근 메시지",

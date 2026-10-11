@@ -25,7 +25,7 @@ const REASON: Record<FlagResult['reason'], string> = {
   ERROR_SAFE_DEFAULT: 'ERROR',
 };
 
-const ofrep = (r: FlagResult) => ({
+export const ofrep = (r: FlagResult) => ({
   key: r.flagKey,
   value: r.value,
   variant: r.variant,

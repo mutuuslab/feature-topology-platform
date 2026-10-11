@@ -8,6 +8,7 @@ import { ko } from '../../copy/ko';
 import { AsyncView, DataTable, EventStream, IdChip, KeyValue, Kpi, PageHeader, Panel, Select, VerdictBadge } from '../../design';
 import { when } from '../shared';
 import { Progress, type Delivery } from './shared';
+import { VehicleRequestPanel } from './VehicleRequests';
 
 const F = ko.fleet;
 const V = ko.vehicle;
@@ -231,6 +232,7 @@ export function VehicleRuntimeScreen() {
                 ]}
               />
             </Panel>
+            <VehicleRequestPanel vin={vin} />
           </>
         )}
       </AsyncView>

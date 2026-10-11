@@ -104,6 +104,8 @@ const BE_DLV = 'backend/test/d03/delivery.spec.ts';
 const BE_VV = 'backend/test/d06/virtual.spec.ts';
 const FE_OPS = 'frontend/src/__tests__/screensOps.test.tsx';
 const E2E_OPS = 'e2e/tests/ops.spec.ts';
+const BE_VREQ = 'backend/test/d02/vehicle-requests.spec.ts';
+const CT_VREQ = 'contracts/src/rules/vehicle-requests.test.ts';
 const VALIDATOR: Impl = { screens: ['/policies/:id', '/validations'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL], via: ['validatePolicy'] };
 /** via — 자기 API 없이 다른 컴포넌트의 라우트 안에서 호출되는 컴포넌트(예: 병렬 검증기)가 그 라우트 이름을 적는다 */
 type Impl = Pick<ComponentEntry, 'screens' | 'tests'> & { via?: string[] };
@@ -118,7 +120,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, FE_POL, E2E_POL] },
   'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
   'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
-  'D05-01': { screens: ['/activation/decide'], tests: [BE_POL, FE_POL, E2E_POL] },
+  'D05-01': { screens: ['/activation/decide'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ] },
   'D06-01': VALIDATOR,
   'D06-02': VALIDATOR,
   'D06-03': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_POL, FE_OPS, E2E_POL, E2E_OPS], via: ['validatePolicy'] },
@@ -130,7 +132,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D03-02': { screens: ['/policies/:id', '/validations'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL], via: ['validatePolicy', 'decidePolicy'] },
   'D04-02': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_OPS, E2E_POL], via: ['validatePolicy'] },
   // PoC ④⑤⑥ 배포·차단 전달 (P8a)
-  'D02-03': { screens: ['/fleet/live', '/fleet/vehicles/:vin'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', 'contracts/src/gleo.test.ts', FE_OPS, E2E_OPS] },
+  'D02-03': { screens: ['/fleet/live', '/fleet/vehicles/:vin'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', 'contracts/src/gleo.test.ts', FE_OPS, E2E_OPS, BE_VREQ, CT_VREQ] },
   'D03-03': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', FE_OPS, E2E_OPS] },
   'D03-04': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', E2E_OPS] },
   'D04-01': { screens: ['/deployments', '/deployments/:id'], tests: [BE_DLV, FE_OPS, E2E_OPS] },

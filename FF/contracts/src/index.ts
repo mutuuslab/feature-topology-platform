@@ -16,3 +16,4 @@ export * from './rules/validators';
 export * from './schemas/ops';
 export * from './gleo';
 export * from './rules/virtual';
+export * from './rules/vehicle-requests';

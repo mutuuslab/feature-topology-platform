@@ -18,6 +18,7 @@ export interface Actor {
 const ROLES_KEY = 'ff:roles';
 const READONLY_KEY = 'ff:readonly';
 const ACTION_KEY = 'ff:action';
+const VEHICLE_KEY = 'ff:vehicle';
 
 /** 이 핸들러를 호출할 수 있는 역할 */
 export const Roles = (...roles: RoleT[]) => SetMetadata(ROLES_KEY, roles);
@@ -25,6 +26,12 @@ export const Roles = (...roles: RoleT[]) => SetMetadata(ROLES_KEY, roles);
 export const ReadOnlyEndpoint = () => SetMetadata(READONLY_KEY, true);
 /** 감사 이력에 남길 행위 이름 (없으면 'METHOD path') */
 export const AuditAction = (action: string) => SetMetadata(ACTION_KEY, action);
+/**
+ * 차량 발신 요청 창구 — 사람 행위자 헤더 대신 차량 신원으로 식별한다(역할 VEHICLE, id `vehicle:<VIN>`).
+ * 데모 신원은 X-Vehicle-Id 헤더다. 실제 배치에서는 mTLS를 끝내는 게이트웨이가 검증한 인증서 주체를 이 자리에 넣는다
+ * (UL-044 serviceMTLS). 헤더 값만으로 인증서 체인 검증을 마쳤다고 주장하지 않는다(C47).
+ */
+export const VehicleEndpoint = () => SetMetadata(VEHICLE_KEY, true);
 
 export function actorOf(req: Request): Actor {
   const r = req as Request & { actor?: Actor };
@@ -55,6 +62,16 @@ export class RolesGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest<Request>();
     if (this.reflector.getAllAndOverride<boolean>(READONLY_KEY, [ctx.getHandler(), ctx.getClass()])) {
       (req as Request & { actor?: Actor }).actor ??= { id: (req.header('x-actor-id') ?? '').trim() || 'anonymous-sdk', role: 'AUDITOR', correlationId: randomUUID() };
+      return true;
+    }
+    if (this.reflector.getAllAndOverride<boolean>(VEHICLE_KEY, [ctx.getHandler(), ctx.getClass()])) {
+      const vehicleId = (req.header('x-vehicle-id') ?? '').trim();
+      const correlationId = (req.header('x-correlation-id') ?? '').trim() || randomUUID();
+      if (!vehicleId) {
+        this.audit.denied({ id: 'vehicle:unknown', role: 'VEHICLE', correlationId }, 'VEHICLE_REQUEST', req.path, '차량 신원 없음');
+        throw new DomainError('VEHICLE_UNAUTHENTICATED', '차량 요청에는 차량 신원(X-Vehicle-Id)이 필요합니다.');
+      }
+      (req as Request & { actor?: Actor }).actor = { id: `vehicle:${vehicleId}`, role: 'VEHICLE', correlationId };
       return true;
     }
     const actor = actorOf(req);

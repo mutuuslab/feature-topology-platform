@@ -5,7 +5,7 @@
 
 ## 다음 세션 시작점
 - **P8b**부터: IF-04 Unleash 어댑터(hfp 브리지·배포 로직 TS 이식, `UNLEASH_MODE=mock|live`, `FF/docker/unleash` 8.2.0), 품질 피드백(D04-06)·이상 징후 대응(D06-12)·IAM(D06-09) 화면, Variant·기능 지원 조건(D02-01·D02-02). 레거시 'Twin/트윈' 표기 래칫(twinTermLines 43 → 0) 정리 시작.
-- **병행 작업(다른 세션 `2026-09-23-ff-imp-eb`)**: 차량 발신 요청(차량→플랫폼 조회·업데이트) — `contracts/src/schemas/vehicle-requests.ts`, `backend/src/domains/d02-runtime/vehicle-requests/*`, routes.ts 항목 추가. vECU `scenario.vehicle_requests` 형식과 맞춘다. 시작 전 이 세션과 범위 확인.
+- **[완료·미커밋 2026-10-12] 차량 발신 요청** (세션 `2026-09-23-ff-imp-eb`, verify:full 통과): 차량이 먼저 부르는 조회 `POST /vehicle/v1/:vin/flags(/:key)`(IF-10, OFREP 형식·ETag)와 보고 `POST /vehicle/v1/:vin/reports`(IF-06: HELLO 재연결 대사·CONTEXT 관측값·TRIAL_ACCEPT·FAULT·READBACK, OVERRIDE는 항상 거부) + 기록 `GET /api/vehicles/:vin/requests`, 차량별 화면 '차량 발신 요청' 패널. 규칙은 `contracts/src/rules/vehicle-requests.ts`(관측 속성 표·보고 순서·거부 사유). 신원은 역할 `VEHICLE`·`X-Vehicle-Id`(데모 — 실제는 mTLS 주체, C47), 자기 VIN만(403 VEHICLE_SCOPE), 신뢰 원천 변경 400 TRUST_SOURCE_FIELD, (vin,bootId,sequence) 멱등, OLD_SEQUENCE·BOOT_MISMATCH 409(멱등 키로 남기지 않음), VIN별 30회/10초 429. 사용자 결정: 체험 수락은 현행(1회권 소진→OFF), 타 VIN 조회 거부, 차량 업데이트는 관측값·보고만. 시험: `backend/test/d02/vehicle-requests.spec.ts`(17)·`contracts/src/rules/vehicle-requests.test.ts`(5)·`frontend/src/__tests__/vehicleRequests.test.tsx`(2)·`e2e/tests/vehicle-requests.spec.ts`(1). 남은 것: FAULT를 이상 징후 대응(D06-12)으로 잇기(P8 6번), 실제 mTLS 신원 연동.
 - **FF_IMP 미커밋 변경**: `gleo/messages.py`·`gleo/decision_engine.py`(kill_command.safe_mode) + 테스트 — 사용자 확인 후 커밋. FF_IMP 테스트는 반드시 `.venv/Scripts/python.exe -m pytest`(websockets 17). `test_unreal_fake_engine.py` 5건은 이전부터 실패(unreal.video_run 작업 중).
 - **vECU 연동 계약**: vECU 폴더에 FF용 새 파일 `tools/ffval_cli.mjs`·`tests/js/ffval_cli.test.mjs`만 추가(기존 파일은 vECU 세션 소유). 기준 ID·items 필드가 바뀌면 vECU 세션이 알려 주기로 함.
 - 실행: 백엔드 9101(`GLEO_MODE=internal|ws`, `VECU_MODE`, `VECU_DIR`, `FF_BOOT_PUBLISH`) · 프론트 9012(`/api/`·`/ofrep/` 프록시) · e2e 9111/9112(vECU는 시험 대역 `backend/test/fixtures/fake-vecu`).
@@ -61,7 +61,7 @@
 
 ## 준수 현황 (자동 생성 — `npm run progress`)
 <!-- AUTO:conformance -->
-**컴포넌트 21/42** — D01 9/10 · D02 0/3 · D03 2/4 · D04 2/6 · D05 1/7 · D06 7/12
+**컴포넌트 28/42** — D01 9/10 · D02 1/3 · D03 4/4 · D04 4/6 · D05 1/7 · D06 9/12
 
 | ID | 컴포넌트 | Tier | 상태 | 화면 | 테스트 |
 |---|---|---|---|---|---|
@@ -77,18 +77,18 @@
 | D01-10 | 감사 이력 관리 | A | ✅ | /audit | 2 |
 | D02-01 | Variant 조건 관리 | A | · | — | 0 |
 | D02-02 | 기능 지원 조건 관리 | B | · | — | 0 |
-| D02-03 | 차량 런타임 실행 모듈 | A | · | — | 0 |
+| D02-03 | 차량 런타임 실행 모듈 | A | ✅ | /fleet/live /fleet/vehicles/:vin | 7 |
 | D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations | 4 |
 | D03-02 | 배포 안전성 검증 | A | ✅ | /policies/:id /validations | 5 |
-| D03-03 | 긴급 기능 차단 | A | · | — | 0 |
-| D03-04 | 이전 상태 복구 | A | · | — | 0 |
-| D04-01 | 배포 파이프라인 연계 | A | · | — | 0 |
-| D04-02 | 품질 기준 검증 | B | ✅ | /policies/:id /validations | 4 |
-| D04-03 | 운영 데이터 수집 | A | · | — | 0 |
+| D03-03 | 긴급 기능 차단 | A | ✅ | /ops/kill | 4 |
+| D03-04 | 이전 상태 복구 | A | ✅ | /ops/kill | 3 |
+| D04-01 | 배포 파이프라인 연계 | A | ✅ | /deployments /deployments/:id | 3 |
+| D04-02 | 품질 기준 검증 | B | ✅ | /policies/:id /validations /validations/virtual | 5 |
+| D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id | 3 |
 | D04-04 | 이벤트 이력 추적 | A | ✅ | /events | 2 |
 | D04-05 | 장애·VOC 이력 연계 | C | · | — | 0 |
 | D04-06 | 품질 피드백 반영 | A | · | — | 0 |
-| D05-01 | API Gateway | C | ✅ | /activation/decide | 3 |
+| D05-01 | API Gateway | C | ✅ | /activation/decide | 4 |
 | D05-02 | 데이터 동기화 | C | · | — | 0 |
 | D05-03 | Legacy 시스템 연계 | C | · | — | 0 |
 | D05-04 | 과금 시스템 연계 | C | · | — | 0 |
@@ -97,14 +97,14 @@
 | D05-07 | Legacy-SDV Interface | C | · | — | 0 |
 | D06-01 | 정책 검증 | A | ✅ | /policies/:id /validations | 4 |
 | D06-02 | 시스템 연동 검증 | B | ✅ | /policies/:id /validations | 4 |
-| D06-03 | 차량 시나리오 검증 | B | ✅ | /policies/:id /validations | 4 |
+| D06-03 | 차량 시나리오 검증 | B | ✅ | /policies/:id /validations /validations/virtual | 7 |
 | D06-04 | 검증 이력 관리 | A | ✅ | /policies/:id /validations | 4 |
 | D06-05 | 변경 영향 검증 | A | ✅ | /policies/:id /validations | 4 |
 | D06-06 | 안전 동작 검증 | B | ✅ | /policies/:id /validations | 4 |
 | D06-07 | 안전 요구사항 추적 | B | ✅ | /policies/:id /validations | 4 |
-| D06-08 | 보안 배포 관리 | A | · | — | 0 |
+| D06-08 | 보안 배포 관리 | A | ✅ | /deployments /deployments/:id /fleet/live | 3 |
 | D06-09 | 플랫폼 인증·권한 관리(IAM) | A | · | — | 0 |
-| D06-10 | 인증서·키 관리(PKI/KMS) | A | · | — | 0 |
+| D06-10 | 인증서·키 관리(PKI/KMS) | A | ✅ | /deployments | 2 |
 | D06-11 | 보안 취약점 모니터링 | C | · | — | 0 |
 | D06-12 | 이상 징후 대응 | B | · | — | 0 |
 
@@ -112,7 +112,8 @@
 
 | 지표 | 현재 기준 | 방향 | 설명 |
 |---|---|---|---|
-| rawColors | 827 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
+| rawColors | 818 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
 | featBdcFiles | 37 | ↓ 줄이기 | FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지 |
-| implementedComponents | 21 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
+| implementedComponents | 28 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
+| twinTermLines | 43 | ↓ 줄이기 | 레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지 |
 <!-- /AUTO:conformance -->

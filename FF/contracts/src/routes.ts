@@ -20,6 +20,7 @@ import {
 import { CreatePolicyBody, OfrepBody, PolicyDecisionBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { KeyRotateBody, KillCreateBody, ReadbackBody } from './schemas/ops';
 import { RunVirtualBody } from './rules/virtual';
+import { VehicleReportBody } from './rules/vehicle-requests';
 import { z } from 'zod';
 
 const EmptyBody = z.object({}).strict();
@@ -125,6 +126,11 @@ export const ROUTES: RouteDef[] = [
   { name: 'ingestReadback', method: 'POST', path: '/api/telemetry/readback', summary: 'IF-06 차량 회신 수집', component: 'D04-03', roles: ['SYSTEM'], body: ReadbackBody },
   { name: 'fleetRuntime', method: 'GET', path: '/api/fleet/runtime', summary: 'Fleet 실시간 적용 현황 — 차량별 적용 게시본·상태·서버 판단 비교', component: 'D02-03' },
   { name: 'vehicleRuntime', method: 'GET', path: '/api/vehicles/:vin/runtime', summary: '차량 런타임 — 적용 게시본·차량 측 평가·서버 판단 비교', component: 'D02-03' },
+  { name: 'vehicleRequests', method: 'GET', path: '/api/vehicles/:vin/requests', summary: '차량 발신 요청 기록 — 조회·보고·거부 사유, 보고 위치(bootId·sequence)', component: 'D02-03' },
+  // 차량 발신 요청 — 사람 역할이 아니라 차량 신원(X-Vehicle-Id, 실제는 mTLS 주체)으로 받는다. 자기 VIN만.
+  { name: 'vehicleQueryAll', method: 'POST', path: '/vehicle/v1/:vin/flags', summary: 'IF-10 차량 발신 전체 flag 조회 (OFREP 형식, ETag)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
+  { name: 'vehicleQuery', method: 'POST', path: '/vehicle/v1/:vin/flags/:key', summary: 'IF-10 차량 발신 단일 flag 조회 (OFREP 형식)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
+  { name: 'vehicleReport', method: 'POST', path: '/vehicle/v1/:vin/reports', summary: 'IF-06 차량 보고 — 재연결 대사·관측값·체험 수락·오류·회신 (Flag 직접 변경은 거부), 재평가 결과 응답', component: 'D02-03', roles: ['VEHICLE'], body: VehicleReportBody },
   { name: 'gleoStatus', method: 'GET', path: '/api/gleo/status', summary: 'GLEO Broker 연결·최근 메시지', component: 'D02-03' },
   { name: 'killRequests', method: 'GET', path: '/api/kill-requests', summary: '긴급 차단 요청 목록 (회신 집계 포함)', component: 'D03-03', query: ['status'] },
   { name: 'killPreview', method: 'GET', path: '/api/kill-requests/preview', summary: '차단 영향 범위 미리보기 (의존 Feature·flag·차량)', component: 'D03-03', query: ['featureId', 'featureVersion', 'vins'], sample: { featureId: 'FEAT-00022', featureVersion: '1.0.0' } },

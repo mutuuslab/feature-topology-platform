@@ -1,5 +1,6 @@
 // 도메인 오류 → 공통 오류 봉투 {error:{code,message,details}}. 프론트는 code로 분기하고 message(한글)를 그대로 보여 준다.
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import { VEHICLE_REJECT, type VehicleReject } from '@ff/contracts';
 import type { Response } from 'express';
 
 export type ErrorCode =
@@ -12,6 +13,7 @@ export type ErrorCode =
   | 'IMMUTABLE'
   | 'GUARD_FAILED'
   | 'IDEMPOTENCY_KEY_REUSED'
+  | VehicleReject
   | 'INTERNAL';
 
 const STATUS: Record<ErrorCode, number> = {
@@ -24,6 +26,7 @@ const STATUS: Record<ErrorCode, number> = {
   IMMUTABLE: 409,
   GUARD_FAILED: 422,
   IDEMPOTENCY_KEY_REUSED: 422,
+  ...VEHICLE_REJECT,
   INTERNAL: 500,
 };
 

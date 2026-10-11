@@ -115,6 +115,9 @@ export class FleetRepo {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM vehicle WHERE vin = ?', vin);
     return r ? JSON.parse(r.doc) : undefined;
   }
+  updateVehicle(v: Vehicle) {
+    this.db.run('UPDATE vehicle SET doc = ? WHERE vin = ?', JSON.stringify(v), v.vin);
+  }
   grants(vin?: string): Entitlement[] {
     return vin ? parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE vin = ? ORDER BY grant_id', vin)) : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement ORDER BY grant_id'));
   }

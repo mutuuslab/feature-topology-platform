@@ -192,4 +192,15 @@ CREATE INDEX virtual_run_policy ON virtual_run(policy_id, scenario_id);
 CREATE INDEX virtual_run_feature ON virtual_run(feature_id, feature_version);
 `,
   },
+  {
+    name: '008_vehicle_request',
+    sql: `
+CREATE TABLE vehicle_request (
+  request_id TEXT PRIMARY KEY, vin TEXT NOT NULL, at TEXT NOT NULL, boot_id TEXT, sequence INTEGER, doc TEXT NOT NULL
+);
+CREATE INDEX vehicle_request_vin ON vehicle_request(vin, at);
+CREATE UNIQUE INDEX vehicle_request_idem ON vehicle_request(vin, boot_id, sequence) WHERE boot_id IS NOT NULL;
+CREATE TABLE vehicle_channel (vin TEXT PRIMARY KEY, boot_id TEXT NOT NULL, sequence INTEGER NOT NULL);
+`,
+  },
 ];

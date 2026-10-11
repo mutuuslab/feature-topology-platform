@@ -71,6 +71,7 @@ export const ROLES = [
   'OPERATOR', // 운영자 (긴급 차단·복구)
   'AUDITOR', // 운영/감사 조회자 (읽기 전용)
   'SYSTEM', // 시스템(Registry) 자동 전이
+  'VEHICLE', // 차량 (차량 발신 요청 채널 — 사람 역할 아님)
 ] as const;
 export const Role = z.enum(ROLES);
 export type Role = z.infer<typeof Role>;
@@ -89,6 +90,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   OPERATOR: '운영자',
   AUDITOR: '운영·감사 조회자',
   SYSTEM: '시스템',
+  VEHICLE: '차량',
 };
 
 /** ID 형식 (ID_체계_안내) */

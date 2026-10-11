@@ -4,8 +4,8 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **P1 데이터셋 적재기**부터. 원본 xlsx를 `FF/data/source/feature_dataset_v0.81.xlsx`로 복사(원본: `C:\Users\TaehoKim\Downloads\Feature_Catalog_BOM_DATASET_v0.81.xlsx`) → `tools/dataset/import.ts`(exceljs) → `data/fixtures/v0.81/*.json` + `manifest.json` → `tools/dataset/check.ts`(verify가 자동 인식) → PRECHECK 16종 + 골든 테스트(FEAT-00022).
-- 시트 헤더는 4행(`Feature_버전변경근거`만 1행 제목), 셀 내 다중값은 `\n` 구분, 자리표시 `미입력/미발급/해당 없음/의존 관계 없음.`
+- **P2 커널**부터: `backend/src/kernel/`에 `node:sqlite` Db 인터페이스·`tx()`·migrations·outbox 이벤트(SSE)·감사(DENIED 포함)·`X-Actor-*` 역할 가드·`Idempotency-Key`·zod 파이프·오류 필터·`@PlatformComponent` + `GET /api/components`. 부팅 시 `FF_SEED=v0.81`로 `data/fixtures/v0.81` 적재(한 트랜잭션). GraphPort·BDC seed·기존 FeatureController는 삭제(프론트는 아직 백엔드를 안 씀 — 영향 없음).
+- 데이터: `npm run data:import`(원본 → 픽스처), `npm run data:check`(verify 포함). PRECHECK·DQ 규칙은 `contracts/src/rules/precheck.ts` — 백엔드 `GET /api/precheck`는 이것을 그대로 호출.
 
 ## 기준 문서 (저장소 밖)
 | 문서 | 위치 | 용도 |
@@ -19,7 +19,7 @@
 
 ## 단계
 - [x] **P0 하네스 골격** — npm workspaces(contracts·backend·frontend), `@ff/contracts`(enum·42 manifest), 백엔드 vitest+swc+supertest, `tools/`(verify·lint-tokens·lint-copy·conformance·ratchet·progress), CI `verify.yml`(Node 24), Cloudflare 배포는 verify 통과 후
-- [ ] P1 데이터셋 적재기·픽스처·PRECHECK 16종·골든 테스트
+- [x] **P1 데이터셋** — SheetJS 적재기(결정적, 원본 행 보존·`_missing` 사유), 픽스처 11종(80/67/18/29/477/122/47/15/68/16/477), `data:check`(해시·재적재 일치), PRECHECK 16종 코드화(데이터셋 예시 판정·요약 수치와 전부 일치), DQ-01(SW 설명 FEAT 참조 18건)·DQ-02(Function 설명 명칭 4건), 골든 테스트
 - [ ] P2 커널: node:sqlite·tx·outbox/SSE·감사·역할·멱등, GraphPort·BDC seed 삭제
 - [ ] P3 Registry·Gate·Lifecycle·BOM 백엔드 + OpenAPI
 - [ ] P4 Topology·Catalog·Impact·PRECHECK API
@@ -40,6 +40,7 @@
 | 2026-10-11 | MENU 2.0 업무 8그룹 + 내 역할 필터 (부서별·Plane별 모드 폐지, UI01~30 코드는 추적 메타로 유지) |
 | 2026-10-11 | Unleash: P0 개정 기준 — Unleash는 작성·수집 원천, 부분 롤아웃은 FP-COHORT-1, 차량 프로파일 FP-VEHICLE-BOOL-1 |
 | 2026-10-11 | hfp-feature-lifecycle은 읽기만, 로직을 FF 백엔드 TS로 이식 |
+| 2026-10-11 | xlsx 파서는 SheetJS(cdn 0.20.3) — exceljs는 이 파일의 표 정의에서 크래시
 | 2026-10-11 | 영속 저장 node:sqlite (Db 인터페이스 뒤), contracts는 CJS dist로 빌드해 백엔드가 소비 |
 
 ## 알려진 이슈·주의

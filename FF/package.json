@@ -23,10 +23,13 @@
     "test:backend": "npm test -w feature-topology-backend",
     "test:frontend": "npm test -w feature-topology-frontend",
     "dev:backend": "npm run start:dev -w feature-topology-backend",
-    "dev:frontend": "npm run dev -w feature-topology-frontend"
+    "dev:frontend": "npm run dev -w feature-topology-frontend",
+    "data:import": "node tools/dataset/import.ts",
+    "data:check": "node tools/dataset/check.ts"
   },
   "devDependencies": {
-    "jsdom": "^25.0.1"
+    "jsdom": "^25.0.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "type": "module"
 }

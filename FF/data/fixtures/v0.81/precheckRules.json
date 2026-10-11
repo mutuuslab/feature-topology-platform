@@ -1,0 +1,130 @@
+[
+  {
+    "ruleId": "DATA-PRECHECK-1.0-01",
+    "criterion": "원천·대상 Feature/Version 참조",
+    "condition": "원천·대상 (Feature ID, Version)이 Feature Registry에 존재하면 PASS, 없으면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "의존관계 29건의 원천·대상 조합 모두 Registry에서 확인됨.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-02",
+    "criterion": "적용 범위",
+    "condition": "원천·대상의 국가·차종·트림이 관계 범위와 같으면 PASS, 다르면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "29건 모두 원천·대상 범위와 관계 행의 범위가 일치함.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-03",
+    "criterion": "대상 Version 확정",
+    "condition": "대상 Version이 기재되고 Registry에 존재하면 PASS, 미기재는 CONDITIONAL, 없는 Version은 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "29건 모두 대상 Version이 기재되고 해당 Registry 버전이 존재함.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-04",
+    "criterion": "REQUIRES Lifecycle",
+    "condition": "원천 PROPOSED는 CONDITIONAL. 그 이후 원천 단계에 필요한 대상 선행 단계가 충족되면 PASS, 미달하면 FAIL",
+    "exampleResult": "CONDITIONAL",
+    "exampleReason": "REQUIRES 25건 중 20건 PASS, 원천 PROPOSED의 5건은 승인 전 관계 판정 대기.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-05",
+    "criterion": "EXCLUDES 구성 충돌",
+    "condition": "같은 Catalog 구성 Baseline에 배타 Feature가 공존하지 않으면 PASS, 공존하면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "EXCLUDES 4건의 현재 구성에서 배타 Feature 공존이 확인되지 않음.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-06",
+    "criterion": "의존관계 종합 판정",
+    "condition": "모든 필수 조건이 충족되면 PASS, 미판정 관계가 있으면 CONDITIONAL, 위반이 있으면 FAIL",
+    "exampleResult": "CONDITIONAL",
+    "exampleReason": "전체 29건 중 PASS 24건, 원천 PROPOSED에 따른 미판정 5건.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-07",
+    "criterion": "Lifecycle별 Gate 진행",
+    "condition": "해당 Lifecycle까지 통과한 Gate만 PASS. 진행 Gate는 CONDITIONAL, PROPOSED Gate는 CONDITIONAL; 모순이면 FAIL",
+    "exampleResult": "CONDITIONAL",
+    "exampleReason": "Gate 477건 중 PASS 441건, 검토 중 36건.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-08",
+    "criterion": "원천 승인·시험 증빙",
+    "condition": "Gate PASS의 승인·시험 원문과 기록을 대조하면 PASS, 원문 미첨부는 CONDITIONAL, 상충하면 FAIL",
+    "exampleResult": "CONDITIONAL",
+    "exampleReason": "이 데이터셋에는 서명된 승인·시험 원문이 첨부되지 않아 원천 시스템 대사가 필요함.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-09",
+    "criterion": "의존관계 ID 형식·유일성",
+    "condition": "DEP-{5자리 숫자} 형식이며 ID 중복이 없으면 PASS, 위반이면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "29건 모두 DEP-xxxxx 형식이고 중복 ID 없음.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-10",
+    "criterion": "관계 키 중복",
+    "condition": "관계 유형·원천 ID/Version·대상 ID/Version 조합이 유일하면 PASS, 중복이면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "29건의 관계 업무 키 중복 없음.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-11",
+    "criterion": "자기 참조 방지",
+    "condition": "원천 Feature와 대상 Feature가 다르면 PASS, 같으면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "29건 모두 원천과 대상 Feature ID가 다름.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-12",
+    "criterion": "REQUIRES 순환",
+    "condition": "REQUIRES 방향 그래프에 순환 경로가 없으면 PASS, 존재하면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "25건의 REQUIRES 관계를 연결한 방향 그래프에서 순환 없음.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-13",
+    "criterion": "Registry·BOM Version 대조",
+    "condition": "Baseline ID가 발급된 각 Registry (Feature ID, Version)에 동일 키의 BOM_Item 행이 1건 있고, PROPOSED Version은 Baseline 미발급·BOM 미반영이면 PASS. 누락·중복·PROPOSED 반영이면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "Feature 버전 80건 중 Baseline 발급 67건이 BOM Item 67건과 같은 키로 일대일 연결되고, PROPOSED 13건은 미발급·미반영.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-14",
+    "criterion": "Gate·Evidence 추적",
+    "condition": "Gate Record ID 및 Evidence Ref와 두 판정 결과가 일치하면 PASS, 불일치하면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "Gate 477건과 Evidence 477건에서 ID·Evidence Ref·판정 결과가 일치함.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-15",
+    "criterion": "Rule Version 적용",
+    "condition": "Topology 관계마다 DATA-PRECHECK-1.0 규칙 참조가 기재되면 PASS, 누락이면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "의존관계 29건 모두 DATA-PRECHECK-1.0을 참조함.",
+    "_missing": {}
+  },
+  {
+    "ruleId": "DATA-PRECHECK-1.0-16",
+    "criterion": "의존관계 표시 완전성",
+    "condition": "Registry·BOM의 관계 ID 목록이 일치하고 미연결 행에 의존 관계 없음.이 표시되면 PASS, 누락이면 FAIL",
+    "exampleResult": "PASS",
+    "exampleReason": "Feature 버전 80건 중 관계 있음 25건, 없음 55건. BOM 반영 67건(관계 있음 20건, 없음 47건)의 관계 표시가 Registry와 일치함.",
+    "_missing": {}
+  }
+]

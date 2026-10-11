@@ -1,0 +1,59 @@
+{
+  "dataset": "Feature_Catalog_BOM_DATASET",
+  "version": "0.81",
+  "importer": "1.0.0",
+  "source": {
+    "file": "data/source/feature_dataset_v0.81.xlsx",
+    "sha256": "a7f92336277a59c24548acd72f29d711a4e52444935dd5ba5c2e35f6b71b9894"
+  },
+  "files": {
+    "features": {
+      "rows": 80,
+      "sha256": "934b932693ecddf177e44cb6f26e9e875b793d97c6014597b9166a2590df7d20"
+    },
+    "bomItems": {
+      "rows": 67,
+      "sha256": "96e55ee67935162e193e9c8c4a428c02523d206cfa52c303ce1bad74c346299e"
+    },
+    "products": {
+      "rows": 18,
+      "sha256": "cc81bcff7fa7ec1de339e21ff8f2ae603f2a547d668711936eddb97efd4e34ea"
+    },
+    "dependencies": {
+      "rows": 29,
+      "sha256": "332e66daaa238da30d1dda85f36edff86626e927273a9c38c97999b719706279"
+    },
+    "gateRecords": {
+      "rows": 477,
+      "sha256": "7669de840c1924623aa18f1fe1da706e4cfab8b63a1c1e49b5cd3f765865e5f8"
+    },
+    "featureFunctions": {
+      "rows": 122,
+      "sha256": "62cda381ccdce73f0a1176d54f6aec6e603c6ed5a1714eae7776a10cfed35f67"
+    },
+    "swMaster": {
+      "rows": 47,
+      "sha256": "e4f2e58f220ad6ed08d198bcf491f6793b3a198d33329e887dd0e176d180180f"
+    },
+    "ecuMaster": {
+      "rows": 15,
+      "sha256": "e9a73e12e6276935acb824da894a876b48628e0854064984667176a4a0d6b468"
+    },
+    "versionRationale": {
+      "rows": 68,
+      "sha256": "ec83de3627067e9554f93cd7d52ab3e5f94978aa0c4d6b9fd69a27ee9bb32efe"
+    },
+    "precheckRules": {
+      "rows": 16,
+      "sha256": "32aa1007fc9940d86de26be8a374cf833da2a9fd1fca2a4eee0c4e6584d09956"
+    },
+    "evidence": {
+      "rows": 477,
+      "sha256": "d196d90e2f2362380448e8f20785cc5504211996238d11d3812c6836d612e760"
+    }
+  },
+  "warnings": {
+    "count": 0,
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  }
+}

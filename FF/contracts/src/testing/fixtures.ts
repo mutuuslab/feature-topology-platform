@@ -1,0 +1,12 @@
+// 테스트 전용: 커밋된 v0.81 픽스처를 읽는다 (런타임 코드에서 import 금지 — Node fs 사용).
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { DATASET_FILES, type Dataset } from '../schemas/dataset';
+
+export const FIXTURES_DIR = join(__dirname, '..', '..', '..', 'data', 'fixtures', 'v0.81');
+
+export function loadDataset(): Dataset {
+  const ds = {} as Record<string, unknown>;
+  for (const k of Object.keys(DATASET_FILES)) ds[k] = JSON.parse(readFileSync(join(FIXTURES_DIR, `${k}.json`), 'utf8'));
+  return ds as unknown as Dataset;
+}

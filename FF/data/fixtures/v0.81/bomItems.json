@@ -1,0 +1,3484 @@
+[
+  {
+    "featureId": "FEAT-00001",
+    "name": "원격 스마트 주차 보조",
+    "description": "차량 외부에서 전·후진 주차를 제어",
+    "requirementIds": [
+      "REQ-PARK-0101"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "2.1.0",
+    "lifecycle": "VERIFIED",
+    "ownerId": "Parking기획팀",
+    "tags": [
+      "parking",
+      "remote-control"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F111A111001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000001",
+        "label": "Remote Parking App 기능"
+      },
+      {
+        "functionId": "FUNC-000002",
+        "label": "Vehicle Control Service 기능"
+      },
+      {
+        "functionId": "FUNC-000003",
+        "label": "RSPA HMI 기능"
+      }
+    ],
+    "swIds": [
+      "SW-RSPA-APP",
+      "SW-VEHCTRL",
+      "SW-RSPA-HMI"
+    ],
+    "swVersions": [
+      "2.1.4",
+      "5.3.1",
+      "1.3.0"
+    ],
+    "ecuPnos": [
+      "99211-NX400",
+      "99211-NX400",
+      "96560-NX410"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter",
+      "Signal"
+    ],
+    "dependencyIds": [
+      "DEP-00001",
+      "DEP-00002"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00001"
+  },
+  {
+    "featureId": "FEAT-00001",
+    "name": "원격 스마트 주차 보조",
+    "description": "차량 외부에서 전·후진 주차를 제어하고, 원격 조작 입력 해제 시 차량 정지 조건을 명시",
+    "requirementIds": [
+      "REQ-PARK-0101"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "2.2.0",
+    "lifecycle": "VERIFIED",
+    "ownerId": "Parking기획팀",
+    "tags": [
+      "parking",
+      "remote-control",
+      "input-release-stop"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F111A111001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000004",
+        "label": "Remote Parking App 기능"
+      },
+      {
+        "functionId": "FUNC-000002",
+        "label": "Vehicle Control Service 기능"
+      },
+      {
+        "functionId": "FUNC-000003",
+        "label": "RSPA HMI 기능"
+      }
+    ],
+    "swIds": [
+      "SW-RSPA-APP",
+      "SW-VEHCTRL",
+      "SW-RSPA-HMI"
+    ],
+    "swVersions": [
+      "2.2.0",
+      "5.3.1",
+      "1.3.0"
+    ],
+    "ecuPnos": [
+      "99211-NX400",
+      "99211-NX400",
+      "96560-NX410"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter",
+      "Signal"
+    ],
+    "dependencyIds": [
+      "DEP-00003",
+      "DEP-00004"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00002"
+  },
+  {
+    "featureId": "FEAT-00002",
+    "name": "주차 충돌방지 보조",
+    "description": "주차 중 장애물 충돌 위험 시 제동 지원",
+    "requirementIds": [
+      "REQ-SAFE-0204"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "1.5.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "parking",
+      "safety"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A112001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000007",
+        "label": "Parking Collision App 기능"
+      },
+      {
+        "functionId": "FUNC-000008",
+        "label": "USS Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-PCA-APP",
+      "SW-USS-SVC"
+    ],
+    "swVersions": [
+      "1.5.6",
+      "2.2.0"
+    ],
+    "ecuPnos": [
+      "99211-NX400",
+      "99211-NX400"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00003"
+  },
+  {
+    "featureId": "FEAT-00002",
+    "name": "주차 충돌방지 보조",
+    "description": "주차 중 장애물 충돌 위험 시 제동을 지원하며, 장애물 감지 신뢰도 저하 시 경고·제동 제한 조건을 명시",
+    "requirementIds": [
+      "REQ-SAFE-0204"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "1.6.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "parking",
+      "safety",
+      "sensor-confidence"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A112001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000009",
+        "label": "Parking Collision App 기능"
+      },
+      {
+        "functionId": "FUNC-000008",
+        "label": "USS Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-PCA-APP",
+      "SW-USS-SVC"
+    ],
+    "swVersions": [
+      "1.6.0",
+      "2.2.0"
+    ],
+    "ecuPnos": [
+      "99211-NX400",
+      "99211-NX400"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00004"
+  },
+  {
+    "featureId": "FEAT-00003",
+    "name": "서라운드 뷰 모니터",
+    "description": "차량 주변 360도 영상을 운전자에게 제공",
+    "requirementIds": [
+      "REQ-VIS-0311"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Inspiration",
+    "version": "3.2.0",
+    "lifecycle": "VERIFIED",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "parking",
+      "vision"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A115001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000011",
+        "label": "Surround View App 기능"
+      },
+      {
+        "functionId": "FUNC-000012",
+        "label": "Camera ECU Firmware 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SVM-APP",
+      "SW-CAMERA-FW"
+    ],
+    "swVersions": [
+      "3.2.1",
+      "8.1.0"
+    ],
+    "ecuPnos": [
+      "96560-NX410",
+      "95790-NX300"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00005"
+  },
+  {
+    "featureId": "FEAT-00003",
+    "name": "서라운드 뷰 모니터",
+    "description": "차량 주변 360도 영상을 운전자에게 제공하고, 저속 주차 중 화면 전환 조건을 명시",
+    "requirementIds": [
+      "REQ-VIS-0311"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Inspiration",
+    "version": "3.3.0",
+    "lifecycle": "VERIFIED",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "parking",
+      "vision",
+      "low-speed-view"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A115001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000013",
+        "label": "Surround View App 기능"
+      },
+      {
+        "functionId": "FUNC-000012",
+        "label": "Camera ECU Firmware 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SVM-APP",
+      "SW-CAMERA-FW"
+    ],
+    "swVersions": [
+      "3.3.0",
+      "8.1.0"
+    ],
+    "ecuPnos": [
+      "96560-NX410",
+      "95790-NX300"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00006"
+  },
+  {
+    "featureId": "FEAT-00004",
+    "name": "고속도로 주행 보조 2",
+    "description": "고속도로에서 차간거리·차로·차선변경 보조",
+    "requirementIds": [
+      "REQ-ADAS-0402"
+    ],
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Calligraphy",
+    "version": "4.0.1",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "highway"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000015",
+        "label": "Highway Assist App 기능"
+      },
+      {
+        "functionId": "FUNC-000016",
+        "label": "ADAS Firmware 기능"
+      }
+    ],
+    "swIds": [
+      "SW-HDA2-APP",
+      "SW-ADAS-FW"
+    ],
+    "swVersions": [
+      "4.0.5",
+      "11.0.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00005",
+      "DEP-00006"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00007"
+  },
+  {
+    "featureId": "FEAT-00004",
+    "name": "고속도로 주행 보조 2",
+    "description": "고속도로에서 차간거리·차로·차선변경을 보조하며, 차로변경 실행 전 운전자 확인 조건을 명시",
+    "requirementIds": [
+      "REQ-ADAS-0402"
+    ],
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Calligraphy",
+    "version": "4.1.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "highway",
+      "driver-confirmation"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000017",
+        "label": "Highway Assist App 기능"
+      },
+      {
+        "functionId": "FUNC-000016",
+        "label": "ADAS Firmware 기능"
+      }
+    ],
+    "swIds": [
+      "SW-HDA2-APP",
+      "SW-ADAS-FW"
+    ],
+    "swVersions": [
+      "4.1.0",
+      "11.0.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00007",
+      "DEP-00008"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00008"
+  },
+  {
+    "featureId": "FEAT-00005",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도 유지",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Premium",
+    "version": "5.4.2",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000019",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000020",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.4.4",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00009"
+  },
+  {
+    "featureId": "FEAT-00005",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도를 유지하며, 정지 후 재출발 시 운전자 확인 조건을 명시",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Premium",
+    "version": "5.5.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control",
+      "restart-confirmation"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000021",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000020",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.5.0",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00010"
+  },
+  {
+    "featureId": "FEAT-00008",
+    "name": "실외 V2L 전원 공급",
+    "description": "구동 배터리 전력을 외부 기기에 공급",
+    "requirementIds": [
+      "REQ-EV-1001"
+    ],
+    "country": "KR",
+    "vehicleModel": "NE PE",
+    "trim": "Prestige",
+    "version": "3.0.0",
+    "lifecycle": "APPROVED",
+    "ownerId": "EV기획팀",
+    "tags": [
+      "energy",
+      "v2l"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A118001"
+    ],
+    "functions": [],
+    "swIds": [],
+    "swVersions": [],
+    "ecuPnos": [],
+    "controlPoints": [],
+    "dependencyIds": [],
+    "_missing": {
+      "controlPoints": "미입력",
+      "dependencyIds": "의존 관계 없음",
+      "ecuPnos": "미입력",
+      "functions": "미입력",
+      "swIds": "미입력",
+      "swVersions": "미입력"
+    },
+    "baselineId": "BL-00014"
+  },
+  {
+    "featureId": "FEAT-00010",
+    "name": "운전자 모니터링 시스템",
+    "description": "시선·눈감음·주의분산을 감지해 단계별 경고",
+    "requirementIds": [
+      "REQ-DMS-1201"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Premium",
+    "version": "2.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Cabin안전기획팀",
+    "tags": [
+      "safety",
+      "driver-monitoring"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F331A125001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000033",
+        "label": "Driver Monitoring System App 기능"
+      },
+      {
+        "functionId": "FUNC-000034",
+        "label": "Driver Monitoring System Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-DMS-APP",
+      "SW-DMS-SVC"
+    ],
+    "swVersions": [
+      "2.0.0",
+      "2.1.0"
+    ],
+    "ecuPnos": [
+      "95770-MX200",
+      "95770-MX200"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00009"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00016"
+  },
+  {
+    "featureId": "FEAT-00011",
+    "name": "스마트폰 디지털 키",
+    "description": "UWB·BLE 기반 스마트폰 인증으로 도어 및 시동 제어",
+    "requirementIds": [
+      "REQ-KEY-1301"
+    ],
+    "country": "US",
+    "vehicleModel": "CT2",
+    "trim": "Limited",
+    "version": "1.3.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Digital Key기획팀",
+    "tags": [
+      "body",
+      "digital-key"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F411A226001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000035",
+        "label": "Phone as Key App 기능"
+      },
+      {
+        "functionId": "FUNC-000036",
+        "label": "Phone as Key Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-PAK-APP",
+      "SW-PAK-SVC"
+    ],
+    "swVersions": [
+      "1.3.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "95400-CT500",
+      "95400-CT500"
+    ],
+    "controlPoints": [
+      "Flag",
+      "DTC"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00017"
+  },
+  {
+    "featureId": "FEAT-00012",
+    "name": "전자식 차동 제한 제어",
+    "description": "노면과 주행 모드에 따라 좌우 구동 토크를 배분",
+    "requirementIds": [
+      "REQ-CHS-1401"
+    ],
+    "country": "CA",
+    "vehicleModel": "EV5",
+    "trim": "AWD GT",
+    "version": "1.1.0",
+    "lifecycle": "APPROVED",
+    "ownerId": "Driving성능팀",
+    "tags": [
+      "chassis",
+      "handling"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A221001"
+    ],
+    "functions": [],
+    "swIds": [],
+    "swVersions": [],
+    "ecuPnos": [],
+    "controlPoints": [],
+    "dependencyIds": [],
+    "_missing": {
+      "controlPoints": "미입력",
+      "dependencyIds": "의존 관계 없음",
+      "ecuPnos": "미입력",
+      "functions": "미입력",
+      "swIds": "미입력",
+      "swVersions": "미입력"
+    },
+    "baselineId": "BL-00018"
+  },
+  {
+    "featureId": "FEAT-00014",
+    "name": "증강현실 HUD 내비게이션",
+    "description": "전방 영상과 지도 정보를 정합해 HUD에 안내 표시",
+    "requirementIds": [
+      "REQ-HMI-1601"
+    ],
+    "country": "JP",
+    "vehicleModel": "GN8",
+    "trim": "Executive",
+    "version": "1.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "ivi",
+      "navigation",
+      "ar"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A215001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000041",
+        "label": "AR HUD Navigation App 기능"
+      },
+      {
+        "functionId": "FUNC-000042",
+        "label": "AR HUD Navigation Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ARHUD-APP",
+      "SW-ARHUD-SVC"
+    ],
+    "swVersions": [
+      "1.0.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00020"
+  },
+  {
+    "featureId": "FEAT-00015",
+    "name": "지능형 속도 제한 보조",
+    "description": "표지판과 지도 속도 제한을 융합해 경고·제어",
+    "requirementIds": [
+      "REQ-ISA-1701"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Premium",
+    "version": "1.2.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Regulation기획팀",
+    "tags": [
+      "adas",
+      "speed-assist"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A427001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000043",
+        "label": "Intelligent Speed Assistance App 기능"
+      },
+      {
+        "functionId": "FUNC-000044",
+        "label": "Intelligent Speed Assistance Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ISA-APP",
+      "SW-ISA-SVC"
+    ],
+    "swVersions": [
+      "1.2.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "99211-MX800",
+      "99211-MX800"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00011"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00021"
+  },
+  {
+    "featureId": "FEAT-00017",
+    "name": "후석 엔터테인먼트 Gen1",
+    "description": "구형 후석 디스플레이에 로컬 미디어와 미러링 제공",
+    "requirementIds": [
+      "REQ-RSE-1901"
+    ],
+    "country": "US",
+    "vehicleModel": "LX2",
+    "trim": "Limited",
+    "version": "2.5.0",
+    "lifecycle": "DEPRECATED",
+    "ownerId": "Infotainment상품팀",
+    "tags": [
+      "ivi",
+      "rear-seat",
+      "entertainment"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A217001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000047",
+        "label": "Rear Seat Entertainment Gen1 App 기능"
+      },
+      {
+        "functionId": "FUNC-000048",
+        "label": "Rear Seat Entertainment Gen1 Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-RSE-APP",
+      "SW-RSE-SVC"
+    ],
+    "swVersions": [
+      "2.5.0",
+      "2.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Flag"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00023"
+  },
+  {
+    "featureId": "FEAT-00018",
+    "name": "레거시 원격 시동 Gen1",
+    "description": "3G 기반 구형 원격 시동 서비스로 통신망 종료에 따라 폐기",
+    "requirementIds": [
+      "REQ-RST-2001"
+    ],
+    "country": "US",
+    "vehicleModel": "DM",
+    "trim": "Premium",
+    "version": "1.8.4",
+    "lifecycle": "RETIRED",
+    "ownerId": "Legacy Service팀",
+    "tags": [
+      "body",
+      "remote-start"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F411A329001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000049",
+        "label": "Legacy Remote Start Gen1 App 기능"
+      },
+      {
+        "functionId": "FUNC-000050",
+        "label": "Legacy Remote Start Gen1 Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-RSTART-APP",
+      "SW-RSTART-SVC"
+    ],
+    "swVersions": [
+      "1.8.4",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "95400-LG100",
+      "95400-LG100"
+    ],
+    "controlPoints": [
+      "Flag",
+      "DTC"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00024"
+  },
+  {
+    "featureId": "FEAT-00022",
+    "name": "전방 안전거리 3단계",
+    "description": "전방 차량과의 거리를 정상·주의·위험 3단계로 판정하고 운전자에게 안내하며 필요 시 속도를 조절",
+    "requirementIds": [
+      "REQ-CARE-2301"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS상품기획팀",
+    "tags": [
+      "adas",
+      "distance-control"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F111A114001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000056",
+        "label": "Extended Gap Control 기능"
+      },
+      {
+        "functionId": "FUNC-000057",
+        "label": "SCC Policy Adapter 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-SDIST-APP",
+      "SW-CARE-SCC-ADP"
+    ],
+    "swVersions": [
+      "1.2.1",
+      "2.3.0"
+    ],
+    "ecuPnos": [
+      "99211-NX400",
+      "99211-NX400"
+    ],
+    "controlPoints": [
+      "Signal",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00013"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00028"
+  },
+  {
+    "featureId": "FEAT-00023",
+    "name": "급가속 억제",
+    "description": "가속페달을 급격하게 밟아도 구동 토크와 가속도 상승을 완만하게 조절",
+    "requirementIds": [
+      "REQ-CARE-2401"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "차량제어상품기획팀",
+    "tags": [
+      "adas",
+      "acceleration-control"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A323001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000058",
+        "label": "Acceleration Suppression 기능"
+      },
+      {
+        "functionId": "FUNC-000059",
+        "label": "Torque Ramp Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-AAS-APP",
+      "SW-CARE-TORQUE-SVC"
+    ],
+    "swVersions": [
+      "1.4.2",
+      "2.1.3"
+    ],
+    "ecuPnos": [
+      "39110-NX500",
+      "39110-NX500"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00014"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00029"
+  },
+  {
+    "featureId": "FEAT-00024",
+    "name": "IC·JC 경로 사전안내",
+    "description": "고속도로 주행 중 전방 IC·JC 진입·진출 방향, 남은 거리와 필요한 차선을 실제 차선 형태로 IVI에 사전 안내",
+    "requirementIds": [
+      "REQ-CARE-2501"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "IVI상품기획팀",
+    "tags": [
+      "navigation",
+      "lane-guidance"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A116001"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000060",
+        "label": "Highway Detailed Guidance 기능"
+      },
+      {
+        "functionId": "FUNC-000061",
+        "label": "Highway Map Guidance Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-HNAV-APP",
+      "SW-CARE-MAP-SVC"
+    ],
+    "swVersions": [
+      "3.2.0",
+      "5.8.1"
+    ],
+    "ecuPnos": [
+      "96560-NX410",
+      "96560-NX410"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00030"
+  },
+  {
+    "featureId": "FEAT-00025",
+    "name": "전방 안전거리 확대",
+    "description": "전방 차량과의 목표 차간거리를 기존보다 크게 설정하고 주행 중 해당 거리를 유지하도록 속도를 조절",
+    "requirementIds": [
+      "REQ-CARE-2301"
+    ],
+    "country": "EU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Ultimate",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS상품기획팀",
+    "tags": [
+      "adas",
+      "distance-control"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F111A114002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000062",
+        "label": "Extended Gap Control 기능"
+      },
+      {
+        "functionId": "FUNC-000063",
+        "label": "SCC Policy Adapter 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-SDIST-APP",
+      "SW-CARE-SCC-ADP"
+    ],
+    "swVersions": [
+      "1.2.1",
+      "2.3.0"
+    ],
+    "ecuPnos": [
+      "99211-NX400",
+      "99211-NX400"
+    ],
+    "controlPoints": [
+      "Signal",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00015"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00031"
+  },
+  {
+    "featureId": "FEAT-00026",
+    "name": "급가속 억제",
+    "description": "가속페달을 급격하게 밟아도 구동 토크와 가속도 상승을 완만하게 조절",
+    "requirementIds": [
+      "REQ-CARE-2401"
+    ],
+    "country": "EU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Ultimate",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "차량제어상품기획팀",
+    "tags": [
+      "adas",
+      "acceleration-control"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A323002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000064",
+        "label": "Acceleration Suppression 기능"
+      },
+      {
+        "functionId": "FUNC-000065",
+        "label": "Torque Ramp Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-AAS-APP",
+      "SW-CARE-TORQUE-SVC"
+    ],
+    "swVersions": [
+      "1.4.2",
+      "2.1.3"
+    ],
+    "ecuPnos": [
+      "39110-NX500",
+      "39110-NX500"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00016"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00032"
+  },
+  {
+    "featureId": "FEAT-00027",
+    "name": "고속도로 IC·JC 상세 안내",
+    "description": "고속도로 주행 중 전방 IC·JC 정보, 진행 방향, 확대 지도 및 권장 차로를 IVI에 상세 표시",
+    "requirementIds": [
+      "REQ-CARE-2501"
+    ],
+    "country": "EU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Ultimate",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "IVI상품기획팀",
+    "tags": [
+      "navigation",
+      "lane-guidance"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A116002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000066",
+        "label": "Highway Detailed Guidance 기능"
+      },
+      {
+        "functionId": "FUNC-000067",
+        "label": "Highway Map Guidance Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-HNAV-APP",
+      "SW-CARE-MAP-SVC"
+    ],
+    "swVersions": [
+      "3.2.0",
+      "5.8.1"
+    ],
+    "ecuPnos": [
+      "96560-NX410",
+      "96560-NX410"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00033"
+  },
+  {
+    "featureId": "FEAT-00028",
+    "name": "전방 안전거리 확대",
+    "description": "전방 차량과의 목표 차간거리를 기존보다 크게 설정하고 주행 중 해당 거리를 유지하도록 속도를 조절",
+    "requirementIds": [
+      "REQ-CARE-2301"
+    ],
+    "country": "US",
+    "vehicleModel": "NX4 PE",
+    "trim": "Limited",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS상품기획팀",
+    "tags": [
+      "adas",
+      "distance-control"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F111A114003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000068",
+        "label": "Extended Gap Control 기능"
+      },
+      {
+        "functionId": "FUNC-000069",
+        "label": "SCC Policy Adapter 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-SDIST-APP",
+      "SW-CARE-SCC-ADP"
+    ],
+    "swVersions": [
+      "1.2.1",
+      "2.3.0"
+    ],
+    "ecuPnos": [
+      "99211-NX400",
+      "99211-NX400"
+    ],
+    "controlPoints": [
+      "Signal",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00017"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00034"
+  },
+  {
+    "featureId": "FEAT-00029",
+    "name": "급가속 억제",
+    "description": "가속페달을 급격하게 밟아도 구동 토크와 가속도 상승을 완만하게 조절",
+    "requirementIds": [
+      "REQ-CARE-2401"
+    ],
+    "country": "US",
+    "vehicleModel": "NX4 PE",
+    "trim": "Limited",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "차량제어상품기획팀",
+    "tags": [
+      "adas",
+      "acceleration-control"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A323003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000070",
+        "label": "Acceleration Suppression 기능"
+      },
+      {
+        "functionId": "FUNC-000071",
+        "label": "Torque Ramp Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-AAS-APP",
+      "SW-CARE-TORQUE-SVC"
+    ],
+    "swVersions": [
+      "1.4.2",
+      "2.1.3"
+    ],
+    "ecuPnos": [
+      "39110-NX500",
+      "39110-NX500"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00018"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00035"
+  },
+  {
+    "featureId": "FEAT-00030",
+    "name": "고속도로 IC·JC 상세 안내",
+    "description": "고속도로 주행 중 전방 IC·JC 정보, 진행 방향, 확대 지도 및 권장 차로를 IVI에 상세 표시",
+    "requirementIds": [
+      "REQ-CARE-2501"
+    ],
+    "country": "US",
+    "vehicleModel": "NX4 PE",
+    "trim": "Limited",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "IVI상품기획팀",
+    "tags": [
+      "navigation",
+      "lane-guidance"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A116003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000072",
+        "label": "Highway Detailed Guidance 기능"
+      },
+      {
+        "functionId": "FUNC-000073",
+        "label": "Highway Map Guidance Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-HNAV-APP",
+      "SW-CARE-MAP-SVC"
+    ],
+    "swVersions": [
+      "3.2.0",
+      "5.8.1"
+    ],
+    "ecuPnos": [
+      "96560-NX410",
+      "96560-NX410"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00036"
+  },
+  {
+    "featureId": "FEAT-00031",
+    "name": "전방 안전거리 확대",
+    "description": "전방 차량과의 목표 차간거리를 기존보다 크게 설정하고 주행 중 해당 거리를 유지하도록 속도를 조절",
+    "requirementIds": [
+      "REQ-CARE-2301"
+    ],
+    "country": "AU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Highlander",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS상품기획팀",
+    "tags": [
+      "adas",
+      "distance-control"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F111A114004"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000074",
+        "label": "Extended Gap Control 기능"
+      },
+      {
+        "functionId": "FUNC-000075",
+        "label": "SCC Policy Adapter 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-SDIST-APP",
+      "SW-CARE-SCC-ADP"
+    ],
+    "swVersions": [
+      "1.2.1",
+      "2.3.0"
+    ],
+    "ecuPnos": [
+      "99211-NX400",
+      "99211-NX400"
+    ],
+    "controlPoints": [
+      "Signal",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00019"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00037"
+  },
+  {
+    "featureId": "FEAT-00032",
+    "name": "급가속 억제",
+    "description": "가속페달을 급격하게 밟아도 구동 토크와 가속도 상승을 완만하게 조절",
+    "requirementIds": [
+      "REQ-CARE-2401"
+    ],
+    "country": "AU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Highlander",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "차량제어상품기획팀",
+    "tags": [
+      "adas",
+      "acceleration-control"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A323004"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000076",
+        "label": "Acceleration Suppression 기능"
+      },
+      {
+        "functionId": "FUNC-000077",
+        "label": "Torque Ramp Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-AAS-APP",
+      "SW-CARE-TORQUE-SVC"
+    ],
+    "swVersions": [
+      "1.4.2",
+      "2.1.3"
+    ],
+    "ecuPnos": [
+      "39110-NX500",
+      "39110-NX500"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00020"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00038"
+  },
+  {
+    "featureId": "FEAT-00033",
+    "name": "고속도로 IC·JC 상세 안내",
+    "description": "고속도로 주행 중 전방 IC·JC 정보, 진행 방향, 확대 지도 및 권장 차로를 IVI에 상세 표시",
+    "requirementIds": [
+      "REQ-CARE-2501"
+    ],
+    "country": "AU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Highlander",
+    "version": "1.0.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "IVI상품기획팀",
+    "tags": [
+      "navigation",
+      "lane-guidance"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A116004"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000078",
+        "label": "Highway Detailed Guidance 기능"
+      },
+      {
+        "functionId": "FUNC-000079",
+        "label": "Highway Map Guidance Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-CARE-HNAV-APP",
+      "SW-CARE-MAP-SVC"
+    ],
+    "swVersions": [
+      "3.2.0",
+      "5.8.1"
+    ],
+    "ecuPnos": [
+      "96560-NX410",
+      "96560-NX410"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00039"
+  },
+  {
+    "featureId": "FEAT-00060",
+    "name": "운전자 모니터링 시스템",
+    "description": "시선·눈감음·주의분산을 감지해 단계별 경고",
+    "requirementIds": [
+      "REQ-DMS-1201"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Prestige",
+    "version": "2.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Cabin안전기획팀",
+    "tags": [
+      "safety",
+      "driver-monitoring"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F331A125002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000164",
+        "label": "Driver Monitoring System App 기능"
+      },
+      {
+        "functionId": "FUNC-000165",
+        "label": "Driver Monitoring System Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-DMS-APP",
+      "SW-DMS-SVC"
+    ],
+    "swVersions": [
+      "2.0.0",
+      "2.1.0"
+    ],
+    "ecuPnos": [
+      "95770-MX200",
+      "95770-MX200"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00021"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00076"
+  },
+  {
+    "featureId": "FEAT-00061",
+    "name": "운전자 모니터링 시스템",
+    "description": "시선·눈감음·주의분산을 감지해 단계별 경고",
+    "requirementIds": [
+      "REQ-DMS-1201"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Exclusive",
+    "version": "2.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Cabin안전기획팀",
+    "tags": [
+      "safety",
+      "driver-monitoring"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F331A125003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000166",
+        "label": "Driver Monitoring System App 기능"
+      },
+      {
+        "functionId": "FUNC-000167",
+        "label": "Driver Monitoring System Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-DMS-APP",
+      "SW-DMS-SVC"
+    ],
+    "swVersions": [
+      "2.0.0",
+      "2.1.0"
+    ],
+    "ecuPnos": [
+      "95770-MX200",
+      "95770-MX200"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00022"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00077"
+  },
+  {
+    "featureId": "FEAT-00062",
+    "name": "운전자 모니터링 시스템",
+    "description": "시선·눈감음·주의분산을 감지해 단계별 경고",
+    "requirementIds": [
+      "REQ-DMS-1201"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Signature",
+    "version": "2.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Cabin안전기획팀",
+    "tags": [
+      "safety",
+      "driver-monitoring"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F331A125004"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000168",
+        "label": "Driver Monitoring System App 기능"
+      },
+      {
+        "functionId": "FUNC-000169",
+        "label": "Driver Monitoring System Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-DMS-APP",
+      "SW-DMS-SVC"
+    ],
+    "swVersions": [
+      "2.0.0",
+      "2.1.0"
+    ],
+    "ecuPnos": [
+      "95770-MX200",
+      "95770-MX200"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00023"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00078"
+  },
+  {
+    "featureId": "FEAT-00064",
+    "name": "스마트폰 디지털 키",
+    "description": "UWB·BLE 기반 스마트폰 인증으로 도어 및 시동 제어",
+    "requirementIds": [
+      "REQ-KEY-1301"
+    ],
+    "country": "CA",
+    "vehicleModel": "CT2",
+    "trim": "Limited",
+    "version": "1.3.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Digital Key기획팀",
+    "tags": [
+      "body",
+      "digital-key"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F411A226002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000172",
+        "label": "Phone as Key App 기능"
+      },
+      {
+        "functionId": "FUNC-000173",
+        "label": "Phone as Key Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-PAK-APP",
+      "SW-PAK-SVC"
+    ],
+    "swVersions": [
+      "1.3.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "95400-CT500",
+      "95400-CT500"
+    ],
+    "controlPoints": [
+      "Flag",
+      "DTC"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00080"
+  },
+  {
+    "featureId": "FEAT-00065",
+    "name": "지능형 속도 제한 보조",
+    "description": "표지판과 지도 속도 제한을 융합해 경고·제어",
+    "requirementIds": [
+      "REQ-ISA-1701"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Prestige",
+    "version": "1.2.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Regulation기획팀",
+    "tags": [
+      "adas",
+      "speed-assist"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A427002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000174",
+        "label": "Intelligent Speed Assistance App 기능"
+      },
+      {
+        "functionId": "FUNC-000175",
+        "label": "Intelligent Speed Assistance Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ISA-APP",
+      "SW-ISA-SVC"
+    ],
+    "swVersions": [
+      "1.2.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "99211-MX800",
+      "99211-MX800"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00024"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00081"
+  },
+  {
+    "featureId": "FEAT-00066",
+    "name": "지능형 속도 제한 보조",
+    "description": "표지판과 지도 속도 제한을 융합해 경고·제어",
+    "requirementIds": [
+      "REQ-ISA-1701"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Exclusive",
+    "version": "1.2.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Regulation기획팀",
+    "tags": [
+      "adas",
+      "speed-assist"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A427003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000176",
+        "label": "Intelligent Speed Assistance App 기능"
+      },
+      {
+        "functionId": "FUNC-000177",
+        "label": "Intelligent Speed Assistance Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ISA-APP",
+      "SW-ISA-SVC"
+    ],
+    "swVersions": [
+      "1.2.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "99211-MX800",
+      "99211-MX800"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00025"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00082"
+  },
+  {
+    "featureId": "FEAT-00067",
+    "name": "지능형 속도 제한 보조",
+    "description": "표지판과 지도 속도 제한을 융합해 경고·제어",
+    "requirementIds": [
+      "REQ-ISA-1701"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Signature",
+    "version": "1.2.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Regulation기획팀",
+    "tags": [
+      "adas",
+      "speed-assist"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A427004"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000178",
+        "label": "Intelligent Speed Assistance App 기능"
+      },
+      {
+        "functionId": "FUNC-000179",
+        "label": "Intelligent Speed Assistance Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ISA-APP",
+      "SW-ISA-SVC"
+    ],
+    "swVersions": [
+      "1.2.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "99211-MX800",
+      "99211-MX800"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Parameter"
+    ],
+    "dependencyIds": [
+      "DEP-00026"
+    ],
+    "_missing": {},
+    "baselineId": "BL-00083"
+  },
+  {
+    "featureId": "FEAT-00081",
+    "name": "후석 엔터테인먼트 Gen1",
+    "description": "구형 후석 디스플레이에 로컬 미디어와 미러링 제공",
+    "requirementIds": [
+      "REQ-RSE-1901"
+    ],
+    "country": "CA",
+    "vehicleModel": "LX2",
+    "trim": "Limited",
+    "version": "2.5.0",
+    "lifecycle": "DEPRECATED",
+    "ownerId": "Infotainment상품팀",
+    "tags": [
+      "ivi",
+      "rear-seat",
+      "entertainment"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A217002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000206",
+        "label": "Rear Seat Entertainment Gen1 App 기능"
+      },
+      {
+        "functionId": "FUNC-000207",
+        "label": "Rear Seat Entertainment Gen1 Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-RSE-APP",
+      "SW-RSE-SVC"
+    ],
+    "swVersions": [
+      "2.5.0",
+      "2.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Flag"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00097"
+  },
+  {
+    "featureId": "FEAT-00082",
+    "name": "레거시 원격 시동 Gen1",
+    "description": "3G 기반 구형 원격 시동 서비스로 통신망 종료에 따라 폐기",
+    "requirementIds": [
+      "REQ-RST-2001"
+    ],
+    "country": "CA",
+    "vehicleModel": "DM",
+    "trim": "Premium",
+    "version": "1.8.4",
+    "lifecycle": "RETIRED",
+    "ownerId": "Legacy Service팀",
+    "tags": [
+      "body",
+      "remote-start"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F411A329002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000208",
+        "label": "Legacy Remote Start Gen1 App 기능"
+      },
+      {
+        "functionId": "FUNC-000209",
+        "label": "Legacy Remote Start Gen1 Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-RSTART-APP",
+      "SW-RSTART-SVC"
+    ],
+    "swVersions": [
+      "1.8.4",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "95400-LG100",
+      "95400-LG100"
+    ],
+    "controlPoints": [
+      "Flag",
+      "DTC"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00098"
+  },
+  {
+    "featureId": "FEAT-00084",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도 유지",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Calligraphy",
+    "version": "5.4.2",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000212",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000213",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.4.4",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00100"
+  },
+  {
+    "featureId": "FEAT-00084",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도를 유지하며, 정지 후 재출발 시 운전자 확인 조건을 명시",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Calligraphy",
+    "version": "5.5.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control",
+      "restart-confirmation"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000214",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000213",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.5.0",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00101"
+  },
+  {
+    "featureId": "FEAT-00097",
+    "name": "전자식 차동 제한 제어",
+    "description": "노면과 주행 모드에 따라 좌우 구동 토크를 배분",
+    "requirementIds": [
+      "REQ-CHS-1401"
+    ],
+    "country": "CA",
+    "vehicleModel": "EV5",
+    "trim": "AWD",
+    "version": "1.1.0",
+    "lifecycle": "APPROVED",
+    "ownerId": "Driving성능팀",
+    "tags": [
+      "chassis",
+      "handling"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A221002"
+    ],
+    "functions": [],
+    "swIds": [],
+    "swVersions": [],
+    "ecuPnos": [],
+    "controlPoints": [],
+    "dependencyIds": [],
+    "_missing": {
+      "controlPoints": "미입력",
+      "dependencyIds": "의존 관계 없음",
+      "ecuPnos": "미입력",
+      "functions": "미입력",
+      "swIds": "미입력",
+      "swVersions": "미입력"
+    },
+    "baselineId": "BL-00114"
+  },
+  {
+    "featureId": "FEAT-00098",
+    "name": "증강현실 HUD 내비게이션",
+    "description": "전방 영상과 지도 정보를 정합해 HUD에 안내 표시",
+    "requirementIds": [
+      "REQ-HMI-1601"
+    ],
+    "country": "US",
+    "vehicleModel": "CT2",
+    "trim": "Limited",
+    "version": "1.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "ivi",
+      "navigation",
+      "ar"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A215002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000242",
+        "label": "AR HUD Navigation App 기능"
+      },
+      {
+        "functionId": "FUNC-000243",
+        "label": "AR HUD Navigation Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ARHUD-APP",
+      "SW-ARHUD-SVC"
+    ],
+    "swVersions": [
+      "1.0.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00115"
+  },
+  {
+    "featureId": "FEAT-00099",
+    "name": "스마트폰 디지털 키",
+    "description": "UWB·BLE 기반 스마트폰 인증으로 도어 및 시동 제어",
+    "requirementIds": [
+      "REQ-KEY-1301"
+    ],
+    "country": "US",
+    "vehicleModel": "CT2",
+    "trim": "Executive",
+    "version": "1.3.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "Digital Key기획팀",
+    "tags": [
+      "body",
+      "digital-key"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F411A226003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000244",
+        "label": "Phone as Key App 기능"
+      },
+      {
+        "functionId": "FUNC-000245",
+        "label": "Phone as Key Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-PAK-APP",
+      "SW-PAK-SVC"
+    ],
+    "swVersions": [
+      "1.3.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "95400-CT500",
+      "95400-CT500"
+    ],
+    "controlPoints": [
+      "Flag",
+      "DTC"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00116"
+  },
+  {
+    "featureId": "FEAT-00100",
+    "name": "증강현실 HUD 내비게이션",
+    "description": "전방 영상과 지도 정보를 정합해 HUD에 안내 표시",
+    "requirementIds": [
+      "REQ-HMI-1601"
+    ],
+    "country": "US",
+    "vehicleModel": "CT2",
+    "trim": "Executive",
+    "version": "1.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "ivi",
+      "navigation",
+      "ar"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A215003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000246",
+        "label": "AR HUD Navigation App 기능"
+      },
+      {
+        "functionId": "FUNC-000247",
+        "label": "AR HUD Navigation Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ARHUD-APP",
+      "SW-ARHUD-SVC"
+    ],
+    "swVersions": [
+      "1.0.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00117"
+  },
+  {
+    "featureId": "FEAT-00136",
+    "name": "후석 엔터테인먼트 Gen1",
+    "description": "구형 후석 디스플레이에 로컬 미디어와 미러링 제공",
+    "requirementIds": [
+      "REQ-RSE-1901"
+    ],
+    "country": "KR",
+    "vehicleModel": "CE1",
+    "trim": "Premium",
+    "version": "2.5.0",
+    "lifecycle": "DEPRECATED",
+    "ownerId": "Infotainment상품팀",
+    "tags": [
+      "ivi",
+      "rear-seat",
+      "entertainment"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A217003"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000318",
+        "label": "Rear Seat Entertainment Gen1 App 기능"
+      },
+      {
+        "functionId": "FUNC-000319",
+        "label": "Rear Seat Entertainment Gen1 Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-RSE-APP",
+      "SW-RSE-SVC"
+    ],
+    "swVersions": [
+      "2.5.0",
+      "2.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Flag"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00153"
+  },
+  {
+    "featureId": "FEAT-00137",
+    "name": "후석 엔터테인먼트 Gen1",
+    "description": "구형 후석 디스플레이에 로컬 미디어와 미러링 제공",
+    "requirementIds": [
+      "REQ-RSE-1901"
+    ],
+    "country": "US",
+    "vehicleModel": "CE1",
+    "trim": "Premium",
+    "version": "2.5.0",
+    "lifecycle": "DEPRECATED",
+    "ownerId": "Infotainment상품팀",
+    "tags": [
+      "ivi",
+      "rear-seat",
+      "entertainment"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A217004"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000320",
+        "label": "Rear Seat Entertainment Gen1 App 기능"
+      },
+      {
+        "functionId": "FUNC-000321",
+        "label": "Rear Seat Entertainment Gen1 Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-RSE-APP",
+      "SW-RSE-SVC"
+    ],
+    "swVersions": [
+      "2.5.0",
+      "2.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Flag"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00154"
+  },
+  {
+    "featureId": "FEAT-00144",
+    "name": "서라운드 뷰 모니터",
+    "description": "차량 주변 360도 영상을 운전자에게 제공",
+    "requirementIds": [
+      "REQ-VIS-0311"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "3.2.0",
+    "lifecycle": "VERIFIED",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "parking",
+      "vision"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A115002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000334",
+        "label": "Surround View App 기능"
+      },
+      {
+        "functionId": "FUNC-000335",
+        "label": "Camera ECU Firmware 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SVM-APP",
+      "SW-CAMERA-FW"
+    ],
+    "swVersions": [
+      "3.2.1",
+      "8.1.0"
+    ],
+    "ecuPnos": [
+      "96560-NX410",
+      "95790-NX300"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00161"
+  },
+  {
+    "featureId": "FEAT-00144",
+    "name": "서라운드 뷰 모니터",
+    "description": "차량 주변 360도 영상을 운전자에게 제공하고, 저속 주차 중 화면 전환 조건을 명시",
+    "requirementIds": [
+      "REQ-VIS-0311"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "3.3.0",
+    "lifecycle": "VERIFIED",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "parking",
+      "vision",
+      "low-speed-view"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A115002"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000336",
+        "label": "Surround View App 기능"
+      },
+      {
+        "functionId": "FUNC-000335",
+        "label": "Camera ECU Firmware 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SVM-APP",
+      "SW-CAMERA-FW"
+    ],
+    "swVersions": [
+      "3.3.0",
+      "8.1.0"
+    ],
+    "ecuPnos": [
+      "96560-NX410",
+      "95790-NX300"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00162"
+  },
+  {
+    "featureId": "FEAT-00145",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도 유지",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "5.4.2",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212004"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000338",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000339",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.4.4",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00163"
+  },
+  {
+    "featureId": "FEAT-00145",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도를 유지하며, 정지 후 재출발 시 운전자 확인 조건을 명시",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "5.5.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control",
+      "restart-confirmation"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212004"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000340",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000339",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.5.0",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00164"
+  },
+  {
+    "featureId": "FEAT-00150",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도 유지",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "EU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Ultimate",
+    "version": "5.4.2",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212006"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000358",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000359",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.4.4",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00173"
+  },
+  {
+    "featureId": "FEAT-00150",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도를 유지하며, 정지 후 재출발 시 운전자 확인 조건을 명시",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "EU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Ultimate",
+    "version": "5.5.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control",
+      "restart-confirmation"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212006"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000360",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000359",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.5.0",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00174"
+  },
+  {
+    "featureId": "FEAT-00163",
+    "name": "차로 유지 보조",
+    "description": "차선 이탈을 감지해 조향을 보조",
+    "requirementIds": [
+      "REQ-ADAS-0603"
+    ],
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Calligraphy",
+    "version": "3.7.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "lane-assist"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A312011"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000410",
+        "label": "Lane Keeping App 기능"
+      },
+      {
+        "functionId": "FUNC-000411",
+        "label": "ADAS Firmware 기능"
+      }
+    ],
+    "swIds": [
+      "SW-LKA-APP",
+      "SW-ADAS-FW"
+    ],
+    "swVersions": [
+      "3.7.2",
+      "11.0.1"
+    ],
+    "ecuPnos": [
+      "99211-NE500",
+      "99211-NE500"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00199"
+  },
+  {
+    "featureId": "FEAT-00163",
+    "name": "차로 유지 보조",
+    "description": "차선 이탈을 감지해 조향을 보조하며, 차선 인식 신뢰도 저하 시 보조 해제 조건을 명시",
+    "requirementIds": [
+      "REQ-ADAS-0603"
+    ],
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Calligraphy",
+    "version": "3.8.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "lane-assist",
+      "confidence-release"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A312011"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000412",
+        "label": "Lane Keeping App 기능"
+      },
+      {
+        "functionId": "FUNC-000411",
+        "label": "ADAS Firmware 기능"
+      }
+    ],
+    "swIds": [
+      "SW-LKA-APP",
+      "SW-ADAS-FW"
+    ],
+    "swVersions": [
+      "3.8.0",
+      "11.0.1"
+    ],
+    "ecuPnos": [
+      "99211-NE500",
+      "99211-NE500"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00200"
+  },
+  {
+    "featureId": "FEAT-00175",
+    "name": "증강현실 HUD 내비게이션",
+    "description": "전방 영상과 지도 정보를 정합해 HUD에 안내 표시",
+    "requirementIds": [
+      "REQ-HMI-1601"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "ivi",
+      "navigation",
+      "ar"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A215015"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000440",
+        "label": "AR HUD Navigation App 기능"
+      },
+      {
+        "functionId": "FUNC-000441",
+        "label": "AR HUD Navigation Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ARHUD-APP",
+      "SW-ARHUD-SVC"
+    ],
+    "swVersions": [
+      "1.0.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00214"
+  },
+  {
+    "featureId": "FEAT-00176",
+    "name": "증강현실 HUD 내비게이션",
+    "description": "전방 영상과 지도 정보를 정합해 HUD에 안내 표시",
+    "requirementIds": [
+      "REQ-HMI-1601"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Prestige",
+    "version": "1.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "ivi",
+      "navigation",
+      "ar"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A215016"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000442",
+        "label": "AR HUD Navigation App 기능"
+      },
+      {
+        "functionId": "FUNC-000443",
+        "label": "AR HUD Navigation Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ARHUD-APP",
+      "SW-ARHUD-SVC"
+    ],
+    "swVersions": [
+      "1.0.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00215"
+  },
+  {
+    "featureId": "FEAT-00177",
+    "name": "증강현실 HUD 내비게이션",
+    "description": "전방 영상과 지도 정보를 정합해 HUD에 안내 표시",
+    "requirementIds": [
+      "REQ-HMI-1601"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Exclusive",
+    "version": "1.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "ivi",
+      "navigation",
+      "ar"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A215017"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000444",
+        "label": "AR HUD Navigation App 기능"
+      },
+      {
+        "functionId": "FUNC-000445",
+        "label": "AR HUD Navigation Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ARHUD-APP",
+      "SW-ARHUD-SVC"
+    ],
+    "swVersions": [
+      "1.0.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00216"
+  },
+  {
+    "featureId": "FEAT-00178",
+    "name": "증강현실 HUD 내비게이션",
+    "description": "전방 영상과 지도 정보를 정합해 HUD에 안내 표시",
+    "requirementIds": [
+      "REQ-HMI-1601"
+    ],
+    "country": "EU",
+    "vehicleModel": "MX5",
+    "trim": "Signature",
+    "version": "1.0.0",
+    "lifecycle": "DEVELOPING",
+    "ownerId": "UX기획팀",
+    "tags": [
+      "ivi",
+      "navigation",
+      "ar"
+    ],
+    "asil": "QM",
+    "upgVc": [
+      "F211A215018"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000446",
+        "label": "AR HUD Navigation App 기능"
+      },
+      {
+        "functionId": "FUNC-000447",
+        "label": "AR HUD Navigation Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-ARHUD-APP",
+      "SW-ARHUD-SVC"
+    ],
+    "swVersions": [
+      "1.0.0",
+      "1.1.0"
+    ],
+    "ecuPnos": [
+      "96560-MX700",
+      "96560-MX700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00217"
+  },
+  {
+    "featureId": "FEAT-00181",
+    "name": "전자식 차동 제한 제어",
+    "description": "노면과 주행 모드에 따라 좌우 구동 토크를 배분",
+    "requirementIds": [
+      "REQ-CHS-1401"
+    ],
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "1.1.0",
+    "lifecycle": "APPROVED",
+    "ownerId": "Driving성능팀",
+    "tags": [
+      "chassis",
+      "handling"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A221003"
+    ],
+    "functions": [],
+    "swIds": [],
+    "swVersions": [],
+    "ecuPnos": [],
+    "controlPoints": [],
+    "dependencyIds": [],
+    "_missing": {
+      "controlPoints": "미입력",
+      "dependencyIds": "의존 관계 없음",
+      "ecuPnos": "미입력",
+      "functions": "미입력",
+      "swIds": "미입력",
+      "swVersions": "미입력"
+    },
+    "baselineId": "BL-00220"
+  },
+  {
+    "featureId": "FEAT-00182",
+    "name": "전자식 차동 제한 제어",
+    "description": "노면과 주행 모드에 따라 좌우 구동 토크를 배분",
+    "requirementIds": [
+      "REQ-CHS-1401"
+    ],
+    "country": "EU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Ultimate",
+    "version": "1.1.0",
+    "lifecycle": "APPROVED",
+    "ownerId": "Driving성능팀",
+    "tags": [
+      "chassis",
+      "handling"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A221004"
+    ],
+    "functions": [],
+    "swIds": [],
+    "swVersions": [],
+    "ecuPnos": [],
+    "controlPoints": [],
+    "dependencyIds": [],
+    "_missing": {
+      "controlPoints": "미입력",
+      "dependencyIds": "의존 관계 없음",
+      "ecuPnos": "미입력",
+      "functions": "미입력",
+      "swIds": "미입력",
+      "swVersions": "미입력"
+    },
+    "baselineId": "BL-00221"
+  },
+  {
+    "featureId": "FEAT-00183",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도 유지",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "US",
+    "vehicleModel": "NX4 PE",
+    "trim": "Limited",
+    "version": "5.4.2",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212013"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000456",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000457",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.4.4",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00222"
+  },
+  {
+    "featureId": "FEAT-00183",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도를 유지하며, 정지 후 재출발 시 운전자 확인 조건을 명시",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "US",
+    "vehicleModel": "NX4 PE",
+    "trim": "Limited",
+    "version": "5.5.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control",
+      "restart-confirmation"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212013"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000458",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000457",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.5.0",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00223"
+  },
+  {
+    "featureId": "FEAT-00184",
+    "name": "전자식 차동 제한 제어",
+    "description": "노면과 주행 모드에 따라 좌우 구동 토크를 배분",
+    "requirementIds": [
+      "REQ-CHS-1401"
+    ],
+    "country": "US",
+    "vehicleModel": "NX4 PE",
+    "trim": "Limited",
+    "version": "1.1.0",
+    "lifecycle": "APPROVED",
+    "ownerId": "Driving성능팀",
+    "tags": [
+      "chassis",
+      "handling"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A221005"
+    ],
+    "functions": [],
+    "swIds": [],
+    "swVersions": [],
+    "ecuPnos": [],
+    "controlPoints": [],
+    "dependencyIds": [],
+    "_missing": {
+      "controlPoints": "미입력",
+      "dependencyIds": "의존 관계 없음",
+      "ecuPnos": "미입력",
+      "functions": "미입력",
+      "swIds": "미입력",
+      "swVersions": "미입력"
+    },
+    "baselineId": "BL-00224"
+  },
+  {
+    "featureId": "FEAT-00185",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도 유지",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "AU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Highlander",
+    "version": "5.4.2",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212014"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000462",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000463",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.4.4",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00225"
+  },
+  {
+    "featureId": "FEAT-00185",
+    "name": "스마트 크루즈 컨트롤",
+    "description": "선행 차량과의 설정 거리 및 속도를 유지하며, 정지 후 재출발 시 운전자 확인 조건을 명시",
+    "requirementIds": [
+      "REQ-ADAS-0501"
+    ],
+    "country": "AU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Highlander",
+    "version": "5.5.0",
+    "lifecycle": "RELEASED",
+    "ownerId": "ADAS기획팀",
+    "tags": [
+      "adas",
+      "cruise-control",
+      "restart-confirmation"
+    ],
+    "asil": "C",
+    "upgVc": [
+      "F111A212014"
+    ],
+    "functions": [
+      {
+        "functionId": "FUNC-000464",
+        "label": "Cruise Control App 기능"
+      },
+      {
+        "functionId": "FUNC-000463",
+        "label": "Radar Object Service 기능"
+      }
+    ],
+    "swIds": [
+      "SW-SCC-APP",
+      "SW-RADAR-SVC"
+    ],
+    "swVersions": [
+      "5.5.0",
+      "4.2.0"
+    ],
+    "ecuPnos": [
+      "99211-GN700",
+      "99211-GN700"
+    ],
+    "controlPoints": [
+      "Flag",
+      "Signal"
+    ],
+    "dependencyIds": [],
+    "_missing": {
+      "dependencyIds": "의존 관계 없음"
+    },
+    "baselineId": "BL-00226"
+  },
+  {
+    "featureId": "FEAT-00186",
+    "name": "전자식 차동 제한 제어",
+    "description": "노면과 주행 모드에 따라 좌우 구동 토크를 배분",
+    "requirementIds": [
+      "REQ-CHS-1401"
+    ],
+    "country": "AU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Highlander",
+    "version": "1.1.0",
+    "lifecycle": "APPROVED",
+    "ownerId": "Driving성능팀",
+    "tags": [
+      "chassis",
+      "handling"
+    ],
+    "asil": "B",
+    "upgVc": [
+      "F511A221006"
+    ],
+    "functions": [],
+    "swIds": [],
+    "swVersions": [],
+    "ecuPnos": [],
+    "controlPoints": [],
+    "dependencyIds": [],
+    "_missing": {
+      "controlPoints": "미입력",
+      "dependencyIds": "의존 관계 없음",
+      "ecuPnos": "미입력",
+      "functions": "미입력",
+      "swIds": "미입력",
+      "swVersions": "미입력"
+    },
+    "baselineId": "BL-00227"
+  }
+]

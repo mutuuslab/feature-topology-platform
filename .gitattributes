@@ -1,0 +1,3 @@
+# 결정적 픽스처 — 해시 비교를 위해 줄끝 고정
+FF/data/fixtures/** text eol=lf
+FF/data/source/*.xlsx binary

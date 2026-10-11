@@ -1,0 +1,442 @@
+[
+  {
+    "catalogId": "CAT-00001",
+    "name": "Parking Assist Package",
+    "description": "주차 및 저속 충돌방지 기능 패키지",
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "3.0.0",
+    "tags": [
+      "parking",
+      "safety"
+    ],
+    "saleType": "구매",
+    "baselineIds": [
+      "BL-00002",
+      "BL-00004",
+      "BL-00162"
+    ],
+    "validFrom": "2027-01-15",
+    "validTo": "2027-12-31",
+    "ownerId": "주차상품기획팀",
+    "lifecycle": "DEVELOPING",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00002",
+    "name": "Highway Driving Package",
+    "description": "고속도로 주행 보조 기능 패키지",
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Calligraphy",
+    "version": "4.1.0",
+    "tags": [
+      "adas",
+      "highway"
+    ],
+    "saleType": "구매",
+    "baselineIds": [
+      "BL-00008",
+      "BL-00101",
+      "BL-00200"
+    ],
+    "validFrom": "2026-12-01",
+    "validTo": "2027-12-31",
+    "ownerId": "ADAS상품기획팀",
+    "lifecycle": "RELEASED",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00004",
+    "name": "EV Convenience Package",
+    "description": "EV 에너지 편의 기능 패키지",
+    "country": "KR",
+    "vehicleModel": "NE PE",
+    "trim": "Prestige",
+    "version": "1.0.0",
+    "tags": [
+      "energy",
+      "convenience"
+    ],
+    "saleType": "구매",
+    "baselineIds": [
+      "BL-00014"
+    ],
+    "validFrom": "2027-04-01",
+    "validTo": "2027-12-31",
+    "ownerId": "EV상품팀",
+    "lifecycle": "DEVELOPING",
+    "type": "SINGLE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00007",
+    "name": "Digital Access and Display Beta",
+    "description": "디지털 키와 AR HUD를 묶은 북미 베타 서비스",
+    "country": "US",
+    "vehicleModel": "CT2",
+    "trim": "Limited",
+    "version": "1.4.0",
+    "tags": [
+      "connected",
+      "digital-service"
+    ],
+    "saleType": "구독",
+    "baselineIds": [
+      "BL-00017",
+      "BL-00115"
+    ],
+    "validFrom": "2028-02-10",
+    "validTo": "2028-12-31",
+    "ownerId": "Digital Experience팀",
+    "lifecycle": "DEVELOPING",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00010",
+    "name": "Rear Entertainment Legacy Pack",
+    "description": "후석 엔터테인먼트 Gen1 기존 고객 유지 상품",
+    "country": "US",
+    "vehicleModel": "LX2",
+    "trim": "Limited",
+    "version": "1.0.0",
+    "tags": [
+      "entertainment",
+      "rear-seat"
+    ],
+    "saleType": "구매",
+    "baselineIds": [
+      "BL-00023"
+    ],
+    "validFrom": "2026-05-15",
+    "validTo": "2027-12-31",
+    "ownerId": "Legacy상품관리팀",
+    "lifecycle": "DEPRECATED",
+    "type": "SINGLE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00011",
+    "name": "3G Remote Start Service",
+    "description": "3G 통신망 종료로 판매·운영이 종료된 원격 시동 서비스",
+    "country": "US",
+    "vehicleModel": "DM",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "tags": [
+      "connected",
+      "emergency-call"
+    ],
+    "saleType": "구매",
+    "baselineIds": [
+      "BL-00024"
+    ],
+    "validFrom": "2026-05-15",
+    "validTo": "2026-09-30",
+    "ownerId": "커넥티드상품팀",
+    "lifecycle": "RETIRED",
+    "type": "SINGLE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00013",
+    "name": "Beginner Care Pass",
+    "description": "초보 운전자의 고속도로 주행 부담을 낮추는 안전거리·가속·상세안내 Feature 패키지",
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "1.1.0",
+    "tags": [
+      "care",
+      "safety"
+    ],
+    "saleType": "구독",
+    "baselineIds": [
+      "BL-00028",
+      "BL-00029",
+      "BL-00030",
+      "BL-00163"
+    ],
+    "validFrom": "2026-09-22",
+    "validTo": "2027-08-31",
+    "ownerId": "선행상품기획팀",
+    "lifecycle": "RELEASED",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00014",
+    "name": "Beginner Care Pass",
+    "description": "초보 운전자의 고속도로 주행 부담을 낮추는 안전거리·가속·상세안내 Feature 패키지",
+    "country": "EU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Ultimate",
+    "version": "1.1.0",
+    "tags": [
+      "care",
+      "safety"
+    ],
+    "saleType": "구독",
+    "baselineIds": [
+      "BL-00031",
+      "BL-00032",
+      "BL-00033",
+      "BL-00173"
+    ],
+    "validFrom": "2026-09-22",
+    "validTo": "2027-08-31",
+    "ownerId": "선행상품기획팀",
+    "lifecycle": "RELEASED",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00015",
+    "name": "Beginner Care Pass",
+    "description": "초보 운전자의 고속도로 주행 부담을 낮추는 안전거리·가속·상세안내 Feature 패키지",
+    "country": "US",
+    "vehicleModel": "NX4 PE",
+    "trim": "Limited",
+    "version": "1.1.0",
+    "tags": [
+      "care",
+      "safety"
+    ],
+    "saleType": "구독",
+    "baselineIds": [
+      "BL-00034",
+      "BL-00035",
+      "BL-00036",
+      "BL-00222"
+    ],
+    "validFrom": "2026-09-22",
+    "validTo": "2027-08-31",
+    "ownerId": "선행상품기획팀",
+    "lifecycle": "RELEASED",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00016",
+    "name": "Beginner Care Pass",
+    "description": "초보 운전자의 고속도로 주행 부담을 낮추는 안전거리·가속·상세안내 Feature 패키지",
+    "country": "AU",
+    "vehicleModel": "NX4 PE",
+    "trim": "Highlander",
+    "version": "1.1.0",
+    "tags": [
+      "care",
+      "safety"
+    ],
+    "saleType": "구독",
+    "baselineIds": [
+      "BL-00037",
+      "BL-00038",
+      "BL-00039",
+      "BL-00225"
+    ],
+    "validFrom": "2026-09-22",
+    "validTo": "2027-08-31",
+    "ownerId": "선행상품기획팀",
+    "lifecycle": "RELEASED",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00017",
+    "name": "원격 주차 보조 30일 체험",
+    "description": "원격 주차와 주차 충돌방지 기능을 30일 동안 평가하는 체험 상품",
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "tags": [
+      "parking",
+      "safety"
+    ],
+    "saleType": "체험",
+    "baselineIds": [
+      "BL-00002",
+      "BL-00004",
+      "BL-00162"
+    ],
+    "validFrom": "2026-10-01",
+    "validTo": "2026-10-31",
+    "ownerId": "주차상품기획팀",
+    "lifecycle": "DEVELOPING",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00018",
+    "name": "고속도로 주행 보조 주말 체험",
+    "description": "고속도로 주행 보조와 스마트 크루즈 기능을 주말 동안 체험하는 상품",
+    "country": "KR",
+    "vehicleModel": "GN7",
+    "trim": "Calligraphy",
+    "version": "1.0.0",
+    "tags": [
+      "adas",
+      "highway"
+    ],
+    "saleType": "체험",
+    "baselineIds": [
+      "BL-00008",
+      "BL-00101",
+      "BL-00200"
+    ],
+    "validFrom": "2026-10-01",
+    "validTo": "2026-10-31",
+    "ownerId": "ADAS상품기획팀",
+    "lifecycle": "APPROVED",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00019",
+    "name": "Beginner Care Pass 1회 체험",
+    "description": "Beginner Care Pass의 전방 안전거리 3단계·급가속 억제·IC·JC 경로 사전안내를 활성화 시점부터 해당 주행 종료까지 제공하는 1회 체험 상품",
+    "country": "KR",
+    "vehicleModel": "NX4 PE",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "tags": [
+      "care",
+      "safety",
+      "highway"
+    ],
+    "saleType": "체험",
+    "baselineIds": [
+      "BL-00028",
+      "BL-00029",
+      "BL-00030",
+      "BL-00163"
+    ],
+    "validFrom": "2026-10-01",
+    "validTo": "2026-10-31",
+    "ownerId": "선행상품기획팀",
+    "lifecycle": "APPROVED",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00024",
+    "name": "Rear Entertainment Upgrade",
+    "description": "후석 엔터테인먼트 기능을 차량 구매 후 활성화하는 단품 구매 상품",
+    "country": "KR",
+    "vehicleModel": "CE1",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "tags": [
+      "entertainment",
+      "rear-seat"
+    ],
+    "saleType": "구매",
+    "baselineIds": [
+      "BL-00153"
+    ],
+    "validFrom": "2026-09-01",
+    "validTo": "2028-10-11",
+    "ownerId": "IVI상품기획팀",
+    "lifecycle": "DEPRECATED",
+    "type": "SINGLE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00034",
+    "name": "Digital Access and Display Beta",
+    "description": "디지털 키와 AR HUD를 묶은 북미 베타 서비스",
+    "country": "US",
+    "vehicleModel": "CT2",
+    "trim": "Executive",
+    "version": "1.4.0",
+    "tags": [
+      "connected",
+      "digital-service"
+    ],
+    "saleType": "구독",
+    "baselineIds": [
+      "BL-00116",
+      "BL-00117"
+    ],
+    "validFrom": "2028-02-10",
+    "validTo": "2028-12-31",
+    "ownerId": "Digital Experience팀",
+    "lifecycle": "DEVELOPING",
+    "type": "PACKAGE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00054",
+    "name": "Rear Entertainment Legacy Pack",
+    "description": "후석 엔터테인먼트 Gen1 기존 고객 유지 상품",
+    "country": "CA",
+    "vehicleModel": "LX2",
+    "trim": "Limited",
+    "version": "1.0.0",
+    "tags": [
+      "entertainment",
+      "rear-seat"
+    ],
+    "saleType": "구매",
+    "baselineIds": [
+      "BL-00097"
+    ],
+    "validFrom": "2026-07-20",
+    "validTo": "2027-12-31",
+    "ownerId": "Legacy상품관리팀",
+    "lifecycle": "DEPRECATED",
+    "type": "SINGLE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00055",
+    "name": "3G Remote Start Service",
+    "description": "3G 통신망 종료로 판매·운영이 종료된 원격 시동 서비스",
+    "country": "CA",
+    "vehicleModel": "DM",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "tags": [
+      "connected",
+      "emergency-call"
+    ],
+    "saleType": "구매",
+    "baselineIds": [
+      "BL-00098"
+    ],
+    "validFrom": "2026-07-20",
+    "validTo": "2026-09-30",
+    "ownerId": "커넥티드상품팀",
+    "lifecycle": "RETIRED",
+    "type": "SINGLE",
+    "_missing": {}
+  },
+  {
+    "catalogId": "CAT-00063",
+    "name": "Rear Entertainment Upgrade",
+    "description": "후석 엔터테인먼트 기능을 차량 구매 후 활성화하는 단품 구매 상품",
+    "country": "US",
+    "vehicleModel": "CE1",
+    "trim": "Premium",
+    "version": "1.0.0",
+    "tags": [
+      "entertainment",
+      "rear-seat"
+    ],
+    "saleType": "구매",
+    "baselineIds": [
+      "BL-00154"
+    ],
+    "validFrom": "2026-09-01",
+    "validTo": "2028-10-11",
+    "ownerId": "IVI상품기획팀",
+    "lifecycle": "DEPRECATED",
+    "type": "SINGLE",
+    "_missing": {}
+  }
+]

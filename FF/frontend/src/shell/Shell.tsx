@@ -2,6 +2,7 @@
 // 운영·안전 그룹 화면은 본문을 어두운 관제실 톤(data-zone="ops")으로 바꿔 운영 모드임을 분명히 한다.
 import { Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
 import { profileOf, roleLabel, roles } from '../data/refdata';
 import { Button, Icon } from '../design';
@@ -164,6 +165,12 @@ export function Shell({ children }: { children: ReactNode }) {
       </aside>
 
       <main className="sh-main" id="main" data-zone={zone}>
+        {STATIC_MODE && (
+          <div className="ds-stale" role="status" data-static-demo>
+            <Icon name="alert" size={16} />
+            {ko.page.readOnly}
+          </div>
+        )}
         {trail.length > 0 && (
           <nav className="sh-trail" aria-label="breadcrumb">
             <ol>

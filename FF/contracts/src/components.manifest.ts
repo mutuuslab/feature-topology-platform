@@ -1,6 +1,7 @@
 // 42 컴포넌트 manifest — 하네스(conformance)의 단일 기준.
 // 출처: Feature_Platform_42컴포넌트_PoC_워크플로우_아키텍처반영_v0.50.pptx (Module View, shape 266~307)
 // status가 'implemented'인 항목은 module·endpoints·screens·tests가 모두 실재해야 한다(tools/conformance.ts).
+import { ROUTES } from './routes';
 
 export type DomainId = 'D01' | 'D02' | 'D03' | 'D04' | 'D05' | 'D06';
 export type Tier = 'A' | 'B' | 'C';
@@ -87,8 +88,20 @@ const SEEDS: Seed[] = [
   ['D06-12', '이상 징후 대응', 'B', 'domains/d06-qsec/anomaly-response', [], [4]],
 ];
 
-/** 구현이 끝난 컴포넌트는 여기에 endpoints/screens/tests를 채우고 status를 올린다. */
-const IMPLEMENTED: Record<string, Pick<ComponentEntry, 'endpoints' | 'screens' | 'tests'>> = {};
+/**
+ * 구현이 끝난 컴포넌트 — 화면(routes.tsx 경로)과 테스트 파일을 적는다. endpoints는 ROUTES에서 자동으로 모인다.
+ * conformance가 모듈 디렉터리·테스트 파일·화면 라우트 실재를, backend/test/conformance.spec.ts가 등록·응답을 검사한다.
+ */
+const BE_D01 = ['backend/test/d01/registry.spec.ts', 'backend/test/d01/topology-catalog.spec.ts'];
+const FE_V2 = 'frontend/src/__tests__/screensV2.test.tsx';
+const E2E_GOV = 'e2e/tests/governance.spec.ts';
+const IMPLEMENTED: Record<string, Pick<ComponentEntry, 'screens' | 'tests'>> = {
+  'D01-01': { screens: ['/features', '/features/:id/:ver', '/baselines'], tests: [...BE_D01, FE_V2, E2E_GOV] },
+  'D01-02': { screens: ['/features/:id/:ver', '/analysis/impact', '/precheck'], tests: [...BE_D01, 'contracts/src/rules/topology.test.ts', 'contracts/src/rules/precheck.test.ts', FE_V2, E2E_GOV] },
+  'D01-03': { screens: ['/products', '/products/new', '/products/:id/:ver'], tests: ['backend/test/d01/topology-catalog.spec.ts', 'contracts/src/rules/catalog.test.ts', E2E_GOV] },
+  'D01-10': { screens: ['/audit'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
+  'D04-04': { screens: ['/events'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
+};
 
 export const COMPONENTS: ComponentEntry[] = SEEDS.map(([id, ko, tier, module, ifs, pocSteps]) => {
   const impl = IMPLEMENTED[id];
@@ -99,7 +112,7 @@ export const COMPONENTS: ComponentEntry[] = SEEDS.map(([id, ko, tier, module, if
     tier,
     status: impl ? 'implemented' : 'planned',
     module,
-    endpoints: impl?.endpoints ?? [],
+    endpoints: impl ? ROUTES.filter((r) => r.component === id).map((r) => `${r.method} ${r.path}`) : [],
     screens: impl?.screens ?? [],
     tests: impl?.tests ?? [],
     ifs,

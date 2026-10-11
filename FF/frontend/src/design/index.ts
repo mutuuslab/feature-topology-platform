@@ -8,3 +8,4 @@ export * from './primitives';
 export * from './lifecycle';
 export * from './table';
 export * from './overlay';
+export * from './page';

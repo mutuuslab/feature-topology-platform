@@ -32,6 +32,10 @@ export interface RouteDef {
   roles?: Role[];
   body?: ZodTypeAny;
   query?: string[];
+  /** 필수 질의가 있는 GET — 준수 검사가 호출할 예시 값 */
+  sample?: Record<string, string>;
+  /** 끝나지 않는 스트림(SSE) — 준수 검사는 상태·Content-Type만 본다 */
+  stream?: boolean;
 }
 
 export const ROUTES: RouteDef[] = [
@@ -39,7 +43,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'health', method: 'GET', path: '/api/health', summary: '상태 점검', component: 'KERNEL' },
   { name: 'components', method: 'GET', path: '/api/components', summary: '42 컴포넌트 현황', component: 'KERNEL' },
   { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit'] },
-  { name: 'eventStream', method: 'GET', path: '/api/events/stream', summary: '이벤트 실시간 스트림 (SSE)', component: 'D04-04', query: ['types'] },
+  { name: 'eventStream', method: 'GET', path: '/api/events/stream', summary: '이벤트 실시간 스트림 (SSE)', component: 'D04-04', query: ['types'], stream: true },
   { name: 'audit', method: 'GET', path: '/api/audit', summary: '감사 이력', component: 'D01-10', query: ['target', 'actorId', 'result', 'limit'] },
 
   // Feature Registry (D01-01)
@@ -74,7 +78,7 @@ export const ROUTES: RouteDef[] = [
   // Feature Catalog (D01-03)
   { name: 'listProducts', method: 'GET', path: '/api/products', summary: '상품 목록', component: 'D01-03', query: ['q', 'lifecycle', 'saleType', 'country'] },
   { name: 'createProduct', method: 'POST', path: '/api/products', summary: '상품 등록 (PROPOSED 1.0.0)', component: 'D01-03', roles: ['PRODUCT_AUTHOR'], body: CreateProductBody },
-  { name: 'productCandidates', method: 'GET', path: '/api/products/candidates', summary: 'BOM 후보 (확정 Baseline·범위 일치)', component: 'D01-03', query: ['country', 'vehicleModel', 'trim', 'q'] },
+  { name: 'productCandidates', method: 'GET', path: '/api/products/candidates', summary: 'BOM 후보 (확정 Baseline·범위 일치)', component: 'D01-03', query: ['country', 'vehicleModel', 'trim', 'q'], sample: { country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium' } },
   { name: 'validateComposition', method: 'POST', path: '/api/products/validate', summary: '구성 검증 (저장 없음)', component: 'D01-03', roles: ['PRODUCT_AUTHOR', 'PRODUCT_APPROVER'], body: ValidateCompositionBody },
   { name: 'productDetail', method: 'GET', path: '/api/products/:id/versions/:ver', summary: '상품 Version 상세·구성 검증·출시 적격성', component: 'D01-03' },
   { name: 'updateProductDraft', method: 'PATCH', path: '/api/products/:id/versions/:ver', summary: 'PROPOSED 상품 수정', component: 'D01-03', roles: ['PRODUCT_AUTHOR'], body: UpdateProductDraftBody },
@@ -83,3 +87,23 @@ export const ROUTES: RouteDef[] = [
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;
+
+/** 경로 이름 + 매개변수 + 질의 → 요청 URL. 질의는 주어진 키 순서대로, 빈 값은 뺀다(스냅샷 파일 이름이 이 순서에 의존). */
+export function routeUrl(name: string, params: Record<string, string> = {}, query: Record<string, string | number | boolean | undefined | null> = {}): string {
+  const r = ROUTES.find((x) => x.name === name);
+  if (!r) throw new Error(`알 수 없는 API: ${name}`);
+  const path = r.path.replace(/:(\w+)/g, (_, k: string) => {
+    if (params[k] === undefined) throw new Error(`${name}: 경로 매개변수 ${k} 누락`);
+    return encodeURIComponent(params[k]);
+  });
+  const qs = Object.entries(query)
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+    .join('&');
+  return qs ? `${path}?${qs}` : path;
+}
+
+/** 정적 데모 스냅샷 파일 이름 — 파일 시스템·정적 호스팅에서 안전한 문자만 남긴다 */
+export function snapshotFile(url: string): string {
+  return 'api-snapshot/' + url.replace(/^\/api\//, '').replace(/[^A-Za-z0-9._-]/g, '_') + '.json';
+}

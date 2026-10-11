@@ -24,11 +24,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm ci && npm run build:contracts
-        working-directory: FF   # workspaces 루트에서 설치
+      - run: npm ci && npm run build:contracts && npm run build -w feature-topology-backend && npm run snapshot:api
+        working-directory: FF   # workspaces 루트에서 설치 + 정적 데모 스냅샷
       - run: npm run build
         env:
           GITHUB_PAGES: '1'
+          VITE_DATA_MODE: static
       - run: cp dist/index.html dist/404.html   # SPA 라우팅 fallback
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,7 +1,9 @@
 // 런타임 준수 검사 — manifest(contracts)와 실제로 떠 있는 Nest 앱을 대조한다.
 // 정적 검사(tools/conformance.ts)는 파일 실재를, 이 테스트는 등록·응답을 본다.
 import { INestApplication } from '@nestjs/common';
-import { COMPONENTS } from '@ff/contracts';
+import { COMPONENTS, ROUTES, routeUrl } from '@ff/contracts';
+import { get as httpGet } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ComponentRegistry } from '../src/kernel/components';
 import { bootApp } from './helpers';
@@ -28,11 +30,28 @@ describe('42 컴포넌트 런타임 준수', () => {
     expect(registry.registered().has(id)).toBe(true);
   });
 
-  const getEndpoints = implemented.flatMap((c) =>
-    c.endpoints.filter((e) => e.startsWith('GET ') && !e.includes(':')).map((e) => [c.id, e.slice(4)] as const),
+  // 경로 매개변수가 없는 GET — 필수 질의는 ROUTES의 sample, 스트림은 상태·헤더만
+  const gets = implemented.flatMap((c) =>
+    ROUTES.filter((r) => r.component === c.id && r.method === 'GET' && !r.path.includes(':')).map((r) => [c.id, r.path, r] as const),
   );
-  it.each(getEndpoints)('%s GET %s — 2xx로 응답한다', async (_id, path) => {
-    const res = await http().get(path);
+  it.each(gets)('%s GET %s — 2xx로 응답한다', async (_id, _path, r) => {
+    const url = routeUrl(r.name, {}, r.sample ?? {});
+    if (r.stream) {
+      const server = app.getHttpServer();
+      if (!server.listening) await new Promise<void>((ok) => server.listen(0, ok));
+      const port = (server.address() as AddressInfo).port;
+      const res = await new Promise<{ status: number; type: string }>((ok, fail) => {
+        const req = httpGet({ port, path: url, headers: { Accept: 'text/event-stream' } }, (m) => {
+          ok({ status: m.statusCode ?? 0, type: String(m.headers['content-type']) });
+          req.destroy();
+        });
+        req.on('error', fail);
+      });
+      expect(res.status).toBe(200);
+      expect(res.type).toContain('text/event-stream');
+      return;
+    }
+    const res = await http().get(url);
     expect(res.status, JSON.stringify(res.body).slice(0, 200)).toBeLessThan(300);
   });
 

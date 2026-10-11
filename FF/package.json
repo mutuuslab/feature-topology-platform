@@ -27,7 +27,8 @@
     "dev:frontend": "npm run dev -w feature-topology-frontend",
     "data:import": "node tools/dataset/import.ts",
     "data:check": "node tools/dataset/check.ts",
-    "openapi": "node tools/openapi.ts"
+    "openapi": "node tools/openapi.ts",
+    "snapshot:api": "node tools/snapshot-api.ts"
   },
   "devDependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",

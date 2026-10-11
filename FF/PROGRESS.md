@@ -4,12 +4,13 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **P6 거버넌스 화면(v2)**부터 — 새 화면은 `frontend/src/screens/`에 `design` 키트·`copy/ko.ts`만 써서 만들고 routes.tsx에 `v2: true`로 등록한다(접근성 위반 0·문구 lint·토큰 lint 하드 규칙).
-  1. API 클라이언트: `src/api/client.ts` — `@ff/contracts`의 `ROUTES`로 함수 생성(이름=ROUTES.name), 행위자 헤더(역할 전환기의 레거시 역할 → 플랫폼 역할 매핑), Idempotency-Key 자동, 오류 봉투 → 예외. `@tanstack/react-query` 도입.
-  2. 화면: Feature Registry 목록(`/features`, DataTable·필터·facets) → 상세(`/features/:id/:ver` — LifecycleStepper(막힌 사유)·GateRail·19속성·의존관계·구현 추적·Baseline·사용 상품·탭은 URL 동기), Gate 원장, BOM 승인 큐(체크리스트·DiffView·DangerConfirm 아닌 일반 확인), Catalog 구성(후보·실시간 검증), 변경 영향, 사전점검(`/precheck`), 감사·이벤트. 기존 `/catalog`·`/master/bom` 등 레거시는 v2가 대체하면 메뉴를 v2로 옮기고 레거시는 부모 아래 드릴다운 또는 삭제(래칫: FEAT-BDC 파일 수 감소).
-  3. UI 리뷰에서 미룬 항목(레거시 화면 재작성 시 함께): Catalog 상단 차트를 한 줄 지표로 접기(1366에서 표 10행 이상), 레거시 채움 배지·그라디언트 막대 제거, KPI 지표 줄(모노·의미 있을 때만 색), 히트맵 off 셀 중립화.
-  4. 정적 모드(`VITE_DATA_MODE=static`)와 `snapshot:api`(Cloudflare 데모).
-- e2e: `cd FF/e2e && npx playwright test`(백엔드 9101·Vite **9112** 자동 기동 — 9012는 다른 프로젝트 Quartz가 사용 중일 수 있음). 시각 기준 갱신 `npm run update:visual -w @ff/e2e`, 접근성 기준 갱신 `UPDATE_A11Y=1`.
+- **P7 정책 파이프라인 + Feature Flag 평가기**부터 (PoC ②③단계).
+  1. contracts: Policy 스키마(정책 ID·대상 Feature Version·Control Point별 값·Safe Default·rollout(코호트)·targeting 조건 typed constraints·상태 Draft→Review→Approved→Deployed), 8개 검증기 규칙(정책 오류·충돌, 컴플라이언스, 차량 시나리오, 안전 동작, 시스템 연동, 변경 영향, 품질 기준(TMS 증적), 안전 요구 추적) — 각각 순수 함수 + 표 기반 테스트. **단일 평가기** `contracts/flags/evaluate.ts`(Kill → 적용성/Variant → 사용 권한(체험권) → 대상 규칙 → 코호트(FP-COHORT-1, P0 `cohort_golden_vectors.json`) → 기본값, 오류·만료 시 Safe Default).
+  2. backend: `domains/d01-policy/{policy-store,targeting,entitlement,activation,staged-rollout,experiment}`, `domains/d06-qsec/*` 검증기(병렬 실행 → 검증 이력 D06-04 → 배포 안전성 D03-02 → 정책 승인). LifecycleService의 `policyCoverage`를 정책 저장소로 연결(현재 0 → DEVELOPING→VERIFIED가 실제로 열린다). OFREP `POST /ofrep/v1/evaluate/flags/:key`(IF-10).
+  3. 데이터: CAT-00019 체험권(1회), FEAT-00022 Control Point(Signal/Parameter) 정책 시드.
+  4. v2 화면: 정책 작성·검증(8개 병렬 결과)·승인, 사용 권한·체험권, 적용 대상·활성화 판단 시뮬레이터. 레거시 `/ops/policy`·`/activation`·`/commerce/billing`은 하위로.
+- P6에서 남긴 것(필요 시): v2 Feature 신규 등록·새 Version·초안 수정·의존관계 등록 폼(백엔드 API는 있음), Topology 그래프 v2.
+- 실행: 백엔드 `npm run build -w feature-topology-backend && npm start -w feature-topology-backend`(9101) · 프론트 `npm run dev -w feature-topology-frontend`(9012, `/api/`만 백엔드로 프록시). 정적 데모 `npm run snapshot:api && VITE_DATA_MODE=static npm run build -w feature-topology-frontend`.
 
 ## 기준 문서 (저장소 밖)
 | 문서 | 위치 | 용도 |
@@ -28,7 +29,7 @@
 - [x] **P3 Registry·Gate·Lifecycle·BOM** — contracts 규칙 표(전이 7종·재판정 표 7·Baseline 정규화/diff), Registry(등록·유사 중복 409·초안 수정·새 Version·상세 19속성+추적), Gate(append-only·증거 없는 PASS 금지·단계 순서·RELEASED 판정 불가), Lifecycle(전이+감사+이벤트 한 tx, 자동 전이 연쇄, 직무 분리·사유), BOM(요청·8항목 체크리스트·요청자≠승인자·BL 발급·Lifecycle 제외 sha256·Baseline은 Lifecycle만 추종). `contracts/routes.ts`(21경로) → OpenAPI 생성·`--check`, 실제 라우트와 양방향 드리프트 테스트. 백엔드 44건·contracts 43건. 테스트가 잡은 버그 2건 수정: 구현 연결 0건이 IMPLEMENTATION을 통과하던 문제, 새 Version 요청의 국가 변경이 조용히 무시되던 문제(스키마 strict)
 - [x] **P4 Topology·Catalog·Impact·PRECHECK** — contracts: 상품 구성 검증(확정 BL·상태·범위·중복·REQUIRES 동봉·EXCLUDES·SINGLE/PACKAGE·기간, 데이터셋 18상품 전부 PASS), 상품 Lifecycle 표 17(구성 승인·고객 출시 승인 분리), 의존관계 판정(데이터셋 29건과 전부 일치)·신규 관계 구조 검증(중복·대칭·범위·순환). 백엔드: 의존관계 등록(PROPOSED 원천만)·Lifecycle 변경 시 재판정, 관계 그래프, `/api/precheck`, 다단계 변경 영향(의존자·Baseline·상품·재판정 Gate·담당자), Catalog(등록·초안·새 Version·후보·저장 없는 검증·전이·출시 적격성·직무 분리). 34경로. 테스트 contracts 58·백엔드 59
 - [x] **P5 디자인 시스템·셸·MENU 2.0** — 토큰("Engineering Instrument": SUIT+JetBrains Mono 셀프호스팅, 종이/그래파이트, 코발트 단일 강조, Lifecycle·Gate 색+모양, 관제실 다크 영역, compact/comfortable 밀도, 시연 모드 P), 디자인 키트(상태 배지·IdChip·LifecycleStepper·GateRail·DataTable(키보드)·AsyncView(data-state)·URL 탭·Diff·EventStream·Drawer·DangerConfirm(type-to-confirm)) + `/_design`, 셸(레일 8·그룹 패널·breadcrumb·내 역할 필터·⌘K·관제실 영역), `routes.tsx` MENU 2.0(83 라우트, 고아 0), 레거시 브리지 CSS. 하네스: IA 테스트 12, e2e(메뉴 크롤 41·3해상도 레이아웃·시연·type-to-confirm), axe(신규 0 / 레거시 343 래칫, 시작 424), 시각 회귀 4조건. 테스트가 잡은 버그: 비요소 키 대상 크래시, 레거시 body 글자 크기가 밀도·시연을 무시, 파생 토큰이 :root에서만 해석돼 관제실 영역 색이 깨짐, 레일 버튼에 다크 토큰 오적용
-- [ ] P6 거버넌스 화면 + react-query + 정적 모드
+- [x] **P6 거버넌스 화면(v2)** — API 클라이언트(ROUTES 기반·역할 매핑·멱등 키·오류 봉투)+react-query, 화면: Feature Registry 목록/상세(스테퍼·전이·Gate 판정·의존관계·구현 추적·Baseline 요청·감사), BOM 확정 승인 큐(체크리스트·diff·결정), Catalog 상품 목록/상세/새 구성(실시간 구성 검증), 변경 영향, 데이터 사전점검, 감사 이력, Platform 이벤트(SSE). 대체된 레거시는 v2 아래 드릴다운. D01-10·D04-04를 도메인 모듈로 분리. 정적 데모 모드(snapshot:api 487응답, 읽기 전용 배너, Cloudflare·Pages 빌드 반영). 컴포넌트 **5/42**(D01-01·02·03·10, D04-04). 테스트: 화면 9·e2e 끝단 흐름 4·v2 접근성 0. 하네스가 잡은 버그: Vite 프록시 '/api'가 '/api-snapshot'까지 가로챔, a11y 대기가 SSE에서 끝나지 않음, 런타임 준수 검사가 필수 질의·스트림 경로를 못 다룸
 - [ ] P7 정책 파이프라인(8 검증기) + 권한·체험권·대상·활성화 + Flag 평가기(OFREP)
 - [ ] P8 PKI·배포·Kill·GLEO·Unleash(IF-04) 어댑터
 - [ ] P9 PoC 6단계 러너 + 42 컴포넌트 실시간 화면
@@ -58,20 +59,20 @@
 
 ## 준수 현황 (자동 생성 — `npm run progress`)
 <!-- AUTO:conformance -->
-**컴포넌트 0/42** — D01 0/10 · D02 0/3 · D03 0/4 · D04 0/6 · D05 0/7 · D06 0/12
+**컴포넌트 5/42** — D01 4/10 · D02 0/3 · D03 0/4 · D04 1/6 · D05 0/7 · D06 0/12
 
 | ID | 컴포넌트 | Tier | 상태 | 화면 | 테스트 |
 |---|---|---|---|---|---|
-| D01-01 | Feature Registry | A | · | — | 0 |
-| D01-02 | Feature Topology | A | · | — | 0 |
-| D01-03 | Feature Catalog | A | · | — | 0 |
+| D01-01 | Feature Registry | A | ✅ | /features /features/:id/:ver /baselines | 4 |
+| D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /analysis/impact /precheck | 6 |
+| D01-03 | Feature Catalog | A | ✅ | /products /products/new /products/:id/:ver | 3 |
 | D01-04 | 적용 대상 선정 규칙 | A | · | — | 0 |
 | D01-05 | 사용 권한 관리 | A | · | — | 0 |
 | D01-06 | 정책 저장·버전 관리 | A | · | — | 0 |
 | D01-07 | 실험·효과 검증 관리 | B | · | — | 0 |
 | D01-08 | 단계적 기능 배포 | B | · | — | 0 |
 | D01-09 | 정책 기반 활성화 제어 | A | · | — | 0 |
-| D01-10 | 감사 이력 관리 | A | · | — | 0 |
+| D01-10 | 감사 이력 관리 | A | ✅ | /audit | 2 |
 | D02-01 | Variant 조건 관리 | A | · | — | 0 |
 | D02-02 | 기능 지원 조건 관리 | B | · | — | 0 |
 | D02-03 | 차량 런타임 실행 모듈 | A | · | — | 0 |
@@ -82,7 +83,7 @@
 | D04-01 | 배포 파이프라인 연계 | A | · | — | 0 |
 | D04-02 | 품질 기준 검증 | B | · | — | 0 |
 | D04-03 | 운영 데이터 수집 | A | · | — | 0 |
-| D04-04 | 이벤트 이력 추적 | A | · | — | 0 |
+| D04-04 | 이벤트 이력 추적 | A | ✅ | /events | 2 |
 | D04-05 | 장애·VOC 이력 연계 | C | · | — | 0 |
 | D04-06 | 품질 피드백 반영 | A | · | — | 0 |
 | D05-01 | API Gateway | C | · | — | 0 |
@@ -111,5 +112,5 @@
 |---|---|---|---|
 | rawColors | 827 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
 | featBdcFiles | 37 | ↓ 줄이기 | FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지 |
-| implementedComponents | 0 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
+| implementedComponents | 5 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
 <!-- /AUTO:conformance -->

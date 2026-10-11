@@ -15,7 +15,8 @@ export default defineConfig({
   server: {
     port: 9012,
     host: true,
-    proxy: { '/api': 'http://localhost:9101' }, // 백엔드(NestJS) — FF 루트에서 npm run dev:backend
+    // '/api/'까지 맞춘다 — '/api'만 쓰면 정적 스냅샷 경로 '/api-snapshot/…'까지 백엔드로 넘어간다
+    proxy: { '/api/': 'http://localhost:9101' }, // 백엔드(NestJS) — FF 루트에서 npm run dev:backend
   },
   build: {
     rollupOptions: {

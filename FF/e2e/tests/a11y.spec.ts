@@ -16,7 +16,9 @@ for (const m of MENU_ENTRIES) {
   test(`axe: ${m.title} (${m.menu})`, async ({ page }) => {
     await page.goto(m.menu);
     await expect(page.locator('#main')).toBeVisible();
-    await page.waitForLoadState('networkidle');
+    // networkidle은 SSE(/events)처럼 열린 연결이 있으면 끝나지 않는다 — 로딩 표식이 사라질 때까지만 기다린다
+    await page.waitForFunction(() => !document.querySelector('[data-state="loading"], [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
+    await page.waitForTimeout(300);
     const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
     const count = bad.reduce((n, v) => n + v.nodes.length, 0);

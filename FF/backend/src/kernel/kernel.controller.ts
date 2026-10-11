@@ -1,18 +1,13 @@
-// 플랫폼 공통 조회 API — 상태 점검, 42 컴포넌트 현황, 이벤트 이력(+SSE), 감사 이력.
-import { Controller, Get, Inject, MessageEvent, Query, Sse } from '@nestjs/common';
-import { Observable, map } from 'rxjs';
-import { AuditService, type AuditResult } from './audit.service';
+// 플랫폼 공통 조회 API — 상태 점검, 42 컴포넌트 현황. (감사 이력은 D01-10, 이벤트 이력은 D04-04 모듈)
+import { Controller, Get, Inject } from '@nestjs/common';
 import { ComponentRegistry } from './components';
 import { DB, type Db } from './db';
-import { EventService } from './event.service';
 
 @Controller('api')
 export class KernelController {
   constructor(
     @Inject(DB) private readonly db: Db,
     private readonly registry: ComponentRegistry,
-    private readonly events: EventService,
-    private readonly audit: AuditService,
   ) {}
 
   @Get('health')
@@ -43,21 +38,5 @@ export class KernelController {
       unknownIds: this.registry.unknownIds(),
       items,
     };
-  }
-
-  @Get('events')
-  listEvents(@Query('after') after?: string, @Query('type') type?: string, @Query('aggregate') aggregate?: string, @Query('limit') limit?: string) {
-    return { items: this.events.list({ after: after ? Number(after) : 0, type, aggregate, limit: limit ? Number(limit) : undefined }) };
-  }
-
-  /** 실시간 이벤트 — EventSource('/api/events/stream?types=a,b') */
-  @Sse('events/stream')
-  stream(@Query('types') types?: string): Observable<MessageEvent> {
-    return this.events.stream(types ? types.split(',') : undefined).pipe(map((e) => ({ id: String(e.seq), type: 'platform', data: e })));
-  }
-
-  @Get('audit')
-  listAudit(@Query('target') target?: string, @Query('actorId') actorId?: string, @Query('result') result?: AuditResult, @Query('limit') limit?: string) {
-    return { items: this.audit.list({ target, actorId, result, limit: limit ? Number(limit) : undefined }) };
   }
 }

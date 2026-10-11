@@ -25,3 +25,4 @@ FF/harness/conformance.json
 FF/e2e/test-results/
 FF/e2e/report/
 FF/e2e/review/
+FF/frontend/public/api-snapshot/

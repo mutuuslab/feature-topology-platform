@@ -3,7 +3,11 @@
  * 위에서 렌더되고 조작 가능한지 검증한다. 렌더 자체가 목적이므로 수치는 최소만 고정한다.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { cleanup, render, screen, fireEvent, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+/** v2 화면(react-query)을 App 통째로 그릴 때 — main.tsx가 주는 공급자와 같다 */
+const freshQueryClient = () => new QueryClient({ defaultOptions: { queries: { retry: false } } });
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { useEffect, type ReactNode } from 'react';
 import { AppProvider, useApp } from '../store';
@@ -240,32 +244,56 @@ describe('§12.5 / §15 / §18 Closed-Loop 화면', () => {
 });
 
 describe('라우팅·네비게이션 통합', () => {
-  it('구현 화면 메뉴(차량 운영 레일 → Twin Fleet)에서 VIN 상세까지 이동한다', async () => {
+  it('차량 운영 레일 → Fleet 실시간 적용 현황 메뉴로 들어간다', async () => {
     render(
+      <QueryClientProvider client={freshQueryClient()}>
       <MemoryRouter initialEntries={['/']}>
         <AppProvider>
           <TwinProvider>
             <App />
           </TwinProvider>
         </AppProvider>
-      </MemoryRouter>,
+      </MemoryRouter>
+      </QueryClientProvider>,
     );
 
     // MENU 2.0 레일은 업무 8그룹 — 차량 운영·안전 그룹 패널에서 화면으로 들어간다.
     fireEvent.click(await screen.findByRole('button', { name: '차량 운영·안전' }));
     // 메뉴 항목 이름은 정본 화면 이름뿐이고(화면 ID 배지는 정본 업무 메뉴에 없다), 기준 화면 정의서(/ui/UI11)는 제품에 없다.
-    const row = await screen.findByRole('link', { name: /^차량 운영 현황$/ }, { timeout: 5000 });
-    expect(row.textContent).toBe('차량 운영 현황');
+    const row = await screen.findByRole('link', { name: /^Fleet 실시간 적용 현황$/ }, { timeout: 5000 });
+    expect(row.textContent).toBe('Fleet 실시간 적용 현황');
     expect(document.querySelector('a[href^="/ui/UI"]')).toBeNull();
-    expect(row).toHaveAttribute('href', '/fleet');
+    expect(row).toHaveAttribute('href', '/fleet/live');
     fireEvent.click(row);
-    // 화면으로 들어가면 그 화면의 나머지 구현 뷰가 「구현 뷰」 행에 나타난다.
-    fireEvent.click(await screen.findByRole('link', { name: /Twin Fleet/, }, { timeout: 5000 }));
-    // 두 페이지 모두 lazy 라우트다. 청크 로드 + Suspense 재시도 + 무거운 페이지 마운트가
-    // 겹치면 기본 1000ms 를 넘길 수 있으므로(머신 부하에 따라 편차가 큼) 여유를 준다.
-    // 검증 대상은 '이동'이지 '지연'이 아니다.
-    expect(await screen.findByRole('heading', { name: /Twin Fleet/ }, { timeout: 5000 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Fleet 실시간 적용 현황' }, { timeout: 5000 })).toBeInTheDocument();
+  }, 20000);
 
+  it('이전 주소 /twin/live는 Fleet 실시간 적용 현황으로, 레거시 3D Fleet은 VIN 상세까지 이동한다', async () => {
+    render(
+      <QueryClientProvider client={freshQueryClient()}>
+      <MemoryRouter initialEntries={['/twin/live']}>
+        <AppProvider>
+          <TwinProvider>
+            <App />
+          </TwinProvider>
+        </AppProvider>
+      </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByRole('heading', { level: 1, name: 'Fleet 실시간 적용 현황' }, { timeout: 5000 })).toBeInTheDocument();
+    cleanup();
+    render(
+      <QueryClientProvider client={freshQueryClient()}>
+      <MemoryRouter initialEntries={['/twin/fleet']}>
+        <AppProvider>
+          <TwinProvider>
+            <App />
+          </TwinProvider>
+        </AppProvider>
+      </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByRole('heading', { name: /Twin Fleet/ }, { timeout: 5000 })).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole('button', { name: '상세 →' })[0]);
     expect(await screen.findByRole('heading', { name: /Vehicle Twin ·/ }, { timeout: 5000 })).toBeInTheDocument();
     // 레일 → 화면 → 구현 뷰 → 상세로 세 번 이동하므로 기본 5s 로는 부족하다(검증 대상은 이동 경로).

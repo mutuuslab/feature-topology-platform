@@ -4,8 +4,8 @@
  * 두 층을 나눠 검증한다.
  *  (1) `scene/plantLayout` 의 순수 함수 — 컨베이어·AMR·야드·셀 상태가 시뮬레이션
  *      시각만으로 결정되고, 판정 집계에서 파생되는지.
- *  (2) `/twin/live` 의 '3D 공장 뷰' 탭 — HUD·프리셋·투어·라벨 LOD·셀 상태표 DOM 계약과
- *      WebGL 미지원 시 자동 강등되는 2D 평면도 경로.
+ *  (2) 화면 쪽('3D 공장 뷰' 탭)은 /twin/live가 Fleet 실시간 적용 현황(/fleet/live)으로 바뀌며 제거되었다(2026-10-12).
+ *      PlantScene은 레거시 Fleet 화면(twinViews)이 계속 쓴다.
  *
  * jsdom 에는 WebGL 도 2D 캔버스도 없으므로 fiber/drei 를 스텁하고, 라벨 텍스처는
  * `makeTexture` 가 null 을 돌려주어 그려지지 않는다(HUD/도면 쪽을 assert 대상으로 삼는다).
@@ -16,7 +16,6 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect, type ReactNode } from 'react';
 import { AppProvider, useApp } from '../store';
 import { createTwinProvider, TwinProvider } from '../state/twinStore';
-import { TwinLive } from '../pages/twinLive';
 import {
   AMR_ROUTES,
   CELLS,
@@ -128,21 +127,6 @@ function LocationProbe() {
   return <div data-testid="loc">{pathname}</div>;
 }
 
-function renderLive() {
-  return render(
-    <MemoryRouter initialEntries={['/twin/live']}>
-      <AppProvider>
-        <RoleSetter role="integrator" />
-        <TwinProvider>
-          <Routes>
-            <Route path="/twin/live" element={<TwinLive />} />
-            <Route path="/twin/vehicle/:vin" element={<LocationProbe />} />
-          </Routes>
-        </TwinProvider>
-      </AppProvider>
-    </MemoryRouter>,
-  );
-}
 
 /** true = WebGL 있음(3D 경로), false = 없음(2D 강등 경로). */
 function stubWebgl(available: boolean) {
@@ -369,113 +353,3 @@ describe('§17.2 Plant Twin — 레이아웃 SoT', () => {
 });
 
 /* ------------------------------------------------------------ 화면(탭/HUD) */
-
-describe('§17.2 Plant Twin — 3D 공장 뷰 탭', () => {
-  it('기본 탭이 공장 뷰이고, 탭 전환으로 차량 뷰·Fleet 평면도로 갈 수 있다', () => {
-    renderLive();
-    expect(screen.getByTestId('plant-view')).toBeInTheDocument();
-    expect(screen.queryByTestId('twinlive-3d')).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: '3D 차량 뷰' }));
-    expect(screen.getByTestId('twinlive-3d')).toBeInTheDocument();
-    expect(screen.queryByTestId('plant-view')).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Fleet 평면도' }));
-    expect(screen.getByTestId('twinlive-floor')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: '3D 공장 뷰' }));
-    expect(screen.getByTestId('plant-view')).toBeInTheDocument();
-  });
-
-  it('HUD 에 규모·Twin 수·프리셋·투어·라벨 모드·FPS 가 있고 캔버스가 마운트된다', () => {
-    renderLive();
-    expect(screen.getByText(/116 m × 60 m · 차량 30대/)).toBeInTheDocument();
-    expect(screen.getByTestId('plant-canvas')).toBeInTheDocument();
-
-    const presets = within(presetGroup()).getAllByRole('button');
-    expect(presets).toHaveLength(8);
-    expect(presets[0]).toHaveTextContent('전체 조망');
-    expect(presets[0].className).toContain('primary'); // 기본 프리셋
-
-    const tour = screen.getByRole('button', { name: /투어/ });
-    expect(tour).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByTestId('plant-fps')).toHaveTextContent('– fps');
-
-    // 색만으로 의미를 전달하지 않도록 범례가 항상 붙는다
-    expect(screen.getByText('수렴 (Converged)')).toBeInTheDocument();
-    expect(screen.getByText('Guard 차단 (Guarded)')).toBeInTheDocument();
-    expect(screen.getByText(/클릭 = VIN 선택/)).toBeInTheDocument();
-  });
-
-  it('프리셋 버튼과 셀 카드 클릭이 카메라 프리셋을 바꾼다', () => {
-    renderLive();
-    fireEvent.click(presetButton('출하 야드'));
-    expect(presetButton('출하 야드').className).toContain('primary');
-    expect(presetButton('전체 조망').className).not.toContain('primary');
-
-    const cards = within(cellGroup()).getAllByRole('button');
-    expect(cards).toHaveLength(5);
-    expect(cards.map((c) => c.textContent)).toEqual(
-      expect.arrayContaining([expect.stringContaining('VIN REG'), expect.stringContaining('EOL TEST')]),
-    );
-
-    fireEvent.click(within(cellGroup()).getByRole('button', { name: /EOL TEST/ }));
-    expect(presetButton('EOL 시험').className).toContain('primary');
-  });
-
-  it('투어는 7 초 체류 후 다음 프리셋으로 넘어가고, 라벨 LOD·선택 VIN 추적이 토글된다', () => {
-    renderLive();
-    const tour = screen.getByRole('button', { name: /투어/ });
-    fireEvent.click(tour);
-    expect(screen.getByRole('button', { name: '⏸ 투어 정지' })).toHaveAttribute('aria-pressed', 'true');
-
-    // +5s 두 번 = 10 s → 첫 스톱(전체 조망)에서 두 번째 스톱(VIN 등록)으로
-    fireEvent.click(screen.getByRole('button', { name: '+5s' }));
-    expect(presetButton('전체 조망').className).toContain('primary');
-    fireEvent.click(screen.getByRole('button', { name: '+5s' }));
-    expect(presetButton('VIN 등록').className).toContain('primary');
-
-    fireEvent.click(screen.getByRole('button', { name: '⏸ 투어 정지' }));
-    expect(screen.getByRole('button', { name: /투어/ })).toHaveAttribute('aria-pressed', 'false');
-
-    const labelGroup = screen.getByRole('group', { name: '라벨 표시 모드' });
-    expect(within(labelGroup).getAllByRole('button')).toHaveLength(4);
-    expect(within(labelGroup).getByRole('button', { name: '자동' })).toHaveAttribute('aria-pressed', 'true');
-    fireEvent.click(within(labelGroup).getByRole('button', { name: '이상만' }));
-    expect(within(labelGroup).getByRole('button', { name: '이상만' })).toHaveAttribute('aria-pressed', 'true');
-
-    const follow = screen.getByRole('button', { name: /선택 VIN 추적/ });
-    fireEvent.click(follow);
-    expect(follow).toHaveAttribute('aria-pressed', 'true');
-    // 추적 중에는 정적 프리셋 강조가 풀린다(추적 프리셋이 카메라를 소유)
-    expect(presetButton('전체 조망').className).not.toContain('primary');
-  });
-});
-
-/* ------------------------------------------------------ 2D 강등 경로 + 라우팅 */
-
-describe('§17.2 Plant Twin — WebGL 없는 환경', () => {
-  beforeEach(() => stubWebgl(false));
-
-  it('같은 레이아웃 SoT 로 그린 2D 평면도로 강등되고 캔버스는 렌더하지 않는다', () => {
-    renderLive();
-    expect(screen.queryByTestId('plant-canvas')).toBeNull();
-    const schematic = screen.getByTestId('plant-schematic');
-    expect(within(schematic).getByRole('img', { name: /공장 평면도/ })).toBeInTheDocument();
-    expect(within(schematic).getByText('OUTBOUND YARD (30)')).toBeInTheDocument();
-    expect(schematic.querySelector('.plant-schematic-note')).not.toBeNull();
-    // 셀 5개 + AMR 6대
-    for (const cell of CELLS) expect(within(schematic).getByText(cell.short)).toBeInTheDocument();
-    for (const r of AMR_ROUTES) expect(within(schematic).getByText(r.id)).toBeInTheDocument();
-  });
-
-  it('야드 차량을 클릭하면 VIN 이 선택되고, 더블클릭하면 차량 상세로 이동한다', () => {
-    renderLive();
-    const schematic = screen.getByTestId('plant-schematic');
-    fireEvent.click(within(schematic).getByRole('button', { name: '야드 VIN-DEMO-005' }));
-    expect(vinSelect().value).toBe('VIN-DEMO-005');
-
-    fireEvent.doubleClick(within(schematic).getByRole('button', { name: '야드 VIN-DEMO-007' }));
-    expect(screen.getByTestId('loc')).toHaveTextContent('/twin/vehicle/VIN-DEMO-007');
-  });
-});

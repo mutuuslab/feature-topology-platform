@@ -13,3 +13,6 @@ export * from './flags/p0';
 export * from './schemas/policy';
 export * from './flags/evaluate';
 export * from './rules/validators';
+export * from './schemas/ops';
+export * from './gleo';
+export * from './rules/virtual';

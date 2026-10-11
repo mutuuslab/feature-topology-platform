@@ -1,0 +1,200 @@
+// P8a 배포·차단 전달 + vECU 가상검증 화면 — 모의 API로 상태·권한·핵심 상호작용을 검증한다.
+// 실제 백엔드와의 끝단 흐름(차단 발령 → 회신 집계, 가상검증 → 정책 GO)은 e2e(ops.spec.ts)가 맡는다.
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { AppProvider } from '../store';
+import { FleetLive, VehicleRuntimeScreen } from '../screens/ops/FleetLive';
+import { KillConsole } from '../screens/ops/KillConsole';
+import { DeploymentDetail } from '../screens/ops/Deployments';
+import { VirtualValidationScreen } from '../screens/policy/Virtual';
+
+type Handler = (url: string, init?: RequestInit) => { status?: number; body: unknown } | undefined;
+let handler: Handler;
+const calls: { url: string; init?: RequestInit }[] = [];
+
+beforeEach(() => {
+  localStorage.clear();
+  calls.length = 0;
+  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+    calls.push({ url, init });
+    const r = handler(url, init) ?? { status: 404, body: { error: { code: 'NOT_FOUND', message: url } } };
+    return new Response(JSON.stringify(r.body), { status: r.status ?? 200, headers: { 'Content-Type': 'application/json' } });
+  }));
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+
+function mount(path: string, routePath: string, el: JSX.Element, role = 'operator') {
+  localStorage.setItem('fp.state.v2', JSON.stringify({ role }));
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={qc}>
+      <MemoryRouter initialEntries={[path]}>
+        <AppProvider>
+          <Routes>
+            <Route path={routePath} element={el} />
+          </Routes>
+        </AppProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
+const posted = (suffix: string) => calls.find((c) => c.init?.method === 'POST' && c.url.endsWith(suffix));
+
+const flag = (flagKey: string, value: boolean, reason = 'POLICY_MATCH', drift = false) => ({ flagKey, publicationId: 'PUB-00001', sequence: 1, local: { value, reason }, server: { value: drift ? !value : value, reason: drift ? 'KILL_SWITCH' : reason }, drift });
+const FLEET = {
+  gleo: 'internal',
+  items: [
+    { vin: 'ego-01', label: '시연', scope: 'KR/NX4 PE/Premium', link: 'ONLINE', quality: 'TRUSTED', gleo: true, featureState: { 'FEAT-00022': 'SAFE_STOP' }, kills: ['FEAT-00022'], flags: [flag('care_00022_param', false, 'KILL_SWITCH')], last: null },
+    { vin: 'KMH-NX4-0001', label: '구독', scope: 'KR/NX4 PE/Premium', link: 'ONLINE', quality: 'TRUSTED', gleo: false, featureState: {}, kills: [], flags: [flag('care_00022_param', true, 'POLICY_MATCH', true)], last: null },
+    { vin: 'KMH-NX4-0003', label: '단절', scope: 'KR/NX4 PE/Premium', link: 'OFFLINE', quality: 'STALE', gleo: false, featureState: {}, kills: [], flags: [], last: null },
+  ],
+};
+const PUB = { publicationId: 'PUB-00002', kind: 'KILL', status: 'DISPATCHED', confirmed: 1, denominator: 2, closedAt: null, createdAt: '2026-10-12T01:00:00.000Z', nodes: [], payload: { flagKey: null, featureId: 'FEAT-00022', targets: ['ego-01', 'lead-01'] } };
+
+describe('Fleet 실시간 적용 현황', () => {
+  it('차량 × flag 매트릭스: 차단(safe)·불일치(drift)·미수신을 구분하고 지표를 낸다', async () => {
+    handler = (url) => {
+      if (url.startsWith('/api/fleet/runtime')) return { body: FLEET };
+      if (url.startsWith('/api/publications')) return { body: { items: [PUB] } };
+      if (url.startsWith('/api/kill-requests')) return { body: { items: [{ killId: 'KILL-00001' }] } };
+      if (url.startsWith('/api/gleo/status')) return { body: { mode: 'internal', connected: false, lastError: null, messages: [] } };
+    };
+    mount('/fleet/live', '/fleet/live', <FleetLive />);
+    const table = await screen.findByRole('table', { name: /차량 × flag/ });
+    const cells = table.querySelectorAll('.ds-fcell');
+    expect([...cells].map((c) => [c.getAttribute('data-v'), c.getAttribute('data-drift')])).toEqual([['safe', 'false'], ['on', 'true'], [null, null]]);
+    expect(within(table).getByText('미수신')).toBeTruthy();
+    expect([...document.querySelectorAll('.ds-kpi__value')].map((k) => k.textContent)).toEqual(['2/3', '1', '1', '1']);
+    expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('1');
+  });
+});
+
+describe('차량별 적용 상태', () => {
+  it('차량 측 판단과 서버 판단을 나란히, 거부된 수신 기록을 보여 준다', async () => {
+    handler = (url) => {
+      if (url.startsWith('/api/vehicles/ego-01/runtime'))
+        return {
+          body: {
+            vehicle: { vin: 'ego-01', label: '시연', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', swVersion: '1.2.1', link: 'ONLINE', quality: 'TRUSTED', gleo: true },
+            runtime: { bootId: 'BOOT-ego-01-1', highest: {}, bundles: { care_00022_param: { publicationId: 'PUB-00001', sequence: 1, payloadHash: 'h', policy: { policyId: 'POL-00003', revision: 1 } } }, kills: {}, featureState: {}, log: [{ at: '2026-10-12T01:00:00.000Z', publicationId: 'PUB-00001', kind: 'POLICY', result: 'REJECTED', detail: 'REPLAY' }] },
+            evaluations: [{ flagKey: 'care_00022_param', local: { value: true, decision: 'ALLOW', reason: 'POLICY_MATCH' }, server: { value: false, decision: 'SAFE_DEFAULT', reason: 'KILL_SWITCH' }, drift: true }],
+          },
+        };
+      if (url.startsWith('/api/vehicles')) return { body: { items: [{ vin: 'ego-01', label: '시연' }] } };
+    };
+    mount('/fleet/vehicles/ego-01', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
+    expect(await screen.findByText('BOOT-ego-01-1')).toBeTruthy();
+    expect(screen.getByText('ON · POLICY_MATCH')).toBeTruthy();
+    expect(screen.getByText('OFF · KILL_SWITCH')).toBeTruthy();
+    expect(screen.getByText('REPLAY')).toBeTruthy();
+  });
+});
+
+describe('긴급 차단·복구', () => {
+  const PREVIEW = {
+    feature: { featureId: 'FEAT-00022', version: '1.0.0', name: '전방 안전거리 3단계', lifecycle: 'RELEASED', asil: 'B' },
+    featureIds: ['FEAT-00022'],
+    dependents: [],
+    flagKeys: ['care_00022_param', 'care_00022_signal'],
+    vehicles: [
+      { vin: 'ego-01', label: '시연', link: 'ONLINE', gleo: true },
+      { vin: 'KMH-NX4-0003', label: '단절', link: 'OFFLINE', gleo: false },
+    ],
+    activeKill: null,
+  };
+  const api: Handler = (url, init) => {
+    if (init?.method === 'POST') return { status: 201, body: { killId: 'KILL-00001' } };
+    if (url.startsWith('/api/kill-requests/preview')) return { body: PREVIEW };
+    if (url.startsWith('/api/kill-requests/KILL-')) return { body: { killId: 'KILL-00001', featureIds: ['FEAT-00022'], flagKeys: [], vins: ['ego-01'], safeMode: 'SAFE_STOP', reason: 'r', status: 'ACTIVE', delivery: null, restore: null, requestedAt: '2026-10-12T01:00:00.000Z' } };
+    if (url.startsWith('/api/kill-requests')) return { body: { items: [] } };
+  };
+
+  it('영향 범위 → 차량 선택 → Safe Stop → 확인 입력이 맞아야 발령, 요청 본문에 범위·방식·확인 값', async () => {
+    handler = api;
+    mount('/ops/kill', '/ops/kill', <KillConsole />);
+    expect(await screen.findByText('care_00022_param, care_00022_signal')).toBeTruthy();
+    fireEvent.click(screen.getByRole('checkbox', { name: /KMH-NX4-0003/ })); // 통신 단절 차량 제외
+    fireEvent.click(screen.getByRole('radio', { name: /Safe Stop/ }));
+    fireEvent.change(screen.getByLabelText('사유'), { target: { value: '전방 거리 오추정' } });
+    fireEvent.click(screen.getByRole('button', { name: '차단 발령' }));
+    const dlg = await screen.findByRole('alertdialog');
+    const go = within(dlg).getByRole('button', { name: '차단 발령' }) as HTMLButtonElement;
+    expect(go.disabled).toBe(true);
+    fireEvent.change(within(dlg).getByRole('textbox'), { target: { value: 'FEAT-00022' } });
+    fireEvent.click(go);
+    await waitFor(() => expect(posted('/api/kill-requests')).toBeTruthy());
+    const p = posted('/api/kill-requests')!;
+    expect(JSON.parse(String(p.init!.body))).toEqual({ featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], safeMode: 'SAFE_STOP', reason: '전방 거리 오추정', confirm: 'FEAT-00022' });
+    expect(new Headers(p.init!.headers).get('X-Actor-Role')).toBe('OPERATOR');
+  });
+
+  it('운영자·안전 담당이 아니면 발령 버튼이 막힌다', async () => {
+    handler = api;
+    mount('/ops/kill', '/ops/kill', <KillConsole />, 'author');
+    await screen.findByText('care_00022_param, care_00022_signal');
+    fireEvent.change(screen.getByLabelText('사유'), { target: { value: '시험' } });
+    expect((screen.getByRole('button', { name: '차단 발령' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+describe('게시본 상세', () => {
+  it('서명 검증·차량별 회신 사유·거부 회신을 보여 준다', async () => {
+    handler = (url) =>
+      url.startsWith('/api/publications/PUB-00001')
+        ? {
+            body: {
+              publication: { ...PUB, publicationId: 'PUB-00001', kind: 'POLICY', status: 'PARTIAL', channel: 'OTA', campaignId: 'CMP-00001', createdBy: 'u', deadlineAt: '2026-10-12T01:00:08.000Z', closedAt: '2026-10-12T01:00:08.000Z', ackOnly: [], nodes: [{ nodeId: 'ego-01', state: 'CONFIRMED', reason: 'READBACK_MATCH' }, { nodeId: 'KMH-NX4-0003', state: 'UNKNOWN', reason: 'NO_REPORT' }], payload: { publicationId: 'PUB-00001', sequence: 1, featureId: 'FEAT-00022', featureVersion: '1.0.0', flagKey: 'care_00022_param', targets: [], desired: 'sha256:x', policy: { policyId: 'POL-00003', revision: 1 }, kill: null }, signature: { keyId: 'KEY-0001', alg: 'Ed25519', payloadHash: 'sha256:abc', signature: 'zz' } },
+              verification: { valid: true, reason: 'SIGNATURE_VALID' },
+              readbacks: [{ vin: 'KMH-NX4-0001', observed: 'REJECTED', rejectReason: 'PAYLOAD_TAMPERED', via: 'IF-06', at: '2026-10-12T01:00:01.000Z' }],
+              calls: [],
+            },
+          }
+        : undefined;
+    mount('/deployments/PUB-00001', '/deployments/:id', <DeploymentDetail />);
+    expect(await screen.findByText('SIGNATURE_VALID')).toBeTruthy();
+    expect(screen.getByText('KEY-0001 · Ed25519')).toBeTruthy();
+    expect(screen.getByText('NO_REPORT')).toBeTruthy();
+    expect(screen.getByText('REJECTED · PAYLOAD_TAMPERED')).toBeTruthy();
+  });
+});
+
+describe('vECU 가상검증', () => {
+  const RUN = (over: Record<string, unknown>) => ({ runId: 'VV-00001', policyId: 'POL-00003', policyRevision: 1, contentHash: 'h', featureId: 'FEAT-00022', featureVersion: '1.0.0', vin: 'ego-01', scenarioId: 'SCN-FEAT00022-NOMINAL', source: 'vecu', simulator: 's', testId: 'TEST-1', overall: 'PASS', gateResult: 'PASS', criteria: [{ id: 'danger_time', label: '위험 누적', unit: 's', op: '<=', limit: 0, status: 'fail', value: 3, at: 20, deciding: false }], evaluation: null, evidence: { files: [{ name: 'verdict.json', sha256: 'abcdef0123456789', bytes: 10 }] }, error: null, at: '2026-10-12T01:00:00.000Z', by: 'u', tms: null, ...over });
+  const api = (run: Record<string, unknown>): Handler => (url, init) => {
+    if (init?.method === 'POST' && url.endsWith('/tms')) return { status: 201, body: { ...run, tms: { tmsId: 'TMS-00001', submittedAt: 'x' } } };
+    if (init?.method === 'POST') return { status: 201, body: { items: [run] } };
+    if (url.startsWith('/api/vecu/status')) return { body: { available: true, mode: 'auto', dir: 'C:/vECU', reason: null, simulatorUrl: 'x' } };
+    if (url.startsWith('/api/virtual-validations/scenarios')) return { body: { items: [{ scenarioId: 'SCN-FEAT00022-NOMINAL', name: '정상', role: 'NOMINAL', validator: 'D06-03', deciding: 'ALL' }] } };
+    if (url.startsWith('/api/virtual-validations/VV-')) return { body: run };
+    if (url.startsWith('/api/virtual-validations')) return { body: { items: [run] } };
+    if (url.startsWith('/api/policies')) return { body: { items: [{ policyId: 'POL-00003', flagKey: 'care_00022_param', featureId: 'FEAT-00022', featureVersion: '1.0.0', status: 'DRAFT', revision: 1 }] } };
+  };
+
+  it('실행은 선택 정책으로 POST, 결과를 열면 기준·증적·TMS 제출(품질 담당)', async () => {
+    handler = api(RUN({}));
+    mount('/validations/virtual', '/validations/virtual', <VirtualValidationScreen />, 'quality');
+    const runBtn = (await screen.findByRole('button', { name: '가상검증 실행' })) as HTMLButtonElement;
+    await waitFor(() => expect(runBtn.disabled).toBe(false)); // 정책 목록이 와야 실행 대상이 정해진다
+    fireEvent.click(runBtn);
+    await waitFor(() => expect(posted('/api/virtual-validations')).toBeTruthy());
+    expect(JSON.parse(String(posted('/api/virtual-validations')!.init!.body))).toEqual({ policyId: 'POL-00003' });
+    fireEvent.click(await screen.findByText('VV-00001'));
+    const tms = await screen.findByRole('button', { name: 'TMS 제출 (IF-09)' });
+    expect(screen.getByRole('link', { name: 'verdict.json' }).getAttribute('href')).toBe('/api/virtual-validations/VV-00001/files/verdict.json');
+    fireEvent.click(tms);
+    await waitFor(() => expect(posted('/api/virtual-validations/VV-00001/tms')).toBeTruthy());
+  });
+
+  it('vECU 미연결 결과에는 TMS 제출이 없다', async () => {
+    handler = api(RUN({ source: 'unavailable', simulator: null, testId: null, overall: 'UNAVAILABLE', gateResult: 'UNAVAILABLE', criteria: [], evidence: null, error: 'VECU_MODE=off' }));
+    mount('/validations/virtual', '/validations/virtual', <VirtualValidationScreen />, 'quality');
+    fireEvent.click(await screen.findByText('VV-00001'));
+    expect(await screen.findByText('VECU_MODE=off')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'TMS 제출 (IF-09)' })).toBeNull();
+  });
+});

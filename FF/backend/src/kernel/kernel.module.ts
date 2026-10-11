@@ -11,6 +11,7 @@ import { EventService } from './event.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
 import { KernelController } from './kernel.controller';
 import { MIGRATIONS } from './migrations';
+import { Scheduler } from './scheduler';
 import { loadFixtures, seedDataset, seedDemo } from './seed';
 
 @Global()
@@ -34,6 +35,7 @@ import { loadFixtures, seedDataset, seedDemo } from './seed';
       },
     },
     Clock,
+    Scheduler,
     AuditService,
     EventService,
     ComponentRegistry,
@@ -41,7 +43,7 @@ import { loadFixtures, seedDataset, seedDemo } from './seed';
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: DomainErrorFilter },
   ],
-  exports: [DB, Clock, AuditService, EventService, ComponentRegistry],
+  exports: [DB, Clock, Scheduler, AuditService, EventService, ComponentRegistry],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

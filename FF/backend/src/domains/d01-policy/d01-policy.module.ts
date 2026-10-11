@@ -8,7 +8,10 @@ import { LifecycleService } from './registry/lifecycle.service';
 import { BaselineController, RegistryController } from './registry/registry.controller';
 import { RegistryService } from './registry/registry.service';
 import { ActivationService } from './activation/activation.service';
-import { KILL_STATE, NO_KILL } from './activation/kill-state';
+import { KILL_STATE } from './activation/kill-state';
+import { KillRepo } from '../d03-safety/kill-switch/kill.repo';
+import { IfCallRepo } from '../../adapters/if-call/if-call.repo';
+import { VirtualRunRepo } from '../d06-qsec/scenario-validation/virtual-run.repo';
 import { EntitlementService } from './entitlement/entitlement.service';
 import { FleetRepo, PolicyRepo } from './policy-repos';
 import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from './repos';
@@ -21,7 +24,10 @@ import { TopologyService } from './topology/topology.service';
 @Module({
   controllers: [AuditHistoryController, RegistryController, BaselineController, TopologyController, CatalogController],
   providers: [
-    { provide: KILL_STATE, useValue: NO_KILL }, // 긴급 기능 차단(D03-03) 저장소가 생기면 교체
+    KillRepo,
+    VirtualRunRepo, // vECU 가상검증 기록 — 검증기·Gate 판정이 함께 읽는다
+    IfCallRepo,
+    { provide: KILL_STATE, useExisting: KillRepo }, // 긴급 기능 차단(D03-03) 저장소
     PolicyRepo,
     FleetRepo,
     EntitlementService,
@@ -29,6 +35,6 @@ import { TopologyService } from './topology/topology.service';
     ActivationService,
     StagedRolloutService,
     AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, TopologyService, CatalogService],
-  exports: [KILL_STATE, PolicyRepo, FleetRepo, EntitlementService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, TopologyService, CatalogService],
+  exports: [KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, TopologyService, CatalogService],
 })
 export class D01PolicyModule {}

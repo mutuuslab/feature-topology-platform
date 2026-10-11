@@ -7,6 +7,7 @@ import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, VerdictBadge, Icon } from '../../design';
 import { usePermission, when } from '../shared';
+import { VirtualPanel } from './Virtual';
 
 const T = ko.policy;
 const INVALIDATE = ['listPolicies', 'policyDetail', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort'];
@@ -193,6 +194,8 @@ export function PolicyDetail() {
                 <p className="ds-field__hint">{T.notValidated}</p>
               )}
             </Panel>
+
+            <VirtualPanel policy={p} />
 
             <div className="ds-split">
               <Panel title={T.title} id="spec">

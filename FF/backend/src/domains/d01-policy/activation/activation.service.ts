@@ -37,7 +37,7 @@ export class ActivationService {
     const result = await evaluateFlag({
       policy,
       scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim },
-      killed: this.kill.killed(policy.featureId),
+      killed: this.kill.killed(policy.featureId, vin),
       vehicle,
       entitlementActive: policy.entitlementCatalogId ? entitlement.active : null,
     });

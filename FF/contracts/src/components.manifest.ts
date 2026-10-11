@@ -100,6 +100,10 @@ const FE_POL = 'frontend/src/__tests__/screensPolicy.test.tsx';
 const E2E_POL = 'e2e/tests/policy.spec.ts';
 const CT_FLAG = ['contracts/src/flags/evaluate.test.ts', 'contracts/src/flags/p0.test.ts'];
 /** PoC ② 분야별 검증기 — 병렬 실행되어 정책 상세·검증 이력에서 결과를 본다 */
+const BE_DLV = 'backend/test/d03/delivery.spec.ts';
+const BE_VV = 'backend/test/d06/virtual.spec.ts';
+const FE_OPS = 'frontend/src/__tests__/screensOps.test.tsx';
+const E2E_OPS = 'e2e/tests/ops.spec.ts';
 const VALIDATOR: Impl = { screens: ['/policies/:id', '/validations'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL], via: ['validatePolicy'] };
 /** via — 자기 API 없이 다른 컴포넌트의 라우트 안에서 호출되는 컴포넌트(예: 병렬 검증기)가 그 라우트 이름을 적는다 */
 type Impl = Pick<ComponentEntry, 'screens' | 'tests'> & { via?: string[] };
@@ -117,14 +121,22 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D05-01': { screens: ['/activation/decide'], tests: [BE_POL, FE_POL, E2E_POL] },
   'D06-01': VALIDATOR,
   'D06-02': VALIDATOR,
-  'D06-03': VALIDATOR,
+  'D06-03': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_POL, FE_OPS, E2E_POL, E2E_OPS], via: ['validatePolicy'] },
   'D06-04': VALIDATOR,
   'D06-05': VALIDATOR,
   'D06-06': VALIDATOR,
   'D06-07': VALIDATOR,
   'D03-01': VALIDATOR,
   'D03-02': { screens: ['/policies/:id', '/validations'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL], via: ['validatePolicy', 'decidePolicy'] },
-  'D04-02': VALIDATOR,
+  'D04-02': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_OPS, E2E_POL], via: ['validatePolicy'] },
+  // PoC ④⑤⑥ 배포·차단 전달 (P8a)
+  'D02-03': { screens: ['/fleet/live', '/fleet/vehicles/:vin'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', 'contracts/src/gleo.test.ts', FE_OPS, E2E_OPS] },
+  'D03-03': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', FE_OPS, E2E_OPS] },
+  'D03-04': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', E2E_OPS] },
+  'D04-01': { screens: ['/deployments', '/deployments/:id'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
+  'D04-03': { screens: ['/fleet/live', '/deployments/:id'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
+  'D06-08': { screens: ['/deployments', '/deployments/:id', '/fleet/live'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
+  'D06-10': { screens: ['/deployments'], tests: [BE_DLV, E2E_OPS] },
 };
 
 export const COMPONENTS: ComponentEntry[] = SEEDS.map(([id, ko, tier, module, ifs, pocSteps]) => {

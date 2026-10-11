@@ -1104,3 +1104,125 @@ textarea.ds-input {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* ---- P8a 배포·차단 전달: Fleet 실시간 적용 현황 · 회신 진행 · 차단 콘솔 ---- */
+.ds-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.ds-fleet {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--fs-sm);
+}
+.ds-fleet th,
+.ds-fleet td {
+  padding: var(--sp-1) var(--sp-2);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+.ds-fleet th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  font-weight: 600;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.ds-fleet tbody tr:hover {
+  background: var(--surface-2);
+}
+.ds-fcell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 56px;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  transition: background var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
+}
+.ds-fcell[data-v='on'] {
+  color: var(--ok);
+  border-color: var(--ok);
+  background: var(--ok-soft);
+}
+.ds-fcell[data-v='off'] {
+  color: var(--ink-2);
+}
+.ds-fcell[data-v='safe'] {
+  color: var(--warn);
+  border-color: var(--warn);
+  background: var(--warn-soft);
+}
+.ds-fcell[data-drift='true'] {
+  border-color: var(--danger);
+  border-style: dashed;
+}
+.ds-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--faint);
+  margin-right: var(--sp-1);
+}
+.ds-dot[data-on='true'] {
+  background: var(--ok);
+}
+.ds-progress {
+  display: grid;
+  grid-template-columns: minmax(80px, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+.ds-progress__track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-sunk);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.ds-progress__fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width var(--t-base) var(--ease);
+}
+.ds-progress[data-status='CONFIRMED'] .ds-progress__fill {
+  background: var(--ok);
+}
+.ds-progress[data-status='PARTIAL'] .ds-progress__fill,
+.ds-progress[data-status='TIMEOUT'] .ds-progress__fill {
+  background: var(--warn);
+}
+.ds-progress[data-status='DIVERGED'] .ds-progress__fill {
+  background: var(--danger);
+}
+.ds-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.ds-choices label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+@media (max-width: 1535px) {
+  .ds-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

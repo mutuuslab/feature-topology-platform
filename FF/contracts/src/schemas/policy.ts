@@ -81,6 +81,10 @@ export const VehicleSchema = z.object({
   swVersion: z.string(),
   /** 문맥 품질 — 통신 단절·오래된 신호를 흉내 낸다 */
   quality: z.enum(['TRUSTED', 'STALE', 'UNTRUSTED']).default('TRUSTED'),
+  /** 통신 연결 — OFFLINE 차량은 배포·차단을 받지 못해 회신하지 않는다(TIMEOUT 시연) */
+  link: z.enum(['ONLINE', 'OFFLINE']).default('ONLINE'),
+  /** FF_IMP 영상 키트 차량 — GLEO_MODE=ws 이면 GLEO Broker로 전달한다 */
+  gleo: z.boolean().default(false),
 });
 export type Vehicle = z.infer<typeof VehicleSchema>;
 

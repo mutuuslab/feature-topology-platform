@@ -1,10 +1,11 @@
 // 검증 이력 관리 (D06-04) — 정책 하나에 대해 분야별 검증 8종을 병렬 실행하고 결과·근거를 이력으로 남긴다.
 // 입력은 Registry(19속성·Gate)·Topology(REQUIRES·영향 상품)·Fleet(데모 차량)에서 모은다. 판단 규칙은 contracts.
 import { Inject, Injectable } from '@nestjs/common';
-import { GATES, type GateStatus, type Policy, type ValidationInput, type ValidatorResult } from '@ff/contracts';
+import { GATES, virtualScenariosFor, type GateStatus, type Policy, type ValidationInput, type ValidatorResult } from '@ff/contracts';
+import { VirtualRunRepo } from '../scenario-validation/virtual-run.repo';
 import { PlatformComponent } from '../../../kernel/components';
 import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from '../../d01-policy/repos';
-import { FleetRepo, PolicyRepo } from '../../d01-policy/policy-repos';
+import { FleetRepo, policyHash, PolicyRepo } from '../../d01-policy/policy-repos';
 import { DomainError } from '../../../kernel/errors';
 
 export interface PolicyValidator {
@@ -28,6 +29,7 @@ export class ValidationService {
     private readonly products: ProductRepo,
     private readonly policies: PolicyRepo,
     private readonly fleet: FleetRepo,
+    private readonly virtualRuns: VirtualRunRepo,
   ) {}
 
   input(policy: Policy): ValidationInput {
@@ -55,7 +57,11 @@ export class ValidationService {
       const prods = this.products.all().filter((p) => p.catalogId === policy.entitlementCatalogId);
       entitlementProductOk = prods.length ? prods.some((p) => p.baselineIds.some((b) => bls.includes(b))) : null;
     }
+    // vECU 가상검증 — 이 정책 내용으로 돌린 시나리오별 최신 실행 (시나리오가 없는 Feature는 빈 목록)
+    const hash = policyHash(policy);
+    const virtual = virtualScenariosFor(policy.featureId).map((scenario) => ({ scenario, run: this.virtualRuns.latest(policy.policyId, scenario.scenarioId, hash) ?? null }));
     return {
+      virtual,
       policy,
       feature,
       gates,

@@ -3254,6 +3254,899 @@
           }
         }
       }
+    },
+    "/api/pki/keys": {
+      "get": {
+        "summary": "서명 키 (공개키·지문·유효기간)",
+        "tags": [
+          "D06-10"
+        ],
+        "operationId": "pkiKeys",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/pki/rotate": {
+      "post": {
+        "summary": "서명 키 교체 (이전 키는 검증용으로 유지)",
+        "tags": [
+          "D06-10"
+        ],
+        "operationId": "rotateKey",
+        "description": "허용 역할: 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/publications": {
+      "get": {
+        "summary": "서명 게시본 (정책·차단·복구) 목록",
+        "tags": [
+          "D06-08"
+        ],
+        "operationId": "publications",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/publications/{id}": {
+      "get": {
+        "summary": "게시본 — 서명 검증·차량별 회신·외부 연계 호출",
+        "tags": [
+          "D06-08"
+        ],
+        "operationId": "publicationDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/calls": {
+      "get": {
+        "summary": "외부 연계 호출 기록 (IF-05·IF-13, 멱등 키)",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "integrationCalls",
+        "parameters": [
+          {
+            "name": "ifId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/telemetry/readbacks": {
+      "get": {
+        "summary": "차량 회신 (readback) 기록",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "readbacks",
+        "parameters": [
+          {
+            "name": "publicationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/telemetry/readback": {
+      "post": {
+        "summary": "IF-06 차량 회신 수집",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "ingestReadback",
+        "description": "허용 역할: 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vin": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "publicationId": {
+                    "type": "string",
+                    "pattern": "^PUB-\\d{5}$"
+                  },
+                  "metricType": {
+                    "type": "string",
+                    "enum": [
+                      "READBACK",
+                      "ACK"
+                    ]
+                  },
+                  "policyHash": {
+                    "type": "string"
+                  },
+                  "featureVersion": {
+                    "type": "string"
+                  },
+                  "bootId": {
+                    "type": "string"
+                  },
+                  "sequence": {
+                    "type": "integer"
+                  },
+                  "observed": {
+                    "type": "string"
+                  },
+                  "rejectReason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "vin",
+                  "publicationId",
+                  "metricType",
+                  "policyHash",
+                  "featureVersion",
+                  "bootId",
+                  "sequence",
+                  "observed"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/fleet/runtime": {
+      "get": {
+        "summary": "Fleet 실시간 적용 현황 — 차량별 적용 게시본·상태·서버 판단 비교",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "fleetRuntime",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/vehicles/{vin}/runtime": {
+      "get": {
+        "summary": "차량 런타임 — 적용 게시본·차량 측 평가·서버 판단 비교",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "vehicleRuntime",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/gleo/status": {
+      "get": {
+        "summary": "GLEO Broker 연결·최근 메시지",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "gleoStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests": {
+      "get": {
+        "summary": "긴급 차단 요청 목록 (회신 집계 포함)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "killRequests",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "긴급 차단 (type-to-confirm·서명·긴급 채널)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "issueKill",
+        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "featureVersion": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "vins": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 500
+                  },
+                  "safeMode": {
+                    "type": "string",
+                    "enum": [
+                      "SAFE_DEFAULT",
+                      "SAFE_STOP"
+                    ],
+                    "default": "SAFE_DEFAULT"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "confirm": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "featureId",
+                  "featureVersion",
+                  "reason",
+                  "confirm"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/preview": {
+      "get": {
+        "summary": "차단 영향 범위 미리보기 (의존 Feature·flag·차량)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "killPreview",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vins",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}": {
+      "get": {
+        "summary": "차단 요청 상세 (차단·복구 회신)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "killDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}/release": {
+      "post": {
+        "summary": "차단 해제·이전 상태 복구",
+        "tags": [
+          "D03-04"
+        ],
+        "operationId": "releaseKill",
+        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/vecu/status": {
+      "get": {
+        "summary": "vECU 가상검증 실행기 연결 상태",
+        "tags": [
+          "D06-03"
+        ],
+        "operationId": "vecuStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/virtual-validations/scenarios": {
+      "get": {
+        "summary": "Feature별 가상검증 시나리오 (판정 기준·연결 검증기)",
+        "tags": [
+          "D06-03"
+        ],
+        "operationId": "virtualScenarios",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/virtual-validations": {
+      "get": {
+        "summary": "가상검증 실행 이력",
+        "tags": [
+          "D06-03"
+        ],
+        "operationId": "virtualRuns",
+        "parameters": [
+          {
+            "name": "policyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "정책을 vECU 가상 차량에 적용해 시나리오 실행 (판정·증적)",
+        "tags": [
+          "D06-03"
+        ],
+        "operationId": "runVirtual",
+        "description": "허용 역할: Feature 작성자, 구현 담당자, Gate 판정자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "policyId": {
+                    "type": "string",
+                    "pattern": "^POL-\\d{5}$"
+                  },
+                  "scenarioIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 20
+                  },
+                  "vin": {
+                    "type": "string",
+                    "default": "ego-01"
+                  }
+                },
+                "required": [
+                  "policyId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/virtual-validations/{id}": {
+      "get": {
+        "summary": "가상검증 결과 (기준별 판정·증적 해시·TMS)",
+        "tags": [
+          "D06-03"
+        ],
+        "operationId": "virtualRunDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/virtual-validations/{id}/files/{name}": {
+      "get": {
+        "summary": "가상검증 증적 파일 (보고서·텔레메트리)",
+        "tags": [
+          "D06-03"
+        ],
+        "operationId": "virtualRunFile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/virtual-validations/{id}/tms": {
+      "post": {
+        "summary": "IF-09 TMS 증적 제출 (G5 근거)",
+        "tags": [
+          "D04-02"
+        ],
+        "operationId": "submitTms",
+        "description": "허용 역할: Gate 판정자, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
     }
   }
 }

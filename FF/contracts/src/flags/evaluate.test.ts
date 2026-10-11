@@ -1,4 +1,5 @@
 // 단일 평가기 + 검증기 8종 — FEAT-00022(전방 안전거리 3단계)와 데모 Fleet으로 PoC ②③ 판단을 고정한다.
+import { judgeVirtual, virtualScenariosFor } from '../rules/virtual';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -117,5 +118,61 @@ describe('PoC ② 분야별 검증 8종 + 배포 안전성', () => {
     const r = await runValidators(input(p as any, over as any));
     expect(r.find((x) => x.componentId === id)!.result).toBe(expected);
     expect(deploySafety(r).decision).toBe(expected === 'FAIL' ? 'BLOCKED' : 'HOLD');
+  });
+  // 회귀: 배포된 정책의 새 개정은 늘 "대체" 사실과 "출시 상품 영향"이 생긴다 — 이것이 HOLD면 출시된 Feature의 정책을 영영 고칠 수 없었다.
+  it('배포 정책 대체·출시 상품 영향은 알림(INFO) — 기록은 남고 판정은 GO', async () => {
+    const r = await runValidators(
+      input({}, {
+        activePolicies: [{ policyId: 'POL-00002', revision: 1, status: 'DEPLOYED', controlPoint: 'Parameter' }] as any,
+        affectedProducts: [{ catalogId: 'CAT-00013', version: '1.0.0', lifecycle: 'RELEASED' }],
+      } as any),
+    );
+    const pol = r.find((x) => x.componentId === 'D06-01')!;
+    const imp = r.find((x) => x.componentId === 'D06-05')!;
+    expect([pol.result, imp.result]).toEqual(['PASS', 'PASS']);
+    expect(pol.findings).toEqual([{ result: 'INFO', message: expect.stringContaining('POL-00002 r1을(를) 대체합니다') }]);
+    expect(imp.findings).toEqual([{ result: 'INFO', message: expect.stringContaining('CAT-00013') }]);
+    expect(pol.summary).toContain('대체합니다');
+    expect(deploySafety(r)).toEqual({ decision: 'GO', reasons: [] });
+  });
+});
+
+describe('vECU 가상검증 → 차량 시나리오(D06-03)·안전 동작(D06-06) 검증', () => {
+  const [NOM, FK] = virtualScenariosFor('FEAT-00022');
+  const crit = (over: Record<string, string> = {}) =>
+    ['kill_latency', 'misjudge', 'danger_time', 'min_ttc', 'max_decel', 'recovery'].map((id) => ({ id, label: id, unit: 's', op: '<=', limit: 1, status: (over[id] ?? 'pass') as any, value: 0.3, at: 1 }));
+  const run = (scenario: typeof NOM, over: Record<string, string> = {}, source: 'vecu' | 'unavailable' = 'vecu') => {
+    const j = judgeVirtual(crit(over), scenario);
+    return { runId: 'VV-00001', source, testId: 'TEST-x', gateResult: source === 'vecu' ? j.gateResult : ('UNAVAILABLE' as const), overall: 'PASS' as const, criteria: j.criteria, contentHash: 'h' };
+  };
+
+  it('판정 기준: 정상 추종은 모든 기준, 오류+Kill은 Kill 경로(지연·복귀·감속)만', () => {
+    expect(judgeVirtual(crit({ danger_time: 'fail' }), NOM).gateResult).toBe('FAIL');
+    expect(judgeVirtual(crit({ danger_time: 'fail', misjudge: 'fail' }), FK).gateResult).toBe('PASS');
+    expect(judgeVirtual(crit({ kill_latency: 'fail' }), FK).gateResult).toBe('FAIL');
+    expect(judgeVirtual(crit({ recovery: 'pending' }), FK).gateResult).toBe('FAIL'); // 끝나지 않은 기준은 통과가 아니다
+  });
+
+  it('미실행·vECU 미연결은 HOLD — 증적 없이 GO 불가', async () => {
+    let r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: null }, { scenario: FK, run: null }] }));
+    expect(deploySafety(r).decision).toBe('HOLD');
+    expect(r.find((x) => x.componentId === 'D06-03')!.findings[0].message).toMatch(/SCN-FEAT00022-NOMINAL 미실행/);
+    r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run(NOM, {}, 'unavailable') }, { scenario: FK, run: run(FK) }] }));
+    expect(r.find((x) => x.componentId === 'D06-03')!.result).toBe('CONDITIONAL');
+  });
+
+  it('정상 추종 FAIL → 차량 시나리오 검증 FAIL → BLOCKED', async () => {
+    const r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run(NOM, { min_ttc: 'fail' }) }, { scenario: FK, run: run(FK) }] }));
+    expect(r.find((x) => x.componentId === 'D06-03')!.result).toBe('FAIL');
+    expect(deploySafety(r).decision).toBe('BLOCKED');
+  });
+
+  it('둘 다 PASS → GO. 오류 주입 구간 위험은 의도된 결과로 INFO에 남는다', async () => {
+    const r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run(NOM) }, { scenario: FK, run: run(FK, { danger_time: 'fail' }) }] }));
+    expect(deploySafety(r)).toEqual({ decision: 'GO', reasons: [] });
+    const sb = r.find((x) => x.componentId === 'D06-06')!;
+    expect(sb.result).toBe('PASS');
+    expect(sb.findings.map((f) => f.result)).toEqual(['INFO', 'INFO']);
+    expect(sb.findings[1].message).toMatch(/의도된 결과/);
   });
 });

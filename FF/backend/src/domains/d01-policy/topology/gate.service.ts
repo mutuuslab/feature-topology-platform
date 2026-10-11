@@ -20,6 +20,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { LifecycleService } from '../registry/lifecycle.service';
 import { GateRepo } from '../repos';
+import { VirtualRunRepo } from '../../d06-qsec/scenario-validation/virtual-run.repo';
 
 const STAGES: GateId[][] = [
   ['G1', 'G2', 'G3'],
@@ -38,6 +39,7 @@ export class GateService {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly clock: Clock,
+    private readonly virtualRuns: VirtualRunRepo,
   ) {}
 
   view(featureId: string, version: string) {
@@ -72,6 +74,22 @@ export class GateService {
     return null;
   }
 
+  /**
+   * 증거가 vECU 가상검증(VV-NNNNN)을 가리키면 그 기록이 이 Feature Version의 것이어야 하고, PASS 판정의 근거라면
+   * vECU가 실제로 돌린 Gate 판정 PASS여야 한다. G5 Verification Gate는 TMS(IF-09)에 제출된 증적만 인정한다.
+   */
+  private virtualEvidence(featureId: string, version: string, body: JudgeGateBody): string | null {
+    for (const id of (body.evidenceRef ?? '').match(/\bVV-\d{5}\b/g) ?? []) {
+      const r = this.virtualRuns.get(id);
+      if (!r) return `${id}: 가상검증 기록이 없습니다.`;
+      if (r.featureId !== featureId || r.featureVersion !== version) return `${id}: ${r.featureId} ${r.featureVersion}의 가상검증입니다 (판정 대상 ${featureId} ${version}).`;
+      if (body.inputResult !== 'PASS') continue;
+      if (r.source !== 'vecu' || r.gateResult !== 'PASS') return `${id}: PASS 근거가 될 수 없습니다 (${r.source === 'vecu' ? `가상검증 ${r.gateResult}` : 'vECU 미연결 결과'}).`;
+      if (body.gate === 'G5' && !r.tms) return `${id}: TMS(IF-09)에 제출한 증적만 G5 근거가 됩니다 — 먼저 제출하세요.`;
+    }
+    return null;
+  }
+
   judge(actor: Actor, featureId: string, version: string, body: JudgeGateBody): { record: GateRecordRow; feature: FeatureVersionRow } {
     const f = this.lifecycle.require(featureId, version);
     const target = `${featureId}@${version}#${body.gate}`;
@@ -79,6 +97,11 @@ export class GateService {
     if (blocked) {
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, blocked, 'D01-02');
       throw new DomainError(LIFECYCLE_RANK[f.lifecycle] >= LIFECYCLE_RANK.RELEASED ? 'IMMUTABLE' : 'GUARD_FAILED', blocked);
+    }
+    const vv = this.virtualEvidence(featureId, version, body);
+    if (vv) {
+      this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, vv, 'D01-02');
+      throw new DomainError('GUARD_FAILED', vv);
     }
     return this.db.tx(() => {
       const prev = this.gates.latest(featureId, version)[body.gate];

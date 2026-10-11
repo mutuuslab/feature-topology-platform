@@ -1,6 +1,6 @@
 {
   "rawColors": {
-    "value": 827,
+    "value": 818,
     "direction": "max",
     "note": "레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다"
   },
@@ -10,8 +10,13 @@
     "note": "FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지"
   },
   "implementedComponents": {
-    "value": 21,
+    "value": 28,
     "direction": "min",
     "note": "구현 완료 컴포넌트 수 — 줄어들 수 없다"
+  },
+  "twinTermLines": {
+    "value": 43,
+    "direction": "max",
+    "note": "레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지"
   }
 }

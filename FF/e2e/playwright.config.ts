@@ -1,6 +1,8 @@
 // 브라우저 하네스 설정 — e2e 전용 백엔드(9111, 메모리 DB·v0.81 시드)와 프론트(9112)를 직접 띄운다. 포트 8000 금지.
 // 개발 서버(9101·9012)와 분리해 매 실행이 깨끗한 시드에서 시작하고, 개발 중인 데이터를 건드리지 않는다.
 import { defineConfig, devices } from '@playwright/test';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 const CI = !!process.env.CI;
 // e2e 전용 프론트 포트 — 개발 서버(9012)·다른 프로젝트와 겹치지 않게 분리 (8000 금지)
@@ -32,7 +34,8 @@ export default defineConfig({
       command: 'npm run build -w feature-topology-backend && npm start -w feature-topology-backend',
       cwd: '..',
       url: `http://localhost:${API}/api/health`,
-      env: { PORT: String(API), FF_DB: ':memory:', FF_SEED: 'v0.81' },
+      // vECU는 같은 계약의 시험 대역(결정적) — 실제 vECU 판정은 backend/test/d06/virtual.spec.ts가 폴더가 있을 때 확인한다
+      env: { PORT: String(API), FF_DB: ':memory:', FF_SEED: 'v0.81', VECU_DIR: resolve(__dirname, '..', 'backend', 'test', 'fixtures', 'fake-vecu'), FF_EVIDENCE_DIR: join(tmpdir(), 'ff-e2e-evidence') },
       reuseExistingServer: !CI,
       timeout: 120_000,
     },

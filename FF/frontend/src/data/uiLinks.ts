@@ -134,7 +134,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   UI11: { screenId: 'UI11', intent: '차량 운영 현황과 수렴 상태', links: [
     { path: '/fleet', label: 'Fleet · 차량 상태', en: 'Fleet · Vehicles', areaId: 'UI11-S01', entry: true },
     { path: '/twin/fleet', label: 'Twin Fleet (3D)', en: 'Twin Fleet (3D)', areaId: 'UI11-S03' },
-    { path: '/twin/live', label: 'Live Visual Twin (3D)', en: 'Live Visual Twin (3D)', areaId: 'UI11-S03' },
+    { path: '/twin/live', label: 'Fleet 실시간 적용 현황', en: 'Fleet Live Rollout', areaId: 'UI11-S03' },
   ] },
   UI12: { screenId: 'UI12', intent: '차량별 적용 상태와 관측값', links: [
     { path: '/twin/applied/:vin', nav: '/twin/applied/VIN-DEMO-017', label: '차량별 적용 상태', en: 'Vehicle Applied State', areaId: 'UI12-S01', entry: true },

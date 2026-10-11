@@ -6,6 +6,7 @@ import type { GateId, GateStatus, Lifecycle } from '../enums';
 import { evaluateFlag, type PolicyScope } from '../flags/evaluate';
 import { decimalCompare, semverCompare, time, type Constraint } from '../flags/p0';
 import { LIFECYCLE_RANK } from './lifecycle';
+import type { VirtualEvidence, VirtualScenario } from './virtual';
 
 export type ValidatorResultState = 'PASS' | 'CONDITIONAL' | 'FAIL';
 
@@ -14,7 +15,8 @@ export interface ValidatorResult {
   ko: string;
   result: ValidatorResultState;
   summary: string;
-  findings: { result: Exclude<ValidatorResultState, 'PASS'>; message: string }[];
+  /** INFO는 알림(대체 사실·통지 대상) — 기록·표시하되 판정에는 넣지 않는다 */
+  findings: { result: Exclude<ValidatorResultState, 'PASS'> | 'INFO'; message: string }[];
 }
 
 export interface ValidationInput {
@@ -31,6 +33,8 @@ export interface ValidationInput {
   affectedProducts: { catalogId: string; version: string; lifecycle: Lifecycle }[];
   /** entitlementCatalogId 상품이 이 Feature를 구성에 포함하나 (null = 상품 없음) */
   entitlementProductOk: boolean | null;
+  /** vECU 가상검증 — 이 Feature 시나리오별, 이 정책 내용으로 돌린 최신 실행(없으면 null). 시나리오가 없는 Feature는 빈 목록 */
+  virtual?: VirtualEvidence[];
 }
 
 /** 문맥으로 쓸 수 있는 이름 — 평가기 vehicleContext와 같다 */
@@ -39,7 +43,7 @@ export const CONTEXT_NAMES = ['vehicleKey', 'country', 'vehicleModel', 'vehicleT
 const done = (componentId: string, ko: string, findings: ValidatorResult['findings'], pass: string): ValidatorResult => ({
   componentId,
   ko,
-  result: findings.some((f) => f.result === 'FAIL') ? 'FAIL' : findings.length ? 'CONDITIONAL' : 'PASS',
+  result: findings.some((f) => f.result === 'FAIL') ? 'FAIL' : findings.some((f) => f.result === 'CONDITIONAL') ? 'CONDITIONAL' : 'PASS',
   summary: findings.length ? findings.map((f) => f.message).slice(0, 2).join(' / ') : pass,
   findings,
 });
@@ -70,7 +74,7 @@ export function validatePolicy(i: ValidationInput): ValidatorResult {
           f.push({ result: 'FAIL', message: `${s.name}: ${ins[a].contextName} 조건이 서로 모순 — 어떤 차량도 만족할 수 없습니다` });
   }
   for (const o of i.activePolicies.filter((x) => x.controlPoint === p.controlPoint && x.policyId !== p.policyId))
-    f.push({ result: 'CONDITIONAL', message: `같은 제어점의 ${o.status} 정책 ${o.policyId} r${o.revision}을(를) 대체합니다` });
+    f.push({ result: 'INFO', message: `같은 제어점의 ${o.status} 정책 ${o.policyId} r${o.revision}을(를) 대체합니다` });
   for (const o of i.flagKeyClash) f.push({ result: 'FAIL', message: `flagKey ${p.flagKey}를 ${o.featureId}의 ${o.policyId}가 이미 씁니다` });
   return done('D06-01', '정책 검증', f, '형식·제어점·충돌 이상 없음');
 }
@@ -89,8 +93,26 @@ export function validateCompliance(i: ValidationInput): ValidatorResult {
 }
 
 /** D06-03 차량 시나리오 — 데모 Fleet에 정책을 배포했다고 가정하고 평가 */
+/** vECU 가상검증 결과 → 검증기 근거. 미실행·미연결은 보완 필요(HOLD), Gate 판정 기준 FAIL은 FAIL. */
+function virtualFindings(i: ValidationInput, validator: VirtualScenario['validator']): ValidatorResult['findings'] {
+  const out: ValidatorResult['findings'] = [];
+  for (const { scenario: s, run: r } of (i.virtual ?? []).filter((v) => v.scenario.validator === validator)) {
+    if (!r) out.push({ result: 'CONDITIONAL', message: `vECU 가상검증 ${s.scenarioId} 미실행 — 현재 정책 내용으로 실행해야 합니다` });
+    else if (r.source !== 'vecu') out.push({ result: 'CONDITIONAL', message: `vECU 미연결 — ${s.scenarioId} 결과는 증적으로 인정하지 않습니다` });
+    else if (r.gateResult !== 'PASS') {
+      const bad = r.criteria.filter((c) => c.deciding && c.status !== 'pass' && c.status !== 'na');
+      out.push({ result: 'FAIL', message: `vECU ${s.scenarioId} FAIL (${r.testId}): ${bad.map((c) => `${c.label} ${c.value ?? '?'}${c.unit} (기준 ${c.op} ${c.limit})`).join(', ')}` });
+    } else {
+      out.push({ result: 'INFO', message: `vECU ${s.scenarioId} PASS (${r.testId})` });
+      const intended = r.criteria.filter((c) => !c.deciding && c.status === 'fail');
+      if (intended.length) out.push({ result: 'INFO', message: `오류 주입 구간 기준 미달(의도된 결과, Kill 이전): ${intended.map((c) => `${c.label} ${c.value}${c.unit}`).join(', ')}` });
+    }
+  }
+  return out;
+}
+
 export async function validateScenario(i: ValidationInput): Promise<ValidatorResult> {
-  const f: ValidatorResult['findings'] = [];
+  const f: ValidatorResult['findings'] = virtualFindings(i, 'D06-03');
   const scope: PolicyScope = { country: i.feature.country, vehicleModel: i.feature.vehicleModel, trim: i.feature.trim };
   const inScope = i.fleet.filter((v) => v.country === scope.country && v.vehicleModel === scope.vehicleModel && v.trim === scope.trim);
   const asDeployed = { ...i.policy, status: 'DEPLOYED' as const };
@@ -110,6 +132,7 @@ export async function validateScenario(i: ValidationInput): Promise<ValidatorRes
 export function validateSafeBehavior(i: ValidationInput): ValidatorResult {
   const g = i.gates.G4;
   const f: ValidatorResult['findings'] = g === 'PASS' ? [] : [{ result: g === '검토 중' ? 'CONDITIONAL' : 'FAIL', message: `G4 Control Gate ${g ?? '미판정'} — Safe Default·Rollback·Kill 근거 미확인` }];
+  f.push(...virtualFindings(i, 'D06-06'));
   return done('D06-06', '안전 동작 검증', f, `G4 PASS · Safe Default ${i.policy.safeDefault ? 'ON' : 'OFF'}`);
 }
 
@@ -131,7 +154,7 @@ export function validateChangeImpact(i: ValidationInput): ValidatorResult {
     if (!r.targetLifecycle || LIFECYCLE_RANK[r.targetLifecycle] < LIFECYCLE_RANK.VERIFIED)
       f.push({ result: 'CONDITIONAL', message: `${r.dependencyId}: 필요 Feature ${r.targetFeatureId} ${r.targetVersion ?? '?'}가 ${r.targetLifecycle ?? '미등록'}` });
   const released = i.affectedProducts.filter((p) => p.lifecycle === 'RELEASED');
-  if (released.length) f.push({ result: 'CONDITIONAL', message: `출시 상품 ${released.map((p) => p.catalogId).join(', ')}에 영향 — 상품 담당 통지` });
+  if (released.length) f.push({ result: 'INFO', message: `출시 상품 ${released.map((p) => p.catalogId).join(', ')}에 영향 — 상품 담당 통지` });
   return done('D06-05', '변경 영향 검증', f, `REQUIRES ${i.requiresTargets.length}건 충족 · 영향 상품 ${i.affectedProducts.length}건`);
 }
 

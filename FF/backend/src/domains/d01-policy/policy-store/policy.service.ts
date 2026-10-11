@@ -15,6 +15,7 @@ import { ValidationService } from '../../d06-qsec/validation-history/validation.
 import { PolicyRepo, policyHash, type ValidationRun } from '../policy-repos';
 import { LifecycleService } from '../registry/lifecycle.service';
 import { FeatureRepo } from '../repos';
+import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.service';
 
 const EDITABLE = ['DRAFT', 'VALIDATED', 'REJECTED'] as const;
 
@@ -31,6 +32,7 @@ export class PolicyService implements OnModuleInit {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly clock: Clock,
+    private readonly secureDeploy: SecureDeployService,
   ) {}
 
   /** PoC 시나리오 시드 — FEAT-00022(전방 안전거리 3단계) Control Point 2개의 배포 정책 (체험권 CAT-00019 필요) */
@@ -193,7 +195,7 @@ export class PolicyService implements OnModuleInit {
     });
   }
 
-  /** 서버 배포 — 이 flagKey의 평가 기준을 이 정책으로 바꾼다(이전 배포본은 RETIRED). 차량 전달(서명·OTA)은 보안 배포(P8). */
+  /** 서버 배포 — 이 flagKey의 평가 기준을 이 정책으로 바꾸고(이전 배포본은 RETIRED), 같은 트랜잭션에서 서명된 게시본을 만들어 차량에 내보낸다(D06-08 → OTA). */
   deploy(actor: Actor, id: string, reason: string) {
     const p = this.require(id);
     if (p.status !== 'APPROVED') {
@@ -210,8 +212,9 @@ export class PolicyService implements OnModuleInit {
       const next: Policy = { ...p, status: 'DEPLOYED' };
       this.policies.update(next);
       this.audit.record(actor, 'POLICY_DEPLOY', id, { before: { status: 'APPROVED' }, after: { status: 'DEPLOYED', contentHash: p.contentHash }, reason, componentId: 'D01-06' });
-      this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null }, { componentId: 'D01-06', correlationId: actor.correlationId });
-      return next;
+      const pub = this.secureDeploy.publishPolicy(next, actor);
+      this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId }, { componentId: 'D01-06', correlationId: actor.correlationId });
+      return { ...next, publicationId: pub.publicationId };
     });
   }
 

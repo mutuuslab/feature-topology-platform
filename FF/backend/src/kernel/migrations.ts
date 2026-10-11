@@ -164,4 +164,32 @@ CREATE TABLE entitlement (grant_id TEXT PRIMARY KEY, vin TEXT NOT NULL, catalog_
 CREATE INDEX entitlement_vin ON entitlement(vin);
 `,
   },
+  {
+    name: '006_delivery',
+    sql: `
+CREATE TABLE pki_key (key_id TEXT PRIMARY KEY, status TEXT NOT NULL, created_at TEXT NOT NULL, not_after TEXT NOT NULL, public_pem TEXT NOT NULL, private_pem TEXT NOT NULL, retired_at TEXT);
+CREATE TABLE publication (
+  publication_id TEXT PRIMARY KEY, kind TEXT NOT NULL, status TEXT NOT NULL,
+  scope_key TEXT NOT NULL, sequence INTEGER NOT NULL, created_at TEXT NOT NULL, doc TEXT NOT NULL,
+  UNIQUE (scope_key, sequence)
+);
+CREATE INDEX publication_status ON publication(status);
+CREATE TABLE readback (id INTEGER PRIMARY KEY AUTOINCREMENT, publication_id TEXT NOT NULL, vin TEXT NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX readback_pub ON readback(publication_id);
+CREATE TABLE if_call (id INTEGER PRIMARY KEY AUTOINCREMENT, if_id TEXT NOT NULL, idem_key TEXT NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL, UNIQUE (if_id, idem_key));
+CREATE TABLE kill_request (kill_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE vehicle_runtime (vin TEXT PRIMARY KEY, doc TEXT NOT NULL);
+`,
+  },
+  {
+    name: '007_virtual_validation',
+    sql: `
+CREATE TABLE virtual_run (
+  run_id TEXT PRIMARY KEY, policy_id TEXT NOT NULL, feature_id TEXT NOT NULL, feature_version TEXT NOT NULL,
+  scenario_id TEXT NOT NULL, content_hash TEXT NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL
+);
+CREATE INDEX virtual_run_policy ON virtual_run(policy_id, scenario_id);
+CREATE INDEX virtual_run_feature ON virtual_run(feature_id, feature_version);
+`,
+  },
 ];

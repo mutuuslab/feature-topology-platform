@@ -77,6 +77,10 @@ const products = () => import('./screens/products/Products');
 const auditEvents = () => import('./screens/governance/AuditEvents');
 const policyScreens = () => import('./screens/policy/Policies');
 const runtimeScreens = () => import('./screens/policy/Runtime');
+const virtualScreens = () => import('./screens/policy/Virtual');
+const fleetScreens = () => import('./screens/ops/FleetLive');
+const killScreens = () => import('./screens/ops/KillConsole');
+const deployScreens = () => import('./screens/ops/Deployments');
 
 export const ROUTES: AppRoute[] = [
   // 1 홈
@@ -116,7 +120,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/decisions/report', element: named(decisions, 'DecisionReport'), title: '결정 보고서', group: 'config', parent: '/analysis/impact' },
   { path: '/decisions/center', element: named(decisions, 'DecisionCenter'), title: '결정 센터', group: 'config', parent: '/analysis/impact' },
   { path: '/decisions/deploy', element: named(decisions, 'DeploymentDecision'), title: '배포 결정', group: 'config', parent: '/analysis/impact' },
-  { path: '/twin/impact', element: named(twin, 'TwinImpact'), title: 'Twin 영향', group: 'config', parent: '/analysis/impact' },
+  { path: '/twin/impact', element: named(twin, 'TwinImpact'), title: '변경 영향 시뮬레이션 (BDC 데모)', group: 'config', parent: '/analysis/impact' },
   { path: '/master/product-spec', element: named(eo, 'ProductSpec'), title: 'Variant·적용 조건', group: 'config', menu: '/master/product-spec', components: ['D02-01'] },
   { path: '/variants/:id', element: def(() => import('./pages/VariantMatrix')), title: 'Variant 매트릭스', group: 'config', parent: '/master/product-spec', components: ['D02-01'] },
 
@@ -138,8 +142,9 @@ export const ROUTES: AppRoute[] = [
   { path: '/policy/conflict', element: named(specnew, 'Conflict'), title: '정책 충돌 검토 (BDC 데모)', group: 'verify', parent: '/validations' },
   { path: '/policy/exception', element: named(specnew, 'Exception'), title: '정책 예외', group: 'verify', parent: '/policy/conflict' },
   { path: '/verify/compliance', element: named(specnew, 'Compliance'), title: '컴플라이언스', group: 'verify', menu: '/verify/compliance', components: ['D03-01'] },
-  { path: '/verify/scenario', element: named(specnew, 'Scenario'), title: '차량 시나리오 검증', group: 'verify', menu: '/verify/scenario', components: ['D06-03'] },
-  { path: '/twin/simulation', element: named(twin, 'TwinSimulation'), title: 'What-if 시뮬레이션', group: 'verify', parent: '/verify/scenario' },
+  { path: '/validations/virtual', element: named(virtualScreens, 'VirtualValidationScreen'), title: 'vECU 가상검증', group: 'verify', menu: '/validations/virtual', components: ['D06-03', 'D04-02'], v2: true },
+  { path: '/verify/scenario', element: named(specnew, 'Scenario'), title: '차량 시나리오 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
+  { path: '/twin/simulation', element: named(twin, 'TwinSimulation'), title: 'What-if 시뮬레이션 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
   { path: '/verify/experiment', element: named(specnew, 'Experiment'), title: '실험·효과', group: 'verify', menu: '/verify/experiment', components: ['D01-07'] },
   { path: '/trace/design', element: named(lineage, 'DesignTrace'), title: '요구·안전 추적', group: 'verify', menu: '/trace/design', components: ['D06-07'] },
 
@@ -157,17 +162,22 @@ export const ROUTES: AppRoute[] = [
   { path: '/policies/:id', element: named(policyScreens, 'PolicyDetail'), title: '정책 상세', group: 'release', parent: '/policies', components: ['D01-06', 'D06-04', 'D03-02', 'D01-08'], v2: true },
   { path: '/ops/policy', element: named(ops2, 'PolicyLifecycle'), title: '정책 단계 보드 (BDC 데모)', group: 'release', parent: '/policies' },
   { path: '/ops/runtime', element: def(() => import('./pages/runtime')), title: '정책 평가 시뮬레이터 (BDC 데모)', group: 'release', parent: '/policies' },
-  { path: '/ops/campaign', element: named(() => import('./pages/areas/ui10'), 'ReleaseOps'), title: '출시·단계 배포', group: 'release', menu: '/ops/campaign', components: ['D01-08', 'D04-01'] },
+  { path: '/deployments', element: named(deployScreens, 'DeploymentList'), title: '서명 배포·차량 회신', group: 'release', menu: '/deployments', components: ['D06-08', 'D06-10', 'D04-01', 'D04-03'], v2: true },
+  { path: '/deployments/:id', element: named(deployScreens, 'DeploymentDetail'), title: '게시본 상세', group: 'release', parent: '/deployments', components: ['D06-08', 'D04-03'], v2: true },
+  { path: '/ops/campaign', element: named(() => import('./pages/areas/ui10'), 'ReleaseOps'), title: '출시 캠페인 (BDC 데모)', group: 'release', parent: '/deployments' },
   { path: '/ops/campaign/:id', element: named(ops2, 'CampaignDetail'), title: '캠페인 상세', group: 'release', parent: '/ops/campaign' },
   { path: '/release/cicd', element: named(specnew, 'CICD'), title: 'CI/CD 연계', group: 'release', parent: '/ops/campaign' },
 
   // 7 차량 운영·안전 (관제실 톤)
-  { path: '/fleet', element: def(() => import('./pages/fleet')), title: '차량 운영 현황', group: 'ops', menu: '/fleet', components: ['D04-03'] },
-  { path: '/twin/fleet', element: named(twin, 'TwinFleet'), title: '3D Fleet', group: 'ops', parent: '/fleet' },
-  { path: '/twin/live', element: named(() => import('./pages/twinLive'), 'TwinLive'), title: '공장 Live', group: 'ops', parent: '/fleet' },
-  { path: '/twin/applied/:vin', element: named(() => import('./pages/areas/ui12'), 'VehicleApplied'), title: '차량별 적용 상태', group: 'ops', menu: '/twin/applied/VIN-DEMO-017', components: ['D02-03'] },
-  { path: '/twin/vehicle/:vin', element: named(twinOps, 'TwinVehicle'), title: '차량 Twin', group: 'ops', parent: '/twin/applied/:vin' },
-  { path: '/twin/incident', element: named(twinOps, 'TwinIncident'), title: '긴급 차단·복구', group: 'ops', menu: '/twin/incident', components: ['D03-03', 'D03-04'] },
+  { path: '/fleet/live', element: named(fleetScreens, 'FleetLive'), title: 'Fleet 실시간 적용 현황', group: 'ops', menu: '/fleet/live', components: ['D02-03', 'D04-03', 'D06-08'], v2: true },
+  { path: '/twin/live', element: named(fleetScreens, 'LegacyLiveRedirect'), title: 'Fleet 실시간 적용 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
+  { path: '/fleet', element: def(() => import('./pages/fleet')), title: '차량 운영 현황 (BDC 데모)', group: 'ops', parent: '/fleet/live' },
+  { path: '/twin/fleet', element: named(twin, 'TwinFleet'), title: '3D Fleet (BDC 데모)', group: 'ops', parent: '/fleet/live' },
+  { path: '/fleet/vehicles/:vin', element: named(fleetScreens, 'VehicleRuntimeScreen'), title: '차량별 적용 상태', group: 'ops', menu: '/fleet/vehicles/ego-01', components: ['D02-03'], v2: true },
+  { path: '/twin/applied/:vin', element: named(() => import('./pages/areas/ui12'), 'VehicleApplied'), title: '차량 적용 상태 (BDC 데모)', group: 'ops', parent: '/fleet/vehicles/:vin' },
+  { path: '/twin/vehicle/:vin', element: named(twinOps, 'TwinVehicle'), title: '차량 상세 (BDC 데모)', group: 'ops', parent: '/twin/applied/:vin' },
+  { path: '/ops/kill', element: named(killScreens, 'KillConsole'), title: '긴급 차단·복구', group: 'ops', menu: '/ops/kill', components: ['D03-03', 'D03-04'], v2: true },
+  { path: '/twin/incident', element: named(twinOps, 'TwinIncident'), title: '긴급 차단 시나리오 (BDC 데모)', group: 'ops', parent: '/ops/kill' },
   { path: '/ops/:id', element: def(() => import('./pages/OpsDashboard')), title: 'Feature 운영 대시보드', group: 'ops', parent: '/twin/incident' },
   { path: '/ops/incident', element: named(ops2, 'IncidentManager'), title: '이상 징후·장애', group: 'ops', menu: '/ops/incident', components: ['D06-12', 'D04-05'] },
   { path: '/ops/incident/:id', element: named(ops2, 'IncidentDetail'), title: '장애 상세', group: 'ops', parent: '/ops/incident' },

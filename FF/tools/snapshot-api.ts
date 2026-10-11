@@ -90,6 +90,24 @@ async function main() {
   const vehicles = await save('vehicles');
   const flagKeys = [...new Set((policies.items as { flagKey: string; status: string }[]).filter((p) => p.status === 'DEPLOYED').map((p) => p.flagKey))];
   for (const v of vehicles.items) for (const flagKey of flagKeys) await save('activationDecide', {}, { vin: v.vin, flagKey });
+  // 배포·차단 전달 (PoC ④⑥) — 부팅 동기화 게시본이 차량에 닿은 뒤의 상태를 찍는다
+  await new Promise((r) => setTimeout(r, 2500));
+  await save('fleetRuntime');
+  await save('gleoStatus');
+  await save('pkiKeys');
+  for (const v of vehicles.items) await save('vehicleRuntime', { vin: v.vin });
+  const pubs = await save('publications');
+  for (const kind of ['POLICY', 'KILL', 'RESTORE']) await save('publications', {}, { kind });
+  for (const p of pubs.items) await save('publicationDetail', { id: p.publicationId });
+  await save('killRequests');
+  await save('killRequests', {}, { status: 'ACTIVE' });
+  await save('killPreview', {}, { featureId: 'FEAT-00022', featureVersion: '1.0.0' });
+  // vECU 가상검증
+  await save('vecuStatus');
+  await save('virtualScenarios', {}, { featureId: 'FEAT-00022' });
+  await save('virtualRuns');
+  for (const p of policies.items as { policyId: string; featureId: string }[]) if (p.featureId === 'FEAT-00022') await save('virtualRuns', {}, { policyId: p.policyId });
+  await save('listPolicies', {}, { featureId: 'FEAT-00022' });
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

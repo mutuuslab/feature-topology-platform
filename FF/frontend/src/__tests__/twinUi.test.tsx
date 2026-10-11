@@ -11,6 +11,7 @@ import { TwinProvider } from '../state/twinStore';
 import { TwinFleet, TwinImpact, TwinSimulation } from '../pages/twin';
 import { TwinVehicle, TwinIncident } from '../pages/twinOps';
 import App from '../App';
+import { MENU } from '../routes';
 import { DOMAINS } from '../i18n';
 
 /** 장애 주입(deploy)·Kill-Switch(kill)·승인(approve)은 권한이 필요하다 → 스모크는 전체 verb 를 가진 integrator 로 실행. */
@@ -250,8 +251,8 @@ describe('라우팅·네비게이션 통합', () => {
       </MemoryRouter>,
     );
 
-    // 1차 IA 레일은 기준 7 업무 그룹이고, 서브내비에는 정본 화면 30개만 올라온다.
-    fireEvent.click(await screen.findByRole('button', { name: '차량 운영' }));
+    // MENU 2.0 레일은 업무 8그룹 — 차량 운영·안전 그룹 패널에서 화면으로 들어간다.
+    fireEvent.click(await screen.findByRole('button', { name: '차량 운영·안전' }));
     // 메뉴 항목 이름은 정본 화면 이름뿐이고(화면 ID 배지는 정본 업무 메뉴에 없다), 기준 화면 정의서(/ui/UI11)는 제품에 없다.
     const row = await screen.findByRole('link', { name: /^차량 운영 현황$/ }, { timeout: 5000 });
     expect(row.textContent).toBe('차량 운영 현황');
@@ -285,15 +286,15 @@ describe('라우팅·네비게이션 통합', () => {
       </MemoryRouter>,
     );
     const ids = /(^|\s)UI\d\d(-S\d\d)?(\s|$)/;
-    for (const domain of DOMAINS) {
-      fireEvent.click(await screen.findByRole('button', { name: domain.ko }));
-      const subnav = document.querySelector('.subnav') as HTMLElement;
-      expect(subnav, domain.key).toBeTruthy();
-      const rows = domain.screens.map(s => within(subnav).getByRole('link', { name: s.ko }));
-      expect(rows).toHaveLength(domain.screens.length);
+    // MENU 2.0 — 그룹 패널의 줄은 routes.tsx의 화면 이름 그대로이고 UI 코드가 붙지 않는다.
+    for (const group of MENU) {
+      fireEvent.click(await screen.findByRole('button', { name: group.ko }));
+      const panel = await screen.findByRole('complementary', { name: group.ko });
+      const rows = group.items.map(r => within(panel).getByRole('link', { name: r.title }));
+      expect(rows).toHaveLength(group.items.length);
       rows.forEach((row, i) => {
-        expect(row.textContent, domain.screens[i].id).toBe(domain.screens[i].ko);
-        expect(ids.test(row.textContent || ''), domain.screens[i].id).toBe(false);
+        expect(row.textContent, group.items[i].path).toBe(group.items[i].title);
+        expect(ids.test(row.textContent || ''), group.items[i].path).toBe(false);
       });
     }
   }, 20000);

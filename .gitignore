@@ -22,3 +22,6 @@ Thumbs.db
 # harness 생성물
 FF/harness/conformance.json
 *.tsbuildinfo
+FF/e2e/test-results/
+FF/e2e/report/
+FF/e2e/review/

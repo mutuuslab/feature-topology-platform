@@ -1,0 +1,97 @@
+/* 레거시 화면 브리지 — styles.css 다음에 로드한다.
+   재작성 전 레거시 화면도 새 셸 안에서 같은 글꼴·폼·표·머리말 체계를 따르게 한다(색은 토큰만).
+   화면이 v2로 다시 만들어지면 해당 규칙의 필요가 사라진다. */
+
+/* 폼 컨트롤 — OS 기본 글꼴·높이 대신 키트 규격 */
+.sh-main select,
+.sh-main input[type='text'],
+.sh-main input[type='search'],
+.sh-main input[type='number'],
+.sh-main input[type='date'],
+.sh-main input:not([type]),
+.sh-main textarea {
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  min-height: calc(var(--row-h) - 6px);
+  padding: 0 var(--sp-2);
+  box-sizing: border-box;
+}
+.sh-main textarea {
+  padding: var(--sp-2);
+}
+.sh-main select:focus,
+.sh-main input:focus,
+.sh-main textarea:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: -1px;
+}
+
+/* 표 — 밀도(행 높이 = --row-h)와 한글 줄바꿈 */
+.sh-main th,
+.sh-main td {
+  padding: 0 var(--sp-3);
+  height: var(--row-h);
+}
+.sh-main th {
+  white-space: nowrap;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+}
+.sh-main td {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.sh-main table {
+  font-size: var(--fs-sm);
+}
+
+/* 버튼 — 키트와 같은 높이·굵기, 비활성은 점선(어두운 영역에서도 읽힘) */
+.sh-main .btn {
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+  border-color: var(--line-strong);
+  border-radius: var(--r);
+  min-height: calc(var(--row-h) - 4px);
+}
+.sh-main .btn.primary,
+.sh-main .btn.danger {
+  color: var(--accent-ink);
+}
+.sh-main .btn:disabled {
+  opacity: 0.6;
+  border-style: dashed;
+  color: var(--muted);
+  background: transparent;
+}
+
+/* 머리말 — 셸이 breadcrumb을 그리므로 레거시 경로 줄은 숨기고, 화면 코드는 H1 뒤 보조 정보로 */
+.sh-main .crumb-block .breadcrumb {
+  display: none;
+}
+.sh-main .page-title {
+  padding-left: 0;
+  font-size: var(--fs-xl);
+  letter-spacing: -0.02em;
+}
+.sh-main .page-title::before {
+  display: none;
+}
+.sh-main .card {
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-1);
+}
+.sh-main .card:hover {
+  box-shadow: var(--e-1);
+}
+
+/* 한글을 모노 글꼴로 조판하지 않는다 — 모노는 ID·해시·숫자만 */
+.sh-main .mono:lang(ko),
+.sh-main code:lang(ko) {
+  font-family: var(--font-sans);
+}

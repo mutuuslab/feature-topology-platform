@@ -1,0 +1,215 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   디자인 토큰 — "Engineering Instrument"
+   색·글꼴·간격·모션을 정의하는 유일한 파일(lint:tokens가 다른 파일의 원시 색을 막는다).
+   · 밝은 종이 위 고밀도 거버넌스 화면 / 운영·안전 영역은 어두운 관제실 톤(data-zone="ops")
+   · 강조색은 코발트 하나, 빨강은 파괴적 액션(Kill)과 FAIL 전용
+   · 밀도: 1920 comfortable · 1366~1599 compact · 시연 모드(data-present) 18px 고대비
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: 'SUIT Variable';
+  src: url('./fonts/SUIT-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono Variable';
+  src: url('./fonts/JetBrainsMono.woff2') format('woff2-variations');
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+:root {
+  /* 글꼴 */
+  --font-sans: 'SUIT Variable', 'SUIT', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'D2Coding', ui-monospace, Consolas, monospace;
+
+  /* 중립 — 따뜻한 그래파이트와 종이 */
+  --paper: #f5f4ef;
+  --surface: #fdfcf9;
+  --surface-2: #f5f4ef;
+  --surface-3: #ecebe4;
+  --surface-sunk: #efede6;
+  --ink: #15171b;
+  --ink-2: #3a3d44;
+  --muted: #5f5b50; /* 대비 ≥5.6:1 (모든 밝은 면) */
+  --faint: #6b675c; /* 대비 ≥4.7:1 — 보조 글자도 AA */
+  --line: #dfdcd2;
+  --line-strong: #c7c3b6;
+
+  /* 강조 — 코발트 단일 */
+  --accent: #2747d4;
+  --accent-hover: #1d36a8;
+  --accent-soft: #e7ebfb;
+  --accent-ink: #ffffff;
+  --focus: #2747d4;
+
+  /* 신호 */
+  --ok: #1a7045;
+  --ok-soft: #e2f1e8;
+  --warn: #8f5500;
+  --warn-soft: #faefd9;
+  --danger: #c3311c;
+  --danger-hover: #9e2614;
+  --danger-soft: #fbe8e3;
+  --info: #1b6a9e;
+  --info-soft: #e1eef7;
+
+  /* Lifecycle 7 — 정의(무채)→승인(코발트)→개발(보라)→검증(청록)→출시(녹)→중단(호박)→종료(회) */
+  --lc-PROPOSED: #6f6a5d;
+  --lc-APPROVED: #3552d6;
+  --lc-DEVELOPING: #6747c4;
+  --lc-VERIFIED: #0b6f85;
+  --lc-RELEASED: #1a7045;
+  --lc-DEPRECATED: #8f5500;
+  --lc-RETIRED: #6e6a62;
+
+
+  /* 글자 크기 — 기본 14 (compact 13, 시연 18) */
+  --fs-base: 14px;
+  --lh: 1.5;
+  --tracking-tight: -0.012em;
+
+  /* 간격 4px 단위 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --row-h: 36px;
+
+  /* 모서리·그림자 — 계기판처럼 각지고 얇게 */
+  --r-sm: 3px;
+  --r: 5px;
+  --r-lg: 8px;
+  --e-1: 0 1px 0 rgba(21, 23, 27, 0.04), 0 1px 2px rgba(21, 23, 27, 0.06);
+  --e-2: 0 6px 24px rgba(21, 23, 27, 0.1), 0 1px 3px rgba(21, 23, 27, 0.08);
+  --e-3: 0 18px 48px rgba(21, 23, 27, 0.18);
+  --scrim: rgba(21, 23, 27, 0.32);
+
+  /* 셸 치수 */
+  --rail-w: 64px;
+  --panel-w: 232px;
+  --topbar-h: 52px;
+  --drawer-w: 380px;
+
+  /* 모션 */
+  --t-fast: 140ms;
+  --t-base: 220ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* 종이 결 — 아주 옅은 계측 격자 */
+  --grid-dot: rgba(21, 23, 27, 0.045);
+
+}
+
+/* 파생 토큰 — 다른 토큰을 참조하므로 각 테마 범위(관제실 영역·다크·시연)에서 다시 선언해야
+   그 범위의 값으로 계산된다(사용자 정의 속성은 선언된 요소에서 해석된다). */
+:root,
+[data-theme='dark'],
+[data-zone='ops'],
+[data-present='on'] {
+  /* Gate 판정 — 색만으로 구분하지 않는다(모양 ● ◐ ○ ✕ 병기) */
+  --gate-PASS: var(--ok);
+  --gate-REVIEW: var(--warn);
+  --gate-UNJUDGED: var(--faint);
+  --gate-FAIL: var(--danger);
+  --fs-xs: calc(var(--fs-base) * 0.786);
+  --fs-sm: calc(var(--fs-base) * 0.857);
+  --fs-md: calc(var(--fs-base) * 1.071);
+  --fs-lg: calc(var(--fs-base) * 1.286);
+  --fs-xl: calc(var(--fs-base) * 1.571);
+  --fs-2xl: calc(var(--fs-base) * 2);
+  /* ── 레거시 화면 별칭 (styles.css 하위 호환 — 재디자인 화면은 위 이름을 쓴다) ── */
+  --brand: var(--accent);
+  --pass: var(--ok);
+  --pending: var(--warn);
+  --fail: var(--danger);
+  --radius: var(--r-lg);
+  --radius-sm: var(--r);
+  --mono: var(--font-mono);
+  --sans: var(--font-sans);
+  --lc-Proposed: var(--lc-PROPOSED);
+  --lc-Approved: var(--lc-APPROVED);
+  --lc-Developing: var(--lc-DEVELOPING);
+  --lc-Verified: var(--lc-VERIFIED);
+  --lc-Released: var(--lc-RELEASED);
+  --lc-Deprecated: var(--lc-DEPRECATED);
+  --lc-Retired: var(--lc-RETIRED);
+  --dp-Binary: var(--lc-DEVELOPING);
+  --dp-Policy: var(--lc-VERIFIED);
+  --dp-Calibration: var(--warn);
+  --dp-Manual: var(--danger);
+  --dp-TBD: var(--faint);
+}
+
+/* 밀도 — 노트북(1366~1599)은 compact */
+@media (max-width: 1599px) {
+  :root {
+    --fs-base: 13px;
+    --row-h: 32px;
+    --panel-w: 212px;
+  }
+}
+
+/* 어두운 관제실 — 전역 다크 테마 또는 운영·안전 영역 */
+[data-theme='dark'],
+[data-zone='ops'] {
+  --paper: #0d0f12;
+  --surface: #15181d;
+  --surface-2: #0d0f12;
+  --surface-3: #1e2229;
+  --surface-sunk: #0a0c0e;
+  --ink: #ebe9e2;
+  --ink-2: #c9c6bd;
+  --muted: #9c998f;
+  --faint: #94918a; /* 어두운 면 대비 ≥5:1 */
+  --line: #2a2e36;
+  --line-strong: #3a3f49;
+  --accent: #8197ff;
+  --accent-hover: #a2b2ff;
+  --accent-soft: #1d2340;
+  --accent-ink: #0d0f12;
+  --focus: #a2b2ff;
+  --ok: #43c486;
+  --ok-soft: #12291d;
+  --warn: #f0aa3c;
+  --warn-soft: #2c2210;
+  --danger: #ff5c45;
+  --danger-hover: #ff7b68;
+  --danger-soft: #34140f;
+  --info: #5fb2e8;
+  --info-soft: #102331;
+  --lc-PROPOSED: #a39e91;
+  --lc-APPROVED: #8197ff;
+  --lc-DEVELOPING: #a98cf0;
+  --lc-VERIFIED: #3fc0d6;
+  --lc-RELEASED: #43c486;
+  --lc-DEPRECATED: #f0aa3c;
+  --lc-RETIRED: #94918a;
+  --e-1: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --e-2: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --e-3: 0 18px 48px rgba(0, 0, 0, 0.6);
+  --scrim: rgba(0, 0, 0, 0.55);
+  --grid-dot: rgba(235, 233, 226, 0.04);
+  color-scheme: dark;
+}
+
+/* 시연·발표 모드 — 큰 글자, 넓은 행, 굵은 초점 */
+[data-present='on'] {
+  --fs-base: 18px;
+  --row-h: 46px;
+  --panel-w: 0px;
+  --line: var(--line-strong);
+  --muted: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms;
+    --t-base: 0ms;
+  }
+}

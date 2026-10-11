@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { useApp } from '../store';
 import { useT } from '../i18n';
 
@@ -51,5 +52,6 @@ export function ToastHost() {
 
 export function NotFound() {
   const { t } = useT();
-  return <EmptyState title={t('notFound')} cta={<a className="btn" href="#/">{t('home')}</a>} />;
+  // BrowserRouter이므로 '#/'가 아니라 라우터 링크로 홈에 간다 (IA 감사: 깨진 링크 수정)
+  return <div data-not-found><EmptyState title={t('notFound')} cta={<Link className="btn" to="/">{t('home')}</Link>} /></div>;
 }

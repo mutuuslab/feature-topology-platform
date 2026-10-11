@@ -7,6 +7,7 @@ import { Steps } from '../components/charts';
 import { domainOfPath, DOMAINS, DEPT_NAV, ITEM, PLANE_NAV, roleHomePath } from '../i18n';
 import { ROLE_HOME_IMPL, SCREEN_ENTRY, SCREEN_LINKS } from '../data/uiLinks';
 import { SPEC_MENU } from '../data/specMenu';
+import { ROUTES } from '../routes';
 
 describe('1차 IA = 기준 패키지 7 업무 그룹 (MENU 1.3)', () => {
   it('도메인은 7개 (기준 업무 그룹 순서)', () => {
@@ -98,8 +99,8 @@ describe('메뉴에는 구현 화면만 있다', () => {
   });
 
   it('메뉴 항목이 모두 실제 라우트로 열린다', () => {
-    const app = readFileSync(join(process.cwd(), 'src', 'App.tsx'), 'utf-8');
-    const routes = [...app.matchAll(/<Route path="([^"]+)"/g)].map(m => m[1].split('/').filter(Boolean));
+    // 라우트 단일 기준은 routes.tsx (MENU 2.0) — 정본 화면(MENU 1.3) 진입 경로가 모두 그대로 열려야 한다
+    const routes = ROUTES.map((r) => r.path.split('/').filter(Boolean));
     const matchesRoute = (path: string) => {
       const segs = path.split('/').filter(Boolean);
       if (segs.length === 0) return routes.some(r => r.length === 0);

@@ -5,7 +5,8 @@
   "workspaces": [
     "contracts",
     "backend",
-    "frontend"
+    "frontend",
+    "e2e"
   ],
   "engines": {
     "node": ">=24"

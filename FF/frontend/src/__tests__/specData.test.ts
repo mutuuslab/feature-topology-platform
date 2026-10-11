@@ -10,6 +10,7 @@ import {
 } from '../data/specPlanesNav';
 import { SPEC_PLANES, SPEC_PLANE_NOTE } from '../data/specArch';
 import { PLANE_NAV, DOMAINS, ITEM } from '../i18n';
+import { ROUTES } from '../routes';
 
 describe('요구사양 문서는 제품에 없다', () => {
   it('문서 원문 자산(public/spec)이 배포 대상에 없다', () => {
@@ -50,9 +51,9 @@ describe('1차 메뉴 (specMenu) ↔ 기준 (specNav) 정합', () => {
 
 describe('요구사양 문서 화면은 제품에 없다', () => {
   it('/ui · /arch · /spec/changelog · /spec/glossary 라우트가 등록되어 있지 않다', () => {
-    const app = readFileSync(join(process.cwd(), 'src', 'App.tsx'), 'utf-8');
+    const paths = ROUTES.map((r) => r.path);
     ['/ui', '/ui/:uiId', '/ui/:uiId/:areaId', '/arch', '/spec/changelog', '/spec/glossary'].forEach((p) => {
-      expect(app.includes(`path="${p}"`), p).toBe(false);
+      expect(paths.includes(p), p).toBe(false);
     });
   });
 });
@@ -162,12 +163,8 @@ describe('Plane별 보기 (4 Plane · 공유 기반)', () => {
     expect(specPlaneOfPath('/unknown/route')).toBeUndefined();
   });
 
-  it('셸이 세 번째 네비 모드로 Plane을 제공한다', () => {
-    const app = readFileSync(join(process.cwd(), 'src', 'App.tsx'), 'utf-8');
-    expect(app.includes("setMode('plane')")).toBe(true);
-    expect(app.includes("navMode === 'plane'")).toBe(true);
-    const store = readFileSync(join(process.cwd(), 'src', 'store.tsx'), 'utf-8');
-    expect(store.includes("'function' | 'dept' | 'plane'")).toBe(true);
+  // MENU 2.0에서 Plane별 네비 모드는 폐지됐다(사용자 결정) — Plane 배치 데이터는 42 컴포넌트 아키텍처 화면용으로 유지한다.
+  it('Plane 배치 데이터(4 Plane)는 라벨·그룹을 모두 갖는다', () => {
     // 레일 라벨은 구현된 4 Plane 뿐이다(공유 기반은 참조 영역과 함께 사라졌다). 라벨·그룹을 모두 갖는다.
     expect(PLANE_NAV).toHaveLength(SPEC_PLANES.length);
     expect(PLANE_NAV.some((p) => p.key === 'shared')).toBe(false);
@@ -203,9 +200,7 @@ describe('기준 화면 ↔ 구현 화면 연결표', () => {
   });
 
   it('연결한 구현 화면 경로가 실제 라우트로 존재한다', () => {
-    const app = readFileSync(join(process.cwd(), 'src', 'App.tsx'), 'utf-8');
-    const routes = [...app.matchAll(/<Route path="([^"]+)"/g)]
-      .map((m) => m[1].split('/').filter(Boolean));
+    const routes = ROUTES.map((r) => r.path.split('/').filter(Boolean));
     const matchesAnyRoute = (path: string) => {
       const segs = path.split('/').filter(Boolean);
       if (segs.length === 0) return routes.some((r) => r.length === 0);

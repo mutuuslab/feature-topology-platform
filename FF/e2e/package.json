@@ -1,0 +1,14 @@
+{
+  "name": "@ff/e2e",
+  "private": true,
+  "description": "브라우저 하네스 — 메뉴 크롤·접근성(axe)·레이아웃·시각 회귀. 백엔드 9101(메모리 DB) + Vite 9012를 띄워 검사한다.",
+  "scripts": {
+    "test": "playwright test --grep-invert @visual",
+    "test:visual": "playwright test --grep @visual",
+    "update:visual": "playwright test --grep @visual --update-snapshots"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "^1.48.0"
+  }
+}

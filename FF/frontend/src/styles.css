@@ -1,18 +1,8 @@
 /* 디자인 토큰 (docs/70-30-tokens-color-type) */
-:root{
-  --brand:#0B5FFF; --ink:#1A1F2B; --muted:#6B7280; --line:#E5E9F0;
-  --surface:#FFFFFF; --surface-2:#F4F6F9; --surface-3:#EEF2F8;
-  --pass:#1F9D55; --pending:#D9822B; --fail:#D64545; --info:#3B82F6;
-  --lc-Proposed:#8895A7; --lc-Approved:#3B82F6; --lc-Developing:#6366F1;
-  --lc-Verified:#0EA5E9; --lc-Released:#1F9D55; --lc-Retired:#9CA3AF;
-  --dp-Binary:#7C3AED; --dp-Policy:#0EA5E9; --dp-Calibration:#D9822B; --dp-Manual:#D64545; --dp-TBD:#9CA3AF;
-  --radius:10px; --radius-sm:6px;
-  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-  --sans:'Pretendard','Noto Sans KR',-apple-system,'Segoe UI',Roboto,sans-serif;
-}
+/* 토큰은 design/tokens.css로 이동 (레거시 이름은 별칭으로 유지) */
 *{box-sizing:border-box}
 html,body,#root{height:100%;margin:0}
-body{font-family:var(--sans);color:var(--ink);background:var(--surface-2);font-size:14px;line-height:1.5}
+body{font-family:var(--sans);color:var(--ink);background:var(--surface-2);font-size:var(--fs-base);line-height:var(--lh)} /* 밀도·시연 모드가 글자 크기를 정한다 */
 a{color:var(--brand);text-decoration:none}
 code,.mono{font-family:var(--mono)}
 
@@ -211,11 +201,7 @@ table.heatmap th{background:transparent}
 }
 
 /* 다크 테마 */
-[data-theme="dark"]{
-  --ink:#E6EAF2; --muted:#9AA6B6; --line:#2A3342;
-  --surface:#141A24; --surface-2:#0F141C; --surface-3:#1E2735;
-  --brand:#5B8CFF;
-}
+/* 다크 토큰은 design/tokens.css */
 [data-theme="dark"] body{background:var(--surface-2)}
 [data-theme="dark"] th{background:var(--surface-3)}
 [data-theme="dark"] .decision.RELEASE{background:#0e2a1c}

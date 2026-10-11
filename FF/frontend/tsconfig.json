@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ES2021",
     "useDefineForClassFields": true,
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2021",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -13,8 +17,19 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ff/contracts": [
+        "../contracts/dist/index.d.ts"
+      ]
+    }
   },
-  "include": ["src"],
-  "exclude": ["src/__tests__", "src/test"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "src/__tests__",
+    "src/test"
+  ]
 }

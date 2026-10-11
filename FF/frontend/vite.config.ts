@@ -1,4 +1,4 @@
-﻿/// <reference types="vitest/config" />
+/// <reference types="vitest/config" />
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -8,10 +8,14 @@ const pages = process.env.GITHUB_PAGES === '1';
 export default defineConfig({
   base: pages ? '/feature-topology-platform/' : '/',
   plugins: [react()],
+  resolve: {
+    // 공용 계약은 소스(TS)를 직접 번들한다 — CJS dist를 거치지 않아 dev·test·build가 같은 코드를 본다.
+    alias: { '@ff/contracts': fileURLToPath(new URL('../contracts/src/index.ts', import.meta.url)) },
+  },
   server: {
     port: 9012,
     host: true,
-    // proxy: { '/api': 'http://localhost:9101' }, // 백엔드 연동 시 주석 해제
+    proxy: { '/api': 'http://localhost:9101' }, // 백엔드(NestJS) — FF 루트에서 npm run dev:backend
   },
   build: {
     rollupOptions: {

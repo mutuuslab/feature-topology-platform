@@ -15,6 +15,7 @@ export default class RouteBoundary extends Component<Props, State> {
   render() {
     const { error } = this.state;
     if (!error) return this.props.children;
-    return <ErrorState msg={`화면을 표시할 수 없습니다: ${error.message}`} onRetry={() => this.setState({ error: null })} />;
+    // data-route-error — e2e 메뉴 크롤이 화면 렌더 실패를 잡는 표식
+    return <div data-route-error><ErrorState msg={`화면을 표시할 수 없습니다: ${error.message}`} onRetry={() => this.setState({ error: null })} /></div>;
   }
 }

@@ -4,12 +4,12 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **P5 디자인 시스템과 셸 (UI/UX 전면 재디자인)**부터. 이 단계부터 화면이 생기므로 `/frontend-design` 원칙을 적용한다.
-  1. `frontend/src/design/tokens.css` — "Engineering Instrument": SUIT Variable(UI·본문) + JetBrains Mono(ID·버전·해시, tabular-nums), 셀프호스팅(`public/fonts`, OFL). 따뜻한 그래파이트 중립(ink #15171B, paper #F5F4EF), 액션 코발트 1색, 빨강은 파괴적 액션·FAIL 전용, Lifecycle 7 순차 램프(`--lc-PROPOSED…`), Gate 4종 색+모양(● ◐ ○ ✕). 다크(운영·안전 관제실) 테마, `data-density`(compact 1366~1536 / comfortable 1920), 시연 모드(`P`, 18px·고대비).
-  2. `frontend/src/design/` 컴포넌트 키트: StatusBadge·LifecycleStepper(막힌 사유)·GateRail·IdChip·DataTable·AsyncView(data-state)·Drawer·Tabs(URL 동기)·DiffView·EvidenceLink·EventStream·KpiTile·DangerConfirm·EmptyState + `/_design` 갤러리.
-  3. `frontend/src/shell/` + `src/routes.tsx`(MENU 2.0 업무 8그룹 데이터, 부모·컴포넌트 ID·UI 코드 메타) — 레일·그룹 패널·상단바(검색·⌘K·역할 전환·내 역할 필터·시연 모드)·우측 컨텍스트 드로어. 기존 `menuCanonical.test`는 IA 하네스(고아 0·라벨=h1·중복 0)로 교체. 문구는 `src/copy/ko.ts`.
-  4. e2e 하네스 시작: `FF/e2e`(@playwright/test, webServer 백엔드 9101 메모리 DB + Vite 9012), axe, `/_design` 시각 회귀 4조건(1366/1536/1920/시연), 메뉴 크롤 404=0.
-- 백엔드 API는 P4까지 34경로 (`contracts/src/routes.ts`, `docs/80-integration/openapi.json`). 프론트 API 클라이언트는 ROUTES에서 생성한다(P6).
+- **P6 거버넌스 화면(v2)**부터 — 새 화면은 `frontend/src/screens/`에 `design` 키트·`copy/ko.ts`만 써서 만들고 routes.tsx에 `v2: true`로 등록한다(접근성 위반 0·문구 lint·토큰 lint 하드 규칙).
+  1. API 클라이언트: `src/api/client.ts` — `@ff/contracts`의 `ROUTES`로 함수 생성(이름=ROUTES.name), 행위자 헤더(역할 전환기의 레거시 역할 → 플랫폼 역할 매핑), Idempotency-Key 자동, 오류 봉투 → 예외. `@tanstack/react-query` 도입.
+  2. 화면: Feature Registry 목록(`/features`, DataTable·필터·facets) → 상세(`/features/:id/:ver` — LifecycleStepper(막힌 사유)·GateRail·19속성·의존관계·구현 추적·Baseline·사용 상품·탭은 URL 동기), Gate 원장, BOM 승인 큐(체크리스트·DiffView·DangerConfirm 아닌 일반 확인), Catalog 구성(후보·실시간 검증), 변경 영향, 사전점검(`/precheck`), 감사·이벤트. 기존 `/catalog`·`/master/bom` 등 레거시는 v2가 대체하면 메뉴를 v2로 옮기고 레거시는 부모 아래 드릴다운 또는 삭제(래칫: FEAT-BDC 파일 수 감소).
+  3. UI 리뷰에서 미룬 항목(레거시 화면 재작성 시 함께): Catalog 상단 차트를 한 줄 지표로 접기(1366에서 표 10행 이상), 레거시 채움 배지·그라디언트 막대 제거, KPI 지표 줄(모노·의미 있을 때만 색), 히트맵 off 셀 중립화.
+  4. 정적 모드(`VITE_DATA_MODE=static`)와 `snapshot:api`(Cloudflare 데모).
+- e2e: `cd FF/e2e && npx playwright test`(백엔드 9101·Vite **9112** 자동 기동 — 9012는 다른 프로젝트 Quartz가 사용 중일 수 있음). 시각 기준 갱신 `npm run update:visual -w @ff/e2e`, 접근성 기준 갱신 `UPDATE_A11Y=1`.
 
 ## 기준 문서 (저장소 밖)
 | 문서 | 위치 | 용도 |
@@ -27,7 +27,7 @@
 - [x] **P2 커널** — `backend/src/kernel/`: node:sqlite Db(tx·SAVEPOINT·afterCommit·동기 콜백 강제), 내장 마이그레이션, v0.81 부팅 시드, 감사(ALLOWED/DENIED/FAILED), outbox 이벤트 + SSE `/api/events/stream`, `X-Actor-*` 역할 가드, Idempotency-Key, ZodPipe, 오류 봉투, `@PlatformComponent` + `GET /api/components`·`/api/health`·`/api/audit`·`/api/events`. 기존 GraphPort·BDC seed·engines/rules/gates 삭제(BDC 휴리스틱은 v0.81 Gate 의미와 달라 이식하지 않음). 백엔드 테스트 18건(트랜잭션 원자성·DENIED 감사·멱등 재전송·스트림 순서 포함)
 - [x] **P3 Registry·Gate·Lifecycle·BOM** — contracts 규칙 표(전이 7종·재판정 표 7·Baseline 정규화/diff), Registry(등록·유사 중복 409·초안 수정·새 Version·상세 19속성+추적), Gate(append-only·증거 없는 PASS 금지·단계 순서·RELEASED 판정 불가), Lifecycle(전이+감사+이벤트 한 tx, 자동 전이 연쇄, 직무 분리·사유), BOM(요청·8항목 체크리스트·요청자≠승인자·BL 발급·Lifecycle 제외 sha256·Baseline은 Lifecycle만 추종). `contracts/routes.ts`(21경로) → OpenAPI 생성·`--check`, 실제 라우트와 양방향 드리프트 테스트. 백엔드 44건·contracts 43건. 테스트가 잡은 버그 2건 수정: 구현 연결 0건이 IMPLEMENTATION을 통과하던 문제, 새 Version 요청의 국가 변경이 조용히 무시되던 문제(스키마 strict)
 - [x] **P4 Topology·Catalog·Impact·PRECHECK** — contracts: 상품 구성 검증(확정 BL·상태·범위·중복·REQUIRES 동봉·EXCLUDES·SINGLE/PACKAGE·기간, 데이터셋 18상품 전부 PASS), 상품 Lifecycle 표 17(구성 승인·고객 출시 승인 분리), 의존관계 판정(데이터셋 29건과 전부 일치)·신규 관계 구조 검증(중복·대칭·범위·순환). 백엔드: 의존관계 등록(PROPOSED 원천만)·Lifecycle 변경 시 재판정, 관계 그래프, `/api/precheck`, 다단계 변경 영향(의존자·Baseline·상품·재판정 Gate·담당자), Catalog(등록·초안·새 Version·후보·저장 없는 검증·전이·출시 적격성·직무 분리). 34경로. 테스트 contracts 58·백엔드 59
-- [ ] P5 디자인 시스템·셸·MENU 2.0·IA 하네스·시각 회귀 기준
+- [x] **P5 디자인 시스템·셸·MENU 2.0** — 토큰("Engineering Instrument": SUIT+JetBrains Mono 셀프호스팅, 종이/그래파이트, 코발트 단일 강조, Lifecycle·Gate 색+모양, 관제실 다크 영역, compact/comfortable 밀도, 시연 모드 P), 디자인 키트(상태 배지·IdChip·LifecycleStepper·GateRail·DataTable(키보드)·AsyncView(data-state)·URL 탭·Diff·EventStream·Drawer·DangerConfirm(type-to-confirm)) + `/_design`, 셸(레일 8·그룹 패널·breadcrumb·내 역할 필터·⌘K·관제실 영역), `routes.tsx` MENU 2.0(83 라우트, 고아 0), 레거시 브리지 CSS. 하네스: IA 테스트 12, e2e(메뉴 크롤 41·3해상도 레이아웃·시연·type-to-confirm), axe(신규 0 / 레거시 343 래칫, 시작 424), 시각 회귀 4조건. 테스트가 잡은 버그: 비요소 키 대상 크래시, 레거시 body 글자 크기가 밀도·시연을 무시, 파생 토큰이 :root에서만 해석돼 관제실 영역 색이 깨짐, 레일 버튼에 다크 토큰 오적용
 - [ ] P6 거버넌스 화면 + react-query + 정적 모드
 - [ ] P7 정책 파이프라인(8 검증기) + 권한·체험권·대상·활성화 + Flag 평가기(OFREP)
 - [ ] P8 PKI·배포·Kill·GLEO·Unleash(IF-04) 어댑터
@@ -46,6 +46,8 @@
 | 2026-10-11 | hfp-feature-lifecycle은 읽기만, 로직을 FF 백엔드 TS로 이식 |
 | 2026-10-11 | xlsx 파서는 SheetJS(cdn 0.20.3) — exceljs는 이 파일의 표 정의에서 크래시
 | 2026-10-11 | node:sqlite는 `process.getBuiltinModule`로 로드(vite가 접두사 제거), 마이그레이션은 TS 문자열(빌드 산출물 포함). 백엔드 타입 검사는 test 포함(tsconfig.json), 빌드는 tsconfig.build.json
+| 2026-10-11 | 프론트는 contracts 소스를 Vite alias로 번들하되 타입은 dist .d.ts로 검사(프론트 tsconfig가 strict:false라 zod 타입이 무너짐). e2e 프론트 포트 9112
+| 2026-10-11 | 운영 영역 표식은 빨강이 아닌 주의(warn)선 — 빨강은 파괴적 액션·FAIL 전용
 | 2026-10-11 | 영속 저장 node:sqlite (Db 인터페이스 뒤), contracts는 CJS dist로 빌드해 백엔드가 소비 |
 
 ## 알려진 이슈·주의
@@ -107,7 +109,7 @@
 
 | 지표 | 현재 기준 | 방향 | 설명 |
 |---|---|---|---|
-| rawColors | 856 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
+| rawColors | 827 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
 | featBdcFiles | 37 | ↓ 줄이기 | FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지 |
 | implementedComponents | 0 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
 <!-- /AUTO:conformance -->

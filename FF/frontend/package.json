@@ -16,7 +16,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
-    "three": "^0.169.0"
+    "three": "^0.169.0",
+    "@ff/contracts": "*"
   },
   "devDependencies": {
     "@gltf-transform/cli": "^4.5.0",

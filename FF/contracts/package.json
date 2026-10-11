@@ -1,0 +1,19 @@
+{
+  "name": "@ff/contracts",
+  "version": "0.81.0",
+  "private": true,
+  "description": "프론트·백엔드 공용 계약: zod 스키마, enum, 규칙 표, 42 컴포넌트 manifest (Node/DOM API 사용 금지)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.9"
+  }
+}

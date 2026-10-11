@@ -1,0 +1,25 @@
+# 품질 게이트 — FF/ 에서 npm run verify (contracts·backend·frontend 타입/테스트, 토큰·문구 lint 래칫, 42 컴포넌트 준수, 빌드).
+# 시각 회귀(verify:full)는 OS별 렌더 차이로 로컬 Windows에서만 돌린다.
+name: Verify
+on:
+  push:
+    branches: [main, 'feat/**']
+  pull_request:
+  workflow_call:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: FF
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: FF/package-lock.json
+      - run: npm ci
+      - name: Playwright 브라우저 (e2e가 있을 때)
+        run: if [ -f e2e/playwright.config.ts ]; then npx playwright install --with-deps chromium; fi
+      - run: npm run verify

@@ -1,0 +1,32 @@
+{
+  "name": "feature-platform",
+  "private": true,
+  "description": "Feature Flag Platform — contracts · backend · frontend · e2e (npm workspaces). 품질 게이트는 npm run verify",
+  "workspaces": [
+    "contracts",
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "verify": "node tools/verify.ts",
+    "verify:full": "node tools/verify.ts --full",
+    "lint:tokens": "node tools/lint-tokens.ts",
+    "lint:copy": "node tools/lint-copy.ts",
+    "ratchet": "node tools/ratchet.ts",
+    "conformance": "node tools/conformance.ts",
+    "progress": "node tools/progress.ts",
+    "build:contracts": "npm run build -w @ff/contracts",
+    "test:contracts": "npm test -w @ff/contracts",
+    "test:backend": "npm test -w feature-topology-backend",
+    "test:frontend": "npm test -w feature-topology-frontend",
+    "dev:backend": "npm run start:dev -w feature-topology-backend",
+    "dev:frontend": "npm run dev -w feature-topology-frontend"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1"
+  },
+  "type": "module"
+}

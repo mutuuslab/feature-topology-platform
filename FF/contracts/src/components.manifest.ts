@@ -95,12 +95,36 @@ const SEEDS: Seed[] = [
 const BE_D01 = ['backend/test/d01/registry.spec.ts', 'backend/test/d01/topology-catalog.spec.ts'];
 const FE_V2 = 'frontend/src/__tests__/screensV2.test.tsx';
 const E2E_GOV = 'e2e/tests/governance.spec.ts';
-const IMPLEMENTED: Record<string, Pick<ComponentEntry, 'screens' | 'tests'>> = {
+const BE_POL = 'backend/test/d01/policy.spec.ts';
+const FE_POL = 'frontend/src/__tests__/screensPolicy.test.tsx';
+const E2E_POL = 'e2e/tests/policy.spec.ts';
+const CT_FLAG = ['contracts/src/flags/evaluate.test.ts', 'contracts/src/flags/p0.test.ts'];
+/** PoC ② 분야별 검증기 — 병렬 실행되어 정책 상세·검증 이력에서 결과를 본다 */
+const VALIDATOR: Impl = { screens: ['/policies/:id', '/validations'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL], via: ['validatePolicy'] };
+/** via — 자기 API 없이 다른 컴포넌트의 라우트 안에서 호출되는 컴포넌트(예: 병렬 검증기)가 그 라우트 이름을 적는다 */
+type Impl = Pick<ComponentEntry, 'screens' | 'tests'> & { via?: string[] };
+const IMPLEMENTED: Record<string, Impl> = {
   'D01-01': { screens: ['/features', '/features/:id/:ver', '/baselines'], tests: [...BE_D01, FE_V2, E2E_GOV] },
   'D01-02': { screens: ['/features/:id/:ver', '/analysis/impact', '/precheck'], tests: [...BE_D01, 'contracts/src/rules/topology.test.ts', 'contracts/src/rules/precheck.test.ts', FE_V2, E2E_GOV] },
   'D01-03': { screens: ['/products', '/products/new', '/products/:id/:ver'], tests: ['backend/test/d01/topology-catalog.spec.ts', 'contracts/src/rules/catalog.test.ts', E2E_GOV] },
   'D01-10': { screens: ['/audit'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
   'D04-04': { screens: ['/events'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
+  'D01-04': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
+  'D01-05': { screens: ['/entitlements'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL] },
+  'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, FE_POL, E2E_POL] },
+  'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
+  'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
+  'D05-01': { screens: ['/activation/decide'], tests: [BE_POL, FE_POL, E2E_POL] },
+  'D06-01': VALIDATOR,
+  'D06-02': VALIDATOR,
+  'D06-03': VALIDATOR,
+  'D06-04': VALIDATOR,
+  'D06-05': VALIDATOR,
+  'D06-06': VALIDATOR,
+  'D06-07': VALIDATOR,
+  'D03-01': VALIDATOR,
+  'D03-02': { screens: ['/policies/:id', '/validations'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL], via: ['validatePolicy', 'decidePolicy'] },
+  'D04-02': VALIDATOR,
 };
 
 export const COMPONENTS: ComponentEntry[] = SEEDS.map(([id, ko, tier, module, ifs, pocSteps]) => {
@@ -112,7 +136,7 @@ export const COMPONENTS: ComponentEntry[] = SEEDS.map(([id, ko, tier, module, if
     tier,
     status: impl ? 'implemented' : 'planned',
     module,
-    endpoints: impl ? ROUTES.filter((r) => r.component === id).map((r) => `${r.method} ${r.path}`) : [],
+    endpoints: impl ? ROUTES.filter((r) => r.component === id || impl.via?.includes(r.name)).map((r) => `${r.method} ${r.path}`) : [],
     screens: impl?.screens ?? [],
     tests: impl?.tests ?? [],
     ifs,

@@ -18,6 +18,7 @@ import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
+import { PolicyRepo } from '../policy-repos';
 import { BaselineRepo, FeatureRepo, GateRepo, TopologyRepo } from '../repos';
 import { TopologyService } from '../topology/topology.service';
 
@@ -43,6 +44,7 @@ export class LifecycleService {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly topologyService: TopologyService,
+    private readonly policies: PolicyRepo,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -57,8 +59,8 @@ export class LifecycleService {
     return {
       latestGates,
       dependencies: this.topology.outgoing(f.featureId, f.version),
-      // 정책 저장소(D01-06)가 아직 없으면 0 — DEVELOPING→VERIFIED는 POLICY_MISSING으로 막힌다(P7에서 연결).
-      policyCoverage: 0,
+      // Control Point 중 승인·배포 정책이 있는 수 (정책 저장소 D01-06)
+      policyCoverage: this.policies.coverage(f.featureId, f.version),
       createdBy: this.features.meta(f.featureId, f.version).createdBy,
       ...extra,
     };

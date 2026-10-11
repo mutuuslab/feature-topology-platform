@@ -26,7 +26,7 @@ describe('API 계약 (ROUTES ↔ 실제 라우트)', () => {
   });
 
   it('쓰기 경로는 역할과 본문 스키마를 선언한다', () => {
-    for (const r of ROUTES.filter((x) => x.method !== 'GET')) {
+    for (const r of ROUTES.filter((x) => x.method !== 'GET' && !x.public)) {
       expect(r.roles?.length, routeKey(r)).toBeGreaterThan(0);
       expect(r.body, routeKey(r)).toBeDefined();
     }

@@ -75,6 +75,8 @@ const def = (m: () => Promise<{ default: ComponentType<any> }>) => lazy(m);
 // v2 화면 (screens/)
 const products = () => import('./screens/products/Products');
 const auditEvents = () => import('./screens/governance/AuditEvents');
+const policyScreens = () => import('./screens/policy/Policies');
+const runtimeScreens = () => import('./screens/policy/Runtime');
 
 export const ROUTES: AppRoute[] = [
   // 1 홈
@@ -132,7 +134,8 @@ export const ROUTES: AppRoute[] = [
   { path: '/verify/evidence/:id', element: named(verify, 'EvidenceDetail'), title: '증적 상세', group: 'verify', parent: '/verify/evidence' },
   { path: '/decisions/verification', element: named(decisions, 'VerificationScope'), title: '검증 범위', group: 'verify', parent: '/verify/evidence' },
   { path: '/readiness/:id', element: def(() => import('./pages/ReleaseReadiness')), title: 'Gate·출시 준비', group: 'verify', parent: '/verify/evidence', components: ['D03-02'] },
-  { path: '/policy/conflict', element: named(specnew, 'Conflict'), title: '정책 검증', group: 'verify', menu: '/policy/conflict', components: ['D06-01'] },
+  { path: '/validations', element: named(policyScreens, 'ValidationHistory'), title: '분야별 검증 이력', group: 'verify', menu: '/validations', components: ['D06-04', 'D03-02'], v2: true },
+  { path: '/policy/conflict', element: named(specnew, 'Conflict'), title: '정책 충돌 검토 (BDC 데모)', group: 'verify', parent: '/validations' },
   { path: '/policy/exception', element: named(specnew, 'Exception'), title: '정책 예외', group: 'verify', parent: '/policy/conflict' },
   { path: '/verify/compliance', element: named(specnew, 'Compliance'), title: '컴플라이언스', group: 'verify', menu: '/verify/compliance', components: ['D03-01'] },
   { path: '/verify/scenario', element: named(specnew, 'Scenario'), title: '차량 시나리오 검증', group: 'verify', menu: '/verify/scenario', components: ['D06-03'] },
@@ -145,10 +148,15 @@ export const ROUTES: AppRoute[] = [
   { path: '/products/new', element: named(products, 'ProductCompose'), title: '새 상품 구성', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/products/:id/:ver', element: named(products, 'ProductDetail'), title: '상품 Version 상세', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/commerce/offer', element: named(plm, 'OfferComposition'), title: '상품 구성 (BDC 데모)', group: 'release', parent: '/products' },
-  { path: '/commerce/billing', element: named(specnew, 'Billing'), title: '사용 권한·과금', group: 'release', menu: '/commerce/billing', components: ['D01-05', 'D05-04'] },
-  { path: '/activation', element: def(() => import('./pages/activation')), title: '적용 대상·활성화', group: 'release', menu: '/activation', components: ['D01-04', 'D01-09'] },
-  { path: '/ops/policy', element: named(ops2, 'PolicyLifecycle'), title: '정책 버전 관리', group: 'release', menu: '/ops/policy', components: ['D01-06'] },
-  { path: '/ops/runtime', element: def(() => import('./pages/runtime')), title: '정책 평가 시뮬레이터', group: 'release', parent: '/ops/policy' },
+  { path: '/entitlements', element: named(runtimeScreens, 'EntitlementsScreen'), title: '사용 권한·체험권', group: 'release', menu: '/entitlements', components: ['D01-05'], v2: true },
+  { path: '/commerce/billing', element: named(specnew, 'Billing'), title: '과금 연계 (BDC 데모)', group: 'release', parent: '/entitlements', components: ['D05-04'] },
+  { path: '/activation/decide', element: named(runtimeScreens, 'ActivationScreen'), title: '활성화 판단', group: 'release', menu: '/activation/decide', components: ['D01-04', 'D01-09', 'D05-01'], v2: true },
+  { path: '/activation', element: def(() => import('./pages/activation')), title: '차종별 활성화 (BDC 데모)', group: 'release', parent: '/activation/decide' },
+  { path: '/policies', element: named(policyScreens, 'PolicyList'), title: '정책·검증·승인', group: 'release', menu: '/policies', components: ['D01-06', 'D01-08'], v2: true },
+  { path: '/policies/new', element: named(policyScreens, 'PolicyCreate'), title: '새 정책', group: 'release', parent: '/policies', components: ['D01-06'], v2: true },
+  { path: '/policies/:id', element: named(policyScreens, 'PolicyDetail'), title: '정책 상세', group: 'release', parent: '/policies', components: ['D01-06', 'D06-04', 'D03-02', 'D01-08'], v2: true },
+  { path: '/ops/policy', element: named(ops2, 'PolicyLifecycle'), title: '정책 단계 보드 (BDC 데모)', group: 'release', parent: '/policies' },
+  { path: '/ops/runtime', element: def(() => import('./pages/runtime')), title: '정책 평가 시뮬레이터 (BDC 데모)', group: 'release', parent: '/policies' },
   { path: '/ops/campaign', element: named(() => import('./pages/areas/ui10'), 'ReleaseOps'), title: '출시·단계 배포', group: 'release', menu: '/ops/campaign', components: ['D01-08', 'D04-01'] },
   { path: '/ops/campaign/:id', element: named(ops2, 'CampaignDetail'), title: '캠페인 상세', group: 'release', parent: '/ops/campaign' },
   { path: '/release/cicd', element: named(specnew, 'CICD'), title: 'CI/CD 연계', group: 'release', parent: '/ops/campaign' },

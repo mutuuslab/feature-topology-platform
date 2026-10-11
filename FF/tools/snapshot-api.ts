@@ -81,6 +81,15 @@ async function main() {
     const [country, vehicleModel, trim] = s.split('|');
     await save('productCandidates', {}, { country, vehicleModel, trim });
   }
+  // 정책·검증·사용 권한·활성화 판단 (PoC ②③) — ActivationScreen은 차량 × 배포 flagKey 조합을 모두 묻는다
+  const policies = await save('listPolicies');
+  await save('listPolicies', {}, { status: 'DEPLOYED' });
+  for (const p of policies.items) await save('policyDetail', { id: p.policyId });
+  await save('validations');
+  await save('entitlements');
+  const vehicles = await save('vehicles');
+  const flagKeys = [...new Set((policies.items as { flagKey: string; status: string }[]).filter((p) => p.status === 'DEPLOYED').map((p) => p.flagKey))];
+  for (const v of vehicles.items) for (const flagKey of flagKeys) await save('activationDecide', {}, { vin: v.vin, flagKey });
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

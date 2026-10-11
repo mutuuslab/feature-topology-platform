@@ -1,0 +1,122 @@
+// 정책·검증·권한·대상·활성화·단계 배포 API (PoC ②③)
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
+import { CreatePolicyBody, PolicyDecisionBody, RolloutStageBody, UpdatePolicyBody } from '@ff/contracts';
+import { z } from 'zod';
+import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
+import { DomainError } from '../../../kernel/errors';
+import { ZodPipe } from '../../../kernel/zod.pipe';
+import { ActivationService } from '../activation/activation.service';
+import { EntitlementService } from '../entitlement/entitlement.service';
+import { StagedRolloutService } from '../staged-rollout/staged-rollout.service';
+import { TargetingService } from '../targeting/targeting.service';
+import { PolicyService } from './policy.service';
+
+const ReasonBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
+
+@Controller('api/policies')
+export class PolicyController {
+  constructor(
+    private readonly policies: PolicyService,
+    private readonly rollout: StagedRolloutService,
+  ) {}
+
+  @Get()
+  list(@Query('featureId') featureId?: string, @Query('status') status?: string, @Query('flagKey') flagKey?: string) {
+    return { items: this.policies.list({ featureId, status, flagKey }) };
+  }
+
+  @Post()
+  @Roles('FEATURE_AUTHOR', 'IMPLEMENTER')
+  @AuditAction('POLICY_CREATE')
+  create(@CurrentActor() actor: Actor, @Body(new ZodPipe(CreatePolicyBody)) body: CreatePolicyBody) {
+    return this.policies.create(actor, body);
+  }
+
+  @Get('validations')
+  validations(@Query('policyId') policyId?: string) {
+    return { items: this.policies.history(policyId) };
+  }
+
+  @Get(':id')
+  detail(@CurrentActor() actor: Actor, @Param('id') id: string) {
+    return this.policies.detail(id, actor);
+  }
+
+  @Patch(':id')
+  @Roles('FEATURE_AUTHOR', 'IMPLEMENTER')
+  @AuditAction('POLICY_UPDATE')
+  update(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(UpdatePolicyBody)) body: UpdatePolicyBody) {
+    return this.policies.update(actor, id, body);
+  }
+
+  @Post(':id/validate')
+  @HttpCode(200)
+  @Roles('FEATURE_AUTHOR', 'IMPLEMENTER', 'GATE_JUDGE')
+  @AuditAction('POLICY_VALIDATE')
+  validate(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(z.object({}).strict())) _b: object) {
+    return this.policies.validate(actor, id);
+  }
+
+  @Post(':id/decision')
+  @HttpCode(200)
+  @Roles('FEATURE_APPROVER')
+  @AuditAction('POLICY_DECISION')
+  decide(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(PolicyDecisionBody)) body: PolicyDecisionBody) {
+    return this.policies.decide(actor, id, body);
+  }
+
+  @Post(':id/deploy')
+  @HttpCode(200)
+  @Roles('RELEASE_MANAGER', 'OPERATOR')
+  @AuditAction('POLICY_DEPLOY')
+  deploy(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(ReasonBody)) body: { reason: string }) {
+    return this.policies.deploy(actor, id, body.reason);
+  }
+
+  @Post(':id/rollout')
+  @HttpCode(200)
+  @Roles('RELEASE_MANAGER', 'OPERATOR')
+  @AuditAction('ROLLOUT_STAGE')
+  stage(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(RolloutStageBody)) body: RolloutStageBody) {
+    return this.rollout.stage(actor, id, body);
+  }
+}
+
+@Controller('api')
+export class RuntimeController {
+  constructor(
+    private readonly entitlements: EntitlementService,
+    private readonly targeting: TargetingService,
+    private readonly activation: ActivationService,
+  ) {}
+
+  @Get('vehicles')
+  vehicles() {
+    return { items: this.targeting.vehicles() };
+  }
+
+  @Get('entitlements')
+  grants(@Query('vin') vin?: string) {
+    return { items: this.entitlements.grants(vin) };
+  }
+
+  @Post('entitlements/:grantId/consume')
+  @HttpCode(200)
+  @Roles('OPERATOR', 'SYSTEM')
+  @AuditAction('ENTITLEMENT_CONSUME')
+  consume(@CurrentActor() actor: Actor, @Param('grantId') grantId: string, @Body(new ZodPipe(z.object({}).strict())) _b: object) {
+    return this.entitlements.consume(actor, grantId);
+  }
+
+  @Get('targeting/cohort')
+  cohort(@Query('flagKey') flagKey?: string, @Query('basisPoints') bp?: string) {
+    if (!flagKey) throw new DomainError('VALIDATION', 'flagKey를 지정하세요.');
+    return this.targeting.cohort(flagKey, bp ? Number(bp) : undefined);
+  }
+
+  @Get('activation/decide')
+  decide(@Query('vin') vin?: string, @Query('flagKey') flagKey?: string) {
+    if (!vin || !flagKey) throw new DomainError('VALIDATION', 'vin과 flagKey를 지정하세요.');
+    return this.activation.decide(vin, flagKey);
+  }
+}

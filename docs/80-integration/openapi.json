@@ -2212,6 +2212,1048 @@
           }
         }
       }
+    },
+    "/api/policies": {
+      "get": {
+        "summary": "정책 목록",
+        "tags": [
+          "D01-06"
+        ],
+        "operationId": "listPolicies",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "flagKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "정책 작성 (DRAFT)",
+        "tags": [
+          "D01-06"
+        ],
+        "operationId": "createPolicy",
+        "description": "허용 역할: Feature 작성자, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "featureVersion": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  },
+                  "controlPoint": {
+                    "type": "string",
+                    "enum": [
+                      "Flag",
+                      "Parameter",
+                      "Signal",
+                      "DTC"
+                    ]
+                  },
+                  "flagKey": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{2,63}$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  "enabled": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "safeDefault": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "entitlementCatalogId": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^CAT-\\d{5}$",
+                    "default": null
+                  },
+                  "strategies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "constraints": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "contextName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "operator": {
+                                "type": "string",
+                                "enum": [
+                                  "IN",
+                                  "NOT_IN",
+                                  "STR_CONTAINS",
+                                  "STR_STARTS_WITH",
+                                  "STR_ENDS_WITH",
+                                  "NUM_EQ",
+                                  "NUM_GT",
+                                  "NUM_GTE",
+                                  "NUM_LT",
+                                  "NUM_LTE",
+                                  "SEMVER_EQ",
+                                  "SEMVER_GT",
+                                  "SEMVER_LT",
+                                  "DATE_AFTER",
+                                  "DATE_BEFORE"
+                                ]
+                              },
+                              "values": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 200
+                                },
+                                "minItems": 1,
+                                "maxItems": 50
+                              },
+                              "inverted": {
+                                "type": "boolean",
+                                "default": false
+                              },
+                              "caseInsensitive": {
+                                "type": "boolean",
+                                "default": false
+                              }
+                            },
+                            "required": [
+                              "contextName",
+                              "operator",
+                              "values"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 20
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "constraints"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 10,
+                    "default": []
+                  },
+                  "rollout": {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "ALL",
+                          "NONE",
+                          "COHORT"
+                        ]
+                      },
+                      "basisPoints": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000,
+                        "default": 10000
+                      },
+                      "salt": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "default": "FF-COHORT-SALT-1"
+                      }
+                    },
+                    "default": {
+                      "mode": "ALL",
+                      "basisPoints": 10000,
+                      "salt": "FF-COHORT-SALT-1"
+                    },
+                    "required": [
+                      "mode"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "featureId",
+                  "featureVersion",
+                  "controlPoint",
+                  "flagKey",
+                  "description"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/validations": {
+      "get": {
+        "summary": "검증 이력 (8종 결과·근거)",
+        "tags": [
+          "D06-04"
+        ],
+        "operationId": "validations",
+        "parameters": [
+          {
+            "name": "policyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}": {
+      "get": {
+        "summary": "정책 상세·마지막 검증·승인 적격성",
+        "tags": [
+          "D01-06"
+        ],
+        "operationId": "policyDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "patch": {
+        "summary": "정책 수정 (새 개정본·재검증 필요)",
+        "tags": [
+          "D01-06"
+        ],
+        "operationId": "updatePolicy",
+        "description": "허용 역할: Feature 작성자, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "featureVersion": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  },
+                  "controlPoint": {
+                    "type": "string",
+                    "enum": [
+                      "Flag",
+                      "Parameter",
+                      "Signal",
+                      "DTC"
+                    ]
+                  },
+                  "flagKey": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{2,63}$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  "enabled": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "safeDefault": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "entitlementCatalogId": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^CAT-\\d{5}$",
+                    "default": null
+                  },
+                  "strategies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "constraints": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "contextName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "operator": {
+                                "type": "string",
+                                "enum": [
+                                  "IN",
+                                  "NOT_IN",
+                                  "STR_CONTAINS",
+                                  "STR_STARTS_WITH",
+                                  "STR_ENDS_WITH",
+                                  "NUM_EQ",
+                                  "NUM_GT",
+                                  "NUM_GTE",
+                                  "NUM_LT",
+                                  "NUM_LTE",
+                                  "SEMVER_EQ",
+                                  "SEMVER_GT",
+                                  "SEMVER_LT",
+                                  "DATE_AFTER",
+                                  "DATE_BEFORE"
+                                ]
+                              },
+                              "values": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 200
+                                },
+                                "minItems": 1,
+                                "maxItems": 50
+                              },
+                              "inverted": {
+                                "type": "boolean",
+                                "default": false
+                              },
+                              "caseInsensitive": {
+                                "type": "boolean",
+                                "default": false
+                              }
+                            },
+                            "required": [
+                              "contextName",
+                              "operator",
+                              "values"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 20
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "constraints"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 10,
+                    "default": []
+                  },
+                  "rollout": {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "ALL",
+                          "NONE",
+                          "COHORT"
+                        ]
+                      },
+                      "basisPoints": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000,
+                        "default": 10000
+                      },
+                      "salt": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "default": "FF-COHORT-SALT-1"
+                      }
+                    },
+                    "default": {
+                      "mode": "ALL",
+                      "basisPoints": 10000,
+                      "salt": "FF-COHORT-SALT-1"
+                    },
+                    "required": [
+                      "mode"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/validate": {
+      "post": {
+        "summary": "분야별 검증 8종 병렬 → 배포 안전성 판정",
+        "tags": [
+          "D06-04"
+        ],
+        "operationId": "validatePolicy",
+        "description": "허용 역할: Feature 작성자, 구현 담당자, Gate 판정자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/decision": {
+      "post": {
+        "summary": "정책 승인·반려 (작성자≠승인자, 해시·GO 확인)",
+        "tags": [
+          "D01-06"
+        ],
+        "operationId": "decidePolicy",
+        "description": "허용 역할: Feature 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVE",
+                      "REJECT"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "decision",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/deploy": {
+      "post": {
+        "summary": "서버 배포 (평가 기준 전환)",
+        "tags": [
+          "D01-06"
+        ],
+        "operationId": "deployPolicy",
+        "description": "허용 역할: Feature 출시 담당자, 운영자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/rollout": {
+      "post": {
+        "summary": "단계적 기능 배포 — 승인 범위 안 코호트 단계",
+        "tags": [
+          "D01-08"
+        ],
+        "operationId": "stageRollout",
+        "description": "허용 역할: Feature 출시 담당자, 운영자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "basisPoints": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "basisPoints",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/vehicles": {
+      "get": {
+        "summary": "데모 Fleet 차량",
+        "tags": [
+          "D01-04"
+        ],
+        "operationId": "vehicles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/entitlements": {
+      "get": {
+        "summary": "사용 권한 (체험권·구독·구매)",
+        "tags": [
+          "D01-05"
+        ],
+        "operationId": "entitlements",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/entitlements/{grantId}/consume": {
+      "post": {
+        "summary": "체험 수락 → 1회 체험권 사용",
+        "tags": [
+          "D01-05"
+        ],
+        "operationId": "consumeEntitlement",
+        "description": "허용 역할: 운영자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/targeting/cohort": {
+      "get": {
+        "summary": "FP-COHORT-1 코호트 소속",
+        "tags": [
+          "D01-04"
+        ],
+        "operationId": "cohort",
+        "parameters": [
+          {
+            "name": "flagKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "basisPoints",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/activation/decide": {
+      "get": {
+        "summary": "서버 기준 활성화 판단 (평가 근거)",
+        "tags": [
+          "D01-09"
+        ],
+        "operationId": "activationDecide",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "flagKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/ofrep/v1/evaluate/flags/{key}": {
+      "post": {
+        "summary": "OFREP 단일 flag 평가",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "ofrepEvaluate",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "targetingKey": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "default": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/ofrep/v1/evaluate/flags": {
+      "post": {
+        "summary": "OFREP 전체 flag 평가 (ETag)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "ofrepBulk",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "targetingKey": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "default": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
     }
   }
 }

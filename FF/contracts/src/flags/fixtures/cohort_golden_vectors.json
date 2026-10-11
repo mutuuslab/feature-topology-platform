@@ -1,0 +1,34 @@
+{
+  "algorithm": "FP-COHORT-1",
+  "vendorEquivalent": false,
+  "vectors": [
+    {
+      "profileVersion": "1",
+      "groupId": "ambient",
+      "cohortSalt": "DEMO-SALT-1",
+      "targetingKey": "DEMO-V1",
+      "bucket": 9744
+    },
+    {
+      "profileVersion": "1",
+      "groupId": "ambient",
+      "cohortSalt": "DEMO-SALT-1",
+      "targetingKey": "DEMO-V2",
+      "bucket": 9598
+    },
+    {
+      "profileVersion": "1",
+      "groupId": "ambient",
+      "cohortSalt": "DEMO-SALT-1",
+      "targetingKey": "DEMO-V3",
+      "bucket": 4381
+    },
+    {
+      "profileVersion": "1",
+      "groupId": "ambient",
+      "cohortSalt": "DEMO-SALT-1",
+      "targetingKey": "DEMO-한글",
+      "bucket": 3169
+    }
+  ]
+}

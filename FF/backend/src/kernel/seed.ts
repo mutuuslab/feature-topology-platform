@@ -2,10 +2,12 @@
 // 이미 적재된 DB(meta.seed 존재)는 건드리지 않는다 — 운영 중 변경을 덮어쓰지 않기 위해.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { DATASET_FILES, type Dataset } from '@ff/contracts';
+import { DATASET_FILES, EntitlementSchema, VehicleSchema, type Dataset } from '@ff/contracts';
 import type { Db } from './db';
 
 export const DEFAULT_FIXTURES = join(__dirname, '..', '..', '..', 'data', 'fixtures', 'v0.81');
+/** 데이터셋 밖의 데모 데이터 — Fleet·사용 권한 (Fleet 연계 IF-06/07·결제 시스템의 모의) */
+export const DEMO_FIXTURES = join(__dirname, '..', '..', '..', 'data', 'fixtures', 'demo');
 
 export function loadFixtures(dir = process.env.FF_FIXTURES ?? DEFAULT_FIXTURES): Dataset {
   const ds = {} as Record<string, unknown[]>;
@@ -43,4 +45,17 @@ export function seedDataset(db: Db, ds: Dataset, label = 'v0.81'): { seeded: boo
   });
   const counts = Object.fromEntries(Object.entries(ds).map(([k, v]) => [k, (v as unknown[]).length]));
   return { seeded: true, counts };
+}
+
+/** 데모 Fleet·사용 권한 시드 — 데이터셋 시드와 별개로 한 번만 */
+export function seedDemo(db: Db, dir = process.env.FF_DEMO_FIXTURES ?? DEMO_FIXTURES): boolean {
+  if (db.get("SELECT value FROM meta WHERE key = 'seed-demo'")) return false;
+  const fleet = VehicleSchema.array().parse(JSON.parse(readFileSync(join(dir, 'fleet.json'), 'utf8')));
+  const ents = EntitlementSchema.array().parse(JSON.parse(readFileSync(join(dir, 'entitlements.json'), 'utf8')));
+  db.tx(() => {
+    for (const v of fleet) db.run('INSERT INTO vehicle (vin, doc) VALUES (?, ?)', v.vin, JSON.stringify(v));
+    for (const e of ents) db.run('INSERT INTO entitlement (grant_id, vin, catalog_id, status, doc) VALUES (?, ?, ?, ?, ?)', e.grantId, e.vin, e.catalogId, e.status, JSON.stringify(e));
+    db.run("INSERT INTO meta (key, value) VALUES ('seed-demo', 'v1')");
+  });
+  return true;
 }

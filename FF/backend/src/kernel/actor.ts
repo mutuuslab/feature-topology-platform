@@ -16,10 +16,13 @@ export interface Actor {
 }
 
 const ROLES_KEY = 'ff:roles';
+const READONLY_KEY = 'ff:readonly';
 const ACTION_KEY = 'ff:action';
 
 /** 이 핸들러를 호출할 수 있는 역할 */
 export const Roles = (...roles: RoleT[]) => SetMetadata(ROLES_KEY, roles);
+/** 상태를 바꾸지 않는 POST(예: OFREP 평가) — 행위자 헤더 없이 익명 조회로 처리 */
+export const ReadOnlyEndpoint = () => SetMetadata(READONLY_KEY, true);
 /** 감사 이력에 남길 행위 이름 (없으면 'METHOD path') */
 export const AuditAction = (action: string) => SetMetadata(ACTION_KEY, action);
 
@@ -50,6 +53,10 @@ export class RolesGuard implements CanActivate {
 
   canActivate(ctx: ExecutionContext): boolean {
     const req = ctx.switchToHttp().getRequest<Request>();
+    if (this.reflector.getAllAndOverride<boolean>(READONLY_KEY, [ctx.getHandler(), ctx.getClass()])) {
+      (req as Request & { actor?: Actor }).actor ??= { id: (req.header('x-actor-id') ?? '').trim() || 'anonymous-sdk', role: 'AUDITOR', correlationId: randomUUID() };
+      return true;
+    }
     const actor = actorOf(req);
     const roles = this.reflector.getAllAndOverride<RoleT[] | undefined>(ROLES_KEY, [ctx.getHandler(), ctx.getClass()]);
     if (!roles || roles.includes(actor.role)) return true;

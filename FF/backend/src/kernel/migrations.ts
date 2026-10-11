@@ -139,4 +139,29 @@ ALTER TABLE product ADD COLUMN config_approved_by TEXT;
 ALTER TABLE product ADD COLUMN release_approved_by TEXT;
 `,
   },
+  {
+    name: '005_policy_runtime',
+    sql: `
+CREATE TABLE policy (
+  policy_id TEXT PRIMARY KEY,
+  feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, control_point TEXT NOT NULL,
+  flag_key TEXT NOT NULL, status TEXT NOT NULL, revision INTEGER NOT NULL,
+  doc TEXT NOT NULL
+);
+CREATE INDEX policy_feature ON policy(feature_id, feature_version);
+CREATE INDEX policy_flag ON policy(flag_key);
+
+CREATE TABLE validation_run (
+  run_id TEXT PRIMARY KEY,
+  policy_id TEXT NOT NULL, policy_revision INTEGER NOT NULL, content_hash TEXT NOT NULL,
+  decision TEXT NOT NULL, at TEXT NOT NULL, by_actor TEXT NOT NULL,
+  doc TEXT NOT NULL
+);
+CREATE INDEX validation_run_policy ON validation_run(policy_id);
+
+CREATE TABLE vehicle (vin TEXT PRIMARY KEY, doc TEXT NOT NULL);
+CREATE TABLE entitlement (grant_id TEXT PRIMARY KEY, vin TEXT NOT NULL, catalog_id TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX entitlement_vin ON entitlement(vin);
+`,
+  },
 ];

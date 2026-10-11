@@ -4,13 +4,15 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **P7 정책 파이프라인 + Feature Flag 평가기**부터 (PoC ②③단계).
-  1. contracts: Policy 스키마(정책 ID·대상 Feature Version·Control Point별 값·Safe Default·rollout(코호트)·targeting 조건 typed constraints·상태 Draft→Review→Approved→Deployed), 8개 검증기 규칙(정책 오류·충돌, 컴플라이언스, 차량 시나리오, 안전 동작, 시스템 연동, 변경 영향, 품질 기준(TMS 증적), 안전 요구 추적) — 각각 순수 함수 + 표 기반 테스트. **단일 평가기** `contracts/flags/evaluate.ts`(Kill → 적용성/Variant → 사용 권한(체험권) → 대상 규칙 → 코호트(FP-COHORT-1, P0 `cohort_golden_vectors.json`) → 기본값, 오류·만료 시 Safe Default).
-  2. backend: `domains/d01-policy/{policy-store,targeting,entitlement,activation,staged-rollout,experiment}`, `domains/d06-qsec/*` 검증기(병렬 실행 → 검증 이력 D06-04 → 배포 안전성 D03-02 → 정책 승인). LifecycleService의 `policyCoverage`를 정책 저장소로 연결(현재 0 → DEVELOPING→VERIFIED가 실제로 열린다). OFREP `POST /ofrep/v1/evaluate/flags/:key`(IF-10).
-  3. 데이터: CAT-00019 체험권(1회), FEAT-00022 Control Point(Signal/Parameter) 정책 시드.
-  4. v2 화면: 정책 작성·검증(8개 병렬 결과)·승인, 사용 권한·체험권, 적용 대상·활성화 판단 시뮬레이터. 레거시 `/ops/policy`·`/activation`·`/commerce/billing`은 하위로.
-- P6에서 남긴 것(필요 시): v2 Feature 신규 등록·새 Version·초안 수정·의존관계 등록 폼(백엔드 API는 있음), Topology 그래프 v2.
-- 실행: 백엔드 `npm run build -w feature-topology-backend && npm start -w feature-topology-backend`(9101) · 프론트 `npm run dev -w feature-topology-frontend`(9012, `/api/`만 백엔드로 프록시). 정적 데모 `npm run snapshot:api && VITE_DATA_MODE=static npm run build -w feature-topology-frontend`.
+- **P8 배포·Kill·GLEO·Unleash(IF-04)**부터 (PoC ④⑤⑥단계).
+  1. PKI(D06-10): `node:crypto` Ed25519로 배포 정책 묶음 서명·검증(키 ID·만료), 미서명 정의 배포 금지(UL-OSS 규칙).
+  2. 배포 파이프라인: IF-05(CCS/OTA 캠페인 요청)·IF-06(Fleet 수집)·IF-07(Fleet 전개)·IF-13(CI/CD) 모의 어댑터 — 포트 인터페이스 + 멱등 키. `deployPolicy`가 서명 → IF-05 요청 → 차량 회신 집계(BD-12 readback 일치 시 CONFIRMED)로 이어진다.
+  3. 긴급 차단·복구 콘솔(D03, 관제실 다크 영역): `KILL_STATE` 제공자(현재 `NO_KILL`)를 kill-requests 저장소로 교체 → 평가기 KILL 단계가 실제로 켜진다. IAM 확인 → Topology 영향 범위 → Safe Default/Safe Stop 선택 → 서명 → IF-05 긴급 → 회신 CONFIRMED/TIMEOUT, 해제는 이전 상태 복구. type-to-confirm.
+  4. GLEO 연동 `GLEO_MODE=off|internal|ws`(ws://127.0.0.1:8765, `X-GLEO-Client: ff-platform`): `policy_push`·`kill_command` 송신(contracts 스키마로 사전 검사), `status_report` → `vehicle.status.reported` 이벤트. FF_IMP `kill_command.safe_mode` 추가 + pytest 회귀.
+  5. IF-04 Unleash 어댑터: hfp `tools/unleash-bridge.js`·`js/unleash.js` 로직을 TS로 이식(`UNLEASH_MODE=mock|live`), `FF/docker/unleash`(8.2.0, 4242). live 통합 테스트는 verify:full에서 도커가 있을 때만.
+  6. 이벤트·품질 피드백(D04)·이상 징후 대응(D06-12) 최소 구현 + 화면.
+- P7에서 남긴 것: 정책 수정(PATCH) 폼 v2, 시드 정책의 검증 이력(정적 데모에서 "아직 검증하지 않았습니다"로 보임), 실험(experiment) 컴포넌트는 P10.
+- 실행: 백엔드 `npm run build -w feature-topology-backend && npm start -w feature-topology-backend`(9101) · 프론트 `npm run dev -w feature-topology-frontend`(9012, `/api/`·`/ofrep/`를 백엔드로 프록시, `FF_API_PORT`로 변경). e2e는 전용 백엔드 9111·프론트 9112(verify에서는 빌드 preview). 정적 데모 `npm run snapshot:api && VITE_DATA_MODE=static npm run build -w feature-topology-frontend`.
 
 ## 기준 문서 (저장소 밖)
 | 문서 | 위치 | 용도 |
@@ -30,7 +32,7 @@
 - [x] **P4 Topology·Catalog·Impact·PRECHECK** — contracts: 상품 구성 검증(확정 BL·상태·범위·중복·REQUIRES 동봉·EXCLUDES·SINGLE/PACKAGE·기간, 데이터셋 18상품 전부 PASS), 상품 Lifecycle 표 17(구성 승인·고객 출시 승인 분리), 의존관계 판정(데이터셋 29건과 전부 일치)·신규 관계 구조 검증(중복·대칭·범위·순환). 백엔드: 의존관계 등록(PROPOSED 원천만)·Lifecycle 변경 시 재판정, 관계 그래프, `/api/precheck`, 다단계 변경 영향(의존자·Baseline·상품·재판정 Gate·담당자), Catalog(등록·초안·새 Version·후보·저장 없는 검증·전이·출시 적격성·직무 분리). 34경로. 테스트 contracts 58·백엔드 59
 - [x] **P5 디자인 시스템·셸·MENU 2.0** — 토큰("Engineering Instrument": SUIT+JetBrains Mono 셀프호스팅, 종이/그래파이트, 코발트 단일 강조, Lifecycle·Gate 색+모양, 관제실 다크 영역, compact/comfortable 밀도, 시연 모드 P), 디자인 키트(상태 배지·IdChip·LifecycleStepper·GateRail·DataTable(키보드)·AsyncView(data-state)·URL 탭·Diff·EventStream·Drawer·DangerConfirm(type-to-confirm)) + `/_design`, 셸(레일 8·그룹 패널·breadcrumb·내 역할 필터·⌘K·관제실 영역), `routes.tsx` MENU 2.0(83 라우트, 고아 0), 레거시 브리지 CSS. 하네스: IA 테스트 12, e2e(메뉴 크롤 41·3해상도 레이아웃·시연·type-to-confirm), axe(신규 0 / 레거시 343 래칫, 시작 424), 시각 회귀 4조건. 테스트가 잡은 버그: 비요소 키 대상 크래시, 레거시 body 글자 크기가 밀도·시연을 무시, 파생 토큰이 :root에서만 해석돼 관제실 영역 색이 깨짐, 레일 버튼에 다크 토큰 오적용
 - [x] **P6 거버넌스 화면(v2)** — API 클라이언트(ROUTES 기반·역할 매핑·멱등 키·오류 봉투)+react-query, 화면: Feature Registry 목록/상세(스테퍼·전이·Gate 판정·의존관계·구현 추적·Baseline 요청·감사), BOM 확정 승인 큐(체크리스트·diff·결정), Catalog 상품 목록/상세/새 구성(실시간 구성 검증), 변경 영향, 데이터 사전점검, 감사 이력, Platform 이벤트(SSE). 대체된 레거시는 v2 아래 드릴다운. D01-10·D04-04를 도메인 모듈로 분리. 정적 데모 모드(snapshot:api 487응답, 읽기 전용 배너, Cloudflare·Pages 빌드 반영). 컴포넌트 **5/42**(D01-01·02·03·10, D04-04). 테스트: 화면 9·e2e 끝단 흐름 4·v2 접근성 0. 하네스가 잡은 버그: Vite 프록시 '/api'가 '/api-snapshot'까지 가로챔, a11y 대기가 SSE에서 끝나지 않음, 런타임 준수 검사가 필수 질의·스트림 경로를 못 다룸
-- [ ] P7 정책 파이프라인(8 검증기) + 권한·체험권·대상·활성화 + Flag 평가기(OFREP)
+- [x] **P7 정책 파이프라인·Flag 평가기** — contracts: P0 참조 구현 충실 이식(3치 논리·decimal/semver/시간·제약 15연산자·decide ALLOW/DENY/HOLD·publishCheck·readback 집계·FP-COHORT-1 코호트, 골든 벡터 + 참조 JS 차등 비교), 정책 스키마(POL-NNNNN·개정·contentHash·DRAFT→VALIDATED→APPROVED→DEPLOYED), **단일 평가기**(배포 → Kill → 적용 범위 → 사용 권한 → 대상 규칙 → 코호트 → 결정, 문맥 불명 시 Safe Default, 단계 배포는 승인 범위만 좁힘), 분야별 검증기 8종 순수 함수 + 배포 안전성 GO/HOLD/BLOCKED. 백엔드: 정책 저장소(D01-06, FEAT-00022 Signal/Parameter 시드)·검증 이력(D06-04, 8종 병렬)·배포 안전성(D03-02, 작성자≠승인자·해시 일치·GO)·단계 배포(D01-08)·사용 권한·체험권(D01-05)·대상(D01-04)·활성화(D01-09)·OFREP(D05-01, IF-10, ETag/304·OFREP 오류 형식)·Lifecycle 정책 커버리지 연결(정책 승인 → Feature VERIFIED 자동 전이). 50경로. 화면 v2: 정책 목록/작성/상세(검증기 8카드·안전성·해시 일치·승인/배포/단계 Drawer), 분야별 검증 이력, 사용 권한·체험권, 활성화 판단(7단계 근거·Fleet 전체 판단·OFREP 응답). 레거시 `/ops/policy`·`/ops/runtime`·`/activation`·`/commerce/billing`·`/policy/conflict`는 v2 아래 드릴다운. 컴포넌트 **21/42**(manifest `via`: 자체 API 없이 검증 라우트 안에서 병렬 실행되는 검증기). 테스트 contracts 94·백엔드 117·프론트 화면 10·e2e 끝단 2(작성→GO→승인→VERIFIED→배포→판단·OFREP / 체험 수락→권한 소진→OFF). 하네스 개선: e2e를 전용 백엔드(9111, 매 실행 새 시드)·빌드 preview로 분리 — 개발 서버 데이터 오염과 첫 요청 컴파일 지연으로 인한 병렬 시간 초과 제거
 - [ ] P8 PKI·배포·Kill·GLEO·Unleash(IF-04) 어댑터
 - [ ] P9 PoC 6단계 러너 + 42 컴포넌트 실시간 화면
 - [ ] P10 나머지 컴포넌트·IF 모의 어댑터·레거시 정리(FEAT-BDC 0)
@@ -50,6 +52,9 @@
 | 2026-10-11 | 프론트는 contracts 소스를 Vite alias로 번들하되 타입은 dist .d.ts로 검사(프론트 tsconfig가 strict:false라 zod 타입이 무너짐). e2e 프론트 포트 9112
 | 2026-10-11 | 운영 영역 표식은 빨강이 아닌 주의(warn)선 — 빨강은 파괴적 액션·FAIL 전용
 | 2026-10-11 | 영속 저장 node:sqlite (Db 인터페이스 뒤), contracts는 CJS dist로 빌드해 백엔드가 소비 |
+| 2026-10-12 | 검증기 8종은 자체 API 없이 `POST /api/policies/:id/validate` 안에서 병렬 실행(PPT ②) — manifest `via`로 그 라우트를 자기 endpoint로 인정 |
+| 2026-10-12 | 문맥 품질 불명(STALE·UNTRUSTED) 차량은 HOLD → Safe Default. 시나리오 검증에서 HOLD 차량은 정보로만 집계(GO 도달 가능) |
+| 2026-10-12 | e2e는 개발 서버를 재사용하지 않는다 — 백엔드 9111(메모리 DB)·프론트 9112, verify에서는 빌드 preview |
 
 ## 알려진 이슈·주의
 - 프론트 `package.json`에 UTF-8 BOM이 들어가면 Vite/Vitest가 깨진다 — 하네스 `readJson`은 BOM을 벗긴다. 편집기 저장 형식 주의.
@@ -59,47 +64,47 @@
 
 ## 준수 현황 (자동 생성 — `npm run progress`)
 <!-- AUTO:conformance -->
-**컴포넌트 5/42** — D01 4/10 · D02 0/3 · D03 0/4 · D04 1/6 · D05 0/7 · D06 0/12
+**컴포넌트 21/42** — D01 9/10 · D02 0/3 · D03 2/4 · D04 2/6 · D05 1/7 · D06 7/12
 
 | ID | 컴포넌트 | Tier | 상태 | 화면 | 테스트 |
 |---|---|---|---|---|---|
 | D01-01 | Feature Registry | A | ✅ | /features /features/:id/:ver /baselines | 4 |
 | D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /analysis/impact /precheck | 6 |
 | D01-03 | Feature Catalog | A | ✅ | /products /products/new /products/:id/:ver | 3 |
-| D01-04 | 적용 대상 선정 규칙 | A | · | — | 0 |
-| D01-05 | 사용 권한 관리 | A | · | — | 0 |
-| D01-06 | 정책 저장·버전 관리 | A | · | — | 0 |
+| D01-04 | 적용 대상 선정 규칙 | A | ✅ | /activation/decide | 5 |
+| D01-05 | 사용 권한 관리 | A | ✅ | /entitlements | 4 |
+| D01-06 | 정책 저장·버전 관리 | A | ✅ | /policies /policies/new /policies/:id | 3 |
 | D01-07 | 실험·효과 검증 관리 | B | · | — | 0 |
-| D01-08 | 단계적 기능 배포 | B | · | — | 0 |
-| D01-09 | 정책 기반 활성화 제어 | A | · | — | 0 |
+| D01-08 | 단계적 기능 배포 | B | ✅ | /policies/:id | 4 |
+| D01-09 | 정책 기반 활성화 제어 | A | ✅ | /activation/decide | 5 |
 | D01-10 | 감사 이력 관리 | A | ✅ | /audit | 2 |
 | D02-01 | Variant 조건 관리 | A | · | — | 0 |
 | D02-02 | 기능 지원 조건 관리 | B | · | — | 0 |
 | D02-03 | 차량 런타임 실행 모듈 | A | · | — | 0 |
-| D03-01 | 컴플라이언스 룰 체커 | B | · | — | 0 |
-| D03-02 | 배포 안전성 검증 | A | · | — | 0 |
+| D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations | 4 |
+| D03-02 | 배포 안전성 검증 | A | ✅ | /policies/:id /validations | 5 |
 | D03-03 | 긴급 기능 차단 | A | · | — | 0 |
 | D03-04 | 이전 상태 복구 | A | · | — | 0 |
 | D04-01 | 배포 파이프라인 연계 | A | · | — | 0 |
-| D04-02 | 품질 기준 검증 | B | · | — | 0 |
+| D04-02 | 품질 기준 검증 | B | ✅ | /policies/:id /validations | 4 |
 | D04-03 | 운영 데이터 수집 | A | · | — | 0 |
 | D04-04 | 이벤트 이력 추적 | A | ✅ | /events | 2 |
 | D04-05 | 장애·VOC 이력 연계 | C | · | — | 0 |
 | D04-06 | 품질 피드백 반영 | A | · | — | 0 |
-| D05-01 | API Gateway | C | · | — | 0 |
+| D05-01 | API Gateway | C | ✅ | /activation/decide | 3 |
 | D05-02 | 데이터 동기화 | C | · | — | 0 |
 | D05-03 | Legacy 시스템 연계 | C | · | — | 0 |
 | D05-04 | 과금 시스템 연계 | C | · | — | 0 |
 | D05-05 | 현장 지원 포털 | C | · | — | 0 |
 | D05-06 | 사업 지표 모니터링 | C | · | — | 0 |
 | D05-07 | Legacy-SDV Interface | C | · | — | 0 |
-| D06-01 | 정책 검증 | A | · | — | 0 |
-| D06-02 | 시스템 연동 검증 | B | · | — | 0 |
-| D06-03 | 차량 시나리오 검증 | B | · | — | 0 |
-| D06-04 | 검증 이력 관리 | A | · | — | 0 |
-| D06-05 | 변경 영향 검증 | A | · | — | 0 |
-| D06-06 | 안전 동작 검증 | B | · | — | 0 |
-| D06-07 | 안전 요구사항 추적 | B | · | — | 0 |
+| D06-01 | 정책 검증 | A | ✅ | /policies/:id /validations | 4 |
+| D06-02 | 시스템 연동 검증 | B | ✅ | /policies/:id /validations | 4 |
+| D06-03 | 차량 시나리오 검증 | B | ✅ | /policies/:id /validations | 4 |
+| D06-04 | 검증 이력 관리 | A | ✅ | /policies/:id /validations | 4 |
+| D06-05 | 변경 영향 검증 | A | ✅ | /policies/:id /validations | 4 |
+| D06-06 | 안전 동작 검증 | B | ✅ | /policies/:id /validations | 4 |
+| D06-07 | 안전 요구사항 추적 | B | ✅ | /policies/:id /validations | 4 |
 | D06-08 | 보안 배포 관리 | A | · | — | 0 |
 | D06-09 | 플랫폼 인증·권한 관리(IAM) | A | · | — | 0 |
 | D06-10 | 인증서·키 관리(PKI/KMS) | A | · | — | 0 |
@@ -112,5 +117,5 @@
 |---|---|---|---|
 | rawColors | 827 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
 | featBdcFiles | 37 | ↓ 줄이기 | FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지 |
-| implementedComponents | 5 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
+| implementedComponents | 21 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
 <!-- /AUTO:conformance -->

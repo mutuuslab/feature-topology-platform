@@ -2,7 +2,7 @@
 // 테스트마다 자기 Feature·상품을 새로 만들어 병렬 실행에서도 서로 간섭하지 않는다.
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
-const API = `http://localhost:${process.env.E2E_API_PORT ?? 9101}`;
+const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
 const uniq = () => Math.random().toString(36).slice(2, 7).toUpperCase();
 

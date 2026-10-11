@@ -1,0 +1,5 @@
+[
+  { "grantId": "ENT-00001", "vin": "ego-01", "catalogId": "CAT-00019", "kind": "체험", "validFrom": "2026-10-01", "validTo": "2026-10-31", "usesLeft": 1, "status": "ACTIVE" },
+  { "grantId": "ENT-00002", "vin": "KMH-NX4-0001", "catalogId": "CAT-00013", "kind": "구독", "validFrom": "2026-09-22", "validTo": "2027-08-31", "usesLeft": null, "status": "ACTIVE" },
+  { "grantId": "ENT-00003", "vin": "lead-01", "catalogId": "CAT-00019", "kind": "체험", "validFrom": "2026-10-01", "validTo": "2026-10-31", "usesLeft": 0, "status": "CONSUMED" }
+]

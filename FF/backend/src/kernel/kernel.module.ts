@@ -1,5 +1,5 @@
 // 커널 모듈 — 모든 도메인 모듈이 공유하는 Db·감사·이벤트·역할 가드·멱등성·오류 봉투.
-import { Global, Inject, Module, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import { Global, Inject, Module, OnApplicationShutdown } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import { RolesGuard } from './actor';
 import { AuditService } from './audit.service';
@@ -11,7 +11,7 @@ import { EventService } from './event.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
 import { KernelController } from './kernel.controller';
 import { MIGRATIONS } from './migrations';
-import { loadFixtures, seedDataset } from './seed';
+import { loadFixtures, seedDataset, seedDemo } from './seed';
 
 @Global()
 @Module({
@@ -21,7 +21,17 @@ import { loadFixtures, seedDataset } from './seed';
     {
       provide: DB,
       // FF_DB 기본 = 메모리 DB(데모·테스트). 파일 경로를 주면 재시작 후에도 유지된다.
-      useFactory: () => new SqliteDb(process.env.FF_DB ?? ':memory:'),
+      // 마이그레이션·시드는 공급자 생성 시점에 끝낸다 — 어떤 모듈의 onModuleInit이 먼저 돌아도 표가 있다.
+      useFactory: () => {
+        const db = new SqliteDb(process.env.FF_DB ?? ':memory:');
+        migrate(db, MIGRATIONS);
+        const seed = process.env.FF_SEED ?? 'v0.81';
+        if (seed !== 'none') {
+          seedDataset(db, loadFixtures(), seed);
+          seedDemo(db);
+        }
+        return db;
+      },
     },
     Clock,
     AuditService,
@@ -33,14 +43,8 @@ import { loadFixtures, seedDataset } from './seed';
   ],
   exports: [DB, Clock, AuditService, EventService, ComponentRegistry],
 })
-export class KernelModule implements OnModuleInit, OnApplicationShutdown {
+export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}
-
-  onModuleInit() {
-    migrate(this.db, MIGRATIONS);
-    const seed = process.env.FF_SEED ?? 'v0.81';
-    if (seed !== 'none') seedDataset(this.db, loadFixtures(), seed);
-  }
 
   onApplicationShutdown() {
     this.db.close();

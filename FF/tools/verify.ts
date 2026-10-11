@@ -12,6 +12,7 @@ interface Step {
   cwd?: string;
   full?: boolean; // --full 에서만
   when?: () => boolean; // 해당 단계가 아직 준비되지 않았으면 건너뜀
+  env?: Record<string, string>;
 }
 
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -30,8 +31,8 @@ const STEPS: Step[] = [
   { id: 'test:frontend', title: '프론트 테스트', cmd: `${npm} test -w feature-topology-frontend` },
   { id: 'conformance', title: '42 컴포넌트 준수', cmd: `node tools/conformance.ts` },
   { id: 'build:frontend', title: '프론트 빌드', cmd: `${npx} vite build`, cwd: 'frontend' },
-  { id: 'e2e', title: 'e2e (기능·접근성·레이아웃)', cmd: `${npx} playwright test --grep-invert @visual`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
-  { id: 'e2e:visual', title: '시각 회귀', cmd: `${npx} playwright test --grep @visual`, cwd: 'e2e', full: true, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
+  { id: 'e2e', title: 'e2e (기능·접근성·레이아웃)', cmd: `${npx} playwright test --grep-invert @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
+  { id: 'e2e:visual', title: '시각 회귀', cmd: `${npx} playwright test --grep @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, full: true, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
 ];
 
 const args = process.argv.slice(2);
@@ -49,7 +50,7 @@ for (const s of STEPS) {
   if (failed && !keepGoing) { results.push({ id: s.id, title: s.title, status: 'SKIP', ms: 0, why: '앞 단계 실패' }); continue; }
   console.log(`\n▶ ${s.title}  (${s.id})`);
   const t0 = Date.now();
-  const r = spawnSync(s.cmd, { cwd: join(FF, s.cwd ?? '.'), stdio: 'inherit', shell: true, env: { ...process.env, FORCE_COLOR: '0' } });
+  const r = spawnSync(s.cmd, { cwd: join(FF, s.cwd ?? '.'), stdio: 'inherit', shell: true, env: { ...process.env, FORCE_COLOR: '0', ...s.env } });
   const ok = r.status === 0;
   results.push({ id: s.id, title: s.title, status: ok ? 'PASS' : 'FAIL', ms: Date.now() - t0 });
   if (!ok) failed = true;

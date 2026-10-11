@@ -7,3 +7,5 @@ export * from './rules/lifecycle';
 export * from './rules/rejudge';
 export * from './rules/canonical';
 export * from './routes';
+export * from './rules/catalog';
+export * from './rules/topology';

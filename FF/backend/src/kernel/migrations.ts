@@ -130,4 +130,13 @@ CREATE TABLE baseline_request (
 CREATE INDEX baseline_request_status ON baseline_request(status);
 `,
   },
+  {
+    name: '004_catalog',
+    sql: `
+ALTER TABLE product ADD COLUMN created_by TEXT;
+ALTER TABLE product ADD COLUMN created_at TEXT;
+ALTER TABLE product ADD COLUMN config_approved_by TEXT;
+ALTER TABLE product ADD COLUMN release_approved_by TEXT;
+`,
+  },
 ];

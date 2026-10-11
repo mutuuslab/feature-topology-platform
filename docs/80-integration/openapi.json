@@ -1284,6 +1284,934 @@
           }
         }
       }
+    },
+    "/api/dependencies": {
+      "get": {
+        "summary": "의존관계 검증 이력",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "dependencies",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "verdict",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "의존관계 등록·판정",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "createDependency",
+        "description": "허용 역할: Feature 작성자, 차량 사양·Variant 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "REQUIRES",
+                      "EXCLUDES"
+                    ]
+                  },
+                  "sourceFeatureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "sourceVersion": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  },
+                  "targetFeatureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "targetVersion": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$",
+                    "default": null
+                  }
+                },
+                "required": [
+                  "type",
+                  "sourceFeatureId",
+                  "sourceVersion",
+                  "targetFeatureId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/topology/graph": {
+      "get": {
+        "summary": "관계 그래프",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "topologyGraph",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "depth",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/precheck": {
+      "get": {
+        "summary": "DATA-PRECHECK 16 규칙 + 데이터 품질",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "precheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/impact/{id}/{ver}": {
+      "get": {
+        "summary": "변경 영향 (Feature→Baseline→Catalog)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "impact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "changed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "summary": "상품 목록",
+        "tags": [
+          "D01-03"
+        ],
+        "operationId": "listProducts",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lifecycle",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "saleType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "상품 등록 (PROPOSED 1.0.0)",
+        "tags": [
+          "D01-03"
+        ],
+        "operationId": "createProduct",
+        "description": "허용 역할: 상품 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "country": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8
+                  },
+                  "vehicleModel": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "trim": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "default": []
+                  },
+                  "saleType": {
+                    "type": "string",
+                    "enum": [
+                      "구독",
+                      "구매",
+                      "체험"
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "PACKAGE",
+                      "SINGLE",
+                      "BUNDLE"
+                    ]
+                  },
+                  "baselineIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^BL-\\d{5}$"
+                    },
+                    "minItems": 1
+                  },
+                  "validFrom": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "default": null
+                  },
+                  "validTo": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "default": null
+                  },
+                  "ownerId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": [
+                  "name",
+                  "description",
+                  "country",
+                  "vehicleModel",
+                  "trim",
+                  "saleType",
+                  "type",
+                  "baselineIds",
+                  "ownerId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/products/candidates": {
+      "get": {
+        "summary": "BOM 후보 (확정 Baseline·범위 일치)",
+        "tags": [
+          "D01-03"
+        ],
+        "operationId": "productCandidates",
+        "parameters": [
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vehicleModel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trim",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/products/validate": {
+      "post": {
+        "summary": "구성 검증 (저장 없음)",
+        "tags": [
+          "D01-03"
+        ],
+        "operationId": "validateComposition",
+        "description": "허용 역할: 상품 작성자, 상품 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "country": {
+                    "type": "string"
+                  },
+                  "vehicleModel": {
+                    "type": "string"
+                  },
+                  "trim": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "PACKAGE",
+                      "SINGLE",
+                      "BUNDLE"
+                    ]
+                  },
+                  "baselineIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "validFrom": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "default": null
+                  },
+                  "validTo": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "default": null
+                  },
+                  "carriedOver": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": []
+                  }
+                },
+                "required": [
+                  "country",
+                  "vehicleModel",
+                  "trim",
+                  "type",
+                  "baselineIds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/products/{id}/versions/{ver}": {
+      "get": {
+        "summary": "상품 Version 상세·구성 검증·출시 적격성",
+        "tags": [
+          "D01-03"
+        ],
+        "operationId": "productDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "patch": {
+        "summary": "PROPOSED 상품 수정",
+        "tags": [
+          "D01-03"
+        ],
+        "operationId": "updateProductDraft",
+        "description": "허용 역할: 상품 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "default": []
+                  },
+                  "saleType": {
+                    "type": "string",
+                    "enum": [
+                      "구독",
+                      "구매",
+                      "체험"
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "PACKAGE",
+                      "SINGLE",
+                      "BUNDLE"
+                    ]
+                  },
+                  "baselineIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^BL-\\d{5}$"
+                    },
+                    "minItems": 1
+                  },
+                  "validFrom": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "default": null
+                  },
+                  "validTo": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "default": null
+                  },
+                  "ownerId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/products/{id}/versions": {
+      "post": {
+        "summary": "새 Catalog Version (구성·기간 변경)",
+        "tags": [
+          "D01-03"
+        ],
+        "operationId": "createProductVersion",
+        "description": "허용 역할: 상품 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseVersion": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  },
+                  "bump": {
+                    "type": "string",
+                    "enum": [
+                      "major",
+                      "minor",
+                      "patch"
+                    ],
+                    "default": "minor"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "changes": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      },
+                      "tags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "default": []
+                      },
+                      "saleType": {
+                        "type": "string",
+                        "enum": [
+                          "구독",
+                          "구매",
+                          "체험"
+                        ]
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "PACKAGE",
+                          "SINGLE",
+                          "BUNDLE"
+                        ]
+                      },
+                      "baselineIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^BL-\\d{5}$"
+                        },
+                        "minItems": 1
+                      },
+                      "validFrom": {
+                        "type": "string",
+                        "nullable": true,
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                        "default": null
+                      },
+                      "validTo": {
+                        "type": "string",
+                        "nullable": true,
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                        "default": null
+                      },
+                      "ownerId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      }
+                    },
+                    "default": {},
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "baseVersion",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/products/{id}/versions/{ver}/transitions": {
+      "post": {
+        "summary": "상품 Lifecycle 전이 (구성 승인·고객 출시 승인 분리)",
+        "tags": [
+          "D01-03"
+        ],
+        "operationId": "productTransition",
+        "description": "허용 역할: 상품 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "type": "string",
+                    "enum": [
+                      "PROPOSED",
+                      "APPROVED",
+                      "DEVELOPING",
+                      "VERIFIED",
+                      "RELEASED",
+                      "DEPRECATED",
+                      "RETIRED"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "to",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
     }
   }
 }

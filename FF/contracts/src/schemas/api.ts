@@ -1,6 +1,6 @@
 // API 요청 본문 스키마 — 백엔드 ZodPipe와 프론트 폼 검증이 공유한다.
 import { z } from 'zod';
-import { Asil, ControlPointType, GateId, GateResult, Lifecycle } from '../enums';
+import { Asil, CatalogType, ControlPointType, GateId, GateResult, Lifecycle, RelationType, SaleType } from '../enums';
 
 const reason = z.string().trim().min(2, '사유를 2자 이상 입력하세요.').max(500);
 
@@ -65,3 +65,70 @@ export type BaselineRequestBody = z.infer<typeof BaselineRequestBody>;
 
 export const BaselineDecisionBody = z.object({ decision: z.enum(['APPROVE', 'REJECT']), reason });
 export type BaselineDecisionBody = z.infer<typeof BaselineDecisionBody>;
+
+// ── Topology (D01-02) ─────────────────────────────────────────────
+
+/** 의존관계 등록 — 원천 Version이 PROPOSED일 때만 (의존관계도 Feature 속성이므로 APPROVED 이후는 새 Version) */
+export const CreateDependencyBody = z
+  .object({
+    type: RelationType,
+    sourceFeatureId: z.string().regex(/^FEAT-\d{5}$/),
+    sourceVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
+    targetFeatureId: z.string().regex(/^FEAT-\d{5}$/),
+    targetVersion: z.string().regex(/^\d+\.\d+\.\d+$/).nullable().default(null),
+  })
+  .strict();
+export type CreateDependencyBody = z.infer<typeof CreateDependencyBody>;
+
+// ── Catalog (D01-03) ──────────────────────────────────────────────
+const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD');
+const baselineIds = z.array(z.string().regex(/^BL-\d{5}$/)).min(1, '구성 Baseline을 1개 이상 선택하세요.');
+
+export const CreateProductBody = z
+  .object({
+    name: z.string().trim().min(1).max(200),
+    description: z.string().trim().min(1).max(2000),
+    country: z.string().trim().min(1).max(8),
+    vehicleModel: z.string().trim().min(1).max(80),
+    trim: z.string().trim().min(1).max(80),
+    tags: z.array(z.string().trim().min(1).max(80)).default([]),
+    saleType: SaleType,
+    type: CatalogType,
+    baselineIds,
+    validFrom: date.nullable().default(null),
+    validTo: date.nullable().default(null),
+    ownerId: z.string().trim().min(1).max(100),
+  })
+  .strict();
+export type CreateProductBody = z.infer<typeof CreateProductBody>;
+
+export const UpdateProductDraftBody = CreateProductBody.omit({ country: true, vehicleModel: true, trim: true }).partial().strict();
+export type UpdateProductDraftBody = z.infer<typeof UpdateProductDraftBody>;
+
+/** 구성·기간 변경 = 새 Catalog Version (PROPOSED부터) */
+export const CreateProductVersionBody = z
+  .object({
+    baseVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
+    bump: z.enum(['major', 'minor', 'patch']).default('minor'),
+    reason: z.string().trim().min(2).max(500),
+    changes: UpdateProductDraftBody.default({}),
+  })
+  .strict();
+export type CreateProductVersionBody = z.infer<typeof CreateProductVersionBody>;
+
+export const ValidateCompositionBody = z
+  .object({
+    country: z.string(),
+    vehicleModel: z.string(),
+    trim: z.string(),
+    type: CatalogType,
+    baselineIds: z.array(z.string()),
+    validFrom: date.nullable().default(null),
+    validTo: date.nullable().default(null),
+    carriedOver: z.array(z.string()).default([]),
+  })
+  .strict();
+export type ValidateCompositionBody = z.infer<typeof ValidateCompositionBody>;
+
+export const ProductTransitionBody = z.object({ to: Lifecycle, reason: z.string().trim().min(2, '사유를 2자 이상 입력하세요.').max(500) }).strict();
+export type ProductTransitionBody = z.infer<typeof ProductTransitionBody>;

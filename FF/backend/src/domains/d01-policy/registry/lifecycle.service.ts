@@ -19,6 +19,7 @@ import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { BaselineRepo, FeatureRepo, GateRepo, TopologyRepo } from '../repos';
+import { TopologyService } from '../topology/topology.service';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
 
@@ -41,6 +42,7 @@ export class LifecycleService {
     private readonly baselines: BaselineRepo,
     private readonly audit: AuditService,
     private readonly events: EventService,
+    private readonly topologyService: TopologyService,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -114,6 +116,8 @@ export class LifecycleService {
       const bl = this.baselines.get(f.baselineId);
       if (bl) this.baselines.setLifecycle(bl.baselineId, { ...bl.snapshot, lifecycle: to });
     }
+    // 원천 Lifecycle이 바뀌면 관계 판정이 달라질 수 있다 (예: 승인되면 미판정 → PASS)
+    this.topologyService.rejudgeOutgoing(next, actor.correlationId);
     const target = `${f.featureId}@${f.version}`;
     this.audit.record(actor, `FEATURE_TRANSITION ${f.lifecycle}→${to}`, target, { before: { lifecycle: f.lifecycle }, after: { lifecycle: to }, reason, componentId: 'D01-01' });
     this.events.publish(

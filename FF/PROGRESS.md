@@ -4,12 +4,12 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **P4 Topology·Catalog·Impact·PRECHECK API**부터.
-  1. Topology(D01-02): 의존관계 등록·검증 API — 존재·방향·자기참조·중복·범위·REQUIRES 순환(`findRequiresCycles` 재사용)·EXCLUDES 대칭, 판정 결과 `DEP` 행 갱신(원천 PROPOSED면 미판정), Variant 호환(국가/차종/트림·UPG-VC), 구현 추적. `GET /api/precheck`(=`runPrecheck`+`runDataQuality` 그대로).
-  2. Catalog(D01-03): `contracts/rules/catalog.ts`(구성 검증: 확정 Baseline만, 같은 Feature 중복 금지, REQUIRES 대상 Baseline 동일 상품 포함, EXCLUDES 공존 FAIL, SINGLE=1, DEPRECATED/RETIRED 신규 선택 금지, 유효기간) + 상품 7상태 전이(구성 승인·고객 출시 승인 분리, 상품 승인자) + 출시 적격성 + 후보 검색.
-  3. Impact: `GET /api/impact?featureId&version` — 정방향 Feature→Function→SW→ECU, 역방향 REQUIRES 의존자, Feature→Baseline→Catalog(product Version), 재판정 Gate·소유자.
-  4. 새 경로는 반드시 `contracts/src/routes.ts`에도 선언 → `npm run openapi` (routes.spec가 드리프트를 잡는다).
-- P3에서 만든 것 사용법: 전이 규칙은 `contracts/rules/lifecycle.ts`(evaluateTransition·autoTransition), 재판정은 `rejudge.ts`, Baseline 해시는 `canonical.ts` + `backend/.../baseline.service.ts#contentHash`. DEVELOPING→VERIFIED는 정책 저장소(P7) 전까지 `policyCoverage=0`으로 POLICY_MISSING에 막힌다(의도된 동작).
+- **P5 디자인 시스템과 셸 (UI/UX 전면 재디자인)**부터. 이 단계부터 화면이 생기므로 `/frontend-design` 원칙을 적용한다.
+  1. `frontend/src/design/tokens.css` — "Engineering Instrument": SUIT Variable(UI·본문) + JetBrains Mono(ID·버전·해시, tabular-nums), 셀프호스팅(`public/fonts`, OFL). 따뜻한 그래파이트 중립(ink #15171B, paper #F5F4EF), 액션 코발트 1색, 빨강은 파괴적 액션·FAIL 전용, Lifecycle 7 순차 램프(`--lc-PROPOSED…`), Gate 4종 색+모양(● ◐ ○ ✕). 다크(운영·안전 관제실) 테마, `data-density`(compact 1366~1536 / comfortable 1920), 시연 모드(`P`, 18px·고대비).
+  2. `frontend/src/design/` 컴포넌트 키트: StatusBadge·LifecycleStepper(막힌 사유)·GateRail·IdChip·DataTable·AsyncView(data-state)·Drawer·Tabs(URL 동기)·DiffView·EvidenceLink·EventStream·KpiTile·DangerConfirm·EmptyState + `/_design` 갤러리.
+  3. `frontend/src/shell/` + `src/routes.tsx`(MENU 2.0 업무 8그룹 데이터, 부모·컴포넌트 ID·UI 코드 메타) — 레일·그룹 패널·상단바(검색·⌘K·역할 전환·내 역할 필터·시연 모드)·우측 컨텍스트 드로어. 기존 `menuCanonical.test`는 IA 하네스(고아 0·라벨=h1·중복 0)로 교체. 문구는 `src/copy/ko.ts`.
+  4. e2e 하네스 시작: `FF/e2e`(@playwright/test, webServer 백엔드 9101 메모리 DB + Vite 9012), axe, `/_design` 시각 회귀 4조건(1366/1536/1920/시연), 메뉴 크롤 404=0.
+- 백엔드 API는 P4까지 34경로 (`contracts/src/routes.ts`, `docs/80-integration/openapi.json`). 프론트 API 클라이언트는 ROUTES에서 생성한다(P6).
 
 ## 기준 문서 (저장소 밖)
 | 문서 | 위치 | 용도 |
@@ -26,7 +26,7 @@
 - [x] **P1 데이터셋** — SheetJS 적재기(결정적, 원본 행 보존·`_missing` 사유), 픽스처 11종(80/67/18/29/477/122/47/15/68/16/477), `data:check`(해시·재적재 일치), PRECHECK 16종 코드화(데이터셋 예시 판정·요약 수치와 전부 일치), DQ-01(SW 설명 FEAT 참조 18건)·DQ-02(Function 설명 명칭 4건), 골든 테스트
 - [x] **P2 커널** — `backend/src/kernel/`: node:sqlite Db(tx·SAVEPOINT·afterCommit·동기 콜백 강제), 내장 마이그레이션, v0.81 부팅 시드, 감사(ALLOWED/DENIED/FAILED), outbox 이벤트 + SSE `/api/events/stream`, `X-Actor-*` 역할 가드, Idempotency-Key, ZodPipe, 오류 봉투, `@PlatformComponent` + `GET /api/components`·`/api/health`·`/api/audit`·`/api/events`. 기존 GraphPort·BDC seed·engines/rules/gates 삭제(BDC 휴리스틱은 v0.81 Gate 의미와 달라 이식하지 않음). 백엔드 테스트 18건(트랜잭션 원자성·DENIED 감사·멱등 재전송·스트림 순서 포함)
 - [x] **P3 Registry·Gate·Lifecycle·BOM** — contracts 규칙 표(전이 7종·재판정 표 7·Baseline 정규화/diff), Registry(등록·유사 중복 409·초안 수정·새 Version·상세 19속성+추적), Gate(append-only·증거 없는 PASS 금지·단계 순서·RELEASED 판정 불가), Lifecycle(전이+감사+이벤트 한 tx, 자동 전이 연쇄, 직무 분리·사유), BOM(요청·8항목 체크리스트·요청자≠승인자·BL 발급·Lifecycle 제외 sha256·Baseline은 Lifecycle만 추종). `contracts/routes.ts`(21경로) → OpenAPI 생성·`--check`, 실제 라우트와 양방향 드리프트 테스트. 백엔드 44건·contracts 43건. 테스트가 잡은 버그 2건 수정: 구현 연결 0건이 IMPLEMENTATION을 통과하던 문제, 새 Version 요청의 국가 변경이 조용히 무시되던 문제(스키마 strict)
-- [ ] P4 Topology·Catalog·Impact·PRECHECK API
+- [x] **P4 Topology·Catalog·Impact·PRECHECK** — contracts: 상품 구성 검증(확정 BL·상태·범위·중복·REQUIRES 동봉·EXCLUDES·SINGLE/PACKAGE·기간, 데이터셋 18상품 전부 PASS), 상품 Lifecycle 표 17(구성 승인·고객 출시 승인 분리), 의존관계 판정(데이터셋 29건과 전부 일치)·신규 관계 구조 검증(중복·대칭·범위·순환). 백엔드: 의존관계 등록(PROPOSED 원천만)·Lifecycle 변경 시 재판정, 관계 그래프, `/api/precheck`, 다단계 변경 영향(의존자·Baseline·상품·재판정 Gate·담당자), Catalog(등록·초안·새 Version·후보·저장 없는 검증·전이·출시 적격성·직무 분리). 34경로. 테스트 contracts 58·백엔드 59
 - [ ] P5 디자인 시스템·셸·MENU 2.0·IA 하네스·시각 회귀 기준
 - [ ] P6 거버넌스 화면 + react-query + 정적 모드
 - [ ] P7 정책 파이프라인(8 검증기) + 권한·체험권·대상·활성화 + Flag 평가기(OFREP)

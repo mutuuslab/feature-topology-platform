@@ -11,6 +11,7 @@ import {
   type FeatureVersionRow,
   type GateId,
   type GateRecordRow,
+  type PrecheckRuleRow,
   type ProductRow,
   type SwMasterRow,
   type VersionRationaleRow,
@@ -146,6 +147,15 @@ export class GateRepo {
     const r = this.db.get<{ m: number | null }>("SELECT max(CAST(substr(gate_record_id, 8) AS INTEGER)) AS m FROM gate_record");
     return `SIM-${gate}-${pad((r?.m ?? 0) + 1, 6)}`;
   }
+  all(): GateRecordRow[] {
+    return parse<GateRecordRow>(this.db.all('SELECT doc FROM gate_record ORDER BY gate_record_id'));
+  }
+  allEvidence(): EvidenceRow[] {
+    return parse<EvidenceRow>(this.db.all('SELECT doc FROM evidence ORDER BY gate_record_id'));
+  }
+  precheckRules(): PrecheckRuleRow[] {
+    return parse<PrecheckRuleRow>(this.db.all('SELECT doc FROM precheck_rule ORDER BY rule_id'));
+  }
   evidence(gateRecordId: string): EvidenceRow | undefined {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM evidence WHERE gate_record_id = ?', gateRecordId);
     return r ? JSON.parse(r.doc) : undefined;
@@ -176,6 +186,41 @@ export class TopologyRepo {
   ecu(ecuPno: string): EcuMasterRow | undefined {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM ecu_master WHERE ecu_pno = ?', ecuPno);
     return r ? JSON.parse(r.doc) : undefined;
+  }
+  get(dependencyId: string): DependencyRow | undefined {
+    const r = this.db.get<{ doc: string }>('SELECT doc FROM dependency WHERE dependency_id = ?', dependencyId);
+    return r ? JSON.parse(r.doc) : undefined;
+  }
+  insert(d: DependencyRow) {
+    this.db.run(
+      'INSERT INTO dependency (dependency_id, type, source_feature_id, source_version, target_feature_id, target_version, doc) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      d.dependencyId,
+      d.type,
+      d.sourceFeatureId,
+      d.sourceVersion,
+      d.targetFeatureId,
+      d.targetVersion,
+      JSON.stringify(d),
+    );
+  }
+  update(d: DependencyRow) {
+    this.db.run('UPDATE dependency SET target_version = ?, doc = ? WHERE dependency_id = ?', d.targetVersion, JSON.stringify(d), d.dependencyId);
+  }
+  nextId(): string {
+    const r = this.db.get<{ m: number | null }>('SELECT max(CAST(substr(dependency_id, 5) AS INTEGER)) AS m FROM dependency');
+    return `DEP-${pad((r?.m ?? 0) + 1, 5)}`;
+  }
+  allFunctions(): FeatureFunctionRow[] {
+    return parse<FeatureFunctionRow>(this.db.all('SELECT doc FROM feature_function'));
+  }
+  allSw(): SwMasterRow[] {
+    return parse<SwMasterRow>(this.db.all('SELECT doc FROM sw_master'));
+  }
+  allEcu(): EcuMasterRow[] {
+    return parse<EcuMasterRow>(this.db.all('SELECT doc FROM ecu_master'));
+  }
+  allRationale(): VersionRationaleRow[] {
+    return parse<VersionRationaleRow>(this.db.all('SELECT doc FROM version_rationale'));
   }
   rationale(featureId: string): VersionRationaleRow | undefined {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM version_rationale WHERE feature_id = ?', featureId);
@@ -300,9 +345,47 @@ export class BaselineRepo {
   }
 }
 
+export interface ProductMeta {
+  createdBy: string | null;
+  configApprovedBy: string | null;
+  releaseApprovedBy: string | null;
+}
+
 @Injectable()
 export class ProductRepo {
   constructor(@Inject(DB) private readonly db: Db) {}
+  get(catalogId: string, version: string): ProductRow | undefined {
+    const r = this.db.get<{ doc: string }>('SELECT doc FROM product WHERE catalog_id = ? AND version = ?', catalogId, version);
+    return r ? JSON.parse(r.doc) : undefined;
+  }
+  versions(catalogId: string): ProductRow[] {
+    return parse<ProductRow>(this.db.all('SELECT doc FROM product WHERE catalog_id = ?', catalogId)).sort(byVersion);
+  }
+  meta(catalogId: string, version: string): ProductMeta {
+    const r = this.db.get<any>('SELECT created_by, config_approved_by, release_approved_by FROM product WHERE catalog_id = ? AND version = ?', catalogId, version);
+    return { createdBy: r?.created_by ?? null, configApprovedBy: r?.config_approved_by ?? null, releaseApprovedBy: r?.release_approved_by ?? null };
+  }
+  insert(p: ProductRow, createdBy: string, createdAt: string) {
+    this.db.run(
+      'INSERT INTO product (catalog_id, version, lifecycle, doc, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      p.catalogId,
+      p.version,
+      p.lifecycle,
+      JSON.stringify(p),
+      createdBy,
+      createdAt,
+    );
+  }
+  update(p: ProductRow) {
+    this.db.run('UPDATE product SET lifecycle = ?, doc = ? WHERE catalog_id = ? AND version = ?', p.lifecycle, JSON.stringify(p), p.catalogId, p.version);
+  }
+  setApprover(catalogId: string, version: string, kind: 'CONFIG' | 'RELEASE', actorId: string) {
+    this.db.run(`UPDATE product SET ${kind === 'CONFIG' ? 'config_approved_by' : 'release_approved_by'} = ? WHERE catalog_id = ? AND version = ?`, actorId, catalogId, version);
+  }
+  nextCatalogId(): string {
+    const r = this.db.get<{ m: number | null }>('SELECT max(CAST(substr(catalog_id, 5) AS INTEGER)) AS m FROM product');
+    return `CAT-${pad((r?.m ?? 0) + 1, 5)}`;
+  }
   all(): ProductRow[] {
     return parse<ProductRow>(this.db.all('SELECT doc FROM product ORDER BY catalog_id')).sort((a, b) => a.catalogId.localeCompare(b.catalogId) || byVersion(a, b));
   }

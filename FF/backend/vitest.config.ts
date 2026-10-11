@@ -8,5 +8,7 @@ export default defineConfig({
     include: ['test/**/*.spec.ts', 'src/**/*.spec.ts'],
     environment: 'node',
     globals: false,
+    // node:sqlite 실험 기능 경고로 출력이 덮이지 않게
+    poolOptions: { forks: { execArgv: ['--disable-warning=ExperimentalWarning'] } },
   },
 });

@@ -1,19 +1,8 @@
 import { Module } from '@nestjs/common';
-import { GRAPH_PORT } from './domain/graph.port';
-import { InMemoryGraphRepository } from './domain/in-memory-graph.repository';
-import { EnginesService } from './engines/engines.service';
-import { ConsistencyService } from './rules/consistency.service';
-import { ReadinessService } from './gates/readiness.service';
-import { FeatureController } from './api/feature.controller';
+import { KernelModule } from './kernel/kernel.module';
 
-// GraphPort 기본 구현 = InMemory. PostgreSQL+AGE 어댑터로 교체하려면 useClass 만 변경.
+// 도메인 모듈(d01-policy … d06-qsec)은 단계별로 추가한다 — PROGRESS.md 참고.
 @Module({
-  controllers: [FeatureController],
-  providers: [
-    { provide: GRAPH_PORT, useClass: InMemoryGraphRepository },
-    EnginesService,
-    ConsistencyService,
-    ReadinessService,
-  ],
+  imports: [KernelModule],
 })
 export class AppModule {}

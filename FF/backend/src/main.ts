@@ -7,6 +7,6 @@ async function bootstrap() {
   const app = await createApp();
   await app.listen(PORT);
   // eslint-disable-next-line no-console
-  console.log(`Feature Platform backend → http://localhost:${PORT}/api/catalog`);
+  console.log(`Feature Platform backend → http://localhost:${PORT}/api/health`);
 }
 bootstrap();

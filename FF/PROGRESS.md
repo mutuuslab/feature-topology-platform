@@ -4,8 +4,12 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **P2 커널**부터: `backend/src/kernel/`에 `node:sqlite` Db 인터페이스·`tx()`·migrations·outbox 이벤트(SSE)·감사(DENIED 포함)·`X-Actor-*` 역할 가드·`Idempotency-Key`·zod 파이프·오류 필터·`@PlatformComponent` + `GET /api/components`. 부팅 시 `FF_SEED=v0.81`로 `data/fixtures/v0.81` 적재(한 트랜잭션). GraphPort·BDC seed·기존 FeatureController는 삭제(프론트는 아직 백엔드를 안 씀 — 영향 없음).
-- 데이터: `npm run data:import`(원본 → 픽스처), `npm run data:check`(verify 포함). PRECHECK·DQ 규칙은 `contracts/src/rules/precheck.ts` — 백엔드 `GET /api/precheck`는 이것을 그대로 호출.
+- **P3 Registry·Gate·Lifecycle·BOM 백엔드**부터.
+  1. `contracts/src/rules/lifecycle.ts`(전이 표: from·to·필요 Gate·필요 입력·허용 역할·자동 여부), `rejudge.ts`(속성→재판정 Gate), `canonical.ts`(Baseline 해시 — Lifecycle 제외) + 표 기반 테스트.
+  2. `backend/src/domains/d01-policy/registry/`: `FeatureRepo`(feature_version 테이블 doc JSON ↔ `FeatureVersionRow`), `GateService`(append-only, PASS는 evidenceRef 필수, 재판정은 새 `SIM-Gn-NNNNNN`), `LifecycleService`(전이 + 감사 + `feature.lifecycle.changed` 이벤트를 한 `db.tx`), `BaselineService`(별도 승인·작성자≠승인자·8항목 체크리스트·diff·해시·`BL-NNNNN`). 서비스에 `@PlatformComponent('D01-01')`.
+  3. API: `GET /api/features`(필터), `GET /api/features/:id/versions/:ver`, `POST …/transitions`, `GET/POST …/gates`, `POST /api/baselines/requests`, `POST /api/baselines/requests/:id/decision`. 쓰기는 `@Roles` + `ZodPipe`.
+  4. 다 되면 manifest `IMPLEMENTED['D01-01']`에 endpoints·tests 채우기(화면은 P6 — conformance가 화면 라우트를 요구하므로 P6 전까지 planned 유지 가능).
+- 커널 사용법: 변경은 `db.tx(() => { …; audit.record(); events.publish(); })`, 권한 거부는 `RolesGuard`가 DENIED 기록, 도메인 거부는 tx 밖에서 `audit.failed()` 후 `DomainError` throw. 테스트는 `test/helpers.ts`의 `bootApp()`(메모리 DB + v0.81 시드).
 
 ## 기준 문서 (저장소 밖)
 | 문서 | 위치 | 용도 |
@@ -20,7 +24,7 @@
 ## 단계
 - [x] **P0 하네스 골격** — npm workspaces(contracts·backend·frontend), `@ff/contracts`(enum·42 manifest), 백엔드 vitest+swc+supertest, `tools/`(verify·lint-tokens·lint-copy·conformance·ratchet·progress), CI `verify.yml`(Node 24), Cloudflare 배포는 verify 통과 후
 - [x] **P1 데이터셋** — SheetJS 적재기(결정적, 원본 행 보존·`_missing` 사유), 픽스처 11종(80/67/18/29/477/122/47/15/68/16/477), `data:check`(해시·재적재 일치), PRECHECK 16종 코드화(데이터셋 예시 판정·요약 수치와 전부 일치), DQ-01(SW 설명 FEAT 참조 18건)·DQ-02(Function 설명 명칭 4건), 골든 테스트
-- [ ] P2 커널: node:sqlite·tx·outbox/SSE·감사·역할·멱등, GraphPort·BDC seed 삭제
+- [x] **P2 커널** — `backend/src/kernel/`: node:sqlite Db(tx·SAVEPOINT·afterCommit·동기 콜백 강제), 내장 마이그레이션, v0.81 부팅 시드, 감사(ALLOWED/DENIED/FAILED), outbox 이벤트 + SSE `/api/events/stream`, `X-Actor-*` 역할 가드, Idempotency-Key, ZodPipe, 오류 봉투, `@PlatformComponent` + `GET /api/components`·`/api/health`·`/api/audit`·`/api/events`. 기존 GraphPort·BDC seed·engines/rules/gates 삭제(BDC 휴리스틱은 v0.81 Gate 의미와 달라 이식하지 않음). 백엔드 테스트 18건(트랜잭션 원자성·DENIED 감사·멱등 재전송·스트림 순서 포함)
 - [ ] P3 Registry·Gate·Lifecycle·BOM 백엔드 + OpenAPI
 - [ ] P4 Topology·Catalog·Impact·PRECHECK API
 - [ ] P5 디자인 시스템·셸·MENU 2.0·IA 하네스·시각 회귀 기준
@@ -41,6 +45,7 @@
 | 2026-10-11 | Unleash: P0 개정 기준 — Unleash는 작성·수집 원천, 부분 롤아웃은 FP-COHORT-1, 차량 프로파일 FP-VEHICLE-BOOL-1 |
 | 2026-10-11 | hfp-feature-lifecycle은 읽기만, 로직을 FF 백엔드 TS로 이식 |
 | 2026-10-11 | xlsx 파서는 SheetJS(cdn 0.20.3) — exceljs는 이 파일의 표 정의에서 크래시
+| 2026-10-11 | node:sqlite는 `process.getBuiltinModule`로 로드(vite가 접두사 제거), 마이그레이션은 TS 문자열(빌드 산출물 포함). 백엔드 타입 검사는 test 포함(tsconfig.json), 빌드는 tsconfig.build.json
 | 2026-10-11 | 영속 저장 node:sqlite (Db 인터페이스 뒤), contracts는 CJS dist로 빌드해 백엔드가 소비 |
 
 ## 알려진 이슈·주의

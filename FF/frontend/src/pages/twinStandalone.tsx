@@ -1,5 +1,5 @@
-/**
- * §18 독립 Twin 콘솔 — `http://localhost:9001/twin.html`
+﻿/**
+ * §18 독립 Twin 콘솔 — `http://localhost:9012/twin.html`
  *
  * Feature Platform 크롬(Sidebar/Topbar/라우터) 바깥에서 단독으로 뜬다.
  * 레이아웃은 RFTwin 관제 화면과 같은 4단 구조를 따른다.

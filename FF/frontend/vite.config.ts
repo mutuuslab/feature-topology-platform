@@ -1,4 +1,4 @@
-/// <reference types="vitest/config" />
+﻿/// <reference types="vitest/config" />
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -9,7 +9,7 @@ export default defineConfig({
   base: pages ? '/feature-topology-platform/' : '/',
   plugins: [react()],
   server: {
-    port: 9001,
+    port: 9012,
     host: true,
     // proxy: { '/api': 'http://localhost:9101' }, // 백엔드 연동 시 주석 해제
   },

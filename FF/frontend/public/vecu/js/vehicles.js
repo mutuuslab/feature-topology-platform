@@ -62,6 +62,7 @@ export function buildInterior(s, ivi) {
   ds.moveTo(X0, Y0); ds.lineTo(X0, .78 * k); ds.quadraticCurveTo(X0 + .005 * L, .84 * k, X0 + .03 * L, .86 * k); ds.lineTo(X0 + .11 * L, Y1); ds.lineTo(X1 - .02 * L, Y1); ds.quadraticCurveTo(X1, Y1, X1, Y1 - .06 * k); ds.lineTo(X1, Y0); ds.lineTo(X0, Y0);
   const dash = new THREE.Mesh(new THREE.ExtrudeGeometry(ds, { depth: cw, bevelEnabled: true, bevelThickness: .02, bevelSize: .015, bevelSegments: 2, curveSegments: 10 }).translate(0, 0, -cw / 2), DASH); dash.castShadow = true; dash.receiveShadow = true; g.add(dash);
   const trim = box(.004, .05, cw * .9, ALU); trim.position.set(X0 - .003, .70 * k, 0); g.add(trim);
+  const cowl = box(.07 * L, .012, cw * 1.02, RUBBER); cowl.position.set(X1 + .035 * L, s.belt + .015, 0); g.add(cowl);   // wiper cowl in front of the dash (black, as on real cars)
   const inlay = rbox(.012, .07, cw * .9, LEATHER2, .005); inlay.position.set(X0 - .004, .63 * k, 0); g.add(inlay);   // trim band under the vents
   const lower = rbox(.05, .18 * k, cw * .92, DASH_LOW, .02); lower.position.set(X0 + .02, .5 * k, 0); g.add(lower);
   const amb = box(.003, .006, cw * .88, AMBIENT); amb.position.set(X0 - .003, .745 * k, 0); g.add(amb);
@@ -131,6 +132,7 @@ export function buildInterior(s, ivi) {
   // spans the whole cabin (windscreen header to rear window) so the painted roof shell is never seen from inside
   const head = box((cab1 - cab0) * .98, .02, cw * .94, FABRIC); head.position.set((cab0 + cab1) / 2, roofY - .065, 0); g.add(head);   // below the inner face of the roof shell
   const shelf = box(.12 * L, .02, cw * .9, CARPET); shelf.position.set(-.4 * L, belt - .02, 0); g.add(shelf);
+  g.add(bar(new THREE.Vector3(.07 * L + .01, roofY - .095, 0), new THREE.Vector3(.07 * L + .03, roofY - .06, 0), .009, DASH_LOW));   // mirror stalk
   const mir = rbox(.035, .065, .23, PIANO, .015); mir.position.set(.07 * L, roofY - .12, 0); g.add(mir); const mirGlass = new THREE.Mesh(new THREE.PlaneGeometry(.2, .05), CHROME); mirGlass.position.set(.07 * L - .016, roofY - .12, 0); mirGlass.rotation.y = -Math.PI / 2; g.add(mirGlass);
   for (const z of [DZ, -DZ]) { const vis = rbox(.16, .018, .3, FABRIC, .008); vis.position.set(.09 * L, roofY - .085, z); g.add(vis); }
   const overhead = rbox(.16, .03, .22, DASH_LOW, .012); overhead.position.set(.05 * L, roofY - .085, 0); g.add(overhead);   // map lights / SOS console

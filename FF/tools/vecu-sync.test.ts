@@ -1,7 +1,10 @@
 // vECU 동기화 허용 목록 — 웹 실행 파일만, 약관·로컬 전용 자산은 어떤 경우에도 빠진다.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { selectFiles } from './vecu-sync.ts';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { selectFiles, sha } from './vecu-sync.ts';
 
 test('허용 목록만 고르고, 실사 스플랫·로컬 전용 모델·도구·시험·문서는 뺀다', () => {
   const all = [
@@ -11,4 +14,11 @@ test('허용 목록만 고르고, 실사 스플랫·로컬 전용 모델·도구
     'tests/js/ffval_cli.test.mjs', 'harness/ref/a.png', 'docs/FF_VIRTUAL_VALIDATION.md', 'run_sil.py', 'CLAUDE.md', 'js/nurec_loader.js',
   ];
   assert.deepEqual(selectFiles(all), ['assets/car.glb.b64.txt', 'ff/FEAT-00022_sample.json', 'index.html', 'js/features/feat00022.js', 'js/main.js', 'js/vendor/ff_evaluate.js']);
+});
+
+test('해시는 줄끝과 무관 — Windows 체크아웃(CRLF)과 CI 체크아웃(LF)이 같은 매니페스트를 통과한다', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'vecu-eol-'));
+  writeFileSync(join(dir, 'a.js'), 'const a = 1;\r\nconst b = 2;\r\n');
+  writeFileSync(join(dir, 'b.js'), 'const a = 1;\nconst b = 2;\n');
+  assert.equal(sha(join(dir, 'a.js')), sha(join(dir, 'b.js')));
 });

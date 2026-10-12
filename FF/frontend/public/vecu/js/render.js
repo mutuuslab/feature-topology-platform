@@ -62,7 +62,7 @@ export function buildPipeline(scene, camera) {
     fx.ultra = traa(litUltra.add(bloomU), depth, vel, camera); fx.high = traa(litHigh.add(bloomH), depth, vel, camera);
     // contrast-adaptive sharpening (noise-aware) for captured scenes: the splat road is reconstructed at ~10 cm and TRAA
     // softens it further; off for the procedural world
-    fx.ultraS = sharpen(fx.ultra, .45, true); fx.highS = sharpen(fx.high, .45, true);
+    fx.ultraS = sharpen(fx.ultra, .7, true); fx.highS = sharpen(fx.high, .7, true);   // 0 = strongest, 2 = none
     fx.bloomU = bloomU; fx.bloomH = bloomH; fx.ao = aoPass; fx.ssr = ssrPass; fx.scenePass = scenePass;
     rp.outputNode = fx.ultra; rnd.pipeline = rp; fx.ok = true;
   } catch (e) { console.warn('post-processing unavailable', e); fx.ok = false; rnd.pipeline = null; }

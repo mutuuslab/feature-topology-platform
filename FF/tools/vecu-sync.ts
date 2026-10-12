@@ -21,7 +21,8 @@ const BANNED_TERMS = /\b(Vector|DYNA4)\b/;
 const MAX_BYTES = 20 * 1024 * 1024;
 
 const posix = (p: string) => p.split(sep).join('/');
-const sha = (p: string) => createHash('sha256').update(readFileSync(p)).digest('hex');
+/** 줄끝은 정규화해서 해시 — Git 체크아웃(Windows CRLF ↔ CI LF)에 따라 달라지지 않게 */
+export const sha = (p: string) => createHash('sha256').update(/\.(html|js|json|txt)$/.test(p) ? readFileSync(p, 'utf8').replace(/\r\n/g, '\n') : readFileSync(p)).digest('hex');
 
 function list(dir: string, base = dir): string[] {
   const out: string[] = [];

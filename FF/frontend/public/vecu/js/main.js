@@ -211,16 +211,18 @@ async function main() {
   const _cl = new THREE.Vector3();
   function actorView(a, dt) {
     a.v.grp.worldToLocal(_cl.copy(camera.position));   // vehicle frame: x forward, y up, z right
-    const az = Math.atan2(-_cl.z, _cl.x) * 180 / Math.PI, far = Math.hypot(_cl.x, _cl.z) > ACTOR_NEAR;
+    const dist = Math.hypot(_cl.x, _cl.z), az = Math.atan2(-_cl.z, _cl.x) * 180 / Math.PI, far = dist > ACTOR_NEAR;
     const off = Math.min(Infinity, ...a.r.seen.map(k => Math.abs((((az - SEEN_AZ[k]) % 360) + 540) % 360 - 180)));   // degrees from the nearest observed direction
-    const splatOk = far || off < (a.body ? ACTOR_VALID_DEG : ACTOR_VALID_DEG + 10), body = !splatOk;
-    a.fade = splatOk ? 1 : 0; a.layer.opacity.value = a.fade;
+    // right next to the camera even the observed side is a smear (it was reconstructed from tens of metres away)
+    const close = dist < (a.body ? ACTOR_CLOSE + 3 : ACTOR_CLOSE);
+    const splatOk = !close && (far || off < (a.body ? ACTOR_VALID_DEG : ACTOR_VALID_DEG + 10)), body = !splatOk;
+    a.fade = splatOk ? 1 : 0; a.layer.opacity.value = a.fade; a.layer.mesh.visible = splatOk;   // nothing drawn while the template stands in
     if (a.body !== body) { a.body = body; a.hidden.forEach(o => { o.visible = body; }); }
   }
-  const ACTOR_NEAR = 45, ACTOR_VALID_DEG = 35;
+  const ACTOR_NEAR = 45, ACTOR_VALID_DEG = 35, ACTOR_CLOSE = 10;
   function applyActors() {
     const on = bg.mode === 'splat';
-    for (const a of actors) { a.layer.group.visible = on; a.hidden.forEach(o => { o.visible = !on; }); a.body = !on; a.fade = 1; a.layer.opacity.value = 1; Object.assign(a.v, on ? { L: a.r.L, W: a.r.W, H: a.r.H } : a.dims); }
+    for (const a of actors) { a.layer.group.visible = on; a.layer.mesh.visible = true; a.hidden.forEach(o => { o.visible = !on; }); a.body = !on; a.fade = 1; a.layer.opacity.value = 1; Object.assign(a.v, on ? { L: a.r.L, W: a.r.W, H: a.r.H } : a.dims); }
   }
   $('#asplFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (!f) return; progress('파일 읽는 중', 0); f.arrayBuffer().then(b => loadSplat(b, f.name)); e.target.value = ''; });
 

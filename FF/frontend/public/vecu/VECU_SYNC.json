@@ -1,6 +1,6 @@
 {
   "source": "C:/project/2026-10-11_vECU",
-  "syncedAt": "2026-10-12T22:59:32.972Z",
+  "syncedAt": "2026-10-12T23:47:22.649Z",
   "note": "tools/vecu-sync.ts가 만든 복사본 — 여기서 고치지 말고 vECU 원본을 고친 뒤 다시 동기화",
   "files": {
     "assets/car.glb.b64.txt": {
@@ -16,19 +16,19 @@
       "bytes": 1863712
     },
     "ff/FEAT-00022_sample.json": {
-      "sha256": "1097cc787519f0c562b1910fe9746d7e8fc85c070422c6cdddbb827504c4aead",
+      "sha256": "e4897313d1af4d770f0bd088dd1f9bab3a35abe70fbb85a28e5150b19b4373e9",
       "bytes": 9966
     },
     "ff/FEAT-00023_sample.json": {
-      "sha256": "b3bc09b8f661bb4849b18dbfcc3cb95c39f9bd5348473d4f49dfc00d61d3b423",
+      "sha256": "10fc1aa9e8f56dbef03728ce0a1a77463208b015221850a5155876202baf28b7",
       "bytes": 8989
     },
     "ff/FEAT-00024_sample.json": {
-      "sha256": "13164ee87d5438b03f93b62266d8b563ced87f9364d114b3e83273a91342a4fd",
+      "sha256": "9ee1d391f616d8f467aa11c394588790cbd450c0270dfe62695fff4d68acae07",
       "bytes": 11277
     },
     "index.html": {
-      "sha256": "940ed8701e8917ab3fb2e13776b45fdbb123d498005526413ec3dadf997ba42f",
+      "sha256": "eca3742a34befc6e13291a185e5f9de7c861dd9f332d6dfa37537c36bbd81ffd",
       "bytes": 25899
     },
     "js/bake.js": {
@@ -48,35 +48,35 @@
       "bytes": 2197
     },
     "js/ffval.js": {
-      "sha256": "2dc72940b14ded7cec567f62e8715c814c1231dd450f903e3a8a758dbf709771",
+      "sha256": "df2f9c28e50cb3cac2c72520fb054866db3c0c84c8585ad86262fe725a7e2277",
       "bytes": 49364
     },
     "js/ffvui.js": {
-      "sha256": "28dee9a129b292e8c0ef7f2f171c174a5719f4fd91bb3798989bb4a154fc5e23",
+      "sha256": "057f7b2e41bab879727b45db38a446097470c437f146125a2513d41522106561",
       "bytes": 34989
     },
     "js/ivi.js": {
-      "sha256": "016207a09b9244699f37f25a3aa181227526e82ee7a971f09925c2e484f12cf2",
+      "sha256": "d20d18451dcc386c882b5a46f62cfb8d3c492ff55ac1ca1063a0d1a316c06727",
       "bytes": 18289
     },
     "js/main.js": {
-      "sha256": "b2e2ded7fdf6da4c9cfd0938b2a9d282c74dfe7edd3c45a2aff180b5c08be90f",
-      "bytes": 53333
+      "sha256": "20fae488534a5e9975196c15db4e7e34dba085331a5d89045437a8b0f96f8d0b",
+      "bytes": 53668
     },
     "js/odr.js": {
-      "sha256": "c4a9dfd5623ede5096b73b003c7dd2070cdebf78de50d5703cc3dc58a39352a5",
+      "sha256": "ded279d5982b61a09c9359f78eb7948f80fa389ce4873b980afe8bb5c831b864",
       "bytes": 11393
     },
     "js/render.js": {
-      "sha256": "2eef8891c33a047a72785db39b87bb5702a70a6ef1128761d0e544675a98dbb8",
-      "bytes": 7058
+      "sha256": "6cbf5ecd0dcb53411b9f34a522595b28eaf366c6f5f527dbe4bb0aded34d0440",
+      "bytes": 7085
     },
     "js/sim.js": {
-      "sha256": "61219b1cab8423ca4146f504b495350e8e7f9d8912bea0164bb945c28a33b9b3",
+      "sha256": "f2ddc64cf6141e226436787f6b585198d6d37f1a4e2a91160b08cbc5f1f5cdc0",
       "bytes": 19091
     },
     "js/splat.js": {
-      "sha256": "69632ba828dadb9dfbc2d9708168060e8cc64987fad16ae0dee87ea537acfe9d",
+      "sha256": "35d94bc1504d4e14feb18a4556fe59cb6bdb9d9867549afd9c8e52bdf85c6048",
       "bytes": 17042
     },
     "js/util.js": {
@@ -84,15 +84,15 @@
       "bytes": 3782
     },
     "js/vehicles.js": {
-      "sha256": "0c8645f4fccb6320bb0f23c1e302eaf69d8017d080b8386fbdf6836e2f219a24",
-      "bytes": 46064
+      "sha256": "7464d5a82a2a2a4aecb3165e5d49c4470d28443a460a2bdca19c9e5f77f4241c",
+      "bytes": 46396
     },
     "js/vendor/ff_evaluate.js": {
       "sha256": "c1ddd580c29d4a9055a1f2fe91d2a873a560346dcdf920a22897fb22e8b25dfe",
       "bytes": 9896
     },
     "js/world.js": {
-      "sha256": "801e645ca8149ed9e1590322d010e6c13916776b6b4120fd492752ceae88b94b",
+      "sha256": "7d5cb84835126d0960c550c7f9e4af2f3ca56a4545c22bf1640afd1b468de95e",
       "bytes": 32094
     },
     "js/zip.js": {

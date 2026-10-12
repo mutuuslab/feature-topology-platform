@@ -45,7 +45,8 @@ export class VecuAdapter {
       dir: this.dir,
       cli: this.available ? this.cli : null,
       /** 3D 실사 주행 화면(선택) — 판정 원천은 헤드리스 실행기 */
-      simulatorUrl: 'http://localhost:8793/index.html',
+      // FF 사이트와 함께 배포된 웹 실행본(tools/vecu-sync.ts → frontend/public/vecu/)
+      simulatorUrl: process.env.VECU_WEB_URL ?? '/vecu/index.html',
       reason: this.mode === 'off' ? 'VECU_MODE=off' : this.available ? null : `실행기 없음: ${this.cli}`,
     };
   }

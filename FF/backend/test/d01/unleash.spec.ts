@@ -3,7 +3,6 @@
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { MockUnleash, UnleashGateway, allowed } from '../../src/adapters/unleash/unleash.client';
-import { Clock } from '../../src/kernel/clock';
 import { actor, bootApp } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
@@ -16,8 +15,7 @@ describe('Unleash 연계 (IF-04) — 모의', () => {
   let http: () => any;
   beforeAll(async () => {
     Object.assign(process.env, { UNLEASH_MODE: 'mock', GLEO_MODE: 'internal' });
-    ({ app, http } = await bootApp());
-    app.get(Clock).set('2026-10-12T01:00:00.000Z');
+    ({ app, http } = await bootApp({ at: '2026-10-12T01:00:00.000Z' })); // 시드 기준일도 같은 날(체험권 날짜는 기준일 상대값)
   });
   afterAll(async () => {
     await app.close();

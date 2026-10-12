@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 import { FF } from './lib.ts';
 
 const require = createRequire(import.meta.url);
-const { routeUrl, snapshotFile, LIFECYCLE } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
+const { routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
 
 const PORT = Number(process.env.SNAPSHOT_PORT ?? 9199); // 8000 금지
 const BASE = `http://localhost:${PORT}`;
@@ -87,6 +87,11 @@ async function main() {
   for (const p of policies.items) await save('policyDetail', { id: p.policyId });
   await save('validations');
   await save('entitlements');
+  // 체험권 차량 목록(상태별 첫 쪽)·체험 전환 분석(나눠 보기 기준별) — 화면과 같은 질의 함수로 키를 맞춘다
+  for (const source of ['ALL', 'DEMO', 'SYNTHETIC'] as const) {
+    for (const state of ['', ...TRIAL_STATES]) await save('trials', {}, trialListQuery({ catalogId: 'CAT-00019', source, state }));
+    for (const groupBy of ['', ...SEGMENT_DIMENSIONS]) await save('trialAnalytics', {}, trialAnalyticsQuery({ catalogId: 'CAT-00019', source, groupBy }));
+  }
   const vehicles = await save('vehicles');
   const flagKeys = [...new Set((policies.items as { flagKey: string; status: string }[]).filter((p) => p.status === 'DEPLOYED').map((p) => p.flagKey))];
   for (const v of vehicles.items) for (const flagKey of flagKeys) await save('activationDecide', {}, { vin: v.vin, flagKey });

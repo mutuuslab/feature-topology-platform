@@ -1,7 +1,6 @@
 // PoC ② 정책 준비·검증·승인 · ③ 사용 권한·서버 활성화 판단 · IF-10 OFREP — API로 끝까지 검증한다.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { Clock } from '../../src/kernel/clock';
 import { actor, bootApp } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
@@ -14,8 +13,7 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
   let app: INestApplication;
   let http: () => any;
   beforeAll(async () => {
-    ({ app, http } = await bootApp());
-    app.get(Clock).set('2026-10-12T01:00:00.000Z'); // 체험권 유효기간(2026-10-01~31) 안
+    ({ app, http } = await bootApp({ at: '2026-10-12T01:00:00.000Z' })); // 시드 기준일도 같은 날(체험권 날짜는 기준일 상대값)
   });
   afterAll(() => app.close());
 
@@ -28,10 +26,11 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
     });
 
     it.each([
-      ['ego-01', true, 'POLICY_MATCH'], // 1회 체험권 유효
+      ['ego-01', true, 'POLICY_MATCH'], // 체험 중 (수락 11일째, 30일)
       ['KMH-NX4-0001', true, 'POLICY_MATCH'], // 구독 CAT-00013 (FEAT-00022 포함)
       ['KMH-NX4-0002', false, 'NO_ENTITLEMENT'],
-      ['lead-01', false, 'NO_ENTITLEMENT'], // 체험권 이미 사용
+      ['lead-01', false, 'NO_ENTITLEMENT'], // 체험 제안 중 — 수락 전에는 OFF
+      ['HMA-NX4-0001', false, 'NOT_APPLICABLE'], // 체험에서 구독으로 전환했지만 US는 적용 범위 밖
       ['KMH-NX4-0003', false, 'CONTEXT_UNKNOWN'], // STALE → HOLD → Safe Default(OFF)
       ['TMA-NX4-0001', false, 'NOT_APPLICABLE'], // EU
     ])('%s → %s (%s)', async (vin, value, reason) => {
@@ -40,14 +39,22 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
       expect(r.body.result.trace.length).toBeGreaterThan(2);
     });
 
-    it('PoC ⑤ 체험 수락 → 1회 체험권 사용 → 다시 판단하면 권한 없음', async () => {
-      await http().post('/api/entitlements/ENT-00001/consume').set(JUDGE).send({}).expect(403); // 운영자·시스템만
-      const c = await http().post('/api/entitlements/ENT-00001/consume').set(OPERATOR).send({}).expect(200);
-      expect(c.body).toMatchObject({ usesLeft: 0, status: 'CONSUMED' });
-      await http().post('/api/entitlements/ENT-00001/consume').set(OPERATOR).send({}).expect(422);
-      expect((await decide('ego-01')).body.result).toMatchObject({ value: false, reason: 'NO_ENTITLEMENT' });
-      const ev = await http().get('/api/events?type=entitlement.consumed').expect(200);
-      expect(ev.body.items.at(-1)).toMatchObject({ aggregate: 'ego-01', payload: { grantId: 'ENT-00001', usesLeft: 0 } });
+    it('PoC ⑤ 체험 제안 수락 → 수락일부터 30일 ON, 다시 수락·거절은 거부', async () => {
+      await http().post('/api/trials/ENT-00003/accept').set(JUDGE).send({}).expect(403); // 운영자·시스템만
+      const c = await http().post('/api/trials/ENT-00003/accept').set(OPERATOR).send({}).expect(200);
+      expect(c.body).toMatchObject({ vin: 'lead-01', status: 'ACTIVE', state: 'ACTIVE', effective: true, acceptedAt: '2026-10-12', validFrom: '2026-10-12', validTo: '2026-11-10', trialDays: 30, daysLeft: 30 });
+      expect((await http().post('/api/trials/ENT-00003/accept').set(OPERATOR).send({}).expect(422)).body.error.code).toBe('GUARD_FAILED');
+      await http().post('/api/trials/ENT-00003/decline').set(OPERATOR).send({}).expect(422);
+      expect((await decide('lead-01')).body.result).toMatchObject({ value: true, reason: 'POLICY_MATCH' });
+      const ev = await http().get('/api/events?type=entitlement.accepted').expect(200);
+      expect(ev.body.items.at(-1)).toMatchObject({ aggregate: 'lead-01', payload: { grantId: 'ENT-00003', validTo: '2026-11-10' } });
+      const failed = await http().get('/api/audit?target=ENT-00003&result=FAILED').expect(200);
+      expect(failed.body.items.map((a: { action: string }) => a.action).sort()).toEqual(['TRIAL_ACCEPT', 'TRIAL_DECLINE']);
+    });
+
+    it('체험 기간이 끝난 권한은 저장 상태가 ACTIVE여도 OFF (TMA-NX4-0001 체험 만료)', async () => {
+      const ents = (await http().get('/api/entitlements?vin=TMA-NX4-0001').expect(200)).body.items;
+      expect(ents[0]).toMatchObject({ grantId: 'ENT-00007', status: 'ACTIVE', state: 'EXPIRED', effective: false });
     });
   });
 

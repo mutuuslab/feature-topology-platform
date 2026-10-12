@@ -44,6 +44,11 @@
   --accent-ink: #ffffff;
   --focus: #2747d4;
 
+  /* 데이터 시각화 범주 — 단계(제안·수락·구매) 고정 순서. validate_palette 통과(CVD ΔE 9.2, 정상 27.6), 3번(aqua)은 대비 2.74:1이라 직접 표기·표 보기 동반 */
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
+  --viz-3: #1baf7a;
+
   /* 신호 */
   --ok: #1a7045;
   --ok-soft: #e2f1e8;
@@ -174,6 +179,9 @@
   --accent-soft: #1d2340;
   --accent-ink: #0d0f12;
   --focus: #a2b2ff;
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
+  --viz-3: #199e70;
   --ok: #43c486;
   --ok-soft: #12291d;
   --warn: #f0aa3c;

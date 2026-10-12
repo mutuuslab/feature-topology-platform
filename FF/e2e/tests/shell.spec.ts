@@ -39,6 +39,9 @@ for (const [w, h] of [
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(0);
+    // 세로도 문서 바깥은 스크롤되지 않는다 — 본문(.sh-main) 안에서만. 회귀: 표 캡션(.ds-sr, absolute)이 본문 밖 기준으로 배치돼 셸 아래 빈 띠가 생기던 문제
+    const vOverflow = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
+    expect(vOverflow).toBeLessThanOrEqual(0);
     const top = await page.locator('.sh-top').boundingBox();
     const rail = await page.locator('.sh-rail').boundingBox();
     expect(top!.width).toBeCloseTo(w, -1);

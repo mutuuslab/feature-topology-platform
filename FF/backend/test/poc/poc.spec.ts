@@ -73,10 +73,11 @@ describe('PoC 6단계 러너 (P9)', () => {
     expect(s.note).toMatch(/재연결 대사/);
   });
 
-  it('⑤ 차량: HELLO 후 이번 게시본으로 차량 측 ON, OpenFeature(OFREP)도 ON', async () => {
+  it('⑤ 차량: HELLO 후 이번 게시본으로 차량 측 ON, OpenFeature(OFREP)도 ON, lead-01은 IVI에서 체험 수락', async () => {
     const s = (await advance()).steps[4];
     expect(s.status, s.note).toBe('DONE');
-    expect(s.evidence).toMatchObject({ sameAsDeployed: true, vehicleValue: true, openFeature: true, openFeatureReason: 'TARGETING_MATCH' });
+    expect(s.evidence).toMatchObject({ sameAsDeployed: true, vehicleValue: true, openFeature: true, openFeatureReason: 'TARGETING_MATCH', trialAccepted: 'lead-01 ENT-00003 ~2026-11-10' });
+    expect(s.actions.some((a: any) => a.summary === 'TRIAL_ACCEPT ENT-00003 → 2026-11-10까지 ON')).toBe(true);
     expect(s.actions.find((a: any) => a.route === 'ofrepEvaluate').role).toBe('VEHICLE');
   });
 

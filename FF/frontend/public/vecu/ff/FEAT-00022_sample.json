@@ -1,0 +1,387 @@
+{
+ "kind": "ff-virtual-validation-package",
+ "version": 1,
+ "note": "FF 플랫폼 정책(Policy) + 기능 적용 범위 + 가상 차량 후보 + 검증 Gate 시험 계획(tests). 정책 필드는 FF/contracts PolicySchema와 같다. scenario는 단일 시나리오 호환용(=tests[1]).",
+ "policy": {
+  "policyId": "POL-00001",
+  "revision": 1,
+  "status": "APPROVED",
+  "contentHash": "sample-not-hashed",
+  "createdBy": "usr-author",
+  "createdAt": "2026-10-12T00:00:00Z",
+  "approvedBy": "usr-approver",
+  "approvedAt": "2026-10-12T00:00:00Z",
+  "lastValidationId": null,
+  "stageBasisPoints": null,
+  "featureId": "FEAT-00022",
+  "featureVersion": "1.0.0",
+  "controlPoint": "Parameter",
+  "flagKey": "care_00022_param",
+  "description": "전방 안전거리 3단계 활성화",
+  "enabled": true,
+  "safeDefault": false,
+  "entitlementCatalogId": "CAT-00019",
+  "strategies": [],
+  "rollout": {
+   "mode": "ALL",
+   "basisPoints": 10000,
+   "salt": "FF-COHORT-SALT-1"
+  }
+ },
+ "scope": {
+  "country": "KR",
+  "vehicleModel": "NX4 PE",
+  "trim": "Premium"
+ },
+ "fleet": [
+  {
+   "vin": "ego-01",
+   "label": "PoC 시연 차량 (BeamNG/UE 영상 키트 ego)",
+   "country": "KR",
+   "vehicleModel": "NX4 PE",
+   "trim": "Premium",
+   "modelYear": "2026",
+   "upgVc": "F111A114001",
+   "swVersion": "1.2.1",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "lead-01",
+   "label": "PoC 선행 차량 (영상 키트 lead)",
+   "country": "KR",
+   "vehicleModel": "NX4 PE",
+   "trim": "Premium",
+   "modelYear": "2026",
+   "upgVc": "F111A114001",
+   "swVersion": "1.2.1",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "KMH-NX4-0001",
+   "label": "구독 고객 차량",
+   "country": "KR",
+   "vehicleModel": "NX4 PE",
+   "trim": "Premium",
+   "modelYear": "2026",
+   "upgVc": "F111A114001",
+   "swVersion": "1.2.1",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "KMH-NX4-0002",
+   "label": "체험 미가입 차량",
+   "country": "KR",
+   "vehicleModel": "NX4 PE",
+   "trim": "Premium",
+   "modelYear": "2025",
+   "upgVc": "F111A114001",
+   "swVersion": "1.2.0",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "KMH-NX4-0003",
+   "label": "통신 지연 차량 (오래된 문맥)",
+   "country": "KR",
+   "vehicleModel": "NX4 PE",
+   "trim": "Premium",
+   "modelYear": "2026",
+   "upgVc": "F111A114001",
+   "swVersion": "1.2.1",
+   "quality": "STALE",
+   "link": "OFFLINE"
+  },
+  {
+   "vin": "KMH-NX4-0004",
+   "label": "구형 SW 차량",
+   "country": "KR",
+   "vehicleModel": "NX4 PE",
+   "trim": "Premium",
+   "modelYear": "2024",
+   "upgVc": "F111A114001",
+   "swVersion": "1.1.9",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "KMH-NX4-0101",
+   "label": "NX4 PE 일반 트림",
+   "country": "KR",
+   "vehicleModel": "NX4 PE",
+   "trim": "Modern",
+   "modelYear": "2026",
+   "upgVc": "F111A114002",
+   "swVersion": "1.2.1",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "KMH-GN7-0001",
+   "label": "GN7 Calligraphy",
+   "country": "KR",
+   "vehicleModel": "GN7",
+   "trim": "Calligraphy",
+   "modelYear": "2026",
+   "upgVc": "F222B221001",
+   "swVersion": "5.4.2",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "KMH-NE-0001",
+   "label": "NE PE Prestige",
+   "country": "KR",
+   "vehicleModel": "NE PE",
+   "trim": "Prestige",
+   "modelYear": "2026",
+   "upgVc": "F333C331001",
+   "swVersion": "3.0.0",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "TMA-NX4-0001",
+   "label": "EU NX4 PE Ultimate",
+   "country": "EU",
+   "vehicleModel": "NX4 PE",
+   "trim": "Ultimate",
+   "modelYear": "2026",
+   "upgVc": "E111A114001",
+   "swVersion": "1.2.1",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "TMA-NX4-0002",
+   "label": "EU NX4 PE Ultimate (오프라인)",
+   "country": "EU",
+   "vehicleModel": "NX4 PE",
+   "trim": "Ultimate",
+   "modelYear": "2025",
+   "upgVc": "E111A114001",
+   "swVersion": "1.2.0",
+   "quality": "UNTRUSTED",
+   "link": "ONLINE"
+  },
+  {
+   "vin": "HMA-NX4-0001",
+   "label": "US NX4 PE Limited",
+   "country": "US",
+   "vehicleModel": "NX4 PE",
+   "trim": "Limited",
+   "modelYear": "2026",
+   "upgVc": "U111A114001",
+   "swVersion": "1.2.1",
+   "quality": "TRUSTED",
+   "link": "ONLINE"
+  }
+ ],
+ "vehicle": "ego-01",
+ "entitlementActive": true,
+ "scenario": {
+  "duration_s": 70,
+  "lead_kph": 80,
+  "target_gap_m": 40,
+  "link_latency_ms": 300,
+  "fault": {
+   "at_s": 17,
+   "ramp_s": 8,
+   "bias_max": 2.4
+  },
+  "kill": {
+   "at_s": 48,
+   "safe_mode": "SAFE_DEFAULT"
+  },
+  "name": "FF_IMP PoC1 — 오류 후 긴급 차단"
+ },
+ "gate": {
+  "id": "G5",
+  "name": "검증 Gate · 배포 전 가상 검증",
+  "components": [
+   "D06-03 차량 시나리오 검증",
+   "D06-06 안전 동작 검증"
+  ]
+ },
+ "tests": [
+  {
+   "id": "SCN-FEAT00022-NOMINAL",
+   "name": "정상 주행 · 기능 활성",
+   "purpose": "정책이 이 차량에서 ON으로 판정되고, 기능이 목표 거리를 안전하게 유지하는지 확인한다.",
+   "steps": [
+    "시동 후 차량이 Flag 조회 → ON 응답 확인",
+    "선행차 80 km/h, 목표 40 m로 60초 주행",
+    "단계 판단이 실제와 일치하는지 관찰"
+   ],
+   "expected": [
+    "조회 응답 ON (POLICY_MATCH)",
+    "실제 '위험' 단계 없음",
+    "최대 감속 2.8 m/s² 이하"
+   ],
+   "scenario": {
+    "duration_s": 60,
+    "lead_kph": 80,
+    "target_gap_m": 40,
+    "link_latency_ms": 300,
+    "vehicle_requests": [
+     {
+      "at_s": 2,
+      "kind": "query",
+      "label": "시동 후 Flag 조회",
+      "expect": "ON"
+     }
+    ],
+    "criteria": {
+     "gate": [
+      "misjudge",
+      "danger_time",
+      "min_ttc",
+      "max_decel",
+      "request_latency",
+      "request_expected"
+     ],
+     "info": []
+    }
+   }
+  },
+  {
+   "id": "SCN-FEAT00022-FAULT-KILL",
+   "name": "오류 발생 · 긴급 차단 → Safe Default",
+   "purpose": "기능 오류(거리 추정 부풀림) 발생 시 긴급 차단이 1초 이내 Safe Default로 전환되고 안전하게 복귀하는지 확인한다.",
+   "steps": [
+    "정상 주행 17초",
+    "17초에 거리 추정 오류 주입",
+    "48초 운영 콘솔 긴급 차단 발동 (통신 지연 300 ms)",
+    "Safe Default(시간 간격 2.2 s) 전환·복귀 관찰"
+   ],
+   "expected": [
+    "Kill → Safe Default ≤ 1.0 s",
+    "Safe Default 후 15초 내 실제 '정상' 복귀",
+    "최대 감속 2.8 m/s² 이하",
+    "오류 구간의 오판단·위험은 참고로 기록"
+   ],
+   "scenario": {
+    "duration_s": 70,
+    "lead_kph": 80,
+    "target_gap_m": 40,
+    "link_latency_ms": 300,
+    "fault": {
+     "at_s": 17,
+     "ramp_s": 8,
+     "bias_max": 2.4
+    },
+    "kill": {
+     "at_s": 48,
+     "safe_mode": "SAFE_DEFAULT"
+    },
+    "criteria": {
+     "gate": [
+      "kill_latency",
+      "recovery",
+      "max_decel",
+      "min_ttc"
+     ],
+     "info": [
+      "misjudge",
+      "danger_time"
+     ]
+    }
+   }
+  },
+  {
+   "id": "SCN-FEAT00022-VEHICLE-REQ",
+   "name": "차량 요청 · Flag 조회·업데이트와 거부 규칙",
+   "purpose": "차량이 보내는 Flag 조회·업데이트에 플랫폼이 FF 차량 채널 규칙대로 응답하고(관측값만 갱신, 신뢰 원천·다른 VIN·Flag 직접 변경은 거부, 체험권 수락 시 1회 체험권 소진), 차량이 1초 안에 반영하는지 확인한다.",
+   "steps": [
+    "출발 → Flag 조회 → ON",
+    "10초: 통신 품질 저하(STALE) 보고 → OFF(판단 보류)",
+    "18초: 통신 회복 보고 → ON",
+    "26초: trim 변경 보고 → 400 TRUST_SOURCE_FIELD 거부, 상태 유지",
+    "32초: Flag 직접 변경 시도 → 403 VEHICLE_OVERRIDE_FORBIDDEN 거부",
+    "38초: 다른 차량(KMH-NX4-0101) 조회 → 403 VEHICLE_SCOPE 거부",
+    "45초: 체험 수락 → 이미 체험 중이라 422 GUARD_FAILED (상태 변화 없음)"
+   ],
+   "expected": [
+    "모든 응답이 기대 결과(ON/OFF/거부)와 일치",
+    "응답·반영 1.0 s 이내",
+    "거부된 요청은 차량 상태에 영향 없음",
+    "ON/OFF 전환 중 급감속 없음"
+   ],
+   "scenario": {
+    "duration_s": 55,
+    "lead_kph": 80,
+    "target_gap_m": 40,
+    "link_latency_ms": 300,
+    "vehicle_requests": [
+     {
+      "at_s": 3,
+      "kind": "query",
+      "label": "출발 후 Flag 조회",
+      "expect": "ON"
+     },
+     {
+      "at_s": 10,
+      "kind": "update",
+      "set": {
+       "quality": "STALE"
+      },
+      "label": "통신 품질 저하 보고",
+      "expect": "OFF"
+     },
+     {
+      "at_s": 18,
+      "kind": "update",
+      "set": {
+       "quality": "TRUSTED"
+      },
+      "label": "통신 회복 보고",
+      "expect": "ON"
+     },
+     {
+      "at_s": 26,
+      "kind": "update",
+      "set": {
+       "trim": "Modern"
+      },
+      "label": "trim 변경 보고 (신뢰 원천)",
+      "expect": "REJECTED"
+     },
+     {
+      "at_s": 32,
+      "kind": "override",
+      "value": false,
+      "label": "Flag 직접 변경 시도",
+      "expect": "REJECTED"
+     },
+     {
+      "at_s": 38,
+      "kind": "query",
+      "vin": "KMH-NX4-0101",
+      "label": "다른 차량 조회",
+      "expect": "REJECTED"
+     },
+     {
+      "at_s": 45,
+      "kind": "trial_accept",
+      "label": "IVI에서 체험 수락 (이미 체험 중)",
+      "expect": "GUARD_FAILED"
+     }
+    ],
+    "criteria": {
+     "gate": [
+      "request_latency",
+      "request_expected",
+      "max_decel",
+      "min_ttc",
+      "danger_time"
+     ],
+     "info": [
+      "misjudge"
+     ]
+    }
+   }
+  }
+ ]
+}

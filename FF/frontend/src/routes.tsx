@@ -77,6 +77,8 @@ const products = () => import('./screens/products/Products');
 const auditEvents = () => import('./screens/governance/AuditEvents');
 const policyScreens = () => import('./screens/policy/Policies');
 const runtimeScreens = () => import('./screens/policy/Runtime');
+const entitlementScreens = () => import('./screens/policy/Entitlements');
+const bizScreens = () => import('./screens/biz/TrialAnalytics');
 const virtualScreens = () => import('./screens/policy/Virtual');
 const fleetScreens = () => import('./screens/ops/FleetLive');
 const killScreens = () => import('./screens/ops/KillConsole');
@@ -159,7 +161,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/products/new', element: named(products, 'ProductCompose'), title: '새 상품 구성', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/products/:id/:ver', element: named(products, 'ProductDetail'), title: '상품 Version 상세', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/commerce/offer', element: named(plm, 'OfferComposition'), title: '상품 구성 (BDC 데모)', group: 'release', parent: '/products' },
-  { path: '/entitlements', element: named(runtimeScreens, 'EntitlementsScreen'), title: '사용 권한·체험권', group: 'release', menu: '/entitlements', components: ['D01-05'], v2: true },
+  { path: '/entitlements', element: named(entitlementScreens, 'EntitlementsScreen'), title: '사용 권한·체험권', group: 'release', menu: '/entitlements', components: ['D01-05', 'D05-04'], v2: true },
   { path: '/commerce/billing', element: named(specnew, 'Billing'), title: '과금 연계 (BDC 데모)', group: 'release', parent: '/entitlements', components: ['D05-04'] },
   { path: '/activation/decide', element: named(runtimeScreens, 'ActivationScreen'), title: '활성화 판단', group: 'release', menu: '/activation/decide', components: ['D01-04', 'D01-09', 'D05-01'], v2: true },
   { path: '/activation', element: def(() => import('./pages/activation')), title: '차종별 활성화 (BDC 데모)', group: 'release', parent: '/activation/decide' },
@@ -208,6 +210,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/admin/permissions', element: named(admin, 'PermissionsMatrix'), title: '권한 매트릭스', group: 'admin', parent: '/admin/users' },
   { path: '/admin/org', element: named(admin, 'OrgDomains'), title: '조직·도메인', group: 'admin', parent: '/admin/users' },
   { path: '/admin/security', element: named(specnew, 'Security'), title: '보안·인증서', group: 'admin', menu: '/admin/security', components: ['D06-10', 'D06-11'] },
+  { path: '/biz/trials', element: named(bizScreens, 'TrialAnalyticsScreen'), title: '체험 전환 분석', group: 'admin', menu: '/biz/trials', components: ['D05-06'], v2: true },
   { path: '/insights/business', element: named(specnew, 'Business'), title: '사업 지표', group: 'admin', menu: '/insights/business', components: ['D05-06'] },
   { path: '/insights/reports', element: named(insights, 'Reports'), title: '보고서', group: 'admin', parent: '/insights/business' },
   { path: '/cost', element: def(() => import('./pages/cost')), title: '비용', group: 'admin', parent: '/insights/business' },

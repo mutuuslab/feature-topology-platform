@@ -25,8 +25,7 @@ describe('차량 발신 요청 (D02-03 · D05-01)', () => {
   const value = (r: { body: { flags: { key: string; value: unknown }[] } }) => r.body.flags.find((f) => f.key === FLAG)?.value;
 
   beforeAll(async () => {
-    ({ app, http } = await bootApp());
-    app.get(Clock).set(at);
+    ({ app, http } = await bootApp({ at: at })); // 시드 기준일도 같은 날(체험권 날짜는 기준일 상대값)
   });
   afterAll(() => app.close());
 
@@ -118,14 +117,22 @@ describe('차량 발신 요청 (D02-03 · D05-01)', () => {
       expect(r.body.error.code).toBe('NOT_FOUND');
     });
 
-    it('IVI 체험 수락 → 1회 체험권 소진 → 체험 정책 OFF, 다시 수락하면 거부', async () => {
+    it('이미 체험 중인 차량의 IVI 체험 수락은 거부한다 (기간형 — 수락은 제안 중일 때 한 번)', async () => {
       const ents = (await http().get(`/api/entitlements?vin=${VIN}`).expect(200)).body.items;
-      const trial = ents.find((e: { catalogId: string; effective: boolean }) => e.catalogId === 'CAT-00019' && e.effective);
-      expect(trial).toBeDefined();
-      const r = await report({ type: 'TRIAL_ACCEPT', catalogId: 'CAT-00019' }).expect(200);
-      expect(r.body.grant).toMatchObject({ grantId: trial.grantId, status: 'CONSUMED', usesLeft: 0 });
-      expect(r.body.flags.find((f: { key: string }) => f.key === FLAG)).toMatchObject({ value: false, metadata: { platformReason: 'NO_ENTITLEMENT' } });
-      const again = await report({ type: 'TRIAL_ACCEPT', catalogId: 'CAT-00019' }).expect(422);
+      expect(ents.find((e: { catalogId: string }) => e.catalogId === 'CAT-00019')).toMatchObject({ state: 'ACTIVE', effective: true });
+      const r = await report({ type: 'TRIAL_ACCEPT', catalogId: 'CAT-00019' }).expect(422);
+      expect(r.body.error).toMatchObject({ code: 'GUARD_FAILED', message: expect.stringContaining('이미') });
+    });
+
+    it('제안 중인 차량(lead-01)이 IVI에서 수락 → 30일 체험 ON, 재평가 응답에 바로 반영', async () => {
+      const LEAD = 'lead-01';
+      const lead = (body: Record<string, unknown>, sequence: number) => http().post(`/vehicle/v1/${LEAD}/reports`).set(as(LEAD)).send({ bootId: 'BOOT-lead-01-1', sequence, observedAt: at, ...body });
+      const before = await http().post(`/vehicle/v1/${LEAD}/flags/${FLAG}`).set(as(LEAD)).send({}).expect(200);
+      expect(before.body).toMatchObject({ value: false, metadata: { platformReason: 'NO_ENTITLEMENT' } });
+      const r = await lead({ type: 'TRIAL_ACCEPT', catalogId: 'CAT-00019' }, 1).expect(200);
+      expect(r.body.grant).toMatchObject({ grantId: 'ENT-00003', status: 'ACTIVE', validFrom: '2026-10-12', validTo: '2026-11-10', daysLeft: 30 });
+      expect(r.body.flags.find((f: { key: string }) => f.key === FLAG)).toMatchObject({ value: true });
+      const again = await lead({ type: 'TRIAL_ACCEPT', catalogId: 'CAT-00019' }, 2).expect(422);
       expect(again.body.error.code).toBe('GUARD_FAILED');
     });
   });
@@ -170,7 +177,7 @@ describe('차량 발신 요청 (D02-03 · D05-01)', () => {
   });
 
   it('VIN별 빈도 한도를 넘으면 429 + Retry-After, 다른 차량은 영향 없음', async () => {
-    const send = () => http().post('/vehicle/v1/lead-01/flags').set(as('lead-01')).send({});
+    const send = () => http().post('/vehicle/v1/KMH-NX4-0002/flags').set(as('KMH-NX4-0002')).send({}); // 앞 시험에서 요청하지 않은 차량
     for (let i = 0; i < VEHICLE_RATE_LIMIT.requests; i++) await send().expect(200);
     const r = await send().expect(429);
     expect(r.body.error.code).toBe('RATE_LIMITED');

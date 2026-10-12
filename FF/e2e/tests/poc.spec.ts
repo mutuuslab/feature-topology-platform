@@ -34,10 +34,9 @@ test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·�
   // 42 컴포넌트 화면 — ⑥ 단계 필터에서 긴급 차단 컴포넌트는 또렷하다
   await page.goto('/arch/components?step=6');
   await expect(page.getByRole('button', { name: /D03-03 긴급 기능 차단 구현/ })).toHaveAttribute('data-dim', 'false');
-  await expect(page.getByRole('button', { name: /D05-04 과금 시스템 연계 계획/ })).toHaveAttribute('data-dim', 'true');
+  await expect(page.getByRole('button', { name: /D05-05 현장 지원 포털 계획/ })).toHaveAttribute('data-dim', 'true');
 
   // OF-3 — PoC 차단을 정리하고, 구독 권한이 있는 KMH-NX4-0001을 따로 차단해 웹 SDK 값 변화를 본다
-  // (ego-01 체험권은 앞선 e2e가 이미 썼을 수 있어 해제 후에도 OFF일 수 있다)
   const H = { 'X-Actor-Id': 'e2e.ops', 'X-Actor-Role': 'OPERATOR' };
   const release = async () => {
     for (const k of (await (await request.get(`${API}/api/kill-requests?status=ACTIVE`)).json()).items) {

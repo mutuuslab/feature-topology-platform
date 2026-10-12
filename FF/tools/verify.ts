@@ -24,6 +24,7 @@ const STEPS: Step[] = [
   { id: 'typecheck:frontend', title: '프론트 타입 검사', cmd: `${npx} tsc -b`, cwd: 'frontend' },
   { id: 'lint:tokens', title: '디자인 토큰 lint', cmd: `node tools/lint-tokens.ts` },
   { id: 'lint:copy', title: '문구 lint', cmd: `node tools/lint-copy.ts` },
+  { id: 'vecu:check', title: 'vECU 웹 실행본 정합 (허용 목록·해시·금지어)', cmd: `node --test tools/vecu-sync.test.ts && node tools/vecu-sync.ts --check` },
   { id: 'data:check', title: '데이터셋 픽스처 정합', cmd: `node tools/dataset/check.ts`, when: () => existsSync(join(FF, 'tools', 'dataset', 'check.ts')) },
   { id: 'openapi', title: 'OpenAPI 최신 여부', cmd: `node tools/openapi.ts --check` },
   { id: 'test:contracts', title: 'contracts 테스트', cmd: `${npm} test -w @ff/contracts` },

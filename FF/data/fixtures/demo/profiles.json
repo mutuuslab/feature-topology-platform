@@ -1,0 +1,14 @@
+[
+  { "vin": "ego-01", "region": "수도권", "ageBand": "40대", "drivingStyle": "고속도로", "adasUsage": "높음" },
+  { "vin": "lead-01", "region": "수도권", "ageBand": "30대", "drivingStyle": "도심", "adasUsage": "보통" },
+  { "vin": "KMH-NX4-0001", "region": "영남", "ageBand": "50대", "drivingStyle": "장거리", "adasUsage": "높음" },
+  { "vin": "KMH-NX4-0002", "region": "충청", "ageBand": "20대", "drivingStyle": "도심", "adasUsage": "낮음" },
+  { "vin": "KMH-NX4-0003", "region": "호남", "ageBand": "60대+", "drivingStyle": "혼합", "adasUsage": "보통" },
+  { "vin": "KMH-NX4-0004", "region": "강원·제주", "ageBand": "40대", "drivingStyle": "장거리", "adasUsage": "보통" },
+  { "vin": "KMH-NX4-0101", "region": "수도권", "ageBand": "30대", "drivingStyle": "혼합", "adasUsage": "보통" },
+  { "vin": "KMH-GN7-0001", "region": "수도권", "ageBand": "50대", "drivingStyle": "도심", "adasUsage": "낮음" },
+  { "vin": "KMH-NE-0001", "region": "영남", "ageBand": "30대", "drivingStyle": "고속도로", "adasUsage": "높음" },
+  { "vin": "TMA-NX4-0001", "region": "DE", "ageBand": "40대", "drivingStyle": "고속도로", "adasUsage": "보통" },
+  { "vin": "TMA-NX4-0002", "region": "FR", "ageBand": "60대+", "drivingStyle": "도심", "adasUsage": "낮음" },
+  { "vin": "HMA-NX4-0001", "region": "West", "ageBand": "40대", "drivingStyle": "장거리", "adasUsage": "높음" }
+]

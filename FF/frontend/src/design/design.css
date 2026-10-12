@@ -693,8 +693,13 @@ button.ds-gate:hover {
 /* ── 화면 골격 ─────────────────────────────────────── */
 .ds-screen {
   display: grid;
+  /* 한 열을 화면 폭에 묶는다 — 줄바꿈 없는 넓은 표가 열(=본문)을 넓히지 않고 표 안에서 가로 스크롤되게 */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-4);
   max-width: 1600px;
+}
+.ds-screen > * {
+  min-width: 0;
 }
 .ds-page {
   display: flex;
@@ -786,6 +791,9 @@ button.ds-gate:hover {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
+}
+.ds-field--inline .ds-field__label {
+  white-space: nowrap;
 }
 .ds-field__label {
   font-size: var(--fs-xs);
@@ -1340,4 +1348,120 @@ textarea.ds-input {
   .ds-poc-steps {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+/* ---------- 데이터 시각화 (체험 전환 분석) — 표지만 계열 색, 글자는 글자 색, 격자는 1px 실선 ---------- */
+.ds-viz {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: var(--sp-3);
+}
+.ds-viz svg {
+  display: block;
+  overflow: visible;
+}
+.ds-viz svg:focus-visible,
+.ds-viz rect[tabindex]:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.ds-viz__label {
+  fill: var(--ink-2);
+  font-size: var(--fs-sm);
+}
+.ds-viz__value {
+  fill: var(--ink);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ds-viz__value--sm {
+  font-size: var(--fs-xs);
+}
+.ds-viz__muted {
+  fill: var(--faint);
+  font-weight: 400;
+  font-size: var(--fs-xs);
+}
+.ds-viz__tick {
+  fill: var(--faint);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+.ds-viz__grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.ds-viz__cross {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+.ds-viz__dot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.ds-viz__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-2);
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+}
+.ds-viz__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.ds-viz__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.ds-viz__key {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+}
+.ds-viz__tip {
+  position: absolute;
+  z-index: 5;
+  min-width: 140px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--surface);
+  box-shadow: var(--shadow-2, none);
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  pointer-events: none;
+}
+.ds-viz__tip-title {
+  margin-bottom: var(--sp-1);
+  color: var(--faint);
+}
+.ds-viz__tip-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.ds-viz__tip-row strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+/* KPI 5칸 한 줄 — 4칸 격자에서 마지막 칸이 홀로 내려가지 않게 */
+.ds-kpis.ds-kpis--5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+@media (max-width: 1365px) {
+  .ds-kpis.ds-kpis--5 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.ds-nowrap {
+  white-space: nowrap;
 }

@@ -106,6 +106,10 @@ const FE_OPS = 'frontend/src/__tests__/screensOps.test.tsx';
 const E2E_OPS = 'e2e/tests/ops.spec.ts';
 const BE_VREQ = 'backend/test/d02/vehicle-requests.spec.ts';
 const CT_VREQ = 'contracts/src/rules/vehicle-requests.test.ts';
+const BE_TRIAL = 'backend/test/d05/trials.spec.ts';
+const CT_TRIAL = 'contracts/src/rules/trial.test.ts';
+const FE_TRIAL = 'frontend/src/__tests__/screensTrials.test.tsx';
+const E2E_TRIAL = 'e2e/tests/trials.spec.ts';
 const VALIDATOR: Impl = { screens: ['/policies/:id', '/validations'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL], via: ['validatePolicy'] };
 /** via — 자기 API 없이 다른 컴포넌트의 라우트 안에서 호출되는 컴포넌트(예: 병렬 검증기)가 그 라우트 이름을 적는다 */
 type Impl = Pick<ComponentEntry, 'screens' | 'tests'> & { via?: string[] };
@@ -116,7 +120,10 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D01-10': { screens: ['/audit'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
   'D04-04': { screens: ['/events'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
   'D01-04': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
-  'D01-05': { screens: ['/entitlements'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL] },
+  'D01-05': { screens: ['/entitlements'], tests: [BE_POL, BE_TRIAL, CT_TRIAL, 'contracts/src/flags/evaluate.test.ts', FE_TRIAL, E2E_TRIAL] },
+  // 기간형 체험권 → 구매 전환·체험 전환 분석 (2026-10-13)
+  'D05-04': { screens: ['/entitlements'], tests: [BE_TRIAL, FE_TRIAL, E2E_TRIAL] },
+  'D05-06': { screens: ['/biz/trials'], tests: [BE_TRIAL, CT_TRIAL, FE_TRIAL, E2E_TRIAL] },
   'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'contracts/src/rules/unleash.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts'] },
   'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
   'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },

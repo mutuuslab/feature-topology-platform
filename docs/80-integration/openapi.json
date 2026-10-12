@@ -3002,6 +3002,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3017,13 +3025,203 @@
         }
       }
     },
-    "/api/entitlements/{grantId}/consume": {
-      "post": {
-        "summary": "체험 수락 → 1회 체험권 사용",
+    "/api/trials": {
+      "get": {
+        "summary": "체험권 차량 목록 (상태·성향 필터)",
         "tags": [
           "D01-05"
         ],
-        "operationId": "consumeEntitlement",
+        "operationId": "trials",
+        "parameters": [
+          {
+            "name": "catalogId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vehicleModel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trim",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ageBand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "drivingStyle",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "adasUsage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trials/offers": {
+      "post": {
+        "summary": "차량별 체험 제안 (14일 안에 수락)",
+        "tags": [
+          "D01-05"
+        ],
+        "operationId": "offerTrials",
+        "description": "허용 역할: 상품 작성자, 운영자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "catalogId": {
+                    "type": "string",
+                    "pattern": "^CAT-\\d{5}$"
+                  },
+                  "vins": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    },
+                    "minItems": 1,
+                    "maxItems": 200
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "catalogId",
+                  "vins"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trials/{grantId}/accept": {
+      "post": {
+        "summary": "체험 수락 → 30일 기능 ON",
+        "tags": [
+          "D01-05"
+        ],
+        "operationId": "acceptTrial",
         "description": "허용 역할: 운영자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
@@ -3064,6 +3262,178 @@
           },
           "422": {
             "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trials/{grantId}/decline": {
+      "post": {
+        "summary": "체험 거절",
+        "tags": [
+          "D01-05"
+        ],
+        "operationId": "declineTrial",
+        "description": "허용 역할: 운영자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trials/{grantId}/purchase": {
+      "post": {
+        "summary": "체험 → 구독·구매 전환 (과금 연계)",
+        "tags": [
+          "D05-04"
+        ],
+        "operationId": "purchaseTrial",
+        "description": "허용 역할: 운영자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "plan": {
+                    "type": "string",
+                    "enum": [
+                      "구독",
+                      "구매"
+                    ]
+                  }
+                },
+                "required": [
+                  "plan"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/biz/trials": {
+      "get": {
+        "summary": "체험 전환 분석 (수락률·전환율·성향별·주별)",
+        "tags": [
+          "D05-06"
+        ],
+        "operationId": "trialAnalytics",
+        "parameters": [
+          {
+            "name": "catalogId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupBy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "weeks",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
           }
         }
       }

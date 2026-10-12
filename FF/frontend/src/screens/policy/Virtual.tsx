@@ -137,6 +137,18 @@ function RunTable({ rows, currentHash, onOpen }: { rows: VRun[]; currentHash?: s
 }
 
 /** 정책 상세의 가상검증 패널 — 이 정책 내용으로 돌린 실행만 검증기 근거가 된다 */
+/** FF 사이트와 함께 배포된 vECU 시뮬레이터(/vecu/, tools/vecu-sync.ts) — ?ffv=<Feature>면 Gate 시험 콘솔과 그 Feature 샘플을 연다 */
+export const VECU_WEB = import.meta.env.VITE_VECU_URL ?? `${import.meta.env.BASE_URL}vecu/index.html`;
+export const vecuLink = (featureId: string) => `${VECU_WEB}?ffv=${encodeURIComponent(featureId)}`;
+
+export function SimulatorLink({ featureId }: { featureId: string }) {
+  return (
+    <a href={vecuLink(featureId)} target="_blank" rel="noopener" title={T.openSimHint} data-testid="vecu-link">
+      {T.openSim} ↗
+    </a>
+  );
+}
+
 export function VirtualPanel({ policy }: { policy: { policyId: string; featureId: string; contentHash: string } }) {
   const sc = useApi<{ items: Scenario[] }>('virtualScenarios', { query: { featureId: policy.featureId } });
   const runs = useApi<{ items: VRun[] }>('virtualRuns', { query: { policyId: policy.policyId } });
@@ -158,7 +170,7 @@ export function VirtualPanel({ policy }: { policy: { policyId: string; featureId
     >
       <div style={{ display: 'grid', gap: 'var(--sp-2)' }}>
         <p className="ds-field__hint">
-          {scenarios.map((s) => `${s.scenarioId} → ${s.validator}`).join(' · ')} · <Link to="/validations/virtual">{T.title} →</Link>
+          {scenarios.map((s) => `${s.scenarioId} → ${s.validator}`).join(' · ')} · <Link to="/validations/virtual">{T.title} →</Link> · <SimulatorLink featureId={policy.featureId} />
         </p>
         <ErrorNote error={run.error} />
         <AsyncView state={asyncState(runs, !Array.isArray(runs.data?.items) || runs.data!.items.length === 0)} error={runs.error?.message} onRetry={() => runs.refetch()} rows={2}>
@@ -184,7 +196,7 @@ export function VirtualValidationScreen() {
   const rows = runs.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-03 · D04-02 · vECU" title={T.title} lead={T.lead} />
+      <PageHeader eyebrow="D06-03 · D04-02 · vECU" title={T.title} lead={T.lead} actions={<SimulatorLink featureId="FEAT-00022" />} />
       <div className="ds-split">
         <Panel title={T.status} id="vecu" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
           {status.data && (

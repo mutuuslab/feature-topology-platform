@@ -1,0 +1,103 @@
+{
+  "source": "C:/project/2026-10-11_vECU",
+  "syncedAt": "2026-10-12T22:59:32.972Z",
+  "note": "tools/vecu-sync.ts가 만든 복사본 — 여기서 고치지 말고 vECU 원본을 고친 뒤 다시 동기화",
+  "files": {
+    "assets/car.glb.b64.txt": {
+      "sha256": "223c2086279f5964073869344632786462ac8faa810c3e45d9116fa54e87e0f7",
+      "bytes": 4700524
+    },
+    "assets/quarry_01_1k.hdr.b64.txt": {
+      "sha256": "34cf74f86e108b029784f1b2786608d82ac088c0a57448dc94826d8b118c0792",
+      "bytes": 1970604
+    },
+    "assets/venice_sunset_1k.hdr.b64.txt": {
+      "sha256": "4e7e1230bacc14d21363a49d897c1370ca7caca7e432f249349403351a01f015",
+      "bytes": 1863712
+    },
+    "ff/FEAT-00022_sample.json": {
+      "sha256": "1097cc787519f0c562b1910fe9746d7e8fc85c070422c6cdddbb827504c4aead",
+      "bytes": 9966
+    },
+    "ff/FEAT-00023_sample.json": {
+      "sha256": "b3bc09b8f661bb4849b18dbfcc3cb95c39f9bd5348473d4f49dfc00d61d3b423",
+      "bytes": 8989
+    },
+    "ff/FEAT-00024_sample.json": {
+      "sha256": "13164ee87d5438b03f93b62266d8b563ced87f9364d114b3e83273a91342a4fd",
+      "bytes": 11277
+    },
+    "index.html": {
+      "sha256": "940ed8701e8917ab3fb2e13776b45fdbb123d498005526413ec3dadf997ba42f",
+      "bytes": 25899
+    },
+    "js/bake.js": {
+      "sha256": "e786605cc63c8c0d62373aa77c1f68318d18610eb87550ac116c20895a58cd0e",
+      "bytes": 6874
+    },
+    "js/features/feat00022.js": {
+      "sha256": "2f38bcaf2f4e2955084410d332706aadc3c7719b869953e5cf4d1e0bc707e83e",
+      "bytes": 2449
+    },
+    "js/features/feat00023.js": {
+      "sha256": "bfce5e0a8a8d18a501fed34dcf4f2abcd3a8f29cd38f8d11b4b79eb1b60374d1",
+      "bytes": 2450
+    },
+    "js/features/feat00024.js": {
+      "sha256": "0abde457061d87c2ae232462469ebe31f270413101b386885185af7b933f11dc",
+      "bytes": 2197
+    },
+    "js/ffval.js": {
+      "sha256": "2dc72940b14ded7cec567f62e8715c814c1231dd450f903e3a8a758dbf709771",
+      "bytes": 49364
+    },
+    "js/ffvui.js": {
+      "sha256": "28dee9a129b292e8c0ef7f2f171c174a5719f4fd91bb3798989bb4a154fc5e23",
+      "bytes": 34989
+    },
+    "js/ivi.js": {
+      "sha256": "016207a09b9244699f37f25a3aa181227526e82ee7a971f09925c2e484f12cf2",
+      "bytes": 18289
+    },
+    "js/main.js": {
+      "sha256": "b2e2ded7fdf6da4c9cfd0938b2a9d282c74dfe7edd3c45a2aff180b5c08be90f",
+      "bytes": 53333
+    },
+    "js/odr.js": {
+      "sha256": "c4a9dfd5623ede5096b73b003c7dd2070cdebf78de50d5703cc3dc58a39352a5",
+      "bytes": 11393
+    },
+    "js/render.js": {
+      "sha256": "2eef8891c33a047a72785db39b87bb5702a70a6ef1128761d0e544675a98dbb8",
+      "bytes": 7058
+    },
+    "js/sim.js": {
+      "sha256": "61219b1cab8423ca4146f504b495350e8e7f9d8912bea0164bb945c28a33b9b3",
+      "bytes": 19091
+    },
+    "js/splat.js": {
+      "sha256": "69632ba828dadb9dfbc2d9708168060e8cc64987fad16ae0dee87ea537acfe9d",
+      "bytes": 17042
+    },
+    "js/util.js": {
+      "sha256": "909e560e7f7a102f6073e9b34994091a9c55b6e007c5f8245d0791eea6d498dc",
+      "bytes": 3782
+    },
+    "js/vehicles.js": {
+      "sha256": "0c8645f4fccb6320bb0f23c1e302eaf69d8017d080b8386fbdf6836e2f219a24",
+      "bytes": 46064
+    },
+    "js/vendor/ff_evaluate.js": {
+      "sha256": "c1ddd580c29d4a9055a1f2fe91d2a873a560346dcdf920a22897fb22e8b25dfe",
+      "bytes": 9896
+    },
+    "js/world.js": {
+      "sha256": "801e645ca8149ed9e1590322d010e6c13916776b6b4120fd492752ceae88b94b",
+      "bytes": 32094
+    },
+    "js/zip.js": {
+      "sha256": "f4f2384b09b1fac1dc0e44fc1bea7f8c261adc40d7f5eafe669f294b9a845776",
+      "bytes": 2403
+    }
+  }
+}

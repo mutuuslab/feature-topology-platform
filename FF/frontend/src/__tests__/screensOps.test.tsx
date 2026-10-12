@@ -190,6 +190,15 @@ describe('vECU 가상검증', () => {
     await waitFor(() => expect(posted('/api/virtual-validations/VV-00001/tms')).toBeTruthy());
   });
 
+  it('함께 배포된 vECU 시뮬레이터를 새 탭으로 연다 (/vecu/, ?ffv=Feature)', async () => {
+    handler = api(RUN({}));
+    mount('/validations/virtual', '/validations/virtual', <VirtualValidationScreen />, 'quality');
+    const link = await screen.findByTestId('vecu-link');
+    expect(link.getAttribute('href')).toBe('/vecu/index.html?ffv=FEAT-00022');
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toBe('noopener');
+  });
+
   it('vECU 미연결 결과에는 TMS 제출이 없다', async () => {
     handler = api(RUN({ source: 'unavailable', simulator: null, testId: null, overall: 'UNAVAILABLE', gateResult: 'UNAVAILABLE', criteria: [], evidence: null, error: 'VECU_MODE=off' }));
     mount('/validations/virtual', '/validations/virtual', <VirtualValidationScreen />, 'quality');

@@ -215,10 +215,15 @@ export class VehicleRequestService {
         return { changed };
       }
       case 'TRIAL_ACCEPT': {
-        const trial = this.entitlements.grants(vin).find((g) => g.catalogId === body.catalogId && g.kind === '체험' && g.effective);
-        if (!trial) throw new DomainError('GUARD_FAILED', `${vin}에 사용할 수 있는 ${body.catalogId} 체험권이 없습니다.`, { catalogId: body.catalogId });
-        const grant = this.entitlements.consume(actor, trial.grantId);
-        return { grant: { grantId: grant.grantId, status: grant.status, usesLeft: grant.usesLeft } };
+        // 기간형 체험권 — 제안 중(OFFERED)인 체험만 수락한다. 수락일부터 30일 ON
+        const trials = this.entitlements.grants(vin).filter((g) => g.catalogId === body.catalogId && g.kind === '체험');
+        const offered = trials.find((g) => g.state === 'OFFERED');
+        if (!offered) {
+          const active = trials.find((g) => g.state === 'ACTIVE');
+          throw new DomainError('GUARD_FAILED', active ? `${vin}은(는) 이미 ${body.catalogId} 체험 중입니다 (${active.validTo}까지).` : `${vin}에 수락할 수 있는 ${body.catalogId} 체험 제안이 없습니다.`, { catalogId: body.catalogId });
+        }
+        const grant = this.entitlements.accept(actor, offered.grantId);
+        return { grant: { grantId: grant.grantId, status: grant.status, validFrom: grant.validFrom, validTo: grant.validTo, daysLeft: grant.daysLeft } };
       }
       case 'FAULT': {
         const fault = { featureId: body.featureId, code: body.code, severity: body.severity, detail: body.detail ?? null, observedAt: body.observedAt, bootId: body.bootId, sequence: body.sequence };

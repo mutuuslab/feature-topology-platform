@@ -22,3 +22,4 @@ export * from './rules/unleash';
 export * from './rules/access';
 export * from './rules/variant';
 export * from './flags/openfeature';
+export * from './rules/trial';

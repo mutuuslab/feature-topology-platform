@@ -10,7 +10,7 @@
     "note": "FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지"
   },
   "implementedComponents": {
-    "value": 33,
+    "value": 35,
     "direction": "min",
     "note": "구현 완료 컴포넌트 수 — 줄어들 수 없다"
   },

@@ -89,22 +89,4 @@ test('정책: 작성 → 8종 검증 GO → 승인 → Feature VERIFIED → 서�
   await expect(page.getByRole('region', { name: 'OFREP 응답 (IF-10)' }).locator('pre')).toContainText(`"key": "${flagKey}"`);
 });
 
-test('활성화 판단: 체험권 수락 → 권한 소진 → 체험 정책이 OFF로 바뀐다', async ({ page, request }) => {
-  // ego-01의 CAT-00019 체험권(1회)이 시드 상태여야 한다 — 이미 쓰였다면 이 흐름은 건너뛴다
-  const ents = await (await request.get(`${API}/api/entitlements?vin=ego-01`)).json();
-  const trial = ents.items.find((e: { catalogId: string; effective: boolean }) => e.catalogId === 'CAT-00019' && e.effective);
-  test.skip(!trial, '시드 체험권이 이미 사용됨 (재사용 서버)');
-
-  await asRole(page, 'operator');
-  await page.goto('/activation/decide?vin=ego-01&flagKey=care_00022_param');
-  await expect(page.getByRole('region', { name: '판단 결과' }).locator('.ds-verdict-big')).toContainText('ON');
-
-  await page.goto('/entitlements');
-  const row = page.getByRole('row', { name: new RegExp(trial.grantId) });
-  await row.getByRole('button', { name: '체험 수락 처리' }).click();
-  await expect(row.getByRole('button', { name: '체험 수락 처리' })).toHaveCount(0);
-
-  await page.goto('/activation/decide?vin=ego-01&flagKey=care_00022_param');
-  await expect(page.getByRole('region', { name: '판단 결과' }).locator('.ds-verdict-big')).toContainText('OFF');
-  await expect(page.locator('.ds-trace li[data-step="ENTITLEMENT"]')).toHaveAttribute('data-result', 'FALSE');
-});
+// 체험권 제안·수락·구매 전환 흐름은 trials.spec.ts

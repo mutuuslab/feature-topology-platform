@@ -17,7 +17,7 @@ import {
   UpdateProductDraftBody,
   ValidateCompositionBody,
 } from './schemas/api';
-import { CreatePolicyBody, OfrepBody, PolicyDecisionBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
+import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { KeyRotateBody, KillCreateBody, ReadbackBody } from './schemas/ops';
 import { RunVirtualBody } from './rules/virtual';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
@@ -109,8 +109,13 @@ export const ROUTES: RouteDef[] = [
 
   // 사용 권한 (D01-05) · 적용 대상 (D01-04) · 활성화 제어 (D01-09)
   { name: 'vehicles', method: 'GET', path: '/api/vehicles', summary: '데모 Fleet 차량', component: 'D01-04' },
-  { name: 'entitlements', method: 'GET', path: '/api/entitlements', summary: '사용 권한 (체험권·구독·구매)', component: 'D01-05', query: ['vin'] },
-  { name: 'consumeEntitlement', method: 'POST', path: '/api/entitlements/:grantId/consume', summary: '체험 수락 → 1회 체험권 사용', component: 'D01-05', roles: ['OPERATOR', 'SYSTEM'], body: EmptyBody },
+  { name: 'entitlements', method: 'GET', path: '/api/entitlements', summary: '사용 권한 (체험권·구독·구매)', component: 'D01-05', query: ['vin', 'source'] },
+  { name: 'trials', method: 'GET', path: '/api/trials', summary: '체험권 차량 목록 (상태·성향 필터)', component: 'D01-05', query: ['catalogId', 'state', 'source', 'country', 'region', 'vehicleModel', 'trim', 'ageBand', 'drivingStyle', 'adasUsage', 'q', 'page', 'pageSize'] },
+  { name: 'offerTrials', method: 'POST', path: '/api/trials/offers', summary: '차량별 체험 제안 (14일 안에 수락)', component: 'D01-05', roles: ['PRODUCT_AUTHOR', 'OPERATOR', 'SYSTEM'], body: OfferTrialsBody },
+  { name: 'acceptTrial', method: 'POST', path: '/api/trials/:grantId/accept', summary: '체험 수락 → 30일 기능 ON', component: 'D01-05', roles: ['OPERATOR', 'SYSTEM'], body: EmptyBody },
+  { name: 'declineTrial', method: 'POST', path: '/api/trials/:grantId/decline', summary: '체험 거절', component: 'D01-05', roles: ['OPERATOR', 'SYSTEM'], body: DeclineTrialBody },
+  { name: 'purchaseTrial', method: 'POST', path: '/api/trials/:grantId/purchase', summary: '체험 → 구독·구매 전환 (과금 연계)', component: 'D05-04', roles: ['OPERATOR', 'SYSTEM'], body: PurchaseTrialBody },
+  { name: 'trialAnalytics', method: 'GET', path: '/api/biz/trials', summary: '체험 전환 분석 (수락률·전환율·성향별·주별)', component: 'D05-06', query: ['catalogId', 'groupBy', 'source', 'weeks'] },
   { name: 'cohort', method: 'GET', path: '/api/targeting/cohort', summary: 'FP-COHORT-1 코호트 소속', component: 'D01-04', query: ['flagKey', 'basisPoints'], sample: { flagKey: 'care_00022_param' } },
   { name: 'activationDecide', method: 'GET', path: '/api/activation/decide', summary: '서버 기준 활성화 판단 (평가 근거)', component: 'D01-09', query: ['vin', 'flagKey'], sample: { vin: 'ego-01', flagKey: 'care_00022_param' } },
 

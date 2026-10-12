@@ -2,11 +2,13 @@
 import { Module } from '@nestjs/common';
 import { D01PolicyModule } from '../d01-policy/d01-policy.module';
 import { OfrepController, OfrepService } from './api-gateway/ofrep.controller';
+import { BillingController, BillingService } from './billing/billing.controller';
+import { BizMetricsController, BizMetricsService } from './biz-metrics/biz-metrics.controller';
 
 @Module({
   imports: [D01PolicyModule],
-  controllers: [OfrepController],
-  providers: [OfrepService],
+  controllers: [OfrepController, BillingController, BizMetricsController],
+  providers: [OfrepService, BillingService, BizMetricsService],
   exports: [OfrepService],
 })
 export class D05ExtModule {}

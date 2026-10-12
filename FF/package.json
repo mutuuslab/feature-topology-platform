@@ -29,6 +29,8 @@
     "data:check": "node tools/dataset/check.ts",
     "openapi": "node tools/openapi.ts",
     "snapshot:api": "node tools/snapshot-api.ts",
+    "vecu:sync": "node tools/vecu-sync.ts",
+    "vecu:check": "node tools/vecu-sync.ts --check",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",
     "unleash:down": "docker compose -f docker/unleash/docker-compose.yml down",
     "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web"

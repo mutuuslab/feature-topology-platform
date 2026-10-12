@@ -243,7 +243,7 @@ export class PocWorkflow {
           }
         });
         Object.assign(step.evidence, { trial: grants.active, demoDecision: demo, allow: counts.ALLOW, deny: counts.DENY, hold: counts.HOLD });
-        if (!demo.startsWith('ON')) step.note = `시연 차량 ${DEMO}이(가) ${demo} — 체험권이 이미 쓰였으면 ON이 되지 않습니다`;
+        if (!demo.startsWith('ON')) step.note = `시연 차량 ${DEMO}이(가) ${demo} — 체험 기간이 끝났으면 ON이 되지 않습니다`;
         step.status = 'DONE';
         return;
       }
@@ -268,6 +268,15 @@ export class PocWorkflow {
         const of = await this.act(step, 'ofrepEvaluate', p.vehicle(DEMO), (x: any) => `OpenFeature ${x.value ? 'ON' : 'OFF'} ${x.reason}`, () => this.ofrep.one(FLAG, { context: { targetingKey: DEMO } } as any));
         Object.assign(step.evidence, { bundle: bundle?.publicationId ?? null, sameAsDeployed: bundle?.publicationId === run.refs.publicationId, vehicleValue: local?.local.value ?? null, openFeature: (of as any).value, openFeatureReason: (of as any).reason });
         if (bundle?.publicationId !== run.refs.publicationId) throw new Error(`${DEMO}이(가) 이번 게시본(${run.refs.publicationId})을 적용하지 않았습니다`);
+        // 체험 제안 — 두 번째 차량에 제안 중인 체험권이 있으면 IVI에서 수락(TRIAL_ACCEPT) → 수락일부터 30일 ON
+        const offered = this.entitlements.grants(SECOND).find((g) => g.catalogId === 'CAT-00019' && g.kind === '체험' && g.state === 'OFFERED');
+        if (offered) {
+          await this.hello(run, step, SECOND);
+          const acc = await this.act(step, 'vehicleReport', p.vehicle(SECOND), (x: any) => `TRIAL_ACCEPT ${x.grant.grantId} → ${x.grant.validTo}까지 ON`, () =>
+            this.vehicleRequests.report(p.vehicle(SECOND), SECOND, { type: 'TRIAL_ACCEPT', catalogId: 'CAT-00019', bootId: this.boot(run, SECOND), sequence: this.next(run, SECOND), observedAt: this.clock.iso() } as any, NO_RES),
+          );
+          Object.assign(step.evidence, { trialAccepted: `${SECOND} ${(acc as any).grant.grantId} ~${(acc as any).grant.validTo}` });
+        } else Object.assign(step.evidence, { trialAccepted: `${SECOND} 제안 중인 체험 없음` });
         step.status = 'DONE';
         return;
       }

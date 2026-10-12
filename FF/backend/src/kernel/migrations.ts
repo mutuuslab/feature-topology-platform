@@ -218,4 +218,13 @@ CREATE INDEX quality_feedback_feature ON quality_feedback(feature_id, status);
 CREATE TABLE poc_run (run_id TEXT PRIMARY KEY, status TEXT NOT NULL, started_at TEXT NOT NULL, doc TEXT NOT NULL);
 `,
   },
+  {
+    // 기간형 체험권 — 차량 가명 성향(국가·지역·차종·트림·연령대·주행 성향·ADAS 사용)과 데모/합성 구분
+    name: '011_trial_analytics',
+    sql: `
+CREATE TABLE vehicle_profile (vin TEXT PRIMARY KEY, source TEXT NOT NULL, doc TEXT NOT NULL);
+ALTER TABLE entitlement ADD COLUMN source TEXT NOT NULL DEFAULT 'DEMO';
+CREATE INDEX entitlement_catalog ON entitlement(catalog_id, source);
+`,
+  },
 ];

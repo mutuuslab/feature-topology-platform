@@ -1,4 +1,4 @@
-// /entitlements — 사용 권한·체험권(D01-05) · /activation/decide — 서버 활성화 판단(D01-09, PoC ③)
+// /activation/decide — 서버 활성화 판단(D01-09, PoC ③). 사용 권한·체험권 화면은 Entitlements.tsx
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
@@ -9,61 +9,7 @@ import { AsyncView, Button, DataTable, ErrorNote, IdChip, PageHeader, Panel, Sel
 import { usePermission } from '../shared';
 import { OpenFeaturePanel } from './OpenFeaturePanel';
 
-const E = ko.entitlement;
 const A = ko.activation;
-
-interface Grant {
-  grantId: string;
-  vin: string;
-  catalogId: string;
-  kind: string;
-  validFrom: string;
-  validTo: string;
-  usesLeft: number | null;
-  status: string;
-  effective: boolean;
-}
-
-export function EntitlementsScreen() {
-  const q = useApi<{ items: Grant[] }>('entitlements');
-  const perm = usePermission(['OPERATOR', 'SYSTEM']);
-  const consume = useApiMutation('consumeEntitlement', ['entitlements', 'activationDecide', 'events', 'audit']);
-  const rows = q.data?.items ?? [];
-  const C = E.col;
-  return (
-    <div className="ds-screen">
-      <PageHeader eyebrow="D01-05 · ENTITLEMENT" title={E.title} lead={E.lead} />
-      <ErrorNote error={consume.error} />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
-        <DataTable
-          caption={E.title}
-          rows={rows}
-          rowKey={(r) => r.grantId}
-          columns={[
-            { key: 'g', header: C.grant, cell: (r) => <span className="ds-mono">{r.grantId}</span>, sort: (r) => r.grantId },
-            { key: 'vin', header: C.vin, cell: (r) => <span className="ds-mono">{r.vin}</span>, sort: (r) => r.vin },
-            { key: 'cat', header: C.catalog, cell: (r) => <IdChip id={r.catalogId} copy={false} /> },
-            { key: 'kind', header: C.kind, cell: (r) => <span className="ds-tag">{r.kind}</span> },
-            { key: 'period', header: C.period, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.validFrom} ~ {r.validTo}</span> },
-            { key: 'uses', header: C.uses, cell: (r) => <span className="ds-mono">{r.usesLeft ?? E.unlimited}</span>, align: 'right' },
-            { key: 'st', header: C.status, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.status}</span> },
-            { key: 'eff', header: C.effective, cell: (r) => <VerdictBadge value={r.effective ? 'PASS' : 'FAIL'} /> },
-            {
-              key: 'act',
-              header: '',
-              cell: (r) =>
-                r.kind === '체험' && r.effective ? (
-                  <Button disabled={!perm.ok || consume.isPending} title={perm.hint} onClick={() => consume.mutate({ params: { grantId: r.grantId }, body: {} })}>
-                    {E.consume}
-                  </Button>
-                ) : null,
-            },
-          ]}
-        />
-      </AsyncView>
-    </div>
-  );
-}
 
 interface Decision {
   vehicle: { vin: string; label: string; quality: string };

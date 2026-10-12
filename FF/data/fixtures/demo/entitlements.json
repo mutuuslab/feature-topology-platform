@@ -1,5 +1,9 @@
 [
-  { "grantId": "ENT-00001", "vin": "ego-01", "catalogId": "CAT-00019", "kind": "체험", "validFrom": "2026-10-01", "validTo": "2026-10-31", "usesLeft": 1, "status": "ACTIVE" },
-  { "grantId": "ENT-00002", "vin": "KMH-NX4-0001", "catalogId": "CAT-00013", "kind": "구독", "validFrom": "2026-09-22", "validTo": "2027-08-31", "usesLeft": null, "status": "ACTIVE" },
-  { "grantId": "ENT-00003", "vin": "lead-01", "catalogId": "CAT-00019", "kind": "체험", "validFrom": "2026-10-01", "validTo": "2026-10-31", "usesLeft": 0, "status": "CONSUMED" }
+  { "grantId": "ENT-00001", "vin": "ego-01", "catalogId": "CAT-00019", "kind": "체험", "status": "ACTIVE", "offeredDays": -14, "acceptedDays": -11, "fromDays": -11, "toDays": 18, "trialDays": 30, "note": "PoC 시연 차량 — 체험 중" },
+  { "grantId": "ENT-00002", "vin": "KMH-NX4-0001", "catalogId": "CAT-00013", "kind": "구독", "status": "ACTIVE", "fromDays": -21, "toDays": 343, "note": "구독" },
+  { "grantId": "ENT-00003", "vin": "lead-01", "catalogId": "CAT-00019", "kind": "체험", "status": "OFFERED", "offeredDays": -2, "fromDays": -2, "toDays": 11, "note": "체험 제안 중 — IVI에서 수락하면 30일 ON" },
+  { "grantId": "ENT-00004", "vin": "KMH-GN7-0001", "catalogId": "CAT-00019", "kind": "체험", "status": "DECLINED", "offeredDays": -40, "fromDays": -40, "toDays": -27, "note": "제안 거절" },
+  { "grantId": "ENT-00005", "vin": "HMA-NX4-0001", "catalogId": "CAT-00019", "kind": "체험", "status": "CONVERTED", "offeredDays": -55, "acceptedDays": -50, "fromDays": -50, "toDays": -21, "trialDays": 30, "convertedDays": -35, "convertedPlan": "구독", "note": "체험 중 구독 전환" },
+  { "grantId": "ENT-00006", "vin": "HMA-NX4-0001", "catalogId": "CAT-00019", "kind": "구독", "status": "ACTIVE", "fromDays": -35, "toDays": 330, "fromTrial": "ENT-00005", "note": "체험에서 전환된 구독" },
+  { "grantId": "ENT-00007", "vin": "TMA-NX4-0001", "catalogId": "CAT-00019", "kind": "체험", "status": "ACTIVE", "offeredDays": -70, "acceptedDays": -60, "fromDays": -60, "toDays": -31, "trialDays": 30, "note": "체험 기간 만료(구매 안 함)" }
 ]

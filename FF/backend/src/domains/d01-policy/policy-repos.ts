@@ -1,6 +1,6 @@
 // 정책·검증 이력·차량·사용 권한 저장소 (키 열 + doc JSON)
 import { Inject, Injectable } from '@nestjs/common';
-import { canonicalJson, PolicySpec, type Entitlement, type Policy, type Vehicle } from '@ff/contracts';
+import { canonicalJson, PolicySpec, type Entitlement, type Policy, type Vehicle, type VehicleProfile } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { DB, type Db } from '../../kernel/db';
 import type { ValidatorResult } from '@ff/contracts';
@@ -118,8 +118,30 @@ export class FleetRepo {
   updateVehicle(v: Vehicle) {
     this.db.run('UPDATE vehicle SET doc = ? WHERE vin = ?', JSON.stringify(v), v.vin);
   }
-  grants(vin?: string): Entitlement[] {
-    return vin ? parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE vin = ? ORDER BY grant_id', vin)) : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement ORDER BY grant_id'));
+  /** 차량을 지정하면 그 차량의 전부, 아니면 데모 권한만(합성 모집단은 통계·목록 화면에서 따로 고른다) */
+  grants(vin?: string, source: 'DEMO' | 'SYNTHETIC' | 'ALL' = 'DEMO'): Entitlement[] {
+    if (vin) return parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE vin = ? ORDER BY grant_id', vin));
+    return source === 'ALL' ? parse<Entitlement>(this.db.all('SELECT doc FROM entitlement ORDER BY grant_id')) : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE source = ? ORDER BY grant_id', source));
+  }
+  grantsForCatalog(catalogId: string, source: 'DEMO' | 'SYNTHETIC' | 'ALL'): Entitlement[] {
+    return source === 'ALL'
+      ? parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE catalog_id = ? ORDER BY grant_id', catalogId))
+      : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE catalog_id = ? AND source = ? ORDER BY grant_id', catalogId, source));
+  }
+  insertGrant(e: Entitlement) {
+    this.db.run('INSERT INTO entitlement (grant_id, vin, catalog_id, status, source, doc) VALUES (?, ?, ?, ?, ?, ?)', e.grantId, e.vin, e.catalogId, e.status, e.source, JSON.stringify(e));
+  }
+  /** 데모 권한 다음 번호 — 합성(ENT-S…)과 섞이지 않는다 */
+  nextGrantId(): string {
+    const r = this.db.get<{ m: string | null }>("SELECT max(grant_id) AS m FROM entitlement WHERE grant_id NOT LIKE 'ENT-S%'");
+    return `ENT-${pad(r?.m ? Number(r.m.slice(4)) + 1 : 1, 5)}`;
+  }
+  profiles(): Map<string, VehicleProfile> {
+    return new Map(parse<VehicleProfile>(this.db.all('SELECT doc FROM vehicle_profile')).map((p) => [p.vin, p]));
+  }
+  profile(vin: string): VehicleProfile | undefined {
+    const r = this.db.get<{ doc: string }>('SELECT doc FROM vehicle_profile WHERE vin = ?', vin);
+    return r ? JSON.parse(r.doc) : undefined;
   }
   grant(id: string): Entitlement | undefined {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM entitlement WHERE grant_id = ?', id);

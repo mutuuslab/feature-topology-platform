@@ -1,6 +1,6 @@
 // 정책·검증·권한·대상·활성화·단계 배포 API (PoC ②③)
 import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
-import { CreatePolicyBody, PolicyDecisionBody, RolloutStageBody, UpdatePolicyBody } from '@ff/contracts';
+import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, PolicyDecisionBody, RolloutStageBody, SEGMENT_DIMENSIONS, UpdatePolicyBody } from '@ff/contracts';
 import { z } from 'zod';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { DomainError } from '../../../kernel/errors';
@@ -96,16 +96,38 @@ export class RuntimeController {
   }
 
   @Get('entitlements')
-  grants(@Query('vin') vin?: string) {
-    return { items: this.entitlements.grants(vin) };
+  grants(@Query('vin') vin?: string, @Query('source') source?: string) {
+    return { items: this.entitlements.grants(vin, source) };
   }
 
-  @Post('entitlements/:grantId/consume')
+  @Get('trials')
+  trials(@Query() q: Record<string, string | undefined>) {
+    const segment = Object.fromEntries(SEGMENT_DIMENSIONS.map((d) => [d, q[d]]));
+    return this.entitlements.trials({ catalogId: q.catalogId, state: q.state, source: q.source, q: q.q, page: q.page ? Number(q.page) : undefined, pageSize: q.pageSize ? Number(q.pageSize) : undefined, segment });
+  }
+
+  @Post('trials/offers')
+  @HttpCode(201)
+  @Roles('PRODUCT_AUTHOR', 'OPERATOR', 'SYSTEM')
+  @AuditAction('TRIAL_OFFER')
+  offerTrials(@CurrentActor() actor: Actor, @Body(new ZodPipe(OfferTrialsBody)) body: OfferTrialsBody) {
+    return this.entitlements.offer(actor, body);
+  }
+
+  @Post('trials/:grantId/accept')
   @HttpCode(200)
   @Roles('OPERATOR', 'SYSTEM')
-  @AuditAction('ENTITLEMENT_CONSUME')
-  consume(@CurrentActor() actor: Actor, @Param('grantId') grantId: string, @Body(new ZodPipe(z.object({}).strict())) _b: object) {
-    return this.entitlements.consume(actor, grantId);
+  @AuditAction('TRIAL_ACCEPT')
+  acceptTrial(@CurrentActor() actor: Actor, @Param('grantId') grantId: string, @Body(new ZodPipe(z.object({}).strict())) _b: object) {
+    return this.entitlements.accept(actor, grantId);
+  }
+
+  @Post('trials/:grantId/decline')
+  @HttpCode(200)
+  @Roles('OPERATOR', 'SYSTEM')
+  @AuditAction('TRIAL_DECLINE')
+  declineTrial(@CurrentActor() actor: Actor, @Param('grantId') grantId: string, @Body(new ZodPipe(DeclineTrialBody)) b: { reason?: string }) {
+    return this.entitlements.decline(actor, grantId, b.reason);
   }
 
   @Get('targeting/cohort')

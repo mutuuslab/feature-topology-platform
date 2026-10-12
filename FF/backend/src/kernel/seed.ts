@@ -2,7 +2,8 @@
 // 이미 적재된 DB(meta.seed 존재)는 건드리지 않는다 — 운영 중 변경을 덮어쓰지 않기 위해.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { DATASET_FILES, EntitlementSchema, VehicleSchema, type Dataset } from '@ff/contracts';
+import { addDays, DATASET_FILES, EntitlementSchema, syntheticTrials, VehicleSchema, type Dataset, type Entitlement, type VehicleProfile } from '@ff/contracts';
+import { z } from 'zod';
 import type { Db } from './db';
 
 export const DEFAULT_FIXTURES = join(__dirname, '..', '..', '..', 'data', 'fixtures', 'v0.81');
@@ -47,15 +48,85 @@ export function seedDataset(db: Db, ds: Dataset, label = 'v0.81'): { seeded: boo
   return { seeded: true, counts };
 }
 
-/** 데모 Fleet·사용 권한 시드 — 데이터셋 시드와 별개로 한 번만 */
-export function seedDemo(db: Db, dir = process.env.FF_DEMO_FIXTURES ?? DEMO_FIXTURES): boolean {
+/** 시드 기준일(KST) — FF_CLOCK_AT(시험 고정 시각)이 있으면 그 날, 없으면 오늘. 데모 권한 날짜는 이 날 기준 상대값이다 */
+export function seedAnchor(): string {
+  const t = process.env.FF_CLOCK_AT ? new Date(process.env.FF_CLOCK_AT) : new Date();
+  return new Date(t.getTime() + 9 * 3600_000).toISOString().slice(0, 10);
+}
+
+/** 데모 권한 픽스처 — 날짜는 기준일로부터의 일수(고정 날짜는 시간이 지나면 데모를 깨뜨린다) */
+const DemoGrant = z
+  .object({
+    grantId: z.string(),
+    vin: z.string(),
+    catalogId: z.string(),
+    kind: z.enum(['구독', '구매', '체험']),
+    status: z.string(),
+    offeredDays: z.number().int().optional(),
+    acceptedDays: z.number().int().optional(),
+    fromDays: z.number().int(),
+    toDays: z.number().int(),
+    trialDays: z.number().int().optional(),
+    convertedDays: z.number().int().optional(),
+    convertedPlan: z.enum(['구독', '구매']).optional(),
+    fromTrial: z.string().optional(),
+    note: z.string().optional(),
+  })
+  .strict();
+const DemoProfile = z.object({ vin: z.string(), region: z.string(), ageBand: z.string(), drivingStyle: z.string(), adasUsage: z.string() }).strict();
+
+export function demoGrants(dir: string, anchor: string): Entitlement[] {
+  const d = (n: number | undefined) => (n === undefined ? null : addDays(anchor, n));
+  return DemoGrant.array()
+    .parse(JSON.parse(readFileSync(join(dir, 'entitlements.json'), 'utf8')))
+    .map((g) =>
+      EntitlementSchema.parse({
+        grantId: g.grantId,
+        vin: g.vin,
+        catalogId: g.catalogId,
+        kind: g.kind,
+        status: g.status,
+        validFrom: d(g.fromDays),
+        validTo: d(g.toDays),
+        offeredAt: d(g.offeredDays),
+        acceptedAt: d(g.acceptedDays),
+        trialDays: g.trialDays ?? null,
+        convertedAt: d(g.convertedDays),
+        convertedPlan: g.convertedPlan ?? null,
+        fromTrial: g.fromTrial ?? null,
+        note: g.note ?? null,
+        source: 'DEMO',
+      }),
+    );
+}
+
+/** 합성 모집단 크기 — FF_SYNTHETIC=0이면 넣지 않는다(기본 3000대) */
+const syntheticSize = () => {
+  const n = Number(process.env.FF_SYNTHETIC ?? 3000);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+};
+
+/** 데모 Fleet·사용 권한·차량 성향 + 통계용 합성 체험 모집단 시드 — 데이터셋 시드와 별개로 한 번만 */
+export function seedDemo(db: Db, dir = process.env.FF_DEMO_FIXTURES ?? DEMO_FIXTURES, anchor = seedAnchor()): boolean {
   if (db.get("SELECT value FROM meta WHERE key = 'seed-demo'")) return false;
   const fleet = VehicleSchema.array().parse(JSON.parse(readFileSync(join(dir, 'fleet.json'), 'utf8')));
-  const ents = EntitlementSchema.array().parse(JSON.parse(readFileSync(join(dir, 'entitlements.json'), 'utf8')));
+  const ents = demoGrants(dir, anchor);
+  const byVin = new Map(fleet.map((v) => [v.vin, v]));
+  const profiles: VehicleProfile[] = DemoProfile.array()
+    .parse(JSON.parse(readFileSync(join(dir, 'profiles.json'), 'utf8')))
+    .map((p) => {
+      const v = byVin.get(p.vin);
+      if (!v) throw new Error(`profiles.json: Fleet에 없는 차량 ${p.vin}`);
+      return { ...p, vin: v.vin, country: v.country, vehicleModel: v.vehicleModel, trim: v.trim, source: 'DEMO' } as VehicleProfile;
+    });
+  const syn = syntheticSize() ? syntheticTrials(syntheticSize(), anchor) : { profiles: [], grants: [] };
+  const insertGrant = (e: Entitlement) => db.run('INSERT INTO entitlement (grant_id, vin, catalog_id, status, source, doc) VALUES (?, ?, ?, ?, ?, ?)', e.grantId, e.vin, e.catalogId, e.status, e.source, JSON.stringify(e));
   db.tx(() => {
     for (const v of fleet) db.run('INSERT INTO vehicle (vin, doc) VALUES (?, ?)', v.vin, JSON.stringify(v));
-    for (const e of ents) db.run('INSERT INTO entitlement (grant_id, vin, catalog_id, status, doc) VALUES (?, ?, ?, ?, ?)', e.grantId, e.vin, e.catalogId, e.status, JSON.stringify(e));
-    db.run("INSERT INTO meta (key, value) VALUES ('seed-demo', 'v1')");
+    for (const e of ents) insertGrant(e);
+    for (const p of [...profiles, ...syn.profiles]) db.run('INSERT INTO vehicle_profile (vin, source, doc) VALUES (?, ?, ?)', p.vin, p.source, JSON.stringify(p));
+    for (const e of syn.grants) insertGrant(EntitlementSchema.parse(e));
+    db.run("INSERT INTO meta (key, value) VALUES ('seed-demo', ?)", `v2 ${anchor} synthetic=${syn.grants.length}`);
   });
   return true;
 }

@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { PolicyDetail, PolicyList, ValidationHistory } from '../screens/policy/Policies';
-import { ActivationScreen, EntitlementsScreen } from '../screens/policy/Runtime';
+import { ActivationScreen } from '../screens/policy/Runtime';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body: unknown };
 let handler: Handler;
@@ -117,33 +117,7 @@ describe('검증 이력', () => {
   });
 });
 
-const GRANTS = {
-  items: [
-    { grantId: 'ENT-00001', vin: 'ego-01', catalogId: 'CAT-00019', kind: '체험', validFrom: '2026-10-01', validTo: '2026-10-31', usesLeft: 1, status: 'ACTIVE', effective: true },
-    { grantId: 'ENT-00002', vin: 'KMH-NX4-0001', catalogId: 'CAT-00013', kind: '구독', validFrom: '2026-09-22', validTo: '2027-08-31', usesLeft: null, status: 'ACTIVE', effective: true },
-    { grantId: 'ENT-00003', vin: 'lead-01', catalogId: 'CAT-00019', kind: '체험', validFrom: '2026-10-01', validTo: '2026-10-31', usesLeft: 0, status: 'CONSUMED', effective: false },
-  ],
-};
-
-describe('사용 권한·체험권', () => {
-  it('유효한 체험권에만 수락 처리 버튼이 있고, 운영자만 누를 수 있다', async () => {
-    handler = (_url, init) => (init?.method === 'POST' ? { status: 201, body: GRANTS.items[0] } : { body: GRANTS });
-    mount('/entitlements', '/entitlements', <EntitlementsScreen />, 'operator');
-    await screen.findByText('ENT-00003');
-    const buttons = screen.getAllByRole('button', { name: '체험 수락 처리' });
-    expect(buttons).toHaveLength(1);
-    expect(screen.getByText('무제한')).toBeTruthy();
-    fireEvent.click(buttons[0]);
-    await waitFor(() => expect(calls.some((c) => c.url === '/api/entitlements/ENT-00001/consume' && c.init?.method === 'POST')).toBe(true));
-  });
-
-  it('운영자가 아니면 수락 처리 버튼이 비활성이다', async () => {
-    handler = () => ({ body: GRANTS });
-    mount('/entitlements', '/entitlements', <EntitlementsScreen />, 'author');
-    const b = await screen.findByRole('button', { name: '체험 수락 처리' });
-    expect((b as HTMLButtonElement).disabled).toBe(true);
-  });
-});
+// 사용 권한·체험권 화면은 screensTrials.test.tsx
 
 const VEHICLES = { items: [{ vin: 'ego-01', label: 'PoC 시연 차량', quality: 'TRUSTED' }, { vin: 'KMH-NX4-0003', label: '문맥 지연', quality: 'STALE' }] };
 const TRACE = [

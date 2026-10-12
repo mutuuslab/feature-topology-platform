@@ -6,7 +6,6 @@ import { INestApplication } from '@nestjs/common';
 import { ErrorCode, OpenFeature, type Client } from '@openfeature/server-sdk';
 import { OFREPProvider } from '@openfeature/ofrep-provider';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { Clock } from '../../src/kernel/clock';
 import { actor, bootApp } from '../helpers';
 
 const FLAG = 'care_00022_param';
@@ -17,8 +16,7 @@ describe('OpenFeature SDK ↔ FF OFREP (OF-1·OF-4)', () => {
   let client: Client;
   beforeAll(async () => {
     process.env.GLEO_MODE = 'internal';
-    ({ app, http } = await bootApp());
-    app.get(Clock).set('2026-10-12T01:00:00.000Z');
+    ({ app, http } = await bootApp({ at: '2026-10-12T01:00:00.000Z' })); // 시드 기준일도 같은 날(체험권 날짜는 기준일 상대값)
     await app.listen(0, '127.0.0.1');
     const { port } = app.getHttpServer().address() as AddressInfo;
     await OpenFeature.setProviderAndWait('ff', new OFREPProvider({ baseUrl: `http://127.0.0.1:${port}` }));

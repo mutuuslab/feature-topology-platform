@@ -88,17 +88,38 @@ export const VehicleSchema = z.object({
 });
 export type Vehicle = z.infer<typeof VehicleSchema>;
 
+/**
+ * 사용 권한 — 구독·구매·체험. 체험은 기간형(2026-10-13 결정): OFFERED(제안, validFrom~validTo = 제안 유효기간)
+ * → ACTIVE(수락, validFrom~validTo = 체험 기간) → EXPIRED / DECLINED / CONVERTED(구독·구매로 전환). 날짜가 지나면 grantState가 EXPIRED로 본다.
+ */
 export const EntitlementSchema = z.object({
-  grantId: z.string().regex(/^ENT-\d{5}$/),
+  grantId: z.string().regex(/^ENT-S?\d{5}$/),
   vin: z.string(),
   catalogId: z.string().regex(/^CAT-\d{5}$/),
   kind: z.enum(['구독', '구매', '체험']),
   validFrom: z.string(),
   validTo: z.string(),
-  usesLeft: z.number().int().min(0).nullable(),
-  status: z.enum(['ACTIVE', 'CONSUMED', 'EXPIRED', 'REVOKED']),
+  usesLeft: z.number().int().min(0).nullable().default(null),
+  status: z.enum(['OFFERED', 'ACTIVE', 'DECLINED', 'EXPIRED', 'CONVERTED', 'REVOKED']),
+  offeredAt: z.string().nullable().default(null),
+  acceptedAt: z.string().nullable().default(null),
+  trialDays: z.number().int().positive().nullable().default(null),
+  convertedAt: z.string().nullable().default(null),
+  convertedPlan: z.enum(['구독', '구매']).nullable().default(null),
+  /** 체험에서 전환되어 생긴 권한이면 그 체험 */
+  fromTrial: z.string().nullable().default(null),
+  source: z.enum(['DEMO', 'SYNTHETIC']).default('DEMO'),
+  note: z.string().nullable().default(null),
 });
 export type Entitlement = z.infer<typeof EntitlementSchema>;
+
+/** 체험 제안 — 차량별로 따로 발급한다(같은 상품의 열린 체험·전환 이력이 있으면 건너뜀) */
+export const OfferTrialsBody = z.object({ catalogId: z.string().regex(/^CAT-\d{5}$/), vins: z.array(z.string().min(3)).min(1).max(200), note: z.string().trim().max(200).optional() }).strict();
+export type OfferTrialsBody = z.infer<typeof OfferTrialsBody>;
+export const DeclineTrialBody = z.object({ reason: z.string().trim().max(200).optional() }).strict();
+/** 체험 → 구매 전환 (D05-04 과금 연계 모의) */
+export const PurchaseTrialBody = z.object({ plan: z.enum(['구독', '구매']) }).strict();
+export type PurchaseTrialBody = z.infer<typeof PurchaseTrialBody>;
 
 export const DecideBody = z.object({ vin: z.string().min(3), flagKey: z.string().min(3) }).strict();
 export type DecideBody = z.infer<typeof DecideBody>;

@@ -307,6 +307,8 @@
 /* 본문 */
 .sh-main {
   grid-area: main;
+  /* 본문 안의 absolute 요소(표 캡션 .ds-sr 등)가 문서 기준으로 배치돼 셸 바깥을 늘리지 않게 */
+  position: relative;
   overflow: auto;
   padding: var(--sp-4) var(--sp-6) var(--sp-10);
   background-color: var(--paper);

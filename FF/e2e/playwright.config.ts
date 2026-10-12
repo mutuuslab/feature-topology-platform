@@ -28,7 +28,11 @@ export default defineConfig({
     trace: 'retain-on-failure',
     ...devices['Desktop Chrome'],
   },
-  projects: [{ name: 'chromium' }],
+  // poc.spec은 FEAT-00022를 실제로 긴급 차단·이상 건을 만든다 — 다른 시험이 모두 끝난 뒤 따로 돈다
+  projects: [
+    { name: 'chromium', testIgnore: /poc\.spec\.ts/ },
+    { name: 'poc', testMatch: /poc\.spec\.ts/, dependencies: ['chromium'] },
+  ],
   webServer: [
     {
       command: 'npm run build -w feature-topology-backend && npm start -w feature-topology-backend',

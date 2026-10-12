@@ -40,6 +40,6 @@ const VALIDATORS = [
     ValidationService,
     DeploySafetyService,
   ],
-  exports: [ValidationService, DeploySafetyService],
+  exports: [ValidationService, DeploySafetyService, VirtualValidationService],
 })
 export class D06QsecModule {}

@@ -88,6 +88,8 @@ export const ROUTES: AppRoute[] = [
   // 1 홈
   { path: '/', element: named(home, 'RoleHome'), title: '내 대시보드', group: 'home', menu: '/' },
   { path: '/admin/approval', element: named(admin, 'ApprovalWorkflow'), title: '검토함', group: 'home', menu: '/admin/approval' },
+  { path: '/poc', element: named(() => import('./screens/home/Poc'), 'PocScreen'), title: 'PoC 6단계 진행', group: 'home', menu: '/poc', v2: true },
+  { path: '/arch/components', element: named(() => import('./screens/home/Architecture'), 'ArchitectureScreen'), title: '42 컴포넌트 아키텍처', group: 'home', menu: '/arch/components', v2: true },
   { path: '/admin/notifications', element: named(admin, 'NotificationsCenter'), title: '알림', group: 'home', parent: '/' },
   { path: '/login', element: named(home, 'Login'), title: '로그인', group: 'home', parent: '/' },
   { path: '/onboarding', element: named(home, 'Onboarding'), title: '시작하기', group: 'home', parent: '/' },

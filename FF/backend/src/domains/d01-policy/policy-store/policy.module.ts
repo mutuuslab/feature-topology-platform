@@ -12,5 +12,6 @@ import { UnleashController, UnleashSyncService } from './unleash-sync.service';
   imports: [D01PolicyModule, D06QsecModule, DeliveryModule],
   controllers: [PolicyController, RuntimeController, UnleashController],
   providers: [PolicyService, UnleashGateway, UnleashSyncService],
+  exports: [PolicyService, UnleashSyncService],
 })
 export class PolicyModule {}

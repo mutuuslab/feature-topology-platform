@@ -7,6 +7,7 @@ import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, IdChip, PageHeader, Panel, Select, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
+import { OpenFeaturePanel } from './OpenFeaturePanel';
 
 const E = ko.entitlement;
 const A = ko.activation;
@@ -154,9 +155,12 @@ export function ActivationScreen() {
                   ]}
                 />
               </Panel>
-              <Panel title={A.ofrep} eyebrow={`POST /ofrep/v1/evaluate/flags/${flagKey}`} id="ofrep">
-                <pre className="ds-code">{STATIC_MODE ? A.ofrepStatic : ofrep ? JSON.stringify(ofrep, null, 2) : '…'}</pre>
-              </Panel>
+              <div style={{ display: 'grid', gap: 'var(--sp-3)', alignContent: 'start' }}>
+                <OpenFeaturePanel vin={vin} flagKey={flagKey} serverValue={d.result.value} />
+                <Panel title={A.ofrep} eyebrow={`POST /ofrep/v1/evaluate/flags/${flagKey}`} id="ofrep">
+                  <pre className="ds-code">{STATIC_MODE ? A.ofrepStatic : ofrep ? JSON.stringify(ofrep, null, 2) : '…'}</pre>
+                </Panel>
+              </div>
             </div>
           </>
         )}

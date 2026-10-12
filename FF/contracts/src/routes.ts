@@ -166,6 +166,12 @@ export const ROUTES: RouteDef[] = [
   { name: 'iamMe', method: 'GET', path: '/api/iam/me', summary: '현재 행위자·허용 작업', component: 'D06-09' },
   { name: 'variantMatrix', method: 'GET', path: '/api/variants/:featureId/:version', summary: 'Variant·지원 조건 × Fleet 매트릭스', component: 'D02-01' },
   { name: 'vehicleSupport', method: 'GET', path: '/api/support/:vin', summary: '차량별 배포 Feature 지원 여부', component: 'D02-02' },
+  // PoC 6단계 러너 (P9) — 실제 서비스를 역할별 행위자로 차례로 실행·상태 저장, 42 컴포넌트 활동
+  { name: 'pocRuns', method: 'GET', path: '/api/poc/runs', summary: 'PoC 실행 목록', component: 'KERNEL' },
+  { name: 'pocRun', method: 'GET', path: '/api/poc/runs/:id', summary: 'PoC 실행 — 단계·행위·증적', component: 'KERNEL' },
+  { name: 'startPoc', method: 'POST', path: '/api/poc/runs', summary: 'PoC 실행 시작 (이전 PoC 차단 복구 후)', component: 'KERNEL', roles: ['OPERATOR', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER'], body: EmptyBody },
+  { name: 'advancePoc', method: 'POST', path: '/api/poc/runs/:id/advance', summary: 'PoC 다음 단계 실행 (진행 중 단계는 완료 확인)', component: 'KERNEL', roles: ['OPERATOR', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER'], body: EmptyBody },
+  { name: 'componentActivity', method: 'GET', path: '/api/components/activity', summary: '컴포넌트별 최근 활동 (이벤트·감사)', component: 'KERNEL', query: ['minutes'] },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

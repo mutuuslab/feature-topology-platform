@@ -212,4 +212,10 @@ CREATE TABLE quality_feedback (feedback_id TEXT PRIMARY KEY, feature_id TEXT NOT
 CREATE INDEX quality_feedback_feature ON quality_feedback(feature_id, status);
 `,
   },
+  {
+    name: '010_poc_run',
+    sql: `
+CREATE TABLE poc_run (run_id TEXT PRIMARY KEY, status TEXT NOT NULL, started_at TEXT NOT NULL, doc TEXT NOT NULL);
+`,
+  },
 ];

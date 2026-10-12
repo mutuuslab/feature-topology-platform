@@ -2,7 +2,7 @@
 // 평가는 활성화 제어(D01-09)의 단일 평가기. 차량은 targetingKey(=VIN)로 식별한다.
 // 오류 계약: 404 FLAG_NOT_FOUND(SDK는 기본값=Safe Default), 400 TARGETING_KEY_MISSING·INVALID_CONTEXT. bulk는 ETag/304.
 import { ArgumentsHost, Body, Catch, Controller, ExceptionFilter, Headers, HttpCode, HttpException, Injectable, Param, Post, Res, UseFilters } from '@nestjs/common';
-import { OfrepBody, type FlagResult } from '@ff/contracts';
+import { ignoredContext, OfrepBody, type FlagResult } from '@ff/contracts';
 import type { Response } from 'express';
 import { createHash } from 'node:crypto';
 import { ReadOnlyEndpoint } from '../../../kernel/actor';
@@ -49,15 +49,23 @@ export class OfrepService {
     return vin;
   }
 
+  /** OF-4 — 판단은 등록 정보로, SDK가 보낸 속성이 다르면 metadata로 알린다 */
+  private context(body: OfrepBody, vin: string) {
+    const ignored = ignoredContext(body.context as Record<string, unknown> | undefined, this.fleet.vehicle(vin)!);
+    return { contextSource: 'REGISTRY', ...(ignored.length && { ignoredContext: ignored.join(',') }) };
+  }
+
   async one(key: string, body: OfrepBody) {
     const vin = this.vin(body, key);
     if (!this.policies.deployed(key)) throw new HttpException({ key, errorCode: 'FLAG_NOT_FOUND', errorDetails: `배포된 flag가 없습니다 — SDK는 기본값(Safe Default)을 쓰세요.` }, 404);
-    return ofrep((await this.activation.decide(vin, key)).result);
+    const r = ofrep((await this.activation.decide(vin, key)).result);
+    return { ...r, metadata: { ...r.metadata, ...this.context(body, vin) } };
   }
 
   async bulk(body: OfrepBody) {
     const vin = this.vin(body);
-    return { flags: (await this.activation.decideAll(vin)).map(ofrep) };
+    const ctx = this.context(body, vin);
+    return { flags: (await this.activation.decideAll(vin)).map(ofrep).map((r) => ({ ...r, metadata: { ...r.metadata, ...ctx } })) };
   }
 }
 

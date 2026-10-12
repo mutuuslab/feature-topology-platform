@@ -6,10 +6,11 @@ import { D05ExtModule } from './domains/d05-ext/d05-ext.module';
 import { D06QsecModule } from './domains/d06-qsec/d06-qsec.module';
 import { DeliveryModule } from './domains/delivery.module';
 import { OpsLoopModule } from './domains/ops-loop.module';
+import { PocModule } from './workflows/poc.module';
 import { KernelModule } from './kernel/kernel.module';
 
 // 도메인 모듈(d01-policy … d06-qsec)은 단계별로 추가한다 — PROGRESS.md 참고.
 @Module({
-  imports: [KernelModule, D01PolicyModule, D06QsecModule, PolicyModule, DeliveryModule, OpsLoopModule, D04OpsModule, D05ExtModule],
+  imports: [KernelModule, D01PolicyModule, D06QsecModule, PolicyModule, DeliveryModule, OpsLoopModule, D04OpsModule, D05ExtModule, PocModule],
 })
 export class AppModule {}

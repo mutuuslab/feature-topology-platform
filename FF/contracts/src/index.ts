@@ -21,3 +21,4 @@ export * from './rules/anomaly';
 export * from './rules/unleash';
 export * from './rules/access';
 export * from './rules/variant';
+export * from './flags/openfeature';

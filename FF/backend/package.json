@@ -19,6 +19,8 @@
   },
   "devDependencies": {
     "@nestjs/testing": "^10.4.15",
+    "@openfeature/ofrep-provider": "^0.2.5",
+    "@openfeature/server-sdk": "^1.23.0",
     "@swc/core": "^1.7.26",
     "@types/express": "^4.17.21",
     "@types/node": "^24.0.0",

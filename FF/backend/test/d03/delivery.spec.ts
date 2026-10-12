@@ -26,8 +26,7 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
   let scheduler: Scheduler;
   let runtime: VehicleRuntimeService;
   beforeAll(async () => {
-    ({ app, http } = await bootApp());
-    app.get(Clock).set('2026-10-12T01:00:00.000Z');
+    ({ app, http } = await bootApp({ at: '2026-10-12T01:00:00.000Z' }));
     scheduler = app.get(Scheduler);
     runtime = app.get(VehicleRuntimeService);
   });

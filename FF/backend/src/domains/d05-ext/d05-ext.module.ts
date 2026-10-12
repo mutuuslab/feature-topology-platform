@@ -7,5 +7,6 @@ import { OfrepController, OfrepService } from './api-gateway/ofrep.controller';
   imports: [D01PolicyModule],
   controllers: [OfrepController],
   providers: [OfrepService],
+  exports: [OfrepService],
 })
 export class D05ExtModule {}

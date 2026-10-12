@@ -32,8 +32,7 @@ describe('운영 되먹임 — 이상 징후 대응 · 품질 피드백', () => 
 
   beforeAll(async () => {
     Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal' });
-    ({ app, http } = await bootApp());
-    app.get(Clock).set(at);
+    ({ app, http } = await bootApp({ at: at }));
   });
   afterAll(async () => {
     await app.close();

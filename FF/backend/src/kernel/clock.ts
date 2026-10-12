@@ -3,7 +3,8 @@ import { Injectable } from '@nestjs/common';
 /** 시간 원천 — 테스트에서 고정 시각으로 교체한다. */
 @Injectable()
 export class Clock {
-  private fixed: Date | null = null;
+  /** FF_CLOCK_AT — 시험 전용: 부팅 전부터 시각을 고정한다(부팅 때 잡히는 회신 기한도 같은 시계를 쓰게) */
+  private fixed: Date | null = process.env.FF_CLOCK_AT ? new Date(process.env.FF_CLOCK_AT) : null;
   now(): Date {
     return this.fixed ? new Date(this.fixed) : new Date();
   }

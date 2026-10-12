@@ -117,6 +117,9 @@ async function main() {
   for (const v of vehicles.items) await save('vehicleSupport', { vin: v.vin });
   await save('unleashStatus');
   for (const p of policies.items) await save('policyUnleash', { id: p.policyId });
+  // P9 — PoC 실행 목록(정적 데모는 실행 불가)·42 컴포넌트 활동
+  await save('pocRuns');
+  await save('componentActivity', {}, { minutes: 60 });
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

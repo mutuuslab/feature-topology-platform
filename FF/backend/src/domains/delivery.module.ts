@@ -23,6 +23,6 @@ import { PublicationController, SecureDeployService } from './d06-qsec/secure-de
   imports: [D01PolicyModule],
   controllers: [PkiController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, VariantConditionsController, SupportConditionsController],
   providers: [PublicationRepo, RuntimeRepo, ReadbackBus, PkiService, TelemetryService, GleoAdapter, VehicleRuntimeService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, KillService, RestoreService, VariantConditionsService, SupportConditionsService],
-  exports: [SecureDeployService, PkiService, VehicleRuntimeService, GleoAdapter],
+  exports: [SecureDeployService, PkiService, VehicleRuntimeService, GleoAdapter, PublicationRepo, KillService, RestoreService, VehicleRequestService],
 })
 export class DeliveryModule {}

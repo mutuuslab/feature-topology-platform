@@ -101,6 +101,7 @@ export const KillRequestSchema = z.object({
   releasedAt: z.string().nullable(),
   releaseReason: z.string().nullable(),
   restorePublicationId: z.string().nullable(),
+  anomalyId: z.string().nullable().default(null),
 });
 export type KillRequest = z.infer<typeof KillRequestSchema>;
 
@@ -114,6 +115,8 @@ export const KillCreateBody = z
     reason: z.string().trim().min(2).max(500),
     /** type-to-confirm — 차단할 Feature ID를 그대로 입력 */
     confirm: z.string(),
+    /** 이상 징후 대응(D06-12)에서 넘어온 차단 — 발령되면 그 이상 건이 조치됨(MITIGATED)이 된다 */
+    anomalyId: z.string().regex(/^ANM-\d{5}$/).optional(),
   })
   .strict();
 export type KillCreateBody = z.infer<typeof KillCreateBody>;

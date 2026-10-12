@@ -175,10 +175,10 @@ export function IncidentManager() {
       {twin && (
         <div className="card">
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <b>Digital Twin Closed Loop Incident ({twinIncidents.length})</b>
-            <button className="btn primary" onClick={() => nav('/twin/incident')}>Twin Incident 콘솔 →</button>
+            <b>차량 적용 Closed-Loop Incident ({twinIncidents.length})</b>
+            <button className="btn primary" onClick={() => nav('/twin/incident')}>Closed-Loop Incident 콘솔 →</button>
           </div>
-          <p className="small muted mt">차량 이상은 VIN 단위 Twin 상태에서 먼저 감지된다. 원인 분석 → Rollout 중단 → Kill-Switch/부분 복구 → 재수렴 확인까지 12단계 Closed Loop 로 처리한다.</p>
+          <p className="small muted mt">차량 이상은 VIN 단위 차량 적용 상태에서 먼저 감지된다. 원인 분석 → Rollout 중단 → Kill-Switch/부분 복구 → 재수렴 확인까지 12단계 Closed Loop 로 처리한다.</p>
           {twinIncidents.length ? (
             <div className="table-wrap mt"><table><thead><tr><th>Incident</th><th>Feature</th><th>심각도</th><th>상태</th><th>영향 VIN</th><th>원인</th></tr></thead>
               <tbody>{twinIncidents.map(i => (
@@ -190,7 +190,7 @@ export function IncidentManager() {
                   <td>{i.affectedVins.length}대</td>
                   <td className="small mono">{i.fault}</td>
                 </tr>))}</tbody></table></div>
-          ) : <p className="small muted mt">현재 Open Twin Incident 없음 — Fault Injection 으로 Closed Loop 를 시연할 수 있다.</p>}
+          ) : <p className="small muted mt">현재 Open Closed-Loop Incident 없음 — Fault Injection 으로 Closed Loop 를 시연할 수 있다.</p>}
         </div>
       )}
       <div className="row analytics-strip">

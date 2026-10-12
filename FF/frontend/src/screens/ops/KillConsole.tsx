@@ -1,7 +1,7 @@
 // /ops/kill — 긴급 차단·복구 (D03-03 · D03-04, PoC ⑥). 검증·승인을 거치지 않는 운영 경로.
 // 영향 범위(REQUIRES 의존·배포 flag·차량) 확인 → 복구 방식 → type-to-confirm → 서명·긴급 채널 → 차량 회신. 해제는 이전 상태 복구.
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
@@ -57,8 +57,11 @@ function NodeTable({ d, caption }: { d: Delivery; caption: string }) {
 
 function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   const perm = usePermission([...KILL_ROLES]);
-  const [featureId, setFeatureId] = useState('FEAT-00022');
-  const [featureVersion, setVersion] = useState('1.0.0');
+  // 이상 징후 대응(/ops/anomalies)에서 넘어오면 대상 Feature·이상 건을 채워 둔다
+  const [sp] = useSearchParams();
+  const anomalyId = sp.get('anomaly');
+  const [featureId, setFeatureId] = useState(sp.get('featureId') ?? 'FEAT-00022');
+  const [featureVersion, setVersion] = useState(sp.get('version') ?? '1.0.0');
   const [picked, setPicked] = useState<string[] | null>(null);
   const [safeMode, setSafeMode] = useState<'SAFE_DEFAULT' | 'SAFE_STOP'>('SAFE_DEFAULT');
   const [reason, setReason] = useState('');
@@ -111,6 +114,11 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
             </div>
           )}
         </AsyncView>
+        {anomalyId && (
+          <p className="ds-field__hint" role="status">
+            {K.fromAnomaly}: <Link to={`/ops/anomalies?id=${anomalyId}`}>{anomalyId}</Link>
+          </p>
+        )}
         <Segmented label={K.safeMode} options={(['SAFE_DEFAULT', 'SAFE_STOP'] as const).map((m) => ({ value: m, label: K.safeModes[m] }))} value={safeMode} onChange={(v) => setSafeMode(v as typeof safeMode)} />
         <Field label={ko.page.reason}>
           <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
@@ -131,7 +139,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
         onClose={() => setConfirm(false)}
         onConfirm={() =>
           issue.mutate(
-            { body: { featureId, featureVersion, vins, safeMode, reason, confirm: featureId } },
+            { body: { featureId, featureVersion, vins, safeMode, reason, confirm: featureId, ...(anomalyId && { anomalyId }) } },
             {
               onSuccess: (k) => {
                 setConfirm(false);

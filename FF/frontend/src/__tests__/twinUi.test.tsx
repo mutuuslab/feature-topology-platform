@@ -59,8 +59,8 @@ describe('§12.1 Twin Fleet 화면', () => {
   it('제목·KPI·VIN 표가 렌더된다', () => {
     renderTwin(<TwinFleet />, { route: '/twin/fleet', initial: '/twin/fleet' });
     // 화면 제목은 정본 이름을 쓴다 (구현 뷰 이름은 화면 안 「구현 뷰」 행과 같다).
-    expect(screen.getByRole('heading', { name: /Twin Fleet \(3D\)/ })).toBeInTheDocument();
-    expect(screen.getByText('전체 Twin')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Fleet 적용 현황 \(3D\)/ })).toBeInTheDocument();
+    expect(screen.getByText('전체 차량')).toBeInTheDocument();
     expect(screen.getByText('Local Guard 차단')).toBeInTheDocument();
     expect(screen.getByText('VIN-DEMO-001')).toBeInTheDocument();
     expect(screen.getByText(/표시 30 \/ 30대/)).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe('§12.2 Twin Impact Preview 화면', () => {
     renderTwin(<TwinImpact />, { route: '/twin/impact', initial: '/twin/impact' });
     expect(screen.getByRole('heading', { name: /Impact Preview/ })).toBeInTheDocument();
     // DEMO_TARGET_RULE(KR · 2027 · EV) 매칭 25대 / 전체 30대
-    expect(screen.getByText(/전체 Twin 30대 중 지역·차종·연식 조건 일치/)).toBeInTheDocument();
+    expect(screen.getByText(/전체 차량 30대 중 지역·차종·연식 조건 일치/)).toBeInTheDocument();
     expect(screen.getByText('Policy-only 가능')).toBeInTheDocument();
     expect(screen.getByText('⛔ Production Rollout 차단 중')).toBeInTheDocument();
     expect(screen.getByLabelText('impact scope')).toBeInTheDocument();
@@ -195,7 +195,7 @@ describe('§12.4 Vehicle Twin 상세 화면', () => {
 
   it('없는 VIN 은 EmptyState 로 안내한다', () => {
     renderTwin(<TwinVehicle />, { route: '/twin/vehicle/:vin', initial: '/twin/vehicle/VIN-NOPE' });
-    expect(screen.getByText(/차량 Twin 을 찾을 수 없습니다/)).toBeInTheDocument();
+    expect(screen.getByText(/차량 적용 상태를 찾을 수 없습니다/)).toBeInTheDocument();
   });
 });
 
@@ -293,9 +293,9 @@ describe('라우팅·네비게이션 통합', () => {
       </MemoryRouter>
       </QueryClientProvider>,
     );
-    expect(await screen.findByRole('heading', { name: /Twin Fleet/ }, { timeout: 5000 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Fleet 적용 현황 \(3D\)/ }, { timeout: 5000 })).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole('button', { name: '상세 →' })[0]);
-    expect(await screen.findByRole('heading', { name: /Vehicle Twin ·/ }, { timeout: 5000 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /차량 적용 상세 ·/ }, { timeout: 5000 })).toBeInTheDocument();
     // 레일 → 화면 → 구현 뷰 → 상세로 세 번 이동하므로 기본 5s 로는 부족하다(검증 대상은 이동 경로).
   }, 20000);
 
@@ -349,6 +349,6 @@ describe('라우팅·네비게이션 통합', () => {
         </AppProvider>
       </MemoryRouter>,
     );
-    expect(await screen.findByRole('heading', { name: /Twin Fleet/ })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Fleet 적용 현황 \(3D\)/ })).toBeInTheDocument();
   });
 });

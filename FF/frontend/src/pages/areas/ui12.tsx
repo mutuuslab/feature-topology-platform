@@ -288,7 +288,7 @@ function ruleRows(row: VehicleRow): RuleRow[] {
 interface Hop { atMs: number; stage: string; target: string; corr: string; result: string; owner: string }
 
 const HOP_STAGES = ['Capture', '검토', '허가', '서명발행', '전달', 'ECU Guard', 'readback'];
-const HOP_OWNERS = ['운영자', '품질 담당', '정책 승인자', '서명 서비스', '배포 파이프라인', '차량 Agent', 'Twin 서비스'];
+const HOP_OWNERS = ['운영자', '품질 담당', '정책 승인자', '서명 서비스', '배포 파이프라인', '차량 Agent', '차량 상태 서비스'];
 
 function hops(row: VehicleRow, nowMs: number): Hop[] {
   const k = hashStr(row.vin + 'hops');
@@ -517,7 +517,7 @@ export function VehicleApplied() {
           <Table head={S01_COLS}>
             {shown.map(r => (
               <tr key={r.vin} onClick={() => { setPick(r.vin); setPanel('A01'); }} style={{ cursor: 'pointer', background: r.vin === row.vin ? 'var(--surface-2)' : undefined }}>
-                <td className="mono small">{r.vin}{r.twinBacked && <span className="pill" style={{ marginLeft: 6 }}>Twin</span>}</td>
+                <td className="mono small">{r.vin}{r.twinBacked && <span className="pill" style={{ marginLeft: 6 }}>상태 연동</span>}</td>
                 <td>{r.desired === 'ON' ? 'ON (켜기)' : 'OFF (끄기)'}</td>
                 <td><Pill s={`${STATE_KO[r.state]} (${r.state})`} tone={STATE_TONE[r.state]} /></td>
                 <td className="mono small">{r.rollout}</td>
@@ -536,13 +536,13 @@ export function VehicleApplied() {
           <button className={`btn small ${panel === 'A02' ? 'primary' : ''}`} onClick={() => { setPanel('A02'); audit('UI12-S01-A02', `출시 대상과 정책 버전 확인 ${row.rollout}`); }}>출시 대상과 정책 버전 확인</button>
           <button className={`btn small ${panel === 'A03' ? 'primary' : ''}`} onClick={() => { setPanel('A03'); audit('UI12-S01-A03', `국가 차종 Trim Variant 참조 ${row.region}/${row.model}/${row.trim}`); }}>국가 차종 Trim Variant 참조</button>
           <Gated label="새로고침 (읽기 전용)" reasons={refreshReasons} onClick={() => { setRefreshedAt(nowMs); setCheck({}); audit('UI12-S01-REFRESH', '스냅샷 읽기 전용 새로고침'); toast(`${row.vin} 스냅샷을 읽기 전용으로 다시 읽었다`, 'ok'); }} />
-          <Link className="btn small" to={`/twin/vehicle/${row.vin}`}>3D 트윈 열기</Link>
+          <Link className="btn small" to={`/twin/vehicle/${row.vin}`}>3D 차량 상세 열기</Link>
         </div>
 
         <div className="card mt">
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
             <b className="small">UI12-S01-D · {row.vin}</b>
-            <span className="pill">{row.twinBacked ? 'Twin 인스턴스' : '합성 스냅샷'}</span>
+            <span className="pill">{row.twinBacked ? '차량 상태 연동' : '합성 스냅샷'}</span>
           </div>
           {panel === 'A01' && (
             <div className="kv small mt">

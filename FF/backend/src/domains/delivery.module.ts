@@ -9,6 +9,8 @@ import { D01PolicyModule } from './d01-policy/d01-policy.module';
 import { VehicleRequestRepo } from './d02-runtime/vehicle-requests/vehicle-request.repo';
 import { VehicleRequestController, VehicleRequestLogController, VehicleRequestService } from './d02-runtime/vehicle-requests/vehicle-request.service';
 import { VehicleRuntimeController, VehicleRuntimeService } from './d02-runtime/vehicle-runtime/vehicle-runtime.service';
+import { VariantConditionsController, VariantConditionsService } from './d02-runtime/variant-conditions/variant.service';
+import { SupportConditionsController, SupportConditionsService } from './d02-runtime/support-conditions/support.service';
 import { KillController, KillService } from './d03-safety/kill-switch/kill.service';
 import { RestoreController, RestoreService } from './d03-safety/restore/restore.service';
 import { PipelineController, PipelineService } from './d04-ops/pipeline-link/pipeline.service';
@@ -19,8 +21,8 @@ import { PublicationController, SecureDeployService } from './d06-qsec/secure-de
 
 @Module({
   imports: [D01PolicyModule],
-  controllers: [PkiController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController],
-  providers: [PublicationRepo, RuntimeRepo, ReadbackBus, PkiService, TelemetryService, GleoAdapter, VehicleRuntimeService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, KillService, RestoreService],
+  controllers: [PkiController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, VariantConditionsController, SupportConditionsController],
+  providers: [PublicationRepo, RuntimeRepo, ReadbackBus, PkiService, TelemetryService, GleoAdapter, VehicleRuntimeService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, KillService, RestoreService, VariantConditionsService, SupportConditionsService],
   exports: [SecureDeployService, PkiService, VehicleRuntimeService, GleoAdapter],
 })
 export class DeliveryModule {}

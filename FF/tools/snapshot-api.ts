@@ -108,6 +108,15 @@ async function main() {
   await save('virtualRuns');
   for (const p of policies.items as { policyId: string; featureId: string }[]) if (p.featureId === 'FEAT-00022') await save('virtualRuns', {}, { policyId: p.policyId });
   await save('listPolicies', {}, { featureId: 'FEAT-00022' });
+  // P8b — 이상 징후·품질 피드백·IAM·Variant·지원 조건·Unleash(모의)
+  await save('anomalies');
+  await save('qualityFeedback');
+  await save('iamRoles');
+  await save('iamDenials');
+  await save('variantMatrix', { featureId: 'FEAT-00022', version: '1.0.0' });
+  for (const v of vehicles.items) await save('vehicleSupport', { vin: v.vin });
+  await save('unleashStatus');
+  for (const p of policies.items) await save('policyUnleash', { id: p.policyId });
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

@@ -81,6 +81,8 @@ const virtualScreens = () => import('./screens/policy/Virtual');
 const fleetScreens = () => import('./screens/ops/FleetLive');
 const killScreens = () => import('./screens/ops/KillConsole');
 const deployScreens = () => import('./screens/ops/Deployments');
+const anomalyScreens = () => import('./screens/ops/Anomalies');
+const accessScreens = () => import('./screens/admin/Access');
 
 export const ROUTES: AppRoute[] = [
   // 1 홈
@@ -121,8 +123,9 @@ export const ROUTES: AppRoute[] = [
   { path: '/decisions/center', element: named(decisions, 'DecisionCenter'), title: '결정 센터', group: 'config', parent: '/analysis/impact' },
   { path: '/decisions/deploy', element: named(decisions, 'DeploymentDecision'), title: '배포 결정', group: 'config', parent: '/analysis/impact' },
   { path: '/twin/impact', element: named(twin, 'TwinImpact'), title: '변경 영향 시뮬레이션 (BDC 데모)', group: 'config', parent: '/analysis/impact' },
-  { path: '/master/product-spec', element: named(eo, 'ProductSpec'), title: 'Variant·적용 조건', group: 'config', menu: '/master/product-spec', components: ['D02-01'] },
-  { path: '/variants/:id', element: def(() => import('./pages/VariantMatrix')), title: 'Variant 매트릭스', group: 'config', parent: '/master/product-spec', components: ['D02-01'] },
+  { path: '/variant-conditions', element: named(accessScreens, 'VariantScreen'), title: 'Variant·지원 조건', group: 'config', menu: '/variant-conditions', components: ['D02-01', 'D02-02'], v2: true },
+  { path: '/master/product-spec', element: named(eo, 'ProductSpec'), title: 'Variant·적용 조건 (BDC 데모)', group: 'config', parent: '/variant-conditions' },
+  { path: '/variants/:id', element: def(() => import('./pages/VariantMatrix')), title: 'Variant 매트릭스 (BDC 데모)', group: 'config', parent: '/master/product-spec' },
 
   // 4 기준정보
   { path: '/master/upg', element: named(plm, 'UpgRegistry'), title: 'UPG·UPG-VC', group: 'master', menu: '/master/upg' },
@@ -142,6 +145,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/policy/conflict', element: named(specnew, 'Conflict'), title: '정책 충돌 검토 (BDC 데모)', group: 'verify', parent: '/validations' },
   { path: '/policy/exception', element: named(specnew, 'Exception'), title: '정책 예외', group: 'verify', parent: '/policy/conflict' },
   { path: '/verify/compliance', element: named(specnew, 'Compliance'), title: '컴플라이언스', group: 'verify', menu: '/verify/compliance', components: ['D03-01'] },
+  { path: '/quality/feedback', element: named(anomalyScreens, 'FeedbackScreen'), title: '품질 피드백', group: 'verify', menu: '/quality/feedback', components: ['D04-06'], v2: true },
   { path: '/validations/virtual', element: named(virtualScreens, 'VirtualValidationScreen'), title: 'vECU 가상검증', group: 'verify', menu: '/validations/virtual', components: ['D06-03', 'D04-02'], v2: true },
   { path: '/verify/scenario', element: named(specnew, 'Scenario'), title: '차량 시나리오 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
   { path: '/twin/simulation', element: named(twin, 'TwinSimulation'), title: 'What-if 시뮬레이션 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
@@ -179,7 +183,8 @@ export const ROUTES: AppRoute[] = [
   { path: '/ops/kill', element: named(killScreens, 'KillConsole'), title: '긴급 차단·복구', group: 'ops', menu: '/ops/kill', components: ['D03-03', 'D03-04'], v2: true },
   { path: '/twin/incident', element: named(twinOps, 'TwinIncident'), title: '긴급 차단 시나리오 (BDC 데모)', group: 'ops', parent: '/ops/kill' },
   { path: '/ops/:id', element: def(() => import('./pages/OpsDashboard')), title: 'Feature 운영 대시보드', group: 'ops', parent: '/twin/incident' },
-  { path: '/ops/incident', element: named(ops2, 'IncidentManager'), title: '이상 징후·장애', group: 'ops', menu: '/ops/incident', components: ['D06-12', 'D04-05'] },
+  { path: '/ops/anomalies', element: named(anomalyScreens, 'AnomalyScreen'), title: '이상 징후 대응', group: 'ops', menu: '/ops/anomalies', components: ['D06-12'], v2: true },
+  { path: '/ops/incident', element: named(ops2, 'IncidentManager'), title: '장애·VOC (BDC 데모)', group: 'ops', parent: '/ops/anomalies', components: ['D04-05'] },
   { path: '/ops/incident/:id', element: named(ops2, 'IncidentDetail'), title: '장애 상세', group: 'ops', parent: '/ops/incident' },
   { path: '/ops/telemetry', element: named(ops2, 'TelemetryExplorer'), title: '운영 데이터·이벤트', group: 'ops', menu: '/ops/telemetry', components: ['D04-03', 'D04-04', 'D04-06'] },
 
@@ -196,7 +201,8 @@ export const ROUTES: AppRoute[] = [
   { path: '/decisions/supplier', element: named(decisions, 'SupplierScope'), title: '협력사 범위', group: 'admin', parent: '/supplier/portal' },
   { path: '/audit', element: named(auditEvents, 'AuditScreen'), title: '감사 이력', group: 'admin', menu: '/audit', components: ['D01-10'], v2: true },
   { path: '/insights/audit', element: named(insights, 'AuditLog'), title: '감사 로그 (BDC 데모)', group: 'admin', parent: '/audit' },
-  { path: '/admin/users', element: named(() => import('./pages/areas/ui17'), 'AccessScope'), title: '사용자·권한', group: 'admin', menu: '/admin/users', components: ['D06-09'] },
+  { path: '/admin/iam', element: named(accessScreens, 'IamScreen'), title: '플랫폼 인증·권한', group: 'admin', menu: '/admin/iam', components: ['D06-09'], v2: true },
+  { path: '/admin/users', element: named(() => import('./pages/areas/ui17'), 'AccessScope'), title: '사용자·권한 (BDC 데모)', group: 'admin', parent: '/admin/iam' },
   { path: '/admin/permissions', element: named(admin, 'PermissionsMatrix'), title: '권한 매트릭스', group: 'admin', parent: '/admin/users' },
   { path: '/admin/org', element: named(admin, 'OrgDomains'), title: '조직·도메인', group: 'admin', parent: '/admin/users' },
   { path: '/admin/security', element: named(specnew, 'Security'), title: '보안·인증서', group: 'admin', menu: '/admin/security', components: ['D06-10', 'D06-11'] },

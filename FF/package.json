@@ -28,7 +28,10 @@
     "data:import": "node tools/dataset/import.ts",
     "data:check": "node tools/dataset/check.ts",
     "openapi": "node tools/openapi.ts",
-    "snapshot:api": "node tools/snapshot-api.ts"
+    "snapshot:api": "node tools/snapshot-api.ts",
+    "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",
+    "unleash:down": "docker compose -f docker/unleash/docker-compose.yml down",
+    "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web"
   },
   "devDependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",

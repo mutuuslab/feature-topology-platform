@@ -239,8 +239,8 @@ const DEFS: PlaneDef[] = [
     note: '현재 차량 상태에서 평가·적용하고 결과를 보고한다. 적용할 수 없으면 안전 기본값으로 전이한다.',
     demos: [
       {
-        ko: 'Digital Twin · 차량 런타임',
-        en: 'Digital Twin · Vehicle Runtime',
+        ko: '차량별 적용 상태 · 차량 런타임',
+        en: 'Vehicle Applied State · Vehicle Runtime',
         routes: [
           '/twin/live',
           '/twin/fleet',

@@ -251,7 +251,7 @@ export function TwinProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     provider.resetAll();
     setRateState(0);
-    audit('TWIN_RESET', T.FEATURE_ID, 'Twin 스냅샷 초기화');
+    audit('TWIN_RESET', T.FEATURE_ID, '차량 상태 스냅샷 초기화');
   }, [provider, audit]);
 
   const runSim = useCallback(

@@ -203,4 +203,13 @@ CREATE UNIQUE INDEX vehicle_request_idem ON vehicle_request(vin, boot_id, sequen
 CREATE TABLE vehicle_channel (vin TEXT PRIMARY KEY, boot_id TEXT NOT NULL, sequence INTEGER NOT NULL);
 `,
   },
+  {
+    name: '009_anomaly_feedback',
+    sql: `
+CREATE TABLE anomaly (anomaly_id TEXT PRIMARY KEY, kind TEXT NOT NULL, feature_id TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX anomaly_open ON anomaly(kind, feature_id, status);
+CREATE TABLE quality_feedback (feedback_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX quality_feedback_feature ON quality_feedback(feature_id, status);
+`,
+  },
 ];

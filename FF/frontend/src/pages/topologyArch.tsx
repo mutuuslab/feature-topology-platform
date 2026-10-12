@@ -1845,7 +1845,7 @@ export function TopologyArch(): JSX.Element {
                 <div>
                   <h4 style={{ fontSize: 13, margin: '0 0 6px' }}>차량 실행 상태</h4>
                   <div className="tpa-strip">
-                    <span className="tpa-chip"><b>{snapshot.twins.length}</b>Twin</span>
+                    <span className="tpa-chip"><b>{snapshot.twins.length}</b>차량</span>
                     <span className="tpa-chip pass"><b>{snapshot.stats.healthCounts.HEALTHY}</b>Online</span>
                     <span className="tpa-chip"><b>{snapshot.rollout.activatedVins.length}</b>활성 VIN</span>
                     <span className="tpa-chip pending"><b>{snapshot.rollout.binaryOtaVins.length}</b>Binary OTA 선행</span>

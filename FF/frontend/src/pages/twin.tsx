@@ -45,7 +45,7 @@ const FILTER_LABEL: Record<keyof T.TwinFilters, string> = {
   featureId: 'Feature ID',
   policyVersion: 'Policy Version',
   entitlement: 'Entitlement',
-  twinHealth: 'Twin Health',
+  twinHealth: 'Vehicle Health',
   eligibility: 'Eligibility',
   reconciliation: 'Reconciliation Status',
 };
@@ -67,7 +67,7 @@ function SimClockBar() {
         <option value={5}>5×</option>
       </select>
       <button className="btn" onClick={() => step(5)}>Step +5s</button>
-      {can('run-engine') && <button className="btn" onClick={() => reset()}>Twin 초기화</button>}
+      {can('run-engine') && <button className="btn" onClick={() => reset()}>차량 상태 초기화</button>}
     </div>
   );
 }
@@ -128,8 +128,8 @@ function FleetTitle() {
   const { rate } = useTwinApi();
   return (
     <PageTitle
-      fallback="Twin Fleet"
-      detail="차량별 Twin 수렴 상태"
+      fallback="Fleet 적용 현황"
+      detail="차량별 적용 수렴 상태"
       suffix={rate > 0 ? <LiveDot /> : <span className="badge" style={{ background: 'var(--pending)' }}>⏸ PAUSED</span>}
     />
   );
@@ -162,7 +162,7 @@ function FleetKpis() {
   );
   return (
     <div className="kpis reveal">
-      <div className="kpi"><div className="v"><CountUp value={total} /></div><div className="l">전체 Twin</div></div>
+      <div className="kpi"><div className="v"><CountUp value={total} /></div><div className="l">전체 차량</div></div>
       <div className="kpi"><div className="v" style={{ color: 'var(--pass)' }}><CountUp value={policyOnly} /></div><div className="l">Policy-only 활성화 가능</div></div>
       <div className="kpi"><div className="v" style={{ color: 'var(--pending)' }}><CountUp value={requiresBinary} /></div><div className="l">Binary OTA 필요</div></div>
       <div className="kpi"><div className="v" style={{ color: 'var(--fail)' }}><CountUp value={guardBlocked} /></div><div className="l">Local Guard 차단</div></div>
@@ -408,8 +408,8 @@ function FleetFilterBlock() {
       </div>
 
       <div className="card cv-auto-tall">
-        <b>VIN별 Twin 상태 (필터 적용)</b>
-        <p className="small muted">차트는 요약이며, 판단의 근거는 이 표의 VIN·상태값입니다. 행을 클릭하면 Vehicle Twin Detail 로 이동합니다.</p>
+        <b>VIN별 차량 적용 상태 (필터 적용)</b>
+        <p className="small muted">차트는 요약이며, 판단의 근거는 이 표의 VIN·상태값입니다. 행을 클릭하면 차량 적용 상세로 이동합니다.</p>
         <TwinVinTable rows={filtered} onSelect={onSelect} />
       </div>
     </>
@@ -466,14 +466,14 @@ export function TwinImpact() {
     <div>
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <PageTitle fallback="Twin Impact Preview" detail="활성화 사전 영향분석" />
+        <PageTitle fallback="Impact Preview" detail="활성화 사전 영향분석" />
         <SimClockBar />
       </div>
       <p className="page-sub">
         Feature <b>{impact.featureId}</b> v{impact.featureVersion} · Policy {impact.policyVersion} · 분석시각{' '}
         {impact.analyzedAt.replace('T', ' ').slice(0, 19)}Z · 대상 {impact.totalMatched}대
       </p>
-      <ClassificationBanner extra="제외 사유·Unknown 원인까지 Twin 스냅샷에서 재계산한 결과입니다" />
+      <ClassificationBanner extra="제외 사유·Unknown 원인까지 차량 상태 스냅샷에서 재계산한 결과입니다" />
 
       <div className="card">
         <b>1) Target 조건</b>
@@ -505,7 +505,7 @@ export function TwinImpact() {
         </div>
         <div className="row mt">
           <button className="btn" onClick={() => setTargetRule(T.DEMO_TARGET_RULE)}>데모 조건으로 초기화</button>
-          <span className="small muted">전체 Twin {snapshot.verdicts.length}대 중 지역·차종·연식 조건 일치 {impact.totalMatched}대</span>
+          <span className="small muted">전체 차량 {snapshot.verdicts.length}대 중 지역·차종·연식 조건 일치 {impact.totalMatched}대</span>
         </div>
       </div>
 
@@ -657,8 +657,8 @@ export function TwinSimulation() {
     <div>
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <PageTitle fallback="What-if Twin Simulation" detail="활성화 전 가상 검증" />
-        <span className="small muted">Simulation Twin ID <code className="mono">{E.SIM_VIN}</code> · seed <code className="mono">{r.seed}</code></span>
+        <PageTitle fallback="What-if Simulation" detail="활성화 전 가상 검증" />
+        <span className="small muted">시뮬레이션 차량 ID <code className="mono">{E.SIM_VIN}</code> · seed <code className="mono">{r.seed}</code></span>
       </div>
       <p className="page-sub">
         실제 차량과 <b>동일한 Policy Evaluator · Local Guard 로직</b>을 가상차량에 적용합니다. 결과는 Quality Gate Evidence 로 저장됩니다.
@@ -745,7 +745,7 @@ export function TwinSimulation() {
                 : <span className="badge" style={{ background: 'var(--fail)' }}>⛔ BLOCK</span>}
               <span className="small muted ml">{r.localGuard.reasonCode}</span>
             </div>
-            <div className="muted">Twin Version</div><div className="mono small">{r.twinVersionBefore} → {r.twinVersionAfter}</div>
+            <div className="muted">차량 상태 Version</div><div className="mono small">{r.twinVersionBefore} → {r.twinVersionAfter}</div>
             <div className="muted">데이터 등급</div><div className="small">{r.dataClassification}</div>
           </div>
           {r.notes.map((n, i) => <p key={i} className="small muted mt">· {loc(n)}</p>)}
@@ -801,7 +801,7 @@ export function TwinSimulation() {
               <button
                 className="btn primary"
                 disabled={hasFail}
-                title={hasFail ? 'FAIL Quality Gate 가 있으면 등록할 수 없습니다' : 'Release Readiness 의 Twin What-if Gate 에 결과를 반영합니다'}
+                title={hasFail ? 'FAIL Quality Gate 가 있으면 등록할 수 없습니다' : 'Release Readiness 의 What-if 검증 Gate 에 결과를 반영합니다'}
                 onClick={() => setGate({ qualityGatePassed: true })}
               >
                 Quality Gate 통과 확인 → Release Gate 반영

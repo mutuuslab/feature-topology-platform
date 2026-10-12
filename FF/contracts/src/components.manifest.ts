@@ -117,7 +117,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D04-04': { screens: ['/events'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
   'D01-04': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
   'D01-05': { screens: ['/entitlements'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL] },
-  'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, FE_POL, E2E_POL] },
+  'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'contracts/src/rules/unleash.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts'] },
   'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
   'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
   'D05-01': { screens: ['/activation/decide'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ] },
@@ -131,6 +131,12 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D03-01': VALIDATOR,
   'D03-02': { screens: ['/policies/:id', '/validations'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL], via: ['validatePolicy', 'decidePolicy'] },
   'D04-02': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_OPS, E2E_POL], via: ['validatePolicy'] },
+  // P8b 운영 되먹임·IAM·Variant
+  'D06-12': { screens: ['/ops/anomalies'], tests: ['backend/test/d06/anomaly.spec.ts', 'contracts/src/rules/anomaly.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx', 'e2e/tests/p8b.spec.ts'] },
+  'D04-06': { screens: ['/quality/feedback'], tests: ['backend/test/d06/anomaly.spec.ts', 'contracts/src/rules/anomaly.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx', 'e2e/tests/p8b.spec.ts'] },
+  'D06-09': { screens: ['/admin/iam'], tests: ['backend/test/d06/iam-variant.spec.ts', 'contracts/src/rules/access-variant.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx'] },
+  'D02-01': { screens: ['/variant-conditions'], tests: ['backend/test/d06/iam-variant.spec.ts', 'contracts/src/rules/access-variant.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx'] },
+  'D02-02': { screens: ['/variant-conditions', '/fleet/vehicles/:vin'], tests: ['backend/test/d06/iam-variant.spec.ts', 'contracts/src/rules/access-variant.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx'] },
   // PoC ④⑤⑥ 배포·차단 전달 (P8a)
   'D02-03': { screens: ['/fleet/live', '/fleet/vehicles/:vin'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', 'contracts/src/gleo.test.ts', FE_OPS, E2E_OPS, BE_VREQ, CT_VREQ] },
   'D03-03': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', FE_OPS, E2E_OPS] },

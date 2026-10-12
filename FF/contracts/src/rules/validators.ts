@@ -7,6 +7,7 @@ import { evaluateFlag, type PolicyScope } from '../flags/evaluate';
 import { decimalCompare, semverCompare, time, type Constraint } from '../flags/p0';
 import { LIFECYCLE_RANK } from './lifecycle';
 import type { VirtualEvidence, VirtualScenario } from './virtual';
+import { variantRow } from './variant';
 
 export type ValidatorResultState = 'PASS' | 'CONDITIONAL' | 'FAIL';
 
@@ -44,7 +45,10 @@ const done = (componentId: string, ko: string, findings: ValidatorResult['findin
   componentId,
   ko,
   result: findings.some((f) => f.result === 'FAIL') ? 'FAIL' : findings.some((f) => f.result === 'CONDITIONAL') ? 'CONDITIONAL' : 'PASS',
-  summary: findings.length ? findings.map((f) => f.message).slice(0, 2).join(' / ') : pass,
+  // 요약: 판정 근거(CONDITIONAL·FAIL)가 있으면 그것, 없으면 통과 요약 + 참고(INFO) 첫 줄
+  summary: findings.some((f) => f.result !== 'INFO')
+    ? findings.filter((f) => f.result !== 'INFO').map((f) => f.message).slice(0, 2).join(' / ')
+    : [pass, ...findings.slice(0, 1).map((f) => f.message)].join(' · '),
   findings,
 });
 
@@ -123,6 +127,9 @@ export async function validateScenario(i: ValidationInput): Promise<ValidatorRes
     // HOLD(문맥 불명)는 P0가 정한 안전 동작(Safe Default 유지)이므로 결함이 아니다 — 수만 요약에 남긴다
     counts[k]++;
   }
+  // 기능 지원 조건(D02-02) — 범위 안이지만 대상 ECU SW가 낮은 차량은 판정을 바꾸지 않고 알린다
+  const unsupported = inScope.map((v) => variantRow({ ...i.feature, featureId: i.feature.featureId, version: i.feature.version }, v)).filter((r) => r.verdict === 'NOT_SUPPORTED');
+  if (unsupported.length) f.push({ result: 'INFO', message: `지원 조건 미달 ${unsupported.length}대 (${unsupported.map((r) => `${r.vin} SW ${r.actual}`).join(', ')} < ${unsupported[0].required}) — 차량에서 기능이 동작하지 않을 수 있음` });
   if (!inScope.length) f.push({ result: 'CONDITIONAL', message: `범위 ${scope.country}/${scope.vehicleModel}/${scope.trim} 시험 차량이 없습니다` });
   else if (counts.ALLOW === 0) f.push({ result: 'CONDITIONAL', message: '범위 안 시험 차량 중 활성화되는 차량이 없습니다' });
   return done('D06-03', '차량 시나리오 검증', f, `범위 차량 ${inScope.length}대: ALLOW ${counts.ALLOW} · DENY ${counts.DENY} · HOLD(Safe Default) ${counts.HOLD}`);

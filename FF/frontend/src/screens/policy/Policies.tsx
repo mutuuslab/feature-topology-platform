@@ -8,6 +8,7 @@ import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, VerdictBadge, Icon } from '../../design';
 import { usePermission, when } from '../shared';
 import { VirtualPanel } from './Virtual';
+import { UnleashPanel } from './Unleash';
 
 const T = ko.policy;
 const INVALIDATE = ['listPolicies', 'policyDetail', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort'];
@@ -196,6 +197,8 @@ export function PolicyDetail() {
             </Panel>
 
             <VirtualPanel policy={p} />
+
+            <UnleashPanel policyId={p.policyId} deployed={p.status === 'DEPLOYED'} />
 
             <div className="ds-split">
               <Panel title={T.title} id="spec">

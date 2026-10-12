@@ -5,10 +5,12 @@ import { DeliveryModule } from '../../delivery.module';
 import { D01PolicyModule } from '../d01-policy.module';
 import { PolicyController, RuntimeController } from './policy.controller';
 import { PolicyService } from './policy.service';
+import { UnleashGateway } from '../../../adapters/unleash/unleash.client';
+import { UnleashController, UnleashSyncService } from './unleash-sync.service';
 
 @Module({
   imports: [D01PolicyModule, D06QsecModule, DeliveryModule],
-  controllers: [PolicyController, RuntimeController],
-  providers: [PolicyService],
+  controllers: [PolicyController, RuntimeController, UnleashController],
+  providers: [PolicyService, UnleashGateway, UnleashSyncService],
 })
 export class PolicyModule {}

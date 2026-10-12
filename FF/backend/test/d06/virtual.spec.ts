@@ -77,7 +77,11 @@ describe('vECU 가상검증 → 검증 Gate', () => {
   it('가상검증 후 정책 검증 GO — D06-03·D06-06에 근거(INFO)가 남고, 오류 주입 구간 위험은 의도된 결과로 표시', async () => {
     const run = await validate();
     expect(run.decision).toBe('GO');
-    expect(result(run, 'D06-03').findings.map((f: any) => f.message)).toEqual([expect.stringMatching(/SCN-FEAT00022-NOMINAL PASS \(TEST-/)]);
+    expect(result(run, 'D06-03').findings.map((f: any) => f.message)).toEqual([
+      expect.stringMatching(/SCN-FEAT00022-NOMINAL PASS \(TEST-/),
+      // D02-02 기능 지원 조건 참고 — 범위 안이지만 기능 앱 SW가 1.2.1 미만인 차량. 판정(GO)은 그대로다
+      expect.stringMatching(/^지원 조건 미달 2대 \(KMH-NX4-0002 SW 1\.2\.0, KMH-NX4-0004 SW 1\.1\.9 < 1\.2\.1\)/),
+    ]);
     expect(result(run, 'D06-06').findings[1].message).toMatch(/의도된 결과/);
   });
 

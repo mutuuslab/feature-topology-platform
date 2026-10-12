@@ -117,6 +117,26 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
     });
   });
 
+  describe('위조 사본 — 회신 집계 보호', () => {
+    // 회귀: 변조된 사본이 진짜 게시본보다 먼저 도착하면 그 거부 회신이 집계되어 게시본 전체가 DIVERGED로 닫혔다(위조 한 건으로 정상 배포를 실패 처리).
+    it('먼저 온 변조 사본의 거부는 보안 신호일 뿐 — 게시본은 닫히지 않고, 뒤에 온 진짜 게시본 적용으로 확인된다', async () => {
+      const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', controlPoint: 'Signal', flagKey: 'care_00022_signal', description: '신호 r2', safeDefault: false, entitlementCatalogId: 'CAT-00019' }).expect(201);
+      await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: c.body.policyId }).expect(201);
+      expect((await http().post(`/api/policies/${c.body.policyId}/validate`).set(AUTHOR).send({}).expect(200)).body.run.decision).toBe('GO');
+      await http().post(`/api/policies/${c.body.policyId}/decision`).set(APPROVER).send({ decision: 'APPROVE', reason: 'GO' }).expect(200);
+      const id = (await http().post(`/api/policies/${c.body.policyId}/deploy`).set(RELEASE).send({ reason: '배포' }).expect(200)).body.publicationId;
+      const genuine = (await pub(id)).publication;
+      runtime.receive('KMH-NX4-0001', { ...genuine, payload: { ...genuine.payload, desired: 'sha256:forged' } });
+      let p = await pub(id);
+      expect(p.publication.status).toBe('DISPATCHED');
+      expect(p.publication.nodes.find((n: any) => n.nodeId === 'KMH-NX4-0001')).toMatchObject({ state: 'UNKNOWN', reason: 'REJECTED:PAYLOAD_TAMPERED' });
+      advance(2_000); // 진짜 게시본이 도착·적용
+      p = await pub(id);
+      expect(p.publication.nodes.find((n: any) => n.nodeId === 'KMH-NX4-0001')).toMatchObject({ state: 'CONFIRMED', reason: 'READBACK_MATCH' });
+      advance(10_000);
+    });
+  });
+
   describe('⑥ 긴급 차단 → 서버 즉시 Safe Default → 차량 회신 → 해제·복구', () => {
     let killId: string;
 

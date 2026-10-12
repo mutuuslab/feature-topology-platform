@@ -139,8 +139,14 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
 
   private evaluate(pub: Publication) {
     const required = pub.payload.targets.filter((v) => !pub.ackOnly.includes(v));
+    // 차량별 최신 '유효' 회신으로 줄인다. 차량이 거부한 회신(서명 불일치·재전송)은 집계하지 않는다 —
+    // 위조 사본 한 건이 진짜 게시본을 DIVERGED로 닫지 못하게. 거부 사유는 노드 사유와 이상 징후(D06-12)로만 남는다.
     const latest = new Map<string, ReturnType<PublicationRepo['readbacks']>[number]>();
-    for (const r of this.repo.readbacks({ publicationId: pub.publicationId })) latest.set(r.vin, r); // 차량별 최신 회신으로 줄인다
+    const rejected = new Map<string, string>();
+    for (const r of this.repo.readbacks({ publicationId: pub.publicationId })) {
+      if (r.rejectReason) rejected.set(r.vin, r.rejectReason);
+      else latest.set(r.vin, r);
+    }
     const now = this.clock.now().getTime();
     const reports: ReadbackReport[] = [...latest.values()].map((r) => ({
       nodeId: r.vin,
@@ -163,7 +169,7 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       desired: pub.payload.desired,
     });
     // 차량이 거부한 회신은 거부 사유를 그대로 보인다 (서명 불일치·재전송)
-    const nodes = agg.nodes.map((n) => ({ ...n, reason: latest.get(n.nodeId)?.rejectReason ? `REJECTED:${latest.get(n.nodeId)!.rejectReason}` : n.reason }));
+    const nodes = agg.nodes.map((n) => (n.state === 'UNKNOWN' && rejected.has(n.nodeId) ? { ...n, reason: `REJECTED:${rejected.get(n.nodeId)}` } : n));
     return { required, agg: { ...agg, nodes } };
   }
 

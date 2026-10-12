@@ -529,8 +529,8 @@ const DERIVED_ARCHETYPES: T.ArchetypeId[] = [
 ];
 
 export const DERIVED_NOTE: T.Localized = {
-  ko: '등록된 As-Built 정보가 없는 VIN이라 결정적(seed 기반) 가상 Twin을 생성했습니다. 실제 차량 데이터가 아닙니다.',
-  en: 'No as-built record exists for this VIN, so a deterministic seeded twin was derived. This is not real vehicle data.',
+  ko: '등록된 As-Built 정보가 없는 VIN이라 결정적(seed 기반) 가상 차량 상태를 생성했습니다. 실제 차량 데이터가 아닙니다.',
+  en: 'No as-built record exists for this VIN, so a deterministic seeded vehicle state was derived. This is not real vehicle data.',
 };
 
 /**
@@ -562,7 +562,7 @@ export function buildDerivedTwin(vin: string, nowMs: number): T.Twin {
       {
         at: isoAt(nowMs),
         actor: 'Vehicle State Adapter (SIMULATED)',
-        action: { ko: '미등록 VIN — 가상 Twin 파생 생성', en: 'Unregistered VIN — derived twin generated' },
+        action: { ko: '미등록 VIN — 가상 차량 상태 파생 생성', en: 'Unregistered VIN — derived vehicle state generated' },
         detail: `seed=${h}`,
       },
       ...twin.auditTrail,

@@ -93,12 +93,13 @@ export class KillService {
         releasedAt: null,
         releaseReason: null,
         restorePublicationId: null,
+        anomalyId: body.anomalyId ?? null,
       };
       const pub = this.deploy.publishKill(k, actor);
       k.publicationId = pub.publicationId;
       this.kills.insert(k);
       this.audit.record(actor, 'KILL_ISSUE', k.killId, { after: { featureIds: k.featureIds, vins: k.vins.length, safeMode: k.safeMode, publicationId: pub.publicationId }, reason: body.reason, componentId: 'D03-03' });
-      this.events.publish('kill.issued', k.killId, { killId: k.killId, featureId: k.featureId, featureIds: k.featureIds, flagKeys: k.flagKeys, vins: k.vins.length, safeMode: k.safeMode, publicationId: pub.publicationId }, { componentId: 'D03-03', correlationId: actor.correlationId });
+      this.events.publish('kill.issued', k.killId, { killId: k.killId, featureId: k.featureId, featureIds: k.featureIds, flagKeys: k.flagKeys, vins: k.vins.length, safeMode: k.safeMode, publicationId: pub.publicationId, anomalyId: k.anomalyId }, { componentId: 'D03-03', correlationId: actor.correlationId });
       return k;
     });
   }

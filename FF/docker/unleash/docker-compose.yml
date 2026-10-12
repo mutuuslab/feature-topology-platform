@@ -1,0 +1,39 @@
+# IF-04 Policy Tool 실연동용 Unleash OSS (P0 개정 BD-04: 공식 이미지 무수정, Edge 미사용).
+# hfp-feature-lifecycle docker/unleash 구성을 FF용으로 옮겼다 — 토큰은 파일에 적지 않고 .env(커밋 안 함)로 받는다.
+#   cp .env.example .env  # 토큰 값을 채운다
+#   docker compose up -d   # http://127.0.0.1:4242 (로컬에만 노출)
+# 플랫폼 백엔드: UNLEASH_MODE=live UNLEASH_URL=http://127.0.0.1:4242 UNLEASH_ADMIN_TOKEN=<관리 토큰>
+name: ff-unleash
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: unleash
+      POSTGRES_USER: unleash
+      POSTGRES_PASSWORD: ${UNLEASH_DB_PASSWORD:?.env에 UNLEASH_DB_PASSWORD를 넣으세요}
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'unleash']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  web:
+    image: unleashorg/unleash-server:8.2.0
+    ports:
+      - '127.0.0.1:4242:4242'
+    environment:
+      DATABASE_URL: postgres://unleash:${UNLEASH_DB_PASSWORD}@db:5432/unleash
+      DATABASE_SSL: 'false'
+      LOG_LEVEL: warn
+      INIT_ADMIN_API_TOKENS: ${UNLEASH_ADMIN_TOKEN:?.env에 UNLEASH_ADMIN_TOKEN을 넣으세요}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O-', 'http://localhost:4242/health']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+volumes:
+  db-data:

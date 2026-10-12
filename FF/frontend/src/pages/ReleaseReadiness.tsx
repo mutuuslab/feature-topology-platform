@@ -91,13 +91,13 @@ export default function ReleaseReadiness() {
           return (
             <div className="col card">
               <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <b>Twin What-if Gate <span className="badge" style={{ background: bg, color: col }}>{status}</span></b>
+                <b>What-if 검증 Gate <span className="badge" style={{ background: bg, color: col }}>{status}</span></b>
                 <div>
                   <button className="btn" onClick={() => nav('/twin/simulation')}>What-if Simulation →</button>{' '}
-                  <button className="btn" onClick={() => nav('/twin/impact')}>Twin Impact Preview</button>
+                  <button className="btn" onClick={() => nav('/twin/impact')}>Impact Preview</button>
                 </div>
               </div>
-              <p className="small muted mt">Simulation Twin 이 실제 차량과 동일한 Policy Evaluator · Local Guard 로 What-if 를 수행한 결과다. 이 Gate 를 통과하지 않으면 Production 승격 대상이 아니다.</p>
+              <p className="small muted mt">시뮬레이션 차량이 실제 차량과 동일한 Policy Evaluator · Local Guard 로 What-if 를 수행한 결과다. 이 Gate 를 통과하지 않으면 Production 승격 대상이 아니다.</p>
               <div className="kv mt">
                 <KvRow k="Simulation ID"><span className="mono">{twin.simResult.simulationId}</span></KvRow>
                 <KvRow k="Feature">{FEATURE_ID} v{FEATURE_VERSION}</KvRow>

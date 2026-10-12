@@ -133,7 +133,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   // ── 차량 운영 ──
   UI11: { screenId: 'UI11', intent: '차량 운영 현황과 수렴 상태', links: [
     { path: '/fleet', label: 'Fleet · 차량 상태', en: 'Fleet · Vehicles', areaId: 'UI11-S01', entry: true },
-    { path: '/twin/fleet', label: 'Twin Fleet (3D)', en: 'Twin Fleet (3D)', areaId: 'UI11-S03' },
+    { path: '/twin/fleet', label: 'Fleet 적용 현황 (3D)', en: 'Fleet Rollout (3D)', areaId: 'UI11-S03' },
     { path: '/twin/live', label: 'Fleet 실시간 적용 현황', en: 'Fleet Live Rollout', areaId: 'UI11-S03' },
   ] },
   UI12: { screenId: 'UI12', intent: '차량별 적용 상태와 관측값', links: [

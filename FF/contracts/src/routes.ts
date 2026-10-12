@@ -20,6 +20,7 @@ import {
 import { CreatePolicyBody, OfrepBody, PolicyDecisionBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { KeyRotateBody, KillCreateBody, ReadbackBody } from './schemas/ops';
 import { RunVirtualBody } from './rules/virtual';
+import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { z } from 'zod';
 
@@ -145,6 +146,26 @@ export const ROUTES: RouteDef[] = [
   { name: 'virtualRunDetail', method: 'GET', path: '/api/virtual-validations/:id', summary: '가상검증 결과 (기준별 판정·증적 해시·TMS)', component: 'D06-03' },
   { name: 'virtualRunFile', method: 'GET', path: '/api/virtual-validations/:id/files/:name', summary: '가상검증 증적 파일 (보고서·텔레메트리)', component: 'D06-03' },
   { name: 'submitTms', method: 'POST', path: '/api/virtual-validations/:id/tms', summary: 'IF-09 TMS 증적 제출 (G5 근거)', component: 'D04-02', roles: ['GATE_JUDGE', 'IMPLEMENTER'], body: EmptyBody },
+  // 이상 징후 대응(D06-12) · 품질 피드백 반영(D04-06) — PoC ⑥ 이상 확인 → 차단 → 품질 되먹임
+  { name: 'anomalies', method: 'GET', path: '/api/anomalies', summary: '이상 건 (고장·보안·전달) — 심각도·권고', component: 'D06-12', query: ['status', 'kind', 'featureId'] },
+  { name: 'anomalyDetail', method: 'GET', path: '/api/anomalies/:id', summary: '이상 건 상세 (신호·근거)', component: 'D06-12' },
+  { name: 'acknowledgeAnomaly', method: 'POST', path: '/api/anomalies/:id/acknowledge', summary: '이상 건 확인', component: 'D06-12', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: AnomalyActionBody },
+  { name: 'mitigateAnomaly', method: 'POST', path: '/api/anomalies/:id/mitigate', summary: '조치 완료 (차단 외 조치)', component: 'D06-12', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: AnomalyActionBody },
+  { name: 'dismissAnomaly', method: 'POST', path: '/api/anomalies/:id/dismiss', summary: '이상 건 기각', component: 'D06-12', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: AnomalyActionBody },
+  { name: 'qualityFeedback', method: 'GET', path: '/api/quality-feedback', summary: '품질 피드백 (다음 Version 재검증 요구)', component: 'D04-06', query: ['featureId', 'status'] },
+  { name: 'qualityFeedbackDetail', method: 'GET', path: '/api/quality-feedback/:id', summary: '품질 피드백 상세', component: 'D04-06' },
+  { name: 'acceptFeedback', method: 'POST', path: '/api/quality-feedback/:id/accept', summary: '품질 피드백 수용', component: 'D04-06', roles: ['FEATURE_AUTHOR', 'GATE_JUDGE', 'SAFETY_OFFICER'], body: FeedbackAcceptBody },
+  // IF-04 Policy Tool (Unleash OSS 8.2.0) — 배포 정책을 Unleash 정의로, 차량별 판단 대조, 서버 변경(drift) 탐지 (D01-06)
+  { name: 'unleashStatus', method: 'GET', path: '/api/unleash/status', summary: 'Unleash 연결 상태 (mock·live·off)', component: 'D01-06' },
+  { name: 'policyUnleash', method: 'GET', path: '/api/policies/:id/unleash', summary: 'Unleash 계획·서버 정의·drift', component: 'D01-06' },
+  { name: 'syncUnleash', method: 'POST', path: '/api/policies/:id/unleash/sync', summary: 'Unleash 동기화 (flag·태그·의존·전략·환경)', component: 'D01-06', roles: ['RELEASE_MANAGER', 'OPERATOR'], body: EmptyBody },
+  { name: 'unleashEvaluation', method: 'GET', path: '/api/policies/:id/unleash/evaluation', summary: '차량별 Unleash 판단 vs 플랫폼 판단', component: 'D01-06' },
+  // 플랫폼 인증·권한(D06-09) · Variant 조건(D02-01) · 기능 지원 조건(D02-02)
+  { name: 'iamRoles', method: 'GET', path: '/api/iam/roles', summary: '역할·권한표(ROUTES 파생)·직무 분리 규칙', component: 'D06-09' },
+  { name: 'iamDenials', method: 'GET', path: '/api/iam/denials', summary: '권한 거부 이력 (역할별 집계)', component: 'D06-09', query: ['limit'] },
+  { name: 'iamMe', method: 'GET', path: '/api/iam/me', summary: '현재 행위자·허용 작업', component: 'D06-09' },
+  { name: 'variantMatrix', method: 'GET', path: '/api/variants/:featureId/:version', summary: 'Variant·지원 조건 × Fleet 매트릭스', component: 'D02-01' },
+  { name: 'vehicleSupport', method: 'GET', path: '/api/support/:vin', summary: '차량별 배포 Feature 지원 여부', component: 'D02-02' },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

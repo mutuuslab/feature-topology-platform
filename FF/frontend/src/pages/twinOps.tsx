@@ -178,8 +178,8 @@ export function TwinVehicle() {
   if (!verdict || !vin) {
     return (
       <EmptyState
-        title={`차량 Twin 을 찾을 수 없습니다: ${vin ?? '–'}`}
-        cta={<button className="btn" onClick={() => nav('/twin/fleet')}>Twin Fleet 으로</button>}
+        title={`차량 적용 상태를 찾을 수 없습니다: ${vin ?? '–'}`}
+        cta={<button className="btn" onClick={() => nav('/twin/fleet')}>Fleet 적용 현황으로</button>}
       />
     );
   }
@@ -193,12 +193,12 @@ export function TwinVehicle() {
 
   return (
     <div>
-      <ClassificationBanner extra={`Twin v${twin.twinVersion}`} />
+      <ClassificationBanner extra={`차량 상태 v${twin.twinVersion}`} />
 
       <Breadcrumb />
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <PageTitle
-          fallback="Vehicle Twin"
+          fallback="차량 적용 상세"
           detail={<span className="mono">{twin.vin}</span>}
           suffix={<LiveDot />}
         />
@@ -242,7 +242,7 @@ export function TwinVehicle() {
           <div className="col card">
             <b>현재 판정 요약</b>
             <div className="kv mt">
-              <KvRow k="Twin Verdict"><ReasonChip def={verdict.verdictReason} /></KvRow>
+              <KvRow k="적용 판정"><ReasonChip def={verdict.verdictReason} /></KvRow>
               <KvRow k="Eligibility"><EligibilityBadge value={verdict.eligibility.eligibility} /></KvRow>
               <KvRow k="Reconciliation"><RecBadge value={verdict.reconciliation.result} /></KvRow>
               <KvRow k="Health"><HealthBadge value={verdict.health} /></KvRow>
@@ -483,7 +483,7 @@ export function TwinVehicle() {
           <div className="col card">
             <b>이 차량의 Feature ↔ 구성 관계</b>
             <p className="small muted mt">
-              Feature 정의는 Twin 에 복사하지 않는다. Topology Version <span className="mono">{twin.asDesigned.topologyVersion}</span> 을
+              Feature 정의는 차량 상태에 복사하지 않는다. Topology Version <span className="mono">{twin.asDesigned.topologyVersion}</span> 을
               참조하고 정의는 <Link to={`/topology/${T.FEATURE_ID}`}>Topology 화면</Link> 에서 확인한다.
             </p>
             <div className="table-wrap mt">
@@ -552,7 +552,7 @@ export function TwinVehicle() {
       {tab === 'Timeline' && (
         <div className="row">
           <div className="col card">
-            <b>Twin / 차량 이벤트 Timeline</b>
+            <b>차량 적용 · 이벤트 Timeline</b>
             <span className="small muted ml">eventId 기준 멱등 수신 · simTick 기준 재생</span>
             {timeline.length ? (
               <Timeline
@@ -594,7 +594,7 @@ export function TwinVehicle() {
           <div className="col card">
             <b>판정 Evidence</b>
             <div className="kv mt">
-              <KvRow k="Eligibility"><span className="mono">{verdict.eligibility.reasonCode}</span> · <span className="mono small">Twin v{verdict.reconciliation.twinVersion}</span></KvRow>
+              <KvRow k="Eligibility"><span className="mono">{verdict.eligibility.reasonCode}</span> · <span className="mono small">차량 상태 v{verdict.reconciliation.twinVersion}</span></KvRow>
               <KvRow k="Reconciliation"><RecBadge value={verdict.reconciliation.result} /> <span className="small muted">since {verdict.reconciliation.firstSeenAt.slice(0, 16).replace('T', ' ')}</span></KvRow>
               <KvRow k="Guard"><ReasonChip def={verdict.guard.reason} /></KvRow>
               <KvRow k="Guard 평가 시각">{verdict.guard.evaluatedAt.slice(0, 19).replace('T', ' ')}</KvRow>
@@ -664,7 +664,7 @@ export function TwinVehicle() {
       <div className="card mt">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <b>
-            Vehicle Twin 시각화 · <span className="mono">{twin.vin}</span> <LiveDot />
+            차량 적용 상태 시각화 · <span className="mono">{twin.vin}</span> <LiveDot />
           </b>
           <span className="small muted">
             부품 색 = 이 차량의 Desired → Reported → Effective → Guard 결과 · 모든 모션은 시뮬레이터 시계에서만 파생
@@ -768,7 +768,7 @@ export function TwinIncident() {
 
       <div className="card">
         <b>1. 장애 주입 (Fault Injection)</b>
-        <span className="small muted ml">실제 차량 결함을 대신해 결정적 결함을 Twin 에 주입한다.</span>
+        <span className="small muted ml">실제 차량 결함을 대신해 결정적 결함을 시뮬레이션 차량에 주입한다.</span>
         <div className="row mt" style={{ gap: 8 }}>
           {T.FAULTS.map((f) => (
             <button key={f.id} className="btn twin-preset" title={`${loc(f.desc)} → ${loc(f.triggers)}`} onClick={() => runInject(f.id)} disabled={!can('deploy')}>

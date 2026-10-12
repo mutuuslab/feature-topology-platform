@@ -1,0 +1,37 @@
+// 플랫폼 인증·권한(IAM, D06-09) — 역할별 권한은 ROUTES의 roles에서 그대로 나온다(라우트 하나가 원천: 화면·API·권한표가 어긋날 수 없다).
+// 직무 분리(SoD) 규칙은 상세설계서의 승인 규칙을 표로 둔다 — 실제 강제는 각 서비스(감사 FAILED/DENIED로 남는다).
+import { ROLES, ROLE_LABEL, type Role } from '../enums';
+import { ROUTES, type RouteDef } from '../routes';
+
+/** 사람 역할 — 차량 기기 신원(VEHICLE)은 역할 선택·권한표에서 뺀다 */
+export const HUMAN_ROLES = ROLES.filter((r) => r !== 'VEHICLE' && r !== 'SYSTEM') as Role[];
+
+export interface Permission {
+  name: string;
+  method: RouteDef['method'];
+  path: string;
+  summary: string;
+  component: string;
+  roles: Role[];
+}
+
+/** 변경 API 중 역할 제한이 있는 것 — 권한표의 행 */
+export function permissions(routes: RouteDef[] = ROUTES): Permission[] {
+  return routes.filter((r) => r.method !== 'GET' && r.roles?.length).map((r) => ({ name: r.name, method: r.method, path: r.path, summary: r.summary, component: r.component, roles: r.roles! }));
+}
+
+export function rolesView(routes: RouteDef[] = ROUTES) {
+  const perms = permissions(routes);
+  return [...ROLES].map((role) => ({ role, label: ROLE_LABEL[role], human: (HUMAN_ROLES as string[]).includes(role), allowed: perms.filter((p) => p.roles.includes(role)).map((p) => p.name) }));
+}
+
+/** 직무 분리 — 같은 사람이 두 역할을 겹쳐 수행할 수 없다 */
+export const SOD_RULES: { id: string; subject: string; rule: string; component: string }[] = [
+  { id: 'SOD-01', subject: 'Feature 정의 승인', rule: 'Feature 작성자는 자기 Feature를 승인할 수 없다', component: 'D01-01' },
+  { id: 'SOD-02', subject: 'BOM Baseline 확정', rule: '확정 요청자와 BOM 승인자는 달라야 한다', component: 'D01-01' },
+  { id: 'SOD-03', subject: '상품 구성 승인', rule: '상품 작성자는 자기 상품을 승인할 수 없다', component: 'D01-03' },
+  { id: 'SOD-04', subject: '상품 고객 출시', rule: '구성 승인자와 고객 출시 승인자는 달라야 한다', component: 'D01-03' },
+  { id: 'SOD-05', subject: '정책 승인', rule: '정책 작성자는 자기 정책을 승인할 수 없다 (P0 publishCheck SELF_APPROVAL)', component: 'D03-02' },
+  { id: 'SOD-06', subject: 'G5 증적', rule: 'vECU 가상검증은 TMS 제출(IF-09)된 실제 실행 PASS만 G5 PASS 근거가 된다', component: 'D04-02' },
+  { id: 'SOD-07', subject: '차량 신원', rule: '차량은 자기 VIN만 조회·보고하고 Flag 값을 직접 바꿀 수 없다', component: 'D02-03' },
+];

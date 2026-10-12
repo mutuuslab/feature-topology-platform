@@ -1,3 +1,5 @@
 
 # vECU 가상검증 증적 (로컬 실행 산출물)
 .evidence/
+# Unleash 실연동 토큰 (로컬 전용)
+docker/unleash/.env

@@ -9,6 +9,7 @@ import { AsyncView, DataTable, EventStream, IdChip, KeyValue, Kpi, PageHeader, P
 import { when } from '../shared';
 import { Progress, type Delivery } from './shared';
 import { VehicleRequestPanel } from './VehicleRequests';
+import { SupportPanel } from '../admin/Access';
 
 const F = ko.fleet;
 const V = ko.vehicle;
@@ -232,6 +233,7 @@ export function VehicleRuntimeScreen() {
                 ]}
               />
             </Panel>
+            <SupportPanel vin={vin} />
             <VehicleRequestPanel vin={vin} />
           </>
         )}

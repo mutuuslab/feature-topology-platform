@@ -13,6 +13,7 @@ import { SafetyReqTraceService } from './safety-req-trace/validator';
 import { ScenarioValidationService } from './scenario-validation/validator';
 import { POLICY_VALIDATORS, ValidationService } from './validation-history/validation.service';
 import { VecuAdapter } from '../../adapters/vecu/vecu.adapter';
+import { IamController, IamService } from './iam/iam.service';
 import { TmsSubmissionService, VirtualValidationController, VirtualValidationService } from './scenario-validation/virtual-validation.service';
 
 const VALIDATORS = [
@@ -28,9 +29,10 @@ const VALIDATORS = [
 
 @Module({
   imports: [D01PolicyModule],
-  controllers: [VirtualValidationController],
+  controllers: [VirtualValidationController, IamController],
   providers: [
     VecuAdapter,
+    IamService,
     VirtualValidationService,
     TmsSubmissionService,
     ...VALIDATORS,

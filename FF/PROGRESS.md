@@ -8,7 +8,7 @@
 - 남은 컴포넌트 9개(P10): D01-07 실험·효과, D04-05 장애·VOC, D05-02~07(데이터 동기화·Legacy·과금·현장 포털·사업 지표·Legacy-SDV), D06-11 취약점 모니터링 — IF 모의 어댑터와 함께. FEAT-BDC 37 → 0.
 - **Unleash 실연동**: Docker Desktop을 켜고 `cp docker/unleash/.env.example docker/unleash/.env`(값 설정) → `npm run unleash:up` → `UNLEASH_LIVE=1 UNLEASH_ADMIN_TOKEN=… npx vitest run test/d01/unleash.spec.ts`(backend). 백엔드 실행 시 `UNLEASH_MODE=live UNLEASH_URL=http://127.0.0.1:4242 UNLEASH_ADMIN_TOKEN=…`. hfp 쪽 Unleash 데이터는 건드리지 않는다.
 - **FF_IMP**: `kill_command.safe_mode`는 브랜치 `feat/kill-safe-mode`(88c13f7) — main 병합은 사용자 결정 대기. 테스트는 `.venv/Scripts/python.exe -m pytest`(websockets 17). `test_unreal_fake_engine.py` 5건은 이전부터 실패.
-- **vECU 연동 계약**: vECU 폴더에 FF용 `tools/ffval_cli.mjs`·`tests/js/ffval_cli.test.mjs`만 추가(나머지는 vECU 세션 소유). 기준 ID·items 필드가 바뀌면 vECU 세션이 알려 주기로 함. 오류+Kill Gate 기준 = kill_latency·recovery·max_decel·min_ttc(양쪽 일치).
+- **vECU 연동 계약**: vECU 폴더에 FF용 `tools/ffval_cli.mjs`·`tests/js/ffval_cli.test.mjs`만 추가(나머지는 vECU 세션 소유). 기준 ID·items 필드가 바뀌면 vECU 세션이 알려 주기로 함. 오류+Kill Gate 기준 = kill_latency·recovery·max_decel·min_ttc(양쪽 일치). vECU ffval 1.3(2026-10-12) 확인: FF CLI·실제 vECU 시험 통과. kill_latency 미반영은 이제 Infinity(=CLI JSON null)+fail — FF는 status로 판정하므로 영향 없음. FEAT-00023(급가속 억제)·FEAT-00024(IC·JC 사전안내)는 vECU에 **가정 기준(provisional)** 으로 추가됨 — FF 시나리오 목록에 넣을 때는 가정 기준 결과를 G5 증적으로 인정하지 않는다(vECU official 판정과 같게).
 - **병행 세션**: 차량 발신 요청은 `2026-09-23-ff-imp-*` 세션이 c943ea0으로 커밋. 같은 저장소를 동시에 고칠 때는 먼저 범위를 나누고, 커밋은 경로를 지정해 담는다(git add -A 금지).
 - 실행: 백엔드 9101(`GLEO_MODE`, `VECU_MODE`·`VECU_DIR`, `UNLEASH_MODE`, `FF_BOOT_PUBLISH`, `FF_SCHEDULER`) · 프론트 9012 · e2e 9111/9112(vECU 시험 대역 `backend/test/fixtures/fake-vecu`, Unleash 모의).
 

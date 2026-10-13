@@ -6,6 +6,7 @@
 import { Controller, Get, Inject, Injectable, Param } from '@nestjs/common';
 import {
   authBlock,
+  COMMAND_KEY_PURPOSE,
   effectiveClass,
   endState,
   evaluateFlag,
@@ -160,7 +161,7 @@ export class VehicleRuntimeService {
     // 봉투 자체의 JWS(차량 1대 범위·vehicle_auth 포함) — 요청 유형의 용도 키여야 한다(FFG-SEC-002)
     const { signature, ...body } = env;
     // alg는 kid 신뢰 앵커와 같아야 한다(RFC 8725 3.1) — 이 HSM의 차단·복원 키는 EdDSA
-    const jwsOk = signature.alg === 'EdDSA' && this.hsm.verifyDetached(env.request === 'restore' ? 'restore' : 'kill', jcs(body), { alg: 'EdDSA', kid: signature.kid, value: signature.value }).valid;
+    const jwsOk = signature.alg === 'EdDSA' && this.hsm.verifyDetached(COMMAND_KEY_PURPOSE[env.request], jcs(body), { alg: 'EdDSA', kid: signature.kid, value: signature.value }).valid;
     const block = Buffer.from(
       authBlock({
         featureId,
@@ -202,6 +203,20 @@ export class VehicleRuntimeService {
     s.guard = { ...(s.guard ?? {}), [featureId]: { lastSeq: va.vehicle_seq, epoch: va.key_epoch } };
     s.log.push({ at: this.clock.iso(), publicationId, kind, result: 'APPLIED', detail: `${env.request} ${env.feature.deact_class} 수락` });
     this.runtime.save(s);
+    if (env.request === 'sync') {
+      // SYNC — 인증된 무동작(키 epoch 상향·순번 표시, 9.6). 상태는 그대로
+      return this.emit(vin, env, current, { request_result: 'ACCEPTED', hmi: 'NONE', weight: current === 'ACTIVE' ? 1000 : 0, edr: current === 'ACTIVE' ? 'AVAILABLE' : 'OFF_BY_COMMAND' });
+    }
+    if (env.request === 'activate') {
+      // 활성화 — 기능이 작동 중이 아닐 때(FFG-LCY-010): ACT_PENDING → 비작동 확인 → ACTIVE
+      this.setState(vin, featureIds, 'ACT_PENDING', false);
+      this.emit(vin, env, 'ACT_PENDING', { request_result: 'ACCEPTED', hmi: 'INFO_PENDING', weight: 0, edr: 'OFF' });
+      this.scheduler.after(SIM_IDLE_MS * TIME_SCALE, () => {
+        this.setState(vin, featureIds, 'ACTIVE', false);
+        this.emit(vin, env, 'ACTIVE', { request_result: 'NONE', hmi: 'NONE', weight: 1000, edr: 'AVAILABLE' });
+      });
+      return;
+    }
     if (env.request === 'restore') {
       // 복원 — 다음 시동에서 자체 시험 뒤 ACTIVE(FFG-DEAC-008, 차량 쪽)
       this.setState(vin, featureIds, 'RESTORE_PENDING', false);

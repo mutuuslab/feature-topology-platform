@@ -137,3 +137,6 @@ export function approvalCheck(
 export function approvalSubject(k: { killId: string; featureId: string; featureVersion: string; request: KillRequestType; reasonCategory: ReasonCategory; vins: readonly string[] }) {
   return { kill_id: k.killId, feature: `${k.featureId}@${k.featureVersion}`, request: k.request, reason: k.reasonCategory, vehicles: [...k.vins].sort() };
 }
+
+/** 요청 유형별 서명 키 용도(FFG-SEC-002) — 비활성화는 kill, 복원·활성화·SYNC는 각자의 키. 차량은 이 용도의 kid로 서명된 봉투만 받는다 */
+export const COMMAND_KEY_PURPOSE: Record<KillRequestType, 'kill' | 'restore' | 'activate' | 'sync'> = { deactivate: 'kill', restore: 'restore', activate: 'activate', sync: 'sync' };

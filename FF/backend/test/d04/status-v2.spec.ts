@@ -3,7 +3,8 @@
 // FFG-TEL-003 · FFG-SEC-004 · FFG-DEAC-013 · FFG-DEAC-007 · FFG-ADS-004 · FFG-VEH-002 · FFG-VEH-013
 Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal' });
 import { afterEach, describe, expect, it } from 'vitest';
-import { jcs, statusAuthCanonical, type KillCommandV2 } from '@ff/contracts';
+import { authBlock, jcs, statusAuthCanonical, type KillCommandV2 } from '@ff/contracts';
+import { targetHashOf } from '../../src/kernel/crypto';
 import { Clock } from '../../src/kernel/clock';
 import { Scheduler } from '../../src/kernel/scheduler';
 import { HsmService } from '../../src/domains/d06-qsec/pki-kms/hsm.service';
@@ -99,6 +100,49 @@ describe('차량 Guard (FFG-VEH-002 · FFG-VEH-013)', () => {
     expect(reports.recent.slice(0, 3).every((x: any) => x.accepted && x.state === 'DISABLED')).toBe(true);
     const log = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log;
     expect(log.slice(-3).map((l: any) => l.detail)).toEqual(['REPLAY', 'SIGNATURE_INVALID', 'AUTH_FAILED']); // 서명은 봉투 전체(vehicle_auth 포함)를 덮는다
+  });
+});
+
+describe('요청 유형별 Guard 동작 (9.6 SYNC · FFG-LCY-010 활성화 · FFG-SEC-002 용도 키)', () => {
+  /** 플랫폼 HSM으로 요청 유형의 봉투를 만든다(같은 차량 키·순번 +1) — 회귀: 예전 Guard는 restore가 아니면 모두 비활성화로 처리했다 */
+  function craft(hsm: HsmService, env: KillCommandV2, request: 'sync' | 'activate', purpose: 'sync' | 'activate' | 'kill') {
+    const vin = env.scope.vehicle_ids[0];
+    const seq = env.vehicle_auth!.vehicle_seq + 1;
+    const block = Buffer.from(
+      authBlock({
+        featureId: env.feature.id,
+        version: env.feature.version,
+        request,
+        reason: env.reason.category,
+        deactClass: env.feature.deact_class,
+        keyEpoch: env.vehicle_auth!.key_epoch,
+        vehicleSeq: seq,
+        notBefore: env.validity.not_before,
+        expiresAt: env.validity.expires_at,
+        targetHash: targetHashOf(vin, env.target.ecu_id, env.target.sw_version),
+        approverRefs: [env.vehicle_auth!.approver_refs[0], env.vehicle_auth!.approver_refs[1]],
+      }),
+    );
+    const { signature: _s, ...b } = { ...env, request, vehicle_auth: { ...env.vehicle_auth!, vehicle_seq: seq, cmd_auth: hsm.cmac(vin, env.vehicle_auth!.key_epoch, block) } };
+    const sig = hsm.signDetached(purpose, jcs(b));
+    return { ...b, signature: { alg: 'EdDSA' as const, kid: sig.kid, value: sig.value } } as KillCommandV2;
+  }
+  it('SYNC는 상태를 바꾸지 않고, 활성화는 ACT_PENDING → ACTIVE, 다른 용도 키로 서명한 활성화는 SIGNATURE_INVALID', async () => {
+    const { http, advance, runtime, hsm } = await boot();
+    const { k } = await killed(http, advance);
+    const env: KillCommandV2 = (await http().get(`/api/kill-requests/${k.killId}/envelopes`).expect(200)).body.envelopes.find((e: KillCommandV2) => e.scope.vehicle_ids[0] === 'ego-01');
+    const state = async () => (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022'];
+    runtime.guard('ego-01', k.publicationId, 'KILL', craft(hsm, env, 'sync', 'sync'), ['FEAT-00022']);
+    expect(await state()).toBe('DISABLED');
+    const wrongKey = craft(hsm, { ...env, vehicle_auth: { ...env.vehicle_auth!, vehicle_seq: env.vehicle_auth!.vehicle_seq + 1 } }, 'activate', 'kill');
+    runtime.guard('ego-01', k.publicationId, 'KILL', wrongKey, ['FEAT-00022']);
+    expect(await state()).toBe('DISABLED');
+    runtime.guard('ego-01', k.publicationId, 'KILL', craft(hsm, { ...env, vehicle_auth: { ...env.vehicle_auth!, vehicle_seq: env.vehicle_auth!.vehicle_seq + 1 } }, 'activate', 'activate'), ['FEAT-00022']);
+    expect(await state()).toBe('ACT_PENDING');
+    advance(2_000);
+    expect(await state()).toBe('ACTIVE');
+    const log = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log.map((l: any) => l.detail);
+    expect(log.slice(-3)).toEqual(['sync DC2 수락', 'SIGNATURE_INVALID', 'activate DC2 수락']);
   });
 });
 

@@ -1,0 +1,534 @@
+{
+  "_note": "GLEO v2 교차 언어 시험 벡터 — backend/test/d03/gleo-v2-vectors.spec.ts가 만든다(손으로 고치지 않는다). 시험 전용 고정 키, 운영 키 아님.",
+  "keys": {
+    "vehicle_root_b64": "V1QQ+EWQGIMBS4wZMHiQnT0L0wT41fykrtoeKsLJqqE=",
+    "epoch": 1,
+    "hkdf": {
+      "hash": "SHA-256",
+      "salt": "epoch:1",
+      "info": "ffp-vehicle-key|<VIN>",
+      "length": 16
+    },
+    "vehicle_keys_hex": {
+      "ego-01": "8e85bbb5cc3b36745c7e3e2e124daa87",
+      "lead-01": "14e10eb41a8e20a6b7ad811a7e70693b"
+    },
+    "kill_signing": {
+      "alg": "EdDSA",
+      "kid": "TEST-KILL-1",
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA/AwkLffmuKEnSbWJm4FahTXit5gPDWVL60OrKwnOWQ8=\n-----END PUBLIC KEY-----\n"
+    },
+    "pseudonym": {
+      "algorithm": "sha256('ffp-pseudonym|' + VIN)[0:16] hex",
+      "values": {
+        "ego-01": "1836e4185d6884d8",
+        "lead-01": "1dbfda8ff941f966"
+      }
+    }
+  },
+  "envelopes": [
+    {
+      "vin": "ego-01",
+      "envelope": {
+        "type": "kill_command",
+        "schema_version": "2.0",
+        "command_id": "6f1c2b9e-3d4a-4e5f-8a7b-1c2d3e4f5a6b",
+        "command_seq": 11,
+        "request": "deactivate",
+        "feature": {
+          "id": "FEAT-00022",
+          "version": "1.0.0",
+          "f_class": "F3",
+          "deact_class": "DC2"
+        },
+        "reason": {
+          "category": "SAFETY",
+          "code": "DIST_EST_BIAS"
+        },
+        "scope": {
+          "vehicle_ids": [
+            "ego-01"
+          ],
+          "max_vehicles": 1
+        },
+        "target": {
+          "market": "KR",
+          "ecu_id": "99211-NX400",
+          "sw_id": "SW-CARE-SDIST-APP",
+          "sw_version": "1.2.1",
+          "rxswin": "NONE"
+        },
+        "validity": {
+          "not_before": "2026-10-13T00:00:00Z",
+          "expires_at": "2026-10-13T12:00:00Z"
+        },
+        "approvals": [
+          {
+            "approver_id": "u-1001",
+            "role": "FSM",
+            "signed_at": "2026-10-12T23:50:00Z",
+            "approval_sig": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+          },
+          {
+            "approver_id": "u-2002",
+            "role": "OPS_LEAD",
+            "signed_at": "2026-10-12T23:52:00Z",
+            "approval_sig": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+          }
+        ],
+        "regulatory": {
+          "type_approval_impact": "NONE",
+          "r156_assessment_id": "SUMS-IA-FEAT-00022-1.0.0",
+          "containment_justification": "원인 분석 전 봉쇄"
+        },
+        "user_notice": {
+          "required": true,
+          "text_ref": "HMI-TXT-FEAT00022-DEACT"
+        },
+        "evidence": {
+          "evidence_manifest_id": "EVM-FEAT-00022-1.0.0",
+          "bom_baseline_id": "BL-00028"
+        },
+        "issued_by": "ff-platform",
+        "issued_at": "2026-10-12T23:55:00Z",
+        "vehicle_auth": {
+          "key_epoch": 1,
+          "vehicle_seq": 1,
+          "approver_refs": [
+            43586,
+            54846
+          ],
+          "cmd_auth": "_Dsb06YSbxCnLDCeR8WU-w"
+        },
+        "signature": {
+          "alg": "EdDSA",
+          "kid": "TEST-KILL-1",
+          "value": "6v02RsA-cPmAlDUylG0G4I_uldtQ_omERfauMOjkYiaFLOnuBXtVAqMPMVy7VKyvTiopVkhoxzw74vaCbckrAA"
+        }
+      },
+      "target_hash": 177366329,
+      "auth_block_hex": "0000001601003c1e6f01000000016acd74806ace1d400a926539aa42d63e0000",
+      "frame56_hex": "0f2200000000001601003c1e6f01000000016acd74806ace1d400a926539aa42d63e0000fc3b1bd3a6126f10a72c309e47c594fb1fd4f652",
+      "crc32": 534050386,
+      "jcs_signed_bytes": "{\"approvals\":[{\"approval_sig\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"approver_id\":\"u-1001\",\"role\":\"FSM\",\"signed_at\":\"2026-10-12T23:50:00Z\"},{\"approval_sig\":\"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\",\"approver_id\":\"u-2002\",\"role\":\"OPS_LEAD\",\"signed_at\":\"2026-10-12T23:52:00Z\"}],\"command_id\":\"6f1c2b9e-3d4a-4e5f-8a7b-1c2d3e4f5a6b\",\"command_seq\":11,\"evidence\":{\"bom_baseline_id\":\"BL-00028\",\"evidence_manifest_id\":\"EVM-FEAT-00022-1.0.0\"},\"feature\":{\"deact_class\":\"DC2\",\"f_class\":\"F3\",\"id\":\"FEAT-00022\",\"version\":\"1.0.0\"},\"issued_at\":\"2026-10-12T23:55:00Z\",\"issued_by\":\"ff-platform\",\"reason\":{\"category\":\"SAFETY\",\"code\":\"DIST_EST_BIAS\"},\"regulatory\":{\"containment_justification\":\"원인 분석 전 봉쇄\",\"r156_assessment_id\":\"SUMS-IA-FEAT-00022-1.0.0\",\"type_approval_impact\":\"NONE\"},\"request\":\"deactivate\",\"schema_version\":\"2.0\",\"scope\":{\"max_vehicles\":1,\"vehicle_ids\":[\"ego-01\"]},\"target\":{\"ecu_id\":\"99211-NX400\",\"market\":\"KR\",\"rxswin\":\"NONE\",\"sw_id\":\"SW-CARE-SDIST-APP\",\"sw_version\":\"1.2.1\"},\"type\":\"kill_command\",\"user_notice\":{\"required\":true,\"text_ref\":\"HMI-TXT-FEAT00022-DEACT\"},\"validity\":{\"expires_at\":\"2026-10-13T12:00:00Z\",\"not_before\":\"2026-10-13T00:00:00Z\"},\"vehicle_auth\":{\"approver_refs\":[43586,54846],\"cmd_auth\":\"_Dsb06YSbxCnLDCeR8WU-w\",\"key_epoch\":1,\"vehicle_seq\":1}}",
+      "schema_errors": []
+    },
+    {
+      "vin": "lead-01",
+      "envelope": {
+        "type": "kill_command",
+        "schema_version": "2.0",
+        "command_id": "6f1c2b9e-3d4a-4e5f-8a7b-1c2d3e4f5a6b",
+        "command_seq": 11,
+        "request": "deactivate",
+        "feature": {
+          "id": "FEAT-00022",
+          "version": "1.0.0",
+          "f_class": "F3",
+          "deact_class": "DC2"
+        },
+        "reason": {
+          "category": "SAFETY",
+          "code": "DIST_EST_BIAS"
+        },
+        "scope": {
+          "vehicle_ids": [
+            "lead-01"
+          ],
+          "max_vehicles": 1
+        },
+        "target": {
+          "market": "KR",
+          "ecu_id": "99211-NX400",
+          "sw_id": "SW-CARE-SDIST-APP",
+          "sw_version": "1.2.1",
+          "rxswin": "NONE"
+        },
+        "validity": {
+          "not_before": "2026-10-13T00:00:00Z",
+          "expires_at": "2026-10-13T12:00:00Z"
+        },
+        "approvals": [
+          {
+            "approver_id": "u-1001",
+            "role": "FSM",
+            "signed_at": "2026-10-12T23:50:00Z",
+            "approval_sig": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+          },
+          {
+            "approver_id": "u-2002",
+            "role": "OPS_LEAD",
+            "signed_at": "2026-10-12T23:52:00Z",
+            "approval_sig": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+          }
+        ],
+        "regulatory": {
+          "type_approval_impact": "NONE",
+          "r156_assessment_id": "SUMS-IA-FEAT-00022-1.0.0",
+          "containment_justification": "원인 분석 전 봉쇄"
+        },
+        "user_notice": {
+          "required": true,
+          "text_ref": "HMI-TXT-FEAT00022-DEACT"
+        },
+        "evidence": {
+          "evidence_manifest_id": "EVM-FEAT-00022-1.0.0",
+          "bom_baseline_id": "BL-00028"
+        },
+        "issued_by": "ff-platform",
+        "issued_at": "2026-10-12T23:55:00Z",
+        "vehicle_auth": {
+          "key_epoch": 1,
+          "vehicle_seq": 1,
+          "approver_refs": [
+            43586,
+            54846
+          ],
+          "cmd_auth": "BoL1i-rU48lBJfC2UTQbQA"
+        },
+        "signature": {
+          "alg": "EdDSA",
+          "kid": "TEST-KILL-1",
+          "value": "IMLeu0Cw6C3VOwr_HbnCf_3y6yfkz8GoNuibliq0VT5t1YjcuO3Mo-VxG7X-gPTwfuts0l5Bf72SCuKOH43BDQ"
+        }
+      },
+      "target_hash": 3391164324,
+      "auth_block_hex": "0000001601003c1e6f01000000016acd74806ace1d40ca210fa4aa42d63e0000",
+      "frame56_hex": "0f2200000000001601003c1e6f01000000016acd74806ace1d40ca210fa4aa42d63e00000682f58bead4e3c94125f0b651341b4086f5624b",
+      "crc32": 2264228427,
+      "jcs_signed_bytes": "{\"approvals\":[{\"approval_sig\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"approver_id\":\"u-1001\",\"role\":\"FSM\",\"signed_at\":\"2026-10-12T23:50:00Z\"},{\"approval_sig\":\"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\",\"approver_id\":\"u-2002\",\"role\":\"OPS_LEAD\",\"signed_at\":\"2026-10-12T23:52:00Z\"}],\"command_id\":\"6f1c2b9e-3d4a-4e5f-8a7b-1c2d3e4f5a6b\",\"command_seq\":11,\"evidence\":{\"bom_baseline_id\":\"BL-00028\",\"evidence_manifest_id\":\"EVM-FEAT-00022-1.0.0\"},\"feature\":{\"deact_class\":\"DC2\",\"f_class\":\"F3\",\"id\":\"FEAT-00022\",\"version\":\"1.0.0\"},\"issued_at\":\"2026-10-12T23:55:00Z\",\"issued_by\":\"ff-platform\",\"reason\":{\"category\":\"SAFETY\",\"code\":\"DIST_EST_BIAS\"},\"regulatory\":{\"containment_justification\":\"원인 분석 전 봉쇄\",\"r156_assessment_id\":\"SUMS-IA-FEAT-00022-1.0.0\",\"type_approval_impact\":\"NONE\"},\"request\":\"deactivate\",\"schema_version\":\"2.0\",\"scope\":{\"max_vehicles\":1,\"vehicle_ids\":[\"lead-01\"]},\"target\":{\"ecu_id\":\"99211-NX400\",\"market\":\"KR\",\"rxswin\":\"NONE\",\"sw_id\":\"SW-CARE-SDIST-APP\",\"sw_version\":\"1.2.1\"},\"type\":\"kill_command\",\"user_notice\":{\"required\":true,\"text_ref\":\"HMI-TXT-FEAT00022-DEACT\"},\"validity\":{\"expires_at\":\"2026-10-13T12:00:00Z\",\"not_before\":\"2026-10-13T00:00:00Z\"},\"vehicle_auth\":{\"approver_refs\":[43586,54846],\"cmd_auth\":\"BoL1i-rU48lBJfC2UTQbQA\",\"key_epoch\":1,\"vehicle_seq\":1}}",
+      "schema_errors": []
+    }
+  ],
+  "guard_cases": [
+    {
+      "name": "정상",
+      "input": {
+        "keyEpoch": 1,
+        "currentEpoch": 1,
+        "lastVehicleSeq": 0,
+        "now": 1791849630000,
+        "notBefore": 1791849600000,
+        "expiresAt": 1791892800000,
+        "designClass": "DC2",
+        "commandClass": "DC2",
+        "jwsOk": true,
+        "cmdAuthOk": true,
+        "vehicleSeq": 1,
+        "approverRefs": [
+          43586,
+          54846
+        ]
+      },
+      "expected": "NONE"
+    },
+    {
+      "name": "재전송",
+      "input": {
+        "keyEpoch": 1,
+        "currentEpoch": 1,
+        "lastVehicleSeq": 1,
+        "now": 1791849630000,
+        "notBefore": 1791849600000,
+        "expiresAt": 1791892800000,
+        "designClass": "DC2",
+        "commandClass": "DC2",
+        "jwsOk": true,
+        "cmdAuthOk": true,
+        "vehicleSeq": 1,
+        "approverRefs": [
+          43586,
+          54846
+        ]
+      },
+      "expected": "REPLAY"
+    },
+    {
+      "name": "cmd_auth 불일치",
+      "input": {
+        "keyEpoch": 1,
+        "currentEpoch": 1,
+        "lastVehicleSeq": 0,
+        "now": 1791849630000,
+        "notBefore": 1791849600000,
+        "expiresAt": 1791892800000,
+        "designClass": "DC2",
+        "commandClass": "DC2",
+        "jwsOk": true,
+        "cmdAuthOk": false,
+        "vehicleSeq": 1,
+        "approverRefs": [
+          43586,
+          54846
+        ]
+      },
+      "expected": "AUTH_FAILED"
+    },
+    {
+      "name": "등급 불일치(운영자 DC0)",
+      "input": {
+        "keyEpoch": 1,
+        "currentEpoch": 1,
+        "lastVehicleSeq": 0,
+        "now": 1791849630000,
+        "notBefore": 1791849600000,
+        "expiresAt": 1791892800000,
+        "designClass": "DC2",
+        "commandClass": "DC0",
+        "jwsOk": true,
+        "cmdAuthOk": true,
+        "vehicleSeq": 1,
+        "approverRefs": [
+          43586,
+          54846
+        ]
+      },
+      "expected": "CLASS_MISMATCH"
+    },
+    {
+      "name": "만료",
+      "input": {
+        "keyEpoch": 1,
+        "currentEpoch": 1,
+        "lastVehicleSeq": 0,
+        "now": 1791892800000,
+        "notBefore": 1791849600000,
+        "expiresAt": 1791892800000,
+        "designClass": "DC2",
+        "commandClass": "DC2",
+        "jwsOk": true,
+        "cmdAuthOk": true,
+        "vehicleSeq": 1,
+        "approverRefs": [
+          43586,
+          54846
+        ]
+      },
+      "expected": "EXPIRED"
+    }
+  ],
+  "status_cases": [
+    {
+      "name": "정상 DISABLED",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.0",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00022",
+          "version": "1.0.0"
+        },
+        "state": "DISABLED",
+        "reason": {
+          "category": "SAFETY",
+          "source": "REMOTE"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 1,
+        "durable": true,
+        "hmi": "INFO_DISABLED",
+        "feature_weight_permille": 0,
+        "edr_aligned_state": "OFF_BY_COMMAND",
+        "received_at": "2026-10-13T00:00:01Z",
+        "applied_at": "2026-10-13T00:00:08Z",
+        "observed_at": "2026-10-13T00:00:08Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "state_auth": "8W9McDduHidFHyo_RGRO6A"
+      },
+      "state_auth_canonical": "{\"applied_at\":\"2026-10-13T00:00:08Z\",\"data_category\":\"SAFETY_OPERATION\",\"durable\":true,\"edr_aligned_state\":\"OFF_BY_COMMAND\",\"feature\":{\"id\":\"FEAT-00022\",\"version\":\"1.0.0\"},\"feature_weight_permille\":0,\"hmi\":\"INFO_DISABLED\",\"key_epoch\":1,\"observed_at\":\"2026-10-13T00:00:08Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"SAFETY\",\"source\":\"REMOTE\"},\"received_at\":\"2026-10-13T00:00:01Z\",\"report_seq\":65539,\"request_result\":\"NONE\",\"schema_version\":\"2.0\",\"state\":\"DISABLED\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":1}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "1.0.0",
+        "lastCommand": {
+          "request": "deactivate",
+          "vehicleSeq": 1
+        }
+      },
+      "expected": {
+        "accepted": true,
+        "violation": null,
+        "action": {
+          "kind": "APPLIED",
+          "retry": false,
+          "security": false
+        }
+      }
+    },
+    {
+      "name": "위조(상태 바꾸고 state_auth 그대로)",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.0",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00022",
+          "version": "1.0.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "SAFETY",
+          "source": "REMOTE"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 1,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "AVAILABLE",
+        "received_at": "2026-10-13T00:00:01Z",
+        "applied_at": "2026-10-13T00:00:08Z",
+        "observed_at": "2026-10-13T00:00:08Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "state_auth": "8W9McDduHidFHyo_RGRO6A"
+      },
+      "context": {
+        "authOk": false,
+        "lastReportSeq": 65538,
+        "expectedVersion": "1.0.0",
+        "lastCommand": {
+          "request": "deactivate",
+          "vehicleSeq": 1
+        }
+      },
+      "expected": {
+        "accepted": false,
+        "violation": {
+          "step": "AUTH",
+          "code": "AUTH_FAILED",
+          "message": "state_auth가 차량 키로 검증되지 않습니다 — 위조·변조 보고"
+        },
+        "action": {
+          "kind": "SECURITY_EVENT",
+          "retry": false,
+          "security": true
+        }
+      }
+    },
+    {
+      "name": "재전송(같은 report_seq)",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.0",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00022",
+          "version": "1.0.0"
+        },
+        "state": "DISABLED",
+        "reason": {
+          "category": "SAFETY",
+          "source": "REMOTE"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 1,
+        "durable": true,
+        "hmi": "INFO_DISABLED",
+        "feature_weight_permille": 0,
+        "edr_aligned_state": "OFF_BY_COMMAND",
+        "received_at": "2026-10-13T00:00:01Z",
+        "applied_at": "2026-10-13T00:00:08Z",
+        "observed_at": "2026-10-13T00:00:08Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "state_auth": "8W9McDduHidFHyo_RGRO6A"
+      },
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65539,
+        "expectedVersion": "1.0.0",
+        "lastCommand": {
+          "request": "deactivate",
+          "vehicleSeq": 1
+        }
+      },
+      "expected": {
+        "accepted": false,
+        "violation": {
+          "step": "SEQUENCE",
+          "code": "REPLAY",
+          "message": "report_seq 65539 ≤ 마지막 65539 — 재전송"
+        },
+        "action": {
+          "kind": "SECURITY_EVENT",
+          "retry": false,
+          "security": true
+        }
+      }
+    },
+    {
+      "name": "재부팅 뒤 해제 없이 ACTIVE(정상 서명)",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.0",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00022",
+          "version": "1.0.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "SAFETY",
+          "source": "STARTUP"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 1,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "AVAILABLE",
+        "received_at": "2026-10-13T00:00:01Z",
+        "applied_at": "2026-10-13T00:00:08Z",
+        "observed_at": "2026-10-13T00:00:08Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 131073,
+        "persistence": "DURABLE",
+        "state_auth": "acG3nT_75eLrcvbqVqE6WQ"
+      },
+      "state_auth_canonical": "{\"applied_at\":\"2026-10-13T00:00:08Z\",\"data_category\":\"SAFETY_OPERATION\",\"durable\":true,\"edr_aligned_state\":\"AVAILABLE\",\"feature\":{\"id\":\"FEAT-00022\",\"version\":\"1.0.0\"},\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"key_epoch\":1,\"observed_at\":\"2026-10-13T00:00:08Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"SAFETY\",\"source\":\"STARTUP\"},\"received_at\":\"2026-10-13T00:00:01Z\",\"report_seq\":131073,\"request_result\":\"NONE\",\"schema_version\":\"2.0\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":1}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "1.0.0",
+        "lastCommand": {
+          "request": "deactivate",
+          "vehicleSeq": 1
+        }
+      },
+      "expected": {
+        "accepted": false,
+        "violation": {
+          "step": "HISTORY",
+          "code": "ACTIVE_WITHOUT_RESTORE",
+          "message": "비활성화 뒤 복원 명령 없이 ACTIVE를 보고했습니다 — 안전 Kill이 풀림"
+        },
+        "action": {
+          "kind": "DISCARD_UNKNOWN",
+          "retry": false,
+          "security": false
+        }
+      }
+    }
+  ]
+}

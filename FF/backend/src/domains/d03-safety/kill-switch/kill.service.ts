@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { Body, Controller, Get, Inject, Injectable, Param, Post, Query } from '@nestjs/common';
 import {
   applyWindowMs,
+  COMMAND_KEY_PURPOSE,
   approvalCheck,
   approvalPlan,
   approvalSubject,
@@ -421,7 +422,7 @@ export class KillService {
    */
   issueCommand(actor: Actor, k: { killId: string; vins: string[] }, draft: KillCommandV2): IssuedCommand {
     this.gate.commit(actor, draft);
-    const purpose = draft.request === 'restore' ? 'restore' : 'kill';
+    const purpose = COMMAND_KEY_PURPOSE[draft.request];
     const { signature: _unsigned, ...body } = draft;
     const sig = this.hsm.signDetached(purpose, jcs(body));
     const command: KillCommandV2 = { ...body, signature: { alg: 'EdDSA', kid: sig.kid, value: sig.value } };

@@ -94,8 +94,15 @@ export class HsmService {
     return 1;
   }
 
+  /**
+   * epoch 루트 비밀 — 시험·시연용 모의 공장 주입: FF_HSM_VEHICLE_ROOT(base64 32바이트)가 있으면 epoch 1 루트로 쓴다(FF_IMP 모의 차량이 같은 차량 키를 파생).
+   * epoch를 올리면(키 유출 대응) 항상 새 무작위 비밀.
+   */
   private putRoot(epoch: number) {
-    const put = () => this.db.run('INSERT INTO hsm_secret (name, epoch, secret, created_at) VALUES (?, ?, ?, ?)', VEHICLE_ROOT, epoch, randomBytes(32).toString('base64'), this.clock.iso());
+    const injected = process.env.FF_HSM_VEHICLE_ROOT;
+    if (injected && epoch === 1 && Buffer.from(injected, 'base64').length !== 32) throw new Error('FF_HSM_VEHICLE_ROOT는 base64 32바이트여야 합니다');
+    const secret = injected && epoch === 1 ? injected : randomBytes(32).toString('base64');
+    const put = () => this.db.run('INSERT INTO hsm_secret (name, epoch, secret, created_at) VALUES (?, ?, ?, ?)', VEHICLE_ROOT, epoch, secret, this.clock.iso());
     if (this.db.inTransaction) put();
     else this.db.tx(put);
   }

@@ -43,7 +43,7 @@ test('이상 징후: 고장 보고 2대(ASIL B) → 긴급 차단 권고 → 확
   await page.goto('/quality/feedback');
   const fb = page.getByRole('row', { name: /FEAT-00022/ }).first();
   await expect(fb).toContainText('G5 · G7');
-  await expect(fb).toContainText('SCN-FEAT00022-FAULT-KILL');
+  await expect(fb).toContainText('SCN-FEAT00022-FAULT-ONBOARD');
 });
 
 test('Unleash 연계: 배포 정책 동기화(모의 Unleash) → drift 없음 → 차량별 대조 불일치 0', async ({ page }) => {

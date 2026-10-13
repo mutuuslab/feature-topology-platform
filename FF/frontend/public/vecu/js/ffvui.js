@@ -7,7 +7,7 @@ import { zip } from './zip.js';
 
 const RES = { TRUE: '✔', FALSE: '✖', UNKNOWN: '?', SKIP: '–' }, STI = { pass: '✔', fail: '✖', pending: '…', na: '–' };
 const STAGE_C = { '정상': '#5cc47d', '주의': '#f0b445', '위험': '#ef5b4c' };
-const EV_LABEL = { fault_injected: '오류 주입', kill_issued: '긴급 차단', safe_default_applied: 'Safe Default' };
+const EV_LABEL = { fault_injected: '오류 주입', kill_issued: '긴급 차단', deact_accepted: '차단 수락', onboard_fault: '차량 내 감지', feature_base_only: 'BASE_ONLY', kill_rejected: 'DC4 거부' };
 const TC_ST = { PASS: '통과', FAIL: '불합격', RUNNING: '진행 중', NOT_RUN: '미실시' };
 const EXP_SHORT = { CONFIRMED: '일치', DIVERGED: '불일치', DUPLICATE: '중복', ACCEPTED: '접수', REJECTED: '거부' };   // request log column; error codes show as the HTTP status
 const fmt = (v, d = 1) => (v == null || !isFinite(v) ? '—' : (+v).toFixed(d));
@@ -56,7 +56,7 @@ export function initFFV(ctx) {
     const n = id => +$(id).value, sc = tc.scenario;
     sc.lead_kph = n('#ffvLead'); sc.target_gap_m = n('#ffvGap'); sc.link_latency_ms = n('#ffvLat'); sc.duration_s = n('#ffvDur');
     sc.fault = $('#ffvFaultOn').checked ? Object.assign({ ramp_s: 8, bias_max: 2.4 }, sc.fault || {}, { at_s: n('#ffvFault') }) : null;
-    sc.kill = $('#ffvKillOn').checked ? Object.assign({ safe_mode: 'SAFE_DEFAULT' }, sc.kill || {}, { at_s: n('#ffvKill') }) : null;
+    sc.kill = $('#ffvKillOn').checked ? Object.assign({}, sc.kill || {}, { at_s: n('#ffvKill') }) : null;
   }
   function tcList() {
     $('#ffvTcs').innerHTML = tcs().map((t, i) => { const r = S.results[t.id], st = S.tc === t && S.run && !S.run.done ? 'RUNNING' : r ? r.overall : 'NOT_RUN';
@@ -122,11 +122,16 @@ export function initFFV(ctx) {
     const r = S.run; while (S.evN < r.events.length) {
       const e = r.events[S.evN++];
       if (e.type === 'fault_injected') S.sched.push({ t: e.t + 4, name: '02_fault', label: `오류 주입 4초 후 · ${e.detail}` });
-      if (e.type === 'safe_default_applied') {
+      if (e.type === 'deact_accepted' && e.deact_class === 'DC2') {   // DC2 takeover warning: the feature still drives, the driver is asked to take over
+        ctx.iviApply({ popup: { title: '운전자 인계 요청', text: `${ivi.feature.name}이(가) 곧 중지됩니다 — 직접 차간 거리를 확인하세요`, level: 'warn', ms: 4000 } });
+        S.sched.push({ t: e.t + .3, name: '03_takeover', label: `원격 차단 수락 → 인계 경고 (지연 ${e.latency_ms} ms)` });
+      }
+      if (e.type === 'onboard_fault') S.sched.push({ t: e.t + .1, name: '03_onboard', label: `차량 내 감지 · ${e.detail}` });
+      if (e.type === 'feature_base_only') {
         ivi.feature.state = 'safe_default';
-        ctx.iviApply({ screen: 'adas', popup: { title: '기능 일시 중지', text: `${ivi.feature.name}이(가) 원격으로 중지되어 기본 주행 보조로 전환했습니다`, level: 'warn', ms: 8000 } });
-        S.sched.push({ t: e.t + .3, name: '04_kill', label: `긴급 차단 → Safe Default 적용 (지연 ${e.latency_ms} ms)` });
-        S.sched.push({ t: e.t + 3, name: '05_safe_default', label: 'Safe Default 적용 3초 후' });
+        ctx.iviApply({ screen: 'adas', popup: { title: '기능 일시 중지', text: `${ivi.feature.name}이(가) ${r.g && r.g.detectAt != null ? "차량 고장 감지로" : "원격으로"} 중지되어 기본 주행 보조로 전환했습니다`, level: 'warn', ms: 8000 } });
+        S.sched.push({ t: e.t + .3, name: '04_base_only', label: `기능 효과 제거 → BASE_ONLY (${e.state})` });
+        S.sched.push({ t: e.t + 3, name: '05_base_only', label: 'BASE_ONLY 3초 후' });
       }
       if (e.type === 'feature_active' && r.t > .1) { ivi.feature.state = 'active'; ctx.iviApply({ screen: home(), popup: { title: '주행 보조 기능 사용 가능', text: `${ivi.feature.name} · ${e.detail}`, level: 'info', ms: 5000 } }); }
       if (e.type === 'feature_disabled' && r.t > .1) { ivi.feature.state = 'disabled'; ctx.iviApply({ screen: home(), popup: { title: '주행 보조 기능 꺼짐', text: `${ivi.feature.name} · ${e.detail}`, level: 'warn', ms: 5000 } }); }

@@ -2,7 +2,7 @@
 // 피드백은 다음 Version이 해야 할 일(G5·G7 재판정, vECU 회귀 시나리오)을 적고, 문제난 Version보다 높은 Version이
 // G5 Verification Gate PASS를 받으면 자동으로 해소된다. 상품·설계 담당은 피드백을 수용(ACCEPTED)해 작업으로 가져간다.
 import { Body, Controller, Get, HttpCode, Inject, Injectable, Logger, OnModuleInit, Param, Post, Query } from '@nestjs/common';
-import { FeedbackAcceptBody, feedbackActions, versionAfter, virtualScenariosFor, type AnomalyKind, type QualityFeedback } from '@ff/contracts';
+import { decidingScenariosFor, FeedbackAcceptBody, feedbackActions, versionAfter, type AnomalyKind, type QualityFeedback } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -73,7 +73,7 @@ export class FeedbackService implements OnModuleInit {
         anomalyId,
         kind: a.kind as AnomalyKind,
         summary: `${a.kind === 'FEATURE_FAULT' ? '현장 고장' : '보안 이상'} — 차량 ${a.vins.length}대 · ${a.reasons.join(' / ')}${a.killId ? ` · 긴급 차단 ${a.killId}` : ''}`,
-        actions: feedbackActions(a, { asil, virtualScenarios: virtualScenariosFor(a.featureId).map((s) => s.scenarioId) }),
+        actions: feedbackActions(a, { asil, virtualScenarios: decidingScenariosFor(a.featureId).map((s) => s.scenarioId) }),
         status: 'OPEN',
         createdAt: this.clock.iso(),
         acceptedBy: null,

@@ -72,7 +72,7 @@ describe('운영 되먹임 — 이상 징후 대응 · 품질 피드백', () => 
     const fb = (await http().get('/api/quality-feedback?featureId=FEAT-00022').expect(200)).body.items;
     expect(fb).toHaveLength(1);
     expect(fb[0]).toMatchObject({ status: 'OPEN', featureVersion: '1.0.0', anomalyId: anm, kind: 'FEATURE_FAULT' });
-    expect(fb[0].actions.map((x: any) => x.ref)).toEqual(['G5', 'G7', 'SCN-FEAT00022-NOMINAL', 'SCN-FEAT00022-FAULT-KILL']);
+    expect(fb[0].actions.map((x: any) => x.ref)).toEqual(['G5', 'G7', 'SCN-FEAT00022-NOMINAL', 'SCN-FEAT00022-FAULT-ONBOARD']); // 기준선(REMOTE-DC2)은 회귀 목록에 넣지 않는다
     await http().post(`/api/anomalies/${anm}/dismiss`).set(OPERATOR).send({ reason: '중복' }).expect(422); // 이미 닫힘
     await restoreV2(http, k.body.killId, '정리', OPERATOR);
   });

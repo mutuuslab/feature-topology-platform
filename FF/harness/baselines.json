@@ -25,12 +25,12 @@
     "note": "보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지"
   },
   "platformRulesImplemented": {
-    "value": 43,
+    "value": 44,
     "direction": "min",
     "note": "보고서 v1.1 플랫폼 규칙 중 @rule 표식으로 구현이 추적되는 규칙 수 — 늘려 나간다"
   },
   "platformRulesTested": {
-    "value": 43,
+    "value": 44,
     "direction": "min",
     "note": "보고서 v1.1 플랫폼 규칙 중 시험이 있는 규칙 수 — 늘려 나간다"
   },

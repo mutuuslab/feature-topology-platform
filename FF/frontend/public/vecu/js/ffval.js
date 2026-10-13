@@ -2,14 +2,19 @@
 // its gate test plan, decide ON/OFF for a virtual vehicle with the platform's own evaluator, drive the feature's
 // vehicle-side runtime in the simulation (fault injection, Kill over a simulated link, flag queries and reports sent by the
 // vehicle), judge each test case against its gate criteria and produce evidence in FF_IMP formats.
+// ffval 2.0 (report v1.1, FF WP9): the vehicle Safety Guard runs the deactivation class of the package's safety profile
+// (DC2: takeover warning → ramp → DISABLED = BASE_ONLY; DC4: remote command refused), and an optional on-board plausibility
+// monitor (scenario.onboard) detects the fault itself and removes the feature effect with the fault ramp — no cloud needed.
+// Evidence carries reproduction info (tool version, scenario hash, seed; the headless CLI adds the script hash).
 // No three.js / DOM here, so the whole run can be exercised under Node (tests/js/*.test.mjs).
 import { evaluateFlag } from './vendor/ff_evaluate.js';
-import { createRuntime as rt22, stageOf } from './features/feat00022.js';
+import { createRuntime as rt22, stageOf, FEATURE_STATES } from './features/feat00022.js';
+import { createPlausibility } from './features/onboard.js';
 import { createRuntime as rt23, driverDemand } from './features/feat00023.js';
 import { createRuntime as rt24 } from './features/feat00024.js';
 
 /** Simulator / validation tool identification recorded in every evidence file. */
-export const FFVAL_VERSION = 'Ausfahrt Test Drive (vECU) · ffval 1.3 (2026-10-12) · FF evaluator @ff/contracts 0.81.0';
+export const FFVAL_VERSION = 'Ausfahrt Test Drive (vECU) · ffval 2.0 (2026-10-14) · FF evaluator @ff/contracts 0.81.0';
 const RANK = { '정상': 0, '주의': 1, '위험': 2 };
 const OBSERVED = ['swVersion', 'quality', 'link'];   // vehicle-reported (observed) attributes; everything else comes from trusted sources
 const r2 = v => (v == null || !isFinite(v) ? null : Math.round(v * 100) / 100);
@@ -20,7 +25,15 @@ export const VEHICLE_RATE_LIMIT = { requests: 30, windowMs: 10000 };
 const REPORT_TYPES = { hello: 'HELLO', update: 'CONTEXT', context: 'CONTEXT', trial_accept: 'TRIAL_ACCEPT', fault: 'FAULT', readback: 'READBACK', override: 'OVERRIDE' };
 
 // criteria shared by every feature
-const C_KILL = { id: 'kill_latency', label: 'Kill → Safe Default 적용', unit: 's', op: '<=', limit: 1.0 };
+const C_KILL = { id: 'kill_latency', label: '원격 차단 → 차량 Guard 수락', unit: 's', op: '<=', limit: 1.0 };
+// limits that come from the safety profile (Registry): limitOf(run) replaces limit
+const C_DEACT = { id: 'deact_time', label: '수락 → 기능 꺼짐 (DISABLED, 인계+램프)', unit: 's', op: '<=', limit: 7.05, limitOf: run => (run.safety.takeoverMs + run.safety.rampMs) / 1000 + 0.05 };
+const C_DETECT = { id: 'detect_latency', label: '고장 시작 → 차량 내 감지 확정', unit: 's', op: '<=', limit: 3.5, limitOf: run => (run.safety.faultTolerantTimeMs - run.safety.faultRampMs) / 1000 };
+const C_FTTI = { id: 'ftti_margin', label: 'FTTI 여유 (FTTI 끝 − 기능 효과 제거)', unit: 's', op: '>=', limit: 0 };
+const C_REFUSE = { id: 'remote_refused', label: 'DC4 원격 차단 거부 (차량 Guard)', unit: '건', op: '>=', limit: 1 };
+/** Registry safety profile defaults (FF FEAT-00022 confirmed: F3/DC2, report 5.6) — the package's `safety` overrides them. */
+const IDLE_S = 1.5;   // FF vehicle simulator / FF_IMP VehicleGuard idle_ms — 'not engaged' confirmation for DC1
+const SAFETY_DEFAULTS = { deactClass: 'DC2', takeoverMs: 4000, rampMs: 3000, faultRampMs: 1500, faultTolerantTimeMs: 5000 };
 const C_DECEL = { id: 'max_decel', label: '최대 감속', unit: 'm/s²', op: '<=', limit: 2.8 };
 const C_REQ = [{ id: 'request_latency', label: '차량 요청 → 응답·반영 (최장)', unit: 's', op: '<=', limit: 1.0 },
   { id: 'request_expected', label: '차량 요청 응답 불일치 (기대 결과 대비)', unit: '건', op: '<=', limit: 0 }];
@@ -49,18 +62,19 @@ export const FEATURES = {
       if (feat.stage_true === '위험') { m.danger += dt; if (m.dangerAt == null) m.dangerAt = t; }
       if (ttc != null && ttc < m.minTtc) { m.minTtc = ttc; m.minTtcAt = t; }
       if (tg < m.minTg) { m.minTg = tg; m.minTgAt = t; }
-      if (run.k.killApplied != null && m.recoveredAt == null && feat.stage_true === '정상') m.recoveredAt = t;
+      if (run.g.disabledAt != null && m.recoveredAt == null && feat.stage_true === '정상') m.recoveredAt = t;
       return { accel: clamp((out.cmd_mps - inp.ego_mps) / .6, -9, 4), fault: out.fault_active,   // the vehicle follows the feature command (first-order, as in FF_IMP)
-        tel: { gap_true: r2(inp.gap_true), gap_est: r2(feat.gap_est), stage_feature: feat.stage_feature, stage_true: feat.stage_true, cmd_kph: r2(out.cmd_mps * 3.6), ttc: r2(ttc) } };
+        monitor: { est: out.gap_est, ref: inp.gap_true },   // on-board plausibility: the feature's estimate vs the independent reference
+        tel: { gap_true: r2(inp.gap_true), gap_est: r2(feat.gap_est), stage_feature: feat.stage_feature, stage_true: feat.stage_true, cmd_kph: r2(out.cmd_mps * 3.6), ttc: r2(ttc), feature_weight: out.feature_weight } };
     },
     values: (run, m, end) => ({
       misjudge: [m.misMax, m.misAt], danger_time: [m.danger, m.dangerAt], min_ttc: [m.minTtc === Infinity ? null : m.minTtc, m.minTtcAt],
-      recovery: run.k.killApplied == null ? (!run.sc.kill || !run.on ? 'na' : null) : m.recoveredAt != null ? [m.recoveredAt - run.k.killApplied, m.recoveredAt] : end ? [Infinity, null] : null }),
-    criteria: [C_KILL,
+      recovery: run.g.disabledAt == null ? (!run.expectsDisable() ? 'na' : end ? [Infinity, null] : null) : m.recoveredAt != null ? [m.recoveredAt - run.g.disabledAt, m.recoveredAt] : end ? [Infinity, null] : null }),
+    criteria: [C_KILL, C_DEACT, C_REFUSE, C_DETECT, C_FTTI,
       { id: 'misjudge', label: '기능 오판단 최장 지속 (실제보다 안전하다고 판단)', unit: 's', op: '<=', limit: 2.0 },
       { id: 'danger_time', label: "실제 '위험' 단계 누적", unit: 's', op: '<=', limit: 0 },
       { id: 'min_ttc', label: '최소 TTC', unit: 's', op: '>=', limit: 2.0 }, C_DECEL,
-      { id: 'recovery', label: "Safe Default 후 실제 '정상' 복귀", unit: 's', op: '<=', limit: 15 }, ...C_REQ],
+      { id: 'recovery', label: "BASE_ONLY 후 실제 '정상' 복귀", unit: 's', op: '<=', limit: 15 }, ...C_REQ],
     worst: m => (m.minTg < Infinity ? { v: m.minTg, at: m.minTgAt, label: `최소 차간 시간 ${m.minTg.toFixed(2)} s`, lowerIsWorse: true } : null),
     summary: m => ({ minTimeGap: r2(m.minTg), minTimeGapAt: r2(m.minTgAt) }),
     chart: sc => ({ unit: 'm', ymax: Math.max(sc.target_gap_m * 1.6, 60), ref: { v: sc.target_gap_m, label: '목표 거리' },
@@ -106,7 +120,7 @@ export const FEATURES = {
       legend: [['억제 중', '#3d7cf0'], ['동작', STATE_C.ACTIVE], ['Safe Default', STATE_C.SAFE_DEFAULT], ['비활성', STATE_C.DISABLED]] }),
   },
   'FEAT-00024': {
-    name: 'IC·JC 경로 사전안내', asil: 'QM', controlPoint: 'Signal', arrange: 'free', provisional: true,
+    name: 'IC·JC 경로 사전안내', asil: 'QM', safety: { deactClass: 'DC1', takeoverMs: 0, rampMs: 0, faultRampMs: 0, faultTolerantTimeMs: 0 }, controlPoint: 'Signal', arrange: 'free', provisional: true,
     faultLabel: sc => `지도 거리 오류 주입 (+${sc.fault.offset_m} m, 오래된 지도)`,
     create: sc => rt24({}, sc),
     init: () => ({ firstAt: null, firstDist: null, errMax: 0, errAt: null, passT: null, clearT: null, offShown: 0, offAt: null, shown: false }),
@@ -155,12 +169,14 @@ export function loadPackage(json) {
   const fleet = p.fleet || [], scenario = Object.assign({}, SCENARIO_DEFAULTS, p.scenario || {});
   const tests = (p.tests && p.tests.length ? p.tests : [{ id: scenario.scenarioId || 'TC-01', name: scenario.name, scenario }])
     .map((t, i) => ({ id: t.id || `TC-${String(i + 1).padStart(2, '0')}`, name: t.name || t.id, purpose: t.purpose || '', steps: t.steps || [], expected: t.expected || [],
-      preconditions: t.preconditions || {}, scenario: Object.assign({}, SCENARIO_DEFAULTS, t.scenario || {}, { name: t.name || (t.scenario && t.scenario.name) || SCENARIO_DEFAULTS.name }) }));
+      preconditions: t.preconditions || {}, scenario: Object.assign({}, SCENARIO_DEFAULTS, t.scenario || {}, { name: t.name || (t.scenario && t.scenario.name) || SCENARIO_DEFAULTS.name }), ...(t.baseline ? { baseline: true } : {}) }));
   return {
     policy: p.policy, scope: p.scope || null, fleet, vehicleVin: p.vehicle || (fleet[0] && fleet[0].vin) || null,
     entitlementActive: p.entitlementActive === undefined ? true : p.entitlementActive,
     scenario, tests, gate: Object.assign({ id: 'G5', name: '검증 Gate (배포 전)' }, p.gate || {}),
     supported: !!FEATURES[p.policy.featureId],
+    // Registry safety profile (FF: deactClass, takeoverMs, rampMs, faultRampMs, faultTolerantTimeMs) — the Guard and the limits use it
+    ...(p.safety ? { safety: p.safety } : {}),
   };
 }
 
@@ -200,7 +216,10 @@ export class ValidationRun {
     this.trial = o.pkg.trial || (this.ent ? 'ACTIVE' : 'NONE');   // OFFERED | ACTIVE | NONE (package field `trial`)
     this.reqs = []; this.pending = []; this.sched = [...(sc.vehicle_requests || [])].sort((a, b) => a.at_s - b.at_s); this.roles = sc.criteria || null;
     this.boot = { id: 'BOOT-1', seq: 0, last: -1 }; this.seen = {}; this.window = []; this.faults = [];
-    this.k = { maxDecel: 0, maxDecelAt: null, killIssued: null, killApplied: null };
+    this.k = { maxDecel: 0, maxDecelAt: null, killIssued: null, killApplied: null, killRejected: null };
+    // vehicle Safety Guard: deactivation class from the safety profile, stage timers, on-board detection
+    this.safety = { ...SAFETY_DEFAULTS, ...(F.safety || {}), ...(o.pkg.safety || {}) };
+    this.g = { due: [], acceptedAt: null, disabledAt: this.on ? null : 0, detectAt: null, onboard: sc.onboard ? createPlausibility(sc.onboard === true ? {} : sc.onboard) : null };
     this.pendingKill = null; this.adviceKillAt = null;
     this.ev('policy_evaluated', `${o.flag ? `${o.flag.decision} · ${o.flag.reason} → ${this.on ? 'ON' : 'OFF'}` : '평가 없음'}`, { flag: o.flag });
     this.ev(this.on ? 'feature_active' : 'feature_disabled', this.on ? `${F.name} 동작` : `정책 OFF — 기본 동작으로 시험`);
@@ -208,6 +227,54 @@ export class ValidationRun {
   iso(t) { return new Date(this.base + t * 1000).toISOString(); }
   ev(type, detail, extra) { this.events.push(Object.assign({ t: r2(this.t), type, detail }, extra || {})); }
   get state() { return !this.on ? 'DISABLED' : this.rt.state; }
+  /** a remote Kill or an on-board detection should switch the feature off in this test */
+  expectsDisable() { return this.on && (!!this.sc.kill || this.adviceKillAt != null || (!!this.g.onboard && !!this.sc.fault)); }
+
+  /** Guard state → runtime (FEAT-00022 blends by weight; runtimes without stages switch to base when the feature stops driving). */
+  guardSet(t, state, rampS) {
+    const prev = this.rt.state;
+    if (this.rt.setGuardState) this.rt.setGuardState(t, state, rampS);
+    else if (!FEATURE_STATES.includes(state)) this.rt.applyKill(t);
+    if (prev !== state) this.ev('guard_state', `차량 Guard ${prev} → ${state}${rampS != null ? ` (램프 ${rampS} s)` : ''}`, { at: this.iso(t), state });
+    if (!FEATURE_STATES.includes(state) && state !== 'RESTORE_PENDING' && this.g.disabledAt == null) {
+      this.g.disabledAt = t;
+      this.ev('feature_base_only', `기능 효과 제거 — 안전 상태 BASE_ONLY (${state})`, { at: this.iso(t), state });
+    }
+  }
+  /** A signed remote deactivation reached the vehicle: the Guard applies the deactivation class (9.3 class check, DEACT stages). */
+  guardReceive(t) {
+    const S = this.safety, k = this.k;
+    if (S.deactClass === 'DC4') {   // remote deactivation forbidden by design (FFG-DEAC-011): state unchanged, rejection reported
+      k.killRejected = t;
+      this.ev('kill_rejected', '차량 Guard 거부 — DC4 원격 비활성화 금지 (DESIGN_CLASS), 상태 그대로', { at: this.iso(t), reject_code: 'DESIGN_CLASS' });
+      return;
+    }
+    k.killApplied = t; this.g.acceptedAt = t; const ms = Math.round((t - k.killIssued) * 1000);
+    this.ev('deact_accepted', `원격 차단 수락 (${S.deactClass}, ${ms} ms)`, { at: this.iso(t), latency_ms: ms, deact_class: S.deactClass });
+    this.g.due = this.g.due.filter(d => d.src !== 'remote');
+    if (S.deactClass === 'DC0') return this.guardSet(t, 'DISABLED');
+    if (S.deactClass === 'DC1') {   // ends once the function is confirmed not engaged — FF simulator FLEET_SIM_IDLE_MS (1.5 s), capped by maxPendingMs
+      this.guardSet(t, 'DEACT_PENDING_IDLE');
+      this.g.due.push({ at: t + Math.min(S.maxPendingMs || IDLE_S * 1000, IDLE_S * 1000) / 1000, state: 'DISABLED', src: 'remote' });
+      return;
+    }
+    if (S.deactClass === 'DC3') return this.guardSet(t, 'DEACT_PENDING_CYCLE');   // ends at the next ignition cycle — not within one drive
+    this.guardSet(t, 'DEACT_WARNING');
+    this.g.due.push({ at: t + S.takeoverMs / 1000, state: 'DEACT_RAMP', ramp: S.rampMs / 1000, src: 'remote' }, { at: t + (S.takeoverMs + S.rampMs) / 1000, state: 'DISABLED', src: 'remote' });
+  }
+  /** On-board fault (plausibility latched): fault ramp, or at once without one; a running ramp is shortened, never extended. */
+  guardLocalFault(t) {
+    const S = this.safety, fr = S.faultRampMs / 1000, st = this.rt.state;
+    if (!FEATURE_STATES.includes(st)) return;
+    if (fr <= 0) { this.g.due = []; return this.guardSet(t, 'DISABLED'); }
+    if (st === 'DEACT_RAMP') {
+      const w = this.rt.weight ? this.rt.weight(t) : 1, end = this.g.due.find(d => d.state === 'DISABLED');
+      if (end && end.at - t <= fr) return;   // a late fault does not extend a running ramp
+      if (this.rt.weight) { this.rt.ramp_s = fr / Math.max(w, 1e-6); this.rt.ramp_at = t - (1 - w) * this.rt.ramp_s; }   // continue from the current share
+      this.ev('guard_state', `차량 Guard 고장 램프로 단축 (${fr} s)`, { at: this.iso(t), state: 'DEACT_RAMP' });
+    } else this.guardSet(t, 'DEACT_RAMP', fr);
+    this.g.due = [{ at: t + fr, state: 'DISABLED', src: 'onboard' }];
+  }
 
   /** One simulation step. inp = {gap_true (m, bumper to bumper), ego_mps, lead_mps, ego_a}. Returns the ego acceleration request (null = vehicle's own control). */
   step(dt, inp) {
@@ -215,19 +282,26 @@ export class ValidationRun {
     const t = this.t, sc = this.sc, k = this.k, F = this.feature;
     while (this.sched.length && t >= this.sched[0].at_s) { const q = this.sched.shift(); for (let i = 0; i < (q.repeat || 1); i++) this.request(q); }
     this.serveRequests(t);
+    // Guard stage timers (DEACT_WARNING → DEACT_RAMP → DISABLED)
+    while (this.on && this.g.due.length && t >= this.g.due[0].at - 1e-9) { const d = this.g.due.shift(); this.guardSet(d.at, d.state, d.ramp); }
     // Kill: scheduled by the scenario, or the operator acting on a KILL advice from the anomaly rule (scenario.ops)
     const killAt = Math.min(sc.kill ? sc.kill.at_s : Infinity, this.adviceKillAt != null ? this.adviceKillAt : Infinity);
     if (this.on && k.killIssued == null && t >= killAt) {
-      k.killIssued = t; this.killed = true; const safeMode = (sc.kill && sc.kill.safe_mode) || 'SAFE_DEFAULT';
-      this.ev('kill_issued', `긴급 차단 발동 (${safeMode})${this.adviceKillAt != null && t >= this.adviceKillAt ? ' · 이상 징후 KILL 권고에 따른 운영자 조치' : ''}`, { at: this.iso(t), safe_mode: safeMode });
+      k.killIssued = t; this.killed = true;
+      this.ev('kill_issued', `긴급 차단 발령 (kill_command v2 deactivate · 설계 ${this.safety.deactClass})${this.adviceKillAt != null && t >= this.adviceKillAt ? ' · 이상 징후 KILL 권고에 따른 운영자 조치' : ''}`, { at: this.iso(t), deact_class: this.safety.deactClass });
       this.pendingKill = t + (sc.link_latency_ms || 0) / 1000;
     }
     if (this.pendingKill != null && t >= this.pendingKill) {
-      this.pendingKill = null; this.rt.applyKill(t); k.killApplied = t; const ms = Math.round((t - k.killIssued) * 1000);
-      this.ev('safe_default_applied', `Safe Default 적용 (${ms} ms)`, { at: this.iso(t), state: 'SAFE_DEFAULT', latency_ms: ms });
+      this.pendingKill = null; this.guardReceive(t);
     }
     if (sc.fault && t < sc.fault.at_s && t + dt >= sc.fault.at_s) this.ev('fault_injected', F.faultLabel(sc));
     const out = this.out = F.step(this, this.rt, t, dt, inp);
+    // on-board plausibility monitor — only while the feature has an effect; latching is the vehicle's own detection
+    if (this.g.onboard && out.monitor && this.on && this.g.detectAt == null && FEATURE_STATES.includes(this.rt.state) && this.g.onboard.step(out.monitor.est, out.monitor.ref, dt)) {
+      this.g.detectAt = t;
+      this.ev('onboard_fault', `차량 내 감지 확정 — 추정 ${r2(out.monitor.est)} m / 기준 ${r2(out.monitor.ref)} m (${this.g.onboard.cfg.rel_pct}%·${this.g.onboard.cfg.abs_m} m 밖 ${this.g.onboard.cfg.debounce_s} s)`, { at: this.iso(t) });
+      this.guardLocalFault(t);
+    }
     if (-(inp.ego_a || 0) > k.maxDecel) { k.maxDecel = -(inp.ego_a || 0); k.maxDecelAt = t; }
     this.dist += inp.ego_mps * dt;
     if (t >= this.nextTel) {
@@ -342,7 +416,7 @@ export class ValidationRun {
       if (rec.vin !== this.vehicle.vin) continue;
       this.lastDecision = r.value;
       if (this.killed) continue;
-      if (r.value && !this.on) { this.on = true; this.rt.state = 'ACTIVE'; this.ev('feature_active', `${rec.id} 응답으로 기능 활성`); }
+      if (r.value && !this.on) { this.on = true; if (this.rt.setGuardState) this.rt.setGuardState(t, 'ACTIVE'); else this.rt.state = 'ACTIVE'; this.g.disabledAt = null; this.ev('feature_active', `${rec.id} 응답으로 기능 활성`); }
       else if (!r.value && this.on) { this.on = false; this.rt.applyKill(t); this.ev('feature_disabled', `${rec.id} 응답으로 기능 비활성 — 기본 동작`); }
     }
   }
@@ -352,7 +426,14 @@ export class ValidationRun {
     const k = this.k, sc = this.sc, end = this.done, F = this.feature;
     const val = {
       // a Kill is expected when the scenario schedules one or the operator acts on KILL advice; none applied by the end = fail
-      kill_latency: k.killApplied != null ? [k.killApplied - k.killIssued, k.killApplied] : k.killIssued == null && (!this.on || (!sc.kill && this.adviceKillAt == null)) ? (end || !sc.kill ? 'na' : null) : end ? [Infinity, null] : null,
+      kill_latency: k.killApplied != null ? [k.killApplied - k.killIssued, k.killApplied] : k.killRejected != null ? 'na' : k.killIssued == null && (!this.on || (!sc.kill && this.adviceKillAt == null)) ? (end || !sc.kill ? 'na' : null) : end ? [Infinity, null] : null,
+      // DC2 stages: accepted → DISABLED; DC1/DC3 never finish within one drive (pending at the end = na, not a failure of the drive)
+      deact_time: this.g.acceptedAt == null ? (k.killIssued != null && k.killRejected == null && this.on && end ? [Infinity, null] : k.killIssued == null || k.killRejected != null ? 'na' : null)
+        : this.g.disabledAt != null ? [this.g.disabledAt - this.g.acceptedAt, this.g.disabledAt] : /DC[13]/.test(this.safety.deactClass) ? 'na' : end ? [Infinity, null] : null,
+      remote_refused: this.safety.deactClass !== 'DC4' || k.killIssued == null ? 'na' : [k.killRejected != null ? 1 : 0, k.killRejected],
+      detect_latency: !this.g.onboard || !sc.fault || !this.on ? 'na' : this.g.detectAt != null ? [this.g.detectAt - sc.fault.at_s, this.g.detectAt] : end ? [Infinity, null] : null,
+      // FTTI budget from the fault onset: the feature effect must be gone (BASE_ONLY) before it ends
+      ftti_margin: !sc.fault || !this.on ? 'na' : this.g.disabledAt != null ? [sc.fault.at_s + this.safety.faultTolerantTimeMs / 1000 - this.g.disabledAt, this.g.disabledAt] : end || this.t >= sc.fault.at_s + this.safety.faultTolerantTimeMs / 1000 ? [-Infinity, null] : null,
       max_decel: [k.maxDecel, k.maxDecelAt], ...F.values(this, this.m, end),
     };
     // vehicle requests: slowest answer, and answers that differ from the test's expected result
@@ -365,14 +446,14 @@ export class ValidationRun {
       val.request_expected = !exp.length ? 'na' : bad.length ? [bad.length, bad[0].t_resp] : end ? [exp.length - answered.filter(q => q.expect).length, null] : null;
     }
     const role = id => (!this.roles ? 'gate' : (this.roles.gate || []).includes(id) ? 'gate' : (this.roles.info || []).includes(id) ? 'info' : null);
-    const items = F.criteria.filter(c => role(c.id)).map(c => {
-      const v = val[c.id];
+    const items = F.criteria.filter(c => role(c.id)).map(({ limitOf, ...c0 }) => {
+      const c = limitOf ? { ...c0, limit: r2(limitOf(this)) } : c0, v = val[c.id];
       const R = { role: role(c.id) };
       if (v === 'na') return { ...c, ...R, status: 'na', value: null, at: null };
       if (v == null || v[0] == null) return { ...c, ...R, status: c.id === 'min_ttc' && end ? 'pass' : 'pending', value: null, at: null };
       const ok = c.op === '<=' ? v[0] <= c.limit + 1e-9 : v[0] >= c.limit - 1e-9;
       // a running maximum that already broke its limit cannot recover; minima/accumulators are final only at the end
-      const status = ok ? (end || ['kill_latency', 'recovery', 'first_announce', 'clear_after_pass'].includes(c.id) ? 'pass' : 'pending') : 'fail';
+      const status = ok ? (end || ['kill_latency', 'recovery', 'first_announce', 'clear_after_pass', 'deact_time', 'detect_latency', 'ftti_margin', 'remote_refused'].includes(c.id) ? 'pass' : 'pending') : 'fail';
       return { ...c, ...R, status, value: r2(v[0]), at: r2(v[1]) };
     });
     // only gate criteria decide; info criteria are reported (e.g. the danger a fault causes before the Kill)
@@ -381,11 +462,13 @@ export class ValidationRun {
   }
 
   /** Evidence files (FF_IMP formats + verdict + report). captures: [{name, label, t, bytes:Uint8Array}] */
-  evidence({ captures = [], chartPng = null, testId } = {}) {
+  evidence({ captures = [], chartPng = null, testId, repro = null } = {}) {
     const P = this.pkg.policy, v = this.verdict(), d0 = new Date(this.base), ymd = `${d0.getFullYear()}${String(d0.getMonth() + 1).padStart(2, '0')}${String(d0.getDate()).padStart(2, '0')}`;   // local date
     const id = testId || `TEST-${P.flagKey}-${ymd}-${String(this.base).slice(-5)}`;
     const summary = {
-      testId: id, kind: 'FF virtual validation (simulator)', overall: v.overall, generatedAt: new Date().toISOString(), internalOnly: true,
+      // generatedAt = simulation clock at the end of the run (deterministic: same package + clock base → same file)
+      testId: id, kind: 'FF virtual validation (simulator)', overall: v.overall, generatedAt: this.iso(this.t), internalOnly: true,
+      repro: { ffvalVersion: FFVAL_VERSION, seed: this.sc.seed != null ? this.sc.seed : 0, clockBase: new Date(this.base).toISOString(), safety: this.safety, ...(repro || {}) },
       policy: { policyId: P.policyId, revision: P.revision, status: P.status, contentHash: P.contentHash, featureId: P.featureId, featureVersion: P.featureVersion, flagKey: P.flagKey },
       evaluation: this.flag && { value: this.flag.value, decision: this.flag.decision, reason: this.flag.reason, assumedDeployed: P.status !== 'DEPLOYED', trace: this.flag.trace },
       test: this.pkg.test ? { id: this.pkg.test.id, name: this.pkg.test.name, purpose: this.pkg.test.purpose, steps: this.pkg.test.steps, expected: this.pkg.test.expected } : null,
@@ -440,8 +523,10 @@ ${s.requests.length ? `<h2>차량 요청 (Flag 조회·업데이트)</h2><table>
 
 /** Gate verdict over the test plan: PASS only if every test case ran and passed its gate criteria. */
 export function gateVerdict(pkg, results) {
-  const tests = pkg.tests.map(t => { const r = results[t.id]; return { id: t.id, name: t.name, overall: r ? r.overall : 'NOT_RUN', testId: r ? r.testId : null }; });
-  const overall = tests.some(t => t.overall === 'FAIL') ? 'FAIL' : tests.every(t => t.overall === 'PASS') ? 'PASS' : 'INCOMPLETE';
+  // baseline tests (comparison runs, e.g. remote-only deactivation) are reported but never decide the gate
+  const tests = pkg.tests.map(t => { const r = results[t.id]; return { id: t.id, name: t.name, baseline: !!t.baseline, overall: r ? r.overall : 'NOT_RUN', testId: r ? r.testId : null }; });
+  const deciding = tests.filter(t => !t.baseline);
+  const overall = deciding.some(t => t.overall === 'FAIL') ? 'FAIL' : deciding.every(t => t.overall === 'PASS') ? 'PASS' : 'INCOMPLETE';
   // a policy without a content hash (sample / unregistered), or criteria not yet fixed by the FF spec, cannot back an official gate decision
   const F = FEATURES[pkg.policy.featureId], provisional = !!(F && F.provisional);
   const official = !!pkg.policy.contentHash && !/sample|not-hashed/i.test(pkg.policy.contentHash) && !provisional;
@@ -458,7 +543,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #d7dde4;padding
 ${/sample|not-hashed/i.test(g.contentHash || '') || !g.contentHash ? '<p style="color:#b3261e;font-weight:700">정책 해시 없음 — 이 패키지는 공식 Gate 증적으로 쓸 수 없습니다 (샘플·미등록 정책).</p>' : ''}
 ${g.provisional ? '<p style="color:#b3261e;font-weight:700">판정 기준이 가정값입니다 (FF 사양 미정) — 공식 Gate 증적으로 쓸 수 없습니다.</p>' : ''}
 <table><tr><th>시험 항목</th><th>이름</th><th>결과</th><th>판정 기준 (측정값)</th><th>증적</th></tr>${g.tests.map(t => { const v = verdicts[t.id]; const kv = v ? v.items.filter(i => i.role !== 'info' && i.status !== 'na').map(i => `${esc(i.label)} ${i.value == null ? '—' : i.value}${esc(i.unit)} ${i.status === 'pass' ? '✔' : i.status === 'fail' ? '✖' : ''}`).join('<br>') + (v.items.some(i => i.role === 'info' && i.status === 'fail') ? `<br><span style="color:#a46a21">참고 초과: ${v.items.filter(i => i.role === 'info' && i.status === 'fail').map(i => esc(i.label)).join(', ')}</span>` : '') : '';
-  return `<tr><td>${esc(t.id)}</td><td>${esc(t.name)}</td><td class="${t.overall}">${V[t.overall] || t.overall}</td><td style="font-size:12px">${kv}</td><td>${t.testId ? `<a href="${esc(t.id)}/report.html">${esc(t.testId)}</a>` : '—'}</td></tr>`; }).join('')}</table>
+  return `<tr><td>${esc(t.id)}</td><td>${esc(t.name)}${t.baseline ? '<br><span style="color:#667">비교 기준선 — Gate 판정 제외</span>' : ''}</td><td class="${t.overall}">${V[t.overall] || t.overall}</td><td style="font-size:12px">${kv}</td><td>${t.testId ? `<a href="${esc(t.id)}/report.html">${esc(t.testId)}</a>` : '—'}</td></tr>`; }).join('')}</table>
 <table style="margin-top:18px"><tr><th style="width:25%">검증 수행</th><td></td><th style="width:25%">Gate 판정 (G5 검증 책임자)</th><td></td></tr><tr><th>일시</th><td></td><th>서명</th><td></td></tr></table>
-<p style="color:#667;font-size:12px">Gate 판정: 모든 시험 항목이 실행되고 각 항목의 판정 기준(참고 기준 제외)을 통과해야 통과. 첨부: gate.json, 시험 항목별 폴더(report.html · verdict.json · telemetry.jsonl · events.json · captures/).</p></html>`;
+<p style="color:#667;font-size:12px">Gate 판정: 비교 기준선을 뺀 모든 시험 항목이 실행되고 각 항목의 판정 기준(참고 기준 제외)을 통과해야 통과. FF 플랫폼 G5는 참고 기준도 면제하지 않고 재현 정보를 요구한다. 첨부: gate.json, 시험 항목별 폴더(report.html · verdict.json · telemetry.jsonl · events.json · captures/).</p></html>`;
 }

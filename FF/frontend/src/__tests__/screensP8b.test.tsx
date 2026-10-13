@@ -95,10 +95,10 @@ describe('이상 징후 대응', () => {
 
 describe('품질 피드백', () => {
   it('다음 Version이 할 일(G5·G7·vECU 회귀)을 보여 주고, 설계 담당이 수용한다', async () => {
-    const FB = { feedbackId: 'FB-00001', featureId: 'FEAT-00022', featureVersion: '1.0.0', anomalyId: 'ANM-00001', kind: 'FEATURE_FAULT', summary: '현장 고장 — 차량 2대', actions: [{ kind: 'REJUDGE_GATE', ref: 'G5', label: 'G5 재판정' }, { kind: 'VIRTUAL_REGRESSION', ref: 'SCN-FEAT00022-FAULT-KILL', label: 'vECU 회귀' }], status: 'OPEN', createdAt: '2026-10-12T01:00:00Z', acceptedBy: null, resolvedAt: null, note: null };
+    const FB = { feedbackId: 'FB-00001', featureId: 'FEAT-00022', featureVersion: '1.0.0', anomalyId: 'ANM-00001', kind: 'FEATURE_FAULT', summary: '현장 고장 — 차량 2대', actions: [{ kind: 'REJUDGE_GATE', ref: 'G5', label: 'G5 재판정' }, { kind: 'VIRTUAL_REGRESSION', ref: 'SCN-FEAT00022-FAULT-ONBOARD', label: 'vECU 회귀' }], status: 'OPEN', createdAt: '2026-10-12T01:00:00Z', acceptedBy: null, resolvedAt: null, note: null };
     handler = (_u, init) => (init?.method === 'POST' ? { body: { ...FB, status: 'ACCEPTED' } } : { body: { items: [FB] } });
     mount('/quality/feedback', '/quality/feedback', <FeedbackScreen />, 'author');
-    expect(await screen.findByText('G5 · SCN-FEAT00022-FAULT-KILL')).toBeTruthy();
+    expect(await screen.findByText('G5 · SCN-FEAT00022-FAULT-ONBOARD')).toBeTruthy();
     fireEvent.click(screen.getByText('FB-00001'));
     expect(await screen.findByRole('link', { name: 'vECU →' })).toBeTruthy();
     fireEvent.change(screen.getByLabelText('사유'), { target: { value: '1.1.0에서 보정' } });

@@ -1,4 +1,5 @@
-// vECU 가상검증 → 검증 Gate 연결: 시나리오 실행(D06-03) → 정책 검증기(D06-03 정상·D06-06 오류+Kill) → TMS 제출(D04-02, IF-09) → G5 Evidence.
+// vECU 가상검증 → 검증 Gate 연결: 시나리오 실행(D06-03) → 정책 검증기(D06-03 정상·D06-06 차량 내 감지) → TMS 제출(D04-02, IF-09) → G5 Evidence.
+// ffval 2.0(WP9): 모든 기준 + 재현 정보가 있어야 Gate PASS, 원격 DC2만 쓴 기준선은 기록만 — FFG-TST-009 · FFG-LCY-006 · FFG-DEAC-001
 // 기본은 같은 계약의 시험 대역(test/fixtures/fake-vecu) — 실제 vECU 판정은 마지막 describe가 C:\project\2026-10-11_vECU로 확인한다.
 import { existsSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -18,7 +19,7 @@ function useVecu(dir: string | null) {
   if (dir) (process.env.VECU_DIR = dir), delete process.env.VECU_MODE;
   else process.env.VECU_MODE = 'off';
 }
-const restore = () => ['VECU_DIR', 'VECU_MODE', 'FF_EVIDENCE_DIR', 'FAKE_VECU_FAIL'].forEach((k) => delete process.env[k]);
+const restore = () => ['VECU_DIR', 'VECU_MODE', 'FF_EVIDENCE_DIR', 'FAKE_VECU_FAIL', 'FAKE_VECU_NO_REPRO'].forEach((k) => delete process.env[k]);
 
 describe('vECU 가상검증 → 검증 Gate', () => {
   let app: INestApplication;
@@ -38,9 +39,9 @@ describe('vECU 가상검증 → 검증 Gate', () => {
   const validate = async () => (await http().post(`/api/policies/${pid}/validate`).set(AUTHOR).send({}).expect(200)).body.run;
   const result = (run: any, id: string) => run.results.find((r: any) => r.componentId === id);
 
-  it('시나리오 목록: FEAT-00022 정상 추종(D06-03 전 기준)·오류+Kill(D06-06 Kill 경로)', async () => {
+  it('시나리오 목록: FEAT-00022 정상 추종(D06-03)·차량 내 감지(D06-06)·원격 DC2 기준선(검증기 없음)', async () => {
     const r = (await http().get('/api/virtual-validations/scenarios?featureId=FEAT-00022').expect(200)).body.items;
-    expect(r.map((s: any) => [s.scenarioId, s.validator])).toEqual([['SCN-FEAT00022-NOMINAL', 'D06-03'], ['SCN-FEAT00022-FAULT-KILL', 'D06-06']]);
+    expect(r.map((s: any) => [s.scenarioId, s.validator])).toEqual([['SCN-FEAT00022-NOMINAL', 'D06-03'], ['SCN-FEAT00022-FAULT-ONBOARD', 'D06-06'], ['SCN-FEAT00022-FAULT-REMOTE-DC2', 'BASELINE']]);
     expect((await http().get('/api/vecu/status').expect(200)).body.available).toBe(true);
   });
 
@@ -48,19 +49,34 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     const run = await validate();
     expect(run.decision).toBe('HOLD');
     expect(result(run, 'D06-03').findings[0].message).toMatch(/SCN-FEAT00022-NOMINAL 미실행/);
-    expect(result(run, 'D06-06').findings[0].message).toMatch(/SCN-FEAT00022-FAULT-KILL 미실행/);
+    expect(result(run, 'D06-06').findings[0].message).toMatch(/SCN-FEAT00022-FAULT-ONBOARD 미실행/);
   });
 
-  it('실행: 정상 추종 PASS, 오류+Kill은 종합 FAIL이지만 Kill 경로 기준만 보는 Gate 판정은 PASS', async () => {
+  it('실행: 정상·차량 내 감지 PASS, 원격 DC2 기준선은 위험 구간 때문에 FAIL — 종합과 Gate 판정이 어긋나지 않는다', async () => {
     await http().post('/api/virtual-validations').set(actor('x', 'AUDITOR')).send({ policyId: pid }).expect(403);
     const r = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid }).expect(201)).body.items;
-    expect(r.map((x: any) => [x.runId, x.scenarioId, x.source, x.overall, x.gateResult])).toEqual([
-      ['VV-00001', 'SCN-FEAT00022-NOMINAL', 'vecu', 'PASS', 'PASS'],
-      ['VV-00002', 'SCN-FEAT00022-FAULT-KILL', 'vecu', 'FAIL', 'PASS'],
+    expect(r.map((x: any) => [x.runId, x.scenarioId, x.role, x.source, x.overall, x.gateResult])).toEqual([
+      ['VV-00001', 'SCN-FEAT00022-NOMINAL', 'NOMINAL', 'vecu', 'PASS', 'PASS'],
+      ['VV-00002', 'SCN-FEAT00022-FAULT-ONBOARD', 'FAULT_ONBOARD', 'vecu', 'PASS', 'PASS'],
+      ['VV-00003', 'SCN-FEAT00022-FAULT-REMOTE-DC2', 'BASELINE_REMOTE', 'vecu', 'FAIL', 'FAIL'],
     ]);
-    const fk = r[1].criteria;
-    expect(fk.filter((c: any) => c.deciding).map((c: any) => c.id)).toEqual(['kill_latency', 'min_ttc', 'max_decel', 'recovery']);
+    // 회귀: 알려진 실패(위험·오판단)를 정보 항목으로 면제하던 ffval 1.x 판정 — 이제 기준선도 모든 기준으로 판정한다
+    expect(r[2].gateReasons).toEqual(expect.arrayContaining([expect.stringMatching(/'위험' 단계/), expect.stringMatching(/FTTI 여유/)]));
+    expect(r[2].criteria.find((c: any) => c.id === 'kill_latency')).toMatchObject({ status: 'pass', deciding: true });
+    // Registry 안전 분류(FEAT-00022 F3/DC2)가 패키지로 넘어가 감지 한계 = FTTI 5 s − 고장 램프 1.5 s
+    expect(r[1].safety).toMatchObject({ deactClass: 'DC2', takeoverMs: 4000, rampMs: 3000, faultRampMs: 1500, faultTolerantTimeMs: 5000 });
+    expect(r[1].criteria.find((c: any) => c.id === 'detect_latency')).toMatchObject({ status: 'pass', limit: 3.5 });
+    expect(r[1].repro).toMatchObject({ scenarioHash: expect.stringMatching(/^[0-9a-f]{64}$/), scriptHash: expect.stringMatching(/^[0-9a-f]{64}$/) });
     expect(r[0].evidence.files.map((f: any) => f.name)).toEqual(['verdict.json', 'report.html']);
+  });
+
+  it('재현 정보 없는 실행(ffval 1.x)은 모든 기준이 통과해도 Gate FAIL — 근거로 쓸 수 없다', async () => {
+    process.env.FAKE_VECU_NO_REPRO = '1';
+    const r = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).expect(201)).body.items[0];
+    delete process.env.FAKE_VECU_NO_REPRO;
+    expect(r).toMatchObject({ overall: 'PASS', gateResult: 'FAIL', repro: null, gateReasons: [expect.stringMatching(/재현 정보/)] });
+    // 다음 시험이 기대하는 '최신 실행'을 되돌린다
+    await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).expect(201);
   });
 
   it('Evidence 파일: 기록된 파일만, 보고서는 스크립트 차단 헤더로', async () => {
@@ -72,7 +88,7 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     await http().get('/api/virtual-validations/VV-00001/files/telemetry.jsonl').expect(404);
   });
 
-  it('가상검증 후 정책 검증 GO — D06-03·D06-06에 근거(INFO)가 남고, 오류 주입 구간 위험은 의도된 결과로 표시', async () => {
+  it('가상검증 후 정책 검증 GO — D06-03·D06-06에 근거(INFO)가 남고, 기준선 FAIL은 검증기에 쓰이지 않는다', async () => {
     const run = await validate();
     expect(run.decision).toBe('GO');
     expect(result(run, 'D06-03').findings.map((f: any) => f.message)).toEqual([
@@ -80,7 +96,8 @@ describe('vECU 가상검증 → 검증 Gate', () => {
       // D02-02 기능 지원 조건 참고 — 범위 안이지만 기능 앱 SW가 1.2.1 미만인 차량. 판정(GO)은 그대로다
       expect.stringMatching(/^지원 조건 미달 2대 \(KMH-NX4-0002 SW 1\.2\.0, KMH-NX4-0004 SW 1\.1\.9 < 1\.2\.1\)/),
     ]);
-    expect(result(run, 'D06-06').findings[1].message).toMatch(/의도된 결과/);
+    expect(result(run, 'D06-06').findings[0].message).toMatch(/SCN-FEAT00022-FAULT-ONBOARD PASS/);
+    expect(JSON.stringify(result(run, 'D06-06').findings)).not.toMatch(/의도된 결과|REMOTE-DC2/);
   });
 
   it('정책 내용이 바뀌면 이전 가상검증은 근거가 아니다 → 다시 HOLD', async () => {
@@ -88,8 +105,8 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     expect((await validate()).decision).toBe('HOLD');
   });
 
-  it('Kill 경로 기준 실패 → 안전 동작 검증 FAIL → BLOCKED', async () => {
-    process.env.FAKE_VECU_FAIL = 'kill_latency';
+  it('차량 내 감지 기준 실패 → 안전 동작 검증 FAIL → BLOCKED', async () => {
+    process.env.FAKE_VECU_FAIL = 'detect_latency';
     await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid }).expect(201);
     delete process.env.FAKE_VECU_FAIL;
     const run = await validate();
@@ -163,16 +180,20 @@ describe.skipIf(!existsSync(join(REAL, 'tools', 'ffval_cli.mjs')))('실제 vECU 
     restore();
   });
 
-  it('FEAT-00022: 정상 추종 PASS · 오류+Kill 종합 FAIL(위험 구간)·Kill 경로 PASS — Evidence 해시 포함', async () => {
+  it('FEAT-00022 (CS-01): 정상 추종 PASS · 차량 내 감지 ≈19.1 s → BASE_ONLY ≈20.6 s, FTTI 여유 ≈1.4 s PASS · 원격 DC2 기준선 FAIL(위험 구간) — Evidence 해시·재현 정보', async () => {
     const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', controlPoint: 'Parameter', flagKey: 'care_00022_param', description: '실제 vECU', safeDefault: false }).expect(201);
     const r = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: c.body.policyId }).expect(201)).body.items;
-    expect(r.map((x: any) => [x.source, x.overall, x.gateResult])).toEqual([['vecu', 'PASS', 'PASS'], ['vecu', 'FAIL', 'PASS']]);
-    const fk = Object.fromEntries(r[1].criteria.map((x: any) => [x.id, x]));
-    expect(fk.danger_time).toMatchObject({ status: 'fail', deciding: false });
-    expect(fk.kill_latency).toMatchObject({ status: 'pass', deciding: true });
-    expect(fk.kill_latency.value).toBeLessThanOrEqual(1);
+    expect(r.map((x: any) => [x.scenarioId.slice(14), x.source, x.overall, x.gateResult])).toEqual([['NOMINAL', 'vecu', 'PASS', 'PASS'], ['FAULT-ONBOARD', 'vecu', 'PASS', 'PASS'], ['FAULT-REMOTE-DC2', 'vecu', 'FAIL', 'FAIL']]);
+    const on = Object.fromEntries(r[1].criteria.map((x: any) => [x.id, x]));
+    expect(on.detect_latency.at).toBeCloseTo(19.11, 1);
+    expect(on.ftti_margin.value).toBeCloseTo(1.39, 1);
+    expect(on.danger_time).toMatchObject({ status: 'pass', value: 0 });
+    const rem = Object.fromEntries(r[2].criteria.map((x: any) => [x.id, x]));
+    expect(rem.danger_time).toMatchObject({ status: 'fail', deciding: true });
+    expect(rem.kill_latency.value).toBeLessThanOrEqual(1);
+    expect(rem.deact_time.value).toBeCloseTo(7, 1);
     expect(r[1].evidence.files.map((f: any) => f.name)).toEqual(expect.arrayContaining(['verdict.json', 'telemetry.jsonl', 'events.json', 'report.html']));
-    expect(fk.min_ttc).toMatchObject({ status: 'pass', deciding: true });
-    expect(r[0].simulator).toMatch(/ausfahrt-ffval/);
+    expect(r[1].repro).toMatchObject({ ffvalVersion: expect.stringMatching(/ffval 2\./), seed: 0 });
+    expect(r[0].simulator).toMatch(/ausfahrt-ffval\/2/);
   });
 });

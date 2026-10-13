@@ -30,6 +30,8 @@ export const VecuRunOutput = z
     criteria: z.array(VecuCriterion).min(1),
     minTimeGap: z.number().nullable(),
     evaluation: z.object({ value: z.boolean(), decision: z.string(), reason: z.string() }).passthrough().nullable(),
+    /** ffval 2.0 재현 정보 — 없으면 FF는 실행을 거부하지 않지만 G5 근거로 인정하지 않는다(rules/virtual.ts judgeVirtual) */
+    repro: z.record(z.unknown()).nullable().optional(),
     dir: z.string().min(1),
     files: z.array(z.object({ name: z.string().min(1), sha256: z.string().regex(/^[0-9a-f]{64}$/), bytes: z.number().int().min(0) })).min(1),
   })
@@ -40,7 +42,7 @@ export const VecuCliOutput = z.object({ tool: z.literal('vecu-ffval'), simulator
 export type VecuCliOutput = z.infer<typeof VecuCliOutput>;
 
 /** FF가 Gate 판정(rules/virtual.ts deciding)에 쓰는 기준 ID — 실제 vECU는 시나리오마다 이것을 모두 내야 한다 */
-export const VECU_REQUIRED_CRITERIA = ['kill_latency', 'misjudge', 'danger_time', 'min_ttc', 'max_decel', 'recovery'] as const;
+export const VECU_REQUIRED_CRITERIA = ['kill_latency', 'deact_time', 'detect_latency', 'ftti_margin', 'misjudge', 'danger_time', 'min_ttc', 'max_decel', 'recovery'] as const;
 
 /** Evidence로 반드시 남아야 하는 파일 (시험 대역은 verdict·report만 쓴다) */
 export const VECU_REQUIRED_FILES = ['verdict.json', 'report.html'] as const;

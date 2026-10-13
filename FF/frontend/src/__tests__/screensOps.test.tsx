@@ -263,13 +263,13 @@ describe('게시본 상세', () => {
 
 describe('vECU 가상검증', () => {
   const RUN = (over: Record<string, unknown>) => ({ runId: 'VV-00001', policyId: 'POL-00003', policyRevision: 1, contentHash: 'h', featureId: 'FEAT-00022', featureVersion: '1.0.0', vin: 'ego-01', scenarioId: 'SCN-FEAT00022-NOMINAL', source: 'vecu', simulator: 's', testId: 'TEST-1', overall: 'PASS', gateResult: 'PASS', criteria: [{ id: 'danger_time', label: '위험 누적', unit: 's', op: '<=', limit: 0, status: 'fail', value: 3, at: 20, deciding: false }], evaluation: null, evidence: { files: [{ name: 'verdict.json', sha256: 'abcdef0123456789', bytes: 10 }] }, error: null, at: '2026-10-12T01:00:00.000Z', by: 'u', tms: null, ...over });
-  const api = (run: Record<string, unknown>): Handler => (url, init) => {
+  const api = (run: Record<string, unknown>, list: Record<string, unknown>[] = [run]): Handler => (url, init) => {
     if (init?.method === 'POST' && url.endsWith('/tms')) return { status: 201, body: { ...run, tms: { tmsId: 'TMS-00001', submittedAt: 'x' } } };
     if (init?.method === 'POST') return { status: 201, body: { items: [run] } };
     if (url.startsWith('/api/vecu/status')) return { body: { available: true, mode: 'auto', dir: 'C:/vECU', reason: null, simulatorUrl: 'x' } };
-    if (url.startsWith('/api/virtual-validations/scenarios')) return { body: { items: [{ scenarioId: 'SCN-FEAT00022-NOMINAL', name: '정상', role: 'NOMINAL', validator: 'D06-03', deciding: 'ALL' }] } };
+    if (url.startsWith('/api/virtual-validations/scenarios')) return { body: { items: [{ scenarioId: 'SCN-FEAT00022-NOMINAL', name: '정상', role: 'NOMINAL', validator: 'D06-03', purpose: '정상 추종', params: { fault: null } }] } };
     if (url.startsWith('/api/virtual-validations/VV-')) return { body: run };
-    if (url.startsWith('/api/virtual-validations')) return { body: { items: [run] } };
+    if (url.startsWith('/api/virtual-validations')) return { body: { items: list } };
     if (url.startsWith('/api/policies')) return { body: { items: [{ policyId: 'POL-00003', flagKey: 'care_00022_param', featureId: 'FEAT-00022', featureVersion: '1.0.0', status: 'DRAFT', revision: 1 }] } };
   };
 
@@ -295,6 +295,25 @@ describe('vECU 가상검증', () => {
     expect(link.getAttribute('href')).toBe('/vecu/index.html?ffv=FEAT-00022');
     expect(link.getAttribute('target')).toBe('_blank');
     expect(link.getAttribute('rel')).toBe('noopener');
+  });
+
+  it('ffval 2.0 (FFG-TST-009): 차량 내 감지와 원격 DC2 기준선을 한 시간축에 비교하고, 기준선·재현 정보 없는 실행은 G5 근거 체크에서 FAIL — 기준선은 TMS 제출 없음', async () => {
+    const crit = (id: string, status: string, value: number | null, at: number | null) => ({ id, label: id, unit: 's', op: '<=', limit: 1, status, value, at, deciding: status !== 'na' });
+    const SAFETY = { deactClass: 'DC2', takeoverMs: 4000, rampMs: 3000, faultRampMs: 1500, faultTolerantTimeMs: 5000 };
+    const REPRO = { ffvalVersion: 'ffval 2.0', scenarioHash: 'a'.repeat(64), scriptHash: 'b'.repeat(64), seed: 0 };
+    const onb = RUN({ runId: 'VV-00002', scenarioId: 'SCN-FEAT00022-FAULT-ONBOARD', role: 'FAULT_ONBOARD', safety: SAFETY, repro: REPRO, gateReasons: [], criteria: [crit('detect_latency', 'pass', 2.1, 19.1), crit('ftti_margin', 'pass', 1.4, 20.6), crit('kill_latency', 'na', null, null)] });
+    const rem = RUN({ runId: 'VV-00003', scenarioId: 'SCN-FEAT00022-FAULT-REMOTE-DC2', role: 'BASELINE_REMOTE', overall: 'FAIL', gateResult: 'FAIL', safety: SAFETY, repro: null, gateReasons: ['danger_time 31s (기준 <= 0)', '재현 정보(도구 Version·시나리오 해시·판정 스크립트 해시·시드)가 없습니다'], criteria: [crit('kill_latency', 'pass', 0.32, 48.3), crit('deact_time', 'pass', 7, 55.3), crit('ftti_margin', 'fail', -33.3, 55.3), crit('danger_time', 'fail', 31, 30)] });
+    handler = api(rem, [onb, rem]);
+    mount('/validations/virtual', '/validations/virtual', <VirtualValidationScreen />, 'quality');
+    const tl = await screen.findByTestId('compare-timeline');
+    expect(within(tl).getByTestId('compare-onboard').textContent).toContain('FTTI 여유 +1.40 s');
+    expect(within(tl).getByTestId('compare-remote').textContent).toContain('FTTI 여유 -33.30 s');
+    expect(tl.textContent).toContain('FTTI 끝 22.00');
+    fireEvent.click(await screen.findByText('VV-00003'));
+    const checks = await screen.findByTestId('g5-checks');
+    expect([...checks.querySelectorAll('li')].map((li) => li.getAttribute('data-state'))).toEqual(['PASS', 'FAIL', 'FAIL', 'FAIL', 'FAIL']);
+    expect(screen.getByText('danger_time 31s (기준 <= 0)')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'TMS 제출 (IF-09)' })).toBeNull();
   });
 
   it('vECU 미연결 결과에는 TMS 제출이 없다', async () => {

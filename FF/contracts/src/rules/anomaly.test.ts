@@ -41,7 +41,7 @@ describe('이상 징후 판정 (D06-12)', () => {
 
 describe('품질 피드백 (D04-06)', () => {
   it('고장: G5 재판정 + ASIL B면 G7 + vECU 회귀 / 전달 이상은 피드백 없음', () => {
-    expect(feedbackActions({ kind: 'FEATURE_FAULT' }, { asil: 'B', virtualScenarios: ['SCN-FEAT00022-FAULT-KILL'] }).map((a) => a.ref)).toEqual(['G5', 'G7', 'SCN-FEAT00022-FAULT-KILL']);
+    expect(feedbackActions({ kind: 'FEATURE_FAULT' }, { asil: 'B', virtualScenarios: ['SCN-FEAT00022-FAULT-ONBOARD'] }).map((a) => a.ref)).toEqual(['G5', 'G7', 'SCN-FEAT00022-FAULT-ONBOARD']);
     expect(feedbackActions({ kind: 'FEATURE_FAULT' }, { asil: 'QM', virtualScenarios: [] }).map((a) => a.ref)).toEqual(['G5']);
     expect(feedbackActions({ kind: 'SECURITY' }, { asil: 'QM', virtualScenarios: [] }).map((a) => a.ref)).toEqual(['G5', 'G7']);
     expect(feedbackActions({ kind: 'DELIVERY' }, { asil: 'B', virtualScenarios: ['x'] })).toEqual([]);

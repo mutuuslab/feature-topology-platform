@@ -1,5 +1,7 @@
-// 차량 시나리오 검증 (D06-03) — vECU 가상검증. 정책을 실차에 보내기 전에 가상 차량에 적용해 기능 동작·오류·Kill·Safe Default를 재현하고,
-// 시나리오별 판정을 정책 검증기(D06-03 정상 추종 · D06-06 오류+Kill 경로)와 G5 Verification Gate Evidence(IF-09 TMS, D04-02)으로 연결한다.
+// 차량 시나리오 검증 (D06-03) — vECU 가상검증(ffval 2.0). 정책을 실차에 보내기 전에 가상 차량에 적용해 기능 동작·오류·차량 내 감지·
+// 원격 비활성화 단계(Registry DC)를 재현하고, 시나리오별 판정을 정책 검증기(D06-03 정상 추종 · D06-06 차량 내 감지)와
+// G5 Verification Gate Evidence(IF-09 TMS, D04-02)으로 연결한다. 원격 DC2만 쓴 기준선 실행은 비교용으로 기록만 한다.
+// 시간 한계(인계·램프·고장 램프·FTTI)는 이 Version의 Registry 안전 분류를 패키지에 실어 vECU가 그대로 쓴다.
 // 가상 차량은 권한 보유·배포 가정으로 평가한다(기능 동작을 보는 시험이므로) — 실제 권한·배포 판단은 활성화 판단(D01-09)이 맡는다.
 import { Body, Controller, Get, Injectable, NotFoundException, Param, Post, Query, Res } from '@nestjs/common';
 import { judgeVirtual, RunVirtualBody, virtualScenariosFor, type VirtualRun } from '@ff/contracts';
@@ -18,6 +20,7 @@ import { ZodPipe } from '../../../kernel/zod.pipe';
 import { Inject } from '@nestjs/common';
 import { FleetRepo, policyHash, PolicyRepo } from '../../d01-policy/policy-repos';
 import { FeatureRepo } from '../../d01-policy/repos';
+import { SafetyProfileService } from '../../d01-policy/registry/safety-profile.service';
 import { VirtualRunRepo } from './virtual-run.repo';
 
 @Injectable()
@@ -33,6 +36,7 @@ export class VirtualValidationService {
     private readonly fleet: FleetRepo,
     private readonly audit: AuditService,
     private readonly events: EventService,
+    private readonly profiles: SafetyProfileService,
   ) {}
 
   scenarios(featureId?: string) {
@@ -53,6 +57,8 @@ export class VirtualValidationService {
     if (!vehicle) throw new DomainError('NOT_FOUND', `차량 ${body.vin}을(를) 찾을 수 없습니다.`);
 
     const contentHash = policyHash(policy);
+    const p = this.profiles.view(policy.featureId, policy.featureVersion).profile;
+    const safety = { deactClass: p.deactClass, takeoverMs: p.takeoverMs, rampMs: p.rampMs, faultRampMs: p.faultRampMs, faultTolerantTimeMs: p.faultTolerantTimeMs, maxPendingMs: p.maxPendingMs };
     const pkg = {
       kind: 'ff-virtual-validation',
       policy: { ...policy, contentHash },
@@ -61,11 +67,13 @@ export class VirtualValidationService {
       fleet: this.fleet.vehicles().map((v) => (v.vin === body.vin ? { ...v, ecuPartNo: feature.ecuPnos[0] ?? null, swId: feature.swIds[0] ?? null } : v)),
       vehicle: body.vin,
       entitlementActive: true,
+      // Registry 안전 분류 — 차량 Guard 단계와 기준 한계(감지 지연 ≤ FTTI − 고장 램프, FTTI 여유 ≥ 0)
+      safety,
       scenarios: scenarios.map((s) => ({ scenarioId: s.scenarioId, ...s.params })),
     };
     const result = this.vecu.run(pkg);
     const at = this.clock.iso();
-    const base = { policyId: policy.policyId, policyRevision: policy.revision, contentHash, featureId: policy.featureId, featureVersion: policy.featureVersion, vin: body.vin, at, by: actor.id, tms: null };
+    const base = { policyId: policy.policyId, policyRevision: policy.revision, contentHash, featureId: policy.featureId, featureVersion: policy.featureVersion, vin: body.vin, at, by: actor.id, tms: null, safety };
 
     return this.db.tx(() => {
       // 번호는 넣을 때마다 매긴다 (같은 실행 안에서 시나리오별 VV 번호가 겹치지 않게)
@@ -74,7 +82,7 @@ export class VirtualValidationService {
         if (!result.ok || !r) {
           return { ...base, runId: this.runs.nextId(), scenarioId: s.scenarioId, role: s.role, source: 'unavailable', simulator: null, testId: null, overall: 'UNAVAILABLE', gateResult: 'UNAVAILABLE', criteria: [], evaluation: null, evidence: null, error: 'error' in result ? result.error : '시나리오 결과 없음' };
         }
-        const j = judgeVirtual(r.criteria, s);
+        const j = judgeVirtual(r.criteria, r.repro);
         return {
           ...base,
           runId: this.runs.nextId(),
@@ -85,7 +93,9 @@ export class VirtualValidationService {
           testId: r.testId,
           overall: r.overall === 'PASS' ? 'PASS' : 'FAIL',
           gateResult: j.gateResult,
+          gateReasons: j.reasons,
           criteria: j.criteria,
+          repro: (r.repro as VirtualRun['repro']) ?? null,
           evaluation: r.evaluation && { value: r.evaluation.value, decision: r.evaluation.decision, reason: r.evaluation.reason },
           evidence: { dir: r.dir, files: r.files },
           error: null,

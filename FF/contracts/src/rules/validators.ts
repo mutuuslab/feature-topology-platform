@@ -97,19 +97,17 @@ export function validateCompliance(i: ValidationInput): ValidatorResult {
 }
 
 /** D06-03 차량 시나리오 — 데모 Fleet에 정책을 배포했다고 가정하고 평가 */
-/** vECU 가상검증 결과 → 검증기 근거. 미실행·미연결은 보완 필요(HOLD), Gate 판정 기준 FAIL은 FAIL. */
+/** vECU 가상검증 결과 → 검증기 근거. 미실행·미연결은 보완 필요(HOLD), 기준 실패·재현 정보 없음은 FAIL — 알려진 실패를 '의도된 결과'로 면제하지 않는다(FFG-TST-009). */
 function virtualFindings(i: ValidationInput, validator: VirtualScenario['validator']): ValidatorResult['findings'] {
   const out: ValidatorResult['findings'] = [];
   for (const { scenario: s, run: r } of (i.virtual ?? []).filter((v) => v.scenario.validator === validator)) {
     if (!r) out.push({ result: 'CONDITIONAL', message: `vECU 가상검증 ${s.scenarioId} 미실행 — 현재 정책 내용으로 실행해야 합니다` });
     else if (r.source !== 'vecu') out.push({ result: 'CONDITIONAL', message: `vECU 미연결 — ${s.scenarioId} 결과는 Evidence로 인정하지 않습니다` });
     else if (r.gateResult !== 'PASS') {
-      const bad = r.criteria.filter((c) => c.deciding && c.status !== 'pass' && c.status !== 'na');
-      out.push({ result: 'FAIL', message: `vECU ${s.scenarioId} FAIL (${r.testId}): ${bad.map((c) => `${c.label} ${c.value ?? '?'}${c.unit} (기준 ${c.op} ${c.limit})`).join(', ')}` });
+      const bad = r.gateReasons?.length ? r.gateReasons : r.criteria.filter((c) => c.status !== 'pass' && c.status !== 'na').map((c) => `${c.label} ${c.value ?? '?'}${c.unit} (기준 ${c.op} ${c.limit})`);
+      out.push({ result: 'FAIL', message: `vECU ${s.scenarioId} FAIL (${r.testId}): ${bad.join(', ')}` });
     } else {
       out.push({ result: 'INFO', message: `vECU ${s.scenarioId} PASS (${r.testId})` });
-      const intended = r.criteria.filter((c) => !c.deciding && c.status === 'fail');
-      if (intended.length) out.push({ result: 'INFO', message: `오류 주입 구간 기준 미달(의도된 결과, Kill 이전): ${intended.map((c) => `${c.label} ${c.value}${c.unit}`).join(', ')}` });
     }
   }
   return out;

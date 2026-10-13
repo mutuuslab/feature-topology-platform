@@ -1,7 +1,7 @@
 {
  "kind": "ff-virtual-validation-package",
  "version": 1,
- "note": "FF 플랫폼 정책(Policy) + 기능 적용 범위 + 가상 차량 후보 + 검증 Gate 시험 계획(tests). 정책 필드는 FF/contracts PolicySchema와 같다. scenario는 단일 시나리오 호환용(=tests[1]).",
+ "note": "FF 플랫폼 정책(Policy) + 기능 적용 범위 + 가상 차량 후보 + 검증 Gate 시험 계획(tests). 정책 필드는 FF/contracts PolicySchema와 같다. scenario는 단일 시나리오 호환용(=tests[1]). ffval 2.0: 오류 시험은 차량 내 감지(판정)와 원격 DC2(비교 기준선, Gate 제외)로 나눴다 — 알려진 실패를 정보 항목으로 면제하지 않는다.",
  "policy": {
   "policyId": "POL-00001",
   "revision": 1,
@@ -247,47 +247,70 @@
    }
   },
   {
-   "id": "SCN-FEAT00022-FAULT-KILL",
-   "name": "오류 발생 · 긴급 차단 → Safe Default",
-   "purpose": "기능 오류(거리 추정 부풀림) 발생 시 긴급 차단이 1초 이내 Safe Default로 전환되고 안전하게 복귀하는지 확인한다.",
+   "id": "SCN-FEAT00022-FAULT-ONBOARD",
+   "name": "거리 추정 오류 · 차량 내 감지 → 고장 램프 → BASE_ONLY (CS-01)",
+   "purpose": "거리 추정값이 17초부터 서서히 커지는 오류에서 차량이 스스로(독립 기준 거리와 대조) 감지하고, 클라우드 없이 고장 램프로 기능 효과를 FTTI 안에 거두는지 확인한다. 보고서 v1.1 12.4.1·CS-01: 감지 19.11 s, BASE_ONLY 20.61 s, FTTI 끝 22.00 s.",
    "steps": [
-    "정상 주행 17초",
-    "17초에 거리 추정 오류 주입",
-    "48초 운영 콘솔 긴급 차단 발동 (통신 지연 300 ms)",
-    "Safe Default(시간 간격 2.2 s) 전환·복귀 관찰"
+    "80 km/h 추종, 목표 거리 40 m",
+    "17초: 거리 추정 오류 주입 (×1.0 → ×2.4, 8초)",
+    "차량 내 감시: 추정·기준 차이 20 %·2 m 밖이 0.2 s 지속 → 감지 확정",
+    "고장 램프 1.5 s → DISABLED (BASE_ONLY)"
    ],
    "expected": [
-    "Kill → Safe Default ≤ 1.0 s",
-    "Safe Default 후 15초 내 실제 '정상' 복귀",
-    "최대 감속 2.8 m/s² 이하",
-    "오류 구간의 오판단·위험은 참고로 기록"
+    "감지 지연 ≤ FTTI − 고장 램프 (3.5 s)",
+    "FTTI 여유 ≥ 0 s",
+    "실제 '위험' 단계 0 s",
+    "오판단 ≤ 2 s"
    ],
    "scenario": {
     "duration_s": 70,
     "lead_kph": 80,
     "target_gap_m": 40,
     "link_latency_ms": 300,
+    "vehicle_requests": [],
+    "fault": {
+     "at_s": 17,
+     "ramp_s": 8,
+     "bias_max": 2.4
+    },
+    "kill": null,
+    "onboard": {
+     "rel_pct": 20,
+     "abs_m": 2,
+     "debounce_s": 0.2
+    },
+    "criteria": null
+   }
+  },
+  {
+   "id": "SCN-FEAT00022-FAULT-REMOTE-DC2",
+   "baseline": true,
+   "name": "비교 기준선 · 원격 차단만 (DC2 인계 4 s + 램프 3 s)",
+   "purpose": "같은 오류를 차량 내 감지 없이 운영자의 원격 차단(48초)만으로 처리하면 위험 구간이 남아 G5 근거가 될 수 없음을 보인다(보고서 12.7 알려진 실패로 G5 통과 금지). Gate 판정에서 빠지는 비교용 시험이다.",
+   "steps": [
+    "17초: 같은 오류 주입",
+    "48초: 원격 차단 kill_command v2 → 차량 Guard 수락",
+    "DEACT_WARNING 4 s → DEACT_RAMP 3 s → DISABLED"
+   ],
+   "expected": [
+    "원격 경로는 지연·단계 기준을 지키지만",
+    "'위험' 단계·FTTI 여유는 불합격 — 차량 내 감지가 필요한 이유"
+   ],
+   "scenario": {
+    "duration_s": 70,
+    "lead_kph": 80,
+    "target_gap_m": 40,
+    "link_latency_ms": 300,
+    "vehicle_requests": [],
     "fault": {
      "at_s": 17,
      "ramp_s": 8,
      "bias_max": 2.4
     },
     "kill": {
-     "at_s": 48,
-     "safe_mode": "SAFE_DEFAULT"
+     "at_s": 48
     },
-    "criteria": {
-     "gate": [
-      "kill_latency",
-      "recovery",
-      "max_decel",
-      "min_ttc"
-     ],
-     "info": [
-      "misjudge",
-      "danger_time"
-     ]
-    }
+    "criteria": null
    }
   },
   {

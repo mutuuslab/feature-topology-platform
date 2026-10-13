@@ -137,42 +137,58 @@ describe('PoC ② 분야별 검증 8종 + 배포 안전성', () => {
   });
 });
 
-describe('vECU 가상검증 → 차량 시나리오(D06-03)·안전 동작(D06-06) 검증', () => {
-  const [NOM, FK] = virtualScenariosFor('FEAT-00022');
+describe('vECU 가상검증 → 차량 시나리오(D06-03)·안전 동작(D06-06) 검증 (FFG-TST-009 · FFG-LCY-006)', () => {
+  const [NOM, ONB, BASE] = virtualScenariosFor('FEAT-00022');
+  const REPRO = { ffvalVersion: 'ffval 2.0', scenarioHash: 'a'.repeat(64), scriptHash: 'b'.repeat(64), seed: 0 };
   const crit = (over: Record<string, string> = {}) =>
-    ['kill_latency', 'misjudge', 'danger_time', 'min_ttc', 'max_decel', 'recovery'].map((id) => ({ id, label: id, unit: 's', op: '<=', limit: 1, status: (over[id] ?? 'pass') as any, value: 0.3, at: 1 }));
-  const run = (scenario: typeof NOM, over: Record<string, string> = {}, source: 'vecu' | 'unavailable' = 'vecu') => {
-    const j = judgeVirtual(crit(over), scenario);
-    return { runId: 'VV-00001', source, testId: 'TEST-x', gateResult: source === 'vecu' ? j.gateResult : ('UNAVAILABLE' as const), overall: 'PASS' as const, criteria: j.criteria, contentHash: 'h' };
+    ['kill_latency', 'detect_latency', 'ftti_margin', 'misjudge', 'danger_time', 'min_ttc', 'max_decel', 'recovery'].map((id) => ({ id, label: id, unit: 's', op: '<=', limit: 1, status: (over[id] ?? 'pass') as any, value: 0.3, at: 1 }));
+  const run = (over: Record<string, string> = {}, source: 'vecu' | 'unavailable' = 'vecu', repro: unknown = REPRO) => {
+    const j = judgeVirtual(crit(over), repro);
+    return { runId: 'VV-00001', source, testId: 'TEST-x', gateResult: source === 'vecu' ? j.gateResult : ('UNAVAILABLE' as const), gateReasons: j.reasons, overall: 'PASS' as const, criteria: j.criteria, contentHash: 'h' };
   };
 
-  it('판정 기준: 정상 추종은 모든 기준, 오류+Kill은 Kill 경로(지연·복귀·감속)만', () => {
-    expect(judgeVirtual(crit({ danger_time: 'fail' }), NOM).gateResult).toBe('FAIL');
-    expect(judgeVirtual(crit({ danger_time: 'fail', misjudge: 'fail' }), FK).gateResult).toBe('PASS');
-    expect(judgeVirtual(crit({ kill_latency: 'fail' }), FK).gateResult).toBe('FAIL');
-    expect(judgeVirtual(crit({ recovery: 'pending' }), FK).gateResult).toBe('FAIL'); // 끝나지 않은 기준은 통과가 아니다
+  it('시나리오: 정상 추종(D06-03)·차량 내 감지(D06-06)가 결정하고, 원격 DC2만 쓴 실행은 비교 기준선(검증기 없음)', () => {
+    expect([NOM, ONB, BASE].map((s) => [s.role, s.validator])).toEqual([['NOMINAL', 'D06-03'], ['FAULT_ONBOARD', 'D06-06'], ['BASELINE_REMOTE', 'BASELINE']]);
+    expect(ONB.params.onboard).toMatchObject({ rel_pct: 20, debounce_s: 0.2 });
+    expect(BASE.params.kill).toEqual({ at_s: 48 });
+  });
+
+  it('회귀(12.7 알려진 실패로 G5 통과 금지): 오류 주입 구간의 위험·오판단도 판정 기준 — 정보 항목으로 면제하지 않는다', () => {
+    // ffval 1.x 방식은 오류+Kill 시나리오에서 danger_time·misjudge를 빼고 PASS를 냈다(vECU 종합 FAIL과 어긋남)
+    expect(judgeVirtual(crit({ danger_time: 'fail', misjudge: 'fail' }), REPRO)).toMatchObject({ gateResult: 'FAIL' });
+    expect(judgeVirtual(crit({ danger_time: 'fail' }), REPRO).reasons).toEqual(['danger_time 0.3s (기준 <= 1)']);
+    expect(judgeVirtual(crit({ recovery: 'pending' }), REPRO).gateResult).toBe('FAIL'); // 끝나지 않은 기준은 통과가 아니다
+    expect(judgeVirtual(crit({ kill_latency: 'na' }), REPRO)).toMatchObject({ gateResult: 'PASS' }); // 해당 없음은 판정에서 뺀다
+    expect(judgeVirtual(crit({ kill_latency: 'na' }), REPRO).criteria.find((c) => c.id === 'kill_latency')!.deciding).toBe(false);
+  });
+
+  it('재현 정보(도구 Version·시나리오 해시·판정 스크립트 해시·시드)가 없으면 모든 기준이 통과해도 근거가 아니다', () => {
+    expect(judgeVirtual(crit(), null)).toMatchObject({ gateResult: 'FAIL', reasons: [expect.stringMatching(/재현 정보/)] });
+    expect(judgeVirtual(crit(), { ...REPRO, scriptHash: 'x' }).gateResult).toBe('FAIL');
+    expect(judgeVirtual(crit(), REPRO)).toMatchObject({ gateResult: 'PASS', reasons: [] });
   });
 
   it('미실행·vECU 미연결은 HOLD — Evidence 없이 GO 불가', async () => {
-    let r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: null }, { scenario: FK, run: null }] }));
+    let r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: null }, { scenario: ONB, run: null }] }));
     expect(deploySafety(r).decision).toBe('HOLD');
     expect(r.find((x) => x.componentId === 'D06-03')!.findings[0].message).toMatch(/SCN-FEAT00022-NOMINAL 미실행/);
-    r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run(NOM, {}, 'unavailable') }, { scenario: FK, run: run(FK) }] }));
+    r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run({}, 'unavailable') }, { scenario: ONB, run: run() }] }));
     expect(r.find((x) => x.componentId === 'D06-03')!.result).toBe('CONDITIONAL');
   });
 
   it('정상 추종 FAIL → 차량 시나리오 검증 FAIL → BLOCKED', async () => {
-    const r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run(NOM, { min_ttc: 'fail' }) }, { scenario: FK, run: run(FK) }] }));
+    const r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run({ min_ttc: 'fail' }) }, { scenario: ONB, run: run() }] }));
     expect(r.find((x) => x.componentId === 'D06-03')!.result).toBe('FAIL');
     expect(deploySafety(r).decision).toBe('BLOCKED');
   });
 
-  it('둘 다 PASS → GO. 오류 주입 구간 위험은 의도된 결과로 INFO에 남는다', async () => {
-    const r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run(NOM) }, { scenario: FK, run: run(FK, { danger_time: 'fail' }) }] }));
+  it('차량 내 감지에서 위험 구간이 남거나 재현 정보가 없으면 안전 동작 검증 FAIL — 기준선 실행은 검증기에 쓰이지 않는다', async () => {
+    let r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run() }, { scenario: ONB, run: run({ danger_time: 'fail' }) }, { scenario: BASE, run: run({ danger_time: 'fail' }) }] }));
+    expect(r.find((x) => x.componentId === 'D06-06')!.result).toBe('FAIL');
+    r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run() }, { scenario: ONB, run: run({}, 'vecu', null) }] }));
+    expect(r.find((x) => x.componentId === 'D06-06')!.findings[0].message).toMatch(/재현 정보/);
+    r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: run() }, { scenario: ONB, run: run() }, { scenario: BASE, run: run({ danger_time: 'fail' }) }] }));
     expect(deploySafety(r)).toEqual({ decision: 'GO', reasons: [] });
-    const sb = r.find((x) => x.componentId === 'D06-06')!;
-    expect(sb.result).toBe('PASS');
-    expect(sb.findings.map((f) => f.result)).toEqual(['INFO', 'INFO']);
-    expect(sb.findings[1].message).toMatch(/의도된 결과/);
+    expect(r.find((x) => x.componentId === 'D06-06')!.findings.map((f) => f.result)).toEqual(['INFO']);
   });
 });

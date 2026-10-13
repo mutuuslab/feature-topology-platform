@@ -17,6 +17,8 @@ export interface VecuRunResult {
   criteria: { id: string; label: string; unit: string; op: string; limit: number; status: 'pass' | 'fail' | 'pending' | 'na'; value: number | null; at: number | null }[];
   minTimeGap: number | null;
   evaluation: { value: boolean; decision: string; reason: string } | null;
+  /** ffval 2.0 재현 정보(없으면 G5 근거 아님) */
+  repro?: Record<string, unknown> | null;
   dir: string;
   files: { name: string; sha256: string; bytes: number }[];
 }

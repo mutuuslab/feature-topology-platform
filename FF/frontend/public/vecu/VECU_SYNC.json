@@ -1,6 +1,6 @@
 {
   "source": "C:/project/2026-10-11_vECU",
-  "syncedAt": "2026-10-13T14:00:26.989Z",
+  "syncedAt": "2026-10-13T22:06:05.466Z",
   "note": "tools/vecu-sync.ts가 만든 복사본 — 여기서 고치지 말고 vECU 원본을 고친 뒤 다시 동기화",
   "files": {
     "assets/car.glb.b64.txt": {
@@ -16,8 +16,8 @@
       "bytes": 1863712
     },
     "ff/FEAT-00022_sample.json": {
-      "sha256": "e4897313d1af4d770f0bd088dd1f9bab3a35abe70fbb85a28e5150b19b4373e9",
-      "bytes": 9966
+      "sha256": "b0e73faf12b5b26ceca52879df139f9048c732f4bd1e42f00d6813df56853b53",
+      "bytes": 10923
     },
     "ff/FEAT-00023_sample.json": {
       "sha256": "10fc1aa9e8f56dbef03728ce0a1a77463208b015221850a5155876202baf28b7",
@@ -36,8 +36,8 @@
       "bytes": 6874
     },
     "js/features/feat00022.js": {
-      "sha256": "2f38bcaf2f4e2955084410d332706aadc3c7719b869953e5cf4d1e0bc707e83e",
-      "bytes": 2449
+      "sha256": "0ef5479515f961bee78d45159a75b321d81027b5b26d5dd33672f9c14d3c1e2c",
+      "bytes": 4404
     },
     "js/features/feat00023.js": {
       "sha256": "bfce5e0a8a8d18a501fed34dcf4f2abcd3a8f29cd38f8d11b4b79eb1b60374d1",
@@ -47,13 +47,17 @@
       "sha256": "0abde457061d87c2ae232462469ebe31f270413101b386885185af7b933f11dc",
       "bytes": 2197
     },
+    "js/features/onboard.js": {
+      "sha256": "036ce45a1e3e4ab5f40540c4384da1dbf9d9ac6ca155bbf295599f00d2bef611",
+      "bytes": 1169
+    },
     "js/ffval.js": {
-      "sha256": "edff9cd80a3e69567570d01987749d84d96676c490f3d63627d5c5a4574f7bfb",
-      "bytes": 49356
+      "sha256": "512c2b9545f00df9630c91b5544c30c673990889e69dc709f44952ae4a0e31df",
+      "bytes": 58418
     },
     "js/ffvui.js": {
-      "sha256": "057f7b2e41bab879727b45db38a446097470c437f146125a2513d41522106561",
-      "bytes": 34989
+      "sha256": "6cbe20564313d85f04f0162ca1037cbe20ae55f8165d24e16e13c36d59ea4b47",
+      "bytes": 35721
     },
     "js/ivi.js": {
       "sha256": "c8c8adb8dbf96a4f9e79662defc8c057f2bfeb9bc6f8a2dee1b179ce144e7cb1",

@@ -114,12 +114,14 @@ const BE_P10 = 'backend/test/ext/p10.spec.ts';
 const CT_EXT = 'contracts/src/rules/ext.test.ts';
 const FE_P10 = 'frontend/src/__tests__/screensP10.test.tsx';
 const E2E_P10 = 'e2e/tests/p10.spec.ts';
+const BE_MASTER = 'backend/test/d01/master.spec.ts';
+const FE_MASTER = 'frontend/src/__tests__/screensMaster.test.tsx';
 const VALIDATOR: Impl = { screens: ['/policies/:id', '/validations'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL], via: ['validatePolicy'] };
 /** via — 자기 API 없이 다른 컴포넌트의 라우트 안에서 호출되는 컴포넌트(예: 병렬 검증기)가 그 라우트 이름을 적는다 */
 type Impl = Pick<ComponentEntry, 'screens' | 'tests'> & { via?: string[] };
 const IMPLEMENTED: Record<string, Impl> = {
-  'D01-01': { screens: ['/features', '/features/:id/:ver', '/baselines'], tests: [...BE_D01, FE_V2, E2E_GOV] },
-  'D01-02': { screens: ['/features/:id/:ver', '/analysis/impact', '/precheck'], tests: [...BE_D01, 'contracts/src/rules/topology.test.ts', 'contracts/src/rules/precheck.test.ts', FE_V2, E2E_GOV] },
+  'D01-01': { screens: ['/features', '/features/:id/:ver', '/baselines', '/change/cr', '/master/taxonomy'], tests: [...BE_D01, FE_V2, E2E_GOV, BE_MASTER, FE_MASTER] },
+  'D01-02': { screens: ['/features/:id/:ver', '/analysis/impact', '/precheck', '/master/upg', '/master/artifacts', '/master/structure', '/master/control-points', '/trace/design'], tests: [...BE_D01, 'contracts/src/rules/topology.test.ts', 'contracts/src/rules/precheck.test.ts', FE_V2, E2E_GOV, BE_MASTER, FE_MASTER] },
   'D01-03': { screens: ['/products', '/products/new', '/products/:id/:ver'], tests: ['backend/test/d01/topology-catalog.spec.ts', 'contracts/src/rules/catalog.test.ts', E2E_GOV] },
   'D01-10': { screens: ['/audit'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
   'D04-04': { screens: ['/events'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
@@ -148,7 +150,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D06-07': VALIDATOR,
   'D03-01': VALIDATOR,
   'D03-02': { screens: ['/policies/:id', '/validations'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL], via: ['validatePolicy', 'decidePolicy'] },
-  'D04-02': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_OPS, E2E_POL], via: ['validatePolicy'] },
+  'D04-02': { screens: ['/policies/:id', '/validations', '/validations/virtual', '/verify/evidence'], tests: [BE_MASTER, FE_MASTER, BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_OPS, E2E_POL], via: ['validatePolicy'] },
   // P8b 운영 되먹임·IAM·Variant
   'D06-12': { screens: ['/ops/anomalies'], tests: ['backend/test/d06/anomaly.spec.ts', 'contracts/src/rules/anomaly.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx', 'e2e/tests/p8b.spec.ts'] },
   'D04-06': { screens: ['/quality/feedback'], tests: ['backend/test/d06/anomaly.spec.ts', 'contracts/src/rules/anomaly.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx', 'e2e/tests/p8b.spec.ts'] },

@@ -232,6 +232,16 @@ export const ROUTES: RouteDef[] = [
   { name: 'openfeatureFlagd', method: 'GET', path: '/api/openfeature/flagd', summary: 'flagd 내보내기 — F0·F1만, defaultVariant=off (FFG-OFT-005·002)', component: 'D05-01' },
   { name: 'openfeatureManifest', method: 'GET', path: '/api/openfeature/manifest', summary: 'OF-7 flag 매니페스트(OpenFeature CLI) + 기본값 규율', component: 'D05-01' },
   { name: 'vehicleOpenFeature', method: 'GET', path: '/api/vehicles/:vin/openfeature', summary: 'OF-6 차량 내장 provider 평가 — IVI 앱용, F2 이상은 기본값·DISABLED', component: 'D02-03', sample: { vin: 'ego-01' } },
+  // P10-C4 기준정보·추적 조회(레거시 기준정보 화면 → v2)
+  { name: 'masterEcu', method: 'GET', path: '/api/master/ecu', summary: 'ECU 마스터 (+ 탑재 SW·Feature 수)', component: 'D01-02' },
+  { name: 'masterSw', method: 'GET', path: '/api/master/sw', summary: 'SW·Artifact 마스터 (+ 쓰는 Feature)', component: 'D01-02', query: ['ecuPno', 'q'] },
+  { name: 'masterStructure', method: 'GET', path: '/api/master/structure', summary: 'SW 구조 — ECU → SW → Function → Feature', component: 'D01-02' },
+  { name: 'masterUpg', method: 'GET', path: '/api/master/upg', summary: 'UPG-VC — 지원 Feature·Fleet 차량', component: 'D01-02' },
+  { name: 'masterControlPoints', method: 'GET', path: '/api/master/control-points', summary: '제어점 — Control Point와 정책 flag 묶음(BD-06)', component: 'D01-02' },
+  { name: 'masterTaxonomy', method: 'GET', path: '/api/master/taxonomy', summary: 'Taxonomy — 태그·범위별 Feature', component: 'D01-02' },
+  { name: 'designTrace', method: 'GET', path: '/api/trace/:id/:ver', summary: '요구·안전 추적 — 요구 → Function → SW → ECU, Gate·증적, 안전 분류', component: 'D01-02', sample: { id: 'FEAT-00022', ver: '1.0.0' } },
+  { name: 'evidenceLedger', method: 'GET', path: '/api/evidence', summary: '증적 원장 (Gate 판정 증적)', component: 'D04-02', query: ['featureId', 'gate', 'result'] },
+  { name: 'versionChanges', method: 'GET', path: '/api/changes', summary: '변경 이력 — Version 변경 사유(변경요청)', component: 'D01-01', query: ['featureId'] },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

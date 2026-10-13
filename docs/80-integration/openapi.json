@@ -8503,6 +8503,263 @@
           }
         }
       }
+    },
+    "/api/master/ecu": {
+      "get": {
+        "summary": "ECU 마스터 (+ 탑재 SW·Feature 수)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterEcu",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/sw": {
+      "get": {
+        "summary": "SW·Artifact 마스터 (+ 쓰는 Feature)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterSw",
+        "parameters": [
+          {
+            "name": "ecuPno",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/structure": {
+      "get": {
+        "summary": "SW 구조 — ECU → SW → Function → Feature",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterStructure",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/upg": {
+      "get": {
+        "summary": "UPG-VC — 지원 Feature·Fleet 차량",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterUpg",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/control-points": {
+      "get": {
+        "summary": "제어점 — Control Point와 정책 flag 묶음(BD-06)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterControlPoints",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/taxonomy": {
+      "get": {
+        "summary": "Taxonomy — 태그·범위별 Feature",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterTaxonomy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trace/{id}/{ver}": {
+      "get": {
+        "summary": "요구·안전 추적 — 요구 → Function → SW → ECU, Gate·증적, 안전 분류",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "designTrace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/evidence": {
+      "get": {
+        "summary": "증적 원장 (Gate 판정 증적)",
+        "tags": [
+          "D04-02"
+        ],
+        "operationId": "evidenceLedger",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "gate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "result",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/changes": {
+      "get": {
+        "summary": "변경 이력 — Version 변경 사유(변경요청)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "versionChanges",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
     }
   }
 }

@@ -57,17 +57,13 @@ const home = () => import('./pages/home');
 const master = () => import('./pages/master');
 const topology2 = () => import('./pages/topology2');
 const decisions = () => import('./pages/decisions');
-const change = () => import('./pages/change');
-const verify = () => import('./pages/verify');
 const ops2 = () => import('./pages/ops2');
 const supplier = () => import('./pages/supplier');
 const integration = () => import('./pages/integration');
 const insights = () => import('./pages/insights');
 const admin = () => import('./pages/admin');
 const specnew = () => import('./pages/specnew');
-const plm = () => import('./pages/plm');
 const eo = () => import('./pages/eo');
-const lineage = () => import('./pages/lineage');
 const twin = () => import('./pages/twin');
 const twinOps = () => import('./pages/twinOps');
 
@@ -81,6 +77,8 @@ const runtimeScreens = () => import('./screens/policy/Runtime');
 const entitlementScreens = () => import('./screens/policy/Entitlements');
 const bizScreens = () => import('./screens/biz/TrialAnalytics');
 const extScreens = () => import('./screens/ext/Integrations');
+const masterScreens = () => import('./screens/master/MasterData');
+const traceScreens = () => import('./screens/master/Trace');
 const experimentScreens = () => import('./screens/ext/Experiments');
 const incidentScreens = () => import('./screens/ext/Incidents');
 const virtualScreens = () => import('./screens/policy/Virtual');
@@ -112,12 +110,12 @@ export const ROUTES: AppRoute[] = [
   { path: '/feature/:id', element: legacyTo('/features'), title: 'Feature 상세 (이전 주소)', group: 'feature', parent: '/features' },
   { path: '/lifecycle', element: legacyTo('/features'), title: 'Lifecycle 보드 (이전 주소)', group: 'feature', parent: '/features' },
   { path: '/master/define', element: named(() => import('./pages/defineRevision'), 'DefineRevision'), title: 'Feature 등록', group: 'feature', menu: '/master/define', components: ['D01-01'] },
-  { path: '/change/cr', element: named(change, 'CRList'), title: '변경요청', group: 'feature', menu: '/change/cr' },
-  { path: '/change/cr/:id', element: named(change, 'CRDetail'), title: '변경요청 상세', group: 'feature', parent: '/change/cr' },
-  { path: '/change/baseline', element: named(change, 'BaselineDiff'), title: 'Baseline 비교', group: 'feature', parent: '/change/cr' },
-  { path: '/change/timeline', element: named(change, 'VersionTimeline'), title: 'Version 이력', group: 'feature', parent: '/change/cr' },
-  { path: '/master/taxonomy', element: named(master, 'TaxonomyBrowser'), title: 'Taxonomy', group: 'feature', menu: '/master/taxonomy' },
-  { path: '/master/taxonomy/edit', element: named(master, 'TaxonomyEditor'), title: 'Taxonomy 편집', group: 'feature', parent: '/master/taxonomy' },
+  { path: '/change/cr', element: named(traceScreens, 'ChangesScreen'), title: '변경요청', group: 'feature', menu: '/change/cr', components: ['D01-01'], v2: true },
+  { path: '/change/cr/:id', element: legacyTo('/change/cr'), title: '변경요청 상세 (이전 주소)', group: 'feature', parent: '/change/cr' },
+  { path: '/change/baseline', element: legacyTo('/change/cr'), title: 'Baseline 비교 (이전 주소)', group: 'feature', parent: '/change/cr' },
+  { path: '/change/timeline', element: legacyTo('/change/cr'), title: 'Version 이력 (이전 주소)', group: 'feature', parent: '/change/cr' },
+  { path: '/master/taxonomy', element: named(masterScreens, 'TaxonomyScreen'), title: 'Taxonomy', group: 'feature', menu: '/master/taxonomy', components: ['D01-01'], v2: true },
+  { path: '/master/taxonomy/edit', element: legacyTo('/master/taxonomy'), title: 'Taxonomy 편집 (이전 주소)', group: 'feature', parent: '/master/taxonomy' },
 
   // 3 구성·Topology
   { path: '/baselines', element: def(() => import('./screens/bom/BaselineQueue')), title: 'BOM 기준선·확정 승인', group: 'config', menu: '/baselines', components: ['D01-01'], v2: true },
@@ -139,19 +137,19 @@ export const ROUTES: AppRoute[] = [
   { path: '/variants/:id', element: legacyTo('/variant-conditions'), title: 'Variant 매트릭스 (이전 주소)', group: 'config', parent: '/variant-conditions' },
 
   // 4 기준정보
-  { path: '/master/upg', element: named(plm, 'UpgRegistry'), title: 'UPG·UPG-VC', group: 'master', menu: '/master/upg' },
-  { path: '/master/artifacts', element: named(master, 'ArtifactCatalog'), title: 'SW·Artifact', group: 'master', menu: '/master/artifacts' },
-  { path: '/master/structure', element: named(plm, 'SwStructure'), title: 'SW 구조', group: 'master', menu: '/master/structure' },
+  { path: '/master/upg', element: named(masterScreens, 'UpgScreen'), title: 'UPG·UPG-VC', group: 'master', menu: '/master/upg', components: ['D01-02'], v2: true },
+  { path: '/master/artifacts', element: named(masterScreens, 'SwScreen'), title: 'SW·Artifact', group: 'master', menu: '/master/artifacts', components: ['D01-02'], v2: true },
+  { path: '/master/structure', element: named(masterScreens, 'StructureScreen'), title: 'SW 구조', group: 'master', menu: '/master/structure', components: ['D01-02'], v2: true },
   { path: '/change/eo', element: named(eo, 'SwEoChange'), title: 'SW EO', group: 'master', menu: '/change/eo' },
-  { path: '/master/control-points', element: named(master, 'ControlPointCatalog'), title: '제어점', group: 'master', menu: '/master/control-points' },
+  { path: '/master/control-points', element: named(masterScreens, 'ControlPointsScreen'), title: '제어점', group: 'master', menu: '/master/control-points', components: ['D01-02'], v2: true },
 
   { path: '/precheck', element: def(() => import('./screens/governance/Precheck')), title: '데이터 사전점검', group: 'master', menu: '/precheck', components: ['D01-02'], v2: true },
 
   // 5 검증·Gate
-  { path: '/verify/evidence', element: named(() => import('./pages/areas/ui16'), 'QualityEvidence'), title: '품질 기준·증적', group: 'verify', menu: '/verify/evidence', components: ['D04-02', 'D06-04'] },
-  { path: '/verify/evidence/:id', element: named(verify, 'EvidenceDetail'), title: '증적 상세', group: 'verify', parent: '/verify/evidence' },
-  { path: '/decisions/verification', element: named(decisions, 'VerificationScope'), title: '검증 범위', group: 'verify', parent: '/verify/evidence' },
-  { path: '/readiness/:id', element: def(() => import('./pages/ReleaseReadiness')), title: 'Gate·출시 준비', group: 'verify', parent: '/verify/evidence', components: ['D03-02'] },
+  { path: '/verify/evidence', element: named(traceScreens, 'EvidenceScreen'), title: '품질 기준·Evidence', group: 'verify', menu: '/verify/evidence', components: ['D04-02', 'D06-04'], v2: true },
+  { path: '/verify/evidence/:id', element: legacyTo('/verify/evidence'), title: '증적 상세 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
+  { path: '/decisions/verification', element: legacyTo('/verify/evidence'), title: '검증 범위 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
+  { path: '/readiness/:id', element: legacyTo('/features'), title: 'Gate·출시 준비 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
   { path: '/validations', element: named(policyScreens, 'ValidationHistory'), title: '분야별 검증 이력', group: 'verify', menu: '/validations', components: ['D06-04', 'D03-02'], v2: true },
   { path: '/policy/conflict', element: legacyTo('/validations'), title: '정책 충돌 검토 (이전 주소)', group: 'verify', parent: '/validations' },
   { path: '/policy/exception', element: named(specnew, 'Exception'), title: '정책 예외', group: 'verify', parent: '/validations' },
@@ -162,7 +160,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/twin/simulation', element: named(twin, 'TwinSimulation'), title: 'What-if 시뮬레이션 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
   { path: '/experiments', element: named(experimentScreens, 'ExperimentsScreen'), title: '실험·효과', group: 'verify', menu: '/experiments', components: ['D01-07'], v2: true },
   { path: '/verify/experiment', element: legacyTo('/experiments'), title: '실험·효과 (이전 주소)', group: 'verify', parent: '/experiments' },
-  { path: '/trace/design', element: named(lineage, 'DesignTrace'), title: '요구·안전 추적', group: 'verify', menu: '/trace/design', components: ['D06-07'] },
+  { path: '/trace/design', element: named(traceScreens, 'DesignTraceScreen'), title: '요구·안전 추적', group: 'verify', menu: '/trace/design', components: ['D06-07', 'D01-02'], v2: true },
 
   // 6 상품·출시
   { path: '/products', element: named(products, 'ProductList'), title: 'Feature Catalog 상품', group: 'release', menu: '/products', components: ['D01-03'], v2: true },

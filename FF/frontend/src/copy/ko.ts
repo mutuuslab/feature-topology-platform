@@ -515,6 +515,14 @@ export const ko = {
     ruleDone: '구현·시험됨',
     ruleTodo: (wp: string) => `${wp}에서 반영`,
     primary: '주 담당',
+    // 도구 신뢰성 — ISO 26262-8 cl.11 (보고서 8.1, FFG-PLT-013)
+    tcl: '도구 신뢰성 (ISO 26262-8 cl.11)',
+    tclKind: { TOOL: '플랫폼 도구', VEHICLE_SW: '차량 SW — ISO 26262-6으로 개발(도구 분류 대상 아님)', UNCLASSIFIED: '분류 안 됨 — 보고서 8.1 표 밖, Safety Manager 분류 필요' } as Record<string, string>,
+    tclOutput: '오류 출력',
+    tclDetect: '검출 수단',
+    tclNoDetect: '후속 검출 수단 없음',
+    tclMethod: '신뢰도 확보',
+    tclSource: { REPORT_8_1: '보고서 8.1 초기 예시 — Safety Plan 확정 전', FF_DRAFT: 'FF 초안' } as Record<string, string>,
   },
   openfeature: {
     title: 'OpenFeature 클라이언트 (웹 SDK · OFREP)',

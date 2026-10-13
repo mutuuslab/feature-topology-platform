@@ -167,6 +167,23 @@ describe('42 컴포넌트 아키텍처', () => {
     expect(within(panel).getByText('FFG-PLT-017')).toBeTruthy();
     expect(within(panel).getByText('주문 순번은 원장 기준 +1')).toBeTruthy();
   });
+
+  it('FFG-PLT-013 도구 신뢰성: 상세에 오류 출력별 TI·TD → TCL과 신뢰도 확보 방법, 서명 서비스는 TCL3·후속 검출 없음, 8.1 밖은 분류 안 됨', async () => {
+    handler = (url) => {
+      if (url.startsWith('/api/components/activity')) return { body: { since: 'x', items: [] } };
+      if (url.startsWith('/api/components')) return { body: { items: [COMP('D03-02', 'implemented', [4]), COMP('D06-10', 'implemented', [5]), COMP('D05-04', 'planned', [])] } };
+      return undefined;
+    };
+    mount('/arch/components', '/arch/components', <ArchitectureScreen />);
+    fireEvent.click(await screen.findByRole('button', { name: /D06-10 컴포넌트 D06-10/ }));
+    let tq = await screen.findByTestId('tool-qualification');
+    expect(tq.textContent).toContain('TCL3');
+    expect(tq.textContent).toContain('TI2·TD3 → TCL3 · 검출 수단: 후속 검출 수단 없음');
+    expect(tq.textContent).toContain('1c 도구 검증(validation)');
+    fireEvent.click(screen.getByRole('button', { name: /D05-04 컴포넌트 D05-04/ }));
+    tq = await screen.findByTestId('tool-qualification');
+    await waitFor(() => expect(screen.getByTestId('tool-qualification').textContent).toContain('분류 안 됨'));
+  });
 });
 
 describe('OpenFeature 웹 SDK 패널 (OF-2·3)', () => {

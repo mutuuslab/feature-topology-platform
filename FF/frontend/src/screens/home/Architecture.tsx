@@ -3,7 +3,7 @@
 // 보고서 v1.1 반영: 규칙마다 집행할 기존 컴포넌트(STANDARDS_MAP)와 추적 상태(RULE_STATUS) — 작업 단계(WP)를 고르면 그 단계가 고치는 컴포넌트만 또렷하게.
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { reportRule, RULE_STATUS, rulesOfComponent, STANDARDS_MAP, type WorkPackage } from '@ff/contracts';
+import { componentTcl, QUALIFICATION_METHODS, reportRule, RULE_STATUS, rulesOfComponent, STANDARDS_MAP, tclOf, TOOL_CLASSIFICATION, type WorkPackage } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
@@ -16,6 +16,38 @@ const WPS: WorkPackage[] = ['WP0', 'WP1', 'WP2', 'WP3', 'WP4', 'WP5', 'WP6', 'WP
 const RULE_IDS = Object.keys(STANDARDS_MAP);
 const done = (id: string) => !!RULE_STATUS[id]?.tested;
 /** 컴포넌트가 집행하는 규칙 — 반영 단계 필터가 있으면 그 단계 규칙만 */
+/** 컴포넌트를 SW 도구로 본 분류 — 오류 출력 유형별 TI·TD → TCL, TCL2 이상의 신뢰도 확보 방법과 근거 시험 */
+function ToolQualification({ componentId }: { componentId: string }) {
+  const c = TOOL_CLASSIFICATION.find((x) => x.componentId === componentId);
+  if (!c) return null;
+  const A = ko.arch;
+  return (
+    <section data-testid="tool-qualification" aria-label={A.tcl}>
+      <h3 className="ds-eyebrow">{A.tcl}</h3>
+      <KeyValue
+        rows={[
+          { k: 'TCL', v: c.kind === 'TOOL' ? <span className="ds-mono">{componentTcl(c)}</span> : '—', note: A.tclKind[c.kind] },
+          ...c.outputs.map((o) => ({
+            k: A.tclOutput,
+            v: <span style={{ fontSize: 'var(--fs-xs)' }}>{o.error}</span>,
+            note: `${o.ti}${o.td ? `·${o.td}` : ''} → ${tclOf(o.ti, o.td)} · ${A.tclDetect}: ${o.detection ?? A.tclNoDetect}`,
+          })),
+          ...(c.qualification
+            ? [
+                {
+                  k: A.tclMethod,
+                  v: <span style={{ fontSize: 'var(--fs-xs)' }}>{c.qualification.methods.map((m) => `${m} ${QUALIFICATION_METHODS[m]}`).join(' · ')}</span>,
+                  note: [c.qualification.note, ...c.qualification.evidence].filter(Boolean).join(' · '),
+                },
+              ]
+            : []),
+        ]}
+      />
+      <p className="ds-field__hint">{A.tclSource[c.source]}</p>
+    </section>
+  );
+}
+
 const rulesFor = (c: string, wp: string) => rulesOfComponent(c).filter((id) => wp === 'ALL' || STANDARDS_MAP[id].wp === wp);
 
 interface Comp {
@@ -185,6 +217,7 @@ export function ArchitectureScreen() {
                 },
               ]}
             />
+            <ToolQualification componentId={sel.id} />
             {rulesOfComponent(sel.id).length ? (
               <RuleChecklist
                 caption={A.standardsList}

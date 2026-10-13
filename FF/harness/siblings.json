@@ -1,0 +1,14 @@
+{
+  "ffImp": {
+    "dir": "../../2026-09-23_FF_IMP",
+    "env": "FF_IMP_DIR",
+    "pin": "5a1138cd7884343566d4dce2f909a177c2889b6d",
+    "watch": ["gleo"],
+    "why": "GLEO 메시지 v2(WP5b) — FF contracts/gleo.ts·adapters/gleo·gleo.ws.spec이 이 커밋의 wire와 함께 고정됐다. FF_IMP checkout이 이 커밋을 포함하지 않으면 실연동 시험이 다른 wire와 비교된다."
+  },
+  "vecu": {
+    "dir": "../../2026-10-11_vECU",
+    "env": "VECU_DIR_REAL",
+    "why": "실제 vECU 계약 시험(backend/test/d06/vecu-contract.spec.ts)과 웹 실행본 동기화(vecu:check)의 원천. git 저장소가 아니라 버전 고정 대신 존재만 보고한다."
+  }
+}

@@ -1,27 +1,38 @@
-// GLEO 실연동 (GLEO_MODE=ws) — FF_IMP의 실제 모의 브로커(python -m gleo.mock_broker)와 실제 DecisionEngine 차량 에이전트를 띄워
-// 긴급 차단이 kill_command(safe_mode)로 나가고, 차량 status_report가 회신 집계(CONFIRMED)로 돌아오는지 본다.
+// GLEO 실연동 (GLEO_MODE=ws) — FF_IMP의 실제 모의 브로커(python -m gleo.mock_broker)와 실제 DecisionEngine·VehicleGuard(v2) 차량 에이전트를 띄워
+// 긴급 차단이 차량마다 서명된 kill_command v2 봉투로 나가고, 차량 Guard가 검증한 뒤 state_auth로 서명한 status_report v2가
+// 6단계 수신 검사를 거쳐 회신 집계(CONFIRMED)로 돌아오는지 본다. 차량 키는 같은 모의 공장 루트(FF_HSM_VEHICLE_ROOT, 시험 전용)에서 파생.
 // FF_IMP 저장소·python websockets가 없으면 건너뛴다(CI). 포트 8798 — GLEO 기본 8765와 겹치지 않게.
+// FFG-PLT-012 · FFG-TEL-003 · FFG-VEH-002
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { PkiService } from '../../src/domains/d06-qsec/pki-kms/pki.service';
 import { actor, bootApp, killV2, restoreV2 } from '../helpers';
 
-const FF_IMP = process.env.FF_IMP_DIR ?? resolve(__dirname, '../../../../../2026-09-23_FF_IMP');
+const FF_IMP_MAIN = resolve(__dirname, '../../../../../2026-09-23_FF_IMP');
+const FF_IMP = process.env.FF_IMP_DIR ?? FF_IMP_MAIN;
 const PORT = 8798;
 const URL = `ws://127.0.0.1:${PORT}`;
-// FF_IMP는 자기 .venv(websockets 17)를 쓴다 — 시스템 python의 다른 websockets 버전으로 돌리면 접속 인자가 맞지 않는다
-const VENV = [join(FF_IMP, '.venv', 'Scripts', 'python.exe'), join(FF_IMP, '.venv', 'bin', 'python')].find((p) => existsSync(p));
+// 시험 전용 모의 공장 루트 — gleo-v2-vectors.spec과 같은 값(운영 루트 아님)
+const TEST_ROOT_B64 = createHash('sha256').update('ffp-test-vehicle-root-v1').digest('base64');
+// FF_IMP는 자기 .venv(websockets 17)를 쓴다 — 시스템 python의 다른 websockets 버전으로 돌리면 접속 인자가 맞지 않는다.
+// worktree(FF_IMP_DIR)에는 .venv가 없으니 기본 checkout의 것을 쓴다
+const VENV = [FF_IMP, FF_IMP_MAIN].flatMap((d) => [join(d, '.venv', 'Scripts', 'python.exe'), join(d, '.venv', 'bin', 'python')]).find((p) => existsSync(p));
 const PY = VENV ?? 'python';
 const ready = existsSync(join(FF_IMP, 'gleo', 'mock_broker.py')) && spawnSync(PY, ['-c', 'import websockets'], { cwd: FF_IMP }).status === 0;
 
 function start(args: string[], marker: string): Promise<ChildProcess> {
   return new Promise((ok, fail) => {
     const p = spawn(PY, ['-u', ...args], { cwd: FF_IMP, env: { ...process.env, PYTHONPATH: FF_IMP } });
+    let err = '';
     const timer = setTimeout(() => fail(new Error(`${args.join(' ')}: ${marker} 대기 시간 초과`)), 10_000);
     p.stdout!.on('data', (b) => String(b).includes(marker) && (clearTimeout(timer), ok(p)));
-    p.on('exit', (c) => fail(new Error(`${args.join(' ')} 종료 ${c}`)));
+    p.stderr!.on('data', (b) => (err += String(b)));
+    p.on('exit', (c) => fail(new Error(`${args.join(' ')} 종료 ${c}\n${err.slice(-800)}`)));
   });
 }
 const until = async (fn: () => Promise<boolean>, ms = 8_000) => {
@@ -33,45 +44,65 @@ const until = async (fn: () => Promise<boolean>, ms = 8_000) => {
   throw new Error('조건 대기 시간 초과');
 };
 
-describe.skipIf(!ready)('GLEO 실연동 — FF_IMP 브로커·차량 에이전트', () => {
+describe.skipIf(!ready)('GLEO 실연동 — FF_IMP 브로커·차량 Guard(v2)', () => {
   let app: INestApplication;
   let http: () => any;
   const procs: ChildProcess[] = [];
 
   beforeAll(async () => {
     procs.push(await start(['-m', 'gleo.mock_broker', '--port', String(PORT)], 'listening'));
-    procs.push(await start([join(__dirname, '..', 'fixtures', 'gleo_vehicle_agent.py'), URL], 'READY'));
-    Object.assign(process.env, { GLEO_MODE: 'ws', GLEO_URL: URL, FF_SCHEDULER: 'manual' });
+    Object.assign(process.env, { GLEO_MODE: 'ws', GLEO_URL: URL, FF_SCHEDULER: 'manual', FF_HSM_VEHICLE_ROOT: TEST_ROOT_B64 });
     ({ app, http } = await bootApp());
+    // 차량 신뢰 저장소 = 플랫폼 공개키(용도별), Feature 안전 분류 = Registry 확정값, 대상 = 봉투 target과 같은 값
+    const keys = app.get(PkiService).vehicleTrust().map((k) => ({ kid: k.keyId, purpose: k.purpose, pem: k.publicKeyPem }));
+    const p = (await http().get('/api/features/FEAT-00022/versions/1.0.0/safety').expect(200)).body.profile;
+    const f = (await http().get('/api/features/FEAT-00022').expect(200)).body.versions.find((v: any) => v.version === '1.0.0');
+    const dir = mkdtempSync(join(tmpdir(), 'ff-gleo-'));
+    const config = join(dir, 'vehicle.json');
+    writeFileSync(config, JSON.stringify({
+      root_b64: TEST_ROOT_B64,
+      epoch: (await http().get('/api/pki/hsm').expect(200)).body.epoch,
+      keys,
+      profiles: [{ feature_id: p.featureId, version: p.version, deact_class: p.deactClass, takeover_ms: p.takeoverMs, ramp_ms: p.rampMs, max_pending_ms: p.maxPendingMs }],
+      ecu_id: f.ecuPnos?.[0] ?? 'UNSPECIFIED',
+      sw_version: f.swVersions?.[0] ?? f.version,
+      vins: ['ego-01', 'lead-01'],
+    }));
+    procs.push(await start([join(__dirname, '..', 'fixtures', 'gleo_vehicle_agent.py'), URL, config], 'READY'));
     await until(async () => (await http().get('/api/gleo/status')).body.connected);
   }, 30_000);
   afterAll(async () => {
     await app?.close();
     for (const p of procs) p.kill();
-    delete process.env.GLEO_MODE;
-    delete process.env.GLEO_URL;
-    delete process.env.FF_SCHEDULER;
+    for (const k of ['GLEO_MODE', 'GLEO_URL', 'FF_SCHEDULER', 'FF_HSM_VEHICLE_ROOT']) delete process.env[k];
   });
 
-  it('긴급 차단(요청 → 2인 승인) → kill_command 송신 → 영상 키트 차량 status_report → CONFIRMED 2/2', async () => {
-    const r = { body: await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01', 'lead-01'], reason: '영상 키트 실연동', confirm: 'FEAT-00022' }, actor('seo.ops', 'OPERATOR')) };
-    await until(async () => (await http().get(`/api/kill-requests/${r.body.killId}`)).body.delivery.status === 'CONFIRMED');
-    const k = (await http().get(`/api/kill-requests/${r.body.killId}`).expect(200)).body;
+  it('긴급 차단(요청 → 2인 승인) → 차량별 v2 봉투 → Guard 검증 → DC2 단계 보고(state_auth) → CONFIRMED 2/2', async () => {
+    const r = await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01', 'lead-01'], reason: '영상 키트 실연동', confirm: 'FEAT-00022' }, actor('seo.ops', 'OPERATOR'));
+    // DC2: 인계 경고 4 s → 램프 3 s → DISABLED (벽시계)
+    await until(async () => (await http().get(`/api/kill-requests/${r.killId}`)).body.delivery.status === 'CONFIRMED', 20_000);
+    const k = (await http().get(`/api/kill-requests/${r.killId}`).expect(200)).body;
     expect(k.delivery).toMatchObject({ confirmed: 2, denominator: 2 });
-    const rb = (await http().get(`/api/telemetry/readbacks?publicationId=${k.publicationId}`).expect(200)).body.items;
-    expect(rb.map((x: any) => [x.vin, x.observed, x.via]).sort()).toEqual([['ego-01', 'DISABLED', 'GLEO'], ['lead-01', 'DISABLED', 'GLEO']]); // v1 영상 키트 SAFE_DEFAULT → v2 끝 상태로 해석(미증명, WP5b에서 state_auth)
     const g = (await http().get('/api/gleo/status').expect(200)).body;
-    expect(g.messages.find((m: any) => m.dir === 'out' && m.msg.type === 'kill_command').msg).toMatchObject({ type: 'kill_command', safe_mode: 'SAFE_DEFAULT', issued_by: 'usr-opslead' }); // 발행자 = 두 번째 승인자(게이트 통과 시점)
-    expect(g.messages.some((m: any) => m.dir === 'in' && m.msg.type === 'status_report')).toBe(true);
+    const out = g.messages.filter((m: any) => m.dir === 'out' && m.msg.type === 'kill_command').map((m: any) => m.msg);
+    expect(out.map((e: any) => [e.schema_version, e.request, e.scope.vehicle_ids])).toEqual([
+      ['2.0', 'deactivate', ['ego-01']],
+      ['2.0', 'deactivate', ['lead-01']],
+    ]);
+    expect(out[0].safe_mode).toBeUndefined();
+    const states = g.messages.filter((m: any) => m.dir === 'in' && m.msg.type === 'status_report').map((m: any) => m.msg.state);
+    expect(new Set(states)).toEqual(new Set(['DEACT_WARNING', 'DEACT_RAMP', 'DISABLED']));
+    const st = (await http().get('/api/vehicles/ego-01/status').expect(200)).body;
+    expect(st.recent.every((x: any) => x.accepted && x.via === 'GLEO')).toBe(true);
     expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('DISABLED');
-    expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log.at(-1).detail).toContain('v1 미증명');
-  });
+  }, 30_000);
 
-  it('해제 → 영상 키트에는 policy_push(enable)로 알리되 회신 의무 없음(ackOnly)', async () => {
+  it('복원(2인 승인) → v2 restore 봉투 → RESTORE_PENDING → 다음 시동 ACTIVE → CONFIRMED 2/2', async () => {
     const k = (await http().get('/api/kill-requests?status=ACTIVE').expect(200)).body.items[0];
     await restoreV2(http, k.killId, '복구', actor('park.safety', 'SAFETY_OFFICER'));
+    await until(async () => (await http().get(`/api/kill-requests/${k.killId}`)).body.restore?.status === 'CONFIRMED', 15_000);
     const d = (await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body;
-    expect(d.restore).toMatchObject({ status: 'CONFIRMED', denominator: 0 });
-    expect(d.restore.ackOnly.sort()).toEqual(['ego-01', 'lead-01']);
-  });
+    expect(d.restore).toMatchObject({ confirmed: 2, denominator: 2 });
+    expect((await http().get('/api/vehicles/lead-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('ACTIVE');
+  }, 30_000);
 });

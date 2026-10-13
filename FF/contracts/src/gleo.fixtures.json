@@ -1,16 +1,12 @@
 {
-  "_note": "GLEO 교차 언어 계약 픽스처 — FF contracts(TS, gleo.test.ts)와 FF_IMP gleo/messages.py(tests/test_messages.py)가 같은 판정을 내려야 한다.",
+  "_note": "GLEO 교차 언어 계약 픽스처 — FF contracts(TS, gleo.test.ts)가 FF_IMP gleo/messages.py validate()와 같은 판정을 내는지 본다. kill_command·status_report의 유효 예는 보고서 패키지 schema/examples(v2)를 쓴다.",
   "valid": [
-    { "type": "policy_push", "feature_id": "FEAT-00022", "action": "enable", "scope": { "vehicle_ids": ["ego-01"] }, "issued_at": "2026-10-12T01:00:00.000Z", "reason": "PUB-00001 care_00022_param" },
-    { "type": "kill_command", "feature_id": "FEAT-00022", "scope": { "vehicle_ids": ["ego-01", "lead-01"] }, "issued_at": "2026-10-12T01:00:00.000Z", "issued_by": "usr-operator" },
-    { "type": "kill_command", "feature_id": "FEAT-00022", "scope": { "vehicle_ids": ["ego-01"] }, "issued_at": "2026-10-12T01:00:00.000Z", "issued_by": "usr-operator", "safe_mode": "SAFE_STOP" },
-    { "type": "status_report", "vehicle_id": "ego-01", "feature_id": "FEAT-00022", "state": "SAFE_DEFAULT", "received_at": "2026-10-12T01:00:00.100Z", "applied_at": "2026-10-12T01:00:00.180Z", "offline": false, "latency_ms": 80.2 }
+    { "type": "policy_push", "feature_id": "FEAT-00022", "action": "enable", "scope": { "vehicle_ids": ["ego-01"] }, "issued_at": "2026-10-12T01:00:00.000Z", "reason": "PUB-00001 care_00022_param" }
   ],
   "invalid": [
     { "_why": "알 수 없는 type", "type": "kill_all", "feature_id": "FEAT-00022" },
-    { "_why": "issued_by 누락", "type": "kill_command", "feature_id": "FEAT-00022", "scope": { "vehicle_ids": ["ego-01"] }, "issued_at": "2026-10-12T01:00:00.000Z" },
     { "_why": "scope.vehicle_ids가 목록이 아님", "type": "policy_push", "feature_id": "FEAT-00022", "action": "enable", "scope": { "vehicle_ids": "ego-01" }, "issued_at": "2026-10-12T01:00:00.000Z", "reason": "x" },
-    { "_why": "safe_mode 값이 계약 밖", "type": "kill_command", "feature_id": "FEAT-00022", "scope": { "vehicle_ids": ["ego-01"] }, "issued_at": "2026-10-12T01:00:00.000Z", "issued_by": "usr-operator", "safe_mode": "SAFE_FAST" },
-    { "_why": "offline 누락", "type": "status_report", "vehicle_id": "ego-01", "feature_id": "FEAT-00022", "state": "SAFE_DEFAULT", "received_at": "2026-10-12T01:00:00.100Z", "applied_at": "2026-10-12T01:00:00.180Z" }
+    { "_why": "v1 kill_command(safe_mode) — v2 봉투가 아님", "type": "kill_command", "feature_id": "FEAT-00022", "scope": { "vehicle_ids": ["ego-01"] }, "issued_at": "2026-10-12T01:00:00.000Z", "issued_by": "usr-operator", "safe_mode": "SAFE_STOP" },
+    { "_why": "v1 status_report(SAFE_DEFAULT, state_auth 없음)", "type": "status_report", "vehicle_id": "ego-01", "feature_id": "FEAT-00022", "state": "SAFE_DEFAULT", "received_at": "2026-10-12T01:00:00.100Z", "applied_at": "2026-10-12T01:00:00.180Z", "offline": false }
   ]
 }

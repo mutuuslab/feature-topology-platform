@@ -34,6 +34,8 @@
     "guide:sync": "node tools/guide-sync.ts",
     "guide:check": "node tools/guide-sync.ts --check",
     "standards": "node tools/standards.ts",
+    "siblings": "node tools/siblings.ts",
+    "integration:status": "node tools/integration-status.ts",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",
     "unleash:down": "docker compose -f docker/unleash/docker-compose.yml down",
     "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web"

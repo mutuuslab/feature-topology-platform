@@ -1,56 +1,35 @@
 // GLEO Broker 어댑터 — FF_IMP 영상 키트 차량(ego-01·lead-01)을 플랫폼이 실제로 구동한다.
 // GLEO_MODE: internal(기본, 내부 시뮬레이터가 대신 회신) | ws(실제 브로커 ws://127.0.0.1:8765) | off(영상 키트 차량 미연결).
 // 보내기 전 contracts 스키마로 검사한다 — 브로커는 잘못된 메시지를 조용히 버린다.
-// GLEO status_report는 차량 런타임의 실제 적용 상태이므로 READBACK으로 받고, 게시본·해시·순번은 보낸 명령과 대응시켜 채운다.
-// GLEO_WIRE=v2(보고서 v1.1 부록 D): 차단·복원은 차량마다 서명된 kill_command v2 봉투(차량 1대)를 보내고, 차량이 state_auth로 서명한
-// status_report v2를 받아 수신 검사(D04-03) 6단계에 넘긴다 — 확인 집계는 검사를 통과해 끝 상태에 닿은 보고만. v1(safe_mode)은 FF_IMP 전환 뒤 지운다.
+// 와이어 v2(보고서 v1.1 부록 D, FF_IMP 5a1138c): 차단·복원은 차량마다 서명된 kill_command v2 봉투(차량 1대)를 보내고, 차량 Safety Guard가
+// state_auth로 서명한 status_report v2를 받아 수신 검사(D04-03) 6단계에 넘긴다 — 확인 집계는 검사를 통과해 끝 상태에 닿은 보고만.
+// policy_push는 차량 정책 캐시 알림(회신 없음)이다 — 기능을 끄는 일은 서명된 kill_command만 한다.
 import { Controller, Get, Injectable, Logger, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
-import { GleoMessage, GleoStatusReport, KillCommandV2, wireErrors, type Publication } from '@ff/contracts';
+import { gleoMessageErrors, type Publication } from '@ff/contracts';
 import { vehiclePseudonym } from '../../kernel/crypto';
 import { EnvelopeRepo } from '../../domains/d03-safety/kill-switch/envelope.repo';
 import { StatusIngestService } from '../../domains/d04-ops/telemetry-ingest/status-ingest.service';
 import { FleetRepo } from '../../domains/d01-policy/policy-repos';
 import { Clock } from '../../kernel/clock';
-import { DB, type Db } from '../../kernel/db';
-import { EventService } from '../../kernel/event.service';
-import { Inject } from '@nestjs/common';
-import { TelemetryService } from '../../domains/d04-ops/telemetry-ingest/telemetry.service';
 import { RuntimeRepo } from '../../domains/d06-qsec/secure-deploy/publication.repo';
 
 export type GleoMode = 'off' | 'internal' | 'ws';
-
-interface Pending {
-  publicationId: string;
-  payloadHash: string;
-  sequence: number;
-  featureVersion: string;
-  featureIds: string[];
-  /** 게시본이 기대하는 끝 상태(v2 DISABLED 등) */
-  desired?: string;
-}
 
 @Injectable()
 export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
   private readonly log = new Logger('GLEO');
   readonly mode: GleoMode = (['off', 'internal', 'ws'].includes(process.env.GLEO_MODE ?? '') ? process.env.GLEO_MODE : 'internal') as GleoMode;
   readonly url = process.env.GLEO_URL ?? 'ws://127.0.0.1:8765';
-  /** 차량 와이어 — v2는 차량별 봉투·서명된 상태 보고(FF_IMP v2), v1은 영상 키트 safe_mode(전환 기간) */
-  readonly wire: 'v1' | 'v2' = process.env.GLEO_WIRE === 'v2' ? 'v2' : 'v1';
   private ws: WebSocket | null = null;
   private connected = false;
   private closing = false;
   private retry: NodeJS.Timeout | null = null;
   private lastError: string | null = null;
-  /** vin|featureId → 회신을 기다리는 KILL·RESTORE 게시본 */
-  private pending = new Map<string, Pending>();
   readonly messages: { dir: 'out' | 'in'; at: string; msg: unknown }[] = [];
 
   constructor(
     private readonly clock: Clock,
-    private readonly telemetry: TelemetryService,
     private readonly runtime: RuntimeRepo,
-    private readonly events: EventService,
-    @Inject(DB) private readonly db: Db,
     private readonly envelopes: EnvelopeRepo,
     private readonly statusIngest: StatusIngestService,
     private readonly fleet: FleetRepo,
@@ -84,34 +63,26 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
   }
 
   status() {
-    return { mode: this.mode, wire: this.wire, url: this.mode === 'ws' ? this.url : null, connected: this.connected, lastError: this.lastError, pending: this.pending.size, messages: this.messages.slice(-30) };
+    return { mode: this.mode, wire: 'v2', url: this.mode === 'ws' ? this.url : null, connected: this.connected, lastError: this.lastError, messages: this.messages.slice(-30) };
   }
 
   /** 게시본 → GLEO 메시지. 회신 의무가 없는(ack만) 차량 목록을 돌려준다. */
   send(pub: Publication, vins: string[]): string[] {
     const p = pub.payload;
-    if (this.wire === 'v2' && (p.kind === 'KILL' || p.kind === 'RESTORE') && p.kill) return this.sendV2(pub, vins);
-    let msg: unknown;
-    let ackOnly: string[] = [];
-    if (p.kind === 'KILL' && p.kill) {
-      msg = { type: 'kill_command', feature_id: p.featureId, scope: { vehicle_ids: vins }, issued_at: p.issuedAt, issued_by: pub.createdBy, safe_mode: p.kill.safeMode };
-      for (const vin of vins) this.pending.set(`${vin}|${p.featureId}`, { publicationId: pub.publicationId, payloadHash: pub.signature.payloadHash, sequence: p.sequence, featureVersion: p.featureVersion, featureIds: p.kill.featureIds, desired: p.desired });
-    } else {
-      // GLEO 영상 키트는 policy_push를 캐시만 하고 회신하지 않는다 — 회신 집계 분모에서 뺀다(ackOnly)
-      const action = p.kind === 'RESTORE' ? 'enable' : p.policy?.enabled ? 'enable' : 'disable';
-      msg = { type: 'policy_push', feature_id: p.featureId, action, scope: { vehicle_ids: vins }, issued_at: p.issuedAt, reason: `${pub.publicationId} ${p.flagKey ?? p.kind}` };
-      ackOnly = vins;
-    }
-    const parsed = GleoMessage.safeParse(msg);
-    if (!parsed.success) throw new Error(`GLEO 메시지 계약 위반: ${parsed.error.message}`);
-    this.push('out', parsed.data);
-    if (this.connected && this.ws) this.ws.send(JSON.stringify(parsed.data));
-    else this.lastError = `미연결 상태에서 ${parsed.data.type} 전송 실패 — 차량 회신 없음(TIMEOUT 예상)`;
-    return ackOnly;
+    if ((p.kind === 'KILL' || p.kind === 'RESTORE') && p.kill) return this.sendV2(pub, vins);
+    // 정책 배포는 policy_push — 차량은 캐시만 하고 회신하지 않는다, 회신 집계 분모에서 뺀다(ackOnly)
+    const action = p.kind === 'RESTORE' ? 'enable' : p.policy?.enabled ? 'enable' : 'disable';
+    const msg = { type: 'policy_push', feature_id: p.featureId, action, scope: { vehicle_ids: vins }, issued_at: p.issuedAt, reason: `${pub.publicationId} ${p.flagKey ?? p.kind}` };
+    const errors = gleoMessageErrors(msg);
+    if (errors.length) throw new Error(`GLEO 메시지 계약 위반: ${errors.join('; ')}`);
+    this.push('out', msg);
+    if (this.connected && this.ws) this.ws.send(JSON.stringify(msg));
+    else this.lastError = '미연결 상태에서 policy_push 전송 실패';
+    return vins;
   }
 
   /**
-   * v2 — 차량마다 서명된 봉투(차량 1대) 한 통씩. 봉투가 없는(레거시 v1) 차단은 보내지 않고 회신 없음으로 남는다.
+   * 차량마다 서명된 봉투(차량 1대) 한 통씩. 봉투가 없는(레거시 v1) 차단은 보내지 않고 회신 없음으로 남는다.
    * @rule FFG-PLT-012 — 전달 규칙: 차량 단위 봉투만 브로커로, 보내기 전 v2 스키마 검사(브로커 보안·mTLS는 운영)
    */
   private sendV2(pub: Publication, vins: string[]): string[] {
@@ -123,7 +94,7 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
         this.lastError = `${vin} 봉투 없음(${p.kill!.killId}) — v1 차단은 v2 와이어로 보내지 않습니다`;
         continue;
       }
-      const errors = wireErrors(KillCommandV2, env);
+      const errors = gleoMessageErrors(env);
       if (errors.length) throw new Error(`kill_command v2 계약 위반: ${errors.join('; ')}`);
       this.push('out', env);
       if (this.connected && this.ws) this.ws.send(JSON.stringify(env));
@@ -137,7 +108,7 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
     return this.fleet.vehicles().find((v) => v.gleo && vehiclePseudonym(v.vin) === pseudonym)?.vin ?? null;
   }
 
-  /** 브로커가 중계한 메시지 — 차량 status_report만 받는다 (자기가 보낸 명령은 브로커가 되돌려 주지 않는다) */
+  /** 브로커가 중계한 메시지 — 차량 status_report v2만 받는다 (자기가 보낸 명령은 브로커가 되돌려 주지 않는다, v1 보고는 버린다) */
   onRaw(raw: string) {
     let data: unknown;
     try {
@@ -157,26 +128,7 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
         s.log.push({ at: this.clock.iso(), publicationId: '-', kind: 'GLEO', result: 'APPLIED', detail: `status_report v2 ${(data as { state: string }).state}` });
         this.runtime.save(s);
       }
-      return;
     }
-    const r = GleoStatusReport.safeParse(data);
-    if (!r.success) return;
-    const m = r.data;
-    this.push('in', m);
-    this.db.tx(() => this.events.publish('vehicle.status.reported', m.vehicle_id, { vehicleId: m.vehicle_id, featureId: m.feature_id, state: m.state, offline: m.offline, latencyMs: (m as any).latency_ms ?? null }, { componentId: 'D02-03' }));
-    const key = `${m.vehicle_id}|${m.feature_id}`;
-    const p = this.pending.get(key);
-    if (!p) return;
-    this.pending.delete(key);
-    // 차량 런타임 상태도 GLEO 보고로 갱신한다 (차량별 적용 상태 화면)
-    const s = this.runtime.get(m.vehicle_id);
-    // v1 영상 키트(safe_mode·SAFE_*)는 v2 끝 상태(DISABLED)를 보고하지 못한다 — 끝 상태로 해석하되 state_auth 없는 미증명 보고로 남긴다(FF_IMP v2 전환 전, WP5b)
-    const v1Safe = /^SAFE_/.test(m.state) && !!p.desired && !/^SAFE_/.test(p.desired);
-    const observed = v1Safe ? p.desired! : m.state;
-    for (const f of p.featureIds) s.featureState[f] = observed;
-    s.log.push({ at: this.clock.iso(), publicationId: p.publicationId, kind: 'GLEO', result: 'APPLIED', detail: `status_report ${m.state}${v1Safe ? ` → ${observed} (v1 미증명)` : ''}` });
-    this.runtime.save(s);
-    this.telemetry.ingest({ vin: m.vehicle_id, publicationId: p.publicationId, metricType: 'READBACK', policyHash: p.payloadHash, featureVersion: p.featureVersion, bootId: s.bootId, sequence: p.sequence, observed }, 'GLEO');
   }
 
   private push(dir: 'out' | 'in', msg: unknown) {

@@ -27,6 +27,7 @@ const STEPS: Step[] = [
   { id: 'vecu:check', title: 'vECU 웹 실행본 정합 (허용 목록·해시·금지어)', cmd: `node --test tools/vecu-sync.test.ts && node tools/vecu-sync.ts --check` },
   { id: 'guide:check', title: '보고서 v1.1 코드 패키지 정합 (허용 목록·해시·규칙 카탈로그)', cmd: `node --test tools/guide-sync.test.ts && node tools/guide-sync.ts --check` },
   { id: 'deadcode', title: '프론트 고아 모듈 0 (진입점에서 닿지 않는 모듈 금지)', cmd: `node tools/dead-modules.ts --check` },
+  { id: 'siblings', title: '형제 저장소 버전 고정 (FF_IMP GLEO v2 pin·vECU 존재)', cmd: `node --test tools/siblings.test.ts && node tools/siblings.ts` },
   { id: 'openfeature:check', title: 'OpenFeature 규율 (SDK 고정·Experimental·기본값 Safe State)', cmd: `node tools/openfeature-check.ts` },
   { id: 'data:check', title: '데이터셋 픽스처 정합', cmd: `node tools/dataset/check.ts`, when: () => existsSync(join(FF, 'tools', 'dataset', 'check.ts')) },
   { id: 'openapi', title: 'OpenAPI 최신 여부', cmd: `node tools/openapi.ts --check` },

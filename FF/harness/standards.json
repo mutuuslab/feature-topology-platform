@@ -708,7 +708,8 @@
         "backend/src/adapters/gleo/gleo.adapter.ts"
       ],
       "tested": [
-        "backend/test/d03/gleo-v2.spec.ts"
+        "backend/test/d03/gleo-v2.spec.ts",
+        "backend/test/d03/gleo.ws.spec.ts"
       ]
     },
     {
@@ -963,6 +964,7 @@
         "contracts/src/rules/status-v2.test.ts",
         "backend/test/d03/gleo-v2-vectors.spec.ts",
         "backend/test/d03/gleo-v2.spec.ts",
+        "backend/test/d03/gleo.ws.spec.ts",
         "backend/test/d04/status-v2.spec.ts",
         "frontend/src/__tests__/screensOps.test.tsx"
       ]
@@ -1078,6 +1080,7 @@
         "contracts/src/rules/kill-v2.test.ts",
         "backend/test/d03/gleo-v2-vectors.spec.ts",
         "backend/test/d03/gleo-v2.spec.ts",
+        "backend/test/d03/gleo.ws.spec.ts",
         "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d04/status-v2.spec.ts"
       ]

@@ -64,7 +64,7 @@ F2 이상은 Safe Default + `DISABLED`(`decided_by=vehicle_safety_guard`)로 돌
 
 1. contracts 빌드 · 백엔드/프론트 타입 검사
 2. lint:tokens(원시 색상 0) · lint:copy(문구·금지어, 보고서 v1.1 용어 규칙 0)
-3. vECU 실행본 정합 · 보고서 코드 패키지 정합 · **고아 모듈 0**(`tools/dead-modules.ts`) · OpenFeature 규율
+3. vECU 실행본 정합 · 보고서 코드 패키지 정합 · **고아 모듈 0**(`tools/dead-modules.ts`) · **형제 저장소 버전 고정**(`harness/siblings.json` — FF_IMP checkout이 GLEO v2 고정 커밋을 포함하고 `gleo/`가 깨끗한지) · OpenFeature 규율
 4. 데이터셋 픽스처 정합 · OpenAPI 최신 여부(`docs/80-integration/openapi.json`)
 5. contracts · 백엔드 · 프론트 테스트
 6. 42 컴포넌트 준수(`--strict`로 42/42) · 보고서 v1.1 규칙 추적
@@ -72,6 +72,7 @@ F2 이상은 Safe Default + `DISABLED`(`decided_by=vehicle_safety_guard`)로 돌
 
 `npm run verify:full`은 시각 회귀(Windows 기준 스크린샷)를 더한다.
 래칫(`harness/baselines.json`)은 나빠질 수 없고, 좋아지면 `npm run ratchet -- --update`로 잠근다.
+여러 세션이 같은 저장소를 쓰므로 통합 전에는 `npm run integration:status`(남은 브랜치·worktree·미커밋, 형제 저장소 포함)로 확인한다.
 현재 원시 색상 0 · FEAT-BDC 0 · 용어 위반 0 · 구현 컴포넌트 41/42(D06-11 취약점 모니터링은 보고서 WP8에서 구현).
 
 ## 데이터

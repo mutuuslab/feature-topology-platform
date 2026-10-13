@@ -1,4 +1,4 @@
-// D04-02 품질 기준 검증 — G5·TMS 증적(IF-09)
+// D04-02 품질 기준 검증 — G5·TMS Evidence(IF-09)
 // 규칙은 @ff/contracts validateQuality 하나 — 화면 미리보기·백엔드 실행이 같은 결과를 낸다.
 import { Injectable } from '@nestjs/common';
 import { validateQuality, type ValidationInput, type ValidatorResult } from '@ff/contracts';

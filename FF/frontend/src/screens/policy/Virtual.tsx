@@ -1,5 +1,5 @@
 // vECU 가상검증 (D06-03 차량 시나리오 검증 · D04-02 TMS 제출 IF-09) — /validations/virtual 화면과 정책 상세의 가상검증 패널.
-// 판정 원천은 C:\project\2026-10-11_vECU 헤드리스 실행기. 미연결 결과는 증적으로 인정하지 않는다.
+// 판정 원천은 C:\project\2026-10-11_vECU 헤드리스 실행기. 미연결 결과는 Evidence로 인정하지 않는다.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { STATIC_MODE } from '../../api/client';

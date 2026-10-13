@@ -139,7 +139,7 @@ export const ROUTES: AppRoute[] = [
 
   // 5 검증·Gate
   { path: '/verify/evidence', element: named(traceScreens, 'EvidenceScreen'), title: '품질 기준·Evidence', group: 'verify', menu: '/verify/evidence', components: ['D04-02', 'D06-04'], v2: true },
-  { path: '/verify/evidence/:id', element: legacyTo('/verify/evidence'), title: '증적 상세 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
+  { path: '/verify/evidence/:id', element: legacyTo('/verify/evidence'), title: 'Evidence 상세 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
   { path: '/decisions/verification', element: legacyTo('/verify/evidence'), title: '검증 범위 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
   { path: '/readiness/:id', element: legacyTo('/features'), title: 'Gate·출시 준비 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
   { path: '/validations', element: named(policyScreens, 'ValidationHistory'), title: '분야별 검증 이력', group: 'verify', menu: '/validations', components: ['D06-04', 'D03-02'], v2: true },

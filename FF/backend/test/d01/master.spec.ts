@@ -1,4 +1,4 @@
-// 기준정보·추적 조회 (P10-C4) — v0.81 데이터셋 그대로: ECU·SW·SW 구조·UPG-VC·제어점·Taxonomy·요구 추적·증적·변경 이력
+// 기준정보·추적 조회 (P10-C4) — v0.81 데이터셋 그대로: ECU·SW·SW 구조·UPG-VC·제어점·Taxonomy·요구 추적·Evidence·변경 이력
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bootApp } from '../helpers';
@@ -40,7 +40,7 @@ describe('기준정보·추적 조회', () => {
     expect(t.scopes.reduce((n: number, s: any) => n + s.count, 0)).toBeGreaterThan(30);
   });
 
-  it('요구·안전 추적 — FEAT-00022: 요구사항 → Function → SW → ECU, Gate 9개·증적, 안전 분류, REQUIRES 의존, Baseline·정책', async () => {
+  it('요구·안전 추적 — FEAT-00022: 요구사항 → Function → SW → ECU, Gate 9개·Evidence, 안전 분류, REQUIRES 의존, Baseline·정책', async () => {
     const t = (await http().get('/api/trace/FEAT-00022/1.0.0').expect(200)).body;
     expect(t.requirements.length).toBeGreaterThan(0);
     expect(t.functions[0]).toMatchObject({ functionId: expect.stringMatching(/^FUNC-/), swId: expect.any(String), ecuName: expect.any(String) });
@@ -51,7 +51,7 @@ describe('기준정보·추적 조회', () => {
     await http().get('/api/trace/FEAT-09999/1.0.0').expect(404);
   });
 
-  it('증적 원장 — 477건, Gate·결과로 거름 · 변경 이력(Version 변경 사유)', async () => {
+  it('Evidence 원장 — 477건, Gate·결과로 거름 · 변경 이력(Version 변경 사유)', async () => {
     expect((await http().get('/api/evidence').expect(200)).body.items).toHaveLength(477);
     const g5 = (await http().get('/api/evidence?featureId=FEAT-00022&gate=G5').expect(200)).body.items;
     expect(g5).toHaveLength(1);

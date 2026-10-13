@@ -1,5 +1,5 @@
-// 기준정보·추적 조회 (D01-02 Topology·구현 추적 · D01-01 변경 이력 · D04-02 증적) — v0.81 데이터셋 그대로.
-// 레거시 기준정보 화면(UPG·SW·SW 구조·제어점·Taxonomy·요구 추적·증적·변경요청)을 v2로 바꾸면서 같은 원천을 API로 낸다(P10-C4).
+// 기준정보·추적 조회 (D01-02 Topology·구현 추적 · D01-01 변경 이력 · D04-02 Evidence) — v0.81 데이터셋 그대로.
+// 레거시 기준정보 화면(UPG·SW·SW 구조·제어점·Taxonomy·요구 추적·Evidence·변경요청)을 v2로 바꾸면서 같은 원천을 API로 낸다(P10-C4).
 import { Controller, Get, Injectable, Param, Query } from '@nestjs/common';
 import { PlatformComponent } from '../../../kernel/components';
 import { DomainError } from '../../../kernel/errors';
@@ -125,7 +125,7 @@ export class MasterDataService {
     };
   }
 
-  /** 요구·안전 추적 — 요구사항 → Function → SW → ECU, Gate·증적, 안전 분류, 의존관계, Baseline·정책 */
+  /** 요구·안전 추적 — 요구사항 → Function → SW → ECU, Gate·Evidence, 안전 분류, 의존관계, Baseline·정책 */
   trace(featureId: string, version: string) {
     const f = this.features.get(featureId, version);
     if (!f) throw new DomainError('NOT_FOUND', `${featureId} ${version}을(를) 찾을 수 없습니다.`);
@@ -147,7 +147,7 @@ export class MasterDataService {
     };
   }
 
-  /** 증적 원장 — Gate 판정과 증적(데이터셋 + 플랫폼에서 판정한 것) */
+  /** Evidence 원장 — Gate 판정과 Evidence(데이터셋 + 플랫폼에서 판정한 것) */
   evidence(q: { featureId?: string; gate?: string; result?: string }) {
     const gateBy = new Map(this.gates.all().map((g) => [g.gateRecordId, g]));
     return this.gates

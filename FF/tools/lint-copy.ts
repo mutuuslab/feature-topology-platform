@@ -82,6 +82,6 @@ if (errors.length) {
 ok = ratchet('featBdcFiles', bdcFiles, 'max', 'FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지') && ok;
 ok = ratchet('twinTermLines', twinLines, 'max', "레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지") && ok;
 const termOk = ratchet('guideTermLines', termHits.length, 'max', "보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지");
-if (!termOk) for (const h of termHits.slice(0, 15)) console.error('    ' + h);
+if (!termOk || process.argv.includes('--terms')) for (const h of process.argv.includes('--terms') ? termHits : termHits.slice(0, 15)) console.error('    ' + h);
 ok = termOk && ok;
 process.exit(ok ? 0 : 1);

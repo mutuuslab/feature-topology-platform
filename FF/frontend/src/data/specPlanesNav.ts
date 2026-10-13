@@ -165,7 +165,7 @@ const DEFS: PlaneDef[] = [
     note: '기술 적합성만 판정한다. 최종 운영 허가는 G+M 소관이라 여기서 발행하지 않는다.',
     demos: [
       {
-        ko: '검증 · 증적',
+        ko: '검증 · Evidence',
         en: 'Verification & Evidence',
         routes: ['/verify/evidence', '/verify/compliance', '/verify/scenario', '/verify/experiment', '/decisions/verification'],
       },

@@ -1682,8 +1682,8 @@ function buildQualityGates(
       status: verificationResult.gateResult === 'PASS' ? 'PASS' : 'WARN',
       detail: {
         ko: verificationResult.missingEvidence.length
-          ? `미완 증적: ${verificationResult.missingEvidence.join(', ')}`
-          : '필수 증적 HIL-BDC-001 / OTA-RB-002 / TEL-BDC-001 완료',
+          ? `미완 Evidence: ${verificationResult.missingEvidence.join(', ')}`
+          : '필수 Evidence HIL-BDC-001 / OTA-RB-002 / TEL-BDC-001 완료',
         en: verificationResult.missingEvidence.length
           ? `Missing evidence: ${verificationResult.missingEvidence.join(', ')}`
           : 'Required evidence HIL-BDC-001 / OTA-RB-002 / TEL-BDC-001 complete',

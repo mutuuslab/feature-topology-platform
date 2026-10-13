@@ -65,7 +65,7 @@ export interface VirtualRun {
   vin: string;
   scenarioId: string;
   role: VirtualRole;
-  /** vecu = 시뮬레이터가 실제로 돌았다. unavailable = vECU 미연결 — 증적으로 인정하지 않는다 */
+  /** vecu = 시뮬레이터가 실제로 돌았다. unavailable = vECU 미연결 — Evidence로 인정하지 않는다 */
   source: 'vecu' | 'unavailable';
   simulator: string | null;
   testId: string | null;

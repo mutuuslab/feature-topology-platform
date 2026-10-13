@@ -1,5 +1,5 @@
 // 차량 시나리오 검증 (D06-03) — vECU 가상검증. 정책을 실차에 보내기 전에 가상 차량에 적용해 기능 동작·오류·Kill·Safe Default를 재현하고,
-// 시나리오별 판정을 정책 검증기(D06-03 정상 추종 · D06-06 오류+Kill 경로)와 G5 Verification Gate 증적(IF-09 TMS, D04-02)으로 연결한다.
+// 시나리오별 판정을 정책 검증기(D06-03 정상 추종 · D06-06 오류+Kill 경로)와 G5 Verification Gate Evidence(IF-09 TMS, D04-02)으로 연결한다.
 // 가상 차량은 권한 보유·배포 가정으로 평가한다(기능 동작을 보는 시험이므로) — 실제 권한·배포 판단은 활성화 판단(D01-09)이 맡는다.
 import { Body, Controller, Get, Injectable, NotFoundException, Param, Post, Query, Res } from '@nestjs/common';
 import { judgeVirtual, RunVirtualBody, virtualScenariosFor, type VirtualRun } from '@ff/contracts';
@@ -113,19 +113,19 @@ export class VirtualValidationService {
     return r;
   }
 
-  /** 기록된 증적 파일만 내준다 (경로 조작 차단) */
+  /** 기록된 Evidence 파일만 내준다 (경로 조작 차단) */
   file(id: string, name: string): string {
     const r = this.detail(id);
     const f = r.evidence?.files.find((x) => x.name === name);
-    if (!r.evidence || !f) throw new DomainError('NOT_FOUND', `${id}에 ${name} 증적이 없습니다.`);
+    if (!r.evidence || !f) throw new DomainError('NOT_FOUND', `${id}에 ${name} Evidence가 없습니다.`);
     const dir = resolve(r.evidence.dir);
     const path = resolve(dir, f.name);
-    if (!path.startsWith(dir + sep)) throw new DomainError('VALIDATION', '잘못된 증적 경로입니다.');
+    if (!path.startsWith(dir + sep)) throw new DomainError('VALIDATION', '잘못된 Evidence 경로입니다.');
     return path;
   }
 }
 
-/** 품질 기준 검증 (D04-02) — IF-09 TMS 증적 제출. 가상검증 결과·증적 해시를 TMS에 등록해 G5 Verification Gate 근거로 쓴다. */
+/** 품질 기준 검증 (D04-02) — IF-09 TMS Evidence 제출. 가상검증 결과·Evidence 해시를 TMS에 등록해 G5 Verification Gate 근거로 쓴다. */
 @Injectable()
 @PlatformComponent('D04-02')
 export class TmsSubmissionService {
@@ -206,7 +206,7 @@ export class VirtualValidationController {
     } catch (e) {
       throw e instanceof DomainError ? e : new NotFoundException();
     }
-    // 증적 보고서는 같은 출처에서 열리므로 스크립트를 막는다
+    // Evidence 보고서는 같은 출처에서 열리므로 스크립트를 막는다
     res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data: 'self'");
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.sendFile(path);

@@ -6421,7 +6421,7 @@
         }
       },
       "post": {
-        "summary": "정책을 vECU 가상 차량에 적용해 시나리오 실행 (판정·증적)",
+        "summary": "정책을 vECU 가상 차량에 적용해 시나리오 실행 (판정·Evidence)",
         "tags": [
           "D06-03"
         ],
@@ -6482,7 +6482,7 @@
     },
     "/api/virtual-validations/{id}": {
       "get": {
-        "summary": "가상검증 결과 (기준별 판정·증적 해시·TMS)",
+        "summary": "가상검증 결과 (기준별 판정·Evidence 해시·TMS)",
         "tags": [
           "D06-03"
         ],
@@ -6512,7 +6512,7 @@
     },
     "/api/virtual-validations/{id}/files/{name}": {
       "get": {
-        "summary": "가상검증 증적 파일 (보고서·텔레메트리)",
+        "summary": "가상검증 Evidence 파일 (보고서·텔레메트리)",
         "tags": [
           "D06-03"
         ],
@@ -6550,7 +6550,7 @@
     },
     "/api/virtual-validations/{id}/tms": {
       "post": {
-        "summary": "IF-09 TMS 증적 제출 (G5 근거)",
+        "summary": "IF-09 TMS Evidence 제출 (G5 근거)",
         "tags": [
           "D04-02"
         ],
@@ -7318,7 +7318,7 @@
     },
     "/api/poc/runs/{id}": {
       "get": {
-        "summary": "PoC 실행 — 단계·행위·증적",
+        "summary": "PoC 실행 — 단계·행위·Evidence",
         "tags": [
           "KERNEL"
         ],
@@ -8649,7 +8649,7 @@
     },
     "/api/trace/{id}/{ver}": {
       "get": {
-        "summary": "요구·안전 추적 — 요구 → Function → SW → ECU, Gate·증적, 안전 분류",
+        "summary": "요구·안전 추적 — 요구 → Function → SW → ECU, Gate·Evidence, 안전 분류",
         "tags": [
           "D01-02"
         ],
@@ -8687,7 +8687,7 @@
     },
     "/api/evidence": {
       "get": {
-        "summary": "증적 원장 (Gate 판정 증적)",
+        "summary": "Evidence 원장 (Gate 판정 Evidence)",
         "tags": [
           "D04-02"
         ],

@@ -1,6 +1,6 @@
-// vECU 가상검증 어댑터 — C:\project\2026-10-11_vECU의 헤드리스 실행기(tools/ffval_cli.mjs)를 실행해 판정·증적을 받는다.
-// 브라우저·포트 없이 Node 프로세스 하나(시나리오당 수십 ms). vECU가 없으면 'unavailable' — 증적으로 인정되지 않는 결과만 남긴다.
-//   VECU_MODE=auto(기본: 있으면 실행) | off,  VECU_DIR=<vECU 폴더>,  FF_EVIDENCE_DIR=<증적 저장 폴더>
+// vECU 가상검증 어댑터 — C:\project\2026-10-11_vECU의 헤드리스 실행기(tools/ffval_cli.mjs)를 실행해 판정·Evidence를 받는다.
+// 브라우저·포트 없이 Node 프로세스 하나(시나리오당 수십 ms). vECU가 없으면 'unavailable' — Evidence로 인정되지 않는 결과만 남긴다.
+//   VECU_MODE=auto(기본: 있으면 실행) | off,  VECU_DIR=<vECU 폴더>,  FF_EVIDENCE_DIR=<Evidence 저장 폴더>
 import { Injectable } from '@nestjs/common';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync } from 'node:fs';

@@ -273,7 +273,7 @@ describe('vECU 가상검증', () => {
     if (url.startsWith('/api/policies')) return { body: { items: [{ policyId: 'POL-00003', flagKey: 'care_00022_param', featureId: 'FEAT-00022', featureVersion: '1.0.0', status: 'DRAFT', revision: 1 }] } };
   };
 
-  it('실행은 선택 정책으로 POST, 결과를 열면 기준·증적·TMS 제출(품질 담당)', async () => {
+  it('실행은 선택 정책으로 POST, 결과를 열면 기준·Evidence·TMS 제출(품질 담당)', async () => {
     handler = api(RUN({}));
     mount('/validations/virtual', '/validations/virtual', <VirtualValidationScreen />, 'quality');
     const runBtn = (await screen.findByRole('button', { name: '가상검증 실행' })) as HTMLButtonElement;

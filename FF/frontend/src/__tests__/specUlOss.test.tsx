@@ -4,7 +4,7 @@
  * 정본: `FP_Unleash_OSS_Integration_Review_v1_0.html` · QC-UL-01~07 · 26 항목 감사 JSON.
  * 이 파일이 고정하는 것은 **값의 출처와 미실행 경계**다.
  *   · 계약 UL-OSS-01~14 ↔ FR-ULOSS-001~014 ↔ IF-FF-01~07 1:1 (QC-UL-04)
- *   · 무료 에디션 한계마다 보상 책임 Core 와 검증 증적이 붙는다 (QC-UL-06)
+ *   · 무료 에디션 한계마다 보상 책임 Core 와 검증 Evidence가 붙는다 (QC-UL-06)
  *   · NOT_RUN · NOT_RECORDED 는 완료가 아니다 (QC-UL-05)
  *   · 승인·발행·Flag 전환은 도구 UI 가 아니라 FP 정본에서만 일어난다 (QC-UL-07)
  */
@@ -150,14 +150,14 @@ describe('계약 · 요구 · 인터페이스 1:1 (QC-UL-04)', () => {
 });
 
 describe('무료 에디션 한계와 보상 책임 (QC-UL-06)', () => {
-  it('한계 12건 각각에 보상 책임 Core 와 검증 증적이 붙는다', () => {
+  it('한계 12건 각각에 보상 책임 Core 와 검증 Evidence가 붙는다', () => {
     expect(UL_LIMITS).toHaveLength(12);
     for (const l of UL_LIMITS) {
       expect(l.limit, '한계').toBeTruthy();
       expect(l.impact, `${l.limit} 영향`).toBeTruthy();
       expect(l.compensates, `${l.limit} 보상 책임`).toMatch(/C\d{2}/);
       expect(l.compensates, `${l.limit} 보상 책임`).not.toContain('Unleash');
-      expect(l.evidence, `${l.limit} 검증 증적`).toBeTruthy();
+      expect(l.evidence, `${l.limit} 검증 Evidence`).toBeTruthy();
     }
   });
 

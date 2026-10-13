@@ -95,7 +95,7 @@ describe('PoC 6단계 러너', () => {
     fireEvent.click(screen.getByRole('button', { name: '새 실행 시작' }));
     const steps = await screen.findByRole('list', { name: 'PoC 6단계 진행' });
     expect(within(steps).getAllByRole('button')).toHaveLength(6);
-    // 현재 단계(②)가 표시되고, ①을 고르면 행위·증적
+    // 현재 단계(②)가 표시되고, ①을 고르면 행위·Evidence
     fireEvent.click(within(steps).getAllByRole('button')[0]);
     expect(await screen.findByText('FEAT-00022 1.0.0 RELEASED')).toBeTruthy();
     expect(screen.getByText('9/9')).toBeTruthy();

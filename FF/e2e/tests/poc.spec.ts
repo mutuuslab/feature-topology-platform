@@ -26,7 +26,7 @@ test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·�
   await expect(steps.getByRole('button').nth(5)).toHaveAttribute('data-status', 'DONE', { timeout: 60_000 });
   for (let i = 0; i < 6; i++) await expect(steps.getByRole('button').nth(i)).toHaveAttribute('data-status', 'DONE');
   await steps.getByRole('button').nth(5).click();
-  const evidence = page.getByRole('region', { name: '증적' });
+  const evidence = page.getByRole('region', { name: 'Evidence' });
   await expect(evidence).toContainText('KILL_SWITCH');
   await expect(evidence).toContainText('MITIGATED');
   await expect(evidence).toContainText(/FB-\d{5}/);

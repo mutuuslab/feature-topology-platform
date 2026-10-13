@@ -153,7 +153,7 @@ describe('vECU 가상검증 → 차량 시나리오(D06-03)·안전 동작(D06-0
     expect(judgeVirtual(crit({ recovery: 'pending' }), FK).gateResult).toBe('FAIL'); // 끝나지 않은 기준은 통과가 아니다
   });
 
-  it('미실행·vECU 미연결은 HOLD — 증적 없이 GO 불가', async () => {
+  it('미실행·vECU 미연결은 HOLD — Evidence 없이 GO 불가', async () => {
     let r = await runValidators(input({}, { virtual: [{ scenario: NOM, run: null }, { scenario: FK, run: null }] }));
     expect(deploySafety(r).decision).toBe('HOLD');
     expect(r.find((x) => x.componentId === 'D06-03')!.findings[0].message).toMatch(/SCN-FEAT00022-NOMINAL 미실행/);

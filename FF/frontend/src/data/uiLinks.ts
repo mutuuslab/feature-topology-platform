@@ -147,7 +147,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   ] },
 
   // ── 품질과 추적 ──
-  UI16: { screenId: 'UI16', intent: '품질 기준과 검증 증적', links: [
+  UI16: { screenId: 'UI16', intent: '품질 기준과 검증 Evidence', links: [
     // 뷰 순서는 정본 상세 영역 순서(S01→S08)를 따른다. 진입 뷰는 `entry` 플래그로만 정한다.
     { path: '/decisions/verification', label: 'Verification Scope', en: 'Verification Scope', areaId: 'UI16-S01' },
     { path: '/verify/evidence', label: 'Test Evidence Manager', en: 'Test Evidence Manager', areaId: 'UI16-S02', entry: true },
@@ -226,7 +226,7 @@ export function implementedViews(screenId: string): ImplementedLink[] {
 export const ROLE_HOME_IMPL: Record<string, string> = {
   author: '/master/define', // UI02 Feature Registry
   approver: '/admin/approval', // UI06 검토함
-  quality: '/verify/evidence', // UI16 품질 기준과 검증 증적
+  quality: '/verify/evidence', // UI16 품질 기준과 검증 Evidence
   operator: '/fleet', // UI11 차량 운영 현황
   steward: '/master/upg', // UI21 UPG와 UPG VC
   commerce: '/commerce/offer', // UI07 Catalog 상품 구성

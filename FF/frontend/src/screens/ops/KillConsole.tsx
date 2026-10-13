@@ -17,6 +17,7 @@ import {
   type GateFinding,
   type ReasonCategory,
   type Role,
+  type SafeMode,
 } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -72,7 +73,7 @@ interface Kill {
   featureIds: string[];
   flagKeys: string[];
   vins: string[];
-  safeMode?: 'SAFE_DEFAULT' | 'SAFE_STOP';
+  safeMode?: SafeMode;
   reason: string;
   status: 'REQUESTED' | 'ACTIVE' | 'RELEASED' | 'REJECTED' | 'EXPIRED';
   requestedBy: string;

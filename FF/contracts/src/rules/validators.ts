@@ -102,7 +102,7 @@ function virtualFindings(i: ValidationInput, validator: VirtualScenario['validat
   const out: ValidatorResult['findings'] = [];
   for (const { scenario: s, run: r } of (i.virtual ?? []).filter((v) => v.scenario.validator === validator)) {
     if (!r) out.push({ result: 'CONDITIONAL', message: `vECU 가상검증 ${s.scenarioId} 미실행 — 현재 정책 내용으로 실행해야 합니다` });
-    else if (r.source !== 'vecu') out.push({ result: 'CONDITIONAL', message: `vECU 미연결 — ${s.scenarioId} 결과는 증적으로 인정하지 않습니다` });
+    else if (r.source !== 'vecu') out.push({ result: 'CONDITIONAL', message: `vECU 미연결 — ${s.scenarioId} 결과는 Evidence로 인정하지 않습니다` });
     else if (r.gateResult !== 'PASS') {
       const bad = r.criteria.filter((c) => c.deciding && c.status !== 'pass' && c.status !== 'na');
       out.push({ result: 'FAIL', message: `vECU ${s.scenarioId} FAIL (${r.testId}): ${bad.map((c) => `${c.label} ${c.value ?? '?'}${c.unit} (기준 ${c.op} ${c.limit})`).join(', ')}` });
@@ -165,11 +165,11 @@ export function validateChangeImpact(i: ValidationInput): ValidatorResult {
   return done('D06-05', '변경 영향 검증', f, `REQUIRES ${i.requiresTargets.length}건 충족 · 영향 상품 ${i.affectedProducts.length}건`);
 }
 
-/** D04-02 품질 기준 — G5 Verification Gate (TMS 시험 증적, IF-09) */
+/** D04-02 품질 기준 — G5 Verification Gate (TMS 시험 Evidence, IF-09) */
 export function validateQuality(i: ValidationInput): ValidatorResult {
   const g = i.gates.G5;
-  const f: ValidatorResult['findings'] = g === 'PASS' ? [] : [{ result: g === 'FAIL' ? 'FAIL' : 'CONDITIONAL', message: `G5 Verification Gate ${g ?? '미판정'} — TMS 시험 증적 필요(IF-09)` }];
-  return done('D04-02', '품질 기준 검증', f, 'G5 PASS — 시험 증적 확인');
+  const f: ValidatorResult['findings'] = g === 'PASS' ? [] : [{ result: g === 'FAIL' ? 'FAIL' : 'CONDITIONAL', message: `G5 Verification Gate ${g ?? '미판정'} — TMS 시험 Evidence 필요(IF-09)` }];
+  return done('D04-02', '품질 기준 검증', f, 'G5 PASS — 시험 Evidence 확인');
 }
 
 /** D06-07 안전 요구사항 추적 — 요구사항 연결·G2, 안전 등급이면 G7 */

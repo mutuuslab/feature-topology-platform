@@ -11,7 +11,7 @@
 .arch-root {
   --arch-command: var(--info);
   --arch-report: var(--pass);
-  --arch-telemetry: #8b5cf6;
+  --arch-telemetry: var(--lg-8b5cf6);
   --arch-audit: var(--pending);
   --arch-blocked: var(--fail);
   --arch-rate: 1;

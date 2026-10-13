@@ -4,6 +4,7 @@
  * 상세 화면은 Feature 정의를 복사하지 않는다 — Feature ID / Topology Version /
  * Policy Version 을 참조하고 Topology 화면으로 링크한다.
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '../store';
@@ -761,9 +762,9 @@ export function TwinIncident() {
       <div className="kpis reveal">
         <StatTile label="열린 Incident" value={incidents.filter((i) => i.status !== 'CLOSED').length} />
         <StatTile label="총 Incident" value={incidents.length} />
-        <StatTile label="영향 차량" value={incident?.affectedVins.length ?? 0} color="#D64545" />
+        <StatTile label="영향 차량" value={incident?.affectedVins.length ?? 0} color={LEGACY_PAL['lg-d64545']} />
         <StatTile label="Kill-Switch 상태" value={incident?.killSwitch.active ? 1 : 0} suffix={incident?.killSwitch.active ? ' ACTIVE' : ' OFF'} />
-        <StatTile label="수렴률" value={Math.round(snapshot.convergence.convergenceRate * 100)} suffix="%" color="#1F9D55" />
+        <StatTile label="수렴률" value={Math.round(snapshot.convergence.convergenceRate * 100)} suffix="%" color={LEGACY_PAL['lg-1f9d55']} />
       </div>
 
       <div className="card">

@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { topology, getFeature, artifact } from '../data/engine';
@@ -28,7 +29,7 @@ export default function Topology() {
   const toggle = (lbl: string) => setHidden(h => { const n = new Set(h); n.has(lbl) ? n.delete(lbl) : n.add(lbl); return n; });
   const exportPng = () => {
     if (!cyRef.current) return;
-    const png = cyRef.current.png({ full: true, scale: 2, bg: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || '#fff' });
+    const png = cyRef.current.png({ full: true, scale: 2, bg: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || LEGACY_PAL['lg-ffffff'] });
     const a = document.createElement('a'); a.href = png; a.download = `topology_${id}.png`; a.click();
   };
 

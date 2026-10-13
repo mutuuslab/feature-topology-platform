@@ -19,6 +19,7 @@
  *    FLASH 셀에, `CRITICAL_DRIFT`/`GUARDED` 차량은 EOL 시험 셀에 실제로 세워진다.
  *    나머지 스테이션은 VIN 없는 WIP(재공품) 바디로 채운다 — 없는 차량을 지어내지 않는다.
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import type { TwinStoreSnapshot } from '../data/twin/port';
 import type { TwinVerdict } from '../data/twin/engine';
 import type { Localized } from '../data/twin/types';
@@ -421,14 +422,14 @@ export type PlantStatus =
 
 /** WebGL 은 CSS 변수를 못 쓰므로 리터럴 hex 로 둔다(styles.css 토큰과 동일 값). */
 export const PLANT_STATUS_HEX: Record<PlantStatus, string> = {
-  RUNNING: '#1F9D55',
-  IDLE: '#8895A7',
-  WAITING: '#3B82F6',
-  WARNING: '#D9822B',
-  BLOCKED: '#E07030',
-  ERROR: '#D64545',
-  SAFETY: '#B91C1C',
-  OFFLINE: '#8895A7',
+  RUNNING: LEGACY_PAL['lg-1f9d55'],
+  IDLE: LEGACY_PAL['lg-8895a7'],
+  WAITING: LEGACY_PAL['lg-3b82f6'],
+  WARNING: LEGACY_PAL['lg-d9822b'],
+  BLOCKED: LEGACY_PAL['lg-e07030'],
+  ERROR: LEGACY_PAL['lg-d64545'],
+  SAFETY: LEGACY_PAL['lg-b91c1c'],
+  OFFLINE: LEGACY_PAL['lg-8895a7'],
 };
 
 export const PLANT_STATUS_LABEL: Record<PlantStatus, Localized> = {
@@ -444,11 +445,11 @@ export const PLANT_STATUS_LABEL: Record<PlantStatus, Localized> = {
 
 /** `toneColor()` 는 CSS `var()` 를 돌려주므로 3D 용 리터럴 표를 따로 둔다. */
 export const TOKEN_HEX: Record<string, string> = {
-  pass: '#1F9D55',
-  pending: '#D9822B',
-  fail: '#D64545',
-  info: '#3B82F6',
-  muted: '#8895A7',
+  pass: LEGACY_PAL['lg-1f9d55'],
+  pending: LEGACY_PAL['lg-d9822b'],
+  fail: LEGACY_PAL['lg-d64545'],
+  info: LEGACY_PAL['lg-3b82f6'],
+  muted: LEGACY_PAL['lg-8895a7'],
 };
 
 /** 야드 차량 색 = 수렴(Reconciliation) 결과 색. */

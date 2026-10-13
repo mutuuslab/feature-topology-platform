@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { impact, verification, deploy, supplier, buildDecisionPackage, fmtWon } from '../data/engine';
@@ -17,10 +18,10 @@ export function VerificationScope() {
       <PageTitle fallback="Verification Scope" />
       <div className="row">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>증적 커버리지</b>
-          <RadialProgress size={120} color={v.gateResult === 'PASS' ? '#1F9D55' : '#D9822B'} value={Math.round(covered / (v.mandatoryTests.length || 1) * 100)} label={`${covered}/${v.mandatoryTests.length} 증적`} />
+          <RadialProgress size={120} color={v.gateResult === 'PASS' ? LEGACY_PAL['lg-1f9d55'] : LEGACY_PAL['lg-d9822b']} value={Math.round(covered / (v.mandatoryTests.length || 1) * 100)} label={`${covered}/${v.mandatoryTests.length} 증적`} />
         </div>
         <div className="col card" style={{ alignItems: 'center', maxWidth: 220 }}><b>증적 상태</b>
-          <Donut size={120} segments={[{ label: '확보', value: covered, color: '#1F9D55' }, { label: 'Missing', value: v.missingEvidence.length, color: '#D9822B' }]} />
+          <Donut size={120} segments={[{ label: '확보', value: covered, color: LEGACY_PAL['lg-1f9d55'] }, { label: 'Missing', value: v.missingEvidence.length, color: LEGACY_PAL['lg-d9822b'] }]} />
         </div>
         <div className="col card">
           <p>Mandatory Tests: {v.mandatoryTests.map(t=><span key={t} className="pill" style={{marginRight:4}}>{t}</span>)}</p>
@@ -42,7 +43,7 @@ export function DeploymentDecision() {
       <PageTitle fallback="Deployment Decision" />
       <div className="card">
         <select value={ct} onChange={e=>setCt(e.target.value)} style={{padding:8}}>{opts.map(o=><option key={o}>{o}</option>)}</select>
-        <div className="decision RELEASE mt" style={{background:'#EAF2FF',color:'var(--brand)',border:'1px solid var(--brand)'}}>
+        <div className="decision RELEASE mt" style={{background:LEGACY_PAL['lg-eaf2ff'],color:'var(--brand)',border:'1px solid var(--brand)'}}>
           배포 방식: <b>{d.deployType}</b> ({d.confidence})
         </div>
         {d.requiredGates.length > 0 && <div className="mt"><b className="small">필요 Gate</b><Steps steps={d.requiredGates} current={0} /></div>}

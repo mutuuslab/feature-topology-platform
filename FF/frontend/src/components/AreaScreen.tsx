@@ -2,6 +2,7 @@
 //
 // 영역 이름과 개수는 data/canonical.ts(정본 영역 표)가 정하므로 화면마다 손으로 적지 않는다.
 // 화면은 영역별 본문만 넘긴다. 제품에는 요구사양 문서를 두지 않으므로 여기서 문서 링크는 만들지 않는다.
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { type CSSProperties, type ReactNode, useState } from 'react';
 import { Breadcrumb } from './Breadcrumb';
 import { PageTitle } from './PageTitle';
@@ -29,7 +30,7 @@ export function Table({ head, children }: { head: string[]; children: ReactNode 
 export function Reasons({ list, title, ok }: { list: string[]; title: string; ok?: boolean }) {
   if (ok) return <div className="small" style={{ color: 'var(--pass)' }}>✓ {title} — 차단 조건 없음</div>;
   return (
-    <div className="card" style={{ background: '#FDECEC', borderColor: 'var(--fail)', padding: '10px 12px', marginTop: 10 }}>
+    <div className="card" style={{ background: LEGACY_PAL['lg-fdecec'], borderColor: 'var(--fail)', padding: '10px 12px', marginTop: 10 }}>
       <b className="small" style={{ color: 'var(--fail)' }}>✗ {title}</b>
       <ul className="small" style={{ margin: '6px 0 0 16px', color: 'var(--fail)' }}>
         {list.map((r, i) => <li key={i}>{r}</li>)}
@@ -64,12 +65,12 @@ export function StageRail({ steps, current, terminal, note }: { steps: { key: st
           return (
             <span key={s.key} className="pill" style={{
               background: on ? 'var(--brand)' : done ? 'var(--pass)' : 'var(--surface-2)',
-              color: on || done ? '#fff' : 'var(--muted)',
+              color: on || done ? LEGACY_PAL['lg-ffffff'] : 'var(--muted)',
               borderColor: on ? 'var(--brand)' : done ? 'var(--pass)' : 'var(--line)',
             }}>{done ? '✓ ' : on ? '▶ ' : ''}{s.ko}</span>
           );
         })}
-        {closed && <span className="pill" style={{ background: 'var(--fail)', color: '#fff', borderColor: 'var(--fail)' }}>■ {current}</span>}
+        {closed && <span className="pill" style={{ background: 'var(--fail)', color: LEGACY_PAL['lg-ffffff'], borderColor: 'var(--fail)' }}>■ {current}</span>}
       </div>
       {terminal && terminal.length > 0 && (
         <div className="row" style={{ gap: 8, marginTop: 8 }}>

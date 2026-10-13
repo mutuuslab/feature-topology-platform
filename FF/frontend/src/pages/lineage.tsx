@@ -2,6 +2,7 @@
 //
 // 연계 작업은 원천 요청의 결과를 격리·재처리·인계까지 추적하고,
 // 설계 추적은 요구 원문이 실제 화면·설계·시험으로 이어졌는지를 판정 상태로 남긴다.
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp, useLiveSlices, useToast } from '../store';
@@ -13,7 +14,7 @@ import {
 } from '../data/plmData';
 
 const Pill = ({ s, tone }: { s: string; tone?: string }) => (
-  <span className="pill" style={{ background: tone || 'var(--surface-2)', color: tone ? '#fff' : 'var(--muted)', borderColor: 'transparent' }}>{s}</span>
+  <span className="pill" style={{ background: tone || 'var(--surface-2)', color: tone ? LEGACY_PAL['lg-ffffff'] : 'var(--muted)', borderColor: 'transparent' }}>{s}</span>
 );
 const Note = ({ children }: { children: ReactNode }) => <p className="small muted" style={{ marginTop: 8 }}>{children}</p>;
 
@@ -138,7 +139,7 @@ export function IntegrationJobs() {
         </div>
         <div className="mt"><Table head={['작업', '격리', '인계', '사유']}>
           {jobs.filter(j => j.cancel).map(j => <tr key={j.id}><td className="mono">{j.id}</td>
-            <td><Pill s={j.cancel!.isolated ? '격리' : '미격리'} tone={j.cancel!.isolated ? '#c53030' : undefined} /></td>
+            <td><Pill s={j.cancel!.isolated ? '격리' : '미격리'} tone={j.cancel!.isolated ? LEGACY_PAL['lg-c53030'] : undefined} /></td>
             <td>{j.cancel!.handedTo}</td><td className="small muted">{j.cancel!.reason}</td></tr>)}
         </Table></div>
         <Note>격리는 원천에 남은 잔여 상태를 지우지 않는다 — 인계 대상이 후속 조치를 이어받는다.</Note>
@@ -229,7 +230,7 @@ export function DesignTrace() {
         <Table head={['항목', '제품 값', '원천 값', '호환']}>
           {[['정확 버전 표기', 'v1.1.0', '1.1.0', '정규화 필요'], ['Revision', 'r1.1', '1.1', '호환'], ['Feature ID', 'FEAT-BDC-001', 'FEAT-BDC-001', '호환'], ['scope', 'BDC-BODY', 'BDC-BODY', '호환']].map(r => (
             <tr key={r[0]}><td>{r[0]}</td><td className="mono">{r[1]}</td><td className="mono">{r[2]}</td>
-              <td><Pill s={r[3]} tone={r[3] === '호환' ? '#2f855a' : '#b8860b'} /></td></tr>
+              <td><Pill s={r[3]} tone={r[3] === '호환' ? LEGACY_PAL['lg-2f855a'] : LEGACY_PAL['lg-b8860b']} /></td></tr>
           ))}
         </Table>
         <div className="row mt" style={{ gap: 8 }}>

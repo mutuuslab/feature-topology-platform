@@ -3,6 +3,7 @@
 // 세 화면 모두 "기준정보를 정확 버전으로 고정해 연결한다"는 같은 계약을 가진다.
 // 상품은 BOM 기준선을, Structure 는 UPG VC 를, 구성원은 SW 정확 버전을 참조하며
 // 참조가 비면 화면이 그 이유를 그대로 보여주고 진행 버튼을 잠근다.
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp, useLiveSlices, useToast } from '../store';
@@ -15,10 +16,10 @@ import {
 } from '../data/plmData';
 
 const STATE_TONE: Record<string, string> = {
-  DRAFT: '#8a8f98', IN_REVIEW: '#b8860b', APPROVED: '#2b6cb0', PUBLISHED: '#2f855a',
-  WITHDRAWN: '#c53030', RETIRED: '#9ca3af', INVALID: '#c53030', VALIDATED: '#2b6cb0', FROZEN: '#2f855a',
+  DRAFT: LEGACY_PAL['lg-8a8f98'], IN_REVIEW: LEGACY_PAL['lg-b8860b'], APPROVED: LEGACY_PAL['lg-2b6cb0'], PUBLISHED: LEGACY_PAL['lg-2f855a'],
+  WITHDRAWN: LEGACY_PAL['lg-c53030'], RETIRED: LEGACY_PAL['lg-9ca3af'], INVALID: LEGACY_PAL['lg-c53030'], VALIDATED: LEGACY_PAL['lg-2b6cb0'], FROZEN: LEGACY_PAL['lg-2f855a'],
 };
-const Pill = ({ s }: { s: string }) => <span className="pill" style={{ background: STATE_TONE[s] || 'var(--surface-2)', color: '#fff', borderColor: 'transparent' }}>{s}</span>;
+const Pill = ({ s }: { s: string }) => <span className="pill" style={{ background: STATE_TONE[s] || 'var(--surface-2)', color: LEGACY_PAL['lg-ffffff'], borderColor: 'transparent' }}>{s}</span>;
 
 /** 근거 없는 판정은 화면에 남기지 않는다 — 사유가 있으면 사유를, 없으면 없다고 적는다. */
 function Note({ children }: { children: ReactNode }) {

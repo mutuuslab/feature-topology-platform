@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 // PLM 기준정보·원천 연계 화면의 작업 데이터 (UI07 · UI21 · UI22 · UI23 · UI24 · UI26 · UI30).
 //
 // 이 화면들은 기준정보를 **정확 버전으로 고정해** 상품·구성·사양·연계·추적에 연결한다.
@@ -37,7 +38,7 @@ export const OFFER_STATE_KO: Record<OfferState, string> = {
   DRAFT: '초안', IN_REVIEW: '검토', APPROVED: '승인', PUBLISHED: '발행', WITHDRAWN: '철회',
 };
 export const OFFER_STATE_TONE: Record<OfferState, string> = {
-  DRAFT: '#8a8f98', IN_REVIEW: '#b8860b', APPROVED: '#2b6cb0', PUBLISHED: '#2f855a', WITHDRAWN: '#c53030',
+  DRAFT: LEGACY_PAL['lg-8a8f98'], IN_REVIEW: LEGACY_PAL['lg-b8860b'], APPROVED: LEGACY_PAL['lg-2b6cb0'], PUBLISHED: LEGACY_PAL['lg-2f855a'], WITHDRAWN: LEGACY_PAL['lg-c53030'],
 };
 
 /** 발행 조건 — 승인과 구성 검증을 통과해야 판매에 쓸 수 있다. */
@@ -192,7 +193,7 @@ export function eoGate(e: SwEo, to: EoState): { ok: boolean; reasons: string[] }
 export const SPEC_STATES = ['DRAFT', 'ALLOW', 'DENY', 'UNKNOWN'] as const;
 export type SpecState = (typeof SPEC_STATES)[number];
 export const SPEC_STATE_KO: Record<SpecState, string> = { DRAFT: '작성', ALLOW: '허용', DENY: '차단', UNKNOWN: '미정' };
-export const SPEC_STATE_TONE: Record<SpecState, string> = { DRAFT: '#8a8f98', ALLOW: '#2f855a', DENY: '#c53030', UNKNOWN: '#b8860b' };
+export const SPEC_STATE_TONE: Record<SpecState, string> = { DRAFT: LEGACY_PAL['lg-8a8f98'], ALLOW: LEGACY_PAL['lg-2f855a'], DENY: LEGACY_PAL['lg-c53030'], UNKNOWN: LEGACY_PAL['lg-b8860b'] };
 
 export interface VariantRow { nation: string; market: string; model: string; trim: string; variant: string; review: SpecState; note: string }
 export interface ProductSpec {
@@ -232,7 +233,7 @@ export const JOB_STAGE_KO: Record<JobStage, string> = {
   PENDING: '대기', ACK_WAIT: '응답 대기', RETRY_READY: '재처리 가능', DEAD_LETTER: '격리', SUCCEEDED: '성공', CANCELLED: '취소',
 };
 export const JOB_STAGE_TONE: Record<JobStage, string> = {
-  PENDING: '#8a8f98', ACK_WAIT: '#b8860b', RETRY_READY: '#2b6cb0', DEAD_LETTER: '#c53030', SUCCEEDED: '#2f855a', CANCELLED: '#9ca3af',
+  PENDING: LEGACY_PAL['lg-8a8f98'], ACK_WAIT: LEGACY_PAL['lg-b8860b'], RETRY_READY: LEGACY_PAL['lg-2b6cb0'], DEAD_LETTER: LEGACY_PAL['lg-c53030'], SUCCEEDED: LEGACY_PAL['lg-2f855a'], CANCELLED: LEGACY_PAL['lg-9ca3af'],
 };
 
 export interface IntegrationJob {
@@ -257,7 +258,7 @@ export const TRACE_STATE_KO: Record<TraceState, string> = {
   SOURCE: '원문만', DESIGN_LINKED: '설계 연결', REVIEW_REQUIRED: '검토 필요', TEST_NOT_RUN: '시험 미실시',
 };
 export const TRACE_STATE_TONE: Record<TraceState, string> = {
-  SOURCE: '#8a8f98', DESIGN_LINKED: '#2f855a', REVIEW_REQUIRED: '#b8860b', TEST_NOT_RUN: '#c53030',
+  SOURCE: LEGACY_PAL['lg-8a8f98'], DESIGN_LINKED: LEGACY_PAL['lg-2f855a'], REVIEW_REQUIRED: LEGACY_PAL['lg-b8860b'], TEST_NOT_RUN: LEGACY_PAL['lg-c53030'],
 };
 
 export interface TraceRow {

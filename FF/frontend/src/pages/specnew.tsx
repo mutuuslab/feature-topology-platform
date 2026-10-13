@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast, useApp, useLiveSlices, PIPELINE_STAGES } from '../store';
@@ -9,7 +10,7 @@ import TopoLink from '../components/TopoLink';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { PageTitle } from '../components/PageTitle';
 
-const CMP_COLOR: Record<string, string> = { PASS: '#1F9D55', PENDING: '#D9822B', BLOCK: '#D64545' };
+const CMP_COLOR: Record<string, string> = { PASS: LEGACY_PAL['lg-1f9d55'], PENDING: LEGACY_PAL['lg-d9822b'], BLOCK: LEGACY_PAL['lg-d64545'] };
 
 // ── 실험 (store 연동) ──
 function ExperimentWidget() {
@@ -19,7 +20,7 @@ function ExperimentWidget() {
     <div><b>실험 · 효과 검증 (store 연동)</b>
       <div className="row mt">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>상태 분포</b>
-          <Donut size={120} center={`${exps.length}`} segments={dist(tally(exps, e => e.status), { Running: '#1F9D55', Draft: '#D9822B', Stopped: '#9CA3AF' })} /></div>
+          <Donut size={120} center={`${exps.length}`} segments={dist(tally(exps, e => e.status), { Running: LEGACY_PAL['lg-1f9d55'], Draft: LEGACY_PAL['lg-d9822b'], Stopped: LEGACY_PAL['lg-9ca3af'] })} /></div>
         <div className="col card" style={{ flex: 2 }}><b>실험별 Uplift(%) <LiveDot /></b>
           <div className="mt"><Bars data={Object.fromEntries(exps.map(e => [e.id, Math.max(0, e.uplift)]))} fmt={n => '+' + n.toFixed(1) + '%'} /></div></div>
       </div>
@@ -58,7 +59,7 @@ function ConflictWidget() {
     <div><b>정책 충돌 탐지·해소 (excludes/overrides 자동 산출)</b>
       <div className="row mt">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>충돌 유형</b>
-          <Donut size={120} center={`${conflicts.length}`} segments={dist(tally(conflicts, c => c.type), { excludes: '#D64545', overrides: '#D9822B' })} /></div>
+          <Donut size={120} center={`${conflicts.length}`} segments={dist(tally(conflicts, c => c.type), { excludes: LEGACY_PAL['lg-d64545'], overrides: LEGACY_PAL['lg-d9822b'] })} /></div>
         <div className="col card" style={{ flex: 2 }}>
           <div className="table-wrap"><table><thead><tr><th>Source</th><th>Type</th><th>Target</th><th>해소</th></tr></thead>
             <tbody>{conflicts.map(c => (<tr key={c.id}><td className="mono">{c.source}</td>
@@ -113,7 +114,7 @@ function ScenarioWidget() {
     <div><b>차량 시나리오 대량 검증 (차종·상태·권한 조합)</b>
       <div className="row mt">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>PASS / FAIL</b>
-          <Donut size={120} center={`${agg.pass + agg.fail}`} segments={[{ label: 'PASS', value: agg.pass || (done ? 0 : 1), color: '#1F9D55' }, { label: 'FAIL', value: agg.fail, color: '#D64545' }]} /></div>
+          <Donut size={120} center={`${agg.pass + agg.fail}`} segments={[{ label: 'PASS', value: agg.pass || (done ? 0 : 1), color: LEGACY_PAL['lg-1f9d55'] }, { label: 'FAIL', value: agg.fail, color: LEGACY_PAL['lg-d64545'] }]} /></div>
         <div className="col card" style={{ maxWidth: 200, alignItems: 'center' }}><b>실행 커버리지</b>
           <RadialProgress size={110} value={Math.round(done / (scs.length || 1) * 100)} label={`${done}/${scs.length} 시나리오`} /></div>
         <div className="col card"><b>실행 안내</b><p className="small muted mt">'실행'을 누르면 2초 틱마다 단계가 진행되어 결과가 집계됩니다(약 5% 실패 가정). FR-SCN·FR-SVL.</p></div>
@@ -147,7 +148,7 @@ function CICDWidget() {
       </div>
       <div className="mt"><Steps steps={PIPELINE_STAGES} current={p.status === 'done' ? undefined : (p.stage < 0 ? undefined : p.stage)} done={p.status === 'done'} /></div>
       {p.status === 'blocked' && <div className="decision HOLD mt">⛔ Quality Gate 차단 — FEAT-BDC-001 9-Gate {r.passCount}/9 ({r.decision}). Gate 충족 또는 관리자 승인 우회 필요.</div>}
-      {p.status === 'done' && <div className="decision RELEASE mt" style={{ background: '#EAF2FF', color: 'var(--brand)', border: '1px solid var(--brand)' }}>🎉 Release 완료 — 단계적 출시는 <b style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => nav('/activation')}>Activation</b> / <b style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => nav('/ops/campaign')}>출시와 차량 적용</b>에서 제어.</div>}
+      {p.status === 'done' && <div className="decision RELEASE mt" style={{ background: LEGACY_PAL['lg-eaf2ff'], color: 'var(--brand)', border: '1px solid var(--brand)' }}>🎉 Release 완료 — 단계적 출시는 <b style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => nav('/activation')}>Activation</b> / <b style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => nav('/ops/campaign')}>출시와 차량 적용</b>에서 제어.</div>}
       <div className="card mt" style={{ background: 'var(--surface-2)' }}><b>실행 로그</b>
         {p.logs.length ? p.logs.map((l, i) => <div className="evt small" key={i}>{l}</div>) : <p className="muted small mt">파이프라인 실행 전</p>}
       </div>
@@ -203,10 +204,10 @@ function BusinessWidget() {
       <div className="row mt">
         <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>권역별 차량</b>
           <Donut size={130} center="10.2M" segments={[
-            { label: 'KR', value: Math.round(fleetStats.byRegion.KR / 1e5), color: '#0B5FFF' },
-            { label: 'EU', value: Math.round(fleetStats.byRegion.EU / 1e5), color: '#16A34A' },
-            { label: 'US', value: Math.round(fleetStats.byRegion.US / 1e5), color: '#D9822B' },
-            { label: 'ETC', value: Math.round(fleetStats.byRegion.ETC / 1e5), color: '#9333EA' }]} /></div>
+            { label: 'KR', value: Math.round(fleetStats.byRegion.KR / 1e5), color: LEGACY_PAL['lg-0b5fff'] },
+            { label: 'EU', value: Math.round(fleetStats.byRegion.EU / 1e5), color: LEGACY_PAL['lg-16a34a'] },
+            { label: 'US', value: Math.round(fleetStats.byRegion.US / 1e5), color: LEGACY_PAL['lg-d9822b'] },
+            { label: 'ETC', value: Math.round(fleetStats.byRegion.ETC / 1e5), color: LEGACY_PAL['lg-9333ea'] }]} /></div>
         <div className="col card" style={{ flex: 2 }}><b>도메인별 예상 개발비</b><div className="mt"><Bars data={cost.byDomain} fmt={fmtWon} /></div></div>
       </div>
       <p className="small muted mt">권역/법규/브랜드 차등 · 판매·정비 포털 · 사업 KPI를 운영 데이터에서 파생 (FR-GLB/FSP/BIZ).</p>
@@ -228,7 +229,7 @@ function SecurityWidget() {
       </div>
       <div className="row mt">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>취약점 Severity</b>
-          <Donut size={120} center={`${sec.vulns.length}`} segments={dist(tally(sec.vulns, v => v.severity), { B: '#D64545', W: '#D9822B', I: '#3B82F6' })} /></div>
+          <Donut size={120} center={`${sec.vulns.length}`} segments={dist(tally(sec.vulns, v => v.severity), { B: LEGACY_PAL['lg-d64545'], W: LEGACY_PAL['lg-d9822b'], I: LEGACY_PAL['lg-3b82f6'] })} /></div>
         <div className="col card"><b>인증서/키 만료 일정</b>
           <Timeline items={certs.map(c => ({ ts: c.expiry, title: c.name, detail: '유효', tag: '인증서' }))} /></div>
       </div>

@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useNavigate } from 'react-router-dom';
 import { costSummary, fmtWon, changeCost, impact } from '../data/engine';
 import { DeployBadge } from '../components/ui';
@@ -5,7 +6,7 @@ import { Bars, Donut, CountUp } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { PageTitle } from '../components/PageTitle';
 
-const PIE = ['#0B5FFF', '#16A34A', '#D9822B', '#9333EA', '#D64545', '#0891B2'];
+const PIE = [LEGACY_PAL['lg-0b5fff'], LEGACY_PAL['lg-16a34a'], LEGACY_PAL['lg-d9822b'], LEGACY_PAL['lg-9333ea'], LEGACY_PAL['lg-d64545'], LEGACY_PAL['lg-0891b2']];
 
 export default function Cost() {
   const nav = useNavigate();

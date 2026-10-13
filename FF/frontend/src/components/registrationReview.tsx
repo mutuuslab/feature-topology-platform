@@ -4,6 +4,7 @@
 //
 // 경계: 이 패널은 Revision 상태(DRAFT·IN_REVIEW·…)를 바꾸지 않는다. 업무 Lifecycle 은 별도 축이며
 // Release Readiness 9 Gate(UI10·UI06 소관)는 상태를 바꾸지 않고 차단 사유만 표시한다.
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SPEC_REG_R1, SPEC_REG_SAFETY_GRADES, SPEC_REG_TAXONOMY, SPEC_REG_ACCEPTANCE, SPEC_REG_UL } from '../data/specRegistrationR1';
@@ -342,7 +343,7 @@ export function RegistrationReviewPanel({
               <span
                 className="pill" data-state={s}
                 style={s === business
-                  ? { background: BUSINESS_STATE_COLOR[s], color: '#fff', borderColor: BUSINESS_STATE_COLOR[s] }
+                  ? { background: BUSINESS_STATE_COLOR[s], color: LEGACY_PAL['lg-ffffff'], borderColor: BUSINESS_STATE_COLOR[s] }
                   : { color: BUSINESS_STATE_COLOR[s] }}
               >{s} {BUSINESS_STATE_KO[s]}</span>
               {i < BUSINESS_STATES.length - 1 && <span className="muted small">→</span>}
@@ -424,7 +425,7 @@ export function RegistrationReviewPanel({
               <span
                 className="pill" data-level={l.level}
                 style={l.minUnit
-                  ? { background: 'var(--brand)', color: '#fff', borderColor: 'var(--brand)' }
+                  ? { background: 'var(--brand)', color: LEGACY_PAL['lg-ffffff'], borderColor: 'var(--brand)' }
                   : undefined}
               >{l.level} {l.name}{l.minUnit ? ' · 최소 관리단위' : ''}</span>
               {l.level !== 'L5' && <span className="muted small">↓</span>}

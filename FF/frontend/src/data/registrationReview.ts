@@ -4,6 +4,7 @@
 //
 // 중요한 구분(UI02-R1): 업무 Lifecycle 은 Revision 상태(DRAFT·IN_REVIEW·CHANGES_REQUESTED·APPROVED·RETIRED,
 // FRI-162) 및 구현·시험·상품·차량 적용 상태와 **별도 축**이다. 두 축을 한 필드로 합치지 않는다.
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { SPEC_REG_CRITERIA, SPEC_REG_CRITERIA_MIN, SPEC_REG_R1, SPEC_REG_TAXONOMY, SPEC_REG_TRANSITIONS } from './specRegistrationR1';
 import type { RegTransition } from './specRegistrationR1';
 import type { ControlPointRecord } from './implementation';
@@ -27,8 +28,8 @@ export const BUSINESS_STATE_KO: Record<BusinessState, string> = {
 };
 
 export const BUSINESS_STATE_COLOR: Record<BusinessState, string> = {
-  Proposed: '#8895A7', Approved: '#0B5FFF', Developing: '#D9822B', Verified: '#1F9D55',
-  Released: '#0F766E', Deprecated: '#B45309', Retired: '#6B7280',
+  Proposed: LEGACY_PAL['lg-8895a7'], Approved: LEGACY_PAL['lg-0b5fff'], Developing: LEGACY_PAL['lg-d9822b'], Verified: LEGACY_PAL['lg-1f9d55'],
+  Released: LEGACY_PAL['lg-0f766e'], Deprecated: LEGACY_PAL['lg-b45309'], Retired: LEGACY_PAL['lg-6b7280'],
 };
 
 /** 데모 기준일 — 수명·노후 판정의 기준 시각(정본 release 20260913-v1.3) */

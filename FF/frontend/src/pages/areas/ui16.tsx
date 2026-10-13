@@ -5,6 +5,7 @@
 //  · 시험 종류 이름이 아니라 동일 대상 hash 의 유효 결과만 승인 입력으로 쓴다
 //  · 미실행·참조 모의는 PASS 로 계상하지 않고, UNKNOWN 은 사유 없이 확정하지 않는다
 //  · 품질 평가(품질 역할)와 운영 승인(승인 역할)은 같은 사람이 할 수 없다
+import { LEGACY_PAL } from '../../design/legacy-palette';
 import { useState, type ReactNode } from 'react';
 import { CanonicalScreen, FIELD, Gated, Reasons, StageRail, Table, type Kpi } from '../../components/AreaScreen';
 import { UlBadge, UlRules, ulBlocks, ulWarns, type UlRule } from '../../components/ulRules';
@@ -371,7 +372,7 @@ const Result = ({ r }: { r: EvResult }) => (
   <span className="mono small" style={{ color: r === 'PASS' ? 'var(--pass)' : r === 'FAIL' ? 'var(--fail)' : 'var(--pending)' }}>{r}</span>
 );
 const State = ({ s }: { s: EvState }) => (
-  <span className="pill" style={{ background: EV_TONE[s], color: '#fff', borderColor: 'transparent' }}>{s}</span>
+  <span className="pill" style={{ background: EV_TONE[s], color: LEGACY_PAL['lg-ffffff'], borderColor: 'transparent' }}>{s}</span>
 );
 
 /** 이 영역에 걸린 검토 항목 — 판정 색 배지로 먼저 훑고 규칙 행으로 내려간다. */

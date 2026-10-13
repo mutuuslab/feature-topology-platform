@@ -11,6 +11,7 @@
 //
 // 이 화면은 문장을 쓰지 않는다. 승인 가능 여부·구현 선택·hash 결속은 data/featureBom.ts 의 계산 결과를
 // 그대로 노출하고, 각 상세 영역의 탭은 아래 로컬 목록이 정의한다(요구사양서 원문은 제품에 두지 않는다).
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bars, Donut, Heatmap } from '../components/charts';
@@ -35,13 +36,13 @@ const ART_INDEX = new Map(ARTIFACT_RECORDS.map(a => [`${a.id}@${a.version}`, a])
 const CP_INDEX = new Map(CONTROL_POINTS.map(c => [c.id, c]));
 
 const STATE_COLOR: Record<BaselineState, string> = {
-  DRAFT: '#8895A7', IN_REVIEW: '#D9822B', CHANGES_REQUESTED: '#D64545', APPROVED: '#1F9D55', REVOKED: '#6B7280',
+  DRAFT: LEGACY_PAL['lg-8895a7'], IN_REVIEW: LEGACY_PAL['lg-d9822b'], CHANGES_REQUESTED: LEGACY_PAL['lg-d64545'], APPROVED: LEGACY_PAL['lg-1f9d55'], REVOKED: LEGACY_PAL['lg-6b7280'],
 };
 const OUTCOME_COLOR: Record<ProfileOutcome, string> = {
-  SELECTED: '#1F9D55', NOT_SUPPORTED: '#D64545', UNVERIFIED: '#D9822B', CONFIG_CONFLICT: '#D64545',
+  SELECTED: LEGACY_PAL['lg-1f9d55'], NOT_SUPPORTED: LEGACY_PAL['lg-d64545'], UNVERIFIED: LEGACY_PAL['lg-d9822b'], CONFIG_CONFLICT: LEGACY_PAL['lg-d64545'],
 };
 const REVIEW_KO: Record<string, string> = { NONE: '일치', REVIEW: '확인 필요', BLOCKED: '차단' };
-const REVIEW_COLOR: Record<string, string> = { NONE: '#1F9D55', REVIEW: '#D9822B', BLOCKED: '#D64545' };
+const REVIEW_COLOR: Record<string, string> = { NONE: LEGACY_PAL['lg-1f9d55'], REVIEW: LEGACY_PAL['lg-d9822b'], BLOCKED: LEGACY_PAL['lg-d64545'] };
 
 /** 그래프 연결 — store 의 edges/relations 와 같은 형태. */
 interface GraphLink { id: string; source: string; target: string; type: string }

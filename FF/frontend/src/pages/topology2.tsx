@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { consistency, wouldCycle } from '../data/engine';
@@ -7,7 +8,7 @@ import { SeverityBadge, SeverityLegend, severityMeta } from '../components/ui';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { PageTitle } from '../components/PageTitle';
 
-const SEV_COLOR = { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' };
+const SEV_COLOR = { Blocking: LEGACY_PAL['lg-d64545'], Warning: LEGACY_PAL['lg-d9822b'], Info: LEGACY_PAL['lg-3b82f6'] };
 
 
 export function EdgeEditor() {

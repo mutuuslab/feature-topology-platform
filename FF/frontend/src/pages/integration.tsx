@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp, useLiveSlices } from '../store';
@@ -6,8 +7,8 @@ import { Donut, Timeline, LiveDot, tally, dist } from '../components/charts';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { PageTitle } from '../components/PageTitle';
 
-const CONN_STATUS_COLORS = { connected: '#1F9D55', degraded: '#D9822B', failed: '#D64545', disabled: '#9CA3AF' };
-const SYNC_STATUS_COLORS = { ok: '#1F9D55', retry: '#D9822B', failed: '#D64545' };
+const CONN_STATUS_COLORS = { connected: LEGACY_PAL['lg-1f9d55'], degraded: LEGACY_PAL['lg-d9822b'], failed: LEGACY_PAL['lg-d64545'], disabled: LEGACY_PAL['lg-9ca3af'] };
+const SYNC_STATUS_COLORS = { ok: LEGACY_PAL['lg-1f9d55'], retry: LEGACY_PAL['lg-d9822b'], failed: LEGACY_PAL['lg-d64545'] };
 
 export function ConnectorDetail() {
   const { id } = useParams();
@@ -45,7 +46,7 @@ export function SyncLogs() {
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Sync 상태</b>
           <Donut size={120} center={`${syncLogs.length}`} segments={dist(tally(syncLogs, l => l.status), SYNC_STATUS_COLORS)} /></div>
         <div className="col card"><b>최근 동기화 이벤트</b>
-          <Timeline items={syncLogs.map(l => ({ ts: l.ts, title: l.event, detail: l.conn, tag: l.status, color: l.status === 'ok' ? '#1F9D55' : l.status === 'retry' ? '#D9822B' : '#D64545' }))} /></div>
+          <Timeline items={syncLogs.map(l => ({ ts: l.ts, title: l.event, detail: l.conn, tag: l.status, color: l.status === 'ok' ? LEGACY_PAL['lg-1f9d55'] : l.status === 'retry' ? LEGACY_PAL['lg-d9822b'] : LEGACY_PAL['lg-d64545'] }))} /></div>
       </div>
       <div className="card"><div className="table-wrap"><table><thead><tr><th>Time</th><th>Connector</th><th>Event</th><th>Status</th></tr></thead>
         <tbody>{syncLogs.map((l, i) => (<tr key={i} role="button" tabIndex={0} onClick={() => setSel(l)} onKeyDown={e => { if (e.key === 'Enter') setSel(l); }}><td>{l.ts}</td><td className="mono">{l.conn}</td><td>{l.event}</td>

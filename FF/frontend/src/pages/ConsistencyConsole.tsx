@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useNavigate } from 'react-router-dom';
 import { consistency } from '../data/engine';
 import { Donut, Bars, RadialProgress, tally, dist } from '../components/charts';
@@ -5,7 +6,7 @@ import { SeverityBadge, SeverityLegend, severityMeta } from '../components/ui';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { PageTitle } from '../components/PageTitle';
 
-const SEV_COLOR = { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' };
+const SEV_COLOR = { Blocking: LEGACY_PAL['lg-d64545'], Warning: LEGACY_PAL['lg-d9822b'], Info: LEGACY_PAL['lg-3b82f6'] };
 
 export default function ConsistencyConsole() {
   const nav = useNavigate();
@@ -26,7 +27,7 @@ export default function ConsistencyConsole() {
         </div>
         <div className="col card" style={{ flex: 2 }}><b>Rule별 위반 건수</b><div className="mt"><Bars data={tally(v, x => x.rule)} /></div></div>
         <div className="col card" style={{ maxWidth: 200, alignItems: 'center' }}><b>정합성 점수</b>
-          <RadialProgress size={110} color={blocking ? '#D64545' : '#1F9D55'} value={Math.round((RULES_TOTAL - new Set(v.map(x => x.rule)).size) / RULES_TOTAL * 100)} label={`${RULES_TOTAL - new Set(v.map(x => x.rule)).size}/${RULES_TOTAL} Rule 통과`} />
+          <RadialProgress size={110} color={blocking ? LEGACY_PAL['lg-d64545'] : LEGACY_PAL['lg-1f9d55']} value={Math.round((RULES_TOTAL - new Set(v.map(x => x.rule)).size) / RULES_TOTAL * 100)} label={`${RULES_TOTAL - new Set(v.map(x => x.rule)).size}/${RULES_TOTAL} Rule 통과`} />
         </div>
       </div>
 

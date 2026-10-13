@@ -14,6 +14,7 @@
  * jsdom 에는 2D 캔버스가 없으므로 `makeTexture` 가 null 을 돌려주고 `Label` 은 아무것도
  * 렌더하지 않는다(테스트에서 assert 대상은 HUD/2D 도면 쪽이다).
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -70,7 +71,7 @@ export const LOD = {
 export function Label({
   text,
   position,
-  color = '#c9d3e4',
+  color = LEGACY_PAL['lg-c9d3e4'],
   size = 1,
   tier = 1,
   priority,

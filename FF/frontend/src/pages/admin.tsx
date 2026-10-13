@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { users, roles, verbs, permMatrix, roleKeyOf, orgs, domains, uiActions, uiRoles, uiPermMatrix, profileOf, roleLabel } from '../data/refdata';
@@ -24,7 +25,7 @@ export function PermissionsMatrix() {
       <p className="page-sub">현재 역할 <b>{roleLabel(role)}</b> — 자기 열을 확인하고, 변경은 감사 로그로 남긴다</p>
       <div className="card" style={{ overflowX: 'auto' }}>
         <table><thead><tr><th>Role \ Verb</th>{verbs.map(v=><th key={v}>{v}</th>)}</tr></thead>
-          <tbody>{roles.map(r=>(<tr key={r} style={{ background: r === role ? 'rgba(11,95,255,.06)' : undefined }}><td><b>{roleLabel(r)}</b></td>{verbs.map(v=>(
+          <tbody>{roles.map(r=>(<tr key={r} style={{ background: r === role ? LEGACY_PAL['lg-rgba-11-95-255-p06'] : undefined }}><td><b>{roleLabel(r)}</b></td>{verbs.map(v=>(
             <td key={v} style={{textAlign:'center'}}>{permMatrix[r]?.includes(v)?'✅':'−'}</td>))}</tr>))}</tbody></table>
       </div>
       <p className="small muted">domain-scoped 오버라이드 · 검증 P4 approve=Verification Gate only · 변경은 감사 로그</p>
@@ -315,7 +316,7 @@ export function NotificationsCenter() {
     return out;
   }, [state, live, syncLogs, pipeline]);
   const shown = filter === 'all' ? items : items.filter(i => i.type === filter);
-  const tone = (t: string) => (t === 'alert' ? 'var(--fail)' : t === 'task' ? 'var(--brand)' : '#6B7280');
+  const tone = (t: string) => (t === 'alert' ? 'var(--fail)' : t === 'task' ? 'var(--brand)' : LEGACY_PAL['lg-6b7280']);
 
   return (
     <div>
@@ -334,7 +335,7 @@ export function NotificationsCenter() {
           <div className="evt" key={n.type + n.ts + i} role="button" tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter') nav(n.to); }}
             onClick={() => nav(n.to)}>
-            <span className="pill" style={{ background: tone(n.type), color: '#fff' }}>{n.type}</span>
+            <span className="pill" style={{ background: tone(n.type), color: LEGACY_PAL['lg-ffffff'] }}>{n.type}</span>
             <span>{n.text}</span>
             <span className="muted small" style={{ marginLeft: 'auto' }}>{n.ts}</span>
           </div>

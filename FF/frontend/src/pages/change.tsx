@@ -2,6 +2,7 @@
 //
 // 변경요청은 사유·Revision 차이·영향·검증 증적·원천 반영·감사를 한 줄기로 남긴다.
 // 전이 가능 여부는 data/changeRequest.crGate 가 정하고 화면은 그 사유를 그대로 보여준다(서버 재검사 전제).
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { changeSets } from '../data/model';
@@ -295,7 +296,7 @@ export function BaselineDiff() {
       <PageTitle fallback="Baseline Diff" detail="v1.0 ↔ v1.1" />
       <div className="card">{cs.map((c, i) => (
         <div key={i} className="evt">
-          <span className="pill" style={{ background: c.type === 'ADD' ? 'var(--pass)' : 'var(--pending)', color: '#fff' }}>{c.type === 'ADD' ? '➕' : '✏'} {c.type}</span>
+          <span className="pill" style={{ background: c.type === 'ADD' ? 'var(--pass)' : 'var(--pending)', color: LEGACY_PAL['lg-ffffff'] }}>{c.type === 'ADD' ? '➕' : '✏'} {c.type}</span>
           <b>{c.area}</b><span className="muted">{c.detail}</span>
         </div>
       ))}</div>

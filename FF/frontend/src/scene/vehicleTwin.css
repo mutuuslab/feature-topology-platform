@@ -7,13 +7,13 @@
  */
 
 .veh-root {
-  --veh-bg: #0a0d13;
-  --veh-panel: #10141c;
-  --veh-panel-2: #161c26;
-  --veh-line: #232b39;
-  --veh-ink: #e7ecf5;
-  --veh-muted: #8a94a6;
-  --veh-brand: #5b8cff;
+  --veh-bg: var(--lg-0a0d13);
+  --veh-panel: var(--lg-10141c);
+  --veh-panel-2: var(--lg-161c26);
+  --veh-line: var(--lg-232b39);
+  --veh-ink: var(--lg-e7ecf5);
+  --veh-muted: var(--lg-8a94a6);
+  --veh-brand: var(--lg-5b8cff);
   color: var(--veh-ink);
   font-family: inherit;
   border: 1px solid var(--veh-line);
@@ -30,7 +30,7 @@
 
 .veh-canvas-wrap {
   position: relative;
-  background: radial-gradient(ellipse at 50% 20%, #141b28 0%, #060810 78%);
+  background: radial-gradient(ellipse at 50% 20%, var(--lg-141b28) 0%, var(--lg-060810) 78%);
 }
 
 .veh-canvas-wrap::after {
@@ -39,7 +39,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, var(--lg-rgba-0-0-0-0p55) 100%);
 }
 
 .veh-paused-banner {
@@ -47,9 +47,9 @@
   left: 10px;
   top: 10px;
   z-index: 5;
-  background: rgba(217, 130, 43, 0.16);
-  border: 1px solid #d9822b;
-  color: #ffcf94;
+  background: var(--lg-rgba-217-130-43-0p16);
+  border: 1px solid var(--lg-d9822b);
+  color: var(--lg-ffcf94);
   font-size: 11px;
   font-weight: 700;
   padding: 3px 9px;
@@ -99,7 +99,7 @@
 .veh-chip[aria-pressed='true'] {
   background: var(--veh-brand);
   border-color: var(--veh-brand);
-  color: #fff;
+  color: var(--lg-ffffff);
   font-weight: 700;
 }
 
@@ -225,7 +225,7 @@
 }
 
 .veh-hud-note {
-  color: #ffb4b4;
+  color: var(--lg-ffb4b4);
   font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
@@ -236,7 +236,7 @@
 .veh-cloud-tag,
 .veh-block-callout {
   display: inline-block;
-  background: rgba(10, 13, 19, 0.92);
+  background: var(--lg-rgba-10-13-19-0p92);
   border: 1px solid var(--veh-line);
   color: var(--veh-ink);
   font-size: 10px;
@@ -246,7 +246,7 @@
 }
 
 .veh-block-callout {
-  border-color: #d64545;
-  color: #ffb4b4;
+  border-color: var(--lg-d64545);
+  color: var(--lg-ffb4b4);
   font-weight: 700;
 }

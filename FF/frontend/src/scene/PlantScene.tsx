@@ -13,6 +13,7 @@
  * 모든 모션은 `snapshot.clock.simTimeMs` 만 쓴다. rate=0 이면 공장이 정말로 멈추고,
  * `+5s` 를 밀면 그만큼 진행된다(같은 순수 함수가 jsdom 에서도 검증된다).
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { Component, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -71,14 +72,14 @@ function Lights() {
   return (
     <>
       <ambientLight intensity={0.5} />
-      <hemisphereLight args={['#cfe0f2', '#2a2f36', 0.55]} />
+      <hemisphereLight args={[LEGACY_PAL['lg-cfe0f2'], LEGACY_PAL['lg-2a2f36'], 0.55]} />
       <directionalLight position={[40, 70, 30]} intensity={0.8} />
       <directionalLight position={[-50, 44, -30]} intensity={0.3} />
       {CELLS.map((c) => (
-        <pointLight key={c.id} position={[c.x, 9, 0]} intensity={90} distance={32} color="#dce8f4" />
+        <pointLight key={c.id} position={[c.x, 9, 0]} intensity={90} distance={32} color={LEGACY_PAL['lg-dce8f4']} />
       ))}
-      <pointLight position={[46, 11, 0]} intensity={80} distance={48} color="#dce8f4" />
-      <pointLight position={[31, 8, 0]} intensity={40} distance={22} color="#e8dfc8" />
+      <pointLight position={[46, 11, 0]} intensity={80} distance={48} color={LEGACY_PAL['lg-dce8f4']} />
+      <pointLight position={[31, 8, 0]} intensity={40} distance={22} color={LEGACY_PAL['lg-e8dfc8']} />
     </>
   );
 }
@@ -90,18 +91,18 @@ function Floor({ gridGeometry }: { gridGeometry: THREE.BufferGeometry }) {
     <group>
       <mesh rotation-x={-Math.PI / 2}>
         <planeGeometry args={[PLANT.width, PLANT.depth]} />
-        <meshStandardMaterial color="#2c3239" metalness={0.05} roughness={0.95} />
+        <meshStandardMaterial color={LEGACY_PAL['lg-2c3239']} metalness={0.05} roughness={0.95} />
       </mesh>
       <lineSegments geometry={gridGeometry} position={[0, 0.008, 0]}>
-        <lineBasicMaterial color="#39424c" transparent opacity={0.6} />
+        <lineBasicMaterial color={LEGACY_PAL['lg-39424c']} transparent opacity={0.6} />
       </lineSegments>
       {/* 보행 통로(안전) */}
-      <FloorMarking x={-30} z={11.6} w={104} d={2.0} hex="#3B82F6" opacity={0.12} />
-      <FloorMarking x={-30} z={-11.6} w={104} d={2.0} hex="#3B82F6" opacity={0.12} />
+      <FloorMarking x={-30} z={11.6} w={104} d={2.0} hex={LEGACY_PAL['lg-3b82f6']} opacity={0.12} />
+      <FloorMarking x={-30} z={-11.6} w={104} d={2.0} hex={LEGACY_PAL['lg-3b82f6']} opacity={0.12} />
       {/* 물류 통로 */}
-      <FloorMarking x={-30} z={22} w={54} d={4.5} hex="#D9822B" opacity={0.09} />
+      <FloorMarking x={-30} z={22} w={54} d={4.5} hex={LEGACY_PAL['lg-d9822b']} opacity={0.09} />
       {/* 출하 대기 구역 */}
-      <FloorMarking x={46} z={0} w={22} d={52} hex="#1F9D55" opacity={0.07} />
+      <FloorMarking x={46} z={0} w={22} d={52} hex={LEGACY_PAL['lg-1f9d55']} opacity={0.07} />
     </group>
   );
 }
@@ -169,7 +170,7 @@ function CellBlock({
               simple
               length={4.2}
               width={1.9}
-              color={a.verdict ? yardHex(a.verdict) : '#8d949c'}
+              color={a.verdict ? yardHex(a.verdict) : LEGACY_PAL['lg-8d949c']}
               wip={!a.verdict}
             />
             {a.verdict && (
@@ -179,13 +180,13 @@ function CellBlock({
                 size={0.75}
                 tier={1}
                 priority={a.verdict.twin.vin === selectedVin ? 9 : 5}
-                color={a.verdict.twin.vin === selectedVin ? '#FFD166' : '#c9d3e4'}
+                color={a.verdict.twin.vin === selectedVin ? LEGACY_PAL['lg-ffd166'] : LEGACY_PAL['lg-c9d3e4']}
               />
             )}
             {a.verdict?.twin.killSwitch?.active && (
               <mesh position={[0, 3.1, 0]}>
                 <boxGeometry args={[0.9, 0.34, 0.06]} />
-                <meshStandardMaterial color="#B91C1C" emissive="#B91C1C" emissiveIntensity={0.9} />
+                <meshStandardMaterial color={LEGACY_PAL['lg-b91c1c']} emissive={LEGACY_PAL['lg-b91c1c']} emissiveIntensity={0.9} />
               </mesh>
             )}
           </group>
@@ -220,7 +221,7 @@ function ConveyorBodies() {
     <group ref={group}>
       {initial.map((x, i) => (
         <group key={i} position={[x, onBeltY, 0]}>
-          <VehicleMesh simple length={4.2} width={1.9} color="#8d949c" wip />
+          <VehicleMesh simple length={4.2} width={1.9} color={LEGACY_PAL['lg-8d949c']} wip />
         </group>
       ))}
     </group>
@@ -287,7 +288,7 @@ function Yard({
               {ks && (
                 <mesh position={[0, 2.05, 0]}>
                   <boxGeometry args={[0.8, 0.3, 0.06]} />
-                  <meshStandardMaterial color="#B91C1C" emissive="#B91C1C" emissiveIntensity={1} />
+                  <meshStandardMaterial color={LEGACY_PAL['lg-b91c1c']} emissive={LEGACY_PAL['lg-b91c1c']} emissiveIntensity={1} />
                 </mesh>
               )}
             </group>
@@ -297,7 +298,7 @@ function Yard({
               size={0.72}
               tier={sel ? 0 : 2}
               priority={sel ? 10 : 2}
-              color={sel ? '#FFD166' : '#b9c4d4'}
+              color={sel ? LEGACY_PAL['lg-ffd166'] : LEGACY_PAL['lg-b9c4d4']}
             />
           </group>
         );
@@ -305,10 +306,10 @@ function Yard({
       {selected && (
         <mesh position={[selected.x, 0.04, selected.z]} rotation-x={-Math.PI / 2}>
           <ringGeometry args={[3.1, 3.45, 40]} />
-          <meshBasicMaterial color="#FFD166" transparent opacity={0.9} side={THREE.DoubleSide} />
+          <meshBasicMaterial color={LEGACY_PAL['lg-ffd166']} transparent opacity={0.9} side={THREE.DoubleSide} />
         </mesh>
       )}
-      <ZoneSign x={46} z={-25} text="OUTBOUND YARD" sub={`${slots.length} / ${YARD.capacity} VIN`} hex="#1F9D55" />
+      <ZoneSign x={46} z={-25} text="OUTBOUND YARD" sub={`${slots.length} / ${YARD.capacity} VIN`} hex={LEGACY_PAL['lg-1f9d55']} />
     </group>
   );
 }
@@ -323,12 +324,12 @@ function Logistics() {
         {[3.2, -3.2].map((z) => (
           <mesh key={z} position={[0, 3, z]}>
             <boxGeometry args={[1.0, 6, 1.0]} />
-            <meshStandardMaterial color="#4c4e51" metalness={0.4} roughness={0.6} />
+            <meshStandardMaterial color={LEGACY_PAL['lg-4c4e51']} metalness={0.4} roughness={0.6} />
           </mesh>
         ))}
         <mesh position={[0, 6.2, 0]}>
           <boxGeometry args={[1.0, 0.6, 7.4]} />
-          <meshStandardMaterial color="#b9901a" roughness={0.85} />
+          <meshStandardMaterial color={LEGACY_PAL['lg-b9901a']} roughness={0.85} />
         </mesh>
         <Label text="OUTBOUND GATE" position={[0, 7.4, 0]} size={1.2} tier={0} priority={7} />
       </group>
@@ -337,7 +338,7 @@ function Logistics() {
       {[-24, -16, -8, 8].map((z) => (
         <Rack key={z} x={-56.6} z={z} yaw={Math.PI / 2} bays={4} />
       ))}
-      <ZoneSign x={-52} z={-27} text="SUPERMARKET" sub="자재 공급 / 키팅" hex="#3B82F6" />
+      <ZoneSign x={-52} z={-27} text="SUPERMARKET" sub="자재 공급 / 키팅" hex={LEGACY_PAL['lg-3b82f6']} />
 
       {/* AMR 충전소 */}
       <ChargingPad x={-46} z={26} />
@@ -418,24 +419,24 @@ function PresetFocus({ preset, lang }: { preset: PlantPreset; lang: PlantLang })
     <group position={[preset.target[0], 0, preset.target[2]]}>
       <mesh position={[0, 0.025, 0]} rotation-x={-Math.PI / 2}>
         <circleGeometry args={[radius, 64]} />
-        <meshBasicMaterial color="#38BDF8" transparent opacity={0.08} depthWrite={false} />
+        <meshBasicMaterial color={LEGACY_PAL['lg-38bdf8']} transparent opacity={0.08} depthWrite={false} />
       </mesh>
       <mesh position={[0, 0.04, 0]} rotation-x={-Math.PI / 2}>
         <ringGeometry args={[radius * 0.9, radius, 64]} />
-        <meshBasicMaterial color="#38BDF8" transparent opacity={0.95} side={THREE.DoubleSide} />
+        <meshBasicMaterial color={LEGACY_PAL['lg-38bdf8']} transparent opacity={0.95} side={THREE.DoubleSide} />
       </mesh>
       <mesh position={[0, 0.055, 0]} rotation-x={-Math.PI / 2}>
         <ringGeometry args={[radius * 0.68, radius * 0.71, 64]} />
-        <meshBasicMaterial color="#FFD166" transparent opacity={0.85} side={THREE.DoubleSide} />
+        <meshBasicMaterial color={LEGACY_PAL['lg-ffd166']} transparent opacity={0.85} side={THREE.DoubleSide} />
       </mesh>
-      <pointLight position={[0, 5, 0]} intensity={55} distance={Math.max(14, radius * 2.2)} color="#38BDF8" />
+      <pointLight position={[0, 5, 0]} intensity={55} distance={Math.max(14, radius * 2.2)} color={LEGACY_PAL['lg-38bdf8']} />
       <Label
         text={`${lang === 'en' ? 'FOCUS' : '현재 초점'} · ${label}`}
         position={[0, Math.max(5.8, preset.target[1] + 4.3), 0]}
         size={1.25}
         tier={0}
         priority={20}
-        color="#7DD3FC"
+        color={LEGACY_PAL['lg-7dd3fc']}
       />
     </group>
   );
@@ -530,8 +531,8 @@ export function PlantScene({
         }}
       >
         <SceneBoundary onFail={() => onSceneFail?.()}>
-          <color attach="background" args={['#151a20']} />
-          <fog attach="fog" args={['#151a20', 130, 320]} />
+          <color attach="background" args={[LEGACY_PAL['lg-151a20']]} />
+          <fog attach="fog" args={[LEGACY_PAL['lg-151a20'], 130, 320]} />
           <Lights />
           <Floor gridGeometry={gridGeometry} />
           <PresetFocus preset={preset} lang={lang} />
@@ -604,7 +605,7 @@ function CellRect({ cell, status }: { cell: PlantCell; status: PlantStatus }) {
       <text x={cell.x * S} y={-9.8 * S} textAnchor="middle" fontSize={17} fill={hex} fontWeight={700}>
         {cell.short}
       </text>
-      <text x={cell.x * S} y={10.9 * S} textAnchor="middle" fontSize={13} fill="#8895A7">
+      <text x={cell.x * S} y={10.9 * S} textAnchor="middle" fontSize={13} fill={LEGACY_PAL['lg-8895a7']}>
         {status}
       </text>
       {stationPositions(cell).map((p, i) => (
@@ -636,7 +637,7 @@ export function PlantSchematic2D({
   return (
     <div className="plant-schematic" data-testid="plant-schematic">
       <svg viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`} role="img" aria-label="공장 평면도 (2D 강등 모드)">
-        <rect x={VB.x} y={VB.y} width={VB.w} height={VB.h} fill="#151a20" />
+        <rect x={VB.x} y={VB.y} width={VB.w} height={VB.h} fill={LEGACY_PAL['lg-151a20']} />
         {Array.from({ length: 13 }).map((_, i) => (
           <line
             key={`v${i}`}
@@ -644,7 +645,7 @@ export function PlantSchematic2D({
             y1={VB.y}
             x2={(-60 + i * 10) * S}
             y2={VB.y + VB.h}
-            stroke="#242a31"
+            stroke={LEGACY_PAL['lg-242a31']}
             strokeWidth={1}
           />
         ))}
@@ -655,7 +656,7 @@ export function PlantSchematic2D({
             y1={(-30 + i * 10) * S}
             x2={VB.x + VB.w}
             y2={(-30 + i * 10) * S}
-            stroke="#242a31"
+            stroke={LEGACY_PAL['lg-242a31']}
             strokeWidth={1}
           />
         ))}
@@ -666,8 +667,8 @@ export function PlantSchematic2D({
           y={CONVEYOR.z * S - 1.3 * S}
           width={(CONVEYOR.x2 - CONVEYOR.x1) * S}
           height={2.6 * S}
-          fill="#2a2d31"
-          stroke="#4c4e51"
+          fill={LEGACY_PAL['lg-2a2d31']}
+          stroke={LEGACY_PAL['lg-4c4e51']}
           strokeWidth={1.5}
         />
         {Array.from({ length: CONVEYOR.bodies }).map((_, i) => (
@@ -677,7 +678,7 @@ export function PlantSchematic2D({
             y={CONVEYOR.z * S - 0.9 * S}
             width={4.2 * S}
             height={1.8 * S}
-            fill="#8d949c"
+            fill={LEGACY_PAL['lg-8d949c']}
             fillOpacity={0.55}
           />
         ))}
@@ -687,7 +688,7 @@ export function PlantSchematic2D({
         ))}
 
         {/* 출하 야드 — 실제 VIN 30대(클릭 선택) */}
-        <text x={46 * S} y={-24 * S} textAnchor="middle" fontSize={17} fill="#1F9D55" fontWeight={700}>
+        <text x={46 * S} y={-24 * S} textAnchor="middle" fontSize={17} fill={LEGACY_PAL['lg-1f9d55']} fontWeight={700}>
           OUTBOUND YARD ({slots.length})
         </text>
         {slots.map((s) => {
@@ -714,7 +715,7 @@ export function PlantSchematic2D({
                 rx={4}
                 fill={hex}
                 fillOpacity={sel ? 0.9 : 0.55}
-                stroke={sel ? '#FFD166' : hex}
+                stroke={sel ? LEGACY_PAL['lg-ffd166'] : hex}
                 strokeWidth={sel ? 3 : 1.5}
               />
               {(sel || s.verdict.twin.killSwitch?.active) && (
@@ -723,7 +724,7 @@ export function PlantSchematic2D({
                   y={s.z * S + 6}
                   textAnchor="middle"
                   fontSize={12}
-                  fill="#0b0f14"
+                  fill={LEGACY_PAL['lg-0b0f14']}
                   fontWeight={700}
                 >
                   {s.verdict.twin.killSwitch?.active ? 'KS' : s.vin.replace('VIN-DEMO-', '#')}
@@ -742,11 +743,11 @@ export function PlantSchematic2D({
                 cx={pose.x * S}
                 cy={pose.z * S}
                 r={1.5 * S}
-                fill="#b9901a"
-                stroke="#f0c14b"
+                fill={LEGACY_PAL['lg-b9901a']}
+                stroke={LEGACY_PAL['lg-f0c14b']}
                 strokeWidth={1.5}
               />
-              <text x={pose.x * S} y={pose.z * S - 2.4 * S} textAnchor="middle" fontSize={11} fill="#d6b46a">
+              <text x={pose.x * S} y={pose.z * S - 2.4 * S} textAnchor="middle" fontSize={11} fill={LEGACY_PAL['lg-d6b46a']}>
                 {r.id}
               </text>
             </g>
@@ -754,8 +755,8 @@ export function PlantSchematic2D({
         })}
 
         {/* 게이트 */}
-        <line x1={GATE.x * S} y1={-6 * S} x2={GATE.x * S} y2={6 * S} stroke="#b9901a" strokeWidth={6} />
-        <text x={GATE.x * S} y={-8 * S} textAnchor="middle" fontSize={15} fill="#b9901a" fontWeight={700}>
+        <line x1={GATE.x * S} y1={-6 * S} x2={GATE.x * S} y2={6 * S} stroke={LEGACY_PAL['lg-b9901a']} strokeWidth={6} />
+        <text x={GATE.x * S} y={-8 * S} textAnchor="middle" fontSize={15} fill={LEGACY_PAL['lg-b9901a']} fontWeight={700}>
           GATE
         </text>
       </svg>

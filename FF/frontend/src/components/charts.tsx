@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { animate } from '../state/motion';
 
@@ -67,7 +68,7 @@ function smoothPath(pts: [number, number][]) {
 }
 
 // ── AreaChart: 그라디언트 면적 + 격자 + Y축 + hover 툴팁 ──
-export function AreaChart({ data, height = 160, color = '#0B5FFF', min, max, fmt }:
+export function AreaChart({ data, height = 160, color = LEGACY_PAL['lg-0b5fff'], min, max, fmt }:
   { data: number[]; height?: number; color?: string; min?: number; max?: number; fmt?: (n: number) => string }) {
   const [hi, setHi] = useState<number | null>(null);
   const W = 320, H = height, padL = 4, padB = 16, padT = 8;
@@ -92,7 +93,7 @@ export function AreaChart({ data, height = 160, color = '#0B5FFF', min, max, fmt
         <path d={area} fill={`url(#${gid})`} />
         <path className="draw" d={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
         {hi != null && <><line x1={x(hi)} y1={padT} x2={x(hi)} y2={H - padB} stroke={color} strokeWidth="0.7" strokeDasharray="2 2" />
-          <circle cx={x(hi)} cy={y(data[hi])} r="3.5" fill={color} stroke="#fff" strokeWidth="1.5" /></>}
+          <circle cx={x(hi)} cy={y(data[hi])} r="3.5" fill={color} stroke={LEGACY_PAL['lg-ffffff']} strokeWidth="1.5" /></>}
         <circle cx={x(data.length - 1)} cy={y(data[data.length - 1])} r="3" fill={color}><animate attributeName="opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite" /></circle>
       </svg>
       {hi != null && <div className="chart-tip" style={{ left: `${(x(hi) / W) * 100}%` }}>{fmt ? fmt(data[hi]) : data[hi]}</div>}
@@ -103,7 +104,7 @@ export function AreaChart({ data, height = 160, color = '#0B5FFF', min, max, fmt
 // 기존 호환 Sparkline (면적 + 그라디언트)
 export function Sparkline({ data, height = 60, color = 'var(--brand)', min, max }:
   { data: number[]; height?: number; color?: string; min?: number; max?: number }) {
-  return <AreaChart data={data} height={height} color={color === 'var(--brand)' ? '#0B5FFF' : color} min={min} max={max} fmt={(n) => n.toFixed(0)} />;
+  return <AreaChart data={data} height={height} color={color === 'var(--brand)' ? LEGACY_PAL['lg-0b5fff'] : color} min={min} max={max} fmt={(n) => n.toFixed(0)} />;
 }
 
 // ── Donut (드로잉 애니메이션 + 중앙 라벨) ──
@@ -140,7 +141,7 @@ export function Bars({ data, fmt, labelWidth = 120 }: { data: Record<string, num
       <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '5px 0' }}>
         <span className="small" title={k} style={{ flex: `0 0 ${labelWidth}px`, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k}</span>
         <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 5, overflow: 'hidden' }}>
-          <div style={{ width: `${(v / max) * 100}%`, background: 'linear-gradient(90deg,#0B5FFF,#0EA5E9)', height: 16, borderRadius: 5, transition: 'width .8s ease' }} />
+          <div style={{ width: `${(v / max) * 100}%`, background: `linear-gradient(90deg,${LEGACY_PAL['lg-0b5fff']},${LEGACY_PAL['lg-0ea5e9']})`, height: 16, borderRadius: 5, transition: 'width .8s ease' }} />
         </div>
         <span className="small mono" style={{ width: 92, textAlign: 'right' }}>{fmt ? fmt(v) : v}</span>
       </div>))}</div>
@@ -153,14 +154,14 @@ export function GaugeArc({ value, label, size = 150 }: { value: number; label?: 
   const r = size / 2 - 12, cx = size / 2, cy = size / 2;
   const ang = Math.PI * (1 - v / 100);
   const ex = cx + r * Math.cos(ang), ey = cy - r * Math.sin(ang);
-  const color = v >= 95 ? '#1F9D55' : v >= 80 ? '#D9822B' : '#D64545';
+  const color = v >= 95 ? LEGACY_PAL['lg-1f9d55'] : v >= 80 ? LEGACY_PAL['lg-d9822b'] : LEGACY_PAL['lg-d64545'];
   const arc = (a0: number, a1: number) => `M ${cx + r * Math.cos(a0)},${cy - r * Math.sin(a0)} A ${r} ${r} 0 0 1 ${cx + r * Math.cos(a1)},${cy - r * Math.sin(a1)}`;
   return (
     <div style={{ textAlign: 'center' }}>
       <svg width={size} height={size / 2 + 16} viewBox={`0 0 ${size} ${size / 2 + 16}`}>
         <path d={arc(Math.PI, 0)} fill="none" stroke="var(--surface-3)" strokeWidth="12" strokeLinecap="round" />
         <path d={arc(Math.PI, ang)} fill="none" stroke={color} strokeWidth="12" strokeLinecap="round" style={{ transition: 'all .6s' }} />
-        <circle cx={ex} cy={ey} r="6" fill={color} stroke="#fff" strokeWidth="2" />
+        <circle cx={ex} cy={ey} r="6" fill={color} stroke={LEGACY_PAL['lg-ffffff']} strokeWidth="2" />
         <text x={cx} y={cy} textAnchor="middle" fontSize="22" fontWeight="800" fill="var(--ink)">{v.toFixed(1)}%</text>
       </svg>
       {label && <div className="small muted">{label}</div>}
@@ -169,7 +170,7 @@ export function GaugeArc({ value, label, size = 150 }: { value: number; label?: 
 }
 
 // ── RadialProgress (링) ──
-export function RadialProgress({ value, size = 92, color = '#0B5FFF', label }: { value: number; size?: number; color?: string; label?: string }) {
+export function RadialProgress({ value, size = 92, color = LEGACY_PAL['lg-0b5fff'], label }: { value: number; size?: number; color?: string; label?: string }) {
   const r = size / 2 - 8, c = 2 * Math.PI * r, v = Math.max(0, Math.min(100, value));
   return (
     <div style={{ textAlign: 'center' }}>
@@ -189,13 +190,13 @@ export function RadialProgress({ value, size = 92, color = '#0B5FFF', label }: {
 // ── Heatmap (rows × cols, value 0..1 또는 null) ──
 export function Heatmap({ rows, cols, cell, legend }:
   { rows: string[]; cols: string[]; cell: (r: string, c: string) => { v: number | null; title?: string; label?: string }; legend?: string }) {
-  const color = (v: number | null) => v == null ? 'var(--surface-2)' : `color-mix(in srgb, #0B5FFF ${Math.round(20 + v * 75)}%, var(--surface))`;
+  const color = (v: number | null) => v == null ? 'var(--surface-2)' : `color-mix(in srgb, var(--lg-0b5fff) ${Math.round(20 + v * 75)}%, var(--surface))`;
   return (
     <div className="table-wrap">
       <table className="heatmap"><thead><tr><th></th>{cols.map(c => <th key={c} style={{ fontSize: 11 }}>{c}</th>)}</tr></thead>
         <tbody>{rows.map(r => (<tr key={r}><td className="mono" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{r}</td>
           {cols.map(c => { const x = cell(r, c); return (
-            <td key={c} title={x.title || ''} style={{ background: color(x.v), textAlign: 'center', color: (x.v ?? 0) > 0.55 ? '#fff' : 'var(--muted)', fontSize: 10, cursor: 'default' }}>{x.label ?? ''}</td>); })}
+            <td key={c} title={x.title || ''} style={{ background: color(x.v), textAlign: 'center', color: (x.v ?? 0) > 0.55 ? LEGACY_PAL['lg-ffffff'] : 'var(--muted)', fontSize: 10, cursor: 'default' }}>{x.label ?? ''}</td>); })}
         </tr>))}</tbody></table>
       {legend && <div className="small muted mt">{legend}</div>}
     </div>
@@ -203,7 +204,7 @@ export function Heatmap({ rows, cols, cell, legend }:
 }
 
 // ── StatTile (카운트업 + delta + 미니 sparkline) ──
-export function StatTile({ label, value, decimals = 0, suffix = '', prefix = '', delta, data, color = '#0B5FFF' }:
+export function StatTile({ label, value, decimals = 0, suffix = '', prefix = '', delta, data, color = LEGACY_PAL['lg-0b5fff'] }:
   { label: string; value: number; decimals?: number; suffix?: string; prefix?: string; delta?: number; data?: number[]; color?: string }) {
   return (
     <div className="kpi stat-tile">
@@ -232,7 +233,7 @@ export function LiveDot() {
 }
 
 // ── 색 팔레트 + 집계 유틸 ──
-export const PALETTE = ['#0B5FFF', '#16A34A', '#D9822B', '#9333EA', '#D64545', '#0891B2', '#CA8A04', '#DB2777', '#2563EB', '#059669'];
+export const PALETTE = [LEGACY_PAL['lg-0b5fff'], LEGACY_PAL['lg-16a34a'], LEGACY_PAL['lg-d9822b'], LEGACY_PAL['lg-9333ea'], LEGACY_PAL['lg-d64545'], LEGACY_PAL['lg-0891b2'], LEGACY_PAL['lg-ca8a04'], LEGACY_PAL['lg-db2777'], LEGACY_PAL['lg-2563eb'], LEGACY_PAL['lg-059669']];
 
 export function tally<T>(items: T[], keyFn: (x: T) => string): Record<string, number> {
   const r: Record<string, number> = {};
@@ -290,14 +291,14 @@ export function GroupedBars({ rows, fmt }: { rows: { label: string; a: number; b
       <div key={r.label} style={{ margin: '8px 0' }}>
         <div className="small" style={{ marginBottom: 3 }}>{r.label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4, height: 12 }}><div style={{ width: `${r.a / max * 100}%`, height: 12, borderRadius: 4, background: '#9AA7B8', transition: 'width .7s' }} /></div>
+          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4, height: 12 }}><div style={{ width: `${r.a / max * 100}%`, height: 12, borderRadius: 4, background: LEGACY_PAL['lg-9aa7b8'], transition: 'width .7s' }} /></div>
           <span className="small mono muted" style={{ width: 64, textAlign: 'right' }}>{f(r.a)}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4, height: 12 }}><div style={{ width: `${r.b / max * 100}%`, height: 12, borderRadius: 4, background: 'linear-gradient(90deg,#0B5FFF,#16A34A)', transition: 'width .7s' }} /></div>
+          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4, height: 12 }}><div style={{ width: `${r.b / max * 100}%`, height: 12, borderRadius: 4, background: `linear-gradient(90deg,${LEGACY_PAL['lg-0b5fff']},${LEGACY_PAL['lg-16a34a']})`, transition: 'width .7s' }} /></div>
           <span className="small mono" style={{ width: 64, textAlign: 'right' }}>{f(r.b)}</span>
         </div>
       </div>
-    ))}<div className="small muted" style={{ marginTop: 4 }}><span style={{ color: '#9AA7B8' }}>■</span> Before · <span style={{ color: '#16A34A' }}>■</span> After</div></div>
+    ))}<div className="small muted" style={{ marginTop: 4 }}><span style={{ color: LEGACY_PAL['lg-9aa7b8'] }}>■</span> Before · <span style={{ color: LEGACY_PAL['lg-16a34a'] }}>■</span> After</div></div>
   );
 }

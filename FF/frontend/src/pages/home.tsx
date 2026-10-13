@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { roles, permMatrix, users, campaigns, profileOf, roleLabel } from '../data/refdata';
@@ -9,7 +10,7 @@ import { SeverityBadge, severityMeta } from '../components/ui';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { PageTitle } from '../components/PageTitle';
 
-const LC_COLOR: Record<string, string> = { Proposed: '#8895A7', Approved: '#3B82F6', Developing: '#6366F1', Verified: '#0EA5E9', Released: '#1F9D55', Retired: '#9CA3AF' };
+const LC_COLOR: Record<string, string> = { Proposed: LEGACY_PAL['lg-8895a7'], Approved: LEGACY_PAL['lg-3b82f6'], Developing: LEGACY_PAL['lg-6366f1'], Verified: LEGACY_PAL['lg-0ea5e9'], Released: LEGACY_PAL['lg-1f9d55'], Retired: LEGACY_PAL['lg-9ca3af'] };
 
 export function Login() {
   const nav = useNavigate();
@@ -78,7 +79,7 @@ export function RoleHome() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
             <label className="small" style={{ opacity: .9 }}>부서/역할 전환</label>
             <select value={role} onChange={e => change(e.target.value)} style={{ padding: 6, borderRadius: 6, border: 'none', minWidth: 140 }}>{roles.map(r => <option key={r} value={r}>{roleLabel(r)}</option>)}</select>
-            <button className="btn" style={{ background: 'rgba(255,255,255,.18)', color: '#fff', border: '1px solid rgba(255,255,255,.4)' }} onClick={() => nav(roleHome[role] || '/')}>내 워크스페이스로 이동 →</button>
+            <button className="btn" style={{ background: LEGACY_PAL['lg-rgba-255-255-255-p18'], color: LEGACY_PAL['lg-ffffff'], border: `1px solid ${LEGACY_PAL['lg-rgba-255-255-255-p4']}` }} onClick={() => nav(roleHome[role] || '/')}>내 워크스페이스로 이동 →</button>
           </div>
         </div>
       </div>
@@ -130,8 +131,8 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     return (<>
       <div className="kpis reveal">
         <StatTile label="총 Feature" value={feats.length} delta={+2} />
-        <StatTile label="Released" value={cat.released} color="#1F9D55" />
-        <StatTile label="개발 진행중" value={cat.developing} color="#6366F1" />
+        <StatTile label="Released" value={cat.released} color={LEGACY_PAL['lg-1f9d55']} />
+        <StatTile label="개발 진행중" value={cat.developing} color={LEGACY_PAL['lg-6366f1']} />
         <div className="kpi"><div className="v">{fmtWon(cost.totalEst)}</div><div className="l">총 예상 개발비</div></div>
       </div>
       <div className="row">
@@ -160,20 +161,20 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     return (<>
       <div className="kpis reveal">
         <StatTile label="총 Feature" value={feats.length} />
-        <StatTile label="관계(Edge)" value={state.edges.length} color="#6366F1" />
-        <StatTile label="정합성 위반" value={vios.length} color="#D9822B" />
-        <StatTile label="Blocking" value={blocking.length} color="#D64545" />
+        <StatTile label="관계(Edge)" value={state.edges.length} color={LEGACY_PAL['lg-6366f1']} />
+        <StatTile label="정합성 위반" value={vios.length} color={LEGACY_PAL['lg-d9822b']} />
+        <StatTile label="Blocking" value={blocking.length} color={LEGACY_PAL['lg-d64545']} />
       </div>
       <div className="row">
         <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>위반 Severity</b>
-          <Donut size={130} center={`${vios.length}`} segments={dist(tally(vios, (v: any) => severityMeta(v.severity).label), { Blocking: '#D64545', Warning: '#D9822B', Info: '#3B82F6' })} /></div>
+          <Donut size={130} center={`${vios.length}`} segments={dist(tally(vios, (v: any) => severityMeta(v.severity).label), { Blocking: LEGACY_PAL['lg-d64545'], Warning: LEGACY_PAL['lg-d9822b'], Info: LEGACY_PAL['lg-3b82f6'] })} /></div>
         <div className="col card" style={{ flex: 2 }}><b>Rule별 위반</b><div className="mt"><Bars data={tally(vios, (v: any) => v.rule)} /></div></div>
         <div className="col card" style={{ maxWidth: 200, alignItems: 'center' }}><b>정합성 점수</b>
-          <RadialProgress size={110} color={blocking.length ? '#D64545' : '#1F9D55'} value={Math.round((RULES - new Set(vios.map((v: any) => v.rule)).size) / RULES * 100)} label={`${RULES - new Set(vios.map((v: any) => v.rule)).size}/${RULES} Rule`} /></div>
+          <RadialProgress size={110} color={blocking.length ? LEGACY_PAL['lg-d64545'] : LEGACY_PAL['lg-1f9d55']} value={Math.round((RULES - new Set(vios.map((v: any) => v.rule)).size) / RULES * 100)} label={`${RULES - new Set(vios.map((v: any) => v.rule)).size}/${RULES} Rule`} /></div>
       </div>
       <div className="row mt">
         <div className="col card"><b>경고 / Blocking 위반</b>
-          {(blocking.length ? blocking : vios).slice(0, 4).map((v: any, i: number) => <div className="evt" key={i} role="button" onClick={() => nav('/consistency')}><span className="pill" style={{ background: severityMeta(v.severity).color, color: '#fff' }}>{v.rule}</span><SeverityBadge code={v.severity} /><span className="muted small">{v.message}</span></div>)}
+          {(blocking.length ? blocking : vios).slice(0, 4).map((v: any, i: number) => <div className="evt" key={i} role="button" onClick={() => nav('/consistency')}><span className="pill" style={{ background: severityMeta(v.severity).color, color: LEGACY_PAL['lg-ffffff'] }}>{v.rule}</span><SeverityBadge code={v.severity} /><span className="muted small">{v.message}</span></div>)}
         </div>
       </div>
     </>);
@@ -186,15 +187,15 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     return (<>
       <div className="kpis reveal">
         <StatTile label="전체 CR" value={crs.length} />
-        <StatTile label="진행중 CR" value={pend.length} color="#6366F1" />
-        <StatTile label="High Risk" value={high.length} color="#D64545" />
-        <StatTile label="BOM 영역" value={11} color="#0EA5E9" />
+        <StatTile label="진행중 CR" value={pend.length} color={LEGACY_PAL['lg-6366f1']} />
+        <StatTile label="High Risk" value={high.length} color={LEGACY_PAL['lg-d64545']} />
+        <StatTile label="BOM 영역" value={11} color={LEGACY_PAL['lg-0ea5e9']} />
       </div>
       <div className="row">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>CR Status</b>
           <Donut size={120} center={`${crs.length}`} segments={dist(tally(crs, (c: any) => c.status))} /></div>
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>Risk 분포</b>
-          <Donut size={120} segments={dist(tally(crs, (c: any) => c.risk), { High: '#D64545', Med: '#D9822B', Low: '#1F9D55' })} /></div>
+          <Donut size={120} segments={dist(tally(crs, (c: any) => c.risk), { High: LEGACY_PAL['lg-d64545'], Med: LEGACY_PAL['lg-d9822b'], Low: LEGACY_PAL['lg-1f9d55'] })} /></div>
         <div className="col card" style={{ flex: 2 }}><b>유형별 CR</b><div className="mt"><Bars data={tally(crs, (c: any) => c.type)} /></div></div>
       </div>
       <div className="row mt">
@@ -214,23 +215,23 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     const verified = feats.filter((f: any) => f.lifecycle === 'Verified' || f.lifecycle === 'Released').length;
     return (<>
       <div className="kpis reveal">
-        <StatTile label="9-Gate PASS" value={r.passCount} suffix="/9" color="#1F9D55" />
+        <StatTile label="9-Gate PASS" value={r.passCount} suffix="/9" color={LEGACY_PAL['lg-1f9d55']} />
         <div className="kpi"><div className="v" style={{ color: r.decision === 'RELEASE' ? 'var(--pass)' : 'var(--pending)' }}>{r.decision}</div><div className="l">Release 판정</div></div>
-        <StatTile label="Verified+ Feature" value={verified} color="#0EA5E9" />
+        <StatTile label="Verified+ Feature" value={verified} color={LEGACY_PAL['lg-0ea5e9']} />
         <StatTile label="총 Feature" value={feats.length} />
       </div>
       <div className="row">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>9-Gate 진척</b>
-          <RadialProgress size={120} color={r.decision === 'RELEASE' ? '#1F9D55' : '#D9822B'} value={Math.round(r.passCount / 9 * 100)} label={`${r.passCount}/9 PASS`} /></div>
+          <RadialProgress size={120} color={r.decision === 'RELEASE' ? LEGACY_PAL['lg-1f9d55'] : LEGACY_PAL['lg-d9822b']} value={Math.round(r.passCount / 9 * 100)} label={`${r.passCount}/9 PASS`} /></div>
         <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>Gate 상태 분포</b>
-          <Donut size={130} segments={[{ label: 'PASS', value: counts.PASS, color: '#1F9D55' }, { label: 'PENDING', value: counts.PENDING, color: '#D9822B' }, { label: 'FAIL', value: counts.FAIL, color: '#D64545' }]} /></div>
+          <Donut size={130} segments={[{ label: 'PASS', value: counts.PASS, color: LEGACY_PAL['lg-1f9d55'] }, { label: 'PENDING', value: counts.PENDING, color: LEGACY_PAL['lg-d9822b'] }, { label: 'FAIL', value: counts.FAIL, color: LEGACY_PAL['lg-d64545'] }]} /></div>
         <div className="col card"><b>바로가기</b>
           <div className="row mt"><button className="btn" onClick={() => nav('/readiness/FEAT-BDC-001')}>Release Readiness →</button><button className="btn" onClick={() => nav('/verify/evidence')}>품질 기준과 검증 증적 →</button><button className="btn" onClick={() => nav('/verify/compliance')}>Compliance →</button></div>
         </div>
       </div>
       <div className="row mt">
         <div className="col card"><b>경고 / Gate 미통과</b>
-          {(r.gates || []).filter((g: any) => g.status !== 'PASS').slice(0, 4).map((g: any, i: number) => <div className="evt" key={i} role="button" onClick={() => nav('/readiness/FEAT-BDC-001')}><span className="pill" style={{ background: g.status === 'FAIL' ? 'var(--fail)' : 'var(--pending)', color: '#fff' }}>{g.status}</span><span className="muted small">{g.name || g.id}</span></div>)}
+          {(r.gates || []).filter((g: any) => g.status !== 'PASS').slice(0, 4).map((g: any, i: number) => <div className="evt" key={i} role="button" onClick={() => nav('/readiness/FEAT-BDC-001')}><span className="pill" style={{ background: g.status === 'FAIL' ? 'var(--fail)' : 'var(--pending)', color: LEGACY_PAL['lg-ffffff'] }}>{g.status}</span><span className="muted small">{g.name || g.id}</span></div>)}
         </div>
       </div>
     </>);
@@ -241,10 +242,10 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     const avgRollout = Math.round(campaigns.reduce((s, c) => s + (c.rollout || 0), 0) / (campaigns.length || 1));
     return (<>
       <div className="kpis reveal">
-        <StatTile label="활성 캠페인" value={campaigns.length} color="#0EA5E9" />
-        <StatTile label="평균 Rollout" value={avgRollout} suffix="%" color="#6366F1" />
-        <StatTile label="활성화(실시간)" value={live.activation} decimals={1} suffix="%" data={live.series} color="#1F9D55" />
-        <StatTile label="Rollback(실시간)" value={live.rollback} color="#D64545" />
+        <StatTile label="활성 캠페인" value={campaigns.length} color={LEGACY_PAL['lg-0ea5e9']} />
+        <StatTile label="평균 Rollout" value={avgRollout} suffix="%" color={LEGACY_PAL['lg-6366f1']} />
+        <StatTile label="활성화(실시간)" value={live.activation} decimals={1} suffix="%" data={live.series} color={LEGACY_PAL['lg-1f9d55']} />
+        <StatTile label="Rollback(실시간)" value={live.rollback} color={LEGACY_PAL['lg-d64545']} />
       </div>
       <div className="row">
         <div className="col card" style={{ flex: 2 }}><b>활성화율 (실시간) <LiveDot /></b>
@@ -269,15 +270,15 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     return (<>
       <div className="kpis reveal">
         <StatTile label="담당 Feature" value={1} />
-        <StatTile label="패키지 완료율" value={Math.round(valid / total * 100)} suffix="%" color="#1F9D55" />
-        <StatTile label="인수 대기" value={total - valid} color="#D9822B" />
-        <StatTile label="Contract Gap" value={1} color="#D64545" />
+        <StatTile label="패키지 완료율" value={Math.round(valid / total * 100)} suffix="%" color={LEGACY_PAL['lg-1f9d55']} />
+        <StatTile label="인수 대기" value={total - valid} color={LEGACY_PAL['lg-d9822b']} />
+        <StatTile label="Contract Gap" value={1} color={LEGACY_PAL['lg-d64545']} />
       </div>
       <div className="row">
         <div className="col card" style={{ maxWidth: 220, alignItems: 'center' }}><b>패키지 완료율</b>
-          <RadialProgress size={120} color="#1F9D55" value={Math.round(valid / total * 100)} label={`${valid}/${total} 항목`} /></div>
+          <RadialProgress size={120} color={LEGACY_PAL['lg-1f9d55']} value={Math.round(valid / total * 100)} label={`${valid}/${total} 항목`} /></div>
         <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>항목 상태</b>
-          <Donut size={130} segments={[{ label: 'valid', value: valid, color: '#1F9D55' }, { label: 'partial', value: total - valid, color: '#D9822B' }]} /></div>
+          <Donut size={130} segments={[{ label: 'valid', value: valid, color: LEGACY_PAL['lg-1f9d55'] }, { label: 'partial', value: total - valid, color: LEGACY_PAL['lg-d9822b'] }]} /></div>
         <div className="col card"><b>바로가기</b>
           <div className="row mt"><button className="btn" onClick={() => nav('/supplier/portal')}>Supplier Portal →</button><button className="btn" onClick={() => nav('/supplier/package')}>Release Package →</button></div>
         </div>
@@ -291,9 +292,9 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
     return (<>
       <div className="kpis reveal">
         <StatTile label="사용자" value={users.length} />
-        <StatTile label="역할" value={roles.length} color="#6366F1" />
-        <StatTile label="감사 로그" value={audit.length} color="#0EA5E9" />
-        <StatTile label="권한 Verb" value={9} color="#9333EA" />
+        <StatTile label="역할" value={roles.length} color={LEGACY_PAL['lg-6366f1']} />
+        <StatTile label="감사 로그" value={audit.length} color={LEGACY_PAL['lg-0ea5e9']} />
+        <StatTile label="권한 Verb" value={9} color={LEGACY_PAL['lg-9333ea']} />
       </div>
       <div className="row">
         <div className="col card" style={{ maxWidth: 260, alignItems: 'center' }}><b>사용자 역할 분포</b>
@@ -314,19 +315,19 @@ function RoleDashboardBody({ role, state, nav }: { role: string; state: any; nav
   return (<>
     <div className="kpis reveal">
       <StatTile label="Fleet 차량" value={10.24} decimals={2} suffix="M" delta={2} />
-      <StatTile label="활성화(실시간)" value={live.activation} decimals={1} suffix="%" data={live.series} color="#1F9D55" delta={+(live.activation - 97).toFixed(1)} />
-      <StatTile label="정책 적용 실패" value={live.failRate} decimals={1} suffix="%" color="#D64545" />
-      <StatTile label="p95 Latency" value={live.p95} suffix="ms" color="#D9822B" />
+      <StatTile label="활성화(실시간)" value={live.activation} decimals={1} suffix="%" data={live.series} color={LEGACY_PAL['lg-1f9d55']} delta={+(live.activation - 97).toFixed(1)} />
+      <StatTile label="정책 적용 실패" value={live.failRate} decimals={1} suffix="%" color={LEGACY_PAL['lg-d64545']} />
+      <StatTile label="p95 Latency" value={live.p95} suffix="ms" color={LEGACY_PAL['lg-d9822b']} />
     </div>
     <div className="row">
       <div className="col card" style={{ flex: 2 }}><b>Fleet 활성화율 (실시간) <LiveDot /></b>
         <AreaChart data={live.series} height={150} min={88} max={100} fmt={n => n.toFixed(0) + '%'} /></div>
       <div className="col card"><b>권역별 차량</b>
         <Donut size={120} center="10.2M" segments={[
-          { label: 'KR', value: Math.round(fleetStats.byRegion.KR / 1e5), color: '#0B5FFF' },
-          { label: 'EU', value: Math.round(fleetStats.byRegion.EU / 1e5), color: '#16A34A' },
-          { label: 'US', value: Math.round(fleetStats.byRegion.US / 1e5), color: '#D9822B' },
-          { label: 'ETC', value: Math.round(fleetStats.byRegion.ETC / 1e5), color: '#9333EA' }]} /></div>
+          { label: 'KR', value: Math.round(fleetStats.byRegion.KR / 1e5), color: LEGACY_PAL['lg-0b5fff'] },
+          { label: 'EU', value: Math.round(fleetStats.byRegion.EU / 1e5), color: LEGACY_PAL['lg-16a34a'] },
+          { label: 'US', value: Math.round(fleetStats.byRegion.US / 1e5), color: LEGACY_PAL['lg-d9822b'] },
+          { label: 'ETC', value: Math.round(fleetStats.byRegion.ETC / 1e5), color: LEGACY_PAL['lg-9333ea'] }]} /></div>
       <div className="col card ticker"><b>실시간 이벤트 <LiveDot /></b>
         {live.events.slice(0, 5).map((e: any, i: number) => <div className="evt" key={e.ts + i}><span className="pill">{e.type}</span><span className="muted small">{e.ts}</span></div>)}</div>
     </div>
@@ -358,7 +359,7 @@ export function HomeCustomize() {
           <div className="evt" key={w.id} style={{ alignItems: 'center' }}>
             <input type="checkbox" checked={w.on} onChange={() => toggle(i)} />
             <b style={{ flex: 1, opacity: w.on ? 1 : 0.5 }}>⠿ {w.id}</b>
-            <span className="pill" style={{ background: w.on ? 'var(--pass)' : 'var(--surface-3)', color: w.on ? '#fff' : 'var(--muted)' }}>{w.on ? '표시' : '숨김'}</span>
+            <span className="pill" style={{ background: w.on ? 'var(--pass)' : 'var(--surface-3)', color: w.on ? LEGACY_PAL['lg-ffffff'] : 'var(--muted)' }}>{w.on ? '표시' : '숨김'}</span>
             <button className="btn" disabled={i === 0} onClick={() => move(i, -1)}>▲</button>
             <button className="btn" disabled={i === items.length - 1} onClick={() => move(i, 1)}>▼</button>
           </div>

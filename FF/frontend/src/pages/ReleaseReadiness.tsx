@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { readiness, getFeature, verification, relationsOf } from '../data/engine';
@@ -50,11 +51,11 @@ export default function ReleaseReadiness() {
         <div className="col card" style={{ maxWidth: 360 }}>
           <b>9-Gate 요약</b>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <RadialProgress value={Math.round(r.passCount / 9 * 100)} size={96} color={r.decision === 'RELEASE' ? '#1F9D55' : '#D9822B'} label={`${r.passCount}/9 PASS`} />
+            <RadialProgress value={Math.round(r.passCount / 9 * 100)} size={96} color={r.decision === 'RELEASE' ? LEGACY_PAL['lg-1f9d55'] : LEGACY_PAL['lg-d9822b']} label={`${r.passCount}/9 PASS`} />
             <Donut size={110} center={`${r.passCount}/9`} segments={[
-              { label: 'PASS', value: counts.PASS, color: '#1F9D55' },
-              { label: 'PENDING', value: counts.PENDING, color: '#D9822B' },
-              { label: 'FAIL', value: counts.FAIL, color: '#D64545' },
+              { label: 'PASS', value: counts.PASS, color: LEGACY_PAL['lg-1f9d55'] },
+              { label: 'PENDING', value: counts.PENDING, color: LEGACY_PAL['lg-d9822b'] },
+              { label: 'FAIL', value: counts.FAIL, color: LEGACY_PAL['lg-d64545'] },
             ]} /></div>
         </div>
         <div className="col card">
@@ -68,7 +69,7 @@ export default function ReleaseReadiness() {
               const running = sim === i;
               const status = sim === -1 ? g.status : reached ? g.status : 'IDLE';
               const bg = running ? 'var(--brand)' : status === 'PASS' ? 'var(--pass)' : status === 'PENDING' ? 'var(--pending)' : status === 'FAIL' ? 'var(--fail)' : 'var(--surface-3)';
-              const col = status === 'IDLE' && !running ? 'var(--muted)' : '#fff';
+              const col = status === 'IDLE' && !running ? 'var(--muted)' : LEGACY_PAL['lg-ffffff'];
               return <span key={g.id} className="pill" style={{ background: bg, color: col }}>{g.id}{running ? ' ⏳' : ''}</span>;
             })}
           </div>
@@ -87,7 +88,7 @@ export default function ReleaseReadiness() {
           const warns = gates.filter(g => g.status === 'WARN');
           const status: 'PASS' | 'WARN' | 'FAIL' | 'NOT_RUN' = failed.length ? 'FAIL' : warns.length ? 'WARN' : twin.impact.gate.qualityGatePassed ? 'PASS' : 'NOT_RUN';
           const bg = status === 'PASS' ? 'var(--pass)' : status === 'FAIL' ? 'var(--fail)' : status === 'WARN' ? 'var(--pending)' : 'var(--surface-3)';
-          const col = status === 'NOT_RUN' ? 'var(--muted)' : '#fff';
+          const col = status === 'NOT_RUN' ? 'var(--muted)' : LEGACY_PAL['lg-ffffff'];
           return (
             <div className="col card">
               <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -119,7 +120,7 @@ export default function ReleaseReadiness() {
         return (
           <div className="row">
             <div className="col card" style={{ maxWidth: 240, alignItems: 'center' }}><b>설계→검증 추적성 (DSV)</b>
-              <RadialProgress size={120} color={v.missingEvidence.length ? '#D9822B' : '#1F9D55'} value={tracePct} label={`${covered}/${v.mandatoryTests.length} 증적 매핑`} />
+              <RadialProgress size={120} color={v.missingEvidence.length ? LEGACY_PAL['lg-d9822b'] : LEGACY_PAL['lg-1f9d55']} value={tracePct} label={`${covered}/${v.mandatoryTests.length} 증적 매핑`} />
               <div className="small muted mt">요구사항(derives) {reqLinks.length}건 연결</div>
             </div>
             <div className="col card" style={{ flex: 2 }}><b>설계 검증 추적 매트릭스 (요구 ↔ 테스트 ↔ 증적)</b>

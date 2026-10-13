@@ -9,6 +9,7 @@
  *  - 라벨은 `scene/labels.tsx` 의 스프라이트 매니저를 쓴다. `<Html>` 은 차단 사유 콜아웃
  *    등 꼭 필요한 곳에서만 최소로 쓴다.
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { createContext, useContext, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Environment, Html, Lightformer, Line, RoundedBox } from '@react-three/drei';
@@ -23,9 +24,9 @@ import {
   type VehiclePart,
 } from './vehicleParts';
 
-const BRAND = '#0B5FFF';
-const FAIL = '#D64545';
-const CLOUD_HEX = '#3B82F6';
+const BRAND = LEGACY_PAL['lg-0b5fff'];
+const FAIL = LEGACY_PAL['lg-d64545'];
+const CLOUD_HEX = LEGACY_PAL['lg-3b82f6'];
 
 /* ------------------------------------------------------------------ */
 /* 시뮬레이션 시각 — TwinClock 에서만 파생, 벽시계/난수 금지               */
@@ -78,36 +79,36 @@ function usePulseMaterial(color: string, pulse: boolean, selected: boolean, opac
 export const MAT = {
   // 페인트 — 클리어코트를 가진 2코트 금속 도장. 하이라이트의 모양은 환경맵이 만든다.
   shell: new THREE.MeshPhysicalMaterial({
-    color: '#2c3444', metalness: 0.72, roughness: 0.26,
+    color: LEGACY_PAL['lg-2c3444'], metalness: 0.72, roughness: 0.26,
     clearcoat: 0.9, clearcoatRoughness: 0.1, envMapIntensity: 1.15,
   }),
   shellDark: new THREE.MeshPhysicalMaterial({
-    color: '#171c26', metalness: 0.6, roughness: 0.34,
+    color: LEGACY_PAL['lg-171c26'], metalness: 0.6, roughness: 0.34,
     clearcoat: 0.5, clearcoatRoughness: 0.2, envMapIntensity: 1,
   }),
   // 유리 — 어두운 관제실에서 실제 유리처럼 읽히려면 투명도보다 "반사"가 지배적이어야 한다.
   glass: new THREE.MeshPhysicalMaterial({
-    color: '#0e1622', metalness: 0.16, roughness: 0.05,
+    color: LEGACY_PAL['lg-0e1622'], metalness: 0.16, roughness: 0.05,
     clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 2.1,
     transparent: true, opacity: 0.62, side: THREE.DoubleSide,
   }),
-  tyre: new THREE.MeshStandardMaterial({ color: '#0d0f13', roughness: 0.86, metalness: 0.05 }),
+  tyre: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-0d0f13'], roughness: 0.86, metalness: 0.05 }),
   rim: new THREE.MeshPhysicalMaterial({
-    color: '#c9cfd8', metalness: 0.96, roughness: 0.2,
+    color: LEGACY_PAL['lg-c9cfd8'], metalness: 0.96, roughness: 0.2,
     clearcoat: 0.7, clearcoatRoughness: 0.12, envMapIntensity: 1.3,
   }),
-  disc: new THREE.MeshStandardMaterial({ color: '#8d949f', metalness: 0.85, roughness: 0.32 }),
-  caliper: new THREE.MeshStandardMaterial({ color: '#c1483f', metalness: 0.4, roughness: 0.45 }),
+  disc: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-8d949f'], metalness: 0.85, roughness: 0.32 }),
+  caliper: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-c1483f'], metalness: 0.4, roughness: 0.45 }),
   trim: new THREE.MeshPhysicalMaterial({
-    color: '#0f1218', metalness: 0.35, roughness: 0.46,
+    color: LEGACY_PAL['lg-0f1218'], metalness: 0.35, roughness: 0.46,
     clearcoat: 0.3, clearcoatRoughness: 0.3, envMapIntensity: 0.9,
   }),
-  underbody: new THREE.MeshStandardMaterial({ color: '#12151b', metalness: 0.35, roughness: 0.55 }),
-  frame: new THREE.MeshStandardMaterial({ color: '#2b323f', metalness: 0.4, roughness: 0.5 }),
-  coolingPlate: new THREE.MeshStandardMaterial({ color: '#3a5670', metalness: 0.65, roughness: 0.28 }),
-  cable: new THREE.MeshStandardMaterial({ color: '#c9532b', metalness: 0.5, roughness: 0.35 }),
-  coolant: new THREE.MeshStandardMaterial({ color: '#2fb7c9', metalness: 0.2, roughness: 0.3, emissive: '#0e5560', emissiveIntensity: 0.4 }),
-  floor: new THREE.MeshStandardMaterial({ color: '#0c0e13', metalness: 0.1, roughness: 0.95 }),
+  underbody: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-12151b'], metalness: 0.35, roughness: 0.55 }),
+  frame: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-2b323f'], metalness: 0.4, roughness: 0.5 }),
+  coolingPlate: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-3a5670'], metalness: 0.65, roughness: 0.28 }),
+  cable: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-c9532b'], metalness: 0.5, roughness: 0.35 }),
+  coolant: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-2fb7c9'], metalness: 0.2, roughness: 0.3, emissive: LEGACY_PAL['lg-0e5560'], emissiveIntensity: 0.4 }),
+  floor: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-0c0e13'], metalness: 0.1, roughness: 0.95 }),
   cloud: new THREE.MeshStandardMaterial({ color: CLOUD_HEX, emissive: CLOUD_HEX, emissiveIntensity: 0.6, metalness: 0.2, roughness: 0.5 }),
 };
 
@@ -121,7 +122,7 @@ export function SceneFloor() {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} material={MAT.floor} receiveShadow>
         <planeGeometry args={[30, 30]} />
       </mesh>
-      <gridHelper args={[30, 30, '#233047', '#161c27']} />
+      <gridHelper args={[30, 30, LEGACY_PAL['lg-233047'], LEGACY_PAL['lg-161c27']]} />
     </group>
   );
 }
@@ -137,11 +138,11 @@ export function SceneFloor() {
 export function ProceduralEnv() {
   return (
     <Environment resolution={128} frames={1}>
-      <Lightformer form="rect" intensity={2.6} color="#ffffff" position={[0, 6, -1]} rotation={[Math.PI / 2, 0, 0]} scale={[14, 4, 1]} />
-      <Lightformer form="rect" intensity={1.7} color="#cfe0ff" position={[-7, 3, 1]} rotation={[0, Math.PI / 2, 0]} scale={[10, 5, 1]} />
-      <Lightformer form="rect" intensity={1.7} color="#cfe0ff" position={[7, 3, 1]} rotation={[0, -Math.PI / 2, 0]} scale={[10, 5, 1]} />
-      <Lightformer form="rect" intensity={2.2} color="#ffffff" position={[0, 4, -8]} scale={[10, 4, 1]} />
-      <Lightformer form="rect" intensity={0.35} color="#1a2436" position={[0, -4, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[16, 16, 1]} />
+      <Lightformer form="rect" intensity={2.6} color={LEGACY_PAL['lg-ffffff']} position={[0, 6, -1]} rotation={[Math.PI / 2, 0, 0]} scale={[14, 4, 1]} />
+      <Lightformer form="rect" intensity={1.7} color={LEGACY_PAL['lg-cfe0ff']} position={[-7, 3, 1]} rotation={[0, Math.PI / 2, 0]} scale={[10, 5, 1]} />
+      <Lightformer form="rect" intensity={1.7} color={LEGACY_PAL['lg-cfe0ff']} position={[7, 3, 1]} rotation={[0, -Math.PI / 2, 0]} scale={[10, 5, 1]} />
+      <Lightformer form="rect" intensity={2.2} color={LEGACY_PAL['lg-ffffff']} position={[0, 4, -8]} scale={[10, 4, 1]} />
+      <Lightformer form="rect" intensity={0.35} color={LEGACY_PAL['lg-1a2436']} position={[0, -4, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[16, 16, 1]} />
     </Environment>
   );
 }
@@ -204,7 +205,7 @@ function Wheel({ position }: { position: [number, number, number] }) {
 /** 도어/패널 이음선 — 실루엣만으로는 "차"로 안 보이는 문제를 해결한다. */
 function BodySeams() {
   const seam = (pts: Array<[number, number, number]>) => (
-    <Line points={pts} color="#0a0e15" lineWidth={1.1} transparent opacity={0.85} />
+    <Line points={pts} color={LEGACY_PAL['lg-0a0e15']} lineWidth={1.1} transparent opacity={0.85} />
   );
   return (
     <group>
@@ -246,7 +247,7 @@ export function CarShell({ xray }: { xray: boolean }) {
   const shellOpacity = xray ? 0.18 : 1;
   const shellMat = useMemo(
     () => new THREE.MeshPhysicalMaterial({
-      color: '#2c3444', metalness: 0.72, roughness: 0.26,
+      color: LEGACY_PAL['lg-2c3444'], metalness: 0.72, roughness: 0.26,
       clearcoat: 0.9, clearcoatRoughness: 0.1, envMapIntensity: 1.15,
       transparent: xray, opacity: shellOpacity,
     }),
@@ -254,7 +255,7 @@ export function CarShell({ xray }: { xray: boolean }) {
   );
   const trimMat = useMemo(
     () => new THREE.MeshPhysicalMaterial({
-      color: '#141922', metalness: 0.5, roughness: 0.42,
+      color: LEGACY_PAL['lg-141922'], metalness: 0.5, roughness: 0.42,
       clearcoat: 0.35, clearcoatRoughness: 0.3, envMapIntensity: 0.85,
       transparent: xray, opacity: xray ? 0.16 : 1,
     }),
@@ -263,7 +264,7 @@ export function CarShell({ xray }: { xray: boolean }) {
   // X-ray 에서도 유리는 살아 있어야 차체와 구분된다 — 불투명도만 낮춘다.
   const glassMat = useMemo(
     () => new THREE.MeshPhysicalMaterial({
-      color: '#0e1622', metalness: 0.16, roughness: 0.05,
+      color: LEGACY_PAL['lg-0e1622'], metalness: 0.16, roughness: 0.05,
       clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 2.1,
       transparent: true, opacity: xray ? 0.12 : 0.62, side: THREE.DoubleSide,
     }),
@@ -329,11 +330,11 @@ export function CarShell({ xray }: { xray: boolean }) {
       {/* 전/후 라이트바 */}
       <mesh position={[0, 0.82, 2.19]}>
         <boxGeometry args={[1.6, 0.1, 0.03]} />
-        <meshStandardMaterial color="#eef4ff" emissive="#eef4ff" emissiveIntensity={0.9} />
+        <meshStandardMaterial color={LEGACY_PAL['lg-eef4ff']} emissive={LEGACY_PAL['lg-eef4ff']} emissiveIntensity={0.9} />
       </mesh>
       <mesh position={[0, 0.82, -2.19]}>
         <boxGeometry args={[1.6, 0.1, 0.03]} />
-        <meshStandardMaterial color="#e14b4b" emissive="#e14b4b" emissiveIntensity={0.7} />
+        <meshStandardMaterial color={LEGACY_PAL['lg-e14b4b']} emissive={LEGACY_PAL['lg-e14b4b']} emissiveIntensity={0.7} />
       </mesh>
       {/* 휠 4 */}
       {WHEEL_POS.map((p, i) => (
@@ -451,7 +452,7 @@ export function HeaterPadNode({ part, selected, onSelect, dim, explode }: NodePr
           [0.4, 0.06, 0.14],
           [-0.4, 0.06, 0.28],
         ]}
-        color="#ffb37a"
+        color={LEGACY_PAL['lg-ffb37a']}
         lineWidth={1}
         transparent
         opacity={0.7}
@@ -598,7 +599,7 @@ export function HvJunctionBox({ battery, bms, hvac, dim }: { battery: [number, n
       <TubeBetween a={battery} b={junction} radius={0.025} material={MAT.cable} />
       <TubeBetween a={junction} b={bms} radius={0.02} material={MAT.cable} />
       <TubeBetween a={junction} b={hvac} radius={0.02} material={MAT.cable} />
-      {!dim && <Label text="HV Junction" position={[junction[0], junction[1] + 0.16, junction[2]]} tier={2} color="#ffb37a" />}
+      {!dim && <Label text="HV Junction" position={[junction[0], junction[1] + 0.16, junction[2]]} tier={2} color={LEGACY_PAL['lg-ffb37a']} />}
     </group>
   );
 }
@@ -649,7 +650,7 @@ export function FlowEdgeView({
   showCallout: boolean;
   lang?: 'ko' | 'en';
 }) {
-  const color = edge.blocked ? FAIL : edge.kind === 'command' ? '#3B82F6' : '#33C27A';
+  const color = edge.blocked ? FAIL : edge.kind === 'command' ? LEGACY_PAL['lg-3b82f6'] : LEGACY_PAL['lg-33c27a'];
   const opacity = dim ? 0.12 : edge.blocked ? 0.9 : 0.55;
   const a = useMemo(() => new THREE.Vector3(...from), [from[0], from[1], from[2]]);
   const b = useMemo(() => new THREE.Vector3(...to), [to[0], to[1], to[2]]);

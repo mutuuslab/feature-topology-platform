@@ -5,6 +5,7 @@
  * 따라서 Router 를 쓰지 않는다 — 링크 대신 뷰 전환 콜백을 받는다.
  * 모든 값은 `TwinStoreSnapshot` 에서만 오고, 없는 값은 만들지 않는다.
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../store';
 import { useTwin, useTwinVerdict } from '../state/twinStore';
@@ -214,7 +215,7 @@ export function TwinLeftPanel({
             className="btn small"
             disabled={!can('kill')}
             onClick={() => kill('ALL', { ko: '콘솔에서 전체 Kill-Switch 발동', en: 'Fleet kill-switch from console' })}
-            style={{ borderColor: 'var(--fail)', color: '#ff8b84' }}
+            style={{ borderColor: 'var(--fail)', color: LEGACY_PAL['lg-ff8b84'] }}
           >
             ⛔ Kill-Switch (ALL)
           </button>
@@ -256,7 +257,7 @@ export function TwinLeftPanel({
           <KV k="분석 시각" v={impact.analyzedAt.slice(11, 19)} mono />
         </div>
         {impact.blockReasons.length > 0 && (
-          <div className="small" style={{ marginTop: 5, color: '#ffc9c5' }}>
+          <div className="small" style={{ marginTop: 5, color: LEGACY_PAL['lg-ffc9c5'] }}>
             {impact.blockReasons.map((r) => loc(r)).join(' · ')}
           </div>
         )}

@@ -6,6 +6,7 @@
 //
 // 5단계(초안·접수·검토·결정·이관)와 3개 경로(Feature 전환·보류·반려)를 구분한다.
 // **개발 이관은 투자·개발 착수 승인이 아니다** — 이관은 접수(ACK)로만 확인하고, 착수 판단은 별도 절차다.
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { BOM_CONDITION_PROFILES } from './featureBom';
 
 export const PROPOSAL_STAGES = ['DRAFT', 'RECEIVED', 'REVIEWING', 'DECISION', 'HANDOFF'] as const;
@@ -30,12 +31,12 @@ export const STAGE_EN: Record<ProposalState, string> = {
   REJECTED: 'Rejected',
 };
 export const STAGE_TONE: Record<ProposalState, string> = {
-  DRAFT: 'var(--muted, #8a8f98)',
-  RECEIVED: 'var(--pending, #b8860b)',
-  REVIEWING: 'var(--pending, #b8860b)',
-  DECISION: 'var(--accent, #2b6cb0)',
-  HANDOFF: 'var(--pass, #2f855a)',
-  REJECTED: 'var(--fail, #c53030)',
+  DRAFT: `var(--muted, ${LEGACY_PAL['lg-8a8f98']})`,
+  RECEIVED: `var(--pending, ${LEGACY_PAL['lg-b8860b']})`,
+  REVIEWING: `var(--pending, ${LEGACY_PAL['lg-b8860b']})`,
+  DECISION: `var(--accent, ${LEGACY_PAL['lg-2b6cb0']})`,
+  HANDOFF: `var(--pass, ${LEGACY_PAL['lg-2f855a']})`,
+  REJECTED: `var(--fail, ${LEGACY_PAL['lg-c53030']})`,
 };
 
 export const PROPOSAL_KINDS = ['NEW', 'CHANGE'] as const;

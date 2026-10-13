@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { taxonomyTree } from '../data/refdata';
@@ -34,7 +35,7 @@ export function TaxonomyBrowser() {
         {taxonomyTree.map((nn, i) => (
           <div key={nn.level} role="button" tabIndex={0} onClick={() => setSel(i)} onKeyDown={e => { if (e.key === 'Enter') setSel(i); }}
             style={{ marginLeft: i * 22, padding: '6px 8px', cursor: 'pointer', borderRadius: 6 }} className="evt">
-            <span className="pill" style={{ background: nn.level === 'L2' ? 'var(--brand)' : '', color: nn.level === 'L2' ? '#fff' : '' }}>{nn.level}</span>{' '}
+            <span className="pill" style={{ background: nn.level === 'L2' ? 'var(--brand)' : '', color: nn.level === 'L2' ? LEGACY_PAL['lg-ffffff'] : '' }}>{nn.level}</span>{' '}
             <b>{nn.name}</b> <span className="muted small">— {nn.note}</span>
           </div>
         ))}
@@ -127,7 +128,7 @@ export function BOMEditor() {
           <button className="btn" onClick={addItem}>+ 항목 추가</button>
         </div>
         <div className="table-wrap mt"><table><thead><tr><th>Artifact ID</th><th>Kind</th><th>source_system</th><th>상태</th></tr></thead>
-          <tbody>{items.length ? items.map((a: any) => (<tr key={a.id}><td className="mono">{a.id}</td><td>{a.kind}</td><td className="muted">ALM/PLM</td><td><span className="pill" style={a._new ? { background: 'var(--pass)', color: '#fff' } : {}}>{a._new ? 'ADD(미저장)' : 'linked'}</span></td></tr>)) : <tr><td colSpan={4} className="muted">이 영역에 등록된 항목이 없습니다. + 항목 추가</td></tr>}</tbody></table></div>
+          <tbody>{items.length ? items.map((a: any) => (<tr key={a.id}><td className="mono">{a.id}</td><td>{a.kind}</td><td className="muted">ALM/PLM</td><td><span className="pill" style={a._new ? { background: 'var(--pass)', color: LEGACY_PAL['lg-ffffff'] } : {}}>{a._new ? 'ADD(미저장)' : 'linked'}</span></td></tr>)) : <tr><td colSpan={4} className="muted">이 영역에 등록된 항목이 없습니다. + 항목 추가</td></tr>}</tbody></table></div>
         <p className="small muted mt">원천 복제 없이 ID·링크만 보유. 저장 시 ChangeSet 생성(RULE-R12). 대기 변경: <b>{pending.length}건</b></p>
         <button className="btn primary" onClick={save}>변경 저장 → ChangeSet</button>
       </div>
@@ -173,7 +174,7 @@ export function ArtifactCatalog() {
         <b className="small">원천 동기화</b>
         {SOURCE_SYNC.map(s => (
           <span key={s.system} className="small">
-            <span className="pill" style={s.state === 'STALE' ? { background: 'var(--pending)', color: '#fff' } : {}}>{s.system}</span>{' '}
+            <span className="pill" style={s.state === 'STALE' ? { background: 'var(--pending)', color: LEGACY_PAL['lg-ffffff'] } : {}}>{s.system}</span>{' '}
             {s.detail} <span className="muted">· {s.at}</span>
           </span>
         ))}
@@ -223,12 +224,12 @@ export function ArtifactCatalog() {
               <td><div className="mono">{a.id}</div><div className="muted small">{a.name}</div></td>
               <td><span className="pill">{a.artifactKind}</span></td>
               <td className="mono">{a.version}</td>
-              <td><span className="pill" style={a.resolution === 'UNRESOLVED' ? { background: 'var(--fail)', color: '#fff' } : { background: 'var(--pass)', color: '#fff' }}>{a.resolution}</span></td>
+              <td><span className="pill" style={a.resolution === 'UNRESOLVED' ? { background: 'var(--fail)', color: LEGACY_PAL['lg-ffffff'] } : { background: 'var(--pass)', color: LEGACY_PAL['lg-ffffff'] }}>{a.resolution}</span></td>
               <td className="mono small" title={a.contentDigest}>{shortDigest(a.contentDigest)}</td>
               <td className="small">{a.delivery === 'PHYSICAL_INSTALL' ? '물리 설치' : a.delivery === 'OTA' ? 'OTA' : '참조 전용'}</td>
               <td>{a.deploymentContent ? '예' : '아니오'}</td>
               <td className="small muted">{a.sourceRef.system} · {a.sourceRef.object}@{a.sourceRef.version}</td>
-              <td>{vs.length ? <span className="pill" style={{ background: vs.some(v => v.blocking) ? 'var(--fail)' : 'var(--pending)', color: '#fff' }}>{vs.length}</span> : <span className="muted small">—</span>}</td>
+              <td>{vs.length ? <span className="pill" style={{ background: vs.some(v => v.blocking) ? 'var(--fail)' : 'var(--pending)', color: LEGACY_PAL['lg-ffffff'] }}>{vs.length}</span> : <span className="muted small">—</span>}</td>
             </tr>
           );
         })}</tbody>
@@ -347,7 +348,7 @@ export function ControlPointCatalog() {
               <tr key={`${v.code}-${i}`}>
                 <td className="mono small">{v.code}</td><td className="small">{v.target}</td>
                 <td className="small">{v.detail}</td>
-                <td><span className="pill" style={v.blocking ? { background: 'var(--fail)', color: '#fff' } : { background: 'var(--pending)', color: '#fff' }}>{v.blocking ? '차단' : '경고'}</span></td>
+                <td><span className="pill" style={v.blocking ? { background: 'var(--fail)', color: LEGACY_PAL['lg-ffffff'] } : { background: 'var(--pending)', color: LEGACY_PAL['lg-ffffff'] }}>{v.blocking ? '차단' : '경고'}</span></td>
               </tr>
             ))}</tbody>
           </table></div>

@@ -1,13 +1,14 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
 import { useMotionTick } from '../state/motion';
 
 const COLOR: Record<string, string> = {
-  'feature-center': '#0B5FFF', feature: '#3B82F6', requirement: '#6366F1',
-  swcomponent: '#7C3AED', ecu: '#9333EA', apiservice: '#0EA5E9', signal: '#0891B2',
-  dtc: '#D9822B', variantrule: '#16A34A', controlpoint: '#DB2777', rule: '#B45309',
-  observationpoint: '#0F766E', deploymentunit: '#2563EB', testcase: '#059669',
-  supplierfunction: '#CA8A04', artifact: '#6B7280',
+  'feature-center': LEGACY_PAL['lg-0b5fff'], feature: LEGACY_PAL['lg-3b82f6'], requirement: LEGACY_PAL['lg-6366f1'],
+  swcomponent: LEGACY_PAL['lg-7c3aed'], ecu: LEGACY_PAL['lg-9333ea'], apiservice: LEGACY_PAL['lg-0ea5e9'], signal: LEGACY_PAL['lg-0891b2'],
+  dtc: LEGACY_PAL['lg-d9822b'], variantrule: LEGACY_PAL['lg-16a34a'], controlpoint: LEGACY_PAL['lg-db2777'], rule: LEGACY_PAL['lg-b45309'],
+  observationpoint: LEGACY_PAL['lg-0f766e'], deploymentunit: LEGACY_PAL['lg-2563eb'], testcase: LEGACY_PAL['lg-059669'],
+  supplierfunction: LEGACY_PAL['lg-ca8a04'], artifact: LEGACY_PAL['lg-6b7280'],
 };
 
 /** concentric 반지름 등급 — 중심 Feature 에서 먼 검증·배포 계열을 바깥 링으로 밀어 라벨 충돌을 줄인다. */
@@ -26,8 +27,8 @@ export default function GraphCanvas({ elements, layout = 'concentric', onNodeCli
     const nodeIds = new Set(elements.nodes.map(n => n.data.id));
     const safeEdges = elements.edges.filter(e => nodeIds.has(e.data.source) && nodeIds.has(e.data.target));
     const css = getComputedStyle(document.documentElement);
-    const ink = css.getPropertyValue('--ink').trim() || '#1A1F2B';
-    const surface = css.getPropertyValue('--surface').trim() || '#ffffff';
+    const ink = css.getPropertyValue('--ink').trim() || LEGACY_PAL['lg-1a1f2b'];
+    const surface = css.getPropertyValue('--surface').trim() || LEGACY_PAL['lg-ffffff'];
     const layoutOpts: any = layout === 'concentric'
       ? { name: 'concentric', minNodeSpacing: 80, concentric: (n: any) => RING[n.data('type')] ?? 1, levelWidth: () => 1, padding: 30 }
       : layout === 'breadthfirst'
@@ -38,24 +39,24 @@ export default function GraphCanvas({ elements, layout = 'concentric', onNodeCli
       elements: [...elements.nodes, ...safeEdges],
       style: [
         { selector: 'node', style: {
-          'background-color': (n: any) => COLOR[n.data('type')] || '#6B7280',
+          'background-color': (n: any) => COLOR[n.data('type')] || LEGACY_PAL['lg-6b7280'],
           label: 'data(label)', color: ink, 'font-size': 10, 'text-wrap': 'wrap', 'text-max-width': '110px',
           'text-valign': 'bottom', 'text-margin-y': 4, width: 26, height: 26,
         } },
         { selector: 'node[type="feature-center"]', style: {
-          width: 52, height: 52, 'font-size': 13, 'font-weight': 'bold', 'border-width': 3, 'border-color': '#ffffff',
-          'background-fill': 'radial-gradient', 'background-gradient-stop-colors': ['#5B9BFF', '#0B5FFF', '#073BB3'],
+          width: 52, height: 52, 'font-size': 13, 'font-weight': 'bold', 'border-width': 3, 'border-color': LEGACY_PAL['lg-ffffff'],
+          'background-fill': 'radial-gradient', 'background-gradient-stop-colors': [LEGACY_PAL['lg-5b9bff'], LEGACY_PAL['lg-0b5fff'], LEGACY_PAL['lg-073bb3']],
           'background-gradient-stop-positions': [0, 55, 100],
-          'underlay-color': '#0B5FFF', 'underlay-opacity': 0.35, 'underlay-padding': 12, 'underlay-shape': 'ellipse',
+          'underlay-color': LEGACY_PAL['lg-0b5fff'], 'underlay-opacity': 0.35, 'underlay-padding': 12, 'underlay-shape': 'ellipse',
         } },
-        { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#0B5FFF', 'underlay-color': '#0B5FFF', 'underlay-opacity': 0.25, 'underlay-padding': 8 } },
+        { selector: 'node:selected', style: { 'border-width': 3, 'border-color': LEGACY_PAL['lg-0b5fff'], 'underlay-color': LEGACY_PAL['lg-0b5fff'], 'underlay-opacity': 0.25, 'underlay-padding': 8 } },
         { selector: 'edge', style: {
-          width: 1.5, 'line-color': '#B6C0CE', 'target-arrow-color': '#B6C0CE', 'target-arrow-shape': 'triangle',
-          'curve-style': 'bezier', label: 'data(label)', 'font-size': 8, color: '#8895A7', 'text-rotation': 'autorotate',
+          width: 1.5, 'line-color': LEGACY_PAL['lg-b6c0ce'], 'target-arrow-color': LEGACY_PAL['lg-b6c0ce'], 'target-arrow-shape': 'triangle',
+          'curve-style': 'bezier', label: 'data(label)', 'font-size': 8, color: LEGACY_PAL['lg-8895a7'], 'text-rotation': 'autorotate',
           'text-background-color': surface, 'text-background-opacity': 1, 'text-background-padding': '2px',
           'arrow-scale': 0.9, 'line-opacity': 0.85,
         } },
-        { selector: 'edge:selected', style: { width: 2.5, 'line-color': '#0B5FFF', 'target-arrow-color': '#0B5FFF' } },
+        { selector: 'edge:selected', style: { width: 2.5, 'line-color': LEGACY_PAL['lg-0b5fff'], 'target-arrow-color': LEGACY_PAL['lg-0b5fff'] } },
       ],
       layout: layoutOpts,
     });

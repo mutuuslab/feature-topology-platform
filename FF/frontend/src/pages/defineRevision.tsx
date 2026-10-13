@@ -7,6 +7,7 @@
 // 진행하고, 동시성은 If-Match(ETag) + Idempotency-Key 로 제어한다(IA-R01 · R06 · R07 · R10).
 // 검토 요청 이후 승인 원본의 hash 가 바뀌면 승인 효력이 사라지고 새 버전·재검토로 분기한다.
 // 제품 서버는 미연결(LOCAL_UI_ONLY)이며 리비전 레지스트리는 브라우저에 영속된다.
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Bars, Donut, RadialProgress, Steps, tally } from '../components/charts';
@@ -56,10 +57,10 @@ const countsOf = (areaId: string) => SPEC_REG_AREA_ATTR_COUNTS[areaId];
 
 /** 입력 책임 — 화면이 값을 받는지, 정확 참조를 고르는지, 서버가 계산하는지. */
 const RESP_KO: Record<string, string> = { EDITABLE: '직접 입력', REFERENCE: '정확 참조', DERIVED: '자동·파생' };
-const RESP_COLOR: Record<string, string> = { EDITABLE: '#0B5FFF', REFERENCE: '#D9822B', DERIVED: '#8895A7' };
+const RESP_COLOR: Record<string, string> = { EDITABLE: LEGACY_PAL['lg-0b5fff'], REFERENCE: LEGACY_PAL['lg-d9822b'], DERIVED: LEGACY_PAL['lg-8895a7'] };
 
 const STATE_COLOR: Record<string, string> = {
-  DRAFT: '#8895A7', IN_REVIEW: '#D9822B', CHANGES_REQUESTED: '#B45309', APPROVED: '#1F9D55', RETIRED: '#6B7280',
+  DRAFT: LEGACY_PAL['lg-8895a7'], IN_REVIEW: LEGACY_PAL['lg-d9822b'], CHANGES_REQUESTED: LEGACY_PAL['lg-b45309'], APPROVED: LEGACY_PAL['lg-1f9d55'], RETIRED: LEGACY_PAL['lg-6b7280'],
 };
 
 /** 워크플로 전이를 실행하는 기준 액션 — 없으면 WORKFLOW 가드만 적용한다. */
@@ -185,7 +186,7 @@ const CONDITION_SEED: CondRow[] = [
   { id: 'CR-2', nation: 'DE', market: 'DE', model: 'B / 2027', trim: 'Trim-S', variant: 'VC-DE-TRIMS', impl: 'IMPL-BDC-14', review: 'CONFIRMED', note: '' },
   { id: 'CR-3', nation: 'UNKNOWN', market: '—', model: '—', trim: '—', variant: '—', impl: '—', review: 'DEFERRED', note: '국가 확정 미정 — 법규 확인 후 결정' },
 ];
-const CONDITION_COLORS: Record<string, string> = { CONFIRMED: '#1F9D55', DEFERRED: '#D9822B', REJECTED: '#D64545' };
+const CONDITION_COLORS: Record<string, string> = { CONFIRMED: LEGACY_PAL['lg-1f9d55'], DEFERRED: LEGACY_PAL['lg-d9822b'], REJECTED: LEGACY_PAL['lg-d64545'] };
 
 const nowTs = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
 
@@ -193,16 +194,16 @@ const nowTs = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
 const FIELD_STYLE: CSSProperties = { width: '100%', padding: 6, border: '1px solid var(--line)', borderRadius: 6 };
 
 function StateChip({ state }: { state: string }) {
-  return <span className="badge" style={{ background: STATE_COLOR[state] || '#6B7280' }}>{state}</span>;
+  return <span className="badge" style={{ background: STATE_COLOR[state] || LEGACY_PAL['lg-6b7280'] }}>{state}</span>;
 }
 
 function RequiredBadge({ value }: { value: string }) {
-  const color: Record<string, string> = { 필수: '#D64545', 조건부: '#D9822B', 자동: '#8895A7', 선택: '#8895A7' };
+  const color: Record<string, string> = { 필수: LEGACY_PAL['lg-d64545'], 조건부: LEGACY_PAL['lg-d9822b'], 자동: LEGACY_PAL['lg-8895a7'], 선택: LEGACY_PAL['lg-8895a7'] };
   return <span className="pill" style={{ color: color[value] || 'inherit', borderColor: color[value] || 'var(--line)' }}>{value || '—'}</span>;
 }
 
 function RespBadge({ value }: { value: string }) {
-  const c = RESP_COLOR[value] || '#6B7280';
+  const c = RESP_COLOR[value] || LEGACY_PAL['lg-6b7280'];
   return <span className="pill" style={{ color: c, borderColor: c }}>{RESP_KO[value] || value}</span>;
 }
 
@@ -996,7 +997,7 @@ export function DefineRevision() {
             return (
               <button
                 key={a.id} className="btn" onClick={() => { setAreaId(a.id); setSel(null); setDetailTab(0); }}
-                style={{ borderColor: on ? 'var(--brand)' : undefined, background: on ? 'var(--brand)' : undefined, color: on ? '#fff' : undefined, textAlign: 'left' }}
+                style={{ borderColor: on ? 'var(--brand)' : undefined, background: on ? 'var(--brand)' : undefined, color: on ? LEGACY_PAL['lg-ffffff'] : undefined, textAlign: 'left' }}
               >
                 <span className="mono small">{a.id}</span> {a.name}
                 <span className="small" style={{ opacity: 0.75 }}> · {c.total} · 입력 {c.editable}/참조 {c.reference}/자동 {c.derived}</span>
@@ -1116,7 +1117,7 @@ export function DefineRevision() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                   {area.detailTabs.map((t, i) => (
                     <button key={t} className="btn" onClick={() => setDetailTab(i)}
-                      style={{ borderColor: detailTab === i ? 'var(--brand)' : undefined, background: detailTab === i ? 'var(--brand)' : undefined, color: detailTab === i ? '#fff' : undefined }}>{t}</button>
+                      style={{ borderColor: detailTab === i ? 'var(--brand)' : undefined, background: detailTab === i ? 'var(--brand)' : undefined, color: detailTab === i ? LEGACY_PAL['lg-ffffff'] : undefined }}>{t}</button>
                   ))}
                 </div>
                 <div className="mt">{detailBody(selected)}</div>
@@ -1139,7 +1140,7 @@ export function DefineRevision() {
                   const set = (patch: Partial<CondRow>) => setConditions(p => p.map((x, j) => (j === i ? { ...x, ...patch } : x)));
                   const incomplete = c.review === 'DEFERRED' && !c.note.trim();
                   return (
-                    <tr key={c.id} style={{ background: incomplete ? 'var(--fail-bg, #FDF2F2)' : undefined }}>
+                    <tr key={c.id} style={{ background: incomplete ? `var(--fail-bg, ${LEGACY_PAL['lg-fdf2f2']})` : undefined }}>
                       <td className="small" onClick={() => { setSel('FRI-049'); setDetailTab(0); }}>{c.id} <span className="muted">({i + 1}행)</span></td>
                       <td><input value={c.nation} disabled={locked} onChange={e => set({ nation: e.target.value })} style={{ width: 90 }} /></td>
                       <td><input value={c.market} disabled={locked} onChange={e => set({ market: e.target.value })} style={{ width: 70 }} /></td>
@@ -1368,9 +1369,9 @@ export function DefineRevision() {
                   <Donut
                     center={`${ATTR_TOTAL}`}
                     segments={[
-                      { label: '직접 입력', value: respTally.EDITABLE || 0, color: '#0B5FFF' },
-                      { label: '정확 참조', value: respTally.REFERENCE || 0, color: '#D9822B' },
-                      { label: '자동·파생', value: respTally.DERIVED || 0, color: '#8895A7' },
+                      { label: '직접 입력', value: respTally.EDITABLE || 0, color: LEGACY_PAL['lg-0b5fff'] },
+                      { label: '정확 참조', value: respTally.REFERENCE || 0, color: LEGACY_PAL['lg-d9822b'] },
+                      { label: '자동·파생', value: respTally.DERIVED || 0, color: LEGACY_PAL['lg-8895a7'] },
                     ]}
                   />
                 </div>

@@ -72,7 +72,7 @@
 .tbtn.is-on {
   background: var(--brand);
   border-color: var(--brand);
-  color: #fff;
+  color: var(--lg-ffffff);
 }
 .tbtn:disabled {
   opacity: 0.45;
@@ -141,7 +141,7 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   border-radius: 4px;
-  color: #fff;
+  color: var(--lg-ffffff);
   background: var(--muted);
 }
 .tag-fail {
@@ -149,10 +149,10 @@
 }
 
 .twin-table tr.row-fail td {
-  background: rgba(223, 91, 91, 0.14);
+  background: var(--lg-rgba-223-91-91-0p14);
 }
 .twin-table tr.row-pending td {
-  background: rgba(240, 173, 78, 0.12);
+  background: var(--lg-rgba-240-173-78-0p12);
 }
 
 /* Closed-Loop 헤더 / 액션 -------------------------------------------- */
@@ -199,16 +199,16 @@
   gap: 2px 8px;
   max-width: min(420px, calc(100% - 24px));
   padding: 8px 11px;
-  border: 1px solid rgba(56, 189, 248, 0.78);
-  border-left: 4px solid #38bdf8;
+  border: 1px solid var(--lg-rgba-56-189-248-0p78);
+  border-left: 4px solid var(--lg-38bdf8);
   border-radius: 7px;
-  background: rgba(8, 15, 24, 0.9);
-  box-shadow: 0 5px 24px rgba(0, 0, 0, 0.45), 0 0 22px rgba(56, 189, 248, 0.12);
-  color: #e6f6ff;
+  background: var(--lg-rgba-8-15-24-0p9);
+  box-shadow: 0 5px 24px var(--lg-rgba-0-0-0-0p45), 0 0 22px var(--lg-rgba-56-189-248-0p12);
+  color: var(--lg-e6f6ff);
   pointer-events: none;
 }
 .plant-focus-readout > span {
-  color: #7dd3fc;
+  color: var(--lg-7dd3fc);
   font: 700 10px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
   letter-spacing: 0.08em;
 }
@@ -217,7 +217,7 @@
 }
 .plant-focus-readout > small {
   grid-column: 1 / -1;
-  color: #a8bac9;
+  color: var(--lg-a8bac9);
   font-size: 11px;
 }
 

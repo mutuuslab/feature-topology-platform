@@ -3,6 +3,7 @@
 // 두 화면 모두 "발행은 공식 번호와 함께만 성립한다"는 계약을 지킨다.
 // SW EO 는 New/Old 구성 비교와 협조 검토를 거쳐 발행하고 BOM 반영을 대사하며,
 // 제품사양은 국가·차종·Trim 조합의 판정을 미정(UNKNOWN) 상태로 남겨 임의 확정하지 않는다.
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useApp, useToast } from '../store';
 import { CanonicalScreen, FIELD, Gated, Reasons, StageRail, Table, type Kpi } from '../components/AreaScreen';
@@ -14,7 +15,7 @@ import {
 } from '../data/plmData';
 
 const Pill = ({ s, tone }: { s: string; tone?: string }) => (
-  <span className="pill" style={{ background: tone || 'var(--surface-2)', color: tone ? '#fff' : 'var(--muted)', borderColor: 'transparent' }}>{s}</span>
+  <span className="pill" style={{ background: tone || 'var(--surface-2)', color: tone ? LEGACY_PAL['lg-ffffff'] : 'var(--muted)', borderColor: 'transparent' }}>{s}</span>
 );
 const Note = ({ children }: { children: ReactNode }) => <p className="small muted" style={{ marginTop: 8 }}>{children}</p>;
 
@@ -105,11 +106,11 @@ export function SwEoChange() {
     'UI23-S02': () => (
       <div>
         <Table head={['구분', '구성원', 'SW 버전', 'Old', 'New', '판정']}>
-          {diff.added.map(m => <tr key={'a' + m.node}><td>추가</td><td className="mono">{m.node}</td><td className="mono">{m.sw}</td><td>—</td><td className="mono">{m.sw}</td><td><Pill s="추가" tone="#2f855a" /></td></tr>)}
-          {diff.removed.map(m => <tr key={'r' + m.node}><td>삭제</td><td className="mono">{m.node}</td><td className="mono">{m.sw}</td><td className="mono">{m.sw}</td><td>—</td><td><Pill s="삭제" tone="#c53030" /></td></tr>)}
+          {diff.added.map(m => <tr key={'a' + m.node}><td>추가</td><td className="mono">{m.node}</td><td className="mono">{m.sw}</td><td>—</td><td className="mono">{m.sw}</td><td><Pill s="추가" tone={LEGACY_PAL['lg-2f855a']} /></td></tr>)}
+          {diff.removed.map(m => <tr key={'r' + m.node}><td>삭제</td><td className="mono">{m.node}</td><td className="mono">{m.sw}</td><td className="mono">{m.sw}</td><td>—</td><td><Pill s="삭제" tone={LEGACY_PAL['lg-c53030']} /></td></tr>)}
           {diff.changed.map(m => {
             const old = oldMembers.find(x => x.node === m.node)!;
-            return <tr key={'c' + m.node}><td>버전 변경</td><td className="mono">{m.node}</td><td className="mono">{old.sw} → {m.sw}</td><td className="mono">{old.sw}</td><td className="mono">{m.sw}</td><td><Pill s="변경" tone="#b8860b" /></td></tr>;
+            return <tr key={'c' + m.node}><td>버전 변경</td><td className="mono">{m.node}</td><td className="mono">{old.sw} → {m.sw}</td><td className="mono">{old.sw}</td><td className="mono">{m.sw}</td><td><Pill s="변경" tone={LEGACY_PAL['lg-b8860b']} /></td></tr>;
           })}
         </Table>
         {diff.added.length + diff.removed.length + diff.changed.length === 0 && <Note>New/Old 구성 차이가 없다 — 구성 참조가 같은지 먼저 확인한다.</Note>}
@@ -162,7 +163,7 @@ export function SwEoChange() {
           <div className="mt"><Table head={['기준선', '상태', '구성원', '대사 판정']}>
             {target && <tr><td className="mono">{target.id}@{target.version}</td><td><Pill s={target.state} /></td>
               <td className="small mono">{target.members.map(m => m.featureVersionRef).join(', ')}</td>
-              <td>{cur?.bomAck ? <Pill s="일치" tone="#2f855a" /> : <Pill s="보류" tone="#b8860b" />}</td></tr>}
+              <td>{cur?.bomAck ? <Pill s="일치" tone={LEGACY_PAL['lg-2f855a']} /> : <Pill s="보류" tone={LEGACY_PAL['lg-b8860b']} />}</td></tr>}
           </Table></div>
           <Note>대사는 EO 발행 내용과 기준선 구성원이 같은 버전을 가리키는지 본다 — 다르면 되돌리지 않고 새 변경요청을 만든다.</Note>
         </div>
@@ -236,7 +237,7 @@ export function ProductSpec() {
         <Table head={['HW', 'SW 조건', '기능 지원', '판정']}>
           {[['ECU-BDC-C · Gen3', '≥3.2.0', 'BDC 전체', '지원'], ['ECU-BDC-B · Gen3', '≥3.2.0', 'BDC 전체', '지원'], ['ECU-BDC-B · Gen2', '2.x', 'BDC 부분', '미지원'], ['ECU-ADAS-A · Gen3', '≥2.0.0', 'ADAS Long', '지원']].map(r => (
             <tr key={r[0]}><td className="mono">{r[0]}</td><td className="mono">{r[1]}</td><td>{r[2]}</td>
-              <td><Pill s={r[3]} tone={r[3] === '지원' ? '#2f855a' : '#c53030'} /></td></tr>
+              <td><Pill s={r[3]} tone={r[3] === '지원' ? LEGACY_PAL['lg-2f855a'] : LEGACY_PAL['lg-c53030']} /></td></tr>
           ))}
         </Table>
         <Note>HW 세대와 SW 조건이 모두 만족해야 조건행이 ALLOW 가 된다 — 하나라도 비면 UNKNOWN 이다.</Note>

@@ -1,3 +1,4 @@
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { telemetry } from '../data/model';
@@ -144,7 +145,7 @@ export function TelemetryExplorer() {
       <div className="card mt"><b>품질 피드백 루프 (VOC·품질 데이터 → 개선) <LiveDot /></b>
         <p className="small muted">실시간 지표·인시던트에서 개선 액션을 도출해 변경요청(CR)으로 반영 (FR-QFL)</p>
         {feedback.length ? feedback.map((f, i) => (
-          <div className="evt" key={i}><span className="pill" style={{ background: 'var(--pending)', color: '#fff' }}>{f.k}</span><span className="muted small">{f.d}</span>
+          <div className="evt" key={i}><span className="pill" style={{ background: 'var(--pending)', color: LEGACY_PAL['lg-ffffff'] }}>{f.k}</span><span className="muted small">{f.d}</span>
             <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => toCR(f)}>CR로 반영 →</button></div>
         )) : <div className="evt"><span className="muted small">현재 임계 초과 항목 없음 — 품질 양호 ✓</span></div>}
       </div>
@@ -195,7 +196,7 @@ export function IncidentManager() {
       )}
       <div className="row analytics-strip">
         <div className="col card" style={{ maxWidth: 230, alignItems: 'center' }}><b>Severity 분포</b>
-          <Donut size={120} center={`${incidents.length}`} segments={dist(tally(incidents, i => i.severity), { high: '#D64545', med: '#D9822B', low: '#1F9D55' })} /></div>
+          <Donut size={120} center={`${incidents.length}`} segments={dist(tally(incidents, i => i.severity), { high: LEGACY_PAL['lg-d64545'], med: LEGACY_PAL['lg-d9822b'], low: LEGACY_PAL['lg-1f9d55'] })} /></div>
         <div className="col card" style={{ flex: 2 }}><b>Status 분포</b>
           <div className="mt"><Bars data={tally(incidents, i => i.status)} /></div></div>
       </div>
@@ -225,7 +226,7 @@ export function IncidentDetail() {
         <div className="row mt">
           {idx < INC_FLOW.length - 1
             ? <button className="btn primary" onClick={() => dispatch({ t: 'INCIDENT_STATUS', id: i.id, status: INC_FLOW[idx + 1] })}>다음 단계 → {INC_FLOW[idx + 1]}</button>
-            : <span className="pill" style={{ background: 'var(--pass)', color: '#fff' }}>해소 완료</span>}
+            : <span className="pill" style={{ background: 'var(--pass)', color: LEGACY_PAL['lg-ffffff'] }}>해소 완료</span>}
         </div>
       </div>
       <div className="card"><div className="kv">

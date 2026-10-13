@@ -16,7 +16,7 @@ export default function App() {
   useEffect(() => {
     if (landed.current) return;
     landed.current = true;
-    if (loc.pathname === '/') nav(roleHome[role] || '/catalog', { replace: true });
+    if (loc.pathname === '/') nav(roleHome[role] || '/features', { replace: true });
   }, []);
 
   return (

@@ -27,11 +27,7 @@ import { CRList } from '../pages/change';
 import { OfferComposition, UpgRegistry, SwStructure } from '../pages/plm';
 import { SwEoChange, ProductSpec } from '../pages/eo';
 import { IntegrationJobs, DesignTrace } from '../pages/lineage';
-import { ReleaseOps } from '../pages/areas/ui10';
-import { VehicleApplied } from '../pages/areas/ui12';
 import { QualityEvidence } from '../pages/areas/ui16';
-import { AccessScope } from '../pages/areas/ui17';
-import { ExternalSystems } from '../pages/areas/ui18';
 
 beforeEach(() => { localStorage.clear(); });
 afterEach(() => { cleanup(); localStorage.clear(); });
@@ -359,15 +355,12 @@ describe('새 정본 화면은 정본 상세 영역을 모두 실제 본문으�
     { id: 'UI24', path: '/master/product-spec', el: <ProductSpec /> },
     { id: 'UI26', path: '/integration/jobs', el: <IntegrationJobs /> },
     { id: 'UI30', path: '/trace/design', el: <DesignTrace /> },
-    { id: 'UI10', path: '/ops/campaign', el: <ReleaseOps /> },
-    { id: 'UI12', path: '/twin/applied/:vin', enter: '/twin/applied/VIN-DEMO-017', el: <VehicleApplied /> },
     { id: 'UI16', path: '/verify/evidence', el: <QualityEvidence /> },
-    { id: 'UI17', path: '/admin/users', el: <AccessScope /> },
-    { id: 'UI18', path: '/integration/connectors', el: <ExternalSystems /> },
   ];
 
-  it('영역 표에 14개 화면 × 정본 영역 수가 있다', () => {
-    expect(SCREENS.map(s => s.id).sort()).toEqual(Object.keys(CANON_AREAS).sort());
+  // UI10·UI12·UI17·UI18 레거시 화면은 v2(/deployments·/fleet/vehicles·/admin/iam·/integration/connectors)로 대체되어 지웠다(P10-C1)
+  it('남은 레거시 정본 화면 × 정본 영역 수가 있다', () => {
+    expect(SCREENS.every(s => s.id in CANON_AREAS)).toBe(true);
     SCREENS.forEach(s =>
       expect(CANON_AREAS[s.id].map(a => a.id), s.id)
         .toEqual(SCREEN_CANON_BY_ID[s.id].areas.map(a => a.id)));

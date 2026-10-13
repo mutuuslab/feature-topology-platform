@@ -78,7 +78,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const search = () => {
     const v = q.trim();
     if (!v) return;
-    nav('/catalog?q=' + encodeURIComponent(v.toUpperCase().startsWith('FEAT-') ? v.toUpperCase() : v));
+    nav('/features?q=' + encodeURIComponent(v.toUpperCase().startsWith('FEAT-') ? v.toUpperCase() : v));
     setQ('');
   };
   const changeRole = (r: string) => {

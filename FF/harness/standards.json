@@ -369,7 +369,9 @@
       ],
       "section": "06_lifecycle.md · 6.6 규칙",
       "implemented": [],
-      "tested": []
+      "tested": [
+        "backend/test/d04/status-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-OFT-001",
@@ -509,6 +511,7 @@
         "contracts/src/rules/jcs.test.ts",
         "contracts/src/rules/policy-gate.test.ts",
         "contracts/src/schemas/wire.test.ts",
+        "backend/test/d03/gleo-v2-vectors.spec.ts",
         "backend/test/d03/policy-gate.spec.ts"
       ]
     },
@@ -821,6 +824,7 @@
         "backend/src/domains/d06-qsec/pki-kms/pki.service.ts"
       ],
       "tested": [
+        "backend/test/d04/status-v2.spec.ts",
         "backend/test/d06/hsm.spec.ts"
       ]
     },
@@ -953,6 +957,7 @@
       "tested": [
         "contracts/src/rules/anomaly.test.ts",
         "contracts/src/rules/status-v2.test.ts",
+        "backend/test/d03/gleo-v2-vectors.spec.ts",
         "backend/test/d04/status-v2.spec.ts",
         "frontend/src/__tests__/screensOps.test.tsx"
       ]
@@ -1066,6 +1071,7 @@
       ],
       "tested": [
         "contracts/src/rules/kill-v2.test.ts",
+        "backend/test/d03/gleo-v2-vectors.spec.ts",
         "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d04/status-v2.spec.ts"
       ]
@@ -1106,6 +1112,7 @@
       ],
       "tested": [
         "contracts/src/rules/status-v2.test.ts",
+        "backend/test/d03/gleo-v2-vectors.spec.ts",
         "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d04/status-v2.spec.ts",
         "backend/test/d06/hsm.spec.ts"

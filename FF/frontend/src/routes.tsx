@@ -55,12 +55,7 @@ const named = <T extends Record<string, unknown>>(load: () => Promise<T>, name: 
 // 페이지 모듈 — 모두 지연 로딩(초기 번들은 셸과 디자인 키트만)
 const home = () => import('./pages/home');
 const topology2 = () => import('./pages/topology2');
-const decisions = () => import('./pages/decisions');
-const ops2 = () => import('./pages/ops2');
-const supplier = () => import('./pages/supplier');
 const admin = () => import('./pages/admin');
-const specnew = () => import('./pages/specnew');
-const eo = () => import('./pages/eo');
 const twin = () => import('./pages/twin');
 const twinOps = () => import('./pages/twinOps');
 
@@ -76,6 +71,7 @@ const bizScreens = () => import('./screens/biz/TrialAnalytics');
 const extScreens = () => import('./screens/ext/Integrations');
 const masterScreens = () => import('./screens/master/MasterData');
 const traceScreens = () => import('./screens/master/Trace');
+const opsScreens = () => import('./screens/master/Ops');
 const experimentScreens = () => import('./screens/ext/Experiments');
 const incidentScreens = () => import('./screens/ext/Incidents');
 const virtualScreens = () => import('./screens/policy/Virtual');
@@ -137,7 +133,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/master/upg', element: named(masterScreens, 'UpgScreen'), title: 'UPG·UPG-VC', group: 'master', menu: '/master/upg', components: ['D01-02'], v2: true },
   { path: '/master/artifacts', element: named(masterScreens, 'SwScreen'), title: 'SW·Artifact', group: 'master', menu: '/master/artifacts', components: ['D01-02'], v2: true },
   { path: '/master/structure', element: named(masterScreens, 'StructureScreen'), title: 'SW 구조', group: 'master', menu: '/master/structure', components: ['D01-02'], v2: true },
-  { path: '/change/eo', element: named(eo, 'SwEoChange'), title: 'SW EO', group: 'master', menu: '/change/eo' },
+  { path: '/change/eo', element: named(opsScreens, 'EoScreen'), title: 'SW EO', group: 'master', menu: '/change/eo', v2: true },
   { path: '/master/control-points', element: named(masterScreens, 'ControlPointsScreen'), title: '제어점', group: 'master', menu: '/master/control-points', components: ['D01-02'], v2: true },
 
   { path: '/precheck', element: def(() => import('./screens/governance/Precheck')), title: '데이터 사전점검', group: 'master', menu: '/precheck', components: ['D01-02'], v2: true },
@@ -150,7 +146,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/validations', element: named(policyScreens, 'ValidationHistory'), title: '분야별 검증 이력', group: 'verify', menu: '/validations', components: ['D06-04', 'D03-02'], v2: true },
   { path: '/policy/conflict', element: legacyTo('/validations'), title: '정책 충돌 검토 (이전 주소)', group: 'verify', parent: '/validations' },
   { path: '/policy/exception', element: legacyTo('/validations'), title: '정책 예외 (이전 주소)', group: 'verify', parent: '/validations' },
-  { path: '/verify/compliance', element: named(specnew, 'Compliance'), title: '컴플라이언스', group: 'verify', menu: '/verify/compliance', components: ['D03-01'] },
+  { path: '/verify/compliance', element: named(opsScreens, 'ComplianceScreen'), title: '컴플라이언스', group: 'verify', menu: '/verify/compliance', components: ['D03-01'], v2: true },
   { path: '/quality/feedback', element: named(anomalyScreens, 'FeedbackScreen'), title: '품질 피드백', group: 'verify', menu: '/quality/feedback', components: ['D04-06'], v2: true },
   { path: '/validations/virtual', element: named(virtualScreens, 'VirtualValidationScreen'), title: 'vECU 가상검증', group: 'verify', menu: '/validations/virtual', components: ['D06-03', 'D04-02'], v2: true },
   { path: '/verify/scenario', element: legacyTo('/validations/virtual'), title: '차량 시나리오 (이전 주소)', group: 'verify', parent: '/validations/virtual' },
@@ -194,7 +190,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/ops/incidents', element: named(incidentScreens, 'IncidentsScreen'), title: '장애·VOC', group: 'ops', menu: '/ops/incidents', components: ['D04-05'], v2: true },
   { path: '/ops/incident', element: legacyTo('/ops/incidents'), title: '장애·VOC (이전 주소)', group: 'ops', parent: '/ops/incidents' },
   { path: '/ops/incident/:id', element: legacyTo('/ops/incidents'), title: '장애 상세 (이전 주소)', group: 'ops', parent: '/ops/incidents' },
-  { path: '/ops/telemetry', element: named(ops2, 'TelemetryExplorer'), title: '운영 데이터·이벤트', group: 'ops', menu: '/ops/telemetry', components: ['D04-03', 'D04-04', 'D04-06'] },
+  { path: '/ops/telemetry', element: named(opsScreens, 'TelemetryScreen'), title: '운영 데이터·이벤트', group: 'ops', menu: '/ops/telemetry', components: ['D04-03', 'D04-04', 'D04-06'], v2: true },
 
   { path: '/events', element: named(auditEvents, 'EventsScreen'), title: 'Platform 이벤트', group: 'ops', menu: '/events', components: ['D04-04'], v2: true },
 
@@ -206,22 +202,22 @@ export const ROUTES: AppRoute[] = [
   { path: '/integration/legacy', element: named(extScreens, 'LegacyScreen'), title: 'Legacy 연계', group: 'admin', menu: '/integration/legacy', components: ['D05-03', 'D05-07'], v2: true },
   { path: '/field', element: named(incidentScreens, 'FieldPortalScreen'), title: '현장 지원 포털', group: 'admin', menu: '/field', components: ['D05-05'], v2: true },
   { path: '/integration/jobs', element: legacyTo('/integration/sync'), title: '연계 작업 (이전 주소)', group: 'admin', parent: '/integration/sync' },
-  { path: '/supplier/portal', element: named(supplier, 'SupplierPortal'), title: '협력사 이관', group: 'admin', menu: '/supplier/portal' },
-  { path: '/supplier/package', element: named(supplier, 'APIReleasePackage'), title: 'API 릴리스 패키지', group: 'admin', parent: '/supplier/portal' },
-  { path: '/supplier/package/:id', element: named(supplier, 'PackageDetail'), title: '패키지 상세', group: 'admin', parent: '/supplier/package' },
-  { path: '/decisions/supplier', element: named(decisions, 'SupplierScope'), title: '협력사 범위', group: 'admin', parent: '/supplier/portal' },
+  { path: '/supplier/portal', element: named(opsScreens, 'SupplierScreen'), title: '협력사 이관', group: 'admin', menu: '/supplier/portal', v2: true },
+  { path: '/supplier/package', element: legacyTo('/supplier/portal'), title: 'API 릴리스 패키지 (이전 주소)', group: 'admin', parent: '/supplier/portal' },
+  { path: '/supplier/package/:id', element: legacyTo('/supplier/portal'), title: '패키지 상세 (이전 주소)', group: 'admin', parent: '/supplier/portal' },
+  { path: '/decisions/supplier', element: legacyTo('/supplier/portal'), title: '협력사 범위 (이전 주소)', group: 'admin', parent: '/supplier/portal' },
   { path: '/audit', element: named(auditEvents, 'AuditScreen'), title: '감사 이력', group: 'admin', menu: '/audit', components: ['D01-10'], v2: true },
   { path: '/insights/audit', element: legacyTo('/audit'), title: '감사 로그 (이전 주소)', group: 'admin', parent: '/audit' },
   { path: '/admin/iam', element: named(accessScreens, 'IamScreen'), title: '플랫폼 인증·권한', group: 'admin', menu: '/admin/iam', components: ['D06-09'], v2: true },
   { path: '/admin/users', element: legacyTo('/admin/iam'), title: '사용자·권한 (이전 주소)', group: 'admin', parent: '/admin/iam' },
   { path: '/admin/permissions', element: legacyTo('/admin/iam'), title: '권한 매트릭스 (이전 주소)', group: 'admin', parent: '/admin/iam' },
   { path: '/admin/org', element: legacyTo('/admin/iam'), title: '조직·도메인 (이전 주소)', group: 'admin', parent: '/admin/iam' },
-  { path: '/admin/security', element: named(specnew, 'Security'), title: '보안·인증서', group: 'admin', menu: '/admin/security', components: ['D06-10', 'D06-11'] },
+  { path: '/admin/security', element: named(opsScreens, 'SecurityScreen'), title: '보안·인증서', group: 'admin', menu: '/admin/security', components: ['D06-10', 'D06-11'], v2: true },
   { path: '/biz/trials', element: named(bizScreens, 'TrialAnalyticsScreen'), title: '체험 전환 분석', group: 'admin', menu: '/biz/trials', components: ['D05-06'], v2: true },
   { path: '/insights/business', element: legacyTo('/biz/trials'), title: '사업 지표 (이전 주소)', group: 'admin', parent: '/biz/trials' },
   { path: '/insights/reports', element: legacyTo('/biz/trials'), title: '보고서 (이전 주소)', group: 'admin', parent: '/biz/trials' },
   { path: '/cost', element: legacyTo('/biz/trials'), title: '비용 (이전 주소)', group: 'admin', parent: '/biz/trials' },
-  { path: '/admin/settings', element: named(admin, 'Settings'), title: '설정', group: 'admin', menu: '/admin/settings' },
+  { path: '/admin/settings', element: named(opsScreens, 'SettingsScreen'), title: '설정', group: 'admin', menu: '/admin/settings', v2: true },
   { path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'admin', menu: '/_design', v2: true },
 ];
 

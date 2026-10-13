@@ -23,7 +23,6 @@ import { CANON_AREAS } from '../data/canonical';
 import { PROPOSAL_TRANSITIONS, SEED_PROPOSALS, proposalGate, type Proposal } from '../data/proposal';
 import { ProposalRegistry } from '../pages/propose';
 import { DefineRevision } from '../pages/defineRevision';
-import { SwEoChange, ProductSpec } from '../pages/eo';
 
 beforeEach(() => { localStorage.clear(); });
 afterEach(() => { cleanup(); localStorage.clear(); });
@@ -343,11 +342,9 @@ describe('화면 제목(h1)도 정본 이름을 쓴다', () => {
 describe('새 정본 화면은 정본 상세 영역을 모두 실제 본문으로 갖는다', () => {
   const SCREENS: { id: string; path: string; enter?: string; el: React.ReactNode }[] = [
     { id: 'UI19', path: '/feature/propose', el: <ProposalRegistry /> },
-    { id: 'UI23', path: '/change/eo', el: <SwEoChange /> },
-    { id: 'UI24', path: '/master/product-spec', el: <ProductSpec /> },
   ];
 
-  // UI07·10·12·16·17·18·21·22·26·28·30 레거시 화면은 v2(/deployments·/fleet/vehicles·/admin/iam·/integration/connectors)로 대체되어 지웠다(P10-C1)
+  // UI07·10·12·16·17·18·21·22·23·24·26·28·30 레거시 화면은 v2(/deployments·/fleet/vehicles·/admin/iam·/integration/connectors)로 대체되어 지웠다(P10-C1)
   it('남은 레거시 정본 화면 × 정본 영역 수가 있다', () => {
     expect(SCREENS.every(s => s.id in CANON_AREAS)).toBe(true);
     SCREENS.forEach(s =>

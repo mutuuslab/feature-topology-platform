@@ -1,7 +1,7 @@
 // Feature Topology (D01-02) · Feature Catalog (D01-03) — 상세설계서 표 8·9·17·21·22 흐름을 API로 검증한다.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp } from '../helpers';
+import { actor, bootApp, confirmSafety } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
@@ -17,6 +17,7 @@ describe('Topology · Catalog', () => {
   afterAll(() => app.close());
 
   const judgeAll = async (id: string, ver: string, gates: string[]) => {
+    if (gates.some((g) => g !== 'G1')) await confirmSafety(http, id, ver);
     for (const gate of gates)
       await http().post(`/api/features/${id}/versions/${ver}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: `${gate} 확인`, evidenceRef: `EV-${gate}` }).expect(201);
   };

@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/_design');
 });
 
-test('긴급 차단: 영향 범위 → Safe Stop → 확인 입력 → 서명·긴급 전달 → 회신 CONFIRMED → Fleet 현황 → 해제·복구', async ({ page }) => {
+test('긴급 차단: 영향 범위 → 확인 입력 → 서명·긴급 전달 → 회신 CONFIRMED → Fleet 현황 → 해제·복구', async ({ page }) => {
   await asRole(page, 'operator');
   await page.goto('/ops/kill');
   await expect(page.getByText('care_00022_param, care_00022_signal')).toBeVisible();
@@ -23,7 +23,6 @@ test('긴급 차단: 영향 범위 → Safe Stop → 확인 입력 → 서명·�
     const label = (await box.locator('xpath=..').textContent()) ?? '';
     if (!label.includes('lead-01')) await box.uncheck();
   }
-  await page.getByRole('radio', { name: /Safe Stop/ }).click();
   await page.getByLabel('사유').first().fill('e2e — 전방 거리 오추정');
   await page.getByRole('button', { name: '차단 발령' }).click();
   const dlg = page.getByRole('alertdialog');

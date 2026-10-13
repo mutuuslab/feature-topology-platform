@@ -114,12 +114,13 @@ describe('긴급 차단·복구', () => {
     if (url.startsWith('/api/kill-requests')) return { body: { items: [] } };
   };
 
-  it('영향 범위 → 차량 선택 → Safe Stop → 확인 입력이 맞아야 발령, 요청 본문에 범위·방식·확인 값', async () => {
+  it('영향 범위 → 차량 선택 → 확인 입력이 맞아야 발령, 요청 본문에 범위·확인 값 — 비활성화 방식은 운영자가 고르지 않는다(FFG-PLT-003)', async () => {
     handler = api;
     mount('/ops/kill', '/ops/kill', <KillConsole />);
     expect(await screen.findByText('care_00022_param, care_00022_signal')).toBeTruthy();
     fireEvent.click(screen.getByRole('checkbox', { name: /KMH-NX4-0003/ })); // 통신 단절 차량 제외
-    fireEvent.click(screen.getByRole('radio', { name: /Safe Stop/ }));
+    expect(screen.queryByRole('radio', { name: /Safe Stop/ })).toBeNull(); // 운영자 선택 UI 없음
+    expect(screen.getByText(/FFG-PLT-003/)).toBeTruthy();
     fireEvent.change(screen.getByLabelText('사유'), { target: { value: '전방 거리 오추정' } });
     fireEvent.click(screen.getByRole('button', { name: '차단 발령' }));
     const dlg = await screen.findByRole('alertdialog');
@@ -129,7 +130,7 @@ describe('긴급 차단·복구', () => {
     fireEvent.click(go);
     await waitFor(() => expect(posted('/api/kill-requests')).toBeTruthy());
     const p = posted('/api/kill-requests')!;
-    expect(JSON.parse(String(p.init!.body))).toEqual({ featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], safeMode: 'SAFE_STOP', reason: '전방 거리 오추정', confirm: 'FEAT-00022' });
+    expect(JSON.parse(String(p.init!.body))).toEqual({ featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: '전방 거리 오추정', confirm: 'FEAT-00022' });
     expect(new Headers(p.init!.headers).get('X-Actor-Role')).toBe('OPERATOR');
   });
 

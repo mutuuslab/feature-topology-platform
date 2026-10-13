@@ -31,6 +31,9 @@
     "snapshot:api": "node tools/snapshot-api.ts",
     "vecu:sync": "node tools/vecu-sync.ts",
     "vecu:check": "node tools/vecu-sync.ts --check",
+    "guide:sync": "node tools/guide-sync.ts",
+    "guide:check": "node tools/guide-sync.ts --check",
+    "standards": "node tools/standards.ts",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",
     "unleash:down": "docker compose -f docker/unleash/docker-compose.yml down",
     "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web"

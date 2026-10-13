@@ -83,3 +83,15 @@ test('위험 액션은 대상 ID를 정확히 입력해야 실행된다 (type-to
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
 });
+
+// 회귀: 1366 관제실 영역에서 GateRail 이름("Safety/Security Gate")이 말줄임으로 잘렸다 — 이름은 잘리지 않고 줄바꿈된다
+for (const w of [1366, 1920]) {
+  test(`Gate 레일 이름은 ${w}에서 잘리지 않는다`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: 900 });
+    await page.goto('/_design');
+    const names = page.locator('.ds-gate__name');
+    await expect(names.first()).toBeVisible();
+    const clipped = await names.evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1).map((e) => e.textContent));
+    expect(clipped).toEqual([]);
+  });
+}

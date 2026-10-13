@@ -227,4 +227,39 @@ ALTER TABLE entitlement ADD COLUMN source TEXT NOT NULL DEFAULT 'DEMO';
 CREATE INDEX entitlement_catalog ON entitlement(catalog_id, source);
 `,
   },
+  {
+    // 보고서 v1.1 WP0 커널 신뢰 기반 — 감사 해시 체인(FFG-PLT-015)·서명 키 용도/epoch(FFG-SEC-002)·승인자 개인 키(FFG-PLT-005)·소프트웨어 HSM 비밀
+    // 감사 행은 추가만: 삭제는 언제나, 수정은 해시가 채워진 뒤 막는다(해시 없는 옛 행의 채우기만 허용 — AuditService.onModuleInit).
+    name: '012_trust',
+    sql: `
+ALTER TABLE audit ADD COLUMN prev_hash TEXT;
+ALTER TABLE audit ADD COLUMN hash TEXT;
+CREATE TRIGGER audit_no_delete BEFORE DELETE ON audit BEGIN SELECT RAISE(ABORT, 'audit is append-only (FFG-PLT-015)'); END;
+CREATE TRIGGER audit_no_update BEFORE UPDATE ON audit WHEN OLD.hash IS NOT NULL BEGIN SELECT RAISE(ABORT, 'audit is append-only (FFG-PLT-015)'); END;
+ALTER TABLE pki_key ADD COLUMN purpose TEXT NOT NULL DEFAULT 'policy';
+ALTER TABLE pki_key ADD COLUMN epoch INTEGER NOT NULL DEFAULT 1;
+CREATE INDEX pki_key_purpose ON pki_key(purpose, status);
+CREATE TABLE approver_key (user_id TEXT PRIMARY KEY, kid TEXT NOT NULL UNIQUE, status TEXT NOT NULL, created_at TEXT NOT NULL, public_pem TEXT NOT NULL, private_pem TEXT NOT NULL);
+CREATE TABLE hsm_secret (name TEXT NOT NULL, epoch INTEGER NOT NULL, secret TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (name, epoch));
+`,
+  },
+  {
+    // 보고서 v1.1 WP1 안전 분류 Registry — Feature Version별 안전 속성(5.7, FFG-CLS-*)과 Flag ID 결합 기록(재사용 금지, FFG-CODE-020)
+    name: '013_safety_profile',
+    sql: `
+CREATE TABLE safety_profile (feature_id TEXT NOT NULL, version TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('DRAFT','CONFIRMED')), doc TEXT NOT NULL, PRIMARY KEY (feature_id, version));
+CREATE TABLE flag_registry (flag_key TEXT PRIMARY KEY, feature_id TEXT NOT NULL, bound_at TEXT NOT NULL, retired_at TEXT);
+`,
+  },
+  {
+    // 명령 원장(보고서 v1.1 8장, FFG-PLT-017·FFG-SEC-003·FFG-PLT-005) — Feature별 명령 순번·직전 Kill 승인자, 이동 시간 창 누적은 추가만
+    name: '014_command_ledger',
+    sql: `
+CREATE TABLE command_ledger (feature_id TEXT PRIMARY KEY, last_seq INTEGER NOT NULL, last_kill_approvers TEXT NOT NULL DEFAULT '[]', updated_at TEXT NOT NULL);
+CREATE TABLE command_window (id INTEGER PRIMARY KEY AUTOINCREMENT, feature_id TEXT NOT NULL, command_id TEXT NOT NULL UNIQUE, request TEXT NOT NULL, vehicles INTEGER NOT NULL, at TEXT NOT NULL);
+CREATE INDEX command_window_feature ON command_window (feature_id, at);
+CREATE TRIGGER command_window_no_update BEFORE UPDATE ON command_window BEGIN SELECT RAISE(ABORT, 'command_window는 추가만 가능'); END;
+CREATE TRIGGER command_window_no_delete BEFORE DELETE ON command_window BEGIN SELECT RAISE(ABORT, 'command_window는 추가만 가능'); END;
+`,
+  },
 ];

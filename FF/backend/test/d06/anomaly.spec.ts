@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Clock } from '../../src/kernel/clock';
 import { Scheduler } from '../../src/kernel/scheduler';
 import { VehicleRuntimeService } from '../../src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service';
-import { actor, bootApp } from '../helpers';
+import { actor, bootApp, confirmSafety } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
@@ -84,6 +84,7 @@ describe('운영 되먹임 — 이상 징후 대응 · 품질 피드백', () => 
     const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '현장 피드백 반영', changes: { description: '거리 추정 편향 보정' } }).expect(201);
     const ver = v.body.feature.version;
     const judge = (gate: string) => http().post(`/api/features/FEAT-00022/versions/${ver}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${gate}` }).expect(201);
+    await confirmSafety(http, 'FEAT-00022', ver);
     for (const g of ['G1', 'G2', 'G3']) await judge(g);
     await http().post(`/api/features/FEAT-00022/versions/${ver}/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);
     expect((await http().get(`/api/quality-feedback/${id}`).expect(200)).body.status).toBe('ACCEPTED');

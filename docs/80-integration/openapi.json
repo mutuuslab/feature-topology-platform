@@ -141,6 +141,369 @@
         }
       }
     },
+    "/api/safety-profiles": {
+      "get": {
+        "summary": "안전 분류 목록 (보고서 5.7)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "safetyProfiles",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/safety": {
+      "get": {
+        "summary": "안전 분류 + 조합 검사 (FFG-CLS-009)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "safetyProfile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "put": {
+        "summary": "안전 분류 초안 수정 (확정 후 불가, FFG-CLS-004)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "updateSafetyProfile",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fClass": {
+                    "type": "string",
+                    "enum": [
+                      "F0",
+                      "F1",
+                      "F2",
+                      "F3",
+                      "F4"
+                    ]
+                  },
+                  "deactClass": {
+                    "type": "string",
+                    "enum": [
+                      "DC0",
+                      "DC1",
+                      "DC2",
+                      "DC3",
+                      "DC4"
+                    ]
+                  },
+                  "regClass": {
+                    "type": "string",
+                    "enum": [
+                      "R0",
+                      "R1",
+                      "R2"
+                    ]
+                  },
+                  "flagType": {
+                    "type": "string",
+                    "enum": [
+                      "RELEASE",
+                      "OPS",
+                      "PERMISSION",
+                      "EXPERIMENT"
+                    ]
+                  },
+                  "adsFeature": {
+                    "type": "boolean"
+                  },
+                  "adsfType": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "ADSF-1",
+                      "ADSF-2"
+                    ]
+                  },
+                  "gsrMandatory": {
+                    "type": "boolean"
+                  },
+                  "itemIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "haraRef": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "asilRef": {
+                    "type": "string",
+                    "enum": [
+                      "QM",
+                      "A",
+                      "B",
+                      "C",
+                      "D"
+                    ]
+                  },
+                  "safetyGoalIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "safeState": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "endState": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "DISABLED",
+                      "INACTIVE",
+                      "HANDOVER",
+                      "MRC"
+                    ]
+                  },
+                  "takeoverMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "rampMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "faultRampMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "faultTolerantTimeMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "maxPendingMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "maxCycleWaitMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "maxActivationScope": {
+                    "type": "object",
+                    "properties": {
+                      "vehicles": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "perWindow": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "vehicles",
+                      "perWindow"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "markets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "rxswin": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "approvalProfile": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "evidenceManifestId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "sbomRef": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "rollbackTarget": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "expiresAt": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "retirementPlan": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/safety/confirm": {
+      "post": {
+        "summary": "안전 분류 확정 — Safety Manager 개인 서명",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "confirmSafetyProfile",
+        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/audit": {
       "get": {
         "summary": "감사 이력",
@@ -182,6 +545,27 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/audit/chain": {
+      "get": {
+        "summary": "감사 해시 체인 무결성 (FFG-PLT-015)",
+        "tags": [
+          "D01-10"
+        ],
+        "operationId": "auditChain",
+        "parameters": [],
         "responses": {
           "200": {
             "description": "성공"
@@ -646,7 +1030,7 @@
           "D01-01"
         ],
         "operationId": "updateDraft",
-        "description": "허용 역할: Feature 작성자, 기능안전·보안 담당자, 차량 사양·Variant 담당자, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -959,7 +1343,7 @@
           "D01-02"
         ],
         "operationId": "judgeGate",
-        "description": "허용 역할: Gate 판정자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Gate 판정자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -3648,12 +4032,96 @@
     },
     "/api/pki/rotate": {
       "post": {
-        "summary": "서명 키 교체 (이전 키는 검증용으로 유지)",
+        "summary": "서명 키 교체 (이전 키는 검증용으로 유지, 용도별)",
         "tags": [
           "D06-10"
         ],
         "operationId": "rotateKey",
-        "description": "허용 역할: 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "policy",
+                      "activate",
+                      "kill",
+                      "restore",
+                      "sync",
+                      "gate"
+                    ],
+                    "default": "policy"
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/pki/hsm": {
+      "get": {
+        "summary": "소프트웨어 HSM — 차량 키 epoch·승인자 키 수",
+        "tags": [
+          "D06-10"
+        ],
+        "operationId": "hsmStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/pki/epoch": {
+      "post": {
+        "summary": "차량 키 epoch 상향 (키 유출 대응, FFG-SEC-002)",
+        "tags": [
+          "D06-10"
+        ],
+        "operationId": "bumpEpoch",
+        "description": "허용 역할: 사이버보안 담당자(CSM), 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -4488,6 +4956,464 @@
         }
       }
     },
+    "/api/gate/preview": {
+      "post": {
+        "summary": "정책 게이트 미리보기 — kill_command v2 판정(스키마·규칙), 원장 변경 없음. 스키마 오류도 SCHEMA_FAIL 결과로 돌려준다",
+        "tags": [
+          "D03-02"
+        ],
+        "operationId": "gatePreview",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM), 사이버보안 담당자(CSM), 운영 리더 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "kill_command"
+                    ]
+                  },
+                  "schema_version": {
+                    "type": "string",
+                    "enum": [
+                      "2.0"
+                    ]
+                  },
+                  "command_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "command_seq": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "request": {
+                    "type": "string",
+                    "enum": [
+                      "deactivate",
+                      "restore",
+                      "activate",
+                      "sync"
+                    ]
+                  },
+                  "feature": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^FEAT-[0-9]{5}$"
+                      },
+                      "version": {
+                        "type": "string",
+                        "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+                      },
+                      "f_class": {
+                        "type": "string",
+                        "enum": [
+                          "F0",
+                          "F1",
+                          "F2",
+                          "F3",
+                          "F4"
+                        ]
+                      },
+                      "deact_class": {
+                        "type": "string",
+                        "enum": [
+                          "DC0",
+                          "DC1",
+                          "DC2",
+                          "DC3",
+                          "DC4"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "f_class",
+                      "deact_class"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "object",
+                    "properties": {
+                      "category": {
+                        "type": "string",
+                        "enum": [
+                          "SAFETY",
+                          "SECURITY",
+                          "REGULATORY",
+                          "COMMERCIAL",
+                          "OPERATIONAL"
+                        ]
+                      },
+                      "code": {
+                        "type": "string",
+                        "pattern": "^[A-Z0-9_]{3,40}$"
+                      },
+                      "incident_id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "category",
+                      "code"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "vehicle_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]{4,64}$"
+                        },
+                        "minItems": 1,
+                        "maxItems": 10000
+                      },
+                      "cohort_id": {
+                        "type": "string"
+                      },
+                      "max_vehicles": {
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    },
+                    "required": [
+                      "vehicle_ids",
+                      "max_vehicles"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "market": {
+                        "type": "string",
+                        "enum": [
+                          "UNECE",
+                          "EU",
+                          "UK",
+                          "CN",
+                          "US",
+                          "CA",
+                          "MX",
+                          "BR",
+                          "KR",
+                          "JP",
+                          "IN",
+                          "AU",
+                          "OTHER"
+                        ]
+                      },
+                      "ecu_id": {
+                        "type": "string"
+                      },
+                      "sw_id": {
+                        "type": "string"
+                      },
+                      "sw_version": {
+                        "type": "string"
+                      },
+                      "rxswin": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "market",
+                      "ecu_id",
+                      "sw_id",
+                      "sw_version",
+                      "rxswin"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "validity": {
+                    "type": "object",
+                    "properties": {
+                      "not_before": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "expires_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    },
+                    "required": [
+                      "not_before",
+                      "expires_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "approvals": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "approver_id": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "FSM",
+                            "CSM",
+                            "OPS_LEAD",
+                            "PRODUCT_OWNER",
+                            "QA",
+                            "REGULATORY"
+                          ]
+                        },
+                        "signed_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "approval_sig": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]{64,}$"
+                        }
+                      },
+                      "required": [
+                        "approver_id",
+                        "role",
+                        "signed_at",
+                        "approval_sig"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 2
+                  },
+                  "regulatory": {
+                    "type": "object",
+                    "properties": {
+                      "type_approval_impact": {
+                        "type": "string",
+                        "enum": [
+                          "NONE",
+                          "INFO_PACKAGE_UPDATE",
+                          "EXTENSION_REQUIRED"
+                        ]
+                      },
+                      "r156_assessment_id": {
+                        "type": "string"
+                      },
+                      "cn_filing_id": {
+                        "type": "string"
+                      },
+                      "recall_campaign_id": {
+                        "type": "string"
+                      },
+                      "containment_justification": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type_approval_impact",
+                      "r156_assessment_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "user_notice": {
+                    "type": "object",
+                    "properties": {
+                      "required": {
+                        "type": "boolean"
+                      },
+                      "text_ref": {
+                        "type": "string"
+                      },
+                      "user_confirmation_required": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "required"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "properties": {
+                      "evidence_manifest_id": {
+                        "type": "string"
+                      },
+                      "bom_baseline_id": {
+                        "type": "string"
+                      },
+                      "sbom_ref": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "evidence_manifest_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "issued_by": {
+                    "type": "string"
+                  },
+                  "issued_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "signature": {
+                    "type": "object",
+                    "properties": {
+                      "alg": {
+                        "type": "string",
+                        "enum": [
+                          "ES256",
+                          "EdDSA"
+                        ]
+                      },
+                      "kid": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]{86}$"
+                      }
+                    },
+                    "required": [
+                      "alg",
+                      "kid",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "vehicle_auth": {
+                    "type": "object",
+                    "properties": {
+                      "key_epoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                      },
+                      "vehicle_seq": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 4294967295
+                      },
+                      "approver_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 65535
+                        }
+                      },
+                      "cmd_auth": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]{22}$"
+                      },
+                      "resync_ref": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                      }
+                    },
+                    "required": [
+                      "key_epoch",
+                      "vehicle_seq",
+                      "approver_refs",
+                      "cmd_auth"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "schema_version",
+                  "command_id",
+                  "command_seq",
+                  "request",
+                  "feature",
+                  "reason",
+                  "scope",
+                  "target",
+                  "validity",
+                  "approvals",
+                  "regulatory",
+                  "user_notice",
+                  "evidence",
+                  "issued_by",
+                  "issued_at",
+                  "signature"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/gate/features/{id}/versions/{ver}": {
+      "get": {
+        "summary": "게이트가 보는 Feature Version — Registry 항목(D.6)·명령 원장·다음 순번·24시간 누적",
+        "tags": [
+          "D03-02"
+        ],
+        "operationId": "gateSnapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/kill-requests": {
       "get": {
         "summary": "긴급 차단 요청 목록 (회신 집계 포함)",
@@ -4523,7 +5449,7 @@
           "D03-03"
         ],
         "operationId": "issueKill",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -4683,7 +5609,7 @@
           "D03-04"
         ],
         "operationId": "releaseKill",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5094,7 +6020,7 @@
           "D06-12"
         ],
         "operationId": "acknowledgeAnomaly",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5154,7 +6080,7 @@
           "D06-12"
         ],
         "operationId": "mitigateAnomaly",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5214,7 +6140,7 @@
           "D06-12"
         ],
         "operationId": "dismissAnomaly",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5342,7 +6268,7 @@
           "D04-06"
         ],
         "operationId": "acceptFeedback",
-        "description": "허용 역할: Feature 작성자, Gate 판정자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, Gate 판정자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5693,7 +6619,7 @@
           "KERNEL"
         ],
         "operationId": "startPoc",
-        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -5765,7 +6691,7 @@
           "KERNEL"
         ],
         "operationId": "advancePoc",
-        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",

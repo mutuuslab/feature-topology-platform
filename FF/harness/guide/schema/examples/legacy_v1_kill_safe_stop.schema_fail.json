@@ -1,0 +1,12 @@
+{
+ "type": "kill_command",
+ "feature_id": "FEAT-00022",
+ "scope": {
+  "vehicle_ids": [
+   "ego"
+  ]
+ },
+ "issued_at": "2026-09-24T01:00:48.000Z",
+ "issued_by": "ops-console",
+ "safe_mode": "SAFE_STOP"
+}

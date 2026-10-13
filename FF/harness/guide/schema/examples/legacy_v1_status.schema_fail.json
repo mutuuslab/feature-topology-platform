@@ -1,0 +1,9 @@
+{
+ "type": "status_report",
+ "vehicle_id": "ego",
+ "feature_id": "FEAT-00022",
+ "state": "SAFE_DEFAULT",
+ "received_at": "2026-09-24T01:00:48.100Z",
+ "applied_at": "2026-09-24T01:00:48.120Z",
+ "offline": false
+}

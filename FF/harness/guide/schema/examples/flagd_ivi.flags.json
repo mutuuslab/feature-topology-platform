@@ -1,0 +1,64 @@
+{
+  "$schema": "https://flagd.dev/schema/v0/flags.json",
+  "metadata": {
+    "flagSetId": "ffp-ivi",
+    "version": "42"
+  },
+  "flags": {
+    "ivi-route-preview": {
+      "state": "ENABLED",
+      "variants": {
+        "on": "v2",
+        "off": "v1"
+      },
+      "defaultVariant": "off",
+      "targeting": {
+        "if": [
+          {
+            "in": [
+              {
+                "var": "market"
+              },
+              [
+                "EU"
+              ]
+            ]
+          },
+          "on",
+          "off"
+        ]
+      },
+      "metadata": {
+        "f_class": "F1"
+      }
+    },
+    "ivi-theme-2026": {
+      "state": "ENABLED",
+      "variants": {
+        "on": true,
+        "off": false
+      },
+      "defaultVariant": "off",
+      "targeting": {
+        "if": [
+          {
+            "in": [
+              {
+                "var": "market"
+              },
+              [
+                "EU",
+                "KR"
+              ]
+            ]
+          },
+          "on",
+          "off"
+        ]
+      },
+      "metadata": {
+        "f_class": "F0"
+      }
+    }
+  }
+}

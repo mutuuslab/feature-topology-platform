@@ -1,0 +1,159 @@
+// 소프트웨어 HSM (D06-10) — 보고서 v1.1 8.2·8.3·9.6의 서명·인증 연산을 한곳에 둔다. 실제 HSM/KMS 연동은 이 서비스 뒤로 숨긴다.
+//  · 분리 서명(JWS detached, EdDSA): 용도별 kid로 JCS 정규화 바이트에 서명 — 64바이트 원시 서명을 base64url(86자)로
+//  · 승인자 개인 서명(approval_sig): 사람마다 키 — 데모에서는 FIDO2·스마트카드 대신 이 서비스가 보관
+//  · 차량 키(epoch별 HKDF 파생)와 AES-CMAC-128 — 봉투 cmd_auth·상태 증명 state_auth(16바이트 → base64url 22자)
+import { Body, Controller, Get, Inject, Injectable, Post } from '@nestjs/common';
+import { b64url, EpochBumpBody, fromB64url, type KeyPurpose } from '@ff/contracts';
+import { createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes, sign, verify } from 'node:crypto';
+import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
+import { AuditService } from '../../../kernel/audit.service';
+import { Clock } from '../../../kernel/clock';
+import { PlatformComponent } from '../../../kernel/components';
+import { aesCmac, equalBytes, hkdf16 } from '../../../kernel/crypto';
+import { DB, type Db } from '../../../kernel/db';
+import { EventService } from '../../../kernel/event.service';
+import { ZodPipe } from '../../../kernel/zod.pipe';
+import { PkiService } from './pki.service';
+
+export interface DetachedSig {
+  alg: 'EdDSA';
+  kid: string;
+  /** base64url 64바이트 원시 서명(86자) — DER 아님 */
+  value: string;
+}
+
+const VEHICLE_ROOT = 'vehicle_root';
+
+@Injectable()
+@PlatformComponent('D06-10')
+export class HsmService {
+  constructor(
+    @Inject(DB) private readonly db: Db,
+    private readonly clock: Clock,
+    private readonly pki: PkiService,
+    private readonly audit: AuditService,
+    private readonly events: EventService,
+  ) {}
+
+  // ── 분리 서명 ─────────────────────────────────────────
+  /**
+   * 용도별 kid로 정규화 바이트에 서명한다.
+   * @rule FFG-SEC-002 — 용도별 서명 키 분리. M-of-N 루트·유출 대응 절차는 운영(WP10)
+   */
+  signDetached(purpose: KeyPurpose, canonical: string): DetachedSig {
+    const { kid, sig } = this.pki.signRaw(purpose, Buffer.from(canonical));
+    return { alg: 'EdDSA', kid, value: b64url(sig) };
+  }
+
+  /** 검증 — kid가 기대한 용도가 아니거나, 서명이 64바이트 원시 형식이 아니면 무효 */
+  verifyDetached(purpose: KeyPurpose, canonical: string, s: DetachedSig): { valid: boolean; reason: string } {
+    const k = this.pki.publicKey(s.kid);
+    if (!k) return { valid: false, reason: 'UNKNOWN_KEY' };
+    if (k.purpose !== purpose) return { valid: false, reason: 'WRONG_KEY_PURPOSE' };
+    if (s.alg !== 'EdDSA' || !/^[A-Za-z0-9_-]{86}$/.test(s.value)) return { valid: false, reason: 'SIGNATURE_FORMAT' };
+    if (new Date(k.notAfter).getTime() < this.clock.now().getTime()) return { valid: false, reason: 'KEY_EXPIRED' };
+    const ok = verify(null, Buffer.from(canonical), createPublicKey(k.pem), Buffer.from(fromB64url(s.value)));
+    return ok ? { valid: true, reason: 'SIGNATURE_VALID' } : { valid: false, reason: 'SIGNATURE_INVALID' };
+  }
+
+  // ── 승인자 개인 서명 ─────────────────────────────────
+  private approverKey(userId: string): { kid: string; private_pem: string; public_pem: string } {
+    let k = this.db.get<{ kid: string; private_pem: string; public_pem: string }>("SELECT kid, private_pem, public_pem FROM approver_key WHERE user_id = ? AND status = 'ACTIVE'", userId);
+    if (!k) {
+      const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+      const row = { kid: `APR-${userId}`, private_pem: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(), public_pem: publicKey.export({ type: 'spki', format: 'pem' }).toString() };
+      const put = () => this.db.run("INSERT INTO approver_key (user_id, kid, status, created_at, public_pem, private_pem) VALUES (?, ?, 'ACTIVE', ?, ?, ?)", userId, row.kid, this.clock.iso(), row.public_pem, row.private_pem);
+      if (this.db.inTransaction) put();
+      else this.db.tx(put);
+      k = row;
+    }
+    return k;
+  }
+
+  /**
+   * 승인자 개인 서명 — approval_sig(보고서 8.3, FIDO2·스마트카드의 데모 대역).
+   * @rule FFG-PLT-005 — 승인마다 개인 서명. 2인·FSM 조건 판정은 정책 게이트(WP3)·Kill 승인(WP4)
+   */
+  approve(userId: string, canonical: string): { kid: string; value: string } {
+    const k = this.approverKey(userId);
+    return { kid: k.kid, value: b64url(sign(null, Buffer.from(canonical), createPrivateKey(k.private_pem))) };
+  }
+
+  verifyApproval(userId: string, canonical: string, value: string): boolean {
+    const k = this.db.get<{ public_pem: string }>('SELECT public_pem FROM approver_key WHERE user_id = ?', userId);
+    if (!k || !/^[A-Za-z0-9_-]{64,}$/.test(value)) return false;
+    return verify(null, Buffer.from(canonical), createPublicKey(k.public_pem), Buffer.from(fromB64url(value)));
+  }
+
+  // ── 차량 키 epoch와 CMAC ─────────────────────────────
+  /** 현재 차량 키 epoch — 처음 부르면 epoch 1의 루트 비밀을 만든다 */
+  epoch(): number {
+    const r = this.db.get<{ e: number | null }>('SELECT max(epoch) AS e FROM hsm_secret WHERE name = ?', VEHICLE_ROOT);
+    if (r?.e) return r.e;
+    this.putRoot(1);
+    return 1;
+  }
+
+  private putRoot(epoch: number) {
+    const put = () => this.db.run('INSERT INTO hsm_secret (name, epoch, secret, created_at) VALUES (?, ?, ?, ?)', VEHICLE_ROOT, epoch, randomBytes(32).toString('base64'), this.clock.iso());
+    if (this.db.inTransaction) put();
+    else this.db.tx(put);
+  }
+
+  private vehicleKey(vin: string, epoch: number): Buffer {
+    const r = this.db.get<{ secret: string }>('SELECT secret FROM hsm_secret WHERE name = ? AND epoch = ?', VEHICLE_ROOT, epoch);
+    if (!r) throw new Error(`차량 키 epoch ${epoch}가 없습니다`);
+    return hkdf16(Buffer.from(r.secret, 'base64'), `epoch:${epoch}`, `ffp-vehicle-key|${vin}`);
+  }
+
+  /**
+   * 차량별 AES-CMAC-128 — 봉투 cmd_auth(요청 프레임 4..35바이트)·상태 증명 state_auth에 같은 키를 쓴다.
+   * @rule FFG-VEH-013 — 차량 단위 키 epoch(파생·상향). 순번 창 검사는 차량 쪽(WP5 시뮬레이터)
+   */
+  cmac(vin: string, epoch: number, frame: Buffer): string {
+    return b64url(aesCmac(this.vehicleKey(vin, epoch), frame));
+  }
+
+  verifyCmac(vin: string, epoch: number, frame: Buffer, tag: string): boolean {
+    if (!/^[A-Za-z0-9_-]{22}$/.test(tag)) return false;
+    let key: Buffer;
+    try {
+      key = this.vehicleKey(vin, epoch);
+    } catch {
+      return false;
+    }
+    return equalBytes(aesCmac(key, frame), Buffer.from(fromB64url(tag)));
+  }
+
+  /** epoch 상향 — 키 유출 대응(보고서 14.3: 24시간 안에 epoch 상향). 이전 epoch 비밀은 검증용으로 남긴다 */
+  bumpEpoch(actor: Actor, reason: string) {
+    return this.db.tx(() => {
+      const prev = this.epoch();
+      this.putRoot(prev + 1);
+      this.audit.record(actor, 'HSM_EPOCH_BUMP', VEHICLE_ROOT, { before: { epoch: prev }, after: { epoch: prev + 1 }, reason, componentId: 'D06-10' });
+      this.events.publish('pki.epoch.bumped', VEHICLE_ROOT, { epoch: prev + 1 }, { componentId: 'D06-10', correlationId: actor.correlationId });
+      return { epoch: prev + 1 };
+    });
+  }
+
+  view() {
+    return { epoch: this.epoch(), approverKeys: this.db.get<{ n: number }>("SELECT count(*) AS n FROM approver_key WHERE status = 'ACTIVE'")!.n };
+  }
+}
+
+@Controller('api/pki')
+export class HsmController {
+  constructor(private readonly hsm: HsmService) {}
+
+  @Get('hsm')
+  view() {
+    return this.hsm.view();
+  }
+
+  @Post('epoch')
+  @Roles('SECURITY_OFFICER', 'SAFETY_OFFICER')
+  @AuditAction('HSM_EPOCH_BUMP')
+  bump(@CurrentActor() actor: Actor, @Body(new ZodPipe(EpochBumpBody)) body: EpochBumpBody) {
+    return this.hsm.bumpEpoch(actor, body.reason);
+  }
+}

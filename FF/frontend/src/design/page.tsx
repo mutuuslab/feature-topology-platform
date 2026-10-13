@@ -2,9 +2,10 @@
 import type { ReactNode, SelectHTMLAttributes } from 'react';
 import { Icon } from './icons';
 
-export function PageHeader({ eyebrow, title, lead, meta, actions }: { eyebrow?: ReactNode; title: ReactNode; lead?: ReactNode; meta?: ReactNode; actions?: ReactNode }) {
+/** tour: 따라하기 스포트라이트 앵커(data-tour) */
+export function PageHeader({ eyebrow, title, lead, meta, actions, tour }: { eyebrow?: ReactNode; title: ReactNode; lead?: ReactNode; meta?: ReactNode; actions?: ReactNode; tour?: string }) {
   return (
-    <header className="ds-page">
+    <header className="ds-page" data-tour={tour}>
       <div className="ds-page__main">
         {eyebrow && <div className="ds-eyebrow">{eyebrow}</div>}
         <h1 className="ds-page__title">{title}</h1>

@@ -4,11 +4,16 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **P10**부터: 남은 컴포넌트 7개(D01-07 실험·효과, D04-05 장애·VOC, D05-02·03·05·07 데이터 동기화·Legacy·현장 포털·Legacy-SDV, D06-11 취약점 모니터링 — D05-04 과금·D05-06 사업 지표는 체험권 작업에서 구현)와 IF 모의 어댑터(IF-01 ALM·IF-02 기준정보·IF-03 MDM/DW·IF-08 Supplier·IF-11 OTel·IF-12 해외공장), OpenFeature OF-5(OTel hook)·OF-6(차량 내장 provider)·OF-7(flag 매니페스트·기본값 규율), 레거시 정리(FEAT-BDC 37·rawColors 818 → 0).
+- **국제표준 보고서 v1.1 실제 개발 WP4부터**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1·WP0·WP1·WP3 완료. 화면 확인: `/learn`, `/_design`, `/features?f=F3`, `/features/FEAT-00022/1.0.0?tab=safety`(UX 검토 사진 `node e2e/scripts/shot-safety.mjs` → `e2e/shots/safety-*`).
+- **WP1 이후 규칙**: Gate G2 이후 PASS는 안전 분류 확정(SAFETY_OFFICER 개인 서명)이 전제(FFG-CLS-001), G1은 조합 위반(blocking)만 막는다. 새 시험·e2e에서 G2 이상을 판정하면 먼저 `confirmSafety(http, id, ver)`(backend `test/helpers.ts`) 또는 `POST …/safety/confirm`. 초안 시드는 `tools/dataset/safety-infer.ts` → `data/fixtures/safety/profiles.json`(80개, FEAT-00022@1.0.0만 확정 F3·DC2·R1). standards 래칫 구현·시험 13·13, TC-FF 3.
+- **반영 기준 = 기존 42 컴포넌트**(사용자 지시 2026-10-13): 플랫폼 규칙 75개를 `contracts/src/rules/standards-map.ts`에서 기존 컴포넌트(32개)에 배치. `standards` 하네스가 빠진 배치·없는 컴포넌트를 막고, 규칙별 상태를 `contracts/src/generated/standards-status.ts`로 내보낸다(바뀌면 함께 커밋). 화면 `/arch/components`(반영률 KPI·카드 "표준 i/n"·`?wp=WP3` 필터·상세 규칙 목록). 새 WP는 "어느 기존 컴포넌트를 고치나"로 시작한다.
+- **다른 세션 반영(2026-10-13 확인)**: 체험권은 기간형(14일 수락·30일 활성) → WP6 기준. 차량 발신 채널(c943ea0, `d02-runtime/vehicle-requests`)의 부팅·순번 대사 위에 WP5 status v2 수신 검사를 쌓는다. FF_IMP `safe_mode`(88c13f7, main 미push)는 WP5에서 v2로 대체. vECU의 FEAT-00023·24(판정 기준 가정값 → "비공식")·IVI 보기(`?ivi=`)는 WP9에 포함, vECU 수정 후 `npm run vecu:sync`. `main`은 324e028(cherry-pick)로 브랜치와 갈라짐 — 공개 시 merge 커밋, 공개 시점은 사용자 결정 대기.
+- **WP3 이후 규칙**: Kill·복원 명령(v2)은 `PolicyGateService.preview`로 판정하고, 발행할 때 `record(actor, cmd)`로 원장에 남긴다(PASS만, 거부 감사는 트랜잭션 밖). Registry 항목은 저장하지 않고 Feature Registry(수명주기: DEPRECATED·RETIRED → DECOMMISSIONED)와 안전 분류에서 만든다. 원장 시드 `data/fixtures/safety/command-ledger.json`(보고서 예시: FEAT-00022 순번 10, 직전 Kill 승인자 u-3003·u-4004). 게이트 대조(`contracts/src/rules/policy-gate.test.ts`)는 Python+jsonschema가 있으면 패키지 게이트와 비교하고 없으면 건너뛴다(러너 고장은 실패). standards 23·23, TC-FF 11.
+- 그다음 **P10**: 남은 컴포넌트 7개(D01-07 실험·효과, D04-05 장애·VOC, D05-02·03·05·07 데이터 동기화·Legacy·현장 포털·Legacy-SDV — D06-11 취약점 모니터링은 보고서 반영 U4·F6으로 이동, D05-04 과금·D05-06 사업 지표는 체험권 작업에서 구현)와 IF 모의 어댑터(IF-01 ALM·IF-02 기준정보·IF-03 MDM/DW·IF-08 Supplier·IF-11 OTel·IF-12 해외공장), OpenFeature OF-6(차량 내장 provider)·OF-7(flag 매니페스트·기본값 규율) — OF-5(OTel hook)는 보고서 반영 F6(OFT-004)으로 이동, 레거시 정리(FEAT-BDC 37·rawColors 818 → 0).
 - **vECU 웹 배포**: vECU를 고친 뒤 배포하려면 `npm run vecu:sync`(허용 목록 → `frontend/public/vecu/`, `VECU_SYNC.json` 해시) 후 커밋. verify `vecu:check`가 복사본 변경·금지 경로(splat/·assets/user/·nurec)·금지어를 막는다. 사이트 `/vecu/index.html?ffv=<FEAT>`, FF 화면은 링크로만 연다(사용자 결정).
 - **체험권**: 데모 권한 날짜는 시드 기준일(FF_CLOCK_AT 또는 오늘, KST) 상대값(`data/fixtures/demo/entitlements.json`의 *Days). 합성 모집단 3000대(`FF_SYNTHETIC=0`이면 생략) — 목록·통계에만, `/api/entitlements` 기본은 데모만. 시험은 `bootApp({ at })`로 시계·기준일을 같이 고정한다.
 - **Unleash 실연동**: Docker Desktop을 켜고 `cp docker/unleash/.env.example docker/unleash/.env`(값 설정) → `npm run unleash:up` → `UNLEASH_LIVE=1 UNLEASH_ADMIN_TOKEN=… npx vitest run test/d01/unleash.spec.ts`(backend). 백엔드 실행 시 `UNLEASH_MODE=live UNLEASH_URL=http://127.0.0.1:4242 UNLEASH_ADMIN_TOKEN=…`. hfp 쪽 Unleash 데이터는 건드리지 않는다.
-- **FF_IMP**: `kill_command.safe_mode`는 브랜치 `feat/kill-safe-mode`(88c13f7) — main 병합은 사용자 결정 대기. 테스트는 `.venv/Scripts/python.exe -m pytest`(websockets 17). `test_unreal_fake_engine.py` 5건은 이전부터 실패.
+- **FF_IMP**: `kill_command.safe_mode`(88c13f7)는 이미 FF_IMP main에 있다(`feat/kill-safe-mode` 브랜치는 없음 — 2026-10-13 확인). 보고서 반영 F3b에서 kill_command v2로 대체(운영자 선택 폐지). 테스트는 `.venv/Scripts/python.exe -m pytest`(websockets 17). `test_unreal_fake_engine.py` 5건은 이전부터 실패.
 - **vECU 연동 계약**: vECU 폴더에 FF용 `tools/ffval_cli.mjs`·`tests/js/ffval_cli.test.mjs`만 추가(나머지는 vECU 세션 소유). 기준 ID·items 필드가 바뀌면 vECU 세션이 알려 주기로 함. 오류+Kill Gate 기준 = kill_latency·recovery·max_decel·min_ttc(양쪽 일치). vECU ffval 1.3(2026-10-12) 확인: FF CLI·실제 vECU 시험 통과. kill_latency 미반영은 이제 Infinity(=CLI JSON null)+fail — FF는 status로 판정하므로 영향 없음. FEAT-00023(급가속 억제)·FEAT-00024(IC·JC 사전안내)는 vECU에 **가정 기준(provisional)** 으로 추가됨 — FF 시나리오 목록에 넣을 때는 가정 기준 결과를 G5 증적으로 인정하지 않는다(vECU official 판정과 같게).
 - **병행 세션**: 차량 발신 요청은 `2026-09-23-ff-imp-*` 세션이 c943ea0으로 커밋. 같은 저장소를 동시에 고칠 때는 먼저 범위를 나누고, 커밋은 경로를 지정해 담는다(git add -A 금지).
 - 실행: 백엔드 9101(`GLEO_MODE`, `VECU_MODE`·`VECU_DIR`, `UNLEASH_MODE`, `FF_BOOT_PUBLISH`, `FF_SCHEDULER`) · 프론트 9012 · e2e 9111/9112(vECU 시험 대역 `backend/test/fixtures/fake-vecu`, Unleash 모의).
@@ -26,6 +31,42 @@
 | OF-5 | **Hook → 관측(IF-11)**: OpenTelemetry 기능 플래그 의미 규약(feature_flag.key·provider_name·variant) 평가 이벤트 hook → 운영 데이터 수집(D04-03) | P10 |
 | OF-6 | **차량 내장 provider**: 오프라인용 in-process provider — 서명 게시본 캐시를 같은 단일 평가기로 평가(D02-03), 통신 단절에도 Safe Default 보장. TS 참조 구현 + vECU 연동 | P10 |
 | OF-7 | **Flag 매니페스트·기본값 규율**: OpenFeature CLI 매니페스트 형식으로 flag 키·타입·Safe Default 내보내기(`GET /api/openfeature/manifest`) → 앱 기본값이 FP Safe Default와 같은지 하네스 검사 | P10 |
+
+## 국제표준 대응방안 보고서 v1.1 반영 + "표준 따라하기" 실습 랩 + vECU 연계 (2026-10-13 사용자 요청)
+원천: `Feature_Flag_플랫폼_국제표준_대응방안_보고서_v1.1.docx`(FFP-FS-STR-001, 규칙 181개·시험 TC-FF 60개·CS-01~11)와 코드 패키지 → `C:\project\2026-09-23_FF_IMP\FF_Safety_Guide_v2`(v1.1 코드패키지로 구성) → 복사본 `harness/guide/`(`npm run guide:sync`, 원고에서 규칙·시험 카탈로그 `catalog.json` 생성). 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`.
+원칙: 플랫폼은 서명 전 1차 방어선(Registry·승인·법규·시장 조건·Evidence), 안전에 결정적인 항목의 최종 확인은 차량 Safety Guard. **UI/UX를 먼저 전부 바꾸고(contract-first, 미리보기 데이터) 그다음 기능을 연결**한다(사용자 지시). U 단계마다 사용자 UX 검토.
+
+사용자 결정
+1. 따라하기 = 플랫폼 내 실습 랩(`/learn`) + 실제 화면 위 가이드 패널(자동·직접 하기·보기, 단계별 역할 전환, 초기화). PoC 러너를 일반화.
+2. 시나리오: ① vECU 연계 CS-01 먼저 완주 → ② 핵심 6개 → ③ CS-01~11 전부·점검표.
+3. vECU: 연계 계약 문서(ffval 2.0) + FF는 fake-vecu로 선행, **이 세션이 vECU도 수정**(소유 세션에 통보). 발견: vECU CLI 루프 `await` 누락(수락된 차량 요청이 끝나기 전 종료).
+4. Kill 동작은 Registry DC(safeMode 선택 폐지), 와이어 v2 완전 전환(FF·FF_IMP), 별도 안전 Registry, 요청 1 + 승인 2(요청자 승인 불가, FFG-PLT-016), 소프트웨어 HSM, '증적'→'Evidence'.
+
+| 단계 | 내용 | 상태 |
+|---|---|---|
+| U0 | 기준·충돌 제거·키트: v1.1 코드패키지 기준 재구성, guide:sync + 규칙 카탈로그(181·60), Kill 화면 safeMode 선택·"검증·승인 없는 경로" 문구 제거, contracts `schemas/safety.ts`·`rules/deactivation.ts`, 디자인 키트 `design/safety.tsx` + 갤러리, 하네스 `standards`·용어 래칫·키트 커버리지 | 완료 39345e5 |
+| U1 | 따라하기 랩 셸: `/learn`·CS-01 보기 모드·GuideDock·스포트라이트·표준 설명 모드·역할 전환·규칙 원문 Drawer + UX 검토 2회 | 완료 eaf2bf0·8ccf1f6 |
+
+**실제 개발 적용 계획 (사용자 지시 2026-10-13: "가이드가 아닌 실제 개발")** — 보고서 플랫폼 적용 규칙 75개를 기능으로. 따라하기는 결과를 보여 주는 창구(WP가 끝나면 해당 시나리오를 켬). 상세: `~/.claude/plans/feature-flag-iso26262-wise-tide.md`.
+공통: 계약 → 순수 규칙 → 마이그레이션(012~, 추가만) → 서비스·API → 화면 → 시험, 규칙 수용 기준 = 보고서 "검증·합격" 문장, `@rule` 표식·`standards` 래칫 상승, `verify:full` + UX 검토.
+
+| WP | 내용 | 주요 규칙 | 상태 |
+|---|---|---|---|
+| WP0 | 커널 신뢰 기반: 감사 해시 체인(UPDATE·DELETE 차단 트리거, 체인 검증 API), 소프트웨어 HSM(용도별 kid·epoch, 차량 키 파생, AES-CMAC, JCS, 정책 엔진), 승인자 개인 키, 역할 확장(SECURITY_OFFICER·OPS_LEAD·REGULATORY_OWNER, 보고서 승인 역할 대응, PLT-016 직무 분리) | PLT-015·013·016, SEC-002·008 | 완료 aa7bf24 |
+| WP1 | 안전 분류 Registry: SafetyProfile(5.7 속성), 분류 판정·조합 검사, 확정 서명·Version 고정, G1 blocker, flagKey 재사용 금지, 화면(목록 열·배지·안전 분류 탭) | CLS-001~009, ADS-002, CODE-020, LCY-011, VEH-006 | 완료 30dd8d1 — LCY-011 은퇴 6단계는 WP2, VEH-006 지원 조건 연결은 WP5로 넘김 |
+| WP2 | Gate 결정 기록(서명·CONDITIONAL 제한·fail-closed·강제 통과 2인), 재-HARA 자동 검출, 은퇴 6단계, G6/G7 분리 | LCY-001~012, TST-009, SOT-004 | 대기 |
+| WP3 | 정책 게이트(D03-02): 메시지 v2 zod(JSON Schema 자동 대조), evaluateGate 14규칙(부록 D.4 + 패키지 시험 변형 22사례 Golden, 패키지 Python 게이트와 규칙 단위 대조), 명령 원장(014_command_ledger: 순번+1·직전 Kill 승인자·24h 누적, 추가만), API `POST /api/gate/preview`·`GET /api/gate/features/:id/versions/:ver`, 안전 분류 탭 "정책 게이트 기준" 패널 | PLT-001~010·017, SEC-003, CLS-009, ADS-002·010 | 완료 9fe9346 — PLT-014(정책 생성 결정성 Golden)는 WP9로, GEN-003은 WP6, HSM 정책 엔진의 누적 상한 재집행은 WP4 |
+| WP4 | Kill·복원 v2: 요청 → 2인 승인(개인 서명) → 원장 → JWS → 차량별 봉투(CMAC), 사후 검토, DC4 거부 기록, 리콜 연계, 대량 종료 계획, 복원 2단계·겹침 금지, 화면(/ops/kill·승인함·복원 마법사) | DEAC-*, PLT-005·016·017, SEC-003·004·008, ADS-004·010·011 | 대기 |
+| WP5 | 차량 연결 v2: status 수신 검사 6단계(state_auth·report_seq…)·TEL-003 Incident, 시뮬레이터 Guard State Machine(DEACT_STAGES), 지연 감시, GLEO v2 + FF_IMP, Fleet 화면 | TEL-001·003·004·010, SEC-004·007, VEH-007·013, DEAC-013 | 대기 |
+| WP6 | 시장 Profile(버전·상태)·GEN-003 차단·CN 신고·형식승인 서명, 체험권 만료 고지(DC3·INACTIVE), SUMS 기록, /verify/compliance | GEN-001~006, PLT-006·009, DEAC-004·010, LCY-008·010 | 대기 |
+| WP7 | OpenFeature 경계: F2+ DISABLED·금지 문맥·metadata·flagd F0/F1·Hook·버전 고정 | OFT-001~008, PLT-011 | 대기 |
+| WP8 | SBOM·VEX·취약점 모니터링(D06-11 신설), 해시 결합 서명, 영향 검색 → 보안 Kill, /admin/security | SBOM-002·003·007, SEC-006, PLT-010 | 대기 |
+| WP9 | vECU 가상검증 v2(ffval 2.0: DC 단계·차량 내 감지·재현 정보·CLI await 결함) + G5 판정 정정 + 조합 시험 + 가상검증 화면 | TST-003·006·009, LCY-006, DEAC-001 | 대기 |
+| WP10 | 운영 감시·KPI·보존: 13.5 지표, 30초 상태 이력·DSSAD 연결, 보존·삭제, 드릴, VSOC 임계값, /ops/safety-kpi | TEL-008~010, ADS-007, DEAC-012, SOT-002·003, SEC-007 | 대기 |
+
+순서: WP0 → WP1 → WP3 → WP4 → WP5 → WP9 → WP2 → WP6 → WP7 → WP8 → WP10 (한 세션 한 WP, WP4·WP5는 2세션).
+
+하네스 규칙(이 작업부터): 규칙을 실제로 집행하는 함수·화면에는 `@rule FFG-XXX-NNN — 남은 부분` 표식, 시험 제목에 같은 ID(+ 해당 TC-FF). 카탈로그에 없는 ID는 verify 실패. 래칫 `platformRulesImplemented`·`platformRulesTested`·`reportTestsReferenced`(늘리기), `guideTermLines`(줄이기).
 
 ## 기준 문서 (저장소 밖)
 | 문서 | 위치 | 용도 |
@@ -49,7 +90,7 @@
 - [x] **P8a 배포·차단 전달·GLEO·vECU 가상검증** — 커널 Scheduler(manual: 결정적 회신·기한). PKI(D06-10 Ed25519·키 교체·이전 키 검증 유지)·보안 배포(D06-08 서명 게시본·대상별 단조 순번·P0 aggregate CONFIRMED/PARTIAL/DIVERGED/TIMEOUT)·파이프라인(D04-01 IF-13 산출물·IF-05 캠페인, 멱등 if_call)·수집(D04-03 IF-06, ReadbackBus)·차량 런타임(D02-03 서명·재전송 검증, 차량 측 평가 vs 서버 판단 drift)·긴급 차단(D03-03 영향 범위=REQUIRES 의존·배포 flag·차량, type-to-confirm, KillRepo가 평가기 KILL 단계 구동)·복구(D03-04 같은 순번 공간으로 오래된 차단 재전송 거부)·부팅 동기화(시드 배포 정책을 서명 게시). GLEO 어댑터 `GLEO_MODE=ws` — FF_IMP 실제 모의 브로커·DecisionEngine과 교차 시험(Safe Stop CONFIRMED). **vECU 가상검증**: vECU `tools/ffval_cli.mjs`(헤드리스) ↔ FF 어댑터·실행 기록(VV)·검증기 연결(정상 추종→D06-03 전 기준, 오류+Kill→D06-06 Kill 경로+TTC, 미실행·미연결은 HOLD)·TMS 제출(D04-02 IF-09)·G5 증적 규칙(같은 Version·vecu PASS·TMS 제출만). 검증기 INFO 등급(P7 결함: 배포 정책 대체·출시 상품 영향이 HOLD라 출시 Feature 정책을 고칠 수 없던 문제). 화면 v2: Fleet 실시간 적용 현황(`/twin/live` 대체·리다이렉트, "Digital Twin" 용어 금지 → lint-copy 금지어·라우트 제목·twinTermLines 래칫), 차량별 적용 상태, 긴급 차단·복구, 서명 배포·차량 회신(+PKI), vECU 가상검증(+정책 상세 패널). 컴포넌트 **28/42**. 테스트: contracts 108·백엔드 164·프론트 화면 7 신규·e2e 끝단 2 신규.
 - [x] **P8b 운영 되먹임·Policy Tool·IAM·Variant** — 이상 징후 대응(D06-12: 차량 고장 보고·서명 거부 회신·배포 회신 이상 → Feature별 이상 건, 규칙 표로 심각도·권고 — ASIL B 2대 이상·CRITICAL 보고·3대 이상이면 긴급 차단 권고, 차단 발령(anomalyId) 시 조치됨)·품질 피드백(D04-06: 조치된 고장·보안 이상 → 다음 Version의 G5·G7 재판정·vECU 회귀 요구, 더 높은 Version G5 PASS로 자동 해소). IF-04 Unleash 어댑터(hfp js/unleash.js·브리지 TS 이식: 허용 목록·토큰 원문·상태 OK/NOT_FOUND/DENIED/FAILED/INVALID, 모의 Unleash는 같은 경로·응답 모양, 배포 정책만 내보냄·EXCLUDES BLOCKED·코호트는 서명 목록·flag 없는 REQUIRES는 참고, 동기화 첫 실패에서 중단·upsert, playground 차량별 대조(STALE·UNTRUSTED는 비교 제외, 차단은 FP에서만), drift 탐지, `docker/unleash` 8.2.0 compose). IAM(D06-09: 권한표는 ROUTES 파생·직무 분리 규칙·거부 이력, VEHICLE은 사람 역할에서 제외). Variant·기능 지원 조건(D02-01·02: 범위·UPG-VC·기능 앱 SW 요구 Version, 평가기는 그대로 두고 매트릭스·정책 검증 INFO·차량별 지원 패널). 레거시 'Twin/트윈' 표기 43 → 0. 화면 v2: 이상 징후 대응, 품질 피드백, 정책 상세 Unleash 패널, 플랫폼 인증·권한, Variant·지원 조건. 하네스가 잡은 결함: 위조 사본이 먼저 오면 진짜 게시본이 DIVERGED로 닫히던 문제(거부 회신은 집계 제외), 모의 Unleash 응답이 내부 배열을 공유해 새 전략을 지우던 문제, 같은 시각 동기화 키 충돌. 컴포넌트 **33/42**.
 - [x] **P9 PoC 6단계 러너·42 컴포넌트 아키텍처·OpenFeature OF-1~4** — 서버 오케스트레이터(`backend/src/workflows/poc1.workflow.ts`, poc_run 저장): ① Registry·Gate 9/9·BL-00028·상품 확인 → ② 정책 작성·vECU 가상검증·8종 GO·승인(작성자≠승인자) → ③ 승인 정책 기준 Fleet 판단 미리보기 → ④ 서버 배포·서명 게시·OTA 회신 집계(PARTIAL 허용)·Unleash 동기화 → ⑤ 차량 HELLO·차량 측 평가·OpenFeature(OFREP) → ⑥ 차량 2대 고장 보고 → 이상 건(긴급 차단 권고) → 운영자 차단 → 회신 CONFIRMED → Safe Default → 품질 피드백. 행위마다 다른 역할(작성자·승인자·출시·운영·차량), ROUTES 역할 규칙 확인, 재실행 시 이전 PoC 차단 복구. 화면 `/poc`(단계·행위·증적·관여 컴포넌트, 끝까지 실행), `/arch/components`(6도메인 42카드·실시간 활동·PoC 단계 필터, GET /api/components/activity). OpenFeature: OF-1 공식 server SDK + OFREP provider 적합성(값·variant·reason·flagMetadata, FLAG_NOT_FOUND·TARGETING_KEY_MISSING·INVALID_CONTEXT → 기본값), OF-2 웹 SDK + OFREP 웹 provider 패널(활성화 판단 화면), OF-3 차단·해제를 ETag 폴링으로 감지(e2e), OF-4 문맥 표준화(targetingKey=VIN, 다른 속성은 등록 정보가 원천·ignoredContext 알림). e2e는 PoC를 별도 프로젝트로 맨 마지막에(FEAT-00022 실제 차단). 하네스가 잡은 결함: 시험이 부팅 뒤 시계를 고정해 부팅 때 잡힌 회신 기한이 실제 날짜에 따라 달라지던 문제 → `bootApp({ at })`·FF_CLOCK_AT.
-- [x] **체험권 기간형 재설계·체험 전환 분석·vECU 동시 배포 (2026-10-13)** — 사용자 요청: 체험권은 차량마다, 활성화 차량 목록·수락 통계·국가/지역/운전자 성향 분석·구매 전환. contracts `rules/trial.ts`(grantState·trialFunnel(K=5 가림)·trialTrend(월요일 주)·결정적 합성 모집단 mulberry32·화면/스냅샷 공용 질의), 권한 스키마(OFFERED/ACTIVE/DECLINED/EXPIRED/CONVERTED, CONSUMED 폐지). 백엔드: 마이그레이션 011(vehicle_profile·entitlement.source), 상대 날짜 시드 + 가명 성향 + 합성 3000대, D01-05 제안·수락·거절·체험권 목록(상태·성향 필터·쪽), D05-04 과금 연계 모의(if_call BILLING 멱등 → 체험 CONVERTED + 구독/구매 권한 fromTrial), D05-06 체험 전환 분석(깔때기·성향별·26주 추이), 차량 TRIAL_ACCEPT = 제안 수락, PoC ⑤에 lead-01 IVI 체험 수락. 화면: 사용 권한·체험권(체험권 차량/전체 권한 탭·제안 패널), 체험 전환 분석 `/biz/trials`(SVG 차트, dataviz 규칙·팔레트 검증, 키보드 십자선). vECU 웹 실행본 동기화(`tools/vecu-sync.ts`) → 사이트 `/vecu/`, 가상검증 화면에서 링크. 하네스가 잡은 결함: 고정 날짜 데모 체험권이 시간이 지나면 만료돼 PoC ON이 깨지던 시한폭탄(8개월 뒤 부팅 회귀 시험), 부팅 후 시계를 고정하던 시험 5개 → 시드 기준일 불일치, 셸 본문(.sh-main)이 position 기준이 아니라 표 캡션(.ds-sr absolute)이 문서를 늘려 긴 화면마다 셸 아래 빈 띠·바깥 스크롤이 생기던 문제(셸 레이아웃 e2e에 세로 넘침 검사 추가), SVG 자식의 offsetX로 십자선 위치가 어긋나던 문제. 컴포넌트 **35/42**.
+- [x] **체험권 기간형 재설계·체험 전환 분석·vECU 동시 배포 (2026-10-13)** — 사용자 요청: 체험권은 차량마다, 활성화 차량 목록·수락 통계·국가/지역/운전자 성향 분석·구매 전환. contracts `rules/trial.ts`(grantState·trialFunnel(K=5 가림)·trialTrend(월요일 주)·결정적 합성 모집단 mulberry32·화면/스냅샷 공용 질의), 권한 스키마(OFFERED/ACTIVE/DECLINED/EXPIRED/CONVERTED, CONSUMED 폐지). 백엔드: 마이그레이션 011(vehicle_profile·entitlement.source), 상대 날짜 시드 + 가명 성향 + 합성 3000대, D01-05 제안·수락·거절·체험권 목록(상태·성향 필터·쪽), D05-04 과금 연계 모의(if_call BILLING 멱등 → 체험 CONVERTED + 구독/구매 권한 fromTrial), D05-06 체험 전환 분석(깔때기·성향별·26주 추이), 차량 TRIAL_ACCEPT = 제안 수락, PoC ⑤에 lead-01 IVI 체험 수락. 화면: 사용 권한·체험권(체험권 차량/전체 권한 탭·제안 패널), 체험 전환 분석 `/biz/trials`(SVG 차트, dataviz 규칙·팔레트 검증, 키보드 십자선). vECU 웹 실행본 동기화(`tools/vecu-sync.ts`) → 사이트 `/vecu/`, 가상검증 화면에서 링크. 하네스가 잡은 결함: 고정 날짜 데모 체험권이 시간이 지나면 만료돼 PoC ON이 깨지던 시한폭탄(8개월 뒤 부팅 회귀 시험), 부팅 후 시계를 고정하던 시험 5개 → 시드 기준일 불일치, 셸 본문(.sh-main)이 position 기준이 아니라 표 캡션(.ds-sr absolute)이 문서를 늘려 긴 화면마다 셸 아래 빈 띠·바깥 스크롤이 생기던 문제(셸 레이아웃 e2e에 세로 넘침 검사 추가), SVG 자식의 offsetX로 십자선 위치가 어긋나던 문제, vECU 원본 CRLF가 Git(LF) 저장 후 해시 불일치(줄끝 정규화), P9 poc 의존 프로젝트에서 --grep-invert가 빠져 CI(Linux)가 Windows 시각 기준과 비교하던 문제(시각 회귀를 별도 `visual` 프로젝트로, 기준 파일 `*-visual.png`). 컴포넌트 **35/42**. 운영 배포 d97662f(2026-10-13) — https://feature-topology.pages.dev/biz/trials · /entitlements · /vecu/?ffv=FEAT-00023 확인(`e2e/scripts/live-smoke.mjs`).
 - [ ] P10 나머지 컴포넌트·IF 모의 어댑터·레거시 정리(FEAT-BDC 0)
 - [ ] P11 마감: --strict, 래칫 0, 시각 기준, 문서
 
@@ -82,7 +123,7 @@
 
 ## 준수 현황 (자동 생성 — `npm run progress`)
 <!-- AUTO:conformance -->
-**컴포넌트 28/42** — D01 9/10 · D02 1/3 · D03 4/4 · D04 4/6 · D05 1/7 · D06 9/12
+**컴포넌트 35/42** — D01 9/10 · D02 3/3 · D03 4/4 · D04 5/6 · D05 3/7 · D06 11/12
 
 | ID | 컴포넌트 | Tier | 상태 | 화면 | 테스트 |
 |---|---|---|---|---|---|
@@ -90,14 +131,14 @@
 | D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /analysis/impact /precheck | 6 |
 | D01-03 | Feature Catalog | A | ✅ | /products /products/new /products/:id/:ver | 3 |
 | D01-04 | 적용 대상 선정 규칙 | A | ✅ | /activation/decide | 5 |
-| D01-05 | 사용 권한 관리 | A | ✅ | /entitlements | 4 |
-| D01-06 | 정책 저장·버전 관리 | A | ✅ | /policies /policies/new /policies/:id | 3 |
+| D01-05 | 사용 권한 관리 | A | ✅ | /entitlements | 6 |
+| D01-06 | 정책 저장·버전 관리 | A | ✅ | /policies /policies/new /policies/:id | 7 |
 | D01-07 | 실험·효과 검증 관리 | B | · | — | 0 |
 | D01-08 | 단계적 기능 배포 | B | ✅ | /policies/:id | 4 |
 | D01-09 | 정책 기반 활성화 제어 | A | ✅ | /activation/decide | 5 |
 | D01-10 | 감사 이력 관리 | A | ✅ | /audit | 2 |
-| D02-01 | Variant 조건 관리 | A | · | — | 0 |
-| D02-02 | 기능 지원 조건 관리 | B | · | — | 0 |
+| D02-01 | Variant 조건 관리 | A | ✅ | /variant-conditions | 3 |
+| D02-02 | 기능 지원 조건 관리 | B | ✅ | /variant-conditions /fleet/vehicles/:vin | 3 |
 | D02-03 | 차량 런타임 실행 모듈 | A | ✅ | /fleet/live /fleet/vehicles/:vin | 7 |
 | D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations | 4 |
 | D03-02 | 배포 안전성 검증 | A | ✅ | /policies/:id /validations | 5 |
@@ -108,13 +149,13 @@
 | D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id | 3 |
 | D04-04 | 이벤트 이력 추적 | A | ✅ | /events | 2 |
 | D04-05 | 장애·VOC 이력 연계 | C | · | — | 0 |
-| D04-06 | 품질 피드백 반영 | A | · | — | 0 |
+| D04-06 | 품질 피드백 반영 | A | ✅ | /quality/feedback | 4 |
 | D05-01 | API Gateway | C | ✅ | /activation/decide | 4 |
 | D05-02 | 데이터 동기화 | C | · | — | 0 |
 | D05-03 | Legacy 시스템 연계 | C | · | — | 0 |
-| D05-04 | 과금 시스템 연계 | C | · | — | 0 |
+| D05-04 | 과금 시스템 연계 | C | ✅ | /entitlements | 3 |
 | D05-05 | 현장 지원 포털 | C | · | — | 0 |
-| D05-06 | 사업 지표 모니터링 | C | · | — | 0 |
+| D05-06 | 사업 지표 모니터링 | C | ✅ | /biz/trials | 4 |
 | D05-07 | Legacy-SDV Interface | C | · | — | 0 |
 | D06-01 | 정책 검증 | A | ✅ | /policies/:id /validations | 4 |
 | D06-02 | 시스템 연동 검증 | B | ✅ | /policies/:id /validations | 4 |
@@ -124,10 +165,10 @@
 | D06-06 | 안전 동작 검증 | B | ✅ | /policies/:id /validations | 4 |
 | D06-07 | 안전 요구사항 추적 | B | ✅ | /policies/:id /validations | 4 |
 | D06-08 | 보안 배포 관리 | A | ✅ | /deployments /deployments/:id /fleet/live | 3 |
-| D06-09 | 플랫폼 인증·권한 관리(IAM) | A | · | — | 0 |
+| D06-09 | 플랫폼 인증·권한 관리(IAM) | A | ✅ | /admin/iam | 3 |
 | D06-10 | 인증서·키 관리(PKI/KMS) | A | ✅ | /deployments | 2 |
 | D06-11 | 보안 취약점 모니터링 | C | · | — | 0 |
-| D06-12 | 이상 징후 대응 | B | · | — | 0 |
+| D06-12 | 이상 징후 대응 | B | ✅ | /ops/anomalies | 4 |
 
 **래칫 기준** (`harness/baselines.json`)
 
@@ -135,6 +176,10 @@
 |---|---|---|---|
 | rawColors | 818 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
 | featBdcFiles | 37 | ↓ 줄이기 | FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지 |
-| implementedComponents | 28 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
-| twinTermLines | 43 | ↓ 줄이기 | 레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지 |
+| implementedComponents | 35 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
+| twinTermLines | 0 | ↓ 줄이기 | 레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지 |
+| guideTermLines | 144 | ↓ 줄이기 | 보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지 |
+| platformRulesImplemented | 2 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 @rule 표식으로 구현이 추적되는 규칙 수 — 늘려 나간다 |
+| platformRulesTested | 2 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 시험이 있는 규칙 수 — 늘려 나간다 |
+| reportTestsReferenced | 1 | ↑ 늘리기 | 시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다 |
 <!-- /AUTO:conformance -->

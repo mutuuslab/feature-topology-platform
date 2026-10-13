@@ -2,7 +2,10 @@
 // /variant-conditions — Variant·지원 조건 (D02-01·D02-02): Feature Version × Fleet 매트릭스.
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { REPORT_APPROVER_ROLES, ROLE_LABEL, type ApproverRole } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
+import { PLATFORM_ROLES } from '../../api/actor';
+import { roleLabel } from '../../data/refdata';
 import { ko } from '../../copy/ko';
 import { AsyncView, DataTable, Field, KeyValue, Kpi, PageHeader, Panel, VerdictBadge } from '../../design';
 import { when } from '../shared';
@@ -65,6 +68,21 @@ export function IamScreen() {
           </Panel>
         )}
       </AsyncView>
+      <Panel title={I.reportRoles} id="report-roles" tour="report-roles">
+        <p className="ds-field__hint" style={{ marginTop: 0 }}>
+          {I.reportRolesLead}
+        </p>
+        <DataTable
+          caption={I.reportRoles}
+          rows={(Object.keys(REPORT_APPROVER_ROLES) as ApproverRole[]).map((a) => ({ a, role: REPORT_APPROVER_ROLES[a] }))}
+          rowKey={(r) => r.a}
+          columns={[
+            { key: 'a', header: 'approvals[].role', cell: (r) => <span className="ds-rule-id">{r.a}</span> },
+            { key: 'p', header: I.col.role, cell: (r) => <span>{`${ROLE_LABEL[r.role]} · `}<span className="ds-mono">{r.role}</span></span> },
+            { key: 'h', header: I.holders, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{Object.entries(PLATFORM_ROLES).filter(([, rs]) => rs.includes(r.role)).map(([k]) => roleLabel(k)).join(', ') || '—'}</span> },
+          ]}
+        />
+      </Panel>
       <div className="ds-split">
         <Panel title={I.sod} id="sod">
           <DataTable

@@ -1,0 +1,211 @@
+{
+ "_comment": "Terminology rules. A banned term is allowed only on lines that also match allow_context. apply_vocabulary: allowed tokens of the rule field '적용' (guide 1.5) besides platform component names. plain_words: upper-case words that are not abbreviations.",
+ "banned": [
+  {
+   "term": "SAFE_STOP",
+   "allow_context": "금지|레거시|legacy|기존|폐기|SAFE_MODES|safe_mode",
+   "why": "Kill 결과로 즉시 정지는 금지(7장). 금지·레거시 문맥에서만 허용"
+  },
+  {
+   "term": "KILLED",
+   "allow_context": "v1\\.0|구 용어|DISABLED",
+   "why": "상태명은 DISABLED"
+  },
+  {
+   "term": "ISO 26262 인증서",
+   "allow_context": "아니|않|불가|대상이 아니",
+   "why": "플랫폼 자체 인증 주장 금지"
+  },
+  {
+   "term": "MISRA 완전 준수",
+   "allow_context": "아니|않|GCS",
+   "why": "준수 주장은 MISRA Compliance:2020 Evidence(GCS)으로만"
+  },
+  {
+   "term": "즉시 비활성화",
+   "allow_context": "금지|불가|DC0|비안전|F0|F1|않|아니|안 된|안된|원칙|요구",
+   "why": "안전 Feature 즉시 비활성화는 금지(7장)"
+  },
+  {
+   "term": "증적",
+   "allow_context": "$^",
+   "why": "사용자 요청(2026-10-13): '증적' 대신 기술 용어 'Evidence' 사용"
+  },
+  {
+   "term": "상태기계",
+   "allow_context": "$^",
+   "why": "용어 통일: State Machine을 쓴다(tools/term_fix.py)"
+  },
+  {
+   "term": "상태 기계",
+   "allow_context": "$^",
+   "why": "용어 통일: State Machine을 쓴다(tools/term_fix.py)"
+  },
+  {
+   "term": "PoC",
+   "allow_context": "$^",
+   "why": "일반 가이드: 특정 PoC·시연 프로젝트를 본문에 쓰지 않는다(2026-10-13 요청)"
+  },
+  {
+   "term": "GLEO",
+   "allow_context": "$^",
+   "why": "일반 가이드: 특정 PoC·시연 프로젝트를 본문에 쓰지 않는다(2026-10-13 요청)"
+  },
+  {
+   "term": "v0.34",
+   "allow_context": "$^",
+   "why": "일반 가이드: 특정 PoC·시연 프로젝트를 본문에 쓰지 않는다(2026-10-13 요청)"
+  },
+  {
+   "term": "timeline.json",
+   "allow_context": "$^",
+   "why": "일반 가이드: 특정 PoC·시연 프로젝트를 본문에 쓰지 않는다(2026-10-13 요청)"
+  },
+  {
+   "term": "시연 키트",
+   "allow_context": "$^",
+   "why": "일반 가이드: 특정 PoC·시연 프로젝트를 본문에 쓰지 않는다(2026-10-13 요청)"
+  },
+  {
+   "term": "영상 기준",
+   "allow_context": "$^",
+   "why": "일반 가이드: 특정 PoC·시연 프로젝트를 본문에 쓰지 않는다(2026-10-13 요청)"
+  },
+  {
+   "term": "내부용",
+   "allow_context": "$^",
+   "why": "본문과 부록은 내부·협력사 공통 배포본이다"
+  },
+  {
+   "term": "Work Package",
+   "allow_context": "$^",
+   "why": "사용자 요청(2026-10-13): Work Package 내용 삭제"
+  },
+  {
+   "term": "WP1",
+   "allow_context": "$^",
+   "why": "사용자 요청(2026-10-13): Work Package 내용 삭제"
+  },
+  {
+   "term": "WP2",
+   "allow_context": "$^",
+   "why": "사용자 요청(2026-10-13): Work Package 내용 삭제"
+  },
+  {
+   "term": "WP3",
+   "allow_context": "$^",
+   "why": "사용자 요청(2026-10-13): Work Package 내용 삭제"
+  },
+  {
+   "term": "WP4",
+   "allow_context": "$^",
+   "why": "사용자 요청(2026-10-13): Work Package 내용 삭제"
+  },
+  {
+   "term": "WP5",
+   "allow_context": "$^",
+   "why": "사용자 요청(2026-10-13): Work Package 내용 삭제"
+  },
+  {
+   "term": "v1.0",
+   "allow_context": "CSAF|SPDX|CycloneDX|OpenFeature|OFREP",
+   "why": "문서 버전은 1.1, 개정 이력은 Initial만 둔다(2026-10-13 요청)"
+  },
+  {
+   "term": "v2.0",
+   "allow_context": "CSAF|SPDX|CycloneDX|OpenFeature|OFREP",
+   "why": "문서 버전은 1.1, 개정 이력은 Initial만 둔다(2026-10-13 요청)"
+  },
+  {
+   "term": "v0.9",
+   "allow_context": "CSAF|SPDX|CycloneDX|OpenFeature|OFREP",
+   "why": "문서 버전은 1.1, 개정 이력은 Initial만 둔다(2026-10-13 요청)"
+  },
+  {
+   "term": "하네스",
+   "allow_context": "$^",
+   "why": "문서 품질 하네스는 문서 밖에서 운영하며 본문에 싣지 않는다(2026-10-13 요청)"
+  },
+  {
+   "term": "공개 입장",
+   "allow_context": "$^",
+   "why": "공신력 없는 출처 삭제(2026-10-13 요청)"
+  }
+ ],
+ "deprecated_map": {
+  "LPC": "차량 런타임 실행 모듈(LPC) 첫 사용 시 병기",
+  "Kill Switch": "긴급 기능 차단(Kill Switch) 첫 사용 시 병기"
+ },
+ "apply_vocabulary": [
+  "C",
+  "C++",
+  "CCS/OTA",
+  "CSM",
+  "Feature Owner",
+  "HMI",
+  "IVI 앱",
+  "LPC",
+  "PKI 운영",
+  "Registry",
+  "Safety Guard",
+  "Safety Manager",
+  "구매",
+  "내부",
+  "데이터 보호 담당",
+  "법규 담당",
+  "법무",
+  "시험 조직",
+  "아키텍트",
+  "요구 Owner",
+  "운영 조직",
+  "전 조직",
+  "차량 SW",
+  "통합 조직",
+  "품질 조직",
+  "플랫폼",
+  "플랫폼 게이트",
+  "협력사"
+ ],
+ "plain_words": [
+  "APPROVED",
+  "CHANGED",
+  "CONDITIONAL",
+  "CONFIGURATION",
+  "DECOMMISSIONED",
+  "DEFAULT",
+  "DEV",
+  "ENUM",
+  "ERROR",
+  "EV",
+  "FAIL",
+  "FATAL",
+  "FD",
+  "FEAT",
+  "GENERAL",
+  "II",
+  "IN",
+  "KILL",
+  "MAJOR",
+  "MINOR",
+  "NULL",
+  "OFF",
+  "OK",
+  "OKSOMELOST",
+  "ON",
+  "PASS",
+  "POST",
+  "PROVIDER",
+  "R171SWIN",
+  "READY",
+  "RELEASED",
+  "REPEATED",
+  "RETIRED",
+  "SKIP",
+  "SOT",
+  "STALE",
+  "TRUSTED",
+  "UNTRUSTED",
+  "WARN",
+  "WRONGSEQUENCE"
+ ]
+}

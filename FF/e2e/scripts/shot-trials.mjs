@@ -1,7 +1,7 @@
-// 개발 확인용 — 체험 전환 분석·체험권 화면을 1536·1920에서 찍는다 (dev 서버 9012 필요). 결과: e2e/test-results/shots/
+// 개발 확인용 — 체험 전환 분석·체험권 화면을 1536·1920에서 찍는다 (dev 서버 9012 필요). 결과: e2e/shots/ (Playwright가 실행마다 비우는 test-results 밖)
 import { chromium } from '@playwright/test';
 const base = process.env.BASE ?? 'http://localhost:9012';
-const out = new URL('../test-results/shots/', import.meta.url).pathname.replace(/^\/(\w:)/, '$1');
+const out = new URL('../shots/', import.meta.url).pathname.replace(/^\/(\w:)/, '$1');
 const b = await chromium.launch();
 for (const [w, h] of [[1536, 864], [1920, 1080]]) {
   const p = await b.newPage({ viewport: { width: w, height: h } });

@@ -23,6 +23,7 @@ Thumbs.db
 FF/harness/conformance.json
 *.tsbuildinfo
 FF/e2e/test-results/
+FF/e2e/shots/
 FF/e2e/report/
 FF/e2e/review/
 FF/frontend/public/api-snapshot/

@@ -1,0 +1,984 @@
+{
+  "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
+  "summary": {
+    "platformRules": 75,
+    "implemented": 23,
+    "tested": 23,
+    "reportTestsReferenced": 11
+  },
+  "rules": [
+    {
+      "id": "FFG-ADS-002",
+      "title": "ADS Feature는 원격 종료가 가능해야 한다",
+      "scope": [
+        "Registry",
+        "Safety Manager"
+      ],
+      "section": "03_ads_regulation.md · 3.11 규칙",
+      "implemented": [
+        "contracts/src/rules/classification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/classification.test.ts",
+        "contracts/src/rules/policy-gate.test.ts"
+      ]
+    },
+    {
+      "id": "FFG-ADS-004",
+      "title": "해제 전 재활성화 금지",
+      "scope": [
+        "Safety Guard",
+        "플랫폼"
+      ],
+      "section": "03_ads_regulation.md · 3.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-ADS-007",
+      "title": "종료·복원 이벤트의 시간 기록과 보존",
+      "scope": [
+        "Safety Guard",
+        "플랫폼"
+      ],
+      "section": "03_ads_regulation.md · 3.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-ADS-010",
+      "title": "폐기 후 활성화 방지",
+      "scope": [
+        "플랫폼",
+        "Safety Guard"
+      ],
+      "section": "03_ads_regulation.md · 3.11 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts"
+      ]
+    },
+    {
+      "id": "FFG-CLS-001",
+      "title": "모든 Feature Version은 네 축으로 분류",
+      "scope": [
+        "Registry",
+        "Safety Manager"
+      ],
+      "section": "05_classification.md · 5.8 규칙",
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/safety-profile.spec.ts",
+        "frontend/src/__tests__/screensSafety.test.tsx",
+        "e2e/tests/governance.spec.ts",
+        "e2e/tests/policy.spec.ts"
+      ]
+    },
+    {
+      "id": "FFG-CLS-002",
+      "title": "안전 관련 Flag는 사용 SW의 ASIL을 상속",
+      "scope": [
+        "차량 SW",
+        "플랫폼"
+      ],
+      "section": "05_classification.md · 5.8 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-CLS-004",
+      "title": "비활성화 등급과 Safe State는 Feature Version에 고정",
+      "scope": [
+        "Registry",
+        "차량 SW"
+      ],
+      "section": "05_classification.md · 5.8 규칙",
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/registry.spec.ts",
+        "backend/test/d01/safety-profile.spec.ts",
+        "frontend/src/__tests__/screensSafety.test.tsx",
+        "e2e/tests/governance.spec.ts"
+      ]
+    },
+    {
+      "id": "FFG-CLS-006",
+      "title": "안전 거동의 A/B 실험 금지",
+      "scope": [
+        "플랫폼",
+        "Feature Owner"
+      ],
+      "section": "05_classification.md · 5.8 규칙",
+      "implemented": [
+        "contracts/src/rules/classification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/classification.test.ts"
+      ]
+    },
+    {
+      "id": "FFG-CLS-007",
+      "title": "Entitlement는 안전 Kill을 해제하지 못함",
+      "scope": [
+        "플랫폼",
+        "차량 SW"
+      ],
+      "section": "05_classification.md · 5.8 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-CLS-009",
+      "title": "비활성화 등급과 F 등급·프로파일의 정합",
+      "scope": [
+        "Registry",
+        "플랫폼 게이트",
+        "Safety Guard"
+      ],
+      "section": "05_classification.md · 5.8 규칙",
+      "implemented": [
+        "contracts/src/rules/classification.ts",
+        "contracts/src/rules/policy-gate.ts",
+        "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/classification.test.ts",
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d01/safety-profile.spec.ts",
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/screensSafety.test.tsx",
+        "e2e/tests/learn.spec.ts"
+      ]
+    },
+    {
+      "id": "FFG-CODE-020",
+      "title": "Flag ID 재사용 금지, 은퇴한 Flag는 코드까지 제거",
+      "scope": [
+        "C",
+        "C++",
+        "플랫폼"
+      ],
+      "section": "10_coding.md · 10.6 규칙",
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/safety-profile.spec.ts"
+      ]
+    },
+    {
+      "id": "FFG-CODE-030",
+      "title": "AI 생성 코드는 사람이 쓴 코드와 같은 절차로",
+      "scope": [
+        "C",
+        "C++",
+        "플랫폼"
+      ],
+      "section": "10_coding.md · 10.6 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-DEAC-004",
+      "title": "상업·운영 사유는 다음 시동에",
+      "scope": [
+        "차량 SW",
+        "플랫폼"
+      ],
+      "section": "07_deactivation.md · 7.11 규칙",
+      "implemented": [
+        "contracts/src/rules/deactivation.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/deactivation.test.ts"
+      ]
+    },
+    {
+      "id": "FFG-DEAC-007",
+      "title": "안전 Kill 상태는 자동으로 풀리지 않음",
+      "scope": [
+        "차량 SW",
+        "플랫폼"
+      ],
+      "section": "07_deactivation.md · 7.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-DEAC-008",
+      "title": "복원은 다른 승인자, 다음 시동, 자체 시험",
+      "scope": [
+        "플랫폼",
+        "차량 SW"
+      ],
+      "section": "07_deactivation.md · 7.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-DEAC-010",
+      "title": "안전 Kill과 리콜·봉쇄 절차 연계",
+      "scope": [
+        "플랫폼",
+        "법규 담당"
+      ],
+      "section": "07_deactivation.md · 7.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-DEAC-011",
+      "title": "DC4 거부도 기록",
+      "scope": [
+        "차량 SW",
+        "플랫폼"
+      ],
+      "section": "07_deactivation.md · 7.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-DEAC-013",
+      "title": "대기 상한과 상위 대응",
+      "scope": [
+        "차량 SW",
+        "플랫폼",
+        "Safety Manager"
+      ],
+      "section": "07_deactivation.md · 7.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-GEN-001",
+      "title": "Compliance Profile은 버전 관리 데이터",
+      "scope": [
+        "플랫폼",
+        "법규 담당"
+      ],
+      "section": "02_compliance.md · 2.4 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-GEN-003",
+      "title": "미확인 시장에서는 F2 이상 활성화 차단",
+      "scope": [
+        "플랫폼 게이트"
+      ],
+      "section": "02_compliance.md · 2.4 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-LCY-001",
+      "title": "Gate 결정은 서명된 기록",
+      "scope": [
+        "플랫폼"
+      ],
+      "section": "06_lifecycle.md · 6.6 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-LCY-002",
+      "title": "Gate는 fail-closed",
+      "scope": [
+        "플랫폼"
+      ],
+      "section": "06_lifecycle.md · 6.6 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-LCY-003",
+      "title": "재-HARA 조건 자동 검출",
+      "scope": [
+        "플랫폼",
+        "Safety Manager"
+      ],
+      "section": "06_lifecycle.md · 6.6 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-LCY-008",
+      "title": "활성화·비활성화는 SUMS 기록 대상",
+      "scope": [
+        "플랫폼",
+        "법규 담당"
+      ],
+      "section": "06_lifecycle.md · 6.6 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-LCY-009",
+      "title": "배포와 효력 분리, 단계적 확대",
+      "scope": [
+        "플랫폼",
+        "CCS/OTA"
+      ],
+      "section": "06_lifecycle.md · 6.6 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-LCY-010",
+      "title": "활성화는 작동 중이 아닐 때, 시장 고지와 함께",
+      "scope": [
+        "차량 SW",
+        "플랫폼"
+      ],
+      "section": "06_lifecycle.md · 6.6 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-OFT-001",
+      "title": "OpenFeature는 F0·F1 평가에만 쓴다",
+      "scope": [
+        "플랫폼",
+        "IVI 앱"
+      ],
+      "section": "11_openfeature.md · 11.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-OFT-002",
+      "title": "기본값은 Safe State",
+      "scope": [
+        "IVI 앱",
+        "플랫폼"
+      ],
+      "section": "11_openfeature.md · 11.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-OFT-003",
+      "title": "Evaluation Context에 개인정보·위치·주행 상태를 넣지 않는다",
+      "scope": [
+        "플랫폼",
+        "IVI 앱",
+        "데이터 보호 담당"
+      ],
+      "section": "11_openfeature.md · 11.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-OFT-004",
+      "title": "감사 Hook과 가명 기록",
+      "scope": [
+        "플랫폼",
+        "IVI 앱"
+      ],
+      "section": "11_openfeature.md · 11.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-OFT-005",
+      "title": "F2 이상 Flag는 OpenFeature 백엔드로 내보내지 않는다",
+      "scope": [
+        "플랫폼 게이트"
+      ],
+      "section": "11_openfeature.md · 11.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-OFT-006",
+      "title": "Provider Event와 스냅샷 Version",
+      "scope": [
+        "플랫폼"
+      ],
+      "section": "11_openfeature.md · 11.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-OFT-007",
+      "title": "사양과 SDK Version 고정",
+      "scope": [
+        "플랫폼",
+        "IVI 앱"
+      ],
+      "section": "11_openfeature.md · 11.11 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-PLT-001",
+      "title": "메시지 스키마 v2 적합성",
+      "scope": [
+        "플랫폼",
+        "LPC"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/jcs.ts",
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/jcs.test.ts",
+        "contracts/src/rules/policy-gate.test.ts",
+        "contracts/src/schemas/wire.test.ts",
+        "backend/test/d03/policy-gate.spec.ts"
+      ]
+    },
+    {
+      "id": "FFG-PLT-002",
+      "title": "Registry RELEASED 버전만 대상",
+      "scope": [
+        "플랫폼"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/designSafety.test.tsx"
+      ]
+    },
+    {
+      "id": "FFG-PLT-003",
+      "title": "등급은 Registry 데이터, 운영자가 선택하지 않음",
+      "scope": [
+        "플랫폼"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts",
+        "frontend/src/screens/ops/KillConsole.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/screensLearn.test.tsx",
+        "frontend/src/__tests__/screensOps.test.tsx"
+      ]
+    },
+    {
+      "id": "FFG-PLT-004",
+      "title": "DC4·의무 기능 원격 요청 금지",
+      "scope": [
+        "플랫폼",
+        "Safety Guard"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts"
+      ]
+    },
+    {
+      "id": "FFG-PLT-005",
+      "title": "2인 승인과 역할",
+      "scope": [
+        "플랫폼"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts",
+        "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
+        "backend/test/d06/hsm.spec.ts",
+        "frontend/src/__tests__/designSafety.test.tsx",
+        "frontend/src/__tests__/screensSafety.test.tsx"
+      ]
+    },
+    {
+      "id": "FFG-PLT-006",
+      "title": "상업·운영 사유의 지연 적용과 고지",
+      "scope": [
+        "플랫폼",
+        "Safety Guard"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts"
+      ]
+    },
+    {
+      "id": "FFG-PLT-007",
+      "title": "메시지 유효기간 상한",
+      "scope": [
+        "플랫폼",
+        "Safety Guard"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts"
+      ]
+    },
+    {
+      "id": "FFG-PLT-008",
+      "title": "적용 범위 상한과 Canary",
+      "scope": [
+        "플랫폼",
+        "CCS/OTA"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts"
+      ]
+    },
+    {
+      "id": "FFG-PLT-009",
+      "title": "시장·형식승인 사전조건",
+      "scope": [
+        "플랫폼",
+        "CCS/OTA",
+        "LPC"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/designSafety.test.tsx"
+      ]
+    },
+    {
+      "id": "FFG-PLT-010",
+      "title": "BOM·SBOM·Evidence 참조",
+      "scope": [
+        "플랫폼",
+        "CCS/OTA"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts"
+      ]
+    },
+    {
+      "id": "FFG-PLT-011",
+      "title": "OpenFeature는 QM 평가 API로만 사용",
+      "scope": [
+        "플랫폼",
+        "IVI 앱"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-PLT-012",
+      "title": "Broker 보안과 전달 규칙",
+      "scope": [
+        "플랫폼",
+        "CCS/OTA"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-PLT-013",
+      "title": "컴포넌트 TCL 분류와 신뢰도 확보",
+      "scope": [
+        "플랫폼",
+        "Safety Manager"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-PLT-014",
+      "title": "정책 생성은 결정적이며 Golden 시험을 가짐",
+      "scope": [
+        "정책 저장·버전 관리",
+        "정책 검증"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-PLT-015",
+      "title": "감사·검증 이력은 추가만 가능",
+      "scope": [
+        "감사 이력 관리",
+        "검증 이력 관리",
+        "이벤트 이력 추적"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "backend/src/kernel/audit.service.ts"
+      ],
+      "tested": [
+        "backend/test/kernel/audit-chain.spec.ts",
+        "frontend/src/__tests__/screensTrust.test.tsx"
+      ]
+    },
+    {
+      "id": "FFG-PLT-016",
+      "title": "IAM 직무 분리",
+      "scope": [
+        "플랫폼 인증·권한 관리(IAM)"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [],
+      "tested": [
+        "contracts/src/rules/tutorial.test.ts",
+        "frontend/src/__tests__/designSafety.test.tsx",
+        "frontend/src/__tests__/screensTrust.test.tsx"
+      ]
+    },
+    {
+      "id": "FFG-PLT-017",
+      "title": "주문 순번은 원장 기준 +1",
+      "scope": [
+        "플랫폼"
+      ],
+      "section": "08_control_plane.md · 8.5 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts",
+        "backend/src/domains/d03-safety/deploy-safety/policy-gate.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/screensP9.test.tsx",
+        "frontend/src/__tests__/screensSafety.test.tsx"
+      ]
+    },
+    {
+      "id": "FFG-SBOM-002",
+      "title": "생성 시 스키마 검증",
+      "scope": [
+        "배포 파이프라인 연계",
+        "협력사"
+      ],
+      "section": "15_sbom.md · 15.4 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-SBOM-003",
+      "title": "해시로 실제 산출물과 결합",
+      "scope": [
+        "보안 배포 관리"
+      ],
+      "section": "15_sbom.md · 15.4 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-SBOM-007",
+      "title": "원산지 속성",
+      "scope": [
+        "구매",
+        "플랫폼"
+      ],
+      "section": "15_sbom.md · 15.4 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-SEC-002",
+      "title": "서명·키 관리",
+      "scope": [
+        "보안 배포 관리",
+        "인증서·키 관리(PKI/KMS)",
+        "PKI 운영"
+      ],
+      "section": "14_security_sotif.md · 14.7 규칙",
+      "implemented": [
+        "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts",
+        "backend/src/domains/d06-qsec/pki-kms/pki.service.ts"
+      ],
+      "tested": [
+        "backend/test/d06/hsm.spec.ts"
+      ]
+    },
+    {
+      "id": "FFG-SEC-003",
+      "title": "대량 Kill 방지",
+      "scope": [
+        "플랫폼",
+        "플랫폼 게이트"
+      ],
+      "section": "14_security_sotif.md · 14.7 규칙",
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts",
+        "backend/src/domains/d03-safety/deploy-safety/policy-gate.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/designSafety.test.tsx",
+        "frontend/src/__tests__/screensSafety.test.tsx"
+      ]
+    },
+    {
+      "id": "FFG-SEC-004",
+      "title": "Kill 전달 추적",
+      "scope": [
+        "플랫폼",
+        "운영 조직"
+      ],
+      "section": "14_security_sotif.md · 14.7 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-SEC-006",
+      "title": "공급망 원산지 관리",
+      "scope": [
+        "구매",
+        "플랫폼"
+      ],
+      "section": "14_security_sotif.md · 14.7 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-SEC-007",
+      "title": "보안 이벤트 정의와 모니터링",
+      "scope": [
+        "Safety Guard",
+        "LPC",
+        "플랫폼"
+      ],
+      "section": "14_security_sotif.md · 14.7 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-SEC-008",
+      "title": "원격 종료 오남용 방지",
+      "scope": [
+        "플랫폼",
+        "Safety Guard"
+      ],
+      "section": "14_security_sotif.md · 14.7 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-SOT-002",
+      "title": "ODD 축소 정책도 비활성화 등급을 따름",
+      "scope": [
+        "플랫폼",
+        "차량 SW"
+      ],
+      "section": "14_security_sotif.md · 14.7 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-SOT-003",
+      "title": "운영 단계 SOTIF 모니터링",
+      "scope": [
+        "품질 피드백 반영",
+        "이상 징후 대응"
+      ],
+      "section": "14_security_sotif.md · 14.7 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TEL-001",
+      "title": "목적별 데이터 범주와 접근 분리",
+      "scope": [
+        "플랫폼",
+        "차량 SW"
+      ],
+      "section": "13_telemetry.md · 13.9 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TEL-003",
+      "title": "실제 상태 보고와 무결성",
+      "scope": [
+        "차량 SW",
+        "운영 데이터 수집"
+      ],
+      "section": "13_telemetry.md · 13.9 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TEL-004",
+      "title": "EDR·DSSAD·사고 보고 정합",
+      "scope": [
+        "차량 SW",
+        "이벤트 이력 추적"
+      ],
+      "section": "13_telemetry.md · 13.9 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TEL-005",
+      "title": "중국 데이터의 현지 처리와 이전 심사",
+      "scope": [
+        "플랫폼",
+        "법무"
+      ],
+      "section": "13_telemetry.md · 13.9 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TEL-006",
+      "title": "EU Data Act 접근권",
+      "scope": [
+        "플랫폼"
+      ],
+      "section": "13_telemetry.md · 13.9 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TEL-008",
+      "title": "보존과 삭제",
+      "scope": [
+        "플랫폼"
+      ],
+      "section": "13_telemetry.md · 13.9 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TEL-009",
+      "title": "운행 중 감시 지표와 부속서 1 집계",
+      "scope": [
+        "운영 조직",
+        "플랫폼"
+      ],
+      "section": "13_telemetry.md · 13.9 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TEL-010",
+      "title": "30초 규칙 판정에 필요한 상태 이력",
+      "scope": [
+        "Safety Guard",
+        "플랫폼"
+      ],
+      "section": "13_telemetry.md · 13.9 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TST-003",
+      "title": "허용 조합 정의와 covering array",
+      "scope": [
+        "시험 조직",
+        "플랫폼"
+      ],
+      "section": "12_testing.md · 12.8 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-TST-009",
+      "title": "시험 Evidence의 연계와 재현 정보",
+      "scope": [
+        "플랫폼",
+        "시험 조직"
+      ],
+      "section": "12_testing.md · 12.8 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-VEH-002",
+      "title": "진위는 백엔드 기원, Guard가 직접 검증",
+      "scope": [
+        "차량 SW",
+        "플랫폼"
+      ],
+      "section": "09_vehicle_runtime.md · 9.12 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-VEH-006",
+      "title": "활성화 전 차량 지원 조건 확인",
+      "scope": [
+        "기능 지원 조건 관리"
+      ],
+      "section": "09_vehicle_runtime.md · 9.12 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-VEH-007",
+      "title": "실제 구성 Attestation",
+      "scope": [
+        "LPC",
+        "플랫폼"
+      ],
+      "section": "09_vehicle_runtime.md · 9.12 규칙",
+      "implemented": [],
+      "tested": []
+    },
+    {
+      "id": "FFG-VEH-013",
+      "title": "명령 순번 창과 차량 단위 키 epoch",
+      "scope": [
+        "차량 SW",
+        "플랫폼"
+      ],
+      "section": "09_vehicle_runtime.md · 9.12 규칙",
+      "implemented": [
+        "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts"
+      ],
+      "tested": [
+        "backend/test/d06/hsm.spec.ts"
+      ]
+    }
+  ],
+  "reportTests": [
+    "TC-FF-11",
+    "TC-FF-16",
+    "TC-FF-21",
+    "TC-FF-23",
+    "TC-FF-45",
+    "TC-FF-46",
+    "TC-FF-47",
+    "TC-FF-48",
+    "TC-FF-49",
+    "TC-FF-50",
+    "TC-FF-53"
+  ]
+}

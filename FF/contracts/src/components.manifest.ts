@@ -110,6 +110,10 @@ const BE_TRIAL = 'backend/test/d05/trials.spec.ts';
 const CT_TRIAL = 'contracts/src/rules/trial.test.ts';
 const FE_TRIAL = 'frontend/src/__tests__/screensTrials.test.tsx';
 const E2E_TRIAL = 'e2e/tests/trials.spec.ts';
+const BE_P10 = 'backend/test/ext/p10.spec.ts';
+const CT_EXT = 'contracts/src/rules/ext.test.ts';
+const FE_P10 = 'frontend/src/__tests__/screensP10.test.tsx';
+const E2E_P10 = 'e2e/tests/p10.spec.ts';
 const VALIDATOR: Impl = { screens: ['/policies/:id', '/validations'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL], via: ['validatePolicy'] };
 /** via — 자기 API 없이 다른 컴포넌트의 라우트 안에서 호출되는 컴포넌트(예: 병렬 검증기)가 그 라우트 이름을 적는다 */
 type Impl = Pick<ComponentEntry, 'screens' | 'tests'> & { via?: string[] };
@@ -124,6 +128,13 @@ const IMPLEMENTED: Record<string, Impl> = {
   // 기간형 체험권 → 구매 전환·체험 전환 분석 (2026-10-13)
   'D05-04': { screens: ['/entitlements'], tests: [BE_TRIAL, FE_TRIAL, E2E_TRIAL] },
   'D05-06': { screens: ['/biz/trials'], tests: [BE_TRIAL, CT_TRIAL, FE_TRIAL, E2E_TRIAL] },
+  // P10 — 실험·효과·장애·VOC·데이터 동기화·Legacy·현장 지원·Legacy-SDV (IF-01·02·03·08·11·12 모의 어댑터)
+  'D01-07': { screens: ['/experiments'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
+  'D04-05': { screens: ['/ops/incidents'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
+  'D05-02': { screens: ['/integration/sync'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
+  'D05-03': { screens: ['/integration/legacy'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
+  'D05-05': { screens: ['/field'], tests: [BE_P10, FE_P10, E2E_P10] },
+  'D05-07': { screens: ['/integration/legacy'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
   'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'contracts/src/rules/unleash.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts'] },
   'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
   'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },

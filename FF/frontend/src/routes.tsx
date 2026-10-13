@@ -79,6 +79,9 @@ const policyScreens = () => import('./screens/policy/Policies');
 const runtimeScreens = () => import('./screens/policy/Runtime');
 const entitlementScreens = () => import('./screens/policy/Entitlements');
 const bizScreens = () => import('./screens/biz/TrialAnalytics');
+const extScreens = () => import('./screens/ext/Integrations');
+const experimentScreens = () => import('./screens/ext/Experiments');
+const incidentScreens = () => import('./screens/ext/Incidents');
 const virtualScreens = () => import('./screens/policy/Virtual');
 const fleetScreens = () => import('./screens/ops/FleetLive');
 const killScreens = () => import('./screens/ops/KillConsole');
@@ -156,7 +159,8 @@ export const ROUTES: AppRoute[] = [
   { path: '/validations/virtual', element: named(virtualScreens, 'VirtualValidationScreen'), title: 'vECU 가상검증', group: 'verify', menu: '/validations/virtual', components: ['D06-03', 'D04-02'], v2: true },
   { path: '/verify/scenario', element: named(specnew, 'Scenario'), title: '차량 시나리오 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
   { path: '/twin/simulation', element: named(twin, 'TwinSimulation'), title: 'What-if 시뮬레이션 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
-  { path: '/verify/experiment', element: named(specnew, 'Experiment'), title: '실험·효과', group: 'verify', menu: '/verify/experiment', components: ['D01-07'] },
+  { path: '/experiments', element: named(experimentScreens, 'ExperimentsScreen'), title: '실험·효과', group: 'verify', menu: '/experiments', components: ['D01-07'], v2: true },
+  { path: '/verify/experiment', element: named(specnew, 'Experiment'), title: '실험·효과 (BDC 데모)', group: 'verify', parent: '/experiments' },
   { path: '/trace/design', element: named(lineage, 'DesignTrace'), title: '요구·안전 추적', group: 'verify', menu: '/trace/design', components: ['D06-07'] },
 
   // 6 상품·출시
@@ -191,17 +195,22 @@ export const ROUTES: AppRoute[] = [
   { path: '/twin/incident', element: named(twinOps, 'TwinIncident'), title: '긴급 차단 시나리오 (BDC 데모)', group: 'ops', parent: '/ops/kill' },
   { path: '/ops/:id', element: def(() => import('./pages/OpsDashboard')), title: 'Feature 운영 대시보드', group: 'ops', parent: '/twin/incident' },
   { path: '/ops/anomalies', element: named(anomalyScreens, 'AnomalyScreen'), title: '이상 징후 대응', group: 'ops', menu: '/ops/anomalies', components: ['D06-12'], v2: true },
-  { path: '/ops/incident', element: named(ops2, 'IncidentManager'), title: '장애·VOC (BDC 데모)', group: 'ops', parent: '/ops/anomalies', components: ['D04-05'] },
+  { path: '/ops/incidents', element: named(incidentScreens, 'IncidentsScreen'), title: '장애·VOC', group: 'ops', menu: '/ops/incidents', components: ['D04-05'], v2: true },
+  { path: '/ops/incident', element: named(ops2, 'IncidentManager'), title: '장애·VOC (BDC 데모)', group: 'ops', parent: '/ops/incidents' },
   { path: '/ops/incident/:id', element: named(ops2, 'IncidentDetail'), title: '장애 상세', group: 'ops', parent: '/ops/incident' },
   { path: '/ops/telemetry', element: named(ops2, 'TelemetryExplorer'), title: '운영 데이터·이벤트', group: 'ops', menu: '/ops/telemetry', components: ['D04-03', 'D04-04', 'D04-06'] },
 
   { path: '/events', element: named(auditEvents, 'EventsScreen'), title: 'Platform 이벤트', group: 'ops', menu: '/events', components: ['D04-04'], v2: true },
 
   // 8 연계·감사·관리
-  { path: '/integration/connectors', element: named(() => import('./pages/areas/ui18'), 'ExternalSystems'), title: '외부 연계 (IF)', group: 'admin', menu: '/integration/connectors', components: ['D05-01'] },
+  { path: '/integration/connectors', element: named(extScreens, 'IntegrationsScreen'), title: '외부 연계 현황', group: 'admin', menu: '/integration/connectors', components: ['D05-01'], v2: true },
+  { path: '/integration/ui18', element: named(() => import('./pages/areas/ui18'), 'ExternalSystems'), title: '외부 연계 (BDC 데모)', group: 'admin', parent: '/integration/connectors' },
   { path: '/integration/connector/:id', element: named(integration, 'ConnectorDetail'), title: '연계 상세', group: 'admin', parent: '/integration/connectors' },
-  { path: '/integration/jobs', element: named(lineage, 'IntegrationJobs'), title: '연계 작업·동기화', group: 'admin', menu: '/integration/jobs', components: ['D05-02', 'D05-03'] },
-  { path: '/integration/sync', element: named(integration, 'SyncLogs'), title: '동기화 로그', group: 'admin', parent: '/integration/jobs' },
+  { path: '/integration/sync', element: named(extScreens, 'DataSyncScreen'), title: '데이터 동기화', group: 'admin', menu: '/integration/sync', components: ['D05-02'], v2: true },
+  { path: '/integration/legacy', element: named(extScreens, 'LegacyScreen'), title: 'Legacy 연계', group: 'admin', menu: '/integration/legacy', components: ['D05-03', 'D05-07'], v2: true },
+  { path: '/field', element: named(incidentScreens, 'FieldPortalScreen'), title: '현장 지원 포털', group: 'admin', menu: '/field', components: ['D05-05'], v2: true },
+  { path: '/integration/jobs', element: named(lineage, 'IntegrationJobs'), title: '연계 작업 (BDC 데모)', group: 'admin', parent: '/integration/sync' },
+  { path: '/integration/sync-logs', element: named(integration, 'SyncLogs'), title: '동기화 로그 (BDC 데모)', group: 'admin', parent: '/integration/jobs' },
   { path: '/supplier/portal', element: named(supplier, 'SupplierPortal'), title: '협력사 이관', group: 'admin', menu: '/supplier/portal' },
   { path: '/supplier/package', element: named(supplier, 'APIReleasePackage'), title: 'API 릴리스 패키지', group: 'admin', parent: '/supplier/portal' },
   { path: '/supplier/package/:id', element: named(supplier, 'PackageDetail'), title: '패키지 상세', group: 'admin', parent: '/supplier/package' },

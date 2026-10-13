@@ -243,4 +243,12 @@ CREATE TABLE approver_key (user_id TEXT PRIMARY KEY, kid TEXT NOT NULL UNIQUE, s
 CREATE TABLE hsm_secret (name TEXT NOT NULL, epoch INTEGER NOT NULL, secret TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (name, epoch));
 `,
   },
+  {
+    // 보고서 v1.1 WP1 안전 분류 Registry — Feature Version별 안전 속성(5.7, FFG-CLS-*)과 Flag ID 결합 기록(재사용 금지, FFG-CODE-020)
+    name: '013_safety_profile',
+    sql: `
+CREATE TABLE safety_profile (feature_id TEXT NOT NULL, version TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('DRAFT','CONFIRMED')), doc TEXT NOT NULL, PRIMARY KEY (feature_id, version));
+CREATE TABLE flag_registry (flag_key TEXT PRIMARY KEY, feature_id TEXT NOT NULL, bound_at TEXT NOT NULL, retired_at TEXT);
+`,
+  },
 ];

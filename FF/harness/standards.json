@@ -2,9 +2,9 @@
   "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
   "summary": {
     "platformRules": 75,
-    "implemented": 7,
-    "tested": 7,
-    "reportTestsReferenced": 2
+    "implemented": 13,
+    "tested": 13,
+    "reportTestsReferenced": 3
   },
   "rules": [
     {
@@ -15,8 +15,12 @@
         "Safety Manager"
       ],
       "section": "03_ads_regulation.md · 3.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/classification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/classification.test.ts"
+      ]
     },
     {
       "id": "FFG-ADS-004",
@@ -59,8 +63,15 @@
         "Safety Manager"
       ],
       "section": "05_classification.md · 5.8 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/safety-profile.spec.ts",
+        "frontend/src/__tests__/screensSafety.test.tsx",
+        "e2e/tests/governance.spec.ts",
+        "e2e/tests/policy.spec.ts"
+      ]
     },
     {
       "id": "FFG-CLS-002",
@@ -81,8 +92,15 @@
         "차량 SW"
       ],
       "section": "05_classification.md · 5.8 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/registry.spec.ts",
+        "backend/test/d01/safety-profile.spec.ts",
+        "frontend/src/__tests__/screensSafety.test.tsx",
+        "e2e/tests/governance.spec.ts"
+      ]
     },
     {
       "id": "FFG-CLS-006",
@@ -92,8 +110,12 @@
         "Feature Owner"
       ],
       "section": "05_classification.md · 5.8 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/classification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/classification.test.ts"
+      ]
     },
     {
       "id": "FFG-CLS-007",
@@ -115,8 +137,14 @@
         "Safety Guard"
       ],
       "section": "05_classification.md · 5.8 규칙",
-      "implemented": [],
+      "implemented": [
+        "contracts/src/rules/classification.ts",
+        "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
+      ],
       "tested": [
+        "contracts/src/rules/classification.test.ts",
+        "backend/test/d01/safety-profile.spec.ts",
+        "frontend/src/__tests__/screensSafety.test.tsx",
         "e2e/tests/learn.spec.ts"
       ]
     },
@@ -129,8 +157,12 @@
         "플랫폼"
       ],
       "section": "10_coding.md · 10.6 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/safety-profile.spec.ts"
+      ]
     },
     {
       "id": "FFG-CODE-030",
@@ -874,6 +906,7 @@
   ],
   "reportTests": [
     "TC-FF-11",
-    "TC-FF-21"
+    "TC-FF-21",
+    "TC-FF-23"
   ]
 }

@@ -4,7 +4,8 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **국제표준 보고서 v1.1 실제 개발 WP0부터**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1(따라하기 랩 셸) 완료. 화면 확인: `/learn`, `/_design`.
+- **국제표준 보고서 v1.1 실제 개발 WP3부터**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1·WP0·WP1 완료. 화면 확인: `/learn`, `/_design`, `/features?f=F3`, `/features/FEAT-00022/1.0.0?tab=safety`(UX 검토 사진 `node e2e/scripts/shot-safety.mjs` → `e2e/shots/safety-*`).
+- **WP1 이후 규칙**: Gate G2 이후 PASS는 안전 분류 확정(SAFETY_OFFICER 개인 서명)이 전제(FFG-CLS-001), G1은 조합 위반(blocking)만 막는다. 새 시험·e2e에서 G2 이상을 판정하면 먼저 `confirmSafety(http, id, ver)`(backend `test/helpers.ts`) 또는 `POST …/safety/confirm`. 초안 시드는 `tools/dataset/safety-infer.ts` → `data/fixtures/safety/profiles.json`(80개, FEAT-00022@1.0.0만 확정 F3·DC2·R1). standards 래칫 구현·시험 13·13, TC-FF 3.
 - 그다음 **P10**: 남은 컴포넌트 7개(D01-07 실험·효과, D04-05 장애·VOC, D05-02·03·05·07 데이터 동기화·Legacy·현장 포털·Legacy-SDV — D06-11 취약점 모니터링은 보고서 반영 U4·F6으로 이동, D05-04 과금·D05-06 사업 지표는 체험권 작업에서 구현)와 IF 모의 어댑터(IF-01 ALM·IF-02 기준정보·IF-03 MDM/DW·IF-08 Supplier·IF-11 OTel·IF-12 해외공장), OpenFeature OF-6(차량 내장 provider)·OF-7(flag 매니페스트·기본값 규율) — OF-5(OTel hook)는 보고서 반영 F6(OFT-004)으로 이동, 레거시 정리(FEAT-BDC 37·rawColors 818 → 0).
 - **vECU 웹 배포**: vECU를 고친 뒤 배포하려면 `npm run vecu:sync`(허용 목록 → `frontend/public/vecu/`, `VECU_SYNC.json` 해시) 후 커밋. verify `vecu:check`가 복사본 변경·금지 경로(splat/·assets/user/·nurec)·금지어를 막는다. 사이트 `/vecu/index.html?ffv=<FEAT>`, FF 화면은 링크로만 연다(사용자 결정).
 - **체험권**: 데모 권한 날짜는 시드 기준일(FF_CLOCK_AT 또는 오늘, KST) 상대값(`data/fixtures/demo/entitlements.json`의 *Days). 합성 모집단 3000대(`FF_SYNTHETIC=0`이면 생략) — 목록·통계에만, `/api/entitlements` 기본은 데모만. 시험은 `bootApp({ at })`로 시계·기준일을 같이 고정한다.
@@ -49,7 +50,7 @@
 | WP | 내용 | 주요 규칙 | 상태 |
 |---|---|---|---|
 | WP0 | 커널 신뢰 기반: 감사 해시 체인(UPDATE·DELETE 차단 트리거, 체인 검증 API), 소프트웨어 HSM(용도별 kid·epoch, 차량 키 파생, AES-CMAC, JCS, 정책 엔진), 승인자 개인 키, 역할 확장(SECURITY_OFFICER·OPS_LEAD·REGULATORY_OWNER, 보고서 승인 역할 대응, PLT-016 직무 분리) | PLT-015·013·016, SEC-002·008 | 완료 aa7bf24 |
-| WP1 | 안전 분류 Registry: SafetyProfile(5.7 속성), 분류 판정·조합 검사, 확정 서명·Version 고정, G1 blocker, flagKey 재사용 금지, 화면(목록 열·배지·안전 분류 탭) | CLS-001~009, ADS-002, CODE-020, LCY-011, VEH-006 | 대기 |
+| WP1 | 안전 분류 Registry: SafetyProfile(5.7 속성), 분류 판정·조합 검사, 확정 서명·Version 고정, G1 blocker, flagKey 재사용 금지, 화면(목록 열·배지·안전 분류 탭) | CLS-001~009, ADS-002, CODE-020, LCY-011, VEH-006 | 완료 (커밋 해시는 git log) — LCY-011 은퇴 6단계는 WP2, VEH-006 지원 조건 연결은 WP5로 넘김 |
 | WP2 | Gate 결정 기록(서명·CONDITIONAL 제한·fail-closed·강제 통과 2인), 재-HARA 자동 검출, 은퇴 6단계, G6/G7 분리 | LCY-001~012, TST-009, SOT-004 | 대기 |
 | WP3 | 정책 게이트(kill_command v2 zod, evaluateGate — 부록 D 15 + 예제 Golden, gate-parity) · 주문 원장(+1·24h 누적) | PLT-001~010·014·017, SEC-003, GEN-003 | 대기 |
 | WP4 | Kill·복원 v2: 요청 → 2인 승인(개인 서명) → 원장 → JWS → 차량별 봉투(CMAC), 사후 검토, DC4 거부 기록, 리콜 연계, 대량 종료 계획, 복원 2단계·겹침 금지, 화면(/ops/kill·승인함·복원 마법사) | DEAC-*, PLT-005·016·017, SEC-003·004·008, ADS-004·010·011 | 대기 |

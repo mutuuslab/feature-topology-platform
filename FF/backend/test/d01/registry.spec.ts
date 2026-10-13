@@ -1,7 +1,7 @@
 // Feature Registry·Gate·Lifecycle·BOM Baseline — 상세설계서 v0.81 업무 흐름(표 4)을 API로 끝까지 검증한다.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp } from '../helpers';
+import { actor, bootApp, confirmSafety } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const AUTHOR2 = actor('park.author', 'FEATURE_AUTHOR');
@@ -91,6 +91,7 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
 
     it('G1~G3 PASS 전에는 정의 승인이 막히고 막힌 사유를 모두 돌려준다', async () => {
       await judge(id, '0.1.0', 'G1').expect(201);
+      await confirmSafety(http, id, '0.1.0');
       const r = await http().post(`/api/features/${id}/versions/0.1.0/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '정의 검토 완료' }).expect(422);
       expect(r.body.error.details.blockers.map((b: any) => b.ref)).toEqual(['G2', 'G3']);
     });
@@ -173,6 +174,7 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
     });
 
     it('G1~G3 → 승인 → 자동 DEVELOPING → Baseline 요청', async () => {
+      await confirmSafety(http, 'FEAT-00022', ver); // 새 Version은 앞 Version 분류를 이어받되 다시 확정(FFG-CLS-004)
       for (const g of ['G1', 'G2', 'G3']) await judge('FEAT-00022', ver, g).expect(201);
       const t = await http().post(`/api/features/FEAT-00022/versions/${ver}/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '문구 변경 승인' }).expect(200);
       expect(t.body.lifecycle).toBe('DEVELOPING');

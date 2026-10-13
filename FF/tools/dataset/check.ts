@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FF, readJson } from '../lib.ts';
 import { importWorkbook, serialize, sha256 } from './import-lib.ts';
+import { buildProfiles, PROFILES, serializeProfiles } from './safety-infer.ts';
 
 const OUT = join(FF, 'data', 'fixtures', 'v0.81');
 const SOURCE = join(FF, 'data', 'source', 'feature_dataset_v0.81.xlsx');
@@ -29,9 +30,13 @@ if (existsSync(SOURCE)) {
   }
 }
 
+// 안전 프로파일 초안(보고서 5.7) — Feature Version 전부를 덮고, 데이터셋에서 다시 만들어도 같아야 한다
+if (!existsSync(PROFILES)) errors.push('data/fixtures/safety/profiles.json 없음 — node tools/dataset/safety-infer.ts');
+else if (lf(readFileSync(PROFILES, 'utf8')) !== serializeProfiles(buildProfiles())) errors.push('safety/profiles.json이 재생성 결과와 다름 — node tools/dataset/safety-infer.ts 후 커밋(손으로 고치지 않는다)');
+
 console.log('data:check');
 if (errors.length) {
   for (const e of errors) console.error('  ✕ ' + e);
   process.exit(1);
 }
-console.log(`  ✓ 픽스처 ${Object.keys(manifest.files).length}종 · manifest·재적재 일치 (경고 ${manifest.warnings.count}건)`);
+console.log(`  ✓ 픽스처 ${Object.keys(manifest.files).length}종 · manifest·재적재 일치 (경고 ${manifest.warnings.count}건) · 안전 프로파일 재생성 일치`);

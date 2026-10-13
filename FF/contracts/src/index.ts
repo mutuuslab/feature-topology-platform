@@ -28,3 +28,5 @@ export * from './schemas/safety';
 export * from './rules/deactivation';
 export * from './rules/standards';
 export * from './rules/tutorial';
+export * from './schemas/safety-profile';
+export * from './rules/classification';

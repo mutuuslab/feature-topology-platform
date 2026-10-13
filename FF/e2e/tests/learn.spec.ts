@@ -28,8 +28,8 @@ for (const [w, h] of [[1366, 768], [1920, 1080]] as const) {
     expect(await noHorizontalOverflow(page)).toBe(true);
 
     await dock.getByRole('button', { name: '다음' }).click();
-    await expect(page).toHaveURL(/\/features\/FEAT-00022\/1\.0\.0$/);
-    await expect(page.locator('[data-tour="feature-header"][data-tour-active="true"]')).toBeVisible();
+    await expect(page).toHaveURL(/\/features\/FEAT-00022\/1\.0\.0\?tab=safety$/);
+    await expect(page.locator('[data-tour="safety-tab"][data-tour-active="true"]')).toBeVisible();
     await expect(dock.getByText('대상 강조 중')).toBeVisible();
 
     await dock.getByRole('button', { name: '다음' }).click();

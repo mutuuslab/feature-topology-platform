@@ -2,6 +2,7 @@
 // 승인은 P0 publishCheck: 작성자≠승인자, 검증한 내용(해시)=지금 내용, 마지막 판정 GO. 승인되면 Feature의 Control Point 정책
 // 커버리지가 올라가 Lifecycle DEVELOPING→VERIFIED 자동 전이 조건이 채워질 수 있다(같은 트랜잭션).
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { SafetyProfileService } from '../registry/safety-profile.service';
 import { LIFECYCLE_RANK, type CreatePolicyBody, type Policy, type PolicyDecisionBody, type UpdatePolicyBody } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
@@ -33,6 +34,7 @@ export class PolicyService implements OnModuleInit {
     private readonly events: EventService,
     private readonly clock: Clock,
     private readonly secureDeploy: SecureDeployService,
+    private readonly flags: SafetyProfileService,
   ) {}
 
   /** PoC 시나리오 시드 — FEAT-00022(전방 안전거리 3단계) Control Point 2개의 배포 정책 (체험권 CAT-00019 필요) */
@@ -108,6 +110,8 @@ export class PolicyService implements OnModuleInit {
     if (LIFECYCLE_RANK[f.lifecycle] < LIFECYCLE_RANK.APPROVED || ['DEPRECATED', 'RETIRED'].includes(f.lifecycle))
       throw new DomainError('GUARD_FAILED', `${f.lifecycle} Feature에는 정책을 등록할 수 없습니다 (APPROVED~RELEASED).`);
     return this.db.tx(() => {
+      const reuse = this.flags.bindFlag(body.flagKey, body.featureId);
+      if (reuse) throw new DomainError('CONFLICT', reuse);
       const p: Policy = {
         ...body,
         policyId: this.policies.nextId(),

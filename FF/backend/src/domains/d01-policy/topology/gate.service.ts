@@ -1,6 +1,7 @@
 // Gate Record — Topology 소유(상세설계서 표 12). append-only: 재판정은 새 SIM-Gn-NNNNNN, 이전 레코드는 감사용으로 남는다.
 // 증거 없는 PASS 금지, Gate 단계 순서(G1~3 → G4~7 → G8~9) 준수, RELEASED 이후 버전은 판정 불가(새 Version으로).
 import { Inject, Injectable } from '@nestjs/common';
+import { SafetyProfileService } from '../registry/safety-profile.service';
 import {
   GATE_META,
   GATES,
@@ -40,6 +41,7 @@ export class GateService {
     private readonly events: EventService,
     private readonly clock: Clock,
     private readonly virtualRuns: VirtualRunRepo,
+    private readonly safety: SafetyProfileService,
   ) {}
 
   view(featureId: string, version: string) {
@@ -97,6 +99,12 @@ export class GateService {
     if (blocked) {
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, blocked, 'D01-02');
       throw new DomainError(LIFECYCLE_RANK[f.lifecycle] >= LIFECYCLE_RANK.RELEASED ? 'IMMUTABLE' : 'GUARD_FAILED', blocked);
+    }
+    // 보고서 v1.1: G1은 안전 분류 네 축·조합(FFG-CLS-001·009), 그 다음 Gate는 Safety Manager 확정(보고서 6.1 G2) — PASS 판정에만
+    const pre = body.inputResult === 'PASS' ? this.safety.gatePrerequisite(featureId, version, body.gate) : null;
+    if (pre) {
+      this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, pre, 'D01-02');
+      throw new DomainError('GUARD_FAILED', pre);
     }
     const vv = this.virtualEvidence(featureId, version, body);
     if (vv) {

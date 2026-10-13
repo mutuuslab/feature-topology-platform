@@ -1467,6 +1467,64 @@ textarea.ds-input {
   white-space: nowrap;
 }
 
+/* 안전 분류 탭 폼 (screens/features/SafetyTab.tsx) */
+.ds-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+.ds-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: var(--sp-3);
+  align-items: start;
+}
+/* 폼 격자 안의 Select는 툴바형(라벨 옆) 대신 라벨 위 — 칸 너비가 달라도 입력이 줄 맞춤 */
+.ds-form-grid > .ds-field--inline:has(select) {
+  display: grid;
+  gap: 4px;
+  align-items: stretch;
+}
+.ds-form-grid .ds-select,
+.ds-form-grid .ds-input {
+  width: 100%;
+}
+/* 확정(잠김) — 입력이 읽기 전용으로 보이게 */
+.ds-fieldset:disabled .ds-select,
+.ds-fieldset:disabled .ds-input {
+  background: var(--surface-2);
+  border-style: dashed;
+  color: var(--ink-2);
+  cursor: default;
+}
+/* 표 칸 안 분류 배지 — 줄바꿈하지 않아 행 높이를 지킨다 */
+.ds-cls-row--nowrap .ds-cls-row {
+  flex-wrap: nowrap;
+}
+.ds-locked {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+}
+.ds-wizard {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-3);
+}
+.ds-wizard > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
 /* ── 기능안전 부품 (design/safety.tsx — 보고서 v1.1 5·7·8·9장) ───────────── */
 .ds-cls-row {
   display: inline-flex;
@@ -1582,6 +1640,8 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
 .ds-stages__step[data-status='current'] .ds-stages__label > svg { color: var(--accent); }
 .ds-stages__no { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); color: var(--muted); }
 .ds-stages__meta { font-family: var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+/* 상태 코드·구간 길이는 토큰 단위로만 줄바꿈(DEACT_W/ARNING·8 / h 방지) — 칸이 아주 좁을 때만 위 anywhere로 끊긴다 */
+.ds-stages__tok { white-space: nowrap; }
 .ds-stages__unknown { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--warn); display: flex; gap: 6px; align-items: center; }
 
 /* 화면 너비가 아니라 놓인 자리(패널) 너비로 배치를 바꾼다 */

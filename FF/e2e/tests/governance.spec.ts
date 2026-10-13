@@ -24,6 +24,9 @@ async function newFeature(request: APIRequestContext, name: string, extra: Recor
 }
 
 async function judgeApi(request: APIRequestContext, id: string, ver: string, gates: string[]) {
+  // 안전 분류 확정(Safety Manager) 없이는 G2 이후 PASS가 막힌다 — FFG-CLS-001
+  const c = await request.post(`${API}/api/features/${id}/versions/${ver}/safety/confirm`, { headers: H('usr-safety', 'SAFETY_OFFICER'), data: { reason: 'HARA 검토 완료' } });
+  expect(c.status(), await c.text()).toBe(201);
   for (const gate of gates) {
     const r = await request.post(`${API}/api/features/${id}/versions/${ver}/gates`, { headers: H('usr-quality', 'GATE_JUDGE'), data: { gate, inputResult: 'PASS', rationale: `${gate} 확인`, evidenceRef: `EV-${gate}` } });
     expect(r.status(), await r.text()).toBe(201);
@@ -34,9 +37,20 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/_design');
 });
 
-test('Registry: Gate 판정(품질) → 정의 승인(승인자) → 자동 DEVELOPING, 감사 이력', async ({ page, request }) => {
+test('Registry: 안전 분류 확정(FSM) → Gate 판정(품질) → 정의 승인(승인자) → 자동 DEVELOPING, 감사 이력', async ({ page, request }) => {
   const f = await newFeature(request, `E2E 레지스트리 ${uniq()}`);
   await asRole(page, 'quality');
+  // 안전 분류 탭 — 추정 초안을 Safety Manager가 개인 서명으로 확정(FFG-CLS-001), 확정 뒤 잠김(FFG-CLS-004)
+  await page.goto(`/features/${f.featureId}/0.1.0?tab=safety`);
+  // QM 추정 초안은 Release Flag — 만료일·은퇴 계획 누락은 경고(FFG-CLS-008)일 뿐 확정을 막지 않는다
+  await expect(page.getByText('대기 1건')).toBeVisible();
+  await expect(page.getByRole('button', { name: '확정 — 개인 서명' })).toBeEnabled();
+  await page.getByRole('button', { name: '확정 — 개인 서명' }).click();
+  const sign = page.getByRole('dialog');
+  await sign.getByLabel('사유').fill('HARA 검토 완료');
+  await sign.getByRole('button', { name: '확정 — 개인 서명' }).click();
+  await expect(page.getByText('확정된 분류입니다 — 바꾸려면 새 Version을 만드세요 (FFG-CLS-004)')).toBeVisible();
+
   await page.goto(`/features/${f.featureId}/0.1.0?tab=gates`);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('E2E 레지스트리');
   for (const g of ['G1', 'G2', 'G3']) {

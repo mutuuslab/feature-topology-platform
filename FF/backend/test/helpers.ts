@@ -23,3 +23,7 @@ export async function bootApp(opts: { controllers?: Type<unknown>[]; providers?:
 }
 
 export const actor = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
+
+/** 안전 분류 확정(보고서 v1.1 G2 선행 — Safety Manager 개인 서명). G1 다음 Gate를 PASS로 판정하는 시험 흐름이 먼저 부른다 */
+export const confirmSafety = (http: () => request.Agent | ReturnType<typeof request>, featureId: string, version: string) =>
+  (http() as ReturnType<typeof request>).post(`/api/features/${featureId}/versions/${version}/safety/confirm`).set(actor('usr-safety', 'SAFETY_OFFICER')).send({ reason: '안전 분류 확정(HARA 검토)' }).expect(201);

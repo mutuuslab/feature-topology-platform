@@ -29,9 +29,9 @@ for (const c of COND) {
   await p.screenshot({ path: `${out}learn-step1-${c.name}.png` });
   const dock = p.getByRole('complementary', { name: '따라하기 가이드' });
   await dock.getByRole('button', { name: '다음' }).click();
-  await p.locator('[data-tour="feature-header"][data-tour-active="true"]').waitFor();
+  await p.locator('[data-tour="safety-tab"][data-tour-active="true"]').waitFor();
   await p.waitForTimeout(600);
-  await p.screenshot({ path: `${out}learn-step2-feature-${c.name}.png` });
+  await p.screenshot({ path: `${out}learn-step2-safety-${c.name}.png` });
   for (let i = 0; i < 5; i++) await dock.getByRole('button', { name: '다음' }).click();
   await p.locator('[data-tour="gate-g5"]').waitFor();
   await p.waitForTimeout(800);

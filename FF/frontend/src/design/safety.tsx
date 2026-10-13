@@ -195,8 +195,8 @@ export function StageStrip({
                 {S.stage[s.id]}
               </span>
               <span className="ds-stages__meta">
-                {s.state ?? '—'}
-                {ms !== undefined ? ` · ${fmtDuration(ms)}` : ''}
+                <span className="ds-stages__tok">{s.state ?? '—'}</span>
+                {ms !== undefined && <span className="ds-stages__tok">{` · ${fmtDuration(ms)}`}</span>}
               </span>
             </li>
           );

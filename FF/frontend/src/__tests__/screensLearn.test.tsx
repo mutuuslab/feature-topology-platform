@@ -41,7 +41,7 @@ function mount(path: string, role = 'author') {
           <Routes>
             <Route path="/learn" element={<LearnHub />} />
             <Route path="/learn/:id" element={<LearnRun />} />
-            <Route path="*" element={<div data-tour="feature-header">target</div>} />
+            <Route path="*" element={<div data-tour="safety-tab">target</div>} />
           </Routes>
           <GuideDock />
           <RuleDrawer />
@@ -100,9 +100,9 @@ describe('가이드 패널 (보기 모드)', () => {
     const dock = await screen.findByRole('complementary', { name: '따라하기 가이드' });
     expect(within(dock).getByRole('heading', { level: 2 }).textContent).toBe('무엇을 확인하나');
     fireEvent.click(within(dock).getByRole('button', { name: '다음' }));
-    await waitFor(() => expect(where()).toContain('/features/FEAT-00022/1.0.0'));
+    await waitFor(() => expect(where()).toContain('/features/FEAT-00022/1.0.0?tab=safety'));
     expect(within(dock).getByRole('heading', { level: 2 }).textContent).toBe('Feature 분류 확인');
-    await waitFor(() => expect(document.querySelector('[data-tour="feature-header"]')!.getAttribute('data-tour-active')).toBe('true'));
+    await waitFor(() => expect(document.querySelector('[data-tour="safety-tab"]')!.getAttribute('data-tour-active')).toBe('true'));
   });
 
   it('단계 역할이 지금 역할과 다르면 배너 → 전환하면 화면 이동 없이 역할만 바뀐다', async () => {

@@ -25,6 +25,7 @@ import {
   Icon,
 } from '../../design';
 import { scopeOf, usePermission, when } from '../shared';
+import { SafetyBadges, SafetyTab } from './SafetyTab';
 import type { AuditEntry, ChecklistItem, FeatureDetail as Detail, GateView } from '../types';
 
 const T = ko.detail;
@@ -56,6 +57,7 @@ export default function FeatureDetail() {
                 <>
                   <span className="ds-tag">{scopeOf(d.feature)}</span>
                   <span className="ds-tag">ASIL {d.feature.asil}</span>
+                  <SafetyBadges id={id} ver={ver} />
                   <span className="ds-tag">{d.feature.ownerId}</span>
                   {d.feature.baselineId && <IdChip id={d.feature.baselineId} copy={false} />}
                 </>
@@ -88,6 +90,7 @@ export default function FeatureDetail() {
             <Tabs
               tabs={[
                 { key: 'overview', label: T.tabs.overview },
+                { key: 'safety', label: T.tabs.safety },
                 { key: 'gates', label: T.tabs.gates, count: Object.keys(d.gates).length },
                 { key: 'deps', label: T.tabs.deps, count: d.dependencies.outgoing.length + d.dependencies.incoming.length },
                 { key: 'trace', label: T.tabs.trace, count: d.trace.length },
@@ -98,6 +101,8 @@ export default function FeatureDetail() {
               {(tab) =>
                 tab === 'overview' ? (
                   <Overview d={d} />
+                ) : tab === 'safety' ? (
+                  <SafetyTab id={id} ver={ver} />
                 ) : tab === 'gates' ? (
                   <Gates id={id} ver={ver} />
                 ) : tab === 'deps' ? (

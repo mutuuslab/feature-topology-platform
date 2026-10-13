@@ -1,6 +1,7 @@
 // Feature Registry (D01-01) — Feature ID+Version의 유일한 쓰기 지점 (상세설계서 §3, 표 20).
 // ID 등록·중복 확인 / PROPOSED 초안 수정 / APPROVED 이후 변경은 새 Version / 조회·역추적.
 import { Inject, Injectable } from '@nestjs/common';
+import { SafetyProfileService } from './safety-profile.service';
 import {
   bumpVersion,
   changedKeys,
@@ -44,6 +45,7 @@ export class RegistryService {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly clock: Clock,
+    private readonly safety: SafetyProfileService,
   ) {}
 
   private summary(f: FeatureVersionRow, latestVersion: string) {
@@ -154,6 +156,7 @@ export class RegistryService {
         _missing: { baselineId: '미발급', functions: '미입력', swIds: '미입력', swVersions: '미입력', ecuPnos: '미입력' },
       };
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
+      this.safety.ensure(f.featureId, f.version); // 안전 분류 초안 — 앞 Version 값을 잇거나 추정(보고서 5.7)
       const target = `${f.featureId}@${f.version}`;
       this.audit.record(actor, 'FEATURE_CREATE', target, { after: f, componentId: 'D01-01' });
       this.events.publish('feature.created', target, { featureId: f.featureId, version: f.version, name: f.name }, { componentId: 'D01-01', correlationId: actor.correlationId });
@@ -191,6 +194,7 @@ export class RegistryService {
       const merged = this.merge(base, body.changes);
       const f: FeatureVersionRow = { ...merged, version, lifecycle: 'PROPOSED', baselineId: null, catalogIds: [], gateRecordIds: [], _missing: { ...merged._missing, baselineId: '미발급' } };
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
+      this.safety.ensure(f.featureId, f.version); // 안전 분류 초안 — 앞 Version 값을 잇거나 추정(보고서 5.7)
       const target = `${featureId}@${version}`;
       const rejudge = gatesToRejudge(changed, base.lifecycle);
       this.audit.record(actor, 'FEATURE_VERSION_CREATE', target, { before: { baseVersion: base.version }, after: { version, changed, rejudge }, reason: body.reason, componentId: 'D01-01' });

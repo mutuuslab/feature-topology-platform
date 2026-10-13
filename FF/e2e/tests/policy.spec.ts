@@ -26,6 +26,8 @@ async function developingFeature(request: APIRequestContext) {
   const base = `/api/features/${f.featureId}/versions/0.1.0`;
   const p = await request.patch(`${API}${base}`, { headers: H(...author), data: { functions: [{ functionId: 'FUNC-000056', label: 'Extended Gap Control 기능' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] } });
   expect(p.status(), await p.text()).toBe(200);
+  // 안전 분류 확정(Safety Manager) 없이는 G2 이후 PASS가 막힌다 — FFG-CLS-001
+  await post(`${base}/safety/confirm`, ['usr-safety', 'SAFETY_OFFICER'], { reason: 'HARA 검토 완료' });
   for (const g of ['G1', 'G2', 'G3']) await post(`${base}/gates`, judge, { gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` });
   await post(`${base}/transitions`, ['usr-approver', 'FEATURE_APPROVER'], { to: 'APPROVED', reason: '승인' }, 200);
   for (const g of ['G4', 'G5', 'G6', 'G7']) await post(`${base}/gates`, judge, { gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` });

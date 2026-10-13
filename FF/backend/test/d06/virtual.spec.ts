@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp } from '../helpers';
+import { actor, bootApp, confirmSafety } from '../helpers';
 
 const FAKE = resolve(__dirname, '..', 'fixtures', 'fake-vecu');
 const REAL = process.env.VECU_DIR_REAL ?? resolve(__dirname, '../../../../../2026-10-11_vECU');
@@ -115,6 +115,7 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     it('준비: FEAT-00022 새 Version → G1~G3 → 승인(DEVELOPING) → 그 Version 정책의 가상검증', async () => {
       const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '감속 파라미터 개선', changes: { description: '위험 단계 감속 요청 파라미터 개선' } }).expect(201);
       ver = v.body.feature.version;
+      await confirmSafety(http, 'FEAT-00022', ver);
       for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/FEAT-00022/versions/${ver}/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await http().post(`/api/features/FEAT-00022/versions/${ver}/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);
       const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: ver, controlPoint: 'Parameter', flagKey: 'care_00022_param', description: 'v2', safeDefault: false }).expect(201);

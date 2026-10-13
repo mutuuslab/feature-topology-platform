@@ -1,10 +1,10 @@
 // /features — Feature Registry 목록 (v2). 백엔드 GET /api/features (D01-01).
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LIFECYCLE, type Lifecycle } from '@ff/contracts';
+import { F_CLASSES, LIFECYCLE, type FClass, type Lifecycle, type SafetyProfile } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, IdChip, Kpi, LifecycleBadge, PageHeader, Segmented, Select, Toolbar } from '../../design';
+import { AsyncView, ClassBadges, DataTable, IdChip, Kpi, LifecycleBadge, PageHeader, Segmented, Select, Toolbar } from '../../design';
 import { MiniGates, scopeOf } from '../shared';
 import type { FeatureList as FeatureListT } from '../types';
 
@@ -17,6 +17,7 @@ export default function FeatureList() {
   const lifecycle = (sp.get('lifecycle') ?? '') as Lifecycle | '';
   const country = sp.get('country') ?? '';
   const latestOnly = sp.get('latest') !== '0';
+  const fClass = (sp.get('f') ?? '') as FClass | '';
   const set = (k: string, v: string) => {
     const n = new URLSearchParams(sp);
     if (v) n.set(k, v);
@@ -38,7 +39,11 @@ export default function FeatureList() {
     };
   }, [all.data]);
 
-  const rows = list.data?.items ?? [];
+  // 안전 분류(보고서 5장)는 별도 Registry — Feature@Version으로 붙인다
+  const profiles = useApi<{ items: SafetyProfile[] }>('safetyProfiles');
+  const cls = useMemo(() => new Map((profiles.data?.items ?? []).map((p) => [`${p.featureId}@${p.version}`, p])), [profiles.data]);
+  const fCount = useMemo(() => Object.fromEntries(F_CLASSES.map((f) => [f, (profiles.data?.items ?? []).filter((p) => p.fClass === f).length])), [profiles.data]);
+  const rows = (list.data?.items ?? []).filter((r) => !fClass || cls.get(`${r.featureId}@${r.version}`)?.fClass === fClass);
   const facets = all.data?.facets;
 
   return (
@@ -68,13 +73,24 @@ export default function FeatureList() {
           label="Lifecycle"
           value={lifecycle}
           onChange={(v) => set('lifecycle', v)}
-          options={[{ value: '' as const, label: ko.page.all, count: facets ? Object.values(facets.lifecycle).reduce((a, b) => a + b, 0) : undefined }, ...LIFECYCLE.map((l) => ({ value: l, label: l, count: facets?.lifecycle[l] ?? 0 }))]}
+          options={[
+            { value: '' as const, label: ko.page.all, count: facets ? Object.values(facets.lifecycle).reduce((a, b) => a + b, 0) : undefined },
+            ...LIFECYCLE.map((l) => ({ value: l, label: l, count: facets?.lifecycle[l] ?? 0 })),
+          ]}
         />
         <Select label={T.country} value={country} onChange={(e) => set('country', e.target.value)}>
           <option value="">{ko.page.all}</option>
           {Object.entries(facets?.country ?? {}).map(([c, n]) => (
             <option key={c} value={c}>
               {c} ({n})
+            </option>
+          ))}
+        </Select>
+        <Select label={T.fFilter} value={fClass} onChange={(e) => set('f', e.target.value)}>
+          <option value="">{ko.page.all}</option>
+          {F_CLASSES.map((f) => (
+            <option key={f} value={f}>
+              {f} ({fCount[f] ?? 0})
             </option>
           ))}
         </Select>
@@ -93,12 +109,47 @@ export default function FeatureList() {
           maxHeight="calc(100vh - 360px)"
           initialSort={{ key: 'id', dir: 'asc' }}
           columns={[
-            { key: 'id', header: T.col.id, cell: (r) => <IdChip id={r.featureId} version={r.version} to={`/features/${r.featureId}/${r.version}`} />, sort: (r) => `${r.featureId}@${r.version.padStart(8, '0')}`, width: '190px' },
+            {
+              key: 'id',
+              header: T.col.id,
+              cell: (r) => <IdChip id={r.featureId} version={r.version} to={`/features/${r.featureId}/${r.version}`} />,
+              sort: (r) => `${r.featureId}@${r.version.padStart(8, '0')}`,
+              width: '190px',
+            },
             { key: 'name', header: T.col.name, cell: (r) => r.name, sort: (r) => r.name },
-            { key: 'scope', header: T.col.scope, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{scopeOf(r)}</span>, sort: (r) => scopeOf(r) },
+            {
+              key: 'scope',
+              header: T.col.scope,
+              cell: (r) => (
+                <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
+                  {scopeOf(r)}
+                </span>
+              ),
+              sort: (r) => scopeOf(r),
+            },
             { key: 'lc', header: T.col.lifecycle, cell: (r) => <LifecycleBadge value={r.lifecycle} />, sort: (r) => LIFECYCLE.indexOf(r.lifecycle) },
+            {
+              key: 'cls',
+              header: T.safetyCols,
+              cell: (r) => {
+                const p = cls.get(`${r.featureId}@${r.version}`);
+                return p ? (
+                  <span className="ds-cls-row--nowrap" title={ko.safety.typeShort[p.flagType]}>
+                    <ClassBadges f={p.fClass} dc={p.deactClass} r={p.regClass} short />
+                  </span>
+                ) : (
+                  <span style={{ color: 'var(--faint)' }}>—</span>
+                );
+              },
+              sort: (r) => cls.get(`${r.featureId}@${r.version}`)?.fClass ?? '',
+            },
             { key: 'gates', header: T.col.gates, cell: (r) => <MiniGates gates={r.gates} /> },
-            { key: 'bl', header: T.col.baseline, cell: (r) => (r.baselineId ? <span className="ds-mono">{r.baselineId}</span> : <span style={{ color: 'var(--faint)' }}>—</span>), sort: (r) => r.baselineId ?? '' },
+            {
+              key: 'bl',
+              header: T.col.baseline,
+              cell: (r) => (r.baselineId ? <span className="ds-mono">{r.baselineId}</span> : <span style={{ color: 'var(--faint)' }}>—</span>),
+              sort: (r) => r.baselineId ?? '',
+            },
             { key: 'asil', header: T.col.asil, cell: (r) => <span className="ds-mono">{r.asil}</span>, sort: (r) => r.asil },
             { key: 'owner', header: T.col.owner, cell: (r) => r.ownerId, sort: (r) => r.ownerId },
           ]}

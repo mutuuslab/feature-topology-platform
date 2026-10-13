@@ -32,7 +32,8 @@ describe('따라하기 시나리오 표', () => {
       expect(t.steps.length).toBeGreaterThan(2);
       expect(new Set(t.steps.map((s) => s.id)).size).toBe(t.steps.length);
       for (const s of t.steps) {
-        expect([s.doKo, s.whyKo, s.expectKo, s.route, s.anchor, s.role].every(Boolean)).toBe(true);
+        expect([s.doKo, s.whyKo, s.expectKo, s.route, s.anchor, s.targetKo, s.role].every(Boolean)).toBe(true);
+        expect(s.pendingKo ?? '').not.toMatch(/\b[UF]\d\b/); // 사용자에게 내부 단계 번호(U3·F1)를 보이지 않는다
         expect(s.rules.length).toBeGreaterThan(0);
       }
     }

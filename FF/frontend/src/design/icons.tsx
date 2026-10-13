@@ -32,6 +32,8 @@ const P: Record<string, string> = {
   book: 'M4 4.5A1.5 1.5 0 0 1 5.5 3H16v12H5.5A1.5 1.5 0 0 0 4 16.5ZM4 16.5A1.5 1.5 0 0 0 5.5 18H16v-3',
   shield: 'M10 3l6 2.5V10c0 3.5-2.6 6-6 7-3.4-1-6-3.5-6-7V5.5Z',
   pen: 'M4 16l1-4 8.5-8.5 3 3L8 15ZM12 5l3 3',
+  minimize: 'M5 15h10',
+  target: 'M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12ZM10 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM10 1.5V4M10 16v2.5M1.5 10H4M16 10h2.5',
 };
 
 export type IconName = keyof typeof P;

@@ -1,6 +1,9 @@
 // /learn — 표준 따라하기 허브와 시나리오 화면. 보고서 v1.1 18장 케이스 시나리오를 실제 화면에서 따라 한다(가이드 패널: shell/GuideDock).
 import { useMemo, type CSSProperties } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+
+/** 준비된 시나리오를 앞에 — 지금 따라 할 수 있는 것이 먼저 보이게 */
+const readyFirst = (a: Tutorial, b: Tutorial) => Number(b.status === 'ready') - Number(a.status === 'ready');
 import { clausesOfRules, reportRule, tutorialById, TUTORIALS, type ReadingPath, type Tutorial } from '@ff/contracts';
 import { ko } from '../../copy/ko';
 import { roleLabel } from '../../data/refdata';
@@ -16,6 +19,7 @@ function rolesOfTutorial(t: Tutorial): string[] {
 
 function Card({ t }: { t: Tutorial }) {
   const st = useLearn();
+  const nav = useNavigate();
   const active = st?.scenarioId === t.id;
   return (
     <li className="ds-learn-card" data-status={t.status}>
@@ -37,16 +41,14 @@ function Card({ t }: { t: Tutorial }) {
           <ClauseChip key={id} id={id} title={reportRule(id)?.title} onOpen={openRule} />
         ))}
       </div>
-      <div className="ds-learn-card__foot">
-        <span className="ds-field__hint">
-          {t.status === 'ready' ? `${L.steps(t.steps.length)} · ${L.minutes(t.minutes)} · ${rolesOfTutorial(t).map(roleLabel).join(', ')}` : L.plannedNote}
-        </span>
-        {active && st && (
-          <span className="ds-field__hint">
-            {L.resume} {st.step + 1}/{t.steps.length}
-          </span>
-        )}
-      </div>
+      {t.status === 'ready' && (
+        <div className="ds-learn-card__foot">
+          <span className="ds-field__hint">{rolesOfTutorial(t).map(roleLabel).join(', ')}</span>
+          <Button variant={active ? 'default' : 'primary'} icon="play" onClick={() => nav(`/learn/${t.id}`)}>
+            {active && st ? L.resumeRun(st.step + 1, t.steps.length) : L.startCta(t.steps.length, t.minutes)}
+          </Button>
+        </div>
+      )}
     </li>
   );
 }
@@ -54,7 +56,7 @@ function Card({ t }: { t: Tutorial }) {
 export function LearnHub() {
   const [sp, setSp] = useSearchParams();
   const path = (sp.get('path') ?? 'ALL') as (typeof PATHS)[number];
-  const list = TUTORIALS.filter((t) => path === 'ALL' || t.readingPath === path);
+  const list = TUTORIALS.filter((t) => path === 'ALL' || t.readingPath === path).sort(readyFirst);
   const counts = useMemo(() => Object.fromEntries(PATHS.map((p) => [p, TUTORIALS.filter((t) => p === 'ALL' || t.readingPath === p).length])), []);
   return (
     <div className="ds-screen">
@@ -81,7 +83,10 @@ export function LearnRun() {
   const st = useLearn();
   if (!t) return <p className="ds-stale">{id}</p>;
   const clauses = clausesOfRules([...t.rules, ...t.steps.flatMap((s) => s.rules)]);
+  const running = st?.scenarioId === t.id;
   const start = () => {
+    // 이미 진행 중이면 이어서(지금 단계 화면으로), 아니면 1단계부터
+    if (running) return nav(t.steps[Math.min(st!.step, t.steps.length - 1)].route);
     learnStore.start(t.id, 'view');
     if (t.steps[0] && t.steps[0].route !== `/learn/${t.id}`) nav(t.steps[0].route);
   };
@@ -130,8 +135,8 @@ export function LearnRun() {
             <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
               {(['view', 'auto', 'self'] as const).map((m) => (
                 <div key={m} style={{ display: 'grid', gap: 4 }}>
-                  <Button variant={m === 'view' ? 'primary' : 'default'} icon={m === 'view' ? 'play' : undefined} disabled={m !== 'view' || !t.steps.length} onClick={start} data-tour={m === 'view' ? 'learn-start' : undefined}>
-                    {L.mode[m]}
+                  <Button variant={m === 'view' && !running ? 'primary' : 'default'} icon={m === 'view' ? 'play' : undefined} disabled={m !== 'view' || !t.steps.length} onClick={start} data-tour={m === 'view' ? 'learn-start' : undefined}>
+                    {m === 'view' && running ? L.resumeRun(st!.step + 1, t.steps.length) : L.mode[m]}
                   </Button>
                   <span className="ds-field__hint">{L.modeHint[m]}</span>
                 </div>

@@ -400,16 +400,30 @@
 }
 .sh-guide {
   grid-area: guide;
-  display: flex;
-  flex-direction: column;
+  /* 머리·진행 막대·이동은 고정, 본문(.sh-guide__body)만 스크롤 */
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   gap: var(--sp-3);
   padding: var(--sp-4);
   border-left: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
-  overflow: auto;
+  overflow: hidden;
   min-width: 0;
+  min-height: 0;
   z-index: 20;
+}
+.sh-guide__body {
+  display: grid;
+  gap: var(--sp-3);
+  align-content: start;
+  overflow: auto;
+  min-height: 0;
+  padding-right: 2px;
+  scrollbar-gutter: stable;
+  /* 아래로 더 있다는 신호 — 끝부분을 흐리게(마지막 줄은 여백으로 가리지 않게) */
+  mask-image: linear-gradient(to bottom, var(--ink) calc(100% - 20px), transparent);
+  padding-bottom: 20px;
 }
 .sh-guide--collapsed {
   position: fixed;
@@ -430,8 +444,14 @@
 .sh-guide__bar li { height: 4px; border-radius: 2px; background: var(--surface-3); }
 .sh-guide__bar li[data-state='done'] { background: var(--ok); }
 .sh-guide__bar li[data-state='now'] { background: var(--accent); }
-.sh-guide__sec { display: grid; gap: var(--sp-1); }
+.sh-guide__sec { display: grid; gap: var(--sp-1); align-content: start; }
 .sh-guide__sec p { margin: 0; font-size: var(--fs-sm); line-height: 1.55; }
+/* 지금 할 일이 패널의 주인공 */
+.sh-guide__sec--now { padding: var(--sp-2) var(--sp-3); border-radius: var(--r); background: var(--accent-soft); }
+.sh-guide__sec--now p { font-size: var(--fs-md); font-weight: 600; color: var(--ink); }
+.sh-guide__sec--now + .sh-guide__sec { border-top: 0; padding-top: 0; }
+.sh-guide__sec--who { padding-bottom: var(--sp-1); }
+.sh-guide__more summary { cursor: pointer; font-size: var(--fs-xs); color: var(--muted); margin-top: 2px; }
 .sh-guide__sec + .sh-guide__sec { border-top: 1px solid var(--line); padding-top: var(--sp-3); }
 .sh-guide__where,
 .sh-guide__who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -450,10 +470,13 @@
 .sh-guide__clauses { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: var(--fs-xs); color: var(--ink-2); }
 .sh-guide__family { color: var(--muted); }
 .sh-guide__pending { color: color-mix(in srgb, var(--warn) 80%, var(--ink)); display: flex; gap: 6px; align-items: baseline; }
-.sh-guide__nav { display: flex; justify-content: space-between; gap: var(--sp-2); margin-top: auto; padding-top: var(--sp-3); border-top: 1px solid var(--line); }
+.sh-guide__nav { display: flex; justify-content: space-between; gap: var(--sp-2); padding-top: var(--sp-3); border-top: 1px solid var(--line); }
 .sh-guide__pre { white-space: pre-line; }
 
 /* 스포트라이트 — 대상 요소 둘레의 고리. 클릭은 아래 요소로 그대로 간다 */
+.sh-spot[data-tight] {
+  box-shadow: 0 0 0 3px var(--accent), 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent);
+}
 .sh-spot {
   position: fixed;
   z-index: 15;
@@ -466,24 +489,14 @@
   .sh-spot { transition: none; }
 }
 
-/* 좁은 화면(1440 미만): 그리드 열 대신 본문 위에 뜬다 */
+/* 좁은 화면(1440 미만): 본문을 덮지 않도록 그룹 패널을 접고 가이드를 좁은 열로 둔다 */
 @media (max-width: 1439px) {
   .sh[data-guide='open'],
   .sh[data-guide='open'][data-panel='closed'] {
-    grid-template-columns: var(--rail-w) var(--panel-w) minmax(0, 1fr);
-    grid-template-areas: 'top top top' 'rail panel main';
+    grid-template-columns: var(--rail-w) 0 minmax(0, 1fr) min(330px, 28vw);
   }
-  .sh[data-guide='open'][data-panel='closed'] { grid-template-columns: var(--rail-w) 0 minmax(0, 1fr); }
-  .sh-guide:not(.sh-guide--collapsed) {
-    position: fixed;
-    top: calc(var(--topbar-h) + var(--sp-2));
-    right: var(--sp-2);
-    bottom: var(--sp-2);
-    width: min(360px, calc(100vw - var(--rail-w) - var(--sp-4)));
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
-    box-shadow: var(--e-3);
-  }
+  .sh[data-guide='open'] .sh-panel { visibility: hidden; }
+  .sh-guide { padding: var(--sp-3); }
 }
 
 /* 시연 모드: 본문을 가리지 않게 아래 자막 띠 — 지금 할 일·왜만 크게, 나머지는 펼쳐 본다 */
@@ -491,6 +504,7 @@
   grid-template-columns: 84px 0 minmax(0, 1fr);
   grid-template-areas: 'top top top' 'rail panel main';
 }
+/* 왼쪽 열(머리·진행·누가·어디서·이동) · 가운데 지금 할 일 · 오른쪽 왜·확인 — 읽는 순서가 왼쪽에서 오른쪽으로 */
 [data-present='on'] .sh-guide:not(.sh-guide--collapsed) {
   position: fixed;
   top: auto;
@@ -498,17 +512,40 @@
   right: var(--sp-4);
   bottom: var(--sp-4);
   width: auto;
-  max-height: 38vh;
-  display: grid;
-  grid-template-columns: minmax(220px, 0.8fr) 1.2fr 1.2fr;
-  align-items: start;
+  height: 32vh;
+  grid-template-columns: minmax(260px, 0.8fr) 2.2fr;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: 'head body' 'bar body' 'who body' 'nav body';
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
   box-shadow: var(--e-3);
 }
-[data-present='on'] .sh-guide__head,
-[data-present='on'] .sh-guide__bar,
-[data-present='on'] .sh-guide__nav { grid-column: 1; }
+[data-present='on'] .sh-guide__head { grid-area: head; }
+[data-present='on'] .sh-guide__bar { grid-area: bar; }
+[data-present='on'] .sh-guide__nav { grid-area: nav; border-top: 0; }
+[data-present='on'] .sh-guide__body {
+  grid-area: body;
+  grid-template-columns: 1.1fr 1fr;
+  grid-template-areas: 'now why' 'where expect';
+  align-items: start;
+  column-gap: var(--sp-5);
+}
+[data-present='on'] .sh-guide__sec--now { grid-area: now; }
+[data-present='on'] .sh-guide__sec--where { grid-area: where; }
+/* 누가(역할 전환)는 왼쪽 고정 열 — 띠 본문이 스크롤돼도 전환 버튼이 가려지지 않는다 */
+[data-present='on'] .sh-guide__sec--who { grid-area: who; align-self: start; }
+[data-present='on'] .sh-guide__sec--why { grid-area: why; }
+[data-present='on'] .sh-guide__sec--expect { grid-area: expect; }
 [data-present='on'] .sh-guide__sec + .sh-guide__sec { border-top: 0; padding-top: 0; }
 [data-present='on'] .sh-guide__sec p { font-size: var(--fs-md); }
-[data-present='on'] .sh[data-guide='open'] .sh-main { padding-bottom: calc(38vh + var(--sp-8)); }
+[data-present='on'] .sh-guide__sec--now p { font-size: var(--fs-lg); }
+[data-present='on'] .sh-guide__clauses-wrap { display: none; }
+[data-present='on'] .sh[data-guide='open'] .sh-main { padding-bottom: calc(32vh + var(--sp-8)); }
+
+/* 규칙 원문 Drawer — 규칙 문장을 맨 위에 크게, 표의 이름 칸은 좁게 */
+.sh-rule { display: grid; gap: var(--sp-3); }
+.sh-rule__lead { margin: 0; font-size: var(--fs-md); line-height: 1.6; padding-bottom: var(--sp-3); border-bottom: 1px solid var(--line); }
+.sh-rule .ds-kv__row { grid-template-columns: 72px 1fr; }
+.ds-drawer__head h2 { text-wrap: balance; }
+[data-present='on'] .ds-drawer { width: min(560px, 36vw); }

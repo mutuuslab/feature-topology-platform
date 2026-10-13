@@ -44,7 +44,7 @@ for (const [w, h] of [[1366, 768], [1920, 1080]] as const) {
     await dock.getByRole('button', { name: '역할 전환' }).click();
     await expect(dock.getByText(/현재 역할이 맞습니다/)).toBeVisible();
     await expect(page).toHaveURL(/tab=gates/); // 역할 전환은 화면을 옮기지 않는다
-    await expect(page.locator('[data-tour="gate-rail"][data-tour-active="true"]')).toBeVisible();
+    await expect(page.locator('[data-tour="gate-g5"][data-tour-active="true"]')).toBeVisible();
 
     await dock.getByRole('button', { name: '끝내기', exact: true }).click();
     await expect(page).toHaveURL(/\/learn\/CS-01$/);

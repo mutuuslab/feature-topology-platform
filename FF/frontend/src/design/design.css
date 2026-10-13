@@ -1652,6 +1652,8 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-learn-card { display: grid; gap: var(--sp-2); align-content: start; padding: var(--sp-4); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
 .ds-learn-card[data-status='ready'] { border-top: 3px solid var(--accent); }
 .ds-learn-card[data-status='planned'] { background: var(--surface-2); }
+.ds-learn-card[data-status='planned'] h3 { color: var(--ink-2); font-weight: 600; }
+.ds-learn-card__foot .ds-btn { margin-left: auto; }
 .ds-learn-card__head { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: center; }
 .ds-learn-card h3 { margin: 0; font-size: var(--fs-md); line-height: 1.35; }
 .ds-learn-card h3 a { color: inherit; }

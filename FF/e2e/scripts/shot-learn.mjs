@@ -1,8 +1,8 @@
-// UX 검토용 — 표준 따라하기(허브·시나리오·가이드 패널)를 1366·1920·시연 모드로 찍는다. 결과: e2e/test-results/shots/learn-*.png
+// UX 검토용 — 표준 따라하기(허브·시나리오·가이드 패널)를 1366·1920·시연 모드로 찍는다. 결과: e2e/shots/ (Playwright가 실행마다 비우는 test-results 밖)의 learn-*.png
 // 실행: 프론트(빌드 preview 또는 dev)가 BASE에서 떠 있어야 한다. node e2e/scripts/shot-learn.mjs
 import { chromium } from '@playwright/test';
 const base = process.env.BASE ?? 'http://localhost:9012';
-const out = new URL('../test-results/shots/', import.meta.url).pathname.replace(/^\/(\w:)/, '$1');
+const out = new URL('../shots/', import.meta.url).pathname.replace(/^\/(\w:)/, '$1');
 const b = await chromium.launch();
 const COND = [
   { name: '1366', w: 1366, h: 768, present: false },
@@ -33,7 +33,7 @@ for (const c of COND) {
   await p.waitForTimeout(600);
   await p.screenshot({ path: `${out}learn-step2-feature-${c.name}.png` });
   for (let i = 0; i < 5; i++) await dock.getByRole('button', { name: '다음' }).click();
-  await p.locator('[data-tour="gate-rail"]').waitFor();
+  await p.locator('[data-tour="gate-g5"]').waitFor();
   await p.waitForTimeout(800);
   await p.screenshot({ path: `${out}learn-step7-role-${c.name}.png` });
   await dock.getByRole('button', { name: 'FFG-TST-009 원문 요약 보기' }).click();

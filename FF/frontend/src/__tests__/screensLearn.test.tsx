@@ -71,7 +71,8 @@ describe('하네스 — 시나리오 단계가 실제 화면을 가리킨다', (
     };
     walk(join(__dirname, '..', 'screens'));
     const all = src.join('\n');
-    const missing = TUTORIALS.flatMap((t) => t.steps.filter((s) => !new RegExp(`(data-tour|tour)=["'{]+${s.anchor}["'}]`).test(all)).map((s) => `${t.id}/${s.id} → ${s.anchor}`));
+    // data-tour="x" · tour="x" · tours={{ G5: 'x' }}
+    const missing = TUTORIALS.flatMap((t) => t.steps.filter((s) => !new RegExp(`(data-tour|tours?)=[^\\n]*["']${s.anchor}["']`).test(all)).map((s) => `${t.id}/${s.id} → ${s.anchor}`));
     expect(missing).toEqual([]);
   });
 });
@@ -86,7 +87,8 @@ describe('허브·시나리오 화면', () => {
   it('자동 실행·직접 하기는 아직 연결 전이라 막혀 있고 이유가 보인다', () => {
     mount('/learn/CS-01');
     expect((screen.getByRole('button', { name: '자동 실행' }) as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getAllByText(/F1/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/아직 연결 전/).length).toBe(2);
+    expect(document.body.textContent).not.toMatch(/다음 개발 단계|\(F\d\)|\bU\d에서|\bF\d에서/); // 내부 단계 번호(U3·F1)는 화면에 없다 — 분류 표기 F3는 허용
     expect(screen.getByText(/위험 구간 26초/)).toBeTruthy();
   });
 });

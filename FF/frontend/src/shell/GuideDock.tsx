@@ -15,7 +15,7 @@ const D = L.dock;
 
 /** 대상 요소를 찾아 위치를 따라간다 — 비동기로 그려지는 화면을 위해 짧게 폴링한다 */
 function useSpotlight(anchor: string | null, describedBy: string) {
-  const [rect, setRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number; height: number; tight: boolean } | null>(null);
   const { pathname, search } = useLocation();
   useEffect(() => {
     if (!anchor) {
@@ -48,8 +48,9 @@ function useSpotlight(anchor: string | null, describedBy: string) {
         scrolled = true;
       }
       const b = el.getBoundingClientRect();
-      const next = { top: b.top, left: b.left, width: b.width, height: b.height };
-      setRect((r) => (r && r.top === next.top && r.left === next.left && r.width === next.width && r.height === next.height ? r : next));
+      // 레일·표 안의 칸이면 고리를 촘촘하게 — 바깥 고리가 이웃 칸(G6 상태 점 등)을 가리지 않게
+      const next = { top: b.top, left: b.left, width: b.width, height: b.height, tight: !!el.parentElement?.closest('.ds-gates, .ds-table, .ds-kv') };
+      setRect((r) => (r && r.top === next.top && r.left === next.left && r.width === next.width && r.height === next.height && r.tight === next.tight ? r : next));
     };
     tick();
     const id = window.setInterval(tick, 400);
@@ -65,8 +66,15 @@ function useSpotlight(anchor: string | null, describedBy: string) {
   return rect;
 }
 
+/** 근거 조항은 두 개까지 펼치고 나머지는 접는다 — 전체 목록은 규칙 Drawer·시나리오 화면에 있다 */
 function StepRules({ step }: { step: TutorialStep }) {
   const clauses = [...new Set(step.rules.flatMap((id) => clausesOf(reportRule(id) ?? { basis: '' })))];
+  const li = (c: string) => (
+    <li key={c}>
+      <span className="ds-rule-id">{c}</span>
+      {standardFamily(c) && <span className="sh-guide__family"> · {standardFamily(c)}</span>}
+    </li>
+  );
   return (
     <div className="sh-guide__rules">
       <div className="ds-cls-row">
@@ -80,14 +88,17 @@ function StepRules({ step }: { step: TutorialStep }) {
         ))}
       </div>
       {clauses.length > 0 && (
-        <ul className="sh-guide__clauses" aria-label={L.clauses}>
-          {clauses.map((c) => (
-            <li key={c}>
-              <span className="ds-rule-id">{c}</span>
-              {standardFamily(c) && <span className="sh-guide__family"> · {standardFamily(c)}</span>}
-            </li>
-          ))}
-        </ul>
+        <div className="sh-guide__clauses-wrap">
+          <ul className="sh-guide__clauses" aria-label={L.clauses}>
+            {clauses.slice(0, 2).map(li)}
+          </ul>
+          {clauses.length > 2 && (
+            <details className="sh-guide__more">
+              <summary>{D.moreClauses(clauses.length - 2)}</summary>
+              <ul className="sh-guide__clauses">{clauses.slice(2).map(li)}</ul>
+            </details>
+          )}
+        </div>
       )}
     </div>
   );
@@ -120,6 +131,7 @@ export function GuideDock() {
     learnStore.set(null);
     nav(`/learn/${t.id}`);
   };
+  const reveal = () => document.querySelector(`[data-tour="${CSS.escape(step.anchor)}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
 
   if (st.collapsed)
     return (
@@ -132,8 +144,16 @@ export function GuideDock() {
 
   return (
     <>
-      {rect && <div className="sh-spot" aria-hidden="true" style={{ top: rect.top - 6, left: rect.left - 6, width: rect.width + 12, height: rect.height + 12 }} />}
+      {rect && (
+        <div
+          className="sh-spot"
+          aria-hidden="true"
+          data-tight={rect.tight || undefined}
+          style={rect.tight ? { top: rect.top - 2, left: rect.left - 2, width: rect.width + 4, height: rect.height + 4 } : { top: rect.top - 6, left: rect.left - 6, width: rect.width + 12, height: rect.height + 12 }}
+        />
+      )}
       <aside className="sh-guide" aria-label={D.label} data-kind={step.kind}>
+        {/* 머리·진행 막대·이동은 고정, 본문만 스크롤 — 시연 띠·좁은 화면에서도 다음 단계 버튼이 사라지지 않는다 */}
         <header className="sh-guide__head">
           <div>
             <div className="ds-eyebrow">
@@ -144,7 +164,7 @@ export function GuideDock() {
             </h2>
           </div>
           <div className="sh-guide__tools">
-            <Button variant="ghost" icon="chevron" aria-label={D.collapse} title={D.collapse} onClick={() => learnStore.patch({ collapsed: true })} />
+            <Button variant="ghost" icon="minimize" aria-label={D.collapse} title={D.collapse} onClick={() => learnStore.patch({ collapsed: true })} />
             <Button variant="ghost" icon="close" aria-label={D.exit} title={D.exit} onClick={finish} />
           </div>
         </header>
@@ -154,26 +174,7 @@ export function GuideDock() {
           ))}
         </ol>
 
-        <section className="sh-guide__sec">
-          <h3 className="ds-eyebrow ds-eyebrow--ko">{D.now}</h3>
-          <p>{step.doKo}</p>
-        </section>
-
-        <section className="sh-guide__sec">
-          <h3 className="ds-eyebrow ds-eyebrow--ko">{D.where}</h3>
-          {here ? (
-            <p className="sh-guide__where" role="status" data-found={!!rect}>
-              <StatusGlyph kind={rect ? 'PASS' : 'UNJUDGED'} /> {rect ? D.found : D.notFound}
-            </p>
-          ) : (
-            <p className="sh-guide__where">
-              <span className="ds-rule-id">{step.route}</span> — {D.otherScreen}
-              <Button onClick={() => nav(step.route)}>{D.go}</Button>
-            </p>
-          )}
-        </section>
-
-        <section className="sh-guide__sec">
+        <section className="sh-guide__sec sh-guide__sec--who">
           <h3 className="ds-eyebrow ds-eyebrow--ko">{D.who}</h3>
           {role === step.role ? (
             <p className="sh-guide__who">
@@ -191,23 +192,49 @@ export function GuideDock() {
           )}
         </section>
 
-        <section className="sh-guide__sec">
-          <h3 className="ds-eyebrow ds-eyebrow--ko">{D.why}</h3>
-          <p>
-            <RuleText text={step.whyKo} />
-          </p>
-          <StepRules step={step} />
-        </section>
+        <div className="sh-guide__body">
+          <section className="sh-guide__sec sh-guide__sec--now">
+            <h3 className="ds-eyebrow ds-eyebrow--ko">{D.now}</h3>
+            <p>{step.doKo}</p>
+          </section>
 
-        <section className="sh-guide__sec">
-          <h3 className="ds-eyebrow ds-eyebrow--ko">{D.expect}</h3>
-          <p>{step.expectKo}</p>
-          {step.pendingKo && (
-            <p className="sh-guide__pending">
-              <StatusGlyph kind="REVIEW" /> {D.pending} — {step.pendingKo}
+          <section className="sh-guide__sec sh-guide__sec--where">
+            <h3 className="ds-eyebrow ds-eyebrow--ko">{D.where}</h3>
+            {here ? (
+              <p className="sh-guide__where" role="status" data-found={!!rect}>
+                <StatusGlyph kind={rect ? 'PASS' : 'UNJUDGED'} /> {rect ? `${D.found}: ${step.targetKo}` : D.notFound}
+                {rect && (
+                  <Button variant="ghost" icon="target" onClick={reveal}>
+                    {D.reveal}
+                  </Button>
+                )}
+              </p>
+            ) : (
+              <p className="sh-guide__where">
+                {step.targetKo} — {D.otherScreen}
+                <Button onClick={() => nav(step.route)}>{D.go}</Button>
+              </p>
+            )}
+          </section>
+
+          <section className="sh-guide__sec sh-guide__sec--why">
+            <h3 className="ds-eyebrow ds-eyebrow--ko">{D.why}</h3>
+            <p>
+              <RuleText text={step.whyKo} />
             </p>
-          )}
-        </section>
+            <StepRules step={step} />
+          </section>
+
+          <section className="sh-guide__sec sh-guide__sec--expect">
+            <h3 className="ds-eyebrow ds-eyebrow--ko">{D.expect}</h3>
+            <p>{step.expectKo}</p>
+            {step.pendingKo && (
+              <p className="sh-guide__pending">
+                <StatusGlyph kind="REVIEW" /> {D.pending} — {step.pendingKo}
+              </p>
+            )}
+          </section>
+        </div>
 
         <footer className="sh-guide__nav">
           <Button icon="chevronLeft" disabled={i === 0} onClick={() => go(i - 1)}>
@@ -228,7 +255,7 @@ export function GuideDock() {
   );
 }
 
-/** 규칙 상세 Drawer — 표준 설명 칩·가이드 패널의 규칙 칩이 연다 */
+/** 규칙 상세 Drawer — 표준 설명 칩·가이드 패널의 규칙 칩이 연다. 규칙 문장을 맨 위에 크게, 나머지는 표로 */
 export function RuleDrawer() {
   const [id, setId] = useState<string | null>(null);
   useEffect(() => {
@@ -241,16 +268,20 @@ export function RuleDrawer() {
   return (
     <Drawer open={!!id} title={id ? `${id}${r ? ` ${r.title}` : ''}` : ''} onClose={() => setId(null)}>
       {r ? (
-        <KeyValue
-          rows={[
-            { k: R.level, v: r.level },
-            { k: R.scope, v: r.scope.join(', ') },
-            { k: R.rule, v: <span className="sh-guide__pre"><RuleText text={r.rule} /></span> },
-            { k: R.basis, v: <span className="sh-guide__pre">{clausesOf(r).map((c) => `${c}${standardFamily(c) ? ` (${standardFamily(c)})` : ''}`).join('\n')}</span> },
-            { k: R.verify, v: <span className="sh-guide__pre"><RuleText text={r.verify} /></span> },
-            { k: R.section, v: r.section },
-          ]}
-        />
+        <div className="sh-rule">
+          <p className="sh-rule__lead">
+            <RuleText text={r.rule} />
+          </p>
+          <KeyValue
+            rows={[
+              { k: R.level, v: r.level },
+              { k: R.scope, v: r.scope.join(', ') },
+              { k: R.basis, v: <span className="sh-guide__pre">{clausesOf(r).map((c) => `${c}${standardFamily(c) ? ` (${standardFamily(c)})` : ''}`).join('\n')}</span> },
+              { k: R.verify, v: <span className="sh-guide__pre"><RuleText text={r.verify} /></span> },
+              { k: R.section, v: r.section.split(' · ').slice(1).join(' · ') || r.section },
+            ]}
+          />
+        </div>
       ) : (
         id && <p>{R.notFound}</p>
       )}

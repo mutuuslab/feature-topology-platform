@@ -20,6 +20,8 @@ export interface TutorialStep {
   route: string;
   /** 스포트라이트 대상 data-tour 값 */
   anchor: string;
+  /** 강조 대상의 이름 — "어디서"에 보인다 */
+  targetKo: string;
   /** 보고서 규칙 ID — 근거 조항은 규칙의 '근거' 필드에서 */
   rules: string[];
   /** 보고서 시험 카탈로그 ID(있으면) */
@@ -74,6 +76,7 @@ export const TUTORIALS: Tutorial[] = [
         role: 'author',
         route: '/learn/CS-01',
         anchor: 'learn-compare',
+        targetKo: '가이드 적용 전·후 표',
         rules: ['FFG-DEAC-001', 'FFG-LCY-006'],
         expectKo: '두 경로의 차이를 위험 구간·감지 시각·FTTI 여유로 설명할 수 있다',
       },
@@ -86,9 +89,10 @@ export const TUTORIALS: Tutorial[] = [
         role: 'author',
         route: FEAT,
         anchor: 'feature-header',
+        targetKo: 'Feature 머리말 › ASIL·범위',
         rules: ['FFG-CLS-001', 'FFG-CLS-009'],
         expectKo: 'F·DC·R·Flag 유형 네 축과 DC2의 인계·램프 시간을 말할 수 있다',
-        pendingKo: '분류 배지·안전 분류 탭은 U3에서 이 화면에 들어갑니다',
+        pendingKo: '이 화면에는 아직 분류 배지가 없습니다 — 분류 값은 보고서 5.6 표를 기준으로 보세요(배지·안전 분류 탭은 화면 개편 때 추가)',
       },
       {
         id: 'tool',
@@ -99,9 +103,10 @@ export const TUTORIALS: Tutorial[] = [
         role: 'author',
         route: '/validations/virtual',
         anchor: 'vecu-status',
+        targetKo: 'vECU 연결 상태',
         rules: ['FFG-TST-006', 'FFG-PLT-013'],
         expectKo: '연결된 도구와 qualification 상태(미실시 → 엔지니어링 Evidence)를 구분한다',
-        pendingKo: '가상 시험 신뢰성 패널은 U2에서 들어갑니다',
+        pendingKo: '도구 분류·재현 정보를 보여 주는 "가상 시험 신뢰성" 패널은 화면 개편 때 추가됩니다',
       },
       {
         id: 'run-remote',
@@ -112,6 +117,7 @@ export const TUTORIALS: Tutorial[] = [
         role: 'author',
         route: '/validations/virtual',
         anchor: 'virtual-run',
+        targetKo: '[가상검증 실행] 버튼',
         rules: ['FFG-TST-009'],
         tests: ['TC-FF-21'],
         expectKo: '실행 기록(VV-)이 생기고 시나리오별 판정이 나온다',
@@ -125,9 +131,10 @@ export const TUTORIALS: Tutorial[] = [
         role: 'author',
         route: '/validations/virtual',
         anchor: 'virtual-runs',
+        targetKo: '실행 기록 표 › 오류+Kill 행',
         rules: ['FFG-TST-009', 'FFG-DEAC-001'],
         expectKo: '위험 시간이 0이 아니면 이 결과는 안전 근거가 아니라는 것을 확인한다',
-        pendingKo: '지금 플랫폼은 이 실행을 Gate PASS로 셉니다 — F1에서 원격 경로를 비교 기준선으로 바꿉니다',
+        pendingKo: '지금 플랫폼은 이 실행을 Gate PASS로 셉니다 — 차량 내 감지 시나리오가 들어오면 원격 경로는 판정이 아닌 비교 기준선이 됩니다',
       },
       {
         id: 'onboard',
@@ -138,10 +145,11 @@ export const TUTORIALS: Tutorial[] = [
         role: 'author',
         route: '/validations/virtual',
         anchor: 'vecu-link',
+        targetKo: '[vECU 시뮬레이터 열기] 링크',
         rules: ['FFG-LCY-006'],
         tests: ['TC-FF-21'],
         expectKo: '감지 시각 ≤ FTTI, FHTI 여유가 양수',
-        pendingKo: 'vECU 차량 내 감지·DC2 단계는 F1에서 추가합니다',
+        pendingKo: 'vECU에는 아직 차량 내 감지와 DC2 단계(경고 → 인계 → 램프)가 없습니다 — 추가 예정',
       },
       {
         id: 'g5',
@@ -151,7 +159,8 @@ export const TUTORIALS: Tutorial[] = [
         whyKo: 'Gate 결정은 서명된 기록이며 입력이 없거나 도구 오류가 있으면 FAIL(fail-closed)입니다. G5는 Feature에 연결되지 않았거나 재현 정보가 없는 시험을 인정하지 않습니다.',
         role: 'quality',
         route: `${FEAT}?tab=gates`,
-        anchor: 'gate-rail',
+        anchor: 'gate-g5',
+        targetKo: 'Gate 레일 › G5 Verification Gate',
         rules: ['FFG-TST-009', 'FFG-LCY-001', 'FFG-LCY-002'],
         expectKo: 'G5 근거로 인정되는 실행과 아닌 실행을 구분한다',
       },

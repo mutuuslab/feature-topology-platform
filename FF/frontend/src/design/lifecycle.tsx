@@ -38,7 +38,8 @@ export function LifecycleStepper({ current, transitions = [] }: { current: Lifec
   );
 }
 
-export function GateRail({ statuses, onSelect }: { statuses: Partial<Record<GateId, string | null>>; onSelect?: (g: GateId) => void }) {
+/** tours: Gate 칸별 따라하기 스포트라이트 앵커(data-tour) */
+export function GateRail({ statuses, onSelect, tours }: { statuses: Partial<Record<GateId, string | null>>; onSelect?: (g: GateId) => void; tours?: Partial<Record<GateId, string>> }) {
   return (
     <div className="ds-gates" role="group" aria-label="Gate G1–G9">
       {GATES.map((g) => {
@@ -49,6 +50,7 @@ export function GateRail({ statuses, onSelect }: { statuses: Partial<Record<Gate
             key={g}
             className="ds-gate"
             data-gate={g}
+            data-tour={tours?.[g]}
             data-status={k}
             data-stage-start={g === 'G4' || g === 'G8'}
             style={{ '--c': `var(--gate-${k})` } as CSSProperties}

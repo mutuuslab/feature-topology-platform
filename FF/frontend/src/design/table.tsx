@@ -10,6 +10,8 @@ export interface Column<T> {
   sort?: (row: T) => string | number;
   align?: 'left' | 'right';
   width?: string;
+  /** 보조 열 — 좁은 화면(1600px 미만)에서는 숨긴다. 상세 화면에 같은 값이 있는 열에만 쓴다 */
+  minor?: boolean;
 }
 
 export function DataTable<T>({ rows, columns, rowKey, onOpen, caption, maxHeight, initialSort }: {
@@ -54,7 +56,7 @@ export function DataTable<T>({ rows, columns, rowKey, onOpen, caption, maxHeight
             {columns.map((c) => {
               const dir = sort?.key === c.key ? sort.dir : null;
               return (
-                <th key={c.key} style={{ width: c.width, textAlign: c.align }} aria-sort={dir ? (dir === 'asc' ? 'ascending' : 'descending') : undefined} scope="col">
+                <th key={c.key} data-minor={c.minor || undefined} style={{ width: c.width, textAlign: c.align }} aria-sort={dir ? (dir === 'asc' ? 'ascending' : 'descending') : undefined} scope="col">
                   {c.sort ? (
                     <button
                       type="button"
@@ -97,7 +99,7 @@ export function DataTable<T>({ rows, columns, rowKey, onOpen, caption, maxHeight
                 }
               >
                 {columns.map((c) => (
-                  <td key={c.key} className={c.align === 'right' ? 'num' : undefined}>
+                  <td key={c.key} data-minor={c.minor || undefined} className={c.align === 'right' ? 'num' : undefined}>
                     {c.cell(r)}
                   </td>
                 ))}

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, DataTable, IdChip, LifecycleBadge, PageHeader, Panel, Tabs, Toolbar, VerdictBadge } from '../../design';
+import { Segments } from '../shared';
 
 const M = ko.master;
 const fref = (s: string) => {
@@ -27,8 +28,8 @@ export function UpgScreen() {
           columns={[
             { key: 'c', header: C.code, cell: (r) => <span className="ds-mono ds-nowrap">{r.upgVc}</span>, sort: (r) => r.upgVc },
             { key: 'f', header: C.features, cell: (r) => (r.features.length ? <span className="ds-chain">{r.features.map((f) => fref(`${f.featureId}@${f.version}`))}</span> : <span className="ds-field__hint">{M.upg.unused}</span>), sort: (r) => r.features.length },
-            { key: 's', header: C.scopes, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.models.join(' · ') || '—'}</span> },
-            { key: 'v', header: C.vehicles, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.vehicles.join(' · ') || '—'}</span>, sort: (r) => r.vehicles.length },
+            { key: 's', header: C.scopes, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.models.length ? <Segments items={r.models} /> : '—'}</span> },
+            { key: 'v', header: C.vehicles, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.vehicles.length ? <Segments items={r.vehicles} /> : '—'}</span>, sort: (r) => r.vehicles.length },
           ]}
         />
       </AsyncView>

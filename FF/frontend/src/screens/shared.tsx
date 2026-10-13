@@ -25,6 +25,20 @@ export function MiniGates({ gates }: { gates: Record<string, string | null | und
 
 export const scopeOf = (x: { country: string; vehicleModel: string; trim: string }) => `${x.country} · ${x.vehicleModel} · ${x.trim}`;
 
+/** 항목 안에서는 줄을 바꾸지 않고 구분자(·)에서만 바꾼다 — 좁은 열에서 'Calligraph / y'처럼 낱말이 잘리지 않게 */
+export function Segments({ items, sep = ' · ' }: { items: string[]; sep?: string }) {
+  return (
+    <>
+      {items.map((x, i) => (
+        <span key={i}>
+          {i > 0 && sep}
+          <span className="ds-nowrap">{x}</span>
+        </span>
+      ))}
+    </>
+  );
+}
+
 /** ISO 시각 → 'YYYY-MM-DD HH:MM' (KST 그대로 표기) */
 export function when(iso: string | null | undefined): string {
   if (!iso) return '—';

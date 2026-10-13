@@ -121,12 +121,16 @@ function TopologyGraph({ data, focus }: { data: Graph; focus: string }) {
       const d = dist.get(n.id) ?? 3;
       rings.set(d, [...(rings.get(d) ?? []), n.id]);
     }
-    const pos = new Map<string, { x: number; y: number }>();
+    // 바깥 원까지 라벨 두 줄(약 50)이 viewBox 안에 들어오게 원 간격을 맞춘다
+    const maxD = Math.max(1, ...rings.keys());
+    const ring = (d: number) => ((H / 2 - 56) * d) / maxD;
+    const pos = new Map<string, { x: number; y: number; up: boolean }>();
     for (const [d, ids] of rings) {
-      const r = d === 0 ? (ids.length > 1 ? 40 : 0) : 70 + d * 60;
+      const r = d === 0 ? (ids.length > 1 ? 40 : 0) : ring(d);
       ids.forEach((id, i) => {
         const a = (2 * Math.PI * i) / ids.length - Math.PI / 2 + d * 0.4;
-        pos.set(id, { x: W / 2 + r * 1.6 * Math.cos(a), y: H / 2 + r * Math.sin(a) });
+        // 위쪽 노드는 라벨을 위에 — 가운데로 들어오는 선과 화살표가 라벨을 덮지 않게(바깥쪽에 라벨)
+        pos.set(id, { x: W / 2 + r * 1.6 * Math.cos(a), y: H / 2 + r * Math.sin(a), up: d > 0 && Math.sin(a) < -0.2 });
       });
     }
     return pos;
@@ -172,6 +176,7 @@ function TopologyGraph({ data, focus }: { data: Graph; focus: string }) {
           const p = layout.get(n.id);
           if (!p) return null;
           const isFocus = n.featureId === focus;
+          const rad = isFocus ? 20 : 15;
           return (
             <g
               key={n.id}
@@ -184,9 +189,9 @@ function TopologyGraph({ data, focus }: { data: Graph; focus: string }) {
               onClick={() => n.version && nav(`/features/${n.featureId}/${n.version}`)}
               onKeyDown={(ev) => ev.key === 'Enter' && n.version && nav(`/features/${n.featureId}/${n.version}`)}
             >
-              <circle r={isFocus ? 20 : 15} />
-              <text y={isFocus ? 34 : 28} textAnchor="middle" className="ds-viz__label">{n.featureId.slice(5)}</text>
-              <text y={isFocus ? 48 : 41} textAnchor="middle" className="ds-viz__muted">{n.name.length > 12 ? `${n.name.slice(0, 12)}…` : n.name}</text>
+              <circle r={rad} />
+              <text y={p.up ? -rad - 20 : rad + 14} textAnchor="middle" className="ds-viz__label ds-topo-label">{n.featureId.slice(5)}</text>
+              <text y={p.up ? -rad - 7 : rad + 27} textAnchor="middle" className="ds-viz__muted ds-topo-label">{n.name.length > 12 ? `${n.name.slice(0, 12)}…` : n.name}</text>
             </g>
           );
         })}

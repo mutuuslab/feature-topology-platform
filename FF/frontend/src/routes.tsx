@@ -54,13 +54,10 @@ const named = <T extends Record<string, unknown>>(load: () => Promise<T>, name: 
 
 // 페이지 모듈 — 모두 지연 로딩(초기 번들은 셸과 디자인 키트만)
 const home = () => import('./pages/home');
-const master = () => import('./pages/master');
 const topology2 = () => import('./pages/topology2');
 const decisions = () => import('./pages/decisions');
 const ops2 = () => import('./pages/ops2');
 const supplier = () => import('./pages/supplier');
-const integration = () => import('./pages/integration');
-const insights = () => import('./pages/insights');
 const admin = () => import('./pages/admin');
 const specnew = () => import('./pages/specnew');
 const eo = () => import('./pages/eo');
@@ -97,10 +94,10 @@ export const ROUTES: AppRoute[] = [
   { path: '/learn/:id', element: named(learnScreens, 'LearnRun'), title: '따라하기 시나리오', group: 'home', parent: '/learn', v2: true },
   { path: '/poc', element: named(() => import('./screens/home/Poc'), 'PocScreen'), title: 'PoC 6단계 진행', group: 'home', menu: '/poc', v2: true },
   { path: '/arch/components', element: named(() => import('./screens/home/Architecture'), 'ArchitectureScreen'), title: '42 컴포넌트 아키텍처', group: 'home', menu: '/arch/components', v2: true },
-  { path: '/admin/notifications', element: named(admin, 'NotificationsCenter'), title: '알림', group: 'home', parent: '/' },
-  { path: '/login', element: named(home, 'Login'), title: '로그인', group: 'home', parent: '/' },
-  { path: '/onboarding', element: named(home, 'Onboarding'), title: '시작하기', group: 'home', parent: '/' },
-  { path: '/home/customize', element: named(home, 'HomeCustomize'), title: '홈 꾸미기', group: 'home', parent: '/' },
+  { path: '/admin/notifications', element: legacyTo('/'), title: '알림 (이전 주소)', group: 'home', parent: '/' },
+  { path: '/login', element: legacyTo('/'), title: '로그인 (이전 주소)', group: 'home', parent: '/' },
+  { path: '/onboarding', element: legacyTo('/'), title: '시작하기 (이전 주소)', group: 'home', parent: '/' },
+  { path: '/home/customize', element: legacyTo('/'), title: '홈 꾸미기 (이전 주소)', group: 'home', parent: '/' },
 
   // 2 Feature 정의
   { path: '/feature/propose', element: named(() => import('./pages/propose'), 'ProposalRegistry'), title: 'Feature 제안', group: 'feature', menu: '/feature/propose' },
@@ -119,8 +116,8 @@ export const ROUTES: AppRoute[] = [
 
   // 3 구성·Topology
   { path: '/baselines', element: def(() => import('./screens/bom/BaselineQueue')), title: 'BOM 기준선·확정 승인', group: 'config', menu: '/baselines', components: ['D01-01'], v2: true },
-  { path: '/master/bom', element: named(() => import('./pages/featureBom'), 'FeatureBom'), title: 'BOM 11영역 편집', group: 'config', parent: '/baselines' },
-  { path: '/master/bom/items', element: named(master, 'BOMEditor'), title: 'BOM 항목 편집', group: 'config', parent: '/master/bom' },
+  { path: '/master/bom', element: legacyTo('/baselines'), title: 'BOM 11영역 편집 (이전 주소)', group: 'config', parent: '/baselines' },
+  { path: '/master/bom/items', element: legacyTo('/baselines'), title: 'BOM 항목 편집 (이전 주소)', group: 'config', parent: '/baselines' },
   { path: '/arch/topology', element: named(() => import('./pages/topologyArch'), 'TopologyArch'), title: 'Topology·의존관계 검증', group: 'config', menu: '/arch/topology', components: ['D01-02'] },
   { path: '/topology/:id', element: def(() => import('./pages/Topology')), title: '관계 그래프', group: 'config', parent: '/arch/topology', components: ['D01-02'] },
   { path: '/topology/edge', element: named(topology2, 'EdgeEditor'), title: '관계 편집', group: 'config', parent: '/arch/topology' },
@@ -128,9 +125,9 @@ export const ROUTES: AppRoute[] = [
   { path: '/consistency/violation', element: named(topology2, 'ViolationDetail'), title: '위반 상세', group: 'config', parent: '/consistency' },
   { path: '/analysis/impact', element: def(() => import('./screens/governance/Impact')), title: '변경 영향 분석', group: 'config', menu: '/analysis/impact', components: ['D01-02', 'D06-05'], v2: true },
   { path: '/impact', element: legacyTo('/analysis/impact'), title: '영향 센터 (이전 주소)', group: 'config', parent: '/analysis/impact' },
-  { path: '/decisions/report', element: named(decisions, 'DecisionReport'), title: '결정 보고서', group: 'config', parent: '/analysis/impact' },
-  { path: '/decisions/center', element: named(decisions, 'DecisionCenter'), title: '결정 센터', group: 'config', parent: '/analysis/impact' },
-  { path: '/decisions/deploy', element: named(decisions, 'DeploymentDecision'), title: '배포 결정', group: 'config', parent: '/analysis/impact' },
+  { path: '/decisions/report', element: legacyTo('/analysis/impact'), title: '결정 보고서 (이전 주소)', group: 'config', parent: '/analysis/impact' },
+  { path: '/decisions/center', element: legacyTo('/analysis/impact'), title: '결정 센터 (이전 주소)', group: 'config', parent: '/analysis/impact' },
+  { path: '/decisions/deploy', element: legacyTo('/analysis/impact'), title: '배포 결정 (이전 주소)', group: 'config', parent: '/analysis/impact' },
   { path: '/twin/impact', element: named(twin, 'TwinImpact'), title: '변경 영향 시뮬레이션 (BDC 데모)', group: 'config', parent: '/analysis/impact' },
   { path: '/variant-conditions', element: named(accessScreens, 'VariantScreen'), title: 'Variant·지원 조건', group: 'config', menu: '/variant-conditions', components: ['D02-01', 'D02-02'], v2: true },
   { path: '/master/product-spec', element: legacyTo('/variant-conditions'), title: 'Variant·적용 조건 (이전 주소)', group: 'config', parent: '/variant-conditions' },
@@ -152,7 +149,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/readiness/:id', element: legacyTo('/features'), title: 'Gate·출시 준비 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
   { path: '/validations', element: named(policyScreens, 'ValidationHistory'), title: '분야별 검증 이력', group: 'verify', menu: '/validations', components: ['D06-04', 'D03-02'], v2: true },
   { path: '/policy/conflict', element: legacyTo('/validations'), title: '정책 충돌 검토 (이전 주소)', group: 'verify', parent: '/validations' },
-  { path: '/policy/exception', element: named(specnew, 'Exception'), title: '정책 예외', group: 'verify', parent: '/validations' },
+  { path: '/policy/exception', element: legacyTo('/validations'), title: '정책 예외 (이전 주소)', group: 'verify', parent: '/validations' },
   { path: '/verify/compliance', element: named(specnew, 'Compliance'), title: '컴플라이언스', group: 'verify', menu: '/verify/compliance', components: ['D03-01'] },
   { path: '/quality/feedback', element: named(anomalyScreens, 'FeedbackScreen'), title: '품질 피드백', group: 'verify', menu: '/quality/feedback', components: ['D04-06'], v2: true },
   { path: '/validations/virtual', element: named(virtualScreens, 'VirtualValidationScreen'), title: 'vECU 가상검증', group: 'verify', menu: '/validations/virtual', components: ['D06-03', 'D04-02'], v2: true },
@@ -180,7 +177,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/deployments/:id', element: named(deployScreens, 'DeploymentDetail'), title: '게시본 상세', group: 'release', parent: '/deployments', components: ['D06-08', 'D04-03'], v2: true },
   { path: '/ops/campaign', element: legacyTo('/deployments'), title: '출시 캠페인 (이전 주소)', group: 'release', parent: '/deployments' },
   { path: '/ops/campaign/:id', element: legacyTo('/deployments'), title: '캠페인 상세 (이전 주소)', group: 'release', parent: '/deployments' },
-  { path: '/release/cicd', element: named(specnew, 'CICD'), title: 'CI/CD 연계', group: 'release', parent: '/deployments' },
+  { path: '/release/cicd', element: legacyTo('/deployments'), title: 'CI/CD 연계 (이전 주소)', group: 'release', parent: '/deployments' },
 
   // 7 차량 운영·안전 (관제실 톤)
   { path: '/fleet/live', element: named(fleetScreens, 'FleetLive'), title: 'Fleet 실시간 적용 현황', group: 'ops', menu: '/fleet/live', components: ['D02-03', 'D04-03', 'D06-08'], v2: true },
@@ -203,7 +200,7 @@ export const ROUTES: AppRoute[] = [
 
   // 8 연계·감사·관리
   { path: '/integration/connectors', element: named(extScreens, 'IntegrationsScreen'), title: '외부 연계 현황', group: 'admin', menu: '/integration/connectors', components: ['D05-01'], v2: true },
-  { path: '/integration/connector/:id', element: named(integration, 'ConnectorDetail'), title: '연계 상세', group: 'admin', parent: '/integration/connectors' },
+  { path: '/integration/connector/:id', element: legacyTo('/integration/connectors'), title: '연계 상세 (이전 주소)', group: 'admin', parent: '/integration/connectors' },
   { path: '/integration/openfeature', element: named(() => import('./screens/ext/OpenFeatureScope'), 'OpenFeatureScopeScreen'), title: 'OpenFeature 범위', group: 'admin', menu: '/integration/openfeature', components: ['D05-01', 'D02-03'], v2: true },
   { path: '/integration/sync', element: named(extScreens, 'DataSyncScreen'), title: '데이터 동기화', group: 'admin', menu: '/integration/sync', components: ['D05-02'], v2: true },
   { path: '/integration/legacy', element: named(extScreens, 'LegacyScreen'), title: 'Legacy 연계', group: 'admin', menu: '/integration/legacy', components: ['D05-03', 'D05-07'], v2: true },
@@ -217,13 +214,13 @@ export const ROUTES: AppRoute[] = [
   { path: '/insights/audit', element: legacyTo('/audit'), title: '감사 로그 (이전 주소)', group: 'admin', parent: '/audit' },
   { path: '/admin/iam', element: named(accessScreens, 'IamScreen'), title: '플랫폼 인증·권한', group: 'admin', menu: '/admin/iam', components: ['D06-09'], v2: true },
   { path: '/admin/users', element: legacyTo('/admin/iam'), title: '사용자·권한 (이전 주소)', group: 'admin', parent: '/admin/iam' },
-  { path: '/admin/permissions', element: named(admin, 'PermissionsMatrix'), title: '권한 매트릭스', group: 'admin', parent: '/admin/iam' },
-  { path: '/admin/org', element: named(admin, 'OrgDomains'), title: '조직·도메인', group: 'admin', parent: '/admin/iam' },
+  { path: '/admin/permissions', element: legacyTo('/admin/iam'), title: '권한 매트릭스 (이전 주소)', group: 'admin', parent: '/admin/iam' },
+  { path: '/admin/org', element: legacyTo('/admin/iam'), title: '조직·도메인 (이전 주소)', group: 'admin', parent: '/admin/iam' },
   { path: '/admin/security', element: named(specnew, 'Security'), title: '보안·인증서', group: 'admin', menu: '/admin/security', components: ['D06-10', 'D06-11'] },
   { path: '/biz/trials', element: named(bizScreens, 'TrialAnalyticsScreen'), title: '체험 전환 분석', group: 'admin', menu: '/biz/trials', components: ['D05-06'], v2: true },
-  { path: '/insights/business', element: named(specnew, 'Business'), title: '사업 지표', group: 'admin', menu: '/insights/business', components: ['D05-06'] },
-  { path: '/insights/reports', element: named(insights, 'Reports'), title: '보고서', group: 'admin', parent: '/insights/business' },
-  { path: '/cost', element: def(() => import('./pages/cost')), title: '비용', group: 'admin', parent: '/insights/business' },
+  { path: '/insights/business', element: legacyTo('/biz/trials'), title: '사업 지표 (이전 주소)', group: 'admin', parent: '/biz/trials' },
+  { path: '/insights/reports', element: legacyTo('/biz/trials'), title: '보고서 (이전 주소)', group: 'admin', parent: '/biz/trials' },
+  { path: '/cost', element: legacyTo('/biz/trials'), title: '비용 (이전 주소)', group: 'admin', parent: '/biz/trials' },
   { path: '/admin/settings', element: named(admin, 'Settings'), title: '설정', group: 'admin', menu: '/admin/settings' },
   { path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'admin', menu: '/_design', v2: true },
 ];

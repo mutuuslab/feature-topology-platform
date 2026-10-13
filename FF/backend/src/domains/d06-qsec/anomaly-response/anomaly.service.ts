@@ -3,7 +3,7 @@
 //   · 배포 회신 이상(publication.closed DIVERGED/TIMEOUT/PARTIAL) → DELIVERY
 // 심각도·권고는 contracts 규칙 표(classifyAnomaly). 긴급 차단이 이 이상 건을 가리켜 발령되면(kill.issued.anomalyId) 조치됨으로 닫는다.
 import { Body, Controller, Get, HttpCode, Inject, Injectable, Logger, OnModuleInit, Param, Post, Query } from '@nestjs/common';
-import { AnomalyActionBody, classifyAnomaly, DELIVERY_STATUS, SECURITY_REJECT, type Anomaly, type AnomalyKind, type AnomalySignal } from '@ff/contracts';
+import { AnomalyActionBody, classifyAnomaly, DELIVERY_STATUS, SECURITY_REJECT, STATUS_VIOLATION_SEVERITY, type Anomaly, type AnomalyKind, type AnomalySignal } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -63,7 +63,7 @@ export class AnomalyService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.events.stream(['vehicle.fault.reported', 'vehicle.readback', 'publication.closed', 'kill.issued', 'incident.sotif.triggered']).subscribe((e) => {
+    this.events.stream(['vehicle.fault.reported', 'vehicle.readback', 'publication.closed', 'kill.issued', 'vehicle.status.rejected', 'kill.overdue', 'incident.sotif.triggered']).subscribe((e) => {
       try {
         this.on(e);
       } catch (err) {
@@ -77,6 +77,14 @@ export class AnomalyService implements OnModuleInit {
     const p = e.payload as Record<string, any>;
     if (e.type === 'kill.issued') {
       if (p.anomalyId) this.close(SYSTEM, p.anomalyId, 'MITIGATED', `긴급 차단 ${p.killId} 발령`, p.killId);
+      return;
+    }
+    // 상태 보고 v2 수신 검사 위반(D04-03) — 위조·재전송·해제 없는 ACTIVE 등(FFG-TEL-003·ADS-004)
+    if (e.type === 'vehicle.status.rejected')
+      return this.signal({ kind: 'SECURITY', featureId: p.featureId ?? '-', vin: p.vin ?? e.aggregate, code: p.code, severity: STATUS_VIOLATION_SEVERITY[p.code] ?? 'WARNING', at: e.at, ref: `STATUS:${p.step}` });
+    // 차단 기한 초과 — 끝 상태에 닿지 않은 차량(FFG-SEC-004·DEAC-013)
+    if (e.type === 'kill.overdue') {
+      for (const vin of p.vins as string[]) this.signal({ kind: 'DELIVERY', featureId: p.featureId, vin, code: 'PENDING_OVERDUE', severity: 'WARNING', at: e.at, ref: p.killId });
       return;
     }
     if (e.type === 'vehicle.fault.reported') return this.signal({ kind: 'FEATURE_FAULT', featureId: p.featureId, vin: e.aggregate, code: p.code, severity: p.severity, at: e.at, ref: e.id });

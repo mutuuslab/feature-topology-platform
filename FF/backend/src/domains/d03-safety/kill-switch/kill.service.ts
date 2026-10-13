@@ -5,6 +5,7 @@
 import { randomUUID } from 'node:crypto';
 import { Body, Controller, Get, Inject, Injectable, Param, Post, Query } from '@nestjs/common';
 import {
+  applyWindowMs,
   approvalCheck,
   approvalPlan,
   approvalSubject,
@@ -30,7 +31,7 @@ import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/ac
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
-import { sha256hex } from '../../../kernel/crypto';
+import { targetHashOf } from '../../../kernel/crypto';
 import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
@@ -53,8 +54,7 @@ const COMMAND_TTL_MS = 12 * 3600_000;
 const UNSIGNED = 'A'.repeat(86);
 
 const marketOf = (country: string): Market => ((MARKETS as readonly string[]).includes(country) ? (country as Market) : 'OTHER');
-/** 대상 식별 해시 — SHA-256(VIN ‖ ECU 부품 번호 ‖ SW 버전) 앞 4바이트(9.2절 ICD 예제) */
-export const targetHashOf = (vin: string, ecu: string, sw: string) => parseInt(sha256hex(`${vin}${ecu}${sw}`).slice(0, 8), 16);
+export { targetHashOf };
 
 export interface IssuedCommand {
   command: KillCommandV2;
@@ -283,7 +283,7 @@ export class KillService {
     try {
       return this.db.tx(() => {
         const issued = this.issueCommand(actor, next, cmd);
-        const pub = this.deploy.publishKill({ ...next, safeMode: next.safeMode }, actor);
+        const pub = this.deploy.publishKill(next, actor, this.applyWithin(next, 'deactivate'));
         const done: KillRequest = { ...next, status: 'ACTIVE', publicationId: pub.publicationId, gate: { result: 'PASS', failed: [], at: this.clock.iso() }, command: this.commandRef(issued) };
         this.kills.update(done);
         this.audit.record(actor, 'KILL_APPROVE', id, { after: { approvals: 2, role: a.role, kid: a.kid }, componentId: 'D03-03' });
@@ -448,11 +448,11 @@ export class KillService {
         approverRefs: refs,
       });
       const cmdAuth = this.hsm.cmac(vin, epoch, Buffer.from(block));
-      const envelope: KillCommandV2 = {
-        ...command,
-        scope: { vehicle_ids: [vin], max_vehicles: 1 },
-        vehicle_auth: { key_epoch: epoch, vehicle_seq: vehicleSeq, approver_refs: [refs[0], refs[1]], cmd_auth: cmdAuth },
-      };
+      // 차량마다 서명된 봉투(부록 D: "one signed envelope per vehicle") — 차량 1대 범위·vehicle_auth까지 덮는 JWS. Fleet 명령 서명을 복사하지 않는다
+      const { signature: _fleetSig, ...fleetBody } = command;
+      const envBody = { ...fleetBody, scope: { vehicle_ids: [vin], max_vehicles: 1 }, vehicle_auth: { key_epoch: epoch, vehicle_seq: vehicleSeq, approver_refs: [refs[0], refs[1]], cmd_auth: cmdAuth } };
+      const envSig = this.hsm.signDetached(purpose, jcs(envBody));
+      const envelope: KillCommandV2 = { ...envBody, signature: { alg: 'EdDSA', kid: envSig.kid, value: envSig.value } };
       this.db.run(
         'INSERT INTO vehicle_envelope (command_id, kill_id, vin, feature_id, request, key_epoch, vehicle_seq, cmd_auth, doc, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         command.command_id,
@@ -468,6 +468,12 @@ export class KillService {
       );
     }
     return { command, envelopes: k.vins.length };
+  }
+
+  /** 차량이 끝 상태에 닿기까지 등급별 시간 — 전달 회신 기한에 더한다 */
+  applyWithin(k: KillRequest, request: 'deactivate' | 'restore'): number {
+    const p = this.profiles.ensure(k.featureId, k.featureVersion);
+    return applyWindowMs(k.deactClass ?? 'DC0', k.reasonCategory ?? 'SAFETY', p, request);
   }
 
   commandRef(i: IssuedCommand) {

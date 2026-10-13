@@ -4606,6 +4606,328 @@
         }
       }
     },
+    "/vehicle/v1/{vin}/status": {
+      "post": {
+        "summary": "IF-06 차량 상태 보고 v2 — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 위반은 이상 징후로",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "vehicleStatus",
+        "description": "허용 역할: 차량 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "status_report"
+                    ]
+                  },
+                  "schema_version": {
+                    "type": "string",
+                    "enum": [
+                      "2.0"
+                    ]
+                  },
+                  "vehicle_pseudonym": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{16,64}$"
+                  },
+                  "feature": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^FEAT-[0-9]{5}$"
+                      },
+                      "version": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "INACTIVE",
+                      "ACT_PENDING",
+                      "ACTIVE",
+                      "DEACT_PENDING_IDLE",
+                      "DEACT_PENDING_CYCLE",
+                      "DEACT_WARNING",
+                      "DEACT_RAMP",
+                      "DISABLED",
+                      "RESTORE_PENDING",
+                      "FAULT",
+                      "UNKNOWN"
+                    ]
+                  },
+                  "reason": {
+                    "type": "object",
+                    "properties": {
+                      "category": {
+                        "type": "string",
+                        "enum": [
+                          "SAFETY",
+                          "SECURITY",
+                          "REGULATORY",
+                          "COMMERCIAL",
+                          "OPERATIONAL"
+                        ]
+                      },
+                      "source": {
+                        "type": "string",
+                        "enum": [
+                          "REMOTE",
+                          "ONBOARD",
+                          "STARTUP"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "category",
+                      "source"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "request_result": {
+                    "type": "string",
+                    "enum": [
+                      "NONE",
+                      "ACCEPTED",
+                      "ACCEPTED_NOT_DURABLE",
+                      "REJECTED"
+                    ]
+                  },
+                  "reject_code": {
+                    "type": "string",
+                    "enum": [
+                      "NONE",
+                      "E2E_LENGTH",
+                      "E2E_DATA_ID",
+                      "E2E_CRC",
+                      "E2E_SEQUENCE",
+                      "AUTH_FAILED",
+                      "KEY_EPOCH_OLD",
+                      "REPLAY",
+                      "SEQ_JUMP",
+                      "TIME_INVALID",
+                      "NOT_YET_VALID",
+                      "EXPIRED",
+                      "TARGET_MISMATCH",
+                      "UNKNOWN_FEATURE",
+                      "VERSION_MISMATCH",
+                      "CODING_INVALID",
+                      "CLASS_MISMATCH",
+                      "DC4_REMOTE_FORBIDDEN",
+                      "APPROVALS_INVALID",
+                      "SAME_APPROVER",
+                      "STATE_NOT_ALLOWED",
+                      "NV_WRITE_FAILED",
+                      "SEQ_UNTRUSTED",
+                      "SCHEMA_VERSION",
+                      "SIGNATURE_INVALID",
+                      "AUTH_MISSING",
+                      "USER_CONFIRMATION_MISSING",
+                      "SEQUENCE_NOT_INCREASING",
+                      "RESPONSE_INVALID"
+                    ]
+                  },
+                  "vehicle_seq": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "durable": {
+                    "type": "boolean"
+                  },
+                  "hmi": {
+                    "type": "string",
+                    "enum": [
+                      "NONE",
+                      "INFO_PENDING",
+                      "WARN_TAKEOVER",
+                      "INFO_DISABLED"
+                    ]
+                  },
+                  "feature_weight_permille": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "policy_hash": {
+                    "type": "string",
+                    "pattern": "^sha256:[a-f0-9]{64}$"
+                  },
+                  "dtc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[0-9A-F]{6}$"
+                    }
+                  },
+                  "edr_aligned_state": {
+                    "type": "string",
+                    "enum": [
+                      "ENGAGED_OR_ARMED",
+                      "AVAILABLE",
+                      "OFF_BY_COMMAND",
+                      "OFF_BY_FAULT",
+                      "OFF"
+                    ]
+                  },
+                  "received_at": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "applied_at": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "observed_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "time_sync": {
+                    "type": "string",
+                    "enum": [
+                      "SYNCED",
+                      "DEGRADED",
+                      "UNSYNCED"
+                    ]
+                  },
+                  "offline_since": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time"
+                  },
+                  "data_category": {
+                    "type": "string",
+                    "enum": [
+                      "SAFETY_OPERATION",
+                      "SECURITY_MONITORING",
+                      "COMMERCIAL_USAGE"
+                    ]
+                  },
+                  "key_epoch": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "report_seq": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4294967295
+                  },
+                  "state_auth": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{22}$"
+                  },
+                  "persistence": {
+                    "type": "string",
+                    "enum": [
+                      "DURABLE",
+                      "PENDING",
+                      "FAILED"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "schema_version",
+                  "vehicle_pseudonym",
+                  "feature",
+                  "state",
+                  "reason",
+                  "request_result",
+                  "vehicle_seq",
+                  "durable",
+                  "hmi",
+                  "feature_weight_permille",
+                  "edr_aligned_state",
+                  "observed_at",
+                  "time_sync",
+                  "data_category",
+                  "key_epoch",
+                  "report_seq",
+                  "state_auth",
+                  "persistence"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/vehicles/{vin}/status": {
+      "get": {
+        "summary": "차량 상태 보고 v2 — 받아들인 최신 상태·최근 수신(위반 포함)",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "vehicleStatusView",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/vehicle/v1/{vin}/reports": {
       "post": {
         "summary": "IF-06 차량 보고 — 재연결 대사·관측값·체험 수락·오류·회신 (Flag 직접 변경은 거부), 재평가 결과 응답",

@@ -278,6 +278,17 @@ CREATE TRIGGER vehicle_envelope_no_delete BEFORE DELETE ON vehicle_envelope BEGI
 `,
   },
   {
+    // 차량 상태 보고 v2(보고서 v1.1 13.3.1) — 받은 보고는 위반까지 모두 남기고(추가만), 받아들인 최신 상태는 차량·Feature별로
+    name: '016_status_v2',
+    sql: `
+CREATE TABLE status_report (id INTEGER PRIMARY KEY AUTOINCREMENT, vin TEXT NOT NULL, feature_id TEXT NOT NULL, report_seq INTEGER NOT NULL, state TEXT NOT NULL, accepted INTEGER NOT NULL, violation TEXT, via TEXT NOT NULL, doc TEXT NOT NULL, received_at TEXT NOT NULL);
+CREATE INDEX status_report_vin ON status_report (vin, id);
+CREATE TRIGGER status_report_no_update BEFORE UPDATE ON status_report BEGIN SELECT RAISE(ABORT, 'status_report는 추가만 가능'); END;
+CREATE TRIGGER status_report_no_delete BEFORE DELETE ON status_report BEGIN SELECT RAISE(ABORT, 'status_report는 추가만 가능'); END;
+CREATE TABLE vehicle_feature_status (vin TEXT NOT NULL, feature_id TEXT NOT NULL, state TEXT NOT NULL, report_seq INTEGER NOT NULL, doc TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (vin, feature_id));
+`,
+  },
+  {
     // P10 — 실험(D01-07)·장애·VOC(D04-05)·동기화 실행(D05-02)·해외공장 주문(D05-03)·OTel 수집기 모의(IF-11)
     name: '020_p10_ext',
     sql: `

@@ -112,7 +112,7 @@ export class RestoreService {
     try {
       return this.db.tx(() => {
         const issued = this.killService.issueCommand(actor, k, draft);
-        const pub = this.deploy.publishRestore(k, actor);
+        const pub = this.deploy.publishRestore(k, actor, this.killService.applyWithin(k, 'restore'));
         const done: KillRequest = {
           ...k,
           status: 'RELEASED',

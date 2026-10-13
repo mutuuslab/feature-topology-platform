@@ -440,6 +440,17 @@ export const ko = {
     deadline: '회신 기한',
     sequence: '순번',
   },
+  // 차량 상태 보고 v2 (D04-03, 보고서 v1.1 9·13장)
+  statusV2: {
+    title: '상태 보고 v2 — 차량 Guard',
+    lead: '차량이 단계마다 차량 키로 서명(state_auth)해 보낸 보고입니다. 플랫폼은 스키마·서명·순번·대상·명령 이력·영속을 검사한 뒤에만 받아들이고, 위반은 이상 징후로 넘깁니다.',
+    none: '받아들인 상태 보고가 없습니다 — 확인 전에는 비활성으로 보지 않습니다(UNKNOWN)',
+    col: { feature: 'Feature', state: '상태', hmi: '운전자 표시', result: '요청 결과', seq: 'report_seq (시동 · 순번)', sync: '시각 · 영속', at: '시각', accepted: '수신 검사', via: '경로', violation: '위반' },
+    accepted: '통과',
+    rejected: '거부',
+    recent: '최근 수신 (위반 포함)',
+    hmi: { NONE: '—', INFO_PENDING: '대기 안내', WARN_TAKEOVER: '인계 경고', INFO_DISABLED: '해제 안내' } as Record<string, string>,
+  },
   vehicleRequests: {
     title: '차량 발신 요청',
     lead: '차량이 먼저 보낸 조회(IF-10)와 보고(IF-06) — 자기 VIN만 받고, Flag 값 직접 변경과 국가·트림·사용 권한 같은 신뢰 원천 변경은 거부합니다. 같은 (부팅, 순번) 재시도는 한 번만 처리합니다.',

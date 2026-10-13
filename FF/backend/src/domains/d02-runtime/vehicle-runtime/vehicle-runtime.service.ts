@@ -1,8 +1,33 @@
 // 차량 런타임 실행 모듈 (D02-03) — 데모 Fleet의 차량 측 에이전트 시뮬레이터 (IF-07 전개 → 적용 → IF-06 회신).
 // 차량은 서명(신뢰 앵커 공개키)·순번(재전송)을 확인한 게시본만 적용하고, 적용한 값을 되읽어 회신한다(P0 BD-12 readback).
 // 차량 측 평가는 서버와 같은 단일 평가기(evaluateFlag)를 캐시된 서명 정책으로 돌린다 — 서버 판단과 어긋나면 drift.
+// v2 차단·복원(보고서 v1.1 9장): 게시본과 함께 이 차량의 봉투를 받아 Guard 검증 순서(서명 → cmd_auth → epoch → 순번 창 → 시각 → 등급 → 승인자)를 거치고,
+// DC 단계 상태 기계(DC2: 경고 → 인계 → 램프 → DISABLED, 복원: RESTORE_PENDING → 다음 시동 → ACTIVE)로 진행하며 단계마다 서명된 status_report v2를 보낸다.
 import { Controller, Get, Inject, Injectable, Param } from '@nestjs/common';
-import { evaluateFlag, PUBLICATION_KEY_PURPOSE, type FlagResult, type Publication } from '@ff/contracts';
+import {
+  authBlock,
+  effectiveClass,
+  endState,
+  evaluateFlag,
+  guardCheck,
+  jcs,
+  PUBLICATION_KEY_PURPOSE,
+  reportSeqOf,
+  statusAuthCanonical,
+  type EdrState,
+  type FlagResult,
+  type GuardState,
+  type HmiState,
+  type KillCommandV2,
+  type Publication,
+  type RejectCode,
+  type StatusReportV2,
+} from '@ff/contracts';
+import { targetHashOf, vehiclePseudonym } from '../../../kernel/crypto';
+import { EnvelopeRepo } from '../../d03-safety/kill-switch/envelope.repo';
+import { PolicyGateService } from '../../d03-safety/deploy-safety/policy-gate.service';
+import { StatusIngestService } from '../../d04-ops/telemetry-ingest/status-ingest.service';
+import { HsmService } from '../../d06-qsec/pki-kms/hsm.service';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
 import { DomainError } from '../../../kernel/errors';
@@ -19,6 +44,12 @@ import { GleoAdapter } from '../../../adapters/gleo/gleo.adapter';
 /** 차량 회신 지연(ms) — 차량마다 조금씩 늦게 돌아와 시연 화면에서 집계가 차오르는 모습이 보인다 */
 const LATENCY = Number(process.env.FLEET_SIM_LATENCY_MS ?? 350);
 const STAGGER = Number(process.env.FLEET_SIM_STAGGER_MS ?? 120);
+/** 단계 시간 배율(시연·e2e에서 줄인다) — 1이면 Registry 시간값 그대로 */
+const TIME_SCALE = Number(process.env.FLEET_SIM_TIME_SCALE ?? 1);
+/** 시뮬레이터의 "기능 비작동"까지(DC1)와 "다음 시동"까지(DC3·복원) — 실차는 운전 상황이 정한다 */
+const SIM_IDLE_MS = Number(process.env.FLEET_SIM_IDLE_MS ?? 1500);
+const SIM_CYCLE_MS = Number(process.env.FLEET_SIM_CYCLE_MS ?? 2000);
+const bootNo = (bootId: string) => Number(/-(\d+)$/.exec(bootId)?.[1] ?? 1);
 
 export const scopeKeyOf = (p: Publication['payload']) => (p.kind === 'POLICY' ? `flag:${p.flagKey}` : `feature:${p.featureId}`);
 
@@ -36,6 +67,10 @@ export class VehicleRuntimeService {
     private readonly scheduler: Scheduler,
     private readonly clock: Clock,
     @Inject(GleoAdapter) private readonly gleo: GleoAdapter,
+    private readonly hsm: HsmService,
+    private readonly envelopes: EnvelopeRepo,
+    private readonly gate: PolicyGateService,
+    private readonly status: StatusIngestService,
   ) {}
 
   /** IF-07 전개 — 연결된 차량만 받는다. GLEO 실연동 차량은 GLEO 어댑터가 맡는다. 회신 의무가 없는 차량 목록을 돌려준다. */
@@ -69,6 +104,14 @@ export class VehicleRuntimeService {
     if (!check.valid) return reject(check.reason);
     if (p.sequence <= (s.highest[key] ?? 0)) return reject('REPLAY');
     s.highest[key] = p.sequence;
+    // v2 — 이 차량의 봉투가 있으면 Guard 경로(레거시 v1 차단은 아래 기존 경로)
+    if ((p.kind === 'KILL' || p.kind === 'RESTORE') && p.kill) {
+      const env = this.envelopes.forVehicle(p.kill.killId, vin, p.kind === 'KILL' ? 'deactivate' : 'restore');
+      if (env) {
+        this.runtime.save(s);
+        return this.guard(vin, pub.publicationId, pub.kind, env, p.kill.featureIds);
+      }
+    }
     let observed: string;
     if (p.kind === 'POLICY' && p.policy) {
       s.bundles[p.policy.flagKey] = { publicationId: pub.publicationId, sequence: p.sequence, payloadHash: pub.signature.payloadHash, policy: p.policy };
@@ -103,6 +146,152 @@ export class VehicleRuntimeService {
       observed,
       ...(rejectReason && { rejectReason }),
     });
+  }
+
+  // ── v2 Guard ─────────────────────────────────────────
+  /**
+   * 봉투 검증(9.3 순서) → 받으면 DC 단계 진행, 거부하면 거부 코드로 보고.
+   * @rule FFG-VEH-002, FFG-DEAC-007 — 차량 쪽(시뮬레이터): 백엔드 기원 진위를 Guard가 직접 검증, 안전 Kill은 복원 명령으로만 풀린다
+   */
+  guard(vin: string, publicationId: string, kind: string, env: KillCommandV2, featureIds: string[]) {
+    const s = this.runtime.get(vin);
+    const featureId = env.feature.id;
+    const va = env.vehicle_auth!;
+    // 봉투 자체의 JWS(차량 1대 범위·vehicle_auth 포함) — 요청 유형의 용도 키여야 한다(FFG-SEC-002)
+    const { signature, ...body } = env;
+    // alg는 kid 신뢰 앵커와 같아야 한다(RFC 8725 3.1) — 이 HSM의 차단·복원 키는 EdDSA
+    const jwsOk = signature.alg === 'EdDSA' && this.hsm.verifyDetached(env.request === 'restore' ? 'restore' : 'kill', jcs(body), { alg: 'EdDSA', kid: signature.kid, value: signature.value }).valid;
+    const block = Buffer.from(
+      authBlock({
+        featureId,
+        version: env.feature.version,
+        request: env.request,
+        reason: env.reason.category,
+        deactClass: env.feature.deact_class,
+        keyEpoch: va.key_epoch,
+        vehicleSeq: va.vehicle_seq,
+        notBefore: env.validity.not_before,
+        expiresAt: env.validity.expires_at,
+        targetHash: targetHashOf(vin, env.target.ecu_id, env.target.sw_version),
+        approverRefs: [va.approver_refs[0], va.approver_refs[1]],
+      }),
+    );
+    const design = this.gate.registryEntry(featureId, env.feature.version)?.deact_class ?? 'DC4';
+    const last = s.guard?.[featureId];
+    const code = guardCheck({
+      jwsOk,
+      cmdAuthOk: this.hsm.verifyCmac(vin, va.key_epoch, block, va.cmd_auth),
+      keyEpoch: va.key_epoch,
+      currentEpoch: this.hsm.epoch(),
+      vehicleSeq: va.vehicle_seq,
+      lastVehicleSeq: last && last.epoch === va.key_epoch ? last.lastSeq : 0,
+      now: this.clock.now().getTime(),
+      notBefore: Date.parse(env.validity.not_before),
+      expiresAt: Date.parse(env.validity.expires_at),
+      designClass: design,
+      commandClass: env.feature.deact_class,
+      approverRefs: [va.approver_refs[0], va.approver_refs[1]],
+    });
+    const current = (s.featureState[featureId] as GuardState | undefined) ?? 'ACTIVE';
+    if (code !== 'NONE') {
+      s.log.push({ at: this.clock.iso(), publicationId, kind, result: 'REJECTED', detail: code });
+      this.runtime.save(s);
+      // 거부 보고의 vehicle_seq는 마지막으로 받아들인 순번(거부한 명령의 순번을 되풀이하지 않는다)
+      return this.emit(vin, env, current, { request_result: 'REJECTED', reject_code: code, vehicleSeq: last?.lastSeq ?? 0 });
+    }
+    s.guard = { ...(s.guard ?? {}), [featureId]: { lastSeq: va.vehicle_seq, epoch: va.key_epoch } };
+    s.log.push({ at: this.clock.iso(), publicationId, kind, result: 'APPLIED', detail: `${env.request} ${env.feature.deact_class} 수락` });
+    this.runtime.save(s);
+    if (env.request === 'restore') {
+      // 복원 — 다음 시동에서 자체 시험 뒤 ACTIVE(FFG-DEAC-008, 차량 쪽)
+      this.setState(vin, featureIds, 'RESTORE_PENDING', false);
+      this.emit(vin, env, 'RESTORE_PENDING', { request_result: 'ACCEPTED', hmi: 'INFO_PENDING' });
+      this.scheduler.after(SIM_CYCLE_MS * TIME_SCALE, () => {
+        this.setState(vin, featureIds, 'ACTIVE', false);
+        this.emit(vin, env, 'ACTIVE', { request_result: 'NONE', hmi: 'NONE', weight: 1000, edr: 'AVAILABLE', source: 'STARTUP' });
+      });
+      return;
+    }
+    // 비활성화 — 사유별 유효 등급의 단계를 승인 시각부터 누적해 한꺼번에 건다
+    const p = this.gate.registryEntry(featureId, env.feature.version)?.profile ?? {};
+    const dc = effectiveClass(env.feature.deact_class, env.reason.category);
+    const end = endState(env.reason.category);
+    const finish = () => {
+      this.setState(vin, featureIds, end, true);
+      this.emit(vin, env, end, { request_result: 'NONE', hmi: 'INFO_DISABLED', weight: 0, edr: 'OFF_BY_COMMAND' });
+    };
+    if (dc === 'DC0') return finish();
+    if (dc === 'DC1') {
+      this.setState(vin, featureIds, 'DEACT_PENDING_IDLE', false);
+      this.emit(vin, env, 'DEACT_PENDING_IDLE', { request_result: 'ACCEPTED', hmi: 'INFO_PENDING' });
+      return this.scheduler.after(Math.min(p.max_pending_ms ?? SIM_IDLE_MS, SIM_IDLE_MS) * TIME_SCALE, finish);
+    }
+    if (dc === 'DC3') {
+      this.setState(vin, featureIds, 'DEACT_PENDING_CYCLE', false);
+      this.emit(vin, env, 'DEACT_PENDING_CYCLE', { request_result: 'ACCEPTED', hmi: 'INFO_PENDING' });
+      return this.scheduler.after(SIM_CYCLE_MS * TIME_SCALE, finish);
+    }
+    // DC2 — 경고·인계 → 램프 → 끝
+    const takeover = (p.takeover_ms ?? 0) * TIME_SCALE;
+    const ramp = (p.ramp_ms ?? 0) * TIME_SCALE;
+    this.setState(vin, featureIds, 'DEACT_WARNING', false);
+    this.emit(vin, env, 'DEACT_WARNING', { request_result: 'ACCEPTED', hmi: 'WARN_TAKEOVER', weight: 1000 });
+    this.scheduler.after(takeover, () => {
+      this.setState(vin, featureIds, 'DEACT_RAMP', false);
+      this.emit(vin, env, 'DEACT_RAMP', { request_result: 'NONE', hmi: 'WARN_TAKEOVER', weight: 500 });
+    });
+    this.scheduler.after(takeover + ramp, finish);
+  }
+
+  /** 차량 상태 반영 — 끝 상태면 차량 측 평가도 차단(kills), ACTIVE면 해제 */
+  private setState(vin: string, featureIds: string[], state: GuardState, killed: boolean) {
+    const s = this.runtime.get(vin);
+    for (const f of featureIds) {
+      s.featureState[f] = state;
+      if (killed) s.kills[f] = { killId: 'v2', safeMode: state, publicationId: '-' };
+      if (state === 'ACTIVE') delete s.kills[f];
+    }
+    this.runtime.save(s);
+  }
+
+  /** status_report v2 — 차량 키로 state_auth를 붙여 수신 검사(D04-03)로 보낸다(IF-06) */
+  private emit(
+    vin: string,
+    env: KillCommandV2,
+    state: GuardState,
+    o: { request_result: StatusReportV2['request_result']; reject_code?: RejectCode; hmi?: HmiState; weight?: number; edr?: EdrState; source?: 'REMOTE' | 'STARTUP'; vehicleSeq?: number },
+  ) {
+    const s = this.runtime.get(vin);
+    s.reportCounter = (s.reportCounter ?? 0) + 1;
+    this.runtime.save(s);
+    const epoch = env.vehicle_auth!.key_epoch;
+    const now = this.clock.iso();
+    const report: Omit<StatusReportV2, 'state_auth'> = {
+      type: 'status_report',
+      schema_version: '2.0',
+      vehicle_pseudonym: vehiclePseudonym(vin),
+      feature: { id: env.feature.id, version: env.feature.version },
+      state,
+      reason: { category: env.reason.category, source: o.source ?? 'REMOTE' },
+      request_result: o.request_result,
+      ...(o.reject_code ? { reject_code: o.reject_code } : {}),
+      vehicle_seq: o.vehicleSeq ?? env.vehicle_auth!.vehicle_seq,
+      durable: true,
+      hmi: o.hmi ?? 'NONE',
+      feature_weight_permille: o.weight ?? (state === 'ACTIVE' ? 1000 : 0),
+      edr_aligned_state: o.edr ?? (state === 'ACTIVE' ? 'AVAILABLE' : 'OFF_BY_COMMAND'),
+      received_at: now,
+      applied_at: now,
+      observed_at: now,
+      time_sync: 'SYNCED',
+      offline_since: null,
+      data_category: 'SAFETY_OPERATION',
+      key_epoch: epoch,
+      report_seq: reportSeqOf(bootNo(s.bootId), s.reportCounter),
+      persistence: 'DURABLE',
+    };
+    const state_auth = this.hsm.cmac(vin, epoch, Buffer.from(statusAuthCanonical(report as Record<string, unknown>)));
+    this.status.ingest(vin, { ...report, state_auth }, 'SIM');
   }
 
   bootId(vin: string) {

@@ -180,15 +180,26 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
       await http().post('/api/kill-requests').set(SAFETY).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', reason: '중복', containmentJustification: '봉쇄', confirm: 'FEAT-00022' }).expect(409);
     });
 
-    it('긴급 채널로 서명 전달(차단 용도 키) → 대상 2대 회신 → CONFIRMED, 차량 측 평가도 KILL_SWITCH', async () => {
+    it('긴급 채널·차량별 봉투 → Guard 검증 → DC2 경고·인계 4 s → 램프 3 s → DISABLED에 닿아야 CONFIRMED, 차량 측 평가도 KILL_SWITCH', async () => {
       let k = (await http().get(`/api/kill-requests/${killId}`).expect(200)).body;
       expect(k.delivery).toMatchObject({ status: 'DISPATCHED', confirmed: 0, denominator: 2 });
+      // 회신 기한 = 긴급 5 s + DC2 인계·램프 7 s
+      expect(Date.parse(k.delivery.deadlineAt) - Date.parse(k.requestedAt)).toBeGreaterThanOrEqual(12_000);
       advance(1_000);
+      // 수락 — 운전자 경고(인계 시간) 중: 아직 적용 완료 아님
+      expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('DEACT_WARNING');
+      k = (await http().get(`/api/kill-requests/${killId}`).expect(200)).body;
+      expect(k.delivery).toMatchObject({ status: 'DISPATCHED', confirmed: 0 });
+      const st = (await http().get('/api/vehicles/ego-01/status').expect(200)).body;
+      expect(st.features[0]).toMatchObject({ featureId: 'FEAT-00022', state: 'DEACT_WARNING', report: { hmi: 'WARN_TAKEOVER', request_result: 'ACCEPTED' } });
+      advance(7_000);
       k = (await http().get(`/api/kill-requests/${killId}`).expect(200)).body;
       expect(k.delivery).toMatchObject({ status: 'CONFIRMED', confirmed: 2, denominator: 2 });
       const v = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body;
-      // 차량 와이어 v1 호환 값(운영자 선택 아님) — v2 봉투·DC 단계는 WP5
-      expect(v.runtime.featureState['FEAT-00022']).toBe('SAFE_DEFAULT');
+      expect(v.runtime.featureState['FEAT-00022']).toBe('DISABLED');
+      // 단계마다 서명된 상태 보고(state_auth) — 모두 수신 검사 통과
+      const recent = (await http().get('/api/vehicles/ego-01/status').expect(200)).body.recent;
+      expect(recent.map((x: any) => [x.state, x.accepted]).reverse()).toEqual([['DEACT_WARNING', true], ['DEACT_RAMP', true], ['DISABLED', true]]);
       expect(v.evaluations.find((x: any) => x.flagKey === 'care_00022_param').local.reason).toBe('KILL_SWITCH');
       const p = await pub(k.publicationId);
       expect(p.publication).toMatchObject({ kind: 'KILL', channel: 'EMERGENCY' });
@@ -200,6 +211,9 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
       expect(r.body).toMatchObject({ status: 'RELEASED', releasedBy: 'usr-csm', restoreRequest: { status: 'APPROVED', command: { commandSeq: 12, envelopes: 2 } } });
       expect((await decide('ego-01')).value).toBe(true);
       advance(1_000);
+      // 복원은 다음 시동에서(RESTORE_PENDING → 자체 시험 → ACTIVE)
+      expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('RESTORE_PENDING');
+      advance(2_000);
       const k = (await http().get(`/api/kill-requests/${killId}`).expect(200)).body;
       expect(k.restore).toMatchObject({ status: 'CONFIRMED', confirmed: 2 });
       expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('ACTIVE');
@@ -216,7 +230,7 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
 
     it('범위 전체 차단은 통신 단절 차량 때문에 기한 후 PARTIAL — 회신 못 한 차량이 그대로 보인다', async () => {
       const r = { body: await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', reason: '전체 차단 시험', confirm: 'FEAT-00022' }, OPERATOR) };
-      advance(10_000);
+      advance(13_000); // 기한 = 5 s + DC2 7 s
       const k = (await http().get(`/api/kill-requests/${r.body.killId}`).expect(200)).body;
       expect(k.delivery).toMatchObject({ status: 'PARTIAL', confirmed: 5, denominator: 6 });
       expect(k.delivery.nodes.find((n: any) => n.nodeId === OFFLINE).reason).toBe('NO_REPORT');

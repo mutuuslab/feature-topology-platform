@@ -65,3 +65,9 @@ export function equalBytes(a: Buffer, b: Buffer): boolean {
   for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i];
   return d === 0;
 }
+
+/** 대상 식별 해시 — SHA-256(VIN ‖ ECU 부품 번호 ‖ SW 버전) 앞 4바이트(보고서 9.2절 ICD 예제). 플랫폼 봉투와 차량 Guard가 같은 값을 쓴다 */
+export const targetHashOf = (vin: string, ecu: string, sw: string) => parseInt(sha256hex(`${vin}${ecu}${sw}`).slice(0, 8), 16);
+
+/** 차량 가명(status_report v2 vehicle_pseudonym) — VIN을 그대로 싣지 않는다(FFG-TEL-001) */
+export const vehiclePseudonym = (vin: string) => sha256hex(`ffp-pseudonym|${vin}`).slice(0, 16);

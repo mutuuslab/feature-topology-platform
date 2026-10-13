@@ -19,6 +19,8 @@ interface Pending {
   sequence: number;
   featureVersion: string;
   featureIds: string[];
+  /** 게시본이 기대하는 끝 상태(v2 DISABLED 등) */
+  desired?: string;
 }
 
 @Injectable()
@@ -81,7 +83,7 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
     let ackOnly: string[] = [];
     if (p.kind === 'KILL' && p.kill) {
       msg = { type: 'kill_command', feature_id: p.featureId, scope: { vehicle_ids: vins }, issued_at: p.issuedAt, issued_by: pub.createdBy, safe_mode: p.kill.safeMode };
-      for (const vin of vins) this.pending.set(`${vin}|${p.featureId}`, { publicationId: pub.publicationId, payloadHash: pub.signature.payloadHash, sequence: p.sequence, featureVersion: p.featureVersion, featureIds: p.kill.featureIds });
+      for (const vin of vins) this.pending.set(`${vin}|${p.featureId}`, { publicationId: pub.publicationId, payloadHash: pub.signature.payloadHash, sequence: p.sequence, featureVersion: p.featureVersion, featureIds: p.kill.featureIds, desired: p.desired });
     } else {
       // GLEO 영상 키트는 policy_push를 캐시만 하고 회신하지 않는다 — 회신 집계 분모에서 뺀다(ackOnly)
       const action = p.kind === 'RESTORE' ? 'enable' : p.policy?.enabled ? 'enable' : 'disable';
@@ -115,10 +117,13 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
     this.pending.delete(key);
     // 차량 런타임 상태도 GLEO 보고로 갱신한다 (차량별 적용 상태 화면)
     const s = this.runtime.get(m.vehicle_id);
-    for (const f of p.featureIds) s.featureState[f] = m.state;
-    s.log.push({ at: this.clock.iso(), publicationId: p.publicationId, kind: 'GLEO', result: 'APPLIED', detail: `status_report ${m.state}` });
+    // v1 영상 키트(safe_mode·SAFE_*)는 v2 끝 상태(DISABLED)를 보고하지 못한다 — 끝 상태로 해석하되 state_auth 없는 미증명 보고로 남긴다(FF_IMP v2 전환 전, WP5b)
+    const v1Safe = /^SAFE_/.test(m.state) && !!p.desired && !/^SAFE_/.test(p.desired);
+    const observed = v1Safe ? p.desired! : m.state;
+    for (const f of p.featureIds) s.featureState[f] = observed;
+    s.log.push({ at: this.clock.iso(), publicationId: p.publicationId, kind: 'GLEO', result: 'APPLIED', detail: `status_report ${m.state}${v1Safe ? ` → ${observed} (v1 미증명)` : ''}` });
     this.runtime.save(s);
-    this.telemetry.ingest({ vin: m.vehicle_id, publicationId: p.publicationId, metricType: 'READBACK', policyHash: p.payloadHash, featureVersion: p.featureVersion, bootId: s.bootId, sequence: p.sequence, observed: m.state }, 'GLEO');
+    this.telemetry.ingest({ vin: m.vehicle_id, publicationId: p.publicationId, metricType: 'READBACK', policyHash: p.payloadHash, featureVersion: p.featureVersion, bootId: s.bootId, sequence: p.sequence, observed }, 'GLEO');
   }
 
   private push(dir: 'out' | 'in', msg: unknown) {

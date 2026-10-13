@@ -25,6 +25,13 @@ describe('이상 징후 판정 (D06-12)', () => {
     expect(classifyAnomaly('SECURITY', [s('REPLAY', 'WARNING'), s('PAYLOAD_TAMPERED', 'CRITICAL')], { asil: 'B' }).severity).toBe('CRITICAL');
   });
 
+  it('보안: 상태 보고 수신 검사 위반(FFG-TEL-003)은 게시본 거부와 따로 사유를 남긴다', () => {
+    const st = (code: string): AnomalySignal => ({ ...sig('a', 'CRITICAL', code), kind: 'SECURITY', ref: 'STATUS:AUTH' });
+    const c = classifyAnomaly('SECURITY', [st('AUTH_FAILED'), { ...sig('b', 'WARNING', 'REPLAY'), kind: 'SECURITY' }], { asil: 'B' });
+    expect(c.severity).toBe('CRITICAL');
+    expect(c.reasons).toEqual(['차량이 서명 게시본을 거부: REPLAY', '상태 보고 검사 위반: AUTH_FAILED']);
+  });
+
   it('전달: DIVERGED는 조사, TIMEOUT·PARTIAL은 재전달', () => {
     const d = (code: string, severity: AnomalySignal['severity']): AnomalySignal => ({ ...sig('', severity, code), kind: 'DELIVERY', vin: null });
     expect(classifyAnomaly('DELIVERY', [d('DIVERGED', 'CRITICAL')], { asil: null }).advice).toBe('INVESTIGATE');

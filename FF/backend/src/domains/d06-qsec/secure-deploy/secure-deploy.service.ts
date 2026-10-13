@@ -1,7 +1,7 @@
 // 보안 배포 관리 (D06-08) — 정책 배포·긴급 차단·복구를 서명된 게시본으로 만들고(PKI D06-10), 파이프라인(D04-01)으로 내보내고,
 // 차량 회신을 P0 aggregate로 집계한다: 대상 전부 readback 일치 → CONFIRMED, 불일치 → DIVERGED, 기한 초과 → PARTIAL/TIMEOUT (BD-12).
 import { Controller, Get, Inject, Injectable, OnApplicationBootstrap, OnModuleInit, Param, Query } from '@nestjs/common';
-import { aggregate, PUBLICATION_KEY_PURPOSE, type KillRequest, type Policy, type Publication, type PublicationKind, type ReadbackReport, type SafeMode } from '@ff/contracts';
+import { aggregate, endState, PUBLICATION_KEY_PURPOSE, type KillRequest, type Policy, type Publication, type PublicationKind, type ReadbackReport, type SafeMode } from '@ff/contracts';
 
 /** 차량 와이어 v1 호환 — v2 차단(safeMode 없음)도 시뮬레이터·GLEO가 읽는 kill.safeMode를 채운다. 차량 와이어 v2(봉투·DC 단계) 전환은 WP5 */
 const legacyMode = (k: KillRequest): SafeMode => k.safeMode ?? 'SAFE_DEFAULT';
@@ -88,16 +88,17 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     });
   }
 
-  publishKill(k: KillRequest, actor: Actor) {
-    return this.create('KILL', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: legacyMode(k) });
+  publishKill(k: KillRequest, actor: Actor, applyWithinMs = 0) {
+    return this.create('KILL', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: k.version === 2 ? endState(k.reasonCategory ?? 'SAFETY') : legacyMode(k) }, applyWithinMs);
   }
 
-  publishRestore(k: KillRequest, actor: Actor) {
-    return this.create('RESTORE', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: 'ACTIVE' });
+  publishRestore(k: KillRequest, actor: Actor, applyWithinMs = 0) {
+    return this.create('RESTORE', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: 'ACTIVE' }, applyWithinMs);
   }
 
   /** 서명된 게시본 생성 — 호출자의 트랜잭션 안에서 기록하고, 커밋된 뒤에만 내보낸다 */
-  private create(kind: PublicationKind, actor: Actor, d: Draft): Publication {
+  /** applyWithinMs — 차량이 끝 상태에 닿기까지의 등급별 시간(DC2 인계+램프 등). 회신 기한에 더한다 */
+  private create(kind: PublicationKind, actor: Actor, d: Draft, applyWithinMs = 0): Publication {
     if (!this.db.inTransaction) throw new Error('게시본은 원 변경과 같은 트랜잭션 안에서 만든다');
     const publicationId = this.repo.nextId();
     const payload = { publicationId, kind, sequence: 0, issuedAt: this.clock.iso(), ...d };
@@ -116,7 +117,7 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       channel: emergency ? 'EMERGENCY' : 'OTA',
       createdBy: actor.id,
       createdAt: now.toISOString(),
-      deadlineAt: new Date(now.getTime() + (emergency ? EMERGENCY_TIMEOUT_MS : OTA_TIMEOUT_MS)).toISOString(),
+      deadlineAt: new Date(now.getTime() + (emergency ? EMERGENCY_TIMEOUT_MS : OTA_TIMEOUT_MS) + applyWithinMs).toISOString(),
       confirmed: 0,
       denominator: d.targets.length,
       nodes: [],

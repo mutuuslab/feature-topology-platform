@@ -8,6 +8,7 @@
  *  - 그림자·후처리 없음(헤드리스 swiftshader 에서도 돌아가야 한다). 낮은 segment 수.
  *  - 움직이는 부품(로봇암·AMR)은 `useFrame` 에서 읽는 시뮬레이션 시각만 쓴다.
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { createContext, useContext, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -27,33 +28,33 @@ export const useSimClock = () => useContext(SimClockContext);
 /* ------------------------------------------------------------ 공유 머티리얼 */
 
 export const MAT = {
-  floor: new THREE.MeshStandardMaterial({ color: '#2b3138', metalness: 0.05, roughness: 0.95 }),
-  aisle: new THREE.MeshStandardMaterial({ color: '#333a42', metalness: 0.05, roughness: 0.95 }),
-  steel: new THREE.MeshStandardMaterial({ color: '#787d84', metalness: 0.45, roughness: 0.45 }),
-  darkSteel: new THREE.MeshStandardMaterial({ color: '#4c4e51', metalness: 0.4, roughness: 0.6 }),
-  frame: new THREE.MeshStandardMaterial({ color: '#464a4f', metalness: 0.3, roughness: 0.8 }),
-  cabinet: new THREE.MeshStandardMaterial({ color: '#a2a7ac', metalness: 0.2, roughness: 0.6 }),
+  floor: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-2b3138'], metalness: 0.05, roughness: 0.95 }),
+  aisle: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-333a42'], metalness: 0.05, roughness: 0.95 }),
+  steel: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-787d84'], metalness: 0.45, roughness: 0.45 }),
+  darkSteel: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-4c4e51'], metalness: 0.4, roughness: 0.6 }),
+  frame: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-464a4f'], metalness: 0.3, roughness: 0.8 }),
+  cabinet: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-a2a7ac'], metalness: 0.2, roughness: 0.6 }),
   fenceMesh: new THREE.MeshStandardMaterial({
-    color: '#8b929a',
+    color: LEGACY_PAL['lg-8b929a'],
     metalness: 0.55,
     roughness: 0.6,
     transparent: true,
     opacity: 0.3,
     side: THREE.DoubleSide,
   }),
-  hazard: new THREE.MeshStandardMaterial({ color: '#b9901a', roughness: 0.85 }),
-  belt: new THREE.MeshStandardMaterial({ color: '#2a2d31', roughness: 0.95 }),
-  screen: new THREE.MeshStandardMaterial({ color: '#0a2a3a', emissive: '#1a6a8a', emissiveIntensity: 0.85 }),
+  hazard: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-b9901a'], roughness: 0.85 }),
+  belt: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-2a2d31'], roughness: 0.95 }),
+  screen: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-0a2a3a'], emissive: LEGACY_PAL['lg-1a6a8a'], emissiveIntensity: 0.85 }),
   glass: new THREE.MeshStandardMaterial({
-    color: '#9fc4d8',
+    color: LEGACY_PAL['lg-9fc4d8'],
     metalness: 0.1,
     roughness: 0.15,
     transparent: true,
     opacity: 0.32,
   }),
-  body: new THREE.MeshStandardMaterial({ color: '#c8cdd4', metalness: 0.55, roughness: 0.35 }),
-  wip: new THREE.MeshStandardMaterial({ color: '#8d949c', metalness: 0.35, roughness: 0.6 }),
-  tyre: new THREE.MeshStandardMaterial({ color: '#1e2124', roughness: 0.9 }),
+  body: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-c8cdd4'], metalness: 0.55, roughness: 0.35 }),
+  wip: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-8d949c'], metalness: 0.35, roughness: 0.6 }),
+  tyre: new THREE.MeshStandardMaterial({ color: LEGACY_PAL['lg-1e2124'], roughness: 0.9 }),
   /** 상태 표시용 — 인스턴스별 색이 필요해 매번 만든다(개수 적음). */
 };
 
@@ -76,7 +77,7 @@ export function VehicleMesh({
   length = 4.4,
   width = 1.95,
   height = 1.42,
-  color = '#c8cdd4',
+  color = LEGACY_PAL['lg-c8cdd4'],
   wip = false,
   simple = false,
 }: {
@@ -136,7 +137,7 @@ export function VehicleMesh({
           {/* 앞유리 하이라이트 — 진행 방향(+X)을 읽게 해 준다 */}
           <mesh position={[length * 0.2, 1.22, 0]} rotation-y={Math.PI / 2}>
             <planeGeometry args={[width * 0.7, 0.4]} />
-            <meshBasicMaterial color="#dfe9f2" transparent opacity={0.28} />
+            <meshBasicMaterial color={LEGACY_PAL['lg-dfe9f2']} transparent opacity={0.28} />
           </mesh>
         </>
       )}
@@ -201,7 +202,7 @@ export function StationProp({
 export function StackLight({ x, z, status }: { x: number; z: number; status: PlantStatus }) {
   const on =
     status === 'RUNNING' ? 0 : status === 'IDLE' || status === 'WAITING' ? 1 : status === 'WARNING' || status === 'BLOCKED' ? 1 : 2;
-  const cols = ['#12b012', '#f0b429', '#e04b4b'];
+  const cols = [LEGACY_PAL['lg-12b012'], LEGACY_PAL['lg-f0b429'], LEGACY_PAL['lg-e04b4b']];
   return (
     <group position={[x, 0, z]}>
       <mesh material={MAT.darkSteel} position={[0, 0.85, 0]}>
@@ -211,8 +212,8 @@ export function StackLight({ x, z, status }: { x: number; z: number; status: Pla
         <mesh key={c} position={[0, 1.78 + i * 0.24, 0]}>
           <cylinderGeometry args={[0.14, 0.14, 0.22, 12]} />
           <meshStandardMaterial
-            color={on === i ? c : '#3a3f45'}
-            emissive={on === i ? c : '#000000'}
+            color={on === i ? c : LEGACY_PAL['lg-3a3f45']}
+            emissive={on === i ? c : LEGACY_PAL['lg-000000']}
             emissiveIntensity={on === i ? 1.1 : 0}
             roughness={0.4}
           />
@@ -480,7 +481,7 @@ export function ZoneSign({
   z,
   text,
   sub,
-  hex = '#8895A7',
+  hex = LEGACY_PAL['lg-8895a7'],
 }: {
   x: number;
   z: number;
@@ -497,7 +498,7 @@ export function ZoneSign({
         <boxGeometry args={[3.2, 0.1, 0.1]} />
         <meshStandardMaterial color={hex} emissive={hex} emissiveIntensity={0.35} />
       </mesh>
-      <Label text={text} position={[0, 3.7, 0]} size={1.5} tier={0} priority={6} color="#dfe9f2" />
+      <Label text={text} position={[0, 3.7, 0]} size={1.5} tier={0} priority={6} color={LEGACY_PAL['lg-dfe9f2']} />
       {sub && <Label text={sub} position={[0, 3.25, 0]} size={0.8} tier={1} priority={4} color={hex} />}
     </group>
   );
@@ -537,7 +538,7 @@ export function AndonBoard({
           </group>
         );
       })}
-      <Label text="ANDON" position={[0, h + 0.72, 0.1]} size={0.7} tier={0} priority={7} color="#dfe9f2" />
+      <Label text="ANDON" position={[0, h + 0.72, 0.1]} size={0.7} tier={0} priority={7} color={LEGACY_PAL['lg-dfe9f2']} />
     </group>
   );
 }
@@ -553,7 +554,7 @@ export function CctvProp({ x, y = 5.4, z, yaw = 0 }: { x: number; y?: number; z:
       </mesh>
       <mesh position={[0.42, y - 0.06, 0]}>
         <sphereGeometry args={[0.07, 8, 8]} />
-        <meshStandardMaterial color="#101418" emissive="#2b3a44" emissiveIntensity={0.6} />
+        <meshStandardMaterial color={LEGACY_PAL['lg-101418']} emissive={LEGACY_PAL['lg-2b3a44']} emissiveIntensity={0.6} />
       </mesh>
     </group>
   );

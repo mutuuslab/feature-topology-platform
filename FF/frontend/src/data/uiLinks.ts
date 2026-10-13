@@ -52,7 +52,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
     { path: '/supplier/package', label: 'API Release Package', en: 'API Release Package', areaId: 'UI25-S05' },
   ] },
   UI27: { screenId: 'UI27', intent: '운영 인계와 조치', links: [
-    { path: '/ops/:id', nav: '/ops/FEAT-BDC-001', label: 'Ops · Kill Switch', en: 'Ops · Kill Switch', areaId: 'UI27-S04', entry: true },
+    { path: '/ops/:id', nav: '/ops/FEAT-00022', label: 'Ops · Kill Switch', en: 'Ops · Kill Switch', areaId: 'UI27-S04', entry: true },
     { path: '/ops/policy', label: 'Policy Lifecycle', en: 'Policy Lifecycle', areaId: 'UI27-S05' },
     { path: '/ops/runtime', label: 'Runtime Sim', en: 'Runtime Sim' },
   ] },
@@ -64,7 +64,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   UI02: { screenId: 'UI02', intent: 'Feature 정의·정확 버전과 등록(Revision) 흐름', links: [
     { path: '/catalog', label: 'Feature Catalog', en: 'Feature Catalog', areaId: 'UI02-S01', entry: true },
     { path: '/master/define', label: 'Feature 등록 (Revision)', en: 'Feature Registration (Revision)', areaId: 'UI02-S01' },
-    { path: '/feature/:id', nav: '/feature/FEAT-BDC-001', label: 'Feature 상세 · 이력', en: 'Feature Detail & History', areaId: 'UI02-S07' },
+    { path: '/feature/:id', nav: '/feature/FEAT-00022', label: 'Feature 상세 · 이력', en: 'Feature Detail & History', areaId: 'UI02-S07' },
     { path: '/master/taxonomy', label: 'Taxonomy Browser', en: 'Taxonomy Browser' },
     { path: '/master/taxonomy/edit', label: 'Taxonomy Editor', en: 'Taxonomy Editor' },
     { path: '/lifecycle', label: 'Lifecycle 관리', en: 'Lifecycle Management' },
@@ -78,7 +78,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   // ── 구성과 PLM ──
   UI03: { screenId: 'UI03', intent: 'Feature별 구현 구성과 Variant 범위', links: [
     { path: '/master/bom/items', label: 'Feature별 구현 구성', en: 'Per-Feature Implementation', areaId: 'UI03-S01', entry: true },
-    { path: '/variants/:id', nav: '/variants/FEAT-BDC-001', label: 'Variant Matrix', en: 'Variant Matrix', areaId: 'UI03-S02' },
+    { path: '/variants/:id', nav: '/variants/FEAT-00022', label: 'Variant Matrix', en: 'Variant Matrix', areaId: 'UI03-S02' },
   ] },
   UI04: { screenId: 'UI04', intent: 'Feature BOM 기준선과 승인 버전', links: [
     { path: '/master/bom', label: 'Feature BOM 기준선', en: 'Feature BOM Baseline', areaId: 'UI04-S01', entry: true },
@@ -86,7 +86,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   ] },
   UI05: { screenId: 'UI05', intent: 'Topology 관계와 변경 영향', links: [
     { path: '/arch/topology', label: 'Topology 동작 메커니즘', en: 'Topology Mechanism', areaId: 'UI05-S01', entry: true },
-    { path: '/topology/:id', nav: '/topology/FEAT-BDC-001', label: 'Topology Graph', en: 'Topology Graph', areaId: 'UI05-S02' },
+    { path: '/topology/:id', nav: '/topology/FEAT-00022', label: 'Topology Graph', en: 'Topology Graph', areaId: 'UI05-S02' },
     { path: '/topology/edge', label: 'Edge Editor', en: 'Edge Editor', areaId: 'UI05-S03' },
     { path: '/impact', label: 'Impact Analysis', en: 'Impact Analysis', areaId: 'UI05-S05' },
     { path: '/twin/impact', label: 'Impact Preview', en: 'Impact Preview', areaId: 'UI05-S06' },
@@ -124,7 +124,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   ] },
   UI10: { screenId: 'UI10', intent: '출시 판단과 차량 적용 실행', links: [
     { path: '/ops/campaign', label: '출시와 차량 적용', en: 'Release & Vehicle Application', areaId: 'UI10-S01', entry: true },
-    { path: '/readiness/:id', nav: '/readiness/FEAT-BDC-001', label: 'Release Readiness', en: 'Release Readiness', areaId: 'UI10-S04' },
+    { path: '/readiness/:id', nav: '/readiness/FEAT-00022', label: 'Release Readiness', en: 'Release Readiness', areaId: 'UI10-S04' },
     { path: '/decisions/deploy', label: 'Deployment Decision', en: 'Deployment Decision', areaId: 'UI10-S04' },
     { path: '/release/cicd', label: 'CI/CD 파이프라인', en: 'CI/CD Pipeline', areaId: 'UI10-S05' },
     { path: '/insights/business', label: '글로벌 출시 · 현장 지원', en: 'Global Rollout & Field Support', areaId: 'UI10-S06' },
@@ -147,7 +147,7 @@ export const SCREEN_LINKS: Record<string, ScreenLink> = {
   ] },
 
   // ── 품질과 추적 ──
-  UI16: { screenId: 'UI16', intent: '품질 기준과 검증 증적', links: [
+  UI16: { screenId: 'UI16', intent: '품질 기준과 검증 Evidence', links: [
     // 뷰 순서는 정본 상세 영역 순서(S01→S08)를 따른다. 진입 뷰는 `entry` 플래그로만 정한다.
     { path: '/decisions/verification', label: 'Verification Scope', en: 'Verification Scope', areaId: 'UI16-S01' },
     { path: '/verify/evidence', label: 'Test Evidence Manager', en: 'Test Evidence Manager', areaId: 'UI16-S02', entry: true },
@@ -226,7 +226,7 @@ export function implementedViews(screenId: string): ImplementedLink[] {
 export const ROLE_HOME_IMPL: Record<string, string> = {
   author: '/master/define', // UI02 Feature Registry
   approver: '/admin/approval', // UI06 검토함
-  quality: '/verify/evidence', // UI16 품질 기준과 검증 증적
+  quality: '/verify/evidence', // UI16 품질 기준과 검증 Evidence
   operator: '/fleet', // UI11 차량 운영 현황
   steward: '/master/upg', // UI21 UPG와 UPG VC
   commerce: '/commerce/offer', // UI07 Catalog 상품 구성

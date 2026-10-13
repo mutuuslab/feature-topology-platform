@@ -75,7 +75,7 @@ export const SPEC_MENU: SpecMenuGroup[] = [
   {
     id: 'quality', ko: '품질과 추적', en: 'Quality & Traceability', icon: '✅',
     items: [
-      { id: 'UI16', ko: '품질 기준과 검증 증적', en: 'Quality Criteria & Evidence', owner: 'quality', kind: 'evidence' },
+      { id: 'UI16', ko: '품질 기준과 검증 Evidence', en: 'Quality Criteria & Evidence', owner: 'quality', kind: 'evidence' },
       { id: 'UI30', ko: '요구사항과 설계 추적', en: 'Requirement & Design Traceability', owner: 'viewer', kind: 'trace' },
       { id: 'UI14', ko: '감사와 변경 이력', en: 'Audit & Change History', owner: 'viewer', kind: 'audit' },
     ],

@@ -104,7 +104,7 @@ export function ActivationScreen() {
               <div style={{ display: 'grid', gap: 'var(--sp-3)', alignContent: 'start' }}>
                 <OpenFeaturePanel vin={vin} flagKey={flagKey} serverValue={d.result.value} />
                 <Panel title={A.ofrep} eyebrow={`POST /ofrep/v1/evaluate/flags/${flagKey}`} id="ofrep">
-                  <pre className="ds-code">{STATIC_MODE ? A.ofrepStatic : ofrep ? JSON.stringify(ofrep, null, 2) : '…'}</pre>
+                  <pre className="ds-code" tabIndex={0}>{STATIC_MODE ? A.ofrepStatic : ofrep ? JSON.stringify(ofrep, null, 2) : '…'}</pre>
                 </Panel>
               </div>
             </div>

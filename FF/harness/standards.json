@@ -2,9 +2,9 @@
   "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
   "summary": {
     "platformRules": 75,
-    "implemented": 32,
-    "tested": 32,
-    "reportTestsReferenced": 13
+    "implemented": 42,
+    "tested": 42,
+    "reportTestsReferenced": 15
   },
   "rules": [
     {
@@ -122,10 +122,15 @@
       ],
       "section": "05_classification.md · 5.8 규칙",
       "implemented": [
-        "contracts/src/rules/classification.ts"
+        "contracts/src/rules/classification.ts",
+        "contracts/src/rules/ext.ts",
+        "backend/src/domains/d01-policy/experiment/experiment.service.ts"
       ],
       "tested": [
-        "contracts/src/rules/classification.test.ts"
+        "contracts/src/rules/classification.test.ts",
+        "contracts/src/rules/ext.test.ts",
+        "backend/test/ext/p10.spec.ts",
+        "e2e/tests/p10.spec.ts"
       ]
     },
     {
@@ -374,8 +379,19 @@
         "IVI 앱"
       ],
       "section": "11_openfeature.md · 11.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/flags/openfeature.ts",
+        "backend/src/domains/d02-runtime/vehicle-runtime/bundle-provider.ts",
+        "backend/src/domains/d05-ext/api-gateway/ofrep.controller.ts"
+      ],
+      "tested": [
+        "contracts/src/flags/openfeature.test.ts",
+        "backend/test/d01/policy.spec.ts",
+        "backend/test/d05/openfeature.spec.ts",
+        "frontend/src/__tests__/screensP10.test.tsx",
+        "frontend/src/__tests__/screensP9.test.tsx",
+        "e2e/tests/poc.spec.ts"
+      ]
     },
     {
       "id": "FFG-OFT-002",
@@ -385,8 +401,12 @@
         "플랫폼"
       ],
       "section": "11_openfeature.md · 11.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/flags/openfeature.ts"
+      ],
+      "tested": [
+        "contracts/src/flags/openfeature.test.ts"
+      ]
     },
     {
       "id": "FFG-OFT-003",
@@ -397,8 +417,15 @@
         "데이터 보호 담당"
       ],
       "section": "11_openfeature.md · 11.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/flags/openfeature.ts",
+        "backend/src/domains/d02-runtime/vehicle-runtime/bundle-provider.ts",
+        "backend/src/domains/d05-ext/api-gateway/ofrep.controller.ts"
+      ],
+      "tested": [
+        "contracts/src/flags/openfeature.test.ts",
+        "backend/test/d05/openfeature.spec.ts"
+      ]
     },
     {
       "id": "FFG-OFT-004",
@@ -408,8 +435,15 @@
         "IVI 앱"
       ],
       "section": "11_openfeature.md · 11.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/flags/openfeature.ts",
+        "backend/src/domains/d02-runtime/vehicle-runtime/bundle-provider.ts",
+        "backend/src/domains/d05-ext/api-gateway/ofrep.controller.ts"
+      ],
+      "tested": [
+        "contracts/src/flags/openfeature.test.ts",
+        "backend/test/d05/openfeature.spec.ts"
+      ]
     },
     {
       "id": "FFG-OFT-005",
@@ -418,8 +452,16 @@
         "플랫폼 게이트"
       ],
       "section": "11_openfeature.md · 11.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/flags/openfeature.ts",
+        "backend/src/domains/d05-ext/api-gateway/ofrep.controller.ts"
+      ],
+      "tested": [
+        "contracts/src/flags/openfeature.test.ts",
+        "backend/test/d01/policy.spec.ts",
+        "backend/test/d05/openfeature.spec.ts",
+        "frontend/src/__tests__/screensP9.test.tsx"
+      ]
     },
     {
       "id": "FFG-OFT-006",
@@ -428,8 +470,13 @@
         "플랫폼"
       ],
       "section": "11_openfeature.md · 11.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/bundle-provider.ts",
+        "backend/src/domains/d05-ext/api-gateway/ofrep.controller.ts"
+      ],
+      "tested": [
+        "backend/test/d05/openfeature.spec.ts"
+      ]
     },
     {
       "id": "FFG-OFT-007",
@@ -439,8 +486,12 @@
         "IVI 앱"
       ],
       "section": "11_openfeature.md · 11.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/flags/openfeature.ts"
+      ],
+      "tested": [
+        "contracts/src/flags/openfeature.test.ts"
+      ]
     },
     {
       "id": "FFG-PLT-001",
@@ -620,7 +671,9 @@
         "contracts/src/rules/policy-gate.ts"
       ],
       "tested": [
-        "contracts/src/rules/policy-gate.test.ts"
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d05/openfeature.spec.ts",
+        "e2e/tests/poc.spec.ts"
       ]
     },
     {
@@ -631,8 +684,14 @@
         "IVI 앱"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/flags/openfeature.ts",
+        "backend/src/domains/d05-ext/api-gateway/ofrep.controller.ts"
+      ],
+      "tested": [
+        "contracts/src/flags/openfeature.test.ts",
+        "backend/test/d05/openfeature.spec.ts"
+      ]
     },
     {
       "id": "FFG-PLT-012",
@@ -858,8 +917,14 @@
         "이상 징후 대응"
       ],
       "section": "14_security_sotif.md · 14.7 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/ext.ts",
+        "backend/src/domains/d04-ops/incident-voc/incident.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/ext.test.ts",
+        "backend/test/ext/p10.spec.ts"
+      ]
     },
     {
       "id": "FFG-TEL-001",
@@ -911,8 +976,16 @@
         "법무"
       ],
       "section": "13_telemetry.md · 13.9 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/ext.ts",
+        "backend/src/domains/d05-ext/data-sync/sync.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/ext.test.ts",
+        "backend/test/ext/p10.spec.ts",
+        "frontend/src/__tests__/screensP10.test.tsx",
+        "e2e/tests/p10.spec.ts"
+      ]
     },
     {
       "id": "FFG-TEL-006",
@@ -1051,6 +1124,8 @@
     "TC-FF-48",
     "TC-FF-49",
     "TC-FF-50",
+    "TC-FF-51",
+    "TC-FF-52",
     "TC-FF-53",
     "TC-FF-58"
   ]

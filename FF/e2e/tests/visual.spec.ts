@@ -41,3 +41,30 @@ for (const c of CONDITIONS.filter((x) => x.name !== '1536')) {
     await expect(zone).toHaveScreenshot(`zone-ops-${c.name}.png`, STRICT);
   });
 }
+
+// 핵심 거버넌스 화면 — v0.81 시드(메모리 DB)만 읽는 화면이라 결정적이다. 시계를 고정하고, 가장 좁은 화면과 가장 넓은 화면에서 본문을 찍는다.
+// (실시간·이벤트·차량 화면은 시뮬레이터·SSE 때문에 시각 기준 대신 기능·레이아웃·접근성 e2e로 본다)
+const CORE = [
+  { name: 'features', url: '/features', ready: 'FEAT-00022' },
+  { name: 'feature-detail', url: '/features/FEAT-00022/1.0.0', ready: 'FEAT-00022' },
+  { name: 'baselines', url: '/baselines?tab=baselines', ready: 'BL-00028' },
+  { name: 'topology', url: '/arch/topology', ready: 'FEAT-00022' },
+  { name: 'products', url: '/products', ready: 'CAT-00019' },
+  { name: 'precheck', url: '/precheck', ready: 'PRECHECK' },
+  { name: 'upg', url: '/master/upg', ready: 'UPG' },
+  { name: 'compliance', url: '/verify/compliance', ready: 'FFG-' },
+];
+for (const c of CONDITIONS.filter((x) => x.name === '1366' || x.name === '1920')) {
+  for (const s of CORE) {
+    test(`@visual 핵심 화면 ${s.name} ${c.name}`, async ({ page }) => {
+      await page.clock.install({ time: new Date('2026-10-14T09:00:00+09:00') });
+      await page.setViewportSize({ width: c.w, height: c.h });
+      await page.addInitScript(() => localStorage.setItem('ff.present', '0'));
+      await page.goto(s.url);
+      await page.evaluate(() => document.fonts.ready);
+      await expect(page.locator('#main')).toContainText(s.ready);
+      await page.waitForFunction(() => !document.querySelector('[data-state="loading"], [aria-busy="true"]'));
+      await expect(page.locator('.sh-main')).toHaveScreenshot(`core-${s.name}-${c.name}.png`);
+    });
+  }
+}

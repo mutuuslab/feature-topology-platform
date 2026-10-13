@@ -1,6 +1,6 @@
-// vECU 가상검증 어댑터 — C:\project\2026-10-11_vECU의 헤드리스 실행기(tools/ffval_cli.mjs)를 실행해 판정·증적을 받는다.
-// 브라우저·포트 없이 Node 프로세스 하나(시나리오당 수십 ms). vECU가 없으면 'unavailable' — 증적으로 인정되지 않는 결과만 남긴다.
-//   VECU_MODE=auto(기본: 있으면 실행) | off,  VECU_DIR=<vECU 폴더>,  FF_EVIDENCE_DIR=<증적 저장 폴더>
+// vECU 가상검증 어댑터 — C:\project\2026-10-11_vECU의 헤드리스 실행기(tools/ffval_cli.mjs)를 실행해 판정·Evidence를 받는다.
+// 브라우저·포트 없이 Node 프로세스 하나(시나리오당 수십 ms). vECU가 없으면 'unavailable' — Evidence로 인정되지 않는 결과만 남긴다.
+//   VECU_MODE=auto(기본: 있으면 실행) | off,  VECU_DIR=<vECU 폴더>,  FF_EVIDENCE_DIR=<Evidence 저장 폴더>
 import { Injectable } from '@nestjs/common';
 import { VecuCliOutput } from '@ff/contracts';
 import { spawnSync } from 'node:child_process';
@@ -65,7 +65,7 @@ export class VecuAdapter {
     } catch (e) {
       return { ok: false, error: `vECU 결과를 읽지 못했습니다: ${(e as Error).message}` };
     }
-    // 출력 계약(contracts schemas/vecu.ts) — vECU가 형식·기준 ID를 바꾸면 조용히 잘못 읽지 않고 거부한다(증적 불인정)
+    // 출력 계약(contracts schemas/vecu.ts) — vECU가 형식·기준 ID를 바꾸면 조용히 잘못 읽지 않고 거부한다(Evidence 불인정)
     const parsed = VecuCliOutput.safeParse(out);
     if (!parsed.success) {
       const where = parsed.error.issues.slice(0, 3).map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`).join('; ');

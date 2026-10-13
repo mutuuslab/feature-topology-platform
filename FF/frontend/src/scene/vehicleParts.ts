@@ -6,6 +6,7 @@
  * React 에 의존하지 않는 순수 함수/타입만 둔다 — 3D 컴포넌트(`vehicleGeometry.tsx`)와
  * 장면(`VehicleTwinScene.tsx`)이 이 모듈을 읽기만 한다.
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import * as T from '../data/twin/types';
 import * as E from '../data/twin/engine';
 
@@ -29,12 +30,12 @@ export const PART_STATE_LABEL: Record<PartState, string> = {
 
 /** styles.css 의 --pass/--pending/--fail/--info/--muted 와 동일한 값. */
 export const PART_STATE_HEX: Record<PartState, string> = {
-  ACTIVE: '#1F9D55',
-  PENDING: '#D9822B',
-  BLOCKED: '#D64545',
-  MISSING: '#D64545',
-  OFFLINE: '#3B82F6',
-  OFF: '#8895A7',
+  ACTIVE: LEGACY_PAL['lg-1f9d55'],
+  PENDING: LEGACY_PAL['lg-d9822b'],
+  BLOCKED: LEGACY_PAL['lg-d64545'],
+  MISSING: LEGACY_PAL['lg-d64545'],
+  OFFLINE: LEGACY_PAL['lg-3b82f6'],
+  OFF: LEGACY_PAL['lg-8895a7'],
 };
 
 export const PART_STATE_TOKEN: Record<PartState, string> = {

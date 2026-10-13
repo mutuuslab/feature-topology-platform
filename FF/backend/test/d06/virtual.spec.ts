@@ -1,4 +1,4 @@
-// vECU 가상검증 → 검증 Gate 연결: 시나리오 실행(D06-03) → 정책 검증기(D06-03 정상·D06-06 오류+Kill) → TMS 제출(D04-02, IF-09) → G5 증적.
+// vECU 가상검증 → 검증 Gate 연결: 시나리오 실행(D06-03) → 정책 검증기(D06-03 정상·D06-06 오류+Kill) → TMS 제출(D04-02, IF-09) → G5 Evidence.
 // 기본은 같은 계약의 시험 대역(test/fixtures/fake-vecu) — 실제 vECU 판정은 마지막 describe가 C:\project\2026-10-11_vECU로 확인한다.
 import { existsSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -44,7 +44,7 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     expect((await http().get('/api/vecu/status').expect(200)).body.available).toBe(true);
   });
 
-  it('가상검증 전에는 정책 검증이 HOLD — 증적 없이 승인할 수 없다', async () => {
+  it('가상검증 전에는 정책 검증이 HOLD — Evidence 없이 승인할 수 없다', async () => {
     const run = await validate();
     expect(run.decision).toBe('HOLD');
     expect(result(run, 'D06-03').findings[0].message).toMatch(/SCN-FEAT00022-NOMINAL 미실행/);
@@ -63,7 +63,7 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     expect(r[0].evidence.files.map((f: any) => f.name)).toEqual(['verdict.json', 'report.html']);
   });
 
-  it('증적 파일: 기록된 파일만, 보고서는 스크립트 차단 헤더로', async () => {
+  it('Evidence 파일: 기록된 파일만, 보고서는 스크립트 차단 헤더로', async () => {
     const v = await http().get('/api/virtual-validations/VV-00001/files/verdict.json').expect(200);
     expect(JSON.parse(v.text ?? JSON.stringify(v.body)).testId).toMatch(/^TEST-care_00022_param-SCN-FEAT00022-NOMINAL/);
     const h = await http().get('/api/virtual-validations/VV-00001/files/report.html').expect(200);
@@ -97,7 +97,7 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     expect(run.decision).toBe('BLOCKED');
   });
 
-  it('vECU 미연결 → unavailable 기록(증적 불인정), TMS 제출 불가', async () => {
+  it('vECU 미연결 → unavailable 기록(Evidence 불인정), TMS 제출 불가', async () => {
     process.env.VECU_MODE = 'off';
     const r = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).expect(201)).body.items[0];
     delete process.env.VECU_MODE;
@@ -133,7 +133,7 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     it('다른 Version의 가상검증·FAIL 결과·TMS 미제출은 PASS 근거로 거부(422, FAILED 감사)', async () => {
       expect((await g5('VV-00001').expect(422)).body.error.message).toMatch(/1\.0\.0의 가상검증/);
       expect((await g5(fail).expect(422)).body.error.message).toMatch(/PASS 근거가 될 수 없습니다/);
-      expect((await g5(pass).expect(422)).body.error.message).toMatch(/TMS\(IF-09\)에 제출한 증적만/);
+      expect((await g5(pass).expect(422)).body.error.message).toMatch(/TMS\(IF-09\)에 제출한 Evidence만/);
       await g5(fail, 'FAIL').expect(201); // FAIL 판정의 근거로는 쓸 수 있다
     });
 
@@ -163,7 +163,7 @@ describe.skipIf(!existsSync(join(REAL, 'tools', 'ffval_cli.mjs')))('실제 vECU 
     restore();
   });
 
-  it('FEAT-00022: 정상 추종 PASS · 오류+Kill 종합 FAIL(위험 구간)·Kill 경로 PASS — 증적 해시 포함', async () => {
+  it('FEAT-00022: 정상 추종 PASS · 오류+Kill 종합 FAIL(위험 구간)·Kill 경로 PASS — Evidence 해시 포함', async () => {
     const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', controlPoint: 'Parameter', flagKey: 'care_00022_param', description: '실제 vECU', safeDefault: false }).expect(201);
     const r = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: c.body.policyId }).expect(201)).body.items;
     expect(r.map((x: any) => [x.source, x.overall, x.gateResult])).toEqual([['vecu', 'PASS', 'PASS'], ['vecu', 'FAIL', 'PASS']]);

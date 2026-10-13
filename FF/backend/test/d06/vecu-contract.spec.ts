@@ -72,7 +72,7 @@ describe('FF ↔ vECU 연계 계약', () => {
     expect(parsed.success, JSON.stringify(!parsed.success && parsed.error.issues)).toBe(true);
   });
 
-  it('① 계약에서 벗어난 출력은 FF 어댑터가 조용히 읽지 않고 거부한다 (증적 불인정)', () => {
+  it('① 계약에서 벗어난 출력은 FF 어댑터가 조용히 읽지 않고 거부한다 (Evidence 불인정)', () => {
     const prev = process.env.VECU_DIR;
     process.env.VECU_DIR = resolve(__dirname, '../fixtures/drifted-vecu');
     try {
@@ -86,7 +86,7 @@ describe('FF ↔ vECU 연계 계약', () => {
   });
 
   describe.skipIf(!HAS_REAL)(`실제 vECU (${REAL})`, () => {
-    it('① 실제 실행기 출력이 계약 스키마를 지키고, FF가 판정에 쓰는 기준 ID·증적 파일을 시나리오마다 모두 낸다', () => {
+    it('① 실제 실행기 출력이 계약 스키마를 지키고, FF가 판정에 쓰는 기준 ID·Evidence 파일을 시나리오마다 모두 낸다', () => {
       const r = runCli(REAL, { ...base, scenarios: ffScenarios() });
       dirs.push(r.out);
       expect(r.status, r.stderr).toBe(0);
@@ -94,7 +94,7 @@ describe('FF ↔ vECU 연계 계약', () => {
       expect(parsed.success, JSON.stringify(!parsed.success && parsed.error.issues)).toBe(true);
       for (const run of parsed.success ? parsed.data.runs : []) {
         expect(VECU_REQUIRED_CRITERIA.filter((id) => !run.criteria.some((c) => c.id === id)), `${run.scenarioId} 기준 ID`).toEqual([]);
-        expect(VECU_REQUIRED_FILES.filter((f) => !run.files.some((x) => x.name === f)), `${run.scenarioId} 증적`).toEqual([]);
+        expect(VECU_REQUIRED_FILES.filter((f) => !run.files.some((x) => x.name === f)), `${run.scenarioId} Evidence`).toEqual([]);
         for (const f of run.files) expect(existsSync(join(run.dir, f.name)), f.name).toBe(true);
       }
     });
@@ -119,7 +119,7 @@ describe('FF ↔ vECU 연계 계약', () => {
       const list: { type: string; request?: any; response?: any }[] = Array.isArray(events) ? events : events.events;
       const asked = list.filter((e) => e.type === 'vehicle_request').map((e) => e.request);
       const answered = new Map(list.filter((e) => e.type === 'platform_response').map((e) => [e.response.id, e.response]));
-      // 시나리오 요청(시각순, repeat 펼침)과 증적의 요청은 같은 순서다 — 값·오류 코드 같은 세부는 시나리오에서 읽는다
+      // 시나리오 요청(시각순, repeat 펼침)과 Evidence의 요청은 같은 순서다 — 값·오류 코드 같은 세부는 시나리오에서 읽는다
       const script = [...scenario.vehicle_requests].sort((a: any, b: any) => a.at_s - b.at_s).flatMap((q: any) => Array.from({ length: q.repeat ?? 1 }, () => q));
       expect(asked).toHaveLength(script.length);
       expect(answered.size, '모든 요청에 응답 (vECU CLI await 회귀)').toBe(asked.length);

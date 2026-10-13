@@ -5,7 +5,7 @@ import { F_CLASSES, LIFECYCLE, type FClass, type Lifecycle, type SafetyProfile }
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, ClassBadges, DataTable, IdChip, Kpi, LifecycleBadge, PageHeader, Segmented, Select, Toolbar } from '../../design';
-import { MiniGates, scopeOf } from '../shared';
+import { MiniGates, scopeOf, Segments } from '../shared';
 import type { FeatureList as FeatureListT } from '../types';
 
 const T = ko.registry;
@@ -116,13 +116,13 @@ export default function FeatureList() {
               sort: (r) => `${r.featureId}@${r.version.padStart(8, '0')}`,
               width: '190px',
             },
-            { key: 'name', header: T.col.name, cell: (r) => r.name, sort: (r) => r.name },
+            { key: 'name', header: T.col.name, cell: (r) => r.name, sort: (r) => r.name, width: '20%' },
             {
               key: 'scope',
               header: T.col.scope,
               cell: (r) => (
                 <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
-                  {scopeOf(r)}
+                  <Segments items={[r.country, r.vehicleModel, r.trim]} />
                 </span>
               ),
               sort: (r) => scopeOf(r),
@@ -150,8 +150,8 @@ export default function FeatureList() {
               cell: (r) => (r.baselineId ? <span className="ds-mono">{r.baselineId}</span> : <span style={{ color: 'var(--faint)' }}>—</span>),
               sort: (r) => r.baselineId ?? '',
             },
-            { key: 'asil', header: T.col.asil, cell: (r) => <span className="ds-mono">{r.asil}</span>, sort: (r) => r.asil },
-            { key: 'owner', header: T.col.owner, cell: (r) => r.ownerId, sort: (r) => r.ownerId },
+            { key: 'asil', header: T.col.asil, cell: (r) => <span className="ds-mono">{r.asil}</span>, sort: (r) => r.asil, minor: true },
+            { key: 'owner', header: T.col.owner, cell: (r) => r.ownerId, sort: (r) => r.ownerId, minor: true },
           ]}
         />
       </AsyncView>

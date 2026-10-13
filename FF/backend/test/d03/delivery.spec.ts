@@ -269,10 +269,10 @@ describe('부팅 동기화', () => {
     const { app, http } = await bootApp();
     try {
       const pubs = (await http().get('/api/publications?kind=POLICY').expect(200)).body.items;
-      expect(pubs.map((p: any) => [p.payload.flagKey, p.createdBy]).sort()).toEqual([['care_00022_param', 'system'], ['care_00022_signal', 'system']]);
+      expect(pubs.map((p: any) => [p.payload.flagKey, p.createdBy]).sort()).toEqual([['care_00022_param', 'system'], ['care_00022_signal', 'system'], ['ivi_00024_guide', 'system']]); // ivi_00024_guide: OpenFeature용 QM flag 시드(P10-B)
       app.get(Scheduler).flush();
       const v = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body;
-      expect(Object.keys(v.runtime.bundles).sort()).toEqual(['care_00022_param', 'care_00022_signal']);
+      expect(Object.keys(v.runtime.bundles).sort()).toEqual(['care_00022_param', 'care_00022_signal', 'ivi_00024_guide']);
       expect(v.evaluations.every((e: any) => !e.drift)).toBe(true);
     } finally {
       await app.close();

@@ -25,7 +25,7 @@ export default function Precheck() {
       <PageHeader eyebrow={`D01-02 · ${d?.ruleVersion ?? 'DATA-PRECHECK'}`} title={T.title} lead={T.lead} />
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
-          <>
+          <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
             <div className="ds-kpis">
               <Kpi label="PASS" value={d.summary.PASS} tone="ok" />
               <Kpi label="CONDITIONAL" value={d.summary.CONDITIONAL} tone="warn" />
@@ -38,7 +38,7 @@ export default function Precheck() {
             <Panel title={T.quality} id="dq">
               <RuleTable rows={d.dataQuality} open={open} setOpen={setOpen} />
             </Panel>
-          </>
+          </div>
         )}
       </AsyncView>
     </div>

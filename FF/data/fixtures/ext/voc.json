@@ -1,0 +1,8 @@
+[
+  { "ref": "VOC-2610-0001", "vin": "KMH-NX4-0002", "featureName": "전방 안전거리", "severity": "CRITICAL", "text": "고속도로 주행 중 앞차와 거리가 충분했는데 갑자기 급제동이 걸렸어요." },
+  { "ref": "VOC-2610-0002", "vin": "KMH-NX4-0003", "featureName": "전방 안전거리", "severity": "CRITICAL", "text": "차가 스스로 감속하면서 뒤차가 놀랐습니다. 의도치 않은 감속이었어요." },
+  { "ref": "VOC-2610-0003", "vin": "KMH-NX4-0001", "featureName": "전방 안전거리", "severity": "WARNING", "text": "간격 경고 반응이 너무 늦습니다." },
+  { "ref": "VOC-2610-0004", "vin": "KMH-GN7-0001", "featureName": "IC·JC 경로 사전안내", "severity": "INFO", "text": "분기점 안내 알림 소리가 너무 커요." },
+  { "ref": "VOC-2610-0005", "vin": "KMH-NE-0001", "featureName": null, "severity": "WARNING", "text": "가끔 시동 후 화면 표시가 늦게 나옵니다." },
+  { "ref": "VOC-2610-0006", "vin": "KMH-NX4-0101", "featureName": "급가속 억제", "severity": "WARNING", "text": "급가속 억제 기능이 켜져 있는데 작동하지 않아요." }
+]

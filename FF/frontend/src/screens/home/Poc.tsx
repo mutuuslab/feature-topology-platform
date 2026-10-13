@@ -1,5 +1,5 @@
 // /poc — PoC 6단계 진행 (P9). 서버 오케스트레이터(POST /api/poc/runs/:id/advance)가 실제 서비스를 역할별 행위자로 실행하고,
-// 화면은 단계·행위·증적·관여 컴포넌트를 보여 준다. "끝까지 실행"은 차량 회신을 기다리는 단계(④·⑥)에서 잠시 쉬며 다시 확인한다.
+// 화면은 단계·행위·Evidence·관여 컴포넌트를 보여 준다. "끝까지 실행"은 차량 회신을 기다리는 단계(④·⑥)에서 잠시 쉬며 다시 확인한다.
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { STATIC_MODE } from '../../api/client';

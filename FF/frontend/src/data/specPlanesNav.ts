@@ -120,9 +120,9 @@ const DEFS: PlaneDef[] = [
           '/master/upg',
           '/master/structure',
           '/master/product-spec',
-          '/feature/FEAT-BDC-001',
+          '/feature/FEAT-00022',
           '/feature/propose',
-          '/variants/FEAT-BDC-001',
+          '/variants/FEAT-00022',
           '/trace/design',
         ],
       },
@@ -143,7 +143,7 @@ const DEFS: PlaneDef[] = [
         en: 'Topology & Impact',
         routes: [
           '/arch/topology',
-          '/topology/FEAT-BDC-001',
+          '/topology/FEAT-00022',
           '/topology/edge',
           '/impact',
           '/consistency',
@@ -165,7 +165,7 @@ const DEFS: PlaneDef[] = [
     note: '기술 적합성만 판정한다. 최종 운영 허가는 G+M 소관이라 여기서 발행하지 않는다.',
     demos: [
       {
-        ko: '검증 · 증적',
+        ko: '검증 · Evidence',
         en: 'Verification & Evidence',
         routes: ['/verify/evidence', '/verify/compliance', '/verify/scenario', '/verify/experiment', '/decisions/verification'],
       },
@@ -197,7 +197,7 @@ const DEFS: PlaneDef[] = [
       {
         ko: '배포 · 운영',
         en: 'Deploy & Ops',
-        routes: ['/readiness/FEAT-BDC-001', '/ops/campaign', '/ops/policy', '/ops/runtime', '/ops/FEAT-BDC-001', '/ops/telemetry', '/fleet', '/activation'],
+        routes: ['/readiness/FEAT-00022', '/ops/campaign', '/ops/policy', '/ops/runtime', '/ops/FEAT-00022', '/ops/telemetry', '/fleet', '/activation'],
       },
       {
         ko: '정책 · 운영 기준',

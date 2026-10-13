@@ -143,7 +143,7 @@ export default function DesignGallery() {
         </Panel>
         <Panel title={T.ids} id="ids">
           <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', alignItems: 'center' }}>
-            <IdChip id="FEAT-00022" version="1.0.0" to="/catalog?q=FEAT-00022" />
+            <IdChip id="FEAT-00022" version="1.0.0" to="/features?q=FEAT-00022" />
             <IdChip id="BL-00028" />
             <IdChip id="CAT-00019" version="1.0.0" />
             <IdChip id="SIM-G8-000193" copy={false} />

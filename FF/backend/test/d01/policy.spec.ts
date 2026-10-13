@@ -59,9 +59,11 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
   });
 
   describe('OFREP (IF-10) — 행위자 헤더 없는 SDK 호출', () => {
-    it('단일 평가: OpenFeature 사유·변형·메타데이터', async () => {
-      const r = await http().post('/ofrep/v1/evaluate/flags/care_00022_param').send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
-      expect(r.body).toMatchObject({ key: 'care_00022_param', value: true, variant: 'on', reason: 'TARGETING_MATCH', metadata: { decision: 'ALLOW' } });
+    it('단일 평가: OpenFeature 사유·변형·메타데이터 — F0·F1(IVI flag)만 값을 계산, F2 이상은 DISABLED(FFG-OFT-001)', async () => {
+      const r = await http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
+      expect(r.body).toMatchObject({ key: 'ivi_00024_guide', value: true, variant: 'on', reason: 'TARGETING_MATCH', metadata: { decision: 'ALLOW' } });
+      const g = await http().post('/ofrep/v1/evaluate/flags/care_00022_param').send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
+      expect(g.body).toMatchObject({ key: 'care_00022_param', value: false, reason: 'DISABLED', metadata: { decided_by: 'vehicle_safety_guard' } });
     });
     it('오류는 OFREP 규격: 키 누락 400, 미등록 차량 400, 없는 flag 404', async () => {
       expect((await http().post('/ofrep/v1/evaluate/flags/care_00022_param').send({ context: {} }).expect(400)).body.errorCode).toBe('TARGETING_KEY_MISSING');
@@ -70,7 +72,7 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
     });
     it('일괄 평가: ETag, 같으면 304', async () => {
       const a = await http().post('/ofrep/v1/evaluate/flags').send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
-      expect(a.body.flags.map((f: any) => f.key)).toEqual(['care_00022_param', 'care_00022_signal']);
+      expect(a.body.flags.map((f: any) => f.key)).toEqual(['ivi_00024_guide']); // F2 이상 키는 OpenFeature 백엔드에 내보내지 않는다(FFG-OFT-005)
       await http().post('/ofrep/v1/evaluate/flags').set('If-None-Match', a.headers.etag).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(304);
     });
   });

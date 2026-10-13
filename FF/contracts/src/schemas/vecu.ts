@@ -1,6 +1,6 @@
 // vECU 가상검증 실행기 출력 계약 (IF-09 공급자: C:\project\2026-10-11_vECU tools/ffval_cli.mjs, 시험 대역 backend/test/fixtures/fake-vecu).
-// stdin 패키지 → --out 증적 → stdout JSON 한 줄. FF는 이 스키마로 읽어서, vECU가 형식·기준 ID를 바꾸면 조용히 잘못 읽지 않고
-// "계약 위반"으로 실행을 거부한다(증적 불인정). vECU 쪽 약속: verdict items 필드(id·status·value·limit·role)·기준 ID를 바꾸면 미리 알린다.
+// stdin 패키지 → --out Evidence → stdout JSON 한 줄. FF는 이 스키마로 읽어서, vECU가 형식·기준 ID를 바꾸면 조용히 잘못 읽지 않고
+// "계약 위반"으로 실행을 거부한다(Evidence 불인정). vECU 쪽 약속: verdict items 필드(id·status·value·limit·role)·기준 ID를 바꾸면 미리 알린다.
 import { z } from 'zod';
 
 export const VecuCriterionStatus = z.enum(['pass', 'fail', 'pending', 'na']);
@@ -42,5 +42,5 @@ export type VecuCliOutput = z.infer<typeof VecuCliOutput>;
 /** FF가 Gate 판정(rules/virtual.ts deciding)에 쓰는 기준 ID — 실제 vECU는 시나리오마다 이것을 모두 내야 한다 */
 export const VECU_REQUIRED_CRITERIA = ['kill_latency', 'misjudge', 'danger_time', 'min_ttc', 'max_decel', 'recovery'] as const;
 
-/** 증적으로 반드시 남아야 하는 파일 (시험 대역은 verdict·report만 쓴다) */
+/** Evidence로 반드시 남아야 하는 파일 (시험 대역은 verdict·report만 쓴다) */
 export const VECU_REQUIRED_FILES = ['verdict.json', 'report.html'] as const;

@@ -3,6 +3,23 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## P10·P11 진행 (2026-10-13 시작 — worktree `../2026-06-04_Feature_Platform-p10`, 브랜치 `feat/p10`)
+> 표준 보고서 세션(ffp-standards-implementation-plan)이 같은 브랜치·작업 트리에서 WP 작업 중 → P10은 별도 worktree에서 하고 단계마다 feat/v081-integration에 merge(merge 전 알림). e2e 포트 9121/9122, 마이그레이션 020~029(표준 세션 017~019·030~). P11 마감은 WP8(D06-11) 뒤.
+- [x] **A 컴포넌트 6 + IF 모의 어댑터** (feat/p10 61e725a·b3704f5, WP5a 합침 2dad71f — 41/42, 화면 /experiments·/ops/incidents·/field·/integration/connectors·/integration/sync·/integration/legacy) — D01-07 실험·효과(F2 이상 A/B 거부·Shadow만, `@rule FFG-CLS-006`), D04-05 장애·VOC(SOTIF 트리거 → 이상 징후 FIELD, `@rule FFG-SOT-003`, 차단은 v2 요청·2인 승인), D05-02 데이터 동기화(IF-02·03·12 대사, 시장 구분·CN 국외 이전 보류 `@rule FFG-TEL-005`), D05-03 Legacy 연계(레거시 옵션 코드 ↔ FEAT, 해외공장 주문 IF-12), D05-05 현장 지원 포털(VIN 종합 조회·현장 접수 → D04-05), D05-07 Legacy-SDV(비SDV 차량은 딜러 코딩, F2 이상 거부). IF 모의: IF-01 ALM·02 기준정보·03 MDM/DW·08 Supplier·11 OTel·12 해외공장 + 외부 연계 현황 v2(`/integration/connectors` 대체). D06-11은 WP8(표준 세션) 담당.
+- [x] **B OpenFeature** (0d25448 — WP7 FFG-OFT-001~007·PLT-011 포함, 시드 ivi_00024_guide, /integration/openfeature, verify openfeature:check. FEAT-00024 sbomRef 없어 복원은 FFG-PLT-010이 막음 → 표준 세션에 데이터 요청) — OF-5 OTel hook(평가 span → IF-11), OF-6 차량 내장 provider(서명 번들 로컬 평가, 서버 판단과 대조), OF-7 flag 매니페스트·기본값 규율(정책 safeDefault·OpenFeature 기본값 일치 검사, 하네스), **OpenFeature 범위 화면**(OF-1~7 상태·근거·엔드포인트·SDK·매니페스트 — 사용자 요청).
+- [x] **C 레거시 정리** (2026-10-14 완료) — 메뉴 51개 전부 v2, 원시 색상 0 · FEAT-BDC 0 · 레거시 axe 0
+  - [x] C1 (9d658de) 26 라우트 legacyTo·13 파일 삭제 · C2 (1ab339b) 원시 색상 752→0(legacy-palette.css·LEGACY_PAL 토큰 파일)
+  - [x] C4 기준정보·추적·운영·관리 v2 (d5a7fee·e981de4·9cd7b45·5b0031e Topology) · 3차 0c4a378 — 검토함(/admin/approval, 내 차례 = contracts approvalCheck·차단 승인자 제외)·내 대시보드(/)·Feature 제안(createFeature)·Feature 등록(진행 목록·다음 할 일·Gate PASS), pages/home·admin·propose·defineRevision 삭제
+  - [x] C3 (cf9179d) store.tsx는 역할·테마·언어·토스트만(roleHome은 v2 경로), data/model·engine·featureBom·implementation·proposal 등 삭제, ⌘K는 Registry 검색, refdata는 역할 라벨·usr-* ID만 유지. `tools/dead-modules.ts`(frontend/*.html 진입점에서 닿지 않는 모듈 0)를 verify `deadcode`로
+  - [x] C5 (4d851a2) a11y.spec: 화면별 허용 건수(a11y-baseline.json) 삭제, 메뉴 51 + 하위 화면 12(시연 값으로 경로 채움) 모두 serious/critical 0. 레거시 .badge·활성 탭 글자 --accent-ink, 차량 칩·What-if 대비, ARIA cell, 코드 블록·스트림 키보드 스크롤, 문장 속 링크 밑줄
+  - 3D 시연 화면 `/twin/*` 5개는 BDC 데모 장면으로 유지(twin.html 공유) — 각 v2 화면의 하위 화면, 접근성 0 적용
+- [~] **D P11 마감**
+  - [x] 용어 규칙 0 (d256244) — '증적'→'Evidence'(프론트·백엔드·contracts·e2e, 조사 포함), guideTermLines 48→0, `node tools/lint-copy.ts --terms`
+  - [x] 문서 (d256244) — FF/README.md 새로 작성, docs/50-screens IA 2.0.0(MENU 2.0), OpenAPI 재생성
+  - [x] 시각 기준 — 디자인 갤러리 + 핵심 거버넌스 화면 8개(features·feature-detail·baselines·topology·products·precheck·upg·compliance) × 1366·1920, 시계 고정, 연속 일치 확인. 기준 확정 전 검토로 찾은 배치 결함 수정: Topology 원 크기를 viewBox에 맞추고 라벨을 바깥쪽+halo로, 표 칸 keep-all(한글 어절 단위), `Segments`(구분자에서만 줄바꿈), DataTable `minor` 열(1600px 미만 숨김 — Feature 목록 ASIL·담당), 사전점검 KPI 간격. 회귀 시험 `designTable.test.tsx`
+  - [ ] conformance `--strict` 42/42 — D06-11 취약점 모니터링(표준 세션 WP8) 뒤. 지금 41/42
+- [x] **feat/p10 → feat/v081-integration merge** (2026-10-14, f28349a 위) — 충돌 contracts/src/index.ts(vecu·ext export 둘 다), vECU 계약 파일에 Evidence 용어 재적용. verify 통과(단, gleo.ws.spec은 FF_IMP가 feat/gleo-v2 작업 중이라 DecisionEngine 생성자 불일치로 실패 — WP5b 완료 때 함께 맞춤). 백엔드 시험은 기계 부하가 크면 30 s 시간 초과가 날 수 있다(단독·--maxWorkers=4로는 통과)
+
 ## 다음 세션 시작점
 - **국제표준 보고서 v1.1 실제 개발 WP5b(FF_IMP 메시지 v2)부터**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1·WP0·WP1·WP3·WP4·WP5a 완료. 화면 확인: `/learn`, `/_design`, `/features?f=F3`, `/features/FEAT-00022/1.0.0?tab=safety`(UX 검토 사진 `node e2e/scripts/shot-safety.mjs` → `e2e/shots/safety-*`).
 - **WP1 이후 규칙**: Gate G2 이후 PASS는 안전 분류 확정(SAFETY_OFFICER 개인 서명)이 전제(FFG-CLS-001), G1은 조합 위반(blocking)만 막는다. 새 시험·e2e에서 G2 이상을 판정하면 먼저 `confirmSafety(http, id, ver)`(backend `test/helpers.ts`) 또는 `POST …/safety/confirm`. 초안 시드는 `tools/dataset/safety-infer.ts` → `data/fixtures/safety/profiles.json`(80개, FEAT-00022@1.0.0만 확정 F3·DC2·R1). standards 래칫 구현·시험 13·13, TC-FF 3.

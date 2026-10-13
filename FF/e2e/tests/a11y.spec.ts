@@ -1,38 +1,20 @@
-// 접근성(axe, WCAG 2.1 AA) — 재디자인 화면은 serious/critical 0이 하드 규칙,
-// 레거시 화면은 harness/a11y-baseline.json의 건수를 넘을 수 없다(래칫, 줄어들면 UPDATE_A11Y=1로 잠금).
+// 접근성(axe, WCAG 2.1 AA) — 메뉴 화면과 메뉴 밖 하위 화면(drill-down) 모두 serious/critical 0이 하드 규칙.
+// P10-C5: 레거시 화면이 모두 v2로 바뀌어 화면별 허용 건수(a11y-baseline.json 래칫)를 없앴다.
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { MENU_ENTRIES, V2_PATHS } from './menu';
+import { expect, test, type Page } from '@playwright/test';
+import { DRILLDOWNS, MENU_ENTRIES } from './menu';
 
-const BASELINE = join(__dirname, '..', '..', 'harness', 'a11y-baseline.json');
-const baseline: Record<string, number> = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf8')) : {};
-const observed: Record<string, number> = {};
-
-test.describe.configure({ mode: 'serial' });
-
-for (const m of MENU_ENTRIES) {
-  test(`axe: ${m.title} (${m.menu})`, async ({ page }) => {
-    await page.goto(m.menu);
-    await expect(page.locator('#main')).toBeVisible();
-    // networkidle은 SSE(/events)처럼 열린 연결이 있으면 끝나지 않는다 — 로딩 표식이 사라질 때까지만 기다린다
-    await page.waitForFunction(() => !document.querySelector('[data-state="loading"], [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
-    await page.waitForTimeout(300);
-    const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
-    const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-    const count = bad.reduce((n, v) => n + v.nodes.length, 0);
-    observed[m.menu] = count;
-    const detail = bad.map((v) => `${v.id} ×${v.nodes.length}: ${v.help}`).join('\n');
-    if (V2_PATHS.includes(m.path)) expect(count, detail).toBe(0);
-    else expect(count, `기준 ${baseline[m.menu] ?? '없음'}\n${detail}`).toBeLessThanOrEqual(baseline[m.menu] ?? count);
-  });
+async function axe(page: Page, url: string) {
+  await page.goto(url);
+  await expect(page.locator('#main')).toBeVisible();
+  // networkidle은 SSE(/events)처럼 열린 연결이 있으면 끝나지 않는다 — 로딩 표식이 사라질 때까지만 기다린다
+  await page.waitForFunction(() => !document.querySelector('[data-state="loading"], [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
+  await page.waitForTimeout(300);
+  const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+  const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+  const detail = bad.map((v) => `${v.id} ×${v.nodes.length}: ${v.help}\n    ${v.nodes.slice(0, 4).map((n) => `${n.target.join(' ')} — ${(n.any[0] ?? n.all[0] ?? n.none[0])?.message ?? ''}`).join('\n    ')}`).join('\n');
+  expect(bad.reduce((n, v) => n + v.nodes.length, 0), detail).toBe(0);
 }
 
-test.afterAll(() => {
-  if (process.env.UPDATE_A11Y === '1' || !existsSync(BASELINE)) {
-    const merged = { ...baseline };
-    for (const [k, v] of Object.entries(observed)) merged[k] = baseline[k] === undefined ? v : Math.min(baseline[k], v);
-    writeFileSync(BASELINE, JSON.stringify(Object.fromEntries(Object.entries(merged).sort()), null, 2) + '\n');
-  }
-});
+for (const m of MENU_ENTRIES) test(`axe: ${m.title} (${m.menu})`, ({ page }) => axe(page, m.menu));
+for (const d of DRILLDOWNS) test(`axe(하위): ${d.title} (${d.url})`, ({ page }) => axe(page, d.url));

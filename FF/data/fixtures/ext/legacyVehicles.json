@@ -1,0 +1,6 @@
+[
+  { "vin": "KMH-LF-0001", "vehicleModel": "LF", "modelYear": "2019", "market": "KR", "architecture": "LEGACY", "codingUnit": "BCM" },
+  { "vin": "KMH-LF-0002", "vehicleModel": "LF", "modelYear": "2020", "market": "KR", "architecture": "LEGACY", "codingUnit": "BCM" },
+  { "vin": "HMA-TM-0001", "vehicleModel": "TM", "modelYear": "2020", "market": "US", "architecture": "LEGACY", "codingUnit": "IBU" },
+  { "vin": "TMA-PD-0001", "vehicleModel": "PD", "modelYear": "2019", "market": "EU", "architecture": "LEGACY", "codingUnit": "BCM" }
+]

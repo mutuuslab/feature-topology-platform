@@ -3,7 +3,8 @@
 // 조치된 이상 건은 Feature에 품질 피드백으로 남아 새 Version의 재검증(G5·vECU 회귀)을 요구한다.
 import { z } from 'zod';
 
-export const AnomalyKind = z.enum(['FEATURE_FAULT', 'SECURITY', 'DELIVERY']);
+/** FIELD_SOTIF — 현장 장애·VOC의 기능 불충분 트리거(D04-05, FFG-SOT-003) */
+export const AnomalyKind = z.enum(['FEATURE_FAULT', 'SECURITY', 'DELIVERY', 'FIELD_SOTIF']);
 export type AnomalyKind = z.infer<typeof AnomalyKind>;
 export const AnomalySeverity = z.enum(['INFO', 'WARNING', 'CRITICAL']);
 export type AnomalySeverity = z.infer<typeof AnomalySeverity>;
@@ -70,6 +71,17 @@ export function classifyAnomaly(kind: AnomalyKind, signals: AnomalySignal[], ctx
     if (safety && vins.size >= 2) (sev = 'CRITICAL'), reasons.push(`ASIL ${ctx.asil} 기능 — 2대 이상에서 보고`);
     if (!reasons.length) reasons.push(`차량 ${vins.size}대 · 최고 보고 수준 ${reported}`);
     return { severity: sev, advice: sev === 'CRITICAL' ? 'KILL' : sev === 'WARNING' ? 'INVESTIGATE' : 'MONITOR', reasons };
+  }
+  if (kind === 'FIELD_SOTIF') {
+    // 현장 보고는 차량 자가 진단보다 불확실 — 서로 다른 차량 2대 이상에서 의도하지 않은 작동이 CRITICAL로 보고되면 차단 권고, 아니면 조사
+    const unintended = signals.filter((s) => s.code === 'UNEXPECTED_ACTIVATION' && s.severity === 'CRITICAL');
+    const uv = new Set(unintended.map((s) => s.vin).filter(Boolean));
+    if (uv.size >= 2) {
+      reasons.push(`서로 다른 차량 ${uv.size}대에서 의도하지 않은 작동(CRITICAL) 현장 보고`);
+      return { severity: 'CRITICAL', advice: 'KILL', reasons };
+    }
+    reasons.push(`현장 장애·VOC ${signals.length}건 (${[...new Set(signals.map((s) => s.code))].join(', ')}) · 최고 ${reported}`);
+    return { severity: reported, advice: reported === 'INFO' ? 'MONITOR' : 'INVESTIGATE', reasons };
   }
   if (kind === 'SECURITY') {
     // ref가 STATUS:로 시작하면 상태 보고 수신 검사 위반(D04-03), 아니면 차량이 게시본을 거부

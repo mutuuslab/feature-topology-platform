@@ -1,4 +1,4 @@
-// vECU 가상검증 실행 기록 — 정책 검증기(D06-03·D06-06)와 Gate 판정(G5 증적 확인)이 함께 읽는다.
+// vECU 가상검증 실행 기록 — 정책 검증기(D06-03·D06-06)와 Gate 판정(G5 Evidence 확인)이 함께 읽는다.
 import { Inject, Injectable } from '@nestjs/common';
 import type { VirtualRun } from '@ff/contracts';
 import { DB, type Db } from '../../../kernel/db';

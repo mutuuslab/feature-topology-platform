@@ -58,7 +58,7 @@ export const UL_CRITERIA: UlCriterion[] = [
   { id: 'QC-UL-03', ko: '한계 주장 근거', condition: '무료·Enterprise 기능 차이 주장에는 공식 비교표 URL(docs.getunleash.io/support/oss-comparison)을 함께 표기한다.', applies: 'AR-08-OS-3' },
   { id: 'QC-UL-04', ko: 'ID 1:1 연결', condition: 'FR-ULOSS-001~014 · UL-OSS-01~14 · IF-FF-01~07이 05_기능요구사항·21_External_Interface 행과 1:1로 대응한다.', applies: 'XLSX 05 · 21 · 모델' },
   { id: 'QC-UL-05', ko: '미실행 표기', condition: '이미지 빌드·기동, 차량 적용, 제품 서버 반입, 사용자 인수를 NOT_RUN으로 표기하고 완료로 쓰지 않는다.', applies: '전 산출물' },
-  { id: 'QC-UL-06', ko: '책임 보상', condition: '무료 에디션 부재 기능마다 보상 책임 Core와 검증 증적을 표에 고정한다.', applies: 'AR-08-OS-3' },
+  { id: 'QC-UL-06', ko: '책임 보상', condition: '무료 에디션 부재 기능마다 보상 책임 Core와 검증 Evidence를 표에 고정한다.', applies: 'AR-08-OS-3' },
   { id: 'QC-UL-07', ko: '화면 경계', condition: '도구 UI에서 승인·발행·Flag 전환을 수행하지 않고 표시값을 판정 근거로 쓰지 않는다.', applies: 'UIUX · UL-OSS-R1 · UI18-S02 · UI30-S04' },
 ];
 
@@ -155,7 +155,7 @@ export const UL_LIMITS: UlLimit[] = [
   { limit: 'Service account 없음', impact: '자동화 자격증명 관리 없음', compensates: 'C47 인증·키 관리 · C44 검증 이력 관리', evidence: '토큰 회전·개인 토큰 0 시험' },
   { limit: 'RBAC 기본 역할만 제공', impact: '세분 권한·직무 분리 불가', compensates: 'C11 RBAC · C47 인증·키 관리', evidence: '권한 우회 차단 시험' },
   { limit: 'SSO · SCIM 없음', impact: '신원 연계·자동 프로비저닝 없음', compensates: 'C11 RBAC · C47 인증·키 관리', evidence: '계정 수명 주기 점검' },
-  { limit: '감사 로그 기본 수준', impact: '변경 이력 증적 부족', compensates: 'C12 감사 이력 관리', evidence: '감사 누락 0 시험' },
+  { limit: '감사 로그 기본 수준', impact: '변경 이력 Evidence 부족', compensates: 'C12 감사 이력 관리', evidence: '감사 누락 0 시험' },
   { limit: 'Signals · Actions · Analytics · Network view 없음', impact: '탐지·자동 대응·관측 통합 없음', compensates: 'C23 수집 · C25 이벤트 이력 · C38 사업 지표', evidence: '관측·대응 경로 시험' },
   { limit: 'Edge 종료(2026-12-31) · Cloud · SLA 없음', impact: '오프라인 Edge·상용 지원 없음', compensates: 'G-01~G-06 운영 Gate · 로컬 평가(C17·C16)', evidence: '미연결 주입 시험(NOT_RUN)' },
   { limit: '서버 1~4대 · SDK 직접 연결 한계', impact: '대규모 팬아웃 불가', compensates: 'C17 로컬 정책 캐시 · C46 보안 배포 관리', evidence: '서명 스냅샷 배포 시험' },
@@ -163,7 +163,7 @@ export const UL_LIMITS: UlLimit[] = [
 
 /** 제약 수준 — 의존 판정 정본은 도구가 아니라 FP 다. 한계 2번의 보상 근거를 화면이 직접 표기한다. */
 export const DEPENDENCY_SOT_COMPENSATION =
-  '도구에 Flag·Variant 의존성 판정이 없으므로 구성·의존관계 정본은 C03 BOM 이, 평가는 C14 Topology·Capability 가 소유한다. 검증 증적은 도구 판정이 아니라 FP 정본 시험이다.';
+  '도구에 Flag·Variant 의존성 판정이 없으므로 구성·의존관계 정본은 C03 BOM 이, 평가는 C14 Topology·Capability 가 소유한다. 검증 Evidence는 도구 판정이 아니라 FP 정본 시험이다.';
 
 // ════════════════════════════════════════════════════════════════════════════
 // 6. 사용 · 미사용 판정

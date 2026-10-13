@@ -13,7 +13,7 @@ async function asRole(page: Page, role: string) {
   }, role);
 }
 
-test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·차단 CONFIRMED) → OpenFeature SDK OFF → 해제 후 ON', async ({ page, request }) => {
+test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·차단 CONFIRMED) → OpenFeature 경계(F3 DISABLED) → IVI flag ON → 차단하면 OFF', async ({ page, request }) => {
   test.setTimeout(120_000);
   await page.goto('/_design');
   await asRole(page, 'operator');
@@ -26,7 +26,7 @@ test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·�
   await expect(steps.getByRole('button').nth(5)).toHaveAttribute('data-status', 'DONE', { timeout: 60_000 });
   for (let i = 0; i < 6; i++) await expect(steps.getByRole('button').nth(i)).toHaveAttribute('data-status', 'DONE');
   await steps.getByRole('button').nth(5).click();
-  const evidence = page.getByRole('region', { name: '증적' });
+  const evidence = page.getByRole('region', { name: 'Evidence' });
   await expect(evidence).toContainText('KILL_SWITCH');
   await expect(evidence).toContainText('MITIGATED');
   await expect(evidence).toContainText(/FB-\d{5}/);
@@ -34,9 +34,9 @@ test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·�
   // 42 컴포넌트 화면 — ⑥ 단계 필터에서 긴급 차단 컴포넌트는 또렷하다
   await page.goto('/arch/components?step=6');
   await expect(page.getByRole('button', { name: /D03-03 긴급 기능 차단 구현/ })).toHaveAttribute('data-dim', 'false');
-  await expect(page.getByRole('button', { name: /D05-05 현장 지원 포털 계획/ })).toHaveAttribute('data-dim', 'true');
+  await expect(page.getByRole('button', { name: /D06-11 보안 취약점 모니터링 계획/ })).toHaveAttribute('data-dim', 'true');
 
-  // OF-3 — PoC 차단을 정리하고, 구독 권한이 있는 KMH-NX4-0001을 따로 차단해 웹 SDK 값 변화를 본다
+  // PoC 차단을 정리하고 OpenFeature 경계·OF-3을 본다 (KMH-NX4-0001)
   // 긴급 차단 v2 — 요청 1 + 서로 다른 2인 승인, 복원은 차단 승인자와 다른 2인(FFG-PLT-005·DEAC-008)
   const H = { 'X-Actor-Id': 'e2e.ops', 'X-Actor-Role': 'OPERATOR' };
   const as = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -54,23 +54,28 @@ test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·�
     }
   };
   await release();
+  // OpenFeature 경계(FFG-OFT-001) — 차량 제어 flag(F3)는 웹 SDK가 값을 받지 않는다: DISABLED + 경계 안내
+  await page.goto('/activation/decide?vin=KMH-NX4-0001&flagKey=care_00022_param');
+  const of = page.getByRole('region', { name: 'OpenFeature 클라이언트 (웹 SDK · OFREP)' });
+  await expect(of.getByTestId('of-guarded')).toBeVisible({ timeout: 15_000 });
+  await expect(of.getByTestId('of-value')).toHaveText('OFF');
+  // OF-3 — IVI 앱 flag(F1)는 SDK가 ON을 받고, 차단하면 ETag 폴링으로 설정 변경을 감지해 OFF(DISABLED)
+  await page.goto('/activation/decide?vin=KMH-NX4-0001&flagKey=ivi_00024_guide');
+  await expect(of.getByTestId('of-value')).toHaveText('ON', { timeout: 15_000 });
+  await expect(of).toContainText('TARGETING_MATCH');
   const k = await post('/api/kill-requests', H, {
-    featureId: 'FEAT-00022',
+    featureId: 'FEAT-00024',
     featureVersion: '1.0.0',
     vins: ['KMH-NX4-0001'],
-    reasonCategory: 'SAFETY',
+    reasonCategory: 'OPERATIONAL',
     reasonCode: 'OF3_CHECK',
-    containmentJustification: 'e2e 봉쇄',
     reason: 'OF-3 확인',
-    confirm: 'FEAT-00022',
+    confirm: 'FEAT-00024',
   });
   await post(`/api/kill-requests/${k.killId}/approvals`, as('e2e.safety', 'SAFETY_OFFICER'), {});
   expect((await post(`/api/kill-requests/${k.killId}/approvals`, as('e2e.lead', 'OPS_LEAD'), {})).status).toBe('ACTIVE');
-  await page.goto('/activation/decide?vin=KMH-NX4-0001&flagKey=care_00022_param');
-  const of = page.getByRole('region', { name: 'OpenFeature 클라이언트 (웹 SDK · OFREP)' });
   await expect(of.getByTestId('of-value')).toHaveText('OFF', { timeout: 15_000 });
   await expect(of).toContainText('DISABLED');
-  await release();
-  await expect(of.getByTestId('of-value')).toHaveText('ON', { timeout: 15_000 });
   await expect(of).toContainText('설정 변경 감지');
+  // 이 차단은 해제하지 않는다 — FEAT-00024 안전 분류에 SBOM 참조가 없어 복원은 정책 게이트(FFG-PLT-010)가 막는다(마지막 시험)
 });

@@ -177,7 +177,7 @@ export function DeploymentDetail() {
                 />
               </Panel>
               <Panel title={D.calls} eyebrow="IF-13 · IF-05" id="calls">
-                <pre className="ds-code">{JSON.stringify(d.calls.map((c) => ({ ifId: c.ifId, at: c.at, request: c.request, response: c.response })), null, 2)}</pre>
+                <pre className="ds-code" tabIndex={0}>{JSON.stringify(d.calls.map((c) => ({ ifId: c.ifId, at: c.at, request: c.request, response: c.response })), null, 2)}</pre>
               </Panel>
             </div>
           </>

@@ -4,7 +4,7 @@
   border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);
   padding:10px 12px;margin-top:10px;
 }
-.vtel[data-streaming="false"]{border-color:#F0C9A8;background:linear-gradient(180deg,#FFFBF6,var(--surface) 60px)}
+.vtel[data-streaming="false"]{border-color:var(--lg-f0c9a8);background:linear-gradient(180deg,var(--lg-fffbf6),var(--surface) 60px)}
 
 .vtel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px dashed var(--line);padding-bottom:8px}
 .vtel-title{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13px}
@@ -42,9 +42,9 @@
 .vtel-empty{margin:6px 4px}
 .vtel-line{display:flex;align-items:center;gap:8px;padding:2px 2px;font-size:11px;border-bottom:1px solid var(--surface-3)}
 .vtel-line:last-child{border-bottom:0}
-.vtel-line:first-child{background:linear-gradient(90deg,rgba(31,157,85,.10),transparent)}
+.vtel-line:first-child{background:linear-gradient(90deg,var(--lg-rgba-31-157-85-p10),transparent)}
 .vtel-badge{margin-left:auto;font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px}
-.vtel-badge.ok{color:var(--pass);background:rgba(31,157,85,.12)}
-.vtel-badge.warn{color:var(--fail);background:rgba(214,69,69,.12)}
+.vtel-badge.ok{color:var(--pass);background:var(--lg-rgba-31-157-85-p12)}
+.vtel-badge.warn{color:var(--fail);background:var(--lg-rgba-214-69-69-p12)}
 .vtel-foot{margin:6px 0 0}
 .vtel-warn{color:var(--fail);font-weight:700}

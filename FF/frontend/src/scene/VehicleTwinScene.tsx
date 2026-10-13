@@ -9,6 +9,7 @@
  * 모든 모션은 `clock.simTimeMs` / `clock.simTick` / `clock.rate` 로만 구동한다.
  * `clock.rate === 0` 이면 부품 펄스 · 흐름 패킷 · 카메라 투어가 전부 멈춘다.
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import { Component, Suspense, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
@@ -452,13 +453,13 @@ function Hud({
           </span>
         ))}
         <span className="veh-legend-item">
-          <span className="veh-legend-line" style={{ borderTopColor: '#3B82F6' }} /> Desired(하강)
+          <span className="veh-legend-line" style={{ borderTopColor: LEGACY_PAL['lg-3b82f6'] }} /> Desired(하강)
         </span>
         <span className="veh-legend-item">
-          <span className="veh-legend-line" style={{ borderTopColor: '#33C27A' }} /> Reported(상승)
+          <span className="veh-legend-line" style={{ borderTopColor: LEGACY_PAL['lg-33c27a'] }} /> Reported(상승)
         </span>
         <span className="veh-legend-item">
-          <span className="veh-legend-line blocked" style={{ borderTopColor: '#D64545' }} /> 차단(사유 코드 표시)
+          <span className="veh-legend-line blocked" style={{ borderTopColor: LEGACY_PAL['lg-d64545'] }} /> 차단(사유 코드 표시)
         </span>
       </div>
 
@@ -602,7 +603,7 @@ export default function VehicleTwinScene({
             camera={{ position: CAMERA_PRESETS[activePreset].pos, fov: 42 }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
             onCreated={({ gl }) => {
-              gl.setClearColor('#080a0f');
+              gl.setClearColor(LEGACY_PAL['lg-080a0f']);
               gl.toneMapping = THREE.ACESFilmicToneMapping;
               gl.toneMappingExposure = 1.05;
             }}
@@ -611,13 +612,13 @@ export default function VehicleTwinScene({
               <ClockDriver clock={clock} node={clockNode.current} />
               <CameraRig preset={activePreset} />
               <ambientLight intensity={0.5} />
-              <hemisphereLight args={['#3a4a66', '#05070b', 0.35]} />
+              <hemisphereLight args={[LEGACY_PAL['lg-3a4a66'], LEGACY_PAL['lg-05070b'], 0.35]} />
               {/* 키 라이트가 그림자를 만든다 — 차체가 바닥에서 떠 보이지 않게 하는 접지감의 근원 */}
               <directionalLight
                 castShadow
                 position={[5.5, 8.5, 4.5]}
                 intensity={2.3}
-                color="#fff6ea"
+                color={LEGACY_PAL['lg-fff6ea']}
                 shadow-mapSize-width={1024}
                 shadow-mapSize-height={1024}
                 shadow-camera-near={1}
@@ -628,7 +629,7 @@ export default function VehicleTwinScene({
                 shadow-camera-bottom={-6}
                 shadow-bias={-0.0006}
               />
-              <directionalLight position={[-6, 4, -5]} intensity={0.5} color="#9fc0ff" />
+              <directionalLight position={[-6, 4, -5]} intensity={0.5} color={LEGACY_PAL['lg-9fc0ff']} />
               {/* 환경맵 — 실 HDRI(Poly Haven studio_small_09, CC0)를 우선 쓰고,
                   로드 실패 시에만 절차적 라이트포머로 폴백한다. 둘 다 금속 페인트·유리가
                   반사할 "무언가"를 제공하는 것이 품질의 핵심이다(§17.4). */}
@@ -643,7 +644,7 @@ export default function VehicleTwinScene({
               )}
               <SceneFloor />
               {/* 접촉 그림자 — 바퀴와 차체 하부의 접지를 강화한다 */}
-              <ContactShadows position={[0, 0.002, 0]} opacity={0.62} scale={16} blur={2.4} far={3.2} resolution={512} color="#000000" />
+              <ContactShadows position={[0, 0.002, 0]} opacity={0.62} scale={16} blur={2.4} far={3.2} resolution={512} color={LEGACY_PAL['lg-000000']} />
               <VehicleModel
                 shell={shell}
                 parts={parts}

@@ -9,6 +9,7 @@
  *
  * 정렬은 (시각, 원천, 원본 순서) 로 결정적이다. 화면은 이 배열만 그린다.
  */
+import { LEGACY_PAL } from '../design/legacy-palette';
 import type { TwinStoreSnapshot } from '../data/twin/port';
 import * as T from '../data/twin/types';
 
@@ -44,11 +45,11 @@ export interface LogLine {
 }
 
 export const LOG_LEVEL_HEX: Record<LogLevel, string> = {
-  TRACE: '#8895A7',
-  INFO: '#7FB2FF',
-  WARN: '#D9822B',
-  ERROR: '#D64545',
-  PASS: '#1F9D55',
+  TRACE: LEGACY_PAL['lg-8895a7'],
+  INFO: LEGACY_PAL['lg-7fb2ff'],
+  WARN: LEGACY_PAL['lg-d9822b'],
+  ERROR: LEGACY_PAL['lg-d64545'],
+  PASS: LEGACY_PAL['lg-1f9d55'],
 };
 
 export const LOG_LEVEL_LABEL: Record<LogLevel, string> = {

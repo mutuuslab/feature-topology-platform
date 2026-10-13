@@ -227,25 +227,25 @@ export function LiveConvergenceMonitor({ snapshot, lang }: { snapshot: TwinStore
         </div>
         <div className="livemon-table" role="table">
           <div className="livemon-tr livemon-th" role="row">
-            <span>tick</span>
-            <span>{t('시각', 'time')}</span>
-            <span>{t('수렴', 'converged')}</span>
-            <span>{t('수렴률', 'rate')}</span>
-            <span>{t('신호', 'telemetry')}</span>
-            <span>{t('신규 로그', 'new log')}</span>
+            <span role="columnheader">tick</span>
+            <span role="columnheader">{t('시각', 'time')}</span>
+            <span role="columnheader">{t('수렴', 'converged')}</span>
+            <span role="columnheader">{t('수렴률', 'rate')}</span>
+            <span role="columnheader">{t('신호', 'telemetry')}</span>
+            <span role="columnheader">{t('신규 로그', 'new log')}</span>
           </div>
           {rows.map((s, i) => (
             <div className="livemon-tr" role="row" key={s.tick} data-testid="livemon-tick-row" data-current={i === 0 ? 'true' : 'false'}>
-              <span className="mono">{s.tick}</span>
-              <span className="mono">{clockOf(s.at)}</span>
-              <span className="mono">
+              <span className="mono" role="cell">{s.tick}</span>
+              <span className="mono" role="cell">{clockOf(s.at)}</span>
+              <span className="mono" role="cell">
                 {s.converged}/{s.total}
               </span>
-              <span className="mono">{s.ratePct}%</span>
-              <span className="mono">
+              <span className="mono" role="cell">{s.ratePct}%</span>
+              <span className="mono" role="cell">
                 {s.fresh}/{s.total}
               </span>
-              <span className="mono">{s.newEvents || '–'}</span>
+              <span className="mono" role="cell">{s.newEvents || '–'}</span>
             </div>
           ))}
         </div>

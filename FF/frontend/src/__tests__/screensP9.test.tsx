@@ -95,7 +95,7 @@ describe('PoC 6단계 러너', () => {
     fireEvent.click(screen.getByRole('button', { name: '새 실행 시작' }));
     const steps = await screen.findByRole('list', { name: 'PoC 6단계 진행' });
     expect(within(steps).getAllByRole('button')).toHaveLength(6);
-    // 현재 단계(②)가 표시되고, ①을 고르면 행위·증적
+    // 현재 단계(②)가 표시되고, ①을 고르면 행위·Evidence
     fireEvent.click(within(steps).getAllByRole('button')[0]);
     expect(await screen.findByText('FEAT-00022 1.0.0 RELEASED')).toBeTruthy();
     expect(screen.getByText('9/9')).toBeTruthy();
@@ -204,4 +204,21 @@ describe('OpenFeature 웹 SDK 패널 (OF-2·3)', () => {
     await waitFor(() => expect(screen.getByTestId('of-value').textContent).toBe('OFF'), { timeout: 3000 });
     expect(screen.getByText(/설정 변경 감지/)).toBeTruthy();
   });
+});
+
+describe('OpenFeature 경계 (FFG-OFT-001)', () => {
+  it('F2 이상 flag는 DISABLED·decided_by=vehicle_safety_guard — 서버 판단과 달라도 불일치(FAIL)가 아니라 경계 안내', async () => {
+    handler = (url) => (url.includes('/ofrep/v1/evaluate/flags') ? { headers: { ETag: '"g1"' }, body: { flags: [{ key: 'care_00022_param', value: false, variant: 'safe_default', reason: 'DISABLED', metadata: { decided_by: 'vehicle_safety_guard', f_class: 'F3' } }] } } : undefined);
+    mount('/a', '/a', <OpenFeaturePanel vin="ego-01" flagKey="care_00022_param" serverValue={true} pollInterval={60} />);
+    expect(await screen.findByTestId('of-guarded')).toBeTruthy();
+    expect(screen.queryByText('FAIL')).toBeNull();
+    expect(screen.getByRole('link', { name: 'OpenFeature 범위 보기' })).toBeTruthy();
+  });
+});
+
+it('웹 SDK bulk에 F2 이상 키가 없으면(FFG-OFT-005) FLAG_NOT_FOUND — 서버에는 배포돼 있으므로 경계 안내', async () => {
+  handler = (url) => (url.includes('/ofrep/v1/evaluate/flags') ? { headers: { ETag: '"g2"' }, body: { flags: [{ key: 'ivi_00024_guide', value: true, variant: 'on', reason: 'TARGETING_MATCH', metadata: {} }] } } : undefined);
+  mount('/a', '/a', <OpenFeaturePanel vin="ego-01" flagKey="care_00022_param" serverValue={true} pollInterval={60} />);
+  expect(await screen.findByTestId('of-guarded')).toBeTruthy();
+  expect(screen.queryByText('FAIL')).toBeNull();
 });

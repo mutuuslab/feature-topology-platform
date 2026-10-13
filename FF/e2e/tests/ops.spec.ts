@@ -89,7 +89,7 @@ test('긴급 차단 v2: 요청 → FSM·운영 리더 승인 → 게이트·서�
   await expect(drawer.getByRole('meter').last()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });
 });
 
-test('vECU 가상검증: 실행(시험 대역) → 결과·증적 → TMS 제출(품질)', async ({ page }) => {
+test('vECU 가상검증: 실행(시험 대역) → 결과·Evidence → TMS 제출(품질)', async ({ page }) => {
   await asRole(page, 'author');
   await page.goto('/validations/virtual');
   const run = page.getByRole('button', { name: '가상검증 실행' });

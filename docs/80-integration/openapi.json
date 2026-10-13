@@ -6421,7 +6421,7 @@
         }
       },
       "post": {
-        "summary": "정책을 vECU 가상 차량에 적용해 시나리오 실행 (판정·증적)",
+        "summary": "정책을 vECU 가상 차량에 적용해 시나리오 실행 (판정·Evidence)",
         "tags": [
           "D06-03"
         ],
@@ -6482,7 +6482,7 @@
     },
     "/api/virtual-validations/{id}": {
       "get": {
-        "summary": "가상검증 결과 (기준별 판정·증적 해시·TMS)",
+        "summary": "가상검증 결과 (기준별 판정·Evidence 해시·TMS)",
         "tags": [
           "D06-03"
         ],
@@ -6512,7 +6512,7 @@
     },
     "/api/virtual-validations/{id}/files/{name}": {
       "get": {
-        "summary": "가상검증 증적 파일 (보고서·텔레메트리)",
+        "summary": "가상검증 Evidence 파일 (보고서·텔레메트리)",
         "tags": [
           "D06-03"
         ],
@@ -6550,7 +6550,7 @@
     },
     "/api/virtual-validations/{id}/tms": {
       "post": {
-        "summary": "IF-09 TMS 증적 제출 (G5 근거)",
+        "summary": "IF-09 TMS Evidence 제출 (G5 근거)",
         "tags": [
           "D04-02"
         ],
@@ -7318,7 +7318,7 @@
     },
     "/api/poc/runs/{id}": {
       "get": {
-        "summary": "PoC 실행 — 단계·행위·증적",
+        "summary": "PoC 실행 — 단계·행위·Evidence",
         "tags": [
           "KERNEL"
         ],
@@ -7407,6 +7407,1340 @@
         "parameters": [
           {
             "name": "minutes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/experiments": {
+      "get": {
+        "summary": "실험 목록 (A/B·Shadow)",
+        "tags": [
+          "D01-07"
+        ],
+        "operationId": "experiments",
+        "parameters": [
+          {
+            "name": "policyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "실험 등록 — F2 이상은 Shadow만 (FFG-CLS-006)",
+        "tags": [
+          "D01-07"
+        ],
+        "operationId": "createExperiment",
+        "description": "허용 역할: Feature 작성자, Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "policyId": {
+                    "type": "string",
+                    "pattern": "^POL-\\d{5}$"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "AB",
+                      "SHADOW"
+                    ]
+                  },
+                  "hypothesis": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 300
+                  },
+                  "metric": {
+                    "type": "string",
+                    "enum": [
+                      "FAULT_RATE",
+                      "HARSH_DECEL_RATE",
+                      "ENGAGEMENT",
+                      "DECISION_AGREEMENT"
+                    ]
+                  },
+                  "treatmentBp": {
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 5000
+                  },
+                  "minSamples": {
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 100000,
+                    "default": 1000
+                  }
+                },
+                "required": [
+                  "policyId",
+                  "type",
+                  "hypothesis",
+                  "metric",
+                  "treatmentBp"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/experiments/{id}": {
+      "get": {
+        "summary": "실험 상세 + 효과 추정",
+        "tags": [
+          "D01-07"
+        ],
+        "operationId": "experiment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/experiments/{id}/start": {
+      "post": {
+        "summary": "실험 시작",
+        "tags": [
+          "D01-07"
+        ],
+        "operationId": "startExperiment",
+        "description": "허용 역할: Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/experiments/{id}/conclude": {
+      "post": {
+        "summary": "실험 종료·결정 (채택·기각·연장)",
+        "tags": [
+          "D01-07"
+        ],
+        "operationId": "concludeExperiment",
+        "description": "허용 역할: Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "ADOPT",
+                      "REJECT",
+                      "EXTEND"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "decision",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/incidents": {
+      "get": {
+        "summary": "현장 장애·VOC 이력",
+        "tags": [
+          "D04-05"
+        ],
+        "operationId": "incidents",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "장애·VOC 접수 — SOTIF 트리거면 이상 징후로 (FFG-SOT-003)",
+        "tags": [
+          "D04-05"
+        ],
+        "operationId": "createIncident",
+        "description": "허용 역할: 운영자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "FIELD",
+                      "VOC",
+                      "DEALER"
+                    ]
+                  },
+                  "vin": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 3,
+                    "default": null
+                  },
+                  "featureId": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^FEAT-\\d{5}$",
+                    "default": null
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "UNEXPECTED_ACTIVATION",
+                      "NO_ACTIVATION",
+                      "PERFORMANCE",
+                      "HMI",
+                      "OTHER"
+                    ]
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "INFO",
+                      "WARNING",
+                      "CRITICAL"
+                    ]
+                  },
+                  "summary": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 500
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "default": null
+                  }
+                },
+                "required": [
+                  "source",
+                  "category",
+                  "severity",
+                  "summary"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/incidents/import-voc": {
+      "post": {
+        "summary": "고객센터 VOC 가져오기 (모의 원천)",
+        "tags": [
+          "D04-05"
+        ],
+        "operationId": "importVoc",
+        "description": "허용 역할: 운영자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/sync/targets": {
+      "get": {
+        "summary": "동기화 대상 (시장 구분 — CN 국외 이전 보류, FFG-TEL-005)",
+        "tags": [
+          "D05-02"
+        ],
+        "operationId": "syncTargets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/sync/runs": {
+      "get": {
+        "summary": "동기화·대사 실행 이력",
+        "tags": [
+          "D05-02"
+        ],
+        "operationId": "syncRuns",
+        "parameters": [
+          {
+            "name": "targetId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "동기화·대사 실행",
+        "tags": [
+          "D05-02"
+        ],
+        "operationId": "runSync",
+        "description": "허용 역할: 운영자, 시스템, 차량 사양·Variant 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "targetId": {
+                    "type": "string",
+                    "pattern": "^SYNC-[A-Z0-9-]+$"
+                  }
+                },
+                "required": [
+                  "targetId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/legacy/mappings": {
+      "get": {
+        "summary": "레거시 옵션 코드 ↔ FEAT 매핑",
+        "tags": [
+          "D05-03"
+        ],
+        "operationId": "legacyMappings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/legacy/orders": {
+      "get": {
+        "summary": "해외공장 주문 해석 결과",
+        "tags": [
+          "D05-03"
+        ],
+        "operationId": "legacyOrders",
+        "parameters": [
+          {
+            "name": "plant",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/legacy/orders/import": {
+      "post": {
+        "summary": "해외공장 주문 가져오기 (IF-12) → 옵션 코드 해석",
+        "tags": [
+          "D05-03"
+        ],
+        "operationId": "importPlantOrders",
+        "description": "허용 역할: 운영자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "plant": {
+                    "type": "string",
+                    "enum": [
+                      "TMA",
+                      "HMA",
+                      "HMGC"
+                    ]
+                  }
+                },
+                "required": [
+                  "plant"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/legacy-sdv/vehicles": {
+      "get": {
+        "summary": "비SDV(레거시) 차량",
+        "tags": [
+          "D05-07"
+        ],
+        "operationId": "legacyVehicles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/legacy-sdv/translate": {
+      "post": {
+        "summary": "Feature 켜기·끄기 → 딜러 코딩 계획 (F2 이상 거부)",
+        "tags": [
+          "D05-07"
+        ],
+        "operationId": "translateLegacy",
+        "description": "허용 역할: 운영자, 차량 사양·Variant 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vin": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "enable": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "vin",
+                  "featureId",
+                  "enable"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/field/vehicles/{vin}": {
+      "get": {
+        "summary": "현장 지원 — 차량 종합 조회",
+        "tags": [
+          "D05-05"
+        ],
+        "operationId": "fieldVehicle",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/field/cases": {
+      "post": {
+        "summary": "현장 접수 → 장애·VOC(D04-05)",
+        "tags": [
+          "D05-05"
+        ],
+        "operationId": "createFieldCase",
+        "description": "허용 역할: 운영자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vin": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "featureId": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^FEAT-\\d{5}$",
+                    "default": null
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "UNEXPECTED_ACTIVATION",
+                      "NO_ACTIVATION",
+                      "PERFORMANCE",
+                      "HMI",
+                      "OTHER"
+                    ]
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "INFO",
+                      "WARNING",
+                      "CRITICAL"
+                    ]
+                  },
+                  "summary": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 500
+                  },
+                  "dealer": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  }
+                },
+                "required": [
+                  "vin",
+                  "category",
+                  "severity",
+                  "summary",
+                  "dealer"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/systems": {
+      "get": {
+        "summary": "IF-01~13 연결 현황 (모의·실연동·호출 수)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "integrationSystems",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/alm/requirements": {
+      "get": {
+        "summary": "IF-01 ALM 요구사항 (Feature Version별)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "almRequirements",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/supplier/deliveries": {
+      "get": {
+        "summary": "IF-08 협력사 SW 납품",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "supplierDeliveries",
+        "parameters": [
+          {
+            "name": "supplier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/otel/spans": {
+      "get": {
+        "summary": "IF-11 OpenTelemetry 수집기 (모의) — 평가·이벤트 span",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "otelSpans",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/openfeature/scope": {
+      "get": {
+        "summary": "OpenFeature 반영 범위 (OF-1~7·경계·SDK 고정·flag 목록)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "openfeatureScope",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/openfeature/flagd": {
+      "get": {
+        "summary": "flagd 내보내기 — F0·F1만, defaultVariant=off (FFG-OFT-005·002)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "openfeatureFlagd",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/openfeature/manifest": {
+      "get": {
+        "summary": "OF-7 flag 매니페스트(OpenFeature CLI) + 기본값 규율",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "openfeatureManifest",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/vehicles/{vin}/openfeature": {
+      "get": {
+        "summary": "OF-6 차량 내장 provider 평가 — IVI 앱용, F2 이상은 기본값·DISABLED",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "vehicleOpenFeature",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/ecu": {
+      "get": {
+        "summary": "ECU 마스터 (+ 탑재 SW·Feature 수)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterEcu",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/sw": {
+      "get": {
+        "summary": "SW·Artifact 마스터 (+ 쓰는 Feature)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterSw",
+        "parameters": [
+          {
+            "name": "ecuPno",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/structure": {
+      "get": {
+        "summary": "SW 구조 — ECU → SW → Function → Feature",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterStructure",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/upg": {
+      "get": {
+        "summary": "UPG-VC — 지원 Feature·Fleet 차량",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterUpg",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/control-points": {
+      "get": {
+        "summary": "제어점 — Control Point와 정책 flag 묶음(BD-06)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterControlPoints",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/master/taxonomy": {
+      "get": {
+        "summary": "Taxonomy — 태그·범위별 Feature",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "masterTaxonomy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trace/{id}/{ver}": {
+      "get": {
+        "summary": "요구·안전 추적 — 요구 → Function → SW → ECU, Gate·Evidence, 안전 분류",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "designTrace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/evidence": {
+      "get": {
+        "summary": "Evidence 원장 (Gate 판정 Evidence)",
+        "tags": [
+          "D04-02"
+        ],
+        "operationId": "evidenceLedger",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "gate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "result",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/changes": {
+      "get": {
+        "summary": "변경 이력 — Version 변경 사유(변경요청)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "versionChanges",
+        "parameters": [
+          {
+            "name": "featureId",
             "in": "query",
             "required": false,
             "schema": {

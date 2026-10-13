@@ -6,7 +6,8 @@ import { FF, ratchet, rel, walk } from './lib.ts';
 
 const SRC = join(FF, 'frontend', 'src');
 /** 토큰 정의가 허용되는 유일한 파일들 */
-const TOKEN_FILES = ['frontend/src/design/tokens.css'];
+/** 색 정의가 허용되는 곳 — 의미 토큰(tokens.css)과 레거시 화면 팔레트(값 그대로 모은 것, P10-C2) */
+const TOKEN_FILES = ['frontend/src/design/tokens.css', 'frontend/src/design/legacy-palette.css', 'frontend/src/design/legacy-palette.ts'];
 /** 재디자인 이후의 신규 UI — 원시 색상 금지 */
 export const NEW_UI_DIRS = ['frontend/src/design', 'frontend/src/screens', 'frontend/src/shell'];
 

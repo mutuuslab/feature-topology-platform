@@ -106,7 +106,7 @@ describe('운영 되먹임 — 이상 징후 대응 · 품질 피드백', () => 
 
   it('배포 회신 PARTIAL(통신 단절 차량) → DELIVERY 이상(재전달 권고), 기각 가능 — 피드백은 만들지 않는다', async () => {
     advance(10_000);
-    const r = (await http().get('/api/anomalies?kind=DELIVERY').expect(200)).body.items[0];
+    const r = (await http().get('/api/anomalies?kind=DELIVERY&featureId=FEAT-00022').expect(200)).body.items[0];
     expect(r).toMatchObject({ featureId: 'FEAT-00022', advice: 'REDELIVER' });
     expect(r.signals.map((s: any) => s.code)).toContain('PARTIAL');
     await http().post(`/api/anomalies/${r.anomalyId}/mitigate`).set(OPERATOR).send({ reason: '통신 복구 후 재전달 예정' }).expect(200);

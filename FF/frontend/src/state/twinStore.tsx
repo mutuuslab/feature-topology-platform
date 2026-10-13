@@ -20,7 +20,7 @@ import { MockTwinProvider } from '../data/twin/simulator';
 import type { RolloutState, TwinStoreSnapshot } from '../data/twin/port';
 import * as T from '../data/twin/types';
 import * as E from '../data/twin/engine';
-import { useAppApi, useAppShell } from '../store';
+import { useAppShell } from '../store';
 import { useMotionTick } from './motion';
 
 /** 결정적 데모 기준 시각 — 시드 Fleet 의 상대 시각이 모두 여기서 파생된다. */
@@ -108,7 +108,8 @@ function clockish(ms: number): string {
 }
 
 export function TwinProvider({ children }: { children: ReactNode }) {
-  const { dispatch } = useAppApi();
+  // 시뮬레이션 조작 기록 — 화면 세션 안에서만 보관한다(서버 감사 이력은 /audit).
+  const auditTrail = useRef<{ ts: string; actor: string; action: string; target: string; detail: string }[]>([]);
   const { role: actor } = useAppShell();
   const [provider] = useState(() => createTwinProvider());
   const persisted = useMemo(loadPersisted, []);
@@ -141,8 +142,8 @@ export function TwinProvider({ children }: { children: ReactNode }) {
 
   const audit = useCallback(
     (action: string, target: string, detail: string) =>
-      dispatch({ t: 'AUDIT', entry: { ts: clockish(provider.getSnapshot().clock.simTimeMs), actor, action, target, detail } }),
-    [dispatch, actor, provider],
+      void (auditTrail.current = [{ ts: clockish(provider.getSnapshot().clock.simTimeMs), actor, action, target, detail }, ...auditTrail.current].slice(0, 200)),
+    [actor, provider],
   );
 
   const setRate = useCallback((next: 0 | 1 | 5) => setRateState(next), []);

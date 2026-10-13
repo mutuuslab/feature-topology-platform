@@ -13,6 +13,7 @@ import { ActivationService } from './activation/activation.service';
 import { KILL_STATE } from './activation/kill-state';
 import { KillRepo } from '../d03-safety/kill-switch/kill.repo';
 import { IfCallRepo } from '../../adapters/if-call/if-call.repo';
+import { MasterDataController, MasterDataService } from './topology/master.controller';
 import { VirtualRunRepo } from '../d06-qsec/scenario-validation/virtual-run.repo';
 import { EntitlementService } from './entitlement/entitlement.service';
 import { FleetRepo, PolicyRepo } from './policy-repos';
@@ -25,8 +26,8 @@ import { TopologyService } from './topology/topology.service';
 
 @Module({
   imports: [TrustModule],
-  controllers: [AuditHistoryController, SafetyProfileController, RegistryController, BaselineController, TopologyController, CatalogController],
-  providers: [
+  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, RegistryController, BaselineController, TopologyController, CatalogController],
+  providers: [MasterDataService, 
     KillRepo,
     VirtualRunRepo, // vECU 가상검증 기록 — 검증기·Gate 판정이 함께 읽는다
     IfCallRepo,

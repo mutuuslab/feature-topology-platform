@@ -297,9 +297,10 @@ button.ds-gate:hover {
 .ds-gate__name {
   font-size: var(--fs-xs);
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.25;
+  /* 좁은 레일에서도 이름을 자르지 않는다 — 최대 두 줄, 칸 높이는 두 줄로 맞춘다 */
+  white-space: normal;
+  min-height: 2.5em;
   max-width: 100%;
 }
 .ds-gate__status {

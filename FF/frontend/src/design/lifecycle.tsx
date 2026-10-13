@@ -60,7 +60,8 @@ export function GateRail({ statuses, onSelect }: { statuses: Partial<Record<Gate
               <StatusGlyph kind={k} size={10} />
               {g}
             </span>
-            <span className="ds-gate__name">{GATE_META[g].name}</span>
+            {/* "Safety/Security Gate" 같은 긴 이름은 "/" 뒤에서 줄바꿈 — 말줄임으로 자르지 않는다(1366 회귀) */}
+            <span className="ds-gate__name">{GATE_META[g].name.replace('/', '/\u200b')}</span>
             <span className="ds-gate__status">{ko.gate[k]}</span>
           </Tag>
         );

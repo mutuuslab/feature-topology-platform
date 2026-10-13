@@ -225,6 +225,8 @@ export interface ApprovalSlot {
 
 function elapsed(from: string, now: number): string {
   const s = Math.max(0, Math.round((now - Date.parse(from)) / 1000));
+  // 1시간 이상은 시·분으로(승인 대기가 길어지면 mm:ss는 읽기 어렵다)
+  if (s >= 3600) return `${Math.floor(s / 3600)}시간 ${Math.floor((s % 3600) / 60)}분`;
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 

@@ -200,6 +200,8 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
     const dlg = await screen.findByRole('dialog');
     await within(dlg).findByText('요청자는 같은 명령을 승인할 수 없습니다(직무 분리)');
     expect((within(dlg).getByRole('button', { name: '승인 — 개인 서명' }) as HTMLButtonElement).disabled).toBe(true);
+    // 회귀: FSM이 필요한 칸은 하나 — 두 칸 모두 FSM으로 보이던 문제
+    expect([...dlg.querySelectorAll('.ds-approvals__slot .ds-eyebrow .ds-rule-id')].map((x) => x.textContent)).toEqual(['FSM', 'CSM·운영 리더 등']);
     cleanup();
     handler = (url, init) =>
       url.startsWith('/api/kill-requests/KILL-') && init?.method !== 'POST'

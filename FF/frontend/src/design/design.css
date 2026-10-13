@@ -906,8 +906,13 @@ textarea.ds-input {
   gap: var(--sp-4);
   align-items: start;
 }
+/* 오른쪽도 표를 담는 화면(긴급 차단 이력 등) — 3:2 */
+.ds-split--wide-side {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
 @media (max-width: 1279px) {
-  .ds-split {
+  .ds-split,
+  .ds-split--wide-side {
     grid-template-columns: minmax(0, 1fr);
   }
 }

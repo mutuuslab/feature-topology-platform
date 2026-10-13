@@ -120,3 +120,21 @@ describe('차량 회신 조치 (보고서 9.3)', () => {
     expect(container.textContent).toContain('같은 명령 재발행');
   });
 });
+
+describe('승인 칸 대기 시간', () => {
+  it('1시간 미만은 mm:ss, 1시간 이상은 시·분 — 오래 밀린 승인도 읽힌다', () => {
+    const now = Date.parse('2026-10-13T03:00:00Z');
+    render(
+      <ApprovalSlots
+        requester={{ id: 'usr-operator' }}
+        slots={[
+          { role: 'FSM', waitingSince: '2026-10-13T02:58:30Z' },
+          { role: 'OPS_LEAD', waitingSince: '2026-10-13T00:55:00Z' },
+        ]}
+        now={now}
+      />,
+    );
+    expect(screen.getByText(/01:30/)).toBeTruthy();
+    expect(screen.getByText(/2시간 5분/)).toBeTruthy();
+  });
+});

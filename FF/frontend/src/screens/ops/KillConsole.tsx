@@ -38,6 +38,7 @@ import {
   PageHeader,
   Panel,
   RuleChecklist,
+  RuleText,
   Select,
   StageStrip,
   WindowGauge,
@@ -202,7 +203,16 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   const needContainment = safetyF2 && !recall.trim() && !containment.trim();
   const locked = !!reg && (reg.deact_class === 'DC4' || reg.gsr_mandatory);
   const fsm = !!reg && approvalPlan(reg.f_class, 'deactivate', category).fsm;
-  const ready = !!p && !p.activeKill && !locked && vins.length > 0 && reason.trim().length >= 2 && /^[A-Z0-9_]{3,40}$/.test(code) && !needContainment && perm.ok;
+  const missing = [
+    !perm.ok && (perm.hint ?? ''),
+    p?.activeKill && K.activeKill,
+    locked && K.lockedDc4,
+    p && !vins.length && K.needVehicles,
+    !/^[A-Z0-9_]{3,40}$/.test(code) && K.needCode,
+    needContainment && K.containment,
+    reason.trim().length < 2 && ko.page.reason,
+  ].filter(Boolean) as string[];
+  const ready = !!p && !missing.length;
   return (
     <Panel
       title={
@@ -237,6 +247,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
                   { k: K.flags, v: <span className="ds-mono">{p.flagKeys.join(', ') || '—'}</span> },
                 ]}
               />
+              {reg && !locked && <span className="ds-eyebrow ds-eyebrow--ko">{K.deactStages}</span>}
               {reg && !locked && (
                 <StageStrip
                   caption={K.deactStages}
@@ -288,7 +299,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
               <Field label={K.recall}>
                 <input className="ds-input ds-input--mono" value={recall} onChange={(e) => setRecall(e.target.value)} />
               </Field>
-              <Field label={K.containment} hint={needContainment ? K.containmentNeed : undefined}>
+              <Field label={K.containment} hint={needContainment ? <RuleText text={K.containmentNeed} /> : undefined}>
                 <input className="ds-input" value={containment} onChange={(e) => setContainment(e.target.value)} />
               </Field>
             </>
@@ -299,10 +310,11 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
         </Field>
         {p && reg && <RuleChecklist live caption={K.checks} items={gateItems(p.checks, fsm)} />}
         <ErrorNote error={issue.error} />
-        <div>
+        <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
           <Button variant="danger" icon="alert" disabled={!ready || issue.isPending} title={perm.hint} onClick={() => setConfirm(true)}>
             {K.issue}
           </Button>
+          {p && missing.length > 0 && <span className="ds-field__hint">{K.needs(missing)}</span>}
         </div>
       </div>
       <DangerConfirm
@@ -372,10 +384,12 @@ function ApprovalBox({
   const myReport = reportRolesOf((PLATFORM_ROLES[perm.role] ?? []) as Role[]);
   const check = approvalCheck({ requestedBy, approvals, plan: { count: 2, fsm }, excluded }, { id: me.id, roles: myReport });
   const hasFsm = approvals.some((a) => a.role === 'FSM');
+  // 빈 칸 역할: FSM이 필요하고 아직 없으면 첫 빈 칸이 FSM, 나머지는 그 밖의 승인 역할
   const slots: ApprovalSlot[] = [0, 1].map((i) => {
     const a = approvals[i];
-    const role = fsm && !hasFsm && i === approvals.length ? 'FSM' : (a?.role ?? (fsm && !hasFsm ? 'FSM' : 'FSM · CSM · OPS_LEAD …'));
-    return { role, approver: a ? { id: a.approverId, signedAt: a.signedAt } : null, waitingSince: a ? null : since };
+    if (a) return { role: a.role, approver: { id: a.approverId, signedAt: a.signedAt } };
+    const fsmSlot = fsm && !hasFsm && i === approvals.length;
+    return { role: fsmSlot ? 'FSM' : K.anyApprover, approver: null, waitingSince: since };
   });
   const blocked =
     'code' in check
@@ -469,7 +483,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
           {k.command && (
             <KeyValue
               rows={[
-                { k: K.command, v: <span className="ds-mono">{k.command.commandId}</span> },
+                { k: K.command, v: <span className="ds-mono" title={k.command.commandId}>{`${k.command.commandId.slice(0, 8)}…`}</span> },
                 { k: K.commandSeq, v: <span className="ds-mono">{k.command.commandSeq}</span>, note: `${K.kid} ${k.command.kid}` },
               ]}
             />
@@ -480,11 +494,10 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               rows={env.data.envelopes}
               rowKey={(e) => `${e.request}-${e.scope.vehicle_ids[0]}`}
               columns={[
-                { key: 'v', header: K.envCol.vin, cell: (e) => <span className="ds-mono">{e.scope.vehicle_ids[0]}</span> },
+                { key: 'v', header: K.envCol.vin, cell: (e) => <span className="ds-mono ds-nowrap">{e.scope.vehicle_ids[0]}</span> },
                 { key: 'r', header: K.envCol.request, cell: (e) => <span className="ds-mono">{e.request}</span> },
-                { key: 'e', header: K.envCol.epoch, cell: (e) => <span className="ds-mono">{e.vehicle_auth.key_epoch}</span>, align: 'right' },
-                { key: 's', header: K.envCol.seq, cell: (e) => <span className="ds-mono">{e.vehicle_auth.vehicle_seq}</span>, align: 'right' },
-                { key: 'a', header: K.envCol.auth, cell: (e) => <span className="ds-mono">{e.vehicle_auth.cmd_auth}</span> },
+                { key: 's', header: K.envCol.seq, cell: (e) => <span className="ds-mono ds-nowrap">{`e${e.vehicle_auth.key_epoch} · #${e.vehicle_auth.vehicle_seq}`}</span> },
+                { key: 'a', header: K.envCol.auth, cell: (e) => <span className="ds-mono" title={e.vehicle_auth.cmd_auth}>{`${e.vehicle_auth.cmd_auth.slice(0, 8)}…`}</span> },
               ]}
             />
           )}
@@ -578,7 +591,7 @@ export function KillConsole() {
   return (
     <div className="ds-screen">
       <PageHeader eyebrow="D03-03 · D03-04 · KILL / RESTORE" title={K.title} lead={K.lead} />
-      <div className="ds-split">
+      <div className="ds-split ds-split--wide-side">
         <NewKill onDone={(k) => setOpen(k.killId)} />
         <Panel title={K.list} id="kills">
           <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
@@ -588,10 +601,19 @@ export function KillConsole() {
               rowKey={(k) => k.killId}
               onOpen={(k) => setOpen(k.killId)}
               columns={[
-                { key: 'id', header: K.col.id, cell: (k) => <span className="ds-mono">{k.killId}</span>, sort: (k) => k.killId },
-                { key: 'f', header: K.col.feature, cell: (k) => <span className="ds-mono">{k.featureIds.join(', ')}</span> },
-                { key: 'n', header: K.col.scope, cell: (k) => <span className="ds-mono">{k.vins.length}</span>, align: 'right' },
-                { key: 'm', header: K.col.mode, cell: (k) => (k.version === 2 ? <ClassBadges dc={k.deactClass} short /> : <span className="ds-tag">{K.legacy}</span>) },
+                {
+                  key: 'id',
+                  header: K.col.id,
+                  cell: (k) => (
+                    <span style={{ display: 'grid', gap: 2 }} title={when(k.requestedAt)}>
+                      <span className="ds-mono ds-nowrap">{k.killId}</span>
+                      <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>
+                        {K.rowScope(k.featureIds.join(', '), k.vins.length)}
+                      </span>
+                    </span>
+                  ),
+                  sort: (k) => k.killId,
+                },
                 {
                   key: 's',
                   header: K.col.status,
@@ -599,13 +621,12 @@ export function KillConsole() {
                     k.status === 'ACTIVE' ? (
                       <PubStatus status={k.delivery?.status ?? 'SIGNED'} />
                     ) : k.status === 'REQUESTED' ? (
-                      <span className="ds-tag">{`${K.status.REQUESTED} · ${K.approvalsCount(k.approvals?.length ?? 0)}`}</span>
+                      <span className="ds-tag">{K.approvalsCount(k.approvals?.length ?? 0)}</span>
                     ) : (
                       <span className="ds-mono">{K.status[k.status]}</span>
                     ),
                 },
                 { key: 'd', header: K.col.delivery, cell: (k) => <Progress d={k.status === 'RELEASED' ? k.restore : k.delivery} /> },
-                { key: 'at', header: K.col.at, cell: (k) => <span className="ds-mono">{when(k.requestedAt)}</span>, sort: (k) => k.requestedAt },
               ]}
             />
           </AsyncView>

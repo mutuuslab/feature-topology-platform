@@ -2,12 +2,15 @@
 // 차량 런타임(D02-03)으로 보내고, 차량 회신(IF-06 → 운영 데이터 수집 D04-03)을 P0 aggregate로 집계한다(BD-12).
 import { z } from 'zod';
 import { PolicySchema } from './policy';
+import { ApproverRole, DeactClass, FClass, REASON_CATEGORIES } from './safety';
 
 export const SafeMode = z.enum(['SAFE_DEFAULT', 'SAFE_STOP']);
 export type SafeMode = z.infer<typeof SafeMode>;
 
 export const PublicationKind = z.enum(['POLICY', 'KILL', 'RESTORE']);
 export type PublicationKind = z.infer<typeof PublicationKind>;
+/** 게시본 종류별 서명 키 용도 — 차량은 기대 용도의 kid로 서명된 것만 받는다(FFG-SEC-002) */
+export const PUBLICATION_KEY_PURPOSE = { POLICY: 'policy', KILL: 'kill', RESTORE: 'restore' } as const satisfies Record<PublicationKind, string>;
 
 /** SIGNED → DISPATCHED → (회신 집계) CONFIRMED | PARTIAL | DIVERGED, 기한 초과 시 TIMEOUT */
 export const PublicationStatus = z.enum(['SIGNED', 'DISPATCHED', 'CONFIRMED', 'PARTIAL', 'DIVERGED', 'TIMEOUT']);
@@ -81,7 +84,39 @@ export type ReadbackBody = z.infer<typeof ReadbackBody>;
 
 // ---- 긴급 기능 차단(D03-03) · 이전 상태 복구(D03-04) ----
 
-export const KillStatus = z.enum(['ACTIVE', 'RELEASED']);
+/** v2: REQUESTED(승인 대기) → ACTIVE(게이트 통과·서명·전달) → RELEASED(복원), 또는 REJECTED(승인 거절·게이트 실패) · EXPIRED(승인 기한 경과). v1 레거시 행은 ACTIVE·RELEASED만 */
+export const KillStatus = z.enum(['REQUESTED', 'ACTIVE', 'RELEASED', 'REJECTED', 'EXPIRED']);
+export type KillStatus = z.infer<typeof KillStatus>;
+
+/** 승인 1건 — 승인자 개인 키로 승인 대상(approvalSubject, JCS)에 서명 */
+export const KillApprovalRecord = z.object({
+  approverId: z.string(),
+  platformRole: z.string(),
+  role: ApproverRole,
+  signedAt: z.string(),
+  kid: z.string(),
+  sig: z.string(),
+  comment: z.string().nullable().default(null),
+});
+export type KillApprovalRecord = z.infer<typeof KillApprovalRecord>;
+
+/** 게이트 판정 요약(명령마다) */
+export const KillGateSummary = z.object({ result: z.enum(['PASS', 'FAIL', 'SCHEMA_FAIL']), failed: z.array(z.string()), at: z.string() });
+/** 서명·발행된 명령(kill_command v2) 요약 — 본문 전체와 차량별 봉투는 /envelopes */
+export const KillCommandRef = z.object({ commandId: z.string(), commandSeq: z.number().int(), kid: z.string(), signature: z.string(), issuedAt: z.string(), envelopes: z.number().int() });
+
+export const RestoreRequest = z.object({
+  requestedBy: z.string(),
+  requestedAt: z.string(),
+  reason: z.string(),
+  status: z.enum(['REQUESTED', 'APPROVED', 'REJECTED']),
+  approvals: z.array(KillApprovalRecord),
+  gate: KillGateSummary.nullable().default(null),
+  command: KillCommandRef.nullable().default(null),
+  rejectedBy: z.string().nullable().default(null),
+  rejectReason: z.string().nullable().default(null),
+});
+export type RestoreRequest = z.infer<typeof RestoreRequest>;
 
 export const KillRequestSchema = z.object({
   killId: z.string().regex(/^KILL-\d{5}$/),
@@ -91,9 +126,26 @@ export const KillRequestSchema = z.object({
   featureIds: z.array(z.string()),
   flagKeys: z.array(z.string()),
   vins: z.array(z.string()),
-  safeMode: SafeMode,
+  /** v1 레거시(운영자가 고르던 안전 모드) — v2 명령에는 없다. 비활성화 방식은 Registry 등급(deactClass) */
+  safeMode: SafeMode.optional(),
   reason: z.string(),
   status: KillStatus,
+  // ── v2 (보고서 v1.1) — 레거시 행에는 없다 ──
+  version: z.literal(2).optional(),
+  reasonCategory: z.enum(REASON_CATEGORIES).optional(),
+  reasonCode: z.string().optional(),
+  fClass: FClass.optional(),
+  deactClass: DeactClass.optional(),
+  fsmRequired: z.boolean().optional(),
+  approvals: z.array(KillApprovalRecord).optional(),
+  expiresAt: z.string().optional(),
+  recallCampaignId: z.string().nullable().optional(),
+  containmentJustification: z.string().nullable().optional(),
+  gate: KillGateSummary.nullable().optional(),
+  command: KillCommandRef.nullable().optional(),
+  rejectedBy: z.string().nullable().optional(),
+  rejectReason: z.string().nullable().optional(),
+  restoreRequest: RestoreRequest.nullable().optional(),
   requestedBy: z.string(),
   requestedAt: z.string(),
   publicationId: z.string().nullable(),
@@ -111,15 +163,32 @@ export const KillCreateBody = z
     featureVersion: z.string().min(1),
     /** 비우면 영향 범위의 모든 차량 */
     vins: z.array(z.string()).max(500).optional(),
-    safeMode: SafeMode.default('SAFE_DEFAULT'),
+    /** 사유 분류·코드(kill_command v2 reason) — 비활성화 방식은 고르지 않는다(Registry 등급) */
+    reasonCategory: z.enum(REASON_CATEGORIES).default('SAFETY'),
+    reasonCode: z
+      .string()
+      .regex(/^[A-Z0-9_]{3,40}$/)
+      .default('FIELD_FAULT'),
     reason: z.string().trim().min(2).max(500),
+    /** F2 이상 안전 Kill은 리콜 캠페인 ID나 봉쇄 결정 근거 중 하나(FFG-PLT-009·DEAC-010) */
+    recallCampaignId: z.string().trim().min(2).max(60).optional(),
+    containmentJustification: z.string().trim().min(2).max(500).optional(),
     /** type-to-confirm — 차단할 Feature ID를 그대로 입력 */
     confirm: z.string(),
     /** 이상 징후 대응(D06-12)에서 넘어온 차단 — 발령되면 그 이상 건이 조치됨(MITIGATED)이 된다 */
-    anomalyId: z.string().regex(/^ANM-\d{5}$/).optional(),
+    anomalyId: z
+      .string()
+      .regex(/^ANM-\d{5}$/)
+      .optional(),
   })
   .strict();
 export type KillCreateBody = z.infer<typeof KillCreateBody>;
+
+/** 승인 — 개인 서명은 서버 HSM이 승인자 키로 만든다. 의견은 선택 */
+export const KillApproveBody = z.object({ comment: z.string().trim().max(500).optional() }).strict();
+export type KillApproveBody = z.infer<typeof KillApproveBody>;
+export const KillRejectBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
+export type KillRejectBody = z.infer<typeof KillRejectBody>;
 
 /** 서명 키 용도 — 용도마다 kid를 분리하고 다른 용도의 키로 서명한 명령은 무효(보고서 v1.1 FFG-SEC-002, 8.2 "kid별 알고리즘·용도 고정") */
 export const KEY_PURPOSES = ['policy', 'activate', 'kill', 'restore', 'sync', 'gate'] as const;

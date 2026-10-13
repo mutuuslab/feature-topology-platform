@@ -18,7 +18,8 @@ import {
   ValidateCompositionBody,
 } from './schemas/api';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
-import { EpochBumpBody, KeyRotateBody, KillCreateBody, ReadbackBody } from './schemas/ops';
+import { EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody } from './schemas/ops';
+import { KILL_APPROVER_ROLES } from './rules/access';
 import { RunVirtualBody } from './rules/virtual';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
@@ -152,8 +153,14 @@ export const ROUTES: RouteDef[] = [
   { name: 'killRequests', method: 'GET', path: '/api/kill-requests', summary: '긴급 차단 요청 목록 (회신 집계 포함)', component: 'D03-03', query: ['status'] },
   { name: 'killPreview', method: 'GET', path: '/api/kill-requests/preview', summary: '차단 영향 범위 미리보기 (의존 Feature·flag·차량)', component: 'D03-03', query: ['featureId', 'featureVersion', 'vins'], sample: { featureId: 'FEAT-00022', featureVersion: '1.0.0' } },
   { name: 'killDetail', method: 'GET', path: '/api/kill-requests/:id', summary: '차단 요청 상세 (차단·복구 회신)', component: 'D03-03' },
-  { name: 'issueKill', method: 'POST', path: '/api/kill-requests', summary: '긴급 차단 (type-to-confirm·서명·긴급 채널)', component: 'D03-03', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillCreateBody },
-  { name: 'releaseKill', method: 'POST', path: '/api/kill-requests/:id/release', summary: '차단 해제·이전 상태 복구', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: z.object({ reason: z.string().trim().min(2).max(500) }).strict() },
+  { name: 'issueKill', method: 'POST', path: '/api/kill-requests', summary: '긴급 차단 요청 (type-to-confirm·사유 분류) — 2인 승인 뒤 게이트·서명·차량별 봉투', component: 'D03-03', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillCreateBody },
+  { name: 'approveKill', method: 'POST', path: '/api/kill-requests/:id/approvals', summary: '긴급 차단 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 발행', component: 'D03-03', roles: KILL_APPROVER_ROLES, body: KillApproveBody },
+  { name: 'rejectKill', method: 'POST', path: '/api/kill-requests/:id/reject', summary: '긴급 차단 요청 거절', component: 'D03-03', roles: KILL_APPROVER_ROLES, body: KillRejectBody },
+  { name: 'killEnvelopes', method: 'GET', path: '/api/kill-requests/:id/envelopes', summary: '발행된 kill_command v2와 차량별 봉투(vehicle_auth·cmd_auth)', component: 'D03-03' },
+  { name: 'requestRestore', method: 'POST', path: '/api/kill-requests/:id/restore', summary: '복원 요청 — 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillRejectBody },
+  { name: 'approveRestore', method: 'POST', path: '/api/kill-requests/:id/restore/approvals', summary: '복원 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 복구 게시', component: 'D03-04', roles: KILL_APPROVER_ROLES, body: KillApproveBody },
+  { name: 'rejectRestore', method: 'POST', path: '/api/kill-requests/:id/restore/reject', summary: '복원 요청 거절', component: 'D03-04', roles: KILL_APPROVER_ROLES, body: KillRejectBody },
+  { name: 'releaseKill', method: 'POST', path: '/api/kill-requests/:id/release', summary: '레거시(v1) 차단 해제 — v2 차단은 복원 요청·승인으로', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: z.object({ reason: z.string().trim().min(2).max(500) }).strict() },
   // vECU 가상검증 (IF-09 가상검증 공급자) — 차량 시나리오(D06-03)·안전 동작(D06-06) 근거, G5 증적은 TMS 제출(D04-02)
   { name: 'vecuStatus', method: 'GET', path: '/api/vecu/status', summary: 'vECU 가상검증 실행기 연결 상태', component: 'D06-03' },
   { name: 'virtualScenarios', method: 'GET', path: '/api/virtual-validations/scenarios', summary: 'Feature별 가상검증 시나리오 (판정 기준·연결 검증기)', component: 'D06-03', query: ['featureId'] },

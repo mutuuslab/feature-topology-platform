@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/_design');
 });
 
-test('긴급 차단: 영향 범위 → 확인 입력 → 서명·긴급 전달 → 회신 CONFIRMED → Fleet 현황 → 해제·복구', async ({ page }) => {
+test('긴급 차단 v2: 요청 → FSM·운영 리더 승인 → 게이트·서명·긴급 전달 → 회신 CONFIRMED → Fleet → 복원 요청 → 다른 2인 승인 → 복구', async ({ page }) => {
   await asRole(page, 'operator');
   await page.goto('/ops/kill');
   await expect(page.getByText('care_00022_param, care_00022_signal')).toBeVisible();
@@ -23,35 +23,70 @@ test('긴급 차단: 영향 범위 → 확인 입력 → 서명·긴급 전달 �
     const label = (await box.locator('xpath=..').textContent()) ?? '';
     if (!label.includes('lead-01')) await box.uncheck();
   }
-  await page.getByLabel('사유').first().fill('e2e — 전방 거리 오추정');
-  await page.getByRole('button', { name: '차단 발령' }).click();
+  // F3 안전 차단 — 봉쇄 결정 근거(FFG-PLT-009·DEAC-010), 비활성화 방식은 Registry 등급(DC2)
+  await page.getByLabel(/봉쇄 결정 근거/).fill('e2e — 원인 분석 전 봉쇄');
+  await page.getByLabel('사유', { exact: true }).fill('e2e — 전방 거리 오추정');
+  await expect(page.locator('#new-kill-h').locator('xpath=ancestor::section').locator('.ds-rules__item[data-status="fail"]')).toHaveCount(0);
+  await page.getByRole('button', { name: '차단 요청' }).click();
   const dlg = page.getByRole('alertdialog');
   await dlg.getByRole('textbox').fill('FEAT-00022');
-  await dlg.getByRole('button', { name: '차단 발령' }).click();
+  await dlg.getByRole('button', { name: '차단 요청' }).click();
 
-  const drawer = page.getByRole('dialog');
+  let drawer = page.getByRole('dialog');
   await expect(drawer).toContainText(/KILL-\d{5}/);
+  await expect(drawer).toContainText('승인 대기');
+  const killId = ((await drawer.locator('h2').first().textContent()) ?? '').trim();
+  // 요청자는 승인할 수 없다
+  await expect(drawer.getByRole('button', { name: '승인 — 개인 서명' })).toBeDisabled();
+
+  // 승인 1 — 품질 검토(FSM), 승인 2 — 협의(운영 리더)
+  for (const role of ['quality', 'coordinator']) {
+    await asRole(page, role);
+    await page.goto(`/ops/kill?id=${killId}`);
+    drawer = page.getByRole('dialog');
+    await drawer.getByRole('button', { name: '승인 — 개인 서명' }).click();
+    await expect(drawer.locator('.ds-approvals__slot[data-done]')).toHaveCount(role === 'quality' ? 1 : 2);
+  }
+  await expect(drawer).toContainText('차단 중');
+  await expect(drawer).toContainText('서명된 명령');
+  await expect(drawer.getByRole('table', { name: '차량별 봉투' })).toContainText('lead-01');
   await expect(drawer.getByRole('meter').first()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });
   await expect(drawer).toContainText('CONFIRMED');
-  const killId = ((await drawer.locator('h2').first().textContent()) ?? '').trim();
 
   // Fleet 실시간 적용 현황 — lead-01은 차량 측에서 Safe(차단) 상태
   await page.goto('/fleet/live');
   const row = page.getByRole('row', { name: /lead-01/ });
   await expect(row.locator('.ds-fcell').first()).toHaveAttribute('data-v', 'safe');
-  await expect(page.getByRole('row', { name: /KMH-NX4-0001/ }).locator('.ds-fcell').first()).not.toHaveAttribute('data-v', 'safe');
+  await expect(
+    page
+      .getByRole('row', { name: /KMH-NX4-0001/ })
+      .locator('.ds-fcell')
+      .first(),
+  ).not.toHaveAttribute('data-v', 'safe');
 
-  // 서명 배포 현황 — 차단 게시본은 서명 검증 통과
+  // 서명 배포 현황 — 차단 게시본은 차단 용도 키로 서명 검증 통과
   await page.goto('/deployments');
   await page.getByRole('row', { name: /차단/ }).first().click();
   await expect(page.getByText('SIGNATURE_VALID')).toBeVisible();
 
-  // 해제 → 복구 전달
+  // 복원 요청(운영자) → 차단 승인자(품질 검토)는 막힘 → PLM 기준정보(부 FSM)·시스템 연계(CSM) 승인
+  await asRole(page, 'operator');
   await page.goto(`/ops/kill?id=${killId}`);
-  await page.getByRole('dialog').getByLabel('사유').fill('원인 수정 확인');
-  await page.getByRole('dialog').getByRole('button', { name: '해제·이전 상태 복구' }).click();
-  await expect(page.getByRole('dialog')).toContainText('해제됨');
-  await expect(page.getByRole('dialog').getByRole('meter').last()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });
+  drawer = page.getByRole('dialog');
+  await drawer.getByLabel('사유', { exact: true }).fill('원인 수정 확인');
+  await drawer.getByRole('button', { name: '복원 요청' }).click();
+  await asRole(page, 'quality');
+  await page.goto(`/ops/kill?id=${killId}`);
+  await expect(page.getByRole('dialog')).toContainText('직전 차단 승인자는 복원을 승인할 수 없습니다');
+  for (const role of ['steward', 'integrator']) {
+    await asRole(page, role);
+    await page.goto(`/ops/kill?id=${killId}`);
+    drawer = page.getByRole('dialog');
+    await drawer.locator('[data-tour="kill-restore"]').getByRole('button', { name: '승인 — 개인 서명' }).click();
+    if (role === 'steward') await expect(drawer.locator('[data-tour="kill-restore"] .ds-approvals__slot[data-done]')).toHaveCount(1);
+  }
+  await expect(drawer).toContainText('해제됨');
+  await expect(drawer.getByRole('meter').last()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });
 });
 
 test('vECU 가상검증: 실행(시험 대역) → 결과·증적 → TMS 제출(품질)', async ({ page }) => {
@@ -60,12 +95,19 @@ test('vECU 가상검증: 실행(시험 대역) → 결과·증적 → TMS 제출
   const run = page.getByRole('button', { name: '가상검증 실행' });
   await expect(run).toBeEnabled();
   await run.click();
-  const first = page.getByRole('table', { name: '실행 이력' }).getByRole('row', { name: /SCN-FEAT00022-NOMINAL/ }).first();
+  const first = page
+    .getByRole('table', { name: '실행 이력' })
+    .getByRole('row', { name: /SCN-FEAT00022-NOMINAL/ })
+    .first();
   // 실행은 vECU 프로세스를 띄우므로 병렬 부하에서는 몇 초 걸릴 수 있다
   await expect(first).toContainText('vecu', { timeout: 30_000 });
   await asRole(page, 'quality');
   await page.reload();
-  await page.getByRole('table', { name: '실행 이력' }).getByRole('row', { name: /SCN-FEAT00022-NOMINAL/ }).first().click();
+  await page
+    .getByRole('table', { name: '실행 이력' })
+    .getByRole('row', { name: /SCN-FEAT00022-NOMINAL/ })
+    .first()
+    .click();
   const drawer = page.getByRole('dialog');
   await expect(drawer.getByRole('link', { name: 'verdict.json' })).toBeVisible();
   await drawer.getByRole('button', { name: 'TMS 제출 (IF-09)' }).click();

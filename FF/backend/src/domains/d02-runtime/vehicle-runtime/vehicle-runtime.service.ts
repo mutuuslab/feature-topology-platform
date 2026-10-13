@@ -2,7 +2,7 @@
 // 차량은 서명(신뢰 앵커 공개키)·순번(재전송)을 확인한 게시본만 적용하고, 적용한 값을 되읽어 회신한다(P0 BD-12 readback).
 // 차량 측 평가는 서버와 같은 단일 평가기(evaluateFlag)를 캐시된 서명 정책으로 돌린다 — 서버 판단과 어긋나면 drift.
 import { Controller, Get, Inject, Injectable, Param } from '@nestjs/common';
-import { evaluateFlag, type FlagResult, type Publication } from '@ff/contracts';
+import { evaluateFlag, PUBLICATION_KEY_PURPOSE, type FlagResult, type Publication } from '@ff/contracts';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
 import { DomainError } from '../../../kernel/errors';
@@ -64,7 +64,8 @@ export class VehicleRuntimeService {
       this.runtime.save(s);
       this.report(s, pub, 'REJECTED', reason);
     };
-    const check = this.pki.verify(p, pub.signature);
+    // 게시본 종류의 용도 키로 서명된 것만(FFG-SEC-002) — 정책 키로 서명한 차단 명령은 WRONG_KEY_PURPOSE
+    const check = this.pki.verify(p, pub.signature, undefined, PUBLICATION_KEY_PURPOSE[pub.kind]);
     if (!check.valid) return reject(check.reason);
     if (p.sequence <= (s.highest[key] ?? 0)) return reject('REPLAY');
     s.highest[key] = p.sequence;

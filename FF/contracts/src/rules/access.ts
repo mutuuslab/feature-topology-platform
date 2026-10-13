@@ -54,6 +54,9 @@ export const REPORT_APPROVER_ROLES: Record<ApproverRole, Role> = {
 };
 
 /** 플랫폼 역할 → 이 사람이 맡을 수 있는 보고서 승인 역할 */
+/** 긴급 차단·복원 승인 칸을 채울 수 있는 플랫폼 역할(보고서 승인 역할 대응) */
+export const KILL_APPROVER_ROLES: Role[] = [...new Set(Object.values(REPORT_APPROVER_ROLES))];
+
 export function reportRolesOf(roles: readonly Role[]): ApproverRole[] {
   return (Object.keys(REPORT_APPROVER_ROLES) as ApproverRole[]).filter((a) => roles.includes(REPORT_APPROVER_ROLES[a]));
 }

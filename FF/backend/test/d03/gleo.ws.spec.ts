@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp } from '../helpers';
+import { actor, bootApp, killV2, restoreV2 } from '../helpers';
 
 const FF_IMP = process.env.FF_IMP_DIR ?? resolve(__dirname, '../../../../../2026-09-23_FF_IMP');
 const PORT = 8798;
@@ -53,26 +53,22 @@ describe.skipIf(!ready)('GLEO 실연동 — FF_IMP 브로커·차량 에이전�
     delete process.env.FF_SCHEDULER;
   });
 
-  it('긴급 차단(Safe Stop) → kill_command 송신 → 영상 키트 차량 status_report SAFE_STOP → CONFIRMED 2/2', async () => {
-    const r = await http()
-      .post('/api/kill-requests')
-      .set(actor('seo.ops', 'OPERATOR'))
-      .send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01', 'lead-01'], safeMode: 'SAFE_STOP', reason: '영상 키트 실연동', confirm: 'FEAT-00022' })
-      .expect(201);
+  it('긴급 차단(요청 → 2인 승인) → kill_command 송신 → 영상 키트 차량 status_report → CONFIRMED 2/2', async () => {
+    const r = { body: await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01', 'lead-01'], reason: '영상 키트 실연동', confirm: 'FEAT-00022' }, actor('seo.ops', 'OPERATOR')) };
     await until(async () => (await http().get(`/api/kill-requests/${r.body.killId}`)).body.delivery.status === 'CONFIRMED');
     const k = (await http().get(`/api/kill-requests/${r.body.killId}`).expect(200)).body;
     expect(k.delivery).toMatchObject({ confirmed: 2, denominator: 2 });
     const rb = (await http().get(`/api/telemetry/readbacks?publicationId=${k.publicationId}`).expect(200)).body.items;
-    expect(rb.map((x: any) => [x.vin, x.observed, x.via]).sort()).toEqual([['ego-01', 'SAFE_STOP', 'GLEO'], ['lead-01', 'SAFE_STOP', 'GLEO']]);
+    expect(rb.map((x: any) => [x.vin, x.observed, x.via]).sort()).toEqual([['ego-01', 'SAFE_DEFAULT', 'GLEO'], ['lead-01', 'SAFE_DEFAULT', 'GLEO']]);
     const g = (await http().get('/api/gleo/status').expect(200)).body;
-    expect(g.messages.find((m: any) => m.dir === 'out' && m.msg.type === 'kill_command').msg).toMatchObject({ type: 'kill_command', safe_mode: 'SAFE_STOP', issued_by: 'seo.ops' });
+    expect(g.messages.find((m: any) => m.dir === 'out' && m.msg.type === 'kill_command').msg).toMatchObject({ type: 'kill_command', safe_mode: 'SAFE_DEFAULT', issued_by: 'usr-opslead' }); // 발행자 = 두 번째 승인자(게이트 통과 시점)
     expect(g.messages.some((m: any) => m.dir === 'in' && m.msg.type === 'status_report')).toBe(true);
-    expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('SAFE_STOP');
+    expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('SAFE_DEFAULT');
   });
 
   it('해제 → 영상 키트에는 policy_push(enable)로 알리되 회신 의무 없음(ackOnly)', async () => {
     const k = (await http().get('/api/kill-requests?status=ACTIVE').expect(200)).body.items[0];
-    await http().post(`/api/kill-requests/${k.killId}/release`).set(actor('park.safety', 'SAFETY_OFFICER')).send({ reason: '복구' }).expect(200);
+    await restoreV2(http, k.killId, '복구', actor('park.safety', 'SAFETY_OFFICER'));
     const d = (await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body;
     expect(d.restore).toMatchObject({ status: 'CONFIRMED', denominator: 0 });
     expect(d.restore.ackOnly.sort()).toEqual(['ego-01', 'lead-01']);

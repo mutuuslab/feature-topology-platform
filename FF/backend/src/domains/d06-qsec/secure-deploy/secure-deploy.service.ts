@@ -1,7 +1,10 @@
 // 보안 배포 관리 (D06-08) — 정책 배포·긴급 차단·복구를 서명된 게시본으로 만들고(PKI D06-10), 파이프라인(D04-01)으로 내보내고,
 // 차량 회신을 P0 aggregate로 집계한다: 대상 전부 readback 일치 → CONFIRMED, 불일치 → DIVERGED, 기한 초과 → PARTIAL/TIMEOUT (BD-12).
 import { Controller, Get, Inject, Injectable, OnApplicationBootstrap, OnModuleInit, Param, Query } from '@nestjs/common';
-import { aggregate, type KillRequest, type Policy, type Publication, type PublicationKind, type ReadbackReport } from '@ff/contracts';
+import { aggregate, PUBLICATION_KEY_PURPOSE, type KillRequest, type Policy, type Publication, type PublicationKind, type ReadbackReport, type SafeMode } from '@ff/contracts';
+
+/** 차량 와이어 v1 호환 — v2 차단(safeMode 없음)도 시뮬레이터·GLEO가 읽는 kill.safeMode를 채운다. 차량 와이어 v2(봉투·DC 단계) 전환은 WP5 */
+const legacyMode = (k: KillRequest): SafeMode => k.safeMode ?? 'SAFE_DEFAULT';
 import type { Actor } from '../../../kernel/actor';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
@@ -86,11 +89,11 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
   }
 
   publishKill(k: KillRequest, actor: Actor) {
-    return this.create('KILL', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: k.safeMode, featureIds: k.featureIds }, targets: k.vins, desired: k.safeMode });
+    return this.create('KILL', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: legacyMode(k) });
   }
 
   publishRestore(k: KillRequest, actor: Actor) {
-    return this.create('RESTORE', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: k.safeMode, featureIds: k.featureIds }, targets: k.vins, desired: 'ACTIVE' });
+    return this.create('RESTORE', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: 'ACTIVE' });
   }
 
   /** 서명된 게시본 생성 — 호출자의 트랜잭션 안에서 기록하고, 커밋된 뒤에만 내보낸다 */
@@ -107,7 +110,8 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       kind,
       status: 'SIGNED',
       payload,
-      signature: this.pki.sign(payload),
+      // 종류별 용도 키(FFG-SEC-002) — 차량은 기대 용도의 kid만 받는다
+      signature: this.pki.sign(payload, PUBLICATION_KEY_PURPOSE[kind]),
       campaignId: null,
       channel: emergency ? 'EMERGENCY' : 'OTA',
       createdBy: actor.id,
@@ -207,7 +211,7 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     if (!publication) throw new DomainError('NOT_FOUND', `게시본 ${id}을(를) 찾을 수 없습니다.`);
     return {
       publication,
-      verification: this.pki.verify(publication.payload, publication.signature),
+      verification: this.pki.verify(publication.payload, publication.signature, undefined, PUBLICATION_KEY_PURPOSE[publication.kind]),
       readbacks: this.repo.readbacks({ publicationId: id }),
       calls: this.pipeline.calls({ key: id }),
     };

@@ -131,26 +131,25 @@ export class PolicyGateService {
    * @rule FFG-PLT-017, FFG-SEC-003 — 원장 갱신(서명 HSM 정책 엔진의 누적 상한 재집행은 WP4)
    */
   record(actor: Actor, cmd: KillCommandV2): GateVerdict {
-    let rejected: GateVerdict | null = null;
     try {
-      return this.writeLedger(actor, cmd, (v) => (rejected = v));
+      return this.db.tx(() => this.commit(actor, cmd));
     } catch (e) {
-      if (!rejected) throw e;
+      if (!(e instanceof GateRejected)) throw e;
       // 거부 감사는 트랜잭션 밖에서(롤백돼도 남는다)
-      const bad = (rejected as GateVerdict).findings.filter((x) => !x.ok);
+      const bad = e.verdict.findings.filter((x) => !x.ok);
       this.audit.failed(actor, 'GATE_RECORD', cmd.feature?.id ?? '-', bad.map((x) => x.rule).join(', '), 'D03-02');
       throw new DomainError('GUARD_FAILED', '정책 게이트를 통과하지 못한 명령은 원장에 남길 수 없습니다.', { findings: bad });
     }
   }
 
-  /** 판정과 원장 갱신을 한 트랜잭션에서 — 그사이 다른 명령이 원장을 바꿨어도 다시 판정한 결과로 */
-  private writeLedger(actor: Actor, cmd: KillCommandV2, reject: (v: GateVerdict) => void): GateVerdict {
-    return this.db.tx(() => {
+  /**
+   * 호출자 트랜잭션 안에서 판정·원장 갱신 — 그사이 다른 명령이 원장을 바꿨어도 다시 판정한 결과로. 거부하면 GateRejected(감사는 호출자가 트랜잭션 밖에서)
+   */
+  commit(actor: Actor, cmd: KillCommandV2): GateVerdict {
+    if (!this.db.inTransaction) throw new Error('commit()은 호출자의 트랜잭션 안에서 부른다');
+    {
       const v = this.preview(cmd);
-      if (v.result !== 'PASS') {
-        reject(v);
-        throw new Error('gate rejected');
-      }
+      if (v.result !== 'PASS') throw new GateRejected(v);
       const approvers = cmd.approvals.map((a) => a.approver_id);
       const prev = this.ledger(cmd.feature.id).last_kill_approvers ?? [];
       const killApprovers = cmd.request === 'deactivate' ? approvers : prev;
@@ -182,7 +181,14 @@ export class PolicyGateService {
         { componentId: 'D03-02', correlationId: actor.correlationId },
       );
       return v;
-    });
+    }
+  }
+}
+
+/** 게이트 거부 — commit()이 던지고 호출자가 감사·상태를 남긴다 */
+export class GateRejected extends Error {
+  constructor(readonly verdict: GateVerdict) {
+    super(`정책 게이트 거부: ${verdict.findings.filter((f) => !f.ok).map((f) => f.rule).join(', ')}`);
   }
 }
 

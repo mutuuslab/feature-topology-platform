@@ -37,16 +37,35 @@ test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·�
   await expect(page.getByRole('button', { name: /D05-05 현장 지원 포털 계획/ })).toHaveAttribute('data-dim', 'true');
 
   // OF-3 — PoC 차단을 정리하고, 구독 권한이 있는 KMH-NX4-0001을 따로 차단해 웹 SDK 값 변화를 본다
+  // 긴급 차단 v2 — 요청 1 + 서로 다른 2인 승인, 복원은 차단 승인자와 다른 2인(FFG-PLT-005·DEAC-008)
   const H = { 'X-Actor-Id': 'e2e.ops', 'X-Actor-Role': 'OPERATOR' };
+  const as = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
+  const post = async (path: string, headers: Record<string, string>, data: unknown) => {
+    const r = await request.post(`${API}${path}`, { headers, data });
+    expect(r.status(), await r.text()).toBe(201);
+    return r.json();
+  };
   const release = async () => {
     for (const k of (await (await request.get(`${API}/api/kill-requests?status=ACTIVE`)).json()).items) {
-      const r = await request.post(`${API}/api/kill-requests/${k.killId}/release`, { headers: H, data: { reason: 'e2e 복구' } });
-      expect(r.status(), await r.text()).toBe(200);
+      if (k.restoreRequest?.status !== 'REQUESTED') await post(`/api/kill-requests/${k.killId}/restore`, H, { reason: 'e2e 복구' });
+      await post(`/api/kill-requests/${k.killId}/restore/approvals`, as('e2e.safety2', 'SAFETY_OFFICER'), {});
+      const done = await post(`/api/kill-requests/${k.killId}/restore/approvals`, as('e2e.csm', 'SECURITY_OFFICER'), {});
+      expect(done.status).toBe('RELEASED');
     }
   };
   await release();
-  const k = await request.post(`${API}/api/kill-requests`, { headers: H, data: { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['KMH-NX4-0001'], safeMode: 'SAFE_DEFAULT', reason: 'OF-3 확인', confirm: 'FEAT-00022' } });
-  expect(k.status(), await k.text()).toBe(201);
+  const k = await post('/api/kill-requests', H, {
+    featureId: 'FEAT-00022',
+    featureVersion: '1.0.0',
+    vins: ['KMH-NX4-0001'],
+    reasonCategory: 'SAFETY',
+    reasonCode: 'OF3_CHECK',
+    containmentJustification: 'e2e 봉쇄',
+    reason: 'OF-3 확인',
+    confirm: 'FEAT-00022',
+  });
+  await post(`/api/kill-requests/${k.killId}/approvals`, as('e2e.safety', 'SAFETY_OFFICER'), {});
+  expect((await post(`/api/kill-requests/${k.killId}/approvals`, as('e2e.lead', 'OPS_LEAD'), {})).status).toBe('ACTIVE');
   await page.goto('/activation/decide?vin=KMH-NX4-0001&flagKey=care_00022_param');
   const of = page.getByRole('region', { name: 'OpenFeature 클라이언트 (웹 SDK · OFREP)' });
   await expect(of.getByTestId('of-value')).toHaveText('OFF', { timeout: 15_000 });

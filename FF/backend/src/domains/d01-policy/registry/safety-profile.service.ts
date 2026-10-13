@@ -86,7 +86,7 @@ export class SafetyProfileService implements OnModuleInit {
       safeState: r >= 2 ? 'BASE_ONLY' : null, endState: r >= 2 ? 'DISABLED' : null,
       takeoverMs: dc === 'DC2' ? 4000 : 0, rampMs: dc === 'DC2' ? 3000 : 0, faultRampMs: r >= 2 ? 1500 : 0, faultTolerantTimeMs: r >= 2 ? 5000 : 0,
       maxPendingMs: dc === 'DC1' ? 600000 : 0, maxCycleWaitMs: dc === 'DC0' ? 0 : 28800000,
-      maxActivationScope: { vehicles: 50000, perWindow: 5000 }, markets: r >= 2 ? [country] : [], rxswin: [],
+      maxActivationScope: { vehicles: 50000, perWindow: 5000 }, markets: [country], rxswin: [],
       approvalProfile: null, evidenceManifestId: null, sbomRef: null, rollbackTarget: null, expiresAt: null, retirementPlan: null,
       confirmedBy: null, confirmedAt: null, confirmSig: null,
     });

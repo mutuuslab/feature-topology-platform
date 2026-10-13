@@ -119,6 +119,12 @@ export class PocWorkflow {
       approver: this.actor(runId, 'poc.approver', 'FEATURE_APPROVER'),
       release: this.actor(runId, 'poc.release', 'RELEASE_MANAGER'),
       ops: this.actor(runId, 'poc.ops', 'OPERATOR'),
+      // 긴급 차단 2인 승인(보고서 v1.1 FFG-PLT-005) — F3 안전 사유라 첫 칸은 Safety Manager(FSM)
+      safety: this.actor(runId, 'poc.safety', 'SAFETY_OFFICER'),
+      opsLead: this.actor(runId, 'poc.opslead', 'OPS_LEAD'),
+      // 복원은 차단 승인자와 다른 2인
+      restoreSafety: this.actor(runId, 'poc.safety2', 'SAFETY_OFFICER'),
+      restoreCsm: this.actor(runId, 'poc.csm', 'SECURITY_OFFICER'),
       vehicle: (vin: string) => this.actor(runId, `vehicle:${vin}`, 'VEHICLE'),
     };
   }
@@ -147,10 +153,19 @@ export class PocWorkflow {
     for (const r of this.list().filter((x) => x.status === 'RUNNING')) this.save({ ...r, status: 'ABORTED', endedAt: this.clock.iso() });
     const n = this.db.get<{ n: number }>('SELECT count(*) AS n FROM poc_run')!.n + 1;
     const runId = `POC-${String(n).padStart(5, '0')}`;
-    const ops = this.people(runId).ops;
+    const people = this.people(runId);
+    const ops = people.ops;
     const restored: string[] = [];
+    // 승인 대기로 남은 차단 요청은 거절
+    for (const k of this.killService.list('REQUESTED').filter((x) => x.featureId === FEATURE)) this.killService.reject(people.restoreSafety, k.killId, { reason: `PoC ${runId} 시작 전 정리` });
     for (const k of this.kills.active().filter((x) => x.featureId === FEATURE)) {
-      this.restore.release(ops, k.killId, `PoC ${runId} 시작 전 복구`);
+      if (k.version === 2) {
+        // v2 차단 — 복원 요청 후 차단 승인자와 다른 2인(FSM·CSM)이 승인(FFG-DEAC-008)
+        if (k.restoreRequest?.status !== 'REQUESTED') this.restore.request(ops, k.killId, `PoC ${runId} 시작 전 복구`);
+        this.restore.approve(people.restoreSafety, k.killId, {});
+        const done = this.restore.approve(people.restoreCsm, k.killId, {});
+        if (done.status !== 'RELEASED') throw new Error(`이전 PoC 차단 ${k.killId}을 복구하지 못했습니다: ${done.restoreRequest?.rejectReason ?? done.status}`);
+      } else this.restore.release(ops, k.killId, `PoC ${runId} 시작 전 복구`);
       restored.push(k.killId);
     }
     const run: PocRun = {
@@ -290,9 +305,23 @@ export class PocWorkflow {
         if (!anm) throw new Error('이상 건이 열리지 않았습니다');
         step.actions.push({ at: this.clock.iso(), actor: 'system', role: 'SYSTEM', route: 'anomalies', summary: `${anm.anomalyId} ${anm.severity} → ${anm.advice}`, ok: true });
         run.refs.anomalyId = anm.anomalyId;
-        const k = await this.act(step, 'issueKill', p.ops, (x) => `${x.killId} → ${x.publicationId}`, () =>
-          this.killService.issue(p.ops, { featureId: FEATURE, featureVersion: VERSION, vins: [DEMO, SECOND], safeMode: 'SAFE_DEFAULT', reason: `PoC ${run.runId}: ${anm.reasons.join(' / ')}`, confirm: FEATURE, anomalyId: anm.anomalyId }),
+        // 요청(운영자) → 승인 FSM → 승인 운영 리더 → 게이트·서명·차량별 봉투·긴급 채널
+        const req = await this.act(step, 'issueKill', p.ops, (x) => `${x.killId} 승인 대기`, () =>
+          this.killService.issue(p.ops, {
+            featureId: FEATURE,
+            featureVersion: VERSION,
+            vins: [DEMO, SECOND],
+            reasonCategory: 'SAFETY',
+            reasonCode: 'GAP_EST_DRIFT',
+            reason: `PoC ${run.runId}: ${anm.reasons.join(' / ')}`,
+            containmentJustification: `이상 건 ${anm.anomalyId} — 원인 분석 전 봉쇄`,
+            confirm: FEATURE,
+            anomalyId: anm.anomalyId,
+          }),
         );
+        await this.act(step, 'approveKill', p.safety, (x) => `${x.killId} 승인 1/2 (FSM)`, () => this.killService.approve(p.safety, req.killId, {}));
+        const k = await this.act(step, 'approveKill', p.opsLead, (x) => `${x.killId} 승인 2/2 → ${x.status} ${x.publicationId ?? ''}`, () => this.killService.approve(p.opsLead, req.killId, {}));
+        if (k.status !== 'ACTIVE') throw new Error(`긴급 차단이 발행되지 않았습니다(${k.status}: ${k.rejectReason ?? ''})`);
         run.refs.killId = k.killId;
         Object.assign(step.evidence, { anomalyId: anm.anomalyId, advice: anm.advice, killId: k.killId });
         await this.check(run, step);

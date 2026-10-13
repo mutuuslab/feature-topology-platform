@@ -195,7 +195,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "KR"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -235,7 +237,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "KR"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -527,7 +531,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "US"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -609,7 +615,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "ME"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -649,7 +657,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "JP"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -731,7 +741,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "US"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -771,7 +783,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "US"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -853,7 +867,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "ME"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -908,7 +924,7 @@
     "rxswin": [],
     "approvalProfile": "AP-F3",
     "evidenceManifestId": null,
-    "sbomRef": null,
+    "sbomRef": "urn:cdx:3e671687-395b-41f5-a30f-a58921a69b79/1",
     "rollbackTarget": null,
     "expiresAt": null,
     "retirementPlan": null,
@@ -986,7 +1002,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "KR"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1110,7 +1128,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "EU"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1234,7 +1254,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "US"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1358,7 +1380,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "AU"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1524,7 +1548,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "CA"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1690,7 +1716,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "CA"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1730,7 +1758,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "CA"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1770,7 +1800,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "ME"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1894,7 +1926,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "ME"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1934,7 +1968,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "ME"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -1974,7 +2010,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "ME"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2056,7 +2094,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "US"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2096,7 +2136,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "US"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2136,7 +2178,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "US"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2218,7 +2262,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "KR"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2300,7 +2346,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "EU"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2340,7 +2388,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "KR"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2380,7 +2430,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "US"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2420,7 +2472,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "KR"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2460,7 +2514,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "KR"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2752,7 +2808,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "ME"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2792,7 +2850,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "EU"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2832,7 +2892,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "EU"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2872,7 +2934,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "EU"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2912,7 +2976,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "EU"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,
@@ -2952,7 +3018,9 @@
       "vehicles": 50000,
       "perWindow": 5000
     },
-    "markets": [],
+    "markets": [
+      "CA"
+    ],
     "rxswin": [],
     "approvalProfile": null,
     "evidenceManifestId": null,

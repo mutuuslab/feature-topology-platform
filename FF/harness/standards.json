@@ -2,8 +2,8 @@
   "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
   "summary": {
     "platformRules": 75,
-    "implemented": 23,
-    "tested": 23,
+    "implemented": 27,
+    "tested": 27,
     "reportTestsReferenced": 11
   },
   "rules": [
@@ -54,7 +54,8 @@
       ],
       "section": "03_ads_regulation.md · 3.11 규칙",
       "implemented": [
-        "contracts/src/rules/policy-gate.ts"
+        "contracts/src/rules/policy-gate.ts",
+        "backend/src/domains/d03-safety/restore/restore.service.ts"
       ],
       "tested": [
         "contracts/src/rules/policy-gate.test.ts"
@@ -218,8 +219,14 @@
         "차량 SW"
       ],
       "section": "07_deactivation.md · 7.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/kill-v2.ts",
+        "backend/src/domains/d03-safety/restore/restore.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/kill-v2.test.ts",
+        "backend/test/d03/kill-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-DEAC-010",
@@ -240,8 +247,12 @@
         "플랫폼"
       ],
       "section": "07_deactivation.md · 7.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts"
+      ],
+      "tested": [
+        "backend/test/d03/kill-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-DEAC-013",
@@ -448,7 +459,8 @@
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
         "backend/test/d03/policy-gate.spec.ts",
-        "frontend/src/__tests__/designSafety.test.tsx"
+        "frontend/src/__tests__/designSafety.test.tsx",
+        "frontend/src/__tests__/screensOps.test.tsx"
       ]
     },
     {
@@ -460,10 +472,12 @@
       "section": "08_control_plane.md · 8.5 규칙",
       "implemented": [
         "contracts/src/rules/policy-gate.ts",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts",
         "frontend/src/screens/ops/KillConsole.tsx"
       ],
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/delivery.spec.ts",
         "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/screensLearn.test.tsx",
         "frontend/src/__tests__/screensOps.test.tsx"
@@ -482,6 +496,7 @@
       ],
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d03/policy-gate.spec.ts"
       ]
     },
@@ -493,15 +508,22 @@
       ],
       "section": "08_control_plane.md · 8.5 규칙",
       "implemented": [
+        "contracts/src/rules/kill-v2.ts",
         "contracts/src/rules/policy-gate.ts",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts",
         "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts"
       ],
       "tested": [
+        "contracts/src/rules/kill-v2.test.ts",
         "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d03/policy-gate.spec.ts",
         "backend/test/d06/hsm.spec.ts",
+        "backend/test/helpers.ts",
         "frontend/src/__tests__/designSafety.test.tsx",
-        "frontend/src/__tests__/screensSafety.test.tsx"
+        "frontend/src/__tests__/screensOps.test.tsx",
+        "frontend/src/__tests__/screensSafety.test.tsx",
+        "e2e/tests/poc.spec.ts"
       ]
     },
     {
@@ -566,7 +588,9 @@
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
         "backend/test/d03/policy-gate.spec.ts",
-        "frontend/src/__tests__/designSafety.test.tsx"
+        "frontend/src/__tests__/designSafety.test.tsx",
+        "frontend/src/__tests__/screensOps.test.tsx",
+        "e2e/tests/ops.spec.ts"
       ]
     },
     {
@@ -740,6 +764,7 @@
       ],
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/designSafety.test.tsx",
         "frontend/src/__tests__/screensSafety.test.tsx"
@@ -787,8 +812,13 @@
         "Safety Guard"
       ],
       "section": "14_security_sotif.md · 14.7 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/kill-v2.ts",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts"
+      ],
+      "tested": [
+        "backend/test/d03/kill-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-SOT-002",
@@ -928,8 +958,14 @@
         "플랫폼"
       ],
       "section": "09_vehicle_runtime.md · 9.12 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/kill-v2.ts",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/kill-v2.test.ts",
+        "backend/test/d03/kill-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-VEH-006",
@@ -961,9 +997,11 @@
       ],
       "section": "09_vehicle_runtime.md · 9.12 규칙",
       "implemented": [
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts",
         "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts"
       ],
       "tested": [
+        "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d06/hsm.spec.ts"
       ]
     }

@@ -95,7 +95,7 @@ describe('차량별 적용 상태', () => {
   });
 });
 
-describe('긴급 차단·복구', () => {
+describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () => {
   const PREVIEW = {
     feature: { featureId: 'FEAT-00022', version: '1.0.0', name: '전방 안전거리 3단계', lifecycle: 'RELEASED', asil: 'B' },
     featureIds: ['FEAT-00022'],
@@ -106,40 +106,115 @@ describe('긴급 차단·복구', () => {
       { vin: 'KMH-NX4-0003', label: '단절', link: 'OFFLINE', gleo: false },
     ],
     activeKill: null,
+    registry: { f_class: 'F3', deact_class: 'DC2', gsr_mandatory: false, profile: { takeover_ms: 4000, ramp_ms: 3000, max_pending_ms: 0, max_cycle_wait_ms: 28800000 } },
+    window: { hours: 24, deactivate: 3, cap: 5000 },
+    checks: [
+      { rule: 'FFG-PLT-002', ok: true, message: 'Registry에서 RELEASED인 Feature Version' },
+      { rule: 'FFG-PLT-009', ok: true, message: '시장·법규 사전조건 충족' },
+    ],
+  };
+  const REQUESTED = {
+    killId: 'KILL-00001',
+    featureId: 'FEAT-00022',
+    featureVersion: '1.0.0',
+    featureIds: ['FEAT-00022'],
+    flagKeys: [],
+    vins: ['ego-01'],
+    reason: 'r',
+    status: 'REQUESTED',
+    version: 2,
+    fClass: 'F3',
+    deactClass: 'DC2',
+    reasonCategory: 'SAFETY',
+    reasonCode: 'FIELD_FAULT',
+    fsmRequired: true,
+    approvals: [],
+    expiresAt: '2026-10-12T03:00:00.000Z',
+    requestedBy: 'usr-operator',
+    requestedAt: '2026-10-12T01:00:00.000Z',
+    releasedBy: null,
+    releasedAt: null,
+    releaseReason: null,
+    delivery: null,
+    restore: null,
   };
   const api: Handler = (url, init) => {
-    if (init?.method === 'POST') return { status: 201, body: { killId: 'KILL-00001' } };
+    if (init?.method === 'POST') return { status: 201, body: REQUESTED };
     if (url.startsWith('/api/kill-requests/preview')) return { body: PREVIEW };
-    if (url.startsWith('/api/kill-requests/KILL-')) return { body: { killId: 'KILL-00001', featureIds: ['FEAT-00022'], flagKeys: [], vins: ['ego-01'], safeMode: 'SAFE_STOP', reason: 'r', status: 'ACTIVE', delivery: null, restore: null, requestedAt: '2026-10-12T01:00:00.000Z' } };
+    if (url.startsWith('/api/kill-requests/KILL-')) return { body: REQUESTED };
     if (url.startsWith('/api/kill-requests')) return { body: { items: [] } };
   };
 
-  it('영향 범위 → 차량 선택 → 확인 입력이 맞아야 발령, 요청 본문에 범위·확인 값 — 비활성화 방식은 운영자가 고르지 않는다(FFG-PLT-003)', async () => {
+  it('영향 범위·Registry 등급·게이트 사전 점검 → 봉쇄 근거 없으면 요청 불가 → 확인 입력이 맞아야 요청, 본문에 사유 분류 — 비활성화 방식은 고르지 않는다', async () => {
     handler = api;
     mount('/ops/kill', '/ops/kill', <KillConsole />);
     expect(await screen.findByText('care_00022_param, care_00022_signal')).toBeTruthy();
     fireEvent.click(screen.getByRole('checkbox', { name: /KMH-NX4-0003/ })); // 통신 단절 차량 제외
     expect(screen.queryByRole('radio', { name: /Safe Stop/ })).toBeNull(); // 운영자 선택 UI 없음
-    expect(screen.getByText(/FFG-PLT-003/)).toBeTruthy();
+    expect(screen.getAllByText(/FFG-PLT-003/).length).toBeGreaterThan(0);
+    // 회귀: 차량을 해제해도 목록이 줄지 않아 다시 고를 수 있다(미리보기는 항상 영향 범위 전체, 사전 점검만 고른 차량으로)
+    await waitFor(() => expect(calls.filter((c) => c.url.startsWith('/api/kill-requests/preview')).at(-1)?.url).toContain('vins=ego-01'));
+    expect(screen.getByRole('checkbox', { name: /KMH-NX4-0003/ })).toBeTruthy();
+    // 승인 칸은 실시간 판정에서 대기 — F3 안전은 FSM 필수
+    expect(document.querySelector('.ds-rules__item[data-status="pending"]')!.textContent).toContain('서로 다른 2인 승인 대기 — 한 칸은 Safety Manager(FSM)');
+    expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('4'); // 누적 3 + 이번 1
     fireEvent.change(screen.getByLabelText('사유'), { target: { value: '전방 거리 오추정' } });
-    fireEvent.click(screen.getByRole('button', { name: '차단 발령' }));
+    const btn = screen.getByRole('button', { name: '차단 요청' }) as HTMLButtonElement;
+    expect(btn.disabled).toBe(true); // F3 안전 — 리콜 ID나 봉쇄 근거 필요
+    fireEvent.change(screen.getByLabelText(/봉쇄 결정 근거/), { target: { value: '원인 분석 전 봉쇄' } });
+    await waitFor(() => expect(btn.disabled).toBe(false));
+    fireEvent.click(btn);
     const dlg = await screen.findByRole('alertdialog');
-    const go = within(dlg).getByRole('button', { name: '차단 발령' }) as HTMLButtonElement;
+    const go = within(dlg).getByRole('button', { name: '차단 요청' }) as HTMLButtonElement;
     expect(go.disabled).toBe(true);
     fireEvent.change(within(dlg).getByRole('textbox'), { target: { value: 'FEAT-00022' } });
     fireEvent.click(go);
     await waitFor(() => expect(posted('/api/kill-requests')).toBeTruthy());
     const p = posted('/api/kill-requests')!;
-    expect(JSON.parse(String(p.init!.body))).toEqual({ featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: '전방 거리 오추정', confirm: 'FEAT-00022' });
+    expect(JSON.parse(String(p.init!.body))).toEqual({
+      featureId: 'FEAT-00022',
+      featureVersion: '1.0.0',
+      vins: ['ego-01'],
+      reasonCategory: 'SAFETY',
+      reasonCode: 'FIELD_FAULT',
+      reason: '전방 거리 오추정',
+      confirm: 'FEAT-00022',
+      containmentJustification: '원인 분석 전 봉쇄',
+    });
     expect(new Headers(p.init!.headers).get('X-Actor-Role')).toBe('OPERATOR');
   });
 
-  it('운영자·안전 담당이 아니면 발령 버튼이 막힌다', async () => {
+  it('운영자·안전 담당이 아니면 요청 버튼이 막힌다', async () => {
     handler = api;
     mount('/ops/kill', '/ops/kill', <KillConsole />, 'author');
     await screen.findByText('care_00022_param, care_00022_signal');
     fireEvent.change(screen.getByLabelText('사유'), { target: { value: '시험' } });
-    expect((screen.getByRole('button', { name: '차단 발령' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText(/봉쇄 결정 근거/), { target: { value: '봉쇄' } });
+    expect((screen.getByRole('button', { name: '차단 요청' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  // 회귀: 상세를 window.location이 아니라 라우터 ?id=로 연다(검토함에서 넘어오는 경로)
+  it('승인 칸 — 요청자는 승인 불가, FSM(품질 검토)은 승인 가능, FSM 칸이 남으면 다른 역할은 막힌다', async () => {
+    handler = api;
+    mount('/ops/kill?id=KILL-00001', '/ops/kill', <KillConsole />, 'operator');
+    const dlg = await screen.findByRole('dialog');
+    await within(dlg).findByText('요청자는 같은 명령을 승인할 수 없습니다(직무 분리)');
+    expect((within(dlg).getByRole('button', { name: '승인 — 개인 서명' }) as HTMLButtonElement).disabled).toBe(true);
+    cleanup();
+    handler = (url, init) =>
+      url.startsWith('/api/kill-requests/KILL-') && init?.method !== 'POST'
+        ? { body: { ...REQUESTED, approvals: [{ approverId: 'usr-coordinator', role: 'OPS_LEAD', signedAt: '2026-10-12T01:05:00.000Z', kid: 'APR-usr-coordinator' }] } }
+        : api(url, init);
+    mount('/ops/kill?id=KILL-00001', '/ops/kill', <KillConsole />, 'integrator'); // CSM — 남은 칸은 FSM만
+    await within(await screen.findByRole('dialog')).findByText('남은 칸은 Safety Manager(FSM)만');
+    cleanup();
+    mount('/ops/kill?id=KILL-00001', '/ops/kill', <KillConsole />, 'quality'); // FSM
+    const d3 = await screen.findByRole('dialog');
+    const approve = (await within(d3).findByRole('button', { name: '승인 — 개인 서명' })) as HTMLButtonElement;
+    await waitFor(() => expect(approve.disabled).toBe(false));
+    fireEvent.click(approve);
+    await waitFor(() => expect(posted('/api/kill-requests/KILL-00001/approvals')).toBeTruthy());
+    expect(new Headers(posted('/api/kill-requests/KILL-00001/approvals')!.init!.headers).get('X-Actor-Role')).toBe('SAFETY_OFFICER');
   });
 });
 

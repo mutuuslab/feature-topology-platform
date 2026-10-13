@@ -73,20 +73,21 @@ describe('이상 징후 대응', () => {
     expect((screen.getByRole('button', { name: '조치 완료' }) as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('차단 콘솔은 이상 건에서 넘어온 Feature로 채워지고, 발령 본문에 anomalyId를 싣는다', async () => {
+  it('차단 콘솔은 이상 건에서 넘어온 Feature로 채워지고, 요청 본문에 anomalyId를 싣는다(발행되면 이상 건이 조치됨)', async () => {
     handler = (url, init) => {
       if (init?.method === 'POST') return { status: 201, body: { killId: 'KILL-00001' } };
-      if (url.startsWith('/api/kill-requests/preview')) return { body: { feature: { featureId: 'FEAT-00022', version: '1.0.0', name: 'x', lifecycle: 'RELEASED', asil: 'B' }, featureIds: ['FEAT-00022'], dependents: [], flagKeys: ['care_00022_param'], vehicles: [{ vin: 'ego-01', label: 'a', link: 'ONLINE', gleo: true }], activeKill: null } };
+      if (url.startsWith('/api/kill-requests/preview')) return { body: { feature: { featureId: 'FEAT-00022', version: '1.0.0', name: 'x', lifecycle: 'RELEASED', asil: 'B' }, featureIds: ['FEAT-00022'], dependents: [], flagKeys: ['care_00022_param'], vehicles: [{ vin: 'ego-01', label: 'a', link: 'ONLINE', gleo: true }], activeKill: null, registry: { f_class: 'F3', deact_class: 'DC2', gsr_mandatory: false }, window: { hours: 24, deactivate: 0, cap: 5000 }, checks: [] } };
       if (url.startsWith('/api/kill-requests/KILL')) return { body: { killId: 'KILL-00001', featureIds: [], flagKeys: [], vins: [], safeMode: 'SAFE_DEFAULT', reason: 'r', status: 'ACTIVE', delivery: null, restore: null } };
       if (url.startsWith('/api/kill-requests')) return { body: { items: [] } };
     };
     mount('/ops/kill?featureId=FEAT-00022&anomaly=ANM-00001', '/ops/kill', <KillConsole />);
     expect(await screen.findByRole('link', { name: 'ANM-00001' })).toBeTruthy();
     fireEvent.change(screen.getByLabelText('사유'), { target: { value: '이상 건 조치' } });
-    fireEvent.click(await screen.findByRole('button', { name: '차단 발령' }));
+    fireEvent.change(await screen.findByLabelText(/봉쇄 결정 근거/), { target: { value: '이상 건 봉쇄' } });
+    fireEvent.click(await screen.findByRole('button', { name: '차단 요청' }));
     const dlg = await screen.findByRole('alertdialog');
     fireEvent.change(within(dlg).getByRole('textbox'), { target: { value: 'FEAT-00022' } });
-    fireEvent.click(within(dlg).getByRole('button', { name: '차단 발령' }));
+    fireEvent.click(within(dlg).getByRole('button', { name: '차단 요청' }));
     await waitFor(() => expect(posted('/api/kill-requests')).toBeTruthy());
     expect(JSON.parse(String(posted('/api/kill-requests')!.init!.body)).anomalyId).toBe('ANM-00001');
   });

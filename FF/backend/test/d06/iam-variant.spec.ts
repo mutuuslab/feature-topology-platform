@@ -20,7 +20,7 @@ describe('IAM · Variant · 기능 지원 조건', () => {
   });
 
   it('거부 이력은 역할 밖 시도(DENIED)를 역할별로 모은다, me는 현재 행위자의 허용 작업', async () => {
-    await http().post('/api/kill-requests').set(actor('a', 'AUDITOR')).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', safeMode: 'SAFE_DEFAULT', reason: 'x', confirm: 'FEAT-00022' }).expect(403);
+    await http().post('/api/kill-requests').set(actor('a', 'AUDITOR')).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', reason: 'x', confirm: 'FEAT-00022' }).expect(403);
     const d = (await http().get('/api/iam/denials').expect(200)).body;
     expect(d.byRole.AUDITOR).toBeGreaterThanOrEqual(1);
     expect(d.items[0]).toMatchObject({ actorRole: 'AUDITOR', result: 'DENIED' });

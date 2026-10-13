@@ -51,7 +51,7 @@ export function buildProfiles(): P[] {
       maxPendingMs: deactClass === 'DC1' ? EXAMPLE.maxPendingMs : 0,
       maxCycleWaitMs: deactClass === 'DC0' ? 0 : EXAMPLE.maxCycleWaitMs,
       maxActivationScope: { vehicles: 50000, perWindow: 5000 },
-      markets: r >= 2 ? [f.country] : [],
+      markets: [f.country], // Feature의 국가가 승인 시장 — 등급과 무관(비어 있으면 긴급 차단도 FFG-PLT-009에 막힌다)
       rxswin: [],
       approvalProfile: null,
       evidenceManifestId: null,
@@ -86,6 +86,8 @@ export function buildProfiles(): P[] {
         maxActivationScope: { vehicles: e.max_vehicles, perWindow: e.max_per_window },
         markets: e.markets_approved,
         approvalProfile: 'AP-F3',
+        // 보고서 예시 명령(kill_safety_dc2_eu.ok)의 evidence.sbom_ref — 복원·활성화 게이트(FFG-PLT-010)가 요구한다. 다른 Feature는 WP8 SBOM 생성 후
+        sbomRef: 'urn:cdx:3e671687-395b-41f5-a30f-a58921a69b79/1',
         confirmedBy: 'report:FFP-FS-STR-001 v1.1 D.6',
         confirmedAt: SEED_AT,
       } satisfies Partial<P>);

@@ -3,7 +3,7 @@
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { MockUnleash, UnleashGateway, allowed } from '../../src/adapters/unleash/unleash.client';
-import { actor, bootApp } from '../helpers';
+import { actor, bootApp, killV2, restoreV2 } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const RELEASE = actor('han.release', 'RELEASE_MANAGER');
@@ -60,10 +60,10 @@ describe('Unleash 연계 (IF-04) — 모의', () => {
   });
 
   it('긴급 차단은 FP에만 — 차단 중인 차량은 불일치로 드러나고 이유가 붙는다', async () => {
-    const k = await http().post('/api/kill-requests').set(OPERATOR).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], safeMode: 'SAFE_DEFAULT', reason: '대조 시험', confirm: 'FEAT-00022' }).expect(201);
+    const k = await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: '대조 시험', confirm: 'FEAT-00022' });
     const e = (await http().get(`/api/policies/${POL}/unleash/evaluation`).expect(200)).body;
     expect(e.rows.find((r: any) => r.vin === 'ego-01')).toMatchObject({ unleash: true, platform: false, verdict: 'MISMATCH', why: expect.stringMatching(/긴급 차단은 FP에서만/) });
-    await http().post(`/api/kill-requests/${k.body.killId}/release`).set(OPERATOR).send({ reason: '시험 종료' }).expect(200);
+    await restoreV2(http, k.killId, '시험 종료');
   });
 
   it('Unleash에서 직접 바꾼 흔적(drift)을 찾는다 — FP가 원천', async () => {

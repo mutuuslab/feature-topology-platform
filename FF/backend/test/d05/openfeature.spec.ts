@@ -6,7 +6,7 @@ import { INestApplication } from '@nestjs/common';
 import { ErrorCode, OpenFeature, type Client } from '@openfeature/server-sdk';
 import { OFREPProvider } from '@openfeature/ofrep-provider';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp } from '../helpers';
+import { actor, bootApp, killV2, restoreV2 } from '../helpers';
 
 const FLAG = 'care_00022_param';
 
@@ -58,11 +58,11 @@ describe('OpenFeature SDK ↔ FF OFREP (OF-1·OF-4)', () => {
 
   it('긴급 차단 중이면 SDK도 Safe Default(DISABLED) — 해제하면 다시 ON', async () => {
     const ops = actor('seo.ops', 'OPERATOR');
-    const k = await http().post('/api/kill-requests').set(ops).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], safeMode: 'SAFE_DEFAULT', reason: 'SDK 확인', confirm: 'FEAT-00022' }).expect(201);
+    const k = await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: 'SDK 확인', confirm: 'FEAT-00022' }, ops);
     const killed = await client.getBooleanDetails(FLAG, true, { targetingKey: 'ego-01' });
     expect(killed).toMatchObject({ value: false, reason: 'DISABLED' });
     expect(killed.flagMetadata.platformReason).toBe('KILL_SWITCH');
-    await http().post(`/api/kill-requests/${k.body.killId}/release`).set(ops).send({ reason: '복구' }).expect(200);
+    await restoreV2(http, k.killId, '복구', ops);
     expect((await client.getBooleanDetails(FLAG, false, { targetingKey: 'ego-01' })).value).toBe(true);
   });
 

@@ -7,6 +7,7 @@ import { implementedPaths } from '../data/uiLinks';
 import { RightPanel, EmptyState } from '../components/patterns';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { PageTitle } from '../components/PageTitle';
+import { useApi } from '../api/hooks';
 import { useApp, useAppShell, useLive, useLiveSlices, useToast, roleHome as ROLE_HOME } from '../store';
 
 /** 데모 기준일 — 만료 임박 판정에 쓴다(시뮬레이터 시계와 별개인 달력 기준). */
@@ -102,6 +103,8 @@ export function ApprovalWorkflow() {
   const toast = useToast();
   const role = state.role;
   const canApprove = (permMatrix[role] || []).includes('approve');
+  // 긴급 차단·복원 승인 대기(보고서 v1.1 FFG-PLT-005) — 실제 API. 승인은 개인 서명이 필요해 Kill 화면에서 한다
+  const kills = useApi<{ items: { killId: string; featureId: string; requestedBy: string; status: string; approvals?: unknown[]; restoreRequest?: { status: string; requestedBy: string; approvals: unknown[] } | null }[] }>('killRequests');
 
   const items = useMemo<InboxItem[]>(() => {
     const out: InboxItem[] = [];
@@ -142,8 +145,14 @@ export function ApprovalWorkflow() {
       kind: '장애 대응', id: i.id, target: i.feature, owner: i.severity,
       gate: `${i.status} · ${i.title}`, to: '/ops/incident',
     }));
+    (kills.data?.items ?? []).forEach((k) => {
+      if (k.status === 'REQUESTED')
+        out.push({ kind: '긴급 차단 승인', id: k.killId, target: k.featureId, owner: k.requestedBy, gate: `승인 ${k.approvals?.length ?? 0}/2 — 요청자 외 2인 개인 서명`, to: `/ops/kill?id=${k.killId}` });
+      else if (k.status === 'ACTIVE' && k.restoreRequest?.status === 'REQUESTED')
+        out.push({ kind: '복원 승인', id: k.killId, target: k.featureId, owner: k.restoreRequest.requestedBy, gate: `승인 ${k.restoreRequest.approvals.length}/2 — 차단 승인자 제외`, to: `/ops/kill?id=${k.killId}` });
+    });
     return out;
-  }, [state, dispatch, role, toast, canApprove]);
+  }, [state, dispatch, role, toast, canApprove, kills.data]);
 
   const byKind = useMemo(() => {
     const m: Record<string, number> = {};

@@ -5444,7 +5444,7 @@
         }
       },
       "post": {
-        "summary": "긴급 차단 (type-to-confirm·서명·긴급 채널)",
+        "summary": "긴급 차단 요청 (type-to-confirm·사유 분류) — 2인 승인 뒤 게이트·서명·차량별 봉투",
         "tags": [
           "D03-03"
         ],
@@ -5472,15 +5472,33 @@
                     },
                     "maxItems": 500
                   },
-                  "safeMode": {
+                  "reasonCategory": {
                     "type": "string",
                     "enum": [
-                      "SAFE_DEFAULT",
-                      "SAFE_STOP"
+                      "SAFETY",
+                      "SECURITY",
+                      "REGULATORY",
+                      "COMMERCIAL",
+                      "OPERATIONAL"
                     ],
-                    "default": "SAFE_DEFAULT"
+                    "default": "SAFETY"
+                  },
+                  "reasonCode": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9_]{3,40}$",
+                    "default": "FIELD_FAULT"
                   },
                   "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "recallCampaignId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 60
+                  },
+                  "containmentJustification": {
                     "type": "string",
                     "minLength": 2,
                     "maxLength": 500
@@ -5602,9 +5620,331 @@
         }
       }
     },
+    "/api/kill-requests/{id}/approvals": {
+      "post": {
+        "summary": "긴급 차단 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 발행",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "approveKill",
+        "description": "허용 역할: 기능안전 담당자(FSM), 사이버보안 담당자(CSM), 운영 리더, 상품 승인자, Gate 판정자, 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comment": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}/reject": {
+      "post": {
+        "summary": "긴급 차단 요청 거절",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "rejectKill",
+        "description": "허용 역할: 기능안전 담당자(FSM), 사이버보안 담당자(CSM), 운영 리더, 상품 승인자, Gate 판정자, 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}/envelopes": {
+      "get": {
+        "summary": "발행된 kill_command v2와 차량별 봉투(vehicle_auth·cmd_auth)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "killEnvelopes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}/restore": {
+      "post": {
+        "summary": "복원 요청 — 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명",
+        "tags": [
+          "D03-04"
+        ],
+        "operationId": "requestRestore",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}/restore/approvals": {
+      "post": {
+        "summary": "복원 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 복구 게시",
+        "tags": [
+          "D03-04"
+        ],
+        "operationId": "approveRestore",
+        "description": "허용 역할: 기능안전 담당자(FSM), 사이버보안 담당자(CSM), 운영 리더, 상품 승인자, Gate 판정자, 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comment": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}/restore/reject": {
+      "post": {
+        "summary": "복원 요청 거절",
+        "tags": [
+          "D03-04"
+        ],
+        "operationId": "rejectRestore",
+        "description": "허용 역할: 기능안전 담당자(FSM), 사이버보안 담당자(CSM), 운영 리더, 상품 승인자, Gate 판정자, 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/kill-requests/{id}/release": {
       "post": {
-        "summary": "차단 해제·이전 상태 복구",
+        "summary": "레거시(v1) 차단 해제 — v2 차단은 복원 요청·승인으로",
         "tags": [
           "D03-04"
         ],

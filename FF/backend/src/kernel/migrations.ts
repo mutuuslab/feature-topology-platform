@@ -262,4 +262,19 @@ CREATE TRIGGER command_window_no_update BEFORE UPDATE ON command_window BEGIN SE
 CREATE TRIGGER command_window_no_delete BEFORE DELETE ON command_window BEGIN SELECT RAISE(ABORT, 'command_window는 추가만 가능'); END;
 `,
   },
+  {
+    // Kill·복원 v2(보고서 v1.1 7~9장) — 서명된 kill_command v2와 차량별 봉투(vehicle_auth·cmd_auth). 둘 다 추가만.
+    // 차량·Feature·epoch마다 vehicle_seq는 하나씩만(재전송·중복 발급 방지, FFG-VEH-013)
+    name: '015_kill_v2',
+    sql: `
+CREATE TABLE kill_command (command_id TEXT PRIMARY KEY, kill_id TEXT NOT NULL, request TEXT NOT NULL, doc TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE INDEX kill_command_kill ON kill_command (kill_id);
+CREATE TABLE vehicle_envelope (command_id TEXT NOT NULL, kill_id TEXT NOT NULL, vin TEXT NOT NULL, feature_id TEXT NOT NULL, request TEXT NOT NULL, key_epoch INTEGER NOT NULL, vehicle_seq INTEGER NOT NULL, cmd_auth TEXT NOT NULL, doc TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (command_id, vin));
+CREATE UNIQUE INDEX vehicle_envelope_seq ON vehicle_envelope (vin, feature_id, key_epoch, vehicle_seq);
+CREATE TRIGGER kill_command_no_update BEFORE UPDATE ON kill_command BEGIN SELECT RAISE(ABORT, 'kill_command는 추가만 가능'); END;
+CREATE TRIGGER kill_command_no_delete BEFORE DELETE ON kill_command BEGIN SELECT RAISE(ABORT, 'kill_command는 추가만 가능'); END;
+CREATE TRIGGER vehicle_envelope_no_update BEFORE UPDATE ON vehicle_envelope BEGIN SELECT RAISE(ABORT, 'vehicle_envelope는 추가만 가능'); END;
+CREATE TRIGGER vehicle_envelope_no_delete BEFORE DELETE ON vehicle_envelope BEGIN SELECT RAISE(ABORT, 'vehicle_envelope는 추가만 가능'); END;
+`,
+  },
 ];

@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../store';
 
 export default function CommandPalette() {
   const nav = useNavigate();
-  const { state } = useApp();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
 
@@ -19,17 +17,19 @@ export default function CommandPalette() {
 
   const items = useMemo(() => {
     const actions = [
-      { label: 'Run Impact Analysis', to: '/analysis/impact' },
+      { label: '변경 영향 분석 · Impact', to: '/analysis/impact' },
       { label: '변경요청 등록', to: '/change/cr?new=1' },
-      { label: 'Release Readiness · FEAT-BDC-001', to: '/readiness/FEAT-BDC-001' },
-      { label: 'Kill Switch · FEAT-BDC-001', to: '/ops/FEAT-BDC-001' },
-      { label: 'Consistency Console', to: '/consistency' },
+      { label: '검토함', to: '/admin/approval' },
+      { label: '긴급 차단·복구 · Kill Switch', to: '/ops/kill' },
+      { label: '사전 점검 · PRECHECK', to: '/precheck' },
+      { label: 'PoC 6단계 진행', to: '/poc' },
     ];
-    const feats = state.features.map(f => ({ label: `${f.id} · ${f.displayName}`, to: `/feature/${f.id}` }));
-    const all = [...actions, ...feats];
-    if (!q) return all.slice(0, 8);
-    return all.filter(i => i.label.toLowerCase().includes(q.toLowerCase())).slice(0, 10);
-  }, [q, state.features]);
+    const needle = q.trim();
+    // Feature ID·이름은 Registry 검색으로 넘긴다(서버가 원천).
+    const search = needle ? [{ label: `Feature 검색 · ${needle}`, to: `/features?q=${encodeURIComponent(needle)}` }] : [];
+    if (!needle) return actions;
+    return [...search, ...actions.filter(i => i.label.toLowerCase().includes(needle.toLowerCase()))].slice(0, 10);
+  }, [q]);
 
   if (!open) return null;
   return (

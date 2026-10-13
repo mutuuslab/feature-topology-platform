@@ -12,7 +12,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, act, cleanup } from '@testing-library/react';
 import { every, animate, setPaused, resetMotion, kernelStats, MotionProvider, useMotion } from '../state/motion';
-import { AppProvider, useApp, useLive, useLiveSlices } from '../store';
 
 /**
  * 시뮬레이션 시계는 rAF 로 돌기 때문에 테스트에서도 rAF·performance 를 함께 가짜로 바꿔야
@@ -93,49 +92,6 @@ describe('모션 커널 — 반복 애니메이션은 한 곳에서만 돈다', 
   });
 });
 
-describe('실시간 슬라이스 분리 — 틱은 실시간 화면만 다시 그린다', () => {
-  it('실시간 구독자가 없으면 LIVE_TICK 이 아예 돌지 않는다', () => {
-    vi.useFakeTimers(fakeTimers());
-    render(<AppProvider><NonLive /></AppProvider>);
-    expect(kernelStats().jobs).toBe(0);
-    act(() => { vi.advanceTimersByTime(10_000); });
-    expect(kernelStats().jobs).toBe(0);
-  });
-
-  it('실시간 화면이 붙으면 틱이 돌고, 비실시간 화면은 리렌더되지 않는다', () => {
-    vi.useFakeTimers(fakeTimers());
-    const nonLiveRenders = vi.fn();
-    render(
-      <AppProvider>
-        <NonLive onRender={nonLiveRenders} />
-        <LiveConsumer />
-      </AppProvider>,
-    );
-    expect(screen.getByTestId('live-tick').textContent).toBe('0');
-    expect(nonLiveRenders).toHaveBeenCalledTimes(1);
-    // 2초 주기 틱 — 4초 진행하면 tick 은 2, AppCtx 를 구독하는 화면은 그대로다.
-    act(() => { vi.advanceTimersByTime(4000); });
-    expect(screen.getByTestId('live-tick').textContent).toBe('2');
-    expect(nonLiveRenders).toHaveBeenCalledTimes(1);
-  });
-
-  it('실시간 화면을 닫으면 틱도 사라진다', () => {
-    vi.useFakeTimers(fakeTimers());
-    const view = render(<AppProvider><LiveConsumer /></AppProvider>);
-    expect(kernelStats().jobs).toBe(1);
-    view.unmount();
-    expect(kernelStats().jobs).toBe(0);
-  });
-
-  it('틱이 갱신하는 다른 슬라이스도 구독한 화면에서는 최신값으로 흐른다', () => {
-    vi.useFakeTimers(fakeTimers());
-    render(<AppProvider><NonLive /><SliceConsumer /></AppProvider>);
-    const before = screen.getByTestId('slice-revenue').textContent;
-    act(() => { vi.advanceTimersByTime(4000); });
-    expect(screen.getByTestId('slice-revenue').textContent).not.toBe(before);
-  });
-});
-
 describe('MotionProvider — 정지 신호를 CSS 와 커널에 함께 내린다', () => {
   it('실행 중이면 html[data-motion="live"] 이고 커널도 돈다', () => {
     vi.useFakeTimers(fakeTimers());
@@ -156,23 +112,6 @@ describe('MotionProvider — 정지 신호를 CSS 와 커널에 함께 내린다
     expect(localStorage.getItem('fp.motion.v1')).toBe('off');
   });
 });
-
-function NonLive({ onRender }: { onRender?: () => void }) {
-  useApp();
-  onRender?.();
-  return <span data-testid="non-live">non-live</span>;
-}
-
-function LiveConsumer() {
-  const live = useLive();
-  return <span data-testid="live-tick">{live.tick}</span>;
-}
-
-/** LIVE_TICK 이 함께 갱신하는 슬라이스(구독/과금)를 읽는 화면. */
-function SliceConsumer() {
-  const { subscriptions } = useLiveSlices();
-  return <span data-testid="slice-revenue">{subscriptions.reduce((a, s) => a + s.revenueWon, 0)}</span>;
-}
 
 function Probe() {
   const motion = useMotion();

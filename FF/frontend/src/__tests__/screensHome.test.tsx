@@ -114,3 +114,16 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     expect(screen.queryByText('FEAT-1 1.0.0')).toBeNull();
   });
 });
+
+describe('역할별 첫 진입 화면', () => {
+  it('9역할 모두 v2 화면(이전 주소 아님)으로 간다', async () => {
+    const { roleHome } = await import('../store');
+    const { ROUTES } = await import('../routes');
+    const { roles } = await import('../data/refdata');
+    expect(Object.keys(roleHome).sort()).toEqual([...roles].sort());
+    for (const [role, to] of Object.entries(roleHome)) {
+      const r = ROUTES.find((x) => x.path === to);
+      expect(r?.v2, `${role} ${to}`).toBe(true);
+    }
+  });
+});

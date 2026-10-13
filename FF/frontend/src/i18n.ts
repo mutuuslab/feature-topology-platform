@@ -193,7 +193,7 @@ export const DEPT_NAV: Dept[] = Object.keys(ROLE_KO).map(role => {
 });
 
 const COMMON: Record<string, { ko: string; en: string }> = {
-  search: { ko: '🔍 검색 · ⌘K  (예: FEAT-BDC-001)', en: '🔍 Search · ⌘K  (e.g. FEAT-BDC-001)' },
+  search: { ko: '🔍 검색 · ⌘K  (예: FEAT-00022)', en: '🔍 Search · ⌘K  (e.g. FEAT-00022)' },
   role: { ko: '역할', en: 'Role' },
   noPerm: { ko: '권한 필요', en: 'Permission required' },
   close: { ko: '닫기', en: 'Close' },

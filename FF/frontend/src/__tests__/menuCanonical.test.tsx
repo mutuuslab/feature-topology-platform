@@ -19,7 +19,6 @@ import { DOMAINS, ITEM, SCREEN_META, canonTitleOf, domainOfPath } from '../i18n'
 import { SPEC_MENU } from '../data/specMenu';
 import { SCREEN_ENTRY, SCREEN_LINKS, areaIdOfRoute, implementedPaths, navPathOfLink, screenOfRoute } from '../data/uiLinks';
 import { SCREEN_AREA_BY_ID, SCREEN_AREA_TOTAL, SCREEN_CANON, SCREEN_CANON_BY_ID } from '../data/screenAreas';
-import { PROPOSAL_TRANSITIONS, SEED_PROPOSALS, proposalGate, type Proposal } from '../data/proposal';
 
 beforeEach(() => { localStorage.clear(); });
 afterEach(() => { cleanup(); localStorage.clear(); });
@@ -100,7 +99,7 @@ describe('정본 메뉴 배치 — 30개 화면이 한 번씩, 자기 진입 경
     expect([screenOfRoute('/ops/campaign'), areaIdOfRoute('/ops/campaign')]).toEqual(['UI10', 'UI10-S01']);
     expect([screenOfRoute('/ops/telemetry'), areaIdOfRoute('/ops/telemetry')]).toEqual(['UI12', 'UI12-S07']);
     expect([screenOfRoute('/ops/incident'), areaIdOfRoute('/ops/incident')]).toEqual(['UI13', 'UI13-S01']);
-    expect(screenOfRoute('/ops/FEAT-BDC-001')).toBe('UI27');
+    expect(screenOfRoute('/ops/FEAT-00022')).toBe('UI27');
   });
 });
 
@@ -128,31 +127,6 @@ describe('변경요청(CR)은 제안 화면이 아니라 변경요청 화면의 
 
   it('Feature 제안 화면에는 변경요청 경로가 하나도 없다', () => {
     expect(rowsOf('UI19')[0].s.views.some(v => v.to.startsWith('/change/'))).toBe(false);
-  });
-});
-
-// ─────────────────────────────────────────────────────────────
-describe('Feature 제안 단계 규칙 (레거시 제안 모델)', () => {
-  it('제안 단계에서 결정까지 가려면 접수·검토 조건을 먼저 채워야 한다', () => {
-    const p = SEED_PROPOSALS.find(x => x.kind === 'CHANGE' && x.stage === 'DRAFT')!;
-    // 초안 → 접수: 정량 근거 없이는 거부된다.
-    const noEvidence: Proposal = { ...p, quantitative: '' };
-    const g1 = proposalGate(noEvidence, 'RECEIVED');
-    expect(g1.ok).toBe(false);
-    expect(g1.reasons.join(' ')).toContain('정량 근거');
-    // 근거를 채우면 접수가 열린다.
-    expect(proposalGate(p, 'RECEIVED').ok).toBe(true);
-    // 검토는 접수 ACK 와 기술 검토자가 함께 있어야 열린다.
-    const received: Proposal = { ...p, stage: 'RECEIVED', handoff: { correlationId: 'c', commandId: 'm', requestedAt: '2026-09-14 10:00', state: 'REQUESTED', receiver: 'Conn. Team' } };
-    expect(proposalGate(received, 'REVIEWING').ok).toBe(false);
-    expect(proposalGate({ ...received, handoff: { ...received.handoff!, state: 'ACKED' }, reviewer: 'quality' }, 'REVIEWING').ok).toBe(true);
-    // 이관은 Feature 전환 경로 + 발급 ID 가 함께 있어야 성립한다(보류·반려는 이관으로 가지 않는다).
-    const decided: Proposal = { ...received, stage: 'DECISION', route: 'FEATURE', featureId: '' };
-    expect(proposalGate(decided, 'HANDOFF').ok).toBe(false);
-    expect(proposalGate({ ...decided, featureId: 'FEAT-CONN-001' }, 'HANDOFF').ok).toBe(true);
-    expect(proposalGate({ ...decided, route: 'HOLD' }, 'HANDOFF').ok).toBe(false);
-    expect(PROPOSAL_TRANSITIONS.HANDOFF).toEqual([]);
-    expect(PROPOSAL_TRANSITIONS.REJECTED).toEqual([]);
   });
 });
 
@@ -259,9 +233,9 @@ describe('화면 제목(h1)도 정본 이름을 쓴다', () => {
   });
 
   it('대상을 바꿔도 같은 화면이면 같은 정본 영역 이름이다 (예: Feature 상세 = UI02-S07)', () => {
-    expect(canonTitleOf('/feature/FEAT-BDC-001')).toBe(SCREEN_AREA_BY_ID['UI02-S07'].name);
+    expect(canonTitleOf('/feature/FEAT-00022')).toBe(SCREEN_AREA_BY_ID['UI02-S07'].name);
     expect(canonTitleOf('/change/cr/CR-2026-0101')).toBe(SCREEN_AREA_BY_ID['UI28-S02'].name);
-    expect(canonTitleOf('/topology/FEAT-BDC-001')).toBe(SCREEN_AREA_BY_ID['UI05-S02'].name);
+    expect(canonTitleOf('/topology/FEAT-00022')).toBe(SCREEN_AREA_BY_ID['UI05-S02'].name);
   });
 
   it('표에 없는 대상 기록은 제목을 화면이 스스로 정한다 (null → 각 화면의 fallback)', () => {

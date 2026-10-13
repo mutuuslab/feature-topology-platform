@@ -11,7 +11,6 @@
  */
 
 import * as T from './types';
-import { verification } from '../engine';
 
 /* ------------------------------------------------------------------ */
 /* Reason code registry                                                */
@@ -1395,6 +1394,9 @@ export function buildSimTwin(inputs: T.SimulationInputs, nowMs: number): T.Twin 
   };
 }
 
+
+/** 차량 검증 Gate 연계 — 시연 차량의 필수 시험 Evidence(HIL·OTA 롤백·Telemetry) 중 아직 PASS가 아닌 것. 레거시 인메모리 모델에서 옮긴 고정값. */
+const VEHICLE_GATE_EVIDENCE = { mandatoryTests: ['HIL-BDC-001', 'OTA-RB-002', 'TEL-BDC-001'], missingEvidence: ['OTA-RB-002'], gateResult: 'PENDING' as 'PENDING' | 'PASS' };
 export function runSimulation(inputs: T.SimulationInputs, nowMs: number): T.SimulationResult {
   const twin = buildSimTwin(inputs, nowMs);
   const ctx: EvalContext = { nowMs, incomingPolicySeq: inputs.policyVersionSeq };
@@ -1602,7 +1604,7 @@ function buildQualityGates(
   eligibility: T.EligibilityResult,
   nowMs: number,
 ): T.SimQualityGate[] {
-  const verificationResult = verification(T.FEATURE_ID);
+  const verificationResult = VEHICLE_GATE_EVIDENCE;
   const staleBlocked = !guard.passed && guard.reasonCode === 'BATTERY_TEMP_SIGNAL_STALE';
   const offlineScenario = inputs.network !== 'ONLINE';
   const rollbackScenario = inputs.killSwitch || inputs.policyVersionSeq < T.DEMO_POLICY.policyVersionSeq;

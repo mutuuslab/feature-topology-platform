@@ -78,7 +78,7 @@ describe('MENU 2.0 구조', () => {
   it('breadcrumb은 그룹 › 부모 › 현재 순서', () => {
     expect(trailOf('/features/FEAT-00022/1.0.0').map((t) => t.title)).toEqual(['Feature 정의', 'Feature Registry', 'Feature Version 상세']);
     // 지운 레거시 화면의 이전 주소는 v2 화면 아래 리다이렉트로 남는다
-    expect(trailOf('/feature/FEAT-BDC-001').map((t) => t.title)).toEqual(['Feature 정의', 'Feature Registry', 'Feature 상세 (이전 주소)']);
+    expect(trailOf('/feature/FEAT-00022').map((t) => t.title)).toEqual(['Feature 정의', 'Feature Registry', 'Feature 상세 (이전 주소)']);
     expect(trailOf('/consistency/violation').map((t) => t.title)).toEqual(['구성·Topology', 'Topology·의존관계 검증', '위반 상세 (이전 주소)']);
   });
 

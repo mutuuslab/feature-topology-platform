@@ -200,6 +200,70 @@ function RunTable({ rows, currentHash, onOpen }: { rows: VRun[]; currentHash?: s
   );
 }
 
+interface ComboPlan {
+  featureId: string;
+  group: string[];
+  safetyFlags: string[];
+  strength: number;
+  basis: string;
+  array: { factors: string[]; strength: number; rows: boolean[][]; tuples: number; covered: number; infeasible: number };
+  negatives: { on: string[]; off: string[]; expect: string; dependencyId: string; rejected: boolean; got: string[] }[];
+}
+
+/** 조합 시험 계획 — 서버(contracts combinationPlan)가 낸 covering array와 부정 시험 결과를 그대로 보인다 */
+export function CombinationPanel({ featureId }: { featureId: string }) {
+  const C = T.combo;
+  const q = useApi<ComboPlan>('virtualCombinations', { query: { featureId } });
+  const p = q.data;
+  return (
+    <Panel title={C.title} eyebrow="FFG-TST-003" id="combinations" tour="virtual-combinations">
+      <p className="ds-field__hint">{C.lead}</p>
+      <AsyncView state={asyncState(q, !p)} error={q.error?.message} onRetry={() => q.refetch()} rows={2}>
+        {p && (
+          <div style={{ display: 'grid', gap: 'var(--sp-3)' }} data-testid="combo-plan">
+            <KeyValue
+              rows={[
+                { k: C.group, v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{p.group.join(' · ')}</span>, note: p.basis },
+                { k: T.criteria, v: <span className="ds-mono">{C.strength(p.array.strength, p.array.rows.length, p.array.tuples)}</span> },
+              ]}
+            />
+            {p.group.length < 2 ? (
+              <p className="ds-field__hint">{C.none}</p>
+            ) : (
+              <DataTable
+                caption={C.row}
+                rows={p.array.rows.map((row, i) => ({ i, row }))}
+                rowKey={(x) => String(x.i)}
+                columns={[
+                  { key: 'n', header: C.row, cell: (x) => <span className="ds-mono">{x.i + 1}</span> },
+                  ...p.array.factors.map((f, j) => ({
+                    key: f,
+                    header: f,
+                    cell: (x: { i: number; row: boolean[] }) => <span className="ds-mono" style={{ color: x.row[j] ? undefined : 'var(--muted)' }}>{x.row[j] ? 'ON' : 'OFF'}</span>,
+                  })),
+                ]}
+              />
+            )}
+            {p.negatives.length > 0 && (
+              <div>
+                <h3 className="ds-eyebrow">{C.negatives}</h3>
+                <ul className="ds-check" data-testid="combo-negatives">
+                  {p.negatives.map((n) => (
+                    <li key={n.dependencyId} data-state={n.rejected ? 'PASS' : 'FAIL'}>
+                      <VerdictBadge value={n.rejected ? 'PASS' : 'FAIL'} />
+                      <span style={{ fontSize: 'var(--fs-xs)' }}>{`${C.negative(n.on, n.off)} → ${n.expect} · ${n.rejected ? C.rejected : C.notRejected} (${n.dependencyId})`}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </AsyncView>
+    </Panel>
+  );
+}
+
 /** 그 역할의 가장 최근 vECU 실행 (실행 번호가 클수록 나중) */
 const latestOf = (rows: VRun[], role: Role) => [...rows].filter((x) => x.role === role && x.source === 'vecu').sort((a, b) => b.runId.localeCompare(a.runId))[0] ?? null;
 const at = (r: VRun, id: string) => r.criteria.find((c) => c.id === id)?.at ?? null;
@@ -357,6 +421,7 @@ export function VirtualValidationScreen() {
           />
         </Panel>
       </div>
+      <CombinationPanel featureId="FEAT-00022" />
       <Panel title={T.compare.title} id="compare" tour="virtual-compare">
         <p className="ds-field__hint">{T.compare.lead}</p>
         <CompareTimeline

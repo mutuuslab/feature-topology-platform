@@ -8,10 +8,17 @@ import type { ValidatorResult } from '@ff/contracts';
 const pad = (n: number, w: number) => String(n).padStart(w, '0');
 const parse = <T>(rows: { doc: string }[]) => rows.map((r) => JSON.parse(r.doc) as T);
 
+/**
+ * 정책 바이트열 — 정책 내용(PolicySpec 필드만)을 정규 JSON으로. 같은 입력이면 키 순서·부가 필드와 무관하게 같은 바이트열이 나온다.
+ * @rule FFG-PLT-014 — 결정적 생성 + 대표 정책 Golden(backend/test/d06/policy-golden.spec.ts, 생성기를 바꾸면 Golden 비교 통과 필요)
+ */
+export function policyBytes(p: Policy | PolicySpec): string {
+  return canonicalJson(PolicySpec.parse(Object.fromEntries(Object.keys(PolicySpec.shape).map((k) => [k, (p as any)[k]]))));
+}
+
 /** 정책 내용 해시 — 승인한 내용과 배포할 내용이 같은지(P0 publishCheck HASH_MISMATCH) 확인하는 기준 */
 export function policyHash(p: Policy | PolicySpec): string {
-  const spec = PolicySpec.parse(Object.fromEntries(Object.keys(PolicySpec.shape).map((k) => [k, (p as any)[k]])));
-  return 'sha256:' + createHash('sha256').update(canonicalJson(spec)).digest('hex');
+  return 'sha256:' + createHash('sha256').update(policyBytes(p)).digest('hex');
 }
 
 export interface ValidationRun {

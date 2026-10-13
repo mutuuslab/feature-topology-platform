@@ -4,7 +4,7 @@
 // 시간 한계(인계·램프·고장 램프·FTTI)는 이 Version의 Registry 안전 분류를 패키지에 실어 vECU가 그대로 쓴다.
 // 가상 차량은 권한 보유·배포 가정으로 평가한다(기능 동작을 보는 시험이므로) — 실제 권한·배포 판단은 활성화 판단(D01-09)이 맡는다.
 import { Body, Controller, Get, Injectable, NotFoundException, Param, Post, Query, Res } from '@nestjs/common';
-import { judgeVirtual, RunVirtualBody, virtualScenariosFor, type VirtualRun } from '@ff/contracts';
+import { combinationPlan, combinationViolations, judgeVirtual, RunVirtualBody, virtualScenariosFor, type VirtualRun } from '@ff/contracts';
 import type { Response } from 'express';
 import { resolve, sep } from 'node:path';
 import { IfCallRepo } from '../../../adapters/if-call/if-call.repo';
@@ -19,7 +19,7 @@ import { EventService } from '../../../kernel/event.service';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { Inject } from '@nestjs/common';
 import { FleetRepo, policyHash, PolicyRepo } from '../../d01-policy/policy-repos';
-import { FeatureRepo } from '../../d01-policy/repos';
+import { FeatureRepo, TopologyRepo } from '../../d01-policy/repos';
 import { SafetyProfileService } from '../../d01-policy/registry/safety-profile.service';
 import { VirtualRunRepo } from './virtual-run.repo';
 
@@ -37,10 +37,28 @@ export class VirtualValidationService {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly profiles: SafetyProfileService,
+    private readonly topology: TopologyRepo,
   ) {}
 
   scenarios(featureId?: string) {
     return featureId ? virtualScenariosFor(featureId) : virtualScenariosFor('FEAT-00022');
+  }
+
+  /**
+   * 조합 시험 계획 — 이 Feature 범위(국가·차종·트림)의 Topology로 허용 조합을 정하고, 금지 조합은 같은 규칙으로 실제로 거부되는지 확인해 함께 낸다.
+   * 안전 관련 여부는 각 Feature 최신 Version의 Registry F 등급(분류 없음은 안전 관련으로 본다).
+   */
+  combinations(featureId: string) {
+    const f = this.features.versions(featureId).at(-1); // 범위는 Version마다 같다 — 최신 Version 기준
+    if (!f) throw new DomainError('NOT_FOUND', `Feature ${featureId}을(를) 찾을 수 없습니다.`);
+    const deps = this.topology.all().filter((d) => d.country === f.country && d.vehicleModel === f.vehicleModel && d.trim === f.trim);
+    const fClassOf = (id: string) => this.profiles.list(id).at(-1)?.fClass ?? null;
+    const plan = combinationPlan(featureId, deps, fClassOf);
+    const negatives = plan.negatives.map((n) => {
+      const got = combinationViolations(n.on, deps).map((v) => v.code);
+      return { ...n, rejected: got.includes(n.expect), got };
+    });
+    return { ...plan, negatives, scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim } };
   }
 
   run(actor: Actor, body: RunVirtualBody): VirtualRun[] {
@@ -189,6 +207,11 @@ export class VirtualValidationController {
   @Get('virtual-validations/scenarios')
   scenarios(@Query('featureId') featureId?: string) {
     return { items: this.vv.scenarios(featureId) };
+  }
+
+  @Get('virtual-validations/combinations')
+  combinations(@Query('featureId') featureId?: string) {
+    return this.vv.combinations(featureId ?? 'FEAT-00022');
   }
 
   @Get('virtual-validations')

@@ -1,0 +1,28 @@
+{
+ "note": "대표 정책(시드 v0.81)의 생성 결과 해시 — 갱신은 UPDATE_GOLDEN=1, 바뀐 이유를 커밋 메시지에",
+ "policies": {
+  "POL-00001": {
+   "flagKey": "care_00022_signal",
+   "status": "DEPLOYED",
+   "specSha256": "e238f16d921135c494d0db17bfa6eab3bd78921ac3e00721b8c1c854776804f9",
+   "unleashSha256": "fa5be18e1566329fb43ce9c2e48ca2edf60e04debeba7b361e9d4a1ada289875"
+  },
+  "POL-00002": {
+   "flagKey": "care_00022_param",
+   "status": "DEPLOYED",
+   "specSha256": "f3436402a4b06629edc6ee5e7ae602006ed4dc7a7dcfd17db1e64ecdccdc46bc",
+   "unleashSha256": "4118b42553e688b0b7bcb33a9dfe14e8fe419d7650fe9b4f714b7d5c6331926a"
+  },
+  "POL-00003": {
+   "flagKey": "ivi_00024_guide",
+   "status": "DEPLOYED",
+   "specSha256": "6c13796e0cb0b06a8452150de6572fb27e9b1b4616e2aab3d27f6f5ec58747ed",
+   "unleashSha256": "7d0447d8e04015d1a06b14a3b90924b9b5109168b5d12f10633045aa0c7441cd"
+  }
+ },
+ "flagdSha256": "62f5384906b6d9900ff8b9e571ecb15ff8a20dfa2da0cbff3995c807ad9df5cd",
+ "representative": {
+  "policyId": "POL-00001",
+  "bytes": "{\"controlPoint\":\"Signal\",\"description\":\"전방 거리 단계(정상·주의·위험) 판정 신호 활성화\",\"enabled\":true,\"entitlementCatalogId\":\"CAT-00019\",\"featureId\":\"FEAT-00022\",\"featureVersion\":\"1.0.0\",\"flagKey\":\"care_00022_signal\",\"rollout\":{\"basisPoints\":10000,\"mode\":\"ALL\",\"salt\":\"FF-COHORT-SALT-1\"},\"safeDefault\":false,\"strategies\":[]}"
+ }
+}

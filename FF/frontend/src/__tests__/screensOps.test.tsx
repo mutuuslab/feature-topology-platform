@@ -263,11 +263,21 @@ describe('게시본 상세', () => {
 
 describe('vECU 가상검증', () => {
   const RUN = (over: Record<string, unknown>) => ({ runId: 'VV-00001', policyId: 'POL-00003', policyRevision: 1, contentHash: 'h', featureId: 'FEAT-00022', featureVersion: '1.0.0', vin: 'ego-01', scenarioId: 'SCN-FEAT00022-NOMINAL', source: 'vecu', simulator: 's', testId: 'TEST-1', overall: 'PASS', gateResult: 'PASS', criteria: [{ id: 'danger_time', label: '위험 누적', unit: 's', op: '<=', limit: 0, status: 'fail', value: 3, at: 20, deciding: false }], evaluation: null, evidence: { files: [{ name: 'verdict.json', sha256: 'abcdef0123456789', bytes: 10 }] }, error: null, at: '2026-10-12T01:00:00.000Z', by: 'u', tms: null, ...over });
+  const COMBO = {
+    featureId: 'FEAT-00022',
+    group: ['FEAT-00022', 'FEAT-00145'],
+    safetyFlags: ['FEAT-00022', 'FEAT-00145'],
+    strength: 2,
+    basis: '안전 관련 Flag 2개가 상호작용 — 3-way(인자 수 이하라 전수)',
+    array: { factors: ['FEAT-00022', 'FEAT-00145'], strength: 2, rows: [[false, false], [false, true], [true, true]], tuples: 3, covered: 3, infeasible: 1 },
+    negatives: [{ on: ['FEAT-00022'], off: ['FEAT-00145'], expect: 'REQUIRES_MISSING', dependencyId: 'DEP-00013', rejected: true, got: ['REQUIRES_MISSING'] }],
+  };
   const api = (run: Record<string, unknown>, list: Record<string, unknown>[] = [run]): Handler => (url, init) => {
     if (init?.method === 'POST' && url.endsWith('/tms')) return { status: 201, body: { ...run, tms: { tmsId: 'TMS-00001', submittedAt: 'x' } } };
     if (init?.method === 'POST') return { status: 201, body: { items: [run] } };
     if (url.startsWith('/api/vecu/status')) return { body: { available: true, mode: 'auto', dir: 'C:/vECU', reason: null, simulatorUrl: 'x' } };
     if (url.startsWith('/api/virtual-validations/scenarios')) return { body: { items: [{ scenarioId: 'SCN-FEAT00022-NOMINAL', name: '정상', role: 'NOMINAL', validator: 'D06-03', purpose: '정상 추종', params: { fault: null } }] } };
+    if (url.startsWith('/api/virtual-validations/combinations')) return { body: COMBO };
     if (url.startsWith('/api/virtual-validations/VV-')) return { body: run };
     if (url.startsWith('/api/virtual-validations')) return { body: { items: list } };
     if (url.startsWith('/api/policies')) return { body: { items: [{ policyId: 'POL-00003', flagKey: 'care_00022_param', featureId: 'FEAT-00022', featureVersion: '1.0.0', status: 'DRAFT', revision: 1 }] } };
@@ -314,6 +324,17 @@ describe('vECU 가상검증', () => {
     expect([...checks.querySelectorAll('li')].map((li) => li.getAttribute('data-state'))).toEqual(['PASS', 'FAIL', 'FAIL', 'FAIL', 'FAIL']);
     expect(screen.getByText('danger_time 31s (기준 <= 0)')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'TMS 제출 (IF-09)' })).toBeNull();
+  });
+
+  it('FFG-TST-003 조합 시험 계획: covering array 행과 금지 조합 부정 시험(거부 확인)을 보인다', async () => {
+    handler = api(RUN({}));
+    mount('/validations/virtual', '/validations/virtual', <VirtualValidationScreen />, 'quality');
+    const plan = await screen.findByTestId('combo-plan');
+    expect(plan.textContent).toContain('2-way · 시험 3행 · 조합 3개 모두 덮음');
+    expect(within(plan).getAllByRole('row')).toHaveLength(4); // 머리글 + 3행
+    const neg = within(plan).getByTestId('combo-negatives');
+    expect(neg.textContent).toContain('FEAT-00022 ON · FEAT-00145 OFF → REQUIRES_MISSING · 거부 확인 (DEP-00013)');
+    expect(neg.querySelector('li')!.getAttribute('data-state')).toBe('PASS');
   });
 
   it('vECU 미연결 결과에는 TMS 제출이 없다', async () => {

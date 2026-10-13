@@ -2,8 +2,8 @@
   "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
   "summary": {
     "platformRules": 75,
-    "implemented": 44,
-    "tested": 44,
+    "implemented": 46,
+    "tested": 46,
     "reportTestsReferenced": 15
   },
   "rules": [
@@ -731,8 +731,12 @@
         "정책 검증"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "backend/src/domains/d01-policy/policy-repos.ts"
+      ],
+      "tested": [
+        "backend/test/d06/policy-golden.spec.ts"
+      ]
     },
     {
       "id": "FFG-PLT-015",
@@ -1049,8 +1053,14 @@
         "플랫폼"
       ],
       "section": "12_testing.md · 12.8 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/covering.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/covering.test.ts",
+        "backend/test/d06/virtual.spec.ts",
+        "frontend/src/__tests__/screensOps.test.tsx"
+      ]
     },
     {
       "id": "FFG-TST-009",

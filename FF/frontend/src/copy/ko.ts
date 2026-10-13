@@ -622,6 +622,18 @@ export const ko = {
     safety: 'Registry 시간값',
     safetyText: (s: { deactClass: string; takeoverMs: number; rampMs: number; faultRampMs: number; faultTolerantTimeMs: number }) =>
       `${s.deactClass} · 인계 ${s.takeoverMs / 1000} s · 램프 ${s.rampMs / 1000} s · 고장 램프 ${s.faultRampMs / 1000} s · FTTI ${s.faultTolerantTimeMs / 1000} s`,
+    combo: {
+      title: '조합 시험 계획',
+      lead: 'Topology의 의존(REQUIRES)·충돌(EXCLUDES)로 허용 조합을 정하고, 안전 관련 Flag(F2 이상)가 둘 이상 상호작용하면 3-way covering array로 시험합니다. 허용되지 않는 조합은 부정 시험으로 실제 거부를 확인합니다.',
+      group: '상호작용 범위',
+      strength: (t: number, n: number, tuples: number) => `${t}-way · 시험 ${n}행 · 조합 ${tuples}개 모두 덮음`,
+      row: '시험 행',
+      negatives: '부정 시험 (금지 조합)',
+      negative: (on: string[], off: string[]) => `${on.join(' + ')} ON${off.length ? ` · ${off.join(', ')} OFF` : ''}`,
+      rejected: '거부 확인',
+      notRejected: '거부되지 않음',
+      none: '이 Feature는 의존·충돌 관계가 없어 단독 시험만 합니다',
+    },
     compare: {
       title: '원격 차단 대 차량 내 감지',
       lead: '같은 거리 추정 오류(17 s)를 두 경로로 처리했을 때 기능 효과가 언제 사라지는지 비교합니다. FTTI 안에 BASE_ONLY에 닿아야 합니다(보고서 CS-01).',

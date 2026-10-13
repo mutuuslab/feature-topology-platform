@@ -166,7 +166,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'releaseKill', method: 'POST', path: '/api/kill-requests/:id/release', summary: '레거시(v1) 차단 해제 — v2 차단은 복원 요청·승인으로', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: z.object({ reason: z.string().trim().min(2).max(500) }).strict() },
   // vECU 가상검증 (IF-09 가상검증 공급자) — 차량 시나리오(D06-03)·안전 동작(D06-06) 근거, G5 Evidence는 TMS 제출(D04-02)
   { name: 'vecuStatus', method: 'GET', path: '/api/vecu/status', summary: 'vECU 가상검증 실행기 연결 상태', component: 'D06-03' },
-  { name: 'virtualScenarios', method: 'GET', path: '/api/virtual-validations/scenarios', summary: 'Feature별 가상검증 시나리오 (판정 기준·연결 검증기)', component: 'D06-03', query: ['featureId'] },
+  { name: 'virtualScenarios', method: 'GET', path: '/api/virtual-validations/scenarios', summary: 'Feature별 가상검증 시나리오 (역할·연결 검증기·목적)', component: 'D06-03', query: ['featureId'] },
+  { name: 'virtualCombinations', method: 'GET', path: '/api/virtual-validations/combinations', summary: 'Feature 조합 시험 계획 (Topology 허용 조합, 3-way covering array, 금지 조합 부정 시험) — FFG-TST-003', component: 'D06-03', query: ['featureId'] },
   { name: 'virtualRuns', method: 'GET', path: '/api/virtual-validations', summary: '가상검증 실행 이력', component: 'D06-03', query: ['policyId', 'featureId', 'featureVersion'] },
   { name: 'runVirtual', method: 'POST', path: '/api/virtual-validations', summary: '정책을 vECU 가상 차량에 적용해 시나리오 실행 (판정·Evidence)', component: 'D06-03', roles: ['FEATURE_AUTHOR', 'IMPLEMENTER', 'GATE_JUDGE'], body: RunVirtualBody },
   { name: 'virtualRunDetail', method: 'GET', path: '/api/virtual-validations/:id', summary: '가상검증 결과 (기준별 판정·Evidence 해시·TMS)', component: 'D06-03' },

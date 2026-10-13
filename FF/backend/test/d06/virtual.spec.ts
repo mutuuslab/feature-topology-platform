@@ -45,6 +45,18 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     expect((await http().get('/api/vecu/status').expect(200)).body.available).toBe(true);
   });
 
+  it('FFG-TST-003 조합 시험 계획: Topology 허용 조합의 covering array와 금지 조합 부정 시험(실제 거부 확인)', async () => {
+    const p = (await http().get('/api/virtual-validations/combinations?featureId=FEAT-00022').expect(200)).body;
+    expect(p).toMatchObject({ featureId: 'FEAT-00022', group: ['FEAT-00022', 'FEAT-00145'], scope: { country: expect.any(String) } });
+    expect(p.safetyFlags).toContain('FEAT-00022'); // Registry F3
+    expect(p.array.rows.some((r: boolean[]) => r[0] && !r[1])).toBe(false); // 22 ON · 145 OFF 금지
+    expect(p.array.covered).toBe(p.array.tuples);
+    expect(p.negatives).toEqual([expect.objectContaining({ on: ['FEAT-00022'], off: ['FEAT-00145'], expect: 'REQUIRES_MISSING', rejected: true })]);
+    const x = (await http().get('/api/virtual-validations/combinations?featureId=FEAT-00023').expect(200)).body;
+    expect(x.negatives).toEqual([expect.objectContaining({ on: ['FEAT-00023', 'FEAT-00181'], expect: 'EXCLUDES_CONFLICT', rejected: true })]);
+    await http().get('/api/virtual-validations/combinations?featureId=FEAT-99999').expect(404);
+  });
+
   it('가상검증 전에는 정책 검증이 HOLD — Evidence 없이 승인할 수 없다', async () => {
     const run = await validate();
     expect(run.decision).toBe('HOLD');

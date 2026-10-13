@@ -83,7 +83,7 @@ export function WhatIfRunner({ result, simTimeMs, simTick, rate, onSetRate, onSt
         </div>
       </div>
 
-      <div className="wif-bar" role="progressbar" aria-valuemin={0} aria-valuemax={frame.totalSeconds} aria-valuenow={frame.elapsedSeconds}>
+      <div className="wif-bar" role="progressbar" aria-label={ko ? '시뮬레이션 진행' : 'simulation progress'} aria-valuemin={0} aria-valuemax={frame.totalSeconds} aria-valuenow={frame.elapsedSeconds}>
         <i style={{ width: `${Math.round(frame.progress * 100)}%` }} />
         <span className="wif-bar-label">
           {ko ? '재생 진행' : 'replay'} {frame.elapsedSeconds} / {frame.totalSeconds}s · {ko ? '이벤트' : 'events'} {frame.revealed.length}/{result.eventLog.length}
@@ -191,7 +191,7 @@ export function WhatIfRunner({ result, simTimeMs, simTick, rate, onSetRate, onSt
                 <span className="wif-desc">{e.desc[lang]}</span>
               </li>
             ))}
-            {!frame.revealed.length && <li className="small muted">▶ {ko ? '실행 버튼을 누르면 실제 이벤트가 1초 간격으로 재생됩니다.' : 'Press run to replay real events at one per second.'}</li>}
+            {!frame.revealed.length && <li className="small wif-empty">▶ {ko ? '실행 버튼을 누르면 실제 이벤트가 1초 간격으로 재생됩니다.' : 'Press run to replay real events at one per second.'}</li>}
           </ul>
         </div>
       </div>

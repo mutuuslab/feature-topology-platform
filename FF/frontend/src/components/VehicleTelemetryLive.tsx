@@ -111,7 +111,7 @@ export function VehicleTelemetryLive({ snapshot, vin, lang }: VehicleTelemetryLi
                 : ` — 최근 ${RX_WINDOW_S}초 수신이면 정상`}
             </span>
           </h4>
-          <div className="vtel-stream" data-testid="vtel-stream">
+          <div className="vtel-stream" data-testid="vtel-stream" tabIndex={0} role="log" aria-label="telemetry stream">
             {frames.length === 0 ? (
               <p className="muted small vtel-empty" data-testid="vtel-stream-empty">
                 {paused

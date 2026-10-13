@@ -320,6 +320,12 @@
   gap: 2px;
 }
 
+.wif-empty {
+  /* 어두운 로그 바탕 위 안내 — 공용 .muted(밝은 바탕용)는 대비 미달(WCAG AA) */
+  color: var(--lg-94a3b8);
+  padding: 2px 4px;
+}
+
 .wif-line {
   display: grid;
   grid-template-columns: 62px 54px minmax(120px, 210px) 1fr;

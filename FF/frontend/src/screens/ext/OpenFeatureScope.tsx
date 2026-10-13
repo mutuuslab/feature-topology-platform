@@ -122,7 +122,7 @@ function JsonPanel({ name }: { name: string }) {
   const q = useApi<unknown>(name);
   return (
     <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
-      <pre className="ds-code" style={{ maxHeight: '50vh', overflow: 'auto' }}>{JSON.stringify(q.data, null, 2)}</pre>
+      <pre className="ds-code" tabIndex={0} style={{ maxHeight: '50vh', overflow: 'auto' }}>{JSON.stringify(q.data, null, 2)}</pre>
     </AsyncView>
   );
 }
@@ -137,7 +137,7 @@ function ManifestPanel() {
           <p className={d.findings.length ? 'ds-stale' : 'ds-ok'} role="status">
             {d.findings.length ? `${O.findings}: ${d.findings.map((f) => `${f.rule} ${f.message}`).join(' · ')}` : `${O.findings}: ${O.noFindings}`}
           </p>
-          <pre className="ds-code" style={{ maxHeight: '50vh', overflow: 'auto' }}>{JSON.stringify({ flags: d.flags }, null, 2)}</pre>
+          <pre className="ds-code" tabIndex={0} style={{ maxHeight: '50vh', overflow: 'auto' }}>{JSON.stringify({ flags: d.flags }, null, 2)}</pre>
         </>
       )}
     </AsyncView>

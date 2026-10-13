@@ -99,7 +99,7 @@
 .veh-chip[aria-pressed='true'] {
   background: var(--veh-brand);
   border-color: var(--veh-brand);
-  color: var(--lg-ffffff);
+  color: var(--lg-05070f); /* 밝은 파랑 바탕 — 흰 글자는 3.2:1로 AA 미달 */
   font-weight: 700;
 }
 

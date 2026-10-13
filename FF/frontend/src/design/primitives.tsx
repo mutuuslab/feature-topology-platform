@@ -46,9 +46,10 @@ export function IdChip({ id, version, to, copy = true }: { id: string; version?:
   );
 }
 
-export function Panel({ title, eyebrow, actions, children, id }: { title?: ReactNode; eyebrow?: ReactNode; actions?: ReactNode; children: ReactNode; id?: string }) {
+/** tour: 따라하기 스포트라이트 앵커(data-tour) */
+export function Panel({ title, eyebrow, actions, children, id, tour }: { title?: ReactNode; eyebrow?: ReactNode; actions?: ReactNode; children: ReactNode; id?: string; tour?: string }) {
   return (
-    <section className="ds-panel" aria-labelledby={id ? `${id}-h` : undefined}>
+    <section className="ds-panel" aria-labelledby={id ? `${id}-h` : undefined} data-tour={tour}>
       {(title || actions) && (
         <header className="ds-panel__head">
           <div>

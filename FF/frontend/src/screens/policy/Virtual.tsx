@@ -143,7 +143,7 @@ export const vecuLink = (featureId: string) => `${VECU_WEB}?ffv=${encodeURICompo
 
 export function SimulatorLink({ featureId }: { featureId: string }) {
   return (
-    <a href={vecuLink(featureId)} target="_blank" rel="noopener" title={T.openSimHint} data-testid="vecu-link">
+    <a href={vecuLink(featureId)} target="_blank" rel="noopener" title={T.openSimHint} data-testid="vecu-link" data-tour="vecu-link">
       {T.openSim} ↗
     </a>
   );
@@ -198,7 +198,7 @@ export function VirtualValidationScreen() {
     <div className="ds-screen">
       <PageHeader eyebrow="D06-03 · D04-02 · vECU" title={T.title} lead={T.lead} actions={<SimulatorLink featureId="FEAT-00022" />} />
       <div className="ds-split">
-        <Panel title={T.status} id="vecu" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
+        <Panel title={T.status} id="vecu" tour="vecu-status" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
           {status.data && (
             <KeyValue
               rows={[
@@ -225,6 +225,7 @@ export function VirtualValidationScreen() {
       <Panel
         title={T.runs}
         id="runs"
+        tour="virtual-runs"
         actions={
           <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'end' }}>
             <Select label={T.policy} value={pick} onChange={(e) => setPolicyId(e.target.value)}>
@@ -234,7 +235,7 @@ export function VirtualValidationScreen() {
                 </option>
               ))}
             </Select>
-            <Button variant="primary" disabled={!perm.ok || !pick || run.isPending} title={perm.hint} onClick={() => run.mutate({ body: { policyId: pick } })}>
+            <Button variant="primary" data-tour="virtual-run" disabled={!perm.ok || !pick || run.isPending} title={perm.hint} onClick={() => run.mutate({ body: { policyId: pick } })}>
               {T.run}
             </Button>
           </div>

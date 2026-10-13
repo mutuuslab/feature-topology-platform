@@ -4,7 +4,7 @@
     "platformRules": 75,
     "implemented": 2,
     "tested": 2,
-    "reportTestsReferenced": 1
+    "reportTestsReferenced": 2
   },
   "rules": [
     {
@@ -116,7 +116,9 @@
       ],
       "section": "05_classification.md · 5.8 규칙",
       "implemented": [],
-      "tested": []
+      "tested": [
+        "e2e/tests/learn.spec.ts"
+      ]
     },
     {
       "id": "FFG-CODE-020",
@@ -408,6 +410,7 @@
         "frontend/src/screens/ops/KillConsole.tsx"
       ],
       "tested": [
+        "frontend/src/__tests__/screensLearn.test.tsx",
         "frontend/src/__tests__/screensOps.test.tsx"
       ]
     },
@@ -557,6 +560,7 @@
       "section": "08_control_plane.md · 8.5 규칙",
       "implemented": [],
       "tested": [
+        "contracts/src/rules/tutorial.test.ts",
         "frontend/src/__tests__/designSafety.test.tsx"
       ]
     },
@@ -847,6 +851,7 @@
     }
   ],
   "reportTests": [
-    "TC-FF-11"
+    "TC-FF-11",
+    "TC-FF-21"
   ]
 }

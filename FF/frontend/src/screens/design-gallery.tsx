@@ -16,6 +16,7 @@ import {
   DiffView,
   Drawer,
   EventStream,
+  Explain,
   GateBadge,
   GateRail,
   IdChip,
@@ -233,6 +234,8 @@ export default function DesignGallery() {
             <ClassBadges f="F4" dc="DC4" r="R2" type="OPS" short />
             <ClauseChip id="FFG-CLS-009" title={T.clauseSample} onOpen={() => undefined} />
             <ClauseChip id="ISO 26262-3 cl.7" />
+            {/* 표준 설명 모드(상단 책 아이콘)를 켜면 보인다 */}
+            <Explain rules={['FFG-CLS-001', 'FFG-CLS-009']} />
           </div>
         </div>
       </Panel>

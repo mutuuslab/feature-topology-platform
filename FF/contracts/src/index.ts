@@ -25,3 +25,5 @@ export * from './flags/openfeature';
 export * from './rules/trial';
 export * from './schemas/safety';
 export * from './rules/deactivation';
+export * from './rules/standards';
+export * from './rules/tutorial';

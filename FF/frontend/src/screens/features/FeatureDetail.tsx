@@ -44,6 +44,7 @@ export default function FeatureDetail() {
         {d && (
           <>
             <PageHeader
+              tour="feature-header"
               eyebrow={<IdChip id={d.feature.featureId} version={d.feature.version} />}
               title={
                 <>
@@ -148,7 +149,9 @@ function Gates({ id, ver }: { id: string; ver: string }) {
   return (
     <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
       <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
-        <GateRail statuses={statuses} onSelect={setSelected} />
+        <div data-tour="gate-rail">
+          <GateRail statuses={statuses} onSelect={setSelected} />
+        </div>
         {g && (
           <div className="ds-split">
             <Panel title={`${g.gate} ${g.name}`} eyebrow={`${g.stage} · ${g.judgeRole}`} id="gate-hist" actions={<GateBadge status={g.status === '미판정' ? null : g.status} />}>

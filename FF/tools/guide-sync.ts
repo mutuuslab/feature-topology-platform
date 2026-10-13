@@ -12,6 +12,8 @@ const SRC = process.env.GUIDE_DIR ?? 'C:/project/2026-09-23_FF_IMP/FF_Safety_Gui
 const OUT = join(FF, 'harness', 'guide');
 const MANIFEST = join(OUT, 'GUIDE_SYNC.json');
 const CATALOG = 'catalog.json';
+/** 화면(따라하기·표준 설명 모드)이 쓰는 규칙·시험 원문 — contracts 생성 모듈(프론트·백엔드 공용). harness/guide/catalog.json에서 만든다 */
+const GENERATED = join(FF, 'contracts', 'src', 'generated', 'report-catalog.ts');
 
 /** 허용 목록 — 플랫폼 게이트·계약 시험에 쓰는 것만 (C/C++ 차량 코드·원고·문서·zip은 제외) */
 const ALLOW: RegExp[] = [/^schema\/[\w.-]+\.schema\.json$/, /^schema\/examples\/[\w.-]+\.json$/, /^harness\/terms\.json$/];
@@ -155,6 +157,20 @@ export function catalogProblems(c: Catalog): string[] {
   return out;
 }
 
+/** catalog.json → contracts 생성 모듈 원문(결정적: 같은 카탈로그면 같은 바이트) */
+export function renderCatalogModule(c: Catalog): string {
+  const rules = c.rules.map(({ id, title, level, scope, rule, basis, verify, file, section }) => ({ id, title, level, scope, rule, basis, verify, section: `${file.replace(/\.md$/, '')} · ${section}` }));
+  return [
+    '// 생성 파일 — tools/guide-sync.ts가 harness/guide/catalog.json(보고서 v1.1 원고)에서 만든다. 손으로 고치지 않는다(guide:check가 잡는다).',
+    "import type { ReportRule, ReportTest } from '../rules/standards';",
+    '',
+    `export const REPORT_RULES: readonly ReportRule[] = ${JSON.stringify(rules, null, 2)};`,
+    '',
+    `export const REPORT_TESTS: readonly ReportTest[] = ${JSON.stringify(c.tests, null, 2)};`,
+    '',
+  ].join('\n');
+}
+
 interface Manifest {
   source: string;
   syncedAt: string;
@@ -197,6 +213,8 @@ function sync() {
     bytes: statSync(join(OUT, CATALOG)).size,
   };
   writeFileSync(MANIFEST, JSON.stringify(m, null, 2) + '\n');
+  mkdirSync(dirname(GENERATED), { recursive: true });
+  writeFileSync(GENERATED, renderCatalogModule(catalog));
   console.log(`guide:sync  ${files.length}개 파일 + 규칙 ${catalog.rules.length}개·시험 ${catalog.tests.length}개 → ${posix(relative(FF, OUT))}`);
 }
 
@@ -213,6 +231,9 @@ function check(): number {
     if (!existsSync(join(OUT, f))) errors.push(`빠진 파일: ${f}`);
     else if (sha(join(OUT, f)) !== e.sha256) errors.push(`복사본이 바뀜(가이드 원본에서 고친 뒤 다시 동기화): ${f}`);
   }
+  // 생성 모듈이 카탈로그와 같은지 — 손으로 고쳤거나 다시 만들지 않았으면 실패
+  const want = renderCatalogModule(readJson<Catalog>(join(OUT, CATALOG)));
+  if (!existsSync(GENERATED) || readFileSync(GENERATED, 'utf8').replace(/\r\n/g, '\n') !== want) errors.push(`생성 모듈이 카탈로그와 다름(npm run guide:sync): ${posix(relative(FF, GENERATED))}`);
   if (errors.length) {
     console.error(`guide:check  ✗ ${errors.length}건\n  ${errors.join('\n  ')}`);
     return 1;

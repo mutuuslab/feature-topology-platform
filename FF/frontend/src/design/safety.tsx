@@ -1,7 +1,7 @@
 // 기능안전 부품 — 국제표준 대응방안 보고서 v1.1의 분류(5장)·비활성화(7장)·승인·원장(8장)·결과 코드(9장)를 화면마다 같은 모양으로 보여 준다.
 // 색만으로 구분하지 않는다: 등급은 모양 글리프 + 텍스트, 판정은 StatusGlyph. 빨강은 위반(FAIL)에만 쓰고 막힘·대기는 warn.
 import type { CSSProperties, ReactNode } from 'react';
-import { reasonAction, type DeactClass, type DeactStage, type FClass, type FlagType, type RegClass, type RejectCode, type RequestResult } from '@ff/contracts';
+import { reasonAction, reportRule, type DeactClass, type DeactStage, type FClass, type FlagType, type RegClass, type RejectCode, type RequestResult } from '@ff/contracts';
 import { ko } from '../copy/ko';
 import { Icon, StatusGlyph } from './icons';
 
@@ -369,6 +369,22 @@ export function ClauseChip({ id, title, onOpen }: { id: string; title?: string; 
   ) : (
     <span className="ds-clause" title={title}>
       {body}
+    </span>
+  );
+}
+
+// ── 표준 설명 모드 ─────────────────────────────────────
+/** 규칙 상세 열기 — 표준 설명 칩·따라하기 가이드 어디서든 셸의 같은 규칙 Drawer가 받는다 */
+export const RULE_EVENT = 'ff:rule-open';
+export const openRule = (id: string) => window.dispatchEvent(new CustomEvent(RULE_EVENT, { detail: id }));
+
+/** 화면 요소 옆의 근거 규칙 칩 — 표준 설명 모드(html[data-explain='on'])에서만 보인다. 꺼져 있으면 접근성 트리에서도 빠진다 */
+export function Explain({ rules }: { rules: readonly string[] }) {
+  return (
+    <span className="ds-explain" data-explain-rules={rules.join(' ')}>
+      {rules.map((id) => (
+        <ClauseChip key={id} id={id} title={reportRule(id)?.title} onOpen={openRule} />
+      ))}
     </span>
   );
 }

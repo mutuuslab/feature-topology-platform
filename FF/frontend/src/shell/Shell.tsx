@@ -9,6 +9,8 @@ import { Button, Icon } from '../design';
 import { useMotion } from '../state/motion';
 import { roleHome, useAppApi, useAppShell } from '../store';
 import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '../routes';
+import { GuideDock, RuleDrawer } from './GuideDock';
+import { learnStore, useExplain, useLearn } from './learn';
 import './shell.css';
 
 const LS_PRESENT = 'ff.present';
@@ -39,6 +41,12 @@ export function Shell({ children }: { children: ReactNode }) {
   const [myRole, setMyRole] = usePersistent(LS_MYROLE, false);
   const [panelOpen, setPanelOpen] = usePersistent(LS_PANEL, true);
   const [q, setQ] = useState('');
+  // 따라하기 진행 중이면 오른쪽에 가이드 패널 열(접으면 떠 있는 버튼만) · 표준 설명 모드는 html[data-explain]
+  const learning = useLearn();
+  const explain = useExplain();
+  useEffect(() => {
+    document.documentElement.setAttribute('data-explain', explain ? 'on' : 'off');
+  }, [explain]);
 
   useEffect(() => {
     if (current) setGroup(current.group);
@@ -79,7 +87,7 @@ export function Shell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="sh" data-panel={panelOpen && !present ? 'open' : 'closed'}>
+    <div className="sh" data-panel={panelOpen && !present ? 'open' : 'closed'} data-guide={learning && !learning.collapsed ? 'open' : undefined}>
       <a className="sh-skip" href="#main">{ko.app.skip}</a>
 
       <header className="sh-top">
@@ -112,6 +120,7 @@ export function Shell({ children }: { children: ReactNode }) {
               ))}
             </select>
           </div>
+          <Button variant="ghost" icon="book" aria-pressed={explain} aria-label={ko.learn.explain.label} title={ko.learn.explain.hint} onClick={() => learnStore.setExplain(!explain)} />
           <Button variant="ghost" icon="present" aria-pressed={present} aria-label={present ? ko.shell.presentOn : ko.shell.presentOff} title={present ? ko.shell.presentOn : ko.shell.presentOff} onClick={() => setPresent(!present)} />
           <Button variant="ghost" icon={motion.running ? 'pause' : 'play'} aria-pressed={motion.running} aria-label={ko.shell.motion} title={ko.shell.motion} onClick={() => motion.setLive(!motion.live)} />
           <Button variant="ghost" icon={theme === 'light' ? 'moon' : 'sun'} aria-label={ko.shell.theme} title={ko.shell.theme} onClick={() => dispatch({ t: 'THEME', theme: theme === 'light' ? 'dark' : 'light' })} />
@@ -182,6 +191,8 @@ export function Shell({ children }: { children: ReactNode }) {
         )}
         <Suspense fallback={<div className="ds-skel" data-state="loading"><span /><span /><span /></div>}>{children}</Suspense>
       </main>
+      <GuideDock />
+      <RuleDrawer />
     </div>
   );
 }

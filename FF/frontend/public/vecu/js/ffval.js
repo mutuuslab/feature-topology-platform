@@ -198,7 +198,7 @@ export class ValidationRun {
     // vehicle-side context (changes with reports), flag requests/reports sent by the vehicle, the report channel state
     this.ctx = { ...o.vehicle }; this.ent = o.pkg.entitlementActive; this.killed = false;
     this.trial = o.pkg.trial || (this.ent ? 'ACTIVE' : 'NONE');   // OFFERED | ACTIVE | NONE (package field `trial`)
-    this.reqs = []; this.sched = [...(sc.vehicle_requests || [])].sort((a, b) => a.at_s - b.at_s); this.roles = sc.criteria || null;
+    this.reqs = []; this.pending = []; this.sched = [...(sc.vehicle_requests || [])].sort((a, b) => a.at_s - b.at_s); this.roles = sc.criteria || null;
     this.boot = { id: 'BOOT-1', seq: 0, last: -1 }; this.seen = {}; this.window = []; this.faults = [];
     this.k = { maxDecel: 0, maxDecelAt: null, killIssued: null, killApplied: null };
     this.pendingKill = null; this.adviceKillAt = null;
@@ -296,7 +296,8 @@ export class ValidationRun {
       if (type === 'FAULT') { this.faults.push({ vin, severity: rec.severity || 'WARNING', code: rec.code, t }); rec.advice = anomalyAdvice(this.feature.asil, this.faults); }
       if (type === 'READBACK') { const decided = this.lastDecision != null ? this.lastDecision : !!(this.flag && this.flag.value); const obs = rec.observed != null ? !!rec.observed : this.on && this.rt.state === 'ACTIVE';
         rec.readback = { observed: obs, desired: decided, status: obs === decided ? 'CONFIRMED' : 'DIVERGED' }; }
-      evaluate({ ...this.pkg, entitlementActive: this.ent }, this.ctx, { killed: this.killed }).then(r => { rec.result = r; });
+      const p = evaluate({ ...this.pkg, entitlementActive: this.ent }, this.ctx, { killed: this.killed }).then(r => { rec.result = r; this.pending = this.pending.filter(x => x !== p); });
+      this.pending.push(p);
     }
     if (rec.bootId != null && !(prev) && !(rec.result && rec.result.rejected && /BOOT_MISMATCH|OLD_SEQUENCE|RATE_LIMITED|VEHICLE_SCOPE/.test(rec.result.rejected.code))) this.seen[key] = { id: rec.id, body };
     if (own) this.window.push(t);
@@ -307,6 +308,11 @@ export class ValidationRun {
     this.ev('vehicle_request', `${rec.id} ${vin} → ${what}${rec.bootId ? ` [${rec.bootId}#${rec.sequence}]` : ''}${rec.label ? ` · ${rec.label}` : ''}`,
       { request: { id: rec.id, kind, type, vin, bootId: rec.bootId, sequence: rec.sequence, set: rec.set, entitlementActive: rec.entitlementActive, code: rec.code, severity: rec.severity, expect: rec.expect, at: this.iso(t) } });
     return rec;
+  }
+  /** Wait for the re-evaluations behind accepted requests. The browser loop yields between frames so they land on their
+   *  own; a headless loop that never yields (tools/ffval_cli.mjs) must await this after each step or no answer arrives. */
+  async settle() {
+    while (this.pending.length) await Promise.all(this.pending.splice(0));
   }
   serveRequests(t) {
     for (const rec of this.reqs) {

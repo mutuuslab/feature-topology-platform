@@ -2,6 +2,7 @@
 // 브라우저·포트 없이 Node 프로세스 하나(시나리오당 수십 ms). vECU가 없으면 'unavailable' — 증적으로 인정되지 않는 결과만 남긴다.
 //   VECU_MODE=auto(기본: 있으면 실행) | off,  VECU_DIR=<vECU 폴더>,  FF_EVIDENCE_DIR=<증적 저장 폴더>
 import { Injectable } from '@nestjs/common';
+import { VecuCliOutput } from '@ff/contracts';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -58,11 +59,18 @@ export class VecuAdapter {
     const r = spawnSync(process.execPath, [this.cli, '--out', this.evidenceDir], { input: JSON.stringify(pkg), cwd: this.dir, encoding: 'utf8', timeout: 60_000, maxBuffer: 16 * 1024 * 1024 });
     if (r.error) return { ok: false, error: `vECU 실행 실패: ${r.error.message}` };
     if (r.status !== 0) return { ok: false, error: `vECU 실행기 종료 ${r.status}: ${(r.stderr || '').trim().slice(0, 300)}` };
+    let out: unknown;
     try {
-      const out = JSON.parse(r.stdout.trim().split('\n').at(-1)!);
-      return { ok: true, simulator: out.simulator, runs: out.runs };
+      out = JSON.parse(r.stdout.trim().split('\n').at(-1)!);
     } catch (e) {
       return { ok: false, error: `vECU 결과를 읽지 못했습니다: ${(e as Error).message}` };
     }
+    // 출력 계약(contracts schemas/vecu.ts) — vECU가 형식·기준 ID를 바꾸면 조용히 잘못 읽지 않고 거부한다(증적 불인정)
+    const parsed = VecuCliOutput.safeParse(out);
+    if (!parsed.success) {
+      const where = parsed.error.issues.slice(0, 3).map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`).join('; ');
+      return { ok: false, error: `vECU 출력이 연계 계약과 다릅니다 — ${where}` };
+    }
+    return { ok: true, simulator: parsed.data.simulator, runs: parsed.data.runs as VecuRunResult[] };
   }
 }

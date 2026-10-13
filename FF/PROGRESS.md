@@ -4,7 +4,7 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **국제표준 보고서 v1.1 반영 U0 마무리 → U1**(아래 "국제표준 대응방안 보고서 v1.1 반영" 표가 상태 원천). U 단계는 UI 먼저, 끝날 때마다 사용자 UX 검토.
+- **국제표준 보고서 v1.1 실제 개발 WP0부터**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1(따라하기 랩 셸) 완료. 화면 확인: `/learn`, `/_design`.
 - 그다음 **P10**: 남은 컴포넌트 7개(D01-07 실험·효과, D04-05 장애·VOC, D05-02·03·05·07 데이터 동기화·Legacy·현장 포털·Legacy-SDV — D06-11 취약점 모니터링은 보고서 반영 U4·F6으로 이동, D05-04 과금·D05-06 사업 지표는 체험권 작업에서 구현)와 IF 모의 어댑터(IF-01 ALM·IF-02 기준정보·IF-03 MDM/DW·IF-08 Supplier·IF-11 OTel·IF-12 해외공장), OpenFeature OF-6(차량 내장 provider)·OF-7(flag 매니페스트·기본값 규율) — OF-5(OTel hook)는 보고서 반영 F6(OFT-004)으로 이동, 레거시 정리(FEAT-BDC 37·rawColors 818 → 0).
 - **vECU 웹 배포**: vECU를 고친 뒤 배포하려면 `npm run vecu:sync`(허용 목록 → `frontend/public/vecu/`, `VECU_SYNC.json` 해시) 후 커밋. verify `vecu:check`가 복사본 변경·금지 경로(splat/·assets/user/·nurec)·금지어를 막는다. 사이트 `/vecu/index.html?ffv=<FEAT>`, FF 화면은 링크로만 연다(사용자 결정).
 - **체험권**: 데모 권한 날짜는 시드 기준일(FF_CLOCK_AT 또는 오늘, KST) 상대값(`data/fixtures/demo/entitlements.json`의 *Days). 합성 모집단 3000대(`FF_SYNTHETIC=0`이면 생략) — 목록·통계에만, `/api/entitlements` 기본은 데모만. 시험은 `bootApp({ at })`로 시계·기준일을 같이 고정한다.
@@ -40,18 +40,27 @@
 
 | 단계 | 내용 | 상태 |
 |---|---|---|
-| U0 | 기준·충돌 제거·키트: v1.1 코드패키지 기준 재구성, guide:sync + 규칙 카탈로그(181·60), Kill 화면 safeMode 선택·"검증·승인 없는 경로" 문구 제거, contracts `schemas/safety.ts`·`rules/deactivation.ts`, 디자인 키트 `design/safety.tsx` 8종 + 갤러리, **하네스**: `standards`(ID 실재·플랫폼 규칙 75개 구현/시험 추적 래칫 → `harness/standards.json`), lint-copy 보고서 용어 래칫(`guideTermLines` 144 → 0), 키트↔갤러리 커버리지 시험 | 완료 39345e5 |
-| U1 | 따라하기 랩 셸: `/learn`·실행 화면·GuideDock·Spotlight·ClauseChip·표준 설명 모드·역할 전환 배너, `tutorial.ts`·`standards.ts`(조항) | 대기 |
-| U2 | **가상검증 화면(사용자 결정 2026-10-13: U1 다음으로 앞당김)**: Feature 선택, 실행 타임라인·원격 대 차량 내 비교(CompareTimeline, telemetry.jsonl), G5 인정 체크리스트(같은 Version·vecu·official·재현 정보·TMS·알려진 실패 없음, FFG-TST-009), 가상 시험 신뢰성 패널(TI2·qualification 미실시·주장 범위, 12.4), 시나리오 표에 등급·FTTI·인계·램프, vECU 링크에 시나리오 지정. 현행 FAULT-KILL PASS에는 "보고서 기준 미충족(알려진 실패)" 경고 — 판정 변경은 F1 | 대기 |
-| U3 | 설계·Gate 화면: 목록 F/DC/R·유형, 상세 배지, 안전 분류 탭(판정 흐름·조건부 속성·DC 미리보기), Gate 탭(G1~G8 대응·Decision Record), `/verify/compliance` | 대기 |
-| U4 | 운영 화면: `/ops/kill` 재설계(실시간 FFG 체크리스트·승인 칸·단계 줄·회신 조치), `/ops/approvals`, 복원 마법사, `/ops/safety-kpi`, Fleet v2 열 | 대기 |
-| U5 | 보안·감사 화면: `/admin/security`(키·SBOM·VEX), `/audit` 체인·원장, IAM 역할 | 대기 |
-| — | UX 확정(시나리오 ①·② 보기 모드 검토 → 시각 기준 잠금) | 대기 |
-| F1 | 엔진 동작 + vECU 연계(ffval 2.0·fake·vECU 수정: DC 단계·차량 내 감지·재현 정보·CLI await 결함) + **G5 판정 정정**(원격 경로=비교 기준선, FAULT-ONBOARD가 D06-06 결정, 알려진 실패 G5 불인정) + CS-01 완주 | 대기 |
-| F2 | 분류·Gate 연결 + ②-1 | 대기 |
-| F3a·F3b | Kill 요청·승인·원장·HSM·봉투 / status v2·Guard 시뮬레이터·GLEO v2·FF_IMP·복원·KPI + ②-2 | 대기 |
-| F4·F5·F6 | 시장·체험권(②-3·②-5) / 보안(②-4) / 나머지 CS ③·OpenFeature·SBOM·ADS | 대기 |
-| F7 | 마감: 정적 배포 녹화 재생, `docs/standards-trace.md`, manifest·PROGRESS | 대기 |
+| U0 | 기준·충돌 제거·키트: v1.1 코드패키지 기준 재구성, guide:sync + 규칙 카탈로그(181·60), Kill 화면 safeMode 선택·"검증·승인 없는 경로" 문구 제거, contracts `schemas/safety.ts`·`rules/deactivation.ts`, 디자인 키트 `design/safety.tsx` + 갤러리, 하네스 `standards`·용어 래칫·키트 커버리지 | 완료 39345e5 |
+| U1 | 따라하기 랩 셸: `/learn`·CS-01 보기 모드·GuideDock·스포트라이트·표준 설명 모드·역할 전환·규칙 원문 Drawer + UX 검토 2회 | 완료 eaf2bf0·8ccf1f6 |
+
+**실제 개발 적용 계획 (사용자 지시 2026-10-13: "가이드가 아닌 실제 개발")** — 보고서 플랫폼 적용 규칙 75개를 기능으로. 따라하기는 결과를 보여 주는 창구(WP가 끝나면 해당 시나리오를 켬). 상세: `~/.claude/plans/feature-flag-iso26262-wise-tide.md`.
+공통: 계약 → 순수 규칙 → 마이그레이션(012~, 추가만) → 서비스·API → 화면 → 시험, 규칙 수용 기준 = 보고서 "검증·합격" 문장, `@rule` 표식·`standards` 래칫 상승, `verify:full` + UX 검토.
+
+| WP | 내용 | 주요 규칙 | 상태 |
+|---|---|---|---|
+| WP0 | 커널 신뢰 기반: 감사 해시 체인(UPDATE·DELETE 차단 트리거, 체인 검증 API), 소프트웨어 HSM(용도별 kid·epoch, 차량 키 파생, AES-CMAC, JCS, 정책 엔진), 승인자 개인 키, 역할 확장(SECURITY_OFFICER·OPS_LEAD·REGULATORY_OWNER, 보고서 승인 역할 대응, PLT-016 직무 분리) | PLT-015·013·016, SEC-002·008 | 대기 |
+| WP1 | 안전 분류 Registry: SafetyProfile(5.7 속성), 분류 판정·조합 검사, 확정 서명·Version 고정, G1 blocker, flagKey 재사용 금지, 화면(목록 열·배지·안전 분류 탭) | CLS-001~009, ADS-002, CODE-020, LCY-011, VEH-006 | 대기 |
+| WP2 | Gate 결정 기록(서명·CONDITIONAL 제한·fail-closed·강제 통과 2인), 재-HARA 자동 검출, 은퇴 6단계, G6/G7 분리 | LCY-001~012, TST-009, SOT-004 | 대기 |
+| WP3 | 정책 게이트(kill_command v2 zod, evaluateGate — 부록 D 15 + 예제 Golden, gate-parity) · 주문 원장(+1·24h 누적) | PLT-001~010·014·017, SEC-003, GEN-003 | 대기 |
+| WP4 | Kill·복원 v2: 요청 → 2인 승인(개인 서명) → 원장 → JWS → 차량별 봉투(CMAC), 사후 검토, DC4 거부 기록, 리콜 연계, 대량 종료 계획, 복원 2단계·겹침 금지, 화면(/ops/kill·승인함·복원 마법사) | DEAC-*, PLT-005·016·017, SEC-003·004·008, ADS-004·010·011 | 대기 |
+| WP5 | 차량 연결 v2: status 수신 검사 6단계(state_auth·report_seq…)·TEL-003 Incident, 시뮬레이터 Guard State Machine(DEACT_STAGES), 지연 감시, GLEO v2 + FF_IMP, Fleet 화면 | TEL-001·003·004·010, SEC-004·007, VEH-007·013, DEAC-013 | 대기 |
+| WP6 | 시장 Profile(버전·상태)·GEN-003 차단·CN 신고·형식승인 서명, 체험권 만료 고지(DC3·INACTIVE), SUMS 기록, /verify/compliance | GEN-001~006, PLT-006·009, DEAC-004·010, LCY-008·010 | 대기 |
+| WP7 | OpenFeature 경계: F2+ DISABLED·금지 문맥·metadata·flagd F0/F1·Hook·버전 고정 | OFT-001~008, PLT-011 | 대기 |
+| WP8 | SBOM·VEX·취약점 모니터링(D06-11 신설), 해시 결합 서명, 영향 검색 → 보안 Kill, /admin/security | SBOM-002·003·007, SEC-006, PLT-010 | 대기 |
+| WP9 | vECU 가상검증 v2(ffval 2.0: DC 단계·차량 내 감지·재현 정보·CLI await 결함) + G5 판정 정정 + 조합 시험 + 가상검증 화면 | TST-003·006·009, LCY-006, DEAC-001 | 대기 |
+| WP10 | 운영 감시·KPI·보존: 13.5 지표, 30초 상태 이력·DSSAD 연결, 보존·삭제, 드릴, VSOC 임계값, /ops/safety-kpi | TEL-008~010, ADS-007, DEAC-012, SOT-002·003, SEC-007 | 대기 |
+
+순서: WP0 → WP1 → WP3 → WP4 → WP5 → WP9 → WP2 → WP6 → WP7 → WP8 → WP10 (한 세션 한 WP, WP4·WP5는 2세션).
 
 하네스 규칙(이 작업부터): 규칙을 실제로 집행하는 함수·화면에는 `@rule FFG-XXX-NNN — 남은 부분` 표식, 시험 제목에 같은 ID(+ 해당 TC-FF). 카탈로그에 없는 ID는 verify 실패. 래칫 `platformRulesImplemented`·`platformRulesTested`·`reportTestsReferenced`(늘리기), `guideTermLines`(줄이기).
 

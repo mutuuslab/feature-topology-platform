@@ -40,7 +40,7 @@
 
 | 단계 | 내용 | 상태 |
 |---|---|---|
-| U0 | 기준·충돌 제거·키트: v1.1 코드패키지 기준 재구성, guide:sync + 규칙 카탈로그(181·60), Kill 화면 safeMode 선택·"검증·승인 없는 경로" 문구 제거, contracts `schemas/safety.ts`·`rules/deactivation.ts`, 디자인 키트 `design/safety.tsx` 8종 + 갤러리, **하네스**: `standards`(ID 실재·플랫폼 규칙 75개 구현/시험 추적 래칫 → `harness/standards.json`), lint-copy 보고서 용어 래칫(`guideTermLines` 144 → 0), 키트↔갤러리 커버리지 시험 | 진행 |
+| U0 | 기준·충돌 제거·키트: v1.1 코드패키지 기준 재구성, guide:sync + 규칙 카탈로그(181·60), Kill 화면 safeMode 선택·"검증·승인 없는 경로" 문구 제거, contracts `schemas/safety.ts`·`rules/deactivation.ts`, 디자인 키트 `design/safety.tsx` 8종 + 갤러리, **하네스**: `standards`(ID 실재·플랫폼 규칙 75개 구현/시험 추적 래칫 → `harness/standards.json`), lint-copy 보고서 용어 래칫(`guideTermLines` 144 → 0), 키트↔갤러리 커버리지 시험 | 완료 39345e5 |
 | U1 | 따라하기 랩 셸: `/learn`·실행 화면·GuideDock·Spotlight·ClauseChip·표준 설명 모드·역할 전환 배너, `tutorial.ts`·`standards.ts`(조항) | 대기 |
 | U2 | **가상검증 화면(사용자 결정 2026-10-13: U1 다음으로 앞당김)**: Feature 선택, 실행 타임라인·원격 대 차량 내 비교(CompareTimeline, telemetry.jsonl), G5 인정 체크리스트(같은 Version·vecu·official·재현 정보·TMS·알려진 실패 없음, FFG-TST-009), 가상 시험 신뢰성 패널(TI2·qualification 미실시·주장 범위, 12.4), 시나리오 표에 등급·FTTI·인계·램프, vECU 링크에 시나리오 지정. 현행 FAULT-KILL PASS에는 "보고서 기준 미충족(알려진 실패)" 경고 — 판정 변경은 F1 | 대기 |
 | U3 | 설계·Gate 화면: 목록 F/DC/R·유형, 상세 배지, 안전 분류 탭(판정 흐름·조건부 속성·DC 미리보기), Gate 탭(G1~G8 대응·Decision Record), `/verify/compliance` | 대기 |

@@ -7,6 +7,7 @@ import { AppProvider } from '../store';
 import { ExperimentsScreen } from '../screens/ext/Experiments';
 import { FieldPortalScreen, IncidentsScreen } from '../screens/ext/Incidents';
 import { DataSyncScreen, IntegrationsScreen, LegacyScreen } from '../screens/ext/Integrations';
+import { OpenFeatureScopeScreen } from '../screens/ext/OpenFeatureScope';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -132,5 +133,42 @@ describe('외부 연계 · 동기화 · Legacy', () => {
     await screen.findByRole('option', { name: /KMH-LF-0001/ });
     fireEvent.click(screen.getByRole('button', { name: '계획 만들기' }));
     expect(await screen.findByText(/전달 불가 — F2/)).toBeTruthy();
+  });
+});
+
+describe('OpenFeature 범위', () => {
+  it('두 경로·범위 표·flag별 경계(F2 이상은 Safety Guard만)·SDK 고정·차량 내장 provider 일치', async () => {
+    handler = (url) => {
+      if (url.startsWith('/api/openfeature/scope'))
+        return {
+          body: {
+            items: [
+              { id: 'OF-6', title: '차량 내장 provider', what: 'IVI 앱용', side: 'vehicle', status: 'done', rules: ['FFG-OFT-001'], endpoints: ['GET /api/vehicles/:vin/openfeature'], tests: [] },
+              { id: 'OUT-1', title: '차량 제어 SW·Safety Guard', what: '쓰지 않음', side: 'vehicle', status: 'excluded', rules: ['FFG-OFT-001'], endpoints: [], tests: [] },
+            ],
+            pins: { spec: '0.8.0', sdks: { '@openfeature/web-sdk': '1.10.0' }, experimental: [] },
+            catalog: [
+              { flagKey: 'ivi_00024_guide', featureId: 'FEAT-00024', featureVersion: '1.0.0', fClass: 'F1', safeDefault: false, revisions: [1], openFeature: true },
+              { flagKey: 'care_00022_param', featureId: 'FEAT-00022', featureVersion: '1.0.0', fClass: 'F3', safeDefault: false, revisions: [1], openFeature: false },
+            ],
+            snapshotVersion: 'snap-abc',
+            audit: { spans: 12, lastAt: null },
+          },
+        };
+      if (url.startsWith('/api/vehicles/ego-01/openfeature'))
+        return { body: { vin: 'ego-01', pseudonym: 'abcdef0123456789', stale: false, items: [{ flagKey: 'care_00022_param', fClass: 'F3', openFeature: false, sdk: { value: false, reason: 'DISABLED' }, guard: { value: true, reason: 'POLICY_MATCH' }, agrees: true }] } };
+      if (url.startsWith('/api/vehicles')) return { body: { items: [{ vin: 'ego-01', label: 'x' }] } };
+    };
+    mount('/integration/openfeature', '/integration/openfeature', <OpenFeatureScopeScreen />);
+    expect(await screen.findByRole('region', { name: 'OpenFeature 경로 — F0·F1' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Safety Guard 경로 — F2 이상' })).toBeTruthy();
+    const cat = screen.getByRole('table', { name: 'flag 목록과 경계' });
+    expect(within(within(cat).getByText('care_00022_param').closest('tr')!).getByText('Safety Guard만')).toBeTruthy();
+    expect(within(within(cat).getByText('ivi_00024_guide').closest('tr')!).getByText('OpenFeature로 평가')).toBeTruthy();
+    expect(screen.getByText('@openfeature/web-sdk 1.10.0')).toBeTruthy();
+    expect(within(within(screen.getByRole('table', { name: '반영 범위' })).getByText('OUT-1').closest('tr')!).getByText('범위 밖')).toBeTruthy();
+    const veh = await screen.findByRole('table', { name: '차량 내장 provider (OF-6)' });
+    expect(within(veh).getByText('OFF · DISABLED')).toBeTruthy();
+    expect(screen.getByText('targetingKey(차량 가명) abcdef0123456789')).toBeTruthy();
   });
 });

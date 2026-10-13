@@ -11,6 +11,7 @@ import { DomainError } from '../../kernel/errors';
 import { FleetRepo } from '../../domains/d01-policy/policy-repos';
 import { FeatureRepo, TopologyRepo } from '../../domains/d01-policy/repos';
 import { IfCallRepo } from '../if-call/if-call.repo';
+import { OtelExporter } from './otel.exporter';
 
 export const EXT_FIXTURES = join(__dirname, '..', '..', '..', '..', 'data', 'fixtures', 'ext');
 const fixture = <T>(name: string): T => JSON.parse(readFileSync(join(process.env.FF_EXT_FIXTURES ?? EXT_FIXTURES, `${name}.json`), 'utf8'));
@@ -49,6 +50,7 @@ export class ExternalSystems {
     private readonly features: FeatureRepo,
     private readonly topology: TopologyRepo,
     private readonly fleet: FleetRepo,
+    private readonly otel: OtelExporter,
   ) {}
 
   mode(ifId: MockIf): 'mock' | 'off' {
@@ -128,9 +130,7 @@ export class ExternalSystems {
 
   /** IF-11 OpenTelemetry Collector — span 받기(모의 수집기는 표에 쌓는다) */
   exportSpans(spans: OtelSpan[]) {
-    if (this.mode('IF-11') === 'off' || !spans.length) return 0;
-    for (const s of spans) this.db.run('INSERT INTO otel_span (trace_id, name, at, doc) VALUES (?, ?, ?, ?)', s.traceId, s.name, s.startTime, JSON.stringify(s));
-    return spans.length;
+    return this.otel.export(spans);
   }
 
   spans(q: { name?: string; limit?: number } = {}): OtelSpan[] {

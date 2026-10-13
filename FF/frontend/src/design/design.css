@@ -1738,3 +1738,28 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-learn-steps li[data-kind='fail'] .ds-learn-steps__no { border-color: var(--warn); }
 .ds-learn-steps__title { font-weight: 700; font-size: var(--fs-sm); }
 .ds-learn-steps p { margin: 2px 0 6px; }
+/* OpenFeature 범위 — 두 경로(OpenFeature F0·F1 / Safety Guard F2 이상) */
+.ds-of-path {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--c, var(--line-strong));
+  border-radius: var(--r);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+}
+.ds-of-path[data-tone='ok'] {
+  --c: var(--ok);
+}
+.ds-of-path[data-tone='warn'] {
+  --c: var(--warn);
+}
+.ds-of-path h3 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-sm);
+}
+.ds-of-path ol {
+  margin: 0;
+  padding-left: var(--sp-5, 20px);
+  display: grid;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+}

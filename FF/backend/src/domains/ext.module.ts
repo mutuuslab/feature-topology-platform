@@ -3,6 +3,7 @@
 import { Module } from '@nestjs/common';
 import { ExternalSystems } from '../adapters/if-mocks/external-systems';
 import { IntegrationController } from '../adapters/if-mocks/integration.controller';
+import { OtelExporter } from '../adapters/if-mocks/otel.exporter';
 import { D01PolicyModule } from './d01-policy/d01-policy.module';
 import { ExperimentController, ExperimentRepo, ExperimentService } from './d01-policy/experiment/experiment.service';
 import { IncidentController, IncidentService } from './d04-ops/incident-voc/incident.service';
@@ -15,7 +16,7 @@ import { OpsLoopModule } from './ops-loop.module';
 @Module({
   imports: [D01PolicyModule, OpsLoopModule],
   controllers: [IntegrationController, ExperimentController, IncidentController, SyncController, LegacyController, LegacySdvController, FieldPortalController],
-  providers: [ExternalSystems, ExperimentRepo, ExperimentService, IncidentService, SyncService, LegacyService, LegacySdvService, FieldPortalService],
+  providers: [OtelExporter, ExternalSystems, ExperimentRepo, ExperimentService, IncidentService, SyncService, LegacyService, LegacySdvService, FieldPortalService],
   exports: [ExternalSystems, IncidentService, ExperimentService],
 })
 export class ExtModule {}

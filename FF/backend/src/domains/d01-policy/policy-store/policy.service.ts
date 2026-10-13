@@ -37,13 +37,16 @@ export class PolicyService implements OnModuleInit {
     private readonly flags: SafetyProfileService,
   ) {}
 
-  /** PoC 시나리오 시드 — FEAT-00022(전방 안전거리 3단계) Control Point 2개의 배포 정책 (체험권 CAT-00019 필요) */
+  /**
+   * PoC 시나리오 시드 — FEAT-00022(전방 안전거리 3단계, F2) Control Point 2개의 배포 정책 (체험권 CAT-00019 필요)
+   * + FEAT-00024(IC·JC 경로 사전안내, QM) IVI 앱 flag — OpenFeature로 평가하는 F0·F1 flag의 예(FFG-OFT-001)
+   */
   onModuleInit() {
     if (process.env.FF_SEED === 'none' || this.policies.all().length) return;
     const f = this.features.get('FEAT-00022', '1.0.0');
     if (!f) return;
     const at = '2026-10-01T00:00:00.000Z';
-    const seed = (cp: 'Signal' | 'Parameter', flagKey: string, description: string): Policy => {
+    const seed = (cp: 'Signal' | 'Parameter' | 'Flag', flagKey: string, description: string, feature = f, entitlementCatalogId: string | null = 'CAT-00019'): Policy => {
       const p: Policy = {
         policyId: this.policies.nextId(),
         revision: 1,
@@ -55,14 +58,14 @@ export class PolicyService implements OnModuleInit {
         approvedAt: at,
         lastValidationId: null,
         stageBasisPoints: null,
-        featureId: f.featureId,
-        featureVersion: f.version,
+        featureId: feature.featureId,
+        featureVersion: feature.version,
         controlPoint: cp,
         flagKey,
         description,
         enabled: true,
         safeDefault: false,
-        entitlementCatalogId: 'CAT-00019',
+        entitlementCatalogId,
         strategies: [],
         rollout: { mode: 'ALL', basisPoints: 10000, salt: 'FF-COHORT-SALT-1' },
       };
@@ -71,6 +74,8 @@ export class PolicyService implements OnModuleInit {
     this.db.tx(() => {
       this.policies.insert(seed('Signal', 'care_00022_signal', '전방 거리 단계(정상·주의·위험) 판정 신호 활성화'));
       this.policies.insert(seed('Parameter', 'care_00022_param', '위험 단계 감속 요청 파라미터 활성화'));
+      const ivi = this.features.get('FEAT-00024', '1.0.0');
+      if (ivi) this.policies.insert(seed('Flag', 'ivi_00024_guide', 'IVI 내비 IC·JC 경로 사전안내 화면 표시', ivi, null));
     });
   }
 

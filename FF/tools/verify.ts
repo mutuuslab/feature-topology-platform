@@ -26,6 +26,7 @@ const STEPS: Step[] = [
   { id: 'lint:copy', title: '문구 lint (+ 보고서 v1.1 용어 규칙 래칫)', cmd: `node --test tools/guide-terms.test.ts && node tools/lint-copy.ts` },
   { id: 'vecu:check', title: 'vECU 웹 실행본 정합 (허용 목록·해시·금지어)', cmd: `node --test tools/vecu-sync.test.ts && node tools/vecu-sync.ts --check` },
   { id: 'guide:check', title: '보고서 v1.1 코드 패키지 정합 (허용 목록·해시·규칙 카탈로그)', cmd: `node --test tools/guide-sync.test.ts && node tools/guide-sync.ts --check` },
+  { id: 'openfeature:check', title: 'OpenFeature 규율 (SDK 고정·Experimental·기본값 Safe State)', cmd: `node tools/openfeature-check.ts` },
   { id: 'data:check', title: '데이터셋 픽스처 정합', cmd: `node tools/dataset/check.ts`, when: () => existsSync(join(FF, 'tools', 'dataset', 'check.ts')) },
   { id: 'openapi', title: 'OpenAPI 최신 여부', cmd: `node tools/openapi.ts --check` },
   { id: 'test:contracts', title: 'contracts 테스트', cmd: `${npm} test -w @ff/contracts` },

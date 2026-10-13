@@ -227,6 +227,11 @@ export const ROUTES: RouteDef[] = [
   { name: 'almRequirements', method: 'GET', path: '/api/integrations/alm/requirements', summary: 'IF-01 ALM 요구사항 (Feature Version별)', component: 'D01-01', query: ['featureId', 'version'], sample: { featureId: 'FEAT-00022', version: '1.0.0' } },
   { name: 'supplierDeliveries', method: 'GET', path: '/api/integrations/supplier/deliveries', summary: 'IF-08 협력사 SW 납품', component: 'D05-01', query: ['supplier'] },
   { name: 'otelSpans', method: 'GET', path: '/api/integrations/otel/spans', summary: 'IF-11 OpenTelemetry 수집기 (모의) — 평가·이벤트 span', component: 'D04-03', query: ['name', 'limit'] },
+  // P10-B OpenFeature — 범위·flagd 내보내기·매니페스트(D05-01), 차량 내장 provider(D02-03)
+  { name: 'openfeatureScope', method: 'GET', path: '/api/openfeature/scope', summary: 'OpenFeature 반영 범위 (OF-1~7·경계·SDK 고정·flag 목록)', component: 'D05-01' },
+  { name: 'openfeatureFlagd', method: 'GET', path: '/api/openfeature/flagd', summary: 'flagd 내보내기 — F0·F1만, defaultVariant=off (FFG-OFT-005·002)', component: 'D05-01' },
+  { name: 'openfeatureManifest', method: 'GET', path: '/api/openfeature/manifest', summary: 'OF-7 flag 매니페스트(OpenFeature CLI) + 기본값 규율', component: 'D05-01' },
+  { name: 'vehicleOpenFeature', method: 'GET', path: '/api/vehicles/:vin/openfeature', summary: 'OF-6 차량 내장 provider 평가 — IVI 앱용, F2 이상은 기본값·DISABLED', component: 'D02-03', sample: { vin: 'ego-01' } },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

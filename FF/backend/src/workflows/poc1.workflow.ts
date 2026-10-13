@@ -11,6 +11,7 @@ import { DB, type Db } from '../kernel/db';
 import { DomainError } from '../kernel/errors';
 import { EventService } from '../kernel/event.service';
 import { KillRepo } from '../domains/d03-safety/kill-switch/kill.repo';
+import { ActivationService } from '../domains/d01-policy/activation/activation.service';
 import { EntitlementService } from '../domains/d01-policy/entitlement/entitlement.service';
 import { FleetRepo, PolicyRepo } from '../domains/d01-policy/policy-repos';
 import { PolicyService } from '../domains/d01-policy/policy-store/policy.service';
@@ -31,6 +32,8 @@ const VERSION = '1.0.0';
 const FLAG = 'care_00022_param';
 const DEMO = 'ego-01';
 const SECOND = 'lead-01';
+/** IVI 앱 flag(FEAT-00024, QM) — OpenFeature로 평가하는 F0·F1 flag의 예 */
+const IVI_FLAG = 'ivi_00024_guide';
 
 export type StepStatus = 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED';
 export interface PocAction {
@@ -81,6 +84,7 @@ export class PocWorkflow {
     private readonly policyRepo: PolicyRepo,
     private readonly fleet: FleetRepo,
     private readonly entitlements: EntitlementService,
+    private readonly activation: ActivationService,
     private readonly kills: KillRepo,
     private readonly policies: PolicyService,
     private readonly virtual: VirtualValidationService,
@@ -280,8 +284,10 @@ export class PocWorkflow {
         }, () => this.runtime.view(DEMO));
         const bundle = view.runtime.bundles[FLAG];
         const local = view.evaluations.find((y) => y.flagKey === FLAG);
-        const of = await this.act(step, 'ofrepEvaluate', p.vehicle(DEMO), (x: any) => `OpenFeature ${x.value ? 'ON' : 'OFF'} ${x.reason}`, () => this.ofrep.one(FLAG, { context: { targetingKey: DEMO } } as any));
-        Object.assign(step.evidence, { bundle: bundle?.publicationId ?? null, sameAsDeployed: bundle?.publicationId === run.refs.publicationId, vehicleValue: local?.local.value ?? null, openFeature: (of as any).value, openFeatureReason: (of as any).reason });
+        // OpenFeature 경계(FFG-OFT-001) — 차량 제어 flag(F2 이상)는 OpenFeature로 값을 계산하지 않고(DISABLED), IVI 앱 flag(F0·F1)만 SDK로 평가
+        const guarded = await this.act(step, 'ofrepEvaluate', p.vehicle(DEMO), (x: any) => `OpenFeature ${FLAG} → ${x.reason} (차량 Safety Guard 몫)`, () => this.ofrep.one(FLAG, { context: { targetingKey: DEMO } } as any));
+        const of = await this.act(step, 'ofrepEvaluate', p.vehicle(DEMO), (x: any) => `OpenFeature ${IVI_FLAG} ${x.value ? 'ON' : 'OFF'} ${x.reason}`, () => this.ofrep.one(IVI_FLAG, { context: { targetingKey: DEMO } } as any));
+        Object.assign(step.evidence, { bundle: bundle?.publicationId ?? null, sameAsDeployed: bundle?.publicationId === run.refs.publicationId, vehicleValue: local?.local.value ?? null, openFeatureBoundary: (guarded as any).reason, openFeature: (of as any).value, openFeatureReason: (of as any).reason });
         if (bundle?.publicationId !== run.refs.publicationId) throw new Error(`${DEMO}이(가) 이번 게시본(${run.refs.publicationId})을 적용하지 않았습니다`);
         // 체험 제안 — 두 번째 차량에 제안 중인 체험권이 있으면 IVI에서 수락(TRIAL_ACCEPT) → 수락일부터 30일 ON
         const offered = this.entitlements.grants(SECOND).find((g) => g.catalogId === 'CAT-00019' && g.kind === '체험' && g.state === 'OFFERED');
@@ -343,11 +349,12 @@ export class PocWorkflow {
     if (step.no === 6) {
       const k = this.killService.detail(run.refs.killId!);
       if (!k.delivery?.closedAt) return;
-      const server = await this.ofrep.one(FLAG, { context: { targetingKey: DEMO } } as any);
+      // 서버 판단은 Safety Guard 경로(활성화 판단) — F2 이상 flag는 OpenFeature로 값을 계산하지 않는다(FFG-OFT-001)
+      const server = (await this.activation.decide(DEMO, FLAG)).result;
       const anm = this.anomalies.require(run.refs.anomalyId!);
       const fb = this.feedback.list({ featureId: FEATURE }).find((x) => x.anomalyId === anm.anomalyId);
       run.refs.feedbackId = fb?.feedbackId ?? null;
-      Object.assign(step.evidence, { killDelivery: `${k.delivery.status} ${k.delivery.confirmed}/${k.delivery.denominator}`, serverValue: (server as any).value, serverReason: (server as any).metadata?.platformReason ?? null, anomalyStatus: anm.status, feedbackId: fb?.feedbackId ?? null });
+      Object.assign(step.evidence, { killDelivery: `${k.delivery.status} ${k.delivery.confirmed}/${k.delivery.denominator}`, serverValue: server.value, serverReason: server.reason, anomalyStatus: anm.status, feedbackId: fb?.feedbackId ?? null });
       if (k.delivery.status !== 'CONFIRMED') throw new Error(`차단 회신 ${k.delivery.status}`);
       step.status = 'DONE';
     }

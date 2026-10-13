@@ -40,9 +40,10 @@ describe('IAM · Variant · 기능 지원 조건', () => {
 
   it('차량별 지원: KMH-NX4-0004는 배포된 FEAT-00022를 지원하지 않는다', async () => {
     const s = (await http().get('/api/support/KMH-NX4-0004').expect(200)).body;
+    s.items = s.items.filter((i: any) => i.featureId === 'FEAT-00022'); // 시드에 QM IVI flag(FEAT-00024)도 있다
     expect(s.items).toHaveLength(1);
     expect(s.items[0]).toMatchObject({ featureId: 'FEAT-00022', verdict: 'NOT_SUPPORTED', actual: '1.1.9', required: '1.2.1' });
     expect(s.items[0].flagKeys.sort()).toEqual(['care_00022_param', 'care_00022_signal']);
-    expect((await http().get('/api/support/ego-01').expect(200)).body.items[0].verdict).toBe('APPLICABLE');
+    expect((await http().get('/api/support/ego-01').expect(200)).body.items.find((i: any) => i.featureId === 'FEAT-00022').verdict).toBe('APPLICABLE');
   });
 });

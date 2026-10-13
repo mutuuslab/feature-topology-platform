@@ -206,6 +206,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/integration/connectors', element: named(extScreens, 'IntegrationsScreen'), title: '외부 연계 현황', group: 'admin', menu: '/integration/connectors', components: ['D05-01'], v2: true },
   { path: '/integration/ui18', element: named(() => import('./pages/areas/ui18'), 'ExternalSystems'), title: '외부 연계 (BDC 데모)', group: 'admin', parent: '/integration/connectors' },
   { path: '/integration/connector/:id', element: named(integration, 'ConnectorDetail'), title: '연계 상세', group: 'admin', parent: '/integration/connectors' },
+  { path: '/integration/openfeature', element: named(() => import('./screens/ext/OpenFeatureScope'), 'OpenFeatureScopeScreen'), title: 'OpenFeature 범위', group: 'admin', menu: '/integration/openfeature', components: ['D05-01', 'D02-03'], v2: true },
   { path: '/integration/sync', element: named(extScreens, 'DataSyncScreen'), title: '데이터 동기화', group: 'admin', menu: '/integration/sync', components: ['D05-02'], v2: true },
   { path: '/integration/legacy', element: named(extScreens, 'LegacyScreen'), title: 'Legacy 연계', group: 'admin', menu: '/integration/legacy', components: ['D05-03', 'D05-07'], v2: true },
   { path: '/field', element: named(incidentScreens, 'FieldPortalScreen'), title: '현장 지원 포털', group: 'admin', menu: '/field', components: ['D05-05'], v2: true },

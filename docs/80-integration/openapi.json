@@ -8410,6 +8410,99 @@
           }
         }
       }
+    },
+    "/api/openfeature/scope": {
+      "get": {
+        "summary": "OpenFeature 반영 범위 (OF-1~7·경계·SDK 고정·flag 목록)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "openfeatureScope",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/openfeature/flagd": {
+      "get": {
+        "summary": "flagd 내보내기 — F0·F1만, defaultVariant=off (FFG-OFT-005·002)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "openfeatureFlagd",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/openfeature/manifest": {
+      "get": {
+        "summary": "OF-7 flag 매니페스트(OpenFeature CLI) + 기본값 규율",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "openfeatureManifest",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/vehicles/{vin}/openfeature": {
+      "get": {
+        "summary": "OF-6 차량 내장 provider 평가 — IVI 앱용, F2 이상은 기본값·DISABLED",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "vehicleOpenFeature",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
     }
   }
 }

@@ -138,7 +138,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'contracts/src/rules/unleash.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts'] },
   'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
   'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
-  'D05-01': { screens: ['/activation/decide'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ] },
+  'D05-01': { screens: ['/activation/decide', '/integration/openfeature', '/integration/connectors'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ, 'backend/test/d05/openfeature.spec.ts', 'contracts/src/flags/openfeature.test.ts', FE_P10] },
   'D06-01': VALIDATOR,
   'D06-02': VALIDATOR,
   'D06-03': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_POL, FE_OPS, E2E_POL, E2E_OPS], via: ['validatePolicy'] },

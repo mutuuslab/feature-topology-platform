@@ -6,6 +6,7 @@ import { buildWorld, world, crownMeshes, PRESETS, WEATHER, atmos, atmo, loadHDRI
 import { SplatLayer } from './splat.js';
 import { Fn, positionLocal, normalize, atan, asin, vec2, texture as tslTexture, uniform, PI } from 'three/tsl';
 import { initFFV } from './ffvui.js';
+import { initIviFocus } from './ivifocus.js';
 import { bakeScene, packBake } from './bake.js';
 import { rnd, initRenderer, initProbe, updateProbe, compileProbe, setSharpen, buildPipeline, setQuality, setBloom, renderMain, renderView } from './render.js';
 import { buildSedan, buildSUV, buildVan, CATALOG, CAT, gltfLoader, prepareModel, addGlbWheels, IDB, glow, setGlow, GLASS } from './vehicles.js';
@@ -243,11 +244,14 @@ async function main() {
       camera.position.lerp(want, k); camLook.lerp(look, k); camera.lookAt(camLook); sim.snapCam = false; return;
     }
     if (ui.cam === 'driver' || ui.cam === 'ivi') {
-      const eye = ego.interior ? ego.interior.eye.clone() : new THREE.Vector3(-.09 * ego.L, ego.H * .78, -.37);
-      if (ui.cam === 'ivi') { eye.add(new THREE.Vector3(.02, .02, .1)); tmpL.copy(ego.interior ? ego.interior.center.position : new THREE.Vector3(.13 * ego.L, .83, 0)); }
+      const cab = ego.interior && ego.interior.eye ? ego.interior : null;   // until the ego model is ready `interior` can be the build flag
+      const eye = cab ? cab.eye.clone() : new THREE.Vector3(-.09 * ego.L, ego.H * .78, -.37);
+      if (ui.cam === 'ivi') { eye.add(new THREE.Vector3(.02, .02, .1)); tmpL.copy(cab ? cab.center.position : new THREE.Vector3(.13 * ego.L, .83, 0)); }
       else { eye.y += camPitch * .05; tmpL.copy(eye).add(new THREE.Vector3(Math.cos(camYaw) * 14, -1.5 - camPitch * 4, -Math.sin(camYaw) * 14)); }   // ~6° down: road, dash and the wheel rim in view
       ego.body.localToWorld(tmpV.copy(eye)); ego.body.localToWorld(tmpL);
-      camera.position.copy(tmpV); camLook.copy(tmpL); camera.lookAt(camLook); sim.snapCam = false; return;
+      camera.position.copy(tmpV); camLook.copy(tmpL); camera.lookAt(camLook); sim.snapCam = false;
+      if (ui.cam === 'ivi' && cab && ivf.mode === 'sharp') fitScreens(cab);
+      return;
     }
     const cfg = { chase: [9.5, 2.9, 5], high: [30, 17, 22], orbit: [11.5, 3.2, 0], close: [6.2, 1.6, 2.5] }[ui.cam] || [9.5, 2.9, 5];
     const yaw = camYaw + (ui.cam === 'orbit' ? sim.simT * .18 : 0), back = f3.clone().applyAxisAngle(UP, yaw).multiplyScalar(-cfg[0]);
@@ -271,6 +275,7 @@ async function main() {
     { label: '카메라', key: 'cam', opts: [['chase', '추적'], ['close', '근접'], ['driver', '운전석'], ['ivi', 'IVI'], ['high', '상공'], ['orbit', '회전']], val: 'chase' },
     { label: '표시', key: 'show', toggles: [['gt', 'GT 박스', false], ['fov', 'FOV', true]], button: { id: 'odrOpen', text: 'OpenDRIVE' } },
     { label: 'IVI · vECU', key: 'io', buttons: [['iviOpen', 'IVI 화면'], ['vecuOpen', 'I/O · 연결'], ['ffvMode', 'FF 가상 검증']] },
+    { label: 'IVI 보기', key: 'ivifx', opts: [['off', '기본'], ['sharp', '선명 (차 안)'], ['bench', '화면만']], val: 'off' },
     { label: '배경', key: 'bg', opts: [['proc', '절차 생성'], ['splat', '실사 스플랫']], val: 'proc', extra: { id: 'asplOpen', text: '.aspl 열기' } },
     { label: '그래픽', key: 'q', opts: [['base', '기본'], ['high', '고급'], ['ultra', '최상']], val: rnd.quality },
     { label: 'Ego 차종 (현대자동차)', key: 'egoCat', custom: true },
@@ -301,6 +306,7 @@ async function main() {
     if (k === 'fog') { atmo.weather = v; ui.quad = false; press('shot', 'none'); applyAtmosphere(); }
     if (k === 'cam') { ui.cam = v; ui.quad = false; shotCam = null; camera.fov = v === 'driver' ? 62 : v === 'ivi' ? 48 : 55; camYaw = 0; camPitch = 0; sim.snapCam = true; press('shot', 'none'); if (world.csm && world.csm.mainFrustum) world.csm.updateFrustums(); }
     if (k === 'shot') shot(v);
+    if (k === 'ivifx' && ivf.mode !== v) ivf.setMode(v);
     if (k === 'gt') { ui.gt = v; veh.forEach(x => { if (x !== ego) x.gt.visible = v; }); }
     if (k === 'fov') ui.fov = v;
     if (k === 'q') { setQuality(v, camera, resize); assetStatus(); }
@@ -332,7 +338,22 @@ async function main() {
   $('#iviLock').onclick = () => iviApply({ body: { locked: !ivi.body.locked } }); $('#iviTrunk').onclick = () => iviApply({ body: { trunk: !ivi.body.trunk } });
   $('#iviPop').onclick = () => iviApply({ popup: { title: '전방 차량 감지', text: 'vECU 테스트 알림 · 스마트 크루즈 컨트롤이 속도를 조절합니다', level: 'warn', ms: 5000 } });
   $('#iviAcc').onclick = () => iviApply({ adas: { acc: ivi.adas.acc === 'active' ? 'standby' : 'active' } });
-  $('#iviCc').onclick = e => { const r = e.target.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 1280, y = (e.clientY - r.top) / r.height * 720; if (y > 52 && y < 92) { const i = Math.floor((x - 28) / 160); const k = ['nav', 'media', 'vehicle', 'adas'][i]; if (k) { ivi.screen = k; ivi.dirty = true; document.querySelectorAll('[data-ivi]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ivi === k))); } } };
+  // IVI focus in the IVI camera: field of view fitted to the centre display (+12 % margin) so its text is large enough
+  // to read; the cluster is read from the driver camera
+  const _fv = new THREE.Vector3();
+  function fitScreens(cab) {
+    camera.updateMatrixWorld(); let t = 0;
+    for (const m of [cab.center]) { const g = m.geometry.parameters; m.updateWorldMatrix(true, false);
+      for (const [x, y] of [[-1, 1], [1, 1], [1, -1], [-1, -1]]) { _fv.set(x * g.width / 2, y * g.height / 2, 0).applyMatrix4(m.matrixWorld).applyMatrix4(camera.matrixWorldInverse);
+        if (_fv.z < -.01) t = Math.max(t, Math.abs(_fv.y / _fv.z), Math.abs(_fv.x / _fv.z) / camera.aspect); } }
+    if (t > 0) { camera.fov = 2 * Math.atan(t * 1.12) * 180 / Math.PI; camera.updateProjectionMatrix(); }
+  }
+  // a tap on the centre display (x, y in its 1280×720 pixels): the tab row switches screens
+  function iviTap(x, y) { if (y > 52 && y < 92) { const i = Math.floor((x - 28) / 160); const k = ['nav', 'media', 'vehicle', 'adas'][i]; if (k) { ivi.screen = k; ivi.dirty = true; document.querySelectorAll('[data-ivi]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ivi === k))); } } }
+  $('#iviCc').onclick = e => { const r = e.target.getBoundingClientRect(); iviTap((e.clientX - r.left) / r.width * 1280, (e.clientY - r.top) / r.height * 720); };
+  // IVI focus (선명: crisp screens on the cabin view, 화면만: the two screens alone) — js/ivifocus.js
+  const ivf = initIviFocus({ THREE, screens, camera, canvas, getInterior: () => ego.interior, isCabin: () => ui.cam === 'driver' || ui.cam === 'ivi', onTap: iviTap });
+  ivf.onMode = m => { press('ivifx', m); if (m === 'sharp' && ui.cam !== 'driver' && ui.cam !== 'ivi') onOpt('cam', 'ivi'); if (m !== 'sharp' && ui.cam === 'ivi') { camera.fov = 48; camera.updateProjectionMatrix(); } };
 
   /* ---------------- shots ---------------- */
   function arrange(cfg) {
@@ -429,7 +450,7 @@ async function main() {
         if (ui.cam !== 'driver' && ui.cam !== 'ivi') updateProbe(scene, ego.grp, egoHide());
         renderMain(scene, camera, w, h);
       }
-      ffvUI.afterRender(now); placeLabels(false); placeQuad(false);
+      ffvUI.afterRender(now); ivf.update(); placeLabels(false); placeQuad(false);
     }
     vecuTick();
     hudT += dt; if (hudT > .12) { hudT = 0; hud(); if (!$('#vecu').hidden) { $('#vecuFrame').textContent = JSON.stringify(vecu.lastFrame || vecuFrame(), null, 1).slice(0, 6000); vecuStatus(vecu.state); } }
@@ -455,12 +476,13 @@ async function main() {
     quality: q => { setQuality(q, camera, resize); press('q', rnd.quality); assetStatus(); }, cam: v => onOpt('cam', v), ego: id => selectEgo(id), ivi: set => iviApply(set),
     dbg: () => ({ ego, scene, camera, rnd, world, THREE, refAt, RD1, RD2, roads, ivi, actors }),
     bake: o => { const ex = [world.sky, world.clouds, world.rain, fan, detA, detB, splat.group, ...veh.map(v => v.grp)].filter(Boolean); const b = bakeScene(scene, Object.assign({ exclude: ex }, o || {})); return { n: b.n, b64: packBake(b) }; },
-    splat: (url) => loadSplat(url || SPLAT_DEFAULT), backdrop: m => setBackdropMode(m), splatGain: g => { bg.gain = g; }, splatVis: on => { splat.group.visible = on; }, splat3dExp: k => { world.splat3dExp = k; applyAtmosphere(); },
+    splat: (url) => loadSplat(url || SPLAT_DEFAULT), backdrop: m => setBackdropMode(m), splatGain: g => { bg.gain = g; }, splatVis: on => { splat.group.visible = on; }, iviFocus: m => { ivf.setMode(m); return ivf.mode; }, splat3dExp: k => { world.splat3dExp = k; applyAtmosphere(); },
     // alignment nudge (simulator coords, metres / degrees about Y): refine here, then bake into nurec2splat --offset/--yaw
     splatXf: o => { if (o) { const g = splat.group; if ('x' in o) g.position.x = o.x; if ('y' in o) g.position.y = o.y; if ('z' in o) g.position.z = o.z; if ('yaw' in o) g.rotation.y = o.yaw * D2R; } return { x: splat.group.position.x, y: splat.group.position.y, z: splat.group.position.z, yaw: splat.group.rotation.y / D2R }; },
     ready: () => ({ splat: { n: splat.n, sorted: splat.ready, mode: bg.mode, msg: bg.msg, actors: actors.map(a => `${a.layer.mesh.name}@${Object.keys(T).find(k => T[k] === a.v)}`) }, car: !!gltfAsset || gltfFail, hdr: !!(world.hdrState.day && world.hdrState.day !== 'loading'), hdrDusk: world.hdrState.dusk || null, backend: rnd.backend, post: rnd.fx.ok, asset: $('#kAsset').textContent })
   };
   const qs = new URLSearchParams(location.search);
+  if (['sharp', 'bench'].includes(qs.get('ivi'))) ivf.setMode(qs.get('ivi'));   // ?ivi=sharp|bench: IVI focus at start
   if (qs.has('ffv')) {   // ?ffv opens the console with a sample; ?ffv=FEAT-000xx picks that sample when it exists
     const want = qs.get('ffv'), sel = $('#ffvSampleSel'); if (want && [...sel.options].some(o => o.value === want)) sel.value = want;
     ffvUI.open(true); $('#ffvSample').click();

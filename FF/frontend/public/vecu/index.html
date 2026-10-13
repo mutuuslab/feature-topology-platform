@@ -135,6 +135,15 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
 #vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(6,8,12,.42) 100%)}
 #credits{position:absolute;right:16px;bottom:calc(var(--dockH,96px) + 22px);margin:0;max-width:min(560px,calc(100% - 32px));font-size:10px;line-height:1.4;color:rgba(232,237,243,.62);text-align:right;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:auto}
 #credits a{color:inherit}
+/* IVI focus (js/ivifocus.js): crisp screens over the cabin view, or the screens alone */
+#ivf{position:fixed;inset:0;z-index:7;pointer-events:none}#ivf[hidden]{display:none}#ivf.sharp{z-index:auto}   /* sharp: placed after the 3D canvas in the DOM — over the scene, under the panels */
+body.ivf-clean .card,body.ivf-clean #dock,body.ivf-clean #credits,body.ivf-clean #hint,body.ivf-clean .vlabel,body.ivf-clean #ffvHud{display:none!important}
+#ivf.sharp .ivf-scr{position:fixed;left:0;top:0;transform-origin:0 0;pointer-events:none}#ivf.sharp .ivf-cc{pointer-events:auto;cursor:pointer}
+#ivf.bench{background:rgba(6,9,13,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.2vh;pointer-events:auto}
+#ivf.bench .ivf-scr{position:static;transform:none!important;visibility:visible!important;border-radius:14px;box-shadow:0 0 0 1px var(--line),0 12px 40px rgba(0,0,0,.6)}
+#ivf.bench .ivf-cl{width:min(88vw,calc(30vh * 3));height:auto}#ivf.bench .ivf-cc{width:min(88vw,calc(52vh * 16 / 9));height:auto;cursor:pointer}
+.ivf-bar{position:fixed;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:rgba(12,16,21,.85);border:1px solid var(--line);border-radius:10px;padding:5px 8px;pointer-events:auto;font-size:12px}
+.ivf-bar span{color:var(--muted);margin-right:4px}#ivf.bench .ivf-bar{position:static;transform:none;order:-1}
 #err{position:absolute;inset:0;display:grid;place-items:center;padding-inline:24px;text-align:center;color:var(--fg);background:var(--ink);font-size:14px;line-height:1.6}
 @media (max-width:640px){
   .card{padding:10px 11px}

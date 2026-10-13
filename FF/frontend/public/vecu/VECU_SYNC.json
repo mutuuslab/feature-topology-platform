@@ -1,6 +1,6 @@
 {
   "source": "C:/project/2026-10-11_vECU",
-  "syncedAt": "2026-10-12T23:47:22.649Z",
+  "syncedAt": "2026-10-13T08:37:41.187Z",
   "note": "tools/vecu-sync.ts가 만든 복사본 — 여기서 고치지 말고 vECU 원본을 고친 뒤 다시 동기화",
   "files": {
     "assets/car.glb.b64.txt": {
@@ -28,8 +28,8 @@
       "bytes": 11277
     },
     "index.html": {
-      "sha256": "eca3742a34befc6e13291a185e5f9de7c861dd9f332d6dfa37537c36bbd81ffd",
-      "bytes": 25899
+      "sha256": "6be6b711442b32665d6ab8bab58bcedf2efb7866a5c54f4ef9f79ea6ac8c1661",
+      "bytes": 27310
     },
     "js/bake.js": {
       "sha256": "e786605cc63c8c0d62373aa77c1f68318d18610eb87550ac116c20895a58cd0e",
@@ -56,12 +56,16 @@
       "bytes": 34989
     },
     "js/ivi.js": {
-      "sha256": "d20d18451dcc386c882b5a46f62cfb8d3c492ff55ac1ca1063a0d1a316c06727",
-      "bytes": 18289
+      "sha256": "c8c8adb8dbf96a4f9e79662defc8c057f2bfeb9bc6f8a2dee1b179ce144e7cb1",
+      "bytes": 18513
+    },
+    "js/ivifocus.js": {
+      "sha256": "f9f636e3ee19e40ebf4cf2938bfd3b66c2d75763908bd1da19877eb489c42b29",
+      "bytes": 5292
     },
     "js/main.js": {
-      "sha256": "20fae488534a5e9975196c15db4e7e34dba085331a5d89045437a8b0f96f8d0b",
-      "bytes": 53668
+      "sha256": "2c25ac312d320f45bce1c6867b8e1240a1392a0d018903cba3f7a3573843dff9",
+      "bytes": 55716
     },
     "js/odr.js": {
       "sha256": "ded279d5982b61a09c9359f78eb7948f80fa389ce4873b980afe8bb5c831b864",

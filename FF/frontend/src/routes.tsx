@@ -54,7 +54,6 @@ const named = <T extends Record<string, unknown>>(load: () => Promise<T>, name: 
 
 // 페이지 모듈 — 모두 지연 로딩(초기 번들은 셸과 디자인 키트만)
 const home = () => import('./pages/home');
-const topology2 = () => import('./pages/topology2');
 const admin = () => import('./pages/admin');
 const twin = () => import('./pages/twin');
 const twinOps = () => import('./pages/twinOps');
@@ -72,6 +71,7 @@ const extScreens = () => import('./screens/ext/Integrations');
 const masterScreens = () => import('./screens/master/MasterData');
 const traceScreens = () => import('./screens/master/Trace');
 const opsScreens = () => import('./screens/master/Ops');
+const topologyScreens = () => import('./screens/master/Topology');
 const experimentScreens = () => import('./screens/ext/Experiments');
 const incidentScreens = () => import('./screens/ext/Incidents');
 const virtualScreens = () => import('./screens/policy/Virtual');
@@ -114,11 +114,11 @@ export const ROUTES: AppRoute[] = [
   { path: '/baselines', element: def(() => import('./screens/bom/BaselineQueue')), title: 'BOM 기준선·확정 승인', group: 'config', menu: '/baselines', components: ['D01-01'], v2: true },
   { path: '/master/bom', element: legacyTo('/baselines'), title: 'BOM 11영역 편집 (이전 주소)', group: 'config', parent: '/baselines' },
   { path: '/master/bom/items', element: legacyTo('/baselines'), title: 'BOM 항목 편집 (이전 주소)', group: 'config', parent: '/baselines' },
-  { path: '/arch/topology', element: named(() => import('./pages/topologyArch'), 'TopologyArch'), title: 'Topology·의존관계 검증', group: 'config', menu: '/arch/topology', components: ['D01-02'] },
-  { path: '/topology/:id', element: def(() => import('./pages/Topology')), title: '관계 그래프', group: 'config', parent: '/arch/topology', components: ['D01-02'] },
-  { path: '/topology/edge', element: named(topology2, 'EdgeEditor'), title: '관계 편집', group: 'config', parent: '/arch/topology' },
-  { path: '/consistency', element: def(() => import('./pages/ConsistencyConsole')), title: '정합성 규칙', group: 'config', parent: '/arch/topology' },
-  { path: '/consistency/violation', element: named(topology2, 'ViolationDetail'), title: '위반 상세', group: 'config', parent: '/consistency' },
+  { path: '/arch/topology', element: named(topologyScreens, 'TopologyScreen'), title: 'Topology·의존관계 검증', group: 'config', menu: '/arch/topology', components: ['D01-02'], v2: true },
+  { path: '/topology/:id', element: legacyTo('/arch/topology?feature=:id'), title: '관계 그래프 (이전 주소)', group: 'config', parent: '/arch/topology' },
+  { path: '/topology/edge', element: legacyTo('/arch/topology'), title: '관계 편집 (이전 주소)', group: 'config', parent: '/arch/topology' },
+  { path: '/consistency', element: legacyTo('/precheck'), title: '정합성 규칙 (이전 주소)', group: 'config', parent: '/arch/topology' },
+  { path: '/consistency/violation', element: legacyTo('/precheck'), title: '위반 상세 (이전 주소)', group: 'config', parent: '/arch/topology' },
   { path: '/analysis/impact', element: def(() => import('./screens/governance/Impact')), title: '변경 영향 분석', group: 'config', menu: '/analysis/impact', components: ['D01-02', 'D06-05'], v2: true },
   { path: '/impact', element: legacyTo('/analysis/impact'), title: '영향 센터 (이전 주소)', group: 'config', parent: '/analysis/impact' },
   { path: '/decisions/report', element: legacyTo('/analysis/impact'), title: '결정 보고서 (이전 주소)', group: 'config', parent: '/analysis/impact' },

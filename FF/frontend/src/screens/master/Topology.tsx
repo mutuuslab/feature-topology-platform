@@ -1,0 +1,225 @@
+// /arch/topology — Topology·의존관계 검증 (D01-02, v2, P10-C4). 관계 표·판정, 선택 Feature 주변 관계 그래프(SVG), 관계 등록·판정.
+// 그래프: 고른 Feature를 가운데, 관계 거리(1·2·3)마다 동심원에 놓는다. REQUIRES는 실선·화살표, EXCLUDES는 점선(대칭).
+import { useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { STATIC_MODE } from '../../api/client';
+import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { ko } from '../../copy/ko';
+import { AsyncView, Button, DataTable, ErrorNote, GateBadge, Kpi, PageHeader, Panel, Segmented, Select, Toolbar } from '../../design';
+import { usePermission } from '../shared';
+
+const T = ko.master.topology;
+
+interface Dep {
+  dependencyId: string;
+  type: 'REQUIRES' | 'EXCLUDES';
+  sourceFeatureId: string;
+  sourceVersion: string;
+  targetFeatureId: string;
+  targetVersion: string | null;
+  verdict: string;
+  rationale: string | null;
+}
+interface Graph {
+  nodes: { id: string; featureId: string; version: string | null; name: string; lifecycle: string | null }[];
+  edges: { id: string; source: string; target: string; type: 'REQUIRES' | 'EXCLUDES'; verdict: string }[];
+}
+
+export function TopologyScreen() {
+  const [sp, setSp] = useSearchParams();
+  const focus = sp.get('feature') ?? 'FEAT-00022';
+  const [depth, setDepth] = useState<'1' | '2' | '3'>('2');
+  const [type, setType] = useState('');
+  const [verdict, setVerdict] = useState('');
+  const deps = useApi<{ items: Dep[] }>('dependencies', { query: { type: type || undefined, verdict: verdict || undefined } }, { placeholderData: (p) => p });
+  const all = useApi<{ items: Dep[] }>('dependencies');
+  const graph = useApi<Graph>('topologyGraph', { query: { featureId: focus, depth } });
+  const feats = useApi<{ items: { featureId: string; version: string; name: string }[] }>('listFeatures', { query: { latestOnly: true } });
+  const rows = deps.data?.items ?? [];
+  const total = all.data?.items ?? [];
+  const C = T.col;
+  return (
+    <div className="ds-screen">
+      <PageHeader eyebrow="D01-02 · Topology · REQUIRES · EXCLUDES" title={T.title} lead={T.lead} actions={<Link to="/precheck">{T.precheck}</Link>} />
+      <div className="ds-kpis">
+        <Kpi label={T.kpi.total} value={total.length} />
+        <Kpi label={T.kpi.requires} value={total.filter((d) => d.type === 'REQUIRES').length} />
+        <Kpi label={T.kpi.excludes} value={total.filter((d) => d.type === 'EXCLUDES').length} />
+        <Kpi label={T.kpi.open} value={total.filter((d) => d.verdict !== 'PASS').length} tone={total.some((d) => d.verdict === 'FAIL') ? 'danger' : undefined} />
+      </div>
+      <Panel title={T.graph} id="topo-graph">
+        <Toolbar label={T.graph}>
+          <Select label={T.focus} value={focus} onChange={(e) => setSp({ feature: e.target.value })}>
+            {!feats.data?.items.some((f) => f.featureId === focus) && <option value={focus}>{focus}</option>}
+            {(feats.data?.items ?? []).map((f) => (
+              <option key={f.featureId} value={f.featureId}>{`${f.featureId} · ${f.name}`}</option>
+            ))}
+          </Select>
+          <Segmented label={T.depth} options={(['1', '2', '3'] as const).map((v) => ({ value: v, label: v }))} value={depth} onChange={(v) => setDepth(v as typeof depth)} />
+        </Toolbar>
+        <AsyncView state={asyncState(graph)} error={graph.error?.message} onRetry={() => graph.refetch()}>
+          {graph.data && <TopologyGraph data={graph.data} focus={focus} />}
+        </AsyncView>
+      </Panel>
+      <Panel title={T.title} id="topo-table">
+        <Toolbar label={T.verdict}>
+          <Select label={T.type} value={type} onChange={(e) => setType(e.target.value)}>
+            <option value="">{T.all}</option>
+            <option value="REQUIRES">REQUIRES</option>
+            <option value="EXCLUDES">EXCLUDES</option>
+          </Select>
+          <Select label={T.verdict} value={verdict} onChange={(e) => setVerdict(e.target.value)}>
+            <option value="">{T.all}</option>
+            {[...new Set(total.map((d) => d.verdict))].map((v) => (
+              <option key={v} value={v}>{v}</option>
+            ))}
+          </Select>
+        </Toolbar>
+        <AsyncView state={asyncState(deps, rows.length === 0)} error={deps.error?.message} onRetry={() => deps.refetch()}>
+          <DataTable
+            caption={T.title}
+            rows={rows}
+            rowKey={(r) => r.dependencyId}
+            maxHeight="50vh"
+            columns={[
+              { key: 'i', header: C.id, cell: (r) => <span className="ds-mono ds-nowrap">{r.dependencyId}</span> },
+              { key: 't', header: C.type, cell: (r) => <span className="ds-tag">{r.type}</span> },
+              { key: 's', header: C.source, cell: (r) => <Link to={`/features/${r.sourceFeatureId}/${r.sourceVersion}`} className="ds-mono ds-nowrap">{`${r.sourceFeatureId}@${r.sourceVersion}`}</Link> },
+              { key: 'g', header: C.target, cell: (r) => <button type="button" className="ds-btn ds-btn--ghost ds-mono" onClick={() => setSp({ feature: r.targetFeatureId })}>{r.targetVersion ? `${r.targetFeatureId}@${r.targetVersion}` : r.targetFeatureId}</button> },
+              { key: 'v', header: C.verdict, cell: (r) => <GateBadge status={r.verdict === '미판정' ? null : r.verdict} /> },
+              { key: 'r', header: C.rationale, cell: (r) => r.rationale ?? '—' },
+            ]}
+          />
+        </AsyncView>
+      </Panel>
+      <CreateDependency />
+    </div>
+  );
+}
+
+/** 동심원 배치 — 고른 Feature(의 버전들)를 가운데, 관계 거리별로 바깥 원 */
+function TopologyGraph({ data, focus }: { data: Graph; focus: string }) {
+  const nav = useNavigate();
+  const W = 760;
+  const H = 420;
+  const layout = useMemo(() => {
+    const adj = new Map<string, Set<string>>();
+    for (const e of data.edges) {
+      adj.set(e.source, (adj.get(e.source) ?? new Set()).add(e.target));
+      adj.set(e.target, (adj.get(e.target) ?? new Set()).add(e.source));
+    }
+    const dist = new Map<string, number>();
+    const start = data.nodes.filter((n) => n.featureId === focus).map((n) => n.id);
+    start.forEach((id) => dist.set(id, 0));
+    const q = [...start];
+    while (q.length) {
+      const cur = q.shift()!;
+      for (const nx of adj.get(cur) ?? []) if (!dist.has(nx)) (dist.set(nx, dist.get(cur)! + 1), q.push(nx));
+    }
+    const rings = new Map<number, string[]>();
+    for (const n of data.nodes) {
+      const d = dist.get(n.id) ?? 3;
+      rings.set(d, [...(rings.get(d) ?? []), n.id]);
+    }
+    const pos = new Map<string, { x: number; y: number }>();
+    for (const [d, ids] of rings) {
+      const r = d === 0 ? (ids.length > 1 ? 40 : 0) : 70 + d * 60;
+      ids.forEach((id, i) => {
+        const a = (2 * Math.PI * i) / ids.length - Math.PI / 2 + d * 0.4;
+        pos.set(id, { x: W / 2 + r * 1.6 * Math.cos(a), y: H / 2 + r * Math.sin(a) });
+      });
+    }
+    return pos;
+  }, [data, focus]);
+  if (!data.edges.length) return <p className="ds-field__hint">{T.noEdges}</p>;
+  return (
+    <div className="ds-viz">
+      <ul className="ds-viz__legend" aria-label={ko.bizTrial.legend}>
+        <li><span className="ds-viz__key ds-topo-key" data-type="REQUIRES" aria-hidden="true" />{T.legend.requires}</li>
+        <li><span className="ds-viz__key ds-topo-key" data-type="EXCLUDES" aria-hidden="true" />{T.legend.excludes}</li>
+      </ul>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="group" aria-label={`${T.graph} — ${focus}`} className="ds-topo">
+        <defs>
+          <marker id="topo-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" className="ds-topo-arrow" />
+          </marker>
+        </defs>
+        {data.edges.map((e) => {
+          const a = layout.get(e.source);
+          const b = layout.get(e.target);
+          if (!a || !b) return null;
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const len = Math.hypot(dx, dy) || 1;
+          const pad = 22;
+          return (
+            <line
+              key={e.id}
+              x1={a.x + (dx / len) * pad}
+              y1={a.y + (dy / len) * pad}
+              x2={b.x - (dx / len) * pad}
+              y2={b.y - (dy / len) * pad}
+              className="ds-topo-edge"
+              data-type={e.type}
+              data-verdict={e.verdict}
+              markerEnd={e.type === 'REQUIRES' ? 'url(#topo-arrow)' : undefined}
+            >
+              <title>{`${e.id} ${e.type} ${e.verdict}`}</title>
+            </line>
+          );
+        })}
+        {data.nodes.map((n) => {
+          const p = layout.get(n.id);
+          if (!p) return null;
+          const isFocus = n.featureId === focus;
+          return (
+            <g
+              key={n.id}
+              transform={`translate(${p.x},${p.y})`}
+              className="ds-topo-node"
+              data-focus={isFocus}
+              role="link"
+              tabIndex={0}
+              aria-label={`${n.id} ${n.name}`}
+              onClick={() => n.version && nav(`/features/${n.featureId}/${n.version}`)}
+              onKeyDown={(ev) => ev.key === 'Enter' && n.version && nav(`/features/${n.featureId}/${n.version}`)}
+            >
+              <circle r={isFocus ? 20 : 15} />
+              <text y={isFocus ? 34 : 28} textAnchor="middle" className="ds-viz__label">{n.featureId.slice(5)}</text>
+              <text y={isFocus ? 48 : 41} textAnchor="middle" className="ds-viz__muted">{n.name.length > 12 ? `${n.name.slice(0, 12)}…` : n.name}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+function CreateDependency() {
+  const perm = usePermission(['FEATURE_AUTHOR', 'VARIANT_OWNER']);
+  const create = useApiMutation<{ dependencyId: string; verdict: string }>('createDependency', ['dependencies', 'topologyGraph', 'events', 'audit']);
+  const [f, setF] = useState({ type: 'REQUIRES', sourceFeatureId: '', sourceVersion: '', targetFeatureId: '', targetVersion: '' });
+  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value.trim() }));
+  if (STATIC_MODE) return null;
+  return (
+    <Panel title={T.create} id="topo-create">
+      <div className="ds-toolbar">
+        <Select label={T.type} value={f.type} onChange={set('type')}>
+          <option value="REQUIRES">REQUIRES</option>
+          <option value="EXCLUDES">EXCLUDES</option>
+        </Select>
+        {(['sourceFeatureId', 'sourceVersion', 'targetFeatureId', 'targetVersion'] as const).map((k) => (
+          <label key={k} className="ds-field ds-field--inline">
+            <span className="ds-field__label">{{ sourceFeatureId: T.source, sourceVersion: T.sourceVer, targetFeatureId: T.target, targetVersion: T.targetVer }[k]}</span>
+            <input className="ds-input ds-input--mono" value={f[k]} onChange={set(k)} style={{ width: k.endsWith('Version') ? 80 : 120 }} />
+          </label>
+        ))}
+      </div>
+      <ErrorNote error={create.error} />
+      {create.data && <p className="ds-ok" role="status">{T.done(create.data.dependencyId, create.data.verdict)}</p>}
+      <Button variant="primary" disabled={!perm.ok || !f.sourceFeatureId || !f.sourceVersion || !f.targetFeatureId || create.isPending} title={perm.hint} onClick={() => create.mutate({ body: { ...f, targetVersion: f.targetVersion || null } })}>
+        {T.submit}
+      </Button>
+    </Panel>
+  );
+}

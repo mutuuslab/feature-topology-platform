@@ -6,6 +6,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { ControlPointsScreen, StructureScreen, SwScreen, TaxonomyScreen, UpgScreen } from '../screens/master/MasterData';
 import { ChangesScreen, DesignTraceScreen, EvidenceScreen } from '../screens/master/Trace';
+import { TopologyScreen } from '../screens/master/Topology';
 
 type Handler = (url: string) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -116,5 +117,35 @@ describe('추적·Evidence·변경', () => {
     mount('/change/cr', '/change/cr', <ChangesScreen />);
     expect(await screen.findByText('센서 신뢰도 개선')).toBeTruthy();
     expect(screen.getByText('1.0 → 1.1')).toBeTruthy();
+  });
+});
+
+describe('Topology·의존관계 검증', () => {
+  it('KPI·관계 표·그래프(고른 Feature 가운데), 대상 Feature를 누르면 그래프 초점이 바뀐다', async () => {
+    const DEPS = [
+      { dependencyId: 'DEP-00001', type: 'REQUIRES', sourceFeatureId: 'FEAT-00022', sourceVersion: '1.0.0', targetFeatureId: 'FEAT-00145', targetVersion: null, verdict: 'PASS', rationale: '전제' },
+      { dependencyId: 'DEP-00002', type: 'EXCLUDES', sourceFeatureId: 'FEAT-00022', sourceVersion: '1.0.0', targetFeatureId: 'FEAT-00025', targetVersion: null, verdict: '미판정', rationale: null },
+    ];
+    handler = (url) => {
+      if (url.startsWith('/api/dependencies')) return { body: { items: DEPS } };
+      if (url.startsWith('/api/topology/graph'))
+        return {
+          body: {
+            nodes: [
+              { id: 'FEAT-00022@1.0.0', featureId: 'FEAT-00022', version: '1.0.0', name: '전방 안전거리', lifecycle: 'RELEASED' },
+              { id: 'FEAT-00145', featureId: 'FEAT-00145', version: null, name: '전제 기능', lifecycle: null },
+            ],
+            edges: [{ id: 'DEP-00001', source: 'FEAT-00022@1.0.0', target: 'FEAT-00145', type: 'REQUIRES', verdict: 'PASS' }],
+          },
+        };
+      if (url.startsWith('/api/features')) return { body: { items: [{ featureId: 'FEAT-00022', version: '1.0.0', name: '전방 안전거리' }] } };
+    };
+    mount('/arch/topology', '/arch/topology', <TopologyScreen />);
+    expect(await screen.findByText('DEP-00001')).toBeTruthy();
+    expect([...document.querySelectorAll('.ds-kpi__value')].map((k) => k.textContent)).toEqual(['2', '1', '1', '1']);
+    const g = await screen.findByRole('group', { name: '관계 그래프 — FEAT-00022' });
+    expect(within(g).getByRole('link', { name: 'FEAT-00022@1.0.0 전방 안전거리' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'FEAT-00145' }));
+    await waitFor(() => expect(calls.some((c) => c.startsWith('/api/topology/graph?featureId=FEAT-00145'))).toBe(true));
   });
 });

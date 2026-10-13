@@ -1781,3 +1781,42 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-tree summary {
   cursor: pointer;
 }
+/* Topology 관계 그래프 — REQUIRES 실선·화살표, EXCLUDES 점선. 판정 색은 Gate 토큰 */
+.ds-topo-edge {
+  stroke: var(--line-strong);
+  stroke-width: 2;
+}
+.ds-topo-edge[data-type='EXCLUDES'] {
+  stroke-dasharray: 6 4;
+}
+.ds-topo-edge[data-verdict='PASS'] {
+  stroke: var(--gate-PASS);
+}
+.ds-topo-edge[data-verdict='FAIL'] {
+  stroke: var(--gate-FAIL);
+}
+.ds-topo-arrow {
+  fill: var(--ink-2);
+}
+.ds-topo-node circle {
+  fill: var(--surface);
+  stroke: var(--line-strong);
+  stroke-width: 2;
+}
+.ds-topo-node[data-focus='true'] circle {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+.ds-topo-node {
+  cursor: pointer;
+}
+.ds-topo-node:focus-visible circle {
+  stroke: var(--focus);
+  stroke-width: 4;
+}
+.ds-topo-key {
+  background: var(--line-strong);
+}
+.ds-topo-key[data-type='EXCLUDES'] {
+  background: repeating-linear-gradient(90deg, var(--line-strong) 0 4px, transparent 4px 7px);
+}

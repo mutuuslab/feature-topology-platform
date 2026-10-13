@@ -5,7 +5,7 @@
     "note": "레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다"
   },
   "featBdcFiles": {
-    "value": 11,
+    "value": 10,
     "direction": "max",
     "note": "FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지"
   },
@@ -20,7 +20,7 @@
     "note": "레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지"
   },
   "guideTermLines": {
-    "value": 74,
+    "value": 64,
     "direction": "max",
     "note": "보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지"
   },

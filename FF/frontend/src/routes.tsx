@@ -53,8 +53,7 @@ const named = <T extends Record<string, unknown>>(load: () => Promise<T>, name: 
   lazy(() => load().then((m) => ({ default: m[name] as ComponentType<any> })));
 
 // 페이지 모듈 — 모두 지연 로딩(초기 번들은 셸과 디자인 키트만)
-const home = () => import('./pages/home');
-const admin = () => import('./pages/admin');
+const homeScreens = () => import('./screens/home/Inbox');
 const twin = () => import('./pages/twin');
 const twinOps = () => import('./pages/twinOps');
 
@@ -84,8 +83,8 @@ const learnScreens = () => import('./screens/learn/Learn');
 
 export const ROUTES: AppRoute[] = [
   // 1 홈
-  { path: '/', element: named(home, 'RoleHome'), title: '내 대시보드', group: 'home', menu: '/' },
-  { path: '/admin/approval', element: named(admin, 'ApprovalWorkflow'), title: '검토함', group: 'home', menu: '/admin/approval' },
+  { path: '/', element: named(homeScreens, 'HomeScreen'), title: '내 대시보드', group: 'home', menu: '/', v2: true },
+  { path: '/admin/approval', element: named(homeScreens, 'ApprovalInboxScreen'), title: '검토함', group: 'home', menu: '/admin/approval', v2: true },
   { path: '/learn', element: named(learnScreens, 'LearnHub'), title: '표준 따라하기', group: 'home', menu: '/learn', v2: true },
   { path: '/learn/:id', element: named(learnScreens, 'LearnRun'), title: '따라하기 시나리오', group: 'home', parent: '/learn', v2: true },
   { path: '/poc', element: named(() => import('./screens/home/Poc'), 'PocScreen'), title: 'PoC 6단계 진행', group: 'home', menu: '/poc', v2: true },
@@ -96,13 +95,13 @@ export const ROUTES: AppRoute[] = [
   { path: '/home/customize', element: legacyTo('/'), title: '홈 꾸미기 (이전 주소)', group: 'home', parent: '/' },
 
   // 2 Feature 정의
-  { path: '/feature/propose', element: named(() => import('./pages/propose'), 'ProposalRegistry'), title: 'Feature 제안', group: 'feature', menu: '/feature/propose' },
+  { path: '/feature/propose', element: named(homeScreens, 'ProposeScreen'), title: 'Feature 제안', group: 'feature', menu: '/feature/propose', v2: true },
   { path: '/features', element: def(() => import('./screens/features/FeatureList')), title: 'Feature Registry', group: 'feature', menu: '/features', components: ['D01-01'], v2: true },
   { path: '/features/:id/:ver', element: def(() => import('./screens/features/FeatureDetail')), title: 'Feature Version 상세', group: 'feature', parent: '/features', components: ['D01-01', 'D01-02'], v2: true },
   { path: '/catalog', element: legacyTo('/features'), title: 'Feature 카탈로그 (이전 주소)', group: 'feature', parent: '/features' },
   { path: '/feature/:id', element: legacyTo('/features'), title: 'Feature 상세 (이전 주소)', group: 'feature', parent: '/features' },
   { path: '/lifecycle', element: legacyTo('/features'), title: 'Lifecycle 보드 (이전 주소)', group: 'feature', parent: '/features' },
-  { path: '/master/define', element: named(() => import('./pages/defineRevision'), 'DefineRevision'), title: 'Feature 등록', group: 'feature', menu: '/master/define', components: ['D01-01'] },
+  { path: '/master/define', element: named(homeScreens, 'DefineScreen'), title: 'Feature 등록', group: 'feature', menu: '/master/define', components: ['D01-01'], v2: true },
   { path: '/change/cr', element: named(traceScreens, 'ChangesScreen'), title: '변경요청', group: 'feature', menu: '/change/cr', components: ['D01-01'], v2: true },
   { path: '/change/cr/:id', element: legacyTo('/change/cr'), title: '변경요청 상세 (이전 주소)', group: 'feature', parent: '/change/cr' },
   { path: '/change/baseline', element: legacyTo('/change/cr'), title: 'Baseline 비교 (이전 주소)', group: 'feature', parent: '/change/cr' },

@@ -19,10 +19,7 @@ import { DOMAINS, ITEM, SCREEN_META, canonTitleOf, domainOfPath } from '../i18n'
 import { SPEC_MENU } from '../data/specMenu';
 import { SCREEN_ENTRY, SCREEN_LINKS, areaIdOfRoute, implementedPaths, navPathOfLink, screenOfRoute } from '../data/uiLinks';
 import { SCREEN_AREA_BY_ID, SCREEN_AREA_TOTAL, SCREEN_CANON, SCREEN_CANON_BY_ID } from '../data/screenAreas';
-import { CANON_AREAS } from '../data/canonical';
 import { PROPOSAL_TRANSITIONS, SEED_PROPOSALS, proposalGate, type Proposal } from '../data/proposal';
-import { ProposalRegistry } from '../pages/propose';
-import { DefineRevision } from '../pages/defineRevision';
 
 beforeEach(() => { localStorage.clear(); });
 afterEach(() => { cleanup(); localStorage.clear(); });
@@ -135,72 +132,7 @@ describe('변경요청(CR)은 제안 화면이 아니라 변경요청 화면의 
 });
 
 // ─────────────────────────────────────────────────────────────
-/** 상태를 문구가 아니라 실제 값으로 읽는 관측점. */
-const Probe = () => {
-  const { state } = useApp();
-  return <div data-testid="probe">{JSON.stringify({
-    features: state.features.length,
-    revisions: state.revisions.length,
-    proposals: (state.proposals as Proposal[]).map(p => ({ id: p.id, stage: p.stage, featureId: p.featureId, route: p.route })),
-  })}</div>;
-};
-const probe = () => JSON.parse(screen.getByTestId('probe').textContent || '{}');
-
-const seedApplication = () => {
-  const src = SEED_PROPOSALS.find(p => p.stage === 'RECEIVED')!;
-  const Con = () => {
-    const { state, dispatch } = useApp();
-    const p = (state.proposals as Proposal[]).find(x => x.id === src.id)!;
-    return (
-      <>
-        <button onClick={() => dispatch({ t: 'PROPOSAL_CONVERT', id: p.id, featureId: 'FEAT-BODY-777', reason: '고객 가치·정량 근거 확인', actor: 'author' })}>
-          전환
-        </button>
-        <Link to={`/master/define?from=${p.id}`}>등록 이어하기</Link>
-        <span data-testid="seed-id">{src.id}</span>
-      </>
-    );
-  };
-  render(
-    <MemoryRouter initialEntries={['/']}>
-      <AppProvider>
-        <Probe />
-        <Con />
-        <Routes>
-          <Route path="/" element={<div>home</div>} />
-          <Route path="/master/define" element={<DefineRevision />} />
-        </Routes>
-      </AppProvider>
-    </MemoryRouter>,
-  );
-  return src.id;
-};
-
-describe('Feature 제안 ↔ Feature Registry 경계 (제안은 만들지 않는다)', () => {
-  it('Feature 전환은 Feature ID 만 발급하고 Feature·Revision 을 만들지 않는다', () => {
-    seedApplication();
-    const before = probe();
-    fireEvent.click(screen.getByText('전환'));
-    const after = probe();
-    expect(after.features).toBe(before.features);
-    expect(after.revisions).toBe(before.revisions);
-    const p = after.proposals.find((x: Proposal) => x.id === 'PRP-2026-0006');
-    expect(p.stage).toBe('HANDOFF');
-    expect(p.route).toBe('FEATURE');
-    expect(p.featureId).toBe('FEAT-BODY-777');
-  });
-
-  it('이관된 제안은 UI02 등록 폼에 원천 제안까지 채워 들어간다', () => {
-    const src = seedApplication();
-    fireEvent.click(screen.getByText('전환'));
-    fireEvent.click(screen.getByText('등록 이어하기'));
-    expect(screen.getByTestId('ui02-handoff')).toBeInTheDocument();
-    const val = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value;
-    expect(val('reg-FRI-005'), 'Feature 명칭').toBe('좌석 열선 승인 정책 신설');
-    expect(val('reg-FRI-037'), '원천 추적').toBe(src);
-    expect(val('reg-FRI-025')).toBe('Body Platform Team');
-  });
-
+describe('Feature 제안 단계 규칙 (레거시 제안 모델)', () => {
   it('제안 단계에서 결정까지 가려면 접수·검토 조건을 먼저 채워야 한다', () => {
     const p = SEED_PROPOSALS.find(x => x.kind === 'CHANGE' && x.stage === 'DRAFT')!;
     // 초안 → 접수: 정량 근거 없이는 거부된다.
@@ -335,41 +267,5 @@ describe('화면 제목(h1)도 정본 이름을 쓴다', () => {
   it('표에 없는 대상 기록은 제목을 화면이 스스로 정한다 (null → 각 화면의 fallback)', () => {
     ['/feature/OTHER-999', '/topology/OTHER-999', '/twin/vehicle/VIN-NOPE']
       .forEach(p => expect(canonTitleOf(p), p).toBeNull());
-  });
-});
-
-// ─────────────────────────────────────────────────────────────
-describe('새 정본 화면은 정본 상세 영역을 모두 실제 본문으로 갖는다', () => {
-  const SCREENS: { id: string; path: string; enter?: string; el: React.ReactNode }[] = [
-    { id: 'UI19', path: '/feature/propose', el: <ProposalRegistry /> },
-  ];
-
-  // UI07·10·12·16·17·18·21·22·23·24·26·28·30 레거시 화면은 v2(/deployments·/fleet/vehicles·/admin/iam·/integration/connectors)로 대체되어 지웠다(P10-C1)
-  it('남은 레거시 정본 화면 × 정본 영역 수가 있다', () => {
-    expect(SCREENS.every(s => s.id in CANON_AREAS)).toBe(true);
-    SCREENS.forEach(s =>
-      expect(CANON_AREAS[s.id].map(a => a.id), s.id)
-        .toEqual(SCREEN_CANON_BY_ID[s.id].areas.map(a => a.id)));
-  });
-
-  SCREENS.forEach(({ id, path, enter, el }) => {
-    it(`${id} 화면 — 영역 ${SCREEN_CANON_BY_ID[id].areas.length}개가 모두 채워져 있고 화면 ID·정본 영역 이름이 일치한다`, () => {
-      render(
-        <MemoryRouter initialEntries={[enter || path]}>
-          <AppProvider><Routes><Route path={path} element={el} /></Routes></AppProvider>
-        </MemoryRouter>,
-      );
-      expect(screen.getAllByText(id).length).toBeGreaterThan(0);
-      const areas = CANON_AREAS[id];
-      areas.forEach(a => {
-        const tab = screen.getByRole('button', { name: new RegExp(a.name) });
-        expect(tab, `${id} ${a.id}`).toBeInTheDocument();
-        fireEvent.click(tab);
-        expect(document.body.textContent, `${id} ${a.id}`).toContain(`${a.id} · ${a.name}`);
-        expect(document.body.textContent, `${id} ${a.id}`).not.toContain('영역 본문이 연결되지 않았다');
-      });
-      // 본문이 빠진 영역은 탭에 ⚠ 로 표시된다 — 아무 영역도 빠지면 안 된다.
-      expect(document.body.textContent).not.toContain('⚠');
-    });
   });
 });

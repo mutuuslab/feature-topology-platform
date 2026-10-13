@@ -48,7 +48,7 @@
 
 | WP | 내용 | 주요 규칙 | 상태 |
 |---|---|---|---|
-| WP0 | 커널 신뢰 기반: 감사 해시 체인(UPDATE·DELETE 차단 트리거, 체인 검증 API), 소프트웨어 HSM(용도별 kid·epoch, 차량 키 파생, AES-CMAC, JCS, 정책 엔진), 승인자 개인 키, 역할 확장(SECURITY_OFFICER·OPS_LEAD·REGULATORY_OWNER, 보고서 승인 역할 대응, PLT-016 직무 분리) | PLT-015·013·016, SEC-002·008 | 완료 |
+| WP0 | 커널 신뢰 기반: 감사 해시 체인(UPDATE·DELETE 차단 트리거, 체인 검증 API), 소프트웨어 HSM(용도별 kid·epoch, 차량 키 파생, AES-CMAC, JCS, 정책 엔진), 승인자 개인 키, 역할 확장(SECURITY_OFFICER·OPS_LEAD·REGULATORY_OWNER, 보고서 승인 역할 대응, PLT-016 직무 분리) | PLT-015·013·016, SEC-002·008 | 완료 aa7bf24 |
 | WP1 | 안전 분류 Registry: SafetyProfile(5.7 속성), 분류 판정·조합 검사, 확정 서명·Version 고정, G1 blocker, flagKey 재사용 금지, 화면(목록 열·배지·안전 분류 탭) | CLS-001~009, ADS-002, CODE-020, LCY-011, VEH-006 | 대기 |
 | WP2 | Gate 결정 기록(서명·CONDITIONAL 제한·fail-closed·강제 통과 2인), 재-HARA 자동 검출, 은퇴 6단계, G6/G7 분리 | LCY-001~012, TST-009, SOT-004 | 대기 |
 | WP3 | 정책 게이트(kill_command v2 zod, evaluateGate — 부록 D 15 + 예제 Golden, gate-parity) · 주문 원장(+1·24h 누적) | PLT-001~010·014·017, SEC-003, GEN-003 | 대기 |

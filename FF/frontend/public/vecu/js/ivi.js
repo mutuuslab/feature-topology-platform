@@ -40,9 +40,10 @@ export function drawCluster(g, w, h) {
   txt(g, `${Math.round(L.kph)}`, w / 2, h * .46, h * .46, C.fg, 'center', 300, MONO);
   txt(g, 'km/h', w / 2, h * .74, h * .09, C.mute, 'center');
   // limit sign
-  const sx = w / 2 + h * .36, sy = h * .22, sr = h * .1; g.beginPath(); g.arc(sx, sy, sr, 0, 6.283); g.fillStyle = '#fff'; g.fill(); g.lineWidth = sr * .22; g.strokeStyle = '#d62b1f'; g.stroke(); txt(g, `${L.limit}`, sx, sy + 1, sr * .95, '#111', 'center', 700);
+  // limit sign clear of the speed digits (it overlapped them at w / 2 + h * .36)
+  const sx = w / 2 + h * .62, sy = h * .22, sr = h * .1; g.beginPath(); g.arc(sx, sy, sr, 0, 6.283); g.fillStyle = '#fff'; g.fill(); g.lineWidth = sr * .22; g.strokeStyle = '#d62b1f'; g.stroke(); txt(g, `${L.limit}`, sx, sy + 1, sr * .95, '#111', 'center', 700);
   // gear + drive mode
-  txt(g, 'P  R  N', w / 2 - h * .42, h * .22, h * .085, C.mute, 'center', 500, MONO); txt(g, L.gear, w / 2 - h * .25, h * .22, h * .12, C.fg, 'center', 600, MONO);
+  txt(g, L.gear, w / 2 - h * .6, h * .22, h * .12, C.fg, 'center', 600, MONO); txt(g, 'P  R  N', w / 2 - h * .7, h * .22, h * .085, C.mute, 'right', 500, MONO);   // PRN ends left of the gear letter
   // ADAS lane graphic (left)
   const ax = w * .17, ay = h * .55, aw = w * .18, ah = h * .62;
   g.save(); g.beginPath(); rr(g, ax - aw / 2, ay - ah / 2, aw, ah, 14); g.clip();
@@ -161,12 +162,12 @@ export class IviScreens {
     this.gl = this.cl.getContext('2d'); this.gc = this.cc.getContext('2d');
     this.texCl = new THREE.CanvasTexture(this.cl); this.texCc = new THREE.CanvasTexture(this.cc);
     for (const t of [this.texCl, this.texCc]) { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; }
-    this.last = 0;
+    this.last = 0; this.version = 0;   // version: bumped on every redraw (IVI focus copies only new frames)
   }
   update(nav, force) {
     const now = performance.now(); if (!force && now - this.last < 100) return; this.last = now;
     drawCluster(this.gl, this.cl.width, this.cl.height); drawCenter(this.gc, this.cc.width, this.cc.height, nav);
-    this.texCl.needsUpdate = true; this.texCc.needsUpdate = true;
+    this.texCl.needsUpdate = true; this.texCc.needsUpdate = true; this.version++;
     if (this.mirror) { const [a, b] = this.mirror; a.getContext('2d').drawImage(this.cl, 0, 0, a.width, a.height); b.getContext('2d').drawImage(this.cc, 0, 0, b.width, b.height); }
   }
 }

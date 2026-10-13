@@ -1,0 +1,34 @@
+{
+ "type": "status_report",
+ "schema_version": "2.0",
+ "vehicle_pseudonym": "9f2c4a7d1e0b5c36",
+ "feature": {
+  "id": "FEAT-00022",
+  "version": "1.0.0"
+ },
+ "state": "DISABLED",
+ "reason": {
+  "category": "SAFETY",
+  "source": "REMOTE"
+ },
+ "request_result": "ACCEPTED",
+ "vehicle_seq": 11,
+ "key_epoch": 0,
+ "report_seq": 196650,
+ "durable": true,
+ "hmi": "INFO_DISABLED",
+ "feature_weight_permille": 0,
+ "policy_hash": "sha256:abababababababababababababababababababababababababababababababab",
+ "dtc": [
+  "C1A2B3"
+ ],
+ "edr_aligned_state": "OFF_BY_COMMAND",
+ "received_at": "2026-10-13T00:01:02Z",
+ "applied_at": "2026-10-13T00:01:09Z",
+ "observed_at": "2026-10-13T00:01:10Z",
+ "time_sync": "SYNCED",
+ "offline_since": null,
+ "data_category": "SAFETY_OPERATION",
+ "state_auth": "fyDAwJbxHWhQZ0_k-jTTDA",
+ "persistence": "DURABLE"
+}

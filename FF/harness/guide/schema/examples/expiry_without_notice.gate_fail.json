@@ -1,0 +1,70 @@
+{
+ "type": "kill_command",
+ "schema_version": "2.0",
+ "command_id": "6f1c2b9e-3d4a-4e5f-8a7b-1c2d3e4f5a6b",
+ "command_seq": 11,
+ "request": "deactivate",
+ "feature": {
+  "id": "FEAT-00022",
+  "version": "1.0.0",
+  "f_class": "F3",
+  "deact_class": "DC2"
+ },
+ "reason": {
+  "category": "COMMERCIAL",
+  "code": "TRIAL_EXPIRED"
+ },
+ "scope": {
+  "vehicle_ids": [
+   "VHC-000123",
+   "VHC-000124"
+  ],
+  "cohort_id": "UPG-VC-SAMPLE-00025",
+  "max_vehicles": 2
+ },
+ "target": {
+  "market": "EU",
+  "ecu_id": "ECU-ADAS-01",
+  "sw_id": "SW-CARE-SCC-ADP",
+  "sw_version": "2.3.0",
+  "rxswin": "R79-SCC-ADP-0230"
+ },
+ "validity": {
+  "not_before": "2026-10-13T00:00:00Z",
+  "expires_at": "2026-10-13T12:00:00Z"
+ },
+ "approvals": [
+  {
+   "approver_id": "u-1001",
+   "role": "FSM",
+   "signed_at": "2026-10-12T23:50:00Z",
+   "approval_sig": "sXtG_e-EARTI9Z3fAg6zNFuXQGeuP5UM7gwQ1G1oZacOomBB499E2cPJdhJYwJjq6lDmXaGKfdQnZavyZGa1vw"
+  },
+  {
+   "approver_id": "u-2002",
+   "role": "OPS_LEAD",
+   "signed_at": "2026-10-12T23:52:00Z",
+   "approval_sig": "UZ7OMVJn-oAxN2OfU2ZbbusdTPEUbkYF2s92jh8N7cFqq2rR1IIpAszR-lYZQZkIBqfAbfDPlX06HfELgetGdA"
+  }
+ ],
+ "regulatory": {
+  "type_approval_impact": "NONE",
+  "r156_assessment_id": "SUMS-IA-2026-0981",
+  "containment_justification": "Interim containment pending root cause; recall decision INC-2026-0412"
+ },
+ "user_notice": {
+  "required": false
+ },
+ "evidence": {
+  "evidence_manifest_id": "EVM-FEAT-00022-1.0.0-0412",
+  "bom_baseline_id": "BOM-2026.10.1",
+  "sbom_ref": "urn:cdx:3e671687-395b-41f5-a30f-a58921a69b79/1"
+ },
+ "issued_by": "ops-console",
+ "issued_at": "2026-10-12T23:55:00Z",
+ "signature": {
+  "alg": "ES256",
+  "kid": "ffp-cp-2026-01",
+  "value": "k6ieCK3dj2LWEjtYk91WbKqh8roL4CntSACl6yiydKn4QCAQxZ6cEEQS45PnRAEOB43D6llqaruRNDPKq0EiIA"
+ }
+}

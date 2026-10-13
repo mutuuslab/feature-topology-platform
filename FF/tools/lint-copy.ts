@@ -1,8 +1,10 @@
 // 문구 lint — 신규 UI는 화면 문구를 src/copy/ko.ts 카탈로그에서만 가져온다.
 // 검사: (1) JSX 텍스트·속성에 한글 직접 기입 금지, (2) 카탈로그·라우트 제목·신규 UI 금지어, (3) 레거시 FEAT-BDC 하드코딩 래칫,
-// (4) 레거시 화면에 남은 'Twin/트윈' 표기 래칫(사용자 결정 2026-10-12: Digital Twin 용어 금지 → 0까지).
+// (4) 레거시 화면에 남은 'Twin/트윈' 표기 래칫(사용자 결정 2026-10-12: Digital Twin 용어 금지 → 0까지),
+// (5) 국제표준 대응방안 보고서 v1.1 용어 규칙(harness/guide/harness/terms.json) — 플랫폼 화면에 해당하는 금지어만, 허용 문맥은 보고서 원본 정규식. 줄 수 래칫 → 0.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { guideTermHits, loadGuideTerms } from './guide-terms.ts';
 import { FF, ratchet, rel, walk } from './lib.ts';
 
 const SRC = join(FF, 'frontend', 'src');
@@ -54,12 +56,20 @@ if (existsSync(COPY_FILE)) {
   });
 }
 
+const guideTerms = loadGuideTerms();
+const termHits: string[] = [];
 let bdcFiles = 0;
 let twinLines = 0;
 for (const f of walk(SRC, ['.ts', '.tsx'])) {
   const text = readFileSync(f, 'utf8');
   if (text.includes('FEAT-BDC')) bdcFiles++;
   if (f.endsWith('.tsx')) for (const line of text.split('\n')) if (!line.trim().startsWith('//') && !line.trim().startsWith('*') && TWIN_VISIBLE.test(line)) twinLines++;
+  if (!/__tests__|\.test\./.test(f))
+    text.split('\n').forEach((line, i) => {
+      const t = line.trim();
+      if (t.startsWith('//') || t.startsWith('*')) return;
+      for (const h of guideTermHits(line, guideTerms)) termHits.push(`${rel(f)}:${i + 1}  '${h.term}' — ${h.why}`);
+    });
 }
 
 console.log('lint:copy');
@@ -71,4 +81,7 @@ if (errors.length) {
 } else console.log('  ✓ 신규 UI 하드코딩 문구·금지어 0건');
 ok = ratchet('featBdcFiles', bdcFiles, 'max', 'FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지') && ok;
 ok = ratchet('twinTermLines', twinLines, 'max', "레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지") && ok;
+const termOk = ratchet('guideTermLines', termHits.length, 'max', "보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지");
+if (!termOk) for (const h of termHits.slice(0, 15)) console.error('    ' + h);
+ok = termOk && ok;
 process.exit(ok ? 0 : 1);

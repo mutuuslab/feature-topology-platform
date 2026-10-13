@@ -1,0 +1,67 @@
+{
+  "source": "C:/project/2026-09-23_FF_IMP/FF_Safety_Guide_v2",
+  "syncedAt": "2026-10-13T04:05:25.745Z",
+  "note": "tools/guide-sync.ts가 만든 복사본 — 여기서 고치지 말고 가이드 원본을 고친 뒤 다시 동기화",
+  "files": {
+    "harness/terms.json": {
+      "sha256": "2670dc769e05c9fb8e315721a411d5684fdf05d8d9aead8c7880557385f8c1d3",
+      "bytes": 5383
+    },
+    "schema/examples/activate_cn_missing_filing.gate_fail.json": {
+      "sha256": "fef8d614230cb5ea5463b69f9d141c1351f52df0742f6e0f7664559a1f4ea4ee",
+      "bytes": 1774
+    },
+    "schema/examples/expiry_without_notice.gate_fail.json": {
+      "sha256": "b2372c7b2d172e0e714f772f5112600eabc6d6fc7fea0f01dd7da4919402055d",
+      "bytes": 1789
+    },
+    "schema/examples/flagd_ivi.flags.json": {
+      "sha256": "d507f410e9b2c862d37782234337ebd1b5acbfbca9516597d8524c9c63a3e3b3",
+      "bytes": 1118
+    },
+    "schema/examples/kill_dc4_aeb.gate_fail.json": {
+      "sha256": "23c82e9e9f318575fab3965130b043d77692fb9d7fd25a748e7bbd20d00752ac",
+      "bytes": 1859
+    },
+    "schema/examples/kill_operator_chose_dc0.gate_fail.json": {
+      "sha256": "cc927858462e48f1b21af39899b6e37049ce38e144992b21f9c50b010d91186f",
+      "bytes": 1859
+    },
+    "schema/examples/kill_safety_dc2_eu.ok.json": {
+      "sha256": "2dcc5e305a8ae7a4357dc99f5099f3c94fe6338948da601a4a2fbb8ce7731e5f",
+      "bytes": 1859
+    },
+    "schema/examples/kill_same_approver.gate_fail.json": {
+      "sha256": "79e85e8298a89472061c481d16cc726cb3946b6a343e31d9dbf2047ca6e58496",
+      "bytes": 1859
+    },
+    "schema/examples/legacy_v1_kill_safe_stop.schema_fail.json": {
+      "sha256": "86da7e227b2a40b1714145818cd8e89cd2f44bedae14ad34580f5726e6f1c410",
+      "bytes": 202
+    },
+    "schema/examples/legacy_v1_status.schema_fail.json": {
+      "sha256": "10da50c22f5ba852214c51dcb23e6644a4a9c829a284fe46523ec425d8946aad",
+      "bytes": 211
+    },
+    "schema/examples/registry.json": {
+      "sha256": "1ae5a753f80a041499f80c8899d49525cc6800c1aebcdb5dc01aeee5d68d36fc",
+      "bytes": 4473
+    },
+    "schema/examples/status_disabled.ok.json": {
+      "sha256": "7e94e664eac7145ce963e5296eb9dc667a4d8b4054f3a16983f8ef3d8b252218",
+      "bytes": 836
+    },
+    "schema/kill_command.v2.schema.json": {
+      "sha256": "7e8c762b5281a633d397662fb845d9250d3c133afb5cb0fec97ba02e212deaff",
+      "bytes": 8892
+    },
+    "schema/status_report.v2.schema.json": {
+      "sha256": "230ac9d35abe6f6ab09471d026592f437f3ed397819a7648083013b8e6d62d0e",
+      "bytes": 5749
+    },
+    "catalog.json": {
+      "sha256": "fdbaef0a61954ed624aba129f8eee522d8f78ff0c2c09fc4ee38d73d1fa02295",
+      "bytes": 144734
+    }
+  }
+}

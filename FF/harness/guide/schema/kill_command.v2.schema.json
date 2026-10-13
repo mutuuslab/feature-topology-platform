@@ -1,0 +1,405 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://example.invalid/ffp/schema/kill_command.v2.schema.json",
+ "title": "kill_command v2 (FFP guide Appendix D)",
+ "description": "Activation / deactivation / restore command from the Control Plane to a vehicle (FFP guide Appendix D). Replaces the v1 kill_command: the operator can no longer choose a safe_mode; the deactivation class is design-time data of the Feature Version (FFG-CODE-011, FFG-PLT-003). Signature: JWS (RFC 7515) with detached payload = RFC 8785 (JCS) canonical JSON of this object without 'signature'; alg must equal the trust-store entry of kid (RFC 8725 3.1); JSON with duplicate member names is rejected before verification. The gate validates the fleet order; the platform then issues one signed envelope per vehicle with 'vehicle_auth' (scope.vehicle_ids has exactly one entry).",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "type",
+  "schema_version",
+  "command_id",
+  "command_seq",
+  "request",
+  "feature",
+  "reason",
+  "scope",
+  "target",
+  "validity",
+  "approvals",
+  "regulatory",
+  "user_notice",
+  "evidence",
+  "issued_by",
+  "issued_at",
+  "signature"
+ ],
+ "properties": {
+  "type": {
+   "const": "kill_command"
+  },
+  "schema_version": {
+   "const": "2.0"
+  },
+  "command_id": {
+   "type": "string",
+   "format": "uuid"
+  },
+  "command_seq": {
+   "type": "integer",
+   "minimum": 1,
+   "maximum": 4294967295,
+   "description": "Order sequence per feature (platform ledger, FFG-PLT-017). The per-vehicle anti-replay value is vehicle_auth.vehicle_seq."
+  },
+  "request": {
+   "enum": [
+    "deactivate",
+    "restore",
+    "activate",
+    "sync"
+   ],
+   "description": "deactivate / restore / activate change the guard state; sync is an authenticated no-op used to raise the vehicle-wide key epoch (guide 9.6)"
+  },
+  "feature": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "version",
+    "f_class",
+    "deact_class"
+   ],
+   "properties": {
+    "id": {
+     "type": "string",
+     "pattern": "^FEAT-[0-9]{5}$"
+    },
+    "version": {
+     "type": "string",
+     "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "f_class": {
+     "enum": [
+      "F0",
+      "F1",
+      "F2",
+      "F3",
+      "F4"
+     ]
+    },
+    "deact_class": {
+     "enum": [
+      "DC0",
+      "DC1",
+      "DC2",
+      "DC3",
+      "DC4"
+     ],
+     "description": "Copied from the Registry. The vehicle rejects a mismatch."
+    }
+   }
+  },
+  "reason": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "category",
+    "code"
+   ],
+   "properties": {
+    "category": {
+     "enum": [
+      "SAFETY",
+      "SECURITY",
+      "REGULATORY",
+      "COMMERCIAL",
+      "OPERATIONAL"
+     ]
+    },
+    "code": {
+     "type": "string",
+     "pattern": "^[A-Z0-9_]{3,40}$"
+    },
+    "incident_id": {
+     "type": "string"
+    }
+   }
+  },
+  "scope": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "vehicle_ids",
+    "max_vehicles"
+   ],
+   "properties": {
+    "vehicle_ids": {
+     "type": "array",
+     "minItems": 1,
+     "maxItems": 10000,
+     "items": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{4,64}$"
+     }
+    },
+    "cohort_id": {
+     "type": "string"
+    },
+    "max_vehicles": {
+     "type": "integer",
+     "minimum": 1
+    }
+   }
+  },
+  "target": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "market",
+    "ecu_id",
+    "sw_id",
+    "sw_version",
+    "rxswin"
+   ],
+   "properties": {
+    "market": {
+     "enum": [
+      "UNECE",
+      "EU",
+      "UK",
+      "CN",
+      "US",
+      "CA",
+      "MX",
+      "BR",
+      "KR",
+      "JP",
+      "IN",
+      "AU",
+      "OTHER"
+     ]
+    },
+    "ecu_id": {
+     "type": "string"
+    },
+    "sw_id": {
+     "type": "string"
+    },
+    "sw_version": {
+     "type": "string"
+    },
+    "rxswin": {
+     "type": "string",
+     "description": "UN R156 RX software identification number(s) affected"
+    }
+   }
+  },
+  "validity": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "not_before",
+    "expires_at"
+   ],
+   "properties": {
+    "not_before": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "expires_at": {
+     "type": "string",
+     "format": "date-time",
+     "description": "Message TTL only. A safety kill state never expires automatically."
+    }
+   }
+  },
+  "approvals": {
+   "type": "array",
+   "minItems": 2,
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "approver_id",
+     "role",
+     "signed_at",
+     "approval_sig"
+    ],
+    "properties": {
+     "approver_id": {
+      "type": "string"
+     },
+     "role": {
+      "enum": [
+       "FSM",
+       "CSM",
+       "OPS_LEAD",
+       "PRODUCT_OWNER",
+       "QA",
+       "REGULATORY"
+      ]
+     },
+     "signed_at": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "approval_sig": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{64,}$",
+      "description": "Approver's personal signature (FIDO2 / smart card) over SHA-256 of the JCS payload without approvals[*].approval_sig and signature (FFG-PLT-005)."
+     }
+    }
+   }
+  },
+  "regulatory": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "type_approval_impact",
+    "r156_assessment_id"
+   ],
+   "properties": {
+    "type_approval_impact": {
+     "enum": [
+      "NONE",
+      "INFO_PACKAGE_UPDATE",
+      "EXTENSION_REQUIRED"
+     ]
+    },
+    "r156_assessment_id": {
+     "type": "string"
+    },
+    "cn_filing_id": {
+     "type": "string",
+     "description": "MIIT/SAMR OTA filing / change permit (China)"
+    },
+    "recall_campaign_id": {
+     "type": "string",
+     "description": "e.g. NHTSA Part 573 / SAMR recall number"
+    },
+    "containment_justification": {
+     "type": "string"
+    }
+   }
+  },
+  "user_notice": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "required"
+   ],
+   "properties": {
+    "required": {
+     "type": "boolean"
+    },
+    "text_ref": {
+     "type": "string"
+    },
+    "user_confirmation_required": {
+     "type": "boolean"
+    }
+   }
+  },
+  "evidence": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "evidence_manifest_id"
+   ],
+   "properties": {
+    "evidence_manifest_id": {
+     "type": "string"
+    },
+    "bom_baseline_id": {
+     "type": "string"
+    },
+    "sbom_ref": {
+     "type": "string",
+     "description": "CycloneDX / SPDX document reference of the released software"
+    }
+   }
+  },
+  "issued_by": {
+   "type": "string"
+  },
+  "issued_at": {
+   "type": "string",
+   "format": "date-time"
+  },
+  "signature": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "alg",
+    "kid",
+    "value"
+   ],
+   "properties": {
+    "alg": {
+     "enum": [
+      "ES256",
+      "EdDSA"
+     ]
+    },
+    "kid": {
+     "type": "string"
+    },
+    "value": {
+     "type": "string",
+     "pattern": "^[A-Za-z0-9_-]{86}$",
+     "description": "base64url of the 64-byte raw signature (ES256: R||S, RFC 7518 3.4; Ed25519). DER is not accepted."
+    }
+   }
+  },
+  "vehicle_auth": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "key_epoch",
+    "vehicle_seq",
+    "approver_refs",
+    "cmd_auth"
+   ],
+   "description": "Per-vehicle envelope only. cmd_auth = AES-CMAC-128 by the platform signing HSM with the vehicle command key of key_epoch over the 32-byte binary block of guide 9.2 (bytes 4..35, including resync_ref). The LPC copies it unchanged; the Safety Guard verifies it (FFG-VEH-002).",
+   "properties": {
+    "key_epoch": {
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 255
+    },
+    "vehicle_seq": {
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 4294967295,
+     "description": "Per (vehicle, feature); accepted if last < seq <= last + 1024 within an epoch."
+    },
+    "approver_refs": {
+     "type": "array",
+     "minItems": 2,
+     "maxItems": 2,
+     "items": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+     },
+     "description": "16-bit references of the two approvers (FSM first for F2+)."
+    },
+    "cmd_auth": {
+     "type": "string",
+     "pattern": "^[A-Za-z0-9_-]{22}$",
+     "description": "base64url, 16 bytes"
+    },
+    "resync_ref": {
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 65535,
+     "default": 0,
+     "description": "Boot reference (report_seq >> 16 of the STARTUP status report) for a RESTORE that resynchronises a feature after NvM record loss; 0 in every other request. Covered by cmd_auth (frame bytes 34..35, guide 9.2/9.5)."
+    }
+   }
+  }
+ },
+ "dependentSchemas": {
+  "vehicle_auth": {
+   "properties": {
+    "scope": {
+     "properties": {
+      "vehicle_ids": {
+       "maxItems": 1
+      }
+     }
+    }
+   }
+  }
+ }
+}

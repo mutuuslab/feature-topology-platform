@@ -1,0 +1,216 @@
+{
+ "_comment": "Registry snapshot used by the platform gate (example). Source of truth: Feature Registry + BOM Baseline.",
+ "features": {
+  "FEAT-00022": {
+   "name": "전방 안전거리 3단계",
+   "version": "1.0.0",
+   "status": "RELEASED",
+   "f_class": "F3",
+   "deact_class": "DC2",
+   "gsr_mandatory": false,
+   "max_vehicles": 50000,
+   "asil_ref": "B",
+   "item": "ITEM-SCC-01",
+   "markets_approved": [
+    "UNECE",
+    "EU",
+    "KR",
+    "CN",
+    "US",
+    "CA"
+   ],
+   "type_approval_relevant": true,
+   "max_per_window": 5000,
+   "profile": {
+    "takeover_ms": 4000,
+    "ramp_ms": 3000,
+    "fault_ramp_ms": 1500,
+    "max_pending_ms": 0,
+    "max_cycle_wait_ms": 28800000
+   },
+   "ads_feature": false
+  },
+  "FEAT-00031": {
+   "name": "IVI 테마",
+   "version": "2.0.0",
+   "status": "RELEASED",
+   "f_class": "F0",
+   "deact_class": "DC0",
+   "gsr_mandatory": false,
+   "max_vehicles": 1000000,
+   "asil_ref": "QM",
+   "item": null,
+   "markets_approved": [
+    "UNECE",
+    "EU",
+    "KR",
+    "CN",
+    "US",
+    "CA",
+    "MX",
+    "BR"
+   ],
+   "type_approval_relevant": false,
+   "max_per_window": 200000,
+   "profile": {
+    "takeover_ms": 0,
+    "ramp_ms": 0,
+    "fault_ramp_ms": 0,
+    "max_pending_ms": 0,
+    "max_cycle_wait_ms": 0
+   },
+   "ads_feature": false
+  },
+  "FEAT-00040": {
+   "name": "AEB 보행자 확장",
+   "version": "3.0.0",
+   "status": "RELEASED",
+   "f_class": "F4",
+   "deact_class": "DC4",
+   "gsr_mandatory": true,
+   "max_vehicles": 1000000,
+   "asil_ref": "D",
+   "item": "ITEM-AEB-01",
+   "markets_approved": [
+    "UNECE",
+    "EU",
+    "KR",
+    "CN",
+    "US"
+   ],
+   "type_approval_relevant": true,
+   "max_per_window": 0,
+   "profile": {
+    "takeover_ms": 0,
+    "ramp_ms": 0,
+    "fault_ramp_ms": 0,
+    "max_pending_ms": 0,
+    "max_cycle_wait_ms": 0
+   },
+   "ads_feature": false
+  },
+  "FEAT-00051": {
+   "name": "IC·JC 경로 사전안내",
+   "version": "1.1.0",
+   "status": "RELEASED",
+   "f_class": "F1",
+   "deact_class": "DC1",
+   "gsr_mandatory": false,
+   "max_vehicles": 500000,
+   "asil_ref": "QM",
+   "item": null,
+   "markets_approved": [
+    "UNECE",
+    "EU",
+    "KR",
+    "CN",
+    "US",
+    "CA",
+    "MX",
+    "BR"
+   ],
+   "type_approval_relevant": false,
+   "max_per_window": 50000,
+   "profile": {
+    "takeover_ms": 0,
+    "ramp_ms": 0,
+    "fault_ramp_ms": 0,
+    "max_pending_ms": 600000,
+    "max_cycle_wait_ms": 28800000
+   },
+   "ads_feature": false
+  },
+  "FEAT-00060": {
+   "name": "고속도로 ADS 기능(예시)",
+   "version": "1.0.0",
+   "status": "RELEASED",
+   "f_class": "F4",
+   "deact_class": "DC2",
+   "gsr_mandatory": false,
+   "max_vehicles": 20000,
+   "asil_ref": "D",
+   "item": "ITEM-ADS-01",
+   "markets_approved": [
+    "UNECE",
+    "EU"
+   ],
+   "type_approval_relevant": true,
+   "max_per_window": 2000,
+   "ads_feature": true,
+   "adsf_type": "ADSF-1",
+   "end_state": "TAKEOVER_COMPLETE_OR_MRC",
+   "profile": {
+    "takeover_ms": 10000,
+    "ramp_ms": 30000,
+    "fault_ramp_ms": 10000,
+    "max_pending_ms": 0,
+    "max_cycle_wait_ms": 28800000
+   }
+  },
+  "FEAT-00061": {
+   "name": "구형 주차 ADS 기능(폐기, 예시)",
+   "version": "0.9.0",
+   "status": "DECOMMISSIONED",
+   "f_class": "F4",
+   "deact_class": "DC2",
+   "gsr_mandatory": false,
+   "max_vehicles": 0,
+   "asil_ref": "D",
+   "item": "ITEM-ADS-02",
+   "markets_approved": [
+    "EU"
+   ],
+   "type_approval_relevant": true,
+   "max_per_window": 0,
+   "ads_feature": true,
+   "adsf_type": "ADSF-2",
+   "end_state": "MRC",
+   "profile": {
+    "takeover_ms": 0,
+    "ramp_ms": 1,
+    "fault_ramp_ms": 5000,
+    "max_pending_ms": 0,
+    "max_cycle_wait_ms": 28800000
+   }
+  }
+ },
+ "policy": {
+  "max_command_ttl_hours": 24,
+  "canary_max_vehicles": 100,
+  "max_not_before_lead_hours": 1,
+  "kill_window_hours": 24,
+  "max_clock_skew_seconds": 300
+ },
+ "ledger": {
+  "_comment": "Audit ledger snapshot (platform). Source of truth: Decision Record / audit history.",
+  "FEAT-00022": {
+   "last_order_seq": 10,
+   "last_kill_approvers": [
+    "u-3003",
+    "u-4004"
+   ],
+   "recent": [
+    {
+     "request": "deactivate",
+     "vehicles": 3,
+     "at": "2026-10-12T20:00:00Z"
+    }
+   ]
+  },
+  "FEAT-00031": {
+   "last_order_seq": 10,
+   "last_kill_approvers": [],
+   "recent": []
+  },
+  "FEAT-00040": {
+   "last_order_seq": 10,
+   "last_kill_approvers": [],
+   "recent": []
+  },
+  "FEAT-00051": {
+   "last_order_seq": 10,
+   "last_kill_approvers": [],
+   "recent": []
+  }
+ }
+}

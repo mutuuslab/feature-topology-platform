@@ -1465,3 +1465,177 @@ textarea.ds-input {
 .ds-nowrap {
   white-space: nowrap;
 }
+
+/* ── 기능안전 부품 (design/safety.tsx — 보고서 v1.1 5·7·8·9장) ───────────── */
+.ds-cls-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  align-items: center;
+}
+.ds-cls {
+  --c: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 7px 0 6px;
+  border-radius: var(--r-sm);
+  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+  background: color-mix(in srgb, var(--c) 7%, var(--surface));
+  color: var(--c);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+/* 처리강도는 한 색의 진하기로만 — 상태색(ok·warn·danger)과 섞이지 않게 */
+.ds-cls[data-axis='F'][data-value='F0'] { --c: var(--faint); }
+.ds-cls[data-axis='F'][data-value='F1'] { --c: color-mix(in srgb, var(--accent) 45%, var(--faint)); }
+.ds-cls[data-axis='F'][data-value='F2'] { --c: color-mix(in srgb, var(--accent) 60%, var(--faint)); }
+.ds-cls[data-axis='F'][data-value='F3'] { --c: color-mix(in srgb, var(--accent) 55%, var(--ink)); }
+.ds-cls[data-axis='F'][data-value='F4'] { --c: var(--ink); }
+.ds-cls[data-axis='DC'],
+.ds-cls[data-axis='R'],
+.ds-cls[data-axis='TYPE'] { --c: var(--ink-2); }
+.ds-cls[data-locked] {
+  --c: var(--ink);
+  border-style: dashed;
+  background: var(--surface-3);
+}
+.ds-cls__glyph { flex: none; }
+/* 등급 값·규칙 ID는 고정폭 — SUIT에서 0과 O가 비슷하다 */
+.ds-cls:not([data-axis='TYPE']) .ds-cls__v,
+.ds-rule-id { font-family: var(--font-mono); font-variant-numeric: slashed-zero; white-space: nowrap; }
+.ds-cls__ko { font-weight: 500; color: var(--muted); }
+[data-present='on'] .ds-cls { height: 28px; font-size: var(--fs-sm); }
+/* 시연 모드: 등급 글리프(SVG)는 글자 크기에 비례, 잠금 아이콘은 글자 높이 정도로 고정 */
+[data-present='on'] .ds-cls__svg { width: 1.6em; height: auto; }
+[data-present='on'] .ds-cls svg.ds-cls__glyph:not(.ds-cls__svg) { width: 14px; height: 14px; }
+[data-present='on'] .ds-rules__mark svg,
+[data-present='on'] .ds-stages__label svg,
+[data-present='on'] .ds-raction svg,
+[data-present='on'] .ds-approvals__who svg { width: 11px; height: 11px; }
+/* 한글 소제목 — eyebrow의 고정폭·자간은 영문 코드용 */
+.ds-eyebrow--ko { font-family: var(--font-sans); letter-spacing: 0; }
+
+.ds-rules { display: grid; gap: var(--sp-2); }
+.ds-rules__head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); }
+.ds-rules__sum { font-size: var(--fs-sm); font-weight: 600; color: var(--ok); }
+.ds-rules[data-fail] .ds-rules__sum { color: var(--danger); }
+.ds-rules__sum-pending { color: var(--warn); }
+.ds-rules__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.ds-rules__item {
+  display: grid;
+  grid-template-columns: 16px max-content 1fr;
+  gap: var(--sp-2);
+  align-items: start;
+  padding: 5px var(--sp-2);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+}
+.ds-rules__item[data-status='fail'] { background: var(--danger-soft); }
+.ds-rules__item[data-status='pending'] { background: var(--surface-2); }
+.ds-rules__item[data-status='na'] { color: var(--faint); }
+[data-present='on'] .ds-rules__mark .ds-badge__glyph { width: 12px; height: 12px; }
+.ds-rules__mark { color: var(--c); padding-top: 4px; display: inline-flex; }
+.ds-rules__id {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 1px 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  text-align: left;
+}
+button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+.ds-rules__text { display: grid; gap: 1px; min-width: 0; }
+.ds-rules__title { font-weight: 600; }
+.ds-rules__reason { color: var(--muted); overflow-wrap: anywhere; }
+
+.ds-stages__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  /* 최대 단계 수(DC2 5단계)에 맞춰 열을 고정 — 등급이 달라도 같은 단계가 같은 너비 */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+}
+.ds-stages__step {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
+  background: var(--surface-2);
+  border-top: 3px solid var(--line-strong);
+  font-size: var(--fs-xs);
+  min-width: 0;
+}
+.ds-stages__step[data-status='done'] { border-top-color: var(--ok); }
+.ds-stages__step[data-status='current'] { border-top-color: var(--accent); background: var(--accent-soft); }
+.ds-stages__step[data-stage='REJECTED'] { border-top-style: dashed; }
+.ds-stages__step[data-stage='REJECTED'][data-status='current'] { border-top-color: var(--warn); background: var(--warn-soft); }
+.ds-stages__label { font-weight: 700; font-size: var(--fs-sm); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.ds-stages__step[data-status='done'] .ds-stages__label > svg { color: var(--ok); }
+.ds-stages__step[data-status='current'] .ds-stages__label > svg { color: var(--accent); }
+.ds-stages__no { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); color: var(--muted); }
+.ds-stages__meta { font-family: var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+.ds-stages__unknown { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--warn); display: flex; gap: 6px; align-items: center; }
+
+/* 화면 너비가 아니라 놓인 자리(패널) 너비로 배치를 바꾼다 */
+.ds-approvals-wrap { container-type: inline-size; }
+.ds-approvals { display: grid; grid-template-columns: minmax(180px, 0.9fr) 2fr; gap: var(--sp-3); align-items: stretch; }
+.ds-approvals__req { display: grid; gap: 2px; align-content: start; padding: var(--sp-2) var(--sp-3); border-left: 3px solid var(--line-strong); }
+.ds-approvals__slots { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--sp-2); }
+.ds-approvals__slot { display: grid; gap: 2px; align-content: start; padding: var(--sp-2) var(--sp-3); border: 1px dashed var(--line-strong); border-radius: var(--r); }
+.ds-approvals__slot[data-done] { border-style: solid; border-color: color-mix(in srgb, var(--ok) 45%, transparent); background: var(--ok-soft); }
+.ds-approvals__slot[data-blocked] { border-color: color-mix(in srgb, var(--warn) 50%, transparent); background: var(--warn-soft); }
+.ds-approvals__who { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
+.ds-approvals__who--empty { color: var(--muted); font-weight: 500; }
+.ds-approvals__slot[data-blocked] .ds-approvals__who { color: color-mix(in srgb, var(--warn) 80%, var(--ink)); }
+@container (max-width: 760px) {
+  .ds-approvals { grid-template-columns: 1fr; }
+}
+
+.ds-window { display: grid; gap: var(--sp-1); }
+.ds-window__head { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: baseline; font-size: var(--fs-sm); }
+.ds-window__track { position: relative; height: 10px; border-radius: 5px; background: var(--surface-3); overflow: hidden; }
+.ds-window__used,
+.ds-window__add { position: absolute; top: 0; bottom: 0; left: 0; }
+.ds-window__used { background: color-mix(in srgb, var(--ink-2) 55%, var(--surface-3)); }
+.ds-window__add { background: var(--accent); }
+.ds-window__add[data-some] { min-width: 3px; }
+.ds-window[data-over] .ds-window__add { background: var(--warn); }
+.ds-window__over { margin: 0; font-size: var(--fs-sm); color: var(--warn); display: flex; gap: 6px; align-items: baseline; }
+
+.ds-chain-status .ds-mono { font-weight: 500; }
+
+.ds-raction {
+  display: inline-grid;
+  grid-template-columns: 14px minmax(22ch, max-content) 1fr;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.ds-raction__mark,
+.ds-raction__code { color: color-mix(in srgb, var(--c) 80%, var(--ink)); display: inline-flex; }
+.ds-raction__code { font-size: var(--fs-xs); font-weight: 600; }
+
+.ds-clause {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+button.ds-clause { cursor: pointer; }
+[data-present='on'] .ds-clause { height: 24px; }
+button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }

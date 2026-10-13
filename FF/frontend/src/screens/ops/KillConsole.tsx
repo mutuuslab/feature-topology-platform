@@ -1,11 +1,12 @@
-// /ops/kill — 긴급 차단·복구 (D03-03 · D03-04, PoC ⑥). 검증·승인을 거치지 않는 운영 경로.
-// 영향 범위(REQUIRES 의존·배포 flag·차량) 확인 → 복구 방식 → type-to-confirm → 서명·긴급 채널 → 차량 회신. 해제는 이전 상태 복구.
+// /ops/kill — 긴급 기능 차단(Kill Switch)·복구 (D03-03 · D03-04, PoC ⑥). 보고서 v1.1 7장: 긴급 상황에도 사전 2인 승인을 생략하지 않는다.
+// 영향 범위(REQUIRES 의존·배포 flag·차량) 확인 → 사유 → type-to-confirm → 서명·긴급 채널 → 차량 회신.
+// @rule FFG-PLT-003 — 화면: 비활성화 방식을 운영자가 고르지 않는다. 명령의 등급 = Registry 등급 게이트 판정은 F3a에서 집행
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DangerConfirm, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented } from '../../design';
+import { AsyncView, Button, DangerConfirm, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel } from '../../design';
 import { usePermission, when } from '../shared';
 import { Progress, PubStatus, type Delivery } from './shared';
 
@@ -63,7 +64,6 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   const [featureId, setFeatureId] = useState(sp.get('featureId') ?? 'FEAT-00022');
   const [featureVersion, setVersion] = useState(sp.get('version') ?? '1.0.0');
   const [picked, setPicked] = useState<string[] | null>(null);
-  const [safeMode, setSafeMode] = useState<'SAFE_DEFAULT' | 'SAFE_STOP'>('SAFE_DEFAULT');
   const [reason, setReason] = useState('');
   const [confirm, setConfirm] = useState(false);
   const pv = useApi<Preview>('killPreview', { query: { featureId, featureVersion } }, { enabled: /^FEAT-\d{5}$/.test(featureId) && /^\d+\.\d+\.\d+$/.test(featureVersion) });
@@ -88,7 +88,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
             <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
               <KeyValue
                 rows={[
-                  { k: K.preview, v: <IdChip id={p.feature.featureId} version={p.feature.version} to={`/features/${p.feature.featureId}/${p.feature.version}`} copy={false} />, note: `${p.feature.name} · ${p.feature.lifecycle} · ASIL ${p.feature.asil}` },
+                  { k: K.preview, v: <IdChip id={p.feature.featureId} version={p.feature.version} to={`/features/${p.feature.featureId}/${p.feature.version}`} copy={false} />, note: `${p.feature.name} · ${p.feature.lifecycle} · ${K.asilRef(p.feature.asil)}` },
                   { k: K.dependents, v: <span className="ds-mono">{p.dependents.map((d) => d.featureId).join(', ') || '—'}</span> },
                   { k: K.flags, v: <span className="ds-mono">{p.flagKeys.join(', ') || '—'}</span> },
                 ]}
@@ -119,7 +119,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
             {K.fromAnomaly}: <Link to={`/ops/anomalies?id=${anomalyId}`}>{anomalyId}</Link>
           </p>
         )}
-        <Segmented label={K.safeMode} options={(['SAFE_DEFAULT', 'SAFE_STOP'] as const).map((m) => ({ value: m, label: K.safeModes[m] }))} value={safeMode} onChange={(v) => setSafeMode(v as typeof safeMode)} />
+        <KeyValue rows={[{ k: K.deactMode, v: K.deactByRegistry, note: K.deactInterim }]} />
         <Field label={ko.page.reason}>
           <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
         </Field>
@@ -139,7 +139,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
         onClose={() => setConfirm(false)}
         onConfirm={() =>
           issue.mutate(
-            { body: { featureId, featureVersion, vins, safeMode, reason, confirm: featureId, ...(anomalyId && { anomalyId }) } },
+            { body: { featureId, featureVersion, vins, reason, confirm: featureId, ...(anomalyId && { anomalyId }) } },
             {
               onSuccess: (k) => {
                 setConfirm(false);
@@ -170,7 +170,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
             rows={[
               { k: K.col.feature, v: <span className="ds-mono">{k.featureIds.join(', ')}</span> },
               { k: K.flags, v: <span className="ds-mono">{k.flagKeys.join(', ') || '—'}</span> },
-              { k: K.safeMode, v: <span className="ds-mono">{k.safeMode}</span> },
+              { k: K.applied, v: K.appliedAs[k.safeMode] },
               { k: K.col.status, v: <span className="ds-mono">{K.status[k.status]}</span>, note: k.releasedAt ? `${k.releasedBy} · ${when(k.releasedAt)}` : undefined },
               { k: ko.page.reason, v: k.reason },
             ]}
@@ -218,6 +218,9 @@ export function KillConsole() {
   return (
     <div className="ds-screen">
       <PageHeader eyebrow="D03-03 · D03-04 · KILL / RESTORE" title={K.title} lead={K.lead} />
+      <p className="ds-stale" role="status">
+        {K.transition}
+      </p>
       <div className="ds-split">
         <NewKill onDone={(k) => setOpen(k.killId)} />
         <Panel title={K.list} id="kills">
@@ -231,7 +234,7 @@ export function KillConsole() {
                 { key: 'id', header: K.col.id, cell: (k) => <span className="ds-mono">{k.killId}</span>, sort: (k) => k.killId },
                 { key: 'f', header: K.col.feature, cell: (k) => <span className="ds-mono">{k.featureIds.join(', ')}</span> },
                 { key: 'n', header: K.col.scope, cell: (k) => <span className="ds-mono">{k.vins.length}</span>, align: 'right' },
-                { key: 'm', header: K.col.mode, cell: (k) => <span className="ds-tag">{k.safeMode}</span> },
+                { key: 'm', header: K.col.mode, cell: (k) => <span className="ds-tag">{K.appliedAs[k.safeMode]}</span> },
                 { key: 's', header: K.col.status, cell: (k) => (k.status === 'ACTIVE' ? <PubStatus status={k.delivery?.status ?? 'SIGNED'} /> : <span className="ds-mono">{K.status.RELEASED}</span>) },
                 { key: 'd', header: K.col.delivery, cell: (k) => <Progress d={k.status === 'ACTIVE' ? k.delivery : k.restore} /> },
                 { key: 'at', header: K.col.at, cell: (k) => <span className="ds-mono">{when(k.requestedAt)}</span>, sort: (k) => k.requestedAt },

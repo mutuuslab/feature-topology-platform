@@ -23,3 +23,5 @@ export * from './rules/access';
 export * from './rules/variant';
 export * from './flags/openfeature';
 export * from './rules/trial';
+export * from './schemas/safety';
+export * from './rules/deactivation';

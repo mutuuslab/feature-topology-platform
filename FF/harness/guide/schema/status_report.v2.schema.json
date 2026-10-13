@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/schema/status_report.v2.schema.json",
+  "title": "status_report v2 (FFP guide Appendix D, Ch.13 telemetry)",
+  "description": "Vehicle report of the ACTUAL guard state. No location, no driver data (data minimisation, GDPR Art.25 / EDPB 01/2020). A report that assumes a state the guard did not confirm is not allowed (use UNKNOWN). state_auth is made by the Safety Guard (HSM key not usable by the QM side) over the 24-byte status block of guide 9.7; report_seq is assigned by the guard (boot_count << 16 | n). The platform rejects a report with an invalid state_auth or a non-increasing report_seq.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "schema_version",
+    "vehicle_pseudonym",
+    "feature",
+    "state",
+    "reason",
+    "request_result",
+    "durable",
+    "hmi",
+    "feature_weight_permille",
+    "edr_aligned_state",
+    "report_seq",
+    "state_auth",
+    "observed_at",
+    "time_sync",
+    "data_category",
+    "persistence",
+    "key_epoch",
+    "vehicle_seq"
+  ],
+  "properties": {
+    "type": {
+      "const": "status_report"
+    },
+    "schema_version": {
+      "const": "2.0"
+    },
+    "vehicle_pseudonym": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{16,64}$",
+      "description": "Pseudonymised vehicle identifier, not the VIN"
+    },
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^FEAT-[0-9]{5}$"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "state": {
+      "enum": [
+        "INACTIVE",
+        "ACT_PENDING",
+        "ACTIVE",
+        "DEACT_PENDING_IDLE",
+        "DEACT_PENDING_CYCLE",
+        "DEACT_WARNING",
+        "DEACT_RAMP",
+        "DISABLED",
+        "RESTORE_PENDING",
+        "FAULT",
+        "UNKNOWN"
+      ]
+    },
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "source"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "SAFETY",
+            "SECURITY",
+            "REGULATORY",
+            "COMMERCIAL",
+            "OPERATIONAL"
+          ]
+        },
+        "source": {
+          "enum": [
+            "REMOTE",
+            "ONBOARD",
+            "STARTUP"
+          ],
+          "description": "REMOTE: last change by a remote request; ONBOARD: on-board detected fault; STARTUP: persisted record lost at start-up"
+        }
+      }
+    },
+    "request_result": {
+      "enum": [
+        "NONE",
+        "ACCEPTED",
+        "ACCEPTED_NOT_DURABLE",
+        "REJECTED"
+      ]
+    },
+    "reject_code": {
+      "enum": [
+        "NONE",
+        "E2E_LENGTH",
+        "E2E_DATA_ID",
+        "E2E_CRC",
+        "E2E_SEQUENCE",
+        "AUTH_FAILED",
+        "KEY_EPOCH_OLD",
+        "REPLAY",
+        "SEQ_JUMP",
+        "TIME_INVALID",
+        "NOT_YET_VALID",
+        "EXPIRED",
+        "TARGET_MISMATCH",
+        "UNKNOWN_FEATURE",
+        "VERSION_MISMATCH",
+        "CODING_INVALID",
+        "CLASS_MISMATCH",
+        "DC4_REMOTE_FORBIDDEN",
+        "APPROVALS_INVALID",
+        "SAME_APPROVER",
+        "STATE_NOT_ALLOWED",
+        "NV_WRITE_FAILED",
+        "SEQ_UNTRUSTED",
+        "SCHEMA_VERSION",
+        "SIGNATURE_INVALID",
+        "AUTH_MISSING",
+        "USER_CONFIRMATION_MISSING",
+        "SEQUENCE_NOT_INCREASING",
+        "RESPONSE_INVALID"
+      ]
+    },
+    "vehicle_seq": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "durable": {
+      "type": "boolean"
+    },
+    "hmi": {
+      "enum": [
+        "NONE",
+        "INFO_PENDING",
+        "WARN_TAKEOVER",
+        "INFO_DISABLED"
+      ]
+    },
+    "feature_weight_permille": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000
+    },
+    "policy_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "dtc": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9A-F]{6}$"
+      }
+    },
+    "edr_aligned_state": {
+      "enum": [
+        "ENGAGED_OR_ARMED",
+        "AVAILABLE",
+        "OFF_BY_COMMAND",
+        "OFF_BY_FAULT",
+        "OFF"
+      ],
+      "description": "Platform values for correlation with EDR / DSSAD records (guide 9.8); not data elements defined by 49 CFR 563 or UN R160. ENGAGED_OR_ARMED includes armed."
+    },
+    "received_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "applied_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "time_sync": {
+      "enum": [
+        "SYNCED",
+        "DEGRADED",
+        "UNSYNCED"
+      ]
+    },
+    "offline_since": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "data_category": {
+      "enum": [
+        "SAFETY_OPERATION",
+        "SECURITY_MONITORING",
+        "COMMERCIAL_USAGE"
+      ]
+    },
+    "key_epoch": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "report_seq": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    },
+    "state_auth": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{22}$",
+      "description": "base64url, 16 bytes (guard CMAC)"
+    },
+    "persistence": {
+      "enum": [
+        "DURABLE",
+        "PENDING",
+        "FAILED"
+      ],
+      "description": "NvM state of the last change (guard nv code, guide 9.5)"
+    }
+  }
+}

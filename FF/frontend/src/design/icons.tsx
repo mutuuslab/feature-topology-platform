@@ -28,6 +28,10 @@ const P: Record<string, string> = {
   user: 'M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM4.5 16.5c.8-2.6 3-4 5.5-4s4.7 1.4 5.5 4',
   layers: 'M10 3 17 7l-7 4-7-4ZM3 10.5l7 4 7-4M3 14l7 4 7-4',
   grid: 'M4 4h5v5H4zM11 4h5v5h-5zM4 11h5v5H4zM11 11h5v5h-5z',
+  lock: 'M6.5 9V7a3.5 3.5 0 0 1 7 0v2M5 9h10v8H5zM10 12.2v2.2',
+  book: 'M4 4.5A1.5 1.5 0 0 1 5.5 3H16v12H5.5A1.5 1.5 0 0 0 4 16.5ZM4 16.5A1.5 1.5 0 0 0 5.5 18H16v-3',
+  shield: 'M10 3l6 2.5V10c0 3.5-2.6 6-6 7-3.4-1-6-3.5-6-7V5.5Z',
+  pen: 'M4 16l1-4 8.5-8.5 3 3L8 15ZM12 5l3 3',
 };
 
 export type IconName = keyof typeof P;
@@ -53,8 +57,8 @@ export function Icon({ name, size = 18, title, ...rest }: { name: IconName; size
   );
 }
 
-/** Gate·판정 모양 — 색맹 사용자도 구분: ● PASS · ◐ 검토 중 · ○ 미판정 · ✕ FAIL */
-export function StatusGlyph({ kind, size = 9 }: { kind: 'PASS' | 'REVIEW' | 'UNJUDGED' | 'FAIL' | 'DOT'; size?: number }) {
+/** Gate·판정 모양 — 색맹 사용자도 구분: ● PASS · ◐ 검토 중 · ○ 미판정 · ✕ FAIL · – 해당 없음 */
+export function StatusGlyph({ kind, size = 9 }: { kind: 'PASS' | 'REVIEW' | 'UNJUDGED' | 'FAIL' | 'DOT' | 'NA'; size?: number }) {
   const s = size;
   return (
     <svg width={s} height={s} viewBox="0 0 10 10" aria-hidden className="ds-badge__glyph">
@@ -65,6 +69,7 @@ export function StatusGlyph({ kind, size = 9 }: { kind: 'PASS' | 'REVIEW' | 'UNJ
           <path d="M5 1a4 4 0 0 1 0 8Z" fill="currentColor" />
         </>
       ) : null}
+      {kind === 'NA' ? <path d="M2 5h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /> : null}
       {kind === 'UNJUDGED' ? <circle cx="5" cy="5" r="3.8" fill="none" stroke="currentColor" strokeWidth="1.4" strokeDasharray="2 1.4" /> : null}
       {kind === 'FAIL' ? <path d="M1.8 1.8l6.4 6.4M8.2 1.8 1.8 8.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /> : null}
     </svg>

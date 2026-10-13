@@ -4,11 +4,12 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 다음 세션 시작점
-- **P10**부터: 남은 컴포넌트 7개(D01-07 실험·효과, D04-05 장애·VOC, D05-02·03·05·07 데이터 동기화·Legacy·현장 포털·Legacy-SDV, D06-11 취약점 모니터링 — D05-04 과금·D05-06 사업 지표는 체험권 작업에서 구현)와 IF 모의 어댑터(IF-01 ALM·IF-02 기준정보·IF-03 MDM/DW·IF-08 Supplier·IF-11 OTel·IF-12 해외공장), OpenFeature OF-5(OTel hook)·OF-6(차량 내장 provider)·OF-7(flag 매니페스트·기본값 규율), 레거시 정리(FEAT-BDC 37·rawColors 818 → 0).
+- **국제표준 보고서 v1.1 반영 U0 마무리 → U1**(아래 "국제표준 대응방안 보고서 v1.1 반영" 표가 상태 원천). U 단계는 UI 먼저, 끝날 때마다 사용자 UX 검토.
+- 그다음 **P10**: 남은 컴포넌트 7개(D01-07 실험·효과, D04-05 장애·VOC, D05-02·03·05·07 데이터 동기화·Legacy·현장 포털·Legacy-SDV — D06-11 취약점 모니터링은 보고서 반영 U4·F6으로 이동, D05-04 과금·D05-06 사업 지표는 체험권 작업에서 구현)와 IF 모의 어댑터(IF-01 ALM·IF-02 기준정보·IF-03 MDM/DW·IF-08 Supplier·IF-11 OTel·IF-12 해외공장), OpenFeature OF-6(차량 내장 provider)·OF-7(flag 매니페스트·기본값 규율) — OF-5(OTel hook)는 보고서 반영 F6(OFT-004)으로 이동, 레거시 정리(FEAT-BDC 37·rawColors 818 → 0).
 - **vECU 웹 배포**: vECU를 고친 뒤 배포하려면 `npm run vecu:sync`(허용 목록 → `frontend/public/vecu/`, `VECU_SYNC.json` 해시) 후 커밋. verify `vecu:check`가 복사본 변경·금지 경로(splat/·assets/user/·nurec)·금지어를 막는다. 사이트 `/vecu/index.html?ffv=<FEAT>`, FF 화면은 링크로만 연다(사용자 결정).
 - **체험권**: 데모 권한 날짜는 시드 기준일(FF_CLOCK_AT 또는 오늘, KST) 상대값(`data/fixtures/demo/entitlements.json`의 *Days). 합성 모집단 3000대(`FF_SYNTHETIC=0`이면 생략) — 목록·통계에만, `/api/entitlements` 기본은 데모만. 시험은 `bootApp({ at })`로 시계·기준일을 같이 고정한다.
 - **Unleash 실연동**: Docker Desktop을 켜고 `cp docker/unleash/.env.example docker/unleash/.env`(값 설정) → `npm run unleash:up` → `UNLEASH_LIVE=1 UNLEASH_ADMIN_TOKEN=… npx vitest run test/d01/unleash.spec.ts`(backend). 백엔드 실행 시 `UNLEASH_MODE=live UNLEASH_URL=http://127.0.0.1:4242 UNLEASH_ADMIN_TOKEN=…`. hfp 쪽 Unleash 데이터는 건드리지 않는다.
-- **FF_IMP**: `kill_command.safe_mode`는 브랜치 `feat/kill-safe-mode`(88c13f7) — main 병합은 사용자 결정 대기. 테스트는 `.venv/Scripts/python.exe -m pytest`(websockets 17). `test_unreal_fake_engine.py` 5건은 이전부터 실패.
+- **FF_IMP**: `kill_command.safe_mode`(88c13f7)는 이미 FF_IMP main에 있다(`feat/kill-safe-mode` 브랜치는 없음 — 2026-10-13 확인). 보고서 반영 F3b에서 kill_command v2로 대체(운영자 선택 폐지). 테스트는 `.venv/Scripts/python.exe -m pytest`(websockets 17). `test_unreal_fake_engine.py` 5건은 이전부터 실패.
 - **vECU 연동 계약**: vECU 폴더에 FF용 `tools/ffval_cli.mjs`·`tests/js/ffval_cli.test.mjs`만 추가(나머지는 vECU 세션 소유). 기준 ID·items 필드가 바뀌면 vECU 세션이 알려 주기로 함. 오류+Kill Gate 기준 = kill_latency·recovery·max_decel·min_ttc(양쪽 일치). vECU ffval 1.3(2026-10-12) 확인: FF CLI·실제 vECU 시험 통과. kill_latency 미반영은 이제 Infinity(=CLI JSON null)+fail — FF는 status로 판정하므로 영향 없음. FEAT-00023(급가속 억제)·FEAT-00024(IC·JC 사전안내)는 vECU에 **가정 기준(provisional)** 으로 추가됨 — FF 시나리오 목록에 넣을 때는 가정 기준 결과를 G5 증적으로 인정하지 않는다(vECU official 판정과 같게).
 - **병행 세션**: 차량 발신 요청은 `2026-09-23-ff-imp-*` 세션이 c943ea0으로 커밋. 같은 저장소를 동시에 고칠 때는 먼저 범위를 나누고, 커밋은 경로를 지정해 담는다(git add -A 금지).
 - 실행: 백엔드 9101(`GLEO_MODE`, `VECU_MODE`·`VECU_DIR`, `UNLEASH_MODE`, `FF_BOOT_PUBLISH`, `FF_SCHEDULER`) · 프론트 9012 · e2e 9111/9112(vECU 시험 대역 `backend/test/fixtures/fake-vecu`, Unleash 모의).
@@ -26,6 +27,33 @@
 | OF-5 | **Hook → 관측(IF-11)**: OpenTelemetry 기능 플래그 의미 규약(feature_flag.key·provider_name·variant) 평가 이벤트 hook → 운영 데이터 수집(D04-03) | P10 |
 | OF-6 | **차량 내장 provider**: 오프라인용 in-process provider — 서명 게시본 캐시를 같은 단일 평가기로 평가(D02-03), 통신 단절에도 Safe Default 보장. TS 참조 구현 + vECU 연동 | P10 |
 | OF-7 | **Flag 매니페스트·기본값 규율**: OpenFeature CLI 매니페스트 형식으로 flag 키·타입·Safe Default 내보내기(`GET /api/openfeature/manifest`) → 앱 기본값이 FP Safe Default와 같은지 하네스 검사 | P10 |
+
+## 국제표준 대응방안 보고서 v1.1 반영 + "표준 따라하기" 실습 랩 + vECU 연계 (2026-10-13 사용자 요청)
+원천: `Feature_Flag_플랫폼_국제표준_대응방안_보고서_v1.1.docx`(FFP-FS-STR-001, 규칙 181개·시험 TC-FF 60개·CS-01~11)와 코드 패키지 → `C:\project\2026-09-23_FF_IMP\FF_Safety_Guide_v2`(v1.1 코드패키지로 구성) → 복사본 `harness/guide/`(`npm run guide:sync`, 원고에서 규칙·시험 카탈로그 `catalog.json` 생성). 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`.
+원칙: 플랫폼은 서명 전 1차 방어선(Registry·승인·법규·시장 조건·Evidence), 안전에 결정적인 항목의 최종 확인은 차량 Safety Guard. **UI/UX를 먼저 전부 바꾸고(contract-first, 미리보기 데이터) 그다음 기능을 연결**한다(사용자 지시). U 단계마다 사용자 UX 검토.
+
+사용자 결정
+1. 따라하기 = 플랫폼 내 실습 랩(`/learn`) + 실제 화면 위 가이드 패널(자동·직접 하기·보기, 단계별 역할 전환, 초기화). PoC 러너를 일반화.
+2. 시나리오: ① vECU 연계 CS-01 먼저 완주 → ② 핵심 6개 → ③ CS-01~11 전부·점검표.
+3. vECU: 연계 계약 문서(ffval 2.0) + FF는 fake-vecu로 선행, **이 세션이 vECU도 수정**(소유 세션에 통보). 발견: vECU CLI 루프 `await` 누락(수락된 차량 요청이 끝나기 전 종료).
+4. Kill 동작은 Registry DC(safeMode 선택 폐지), 와이어 v2 완전 전환(FF·FF_IMP), 별도 안전 Registry, 요청 1 + 승인 2(요청자 승인 불가, FFG-PLT-016), 소프트웨어 HSM, '증적'→'Evidence'.
+
+| 단계 | 내용 | 상태 |
+|---|---|---|
+| U0 | 기준·충돌 제거·키트: v1.1 코드패키지 기준 재구성, guide:sync + 규칙 카탈로그(181·60), Kill 화면 safeMode 선택·"검증·승인 없는 경로" 문구 제거, contracts `schemas/safety.ts`·`rules/deactivation.ts`, 디자인 키트 `design/safety.tsx` 8종 + 갤러리, **하네스**: `standards`(ID 실재·플랫폼 규칙 75개 구현/시험 추적 래칫 → `harness/standards.json`), lint-copy 보고서 용어 래칫(`guideTermLines` 144 → 0), 키트↔갤러리 커버리지 시험 | 진행 |
+| U1 | 따라하기 랩 셸: `/learn`·실행 화면·GuideDock·Spotlight·ClauseChip·표준 설명 모드·역할 전환 배너, `tutorial.ts`·`standards.ts`(조항) | 대기 |
+| U2 | **가상검증 화면(사용자 결정 2026-10-13: U1 다음으로 앞당김)**: Feature 선택, 실행 타임라인·원격 대 차량 내 비교(CompareTimeline, telemetry.jsonl), G5 인정 체크리스트(같은 Version·vecu·official·재현 정보·TMS·알려진 실패 없음, FFG-TST-009), 가상 시험 신뢰성 패널(TI2·qualification 미실시·주장 범위, 12.4), 시나리오 표에 등급·FTTI·인계·램프, vECU 링크에 시나리오 지정. 현행 FAULT-KILL PASS에는 "보고서 기준 미충족(알려진 실패)" 경고 — 판정 변경은 F1 | 대기 |
+| U3 | 설계·Gate 화면: 목록 F/DC/R·유형, 상세 배지, 안전 분류 탭(판정 흐름·조건부 속성·DC 미리보기), Gate 탭(G1~G8 대응·Decision Record), `/verify/compliance` | 대기 |
+| U4 | 운영 화면: `/ops/kill` 재설계(실시간 FFG 체크리스트·승인 칸·단계 줄·회신 조치), `/ops/approvals`, 복원 마법사, `/ops/safety-kpi`, Fleet v2 열 | 대기 |
+| U5 | 보안·감사 화면: `/admin/security`(키·SBOM·VEX), `/audit` 체인·원장, IAM 역할 | 대기 |
+| — | UX 확정(시나리오 ①·② 보기 모드 검토 → 시각 기준 잠금) | 대기 |
+| F1 | 엔진 동작 + vECU 연계(ffval 2.0·fake·vECU 수정: DC 단계·차량 내 감지·재현 정보·CLI await 결함) + **G5 판정 정정**(원격 경로=비교 기준선, FAULT-ONBOARD가 D06-06 결정, 알려진 실패 G5 불인정) + CS-01 완주 | 대기 |
+| F2 | 분류·Gate 연결 + ②-1 | 대기 |
+| F3a·F3b | Kill 요청·승인·원장·HSM·봉투 / status v2·Guard 시뮬레이터·GLEO v2·FF_IMP·복원·KPI + ②-2 | 대기 |
+| F4·F5·F6 | 시장·체험권(②-3·②-5) / 보안(②-4) / 나머지 CS ③·OpenFeature·SBOM·ADS | 대기 |
+| F7 | 마감: 정적 배포 녹화 재생, `docs/standards-trace.md`, manifest·PROGRESS | 대기 |
+
+하네스 규칙(이 작업부터): 규칙을 실제로 집행하는 함수·화면에는 `@rule FFG-XXX-NNN — 남은 부분` 표식, 시험 제목에 같은 ID(+ 해당 TC-FF). 카탈로그에 없는 ID는 verify 실패. 래칫 `platformRulesImplemented`·`platformRulesTested`·`reportTestsReferenced`(늘리기), `guideTermLines`(줄이기).
 
 ## 기준 문서 (저장소 밖)
 | 문서 | 위치 | 용도 |
@@ -82,7 +110,7 @@
 
 ## 준수 현황 (자동 생성 — `npm run progress`)
 <!-- AUTO:conformance -->
-**컴포넌트 28/42** — D01 9/10 · D02 1/3 · D03 4/4 · D04 4/6 · D05 1/7 · D06 9/12
+**컴포넌트 35/42** — D01 9/10 · D02 3/3 · D03 4/4 · D04 5/6 · D05 3/7 · D06 11/12
 
 | ID | 컴포넌트 | Tier | 상태 | 화면 | 테스트 |
 |---|---|---|---|---|---|
@@ -90,14 +118,14 @@
 | D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /analysis/impact /precheck | 6 |
 | D01-03 | Feature Catalog | A | ✅ | /products /products/new /products/:id/:ver | 3 |
 | D01-04 | 적용 대상 선정 규칙 | A | ✅ | /activation/decide | 5 |
-| D01-05 | 사용 권한 관리 | A | ✅ | /entitlements | 4 |
-| D01-06 | 정책 저장·버전 관리 | A | ✅ | /policies /policies/new /policies/:id | 3 |
+| D01-05 | 사용 권한 관리 | A | ✅ | /entitlements | 6 |
+| D01-06 | 정책 저장·버전 관리 | A | ✅ | /policies /policies/new /policies/:id | 7 |
 | D01-07 | 실험·효과 검증 관리 | B | · | — | 0 |
 | D01-08 | 단계적 기능 배포 | B | ✅ | /policies/:id | 4 |
 | D01-09 | 정책 기반 활성화 제어 | A | ✅ | /activation/decide | 5 |
 | D01-10 | 감사 이력 관리 | A | ✅ | /audit | 2 |
-| D02-01 | Variant 조건 관리 | A | · | — | 0 |
-| D02-02 | 기능 지원 조건 관리 | B | · | — | 0 |
+| D02-01 | Variant 조건 관리 | A | ✅ | /variant-conditions | 3 |
+| D02-02 | 기능 지원 조건 관리 | B | ✅ | /variant-conditions /fleet/vehicles/:vin | 3 |
 | D02-03 | 차량 런타임 실행 모듈 | A | ✅ | /fleet/live /fleet/vehicles/:vin | 7 |
 | D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations | 4 |
 | D03-02 | 배포 안전성 검증 | A | ✅ | /policies/:id /validations | 5 |
@@ -108,13 +136,13 @@
 | D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id | 3 |
 | D04-04 | 이벤트 이력 추적 | A | ✅ | /events | 2 |
 | D04-05 | 장애·VOC 이력 연계 | C | · | — | 0 |
-| D04-06 | 품질 피드백 반영 | A | · | — | 0 |
+| D04-06 | 품질 피드백 반영 | A | ✅ | /quality/feedback | 4 |
 | D05-01 | API Gateway | C | ✅ | /activation/decide | 4 |
 | D05-02 | 데이터 동기화 | C | · | — | 0 |
 | D05-03 | Legacy 시스템 연계 | C | · | — | 0 |
-| D05-04 | 과금 시스템 연계 | C | · | — | 0 |
+| D05-04 | 과금 시스템 연계 | C | ✅ | /entitlements | 3 |
 | D05-05 | 현장 지원 포털 | C | · | — | 0 |
-| D05-06 | 사업 지표 모니터링 | C | · | — | 0 |
+| D05-06 | 사업 지표 모니터링 | C | ✅ | /biz/trials | 4 |
 | D05-07 | Legacy-SDV Interface | C | · | — | 0 |
 | D06-01 | 정책 검증 | A | ✅ | /policies/:id /validations | 4 |
 | D06-02 | 시스템 연동 검증 | B | ✅ | /policies/:id /validations | 4 |
@@ -124,10 +152,10 @@
 | D06-06 | 안전 동작 검증 | B | ✅ | /policies/:id /validations | 4 |
 | D06-07 | 안전 요구사항 추적 | B | ✅ | /policies/:id /validations | 4 |
 | D06-08 | 보안 배포 관리 | A | ✅ | /deployments /deployments/:id /fleet/live | 3 |
-| D06-09 | 플랫폼 인증·권한 관리(IAM) | A | · | — | 0 |
+| D06-09 | 플랫폼 인증·권한 관리(IAM) | A | ✅ | /admin/iam | 3 |
 | D06-10 | 인증서·키 관리(PKI/KMS) | A | ✅ | /deployments | 2 |
 | D06-11 | 보안 취약점 모니터링 | C | · | — | 0 |
-| D06-12 | 이상 징후 대응 | B | · | — | 0 |
+| D06-12 | 이상 징후 대응 | B | ✅ | /ops/anomalies | 4 |
 
 **래칫 기준** (`harness/baselines.json`)
 
@@ -135,6 +163,10 @@
 |---|---|---|---|
 | rawColors | 818 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
 | featBdcFiles | 37 | ↓ 줄이기 | FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지 |
-| implementedComponents | 28 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
-| twinTermLines | 43 | ↓ 줄이기 | 레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지 |
+| implementedComponents | 35 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
+| twinTermLines | 0 | ↓ 줄이기 | 레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지 |
+| guideTermLines | 144 | ↓ 줄이기 | 보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지 |
+| platformRulesImplemented | 2 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 @rule 표식으로 구현이 추적되는 규칙 수 — 늘려 나간다 |
+| platformRulesTested | 2 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 시험이 있는 규칙 수 — 늘려 나간다 |
+| reportTestsReferenced | 1 | ↑ 늘리기 | 시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다 |
 <!-- /AUTO:conformance -->

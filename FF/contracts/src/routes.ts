@@ -23,6 +23,7 @@ import { RunVirtualBody } from './rules/virtual';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
+import { KillCommandV2 } from './schemas/wire';
 import { z } from 'zod';
 
 const EmptyBody = z.object({}).strict();
@@ -146,6 +147,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'vehicleQuery', method: 'POST', path: '/vehicle/v1/:vin/flags/:key', summary: 'IF-10 차량 발신 단일 flag 조회 (OFREP 형식)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleReport', method: 'POST', path: '/vehicle/v1/:vin/reports', summary: 'IF-06 차량 보고 — 재연결 대사·관측값·체험 수락·오류·회신 (Flag 직접 변경은 거부), 재평가 결과 응답', component: 'D02-03', roles: ['VEHICLE'], body: VehicleReportBody },
   { name: 'gleoStatus', method: 'GET', path: '/api/gleo/status', summary: 'GLEO Broker 연결·최근 메시지', component: 'D02-03' },
+  { name: 'gatePreview', method: 'POST', path: '/api/gate/preview', summary: '정책 게이트 미리보기 — kill_command v2 판정(스키마·규칙), 원장 변경 없음. 스키마 오류도 SCHEMA_FAIL 결과로 돌려준다', component: 'D03-02', roles: ['OPERATOR', 'SAFETY_OFFICER', 'SECURITY_OFFICER', 'OPS_LEAD'], body: KillCommandV2 },
+  { name: 'gateSnapshot', method: 'GET', path: '/api/gate/features/:id/versions/:ver', summary: '게이트가 보는 Feature Version — Registry 항목(D.6)·명령 원장·다음 순번·24시간 누적', component: 'D03-02', sample: { id: 'FEAT-00022', ver: '1.0.0' } },
   { name: 'killRequests', method: 'GET', path: '/api/kill-requests', summary: '긴급 차단 요청 목록 (회신 집계 포함)', component: 'D03-03', query: ['status'] },
   { name: 'killPreview', method: 'GET', path: '/api/kill-requests/preview', summary: '차단 영향 범위 미리보기 (의존 Feature·flag·차량)', component: 'D03-03', query: ['featureId', 'featureVersion', 'vins'], sample: { featureId: 'FEAT-00022', featureVersion: '1.0.0' } },
   { name: 'killDetail', method: 'GET', path: '/api/kill-requests/:id', summary: '차단 요청 상세 (차단·복구 회신)', component: 'D03-03' },

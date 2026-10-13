@@ -33,3 +33,4 @@ export * from './rules/classification';
 export * from './rules/standards-map';
 export * from './generated/standards-status';
 export * from './schemas/wire';
+export * from './rules/policy-gate';

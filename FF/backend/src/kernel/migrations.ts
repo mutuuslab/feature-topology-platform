@@ -251,4 +251,15 @@ CREATE TABLE safety_profile (feature_id TEXT NOT NULL, version TEXT NOT NULL, st
 CREATE TABLE flag_registry (flag_key TEXT PRIMARY KEY, feature_id TEXT NOT NULL, bound_at TEXT NOT NULL, retired_at TEXT);
 `,
   },
+  {
+    // 명령 원장(보고서 v1.1 8장, FFG-PLT-017·FFG-SEC-003·FFG-PLT-005) — Feature별 명령 순번·직전 Kill 승인자, 이동 시간 창 누적은 추가만
+    name: '014_command_ledger',
+    sql: `
+CREATE TABLE command_ledger (feature_id TEXT PRIMARY KEY, last_seq INTEGER NOT NULL, last_kill_approvers TEXT NOT NULL DEFAULT '[]', updated_at TEXT NOT NULL);
+CREATE TABLE command_window (id INTEGER PRIMARY KEY AUTOINCREMENT, feature_id TEXT NOT NULL, command_id TEXT NOT NULL UNIQUE, request TEXT NOT NULL, vehicles INTEGER NOT NULL, at TEXT NOT NULL);
+CREATE INDEX command_window_feature ON command_window (feature_id, at);
+CREATE TRIGGER command_window_no_update BEFORE UPDATE ON command_window BEGIN SELECT RAISE(ABORT, 'command_window는 추가만 가능'); END;
+CREATE TRIGGER command_window_no_delete BEFORE DELETE ON command_window BEGIN SELECT RAISE(ABORT, 'command_window는 추가만 가능'); END;
+`,
+  },
 ];

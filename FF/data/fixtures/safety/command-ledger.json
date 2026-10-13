@@ -1,0 +1,11 @@
+{
+  "_comment": "명령 원장 시드 — 보고서 v1.1 코드 패키지 schema/examples/registry.json의 ledger(FEAT-00022)와 같다. 원천은 감사 이력(Decision Record). 다른 Feature는 빈 원장에서 시작한다.",
+  "items": [
+    {
+      "featureId": "FEAT-00022",
+      "lastSeq": 10,
+      "lastKillApprovers": ["u-3003", "u-4004"],
+      "recent": [{ "commandId": "seed-FEAT-00022-0010", "request": "deactivate", "vehicles": 3, "at": "2026-10-12T20:00:00Z" }]
+    }
+  ]
+}

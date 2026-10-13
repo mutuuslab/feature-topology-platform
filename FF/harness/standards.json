@@ -2,9 +2,9 @@
   "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
   "summary": {
     "platformRules": 75,
-    "implemented": 13,
-    "tested": 13,
-    "reportTestsReferenced": 4
+    "implemented": 23,
+    "tested": 23,
+    "reportTestsReferenced": 11
   },
   "rules": [
     {
@@ -19,7 +19,8 @@
         "contracts/src/rules/classification.ts"
       ],
       "tested": [
-        "contracts/src/rules/classification.test.ts"
+        "contracts/src/rules/classification.test.ts",
+        "contracts/src/rules/policy-gate.test.ts"
       ]
     },
     {
@@ -52,8 +53,12 @@
         "Safety Guard"
       ],
       "section": "03_ads_regulation.md · 3.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts"
+      ]
     },
     {
       "id": "FFG-CLS-001",
@@ -139,11 +144,14 @@
       "section": "05_classification.md · 5.8 규칙",
       "implemented": [
         "contracts/src/rules/classification.ts",
+        "contracts/src/rules/policy-gate.ts",
         "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
       ],
       "tested": [
         "contracts/src/rules/classification.test.ts",
+        "contracts/src/rules/policy-gate.test.ts",
         "backend/test/d01/safety-profile.spec.ts",
+        "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/screensSafety.test.tsx",
         "e2e/tests/learn.spec.ts"
       ]
@@ -417,11 +425,14 @@
       ],
       "section": "08_control_plane.md · 8.5 규칙",
       "implemented": [
-        "contracts/src/rules/jcs.ts"
+        "contracts/src/rules/jcs.ts",
+        "contracts/src/rules/policy-gate.ts"
       ],
       "tested": [
         "contracts/src/rules/jcs.test.ts",
-        "contracts/src/schemas/wire.test.ts"
+        "contracts/src/rules/policy-gate.test.ts",
+        "contracts/src/schemas/wire.test.ts",
+        "backend/test/d03/policy-gate.spec.ts"
       ]
     },
     {
@@ -431,8 +442,12 @@
         "플랫폼"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
       "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/designSafety.test.tsx"
       ]
     },
@@ -444,9 +459,12 @@
       ],
       "section": "08_control_plane.md · 8.5 규칙",
       "implemented": [
+        "contracts/src/rules/policy-gate.ts",
         "frontend/src/screens/ops/KillConsole.tsx"
       ],
       "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/screensLearn.test.tsx",
         "frontend/src/__tests__/screensOps.test.tsx"
       ]
@@ -459,8 +477,13 @@
         "Safety Guard"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts"
+      ]
     },
     {
       "id": "FFG-PLT-005",
@@ -470,11 +493,15 @@
       ],
       "section": "08_control_plane.md · 8.5 규칙",
       "implemented": [
+        "contracts/src/rules/policy-gate.ts",
         "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts"
       ],
       "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
         "backend/test/d06/hsm.spec.ts",
-        "frontend/src/__tests__/designSafety.test.tsx"
+        "frontend/src/__tests__/designSafety.test.tsx",
+        "frontend/src/__tests__/screensSafety.test.tsx"
       ]
     },
     {
@@ -485,8 +512,12 @@
         "Safety Guard"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts"
+      ]
     },
     {
       "id": "FFG-PLT-007",
@@ -496,8 +527,13 @@
         "Safety Guard"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts"
+      ]
     },
     {
       "id": "FFG-PLT-008",
@@ -507,8 +543,13 @@
         "CCS/OTA"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts"
+      ]
     },
     {
       "id": "FFG-PLT-009",
@@ -519,8 +560,12 @@
         "LPC"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
       "tested": [
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/designSafety.test.tsx"
       ]
     },
@@ -532,8 +577,12 @@
         "CCS/OTA"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-gate.test.ts"
+      ]
     },
     {
       "id": "FFG-PLT-011",
@@ -617,9 +666,15 @@
         "플랫폼"
       ],
       "section": "08_control_plane.md · 8.5 규칙",
-      "implemented": [],
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts",
+        "backend/src/domains/d03-safety/deploy-safety/policy-gate.service.ts"
+      ],
       "tested": [
-        "frontend/src/__tests__/screensP9.test.tsx"
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/screensP9.test.tsx",
+        "frontend/src/__tests__/screensSafety.test.tsx"
       ]
     },
     {
@@ -679,9 +734,15 @@
         "플랫폼 게이트"
       ],
       "section": "14_security_sotif.md · 14.7 규칙",
-      "implemented": [],
+      "implemented": [
+        "contracts/src/rules/policy-gate.ts",
+        "backend/src/domains/d03-safety/deploy-safety/policy-gate.service.ts"
+      ],
       "tested": [
-        "frontend/src/__tests__/designSafety.test.tsx"
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/designSafety.test.tsx",
+        "frontend/src/__tests__/screensSafety.test.tsx"
       ]
     },
     {
@@ -909,8 +970,15 @@
   ],
   "reportTests": [
     "TC-FF-11",
+    "TC-FF-16",
     "TC-FF-21",
     "TC-FF-23",
-    "TC-FF-50"
+    "TC-FF-45",
+    "TC-FF-46",
+    "TC-FF-47",
+    "TC-FF-48",
+    "TC-FF-49",
+    "TC-FF-50",
+    "TC-FF-53"
   ]
 }

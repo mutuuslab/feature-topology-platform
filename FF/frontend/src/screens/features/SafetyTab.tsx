@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { checkProfile, DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, proposeClass, REG_CLASSES, type ClassFinding, type ClassifyAnswers, type SafetyProfile } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, ClassBadges, Drawer, ErrorNote, Explain, Field, Icon, KeyValue, Panel, RuleChecklist, Select, StageStrip, StatusGlyph } from '../../design';
+import { AsyncView, Button, ClassBadges, Drawer, ErrorNote, Explain, Field, Icon, KeyValue, Panel, RuleChecklist, Select, StageStrip, StatusGlyph, WindowGauge } from '../../design';
 import { usePermission, when } from '../shared';
 
 const S = ko.safetyTab;
@@ -71,6 +71,54 @@ function Wizard({ asil, onApply, disabled }: { asil: SafetyProfile['asilRef']; o
         </div>
       </div>
     </details>
+  );
+}
+
+interface GateSnapshot {
+  feature: { status: string; markets_approved: string[]; max_vehicles: number; max_per_window: number };
+  ledger: { last_order_seq?: number; last_kill_approvers?: string[] };
+  nextSeq: number;
+  window: { hours: number; deactivate: number; cap: number };
+}
+
+/** 정책 게이트 기준 (D03-02) — 이 분류·Registry 값이 Kill·복원 명령 판정에서 어떻게 쓰이는지 */
+function GatePanel({ id, ver }: { id: string; ver: string }) {
+  const g = useApi<GateSnapshot>('gateSnapshot', { params: { id, ver } });
+  const s = g.data;
+  return (
+    <Panel
+      title={
+        <>
+          {S.gate} <Explain rules={['FFG-PLT-002', 'FFG-PLT-017', 'FFG-SEC-003', 'FFG-PLT-005']} />
+        </>
+      }
+      id="safety-gate"
+      tour="safety-gate"
+    >
+      <AsyncView state={asyncState(g)} error={g.error?.message} onRetry={() => g.refetch()}>
+        {s && (
+          <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+            <p className="ds-field__hint" style={{ margin: 0 }}>
+              {S.gateLead}
+            </p>
+            <KeyValue
+              rows={[
+                { k: S.gateStatus, v: S.gateStatusKo[s.feature.status] ?? S.gateNotTarget(s.feature.status) },
+                { k: S.gateMarkets, v: <span className="ds-mono">{s.feature.markets_approved.join(' · ') || '—'}</span> },
+                { k: S.gateCap, v: S.gateCapValue(s.feature.max_vehicles, s.feature.max_per_window) },
+                { k: S.gateNextSeq, v: <span className="ds-mono">{s.nextSeq}</span> },
+                {
+                  k: S.gateApprovers,
+                  v: <span className="ds-mono">{s.ledger.last_kill_approvers?.join(', ') || S.gateNoKill}</span>,
+                  note: s.ledger.last_kill_approvers?.length ? S.gateApproversNote : undefined,
+                },
+              ]}
+            />
+            <WindowGauge used={s.window.deactivate} adding={0} cap={s.window.cap} />
+          </div>
+        )}
+      </AsyncView>
+    </Panel>
   );
 }
 
@@ -259,6 +307,7 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
                   </p>
                 )}
               </Panel>
+              <GatePanel id={id} ver={ver} />
               {locked && (
                 <Panel title={S.confirmedBy} id="safety-confirmed">
                   <KeyValue

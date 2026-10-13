@@ -667,6 +667,19 @@ export const ko = {
     signature: '개인 서명',
     locked: '확정된 분류입니다 — 바꾸려면 새 Version을 만드세요 (FFG-CLS-004)',
     unsigned: '서명 없음(보고서 예시 시드)',
+    // 정책 게이트 기준 (D03-02, 보고서 8장·부록 D.6) — 이 분류가 Kill·복원 명령 판정에 쓰이는 모습
+    gate: '정책 게이트 기준',
+    gateLead: 'Kill·복원 명령을 서명하기 전에 플랫폼 게이트가 이 Version을 이렇게 봅니다. 값은 Registry와 이 분류에서 나오고, 운영자가 고르지 않습니다.',
+    gateStatus: '게이트 상태',
+    gateStatusKo: { RELEASED: '명령 대상(RELEASED)', DECOMMISSIONED: '폐기 — 비활성화만' } as Record<string, string>,
+    gateNotTarget: (lc: string) => `명령 대상 아님(${lc})`,
+    gateMarkets: '승인 시장',
+    gateCap: '범위 상한',
+    gateCapValue: (max: number, win: number) => `명령당 ${max.toLocaleString()}대 · 24시간 누적 ${win.toLocaleString()}대`,
+    gateNextSeq: '다음 명령 순번',
+    gateApprovers: '직전 Kill 승인자',
+    gateApproversNote: '다음 복원을 승인할 수 없습니다',
+    gateNoKill: '없음',
   },
   // 기능안전 부품 — 국제표준 대응방안 보고서 v1.1(FFP-FS-STR-001) 5·7·8·9장 용어
   safety: {

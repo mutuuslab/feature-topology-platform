@@ -33,7 +33,7 @@ export const STANDARDS_MAP: Readonly<Record<string, RulePlacement>> = {
   'FFG-PLT-008': { components: ['D03-02', 'D01-08'], wp: 'WP3' },
   'FFG-PLT-009': { components: ['D03-02', 'D03-01'], wp: 'WP3' },
   'FFG-PLT-010': { components: ['D03-02', 'D04-01'], wp: 'WP3' },
-  'FFG-PLT-014': { components: ['D01-06', 'D06-01'], wp: 'WP3' },
+  'FFG-PLT-014': { components: ['D01-06', 'D06-01'], wp: 'WP9' }, // 정책 생성 결정성 Golden — 도구 신뢰성(TCL, PLT-013)과 함께
   'FFG-PLT-017': { components: ['D03-02'], wp: 'WP3' },
   'FFG-SEC-003': { components: ['D03-02', 'D06-10'], wp: 'WP3' },
   'FFG-ADS-010': { components: ['D03-02', 'D03-04'], wp: 'WP3' },

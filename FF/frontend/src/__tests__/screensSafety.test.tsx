@@ -9,8 +9,51 @@ import { AppProvider } from '../store';
 import { SafetyTab } from '../screens/features/SafetyTab';
 
 // 데이터셋 추정 초안(FEAT-00001@2.1.0)과 같은 모양 — F2 · DC2 · R1, 조합 위반 없음
-const BASE: SafetyProfile = { featureId: 'FEAT-00099', version: '0.1.0', status: 'DRAFT', source: 'INFERRED', fClass: 'F2', deactClass: 'DC2', regClass: 'R1', flagType: 'OPS', adsFeature: false, adsfType: null, gsrMandatory: false, itemIds: [], haraRef: null, asilRef: 'B', safetyGoalIds: [], safeState: 'BASE_ONLY', endState: 'DISABLED', takeoverMs: 4000, rampMs: 3000, faultRampMs: 1500, faultTolerantTimeMs: 5000, maxPendingMs: 0, maxCycleWaitMs: 28800000, maxActivationScope: { vehicles: 50000, perWindow: 5000 }, markets: ['KR'], rxswin: [], approvalProfile: null, evidenceManifestId: null, sbomRef: null, rollbackTarget: null, expiresAt: null, retirementPlan: null, confirmedBy: null, confirmedAt: null, confirmSig: null };
+const BASE: SafetyProfile = {
+  featureId: 'FEAT-00099',
+  version: '0.1.0',
+  status: 'DRAFT',
+  source: 'INFERRED',
+  fClass: 'F2',
+  deactClass: 'DC2',
+  regClass: 'R1',
+  flagType: 'OPS',
+  adsFeature: false,
+  adsfType: null,
+  gsrMandatory: false,
+  itemIds: [],
+  haraRef: null,
+  asilRef: 'B',
+  safetyGoalIds: [],
+  safeState: 'BASE_ONLY',
+  endState: 'DISABLED',
+  takeoverMs: 4000,
+  rampMs: 3000,
+  faultRampMs: 1500,
+  faultTolerantTimeMs: 5000,
+  maxPendingMs: 0,
+  maxCycleWaitMs: 28800000,
+  maxActivationScope: { vehicles: 50000, perWindow: 5000 },
+  markets: ['KR'],
+  rxswin: [],
+  approvalProfile: null,
+  evidenceManifestId: null,
+  sbomRef: null,
+  rollbackTarget: null,
+  expiresAt: null,
+  retirementPlan: null,
+  confirmedBy: null,
+  confirmedAt: null,
+  confirmSig: null,
+};
 
+// 게이트가 보는 이 Version (GET /api/gate/features/:id/versions/:ver)
+const GATE = {
+  feature: { status: 'RELEASED', markets_approved: ['UNECE', 'EU', 'KR'], max_vehicles: 50000, max_per_window: 5000 },
+  ledger: { last_order_seq: 10, last_kill_approvers: ['u-3003', 'u-4004'] },
+  nextSeq: 11,
+  window: { hours: 24, deactivate: 3, cap: 5000 },
+};
 type Call = { url: string; method: string; body: unknown };
 let calls: Call[];
 let profile: SafetyProfile;
@@ -24,6 +67,7 @@ beforeEach(() => {
       const method = init?.method ?? 'GET';
       const body = init?.body ? JSON.parse(String(init.body)) : undefined;
       calls.push({ url, method, body });
+      if (url.startsWith('/api/gate/')) return new Response(JSON.stringify(GATE), { status: 200, headers: { 'Content-Type': 'application/json' } });
       if (method === 'PUT') profile = { ...profile, ...(body as Partial<SafetyProfile>) };
       if (method === 'POST') profile = { ...profile, status: 'CONFIRMED', confirmedBy: 'usr-safety', confirmedAt: '2026-10-13T00:00:00Z', confirmSig: 'A'.repeat(86) };
       return new Response(JSON.stringify({ profile, findings: checkProfile(profile) }), { status: method === 'POST' ? 201 : 200, headers: { 'Content-Type': 'application/json' } });
@@ -94,5 +138,19 @@ describe('안전 분류 탭 — 저장·확정 권한 (FFG-CLS-001 · FFG-CLS-00
     expect(screen.getByLabelText('처리강도 F').matches(':disabled')).toBe(true);
     expect(screen.queryByRole('button', { name: '초안 저장' })).toBeNull();
     expect(screen.getByText(`${'A'.repeat(16)}…`)).toBeTruthy();
+  });
+});
+
+describe('안전 분류 탭 — 정책 게이트 기준 (FFG-PLT-017 · FFG-SEC-003 · FFG-PLT-005)', () => {
+  it('게이트가 보는 상태·상한·다음 순번·직전 Kill 승인자와 24시간 누적을 보인다', async () => {
+    mount('author');
+    const panel = (await screen.findByRole('heading', { name: /정책 게이트 기준/ })).closest('section')!;
+    await within(panel).findByText('명령 대상(RELEASED)');
+    expect(within(panel).getByText('명령당 50,000대 · 24시간 누적 5,000대')).toBeTruthy();
+    expect(within(panel).getByText('11')).toBeTruthy();
+    expect(within(panel).getByText('u-3003, u-4004')).toBeTruthy();
+    expect(within(panel).getByText('다음 복원을 승인할 수 없습니다')).toBeTruthy();
+    expect(within(panel).getByRole('meter').getAttribute('aria-valuenow')).toBe('3');
+    expect(calls.some((c) => c.url === '/api/gate/features/FEAT-00099/versions/0.1.0')).toBe(true);
   });
 });

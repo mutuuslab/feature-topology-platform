@@ -17,8 +17,8 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": false
   },
   "FFG-ADS-010": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-CLS-001": {
     "implemented": true,
@@ -141,40 +141,40 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": true
   },
   "FFG-PLT-002": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-PLT-003": {
     "implemented": true,
     "tested": true
   },
   "FFG-PLT-004": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-PLT-005": {
     "implemented": true,
     "tested": true
   },
   "FFG-PLT-006": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-PLT-007": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-PLT-008": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-PLT-009": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-PLT-010": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-PLT-011": {
     "implemented": false,
@@ -201,8 +201,8 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": false
   },
   "FFG-PLT-017": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-SBOM-002": {
     "implemented": false,
@@ -221,8 +221,8 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": true
   },
   "FFG-SEC-003": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-SEC-004": {
     "implemented": false,

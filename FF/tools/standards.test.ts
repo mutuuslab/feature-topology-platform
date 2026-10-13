@@ -1,7 +1,7 @@
 // 보고서 규칙 추적 — 없는 ID는 잡고, @rule 표식만 구현 추적으로 센다.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { scanText } from './standards.ts';
+import { placementProblems, renderStatusModule, scanText } from './standards.ts';
 
 const known = { rules: new Set(['FFG-PLT-003', 'FFG-DEAC-004']), tests: new Set(['TC-FF-11']) };
 
@@ -15,4 +15,22 @@ test('구현 추적은 @rule 표식만 — 단순 언급은 세지 않는다', (
   assert.deepEqual(s.tags, ['FFG-DEAC-004', 'FFG-PLT-003']);
   assert.deepEqual(s.mentions, ['FFG-PLT-003', 'FFG-DEAC-004', 'FFG-PLT-003']);
   assert.deepEqual(s.unknown, []);
+});
+
+test('반영 위치 — 플랫폼 규칙은 모두 기존 컴포넌트에, 컴포넌트는 manifest에 있어야 한다', () => {
+  const map = { 'FFG-PLT-003': { components: ['D03-02'], wp: 'WP3' as const }, 'FFG-ADS-099': { components: ['D09-01'], wp: 'WP9' as const } };
+  assert.deepEqual(placementProblems(['FFG-PLT-003', 'FFG-DEAC-004'], map, ['D03-02']), [
+    'FFG-DEAC-004 — 반영할 기존 컴포넌트가 정해지지 않음(standards-map.ts)',
+    'FFG-ADS-099 — 플랫폼 적용 규칙이 아님(배치 표에서 뺀다)',
+    'FFG-ADS-099 → D09-01 — 42 컴포넌트 manifest에 없는 ID',
+  ]);
+});
+
+test('규칙 상태 모듈 — 시험은 구현 추적이 있을 때만 센다', () => {
+  const text = renderStatusModule([
+    { id: 'FFG-PLT-003', implemented: ['a.ts'], tested: ['a.test.ts'] },
+    { id: 'FFG-DEAC-004', implemented: [], tested: ['b.test.ts'] },
+  ]);
+  assert.match(text, /"FFG-PLT-003": \{\s+"implemented": true,\s+"tested": true/);
+  assert.match(text, /"FFG-DEAC-004": \{\s+"implemented": false,\s+"tested": false/);
 });

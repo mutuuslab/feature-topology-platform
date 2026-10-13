@@ -1333,6 +1333,12 @@ textarea.ds-input {
   font-weight: 600;
   line-height: 1.3;
 }
+/* 보고서 v1.1 반영률 — 컴포넌트가 집행할 규칙 중 구현·시험된 수 */
+.ds-comp__std {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+}
 .ds-comp__meta {
   font-family: var(--font-mono);
   font-size: 10px;

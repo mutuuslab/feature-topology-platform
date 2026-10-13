@@ -4,7 +4,7 @@
     "platformRules": 75,
     "implemented": 13,
     "tested": 13,
-    "reportTestsReferenced": 3
+    "reportTestsReferenced": 4
   },
   "rules": [
     {
@@ -420,7 +420,8 @@
         "contracts/src/rules/jcs.ts"
       ],
       "tested": [
-        "contracts/src/rules/jcs.test.ts"
+        "contracts/src/rules/jcs.test.ts",
+        "contracts/src/schemas/wire.test.ts"
       ]
     },
     {
@@ -617,7 +618,9 @@
       ],
       "section": "08_control_plane.md · 8.5 규칙",
       "implemented": [],
-      "tested": []
+      "tested": [
+        "frontend/src/__tests__/screensP9.test.tsx"
+      ]
     },
     {
       "id": "FFG-SBOM-002",
@@ -907,6 +910,7 @@
   "reportTests": [
     "TC-FF-11",
     "TC-FF-21",
-    "TC-FF-23"
+    "TC-FF-23",
+    "TC-FF-50"
   ]
 }

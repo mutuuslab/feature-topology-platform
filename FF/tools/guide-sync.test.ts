@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildCatalog, catalogProblems, selectFiles, sha } from './guide-sync.ts';
 
-test('스키마 v2·예제·용어 규칙만 고른다', () => {
+test('스키마 v2·예제·용어 규칙·패키지 게이트 원본만 고른다', () => {
   const all = [
     'schema/kill_command.v2.schema.json', 'schema/status_report.v2.schema.json', 'schema/examples/registry.json',
     'schema/examples/kill_dc4_aeb.gate_fail.json', 'harness/terms.json', 'harness/sources.json', 'harness/platform_model.json',
@@ -15,7 +15,7 @@ test('스키마 v2·예제·용어 규칙만 고른다', () => {
   ];
   assert.deepEqual(selectFiles(all), [
     'harness/terms.json', 'schema/examples/kill_dc4_aeb.gate_fail.json', 'schema/examples/registry.json',
-    'schema/kill_command.v2.schema.json', 'schema/status_report.v2.schema.json',
+    'schema/kill_command.v2.schema.json', 'schema/status_report.v2.schema.json', 'tools/platform_policy_gate.py',
   ]);
 });
 

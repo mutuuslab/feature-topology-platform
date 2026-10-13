@@ -141,6 +141,369 @@
         }
       }
     },
+    "/api/safety-profiles": {
+      "get": {
+        "summary": "안전 분류 목록 (보고서 5.7)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "safetyProfiles",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/safety": {
+      "get": {
+        "summary": "안전 분류 + 조합 검사 (FFG-CLS-009)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "safetyProfile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "put": {
+        "summary": "안전 분류 초안 수정 (확정 후 불가, FFG-CLS-004)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "updateSafetyProfile",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fClass": {
+                    "type": "string",
+                    "enum": [
+                      "F0",
+                      "F1",
+                      "F2",
+                      "F3",
+                      "F4"
+                    ]
+                  },
+                  "deactClass": {
+                    "type": "string",
+                    "enum": [
+                      "DC0",
+                      "DC1",
+                      "DC2",
+                      "DC3",
+                      "DC4"
+                    ]
+                  },
+                  "regClass": {
+                    "type": "string",
+                    "enum": [
+                      "R0",
+                      "R1",
+                      "R2"
+                    ]
+                  },
+                  "flagType": {
+                    "type": "string",
+                    "enum": [
+                      "RELEASE",
+                      "OPS",
+                      "PERMISSION",
+                      "EXPERIMENT"
+                    ]
+                  },
+                  "adsFeature": {
+                    "type": "boolean"
+                  },
+                  "adsfType": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "ADSF-1",
+                      "ADSF-2"
+                    ]
+                  },
+                  "gsrMandatory": {
+                    "type": "boolean"
+                  },
+                  "itemIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "haraRef": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "asilRef": {
+                    "type": "string",
+                    "enum": [
+                      "QM",
+                      "A",
+                      "B",
+                      "C",
+                      "D"
+                    ]
+                  },
+                  "safetyGoalIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "safeState": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "endState": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "DISABLED",
+                      "INACTIVE",
+                      "HANDOVER",
+                      "MRC"
+                    ]
+                  },
+                  "takeoverMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "rampMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "faultRampMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "faultTolerantTimeMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "maxPendingMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "maxCycleWaitMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "maxActivationScope": {
+                    "type": "object",
+                    "properties": {
+                      "vehicles": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "perWindow": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "vehicles",
+                      "perWindow"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "markets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "rxswin": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "approvalProfile": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "evidenceManifestId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "sbomRef": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "rollbackTarget": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "expiresAt": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "retirementPlan": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/safety/confirm": {
+      "post": {
+        "summary": "안전 분류 확정 — Safety Manager 개인 서명",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "confirmSafetyProfile",
+        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/audit": {
       "get": {
         "summary": "감사 이력",

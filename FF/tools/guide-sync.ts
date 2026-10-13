@@ -16,7 +16,8 @@ const CATALOG = 'catalog.json';
 const GENERATED = join(FF, 'contracts', 'src', 'generated', 'report-catalog.ts');
 
 /** 허용 목록 — 플랫폼 게이트·계약 시험에 쓰는 것만 (C/C++ 차량 코드·원고·문서·zip은 제외) */
-const ALLOW: RegExp[] = [/^schema\/[\w.-]+\.schema\.json$/, /^schema\/examples\/[\w.-]+\.json$/, /^harness\/terms\.json$/];
+// tools/platform_policy_gate.py — 패키지 게이트 원본. gate-parity가 evaluate()만 불러 TS 게이트와 규칙 단위로 대조한다.
+const ALLOW: RegExp[] = [/^schema\/[\w.-]+\.schema\.json$/, /^schema\/examples\/[\w.-]+\.json$/, /^harness\/terms\.json$/, /^tools\/platform_policy_gate\.py$/];
 
 const posix = (p: string) => p.split(sep).join('/');
 /** 줄끝은 정규화해서 해시 — Git 체크아웃(Windows CRLF ↔ CI LF)에 따라 달라지지 않게 */
@@ -190,7 +191,7 @@ function manuscripts(): { file: string; text: string }[] {
 function sync() {
   if (!existsSync(join(SRC, 'schema', 'kill_command.v2.schema.json'))) throw new Error(`가이드 폴더가 없습니다: ${SRC} (GUIDE_DIR로 지정)`);
   const files = selectFiles(list(SRC));
-  for (const f of files) JSON.parse(readFileSync(join(SRC, f), 'utf8').replace(/^﻿/, '')); // 깨진 JSON은 복사하지 않는다
+  for (const f of files.filter((x) => x.endsWith('.json'))) JSON.parse(readFileSync(join(SRC, f), 'utf8').replace(/^﻿/, '')); // 깨진 JSON은 복사하지 않는다
   const catalog = buildCatalog(manuscripts());
   const bad = catalogProblems(catalog);
   if (bad.length) throw new Error(`원고 규칙 형식 오류 — ${bad.join(' / ')}`);

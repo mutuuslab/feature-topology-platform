@@ -1,6 +1,6 @@
 {
   "source": "C:/project/2026-09-23_FF_IMP/FF_Safety_Guide_v2",
-  "syncedAt": "2026-10-13T05:35:19.139Z",
+  "syncedAt": "2026-10-13T08:55:31.534Z",
   "note": "tools/guide-sync.ts가 만든 복사본 — 여기서 고치지 말고 가이드 원본을 고친 뒤 다시 동기화",
   "files": {
     "harness/terms.json": {
@@ -58,6 +58,10 @@
     "schema/status_report.v2.schema.json": {
       "sha256": "230ac9d35abe6f6ab09471d026592f437f3ed397819a7648083013b8e6d62d0e",
       "bytes": 5749
+    },
+    "tools/platform_policy_gate.py": {
+      "sha256": "886c2b99f70a8528d450e74e02441ac2bb8987e051052fa8e24cabb8fb3d13f9",
+      "bytes": 12279
     },
     "catalog.json": {
       "sha256": "fdbaef0a61954ed624aba129f8eee522d8f78ff0c2c09fc4ee38d73d1fa02295",

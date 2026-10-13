@@ -453,6 +453,17 @@ export const ko = {
     interfaces: '외부 연계',
     events: '이벤트',
     lastEvent: '마지막 이벤트',
+    // 보고서 v1.1 반영 — 규칙마다 집행할 기존 컴포넌트(contracts rules/standards-map)
+    standards: '보고서 v1.1 반영',
+    standardsNote: '플랫폼 규칙 중 구현·시험까지 추적된 수',
+    standardsCard: (done: number, all: number) => `표준 ${done}/${all}`,
+    wp: '보고서 작업 단계',
+    wpAll: '전체',
+    standardsList: '보고서 규칙 — 이 컴포넌트가 집행',
+    standardsNone: '이 컴포넌트에 배치된 보고서 규칙이 없습니다',
+    ruleDone: '구현·시험됨',
+    ruleTodo: (wp: string) => `${wp}에서 반영`,
+    primary: '주 담당',
   },
   openfeature: {
     title: 'OpenFeature 클라이언트 (웹 SDK · OFREP)',

@@ -105,7 +105,10 @@ export interface CombinationPlan {
   group: string[];
   /** 그 중 안전 관련 Flag(F2 이상, 분류 없음은 안전 관련으로 본다) */
   safetyFlags: string[];
+  /** 실제로 만든 강도(인자 수가 요구보다 적으면 인자 수 = 전수) */
   strength: number;
+  /** 규칙이 요구한 강도 — 안전 관련 Flag 2개 이상 상호작용이면 3 */
+  requestedStrength: number;
   /** 왜 이 강도인가 */
   basis: string;
   array: CoveringArray;
@@ -127,7 +130,7 @@ export function combinationPlan(featureId: string, deps: Dep[], fClassOf: (featu
   const strength = safetyFlags.length >= 2 ? 3 : 2;
   const basis =
     safetyFlags.length >= 2
-      ? `안전 관련 Flag ${safetyFlags.length}개가 상호작용 — 3-way${group.length <= 3 ? '(인자 수 이하라 전수)' : ''}`
+      ? `안전 관련 Flag ${safetyFlags.length}개가 상호작용 — 3-way 요구${group.length <= 3 ? ` (Flag ${group.length}개라 전수)` : ''}`
       : `안전 관련 Flag ${safetyFlags.length}개 — 2-way${group.length <= 2 ? '(전수)' : ''}`;
   const array = coveringArray(group, strength, (row) => combinationViolations(group.filter((_, i) => row[i]), inGroup).length === 0);
   const negatives = inGroup.map((d) =>
@@ -135,5 +138,5 @@ export function combinationPlan(featureId: string, deps: Dep[], fClassOf: (featu
       ? { on: [d.sourceFeatureId], off: [d.targetFeatureId], expect: 'REQUIRES_MISSING' as const, dependencyId: d.dependencyId }
       : { on: [d.sourceFeatureId, d.targetFeatureId], off: [], expect: 'EXCLUDES_CONFLICT' as const, dependencyId: d.dependencyId },
   );
-  return { featureId, group, safetyFlags, strength: array.strength, basis, array, negatives };
+  return { featureId, group, safetyFlags, strength: array.strength, requestedStrength: strength, basis, array, negatives };
 }

@@ -268,6 +268,7 @@ describe('vECU 가상검증', () => {
     group: ['FEAT-00022', 'FEAT-00145'],
     safetyFlags: ['FEAT-00022', 'FEAT-00145'],
     strength: 2,
+    requestedStrength: 3,
     basis: '안전 관련 Flag 2개가 상호작용 — 3-way(인자 수 이하라 전수)',
     array: { factors: ['FEAT-00022', 'FEAT-00145'], strength: 2, rows: [[false, false], [false, true], [true, true]], tuples: 3, covered: 3, infeasible: 1 },
     negatives: [{ on: ['FEAT-00022'], off: ['FEAT-00145'], expect: 'REQUIRES_MISSING', dependencyId: 'DEP-00013', rejected: true, got: ['REQUIRES_MISSING'] }],
@@ -330,7 +331,7 @@ describe('vECU 가상검증', () => {
     handler = api(RUN({}));
     mount('/validations/virtual', '/validations/virtual', <VirtualValidationScreen />, 'quality');
     const plan = await screen.findByTestId('combo-plan');
-    expect(plan.textContent).toContain('2-way · 시험 3행 · 조합 3개 모두 덮음');
+    expect(plan.textContent).toContain('시험 3행 — Flag 2개라 허용 조합 모두(전수) · 금지 조합은 부정 시험 1건');
     expect(within(plan).getAllByRole('row')).toHaveLength(4); // 머리글 + 3행
     const neg = within(plan).getByTestId('combo-negatives');
     expect(neg.textContent).toContain('FEAT-00022 ON · FEAT-00145 OFF → REQUIRES_MISSING · 거부 확인 (DEP-00013)');

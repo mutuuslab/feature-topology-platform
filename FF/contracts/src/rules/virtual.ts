@@ -143,11 +143,13 @@ export function judgeVirtual(criteria: Omit<VirtualCriterion, 'deciding'>[], rep
   const marked = criteria.map((c) => ({ ...c, deciding: c.status !== 'na' }));
   const reasons: string[] = [];
   const bad = marked.filter((c) => c.status === 'fail' || c.status === 'pending');
-  if (bad.length) reasons.push(...bad.map((c) => `${c.label} ${c.status === 'pending' ? '끝나지 않음' : `${c.value ?? '?'}${c.unit} (기준 ${c.op} ${c.limit})`}`));
+  if (bad.length) reasons.push(...bad.map((c) => `${c.label} ${c.status === 'pending' ? '끝나지 않음' : `${c.value ?? '?'}${c.unit} (기준 ${OP[c.op] ?? c.op} ${c.limit})`}`));
   if (!marked.some((c) => c.deciding)) reasons.push('판정할 기준이 없습니다');
   if (!VirtualRepro.safeParse(repro).success) reasons.push('재현 정보(도구 Version·시나리오 해시·판정 스크립트 해시·시드)가 없습니다');
   return { gateResult: reasons.length ? 'FAIL' : 'PASS', criteria: marked, reasons };
 }
+
+const OP: Record<string, string> = { '<=': '≤', '>=': '≥' };
 
 /** 정책 검증기가 쓰는 입력 — 이 정책 내용(contentHash)으로 돌린 최신 실행 */
 export interface VirtualEvidence {

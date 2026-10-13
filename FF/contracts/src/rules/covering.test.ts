@@ -38,7 +38,7 @@ describe('Feature 조합 시험 계획 (시드 Topology)', () => {
   it('FEAT-00022: 상호작용 범위는 REQUIRES로 이어진 FEAT-00145까지, 둘 다 안전 관련이면 3-way(인자 2개라 전수) — 금지 1건', () => {
     expect(interactionGroup('FEAT-00022', deps)).toEqual(['FEAT-00022', 'FEAT-00145']);
     const p = combinationPlan('FEAT-00022', deps, () => 'F3');
-    expect(p).toMatchObject({ group: ['FEAT-00022', 'FEAT-00145'], safetyFlags: ['FEAT-00022', 'FEAT-00145'], strength: 2 });
+    expect(p).toMatchObject({ group: ['FEAT-00022', 'FEAT-00145'], safetyFlags: ['FEAT-00022', 'FEAT-00145'], strength: 2, requestedStrength: 3 });
     expect(p.basis).toMatch(/3-way/);
     expect(p.array.rows).toHaveLength(3); // 4가지 중 22 ON·145 OFF는 금지
     expect(p.negatives).toEqual([{ on: ['FEAT-00022'], off: ['FEAT-00145'], expect: 'REQUIRES_MISSING', dependencyId: expect.stringMatching(/^DEP-/) }]);

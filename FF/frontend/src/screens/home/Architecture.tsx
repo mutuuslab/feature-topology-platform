@@ -193,7 +193,7 @@ export function ArchitectureScreen() {
                 {
                   k: A.endpoints,
                   v: (
-                    <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
+                    <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', whiteSpace: 'pre-line' }}>
                       {sel.endpoints.join('\n') || '—'}
                     </span>
                   ),

@@ -156,7 +156,7 @@ describe('vECU 가상검증 → 차량 시나리오(D06-03)·안전 동작(D06-0
   it('회귀(12.7 알려진 실패로 G5 통과 금지): 오류 주입 구간의 위험·오판단도 판정 기준 — 정보 항목으로 면제하지 않는다', () => {
     // ffval 1.x 방식은 오류+Kill 시나리오에서 danger_time·misjudge를 빼고 PASS를 냈다(vECU 종합 FAIL과 어긋남)
     expect(judgeVirtual(crit({ danger_time: 'fail', misjudge: 'fail' }), REPRO)).toMatchObject({ gateResult: 'FAIL' });
-    expect(judgeVirtual(crit({ danger_time: 'fail' }), REPRO).reasons).toEqual(['danger_time 0.3s (기준 <= 1)']);
+    expect(judgeVirtual(crit({ danger_time: 'fail' }), REPRO).reasons).toEqual(['danger_time 0.3s (기준 ≤ 1)']);
     expect(judgeVirtual(crit({ recovery: 'pending' }), REPRO).gateResult).toBe('FAIL'); // 끝나지 않은 기준은 통과가 아니다
     expect(judgeVirtual(crit({ kill_latency: 'na' }), REPRO)).toMatchObject({ gateResult: 'PASS' }); // 해당 없음은 판정에서 뺀다
     expect(judgeVirtual(crit({ kill_latency: 'na' }), REPRO).criteria.find((c) => c.id === 'kill_latency')!.deciding).toBe(false);

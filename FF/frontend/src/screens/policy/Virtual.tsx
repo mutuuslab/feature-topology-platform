@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, IdChip, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, Icon, IdChip, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 
 const T = ko.virtual;
@@ -73,7 +73,7 @@ function G5Checklist({ r }: { r: VRun }) {
       <ul className="ds-check" data-testid="g5-checks">
         {g5Checks(r).map((c) => (
           <li key={c.k} data-state={c.ok ? 'PASS' : 'FAIL'}>
-            <VerdictBadge value={c.ok ? 'PASS' : 'FAIL'} />
+            <Icon name={c.ok ? 'check' : 'close'} size={16} title={c.ok ? 'PASS' : 'FAIL'} />
             <span style={{ fontSize: 'var(--fs-xs)' }}>{c.k}</span>
           </li>
         ))}
@@ -105,7 +105,7 @@ function RunDrawer({ id, onClose }: { id: string | null; onClose: () => void }) 
                 v: r.repro ? <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{`scenario ${short(r.repro.scenarioHash)} · script ${short(r.repro.scriptHash)} · seed ${r.repro.seed}`}</span> : '—',
                 note: r.repro?.ffvalVersion,
               },
-              { k: T.tms, v: <span className="ds-mono">{r.tms ? `${r.tms.tmsId} · ${when(r.tms.submittedAt)}` : '—'}</span> },
+              { k: T.tms, v: <span className="ds-mono">{r.tms ? `${r.tms.tmsId} · ${when(r.tms.submittedAt)}` : r.role === 'BASELINE_REMOTE' ? T.tmsNotTarget : r.source === 'vecu' ? T.tmsNone : '—'}</span> },
             ]}
           />
           {r.source === 'vecu' && <G5Checklist r={r} />}
@@ -115,6 +115,7 @@ function RunDrawer({ id, onClose }: { id: string | null; onClose: () => void }) 
               <ul className="ds-check">
                 {r.gateReasons.map((x) => (
                   <li key={x} data-state="FAIL">
+                    <Icon name="close" size={16} />
                     <span style={{ fontSize: 'var(--fs-xs)' }}>{x}</span>
                   </li>
                 ))}
@@ -129,7 +130,7 @@ function RunDrawer({ id, onClose }: { id: string | null; onClose: () => void }) 
               columns={[
                 { key: 'l', header: T.criteria, cell: (c) => <span style={{ fontSize: 'var(--fs-xs)', fontWeight: c.deciding ? 600 : 400 }}>{c.label}</span> },
                 { key: 'v', header: 'value', cell: (c) => <span className="ds-mono">{c.value == null ? '—' : `${c.value}${c.unit}`}</span>, align: 'right' },
-                { key: 'lim', header: T.deciding, cell: (c) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{`${c.op} ${c.limit}${c.unit}${c.deciding ? ' ●' : ''}`}</span> },
+                { key: 'lim', header: T.deciding, cell: (c) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', whiteSpace: 'nowrap' }}>{`${c.op} ${c.limit}${c.unit}${c.deciding ? ' ●' : ''}`}</span> },
                 { key: 's', header: T.col.gate, cell: (c) => <VerdictBadge value={CRIT[c.status]} /> },
               ]}
             />
@@ -140,10 +141,13 @@ function RunDrawer({ id, onClose }: { id: string | null; onClose: () => void }) 
               <ul className="ds-check">
                 {r.evidence.files.map((f) => (
                   <li key={f.name} data-state="INFO">
-                    <a href={`/api/virtual-validations/${r.runId}/files/${encodeURIComponent(f.name)}`} target="_blank" rel="noreferrer" className="ds-mono">
-                      {f.name}
-                    </a>
-                    <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>{`sha256:${f.sha256.slice(0, 12)}… · ${f.bytes} B`}</span>
+                    <Icon name="book" size={16} />
+                    <span>
+                      <a href={`/api/virtual-validations/${r.runId}/files/${encodeURIComponent(f.name)}`} target="_blank" rel="noreferrer" className="ds-mono">
+                        {f.name}
+                      </a>
+                      <span className="ds-check__detail ds-mono">{`sha256:${f.sha256.slice(0, 12)}… · ${f.bytes} B`}</span>
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -205,6 +209,7 @@ interface ComboPlan {
   group: string[];
   safetyFlags: string[];
   strength: number;
+  requestedStrength: number;
   basis: string;
   array: { factors: string[]; strength: number; rows: boolean[][]; tuples: number; covered: number; infeasible: number };
   negatives: { on: string[]; off: string[]; expect: string; dependencyId: string; rejected: boolean; got: string[] }[];
@@ -224,7 +229,7 @@ export function CombinationPanel({ featureId }: { featureId: string }) {
             <KeyValue
               rows={[
                 { k: C.group, v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{p.group.join(' · ')}</span>, note: p.basis },
-                { k: T.criteria, v: <span className="ds-mono">{C.strength(p.array.strength, p.array.rows.length, p.array.tuples)}</span> },
+                { k: T.criteria, v: <span>{C.strength(p.requestedStrength, p.array.strength, p.array.rows.length, p.negatives.length)}</span> },
               ]}
             />
             {p.group.length < 2 ? (
@@ -239,7 +244,11 @@ export function CombinationPanel({ featureId }: { featureId: string }) {
                   ...p.array.factors.map((f, j) => ({
                     key: f,
                     header: f,
-                    cell: (x: { i: number; row: boolean[] }) => <span className="ds-mono" style={{ color: x.row[j] ? undefined : 'var(--muted)' }}>{x.row[j] ? 'ON' : 'OFF'}</span>,
+                    cell: (x: { i: number; row: boolean[] }) => (
+                      <span className="ds-mono" style={x.row[j] ? { background: 'var(--ok-soft)', color: 'var(--ok)', padding: '1px 8px', borderRadius: 'var(--r)', fontWeight: 600 } : { color: 'var(--muted)', padding: '1px 8px' }}>
+                        {x.row[j] ? 'ON' : 'OFF'}
+                      </span>
+                    ),
                   })),
                 ]}
               />
@@ -250,7 +259,7 @@ export function CombinationPanel({ featureId }: { featureId: string }) {
                 <ul className="ds-check" data-testid="combo-negatives">
                   {p.negatives.map((n) => (
                     <li key={n.dependencyId} data-state={n.rejected ? 'PASS' : 'FAIL'}>
-                      <VerdictBadge value={n.rejected ? 'PASS' : 'FAIL'} />
+                      <Icon name={n.rejected ? 'check' : 'close'} size={16} title={n.rejected ? 'PASS' : 'FAIL'} />
                       <span style={{ fontSize: 'var(--fs-xs)' }}>{`${C.negative(n.on, n.off)} → ${n.expect} · ${n.rejected ? C.rejected : C.notRejected} (${n.dependencyId})`}</span>
                     </li>
                   ))}
@@ -278,58 +287,71 @@ export function CompareTimeline({ onboard, remote, faultAt }: { onboard: VRun | 
   if (!onboard || !remote) return <p className="ds-field__hint">{C.none}</p>;
   const ftti = (onboard.safety?.faultTolerantTimeMs ?? 5000) / 1000;
   const rows = [
-    { key: 'onboard', label: C.onboard, r: onboard, marks: [{ t: at(onboard, 'detect_latency'), l: C.detect, tone: 'var(--info)' }, { t: at(onboard, 'ftti_margin'), l: C.base, tone: 'var(--ok)' }] },
-    { key: 'remote', label: C.remote, r: remote, marks: [{ t: at(remote, 'kill_latency'), l: C.accept, tone: 'var(--info)' }, { t: at(remote, 'deact_time'), l: C.base, tone: 'var(--warn)' }] },
+    { key: 'onboard', label: C.onboard, r: onboard, first: { t: at(onboard, 'detect_latency'), l: C.detect }, base: at(onboard, 'ftti_margin') },
+    { key: 'remote', label: C.remote, r: remote, first: { t: at(remote, 'kill_latency'), l: C.accept }, base: at(remote, 'deact_time') },
   ];
-  const ts = [faultAt, faultAt + ftti, ...rows.flatMap((x) => x.marks.map((m) => m.t ?? faultAt))];
+  const ts = [faultAt, faultAt + ftti, ...rows.flatMap((x) => [x.first.t ?? faultAt, x.base ?? faultAt])];
   const t0 = Math.floor(Math.min(...ts) - 2);
   const t1 = Math.ceil(Math.max(...ts) + 2);
-  const W = 640;
-  const L = 120;
-  const x = (t: number) => L + ((t - t0) / (t1 - t0)) * (W - L - 12);
-  const H = 44;
+  // 고정 크기 — 글자가 패널 폭에 따라 커지지 않게(최대 폭 W px)
+  const W = 960;
+  const L = 150;
+  const R = 170; // 오른쪽: 판정 글자 자리
+  const x = (t: number) => L + ((t - t0) / (t1 - t0)) * (W - L - R);
+  const H = 64;
+  const top = 22;
+  const bottom = top + rows.length * H;
   const ticks = Array.from({ length: Math.floor((t1 - t0) / 5) + 1 }, (_, i) => Math.ceil(t0 / 5) * 5 + i * 5).filter((t) => t <= t1);
+  const fmt = (t: number) => t.toFixed(2);
   return (
     <figure style={{ margin: 0 }} data-testid="compare-timeline">
-      <svg viewBox={`0 0 ${W} ${rows.length * H + 40}`} role="img" aria-label={C.title} style={{ width: '100%', height: 'auto', fontSize: 11 }}>
-        <rect x={x(faultAt)} y={4} width={x(faultAt + ftti) - x(faultAt)} height={rows.length * H} fill="var(--ok-soft)" />
-        {[{ t: faultAt, l: C.fault, tone: 'var(--fail)' }, { t: faultAt + ftti, l: C.ftti, tone: 'var(--ink-2)' }].map((m) => (
-          <g key={m.l}>
-            <line x1={x(m.t)} x2={x(m.t)} y1={4} y2={rows.length * H + 4} stroke={m.tone} strokeDasharray="3 3" />
-            <text x={x(m.t) + 3} y={rows.length * H + 16} fill={m.tone}>{`${m.l} ${m.t.toFixed(2)}`}</text>
-          </g>
-        ))}
+      <svg viewBox={`0 0 ${W} ${bottom + 44}`} role="img" aria-label={C.title} style={{ width: '100%', maxWidth: W, height: 'auto', fontSize: 13 }}>
+        {/* FTTI 구간: 고장 시작 → FTTI 끝 — 이 안에 BASE_ONLY에 닿아야 한다 */}
+        <rect x={x(faultAt)} y={top} width={x(faultAt + ftti) - x(faultAt)} height={rows.length * H} fill="var(--ok-soft)" />
+        <text x={(x(faultAt) + x(faultAt + ftti)) / 2} y={top - 6} textAnchor="middle" fill="var(--ok)" fontWeight={600}>
+          {`FTTI ${ftti} s`}
+        </text>
+        <line x1={x(faultAt)} x2={x(faultAt)} y1={top} y2={bottom} stroke="var(--fail)" strokeDasharray="3 3" />
+        <line x1={x(faultAt + ftti)} x2={x(faultAt + ftti)} y1={top} y2={bottom} stroke="var(--ink-2)" strokeDasharray="3 3" />
+        <text x={x(faultAt) - 4} y={bottom + 14} textAnchor="end" fill="var(--fail)">{`${C.fault} ${fmt(faultAt)}`}</text>
+        <text x={x(faultAt + ftti) + 4} y={bottom + 14} textAnchor="start" fill="var(--ink-2)">{`${C.ftti} ${fmt(faultAt + ftti)}`}</text>
         {rows.map((row, i) => {
-          const y = 4 + i * H + H / 2;
-          const base = row.marks[1].t;
+          const y = top + i * H + H / 2;
           const margin = val(row.r, 'ftti_margin');
+          const ok = margin != null && margin >= 0;
+          const tone = ok ? 'var(--ok)' : 'var(--fail)';
           return (
             <g key={row.key} data-testid={`compare-${row.key}`}>
-              <text x={4} y={y + 4} fill="var(--ink)">{row.label}</text>
-              <line x1={x(faultAt)} x2={x(base ?? t1)} y1={y} y2={y} stroke={margin != null && margin >= 0 ? 'var(--ok)' : 'var(--fail)'} strokeWidth={6} strokeLinecap="round" opacity={0.5} />
-              {row.marks.map((m) =>
-                m.t == null ? null : (
-                  <g key={m.l}>
-                    <circle cx={x(m.t)} cy={y} r={5} fill={m.tone} />
-                    <text x={x(m.t)} y={y - 9} textAnchor="middle" fill="var(--ink-2)">{`${m.l} ${m.t.toFixed(2)}`}</text>
-                  </g>
-                ),
+              <text x={4} y={y + 4} fill="var(--ink)" fontWeight={600}>{row.label}</text>
+              <line x1={x(faultAt)} x2={x(row.base ?? t1)} y1={y} y2={y} stroke={tone} strokeWidth={6} strokeLinecap="round" opacity={0.75} />
+              {row.first.t != null && (
+                <g>
+                  <circle cx={x(row.first.t)} cy={y} r={5} fill="var(--info)" />
+                  {/* 첫 표식은 위, BASE_ONLY는 아래 — 가까워도 겹치지 않게 */}
+                  <text x={x(row.first.t)} y={y - 10} textAnchor="middle" fill="var(--ink-2)" stroke="var(--surface)" strokeWidth={4} paintOrder="stroke" >{`${row.first.l} ${fmt(row.first.t)}`}</text>
+                </g>
+              )}
+              {row.base != null && (
+                <g>
+                  <rect x={x(row.base) - 5} y={y - 5} width={10} height={10} fill="var(--ink)" />
+                  <text x={x(row.base)} y={y + 20} textAnchor="middle" fill="var(--ink-2)" stroke="var(--surface)" strokeWidth={4} paintOrder="stroke" >{`${C.base} ${fmt(row.base)}`}</text>
+                </g>
               )}
               {margin != null && (
-                <text x={W - 8} y={y + 16} textAnchor="end" fill={margin >= 0 ? 'var(--ok)' : 'var(--fail)'}>
-                  {C.margin(margin)}
+                <text x={W - R + 12} y={y + 4} fill={tone} fontWeight={600}>
+                  {`${ok ? '✓' : '✗'} ${C.margin(margin)}`}
                 </text>
               )}
             </g>
           );
         })}
         {ticks.map((t) => (
-          <text key={t} x={x(t)} y={rows.length * H + 34} textAnchor="middle" fill="var(--muted)">
+          <text key={t} x={x(t)} y={bottom + 34} textAnchor="middle" fill="var(--muted)">
             {t}
           </text>
         ))}
       </svg>
-      <figcaption className="ds-field__hint">{`${C.axis} · ${onboard.runId} / ${remote.runId}`}</figcaption>
+      <figcaption className="ds-field__hint">{`${C.axis} · ${onboard.runId} / ${remote.runId} · ${C.stepNote}`}</figcaption>
     </figure>
   );
 }
@@ -395,33 +417,30 @@ export function VirtualValidationScreen() {
   return (
     <div className="ds-screen">
       <PageHeader eyebrow="D06-03 · D04-02 · vECU" title={T.title} lead={T.lead} actions={<SimulatorLink featureId="FEAT-00022" />} />
-      <div className="ds-split">
-        <Panel title={T.status} id="vecu" tour="vecu-status" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
-          {status.data && (
-            <KeyValue
-              rows={[
-                { k: T.status, v: <span className="ds-mono">{status.data.available ? T.available : T.unavailable}</span>, note: status.data.reason ?? undefined },
-                { k: 'VECU_DIR', v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', wordBreak: 'break-all' }}>{status.data.dir}</span> },
-              ]}
-            />
-          )}
-        </Panel>
-        <Panel title={T.scenarios} id="scenarios">
-          <DataTable
-            caption={T.scenarios}
-            rows={sc.data?.items ?? []}
-            rowKey={(s) => s.scenarioId}
-            columns={[
-              { key: 'id', header: T.col.scenario, cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.scenarioId}</span> },
-              { key: 'n', header: ko.registry.col.name, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }}>{s.name}</span> },
-              { key: 'r', header: T.col.role, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }}>{T.role[s.role]}</span> },
-              { key: 'v', header: T.validator, cell: (s) => <span className="ds-mono" title={s.validator === 'BASELINE' ? T.baselineNote : undefined}>{s.validator === 'BASELINE' ? '—' : s.validator}</span> },
-              { key: 'p', header: T.purpose, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }}>{s.purpose}</span> },
+      <Panel title={T.status} id="vecu" tour="vecu-status" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
+        {status.data && (
+          <KeyValue
+            rows={[
+              { k: T.status, v: <span className="ds-mono">{status.data.available ? T.available : T.unavailable}</span>, note: status.data.reason ?? undefined },
+              { k: 'VECU_DIR', v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', wordBreak: 'break-all' }}>{status.data.dir}</span> },
             ]}
           />
-        </Panel>
-      </div>
-      <CombinationPanel featureId="FEAT-00022" />
+        )}
+      </Panel>
+      <Panel title={T.scenarios} id="scenarios">
+        <DataTable
+          caption={T.scenarios}
+          rows={sc.data?.items ?? []}
+          rowKey={(s) => s.scenarioId}
+          columns={[
+            { key: 'id', header: T.col.scenario, cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', whiteSpace: 'nowrap' }}>{s.scenarioId}</span> },
+            { key: 'n', header: ko.registry.col.name, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)', display: 'inline-block', minWidth: '16ch' }}>{s.name}</span> },
+            { key: 'r', header: T.col.role, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }}>{T.role[s.role]}</span> },
+            { key: 'v', header: T.validator, cell: (s) => <span className="ds-mono" title={s.validator === 'BASELINE' ? T.baselineNote : undefined}>{s.validator === 'BASELINE' ? '—' : s.validator}</span> },
+            { key: 'p', header: T.purpose, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }}>{s.purpose}</span> },
+          ]}
+        />
+      </Panel>
       <Panel title={T.compare.title} id="compare" tour="virtual-compare">
         <p className="ds-field__hint">{T.compare.lead}</p>
         <CompareTimeline
@@ -430,6 +449,7 @@ export function VirtualValidationScreen() {
           faultAt={sc.data?.items.find((s) => s.role === 'FAULT_ONBOARD')?.params.fault?.at_s ?? 17}
         />
       </Panel>
+      <CombinationPanel featureId="FEAT-00022" />
       <Panel
         title={T.runs}
         id="runs"

@@ -25,6 +25,7 @@ import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile'
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { KillCommandV2 } from './schemas/wire';
+import { ConcludeExperimentBody, CreateExperimentBody, CreateIncidentBody, FieldCaseBody, ImportOrdersBody, RunSyncBody, TranslateLegacyBody } from './rules/ext';
 import { z } from 'zod';
 
 const EmptyBody = z.object({}).strict();
@@ -195,6 +196,35 @@ export const ROUTES: RouteDef[] = [
   { name: 'startPoc', method: 'POST', path: '/api/poc/runs', summary: 'PoC 실행 시작 (이전 PoC 차단 복구 후)', component: 'KERNEL', roles: ['OPERATOR', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER'], body: EmptyBody },
   { name: 'advancePoc', method: 'POST', path: '/api/poc/runs/:id/advance', summary: 'PoC 다음 단계 실행 (진행 중 단계는 완료 확인)', component: 'KERNEL', roles: ['OPERATOR', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER'], body: EmptyBody },
   { name: 'componentActivity', method: 'GET', path: '/api/components/activity', summary: '컴포넌트별 최근 활동 (이벤트·감사)', component: 'KERNEL', query: ['minutes'] },
+  // P10 — 실험·효과(D01-07)
+  { name: 'experiments', method: 'GET', path: '/api/experiments', summary: '실험 목록 (A/B·Shadow)', component: 'D01-07', query: ['policyId', 'status'] },
+  { name: 'experiment', method: 'GET', path: '/api/experiments/:id', summary: '실험 상세 + 효과 추정', component: 'D01-07' },
+  { name: 'createExperiment', method: 'POST', path: '/api/experiments', summary: '실험 등록 — F2 이상은 Shadow만 (FFG-CLS-006)', component: 'D01-07', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: CreateExperimentBody },
+  { name: 'startExperiment', method: 'POST', path: '/api/experiments/:id/start', summary: '실험 시작', component: 'D01-07', roles: ['RELEASE_MANAGER'], body: EmptyBody },
+  { name: 'concludeExperiment', method: 'POST', path: '/api/experiments/:id/conclude', summary: '실험 종료·결정 (채택·기각·연장)', component: 'D01-07', roles: ['RELEASE_MANAGER'], body: ConcludeExperimentBody },
+  // 장애·VOC(D04-05)
+  { name: 'incidents', method: 'GET', path: '/api/incidents', summary: '현장 장애·VOC 이력', component: 'D04-05', query: ['status', 'featureId', 'source'] },
+  { name: 'createIncident', method: 'POST', path: '/api/incidents', summary: '장애·VOC 접수 — SOTIF 트리거면 이상 징후로 (FFG-SOT-003)', component: 'D04-05', roles: ['OPERATOR', 'SYSTEM'], body: CreateIncidentBody },
+  { name: 'importVoc', method: 'POST', path: '/api/incidents/import-voc', summary: '고객센터 VOC 가져오기 (모의 원천)', component: 'D04-05', roles: ['OPERATOR', 'SYSTEM'], body: EmptyBody },
+  // 데이터 동기화(D05-02 · IF-02·03·12)
+  { name: 'syncTargets', method: 'GET', path: '/api/sync/targets', summary: '동기화 대상 (시장 구분 — CN 국외 이전 보류, FFG-TEL-005)', component: 'D05-02' },
+  { name: 'syncRuns', method: 'GET', path: '/api/sync/runs', summary: '동기화·대사 실행 이력', component: 'D05-02', query: ['targetId'] },
+  { name: 'runSync', method: 'POST', path: '/api/sync/runs', summary: '동기화·대사 실행', component: 'D05-02', roles: ['OPERATOR', 'SYSTEM', 'VARIANT_OWNER'], body: RunSyncBody },
+  // Legacy 연계(D05-03 · IF-12)
+  { name: 'legacyMappings', method: 'GET', path: '/api/legacy/mappings', summary: '레거시 옵션 코드 ↔ FEAT 매핑', component: 'D05-03' },
+  { name: 'legacyOrders', method: 'GET', path: '/api/legacy/orders', summary: '해외공장 주문 해석 결과', component: 'D05-03', query: ['plant'] },
+  { name: 'importPlantOrders', method: 'POST', path: '/api/legacy/orders/import', summary: '해외공장 주문 가져오기 (IF-12) → 옵션 코드 해석', component: 'D05-03', roles: ['OPERATOR', 'SYSTEM'], body: ImportOrdersBody },
+  // Legacy-SDV(D05-07)
+  { name: 'legacyVehicles', method: 'GET', path: '/api/legacy-sdv/vehicles', summary: '비SDV(레거시) 차량', component: 'D05-07' },
+  { name: 'translateLegacy', method: 'POST', path: '/api/legacy-sdv/translate', summary: 'Feature 켜기·끄기 → 딜러 코딩 계획 (F2 이상 거부)', component: 'D05-07', roles: ['OPERATOR', 'VARIANT_OWNER'], body: TranslateLegacyBody },
+  // 현장 지원 포털(D05-05)
+  { name: 'fieldVehicle', method: 'GET', path: '/api/field/vehicles/:vin', summary: '현장 지원 — 차량 종합 조회', component: 'D05-05', sample: { vin: 'ego-01' } },
+  { name: 'createFieldCase', method: 'POST', path: '/api/field/cases', summary: '현장 접수 → 장애·VOC(D04-05)', component: 'D05-05', roles: ['OPERATOR'], body: FieldCaseBody },
+  // 외부 연계 모의 어댑터
+  { name: 'integrationSystems', method: 'GET', path: '/api/integrations/systems', summary: 'IF-01~13 연결 현황 (모의·실연동·호출 수)', component: 'D05-01' },
+  { name: 'almRequirements', method: 'GET', path: '/api/integrations/alm/requirements', summary: 'IF-01 ALM 요구사항 (Feature Version별)', component: 'D01-01', query: ['featureId', 'version'], sample: { featureId: 'FEAT-00022', version: '1.0.0' } },
+  { name: 'supplierDeliveries', method: 'GET', path: '/api/integrations/supplier/deliveries', summary: 'IF-08 협력사 SW 납품', component: 'D05-01', query: ['supplier'] },
+  { name: 'otelSpans', method: 'GET', path: '/api/integrations/otel/spans', summary: 'IF-11 OpenTelemetry 수집기 (모의) — 평가·이벤트 span', component: 'D04-03', query: ['name', 'limit'] },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

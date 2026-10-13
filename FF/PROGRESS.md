@@ -3,6 +3,13 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## P10·P11 진행 (2026-10-13 시작 — worktree `../2026-06-04_Feature_Platform-p10`, 브랜치 `feat/p10`)
+> 표준 보고서 세션(ffp-standards-implementation-plan)이 같은 브랜치·작업 트리에서 WP 작업 중 → P10은 별도 worktree에서 하고 단계마다 feat/v081-integration에 merge(merge 전 알림). e2e 포트 9121/9122, 마이그레이션 020~029(표준 세션 017~019·030~). P11 마감은 WP8(D06-11) 뒤.
+- [ ] **A 컴포넌트 6 + IF 모의 어댑터** — D01-07 실험·효과(F2 이상 A/B 거부·Shadow만, `@rule FFG-CLS-006`), D04-05 장애·VOC(SOTIF 트리거 → 이상 징후 FIELD, `@rule FFG-SOT-003`, 차단은 v2 요청·2인 승인), D05-02 데이터 동기화(IF-02·03·12 대사, 시장 구분·CN 국외 이전 보류 `@rule FFG-TEL-005`), D05-03 Legacy 연계(레거시 옵션 코드 ↔ FEAT, 해외공장 주문 IF-12), D05-05 현장 지원 포털(VIN 종합 조회·현장 접수 → D04-05), D05-07 Legacy-SDV(비SDV 차량은 딜러 코딩, F2 이상 거부). IF 모의: IF-01 ALM·02 기준정보·03 MDM/DW·08 Supplier·11 OTel·12 해외공장 + 외부 연계 현황 v2(`/integration/connectors` 대체). D06-11은 WP8(표준 세션) 담당.
+- [ ] **B OpenFeature** — OF-5 OTel hook(평가 span → IF-11), OF-6 차량 내장 provider(서명 번들 로컬 평가, 서버 판단과 대조), OF-7 flag 매니페스트·기본값 규율(정책 safeDefault·OpenFeature 기본값 일치 검사, 하네스), **OpenFeature 범위 화면**(OF-1~7 상태·근거·엔드포인트·SDK·매니페스트 — 사용자 요청).
+- [ ] **C 레거시 정리** — FEAT-BDC 37 → 0, rawColors 818 → 0(3D 장면 재질 색은 장면 팔레트 토큰 모듈로), 레거시 axe → 0. "(BDC 데모)" 드릴다운은 v2 대체가 있으면 삭제, 메뉴 레거시 화면은 v2로 재작성.
+- [ ] **D P11 마감** — conformance --strict 42/42(D06-11 WP8 필요), 래칫 0, 시각 기준 확정, 문서(IA·OpenAPI·README).
+
 ## 다음 세션 시작점
 - **국제표준 보고서 v1.1 실제 개발 WP5부터**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1·WP0·WP1·WP3·WP4 완료. 화면 확인: `/learn`, `/_design`, `/features?f=F3`, `/features/FEAT-00022/1.0.0?tab=safety`(UX 검토 사진 `node e2e/scripts/shot-safety.mjs` → `e2e/shots/safety-*`).
 - **WP1 이후 규칙**: Gate G2 이후 PASS는 안전 분류 확정(SAFETY_OFFICER 개인 서명)이 전제(FFG-CLS-001), G1은 조합 위반(blocking)만 막는다. 새 시험·e2e에서 G2 이상을 판정하면 먼저 `confirmSafety(http, id, ver)`(backend `test/helpers.ts`) 또는 `POST …/safety/confirm`. 초안 시드는 `tools/dataset/safety-infer.ts` → `data/fixtures/safety/profiles.json`(80개, FEAT-00022@1.0.0만 확정 F3·DC2·R1). standards 래칫 구현·시험 13·13, TC-FF 3.

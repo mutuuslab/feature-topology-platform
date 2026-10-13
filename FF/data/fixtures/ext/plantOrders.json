@@ -1,0 +1,7 @@
+[
+  { "orderId": "PO-TMA-26100001", "plant": "TMA", "market": "EU", "vin": "TMA-NX4-1001", "vehicleModel": "NX4 PE", "options": ["OPT-FSD3", "OPT-ACCL", "OPT-ISLA", "OPT-DMS2"] },
+  { "orderId": "PO-TMA-26100002", "plant": "TMA", "market": "EU", "vin": "TMA-NX4-1002", "vehicleModel": "NX4 PE", "options": ["OPT-FSD3", "OPT-XHUD"] },
+  { "orderId": "PO-HMA-26100001", "plant": "HMA", "market": "US", "vin": "HMA-NX4-1001", "vehicleModel": "NX4 PE", "options": ["OPT-FSD3", "OPT-DKEY", "OPT-RSE1"] },
+  { "orderId": "PO-HMA-26100002", "plant": "HMA", "market": "US", "vin": "HMA-NX4-1002", "vehicleModel": "NX4 PE", "options": ["OPT-ACCL", "OPT-RMST"] },
+  { "orderId": "PO-HMGC-26100001", "plant": "HMGC", "market": "CN", "vin": "HMGC-NX4-1001", "vehicleModel": "NX4 PE", "options": ["OPT-FSD3", "OPT-CNAV"] }
+]

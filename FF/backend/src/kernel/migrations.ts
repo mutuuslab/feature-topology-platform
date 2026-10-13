@@ -277,4 +277,19 @@ CREATE TRIGGER vehicle_envelope_no_update BEFORE UPDATE ON vehicle_envelope BEGI
 CREATE TRIGGER vehicle_envelope_no_delete BEFORE DELETE ON vehicle_envelope BEGIN SELECT RAISE(ABORT, 'vehicle_envelope는 추가만 가능'); END;
 `,
   },
+  {
+    // P10 — 실험(D01-07)·장애·VOC(D04-05)·동기화 실행(D05-02)·해외공장 주문(D05-03)·OTel 수집기 모의(IF-11)
+    name: '020_p10_ext',
+    sql: `
+CREATE TABLE experiment (experiment_id TEXT PRIMARY KEY, policy_id TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX experiment_policy ON experiment(policy_id);
+CREATE TABLE incident (incident_id TEXT PRIMARY KEY, feature_id TEXT, status TEXT NOT NULL, source TEXT NOT NULL, external_ref TEXT, doc TEXT NOT NULL);
+CREATE UNIQUE INDEX incident_external ON incident(source, external_ref) WHERE external_ref IS NOT NULL;
+CREATE TABLE sync_run (run_id TEXT PRIMARY KEY, target_id TEXT NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX sync_run_target ON sync_run(target_id, at);
+CREATE TABLE plant_order (order_id TEXT PRIMARY KEY, plant TEXT NOT NULL, vin TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE otel_span (id INTEGER PRIMARY KEY AUTOINCREMENT, trace_id TEXT NOT NULL, name TEXT NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX otel_span_name ON otel_span(name, id);
+`,
+  },
 ];

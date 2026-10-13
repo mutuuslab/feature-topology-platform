@@ -63,7 +63,7 @@ export class AnomalyService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.events.stream(['vehicle.fault.reported', 'vehicle.readback', 'publication.closed', 'kill.issued']).subscribe((e) => {
+    this.events.stream(['vehicle.fault.reported', 'vehicle.readback', 'publication.closed', 'kill.issued', 'incident.sotif.triggered']).subscribe((e) => {
       try {
         this.on(e);
       } catch (err) {
@@ -80,6 +80,8 @@ export class AnomalyService implements OnModuleInit {
       return;
     }
     if (e.type === 'vehicle.fault.reported') return this.signal({ kind: 'FEATURE_FAULT', featureId: p.featureId, vin: e.aggregate, code: p.code, severity: p.severity, at: e.at, ref: e.id });
+    // 현장 장애·VOC의 SOTIF 트리거(D04-05, FFG-SOT-003) — 신호의 ref는 장애 ID(장애 이력이 이상 건을 거꾸로 찾는다)
+    if (e.type === 'incident.sotif.triggered') return this.signal({ kind: 'FIELD_SOTIF', featureId: p.featureId, vin: p.vin ?? null, code: p.category, severity: p.severity, at: e.at, ref: p.incidentId });
     const pub = p.publicationId ? this.publications.get(p.publicationId) : undefined;
     if (!pub) return;
     if (e.type === 'vehicle.readback' && p.rejectReason)

@@ -1,0 +1,11 @@
+[
+  { "legacyCode": "OPT-FSD3", "system": "PLANT-ERP", "description": "Forward Safe Distance Lv3", "featureId": "FEAT-00022", "note": "EU·US 사양은 각 시장 Feature(FEAT-00025·00028)로 분기 예정" },
+  { "legacyCode": "OPT-ACCL", "system": "PLANT-ERP", "description": "Acceleration Limiter", "featureId": "FEAT-00023", "note": null },
+  { "legacyCode": "OPT-ISLA", "system": "PLANT-ERP", "description": "Intelligent Speed Limit Assist", "featureId": "FEAT-00015", "note": null },
+  { "legacyCode": "OPT-DMS2", "system": "PLANT-ERP", "description": "Driver Monitoring Gen2", "featureId": "FEAT-00010", "note": null },
+  { "legacyCode": "OPT-DKEY", "system": "PLANT-ERP", "description": "Smartphone Digital Key", "featureId": "FEAT-00011", "note": null },
+  { "legacyCode": "OPT-RSE1", "system": "PLANT-ERP", "description": "Rear Seat Entertainment Gen1", "featureId": "FEAT-00017", "note": null },
+  { "legacyCode": "OPT-RMST", "system": "DEALER-DMS", "description": "Remote Start Gen1 (legacy)", "featureId": "FEAT-00018", "note": "레거시 원격 시동 — 딜러 코딩 대상" },
+  { "legacyCode": "OPT-SCC2", "system": "DEALER-DMS", "description": "Smart Cruise Control", "featureId": "FEAT-00005", "note": null },
+  { "legacyCode": "OPT-SVM1", "system": "DEALER-DMS", "description": "Surround View Monitor", "featureId": "FEAT-00003", "note": null }
+]

@@ -27,6 +27,14 @@ describe('수신 검사 6단계 (13.3.1)', () => {
     expect(checkStatusReport(active, CTX).violation).toMatchObject({ step: 'HISTORY', code: 'ACTIVE_WITHOUT_RESTORE' });
     expect(checkStatusReport(active, { ...CTX, lastCommand: { request: 'restore', vehicleSeq: 12 } }).accepted).toBe(true);
   });
+  it('회귀: 비활성화를 거부한 차량의 ACTIVE 보고는 해제 위반이 아니다 — 거부 코드 조치(보안 이벤트)로 넘긴다, 받아들인 적이 있으면 순번을 잃어도 위반', () => {
+    // GLEO 실연동에서 서명 검증 실패(SIGNATURE_INVALID)를 보고한 차량이 ACTIVE_WITHOUT_RESTORE("Kill이 풀림")로 잘못 분류됐다
+    const rejected = { ...report(), state: 'ACTIVE', hmi: 'NONE', edr_aligned_state: 'AVAILABLE', feature_weight_permille: 1000, request_result: 'REJECTED', reject_code: 'SIGNATURE_INVALID', vehicle_seq: 0 };
+    expect(checkStatusReport(rejected, CTX)).toMatchObject({ accepted: true, violation: null, action: { kind: 'SECURITY_EVENT' } });
+    // 이미 받아들였다고 보고한 뒤(acknowledged) 재부팅으로 순번까지 잃고 ACTIVE — TC-FF-58 그대로 위반
+    const lost = { ...rejected, request_result: 'NONE', reject_code: undefined, reason: { category: 'SAFETY', source: 'STARTUP' } };
+    expect(checkStatusReport(lost, { ...CTX, lastCommand: { request: 'deactivate', vehicleSeq: 11, acknowledged: true } }).violation).toMatchObject({ code: 'ACTIVE_WITHOUT_RESTORE' });
+  });
   it('6 영속 — 받아들이되 저장 실패는 같은 명령 재발행 조치', () => {
     const r = checkStatusReport({ ...report(), request_result: 'ACCEPTED_NOT_DURABLE', durable: false, persistence: 'PENDING' }, CTX);
     expect(r).toMatchObject({ accepted: true, action: { kind: 'REISSUE_SAME' } });

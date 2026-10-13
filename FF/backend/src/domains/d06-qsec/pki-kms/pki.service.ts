@@ -1,7 +1,7 @@
 // 인증서·키 관리 PKI/KMS (D06-10) — 게시본 서명 키(Ed25519, node:crypto). 개인키는 데모용으로 DB에 두며
 // 실제 KMS/HSM 연동은 이 서비스 뒤로 숨긴다. 차량은 공개키(신뢰 앵커)로만 검증한다.
 import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Post } from '@nestjs/common';
-import { canonicalJson, KeyRotateBody, type KeyPurpose, type Signature } from '@ff/contracts';
+import { canonicalJson, COMMAND_KEY_PURPOSE, KeyRotateBody, type KeyPurpose, type Signature } from '@ff/contracts';
 import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, sign, verify } from 'node:crypto';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
@@ -84,6 +84,16 @@ export class PkiService implements OnModuleInit {
         publicKeyPem: r.public_pem,
         fingerprint: 'sha256:' + createHash('sha256').update(createPublicKey(r.public_pem).export({ type: 'spki', format: 'der' })).digest('hex').slice(0, 16),
       }));
+  }
+
+  /**
+   * 차량 신뢰 저장소 프로비저닝(모의 공장) — 차량 명령 용도 키(kill·restore·activate·sync)를 모두 보장하고 그 공개키를 돌려준다.
+   * 용도 키는 처음 쓸 때 만들어지므로, 차량에 넣을 신뢰 앵커는 이 묶음으로 미리 받는다(모르는 kid의 봉투는 Guard가 SIGNATURE_INVALID).
+   */
+  vehicleTrust(): KeyInfo[] {
+    const purposes = new Set<KeyPurpose>(Object.values(COMMAND_KEY_PURPOSE));
+    for (const p of purposes) this.ensure(p);
+    return this.keys().filter((k) => k.status === 'ACTIVE' && purposes.has(k.purpose));
   }
 
   /** 게시본 서명 — 정규 JSON의 sha256을 그 용도의 활성 키로 서명 */

@@ -59,6 +59,16 @@ export class StatusIngestService implements OnModuleInit {
   }
 
   /** 이 차량에 전개된 Version — 마지막 명령의 Version, 없으면 RELEASED 최신 */
+  /** 차량이 이 명령(vehicle_seq)을 받아들였다고 이미 보고했는가 — 수락된 보고 가운데 거부가 아닌 것의 vehicle_seq ≥ 발급 */
+  private acknowledged(vin: string, featureId: string, vehicleSeq: number): boolean {
+    return !!this.db.get(
+      "SELECT 1 FROM status_report WHERE vin = ? AND feature_id = ? AND accepted = 1 AND json_extract(doc, '$.request_result') <> 'REJECTED' AND json_extract(doc, '$.vehicle_seq') >= ? LIMIT 1",
+      vin,
+      featureId,
+      vehicleSeq,
+    );
+  }
+
   private expectedVersion(vin: string, featureId: string): string | null {
     const last = this.envelopes.last(vin, featureId);
     if (last) return last.version;
@@ -92,7 +102,7 @@ export class StatusIngestService implements OnModuleInit {
       authOk,
       lastReportSeq,
       expectedVersion: featureId ? this.expectedVersion(vin, featureId) : null,
-      lastCommand: last ? { request: last.request, vehicleSeq: last.vehicleSeq } : null,
+      lastCommand: last ? { request: last.request, vehicleSeq: last.vehicleSeq, acknowledged: this.acknowledged(vin, featureId!, last.vehicleSeq) } : null,
     });
     // 가명은 이 차량의 것이어야 한다(채널 인증 VIN과 보고 본문의 결합)
     if (result.accepted && r.vehicle_pseudonym !== vehiclePseudonym(vin))

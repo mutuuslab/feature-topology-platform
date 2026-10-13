@@ -4,7 +4,7 @@
 Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal' });
 import { afterEach, describe, expect, it } from 'vitest';
 import { authBlock, jcs, statusAuthCanonical, type KillCommandV2 } from '@ff/contracts';
-import { targetHashOf } from '../../src/kernel/crypto';
+import { targetHashOf, vehiclePseudonym } from '../../src/kernel/crypto';
 import { Clock } from '../../src/kernel/clock';
 import { Scheduler } from '../../src/kernel/scheduler';
 import { HsmService } from '../../src/domains/d06-qsec/pki-kms/hsm.service';
@@ -80,6 +80,22 @@ describe('수신 검사 (FFG-TEL-003 · TC-FF-24)', () => {
     const signed = { ...reboot, state_auth: hsm.cmac('ego-01', reboot.key_epoch, Buffer.from(statusAuthCanonical(reboot))) };
     expect((await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('ego-01')).send(signed).expect(200)).body.violation).toMatchObject({ step: 'HISTORY', code: 'ACTIVE_WITHOUT_RESTORE' });
     expect((await anomalies(http, 'SECURITY'))[0].reasons).toContain('상태 보고 검사 위반: ACTIVE_WITHOUT_RESTORE');
+  });
+
+  it('회귀: 비활성화를 거부한(받지 못한) 차량의 ACTIVE 보고는 해제 위반이 아니고, 받아들였던 차량은 순번을 잃어도 위반', async () => {
+    // GLEO 실연동에서 SIGNATURE_INVALID로 거부한 차량의 ACTIVE 보고가 ACTIVE_WITHOUT_RESTORE("Kill이 풀림")로 잘못 분류됐다
+    const { http, advance, hsm } = await boot();
+    const sign = (vin: string, r: Record<string, any>) => ({ ...r, state_auth: hsm.cmac(vin, r.key_epoch, Buffer.from(statusAuthCanonical(r))) });
+    const { k, last } = await killV2(http, { ...KILL, vins: ['ego-01', 'KMH-NX4-0003'] }).then(async (k) => (advance(8_000), { k, last: (await http().get('/api/vehicles/ego-01/status').expect(200)).body.features[0].report }));
+    const { state_auth: _a, ...base } = last;
+    const active = { ...base, state: 'ACTIVE', hmi: 'NONE', edr_aligned_state: 'AVAILABLE', feature_weight_permille: 1000, vehicle_seq: 0 };
+    // 단절 차량(KMH-NX4-0003)이 봉투를 거부 — 받아들인 적 없음
+    const rejected = sign('KMH-NX4-0003', { ...active, vehicle_pseudonym: vehiclePseudonym('KMH-NX4-0003'), request_result: 'REJECTED', reject_code: 'SIGNATURE_INVALID', report_seq: 65537 });
+    expect((await http().post('/vehicle/v1/KMH-NX4-0003/status').set(VEHICLE('KMH-NX4-0003')).send(rejected).expect(200)).body).toMatchObject({ accepted: true, violation: null });
+    expect((await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body.delivery.confirmed).toBe(1);
+    // ego-01은 DISABLED까지 받아들였다 — 재부팅으로 vehicle_seq까지 잃은 ACTIVE도 위반
+    const lost = sign('ego-01', { ...active, reason: { category: 'SAFETY', source: 'STARTUP' }, request_result: 'NONE', report_seq: ((last.report_seq >>> 16) + 1) * 65536 + 1 });
+    expect((await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('ego-01')).send(lost).expect(200)).body.violation).toMatchObject({ step: 'HISTORY', code: 'ACTIVE_WITHOUT_RESTORE' });
   });
 });
 

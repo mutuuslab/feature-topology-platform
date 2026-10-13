@@ -26,7 +26,7 @@ export interface StatusCheckContext {
   /** 4 — 이 차량에 전개된 Feature Version(없으면 null) */
   expectedVersion: string | null;
   /** 5 — 이 차량·Feature에 마지막으로 발급한 명령(봉투) */
-  lastCommand: { request: 'deactivate' | 'restore' | 'activate' | 'sync'; vehicleSeq: number } | null;
+  lastCommand: { request: 'deactivate' | 'restore' | 'activate' | 'sync'; vehicleSeq: number; /** 차량이 이 명령을 받아들였다고 이미 보고했는가(수락된 보고의 vehicle_seq ≥ 발급) */ acknowledged?: boolean } | null;
 }
 
 export interface StatusCheckResult {
@@ -61,8 +61,10 @@ export function checkStatusReport(report: unknown, ctx: StatusCheckContext): Sta
     if (DEACT_STATES.includes(r.state) && last?.request !== 'deactivate') return fail('HISTORY', 'STATE_WITHOUT_COMMAND', `${r.state}을(를) 원격 사유로 보고했지만 이 차량에 비활성화 명령이 없습니다`);
     if (last && r.vehicle_seq > last.vehicleSeq) return fail('HISTORY', 'SEQ_AHEAD', `vehicle_seq ${r.vehicle_seq} > 발급 ${last.vehicleSeq} — 플랫폼이 보내지 않은 명령`);
   }
-  // 해제(restore) 없이 ACTIVE — 재부팅·SW 업데이트로 Kill이 풀렸다(FFG-ADS-004·DEAC-007)
-  if (r.state === 'ACTIVE' && last?.request === 'deactivate') return fail('HISTORY', 'ACTIVE_WITHOUT_RESTORE', '비활성화 뒤 복원 명령 없이 ACTIVE를 보고했습니다 — 안전 Kill이 풀림');
+  // 해제(restore) 없이 ACTIVE — 재부팅·SW 업데이트로 Kill이 풀렸다(FFG-ADS-004·DEAC-007). 차량이 그 비활성화를 받아들인 뒤에만 위반이다:
+  // 거부했거나 아직 못 받은 차량(보고 vehicle_seq < 발급)의 ACTIVE는 사실 그대로 — 거부는 거부 코드 조치로, 미적용은 회신 기한 감시로 다룬다
+  const tookDeactivation = !!last && (r.vehicle_seq >= last.vehicleSeq || !!last.acknowledged);
+  if (r.state === 'ACTIVE' && last?.request === 'deactivate' && tookDeactivation) return fail('HISTORY', 'ACTIVE_WITHOUT_RESTORE', '비활성화 뒤 복원 명령 없이 ACTIVE를 보고했습니다 — 안전 Kill이 풀림');
   const action = r.persistence === 'FAILED' ? reasonAction('REJECTED', 'NV_WRITE_FAILED') : reasonAction(r.request_result, r.reject_code ?? 'NONE');
   return { accepted: true, violation: null, action };
 }

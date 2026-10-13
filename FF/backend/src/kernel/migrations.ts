@@ -227,4 +227,20 @@ ALTER TABLE entitlement ADD COLUMN source TEXT NOT NULL DEFAULT 'DEMO';
 CREATE INDEX entitlement_catalog ON entitlement(catalog_id, source);
 `,
   },
+  {
+    // 보고서 v1.1 WP0 커널 신뢰 기반 — 감사 해시 체인(FFG-PLT-015)·서명 키 용도/epoch(FFG-SEC-002)·승인자 개인 키(FFG-PLT-005)·소프트웨어 HSM 비밀
+    // 감사 행은 추가만: 삭제는 언제나, 수정은 해시가 채워진 뒤 막는다(해시 없는 옛 행의 채우기만 허용 — AuditService.onModuleInit).
+    name: '012_trust',
+    sql: `
+ALTER TABLE audit ADD COLUMN prev_hash TEXT;
+ALTER TABLE audit ADD COLUMN hash TEXT;
+CREATE TRIGGER audit_no_delete BEFORE DELETE ON audit BEGIN SELECT RAISE(ABORT, 'audit is append-only (FFG-PLT-015)'); END;
+CREATE TRIGGER audit_no_update BEFORE UPDATE ON audit WHEN OLD.hash IS NOT NULL BEGIN SELECT RAISE(ABORT, 'audit is append-only (FFG-PLT-015)'); END;
+ALTER TABLE pki_key ADD COLUMN purpose TEXT NOT NULL DEFAULT 'policy';
+ALTER TABLE pki_key ADD COLUMN epoch INTEGER NOT NULL DEFAULT 1;
+CREATE INDEX pki_key_purpose ON pki_key(purpose, status);
+CREATE TABLE approver_key (user_id TEXT PRIMARY KEY, kid TEXT NOT NULL UNIQUE, status TEXT NOT NULL, created_at TEXT NOT NULL, public_pem TEXT NOT NULL, private_pem TEXT NOT NULL);
+CREATE TABLE hsm_secret (name TEXT NOT NULL, epoch INTEGER NOT NULL, secret TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (name, epoch));
+`,
+  },
 ];

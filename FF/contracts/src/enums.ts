@@ -59,7 +59,7 @@ export type CatalogType = z.infer<typeof CatalogType>;
 /** 플랫폼 역할 (표 6) — 데모 IAM의 X-Actor-Role 값 */
 export const ROLES = [
   'FEATURE_AUTHOR', // Feature 작성자
-  'SAFETY_OFFICER', // 기능안전/보안 담당자
+  'SAFETY_OFFICER', // 기능안전 담당자 — 보고서 v1.1의 Safety Manager(FSM)
   'VARIANT_OWNER', // 차량 사양/Variant 담당자
   'FEATURE_APPROVER', // Feature 승인자
   'IMPLEMENTER', // 구현 담당자
@@ -69,6 +69,9 @@ export const ROLES = [
   'PRODUCT_APPROVER', // 상품 승인자
   'GATE_JUDGE', // Gate 판정자
   'OPERATOR', // 운영자 (긴급 차단·복구)
+  'SECURITY_OFFICER', // 사이버보안 담당자 — 보고서의 CSM (대량 Kill·키 사고)
+  'OPS_LEAD', // 운영 리더 — 보고서의 OPS_LEAD (긴급 차단 2번째 승인)
+  'REGULATORY_OWNER', // 법규 담당 — 보고서의 REGULATORY (형식승인 영향 서명·Profile)
   'AUDITOR', // 운영/감사 조회자 (읽기 전용)
   'SYSTEM', // 시스템(Registry) 자동 전이
   'VEHICLE', // 차량 (차량 발신 요청 채널 — 사람 역할 아님)
@@ -78,7 +81,7 @@ export type Role = z.infer<typeof Role>;
 
 export const ROLE_LABEL: Record<Role, string> = {
   FEATURE_AUTHOR: 'Feature 작성자',
-  SAFETY_OFFICER: '기능안전·보안 담당자',
+  SAFETY_OFFICER: '기능안전 담당자(FSM)',
   VARIANT_OWNER: '차량 사양·Variant 담당자',
   FEATURE_APPROVER: 'Feature 승인자',
   IMPLEMENTER: '구현 담당자',
@@ -88,6 +91,9 @@ export const ROLE_LABEL: Record<Role, string> = {
   PRODUCT_APPROVER: '상품 승인자',
   GATE_JUDGE: 'Gate 판정자',
   OPERATOR: '운영자',
+  SECURITY_OFFICER: '사이버보안 담당자(CSM)',
+  OPS_LEAD: '운영 리더',
+  REGULATORY_OWNER: '법규 담당',
   AUDITOR: '운영·감사 조회자',
   SYSTEM: '시스템',
   VEHICLE: '차량',

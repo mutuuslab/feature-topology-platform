@@ -195,6 +195,27 @@
         }
       }
     },
+    "/api/audit/chain": {
+      "get": {
+        "summary": "감사 해시 체인 무결성 (FFG-PLT-015)",
+        "tags": [
+          "D01-10"
+        ],
+        "operationId": "auditChain",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/features": {
       "get": {
         "summary": "Feature 버전 목록",
@@ -646,7 +667,7 @@
           "D01-01"
         ],
         "operationId": "updateDraft",
-        "description": "허용 역할: Feature 작성자, 기능안전·보안 담당자, 차량 사양·Variant 담당자, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -959,7 +980,7 @@
           "D01-02"
         ],
         "operationId": "judgeGate",
-        "description": "허용 역할: Gate 판정자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Gate 판정자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -3648,12 +3669,96 @@
     },
     "/api/pki/rotate": {
       "post": {
-        "summary": "서명 키 교체 (이전 키는 검증용으로 유지)",
+        "summary": "서명 키 교체 (이전 키는 검증용으로 유지, 용도별)",
         "tags": [
           "D06-10"
         ],
         "operationId": "rotateKey",
-        "description": "허용 역할: 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "policy",
+                      "activate",
+                      "kill",
+                      "restore",
+                      "sync",
+                      "gate"
+                    ],
+                    "default": "policy"
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/pki/hsm": {
+      "get": {
+        "summary": "소프트웨어 HSM — 차량 키 epoch·승인자 키 수",
+        "tags": [
+          "D06-10"
+        ],
+        "operationId": "hsmStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/pki/epoch": {
+      "post": {
+        "summary": "차량 키 epoch 상향 (키 유출 대응, FFG-SEC-002)",
+        "tags": [
+          "D06-10"
+        ],
+        "operationId": "bumpEpoch",
+        "description": "허용 역할: 사이버보안 담당자(CSM), 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -4523,7 +4628,7 @@
           "D03-03"
         ],
         "operationId": "issueKill",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -4683,7 +4788,7 @@
           "D03-04"
         ],
         "operationId": "releaseKill",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5094,7 +5199,7 @@
           "D06-12"
         ],
         "operationId": "acknowledgeAnomaly",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5154,7 +5259,7 @@
           "D06-12"
         ],
         "operationId": "mitigateAnomaly",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5214,7 +5319,7 @@
           "D06-12"
         ],
         "operationId": "dismissAnomaly",
-        "description": "허용 역할: 운영자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5342,7 +5447,7 @@
           "D04-06"
         ],
         "operationId": "acceptFeedback",
-        "description": "허용 역할: Feature 작성자, Gate 판정자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, Gate 판정자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -5693,7 +5798,7 @@
           "KERNEL"
         ],
         "operationId": "startPoc",
-        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -5765,7 +5870,7 @@
           "KERNEL"
         ],
         "operationId": "advancePoc",
-        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전·보안 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",

@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, EventStream, PageHeader, Panel, Segmented, Toolbar, type StreamItem } from '../../design';
+import { AsyncView, ChainStatus, DataTable, EventStream, PageHeader, Panel, Segmented, Toolbar, type StreamItem } from '../../design';
 import { AuditTable } from '../features/FeatureDetail';
 import { when } from '../shared';
 import type { AuditEntry } from '../types';
@@ -15,9 +15,16 @@ export function AuditScreen() {
   const [applied, setApplied] = useState('');
   const q = useApi<{ items: AuditEntry[] }>('audit', { query: { result: result || undefined, target: applied || undefined, limit: 500 } });
   const rows = q.data?.items ?? [];
+  const chain = useApi<{ ok: boolean; verified: number; head: string | null; broken: { id: number; kind: string } | null }>('auditChain');
+  const c = chain.data;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-10 · AUDIT" title={ko.audit.title} lead={ko.audit.lead} />
+      <PageHeader eyebrow="D01-10 · AUDIT" title={ko.audit.title} lead={ko.audit.lead} meta={c && <ChainStatus ok={c.ok} verified={c.verified} head={c.head ?? undefined} />} tour="audit-chain" />
+      {c?.broken && (
+        <p className="ds-stale" role="alert">
+          {ko.audit.chainBroken(c.broken.id, c.broken.kind)}
+        </p>
+      )}
       <Toolbar label={ko.audit.title}>
         <input
           className="ds-input ds-input--mono"

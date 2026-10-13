@@ -10,6 +10,9 @@ export class AuditHistoryService {
   list(q: AuditQuery) {
     return this.audit.list(q);
   }
+  chain() {
+    return this.audit.verifyChain();
+  }
 }
 
 @Controller('api/audit')
@@ -19,5 +22,10 @@ export class AuditHistoryController {
   @Get()
   list(@Query('target') target?: string, @Query('actorId') actorId?: string, @Query('result') result?: AuditResult, @Query('limit') limit?: string) {
     return { items: this.history.list({ target, actorId, result, limit: limit ? Number(limit) : undefined }) };
+  }
+
+  @Get('chain')
+  chain() {
+    return this.history.chain();
   }
 }

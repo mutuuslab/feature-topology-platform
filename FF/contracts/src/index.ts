@@ -6,6 +6,7 @@ export * from './rules/precheck';
 export * from './rules/lifecycle';
 export * from './rules/rejudge';
 export * from './rules/canonical';
+export * from './rules/jcs';
 export * from './routes';
 export * from './rules/catalog';
 export * from './rules/topology';

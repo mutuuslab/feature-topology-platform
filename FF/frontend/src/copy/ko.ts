@@ -209,8 +209,9 @@ export const ko = {
   },
   audit: {
     title: '감사 이력',
-    lead: '모든 등록·변경·승인·거부·실패를 남깁니다 — 거부된 시도(DENIED)와 실패(FAILED)도 기록됩니다.',
+    lead: '모든 등록·변경·승인·거부·실패를 남깁니다 — 거부된 시도(DENIED)와 실패(FAILED)도 기록됩니다. 기록은 추가만 되고, 행마다 앞 행의 해시를 이어 받아 위변조를 검출합니다(FFG-PLT-015).',
     result: '결과',
+    chainBroken: (id: number, kind: string) => `${id}번 행에서 체인이 끊겼습니다 — ${kind === 'hash' ? '내용이 바뀌었습니다' : '앞 행이 사라지거나 순서가 바뀌었습니다'}`,
     col: { at: '시각', actor: '행위자', role: '역할', action: '행위', target: '대상', result: '결과', reason: '사유' },
   },
   events: {
@@ -514,6 +515,9 @@ export const ko = {
     sod: '직무 분리 규칙',
     denials: '최근 거부 시도',
     me: '현재 행위자',
+    reportRoles: '보고서 승인 역할 대응 (kill_command v2 approvals[].role)',
+    reportRolesLead: '보고서 v1.1의 승인 역할을 플랫폼 역할로 맡습니다. 요청자는 같은 명령을 승인할 수 없습니다(FFG-PLT-016).',
+    holders: '맡는 데모 사용자',
     col: { action: '작업', component: '컴포넌트', rule: '규칙', subject: '대상', at: '시각', actor: '행위자', role: '역할', target: '대상' },
   },
   variant: {

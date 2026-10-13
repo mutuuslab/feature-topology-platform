@@ -18,7 +18,7 @@ import {
   ValidateCompositionBody,
 } from './schemas/api';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
-import { KeyRotateBody, KillCreateBody, ReadbackBody } from './schemas/ops';
+import { EpochBumpBody, KeyRotateBody, KillCreateBody, ReadbackBody } from './schemas/ops';
 import { RunVirtualBody } from './rules/virtual';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
@@ -56,6 +56,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit'] },
   { name: 'eventStream', method: 'GET', path: '/api/events/stream', summary: '이벤트 실시간 스트림 (SSE)', component: 'D04-04', query: ['types'], stream: true },
   { name: 'audit', method: 'GET', path: '/api/audit', summary: '감사 이력', component: 'D01-10', query: ['target', 'actorId', 'result', 'limit'] },
+  { name: 'auditChain', method: 'GET', path: '/api/audit/chain', summary: '감사 해시 체인 무결성 (FFG-PLT-015)', component: 'D01-10' },
 
   // Feature Registry (D01-01)
   { name: 'listFeatures', method: 'GET', path: '/api/features', summary: 'Feature 버전 목록', component: 'D01-01', query: ['q', 'lifecycle', 'country', 'vehicleModel', 'latestOnly'] },
@@ -124,7 +125,9 @@ export const ROUTES: RouteDef[] = [
   { name: 'ofrepBulk', method: 'POST', path: '/ofrep/v1/evaluate/flags', summary: 'OFREP 전체 flag 평가 (ETag)', component: 'D05-01', body: OfrepBody, public: true },
   // 배포·차단 전달 (PoC ④⑤⑥) — 서명 게시본 → 파이프라인 → 차량 런타임·GLEO → 회신 집계
   { name: 'pkiKeys', method: 'GET', path: '/api/pki/keys', summary: '서명 키 (공개키·지문·유효기간)', component: 'D06-10' },
-  { name: 'rotateKey', method: 'POST', path: '/api/pki/rotate', summary: '서명 키 교체 (이전 키는 검증용으로 유지)', component: 'D06-10', roles: ['SAFETY_OFFICER'], body: KeyRotateBody },
+  { name: 'rotateKey', method: 'POST', path: '/api/pki/rotate', summary: '서명 키 교체 (이전 키는 검증용으로 유지, 용도별)', component: 'D06-10', roles: ['SAFETY_OFFICER'], body: KeyRotateBody },
+  { name: 'hsmStatus', method: 'GET', path: '/api/pki/hsm', summary: '소프트웨어 HSM — 차량 키 epoch·승인자 키 수', component: 'D06-10' },
+  { name: 'bumpEpoch', method: 'POST', path: '/api/pki/epoch', summary: '차량 키 epoch 상향 (키 유출 대응, FFG-SEC-002)', component: 'D06-10', roles: ['SECURITY_OFFICER', 'SAFETY_OFFICER'], body: EpochBumpBody },
   { name: 'publications', method: 'GET', path: '/api/publications', summary: '서명 게시본 (정책·차단·복구) 목록', component: 'D06-08', query: ['kind', 'status'] },
   { name: 'publicationDetail', method: 'GET', path: '/api/publications/:id', summary: '게시본 — 서명 검증·차량별 회신·외부 연계 호출', component: 'D06-08' },
   { name: 'integrationCalls', method: 'GET', path: '/api/integrations/calls', summary: '외부 연계 호출 기록 (IF-05·IF-13, 멱등 키)', component: 'D04-01', query: ['ifId', 'key'] },

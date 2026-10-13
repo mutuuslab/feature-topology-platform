@@ -1,4 +1,4 @@
-// GLEO 와이어 v2 (GLEO_WIRE=v2, 보고서 v1.1 부록 D·13.3.1) — 브로커로 차량마다 서명된 kill_command v2 봉투를 보내고,
+// GLEO 와이어 v2 (보고서 v1.1 부록 D·13.3.1) — 브로커로 차량마다 서명된 kill_command v2 봉투를 보내고,
 // 차량이 state_auth로 서명한 status_report v2를 6단계 수신 검사에 넘긴다. 이 시험은 브로커 없이 어댑터를 직접 구동한다
 // (보낸 메시지는 기록만, 차량 역할은 시험이 플랫폼 계약으로 수행 — FF_IMP 실연동은 gleo.ws.spec).
 // FFG-PLT-012 · FFG-TEL-003 · FFG-VEH-002
@@ -6,7 +6,6 @@ Object.assign(process.env, {
   FF_SCHEDULER: "manual",
   GLEO_MODE: "ws",
   GLEO_URL: "ws://127.0.0.1:9",
-  GLEO_WIRE: "v2",
 });
 import { afterAll, describe, expect, it } from "vitest";
 import {
@@ -24,7 +23,7 @@ import { bootApp, killV2 } from "../helpers";
 let close: (() => Promise<void>) | null = null;
 afterAll(async () => {
   await close?.();
-  for (const k of ["FF_SCHEDULER", "GLEO_MODE", "GLEO_URL", "GLEO_WIRE"])
+  for (const k of ["FF_SCHEDULER", "GLEO_MODE", "GLEO_URL"])
     delete process.env[k];
 });
 

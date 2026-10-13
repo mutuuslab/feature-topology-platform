@@ -17,13 +17,15 @@ import { PipelineController, PipelineService } from './d04-ops/pipeline-link/pip
 import { ReadbackBus, TelemetryController, TelemetryService } from './d04-ops/telemetry-ingest/telemetry.service';
 import { TrustModule } from './d06-qsec/pki-kms/trust.module';
 import { PolicyGateController, PolicyGateService } from './d03-safety/deploy-safety/policy-gate.service';
+import { EnvelopeRepo } from './d03-safety/kill-switch/envelope.repo';
+import { StatusIngestController, StatusIngestService, VehicleStatusController } from './d04-ops/telemetry-ingest/status-ingest.service';
 import { PublicationRepo, RuntimeRepo } from './d06-qsec/secure-deploy/publication.repo';
 import { PublicationController, SecureDeployService } from './d06-qsec/secure-deploy/secure-deploy.service';
 
 @Module({
   imports: [D01PolicyModule, TrustModule],
-  controllers: [PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, PolicyGateController, VariantConditionsController, SupportConditionsController],
-  providers: [PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, KillService, RestoreService, PolicyGateService, VariantConditionsService, SupportConditionsService],
+  controllers: [PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, PolicyGateController, StatusIngestController, VehicleStatusController, VariantConditionsController, SupportConditionsController],
+  providers: [PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, KillService, RestoreService, PolicyGateService, EnvelopeRepo, StatusIngestService, VariantConditionsService, SupportConditionsService],
   exports: [TrustModule, SecureDeployService, VehicleRuntimeService, GleoAdapter, PublicationRepo, KillService, RestoreService, VehicleRequestService, PolicyGateService],
 })
 export class DeliveryModule {}

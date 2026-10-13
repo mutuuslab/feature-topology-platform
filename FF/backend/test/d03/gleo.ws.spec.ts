@@ -59,11 +59,12 @@ describe.skipIf(!ready)('GLEO 실연동 — FF_IMP 브로커·차량 에이전�
     const k = (await http().get(`/api/kill-requests/${r.body.killId}`).expect(200)).body;
     expect(k.delivery).toMatchObject({ confirmed: 2, denominator: 2 });
     const rb = (await http().get(`/api/telemetry/readbacks?publicationId=${k.publicationId}`).expect(200)).body.items;
-    expect(rb.map((x: any) => [x.vin, x.observed, x.via]).sort()).toEqual([['ego-01', 'SAFE_DEFAULT', 'GLEO'], ['lead-01', 'SAFE_DEFAULT', 'GLEO']]);
+    expect(rb.map((x: any) => [x.vin, x.observed, x.via]).sort()).toEqual([['ego-01', 'DISABLED', 'GLEO'], ['lead-01', 'DISABLED', 'GLEO']]); // v1 영상 키트 SAFE_DEFAULT → v2 끝 상태로 해석(미증명, WP5b에서 state_auth)
     const g = (await http().get('/api/gleo/status').expect(200)).body;
     expect(g.messages.find((m: any) => m.dir === 'out' && m.msg.type === 'kill_command').msg).toMatchObject({ type: 'kill_command', safe_mode: 'SAFE_DEFAULT', issued_by: 'usr-opslead' }); // 발행자 = 두 번째 승인자(게이트 통과 시점)
     expect(g.messages.some((m: any) => m.dir === 'in' && m.msg.type === 'status_report')).toBe(true);
-    expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('SAFE_DEFAULT');
+    expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('DISABLED');
+    expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log.at(-1).detail).toContain('v1 미증명');
   });
 
   it('해제 → 영상 키트에는 policy_push(enable)로 알리되 회신 의무 없음(ackOnly)', async () => {

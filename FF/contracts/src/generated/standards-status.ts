@@ -9,8 +9,8 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": true
   },
   "FFG-ADS-004": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-ADS-007": {
     "implemented": false,
@@ -57,8 +57,8 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": true
   },
   "FFG-DEAC-007": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-DEAC-008": {
     "implemented": true,
@@ -73,8 +73,8 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": true
   },
   "FFG-DEAC-013": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-GEN-001": {
     "implemented": false,
@@ -225,8 +225,8 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": true
   },
   "FFG-SEC-004": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-SEC-006": {
     "implemented": false,
@@ -253,8 +253,8 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": false
   },
   "FFG-TEL-003": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-TEL-004": {
     "implemented": false,

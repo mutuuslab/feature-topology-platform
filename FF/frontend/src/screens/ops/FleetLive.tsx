@@ -5,7 +5,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, EventStream, IdChip, KeyValue, Kpi, PageHeader, Panel, Select, VerdictBadge } from '../../design';
+import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, Kpi, PageHeader, Panel, Select, VerdictBadge } from '../../design';
 import { when } from '../shared';
 import { Progress, type Delivery } from './shared';
 import { VehicleRequestPanel } from './VehicleRequests';
@@ -158,7 +158,7 @@ export function VehicleRuntimeScreen() {
   const { vin = 'ego-01' } = useParams();
   const vehicles = useApi<{ items: { vin: string; label: string }[] }>('vehicles');
   const q = useApi<RuntimeView>('vehicleRuntime', { params: { vin } });
-  usePlatformEvents(STREAM, ['vehicleRuntime']);
+  usePlatformEvents(STREAM, ['vehicleRuntime', 'vehicleStatusView']);
   const d = q.data;
   return (
     <div className="ds-screen">
@@ -233,6 +233,7 @@ export function VehicleRuntimeScreen() {
                 ]}
               />
             </Panel>
+            <StatusV2Panel vin={vin} />
             <SupportPanel vin={vin} />
             <VehicleRequestPanel vin={vin} />
           </>
@@ -242,6 +243,77 @@ export function VehicleRuntimeScreen() {
   );
 }
 
+
+interface StatusView {
+  features: { featureId: string; state: string; reportSeq: number; updatedAt: string; report: { hmi: string; request_result: string; reject_code?: string; time_sync: string; persistence: string; feature_weight_permille: number } }[];
+  recent: { featureId: string; state: string; reportSeq: number; accepted: boolean; violation: { step: string; code: string; message: string } | null; via: string; at: string }[];
+}
+
+/**
+ * 상태 보고 v2 — 받아들인 최신 상태와 최근 수신(위반 포함). 보고가 없으면 UNKNOWN(확인 전에는 비활성으로 보지 않는다).
+ * @rule FFG-TEL-003 — 화면: 증명된 보고와 위반을 구분해 보인다
+ */
+function StatusV2Panel({ vin }: { vin: string }) {
+  const S2 = ko.statusV2;
+  const q = useApi<StatusView>('vehicleStatusView', { params: { vin } });
+  const d = q.data;
+  const seq = (n: number) => `${n >>> 16} · ${n & 0xffff}`;
+  return (
+    <Panel
+      title={
+        <>
+          {S2.title} <Explain rules={['FFG-TEL-003', 'FFG-VEH-002', 'FFG-DEAC-007']} />
+        </>
+      }
+      id="status-v2"
+      tour="vehicle-status-v2"
+    >
+      <p className="ds-field__hint" style={{ marginTop: 0 }}>
+        {S2.lead}
+      </p>
+      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+        {d && (
+          <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+            {d.features?.length ? (
+              <DataTable
+                caption={S2.title}
+                rows={d.features}
+                rowKey={(f) => f.featureId}
+                columns={[
+                  { key: 'f', header: S2.col.feature, cell: (f) => <span className="ds-mono ds-nowrap">{f.featureId}</span> },
+                  { key: 's', header: S2.col.state, cell: (f) => <span className="ds-tag ds-mono">{f.state}</span> },
+                  { key: 'h', header: S2.col.hmi, cell: (f) => S2.hmi[f.report.hmi] ?? f.report.hmi },
+                  { key: 'r', header: S2.col.result, cell: (f) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{f.report.reject_code && f.report.reject_code !== 'NONE' ? `${f.report.request_result} · ${f.report.reject_code}` : f.report.request_result}</span> },
+                  { key: 'q', header: S2.col.seq, cell: (f) => <span className="ds-mono ds-nowrap">{seq(f.reportSeq)}</span> },
+                  { key: 't', header: S2.col.sync, cell: (f) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{`${f.report.time_sync} · ${f.report.persistence}`}</span> },
+                ]}
+              />
+            ) : (
+              <p className="ds-stale" role="status">
+                {S2.none}
+              </p>
+            )}
+            {(d.recent?.length ?? 0) > 0 && (
+              <DataTable
+                caption={S2.recent}
+                rows={d.recent}
+                rowKey={(x) => `${x.at}-${x.reportSeq}-${x.featureId}`}
+                columns={[
+                  { key: 'at', header: S2.col.at, cell: (x) => <span className="ds-mono ds-nowrap">{when(x.at)}</span> },
+                  { key: 'f', header: S2.col.feature, cell: (x) => <span className="ds-mono ds-nowrap">{x.featureId}</span> },
+                  { key: 's', header: S2.col.state, cell: (x) => <span className="ds-mono">{x.state}</span> },
+                  { key: 'a', header: S2.col.accepted, cell: (x) => <VerdictBadge value={x.accepted ? 'PASS' : 'FAIL'} /> },
+                  { key: 'v', header: S2.col.violation, cell: (x) => (x.violation ? <span title={x.violation.message} className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{`${x.violation.step} · ${x.violation.code}`}</span> : '—') },
+                  { key: 'w', header: S2.col.via, cell: (x) => <span className="ds-mono">{x.via}</span> },
+                ]}
+              />
+            )}
+          </div>
+        )}
+      </AsyncView>
+    </Panel>
+  );
+}
 
 /** 이전 주소(/twin/live) — Fleet 실시간 적용 현황으로 옮겼다 */
 export function LegacyLiveRedirect() {

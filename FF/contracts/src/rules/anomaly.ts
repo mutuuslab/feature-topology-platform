@@ -45,6 +45,19 @@ const max = (a: AnomalySeverity, b: AnomalySeverity) => (RANK[a] >= RANK[b] ? a 
  * 이상 건 판정 — 같은 (종류, Feature)의 신호를 모아 심각도·권고·근거를 낸다.
  * FEATURE_FAULT: 차량이 CRITICAL을 보고했거나, 서로 다른 차량 3대 이상, 또는 ASIL B 이상에서 2대 이상이면 CRITICAL → 긴급 차단 권고.
  */
+/** 상태 보고 수신 검사 위반 심각도(FFG-TEL-003) — 증명 실패·해제 없는 ACTIVE·명령 없는 상태는 CRITICAL */
+export const STATUS_VIOLATION_SEVERITY: Record<string, AnomalySeverity> = {
+  AUTH_FAILED: 'CRITICAL',
+  ACTIVE_WITHOUT_RESTORE: 'CRITICAL',
+  STATE_WITHOUT_COMMAND: 'CRITICAL',
+  SEQ_AHEAD: 'CRITICAL',
+  PSEUDONYM_MISMATCH: 'CRITICAL',
+  REPLAY: 'WARNING',
+  SCHEMA: 'WARNING',
+  UNKNOWN_FEATURE: 'WARNING',
+  VERSION_MISMATCH: 'WARNING',
+};
+
 export function classifyAnomaly(kind: AnomalyKind, signals: AnomalySignal[], ctx: { asil: string | null }): { severity: AnomalySeverity; advice: AnomalyAdvice; reasons: string[] } {
   const vins = new Set(signals.map((s) => s.vin).filter(Boolean));
   const reported = signals.reduce<AnomalySeverity>((m, s) => max(m, s.severity), 'INFO');
@@ -59,8 +72,11 @@ export function classifyAnomaly(kind: AnomalyKind, signals: AnomalySignal[], ctx
     return { severity: sev, advice: sev === 'CRITICAL' ? 'KILL' : sev === 'WARNING' ? 'INVESTIGATE' : 'MONITOR', reasons };
   }
   if (kind === 'SECURITY') {
-    const codes = [...new Set(signals.map((s) => s.code))];
-    reasons.push(`차량이 서명 게시본을 거부: ${codes.join(', ')}`);
+    // ref가 STATUS:로 시작하면 상태 보고 수신 검사 위반(D04-03), 아니면 차량이 게시본을 거부
+    const rejects = [...new Set(signals.filter((s) => !(s.ref ?? '').startsWith('STATUS:')).map((s) => s.code))];
+    const status = [...new Set(signals.filter((s) => (s.ref ?? '').startsWith('STATUS:')).map((s) => s.code))];
+    if (rejects.length) reasons.push(`차량이 서명 게시본을 거부: ${rejects.join(', ')}`);
+    if (status.length) reasons.push(`상태 보고 검사 위반: ${status.join(', ')}`);
     return { severity: reported, advice: 'SECURITY_REVIEW', reasons };
   }
   const worst = signals.reduce<AnomalySeverity>((m, s) => max(m, s.severity), 'INFO');

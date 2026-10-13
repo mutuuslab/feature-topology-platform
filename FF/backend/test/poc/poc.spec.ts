@@ -86,7 +86,7 @@ describe('PoC 6단계 러너 (P9)', () => {
     let s = r.steps[5];
     expect(s.status).toBe('RUNNING');
     expect(s.evidence).toMatchObject({ advice: 'KILL' });
-    flush(2_000);
+    flush(8_000); // DC2 — 운전자 경고·인계 4 s + 램프 3 s 뒤 DISABLED에 닿아야 회신 CONFIRMED
     r = await advance();
     s = r.steps[5];
     expect(s.status, s.note).toBe('DONE');

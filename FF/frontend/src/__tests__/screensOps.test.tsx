@@ -93,6 +93,26 @@ describe('차량별 적용 상태', () => {
     expect(screen.getByText('OFF · KILL_SWITCH')).toBeTruthy();
     expect(screen.getByText('REPLAY')).toBeTruthy();
   });
+
+  it('상태 보고 v2 — 받아들인 상태(DC2 인계 경고)·report_seq(시동·순번)와 위반 보고를 구분(FFG-TEL-003), 보고가 없으면 UNKNOWN 안내', async () => {
+    const RT = { vehicle: { vin: 'ego-01', label: '시연', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', swVersion: '1.2.1', link: 'ONLINE', quality: 'TRUSTED', gleo: false }, runtime: { bootId: 'BOOT-ego-01-1', highest: {}, bundles: {}, kills: {}, featureState: {}, log: [] }, evaluations: [] };
+    const STATUS = {
+      features: [{ featureId: 'FEAT-00022', state: 'DEACT_WARNING', reportSeq: 65537, updatedAt: '2026-10-12T01:00:00Z', report: { hmi: 'WARN_TAKEOVER', request_result: 'ACCEPTED', time_sync: 'SYNCED', persistence: 'DURABLE', feature_weight_permille: 1000 } }],
+      recent: [{ featureId: 'FEAT-00022', state: 'ACTIVE', reportSeq: 65538, accepted: false, violation: { step: 'AUTH', code: 'AUTH_FAILED', message: '위조' }, via: 'IF-06', at: '2026-10-12T01:00:01Z' }],
+    };
+    let status: unknown = STATUS;
+    handler = (url) => (url.startsWith('/api/vehicles/ego-01/runtime') ? { body: RT } : url.startsWith('/api/vehicles/ego-01/status') ? { body: status } : url.startsWith('/api/vehicles/ego-01/requests') ? { body: { cursor: null, limit: { requests: 30, windowMs: 10000 }, items: [] } } : url.startsWith('/api/vehicles') ? { body: { items: [{ vin: 'ego-01', label: '시연' }] } } : undefined);
+    mount('/fleet/vehicles/ego-01', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
+    const panel = (await screen.findByRole('heading', { name: /상태 보고 v2/ })).closest('section')!;
+    await within(panel).findByText('DEACT_WARNING');
+    expect(within(panel).getByText('인계 경고')).toBeTruthy();
+    expect(within(panel).getByText('1 · 1')).toBeTruthy();
+    expect(within(panel).getByText('AUTH · AUTH_FAILED')).toBeTruthy();
+    cleanup();
+    status = { features: [], recent: [] };
+    mount('/fleet/vehicles/ego-01', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
+    expect(await screen.findByText('받아들인 상태 보고가 없습니다 — 확인 전에는 비활성으로 보지 않습니다(UNKNOWN)')).toBeTruthy();
+  });
 });
 
 describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () => {

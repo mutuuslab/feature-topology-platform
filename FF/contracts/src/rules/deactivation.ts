@@ -134,3 +134,15 @@ export function reasonAction(result: 'NONE' | 'ACCEPTED' | 'ACCEPTED_NOT_DURABLE
   if (result === 'ACCEPTED' || result === 'NONE') return A('APPLIED');
   return REASON_ACTIONS[code];
 }
+
+/** 차량이 끝 상태에 닿기까지 걸리는 등급별 시간 — 전달 회신 기한과 기한 감시(pending_overdue)가 같은 값을 쓴다. 복원은 다음 시동 */
+export function applyWindowMs(
+  designClass: DeactClass,
+  reason: ReasonCategory,
+  p: { takeoverMs: number; rampMs: number; maxPendingMs: number; maxCycleWaitMs: number },
+  request: 'deactivate' | 'restore' = 'deactivate',
+): number {
+  if (request === 'restore') return p.maxCycleWaitMs;
+  const dc = effectiveClass(designClass, reason);
+  return dc === 'DC1' ? p.maxPendingMs : dc === 'DC2' ? p.takeoverMs + p.rampMs : dc === 'DC3' ? p.maxCycleWaitMs : 0;
+}

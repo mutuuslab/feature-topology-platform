@@ -2,9 +2,9 @@
   "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
   "summary": {
     "platformRules": 75,
-    "implemented": 27,
-    "tested": 27,
-    "reportTestsReferenced": 11
+    "implemented": 32,
+    "tested": 32,
+    "reportTestsReferenced": 13
   },
   "rules": [
     {
@@ -31,8 +31,13 @@
         "플랫폼"
       ],
       "section": "03_ads_regulation.md · 3.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/status-v2.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/status-v2.test.ts",
+        "backend/test/d04/status-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-ADS-007",
@@ -208,8 +213,14 @@
         "플랫폼"
       ],
       "section": "07_deactivation.md · 7.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/status-v2.ts",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/status-v2.test.ts",
+        "backend/test/d04/status-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-DEAC-008",
@@ -263,8 +274,12 @@
         "Safety Manager"
       ],
       "section": "07_deactivation.md · 7.11 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts"
+      ],
+      "tested": [
+        "backend/test/d04/status-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-GEN-001",
@@ -778,8 +793,12 @@
         "운영 조직"
       ],
       "section": "14_security_sotif.md · 14.7 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts"
+      ],
+      "tested": [
+        "backend/test/d04/status-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-SEC-006",
@@ -861,8 +880,17 @@
         "운영 데이터 수집"
       ],
       "section": "13_telemetry.md · 13.9 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/status-v2.ts",
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts",
+        "frontend/src/screens/ops/FleetLive.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/anomaly.test.ts",
+        "contracts/src/rules/status-v2.test.ts",
+        "backend/test/d04/status-v2.spec.ts",
+        "frontend/src/__tests__/screensOps.test.tsx"
+      ]
     },
     {
       "id": "FFG-TEL-004",
@@ -960,11 +988,13 @@
       "section": "09_vehicle_runtime.md · 9.12 규칙",
       "implemented": [
         "contracts/src/rules/kill-v2.ts",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts",
         "backend/src/domains/d03-safety/kill-switch/kill.service.ts"
       ],
       "tested": [
         "contracts/src/rules/kill-v2.test.ts",
-        "backend/test/d03/kill-v2.spec.ts"
+        "backend/test/d03/kill-v2.spec.ts",
+        "backend/test/d04/status-v2.spec.ts"
       ]
     },
     {
@@ -997,11 +1027,14 @@
       ],
       "section": "09_vehicle_runtime.md · 9.12 규칙",
       "implemented": [
+        "contracts/src/rules/status-v2.ts",
         "backend/src/domains/d03-safety/kill-switch/kill.service.ts",
         "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts"
       ],
       "tested": [
+        "contracts/src/rules/status-v2.test.ts",
         "backend/test/d03/kill-v2.spec.ts",
+        "backend/test/d04/status-v2.spec.ts",
         "backend/test/d06/hsm.spec.ts"
       ]
     }
@@ -1011,12 +1044,14 @@
     "TC-FF-16",
     "TC-FF-21",
     "TC-FF-23",
+    "TC-FF-24",
     "TC-FF-45",
     "TC-FF-46",
     "TC-FF-47",
     "TC-FF-48",
     "TC-FF-49",
     "TC-FF-50",
-    "TC-FF-53"
+    "TC-FF-53",
+    "TC-FF-58"
   ]
 }

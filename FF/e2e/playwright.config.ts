@@ -41,7 +41,8 @@ export default defineConfig({
       cwd: '..',
       url: `http://localhost:${API}/api/health`,
       // vECU는 같은 계약의 시험 대역(결정적) — 실제 vECU 판정은 backend/test/d06/virtual.spec.ts가 폴더가 있을 때 확인한다
-      env: { PORT: String(API), FF_DB: ':memory:', FF_SEED: 'v0.81', VECU_DIR: resolve(__dirname, '..', 'backend', 'test', 'fixtures', 'fake-vecu'), FF_EVIDENCE_DIR: join(tmpdir(), 'ff-e2e-evidence') },
+      // FLEET_SIM_TIME_SCALE — 차량 시뮬레이터의 DC 단계 시간(인계·램프)을 줄여 e2e 대기를 짧게(Registry 값 × 0.5)
+      env: { PORT: String(API), FF_DB: ':memory:', FF_SEED: 'v0.81', FLEET_SIM_TIME_SCALE: '0.5', VECU_DIR: resolve(__dirname, '..', 'backend', 'test', 'fixtures', 'fake-vecu'), FF_EVIDENCE_DIR: join(tmpdir(), 'ff-e2e-evidence') },
       reuseExistingServer: !CI,
       timeout: 120_000,
     },

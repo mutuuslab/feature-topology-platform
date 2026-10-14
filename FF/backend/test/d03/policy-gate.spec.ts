@@ -67,7 +67,20 @@ describe('미리보기 — 원장은 바꾸지 않는다', () => {
       'FFG-PLT-008',
       'FFG-SEC-003',
       'FFG-PLT-009',
+      'FFG-GEN-003', // 플랫폼 규칙(패키지 게이트 대조 밖) — 시장 Compliance Profile
     ]);
+    expect(v.profiles).toEqual([{ profileId: 'EU', version: '1.0.0', status: 'CONFIRMED' }]); // FFG-GEN-001 — 판정에 쓴 Profile 버전
+  });
+  it('FFG-GEN-003 미확인 시장(캐나다 검증 필요): 같은 명령을 활성화로 바꾸면 FAIL, 안전 Kill은 PASS', async () => {
+    const { http } = await boot();
+    const kill = { ...example('kill_safety_dc2_eu.ok.json') };
+    kill.target = { ...kill.target, market: 'CA' };
+    const k = (await http().post('/api/gate/preview').set(OPS).send(kill).expect(201)).body;
+    expect(k.findings.find((x: any) => x.rule === 'FFG-GEN-003')).toMatchObject({ ok: true });
+    expect(k.profiles).toEqual([{ profileId: 'NA-CA', version: '1.0.0', status: 'VERIFY_REQUIRED' }]);
+    const act = (await http().post('/api/gate/preview').set(OPS).send({ ...kill, request: 'activate' }).expect(201)).body;
+    expect(act.findings.find((x: any) => x.rule === 'FFG-GEN-003')).toMatchObject({ ok: false, message: expect.stringMatching(/NA-CA 검증 필요/) });
+    expect(act.result).toBe('FAIL');
   });
   it('Kill 관련 역할만 — 작성자는 403', async () => {
     const { http } = await boot();

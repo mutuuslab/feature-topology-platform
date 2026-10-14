@@ -14,6 +14,7 @@ export * from './rules/gate-decision';
 export * from './rules/rehara';
 export * from './rules/rollout-stage';
 export * from './rules/asil-inheritance';
+export * from './rules/compliance-profile';
 export * from './rules/tool-qualification';
 export * from './rules/topology';
 export * from './flags/p0';

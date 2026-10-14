@@ -4,6 +4,7 @@
 import { Body, Controller, Get, Inject, Injectable, Param, Post } from '@nestjs/common';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { profileFinding, type ProfileFinding } from '@ff/contracts';
 import { DEFAULT_GATE_POLICY, gateVerdict, type GateFeature, type GateLedger, type GateRegistry, type GateVerdict, type KillCommandV2 } from '@ff/contracts';
 import { CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
@@ -118,12 +119,21 @@ export class PolicyGateService {
     return { features: entry ? { [featureId]: entry } : {}, policy: DEFAULT_GATE_POLICY, ledger: { [featureId]: this.ledger(featureId) } };
   }
 
-  /** 판정만 — 원장은 바꾸지 않는다 */
-  preview(cmd: unknown): GateVerdict {
-    const f = (cmd as { feature?: { id?: unknown; version?: unknown } } | null)?.feature;
-    const id = typeof f?.id === 'string' ? f.id : '';
-    const ver = typeof f?.version === 'string' ? f.version : '';
-    return gateVerdict(cmd, this.registryFor(id, ver), this.clock.now());
+  /**
+   * 판정만 — 원장은 바꾸지 않는다. 보고서 패키지 게이트와 같은 규칙(gateVerdict, Python 대조) 뒤에 플랫폼 규칙 FFG-GEN-003(시장 Profile)을 붙인다.
+   * 판정에 쓴 Compliance Profile 버전을 함께 돌려준다(FFG-GEN-001 — 명령 기록).
+   */
+  preview(cmd: unknown): GateVerdict & { profiles?: ProfileFinding['profiles'] } {
+    const c = cmd as { feature?: { id?: unknown; version?: unknown }; target?: { market?: unknown }; request?: unknown } | null;
+    const id = typeof c?.feature?.id === 'string' ? c.feature.id : '';
+    const ver = typeof c?.feature?.version === 'string' ? c.feature.version : '';
+    const registry = this.registryFor(id, ver);
+    const v = gateVerdict(cmd, registry, this.clock.now());
+    if (v.result === 'SCHEMA_FAIL') return v;
+    const feat = registry.features[id];
+    const p = profileFinding({ market: String(c?.target?.market ?? ''), request: String(c?.request ?? ''), fClass: feat?.f_class ?? null, adsFeature: !!feat?.ads_feature });
+    const findings = [...v.findings, { rule: p.rule, ok: p.ok, message: p.detail }];
+    return { ...v, findings, result: findings.every((x) => x.ok) ? 'PASS' : 'FAIL', profiles: p.profiles };
   }
 
   /**
@@ -170,14 +180,14 @@ export class PolicyGateService {
           this.clock.iso(),
         );
       this.audit.record(actor, 'GATE_RECORD', cmd.feature.id, {
-        after: { commandId: cmd.command_id, commandSeq: cmd.command_seq, request: cmd.request, vehicles: cmd.scope.vehicle_ids.length, approvers },
+        after: { commandId: cmd.command_id, commandSeq: cmd.command_seq, request: cmd.request, vehicles: cmd.scope.vehicle_ids.length, approvers, complianceProfiles: v.profiles ?? [] },
         reason: `${cmd.reason.category}/${cmd.reason.code}`,
         componentId: 'D03-02',
       });
       this.events.publish(
         'gate.recorded',
         cmd.feature.id,
-        { featureId: cmd.feature.id, commandId: cmd.command_id, commandSeq: cmd.command_seq, request: cmd.request, vehicles: cmd.scope.vehicle_ids.length },
+        { featureId: cmd.feature.id, commandId: cmd.command_id, commandSeq: cmd.command_seq, request: cmd.request, vehicles: cmd.scope.vehicle_ids.length, complianceProfiles: v.profiles ?? [] },
         { componentId: 'D03-02', correlationId: actor.correlationId },
       );
       return v;

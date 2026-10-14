@@ -32,7 +32,7 @@ export const FEATURE_TRANSITIONS: TransitionRule[] = [
 
 export const LIFECYCLE_RANK: Record<Lifecycle, number> = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
+export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
 
 export interface Blocker {
   code: BlockerCode;
@@ -43,6 +43,8 @@ export interface Blocker {
 export interface TransitionContext {
   /** Gate별 최신 판정 상태 (레코드 없음 = 미판정) */
   latestGates: Partial<Record<GateId, GateStatus>>;
+  /** 최신 기록의 Decision Record가 없거나 서명이 맞지 않는 Gate(FFG-LCY-001) — 사유 문구 */
+  unsignedGates?: Partial<Record<GateId, string>>;
   /** 이 버전이 원천인 의존관계 */
   dependencies: Pick<DependencyRow, 'dependencyId' | 'targetVersion' | 'verdict'>[];
   /** Control Point 중 정책이 등록된 수 (DEVELOPING→VERIFIED 조건 — 정책 저장소 D01-06) */
@@ -73,6 +75,7 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
     const s = ctx.latestGates[g];
     if (!s) blockers.push({ code: 'GATE_UNJUDGED', message: `${g} ${GATE_META[g].name} 미판정`, ref: g });
     else if (s !== 'PASS') blockers.push({ code: 'GATE_NOT_PASSED', message: `${g} ${GATE_META[g].name} ${s}`, ref: g });
+    else if (ctx.unsignedGates?.[g]) blockers.push({ code: 'GATE_UNSIGNED', message: `${g} ${GATE_META[g].name} — ${ctx.unsignedGates[g]}`, ref: g });
   }
   for (const k of rule.inputs) if (isEmpty(f[k])) blockers.push({ code: 'INPUT_MISSING', message: `필수 입력 누락: ${String(k)}`, ref: String(k) });
 

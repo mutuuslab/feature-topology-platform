@@ -158,6 +158,12 @@ function Gates({ id, ver }: { id: string; ver: string }) {
         {g && (
           <div className="ds-split">
             <Panel title={`${g.gate} ${g.name}`} eyebrow={`${g.stage} · ${g.judgeRole}`} id="gate-hist" actions={<GateBadge status={g.status === '미판정' ? null : g.status} />}>
+              {g.decision && (
+                <p className="ds-field__hint" data-testid="gate-decision" style={{ color: g.decision.state === 'MISSING' || g.decision.state === 'INVALID' ? 'var(--danger)' : undefined }}>
+                  {`${T.decision}: ${T.decisionState[g.decision.state]} · ${T.decisionNote(g.decision.kid, g.decision.approver ? (g.decision.approver.id ?? g.decision.approver.role) : null)}`}
+                  {g.decision.reason ? ` — ${g.decision.reason}` : ''}
+                </p>
+              )}
               <h3 className="ds-eyebrow" style={{ margin: '0 0 var(--sp-2)' }}>{T.history}</h3>
               <DataTable
                 caption={T.history}
@@ -168,6 +174,15 @@ function Gates({ id, ver }: { id: string; ver: string }) {
                   { key: 'st', header: ko.audit.col.result, cell: (r) => <GateBadge status={r.status} /> },
                   { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono">{r.judgedAt.slice(0, 16).replace('T', ' ')}</span> },
                   { key: 'ev', header: T.evidence, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.evidenceRef ?? '—'}</span> },
+                  {
+                    key: 'sig',
+                    header: T.decision,
+                    cell: (r) => (
+                      <span data-testid={`decision-${r.gateRecordId}`} style={{ fontSize: 'var(--fs-xs)', color: r.decision === 'MISSING' || r.decision === 'INVALID' ? 'var(--danger)' : undefined }}>
+                        {r.decision ? T.decisionState[r.decision] : '—'}
+                      </span>
+                    ),
+                  },
                   { key: 'why', header: ko.page.reason, cell: (r) => r.rationale },
                 ]}
               />

@@ -64,7 +64,18 @@ export interface FeatureDetail {
 }
 
 export interface GateView {
-  gates: { gate: string; name: string; judgeRole: string; stage: string; status: string; latest: GateRecordRow | null; evidence: any; history: GateRecordRow[] }[];
+  gates: {
+    gate: string;
+    name: string;
+    judgeRole: string;
+    stage: string;
+    status: string;
+    latest: GateRecordRow | null;
+    evidence: any;
+    /** FFG-LCY-001 Decision Record 서명 상태 */
+    decision?: { state: 'SIGNED' | 'IMPORTED' | 'MISSING' | 'INVALID'; reason: string | null; kid: string | null; approver: { id: string | null; role: string } | null } | null;
+    history: (GateRecordRow & { decision?: 'SIGNED' | 'IMPORTED' | 'MISSING' | 'INVALID' })[];
+  }[];
 }
 
 export interface ChecklistItem {

@@ -6,6 +6,7 @@ import { CatalogController } from './catalog/catalog.controller';
 import { CatalogService } from './catalog/catalog.service';
 import { BaselineService } from './registry/baseline.service';
 import { LifecycleService } from './registry/lifecycle.service';
+import { GateDecisionService } from './topology/gate-decision.service';
 import { BaselineController, RegistryController } from './registry/registry.controller';
 import { RegistryService } from './registry/registry.service';
 import { SafetyProfileController, SafetyProfileService } from './registry/safety-profile.service';
@@ -39,7 +40,7 @@ import { TopologyService } from './topology/topology.service';
     ActivationService,
     StagedRolloutService,
     SafetyProfileService,
-    AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, TopologyService, CatalogService],
-  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, TopologyService, CatalogService],
+    AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, TopologyService, CatalogService],
+  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, TopologyService, CatalogService],
 })
 export class D01PolicyModule {}

@@ -289,6 +289,15 @@ CREATE TABLE vehicle_feature_status (vin TEXT NOT NULL, feature_id TEXT NOT NULL
 `,
   },
   {
+    // 보고서 v1.1 WP2 — Gate Decision Record(FFG-LCY-001): Gate 기록마다 서명된 결정 본문. 추가만(재판정은 새 Gate 기록 + 새 결정)
+    name: '017_gate_decision',
+    sql: `
+CREATE TABLE gate_decision (gate_record_id TEXT PRIMARY KEY, provenance TEXT NOT NULL, kid TEXT NOT NULL, signed_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TRIGGER gate_decision_no_update BEFORE UPDATE ON gate_decision BEGIN SELECT RAISE(ABORT, 'gate_decision은 추가만 가능'); END;
+CREATE TRIGGER gate_decision_no_delete BEFORE DELETE ON gate_decision BEGIN SELECT RAISE(ABORT, 'gate_decision은 추가만 가능'); END;
+`,
+  },
+  {
     // P10 — 실험(D01-07)·장애·VOC(D04-05)·동기화 실행(D05-02)·해외공장 주문(D05-03)·OTel 수집기 모의(IF-11)
     name: '020_p10_ext',
     sql: `

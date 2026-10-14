@@ -21,6 +21,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { LifecycleService } from '../registry/lifecycle.service';
 import { GateRepo } from '../repos';
+import { GateDecisionService } from './gate-decision.service';
 import { VirtualRunRepo } from '../../d06-qsec/scenario-validation/virtual-run.repo';
 
 const STAGES: GateId[][] = [
@@ -42,6 +43,7 @@ export class GateService {
     private readonly clock: Clock,
     private readonly virtualRuns: VirtualRunRepo,
     private readonly safety: SafetyProfileService,
+    private readonly decisions: GateDecisionService,
   ) {}
 
   view(featureId: string, version: string) {
@@ -55,10 +57,12 @@ export class GateService {
         judgeRole: GATE_META[g].judgeRole,
         stage: GATE_META[g].stage,
         latest: latest[g] ?? null,
+        /** FFG-LCY-001 — 최신 기록의 Decision Record 서명 상태 */
+        decision: latest[g] ? this.decisions.verify(latest[g]!) : null,
         /** 레코드 없음 = 미판정 (Registry 표시 '미발급') */
         status: latest[g]?.status ?? '미판정',
         evidence: latest[g] ? this.gates.evidence(latest[g]!.gateRecordId) ?? null : null,
-        history: history.filter((h) => h.gate === g),
+        history: history.filter((h) => h.gate === g).map((h) => ({ ...h, decision: this.decisions.verify(h).state })),
       })),
     };
   }
@@ -77,6 +81,7 @@ export class GateService {
   }
 
   /**
+   * @rule FFG-LCY-002 — fail-closed: 근거 없는 PASS(입력 검사)·없는 가상검증 기록·vECU 미연결/도구 실패 결과·Gate 판정 FAIL인 실행은 PASS 근거가 아니다(판정 거부, 감사 FAILED). 강제 통과(덮어쓰기) 경로는 두지 않는다 — 재판정만
    * 증거가 vECU 가상검증(VV-NNNNN)을 가리키면 그 기록이 이 Feature Version의 것이어야 하고, PASS 판정의 근거라면
    * vECU가 실제로 돌린 Gate 판정 PASS여야 한다. G5 Verification Gate는 TMS(IF-09)에 제출된 Evidence만 인정한다.
    */
@@ -132,9 +137,11 @@ export class GateService {
         _missing: {},
       };
       this.gates.insert(record);
+      // 결정 기록 — 판정한 사람·그때의 역할로 서명(같은 트랜잭션)
+      const decision = this.decisions.sign(record, { id: actor.id, role: actor.role }, 'PLATFORM');
       this.audit.record(actor, `GATE_JUDGE ${body.gate}`, target, {
         before: prev ? { gateRecordId: prev.gateRecordId, status: prev.status } : null,
-        after: { gateRecordId: record.gateRecordId, status: record.status, evidenceRef: record.evidenceRef },
+        after: { gateRecordId: record.gateRecordId, status: record.status, evidenceRef: record.evidenceRef, decisionKid: decision.signature.kid },
         reason: body.rationale,
         componentId: 'D01-02',
       });

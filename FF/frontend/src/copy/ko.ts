@@ -150,6 +150,10 @@ export const ko = {
     evidence: 'Evidence Ref',
     evidenceHint: 'PASS에는 증거가 필요합니다 (증거 없는 PASS 금지)',
     history: '판정 이력',
+    // Gate Decision Record 서명 상태 (FFG-LCY-001)
+    decision: '결정 서명',
+    decisionState: { SIGNED: '서명됨', IMPORTED: '이관 기록 봉인', MISSING: '서명 없음 — 전이 근거 아님', INVALID: '서명 불일치 — 전이 근거 아님' } as Record<string, string>,
+    decisionNote: (kid: string | null, who: string | null) => `${kid ?? '—'}${who ? ` · ${who}` : ''}`,
     outgoing: '이 Version이 원천인 관계',
     incoming: '이 Feature를 대상으로 하는 관계',
     noDeps: '의존관계가 없습니다',

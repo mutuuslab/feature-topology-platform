@@ -48,10 +48,10 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
   const pub = async (id: string) => (await http().get(`/api/publications/${id}`).expect(200)).body;
   const decide = async (vin: string) => (await http().get(`/api/activation/decide?vin=${vin}&flagKey=care_00022_param`).expect(200)).body.result;
 
-  it('서명 키: Ed25519 활성 키 1개, 공개키만 노출', async () => {
+  it('서명 키: 게시본 서명은 Ed25519 정책 키 1개(KEY-0001), 공개키만 노출', async () => {
     const r = await http().get('/api/pki/keys').expect(200);
-    expect(r.body.items).toHaveLength(1);
-    expect(r.body.items[0]).toMatchObject({ keyId: 'KEY-0001', alg: 'Ed25519', status: 'ACTIVE' });
+    expect(r.body.items.filter((k: any) => k.purpose === 'policy')).toHaveLength(1);
+    expect(r.body.items[0]).toMatchObject({ keyId: 'KEY-0001', alg: 'Ed25519', status: 'ACTIVE', purpose: 'policy' });
     expect(r.body.items[0].publicKeyPem).toContain('BEGIN PUBLIC KEY');
     expect(JSON.stringify(r.body)).not.toContain('PRIVATE');
   });

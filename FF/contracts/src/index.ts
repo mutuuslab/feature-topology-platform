@@ -10,6 +10,7 @@ export * from './rules/jcs';
 export * from './routes';
 export * from './rules/catalog';
 export * from './rules/covering';
+export * from './rules/gate-decision';
 export * from './rules/tool-qualification';
 export * from './rules/topology';
 export * from './flags/p0';

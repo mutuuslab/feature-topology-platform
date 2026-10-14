@@ -20,6 +20,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { PolicyRepo } from '../policy-repos';
 import { BaselineRepo, FeatureRepo, GateRepo, TopologyRepo } from '../repos';
+import { GateDecisionService } from '../topology/gate-decision.service';
 import { TopologyService } from '../topology/topology.service';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
@@ -45,6 +46,7 @@ export class LifecycleService {
     private readonly events: EventService,
     private readonly topologyService: TopologyService,
     private readonly policies: PolicyRepo,
+    private readonly decisions: GateDecisionService,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -58,6 +60,8 @@ export class LifecycleService {
     const latestGates = Object.fromEntries(Object.entries(latest).map(([g, r]) => [g, r!.status])) as Partial<Record<string, GateStatus>>;
     return {
       latestGates,
+      // FFG-LCY-001 — 서명된 Decision Record가 없는 Gate PASS는 전이 근거가 아니다
+      unsignedGates: this.decisions.unsigned(f.featureId, f.version),
       dependencies: this.topology.outgoing(f.featureId, f.version),
       // Control Point 중 승인·배포 정책이 있는 수 (정책 저장소 D01-06)
       policyCoverage: this.policies.coverage(f.featureId, f.version),

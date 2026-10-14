@@ -16,9 +16,10 @@ async function boot() {
 const CMD = jcs({ type: 'kill_command', schema_version: '2.0', feature: { id: 'FEAT-00022', version: '1.0.0' }, request: 'deactivate' });
 
 describe('용도별 서명 키 (FFG-SEC-002)', () => {
-  it('부팅 때는 정책 키 하나만 — 기존 키 번호를 바꾸지 않는다', async () => {
+  it('부팅 때는 정책 키(KEY-0001 그대로)와 Gate 결정 봉인 키만 — 다른 용도 키는 처음 쓸 때', async () => {
     const { pki } = await boot();
-    expect(pki.keys().map((k) => [k.keyId, k.purpose])).toEqual([['KEY-0001', 'policy']]);
+    // gate 키 — 이관 Gate 기록을 부팅 때 봉인한다(FFG-LCY-001)
+    expect(pki.keys().map((k) => [k.keyId, k.purpose])).toEqual([['KEY-0001', 'policy'], ['KEY-0002', 'gate']]);
   });
 
   it('분리 서명은 64바이트 원시 서명(base64url 86자)이고, 다른 용도로 검증하면 무효', async () => {
@@ -43,8 +44,9 @@ describe('용도별 서명 키 (FFG-SEC-002)', () => {
     const { http, pki } = await boot();
     pki.sign({}, 'kill');
     await http().post('/api/pki/rotate').set(actor('u-safety', 'SAFETY_OFFICER')).send({ reason: '정기 교체', purpose: 'kill' }).expect(201);
-    const active = pki.keys().filter((k) => k.status === 'ACTIVE').map((k) => [k.keyId, k.purpose]);
-    expect(active).toEqual([['KEY-0001', 'policy'], ['KEY-0003', 'kill']]);
+    // gate 용도 키는 부팅 때 이관 Gate 기록 봉인(FFG-LCY-001)으로 먼저 생긴다
+    const active = pki.keys().filter((k) => k.status === 'ACTIVE' && k.purpose !== 'gate').map((k) => [k.keyId, k.purpose]);
+    expect(active).toEqual([['KEY-0001', 'policy'], ['KEY-0004', 'kill']]);
   });
 });
 

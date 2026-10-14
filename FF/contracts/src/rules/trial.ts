@@ -6,6 +6,8 @@ import type { Entitlement } from '../schemas/policy';
 
 export const TRIAL_DAYS = 30;
 export const OFFER_DAYS = 14;
+/** 만료 사전 고지 — 만료일 N일 전부터 (FFG-LCY-010: F2 이상은 고지·확인 뒤에만 상업 비활성화를 적용한다) */
+export const TRIAL_NOTICE_DAYS = 3;
 /** 5대 미만 집단은 통계에서 가린다 (재식별 방지) */
 export const K_ANONYMITY = 5;
 
@@ -38,6 +40,21 @@ export function grantState(g: Entitlement, today: string): { state: TrialState; 
   if (g.status === 'OFFERED') return within ? { state: 'OFFERED', effective: false, daysLeft: left } : { state: 'EXPIRED', effective: false, daysLeft: null };
   return { state: g.status as TrialState, effective: false, daysLeft: null };
 }
+
+/**
+ * 만료 sweep이 이 체험권에 할 일 — 순수 함수(하루 1회 sweep·시험이 같이 쓴다).
+ *   NOTICE: 수락된 체험(저장 상태 ACTIVE)이 만료 N일 전 안에 들었고, 지금 만료일에 대한 고지가 아직 없다(연장되면 다시 고지)
+ *   EXPIRE: 저장 상태가 ACTIVE인데 기간이 지났다 — 저장 상태를 EXPIRED로 확정한다(CONVERTED·DECLINED·REVOKED는 대상 아님)
+ */
+export function trialSweepPlan(g: Entitlement, today: string, noticeDays = TRIAL_NOTICE_DAYS): 'NOTICE' | 'EXPIRE' | null {
+  if (g.kind !== '체험' || g.status !== 'ACTIVE' || !g.acceptedAt) return null;
+  if (today > g.validTo) return 'EXPIRE';
+  if (today >= addDays(g.validTo, -noticeDays) && g.noticeFor !== g.validTo) return 'NOTICE';
+  return null;
+}
+
+/** 만료 이벤트에 실을 고지 — 지금 만료일에 대해 낸 고지만 인정한다(연장 전 고지는 무효) */
+export const noticeOf = (g: Entitlement) => (g.noticeFor === g.validTo && g.noticeId ? { noticeId: g.noticeId, noticeAt: g.noticeAt } : { noticeId: null, noticeAt: null });
 
 export interface FunnelGroup {
   key: string;

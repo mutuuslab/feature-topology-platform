@@ -1,7 +1,7 @@
 // 기간형 체험권 상태·전환 분석·합성 모집단 (2026-10-13 결정)
 import { describe, expect, it } from 'vitest';
 import { EntitlementSchema, type Entitlement } from '../schemas/policy';
-import { addDays, grantState, syntheticTrials, trialFunnel, trialTrend, type VehicleProfile } from './trial';
+import { addDays, grantState, noticeOf, syntheticTrials, trialFunnel, trialSweepPlan, trialTrend, type VehicleProfile } from './trial';
 
 const T = (o: Partial<Entitlement>): Entitlement => EntitlementSchema.parse({ grantId: 'ENT-00001', vin: 'v', catalogId: 'CAT-00019', kind: '체험', validFrom: '2026-10-01', validTo: '2026-10-30', status: 'ACTIVE', ...o });
 
@@ -47,5 +47,30 @@ describe('체험 전환 분석', () => {
     expect(r['높음']).toBeGreaterThan(r['보통']);
     expect(r['보통']).toBeGreaterThan(r['낮음']);
     expect(f.total.converted).toBeGreaterThan(100);
+  });
+});
+
+describe('만료 sweep 계획 (FFG-LCY-010 사전 고지)', () => {
+  const A = (o: Partial<Entitlement> = {}) => T({ acceptedAt: '2026-10-01', ...o });
+  it.each([
+    ['만료 4일 전 → 아직 없음', A(), '2026-10-26', null],
+    ['만료 3일 전 → 고지', A(), '2026-10-27', 'NOTICE'],
+    ['고지한 뒤 같은 만료일 → 다시 고지하지 않음', A({ noticeId: 'NTC-00001', noticeFor: '2026-10-30' }), '2026-10-29', null],
+    ['연장되어 만료일이 바뀜 → 새 만료일로 다시 고지', A({ noticeId: 'NTC-00001', noticeFor: '2026-10-30', validTo: '2026-11-02' }), '2026-10-30', 'NOTICE'],
+    ['만료일 당일까지는 ON → 만료 아님', A({ noticeId: 'NTC-00001', noticeFor: '2026-10-30' }), '2026-10-30', null],
+    ['만료일 다음 날 → 만료 확정', A({ noticeId: 'NTC-00001', noticeFor: '2026-10-30' }), '2026-10-31', 'EXPIRE'],
+    ['고지 없이 기간이 지났어도 만료는 확정(고지 없음으로 실린다)', A(), '2026-11-05', 'EXPIRE'],
+    ['고지 뒤 구매 전환 → 만료를 내지 않는다', A({ status: 'CONVERTED', noticeId: 'NTC-00001', noticeFor: '2026-10-30' }), '2026-10-31', null],
+    ['거절·이미 만료 확정 → 대상 아님', A({ status: 'EXPIRED' }), '2026-11-05', null],
+    ['수락 전 제안 → 대상 아님', A({ status: 'OFFERED', acceptedAt: null }), '2026-10-29', null],
+    ['구독 → 대상 아님', A({ kind: '구독' }), '2026-10-31', null],
+  ] as const)('%s', (_n, g, today, plan) => {
+    expect(trialSweepPlan(g, today)).toBe(plan);
+  });
+
+  it('만료에 실리는 고지는 지금 만료일에 대해 낸 것만', () => {
+    expect(noticeOf(A({ noticeId: 'NTC-00001', noticeAt: '2026-10-27T00:00:00Z', noticeFor: '2026-10-30' }))).toEqual({ noticeId: 'NTC-00001', noticeAt: '2026-10-27T00:00:00Z' });
+    expect(noticeOf(A({ noticeId: 'NTC-00001', noticeAt: 'x', noticeFor: '2026-10-30', validTo: '2026-11-02' }))).toEqual({ noticeId: null, noticeAt: null });
+    expect(noticeOf(A())).toEqual({ noticeId: null, noticeAt: null });
   });
 });

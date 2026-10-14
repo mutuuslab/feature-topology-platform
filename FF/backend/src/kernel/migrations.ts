@@ -332,4 +332,12 @@ CREATE TABLE otel_span (id INTEGER PRIMARY KEY AUTOINCREMENT, trace_id TEXT NOT 
 CREATE INDEX otel_span_name ON otel_span(name, id);
 `,
   },
+  {
+    // 체험권 만료 사전 고지 (FFG-LCY-010) — 체험권·만료일마다 한 번. 고지 ID(NTC-NNNNN)는 차단 명령의 user_notice.text_ref가 된다
+    name: '021_trial_notice',
+    sql: `
+CREATE TABLE trial_notice (notice_id TEXT PRIMARY KEY, grant_id TEXT NOT NULL, valid_to TEXT NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE UNIQUE INDEX trial_notice_once ON trial_notice(grant_id, valid_to);
+`,
+  },
 ];

@@ -124,6 +124,10 @@ export class EntitlementService {
           fromTrial: null,
           source: 'DEMO',
           note: body.note ?? null,
+          noticeId: null,
+          noticeAt: null,
+          noticeFor: null,
+          expiredAt: null,
         };
         this.fleet.insertGrant(g);
         this.audit.record(actor, 'TRIAL_OFFER', g.grantId, { after: { vin, catalogId: g.catalogId, validTo: g.validTo }, componentId: 'D01-05' });
@@ -192,6 +196,10 @@ export class EntitlementService {
       fromTrial: trial.grantId,
       source: trial.source,
       note: `주문 ${orderId}`,
+      noticeId: null,
+      noticeAt: null,
+      noticeFor: null,
+      expiredAt: null,
     };
     this.fleet.updateGrant(done);
     this.fleet.insertGrant(grant);

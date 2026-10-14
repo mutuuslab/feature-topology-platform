@@ -11,6 +11,7 @@ import { ReharaRepo } from './topology/rehara.repo';
 import { BaselineController, RegistryController } from './registry/registry.controller';
 import { RegistryService } from './registry/registry.service';
 import { SafetyProfileController, SafetyProfileService } from './registry/safety-profile.service';
+import { TrialExpiryService } from './entitlement/trial-expiry.service';
 import { ActivationService } from './activation/activation.service';
 import { KILL_STATE } from './activation/kill-state';
 import { KillRepo } from '../d03-safety/kill-switch/kill.repo';
@@ -37,11 +38,12 @@ import { TopologyService } from './topology/topology.service';
     PolicyRepo,
     FleetRepo,
     EntitlementService,
+    TrialExpiryService, // 체험권 만료 사전 고지·만료 확정 sweep (FFG-LCY-010)
     TargetingService,
     ActivationService,
     StagedRolloutService,
     SafetyProfileService,
     AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
-  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
+  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
 })
 export class D01PolicyModule {}

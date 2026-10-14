@@ -2,8 +2,8 @@
   "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
   "summary": {
     "platformRules": 75,
-    "implemented": 56,
-    "tested": 56,
+    "implemented": 57,
+    "tested": 57,
     "reportTestsReferenced": 16
   },
   "rules": [
@@ -417,9 +417,13 @@
         "플랫폼"
       ],
       "section": "06_lifecycle.md · 6.6 규칙",
-      "implemented": [],
+      "implemented": [
+        "backend/src/domains/d01-policy/entitlement/trial-expiry.service.ts"
+      ],
       "tested": [
-        "backend/test/d04/status-v2.spec.ts"
+        "contracts/src/rules/trial.test.ts",
+        "backend/test/d04/status-v2.spec.ts",
+        "backend/test/d05/trial-expiry.spec.ts"
       ]
     },
     {

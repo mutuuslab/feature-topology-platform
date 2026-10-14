@@ -53,9 +53,10 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
       expect(failed.body.items.map((a: { action: string }) => a.action).sort()).toEqual(['TRIAL_ACCEPT', 'TRIAL_DECLINE']);
     });
 
-    it('체험 기간이 끝난 권한은 저장 상태가 ACTIVE여도 OFF (TMA-NX4-0001 체험 만료)', async () => {
+    // 저장 상태가 ACTIVE여도 날짜가 지나면 OFF인 규칙은 contracts grantState 시험이 지킨다 — 시드는 이미 끝난 체험을 만료 확정(EXPIRED)으로 넣는다(만료 sweep, FFG-LCY-010)
+    it('체험 기간이 끝난 권한은 OFF (TMA-NX4-0001 체험 만료 — 시드에서 만료 확정)', async () => {
       const ents = (await http().get('/api/entitlements?vin=TMA-NX4-0001').expect(200)).body.items;
-      expect(ents[0]).toMatchObject({ grantId: 'ENT-00007', status: 'ACTIVE', state: 'EXPIRED', effective: false });
+      expect(ents[0]).toMatchObject({ grantId: 'ENT-00007', status: 'EXPIRED', state: 'EXPIRED', effective: false });
     });
   });
 

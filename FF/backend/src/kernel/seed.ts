@@ -97,7 +97,9 @@ export function demoGrants(dir: string, anchor: string): Entitlement[] {
         note: g.note ?? null,
         source: 'DEMO',
       }),
-    );
+    )
+    // 시드 시점에 이미 끝난 체험은 만료가 확정된 과거 기록이다 — 부팅 만료 sweep이 '고지 없는 만료'로 다시 내보내지 않게
+    .map((g) => (g.kind === '체험' && g.status === 'ACTIVE' && g.validTo < anchor ? { ...g, status: 'EXPIRED' as const, expiredAt: addDays(g.validTo, 1) } : g));
 }
 
 /** 합성 모집단 크기 — FF_SYNTHETIC=0이면 넣지 않는다(기본 3000대) */

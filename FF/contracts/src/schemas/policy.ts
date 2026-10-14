@@ -115,6 +115,12 @@ export const EntitlementSchema = z.object({
   fromTrial: z.string().nullable().default(null),
   source: z.enum(['DEMO', 'SYNTHETIC']).default('DEMO'),
   note: z.string().nullable().default(null),
+  /** 만료 사전 고지 (FFG-LCY-010) — 고지 기록 ID(NTC-NNNNN)·시각, 그리고 고지한 만료일(연장으로 validTo가 바뀌면 다시 고지한다) */
+  noticeId: z.string().nullable().default(null),
+  noticeAt: z.string().nullable().default(null),
+  noticeFor: z.string().nullable().default(null),
+  /** 만료 처리 시각 — sweep이 저장 상태를 EXPIRED로 확정한 때 */
+  expiredAt: z.string().nullable().default(null),
 });
 export type Entitlement = z.infer<typeof EntitlementSchema>;
 

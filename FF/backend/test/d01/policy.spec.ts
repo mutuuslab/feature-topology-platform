@@ -1,6 +1,7 @@
 // PoC ② 정책 준비·검증·승인 · ③ 사용 권한·서버 활성화 판단 · IF-10 OFREP — API로 끝까지 검증한다.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { Clock } from '../../src/kernel/clock';
 import { actor, bootApp, confirmSafety } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
@@ -134,10 +135,23 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
       expect(r.body).toMatchObject({ value: true, reason: 'TARGETING_MATCH' });
     });
 
-    it('단계적 배포: 승인 범위 안에서만 — 0%면 COHORT_MISS, 코호트 목록은 FP-COHORT-1', async () => {
+    it('단계적 배포: 승인 범위 안에서만 — 0%면 COHORT_MISS, 코호트 목록은 FP-COHORT-1 · FFG-LCY-009 배포자 ≠ 효력 확대자, F2 이상은 Canary 관측 뒤', async () => {
       await http().post(`/api/policies/${pid}/rollout`).set(RELEASE).send({ basisPoints: 0, reason: '일시 중단' }).expect(200);
       expect((await decide('KMH-NX4-0002', spec().flagKey)).body.result.reason).toBe('COHORT_MISS');
-      await http().post(`/api/policies/${pid}/rollout`).set(RELEASE).send({ basisPoints: 5000, reason: '50% 확대' }).expect(200);
+      // 배포한 사람은 효력을 넓힐 수 없다
+      expect((await http().post(`/api/policies/${pid}/rollout`).set(RELEASE).send({ basisPoints: 300, reason: 'Canary' }).expect(403)).body.error.code).toBe('SEPARATION_OF_DUTY');
+      await http().post(`/api/policies/${pid}/rollout`).set(OPERATOR).send({ basisPoints: 300, reason: 'Canary 시작' }).expect(200);
+      const fClass = (await http().get(`/api/features/${fid}/versions/0.1.0/safety`).expect(200)).body.profile.fClass;
+      if (fClass >= 'F2') {
+        // Canary 관측 기간(24 h) 전에는 넓힐 수 없다 → 25시간 뒤 중단 기준(이상 징후·차단 없음) 판정과 함께 확대
+        expect((await http().post(`/api/policies/${pid}/rollout`).set(OPERATOR).send({ basisPoints: 5000, reason: '50% 확대' }).expect(422)).body.error.message).toMatch(/관측 기간/);
+        const clock = app.get(Clock);
+        clock.set(new Date(clock.now().getTime() + 25 * 3600_000));
+      }
+      await http().post(`/api/policies/${pid}/rollout`).set(OPERATOR).send({ basisPoints: 5000, reason: '50% 확대' }).expect(200);
+      const staged = (await http().get(`/api/events?type=rollout.staged`).expect(200)).body.items.at(-1).payload;
+      expect(staged).toMatchObject({ to: 5000, kind: 'EXPAND' });
+      if (fClass >= 'F2') expect(staged.criteria).toMatchObject({ openAnomalies: [], activeKills: [] });
       const c = await http().get(`/api/targeting/cohort?flagKey=${spec().flagKey}`).expect(200);
       expect(c.body).toMatchObject({ basisPoints: 5000, algorithm: 'FP-COHORT-1' });
       for (const v of c.body.vehicles) expect(v.inCohort).toBe(v.bucket < 5000);

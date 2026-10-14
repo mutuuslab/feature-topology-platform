@@ -240,7 +240,7 @@ export const ko = {
     reject: '반려',
     deploy: '서버 배포',
     stage: '단계 조정',
-    stageHint: '승인된 배포 범위 안에서만 넓힐 수 있습니다 (FP-COHORT-1)',
+    stageHint: '승인된 배포 범위 안에서만 넓힐 수 있습니다 (FP-COHORT-1). 배포한 사람은 넓힐 수 없고, F2 이상은 Canary(≤ 5%)에서 24시간 관측하고 열린 이상 징후·진행 중 차단이 없어야 넓힙니다 (FFG-LCY-009)',
     validators: '분야별 검증 8종 (병렬)',
     safety: '배포 안전성 판정',
     safetyDecision: { GO: 'GO — 승인 가능', HOLD: 'HOLD — 보완 필요', BLOCKED: 'BLOCKED — 승인 불가' },

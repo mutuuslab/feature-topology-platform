@@ -59,6 +59,11 @@ export const PolicySchema = PolicySpec.extend({
   lastValidationId: z.string().nullable(),
   /** 단계적 기능 배포(D01-08) 현재 단계 — 승인된 내용(해시) 밖의 운영 값. null이면 정책 rollout 그대로 */
   stageBasisPoints: z.number().int().min(0).max(10000).nullable().default(null),
+  /** 배포(패키지 전달)한 사람·시각 — 효력 확대는 다른 사람이 승인한다(FFG-LCY-009) */
+  deployedBy: z.string().nullable().optional(),
+  deployedAt: z.string().nullable().optional(),
+  /** 지금 단계가 시작된 시각 — Canary 관측 기간의 기준 */
+  stagedAt: z.string().nullable().optional(),
 });
 export type Policy = z.infer<typeof PolicySchema>;
 

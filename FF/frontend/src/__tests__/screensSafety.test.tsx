@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { checkProfile, type SafetyProfile } from '@ff/contracts';
+import { asilInheritance, checkProfile, type SafetyProfile } from '@ff/contracts';
 import { AppProvider } from '../store';
 import { SafetyTab } from '../screens/features/SafetyTab';
 
@@ -70,7 +70,7 @@ beforeEach(() => {
       if (url.startsWith('/api/gate/')) return new Response(JSON.stringify(GATE), { status: 200, headers: { 'Content-Type': 'application/json' } });
       if (method === 'PUT') profile = { ...profile, ...(body as Partial<SafetyProfile>) };
       if (method === 'POST') profile = { ...profile, status: 'CONFIRMED', confirmedBy: 'usr-safety', confirmedAt: '2026-10-13T00:00:00Z', confirmSig: 'A'.repeat(86) };
-      return new Response(JSON.stringify({ profile, findings: checkProfile(profile) }), { status: method === 'POST' ? 201 : 200, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ profile, findings: checkProfile(profile), asil: asilInheritance({ asil: 'B', controlPoints: ['Parameter'] }, profile, { toolConfidence: true }) }), { status: method === 'POST' ? 201 : 200, headers: { 'Content-Type': 'application/json' } });
     }),
   );
 });
@@ -111,6 +111,15 @@ describe('안전 분류 탭 — 조합 검사 (FFG-CLS-009 · TC-FF-23)', () => 
     const preview = (await screen.findByText('비활성화 효과 미리보기')).closest('section')!;
     expect(preview.textContent).toContain('4.0 s');
     expect(within(preview).getByRole('list', { name: '안전·보안·법규 사유' }).textContent).toMatch(/운전자 경고.*4.0 s/);
+  });
+});
+
+describe('안전 분류 탭 — ASIL 상속 (FFG-CLS-002)', () => {
+  it('보정 데이터(Parameter) Flag는 예외 조건이 불충족 — 상속 ASIL과 조건별 판정을 보인다', async () => {
+    mount('quality');
+    const a = await screen.findByTestId('asil-inheritance');
+    expect(a.textContent).toContain('ASIL B을(를) 상속합니다');
+    expect(within(a).getByText('NOT_CALIBRATION')).toBeTruthy();
   });
 });
 

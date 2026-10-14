@@ -2,7 +2,7 @@
 // 초안(DRAFT)은 데이터셋에서 추정하거나 작성자가 고치고, Safety Manager(SAFETY_OFFICER)가 개인 서명으로 확정(CONFIRMED)하면 원천이 된다.
 // 확정 뒤에는 등급·시간값을 바꿀 수 없다 — 새 Version을 만든다(FFG-CLS-004). Gate는 G1에서 네 축·조합을, G2에서 확정 여부를 본다.
 import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Param, Post, Put, Query } from '@nestjs/common';
-import { blocking, checkProfile, inferFClass, jcs, LOCKED_AFTER_CONFIRM, SafetyConfirmBody, SafetyProfile, SafetyProfilePatch, fRank, type ClassFinding } from '@ff/contracts';
+import { asilInheritance, blocking, checkProfile, checkToolClassification, COMPONENTS, inferFClass, jcs, LOCKED_AFTER_CONFIRM, SafetyConfirmBody, SafetyProfile, SafetyProfilePatch, fRank, type AsilInheritance, type ClassFinding } from '@ff/contracts';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
@@ -19,7 +19,12 @@ import { FeatureRepo } from '../repos';
 /** 커밋된 초안 픽스처(tools/dataset/safety-infer.ts) — repo 루트 기준 */
 const FIXTURE = join(__dirname, '..', '..', '..', '..', '..', 'data', 'fixtures', 'safety', 'profiles.json');
 
+/** 도구 신뢰성 분류(FFG-PLT-013)에 규칙 위반이 없는가 — ASIL 상속 예외 조건(생성 경로 도구 신뢰도) */
+const TOOL_CONFIDENCE = checkToolClassification(COMPONENTS.map((c) => c.id)).every((p) => p.severity !== 'FAIL');
+
 export interface ProfileView {
+  /** FFG-CLS-002 — 안전 관련 Flag의 ASIL 상속·예외 */
+  asil?: AsilInheritance;
   profile: SafetyProfile;
   findings: ClassFinding[];
 }
@@ -94,7 +99,7 @@ export class SafetyProfileService implements OnModuleInit {
 
   view(featureId: string, version: string): ProfileView {
     const profile = this.ensure(featureId, version);
-    return { profile, findings: checkProfile(profile) };
+    return { profile, findings: checkProfile(profile), asil: this.asil(featureId, version, profile) };
   }
 
   list(featureId?: string): SafetyProfile[] {
@@ -175,6 +180,11 @@ export class SafetyProfileService implements OnModuleInit {
    * Gate 판정 전제 — G1: 네 축과 차단급 조합, G2 이후: Safety Manager 확정.
    * @rule FFG-CLS-001 — 네 축이 비어 있거나 조합이 위반이면 G1 PASS 불가
    */
+  private asil(featureId: string, version: string, p: SafetyProfile): AsilInheritance {
+    const f = this.features.get(featureId, version);
+    return asilInheritance({ asil: f?.asil ?? (null as never), controlPoints: f?.controlPoints ?? [] }, p, { toolConfidence: TOOL_CONFIDENCE });
+  }
+
   gatePrerequisite(featureId: string, version: string, gate: string): string | null {
     const p = this.ensure(featureId, version);
     if (gate === 'G1') {
@@ -182,6 +192,8 @@ export class SafetyProfileService implements OnModuleInit {
       return bad.length ? `안전 분류 조합 위반 — ${bad.map((b) => `${b.rule} ${b.message}`).join(' / ')}` : null;
     }
     if (p.status !== 'CONFIRMED') return `안전 분류(F·DC·R·유형)가 Safety Manager 확정 전입니다 — G1 다음 Gate는 확정된 분류가 필요합니다 (FFG-CLS-001·보고서 6.1 G2).`;
+    // G7 Safety/Security Gate — 안전 관련 Flag 경로의 ASIL(상속 또는 다섯 조건 예외)이 정해져 있어야 한다
+    if (gate === 'G7') return this.asil(featureId, version, p).blocker;
     return null;
   }
 }

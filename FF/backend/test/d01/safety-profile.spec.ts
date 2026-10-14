@@ -99,3 +99,13 @@ describe('Flag ID 재사용 금지 (FFG-CODE-020)', () => {
     expect(svc.bindFlag('brand_new_flag', 'FEAT-00002')).toContain('묶인 키');
   });
 });
+
+describe('ASIL 상속 (FFG-CLS-002)', () => {
+  it('FEAT-00022(F3, Parameter)는 보정 데이터 Flag라 예외 불가 — 사용 SW ASIL B를 상속, 조건별 판정과 Evidence', async () => {
+    const { http } = await boot();
+    const v = (await http().get('/api/features/FEAT-00022/versions/1.0.0/safety').expect(200)).body;
+    expect(v.asil).toMatchObject({ safetyRelated: true, inherits: 'B', exception: false, blocker: null });
+    const by = Object.fromEntries(v.asil.conditions.map((c: any) => [c.id, c.met]));
+    expect(by).toMatchObject({ NOT_CALIBRATION: false, CONFIG_SET_ONLY: false, GUARD_VERIFIES: true, TOOL_CONFIDENCE: true });
+  });
+});

@@ -764,6 +764,12 @@ export const ko = {
     findings: '조합 검사 (FFG-CLS-009 외)',
     findingsList: '규칙별 결과',
     noFindings: '조합 위반 없음',
+    // ASIL 상속 (FFG-CLS-002)
+    asil: 'ASIL 상속 (FFG-CLS-002)',
+    asilInherits: (a: string | null) => `생성·전달 경로가 사용 SW의 ASIL ${a ?? '—'}을(를) 상속합니다`,
+    asilException: '다섯 조건을 모두 만족 — ASIL 상속 예외 적용 가능',
+    asilNotSafety: 'F0·F1 — 안전 관련 Flag가 아니어서 상속 대상이 아닙니다',
+    asilConditions: '예외 조건',
     preview: '비활성화 효과 미리보기',
     previewSafety: '안전·보안·법규 사유',
     previewCommercial: '상업·운영 사유(체험권 만료 등)',

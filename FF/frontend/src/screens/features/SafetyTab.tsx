@@ -1,7 +1,7 @@
 // Feature 상세 › 안전 분류 탭 (D01-01, 보고서 v1.1 5장) — 판정 흐름으로 제안 → 초안 수정(조합 검사 실시간) → 비활성화 효과 미리보기 → Safety Manager 개인 서명 확정.
 // 조합 검사·제안·미리보기는 contracts 순수 함수(checkProfile·proposeClass·deactStages)라 서버 판정과 같다.
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-import { checkProfile, DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, proposeClass, REG_CLASSES, type ClassFinding, type ClassifyAnswers, type SafetyProfile } from '@ff/contracts';
+import { ASIL_EXCEPTION_LABEL, checkProfile, DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, proposeClass, REG_CLASSES, type AsilInheritance, type ClassFinding, type ClassifyAnswers, type SafetyProfile } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, ClassBadges, Drawer, ErrorNote, Explain, Field, Icon, KeyValue, Panel, RuleChecklist, Select, StageStrip, StatusGlyph, WindowGauge } from '../../design';
@@ -15,6 +15,27 @@ const INVALIDATE = ['safetyProfile', 'safetyProfiles', 'featureDetail', 'audit']
 interface View {
   profile: SafetyProfile;
   findings: ClassFinding[];
+  asil?: AsilInheritance;
+}
+
+/** 안전 관련 Flag의 ASIL 상속과 예외 다섯 조건 — 서버 판정(contracts asilInheritance) 그대로 */
+function AsilPanel({ a }: { a: AsilInheritance }) {
+  return (
+    <Panel title={S.asil} id="safety-asil">
+      <div data-testid="asil-inheritance" style={{ display: 'grid', gap: 'var(--sp-2)' }}>
+        <p className="ds-field__hint" style={{ margin: 0, color: a.blocker ? 'var(--danger)' : undefined }}>
+          {!a.safetyRelated ? S.asilNotSafety : a.exception ? S.asilException : S.asilInherits(a.inherits)}
+          {a.blocker ? ` — ${a.blocker}` : ''}
+        </p>
+        {a.safetyRelated && (
+          <RuleChecklist
+            caption={S.asilConditions}
+            items={a.conditions.map((c) => ({ id: c.id, status: c.met && c.evidence ? ('pass' as const) : ('fail' as const), title: ASIL_EXCEPTION_LABEL[c.id], reason: c.evidence ?? '—' }))}
+          />
+        )}
+      </div>
+    </Panel>
+  );
 }
 
 const TIME_KEYS = ['takeoverMs', 'rampMs', 'faultRampMs', 'faultTolerantTimeMs', 'maxPendingMs', 'maxCycleWaitMs'] as const;
@@ -307,6 +328,7 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
                   </p>
                 )}
               </Panel>
+              {q.data?.asil && <AsilPanel a={q.data.asil} />}
               <GatePanel id={id} ver={ver} />
               {locked && (
                 <Panel title={S.confirmedBy} id="safety-confirmed">

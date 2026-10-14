@@ -6375,6 +6375,36 @@
         }
       }
     },
+    "/api/sums": {
+      "get": {
+        "summary": "SUMS 기록 — 명령별 RXSWIN·형식승인 영향 평가·사용자 고지·결과, 보존 기간(FFG-LCY-008)",
+        "tags": [
+          "D06-08"
+        ],
+        "operationId": "sumsRecords",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/rehara-requests": {
       "get": {
         "summary": "재-HARA 요청 (보고서 6.4 조건 자동 검출) — FFG-LCY-003",

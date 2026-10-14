@@ -16,6 +16,8 @@ export interface ComplianceProfile {
   obligations: string;
   settings: string;
   status: ProfileStatus;
+  /** SUMS 기록 보존(보고서 13.7) — 원문에 값이 있는 시장만. null = Profile 원문 확인 필요 */
+  sumsRetention?: { yearsAfterProductionEnd: number; basis: string } | null;
 }
 
 /** 보고서 2.3 초기 Profile — ADS Profile(시장별 확인)은 시장 코드가 아니라 ADS Feature에 붙는다 */
@@ -23,7 +25,7 @@ export const COMPLIANCE_PROFILES: ComplianceProfile[] = [
   { profileId: 'GLOBAL-UNECE', version: '1.0.0', markets: ['UNECE'], countries: 'EU·EEA, 일본, 기타 1958 협정 체약국', obligations: 'UN R155·R156, RXSWIN, ADAS 관련 UN 규정, R185(발효 후)', settings: 'R156 영향 평가 ID 필수, RXSWIN 호환 검사, 사용자 고지, ADS 원격 종료 요구', status: 'CONFIRMED' },
   { profileId: 'UK', version: '1.0.0', markets: ['UK'], countries: '영국', obligations: 'GB 형식승인 사이버보안·SW 업데이트 요건(신규 형식 2026-06-01, 전 차량 2027-06-01)', settings: 'GLOBAL-UNECE + 영국 적용일', status: 'CONFIRMED' },
   { profileId: 'EU', version: '1.0.0', markets: ['EU'], countries: 'EU·EEA', obligations: 'GSR 의무 기능, Data Act, GDPR·ePrivacy, PLD, CRA, NIS2', settings: 'DC4 목록(GSR), 텔레메트리 동의·접근권, 가명화', status: 'CONFIRMED' },
-  { profileId: 'CN', version: '1.0.0', markets: ['CN'], countries: '중국', obligations: 'GB 44495·44496, MIIT·SAMR OTA 신고·허가, 공개 베타 금지, 데이터 규정', settings: '신고·허가 ID 필수, 차량 내 사용자 확인, 데이터 현지 처리', status: 'CONFIRMED' },
+  { profileId: 'CN', version: '1.0.0', markets: ['CN'], countries: '중국', obligations: 'GB 44495·44496, MIIT·SAMR OTA 신고·허가, 공개 베타 금지, 데이터 규정', settings: '신고·허가 ID 필수, 차량 내 사용자 확인, 데이터 현지 처리', status: 'CONFIRMED', sumsRetention: { yearsAfterProductionEnd: 10, basis: 'GB 44496-2024 §4.1.2 (차종 생산 중단 후 최소 10년)' } },
   { profileId: 'NA-US', version: '1.0.0', markets: ['US'], countries: '미국', obligations: 'Part 573 리콜(5영업일), SGO 사고 보고, FMVSS 127, BIS Connected Vehicle, 49 CFR Part 563 EDR', settings: '안전 Kill과 리콜 연계, AEB는 DC4, SW 원산지 관리, EDR·SGO 정합 텔레메트리', status: 'CONFIRMED' },
   { profileId: 'NA-CA', version: '1.0.0', markets: ['CA'], countries: '캐나다', obligations: 'Motor Vehicle Safety Act(결함 통지), CMVSS', settings: '리콜은 MVSA 절차, 사이버보안은 R155 수준', status: 'VERIFY_REQUIRED' },
   { profileId: 'LATAM', version: '1.0.0', markets: ['BR', 'MX'], countries: '브라질, 멕시코', obligations: '시장별 의무 ADAS, 개인정보(LGPD)', settings: 'DC4 목록에 시장별 의무 기능 반영', status: 'VERIFY_REQUIRED' },
@@ -56,4 +58,14 @@ export function profileFinding(i: { market: string; request: string; fClass: str
   if (!widening || !safety || !unconfirmed.length)
     return { rule: 'FFG-GEN-003', ok: true, detail: !widening ? `${i.request}: 시장 Profile 상태와 무관하게 허용(비활성화는 막지 않는다)` : `${used.map((p) => `${p.profileId} ${p.version}`).join(', ') || i.market} 확인`, profiles: used };
   return { rule: 'FFG-GEN-003', ok: false, detail: `${i.request}: ${unconfirmed.join(', ')} — F2 이상 활성화·복원 차단(원문 확인 뒤 Profile 갱신 필요)`, profiles: used };
+}
+
+/**
+ * SUMS 기록 보존 기간 — Profile들 중 가장 긴 요건(보고서 13.7). 값이 없는 Profile은 원문 확인 전이라 목록으로 돌려준다.
+ * @rule FFG-LCY-008 — 보존 기간 = Profile 최대값. 값이 없는 시장의 원문 확인은 법규 담당(GEN-004)
+ */
+export function sumsRetention(profiles: ComplianceProfile[] = COMPLIANCE_PROFILES): { yearsAfterProductionEnd: number; basis: string; unknown: string[] } {
+  const known = profiles.filter((p) => p.sumsRetention).sort((a, b) => b.sumsRetention!.yearsAfterProductionEnd - a.sumsRetention!.yearsAfterProductionEnd);
+  const top = known[0]?.sumsRetention;
+  return { yearsAfterProductionEnd: top?.yearsAfterProductionEnd ?? 0, basis: top ? `${known[0].profileId} ${top.basis}` : '원문 확인 필요', unknown: profiles.filter((p) => !p.sumsRetention).map((p) => p.profileId) };
 }

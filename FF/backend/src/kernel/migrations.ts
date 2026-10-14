@@ -307,6 +307,17 @@ CREATE INDEX rehara_fv ON rehara_request(feature_id, feature_version, status);
 `,
   },
   {
+    // 보고서 v1.1 WP6 — SUMS 기록(FFG-LCY-008): 명령(RXSWIN·형식승인 영향 평가·사용자 고지)과 결과. 추가만
+    name: '019_sums',
+    sql: `
+CREATE TABLE sums_record (id INTEGER PRIMARY KEY AUTOINCREMENT, command_id TEXT NOT NULL, kind TEXT NOT NULL, feature_id TEXT NOT NULL, publication_id TEXT, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX sums_command ON sums_record (command_id, kind);
+CREATE INDEX sums_publication ON sums_record (publication_id);
+CREATE TRIGGER sums_no_update BEFORE UPDATE ON sums_record BEGIN SELECT RAISE(ABORT, 'sums_record는 추가만 가능'); END;
+CREATE TRIGGER sums_no_delete BEFORE DELETE ON sums_record BEGIN SELECT RAISE(ABORT, 'sums_record는 추가만 가능'); END;
+`,
+  },
+  {
     // P10 — 실험(D01-07)·장애·VOC(D04-05)·동기화 실행(D05-02)·해외공장 주문(D05-03)·OTel 수집기 모의(IF-11)
     name: '020_p10_ext',
     sql: `

@@ -15,6 +15,7 @@ import { POLICY_VALIDATORS, ValidationService } from './validation-history/valid
 import { VecuAdapter } from '../../adapters/vecu/vecu.adapter';
 import { IamController, IamService } from './iam/iam.service';
 import { TmsSubmissionService, VirtualValidationController, VirtualValidationService } from './scenario-validation/virtual-validation.service';
+import { ReharaController, ReharaService } from './change-impact-validation/rehara.service';
 
 const VALIDATORS = [
   PolicyValidationService,
@@ -29,11 +30,12 @@ const VALIDATORS = [
 
 @Module({
   imports: [D01PolicyModule],
-  controllers: [VirtualValidationController, IamController],
+  controllers: [VirtualValidationController, IamController, ReharaController],
   providers: [
     VecuAdapter,
     IamService,
     VirtualValidationService,
+    ReharaService,
     TmsSubmissionService,
     ...VALIDATORS,
     { provide: POLICY_VALIDATORS, useFactory: (...vs: unknown[]) => vs, inject: VALIDATORS },

@@ -22,6 +22,8 @@ import { EventService } from '../../../kernel/event.service';
 import { LifecycleService } from '../registry/lifecycle.service';
 import { GateRepo } from '../repos';
 import { GateDecisionService } from './gate-decision.service';
+import { ReharaRepo } from './rehara.repo';
+import { REHARA_BLOCKED_GATES, REHARA_LABEL } from '@ff/contracts';
 import { VirtualRunRepo } from '../../d06-qsec/scenario-validation/virtual-run.repo';
 
 const STAGES: GateId[][] = [
@@ -44,6 +46,7 @@ export class GateService {
     private readonly virtualRuns: VirtualRunRepo,
     private readonly safety: SafetyProfileService,
     private readonly decisions: GateDecisionService,
+    private readonly rehara: ReharaRepo,
   ) {}
 
   view(featureId: string, version: string) {
@@ -64,6 +67,8 @@ export class GateService {
         evidence: latest[g] ? this.gates.evidence(latest[g]!.gateRecordId) ?? null : null,
         history: history.filter((h) => h.gate === g).map((h) => ({ ...h, decision: this.decisions.verify(h).state })),
       })),
+      /** FFG-LCY-003 — 이 Version의 재-HARA 요청(열린 것이 있으면 G3 이후 PASS 막힘) */
+      rehara: this.rehara.list({ featureId, featureVersion: version }),
     };
   }
 
@@ -111,6 +116,13 @@ export class GateService {
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, pre, 'D01-02');
       throw new DomainError('GUARD_FAILED', pre);
     }
+    // FFG-LCY-003 — 재-HARA 요청이 열려 있으면 G3 이후 PASS는 G2(위험 분석) 재판정 뒤에
+    const rh = body.inputResult === 'PASS' && (REHARA_BLOCKED_GATES as readonly string[]).includes(body.gate) ? this.rehara.open(featureId, version) : [];
+    if (rh.length) {
+      const msg = `재-HARA 요청 ${rh.map((x) => `${x.requestId}(${REHARA_LABEL[x.condition]})`).join(', ')}이(가) 열려 있습니다 — G2를 다시 판정한 뒤 ${body.gate}을(를) PASS로 판정할 수 있습니다.`;
+      this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, msg, 'D01-02');
+      throw new DomainError('GUARD_FAILED', msg);
+    }
     const vv = this.virtualEvidence(featureId, version, body);
     if (vv) {
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, vv, 'D01-02');
@@ -139,6 +151,10 @@ export class GateService {
       this.gates.insert(record);
       // 결정 기록 — 판정한 사람·그때의 역할로 서명(같은 트랜잭션)
       const decision = this.decisions.sign(record, { id: actor.id, role: actor.role }, 'PLATFORM');
+      // G2 재판정 PASS가 열린 재-HARA 요청을 닫는다
+      if (body.gate === 'G2' && record.status === 'PASS')
+        for (const x of this.rehara.resolve(featureId, version, record.gateRecordId, this.clock.iso()))
+          this.audit.record(actor, 'REHARA_RESOLVE', `${featureId}@${version}`, { before: { requestId: x.requestId, status: 'OPEN' }, after: { status: 'RESOLVED', gateRecordId: record.gateRecordId }, componentId: 'D01-02' });
       this.audit.record(actor, `GATE_JUDGE ${body.gate}`, target, {
         before: prev ? { gateRecordId: prev.gateRecordId, status: prev.status } : null,
         after: { gateRecordId: record.gateRecordId, status: record.status, evidenceRef: record.evidenceRef, decisionKid: decision.signature.kid },

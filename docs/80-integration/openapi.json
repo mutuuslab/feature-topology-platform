@@ -6375,6 +6375,52 @@
         }
       }
     },
+    "/api/rehara-requests": {
+      "get": {
+        "summary": "재-HARA 요청 (보고서 6.4 조건 자동 검출) — FFG-LCY-003",
+        "tags": [
+          "D06-05"
+        ],
+        "operationId": "reharaRequests",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/virtual-validations/combinations": {
       "get": {
         "summary": "Feature 조합 시험 계획 (Topology 허용 조합, 3-way covering array, 금지 조합 부정 시험) — FFG-TST-003",

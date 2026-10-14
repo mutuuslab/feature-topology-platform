@@ -154,6 +154,22 @@ function Gates({ id, ver }: { id: string; ver: string }) {
   return (
     <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
       <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
+        {!!q.data?.rehara?.length && (
+          <section aria-label={T.rehara} data-testid="rehara">
+            {q.data.rehara.some((x) => x.status === 'OPEN') && <p className="ds-field__hint" style={{ color: 'var(--danger)' }}>{T.reharaOpen(q.data.rehara.filter((x) => x.status === 'OPEN').length)}</p>}
+            <ul className="ds-check">
+              {q.data.rehara.map((x) => (
+                <li key={x.requestId} data-state={x.status === 'OPEN' ? 'FAIL' : 'PASS'}>
+                  <Icon name={x.status === 'OPEN' ? 'alert' : 'check'} size={16} />
+                  <span>
+                    <span className="ds-mono">{x.requestId}</span> {T.reharaCondition[x.condition] ?? x.condition}
+                    <span className="ds-check__detail">{`${x.detail}${x.resolvedBy ? ` · ${T.reharaResolved(x.resolvedBy)}` : ''}`}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         <GateRail statuses={statuses} onSelect={setSelected} tours={{ G5: 'gate-g5' }} />
         {g && (
           <div className="ds-split">

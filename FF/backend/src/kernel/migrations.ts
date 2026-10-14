@@ -298,6 +298,15 @@ CREATE TRIGGER gate_decision_no_delete BEFORE DELETE ON gate_decision BEGIN SELE
 `,
   },
   {
+    // 보고서 v1.1 WP2 — 재-HARA 요청(FFG-LCY-003): 6.4 조건 자동 검출. 같은 원인(ref)으로 두 번 만들지 않는다
+    name: '018_rehara',
+    sql: `
+CREATE TABLE rehara_request (request_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, condition TEXT NOT NULL, ref TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE UNIQUE INDEX rehara_once ON rehara_request(feature_id, feature_version, ref);
+CREATE INDEX rehara_fv ON rehara_request(feature_id, feature_version, status);
+`,
+  },
+  {
     // P10 — 실험(D01-07)·장애·VOC(D04-05)·동기화 실행(D05-02)·해외공장 주문(D05-03)·OTel 수집기 모의(IF-11)
     name: '020_p10_ext',
     sql: `

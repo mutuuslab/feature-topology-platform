@@ -76,6 +76,8 @@ export interface GateView {
     decision?: { state: 'SIGNED' | 'IMPORTED' | 'MISSING' | 'INVALID'; reason: string | null; kid: string | null; approver: { id: string | null; role: string } | null } | null;
     history: (GateRecordRow & { decision?: 'SIGNED' | 'IMPORTED' | 'MISSING' | 'INVALID' })[];
   }[];
+  /** FFG-LCY-003 재-HARA 요청 */
+  rehara?: { requestId: string; condition: string; detail: string; status: 'OPEN' | 'RESOLVED'; createdAt: string; resolvedBy: string | null }[];
 }
 
 export interface ChecklistItem {

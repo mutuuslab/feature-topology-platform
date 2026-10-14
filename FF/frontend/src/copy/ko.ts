@@ -153,6 +153,10 @@ export const ko = {
     // Gate Decision Record 서명 상태 (FFG-LCY-001)
     decision: '결정 서명',
     decisionState: { SIGNED: '서명됨', IMPORTED: '이관 기록 봉인', MISSING: '서명 없음 — 전이 근거 아님', INVALID: '서명 불일치 — 전이 근거 아님' } as Record<string, string>,
+    rehara: '재-HARA 요청',
+    reharaOpen: (n: number) => `재-HARA 요청 ${n}건이 열려 있습니다 — G2(위험 분석)를 다시 판정하기 전에는 G3 이후 Gate를 PASS로 판정할 수 없습니다`,
+    reharaCondition: { SCOPE: '범위 확대', CONTROL: '제어 권한 변경', TOPOLOGY: 'Topology 관계 신규', FIELD: '현장 트리거', TARA: 'TARA 위협', ADS_TOOL: 'ADS 검증 도구·임계값' } as Record<string, string>,
+    reharaResolved: (by: string) => `닫힘 — ${by}`,
     decisionNote: (kid: string | null, who: string | null) => `${kid ?? '—'}${who ? ` · ${who}` : ''}`,
     outgoing: '이 Version이 원천인 관계',
     incoming: '이 Feature를 대상으로 하는 관계',

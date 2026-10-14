@@ -116,7 +116,7 @@ describe('Feature Version 상세', () => {
     expect(within(dialog).getAllByText(/Feature 승인자 역할이 할 수 있습니다/).length).toBeGreaterThan(0);
   });
 
-  it('FFG-LCY-001 Gate 탭: Decision Record 서명 상태 — 판정 이력마다 서명됨·이관 기록 봉인·서명 없음(전이 근거 아님)', async () => {
+  it('FFG-LCY-001·003 Gate 탭: Decision Record 서명 상태·재-HARA 요청 — 판정 이력마다 서명됨·이관 기록 봉인·서명 없음(전이 근거 아님)', async () => {
     const rec = (id: string, decision: string) => ({ gateRecordId: id, featureId: 'FEAT-00013', featureVersion: '0.3.0', country: 'KR', gate: 'G1', gateName: 'Feature Gate', inputResult: 'PASS', rationale: '확인', evidenceRef: 'EV-1', judgeRole: 'Gate 판정자', judgedAt: '2026-10-12T10:00:00+09:00', status: 'PASS', gateStageLifecycle: 'PROPOSED', currentLifecycle: 'PROPOSED', transitionNote: '', _missing: {}, decision });
     const GATES = {
       gates: [
@@ -127,6 +127,10 @@ describe('Feature Version 상세', () => {
           history: [rec('SIM-G1-000001', 'IMPORTED'), rec('SIM-G1-000002', 'SIGNED'), rec('SIM-G1-000003', 'MISSING')],
         },
       ],
+      rehara: [
+        { requestId: 'RH-00001', condition: 'CONTROL', detail: 'takeoverMs 4000 → 2500', status: 'OPEN', createdAt: 'x', resolvedBy: null },
+        { requestId: 'RH-00002', condition: 'TOPOLOGY', detail: 'DEP-00030 FEAT-00013 REQUIRES FEAT-00024', status: 'RESOLVED', createdAt: 'x', resolvedBy: 'SIM-G2-000009' },
+      ],
     };
     handler = (url) => (url.includes('/gates') ? { body: GATES } : { body: DETAIL });
     mount('/features/FEAT-00013/0.3.0', '/features/:id/:ver', <FeatureDetail />);
@@ -136,6 +140,11 @@ describe('Feature Version 상세', () => {
     expect(note.textContent).toContain('서명된 Decision Record가 없습니다');
     expect(screen.getByTestId('decision-SIM-G1-000001').textContent).toBe('이관 기록 봉인');
     expect(screen.getByTestId('decision-SIM-G1-000002').textContent).toBe('서명됨');
+    // FFG-LCY-003 — 열린 재-HARA 요청은 G3 이후 PASS를 막는다는 안내와 함께
+    const rh = screen.getByTestId('rehara');
+    expect(rh.textContent).toContain('재-HARA 요청 1건이 열려 있습니다');
+    expect([...rh.querySelectorAll('li')].map((li) => li.getAttribute('data-state'))).toEqual(['FAIL', 'PASS']);
+    expect(rh.textContent).toContain('닫힘 — SIM-G2-000009');
   });
 });
 

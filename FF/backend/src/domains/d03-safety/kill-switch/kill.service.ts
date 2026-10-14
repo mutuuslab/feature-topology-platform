@@ -153,7 +153,7 @@ export class KillService {
    * 차단 요청 — 승인 대기(REQUESTED). DC4·의무 기능은 받지 않고 거부를 기록한다.
    * @rule FFG-DEAC-011, FFG-PLT-003 — 요청 단계: DC4 거부 기록, 비활성화 방식은 Registry 등급(운영자 선택 없음)
    */
-  issue(actor: Actor, body: KillCreateBody): KillRequest {
+  issue(actor: Actor, body: KillCreateBody, opts: { userNoticeRef?: string | null } = {}): KillRequest {
     if (body.confirm.trim() !== body.featureId) {
       this.audit.failed(actor, 'KILL_REQUEST', body.featureId, 'type-to-confirm 불일치', 'D03-03');
       throw new DomainError('VALIDATION', `확인 입력이 차단 대상 Feature ID(${body.featureId})와 다릅니다.`);
@@ -201,6 +201,7 @@ export class KillService {
         expiresAt: new Date(now.getTime() + APPROVAL_TTL_MS).toISOString(),
         recallCampaignId: body.recallCampaignId ?? null,
         containmentJustification: body.containmentJustification ?? null,
+        userNoticeRef: opts.userNoticeRef ?? null,
         gate: null,
         command: null,
         rejectedBy: null,
@@ -373,6 +374,7 @@ export class KillService {
       anomalyId?: string | null;
       recallCampaignId?: string | null;
       containmentJustification?: string | null;
+      userNoticeRef?: string | null;
     },
     request: KillRequestType,
     approvals: KillApprovalRecord[],
@@ -408,7 +410,11 @@ export class KillService {
         ...(k.recallCampaignId ? { recall_campaign_id: k.recallCampaignId } : {}),
         ...(k.containmentJustification ? { containment_justification: k.containmentJustification } : {}),
       },
-      user_notice: { required: true, text_ref: `HMI-TXT-${k.featureId.replace('-', '')}-${request === 'restore' ? 'RESTORE' : 'DEACT'}` },
+      // 사용자 고지 — 체험권 만료처럼 실제 고지 기록(NTC-…)이 있으면 그 기록, 아니면 기능별 HMI 고지 문안.
+      // 고지 없는 체험권 만료는 요청 자체를 만들지 않는다(trial-expiry.listener)
+      user_notice: k.userNoticeRef
+        ? { required: true, text_ref: k.userNoticeRef, ...(marketOf(f.country) === 'CN' ? { user_confirmation_required: true } : {}) }
+        : { required: true, text_ref: `HMI-TXT-${k.featureId.replace('-', '')}-${request === 'restore' ? 'RESTORE' : 'DEACT'}` },
       evidence: { evidence_manifest_id: `EVM-${k.featureId}-${k.featureVersion}`, ...(f.baselineId ? { bom_baseline_id: f.baselineId } : {}), ...(p.sbomRef ? { sbom_ref: p.sbomRef } : {}) },
       issued_by: 'ff-platform',
       issued_at: now.toISOString(),

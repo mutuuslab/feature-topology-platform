@@ -141,6 +141,8 @@ export const KillRequestSchema = z.object({
   expiresAt: z.string().optional(),
   recallCampaignId: z.string().nullable().optional(),
   containmentJustification: z.string().nullable().optional(),
+  /** 상업·운영 사유 명령의 사용자 고지 기록(예: 체험권 만료 고지 NTC-NNNNN) — 없으면 F2 이상 상업 명령은 게이트 FFG-PLT-006 FAIL */
+  userNoticeRef: z.string().nullable().optional(),
   gate: KillGateSummary.nullable().optional(),
   command: KillCommandRef.nullable().optional(),
   rejectedBy: z.string().nullable().optional(),

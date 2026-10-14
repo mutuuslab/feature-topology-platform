@@ -217,7 +217,8 @@
         "contracts/src/rules/deactivation.ts"
       ],
       "tested": [
-        "contracts/src/rules/deactivation.test.ts"
+        "contracts/src/rules/deactivation.test.ts",
+        "backend/test/d03/trial-expiry-kill.spec.ts"
       ]
     },
     {
@@ -418,10 +419,13 @@
       ],
       "section": "06_lifecycle.md · 6.6 규칙",
       "implemented": [
-        "backend/src/domains/d01-policy/entitlement/trial-expiry.service.ts"
+        "backend/src/domains/d01-policy/entitlement/trial-expiry.service.ts",
+        "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts"
       ],
       "tested": [
         "contracts/src/rules/trial.test.ts",
+        "backend/test/d01/policy.spec.ts",
+        "backend/test/d03/trial-expiry-kill.spec.ts",
         "backend/test/d04/status-v2.spec.ts",
         "backend/test/d05/trial-expiry.spec.ts"
       ]
@@ -660,7 +664,8 @@
         "contracts/src/rules/policy-gate.ts"
       ],
       "tested": [
-        "contracts/src/rules/policy-gate.test.ts"
+        "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/d03/trial-expiry-kill.spec.ts"
       ]
     },
     {

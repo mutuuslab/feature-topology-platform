@@ -143,7 +143,7 @@ describe('요청 유형별 Guard 동작 (9.6 SYNC · FFG-LCY-010 활성화 · FF
     const sig = hsm.signDetached(purpose, jcs(b));
     return { ...b, signature: { alg: 'EdDSA' as const, kid: sig.kid, value: sig.value } } as KillCommandV2;
   }
-  it('SYNC는 상태를 바꾸지 않고, 활성화는 ACT_PENDING → ACTIVE, 다른 용도 키로 서명한 활성화는 SIGNATURE_INVALID', async () => {
+  it('SYNC는 상태를 바꾸지 않고, 다른 용도 키로 서명한 활성화는 SIGNATURE_INVALID, DISABLED 활성화는 STATE_NOT_ALLOWED(FFG-CLS-007·TC-FF-15), INACTIVE 활성화는 ACT_PENDING → ACTIVE', async () => {
     const { http, advance, runtime, hsm } = await boot();
     const { k } = await killed(http, advance);
     const env: KillCommandV2 = (await http().get(`/api/kill-requests/${k.killId}/envelopes`).expect(200)).body.envelopes.find((e: KillCommandV2) => e.scope.vehicle_ids[0] === 'ego-01');
@@ -153,12 +153,21 @@ describe('요청 유형별 Guard 동작 (9.6 SYNC · FFG-LCY-010 활성화 · FF
     const wrongKey = craft(hsm, { ...env, vehicle_auth: { ...env.vehicle_auth!, vehicle_seq: env.vehicle_auth!.vehicle_seq + 1 } }, 'activate', 'kill');
     runtime.guard('ego-01', k.publicationId, 'KILL', wrongKey, ['FEAT-00022']);
     expect(await state()).toBe('DISABLED');
-    runtime.guard('ego-01', k.publicationId, 'KILL', craft(hsm, { ...env, vehicle_auth: { ...env.vehicle_auth!, vehicle_seq: env.vehicle_auth!.vehicle_seq + 1 } }, 'activate', 'activate'), ['FEAT-00022']);
+    // 회귀: 안전 Kill로 DISABLED인 기능을 활성화 명령(체험권·구독 경로)이 풀었다 — 복원 절차만 풀 수 있다
+    const activate = (bump: number) => craft(hsm, { ...env, vehicle_auth: { ...env.vehicle_auth!, vehicle_seq: env.vehicle_auth!.vehicle_seq + bump } }, 'activate', 'activate');
+    runtime.guard('ego-01', k.publicationId, 'KILL', activate(1), ['FEAT-00022']);
+    expect(await state()).toBe('DISABLED');
+    // 상업 사유로 꺼진(INACTIVE) 기능은 활성화로 켠다 — 작동 중이 아닐 때 ACT_PENDING → ACTIVE
+    const rt = runtime as any;
+    const st = rt.runtime.get('ego-01');
+    st.featureState['FEAT-00022'] = 'INACTIVE';
+    rt.runtime.save(st);
+    runtime.guard('ego-01', k.publicationId, 'KILL', activate(2), ['FEAT-00022']);
     expect(await state()).toBe('ACT_PENDING');
     advance(2_000);
     expect(await state()).toBe('ACTIVE');
     const log = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log.map((l: any) => l.detail);
-    expect(log.slice(-3)).toEqual(['sync DC2 수락', 'SIGNATURE_INVALID', 'activate DC2 수락']);
+    expect(log.slice(-4)).toEqual(['sync DC2 수락', 'SIGNATURE_INVALID', 'STATE_NOT_ALLOWED', 'activate DC2 수락']);
   });
 });
 

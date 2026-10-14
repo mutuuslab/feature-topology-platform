@@ -2,9 +2,9 @@
   "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
   "summary": {
     "platformRules": 75,
-    "implemented": 54,
-    "tested": 54,
-    "reportTestsReferenced": 15
+    "implemented": 55,
+    "tested": 55,
+    "reportTestsReferenced": 16
   },
   "rules": [
     {
@@ -147,8 +147,12 @@
         "차량 SW"
       ],
       "section": "05_classification.md · 5.8 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts"
+      ],
+      "tested": [
+        "backend/test/d04/status-v2.spec.ts"
+      ]
     },
     {
       "id": "FFG-CLS-009",
@@ -1190,6 +1194,7 @@
   ],
   "reportTests": [
     "TC-FF-11",
+    "TC-FF-15",
     "TC-FF-16",
     "TC-FF-21",
     "TC-FF-23",

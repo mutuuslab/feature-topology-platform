@@ -179,7 +179,7 @@ export class VehicleRuntimeService {
     );
     const design = this.gate.registryEntry(featureId, env.feature.version)?.deact_class ?? 'DC4';
     const last = s.guard?.[featureId];
-    const code = guardCheck({
+    const verified = guardCheck({
       jwsOk,
       cmdAuthOk: this.hsm.verifyCmac(vin, va.key_epoch, block, va.cmd_auth),
       keyEpoch: va.key_epoch,
@@ -194,6 +194,8 @@ export class VehicleRuntimeService {
       approverRefs: [va.approver_refs[0], va.approver_refs[1]],
     });
     const current = (s.featureState[featureId] as GuardState | undefined) ?? 'ACTIVE';
+    // @rule FFG-CLS-007 — TC-FF-15: DISABLED(안전 비활성화)는 활성화로 풀지 않는다, 복원 절차(restore)만. 체험권·구독 변경이 활성화를 보내도 그대로
+    const code = verified === 'NONE' && env.request === 'activate' && current === 'DISABLED' ? 'STATE_NOT_ALLOWED' : verified;
     if (code !== 'NONE') {
       s.log.push({ at: this.clock.iso(), publicationId, kind, result: 'REJECTED', detail: code });
       this.runtime.save(s);

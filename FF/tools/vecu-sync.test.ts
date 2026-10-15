@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { selectFiles, sha } from './vecu-sync.ts';
+import { driftOf, selectFiles, sha } from './vecu-sync.ts';
 
 test('허용 목록만 고르고, 실사 스플랫·로컬 전용 모델·도구·시험·문서는 뺀다', () => {
   const all = [
@@ -21,4 +21,14 @@ test('해시는 줄끝과 무관 — Windows 체크아웃(CRLF)과 CI 체크아�
   writeFileSync(join(dir, 'a.js'), 'const a = 1;\r\nconst b = 2;\r\n');
   writeFileSync(join(dir, 'b.js'), 'const a = 1;\nconst b = 2;\n');
   assert.equal(sha(join(dir, 'a.js')), sha(join(dir, 'b.js')));
+});
+
+// 회귀(2026-10-16): vECU 원본의 평가기 사본(js/vendor/ff_evaluate.js)이 다시 만들어졌는데 사이트 사본은 예전 것 — 매니페스트 비교만으로는 못 잡았다
+test('원본 대비 낡음 — 바뀐 파일·새 파일·없어진 파일을 찾고, 같으면 비어 있다', () => {
+  assert.deepEqual(driftOf({ 'index.html': 'a', 'js/x.js': 'b' }, { 'index.html': 'a', 'js/x.js': 'b' }), []);
+  assert.deepEqual(driftOf({ 'index.html': 'a', 'js/vendor/ff_evaluate.js': 'NEW', 'js/new.js': 'c' }, { 'index.html': 'a', 'js/vendor/ff_evaluate.js': 'OLD', 'js/gone.js': 'd' }), [
+    '원본에 새 파일: js/new.js',
+    '원본에서 없어짐: js/gone.js',
+    '원본이 바뀜: js/vendor/ff_evaluate.js',
+  ]);
 });

@@ -1,6 +1,7 @@
 // vECU 시뮬레이터 웹 실행본 동기화 — FF 사이트와 함께 /vecu/ 로 배포한다(사용자 결정 2026-10-13: FF repo에 웹 실행본 동기화, FF에서는 링크로 연다).
 //   node tools/vecu-sync.ts           VECU_DIR(기본 C:/project/2026-10-11_vECU)에서 허용 목록만 frontend/public/vecu/ 로 복사 + VECU_SYNC.json(해시)
 //   node tools/vecu-sync.ts --check   복사본이 매니페스트와 같은지(FF 쪽에서 고치지 않았는지)·금지 경로·금지어가 없는지 검사 (verify 단계)
+//                                     + vECU 원본이 있으면 동기화 뒤 원본이 바뀌었는지(낡은 사본을 배포하지 않게, 2026-10-16 평가기 사본 회귀)
 // vECU 원본은 읽기만 한다(vECU 세션 소유). 실사 스플랫(splat/ — NuRec 약관 4.6 호스팅 금지)·assets/user/(로컬 전용 모델)·도구·시험·문서는 제외.
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -57,6 +58,17 @@ function problems(root: string, files: string[]): string[] {
   return out;
 }
 
+/** 원본 대비 사본의 낡음 — 원본에서 바뀐 파일·새로 생긴 파일·없어진 파일(허용 목록 기준). 순수 함수: 해시 표 두 개만 본다 */
+export function driftOf(source: Record<string, string>, synced: Record<string, string>): string[] {
+  const out: string[] = [];
+  for (const [f, h] of Object.entries(source)) {
+    if (!(f in synced)) out.push(`원본에 새 파일: ${f}`);
+    else if (synced[f] !== h) out.push(`원본이 바뀜: ${f}`);
+  }
+  for (const f of Object.keys(synced)) if (!(f in source)) out.push(`원본에서 없어짐: ${f}`);
+  return out.sort();
+}
+
 function sync() {
   if (!existsSync(join(SRC, 'index.html'))) throw new Error(`vECU 폴더가 없습니다: ${SRC} (VECU_DIR로 지정)`);
   const files = selectFiles(list(SRC));
@@ -87,6 +99,12 @@ function check(): number {
   for (const [f, e] of Object.entries(m.files)) {
     if (!existsSync(join(OUT, f))) errors.push(`빠진 파일: ${f}`);
     else if (sha(join(OUT, f)) !== e.sha256) errors.push(`복사본이 바뀜(원본에서 고친 뒤 다시 동기화): ${f}`);
+  }
+  // 원본이 있으면(로컬) 사본이 최신인지 — 없으면(CI) 사본만 본다
+  if (existsSync(join(SRC, 'index.html'))) {
+    const source = Object.fromEntries(selectFiles(list(SRC)).map((f) => [f, sha(join(SRC, f))]));
+    const drift = driftOf(source, Object.fromEntries(Object.entries(m.files).map(([f, e]) => [f, e.sha256])));
+    for (const d of drift) errors.push(`${d} — npm run vecu:sync 로 다시 동기화`);
   }
   if (errors.length) {
     console.error(`vecu:check  ✗ ${errors.length}건\n  ${errors.join('\n  ')}`);

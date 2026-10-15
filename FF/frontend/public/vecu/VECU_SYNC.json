@@ -1,6 +1,6 @@
 {
   "source": "C:/project/2026-10-11_vECU",
-  "syncedAt": "2026-10-13T22:06:05.466Z",
+  "syncedAt": "2026-10-15T18:23:30.000Z",
   "note": "tools/vecu-sync.ts가 만든 복사본 — 여기서 고치지 말고 vECU 원본을 고친 뒤 다시 동기화",
   "files": {
     "assets/car.glb.b64.txt": {
@@ -96,8 +96,8 @@
       "bytes": 46396
     },
     "js/vendor/ff_evaluate.js": {
-      "sha256": "c1ddd580c29d4a9055a1f2fe91d2a873a560346dcdf920a22897fb22e8b25dfe",
-      "bytes": 9896
+      "sha256": "742416ebf5d1b9a3644c26d1b83d5564fcd335e248cf34aa53e1cb0b7e36d5ec",
+      "bytes": 10232
     },
     "js/world.js": {
       "sha256": "7d5cb84835126d0960c550c7f9e4af2f3ca56a4545c22bf1640afd1b468de95e",

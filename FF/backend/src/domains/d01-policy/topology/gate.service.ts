@@ -23,7 +23,7 @@ import { LifecycleService } from '../registry/lifecycle.service';
 import { GateRepo } from '../repos';
 import { GateDecisionService } from './gate-decision.service';
 import { ReharaRepo } from './rehara.repo';
-import { REHARA_BLOCKED_GATES, REHARA_LABEL } from '@ff/contracts';
+import { changeRecordFindings, REHARA_BLOCKED_GATES, REHARA_LABEL, type ChangeRecordBody } from '@ff/contracts';
 import { VirtualRunRepo } from '../../d06-qsec/scenario-validation/virtual-run.repo';
 
 const STAGES: GateId[][] = [
@@ -102,6 +102,24 @@ export class GateService {
     return null;
   }
 
+  /**
+   * G5 Verification — 이 Version이 쓰는 SW Version의 변경 기록에 근거 누락·커버리지 미달이 있으면 PASS 불가(AI 생성 변경도 같은 기준).
+   * @rule FFG-CODE-030 — 변경 기록의 검토·정적 분석·시험·커버리지 근거를 Gate가 확인
+   */
+  private changeRecordBlocker(f: FeatureVersionRow): string | null {
+    const bad: string[] = [];
+    f.swIds.forEach((swId, i) => {
+      const ver = f.swVersions[i];
+      if (!ver) return;
+      for (const r of this.db.all<{ change_id: string; doc: string }>('SELECT c.change_id, c.doc FROM change_record c WHERE c.sw_id = ? AND c.sw_version = ? AND c.rev = (SELECT MAX(rev) FROM change_record x WHERE x.change_id = c.change_id) ORDER BY c.change_id', swId, ver)) {
+        const d = JSON.parse(r.doc) as ChangeRecordBody;
+        const fs = changeRecordFindings(d);
+        if (fs.length) bad.push(`${r.change_id}(${d.aiGenerated ? `AI ${d.aiGenerated.tool}` : '사람'}): ${fs.join(', ')}`);
+      }
+    });
+    return bad.length ? `변경 기록 근거가 부족합니다 — ${bad.join(' / ')} (FFG-CODE-030)` : null;
+  }
+
   judge(actor: Actor, featureId: string, version: string, body: JudgeGateBody): { record: GateRecordRow; feature: FeatureVersionRow } {
     const f = this.lifecycle.require(featureId, version);
     const target = `${featureId}@${version}#${body.gate}`;
@@ -122,6 +140,11 @@ export class GateService {
       const msg = `재-HARA 요청 ${rh.map((x) => `${x.requestId}(${REHARA_LABEL[x.condition]})`).join(', ')}이(가) 열려 있습니다 — G2를 다시 판정한 뒤 ${body.gate}을(를) PASS로 판정할 수 있습니다.`;
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, msg, 'D01-02');
       throw new DomainError('GUARD_FAILED', msg);
+    }
+    const cr = body.inputResult === 'PASS' && body.gate === 'G5' ? this.changeRecordBlocker(f) : null;
+    if (cr) {
+      this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, cr, 'D01-02');
+      throw new DomainError('GUARD_FAILED', cr, { rule: 'FFG-CODE-030' });
     }
     const vv = this.virtualEvidence(featureId, version, body);
     if (vv) {

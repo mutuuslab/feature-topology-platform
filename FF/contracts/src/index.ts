@@ -27,6 +27,7 @@ export * from './rules/data-act';
 export * from './rules/recall';
 export * from './rules/duty-separation';
 export * from './rules/attestation';
+export * from './rules/change-record';
 export * from './rules/tool-qualification';
 export * from './rules/topology';
 export * from './flags/p0';

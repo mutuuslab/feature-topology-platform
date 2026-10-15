@@ -412,4 +412,15 @@ CREATE TRIGGER kill_post_review_no_update BEFORE UPDATE ON kill_post_review BEGI
 CREATE TRIGGER kill_post_review_no_delete BEFORE DELETE ON kill_post_review BEGIN SELECT RAISE(ABORT, 'kill_post_review는 추가만 가능'); END;
 `,
   },
+  {
+    // 보고서 v1.1 — 변경 기록(FFG-CODE-030): CI/CD(IF-13)가 SW Version마다 등록. AI 생성 표시·도구·범위와 검토·분석·시험·커버리지 근거.
+    // 추가만 — 근거 보완은 같은 변경 ID의 새 개정(rev)이고 최신 개정으로 판정한다
+    name: '036_change_record',
+    sql: `
+CREATE TABLE change_record (change_id TEXT NOT NULL, rev INTEGER NOT NULL, sw_id TEXT NOT NULL, sw_version TEXT NOT NULL, ai INTEGER NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (change_id, rev));
+CREATE INDEX change_record_sw ON change_record (sw_id, sw_version);
+CREATE TRIGGER change_record_no_update BEFORE UPDATE ON change_record BEGIN SELECT RAISE(ABORT, 'change_record는 추가만 가능'); END;
+CREATE TRIGGER change_record_no_delete BEFORE DELETE ON change_record BEGIN SELECT RAISE(ABORT, 'change_record는 추가만 가능'); END;
+`,
+  },
 ];

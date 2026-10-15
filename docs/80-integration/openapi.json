@@ -4283,6 +4283,182 @@
         }
       }
     },
+    "/api/change-records": {
+      "get": {
+        "summary": "변경 기록 감사 — AI 생성 표시·도구·범위, 검토·정적 분석·시험·커버리지 근거 누락(FFG-CODE-030)",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "changeRecords",
+        "parameters": [
+          {
+            "name": "swId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "CI/CD(IF-13) 변경 기록 등록 — 추가만",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "registerChangeRecord",
+        "description": "허용 역할: 구현 담당자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "changeId": {
+                    "type": "string",
+                    "pattern": "^CHG-[A-Za-z0-9-]{3,40}$"
+                  },
+                  "swId": {
+                    "type": "string",
+                    "pattern": "^SW-[A-Z0-9-]+$"
+                  },
+                  "swVersion": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  },
+                  "commit": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{7,40}$"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 300
+                  },
+                  "aiGenerated": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "tool": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 80
+                      },
+                      "toolVersion": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "scope": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 300
+                      }
+                    },
+                    "required": [
+                      "tool",
+                      "toolVersion",
+                      "scope"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "properties": {
+                      "review": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 2
+                      },
+                      "staticAnalysis": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 2
+                      },
+                      "tests": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 2
+                      },
+                      "coverage": {
+                        "type": "object",
+                        "nullable": true,
+                        "properties": {
+                          "achieved": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          "required": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100
+                          }
+                        },
+                        "required": [
+                          "achieved",
+                          "required"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "review",
+                      "staticAnalysis",
+                      "tests",
+                      "coverage"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "changeId",
+                  "swId",
+                  "swVersion",
+                  "commit",
+                  "summary",
+                  "aiGenerated",
+                  "evidence"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/integrations/calls": {
       "get": {
         "summary": "외부 연계 호출 기록 (IF-05·IF-13, 멱등 키)",

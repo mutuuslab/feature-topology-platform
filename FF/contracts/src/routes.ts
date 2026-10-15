@@ -25,6 +25,7 @@ import { MetricPlanBody } from './rules/safety-kpi';
 import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
 import { ContractBasisBody, DataAccessRequestBody } from './rules/data-act';
 import { PostReviewBody } from './rules/duty-separation';
+import { ChangeRecordBody } from './rules/change-record';
 import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
@@ -146,6 +147,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'bumpEpoch', method: 'POST', path: '/api/pki/epoch', summary: '차량 키 epoch 상향 (키 유출 대응, FFG-SEC-002)', component: 'D06-10', roles: ['SECURITY_OFFICER', 'SAFETY_OFFICER'], body: EpochBumpBody },
   { name: 'publications', method: 'GET', path: '/api/publications', summary: '서명 게시본 (정책·차단·복구) 목록', component: 'D06-08', query: ['kind', 'status'] },
   { name: 'publicationDetail', method: 'GET', path: '/api/publications/:id', summary: '게시본 — 서명 검증·차량별 회신·외부 연계 호출', component: 'D06-08' },
+  { name: 'changeRecords', method: 'GET', path: '/api/change-records', summary: '변경 기록 감사 — AI 생성 표시·도구·범위, 검토·정적 분석·시험·커버리지 근거 누락(FFG-CODE-030)', component: 'D04-01', query: ['swId'] },
+  { name: 'registerChangeRecord', method: 'POST', path: '/api/change-records', summary: 'CI/CD(IF-13) 변경 기록 등록 — 추가만', component: 'D04-01', roles: ['IMPLEMENTER', 'SYSTEM'], body: ChangeRecordBody },
   { name: 'integrationCalls', method: 'GET', path: '/api/integrations/calls', summary: '외부 연계 호출 기록 (IF-05·IF-13, 멱등 키)', component: 'D04-01', query: ['ifId', 'key'] },
   { name: 'readbacks', method: 'GET', path: '/api/telemetry/readbacks', summary: '차량 회신 (readback) 기록', component: 'D04-03', query: ['publicationId', 'vin'], dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   { name: 'ingestReadback', method: 'POST', path: '/api/telemetry/readback', summary: 'IF-06 차량 회신 수집', component: 'D04-03', roles: ['SYSTEM'], body: ReadbackBody },

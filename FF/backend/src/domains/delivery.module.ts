@@ -23,13 +23,14 @@ import { TrustModule } from './d06-qsec/pki-kms/trust.module';
 import { PolicyGateController, PolicyGateService } from './d03-safety/deploy-safety/policy-gate.service';
 import { EnvelopeRepo } from './d03-safety/kill-switch/envelope.repo';
 import { StatusIngestController, StatusIngestService, VehicleStatusController } from './d04-ops/telemetry-ingest/status-ingest.service';
+import { RetentionController, RetentionService } from './d04-ops/telemetry-ingest/retention.service';
 import { PublicationRepo, RuntimeRepo } from './d06-qsec/secure-deploy/publication.repo';
 import { PublicationController, SecureDeployService } from './d06-qsec/secure-deploy/secure-deploy.service';
 
 @Module({
   imports: [D01PolicyModule, TrustModule],
-  controllers: [VehicleOpenFeatureController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, PolicyGateController, StatusIngestController, VehicleStatusController, VariantConditionsController, SupportConditionsController, SbomController],
-  providers: [OtelExporter, VehicleOpenFeatureService, PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, SbomService, KillService, TrialExpiryListener, RestoreService, PolicyGateService, EnvelopeRepo, StatusIngestService, VariantConditionsService, SupportConditionsService],
+  controllers: [VehicleOpenFeatureController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, PolicyGateController, StatusIngestController, VehicleStatusController, VariantConditionsController, SupportConditionsController, SbomController, RetentionController],
+  providers: [OtelExporter, VehicleOpenFeatureService, PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, SbomService, KillService, TrialExpiryListener, RestoreService, PolicyGateService, EnvelopeRepo, StatusIngestService, VariantConditionsService, SupportConditionsService, RetentionService],
   exports: [TrustModule, SecureDeployService, VehicleRuntimeService, GleoAdapter, PublicationRepo, KillService, RestoreService, VehicleRequestService, PolicyGateService],
 })
 export class DeliveryModule {}

@@ -19,6 +19,7 @@ export * from './rules/sums';
 export * from './rules/sbom';
 export * from './rules/kill-timeline';
 export * from './rules/security-events';
+export * from './rules/retention';
 export * from './rules/tool-qualification';
 export * from './rules/topology';
 export * from './flags/p0';

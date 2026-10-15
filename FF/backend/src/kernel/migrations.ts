@@ -365,4 +365,20 @@ CREATE TABLE vehicle_channel_limit (id INTEGER PRIMARY KEY AUTOINCREMENT, vin TE
 CREATE INDEX vehicle_channel_limit_vin ON vehicle_channel_limit (vin, until);
 `,
   },
+  {
+    // 보고서 v1.1 WP10 — 보존과 삭제(FFG-TEL-008, 13.7): 삭제 기록(추가만). 추가만 저장소도 보존 기간이 지나면 지워야 하므로
+    // 삭제 금지 트리거를 보존 sweep 중(retention_gate.active = 1, 같은 트랜잭션 안)에만 풀리게 바꾼다
+    name: '032_retention',
+    sql: `
+CREATE TABLE retention_gate (id INTEGER PRIMARY KEY CHECK (id = 1), active INTEGER NOT NULL);
+INSERT INTO retention_gate (id, active) VALUES (1, 0);
+CREATE TABLE retention_deletion (id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT NOT NULL, store TEXT NOT NULL, cutoff TEXT NOT NULL, deleted INTEGER NOT NULL, held INTEGER NOT NULL, doc TEXT NOT NULL);
+CREATE TRIGGER retention_deletion_no_update BEFORE UPDATE ON retention_deletion BEGIN SELECT RAISE(ABORT, 'retention_deletion은 추가만 가능'); END;
+CREATE TRIGGER retention_deletion_no_delete BEFORE DELETE ON retention_deletion BEGIN SELECT RAISE(ABORT, 'retention_deletion은 추가만 가능'); END;
+DROP TRIGGER status_report_no_delete;
+CREATE TRIGGER status_report_no_delete BEFORE DELETE ON status_report WHEN (SELECT active FROM retention_gate WHERE id = 1) = 0 BEGIN SELECT RAISE(ABORT, 'status_report는 추가만 가능(보존 기간 삭제만 허용)'); END;
+DROP TRIGGER security_event_no_delete;
+CREATE TRIGGER security_event_no_delete BEFORE DELETE ON security_event WHEN (SELECT active FROM retention_gate WHERE id = 1) = 0 BEGIN SELECT RAISE(ABORT, 'security_event는 추가만 가능(보존 기간 삭제만 허용)'); END;
+`,
+  },
 ];

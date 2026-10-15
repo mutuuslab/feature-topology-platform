@@ -120,6 +120,16 @@ export const master = {
     filter: '상태',
     filters: { all: '전체', open: '미구현', done: '구현' } as Record<string, string>,
     col: { id: '규칙', title: '내용', level: '수준', wp: '작업 단계', components: '컴포넌트', impl: '구현', test: '시험' },
+    tabs: { rules: '규칙 추적', profiles: '시장 Profile' },
+    profiles: {
+      title: '시장 Compliance Profile',
+      kpi: { profiles: 'Profile', confirmed: '원문 확인', verify: '검증 필요', sums: 'SUMS 보존(생산 중단 후)' },
+      years: (n: number) => (n ? `${n}년` : '확인 필요'),
+      simTitle: '게이트 사전 판정 — 미확인 시장에서 F2 이상 활성화·복원은 차단, 비활성화는 허용',
+      sim: { market: '시장', request: '요청', fClass: '안전 등급(F)', ads: 'ADS 기능' },
+      requests: { activate: '활성화', restore: '복원', deactivate: '비활성화' } as Record<string, string>,
+      col: { id: 'Profile', countries: '국가', obligations: '의무', settings: '플랫폼 설정', status: '상태' },
+    },
   },
   eo: {
     title: 'SW EO',

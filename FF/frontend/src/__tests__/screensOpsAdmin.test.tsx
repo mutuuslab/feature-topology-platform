@@ -128,6 +128,18 @@ describe('운영·관리 v2', () => {
     expect(screen.getAllByRole('row').length).toBeLessThan(total + 1);
   });
 
+  it('컴플라이언스 시장 Profile — Profile 표와 게이트 사전 판정: 검증 필요 시장의 F2 활성화는 FAIL, 비활성화는 허용 (FFG-GEN-003)', async () => {
+    handler = () => undefined;
+    mount('/verify/compliance', <ComplianceScreen />);
+    fireEvent.click(screen.getByRole('tab', { name: '시장 Profile' }));
+    expect(await screen.findByText('NA-CA 1.0.0')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('시장'), { target: { value: 'CA' } });
+    const verdict = () => screen.getByTestId('cp-verdict').textContent ?? '';
+    expect(verdict()).toMatch(/NA-CA 검증 필요 — F2 이상 활성화·복원 차단/);
+    fireEvent.change(screen.getByLabelText('요청'), { target: { value: 'deactivate' } });
+    expect(verdict()).toMatch(/비활성화는 막지 않는다/);
+  });
+
   it('SW EO — Version 여러 개인 SW만, 이력 순서', async () => {
     handler = () => ({ body: { items: [{ swId: 'SW-A', version: '1.10.0', name: 'a', ecuPno: 'E1', lifecycle: 'RELEASED', features: [] }, { swId: 'SW-A', version: '1.9.0', name: 'a', ecuPno: 'E1', lifecycle: 'RETIRED', features: [] }, { swId: 'SW-B', version: '1.0.0', name: 'b', ecuPno: 'E2', lifecycle: 'RELEASED', features: [] }] } });
     mount('/change/eo', <EoScreen />);

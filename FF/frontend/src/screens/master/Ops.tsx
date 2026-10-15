@@ -2,7 +2,7 @@
 // /admin/settings 설정, /verify/compliance 컴플라이언스(보고서 v1.1 규칙 추적), /change/eo SW EO. 모두 기존 API·계약 데이터를 읽는다.
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { OPENFEATURE_PINS, reportRule, RULE_STATUS, STANDARDS_MAP, VEX_STATES } from '@ff/contracts';
+import { COMPLIANCE_PROFILES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, Segmented, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
@@ -369,7 +369,7 @@ export function SettingsScreen() {
 
 // ───────── 컴플라이언스 (보고서 v1.1 플랫폼 규칙 추적) ─────────
 
-export function ComplianceScreen() {
+function RulesTab() {
   const [filter, setFilter] = useState<'all' | 'open' | 'done'>('all');
   const C = M.compliance;
   const all = useMemo(
@@ -381,8 +381,7 @@ export function ComplianceScreen() {
   );
   const rows = all.filter((r) => filter === 'all' || (filter === 'done' ? r.status.implemented : !r.status.implemented));
   return (
-    <div className="ds-screen">
-      <PageHeader eyebrow="D03-01 · Report v1.1 FFG" title={C.title} lead={C.lead} actions={<Link to="/arch/components">{ko.arch.title}</Link>} />
+    <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
       <div className="ds-kpis">
         <Kpi label={C.kpi.total} value={all.length} />
         <Kpi label={C.kpi.implemented} value={`${all.filter((r) => r.status.implemented).length}/${all.length}`} tone="ok" />
@@ -406,6 +405,82 @@ export function ComplianceScreen() {
           { key: 'te', header: C.col.test, cell: (r) => <VerdictBadge value={r.status.tested ? 'PASS' : 'UNJUDGED'} /> },
         ]}
       />
+    </div>
+  );
+}
+
+/** 시장 Compliance Profile(보고서 v1.1 GEN, FFG-GEN-001·003) — Profile 표와 게이트 사전 판정(profileFinding, 서버 정책 게이트와 같은 함수) */
+function ProfilesTab() {
+  const C = M.compliance.profiles;
+  const [sim, setSim] = useState({ market: 'KR', request: 'activate', fClass: 'F2', ads: false });
+  const verdict = profileFinding({ market: sim.market, request: sim.request, fClass: sim.fClass, adsFeature: sim.ads });
+  const markets = [...new Set(COMPLIANCE_PROFILES.flatMap((p) => p.markets as string[]))].filter((m) => m !== 'ADS');
+  const ret = sumsRetention();
+  return (
+    <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
+      <div className="ds-kpis">
+        <Kpi label={C.kpi.profiles} value={COMPLIANCE_PROFILES.length} />
+        <Kpi label={C.kpi.confirmed} value={`${COMPLIANCE_PROFILES.filter((p) => p.status === 'CONFIRMED').length}/${COMPLIANCE_PROFILES.length}`} tone="ok" />
+        <Kpi label={C.kpi.verify} value={COMPLIANCE_PROFILES.filter((p) => p.status !== 'CONFIRMED').length} tone="warn" />
+        <Kpi label={C.kpi.sums} value={C.years(ret.yearsAfterProductionEnd)} hint={ret.basis} />
+      </div>
+      <Panel title={C.simTitle} eyebrow="FFG-GEN-003" id="cp-sim">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-3)', alignItems: 'flex-end' }}>
+          <Select label={C.sim.market} value={sim.market} onChange={(e) => setSim({ ...sim, market: e.target.value })}>
+            {[...markets, 'KR', 'OTHER'].filter((m, i, a) => a.indexOf(m) === i).map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </Select>
+          <Select label={C.sim.request} value={sim.request} onChange={(e) => setSim({ ...sim, request: e.target.value })}>
+            {['activate', 'restore', 'deactivate'].map((q) => (
+              <option key={q} value={q}>
+                {C.requests[q]}
+              </option>
+            ))}
+          </Select>
+          <Select label={C.sim.fClass} value={sim.fClass} onChange={(e) => setSim({ ...sim, fClass: e.target.value })}>
+            {['F0', 'F1', 'F2', 'F3', 'F4'].map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </Select>
+          <label className="ds-field ds-field--inline" style={{ paddingBottom: 'var(--sp-1)' }}>
+            <input type="checkbox" checked={sim.ads} onChange={(e) => setSim({ ...sim, ads: e.target.checked })} />
+            <span className="ds-field__label">{C.sim.ads}</span>
+          </label>
+        </div>
+        <div data-testid="cp-verdict" style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', marginTop: 'var(--sp-3)' }}>
+          <VerdictBadge value={verdict.ok ? 'PASS' : 'FAIL'} />
+          <span>{verdict.detail}</span>
+        </div>
+      </Panel>
+      <DataTable
+        caption={C.title}
+        rows={COMPLIANCE_PROFILES}
+        rowKey={(p) => p.profileId}
+        maxHeight="52vh"
+        columns={[
+          { key: 'id', header: C.col.id, cell: (p) => <span className="ds-mono ds-nowrap">{`${p.profileId} ${p.version}`}</span>, sort: (p) => p.profileId },
+          { key: 'c', header: C.col.countries, cell: (p) => p.countries },
+          // 날짜(YYYY-MM-DD)가 줄바꿈에 갈리지 않게 줄바꿈 없는 하이픈으로
+          { key: 'o', header: C.col.obligations, cell: (p) => p.obligations.replace(/(\d{4})-(\d{2})-(\d{2})/g, '$1‑$2‑$3') },
+          { key: 's', header: C.col.settings, cell: (p) => p.settings },
+          { key: 'st', header: C.col.status, cell: (p) => <VerdictBadge value={p.status === 'CONFIRMED' ? 'PASS' : 'CONDITIONAL'} />, sort: (p) => p.status },
+        ]}
+      />
+    </div>
+  );
+}
+
+export function ComplianceScreen() {
+  const C = M.compliance;
+  return (
+    <div className="ds-screen">
+      <PageHeader eyebrow="D03-01 · Report v1.1 FFG" title={C.title} lead={C.lead} actions={<Link to="/arch/components">{ko.arch.title}</Link>} />
+      <Tabs tabs={[{ key: 'rules', label: C.tabs.rules }, { key: 'profiles', label: C.tabs.profiles }]}>{(t) => (t === 'profiles' ? <ProfilesTab /> : <RulesTab />)}</Tabs>
     </div>
   );
 }

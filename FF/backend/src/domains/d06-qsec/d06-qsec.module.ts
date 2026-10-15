@@ -14,6 +14,7 @@ import { ScenarioValidationService } from './scenario-validation/validator';
 import { POLICY_VALIDATORS, ValidationService } from './validation-history/validation.service';
 import { VecuAdapter } from '../../adapters/vecu/vecu.adapter';
 import { IamController, IamService } from './iam/iam.service';
+import { PostReviewController, PostReviewService } from './iam/post-review.service';
 import { TmsSubmissionService, VirtualValidationController, VirtualValidationService } from './scenario-validation/virtual-validation.service';
 import { ReharaController, ReharaService } from './change-impact-validation/rehara.service';
 import { SumsController, SumsService } from './secure-deploy/sums.service';
@@ -32,10 +33,11 @@ const VALIDATORS = [
 
 @Module({
   imports: [D01PolicyModule],
-  controllers: [VirtualValidationController, IamController, ReharaController, SumsController, SecurityEventController],
+  controllers: [VirtualValidationController, IamController, ReharaController, SumsController, SecurityEventController, PostReviewController],
   providers: [
     VecuAdapter,
     IamService,
+    PostReviewService,
     VirtualValidationService,
     ReharaService,
     SumsService,

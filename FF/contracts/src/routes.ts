@@ -24,6 +24,7 @@ import { RunVirtualBody } from './rules/virtual';
 import { MetricPlanBody } from './rules/safety-kpi';
 import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
 import { ContractBasisBody, DataAccessRequestBody } from './rules/data-act';
+import { PostReviewBody } from './rules/duty-separation';
 import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
@@ -213,6 +214,9 @@ export const ROUTES: RouteDef[] = [
   // 플랫폼 인증·권한(D06-09) · Variant 조건(D02-01) · 기능 지원 조건(D02-02)
   { name: 'iamRoles', method: 'GET', path: '/api/iam/roles', summary: '역할·권한표(ROUTES 파생)·직무 분리 규칙', component: 'D06-09' },
   { name: 'iamDenials', method: 'GET', path: '/api/iam/denials', summary: '권한 거부 이력 (역할별 집계)', component: 'D06-09', query: ['limit'] },
+  { name: 'iamSodAudit', method: 'GET', path: '/api/iam/sod-audit', summary: '직무 분리 감사 — 요구 승인·출시·Kill 실행·복원 승인 겸직 계정, 긴급 권한 사후 검토 현황(FFG-PLT-016)', component: 'D06-09' },
+  { name: 'killPostReviews', method: 'GET', path: '/api/kill-post-reviews', summary: '발행된 Kill(긴급 권한)마다 24시간 사후 독립 검토 기한·기록', component: 'D06-09' },
+  { name: 'recordKillPostReview', method: 'POST', path: '/api/kill-requests/:id/post-review', summary: '긴급 권한 사후 독립 검토 기록 — 요청자·승인자 제외, 한 번(FFG-PLT-016)', component: 'D06-09', roles: ['SAFETY_OFFICER', 'SECURITY_OFFICER', 'REGULATORY_OWNER'], body: PostReviewBody },
   { name: 'iamMe', method: 'GET', path: '/api/iam/me', summary: '현재 행위자·허용 작업', component: 'D06-09' },
   { name: 'variantMatrix', method: 'GET', path: '/api/variants/:featureId/:version', summary: 'Variant·지원 조건 × Fleet 매트릭스', component: 'D02-01' },
   { name: 'vehicleSupport', method: 'GET', path: '/api/support/:vin', summary: '차량별 배포 Feature 지원 여부', component: 'D02-02' },

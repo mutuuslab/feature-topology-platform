@@ -403,4 +403,13 @@ CREATE TRIGGER data_act_contract_basis_no_update BEFORE UPDATE ON data_act_contr
 CREATE TRIGGER data_act_contract_basis_no_delete BEFORE DELETE ON data_act_contract_basis BEGIN SELECT RAISE(ABORT, 'data_act_contract_basis는 추가만 가능'); END;
 `,
   },
+  {
+    // 보고서 v1.1 — IAM 직무 분리(FFG-PLT-016): 긴급 권한(Kill 발행) 사후 독립 검토 기록. 한 명령에 한 번, 추가만
+    name: '035_kill_post_review',
+    sql: `
+CREATE TABLE kill_post_review (kill_id TEXT PRIMARY KEY, reviewer TEXT NOT NULL, role TEXT NOT NULL, at TEXT NOT NULL, summary TEXT NOT NULL);
+CREATE TRIGGER kill_post_review_no_update BEFORE UPDATE ON kill_post_review BEGIN SELECT RAISE(ABORT, 'kill_post_review는 추가만 가능'); END;
+CREATE TRIGGER kill_post_review_no_delete BEFORE DELETE ON kill_post_review BEGIN SELECT RAISE(ABORT, 'kill_post_review는 추가만 가능'); END;
+`,
+  },
 ];

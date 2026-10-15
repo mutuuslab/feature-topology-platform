@@ -7969,6 +7969,108 @@
         }
       }
     },
+    "/api/iam/sod-audit": {
+      "get": {
+        "summary": "직무 분리 감사 — 요구 승인·출시·Kill 실행·복원 승인 겸직 계정, 긴급 권한 사후 검토 현황(FFG-PLT-016)",
+        "tags": [
+          "D06-09"
+        ],
+        "operationId": "iamSodAudit",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-post-reviews": {
+      "get": {
+        "summary": "발행된 Kill(긴급 권한)마다 24시간 사후 독립 검토 기한·기록",
+        "tags": [
+          "D06-09"
+        ],
+        "operationId": "killPostReviews",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}/post-review": {
+      "post": {
+        "summary": "긴급 권한 사후 독립 검토 기록 — 요청자·승인자 제외, 한 번(FFG-PLT-016)",
+        "tags": [
+          "D06-09"
+        ],
+        "operationId": "recordKillPostReview",
+        "description": "허용 역할: 기능안전 담당자(FSM), 사이버보안 담당자(CSM), 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "summary": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "summary"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/iam/me": {
       "get": {
         "summary": "현재 행위자·허용 작업",

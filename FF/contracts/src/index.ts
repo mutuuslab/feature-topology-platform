@@ -25,6 +25,7 @@ export * from './rules/odd-restriction';
 export * from './rules/data-catalog';
 export * from './rules/data-act';
 export * from './rules/recall';
+export * from './rules/duty-separation';
 export * from './rules/tool-qualification';
 export * from './rules/topology';
 export * from './flags/p0';

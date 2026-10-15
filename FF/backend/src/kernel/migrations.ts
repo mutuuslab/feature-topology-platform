@@ -381,4 +381,14 @@ DROP TRIGGER security_event_no_delete;
 CREATE TRIGGER security_event_no_delete BEFORE DELETE ON security_event WHEN (SELECT active FROM retention_gate WHERE id = 1) = 0 BEGIN SELECT RAISE(ABORT, 'security_event는 추가만 가능(보존 기간 삭제만 허용)'); END;
 `,
   },
+  {
+    // 보고서 v1.1 WP10 — 운행 중 감시 지표(FFG-TEL-009, 13.5): Feature Version별 Safety Case 경보 기준 기록(추가만 — 최신 기록이 유효)
+    name: '033_safety_metric_plan',
+    sql: `
+CREATE TABLE safety_metric_plan (id INTEGER PRIMARY KEY AUTOINCREMENT, feature_id TEXT NOT NULL, version TEXT NOT NULL, doc TEXT NOT NULL, recorded_by TEXT NOT NULL, recorded_at TEXT NOT NULL);
+CREATE INDEX safety_metric_plan_fv ON safety_metric_plan (feature_id, version, id);
+CREATE TRIGGER safety_metric_plan_no_update BEFORE UPDATE ON safety_metric_plan BEGIN SELECT RAISE(ABORT, 'safety_metric_plan은 추가만 가능'); END;
+CREATE TRIGGER safety_metric_plan_no_delete BEFORE DELETE ON safety_metric_plan BEGIN SELECT RAISE(ABORT, 'safety_metric_plan은 추가만 가능'); END;
+`,
+  },
 ];

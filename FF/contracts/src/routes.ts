@@ -21,6 +21,7 @@ import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyD
 import { EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody } from './schemas/ops';
 import { KILL_APPROVER_ROLES } from './rules/access';
 import { RunVirtualBody } from './rules/virtual';
+import { MetricPlanBody } from './rules/safety-kpi';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
@@ -175,6 +176,9 @@ export const ROUTES: RouteDef[] = [
   { name: 'recordVex', method: 'POST', path: '/api/vex', summary: 'VEX 판정 기록 — 저장된 SBOM으로 영향 Feature·조치 특정', component: 'D06-11', roles: ['SECURITY_OFFICER', 'SAFETY_OFFICER'], body: VexStatement },
   { name: 'retention', method: 'GET', path: '/api/retention', summary: '저장소별 보존 기간(13.7)·데이터 범주(13.1)·기간 초과/보존 유지/삭제 대상 수와 삭제 기록(FFG-TEL-008)', component: 'D04-03' },
   { name: 'retentionSweep', method: 'POST', path: '/api/retention/sweep', summary: '보존 기간이 지난 행 삭제 — 열린 Incident·이상 건에 연결된 행은 남기고 삭제 기록(FFG-TEL-008)', component: 'D04-03', roles: ['REGULATORY_OWNER', 'OPS_LEAD'], body: EmptyBody },
+  { name: 'safetyKpi', method: 'GET', path: '/api/safety-kpi', summary: '출시 Feature Version별 운행 중 감시 지표 6종(13.5)·경보, 지표 계획 누락·예시값 Version(FFG-TEL-009)', component: 'D04-03' },
+  { name: 'safetyKpiAnnex1', method: 'GET', path: '/api/safety-kpi/:featureId/:version/annex1', summary: 'ADS 기능 부속서 1 정기 보고 집계(기본 최근 365일, FFG-TEL-009)', component: 'D04-03', query: ['from', 'to'] },
+  { name: 'recordSafetyKpiPlan', method: 'PUT', path: '/api/safety-kpi/:featureId/:version/plan', summary: 'Safety Case 경보 기준 기록(FSM, 추가만 — 최신 기록 유효)', component: 'D04-03', roles: ['SAFETY_OFFICER'], body: MetricPlanBody },
   { name: 'securityEvents', method: 'GET', path: '/api/security-events', summary: '보안 이벤트(IdsM) 기록·정의 — 임계값 도달 시 VSOC 경보, 진위 실패는 채널 제한(FFG-SEC-007)', component: 'D06-12', query: ['eventId'] },
   { name: 'sumsRecords', method: 'GET', path: '/api/sums', summary: 'SUMS 기록 — 명령별 RXSWIN·형식승인 영향 평가·사용자 고지·결과, 보존 기간(FFG-LCY-008)', component: 'D06-08', query: ['featureId'] },
   { name: 'reharaRequests', method: 'GET', path: '/api/rehara-requests', summary: '재-HARA 요청 (보고서 6.4 조건 자동 검출) — FFG-LCY-003', component: 'D06-05', query: ['featureId', 'featureVersion', 'status'] },

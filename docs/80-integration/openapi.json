@@ -6634,6 +6634,173 @@
         }
       }
     },
+    "/api/safety-kpi": {
+      "get": {
+        "summary": "출시 Feature Version별 운행 중 감시 지표 6종(13.5)·경보, 지표 계획 누락·예시값 Version(FFG-TEL-009)",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "safetyKpi",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/safety-kpi/{featureId}/{version}/annex1": {
+      "get": {
+        "summary": "ADS 기능 부속서 1 정기 보고 집계(기본 최근 365일, FFG-TEL-009)",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "safetyKpiAnnex1",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/safety-kpi/{featureId}/{version}/plan": {
+      "put": {
+        "summary": "Safety Case 경보 기준 기록(FSM, 추가만 — 최신 기록 유효)",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "recordSafetyKpiPlan",
+        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "thresholds": {
+                    "type": "object",
+                    "properties": {
+                      "KILL_LATENCY_P95": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "INCOMPLETE_DEACTIVATION": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "PENDING_OVERDUE": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "ONBOARD_FAULT_RATIO": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "STATE_PROOF_FAILURE": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "PERSISTENCE_FAILED": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "thresholds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/security-events": {
       "get": {
         "summary": "보안 이벤트(IdsM) 기록·정의 — 임계값 도달 시 VSOC 경보, 진위 실패는 채널 제한(FFG-SEC-007)",

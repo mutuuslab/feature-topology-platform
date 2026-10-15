@@ -173,6 +173,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'sbomDetail', method: 'GET', path: '/api/sbom/:serial', summary: 'SBOM 본문(CycloneDX 1.6)', component: 'D06-11' },
   { name: 'vexList', method: 'GET', path: '/api/vex', summary: 'VEX 판정 이력과 영향 Feature', component: 'D06-11' },
   { name: 'recordVex', method: 'POST', path: '/api/vex', summary: 'VEX 판정 기록 — 저장된 SBOM으로 영향 Feature·조치 특정', component: 'D06-11', roles: ['SECURITY_OFFICER', 'SAFETY_OFFICER'], body: VexStatement },
+  { name: 'securityEvents', method: 'GET', path: '/api/security-events', summary: '보안 이벤트(IdsM) 기록·정의 — 임계값 도달 시 VSOC 경보, 진위 실패는 채널 제한(FFG-SEC-007)', component: 'D06-12', query: ['eventId'] },
   { name: 'sumsRecords', method: 'GET', path: '/api/sums', summary: 'SUMS 기록 — 명령별 RXSWIN·형식승인 영향 평가·사용자 고지·결과, 보존 기간(FFG-LCY-008)', component: 'D06-08', query: ['featureId'] },
   { name: 'reharaRequests', method: 'GET', path: '/api/rehara-requests', summary: '재-HARA 요청 (보고서 6.4 조건 자동 검출) — FFG-LCY-003', component: 'D06-05', query: ['featureId', 'featureVersion', 'status'] },
   { name: 'virtualCombinations', method: 'GET', path: '/api/virtual-validations/combinations', summary: 'Feature 조합 시험 계획 (Topology 허용 조합, 3-way covering array, 금지 조합 부정 시험) — FFG-TST-003', component: 'D06-03', query: ['featureId'] },

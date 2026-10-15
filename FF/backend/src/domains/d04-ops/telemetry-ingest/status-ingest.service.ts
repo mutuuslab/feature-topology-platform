@@ -135,7 +135,7 @@ export class StatusIngestService implements OnModuleInit {
         this.events.publish(
           'vehicle.status.accepted',
           vin,
-          { vin, featureId, state: r.state, requestResult: r.request_result, rejectCode: r.reject_code ?? null, action: result.action.kind },
+          { vin, featureId, state: r.state, requestResult: r.request_result, rejectCode: r.reject_code ?? null, action: result.action.kind, timeSync: r.time_sync ?? null, keyEpoch: r.key_epoch ?? null },
           { componentId: 'D04-03' },
         );
         if (result.action.kind === 'REISSUE_SAME') this.events.publish('vehicle.status.reissue', vin, { vin, featureId, commandId: last?.commandId ?? null }, { componentId: 'D04-03' });
@@ -229,6 +229,8 @@ export class VehicleStatusController {
   constructor(
     private readonly status: StatusIngestService,
     private readonly audit: AuditService,
+    @Inject(DB) private readonly db: Db,
+    private readonly clock: Clock,
   ) {}
 
   @Post('status')
@@ -239,6 +241,12 @@ export class VehicleStatusController {
     if (self !== vin) {
       this.audit.denied(actor, 'VEHICLE_STATUS', vin, `차량 ${self}이(가) 다른 차량 ${vin}의 상태를 보고`, 'D04-03');
       throw new DomainError('FORBIDDEN', `차량 ${self}은(는) 자기 VIN으로만 보고할 수 있습니다.`, { code: 'VEHICLE_SCOPE' });
+    }
+    // 보안 이벤트(FFG-SEC-007) — 진위 실패 임계값을 넘은 차량은 제한 시간 동안 상태 보고 채널을 처리하지 않는다
+    const limit = this.db.get<{ until: string; reason: string }>('SELECT until, reason FROM vehicle_channel_limit WHERE vin = ? AND until > ? ORDER BY until DESC LIMIT 1', vin, this.clock.iso());
+    if (limit) {
+      this.audit.denied(actor, 'VEHICLE_STATUS', vin, `채널 처리 제한 중 (${limit.reason}, ${limit.until}까지)`, 'D04-03');
+      throw new DomainError('RATE_LIMITED', `보안 이벤트로 이 차량의 보고 채널이 ${limit.until}까지 제한됩니다.`, { code: 'CHANNEL_LIMITED', until: limit.until });
     }
     const r = this.status.ingest(vin, body, 'IF-06');
     return { accepted: r.accepted, violation: r.violation, action: r.action.kind };

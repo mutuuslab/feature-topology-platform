@@ -353,4 +353,16 @@ CREATE TRIGGER vex_no_update BEFORE UPDATE ON vex BEGIN SELECT RAISE(ABORT, 'vex
 CREATE TRIGGER vex_no_delete BEFORE DELETE ON vex BEGIN SELECT RAISE(ABORT, 'vex는 추가만 가능'); END;
 `,
   },
+  {
+    // 보고서 v1.1 WP10 — 보안 이벤트(FFG-SEC-007, 14.4): 포렌식 기록(추가만, 개인정보 없음 — 차량은 가명)과 진위 실패 채널 제한
+    name: '031_security_event',
+    sql: `
+CREATE TABLE security_event (id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT NOT NULL, event_id TEXT NOT NULL, code TEXT NOT NULL, vehicle TEXT, doc TEXT NOT NULL);
+CREATE INDEX security_event_window ON security_event (event_id, at);
+CREATE TRIGGER security_event_no_update BEFORE UPDATE ON security_event BEGIN SELECT RAISE(ABORT, 'security_event는 추가만 가능'); END;
+CREATE TRIGGER security_event_no_delete BEFORE DELETE ON security_event BEGIN SELECT RAISE(ABORT, 'security_event는 추가만 가능'); END;
+CREATE TABLE vehicle_channel_limit (id INTEGER PRIMARY KEY AUTOINCREMENT, vin TEXT NOT NULL, until TEXT NOT NULL, reason TEXT NOT NULL, at TEXT NOT NULL);
+CREATE INDEX vehicle_channel_limit_vin ON vehicle_channel_limit (vin, until);
+`,
+  },
 ];

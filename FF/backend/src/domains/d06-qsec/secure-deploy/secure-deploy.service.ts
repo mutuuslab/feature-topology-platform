@@ -19,6 +19,7 @@ import { PipelineService } from '../../d04-ops/pipeline-link/pipeline.service';
 import { ReadbackBus } from '../../d04-ops/telemetry-ingest/telemetry.service';
 import { PkiService } from '../pki-kms/pki.service';
 import { PublicationRepo } from './publication.repo';
+import { SbomService } from '../vuln-monitor/sbom.service';
 
 const OTA_TIMEOUT_MS = Number(process.env.PUBLICATION_TIMEOUT_MS ?? 8000);
 const EMERGENCY_TIMEOUT_MS = Number(process.env.KILL_TIMEOUT_MS ?? 5000);
@@ -50,6 +51,7 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     private readonly events: EventService,
     private readonly bus: ReadbackBus,
     private readonly policies: PolicyRepo,
+    private readonly sbom: SbomService,
   ) {}
 
   onModuleInit() {
@@ -124,6 +126,9 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       ackOnly: [],
       closedAt: null,
     };
+    // SBOM(D06-11) — 이 패키지(payloadHash)에 결합된 CycloneDX SBOM이 스키마를 통과해야 게시본이 남는다(FFG-SBOM-002·003).
+    // 실패하면 던져서 트랜잭션 전체(원 변경·서명)를 되돌린다 — 해시가 맞지 않는 패키지는 서명된 채로 배포되지 않는다
+    this.sbom.attach(publicationId, d.featureId, d.featureVersion, this.sbom.build(publicationId, d.featureId, d.featureVersion, pub.signature.payloadHash), pub.signature.payloadHash);
     this.repo.insert(pub, scopeKey);
     this.events.publish('publication.signed', publicationId, { publicationId, kind, keyId: pub.signature.keyId, payloadHash: pub.signature.payloadHash, targets: d.targets.length }, { componentId: 'D06-08', correlationId: actor.correlationId });
     this.db.afterCommit(() => this.dispatch(publicationId));

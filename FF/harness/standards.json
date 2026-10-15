@@ -859,10 +859,12 @@
       ],
       "section": "15_sbom.md · 15.4 규칙",
       "implemented": [
-        "contracts/src/rules/sbom.ts"
+        "contracts/src/rules/sbom.ts",
+        "backend/src/domains/d06-qsec/vuln-monitor/sbom.service.ts"
       ],
       "tested": [
-        "contracts/src/rules/sbom.test.ts"
+        "contracts/src/rules/sbom.test.ts",
+        "backend/test/d06/sbom.spec.ts"
       ]
     },
     {
@@ -873,7 +875,8 @@
       ],
       "section": "15_sbom.md · 15.4 규칙",
       "implemented": [
-        "contracts/src/rules/sbom.ts"
+        "contracts/src/rules/sbom.ts",
+        "backend/src/domains/d06-qsec/vuln-monitor/sbom.service.ts"
       ],
       "tested": [
         "contracts/src/rules/sbom.test.ts"
@@ -959,7 +962,8 @@
         "contracts/src/rules/sbom.ts"
       ],
       "tested": [
-        "contracts/src/rules/sbom.test.ts"
+        "contracts/src/rules/sbom.test.ts",
+        "backend/test/d06/sbom.spec.ts"
       ]
     },
     {

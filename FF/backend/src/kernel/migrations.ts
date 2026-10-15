@@ -340,4 +340,17 @@ CREATE TABLE trial_notice (notice_id TEXT PRIMARY KEY, grant_id TEXT NOT NULL, v
 CREATE UNIQUE INDEX trial_notice_once ON trial_notice(grant_id, valid_to);
 `,
   },
+  {
+    // 보고서 v1.1 WP8 — SBOM(CycloneDX 1.6, 게시본마다)·VEX 판정(FFG-SBOM-002·003·007, SEC-006). 추가만 — 원산지 근거 10년 보존(BIS 15 CFR 791)
+    name: '030_sbom',
+    sql: `
+CREATE TABLE sbom (serial TEXT PRIMARY KEY, publication_id TEXT, feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, package_hash TEXT NOT NULL, created_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX sbom_feature ON sbom (feature_id, feature_version, created_at);
+CREATE TRIGGER sbom_no_update BEFORE UPDATE ON sbom BEGIN SELECT RAISE(ABORT, 'sbom은 추가만 가능'); END;
+CREATE TRIGGER sbom_no_delete BEFORE DELETE ON sbom BEGIN SELECT RAISE(ABORT, 'sbom은 추가만 가능'); END;
+CREATE TABLE vex (id INTEGER PRIMARY KEY AUTOINCREMENT, vuln_id TEXT NOT NULL, state TEXT NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TRIGGER vex_no_update BEFORE UPDATE ON vex BEGIN SELECT RAISE(ABORT, 'vex는 추가만 가능'); END;
+CREATE TRIGGER vex_no_delete BEFORE DELETE ON vex BEGIN SELECT RAISE(ABORT, 'vex는 추가만 가능'); END;
+`,
+  },
 ];

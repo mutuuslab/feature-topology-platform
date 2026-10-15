@@ -6375,6 +6375,172 @@
         }
       }
     },
+    "/api/sbom": {
+      "get": {
+        "summary": "게시본별 CycloneDX 1.6 SBOM 목록 — 원산지 누락 발견(FFG-SBOM-002·003·007, SEC-006)",
+        "tags": [
+          "D06-11"
+        ],
+        "operationId": "sbomList",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/sbom/{serial}": {
+      "get": {
+        "summary": "SBOM 본문(CycloneDX 1.6)",
+        "tags": [
+          "D06-11"
+        ],
+        "operationId": "sbomDetail",
+        "parameters": [
+          {
+            "name": "serial",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/vex": {
+      "get": {
+        "summary": "VEX 판정 이력과 영향 Feature",
+        "tags": [
+          "D06-11"
+        ],
+        "operationId": "vexList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "VEX 판정 기록 — 저장된 SBOM으로 영향 Feature·조치 특정",
+        "tags": [
+          "D06-11"
+        ],
+        "operationId": "recordVex",
+        "description": "허용 역할: 사이버보안 담당자(CSM), 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vulnId": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "affects": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "not_affected",
+                      "affected",
+                      "fixed",
+                      "under_investigation"
+                    ]
+                  },
+                  "justification": {
+                    "type": "string",
+                    "enum": [
+                      "code_not_present",
+                      "code_not_reachable",
+                      "requires_configuration",
+                      "requires_dependency",
+                      "requires_environment",
+                      "protected_by_compiler",
+                      "protected_at_runtime",
+                      "protected_at_perimeter",
+                      "protected_by_mitigating_control"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "vulnId",
+                  "affects",
+                  "state"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/sums": {
       "get": {
         "summary": "SUMS 기록 — 명령별 RXSWIN·형식승인 영향 평가·사용자 고지·결과, 보존 기간(FFG-LCY-008)",

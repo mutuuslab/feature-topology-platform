@@ -391,4 +391,16 @@ CREATE TRIGGER safety_metric_plan_no_update BEFORE UPDATE ON safety_metric_plan 
 CREATE TRIGGER safety_metric_plan_no_delete BEFORE DELETE ON safety_metric_plan BEGIN SELECT RAISE(ABORT, 'safety_metric_plan은 추가만 가능'); END;
 `,
   },
+  {
+    // 보고서 v1.1 WP10 — EU Data Act 접근권(FFG-TEL-006): 요청 처리 기록(제공·거부, 내보낸 내용은 해시만)과 OEM 비개인 데이터 이용 계약 근거(문서 ID). 둘 다 추가만
+    name: '034_data_act',
+    sql: `
+CREATE TABLE data_access_request (request_id TEXT PRIMARY KEY, vin TEXT NOT NULL, status TEXT NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TRIGGER data_access_request_no_update BEFORE UPDATE ON data_access_request BEGIN SELECT RAISE(ABORT, 'data_access_request는 추가만 가능'); END;
+CREATE TRIGGER data_access_request_no_delete BEFORE DELETE ON data_access_request BEGIN SELECT RAISE(ABORT, 'data_access_request는 추가만 가능'); END;
+CREATE TABLE data_act_contract_basis (id INTEGER PRIMARY KEY AUTOINCREMENT, ref TEXT NOT NULL, note TEXT NOT NULL, recorded_by TEXT NOT NULL, recorded_at TEXT NOT NULL);
+CREATE TRIGGER data_act_contract_basis_no_update BEFORE UPDATE ON data_act_contract_basis BEGIN SELECT RAISE(ABORT, 'data_act_contract_basis는 추가만 가능'); END;
+CREATE TRIGGER data_act_contract_basis_no_delete BEFORE DELETE ON data_act_contract_basis BEGIN SELECT RAISE(ABORT, 'data_act_contract_basis는 추가만 가능'); END;
+`,
+  },
 ];

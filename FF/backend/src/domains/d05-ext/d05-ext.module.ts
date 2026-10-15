@@ -6,11 +6,12 @@ import { OfrepController, OfrepService } from './api-gateway/ofrep.controller';
 import { OpenFeatureController, OpenFeatureGovService } from './api-gateway/openfeature.controller';
 import { BillingController, BillingService } from './billing/billing.controller';
 import { BizMetricsController, BizMetricsService } from './biz-metrics/biz-metrics.controller';
+import { DataActController, DataActService } from './api-gateway/data-act.service';
 
 @Module({
   imports: [D01PolicyModule],
-  controllers: [OfrepController, OpenFeatureController, BillingController, BizMetricsController],
-  providers: [OtelExporter, OfrepService, OpenFeatureGovService, BillingService, BizMetricsService],
+  controllers: [OfrepController, OpenFeatureController, BillingController, BizMetricsController, DataActController],
+  providers: [OtelExporter, OfrepService, OpenFeatureGovService, BillingService, BizMetricsService, DataActService],
   exports: [OfrepService],
 })
 export class D05ExtModule {}

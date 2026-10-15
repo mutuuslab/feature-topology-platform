@@ -265,8 +265,8 @@ export const RULE_STATUS: Readonly<Record<string, RuleTraceStatus>> = {
     "tested": true
   },
   "FFG-TEL-006": {
-    "implemented": false,
-    "tested": false
+    "implemented": true,
+    "tested": true
   },
   "FFG-TEL-008": {
     "implemented": true,

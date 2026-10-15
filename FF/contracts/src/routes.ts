@@ -23,6 +23,7 @@ import { KILL_APPROVER_ROLES } from './rules/access';
 import { RunVirtualBody } from './rules/virtual';
 import { MetricPlanBody } from './rules/safety-kpi';
 import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
+import { ContractBasisBody, DataAccessRequestBody } from './rules/data-act';
 import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
@@ -183,6 +184,9 @@ export const ROUTES: RouteDef[] = [
   { name: 'safetyKpi', method: 'GET', path: '/api/safety-kpi', summary: '출시 Feature Version별 운행 중 감시 지표 6종(13.5)·경보, 지표 계획 누락·예시값 Version(FFG-TEL-009)', component: 'D04-03' },
   { name: 'safetyKpiAnnex1', method: 'GET', path: '/api/safety-kpi/:featureId/:version/annex1', summary: 'ADS 기능 부속서 1 정기 보고 집계(기본 최근 365일, FFG-TEL-009)', component: 'D04-03', query: ['from', 'to'] },
   { name: 'recordSafetyKpiPlan', method: 'PUT', path: '/api/safety-kpi/:featureId/:version/plan', summary: 'Safety Case 경보 기준 기록(FSM, 추가만 — 최신 기록 유효)', component: 'D04-03', roles: ['SAFETY_OFFICER'], body: MetricPlanBody },
+  { name: 'dataAccessRequests', method: 'GET', path: '/api/data-access-requests', summary: 'EU Data Act 접근 요청 처리 기록·계약 근거·Art.3(1) 직접 접근 대상·발견(FFG-TEL-006)', component: 'D05-01', roles: ['REGULATORY_OWNER', 'OPERATOR', 'AUDITOR', 'SYSTEM'] },
+  { name: 'createDataAccessRequest', method: 'POST', path: '/api/data-access-requests', summary: 'EU 차량 사용자·제3자 데이터 접근 요청 처리 — Feature 상태·이력 제공 또는 거부(처리 기록, Art.4·5)', component: 'D05-01', roles: ['OPERATOR', 'REGULATORY_OWNER'], body: DataAccessRequestBody },
+  { name: 'recordDataActContractBasis', method: 'POST', path: '/api/data-act/contract-basis', summary: 'OEM 비개인 데이터 이용 계약 근거(문서 ID) 등록 — 법무', component: 'D05-01', roles: ['REGULATORY_OWNER'], body: ContractBasisBody },
   { name: 'securityEvents', method: 'GET', path: '/api/security-events', summary: '보안 이벤트(IdsM) 기록·정의 — 임계값 도달 시 VSOC 경보, 진위 실패는 채널 제한(FFG-SEC-007)', component: 'D06-12', query: ['eventId'], dataCategory: 'SECURITY_MONITORING', roles: [...DATA_CATEGORY_ACCESS.SECURITY_MONITORING] },
   { name: 'sumsRecords', method: 'GET', path: '/api/sums', summary: 'SUMS 기록 — 명령별 RXSWIN·형식승인 영향 평가·사용자 고지·결과, 보존 기간(FFG-LCY-008)', component: 'D06-08', query: ['featureId'] },
   { name: 'reharaRequests', method: 'GET', path: '/api/rehara-requests', summary: '재-HARA 요청 (보고서 6.4 조건 자동 검출) — FFG-LCY-003', component: 'D06-05', query: ['featureId', 'featureVersion', 'status'] },

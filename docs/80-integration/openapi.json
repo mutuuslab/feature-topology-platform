@@ -6854,6 +6854,189 @@
         }
       }
     },
+    "/api/data-access-requests": {
+      "get": {
+        "summary": "EU Data Act 접근 요청 처리 기록·계약 근거·Art.3(1) 직접 접근 대상·발견(FFG-TEL-006)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "dataAccessRequests",
+        "description": "허용 역할: 법규 담당, 운영자, 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "EU 차량 사용자·제3자 데이터 접근 요청 처리 — Feature 상태·이력 제공 또는 거부(처리 기록, Art.4·5)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "createDataAccessRequest",
+        "description": "허용 역할: 운영자, 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vin": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "requester": {
+                    "type": "string",
+                    "enum": [
+                      "USER",
+                      "THIRD_PARTY"
+                    ]
+                  },
+                  "thirdParty": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 80
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 120
+                      },
+                      "gatekeeper": {
+                        "type": "boolean",
+                        "default": false
+                      }
+                    },
+                    "default": null,
+                    "required": [
+                      "id",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "userAuthorizationRef": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2,
+                    "maxLength": 80,
+                    "default": null
+                  },
+                  "scope": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "FEATURE_STATE",
+                        "FEATURE_HISTORY"
+                      ]
+                    },
+                    "minItems": 1,
+                    "default": [
+                      "FEATURE_STATE",
+                      "FEATURE_HISTORY"
+                    ]
+                  }
+                },
+                "required": [
+                  "vin",
+                  "requester"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/data-act/contract-basis": {
+      "post": {
+        "summary": "OEM 비개인 데이터 이용 계약 근거(문서 ID) 등록 — 법무",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "recordDataActContractBasis",
+        "description": "허용 역할: 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "ref",
+                  "note"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/security-events": {
       "get": {
         "summary": "보안 이벤트(IdsM) 기록·정의 — 임계값 도달 시 VSOC 경보, 진위 실패는 채널 제한(FFG-SEC-007)",

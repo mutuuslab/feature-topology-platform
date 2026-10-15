@@ -34,7 +34,7 @@ test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·�
   // 42 컴포넌트 화면 — ⑥ 단계 필터에서 긴급 차단 컴포넌트는 또렷하다
   await page.goto('/arch/components?step=6');
   await expect(page.getByRole('button', { name: /D03-03 긴급 기능 차단 구현/ })).toHaveAttribute('data-dim', 'false');
-  await expect(page.getByRole('button', { name: /D06-11 보안 취약점 모니터링 계획/ })).toHaveAttribute('data-dim', 'true');
+  await expect(page.getByRole('button', { name: /D06-11 보안 취약점 모니터링 구현/ })).toHaveAttribute('data-dim', 'true');
 
   // PoC 차단을 정리하고 OpenFeature 경계·OF-3을 본다 (KMH-NX4-0001)
   // 긴급 차단 v2 — 요청 1 + 서로 다른 2인 승인, 복원은 차단 승인자와 다른 2인(FFG-PLT-005·DEAC-008)

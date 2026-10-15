@@ -864,7 +864,8 @@
       ],
       "tested": [
         "contracts/src/rules/sbom.test.ts",
-        "backend/test/d06/sbom.spec.ts"
+        "backend/test/d06/sbom.spec.ts",
+        "frontend/src/__tests__/screensOpsAdmin.test.tsx"
       ]
     },
     {

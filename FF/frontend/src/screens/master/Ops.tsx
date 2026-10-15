@@ -2,10 +2,11 @@
 // /admin/settings 설정, /verify/compliance 컴플라이언스(보고서 v1.1 규칙 추적), /change/eo SW EO. 모두 기존 API·계약 데이터를 읽는다.
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { OPENFEATURE_PINS, reportRule, RULE_STATUS, STANDARDS_MAP } from '@ff/contracts';
-import { asyncState, useApi } from '../../api/hooks';
+import { OPENFEATURE_PINS, reportRule, RULE_STATUS, STANDARDS_MAP, VEX_STATES } from '@ff/contracts';
+import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, IdChip, KeyValue, Kpi, PageHeader, Panel, Segmented, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
+import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, Segmented, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
+import { usePermission } from '../shared';
 
 const M = ko.master;
 const fref = (s: string) => {
@@ -200,7 +201,119 @@ export function SecurityScreen() {
           <Link to="/arch/components?wp=WP8">WP8</Link>
         </Panel>
       </div>
+      <SbomPanel />
+      <VexPanel />
     </div>
+  );
+}
+
+interface SbomRow {
+  serial: string;
+  publicationId: string | null;
+  featureId: string;
+  featureVersion: string;
+  components: number;
+  originFindings: string[];
+}
+
+/** 서명 게시본별 SBOM — 원산지 누락은 발견으로(배포는 막지 않는다) */
+function SbomPanel() {
+  const S = M.security;
+  const q = useApi<{ items: SbomRow[] }>('sbomList');
+  const rows = [...(q.data?.items ?? [])].reverse();
+  return (
+    <Panel title={S.sbom} eyebrow="D06-11 · FFG-SBOM-002·003" id="sec-sbom">
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={3}>
+        <DataTable
+          caption={S.sbom}
+          rows={rows}
+          rowKey={(r) => r.serial}
+          columns={[
+            { key: 's', header: S.sbomCol.serial, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }} title={r.serial}>{r.serial.slice(9, 17)}</span> },
+            { key: 'p', header: S.sbomCol.pub, cell: (r) => <span className="ds-mono">{r.publicationId ?? '—'}</span> },
+            { key: 'f', header: S.sbomCol.feature, cell: (r) => <span className="ds-mono">{`${r.featureId}@${r.featureVersion}`}</span> },
+            { key: 'c', header: S.sbomCol.comps, cell: (r) => <span className="ds-mono">{r.components}</span>, align: 'right' },
+            {
+              key: 'o',
+              header: S.sbomCol.origin,
+              cell: (r) => (
+                <span title={r.originFindings.join('\n') || undefined} style={{ fontSize: 'var(--fs-xs)', color: r.originFindings.length ? 'var(--warn)' : 'var(--ok)' }} data-testid={`origin-${r.serial}`}>
+                  {r.originFindings.length ? S.originMissing(r.originFindings.length) : S.originOk}
+                </span>
+              ),
+            },
+          ]}
+        />
+      </AsyncView>
+    </Panel>
+  );
+}
+
+interface VexRow {
+  statement: { vulnId: string; affects: string[]; state: string; justification?: string };
+  impact: { action: string; features: { featureId: string; featureVersion: string; killPath: boolean }[] };
+  at: string;
+}
+
+/** VEX 판정 기록·이력 — 영향 Feature와 조치 권고(보고서 15.2.2) */
+function VexPanel() {
+  const S = M.security;
+  const q = useApi<{ items: VexRow[] }>('vexList');
+  const perm = usePermission(['SECURITY_OFFICER', 'SAFETY_OFFICER']);
+  const rec = useApiMutation('recordVex', ['vexList', 'audit']);
+  const [f, setF] = useState({ vulnId: '', affects: '', state: 'under_investigation', justification: 'code_not_reachable' });
+  const rows = [...(q.data?.items ?? [])].reverse();
+  return (
+    <Panel title={S.vex} eyebrow="D06-11 · VEX" id="sec-vex">
+      <form
+        style={{ display: 'grid', gap: 'var(--sp-2)', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', alignItems: 'end' }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          const affects = f.affects.split(',').map((x) => x.trim()).filter(Boolean);
+          rec.mutate({ body: { vulnId: f.vulnId.trim(), affects, state: f.state, ...(f.state === 'not_affected' ? { justification: f.justification } : {}) } }, { onSuccess: () => setF({ ...f, vulnId: '', affects: '' }) });
+        }}
+      >
+        <Field label={S.vexForm.vuln}>
+          <input className="ds-input ds-input--mono" value={f.vulnId} onChange={(e) => setF({ ...f, vulnId: e.target.value })} />
+        </Field>
+        <Field label={S.vexForm.affects}>
+          <input className="ds-input ds-input--mono" value={f.affects} onChange={(e) => setF({ ...f, affects: e.target.value })} />
+        </Field>
+        <Select label={S.vexForm.state} value={f.state} onChange={(e) => setF({ ...f, state: e.target.value })}>
+          {VEX_STATES.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </Select>
+        {f.state === 'not_affected' && (
+          <Select label={S.vexForm.justification} value={f.justification} onChange={(e) => setF({ ...f, justification: e.target.value })}>
+            {['code_not_present', 'code_not_reachable', 'requires_configuration', 'protected_at_runtime', 'protected_by_mitigating_control'].map((j) => (
+              <option key={j} value={j}>
+                {j}
+              </option>
+            ))}
+          </Select>
+        )}
+        <Button type="submit" variant="primary" disabled={!perm.ok || rec.isPending || f.vulnId.trim().length < 3 || !f.affects.trim()} title={perm.hint}>
+          {S.vexForm.submit}
+        </Button>
+      </form>
+      <ErrorNote error={rec.error} />
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={2} empty={{ title: S.vexNone }}>
+        <DataTable
+          caption={S.vex}
+          rows={rows}
+          rowKey={(r) => `${r.statement.vulnId}-${r.at}`}
+          columns={[
+            { key: 'v', header: S.vexCol.vuln, cell: (r) => <span className="ds-mono">{r.statement.vulnId}</span> },
+            { key: 's', header: S.vexCol.state, cell: (r) => <span className="ds-tag">{r.statement.state}</span> },
+            { key: 'f', header: S.vexCol.features, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.impact.features.map((x) => `${x.featureId}@${x.featureVersion}${x.killPath ? ' (Kill 경로)' : ''}`).join(', ') || '—'}</span> },
+            { key: 'a', header: S.vexCol.action, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)', color: r.impact.action === 'NONE' ? undefined : 'var(--danger)' }}>{S.vexAction[r.impact.action] ?? r.impact.action}</span> },
+          ]}
+        />
+      </AsyncView>
+    </Panel>
   );
 }
 

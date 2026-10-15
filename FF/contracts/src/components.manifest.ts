@@ -166,6 +166,8 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D04-03': { screens: ['/fleet/live', '/deployments/:id', '/ops/telemetry'], tests: [BE_DLV, FE_OPS, E2E_OPS, FE_OPSADMIN] },
   'D06-08': { screens: ['/deployments', '/deployments/:id', '/fleet/live'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
   'D06-10': { screens: ['/deployments', '/admin/security'], tests: [BE_DLV, E2E_OPS, FE_OPSADMIN] },
+  // 보고서 v1.1 WP8 — 게시본별 CycloneDX SBOM·서명 전 해시 결합·VEX 판정
+  'D06-11': { screens: ['/admin/security'], tests: ['backend/test/d06/sbom.spec.ts', 'contracts/src/rules/sbom.test.ts', FE_OPSADMIN] },
 };
 
 export const COMPONENTS: ComponentEntry[] = SEEDS.map(([id, ko, tier, module, ifs, pocSteps]) => {

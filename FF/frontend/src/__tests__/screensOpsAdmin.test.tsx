@@ -67,12 +67,19 @@ describe('운영·관리 v2', () => {
     expect(await screen.findByText('SW-B')).toBeTruthy();
   });
 
-  it('보안·인증서 — 키·HSM, 취약점 모니터링은 WP8 계획', async () => {
-    handler = (url) => (url.startsWith('/api/pki/keys') ? { body: { items: [{ keyId: 'KEY-0001', alg: 'Ed25519', purpose: 'policy', epoch: 1, status: 'ACTIVE', createdAt: 'x', notAfter: 'y', fingerprint: 'sha256:f0' }] } } : { body: { epoch: 1, approverKeys: 3 } });
+  it('보안·인증서 — 키·HSM, SBOM 목록(원산지 발견)·VEX 판정 이력 (D06-11 · FFG-SBOM-002·SEC-006)', async () => {
+    const SBOM = { items: [{ serial: 'urn:uuid:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', publicationId: 'PUB-00004', featureId: 'FEAT-00022', featureVersion: '1.0.0', components: 3, originFindings: ['SW-CARE-SDIST-APP@1.2.1(FF): country 없음'] }] };
+    const VEX = { items: [{ statement: { vulnId: 'CVE-2026-0001', affects: ['SW-CARE-SDIST-APP@1.2.1'], state: 'affected' }, impact: { action: 'SECURITY_KILL_OR_UPDATE', features: [{ featureId: 'FEAT-00022', featureVersion: '1.0.0', killPath: false }] }, at: 'x' }] };
+    handler = (url) => (url.startsWith('/api/sbom') ? { body: SBOM } : url.startsWith('/api/vex') ? { body: VEX } : url.startsWith('/api/pki/keys') ? { body: { items: [{ keyId: 'KEY-0001', alg: 'Ed25519', purpose: 'policy', epoch: 1, status: 'ACTIVE', createdAt: 'x', notAfter: 'y', fingerprint: 'sha256:f0' }] } } : { body: { epoch: 1, approverKeys: 3 } });
     mount('/admin/security', <SecurityScreen />);
     expect(await screen.findByText('KEY-0001')).toBeTruthy();
     expect(await screen.findByText('approverKeys')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'WP8' }).getAttribute('href')).toBe('/arch/components?wp=WP8');
+    expect((await screen.findByTestId('origin-urn:uuid:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')).textContent).toBe('1건 누락');
+    expect(await screen.findByText('CVE-2026-0001')).toBeTruthy();
+    expect(screen.getByText('보안 차단 또는 업데이트 결정')).toBeTruthy();
+    // 운영자는 VEX를 기록하지 못한다(CSM·FSM)
+    expect((screen.getByRole('button', { name: 'VEX 기록' }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('설정 — 상태·건수·연계 방식', async () => {

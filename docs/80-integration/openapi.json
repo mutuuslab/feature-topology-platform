@@ -4283,6 +4283,311 @@
         }
       }
     },
+    "/api/flag-retirements": {
+      "get": {
+        "summary": "Flag 은퇴 6단계 진행·코드 삭제 기한·기한 초과(보고서 6.5, FFG-LCY-011)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "flagRetirements",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "Flag 은퇴 요청 — 다음 정기 릴리스 예정일(선택)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "requestFlagRetirement",
+        "description": "허용 역할: Feature 작성자, Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "flagKey": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 64
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 500
+                  },
+                  "nextReleaseAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "date-time",
+                    "default": null
+                  }
+                },
+                "required": [
+                  "flagKey",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/flag-retirements/{id}/approvals": {
+      "post": {
+        "summary": "은퇴 승인 — Feature Owner, F2 이상은 Safety Manager도(요청자 제외)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "approveFlagRetirement",
+        "description": "허용 역할: Feature 승인자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/flag-retirements/{id}/steps": {
+      "post": {
+        "summary": "은퇴 2~6단계 기록 — 순서·완료 조건, 5단계 Registry 퇴역(ID 재사용 금지)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "recordFlagRetirementStep",
+        "description": "허용 역할: Feature 작성자, Feature 출시 담당자, 구현 담당자, 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "step": {
+                        "type": "string",
+                        "enum": [
+                          "REMAINING_VEHICLES"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "step"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "step": {
+                        "type": "string",
+                        "enum": [
+                          "FINAL_STATE"
+                        ]
+                      },
+                      "swVersion": {
+                        "type": "string",
+                        "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                      },
+                      "completionRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "requiredRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "evidenceRef": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "required": [
+                      "step",
+                      "swVersion",
+                      "completionRate",
+                      "requiredRate",
+                      "evidenceRef"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "step": {
+                        "type": "string",
+                        "enum": [
+                          "CODE_REMOVED"
+                        ]
+                      },
+                      "analysisRef": {
+                        "type": "string",
+                        "minLength": 2
+                      },
+                      "references": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "step",
+                      "analysisRef",
+                      "references"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "step": {
+                        "type": "string",
+                        "enum": [
+                          "REGISTRY_RETIRED"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "step"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "step": {
+                        "type": "string",
+                        "enum": [
+                          "RECORDS_RETAINED"
+                        ]
+                      },
+                      "markets": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 2
+                        },
+                        "minItems": 1
+                      },
+                      "basis": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 300
+                      }
+                    },
+                    "required": [
+                      "step",
+                      "markets",
+                      "basis"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/change-records": {
       "get": {
         "summary": "변경 기록 감사 — AI 생성 표시·도구·범위, 검토·정적 분석·시험·커버리지 근거 누락(FFG-CODE-030)",

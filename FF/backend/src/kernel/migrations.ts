@@ -423,4 +423,13 @@ CREATE TRIGGER change_record_no_update BEFORE UPDATE ON change_record BEGIN SELE
 CREATE TRIGGER change_record_no_delete BEFORE DELETE ON change_record BEGIN SELECT RAISE(ABORT, 'change_record는 추가만 가능'); END;
 `,
   },
+  {
+    // 보고서 v1.1 6.5 — Flag 은퇴 6단계(FFG-LCY-011 플랫폼 몫): 은퇴 건 진행 기록(단계마다 감사). 삭제 금지 — 기록 보존이 6단계
+    name: '037_flag_retirement',
+    sql: `
+CREATE TABLE flag_retirement (retirement_id TEXT PRIMARY KEY, flag_key TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX flag_retirement_flag ON flag_retirement (flag_key, status);
+CREATE TRIGGER flag_retirement_no_delete BEFORE DELETE ON flag_retirement BEGIN SELECT RAISE(ABORT, 'flag_retirement는 삭제할 수 없음(기록 보존)'); END;
+`,
+  },
 ];

@@ -26,6 +26,7 @@ import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
 import { ContractBasisBody, DataAccessRequestBody } from './rules/data-act';
 import { PostReviewBody } from './rules/duty-separation';
 import { ChangeRecordBody } from './rules/change-record';
+import { RetirementRequestBody, RetirementStepBody } from './rules/retirement';
 import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
@@ -147,6 +148,10 @@ export const ROUTES: RouteDef[] = [
   { name: 'bumpEpoch', method: 'POST', path: '/api/pki/epoch', summary: '차량 키 epoch 상향 (키 유출 대응, FFG-SEC-002)', component: 'D06-10', roles: ['SECURITY_OFFICER', 'SAFETY_OFFICER'], body: EpochBumpBody },
   { name: 'publications', method: 'GET', path: '/api/publications', summary: '서명 게시본 (정책·차단·복구) 목록', component: 'D06-08', query: ['kind', 'status'] },
   { name: 'publicationDetail', method: 'GET', path: '/api/publications/:id', summary: '게시본 — 서명 검증·차량별 회신·외부 연계 호출', component: 'D06-08' },
+  { name: 'flagRetirements', method: 'GET', path: '/api/flag-retirements', summary: 'Flag 은퇴 6단계 진행·코드 삭제 기한·기한 초과(보고서 6.5, FFG-LCY-011)', component: 'D01-01' },
+  { name: 'requestFlagRetirement', method: 'POST', path: '/api/flag-retirements', summary: 'Flag 은퇴 요청 — 다음 정기 릴리스 예정일(선택)', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: RetirementRequestBody },
+  { name: 'approveFlagRetirement', method: 'POST', path: '/api/flag-retirements/:id/approvals', summary: '은퇴 승인 — Feature Owner, F2 이상은 Safety Manager도(요청자 제외)', component: 'D01-01', roles: ['FEATURE_APPROVER', 'SAFETY_OFFICER'], body: EmptyBody },
+  { name: 'recordFlagRetirementStep', method: 'POST', path: '/api/flag-retirements/:id/steps', summary: '은퇴 2~6단계 기록 — 순서·완료 조건, 5단계 Registry 퇴역(ID 재사용 금지)', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER', 'IMPLEMENTER', 'REGULATORY_OWNER'], body: RetirementStepBody },
   { name: 'changeRecords', method: 'GET', path: '/api/change-records', summary: '변경 기록 감사 — AI 생성 표시·도구·범위, 검토·정적 분석·시험·커버리지 근거 누락(FFG-CODE-030)', component: 'D04-01', query: ['swId'] },
   { name: 'registerChangeRecord', method: 'POST', path: '/api/change-records', summary: 'CI/CD(IF-13) 변경 기록 등록 — 추가만', component: 'D04-01', roles: ['IMPLEMENTER', 'SYSTEM'], body: ChangeRecordBody },
   { name: 'integrationCalls', method: 'GET', path: '/api/integrations/calls', summary: '외부 연계 호출 기록 (IF-05·IF-13, 멱등 키)', component: 'D04-01', query: ['ifId', 'key'] },

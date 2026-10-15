@@ -3,7 +3,7 @@
 // 커버리지가 올라가 Lifecycle DEVELOPING→VERIFIED 자동 전이 조건이 채워질 수 있다(같은 트랜잭션).
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { SafetyProfileService } from '../registry/safety-profile.service';
-import { LIFECYCLE_RANK, type CreatePolicyBody, type Policy, type PolicyDecisionBody, type UpdatePolicyBody } from '@ff/contracts';
+import { LIFECYCLE_RANK, oddRestrictionFindings, type CreatePolicyBody, type Policy, type PolicyDecisionBody, type UpdatePolicyBody } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -114,6 +114,12 @@ export class PolicyService implements OnModuleInit {
     if (!f) throw new DomainError('NOT_FOUND', `${body.featureId} ${body.featureVersion}이(가) Registry에 없습니다.`);
     if (LIFECYCLE_RANK[f.lifecycle] < LIFECYCLE_RANK.APPROVED || ['DEPRECATED', 'RETIRED'].includes(f.lifecycle))
       throw new DomainError('GUARD_FAILED', `${f.lifecycle} Feature에는 정책을 등록할 수 없습니다 (APPROVED~RELEASED).`);
+    // ODD 축소 정책은 새 Feature Version으로만 등록한다(등급 확정은 배포 때 다시 본다)
+    const odd = this.oddFindings(body).filter((x) => x.code === 'BASE_UNKNOWN' || x.code === 'NOT_NEW_VERSION');
+    if (odd.length) {
+      this.audit.failed(actor, 'POLICY_CREATE', body.flagKey, odd.map((x) => x.message).join(' · '), 'D01-06');
+      throw new DomainError('GUARD_FAILED', odd.map((x) => x.message).join(' · '), { rule: 'FFG-SOT-002', findings: odd });
+    }
     return this.db.tx(() => {
       const reuse = this.flags.bindFlag(body.flagKey, body.featureId);
       if (reuse) throw new DomainError('CONFLICT', reuse);
@@ -212,6 +218,11 @@ export class PolicyService implements OnModuleInit {
       throw new DomainError('GUARD_FAILED', `승인된(APPROVED) 정책만 배포할 수 있습니다 (현재 ${p.status}).`);
     }
     if (p.contentHash !== policyHash(p)) throw new DomainError('GUARD_FAILED', '승인 이후 정책 내용이 바뀌었습니다 (해시 불일치).');
+    const odd = this.oddFindings(p);
+    if (odd.length) {
+      this.audit.failed(actor, 'POLICY_DEPLOY', id, odd.map((x) => x.message).join(' · '), 'D01-06');
+      throw new DomainError('GUARD_FAILED', odd.map((x) => x.message).join(' · '), { rule: 'FFG-SOT-002', findings: odd });
+    }
     return this.db.tx(() => {
       const prev = this.policies.deployed(p.flagKey);
       if (prev && prev.policyId !== p.policyId) {
@@ -224,6 +235,20 @@ export class PolicyService implements OnModuleInit {
       const pub = this.secureDeploy.publishPolicy(next, actor);
       this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId }, { componentId: 'D01-06', correlationId: actor.correlationId });
       return { ...next, publicationId: pub.publicationId };
+    });
+  }
+
+  /** ODD 축소 정책 판정 입력 — Registry·안전 분류(확정 서명 검증) — 축소 정책이 아니면 발견 없음 */
+  private oddFindings(p: Pick<Policy, 'featureId' | 'featureVersion' | 'oddRestriction'>) {
+    if (!p.oddRestriction) return [];
+    const profile = this.flags.ensure(p.featureId, p.featureVersion);
+    const base = this.features.get(p.featureId, p.oddRestriction.baseVersion);
+    return oddRestrictionFindings({
+      featureVersion: p.featureVersion,
+      restriction: p.oddRestriction,
+      baseExists: !!base,
+      profile: { confirmed: this.flags.verifyConfirmation(profile), fClass: profile.fClass },
+      baseProfile: base ? { fClass: this.flags.ensure(p.featureId, base.version).fClass } : null,
     });
   }
 

@@ -2807,6 +2807,31 @@
                       "mode"
                     ],
                     "additionalProperties": false
+                  },
+                  "oddRestriction": {
+                    "type": "object",
+                    "properties": {
+                      "triggerId": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 120
+                      },
+                      "basisRef": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 40,
+                        "default": null
+                      },
+                      "baseVersion": {
+                        "type": "string",
+                        "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                      }
+                    },
+                    "required": [
+                      "triggerId",
+                      "baseVersion"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -3074,6 +3099,31 @@
                     },
                     "required": [
                       "mode"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "oddRestriction": {
+                    "type": "object",
+                    "properties": {
+                      "triggerId": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 120
+                      },
+                      "basisRef": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 40,
+                        "default": null
+                      },
+                      "baseVersion": {
+                        "type": "string",
+                        "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                      }
+                    },
+                    "required": [
+                      "triggerId",
+                      "baseVersion"
                     ],
                     "additionalProperties": false
                   }

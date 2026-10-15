@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { ControlPointType } from '../enums';
 import { CONSTRAINT_OPERATORS } from '../flags/p0';
+import { OddRestriction } from '../rules/odd-restriction';
 
 export const ConstraintSchema = z
   .object({
@@ -43,6 +44,8 @@ export const PolicySpec = z
     entitlementCatalogId: z.string().regex(/^CAT-\d{5}$/).nullable().default(null),
     strategies: z.array(StrategySchema).max(10).default([]),
     rollout: RolloutSchema.default({ mode: 'ALL', basisPoints: 10000, salt: 'FF-COHORT-SALT-1' }),
+    /** 트리거 조건 대응 ODD 축소 정책(FFG-SOT-002) — 새 Feature Version·확정 등급이어야 배포된다 */
+    oddRestriction: OddRestriction.optional(),
   })
   .strict();
 export type PolicySpec = z.infer<typeof PolicySpec>;

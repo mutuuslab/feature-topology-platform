@@ -341,7 +341,8 @@
       ],
       "tested": [
         "contracts/src/rules/compliance-profile.test.ts",
-        "backend/test/d03/policy-gate.spec.ts"
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/screensOpsAdmin.test.tsx"
       ]
     },
     {

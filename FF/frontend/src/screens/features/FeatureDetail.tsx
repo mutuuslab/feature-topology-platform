@@ -26,6 +26,7 @@ import {
 } from '../../design';
 import { scopeOf, usePermission, when } from '../shared';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
+import { FeatureVersionActions } from './VersionEdit';
 import type { AuditEntry, ChecklistItem, FeatureDetail as Detail, GateView } from '../types';
 
 const T = ko.detail;
@@ -63,13 +64,16 @@ export default function FeatureDetail() {
                 </>
               }
               actions={
-                <Select label={T.versions} value={ver} onChange={(e) => nav(`/features/${id}/${e.target.value}`)}>
-                  {d.versions.map((v) => (
-                    <option key={v.version} value={v.version}>
-                      {v.version} · {v.lifecycle}
-                    </option>
-                  ))}
-                </Select>
+                <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                  <FeatureVersionActions key={`${id}@${ver}`} f={d.feature} latest={d.versions[d.versions.length - 1]?.version === ver} />
+                  <Select label={T.versions} value={ver} onChange={(e) => nav(`/features/${id}/${e.target.value}`)}>
+                    {d.versions.map((v) => (
+                      <option key={v.version} value={v.version}>
+                        {v.version} · {v.lifecycle}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
               }
             />
 

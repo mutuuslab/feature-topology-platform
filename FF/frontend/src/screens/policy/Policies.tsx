@@ -6,6 +6,7 @@ import { ControlPointType } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, VerdictBadge, Icon } from '../../design';
+import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
 import { VirtualPanel } from './Virtual';
 import { UnleashPanel } from './Unleash';
@@ -153,6 +154,7 @@ export function PolicyDetail() {
               lead={p.description}
               actions={
                 <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
+                  <PolicyEdit key={`${p.policyId}@${p.revision}`} p={p} />
                   {['DRAFT', 'VALIDATED', 'REJECTED'].includes(p.status) && (
                     <Button variant="primary" icon="check" disabled={!author.ok || validate.isPending} title={author.hint} onClick={() => validate.mutate({ params: { id }, body: {} })}>
                       {T.validate}

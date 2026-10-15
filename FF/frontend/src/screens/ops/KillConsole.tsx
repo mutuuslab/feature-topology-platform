@@ -21,6 +21,7 @@ import {
 } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { PostReviewForm } from '../admin/Oversight';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
 import {
@@ -435,6 +436,68 @@ interface Envelopes {
   envelopes: { request: string; scope: { vehicle_ids: string[] }; vehicle_auth: { key_epoch: number; vehicle_seq: number; cmd_auth: string } }[];
 }
 
+interface TimePt {
+  at: string;
+  trust: 'TRUSTED' | 'UNCERTAIN';
+  timeSync: string;
+}
+interface TimelineRow {
+  vin: string;
+  deactivate: { commandId: string; accepted: TimePt | null; completed: TimePt | null } | null;
+  restore: { commandId: string; accepted: TimePt | null; effective: TimePt | null } | null;
+  cause: 'REMOTE_KILL' | 'ONBOARD_FAULT' | 'UNKNOWN';
+  uncertain: string[];
+}
+
+/** 종료·복원 시간 기록 — 차량마다 다섯 시각, 신뢰 못 하는 시각은 흐리게 (FFG-ADS-007·TEL-004·TEL-010) */
+function KillTimeline({ id }: { id: string }) {
+  const P = ko.p11.kill;
+  const q = useApi<{ items: TimelineRow[] }>('killTimeline', { params: { id } });
+  const rows = q.data?.items ?? [];
+  const pt = (p: TimePt | null | undefined) =>
+    p ? (
+      <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)', color: p.trust === 'UNCERTAIN' ? 'var(--warn)' : undefined }} title={p.trust === 'UNCERTAIN' ? `${P.uncertain} · ${p.timeSync}` : p.timeSync}>
+        {when(p.at)}
+      </span>
+    ) : (
+      '—'
+    );
+  const C = P.col;
+  return (
+    <section style={{ display: 'grid', gap: 'var(--sp-2)' }} data-testid="kill-timeline">
+      <h3 className="ds-eyebrow ds-eyebrow--ko">{P.timeline}</h3>
+      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: P.timelineEmpty }} error={q.error?.message} rows={2}>
+        <DataTable
+          caption={P.timeline}
+          rows={rows}
+          rowKey={(r) => r.vin}
+          columns={[
+            { key: 'v', header: C.vin, cell: (r) => <span className="ds-mono ds-nowrap">{r.vin}</span> },
+            { key: 'a', header: C.accepted, cell: (r) => pt(r.deactivate?.accepted) },
+            { key: 'c', header: C.completed, cell: (r) => pt(r.deactivate?.completed) },
+            { key: 'ra', header: C.restoreAccepted, cell: (r) => pt(r.restore?.accepted) },
+            { key: 'e', header: C.effective, cell: (r) => pt(r.restore?.effective) },
+            { key: 'k', header: C.cause, cell: (r) => P.cause[r.cause] ?? r.cause },
+          ]}
+        />
+      </AsyncView>
+    </section>
+  );
+}
+
+/** 긴급 권한(Kill 발행)의 24시간 사후 독립 검토 (FFG-PLT-016) */
+function PostReview({ id }: { id: string }) {
+  const q = useApi<{ items: { killId: string; due: string; status: 'REVIEWED' | 'PENDING' | 'OVERDUE'; review: any; issuedAt: string; featureId: string; requestedBy: string; approvers: string[] }[] }>('killPostReviews');
+  const row = q.data?.items.find((r) => r.killId === id);
+  if (!row) return null;
+  return (
+    <section style={{ display: 'grid', gap: 'var(--sp-2)' }}>
+      <h3 className="ds-eyebrow ds-eyebrow--ko">{ko.p11.kill.postReview}</h3>
+      <PostReviewForm killId={id} row={row} />
+    </section>
+  );
+}
+
 function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const q = useApi<Kill>('killDetail', { params: { id: id ?? '' } }, { enabled: !!id });
   const env = useApi<Envelopes>('killEnvelopes', { params: { id: id ?? '' } }, { enabled: !!id && !!q.data?.command });
@@ -519,6 +582,8 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               <Progress d={k.restore} />
             </>
           )}
+          {k.command && <KillTimeline id={k.killId} />}
+          {k.command && <PostReview id={k.killId} />}
           {k.status === 'ACTIVE' && v2 && (
             <div style={{ display: 'grid', gap: 'var(--sp-2)' }} data-tour="kill-restore">
               <h3 className="ds-eyebrow ds-eyebrow--ko">

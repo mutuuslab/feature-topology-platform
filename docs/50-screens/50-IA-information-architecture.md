@@ -3,13 +3,13 @@ id: SCR-IA
 type: screen
 title: "정보구조 & 네비게이션 셸 / IA & Nav Shell"
 status: implemented
-version: 2.0.0
+version: 2.1.0
 owner: feature-architect
 cycle: 34
 traces:
   satisfies: [FR-27, NFR-2, NFR-6]
   realized_in_screen: [SCR-010, SCR-A50]
-last_updated: 2026-10-14
+last_updated: 2026-10-16
 ---
 
 # 정보구조 & 네비게이션 셸 / IA & Nav Shell — MENU 2.0
@@ -32,7 +32,7 @@ last_updated: 2026-10-14
 - **차량 운영·안전** 그룹은 어두운 관제실 톤(`data-zone="ops"`)으로 바뀌어 지금 운영 모드임을 보인다.
 - 밀도(1366~1536 compact · 1920 comfortable)와 **시연 모드**(`P`, 18px 기준·고대비·PoC 단계 표시줄 고정)는 같은 토큰의 다른 값이다.
 
-## 2. 메뉴 트리 — 업무 기준 8그룹 (메뉴 51)
+## 2. 메뉴 트리 — 업무 기준 8그룹 (메뉴 55)
 ```
 ⌂ 홈              내 대시보드 / · 검토함 /admin/approval · 표준 따라하기 /learn · PoC 6단계 진행 /poc · 42 컴포넌트 아키텍처 /arch/components
 ▸ Feature 정의     Feature 제안 /feature/propose · Feature Registry /features · Feature 등록 /master/define · 변경요청 /change/cr · Taxonomy /master/taxonomy
@@ -40,12 +40,13 @@ last_updated: 2026-10-14
 ▸ 기준정보         UPG·UPG-VC /master/upg · SW·Artifact /master/artifacts · SW 구조 /master/structure · SW EO /change/eo · 제어점 /master/control-points · 데이터 사전점검 /precheck
 ▸ 검증·Gate        품질 기준·Evidence /verify/evidence · 분야별 검증 이력 /validations · 컴플라이언스 /verify/compliance · 품질 피드백 /quality/feedback
                    · vECU 가상검증 /validations/virtual · 실험·효과 /experiments · 요구·안전 추적 /trace/design
-▸ 상품·출시        Feature Catalog 상품 /products · 사용 권한·체험권 /entitlements · 활성화 판단 /activation/decide · 정책·검증·승인 /policies · 서명 배포·차량 회신 /deployments
+▸ 상품·출시        Feature Catalog 상품 /products · 사용 권한·체험권 /entitlements · 활성화 판단 /activation/decide · 정책·검증·승인 /policies
+                   · Flag 은퇴 /flag-retirements · 서명 배포·차량 회신 /deployments
 ▸ 차량 운영·안전   Fleet 실시간 적용 현황 /fleet/live · 차량별 적용 상태 /fleet/vehicles/ego-01 · 긴급 차단·복구 /ops/kill · 이상 징후 대응 /ops/anomalies
-  (관제실 톤)      · 장애·VOC /ops/incidents · 운영 데이터·이벤트 /ops/telemetry · Platform 이벤트 /events
+  (관제실 톤)      · 운행 중 감시 지표 /ops/safety-kpi · 장애·VOC /ops/incidents · 운영 데이터·이벤트 /ops/telemetry · Platform 이벤트 /events
 ⚙ 연계·감사·관리   외부 연계 현황 /integration/connectors · OpenFeature 범위 /integration/openfeature · 데이터 동기화 /integration/sync · Legacy 연계 /integration/legacy
-                   · 현장 지원 포털 /field · 협력사 이관 /supplier/portal · 감사 이력 /audit · 플랫폼 인증·권한 /admin/iam · 보안·인증서 /admin/security
-                   · 체험 전환 분석 /biz/trials · 설정 /admin/settings · 디자인 시스템 /_design
+                   · 현장 지원 포털 /field · 협력사 이관 /supplier/portal · 감사 이력 /audit · 감독 기록 /audit/oversight · 플랫폼 인증·권한 /admin/iam
+                   · 보안·인증서 /admin/security · 데이터·규제 기록 /admin/data · 체험 전환 분석 /biz/trials · 설정 /admin/settings · 디자인 시스템 /_design
 ```
 
 ## 3. 메뉴 밖 화면 규칙
@@ -67,7 +68,7 @@ last_updated: 2026-10-14
 - ⌘K 명령: 영향 분석·변경요청·검토함·긴급 차단·사전점검·PoC와 Feature 검색.
 
 ## 6. 품질 기준 (하네스)
-- 메뉴 51 + 하위 화면 전부 axe(WCAG 2.1 AA) serious/critical **0** — 화면별 허용 건수 없음.
+- 메뉴 55 + 하위 화면 전부 axe(WCAG 2.1 AA) serious/critical **0** — 화면별 허용 건수 없음.
 - 1366·1536·1920에서 가로 넘침·잘림·겹침 없음(레이아웃 e2e).
 - 문구는 `copy/ko.ts`에서만, 원시 색상은 토큰 파일에서만, 보고서 v1.1 용어 규칙(Evidence 등) 위반 0.
 
@@ -78,4 +79,5 @@ last_updated: 2026-10-14
 | 버전 | 날짜 | 내용 |
 |---|---|---|
 | 0.1.0 | 2026-06-05 | 초안 (사용자 확정: 좌측 그룹 사이드바·하이브리드·KO+EN) |
+| 2.1.0 | 2026-10-16 | P11 — API만 있던 기능의 화면: Flag 은퇴, 감독 기록(직무 분리·사후 검토·변경 기록·재-HARA), 데이터·규제 기록(SUMS·Data Act·보존), 운행 중 감시 지표 반영 (메뉴 55) |
 | 2.0.0 | 2026-10-14 | MENU 2.0 구현 반영 — 업무 기준 8그룹·메뉴 51, 하위 화면·이전 주소 규칙, 역할 첫 진입·검토함, 접근성 하드 규칙 (P10) |

@@ -7,6 +7,7 @@ import { call } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, LifecycleBadge, LifecycleStepper, PageHeader, Panel, VerdictBadge, Icon } from '../../design';
+import { ProductVersionActions } from '../features/VersionEdit';
 import { scopeOf, usePermission } from '../shared';
 
 const T = ko.product;
@@ -148,6 +149,7 @@ export function ProductDetail() {
                 </>
               }
               lead={p.description}
+              actions={<ProductVersionActions key={`${p.catalogId}@${p.version}`} p={p} latest={d.versions[d.versions.length - 1]?.version === p.version} />}
             />
             <Panel title={ko.detail.transitionTitle} id="plc">
               <LifecycleStepper current={p.lifecycle} transitions={d.transitions.map((t) => ({ to: t.to, blockers: t.blockers.map((m) => ({ message: m })) }))} />

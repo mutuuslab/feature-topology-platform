@@ -44,9 +44,9 @@ npm run dev:frontend     # http://127.0.0.1:9012       (/api → 9101 프록시)
 - **구성·Topology**: BOM 기준선·확정 승인 · Topology·의존관계 검증 · 변경 영향 분석 · Variant·지원 조건
 - **기준정보**: UPG·UPG-VC · SW·Artifact · SW 구조 · SW EO · 제어점 · 데이터 사전점검
 - **검증·Gate**: 품질 기준·Evidence · 분야별 검증 이력 · 컴플라이언스 · 품질 피드백 · vECU 가상검증 · 실험·효과 · 요구·안전 추적
-- **상품·출시**: Feature Catalog 상품 · 사용 권한·체험권 · 활성화 판단 · 정책·검증·승인 · 서명 배포·차량 회신
-- **차량 운영·안전**(어두운 관제실 톤): Fleet 실시간 적용 현황 · 차량별 적용 상태 · 긴급 차단·복구 · 이상 징후 대응 · 장애·VOC · 운영 데이터·이벤트 · Platform 이벤트
-- **연계·감사·관리**: 외부 연계 현황 · OpenFeature 범위 · 데이터 동기화 · Legacy 연계 · 현장 지원 포털 · 협력사 이관 · 감사 이력 · 플랫폼 인증·권한 · 보안·인증서 · 체험 전환 분석 · 설정 · 디자인 시스템
+- **상품·출시**: Feature Catalog 상품 · 사용 권한·체험권 · 활성화 판단 · 정책·검증·승인 · Flag 은퇴 · 서명 배포·차량 회신
+- **차량 운영·안전**(어두운 관제실 톤): Fleet 실시간 적용 현황 · 차량별 적용 상태 · 긴급 차단·복구 · 이상 징후 대응 · 운행 중 감시 지표 · 장애·VOC · 운영 데이터·이벤트 · Platform 이벤트
+- **연계·감사·관리**: 외부 연계 현황 · OpenFeature 범위 · 데이터 동기화 · Legacy 연계 · 현장 지원 포털 · 협력사 이관 · 감사 이력 · 감독 기록 · 플랫폼 인증·권한 · 보안·인증서 · 데이터·규제 기록 · 체험 전환 분석 · 설정 · 디자인 시스템
 
 메뉴 밖 화면은 모두 부모가 있는 하위 화면(Feature·상품·정책·게시본 상세 등)이고, 예전 주소는 v2 화면으로 넘겨 준다.
 3D 시연 화면(`/twin/*`, `twin.html`)은 BDC 데모 장면으로 남아 있고 해당 v2 화면의 하위 화면이다.
@@ -67,13 +67,13 @@ F2 이상은 Safe Default + `DISABLED`(`decided_by=vehicle_safety_guard`)로 돌
 3. vECU 실행본 정합 · 보고서 코드 패키지 정합 · **고아 모듈 0**(`tools/dead-modules.ts`) · **형제 저장소 버전 고정**(`harness/siblings.json` — FF_IMP checkout이 GLEO v2 고정 커밋을 포함하고 `gleo/`가 깨끗한지) · OpenFeature 규율
 4. 데이터셋 픽스처 정합 · OpenAPI 최신 여부(`docs/80-integration/openapi.json`)
 5. contracts · 백엔드 · 프론트 테스트
-6. 42 컴포넌트 준수(`--strict`로 42/42) · 보고서 v1.1 규칙 추적
-7. 프론트 빌드 · e2e(기능·PoC·**메뉴 51 + 하위 화면 전부 axe serious/critical 0**·레이아웃)
+6. 42 컴포넌트 준수(`--strict`, 42/42가 아니면 실패) · 보고서 v1.1 규칙 추적(75/75)
+7. 프론트 빌드 · e2e(기능·PoC·**메뉴 55 + 하위 화면 전부 axe serious/critical 0**·레이아웃)
 
 `npm run verify:full`은 시각 회귀(Windows 기준 스크린샷)를 더한다.
 래칫(`harness/baselines.json`)은 나빠질 수 없고, 좋아지면 `npm run ratchet -- --update`로 잠근다.
 여러 세션이 같은 저장소를 쓰므로 통합 전에는 `npm run integration:status`(남은 브랜치·worktree·미커밋, 형제 저장소 포함)로 확인한다.
-현재 원시 색상 0 · FEAT-BDC 0 · 용어 위반 0 · 구현 컴포넌트 41/42(D06-11 취약점 모니터링은 보고서 WP8에서 구현).
+현재 원시 색상 0 · FEAT-BDC 0 · 용어 위반 0 · 구현 컴포넌트 42/42 · 플랫폼 규칙 75/75.
 
 ## 데이터
 

@@ -1,6 +1,7 @@
 // 화면 문구 카탈로그 — 재디자인 화면(design/·shell/·screens/)은 문구를 여기서만 가져온다(lint:copy).
 // 표기 원칙: 한글 라벨 + 영문 기술용어·ID(Feature, Baseline, Gate, Kill, Safe Default …), 문장은 '…합니다/하세요'.
 import { p10 } from './p10';
+import { p11 } from './p11';
 import { master } from './master';
 import type { Lifecycle } from '@ff/contracts';
 
@@ -894,6 +895,7 @@ export const ko = {
     clauseOpen: (id: string) => `${id} 원문 요약 보기`,
   },
   p10,
+  p11,
   master,
 } as const;
 

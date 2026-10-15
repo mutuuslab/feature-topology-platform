@@ -238,6 +238,28 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
     await waitFor(() => expect(posted('/api/kill-requests/KILL-00001/approvals')).toBeTruthy());
     expect(new Headers(posted('/api/kill-requests/KILL-00001/approvals')!.init!.headers).get('X-Actor-Role')).toBe('SAFETY_OFFICER');
   });
+
+  it('발행된 차단 — 차량별 종료·복원 시각(불확실 시각 표시)과 24시간 사후 독립 검토(CSM이 기록)', async () => {
+    const ACTIVE = { ...REQUESTED, status: 'ACTIVE', command: { commandId: '0c1d2e3f-0000-4000-8000-000000000001', commandSeq: 3, kid: 'KILL-K1' }, approvals: [{ approverId: 'usr-safety', role: 'FSM', signedAt: 'x' }, { approverId: 'usr-coordinator', role: 'OPS_LEAD', signedAt: 'x' }] };
+    const pt = (at: string, trust = 'TRUSTED') => ({ at, trust, timeSync: trust === 'TRUSTED' ? 'SYNCED' : 'DEGRADED' });
+    handler = (url, init) => {
+      if (url.startsWith('/api/kill-requests/KILL-00001/timeline')) return { body: { killId: 'KILL-00001', featureId: 'FEAT-00022', items: [{ vin: 'ego-01', deactivate: { commandId: 'c', accepted: pt('2026-10-12T01:10:00.000Z'), completed: pt('2026-10-12T01:10:08.000Z', 'UNCERTAIN') }, restore: null, cause: 'REMOTE_KILL', uncertain: ['비활성화 완료'] }] } };
+      if (url.startsWith('/api/kill-requests/KILL-00001/envelopes')) return { body: { envelopes: [] } };
+      if (url.startsWith('/api/kill-post-reviews')) return { body: { items: [{ killId: 'KILL-00001', featureId: 'FEAT-00022', issuedAt: '2026-10-12T01:10:00.000Z', due: '2026-10-13T01:10:00.000Z', requestedBy: 'usr-operator', approvers: ['usr-safety', 'usr-coordinator'], review: null, status: 'PENDING' }] } };
+      if (url.startsWith('/api/kill-requests/KILL-') && init?.method !== 'POST') return { body: ACTIVE };
+      return api(url, init);
+    };
+    mount('/ops/kill?id=KILL-00001', '/ops/kill', <KillConsole />, 'integrator');
+    const dlg = await screen.findByRole('dialog');
+    const tl = await within(dlg).findByTestId('kill-timeline');
+    expect(within(tl).getByText('원격 Kill')).toBeTruthy();
+    expect(within(tl).getAllByTitle(/시각 불확실/)).toHaveLength(1);
+    const pr = await within(dlg).findByTestId('post-review');
+    fireEvent.change(within(pr).getByRole('textbox'), { target: { value: '현장 결함 확인, 차단 범위 적정' } });
+    fireEvent.click(within(pr).getByRole('button', { name: '사후 검토 기록' }));
+    await waitFor(() => expect(posted('/api/kill-requests/KILL-00001/post-review')).toBeTruthy());
+    expect(new Headers(posted('/api/kill-requests/KILL-00001/post-review')!.init!.headers).get('X-Actor-Role')).toBe('SECURITY_OFFICER');
+  });
 });
 
 describe('게시본 상세', () => {

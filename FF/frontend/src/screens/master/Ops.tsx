@@ -7,6 +7,7 @@ import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, Segmented, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
+import { EpochBump, SbomDrawer, SecurityEventsPanel } from './Security';
 
 const M = ko.master;
 const fref = (s: string) => {
@@ -191,16 +192,16 @@ export function SecurityScreen() {
         </AsyncView>
       </Panel>
       <div className="ds-split">
-        <Panel title={S.hsm} id="sec-hsm">
+        <Panel title={S.hsm} id="sec-hsm" actions={<EpochBump />}>
           <AsyncView state={asyncState(hsm)} error={hsm.error?.message} onRetry={() => hsm.refetch()}>
             <KeyValue rows={Object.entries(hsm.data ?? {}).map(([k, v]) => ({ k: <span className="ds-mono">{k}</span>, v: <span className="ds-mono">{String(v)}</span> }))} />
           </AsyncView>
         </Panel>
         <Panel title={S.vuln} id="sec-vuln">
           <p className="ds-field__hint">{S.vulnNote}</p>
-          <Link to="/arch/components?wp=WP8">WP8</Link>
         </Panel>
       </div>
+      <SecurityEventsPanel />
       <SbomPanel />
       <VexPanel />
     </div>
@@ -221,6 +222,7 @@ function SbomPanel() {
   const S = M.security;
   const q = useApi<{ items: SbomRow[] }>('sbomList');
   const rows = [...(q.data?.items ?? [])].reverse();
+  const [open, setOpen] = useState<string | null>(null);
   return (
     <Panel title={S.sbom} eyebrow="D06-11 · FFG-SBOM-002·003" id="sec-sbom">
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={3}>
@@ -228,6 +230,7 @@ function SbomPanel() {
           caption={S.sbom}
           rows={rows}
           rowKey={(r) => r.serial}
+          onOpen={(r) => setOpen(r.serial)}
           columns={[
             { key: 's', header: S.sbomCol.serial, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }} title={r.serial}>{r.serial.slice(9, 17)}</span> },
             { key: 'p', header: S.sbomCol.pub, cell: (r) => <span className="ds-mono">{r.publicationId ?? '—'}</span> },
@@ -245,6 +248,7 @@ function SbomPanel() {
           ]}
         />
       </AsyncView>
+      <SbomDrawer serial={open} onClose={() => setOpen(null)} />
     </Panel>
   );
 }

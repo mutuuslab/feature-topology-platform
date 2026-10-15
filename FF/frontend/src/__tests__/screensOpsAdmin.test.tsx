@@ -71,16 +71,26 @@ describe('운영·관리 v2', () => {
   it('보안·인증서 — 키·HSM, SBOM 목록(원산지 발견)·VEX 판정 이력 (D06-11 · FFG-SBOM-002·SEC-006)', async () => {
     const SBOM = { items: [{ serial: 'urn:uuid:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', publicationId: 'PUB-00004', featureId: 'FEAT-00022', featureVersion: '1.0.0', components: 3, originFindings: ['SW-CARE-SDIST-APP@1.2.1(FF): country 없음'] }] };
     const VEX = { items: [{ statement: { vulnId: 'CVE-2026-0001', affects: ['SW-CARE-SDIST-APP@1.2.1'], state: 'affected' }, impact: { action: 'SECURITY_KILL_OR_UPDATE', features: [{ featureId: 'FEAT-00022', featureVersion: '1.0.0', killPath: false }] }, at: 'x' }] };
-    handler = (url) => (url.startsWith('/api/sbom') ? { body: SBOM } : url.startsWith('/api/vex') ? { body: VEX } : url.startsWith('/api/pki/keys') ? { body: { items: [{ keyId: 'KEY-0001', alg: 'Ed25519', purpose: 'policy', epoch: 1, status: 'ACTIVE', createdAt: 'x', notAfter: 'y', fingerprint: 'sha256:f0' }] } } : { body: { epoch: 1, approverKeys: 3 } });
+    const SEC = { items: [{ at: '2026-10-16T01:00:00.000Z', eventId: 'AUTH_FAILURE', code: 'STATE_AUTH_MISMATCH', vehicle: 'vp-7f3a' }], definitions: [{ id: 'AUTH_FAILURE', label: '인증 실패', codes: ['STATE_AUTH_MISMATCH'], threshold: { count: 3, windowMs: 600000, perVehicle: true }, response: 'VSOC 경보', limitChannel: true }] };
+    const CDX = { serialNumber: SBOM.items[0].serial, metadata: { timestamp: '2026-10-16T01:00:00.000Z', component: { name: 'PUB-00004', version: '1' } }, components: [{ 'bom-ref': 'SW-CARE-SDIST-APP@1.2.1', type: 'application', name: 'SW-CARE-SDIST-APP', version: '1.2.1', purl: 'pkg:generic/sw-care@1.2.1', properties: [{ name: 'origin:vcs', value: 'git' }] }] };
+    handler = (url) => (url.startsWith('/api/sbom/') ? { body: CDX } : url.startsWith('/api/security-events') ? { body: SEC } : url.startsWith('/api/sbom') ? { body: SBOM } : url.startsWith('/api/vex') ? { body: VEX } : url.startsWith('/api/pki/keys') ? { body: { items: [{ keyId: 'KEY-0001', alg: 'Ed25519', purpose: 'policy', epoch: 1, status: 'ACTIVE', createdAt: 'x', notAfter: 'y', fingerprint: 'sha256:f0' }] } } : { body: { epoch: 1, approverKeys: 3 } });
     mount('/admin/security', <SecurityScreen />);
     expect(await screen.findByText('KEY-0001')).toBeTruthy();
     expect(await screen.findByText('approverKeys')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'WP8' }).getAttribute('href')).toBe('/arch/components?wp=WP8');
+    // 보안 이벤트(IdsM) 정의·기록, 차량 키 epoch 상향은 CSM·FSM만 (운영자 불가)
+    expect(await screen.findByText('STATE_AUTH_MISMATCH')).toBeTruthy();
+    expect(screen.getByText('10분에 3회 (차량별)')).toBeTruthy();
+    expect((screen.getByRole('button', { name: '차량 키 epoch 상향' }) as HTMLButtonElement).disabled).toBe(true);
     expect((await screen.findByTestId('origin-urn:uuid:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')).textContent).toBe('1건 누락');
     expect(await screen.findByText('CVE-2026-0001')).toBeTruthy();
     expect(screen.getByText('보안 차단 또는 업데이트 결정')).toBeTruthy();
     // 운영자는 VEX를 기록하지 못한다(CSM·FSM)
     expect((screen.getByRole('button', { name: 'VEX 기록' }) as HTMLButtonElement).disabled).toBe(true);
+    // SBOM 행을 열면 CycloneDX 본문(구성 요소·원산지 속성)
+    fireEvent.click(screen.getByTestId('origin-urn:uuid:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee').closest('tr')!);
+    const body = await screen.findByTestId('sbom-detail');
+    expect(within(body).getByText('pkg:generic/sw-care@1.2.1')).toBeTruthy();
+    expect(within(body).getByText('origin:vcs=git')).toBeTruthy();
   });
 
   it('운행 중 감시 지표 — Version별 지표·경보, 예시값 기준 표시, 부속서 1 (D04-03 · FFG-TEL-009)', async () => {

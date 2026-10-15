@@ -6,6 +6,7 @@
 // UL-DD-10·C23-AC01(낮은 sequence·과거 boot 보고가 최신 상태를 덮어쓰지 않음)·UL-065(재부팅 후 재연결 시 먼저 대사) → 멱등·부팅 규칙.
 import { z } from 'zod';
 import { ReadbackBody } from '../schemas/ops';
+import { AttestationEntry } from './attestation';
 
 /** 차량이 보고로 바꿀 수 있는 관측 속성 — 나머지 Vehicle 속성은 신뢰 원천(제조·판매 기준 정보)이라 거부 */
 export const VEHICLE_OBSERVED_FIELDS = {
@@ -38,6 +39,8 @@ export const VehicleReportBody = z.discriminatedUnion('type', [
   /** 적용 결과 회신 — IF-06 수집으로 넘긴다 (vin·bootId는 보고 봉투 값을 쓴다) */
   z.object({ type: z.literal('READBACK'), ...Seq, readback: ReadbackBody.omit({ vin: true, bootId: true }) }).strict(),
   /** Flag 값 직접 변경 — 항상 거부한다. 스키마에 두는 이유는 차량이 VALIDATION이 아니라 명시적인 거부 사유를 받게 하려는 것 */
+  // 실제 구성 Attestation(FFG-VEH-007) — 적용 중인 정책 해시·Feature Version·BOM 식별자(Flag 정책 단위)
+  z.object({ type: z.literal('ATTESTATION'), ...Seq, configs: z.array(AttestationEntry).max(64) }).strict(),
   z.object({ type: z.literal('OVERRIDE'), ...Seq, flagKey: z.string().min(1), value: z.unknown() }).strict(),
 ]);
 export type VehicleReportBody = z.infer<typeof VehicleReportBody>;

@@ -5,12 +5,14 @@
 // 규칙(바꿀 수 있는 관측 속성·순서 판정·거부 사유)은 contracts/rules/vehicle-requests.ts 한 곳에 있다.
 import { Body, Controller, Get, Headers, HttpCode, Inject, Injectable, Param, Post, Res } from '@nestjs/common';
 import {
+  attestationMismatches,
   DATA_CATEGORY_ACCESS,
   checkObservedSet,
   checkReportOrder,
   OfrepBody,
   VEHICLE_RATE_LIMIT,
   VehicleReportBody,
+  type ExpectedConfig,
   type Publication,
   type VehicleReportType,
 } from '@ff/contracts';
@@ -27,6 +29,7 @@ import { ZodPipe } from '../../../kernel/zod.pipe';
 import { ActivationService } from '../../d01-policy/activation/activation.service';
 import { EntitlementService } from '../../d01-policy/entitlement/entitlement.service';
 import { FleetRepo, PolicyRepo } from '../../d01-policy/policy-repos';
+import { FeatureRepo } from '../../d01-policy/repos';
 import { TelemetryService } from '../../d04-ops/telemetry-ingest/telemetry.service';
 import { ofrep } from '../../d05-ext/api-gateway/ofrep.controller';
 import { PublicationRepo } from '../../d06-qsec/secure-deploy/publication.repo';
@@ -57,6 +60,7 @@ export class VehicleRequestService {
     private readonly events: EventService,
     private readonly clock: Clock,
     @Inject(DB) private readonly db: Db,
+    private readonly features: FeatureRepo,
   ) {}
 
   // ---- 공통 관문 ----
@@ -232,11 +236,38 @@ export class VehicleRequestService {
         this.audit.record(actor, 'VEHICLE_FAULT', vin, { after: fault, componentId: COMPONENT });
         return { fault };
       }
+      case 'ATTESTATION': {
+        const expected = this.expectedConfigs(vin);
+        const mismatches = attestationMismatches(body.configs, expected);
+        const attestation = { compared: expected.length, reported: body.configs.length, mismatches };
+        this.audit.record(actor, 'VEHICLE_ATTESTATION', vin, { after: attestation, componentId: COMPONENT });
+        // 불일치는 이상 건(D06-12)으로 — 보고를 받는 즉시(FFG-VEH-007)
+        if (mismatches.length) this.events.publish('vehicle.config.mismatch', vin, { vin, mismatches, publications: expected.map((e) => e.publicationId) }, meta);
+        return { attestation };
+      }
       case 'READBACK': {
         const stored = this.telemetry.ingest({ ...body.readback, vin, bootId: body.bootId }, 'IF-06', actor.correlationId);
         return { readback: { publicationId: stored.publicationId, observed: stored.observed, at: stored.at } };
       }
     }
+  }
+
+  /**
+   * 기대 구성 — 이 차량에 보낸(전달 시작된) 정책 게시본 중 Flag마다 가장 최근 순번. BOM은 그 Feature Version의 BOM Baseline.
+   * @rule FFG-VEH-007 — 플랫폼 기대 구성(정책 해시·Feature Version·BOM)
+   */
+  private expectedConfigs(vin: string): ExpectedConfig[] {
+    const latest = new Map<string, Publication>();
+    for (const p of this.publications.list({ kind: 'POLICY' }))
+      if (p.status !== 'SIGNED' && p.payload.flagKey && p.payload.targets.includes(vin) && p.payload.sequence > (latest.get(p.payload.flagKey)?.payload.sequence ?? 0)) latest.set(p.payload.flagKey, p);
+    return [...latest.values()].map((p) => ({
+      featureId: p.payload.featureId,
+      flagKey: p.payload.flagKey!,
+      featureVersion: p.payload.featureVersion,
+      policyHash: p.signature.payloadHash,
+      publicationId: p.publicationId,
+      bomBaselineId: this.features.get(p.payload.featureId, p.payload.featureVersion)?.baselineId ?? null,
+    }));
   }
 
   /** 재연결 대사 (UL-065) — 이 차량 대상 게시본 중 차량이 가진 순번보다 새 것을 순서대로. 서명째 돌려주어 차량이 직접 검증한다 */
@@ -268,6 +299,8 @@ function summarize(b: VehicleReportBody): string {
       return `오류 ${b.featureId} ${b.code} (${b.severity})`;
     case 'READBACK':
       return `회신 ${b.readback.publicationId} ${b.readback.observed}`;
+    case 'ATTESTATION':
+      return `구성 보고 ${b.configs.length}건`;
     case 'OVERRIDE':
       return `Flag 직접 변경 ${b.flagKey}=${JSON.stringify(b.value)}`;
   }

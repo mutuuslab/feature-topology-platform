@@ -5250,6 +5250,77 @@
                       "type": {
                         "type": "string",
                         "enum": [
+                          "ATTESTATION"
+                        ]
+                      },
+                      "bootId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "observedAt": {
+                        "type": "string",
+                        "minLength": 10
+                      },
+                      "configs": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "featureId": {
+                              "type": "string",
+                              "pattern": "^FEAT-\\d{5}$"
+                            },
+                            "featureVersion": {
+                              "type": "string",
+                              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                            },
+                            "flagKey": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 64
+                            },
+                            "policyHash": {
+                              "type": "string",
+                              "pattern": "^sha256:[a-f0-9]{64}$"
+                            },
+                            "bomBaselineId": {
+                              "type": "string",
+                              "nullable": true,
+                              "pattern": "^BL-\\d{5}$"
+                            }
+                          },
+                          "required": [
+                            "featureId",
+                            "featureVersion",
+                            "flagKey",
+                            "policyHash",
+                            "bomBaselineId"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 64
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "bootId",
+                      "sequence",
+                      "observedAt",
+                      "configs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
                           "OVERRIDE"
                         ]
                       },

@@ -27,6 +27,9 @@ import {
   type Market,
   type ReasonCategory,
   type Role,
+  killTimeline,
+  type TimelineCommand,
+  type TimelineReport,
 } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
@@ -502,6 +505,22 @@ export class KillService {
     return { commands, envelopes };
   }
 
+  /**
+   * 종료·복원 시간 기록 — 차량마다 다섯 시각(종료 수락·비활성화 완료·MRC·복원 수락·복원 효력)과 명령 ID, Kill·고장 구분, 신뢰 시간 여부.
+   * 수신 검사를 통과한 status_report v2만 쓴다(FFG-ADS-007·TEL-004·TEL-010).
+   */
+  timeline(id: string) {
+    const k = this.load(id);
+    const commands = this.db
+      .all<{ command_id: string; request: string; vin: string; vehicle_seq: number }>('SELECT command_id, request, vin, vehicle_seq FROM vehicle_envelope WHERE kill_id = ? ORDER BY created_at', id)
+      .map((r) => ({ commandId: r.command_id, request: r.request as TimelineCommand['request'], vin: r.vin, vehicleSeq: r.vehicle_seq }));
+    const reports = this.db
+      .all<{ vin: string; doc: string }>(`SELECT vin, doc FROM status_report WHERE feature_id = ? AND accepted = 1 AND vin IN (${k.vins.map(() => '?').join(',') || "''"}) ORDER BY id`, k.featureId, ...k.vins)
+      .map((r) => ({ ...(JSON.parse(r.doc) as Omit<TimelineReport, 'vin'>), vin: r.vin }));
+    const ads = !!this.gate.registryEntry(k.featureId, k.featureVersion)?.ads_feature;
+    return { killId: id, featureId: k.featureId, items: k.vins.map((vin) => killTimeline(vin, commands, reports, { adsFeature: ads })) };
+  }
+
   list(status?: string) {
     return this.kills
       .list()
@@ -562,6 +581,11 @@ export class KillController {
   @Get(':id')
   detail(@Param('id') id: string) {
     return this.kills.detail(id);
+  }
+
+  @Get(':id/timeline')
+  timeline(@Param('id') id: string) {
+    return this.kills.timeline(id);
   }
 
   @Get(':id/envelopes')

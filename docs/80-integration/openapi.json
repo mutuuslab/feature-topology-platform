@@ -6058,6 +6058,36 @@
         }
       }
     },
+    "/api/kill-requests/{id}/timeline": {
+      "get": {
+        "summary": "종료·복원 시간 기록 — 차량별 다섯 시각·명령 ID·Kill/고장 구분·신뢰 시간(FFG-ADS-007·TEL-004·TEL-010)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "killTimeline",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/kill-requests/{id}/envelopes": {
       "get": {
         "summary": "발행된 kill_command v2와 차량별 봉투(vehicle_auth·cmd_auth)",

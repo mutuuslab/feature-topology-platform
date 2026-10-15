@@ -160,6 +160,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'issueKill', method: 'POST', path: '/api/kill-requests', summary: '긴급 차단 요청 (type-to-confirm·사유 분류) — 2인 승인 뒤 게이트·서명·차량별 봉투', component: 'D03-03', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillCreateBody },
   { name: 'approveKill', method: 'POST', path: '/api/kill-requests/:id/approvals', summary: '긴급 차단 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 발행', component: 'D03-03', roles: KILL_APPROVER_ROLES, body: KillApproveBody },
   { name: 'rejectKill', method: 'POST', path: '/api/kill-requests/:id/reject', summary: '긴급 차단 요청 거절', component: 'D03-03', roles: KILL_APPROVER_ROLES, body: KillRejectBody },
+  { name: 'killTimeline', method: 'GET', path: '/api/kill-requests/:id/timeline', summary: '종료·복원 시간 기록 — 차량별 다섯 시각·명령 ID·Kill/고장 구분·신뢰 시간(FFG-ADS-007·TEL-004·TEL-010)', component: 'D03-03' },
   { name: 'killEnvelopes', method: 'GET', path: '/api/kill-requests/:id/envelopes', summary: '발행된 kill_command v2와 차량별 봉투(vehicle_auth·cmd_auth)', component: 'D03-03' },
   { name: 'requestRestore', method: 'POST', path: '/api/kill-requests/:id/restore', summary: '복원 요청 — 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillRejectBody },
   { name: 'approveRestore', method: 'POST', path: '/api/kill-requests/:id/restore/approvals', summary: '복원 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 복구 게시', component: 'D03-04', roles: KILL_APPROVER_ROLES, body: KillApproveBody },

@@ -163,7 +163,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D03-03': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', FE_OPS, E2E_OPS] },
   'D03-04': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', E2E_OPS] },
   'D04-01': { screens: ['/deployments', '/deployments/:id'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
-  'D04-03': { screens: ['/fleet/live', '/deployments/:id', '/ops/telemetry'], tests: [BE_DLV, FE_OPS, E2E_OPS, FE_OPSADMIN] },
+  'D04-03': { screens: ['/fleet/live', '/deployments/:id', '/ops/telemetry', '/ops/safety-kpi'], tests: [BE_DLV, FE_OPS, E2E_OPS, FE_OPSADMIN] },
   'D06-08': { screens: ['/deployments', '/deployments/:id', '/fleet/live'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
   'D06-10': { screens: ['/deployments', '/admin/security'], tests: [BE_DLV, E2E_OPS, FE_OPSADMIN] },
   // 보고서 v1.1 WP8 — 게시본별 CycloneDX SBOM·서명 전 해시 결합·VEX 판정

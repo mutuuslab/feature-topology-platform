@@ -6,6 +6,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { STANDARDS_MAP } from '@ff/contracts';
 import { AppProvider } from '../store';
 import { ComplianceScreen, EoScreen, SecurityScreen, SettingsScreen, SupplierScreen, TelemetryScreen } from '../screens/master/Ops';
+import { SafetyKpiScreen } from '../screens/ops/SafetyKpi';
 
 type Handler = (url: string) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -80,6 +81,35 @@ describe('운영·관리 v2', () => {
     expect(screen.getByText('보안 차단 또는 업데이트 결정')).toBeTruthy();
     // 운영자는 VEX를 기록하지 못한다(CSM·FSM)
     expect((screen.getByRole('button', { name: 'VEX 기록' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('운행 중 감시 지표 — Version별 지표·경보, 예시값 기준 표시, 부속서 1 (D04-03 · FFG-TEL-009)', async () => {
+    const H = 3_600_000;
+    const defs = [
+      { id: 'KILL_LATENCY_P95', definition: '명령 발행부터 DISABLED·DURABLE 보고까지', type: 'ROUTINE', unit: 'ms', alert: { op: 'ABOVE', example: 24 * H, text: '' } },
+      { id: 'STATE_PROOF_FAILURE', definition: 'state_auth·report_seq 검사 실패 건수', type: 'EXCEEDANCE', unit: 'count', alert: { op: 'AT_LEAST', example: 1, text: '' } },
+    ];
+    const plan = { source: 'EXAMPLE', thresholds: { KILL_LATENCY_P95: 24 * H, STATE_PROOF_FAILURE: 1 }, recordedBy: null, recordedAt: null };
+    const OV = {
+      definitions: defs,
+      coverage: { missing: [], exampleOnly: [{ featureId: 'FEAT-00022', version: '1.0.0' }] },
+      alerts: 1,
+      items: [{ featureId: 'FEAT-00022', version: '1.0.0', ads: false, plan, metrics: [{ id: 'KILL_LATENCY_P95', value: 8000, previous: null, threshold: 24 * H, alert: false }, { id: 'STATE_PROOF_FAILURE', value: 1, previous: null, threshold: 1, alert: true }] }],
+    };
+    handler = (url) => (url.includes('/annex1') ? { body: { applicable: false, from: '', to: '', lines: [], missing: [] } } : url.startsWith('/api/safety-kpi') ? { body: OV } : undefined);
+    mount('/ops/safety-kpi', <SafetyKpiScreen />);
+    expect(await screen.findByText('FEAT-00022')).toBeTruthy();
+    expect(screen.getByText('8.0s')).toBeTruthy();
+    expect(screen.getByText('0/1')).toBeTruthy(); // Safety Case 기준 기록 0/1 — 예시값 사용
+    expect(screen.getByText('예시값')).toBeTruthy();
+    fireEvent.click(screen.getByText('FEAT-00022'));
+    expect(await screen.findByText('ADS 기능이 아니어서 부속서 1 집계 대상이 아닙니다.')).toBeTruthy();
+    expect(screen.getByText(/경보 기준 ≥ 1 \(예시값\)/)).toBeTruthy();
+    // 현재 기준으로 채워 두고, 운영자는 값을 바꿔도 기록하지 못한다(FSM)
+    const input = screen.getByLabelText('상태 증명 실패 (대·건)') as HTMLInputElement;
+    expect(input.value).toBe('1');
+    fireEvent.change(input, { target: { value: '5' } });
+    expect((screen.getByRole('button', { name: '기준 기록' }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('설정 — 상태·건수·연계 방식', async () => {

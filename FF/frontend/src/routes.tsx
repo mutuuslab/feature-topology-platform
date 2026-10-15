@@ -78,6 +78,7 @@ const fleetScreens = () => import('./screens/ops/FleetLive');
 const killScreens = () => import('./screens/ops/KillConsole');
 const deployScreens = () => import('./screens/ops/Deployments');
 const anomalyScreens = () => import('./screens/ops/Anomalies');
+const kpiScreens = () => import('./screens/ops/SafetyKpi');
 const accessScreens = () => import('./screens/admin/Access');
 const learnScreens = () => import('./screens/learn/Learn');
 
@@ -186,6 +187,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/twin/incident', element: named(twinOps, 'TwinIncident'), title: '긴급 차단 시나리오 (BDC 데모)', group: 'ops', parent: '/ops/kill' },
   { path: '/ops/:id', element: legacyTo('/fleet/live'), title: 'Feature 운영 대시보드 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/ops/anomalies', element: named(anomalyScreens, 'AnomalyScreen'), title: '이상 징후 대응', group: 'ops', menu: '/ops/anomalies', components: ['D06-12'], v2: true },
+  { path: '/ops/safety-kpi', element: named(kpiScreens, 'SafetyKpiScreen'), title: '운행 중 감시 지표', group: 'ops', menu: '/ops/safety-kpi', components: ['D04-03'], v2: true },
   { path: '/ops/incidents', element: named(incidentScreens, 'IncidentsScreen'), title: '장애·VOC', group: 'ops', menu: '/ops/incidents', components: ['D04-05'], v2: true },
   { path: '/ops/incident', element: legacyTo('/ops/incidents'), title: '장애·VOC (이전 주소)', group: 'ops', parent: '/ops/incidents' },
   { path: '/ops/incident/:id', element: legacyTo('/ops/incidents'), title: '장애 상세 (이전 주소)', group: 'ops', parent: '/ops/incidents' },

@@ -1142,7 +1142,8 @@
       ],
       "tested": [
         "contracts/src/rules/safety-kpi.test.ts",
-        "backend/test/d04/safety-kpi.spec.ts"
+        "backend/test/d04/safety-kpi.spec.ts",
+        "frontend/src/__tests__/screensOpsAdmin.test.tsx"
       ]
     },
     {

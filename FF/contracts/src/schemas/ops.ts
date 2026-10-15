@@ -141,6 +141,9 @@ export const KillRequestSchema = z.object({
   expiresAt: z.string().optional(),
   recallCampaignId: z.string().nullable().optional(),
   containmentJustification: z.string().nullable().optional(),
+  /** 결함 판정 시각과 대상 시장별 결함 보고 기한(FFG-DEAC-010) — F2 이상 안전 Kill만 */
+  defectDeterminedAt: z.string().nullable().optional(),
+  recallReports: z.array(z.object({ market: z.string(), defectDeterminedAt: z.string().nullable(), due: z.string().nullable(), basis: z.string(), note: z.string().nullable() })).optional(),
   /** 상업·운영 사유 명령의 사용자 고지 기록(예: 체험권 만료 고지 NTC-NNNNN) — 없으면 F2 이상 상업 명령은 게이트 FFG-PLT-006 FAIL */
   userNoticeRef: z.string().nullable().optional(),
   gate: KillGateSummary.nullable().optional(),
@@ -175,6 +178,8 @@ export const KillCreateBody = z
     /** F2 이상 안전 Kill은 리콜 캠페인 ID나 봉쇄 결정 근거 중 하나(FFG-PLT-009·DEAC-010) */
     recallCampaignId: z.string().trim().min(2).max(60).optional(),
     containmentJustification: z.string().trim().min(2).max(500).optional(),
+    /** 결함 판정 시각 — 시장별 결함 보고 기한(미국 5영업일)의 기준 */
+    defectDeterminedAt: z.string().datetime().optional(),
     /** type-to-confirm — 차단할 Feature ID를 그대로 입력 */
     confirm: z.string(),
     /** 이상 징후 대응(D06-12)에서 넘어온 차단 — 발령되면 그 이상 건이 조치됨(MITIGATED)이 된다 */

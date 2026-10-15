@@ -5878,6 +5878,10 @@
                     "minLength": 2,
                     "maxLength": 500
                   },
+                  "defectDeterminedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
                   "confirm": {
                     "type": "string"
                   },

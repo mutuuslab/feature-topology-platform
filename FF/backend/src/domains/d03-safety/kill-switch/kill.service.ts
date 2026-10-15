@@ -31,6 +31,7 @@ import {
   type TimelineCommand,
   type TimelineReport,
 } from '@ff/contracts';
+import { recallReportDue } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -173,8 +174,11 @@ export class KillService {
       throw new DomainError('GUARD_FAILED', 'DC4·법규 의무 기능은 원격으로 비활성화하지 않습니다 — 정비·리콜 절차로 처리합니다 (FFG-PLT-004·FFG-DEAC-011).', { rule: 'FFG-PLT-004' });
     }
     const plan = approvalPlan(reg.f_class, 'deactivate', body.reasonCategory);
-    if (body.reasonCategory === 'SAFETY' && ['F2', 'F3', 'F4'].includes(reg.f_class) && !body.recallCampaignId && !body.containmentJustification)
-      throw new DomainError('VALIDATION', 'F2 이상 안전 차단은 리콜 캠페인 ID나 봉쇄 결정 근거가 필요합니다 (FFG-PLT-009·FFG-DEAC-010).');
+    const safetyKill = body.reasonCategory === 'SAFETY' && ['F2', 'F3', 'F4'].includes(reg.f_class);
+    if (safetyKill && !body.recallCampaignId && !body.containmentJustification) {
+      this.audit.failed(actor, 'KILL_REQUEST', body.featureId, 'FFG-DEAC-010 리콜·봉쇄 근거 없는 F2 이상 안전 차단', 'D03-03');
+      throw new DomainError('VALIDATION', 'F2 이상 안전 차단은 리콜 캠페인 ID나 봉쇄 결정 근거가 필요합니다 (FFG-PLT-009·FFG-DEAC-010).', { rule: 'FFG-DEAC-010' });
+    }
     const now = this.clock.now();
     return this.db.tx(() => {
       const k: KillRequest = {
@@ -204,6 +208,7 @@ export class KillService {
         expiresAt: new Date(now.getTime() + APPROVAL_TTL_MS).toISOString(),
         recallCampaignId: body.recallCampaignId ?? null,
         containmentJustification: body.containmentJustification ?? null,
+        ...(safetyKill ? { defectDeterminedAt: body.defectDeterminedAt ?? null, recallReports: recallReportDue(pv.vehicles.map((v) => this.fleet.vehicles().find((x) => x.vin === v.vin)?.country ?? 'OTHER'), body.defectDeterminedAt ?? null) } : {}),
         userNoticeRef: opts.userNoticeRef ?? null,
         gate: null,
         command: null,

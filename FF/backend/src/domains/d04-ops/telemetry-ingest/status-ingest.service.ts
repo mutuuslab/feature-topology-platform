@@ -3,10 +3,10 @@
 // 해당 게시본의 회신(P0 readback)으로 이어 준다 — 차단은 DISABLED(상업 사유 INACTIVE), 복원은 ACTIVE에 닿아야 "적용됨".
 // 기한 감시: 차단이 발행되면 등급별 예상 시간 + 여유 안에 끝 상태가 아닌 차량을 pending_overdue로 올린다(FFG-SEC-004·DEAC-013).
 import { Body, Controller, Get, HttpCode, Inject, Injectable, OnModuleInit, Param, Post, Query } from '@nestjs/common';
-import { AuditAction, CurrentActor, VehicleEndpoint, type Actor } from '../../../kernel/actor';
+import { AuditAction, CurrentActor, Roles, VehicleEndpoint, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { DomainError } from '../../../kernel/errors';
-import { applyWindowMs, checkStatusReport, endState, statusAuthCanonical, type KillRequest, type StatusCheckResult, type StatusReportV2 } from '@ff/contracts';
+import { applyWindowMs, checkStatusReport, DATA_CATEGORY_ACCESS, endState, statusAuthCanonical, type KillRequest, type StatusCheckResult, type StatusReportV2 } from '@ff/contracts';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
 import { vehiclePseudonym } from '../../../kernel/crypto';
@@ -259,6 +259,7 @@ export class StatusIngestController {
 
   /** 차량 상태 보고 v2(받아들인 최신·최근 수신 20건, 위반 포함) */
   @Get('vehicles/:vin/status')
+  @Roles(...DATA_CATEGORY_ACCESS.SAFETY_OPERATION)
   vehicle(@Param('vin') vin: string, @Query('limit') _limit?: string) {
     return this.status.vehicle(vin);
   }

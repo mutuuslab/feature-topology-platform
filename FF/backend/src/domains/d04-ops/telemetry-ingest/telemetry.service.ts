@@ -1,7 +1,7 @@
 // 운영 데이터 수집 (D04-03) — IF-06 차량 회신(readback)·GLEO status_report를 받아 저장하고 이벤트로 알린다.
 // 집계(CONFIRMED/PARTIAL/…)는 보안 배포(D06-08)가 ReadbackBus를 구독해 다시 계산한다(모듈 간 순환 의존 없음).
 import { Body, Controller, Get, HttpCode, Inject, Injectable, Post, Query } from '@nestjs/common';
-import { ReadbackBody } from '@ff/contracts';
+import { DATA_CATEGORY_ACCESS, ReadbackBody } from '@ff/contracts';
 import { Subject } from 'rxjs';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { Clock } from '../../../kernel/clock';
@@ -60,6 +60,7 @@ export class TelemetryController {
   }
 
   @Get('readbacks')
+  @Roles(...DATA_CATEGORY_ACCESS.SAFETY_OPERATION)
   readbacks(@Query('publicationId') publicationId?: string, @Query('vin') vin?: string) {
     return { items: this.telemetry.list({ publicationId, vin }) };
   }

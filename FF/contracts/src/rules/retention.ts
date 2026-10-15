@@ -33,7 +33,7 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
   { store: 'security_event', record: '보안 로그', category: 'SECURITY_MONITORING', period: { kind: 'DAYS', days: 3 * 365, assumed: false }, basis: 'UN R155, MIIT 2026 국외 이전 지침(3년 이상)', personal: false },
   { store: 'status_report', record: '상태 보고(운행 중 안전 데이터)', category: 'SAFETY_OPERATION', period: { kind: 'DAYS', days: 365, assumed: true }, basis: 'UN ADS GTR 제안문 §5.1.8.5.3 — 안전 문제 관련은 시정 조치·검토가 끝날 때까지', personal: false },
   { store: 'readback', record: '적용 확인(readback)', category: 'SAFETY_OPERATION', period: { kind: 'DAYS', days: 365, assumed: true }, basis: 'UN ADS GTR 제안문 §5.1.8.5.3', personal: false },
-  { store: 'vehicle_request', record: '차량 발신 보고(문맥·체험 수락 포함)', category: 'COMMERCIAL_USAGE', period: { kind: 'DAYS', days: 30, assumed: true }, basis: 'GDPR Art.5, PIPL — 목적 달성 후 지체 없이 삭제', personal: true },
+  { store: 'vehicle_request', record: '차량 발신 보고(문맥·고장·체험 수락 포함)', category: 'SAFETY_OPERATION', period: { kind: 'DAYS', days: 30, assumed: true }, basis: 'GDPR Art.5, PIPL — 목적 달성 후 지체 없이 삭제', personal: true },
 ];
 
 export const retentionPolicy = (store: string): RetentionPolicy | null => RETENTION_POLICIES.find((p) => p.store === store) ?? null;

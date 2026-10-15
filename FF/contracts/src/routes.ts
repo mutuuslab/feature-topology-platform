@@ -22,6 +22,8 @@ import { EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillReje
 import { KILL_APPROVER_ROLES } from './rules/access';
 import { RunVirtualBody } from './rules/virtual';
 import { MetricPlanBody } from './rules/safety-kpi';
+import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
+import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
@@ -51,6 +53,8 @@ export interface RouteDef {
   sample?: Record<string, string>;
   /** 끝나지 않는 스트림(SSE) — 준수 검사는 상태·Content-Type만 본다 */
   stream?: boolean;
+  /** 텔레메트리 읽기 경로의 13.1 범주 — roles는 DATA_CATEGORY_ACCESS와 같다(FFG-TEL-001) */
+  dataCategory?: DataCategory;
   /** 상태를 바꾸지 않는 공개 POST(OFREP 평가) — 역할 없음 */
   public?: boolean;
 }
@@ -141,16 +145,16 @@ export const ROUTES: RouteDef[] = [
   { name: 'publications', method: 'GET', path: '/api/publications', summary: '서명 게시본 (정책·차단·복구) 목록', component: 'D06-08', query: ['kind', 'status'] },
   { name: 'publicationDetail', method: 'GET', path: '/api/publications/:id', summary: '게시본 — 서명 검증·차량별 회신·외부 연계 호출', component: 'D06-08' },
   { name: 'integrationCalls', method: 'GET', path: '/api/integrations/calls', summary: '외부 연계 호출 기록 (IF-05·IF-13, 멱등 키)', component: 'D04-01', query: ['ifId', 'key'] },
-  { name: 'readbacks', method: 'GET', path: '/api/telemetry/readbacks', summary: '차량 회신 (readback) 기록', component: 'D04-03', query: ['publicationId', 'vin'] },
+  { name: 'readbacks', method: 'GET', path: '/api/telemetry/readbacks', summary: '차량 회신 (readback) 기록', component: 'D04-03', query: ['publicationId', 'vin'], dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   { name: 'ingestReadback', method: 'POST', path: '/api/telemetry/readback', summary: 'IF-06 차량 회신 수집', component: 'D04-03', roles: ['SYSTEM'], body: ReadbackBody },
   { name: 'fleetRuntime', method: 'GET', path: '/api/fleet/runtime', summary: 'Fleet 실시간 적용 현황 — 차량별 적용 게시본·상태·서버 판단 비교', component: 'D02-03' },
   { name: 'vehicleRuntime', method: 'GET', path: '/api/vehicles/:vin/runtime', summary: '차량 런타임 — 적용 게시본·차량 측 평가·서버 판단 비교', component: 'D02-03' },
-  { name: 'vehicleRequests', method: 'GET', path: '/api/vehicles/:vin/requests', summary: '차량 발신 요청 기록 — 조회·보고·거부 사유, 보고 위치(bootId·sequence)', component: 'D02-03' },
+  { name: 'vehicleRequests', method: 'GET', path: '/api/vehicles/:vin/requests', summary: '차량 발신 요청 기록 — 조회·보고·거부 사유, 보고 위치(bootId·sequence)', component: 'D02-03', dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   // 차량 발신 요청 — 사람 역할이 아니라 차량 신원(X-Vehicle-Id, 실제는 mTLS 주체)으로 받는다. 자기 VIN만.
   { name: 'vehicleQueryAll', method: 'POST', path: '/vehicle/v1/:vin/flags', summary: 'IF-10 차량 발신 전체 flag 조회 (OFREP 형식, ETag)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleQuery', method: 'POST', path: '/vehicle/v1/:vin/flags/:key', summary: 'IF-10 차량 발신 단일 flag 조회 (OFREP 형식)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleStatus', method: 'POST', path: '/vehicle/v1/:vin/status', summary: 'IF-06 차량 상태 보고 v2 — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 위반은 이상 징후로', component: 'D04-03', roles: ['VEHICLE'], body: StatusReportV2 },
-  { name: 'vehicleStatusView', method: 'GET', path: '/api/vehicles/:vin/status', summary: '차량 상태 보고 v2 — 받아들인 최신 상태·최근 수신(위반 포함)', component: 'D04-03' },
+  { name: 'vehicleStatusView', method: 'GET', path: '/api/vehicles/:vin/status', summary: '차량 상태 보고 v2 — 받아들인 최신 상태·최근 수신(위반 포함)', component: 'D04-03', dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   { name: 'vehicleReport', method: 'POST', path: '/vehicle/v1/:vin/reports', summary: 'IF-06 차량 보고 — 재연결 대사·관측값·체험 수락·오류·회신 (Flag 직접 변경은 거부), 재평가 결과 응답', component: 'D02-03', roles: ['VEHICLE'], body: VehicleReportBody },
   { name: 'gleoStatus', method: 'GET', path: '/api/gleo/status', summary: 'GLEO Broker 연결·최근 메시지', component: 'D02-03' },
   { name: 'gatePreview', method: 'POST', path: '/api/gate/preview', summary: '정책 게이트 미리보기 — kill_command v2 판정(스키마·규칙), 원장 변경 없음. 스키마 오류도 SCHEMA_FAIL 결과로 돌려준다', component: 'D03-02', roles: ['OPERATOR', 'SAFETY_OFFICER', 'SECURITY_OFFICER', 'OPS_LEAD'], body: KillCommandV2 },
@@ -179,7 +183,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'safetyKpi', method: 'GET', path: '/api/safety-kpi', summary: '출시 Feature Version별 운행 중 감시 지표 6종(13.5)·경보, 지표 계획 누락·예시값 Version(FFG-TEL-009)', component: 'D04-03' },
   { name: 'safetyKpiAnnex1', method: 'GET', path: '/api/safety-kpi/:featureId/:version/annex1', summary: 'ADS 기능 부속서 1 정기 보고 집계(기본 최근 365일, FFG-TEL-009)', component: 'D04-03', query: ['from', 'to'] },
   { name: 'recordSafetyKpiPlan', method: 'PUT', path: '/api/safety-kpi/:featureId/:version/plan', summary: 'Safety Case 경보 기준 기록(FSM, 추가만 — 최신 기록 유효)', component: 'D04-03', roles: ['SAFETY_OFFICER'], body: MetricPlanBody },
-  { name: 'securityEvents', method: 'GET', path: '/api/security-events', summary: '보안 이벤트(IdsM) 기록·정의 — 임계값 도달 시 VSOC 경보, 진위 실패는 채널 제한(FFG-SEC-007)', component: 'D06-12', query: ['eventId'] },
+  { name: 'securityEvents', method: 'GET', path: '/api/security-events', summary: '보안 이벤트(IdsM) 기록·정의 — 임계값 도달 시 VSOC 경보, 진위 실패는 채널 제한(FFG-SEC-007)', component: 'D06-12', query: ['eventId'], dataCategory: 'SECURITY_MONITORING', roles: [...DATA_CATEGORY_ACCESS.SECURITY_MONITORING] },
   { name: 'sumsRecords', method: 'GET', path: '/api/sums', summary: 'SUMS 기록 — 명령별 RXSWIN·형식승인 영향 평가·사용자 고지·결과, 보존 기간(FFG-LCY-008)', component: 'D06-08', query: ['featureId'] },
   { name: 'reharaRequests', method: 'GET', path: '/api/rehara-requests', summary: '재-HARA 요청 (보고서 6.4 조건 자동 검출) — FFG-LCY-003', component: 'D06-05', query: ['featureId', 'featureVersion', 'status'] },
   { name: 'virtualCombinations', method: 'GET', path: '/api/virtual-validations/combinations', summary: 'Feature 조합 시험 계획 (Topology 허용 조합, 3-way covering array, 금지 조합 부정 시험) — FFG-TST-003', component: 'D06-03', query: ['featureId'] },

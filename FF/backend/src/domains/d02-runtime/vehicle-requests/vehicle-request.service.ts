@@ -5,6 +5,7 @@
 // 규칙(바꿀 수 있는 관측 속성·순서 판정·거부 사유)은 contracts/rules/vehicle-requests.ts 한 곳에 있다.
 import { Body, Controller, Get, Headers, HttpCode, Inject, Injectable, Param, Post, Res } from '@nestjs/common';
 import {
+  DATA_CATEGORY_ACCESS,
   checkObservedSet,
   checkReportOrder,
   OfrepBody,
@@ -15,7 +16,7 @@ import {
 } from '@ff/contracts';
 import type { Response } from 'express';
 import { createHash } from 'node:crypto';
-import { AuditAction, CurrentActor, VehicleEndpoint, type Actor } from '../../../kernel/actor';
+import { AuditAction, CurrentActor, Roles, VehicleEndpoint, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
@@ -310,6 +311,7 @@ export class VehicleRequestLogController {
   constructor(private readonly svc: VehicleRequestService) {}
 
   @Get()
+  @Roles(...DATA_CATEGORY_ACCESS.SAFETY_OPERATION)
   list(@Param('vin') vin: string) {
     return this.svc.list(vin);
   }

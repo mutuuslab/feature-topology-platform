@@ -4328,6 +4328,7 @@
           "D04-03"
         ],
         "operationId": "readbacks",
+        "description": "허용 역할: 기능안전 담당자(FSM), 운영자, 운영 리더, Gate 판정자, Feature 출시 담당자, 구현 담당자, Feature 작성자, Feature 승인자, 법규 담당, 사이버보안 담당자(CSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "publicationId",
@@ -4503,6 +4504,7 @@
           "D02-03"
         ],
         "operationId": "vehicleRequests",
+        "description": "허용 역할: 기능안전 담당자(FSM), 운영자, 운영 리더, Gate 판정자, Feature 출시 담당자, 구현 담당자, Feature 작성자, Feature 승인자, 법규 담당, 사이버보안 담당자(CSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "vin",
@@ -4955,6 +4957,7 @@
           "D04-03"
         ],
         "operationId": "vehicleStatusView",
+        "description": "허용 역할: 기능안전 담당자(FSM), 운영자, 운영 리더, Gate 판정자, Feature 출시 담당자, 구현 담당자, Feature 작성자, Feature 승인자, 법규 담당, 사이버보안 담당자(CSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "vin",
@@ -6858,6 +6861,7 @@
           "D06-12"
         ],
         "operationId": "securityEvents",
+        "description": "허용 역할: 사이버보안 담당자(CSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "eventId",

@@ -2,8 +2,8 @@
 // 플랫폼 수신 검사 위반(state_auth·report_seq), 정책 게이트 승인 위반을 IdsM 이벤트로 기록하고(031, 추가만, 차량은 가명), 임계값에 닿으면
 // SECURITY_MONITORING 범주로 VSOC에 경보(vsoc.alert)를 낸다. 진위 실패 경보는 그 차량의 상태 보고 채널을 일정 시간 제한한다.
 import { Controller, Get, Inject, Injectable, Logger, OnModuleInit, Query } from '@nestjs/common';
-import { CHANNEL_LIMIT_MS, securityAlert, securityEventOf, SECURITY_EVENTS, type SecurityObservation } from '@ff/contracts';
-import type { Actor } from '../../../kernel/actor';
+import { CHANNEL_LIMIT_MS, DATA_CATEGORY_ACCESS, securityAlert, securityEventOf, SECURITY_EVENTS, type SecurityObservation } from '@ff/contracts';
+import { Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
@@ -90,6 +90,7 @@ export class SecurityEventController {
   constructor(private readonly sec: SecurityEventService) {}
 
   @Get('security-events')
+  @Roles(...DATA_CATEGORY_ACCESS.SECURITY_MONITORING)
   list(@Query('eventId') eventId?: string) {
     return { items: this.sec.list({ eventId }), definitions: SECURITY_EVENTS };
   }

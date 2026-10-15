@@ -2,8 +2,8 @@
   "note": "tools/standards.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @rule 표식, tested = 시험 파일의 ID 언급(요약의 tested는 구현 추적도 있는 규칙만)",
   "summary": {
     "platformRules": 75,
-    "implemented": 57,
-    "tested": 57,
+    "implemented": 61,
+    "tested": 61,
     "reportTestsReferenced": 16
   },
   "rules": [
@@ -858,8 +858,12 @@
         "협력사"
       ],
       "section": "15_sbom.md · 15.4 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/sbom.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/sbom.test.ts"
+      ]
     },
     {
       "id": "FFG-SBOM-003",
@@ -868,8 +872,12 @@
         "보안 배포 관리"
       ],
       "section": "15_sbom.md · 15.4 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/sbom.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/sbom.test.ts"
+      ]
     },
     {
       "id": "FFG-SBOM-007",
@@ -879,8 +887,12 @@
         "플랫폼"
       ],
       "section": "15_sbom.md · 15.4 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/sbom.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/sbom.test.ts"
+      ]
     },
     {
       "id": "FFG-SEC-002",
@@ -943,8 +955,12 @@
         "플랫폼"
       ],
       "section": "14_security_sotif.md · 14.7 규칙",
-      "implemented": [],
-      "tested": []
+      "implemented": [
+        "contracts/src/rules/sbom.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/sbom.test.ts"
+      ]
     },
     {
       "id": "FFG-SEC-007",

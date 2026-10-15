@@ -29,7 +29,7 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
     it.each([
       ['ego-01', true, 'POLICY_MATCH'], // 체험 중 (수락 11일째, 30일)
       ['KMH-NX4-0001', true, 'POLICY_MATCH'], // 구독 CAT-00013 (FEAT-00022 포함)
-      ['KMH-NX4-0002', false, 'NO_ENTITLEMENT'],
+      ['KMH-NX4-0002', false, 'NOT_SUPPORTED'], // SW 1.2.0 < 요구 1.2.1 — 지원 조건이 사용 권한보다 먼저(FFG-VEH-006)
       ['lead-01', false, 'NO_ENTITLEMENT'], // 체험 제안 중 — 수락 전에는 OFF
       ['HMA-NX4-0001', false, 'NOT_APPLICABLE'], // 체험에서 구독으로 전환했지만 US는 적용 범위 밖
       ['KMH-NX4-0003', false, 'CONTEXT_UNKNOWN'], // STALE → HOLD → Safe Default(OFF)
@@ -132,13 +132,13 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
     it('배포 → OFREP·활성화 판단에 반영 (권한 불필요 정책)', async () => {
       await http().post(`/api/policies/${pid}/deploy`).set(JUDGE).send({ reason: '배포' }).expect(403);
       await http().post(`/api/policies/${pid}/deploy`).set(RELEASE).send({ reason: '서버 배포' }).expect(200);
-      const r = await http().post(`/ofrep/v1/evaluate/flags/${spec().flagKey}`).send({ context: { targetingKey: 'KMH-NX4-0002' } }).expect(200);
+      const r = await http().post(`/ofrep/v1/evaluate/flags/${spec().flagKey}`).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200); // 지원 조건(SW ≥ 1.2.1)을 만족하는 차량
       expect(r.body).toMatchObject({ value: true, reason: 'TARGETING_MATCH' });
     });
 
     it('단계적 배포: 승인 범위 안에서만 — 0%면 COHORT_MISS, 코호트 목록은 FP-COHORT-1 · FFG-LCY-009 배포자 ≠ 효력 확대자, F2 이상은 Canary 관측 뒤', async () => {
       await http().post(`/api/policies/${pid}/rollout`).set(RELEASE).send({ basisPoints: 0, reason: '일시 중단' }).expect(200);
-      expect((await decide('KMH-NX4-0002', spec().flagKey)).body.result.reason).toBe('COHORT_MISS');
+      expect((await decide('KMH-NX4-0001', spec().flagKey)).body.result.reason).toBe('COHORT_MISS');
       // 배포한 사람은 효력을 넓힐 수 없다
       expect((await http().post(`/api/policies/${pid}/rollout`).set(RELEASE).send({ basisPoints: 300, reason: 'Canary' }).expect(403)).body.error.code).toBe('SEPARATION_OF_DUTY');
       await http().post(`/api/policies/${pid}/rollout`).set(OPERATOR).send({ basisPoints: 300, reason: 'Canary 시작' }).expect(200);

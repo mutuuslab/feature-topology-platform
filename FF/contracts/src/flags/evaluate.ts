@@ -1,5 +1,5 @@
 // 단일 Flag 평가기 — 서버 활성화 판단(D01-09)·OFREP(IF-10)·차량 런타임 시뮬레이터·정책 시나리오 검증이 같은 함수를 쓴다.
-// 순서: 배포 여부 → 긴급 차단(Kill) → 적용 범위(필수) → 사용 권한(필수) → 대상 전략(OR) → 코호트(FP-COHORT-1) → P0 decide.
+// 순서: 배포 여부 → 긴급 차단(Kill) → 적용 범위(필수) → 차량 지원 조건(필수, 넘겼을 때) → 사용 권한(필수) → 대상 전략(OR) → 코호트(FP-COHORT-1) → P0 decide.
 // HOLD(문맥 불명·무효)는 Safe Default, DENY는 OFF, ALLOW는 정책 값(enabled).
 import type { Policy, Vehicle } from '../schemas/policy';
 import { and3, cohortBucket, constraint, decide, type Decision, type EvalContext, type Tri } from './p0';
@@ -8,6 +8,7 @@ export type EvalReason =
   | 'NOT_DEPLOYED'
   | 'KILL_SWITCH'
   | 'NOT_APPLICABLE'
+  | 'NOT_SUPPORTED'
   | 'NO_ENTITLEMENT'
   | 'TARGETING_MISS'
   | 'COHORT_MISS'
@@ -16,7 +17,7 @@ export type EvalReason =
   | 'ERROR_SAFE_DEFAULT';
 
 export interface EvalStep {
-  step: 'DEPLOYED' | 'KILL' | 'APPLICABILITY' | 'ENTITLEMENT' | 'TARGETING' | 'COHORT' | 'DECIDE';
+  step: 'DEPLOYED' | 'KILL' | 'APPLICABILITY' | 'SUPPORT' | 'ENTITLEMENT' | 'TARGETING' | 'COHORT' | 'DECIDE';
   result: Tri | 'SKIP';
   detail: string;
 }
@@ -47,6 +48,8 @@ export interface EvalInput {
   vehicle: Vehicle;
   /** 이 차량의 해당 상품 사용 권한이 지금 유효한가 (null = 확인 불가) */
   entitlementActive: boolean | null;
+  /** 차량 지원 조건(D02-02 variantRow 판정) — 넘기면 필수 조건이 된다(FFG-VEH-006). NOT_SUPPORTED면 비활성 유지, 사유 보고 */
+  support?: { verdict: 'APPLICABLE' | 'NOT_APPLICABLE' | 'NOT_SUPPORTED' | 'UNKNOWN'; reason: string };
 }
 
 /** 차량 → P0 평가 문맥. 차량 문맥 품질이 TRUSTED가 아니면 모든 항목이 판단 불가가 된다. */
@@ -64,7 +67,11 @@ export function vehicleContext(v: Vehicle, entitlementActive: boolean | null): E
   };
 }
 
-export async function evaluateFlag({ policy, scope, killed, vehicle, entitlementActive }: EvalInput): Promise<FlagResult> {
+/**
+ * 단일 Flag 평가.
+ * @rule FFG-VEH-006 — 활성화 전 차량 지원 조건 확인: 불만족이면 활성화하지 않고 사유(NOT_SUPPORTED·trace)를 보고
+ */
+export async function evaluateFlag({ policy, scope, killed, vehicle, entitlementActive, support }: EvalInput): Promise<FlagResult> {
   const trace: EvalStep[] = [];
   const out = (decision: FlagResult['decision'], reason: EvalReason, value: boolean): FlagResult => ({
     flagKey: policy.flagKey,
@@ -92,6 +99,10 @@ export async function evaluateFlag({ policy, scope, killed, vehicle, entitlement
     ]);
     trace.push({ step: 'APPLICABILITY', result: applicability, detail: `범위 ${scope.country}/${scope.vehicleModel}/${scope.trim}` });
 
+    // 차량 지원 조건 — 범위 밖(NOT_APPLICABLE)은 적용 범위가 이미 거른다
+    const supportTri: Tri = !support || support.verdict === 'APPLICABLE' || support.verdict === 'NOT_APPLICABLE' ? 'TRUE' : support.verdict === 'NOT_SUPPORTED' ? 'FALSE' : 'UNKNOWN';
+    if (support) trace.push({ step: 'SUPPORT', result: supportTri, detail: support.reason });
+
     let entitlement: Tri = 'TRUE';
     if (policy.entitlementCatalogId) entitlement = constraint({ contextName: 'trialSessionValid', operator: 'IN', values: ['true'] }, ctx);
     trace.push({ step: 'ENTITLEMENT', result: policy.entitlementCatalogId ? entitlement : 'SKIP', detail: policy.entitlementCatalogId ?? '권한 불필요' });
@@ -109,11 +120,11 @@ export async function evaluateFlag({ policy, scope, killed, vehicle, entitlement
     }
     trace.push({ step: 'COHORT', result: cohort, detail: bp === 10000 ? '전체' : bp === 0 ? '배포 대상 없음' : `FP-COHORT-1 < ${bp / 100}%` });
 
-    const d = decide({ flagEnabled: policy.enabled, strategies, mandatory: [applicability, entitlement, cohort] });
+    const d = decide({ flagEnabled: policy.enabled, strategies, mandatory: [applicability, supportTri, entitlement, cohort] });
     trace.push({ step: 'DECIDE', result: d.decision === 'ALLOW' ? 'TRUE' : d.decision === 'DENY' ? 'FALSE' : 'UNKNOWN', detail: d.reason });
     if (d.decision === 'HOLD') return out('HOLD', 'CONTEXT_UNKNOWN', policy.safeDefault);
     if (d.decision === 'DENY') {
-      const reason: EvalReason = applicability === 'FALSE' ? 'NOT_APPLICABLE' : entitlement === 'FALSE' ? 'NO_ENTITLEMENT' : cohort === 'FALSE' ? 'COHORT_MISS' : 'TARGETING_MISS';
+      const reason: EvalReason = applicability === 'FALSE' ? 'NOT_APPLICABLE' : supportTri === 'FALSE' ? 'NOT_SUPPORTED' : entitlement === 'FALSE' ? 'NO_ENTITLEMENT' : cohort === 'FALSE' ? 'COHORT_MISS' : 'TARGETING_MISS';
       return out('DENY', reason, false);
     }
     return out('ALLOW', 'POLICY_MATCH', policy.enabled);

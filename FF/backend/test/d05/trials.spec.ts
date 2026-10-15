@@ -63,7 +63,8 @@ describe('체험권 — 제안·수락·거절·구매 전환', () => {
     const d = await http().get('/api/activation/decide?vin=KMH-NX4-0002&flagKey=care_00022_param').expect(200);
     expect(d.body.entitlement).toMatchObject({ active: true });
     expect(d.body.entitlement.grants.map((g: any) => g.grantId)).toContain('ENT-00011');
-    expect(d.body.result).toMatchObject({ value: true, reason: 'POLICY_MATCH' }); // 판단 시험 표에서 NO_ENTITLEMENT였던 차량
+    // 권한은 생겼지만 이 차량은 SW 1.2.0 < 요구 1.2.1 — 지원 조건 미달이면 OFF, 사유 보고(FFG-VEH-006)
+    expect(d.body.result).toMatchObject({ value: false, reason: 'NOT_SUPPORTED' });
     const ev = await http().get('/api/events?type=entitlement.converted').expect(200);
     expect(ev.body.items.at(-1)).toMatchObject({ aggregate: 'KMH-NX4-0002', payload: { plan: '구독', newGrantId: 'ENT-00011', orderId: 'ORD-00001' } });
   });

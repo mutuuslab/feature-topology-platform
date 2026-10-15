@@ -87,7 +87,7 @@ test('정책: 작성 → 8종 검증 GO → 승인 → Feature VERIFIED → 서�
   await page.getByRole('link', { name: '활성화 판단 →' }).click();
   await expect(page).toHaveURL(new RegExp(`/activation/decide\\?flagKey=${flagKey}`));
   await expect(page.getByRole('region', { name: '판단 결과' }).locator('.ds-verdict-big')).toContainText('ON');
-  await expect(page.locator('.ds-trace li')).toHaveCount(7);
+  await expect(page.locator('.ds-trace li')).toHaveCount(8); // 배포·차단·범위·지원 조건(FFG-VEH-006)·권한·대상·코호트·판정
   await expect(page.getByRole('region', { name: 'OFREP 응답 (IF-10)' }).locator('pre')).toContainText(`"key": "${flagKey}"`);
 });
 

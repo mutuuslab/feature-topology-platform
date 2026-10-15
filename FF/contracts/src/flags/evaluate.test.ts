@@ -49,6 +49,17 @@ describe('Flag 평가 — PoC ③ 서버 활성화 판단', () => {
   it('체험권이 없으면 DENY(NO_ENTITLEMENT) → OFF', async () => {
     expect(await ev({}, 'KMH-NX4-0002', { ent: false })).toMatchObject({ value: false, decision: 'DENY', reason: 'NO_ENTITLEMENT' });
   });
+  it('FFG-VEH-006 지원 조건 불만족(SW 미달) 차량은 체험권이 있어도 DENY(NOT_SUPPORTED) — 사유를 trace로 보고, 판정 불명은 Safe Default', async () => {
+    const sup = (verdict: 'APPLICABLE' | 'NOT_SUPPORTED' | 'UNKNOWN', reason: string) =>
+      evaluateFlag({ policy: policy(), scope, killed: false, vehicle: V('ego-01'), entitlementActive: true, support: { verdict, reason } });
+    const no = await sup('NOT_SUPPORTED', 'SW 1.1.9 < 요구 1.2.1');
+    expect(no).toMatchObject({ value: false, decision: 'DENY', reason: 'NOT_SUPPORTED' });
+    expect(no.trace.find((t) => t.step === 'SUPPORT')).toEqual({ step: 'SUPPORT', result: 'FALSE', detail: 'SW 1.1.9 < 요구 1.2.1' });
+    expect(await sup('UNKNOWN', '문맥 STALE')).toMatchObject({ value: false, decision: 'HOLD', reason: 'CONTEXT_UNKNOWN' });
+    const ok = await sup('APPLICABLE', 'SW 1.2.1 ≥ 1.2.1');
+    expect(ok).toMatchObject({ value: true, reason: 'POLICY_MATCH' });
+    expect(ok.trace.map((t) => t.step)).toEqual(['DEPLOYED', 'KILL', 'APPLICABILITY', 'SUPPORT', 'ENTITLEMENT', 'TARGETING', 'COHORT', 'DECIDE']);
+  });
   it('긴급 차단이 모든 조건보다 먼저 — Safe Default', async () => {
     expect(await ev({}, 'ego-01', { killed: true })).toMatchObject({ value: false, decision: 'SAFE_DEFAULT', reason: 'KILL_SWITCH' });
   });

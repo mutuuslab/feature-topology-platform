@@ -1,6 +1,6 @@
 // 정책 기반 활성화 제어 (D01-09) — 서버 기준 활성화 판단(PoC ③), contracts 단일 평가기(evaluateFlag).
 import { Inject, Injectable } from '@nestjs/common';
-import { cohortBucket, effectiveBasisPoints, evaluateFlag, type Entitlement, type FlagResult, type Policy, type RolloutStageBody } from '@ff/contracts';
+import { cohortBucket, effectiveBasisPoints, evaluateFlag, variantRow, type Entitlement, type FlagResult, type Policy, type RolloutStageBody } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -34,12 +34,15 @@ export class ActivationService {
     const f = this.features.get(policy.featureId, policy.featureVersion);
     if (!f) throw new DomainError('NOT_FOUND', `정책 대상 ${policy.featureId} ${policy.featureVersion}이(가) 없습니다.`);
     const entitlement = this.entitlements.activeFor(vin, policy.featureId);
+    // 활성화 전 차량 지원 조건(FFG-VEH-006) — 기능 지원 조건 관리(D02-02)와 같은 판정
+    const sup = variantRow({ ...f, featureId: policy.featureId, version: policy.featureVersion }, vehicle);
     const result = await evaluateFlag({
       policy,
       scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim },
       killed: this.kill.killed(policy.featureId, vin),
       vehicle,
       entitlementActive: policy.entitlementCatalogId ? entitlement.active : null,
+      support: { verdict: sup.verdict, reason: sup.reason },
     });
     return { vehicle, policy, result, entitlement };
   }

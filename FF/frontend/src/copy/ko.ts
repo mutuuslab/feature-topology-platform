@@ -327,7 +327,7 @@ export const ko = {
     fleet: 'Fleet 전체 판단',
     ofrep: 'OFREP 응답 (IF-10)',
     ofrepStatic: '읽기 전용 데모에서는 OFREP를 호출하지 않습니다 — 위 판단 결과가 같은 평가기의 값입니다',
-    steps: { DEPLOYED: '배포', KILL: '긴급 차단', APPLICABILITY: '적용 범위', ENTITLEMENT: '사용 권한', TARGETING: '대상 규칙', COHORT: '코호트', DECIDE: '결정' },
+    steps: { DEPLOYED: '배포', KILL: '긴급 차단', APPLICABILITY: '적용 범위', SUPPORT: '지원 조건', ENTITLEMENT: '사용 권한', TARGETING: '대상 규칙', COHORT: '코호트', DECIDE: '결정' },
   },
   fleet: {
     title: 'Fleet 실시간 적용 현황',

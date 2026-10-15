@@ -82,10 +82,14 @@ describe('차량 발신 요청 (D02-03 · D05-01)', () => {
       const stale = await report({ type: 'CONTEXT', set: { quality: 'STALE' } }).expect(200);
       expect(stale.body.changed.quality).toEqual({ before: 'TRUSTED', after: 'STALE' });
       expect(stale.body.flags.find((f: { key: string }) => f.key === FLAG)).toMatchObject({ value: false, metadata: { decision: 'HOLD' } });
-      const ok = await report({ type: 'CONTEXT', set: { quality: 'TRUSTED', swVersion: '1.1.9' } }).expect(200);
+      const ok = await report({ type: 'CONTEXT', set: { quality: 'TRUSTED', swVersion: '1.2.2' } }).expect(200);
       expect(value(ok)).toBe(true);
+      // FFG-VEH-006 — 지원 조건(SW ≥ 1.2.1) 밑으로 내려간 보고면 비활성 유지, 사유 DISABLED(평가 NOT_SUPPORTED)
+      const low = await report({ type: 'CONTEXT', set: { swVersion: '1.1.9' } }).expect(200);
+      expect(low.body.flags.find((f: { key: string }) => f.key === FLAG)).toMatchObject({ value: false, reason: 'DISABLED', metadata: { decision: 'DENY' } });
       const v = (await http().get('/api/vehicles').expect(200)).body.items.find((x: { vin: string }) => x.vin === VIN);
       expect(v).toMatchObject({ quality: 'TRUSTED', swVersion: '1.1.9' });
+      expect(value(await report({ type: 'CONTEXT', set: { swVersion: '1.2.1' } }).expect(200))).toBe(true); // 다음 시험을 위해 되돌린다
     });
 
     it('신뢰 원천 속성(트림)은 바꾸지 못한다 — 400 TRUST_SOURCE_FIELD, 차량 정보 그대로', async () => {

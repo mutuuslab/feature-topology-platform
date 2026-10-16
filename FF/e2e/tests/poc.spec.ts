@@ -13,6 +13,65 @@ async function asRole(page: Page, role: string) {
   }, role);
 }
 
+// 두 시험은 파일 순서대로 한 작업자에서 — 키보드 실행이 남긴 차단은 다음 '새 실행 시작'이 복구한다(poc1.workflow start)
+test.describe.configure({ mode: 'default' });
+
+/** Tab만 눌러 이름이 맞는 요소까지 간다 — 닿은 요소는 :focus-visible이고 윤곽선이 보여야 한다(설계안 4e 키보드·focus-visible) */
+async function tabTo(page: Page, name: RegExp, max = 150) {
+  for (let i = 0; i < max; i++) {
+    await page.keyboard.press('Tab');
+    const f = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement | null;
+      if (!el || el === document.body) return null;
+      const cs = getComputedStyle(el);
+      return { name: (el.getAttribute('aria-label') || el.innerText || '').trim(), visible: el.matches(':focus-visible'), ring: cs.outlineStyle !== 'none' || cs.boxShadow !== 'none' };
+    });
+    if (f && name.test(f.name)) {
+      expect(f.visible && f.ring, `${f.name}: 키보드 포커스 표시가 보이지 않는다`).toBe(true);
+      return;
+    }
+  }
+  throw new Error(`Tab ${max}번 안에 ${name}에 닿지 못했다`);
+}
+
+test('키보드만으로 PoC: 건너뛰기 링크 → Ctrl+K로 /poc → 새 실행 → 다음 단계 → 끝까지 실행 → ⑥ Evidence', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto('/_design');
+  await asRole(page, 'operator');
+  await page.goto('/');
+  // 첫 Tab은 본문 건너뛰기
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: '본문으로 건너뛰기' })).toBeFocused();
+  // ⌘K — 결과 목록을 ↓로 골라 Enter
+  await page.keyboard.press('Control+k');
+  const box = page.getByRole('combobox', { name: '이동·실행' });
+  await expect(box).toBeFocused();
+  await page.keyboard.type('PoC');
+  for (let i = 0; i < 5; i++) {
+    const active = await box.getAttribute('aria-activedescendant');
+    if (active && (await page.locator(`#${active}`).innerText()).includes('PoC 6단계 진행')) break;
+    await page.keyboard.press('ArrowDown');
+  }
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/poc$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'PoC 6단계 진행' })).toBeVisible();
+
+  await tabTo(page, /^새 실행 시작$/);
+  await page.keyboard.press('Enter');
+  const steps = page.getByRole('list', { name: 'PoC 6단계 진행' });
+  await expect(steps.getByRole('button')).toHaveCount(6);
+  await tabTo(page, /^다음 단계$/);
+  await page.keyboard.press('Enter');
+  await expect(steps.getByRole('button').nth(0)).toHaveAttribute('data-status', 'DONE');
+  await tabTo(page, /^끝까지 실행$/);
+  await page.keyboard.press('Enter');
+  await expect(steps.getByRole('button').nth(5)).toHaveAttribute('data-status', 'DONE', { timeout: 60_000 });
+  // ⑥ 단계를 키보드로 골라 Evidence를 연다
+  await tabTo(page, /^⑥/);
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('region', { name: 'Evidence' })).toContainText('KILL_SWITCH');
+});
+
 test('PoC: 새 실행 → 끝까지 실행 → ①~⑥ 완료(배포 PARTIAL·차단 CONFIRMED) → OpenFeature 경계(F3 DISABLED) → IVI flag ON → 차단하면 OFF', async ({ page, request }) => {
   test.setTimeout(120_000);
   await page.goto('/_design');

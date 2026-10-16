@@ -961,6 +961,12 @@ textarea.ds-input {
   color: var(--muted);
   font-size: var(--fs-xs);
 }
+/* 표 칸 안의 ID 칩 목록 — 칩은 제 너비를 지키고 칸이 좁으면 칩 단위로 줄을 바꾼다(.ds-chain은 영향 체인 카드용 4열 격자) */
+.ds-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-2);
+}
 .ds-chain {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

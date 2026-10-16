@@ -19,6 +19,14 @@
   - [x] 시각 기준 — 디자인 갤러리 + 핵심 거버넌스 화면 8개(features·feature-detail·baselines·topology·products·precheck·upg·compliance) × 1366·1920, 시계 고정, 연속 일치 확인. 기준 확정 전 검토로 찾은 배치 결함 수정: Topology 원 크기를 viewBox에 맞추고 라벨을 바깥쪽+halo로, 표 칸 keep-all(한글 어절 단위), `Segments`(구분자에서만 줄바꿈), DataTable `minor` 열(1600px 미만 숨김 — Feature 목록 ASIL·담당), 사전점검 KPI 간격. 회귀 시험 `designTable.test.tsx`
   - [x] conformance `--strict` 42/42 — WP8 D06-11(cf66ce9) 뒤 verify가 --strict로 돈다(tools/verify.test.ts가 지킨다)
   - [x] API만 있던 기능의 화면 (2026-10-16) — /flag-retirements(은퇴 6단계), /audit/oversight(직무 분리·사후 검토·변경 기록·재-HARA), /admin/data(SUMS·Data Act·보존 삭제), /ops/kill 상세(종료·복원 타임라인·사후 검토), /admin/security(보안 이벤트·SBOM 본문·epoch 상향), Feature·상품·정책 상세(새 Version·초안 수정). 시험 screensP11·e2e p11(실서버). 화면 없는 API는 의도적: 차량 채널(/vehicle/v1·OFREP·readback), SSE, Evidence 파일, /api/gate/preview(명령 JSON 판정 — CI·도구용)
+- [x] **UI/UX·프론트 미구현 마감** (2026-10-16 — 설계안 2.1·4e 대조)
+  - [x] 공개 사이트 정적 데이터 (b52640c) — 화면이 부르는 GET 61종이 스냅샷에 없던 결함: `snapshot:api` 627→1119 파일(역할 헤더는 라우트 첫 역할), 정적 모드는 404·HTML 응답을 '데모 스냅샷에 없는 데이터'로. 하네스 `e2e:static`(메뉴 + 하위 화면 67개의 모든 탭을 정적 빌드로 열어 스냅샷 누락 0)
+  - [x] 화면별 UX 하네스 (76914ee, `e2e/tests/ux.spec.ts`) — 1366 가로 넘침 0, API 500·403·지연을 강제해 data-state(error·forbidden·loading), 첫 화면 시간 예산. 찾은 결함: 검토함이 403을 빈 목록으로 보임 → forbidden·다시 시도(회귀 screensHome)
+  - [x] 성능 예산 (76914ee) — `harness/budgets.json`(초기 gzip 290 KiB·청크 40 KiB, 3D 장면 예외 320), verify `budget`
+  - [x] Feature 요약 서랍 — IdChip(`FEAT-\d{5}`)에 '요약 보기' → 셸 `FeaturePeek`(Lifecycle·범위·ASIL·Baseline·상품·의존·Gate 레일·상세 열기), Version 없으면 최신(`featureVersions` 스냅샷 추가). 찾은 결함: 행 열기 표 안의 IdChip 복사·요약 버튼 클릭·Enter가 행으로 올라가 상세로 이동 → DataTable이 셀 안 컨트롤 이벤트를 무시(회귀 designTable)
+  - [x] 키보드만으로 PoC (`e2e/tests/poc.spec.ts` 첫 시험) — 건너뛰기 링크 → Ctrl+K → 새 실행·다음 단계·끝까지 실행 → ⑥ Evidence, 닿는 요소마다 :focus-visible·윤곽선. 찾은 결함: ⌘K 결과가 클릭만 받는 div(키보드로 이동 불가)·고정 6항목 → `shell/CommandPalette.tsx` combobox+listbox(↑↓·Enter·Esc·포커스 복귀), 항목은 MENU 전체(회귀 commandPalette)
+  - [x] 시각 기준 갱신 7장(요약 보기 아이콘) — 검토로 찾은 결함: 표 칸의 ID 칩 목록이 영향 체인용 4열 격자(`.ds-chain`)를 써서 1366에서 칩 배경보다 글자가 넓었다(UPG·Taxonomy·SW·SW EO·협력사 이관) → `.ds-chips`(칩 단위 줄바꿈). 하네스: ux.spec 1366 검사에 "칩 내용 > 칩 너비 0" 추가(수정 전 5화면 실패 확인)
+  - 남김(의도): 밀도는 화면 폭 media query 자동(`data-density` 토글 없음), 3D 시연 하위 화면은 BDC 데모 유지
 - [x] **feat/p10 → feat/v081-integration merge** (2026-10-14, f28349a 위) — 충돌 contracts/src/index.ts(vecu·ext export 둘 다), vECU 계약 파일에 Evidence 용어 재적용. verify 통과(단, gleo.ws.spec은 FF_IMP가 feat/gleo-v2 작업 중이라 DecisionEngine 생성자 불일치로 실패 — WP5b 완료 때 함께 맞춤). 백엔드 시험은 기계 부하가 크면 30 s 시간 초과가 날 수 있다(단독·--maxWorkers=4로는 통과)
 
 ## 다음 세션 시작점

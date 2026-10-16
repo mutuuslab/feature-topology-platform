@@ -169,4 +169,18 @@ export const p11 = {
     sbomOpen: 'SBOM 본문',
     sbomCol: { name: '구성 요소', type: '유형', version: 'Version', purl: 'purl', props: '속성' },
   },
+  peek: {
+    version: 'Version',
+    lead: '어느 화면에서든 Feature ID 옆 버튼으로 여는 요약입니다. 고치려면 상세 화면에서 합니다.',
+    scope: '적용 범위',
+    owner: '담당',
+    asil: 'ASIL',
+    baseline: 'Baseline',
+    noBaseline: '확정된 Baseline 없음',
+    gates: 'Gate G1~G9',
+    products: '이 Version을 쓰는 상품',
+    noProducts: '쓰는 상품 없음',
+    deps: (out: number, inc: number) => `의존 ${out} · 피의존 ${inc}`,
+    open: '상세 열기',
+  },
 } as const;

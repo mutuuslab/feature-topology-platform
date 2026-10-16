@@ -549,3 +549,21 @@
 .sh-rule .ds-kv__row { grid-template-columns: 72px 1fr; }
 .ds-drawer__head h2 { text-wrap: balance; }
 [data-present='on'] .ds-drawer { width: min(560px, 36vw); }
+
+/* Feature 요약 서랍 (FeaturePeek) */
+.sh-peek { display: grid; gap: var(--sp-3); }
+.sh-peek__name { margin: 0; font-size: var(--fs-lg); display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
+.sh-peek__sub { margin: 0; font-size: var(--fs-sm); color: var(--ink-2); }
+.sh-peek .ds-kv__row { grid-template-columns: 112px 1fr; }
+
+/* ⌘K 이동·실행 (CommandPalette) — 결과는 listbox, 고른 행은 aria-selected */
+.sh-cmdk__backdrop { position: fixed; inset: 0; z-index: 60; display: flex; justify-content: center; align-items: flex-start; background: var(--scrim); }
+.sh-cmdk { margin-top: 80px; width: 560px; max-width: 92vw; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--e-3); overflow: hidden; }
+.sh-cmdk input { width: 100%; padding: var(--sp-3) var(--sp-4); border: none; border-bottom: 1px solid var(--line); font-size: var(--fs-md); background: var(--surface); color: var(--ink); }
+.sh-cmdk input:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.sh-cmdk ul { list-style: none; margin: 0; padding: var(--sp-1) 0; max-height: 50vh; overflow-y: auto; }
+.sh-cmdk__item { display: flex; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-2) var(--sp-4); cursor: pointer; font-size: var(--fs-sm); }
+.sh-cmdk__item[aria-selected='true'] { background: var(--surface-3); box-shadow: inset 3px 0 0 var(--accent); }
+.sh-cmdk__group, .sh-cmdk__none, .sh-cmdk__hint { color: var(--muted); font-size: var(--fs-xs); }
+.sh-cmdk__none { padding: var(--sp-2) var(--sp-4); }
+.sh-cmdk__hint { margin: 0; padding: var(--sp-2) var(--sp-4); border-top: 1px solid var(--line); }

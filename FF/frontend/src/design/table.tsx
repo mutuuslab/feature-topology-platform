@@ -14,6 +14,12 @@ export interface Column<T> {
   minor?: boolean;
 }
 
+/** 셀 안의 버튼·링크·입력(IdChip 복사·요약 보기 등)에서 온 클릭·키는 행 열기로 올리지 않는다 */
+const fromControl = (e: { target: EventTarget; currentTarget: EventTarget }) => {
+  const c = (e.target as HTMLElement).closest?.('button, a, input, select, textarea, [role="button"]');
+  return !!c && c !== e.currentTarget;
+};
+
 export function DataTable<T>({ rows, columns, rowKey, onOpen, caption, maxHeight, initialSort }: {
   rows: T[];
   columns: Column<T>[];
@@ -84,11 +90,12 @@ export function DataTable<T>({ rows, columns, rowKey, onOpen, caption, maxHeight
                 tabIndex={onOpen ? (active === k || (!active && i === 0) ? 0 : -1) : undefined}
                 data-clickable={!!onOpen}
                 aria-selected={onOpen ? active === k : undefined}
-                onClick={onOpen ? () => onOpen(r) : undefined}
+                onClick={onOpen ? (e) => !fromControl(e) && onOpen(r) : undefined}
                 onFocus={() => setActive(k)}
                 onKeyDown={
                   onOpen
                     ? (e) => {
+                        if (fromControl(e)) return;
                         if (e.key === 'ArrowDown') (e.preventDefault(), focusRow(Math.min(i + 1, sorted.length - 1)));
                         else if (e.key === 'ArrowUp') (e.preventDefault(), focusRow(Math.max(i - 1, 0)));
                         else if (e.key === 'Home') (e.preventDefault(), focusRow(0));

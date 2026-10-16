@@ -29,6 +29,9 @@ for (const m of SCREENS) {
       await page.waitForLoadState('networkidle');
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(overflow, '가로 스크롤이 생긴다 — 넓은 표는 표 안에서 스크롤해야 한다').toBeLessThanOrEqual(0);
+      // ID 칩은 제 내용보다 좁아지지 않는다 — 격자 칸에 눌리면 글자·버튼이 칩 배경 밖으로 나간다(UPG 지원 Feature 칸 회귀)
+      const squeezed = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('.ds-id')].filter((e) => e.offsetParent && e.scrollWidth > e.clientWidth + 1).map((e) => e.dataset.id));
+      expect(squeezed, `칩 배경보다 내용이 넓다: ${squeezed.slice(0, 5).join(', ')}`).toEqual([]);
     });
 
     test('API 오류(500) — 오류 상태와 다시 시도, 셸 유지', async ({ page }) => {
@@ -75,3 +78,19 @@ for (const url of ['/features', '/features/FEAT-00022/1.0.0', '/products', '/ops
     expect(Date.now() - t0).toBeLessThanOrEqual(BUDGET.firstScreenMs);
   });
 }
+
+// Feature 요약 서랍(설계안 2.1) — 목록 행 안의 '요약 보기'는 행을 열지 않고 서랍만 연다. 서랍에서 상세로 이동하면 닫힌다.
+test('Feature 요약 서랍: 목록에서 열고, 키보드로 상세 이동', async ({ page }) => {
+  await page.goto('/features');
+  const peek = page.getByRole('button', { name: /^요약 보기 FEAT-00022@/ }).first();
+  await peek.click();
+  await expect(page).toHaveURL(/\/features(\?.*)?$/);
+  const dlg = page.getByRole('dialog');
+  await expect(dlg.getByTestId('feature-peek')).toBeVisible();
+  await expect(dlg).toContainText('Gate G1~G9');
+  await expect(dlg).toContainText('CAT-');
+  await dlg.getByRole('link', { name: '상세 열기' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/features\/FEAT-00022\/[\d.]+$/);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});

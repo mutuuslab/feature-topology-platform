@@ -15,6 +15,11 @@ export function Button({ variant = 'default', icon, children, ...rest }: { varia
 }
 
 /** Feature·Baseline·Catalog 등 ID — 모노 글꼴, 복사, 딥링크 */
+/** Feature 요약 서랍 — 어디서든 Feature ID 옆 버튼으로 연다(셸의 FeaturePeek가 듣는다, 설계안 2.1 우측 컨텍스트 서랍) */
+export const FEATURE_PEEK_EVENT = 'ff:feature-peek';
+const FEATURE_ID = /^FEAT-\d{5}$/;
+export const openFeaturePeek = (featureId: string, version: string | null = null) => window.dispatchEvent(new CustomEvent(FEATURE_PEEK_EVENT, { detail: { featureId, version } }));
+
 export function IdChip({ id, version, to, copy = true }: { id: string; version?: string | null; to?: string; copy?: boolean }) {
   const [copied, setCopied] = useState(false);
   const text = version ? `${id}@${version}` : id;
@@ -24,9 +29,15 @@ export function IdChip({ id, version, to, copy = true }: { id: string; version?:
       {version ? <span className="ds-id__ver">@{version}</span> : null}
     </>
   );
+  const peek = FEATURE_ID.test(id);
   return (
     <span className="ds-id" data-id={text}>
       {to ? <Link to={to}>{label}</Link> : label}
+      {peek && (
+        <button type="button" className="ds-id__copy" aria-label={`${ko.action.peek} ${text}`} title={ko.action.peek} onClick={() => openFeaturePeek(id, version ?? null)}>
+          <Icon name="layers" size={13} />
+        </button>
+      )}
       {copy && (
         <button
           type="button"

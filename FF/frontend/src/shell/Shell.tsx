@@ -10,6 +10,7 @@ import { useMotion } from '../state/motion';
 import { roleHome, useAppApi, useAppShell } from '../store';
 import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '../routes';
 import { GuideDock, RuleDrawer } from './GuideDock';
+import { FeaturePeek } from './FeaturePeek';
 import { learnStore, useExplain, useLearn } from './learn';
 import './shell.css';
 
@@ -193,6 +194,7 @@ export function Shell({ children }: { children: ReactNode }) {
       </main>
       <GuideDock />
       <RuleDrawer />
+      <FeaturePeek />
     </div>
   );
 }

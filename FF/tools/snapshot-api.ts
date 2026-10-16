@@ -72,6 +72,8 @@ async function main() {
     await save('audit', {}, { target: `${f.featureId}@${f.version}`, limit: 100 });
     await save('impact', p);
   }
+  // Feature 요약 서랍(FeaturePeek) — Version 없이 열면 최신 Version을 이 응답에서 고른다
+  for (const id of new Set((all.items as { featureId: string }[]).map((f) => f.featureId))) await save('featureVersions', { id });
 
   // BOM·Catalog
   await save('baselineRequests');

@@ -154,7 +154,7 @@ export function SupplierScreen() {
             { key: 'c', header: C.checksum, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{String(r.checksum ?? '—').slice(0, 18)}</span> },
             { key: 'e', header: C.ecu, cell: (r) => <span className="ds-mono ds-nowrap">{r.ecuPno}</span> },
             { key: 'l', header: C.lifecycle, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.lifecycle}</span> },
-            { key: 'f', header: C.features, cell: (r) => <span className="ds-chain">{featuresOf(r).map(fref)}</span> },
+            { key: 'f', header: C.features, cell: (r) => <span className="ds-chips">{featuresOf(r).map(fref)}</span> },
           ]}
         />
       </AsyncView>
@@ -524,7 +524,7 @@ export function EoScreen() {
             { key: 'n', header: E.col.name, cell: (r) => r.name },
             { key: 'e', header: E.col.ecu, cell: (r) => <span className="ds-mono ds-nowrap">{r.ecuPno}</span> },
             { key: 'v', header: E.col.versions, cell: (r) => <span className="ds-mono">{r.versions.map((v) => `${v.version}(${v.lifecycle})`).join(' → ')}</span>, sort: (r) => r.versions.length },
-            { key: 'f', header: E.col.features, cell: (r) => <span className="ds-chain">{r.versions.flatMap((v) => v.features).map(fref)}</span> },
+            { key: 'f', header: E.col.features, cell: (r) => <span className="ds-chips">{r.versions.flatMap((v) => v.features).map(fref)}</span> },
           ]}
         />
       </AsyncView>

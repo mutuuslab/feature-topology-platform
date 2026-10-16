@@ -8,7 +8,7 @@ import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, Field, Kpi, LifecycleBadge, PageHeader, Panel, Segmented, Select, VerdictBadge } from '../../design';
+import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, Kpi, LifecycleBadge, PageHeader, Panel, Segmented, Select, VerdictBadge } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
 
@@ -81,7 +81,10 @@ export function useInbox() {
         return { key: `restore:${k.killId}`, queue: 'restore' as const, item: k.killId, detail: `${k.featureId} ${k.featureVersion} · ${I.approvals(k.restoreRequest!.approvals.length, 2)}`, since: k.restoreRequest!.requestedAt, who: k.restoreRequest!.requestedBy, mine: c.ok, why: 'message' in c ? c.message : null, to: `/ops/kill?id=${k.killId}` };
       }),
   ];
-  return { items, queries, loading: queries.some((q) => q.isPending), error: queries.find((q) => q.isError)?.error ?? null };
+  const failed = queries.find((q) => q.isError);
+  // 여러 큐를 합친다 — 하나라도 실패하면 그 상태(권한 거부면 forbidden)를 그대로 보인다
+  const state: AsyncState = failed ? asyncState(failed) : queries.some((q) => q.isPending) ? 'loading' : items.length ? 'ready' : 'empty';
+  return { items, queries, state, loading: queries.some((q) => q.isPending), error: failed?.error ?? null, retry: () => queries.forEach((q) => q.isError && q.refetch()) };
 }
 
 export function ApprovalInboxScreen() {
@@ -98,7 +101,7 @@ export function ApprovalInboxScreen() {
           <Kpi key={q} label={I.queues[q]} value={rows.filter((r) => r.queue === q).length} hint={I.roles[q]} />
         ))}
       </div>
-      <AsyncView state={inbox.error ? 'error' : inbox.loading ? 'loading' : rows.length ? 'ready' : 'empty'} empty={{ title: I.empty }} error={inbox.error?.message}>
+      <AsyncView state={inbox.state === 'ready' && rows.length === 0 ? 'empty' : inbox.state} empty={{ title: I.empty }} error={inbox.error?.message} onRetry={inbox.retry}>
         {queues
           .filter((q) => rows.some((r) => r.queue === q))
           .map((q) => (

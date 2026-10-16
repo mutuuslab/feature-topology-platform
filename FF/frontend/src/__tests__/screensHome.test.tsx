@@ -70,6 +70,17 @@ describe('검토함 v2', () => {
     expect(within(restore).getByRole('link', { name: '열기' }).getAttribute('href')).toBe('/ops/kill?id=KILL-2');
   });
 
+  // 회귀(2026-10-16, e2e ux 하네스): 큐 하나가 403이면 '권한 없음' 대신 일반 오류로 보였다
+  it('큐 조회가 권한 거부(403)면 권한 안내 상태, 오류(500)면 다시 시도', async () => {
+    handler = () => ({ status: 403, body: { error: { code: 'FORBIDDEN', message: '권한이 없습니다' } } });
+    mount('viewer', '/admin/approval', <ApprovalInboxScreen />);
+    expect(await screen.findByText('이 역할로는 볼 수 없습니다')).toBeTruthy();
+    cleanup();
+    handler = () => ({ status: 500, body: { error: { code: 'INTERNAL', message: '서버 오류' } } });
+    mount('viewer', '/admin/approval', <ApprovalInboxScreen />);
+    expect(await screen.findByRole('button', { name: '다시 시도' })).toBeTruthy();
+  });
+
   it('요청자 본인은 자기 차단 요청을 승인할 차례가 아니다(직무 분리)', async () => {
     handler = inboxApi;
     mount('operator', '/admin/approval', <ApprovalInboxScreen />);

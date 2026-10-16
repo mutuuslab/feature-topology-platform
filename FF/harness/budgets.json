@@ -1,0 +1,7 @@
+{
+  "note": "성능 예산(설계안 4e) — gzip 바이트. 넘으면 verify 실패. 올리려면 이유를 남기고 이 파일을 함께 고친다. 2026-10-16 측정: 첫 화면 255 KiB, 화면 묶음 최대 33 KiB(3D 장면 제외)",
+  "initialGzipKiB": 290,
+  "chunkGzipKiB": 40,
+  "allow": { "VehicleTwinScene": 320 },
+  "firstScreenMs": 4000
+}

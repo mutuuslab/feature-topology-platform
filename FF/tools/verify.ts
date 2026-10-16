@@ -37,6 +37,7 @@ const STEPS: Step[] = [
   { id: 'conformance', title: '42 컴포넌트 준수 (--strict: 42/42가 아니면 실패)', cmd: `node --test tools/verify.test.ts && node tools/conformance.ts --strict` },
   { id: 'standards', title: '보고서 v1.1 규칙 추적 (ID 실재·플랫폼 규칙 구현·시험 래칫)', cmd: `node --test tools/standards.test.ts tools/ratchet.test.ts && node tools/standards.ts` },
   { id: 'build:frontend', title: '프론트 빌드', cmd: `${npx} vite build`, cwd: 'frontend' },
+  { id: 'budget', title: '성능 예산 (첫 화면·화면 묶음 gzip, harness/budgets.json)', cmd: `node --test tools/bundle-budget.test.ts && node tools/bundle-budget.ts` },
   { id: 'e2e', title: 'e2e (기능·접근성·레이아웃)', cmd: `${npx} playwright test --grep-invert @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
   { id: 'e2e:static', title: '정적 데모 (공개 사이트 방식 빌드 — 모든 메뉴·하위 화면·탭이 스냅샷만으로 열린다)', cmd: `${npx} playwright test -c playwright.static.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.static.config.ts')) },
   { id: 'e2e:visual', title: '시각 회귀', cmd: `${npx} playwright test --grep @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, full: true, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },

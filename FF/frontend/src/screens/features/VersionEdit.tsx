@@ -208,7 +208,7 @@ interface PolicyLike {
 /** 정책 상세 머리 — DRAFT·VALIDATED·REJECTED만 수정(새 개정본 DRAFT, 다시 검증) */
 export function PolicyEdit({ p }: { p: PolicyLike }) {
   const perm = usePermission(['FEATURE_AUTHOR', 'IMPLEMENTER']);
-  const save = useApiMutation('updatePolicy', ['policyDetail', 'listPolicies', 'audit']);
+  const save = useApiMutation('updatePolicy', ['policyDetail', 'listPolicies', 'audit', 'policyRevisions', 'policyChanges']);
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ description: p.description, enabled: p.enabled, safeDefault: p.safeDefault, mode: p.rollout.mode, basisPoints: String(p.rollout.basisPoints) });
   if (!['DRAFT', 'VALIDATED', 'REJECTED'].includes(p.status)) return null;

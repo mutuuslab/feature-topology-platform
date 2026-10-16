@@ -4,18 +4,18 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 162,
-      "부분": 259,
-      "미구현": 202,
+      "구현": 169,
+      "부분": 255,
+      "미구현": 199,
       "범위 밖": 5
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 89,
-        "부분": 83,
-        "미구현": 64,
+        "구현": 96,
+        "부분": 79,
+        "미구현": 61,
         "범위 밖": 3
       },
       {
@@ -59,7 +59,7 @@
         "범위 밖": 0
       }
     ],
-    "traced": 7,
+    "traced": 14,
     "untracedImplemented": 155,
     "defects": 5,
     "decisionsPending": 9,
@@ -91,6 +91,48 @@
       "tested": [
         "contracts/src/rules/notification.test.ts"
       ]
+    },
+    "FR-POL-002-004": {
+      "implemented": [
+        "contracts/src/rules/policy-version.ts"
+      ],
+      "tested": []
+    },
+    "FR-PVER-002-001": {
+      "implemented": [
+        "contracts/src/rules/policy-version.ts"
+      ],
+      "tested": []
+    },
+    "FR-PVER-002-002": {
+      "implemented": [
+        "contracts/src/rules/policy-version.ts"
+      ],
+      "tested": []
+    },
+    "FR-PVER-002-003": {
+      "implemented": [
+        "contracts/src/rules/policy-version.ts"
+      ],
+      "tested": []
+    },
+    "FR-PVER-002-004": {
+      "implemented": [
+        "contracts/src/rules/policy-version.ts"
+      ],
+      "tested": []
+    },
+    "FR-PVER-002-005": {
+      "implemented": [
+        "contracts/src/rules/policy-version.ts"
+      ],
+      "tested": []
+    },
+    "FR-PVER-002-006": {
+      "implemented": [
+        "contracts/src/rules/policy-version.ts"
+      ],
+      "tested": []
     },
     "FR-RTE-001-004": {
       "implemented": [],

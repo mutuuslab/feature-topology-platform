@@ -450,4 +450,15 @@ CREATE TRIGGER notification_no_delete BEFORE DELETE ON notification BEGIN SELECT
 CREATE TRIGGER notification_email_no_delete BEFORE DELETE ON notification_email BEGIN SELECT RAISE(ABORT, 'notification_email은 추가만 가능'); END;
 `,
   },
+  {
+    // 정책 버전 이력 — 개정본마다 내용 전체(doc)를 남긴다. 이력 저장 이전에 있던 정책은 지금 개정본을 IMPORTED로 시작점 삼는다
+    name: '039_policy_revision',
+    sql: `
+CREATE TABLE policy_revision (policy_id TEXT NOT NULL, revision INTEGER NOT NULL, content_hash TEXT NOT NULL, kind TEXT NOT NULL, changed_by TEXT NOT NULL, changed_at TEXT NOT NULL, restored_from INTEGER, reason TEXT, doc TEXT NOT NULL, PRIMARY KEY (policy_id, revision));
+INSERT INTO policy_revision (policy_id, revision, content_hash, kind, changed_by, changed_at, restored_from, reason, doc)
+  SELECT policy_id, revision, json_extract(doc, '$.contentHash'), 'IMPORTED', json_extract(doc, '$.createdBy'), json_extract(doc, '$.createdAt'), NULL, NULL, doc FROM policy;
+CREATE TRIGGER policy_revision_no_update BEFORE UPDATE ON policy_revision BEGIN SELECT RAISE(ABORT, 'policy_revision은 추가만 가능'); END;
+CREATE TRIGGER policy_revision_no_delete BEFORE DELETE ON policy_revision BEGIN SELECT RAISE(ABORT, 'policy_revision은 추가만 가능'); END;
+`,
+  },
 ];

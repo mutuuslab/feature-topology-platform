@@ -106,6 +106,68 @@ describe('정책 상세', () => {
   });
 });
 
+describe('정책 버전 이력', () => {
+  const REVS = {
+    policyId: 'POL-00003',
+    current: 2,
+    status: 'VALIDATED',
+    restorable: true,
+    items: [
+      { revision: 2, contentHash: 'sha256:aa', kind: 'UPDATE', changedBy: 'usr-author', changedAt: '2026-10-02T00:00:00.000Z', restoredFrom: null, reason: null, current: true, validations: [{ runId: 'VR-00001', decision: 'HOLD', at: '2026-10-02T00:00:00.000Z' }] },
+      { revision: 1, contentHash: 'sha256:11', kind: 'CREATE', changedBy: 'usr-author', changedAt: '2026-10-01T00:00:00.000Z', restoredFrom: null, reason: null, current: false, validations: [] },
+    ],
+  };
+  const SPEC1 = { featureId: 'FEAT-00022', featureVersion: '1.0.0', controlPoint: 'Flag', flagKey: 'care_00022_trial', description: '처음 정책', enabled: true, safeDefault: false, entitlementCatalogId: 'CAT-00019', strategies: [], rollout: { mode: 'COHORT', basisPoints: 5000, salt: 'S' } };
+  const CHANGES = {
+    policyId: 'POL-00003',
+    items: [
+      { revision: 2, kind: 'UPDATE', changedBy: 'usr-author', changedAt: '2026-10-02T00:00:00.000Z', restoredFrom: null, reason: null, before: SPEC1, after: { ...SPEC1, description: '체험 정책' }, changes: [{ path: 'description', before: '처음 정책', after: '체험 정책' }] },
+      { revision: 1, kind: 'CREATE', changedBy: 'usr-author', changedAt: '2026-10-01T00:00:00.000Z', restoredFrom: null, reason: null, before: null, after: SPEC1, changes: [] },
+    ],
+  };
+  const api = (over: { revs?: object } = {}): Handler => (url, init) => {
+    if (url.endsWith('/revisions/1/restore')) return { body: { ...POL, revision: 3, status: 'DRAFT' } };
+    if (url.endsWith('/revisions/1')) return { body: { ...REVS.items[1], spec: SPEC1, changesFromCurrent: [{ path: 'description', before: '체험 정책', after: '처음 정책' }] } };
+    if (url.endsWith('/revisions')) return { body: { ...REVS, ...over.revs } };
+    if (url.endsWith('/changes')) return { body: CHANGES };
+    if (init?.method && init.method !== 'GET') return { body: {} };
+    return { body: url.startsWith('/api/policies/POL-00003') ? DETAIL() : { items: [] } };
+  };
+
+  it('개정본마다 변경 종류·바뀐 항목·검증을 보이고, 이전 버전을 열면 지금 내용과의 차이와 복원이 있다', async () => {
+    handler = api();
+    mount('/policies/POL-00003', '/policies/:id', <PolicyDetail />, 'author');
+    const table = await screen.findByRole('table', { name: '버전 이력' });
+    expect(await within(table).findByText('r2 · 현재')).toBeTruthy();
+    const r2 = within(table).getByText('r2 · 현재').closest('tr')!;
+    expect(within(r2).getByText('수정')).toBeTruthy();
+    expect(within(r2).getByText('description')).toBeTruthy();
+    const r1 = within(table).getByText('r1').closest('tr')!;
+    expect(within(r1).getByText('처음 작성')).toBeTruthy();
+    fireEvent.click(within(r1).getByText('r1'));
+    const dlg = await screen.findByRole('dialog', { name: 'r1 버전 내용' });
+    const diff = await within(dlg).findByRole('table', { name: '지금 내용과의 차이' });
+    expect(within(diff).getByText('처음 정책')).toBeTruthy();
+    const restore = within(dlg).getByRole('button', { name: '이 버전으로 복원' }) as HTMLButtonElement;
+    expect(restore.disabled).toBe(true); // 사유 전
+    fireEvent.change(within(dlg).getByRole('textbox'), { target: { value: '설명 되돌림' } });
+    fireEvent.click(restore);
+    await waitFor(() => expect(calls.some((c) => c.url === '/api/policies/POL-00003/revisions/1/restore' && c.init?.method === 'POST')).toBe(true));
+    const post = calls.find((c) => c.url.endsWith('/revisions/1/restore'))!;
+    expect(JSON.parse(String(post.init!.body))).toEqual({ reason: '설명 되돌림' });
+  });
+
+  it('승인·배포된 정책은 버전을 되살릴 수 없다는 안내만 있고 복원 버튼이 없다', async () => {
+    handler = api({ revs: { status: 'DEPLOYED', restorable: false } });
+    mount('/policies/POL-00003', '/policies/:id', <PolicyDetail />, 'author');
+    expect(await screen.findByText(/DEPLOYED 정책은 버전을 되살릴 수 없습니다/)).toBeTruthy();
+    fireEvent.click(within(await screen.findByRole('table', { name: '버전 이력' })).getByText('r1'));
+    const dlg = await screen.findByRole('dialog', { name: 'r1 버전 내용' });
+    await within(dlg).findByRole('table', { name: '지금 내용과의 차이' });
+    expect(within(dlg).queryByRole('button', { name: '이 버전으로 복원' })).toBeNull();
+  });
+});
+
 describe('검증 이력', () => {
   it('실행마다 판정을 보여 주고, 행을 열면 8종 결과가 나온다', async () => {
     handler = () => ({ body: { items: [RUN] } });

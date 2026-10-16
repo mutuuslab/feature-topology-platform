@@ -88,7 +88,13 @@ async function main() {
   // 정책·검증·사용 권한·활성화 판단 (PoC ②③) — ActivationScreen은 차량 × 배포 flagKey 조합을 모두 묻는다
   const policies = await save('listPolicies');
   await save('listPolicies', {}, { status: 'DEPLOYED' });
-  for (const p of policies.items) await save('policyDetail', { id: p.policyId });
+  for (const p of policies.items) {
+    await save('policyDetail', { id: p.policyId });
+    // 정책 상세의 버전 이력 — 목록과 변경 이력(버전 내용은 행을 열 때 읽으므로 개정본마다)
+    const revs = await save('policyRevisions', { id: p.policyId });
+    await save('policyChanges', { id: p.policyId });
+    for (const r of revs.items) await save('policyRevision', { id: p.policyId, revision: String(r.revision) });
+  }
   await save('validations');
   await save('entitlements');
   // 체험권 차량 목록(상태별 첫 쪽)·체험 전환 분석(나눠 보기 기준별) — 화면과 같은 질의 함수로 키를 맞춘다

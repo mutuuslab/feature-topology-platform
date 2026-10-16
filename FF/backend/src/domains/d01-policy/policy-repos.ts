@@ -1,6 +1,6 @@
 // 정책·검증 이력·차량·사용 권한 저장소 (키 열 + doc JSON)
 import { Inject, Injectable } from '@nestjs/common';
-import { canonicalJson, PolicySpec, type Entitlement, type Policy, type Vehicle, type VehicleProfile } from '@ff/contracts';
+import { canonicalJson, PolicySpec, policySpecOf, type Entitlement, type Policy, type PolicyRevision, type PolicyRevisionKind, type Vehicle, type VehicleProfile } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { DB, type Db } from '../../kernel/db';
 import type { ValidatorResult } from '@ff/contracts';
@@ -20,6 +20,29 @@ export function policyBytes(p: Policy | PolicySpec): string {
 export function policyHash(p: Policy | PolicySpec): string {
   return 'sha256:' + createHash('sha256').update(policyBytes(p)).digest('hex');
 }
+
+interface RevisionRow {
+  policy_id: string;
+  revision: number;
+  content_hash: string;
+  kind: PolicyRevisionKind;
+  changed_by: string;
+  changed_at: string;
+  restored_from: number | null;
+  reason: string | null;
+  doc: string;
+}
+const toRevision = (r: RevisionRow): PolicyRevision => ({
+  policyId: r.policy_id,
+  revision: r.revision,
+  contentHash: r.content_hash,
+  kind: r.kind,
+  changedBy: r.changed_by,
+  changedAt: r.changed_at,
+  restoredFrom: r.restored_from,
+  reason: r.reason,
+  spec: policySpecOf(JSON.parse(r.doc)),
+});
 
 export interface ValidationRun {
   runId: string;
@@ -62,6 +85,7 @@ export class PolicyRepo {
       version,
     )!.n;
   }
+  /** 새 정책 — 첫 개정본도 함께 남긴다(작성자·작성 시각) */
   insert(p: Policy) {
     this.db.run(
       'INSERT INTO policy (policy_id, feature_id, feature_version, control_point, flag_key, status, revision, doc) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
@@ -74,9 +98,40 @@ export class PolicyRepo {
       p.revision,
       JSON.stringify(p),
     );
+    this.insertRevision(p, { kind: 'CREATE', by: p.createdBy, at: p.createdAt });
   }
-  update(p: Policy) {
+  /**
+   * 정책 갱신 — 내용이 바뀌어 개정본이 오르면 revision에 그 개정본 기록(누가·언제·왜)을 넘긴다.
+   * 기록 없는 개정본으로 저장하려 하면 거부한다 — 개정본 내용이 덮어써져 사라지지 않게(FR-PVER-002-001).
+   */
+  update(p: Policy, revision?: { kind: Exclude<PolicyRevisionKind, 'CREATE' | 'IMPORTED'>; by: string; at: string; restoredFrom?: number | null; reason?: string | null }) {
+    if (revision) this.insertRevision(p, revision);
+    else if (!this.revision(p.policyId, p.revision)) throw new Error(`${p.policyId} r${p.revision} 개정본 기록 없이 정책을 저장하려 했습니다.`);
     this.db.run('UPDATE policy SET status = ?, revision = ?, flag_key = ?, control_point = ?, doc = ? WHERE policy_id = ?', p.status, p.revision, p.flagKey, p.controlPoint, JSON.stringify(p), p.policyId);
+  }
+  private insertRevision(p: Policy, r: { kind: PolicyRevisionKind; by: string; at: string; restoredFrom?: number | null; reason?: string | null }) {
+    this.db.run(
+      'INSERT INTO policy_revision (policy_id, revision, content_hash, kind, changed_by, changed_at, restored_from, reason, doc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      p.policyId,
+      p.revision,
+      policyHash(p),
+      r.kind,
+      r.by,
+      r.at,
+      r.restoredFrom ?? null,
+      r.reason ?? null,
+      JSON.stringify(p),
+    );
+  }
+  /** 개정본 목록 — 오름차순 */
+  revisions(policyId: string): PolicyRevision[] {
+    return this.db
+      .all<RevisionRow>('SELECT * FROM policy_revision WHERE policy_id = ? ORDER BY revision', policyId)
+      .map(toRevision);
+  }
+  revision(policyId: string, revision: number): PolicyRevision | undefined {
+    const r = this.db.get<RevisionRow>('SELECT * FROM policy_revision WHERE policy_id = ? AND revision = ?', policyId, revision);
+    return r ? toRevision(r) : undefined;
   }
   nextId(): string {
     const r = this.db.get<{ m: number | null }>('SELECT max(CAST(substr(policy_id, 5) AS INTEGER)) AS m FROM policy');

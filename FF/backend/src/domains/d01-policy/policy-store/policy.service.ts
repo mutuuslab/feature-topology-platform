@@ -3,7 +3,7 @@
 // 커버리지가 올라가 Lifecycle DEVELOPING→VERIFIED 자동 전이 조건이 채워질 수 있다(같은 트랜잭션).
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { SafetyProfileService } from '../registry/safety-profile.service';
-import { LIFECYCLE_RANK, oddRestrictionFindings, type CreatePolicyBody, type Policy, type PolicyDecisionBody, type UpdatePolicyBody } from '@ff/contracts';
+import { LIFECYCLE_RANK, oddRestrictionFindings, policyChangeLog, policyDiff, POLICY_EDITABLE, PolicySpec, type CreatePolicyBody, type Policy, type PolicyDecisionBody, type UpdatePolicyBody } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -18,7 +18,7 @@ import { LifecycleService } from '../registry/lifecycle.service';
 import { FeatureRepo } from '../repos';
 import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.service';
 
-const EDITABLE = ['DRAFT', 'VALIDATED', 'REJECTED'] as const;
+const EDITABLE = POLICY_EDITABLE;
 
 @Injectable()
 @PlatformComponent('D01-06')
@@ -153,7 +153,7 @@ export class PolicyService implements OnModuleInit {
     return this.db.tx(() => {
       const next: Policy = { ...p, ...Object.fromEntries(Object.entries(body).filter(([, v]) => v !== undefined)), status: 'DRAFT', revision: p.revision + 1 } as Policy;
       next.contentHash = policyHash(next);
-      this.policies.update(next);
+      this.policies.update(next, { kind: 'UPDATE', by: actor.id, at: this.clock.iso() });
       this.audit.record(actor, 'POLICY_UPDATE', id, { before: { revision: p.revision, contentHash: p.contentHash }, after: { revision: next.revision, contentHash: next.contentHash }, componentId: 'D01-06' });
       return next;
     });
@@ -249,6 +249,65 @@ export class PolicyService implements OnModuleInit {
       baseExists: !!base,
       profile: { confirmed: this.flags.verifyConfirmation(profile), fClass: profile.fClass },
       baseProfile: base ? { fClass: this.flags.ensure(p.featureId, base.version).fClass } : null,
+    });
+  }
+
+  /** 정책 버전 목록 — 개정본마다 내용 해시·변경 종류·그 개정본을 검증한 실행 (FR-PVER-002-002) */
+  revisions(id: string) {
+    const p = this.require(id);
+    const runs = this.policies.runs(id);
+    return {
+      policyId: id,
+      current: p.revision,
+      status: p.status,
+      restorable: (EDITABLE as readonly string[]).includes(p.status),
+      items: this.policies
+        .revisions(id)
+        .reverse()
+        .map(({ spec: _spec, ...r }) => ({ ...r, current: r.revision === p.revision, validations: runs.filter((v) => v.policyRevision === r.revision).map((v) => ({ runId: v.runId, decision: v.decision, at: v.at })) })),
+    };
+  }
+
+  /** 정책 버전 내용 — 없는 버전은 NOT_FOUND (FR-PVER-002-003) */
+  revision(id: string, revision: number) {
+    const p = this.require(id);
+    const r = Number.isInteger(revision) ? this.policies.revision(id, revision) : undefined;
+    if (!r) throw new DomainError('NOT_FOUND', `${id}에 r${revision} 버전이 없습니다.`);
+    const current = this.policies.revision(id, p.revision);
+    return { ...r, current: r.revision === p.revision, changesFromCurrent: current ? policyDiff(current.spec, r.spec) : [] };
+  }
+
+  /** 정책 변경 이력 — 변경자·시각·변경 전·변경 후 (FR-PVER-002-005·006) */
+  changes(id: string) {
+    this.require(id);
+    return { policyId: id, items: policyChangeLog(this.policies.revisions(id)) };
+  }
+
+  /**
+   * 정책 버전 복원 (FR-PVER-002-004·FR-POL-002-004) — 고른 버전의 내용으로 새 개정본을 만든다. 상태는 DRAFT라 검증·승인을 다시 받아야 배포된다.
+   * 승인·배포·폐기된 정책은 바꾸지 않는다(배포본을 이전 내용으로 되돌리는 일은 롤백).
+   */
+  restore(actor: Actor, id: string, revision: number, reason: string): Policy {
+    const p = this.require(id);
+    const from = this.revision(id, revision);
+    if (!(EDITABLE as readonly string[]).includes(p.status)) {
+      this.audit.failed(actor, 'POLICY_RESTORE', id, `${p.status} 정책 버전 복원 시도 (r${revision})`, 'D01-06');
+      throw new DomainError('IMMUTABLE', `${p.status} 정책은 이전 버전으로 되살릴 수 없습니다. 배포본을 되돌리려면 롤백을 쓰세요.`);
+    }
+    if (from.current || from.contentHash === p.contentHash) throw new DomainError('CONFLICT', `r${revision}은(는) 지금 내용과 같습니다 — 되살릴 것이 없습니다.`);
+    return this.db.tx(() => {
+      const meta = Object.fromEntries(Object.entries(p).filter(([k]) => !(k in PolicySpec.shape)));
+      const next = { ...meta, ...from.spec, status: 'DRAFT', revision: p.revision + 1 } as Policy;
+      next.contentHash = policyHash(next);
+      this.policies.update(next, { kind: 'RESTORE', by: actor.id, at: this.clock.iso(), restoredFrom: revision, reason });
+      this.audit.record(actor, 'POLICY_RESTORE', id, {
+        before: { revision: p.revision, contentHash: p.contentHash, status: p.status },
+        after: { revision: next.revision, contentHash: next.contentHash, status: next.status, restoredFrom: revision },
+        reason,
+        componentId: 'D01-06',
+      });
+      this.events.publish('policy.restored', id, { policyId: id, revision: next.revision, restoredFrom: revision, reason }, { componentId: 'D01-06', correlationId: actor.correlationId });
+      return next;
     });
   }
 

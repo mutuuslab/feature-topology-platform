@@ -1,6 +1,6 @@
 // 정책·검증·권한·대상·활성화·단계 배포 API (PoC ②③)
 import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
-import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, PolicyDecisionBody, RolloutStageBody, SEGMENT_DIMENSIONS, UpdatePolicyBody } from '@ff/contracts';
+import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, PolicyDecisionBody, RestorePolicyRevisionBody, RolloutStageBody, SEGMENT_DIMENSIONS, UpdatePolicyBody } from '@ff/contracts';
 import { z } from 'zod';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { DomainError } from '../../../kernel/errors';
@@ -47,6 +47,29 @@ export class PolicyController {
   @AuditAction('POLICY_UPDATE')
   update(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(UpdatePolicyBody)) body: UpdatePolicyBody) {
     return this.policies.update(actor, id, body);
+  }
+
+  @Get(':id/revisions')
+  revisions(@Param('id') id: string) {
+    return this.policies.revisions(id);
+  }
+
+  @Get(':id/revisions/:revision')
+  revision(@Param('id') id: string, @Param('revision') revision: string) {
+    return this.policies.revision(id, /^\d+$/.test(revision) ? Number(revision) : NaN);
+  }
+
+  @Post(':id/revisions/:revision/restore')
+  @HttpCode(200)
+  @Roles('FEATURE_AUTHOR', 'IMPLEMENTER')
+  @AuditAction('POLICY_RESTORE')
+  restore(@CurrentActor() actor: Actor, @Param('id') id: string, @Param('revision') revision: string, @Body(new ZodPipe(RestorePolicyRevisionBody)) body: RestorePolicyRevisionBody) {
+    return this.policies.restore(actor, id, /^\d+$/.test(revision) ? Number(revision) : NaN, body.reason);
+  }
+
+  @Get(':id/changes')
+  changes(@Param('id') id: string) {
+    return this.policies.changes(id);
   }
 
   @Post(':id/validate')

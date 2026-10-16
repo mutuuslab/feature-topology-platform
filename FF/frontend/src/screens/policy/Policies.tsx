@@ -10,9 +10,10 @@ import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
 import { VirtualPanel } from './Virtual';
 import { UnleashPanel } from './Unleash';
+import { PolicyVersions } from './PolicyVersions';
 
 const T = ko.policy;
-const INVALIDATE = ['listPolicies', 'policyDetail', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort'];
+const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort'];
 
 interface Policy {
   policyId: string;
@@ -233,6 +234,7 @@ export function PolicyDetail() {
                 />
               </Panel>
             </div>
+            <PolicyVersions key={p.policyId} policyId={p.policyId} />
             <PolicyActionDrawer kind={drawer} policy={p} approval={d.approval} onClose={() => setDrawer(null)} />
           </>
         )}

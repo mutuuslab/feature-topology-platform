@@ -763,9 +763,9 @@
       "gap": "**설계와 충돌** — 우선순위 대신 '단일 배포' 원칙. 명세 조정 필요"
     },
     "FR-POL-002-004": {
-      "verdict": "부분",
-      "evidence": "수정 시 revision+1·해시 (`policy.service.ts:154-157`) — 같은 행 덮어씀",
-      "gap": "과거 개정본 내용 보존·조회·복원"
+      "verdict": "구현",
+      "evidence": "수정·복원마다 새 개정본으로 내용 보존, `GET /api/policies/:id/revisions/:revision`, `POST …/restore`(새 개정본 DRAFT·재검증 필요) — 개정본 저장 `policy_revision`(migration 039, 추가만) · 규칙 `contracts/src/rules/policy-version.ts` · `policy.service.ts` revisions/revision/changes/restore · 화면 정책 상세 \"버전 이력\" (시험 `backend/test/d01/policy-version.spec.ts`)",
+      "gap": ""
     },
     "FR-POL-002-005": {
       "verdict": "부분",
@@ -1048,34 +1048,34 @@
       "gap": "삭제 도입 시 DEPLOYED 거부"
     },
     "FR-PVER-002-001": {
-      "verdict": "부분",
-      "evidence": "revision 증가, 이전 내용은 덮어씀 (`policy-repos.ts:78-80`)",
-      "gap": "개정본별 내용 보존"
+      "verdict": "구현",
+      "evidence": "수정하면 새 개정본으로 내용 전체를 남긴다 — 이전 개정본은 덮어쓰지 않는다(덮어쓰기 회귀 시험) — 개정본 저장 `policy_revision`(migration 039, 추가만) · 규칙 `contracts/src/rules/policy-version.ts` · `policy.service.ts` revisions/revision/changes/restore · 화면 정책 상세 \"버전 이력\" (시험 `backend/test/d01/policy-version.spec.ts`)",
+      "gap": ""
     },
     "FR-PVER-002-002": {
-      "verdict": "미구현",
-      "evidence": "검증 실행 기록에 revision·hash만",
-      "gap": "버전 목록 API"
+      "verdict": "구현",
+      "evidence": "`GET /api/policies/:id/revisions` — 개정본별 변경 종류·변경자·시각·검증 실행 — 개정본 저장 `policy_revision`(migration 039, 추가만) · 규칙 `contracts/src/rules/policy-version.ts` · `policy.service.ts` revisions/revision/changes/restore · 화면 정책 상세 \"버전 이력\" (시험 `backend/test/d01/policy-version.spec.ts`)",
+      "gap": ""
     },
     "FR-PVER-002-003": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "버전별 내용·NOT_FOUND"
+      "verdict": "구현",
+      "evidence": "`GET /api/policies/:id/revisions/:revision` — 내용과 지금 내용과의 차이, 없는 버전 NOT_FOUND — 개정본 저장 `policy_revision`(migration 039, 추가만) · 규칙 `contracts/src/rules/policy-version.ts` · `policy.service.ts` revisions/revision/changes/restore · 화면 정책 상세 \"버전 이력\" (시험 `backend/test/d01/policy-version.spec.ts`)",
+      "gap": ""
     },
     "FR-PVER-002-004": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "복원 시 새 개정본으로 재검증·재승인"
+      "verdict": "구현",
+      "evidence": "`POST /api/policies/:id/revisions/:revision/restore` — 새 개정본(DRAFT)으로 적용, 지금과 같은 내용 409, 승인·배포 정책은 IMMUTABLE(배포본 되돌리기는 롤백) — 개정본 저장 `policy_revision`(migration 039, 추가만) · 규칙 `contracts/src/rules/policy-version.ts` · `policy.service.ts` revisions/revision/changes/restore · 화면 정책 상세 \"버전 이력\" (시험 `backend/test/d01/policy-version.spec.ts`)",
+      "gap": ""
     },
     "FR-PVER-002-005": {
-      "verdict": "부분",
-      "evidence": "감사 before/after = revision·contentHash",
-      "gap": "변경 전후 내용"
+      "verdict": "구현",
+      "evidence": "개정본마다 변경자·시각·사유, 변경 이력은 변경 전·변경 후 내용과 바뀐 항목(점 경로) — 개정본 저장 `policy_revision`(migration 039, 추가만) · 규칙 `contracts/src/rules/policy-version.ts` · `policy.service.ts` revisions/revision/changes/restore · 화면 정책 상세 \"버전 이력\" (시험 `backend/test/d01/policy-version.spec.ts`)",
+      "gap": ""
     },
     "FR-PVER-002-006": {
-      "verdict": "부분",
-      "evidence": "`/api/audit?target=POL-…`, `/api/policies/validations`",
-      "gap": "정책별 이력 API·미등록 NOT_FOUND"
+      "verdict": "구현",
+      "evidence": "`GET /api/policies/:id/changes` — 최신 순 변경 이력, 미등록 정책 NOT_FOUND — 개정본 저장 `policy_revision`(migration 039, 추가만) · 규칙 `contracts/src/rules/policy-version.ts` · `policy.service.ts` revisions/revision/changes/restore · 화면 정책 상세 \"버전 이력\" (시험 `backend/test/d01/policy-version.spec.ts`)",
+      "gap": ""
     },
     "FR-PVER-003-001": {
       "verdict": "부분",

@@ -1846,3 +1846,37 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-topo-key[data-type='EXCLUDES'] {
   background: repeating-linear-gradient(90deg, var(--line-strong) 0 4px, transparent 4px 7px);
 }
+
+/* 정책 버전 이력(D01-06) — 버전 차이·변경 이력 표, 버전 내용 */
+.pv-lead {
+  color: var(--ink-2);
+  margin-top: 0;
+}
+.pv-meta {
+  margin: 0;
+  color: var(--ink-2);
+}
+.pv-h {
+  margin: var(--sp-2) 0 var(--sp-1);
+  font-size: var(--fs-base);
+}
+.pv-diff th[scope='row'] {
+  font-weight: 600;
+}
+.pv-diff__before {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.pv-spec {
+  max-height: 320px;
+  overflow: auto;
+  margin: 0;
+  padding: var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  font-size: var(--fs-xs);
+}
+.pv-log summary {
+  cursor: pointer;
+  margin-top: var(--sp-3);
+}

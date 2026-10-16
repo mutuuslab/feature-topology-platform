@@ -1,0 +1,117 @@
+{
+  "note": "tools/requirements.ts가 만든다 — 손으로 고치지 않는다. implemented = 소스의 @req 표식, tested = 시험 파일의 ID 언급, probes = it.fails 결함 기록",
+  "source": "96591b14470489dd02303b054a9bb4bf71112c6902aeda15a150e9ce66066b04",
+  "summary": {
+    "total": 628,
+    "verdicts": {
+      "구현": 155,
+      "부분": 265,
+      "미구현": 203,
+      "범위 밖": 5
+    },
+    "sheets": [
+      {
+        "sheet": "01_Feature 정책 관리",
+        "leaves": 239,
+        "구현": 88,
+        "부분": 84,
+        "미구현": 64,
+        "범위 밖": 3
+      },
+      {
+        "sheet": "02_차량 런타임 실행",
+        "leaves": 81,
+        "구현": 15,
+        "부분": 49,
+        "미구현": 15,
+        "범위 밖": 2
+      },
+      {
+        "sheet": "03_안전·검증",
+        "leaves": 109,
+        "구현": 23,
+        "부분": 31,
+        "미구현": 55,
+        "범위 밖": 0
+      },
+      {
+        "sheet": "04_배포·운영·데이터",
+        "leaves": 78,
+        "구현": 8,
+        "부분": 44,
+        "미구현": 26,
+        "범위 밖": 0
+      },
+      {
+        "sheet": "05_시스템 연계·확장",
+        "leaves": 34,
+        "구현": 4,
+        "부분": 16,
+        "미구현": 14,
+        "범위 밖": 0
+      },
+      {
+        "sheet": "06_품질·보안·운영",
+        "leaves": 87,
+        "구현": 17,
+        "부분": 41,
+        "미구현": 29,
+        "범위 밖": 0
+      }
+    ],
+    "traced": 0,
+    "untracedImplemented": 155,
+    "defects": 5,
+    "decisionsPending": 9,
+    "specIssues": 3
+  },
+  "traces": {
+    "FR-REG-002-008": {
+      "implemented": [],
+      "tested": [
+        "contracts/src/rules/requirements-defects.test.ts"
+      ]
+    },
+    "FR-REG-002-009": {
+      "implemented": [],
+      "tested": [
+        "contracts/src/rules/requirements-defects.test.ts"
+      ]
+    },
+    "FR-REG-002-019": {
+      "implemented": [],
+      "tested": [
+        "backend/test/requirements/defects.spec.ts"
+      ]
+    },
+    "FR-RTE-001-004": {
+      "implemented": [],
+      "tested": [
+        "backend/test/requirements/defects.spec.ts"
+      ]
+    },
+    "FR-RTE-005-001": {
+      "implemented": [],
+      "tested": [
+        "backend/test/requirements/defects.spec.ts"
+      ]
+    }
+  },
+  "probes": {
+    "FR-REG-002-008": [
+      "contracts/src/rules/requirements-defects.test.ts"
+    ],
+    "FR-REG-002-009": [
+      "contracts/src/rules/requirements-defects.test.ts"
+    ],
+    "FR-RTE-005-001": [
+      "backend/test/requirements/defects.spec.ts"
+    ],
+    "FR-RTE-001-004": [
+      "backend/test/requirements/defects.spec.ts"
+    ],
+    "FR-REG-002-019": [
+      "backend/test/requirements/defects.spec.ts"
+    ]
+  }
+}

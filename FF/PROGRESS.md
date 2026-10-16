@@ -39,6 +39,25 @@
 ## EA 원본 다이어그램 (2026-10-17 사용자 요청 "EA다이어그램 원본을 넣어")
 - [x] 원본 `docs/20-architecture/ea/FF_플랫폼_아키텍처_v0.0.qea`(sha256 f63e314a…, Layered Architecture: 6 도메인·12 레이어·49 컴포넌트, 이름 원본 그대로) → `tools/ea-diagram.ts`가 저장된 위치·색으로 SVG(`frontend/public/arch/ea-layered-architecture.svg`)·메타 생성 → `/arch/components` "EA 원본" 패널(원본 크기·가로 스크롤·키보드 초점). 원본을 바꾸면 `.qea` 교체 → `npm run ea:render` → 함께 커밋, verify `ea:check`가 어긋남을 막는다. 긴 이름은 두 줄(회귀 시험), 포함 관계 선(Nesting 12)은 상자 겹침으로 대신.
 
+## 기능명세서(Review Revision) 요구사항 반영 추적 (2026-10-17 사용자 요청 "반영해야 되는 요구사양 검토" → "하네스 엔지니어링")
+- [x] **검토**: 기능명세서 v0.5 이관본 6시트, 말단 628건을 코드와 대조 — 구현 155 · 부분 265 · 미구현 203 · 범위 밖 5. 요구사항별 근거는 `harness/requirements/review.json`의 `verdicts`.
+- [x] **하네스 `req`** (`tools/requirements.ts`, verify 단계 `req`, 의존성 없는 xlsx 판독기 `tools/xlsx.ts`):
+  - 원본 xlsx 해시 = 카탈로그(`harness/requirements/catalog.json`). 원본이 바뀌면 `npm run req:sync` 후 판정 재검토.
+  - 말단마다 판정 하나.
+  - 코드의 `@req FR-…` 표식은 실재 ID여야 하고, 미구현·범위 밖 판정에는 달 수 없다(판정 먼저 갱신).
+  - 결함마다 실행되는 기록(`it.fails`) — 고치면 시험이 실패하므로 `it`으로 바꾸고 결함 목록에서 뺀다.
+  - 결정·주제의 ID 참조를 확인한다.
+  - 래칫: 구현·추적은 줄지 않고, 미구현·추적 없는 구현·결함은 늘지 않는다.
+  - 보고서 `harness/requirements/REPORT.md`는 데이터에서 생성한다(손으로 고치지 않는다).
+- [ ] **결함 5건** — 결함 기록: `backend/test/requirements/defects.spec.ts`, `contracts/src/rules/requirements-defects.test.ts`.
+  - FR-RTE-005-001: 차량 측 평가가 지원 조건을 보지 않아 SW 미달 차량이 구독하면 서버 OFF·차량 ON.
+  - FR-RTE-001-004: 대상 밖 차량이 정책 게시본을 적용함.
+  - FR-REG-002-019: DEPRECATED Feature의 승인된 정책이 배포됨.
+  - FR-REG-002-008/009: 출시가 G8·G9만 봄.
+- [ ] **결정 대기 9건 (D1~D9)**: 즉시·자동·외부 제어 / 삭제 / 규칙 화면 관리 / fail-closed 완화 / 개인정보·동적 상태 / 평가 의미 / 범위 경계 / 데이터 모델 / 출시 전 배포.
+  - 결정되면 review.json `decisions[].status='결정됨'` + `resolution`.
+- [ ] **@req 표식 0건** — 구현 판정 155건의 집행 위치에 표식을 단다(래칫 `req.untracedImplemented` 155 → 줄여 나감).
+
 ## 다음 세션 시작점
 - **국제표준 보고서 v1.1 실제 개발 WP10 완료 — 플랫폼 규칙 75개 모두 구현·시험 추적 완료 — 다음은 WP6 /verify/compliance 교체·WP2 은퇴 6단계부터 — WP6 화면·WP2 은퇴 6단계 반영 완료(은퇴·Data Act·사후 검토·변경 기록 화면은 아직 API만)**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1·WP0·WP1·WP3·WP4·WP5·WP9 완료. 규칙 추적 75/75. **사용자 결정 대기: 데모 계정 겸직 3건(approver 요구 승인+출시, steward 요구 승인+복원 승인, coordinator 출시+Kill 실행) — FFG-PLT-016 합격(겸직 0건)에는 계정 재구성 필요, PoC·e2e 흐름 영향**. 화면 확인: `/learn`, `/_design`, `/features?f=F3`, `/features/FEAT-00022/1.0.0?tab=safety`(UX 검토 사진 `node e2e/scripts/shot-safety.mjs` → `e2e/shots/safety-*`).
 - **WP1 이후 규칙**: Gate G2 이후 PASS는 안전 분류 확정(SAFETY_OFFICER 개인 서명)이 전제(FFG-CLS-001), G1은 조합 위반(blocking)만 막는다. 새 시험·e2e에서 G2 이상을 판정하면 먼저 `confirmSafety(http, id, ver)`(backend `test/helpers.ts`) 또는 `POST …/safety/confirm`. 초안 시드는 `tools/dataset/safety-infer.ts` → `data/fixtures/safety/profiles.json`(80개, FEAT-00022@1.0.0만 확정 F3·DC2·R1). standards 래칫 구현·시험 13·13, TC-FF 3.
@@ -113,6 +132,7 @@
 | 42컴포넌트 PoC 워크플로우 v0.50 | `Downloads\Feature_Platform_42컴포넌트_PoC_워크플로우_아키텍처반영_v0.50.pptx` | 42 컴포넌트·IF-01~13·PoC 6단계 |
 | Catalog BOM DATASET v0.81 | `Downloads\Feature_Catalog_BOM_DATASET_v0.81.xlsx` | 실데이터 21시트 |
 | Unleash P0 개정 v1.0 | `Downloads\Feature_Platform_Unleash_P0_Revision_v1_0` | Unleash 역할·롤아웃(FP-COHORT-1)·계약 |
+| 기능명세서 Review Revision (v0.5 이관) | `C:\project\2026-07-12_FF_Requirement분석\FF_Requirement_작성중\Feature Flag 플랫폼 기능명세서 Review Revision.xlsx` | 요구사항 757건(말단 628) — `harness/requirements/catalog.json`, 하네스 `req` |
 | 실제 Unleash 적용분 | `Downloads\hfp-feature-lifecycle` (읽기 전용, 미커밋) | 8.2.0 공식 이미지 + Admin API 배포 로직 → IF-04 어댑터로 이식 |
 
 ## 단계

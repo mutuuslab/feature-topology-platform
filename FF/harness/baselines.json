@@ -38,5 +38,30 @@
     "value": 16,
     "direction": "min",
     "note": "시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다"
+  },
+  "req.verdict.implemented": {
+    "value": 155,
+    "direction": "min",
+    "note": "기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다"
+  },
+  "req.verdict.missing": {
+    "value": 203,
+    "direction": "max",
+    "note": "기능명세서 말단 요구사항 중 미구현 판정 수 — 늘면 안 된다"
+  },
+  "req.traced": {
+    "value": 0,
+    "direction": "min",
+    "note": "@req 표식으로 코드에 추적된 요구사항 수"
+  },
+  "req.untracedImplemented": {
+    "value": 155,
+    "direction": "max",
+    "note": "구현 판정인데 @req 표식이 없는 요구사항 수 — 줄여 나간다"
+  },
+  "req.defects": {
+    "value": 5,
+    "direction": "max",
+    "note": "미해결 결함(it.fails 결함 기록) 수 — 늘면 안 된다"
   }
 }

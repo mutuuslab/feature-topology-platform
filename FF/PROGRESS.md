@@ -36,9 +36,6 @@
 - [x] **S3 화면·하네스·정리** — `/validations/virtual`: 검증 서버 패널(host:port·CARLA 버전·맵·실행 중/대기·실행기, 미연결이면 `npm run carla:up` 안내, 투어 `sim-status`), 머리글에 차량 내 감지 Evidence 보고서 링크(`sim-report`), 실행 서랍에 CARLA 재생 명령(복사). 실행기 `--replay <기록> [--info]`(서버가 기록을 읽는지 확인, 실서버 1400프레임·69.95 s). vECU 자산 제거(`frontend/public/vecu` 27개·`tools/vecu-sync`·`vecu:sync|check`), `npm run carla:up|down|status|doctor`·`sim:test`, verify `sim:test` 단계, siblings `carla`, 스냅샷 `simStatus`, lint:copy 금지어 `vECU|ffval`(화면). verify:full 22단계 통과
 - [x] **S4 실연동 확인** (2026-10-17, 실 CARLA 검증 서버 2100 + 백엔드 `SIM_MODE=auto`) — 3종 17.7 s(실행 중 `/api/health` 3 ms): NOMINAL PASS · FAULT-ONBOARD 감지 19.1 s·BASE_ONLY 20.6 s·FTTI 여유 +1.4 s PASS · 기준선 FAIL(위험 31.5 s·오판단 28.9 s·FTTI −33.4 s). 정책 검증 GO(D06-03·D06-06 PASS) → TMS-00001, Evidence 6파일(recorder 1400프레임·69.95 s, `--replay --info` 확인), PoC ② DONE(VV PASS·PASS·FAIL, GO, APPROVED). 화면: 서버 패널·보고서 링크(CSP)·재생 명령·G5 5/5·비교 타임라인 확인. **결함 수정**: 비교 기준선이 API로는 TMS 제출됐음(화면만 숨김, vECU 시절부터) → 422 + 감사 FAILED, 회귀 시험 `virtual.spec`
 
-## EA 원본 다이어그램 (2026-10-17 사용자 요청 "EA다이어그램 원본을 넣어")
-- [x] 원본 `docs/20-architecture/ea/FF_플랫폼_아키텍처_v0.0.qea`(sha256 f63e314a…, Layered Architecture: 6 도메인·12 레이어·49 컴포넌트, 이름 원본 그대로) → `tools/ea-diagram.ts`가 저장된 위치·색으로 SVG(`frontend/public/arch/ea-layered-architecture.svg`)·메타 생성 → `/arch/components` "EA 원본" 패널(원본 크기·가로 스크롤·키보드 초점). 원본을 바꾸면 `.qea` 교체 → `npm run ea:render` → 함께 커밋, verify `ea:check`가 어긋남을 막는다. 긴 이름은 두 줄(회귀 시험), 포함 관계 선(Nesting 12)은 상자 겹침으로 대신.
-
 ## 기능명세서(Review Revision) 요구사항 반영 추적 (2026-10-17 사용자 요청 "반영해야 되는 요구사양 검토" → "하네스 엔지니어링")
 - [x] **검토**: 기능명세서 v0.5 이관본 6시트, 말단 628건을 코드와 대조 — 구현 155 · 부분 265 · 미구현 203 · 범위 밖 5. 요구사항별 근거는 `harness/requirements/review.json`의 `verdicts`.
 - [x] **하네스 `req`** (`tools/requirements.ts`, verify 단계 `req`, 의존성 없는 xlsx 판독기 `tools/xlsx.ts`):
@@ -172,6 +169,7 @@
 | 2026-10-13 | 체험 분석은 결정적 합성 모집단(3000대, 화면에 '합성' 표시) + 데모 차량. 운전자 정보는 가명 구간값(연령대·주행 성향·ADAS 사용)만, 국가·지역·차종·트림 포함, 5대 미만 집단은 가림 |
 | 2026-10-13 | vECU 시뮬레이터 웹 실행본을 FF repo(공개)에 허용 목록으로 동기화해 같은 CI로 `/vecu/` 배포. 실사 스플랫(NuRec 약관)·로컬 전용 모델 제외. FF에서는 링크로 연다(임베드·결과 회수 안 함) |
 | 2026-10-17 | 가상검증 실행기를 vECU에서 CARLA 0.9.16(`sim/carla`, LearnCarla 설치본)으로 완전 대체. 검증 전용 서버 RPC 2100 — 공유 서버 2000은 쓰지 않는다. 판정 의미(기준·한계·재현 정보)는 그대로, 판단(evaluation)은 FF evaluateFlag가 넣는다. 이전 실행 기록은 Evidence 불인정 |
+| 2026-10-17 | EA(Enterprise Architect)는 쓰지 않는다 — EA 원본 .qea·화면 패널·ea:check 하네스 제거(e7898ee 되돌림). 아키텍처 기준은 42 컴포넌트 manifest + 기능명세서 요구사항(req 하네스) |
 
 ## 알려진 이슈·주의
 - 프론트 `package.json`에 UTF-8 BOM이 들어가면 Vite/Vitest가 깨진다 — 하네스 `readJson`은 BOM을 벗긴다. 편집기 저장 형식 주의.

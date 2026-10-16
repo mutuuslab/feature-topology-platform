@@ -25,7 +25,6 @@ const STEPS: Step[] = [
   { id: 'lint:tokens', title: '디자인 토큰 lint', cmd: `node tools/lint-tokens.ts` },
   { id: 'lint:copy', title: '문구 lint (+ 보고서 v1.1 용어 규칙 래칫)', cmd: `node --test tools/guide-terms.test.ts && node tools/lint-copy.ts` },
   { id: 'sim:test', title: 'CARLA 실행기 판정 핵심 (서버 없는 pytest — 기준 운동학 재현·Guard·CLI 계약, LearnCarla venv 없으면 건너뜀)', cmd: `node --test tools/carla-doctor.test.ts && node tools/carla-doctor.ts --pytest` },
-  { id: 'ea:check', title: 'EA 원본 다이어그램 = 화면 SVG (docs/20-architecture/ea/*.qea)', cmd: `node --test tools/ea-diagram.test.ts && node tools/ea-diagram.ts --check` },
   { id: 'guide:check', title: '보고서 v1.1 코드 패키지 정합 (허용 목록·해시·규칙 카탈로그)', cmd: `node --test tools/guide-sync.test.ts && node tools/guide-sync.ts --check` },
   { id: 'deadcode', title: '프론트 고아 모듈 0 (진입점에서 닿지 않는 모듈 금지)', cmd: `node tools/dead-modules.ts --check` },
   { id: 'siblings', title: '형제 저장소 버전 고정 (FF_IMP GLEO v2 pin·LearnCarla CARLA 설치 존재)', cmd: `node --test tools/siblings.test.ts && node tools/siblings.ts` },

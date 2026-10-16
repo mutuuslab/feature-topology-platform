@@ -90,6 +90,8 @@ describe('가상검증(CARLA) → 검증 Gate', () => {
     expect(r[1].safety).toMatchObject({ deactClass: 'DC2', takeoverMs: 4000, rampMs: 3000, faultRampMs: 1500, faultTolerantTimeMs: 5000 });
     expect(r[1].criteria.find((c: any) => c.id === 'detect_latency')).toMatchObject({ status: 'pass', limit: 3.5 });
     expect(r[1].repro).toMatchObject({ scenarioHash: expect.stringMatching(/^[0-9a-f]{64}$/), scriptHash: expect.stringMatching(/^[0-9a-f]{64}$/) });
+    // 회귀(S4 실연동에서 발견): 비교 기준선은 화면에서만 숨기고 API로는 TMS에 제출됐다 — 기록·표시만
+    expect((await http().post(`/api/virtual-validations/${r[2].runId}/tms`).set(JUDGE).send({}).expect(422)).body.error.message).toMatch(/비교 기준선 실행은 TMS 제출 대상이 아닙니다/);
     expect(r[0].evidence.files.map((f: any) => f.name)).toEqual(['verdict.json', 'report.html', 'carla_recording.log']);
     expect(r[1].repro).toMatchObject({ toolVersion: expect.stringMatching(/^ff-carla/), map: 'Town04', replay: expect.stringMatching(/carla_recording\.log/) });
     // 판단(evaluation)은 FF 단일 평가기가 계산해 패키지로 넘긴 값 — 실행기가 그대로 싣는다

@@ -179,6 +179,11 @@ export class TmsSubmissionService {
       this.audit.failed(actor, 'TMS_SUBMIT', id, r.source === 'vecu' ? '이전 실행기 기록 제출 시도' : '실행기 미연결 결과 제출 시도', 'D04-02');
       throw new DomainError('GUARD_FAILED', 'CARLA 실행기가 실제로 실행한 결과만 TMS에 제출할 수 있습니다.');
     }
+    // 비교 기준선(원격 DC2만)은 기록·표시만 — 화면이 버튼을 숨겨도 API로 들어오면 TMS(G5 Evidence 경로)에 싣지 않는다
+    if (r.role === 'BASELINE_REMOTE') {
+      this.audit.failed(actor, 'TMS_SUBMIT', id, '비교 기준선 제출 시도', 'D04-02');
+      throw new DomainError('GUARD_FAILED', '비교 기준선 실행은 TMS 제출 대상이 아닙니다 — 기록·비교 표시만 합니다.');
+    }
     if (r.tms) return r;
     const n = this.ifCalls.next('IF-09');
     const res = this.ifCalls.call(

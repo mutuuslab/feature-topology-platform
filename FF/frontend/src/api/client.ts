@@ -41,7 +41,8 @@ export async function call<T = any>(name: RouteName | string, opts: CallOptions 
   if (STATIC_MODE) {
     if (write) throw new ApiError(403, 'READ_ONLY_DEMO', '읽기 전용 데모입니다. 변경은 플랫폼 백엔드에 연결된 환경에서만 할 수 있습니다.');
     const res = await fetch(import.meta.env.BASE_URL + snapshotFile(url), { signal: opts.signal });
-    if (!res.ok) throw new ApiError(404, 'NOT_FOUND', '데모 스냅샷에 없는 데이터입니다.');
+    // 정적 호스팅은 없는 파일에 SPA 대체 응답(index.html, 200)을 준다 — JSON이 아니면 '스냅샷에 없음'으로 본다(파싱 오류로 화면이 깨지지 않게)
+    if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) throw new ApiError(404, 'NOT_FOUND', '데모 스냅샷에 없는 데이터입니다.');
     return res.json();
   }
 

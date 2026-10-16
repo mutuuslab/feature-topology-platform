@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 import { FF } from './lib.ts';
 
 const require = createRequire(import.meta.url);
-const { routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
+const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
 
 const PORT = Number(process.env.SNAPSHOT_PORT ?? 9199); // 8000 금지
 const BASE = `http://localhost:${PORT}`;
@@ -19,8 +19,10 @@ const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning',
   stdio: 'ignore',
 });
 
-async function get<T = any>(url: string): Promise<T> {
-  const r = await fetch(BASE + url);
+// 역할이 걸린 조회(보안 이벤트·Data Act·차량 상태 등)는 그 경로가 허용하는 첫 역할로 받는다 — 정적 데모는 읽기 전용 공개본이다
+async function get<T = any>(url: string, name?: string): Promise<T> {
+  const role = (ROUTES.find((x: { name: string }) => x.name === name) as { roles?: string[] } | undefined)?.roles?.[0];
+  const r = await fetch(BASE + url, { headers: role ? { 'X-Actor-Id': 'usr-snapshot', 'X-Actor-Role': role } : {} });
   if (!r.ok) throw new Error(`${url} → ${r.status}`);
   return r.json() as Promise<T>;
 }
@@ -38,7 +40,7 @@ async function main() {
   let n = 0;
   const save = async (name: string, params: Record<string, string> = {}, query: Record<string, any> = {}) => {
     const url = routeUrl(name, params, query);
-    const body = await get(url);
+    const body = await get(url, name);
     const file = join(OUT, snapshotFile(url));
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, JSON.stringify(body));
@@ -125,6 +127,48 @@ async function main() {
   // P9 — PoC 실행 목록(정적 데모는 실행 불가)·42 컴포넌트 활동
   await save('pocRuns');
   await save('componentActivity', {}, { minutes: 60 });
+  // P10·P11·보고서 v1.1 화면 — e2e:static(정적 데모 하네스)이 메뉴·하위 화면·탭을 열어 찾은 요청 모양 그대로
+  for (const reasonCategory of ['SAFETY', 'SECURITY', 'REGULATORY', 'COMMERCIAL', 'OPERATIONAL']) await save('killPreview', {}, { featureId: 'FEAT-00022', featureVersion: '1.0.0', reasonCategory });
+  await save('listPolicies', {}, { status: 'VALIDATED' });
+  await save('baselineRequests', {}, { status: 'REQUESTED' });
+  await save('auditChain');
+  await save('versionChanges');
+  await save('dependencies');
+  await save('evidenceLedger');
+  await save('safetyProfiles');
+  for (const f of all.items as { featureId: string; version: string }[]) {
+    const p = { id: f.featureId, ver: f.version };
+    await save('safetyProfile', p);
+    await save('designTrace', p);
+    await save('gateSnapshot', p);
+  }
+  for (const featureId of new Set((all.items as { featureId: string }[]).map((f) => f.featureId))) await save('topologyGraph', {}, { featureId, depth: 2 });
+  for (const m of ['masterUpg', 'masterSw', 'masterStructure', 'masterControlPoints', 'masterTaxonomy', 'masterEcu']) await save(m);
+  for (const v of vehicles.items as { vin: string }[]) {
+    await save('fieldVehicle', { vin: v.vin });
+    await save('vehicleRequests', { vin: v.vin });
+    await save('vehicleStatusView', { vin: v.vin });
+    await save('vehicleOpenFeature', { vin: v.vin });
+  }
+  await save('readbacks');
+  await save('experiments');
+  await save('incidents');
+  for (const m of ['syncTargets', 'legacyMappings', 'legacyOrders', 'legacyVehicles', 'integrationSystems', 'supplierDeliveries', 'openfeatureScope', 'openfeatureManifest', 'openfeatureFlagd', 'integrationCalls']) await save(m);
+  for (const f of all.items as { featureId: string; version: string }[]) await save('almRequirements', {}, { featureId: f.featureId, version: f.version });
+  await save('otelSpans', {}, { limit: 100 });
+  const targets = await get('/api/sync/targets');
+  for (const t of (targets.items ?? targets) as { targetId: string }[]) await save('syncRuns', {}, { targetId: t.targetId });
+  await save('virtualCombinations', {}, { featureId: 'FEAT-00022' });
+  await save('safetyKpi');
+  await save('safetyKpiAnnex1', { featureId: 'FEAT-00022', version: '1.0.0' });
+  // 보안·인증서 — SBOM serial은 부팅마다 달라 같은 실행의 목록에서 본문을 받는다
+  await save('hsmStatus');
+  const sboms = await save('sbomList');
+  for (const b of sboms.items as { serial: string }[]) await save('sbomDetail', { serial: b.serial });
+  await save('vexList');
+  await save('securityEvents');
+  // P11 — Flag 은퇴·감독 기록·데이터·규제 기록
+  for (const m of ['flagRetirements', 'iamSodAudit', 'killPostReviews', 'changeRecords', 'reharaRequests', 'sumsRecords', 'dataAccessRequests', 'retention']) await save(m);
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

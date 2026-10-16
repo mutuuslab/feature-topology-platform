@@ -9,6 +9,6 @@ const src = readFileSync(join(FF, 'tools', 'verify.ts'), 'utf8');
 const step = (id: string) => new RegExp(`\{ id: '${id}',[^\n]*\}`).exec(src)?.[0] ?? '';
 
 test('conformance는 --strict(42/42)로 돈다', () => assert.match(step('conformance'), /conformance\.ts --strict/));
-test('통합 검사(고아 모듈·형제 저장소·vECU 사본)가 verify에 있다', () => {
-  for (const id of ['deadcode', 'siblings', 'vecu:check']) assert.ok(step(id), id);
+test('통합 검사(고아 모듈·형제 저장소·vECU 사본·정적 데모)가 verify에 있다', () => {
+  for (const id of ['deadcode', 'siblings', 'vecu:check', 'e2e:static']) assert.ok(step(id), id);
 });

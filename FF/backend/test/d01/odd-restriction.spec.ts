@@ -1,7 +1,7 @@
 // ODD 축소 정책 (D01-06, 보고서 v1.1 14.7 · FFG-SOT-002) — 수용 기준: 등급 없는 ODD 축소 정책의 배포 0건.
 // 트리거 조건 대응으로 Feature를 제한하는 정책은 새 Feature Version으로 등록하고, 7장 등급(안전 분류 확정)과 일반 승인 절차를 그대로 따른다.
-// 정책 검증의 차량 시나리오 검증(D06-03)·안전 동작 검증(D06-06)은 시험 대역 vECU 실행을 근거로 쓴다
-Object.assign(process.env, { VECU_DIR: require('node:path').resolve(__dirname, '..', 'fixtures', 'fake-vecu'), FF_EVIDENCE_DIR: require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'ff-odd-')) });
+// 정책 검증의 차량 시나리오 검증(D06-03)·안전 동작 검증(D06-06)은 시험 대역 가상검증(fake-carla) 실행을 근거로 쓴다
+Object.assign(process.env, { CARLA_RUNNER: require('node:path').resolve(__dirname, '..', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FF_EVIDENCE_DIR: require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'ff-odd-')) });
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { actor, bootApp, confirmSafety } from '../helpers';
 
@@ -18,7 +18,7 @@ describe('ODD 축소 정책 (FFG-SOT-002)', () => {
   });
   afterAll(async () => {
     await b.app.close();
-    for (const k of ['VECU_DIR', 'FF_EVIDENCE_DIR']) delete process.env[k];
+    for (const k of ['CARLA_RUNNER', 'FF_EVIDENCE_DIR']) delete process.env[k];
   });
 
   /** 새 Version → (등급 수정) → 안전 분류 확정 → G1~G3 → APPROVED → G4 */

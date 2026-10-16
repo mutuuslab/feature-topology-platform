@@ -86,9 +86,9 @@ export class GateService {
   }
 
   /**
-   * @rule FFG-LCY-002 — fail-closed: 근거 없는 PASS(입력 검사)·없는 가상검증 기록·vECU 미연결/도구 실패 결과·Gate 판정 FAIL인 실행은 PASS 근거가 아니다(판정 거부, 감사 FAILED). 강제 통과(덮어쓰기) 경로는 두지 않는다 — 재판정만
-   * 증거가 vECU 가상검증(VV-NNNNN)을 가리키면 그 기록이 이 Feature Version의 것이어야 하고, PASS 판정의 근거라면
-   * vECU가 실제로 돌린 Gate 판정 PASS여야 한다. G5 Verification Gate는 TMS(IF-09)에 제출된 Evidence만 인정한다.
+   * @rule FFG-LCY-002 — fail-closed: 근거 없는 PASS(입력 검사)·없는 가상검증 기록·실행기 미연결/도구 실패/이전 실행기(vECU) 결과·Gate 판정 FAIL인 실행은 PASS 근거가 아니다(판정 거부, 감사 FAILED). 강제 통과(덮어쓰기) 경로는 두지 않는다 — 재판정만
+   * 증거가 가상검증(VV-NNNNN)을 가리키면 그 기록이 이 Feature Version의 것이어야 하고, PASS 판정의 근거라면
+   * CARLA 실행기가 실제로 돌린 Gate 판정 PASS여야 한다. G5 Verification Gate는 TMS(IF-09)에 제출된 Evidence만 인정한다.
    */
   private virtualEvidence(featureId: string, version: string, body: JudgeGateBody): string | null {
     for (const id of (body.evidenceRef ?? '').match(/\bVV-\d{5}\b/g) ?? []) {
@@ -96,7 +96,7 @@ export class GateService {
       if (!r) return `${id}: 가상검증 기록이 없습니다.`;
       if (r.featureId !== featureId || r.featureVersion !== version) return `${id}: ${r.featureId} ${r.featureVersion}의 가상검증입니다 (판정 대상 ${featureId} ${version}).`;
       if (body.inputResult !== 'PASS') continue;
-      if (r.source !== 'vecu' || r.gateResult !== 'PASS') return `${id}: PASS 근거가 될 수 없습니다 (${r.source === 'vecu' ? `가상검증 ${r.gateResult}` : 'vECU 미연결 결과'}).`;
+      if (r.source !== 'carla' || r.gateResult !== 'PASS') return `${id}: PASS 근거가 될 수 없습니다 (${r.source === 'carla' ? `가상검증 ${r.gateResult}` : r.source === 'vecu' ? '이전 실행기 기록 — CARLA로 다시 실행' : '실행기 미연결 결과'}).`;
       if (body.gate === 'G5' && !r.tms) return `${id}: TMS(IF-09)에 제출한 Evidence만 G5 근거가 됩니다 — 먼저 제출하세요.`;
     }
     return null;

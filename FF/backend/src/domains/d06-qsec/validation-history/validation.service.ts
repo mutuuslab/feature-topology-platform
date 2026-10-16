@@ -57,7 +57,7 @@ export class ValidationService {
       const prods = this.products.all().filter((p) => p.catalogId === policy.entitlementCatalogId);
       entitlementProductOk = prods.length ? prods.some((p) => p.baselineIds.some((b) => bls.includes(b))) : null;
     }
-    // vECU 가상검증 — 이 정책 내용으로 돌린 시나리오별 최신 실행 (시나리오가 없는 Feature는 빈 목록)
+    // 가상검증(CARLA) — 이 정책 내용으로 돌린 시나리오별 최신 실행 (시나리오가 없는 Feature는 빈 목록)
     const hash = policyHash(policy);
     const virtual = virtualScenariosFor(policy.featureId).map((scenario) => ({ scenario, run: this.virtualRuns.latest(policy.policyId, scenario.scenarioId, hash) ?? null }));
     return {

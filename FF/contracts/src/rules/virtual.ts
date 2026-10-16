@@ -1,11 +1,11 @@
-// vECU 가상검증 (IF-09 가상검증 공급자: C:\project\2026-10-11_vECU tools/ffval_cli.mjs, ffval 2.0) — 시나리오 목록과 Gate 반영 규칙.
+// 가상검증 (IF-09 가상검증 공급자: CARLA 0.9.16 실행기 sim/carla — 검증 전용 서버, Town04 고속도로) — 시나리오 목록과 Gate 반영 규칙.
 // NOMINAL(정상 추종)은 차량 시나리오 검증(D06-03)을, FAULT_ONBOARD(오류 → 차량 내 감지 → 고장 램프 → BASE_ONLY, 보고서 v1.1 CS-01)는
 // 안전 동작 검증(D06-06)을 결정한다. 판정은 모든 기준이 통과해야 하고(정보 항목으로 면제하지 않는다 — 알려진 실패로 G5 통과 금지, 12.7),
 // 재현 정보가 없으면 근거가 아니다. BASELINE_REMOTE(같은 오류를 원격 DC2 차단만으로 처리)는 비교 기준선 — 기록·표시만 하고 검증기는 쓰지 않는다.
-// 시간 한계(인계·램프·고장 램프·FTTI)는 Registry 안전 분류(safety_profile)가 패키지로 넘어가 vECU가 쓴다.
+// 시간 한계(인계·램프·고장 램프·FTTI)는 Registry 안전 분류(safety_profile)가 패키지로 넘어가 실행기의 차량 Guard가 쓴다.
 import { z } from 'zod';
 
-/** FAULT_KILL은 ffval 1.x 기록 읽기용(오류+Kill 경로만 판정하던 방식) — 새 실행은 만들지 않는다 */
+/** FAULT_KILL은 이전 실행기 기록 읽기용(오류+Kill 경로만 판정하던 방식) — 새 실행은 만들지 않는다 */
 export const VirtualRole = z.enum(['NOMINAL', 'FAULT_ONBOARD', 'BASELINE_REMOTE', 'FAULT_KILL']);
 export type VirtualRole = z.infer<typeof VirtualRole>;
 
@@ -18,7 +18,7 @@ export interface VirtualScenario {
   validator: 'D06-03' | 'D06-06' | 'BASELINE';
   /** 무엇을 보이는 시험인가 — 화면·Evidence 설명 */
   purpose: string;
-  /** vECU ffval 시나리오 (FF_IMP timeline.json sim 블록 호환 + ffval 2.0 onboard) */
+  /** 실행기 시나리오 (FF_IMP timeline.json sim 블록 호환 + 차량 내 감지 onboard) — sim/carla/ffcarla/run.py가 그대로 읽는다 */
   params: {
     name: string;
     duration_s: number;
@@ -85,7 +85,7 @@ export type VirtualCriterion = z.infer<typeof VirtualCriterion>;
 /** 재현 정보 — 같은 도구·시나리오·판정 스크립트·시드로 다시 돌릴 수 있어야 근거다(보고서 12.4.1·FFG-ADS-009) */
 export const VirtualRepro = z
   .object({
-    ffvalVersion: z.string().min(1),
+    toolVersion: z.string().min(1),
     scenarioHash: z.string().regex(/^[0-9a-f]{64}$/),
     scriptHash: z.string().regex(/^[0-9a-f]{64}$/),
     seed: z.number(),
@@ -103,8 +103,9 @@ export interface VirtualRun {
   vin: string;
   scenarioId: string;
   role: VirtualRole;
-  /** vecu = 시뮬레이터가 실제로 돌았다. unavailable = vECU 미연결 — Evidence로 인정하지 않는다 */
-  source: 'vecu' | 'unavailable';
+  /** carla = CARLA 실행기가 실제로 돌았다. unavailable = 실행기·서버 미연결 — Evidence로 인정하지 않는다.
+   *  vecu = 이전 실행기 기록(이력 읽기 전용) — 실행기 교체(2026-10-17) 뒤에는 G5·검증 근거로 인정하지 않는다 */
+  source: 'carla' | 'vecu' | 'unavailable';
   simulator: string | null;
   testId: string | null;
   /** 시뮬레이터 종합 판정 (모든 기준) */

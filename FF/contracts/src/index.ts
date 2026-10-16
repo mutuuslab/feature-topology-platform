@@ -57,5 +57,5 @@ export * from './schemas/wire';
 export * from './rules/policy-gate';
 export * from './rules/kill-v2';
 export * from './rules/status-v2';
-export * from './schemas/vecu';
+export * from './schemas/sim';
 export * from './rules/ext';

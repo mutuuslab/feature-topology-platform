@@ -28,7 +28,7 @@ export interface TutorialStep {
   tests?: string[];
   /** 확인할 결과(보기 모드에서는 기대 결과 설명, F1부터 백엔드가 근거로 판정) */
   expectKo: string;
-  /** 아직 플랫폼·vECU에 없는 동작 — 화면에 '준비 중'으로 보인다 */
+  /** 아직 플랫폼·실행기에 없는 동작 — 화면에 '준비 중'으로 보인다 */
   pendingKo?: string;
 }
 
@@ -60,7 +60,7 @@ export const TUTORIALS: Tutorial[] = [
     track: 'VIRTUAL',
     readingPath: 'VERIFY_OPERATE',
     title: '거리 추정 오류 — 차량 내 감지 대 원격 Kill',
-    summaryKo: 'FEAT-00022(전방 안전거리)의 거리 추정이 서서히 틀어질 때, 원격 Kill만 믿으면 위험 구간이 남고 차량 내 감지가 있으면 FTTI 안에 효과를 거둔다는 것을 vECU 가상검증으로 확인합니다.',
+    summaryKo: 'FEAT-00022(전방 안전거리)의 거리 추정이 서서히 틀어질 때, 원격 Kill만 믿으면 위험 구간이 남고 차량 내 감지가 있으면 FTTI 안에 효과를 거둔다는 것을 CARLA 가상검증으로 확인합니다.',
     minutes: 15,
     before: '원격 경로 — 위험 구간 26초, 운영자가 48초에 Kill. 즉시 정지형 Kill이면 새 Hazard',
     after: '차량 내 감지 19.11초, BASE_ONLY 20.61초 — FTTI 22.00초보다 1.39초 앞섬, 클라우드 관여 없음',
@@ -96,13 +96,13 @@ export const TUTORIALS: Tutorial[] = [
       {
         id: 'tool',
         kind: 'observe',
-        title: 'vECU 연결과 도구 신뢰성',
-        doKo: 'vECU 가상검증 화면에서 시뮬레이터 연결 상태를 확인하세요.',
+        title: 'CARLA 연결과 도구 신뢰성',
+        doKo: '가상검증 화면에서 CARLA 검증 서버 연결 상태를 확인하세요.',
         whyKo: '시뮬레이션 결과를 합격 판정에 쓰면 시뮬레이터·실행 어댑터·판정 스크립트를 ISO 26262-8 cl.11로 분류해야 합니다. 거짓 PASS를 낼 수 있으므로 TI2입니다.',
         role: 'author',
         route: '/validations/virtual',
-        anchor: 'vecu-status',
-        targetKo: 'vECU 연결 상태',
+        anchor: 'sim-status',
+        targetKo: 'CARLA 검증 서버 상태',
         rules: ['FFG-TST-006', 'FFG-PLT-013'],
         expectKo: '연결된 도구와 qualification 상태(미실시 → 엔지니어링 Evidence)를 구분한다',
         pendingKo: '도구 분류·재현 정보를 보여 주는 "가상 시험 신뢰성" 패널은 화면 개편 때 추가됩니다',
@@ -139,16 +139,15 @@ export const TUTORIALS: Tutorial[] = [
         id: 'onboard',
         kind: 'observe',
         title: '차량 내 감지 시나리오',
-        doKo: 'vECU 시뮬레이터에서 같은 고장을 차량 내 감지로 처리하는 장면을 봅니다.',
+        doKo: '차량 내 감지 실행을 열고 Evidence 보고서(CARLA 주행 시계열)에서 같은 고장을 차량이 스스로 처리하는 과정을 봅니다.',
         whyKo: '감시 로직이 19.11초에 고장을 확정하고 Guard가 20.61초에 기본 기능으로 돌립니다. FHTI = FDTI + Guard 주기 + fault_ramp + 변화율 제한 + 액추에이터 응답 ≤ FTTI(보고서 7.4).',
         role: 'author',
         route: '/validations/virtual',
-        anchor: 'vecu-link',
-        targetKo: '[vECU 시뮬레이터 열기] 링크',
+        anchor: 'sim-report',
+        targetKo: '실행 상세 › [Evidence 보고서]',
         rules: ['FFG-LCY-006'],
         tests: ['TC-FF-21'],
         expectKo: '감지 시각 ≤ FTTI, FHTI 여유가 양수',
-        pendingKo: 'vECU에는 아직 차량 내 감지와 DC2 단계(경고 → 인계 → 램프)가 없습니다 — 추가 예정',
       },
       {
         id: 'g5',

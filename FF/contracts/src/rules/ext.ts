@@ -283,7 +283,7 @@ export type MockIf = (typeof MOCK_IFS)[number];
 export interface IfSystemStatus {
   ifId: string;
   name: string;
-  /** 어댑터 종류 — 모의·실연동·꺼짐, 또는 다른 경로(GLEO·vECU·Unleash) */
+  /** 어댑터 종류 — 모의·실연동·꺼짐, 또는 다른 경로(GLEO·CARLA·Unleash) */
   mode: 'mock' | 'live' | 'off' | 'internal' | 'ws' | 'cli';
   adapter: string;
   components: string[];

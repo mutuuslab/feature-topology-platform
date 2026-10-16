@@ -33,7 +33,7 @@ export const SOD_RULES: { id: string; subject: string; rule: string; component: 
   { id: 'SOD-03', subject: '상품 구성 승인', rule: '상품 작성자는 자기 상품을 승인할 수 없다', component: 'D01-03' },
   { id: 'SOD-04', subject: '상품 고객 출시', rule: '구성 승인자와 고객 출시 승인자는 달라야 한다', component: 'D01-03' },
   { id: 'SOD-05', subject: '정책 승인', rule: '정책 작성자는 자기 정책을 승인할 수 없다 (P0 publishCheck SELF_APPROVAL)', component: 'D03-02' },
-  { id: 'SOD-06', subject: 'G5 Evidence', rule: 'vECU 가상검증은 TMS 제출(IF-09)된 실제 실행 PASS만 G5 PASS 근거가 된다', component: 'D04-02' },
+  { id: 'SOD-06', subject: 'G5 Evidence', rule: '가상검증(CARLA)은 TMS 제출(IF-09)된 실제 실행 PASS만 G5 PASS 근거가 된다', component: 'D04-02' },
   { id: 'SOD-07', subject: '차량 신원', rule: '차량은 자기 VIN만 조회·보고하고 Flag 값을 직접 바꿀 수 없다', component: 'D02-03' },
   // 보고서 v1.1 FFG-PLT-016 — 요구 승인·출시·Kill 실행·복원 승인 권한 분리, 요청자 ≠ 승인자, 긴급 권한은 사후 검토
   { id: 'SOD-08', subject: '긴급 차단 승인', rule: '차단 요청자는 같은 명령의 승인자가 될 수 없다 — 서로 다른 2인 승인, F2 이상 안전·보안 사유는 FSM 포함 (FFG-PLT-005·016)', component: 'D03-03' },

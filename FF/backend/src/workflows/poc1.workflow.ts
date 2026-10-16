@@ -232,7 +232,7 @@ export class PocWorkflow {
         return;
       }
       case 2: {
-        // ② 정책 준비·검증·승인 — 작성 → vECU 가상검증 → 분야별 검증 8종(GO) → 승인(작성자≠승인자)
+        // ② 정책 준비·검증·승인 — 작성 → 가상검증(CARLA) → 분야별 검증 8종(GO) → 승인(작성자≠승인자)
         const pol = await this.act(step, 'createPolicy', p.author, (x) => `${x.policyId} r${x.revision} DRAFT`, () =>
           this.policies.create(p.author, { featureId: FEATURE, featureVersion: VERSION, controlPoint: 'Parameter', flagKey: FLAG, description: `PoC ${run.runId} — 위험 단계 감속 요청 파라미터`, safeDefault: false, enabled: true, entitlementCatalogId: 'CAT-00019', strategies: [], rollout: { mode: 'ALL', basisPoints: 10000, salt: 'FF-COHORT-SALT-1' } } as any),
         );

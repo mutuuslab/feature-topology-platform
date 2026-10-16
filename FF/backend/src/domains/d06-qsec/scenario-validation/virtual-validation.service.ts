@@ -1,14 +1,15 @@
-// 차량 시나리오 검증 (D06-03) — vECU 가상검증(ffval 2.0). 정책을 실차에 보내기 전에 가상 차량에 적용해 기능 동작·오류·차량 내 감지·
+// 차량 시나리오 검증 (D06-03) — CARLA 가상검증(sim/carla, 검증 전용 서버). 정책을 실차에 보내기 전에 가상 차량에 적용해 기능 동작·오류·차량 내 감지·
 // 원격 비활성화 단계(Registry DC)를 재현하고, 시나리오별 판정을 정책 검증기(D06-03 정상 추종 · D06-06 차량 내 감지)와
 // G5 Verification Gate Evidence(IF-09 TMS, D04-02)으로 연결한다. 원격 DC2만 쓴 기준선 실행은 비교용으로 기록만 한다.
-// 시간 한계(인계·램프·고장 램프·FTTI)는 이 Version의 Registry 안전 분류를 패키지에 실어 vECU가 그대로 쓴다.
+// 시간 한계(인계·램프·고장 램프·FTTI)는 이 Version의 Registry 안전 분류를 패키지에 실어 실행기의 차량 Guard가 그대로 쓴다.
+// 정책 판단(evaluation)은 FF 단일 평가기(evaluateFlag)로 여기서 계산해 넘긴다 — 실행기에 평가기를 복제하지 않는다.
 // 가상 차량은 권한 보유·배포 가정으로 평가한다(기능 동작을 보는 시험이므로) — 실제 권한·배포 판단은 활성화 판단(D01-09)이 맡는다.
 import { Body, Controller, Get, Injectable, NotFoundException, Param, Post, Query, Res } from '@nestjs/common';
-import { combinationPlan, combinationViolations, judgeVirtual, RunVirtualBody, virtualScenariosFor, type VirtualRun } from '@ff/contracts';
+import { combinationPlan, combinationViolations, evaluateFlag, judgeVirtual, RunVirtualBody, virtualScenariosFor, type Policy, type VirtualRun } from '@ff/contracts';
 import type { Response } from 'express';
 import { resolve, sep } from 'node:path';
 import { IfCallRepo } from '../../../adapters/if-call/if-call.repo';
-import { VecuAdapter } from '../../../adapters/vecu/vecu.adapter';
+import { CarlaAdapter } from '../../../adapters/sim/carla.adapter';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -29,7 +30,7 @@ export class VirtualValidationService {
   constructor(
     @Inject(DB) private readonly db: Db,
     private readonly clock: Clock,
-    private readonly vecu: VecuAdapter,
+    private readonly sim: CarlaAdapter,
     private readonly runs: VirtualRunRepo,
     private readonly policies: PolicyRepo,
     private readonly features: FeatureRepo,
@@ -61,13 +62,13 @@ export class VirtualValidationService {
     return { ...plan, negatives, scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim } };
   }
 
-  run(actor: Actor, body: RunVirtualBody): VirtualRun[] {
+  async run(actor: Actor, body: RunVirtualBody): Promise<VirtualRun[]> {
     const policy = this.policies.get(body.policyId);
     if (!policy) throw new DomainError('NOT_FOUND', `정책 ${body.policyId}을(를) 찾을 수 없습니다.`);
     const feature = this.features.get(policy.featureId, policy.featureVersion);
     if (!feature) throw new DomainError('NOT_FOUND', `정책 대상 ${policy.featureId} ${policy.featureVersion}이(가) 없습니다.`);
     const all = virtualScenariosFor(policy.featureId);
-    if (!all.length) throw new DomainError('GUARD_FAILED', `${policy.featureId}은(는) vECU에 차량 측 런타임이 없어 가상검증 대상이 아닙니다.`);
+    if (!all.length) throw new DomainError('GUARD_FAILED', `${policy.featureId}은(는) 가상검증 실행기에 차량 측 런타임이 없어 대상이 아닙니다.`);
     const scenarios = body.scenarioIds?.length ? all.filter((s) => body.scenarioIds!.includes(s.scenarioId)) : all;
     const unknown = (body.scenarioIds ?? []).filter((id) => !all.some((s) => s.scenarioId === id));
     if (unknown.length) throw new DomainError('VALIDATION', `알 수 없는 시나리오: ${unknown.join(', ')}`);
@@ -75,21 +76,26 @@ export class VirtualValidationService {
     if (!vehicle) throw new DomainError('NOT_FOUND', `차량 ${body.vin}을(를) 찾을 수 없습니다.`);
 
     const contentHash = policyHash(policy);
+    // 가상 차량 평가 — 배포·권한 보유 가정(기능 동작 시험), 차단 없음
+    const scope = { country: feature.country, vehicleModel: feature.vehicleModel, trim: feature.trim };
+    const flag = await evaluateFlag({ policy: { ...policy, status: 'DEPLOYED' } as Policy, scope, killed: false, vehicle, entitlementActive: true });
+    const evaluation = { value: !!flag.value, decision: flag.decision, reason: flag.reason };
     const p = this.profiles.view(policy.featureId, policy.featureVersion).profile;
     const safety = { deactClass: p.deactClass, takeoverMs: p.takeoverMs, rampMs: p.rampMs, faultRampMs: p.faultRampMs, faultTolerantTimeMs: p.faultTolerantTimeMs, maxPendingMs: p.maxPendingMs };
     const pkg = {
       kind: 'ff-virtual-validation',
       policy: { ...policy, contentHash },
-      scope: { country: feature.country, vehicleModel: feature.vehicleModel, trim: feature.trim },
+      scope,
       // 구현 추적(ECU·SW)은 판정 요약(verdict.vehicle)에 그대로 실린다
       fleet: this.fleet.vehicles().map((v) => (v.vin === body.vin ? { ...v, ecuPartNo: feature.ecuPnos[0] ?? null, swId: feature.swIds[0] ?? null } : v)),
       vehicle: body.vin,
       entitlementActive: true,
+      evaluation,
       // Registry 안전 분류 — 차량 Guard 단계와 기준 한계(감지 지연 ≤ FTTI − 고장 램프, FTTI 여유 ≥ 0)
       safety,
       scenarios: scenarios.map((s) => ({ scenarioId: s.scenarioId, ...s.params })),
     };
-    const result = this.vecu.run(pkg);
+    const result = await this.sim.run(pkg);
     const at = this.clock.iso();
     const base = { policyId: policy.policyId, policyRevision: policy.revision, contentHash, featureId: policy.featureId, featureVersion: policy.featureVersion, vin: body.vin, at, by: actor.id, tms: null, safety };
 
@@ -106,7 +112,7 @@ export class VirtualValidationService {
           runId: this.runs.nextId(),
           scenarioId: s.scenarioId,
           role: s.role,
-          source: 'vecu',
+          source: 'carla',
           simulator: result.simulator,
           testId: r.testId,
           overall: r.overall === 'PASS' ? 'PASS' : 'FAIL',
@@ -169,9 +175,9 @@ export class TmsSubmissionService {
   submit(actor: Actor, id: string): VirtualRun {
     const r = this.runs.get(id);
     if (!r) throw new DomainError('NOT_FOUND', `가상검증 ${id}을(를) 찾을 수 없습니다.`);
-    if (r.source !== 'vecu') {
-      this.audit.failed(actor, 'TMS_SUBMIT', id, 'vECU 미연결 결과 제출 시도', 'D04-02');
-      throw new DomainError('GUARD_FAILED', 'vECU가 실제로 실행한 결과만 TMS에 제출할 수 있습니다.');
+    if (r.source !== 'carla') {
+      this.audit.failed(actor, 'TMS_SUBMIT', id, r.source === 'vecu' ? '이전 실행기 기록 제출 시도' : '실행기 미연결 결과 제출 시도', 'D04-02');
+      throw new DomainError('GUARD_FAILED', 'CARLA 실행기가 실제로 실행한 결과만 TMS에 제출할 수 있습니다.');
     }
     if (r.tms) return r;
     const n = this.ifCalls.next('IF-09');
@@ -196,12 +202,12 @@ export class VirtualValidationController {
   constructor(
     private readonly vv: VirtualValidationService,
     private readonly tms: TmsSubmissionService,
-    private readonly vecu: VecuAdapter,
+    private readonly sim: CarlaAdapter,
   ) {}
 
-  @Get('vecu/status')
+  @Get('sim/status')
   status() {
-    return this.vecu.status();
+    return this.sim.status();
   }
 
   @Get('virtual-validations/scenarios')
@@ -222,8 +228,8 @@ export class VirtualValidationController {
   @Post('virtual-validations')
   @Roles('FEATURE_AUTHOR', 'IMPLEMENTER', 'GATE_JUDGE')
   @AuditAction('VIRTUAL_VALIDATION')
-  run(@CurrentActor() actor: Actor, @Body(new ZodPipe(RunVirtualBody)) body: RunVirtualBody) {
-    return { items: this.vv.run(actor, body) };
+  async run(@CurrentActor() actor: Actor, @Body(new ZodPipe(RunVirtualBody)) body: RunVirtualBody) {
+    return { items: await this.vv.run(actor, body) };
   }
 
   @Get('virtual-validations/:id')

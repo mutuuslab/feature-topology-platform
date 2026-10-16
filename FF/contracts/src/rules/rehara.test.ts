@@ -15,7 +15,7 @@ describe('재-HARA 조건 (보고서 6.4)', () => {
       [{ kind: 'DEPENDENCY', dependency: { dependencyId: 'DEP-00099', type: 'REQUIRES', sourceFeatureId: 'FEAT-00022', targetFeatureId: 'FEAT-00145' } }, 'TOPOLOGY'],
       [{ kind: 'ANOMALY', anomalyId: 'ANM-00001', anomalyKind: 'FIELD_SOTIF' }, 'FIELD'],
       [{ kind: 'ANOMALY', anomalyId: 'ANM-00002', anomalyKind: 'SECURITY' }, 'TARA'],
-      [{ kind: 'TOOL', adsFeature: true, from: { tool: 'ausfahrt-ffval/1', limits: { kill_latency: 1 } }, to: { tool: 'ausfahrt-ffval/2', limits: { kill_latency: 1 } } }, 'ADS_TOOL'],
+      [{ kind: 'TOOL', adsFeature: true, from: { tool: 'ff-carla/0.9', limits: { kill_latency: 1 } }, to: { tool: 'ff-carla/1.0', limits: { kill_latency: 1 } } }, 'ADS_TOOL'],
     ];
     for (const [c, want] of cases) expect(cond(c), want).toEqual([want]);
     expect(new Set(cases.map(([, w]) => w))).toEqual(new Set(REHARA_CONDITIONS));

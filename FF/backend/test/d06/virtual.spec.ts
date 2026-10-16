@@ -1,32 +1,34 @@
-// vECU 가상검증 → 검증 Gate 연결: 시나리오 실행(D06-03) → 정책 검증기(D06-03 정상·D06-06 차량 내 감지) → TMS 제출(D04-02, IF-09) → G5 Evidence.
-// ffval 2.0(WP9): 모든 기준 + 재현 정보가 있어야 Gate PASS, 원격 DC2만 쓴 기준선은 기록만 — FFG-TST-009 · FFG-LCY-006 · FFG-DEAC-001
-// 기본은 같은 계약의 시험 대역(test/fixtures/fake-vecu) — 실제 vECU 판정은 마지막 describe가 C:\project\2026-10-11_vECU로 확인한다.
+// 가상검증(CARLA) → 검증 Gate 연결: 시나리오 실행(D06-03) → 정책 검증기(D06-03 정상·D06-06 차량 내 감지) → TMS 제출(D04-02, IF-09) → G5 Evidence.
+// 모든 기준 + 재현 정보가 있어야 Gate PASS, 원격 DC2만 쓴 기준선은 기록만 — FFG-TST-009 · FFG-LCY-006 · FFG-DEAC-001
+// 기본은 같은 계약의 시험 대역(test/fixtures/fake-carla) — 실제 CARLA 판정은 마지막 describe가 검증 전용 서버(2100)가 떠 있을 때 확인한다(npm run carla:up).
 import { existsSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { VirtualRunRepo } from '../../src/domains/d06-qsec/scenario-validation/virtual-run.repo';
 import { actor, bootApp, confirmSafety } from '../helpers';
 
-const FAKE = resolve(__dirname, '..', 'fixtures', 'fake-vecu');
-const REAL = process.env.VECU_DIR_REAL ?? resolve(__dirname, '../../../../../2026-10-11_vECU');
+const FAKE = resolve(__dirname, '..', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs');
+const REAL = resolve(__dirname, '..', '..', '..', 'sim', 'carla', 'ffcarla_cli.py');
+const PYTHON = process.env.CARLA_PYTHON ?? 'C:/project/2026-10-17_Carlra/.venv/Scripts/python.exe';
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
 const JUDGE = actor('choi.judge', 'GATE_JUDGE');
 
-function useVecu(dir: string | null) {
+function useRunner(runner: string) {
   process.env.FF_EVIDENCE_DIR = mkdtempSync(join(tmpdir(), 'ff-vv-'));
-  if (dir) (process.env.VECU_DIR = dir), delete process.env.VECU_MODE;
-  else process.env.VECU_MODE = 'off';
+  process.env.CARLA_RUNNER = runner;
+  delete process.env.SIM_MODE;
 }
-const restore = () => ['VECU_DIR', 'VECU_MODE', 'FF_EVIDENCE_DIR', 'FAKE_VECU_FAIL', 'FAKE_VECU_NO_REPRO'].forEach((k) => delete process.env[k]);
+const restore = () => ['CARLA_RUNNER', 'SIM_MODE', 'FF_EVIDENCE_DIR', 'FAKE_SIM_FAIL', 'FAKE_SIM_NO_REPRO', 'FAKE_SIM_DELAY_MS', 'FAKE_SIM_FOREIGN'].forEach((k) => delete process.env[k]);
 
-describe('vECU 가상검증 → 검증 Gate', () => {
+describe('가상검증(CARLA) → 검증 Gate', () => {
   let app: INestApplication;
   let http: () => any;
   let pid: string;
   beforeAll(async () => {
-    useVecu(FAKE);
+    useRunner(FAKE);
     ({ app, http } = await bootApp({ at: '2026-10-12T01:00:00.000Z' })); // 시드 기준일도 같은 날(체험권 날짜는 기준일 상대값)
     const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', controlPoint: 'Parameter', flagKey: 'care_00022_param', description: '감속 요청 파라미터 r2', safeDefault: false, entitlementCatalogId: 'CAT-00019' }).expect(201);
     pid = c.body.policyId;
@@ -42,8 +44,17 @@ describe('vECU 가상검증 → 검증 Gate', () => {
   it('시나리오 목록: FEAT-00022 정상 추종(D06-03)·차량 내 감지(D06-06)·원격 DC2 기준선(검증기 없음)', async () => {
     const r = (await http().get('/api/virtual-validations/scenarios?featureId=FEAT-00022').expect(200)).body.items;
     expect(r.map((s: any) => [s.scenarioId, s.validator])).toEqual([['SCN-FEAT00022-NOMINAL', 'D06-03'], ['SCN-FEAT00022-FAULT-ONBOARD', 'D06-06'], ['SCN-FEAT00022-FAULT-REMOTE-DC2', 'BASELINE']]);
-    expect((await http().get('/api/vecu/status').expect(200)).body.available).toBe(true);
+    const st = (await http().get('/api/sim/status').expect(200)).body;
+    expect(st).toMatchObject({ available: true, simulator: 'CARLA', port: 2100, server: { version: '0.9.16', map: 'Town04', foreignVehicles: 0 }, reason: null });
   });
+
+  it('공유 서버를 가리키면(FF가 만들지 않은 차량) 사용 불가로 알린다 — 검증 전용 서버만 쓴다', async () => {
+    process.env.FAKE_SIM_FOREIGN = '28';
+    await new Promise((r) => setTimeout(r, 5_100)); // 탐침 캐시(5 s) 만료
+    const st = (await http().get('/api/sim/status').expect(200)).body;
+    delete process.env.FAKE_SIM_FOREIGN;
+    expect(st).toMatchObject({ available: false, server: { foreignVehicles: 28 }, reason: expect.stringMatching(/FF가 만들지 않은 차량 28대/) });
+  }, 15_000);
 
   it('FFG-TST-003 조합 시험 계획: Topology 허용 조합의 covering array와 금지 조합 부정 시험(실제 거부 확인)', async () => {
     const p = (await http().get('/api/virtual-validations/combinations?featureId=FEAT-00022').expect(200)).body;
@@ -68,24 +79,27 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     await http().post('/api/virtual-validations').set(actor('x', 'AUDITOR')).send({ policyId: pid }).expect(403);
     const r = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid }).expect(201)).body.items;
     expect(r.map((x: any) => [x.runId, x.scenarioId, x.role, x.source, x.overall, x.gateResult])).toEqual([
-      ['VV-00001', 'SCN-FEAT00022-NOMINAL', 'NOMINAL', 'vecu', 'PASS', 'PASS'],
-      ['VV-00002', 'SCN-FEAT00022-FAULT-ONBOARD', 'FAULT_ONBOARD', 'vecu', 'PASS', 'PASS'],
-      ['VV-00003', 'SCN-FEAT00022-FAULT-REMOTE-DC2', 'BASELINE_REMOTE', 'vecu', 'FAIL', 'FAIL'],
+      ['VV-00001', 'SCN-FEAT00022-NOMINAL', 'NOMINAL', 'carla', 'PASS', 'PASS'],
+      ['VV-00002', 'SCN-FEAT00022-FAULT-ONBOARD', 'FAULT_ONBOARD', 'carla', 'PASS', 'PASS'],
+      ['VV-00003', 'SCN-FEAT00022-FAULT-REMOTE-DC2', 'BASELINE_REMOTE', 'carla', 'FAIL', 'FAIL'],
     ]);
-    // 회귀: 알려진 실패(위험·오판단)를 정보 항목으로 면제하던 ffval 1.x 판정 — 이제 기준선도 모든 기준으로 판정한다
+    // 회귀: 알려진 실패(위험·오판단)를 정보 항목으로 면제하던 이전 판정 방식 — 이제 기준선도 모든 기준으로 판정한다
     expect(r[2].gateReasons).toEqual(expect.arrayContaining([expect.stringMatching(/'위험' 단계/), expect.stringMatching(/FTTI 여유/)]));
     expect(r[2].criteria.find((c: any) => c.id === 'kill_latency')).toMatchObject({ status: 'pass', deciding: true });
     // Registry 안전 분류(FEAT-00022 F3/DC2)가 패키지로 넘어가 감지 한계 = FTTI 5 s − 고장 램프 1.5 s
     expect(r[1].safety).toMatchObject({ deactClass: 'DC2', takeoverMs: 4000, rampMs: 3000, faultRampMs: 1500, faultTolerantTimeMs: 5000 });
     expect(r[1].criteria.find((c: any) => c.id === 'detect_latency')).toMatchObject({ status: 'pass', limit: 3.5 });
     expect(r[1].repro).toMatchObject({ scenarioHash: expect.stringMatching(/^[0-9a-f]{64}$/), scriptHash: expect.stringMatching(/^[0-9a-f]{64}$/) });
-    expect(r[0].evidence.files.map((f: any) => f.name)).toEqual(['verdict.json', 'report.html']);
+    expect(r[0].evidence.files.map((f: any) => f.name)).toEqual(['verdict.json', 'report.html', 'carla_recording.log']);
+    expect(r[1].repro).toMatchObject({ toolVersion: expect.stringMatching(/^ff-carla/), map: 'Town04', replay: expect.stringMatching(/carla_recording\.log/) });
+    // 판단(evaluation)은 FF 단일 평가기가 계산해 패키지로 넘긴 값 — 실행기가 그대로 싣는다
+    expect(r[0].evaluation).toMatchObject({ value: true, decision: expect.any(String) });
   });
 
-  it('재현 정보 없는 실행(ffval 1.x)은 모든 기준이 통과해도 Gate FAIL — 근거로 쓸 수 없다', async () => {
-    process.env.FAKE_VECU_NO_REPRO = '1';
+  it('재현 정보 없는 실행은 모든 기준이 통과해도 Gate FAIL — 근거로 쓸 수 없다', async () => {
+    process.env.FAKE_SIM_NO_REPRO = '1';
     const r = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).expect(201)).body.items[0];
-    delete process.env.FAKE_VECU_NO_REPRO;
+    delete process.env.FAKE_SIM_NO_REPRO;
     expect(r).toMatchObject({ overall: 'PASS', gateResult: 'FAIL', repro: null, gateReasons: [expect.stringMatching(/재현 정보/)] });
     // 다음 시험이 기대하는 '최신 실행'을 되돌린다
     await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).expect(201);
@@ -98,7 +112,24 @@ describe('vECU 가상검증 → 검증 Gate', () => {
     expect(h.headers['content-security-policy']).toContain("default-src 'none'");
     await http().get('/api/virtual-validations/VV-00001/files/..%2F..%2Fpackage.json').expect(404);
     await http().get('/api/virtual-validations/VV-00001/files/telemetry.jsonl').expect(404);
+    await http().get('/api/virtual-validations/VV-00001/files/carla_recording.log').expect(200);
   });
+
+  // 회귀: 이전 어댑터는 spawnSync로 실행기를 기다려 실행 중 백엔드 전체가 멈췄다(CARLA 3종은 수십 초)
+  it('실행 중에도 다른 요청에 응답한다 — 실행기는 비동기, 한 번에 하나(대기열)', async () => {
+    process.env.FAKE_SIM_DELAY_MS = '1500';
+    const t0 = Date.now();
+    const run = http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).then((x: any) => ({ x, at: Date.now() - t0 }));
+    await new Promise((r) => setTimeout(r, 300));
+    const st = (await http().get('/api/sim/status').expect(200)).body;
+    await http().get('/api/health').expect(200);
+    const health = Date.now() - t0;
+    const done = await run;
+    delete process.env.FAKE_SIM_DELAY_MS;
+    expect(done.x.status).toBe(201);
+    expect(st.queue.running).toBe(1);
+    expect(health).toBeLessThan(done.at);
+  }, 20_000);
 
   it('가상검증 후 정책 검증 GO — D06-03·D06-06에 근거(INFO)가 남고, 기준선 FAIL은 검증기에 쓰이지 않는다', async () => {
     const run = await validate();
@@ -118,24 +149,34 @@ describe('vECU 가상검증 → 검증 Gate', () => {
   });
 
   it('차량 내 감지 기준 실패 → 안전 동작 검증 FAIL → BLOCKED', async () => {
-    process.env.FAKE_VECU_FAIL = 'detect_latency';
+    process.env.FAKE_SIM_FAIL = 'detect_latency';
     await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid }).expect(201);
-    delete process.env.FAKE_VECU_FAIL;
+    delete process.env.FAKE_SIM_FAIL;
     const run = await validate();
     expect(result(run, 'D06-06').result).toBe('FAIL');
     expect(run.decision).toBe('BLOCKED');
   });
 
-  it('vECU 미연결 → unavailable 기록(Evidence 불인정), TMS 제출 불가', async () => {
-    process.env.VECU_MODE = 'off';
+  it('실행기 미연결 → unavailable 기록(Evidence 불인정), TMS 제출 불가', async () => {
+    process.env.SIM_MODE = 'off';
     const r = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).expect(201)).body.items[0];
-    delete process.env.VECU_MODE;
-    expect(r).toMatchObject({ source: 'unavailable', gateResult: 'UNAVAILABLE', error: 'VECU_MODE=off' });
-    expect(result(await validate(), 'D06-03').findings[0].message).toMatch(/vECU 미연결/);
+    delete process.env.SIM_MODE;
+    expect(r).toMatchObject({ source: 'unavailable', gateResult: 'UNAVAILABLE', error: 'SIM_MODE=off' });
+    expect(result(await validate(), 'D06-03').findings[0].message).toMatch(/CARLA 실행기 미연결/);
     await http().post(`/api/virtual-validations/${r.runId}/tms`).set(JUDGE).send({}).expect(422);
   });
 
-  describe('G5 Verification Gate — TMS(IF-09)에 제출한 vECU PASS만 근거', () => {
+  // 실행기 교체(2026-10-17): 이전 실행기(vECU)로 남은 기록은 이력으로만 읽고 검증·TMS·G5 근거로 쓰지 않는다
+  it('이전 실행기(vECU) 기록은 PASS여도 Evidence가 아니다 — 검증기 CONDITIONAL, TMS 제출 거부', async () => {
+    const repo = app.get(VirtualRunRepo);
+    const cur = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: pid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).expect(201)).body.items[0];
+    const old = { ...cur, runId: repo.nextId(), source: 'vecu' as const, simulator: 'ausfahrt-ffval/2', at: new Date(Date.parse(cur.at) + 1000).toISOString() };
+    repo.insert(old);
+    expect(result(await validate(), 'D06-03').findings[0].message).toMatch(/이전 실행기 기록 — CARLA로 다시 실행/);
+    expect((await http().post(`/api/virtual-validations/${old.runId}/tms`).set(JUDGE).send({}).expect(422)).body.error.message).toMatch(/CARLA 실행기가 실제로 실행한 결과만/);
+  });
+
+  describe('G5 Verification Gate — TMS(IF-09)에 제출한 CARLA PASS만 근거', () => {
     let ver: string;
     let vpid: string;
     let pass: string;
@@ -150,14 +191,14 @@ describe('vECU 가상검증 → 검증 Gate', () => {
       const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: ver, controlPoint: 'Parameter', flagKey: 'care_00022_param', description: 'v2', safeDefault: false }).expect(201);
       vpid = c.body.policyId;
       const ok = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: vpid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).expect(201)).body.items[0];
-      process.env.FAKE_VECU_FAIL = 'min_ttc';
+      process.env.FAKE_SIM_FAIL = 'min_ttc';
       const bad = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: vpid, scenarioIds: ['SCN-FEAT00022-NOMINAL'] }).expect(201)).body.items[0];
-      delete process.env.FAKE_VECU_FAIL;
+      delete process.env.FAKE_SIM_FAIL;
       [pass, fail] = [ok.runId, bad.runId];
       expect([ok.gateResult, bad.gateResult]).toEqual(['PASS', 'FAIL']);
     });
 
-    const g5 = (evidenceRef: string, inputResult = 'PASS') => http().post(`/api/features/FEAT-00022/versions/${ver}/gates`).set(JUDGE).send({ gate: 'G5', inputResult, rationale: 'vECU 가상검증', evidenceRef });
+    const g5 = (evidenceRef: string, inputResult = 'PASS') => http().post(`/api/features/FEAT-00022/versions/${ver}/gates`).set(JUDGE).send({ gate: 'G5', inputResult, rationale: 'CARLA 가상검증', evidenceRef });
 
     it('다른 Version의 가상검증·FAIL 결과·TMS 미제출은 PASS 근거로 거부(422, FAILED 감사)', async () => {
       expect((await g5('VV-00001').expect(422)).body.error.message).toMatch(/1\.0\.0의 가상검증/);
@@ -180,32 +221,36 @@ describe('vECU 가상검증 → 검증 Gate', () => {
   });
 });
 
-describe.skipIf(!existsSync(join(REAL, 'tools', 'ffval_cli.mjs')))('실제 vECU (C:\\project\\2026-10-11_vECU) 판정', () => {
+// 실제 실행기 — 검증 전용 CARLA 서버(2100)가 떠 있을 때만(npm run carla:up). 공유 서버(2000)는 쓰지 않는다.
+describe.skipIf(!existsSync(PYTHON))('실제 CARLA 0.9.16 실행기 판정 (검증 전용 서버)', () => {
   let app: INestApplication;
   let http: () => any;
+  let up = false;
   beforeAll(async () => {
-    useVecu(REAL);
+    useRunner(REAL);
     ({ app, http } = await bootApp());
-  });
+    up = (await http().get('/api/sim/status').expect(200)).body.available;
+  }, 60_000);
   afterAll(async () => {
     await app.close();
     restore();
   });
 
-  it('FEAT-00022 (CS-01): 정상 추종 PASS · 차량 내 감지 ≈19.1 s → BASE_ONLY ≈20.6 s, FTTI 여유 ≈1.4 s PASS · 원격 DC2 기준선 FAIL(위험 구간) — Evidence 해시·재현 정보', async () => {
-    const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', controlPoint: 'Parameter', flagKey: 'care_00022_param', description: '실제 vECU', safeDefault: false }).expect(201);
+  it('FEAT-00022 (CS-01): 정상 추종 PASS · 차량 내 감지 ≈19.1 s → FTTI 여유 ≥ 0 PASS · 원격 DC2 기준선 FAIL(위험 구간) — Evidence 해시·recorder·재현 정보', async (ctx) => {
+    if (!up) ctx.skip();
+    const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', controlPoint: 'Parameter', flagKey: 'care_00022_param', description: '실제 CARLA', safeDefault: false }).expect(201);
     const r = (await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: c.body.policyId }).expect(201)).body.items;
-    expect(r.map((x: any) => [x.scenarioId.slice(14), x.source, x.overall, x.gateResult])).toEqual([['NOMINAL', 'vecu', 'PASS', 'PASS'], ['FAULT-ONBOARD', 'vecu', 'PASS', 'PASS'], ['FAULT-REMOTE-DC2', 'vecu', 'FAIL', 'FAIL']]);
+    expect(r.map((x: any) => [x.scenarioId.slice(14), x.source, x.overall, x.gateResult])).toEqual([['NOMINAL', 'carla', 'PASS', 'PASS'], ['FAULT-ONBOARD', 'carla', 'PASS', 'PASS'], ['FAULT-REMOTE-DC2', 'carla', 'FAIL', 'FAIL']]);
     const on = Object.fromEntries(r[1].criteria.map((x: any) => [x.id, x]));
-    expect(on.detect_latency.at).toBeCloseTo(19.11, 1);
-    expect(on.ftti_margin.value).toBeCloseTo(1.39, 1);
+    expect(on.detect_latency.at).toBeGreaterThan(18.8);
+    expect(on.detect_latency.at).toBeLessThan(19.5);
+    expect(on.ftti_margin.value).toBeGreaterThanOrEqual(0);
     expect(on.danger_time).toMatchObject({ status: 'pass', value: 0 });
     const rem = Object.fromEntries(r[2].criteria.map((x: any) => [x.id, x]));
     expect(rem.danger_time).toMatchObject({ status: 'fail', deciding: true });
     expect(rem.kill_latency.value).toBeLessThanOrEqual(1);
-    expect(rem.deact_time.value).toBeCloseTo(7, 1);
-    expect(r[1].evidence.files.map((f: any) => f.name)).toEqual(expect.arrayContaining(['verdict.json', 'telemetry.jsonl', 'events.json', 'report.html']));
-    expect(r[1].repro).toMatchObject({ ffvalVersion: expect.stringMatching(/ffval 2\./), seed: 0 });
-    expect(r[0].simulator).toMatch(/ausfahrt-ffval\/2/);
-  });
+    expect(r[1].evidence.files.map((f: any) => f.name)).toEqual(expect.arrayContaining(['verdict.json', 'telemetry.jsonl', 'events.json', 'report.html', 'carla_recording.log']));
+    expect(r[1].repro).toMatchObject({ toolVersion: expect.stringMatching(/^ff-carla 1\./), seed: 0, map: 'Town04' });
+    expect(r[0].simulator).toMatch(/CARLA 0\.9\.16/);
+  }, 300_000);
 });

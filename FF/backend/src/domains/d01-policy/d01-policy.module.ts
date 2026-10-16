@@ -33,7 +33,7 @@ import { TopologyService } from './topology/topology.service';
   controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
-    VirtualRunRepo, // vECU 가상검증 기록 — 검증기·Gate 판정이 함께 읽는다
+    VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
     IfCallRepo,
     { provide: KILL_STATE, useExisting: KillRepo }, // 긴급 기능 차단(D03-03) 저장소
     PolicyRepo,

@@ -65,10 +65,10 @@ export class ReharaService implements OnModuleInit {
     }
     if (type === 'virtual.validation.completed') {
       const run = this.runs.get(p.runId);
-      if (!run || run.source !== 'vecu') return [];
+      if (!run || run.source !== 'carla') return [];
       const prev = this.runs
         .list({ featureId: run.featureId, featureVersion: run.featureVersion })
-        .filter((r) => r.source === 'vecu' && r.scenarioId === run.scenarioId && r.runId < run.runId)
+        .filter((r) => r.source === 'carla' && r.scenarioId === run.scenarioId && r.runId < run.runId)
         .sort((a, b) => b.runId.localeCompare(a.runId))[0];
       if (!prev) return [];
       const ads = (this.profiles.list(run.featureId).find((x) => x.version === run.featureVersion) as SafetyProfile | undefined)?.adsFeature ?? false;

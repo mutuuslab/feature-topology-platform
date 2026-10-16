@@ -209,7 +209,7 @@ export function evaluateGate(cmd: KillCommandV2, registry: GateRegistry, now: Da
 
 /**
  * 스키마(FFG-PLT-001) → 규칙 판정. 화면 실시간 체크리스트와 서버 판정이 같은 함수를 쓴다.
- * @rule FFG-PLT-001 — 플랫폼 쪽 스키마 적합성(차량 LPC 쪽 재검사는 vECU·FF_IMP)
+ * @rule FFG-PLT-001 — 플랫폼 쪽 스키마 적합성(차량 LPC 쪽 재검사는 차량 Guard(가상검증 CARLA·FF_IMP))
  */
 export function gateVerdict(cmd: unknown, registry: GateRegistry, now: Date): GateVerdict {
   const errors = wireErrors(KillCommandV2, cmd);

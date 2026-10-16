@@ -118,7 +118,7 @@ export interface CombinationPlan {
 
 /**
  * Feature 하나의 조합 시험 계획.
- * @rule FFG-TST-003 — 허용 조합 = Topology REQUIRES·EXCLUDES, 안전 관련 Flag 2개 이상 상호작용이면 3-way, 금지 조합은 부정 시험. 조합별 vECU 실행은 다기능 차량 런타임이 생기면(현재 FEAT-00022 단독)
+ * @rule FFG-TST-003 — 허용 조합 = Topology REQUIRES·EXCLUDES, 안전 관련 Flag 2개 이상 상호작용이면 3-way, 금지 조합은 부정 시험. 조합별 가상검증 실행은 다기능 차량 런타임이 생기면(현재 FEAT-00022 단독)
  */
 export function combinationPlan(featureId: string, deps: Dep[], fClassOf: (featureId: string) => string | null): CombinationPlan {
   const group = interactionGroup(featureId, deps);

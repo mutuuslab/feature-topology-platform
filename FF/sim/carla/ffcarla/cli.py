@@ -20,6 +20,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import VERSION
+from .lock import ServerBusy, server_lock
 from .report import report_html
 from .run import ValidationRun
 
@@ -61,6 +62,8 @@ def load_package(raw: str) -> dict:
     ev = pkg.get('evaluation')
     if not isinstance(ev, dict) or 'value' not in ev:
         raise InputError('evaluation(FF 정책 판단 결과)이 없습니다')
+    if not any(v.get('vin') == pkg.get('vehicle') for v in pkg.get('fleet') or []):
+        raise InputError(f"vehicle {pkg.get('vehicle')} is not in fleet[]")
     scs = pkg.get('scenarios') or ([pkg['scenario']] if pkg.get('scenario') else [])
     if not scs:
         raise InputError('scenarios가 비었습니다')
@@ -91,7 +94,7 @@ def run_package(pkg: dict, out: Path, world, simulator: str, server_version: str
         rec = (d / 'carla_recording.log').resolve()  # 서버는 상대 경로를 자기 Saved 폴더 기준으로 쓴다
         info = world.drive(run, str(rec), seed)
         v = run.verdict()
-        repro = dict(ffvalVersion=f'{VERSION} · CARLA {server_version} · {info["map"]}', simulator=simulator, serverVersion=server_version,
+        repro = dict(toolVersion=f'{VERSION} · CARLA {server_version} · {info["map"]}', simulator=simulator, serverVersion=server_version,
                      map=info['map'], stepS=info['stepS'], seed=seed, scenarioHash=sha256(canon(sc)), scriptHash=script_hash(),
                      safety=run.safety, clockBase=iso(0), routeStart=info['routeStart'], vehicles=dict(ego=info['egoBlueprint'], lead=info['leadBlueprint']),
                      replay=f"client.replay_file('{rec.name}', 0, 0, 0) — CARLA {server_version} {info['map']}")
@@ -160,6 +163,16 @@ def _main(a, emit) -> int:
     except InputError as e:
         emit(dict(tool=TOOL, error=str(e)))
         return 2
+    try:
+        with server_lock(host, port, float(os.environ.get('CARLA_LOCK_TIMEOUT_S', '600'))):
+            return _run_on_server(W, pkg, Path(a.out), host, port, emit)
+    except ServerBusy as e:
+        emit(dict(tool=TOOL, error=str(e)))
+        return 3
+
+
+def _run_on_server(W, pkg: dict, out: Path, host: str, port: int, emit) -> int:
+    """검증 서버 잠금을 잡은 뒤에만 부른다 — 연결·세계 준비·시나리오 실행·정리"""
     need = max(s['duration_s'] * s['lead_kph'] / 3.6 + s['target_gap_m'] for s in pkg['scenarios']) + 150
     try:
         c, ver = W.connect(host, port, 60.0)
@@ -168,7 +181,7 @@ def _main(a, emit) -> int:
         emit(dict(tool=TOOL, error=f'CARLA 서버 {host}:{port} — {e}'))
         return 3
     try:
-        res = run_package(pkg, Path(a.out), world, f'CARLA {ver} ({W.MAP}, sync {round(1 / W.STEP_S)} Hz)', ver)
+        res = run_package(pkg, out, world, f'CARLA {ver} ({W.MAP}, sync {round(1 / W.STEP_S)} Hz)', ver)
     except Exception as e:  # noqa: BLE001 — 실행기 내부 오류는 한 줄로 알리고 1
         emit(dict(tool=TOOL, error=f'{type(e).__name__}: {e}'))
         return 1

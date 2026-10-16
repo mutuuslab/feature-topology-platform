@@ -1,5 +1,5 @@
 // 품질 피드백 반영 (D04-06, PoC ⑥ → ① 되먹임) — 조치된 현장 이상(고장·보안)을 Feature 품질 피드백(FB)으로 남긴다.
-// 피드백은 다음 Version이 해야 할 일(G5·G7 재판정, vECU 회귀 시나리오)을 적고, 문제난 Version보다 높은 Version이
+// 피드백은 다음 Version이 해야 할 일(G5·G7 재판정, 가상검증 회귀 시나리오)을 적고, 문제난 Version보다 높은 Version이
 // G5 Verification Gate PASS를 받으면 자동으로 해소된다. 상품·설계 담당은 피드백을 수용(ACCEPTED)해 작업으로 가져간다.
 import { Body, Controller, Get, HttpCode, Inject, Injectable, Logger, OnModuleInit, Param, Post, Query } from '@nestjs/common';
 import { decidingScenariosFor, FeedbackAcceptBody, feedbackActions, versionAfter, type AnomalyKind, type QualityFeedback } from '@ff/contracts';

@@ -48,9 +48,41 @@ def test_missing_evaluation_is_input_error(tmp_path):
     assert code == 2 and 'evaluation' in out['error']
 
 
+def test_vehicle_not_in_fleet_is_input_error(tmp_path):
+    code, out = cli(json.dumps({**PKG, 'vehicle': 'no-such-vin'}), '--out', str(tmp_path))
+    assert code == 2 and 'no-such-vin' in out['error']
+
+
 def test_no_server_is_exit_3(tmp_path):
     code, out = cli(json.dumps(PKG), '--out', str(tmp_path))
     assert code == 3 and 'CARLA 서버' in out['error']
+
+
+# 회귀: 같은 검증 서버에 실행기 둘이 동시에 붙으면 서로의 세계를 건드려 판정이 조용히 틀렸다(FAULT-ONBOARD FAIL·종료 1).
+# 이제 서버(host:port)마다 잠금을 잡고, 다른 실행이 쓰는 중이면 기다리다 시간이 넘으면 '사용 중'(종료 3)으로 알린다.
+def test_busy_server_waits_then_reports_busy(tmp_path):
+    port = free_port()
+    holder = subprocess.Popen(
+        [sys.executable, '-c',
+         'import sys,time; sys.path.insert(0, sys.argv[1]); from ffcarla.lock import server_lock\n'
+         'with server_lock("127.0.0.1", int(sys.argv[2]), 5):\n print("held", flush=True); time.sleep(30)',
+         str(CLI.parent), str(port)],
+        stdout=subprocess.PIPE, text=True)
+    try:
+        assert holder.stdout.readline().strip() == 'held'
+        env_timeout = os.environ.get('CARLA_LOCK_TIMEOUT_S')
+        os.environ['CARLA_LOCK_TIMEOUT_S'] = '1'
+        try:
+            code, out = cli(json.dumps(PKG), '--out', str(tmp_path), port=port)
+        finally:
+            if env_timeout is None:
+                os.environ.pop('CARLA_LOCK_TIMEOUT_S')
+            else:
+                os.environ['CARLA_LOCK_TIMEOUT_S'] = env_timeout
+        assert code == 3 and '쓰는 중' in out['error'], out
+    finally:
+        holder.kill()
+        holder.wait()
 
 
 def test_probe_without_server_is_exit_3():

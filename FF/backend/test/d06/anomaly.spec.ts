@@ -65,7 +65,7 @@ describe('운영 되먹임 — 이상 징후 대응 · 품질 피드백', () => 
     expect(r.body).toMatchObject({ status: 'ACKNOWLEDGED', acknowledgedBy: 'seo.ops' });
   });
 
-  it('이상 건을 가리켜 긴급 차단 발령 → 이상 건 MITIGATED(killId) → 품질 피드백 FB 생성(G5·G7·vECU 회귀)', async () => {
+  it('이상 건을 가리켜 긴급 차단 발령 → 이상 건 MITIGATED(killId) → 품질 피드백 FB 생성(G5·G7·가상검증 회귀)', async () => {
     const k = { body: await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01', 'lead-01'], reason: '이상 건 조치', confirm: 'FEAT-00022', anomalyId: anm }, OPERATOR) };
     const a = (await http().get(`/api/anomalies/${anm}`).expect(200)).body;
     expect(a).toMatchObject({ status: 'MITIGATED', killId: k.body.killId });

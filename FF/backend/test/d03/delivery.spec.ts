@@ -1,7 +1,7 @@
 // PoC ④⑤⑥ 배포·차단 전달 — 서명(D06-10) → 보안 배포(D06-08) → 파이프라인(D04-01, IF-05/13) → 차량 런타임(D02-03)
 // → 회신 수집(D04-03, IF-06) → P0 aggregate, 긴급 차단(D03-03)·이전 상태 복구(D03-04). 스케줄러는 manual — 회신·기한을 결정적으로 돌린다.
-// vECU는 같은 계약의 시험 대역 — 가상검증(D06-03·D06-06) 없이는 FEAT-00022 정책이 GO가 될 수 없다
-Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal', VECU_DIR: require('node:path').resolve(__dirname, '..', 'fixtures', 'fake-vecu'), FF_EVIDENCE_DIR: require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'ff-vv-')) });
+// 가상검증 실행기는 같은 계약의 시험 대역(fake-carla) — 가상검증(D06-03·D06-06) 없이는 FEAT-00022 정책이 GO가 될 수 없다
+Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal', CARLA_RUNNER: require('node:path').resolve(__dirname, '..', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FF_EVIDENCE_DIR: require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'ff-vv-')) });
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Clock } from '../../src/kernel/clock';
@@ -34,7 +34,7 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
     await app.close();
     delete process.env.FF_SCHEDULER; // 같은 워커의 다음 시험 파일에 새지 않게
     delete process.env.GLEO_MODE;
-    delete process.env.VECU_DIR;
+    delete process.env.CARLA_RUNNER;
     delete process.env.FF_EVIDENCE_DIR;
   });
 

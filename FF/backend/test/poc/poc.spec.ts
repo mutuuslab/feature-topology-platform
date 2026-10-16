@@ -23,12 +23,12 @@ describe('PoC 6단계 러너 (P9)', () => {
   };
 
   beforeAll(async () => {
-    Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal', UNLEASH_MODE: 'mock', VECU_DIR: resolve(__dirname, '..', 'fixtures', 'fake-vecu'), FF_EVIDENCE_DIR: mkdtempSync(join(tmpdir(), 'ff-poc-')) });
+    Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal', UNLEASH_MODE: 'mock', CARLA_RUNNER: resolve(__dirname, '..', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FF_EVIDENCE_DIR: mkdtempSync(join(tmpdir(), 'ff-poc-')) });
     ({ app, http } = await bootApp({ at: '2026-10-12T01:00:00.000Z' }));
   });
   afterAll(async () => {
     await app.close();
-    for (const k of ['FF_SCHEDULER', 'GLEO_MODE', 'UNLEASH_MODE', 'VECU_DIR', 'FF_EVIDENCE_DIR']) delete process.env[k];
+    for (const k of ['FF_SCHEDULER', 'GLEO_MODE', 'UNLEASH_MODE', 'CARLA_RUNNER', 'FF_EVIDENCE_DIR']) delete process.env[k];
   });
 
   it('시작은 운영·출시·승인·안전 담당만 — 6단계 PENDING, 단계마다 관여 컴포넌트', async () => {
@@ -47,7 +47,7 @@ describe('PoC 6단계 러너 (P9)', () => {
     expect(String(s.evidence.products)).toMatch(/CAT-00019/);
   });
 
-  it('② 정책: 작성자 작성 → vECU 가상검증 → 8종 GO → 승인자 승인 (작성자≠승인자)', async () => {
+  it('② 정책: 작성자 작성 → 가상검증(CARLA) → 8종 GO → 승인자 승인 (작성자≠승인자)', async () => {
     const s = (await advance()).steps[1];
     expect(s.status, s.note).toBe('DONE');
     expect(s.evidence).toMatchObject({ safety: 'GO', status: 'APPROVED' });

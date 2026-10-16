@@ -12,7 +12,7 @@ import { SafeBehaviorValidationService } from './safe-behavior-validation/valida
 import { SafetyReqTraceService } from './safety-req-trace/validator';
 import { ScenarioValidationService } from './scenario-validation/validator';
 import { POLICY_VALIDATORS, ValidationService } from './validation-history/validation.service';
-import { VecuAdapter } from '../../adapters/vecu/vecu.adapter';
+import { CarlaAdapter } from '../../adapters/sim/carla.adapter';
 import { IamController, IamService } from './iam/iam.service';
 import { PostReviewController, PostReviewService } from './iam/post-review.service';
 import { TmsSubmissionService, VirtualValidationController, VirtualValidationService } from './scenario-validation/virtual-validation.service';
@@ -35,7 +35,7 @@ const VALIDATORS = [
   imports: [D01PolicyModule],
   controllers: [VirtualValidationController, IamController, ReharaController, SumsController, SecurityEventController, PostReviewController],
   providers: [
-    VecuAdapter,
+    CarlaAdapter,
     IamService,
     PostReviewService,
     VirtualValidationService,

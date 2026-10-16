@@ -54,7 +54,7 @@ td,th{{border-bottom:1px solid #dfdcd2;padding:4px 8px;text-align:left;vertical-
 <p>시작 상태: 간격 {esc(v["start"]["gap_m"])} m · 자차 {esc(v["start"]["ego_kph"])} km/h · 선행차 {esc(v["start"]["lead_kph"])} km/h · 최소 차간 시간 {esc(v["minTimeGap"])} s ({esc(v["minTimeGapAt"])} s) · 차로 이탈 최대 {esc(v["maxLateralDevM"])} m</p>
 {chart(tel, sc["duration_s"], sc["target_gap_m"])}
 <h2>판정 기준</h2><table><tr><th>기준</th><th>한계</th><th>값</th><th>시각</th><th>판정</th></tr>{rows}</table>
-<h2>재현 정보</h2><table><tr><td>도구</td><td>{esc(r["ffvalVersion"])}</td></tr><tr><td>시나리오 해시</td><td><code>{esc(r["scenarioHash"])}</code></td></tr>
+<h2>재현 정보</h2><table><tr><td>도구</td><td>{esc(r["toolVersion"])}</td></tr><tr><td>시나리오 해시</td><td><code>{esc(r["scenarioHash"])}</code></td></tr>
 <tr><td>판정 코드 해시</td><td><code>{esc(r["scriptHash"])}</code></td></tr><tr><td>시드 · 주기</td><td>{esc(r["seed"])} · {esc(r["stepS"])} s</td></tr>
 <tr><td>CARLA 재생</td><td><code>{esc(r["replay"])}</code></td></tr><tr><td>안전 분류</td><td><code>{esc(r["safety"])}</code></td></tr></table>
 <h2>제한 사항</h2><ul>{lim}</ul>

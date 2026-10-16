@@ -1,6 +1,6 @@
 // 이상 징후 대응 (D06-12) · 품질 피드백 반영 (D04-06) — PoC ⑥ "이상 확인 → 긴급 차단 → 품질 반영".
 // 현장 신호(차량 고장 보고·서명 거부 회신·배포 회신 이상)를 Feature별 이상 건으로 묶고, 심각도·권고를 이 표로 정한다.
-// 조치된 이상 건은 Feature에 품질 피드백으로 남아 새 Version의 재검증(G5·vECU 회귀)을 요구한다.
+// 조치된 이상 건은 Feature에 품질 피드백으로 남아 새 Version의 재검증(G5·가상검증 회귀)을 요구한다.
 import { z } from 'zod';
 
 /** FIELD_SOTIF — 현장 장애·VOC의 기능 불충분 트리거(D04-05, FFG-SOT-003) */
@@ -132,7 +132,7 @@ export interface QualityFeedback {
   anomalyId: string;
   kind: AnomalyKind;
   summary: string;
-  /** 다음 Version이 해야 할 일 — 재판정 Gate·vECU 회귀 시나리오 */
+  /** 다음 Version이 해야 할 일 — 재판정 Gate·가상검증 회귀 시나리오 */
   actions: { kind: 'REJUDGE_GATE' | 'VIRTUAL_REGRESSION'; ref: string; label: string }[];
   status: FeedbackStatus;
   createdAt: string;
@@ -143,12 +143,12 @@ export interface QualityFeedback {
   note: string | null;
 }
 
-/** 조치된 이상 건 → 다음 Version이 할 일. 고장·보안은 G5(검증) 재판정, ASIL B 이상은 G7(안전·보안)도. vECU 시나리오가 있으면 회귀 실행. */
+/** 조치된 이상 건 → 다음 Version이 할 일. 고장·보안은 G5(검증) 재판정, ASIL B 이상은 G7(안전·보안)도. 가상검증 시나리오가 있으면 회귀 실행. */
 export function feedbackActions(a: Pick<Anomaly, 'kind'>, ctx: { asil: string | null; virtualScenarios: string[] }): QualityFeedback['actions'] {
   if (a.kind === 'DELIVERY') return [];
   const out: QualityFeedback['actions'] = [{ kind: 'REJUDGE_GATE', ref: 'G5', label: 'G5 Verification Gate 재판정' }];
   if (a.kind === 'SECURITY' || (ctx.asil && ctx.asil !== 'QM')) out.push({ kind: 'REJUDGE_GATE', ref: 'G7', label: 'G7 Safety/Security Gate 재판정' });
-  for (const s of ctx.virtualScenarios) out.push({ kind: 'VIRTUAL_REGRESSION', ref: s, label: `vECU 회귀 ${s}` });
+  for (const s of ctx.virtualScenarios) out.push({ kind: 'VIRTUAL_REGRESSION', ref: s, label: `가상검증 회귀 ${s}` });
   return out;
 }
 

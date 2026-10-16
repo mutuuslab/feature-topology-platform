@@ -181,8 +181,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'approveRestore', method: 'POST', path: '/api/kill-requests/:id/restore/approvals', summary: '복원 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 복구 게시', component: 'D03-04', roles: KILL_APPROVER_ROLES, body: KillApproveBody },
   { name: 'rejectRestore', method: 'POST', path: '/api/kill-requests/:id/restore/reject', summary: '복원 요청 거절', component: 'D03-04', roles: KILL_APPROVER_ROLES, body: KillRejectBody },
   { name: 'releaseKill', method: 'POST', path: '/api/kill-requests/:id/release', summary: '레거시(v1) 차단 해제 — v2 차단은 복원 요청·승인으로', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: z.object({ reason: z.string().trim().min(2).max(500) }).strict() },
-  // vECU 가상검증 (IF-09 가상검증 공급자) — 차량 시나리오(D06-03)·안전 동작(D06-06) 근거, G5 Evidence는 TMS 제출(D04-02)
-  { name: 'vecuStatus', method: 'GET', path: '/api/vecu/status', summary: 'vECU 가상검증 실행기 연결 상태', component: 'D06-03' },
+  // 가상검증 (IF-09 가상검증 공급자: CARLA 실행기) — 차량 시나리오(D06-03)·안전 동작(D06-06) 근거, G5 Evidence는 TMS 제출(D04-02)
+  { name: 'simStatus', method: 'GET', path: '/api/sim/status', summary: 'CARLA 가상검증 실행기 연결 상태', component: 'D06-03' },
   { name: 'virtualScenarios', method: 'GET', path: '/api/virtual-validations/scenarios', summary: 'Feature별 가상검증 시나리오 (역할·연결 검증기·목적)', component: 'D06-03', query: ['featureId'] },
   { name: 'sbomList', method: 'GET', path: '/api/sbom', summary: '게시본별 CycloneDX 1.6 SBOM 목록 — 원산지 누락 발견(FFG-SBOM-002·003·007, SEC-006)', component: 'D06-11', query: ['featureId'] },
   { name: 'sbomDetail', method: 'GET', path: '/api/sbom/:serial', summary: 'SBOM 본문(CycloneDX 1.6)', component: 'D06-11' },
@@ -201,7 +201,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'reharaRequests', method: 'GET', path: '/api/rehara-requests', summary: '재-HARA 요청 (보고서 6.4 조건 자동 검출) — FFG-LCY-003', component: 'D06-05', query: ['featureId', 'featureVersion', 'status'] },
   { name: 'virtualCombinations', method: 'GET', path: '/api/virtual-validations/combinations', summary: 'Feature 조합 시험 계획 (Topology 허용 조합, 3-way covering array, 금지 조합 부정 시험) — FFG-TST-003', component: 'D06-03', query: ['featureId'] },
   { name: 'virtualRuns', method: 'GET', path: '/api/virtual-validations', summary: '가상검증 실행 이력', component: 'D06-03', query: ['policyId', 'featureId', 'featureVersion'] },
-  { name: 'runVirtual', method: 'POST', path: '/api/virtual-validations', summary: '정책을 vECU 가상 차량에 적용해 시나리오 실행 (판정·Evidence)', component: 'D06-03', roles: ['FEATURE_AUTHOR', 'IMPLEMENTER', 'GATE_JUDGE'], body: RunVirtualBody },
+  { name: 'runVirtual', method: 'POST', path: '/api/virtual-validations', summary: '정책을 CARLA 가상 차량에 적용해 시나리오 실행 (판정·Evidence)', component: 'D06-03', roles: ['FEATURE_AUTHOR', 'IMPLEMENTER', 'GATE_JUDGE'], body: RunVirtualBody },
   { name: 'virtualRunDetail', method: 'GET', path: '/api/virtual-validations/:id', summary: '가상검증 결과 (기준별 판정·Evidence 해시·TMS)', component: 'D06-03' },
   { name: 'virtualRunFile', method: 'GET', path: '/api/virtual-validations/:id/files/:name', summary: '가상검증 Evidence 파일 (보고서·텔레메트리)', component: 'D06-03' },
   { name: 'submitTms', method: 'POST', path: '/api/virtual-validations/:id/tms', summary: 'IF-09 TMS Evidence 제출 (G5 근거)', component: 'D04-02', roles: ['GATE_JUDGE', 'IMPLEMENTER'], body: EmptyBody },

@@ -1,5 +1,7 @@
 
-# vECU 가상검증 증적 (로컬 실행 산출물)
+# 가상검증 Evidence·CARLA 검증 서버 상태 (로컬 실행 산출물)
 .evidence/
+.sim/
+__pycache__/
 # Unleash 실연동 토큰 (로컬 전용)
 docker/unleash/.env

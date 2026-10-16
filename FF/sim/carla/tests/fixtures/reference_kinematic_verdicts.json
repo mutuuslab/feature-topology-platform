@@ -1,0 +1,267 @@
+{
+ "source": "FF .evidence 2026-10-13 runs of the previous reference simulator (headless kinematic loop, 60 Hz) — same scenarios/safety profile",
+ "scenarios": {
+  "SCN-FEAT00022-NOMINAL": {
+   "overall": "PASS",
+   "scenario": {
+    "duration_s": 70,
+    "lead_kph": 80,
+    "target_gap_m": 40,
+    "fault": null,
+    "kill": null,
+    "link_latency_ms": 300
+   },
+   "safety": {
+    "deactClass": "DC2",
+    "takeoverMs": 4000,
+    "rampMs": 3000,
+    "faultRampMs": 1500,
+    "faultTolerantTimeMs": 5000,
+    "maxPendingMs": 0
+   },
+   "stepS": 0.016666666666666666,
+   "criteria": {
+    "kill_latency": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 1
+    },
+    "deact_time": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 7.05
+    },
+    "remote_refused": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 1
+    },
+    "detect_latency": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 3.5
+    },
+    "ftti_margin": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 0
+    },
+    "misjudge": {
+     "status": "pass",
+     "value": 0,
+     "at": null,
+     "limit": 2
+    },
+    "danger_time": {
+     "status": "pass",
+     "value": 0,
+     "at": null,
+     "limit": 0
+    },
+    "min_ttc": {
+     "status": "pass",
+     "value": null,
+     "at": null,
+     "limit": 2
+    },
+    "max_decel": {
+     "status": "pass",
+     "value": 0,
+     "at": null,
+     "limit": 2.8
+    },
+    "recovery": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 15
+    }
+   }
+  },
+  "SCN-FEAT00022-FAULT-ONBOARD": {
+   "overall": "PASS",
+   "scenario": {
+    "duration_s": 70,
+    "lead_kph": 80,
+    "target_gap_m": 40,
+    "fault": {
+     "at_s": 17,
+     "ramp_s": 8,
+     "bias_max": 2.4
+    },
+    "kill": null,
+    "link_latency_ms": 300,
+    "onboard": {
+     "rel_pct": 20,
+     "abs_m": 2,
+     "debounce_s": 0.2
+    }
+   },
+   "safety": {
+    "deactClass": "DC2",
+    "takeoverMs": 4000,
+    "rampMs": 3000,
+    "faultRampMs": 1500,
+    "faultTolerantTimeMs": 5000,
+    "maxPendingMs": 0
+   },
+   "stepS": 0.016666666666666666,
+   "criteria": {
+    "kill_latency": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 1
+    },
+    "deact_time": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 7.05
+    },
+    "remote_refused": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 1
+    },
+    "detect_latency": {
+     "status": "pass",
+     "value": 2.1,
+     "at": 19.1,
+     "limit": 3.5
+    },
+    "ftti_margin": {
+     "status": "pass",
+     "value": 1.4,
+     "at": 20.6,
+     "limit": 0
+    },
+    "misjudge": {
+     "status": "pass",
+     "value": 0,
+     "at": null,
+     "limit": 2
+    },
+    "danger_time": {
+     "status": "pass",
+     "value": 0,
+     "at": null,
+     "limit": 0
+    },
+    "min_ttc": {
+     "status": "pass",
+     "value": 21.59,
+     "at": 19.43,
+     "limit": 2
+    },
+    "max_decel": {
+     "status": "pass",
+     "value": 2.55,
+     "at": 20.85,
+     "limit": 2.8
+    },
+    "recovery": {
+     "status": "pass",
+     "value": 0,
+     "at": 20.6,
+     "limit": 15
+    }
+   }
+  },
+  "SCN-FEAT00022-FAULT-REMOTE-DC2": {
+   "overall": "FAIL",
+   "scenario": {
+    "duration_s": 70,
+    "lead_kph": 80,
+    "target_gap_m": 40,
+    "fault": {
+     "at_s": 17,
+     "ramp_s": 8,
+     "bias_max": 2.4
+    },
+    "kill": {
+     "at_s": 48
+    },
+    "link_latency_ms": 300,
+    "onboard": null
+   },
+   "safety": {
+    "deactClass": "DC2",
+    "takeoverMs": 4000,
+    "rampMs": 3000,
+    "faultRampMs": 1500,
+    "faultTolerantTimeMs": 5000,
+    "maxPendingMs": 0
+   },
+   "stepS": 0.016666666666666666,
+   "criteria": {
+    "kill_latency": {
+     "status": "pass",
+     "value": 0.32,
+     "at": 48.33,
+     "limit": 1
+    },
+    "deact_time": {
+     "status": "pass",
+     "value": 7,
+     "at": 55.33,
+     "limit": 7.05
+    },
+    "remote_refused": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 1
+    },
+    "detect_latency": {
+     "status": "na",
+     "value": null,
+     "at": null,
+     "limit": 3.5
+    },
+    "ftti_margin": {
+     "status": "fail",
+     "value": -33.33,
+     "at": 55.33,
+     "limit": 0
+    },
+    "misjudge": {
+     "status": "fail",
+     "value": 28.98,
+     "at": 48.32,
+     "limit": 2
+    },
+    "danger_time": {
+     "status": "fail",
+     "value": 30.98,
+     "at": 23.05,
+     "limit": 0
+    },
+    "min_ttc": {
+     "status": "pass",
+     "value": 5.56,
+     "at": 22.75,
+     "limit": 2
+    },
+    "max_decel": {
+     "status": "pass",
+     "value": 1.48,
+     "at": 53.28,
+     "limit": 2.8
+    },
+    "recovery": {
+     "status": "pass",
+     "value": 2.72,
+     "at": 58.05,
+     "limit": 15
+    }
+   }
+  }
+ }
+}

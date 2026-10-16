@@ -242,7 +242,7 @@ export class PocWorkflow {
         const v = await this.act(step, 'validatePolicy', p.author, (x: any) => `${x.run.decision} (${x.run.results.filter((r: any) => r.result === 'PASS').length}/8 PASS)`, () => this.policies.validate(p.author, pol.policyId));
         Object.assign(step.evidence, { policyId: pol.policyId, virtual: vv.map((r) => `${r.runId} ${r.gateResult}`).join(', '), safety: (v as any).run.decision });
         if ((v as any).run.decision !== 'GO') throw new Error(`배포 안전성 ${(v as any).run.decision}: ${(v as any).run.reasons.join(' / ')}`);
-        await this.act(step, 'decidePolicy', p.approver, () => 'APPROVE', () => this.policies.decide(p.approver, pol.policyId, { decision: 'APPROVE', reason: `PoC ${run.runId}: 8종 GO·vECU PASS 확인` }));
+        await this.act(step, 'decidePolicy', p.approver, () => 'APPROVE', () => this.policies.decide(p.approver, pol.policyId, { decision: 'APPROVE', reason: `PoC ${run.runId}: 8종 GO·가상검증 PASS 확인` }));
         step.evidence.status = 'APPROVED';
         step.status = 'DONE';
         return;

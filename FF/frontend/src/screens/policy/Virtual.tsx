@@ -1,5 +1,5 @@
-// vECU 가상검증 (D06-03 차량 시나리오 검증 · D04-02 TMS 제출 IF-09) — /validations/virtual 화면과 정책 상세의 가상검증 패널.
-// 판정 원천은 C:\project\2026-10-11_vECU 헤드리스 실행기(ffval 2.0). 미연결·재현 정보 없음·기준 실패는 Evidence로 인정하지 않는다.
+// 가상검증 (D06-03 차량 시나리오 검증 · D04-02 TMS 제출 IF-09) — /validations/virtual 화면과 정책 상세의 가상검증 패널.
+// 판정 원천은 CARLA 0.9.16 실행기(sim/carla, 검증 전용 서버 2100). 미연결·이전 실행기 기록·재현 정보 없음·기준 실패는 Evidence로 인정하지 않는다.
 // 원격 DC2만 쓴 기준선 실행은 차량 내 감지와 나란히 비교 타임라인으로 보인다(보고서 v1.1 CS-01) — FFG-TST-009 · FFG-LCY-006
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -33,13 +33,14 @@ export interface VRun {
   vin: string;
   scenarioId: string;
   role?: Role;
-  source: 'vecu' | 'unavailable';
+  /** vecu = 이전 실행기 기록(이력) — Evidence 아님 */
+  source: 'carla' | 'vecu' | 'unavailable';
   simulator: string | null;
   testId: string | null;
   overall: 'PASS' | 'FAIL' | 'UNAVAILABLE';
   gateResult: 'PASS' | 'FAIL' | 'UNAVAILABLE';
   gateReasons?: string[];
-  repro?: { ffvalVersion: string; scenarioHash: string; scriptHash: string; seed: number } | null;
+  repro?: { toolVersion: string; scenarioHash: string; scriptHash: string; seed: number; map?: string; replay?: string } | null;
   safety?: { deactClass: string; takeoverMs: number; rampMs: number; faultRampMs: number; faultTolerantTimeMs: number } | null;
   criteria: { id: string; label: string; unit: string; op: string; limit: number; status: 'pass' | 'fail' | 'pending' | 'na'; value: number | null; at: number | null; deciding: boolean }[];
   evaluation: { value: boolean; decision: string; reason: string } | null;
@@ -58,7 +59,7 @@ const short = (h: string) => `${h.slice(0, 12)}…`;
 function g5Checks(r: VRun) {
   const crit = r.criteria.filter((c) => c.status !== 'na');
   return [
-    { k: T.g5.source, ok: r.source === 'vecu' },
+    { k: T.g5.source, ok: r.source === 'carla' },
     { k: T.g5.criteria, ok: crit.length > 0 && crit.every((c) => c.status === 'pass') },
     { k: T.g5.repro, ok: !!r.repro },
     { k: T.g5.baseline, ok: r.role !== 'BASELINE_REMOTE' && r.role !== 'FAULT_KILL' },
@@ -103,12 +104,13 @@ function RunDrawer({ id, onClose }: { id: string | null; onClose: () => void }) 
               {
                 k: T.repro,
                 v: r.repro ? <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{`scenario ${short(r.repro.scenarioHash)} · script ${short(r.repro.scriptHash)} · seed ${r.repro.seed}`}</span> : '—',
-                note: r.repro?.ffvalVersion,
+                note: r.repro?.toolVersion,
               },
-              { k: T.tms, v: <span className="ds-mono">{r.tms ? `${r.tms.tmsId} · ${when(r.tms.submittedAt)}` : r.role === 'BASELINE_REMOTE' ? T.tmsNotTarget : r.source === 'vecu' ? T.tmsNone : '—'}</span> },
+              ...(r.repro?.replay ? [{ k: T.replay, v: <span style={{ wordBreak: 'break-all', fontSize: 'var(--fs-xs)' }}><IdChip id={r.repro.replay} /></span>, note: T.replayNote }] : []),
+              { k: T.tms, v: <span className="ds-mono">{r.tms ? `${r.tms.tmsId} · ${when(r.tms.submittedAt)}` : r.role === 'BASELINE_REMOTE' ? T.tmsNotTarget : r.source === 'carla' ? T.tmsNone : '—'}</span> },
             ]}
           />
-          {r.source === 'vecu' && <G5Checklist r={r} />}
+          {r.source !== 'unavailable' && <G5Checklist r={r} />}
           {!!r.gateReasons?.length && (
             <div>
               <h3 className="ds-eyebrow">{T.reasons}</h3>
@@ -143,7 +145,7 @@ function RunDrawer({ id, onClose }: { id: string | null; onClose: () => void }) 
                   <li key={f.name} data-state="INFO">
                     <Icon name="book" size={16} />
                     <span>
-                      <a href={`/api/virtual-validations/${r.runId}/files/${encodeURIComponent(f.name)}`} target="_blank" rel="noreferrer" className="ds-mono">
+                      <a href={fileUrl(r.runId, f.name)} target="_blank" rel="noreferrer" className="ds-mono">
                         {f.name}
                       </a>
                       <span className="ds-check__detail ds-mono">{`sha256:${f.sha256.slice(0, 12)}… · ${f.bytes} B`}</span>
@@ -154,7 +156,7 @@ function RunDrawer({ id, onClose }: { id: string | null; onClose: () => void }) 
             </div>
           )}
           <ErrorNote error={tms.error} />
-          {r.source === 'vecu' && !r.tms && r.role !== 'BASELINE_REMOTE' && (
+          {r.source === 'carla' && !r.tms && r.role !== 'BASELINE_REMOTE' && (
             <Button variant="primary" disabled={!perm.ok || tms.isPending} title={perm.hint} onClick={() => tms.mutate({ params: { id: r.runId }, body: {} })}>
               {T.tms}
             </Button>
@@ -191,7 +193,7 @@ function RunTable({ rows, currentHash, onOpen }: { rows: VRun[]; currentHash?: s
           key: 'src',
           header: T.status,
           cell: (r) => (
-            <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', color: r.source === 'vecu' ? undefined : 'var(--warn)' }}>
+            <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', color: r.source === 'carla' ? undefined : 'var(--warn)' }}>
               {r.source}
               {currentHash && r.contentHash !== currentHash ? ` · ${T.staleHash}` : ''}
             </span>
@@ -273,8 +275,8 @@ export function CombinationPanel({ featureId }: { featureId: string }) {
   );
 }
 
-/** 그 역할의 가장 최근 vECU 실행 (실행 번호가 클수록 나중) */
-const latestOf = (rows: VRun[], role: Role) => [...rows].filter((x) => x.role === role && x.source === 'vecu').sort((a, b) => b.runId.localeCompare(a.runId))[0] ?? null;
+/** 그 역할의 가장 최근 CARLA 실행 (실행 번호가 클수록 나중) */
+const latestOf = (rows: VRun[], role: Role) => [...rows].filter((x) => x.role === role && x.source === 'carla').sort((a, b) => b.runId.localeCompare(a.runId))[0] ?? null;
 const at = (r: VRun, id: string) => r.criteria.find((c) => c.id === id)?.at ?? null;
 const val = (r: VRun, id: string) => r.criteria.find((c) => c.id === id)?.value ?? null;
 
@@ -357,16 +359,34 @@ export function CompareTimeline({ onboard, remote, faultAt }: { onboard: VRun | 
 }
 
 /** 정책 상세의 가상검증 패널 — 이 정책 내용으로 돌린 실행만 검증기 근거가 된다 */
-/** FF 사이트와 함께 배포된 vECU 시뮬레이터(/vecu/, tools/vecu-sync.ts) — ?ffv=<Feature>면 Gate 시험 콘솔과 그 Feature 샘플을 연다 */
-export const VECU_WEB = import.meta.env.VITE_VECU_URL ?? `${import.meta.env.BASE_URL}vecu/index.html`;
-export const vecuLink = (featureId: string) => `${VECU_WEB}?ffv=${encodeURIComponent(featureId)}`;
+const fileUrl = (runId: string, name: string) => `/api/virtual-validations/${runId}/files/${encodeURIComponent(name)}`;
 
-export function SimulatorLink({ featureId }: { featureId: string }) {
+/** 차량 내 감지 실행의 Evidence 보고서(CARLA 주행 시계열) — 정적 배포에는 Evidence 파일이 없어 안내만 */
+function ReportLink({ run }: { run: VRun | null }) {
+  const has = !!run?.evidence?.files.some((f) => f.name === 'report.html');
+  if (!run || !has || STATIC_MODE)
+    return (
+      <span className="ds-field__hint" data-testid="sim-report" data-tour="sim-report">
+        {T.reportNone}
+      </span>
+    );
   return (
-    <a href={vecuLink(featureId)} target="_blank" rel="noopener" title={T.openSimHint} data-testid="vecu-link" data-tour="vecu-link">
-      {T.openSim} ↗
+    <a href={fileUrl(run.runId, 'report.html')} target="_blank" rel="noreferrer" title={`${run.runId} · ${run.testId ?? ''}`} data-testid="sim-report" data-tour="sim-report">
+      {T.reportOnboard} ↗
     </a>
   );
+}
+
+interface SimStatus {
+  available: boolean;
+  mode: string;
+  simulator: string;
+  host: string;
+  port: number;
+  server: { version: string; map: string; synchronous: boolean; vehicles: number; foreignVehicles: number } | null;
+  runner: string;
+  reason: string | null;
+  queue: { running: number; waiting: number };
 }
 
 export function VirtualPanel({ policy }: { policy: { policyId: string; featureId: string; contentHash: string } }) {
@@ -390,7 +410,7 @@ export function VirtualPanel({ policy }: { policy: { policyId: string; featureId
     >
       <div style={{ display: 'grid', gap: 'var(--sp-2)' }}>
         <p className="ds-field__hint">
-          {scenarios.map((s) => `${s.scenarioId} → ${s.validator === 'BASELINE' ? T.role.BASELINE_REMOTE : s.validator}`).join(' · ')} · <Link to="/validations/virtual">{T.title} →</Link> · <SimulatorLink featureId={policy.featureId} />
+          {scenarios.map((s) => `${s.scenarioId} → ${s.validator === 'BASELINE' ? T.role.BASELINE_REMOTE : s.validator}`).join(' · ')} · <Link to="/validations/virtual">{T.title} →</Link>
         </p>
         <ErrorNote error={run.error} />
         <AsyncView state={asyncState(runs, !Array.isArray(runs.data?.items) || runs.data!.items.length === 0)} error={runs.error?.message} onRetry={() => runs.refetch()} rows={2}>
@@ -403,7 +423,7 @@ export function VirtualPanel({ policy }: { policy: { policyId: string; featureId
 }
 
 export function VirtualValidationScreen() {
-  const status = useApi<{ available: boolean; mode: string; dir: string; reason: string | null; simulatorUrl: string }>('vecuStatus');
+  const status = useApi<SimStatus>('simStatus');
   const sc = useApi<{ items: Scenario[] }>('virtualScenarios', { query: { featureId: 'FEAT-00022' } });
   const runs = useApi<{ items: VRun[] }>('virtualRuns');
   const policies = useApi<{ items: { policyId: string; flagKey: string; featureId: string; featureVersion: string; status: string; revision: number }[] }>('listPolicies', { query: { featureId: 'FEAT-00022' } });
@@ -416,13 +436,19 @@ export function VirtualValidationScreen() {
   const rows = runs.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-03 · D04-02 · vECU" title={T.title} lead={T.lead} actions={<SimulatorLink featureId="FEAT-00022" />} />
-      <Panel title={T.status} id="vecu" tour="vecu-status" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
+      <PageHeader eyebrow="D06-03 · D04-02 · CARLA" title={T.title} lead={T.lead} actions={<ReportLink run={latestOf(rows, 'FAULT_ONBOARD')} />} />
+      <Panel title={T.status} id="sim" tour="sim-status" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
         {status.data && (
           <KeyValue
             rows={[
-              { k: T.status, v: <span className="ds-mono">{status.data.available ? T.available : T.unavailable}</span>, note: status.data.reason ?? undefined },
-              { k: 'VECU_DIR', v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', wordBreak: 'break-all' }}>{status.data.dir}</span> },
+              { k: T.status, v: <span className="ds-mono">{status.data.available ? T.available : T.unavailable}</span>, note: status.data.reason ?? (status.data.available ? undefined : T.startHint) },
+              {
+                k: T.server,
+                v: <span className="ds-mono">{`${status.data.host}:${status.data.port}`}</span>,
+                note: status.data.server ? T.serverText(status.data.server) : undefined,
+              },
+              { k: T.queue, v: <span className="ds-mono">{`${status.data.queue.running} · ${status.data.queue.waiting}`}</span> },
+              { k: T.runner, v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', wordBreak: 'break-all' }}>{status.data.runner}</span>, note: status.data.mode === 'off' ? 'SIM_MODE=off' : undefined },
             ]}
           />
         )}

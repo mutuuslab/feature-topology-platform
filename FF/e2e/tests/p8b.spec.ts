@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/_design');
 });
 
-test('이상 징후: 고장 보고 2대(ASIL B) → 긴급 차단 권고 → 확인·조치 완료 → 품질 피드백(G5·G7·vECU 회귀)', async ({ page, request }) => {
+test('이상 징후: 고장 보고 2대(ASIL B) → 긴급 차단 권고 → 확인·조치 완료 → 품질 피드백(G5·G7·가상검증 회귀)', async ({ page, request }) => {
   const at = new Date().toISOString();
   for (const vin of ['KMH-NX4-0001', 'KMH-NX4-0004']) {
     const boot = `BOOT-${vin}-e2e`;

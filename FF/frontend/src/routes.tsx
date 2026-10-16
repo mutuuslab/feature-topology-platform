@@ -148,7 +148,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/policy/exception', element: legacyTo('/validations'), title: '정책 예외 (이전 주소)', group: 'verify', parent: '/validations' },
   { path: '/verify/compliance', element: named(opsScreens, 'ComplianceScreen'), title: '컴플라이언스', group: 'verify', menu: '/verify/compliance', components: ['D03-01'], v2: true },
   { path: '/quality/feedback', element: named(anomalyScreens, 'FeedbackScreen'), title: '품질 피드백', group: 'verify', menu: '/quality/feedback', components: ['D04-06'], v2: true },
-  { path: '/validations/virtual', element: named(virtualScreens, 'VirtualValidationScreen'), title: 'vECU 가상검증', group: 'verify', menu: '/validations/virtual', components: ['D06-03', 'D04-02'], v2: true },
+  { path: '/validations/virtual', element: named(virtualScreens, 'VirtualValidationScreen'), title: 'CARLA 가상검증', group: 'verify', menu: '/validations/virtual', components: ['D06-03', 'D04-02'], v2: true },
   { path: '/verify/scenario', element: legacyTo('/validations/virtual'), title: '차량 시나리오 (이전 주소)', group: 'verify', parent: '/validations/virtual' },
   { path: '/twin/simulation', element: named(twin, 'TwinSimulation'), title: 'What-if 시뮬레이션 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
   { path: '/experiments', element: named(experimentScreens, 'ExperimentsScreen'), title: '실험·효과', group: 'verify', menu: '/experiments', components: ['D01-07'], v2: true },

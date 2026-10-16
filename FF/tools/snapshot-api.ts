@@ -111,8 +111,8 @@ async function main() {
   await save('killRequests');
   await save('killRequests', {}, { status: 'ACTIVE' });
   await save('killPreview', {}, { featureId: 'FEAT-00022', featureVersion: '1.0.0' });
-  // vECU 가상검증
-  await save('vecuStatus');
+  // 가상검증(CARLA) — 정적 배포에는 검증 서버가 없다(상태는 미연결로 찍힌다)
+  await save('simStatus');
   await save('virtualScenarios', {}, { featureId: 'FEAT-00022' });
   await save('virtualRuns');
   for (const p of policies.items as { policyId: string; featureId: string }[]) if (p.featureId === 'FEAT-00022') await save('virtualRuns', {}, { policyId: p.policyId });

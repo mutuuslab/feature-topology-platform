@@ -15,7 +15,7 @@ async function asRole(page: Page, role: string) {
 const noHorizontalOverflow = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 
 for (const [w, h] of [[1366, 768], [1920, 1080]] as const) {
-  test(`CS-01 보기 모드 ${w}: 시작 → 분류 화면 강조 → vECU 화면 → 역할 전환 → 끝내기`, async ({ page }) => {
+  test(`CS-01 보기 모드 ${w}: 시작 → 분류 화면 강조 → 가상검증 화면 → 역할 전환 → 끝내기`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await asRole(page, 'author');
     await page.goto('/learn');
@@ -34,7 +34,7 @@ for (const [w, h] of [[1366, 768], [1920, 1080]] as const) {
 
     await dock.getByRole('button', { name: '다음' }).click();
     await expect(page).toHaveURL(/\/validations\/virtual$/);
-    await expect(page.locator('[data-tour="vecu-status"][data-tour-active="true"]')).toBeVisible();
+    await expect(page.locator('[data-tour="sim-status"][data-tour-active="true"]')).toBeVisible();
     expect(await noHorizontalOverflow(page)).toBe(true);
 
     // 마지막 단계(G5)는 품질 검토 역할 — 배너 → 전환

@@ -1,5 +1,5 @@
 // /ops/anomalies — 이상 징후 대응 (D06-12, PoC ⑥ 이상 확인). 차량 고장 보고·서명 거부 회신·배포 회신 이상 → 이상 건 → 긴급 차단·조치·기각.
-// /quality/feedback — 품질 피드백 (D04-06). 조치된 이상 건이 다음 Version에 남긴 요구(G5·G7 재판정, vECU 회귀) — 새 Version의 G5 PASS로 자동 해소.
+// /quality/feedback — 품질 피드백 (D04-06). 조치된 이상 건이 다음 Version에 남긴 요구(G5·G7 재판정, 가상검증 회귀) — 새 Version의 G5 PASS로 자동 해소.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -211,7 +211,7 @@ export function FeedbackScreen() {
               {open.actions.map((x) => (
                 <li key={x.ref} data-state={open.status === 'RESOLVED' ? 'PASS' : 'INFO'}>
                   <span>{x.label}</span>
-                  {x.kind === 'VIRTUAL_REGRESSION' && <Link to="/validations/virtual">vECU →</Link>}
+                  {x.kind === 'VIRTUAL_REGRESSION' && <Link to="/validations/virtual">{ko.virtual.title} →</Link>}
                 </li>
               ))}
             </ul>

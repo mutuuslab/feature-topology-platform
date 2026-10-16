@@ -88,3 +88,16 @@ def test_busy_server_waits_then_reports_busy(tmp_path):
 def test_probe_without_server_is_exit_3():
     code, out = cli('', '--probe')
     assert code == 3 and 'error' in out
+
+
+def test_replay_missing_file_is_input_error(tmp_path):
+    code, out = cli('', '--replay', str(tmp_path / 'nope.log'), '--info')
+    assert code == 2 and '기록 파일이 없습니다' in out['error']
+
+
+def test_recording_summary_reads_carla_0916_info():
+    sys.path.insert(0, str(CLI.parent))
+    from ffcarla.recorder import recording_summary
+    info = 'Version: 2\nMap: Town04\nDate: 10/17/26 02:20:27\n\nFrame 1 at 0 seconds\n Create 24: spectator (0)\n\nFrames: 1400\nDuration: 69.95 seconds\n'
+    assert recording_summary(info) == dict(format='2', map='Town04', frames=1400, durationS=69.95, readable=True)
+    assert recording_summary('File not found')['readable'] is False

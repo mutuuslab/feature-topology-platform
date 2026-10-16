@@ -1,6 +1,6 @@
-// UX 검토용 — vECU 가상검증 v2(WP9): 조합 시험 계획·원격 대 차량 내 비교 타임라인·실행 이력 → 기준선/차량 내 감지 실행 서랍(G5 인정 체크리스트)
+// UX 검토용 — CARLA 가상검증: 조합 시험 계획·원격 대 차량 내 비교 타임라인·실행 이력 → 기준선/차량 내 감지 실행 서랍(G5 인정 체크리스트)
 // → 42 컴포넌트 상세의 도구 신뢰성(TCL). 결과: e2e/shots/virtual-*.png, arch-tcl-*.png.
-// 실행: 프론트(BASE)·백엔드(API, 실제 vECU 연결)가 떠 있어야 한다. 가상검증 실행을 만든다(데모 DB) — node e2e/scripts/shot-virtual.mjs
+// 실행: 프론트(BASE)·백엔드(API, CARLA 검증 서버 2100 연결 — npm run carla:up)가 떠 있어야 한다. 가상검증 실행을 만든다(데모 DB) — node e2e/scripts/shot-virtual.mjs
 import { chromium } from '@playwright/test';
 const base = process.env.BASE ?? 'http://localhost:9012';
 const api = process.env.API ?? 'http://localhost:9101';

@@ -6963,13 +6963,13 @@
         }
       }
     },
-    "/api/vecu/status": {
+    "/api/sim/status": {
       "get": {
-        "summary": "vECU 가상검증 실행기 연결 상태",
+        "summary": "CARLA 가상검증 실행기 연결 상태",
         "tags": [
           "D06-03"
         ],
-        "operationId": "vecuStatus",
+        "operationId": "simStatus",
         "parameters": [],
         "responses": {
           "200": {
@@ -7776,7 +7776,7 @@
         }
       },
       "post": {
-        "summary": "정책을 vECU 가상 차량에 적용해 시나리오 실행 (판정·Evidence)",
+        "summary": "정책을 CARLA 가상 차량에 적용해 시나리오 실행 (판정·Evidence)",
         "tags": [
           "D06-03"
         ],

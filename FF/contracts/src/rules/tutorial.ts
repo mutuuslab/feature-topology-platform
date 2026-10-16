@@ -144,7 +144,7 @@ export const TUTORIALS: Tutorial[] = [
         role: 'author',
         route: '/validations/virtual',
         anchor: 'sim-report',
-        targetKo: '실행 상세 › [Evidence 보고서]',
+        targetKo: '[Evidence 보고서 (차량 내 감지)] 링크',
         rules: ['FFG-LCY-006'],
         tests: ['TC-FF-21'],
         expectKo: '감지 시각 ≤ FTTI, FHTI 여유가 양수',

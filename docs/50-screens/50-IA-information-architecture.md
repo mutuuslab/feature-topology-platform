@@ -39,7 +39,7 @@ last_updated: 2026-10-16
 ▸ 구성·Topology    BOM 기준선·확정 승인 /baselines · Topology·의존관계 검증 /arch/topology · 변경 영향 분석 /analysis/impact · Variant·지원 조건 /variant-conditions
 ▸ 기준정보         UPG·UPG-VC /master/upg · SW·Artifact /master/artifacts · SW 구조 /master/structure · SW EO /change/eo · 제어점 /master/control-points · 데이터 사전점검 /precheck
 ▸ 검증·Gate        품질 기준·Evidence /verify/evidence · 분야별 검증 이력 /validations · 컴플라이언스 /verify/compliance · 품질 피드백 /quality/feedback
-                   · vECU 가상검증 /validations/virtual · 실험·효과 /experiments · 요구·안전 추적 /trace/design
+                   · CARLA 가상검증 /validations/virtual · 실험·효과 /experiments · 요구·안전 추적 /trace/design
 ▸ 상품·출시        Feature Catalog 상품 /products · 사용 권한·체험권 /entitlements · 활성화 판단 /activation/decide · 정책·검증·승인 /policies
                    · Flag 은퇴 /flag-retirements · 서명 배포·차량 회신 /deployments
 ▸ 차량 운영·안전   Fleet 실시간 적용 현황 /fleet/live · 차량별 적용 상태 /fleet/vehicles/ego-01 · 긴급 차단·복구 /ops/kill · 이상 징후 대응 /ops/anomalies

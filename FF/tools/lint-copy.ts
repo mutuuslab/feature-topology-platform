@@ -11,8 +11,12 @@ const SRC = join(FF, 'frontend', 'src');
 const NEW_UI_DIRS = ['frontend/src/design', 'frontend/src/screens', 'frontend/src/shell'];
 const COPY_FILE = join(SRC, 'copy', 'ko.ts');
 
+/** 이전 가상검증 실행기 이름 — 대소문자 구분(이력 기록의 source 값 'vecu'는 식별자라 허용) */
+const OLD_RUNNER = /vECU|VECU|ffval/;
+const OLD_RUNNER_VISIBLE = /['"`>][^'"`<]*?(vECU|VECU|ffval)/;
 /** 금지어 — 용어집(docs/_glossary) 기준 표기로 통일 */
 const BANNED: [RegExp, string][] = [
+  [OLD_RUNNER, "'가상검증(CARLA)' — 실행기 교체(2026-10-17), 이전 실행기 이름은 화면에 쓰지 않는다"],
   [/킬\s?스위치/, "'긴급 차단' 또는 'Kill'"],
   [/세이프\s?디폴트/, "'Safe Default'"],
   [/베이스라인/, "'Baseline' 또는 '기준선'"],
@@ -41,12 +45,14 @@ for (const f of walk(SRC, ['.tsx'])) {
 readFileSync(join(SRC, 'routes.tsx'), 'utf8').split('\n').forEach((line, i) => {
   const t = line.match(/title: '([^']*)'/);
   if (t && TWIN.test(t[1])) errors.push(`frontend/src/routes.tsx:${i + 1}  금지어 Twin/트윈 → 업무 용어 (${t[1]})`);
+  if (t && OLD_RUNNER.test(t[1])) errors.push(`frontend/src/routes.tsx:${i + 1}  금지어 ${OLD_RUNNER} → 가상검증(CARLA) (${t[1]})`);
 });
 for (const f of walk(SRC, ['.tsx'])) {
   const r = rel(f);
   if (!NEW_UI_DIRS.some((d) => r.startsWith(d + '/'))) continue;
   readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
     if (!line.trim().startsWith('//') && TWIN_VISIBLE.test(line)) errors.push(`${r}:${i + 1}  금지어 Twin/트윈 → 업무 용어`);
+    if (!line.trim().startsWith('//') && OLD_RUNNER_VISIBLE.test(line)) errors.push(`${r}:${i + 1}  금지어 ${OLD_RUNNER} → 가상검증(CARLA)`);
   });
 }
 

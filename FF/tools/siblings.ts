@@ -1,4 +1,4 @@
-// 형제 저장소 버전 고정 검사 (verify `siblings`) — FF 시험이 실제로 띄우는 다른 저장소(FF_IMP GLEO, vECU)가 FF가 맞춘 버전인지 본다.
+// 형제 저장소 버전 고정 검사 (verify `siblings`) — FF 시험이 실제로 띄우는 다른 저장소(FF_IMP GLEO, LearnCarla CARLA)가 FF가 맞춘 버전인지 본다.
 // 배경(2026-10-14): FF_IMP가 다른 세션에서 GLEO v2 브랜치로 바뀐 채로 FF verify를 돌려 gleo.ws.spec이 엉뚱한 wire와 비교되어 실패했다.
 // 규칙: 저장소가 없으면 SKIP(CI) · FF_IMP checkout은 harness/siblings.json의 pin 커밋을 포함해야 하고 · 시험이 쓰는 폴더(watch)에 미커밋 변경이 없어야 한다.
 import { spawnSync } from 'node:child_process';
@@ -38,12 +38,13 @@ export function factsOf(dir: string, pin: string, watch: string[]): SiblingFacts
 }
 
 if (import.meta.main ?? process.argv[1]?.endsWith('siblings.ts')) {
-  const cfg = readJson<{ ffImp: { dir: string; env: string; pin: string; watch: string[] }; vecu: { dir: string; env: string } }>(join(FF, 'harness', 'siblings.json'));
+  const cfg = readJson<{ ffImp: { dir: string; env: string; pin: string; watch: string[] }; carla: { dir: string; env: string; python: string; server: string } }>(join(FF, 'harness', 'siblings.json'));
   const ffImpDir = process.env[cfg.ffImp.env] ?? resolve(FF, cfg.ffImp.dir);
   const v = judgeFfImp(factsOf(ffImpDir, cfg.ffImp.pin, cfg.ffImp.watch), cfg.ffImp.pin);
-  const vecuDir = process.env[cfg.vecu.env] ?? resolve(FF, cfg.vecu.dir);
+  const carlaDir = process.env[cfg.carla.env] ?? resolve(FF, cfg.carla.dir);
+  const carlaOk = existsSync(join(carlaDir, cfg.carla.python)) && existsSync(join(carlaDir, cfg.carla.server));
   console.log('siblings');
   console.log(`  ${v.status === 'FAIL' ? '✕' : v.status === 'SKIP' ? '·' : '✓'} FF_IMP (${ffImpDir}) — ${v.note}`);
-  console.log(`  ${existsSync(vecuDir) ? '✓' : '·'} vECU (${vecuDir}) — ${existsSync(vecuDir) ? '있음 (계약 시험이 실제 실행기로 돈다)' : '없음 — 실제 vECU 계약 시험은 건너뛴다'}`);
+  console.log(`  ${carlaOk ? '✓' : '·'} LearnCarla CARLA (${carlaDir}) — ${carlaOk ? 'venv·서버 있음 (검증 서버가 떠 있으면 실제 실행기 시험이 돈다: npm run carla:up)' : '없음 — 실제 CARLA 시험은 건너뛴다'}`);
   process.exit(v.status === 'FAIL' ? 1 : 0);
 }

@@ -2,6 +2,7 @@
 
   python sim/carla/ffcarla_cli.py --out <dir>          패키지 JSON은 stdin
   python sim/carla/ffcarla_cli.py --probe              서버 상태 한 줄
+  python sim/carla/ffcarla_cli.py --replay <기록> [--info]   Evidence의 carla_recording.log 재생(--info는 정보만)
 
 패키지: {policy, scope?, fleet[], vehicle(VIN), safety, evaluation{value, decision, reason}, scenarios:[{scenarioId, ...}], seed?}
   evaluation은 FF가 자기 평가기(flags/evaluate.ts)로 계산해 넣는다 — 실행기에 평가기를 복제하지 않는다.
@@ -21,6 +22,7 @@ from pathlib import Path
 
 from . import VERSION
 from .lock import ServerBusy, server_lock
+from .recorder import recording_summary
 from .report import report_html
 from .run import ValidationRun
 
@@ -97,7 +99,7 @@ def run_package(pkg: dict, out: Path, world, simulator: str, server_version: str
         repro = dict(toolVersion=f'{VERSION} · CARLA {server_version} · {info["map"]}', simulator=simulator, serverVersion=server_version,
                      map=info['map'], stepS=info['stepS'], seed=seed, scenarioHash=sha256(canon(sc)), scriptHash=script_hash(),
                      safety=run.safety, clockBase=iso(0), routeStart=info['routeStart'], vehicles=dict(ego=info['egoBlueprint'], lead=info['leadBlueprint']),
-                     replay=f"client.replay_file('{rec.name}', 0, 0, 0) — CARLA {server_version} {info['map']}")
+                     replay=f'python sim/carla/ffcarla_cli.py --replay "{rec}"')
         verdict = dict(testId=test_id, kind='FF virtual validation (CARLA)', overall=v['overall'], generatedAt=iso(run.t), internalOnly=True,
                        repro=repro, policy={k: pol.get(k) for k in ('policyId', 'revision', 'status', 'contentHash', 'featureId', 'featureVersion', 'flagKey')},
                        evaluation=ev, vehicle=vehicle, scenario=sc, start=info['start'], maxLateralDevM=info['maxLateralDevM'],
@@ -127,6 +129,8 @@ def main(argv=None) -> int:
     ap.add_argument('--out', help='Evidence 폴더')
     ap.add_argument('--package', help='패키지 JSON 파일 (없으면 stdin)')
     ap.add_argument('--probe', action='store_true', help='서버 상태만')
+    ap.add_argument('--replay', metavar='RECORDING', help='Evidence의 carla_recording.log를 서버에서 다시 재생 (CARLA_PORT로 화면 있는 서버를 고른다)')
+    ap.add_argument('--info', action='store_true', help='--replay와 함께: 재생하지 않고 기록 정보(프레임·길이·맵)만')
     a = ap.parse_args(argv)
     # stdout에는 결과 한 줄만 — carla 네이티브 라이브러리가 종료할 때 stdout에 'INFO: …'을 찍으므로 fd 1을 stderr로 돌리고
     # 결과는 원래 stdout으로 직접 쓴다(FF CarlaAdapter는 마지막 줄을 결과로 읽는다)
@@ -155,6 +159,8 @@ def _main(a, emit) -> int:
         except RuntimeError as e:
             emit(dict(tool=TOOL, host=host, port=port, error=str(e)))
             return 3
+    if a.replay:
+        return _replay(W, Path(a.replay), a.info, host, port, emit)
     if not a.out:
         emit(dict(tool=TOOL, error='--out이 필요합니다'))
         return 2
@@ -168,6 +174,30 @@ def _main(a, emit) -> int:
             return _run_on_server(W, pkg, Path(a.out), host, port, emit)
     except ServerBusy as e:
         emit(dict(tool=TOOL, error=str(e)))
+        return 3
+
+
+def _replay(W, rec: Path, info_only: bool, host: str, port: int, emit) -> int:
+    """기록 재생 — 서버가 파일을 직접 읽으므로 절대 경로로 넘긴다. --info는 읽기만, 재생은 세계를 바꾸므로 검증 잠금을 잡는다."""
+    rec = rec.resolve()
+    if not rec.is_file():
+        emit(dict(tool=TOOL, error=f'기록 파일이 없습니다: {rec}'))
+        return 2
+    try:
+        c, ver = W.connect(host, port, 60.0)
+        summary = c.show_recorder_file_info(str(rec), False)
+        head = dict(tool=TOOL, recording=str(rec), host=host, port=port, server=ver, **recording_summary(summary))
+        if info_only:
+            emit(head)
+            return 0
+        with server_lock(host, port, float(os.environ.get('CARLA_LOCK_TIMEOUT_S', '600'))):
+            emit(dict(head, replaying=True, result=c.replay_file(str(rec), 0.0, 0.0, 0).strip().splitlines()[:1]))
+        return 0
+    except ServerBusy as e:
+        emit(dict(tool=TOOL, error=str(e)))
+        return 3
+    except RuntimeError as e:
+        emit(dict(tool=TOOL, host=host, port=port, error=str(e)))
         return 3
 
 

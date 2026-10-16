@@ -3,12 +3,16 @@
     "dir": "../../2026-09-23_FF_IMP",
     "env": "FF_IMP_DIR",
     "pin": "5a1138cd7884343566d4dce2f909a177c2889b6d",
-    "watch": ["gleo"],
+    "watch": [
+      "gleo"
+    ],
     "why": "GLEO 메시지 v2(WP5b) — FF contracts/gleo.ts·adapters/gleo·gleo.ws.spec이 이 커밋의 wire와 함께 고정됐다. FF_IMP checkout이 이 커밋을 포함하지 않으면 실연동 시험이 다른 wire와 비교된다."
   },
-  "vecu": {
-    "dir": "../../2026-10-11_vECU",
-    "env": "VECU_DIR_REAL",
-    "why": "실제 vECU 계약 시험(backend/test/d06/vecu-contract.spec.ts)과 웹 실행본 동기화(vecu:check)의 원천. git 저장소가 아니라 버전 고정 대신 존재만 보고한다."
+  "carla": {
+    "dir": "../../2026-10-17_Carlra",
+    "env": "CARLA_HOME_DIR",
+    "python": ".venv/Scripts/python.exe",
+    "server": "sandbox/CARLA_0.9.16/CarlaUE4.exe",
+    "why": "가상검증 실행기(sim/carla)를 돌리는 LearnCarla 설치본 — venv Python(carla 0.9.16 휠)과 검증 전용 서버(2100) 실행 파일. git 저장소의 origin이 upstream이라 버전 고정 대신 존재만 보고한다. 공유 서버(2000)는 쓰지 않는다."
   }
 }

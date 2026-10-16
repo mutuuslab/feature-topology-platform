@@ -4,7 +4,7 @@
 상태 = 차량 Safety Guard 상태(status_report v2): ACTIVE / DEACT_PENDING_* / DEACT_WARNING(기능이 아직 제어),
 DEACT_RAMP(기능 명령 → 기본 명령, 램프 동안 선형), DISABLED / INACTIVE(안전 상태 BASE_ONLY: 기본 차간 시간 제어).
 주입된 고장은 기능이 모르는 채로 기능의 거리 추정을 부풀린다.
-확장(ffval 2.0과 같음): set_guard_state(t, 'DEACT_RAMP', ramp_s)는 그 램프의 길이를 받는다 — 차량 내 고장 램프
+확장(이전 실행기 기준 운동학과 같음): set_guard_state(t, 'DEACT_RAMP', ramp_s)는 그 램프의 길이를 받는다 — 차량 내 고장 램프
 (Registry faultRampMs)는 원격 램프(rampMs)보다 짧다.
 """
 from __future__ import annotations

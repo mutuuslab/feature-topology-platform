@@ -1,4 +1,4 @@
-// P9 PoC 6단계 끝단 — 실제 백엔드(전용 9111, 실제 타이머, vECU 시험 대역·모의 Unleash)에서 화면의 "끝까지 실행"으로 ①~⑥.
+// P9 PoC 6단계 끝단 — 실제 백엔드(전용 9111, 실제 타이머, 가상검증 시험 대역(fake-carla)·모의 Unleash)에서 화면의 "끝까지 실행"으로 ①~⑥.
 // FEAT-00022를 실제로 긴급 차단하므로 다른 e2e가 모두 끝난 뒤 별도 프로젝트(poc)로 돈다(playwright.config.ts).
 // 이어서 OF-3: 차단 중 OpenFeature 웹 SDK 값이 OFF(DISABLED), 해제하면 ETag 폴링으로 다시 ON.
 import { expect, test, type Page } from '@playwright/test';

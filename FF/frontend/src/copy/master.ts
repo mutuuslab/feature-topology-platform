@@ -107,7 +107,7 @@ export const master = {
   },
   settings: {
     title: '설정',
-    lead: '플랫폼 실행 상태 — 데이터셋 시드, 저장 건수, 외부 연계 방식(모의·실연동·내장), OpenFeature SDK 고정 Version. 바꾸려면 백엔드 환경 변수(GLEO_MODE·VECU_MODE·UNLEASH_MODE·IF_MODE_xx)를 씁니다.',
+    lead: '플랫폼 실행 상태 — 데이터셋 시드, 저장 건수, 외부 연계 방식(모의·실연동·내장), OpenFeature SDK 고정 Version. 바꾸려면 백엔드 환경 변수(GLEO_MODE·SIM_MODE·UNLEASH_MODE·IF_MODE_xx)를 씁니다.',
     health: '상태',
     counts: '저장 건수',
     integrations: '외부 연계 방식',

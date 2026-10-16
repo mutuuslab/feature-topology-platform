@@ -1,4 +1,4 @@
-// PoC ④⑥ 배포·차단 전달 + vECU 가상검증 끝단 흐름 — 실제 백엔드(전용 9111, 실제 타이머)와 v2 화면.
+// PoC ④⑥ 배포·차단 전달 + CARLA 가상검증 끝단 흐름 — 실제 백엔드(전용 9111, 실제 타이머)와 v2 화면.
 // 긴급 차단은 lead-01만 대상으로 한다 — ego-01은 policy.spec의 체험권 흐름이 병렬로 쓴다.
 import { expect, test, type Page } from '@playwright/test';
 
@@ -89,9 +89,10 @@ test('긴급 차단 v2: 요청 → FSM·운영 리더 승인 → 게이트·서�
   await expect(drawer.getByRole('meter').last()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });
 });
 
-test('vECU 가상검증: 실행(시험 대역) → 결과·Evidence → TMS 제출(품질)', async ({ page }) => {
+test('CARLA 가상검증: 서버 상태 → 실행(시험 대역) → 결과·Evidence → TMS 제출(품질)', async ({ page }) => {
   await asRole(page, 'author');
   await page.goto('/validations/virtual');
+  await expect(page.locator('[data-tour="sim-status"]')).toContainText('127.0.0.1:2100');
   const run = page.getByRole('button', { name: '가상검증 실행' });
   await expect(run).toBeEnabled();
   await run.click();
@@ -99,8 +100,8 @@ test('vECU 가상검증: 실행(시험 대역) → 결과·Evidence → TMS 제�
     .getByRole('table', { name: '실행 이력' })
     .getByRole('row', { name: /SCN-FEAT00022-NOMINAL/ })
     .first();
-  // 실행은 vECU 프로세스를 띄우므로 병렬 부하에서는 몇 초 걸릴 수 있다
-  await expect(first).toContainText('vecu', { timeout: 30_000 });
+  // 실행은 실행기 프로세스를 띄우므로 병렬 부하에서는 몇 초 걸릴 수 있다
+  await expect(first).toContainText('carla', { timeout: 30_000 });
   await asRole(page, 'quality');
   await page.reload();
   await page
@@ -110,6 +111,7 @@ test('vECU 가상검증: 실행(시험 대역) → 결과·Evidence → TMS 제�
     .click();
   const drawer = page.getByRole('dialog');
   await expect(drawer.getByRole('link', { name: 'verdict.json' })).toBeVisible();
+  await expect(drawer.getByRole('link', { name: 'carla_recording.log' })).toBeVisible();
   await drawer.getByRole('button', { name: 'TMS 제출 (IF-09)' }).click();
   await expect(drawer).toContainText(/TMS-\d{5}/);
 });

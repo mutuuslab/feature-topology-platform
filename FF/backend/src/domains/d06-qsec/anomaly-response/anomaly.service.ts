@@ -136,7 +136,7 @@ export class AnomalyService implements OnModuleInit {
       this.repo.save(next, !prev);
       if (!prev || prev.severity !== next.severity) {
         this.audit.record(SYSTEM, prev ? 'ANOMALY_ESCALATE' : 'ANOMALY_OPEN', next.anomalyId, { before: prev ? { severity: prev.severity } : undefined, after: { kind: next.kind, featureId: next.featureId, severity: next.severity, advice: next.advice }, componentId: 'D06-12' });
-        this.events.publish(prev ? 'anomaly.escalated' : 'anomaly.opened', next.anomalyId, { anomalyId: next.anomalyId, kind: next.kind, featureId: next.featureId, severity: next.severity, advice: next.advice, vins: next.vins.length }, { componentId: 'D06-12' });
+        this.events.publish(prev ? 'anomaly.escalated' : 'anomaly.opened', next.anomalyId, { anomalyId: next.anomalyId, kind: next.kind, featureId: next.featureId, severity: next.severity, advice: next.advice, vins: next.vins.length, signals: next.signals.length }, { componentId: 'D06-12' });
       }
     });
   }

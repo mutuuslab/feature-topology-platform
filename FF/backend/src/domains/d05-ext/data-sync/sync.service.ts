@@ -87,7 +87,7 @@ export class SyncService {
     this.db.tx(() => {
       this.db.run('INSERT INTO sync_run (run_id, target_id, at, doc) VALUES (?, ?, ?, ?)', run.runId, run.targetId, run.at, JSON.stringify(run));
       this.audit.record(actor, 'SYNC_RUN', run.runId, { after: { targetId, status: run.status, diffs: run.diffs.length, market: t.market }, componentId: 'D05-02' });
-      this.events.publish('sync.completed', run.runId, { targetId, ifId: t.ifId, status: run.status, diffs: run.diffs.length, market: t.market }, { componentId: 'D05-02', correlationId: actor.correlationId });
+      this.events.publish('sync.completed', run.runId, { targetId, ifId: t.ifId, status: run.status, diffs: run.diffs.length, market: t.market, reason: run.reason }, { componentId: 'D05-02', correlationId: actor.correlationId });
     });
     return run;
   }

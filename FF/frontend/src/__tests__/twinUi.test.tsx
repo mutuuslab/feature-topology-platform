@@ -305,13 +305,15 @@ describe('라우팅·네비게이션 통합', () => {
    */
   it('서브내비 줄에는 화면 ID 코드가 붙지 않는다 (이름만 남는다)', async () => {
     render(
+      <QueryClientProvider client={freshQueryClient()}>
       <MemoryRouter initialEntries={['/']}>
         <AppProvider>
           <TwinProvider>
             <App />
           </TwinProvider>
         </AppProvider>
-      </MemoryRouter>,
+      </MemoryRouter>
+      </QueryClientProvider>,
     );
     const ids = /(^|\s)UI\d\d(-S\d\d)?(\s|$)/;
     // MENU 2.0 — 그룹 패널의 줄은 routes.tsx의 화면 이름 그대로이고 UI 코드가 붙지 않는다.
@@ -341,13 +343,15 @@ describe('라우팅·네비게이션 통합', () => {
 
   it('/twin/fleet 라우트가 App 스택에서 렌더된다', async () => {
     render(
+      <QueryClientProvider client={freshQueryClient()}>
       <MemoryRouter initialEntries={['/twin/fleet']}>
         <AppProvider>
           <TwinProvider>
             <App />
           </TwinProvider>
         </AppProvider>
-      </MemoryRouter>,
+      </MemoryRouter>
+      </QueryClientProvider>,
     );
     expect(await screen.findByRole('heading', { name: /Fleet 적용 현황 \(3D\)/ })).toBeInTheDocument();
   });

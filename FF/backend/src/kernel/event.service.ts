@@ -17,9 +17,19 @@ export interface PlatformEvent<T = unknown> {
   payload: T;
 }
 
+/** 발행 훅 — 이벤트와 같은 트랜잭션에서 돈다(예: 수신자 알림). 훅 안에서 다시 발행하지 않는다 */
+export type PublishHook = (ev: PlatformEvent) => void;
+
 @Injectable()
 export class EventService {
   private readonly bus = new Subject<PlatformEvent>();
+  private readonly hooks: PublishHook[] = [];
+  private inHook = false;
+
+  /** 같은 트랜잭션 훅 등록 — 훅이 던지면 변경 전체가 롤백된다(알림 없이 상태만 바뀌는 일이 없다) */
+  onPublish(hook: PublishHook) {
+    this.hooks.push(hook);
+  }
 
   constructor(
     @Inject(DB) private readonly db: Db,
@@ -49,6 +59,13 @@ export class EventService {
       JSON.stringify(payload),
     );
     const full = { seq: lastInsertRowid, ...ev };
+    if (this.inHook) throw new Error('EventService 발행 훅 안에서는 이벤트를 다시 발행하지 않습니다');
+    this.inHook = true;
+    try {
+      for (const h of this.hooks) h(full);
+    } finally {
+      this.inHook = false;
+    }
     this.db.afterCommit(() => this.bus.next(full));
     return full;
   }

@@ -32,6 +32,9 @@ export interface CallOptions {
 /** 요청 URL — contracts의 routeUrl (정적 스냅샷 도구와 같은 규칙) */
 export const pathOf = (name: string, params: Record<string, string> = {}, query: CallOptions['query'] = {}) => routeUrl(name, params, query ?? {});
 
+/** 계정마다 결과가 다른 조회인가 — 캐시 키에 역할을 넣는다 */
+export const isPersonal = (name: string) => !!BY_NAME.get(name)?.personal;
+
 export async function call<T = any>(name: RouteName | string, opts: CallOptions = {}): Promise<T> {
   const route = BY_NAME.get(name);
   if (!route) throw new Error(`알 수 없는 API: ${name}`);
@@ -47,10 +50,13 @@ export async function call<T = any>(name: RouteName | string, opts: CallOptions 
   }
 
   const headers: Record<string, string> = { Accept: 'application/json' };
-  if (write) {
+  // 쓰기와 계정별 조회(내 알림)는 행위자 헤더를 붙인다
+  if (write || (route.personal && opts.role)) {
     const a = actorFor(opts.role ?? 'viewer', route.roles);
     headers['X-Actor-Id'] = a.id;
     headers['X-Actor-Role'] = a.role;
+  }
+  if (write) {
     headers['Idempotency-Key'] = crypto.randomUUID();
     headers['Content-Type'] = 'application/json';
   }

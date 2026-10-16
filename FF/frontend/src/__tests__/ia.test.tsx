@@ -3,6 +3,7 @@
 import { describe, expect, it, afterEach, beforeEach } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SPEC_MENU } from '../data/specMenu';
 import { SCREEN_ENTRY } from '../data/uiLinks';
 import { roles } from '../data/refdata';
@@ -92,15 +93,17 @@ describe('MENU 2.0 구조', () => {
 
 const renderShell = (path: string) =>
   render(
-    <MemoryRouter initialEntries={[path]}>
-      <MotionProvider>
-        <AppProvider>
-          <Shell>
-            <h1>본문</h1>
-          </Shell>
-        </AppProvider>
-      </MotionProvider>
-    </MemoryRouter>,
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MemoryRouter initialEntries={[path]}>
+        <MotionProvider>
+          <AppProvider>
+            <Shell>
+              <h1>본문</h1>
+            </Shell>
+          </AppProvider>
+        </MotionProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 
 describe('셸', () => {

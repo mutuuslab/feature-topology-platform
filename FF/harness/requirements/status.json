@@ -4,17 +4,17 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 155,
-      "부분": 265,
-      "미구현": 203,
+      "구현": 162,
+      "부분": 259,
+      "미구현": 202,
       "범위 밖": 5
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 88,
-        "부분": 84,
+        "구현": 89,
+        "부분": 83,
         "미구현": 64,
         "범위 밖": 3
       },
@@ -29,24 +29,24 @@
       {
         "sheet": "03_안전·검증",
         "leaves": 109,
-        "구현": 23,
-        "부분": 31,
+        "구현": 27,
+        "부분": 27,
         "미구현": 55,
         "범위 밖": 0
       },
       {
         "sheet": "04_배포·운영·데이터",
         "leaves": 78,
-        "구현": 8,
+        "구현": 9,
         "부분": 44,
-        "미구현": 26,
+        "미구현": 25,
         "범위 밖": 0
       },
       {
         "sheet": "05_시스템 연계·확장",
         "leaves": 34,
-        "구현": 4,
-        "부분": 16,
+        "구현": 5,
+        "부분": 15,
         "미구현": 14,
         "범위 밖": 0
       },
@@ -59,7 +59,7 @@
         "범위 밖": 0
       }
     ],
-    "traced": 0,
+    "traced": 7,
     "untracedImplemented": 155,
     "defects": 5,
     "decisionsPending": 9,
@@ -84,6 +84,14 @@
         "backend/test/requirements/defects.spec.ts"
       ]
     },
+    "FR-REG-005-014": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification.test.ts"
+      ]
+    },
     "FR-RTE-001-004": {
       "implemented": [],
       "tested": [
@@ -94,6 +102,57 @@
       "implemented": [],
       "tested": [
         "backend/test/requirements/defects.spec.ts"
+      ]
+    },
+    "FR-CRC-002-009": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification.test.ts",
+        "backend/test/d04/notifications.spec.ts"
+      ]
+    },
+    "FR-DSV-001-011": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification.test.ts",
+        "backend/test/d04/notifications.spec.ts"
+      ]
+    },
+    "FR-KSW-003-003": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification.test.ts",
+        "backend/test/d04/notifications.spec.ts"
+      ]
+    },
+    "FR-KSW-004-005": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "backend/test/d04/notifications.spec.ts"
+      ]
+    },
+    "FR-EVT-003-003": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification.test.ts"
+      ]
+    },
+    "FR-DSYN-001-004": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "backend/test/d04/notifications.spec.ts"
       ]
     }
   },

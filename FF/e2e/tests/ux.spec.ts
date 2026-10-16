@@ -13,6 +13,8 @@ const SCREENS = MENU_ENTRIES.filter((m) => m.menu !== '/');
 async function forceApi(page: Page, status: number, delayMs = 0) {
   let hits = 0;
   await page.route(/\/api\/(?!health|events\/stream)/, async (route) => {
+    // 상단바 종의 최근 알림(limit=6)은 셸 공통 조회 — 화면 상태 검사 대상이 아니다
+    if (/\/api\/notifications\?limit=6$/.test(route.request().url())) return route.continue();
     hits++;
     if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
     await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify({ error: { code: status === 403 ? 'FORBIDDEN' : 'INTERNAL', message: status === 403 ? '권한이 없습니다' : '시험용 서버 오류' } }) });

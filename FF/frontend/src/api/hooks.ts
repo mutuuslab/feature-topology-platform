@@ -2,16 +2,19 @@
 import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from '@tanstack/react-query';
 import { useAppShell } from '../store';
 import type { AsyncState } from '../design';
-import { ApiError, call, type CallOptions } from './client';
+import { ApiError, call, isPersonal, type CallOptions } from './client';
 
 export function useApi<T = any>(
   name: string,
   opts: Pick<CallOptions, 'params' | 'query'> = {},
   q: Omit<UseQueryOptions<T, ApiError>, 'queryKey' | 'queryFn'> = {},
 ) {
+  const { role } = useAppShell();
+  const personal = isPersonal(name);
   return useQuery<T, ApiError>({
-    queryKey: [name, opts.params ?? {}, opts.query ?? {}],
-    queryFn: ({ signal }) => call<T>(name, { ...opts, signal }),
+    // 계정마다 다른 조회(내 알림)는 역할을 바꾸면 다시 읽는다
+    queryKey: personal ? [name, opts.params ?? {}, opts.query ?? {}, role] : [name, opts.params ?? {}, opts.query ?? {}],
+    queryFn: ({ signal }) => call<T>(name, { ...opts, signal, ...(personal ? { role } : {}) }),
     ...q,
   });
 }

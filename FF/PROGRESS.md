@@ -53,7 +53,18 @@
   - FR-REG-002-008/009: 출시가 G8·G9만 봄.
 - [ ] **결정 대기 9건 (D1~D9)**: 즉시·자동·외부 제어 / 삭제 / 규칙 화면 관리 / fail-closed 완화 / 개인정보·동적 상태 / 평가 의미 / 범위 경계 / 데이터 모델 / 출시 전 배포.
   - 결정되면 review.json `decisions[].status='결정됨'` + `resolution`.
-- [ ] **@req 표식 0건** — 구현 판정 155건의 집행 위치에 표식을 단다(래칫 `req.untracedImplemented` 155 → 줄여 나감).
+- [ ] **@req 표식** — 새로 구현한 요구사항은 표식과 함께 들어온다(알림 7건). 기존 구현 판정 155건의 집행 위치 표식은 아직(래칫 `req.untracedImplemented` 155 → 줄여 나감).
+- **결정 없이 여러 시트에 걸친 UI 반영 — 알림 센터 → 정책 버전 이력 → 롤백 순서** (2026-10-17 사용자 지시)
+  - [x] **알림 센터 (D04-04)**: 구현 155 → 162, 미구현 203 → 202.
+    - 대상 요구사항: FR-REG-005-014, FR-CRC-002-009, FR-DSV-001-011, FR-KSW-003-003, FR-KSW-004-005, FR-EVT-003-003, FR-DSYN-001-004.
+    - 규칙 표: `contracts/src/rules/notification.ts`(이벤트 → 범주·받는 사람·제외).
+    - Fan-out: 이벤트 발행과 같은 트랜잭션(`EventService.onPublish`)에서 수행. migration `038_notification`.
+    - Web 알림은 항상 받는다. 메일은 모의 발송함으로 보내며 범주별로 고를 수 있다. 승인 요청·긴급 차단 메일은 끌 수 없다.
+    - 화면: 상단바 종(안 읽음 배지·최근 6건)과 `/notifications`(목록·읽음·메일 설정·발송 기록). `/admin/notifications`는 이 화면으로 넘긴다.
+    - 계정별 조회는 `RouteDef.personal` — 프론트가 GET에도 행위자 헤더를 붙이고 캐시 키에 역할을 넣는다.
+    - 원천 기능이 없어 이번에 빠진 알림: 규칙 만료·충돌·CI/CD·QGV. 롤백 알림은 롤백 단계에서 넣는다.
+  - [ ] **정책 버전 이력** (FR-PVER-002-*, FR-POL-002-004)
+  - [ ] **롤백** (FR-RBK-*, 롤백 알림 포함)
 
 ## 다음 세션 시작점
 - **국제표준 보고서 v1.1 실제 개발 WP10 완료 — 플랫폼 규칙 75개 모두 구현·시험 추적 완료 — 다음은 WP6 /verify/compliance 교체·WP2 은퇴 6단계부터 — WP6 화면·WP2 은퇴 6단계 반영 완료(은퇴·Data Act·사후 검토·변경 기록 화면은 아직 API만)**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1·WP0·WP1·WP3·WP4·WP5·WP9 완료. 규칙 추적 75/75. **사용자 결정 대기: 데모 계정 겸직 3건(approver 요구 승인+출시, steward 요구 승인+복원 승인, coordinator 출시+Kill 실행) — FFG-PLT-016 합격(겸직 0건)에는 계정 재구성 필요, PoC·e2e 흐름 영향**. 화면 확인: `/learn`, `/_design`, `/features?f=F3`, `/features/FEAT-00022/1.0.0?tab=safety`(UX 검토 사진 `node e2e/scripts/shot-safety.mjs` → `e2e/shots/safety-*`).

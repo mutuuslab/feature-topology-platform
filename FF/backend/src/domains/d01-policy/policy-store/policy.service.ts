@@ -233,7 +233,7 @@ export class PolicyService implements OnModuleInit {
       this.policies.update(next);
       this.audit.record(actor, 'POLICY_DEPLOY', id, { before: { status: 'APPROVED' }, after: { status: 'DEPLOYED', contentHash: p.contentHash }, reason, componentId: 'D01-06' });
       const pub = this.secureDeploy.publishPolicy(next, actor);
-      this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId }, { componentId: 'D01-06', correlationId: actor.correlationId });
+      this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId, reason }, { componentId: 'D01-06', correlationId: actor.correlationId });
       return { ...next, publicationId: pub.publicationId };
     });
   }

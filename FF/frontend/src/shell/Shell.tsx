@@ -12,6 +12,7 @@ import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '
 import { GuideDock, RuleDrawer } from './GuideDock';
 import { FeaturePeek } from './FeaturePeek';
 import { learnStore, useExplain, useLearn } from './learn';
+import { NotificationBell } from './NotificationBell';
 import './shell.css';
 
 const LS_PRESENT = 'ff.present';
@@ -128,7 +129,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <Button variant="ghost" className="sh-lang" aria-label={ko.shell.language} title={ko.shell.language} onClick={() => dispatch({ t: 'LANG', lang: lang === 'ko' ? 'en' : 'ko' })}>
             {lang.toUpperCase()}
           </Button>
-          <Button variant="ghost" icon="bell" aria-label={ko.shell.notifications} title={ko.shell.notifications} onClick={() => nav('/admin/notifications')} />
+          <NotificationBell />
         </div>
       </header>
 

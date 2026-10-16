@@ -432,4 +432,22 @@ CREATE INDEX flag_retirement_flag ON flag_retirement (flag_key, status);
 CREATE TRIGGER flag_retirement_no_delete BEFORE DELETE ON flag_retirement BEGIN SELECT RAISE(ABORT, 'flag_retirement는 삭제할 수 없음(기록 보존)'); END;
 `,
   },
+  {
+    // 기능명세서 공통 — 수신자 지정 알림(D04-04): 이벤트 하나에 알림 하나(같은 트랜잭션), 수신자 키(개인·역할·팀), 계정별 읽음,
+    // 이메일 설정과 모의 발송 기록. 알림·발송 기록은 추가만 — 읽음만 계정별로 쌓인다
+    name: '038_notification',
+    sql: `
+CREATE TABLE notification (notification_id TEXT PRIMARY KEY, event_seq INTEGER NOT NULL UNIQUE, category TEXT NOT NULL, severity TEXT NOT NULL, created_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE notification_recipient (notification_id TEXT NOT NULL, rkey TEXT NOT NULL, PRIMARY KEY (notification_id, rkey));
+CREATE INDEX notification_recipient_key ON notification_recipient (rkey, notification_id);
+CREATE TABLE notification_exclude (notification_id TEXT NOT NULL, user_id TEXT NOT NULL, PRIMARY KEY (notification_id, user_id));
+CREATE TABLE notification_read (notification_id TEXT NOT NULL, user_id TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY (notification_id, user_id));
+CREATE TABLE notification_pref (user_id TEXT PRIMARY KEY, doc TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE notification_email (id INTEGER PRIMARY KEY AUTOINCREMENT, notification_id TEXT NOT NULL, user_id TEXT NOT NULL, address TEXT NOT NULL, subject TEXT NOT NULL, status TEXT NOT NULL, at TEXT NOT NULL);
+CREATE INDEX notification_email_user ON notification_email (user_id, id);
+CREATE TRIGGER notification_no_update BEFORE UPDATE ON notification BEGIN SELECT RAISE(ABORT, 'notification은 추가만 가능'); END;
+CREATE TRIGGER notification_no_delete BEFORE DELETE ON notification BEGIN SELECT RAISE(ABORT, 'notification은 추가만 가능'); END;
+CREATE TRIGGER notification_email_no_delete BEFORE DELETE ON notification_email BEGIN SELECT RAISE(ABORT, 'notification_email은 추가만 가능'); END;
+`,
+  },
 ];

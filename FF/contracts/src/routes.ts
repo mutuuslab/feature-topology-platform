@@ -19,7 +19,8 @@ import {
 } from './schemas/api';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody } from './schemas/ops';
-import { KILL_APPROVER_ROLES } from './rules/access';
+import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
+import { NotificationPrefsBody, NotificationReadAllBody } from './rules/notification';
 import { RunVirtualBody } from './rules/virtual';
 import { MetricPlanBody } from './rules/safety-kpi';
 import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
@@ -61,6 +62,8 @@ export interface RouteDef {
   dataCategory?: DataCategory;
   /** 상태를 바꾸지 않는 공개 POST(OFREP 평가) — 역할 없음 */
   public?: boolean;
+  /** 요청 계정마다 결과가 다른 조회(내 알림) — 프론트가 GET에도 행위자 헤더를 붙이고 계정별로 캐시한다 */
+  personal?: boolean;
 }
 
 export const ROUTES: RouteDef[] = [
@@ -68,6 +71,12 @@ export const ROUTES: RouteDef[] = [
   { name: 'health', method: 'GET', path: '/api/health', summary: '상태 점검', component: 'KERNEL' },
   { name: 'components', method: 'GET', path: '/api/components', summary: '42 컴포넌트 현황', component: 'KERNEL' },
   { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit'] },
+  { name: 'notifications', method: 'GET', path: '/api/notifications', summary: '내 알림 — 개인·역할·Owner 팀 수신자, 안 읽음 수·범주별 집계', component: 'D04-04', query: ['unread', 'category', 'limit'], personal: true },
+  { name: 'readNotification', method: 'POST', path: '/api/notifications/:id/read', summary: '알림 읽음 표시(계정별)', component: 'D04-04', roles: HUMAN_ROLES, body: EmptyBody },
+  { name: 'readAllNotifications', method: 'POST', path: '/api/notifications/read-all', summary: '알림 모두 읽음(범주 선택)', component: 'D04-04', roles: HUMAN_ROLES, body: NotificationReadAllBody },
+  { name: 'notificationPrefs', method: 'GET', path: '/api/notifications/preferences', summary: '알림 메일 설정 — 범주별, 승인 요청·긴급은 고정', component: 'D04-04', personal: true },
+  { name: 'saveNotificationPrefs', method: 'POST', path: '/api/notifications/preferences', summary: '알림 메일 설정 저장(감사)', component: 'D04-04', roles: HUMAN_ROLES, body: NotificationPrefsBody },
+  { name: 'notificationEmails', method: 'GET', path: '/api/notifications/emails', summary: '알림 메일 발송 기록(모의 — 실 메일 서버 연동 없음)', component: 'D04-04', query: ['limit'], personal: true },
   { name: 'eventStream', method: 'GET', path: '/api/events/stream', summary: '이벤트 실시간 스트림 (SSE)', component: 'D04-04', query: ['types'], stream: true },
   { name: 'safetyProfiles', method: 'GET', path: '/api/safety-profiles', summary: '안전 분류 목록 (보고서 5.7)', component: 'D01-01', query: ['featureId'] },
   { name: 'safetyProfile', method: 'GET', path: '/api/features/:id/versions/:ver/safety', summary: '안전 분류 + 조합 검사 (FFG-CLS-009)', component: 'D01-01' },

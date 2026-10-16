@@ -353,9 +353,9 @@
       "gap": "N/A 판정·사유·승인자"
     },
     "FR-REG-005-014": {
-      "verdict": "부분",
-      "evidence": "`gate.judged` 이벤트(SSE) 발행만",
-      "gap": "Owner·Approver 대상 알림 채널 없음"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `gate.judged` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — Feature Owner 팀 + FEATURE_APPROVER, 판정자 본인 제외",
+      "gap": ""
     },
     "FR-REG-005-015": {
       "verdict": "부분",
@@ -1860,9 +1860,9 @@
       "gap": "배포 ID 외 Feature ID·대상 지역 필터"
     },
     "FR-CRC-002-009": {
-      "verdict": "부분",
-      "evidence": "`policy.validated` 이벤트 방송 `policy.service.ts:182`",
-      "gap": "담당자 지정 Web 알림·이메일"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `policy.validated NO-GO` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 배포 ID는 정책 ID(policyId)로 표시 — 별도 배포 ID 개념 없음",
+      "gap": ""
     },
     "FR-DSV-001-001": {
       "verdict": "구현",
@@ -1915,9 +1915,9 @@
       "gap": "—"
     },
     "FR-DSV-001-011": {
-      "verdict": "부분",
-      "evidence": "이벤트 방송만 `policy.service.ts:182`",
-      "gap": "Owner·요청자 알림"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `policy.validated NO-GO` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 실패 항목·차단 사유를 Owner 팀·요청자(createdBy)에게",
+      "gap": ""
     },
     "FR-DSV-002-001": {
       "verdict": "부분",
@@ -2050,9 +2050,9 @@
       "gap": "Feature Owner·요청자·협력사(IF-08 납품 정보) 산출"
     },
     "FR-KSW-003-003": {
-      "verdict": "부분",
-      "evidence": "`kill.issued` 이벤트 방송 `kill.service.ts:314`",
-      "gap": "Owner 대상 알림"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `kill.issued` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — Owner 팀·OPERATOR·OPS_LEAD, 긴급(CRITICAL) 메일 항상 발송",
+      "gap": ""
     },
     "FR-KSW-003-004": {
       "verdict": "구현",
@@ -2080,9 +2080,9 @@
       "gap": "일부 범위 선택"
     },
     "FR-KSW-004-005": {
-      "verdict": "부분",
-      "evidence": "검토함에 복원 승인 대기 표시(역할·차단 승인자 제외 판정) `Inbox.tsx:77-80`, 이벤트 `kill.restore-requested` `restore.service.ts:77`",
-      "gap": "지정 승인대상자·이메일"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `kill.restore-requested` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 승인 역할에게, 요청자·직전 차단 승인자 제외(SOD-09)",
+      "gap": ""
     },
     "FR-KSW-004-006": {
       "verdict": "구현",
@@ -2355,9 +2355,9 @@
       "gap": "평가 횟수·활성화 비율·롤백 건수 변동 기준, 이상 이벤트로 기록(현재 경보는 저장되지 않음)"
     },
     "FR-EVT-003-003": {
-      "verdict": "미구현",
-      "evidence": "SSE 스트림(`/api/events/stream`)·이상 징후 화면만, 알림 종(bell)은 홈으로 이동 (`Shell.tsx:131`, `routes.tsx:93`)",
-      "gap": "Web 알림 또는 이메일 채널, 알림 대상 정의"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `anomaly.opened / anomaly.escalated` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 알림 대상=OPERATOR·OPS_LEAD·Owner 팀(명세서 비고의 대상·채널 정의를 규칙 표로 확정)",
+      "gap": ""
     },
     "FR-VOC-001-001": {
       "verdict": "부분",
@@ -2715,9 +2715,9 @@
       "gap": "-"
     },
     "FR-DSYN-001-004": {
-      "verdict": "부분",
-      "evidence": "`sync.completed` 이벤트에 status·targetId·market 포함, SSE `/api/events/stream`로 전달(sync.service.ts:90, kernel/event.service.ts)",
-      "gap": "담당자 지정·알림 채널(Web 알림 목록/이메일) 없음. FAILED일 때 알림 발생 규칙과 시험 필요"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `sync.completed FAILED` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — IMPLEMENTER(연계 담당)에게, FAILED일 때만",
+      "gap": ""
     },
     "FR-SDVI-001-001": {
       "verdict": "부분",

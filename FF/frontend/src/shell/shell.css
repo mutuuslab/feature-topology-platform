@@ -567,3 +567,159 @@
 .sh-cmdk__group, .sh-cmdk__none, .sh-cmdk__hint { color: var(--muted); font-size: var(--fs-xs); }
 .sh-cmdk__none { padding: var(--sp-2) var(--sp-4); }
 .sh-cmdk__hint { margin: 0; padding: var(--sp-2) var(--sp-4); border-top: 1px solid var(--line); }
+
+/* 알림 — 상단바 종(안 읽음 배지·최근 알림 펼침)과 /notifications 화면(D04-04) */
+.sh-ntf {
+  position: relative;
+  display: inline-flex;
+}
+.sh-ntf__badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--danger);
+  color: var(--surface);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+.sh-ntf__pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  width: 380px;
+  max-height: 70vh;
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--e-3);
+  padding: var(--sp-2);
+}
+.sh-ntf__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-1) var(--sp-2);
+}
+.sh-ntf__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sh-ntf__list button {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: var(--sp-2);
+  border: 0;
+  border-radius: var(--r);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sh-ntf__list button:hover,
+.sh-ntf__list button:focus-visible {
+  background: var(--line);
+}
+.sh-ntf__list li[data-unread] .sh-ntf__title {
+  font-weight: 700;
+}
+.sh-ntf__meta,
+.ntf-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.sh-ntf__empty {
+  margin: var(--sp-2);
+  color: var(--muted);
+}
+.sh-ntf__all {
+  display: block;
+  padding: var(--sp-2);
+  text-align: center;
+}
+.ntf-lead {
+  color: var(--ink-2);
+  margin-top: 0;
+}
+.ntf-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.ntf-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+.ntf-row {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-left: 3px solid transparent;
+  border-radius: var(--r);
+}
+.ntf-row[data-unread] {
+  border-left-color: var(--info);
+}
+.ntf-row__state {
+  margin-left: auto;
+}
+.ntf-row__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+}
+.ntf-row__fields dt {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.ntf-row__fields dd {
+  margin: 0;
+}
+.ntf-row__actions {
+  display: flex;
+  gap: var(--sp-2);
+}
+.ntf-side {
+  display: grid;
+  gap: var(--sp-4);
+}
+.ntf-prefs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+.ntf-prefs li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.ntf-prefs label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}

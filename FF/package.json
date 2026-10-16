@@ -34,6 +34,8 @@
     "carla:status": "bash sim/carla/server.sh status",
     "carla:doctor": "node tools/carla-doctor.ts",
     "sim:test": "node tools/carla-doctor.ts --pytest",
+    "ea:render": "node tools/ea-diagram.ts",
+    "ea:check": "node tools/ea-diagram.ts --check",
     "guide:sync": "node tools/guide-sync.ts",
     "guide:check": "node tools/guide-sync.ts --check",
     "standards": "node tools/standards.ts",

@@ -168,6 +168,21 @@ describe('42 컴포넌트 아키텍처', () => {
     expect(within(panel).getByText('주문 순번은 원장 기준 +1')).toBeTruthy();
   });
 
+  it('EA 원본 패널: Layered Architecture SVG(6 도메인 · 12 레이어 · 49 컴포넌트)와 원본 파일 해시', async () => {
+    handler = (url) => {
+      if (url.startsWith('/api/components/activity')) return { body: { since: 'x', items: [] } };
+      if (url.startsWith('/api/components')) return { body: { items: [COMP('D01-06', 'implemented', [2])] } };
+      return undefined;
+    };
+    mount('/arch/components', '/arch/components', <ArchitectureScreen />);
+    const fig = await screen.findByTestId('ea-original');
+    const img = within(fig).getByRole('img');
+    expect(img.getAttribute('src')).toBe('/arch/ea-layered-architecture.svg');
+    expect(img.getAttribute('alt')).toBe('Layered Architecture — 6개 도메인, 12개 레이어, 49개 컴포넌트');
+    expect(fig.textContent).toContain('docs/20-architecture/ea/FF_플랫폼_아키텍처_v0.0.qea · sha256:f63e314aaace…');
+    expect(screen.getByRole('link', { name: '원본 크기로 보기 ↗' }).getAttribute('href')).toBe('/arch/ea-layered-architecture.svg');
+  });
+
   it('FFG-PLT-013 도구 신뢰성: 상세에 오류 출력별 TI·TD → TCL과 신뢰도 확보 방법, 서명 서비스는 TCL3·후속 검출 없음, 8.1 밖은 분류 안 됨', async () => {
     handler = (url) => {
       if (url.startsWith('/api/components/activity')) return { body: { since: 'x', items: [] } };

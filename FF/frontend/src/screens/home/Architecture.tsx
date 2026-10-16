@@ -7,7 +7,8 @@ import { componentTcl, QUALIFICATION_METHODS, reportRule, RULE_STATUS, rulesOfCo
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Drawer, KeyValue, Kpi, PageHeader, RuleChecklist, Segmented, VerdictBadge } from '../../design';
+import { AsyncView, Drawer, KeyValue, Kpi, PageHeader, Panel, RuleChecklist, Segmented, VerdictBadge } from '../../design';
+import EA from './ea-diagram.meta.json';
 import { when } from '../shared';
 
 const A = ko.arch;
@@ -71,6 +72,25 @@ interface Activity {
   lastType: string | null;
   audits: number;
   refused: number;
+}
+
+/** EA 원본(Layered Architecture) — docs/20-architecture/ea/*.qea를 tools/ea-diagram.ts가 저장된 위치·색 그대로 그린 SVG */
+function EaOriginal() {
+  const src = `${import.meta.env.BASE_URL}${EA.svg.replace(/^\//, '')}`;
+  return (
+    <Panel title={A.ea.title} eyebrow="Enterprise Architect" id="ea" actions={<a href={src} target="_blank" rel="noreferrer">{A.ea.open} ↗</a>}>
+      <figure style={{ margin: 0, display: 'grid', gap: 'var(--sp-2)' }} data-testid="ea-original">
+        {/* 키보드로도 가로 스크롤 — 초점을 받는 영역(axe scrollable-region-focusable) */}
+        <div tabIndex={0} role="region" aria-label={A.ea.scroll} style={{ overflowX: 'auto', border: '1px solid var(--line)', borderRadius: 'var(--radius-sm)' }}>
+          {/* 원본 크기(글자 12 px) — 줄이면 컴포넌트 이름을 읽을 수 없다. 넓으면 가로로 스크롤 */}
+          <img src={src} alt={A.ea.alt(EA.diagram, EA.counts)} width={EA.width} height={EA.height} style={{ display: 'block', maxWidth: 'none' }} />
+        </div>
+        <figcaption className="ds-field__hint">
+          {A.ea.scroll} · {A.ea.caption(EA.counts)} · <span className="ds-mono">{`${EA.source} · sha256:${EA.sha256.slice(0, 12)}…`}</span>
+        </figcaption>
+      </figure>
+    </Panel>
+  );
 }
 
 export function ArchitectureScreen() {
@@ -161,6 +181,7 @@ export function ArchitectureScreen() {
           ))}
         </div>
       </AsyncView>
+      <EaOriginal />
       <Drawer open={!!sel} title={sel ? `${sel.id} ${sel.ko}` : ''} onClose={() => setOpen(null)}>
         {sel && (
           <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>

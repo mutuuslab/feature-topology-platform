@@ -508,6 +508,14 @@ export const ko = {
   },
   arch: {
     title: '42 컴포넌트 아키텍처',
+    ea: {
+      title: 'EA 원본 — Layered Architecture',
+      open: '원본 크기로 보기',
+      scroll: '원본 크기 — 가로로 스크롤하면 오른쪽 3개 도메인(배포·운영·데이터 · 시스템 연계·확장 · 품질·보안·운영)',
+      alt: (name: string, c: { domains: number; layers: number; components: number }) => `${name} — ${c.domains}개 도메인, ${c.layers}개 레이어, ${c.components}개 컴포넌트`,
+      caption: (c: { domains: number; layers: number; components: number }) =>
+        `Enterprise Architect 모델의 저장된 위치·색 그대로 — ${c.domains} 도메인 · ${c.layers} 레이어 · ${c.components} 컴포넌트(이름은 원본 표기). 위 카드는 이를 구현 단위 42개로 묶은 것`,
+    },
     lead: '6개 도메인 42개 컴포넌트의 구현 상태와 지금 움직이는 곳 — 플랫폼 이벤트가 오면 해당 컴포넌트가 바로 표시됩니다. PoC 단계를 고르면 그 단계에 관여하는 컴포넌트가 강조됩니다.',
     domains: { D01: '01 Feature 정책 관리', D02: '02 차량 런타임 실행', D03: '03 안전·검증', D04: '04 배포·운영·데이터', D05: '05 시스템 연계·확장', D06: '06 품질·보안·운영' },
     implemented: '구현',

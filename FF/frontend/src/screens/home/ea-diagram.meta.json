@@ -1,0 +1,24 @@
+{
+  "source": "docs/20-architecture/ea/FF_플랫폼_아키텍처_v0.0.qea",
+  "sha256": "f63e314aaace116d7f27651fede697aceb440f00264589e44469b5287dcef8c0",
+  "bytes": 1675264,
+  "diagram": "Layered Architecture",
+  "domains": [
+    "Feature 정책 관리",
+    "차량 런타임 실행",
+    "안전·검증",
+    "배포·운영·데이터",
+    "시스템 연계·확장",
+    "품질·보안·운영"
+  ],
+  "counts": {
+    "domains": 6,
+    "layers": 12,
+    "components": 49,
+    "nesting": 12
+  },
+  "svg": "/arch/ea-layered-architecture.svg",
+  "width": 2231,
+  "height": 789,
+  "generatedBy": "tools/ea-diagram.ts"
+}

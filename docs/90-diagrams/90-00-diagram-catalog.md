@@ -25,6 +25,7 @@ last_updated: 2026-06-05
 | DIAG-FLW-GATES | flowchart (embed) | 40-70,60-30 | [[40-70-release-readiness-gates]] |
 | DIAG-C4-CONTEXT/CONTAINER | flowchart (embed) | 20-00 | [[20-00-architecture-overview]] |
 | DIAG-STANDARDS-LANDSCAPE | flowchart (embed) | 00-90 | [[00-90-standards-landscape]] |
+| DIAG-EA-LAYERED | EA Component (원본 `.qea`) | `20-architecture/ea/FF_플랫폼_아키텍처_v0.0.qea` → 화면 `/arch/components` (`npm run ea:render`) | [[20-architecture/ea/README]] |
 
 ## 규약
 구조=erDiagram/classDiagram · 시간행위=stateDiagram/sequenceDiagram · 결정로직=flowchart(+DMN YAML) · 시스템형상=C4(flowchart). 독립 소스는 `.mmd`, 본문 설명용은 임베드.

@@ -1,0 +1,350 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="5 109 2231 789" width="2231" height="789" font-family="Malgun Gothic, 'Apple SD Gothic Neo', 'Noto Sans KR', Arial, sans-serif" font-size="12" role="img" aria-label="Layered Architecture">
+<title>Layered Architecture — EA 원본(저장된 위치·색)</title>
+<rect x="5" y="109" width="2231" height="789" fill="#ffffff"/>
+<g data-ea-id="104" data-type="Package">
+<rect x="15" y="119" width="1100" height="321" rx="2" fill="#ffe4c4" stroke="#8a7f7f" stroke-width="1"/>
+<text x="565" y="135" text-anchor="middle" fill="#5f5b56" font-size="11">«domain»</text>
+<text x="565" y="150" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">Feature 정책 관리</text>
+</g>
+<g data-ea-id="110" data-type="Package">
+<rect x="24" y="170" width="527" height="120" rx="2" fill="#ffe4e1" stroke="#8a7f7f" stroke-width="1"/>
+<text x="287.5" y="186" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="287.5" y="201" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">① Feature 등록·카탈로그 관리</text>
+</g>
+<g data-ea-id="122" data-type="Component">
+<rect x="34" y="220" width="150" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="109" y="236" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="109" y="251" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">Feature Registry</text>
+</g>
+<g data-ea-id="123" data-type="Component">
+<rect x="206" y="221" width="150" height="52" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="281" y="237" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="281" y="252" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">Feature Catalog</text>
+</g>
+<g data-ea-id="124" data-type="Component">
+<rect x="376" y="221" width="150" height="52" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="451" y="237" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="451" y="252" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">Feature 의존관계 관리</text>
+</g>
+<g data-ea-id="112" data-type="Package">
+<rect x="25" y="308" width="1080" height="114" rx="2" fill="#fff5ee" stroke="#8a7f7f" stroke-width="1"/>
+<text x="565" y="324" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="565" y="339" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">③ 정책 거버넌스·권한·감사 관리</text>
+</g>
+<g data-ea-id="129" data-type="Component">
+<rect x="35" y="356" width="195" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="132.5" y="372" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="132.5" y="387" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">정책 저장·버전 관리</text>
+</g>
+<g data-ea-id="130" data-type="Component">
+<rect x="245" y="356" width="195" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="342.5" y="372" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="342.5" y="387" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">예외 정책 관리</text>
+</g>
+<g data-ea-id="131" data-type="Component">
+<rect x="455" y="356" width="195" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="552.5" y="372" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="552.5" y="387" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">정책 충돌 관리</text>
+</g>
+<g data-ea-id="132" data-type="Component">
+<rect x="665" y="356" width="195" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="762.5" y="372" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="762.5" y="387" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">RBAC</text>
+</g>
+<g data-ea-id="133" data-type="Component">
+<rect x="875" y="356" width="195" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="972.5" y="372" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="972.5" y="387" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">감사 이력 관리</text>
+</g>
+<g data-ea-id="105" data-type="Package">
+<rect x="15" y="472" width="1100" height="192" rx="2" fill="#ffe4c4" stroke="#8a7f7f" stroke-width="1"/>
+<text x="565" y="488" text-anchor="middle" fill="#5f5b56" font-size="11">«domain»</text>
+<text x="565" y="503" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">차량 런타임 실행</text>
+</g>
+<g data-ea-id="113" data-type="Package">
+<rect x="25" y="526" width="530" height="114" rx="2" fill="#ffe4e1" stroke="#8a7f7f" stroke-width="1"/>
+<text x="290" y="542" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="290" y="557" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">④ 차량 적용 조건 관리</text>
+</g>
+<g data-ea-id="134" data-type="Component">
+<rect x="35" y="572" width="155" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="112.5" y="588" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="112.5" y="603" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">Variant 조건 관리</text>
+</g>
+<g data-ea-id="135" data-type="Component">
+<rect x="205" y="572" width="155" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="282.5" y="588" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="282.5" y="603" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">기능 지원 조건 관리</text>
+</g>
+<g data-ea-id="136" data-type="Component">
+<rect x="375" y="572" width="155" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="452.5" y="588" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="452.5" y="603" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">적용 대상 선정 규칙</text>
+</g>
+<g data-ea-id="114" data-type="Package">
+<rect x="575" y="526" width="530" height="114" rx="2" fill="#ffe4e1" stroke="#8a7f7f" stroke-width="1"/>
+<text x="840" y="542" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="840" y="557" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">⑤ 차량 기능 동적 제어</text>
+</g>
+<g data-ea-id="137" data-type="Component">
+<rect x="585" y="572" width="155" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="662.5" y="588" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="662.5" y="603" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">차량 런타임 실행 모듈</text>
+</g>
+<g data-ea-id="138" data-type="Component">
+<rect x="755" y="572" width="155" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="832.5" y="588" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="832.5" y="603" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">로컈 정책 캐시</text>
+</g>
+<g data-ea-id="139" data-type="Component">
+<rect x="925" y="572" width="155" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1002.5" y="588" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1002.5" y="603" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">안전 기본값 제어</text>
+</g>
+<g data-ea-id="106" data-type="Package">
+<rect x="15" y="696" width="1100" height="192" rx="2" fill="#ffe4c4" stroke="#8a7f7f" stroke-width="1"/>
+<text x="565" y="712" text-anchor="middle" fill="#5f5b56" font-size="11">«domain»</text>
+<text x="565" y="727" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">안전·검증</text>
+</g>
+<g data-ea-id="115" data-type="Package">
+<rect x="25" y="753" width="1080" height="120" rx="2" fill="#ffe4e1" stroke="#8a7f7f" stroke-width="1"/>
+<text x="565" y="769" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="565" y="784" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">⑥ OTA 품질·안전·비상 제어</text>
+</g>
+<g data-ea-id="140" data-type="Component">
+<rect x="35" y="802" width="240" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="155" y="818" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="155" y="833" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">콘플라이언스 룰 체커</text>
+</g>
+<g data-ea-id="141" data-type="Component">
+<rect x="290" y="802" width="240" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="410" y="818" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="410" y="833" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">배포 안전성 검증</text>
+</g>
+<g data-ea-id="142" data-type="Component">
+<rect x="545" y="802" width="240" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="665" y="818" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="665" y="833" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">긴급 기능 차단</text>
+</g>
+<g data-ea-id="143" data-type="Component">
+<rect x="800" y="802" width="240" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="920" y="818" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="920" y="833" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">이전 상태 복구</text>
+</g>
+<g data-ea-id="107" data-type="Package">
+<rect x="1126" y="182" width="1100" height="192" rx="2" fill="#ffe4c4" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1676" y="198" text-anchor="middle" fill="#5f5b56" font-size="11">«domain»</text>
+<text x="1676" y="213" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">배포·운영·데이터</text>
+</g>
+<g data-ea-id="116" data-type="Package">
+<rect x="1136" y="235" width="530" height="120" rx="2" fill="#ffe4e1" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1401" y="251" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="1401" y="266" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">⑦ 데이터 수집·운영</text>
+</g>
+<g data-ea-id="144" data-type="Component">
+<rect x="1149" y="285" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1206.5" y="301" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1206.5" y="316" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">운영 데이터 수집</text>
+</g>
+<g data-ea-id="145" data-type="Component">
+<rect x="1279" y="285" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1336.5" y="301" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1336.5" y="316" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">품질 피드백 반영</text>
+</g>
+<g data-ea-id="146" data-type="Component">
+<rect x="1409" y="285" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1466.5" y="301" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1466.5" y="316" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">이벤트 이력 추적</text>
+</g>
+<g data-ea-id="147" data-type="Component">
+<rect x="1539" y="285" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1596.5" y="297" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="1596.5" y="311" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">장애·VOC</text>
+<text x="1596.5" y="324" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">이력 연계</text>
+</g>
+<g data-ea-id="117" data-type="Package">
+<rect x="1686" y="235" width="530" height="120" rx="2" fill="#ffe4e1" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1951" y="251" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="1951" y="266" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">⑧ CI/CD·배포 자동화 관리</text>
+</g>
+<g data-ea-id="148" data-type="Component">
+<rect x="1699" y="285" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1756.5" y="297" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="1756.5" y="311" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">SW 배포·</text>
+<text x="1756.5" y="324" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">기능 출시 분리</text>
+</g>
+<g data-ea-id="149" data-type="Component">
+<rect x="1829" y="285" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1886.5" y="297" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="1886.5" y="311" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">배포 파이프라인</text>
+<text x="1886.5" y="324" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">연계</text>
+</g>
+<g data-ea-id="150" data-type="Component">
+<rect x="1959" y="285" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="2016.5" y="297" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="2016.5" y="311" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">단계적 배포</text>
+<text x="2016.5" y="324" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">자동화</text>
+</g>
+<g data-ea-id="151" data-type="Component">
+<rect x="2089" y="285" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="2146.5" y="301" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="2146.5" y="316" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">품질 기준 검증</text>
+</g>
+<g data-ea-id="108" data-type="Package">
+<rect x="1126" y="409" width="1100" height="192" rx="2" fill="#ffe4c4" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1676" y="425" text-anchor="middle" fill="#5f5b56" font-size="11">«domain»</text>
+<text x="1676" y="440" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">시스템 연계·확장</text>
+</g>
+<g data-ea-id="118" data-type="Package">
+<rect x="1136" y="461" width="530" height="114" rx="2" fill="#fff5ee" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1401" y="477" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="1401" y="492" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">⑨ 외부·기존 시스템 연계</text>
+</g>
+<g data-ea-id="152" data-type="Component">
+<rect x="1146" y="509" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1203.5" y="525" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1203.5" y="540" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">API Gateway</text>
+</g>
+<g data-ea-id="153" data-type="Component">
+<rect x="1276" y="509" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1333.5" y="521" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="1333.5" y="535" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">Legacy</text>
+<text x="1333.5" y="548" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">시스템 연계</text>
+</g>
+<g data-ea-id="154" data-type="Component">
+<rect x="1406" y="509" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1463.5" y="525" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1463.5" y="540" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">데이터 동기화</text>
+</g>
+<g data-ea-id="155" data-type="Component">
+<rect x="1536" y="509" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1593.5" y="521" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="1593.5" y="535" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">Legacy-SDV</text>
+<text x="1593.5" y="548" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">Interface</text>
+</g>
+<g data-ea-id="119" data-type="Package">
+<rect x="1686" y="461" width="530" height="114" rx="2" fill="#fff5ee" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1951" y="477" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="1951" y="492" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">⑩ 공급망 운영 체계 확장</text>
+</g>
+<g data-ea-id="156" data-type="Component">
+<rect x="1696" y="509" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1753.5" y="525" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1753.5" y="540" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">과금 시스템 연계</text>
+</g>
+<g data-ea-id="157" data-type="Component">
+<rect x="1826" y="509" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1883.5" y="525" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1883.5" y="540" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">글로벌 출시 관리</text>
+</g>
+<g data-ea-id="158" data-type="Component">
+<rect x="1956" y="509" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="2013.5" y="525" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="2013.5" y="540" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">현장 지원 포털</text>
+</g>
+<g data-ea-id="159" data-type="Component">
+<rect x="2086" y="509" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="2143.5" y="521" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="2143.5" y="535" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">사업 지표</text>
+<text x="2143.5" y="548" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">모니터링</text>
+</g>
+<g data-ea-id="109" data-type="Package">
+<rect x="1126" y="633" width="1100" height="254" rx="2" fill="#ffe4c4" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1676" y="649" text-anchor="middle" fill="#5f5b56" font-size="11">«domain»</text>
+<text x="1676" y="664" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">품질·보안·운영</text>
+</g>
+<g data-ea-id="120" data-type="Package">
+<rect x="1135" y="689" width="530" height="175" rx="2" fill="#fff5ee" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1400" y="705" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="1400" y="720" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">⑪ 협력사 협업·품질관리</text>
+</g>
+<g data-ea-id="160" data-type="Component">
+<rect x="1145" y="737" width="155" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1222.5" y="753" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1222.5" y="768" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">정책 검증</text>
+</g>
+<g data-ea-id="161" data-type="Component">
+<rect x="1315" y="737" width="155" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1392.5" y="753" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1392.5" y="768" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">시스템 연동 검증</text>
+</g>
+<g data-ea-id="162" data-type="Component">
+<rect x="1485" y="737" width="155" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1562.5" y="753" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1562.5" y="768" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">차량 시나리오 검증</text>
+</g>
+<g data-ea-id="163" data-type="Component">
+<rect x="1145" y="802" width="155" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1222.5" y="818" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1222.5" y="833" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">안전 동작 검증</text>
+</g>
+<g data-ea-id="164" data-type="Component">
+<rect x="1315" y="802" width="155" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1392.5" y="818" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1392.5" y="833" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">변경 영향 검증</text>
+</g>
+<g data-ea-id="165" data-type="Component">
+<rect x="1485" y="802" width="155" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1562.5" y="818" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1562.5" y="833" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">검증 이력 관리</text>
+</g>
+<g data-ea-id="121" data-type="Package">
+<rect x="1685" y="689" width="530" height="175" rx="2" fill="#fff5ee" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1950" y="705" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="1950" y="720" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">⑫ 보안·안전 운영 관리</text>
+</g>
+<g data-ea-id="166" data-type="Component">
+<rect x="1695" y="737" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1752.5" y="749" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="1752.5" y="763" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">안전 요구사항</text>
+<text x="1752.5" y="776" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">추적</text>
+</g>
+<g data-ea-id="167" data-type="Component">
+<rect x="1825" y="737" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1882.5" y="753" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1882.5" y="768" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">보안 배포 관리</text>
+</g>
+<g data-ea-id="168" data-type="Component">
+<rect x="1955" y="737" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="2012.5" y="753" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="2012.5" y="768" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">인증·키 관리</text>
+</g>
+<g data-ea-id="169" data-type="Component">
+<rect x="2085" y="737" width="115" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="2142.5" y="749" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="2142.5" y="763" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">보안 취약점</text>
+<text x="2142.5" y="776" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">모니터링</text>
+</g>
+<g data-ea-id="111" data-type="Package">
+<rect x="577" y="170" width="528" height="120" rx="2" fill="#ffe4e1" stroke="#8a7f7f" stroke-width="1"/>
+<text x="841" y="186" text-anchor="middle" fill="#5f5b56" font-size="11">«layer»</text>
+<text x="841" y="201" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="13">② Feature 정책 활성화 제어</text>
+</g>
+<g data-ea-id="170" data-type="Component">
+<rect x="1695" y="802" width="240" height="50" rx="4" fill="#e0ffff" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1815" y="818" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="1815" y="833" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">이상 징후 대응</text>
+</g>
+<g data-ea-id="125" data-type="Component">
+<rect x="583" y="218" width="115" height="50" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="640.5" y="230" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="640.5" y="244" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">정책 기반</text>
+<text x="640.5" y="257" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">활성화 제어</text>
+</g>
+<g data-ea-id="127" data-type="Component">
+<rect x="844" y="218" width="115" height="52" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="901.5" y="234" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="901.5" y="249" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">단계적 기능 배포</text>
+</g>
+<g data-ea-id="126" data-type="Component">
+<rect x="714" y="218" width="115" height="52" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="771.5" y="234" text-anchor="middle" fill="#5f5b56" font-size="11">«component»</text>
+<text x="771.5" y="249" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="12">사용 권한 관리</text>
+</g>
+<g data-ea-id="128" data-type="Component">
+<rect x="974" y="218" width="115" height="52" rx="4" fill="#e6e6fa" stroke="#8a7f7f" stroke-width="1"/>
+<text x="1031.5" y="230" text-anchor="middle" fill="#5f5b56" font-size="10">«component»</text>
+<text x="1031.5" y="244" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">실험·효과</text>
+<text x="1031.5" y="257" text-anchor="middle" fill="#2b2b2b" font-weight="700" font-size="11">검증 관리</text>
+</g>
+</svg>

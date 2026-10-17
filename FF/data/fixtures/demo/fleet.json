@@ -1,6 +1,6 @@
 [
-  {"vin": "ego-01", "label": "PoC 시연 차량 (BeamNG/UE 영상 키트 ego)", "country": "KR", "vehicleModel": "NX4 PE", "trim": "Premium", "modelYear": "2026", "upgVc": "F111A114001", "swVersion": "1.2.1", "quality": "TRUSTED", "link": "ONLINE", "gleo": true},
-  {"vin": "lead-01", "label": "PoC 선행 차량 (영상 키트 lead)", "country": "KR", "vehicleModel": "NX4 PE", "trim": "Premium", "modelYear": "2026", "upgVc": "F111A114001", "swVersion": "1.2.1", "quality": "TRUSTED", "link": "ONLINE", "gleo": true},
+  {"vin": "ego-01", "label": "PoC 시연 차량 (BeamNG/UE 영상 키트 ego)", "country": "KR", "vehicleModel": "NX4 PE", "trim": "Premium", "modelYear": "2026", "upgVc": "F111A114001", "swVersion": "1.2.1", "quality": "TRUSTED", "link": "ONLINE", "gleo": true, "canary": true},
+  {"vin": "lead-01", "label": "PoC 선행 차량 (영상 키트 lead)", "country": "KR", "vehicleModel": "NX4 PE", "trim": "Premium", "modelYear": "2026", "upgVc": "F111A114001", "swVersion": "1.2.1", "quality": "TRUSTED", "link": "ONLINE", "gleo": true, "canary": true},
   {"vin": "KMH-NX4-0001", "label": "구독 고객 차량", "country": "KR", "vehicleModel": "NX4 PE", "trim": "Premium", "modelYear": "2026", "upgVc": "F111A114001", "swVersion": "1.2.1", "quality": "TRUSTED", "link": "ONLINE", "gleo": false},
   {"vin": "KMH-NX4-0002", "label": "체험 미가입 차량", "country": "KR", "vehicleModel": "NX4 PE", "trim": "Premium", "modelYear": "2025", "upgVc": "F111A114001", "swVersion": "1.2.0", "quality": "TRUSTED", "link": "ONLINE", "gleo": false},
   {"vin": "KMH-NX4-0003", "label": "통신 지연 차량 (오래된 문맥)", "country": "KR", "vehicleModel": "NX4 PE", "trim": "Premium", "modelYear": "2026", "upgVc": "F111A114001", "swVersion": "1.2.1", "quality": "STALE", "link": "OFFLINE", "gleo": false},

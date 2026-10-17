@@ -93,6 +93,8 @@ export const VehicleSchema = z.object({
   link: z.enum(['ONLINE', 'OFFLINE']).default('ONLINE'),
   /** FF_IMP 영상 키트 차량 — GLEO_MODE=ws 이면 GLEO Broker로 전달한다 */
   gleo: z.boolean().default(false),
+  /** 지정 Canary 차량(시험·사내 차량) — 부분 배포(0% < 범위 < 100%)면 Cohort 버킷과 관계없이 포함한다(FFG-LCY-009 Canary 관측 대상) */
+  canary: z.boolean().default(false),
 });
 export type Vehicle = z.infer<typeof VehicleSchema>;
 

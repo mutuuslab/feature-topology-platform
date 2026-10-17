@@ -88,6 +88,14 @@ describe('Flag 평가 — PoC ③ 서버 활성화 판단', () => {
     expect(await ev({ stageBasisPoints: 0 }, 'ego-01')).toMatchObject({ reason: 'COHORT_MISS' });
     expect(await ev({ rollout: { mode: 'COHORT', basisPoints: 0, salt: 'S' }, stageBasisPoints: 10000 }, 'ego-01')).toMatchObject({ reason: 'COHORT_MISS' });
   });
+  it('FFG-LCY-009 지정 Canary 차량은 부분 배포(Canary 5%)에 버킷과 관계없이 포함 — 일반 차량은 버킷대로, 0%면 Canary 차량도 제외', async () => {
+    expect(V('ego-01').canary).toBe(true);
+    const canary = await ev({ stageBasisPoints: 500 }, 'ego-01');
+    expect(canary).toMatchObject({ decision: 'ALLOW' });
+    expect(canary.trace.find((t) => t.step === 'COHORT')).toMatchObject({ result: 'TRUE', detail: expect.stringMatching(/지정 Canary 차량/) });
+    expect(await ev({ stageBasisPoints: 500 }, 'KMH-NX4-0001')).toMatchObject({ decision: 'DENY', reason: 'COHORT_MISS' }); // 버킷 1499 ≥ 500
+    expect(await ev({ stageBasisPoints: 0 }, 'lead-01')).toMatchObject({ reason: 'COHORT_MISS' });
+  });
 });
 
 const input = (p: Partial<Policy> = {}, over: Partial<ValidationInput> = {}): ValidationInput => ({

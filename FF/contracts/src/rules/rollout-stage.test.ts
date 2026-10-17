@@ -1,6 +1,6 @@
 // 배포와 효력 분리·단계적 확대 — FFG-LCY-009 수용 기준: F2 이상 확대 100%에 Canary 결과와 중단 기준 판정이 있다
 import { describe, expect, it } from 'vitest';
-import { CANARY_MAX_BP, judgeStageChange, type StageChangeInput } from './rollout-stage';
+import { CANARY_MAX_BP, deployStartBasisPoints, judgeStageChange, type StageChangeInput } from './rollout-stage';
 
 const base: StageChangeInput = { fClass: 'F3', current: 300, to: 5000, since: '2026-10-10T00:00:00Z', now: '2026-10-12T00:00:00Z', actorId: 'usr-operator', deployedBy: 'usr-release', openAnomalies: [], activeKills: [] };
 const codes = (i: Partial<StageChangeInput>) => judgeStageChange({ ...base, ...i }).blockers.map((b) => b.code);
@@ -28,5 +28,13 @@ describe('단계 조정 판정 (FFG-LCY-009)', () => {
   it('F0·F1은 Canary 조건 없이 확대(분리만), 분류 없음은 안전 관련으로 본다', () => {
     expect(judgeStageChange({ ...base, fClass: 'F1', current: 0 })).toMatchObject({ kind: 'EXPAND', ok: true, criteria: null });
     expect(codes({ fClass: null, current: 0 })).toEqual(['CANARY_FIRST']);
+  });
+
+  it('FFG-LCY-009 배포 직후 범위 — F2 이상·분류 없음은 승인 범위가 넓어도 Canary(5%)에서 시작, F0·F1과 이미 좁은 승인 범위는 그대로', () => {
+    expect(deployStartBasisPoints('F3', 10000)).toBe(CANARY_MAX_BP);
+    expect(deployStartBasisPoints('F2', 5000)).toBe(CANARY_MAX_BP);
+    expect(deployStartBasisPoints(null, 10000)).toBe(CANARY_MAX_BP);
+    expect(deployStartBasisPoints('F3', 300)).toBeNull();
+    expect(deployStartBasisPoints('F1', 10000)).toBeNull();
   });
 });

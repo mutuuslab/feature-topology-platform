@@ -71,6 +71,8 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
       const d = await http().post(`/api/policies/${pid}/deploy`).set(RELEASE).send({ reason: '배포' }).expect(200);
       pubId = d.body.publicationId;
       expect(pubId).toMatch(/^PUB-\d{5}$/);
+      // FFG-LCY-009 F3 Feature는 Canary(5%)에서 시작 — 지정 Canary 차량(ego-01·lead-01)만 효력, 단계 값은 해시 밖
+      expect(d.body).toMatchObject({ stageBasisPoints: 500, stagedAt: d.body.deployedAt });
 
       const p = await pub(pubId);
       expect(p.publication).toMatchObject({ kind: 'POLICY', status: 'DISPATCHED', channel: 'OTA', campaignId: expect.stringMatching(/^CMP-\d{5}$/), denominator: 6 });
@@ -159,6 +161,9 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
 
     it('차단 발령 즉시 서버 판단이 Safe Default(KILL_SWITCH) — 범위 밖 차량은 그대로', async () => {
       expect((await decide('ego-01')).value).toBe(true);
+      // 범위 밖 차량 — Canary 범위 밖이라 COHORT_MISS, 차단 뒤에도 같은 판단이어야 한다
+      const outside = await decide('KMH-NX4-0001');
+      expect(outside).toMatchObject({ value: false, reason: 'COHORT_MISS' });
       const r = await http()
         .post('/api/kill-requests')
         .set(OPERATOR)
@@ -175,7 +180,7 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
       // 두 번째 승인 → 게이트 PASS → 원장 순번 11(시드 10 + 1) → 차량별 봉투 2개 → 긴급 채널
       expect(two).toMatchObject({ status: 'ACTIVE', gate: { result: 'PASS', failed: [] }, command: { commandSeq: 11, envelopes: 2 } });
       expect(await decide('ego-01')).toMatchObject({ value: false, decision: 'SAFE_DEFAULT', reason: 'KILL_SWITCH' });
-      expect((await decide('KMH-NX4-0001')).value).toBe(true);
+      expect(await decide('KMH-NX4-0001')).toEqual(outside);
       // 같은 Feature 중복 차단 금지
       await http().post('/api/kill-requests').set(SAFETY).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', reason: '중복', containmentJustification: '봉쇄', confirm: 'FEAT-00022' }).expect(409);
     });

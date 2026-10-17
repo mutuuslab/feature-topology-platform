@@ -3,7 +3,7 @@
 // 커버리지가 올라가 Lifecycle DEVELOPING→VERIFIED 자동 전이 조건이 채워질 수 있다(같은 트랜잭션).
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { SafetyProfileService } from '../registry/safety-profile.service';
-import { LIFECYCLE_RANK, oddRestrictionFindings, policyChangeLog, policyDiff, POLICY_EDITABLE, PolicySpec, type CreatePolicyBody, type Policy, type PolicyDecisionBody, type UpdatePolicyBody } from '@ff/contracts';
+import { deployStartBasisPoints, effectiveBasisPoints, LIFECYCLE_RANK, oddRestrictionFindings, policyChangeLog, policyDiff, POLICY_EDITABLE, PolicySpec, type CreatePolicyBody, type Policy, type PolicyDecisionBody, type UpdatePolicyBody } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -229,11 +229,15 @@ export class PolicyService implements OnModuleInit {
         this.policies.update({ ...prev, status: 'RETIRED' });
         this.audit.record(actor, 'POLICY_RETIRE', prev.policyId, { before: { status: 'DEPLOYED' }, after: { status: 'RETIRED' }, reason: `${p.policyId}로 대체`, componentId: 'D01-06' });
       }
-      const next: Policy = { ...p, status: 'DEPLOYED', deployedBy: actor.id, deployedAt: this.clock.iso() };
+      // F2 이상은 Canary에서 시작한다(FFG-LCY-009) — 단계 값은 해시 밖이라 승인 내용은 그대로
+      const fClass = this.flags.list(p.featureId).find((x) => x.version === p.featureVersion)?.fClass ?? null;
+      const canary = deployStartBasisPoints(fClass, effectiveBasisPoints({ ...p, stageBasisPoints: null }));
+      const now = this.clock.iso();
+      const next: Policy = { ...p, status: 'DEPLOYED', deployedBy: actor.id, deployedAt: now, ...(canary != null ? { stageBasisPoints: canary, stagedAt: now } : { stageBasisPoints: null, stagedAt: null }) };
       this.policies.update(next);
-      this.audit.record(actor, 'POLICY_DEPLOY', id, { before: { status: 'APPROVED' }, after: { status: 'DEPLOYED', contentHash: p.contentHash }, reason, componentId: 'D01-06' });
+      this.audit.record(actor, 'POLICY_DEPLOY', id, { before: { status: 'APPROVED' }, after: { status: 'DEPLOYED', contentHash: p.contentHash, stage: next.stageBasisPoints, fClass }, reason, componentId: 'D01-06' });
       const pub = this.secureDeploy.publishPolicy(next, actor);
-      this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId, reason }, { componentId: 'D01-06', correlationId: actor.correlationId });
+      this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId, stage: next.stageBasisPoints, reason }, { componentId: 'D01-06', correlationId: actor.correlationId });
       return { ...next, publicationId: pub.publicationId };
     });
   }

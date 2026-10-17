@@ -116,9 +116,10 @@ export async function evaluateFlag({ policy, scope, killed, vehicle, entitlement
     if (bp === 0) cohort = 'FALSE';
     else if (bp < 10000) {
       if (vehicle.quality !== 'TRUSTED') cohort = 'UNKNOWN';
+      else if (vehicle.canary) cohort = 'TRUE';
       else cohort = (await cohortBucket('1', policy.flagKey, policy.rollout.salt, vehicle.vin)) < bp ? 'TRUE' : 'FALSE';
     }
-    trace.push({ step: 'COHORT', result: cohort, detail: bp === 10000 ? '전체' : bp === 0 ? '배포 대상 없음' : `FP-COHORT-1 < ${bp / 100}%` });
+    trace.push({ step: 'COHORT', result: cohort, detail: bp === 10000 ? '전체' : bp === 0 ? '배포 대상 없음' : vehicle.canary && vehicle.quality === 'TRUSTED' ? `지정 Canary 차량 — 부분 배포 ${bp / 100}%에 포함` : `FP-COHORT-1 < ${bp / 100}%` });
 
     const d = decide({ flagEnabled: policy.enabled, strategies, mandatory: [applicability, supportTri, entitlement, cohort] });
     trace.push({ step: 'DECIDE', result: d.decision === 'ALLOW' ? 'TRUE' : d.decision === 'DENY' ? 'FALSE' : 'UNKNOWN', detail: d.reason });

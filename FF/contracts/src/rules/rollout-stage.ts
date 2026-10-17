@@ -37,7 +37,7 @@ const safetyRelated = (f: FClass | null) => f == null || f >= 'F2';
 
 /**
  * 단계 조정 판정.
- * @rule FFG-LCY-009 — 배포·효력 승인 분리, F2 이상 Canary 시작과 관측 기간·중단 기준 판정. 배포 직후 기본 범위(정책 승인 범위)는 정책 승인에서 정한다
+ * @rule FFG-LCY-009 — 배포·효력 승인 분리, F2 이상 Canary 시작과 관측 기간·중단 기준 판정. 배포 직후 범위는 deployStartBasisPoints
  */
 export function judgeStageChange(i: StageChangeInput): StageJudgement {
   if (i.to <= i.current) return { kind: 'SHRINK', ok: true, blockers: [], criteria: null };
@@ -52,4 +52,13 @@ export function judgeStageChange(i: StageChangeInput): StageJudgement {
   if (i.openAnomalies.length || i.activeKills.length)
     blockers.push({ code: 'STOP_CRITERIA', message: `중단 기준 충족 — ${[...i.openAnomalies.map((a) => `이상 징후 ${a}`), ...i.activeKills.map((k) => `차단 ${k}`)].join(', ')}` });
   return { kind: 'EXPAND', ok: !blockers.length, blockers, criteria: { observedMs, requiredMs: CANARY_OBSERVE_MS, openAnomalies: i.openAnomalies, activeKills: i.activeKills } };
+}
+
+/**
+ * 배포 직후 효력 범위 — F2 이상(분류 없음 포함)은 승인 범위가 Canary 상한보다 넓어도 Canary(≤ CANARY_MAX_BP)에서 시작한다.
+ * null이면 단계 없이 승인 범위 그대로. 이후 확대는 judgeStageChange(관측 기간·중단 기준·다른 승인자)를 거친다.
+ * @rule FFG-LCY-009 — F2 이상 활성화는 Canary Cohort부터
+ */
+export function deployStartBasisPoints(fClass: FClass | null, approvedBp: number): number | null {
+  return safetyRelated(fClass) && approvedBp > CANARY_MAX_BP ? CANARY_MAX_BP : null;
 }

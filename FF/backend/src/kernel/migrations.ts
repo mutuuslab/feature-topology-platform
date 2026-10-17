@@ -475,4 +475,11 @@ CREATE TRIGGER rollback_request_no_delete BEFORE DELETE ON rollback_request BEGI
 CREATE TRIGGER rollback_execution_no_delete BEFORE DELETE ON rollback_execution BEGIN SELECT RAISE(ABORT, 'rollback_execution은 지울 수 없다'); END;
 `,
   },
+  {
+    // 5년 운영 — 권한 수십만 건: 만료 sweep(ACTIVE만)을 색인으로(상품별 조회 색인은 이미 있다)
+    name: '041_ops5y_indexes',
+    sql: `
+CREATE INDEX entitlement_status ON entitlement(status);
+`,
+  },
 ];

@@ -96,4 +96,14 @@ describe('5년 운영 모집단·신차 등록·대규모 지도 (D02-03)', () =
     expect(pop.sample.rows).toBe(sample.length - future - retired);
     expect(pop.sample.inactive).toBe(retired + future);
   });
+
+  it('표본 차량에도 실제 경로로 체험을 제안한다 — 권한은 SYNTHETIC(가중 집계), 말소 차량은 건너뛴다', async () => {
+    const live = sample.find((p) => !p.retiredAt && p.country === 'KR' && p.vehicleModel === 'NX4 PE')!;
+    const gone = sample.find((p) => p.retiredAt)!;
+    const r = (await http().post('/api/trials/offers').set(OPERATOR).send({ catalogId: 'CAT-00019', vins: [live.vin, gone.vin] }).expect(201)).body;
+    expect(r.offered.map((g: { vin: string }) => g.vin)).toEqual([live.vin]);
+    expect(r.skipped).toEqual([{ vin: gone.vin, reason: '판매 전이거나 말소된 차량' }]);
+    const g = (await http().get(`/api/entitlements?vin=${live.vin}`).set(OPERATOR).expect(200)).body;
+    expect(JSON.stringify(g)).toContain('SYNTHETIC');
+  });
 });

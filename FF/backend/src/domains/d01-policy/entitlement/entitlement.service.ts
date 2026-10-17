@@ -2,7 +2,7 @@
 //   제안(OFFERED, 14일 안에 수락) → 수락(ACTIVE, 수락일부터 30일 기능 ON) → 만료 / 거절 / 구매 전환(CONVERTED, 과금 연계 D05-04가 부른다).
 // 상태·유효 판단은 contracts/rules/trial.ts grantState 한 곳 — 저장된 상태가 ACTIVE여도 기간이 지나면 OFF.
 import { Inject, Injectable } from '@nestjs/common';
-import { addDays, grantState, SEGMENT_DIMENSIONS, TRIAL_DAYS, variantRow, type Entitlement, type OfferTrialsBody, type TrialState, type VehicleProfile } from '@ff/contracts';
+import { addDays, grantState, inService, SEGMENT_DIMENSIONS, TRIAL_DAYS, variantRow, type Entitlement, type OfferTrialsBody, type TrialState, type VehicleProfile } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -99,8 +99,16 @@ export class EntitlementService {
     const skipped: { vin: string; reason: string }[] = [];
     this.db.tx(() => {
       for (const vin of [...new Set(body.vins)]) {
-        if (!this.fleet.vehicle(vin)) {
+        // 등록 차량(Fleet) 또는 커넥티드 등록된 5년 운영 표본 차량(판매 뒤·말소 전)만 — 표본 권한은 source SYNTHETIC(가중 집계 대상)
+        const registered = this.fleet.vehicle(vin);
+        const profile = !registered || registered.fleet === 'SAMPLE' ? this.fleet.profile(vin) : undefined;
+        const sample = profile?.soldMonth ? profile : undefined;
+        if (!registered && !sample) {
           skipped.push({ vin, reason: 'Fleet에 없는 차량' });
+          continue;
+        }
+        if (sample && !inService(sample, today)) {
+          skipped.push({ vin, reason: '판매 전이거나 말소된 차량' });
           continue;
         }
         const unsupported = this.unsupported(vin, body.catalogId);
@@ -129,7 +137,7 @@ export class EntitlementService {
           convertedAt: null,
           convertedPlan: null,
           fromTrial: null,
-          source: 'DEMO',
+          source: sample ? 'SYNTHETIC' : 'DEMO',
           note: body.note ?? null,
           noticeId: null,
           noticeAt: null,

@@ -121,6 +121,13 @@ export function populationAt(start: string, today: string): PopulationSummary {
 
 // ---------------- 층화 가중 표본 ----------------
 
+/** 시장별 트림 구성(가정) — 데이터셋 Feature 적용 범위(KR Premium·EU Ultimate·US Limited 등)와 맞춘다. 범위 밖 트림은 그 기능의 대상이 아니다 */
+export const SAMPLE_TRIMS: Record<string, Partial<Record<PopulationCountry, [string, number][]>>> = {
+  'NX4 PE': { KR: [['Premium', 50], ['Inspiration', 30], ['Modern', 20]], EU: [['Ultimate', 55], ['Premium', 45]], US: [['Limited', 50], ['SEL', 50]] },
+  GN7: { KR: [['Calligraphy', 40], ['Premium', 35], ['Exclusive', 25]], EU: [['Calligraphy', 50], ['Premium', 50]], US: [['Calligraphy', 50], ['Limited', 50]] },
+  NE: { KR: [['Long Range', 60], ['Standard', 40]], EU: [['Long Range', 60], ['Standard', 40]], US: [['Long Range', 60], ['Standard', 40]] },
+};
+
 const WMI: Record<PopulationCountry, string> = { KR: 'KMH', US: 'HMA', EU: 'TMA' };
 const MODEL_CODE: Record<string, string> = { 'NX4 PE': 'NX4', GN7: 'GN7', NE: 'NE' };
 
@@ -155,6 +162,8 @@ export function sampleVehicles(n: number, start: string, today: string, seed = 2
       const soldMonth = weightedPick(r, pickMonth);
       const soldDay = `${soldMonth}-${String(1 + Math.floor(r() * 28)).padStart(2, '0')}`;
       const traits = profileTraits(r, country, vehicleModel);
+      const trims = SAMPLE_TRIMS[vehicleModel]?.[country];
+      if (trims) traits.trim = weightedPick(r, trims);
       // 말소 — 지수 분포(연 말소율), 기준일 이후면 아직 운행 중
       const lifeYears = -Math.log(1 - r()) / -Math.log(1 - POPULATION_ASSUMPTIONS.annualAttrition);
       const retired = addDays(soldDay < start ? start : soldDay, Math.round(lifeYears * 365));

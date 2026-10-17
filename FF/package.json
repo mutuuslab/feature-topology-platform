@@ -29,6 +29,8 @@
     "data:check": "node tools/dataset/check.ts",
     "openapi": "node tools/openapi.ts",
     "snapshot:api": "node tools/snapshot-api.ts",
+    "ops5y:build": "npm run build -w @ff/contracts && npm run build -w feature-topology-backend && node tools/ops5y/replay.ts",
+    "dev:backend:ops5y": "node tools/ops5y/serve.ts",
     "carla:up": "bash sim/carla/server.sh up",
     "carla:down": "bash sim/carla/server.sh down",
     "carla:status": "bash sim/carla/server.sh status",

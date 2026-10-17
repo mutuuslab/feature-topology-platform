@@ -1,0 +1,44 @@
+{
+  "_note": "5년 운영 재생(tools/ops5y)의 출시 일정 — 가정값. 개시일 기준 경과 개월(month)에 Feature Version 정책을 배포하고, 상품은 그 달부터 판매한다(재생 DB에서만 validFrom을 덮어쓴다). v0.81 데이터셋의 같은 Feature 이전 Version이 먼저 나가고 나중 Version이 대체한다.",
+  "features": [
+    { "month": 1, "featureId": "FEAT-00001", "version": "2.1.0", "catalogId": "CAT-00001" },
+    { "month": 1, "featureId": "FEAT-00002", "version": "1.5.0", "catalogId": "CAT-00001" },
+    { "month": 2, "featureId": "FEAT-00144", "version": "3.2.0", "catalogId": "CAT-00001" },
+    { "month": 4, "featureId": "FEAT-00004", "version": "4.0.1", "catalogId": "CAT-00002" },
+    { "month": 4, "featureId": "FEAT-00084", "version": "5.4.2", "catalogId": "CAT-00002" },
+    { "month": 5, "featureId": "FEAT-00163", "version": "3.7.0", "catalogId": "CAT-00002" },
+    { "month": 11, "featureId": "FEAT-00022", "version": "1.0.0", "catalogId": "CAT-00019", "flags": { "Signal": "care_00022_signal", "Parameter": "care_00022_param" } },
+    { "month": 11, "featureId": "FEAT-00023", "version": "1.0.0", "catalogId": "CAT-00019" },
+    { "month": 11, "featureId": "FEAT-00024", "version": "1.0.0", "catalogId": null, "flags": { "Flag": "ivi_00024_guide" } },
+    { "month": 12, "featureId": "FEAT-00145", "version": "5.4.2", "catalogId": "CAT-00013" },
+    { "month": 20, "featureId": "FEAT-00025", "version": "1.0.0", "catalogId": "CAT-00014" },
+    { "month": 20, "featureId": "FEAT-00026", "version": "1.0.0", "catalogId": "CAT-00014" },
+    { "month": 21, "featureId": "FEAT-00027", "version": "1.0.0", "catalogId": "CAT-00014" },
+    { "month": 21, "featureId": "FEAT-00150", "version": "5.4.2", "catalogId": "CAT-00014" },
+    { "month": 24, "featureId": "FEAT-00028", "version": "1.0.0", "catalogId": "CAT-00015" },
+    { "month": 24, "featureId": "FEAT-00029", "version": "1.0.0", "catalogId": "CAT-00015" },
+    { "month": 25, "featureId": "FEAT-00030", "version": "1.0.0", "catalogId": "CAT-00015" },
+    { "month": 25, "featureId": "FEAT-00183", "version": "5.4.2", "catalogId": "CAT-00015" },
+    { "month": 37, "featureId": "FEAT-00001", "version": "2.2.0", "catalogId": "CAT-00017" },
+    { "month": 37, "featureId": "FEAT-00002", "version": "1.6.0", "catalogId": "CAT-00017" },
+    { "month": 38, "featureId": "FEAT-00144", "version": "3.3.0", "catalogId": "CAT-00017" },
+    { "month": 41, "featureId": "FEAT-00004", "version": "4.1.0", "catalogId": "CAT-00018" },
+    { "month": 41, "featureId": "FEAT-00084", "version": "5.5.0", "catalogId": "CAT-00018" },
+    { "month": 42, "featureId": "FEAT-00163", "version": "3.8.0", "catalogId": "CAT-00018" },
+    { "month": 52, "featureId": "FEAT-00145", "version": "5.5.0", "catalogId": "CAT-00013" },
+    { "month": 53, "featureId": "FEAT-00150", "version": "5.5.0", "catalogId": "CAT-00014" },
+    { "month": 54, "featureId": "FEAT-00183", "version": "5.5.0", "catalogId": "CAT-00015" }
+  ],
+  "trialCampaigns": [
+    { "fromMonth": 12, "catalogId": "CAT-00019", "monthlyShare": 0.05 },
+    { "fromMonth": 38, "catalogId": "CAT-00017", "monthlyShare": 0.03 },
+    { "fromMonth": 42, "catalogId": "CAT-00018", "monthlyShare": 0.04 }
+  ],
+  "incidents": [
+    { "month": 16, "day": 14, "featureId": "FEAT-00022", "code": "RADAR_BIAS", "kill": true },
+    { "month": 30, "day": 3, "featureId": "FEAT-00025", "code": "GAP_SENSOR_DRIFT", "kill": true },
+    { "month": 44, "day": 20, "featureId": "FEAT-00028", "code": "RADAR_BIAS", "kill": true },
+    { "month": 57, "day": 11, "featureId": "FEAT-00022", "code": "CAMERA_OCCLUSION", "kill": true }
+  ],
+  "rollbacks": [{ "month": 39, "day": 9, "featureId": "FEAT-00001", "reason": "2.2.0 배포 후 현장 보고 — 2.1.0으로 복구" }]
+}

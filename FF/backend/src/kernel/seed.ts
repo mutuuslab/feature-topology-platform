@@ -50,6 +50,8 @@ export function seedDataset(db: Db, ds: Dataset, label = 'v0.81'): { seeded: boo
 
 /** 시드 기준일(KST) — FF_CLOCK_AT(시험 고정 시각)이 있으면 그 날, 없으면 오늘. 데모 권한 날짜는 이 날 기준 상대값이다 */
 export function seedAnchor(): string {
+  // FF_SEED_ANCHOR — 5년 재생은 시계를 개시일(5년 전)에 두고 시작하지만, 데모 차량 권한은 재생이 끝나는 날(오늘) 기준으로 둔다
+  if (process.env.FF_SEED_ANCHOR) return process.env.FF_SEED_ANCHOR.slice(0, 10);
   const t = process.env.FF_CLOCK_AT ? new Date(process.env.FF_CLOCK_AT) : new Date();
   return new Date(t.getTime() + 9 * 3600_000).toISOString().slice(0, 10);
 }

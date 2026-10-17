@@ -221,11 +221,21 @@ export class FleetRepo {
     this.rev++;
     this.db.run('INSERT INTO entitlement (grant_id, vin, catalog_id, status, source, doc) VALUES (?, ?, ?, ?, ?, ?)', e.grantId, e.vin, e.catalogId, e.status, e.source, JSON.stringify(e));
   }
-  /** 데모 권한 다음 번호 — 합성(ENT-S…)과 섞이지 않는다 */
+  /**
+   * 권한 다음 번호(ENT-xxxxx) — 합성(ENT-S…)과 섞이지 않는다. 번호는 meta 카운터에 둔다:
+   * 권한이 수십만 건이면 매번 최대값을 훑는 질의가 제안 한 건마다 표 전체를 읽는다(5년 운영). 카운터가 없으면 한 번만 최대값으로 맞춘다.
+   * 문자열 max는 ENT-99999 > ENT-100000으로 잘못 고르므로 숫자로 비교한다. 호출자의 트랜잭션이 롤백되면 카운터도 함께 되돌아간다.
+   * ENT- 번호 권한은 시드 뒤에는 이 함수로만 만든다(직접 번호를 넣으면 카운터와 겹칠 수 있다).
+   */
   nextGrantId(): string {
-    // 문자열 max는 ENT-99999 > ENT-100000으로 잘못 고른다 — 숫자로 비교한다
-    const r = this.db.get<{ m: number | null }>("SELECT max(CAST(substr(grant_id, 5) AS INTEGER)) AS m FROM entitlement WHERE grant_id NOT LIKE 'ENT-S%'");
-    return `ENT-${pad((r?.m ?? 0) + 1, 5)}`;
+    const cur = this.db.get<{ value: string }>("SELECT value FROM meta WHERE key = 'seq:grant'");
+    const last = cur ? Number(cur.value) : (this.db.get<{ m: number | null }>("SELECT max(CAST(substr(grant_id, 5) AS INTEGER)) AS m FROM entitlement WHERE grant_id NOT LIKE 'ENT-S%'")?.m ?? 0);
+    this.db.run("INSERT INTO meta (key, value) VALUES ('seq:grant', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", String(last + 1));
+    return `ENT-${pad(last + 1, 5)}`;
+  }
+  /** 저장 상태가 ACTIVE인 권한 — 만료 sweep 대상(색인) */
+  activeGrants(): Entitlement[] {
+    return parse<Entitlement>(this.db.all("SELECT doc FROM entitlement WHERE status = 'ACTIVE' ORDER BY grant_id"));
   }
   profiles(): Map<string, VehicleProfile> {
     if (this.profCache?.rev === this.rev) return this.profCache.profiles;

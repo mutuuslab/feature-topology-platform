@@ -87,7 +87,8 @@ export class KillService {
   ) {}
 
   /** 차단 영향 범위 — 대상 Feature + 이를 REQUIRES하는 Feature(전이), 그 배포 flag, 적용 범위에 드는 차량. 게이트가 보는 등급·24시간 누적도 함께 */
-  preview(featureId: string, featureVersion: string, vins?: string[]) {
+  /** category — 새 요청의 사유 분류. 생략하면 긴급(안전·보안·규제) 요청으로 본다 */
+  preview(featureId: string, featureVersion: string, vins?: string[], category?: ReasonCategory) {
     const f = this.features.get(featureId, featureVersion);
     if (!f) throw new DomainError('NOT_FOUND', `${featureId} ${featureVersion}을(를) 찾을 수 없습니다.`);
     const ids = [featureId];
@@ -112,7 +113,18 @@ export class KillService {
       flagKeys: [...new Set(deployed.map((p) => p.flagKey))].sort(),
       vehicles: vehicles.map((v) => ({ vin: v.vin, label: v.label, link: v.link, gleo: v.gleo })),
       unknownVins: unknown,
-      activeKill: this.kills.list().find((k) => k.featureId === featureId && (k.status === 'ACTIVE' || this.effective(k).status === 'REQUESTED'))?.killId ?? null,
+      // 진행 중 차단 — 대상 차량이 겹칠 때만 새 요청을 막는다. 체험 만료 같은 상업 비활성화(차량 한 대)는 긴급 차단(안전·보안·규제)을 막지 않는다
+      // (5년 운영 재생에서 발견: 만료된 체험 한 대의 상업 비활성화가 기능 전체의 안전 Kill을 '이미 차단 중'으로 거부했다)
+      activeKill:
+        this.kills
+          .list()
+          .find(
+            (k) =>
+              k.featureId === featureId &&
+              (k.status === 'ACTIVE' || this.effective(k).status === 'REQUESTED') &&
+              !(k.reasonCategory === 'COMMERCIAL' && category !== 'COMMERCIAL') &&
+              k.vins.some((v) => vehicles.some((x) => x.vin === v)),
+          )?.killId ?? null,
       // 게이트가 보는 이 Version(D.6) — 화면 체크리스트·누적 게이지
       registry: snap.feature,
       window: snap.window,
@@ -162,7 +174,7 @@ export class KillService {
       this.audit.failed(actor, 'KILL_REQUEST', body.featureId, 'type-to-confirm 불일치', 'D03-03');
       throw new DomainError('VALIDATION', `확인 입력이 차단 대상 Feature ID(${body.featureId})와 다릅니다.`);
     }
-    const pv = this.preview(body.featureId, body.featureVersion, body.vins);
+    const pv = this.preview(body.featureId, body.featureVersion, body.vins, body.reasonCategory);
     if (pv.activeKill) throw new DomainError('CONFLICT', `${body.featureId}은(는) 이미 차단 중이거나 승인 대기 중입니다 (${pv.activeKill}).`, { killId: pv.activeKill });
     if (pv.unknownVins.length) throw new DomainError('VALIDATION', `영향 범위 밖의 차량이 있습니다: ${pv.unknownVins.join(', ')}`, { unknownVins: pv.unknownVins });
     if (!pv.vehicles.length) throw new DomainError('GUARD_FAILED', '차단할 대상 차량이 없습니다.');

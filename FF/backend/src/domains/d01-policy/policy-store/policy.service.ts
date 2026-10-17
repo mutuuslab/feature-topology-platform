@@ -42,7 +42,8 @@ export class PolicyService implements OnModuleInit {
    * + FEAT-00024(IC·JC 경로 사전안내, QM) IVI 앱 flag — OpenFeature로 평가하는 F0·F1 flag의 예(FFG-OFT-001)
    */
   onModuleInit() {
-    if (process.env.FF_SEED === 'none' || this.policies.all().length) return;
+    // 5년 운영 데이터셋(FF_DATASET=ops5y)은 정책을 재생(tools/ops5y)이 실제 경로로 만든다 — 2026년 날짜 시드 정책을 넣지 않는다
+    if (process.env.FF_SEED === 'none' || process.env.FF_DATASET === 'ops5y' || this.policies.all().length) return;
     const f = this.features.get('FEAT-00022', '1.0.0');
     if (!f) return;
     const at = '2026-10-01T00:00:00.000Z';

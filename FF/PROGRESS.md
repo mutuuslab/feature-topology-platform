@@ -80,7 +80,7 @@
     - **위치 개인정보 — D5 결정 전 잠정 기본값(사용자 확인 필요)**
       - 위치 원천은 데모 전용 모의 공급자(`contracts/rules/fleet-map.ts` — 국가·지역 도시 주변, VIN 결정적). 저장하지 않고 조회 때 계산한다.
       - 지도 목록은 약 1 km(0.01°)로 낮춘다. 한 대 상세만 정밀(0.0001°)이고 열람마다 감사(`FLEET_LOCATION_VIEW`), 지도 열람은 계정당 10분에 한 번 감사.
-      - 열람 역할: 운영·운영 책임·안전·감사(`LOCATION_VIEW_ROLES`). 그 밖은 403·거부 감사.
+      - 열람 역할: **사람 역할 누구나**(사용자 결정 2026-10-17 "누구나 다 볼 수 있도록", `LOCATION_VIEW_ROLES = HUMAN_ROLES + SYSTEM`). 차량 신원은 403·거부 감사. 열람 감사·약 1 km 정밀도는 그대로.
       - 위치 공유 미동의 차량(데모 KMH-NX4-0003, 합성 약 5%)은 지역 대표점만.
       - 타일 요청에는 보고 있는 지도 범위만 담기고 차량 좌표는 브라우저 밖으로 나가지 않는다.
     - API: `GET /api/fleet/map?source=DEMO|SYNTHETIC|ALL&catalogId&flagKey`, `GET /api/fleet/map/vehicles/:vin`.

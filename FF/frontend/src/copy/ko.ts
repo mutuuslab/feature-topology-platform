@@ -124,7 +124,7 @@ export const ko = {
     syntheticNote: (n: number) => `합성 모집단 ${n.toLocaleString('ko-KR')}대는 구독 상태만 있어 기능 활성 보기에서는 회색으로 보입니다.`,
     live: '실시간 변경',
     updated: (t: string) => `갱신 ${t}`,
-    forbidden: '이 역할로는 차량 위치를 볼 수 없습니다. 위치 열람은 운영·운영 책임·안전·감사 역할만 가능합니다.',
+    forbidden: '이 신원으로는 차량 위치를 볼 수 없습니다. 차량 위치는 사람 역할이면 누구나 볼 수 있고, 열람은 감사에 남습니다.',
   },
   rollback: {
     title: '롤백',

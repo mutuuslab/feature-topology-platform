@@ -112,10 +112,10 @@ describe('전세계 차량 지도 화면', () => {
     expect(calls.find((c) => c.url === '/api/fleet/map/vehicles/KMH-NX4-0001')!.headers['X-Actor-Role']).toBe('AUDITOR');
   });
 
-  it('위치 열람 역할 밖이면 지도·표 대신 안내만 보인다', async () => {
+  it('위치 열람이 거부되면(차량 신원 등) 지도·표 대신 안내만 보인다', async () => {
     status = 403;
     mount('author');
-    expect(await screen.findByText(/위치 열람은 운영·운영 책임·안전·감사 역할만/)).toBeTruthy();
+    expect(await screen.findByText(/사람 역할이면 누구나 볼 수 있고/)).toBeTruthy();
     expect(screen.queryByRole('table', { name: '차량 목록' })).toBeNull();
   });
 });

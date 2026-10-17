@@ -3,12 +3,17 @@
 //   - 위치 원천은 데모 전용 모의 공급자 — 차량 국가·지역의 도시 주변 좌표를 VIN으로 결정적으로 만든다. 저장하지 않고 조회 때 계산한다.
 //   - 지도 전체는 약 1 km 정밀도(0.01°)로 낮춰 보낸다. 한 대 상세만 정밀(0.0001°)이며 열람마다 감사한다.
 //   - 위치 공유에 동의하지 않은 차량은 지역 대표점만 보인다.
-//   - 열람은 LOCATION_VIEW_ROLES만.
+//   - 열람은 사람 역할 전부(LOCATION_VIEW_ROLES, 사용자 결정 2026-10-17). 차량 신원은 열람하지 않는다.
 import type { Role } from '../enums';
+import { HUMAN_ROLES } from './access';
 import { grantState } from './trial';
 import type { Entitlement } from '../schemas/policy';
 
-export const LOCATION_VIEW_ROLES: Role[] = ['OPERATOR', 'OPS_LEAD', 'SAFETY_OFFICER', 'AUDITOR', 'SYSTEM'];
+/**
+ * 위치 열람 역할 — 사람 역할 전부(사용자 결정 2026-10-17 "누구나 다 볼 수 있도록"). 차량(VEHICLE)은 열람하지 않는다.
+ * 열람은 계속 감사하고(지도는 계정당 10분에 한 번, 상세는 매번), 지도 목록의 정밀도(약 1 km)도 그대로다.
+ */
+export const LOCATION_VIEW_ROLES: Role[] = [...HUMAN_ROLES, 'SYSTEM'];
 /** 지도 목록 정밀도 — 0.01° ≈ 1.1 km */
 export const MAP_PRECISION_DEG = 0.01;
 /** 한 대 상세 정밀도 — 0.0001° ≈ 11 m */

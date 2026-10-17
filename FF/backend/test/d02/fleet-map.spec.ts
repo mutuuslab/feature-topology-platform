@@ -1,4 +1,4 @@
-// 전세계 차량 지도 (D02-03) — 위치(약 1 km·모의)·구독 상태·기능 활성, 열람 역할 제한·감사(지도는 10분에 한 번, 상세는 매번), 움직임, 합성 모집단.
+// 전세계 차량 지도 (D02-03) — 위치(약 1 km·모의)·구독 상태·기능 활성, 사람 역할 누구나 열람·감사(지도는 10분에 한 번, 상세는 매번), 움직임, 합성 모집단.
 Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal' });
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -59,10 +59,14 @@ describe('전세계 차량 지도 (D02-03)', () => {
     expect(mapAudits('jung.audit')).toHaveLength(before + 2);
   });
 
-  it('열람 역할 밖이면 403과 거부 감사 — Feature 작성자', async () => {
-    await http().get('/api/fleet/map').set(AUTHOR).expect(403);
-    await http().get('/api/fleet/map/vehicles/ego-01').set(AUTHOR).expect(403);
-    const denied = app.get(AuditService).list({ actorId: 'kim.author', result: 'DENIED' });
+  it('누구나 열람(사용자 결정 2026-10-17) — Feature 작성자도 보고 열람이 감사에 남는다, 차량 신원은 403', async () => {
+    const r = (await http().get('/api/fleet/map').set(AUTHOR).expect(200)).body;
+    expect(r.items.length).toBeGreaterThan(0);
+    expect(r.precision.level).toBe('COARSE'); // 정밀도는 그대로
+    expect(mapAudits('kim.author').length).toBeGreaterThan(0);
+    await http().get('/api/fleet/map/vehicles/ego-01').set(AUTHOR).expect(200);
+    await http().get('/api/fleet/map').set(actor('vehicle-x', 'VEHICLE')).expect(403);
+    const denied = app.get(AuditService).list({ actorId: 'vehicle-x', result: 'DENIED' });
     expect(denied.some((a) => a.target === '/api/fleet/map')).toBe(true);
   });
 

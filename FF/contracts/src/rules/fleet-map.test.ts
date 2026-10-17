@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EntitlementSchema, type Entitlement } from '../schemas/policy';
 import { ROUTES } from '../routes';
+import { HUMAN_ROLES } from './access';
 import { LOCATION_VIEW_ROLES, MAP_PRECISION_DEG, activationState, coarsen, locationConsent, mockPosition, regionPoint, subscriptionState, summarize, type FleetMapVehicle } from './fleet-map';
 
 const G = (o: Partial<Entitlement>): Entitlement => EntitlementSchema.parse({ grantId: 'ENT-00001', vin: 'v', catalogId: 'CAT-00019', kind: '체험', validFrom: '2026-10-01', validTo: '2026-10-30', status: 'ACTIVE', ...o });
@@ -95,8 +96,9 @@ describe('전세계 차량 지도 — 위치 경로 불변식(하네스)', () =>
       for (const role of r.roles ?? []) expect(LOCATION_VIEW_ROLES, `${r.name}: ${role}은(는) 위치 열람 역할이 아니다`).toContain(role);
     }
   });
-  it('위치 열람 역할에 Feature 작성·상품 역할이 들어가지 않는다 — 넓히려면 D5 결정이 먼저', () => {
-    for (const role of ['FEATURE_AUTHOR', 'PRODUCT_AUTHOR', 'IMPLEMENTER'] as const) expect(LOCATION_VIEW_ROLES).not.toContain(role);
+  it('위치 열람은 사람 역할 전부(사용자 결정 2026-10-17), 차량 신원은 열람하지 않는다 — 지도 정밀도는 그대로', () => {
+    for (const role of HUMAN_ROLES) expect(LOCATION_VIEW_ROLES).toContain(role);
+    expect(LOCATION_VIEW_ROLES).not.toContain('VEHICLE');
     expect(MAP_PRECISION_DEG).toBeGreaterThanOrEqual(0.01); // 지도 목록은 약 1 km보다 정밀하지 않게
   });
 });

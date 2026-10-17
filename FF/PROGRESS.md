@@ -3,6 +3,19 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## 5년 운영 규모 데이터 (2026-10-17 사용자 요청 "현대차 연 700만 대, 플랫폼 5년 운영 가정 · 모든 차가 해당되지는 않음 · Test·시뮬레이션")
+- 결정: 이력은 **실제 서비스로 5년 재생**, 차량은 **모델 계산 + 가중 표본 행**. 계획 `~/.claude/plans/c-users-taehokim-downloads-feature-flag-snappy-heron.md`.
+- 모집단 모델 `contracts/src/rules/population.ts`(가정값 — 실제 수치 아님): 판매 3,502만 → 서비스 시장 2,001만 → 플랫폼 탑재 1,333만 → 커넥티드 1,000만 → 운행 중 **961만**(2026-10-18).
+- 표본 5만 행(가중치 ≈ 층 대수 ÷ 표본), 수신 표본 200대(OTA·readback). 시연 12대·기본 시험 부팅(메모리 DB, 합성 3,000)은 그대로.
+- 재생 `npm run ops5y:build` → `.sim/ops5y.db`(gitignore), 보고서 `docs/80-integration/ops5y-report.md`. 2021-10-18 → 2026-10-18, 1,827일, 약 4분, **불변식 12/12 PASS**.
+  - 짧은 재생(125일) CI 시험 `backend/test/ops5y/replay.spec.ts`.
+  - 재생이 찾아 고친 결함: 서명 키 365일 만료 후에도 서명(전 차량 거부), 상업 비활성화가 안전 긴급 차단을 막음, 지도 격자 무제한(2 MB), 정적 데모 URL 어긋남.
+- dev: `npm run dev:backend:ops5y`(9101, 재생 DB 사본으로 — 재시작하면 재생 직후 상태). 화면: 지도 묶음(대표 대수)·화면 범위 요청, 체험 분석 26주/1년/5년, 홈 대상 차량, 만·억 표기.
+- **사용자 결정 대기**
+  1. 오래된 배포 산출물 롤백: 서명 키가 이미 만료된 3년 전 산출물은 "서명을 확인할 수 없습니다"로 롤백 거부(현재 동작). 서명 당시 유효했으면 허용할지.
+  2. FEAT-00025·FEAT-00028 안전 프로파일에 sbomRef 없음 → 긴급 차단 뒤 복원이 게이트 FFG-PLT-010에서 막힘(EU·US 기능은 차단하면 복구 불가).
+  3. 가정값(탑재율·커넥티드율·시장 비중)을 실제 비율로 바꿀지 — `POPULATION_ASSUMPTIONS`만 바꾸고 재생.
+
 ## P10·P11 진행 (2026-10-13 시작 — worktree `../2026-06-04_Feature_Platform-p10`, 브랜치 `feat/p10`)
 > 표준 보고서 세션(ffp-standards-implementation-plan)이 같은 브랜치·작업 트리에서 WP 작업 중 → P10은 별도 worktree에서 하고 단계마다 feat/v081-integration에 merge(merge 전 알림). e2e 포트 9121/9122, 마이그레이션 020~029(표준 세션 017~019·030~). P11 마감은 WP8(D06-11) 뒤.
 - [x] **A 컴포넌트 6 + IF 모의 어댑터** (feat/p10 61e725a·b3704f5, WP5a 합침 2dad71f — 41/42, 화면 /experiments·/ops/incidents·/field·/integration/connectors·/integration/sync·/integration/legacy) — D01-07 실험·효과(F2 이상 A/B 거부·Shadow만, `@rule FFG-CLS-006`), D04-05 장애·VOC(SOTIF 트리거 → 이상 징후 FIELD, `@rule FFG-SOT-003`, 차단은 v2 요청·2인 승인), D05-02 데이터 동기화(IF-02·03·12 대사, 시장 구분·CN 국외 이전 보류 `@rule FFG-TEL-005`), D05-03 Legacy 연계(레거시 옵션 코드 ↔ FEAT, 해외공장 주문 IF-12), D05-05 현장 지원 포털(VIN 종합 조회·현장 접수 → D04-05), D05-07 Legacy-SDV(비SDV 차량은 딜러 코딩, F2 이상 거부). IF 모의: IF-01 ALM·02 기준정보·03 MDM/DW·08 Supplier·11 OTel·12 해외공장 + 외부 연계 현황 v2(`/integration/connectors` 대체). D06-11은 WP8(표준 세션) 담당.

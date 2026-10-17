@@ -126,7 +126,7 @@ export const master = {
     pins: 'OpenFeature SDK',
   },
   compliance: {
-    key: { rules: (tested: number, total: number) => `플랫폼 규칙 구현 · 시험 ${tested}/${total}`, verify: '시장 확인이 필요한 Profile', confirmed: '모든 시장 Profile 확인됨' },
+    key: { rules: (tested: number, total: number) => (tested === total ? '플랫폼 규칙 구현 — 모두 시험됨' : `플랫폼 규칙 구현 — 시험 ${tested}/${total}`), verify: '시장 확인이 필요한 Profile', confirmed: '모든 시장 Profile 확인됨' },
     title: '컴플라이언스',
     lead: '보고서 v1.1 플랫폼 규칙의 구현·시험 추적.',
     kpi: { total: '플랫폼 규칙', implemented: '구현 추적', tested: '시험 추적' },

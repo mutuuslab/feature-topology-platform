@@ -10,6 +10,7 @@ import { ApprovalInboxScreen, HomeScreen } from '../screens/home/Inbox';
 import { NotificationsScreen } from '../screens/home/Notifications';
 import { TopologyScreen } from '../screens/master/Topology';
 import { FleetMapScreen } from '../screens/ops/FleetMap';
+import { AuditScreen } from '../screens/governance/AuditEvents';
 
 beforeEach(() => {
   localStorage.clear();
@@ -50,4 +51,13 @@ describe('핵심 메시지 — 불러오는 중에는 판정하지 않는다(거
       expect(key).toHaveLength(1);
       expect(key[0].getAttribute('data-tone')).toBe('neutral');
     });
+});
+
+// 반대 방향의 거짓 경보(2026-10-18 S4 재검토에서 발견): 감사 화면이 불러오는 중에 "해시 체인이 끊겼습니다"를 보였다
+it('감사: 응답 전에는 해시 체인 끊김도 정상도 말하지 않는다', async () => {
+  mount('/audit', <AuditScreen />);
+  await new Promise((r) => setTimeout(r, 30));
+  const key = document.querySelector('[data-key-message]')!;
+  expect(key.getAttribute('data-tone')).toBe('neutral');
+  expect(key.textContent).not.toMatch(/끊겼|정상/);
 });

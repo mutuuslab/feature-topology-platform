@@ -23,7 +23,7 @@ export function AuditScreen() {
         codes="D01-10 · AUDIT"
         title={ko.audit.title}
         lead={ko.audit.lead}
-        message={!c ? { tone: 'neutral', value: '—', text: ko.audit.key.broken } : c.ok ? { tone: 'ok', text: ko.audit.key.ok(c.verified, c.head ? `${c.head.slice(0, 10)}…` : '—') } : { tone: 'danger', text: ko.audit.key.broken }}
+        message={!c ? { tone: 'neutral', value: '—', text: ko.audit.key.checking } : c.ok ? { tone: 'ok', text: ko.audit.key.ok(c.verified) } : { tone: 'danger', text: ko.audit.key.broken }}
         tour="audit-chain"
       />
       {c?.broken && (

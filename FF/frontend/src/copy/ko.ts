@@ -303,7 +303,7 @@ export const ko = {
     country: '국가',
     vehicleModel: '차종',
     kpiVersions: 'Feature Version',
-    key: { ids: 'Feature', versions: (n: number) => `Version ${n}개 · 출시·제안 수는 아래 Lifecycle 탭` },
+    key: { ids: 'Feature', versions: (n: number) => `Version ${n}개` },
     kpiIds: 'Feature ID',
     kpiReleased: 'RELEASED',
     kpiProposed: 'PROPOSED',
@@ -403,7 +403,7 @@ export const ko = {
     col: { rule: '규칙', criterion: '점검 기준', result: '판정', expected: '예시', summary: '요약' },
   },
   audit: {
-    key: { ok: (n: number, head: string) => `해시 체인 정상 — ${n}건 검증, 위변조 없음 · 마지막 ${head}`, broken: '해시 체인이 끊겼습니다 — 위변조 의심' },
+    key: { ok: (n: number) => `해시 체인 정상 — ${n}건 검증, 위변조 없음`, broken: '해시 체인이 끊겼습니다 — 위변조 의심', checking: '해시 체인 확인 중' },
     title: '감사 이력',
     lead: '모든 등록·변경·승인·거부·실패 기록 — 추가만 되고 위변조를 검출합니다.',
     result: '결과',
@@ -433,6 +433,7 @@ export const ko = {
     hashOk: '검증한 내용과 현재 내용이 같습니다',
     hashStale: '검증 이후 내용이 바뀌었습니다 — 다시 검증하세요',
     notValidated: '아직 검증하지 않았습니다',
+    notValidatedLive: '분야별 검증 기록 없이 진행 중 — 검증을 실행하세요',
     validatorsEmpty: "'분야별 검증 실행'을 누르면 8종 결과가 여기에 나옵니다",
     history: '검증 이력',
     versions: {
@@ -957,7 +958,6 @@ export const ko = {
     plannedNote: '단계 준비 중',
     key: {
       ready: '준비된 실습',
-      first: '첫 실습 시작 →',
       running: (t: string) => `진행 중 — ${t}`,
       resume: '이어하기 →',
       inProgress: '단계 진행 중',

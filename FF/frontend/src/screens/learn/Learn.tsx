@@ -50,7 +50,7 @@ function Card({ t }: { t: Tutorial }) {
 /** 핵심 메시지 — 진행 중인 실습이 먼저, 없으면 준비된 실습 수와 첫 실습 */
 function hubMessage(running: Tutorial | undefined, ready: Tutorial[]): KeyMessageSpec {
   if (running) return { tone: 'accent', text: L.key.running(running.title), action: <Link to={`/learn/${running.id}`}>{L.key.resume}</Link> };
-  return { tone: 'accent', value: ready.length, text: L.key.ready, action: ready[0] ? <Link to={`/learn/${ready[0].id}`}>{L.key.first}</Link> : undefined };
+  return { tone: 'accent', value: ready.length, text: L.key.ready };
 }
 
 export function LearnHub() {

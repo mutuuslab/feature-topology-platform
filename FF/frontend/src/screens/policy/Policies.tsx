@@ -143,9 +143,9 @@ export function PolicyDetail() {
             <PageHeader
               title={<span className="ds-mono">{p.flagKey}</span>}
               message={{
-                tone: d.lastRun ? (d.lastRun.decision === 'GO' && d.hashMatchesValidation ? 'ok' : d.lastRun.decision === 'BLOCKED' ? 'danger' : 'warn') : 'neutral',
+                tone: d.lastRun ? (d.lastRun.decision === 'GO' && d.hashMatchesValidation ? 'ok' : d.lastRun.decision === 'BLOCKED' ? 'danger' : 'warn') : p.status === 'DRAFT' ? 'neutral' : 'warn',
                 value: p.status,
-                text: d.lastRun ? `${T.safetyDecision[d.lastRun.decision]} · ${d.hashMatchesValidation ? T.hashOk : T.hashStale}` : T.notValidated,
+                text: d.lastRun ? `${T.safetyDecision[d.lastRun.decision]} · ${d.hashMatchesValidation ? T.hashOk : T.hashStale}` : p.status === 'DRAFT' ? T.notValidated : T.notValidatedLive,
               }}
               meta={
                 <>

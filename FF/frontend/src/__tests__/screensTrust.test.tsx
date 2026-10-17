@@ -38,7 +38,7 @@ describe('감사 이력 — 해시 체인 (FFG-PLT-015)', () => {
     handler = (u) => (u.startsWith('/api/audit/chain') ? { body: { ok: true, verified: 42, head: 'abcdef0123456789', broken: null } } : u.startsWith('/api/audit') ? { body: { items: [] } } : undefined);
     mount('/audit', <AuditScreen />);
     // 핵심 메시지 하나에 판정·검증 수·마지막 해시(3초 테스트)
-    expect(await screen.findByText('해시 체인 정상 — 42건 검증, 위변조 없음 · 마지막 abcdef0123…')).toBeTruthy();
+    expect(await screen.findByText('해시 체인 정상 — 42건 검증, 위변조 없음')).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
   });
   it('끊기면 끊긴 행과 이유를 경고한다', async () => {

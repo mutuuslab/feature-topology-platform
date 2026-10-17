@@ -194,7 +194,7 @@ export class RegistryService {
       const merged = this.merge(base, body.changes);
       const f: FeatureVersionRow = { ...merged, version, lifecycle: 'PROPOSED', baselineId: null, catalogIds: [], gateRecordIds: [], _missing: { ...merged._missing, baselineId: '미발급' } };
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
-      this.safety.ensure(f.featureId, f.version); // 안전 분류 초안 — 앞 Version 값을 잇거나 추정(보고서 5.7)
+      this.safety.ensure(f.featureId, f.version, base.version); // 안전 분류 초안 — 기준 Version 값을 잇는다(보고서 5.7, DRAFT)
       const target = `${featureId}@${version}`;
       const rejudge = gatesToRejudge(changed, base.lifecycle);
       this.audit.record(actor, 'FEATURE_VERSION_CREATE', target, { before: { baseVersion: base.version }, after: { version, changed, rejudge }, reason: body.reason, componentId: 'D01-01' });

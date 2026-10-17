@@ -109,3 +109,16 @@ describe('ASIL 상속 (FFG-CLS-002)', () => {
     expect(by).toMatchObject({ NOT_CALIBRATION: false, CONFIG_SET_ONLY: false, GUARD_VERIFIES: true, TOOL_CONFIDENCE: true });
   });
 });
+
+describe('새 Version 안전 분류 초안의 기준 (회귀)', () => {
+  it('FFG-CLS-004 새 Version은 기준 Version의 분류를 잇는다 — 사이에 등급을 낮춘 다른 갈래 Version이 있어도 그 값을 잇지 않는다(재확정 전 DRAFT)', async () => {
+    const { http } = await boot();
+    const mk = async (reason: string) => (await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason, changes: { description: reason } }).expect(201)).body.feature.version as string;
+    const low = await mk('등급 낮춘 갈래');
+    await http().put(`/api/features/FEAT-00022/versions/${low}/safety`).set(AUTHOR).send({ fClass: 'F2' }).expect(200);
+    await confirmSafety(http, 'FEAT-00022', low);
+    const next = await mk('1.0.0 기준 새 Version');
+    const p = (await http().get(`/api/features/FEAT-00022/versions/${next}/safety`).expect(200)).body.profile;
+    expect(p).toMatchObject({ fClass: 'F3', status: 'DRAFT' });
+  });
+});

@@ -2,7 +2,7 @@
 // 초안(DRAFT)은 데이터셋에서 추정하거나 작성자가 고치고, Safety Manager(SAFETY_OFFICER)가 개인 서명으로 확정(CONFIRMED)하면 원천이 된다.
 // 확정 뒤에는 등급·시간값을 바꿀 수 없다 — 새 Version을 만든다(FFG-CLS-004). Gate는 G1에서 네 축·조합을, G2에서 확정 여부를 본다.
 import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Param, Post, Put, Query } from '@nestjs/common';
-import { asilInheritance, blocking, checkProfile, checkToolClassification, COMPONENTS, inferFClass, jcs, LOCKED_AFTER_CONFIRM, SafetyConfirmBody, SafetyProfile, SafetyProfilePatch, fRank, type AsilInheritance, type ClassFinding } from '@ff/contracts';
+import { asilInheritance, blocking, compareVersion, checkProfile, checkToolClassification, COMPONENTS, inferFClass, jcs, LOCKED_AFTER_CONFIRM, SafetyConfirmBody, SafetyProfile, SafetyProfilePatch, fRank, type AsilInheritance, type ClassFinding } from '@ff/contracts';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
@@ -62,13 +62,20 @@ export class SafetyProfileService implements OnModuleInit {
     return r ? SafetyProfile.parse(JSON.parse(r.doc)) : null;
   }
 
-  /** Feature Version을 만들면 초안이 생긴다 — 앞 Version이 있으면 그 값을 이어받고(DRAFT), 없으면 ASIL·SW 등급으로 추정 */
-  ensure(featureId: string, version: string): SafetyProfile {
+  /**
+   * Feature Version을 만들면 초안이 생긴다 — 새 Version은 그 Version을 만든 기준 Version(baseVersion)의 분류를 이어받고(DRAFT, Safety Manager 재확정 필요),
+   * 기준이 없으면 그보다 낮은 Version 중 가장 높은 것, 그것도 없으면 ASIL·SW 등급으로 추정. 가장 높은 Version을 잇던 동작은 다른 갈래(예: 등급을 낮춘 시험 Version)를 이어받는 결함이었다.
+   */
+  ensure(featureId: string, version: string, baseVersion?: string): SafetyProfile {
     const have = this.row(featureId, version);
     if (have) return have;
     const f = this.features.get(featureId, version);
     if (!f) throw new DomainError('NOT_FOUND', `${featureId} ${version}이(가) 없습니다.`);
-    const prev = this.db.get<{ doc: string }>('SELECT doc FROM safety_profile WHERE feature_id = ? ORDER BY version DESC LIMIT 1', featureId);
+    const lower = this.db
+      .all<{ version: string; doc: string }>('SELECT version, doc FROM safety_profile WHERE feature_id = ?', featureId)
+      .filter((x) => compareVersion(x.version, version) < 0)
+      .sort((a, b) => compareVersion(b.version, a.version))[0];
+    const prev = baseVersion && baseVersion !== version ? { doc: JSON.stringify(this.ensure(featureId, baseVersion)) } : lower;
     const sw = this.db.all<{ doc: string }>('SELECT doc FROM sw_master').map((r) => JSON.parse(r.doc));
     const swClasses = (f.swIds ?? []).map((id) => sw.find((s) => s.swId === id)?.safetyClass).filter(Boolean) as string[];
     const base: SafetyProfile = prev ? { ...SafetyProfile.parse(JSON.parse(prev.doc)) } : this.infer(f.asil, swClasses, f.country);

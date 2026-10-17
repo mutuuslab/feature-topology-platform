@@ -41,7 +41,7 @@ describe('보존과 삭제 (FFG-TEL-008)', () => {
     const r = (await http().post('/api/retention/sweep').set(actor('usr-reg', 'REGULATORY_OWNER')).send({}).expect(200)).body;
     expect(r.stores).toEqual(
       expect.arrayContaining([
-        { store: 'status_report', cutoff: '2025-10-15T00:00:00.000Z', deleted: 1, held: 1 },
+        { store: 'status_report', cutoff: '2024-10-15T00:00:00.000Z', deleted: 1, held: 1 },
         expect.objectContaining({ store: 'security_event', deleted: 1, held: 1 }),
         expect.objectContaining({ store: 'vehicle_request', deleted: 1, held: 0 }),
       ]),

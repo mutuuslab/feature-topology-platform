@@ -31,8 +31,8 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
   { store: 'gate_decision', record: 'Gate 결정', category: 'SAFETY_OPERATION', period: { kind: 'SAFETY_CASE' }, basis: 'ISO 26262-8:2018 cl.10', personal: false },
   { store: 'sums_record', record: 'SUMS 기록(명령, 영향평가, 결과)', category: 'SAFETY_OPERATION', period: { kind: 'MARKET_LONGEST' }, basis: 'GB 44496 §4.1.2', personal: false },
   { store: 'security_event', record: '보안 로그', category: 'SECURITY_MONITORING', period: { kind: 'DAYS', days: 3 * 365, assumed: false }, basis: 'UN R155, MIIT 2026 국외 이전 지침(3년 이상)', personal: false },
-  { store: 'status_report', record: '상태 보고(운행 중 안전 데이터)', category: 'SAFETY_OPERATION', period: { kind: 'DAYS', days: 365, assumed: true }, basis: 'UN ADS GTR 제안문 §5.1.8.5.3 — 안전 문제 관련은 시정 조치·검토가 끝날 때까지', personal: false },
-  { store: 'readback', record: '적용 확인(readback)', category: 'SAFETY_OPERATION', period: { kind: 'DAYS', days: 365, assumed: true }, basis: 'UN ADS GTR 제안문 §5.1.8.5.3', personal: false },
+  { store: 'status_report', record: '상태 보고(운행 중 안전 데이터)', category: 'SAFETY_OPERATION', period: { kind: 'DAYS', days: 730, assumed: true }, basis: 'UN ADS GTR 제안문 §5.1.8.5.3 — 안전 문제 관련은 시정 조치·검토가 끝날 때까지. 730일: 연 1회 정기 보고(§5.4.9)가 직전 연도와 비교하므로 2년치를 둔다(플랫폼 결정, 시장 확인 전 가정값)', personal: false },
+  { store: 'readback', record: '적용 확인(readback)', category: 'SAFETY_OPERATION', period: { kind: 'DAYS', days: 730, assumed: true }, basis: 'UN ADS GTR 제안문 §5.1.8.5.3 — 상태 보고와 같은 730일(정기 보고 전년 비교, 가정값)', personal: false },
   { store: 'vehicle_request', record: '차량 발신 보고(문맥·고장·체험 수락 포함)', category: 'SAFETY_OPERATION', period: { kind: 'DAYS', days: 30, assumed: true }, basis: 'GDPR Art.5, PIPL — 목적 달성 후 지체 없이 삭제', personal: true },
 ];
 

@@ -56,6 +56,12 @@
 - 12건 — 단계 확대 · GUARD_FAILED · 단계를 넓힐 수 없습니다: 중단 기준 충족 — 이상 징후 ANM-00051
 - 1건 — 롤백 요청 · GUARD_FAILED · 롤백할 수 없습니다: 연결된 배포 산출물의 서명을 확인할 수 없습니다
 
+## 운영 중 드러난 문제 (요청은 받아들여졌지만 결과가 막힘)
+
+- 2024-04-08 복원 막힘 — KILL-00006 FEAT-00025 — 복원 REJECTED, 게이트 FFG-PLT-010
+- 2025-06-23 복원 막힘 — KILL-00033 FEAT-00028 — 복원 REJECTED, 게이트 FFG-PLT-010
+- 서명 키 정기 교체 16건(만료 30일 전, 용도별)
+
 ## 저장 건수
 
 - audit: 24,732
@@ -68,7 +74,7 @@
 - kill_request: 70
 - anomaly: 116
 - notification: 335
-- event: —
+- events: 21,474
 - rollback_execution: 0
 - validation_run: 28
 - virtual_run: 6

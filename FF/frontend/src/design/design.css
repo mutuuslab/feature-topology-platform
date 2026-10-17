@@ -1912,3 +1912,137 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   align-items: end;
   gap: var(--sp-2);
 }
+
+/* 전세계 차량 지도 (/fleet/map) */
+.fm-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: end;
+}
+.fm-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: var(--sp-4);
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .fm-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.fm-map {
+  position: relative;
+}
+.fm-map__canvas {
+  height: clamp(340px, calc(100vh - 470px), 620px);
+  min-height: 360px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.fm-map__note {
+  position: absolute;
+  left: var(--sp-2);
+  bottom: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.fm-empty,
+.fm-note {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.fm-empty {
+  padding: var(--sp-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+.fm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  margin: var(--sp-3) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+}
+.fm-legend li {
+  display: inline-flex;
+  gap: var(--sp-1);
+  align-items: center;
+}
+.fm-legend__n {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.fm-chip {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+.fm-chip__dot,
+.fm-chip__ring {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+.fm-chip__ring {
+  border: 2px solid var(--muted);
+  background: transparent;
+}
+.fm-sub {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.fm-pop .maplibregl-popup-content {
+  padding: var(--sp-2) var(--sp-3);
+  font: inherit;
+  font-size: var(--fs-xs);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--e-3);
+}
+.fm-pop .maplibregl-popup-tip {
+  display: none;
+}
+.fm-controls + * {
+  margin-top: var(--sp-3);
+}
+.fm-linkbtn {
+  padding: 0;
+  font: inherit;
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.fm-linkbtn:hover {
+  text-decoration: underline;
+}
+.fm-detail {
+  display: grid;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.fm-detail .ds-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.fm-detail td,
+.fm-detail th {
+  white-space: nowrap;
+}

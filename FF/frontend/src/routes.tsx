@@ -179,6 +179,7 @@ export const ROUTES: AppRoute[] = [
 
   // 7 차량 운영·안전 (관제실 톤)
   { path: '/fleet/live', element: named(fleetScreens, 'FleetLive'), title: 'Fleet 실시간 적용 현황', group: 'ops', menu: '/fleet/live', components: ['D02-03', 'D04-03', 'D06-08'], v2: true },
+  { path: '/fleet/map', element: named(() => import('./screens/ops/FleetMap'), 'FleetMapScreen'), title: '전세계 차량 지도', group: 'ops', menu: '/fleet/map', components: ['D02-03'], v2: true },
   { path: '/twin/live', element: named(fleetScreens, 'LegacyLiveRedirect'), title: 'Fleet 실시간 적용 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/fleet', element: legacyTo('/fleet/live'), title: '차량 운영 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/twin/fleet', element: named(twin, 'TwinFleet'), title: '3D Fleet (BDC 데모)', group: 'ops', parent: '/fleet/live' },

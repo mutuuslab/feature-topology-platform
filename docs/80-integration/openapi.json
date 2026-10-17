@@ -5383,6 +5383,84 @@
         }
       }
     },
+    "/api/fleet/map": {
+      "get": {
+        "summary": "전세계 차량 지도 — 차량별 위치(약 1 km)·구독 상태·기능 활성, 국가별 집계. 위치는 데모 모의값, 열람 감사",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "fleetMap",
+        "description": "허용 역할: 운영자, 운영 리더, 기능안전 담당자(FSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "catalogId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "flagKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/fleet/map/vehicles/{vin}": {
+      "get": {
+        "summary": "지도 차량 상세 — 정밀 위치(약 10 m)·권한·플래그 적용, 열람마다 감사",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "fleetMapVehicle",
+        "description": "허용 역할: 운영자, 운영 리더, 기능안전 담당자(FSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/vehicles/{vin}/runtime": {
       "get": {
         "summary": "차량 런타임 — 적용 게시본·차량 측 평가·서버 판단 비교",

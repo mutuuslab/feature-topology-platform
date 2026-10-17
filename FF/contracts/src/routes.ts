@@ -26,6 +26,7 @@ import { NotificationPrefsBody, NotificationReadAllBody } from './rules/notifica
 import { RunVirtualBody } from './rules/virtual';
 import { MetricPlanBody } from './rules/safety-kpi';
 import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
+import { LOCATION_VIEW_ROLES } from './rules/fleet-map';
 import { ContractBasisBody, DataAccessRequestBody } from './rules/data-act';
 import { PostReviewBody } from './rules/duty-separation';
 import { ChangeRecordBody } from './rules/change-record';
@@ -173,6 +174,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'readbacks', method: 'GET', path: '/api/telemetry/readbacks', summary: '차량 회신 (readback) 기록', component: 'D04-03', query: ['publicationId', 'vin'], dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   { name: 'ingestReadback', method: 'POST', path: '/api/telemetry/readback', summary: 'IF-06 차량 회신 수집', component: 'D04-03', roles: ['SYSTEM'], body: ReadbackBody },
   { name: 'fleetRuntime', method: 'GET', path: '/api/fleet/runtime', summary: 'Fleet 실시간 적용 현황 — 차량별 적용 게시본·상태·서버 판단 비교', component: 'D02-03' },
+  { name: 'fleetMap', method: 'GET', path: '/api/fleet/map', summary: '전세계 차량 지도 — 차량별 위치(약 1 km)·구독 상태·기능 활성, 국가별 집계. 위치는 데모 모의값, 열람 감사', component: 'D02-03', query: ['source', 'catalogId', 'flagKey'], personal: true, roles: [...LOCATION_VIEW_ROLES] },
+  { name: 'fleetMapVehicle', method: 'GET', path: '/api/fleet/map/vehicles/:vin', summary: '지도 차량 상세 — 정밀 위치(약 10 m)·권한·플래그 적용, 열람마다 감사', component: 'D02-03', personal: true, roles: [...LOCATION_VIEW_ROLES], sample: { vin: 'KMH-NX4-0001' } },
   { name: 'vehicleRuntime', method: 'GET', path: '/api/vehicles/:vin/runtime', summary: '차량 런타임 — 적용 게시본·차량 측 평가·서버 판단 비교', component: 'D02-03' },
   { name: 'vehicleRequests', method: 'GET', path: '/api/vehicles/:vin/requests', summary: '차량 발신 요청 기록 — 조회·보고·거부 사유, 보고 위치(bootId·sequence)', component: 'D02-03', dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   // 차량 발신 요청 — 사람 역할이 아니라 차량 신원(X-Vehicle-Id, 실제는 mTLS 주체)으로 받는다. 자기 VIN만.

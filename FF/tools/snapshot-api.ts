@@ -108,6 +108,13 @@ async function main() {
   // 배포·차단 전달 (PoC ④⑥) — 부팅 동기화 게시본이 차량에 닿은 뒤의 상태를 찍는다
   await new Promise((r) => setTimeout(r, 2500));
   await save('fleetRuntime');
+  // 전세계 차량 지도(D02-03) — 정적 데모는 찍은 시점 위치로 멈춰 있다(5초 갱신 없음)
+  const fm = await save('fleetMap', {}, { source: 'DEMO' });
+  for (const flagKey of fm.flagKeys) await save('fleetMap', {}, { source: 'DEMO', flagKey });
+  for (const c of fm.catalogs) await save('fleetMap', {}, { source: 'DEMO', catalogId: c.catalogId });
+  const fs = await save('fleetMap', {}, { source: 'SYNTHETIC' });
+  for (const c of fs.catalogs) await save('fleetMap', {}, { source: 'SYNTHETIC', catalogId: c.catalogId });
+  for (const v of fm.items) await save('fleetMapVehicle', { vin: v.vin });
   await save('gleoStatus');
   await save('pkiKeys');
   for (const v of vehicles.items) await save('vehicleRuntime', { vin: v.vin });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EntitlementSchema, type Entitlement } from '../schemas/policy';
-import { activationState, coarsen, locationConsent, mockPosition, regionPoint, subscriptionState, summarize, type FleetMapVehicle } from './fleet-map';
+import { ROUTES } from '../routes';
+import { LOCATION_VIEW_ROLES, MAP_PRECISION_DEG, activationState, coarsen, locationConsent, mockPosition, regionPoint, subscriptionState, summarize, type FleetMapVehicle } from './fleet-map';
 
 const G = (o: Partial<Entitlement>): Entitlement => EntitlementSchema.parse({ grantId: 'ENT-00001', vin: 'v', catalogId: 'CAT-00019', kind: '체험', validFrom: '2026-10-01', validTo: '2026-10-30', status: 'ACTIVE', ...o });
 const km = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
@@ -18,14 +19,17 @@ describe('전세계 차량 지도 — 모의 위치', () => {
     expect(km(a, { lat: city[0], lng: city[1] })).toBeLessThan(20);
   });
 
-  it('움직이는 차량은 시간이 지나면 위치가 바뀌고, 정지 차량은 그대로이며 방향이 없다', () => {
+  it('움직이는 차량은 시간이 지나면 위치가 바뀌고, 정지 차량은 그대로이며 VIN마다 정해진 주차 방향', () => {
     const t0 = mockPosition('ego-01', 'KR', '수도권', 0, true)!;
     const t1 = mockPosition('ego-01', 'KR', '수도권', 60_000, true)!;
     expect(km(t0, t1)).toBeGreaterThan(0.2);
     expect(t1.heading).toBeGreaterThanOrEqual(0);
     const p0 = mockPosition('SYN-KR-00001', 'KR', '수도권', 0, false)!;
     expect(mockPosition('SYN-KR-00001', 'KR', '수도권', 9_999_999, false)).toEqual(p0);
-    expect(p0.heading).toBeNull();
+    expect(p0.heading).toBeGreaterThanOrEqual(0);
+    expect(p0.heading).toBeLessThan(360);
+    const hs = new Set(Array.from({ length: 50 }, (_, i) => mockPosition(`SYN-KR-${i}`, 'KR', '수도권', 0, false)!.heading));
+    expect(hs.size).toBeGreaterThan(30); // 모두 같은 방향이 아니다
   });
 
   it('지도에 없는 국가는 위치가 없다', () => {
@@ -77,5 +81,22 @@ describe('전세계 차량 지도 — 상태', () => {
     const rows = summarize([v('US'), v('KR'), v('KR', { position: null, subscription: 'PAID', activation: null })]);
     expect(rows.map((r) => r.country)).toEqual(['KR', 'US']);
     expect(rows[0]).toMatchObject({ total: 2, located: 1, subscription: { TRIAL: 1, PAID: 1 }, activation: { ON: 1 } });
+  });
+});
+
+describe('전세계 차량 지도 — 위치 경로 불변식(하네스)', () => {
+  const routes = ROUTES.filter((r) => r.path.startsWith('/api/fleet/map'));
+  it('위치를 돌려주는 경로는 모두 계정 단위 조회(행위자 감사)이고 열람 역할이 위치 열람 역할 안에 있다', () => {
+    expect(routes.map((r) => r.name).sort()).toEqual(['fleetMap', 'fleetMapVehicle']);
+    for (const r of routes) {
+      expect(r.method).toBe('GET');
+      expect(r.personal, `${r.name}: 행위자 헤더 없이 열리면 열람 감사가 익명이 된다`).toBe(true);
+      expect(r.roles?.length, `${r.name}: 역할 제한 없음`).toBeGreaterThan(0);
+      for (const role of r.roles ?? []) expect(LOCATION_VIEW_ROLES, `${r.name}: ${role}은(는) 위치 열람 역할이 아니다`).toContain(role);
+    }
+  });
+  it('위치 열람 역할에 Feature 작성·상품 역할이 들어가지 않는다 — 넓히려면 D5 결정이 먼저', () => {
+    for (const role of ['FEATURE_AUTHOR', 'PRODUCT_AUTHOR', 'IMPLEMENTER'] as const) expect(LOCATION_VIEW_ROLES).not.toContain(role);
+    expect(MAP_PRECISION_DEG).toBeGreaterThanOrEqual(0.01); // 지도 목록은 약 1 km보다 정밀하지 않게
   });
 });

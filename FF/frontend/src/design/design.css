@@ -1935,7 +1935,7 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   position: relative;
 }
 .fm-map__canvas {
-  height: clamp(340px, calc(100vh - 470px), 620px);
+  height: clamp(340px, calc(100vh - 520px), 620px);
   min-height: 360px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
@@ -2045,4 +2045,25 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .fm-detail td,
 .fm-detail th {
   white-space: nowrap;
+}
+.fm-chip__car {
+  width: 10px;
+  height: 16px;
+  flex: none;
+  fill: var(--ink-2);
+  stroke: var(--surface);
+  stroke-width: 1;
+}
+.fm-chip__glass {
+  fill: var(--surface);
+  stroke: none;
+}
+.fm-chip__dot--sm {
+  width: 6px;
+  height: 6px;
+  background: var(--ink-2);
+}
+.fm-chip__dot[data-hollow] {
+  background: transparent;
+  box-sizing: border-box;
 }

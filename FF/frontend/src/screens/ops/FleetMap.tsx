@@ -10,7 +10,7 @@ import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
 import { AsyncView, DataTable, EventStream, KeyValue, Kpi, PageHeader, Panel, Segmented, Select } from '../../design';
 import { when } from '../shared';
-import { ACTIVATION_VAR, FleetMapCanvas, NO_RUNTIME_VAR, stateLabel, stateVar, SUBSCRIPTION_VAR, VIEWS, type MapView } from './FleetMapCanvas';
+import { ACTIVATION_VAR, FleetMapCanvas, HOLLOW_VAR, NO_RUNTIME_VAR, stateLabel, stateVar, SUBSCRIPTION_VAR, VIEWS, type MapView } from './FleetMapCanvas';
 
 const F = ko.fleetMap;
 const STREAM = ['kill.', 'publication.', 'vehicle.', 'trial.', 'entitlement.', 'readback.'];
@@ -52,9 +52,11 @@ interface DetailResponse {
 }
 
 export function StateChip({ cssVar, label }: { cssVar: string; label: string }) {
+  // 지도의 속이 빈 자동차(권한 없음)와 같게 칩도 테두리만
+  const hollow = cssVar === HOLLOW_VAR;
   return (
     <span className="fm-chip">
-      <span className="fm-chip__dot" style={{ background: `var(${cssVar})` }} aria-hidden="true" />
+      <span className="fm-chip__dot" data-hollow={hollow || undefined} style={hollow ? { border: `2px solid var(${cssVar})` } : { background: `var(${cssVar})` }} aria-hidden="true" />
       {label}
     </span>
   );
@@ -101,6 +103,25 @@ function Legend({ lens, items }: { lens: MapLens; items: FleetMapVehicle[] }) {
           {LOCATION_PRECISION_LABEL.REGION}
         </span>
       </li>
+      {items.some((x) => x.source === 'DEMO') && (
+        <li>
+          <span className="fm-chip">
+            <svg className="fm-chip__car" viewBox="0 0 12 20" aria-hidden="true">
+              <path d="M2 6.5V17q0 1.5 1.5 1.5h5Q10 18.5 10 17V6.5Q10 2 6 1Q2 2 2 6.5z" />
+              <path d="M3.4 7.6h5.2l-.6 2.8H4z" className="fm-chip__glass" />
+            </svg>
+            {F.legendCar}
+          </span>
+        </li>
+      )}
+      {items.some((x) => x.source === 'SYNTHETIC') && (
+        <li>
+          <span className="fm-chip">
+            <span className="fm-chip__dot fm-chip__dot--sm" aria-hidden="true" />
+            {F.legendDot}
+          </span>
+        </li>
+      )}
     </ul>
   );
 }
@@ -153,26 +174,36 @@ function Detail({ vin }: { vin: string }) {
                 rows={d.grants}
                 rowKey={(g) => g.grantId}
                 columns={[
+                  // 좁은 옆 패널 — 칸을 둘씩 묶어 세 칸으로
                   {
                     key: 'id',
-                    header: 'ID',
-                    cell: (g) => <span className="ds-mono">{g.grantId}</span>,
+                    header: F.grantCol.grant,
+                    cell: (g) => (
+                      <>
+                        <span className="ds-mono">{g.grantId}</span>
+                        <div className="fm-sub ds-mono">{g.catalogId}</div>
+                      </>
+                    ),
                   },
-                  {
-                    key: 'c',
-                    header: F.catalog,
-                    cell: (g) => <span className="ds-mono">{g.catalogId}</span>,
-                  },
-                  { key: 'k', header: '종류', cell: (g) => g.kind },
                   {
                     key: 's',
-                    header: '상태',
-                    cell: (g) => `${g.state}${g.effective ? ' · ON' : ''}`,
+                    header: F.grantCol.state,
+                    cell: (g) => (
+                      <>
+                        {g.kind}
+                        <div className="fm-sub">{`${g.state}${g.effective ? ' · ON' : ''}`}</div>
+                      </>
+                    ),
                   },
                   {
                     key: 'p',
-                    header: '기간',
-                    cell: (g) => <span className="ds-mono">{`${g.validFrom}~${g.validTo}`}</span>,
+                    header: F.grantCol.period,
+                    cell: (g) => (
+                      <span className="ds-mono">
+                        {g.validFrom}
+                        <div className="fm-sub">~{g.validTo}</div>
+                      </span>
+                    ),
                   },
                 ]}
               />

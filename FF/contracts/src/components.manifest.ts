@@ -159,7 +159,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D02-01': { screens: ['/variant-conditions'], tests: ['backend/test/d06/iam-variant.spec.ts', 'contracts/src/rules/access-variant.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx'] },
   'D02-02': { screens: ['/variant-conditions', '/fleet/vehicles/:vin'], tests: ['backend/test/d06/iam-variant.spec.ts', 'contracts/src/rules/access-variant.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx'] },
   // PoC ④⑤⑥ 배포·차단 전달 (P8a)
-  'D02-03': { screens: ['/fleet/live', '/fleet/vehicles/:vin', '/fleet/map'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', 'contracts/src/gleo.test.ts', FE_OPS, E2E_OPS, BE_VREQ, CT_VREQ, 'backend/test/d02/fleet-map.spec.ts', 'contracts/src/rules/fleet-map.test.ts', 'frontend/src/__tests__/screensFleetMap.test.tsx'] },
+  'D02-03': { screens: ['/fleet/live', '/fleet/vehicles/:vin', '/fleet/map'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', 'contracts/src/gleo.test.ts', FE_OPS, E2E_OPS, BE_VREQ, CT_VREQ, 'backend/test/d02/fleet-map.spec.ts', 'contracts/src/rules/fleet-map.test.ts', 'frontend/src/__tests__/screensFleetMap.test.tsx', 'frontend/src/__tests__/carIcon.test.ts', 'e2e/tests/fleet-map.spec.ts'] },
   'D03-03': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', FE_OPS, E2E_OPS] },
   'D03-04': { screens: ['/ops/kill', '/ops/rollback'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', E2E_OPS, 'backend/test/d03/rollback.spec.ts', 'contracts/src/rules/rollback.test.ts', 'frontend/src/__tests__/screensRollback.test.tsx'] },
   'D04-01': { screens: ['/deployments', '/deployments/:id'], tests: [BE_DLV, FE_OPS, E2E_OPS] },

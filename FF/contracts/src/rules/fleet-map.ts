@@ -113,7 +113,7 @@ export interface MockPosition {
   lat: number;
   lng: number;
   city: string;
-  /** 진행 방향(도, 북=0) — 움직이는 차량만 */
+  /** 진행 방향(도, 북=0) — 정지 차량은 주차 방향 */
   heading: number | null;
 }
 
@@ -129,7 +129,8 @@ export function mockPosition(vin: string, country: string, region: string, tMs: 
   // 제곱근 — 원판 안에 고르게 퍼지게(가운데로 몰리지 않게)
   const d = 2 + Math.sqrt(unit(vin, 'dist')) * spreadKm;
   const [bLat, bLng] = offsetKm(cLat, cLng, d * Math.cos(a), d * Math.sin(a));
-  if (!moving) return { lat: bLat, lng: bLng, city, heading: null };
+  // 주차한 차도 방향이 있다 — VIN마다 정해진 주차 방향(지도 자동차가 모두 북쪽을 보지 않게)
+  if (!moving) return { lat: bLat, lng: bLng, city, heading: Math.floor(unit(vin, 'park') * 360) };
   const r = 1.5 + unit(vin, 'radius') * 3;
   const periodMs = (12 + unit(vin, 'period') * 8) * 60_000;
   const th = unit(vin, 'phase') * 2 * Math.PI + ((tMs % periodMs) / periodMs) * 2 * Math.PI;

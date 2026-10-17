@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ActivationState, FleetMapVehicle, MapLens, SubscriptionState } from '@ff/contracts';
 import { ACTIVATION_LABEL, LOCATION_PRECISION_LABEL, SUBSCRIPTION_LABEL } from '@ff/contracts';
 import { ko } from '../../copy/ko';
+import { CAR_PIXEL_RATIO, carIconName, carImage } from './carIcon';
 
 const F = ko.fleetMap;
 export const MAP_STYLE_URL: string = import.meta.env.VITE_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/positron';
@@ -17,7 +18,7 @@ export const SUBSCRIPTION_VAR: Record<SubscriptionState, string> = {
   TRIAL: '--viz-2',
   PAID: '--viz-3',
   ENDED: '--faint',
-  NONE: '--line-strong',
+  NONE: '--muted',
 };
 export const ACTIVATION_VAR: Record<ActivationState, string> = {
   ON: '--ok',
@@ -26,6 +27,14 @@ export const ACTIVATION_VAR: Record<ActivationState, string> = {
   UNKNOWN: '--warn',
 };
 export const NO_RUNTIME_VAR = '--line-strong';
+/** 자동차 아이콘을 만들 상태 색 토큰 전부 */
+export const CAR_STATE_VARS = [...new Set([...Object.values(SUBSCRIPTION_VAR), ...Object.values(ACTIVATION_VAR), NO_RUNTIME_VAR])];
+/** 이 확대 단계부터 합성 차량도 자동차로 그린다(도시 단위) */
+export const SYN_CAR_ZOOM = 10;
+/** 차량을 고르면 이 단계까지 확대한다 */
+export const SELECT_ZOOM = 11;
+/** 속이 빈 자동차로 그리는 상태 색 — 권한 없음(종료의 회색과 모양으로 가른다) */
+export const HOLLOW_VAR = SUBSCRIPTION_VAR.NONE;
 
 export const stateVar = (v: FleetMapVehicle, lens: MapLens) => (lens === 'subscription' ? SUBSCRIPTION_VAR[v.subscription] : v.activation ? ACTIVATION_VAR[v.activation] : NO_RUNTIME_VAR);
 export const stateLabel = (v: FleetMapVehicle, lens: MapLens) => (lens === 'subscription' ? SUBSCRIPTION_LABEL[v.subscription] : v.activation ? ACTIVATION_LABEL[v.activation] : '런타임 없음(합성)');
@@ -83,6 +92,9 @@ function toGeoJSON(el: Element, items: FleetMapVehicle[], lens: MapLens) {
           region: v.position!.precision === 'REGION',
           stale: v.stale,
           color: cssVar(el, stateVar(v, lens)),
+          icon: carIconName(stateVar(v, lens)),
+          // 정지 차량은 방향이 없다 — 북쪽으로 둔다
+          heading: v.position!.heading ?? 0,
         },
       })),
   };
@@ -183,16 +195,38 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
         const { items: xs, lens: l } = latest.current;
         m.addSource('veh', { type: 'geojson', data: toGeoJSON(el, xs, l) });
         const surface = cssVar(el, '--surface');
+        // 상태 색마다 자동차 아이콘 하나 — 유리·바퀴는 테마와 무관하게 어두운 색
+        const carColors = { outline: surface, glass: isDark(el) ? cssVar(el, '--paper') : cssVar(el, '--ink-2') };
+        for (const v of CAR_STATE_VARS) m.addImage(carIconName(v), carImage({ ...carColors, body: cssVar(el, v), hollow: v === HOLLOW_VAR }), { pixelRatio: CAR_PIXEL_RATIO });
+        const SYN = ['all', ['!', ['get', 'demo']], ['!', ['get', 'region']]];
+        // 합성 모집단 — 넓게 볼 때는 점, 도시 단위로 확대하면 작은 자동차
         m.addLayer({
           id: 'veh-syn',
           type: 'circle',
           source: 'veh',
-          filter: ['all', ['!', ['get', 'demo']], ['!', ['get', 'region']]],
+          maxzoom: SYN_CAR_ZOOM,
+          filter: SYN,
           paint: {
             'circle-color': ['get', 'color'],
-            'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 1.5, 4, 2.2, 6, 3, 9, 4, 12, 5.5],
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 1.5, 4, 2.2, 6, 3, 9, 4],
             'circle-opacity': 0.85,
           },
+        });
+        m.addLayer({
+          id: 'veh-syn-car',
+          type: 'symbol',
+          source: 'veh',
+          minzoom: SYN_CAR_ZOOM,
+          filter: SYN,
+          layout: {
+            'icon-image': ['get', 'icon'],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], SYN_CAR_ZOOM, 0.5, 15, 0.8],
+            'icon-rotate': ['get', 'heading'],
+            'icon-rotation-alignment': 'map',
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true,
+          },
+          paint: { 'icon-opacity': 0.85 },
         });
         // 지역 대표점 고리는 데모 차량만 — 합성 미동의 차량(약 5%)은 한 점에 쌓여 얼룩이 되므로 표·집계에만 남긴다
         m.addLayer({
@@ -208,18 +242,34 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
             'circle-stroke-color': ['get', 'color'],
           },
         });
+        // 데모 Fleet — 받침 원(면 색) 위에 진행 방향으로 돌린 자동차. 합성 점 무리 속에서도 데모 차량이 보이게, 오프라인(마지막 보고 위치)은 흐리게
         m.addLayer({
-          id: 'veh-demo',
+          id: 'veh-demo-base',
           type: 'circle',
           source: 'veh',
           filter: ['all', ['get', 'demo'], ['!', ['get', 'region']]],
           paint: {
-            'circle-color': ['get', 'color'],
-            'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 5, 6, 7, 12, 9],
-            'circle-opacity': ['case', ['get', 'stale'], 0.55, 1],
-            'circle-stroke-width': 2,
-            'circle-stroke-color': surface,
+            'circle-color': surface,
+            'circle-opacity': ['case', ['get', 'stale'], 0.45, 0.85],
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 9, 6, 12, 12, 15, 16, 19],
+            'circle-stroke-width': 1.5,
+            'circle-stroke-color': ['get', 'color'],
           },
+        });
+        m.addLayer({
+          id: 'veh-demo',
+          type: 'symbol',
+          source: 'veh',
+          filter: ['all', ['get', 'demo'], ['!', ['get', 'region']]],
+          layout: {
+            'icon-image': ['get', 'icon'],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 1, 0.6, 6, 0.75, 12, 0.95, 16, 1.2],
+            'icon-rotate': ['get', 'heading'],
+            'icon-rotation-alignment': 'map',
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true,
+          },
+          paint: { 'icon-opacity': ['case', ['get', 'stale'], 0.55, 1] },
         });
         m.addLayer({
           id: 'veh-sel',
@@ -228,7 +278,7 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
           filter: ['==', ['get', 'vin'], ''],
           paint: {
             'circle-opacity': 0,
-            'circle-radius': 13,
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 12, 6, 15, 12, 18, 16, 22],
             'circle-stroke-width': 2.5,
             'circle-stroke-color': cssVar(el, '--ink'),
           },
@@ -241,7 +291,7 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
           filter: ['any', ['get', 'demo'], ['!', ['get', 'region']]],
           paint: {
             'circle-opacity': 0,
-            'circle-radius': ['case', ['get', 'demo'], 14, 7],
+            'circle-radius': ['case', ['get', 'demo'], 16, 7],
           },
         });
         // 차량 이름표는 지명과 구분되게 기울임이 아닌 굵은 글꼴(없으면 보통)
@@ -298,10 +348,23 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
           if (dead || !host.current) return;
           host.current.dataset.rendered = String(
             m.queryRenderedFeatures({
-              layers: ['veh-demo', 'veh-syn', 'veh-region'],
+              layers: ['veh-demo', 'veh-syn', 'veh-syn-car', 'veh-region'],
             }).length,
           );
+          const cars = m.queryRenderedFeatures({ layers: ['veh-demo', 'veh-syn-car'] });
+          host.current.dataset.cars = String(cars.length);
+          // 화면에 그린 데모 자동차의 픽셀 위치·아이콘 — e2e가 지도 위 자동차를 직접 눌러 보고, 아이콘이 상태 색인지 본다
+          host.current.dataset.points = JSON.stringify(
+            cars
+              .filter((f: any) => f.properties.demo)
+              .slice(0, 50)
+              .map((f: any) => {
+                const p = m.project(f.geometry.coordinates);
+                return { vin: f.properties.vin, icon: f.properties.icon, x: Math.round(p.x), y: Math.round(p.y) };
+              }),
+          );
           host.current.dataset.style = fb ? 'fallback' : isDark(el) ? 'dark' : 'light';
+          host.current.dataset.zoom = m.getZoom().toFixed(2);
         });
         setPhase('ready');
       });
@@ -323,6 +386,9 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
     const m = map.current;
     if (phase !== 'ready' || !m?.getLayer('veh-sel')) return;
     m.setFilter('veh-sel', ['==', ['get', 'vin'], selected ?? '']);
+    // 고른 차량으로 지도를 옮긴다 — 표에서 골라도 그 차량이 지도 가운데 보이게(도시 단위까지 확대)
+    const v = selected ? latest.current.items.find((x) => x.vin === selected) : null;
+    if (v?.position) m.easeTo({ center: [v.position.lng, v.position.lat], zoom: Math.max(m.getZoom(), SELECT_ZOOM), duration: reducedMotion() ? 0 : 700 });
   }, [selected, phase]);
 
   useEffect(() => {

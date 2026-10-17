@@ -33,7 +33,7 @@ async function settled() {
     last = now;
   }
   await p.waitForTimeout(1000);
-  return { rendered: Number(await canvas.getAttribute('data-rendered')), style: await canvas.getAttribute('data-style') };
+  return { rendered: Number(await canvas.getAttribute('data-rendered')), cars: Number(await canvas.getAttribute('data-cars')), style: await canvas.getAttribute('data-style') };
 }
 const steps = {};
 await p.goto(`${base}/fleet/map`);
@@ -51,9 +51,13 @@ await p.getByRole('radio', { name: '기능 활성' }).click();
 steps.krActivation = await settled();
 await p.screenshot({ path: `${out}fleet-map-kr-activation.png` });
 
+// 차량을 고르면 지도가 그 차량으로 확대·이동한다 — 서울 도심, 구독 보기, 합성 차량까지 자동차
+await p.getByRole('radio', { name: '구독 상태' }).click();
+await p.getByRole('radio', { name: '데모 + 합성 모집단' }).click();
 await p.getByRole('table', { name: '차량 목록' }).getByText('ego-01').click();
 await p.getByTestId('fleet-map-detail').waitFor();
-await p.waitForTimeout(1500);
+steps.city = await settled();
+await canvas.screenshot({ path: `${out}fleet-map-city.png` });
 await p.screenshot({ path: `${out}fleet-map-detail.png` });
 
 console.log(JSON.stringify({ steps, tiles, errors: errors.slice(0, 10) }, null, 1));

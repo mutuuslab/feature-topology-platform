@@ -269,10 +269,16 @@
 }
 .sh-panel__head {
   padding: var(--sp-4) var(--sp-4) var(--sp-2);
+  display: grid;
+  gap: var(--sp-2);
 }
 .sh-panel__head h2 {
   margin: 2px 0 0;
   font-size: var(--fs-md);
+}
+.sh-panel__head .sh-switch {
+  padding: 0;
+  justify-self: start;
 }
 .sh-panel__list {
   list-style: none;
@@ -312,8 +318,6 @@
   overflow: auto;
   padding: var(--sp-4) var(--sp-6) var(--sp-10);
   background-color: var(--paper);
-  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
-  background-size: 16px 16px;
   color: var(--ink);
   min-width: 0;
 }

@@ -266,6 +266,9 @@ export const ko = {
     table: '데이터 표',
     states: '비동기 상태',
     kpi: '지표',
+    key: '핵심 메시지 — 화면마다 하나(3초 테스트)',
+    keySamples: { waiting: '내 차례 검토', ok: '판단 불일치 없음', on: 'ON — 정책 일치', blocked: '기준값 미기록 — 예시값으로 판정 중' },
+    summary: { features: 'Feature', versions: 'Version', baselines: 'Baseline' },
     diff: '변경 비교',
     stream: '이벤트 스트림',
     danger: '파괴적 액션 확인',
@@ -555,7 +558,7 @@ export const ko = {
     rejected: '거부',
   },
   kill: {
-    title: '긴급 기능 차단(Kill Switch)·복구',
+    title: '긴급 차단·복구',
     lead: '안전·보안 사유로 기능을 끄는 운영 경로 — 요청(영향 범위·사유) → 서로 다른 2인의 개인 서명 승인 → 정책 게이트 → 서명·차량별 봉투 → 긴급 채널 → 차량 회신. 긴급 상황에도 사전 승인은 생략하지 않습니다(보고서 7.10).',
     asilRef: (a: string) => `ASIL ${a} (참고 — 플랫폼은 산정하지 않음)`,
     deactMode: '비활성화 방식',

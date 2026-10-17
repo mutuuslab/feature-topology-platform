@@ -2,15 +2,85 @@
 import type { ReactNode, SelectHTMLAttributes } from 'react';
 import { Icon } from './icons';
 
-/** tour: 따라하기 스포트라이트 앵커(data-tour) */
-export function PageHeader({ eyebrow, title, lead, meta, actions, tour }: { eyebrow?: ReactNode; title: ReactNode; lead?: ReactNode; meta?: ReactNode; actions?: ReactNode; tour?: string }) {
+export type KeyTone = 'ok' | 'warn' | 'danger' | 'accent' | 'neutral';
+export interface KeyMessageSpec {
+  /** 판정 색 — 행동이 필요하면 warn·danger, 정상이면 ok */
+  tone?: KeyTone;
+  /** 큰 숫자·판정(선택) — 있으면 화면에서 가장 큰 글자 */
+  value?: ReactNode;
+  /** 한 줄 문장 */
+  text: ReactNode;
+  /** 바로 갈 수 있는 행동(링크·버튼, 선택) */
+  action?: ReactNode;
+}
+
+/**
+ * 핵심 메시지 — 3초 테스트(2026-10-17): 화면마다 하나, H1 바로 아래, 화면에서 가장 큰 글자.
+ * 데이터에서 만든 판정·처리할 일 수·상태 한 줄. 하네스(e2e three-second.spec)가 화면마다 정확히 1개인지 본다.
+ */
+export function KeyMessage({ tone = 'neutral', value, text, action }: KeyMessageSpec) {
+  return (
+    <div className="ds-key" data-key-message data-tone={tone} role="status">
+      {value != null && <strong className="ds-key__value">{value}</strong>}
+      <span className="ds-key__text" data-solo={value == null ? '' : undefined}>
+        {text}
+      </span>
+      {action && <span className="ds-key__action">{action}</span>}
+    </div>
+  );
+}
+
+/** 보조 요약 한 줄 — 핵심 메시지 밖의 개수·기준(KPI 타일 줄 대신). 핵심보다 작고 회색 */
+export function SummaryLine({ items, label }: { items: { k: ReactNode; v: ReactNode }[]; label?: string }) {
+  return (
+    <p className="ds-summary" aria-label={label}>
+      {items.map((x, i) => (
+        <span key={i}>
+          {x.k} <b>{x.v}</b>
+        </span>
+      ))}
+    </p>
+  );
+}
+
+/**
+ * 화면 머리 — 제목 → 핵심 메시지(message) → meta → 설명(한 줄). 행동은 오른쪽.
+ * codes(구 eyebrow): 컴포넌트·규칙·IF 추적 코드 — 설명 모드(html[data-explain='on'])에서만 보인다(3초 테스트: 제목보다 먼저 읽히는 장식 제거).
+ * tour: 따라하기 스포트라이트 앵커(data-tour)
+ */
+export function PageHeader({
+  eyebrow,
+  codes,
+  title,
+  message,
+  lead,
+  meta,
+  actions,
+  tour,
+}: {
+  /** @deprecated codes를 쓴다 — 지금은 codes와 같게 설명 모드에서만 보인다 */
+  eyebrow?: ReactNode;
+  codes?: ReactNode;
+  title: ReactNode;
+  message?: KeyMessageSpec;
+  lead?: ReactNode;
+  meta?: ReactNode;
+  actions?: ReactNode;
+  tour?: string;
+}) {
+  const trace = codes ?? eyebrow;
   return (
     <header className="ds-page" data-tour={tour}>
       <div className="ds-page__main">
-        {eyebrow && <div className="ds-eyebrow">{eyebrow}</div>}
+        {trace && <div className="ds-page__codes">{trace}</div>}
         <h1 className="ds-page__title">{title}</h1>
+        {message && <KeyMessage {...message} />}
         {meta && <div className="ds-page__meta">{meta}</div>}
-        {lead && <p className="ds-page__lead">{lead}</p>}
+        {lead && (
+          <p className="ds-page__lead" title={typeof lead === 'string' ? lead : undefined}>
+            {lead}
+          </p>
+        )}
       </div>
       {actions && <div className="ds-page__actions">{actions}</div>}
     </header>

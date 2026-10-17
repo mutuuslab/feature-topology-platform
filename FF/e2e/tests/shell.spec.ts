@@ -22,8 +22,9 @@ for (const m of MENU_ENTRIES) {
     await expect(page.locator('[data-not-found]')).toHaveCount(0);
     // 라우트 경계(RouteBoundary)가 오류를 잡지 않았어야 한다
     await expect(page.locator('[data-route-error]')).toHaveCount(0);
-    // 셸 breadcrumb 마지막 칸 = 메뉴 이름
-    await expect(page.locator('.sh-trail [aria-current="page"]')).toHaveText(m.title);
+    // 위치는 한 번만(3초 테스트) — 현재 화면 이름은 H1이 말하고, 경로 표시는 그 이름을 되풀이하지 않는다
+    await expect(page.locator('h1').first()).toContainText(m.title);
+    expect((await page.locator('.sh-trail li').allInnerTexts()).map((t) => t.trim())).not.toContain(m.title);
     expect(errors, errors.join('\n')).toEqual([]);
   });
 }

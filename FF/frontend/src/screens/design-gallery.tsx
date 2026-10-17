@@ -20,6 +20,7 @@ import {
   GateBadge,
   GateRail,
   IdChip,
+  KeyMessage,
   Kpi,
   LifecycleBadge,
   LifecycleStepper,
@@ -28,6 +29,7 @@ import {
   RuleChecklist,
   RuleText,
   StageStrip,
+  SummaryLine,
   Tabs,
   VerdictBadge,
   WindowGauge,
@@ -161,6 +163,16 @@ export default function DesignGallery() {
       <Panel title={T.gates} id="gates">
         <GateRail statuses={GATE_SAMPLE} onSelect={() => undefined} />
         <p className="ds-kpi__hint" style={{ marginTop: 8 }}>{GATES.length} Gates · G1–G3 PROPOSED · G4–G7 DEVELOPING · G8–G9 VERIFIED</p>
+      </Panel>
+
+      <Panel title={T.key} id="key">
+        <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+          <KeyMessage tone="warn" value="3" text={T.keySamples.waiting} />
+          <KeyMessage tone="ok" value="0" text={T.keySamples.ok} />
+          <KeyMessage tone="ok" text={T.keySamples.on} />
+          <KeyMessage tone="warn" text={T.keySamples.blocked} />
+          <SummaryLine items={[{ k: T.summary.features, v: 68 }, { k: T.summary.versions, v: 80 }, { k: T.summary.baselines, v: 67 }]} />
+        </div>
       </Panel>
 
       <Panel title={T.kpi} id="kpi">

@@ -113,7 +113,10 @@ describe('셸', () => {
     expect(rail).toHaveLength(8);
     const panel = screen.getByRole('complementary', { name: 'Feature 정의' });
     expect(within(panel).getByRole('link', { name: 'Feature Registry' }).className).toContain('active');
-    expect(screen.getByRole('navigation', { name: 'breadcrumb' }).textContent).toContain('Feature 상세');
+    // 위치는 한 번만(3초 테스트) — 경로 표시는 상위까지, 현재 화면 이름은 H1이 말한다
+    const trail = screen.getByRole('navigation', { name: 'breadcrumb' }).textContent;
+    expect(trail).toContain('Feature Registry');
+    expect(trail).not.toContain('Feature 상세');
   });
 
   it('운영·안전 그룹 화면은 본문이 관제실 톤(data-zone=ops)', () => {

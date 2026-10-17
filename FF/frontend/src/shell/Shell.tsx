@@ -110,10 +110,6 @@ export function Shell({ children }: { children: ReactNode }) {
         </form>
 
         <div className="sh-tools">
-          <button type="button" role="switch" className="sh-switch" aria-checked={myRole} title={ko.shell.myRole} onClick={() => setMyRole(!myRole)}>
-            <span className="sh-switch__track" aria-hidden><span /></span>
-            <span>{ko.shell.myRole}</span>
-          </button>
           <div className="sh-user" title={`${me.name} · ${me.empNo} · ${me.org}`}>
             <span className="sh-user__avatar" aria-hidden>{me.name.slice(0, 1)}</span>
             <select aria-label={ko.shell.role} value={role} onChange={(e) => changeRole(e.target.value)}>
@@ -160,8 +156,12 @@ export function Shell({ children }: { children: ReactNode }) {
 
       <aside className="sh-panel" aria-label={GROUPS.find((g) => g.key === group)!.ko} data-zone={GROUPS.find((g) => g.key === group)?.zone}>
         <div className="sh-panel__head">
-          <span className="ds-eyebrow">{String(GROUPS.findIndex((g) => g.key === group) + 1).padStart(2, '0')}</span>
           <h2>{GROUPS.find((g) => g.key === group)!.ko}</h2>
+          {/* 메뉴를 거르는 스위치는 메뉴 머리에 — 상단 막대 조작을 줄인다(3초 테스트) */}
+          <button type="button" role="switch" className="sh-switch" aria-checked={myRole} title={ko.shell.myRole} onClick={() => setMyRole(!myRole)}>
+            <span className="sh-switch__track" aria-hidden><span /></span>
+            <span>{ko.shell.myRole}</span>
+          </button>
         </div>
         <ul className="sh-panel__list">
           {items.map((r) => (
@@ -182,11 +182,12 @@ export function Shell({ children }: { children: ReactNode }) {
             {ko.page.readOnly}
           </div>
         )}
-        {trail.length > 0 && (
+        {/* 위치는 한 번만(3초 테스트) — 현재 화면 이름은 H1이 말한다. 상위 화면이 있을 때만 그룹·상위까지 */}
+        {trail.length > 2 && (
           <nav className="sh-trail" aria-label="breadcrumb">
             <ol>
-              {trail.map((t, i) => (
-                <li key={i}>{t.to ? <Link to={t.to}>{t.title}</Link> : <span aria-current={i === trail.length - 1 ? 'page' : undefined}>{t.title}</span>}</li>
+              {trail.slice(0, -1).map((t, i) => (
+                <li key={i}>{t.to ? <Link to={t.to}>{t.title}</Link> : <span>{t.title}</span>}</li>
               ))}
             </ol>
           </nav>

@@ -95,3 +95,8 @@
 .sh-main code:lang(ko) {
   font-family: var(--font-sans);
 }
+
+/* 흐린 보조 문장 안의 링크는 색만으로 구분되지 않게 밑줄(axe link-in-text-block) — 점 격자 배경이 대비 판정을 가리고 있었다 */
+.sh-main .page-sub a {
+  text-decoration: underline;
+}

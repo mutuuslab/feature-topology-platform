@@ -180,6 +180,8 @@ h3 {
   font-weight: 500;
 }
 .ds-id__copy {
+  /* 3초 테스트 — 복사 아이콘은 마우스·초점이 있을 때만 */
+  opacity: 0;
   border: 0;
   background: none;
   color: var(--muted);
@@ -187,6 +189,11 @@ h3 {
   padding: 2px 4px;
   border-radius: var(--r-sm);
   display: inline-flex;
+}
+.ds-id:hover .ds-id__copy,
+.ds-id:focus-within .ds-id__copy,
+.ds-id__copy:focus-visible {
+  opacity: 1;
 }
 .ds-id__copy:hover {
   color: var(--accent);
@@ -337,8 +344,6 @@ button.ds-gate:hover {
   color: var(--muted);
   font-size: var(--fs-xs);
   font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
   text-align: left;
   padding: 0 var(--sp-3);
   height: calc(var(--row-h) - 4px);
@@ -607,7 +612,7 @@ button.ds-gate:hover {
 .ds-kpi__value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: var(--fs-xl);
+  font-size: var(--fs-md); /* 3초 테스트 — 핵심 메시지(ds-key)보다 작게 */
   font-weight: 700;
   color: var(--c);
   line-height: 1.15;
@@ -620,7 +625,6 @@ button.ds-gate:hover {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  box-shadow: var(--e-1);
 }
 .ds-panel__head {
   display: flex;
@@ -638,11 +642,9 @@ button.ds-gate:hover {
   padding: var(--sp-4);
 }
 .ds-eyebrow {
-  font-family: var(--font-mono);
+  /* 3초 테스트 — 대문자·자간 확장·고정폭은 한글을 읽기 어렵게 하고 제목보다 먼저 읽힌다 */
   font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 600;
   color: var(--muted);
 }
 
@@ -724,7 +726,7 @@ button.ds-gate:hover {
 }
 .ds-page__title {
   margin: 2px 0 0;
-  font-size: var(--fs-xl);
+  font-size: var(--fs-lg); /* 핵심 메시지(ds-key)가 화면에서 가장 크다 */
   letter-spacing: -0.025em;
   display: flex;
   align-items: center;
@@ -743,6 +745,73 @@ button.ds-gate:hover {
   max-width: 78ch;
   color: var(--muted);
   font-size: var(--fs-sm);
+  /* 설명은 한 줄 — 전문은 title·설명 모드 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-explain='on'] .ds-page__lead {
+  white-space: normal;
+}
+/* 추적 코드(구 eyebrow) — 설명 모드에서만 */
+.ds-page__codes {
+  display: none;
+}
+[data-explain='on'] .ds-page__codes {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+/* 핵심 메시지 — 화면에서 가장 큰 글자, 하나뿐 */
+.ds-key {
+  --c: var(--ink);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-3);
+  margin-top: var(--sp-2);
+}
+.ds-key[data-tone='ok'] { --c: var(--ok); }
+.ds-key[data-tone='warn'] { --c: var(--warn); }
+.ds-key[data-tone='danger'] { --c: var(--danger); }
+.ds-key[data-tone='accent'] { --c: var(--accent); }
+.ds-key__value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--c);
+}
+.ds-key__text {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--ink);
+}
+.ds-key__text[data-solo] {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--c);
+  line-height: 1.2;
+}
+.ds-key[data-tone='neutral'] .ds-key__text[data-solo] { color: var(--ink); }
+.ds-key__action {
+  font-size: var(--fs-sm);
+}
+/* 보조 요약 한 줄 — KPI 타일 줄 대신 */
+.ds-summary {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.ds-summary b {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 .ds-page__actions {
   display: flex;

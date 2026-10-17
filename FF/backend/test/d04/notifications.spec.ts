@@ -66,7 +66,7 @@ describe('수신자 지정 알림 (D04-04)', () => {
     ]);
     expect(find(await inbox(KILL_REQUESTER), 'kill.requested')).toHaveLength(0);
     const mails = (await http().get('/api/notifications/emails').set(VIEWER).expect(200)).body.items.filter((m: any) => m.notificationId === n.notificationId);
-    expect(mails.map((m: any) => m.userId).sort()).toEqual(['usr-approver', 'usr-coordinator', 'usr-integrator', 'usr-quality', 'usr-steward']);
+    expect(mails.map((m: any) => m.userId).sort()).toEqual(['usr-approver', 'usr-integrator', 'usr-quality', 'usr-steward']); // 승인 역할을 가진 데모 계정 — 협의 이관(출시 담당)은 승인 역할 없음(FFG-PLT-016)
     expect(mails.every((m: any) => m.status === 'SENT' && m.subject.startsWith('[FF] 긴급 차단 승인 요청'))).toBe(true);
   });
 

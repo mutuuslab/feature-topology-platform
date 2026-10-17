@@ -227,7 +227,7 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
       url.startsWith('/api/kill-requests/KILL-') && init?.method !== 'POST'
         ? { body: { ...REQUESTED, approvals: [{ approverId: 'usr-coordinator', role: 'OPS_LEAD', signedAt: '2026-10-12T01:05:00.000Z', kid: 'APR-usr-coordinator' }] } }
         : api(url, init);
-    mount('/ops/kill?id=KILL-00001', '/ops/kill', <KillConsole />, 'integrator'); // CSM — 남은 칸은 FSM만
+    mount('/ops/kill?id=KILL-00001', '/ops/kill', <KillConsole />, 'steward'); // 법규 담당(REGULATORY) — 남은 칸은 FSM만
     await within(await screen.findByRole('dialog')).findByText('남은 칸은 Safety Manager(FSM)만');
     cleanup();
     mount('/ops/kill?id=KILL-00001', '/ops/kill', <KillConsole />, 'quality'); // FSM

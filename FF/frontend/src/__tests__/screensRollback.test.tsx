@@ -91,7 +91,7 @@ describe('롤백 화면', () => {
     fireEvent.click(submit);
     await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.url === '/api/rollback-requests')).toBe(true));
     const post = calls.find((c) => c.method === 'POST' && c.url === '/api/rollback-requests')!;
-    expect(post.body).toEqual({ deploymentId: 'PUB-00010', targetTypes: ['POLICY_VERSION'], recovery: { policyId: 'POL-00004' }, scope: SCOPE, approvers: ['usr-approver'], reason: 'P5 감속 과다' });
+    expect(post.body).toEqual({ deploymentId: 'PUB-00010', targetTypes: ['POLICY_VERSION'], recovery: { policyId: 'POL-00004' }, scope: SCOPE, approvers: ['usr-quality'], reason: 'P5 감속 과다' });
     expect(post.headers['X-Actor-Id']).toBe('usr-operator');
     expect(await screen.findByText(/RBR-00002을\(를\) 만들었습니다/)).toBeTruthy();
   });

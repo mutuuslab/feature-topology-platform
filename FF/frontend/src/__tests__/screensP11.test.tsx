@@ -112,13 +112,13 @@ describe('데이터·규제 기록', () => {
     expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ vin: 'TMA-NX4-0002', requester: 'THIRD_PARTY', thirdParty: { id: 'TP-1', name: 'Fleet Co', gatekeeper: false }, userAuthorizationRef: null, scope: ['FEATURE_STATE'] });
   });
 
-  it('보존 — 가정값 표시, 삭제는 type-to-confirm 뒤에만 보낸다(운영 리더)', async () => {
+  it('보존 — 가정값 표시, 삭제는 type-to-confirm 뒤에만 보낸다(법규 담당)', async () => {
     handler = (url, init) => {
       if (url.startsWith('/api/retention/sweep')) return { body: { at: 'x', stores: [] } };
       if (url.startsWith('/api/retention')) return { body: { policies: [{ store: 'telemetry', record: '차량 텔레메트리', category: 'OPERATION', period: { kind: 'DAYS', days: 90, assumed: true }, basis: '가정', personal: false, cutoff: 'x', expired: 4, held: 1, deletable: 3 }], deletions: [] } };
       return init ? undefined : undefined;
     };
-    mount('coordinator', '/admin/data?tab=retention', <DataGovernanceScreen />);
+    mount('steward', '/admin/data?tab=retention', <DataGovernanceScreen />);
     expect(await screen.findByText('90일 · 가정값')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '기간 지난 행 삭제 (3)' }));
     const dialog = await screen.findByRole('alertdialog');

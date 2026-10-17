@@ -20,7 +20,7 @@ export function useApi<T = any>(
 }
 
 /** 변경 — 성공하면 invalidate에 적은 API 이름으로 시작하는 쿼리를 다시 읽는다 */
-export function useApiMutation<T = any, V extends Pick<CallOptions, 'params' | 'body'> = Pick<CallOptions, 'params' | 'body'>>(name: string, invalidate: string[] = []) {
+export function useApiMutation<T = any, V extends Pick<CallOptions, 'params' | 'body' | 'actorRole'> = Pick<CallOptions, 'params' | 'body' | 'actorRole'>>(name: string, invalidate: string[] = []) {
   const qc = useQueryClient();
   const { role } = useAppShell();
   return useMutation<T, ApiError, V>({

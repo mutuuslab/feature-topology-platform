@@ -9,12 +9,12 @@ describe('IAM 직무 분리 (FFG-PLT-016)', () => {
     expect(dutyConflicts({ x: ['RELEASE_MANAGER', 'OPS_LEAD', 'AUDITOR'] })).toEqual([{ account: 'x', duties: ['RELEASE', 'KILL_EXECUTION'], roles: ['RELEASE_MANAGER', 'OPS_LEAD'] }]);
   });
 
-  it('FFG-PLT-016 현재 데모 계정 감사 — 겸직 3건(구성 승인·PLM 기준정보·협의 이관)이 발견으로 드러난다(계정 재구성은 사용자 결정 대기)', () => {
-    expect(dutyConflicts(DEMO_PERSONAS).map((c) => [c.account, c.duties])).toEqual([
-      ['approver', ['REQUIREMENT_APPROVAL', 'RELEASE']],
-      ['steward', ['REQUIREMENT_APPROVAL', 'RESTORE_APPROVAL']],
-      ['coordinator', ['RELEASE', 'KILL_EXECUTION']],
-    ]);
+  it('FFG-PLT-016 데모 계정 감사 — 겸직 계정 0건, 직무마다 맡는 계정이 있고 복원용 FSM은 차단용 FSM과 다른 계정', () => {
+    expect(dutyConflicts(DEMO_PERSONAS)).toEqual([]);
+    const holders = (d: Parameters<typeof dutiesOf>[0][number]) => Object.keys(DEMO_PERSONAS).filter((k) => DEMO_PERSONAS[k].includes(d));
+    expect(holders('RELEASE_MANAGER')).toEqual(['coordinator']);
+    expect(holders('OPERATOR')).toEqual(['operator']);
+    expect(holders('SAFETY_OFFICER')).toEqual(['quality', 'integrator']);
   });
 
   it('FFG-PLT-016 긴급 권한 사후 검토자는 그 명령의 요청자·승인자가 아니다', () => {

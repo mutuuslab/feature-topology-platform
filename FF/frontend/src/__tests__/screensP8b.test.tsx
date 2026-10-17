@@ -123,7 +123,7 @@ describe('Unleash 연계 패널 (IF-04)', () => {
       if (url.endsWith('/unleash/evaluation')) return { body: { summary: { vehicles: 2, agree: 1, mismatch: 1, noContext: 0, error: 0 }, rows: [{ vin: 'ego-01', label: 'a', unleash: true, platform: false, platformReason: 'KILL_SWITCH', verdict: 'MISMATCH', why: '긴급 차단은 FP에서만' }, { vin: 'b', label: 'b', unleash: false, platform: false, platformReason: 'NOT_APPLICABLE', verdict: 'AGREE', why: null }] } };
       return { body: VIEW() };
     };
-    mount('/p', '/p', <UnleashPanel policyId="POL-00002" deployed />, 'approver');
+    mount('/p', '/p', <UnleashPanel policyId="POL-00002" deployed />, 'coordinator'); // 출시 담당
     expect(await screen.findByText('country IN KR')).toBeTruthy();
     expect(screen.getByText('Unleash에 flag가 없습니다')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Unleash 동기화' }));

@@ -1,7 +1,7 @@
 // API 클라이언트 — 경로는 @ff/contracts ROUTES 하나에서 온다(백엔드 실제 라우트와 테스트로 일치 보장).
 // 쓰기 요청은 행위자 헤더와 Idempotency-Key를 자동으로 붙이고, 오류 봉투 {error:{code,message}}를 ApiError로 바꾼다.
 // 정적 데모(VITE_DATA_MODE=static, Cloudflare)에서는 GET을 미리 떠 둔 스냅샷에서 읽고 쓰기는 막는다.
-import { ROUTES, routeUrl, snapshotFile, type RouteDef } from '@ff/contracts';
+import { ROUTES, routeUrl, snapshotFile, type Role, type RouteDef } from '@ff/contracts';
 import { actorFor } from './actor';
 
 export const STATIC_MODE = import.meta.env.VITE_DATA_MODE === 'static';
@@ -26,6 +26,8 @@ export interface CallOptions {
   body?: unknown;
   /** 현재 화면의 역할(레거시 키) — 쓰기 요청의 행위자 */
   role?: string;
+  /** 이 요청에서 맡을 플랫폼 역할 — 한 사람이 여러 승인 역할을 맡을 때 화면이 정한다(예: 빈 칸이 FSM이면 FSM으로 서명). 맡지 않은 역할이면 무시 */
+  actorRole?: Role;
   signal?: AbortSignal;
 }
 
@@ -52,7 +54,7 @@ export async function call<T = any>(name: RouteName | string, opts: CallOptions 
   const headers: Record<string, string> = { Accept: 'application/json' };
   // 쓰기와 계정별 조회(내 알림)는 행위자 헤더를 붙인다
   if (write || (route.personal && opts.role)) {
-    const a = actorFor(opts.role ?? 'viewer', route.roles);
+    const a = actorFor(opts.role ?? 'viewer', opts.actorRole && route.roles?.includes(opts.actorRole) ? [opts.actorRole, ...route.roles] : route.roles);
     headers['X-Actor-Id'] = a.id;
     headers['X-Actor-Role'] = a.role;
   }

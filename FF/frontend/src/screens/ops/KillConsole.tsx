@@ -18,6 +18,7 @@ import {
   type ReasonCategory,
   type Role,
   type SafeMode,
+  REPORT_APPROVER_ROLES,
 } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -413,7 +414,7 @@ function ApprovalBox({
           icon="pen"
           disabled={!perm.ok || !!blocked || approve.isPending}
           title={perm.hint ?? blocked ?? undefined}
-          onClick={() => approve.mutate({ params: { id }, body: {} })}
+          onClick={() => approve.mutate({ params: { id }, body: {}, actorRole: 'role' in check ? REPORT_APPROVER_ROLES[check.role] : undefined })}
         >
           {K.approve}
         </Button>

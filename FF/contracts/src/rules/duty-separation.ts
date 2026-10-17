@@ -23,14 +23,15 @@ export const POST_REVIEW_MS = 24 * 3_600_000;
 /** 데모 IAM 계정(화면 역할 전환기) ↔ 플랫폼 역할 — 프론트 actor.ts가 그대로 쓴다 */
 export const DEMO_PERSONAS: Record<string, Role[]> = {
   author: ['FEATURE_AUTHOR'], // Feature 설계
-  approver: ['FEATURE_APPROVER', 'PRODUCT_APPROVER', 'RELEASE_MANAGER'], // 구성 승인
-  quality: ['GATE_JUDGE', 'SAFETY_OFFICER'], // 품질 검토 (Gate 판정)
-  operator: ['OPERATOR'], // 차량 운영
-  // PLM 기준정보 (Baseline 승인권자) · 법규 담당 · 부 Safety Manager(개발과 독립) — 복원은 차단 승인자와 다른 FSM이 필요(FFG-DEAC-008)
-  steward: ['BOM_APPROVER', 'VARIANT_OWNER', 'REGULATORY_OWNER', 'SAFETY_OFFICER'],
+  // 계정 수는 기능명세서(FP-DETAILED-1.1) 역할 9로 고정 — 겸직 0건이 되도록 9계정 안에서 직무를 나눈다(2026-10-17 결정)
+  approver: ['FEATURE_APPROVER', 'PRODUCT_APPROVER'], // 구성 승인 — 요구 승인만(출시는 협의 이관)
+  quality: ['GATE_JUDGE', 'SAFETY_OFFICER'], // 품질 검토 (Gate 판정) · Safety Manager(FSM)
+  operator: ['OPERATOR'], // 차량 운영 — Kill 실행
+  steward: ['BOM_APPROVER', 'VARIANT_OWNER', 'REGULATORY_OWNER'], // PLM 기준정보 (Baseline 승인권자) · 법규 담당
   commerce: ['PRODUCT_AUTHOR'], // 상품 권리
-  integrator: ['IMPLEMENTER', 'SECURITY_OFFICER'], // 시스템 연계 · 사이버보안(CSM)
-  coordinator: ['RELEASE_MANAGER', 'OPS_LEAD'], // 협의와 개발 이관 · 운영 리더(긴급 차단 2번째 승인)
+  // 시스템 연계 · 사이버보안(CSM) · 부 Safety Manager — 복원은 차단 승인자와 다른 FSM이 필요(FFG-DEAC-008). 둘 다 복원 승인 직무
+  integrator: ['IMPLEMENTER', 'SECURITY_OFFICER', 'SAFETY_OFFICER'],
+  coordinator: ['RELEASE_MANAGER'], // 협의와 개발 이관 · 출시(Release)
   viewer: ['AUDITOR'], // 조회
 };
 

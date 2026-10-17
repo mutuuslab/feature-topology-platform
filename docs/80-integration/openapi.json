@@ -10071,7 +10071,7 @@
           "D06-09"
         ],
         "operationId": "recordKillPostReview",
-        "description": "허용 역할: 기능안전 담당자(FSM), 사이버보안 담당자(CSM), 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 사이버보안 담당자(CSM), 기능안전 담당자(FSM), 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",

@@ -47,7 +47,7 @@ test('이상 징후: 고장 보고 2대(ASIL B) → 긴급 차단 권고 → 확
 });
 
 test('Unleash 연계: 배포 정책 동기화(모의 Unleash) → drift 없음 → 차량별 대조 불일치 0', async ({ page }) => {
-  await asRole(page, 'approver'); // 출시 담당 겸
+  await asRole(page, 'coordinator'); // 출시 담당
   await page.goto('/policies/POL-00002');
   const panel = page.getByRole('region', { name: 'Policy Tool 연계 (Unleash · IF-04)' });
   await expect(panel).toContainText('country IN KR');

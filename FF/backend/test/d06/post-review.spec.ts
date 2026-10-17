@@ -40,8 +40,8 @@ describe('긴급 권한 사후 검토 (FFG-PLT-016)', () => {
     expect(() => b.get<Db>(DB).run('DELETE FROM kill_post_review')).toThrow(/추가만/);
   });
 
-  it('FFG-PLT-016 직무 분리 감사는 데모 계정의 겸직을 발견으로 보인다', async () => {
+  it('FFG-PLT-016 직무 분리 감사 — 데모 계정 겸직 0건', async () => {
     const a = (await b.http().get('/api/iam/sod-audit').expect(200)).body;
-    expect(a.conflicts.map((c: any) => c.account)).toEqual(['approver', 'steward', 'coordinator']);
+    expect(a.conflicts).toEqual([]);
   });
 });

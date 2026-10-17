@@ -50,14 +50,15 @@ describe('감사 이력 — 해시 체인 (FFG-PLT-015)', () => {
 });
 
 describe('IAM — 보고서 승인 역할 대응 (FFG-PLT-016)', () => {
-  it('FSM·CSM·OPS_LEAD를 서로 다른 데모 사용자가 맡는다 — 요청자(운영자)와 겹치지 않는다', async () => {
+  it('FSM·CSM은 Kill 요청자(운영자)가 아닌 데모 사용자가 맡고, 복원용 부 FSM이 따로 있다 — OPS_LEAD는 겸직을 없애려 데모 계정에 두지 않는다', async () => {
     handler = (u) => (u.startsWith('/api/iam/roles') ? { body: { roles: [], humanRoles: [], permissions: [], sod: [] } } : u.startsWith('/api/iam/denials') ? { body: { items: [] } } : undefined);
     mount('/admin/iam', <IamScreen />);
     const table = await screen.findByRole('table', { name: /보고서 승인 역할 대응/ });
     const row = (r: string) => within(table).getAllByText(r)[0].closest('tr')!.textContent!;
     expect(row('FSM')).toContain('품질 검토');
+    expect(row('FSM')).toContain('시스템 연계');
     expect(row('CSM')).toContain('시스템 연계');
-    expect(row('OPS_LEAD')).toContain('협의와 개발 이관');
+    expect(row('OPS_LEAD')).not.toContain('협의와 개발 이관');
     for (const r of ['FSM', 'CSM', 'OPS_LEAD']) expect(row(r)).not.toContain('차량 운영');
   });
 });

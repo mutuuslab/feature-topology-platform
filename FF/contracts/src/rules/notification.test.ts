@@ -51,7 +51,7 @@ describe('알림 규칙 — 내용 항목과 수신자', () => {
       { label: '차단 대상 범위', value: '차량 2대 · flag care_00022_param' },
       { label: '차단 사유', value: 'SAFETY/FIELD_DEFECT — 현장 결함 확인' },
     ]);
-    expect(who(d)).toEqual(['usr-author', 'usr-operator', 'usr-coordinator']);
+    expect(who(d)).toEqual(['usr-author', 'usr-operator']); // 운영 리더(OPS_LEAD)는 겸직을 없애려 데모 계정에 두지 않는다(FFG-PLT-016)
   });
 
   it('복원 승인 요청 → 해제 범위·사유·요청자·일시, 승인 역할 중 요청자와 직전 차단 승인자는 빼고(SOD-09)', () => {

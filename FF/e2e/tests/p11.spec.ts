@@ -50,9 +50,9 @@ test('보안·인증서: 보안 이벤트 정의와 SBOM 본문(CycloneDX 구성
   await expect(body.getByRole('row')).not.toHaveCount(1); // 머리 행 + 구성 요소
 });
 
-test('감독 기록: 데모 계정 겸직이 직무 분리 감사에 보이고, 데이터·규제 기록의 보존 표가 열린다', async ({ page }) => {
+test('감독 기록: 직무 분리 감사 — 데모 계정 겸직 0건(FFG-PLT-016), 데이터·규제 기록의 보존 표가 열린다', async ({ page }) => {
   await page.goto('/audit/oversight');
-  await expect(panel(page, 'sod-conflicts').getByRole('row').filter({ hasText: 'coordinator' })).toContainText('Kill 실행');
+  await expect(panel(page, 'sod-conflicts')).toContainText('겸직 계정이 없습니다');
   await page.goto('/admin/data?tab=retention');
   await expect(panel(page, 'ret-policies').getByRole('row').nth(1)).toBeVisible();
 });

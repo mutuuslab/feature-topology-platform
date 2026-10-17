@@ -422,9 +422,11 @@
         "contracts/src/rules/rollout-stage.ts"
       ],
       "tested": [
+        "contracts/src/flags/evaluate.test.ts",
         "contracts/src/rules/rollout-stage.test.ts",
         "backend/test/d01/policy.spec.ts",
-        "backend/test/d01/rollout-stage.spec.ts"
+        "backend/test/d01/rollout-stage.spec.ts",
+        "backend/test/d03/delivery.spec.ts"
       ]
     },
     {
@@ -850,10 +852,14 @@
       ],
       "tested": [
         "contracts/src/rules/duty-separation.test.ts",
+        "contracts/src/rules/notification.test.ts",
         "contracts/src/rules/tutorial.test.ts",
+        "backend/test/d04/notifications.spec.ts",
         "backend/test/d06/post-review.spec.ts",
         "frontend/src/__tests__/designSafety.test.tsx",
-        "frontend/src/__tests__/screensTrust.test.tsx"
+        "frontend/src/__tests__/screensTrust.test.tsx",
+        "e2e/tests/p11.spec.ts",
+        "e2e/tests/policy.spec.ts"
       ]
     },
     {

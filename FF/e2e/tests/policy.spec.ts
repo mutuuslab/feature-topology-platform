@@ -73,7 +73,9 @@ test('정책: 작성 → 8종 검증 GO → 승인 → Feature VERIFIED → 서�
   const f = await (await request.get(`${API}/api/features/${fid}/versions/0.1.0`)).json();
   expect(f.feature.lifecycle).toBe('VERIFIED');
 
-  // 서버 배포 (출시 담당 — approver 역할이 RELEASE_MANAGER를 겸한다)
+  // 서버 배포 — 출시 담당(협의 이관 계정, RELEASE_MANAGER). 승인자는 출시를 겸하지 않는다(FFG-PLT-016)
+  await asRole(page, 'coordinator');
+  await page.reload();
   await page.getByRole('button', { name: '서버 배포' }).click();
   await page.getByRole('dialog').getByLabel('사유', { exact: false }).fill('e2e 배포');
   await page.getByRole('dialog').getByRole('button', { name: '서버 배포' }).click();

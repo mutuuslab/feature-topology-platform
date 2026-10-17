@@ -19,3 +19,17 @@ describe('큰 수 표기 — 만·억', () => {
   });
   it('정확한 값', () => expect(formatExact(9_607_641.4)).toBe('9,607,641'));
 });
+
+import { niceMax } from '../screens/biz/charts';
+describe('추이 축 최댓값 — 눈금 4칸이 둥근 수', () => {
+  // 회귀: 2.5배 단계로 2.5만이 되면 눈금이 6,250·1.3만·1.9만으로 고르지 않았다
+  it.each([
+    [23_000, 40_000],
+    [9_000, 20_000],
+    [37, 40],
+    [0, 4],
+  ])('%d → %d', (v, max) => {
+    expect(niceMax(v)).toBe(max);
+    expect(niceMax(v)).toBeGreaterThanOrEqual(v);
+  });
+});

@@ -247,7 +247,8 @@ const mapValues = <K extends string>(o: Record<K, number>, f: (n: number) => num
 // ---------------- 대규모 모집단 지도 — 격자 집계 ----------------
 
 /** 지도에 점으로 보내는 합성 차량 상한 — 넘으면 격자 집계(클러스터)만 보낸다(5년 운영 표본 5만 대를 5초마다 다 보내지 않는다) */
-export const MAP_POINT_LIMIT = 5000;
+// 표본 점 한 대 약 350 B — 1,500대면 응답 약 0.5 MB(5,000이면 1.7 MB였다)
+export const MAP_POINT_LIMIT = 1500;
 /** 화면 범위 [서, 남, 동, 북] */
 export type MapBbox = [number, number, number, number];
 export const WORLD_BBOX: MapBbox = [-180, -90, 180, 90];

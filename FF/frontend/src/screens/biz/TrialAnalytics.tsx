@@ -60,6 +60,9 @@ export function TrialAnalyticsScreen() {
   // 진행 중인 주는 그래프에서 뺀다(덜 찬 주가 급락처럼 보임) — 표에는 남긴다
   const done = d ? d.trend.filter((w) => addDays(w.week, 6) < d.today) : [];
   const partial = d?.trend.find((w) => addDays(w.week, 6) >= d.today);
+  // 1년 넘게 보면 4주씩 합친다 — 월 캠페인이라 주별로는 톱니가 된다
+  const bucket = done.length > 60 ? 4 : 1;
+  const shown = bucket === 1 ? done : Array.from({ length: Math.ceil(done.length / bucket) }, (_, i) => done.slice(i * bucket, i * bucket + bucket)).map((g) => ({ week: g[0].week, offered: g.reduce((t, w) => t + w.offered, 0), accepted: g.reduce((t, w) => t + w.accepted, 0), converted: g.reduce((t, w) => t + w.converted, 0) }));
   return (
     <div className="ds-screen">
       <PageHeader
@@ -67,7 +70,7 @@ export function TrialAnalyticsScreen() {
         title={B.title}
         lead={B.lead}
         message={{ tone: 'ok', value: t ? pct(t.conversionRate) : '—', text: B.key }}
-        meta={d ? `${B.asOf(d.today)} · ${B.counts(d.counts.demo, d.counts.synthetic)}${d.represented && d.represented > d.counts.demo + d.counts.synthetic ? ` · ${O.represented(d.represented)}` : ''}` : undefined}
+        meta={d ? `${B.asOf(d.today)} · ${B.counts(d.counts.demo, d.counts.synthetic)}` : undefined}
         actions={<Link to="/entitlements">{ko.entitlement.tabs.trials}</Link>}
       />
       <Toolbar label={B.filters}>
@@ -109,9 +112,9 @@ export function TrialAnalyticsScreen() {
               <Panel title={B.trend} id="trial-trend">
                 <TrendChart
                   label={B.trend}
-                  weekLabel={B.week}
-                  weeks={done.map((w) => w.week)}
-                  series={(['offered', 'accepted', 'converted'] as const).map((k) => ({ key: k, label: B.stages[k], values: done.map((w) => w[k]) }))}
+                  weekLabel={bucket === 1 ? B.week : `${B.week} · ${O.monthly}`}
+                  weeks={shown.map((w) => w.week)}
+                  series={(['offered', 'accepted', 'converted'] as const).map((k) => ({ key: k, label: B.stages[k], values: shown.map((w) => w[k]) }))}
                 />
                 {partial && <p className="ds-field__hint">{B.trendPartial(partial.week)}</p>}
                 <details>

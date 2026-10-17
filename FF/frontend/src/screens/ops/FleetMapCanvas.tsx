@@ -227,15 +227,8 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view, clusters
             'circle-opacity': 0.18,
             'circle-stroke-color': cssVar(el, '--accent'),
             'circle-stroke-width': 1.5,
-            'circle-radius': ['interpolate', ['linear'], ['sqrt', ['get', 'count']], 0, 8, 400, 18, 2000, 40],
+            'circle-radius': ['interpolate', ['linear'], ['sqrt', ['get', 'count']], 0, 8, 400, 16, 2000, 30],
           },
-        });
-        m.addLayer({
-          id: 'cl-label',
-          type: 'symbol',
-          source: 'cl',
-          layout: { 'text-field': ['get', 'label'], 'text-size': 11, 'text-allow-overlap': false },
-          paint: { 'text-color': cssVar(el, '--ink'), 'text-halo-color': cssVar(el, '--surface'), 'text-halo-width': 1.6 },
         });
         const surface = cssVar(el, '--surface');
         // 상태 색마다 자동차 아이콘 하나 — 유리·바퀴는 테마와 무관하게 어두운 색
@@ -378,6 +371,15 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view, clusters
         };
         m.on('moveend', report);
         report();
+        // 묶음 숫자는 자동차 위에 — 스타일이 가진 글꼴로(기본 글꼴은 타일 서버에 없어 404). 대체 윤곽(글꼴 없음)이면 원만
+        if (font)
+          m.addLayer({
+            id: 'cl-label',
+            type: 'symbol',
+            source: 'cl',
+            layout: { 'text-field': ['get', 'label'], 'text-font': font, 'text-size': 11, 'text-allow-overlap': false },
+            paint: { 'text-color': cssVar(el, '--ink'), 'text-halo-color': surface, 'text-halo-width': 1.8 },
+          });
         m.on('click', 'veh-hit', (e: any) => {
           const vin = e.features?.[0]?.properties?.vin;
           if (vin) latest.current.onSelect(vin);

@@ -1,6 +1,6 @@
 // 홈·등록 v2 화면 (P10-C4) — 검토함(내 차례 판정은 contracts approvalCheck), 내 대시보드, Feature 제안·등록. 모의 API.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
@@ -112,6 +112,20 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     mount('steward', '/', <HomeScreen />);
     await screen.findByRole('link', { name: /Feature Registry/ });
     expect(screen.queryByText('대상 차량(운행 중)')).toBeNull();
+  });
+
+  it('긴급 차단 수에 상업 비활성화는 넣지 않고, 시연 Fleet 수에 수신 표본은 넣지 않는다', async () => {
+    // 회귀: 5년 운영 DB에서 체험 만료 비활성화 54건이 "긴급 차단"으로, 수신 표본 200대가 시연 Fleet으로 세어졌다
+    handler = (url) => {
+      if (url.startsWith('/api/kill-requests')) return { body: { items: [{ killId: 'K1', reasonCategory: 'SAFETY' }, { killId: 'K2', reasonCategory: 'COMMERCIAL' }, { killId: 'K3', reasonCategory: 'COMMERCIAL' }] } };
+      if (url.startsWith('/api/vehicles')) return { body: { items: [{ vin: 'ego-01', fleet: 'DEMO' }, { vin: 'KMH-NX4-P000001', fleet: 'SAMPLE' }] } };
+      return inboxApi(url);
+    };
+    mount('steward', '/', <HomeScreen />);
+    await screen.findByRole('link', { name: /Feature Registry/ });
+    await waitFor(() => expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1'));
+    const online = [...document.querySelectorAll('.ds-summary > span')].find((s) => s.textContent?.includes('데모 Fleet'));
+    expect(online?.querySelector('b')?.textContent).toBe('1');
   });
 
   it('Feature 제안 — 필수 항목 전에는 막히고, 등록하면 새 Feature 상세로 간다', async () => {

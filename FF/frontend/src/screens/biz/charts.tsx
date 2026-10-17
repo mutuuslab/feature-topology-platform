@@ -153,7 +153,7 @@ export function SegmentChart({ rows, label, suppressedText, rateLabels }: { rows
           const name = (
             <text x={labelW - 8} y={y0 + bar + gap / 2} className="ds-viz__label" textAnchor="end" dominantBaseline="central">
               {r.key}
-              <tspan className="ds-viz__muted"> ({nf(r.offered)})</tspan>
+              <tspan className="ds-viz__muted"> ({formatCount(r.offered)})</tspan>
             </text>
           );
           if (r.suppressed)
@@ -193,10 +193,12 @@ export function SegmentChart({ rows, label, suppressedText, rateLabels }: { rows
 }
 
 /** 깔끔한 축 최댓값 (1·2·2.5·5 × 10^n) */
-function niceMax(v: number) {
-  if (v <= 0) return 1;
-  const p = 10 ** Math.floor(Math.log10(v));
-  return ([1, 2, 2.5, 5, 10].find((m) => m * p >= v) ?? 10) * p;
+/** 축 최댓값 — 눈금 4칸이 모두 둥근 수(1·2·5×10ⁿ)가 되게 */
+export function niceMax(v: number) {
+  if (v <= 0) return 4;
+  const raw = v / 4;
+  const p = 10 ** Math.floor(Math.log10(raw));
+  return ([1, 2, 5, 10].find((m) => m * p >= raw) ?? 10) * p * 4;
 }
 
 /** 주별 추이 — 계열 3개 선, 축 하나, 십자선이 가장 가까운 주를 잡고 세 값을 한 툴팁에. ←/→ 키로 주 이동 */

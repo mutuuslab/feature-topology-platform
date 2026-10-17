@@ -351,6 +351,8 @@ export function FleetMapScreen() {
   const clusters = useMemo(() => (synData && synData.pointsOmitted ? (synData.clusters ?? []) : []), [synData]);
   const represented = summary.reduce((t, r) => t + r.total, 0);
   const sampled = clusters.reduce((t, c) => t + c.sample, 0);
+  // 안내 문구는 지금 보이는 범위 기준 — 국가 요약(전체)과 다르다
+  const inView = clusters.reduce((t, c) => t + c.count, 0);
   const count = (pred: (v: FleetMapVehicle) => boolean) => items.filter(pred).length.toLocaleString('ko-KR');
   const demoItems = demo.data?.items ?? [];
   const forbidden = demo.error?.status === 403;
@@ -471,7 +473,7 @@ export function FleetMapScreen() {
               <AsyncView state={asyncState(demo, false)} error={demo.error?.message} onRetry={() => demo.refetch()}>
                 <FleetMapCanvas items={items} lens={lens} selected={selected} onSelect={select} view={view} clusters={clusters} onViewChange={onViewChange} />
                 <Legend lens={lens} items={items} summary={summary} clustered={clusters.length > 0} />
-                {synData && (clusters.length ? <p className="fm-note">{O.clusterNote(represented, sampled)}</p> : synData.items.length > 0 && <p className="fm-note">{O.pointsNote(synData.items.length)}</p>)}
+                {synData && (clusters.length ? <p className="fm-note">{O.clusterNote(inView, sampled)}</p> : synData.items.length > 0 && <p className="fm-note">{O.pointsNote(synData.items.length)}</p>)}
                 {synData && lens === 'activation' && <p className="fm-note">{O.activationNote}</p>}
               </AsyncView>
             </Panel>

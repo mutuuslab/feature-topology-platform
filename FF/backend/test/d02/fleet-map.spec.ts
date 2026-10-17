@@ -96,8 +96,12 @@ describe('전세계 차량 지도 (D02-03)', () => {
 
   it('합성 모집단 — 정지 위치·구독 상태만(런타임 없음), 상품 필터', async () => {
     const synthetic = [...app.get(FleetRepo).profiles().values()].filter((p) => p.source === 'SYNTHETIC').length;
-    const r = (await http().get('/api/fleet/map?source=SYNTHETIC&catalogId=CAT-00019').set(OPERATOR).expect(200)).body;
-    expect(r.items).toHaveLength(synthetic);
+    // 세계 범위 — 상한(MAP_POINT_LIMIT)을 넘으면 점 대신 묶음. 점 + 생략 = 전체
+    const world = (await http().get('/api/fleet/map?source=SYNTHETIC&catalogId=CAT-00019').set(OPERATOR).expect(200)).body;
+    expect(world.items.length + world.pointsOmitted).toBe(synthetic);
+    // 수도권 범위로 좁히면 점으로
+    const r = (await http().get('/api/fleet/map?source=SYNTHETIC&catalogId=CAT-00019&zoom=11&bbox=126.5,37.2,127.5,37.9').set(OPERATOR).expect(200)).body;
+    if (synthetic) expect(r.items.length).toBeGreaterThan(0);
     expect(r.items.every((x: any) => x.source === 'SYNTHETIC' && x.activation === null && !x.moving)).toBe(true);
     if (synthetic) {
       expect(new Set(r.items.map((x: any) => x.subscription)).size).toBeGreaterThan(1);

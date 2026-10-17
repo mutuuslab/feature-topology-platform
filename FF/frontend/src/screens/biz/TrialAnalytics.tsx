@@ -14,6 +14,7 @@ const B = ko.bizTrial;
 const T = ko.trial;
 const O = ops5y.trial;
 /** 추이 기간(주) — 5년 운영이면 260주까지 */
+// 기본 26주는 요청에 넣지 않는다(서버 기본) — 정적 데모 스냅샷 URL과 같게
 const PERIODS = [26, 52, 260] as const;
 type Period = (typeof PERIODS)[number];
 
@@ -53,7 +54,7 @@ export function TrialAnalyticsScreen() {
   const [groupBy, setGroupBy] = useState<SegmentDimension | ''>('drivingStyle');
   const [weeks, setWeeks] = useState<Period>(26);
   const catalogId = 'CAT-00019';
-  const q = useApi<Analytics>('trialAnalytics', { query: { ...trialAnalyticsQuery({ catalogId, source, groupBy }), weeks } }, { placeholderData: (prev) => prev });
+  const q = useApi<Analytics>('trialAnalytics', { query: { ...trialAnalyticsQuery({ catalogId, source, groupBy }), weeks: weeks === 26 ? undefined : weeks } }, { placeholderData: (prev) => prev });
   const d = q.data;
   const t = d?.total;
   // 진행 중인 주는 그래프에서 뺀다(덜 찬 주가 급락처럼 보임) — 표에는 남긴다

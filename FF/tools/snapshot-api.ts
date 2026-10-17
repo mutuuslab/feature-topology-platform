@@ -100,7 +100,11 @@ async function main() {
   // 체험권 차량 목록(상태별 첫 쪽)·체험 전환 분석(나눠 보기 기준별) — 화면과 같은 질의 함수로 키를 맞춘다
   for (const source of ['ALL', 'DEMO', 'SYNTHETIC'] as const) {
     for (const state of ['', ...TRIAL_STATES]) await save('trials', {}, trialListQuery({ catalogId: 'CAT-00019', source, state }));
-    for (const groupBy of ['', ...SEGMENT_DIMENSIONS]) await save('trialAnalytics', {}, trialAnalyticsQuery({ catalogId: 'CAT-00019', source, groupBy }));
+    for (const groupBy of ['', ...SEGMENT_DIMENSIONS]) {
+      await save('trialAnalytics', {}, trialAnalyticsQuery({ catalogId: 'CAT-00019', source, groupBy }));
+      // 기간 1년·5년 — 26주(기본)는 요청에 넣지 않는다
+      for (const weeks of [52, 260]) await save('trialAnalytics', {}, { ...trialAnalyticsQuery({ catalogId: 'CAT-00019', source, groupBy }), weeks });
+    }
   }
   const vehicles = await save('vehicles');
   const flagKeys = [...new Set((policies.items as { flagKey: string; status: string }[]).filter((p) => p.status === 'DEPLOYED').map((p) => p.flagKey))];
@@ -109,6 +113,7 @@ async function main() {
   await new Promise((r) => setTimeout(r, 2500));
   await save('fleetRuntime');
   // 전세계 차량 지도(D02-03) — 정적 데모는 찍은 시점 위치로 멈춰 있다(5초 갱신 없음)
+  await save('fleetPopulation');
   const fm = await save('fleetMap', {}, { source: 'DEMO' });
   for (const flagKey of fm.flagKeys) await save('fleetMap', {}, { source: 'DEMO', flagKey });
   for (const c of fm.catalogs) await save('fleetMap', {}, { source: 'DEMO', catalogId: c.catalogId });

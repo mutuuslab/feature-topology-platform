@@ -135,7 +135,7 @@ describe('체험 전환 분석', () => {
     expect(within(tip).getByText('124')).toBeTruthy();
     expect(within(tip).getByText('34')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('나눠 보기'), { target: { value: 'adasUsage' } });
-    await waitFor(() => expect(calls.some((c) => c.url === '/api/biz/trials?catalogId=CAT-00019&source=ALL&groupBy=adasUsage&weeks=26')).toBe(true));
+    await waitFor(() => expect(calls.some((c) => c.url === '/api/biz/trials?catalogId=CAT-00019&source=ALL&groupBy=adasUsage')).toBe(true));
     // 5년 운영 — 추이를 260주로
     fireEvent.click(screen.getByRole('radio', { name: '5년' }));
     await waitFor(() => expect(calls.some((c) => c.url.endsWith('&weeks=260'))).toBe(true));

@@ -126,8 +126,8 @@ describe('전세계 차량 지도 화면', () => {
     expect(within(summary).getByTitle('9,607,631').textContent).toBe('961만');
     const legend = screen.getByRole('list', { name: '범례' });
     expect(within(legend).getByText('대상 차량 묶음 — 숫자는 대표 대수')).toBeTruthy();
-    // 지도 범위를 아직 모르면(WebGL 없음) 확대 1 전체로 받는다
-    expect(calls.some((c) => c.url.includes('source=SYNTHETIC') && c.url.includes('zoom=1'))).toBe(true);
+    // 지도 범위를 모르면(WebGL 없음) 범위 없이 — 서버 기본(확대 1·세계)이고 정적 데모 스냅샷 URL과 같다
+    expect(calls.some((c) => c.url === '/api/fleet/map?source=SYNTHETIC')).toBe(true);
   });
 
   it('위치 열람이 거부되면(차량 신원 등) 지도·표 대신 안내만 보인다', async () => {

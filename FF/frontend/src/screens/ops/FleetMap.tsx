@@ -53,9 +53,10 @@ function mergeSummary(a: FleetMapSummaryRow[], b: FleetMapSummaryRow[]): FleetMa
   return [...m.values()].sort((x, y) => y.total - x.total);
 }
 
-/** 화면 범위를 요청 값으로 — 확대는 정수, 범위는 바깥쪽으로 0.5° 맞춤(조금 움직일 때마다 다시 받지 않게) */
+/** 화면 범위를 요청 값으로 — 확대는 정수, 범위는 바깥쪽으로 0.5° 맞춤(조금 움직일 때마다 다시 받지 않게).
+ * 범위를 모르거나 정적 데모(URL로 찾는 스냅샷)면 넣지 않는다 — 서버 기본(확대 1·세계 전체)과 같다 */
 function viewQuery(v: MapViewport | null) {
-  if (!v) return { zoom: 1 };
+  if (!v || STATIC_MODE) return {};
   const out = (x: number, f: (n: number) => number) => f(x * 2) / 2;
   const [w, so, e, n] = v.bbox;
   return { zoom: Math.round(v.zoom), bbox: [out(w, Math.floor), out(so, Math.floor), out(e, Math.ceil), out(n, Math.ceil)].join(',') };

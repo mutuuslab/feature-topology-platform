@@ -1265,7 +1265,8 @@
       ],
       "section": "09_vehicle_runtime.md · 9.12 규칙",
       "implemented": [
-        "contracts/src/flags/evaluate.ts"
+        "contracts/src/flags/evaluate.ts",
+        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts"
       ],
       "tested": [
         "contracts/src/flags/evaluate.test.ts",

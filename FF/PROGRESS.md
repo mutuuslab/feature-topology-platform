@@ -105,6 +105,7 @@
     - 화면 `/ops/rollback`: 배포 → 복구 가능 버전·이력 → 미리보기·요청 → 승인·실행 → 이력.
 
 ## 다음 세션 시작점
+- **보고서 v1.1 남은 결정 5건 처리(2026-10-17, 사용자 "현명히 판단")**: ① 데모 계정 겸직 0건 — 계정 수는 기능명세서 9로 고정이라 9계정 안에서 재배치(구성 승인=요구 승인만, 출시=협의 이관, OPS_LEAD 데모 계정 없음, 부 FSM=시스템 연계; 승인 화면은 빈 칸에 맞는 역할로 서명 `actorRole`) · ② 상태 보고·적용 확인 보존 730일(정기 보고 전년 비교, 가정값), 차량 발신 보고 30일 유지 · ③ 새 Version은 기준 Version의 분류를 잇는다(높은 Version을 잇던 결함 수정) · ④ F2 이상 배포는 Canary 5%에서 시작 + 지정 Canary 차량(`Vehicle.canary`, ego-01·lead-01) — vECU `js/vendor/ff_evaluate.js`도 재생성 · ⑤ 지원하지 않는 차량(NOT_SUPPORTED)에는 체험 제안·수락·구매 전환을 하지 않는다(FFG-VEH-006). 실제 값이 없는 항목(HW 리비전·보정 데이터·센서 조건, EU 출시일, Data Act 계약 문서)은 지어내지 않고 UNKNOWN·확인 필요로 둔다. 구성 증명 발신(시뮬레이터·FF_IMP 모의 차량)은 아직 없음.
 - **국제표준 보고서 v1.1 실제 개발 WP10 완료 — 플랫폼 규칙 75개 모두 구현·시험 추적 완료 — 다음은 WP6 /verify/compliance 교체·WP2 은퇴 6단계부터 — WP6 화면·WP2 은퇴 6단계 반영 완료(은퇴·Data Act·사후 검토·변경 기록 화면은 아직 API만)**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1·WP0·WP1·WP3·WP4·WP5·WP9 완료. 규칙 추적 75/75. **사용자 결정 대기: 데모 계정 겸직 3건(approver 요구 승인+출시, steward 요구 승인+복원 승인, coordinator 출시+Kill 실행) — FFG-PLT-016 합격(겸직 0건)에는 계정 재구성 필요, PoC·e2e 흐름 영향**. 화면 확인: `/learn`, `/_design`, `/features?f=F3`, `/features/FEAT-00022/1.0.0?tab=safety`(UX 검토 사진 `node e2e/scripts/shot-safety.mjs` → `e2e/shots/safety-*`).
 - **WP1 이후 규칙**: Gate G2 이후 PASS는 안전 분류 확정(SAFETY_OFFICER 개인 서명)이 전제(FFG-CLS-001), G1은 조합 위반(blocking)만 막는다. 새 시험·e2e에서 G2 이상을 판정하면 먼저 `confirmSafety(http, id, ver)`(backend `test/helpers.ts`) 또는 `POST …/safety/confirm`. 초안 시드는 `tools/dataset/safety-infer.ts` → `data/fixtures/safety/profiles.json`(80개, FEAT-00022@1.0.0만 확정 F3·DC2·R1). standards 래칫 구현·시험 13·13, TC-FF 3.
 - **반영 기준 = 기존 42 컴포넌트**(사용자 지시 2026-10-13): 플랫폼 규칙 75개를 `contracts/src/rules/standards-map.ts`에서 기존 컴포넌트(32개)에 배치. `standards` 하네스가 빠진 배치·없는 컴포넌트를 막고, 규칙별 상태를 `contracts/src/generated/standards-status.ts`로 내보낸다(바뀌면 함께 커밋). 화면 `/arch/components`(반영률 KPI·카드 "표준 i/n"·`?wp=WP3` 필터·상세 규칙 목록). 새 WP는 "어느 기존 컴포넌트를 고치나"로 시작한다.
@@ -219,6 +220,7 @@
 | 2026-10-13 | vECU 시뮬레이터 웹 실행본을 FF repo(공개)에 허용 목록으로 동기화해 같은 CI로 `/vecu/` 배포. 실사 스플랫(NuRec 약관)·로컬 전용 모델 제외. FF에서는 링크로 연다(임베드·결과 회수 안 함) |
 | 2026-10-17 | 가상검증 실행기를 vECU에서 CARLA 0.9.16(`sim/carla`, LearnCarla 설치본)으로 완전 대체. 검증 전용 서버 RPC 2100 — 공유 서버 2000은 쓰지 않는다. 판정 의미(기준·한계·재현 정보)는 그대로, 판단(evaluation)은 FF evaluateFlag가 넣는다. 이전 실행 기록은 Evidence 불인정 |
 | 2026-10-17 | EA(Enterprise Architect)는 쓰지 않는다 — EA 원본 .qea·화면 패널·ea:check 하네스 제거(e7898ee 되돌림). 아키텍처 기준은 42 컴포넌트 manifest + 기능명세서 요구사항(req 하네스) |
+| 2026-10-17 | 보고서 v1.1 남은 결정(사용자 위임): 데모 9계정 겸직 0 재배치 · 상태 보고 보존 730일 · 새 Version 분류는 기준 Version 승계 · F2+ 배포 Canary 5% 시작 + 지정 Canary 차량 · NOT_SUPPORTED 차량 체험권 제외 |
 
 ## 알려진 이슈·주의
 - 프론트 `package.json`에 UTF-8 BOM이 들어가면 Vite/Vitest가 깨진다 — 하네스 `readJson`은 BOM을 벗긴다. 편집기 저장 형식 주의.

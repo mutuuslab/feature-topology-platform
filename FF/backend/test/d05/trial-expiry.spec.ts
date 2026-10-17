@@ -27,9 +27,9 @@ describe('체험권 만료 sweep — 사전 고지 → 만료 확정 (FFG-LCY-01
     sweep = get(TrialExpiryService);
     clock = get(Clock);
     clock.set(AT);
-    // lead-01(ENT-00003) 수락 → 2026-11-10까지 · KMH-NX4-0002 제안(ENT-00008), 10-14에 수락 → 2026-11-12까지
+    // lead-01(ENT-00003) 수락 → 2026-11-10까지 · KMH-NX4-0003 제안(ENT-00008, 지원 차량), 10-14에 수락 → 2026-11-12까지
     await http().post('/api/trials/ENT-00003/accept').set(OPERATOR).send({}).expect(200);
-    await http().post('/api/trials/offers').set(PRODUCT).send({ catalogId: 'CAT-00019', vins: ['KMH-NX4-0002'] }).expect(201);
+    await http().post('/api/trials/offers').set(PRODUCT).send({ catalogId: 'CAT-00019', vins: ['KMH-NX4-0003'] }).expect(201);
     clock.set(kst('2026-10-14'));
     await http().post('/api/trials/ENT-00008/accept').set(OPERATOR).send({}).expect(200);
   });
@@ -70,7 +70,7 @@ describe('체험권 만료 sweep — 사전 고지 → 만료 확정 (FFG-LCY-01
     expect(r.expired.map((e) => [e.grantId, e.noticeId, e.noticeAt])).toEqual([['ENT-00008', null, null]]);
     const all = await events('trial.expired');
     expect(all.map((e: any) => e.grantId)).toEqual(['ENT-00001', 'ENT-00008']);
-    expect(all[1]).toMatchObject({ vin: 'KMH-NX4-0002', validTo: '2026-11-12', fClassMax: 'F3' });
+    expect(all[1]).toMatchObject({ vin: 'KMH-NX4-0003', validTo: '2026-11-12', fClassMax: 'F3' });
   });
 
   it('감사 기록 — 시스템 행위자로 고지·만료가 남는다', async () => {

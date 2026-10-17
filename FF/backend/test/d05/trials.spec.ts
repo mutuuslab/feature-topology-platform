@@ -1,6 +1,7 @@
 // 기간형 체험권 (D01-05) → 구매 전환 (D05-04 과금 연계 모의) → 체험 전환 분석 (D05-06 사업 지표) — 2026-10-13 결정.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { FleetRepo } from '../../src/domains/d01-policy/policy-repos';
 import { actor, bootApp } from '../helpers';
 
 const OPERATOR = actor('seo.ops', 'OPERATOR');
@@ -25,7 +26,7 @@ describe('체험권 — 제안·수락·거절·구매 전환', () => {
     expect(ents.find((e: any) => e.grantId === 'ENT-00006')).toMatchObject({ kind: '구독', fromTrial: 'ENT-00005', effective: true });
   });
 
-  it('차량별 체험 제안 — 열린 체험·전환 이력·유효한 구독이 있으면 건너뛴다, 작성자·운영자만', async () => {
+  it('차량별 체험 제안 — 열린 체험·전환 이력·유효한 구독·지원하지 않는 차량(FFG-VEH-006)은 건너뛴다, 작성자·운영자만', async () => {
     await http().post('/api/trials/offers').set(AUDITOR).send({ catalogId: 'CAT-00019', vins: ['KMH-NX4-0002'] }).expect(403);
     const r = await http()
       .post('/api/trials/offers')
@@ -33,13 +34,14 @@ describe('체험권 — 제안·수락·거절·구매 전환', () => {
       .send({ catalogId: 'CAT-00019', vins: ['KMH-NX4-0002', 'KMH-NX4-0003', 'ego-01', 'HMA-NX4-0001', 'TMA-NX4-0001', 'NOPE-1'], note: '가을 프로모션' })
       .expect(201);
     expect(r.body.offered.map((g: any) => [g.vin, g.grantId, g.state, g.validTo])).toEqual([
-      ['KMH-NX4-0002', 'ENT-00008', 'OFFERED', '2026-10-25'],
-      ['KMH-NX4-0003', 'ENT-00009', 'OFFERED', '2026-10-25'],
-      ['TMA-NX4-0001', 'ENT-00010', 'OFFERED', '2026-10-25'], // 지난 체험이 만료되었으면 다시 제안할 수 있다
+      ['KMH-NX4-0003', 'ENT-00008', 'OFFERED', '2026-10-25'],
+      ['TMA-NX4-0001', 'ENT-00009', 'OFFERED', '2026-10-25'], // 지난 체험이 만료되었으면 다시 제안할 수 있다
     ]);
-    expect(r.body.skipped.map((s: any) => s.vin)).toEqual(['ego-01', 'HMA-NX4-0001', 'NOPE-1']);
+    expect(r.body.skipped.map((s: any) => s.vin)).toEqual(['KMH-NX4-0002', 'ego-01', 'HMA-NX4-0001', 'NOPE-1']);
+    // 켤 수 없는 기능은 제안하지 않는다 — SW 1.2.0 < 요구 1.2.1
+    expect(r.body.skipped[0].reason).toMatch(/^NOT_SUPPORTED: FEAT-00022 1\.0\.0 — SW 1\.2\.0 < 요구 1\.2\.1/);
     const ev = await http().get('/api/events?type=entitlement.offered').expect(200);
-    expect(ev.body.items).toHaveLength(3);
+    expect(ev.body.items).toHaveLength(2);
   });
 
   it('거절하면 DECLINED, 다시 수락할 수 없다', async () => {
@@ -54,19 +56,37 @@ describe('체험권 — 제안·수락·거절·구매 전환', () => {
     const p = await http().post('/api/trials/ENT-00008/purchase').set(OPERATOR).send({ plan: '구독' }).expect(200);
     expect(p.body.order).toMatchObject({ orderId: 'ORD-00001', plan: '구독', status: 'PAID' });
     expect(p.body.trial).toMatchObject({ grantId: 'ENT-00008', state: 'CONVERTED', convertedAt: '2026-10-12', convertedPlan: '구독', effective: false });
-    expect(p.body.grant).toMatchObject({ grantId: 'ENT-00011', kind: '구독', fromTrial: 'ENT-00008', validTo: '2027-10-11', effective: true });
+    expect(p.body.grant).toMatchObject({ grantId: 'ENT-00010', kind: '구독', fromTrial: 'ENT-00008', validTo: '2027-10-11', effective: true });
     // 같은 체험을 다시 구매하면 거부, 과금 호출은 한 번만
     await http().post('/api/trials/ENT-00008/purchase').set(OPERATOR).send({ plan: '구독' }).expect(422);
     const calls = await http().get('/api/integrations/calls?ifId=BILLING').expect(200);
     expect(calls.body.items).toHaveLength(1);
     // 구독 권한은 체험과 별개로 ON — 체험 판단은 구독이 이어받는다
-    const d = await http().get('/api/activation/decide?vin=KMH-NX4-0002&flagKey=care_00022_param').expect(200);
+    const d = await http().get('/api/activation/decide?vin=KMH-NX4-0003&flagKey=care_00022_param').expect(200);
     expect(d.body.entitlement).toMatchObject({ active: true });
-    expect(d.body.entitlement.grants.map((g: any) => g.grantId)).toContain('ENT-00011');
-    // 권한은 생겼지만 이 차량은 SW 1.2.0 < 요구 1.2.1 — 지원 조건 미달이면 OFF, 사유 보고(FFG-VEH-006)
-    expect(d.body.result).toMatchObject({ value: false, reason: 'NOT_SUPPORTED' });
+    expect(d.body.entitlement.grants.map((g: any) => g.grantId)).toContain('ENT-00010');
+    // 지원 조건으로는 막히지 않는다(이 차량 문맥 품질은 별개 판정)
+    expect(d.body.result.trace.find((t: any) => t.step === 'SUPPORT').result).not.toBe('FALSE');
     const ev = await http().get('/api/events?type=entitlement.converted').expect(200);
-    expect(ev.body.items.at(-1)).toMatchObject({ aggregate: 'KMH-NX4-0002', payload: { plan: '구독', newGrantId: 'ENT-00011', orderId: 'ORD-00001' } });
+    expect(ev.body.items.at(-1)).toMatchObject({ aggregate: 'KMH-NX4-0003', payload: { plan: '구독', newGrantId: 'ENT-00010', orderId: 'ORD-00001' } });
+  });
+
+  it('FFG-VEH-006 제안 뒤 SW가 요구 Version 아래로 내려가면 수락·구매 전환도 거부(감사 FAILED), 과금은 부르지 않는다', async () => {
+    const fleet = app.get(FleetRepo);
+    const set = (vin: string, swVersion: string) => fleet.updateVehicle({ ...fleet.vehicle(vin)!, swVersion });
+    set('lead-01', '1.2.0'); // 제안 중(ENT-00003)
+    set('ego-01', '1.2.0'); // 체험 중(ENT-00001)
+    try {
+      expect((await http().post('/api/trials/ENT-00003/accept').set(OPERATOR).send({}).expect(422)).body.error.message).toMatch(/NOT_SUPPORTED: FEAT-00022/);
+      expect((await http().post('/api/trials/ENT-00001/purchase').set(OPERATOR).send({ plan: '구매' }).expect(422)).body.error.message).toMatch(/NOT_SUPPORTED: FEAT-00022/);
+      expect((await http().get('/api/integrations/calls?ifId=BILLING').expect(200)).body.items).toHaveLength(1);
+      const failed = (await http().get('/api/audit?target=ENT-00003').expect(200)).body.items;
+      expect(failed.at(-1)).toMatchObject({ action: 'TRIAL_ACCEPT', result: 'FAILED' });
+    } finally {
+      set('lead-01', '1.2.1');
+      set('ego-01', '1.2.1');
+    }
+    expect((await http().get('/api/trials?source=DEMO&catalogId=CAT-00019').expect(200)).body.items.find((t: any) => t.vin === 'lead-01')).toMatchObject({ state: 'OFFERED' });
   });
 
   it('체험권 목록 — 상태·성향 필터와 쪽 나눔 (합성 모집단 포함)', async () => {

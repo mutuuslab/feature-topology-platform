@@ -2,7 +2,7 @@
 //   제안(OFFERED, 14일 안에 수락) → 수락(ACTIVE, 수락일부터 30일 기능 ON) → 만료 / 거절 / 구매 전환(CONVERTED, 과금 연계 D05-04가 부른다).
 // 상태·유효 판단은 contracts/rules/trial.ts grantState 한 곳 — 저장된 상태가 ACTIVE여도 기간이 지나면 OFF.
 import { Inject, Injectable } from '@nestjs/common';
-import { addDays, grantState, SEGMENT_DIMENSIONS, TRIAL_DAYS, type Entitlement, type OfferTrialsBody, type TrialState, type VehicleProfile } from '@ff/contracts';
+import { addDays, grantState, SEGMENT_DIMENSIONS, TRIAL_DAYS, variantRow, type Entitlement, type OfferTrialsBody, type TrialState, type VehicleProfile } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -10,8 +10,8 @@ import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
-import { FleetRepo } from '../policy-repos';
-import { BaselineRepo, ProductRepo } from '../repos';
+import { FleetRepo, PolicyRepo } from '../policy-repos';
+import { BaselineRepo, FeatureRepo, ProductRepo } from '../repos';
 
 export type GrantView = Entitlement & { state: TrialState; effective: boolean; daysLeft: number | null };
 export type Source = 'DEMO' | 'SYNTHETIC' | 'ALL';
@@ -39,6 +39,8 @@ export class EntitlementService {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly clock: Clock,
+    private readonly policies: PolicyRepo,
+    private readonly features: FeatureRepo,
   ) {}
 
   today() {
@@ -101,6 +103,11 @@ export class EntitlementService {
           skipped.push({ vin, reason: 'Fleet에 없는 차량' });
           continue;
         }
+        const unsupported = this.unsupported(vin, body.catalogId);
+        if (unsupported) {
+          skipped.push({ vin, reason: unsupported });
+          continue;
+        }
         const mine = this.fleet.grants(vin).filter((g) => g.catalogId === body.catalogId).map((g) => this.view(g, today));
         const blocking = mine.find((g) => (g.kind === '체험' && (g.state === 'OFFERED' || g.state === 'ACTIVE' || g.state === 'CONVERTED')) || (g.kind !== '체험' && g.effective));
         if (blocking) {
@@ -144,6 +151,8 @@ export class EntitlementService {
     const today = this.today();
     const s = grantState(g, today).state;
     if (s !== 'OFFERED') return this.refuse(actor, 'TRIAL_ACCEPT', g, `수락할 수 없는 체험권입니다 (${s}${g.acceptedAt ? `, ${g.acceptedAt} 수락` : ''}).`);
+    const unsupported = this.unsupported(g.vin, g.catalogId);
+    if (unsupported) return this.refuse(actor, 'TRIAL_ACCEPT', g, `수락할 수 없는 체험권입니다 — ${unsupported}`);
     return this.db.tx(() => {
       const next: Entitlement = { ...g, status: 'ACTIVE', acceptedAt: today, validFrom: today, validTo: addDays(today, TRIAL_DAYS - 1), trialDays: TRIAL_DAYS };
       this.fleet.updateGrant(next);
@@ -172,6 +181,8 @@ export class EntitlementService {
     const g = this.mustTrial(actor, grantId, 'TRIAL_PURCHASE');
     const s = grantState(g, this.today()).state;
     if (!g.acceptedAt || (s !== 'ACTIVE' && s !== 'EXPIRED')) return this.refuse(actor, 'TRIAL_PURCHASE', g, `구매로 전환할 수 없는 체험권입니다 (${s}${g.acceptedAt ? '' : ', 수락 전'}).`);
+    const unsupported = this.unsupported(g.vin, g.catalogId);
+    if (unsupported) return this.refuse(actor, 'TRIAL_PURCHASE', g, `구매로 전환할 수 없는 체험권입니다 — ${unsupported}`);
     return g;
   }
 
@@ -213,6 +224,23 @@ export class EntitlementService {
     if (!g) throw new DomainError('NOT_FOUND', `${grantId}을(를) 찾을 수 없습니다.`);
     if (g.kind !== '체험') return this.refuse(actor, action, g, `${grantId}은(는) 체험권이 아닙니다 (${g.kind}).`);
     return g;
+  }
+
+  /**
+   * 이 상품을 권리로 켜는 배포 정책의 Feature를 이 차량이 지원하지 않는가 — 지원 조건 관리(D02-02)·평가기 SUPPORT 단계와 같은 판정.
+   * 켤 수 없는 기능을 제안·판매하지 않는다. 판정 불명(UNKNOWN)은 막지 않는다(평가기가 HOLD로 다룬다). 데모 Fleet 밖 차량은 판정하지 않는다.
+   * @rule FFG-VEH-006 — 지원하지 않는 차량에는 체험 제안·수락·구매 전환을 하지 않는다
+   */
+  private unsupported(vin: string, catalogId: string): string | null {
+    const v = this.fleet.vehicle(vin);
+    if (!v) return null;
+    for (const p of this.policies.all().filter((x) => x.status === 'DEPLOYED' && x.entitlementCatalogId === catalogId)) {
+      const f = this.features.get(p.featureId, p.featureVersion);
+      if (!f) continue;
+      const row = variantRow({ ...f, featureId: p.featureId, version: p.featureVersion }, v);
+      if (row.verdict === 'NOT_SUPPORTED') return `NOT_SUPPORTED: ${p.featureId} ${p.featureVersion} — ${row.reason}`;
+    }
+    return null;
   }
 
   private refuse(actor: Actor, action: string, g: Entitlement, message: string): never {

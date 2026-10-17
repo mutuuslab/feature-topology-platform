@@ -95,7 +95,7 @@ describe('Flag 평가 — PoC ③ 서버 활성화 판단', () => {
     expect(canary.trace.find((t) => t.step === 'COHORT')).toMatchObject({ result: 'TRUE', detail: expect.stringMatching(/지정 Canary 차량/) });
     expect(await ev({ stageBasisPoints: 500 }, 'KMH-NX4-0001')).toMatchObject({ decision: 'DENY', reason: 'COHORT_MISS' }); // 버킷 1499 ≥ 500
     expect(await ev({ stageBasisPoints: 0 }, 'lead-01')).toMatchObject({ reason: 'COHORT_MISS' });
-  });
+  }, 20_000); // 부분 배포 평가는 cohortBucket(WebCrypto SHA-256)을 여러 번 — 부하가 큰 기계에서 기본 5초를 넘긴 적이 있다
 });
 
 const input = (p: Partial<Policy> = {}, over: Partial<ValidationInput> = {}): ValidationInput => ({

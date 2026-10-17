@@ -115,6 +115,10 @@ async function main() {
   for (const kind of ['POLICY', 'KILL', 'RESTORE']) await save('publications', {}, { kind });
   for (const p of pubs.items) await save('publicationDetail', { id: p.publicationId });
   await save('killRequests');
+  // 롤백(D03-04) — 배포 목록·배포별 상세·이력(정적 데모에는 실행 기록이 없다)
+  const rbDeps = await save('rollbackDeployments');
+  for (const d of rbDeps.items) if (d.deploymentId) await save('rollbackDeployment', { deploymentId: d.deploymentId });
+  await save('rollbacks');
   await save('killRequests', {}, { status: 'ACTIVE' });
   await save('killPreview', {}, { featureId: 'FEAT-00022', featureVersion: '1.0.0' });
   // 가상검증(CARLA) — 정적 배포에는 검증 서버가 없다(상태는 미연결로 찍힌다)

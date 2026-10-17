@@ -186,6 +186,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/twin/applied/:vin', element: legacyTo('/fleet/vehicles/:vin'), title: '차량 적용 상태 (이전 주소)', group: 'ops', parent: '/fleet/vehicles/:vin' },
   { path: '/twin/vehicle/:vin', element: named(twinOps, 'TwinVehicle'), title: '차량 상세 (BDC 데모)', group: 'ops', parent: '/fleet/vehicles/:vin' },
   { path: '/ops/kill', element: named(killScreens, 'KillConsole'), title: '긴급 차단·복구', group: 'ops', menu: '/ops/kill', components: ['D03-03', 'D03-04'], v2: true },
+  { path: '/ops/rollback', element: named(() => import('./screens/ops/Rollback'), 'RollbackScreen'), title: '롤백', group: 'ops', menu: '/ops/rollback', components: ['D03-04'], v2: true },
   { path: '/twin/incident', element: named(twinOps, 'TwinIncident'), title: '긴급 차단 시나리오 (BDC 데모)', group: 'ops', parent: '/ops/kill' },
   { path: '/ops/:id', element: legacyTo('/fleet/live'), title: 'Feature 운영 대시보드 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/ops/anomalies', element: named(anomalyScreens, 'AnomalyScreen'), title: '이상 징후 대응', group: 'ops', menu: '/ops/anomalies', components: ['D06-12'], v2: true },

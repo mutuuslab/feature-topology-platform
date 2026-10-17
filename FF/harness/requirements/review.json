@@ -2095,144 +2095,144 @@
       "gap": "부분 범위 해제·잔여 범위 유지 없음"
     },
     "FR-RBK-001-001": {
-      "verdict": "미구현",
-      "evidence": "Rollback Plan 엔티티·API 없음(공통 사실)",
-      "gap": "Plan 엔티티·API"
+      "verdict": "구현",
+      "evidence": "`POST /api/rollback-plans` — 배포 ID·대상 유형·조건·복구 기준 버전·범위·승인대상자 입력, Plan ID·Feature·배포 버전·요청자·일시는 서버가 채운다 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-001-002": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "필수 항목 검증"
+      "verdict": "구현",
+      "evidence": "필수 항목 스키마(CreateRollbackPlanBody) — 범위·조건·승인대상자·대상 유형 없으면 400 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-001-003": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "정책 버전만 플랫폼 대상, SW 버전은 IF-05 외부(설계 충돌)"
+      "verdict": "부분",
+      "evidence": "대상 유형으로 정책 버전·SW 버전을 받지만 SW 버전은 실행하지 않고 OTA(IF-05) 위임 사유로 거부 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": "SW 버전 롤백(결정 대기 D7)"
     },
     "FR-RBK-001-004": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "실패율·DTC 조건·기준값"
+      "verdict": "구현",
+      "evidence": "자동 조건: 배포 실패율 기준(%)·DTC 코드/유형(SAE J2012 상위 2비트) — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-001-005": {
-      "verdict": "미구현",
-      "evidence": "이전 배포 정책은 RETIRED로 바뀌고 재배포 불가 `policy.service.ts:216,226-229`",
-      "gap": "배포 완료·Gate 통과·승인·산출물(서명 게시본) 존재 검증"
+      "verdict": "구현",
+      "evidence": "복구 기준 버전 판정 recoveryBlockers — 배포 완료(산출물 CONFIRMED·PARTIAL)·검증 GO(같은 해시)·운영 승인·서명 검증된 산출물 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-001-006": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "범위 유형"
+      "verdict": "구현",
+      "evidence": "적용 범위: Feature·Variant Rule(upgVc)·생산 지역(VIN 앞자리)·적용 지역(국가)·SW 버전·VIN, 하나 이상 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-001-007": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "승인 요청 알림"
+      "verdict": "구현",
+      "evidence": "알림 rollback.plan.requested → 지정 승인대상자(요청자 제외), 필드 전부 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-001-008": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "승인/반려 기록"
+      "verdict": "구현",
+      "evidence": "`POST /api/rollback-plans/:id/decision` — 승인자·일시·의견·결과(APPROVE/REJECT), 지정 승인대상자만 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-002-001": {
-      "verdict": "미구현",
-      "evidence": "자동 롤백 트리거 없음(이상 건은 KILL 권고만 `rules/anomaly.ts:14`)",
-      "gap": "실패율·DTC 조건 감시"
+      "verdict": "구현",
+      "evidence": "발행 훅: 계획이 묶인 배포 게시본이 닫힐 때 실패율 > 기준, 범위 안 차량 status 보고의 DTC 일치 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-002-002": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "조건 충족 시 계획의 복구 기준 버전으로 실행 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-002-003": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "재검증(정책 검증 8종 재사용 가능)"
+      "verdict": "구현",
+      "evidence": "실행 전 assess 재검증(배포가 지금 효력·복구 기준 판정·긴급 차단 없음·범위) — 실패면 아무것도 바꾸지 않고 FAILED — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-002-004": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "이전 정책 게시본 재게시(서명·순번 규칙 준수)"
+      "verdict": "구현",
+      "evidence": "지금 정책 RETIRED·복구 기준 정책 DEPLOYED, 복구 기준 내용(같은 해시)을 새 순번으로 재서명해 게시 — 원래 산출물 ID 기록. SW 버전은 OTA 위임 사유로 거부 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-002-005": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "상태(요청·실행 중·완료·실패)·결과"
+      "verdict": "구현",
+      "evidence": "rollback_execution — 배포 ID·Feature·Plan/요청 ID·유형·전후 버전·산출물 ID·일시·상태(요청·실행 중·완료·실패)·결과 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-003-001": {
-      "verdict": "미구현",
-      "evidence": "롤백 경로 없음(재사용 후보: `GET /api/impact/:id/:ver`, kill preview)",
-      "gap": "롤백 전 산출"
+      "verdict": "구현",
+      "evidence": "영향 Feature = 복구 기준 Feature + REQUIRES 의존 Feature(긴급 차단 영향 산출 재사용) — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-003-002": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "Topology·범위 기준"
+      "verdict": "구현",
+      "evidence": "영향 차량 그룹 — 생산 지역·적용 지역·Variant·SW 버전별 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-003-003": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "롤백 범위 = 배포 대상 ∩ 적용 범위, flag 단위라 배포 대상 전부를 덮어야 한다(SCOPE_PARTIAL) — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-004-001": {
-      "verdict": "미구현",
-      "evidence": "수동 롤백 API 없음",
-      "gap": "요청 API"
+      "verdict": "부분",
+      "evidence": "`POST /api/rollback-requests` — 배포 ID·유형·복구 기준 버전·사유·승인대상자, 배포 ID로 Feature·범위 조회 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": "SW 버전 대상은 D7 결정 대기"
     },
     "FR-RBK-004-002": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "롤백 권한 역할"
+      "verdict": "구현",
+      "evidence": "롤백 권한 역할 ROLLBACK_REQUEST_ROLES(RELEASE_MANAGER·OPERATOR) — 그 밖 403 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-004-003": {
       "verdict": "부분",
-      "evidence": "`GET /api/changes`(Version 변경 사유), `GET /api/publications`(서명 게시본), 정책 목록·감사",
-      "gap": "배포 ID 기준 통합 조회가 롤백 흐름에 없음"
+      "evidence": "`GET /api/rollbacks/deployments/:id` — Feature·배포 버전·적용 범위·정책 변경 이력·배포 이력 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": "SW 변경 이력 원천 없음(OTA IF-05, D7)"
     },
     "FR-RBK-004-004": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "배포 완료·Gate 통과·승인 조건 필터"
+      "verdict": "구현",
+      "evidence": "`GET /api/rollbacks/deployments/:id` candidates — 복구 가능 여부와 불가 사유 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-004-005": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "알림 rollback.requested → 지정 승인대상자, 필드 전부 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-004-006": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "`POST /api/rollback-requests/:id/decision` — 승인자·일시·의견·결과 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-004-007": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "승인(APPROVED) 아닌 요청 실행 422 + 감사 FAILED — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-004-008": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "`POST /api/rollback-requests/:id/execute` — 재검증 후 복구 기준 정책 재게시 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-005-001": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "실패 사유·실패 시점 저장(재검증 실패, 롤백 산출물 미확인) — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-005-002": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "`GET /api/rollbacks` — 배포·Feature·Plan·요청·유형·차량(VIN)·상태·결과·기간 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-005-003": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "알림 rollback.completed → 요청자·승인자·배포 요청자·Feature Owner — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-RBK-005-004": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "알림 rollback.failed → 같은 대상, 실패 사유·시점 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
+      "gap": ""
     },
     "FR-OPD-001-001": {
       "verdict": "부분",

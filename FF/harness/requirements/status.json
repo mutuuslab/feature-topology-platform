@@ -4,9 +4,9 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 169,
-      "부분": 255,
-      "미구현": 199,
+      "구현": 194,
+      "부분": 257,
+      "미구현": 172,
       "범위 밖": 5
     },
     "sheets": [
@@ -29,9 +29,9 @@
       {
         "sheet": "03_안전·검증",
         "leaves": 109,
-        "구현": 27,
-        "부분": 27,
-        "미구현": 55,
+        "구현": 52,
+        "부분": 29,
+        "미구현": 28,
         "범위 밖": 0
       },
       {
@@ -59,7 +59,7 @@
         "범위 밖": 0
       }
     ],
-    "traced": 14,
+    "traced": 40,
     "untracedImplemented": 155,
     "defects": 5,
     "decisionsPending": 9,
@@ -180,6 +180,162 @@
       "tested": [
         "backend/test/d04/notifications.spec.ts"
       ]
+    },
+    "FR-RBK-001-001": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-001-002": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-001-004": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-001-005": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-001-006": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-001-007": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-001-008": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-002-001": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-002-002": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-002-003": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-002-004": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-002-005": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-003-001": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-003-002": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-003-003": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-004-001": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-004-002": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-004-004": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-004-005": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-004-006": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-004-007": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-004-008": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-005-001": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-005-002": {
+      "implemented": [
+        "contracts/src/rules/rollback.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-005-003": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": []
+    },
+    "FR-RBK-005-004": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": []
     },
     "FR-EVT-003-003": {
       "implemented": [

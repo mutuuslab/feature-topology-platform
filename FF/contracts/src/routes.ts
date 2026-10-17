@@ -18,6 +18,7 @@ import {
   ValidateCompositionBody,
 } from './schemas/api';
 import { RestorePolicyRevisionBody } from './rules/policy-version';
+import { CreateRollbackPlanBody, CreateRollbackRequestBody, ROLLBACK_APPROVER_ROLES, ROLLBACK_REQUEST_ROLES, RollbackDecisionBody, RollbackPreviewBody } from './rules/rollback';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody } from './schemas/ops';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
@@ -194,6 +195,20 @@ export const ROUTES: RouteDef[] = [
   { name: 'requestRestore', method: 'POST', path: '/api/kill-requests/:id/restore', summary: '복원 요청 — 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillRejectBody },
   { name: 'approveRestore', method: 'POST', path: '/api/kill-requests/:id/restore/approvals', summary: '복원 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 복구 게시', component: 'D03-04', roles: KILL_APPROVER_ROLES, body: KillApproveBody },
   { name: 'rejectRestore', method: 'POST', path: '/api/kill-requests/:id/restore/reject', summary: '복원 요청 거절', component: 'D03-04', roles: KILL_APPROVER_ROLES, body: KillRejectBody },
+  { name: 'rollbackDeployments', method: 'GET', path: '/api/rollbacks/deployments', summary: '롤백 대상 배포 — flag별 지금 배포와 복구 가능한 정책 버전', component: 'D03-04' },
+  { name: 'rollbackDeployment', method: 'GET', path: '/api/rollbacks/deployments/:deploymentId', summary: '배포 기준 롤백 정보 — 변경·버전·배포 이력, 복구 가능 버전', component: 'D03-04' },
+  { name: 'previewRollback', method: 'POST', path: '/api/rollbacks/preview', summary: '롤백 미리보기 — 영향 Feature·차량 그룹·적용 범위·적용 가능 여부(기록 없음)', component: 'D03-04', roles: HUMAN_ROLES, body: RollbackPreviewBody },
+  { name: 'rollbacks', method: 'GET', path: '/api/rollbacks', summary: '롤백 이력 — 배포·Feature·Plan·요청·유형·차량·상태·결과·기간', component: 'D03-04', query: ['deploymentId', 'featureId', 'planId', 'requestId', 'targetType', 'vin', 'status', 'result', 'from', 'to'] },
+  { name: 'rollbackExecution', method: 'GET', path: '/api/rollbacks/:id', summary: '롤백 실행 기록', component: 'D03-04' },
+  { name: 'rollbackPlans', method: 'GET', path: '/api/rollback-plans', summary: 'Rollback Plan 목록', component: 'D03-04', query: ['deploymentId', 'status'] },
+  { name: 'createRollbackPlan', method: 'POST', path: '/api/rollback-plans', summary: 'Rollback Plan 생성 — 자동 롤백 조건·복구 기준 버전·범위·승인대상자', component: 'D03-04', roles: ROLLBACK_REQUEST_ROLES, body: CreateRollbackPlanBody },
+  { name: 'rollbackPlan', method: 'GET', path: '/api/rollback-plans/:id', summary: 'Rollback Plan 상세', component: 'D03-04' },
+  { name: 'decideRollbackPlan', method: 'POST', path: '/api/rollback-plans/:id/decision', summary: 'Rollback Plan 승인·반려 — 지정 승인대상자(요청자 아님)', component: 'D03-04', roles: ROLLBACK_APPROVER_ROLES, body: RollbackDecisionBody },
+  { name: 'rollbackRequests', method: 'GET', path: '/api/rollback-requests', summary: '수동 롤백 요청 목록', component: 'D03-04', query: ['deploymentId', 'status'] },
+  { name: 'createRollbackRequest', method: 'POST', path: '/api/rollback-requests', summary: '수동 롤백 요청 — 복구 기준 버전·사유·승인대상자', component: 'D03-04', roles: ROLLBACK_REQUEST_ROLES, body: CreateRollbackRequestBody },
+  { name: 'rollbackRequest', method: 'GET', path: '/api/rollback-requests/:id', summary: '수동 롤백 요청 상세', component: 'D03-04' },
+  { name: 'decideRollbackRequest', method: 'POST', path: '/api/rollback-requests/:id/decision', summary: '수동 롤백 승인·반려 — 지정 승인대상자(요청자 아님)', component: 'D03-04', roles: ROLLBACK_APPROVER_ROLES, body: RollbackDecisionBody },
+  { name: 'executeRollbackRequest', method: 'POST', path: '/api/rollback-requests/:id/execute', summary: '승인된 수동 롤백 실행 — 재검증 후 복구 기준 버전 재게시', component: 'D03-04', roles: ROLLBACK_REQUEST_ROLES, body: EmptyBody },
   { name: 'releaseKill', method: 'POST', path: '/api/kill-requests/:id/release', summary: '레거시(v1) 차단 해제 — v2 차단은 복원 요청·승인으로', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: z.object({ reason: z.string().trim().min(2).max(500) }).strict() },
   // 가상검증 (IF-09 가상검증 공급자: CARLA 실행기) — 차량 시나리오(D06-03)·안전 동작(D06-06) 근거, G5 Evidence는 TMS 제출(D04-02)
   { name: 'simStatus', method: 'GET', path: '/api/sim/status', summary: 'CARLA 가상검증 실행기 연결 상태', component: 'D06-03' },

@@ -72,7 +72,24 @@
     - 복원 규칙: 새 개정본이 DRAFT로 생기므로 재검증·재승인이 필요하다. 지금 내용과 같으면 409.
     - 승인·배포된 정책은 복원할 수 없다(IMMUTABLE). 배포본 되돌리기는 롤백 단계의 몫.
     - 화면: 정책 상세 "버전 이력"(목록·버전 내용과 차이·변경 이력·복원).
-  - [ ] **롤백** (FR-RBK-*, 롤백 알림 포함)
+  - [x] **롤백 (D03-04)**: 구현 169 → 194, 미구현 199 → 172. FR-RBK 28건 중 25건 구현, 3건 부분(SW 버전 — D7).
+    - 개념
+      - 배포 ID = 정책 배포가 만든 POLICY 게시본.
+      - 복구 기준 버전 = 같은 flag로 예전에 배포했던 정책.
+      - 복구 가능 조건: 배포 산출물 CONFIRMED·PARTIAL, 같은 해시의 검증 GO, 운영 승인, 서명 검증.
+    - 실행 규칙
+      - 실행은 늘 재검증부터 한다(배포가 지금 효력인지, 긴급 차단 없음, 범위). 실패하면 아무것도 바꾸지 않고 FAILED로 남긴다.
+      - 지금 정책은 RETIRED, 복구 기준 정책은 DEPLOYED로 바꾸고 같은 내용을 새 순번으로 재서명해 게시한다.
+      - 롤백 게시본이 CONFIRMED면 완료·성공, 그 밖은 실패(사유·시점).
+    - 수동 롤백: 요청 → 지정 승인대상자 승인(요청자 아님) → 실행. 승인 전 실행은 422.
+    - Rollback Plan: 승인해 두면 자동 롤백한다. 조건은 계획이 묶인 배포 게시본의 실패율 > 기준, 또는 범위 안 차량 status 보고의 DTC 일치(`vehicle.status.accepted`에 dtc 추가).
+    - **결정 없이 정한 설계 2가지(사용자 확인 필요)**
+      - ① 정책 롤백은 flag 단위 — 적용 범위가 배포 대상 차량 전부를 덮어야 한다. 일부 차량만 되돌리면 서버·차량 기준이 갈라지기 때문이다.
+      - ② 자동 롤백은 사람이 미리 승인한 계획에서만 실행한다(D1 "자동 제어"와 인접). 실행 직전 재검증은 fail-closed.
+    - SW 버전 대상은 받되 OTA(IF-05) 위임 사유로 거부한다(D7 대기).
+    - API: `/api/rollbacks/deployments[/:id]`, `POST /api/rollbacks/preview`, `/api/rollbacks[/:id]`, `/api/rollback-plans`(+decision), `/api/rollback-requests`(+decision·execute). migration 040.
+    - 알림 4종: Plan·수동 승인 요청, 완료, 실패.
+    - 화면 `/ops/rollback`: 배포 → 복구 가능 버전·이력 → 미리보기·요청 → 승인·실행 → 이력.
 
 ## 다음 세션 시작점
 - **국제표준 보고서 v1.1 실제 개발 WP10 완료 — 플랫폼 규칙 75개 모두 구현·시험 추적 완료 — 다음은 WP6 /verify/compliance 교체·WP2 은퇴 6단계부터 — WP6 화면·WP2 은퇴 6단계 반영 완료(은퇴·Data Act·사후 검토·변경 기록 화면은 아직 API만)**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1·WP0·WP1·WP3·WP4·WP5·WP9 완료. 규칙 추적 75/75. **사용자 결정 대기: 데모 계정 겸직 3건(approver 요구 승인+출시, steward 요구 승인+복원 승인, coordinator 출시+Kill 실행) — FFG-PLT-016 합격(겸직 0건)에는 계정 재구성 필요, PoC·e2e 흐름 영향**. 화면 확인: `/learn`, `/_design`, `/features?f=F3`, `/features/FEAT-00022/1.0.0?tab=safety`(UX 검토 사진 `node e2e/scripts/shot-safety.mjs` → `e2e/shots/safety-*`).

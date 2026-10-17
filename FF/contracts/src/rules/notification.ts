@@ -85,7 +85,7 @@ const roles = (rs: readonly Role[]): Recipient[] => rs.map((role) => ({ kind: 'r
 
 /**
  * 이벤트 종류 → 알림 규칙. 없는 이벤트는 알림을 만들지 않는다(이벤트 이력에만 남는다).
- * @req FR-REG-005-014, FR-CRC-002-009, FR-DSV-001-011, FR-KSW-003-003, FR-KSW-004-005, FR-EVT-003-003, FR-DSYN-001-004
+ * @req FR-REG-005-014, FR-CRC-002-009, FR-DSV-001-011, FR-KSW-003-003, FR-KSW-004-005, FR-EVT-003-003, FR-DSYN-001-004, FR-RBK-001-007, FR-RBK-004-005, FR-RBK-005-003, FR-RBK-005-004
  */
 export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
   'gate.judged': {
@@ -244,6 +244,11 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
       };
     },
   },
+  // 롤백(D03-04) — 승인 요청은 지정 승인대상자에게(요청자 제외), 결과는 요청자·승인자·배포 요청자·Feature Owner에게
+  'rollback.plan.requested': { needs: ['feature'], build: (ctx) => rollbackApproval(ctx, 'plan') },
+  'rollback.requested': { needs: ['feature'], build: (ctx) => rollbackApproval(ctx, 'manual') },
+  'rollback.completed': { needs: ['feature'], build: (ctx) => rollbackResult(ctx, true) },
+  'rollback.failed': { needs: ['feature'], build: (ctx) => rollbackResult(ctx, false) },
   'anomaly.opened': { needs: ['feature'], build: (ctx) => anomaly(ctx, '발생') },
   'anomaly.escalated': { needs: ['feature'], build: (ctx) => anomaly(ctx, '격상') },
   'sync.completed': {
@@ -268,6 +273,64 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
     },
   },
 };
+
+/** 롤백 승인 요청 — 이벤트가 알림에 필요한 값을 모두 싣는다(Plan·수동 요청 기록을 다시 읽지 않는다) */
+function rollbackApproval(ctx: NotificationContext, kind: 'plan' | 'manual'): NotificationDraft {
+  const p = ctx.event.payload;
+  const plan = kind === 'plan';
+  return {
+    category: 'APPROVAL',
+    severity: 'WARNING',
+    title: `${plan ? 'Rollback Plan' : '수동 롤백'} 승인 요청 — ${featureLabel(ctx, String(p.featureId))}`,
+    fields: [
+      { label: plan ? 'Rollback Plan ID' : '수동 롤백 요청 ID', value: String(plan ? p.planId : p.requestId) },
+      { label: '배포 ID', value: String(p.deploymentId) },
+      { label: 'Feature', value: featureLabel(ctx, String(p.featureId)) },
+      { label: '배포 버전', value: String(p.deployedVersion) },
+      { label: '롤백 대상 유형', value: String(p.targetTypes) },
+      ...(plan ? [{ label: '롤백 조건', value: String(p.conditions) }] : []),
+      { label: '복구 기준 버전', value: String(p.recoveryVersion) },
+      { label: '적용 대상 범위', value: String(p.scope) },
+      ...(plan ? [] : [{ label: '복구 사유', value: String(p.reason) }]),
+      { label: '요청자', value: String(p.requestedBy) },
+      { label: '요청 일시', value: String(p.requestedAt) },
+    ],
+    link: `/ops/rollback?${plan ? 'plan' : 'request'}=${plan ? p.planId : p.requestId}`,
+    recipients: (p.approvers as string[]).map((id) => ({ kind: 'user', id }) as Recipient),
+    exclude: [String(p.requestedBy)],
+    requirementIds: [plan ? 'FR-RBK-001-007' : 'FR-RBK-004-005'],
+  };
+}
+
+/** 롤백 완료·실패 — 관련 담당자: 요청자·승인자·배포 요청자·Feature Owner */
+function rollbackResult(ctx: NotificationContext, ok: boolean): NotificationDraft {
+  const p = ctx.event.payload;
+  const people = [p.requestedBy, p.approvedBy, p.deploymentRequestedBy].filter((x): x is string => !!x && x !== 'system');
+  return {
+    category: 'DEPLOY',
+    severity: ok ? 'INFO' : 'CRITICAL',
+    title: `롤백 ${ok ? '완료' : '실패'} — ${featureLabel(ctx, String(p.featureId))} → ${p.recoveryVersion}`,
+    fields: [
+      { label: '배포 ID', value: String(p.deploymentId) },
+      { label: 'Feature', value: featureLabel(ctx, String(p.featureId)) },
+      { label: '롤백 대상 유형', value: String(p.targetTypes) },
+      { label: '복구 기준 버전', value: String(p.recoveryVersion) },
+      ...(ok
+        ? [
+            { label: '롤백 후 상태', value: String(p.afterState) },
+            { label: '롤백 결과', value: '성공' },
+          ]
+        : [
+            { label: '실패 사유', value: String(p.failureReason) },
+            { label: '실패 발생 시점', value: String(p.failedAt) },
+          ]),
+    ],
+    link: `/ops/rollback?execution=${p.executionId}`,
+    recipients: [...new Set(people)].map((id) => ({ kind: 'user', id }) as Recipient).concat(owner(ctx), roles(['RELEASE_MANAGER'])),
+    exclude: [],
+    requirementIds: [ok ? 'FR-RBK-005-003' : 'FR-RBK-005-004'],
+  };
+}
 
 function anomaly(ctx: NotificationContext, what: string): NotificationDraft {
   const p = ctx.event.payload;

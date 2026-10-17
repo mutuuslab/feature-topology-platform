@@ -1880,3 +1880,35 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   cursor: pointer;
   margin-top: var(--sp-3);
 }
+
+/* 롤백(D03-04) — 요청 양식 묶음, 미리보기, 요청·계획 항목 */
+.rb-fieldset {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.rb-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.rb-preview {
+  display: grid;
+  gap: var(--sp-2);
+}
+.rb-item {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.rb-decide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-2);
+}

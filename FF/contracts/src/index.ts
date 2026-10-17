@@ -61,3 +61,4 @@ export * from './schemas/sim';
 export * from './rules/ext';
 export * from './rules/notification';
 export * from './rules/policy-version';
+export * from './rules/rollback';

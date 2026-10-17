@@ -461,4 +461,18 @@ CREATE TRIGGER policy_revision_no_update BEFORE UPDATE ON policy_revision BEGIN 
 CREATE TRIGGER policy_revision_no_delete BEFORE DELETE ON policy_revision BEGIN SELECT RAISE(ABORT, 'policy_revision은 추가만 가능'); END;
 `,
   },
+  {
+    // 롤백(D03-04) — Rollback Plan·수동 롤백 요청·롤백 실행. 상태가 바뀌는 기록이라 갱신은 되지만 지울 수 없다(변경은 감사에 남는다)
+    name: '040_rollback',
+    sql: `
+CREATE TABLE rollback_plan (plan_id TEXT PRIMARY KEY, deployment_id TEXT NOT NULL, feature_id TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX rollback_plan_deployment ON rollback_plan (deployment_id, status);
+CREATE TABLE rollback_request (request_id TEXT PRIMARY KEY, deployment_id TEXT NOT NULL, feature_id TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE rollback_execution (execution_id TEXT PRIMARY KEY, deployment_id TEXT NOT NULL, feature_id TEXT NOT NULL, plan_id TEXT, request_id TEXT, status TEXT NOT NULL, result TEXT, artifact_id TEXT, started_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX rollback_execution_artifact ON rollback_execution (artifact_id);
+CREATE TRIGGER rollback_plan_no_delete BEFORE DELETE ON rollback_plan BEGIN SELECT RAISE(ABORT, 'rollback_plan은 지울 수 없다'); END;
+CREATE TRIGGER rollback_request_no_delete BEFORE DELETE ON rollback_request BEGIN SELECT RAISE(ABORT, 'rollback_request는 지울 수 없다'); END;
+CREATE TRIGGER rollback_execution_no_delete BEFORE DELETE ON rollback_execution BEGIN SELECT RAISE(ABORT, 'rollback_execution은 지울 수 없다'); END;
+`,
+  },
 ];

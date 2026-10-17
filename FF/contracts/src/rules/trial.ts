@@ -25,7 +25,15 @@ export interface VehicleProfile {
   drivingStyle: '도심' | '고속도로' | '장거리' | '혼합';
   adasUsage: '낮음' | '보통' | '높음';
   source: 'DEMO' | 'SYNTHETIC';
+  /** 가중 표본(5년 운영 모집단, population.ts) — 이 행 하나가 대표하는 실제 차량 수. 없으면 1 */
+  weight?: number;
+  /** 판매월(YYYY-MM) — 표본 차량만 */
+  soldMonth?: string;
+  /** 말소일(폐차·수출) — 이 날 이후 집계에서 빠진다. 표본 차량만 */
+  retiredAt?: string | null;
 }
+/** 집계 가중치 — 표본 행은 대표 차량 수, 그 밖은 1 */
+export const weightOf = (p: Pick<VehicleProfile, 'weight'> | undefined) => (p?.weight && p.weight > 0 ? p.weight : 1);
 
 export const addDays = (ymd: string, n: number) => new Date(Date.parse(`${ymd}T00:00:00Z`) + n * 86400_000).toISOString().slice(0, 10);
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400_000);
@@ -71,6 +79,8 @@ export interface FunnelGroup {
   overallRate: number | null;
   medianDaysToConvert: number | null;
   suppressed: boolean;
+  /** 가중 전 표본 행 수(제안) — 가림 판단은 이 값으로 한다(가중 대수가 커도 실제 차량이 적으면 재식별 위험) */
+  sample: number;
 }
 
 const rate = (a: number, b: number) => (b ? Math.round((a / b) * 1000) / 1000 : null);
@@ -80,22 +90,25 @@ const median = (xs: number[]) => {
   return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
 };
 
-function tally(key: string, rows: { grant: Entitlement }[], today: string): FunnelGroup {
-  const g: FunnelGroup = { key, offered: 0, accepted: 0, active: 0, converted: 0, declined: 0, expired: 0, pending: 0, acceptRate: null, conversionRate: null, overallRate: null, medianDaysToConvert: null, suppressed: false };
+function tally(key: string, rows: { grant: Entitlement; profile?: VehicleProfile }[], today: string): FunnelGroup {
+  const g: FunnelGroup = { key, offered: 0, accepted: 0, active: 0, converted: 0, declined: 0, expired: 0, pending: 0, acceptRate: null, conversionRate: null, overallRate: null, medianDaysToConvert: null, suppressed: false, sample: 0 };
   const toConvert: number[] = [];
-  for (const { grant } of rows) {
+  for (const { grant, profile } of rows) {
+    const w = weightOf(profile);
     const s = grantState(grant, today).state;
-    g.offered++;
-    if (grant.acceptedAt) g.accepted++;
-    if (s === 'ACTIVE') g.active++;
+    g.sample++;
+    g.offered += w;
+    if (grant.acceptedAt) g.accepted += w;
+    if (s === 'ACTIVE') g.active += w;
     if (s === 'CONVERTED') {
-      g.converted++;
+      g.converted += w;
       if (grant.acceptedAt && grant.convertedAt) toConvert.push(daysBetween(grant.acceptedAt, grant.convertedAt));
     }
-    if (s === 'DECLINED') g.declined++;
-    if (s === 'EXPIRED') g.expired++;
-    if (s === 'OFFERED') g.pending++;
+    if (s === 'DECLINED') g.declined += w;
+    if (s === 'EXPIRED') g.expired += w;
+    if (s === 'OFFERED') g.pending += w;
   }
+  for (const k of ['offered', 'accepted', 'active', 'converted', 'declined', 'expired', 'pending'] as const) g[k] = Math.round(g[k]);
   g.acceptRate = rate(g.accepted, g.offered);
   g.conversionRate = rate(g.converted, g.accepted);
   g.overallRate = rate(g.converted, g.offered);
@@ -111,17 +124,19 @@ export function trialFunnel(rows: { grant: Entitlement; profile: VehicleProfile 
   const by = new Map<string, typeof trials>();
   for (const r of trials) {
     const key = r.profile?.[groupBy] ?? '미상';
-    by.set(key, [...(by.get(key) ?? []), r]);
+    const list = by.get(key);
+    if (list) list.push(r);
+    else by.set(key, [r]);
   }
   const groups = [...by.entries()]
     .map(([key, rs]) => tally(key, rs, today))
-    .map((g) => (g.offered < k ? { ...g, accepted: 0, active: 0, converted: 0, declined: 0, expired: 0, pending: 0, acceptRate: null, conversionRate: null, overallRate: null, medianDaysToConvert: null, suppressed: true } : g))
+    .map((g) => (g.sample < k ? { ...g, accepted: 0, active: 0, converted: 0, declined: 0, expired: 0, pending: 0, acceptRate: null, conversionRate: null, overallRate: null, medianDaysToConvert: null, suppressed: true } : g))
     .sort((a, b) => b.offered - a.offered);
   return { total, groups };
 }
 
-/** 주별 추이 — 제안·수락·구매 (주 시작일 월요일) */
-export function trialTrend(grants: Entitlement[], today: string, weeks = 12) {
+/** 주별 추이 — 제안·수락·구매 (주 시작일 월요일). 가중 표본이면 weight(vin)로 대표 대수를 센다 */
+export function trialTrend(grants: Entitlement[], today: string, weeks = 12, weight: (vin: string) => number = () => 1) {
   const monday = (ymd: string) => {
     const d = new Date(`${ymd}T00:00:00Z`);
     return addDays(ymd, -((d.getUTCDay() + 6) % 7));
@@ -129,16 +144,19 @@ export function trialTrend(grants: Entitlement[], today: string, weeks = 12) {
   const last = monday(today);
   const keys = Array.from({ length: weeks }, (_, i) => addDays(last, -7 * (weeks - 1 - i)));
   const out = keys.map((week) => ({ week, offered: 0, accepted: 0, converted: 0 }));
-  const at = (ymd: string | null | undefined) => (ymd ? out.find((w) => w.week === monday(ymd)) : undefined);
-  for (const g of grants.filter((x) => x.kind === '체험')) {
+  const byWeek = new Map(out.map((w) => [w.week, w]));
+  const at = (ymd: string | null | undefined) => (ymd ? byWeek.get(monday(ymd)) : undefined);
+  for (const g of grants) {
+    if (g.kind !== '체험') continue;
+    const w = weight(g.vin);
     const o = at(g.offeredAt);
-    if (o) o.offered++;
+    if (o) o.offered += w;
     const a = at(g.acceptedAt);
-    if (a) a.accepted++;
+    if (a) a.accepted += w;
     const c = at(g.convertedAt);
-    if (c) c.converted++;
+    if (c) c.converted += w;
   }
-  return out;
+  return out.map((w) => ({ week: w.week, offered: Math.round(w.offered), accepted: Math.round(w.accepted), converted: Math.round(w.converted) }));
 }
 
 // ---------------- 합성 모집단 (결정적) ----------------
@@ -159,6 +177,28 @@ function pick<T>(r: () => number, items: [T, number][]): T {
   let x = r() * total;
   for (const [v, w] of items) if ((x -= w) < 0) return v;
   return items.at(-1)![0];
+}
+
+/** 차량 가명 성향 — 지역·트림·연령대·주행 성향·ADAS 사용(난수 소비 순서 고정: 합성 모집단이 바뀌지 않는다) */
+export function profileTraits(r: () => number, country: string, vehicleModel: string): Pick<VehicleProfile, 'region' | 'trim' | 'ageBand' | 'drivingStyle' | 'adasUsage'> {
+  return {
+    region: pick(r, REGIONS[country]),
+    trim: pick(r, TRIMS[vehicleModel]),
+    ageBand: pick(r, [['20대', 15], ['30대', 25], ['40대', 28], ['50대', 20], ['60대+', 12]]),
+    drivingStyle: pick(r, [['도심', 35], ['고속도로', 30], ['장거리', 20], ['혼합', 15]]),
+    adasUsage: pick(r, [['낮음', 30], ['보통', 45], ['높음', 25]]),
+  };
+}
+
+/** 성향별 체험 수락·구매 확률 — 고속도로·장거리, ADAS 사용이 높을수록 전방 안전거리 기능을 더 받아들인다 */
+export function trialPropensity(p: Pick<VehicleProfile, 'country' | 'ageBand' | 'drivingStyle' | 'adasUsage'>) {
+  const style = { 도심: -0.08, 고속도로: 0.15, 장거리: 0.12, 혼합: 0 }[p.drivingStyle];
+  const adas = { 낮음: -0.12, 보통: 0, 높음: 0.15 }[p.adasUsage];
+  const age = { '20대': 0.05, '30대': 0.02, '40대': 0, '50대': -0.03, '60대+': -0.1 }[p.ageBand];
+  const ctry = { KR: 0.03, US: 0, EU: -0.05 }[p.country as 'KR' | 'US' | 'EU'] ?? 0;
+  const pAccept = Math.min(0.9, Math.max(0.05, 0.35 + style + adas + age + ctry));
+  const pConvert = Math.min(0.8, Math.max(0.03, 0.22 + (p.adasUsage === '높음' ? 0.12 : 0) + (p.drivingStyle === '장거리' ? 0.08 : 0) + (p.ageBand === '40대' || p.ageBand === '50대' ? 0.05 : 0) + (p.ageBand === '20대' ? -0.06 : 0) + (p.country === 'US' ? 0.04 : 0)));
+  return { pAccept, pConvert };
 }
 
 /** 목록 필터 선택지 — 가명 구간값 */
@@ -191,24 +231,9 @@ export function syntheticTrials(n: number, anchor: string, seed = 20261013, cata
   for (let i = 1; i <= n; i++) {
     const country = pick(r, [['KR', 50], ['US', 30], ['EU', 20]]);
     const vehicleModel = pick(r, MODELS);
-    const p: VehicleProfile = {
-      vin: `SYN-${country}-${String(i).padStart(5, '0')}`,
-      country,
-      region: pick(r, REGIONS[country]),
-      vehicleModel,
-      trim: pick(r, TRIMS[vehicleModel]),
-      ageBand: pick(r, [['20대', 15], ['30대', 25], ['40대', 28], ['50대', 20], ['60대+', 12]]),
-      drivingStyle: pick(r, [['도심', 35], ['고속도로', 30], ['장거리', 20], ['혼합', 15]]),
-      adasUsage: pick(r, [['낮음', 30], ['보통', 45], ['높음', 25]]),
-      source: 'SYNTHETIC',
-    };
+    const p: VehicleProfile = { vin: `SYN-${country}-${String(i).padStart(5, '0')}`, country, vehicleModel, ...profileTraits(r, country, vehicleModel), source: 'SYNTHETIC' };
     profiles.push(p);
-    const style = { 도심: -0.08, 고속도로: 0.15, 장거리: 0.12, 혼합: 0 }[p.drivingStyle];
-    const adas = { 낮음: -0.12, 보통: 0, 높음: 0.15 }[p.adasUsage];
-    const age = { '20대': 0.05, '30대': 0.02, '40대': 0, '50대': -0.03, '60대+': -0.1 }[p.ageBand];
-    const ctry = { KR: 0.03, US: 0, EU: -0.05 }[country as 'KR' | 'US' | 'EU'];
-    const pAccept = Math.min(0.9, Math.max(0.05, 0.35 + style + adas + age + ctry));
-    const pConvert = Math.min(0.8, Math.max(0.03, 0.22 + (p.adasUsage === '높음' ? 0.12 : 0) + (p.drivingStyle === '장거리' ? 0.08 : 0) + (p.ageBand === '40대' || p.ageBand === '50대' ? 0.05 : 0) + (p.ageBand === '20대' ? -0.06 : 0) + (country === 'US' ? 0.04 : 0)));
+    const { pAccept, pConvert } = trialPropensity(p);
     const offeredAt = addDays(anchor, -Math.floor(r() * 180));
     const base = { grantId: `ENT-S${String(i).padStart(5, '0')}`, vin: p.vin, catalogId, kind: '체험' as const, usesLeft: null, offeredAt, source: 'SYNTHETIC' as const };
     if (r() < pAccept) {
@@ -265,3 +290,6 @@ export function trialListQuery(f: TrialListFilter): Record<string, string | numb
 export function trialAnalyticsQuery(f: { catalogId: string; source: TrialSource; groupBy?: SegmentDimension | '' }): Record<string, string | undefined> {
   return { catalogId: f.catalogId, source: f.source, groupBy: f.groupBy || undefined };
 }
+
+/** 모집단 표본(population.ts)이 같은 성향 분포를 쓰도록 내보낸다 */
+export { prng as trialPrng, pick as weightedPick, REGIONS as TRIAL_REGIONS, TRIMS as TRIAL_TRIMS };

@@ -169,7 +169,34 @@ export class PolicyRepo {
 
 @Injectable()
 export class FleetRepo {
+  /** 권한·성향 쓰기마다 오른다 — 대규모 표본 집계 캐시의 무효화 기준 */
+  private rev = 0;
+  private synCache: { rev: number; grants: Entitlement[]; byVin: Map<string, Entitlement[]> } | null = null;
+  private profCache: { rev: number; profiles: Map<string, VehicleProfile> } | null = null;
   constructor(@Inject(DB) private readonly db: Db) {}
+  get revision() {
+    return this.rev;
+  }
+  /** 합성·표본 권한 전부와 VIN별 묶음 — 같은 revision이면 다시 읽지 않는다(5년 운영 표본 수십만 건) */
+  syntheticGrants(): { grants: Entitlement[]; byVin: Map<string, Entitlement[]> } {
+    if (this.synCache?.rev === this.rev) return this.synCache;
+    const grants = this.grants(undefined, 'SYNTHETIC');
+    const byVin = new Map<string, Entitlement[]>();
+    for (const g of grants) {
+      const xs = byVin.get(g.vin);
+      if (xs) xs.push(g);
+      else byVin.set(g.vin, [g]);
+    }
+    this.synCache = { rev: this.rev, grants, byVin };
+    return this.synCache;
+  }
+  insertProfile(p: VehicleProfile) {
+    this.rev++;
+    this.db.run('INSERT INTO vehicle_profile (vin, source, doc) VALUES (?, ?, ?)', p.vin, p.source, JSON.stringify(p));
+  }
+  insertVehicle(v: Vehicle) {
+    this.db.run('INSERT INTO vehicle (vin, doc) VALUES (?, ?)', v.vin, JSON.stringify(v));
+  }
   vehicles(): Vehicle[] {
     return parse<Vehicle>(this.db.all('SELECT doc FROM vehicle ORDER BY vin'));
   }
@@ -191,15 +218,20 @@ export class FleetRepo {
       : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE catalog_id = ? AND source = ? ORDER BY grant_id', catalogId, source));
   }
   insertGrant(e: Entitlement) {
+    this.rev++;
     this.db.run('INSERT INTO entitlement (grant_id, vin, catalog_id, status, source, doc) VALUES (?, ?, ?, ?, ?, ?)', e.grantId, e.vin, e.catalogId, e.status, e.source, JSON.stringify(e));
   }
   /** 데모 권한 다음 번호 — 합성(ENT-S…)과 섞이지 않는다 */
   nextGrantId(): string {
-    const r = this.db.get<{ m: string | null }>("SELECT max(grant_id) AS m FROM entitlement WHERE grant_id NOT LIKE 'ENT-S%'");
-    return `ENT-${pad(r?.m ? Number(r.m.slice(4)) + 1 : 1, 5)}`;
+    // 문자열 max는 ENT-99999 > ENT-100000으로 잘못 고른다 — 숫자로 비교한다
+    const r = this.db.get<{ m: number | null }>("SELECT max(CAST(substr(grant_id, 5) AS INTEGER)) AS m FROM entitlement WHERE grant_id NOT LIKE 'ENT-S%'");
+    return `ENT-${pad((r?.m ?? 0) + 1, 5)}`;
   }
   profiles(): Map<string, VehicleProfile> {
-    return new Map(parse<VehicleProfile>(this.db.all('SELECT doc FROM vehicle_profile')).map((p) => [p.vin, p]));
+    if (this.profCache?.rev === this.rev) return this.profCache.profiles;
+    const profiles = new Map(parse<VehicleProfile>(this.db.all('SELECT doc FROM vehicle_profile')).map((p) => [p.vin, p]));
+    this.profCache = { rev: this.rev, profiles };
+    return profiles;
   }
   profile(vin: string): VehicleProfile | undefined {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM vehicle_profile WHERE vin = ?', vin);
@@ -210,6 +242,7 @@ export class FleetRepo {
     return r ? JSON.parse(r.doc) : undefined;
   }
   updateGrant(e: Entitlement) {
+    this.rev++;
     this.db.run('UPDATE entitlement SET status = ?, doc = ? WHERE grant_id = ?', e.status, JSON.stringify(e), e.grantId);
   }
 }

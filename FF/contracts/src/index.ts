@@ -63,3 +63,4 @@ export * from './rules/notification';
 export * from './rules/policy-version';
 export * from './rules/rollback';
 export * from './rules/fleet-map';
+export * from './rules/population';

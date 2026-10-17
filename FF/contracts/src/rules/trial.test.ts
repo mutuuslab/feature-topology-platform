@@ -74,3 +74,43 @@ describe('만료 sweep 계획 (FFG-LCY-010 사전 고지)', () => {
     expect(noticeOf(A())).toEqual({ noticeId: null, noticeAt: null });
   });
 });
+
+describe('체험 전환 분석 — 5년 운영 가중 표본', () => {
+  const today = '2026-10-17';
+  const grant = (i: number, accepted: boolean): Entitlement =>
+    EntitlementSchema.parse({ grantId: `ENT-S${String(i).padStart(5, '0')}`, vin: `V${i}`, catalogId: 'CAT-00019', kind: '체험', status: accepted ? 'CONVERTED' : 'DECLINED', validFrom: '2026-09-01', validTo: '2026-09-30', offeredAt: '2026-09-01', acceptedAt: accepted ? '2026-09-02' : null, trialDays: accepted ? 30 : null, convertedAt: accepted ? '2026-09-20' : null, convertedPlan: accepted ? '구독' : null, source: 'SYNTHETIC' });
+  const profile = (i: number, country: string, weight: number): VehicleProfile => ({ vin: `V${i}`, country, region: '수도권', vehicleModel: 'NX4 PE', trim: 'Premium', ageBand: '40대', drivingStyle: '도심', adasUsage: '보통', source: 'SYNTHETIC', weight });
+
+  it('대수는 가중 합계, 비율은 가중 비율', () => {
+    const rows = [
+      { grant: grant(1, true), profile: profile(1, 'KR', 300) },
+      { grant: grant(2, false), profile: profile(2, 'KR', 100) },
+    ];
+    const { total } = trialFunnel(rows, null, today);
+    expect(total.offered).toBe(400);
+    expect(total.converted).toBe(300);
+    expect(total.overallRate).toBe(0.75);
+    expect(total.sample).toBe(2);
+  });
+
+  it('가림은 가중 대수가 아니라 표본 행 수로 판단한다 — 큰 가중치 4대 집단도 가린다', () => {
+    const rows = [1, 2, 3, 4].map((i) => ({ grant: grant(i, true), profile: profile(i, 'EU', 1000) }));
+    const { groups } = trialFunnel(rows, 'country', today);
+    expect(groups[0].suppressed).toBe(true);
+    expect(groups[0].converted).toBe(0);
+  });
+
+  it('추이는 weight(vin)로 센다', () => {
+    const t = trialTrend([grant(1, true)], today, 8, () => 250);
+    expect(t.reduce((s, w) => s + w.offered, 0)).toBe(250);
+    expect(t.reduce((s, w) => s + w.converted, 0)).toBe(250);
+  });
+
+  it('회귀: 20만 건 깔때기·추이가 선형 시간 — 이전 구현은 그룹마다 배열을 복사해 O(n²)였다', () => {
+    const rows = Array.from({ length: 200_000 }, (_, i) => ({ grant: grant(i, i % 3 === 0), profile: profile(i, ['KR', 'US', 'EU'][i % 3], 50) }));
+    const t0 = performance.now();
+    trialFunnel(rows, 'country', today);
+    trialTrend(rows.map((r) => r.grant), today, 260, () => 50);
+    expect(performance.now() - t0).toBeLessThan(3000);
+  });
+});

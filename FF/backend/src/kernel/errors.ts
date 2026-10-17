@@ -47,6 +47,10 @@ export interface ErrorEnvelope {
   error: { code: ErrorCode; message: string; details?: unknown };
 }
 
+/** body-parser 오류 — expose가 켜진 4xx */
+const isClientBodyError = (e: unknown): e is { status: number; type?: string } =>
+  !!e && typeof e === 'object' && (e as { expose?: unknown }).expose === true && typeof (e as { status?: unknown }).status === 'number' && (e as { status: number }).status >= 400 && (e as { status: number }).status < 500;
+
 @Catch()
 export class DomainErrorFilter implements ExceptionFilter {
   catch(err: unknown, host: ArgumentsHost) {
@@ -60,6 +64,10 @@ export class DomainErrorFilter implements ExceptionFilter {
       status = err.getStatus();
       const code: ErrorCode = status === 404 ? 'NOT_FOUND' : status === 403 ? 'FORBIDDEN' : status === 401 ? 'UNAUTHENTICATED' : status < 500 ? 'VALIDATION' : 'INTERNAL';
       body = { error: { code, message: status === 404 ? '요청한 경로를 찾을 수 없습니다.' : err.message } };
+    } else if (isClientBodyError(err)) {
+      // 요청 본문 읽기 실패(본문 너무 큼 413, JSON 깨짐 400) — 서버 오류(500)가 아니라 요청 쪽 문제로 돌려준다
+      status = err.status;
+      body = { error: { code: 'VALIDATION', message: err.type === 'entity.too.large' ? '요청 본문이 너무 큽니다. 나눠서 보내세요.' : '요청 본문을 읽을 수 없습니다(JSON 형식 확인).' } };
     } else {
       // eslint-disable-next-line no-console
       console.error(err);

@@ -15,7 +15,8 @@ export class VehicleRequestRepo {
   constructor(@Inject(DB) private readonly db: Db) {}
 
   nextId(): string {
-    const n = this.db.get<{ n: number }>('SELECT count(*) AS n FROM vehicle_request')!.n + 1;
+    // 행 수가 아니라 최대 번호로 — 보존 sweep(30일)이 오래된 행을 지우면 행 수 기반 번호가 남은 행과 겹친다
+    const n = (this.db.get<{ m: number | null }>('SELECT max(CAST(substr(request_id, 6) AS INTEGER)) AS m FROM vehicle_request')?.m ?? 0) + 1;
     return `VREQ-${String(n).padStart(5, '0')}`;
   }
   /** 멱등 키가 없는 기록(조회·빈도 초과·범위 위반)은 bootId·sequence를 비워 둔다 — 재시도가 같은 거부를 받지 않게 */

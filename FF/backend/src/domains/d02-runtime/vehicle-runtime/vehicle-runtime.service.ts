@@ -338,9 +338,11 @@ export class VehicleRuntimeService {
   }
 
   /** Fleet 실시간 적용 현황 — 차량마다 적용 게시본·Feature 상태·차량 측 값과 서버 판단(어긋남 표시) */
-  async fleetStatus() {
+  /** fleet: DEMO = 시연 차량만(5년 운영 수신 표본 제외 — 화면·지도는 표본을 성향·가중치로 따로 본다) */
+  async fleetStatus(fleet: 'DEMO' | 'ALL' = 'DEMO') {
     const items = [];
     for (const v of this.fleet.vehicles()) {
+      if (fleet === 'DEMO' && v.fleet === 'SAMPLE') continue;
       const { runtime: s, evaluations } = await this.view(v.vin);
       items.push({
         vin: v.vin,

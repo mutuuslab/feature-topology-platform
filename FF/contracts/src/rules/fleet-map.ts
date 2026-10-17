@@ -211,6 +211,8 @@ export interface FleetMapVehicle {
   /** 런타임이 없는 합성 차량은 null */
   activation: ActivationState | null;
   kills: string[];
+  /** 가중 표본(5년 운영 모집단)이면 이 차량이 대표하는 실제 차량 수. 없으면 1 */
+  weight?: number;
 }
 
 export interface FleetMapSummaryRow {
@@ -229,12 +231,65 @@ export function summarize(vs: FleetMapVehicle[]): FleetMapSummaryRow[] {
       row = { country: v.country, total: 0, located: 0, subscription: { PAID: 0, TRIAL: 0, OFFERED: 0, ENDED: 0, NONE: 0 }, activation: { ON: 0, OFF: 0, DISABLED: 0, UNKNOWN: 0 } };
       m.set(v.country, row);
     }
-    row.total++;
-    if (v.position) row.located++;
-    row.subscription[v.subscription]++;
-    if (v.activation) row.activation[v.activation]++;
+    const w = v.weight && v.weight > 0 ? v.weight : 1;
+    row.total += w;
+    if (v.position) row.located += w;
+    row.subscription[v.subscription] += w;
+    if (v.activation) row.activation[v.activation] += w;
   }
-  return [...m.values()].sort((a, b) => b.total - a.total || a.country.localeCompare(b.country));
+  const r = Math.round;
+  return [...m.values()]
+    .map((x) => ({ ...x, total: r(x.total), located: r(x.located), subscription: mapValues(x.subscription, r), activation: mapValues(x.activation, r) }))
+    .sort((a, b) => b.total - a.total || a.country.localeCompare(b.country));
+}
+const mapValues = <K extends string>(o: Record<K, number>, f: (n: number) => number) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, f(v as number)])) as Record<K, number>;
+
+// ---------------- 대규모 모집단 지도 — 격자 집계 ----------------
+
+/** 지도에 점으로 보내는 합성 차량 상한 — 넘으면 격자 집계(클러스터)만 보낸다(5년 운영 표본 5만 대를 5초마다 다 보내지 않는다) */
+export const MAP_POINT_LIMIT = 5000;
+/** 화면 범위 [서, 남, 동, 북] */
+export type MapBbox = [number, number, number, number];
+export const WORLD_BBOX: MapBbox = [-180, -90, 180, 90];
+export function parseBbox(s: string | undefined): MapBbox {
+  const xs = (s ?? '').split(',').map(Number);
+  if (xs.length !== 4 || xs.some((x) => !Number.isFinite(x))) return WORLD_BBOX;
+  const [w, so, e, n] = xs;
+  return [Math.max(-180, w), Math.max(-90, so), Math.min(180, e), Math.min(90, n)];
+}
+export const inBbox = (p: { lat: number; lng: number }, b: MapBbox) => p.lat >= b[1] && p.lat <= b[3] && p.lng >= b[0] && p.lng <= b[2];
+/** 확대 수준별 격자 크기(도) — 화면에서 격자 하나가 대략 60 px */
+export const clusterCellDeg = (zoom: number) => Math.min(20, Math.max(0.02, 360 / 2 ** (Math.max(0, zoom) + 2.5)));
+
+export interface FleetMapCluster {
+  id: string;
+  lat: number;
+  lng: number;
+  /** 대표 차량 수(가중) */
+  count: number;
+  /** 표본 차량 수 */
+  sample: number;
+  subscription: Record<SubscriptionState, number>;
+}
+
+/** 위치가 있는 차량을 격자로 모은다 — 중심은 가중 평균, 대수는 가중 합계 */
+export function clusterize(vs: FleetMapVehicle[], cellDeg: number): FleetMapCluster[] {
+  const m = new Map<string, { lat: number; lng: number; w: number; n: number; sub: Record<SubscriptionState, number> }>();
+  for (const v of vs) {
+    if (!v.position) continue;
+    const key = `${Math.floor(v.position.lat / cellDeg)}:${Math.floor(v.position.lng / cellDeg)}`;
+    const w = v.weight && v.weight > 0 ? v.weight : 1;
+    let c = m.get(key);
+    if (!c) m.set(key, (c = { lat: 0, lng: 0, w: 0, n: 0, sub: { PAID: 0, TRIAL: 0, OFFERED: 0, ENDED: 0, NONE: 0 } }));
+    c.lat += v.position.lat * w;
+    c.lng += v.position.lng * w;
+    c.w += w;
+    c.n++;
+    c.sub[v.subscription] += w;
+  }
+  return [...m.entries()]
+    .map(([id, c]) => ({ id, lat: Math.round((c.lat / c.w) * 1e4) / 1e4, lng: Math.round((c.lng / c.w) * 1e4) / 1e4, count: Math.round(c.w), sample: c.n, subscription: mapValues(c.sub, Math.round) }))
+    .sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
 }
 
 export const MAP_PRIVACY_NOTE =

@@ -1,7 +1,7 @@
 // 보안 배포 관리 (D06-08) — 정책 배포·긴급 차단·복구를 서명된 게시본으로 만들고(PKI D06-10), 파이프라인(D04-01)으로 내보내고,
 // 차량 회신을 P0 aggregate로 집계한다: 대상 전부 readback 일치 → CONFIRMED, 불일치 → DIVERGED, 기한 초과 → PARTIAL/TIMEOUT (BD-12).
 import { Controller, Get, Inject, Injectable, OnApplicationBootstrap, OnModuleInit, Param, Query } from '@nestjs/common';
-import { aggregate, endState, PUBLICATION_KEY_PURPOSE, type KillRequest, type Policy, type Publication, type PublicationKind, type ReadbackReport, type SafeMode } from '@ff/contracts';
+import { aggregate, endState, inService, PUBLICATION_KEY_PURPOSE, type KillRequest, type Policy, type Publication, type PublicationKind, type ReadbackReport, type SafeMode } from '@ff/contracts';
 
 /** 차량 와이어 v1 호환 — v2 차단(safeMode 없음)도 시뮬레이터·GLEO가 읽는 kill.safeMode를 채운다. 차량 와이어 v2(봉투·DC 단계) 전환은 WP5 */
 const legacyMode = (k: KillRequest): SafeMode => k.safeMode ?? 'SAFE_DEFAULT';
@@ -72,9 +72,12 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
   targetsFor(featureId: string, version: string): string[] {
     const f = this.features.get(featureId, version);
     if (!f) return [];
+    const today = this.clock.kst().slice(0, 10);
     return this.fleet
       .vehicles()
       .filter((v) => v.country === f.country && v.vehicleModel === f.vehicleModel && v.trim === f.trim)
+      // 5년 운영 수신 표본 — 말소(폐차·수출)된 차는 더 받지 않는다
+      .filter((v) => v.fleet !== 'SAMPLE' || inService(this.fleet.profile(v.vin) ?? {}, today))
       .map((v) => v.vin);
   }
 

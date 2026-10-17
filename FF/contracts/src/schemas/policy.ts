@@ -95,6 +95,8 @@ export const VehicleSchema = z.object({
   gleo: z.boolean().default(false),
   /** 지정 Canary 차량(시험·사내 차량) — 부분 배포(0% < 범위 < 100%)면 Cohort 버킷과 관계없이 포함한다(FFG-LCY-009 Canary 관측 대상) */
   canary: z.boolean().default(false),
+  /** DEMO = 시연 차량(이름 있는 12대), SAMPLE = 5년 운영 모집단의 수신 표본(실제 OTA 수신·회신, 지도·목록은 표본 성향으로 본다) */
+  fleet: z.enum(['DEMO', 'SAMPLE']).default('DEMO'),
 });
 export type Vehicle = z.infer<typeof VehicleSchema>;
 
@@ -103,7 +105,7 @@ export type Vehicle = z.infer<typeof VehicleSchema>;
  * → ACTIVE(수락, validFrom~validTo = 체험 기간) → EXPIRED / DECLINED / CONVERTED(구독·구매로 전환). 날짜가 지나면 grantState가 EXPIRED로 본다.
  */
 export const EntitlementSchema = z.object({
-  grantId: z.string().regex(/^ENT-S?\d{5}$/),
+  grantId: z.string().regex(/^ENT-S?\d{5,8}$/),
   vin: z.string(),
   catalogId: z.string().regex(/^CAT-\d{5}$/),
   kind: z.enum(['구독', '구매', '체험']),

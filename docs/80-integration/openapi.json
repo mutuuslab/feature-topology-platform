@@ -5390,7 +5390,7 @@
           "D02-03"
         ],
         "operationId": "fleetMap",
-        "description": "허용 역할: 운영자, 운영 리더, 기능안전 담당자(FSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "source",
@@ -5410,6 +5410,22 @@
           },
           {
             "name": "flagKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "zoom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bbox",
             "in": "query",
             "required": false,
             "schema": {
@@ -5437,7 +5453,7 @@
           "D02-03"
         ],
         "operationId": "fleetMapVehicle",
-        "description": "허용 역할: 운영자, 운영 리더, 기능안전 담당자(FSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "vin",
@@ -5457,6 +5473,233 @@
           },
           "404": {
             "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/fleet/population": {
+      "get": {
+        "summary": "대상 차량 모집단 — 판매 → 서비스 시장 → 플랫폼 탑재 → 커넥티드 → 운행 중 깔때기(가정값 모델)·가중 표본 규모",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "fleetPopulation",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/fleet/onboard": {
+      "post": {
+        "summary": "신차 커넥티드 등록(IF-06 Fleet 연계 모의) — 가중 표본 차량·수신 표본 등록",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "fleetOnboard",
+        "description": "허용 역할: 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profiles": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "vin": {
+                          "type": "string",
+                          "minLength": 3
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "region": {
+                          "type": "string"
+                        },
+                        "vehicleModel": {
+                          "type": "string"
+                        },
+                        "trim": {
+                          "type": "string"
+                        },
+                        "ageBand": {
+                          "type": "string",
+                          "enum": [
+                            "20대",
+                            "30대",
+                            "40대",
+                            "50대",
+                            "60대+"
+                          ]
+                        },
+                        "drivingStyle": {
+                          "type": "string",
+                          "enum": [
+                            "도심",
+                            "고속도로",
+                            "장거리",
+                            "혼합"
+                          ]
+                        },
+                        "adasUsage": {
+                          "type": "string",
+                          "enum": [
+                            "낮음",
+                            "보통",
+                            "높음"
+                          ]
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "DEMO",
+                            "SYNTHETIC"
+                          ]
+                        },
+                        "weight": {
+                          "type": "number",
+                          "minimum": 0,
+                          "exclusiveMinimum": true
+                        },
+                        "soldMonth": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}$"
+                        },
+                        "retiredAt": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "vin",
+                        "country",
+                        "region",
+                        "vehicleModel",
+                        "trim",
+                        "ageBand",
+                        "drivingStyle",
+                        "adasUsage",
+                        "source"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 300,
+                    "default": []
+                  },
+                  "receivers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "vin": {
+                          "type": "string",
+                          "minLength": 3
+                        },
+                        "label": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "vehicleModel": {
+                          "type": "string"
+                        },
+                        "trim": {
+                          "type": "string"
+                        },
+                        "modelYear": {
+                          "type": "string"
+                        },
+                        "upgVc": {
+                          "type": "string"
+                        },
+                        "swVersion": {
+                          "type": "string"
+                        },
+                        "quality": {
+                          "type": "string",
+                          "enum": [
+                            "TRUSTED",
+                            "STALE",
+                            "UNTRUSTED"
+                          ],
+                          "default": "TRUSTED"
+                        },
+                        "link": {
+                          "type": "string",
+                          "enum": [
+                            "ONLINE",
+                            "OFFLINE"
+                          ],
+                          "default": "ONLINE"
+                        },
+                        "gleo": {
+                          "type": "boolean",
+                          "default": false
+                        },
+                        "canary": {
+                          "type": "boolean",
+                          "default": false
+                        },
+                        "fleet": {
+                          "type": "string",
+                          "enum": [
+                            "DEMO",
+                            "SAMPLE"
+                          ],
+                          "default": "DEMO"
+                        }
+                      },
+                      "required": [
+                        "vin",
+                        "label",
+                        "country",
+                        "vehicleModel",
+                        "trim",
+                        "modelYear",
+                        "upgVc",
+                        "swVersion"
+                      ]
+                    },
+                    "maxItems": 50,
+                    "default": []
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
           }
         }
       }

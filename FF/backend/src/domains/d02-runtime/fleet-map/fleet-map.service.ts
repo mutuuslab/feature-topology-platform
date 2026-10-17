@@ -3,21 +3,28 @@
 import { Controller, Get, Inject, Injectable, Param, Query } from '@nestjs/common';
 import {
   activationState,
+  clusterCellDeg,
+  clusterize,
   coarsen,
   DETAIL_PRECISION_DEG,
+  inBbox,
+  inService,
   LOCATION_PRECISION_LABEL,
   LOCATION_VIEW_ROLES,
   locationConsent,
   MAP_AUDIT_WINDOW_MS,
+  MAP_POINT_LIMIT,
   MAP_PRECISION_DEG,
   MAP_PRIVACY_NOTE,
   mockPosition,
+  parseBbox,
   PRECISION_ACCURACY_M,
   regionPoint,
   regionsOf,
   subscriptionState,
   summarize,
   SYNTHETIC_SPREAD_KM,
+  weightOf,
   type Entitlement,
   type FleetMapPosition,
   type FleetMapVehicle,
@@ -107,6 +114,7 @@ export class FleetMapService {
       subscription: subscriptionState(grants, today, catalogId),
       activation: null,
       kills: [],
+      weight: weightOf(p),
     };
   }
 
@@ -119,35 +127,41 @@ export class FleetMapService {
     return true;
   }
 
-  async map(actor: Actor, q: { source?: string; catalogId?: string; flagKey?: string }) {
+  /**
+   * 지도 — 데모 차량은 항상 점으로. 합성·표본 차량은 화면 범위(bbox) 안이 MAP_POINT_LIMIT 이하일 때만 점으로 보내고,
+   * 늘 격자 집계(clusters, 대표 대수)를 함께 보낸다. 국가별 요약은 범위와 관계없이 전체(가중) 기준이다.
+   */
+  async map(actor: Actor, q: { source?: string; catalogId?: string; flagKey?: string; zoom?: string; bbox?: string }) {
     const source = asMapSource(q.source);
     const catalogId = q.catalogId || undefined;
     const flagKey = q.flagKey || undefined;
+    const zoom = Number.isFinite(Number(q.zoom)) && q.zoom !== undefined && q.zoom !== '' ? Number(q.zoom) : 1;
+    const bbox = parseBbox(q.bbox);
     const today = this.entitlements.today();
     const profiles = this.fleet.profiles();
     const items: FleetMapVehicle[] = [];
+    const synthetic: FleetMapVehicle[] = [];
     let flagKeys: string[] = [];
     if (source !== 'SYNTHETIC') {
-      const rt = await this.runtime.fleetStatus();
+      const rt = await this.runtime.fleetStatus('DEMO');
       flagKeys = [...new Set(rt.items.flatMap((r) => r.flags.map((f) => f.flagKey)))].sort();
       for (const r of rt.items) items.push(this.demoVehicle(r, profiles, today, { catalogId, flagKey }, false));
     }
+    const syn = this.fleet.syntheticGrants();
     if (source !== 'DEMO') {
-      const byVin = new Map<string, Entitlement[]>();
-      for (const g of this.fleet.grants(undefined, 'SYNTHETIC')) {
-        const xs = byVin.get(g.vin);
-        if (xs) xs.push(g);
-        else byVin.set(g.vin, [g]);
-      }
-      for (const p of profiles.values()) if (p.source === 'SYNTHETIC') items.push(this.syntheticVehicle(p, byVin.get(p.vin) ?? [], today, catalogId, false));
+      for (const p of profiles.values()) if (p.source === 'SYNTHETIC' && inService(p, today)) synthetic.push(this.syntheticVehicle(p, syn.byVin.get(p.vin) ?? [], today, catalogId, false));
     }
-    const used = new Set(this.fleet.grants(undefined, source === 'DEMO' ? 'DEMO' : source === 'SYNTHETIC' ? 'SYNTHETIC' : 'ALL').map((g) => g.catalogId));
+    const all = [...items, ...synthetic];
+    const inView = synthetic.filter((v) => v.position && inBbox(v.position, bbox));
+    const points = inView.length <= MAP_POINT_LIMIT ? inView : [];
+    const used = new Set([...(source !== 'SYNTHETIC' ? this.fleet.grants(undefined, 'DEMO') : []), ...(source !== 'DEMO' ? syn.grants : [])].map((g) => g.catalogId));
     const catalogs = this.products
       .all()
       .filter((p) => used.has(p.catalogId))
       .map((p) => ({ catalogId: p.catalogId, name: p.name }))
       .sort((a, b) => a.catalogId.localeCompare(b.catalogId));
-    const audited = this.auditMap(actor, { source, catalogId, flagKey }, items.length);
+    const represented = Math.round(all.reduce((t, v) => t + (v.weight ?? 1), 0));
+    const audited = this.auditMap(actor, { source, catalogId, flagKey }, represented);
     return {
       generatedAt: this.clock.iso(),
       source,
@@ -159,8 +173,12 @@ export class FleetMapService {
       provider: MAP_PROVIDER,
       privacy: MAP_PRIVACY_NOTE,
       audited,
-      items,
-      summary: summarize(items),
+      items: [...items, ...points],
+      /** 범위 안 표본이 상한을 넘어 점으로 보내지 않은 수(0이면 범위 안 전부 보냄) */
+      pointsOmitted: inView.length - points.length,
+      clusters: clusterize(all.filter((v) => v.source === 'SYNTHETIC'), clusterCellDeg(zoom)),
+      represented,
+      summary: summarize(all),
     };
   }
 
@@ -170,7 +188,7 @@ export class FleetMapService {
     const profiles = this.fleet.profiles();
     let item: FleetMapVehicle;
     let runtime: Pick<RuntimeRow, 'featureState' | 'flags' | 'last' | 'quality' | 'gleo'> | null = null;
-    if (this.fleet.vehicle(vin)) {
+    if (this.fleet.vehicle(vin) && this.fleet.vehicle(vin)!.fleet !== 'SAMPLE') {
       const rt = await this.runtime.fleetStatus();
       const r = rt.items.find((x) => x.vin === vin)!;
       item = this.demoVehicle(r, profiles, today, {}, true);
@@ -198,8 +216,8 @@ export class FleetMapController {
 
   @Get()
   @Roles(...LOCATION_VIEW_ROLES)
-  map(@CurrentActor() actor: Actor, @Query('source') source?: string, @Query('catalogId') catalogId?: string, @Query('flagKey') flagKey?: string) {
-    return this.s.map(actor, { source, catalogId, flagKey });
+  map(@CurrentActor() actor: Actor, @Query('source') source?: string, @Query('catalogId') catalogId?: string, @Query('flagKey') flagKey?: string, @Query('zoom') zoom?: string, @Query('bbox') bbox?: string) {
+    return this.s.map(actor, { source, catalogId, flagKey, zoom, bbox });
   }
 
   @Get('vehicles/:vin')

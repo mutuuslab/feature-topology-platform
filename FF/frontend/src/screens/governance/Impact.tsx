@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { REJUDGE_MAP } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, GateBadge, IdChip, Kpi, LifecycleBadge, PageHeader, Panel } from '../../design';
+import { AsyncView, GateBadge, IdChip, LifecycleBadge, PageHeader, Panel, SummaryLine } from '../../design';
 
 const T = ko.impact;
 const CHANGEABLE = Object.keys(REJUDGE_MAP);
@@ -32,7 +32,18 @@ export default function ImpactScreen() {
   const d = q.data;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-02 · D06-05 · IMPACT" title={T.title} lead={T.lead} />
+      <PageHeader
+        codes="D01-02 · D06-05 · IMPACT"
+        title={T.title}
+        lead={T.lead}
+        message={
+          q.data
+            ? q.data.summary.rejudgeGates
+              ? { tone: 'warn', value: q.data.summary.rejudgeGates, text: T.key.rejudge(`${feature} ${version}`) }
+              : { tone: 'ok', text: T.key.none(`${feature} ${version}`) }
+            : { tone: 'neutral', value: '—', text: T.key.rejudge(`${feature} ${version}`) }
+        }
+      />
       <Panel title={T.target} id="target">
         <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label className="ds-field">
@@ -57,12 +68,13 @@ export default function ImpactScreen() {
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <>
-            <div className="ds-kpis">
-              <Kpi label={T.dependents} value={d.summary.dependents} />
-              <Kpi label={T.products} value={d.summary.products} hint={`RELEASED ${d.summary.releasedProducts}`} tone={d.summary.releasedProducts ? 'warn' : undefined} />
-              <Kpi label={T.rejudge} value={d.summary.rejudgeGates} />
-              <Kpi label={T.owners} value={d.owners.length} />
-            </div>
+            <SummaryLine
+              items={[
+                { k: T.dependents, v: d.summary.dependents },
+                { k: T.products, v: `${d.summary.products} (RELEASED ${d.summary.releasedProducts})` },
+                { k: T.owners, v: d.owners.length },
+              ]}
+            />
             <div className="ds-chain" aria-label={T.title}>
               <section>
                 <h3>Feature</h3>

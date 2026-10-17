@@ -231,7 +231,7 @@ export default function DesignGallery() {
         </Panel>
       </div>
 
-      <Panel title={T.safetyClasses} eyebrow="FFP-FS-STR-001 v1.1 · 5장" id="safety-classes">
+      <Panel title={T.safetyClasses} codes="FFP-FS-STR-001 v1.1 · 5장" id="safety-classes">
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
           <div className="ds-cls-row">{F_CLASSES.map((f) => <ClassBadge key={f} axis="F" value={f} />)}</div>
           <div className="ds-cls-row">{DEACT_CLASSES.map((d) => <ClassBadge key={d} axis="DC" value={d} />)}</div>

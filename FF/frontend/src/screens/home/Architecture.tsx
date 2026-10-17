@@ -7,7 +7,7 @@ import { componentTcl, QUALIFICATION_METHODS, reportRule, RULE_STATUS, rulesOfCo
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Drawer, KeyValue, Kpi, PageHeader, RuleChecklist, Segmented, VerdictBadge } from '../../design';
+import { AsyncView, Drawer, KeyValue, PageHeader, RuleChecklist, Segmented, SummaryLine, VerdictBadge } from '../../design';
 import { when } from '../shared';
 
 const A = ko.arch;
@@ -106,14 +106,21 @@ export function ArchitectureScreen() {
   const sel = comps.find((c) => c.id === open);
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="42 COMPONENTS · 6 DOMAINS" title={A.title} lead={A.lead} actions={<Link to="/poc">{ko.poc.title} →</Link>} />
-      <div className="ds-kpis">
-        <Kpi label={A.implemented} value={`${implemented}/${comps.length || 42}`} tone="ok" />
-        <Kpi label={A.planned} value={comps.length - implemented} />
-        <Kpi label={A.active} value={active} tone={active ? 'accent' : undefined} />
-        <Kpi label={A.interfaces} value={new Set(comps.filter((c) => c.status === 'implemented').flatMap((c) => c.ifs)).size} />
-        <Kpi label={A.standards} value={`${RULE_IDS.filter(done).length}/${RULE_IDS.length}`} hint={A.standardsNote} tone="accent" />
-      </div>
+      <PageHeader
+        codes="42 COMPONENTS · 6 DOMAINS"
+        title={A.title}
+        lead={A.lead}
+        message={{ tone: 'ok', value: `${implemented}/${comps.length || 42}`, text: A.implemented }}
+        actions={<Link to="/poc">{ko.poc.title} →</Link>}
+      />
+      <SummaryLine
+        items={[
+          { k: A.planned, v: comps.length - implemented },
+          { k: A.active, v: active },
+          { k: A.interfaces, v: new Set(comps.filter((c) => c.status === 'implemented').flatMap((c) => c.ifs)).size },
+          { k: A.standards, v: `${RULE_IDS.filter(done).length}/${RULE_IDS.length}` },
+        ]}
+      />
       <Segmented
         label={A.step}
         options={[{ value: 'ALL', label: A.all }, ...[1, 2, 3, 4, 5, 6].map((n) => ({ value: String(n), label: ['①', '②', '③', '④', '⑤', '⑥'][n - 1] }))]}

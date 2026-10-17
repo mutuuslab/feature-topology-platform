@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, Kpi, PageHeader, Panel, Select, Tabs, VerdictBadge } from '../../design';
+import { AsyncView, DataTable, PageHeader, Panel, Select, SummaryLine, Tabs, VerdictBadge } from '../../design';
 
 const O = ko.p10.openfeature;
 
@@ -40,16 +40,22 @@ export function OpenFeatureScopeScreen() {
   const d = q.data;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D05-01 · IF-10 · OpenFeature · FFG-OFT · FFG-PLT-011" title={O.title} lead={O.lead} />
+      <PageHeader
+        codes="D05-01 · IF-10 · OpenFeature · FFG-OFT · FFG-PLT-011"
+        title={O.title}
+        lead={O.lead}
+        message={{ tone: 'ok', value: d ? d.catalog.filter((c) => c.openFeature).length : '—', text: O.key }}
+      />
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <>
-            <div className="ds-kpis">
-              <Kpi label={O.kpi.flags} value={d.catalog.filter((c) => c.openFeature).length} tone="ok" />
-              <Kpi label={O.kpi.excluded} value={d.catalog.filter((c) => !c.openFeature).length} />
-              <Kpi label={O.kpi.spans} value={d.audit.spans} hint={d.audit.lastAt?.slice(0, 19).replace('T', ' ') ?? undefined} />
-              <Kpi label={O.kpi.snapshot} value={<span className="ds-mono" style={{ fontSize: 'var(--fs-sm)' }}>{d.snapshotVersion}</span>} />
-            </div>
+            <SummaryLine
+              items={[
+                { k: O.kpi.excluded, v: d.catalog.filter((c) => !c.openFeature).length },
+                { k: O.kpi.spans, v: d.audit.spans },
+                { k: O.kpi.snapshot, v: d.snapshotVersion },
+              ]}
+            />
             <Panel title={O.paths} id="of-paths">
               <div className="ds-split">
                 <PathColumn title={O.ofPath} steps={O.ofPathSteps} tone="ok" />

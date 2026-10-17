@@ -142,7 +142,9 @@ describe('Topology·의존관계 검증', () => {
     };
     mount('/arch/topology', '/arch/topology', <TopologyScreen />);
     expect(await screen.findByText('DEP-00001')).toBeTruthy();
-    expect([...document.querySelectorAll('.ds-kpi__value')].map((k) => k.textContent)).toEqual(['2', '1', '1', '1']);
+    // 핵심 메시지 = 미판정·FAIL 관계 수, 요약 줄 = 관계·REQUIRES·EXCLUDES(3초 테스트)
+    expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1');
+    expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['2', '1', '1']);
     const g = await screen.findByRole('group', { name: '관계 그래프 — FEAT-00022' });
     expect(within(g).getByRole('link', { name: 'FEAT-00022@1.0.0 전방 안전거리' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'FEAT-00145' }));

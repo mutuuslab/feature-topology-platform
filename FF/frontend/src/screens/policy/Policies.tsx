@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ControlPointType } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, VerdictBadge, Icon } from '../../design';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge, Icon } from '../../design';
 import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
 import { VirtualPanel } from './Virtual';
@@ -64,15 +64,20 @@ export function PolicyList() {
   return (
     <div className="ds-screen">
       <PageHeader
-        eyebrow="D01-06 · POLICY STORE"
+        codes="D01-06 · POLICY STORE"
         title={T.title}
         lead={T.lead}
+        message={(() => {
+          const n = rows.filter((r) => r.status === 'VALIDATED').length;
+          return !q.data ? { tone: 'neutral', value: '—', text: T.key.pending } : n ? { tone: 'warn', value: n, text: T.key.pending } : { tone: 'ok', text: T.key.none };
+        })()}
         actions={
           <Button variant="primary" icon="layers" disabled={!perm.ok} title={perm.hint} onClick={() => nav('/policies/new')}>
             {T.create}
           </Button>
         }
       />
+      <SummaryLine items={[{ k: T.key.deployWait, v: rows.filter((r) => r.status === 'APPROVED').length }, { k: T.key.deployed, v: rows.filter((r) => r.status === 'DEPLOYED').length }]} />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.title}
@@ -136,16 +141,15 @@ export function PolicyDetail() {
         {d && p && (
           <>
             <PageHeader
-              eyebrow={<IdChip id={p.policyId} version={`r${p.revision}`} />}
-              title={
-                <>
-                  <span className="ds-mono">{p.flagKey}</span>
-                  <VerdictBadge value={STATUS_VERDICT[p.status] ?? '미판정'} />
-                  <span className="ds-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>{p.status}</span>
-                </>
-              }
+              title={<span className="ds-mono">{p.flagKey}</span>}
+              message={{
+                tone: d.lastRun ? (d.lastRun.decision === 'GO' && d.hashMatchesValidation ? 'ok' : d.lastRun.decision === 'BLOCKED' ? 'danger' : 'warn') : 'neutral',
+                value: p.status,
+                text: d.lastRun ? `${T.safetyDecision[d.lastRun.decision]} · ${d.hashMatchesValidation ? T.hashOk : T.hashStale}` : T.notValidated,
+              }}
               meta={
                 <>
+                  <IdChip id={p.policyId} version={`r${p.revision}`} />
                   <IdChip id={p.featureId} version={p.featureVersion} to={`/features/${p.featureId}/${p.featureVersion}`} copy={false} />
                   {d.feature && <span className="ds-tag">{d.feature.name}</span>}
                   <span className="ds-tag">{p.controlPoint}</span>
@@ -185,17 +189,13 @@ export function PolicyDetail() {
               title={T.validators}
               eyebrow={d.lastRun ? `${d.lastRun.runId} · ${when(d.lastRun.at)} · r${d.lastRun.policyRevision}` : undefined}
               id="validators"
-              actions={d.lastRun ? <VerdictBadge value={DECISION_VERDICT[d.lastRun.decision]} /> : undefined}
             >
               {d.lastRun ? (
                 <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
                   <ValidatorGrid run={d.lastRun} />
-                  <div className={d.hashMatchesValidation ? 'ds-ok' : 'ds-stale'} role="status">
-                    <strong>{T.safety}: {T.safetyDecision[d.lastRun.decision]}</strong> · {d.hashMatchesValidation ? T.hashOk : T.hashStale}
-                  </div>
                 </div>
               ) : (
-                <p className="ds-field__hint">{T.notValidated}</p>
+                <p className="ds-field__hint">{T.validatorsEmpty}</p>
               )}
             </Panel>
 
@@ -297,7 +297,7 @@ export function PolicyCreate() {
   const F = T.field;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-06 · NEW POLICY" title={T.create} lead={T.lead} />
+      <PageHeader codes="D01-06 · NEW POLICY" title={T.create} message={perm.ok ? { tone: 'accent', text: T.key.can } : { tone: 'warn', text: T.key.cannot }} />
       <Panel id="new-policy">
         <form
           style={{ display: 'grid', gap: 'var(--sp-3)', maxWidth: 720 }}
@@ -387,7 +387,15 @@ export function ValidationHistory() {
   const rows = q.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-04 · VALIDATION HISTORY" title={ko.validations.title} lead={ko.validations.lead} />
+      <PageHeader
+        codes="D06-04 · VALIDATION HISTORY"
+        title={ko.validations.title}
+        lead={ko.validations.lead}
+        message={(() => {
+          const held = rows.filter((r) => r.decision !== 'GO').length;
+          return !q.data ? { tone: 'neutral', value: '—', text: ko.validations.key.held } : held ? { tone: 'warn', value: held, text: ko.validations.key.held } : { tone: 'ok', text: ko.validations.key.clean };
+        })()}
+      />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={ko.validations.title}

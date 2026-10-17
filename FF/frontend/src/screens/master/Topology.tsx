@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, GateBadge, Kpi, PageHeader, Panel, Segmented, Select, Toolbar } from '../../design';
+import { AsyncView, Button, DataTable, ErrorNote, GateBadge, PageHeader, Panel, Segmented, Select, SummaryLine, Toolbar } from '../../design';
 import { usePermission } from '../shared';
 
 const T = ko.master.topology;
@@ -40,13 +40,25 @@ export function TopologyScreen() {
   const C = T.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-02 · Topology · REQUIRES · EXCLUDES" title={T.title} lead={T.lead} actions={<Link to="/precheck">{T.precheck}</Link>} />
-      <div className="ds-kpis">
-        <Kpi label={T.kpi.total} value={total.length} />
-        <Kpi label={T.kpi.requires} value={total.filter((d) => d.type === 'REQUIRES').length} />
-        <Kpi label={T.kpi.excludes} value={total.filter((d) => d.type === 'EXCLUDES').length} />
-        <Kpi label={T.kpi.open} value={total.filter((d) => d.verdict !== 'PASS').length} tone={total.some((d) => d.verdict === 'FAIL') ? 'danger' : undefined} />
-      </div>
+      <PageHeader
+        codes="D01-02 · Topology · REQUIRES · EXCLUDES"
+        title={T.title}
+        lead={T.lead}
+        message={(() => {
+          const open = total.filter((d) => d.verdict !== 'PASS').length;
+          const fail = total.some((d) => d.verdict === 'FAIL');
+          if (!all.data) return { tone: 'neutral', value: '—', text: T.key.open };
+          return open ? { tone: fail ? 'danger' : 'warn', value: open, text: fail ? T.key.fail : T.key.open } : { tone: 'ok', text: T.key.clean };
+        })()}
+        actions={<Link to="/precheck">{T.precheck}</Link>}
+      />
+      <SummaryLine
+        items={[
+          { k: T.kpi.total, v: total.length },
+          { k: T.kpi.requires, v: total.filter((d) => d.type === 'REQUIRES').length },
+          { k: T.kpi.excludes, v: total.filter((d) => d.type === 'EXCLUDES').length },
+        ]}
+      />
       <Panel title={T.graph} id="topo-graph">
         <Toolbar label={T.graph}>
           <Select label={T.focus} value={focus} onChange={(e) => setSp({ feature: e.target.value })}>
@@ -61,7 +73,7 @@ export function TopologyScreen() {
           {graph.data && <TopologyGraph data={graph.data} focus={focus} />}
         </AsyncView>
       </Panel>
-      <Panel title={T.title} id="topo-table">
+      <Panel id="topo-table">
         <Toolbar label={T.verdict}>
           <Select label={T.type} value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">{T.all}</option>

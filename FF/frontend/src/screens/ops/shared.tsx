@@ -17,14 +17,7 @@ export interface Delivery {
 export const PUB_VERDICT: Record<string, string> = { SIGNED: '미판정', DISPATCHED: '검토 중', CONFIRMED: 'PASS', PARTIAL: 'CONDITIONAL', TIMEOUT: 'FAIL', DIVERGED: 'FAIL' };
 
 export function PubStatus({ status }: { status: string }) {
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--sp-1)' }}>
-      <VerdictBadge value={PUB_VERDICT[status] ?? '미판정'} />
-      <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
-        {status}
-      </span>
-    </span>
-  );
+  return <VerdictBadge value={PUB_VERDICT[status] ?? '미판정'} label={status} />;
 }
 
 export function Progress({ d }: { d: Pick<Delivery, 'status' | 'confirmed' | 'denominator'> | null | undefined }) {

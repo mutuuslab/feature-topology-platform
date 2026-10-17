@@ -42,7 +42,15 @@ export function RetirementsScreen() {
   const C = T.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-01 · FFG-LCY-011" title={T.title} lead={T.lead} />
+      <PageHeader
+        codes="D01-01 · FFG-LCY-011"
+        title={T.title}
+        lead={T.lead}
+        message={(() => {
+          const overdue = rows.filter((r) => r.overdue).length;
+          return !q.data ? { tone: 'neutral', value: '—', text: T.key.count } : overdue ? { tone: 'danger', value: overdue, text: T.key.overdue } : rows.length ? { tone: 'neutral', value: rows.length, text: T.key.count } : { tone: 'neutral', text: T.key.none };
+        })()}
+      />
       <RequestForm />
       <Panel title={T.list} id="retirements">
         <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: T.empty }} error={q.error?.message} onRetry={() => q.refetch()}>

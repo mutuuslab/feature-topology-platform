@@ -12,9 +12,16 @@ const T = ko.bom;
 const STATUS_VERDICT = { PENDING: 'CONDITIONAL', APPROVED: 'PASS', REJECTED: 'FAIL' } as const;
 
 export default function BaselineQueue() {
+  const reqs = useApi<{ items: BaselineRequest[] }>('baselineRequests');
+  const pending = (reqs.data?.items ?? []).filter((r) => r.status === 'PENDING').length;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-01 · FEATURE BOM" title={T.title} lead={T.lead} />
+      <PageHeader
+        codes="D01-01 · FEATURE BOM"
+        title={T.title}
+        lead={T.lead}
+        message={!reqs.data ? { tone: 'neutral', value: '—', text: T.key.pending } : pending ? { tone: 'warn', value: pending, text: T.key.pending } : { tone: 'ok', text: T.key.none }}
+      />
       <Tabs tabs={[{ key: 'requests', label: T.tabRequests }, { key: 'baselines', label: T.tabBaselines }]}>
         {(tab) => (tab === 'requests' ? <Requests /> : <Baselines />)}
       </Tabs>
@@ -42,7 +49,7 @@ function Requests() {
         value={status}
         onChange={(v) => setStatus(v as typeof status)}
         options={[
-          { value: 'PENDING', label: T.status.PENDING, count: count('PENDING') },
+          { value: 'PENDING', label: T.status.PENDING },
           { value: 'APPROVED', label: T.status.APPROVED, count: count('APPROVED') },
           { value: 'REJECTED', label: T.status.REJECTED, count: count('REJECTED') },
           { value: '', label: ko.page.all, count: all.data?.items.length },

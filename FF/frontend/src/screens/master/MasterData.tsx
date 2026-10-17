@@ -19,7 +19,15 @@ export function UpgScreen() {
   const C = M.upg.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-02 · UPG-VC" title={M.upg.title} lead={M.upg.lead} />
+      <PageHeader
+        codes="D01-02 · UPG-VC"
+        title={M.upg.title}
+        lead={M.upg.lead}
+        message={(() => {
+          const bad = rows.filter((r) => !r.features.length || !r.vehicles.length).length;
+          return !q.data ? { tone: 'neutral', value: '—', text: M.upg.key.mismatch } : bad ? { tone: 'warn', value: bad, text: M.upg.key.mismatch } : { tone: 'ok', text: M.upg.key.clean };
+        })()}
+      />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={M.upg.title}
@@ -53,9 +61,10 @@ interface SwRow {
 }
 
 export function SwScreen() {
+  const all = useApi<{ items: SwRow[] }>('masterSw', { query: {} });
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-02 · SW_Master · ECU_Master" title={M.sw.title} lead={M.sw.lead} />
+      <PageHeader codes="D01-02 · SW_Master · ECU_Master" title={M.sw.title} lead={M.sw.lead} message={{ tone: 'neutral', value: all.data ? all.data.items.length : '—', text: M.sw.key }} />
       <Tabs tabs={[{ key: 'sw', label: M.sw.tabs.sw }, { key: 'ecu', label: M.sw.tabs.ecu }]}>{(t) => (t === 'ecu' ? <EcuTab /> : <SwTab />)}</Tabs>
     </div>
   );
@@ -130,7 +139,12 @@ export function StructureScreen() {
   const S = M.structure;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-02 · ECU → SW → Function" title={S.title} lead={S.lead} />
+      <PageHeader
+        codes="D01-02 · ECU → SW → Function"
+        title={S.title}
+        lead={S.lead}
+        message={{ tone: 'neutral', text: q.data ? S.key(rows.length, rows.reduce((n, e) => n + e.sw.length, 0), rows.reduce((n, e) => n + e.sw.reduce((m, s) => m + s.functions.length, 0), 0)) : '—' }}
+      />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
         <ul className="ds-tree" aria-label={S.title}>
           {rows.map((e) => (
@@ -183,7 +197,15 @@ export function ControlPointsScreen() {
   const C = M.cp.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-02 · Control Point · BD-06" title={M.cp.title} lead={M.cp.lead} />
+      <PageHeader
+        codes="D01-02 · Control Point · BD-06"
+        title={M.cp.title}
+        lead={M.cp.lead}
+        message={(() => {
+          const bad = all.filter((r) => r.unbound.length || r.multiBound.length).length;
+          return !q.data ? { tone: 'neutral', value: '—', text: M.cp.key.bad } : bad ? { tone: 'danger', value: bad, text: M.cp.key.bad } : { tone: 'ok', text: M.cp.key.clean };
+        })()}
+      />
       <Toolbar label={M.cp.onlyIssues}>
         <label className="ds-field ds-field--inline">
           <input type="checkbox" checked={issues} onChange={(e) => setIssues(e.target.checked)} />
@@ -216,7 +238,7 @@ export function TaxonomyScreen() {
   const T = M.taxonomy;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-01 · Taxonomy" title={T.title} lead={T.lead} />
+      <PageHeader codes="D01-01 · Taxonomy" title={T.title} lead={T.lead} message={{ tone: 'neutral', text: d ? T.key(d.tags.length, d.scopes.length) : '—' }} />
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <div className="ds-split">

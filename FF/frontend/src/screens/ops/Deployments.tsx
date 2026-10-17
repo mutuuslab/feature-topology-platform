@@ -9,6 +9,7 @@ import { usePermission, when } from '../shared';
 import { Progress, PubStatus, type Delivery } from './shared';
 
 const D = ko.deploy;
+const PUB_TONE: Record<string, 'ok' | 'warn' | 'danger' | 'accent' | 'neutral'> = { CONFIRMED: 'ok', PARTIAL: 'warn', TIMEOUT: 'danger', DIVERGED: 'danger', DISPATCHED: 'accent', SIGNED: 'neutral' };
 
 interface Pub extends Delivery {
   kind: 'POLICY' | 'KILL' | 'RESTORE';
@@ -37,7 +38,7 @@ function Keys() {
   return (
     <Panel
       title={D.keys}
-      eyebrow="D06-10 · Ed25519"
+      codes="D06-10 · Ed25519"
       id="keys"
       actions={
         <Button disabled={!perm.ok} title={perm.hint} onClick={() => setOpen(true)}>
@@ -80,7 +81,15 @@ export function DeploymentList() {
   const rows = q.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-08 · SECURE DEPLOY" title={D.title} lead={D.lead} />
+      <PageHeader
+        codes="D06-08 · SECURE DEPLOY"
+        title={D.title}
+        lead={D.lead}
+        message={(() => {
+          const bad = rows.filter((r) => r.status === 'PARTIAL' || r.status === 'TIMEOUT' || r.status === 'DIVERGED').length;
+          return !q.data ? { tone: 'neutral', value: '—', text: D.key.bad } : bad ? { tone: 'warn', value: bad, text: D.key.bad } : { tone: 'ok', text: D.key.clean };
+        })()}
+      />
       <Segmented label={D.col.kind} options={(['ALL', 'POLICY', 'KILL', 'RESTORE'] as const).map((k) => ({ value: k, label: k === 'ALL' ? ko.page.all : D.kind[k] }))} value={kind} onChange={(v) => setKind(v as typeof kind)} />
       <div className="ds-split">
         <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
@@ -118,14 +127,15 @@ export function DeploymentDetail() {
         {d && p && (
           <>
             <PageHeader
-              eyebrow={<IdChip id={p.publicationId} version={`#${p.payload.sequence}`} />}
               title={
                 <>
-                  {D.kind[p.kind]} · <span className="ds-mono">{p.payload.flagKey ?? p.payload.featureId}</span> <PubStatus status={p.status} />
+                  {D.kind[p.kind]} · <span className="ds-mono">{p.payload.flagKey ?? p.payload.featureId}</span>
                 </>
               }
+              message={{ tone: PUB_TONE[p.status] ?? 'neutral', value: p.status, text: D.key.detail(p.confirmed, p.denominator) }}
               meta={
                 <>
+                  <IdChip id={p.publicationId} version={`#${p.payload.sequence}`} />
                   <IdChip id={p.payload.featureId} version={p.payload.featureVersion} to={`/features/${p.payload.featureId}/${p.payload.featureVersion}`} copy={false} />
                   {p.payload.policy && <IdChip id={p.payload.policy.policyId} version={`r${p.payload.policy.revision}`} to={`/policies/${p.payload.policy.policyId}`} copy={false} />}
                   {p.payload.kill && <Link to={`/ops/kill?id=${p.payload.kill.killId}`}>{p.payload.kill.killId}</Link>}
@@ -135,7 +145,7 @@ export function DeploymentDetail() {
             />
             <Progress d={p} />
             <div className="ds-split">
-              <Panel title={D.signature} eyebrow="D06-10" id="signature" actions={<VerdictBadge value={d.verification.valid ? 'PASS' : 'FAIL'} />}>
+              <Panel title={D.signature} codes="D06-10" id="signature" actions={<VerdictBadge value={d.verification.valid ? 'PASS' : 'FAIL'} />}>
                 <KeyValue
                   rows={[
                     { k: D.col.key, v: <span className="ds-mono">{`${p.signature.keyId} · ${p.signature.alg}`}</span> },
@@ -149,7 +159,7 @@ export function DeploymentDetail() {
                   ]}
                 />
               </Panel>
-              <Panel title={D.nodes} eyebrow="P0 aggregate · BD-12" id="nodes">
+              <Panel title={D.nodes} codes="P0 aggregate · BD-12" id="nodes">
                 <DataTable
                   caption={D.nodes}
                   rows={p.nodes}
@@ -163,7 +173,7 @@ export function DeploymentDetail() {
               </Panel>
             </div>
             <div className="ds-split">
-              <Panel title={D.readbacks} eyebrow="IF-06 · GLEO" id="readbacks">
+              <Panel title={D.readbacks} codes="IF-06 · GLEO" id="readbacks">
                 <DataTable
                   caption={D.readbacks}
                   rows={[...d.readbacks].reverse()}
@@ -176,7 +186,7 @@ export function DeploymentDetail() {
                   ]}
                 />
               </Panel>
-              <Panel title={D.calls} eyebrow="IF-13 · IF-05" id="calls">
+              <Panel title={D.calls} codes="IF-13 · IF-05" id="calls">
                 <pre className="ds-code" tabIndex={0}>{JSON.stringify(d.calls.map((c) => ({ ifId: c.ifId, at: c.at, request: c.request, response: c.response })), null, 2)}</pre>
               </Panel>
             </div>

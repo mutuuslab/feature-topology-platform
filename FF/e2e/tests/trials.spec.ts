@@ -61,7 +61,9 @@ test('체험 전환 분석: KPI·깔때기·성향별·주별 추이, 데모만 
   await page.goto('/biz/trials');
   await expect(page.getByRole('heading', { name: '체험 전환 분석' })).toBeVisible();
   await expect(page.getByRole('group', { name: /^제안 → 수락 → 구매: 제안 [\d,]+, 수락 [\d,]+, 구매 [\d,]+$/ })).toBeVisible();
-  await expect(page.locator('.ds-kpi')).toHaveCount(5);
+  // 핵심 메시지 = 구매 전환율, 나머지 4개는 요약 한 줄(3초 테스트)
+  await expect(page.locator('#main [data-key-message] .ds-key__value')).toHaveText(/%$/);
+  await expect(page.locator('#main .ds-summary > span')).toHaveCount(4);
   const seg = page.getByRole('table', { name: '주행 성향별 수락률·구매 전환율' });
   await expect(seg.getByRole('row')).toHaveCount(5); // 머리 + 4개 성향
   await page.getByLabel('나눠 보기').selectOption('ageBand');

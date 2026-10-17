@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, GateBadge, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Select, Toolbar } from '../../design';
+import { AsyncView, DataTable, GateBadge, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Select, Toolbar, type KeyMessageSpec } from '../../design';
 
 const M = ko.master;
 
@@ -18,6 +18,16 @@ interface Trace {
   policies: { policyId: string; flagKey: string; status: string }[];
 }
 
+/** 핵심 메시지 — 추적 빈칸(요구·구현·근거 없는 Gate·안전 분류 미확정)이 있으면 그것, 없으면 완결 */
+function traceMessage(d: Trace | undefined): KeyMessageSpec {
+  const T = M.trace.key;
+  if (!d) return { tone: 'neutral', value: '—', text: T.done };
+  const noEvidence = d.gates.filter((g) => g.status === 'PASS' && !g.evidenceRef).length;
+  const gaps = [!d.requirements.length && T.none, !d.functions.length && T.impl, noEvidence > 0 && T.evidence(noEvidence), d.safety.status !== 'CONFIRMED' && T.unconfirmed].filter(Boolean) as string[];
+  const link = <IdChip id={d.feature.featureId} version={d.feature.version} to={`/features/${d.feature.featureId}/${d.feature.version}`} />;
+  return gaps.length ? { tone: 'warn', value: gaps.length, text: T.gaps(gaps.join(' · ')), action: link } : { tone: 'ok', text: T.done, action: link };
+}
+
 export function DesignTraceScreen() {
   const [sp, setSp] = useSearchParams();
   const pick = sp.get('feature') ?? 'FEAT-00022@1.0.0';
@@ -28,7 +38,7 @@ export function DesignTraceScreen() {
   const T = M.trace;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-02 · D06-07 · REQ → IMPL → VERIFY" title={T.title} lead={T.lead} />
+      <PageHeader codes="D01-02 · D06-07 · REQ → IMPL → VERIFY" title={T.title} lead={T.lead} message={traceMessage(d)} />
       <Toolbar label={T.pick}>
         <Select label={T.pick} value={pick} onChange={(e) => setSp({ feature: e.target.value })}>
           {!feats.data?.items.some((f) => `${f.featureId}@${f.version}` === pick) && <option value={pick}>{pick}</option>}
@@ -40,9 +50,6 @@ export function DesignTraceScreen() {
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <>
-            <p>
-              <IdChip id={d.feature.featureId} version={d.feature.version} to={`/features/${d.feature.featureId}/${d.feature.version}`} /> {d.feature.name} <LifecycleBadge value={d.feature.lifecycle} /> <span className="ds-mono ds-field__hint">{`${d.feature.scope} · ASIL ${d.feature.asil}`}</span>
-            </p>
             <div className="ds-split">
               <Panel title={T.requirements} id="trace-req">
                 <ul className="ds-mono">{d.requirements.length ? d.requirements.map((r) => <li key={r.reqId}>{r.reqId}</li>) : <li>{M.common.none}</li>}</ul>
@@ -116,7 +123,16 @@ export function EvidenceScreen() {
   const E = M.evidence;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D04-02 · Gate_Evidence" title={E.title} lead={E.lead} meta={M.common.count(rows.length)} />
+      <PageHeader
+        codes="D04-02 · Gate_Evidence"
+        title={E.title}
+        lead={E.lead}
+        message={(() => {
+          const fail = rows.filter((r) => r.inputResult === 'FAIL' || r.gateStatus === 'FAIL').length;
+          return !q.data ? { tone: 'neutral', value: '—', text: E.key.fail } : fail ? { tone: 'danger', value: fail, text: E.key.fail } : { tone: 'ok', text: E.key.clean };
+        })()}
+        meta={M.common.count(rows.length)}
+      />
       <Toolbar label={E.title}>
         <label className="ds-field ds-field--inline">
           <span className="ds-field__label">{M.common.feature}</span>
@@ -161,7 +177,7 @@ export function ChangesScreen() {
   const C = M.changes.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-01 · Version_Rationale" title={M.changes.title} lead={M.changes.lead} meta={M.common.count(rows.length)} />
+      <PageHeader codes="D01-01 · Version_Rationale" title={M.changes.title} lead={M.changes.lead} message={{ tone: 'neutral', value: q.data ? rows.length : '—', text: M.changes.key }} />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={M.changes.title}

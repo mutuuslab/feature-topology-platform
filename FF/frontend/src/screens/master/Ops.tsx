@@ -1,11 +1,11 @@
 // 운영·관리 v2 화면 (P10-C4) — /ops/telemetry 운영 데이터·이벤트, /supplier/portal 협력사 이관, /admin/security 보안·인증서,
 // /admin/settings 설정, /verify/compliance 컴플라이언스(보고서 v1.1 규칙 추적), /change/eo SW EO. 모두 기존 API·계약 데이터를 읽는다.
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { COMPLIANCE_PROFILES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, Segmented, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
+import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { usePermission } from '../shared';
 import { EpochBump, SbomDrawer, SecurityEventsPanel } from './Security';
 
@@ -19,10 +19,20 @@ const t19 = (iso: string | null | undefined) => (iso ? iso.slice(0, 19).replace(
 // ───────── 운영 데이터·이벤트 ─────────
 
 export function TelemetryScreen() {
+  const rb = useApi<{ items: { observed: string }[] }>('readbacks');
   const T = M.telemetry;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D04-03 · IF-06 · IF-11" title={T.title} lead={T.lead} actions={<Link to="/events">{T.events}</Link>} />
+      <PageHeader
+        codes="D04-03 · IF-06 · IF-11"
+        title={T.title}
+        lead={T.lead}
+        message={(() => {
+          const n = (rb.data?.items ?? []).filter((r) => r.observed === 'REJECTED').length;
+          return !rb.data ? { tone: 'neutral', value: '—', text: T.key.rejected } : n ? { tone: 'warn', value: n, text: T.key.rejected } : { tone: 'ok', text: T.key.clean };
+        })()}
+        actions={<Link to="/events">{T.events}</Link>}
+      />
       <Tabs tabs={[{ key: 'readbacks', label: T.tabs.readbacks }, { key: 'status', label: T.tabs.status }, { key: 'requests', label: T.tabs.requests }]}>
         {(t) => (t === 'status' ? <StatusTab /> : t === 'requests' ? <RequestsTab /> : <ReadbacksTab />)}
       </Tabs>
@@ -134,7 +144,7 @@ export function SupplierScreen() {
   const C = S.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D05-01 · IF-08 Supplier Portal" title={S.title} lead={S.lead} meta={pick ? S.summary(mine.length, new Set(mine.flatMap(featuresOf)).size) : undefined} />
+      <PageHeader codes="D05-01 · IF-08 Supplier Portal" title={S.title} lead={S.lead} message={{ tone: 'neutral', value: pick || '—', text: S.key(mine.length, new Set(mine.flatMap(featuresOf)).size) }} />
       <Toolbar label={S.supplier}>
         <Select label={S.supplier} value={pick} onChange={(e) => setSupplier(e.target.value)}>
           {suppliers.map((s) => (
@@ -172,7 +182,15 @@ export function SecurityScreen() {
   const rows = keys.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-10 · D06-11 · PKI/KMS" title={S.title} lead={S.lead} />
+      <PageHeader
+        codes="D06-10 · D06-11 · PKI/KMS"
+        title={S.title}
+        lead={S.lead}
+        message={(() => {
+          const soon = rows.filter((r) => r.status === 'ACTIVE' && Date.parse(r.notAfter) - Date.now() < 30 * 86_400_000).length;
+          return !keys.data ? { tone: 'neutral', value: '—', text: S.key.expiring } : soon ? { tone: 'warn', value: soon, text: S.key.expiring } : { tone: 'ok', text: S.key.clean(rows.length) };
+        })()}
+      />
       <Panel title={S.keys} id="sec-keys">
         <AsyncView state={asyncState(keys, rows.length === 0)} error={keys.error?.message} onRetry={() => keys.refetch()}>
           <DataTable
@@ -224,7 +242,7 @@ function SbomPanel() {
   const rows = [...(q.data?.items ?? [])].reverse();
   const [open, setOpen] = useState<string | null>(null);
   return (
-    <Panel title={S.sbom} eyebrow="D06-11 · FFG-SBOM-002·003" id="sec-sbom">
+    <Panel title={S.sbom} codes="D06-11 · FFG-SBOM-002·003" id="sec-sbom">
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={3}>
         <DataTable
           caption={S.sbom}
@@ -268,7 +286,7 @@ function VexPanel() {
   const [f, setF] = useState({ vulnId: '', affects: '', state: 'under_investigation', justification: 'code_not_reachable' });
   const rows = [...(q.data?.items ?? [])].reverse();
   return (
-    <Panel title={S.vex} eyebrow="D06-11 · VEX" id="sec-vex">
+    <Panel title={S.vex} codes="D06-11 · VEX" id="sec-vex">
       <form
         style={{ display: 'grid', gap: 'var(--sp-2)', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', alignItems: 'end' }}
         onSubmit={(e) => {
@@ -330,14 +348,13 @@ export function SettingsScreen() {
   const h = health.data;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="KERNEL · CONFIG" title={S.title} lead={S.lead} />
+      <PageHeader codes="KERNEL · CONFIG" title={S.title} lead={S.lead} message={!h ? { tone: 'neutral', value: '—', text: S.key.bad } : h.status === 'ok' ? { tone: 'ok', text: S.key.ok(h.seed ?? '—') } : { tone: 'danger', text: S.key.bad }} />
       <div className="ds-split">
         <Panel title={S.health} id="set-health">
           <AsyncView state={asyncState(health)} error={health.error?.message} onRetry={() => health.refetch()}>
             {h && (
               <KeyValue
                 rows={[
-                  { k: S.health, v: <VerdictBadge value={h.status === 'ok' ? 'PASS' : 'FAIL'} /> },
                   { k: 'seed', v: <span className="ds-mono">{h.seed ?? '—'}</span> },
                   ...Object.entries(h.counts).map(([k, v]) => ({ k: <span className="ds-mono">{k}</span>, v: <span className="ds-mono">{v.toLocaleString('ko-KR')}</span> })),
                 ]}
@@ -373,6 +390,22 @@ export function SettingsScreen() {
 
 // ───────── 컴플라이언스 (보고서 v1.1 플랫폼 규칙 추적) ─────────
 
+/** 핵심 메시지 — 규칙 탭: 구현 n/전체·시험 n/전체, 시장 탭: 확인이 필요한 Profile 수 */
+function complianceMessage(profiles: boolean): KeyMessageSpec {
+  const K = M.compliance.key;
+  if (profiles) {
+    const verify = COMPLIANCE_PROFILES.filter((p) => p.status !== 'CONFIRMED').length;
+    return verify ? { tone: 'warn', value: verify, text: K.verify } : { tone: 'ok', text: K.confirmed };
+  }
+  const ids = Object.keys(STANDARDS_MAP);
+  const impl = ids.filter((id) => RULE_STATUS[id]?.implemented).length;
+  const tested = ids.filter((id) => RULE_STATUS[id]?.tested).length;
+  return { tone: impl === ids.length && tested === ids.length ? 'ok' : 'warn', value: `${impl}/${ids.length}`, text: K.rules(tested, ids.length) };
+}
+
+/** 예외만 강조 — 충족이면 작은 표시, 미충족만 배지 */
+const Done = ({ ok }: { ok: boolean }) => (ok ? <span title="PASS" style={{ color: 'var(--ok)' }}><StatusGlyph kind="PASS" /></span> : <VerdictBadge value="UNJUDGED" />);
+
 function RulesTab() {
   const [filter, setFilter] = useState<'all' | 'open' | 'done'>('all');
   const C = M.compliance;
@@ -386,11 +419,6 @@ function RulesTab() {
   const rows = all.filter((r) => filter === 'all' || (filter === 'done' ? r.status.implemented : !r.status.implemented));
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
-      <div className="ds-kpis">
-        <Kpi label={C.kpi.total} value={all.length} />
-        <Kpi label={C.kpi.implemented} value={`${all.filter((r) => r.status.implemented).length}/${all.length}`} tone="ok" />
-        <Kpi label={C.kpi.tested} value={`${all.filter((r) => r.status.tested).length}/${all.length}`} tone="accent" />
-      </div>
       <Toolbar label={C.filter}>
         <Segmented label={C.filter} options={(['all', 'open', 'done'] as const).map((v) => ({ value: v, label: C.filters[v] }))} value={filter} onChange={(v) => setFilter(v as typeof filter)} />
       </Toolbar>
@@ -405,8 +433,8 @@ function RulesTab() {
           { key: 'l', header: C.col.level, cell: (r) => <span className="ds-nowrap">{r.rule?.level ?? '—'}</span> },
           { key: 'w', header: C.col.wp, cell: (r) => <span className="ds-mono">{r.wp}</span>, sort: (r) => r.wp },
           { key: 'c', header: C.col.components, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.components.join(' · ')}</span> },
-          { key: 'im', header: C.col.impl, cell: (r) => <VerdictBadge value={r.status.implemented ? 'PASS' : 'UNJUDGED'} /> },
-          { key: 'te', header: C.col.test, cell: (r) => <VerdictBadge value={r.status.tested ? 'PASS' : 'UNJUDGED'} /> },
+          { key: 'im', header: C.col.impl, cell: (r) => <Done ok={r.status.implemented} /> },
+          { key: 'te', header: C.col.test, cell: (r) => <Done ok={r.status.tested} /> },
         ]}
       />
     </div>
@@ -422,13 +450,14 @@ function ProfilesTab() {
   const ret = sumsRetention();
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
-      <div className="ds-kpis">
-        <Kpi label={C.kpi.profiles} value={COMPLIANCE_PROFILES.length} />
-        <Kpi label={C.kpi.confirmed} value={`${COMPLIANCE_PROFILES.filter((p) => p.status === 'CONFIRMED').length}/${COMPLIANCE_PROFILES.length}`} tone="ok" />
-        <Kpi label={C.kpi.verify} value={COMPLIANCE_PROFILES.filter((p) => p.status !== 'CONFIRMED').length} tone="warn" />
-        <Kpi label={C.kpi.sums} value={C.years(ret.yearsAfterProductionEnd)} hint={ret.basis} />
-      </div>
-      <Panel title={C.simTitle} eyebrow="FFG-GEN-003" id="cp-sim">
+      <SummaryLine
+        items={[
+          { k: C.kpi.profiles, v: COMPLIANCE_PROFILES.length },
+          { k: C.kpi.confirmed, v: `${COMPLIANCE_PROFILES.filter((p) => p.status === 'CONFIRMED').length}/${COMPLIANCE_PROFILES.length}` },
+          { k: C.kpi.sums, v: C.years(ret.yearsAfterProductionEnd) },
+        ]}
+      />
+      <Panel title={C.simTitle} codes="FFG-GEN-003" id="cp-sim">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-3)', alignItems: 'flex-end' }}>
           <Select label={C.sim.market} value={sim.market} onChange={(e) => setSim({ ...sim, market: e.target.value })}>
             {[...markets, 'KR', 'OTHER'].filter((m, i, a) => a.indexOf(m) === i).map((m) => (
@@ -481,9 +510,10 @@ function ProfilesTab() {
 
 export function ComplianceScreen() {
   const C = M.compliance;
+  const [sp] = useSearchParams();
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D03-01 · Report v1.1 FFG" title={C.title} lead={C.lead} actions={<Link to="/arch/components">{ko.arch.title}</Link>} />
+      <PageHeader codes="D03-01 · Report v1.1 FFG" title={C.title} lead={C.lead} message={complianceMessage(sp.get('tab') === 'profiles')} actions={<Link to="/arch/components">{ko.arch.title}</Link>} />
       <Tabs tabs={[{ key: 'rules', label: C.tabs.rules }, { key: 'profiles', label: C.tabs.profiles }]}>{(t) => (t === 'profiles' ? <ProfilesTab /> : <RulesTab />)}</Tabs>
     </div>
   );
@@ -507,7 +537,7 @@ export function EoScreen() {
   const E = M.eo;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-02 · SW EO" title={E.title} lead={E.lead} />
+      <PageHeader codes="D01-02 · SW EO" title={E.title} lead={E.lead} message={{ tone: 'neutral', value: q.data ? groups.filter((g) => g.versions.length > 1).length : '—', text: E.key }} />
       <Toolbar label={E.onlyMulti}>
         <label className="ds-field ds-field--inline">
           <input type="checkbox" checked={multi} onChange={(e) => setMulti(e.target.checked)} />

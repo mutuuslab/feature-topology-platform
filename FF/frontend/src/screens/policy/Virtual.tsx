@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Icon, IdChip, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, Icon, IdChip, KeyValue, PageHeader, Panel, Select, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { usePermission, when } from '../shared';
 
 const T = ko.virtual;
@@ -223,7 +223,7 @@ export function CombinationPanel({ featureId }: { featureId: string }) {
   const q = useApi<ComboPlan>('virtualCombinations', { query: { featureId } });
   const p = q.data;
   return (
-    <Panel title={C.title} eyebrow="FFG-TST-003" id="combinations" tour="virtual-combinations">
+    <Panel title={C.title} codes="FFG-TST-003" id="combinations" tour="virtual-combinations">
       <p className="ds-field__hint">{C.lead}</p>
       <AsyncView state={asyncState(q, !p)} error={q.error?.message} onRetry={() => q.refetch()} rows={2}>
         {p && (
@@ -273,6 +273,14 @@ export function CombinationPanel({ featureId }: { featureId: string }) {
       </AsyncView>
     </Panel>
   );
+}
+
+/** 핵심 메시지 — 최근 차량 내 감지 실행의 G5 판정과 FTTI 여유, 서버가 없으면 그것 */
+function virtualMessage(sim: SimStatus | undefined, onboard: VRun | null): KeyMessageSpec {
+  const K = T.key;
+  if (!onboard) return sim && !sim.available ? { tone: 'warn', text: K.off } : { tone: 'neutral', text: K.none };
+  const margin = val(onboard, 'ftti_margin');
+  return { tone: onboard.gateResult === 'PASS' ? 'ok' : 'danger', value: onboard.gateResult, text: K.g5(margin == null ? '—' : `${margin >= 0 ? '+' : ''}${margin.toFixed(2)} s`) };
 }
 
 /** 그 역할의 가장 최근 CARLA 실행 (실행 번호가 클수록 나중) */
@@ -400,7 +408,7 @@ export function VirtualPanel({ policy }: { policy: { policyId: string; featureId
   return (
     <Panel
       title={T.title}
-      eyebrow="D06-03 · IF-09"
+      codes="D06-03 · IF-09"
       id="virtual"
       actions={
         <Button variant="primary" disabled={!perm.ok || run.isPending} title={perm.hint} onClick={() => run.mutate({ body: { policyId: policy.policyId } })}>
@@ -436,7 +444,7 @@ export function VirtualValidationScreen() {
   const rows = runs.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-03 · D04-02 · CARLA" title={T.title} lead={T.lead} actions={<ReportLink run={latestOf(rows, 'FAULT_ONBOARD')} />} />
+      <PageHeader codes="D06-03 · D04-02 · CARLA" title={T.title} lead={T.lead} message={virtualMessage(status.data, latestOf(rows, 'FAULT_ONBOARD'))} actions={<ReportLink run={latestOf(rows, 'FAULT_ONBOARD')} />} />
       <Panel title={T.status} id="sim" tour="sim-status" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
         {status.data && (
           <KeyValue

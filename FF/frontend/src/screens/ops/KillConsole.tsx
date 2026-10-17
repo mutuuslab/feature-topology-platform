@@ -657,7 +657,18 @@ export function KillConsole() {
   const rows = q.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D03-03 · D03-04 · KILL / RESTORE" title={K.title} lead={K.lead} />
+      <PageHeader
+        codes="D03-03 · D03-04 · KILL / RESTORE"
+        title={K.title}
+        lead={K.lead}
+        message={(() => {
+          const waiting = rows.filter((k) => k.status === 'REQUESTED').length;
+          const active = rows.filter((k) => k.status === 'ACTIVE').length;
+          if (!q.data) return { tone: 'neutral', value: '—', text: K.key.clean };
+          if (waiting) return { tone: 'warn', value: waiting, text: K.key.waiting(active) };
+          return active ? { tone: 'danger', value: active, text: K.key.active } : { tone: 'ok', text: K.key.clean };
+        })()}
+      />
       <div className="ds-split ds-split--wide-side">
         <NewKill onDone={(k) => setOpen(k.killId)} />
         <Panel title={K.list} id="kills">

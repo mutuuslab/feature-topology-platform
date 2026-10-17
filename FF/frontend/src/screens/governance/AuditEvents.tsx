@@ -19,7 +19,13 @@ export function AuditScreen() {
   const c = chain.data;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-10 · AUDIT" title={ko.audit.title} lead={ko.audit.lead} meta={c && <ChainStatus ok={c.ok} verified={c.verified} head={c.head ?? undefined} />} tour="audit-chain" />
+      <PageHeader
+        codes="D01-10 · AUDIT"
+        title={ko.audit.title}
+        lead={ko.audit.lead}
+        message={!c ? { tone: 'neutral', value: '—', text: ko.audit.key.broken } : c.ok ? { tone: 'ok', text: ko.audit.key.ok(c.verified, c.head ? `${c.head.slice(0, 10)}…` : '—') } : { tone: 'danger', text: ko.audit.key.broken }}
+        tour="audit-chain"
+      />
       {c?.broken && (
         <p className="ds-stale" role="alert">
           {ko.audit.chainBroken(c.broken.id, c.broken.kind)}
@@ -93,7 +99,7 @@ export function EventsScreen() {
   const stream: StreamItem[] = live.map((e) => ({ seq: e.seq, at: e.at, type: e.type, aggregate: e.aggregate, summary: summarize(e.payload) }));
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D04-04 · EVENT HISTORY" title={ko.events.title} lead={ko.events.lead} />
+      <PageHeader codes="D04-04 · EVENT HISTORY" title={ko.events.title} lead={ko.events.lead} message={{ tone: 'accent', value: q.data ? q.data.items.length : '—', text: ko.events.key }} />
       <div className="ds-split">
         <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
           <DataTable

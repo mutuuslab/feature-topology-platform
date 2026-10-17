@@ -50,31 +50,32 @@ export function ActivationScreen() {
   const d = q.data;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-09 · ACTIVATION" title={A.title} lead={A.lead} />
-      <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
-        <Select label={A.vehicle} value={vin} onChange={(e) => set('vin', e.target.value)}>
-          {(vehicles.data?.items ?? []).map((v) => (
-            <option key={v.vin} value={v.vin}>
-              {v.vin} · {v.label}
-            </option>
-          ))}
-        </Select>
-        <Select label={A.flag} value={flagKey} onChange={(e) => set('flagKey', e.target.value)}>
-          {flags.map((k) => (
-            <option key={k}>{k}</option>
-          ))}
-        </Select>
-      </div>
+      <PageHeader
+        codes="D01-09 · ACTIVATION"
+        title={A.title}
+        lead={A.lead}
+        message={d ? { tone: d.result.value ? 'ok' : 'neutral', value: d.result.value ? 'ON' : 'OFF', text: A.key(vin, flagKey, d.result.decision, d.result.reason) } : { tone: 'neutral', value: '—', text: A.key(vin, flagKey, '…', '…') }}
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
+            <Select label={A.vehicle} value={vin} onChange={(e) => set('vin', e.target.value)}>
+              {(vehicles.data?.items ?? []).map((v) => (
+                <option key={v.vin} value={v.vin}>
+                  {v.vin} · {v.label}
+                </option>
+              ))}
+            </Select>
+            <Select label={A.flag} value={flagKey} onChange={(e) => set('flagKey', e.target.value)}>
+              {flags.map((k) => (
+                <option key={k}>{k}</option>
+              ))}
+            </Select>
+          </div>
+        }
+      />
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <>
-            <Panel title={A.result} eyebrow={`${d.result.policyId} r${d.result.revision}`} id="result" actions={<VerdictBadge value={DECISION_VERDICT[d.result.decision] ?? '미판정'} />}>
-              <div className="ds-verdict-big" data-value={d.result.value}>
-                <strong style={{ color: d.result.value ? 'var(--ok)' : 'var(--ink-2)' }}>{d.result.value ? 'ON' : 'OFF'}</strong>
-                <span>{d.result.decision}</span>
-                <span style={{ color: 'var(--muted)' }}>{d.result.reason}</span>
-              </div>
-              <h3 className="ds-eyebrow" style={{ margin: 'var(--sp-3) 0 var(--sp-2)' }}>{A.trace}</h3>
+            <Panel title={A.trace} eyebrow={`${d.result.policyId} r${d.result.revision}`} id="result">
               <ol className="ds-trace">
                 {d.result.trace.map((t) => (
                   <li key={t.step} data-result={t.result} data-step={t.step}>

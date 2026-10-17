@@ -57,13 +57,17 @@ export function IdChip({ id, version, to, copy = true }: { id: string; version?:
   );
 }
 
-/** tour: 따라하기 스포트라이트 앵커(data-tour) */
-export function Panel({ title, eyebrow, actions, children, id, tour }: { title?: ReactNode; eyebrow?: ReactNode; actions?: ReactNode; children: ReactNode; id?: string; tour?: string }) {
+/**
+ * tour: 따라하기 스포트라이트 앵커(data-tour).
+ * eyebrow: 제목 위 보조 정보(개수·기준 시각 등 사람이 읽는 말). 컴포넌트·규칙·IF 코드는 codes — 설명 모드에서만 보인다(3초 테스트).
+ */
+export function Panel({ title, eyebrow, codes, actions, children, id, tour }: { title?: ReactNode; eyebrow?: ReactNode; codes?: ReactNode; actions?: ReactNode; children: ReactNode; id?: string; tour?: string }) {
   return (
-    <section className="ds-panel" aria-labelledby={id ? `${id}-h` : undefined} data-tour={tour}>
+    <section className="ds-panel" aria-labelledby={id && title ? `${id}-h` : undefined} data-tour={tour}>
       {(title || actions) && (
         <header className="ds-panel__head">
           <div>
+            {codes && <div className="ds-page__codes">{codes}</div>}
             {eyebrow && <div className="ds-eyebrow">{eyebrow}</div>}
             {title && <h2 id={id ? `${id}-h` : undefined}>{title}</h2>}
           </div>

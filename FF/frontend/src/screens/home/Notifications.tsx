@@ -140,9 +140,10 @@ export function NotificationsScreen() {
   return (
     <>
       <PageHeader
-        eyebrow={N.eyebrow}
+        codes={N.eyebrow}
         title={N.title}
         lead={N.lead}
+        message={STATIC_MODE ? { tone: 'neutral', text: N.key.static } : !totals.data ? { tone: 'neutral', value: '—', text: N.key.unread } : unread ? { tone: 'warn', value: unread, text: N.key.unread } : { tone: 'ok', text: N.key.clear }}
         actions={
           <Button icon="check" disabled={STATIC_MODE || unread === 0 || readAll.isPending} onClick={() => readAll.mutate({ body: category ? { category } : {} })}>
             {N.markAll}
@@ -150,14 +151,14 @@ export function NotificationsScreen() {
         }
       />
       <div className="ds-split">
-        <Panel title={N.title} id="ntf-list">
+        <Panel id="ntf-list">
           <div className="ntf-filters">
             <Segmented
               label={N.filterLabel}
               value={view}
               onChange={(v) => setView(v as 'unread' | 'all')}
               options={[
-                { value: 'unread', label: N.unreadOnly, count: unread },
+                { value: 'unread', label: N.unreadOnly },
                 { value: 'all', label: N.all, count: totals.data?.items.length },
               ]}
             />

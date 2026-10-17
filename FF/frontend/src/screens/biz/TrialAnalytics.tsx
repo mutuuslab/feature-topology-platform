@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { addDays, SEGMENT_DIMENSIONS, trialAnalyticsQuery, type SegmentDimension, type TrialSource } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, Kpi, PageHeader, Panel, Segmented, Select, Toolbar } from '../../design';
+import { AsyncView, DataTable, PageHeader, Panel, Segmented, Select, SummaryLine, Toolbar } from '../../design';
 import { FunnelChart, pct, SegmentChart, TrendChart } from './charts';
 
 const B = ko.bizTrial;
@@ -53,9 +53,10 @@ export function TrialAnalyticsScreen() {
   return (
     <div className="ds-screen">
       <PageHeader
-        eyebrow={`D05-06 · BIZ METRICS · ${catalogId}`}
+        codes={`D05-06 · BIZ METRICS · ${catalogId}`}
         title={B.title}
         lead={B.lead}
+        message={{ tone: 'ok', value: t ? pct(t.conversionRate) : '—', text: B.key }}
         meta={d ? `${B.asOf(d.today)} · ${B.counts(d.counts.demo, d.counts.synthetic)}` : undefined}
         actions={<Link to="/entitlements">{ko.entitlement.tabs.trials}</Link>}
       />
@@ -74,13 +75,14 @@ export function TrialAnalyticsScreen() {
       <AsyncView state={asyncState(q, !t || t.offered === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && t && (
           <div className="ds-stack" style={{ opacity: q.isPlaceholderData ? 0.6 : 1 }}>
-            <div className="ds-kpis ds-kpis--5">
-              <Kpi label={B.kpi.offered} value={nf(t.offered)} hint={B.kpiHint.offered(t.pending)} />
-              <Kpi label={B.kpi.accepted} value={pct(t.acceptRate)} hint={B.kpiHint.accepted(t.accepted)} tone="accent" />
-              <Kpi label={B.kpi.converted} value={pct(t.conversionRate)} hint={B.kpiHint.converted(t.converted)} tone="ok" />
-              <Kpi label={B.kpi.overall} value={pct(t.overallRate)} hint={B.kpiHint.overall} />
-              <Kpi label={B.kpi.median} value={t.medianDaysToConvert === null ? '—' : String(t.medianDaysToConvert)} hint={B.kpiHint.median} />
-            </div>
+            <SummaryLine
+              items={[
+                { k: B.kpi.offered, v: nf(t.offered) },
+                { k: B.kpi.accepted, v: pct(t.acceptRate) },
+                { k: B.kpi.overall, v: pct(t.overallRate) },
+                { k: B.kpi.median, v: t.medianDaysToConvert === null ? '—' : String(t.medianDaysToConvert) },
+              ]}
+            />
             <div className="ds-stack">
               <Panel title={B.funnel} id="trial-funnel">
                 <FunnelChart

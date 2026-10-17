@@ -7,7 +7,7 @@ import { asyncState, useApi } from '../../api/hooks';
 import { PLATFORM_ROLES } from '../../api/actor';
 import { roleLabel } from '../../data/refdata';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, Field, KeyValue, Kpi, PageHeader, Panel, VerdictBadge } from '../../design';
+import { AsyncView, DataTable, Field, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge } from '../../design';
 import { when } from '../shared';
 
 const I = ko.iam;
@@ -27,7 +27,7 @@ export function IamScreen() {
   const roles = d ? d.roles.filter((r) => r.human) : [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-09 · IAM" title={I.title} lead={I.lead} />
+      <PageHeader codes="D06-09 · IAM" title={I.title} lead={I.lead} message={{ tone: 'neutral', value: den.data ? den.data.items.length : '—', text: I.key }} />
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <Panel title={I.matrix} id="matrix">
@@ -135,7 +135,18 @@ export function VariantScreen() {
   const set = (f: string, v: string) => (setFeatureId(f), setVersion(v), setSp({ featureId: f, version: v }, { replace: true }));
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D02-01 · D02-02 · VARIANT / SUPPORT" title={VC.title} lead={VC.lead} />
+      <PageHeader
+        codes="D02-01 · D02-02 · VARIANT / SUPPORT"
+        title={VC.title}
+        lead={VC.lead}
+        message={
+          d
+            ? d.summary.notSupported
+              ? { tone: 'warn', value: d.summary.notSupported, text: VC.key.notSupported(`${d.feature.featureId} ${d.feature.version} ${d.feature.name}`) }
+              : { tone: 'ok', text: VC.key.ok(`${d.feature.featureId} ${d.feature.version} ${d.feature.name}`) }
+            : { tone: 'neutral', value: '—', text: VC.key.notSupported(`${featureId} ${version}`) }
+        }
+      />
       <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
         <Field label={VC.feature}>
           <input className="ds-input ds-input--mono" value={featureId} onChange={(e) => set(e.target.value.trim().toUpperCase(), version)} />
@@ -147,13 +158,14 @@ export function VariantScreen() {
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <>
-            <div className="ds-kpis">
-              <Kpi label={VC.verdict.APPLICABLE} value={d.summary.applicable} tone="ok" />
-              <Kpi label={VC.verdict.NOT_SUPPORTED} value={d.summary.notSupported} tone={d.summary.notSupported ? 'warn' : undefined} />
-              <Kpi label={VC.verdict.NOT_APPLICABLE} value={d.summary.notApplicable} />
-              <Kpi label={VC.verdict.UNKNOWN} value={d.summary.unknown} />
-            </div>
-            <Panel title={`${d.feature.featureId} ${d.feature.version} · ${d.feature.name}`} eyebrow={VC.conditions} id="conditions">
+            <SummaryLine
+              items={[
+                { k: VC.verdict.APPLICABLE, v: d.summary.applicable },
+                { k: VC.verdict.NOT_APPLICABLE, v: d.summary.notApplicable },
+                { k: VC.verdict.UNKNOWN, v: d.summary.unknown },
+              ]}
+            />
+            <Panel title={VC.conditions} id="conditions">
               <KeyValue
                 rows={[
                   { k: VC.col.scope, v: <span className="ds-mono">{d.conditions.scope}</span> },
@@ -186,7 +198,7 @@ export function VariantScreen() {
 export function SupportPanel({ vin }: { vin: string }) {
   const q = useApi<{ items: { featureId: string; version: string; name: string; flagKeys: string[]; verdict: keyof typeof VC.verdict; reason: string }[] }>('vehicleSupport', { params: { vin } });
   return (
-    <Panel title={VC.support} eyebrow="D02-02" id="support">
+    <Panel title={VC.support} codes="D02-02" id="support">
       <AsyncView state={asyncState(q, (q.data?.items ?? []).length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={2}>
         <DataTable
           caption={VC.support}

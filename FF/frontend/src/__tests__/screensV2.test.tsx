@@ -55,8 +55,9 @@ describe('Feature Registry 목록', () => {
     mount('/features', '/features', <FeatureList />);
     expect(await screen.findByText('전방 안전거리 3단계')).toBeTruthy();
     expect(document.querySelector('[data-state="ready"]')).toBeTruthy();
-    const kpis = document.querySelectorAll('.ds-kpi__value');
-    expect([...kpis].map((k) => k.textContent)).toEqual(['2', '2', '1', '1', '1']);
+    // 핵심 메시지 = Feature 수, 요약 줄 = Baseline 확정 수(출시·제안 수는 Lifecycle 탭이 보인다)
+    expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('2');
+    expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['1']);
     expect(calls.some((c) => c.url.startsWith('/api/features?') && c.url.includes('latestOnly=true'))).toBe(true);
   });
 

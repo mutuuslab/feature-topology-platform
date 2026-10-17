@@ -8,7 +8,7 @@ import { asyncState, useApi } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, EventStream, KeyValue, Kpi, PageHeader, Panel, Segmented, Select } from '../../design';
+import { AsyncView, DataTable, EventStream, KeyValue, PageHeader, Panel, Segmented, Select } from '../../design';
 import { when } from '../shared';
 import { ACTIVATION_VAR, FleetMapCanvas, HOLLOW_VAR, NO_RUNTIME_VAR, stateLabel, stateVar, SUBSCRIPTION_VAR, VIEWS, type MapView } from './FleetMapCanvas';
 
@@ -372,7 +372,16 @@ export function FleetMapScreen() {
 
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow={F.eyebrow} title={F.title} lead={F.lead} />
+      <PageHeader
+        codes={F.eyebrow}
+        title={F.title}
+        lead={F.lead}
+        message={(() => {
+          const n = items.filter((v) => v.activation === 'DISABLED' || v.activation === 'UNKNOWN').length;
+          const killed = items.some((v) => v.activation === 'DISABLED');
+          return forbidden ? { tone: 'neutral', text: F.key.forbidden } : !demo.data ? { tone: 'neutral', value: '—', text: F.key.attention } : n ? { tone: killed ? 'danger' : 'warn', value: n, text: F.key.attention } : { tone: 'ok', text: F.key.clean };
+        })()}
+      />
       {forbidden ? (
         <Panel title={F.privacyTitle} id="fm-forbidden">
           <AsyncView state="forbidden">{null}</AsyncView>
@@ -380,12 +389,6 @@ export function FleetMapScreen() {
         </Panel>
       ) : (
         <>
-          <div className="ds-kpis">
-            <Kpi label={F.kpi.paid} value={count((v) => v.subscription === 'PAID')} />
-            <Kpi label={F.kpi.trial} value={count((v) => v.subscription === 'TRIAL')} tone="accent" />
-            <Kpi label={F.kpi.killed} value={count((v) => v.activation === 'DISABLED')} tone={items.some((v) => v.activation === 'DISABLED') ? 'danger' : undefined} />
-            <Kpi label={F.kpi.unknown} value={count((v) => v.activation === 'UNKNOWN')} tone={items.some((v) => v.activation === 'UNKNOWN') ? 'warn' : undefined} />
-          </div>
 
           <div className="fm-layout">
             <Panel

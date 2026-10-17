@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, Kpi, PageHeader, Panel, VerdictBadge } from '../../design';
+import { AsyncView, DataTable, PageHeader, Panel, SummaryLine, VerdictBadge } from '../../design';
 
 interface Outcome {
   ruleId: string;
@@ -22,16 +22,22 @@ export default function Precheck() {
   const d = q.data;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow={`D01-02 · ${d?.ruleVersion ?? 'DATA-PRECHECK'}`} title={T.title} lead={T.lead} />
+      <PageHeader
+        codes={`D01-02 · ${d?.ruleVersion ?? 'DATA-PRECHECK'}`}
+        title={T.title}
+        lead={T.lead}
+        message={
+          !d
+            ? { tone: 'neutral', value: '—', text: T.key.clean }
+            : d.summary.FAIL + d.summary.CONDITIONAL
+              ? { tone: d.summary.FAIL ? 'danger' : 'warn', value: `${d.summary.FAIL} · ${d.summary.CONDITIONAL}`, text: T.key.issues(d.summary.FAIL + d.summary.CONDITIONAL) }
+              : { tone: 'ok', text: T.key.clean }
+        }
+      />
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
-            <div className="ds-kpis">
-              <Kpi label="PASS" value={d.summary.PASS} tone="ok" />
-              <Kpi label="CONDITIONAL" value={d.summary.CONDITIONAL} tone="warn" />
-              <Kpi label="FAIL" value={d.summary.FAIL} tone={d.summary.FAIL ? 'danger' : undefined} />
-              <Kpi label={T.quality} value={d.summary.dataQualityFindings} tone={d.summary.dataQualityFindings ? 'warn' : undefined} />
-            </div>
+            <SummaryLine items={[{ k: 'PASS', v: d.summary.PASS }, { k: T.quality, v: d.summary.dataQualityFindings }]} />
             <Panel title={T.rules} id="rules">
               <RuleTable rows={d.rules} open={open} setOpen={setOpen} showExpected />
             </Panel>
@@ -45,20 +51,22 @@ export default function Precheck() {
   );
 }
 
+const SEVERITY = (r: string) => (r === 'FAIL' ? 0 : r === 'CONDITIONAL' ? 1 : 2);
+
 function RuleTable({ rows, open, setOpen, showExpected }: { rows: Outcome[]; open: string | null; setOpen: (k: string | null) => void; showExpected?: boolean }) {
   const C = T.col;
   return (
     <>
       <DataTable
         caption={T.rules}
-        rows={rows}
+        rows={[...rows].sort((a, b) => SEVERITY(a.result) - SEVERITY(b.result))}
         rowKey={(r) => r.ruleId}
         onOpen={(r) => setOpen(open === r.ruleId ? null : r.ruleId)}
         columns={[
           { key: 'id', header: C.rule, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.ruleId}</span>, width: '190px' },
           { key: 't', header: C.criterion, cell: (r) => r.title },
           { key: 'r', header: C.result, cell: (r) => <VerdictBadge value={r.result} /> },
-          ...(showExpected ? [{ key: 'e', header: C.expected, cell: (r: Outcome) => (r.expected ? <VerdictBadge value={r.expected} /> : '—') }] : []),
+          ...(showExpected ? [{ key: 'e', header: C.expected, cell: (r: Outcome) => (r.expected && r.expected !== r.result ? <VerdictBadge value={r.expected} /> : <span className="ds-field__hint">{r.expected ? '=' : '—'}</span>) }] : []),
           { key: 's', header: C.summary, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.summary}{r.findings.length ? ` · ${T.findings(r.findings.length)}` : ''}</span> },
         ]}
       />

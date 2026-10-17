@@ -5,7 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, Field, PageHeader, Panel, Select, Toolbar, VerdictBadge } from '../../design';
+import { AsyncView, Button, DataTable, ErrorNote, Field, PageHeader, Panel, Select, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { usePermission } from '../shared';
 
 const I = ko.p10.incident;
@@ -39,9 +39,13 @@ export function IncidentsScreen() {
   return (
     <div className="ds-screen">
       <PageHeader
-        eyebrow="D04-05 · INCIDENT · VOC · FFG-SOT-003"
+        codes="D04-05 · INCIDENT · VOC · FFG-SOT-003"
         title={I.title}
         lead={I.lead}
+        message={(() => {
+          const n = rows.filter((r) => r.status === 'OPEN' && !r.anomalyId).length;
+          return !list.data ? { tone: 'neutral', value: '—', text: I.key.open } : n ? { tone: 'warn', value: n, text: I.key.open } : { tone: 'ok', text: I.key.clean };
+        })()}
         actions={
           <Button variant="primary" disabled={!perm.ok || importVoc.isPending || STATIC_MODE} title={perm.hint} onClick={() => importVoc.mutate({ body: {} })}>
             {I.importVoc}
@@ -138,6 +142,16 @@ interface FieldView {
   incidents: { incidentId: string; source: string; category: string; severity: string; status: string; summary: string }[];
 }
 
+/** 핵심 메시지 — 차단 중이면 그것, 열린 이상 건, 아니면 ON flag 수와 차량 한 줄 */
+function fieldMessage(d: FieldView | undefined): KeyMessageSpec {
+  if (!d) return { tone: 'neutral', value: '—', text: '' };
+  const line = `${d.vehicle.vin} · ${d.vehicle.label} · ${d.vehicle.country} ${d.vehicle.vehicleModel} ${d.vehicle.trim} · SW ${d.vehicle.swVersion}`;
+  const kills = d.kills.filter((k) => k.status === 'ACTIVE').length;
+  if (kills) return { tone: 'danger', value: kills, text: F.key.kill(line) };
+  if (d.anomalies.length) return { tone: 'warn', value: d.anomalies.length, text: F.key.anomaly(line) };
+  return { tone: 'ok', value: `${d.flags.filter((f) => f.value).length}/${d.flags.length}`, text: F.key.ok(line) };
+}
+
 export function FieldPortalScreen() {
   const [sp, setSp] = useSearchParams();
   const vin = sp.get('vin') ?? 'ego-01';
@@ -147,7 +161,7 @@ export function FieldPortalScreen() {
   const C = F.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D05-05 · FIELD SUPPORT" title={F.title} lead={F.lead} />
+      <PageHeader codes="D05-05 · FIELD SUPPORT" title={F.title} lead={F.lead} message={fieldMessage(d)} />
       <Toolbar label={F.vin}>
         <label className="ds-field ds-field--inline">
           <span className="ds-field__label">{F.vin}</span>
@@ -158,7 +172,6 @@ export function FieldPortalScreen() {
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <>
-            <p className="ds-mono">{`${d.vehicle.vin} · ${d.vehicle.label} · ${d.vehicle.country} ${d.vehicle.vehicleModel} ${d.vehicle.trim} · SW ${d.vehicle.swVersion}`}</p>
             <div className="ds-split">
               <Panel title={F.flags} id="field-flags">
                 <DataTable caption={F.flags} rows={d.flags} rowKey={(r) => r.flagKey} columns={[

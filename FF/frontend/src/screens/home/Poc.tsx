@@ -6,12 +6,22 @@ import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';
+import { AsyncView, Button, DataTable, KeyValue, PageHeader, Panel, Select, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { usePermission, when } from '../shared';
 
 const P = ko.poc;
 const RUNNERS = ['OPERATOR', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER'] as const;
 const VERDICT: Record<string, string> = { DONE: 'PASS', RUNNING: '검토 중', FAILED: 'FAIL', PENDING: '미판정' };
+
+/** 핵심 메시지 — 완료 단계 수와 지금 단계 */
+function pocMessage(run: { status: string; steps: { no: number; title: string; status: string }[] } | undefined): KeyMessageSpec {
+  if (!run) return { tone: 'neutral', value: 0, text: P.keyNone };
+  const done = run.steps.filter((s) => s.status === 'DONE').length;
+  const cur = run.steps.find((s) => s.status !== 'DONE');
+  const tone = run.status === 'FAILED' || run.status === 'ABORTED' ? 'danger' : done === run.steps.length ? 'ok' : 'accent';
+  const n = ['①', '②', '③', '④', '⑤', '⑥'];
+  return { tone, value: `${done}/${run.steps.length}`, text: cur ? `${n[cur.no - 1]} ${cur.title} — ${cur.status === 'RUNNING' ? P.waiting : P.status[cur.status as keyof typeof P.status]}` : P.status.DONE };
+}
 
 interface Step {
   no: number;
@@ -77,9 +87,10 @@ export function PocScreen() {
   return (
     <div className="ds-screen">
       <PageHeader
-        eyebrow="PoC 1 · FEAT-00022 · care_00022_param"
+        codes="PoC 1 · FEAT-00022 · care_00022_param"
         title={P.title}
         lead={P.lead}
+        message={pocMessage(run)}
         actions={
           <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'end', flexWrap: 'wrap' }}>
             {(runs.data?.items.length ?? 0) > 0 && (
@@ -111,7 +122,6 @@ export function PocScreen() {
           </div>
         }
       />
-      {STATIC_MODE && <p className="ds-field__hint">{P.staticNote}</p>}
       <AsyncView state={id ? asyncState(q) : asyncState(runs, true)} empty={{ title: P.none }} error={(q.error ?? runs.error)?.message} onRetry={() => (id ? q.refetch() : runs.refetch())}>
         {run && (
           <>
@@ -122,7 +132,7 @@ export function PocScreen() {
                     <span className="ds-poc-step__no">{['①', '②', '③', '④', '⑤', '⑥'][s.no - 1]}</span>
                     <span className="ds-poc-step__title">{s.title}</span>
                     <span>
-                      <VerdictBadge value={VERDICT[s.status]} /> <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.status === 'RUNNING' ? P.waiting : P.status[s.status]}</span>
+                      <VerdictBadge value={VERDICT[s.status]} />
                     </span>
                   </button>
                 </li>
@@ -131,7 +141,7 @@ export function PocScreen() {
             {run.refs.restoredKills && <p className="ds-field__hint">{`${P.restored}: ${run.refs.restoredKills}`}</p>}
             {step && (
               <div className="ds-split">
-                <Panel title={`${['①', '②', '③', '④', '⑤', '⑥'][step.no - 1]} ${step.title}`} eyebrow={`${run.runId} · ${P.status[step.status]}`} id="step">
+                <Panel title={`${['①', '②', '③', '④', '⑤', '⑥'][step.no - 1]} ${step.title}`} id="step">
                   {step.note && (
                     <p className={step.status === 'FAILED' ? 'ds-stale' : 'ds-field__hint'} role="status">
                       {step.note}

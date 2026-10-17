@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, Kpi, PageHeader, VerdictBadge } from '../../design';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, SummaryLine, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 
 const K = ko.safetyKpi;
@@ -193,13 +193,24 @@ export function SafetyKpiScreen() {
   const selected = items.find((i) => `${i.featureId}@${i.version}` === open) ?? null;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D04-03 · IN-SERVICE MONITORING · FFG-TEL-009" title={K.title} lead={K.lead} />
-      <div className="ds-kpis">
-        <Kpi label={K.kpi.released} value={items.length} />
-        <Kpi label={K.kpi.alerts} value={d?.alerts ?? 0} tone={d?.alerts ? 'danger' : 'ok'} />
-        <Kpi label={K.kpi.ads} value={items.filter((i) => i.ads).length} />
-        <Kpi label={K.kpi.recorded} value={`${items.length - (d?.coverage.exampleOnly.length ?? 0)}/${items.length}`} tone={d?.coverage.exampleOnly.length ? 'warn' : 'ok'} />
-      </div>
+      <PageHeader
+        codes="D04-03 · IN-SERVICE MONITORING · FFG-TEL-009"
+        title={K.title}
+        lead={K.lead}
+        message={(() => {
+          if (!d) return { tone: 'neutral', value: '—', text: K.key.clean };
+          if (d.alerts) return { tone: 'danger', value: d.alerts, text: K.key.alerts };
+          const ex = d.coverage.exampleOnly.length;
+          return ex ? { tone: 'warn', text: K.key.example(ex, items.length) } : { tone: 'ok', text: K.key.clean };
+        })()}
+      />
+      <SummaryLine
+        items={[
+          { k: K.kpi.released, v: items.length },
+          { k: K.kpi.ads, v: items.filter((i) => i.ads).length },
+          { k: K.kpi.recorded, v: `${items.length - (d?.coverage.exampleOnly.length ?? 0)}/${items.length}` },
+        ]}
+      />
       <AsyncView state={asyncState(q, items.length === 0)} empty={{ title: K.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={K.title}

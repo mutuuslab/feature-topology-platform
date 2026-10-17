@@ -37,13 +37,17 @@ export function GateBadge({ status }: { status: string | null | undefined }) {
   );
 }
 
-/** 의존관계·구성·사전점검 판정 (PASS / CONDITIONAL / FAIL / 미판정) */
-export function VerdictBadge({ value }: { value: string }) {
+/**
+ * 의존관계·구성·사전점검 판정 (PASS / CONDITIONAL / FAIL / 미판정).
+ * label: 판정 색으로 원문 상태(CONFIRMED·DEPLOYED 등)를 보인다 — 배지 옆에 원문을 또 쓰지 않는다(3초 테스트).
+ */
+export function VerdictBadge({ value, label }: { value: string; label?: string }) {
   const k = value === 'CONDITIONAL' ? 'REVIEW' : gateKind(value);
+  const text = label ?? value;
   return (
-    <span className="ds-badge" data-verdict={value} style={{ '--c': `var(--gate-${k})` } as CSSProperties}>
+    <span className="ds-badge" data-verdict={value} title={label ? value : undefined} style={{ '--c': `var(--gate-${k})` } as CSSProperties}>
       <StatusGlyph kind={k} />
-      {/[가-힣]/.test(value) ? <span className="ds-badge__ko">{value}</span> : value}
+      {/[가-힣]/.test(text) ? <span className="ds-badge__ko">{text}</span> : text}
     </span>
   );
 }

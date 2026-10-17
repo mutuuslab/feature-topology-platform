@@ -5,7 +5,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, Kpi, PageHeader, Panel, Select, VerdictBadge } from '../../design';
+import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, PageHeader, Panel, Select, SummaryLine, VerdictBadge } from '../../design';
 import { when } from '../shared';
 import { Progress, type Delivery } from './shared';
 import { VehicleRequestPanel } from './VehicleRequests';
@@ -58,13 +58,19 @@ export function FleetLive() {
   const drift = rows.reduce((n, r) => n + r.flags.filter((f) => f.drift).length, 0);
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D02-03 · D04-03 · D06-08 · LIVE" title={F.title} lead={F.lead} />
-      <div className="ds-kpis">
-        <Kpi label={F.kpi.online} value={`${rows.filter((r) => r.link === 'ONLINE').length}/${rows.length}`} tone="ok" />
-        <Kpi label={F.kpi.inflight} value={inflight} tone={inflight ? 'accent' : undefined} />
-        <Kpi label={F.kpi.kills} value={kills.data?.items.length ?? 0} tone={kills.data?.items.length ? 'danger' : undefined} />
-        <Kpi label={F.kpi.drift} value={drift} tone={drift ? 'warn' : undefined} />
-      </div>
+      <PageHeader
+        codes="D02-03 · D04-03 · D06-08 · LIVE"
+        title={F.title}
+        lead={F.lead}
+        message={!fleet.data ? { tone: 'neutral', value: '—', text: F.key.drift } : drift ? { tone: 'warn', value: drift, text: F.key.drift } : { tone: 'ok', text: F.key.clean }}
+      />
+      <SummaryLine
+        items={[
+          { k: F.kpi.online, v: `${rows.filter((r) => r.link === 'ONLINE').length}/${rows.length}` },
+          { k: F.kpi.inflight, v: inflight },
+          { k: F.kpi.kills, v: kills.data?.items.length ?? 0 },
+        ]}
+      />
       <Panel title={F.matrix} id="matrix">
         <AsyncView state={asyncState(fleet, rows.length === 0)} error={fleet.error?.message} onRetry={() => fleet.refetch()}>
           <div style={{ overflow: 'auto', maxHeight: 'calc(100vh - 420px)' }}>
@@ -163,9 +169,13 @@ export function VehicleRuntimeScreen() {
   return (
     <div className="ds-screen">
       <PageHeader
-        eyebrow="D02-03 · VEHICLE RUNTIME"
+        codes="D02-03 · VEHICLE RUNTIME"
         title={V.title}
         lead={V.lead}
+        message={(() => {
+          const n = d?.evaluations.filter((e) => e.drift).length ?? 0;
+          return !d ? { tone: 'neutral', value: '—', text: V.key.clean(vin) } : n ? { tone: 'warn', value: n, text: V.key.drift(vin) } : { tone: 'ok', text: V.key.clean(vin) };
+        })()}
         actions={
           <Select label={V.pick} value={vin} onChange={(e) => nav(`/fleet/vehicles/${encodeURIComponent(e.target.value)}`)}>
             {(vehicles.data?.items ?? []).map((v) => (

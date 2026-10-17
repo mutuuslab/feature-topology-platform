@@ -11,9 +11,24 @@ const T = ko.p11.oversight;
 const mono = (s: string | number | null | undefined) => <span className="ds-mono ds-nowrap">{s ?? '—'}</span>;
 
 export function OversightScreen() {
+  const sod = useApi<SodView>('iamSodAudit');
+  const s = sod.data;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-09 · D04-01 · D06-05" title={T.title} lead={T.lead} />
+      <PageHeader
+        codes="D06-09 · D04-01 · D06-05"
+        title={T.title}
+        lead={T.lead}
+        message={
+          !s?.conflicts || !s.postReviews
+            ? { tone: 'neutral', value: '—', text: T.key.clean }
+            : s.conflicts.length
+              ? { tone: 'danger', value: s.conflicts.length, text: T.key.conflicts }
+              : s.postReviews.overdue
+                ? { tone: 'warn', value: s.postReviews.overdue, text: T.key.overdue }
+                : { tone: 'ok', text: T.key.clean }
+        }
+      />
       <Tabs tabs={[{ key: 'sod', label: T.tabs.sod }, { key: 'review', label: T.tabs.review }, { key: 'changes', label: T.tabs.changes }, { key: 'rehara', label: T.tabs.rehara }]}>
         {(tab) => (tab === 'review' ? <PostReviews /> : tab === 'changes' ? <Changes /> : tab === 'rehara' ? <Rehara /> : <Sod />)}
       </Tabs>
@@ -80,7 +95,7 @@ function PostReviews() {
   const rows = [...(q.data?.items ?? [])].reverse();
   const C = R.col;
   return (
-    <Panel title={T.tabs.review} eyebrow="FFG-PLT-016" id="post-reviews">
+    <Panel title={T.tabs.review} codes="FFG-PLT-016" id="post-reviews">
       <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: R.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.tabs.review}
@@ -183,7 +198,7 @@ function Rehara() {
   const rows = [...(q.data?.items ?? [])].reverse();
   const C = R.col;
   return (
-    <Panel title={T.tabs.rehara} eyebrow="FFG-LCY-006" id="rehara">
+    <Panel title={T.tabs.rehara} codes="FFG-LCY-006" id="rehara">
       <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: R.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.tabs.rehara}

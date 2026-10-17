@@ -9,9 +9,16 @@ const T = ko.p11.data;
 const mono = (s: string | number | null | undefined) => <span className="ds-mono ds-nowrap">{s ?? '—'}</span>;
 
 export function DataGovernanceScreen() {
+  const ret = useApi<{ policies: { deletable: number }[] }>('retention');
+  const del = (ret.data?.policies ?? []).reduce((n, p) => n + (p.deletable ?? 0), 0);
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-08 · D05-01 · D04-03" title={T.title} lead={T.lead} />
+      <PageHeader
+        codes="D06-08 · D05-01 · D04-03"
+        title={T.title}
+        lead={T.lead}
+        message={!ret.data ? { tone: 'neutral', value: '—', text: T.key.deletable } : del ? { tone: 'warn', value: del, text: T.key.deletable } : { tone: 'ok', text: T.key.clean }}
+      />
       <Tabs tabs={[{ key: 'sums', label: T.tabs.sums }, { key: 'data-act', label: T.tabs.dataAct }, { key: 'retention', label: T.tabs.retention }]}>
         {(tab) => (tab === 'data-act' ? <DataAct /> : tab === 'retention' ? <Retention /> : <Sums />)}
       </Tabs>
@@ -119,7 +126,7 @@ function AccessForm({ vins }: { vins: string[] }) {
   const [authRef, setAuthRef] = useState('');
   const [scope, setScope] = useState<string[]>(['FEATURE_STATE']);
   return (
-    <Panel title={D.create} eyebrow="FFG-TEL-006" id="dar-create">
+    <Panel title={D.create} codes="FFG-TEL-006" id="dar-create">
       <div className="ds-split">
         <Select label={D.vin} value={vin} onChange={(e) => setVin(e.target.value)}>
           <option value="">—</option>

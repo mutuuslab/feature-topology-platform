@@ -177,7 +177,7 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
                   {S.title} <Explain rules={['FFG-CLS-001', 'FFG-CLS-004', 'FFG-CLS-009']} />
                 </>
               }
-              eyebrow="FFP-FS-STR-001 v1.1 · §5"
+              codes="FFP-FS-STR-001 v1.1 · §5"
               id="safety-profile"
               tour="safety-tab"
               actions={<ClassBadges f={merged.fClass} dc={merged.deactClass} r={merged.regClass} type={merged.flagType} short />}

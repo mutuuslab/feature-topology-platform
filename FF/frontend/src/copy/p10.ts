@@ -1,8 +1,9 @@
 // P10 화면 문구 — 실험·효과, 장애·VOC, 데이터 동기화, Legacy 연계·Legacy-SDV, 현장 지원 포털, 외부 연계 현황. ko.p10으로 쓴다.
 export const p10 = {
   experiment: {
+    key: { running: '진행 중인 실험', none: '진행 중인 실험이 없습니다' },
     title: '실험·효과',
-    lead: '정책 하나를 대상으로 A/B(처리군에만 적용) 또는 Shadow(판단만 계산, 적용 안 함) 실험을 하고 효과를 추정합니다. 안전 관련(F2 이상) Feature는 Shadow만 허용됩니다 (FFG-CLS-006).',
+    lead: '정책 하나로 A/B·Shadow 실험을 하고 효과를 추정합니다.',
     create: '실험 등록',
     policy: '대상 정책',
     type: '유형',
@@ -35,8 +36,9 @@ export const p10 = {
     empty: '등록된 실험이 없습니다',
   },
   incident: {
+    key: { open: '이상 징후에 연결되지 않은 열린 장애·VOC', clean: '연결 안 된 열린 장애·VOC가 없습니다' },
     title: '장애·VOC',
-    lead: '현장 장애(정비망·딜러)와 고객센터 VOC를 차량·Feature 단위로 모읍니다. 기능 불충분(의도하지 않은 작동·미작동·성능 미달) 또는 CRITICAL이면 이상 징후로 넘기고(FFG-SOT-003), 차단 여부는 이상 징후에서 사람이 요청·승인합니다.',
+    lead: '현장 장애와 VOC를 차량·Feature 단위로 모읍니다.',
     importVoc: 'VOC 가져오기',
     imported: (n: number, s: number) => `${n}건 가져옴 · 이미 있는 ${s}건 건너뜀`,
     create: '현장 장애 접수',
@@ -57,8 +59,9 @@ export const p10 = {
     any: '전체',
   },
   sync: {
+    key: { bad: '보류·실패한 동기화 대상', clean: '모든 동기화 대상이 최근 실행에 성공했습니다' },
     title: '데이터 동기화',
-    lead: '외부 원천(IF-02 기준정보 · IF-03 MDM/DW · IF-12 해외공장)과 플랫폼 데이터를 대사합니다. 원천을 덮어쓰지 않고 차이만 기록합니다. CN 시장 데이터의 국외 이전은 심사 전까지 보류됩니다 (FFG-TEL-005).',
+    lead: '외부 원천과 플랫폼 데이터를 대사하고 차이만 기록합니다.',
     run: '대사 실행',
     col: { target: '대상', if: 'IF', system: '원천', market: '시장', direction: '방향', gate: '이전 심사', last: '최근 실행', diffs: '차이' },
     directions: { INBOUND: '수신', OUTBOUND: '송신' } as Record<string, string>,
@@ -75,8 +78,9 @@ export const p10 = {
     records: (p: number, e: number) => `플랫폼 ${p} · 원천 ${e}`,
   },
   legacy: {
+    key: { bad: '옵션 코드를 해석하지 못한 주문', clean: '모든 주문의 옵션 코드를 해석했습니다' },
     title: 'Legacy 연계',
-    lead: '해외공장 ERP·딜러 DMS의 레거시 옵션 코드를 FEAT ID로 해석합니다(IF-12). 비SDV(레거시) 차량은 런타임 Flag 평가·원격 차단이 없어 딜러 코딩으로만 켜고 끄며, 안전 관련(F2 이상) Feature는 내보내지 않습니다.',
+    lead: '레거시 옵션 코드를 FEAT ID로 해석합니다.',
     mappings: '옵션 코드 매핑',
     orders: '해외공장 주문',
     import: (plant: string) => `${plant} 주문 가져오기`,
@@ -94,8 +98,9 @@ export const p10 = {
     noOrders: '가져온 주문이 없습니다',
   },
   field: {
+    key: { kill: (v: string) => `긴급 차단 중 — ${v}`, anomaly: (v: string) => `열린 이상 건 — ${v}`, ok: (v: string) => `ON flag · 차단·이상 없음 — ${v}` },
     title: '현장 지원 포털',
-    lead: '딜러·정비 현장에서 VIN 하나로 차량의 Feature 상태(flag 값·사용 권한·긴급 차단·이상 건·장애 이력)를 봅니다. 현장 접수는 장애·VOC로 넘어갑니다.',
+    lead: 'VIN 하나로 차량의 Feature 상태를 봅니다.',
     vin: 'VIN',
     lookup: '조회',
     flags: 'Feature 상태',
@@ -112,8 +117,9 @@ export const p10 = {
     col: { flag: 'flag', feature: 'Feature', value: '값', reason: '사유', grant: '권한', kind: '유형', state: '상태', until: '종료', anomaly: '이상 건', severity: '심각도', advice: '권고', incident: '장애', category: '범주', summary: '내용' },
   },
   integrations: {
+    key: (mock: number, live: number) => `외부 연계 — 모의 ${mock} · 실연동·내장 ${live}`,
     title: '외부 연계 현황',
-    lead: 'IF-01~13의 연결 방식(모의·실연동·내장)과 호출 기록. 모의 어댑터(IF-01·02·03·08·11·12)는 데이터셋·픽스처로 결정적으로 응답하고, 호출마다 멱등 키로 기록됩니다.',
+    lead: '외부 연계의 연결 방식과 호출 기록.',
     col: { if: 'IF', name: '연계', mode: '방식', adapter: '어댑터', components: '컴포넌트', calls: '호출', last: '최근' },
     modes: { mock: '모의', live: '실연동', off: '꺼짐', internal: '내장', ws: 'WebSocket', cli: 'CLI' } as Record<string, string>,
     tabs: { systems: '연결 현황', alm: 'IF-01 ALM 요구사항', supplier: 'IF-08 협력사 납품', otel: 'IF-11 OTel span', calls: '호출 기록' },
@@ -126,8 +132,9 @@ export const p10 = {
     noSpans: '수집된 span이 없습니다 — OpenFeature 평가가 일어나면 쌓입니다',
   },
   openfeature: {
+    key: 'OpenFeature로 계산하는 flag(F0·F1)',
     title: 'OpenFeature 범위',
-    lead: 'OpenFeature는 IVI 앱 같은 QM 소비자를 위한 평가 API입니다. 안전 등급 F0·F1 flag만 OpenFeature로 값을 계산하고, F2 이상(차량 제어) flag는 서명 정책과 차량 Safety Guard 경로로만 전달합니다 (보고서 11장 FFG-OFT, FFG-PLT-011).',
+    lead: 'F0·F1 flag만 OpenFeature로 계산합니다 — F2 이상은 Safety Guard 경로.',
     kpi: { flags: 'OpenFeature 대상 flag (F0·F1)', excluded: '경계 밖 flag (F2 이상)', spans: '평가 감사 기록 (OTel span)', snapshot: '등록 스냅샷 Version' },
     paths: '두 경로',
     ofPath: 'OpenFeature 경로 — F0·F1',

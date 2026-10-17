@@ -6,7 +6,7 @@ import { ADAS_USAGE, AGE_BANDS, DRIVING_STYLES, regionsOf, TRIAL_COUNTRIES, TRIA
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, Kpi, PageHeader, Panel, Segmented, Select, StatusGlyph, Tabs, Toolbar, VerdictBadge } from '../../design';
+import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Select, StatusGlyph, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
 
 const E = ko.entitlement;
@@ -74,9 +74,17 @@ const SEGMENTS: { dim: SegmentDimension; options: (seg: Partial<Record<SegmentDi
 ];
 
 export function EntitlementsScreen() {
+  const all = useApi<TrialPage>('trials', { query: trialListQuery({ catalogId: 'CAT-00019', source: 'ALL', state: '', segment: {}, q: '', page: 1 }) });
+  const active = all.data?.byState.ACTIVE;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-05 · ENTITLEMENT · D05-04 BILLING" title={E.title} lead={E.lead} actions={<Link to="/biz/trials">{T.toAnalytics}</Link>} />
+      <PageHeader
+        codes="D01-05 · ENTITLEMENT · D05-04 BILLING"
+        title={E.title}
+        lead={E.lead}
+        message={{ tone: 'ok', value: active == null ? '—' : active.toLocaleString('ko-KR'), text: E.key }}
+        actions={<Link to="/biz/trials">{T.toAnalytics}</Link>}
+      />
       <Tabs tabs={[{ key: 'trials', label: E.tabs.trials }, { key: 'grants', label: E.tabs.grants }]}>{(tab) => (tab === 'grants' ? <GrantsTable /> : <TrialVehicles />)}</Tabs>
     </div>
   );
@@ -136,13 +144,6 @@ function TrialVehicles() {
         </label>
       </Toolbar>
       {source !== 'DEMO' && <p className="ds-field__hint">{T.syntheticNote}</p>}
-      {data && (
-        <div className="ds-kpis ds-kpis--5">
-          {(['ACTIVE', 'OFFERED', 'CONVERTED', 'DECLINED', 'EXPIRED'] as const).map((s) => (
-            <Kpi key={s} label={T.states[s]} value={(data.byState[s] ?? 0).toLocaleString('ko-KR')} tone={s === 'ACTIVE' ? 'ok' : s === 'CONVERTED' ? 'accent' : undefined} />
-          ))}
-        </div>
-      )}
       <ErrorNote error={accept.error ?? decline.error ?? purchase.error} />
       <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: T.empty }} error={list.error?.message} onRetry={() => list.refetch()}>
         <div style={{ opacity: list.isPlaceholderData ? 0.6 : 1 }}>

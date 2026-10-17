@@ -110,7 +110,8 @@ describe('운영·관리 v2', () => {
     mount('/ops/safety-kpi', <SafetyKpiScreen />);
     expect(await screen.findByText('FEAT-00022')).toBeTruthy();
     expect(screen.getByText('8.0s')).toBeTruthy();
-    expect(screen.getByText('0/1')).toBeTruthy(); // Safety Case 기준 기록 0/1 — 예시값 사용
+    expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1'); // 핵심 메시지 = 경보 수(예시값보다 먼저)
+    expect(screen.getByText('0/1')).toBeTruthy(); // 요약 줄 — Safety Case 기준 기록 0/1, 예시값 사용
     expect(screen.getByText('예시값')).toBeTruthy();
     fireEvent.click(screen.getByText('FEAT-00022'));
     expect(await screen.findByText('ADS 기능이 아니어서 부속서 1 집계 대상이 아닙니다.')).toBeTruthy();

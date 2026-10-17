@@ -1,5 +1,5 @@
 // /learn — 표준 따라하기 허브와 시나리오 화면. 보고서 v1.1 18장 케이스 시나리오를 실제 화면에서 따라 한다(가이드 패널: shell/GuideDock).
-import { useMemo, type CSSProperties } from 'react';
+import { useMemo } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 /** 준비된 시나리오를 앞에 — 지금 따라 할 수 있는 것이 먼저 보이게 */
@@ -7,7 +7,7 @@ const readyFirst = (a: Tutorial, b: Tutorial) => Number(b.status === 'ready') - 
 import { clausesOfRules, reportRule, tutorialById, TUTORIALS, type ReadingPath, type Tutorial } from '@ff/contracts';
 import { ko } from '../../copy/ko';
 import { roleLabel } from '../../data/refdata';
-import { Button, ClauseChip, KeyValue, PageHeader, Panel, Segmented, StatusGlyph, openRule } from '../../design';
+import { Button, ClauseChip, Explain, KeyValue, PageHeader, Panel, Segmented, openRule, type KeyMessageSpec } from '../../design';
 import { learnStore, useLearn } from '../../shell/learn';
 
 const L = ko.learn;
@@ -27,20 +27,14 @@ function Card({ t }: { t: Tutorial }) {
         <span className="ds-eyebrow">
           {t.cs ?? t.id} · {L.track[t.track]}
         </span>
-        <span className="ds-badge" style={{ '--c': t.status === 'ready' ? 'var(--ok)' : 'var(--faint)' } as CSSProperties}>
-          <StatusGlyph kind={t.status === 'ready' ? 'PASS' : 'UNJUDGED'} />
-          <span className="ds-badge__ko">{L.status[t.status]}</span>
-        </span>
+        {t.status !== 'ready' && <span className="ds-field__hint">{L.status[t.status]}</span>}
       </div>
       <h3>
         <Link to={`/learn/${t.id}`}>{t.title}</Link>
       </h3>
       <p className="ds-learn-card__sum">{t.summaryKo}</p>
-      <div className="ds-cls-row" aria-label={L.rules}>
-        {t.rules.map((id) => (
-          <ClauseChip key={id} id={id} title={reportRule(id)?.title} onOpen={openRule} />
-        ))}
-      </div>
+      {/* 근거 규칙 칩은 설명 모드에서만(3초 테스트) — 카드는 제목·요약·시작 버튼 */}
+      <Explain rules={t.rules} />
       {t.status === 'ready' && (
         <div className="ds-learn-card__foot">
           <span className="ds-field__hint">{rolesOfTutorial(t).map(roleLabel).join(', ')}</span>
@@ -53,14 +47,23 @@ function Card({ t }: { t: Tutorial }) {
   );
 }
 
+/** 핵심 메시지 — 진행 중인 실습이 먼저, 없으면 준비된 실습 수와 첫 실습 */
+function hubMessage(running: Tutorial | undefined, ready: Tutorial[]): KeyMessageSpec {
+  if (running) return { tone: 'accent', text: L.key.running(running.title), action: <Link to={`/learn/${running.id}`}>{L.key.resume}</Link> };
+  return { tone: 'accent', value: ready.length, text: L.key.ready, action: ready[0] ? <Link to={`/learn/${ready[0].id}`}>{L.key.first}</Link> : undefined };
+}
+
 export function LearnHub() {
   const [sp, setSp] = useSearchParams();
   const path = (sp.get('path') ?? 'ALL') as (typeof PATHS)[number];
   const list = TUTORIALS.filter((t) => path === 'ALL' || t.readingPath === path).sort(readyFirst);
+  const st = useLearn();
+  const running = st ? tutorialById(st.scenarioId) : undefined;
+  const ready = TUTORIALS.filter((t) => t.status === 'ready');
   const counts = useMemo(() => Object.fromEntries(PATHS.map((p) => [p, TUTORIALS.filter((t) => p === 'ALL' || t.readingPath === p).length])), []);
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="FFP-FS-STR-001 v1.1 · 18장" title={L.title} lead={L.lead} />
+      <PageHeader codes="FFP-FS-STR-001 v1.1 · 18장" title={L.title} lead={L.lead} message={hubMessage(running, ready)} />
       <Segmented
         label={L.pathLabel}
         value={path}
@@ -92,9 +95,21 @@ export function LearnRun() {
   };
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow={`${t.cs ?? t.id} · ${L.track[t.track]} · ${L.path[t.readingPath as ReadingPath]}`} title={t.title} lead={t.summaryKo} />
+      <PageHeader
+        codes={`${t.cs ?? t.id} · ${L.track[t.track]} · ${L.path[t.readingPath as ReadingPath]}`}
+        title={t.title}
+        message={
+          !t.steps.length
+            ? { tone: 'neutral', text: L.plannedNote }
+            : running
+              ? { tone: 'accent', value: `${st!.step + 1}/${t.steps.length}`, text: L.key.inProgress }
+              : { tone: 'accent', value: L.key.steps(t.steps.length), text: L.key.minutes(t.minutes) }
+        }
+      />
       <div className="ds-split">
         <div style={{ display: 'grid', gap: 'var(--sp-4)', alignContent: 'start' }}>
+          {/* 시나리오 요약은 학습 본문 — 머리 설명(한 줄)이 아니라 본문 맨 위에 */}
+          <p className="ds-learn-card__sum">{t.summaryKo}</p>
           {(t.before || t.after) && (
             <Panel title={L.compare} id="learn-compare" tour="learn-compare">
               <KeyValue

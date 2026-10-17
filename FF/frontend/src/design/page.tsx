@@ -20,7 +20,7 @@ export interface KeyMessageSpec {
  */
 export function KeyMessage({ tone = 'neutral', value, text, action }: KeyMessageSpec) {
   return (
-    <div className="ds-key" data-key-message data-tone={tone} role="status">
+    <div className="ds-key" data-key-message data-tone={tone}>
       {value != null && <strong className="ds-key__value">{value}</strong>}
       <span className="ds-key__text" data-solo={value == null ? '' : undefined}>
         {text}
@@ -45,11 +45,10 @@ export function SummaryLine({ items, label }: { items: { k: ReactNode; v: ReactN
 
 /**
  * 화면 머리 — 제목 → 핵심 메시지(message) → meta → 설명(한 줄). 행동은 오른쪽.
- * codes(구 eyebrow): 컴포넌트·규칙·IF 추적 코드 — 설명 모드(html[data-explain='on'])에서만 보인다(3초 테스트: 제목보다 먼저 읽히는 장식 제거).
+ * codes: 컴포넌트·규칙·IF 추적 코드 — 설명 모드(html[data-explain='on'])에서만 보인다(3초 테스트: 제목보다 먼저 읽히는 장식 제거).
  * tour: 따라하기 스포트라이트 앵커(data-tour)
  */
 export function PageHeader({
-  eyebrow,
   codes,
   title,
   message,
@@ -58,8 +57,6 @@ export function PageHeader({
   actions,
   tour,
 }: {
-  /** @deprecated codes를 쓴다 — 지금은 codes와 같게 설명 모드에서만 보인다 */
-  eyebrow?: ReactNode;
   codes?: ReactNode;
   title: ReactNode;
   message?: KeyMessageSpec;
@@ -68,7 +65,7 @@ export function PageHeader({
   actions?: ReactNode;
   tour?: string;
 }) {
-  const trace = codes ?? eyebrow;
+  const trace = codes;
   return (
     <header className="ds-page" data-tour={tour}>
       <div className="ds-page__main">

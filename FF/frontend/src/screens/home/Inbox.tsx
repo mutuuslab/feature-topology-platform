@@ -8,7 +8,7 @@ import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, Kpi, LifecycleBadge, PageHeader, Panel, Segmented, Select, VerdictBadge } from '../../design';
+import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, SummaryLine, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
 
@@ -91,16 +91,18 @@ export function ApprovalInboxScreen() {
   const [scope, setScope] = useState<'mine' | 'all'>('mine');
   const inbox = useInbox();
   const rows = scope === 'mine' ? inbox.items.filter((i) => i.mine) : inbox.items;
+  const mineCount = inbox.items.filter((i) => i.mine).length;
   const C = I.col;
   const queues = Object.keys(I.queues) as Extract<keyof typeof I.queues, string>[];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-01 · D01-03 · D01-06 · D03-03 · D03-04" title={I.title} lead={I.lead} actions={<Segmented label={I.scope} options={(['mine', 'all'] as const).map((v) => ({ value: v, label: I.scopes[v], count: v === 'mine' ? inbox.items.filter((i) => i.mine).length : inbox.items.length }))} value={scope} onChange={(v) => setScope(v as typeof scope)} />} />
-      <div className="ds-kpis ds-kpis--5">
-        {queues.slice(0, 5).map((q) => (
-          <Kpi key={q} label={I.queues[q]} value={rows.filter((r) => r.queue === q).length} hint={I.roles[q]} />
-        ))}
-      </div>
+      <PageHeader
+        codes="D01-01 · D01-03 · D01-06 · D03-03 · D03-04"
+        title={I.title}
+        lead={I.lead}
+        message={inbox.loading ? { tone: 'neutral', value: '—', text: I.key.mine } : mineCount ? { tone: 'warn', value: mineCount, text: I.key.mine } : { tone: 'ok', text: I.key.clear }}
+        actions={<Segmented label={I.scope} options={(['mine', 'all'] as const).map((v) => ({ value: v, label: I.scopes[v], count: v === 'all' ? inbox.items.length : undefined }))} value={scope} onChange={(v) => setScope(v as typeof scope)} />}
+      />
       <AsyncView state={inbox.state === 'ready' && rows.length === 0 ? 'empty' : inbox.state} empty={{ title: I.empty }} error={inbox.error?.message} onRetry={inbox.retry}>
         {queues
           .filter((q) => rows.some((r) => r.queue === q))
@@ -128,6 +130,16 @@ export function ApprovalInboxScreen() {
 
 // ───────── 내 대시보드 ─────────
 
+/** 핵심 메시지 — 걸린 긴급 차단이 가장 먼저, 없으면 내 차례인 검토 */
+function homeMessage(activeKills: number, mine: number, loaded: boolean): KeyMessageSpec {
+  const H = ko.master.home;
+  // 데이터가 오기 전에는 판정하지 않는다 — 빈 목록을 '없음'으로 읽으면 거짓 안심
+  if (!loaded) return { tone: 'neutral', value: '—', text: H.key.inbox };
+  if (activeKills) return { tone: 'danger', value: activeKills, text: H.key.kills, action: <Link to="/ops/kill">{H.key.open}</Link> };
+  if (mine) return { tone: 'warn', value: mine, text: H.key.inbox, action: <Link to="/admin/approval">{H.key.open}</Link> };
+  return { tone: 'ok', text: H.key.clear };
+}
+
 export function HomeScreen() {
   const H = ko.master.home;
   const inbox = useInbox();
@@ -138,6 +150,8 @@ export function HomeScreen() {
   const fleet = useApi<{ items: unknown[] }>('vehicles');
   const f = feats.data?.items ?? [];
   const byLc = f.reduce<Record<string, number>>((m, x) => ((m[x.lifecycle] = (m[x.lifecycle] ?? 0) + 1), m), {});
+  const activeKills = kills.data?.items.length ?? 0;
+  const mine = inbox.items.filter((i) => i.mine).length;
   const LINKS: [string, string][] = [
     ['/admin/approval', I.title],
     ['/features', 'Feature Registry'],
@@ -148,15 +162,16 @@ export function HomeScreen() {
   ];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="HOME" title={H.title} lead={H.lead} />
-      <div className="ds-kpis">
-        <Kpi label={H.kpi.inbox} value={inbox.items.filter((i) => i.mine).length} tone="accent" />
-        <Kpi label={H.kpi.features} value={f.length} hint={`${H.kpi.released} ${byLc.RELEASED ?? 0}`} />
-        <Kpi label={H.kpi.policies} value={pols.data?.items.length ?? '—'} />
-        <Kpi label={H.kpi.kills} value={kills.data?.items.length ?? '—'} tone={kills.data?.items.length ? 'danger' : undefined} />
-        <Kpi label={H.kpi.anomalies} value={(anms.data?.items ?? []).filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length} />
-        <Kpi label={H.kpi.online} value={fleet.data?.items.length ?? '—'} />
-      </div>
+      <PageHeader title={H.title} lead={H.lead} message={homeMessage(activeKills, mine, !!kills.data && !inbox.loading)} />
+      <SummaryLine
+        items={[
+          { k: H.kpi.features, v: f.length },
+          { k: H.kpi.released, v: byLc.RELEASED ?? 0 },
+          { k: H.kpi.policies, v: pols.data?.items.length ?? '—' },
+          { k: H.kpi.anomalies, v: (anms.data?.items ?? []).filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length },
+          { k: H.kpi.online, v: fleet.data?.items.length ?? '—' },
+        ]}
+      />
       <div className="ds-split">
         <Panel title={H.lifecycle} id="home-lc">
           <ul className="ds-chain">
@@ -202,8 +217,8 @@ export function ProposeScreen() {
   );
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-01 · PROPOSED 0.1.0" title={P.title} lead={P.lead} />
-      <Panel title={P.title} id="propose-form">
+      <PageHeader codes="D01-01 · PROPOSED 0.1.0" title={P.title} lead={P.lead} message={perm.ok ? { tone: 'accent', text: P.key.can } : { tone: 'warn', text: P.key.cannot }} />
+      <Panel id="propose-form">
         <div className="ds-split">
           <div className="ds-stack">
             {text('name', P.name, true)}
@@ -261,7 +276,13 @@ export function DefineScreen() {
   const C = D.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-01 · Registry" title={D.title} lead={D.lead} actions={<Link to="/feature/propose">{D.newProposal}</Link>} />
+      <PageHeader
+        codes="D01-01 · Registry"
+        title={D.title}
+        lead={D.lead}
+        message={q.data ? (rows.length ? { tone: 'accent', value: rows.length, text: D.key.open } : { tone: 'ok', text: D.key.none }) : { tone: 'neutral', value: '—', text: D.key.open }}
+        actions={<Link to="/feature/propose">{D.newProposal}</Link>}
+      />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={D.title}

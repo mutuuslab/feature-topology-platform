@@ -164,7 +164,9 @@ describe('IAM · Variant', () => {
     });
     mount('/variant-conditions', '/variant-conditions', <VariantScreen />);
     expect(await screen.findByText('SW-CARE-SDIST-APP ≥ 1.2.1')).toBeTruthy();
-    expect([...document.querySelectorAll('.ds-kpi__value')].map((k) => k.textContent)).toEqual(['3', '2', '6', '1']);
+    // 핵심 메시지 = 지원 안 됨(SW 미달) 차량 수, 요약 줄 = 적용·범위 밖·판정 불명
+    expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('2');
+    expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['3', '6', '1']);
     expect(screen.getByText('SW 1.1.9 < 요구 1.2.1')).toBeTruthy();
   });
 });

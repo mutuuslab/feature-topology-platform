@@ -122,11 +122,19 @@ export function AnomalyScreen() {
   const rows = status === 'ALL' ? all : all.filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED');
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D06-12 · ANOMALY RESPONSE" title={A.title} lead={A.lead} />
+      <PageHeader
+        codes="D06-12 · ANOMALY RESPONSE"
+        title={A.title}
+        lead={A.lead}
+        message={(() => {
+          const n = all.filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length;
+          return !q.data ? { tone: 'neutral', value: '—', text: A.key.open } : n ? { tone: 'warn', value: n, text: A.key.open } : { tone: 'ok', text: A.key.clean };
+        })()}
+      />
       <Segmented
         label={A.col.status}
         options={[
-          { value: 'OPEN', label: `${A.status.OPEN}·${A.status.ACKNOWLEDGED}`, count: all.filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length },
+          { value: 'OPEN', label: `${A.status.OPEN}·${A.status.ACKNOWLEDGED}` },
           { value: 'ALL', label: ko.page.all, count: all.length },
         ]}
         value={status}
@@ -180,7 +188,15 @@ export function FeedbackScreen() {
   const rows = q.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D04-06 · QUALITY FEEDBACK" title={FB.title} lead={FB.lead} />
+      <PageHeader
+        codes="D04-06 · QUALITY FEEDBACK"
+        title={FB.title}
+        lead={FB.lead}
+        message={(() => {
+          const open = rows.filter((r) => r.status === 'OPEN').length;
+          return !q.data ? { tone: 'neutral', value: '—', text: FB.key.open } : open ? { tone: 'warn', value: open, text: FB.key.open } : { tone: 'ok', text: FB.key.clean };
+        })()}
+      />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={FB.title}

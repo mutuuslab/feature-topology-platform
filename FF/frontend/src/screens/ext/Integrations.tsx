@@ -23,9 +23,12 @@ interface SystemRow {
 }
 
 export function IntegrationsScreen() {
+  const sys = useApi<{ items: SystemRow[] }>('integrationSystems');
+  const items = sys.data?.items ?? [];
+  const mock = items.filter((s) => s.mode === 'mock').length;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D05-01 · IF-01~13" title={G.title} lead={G.lead} />
+      <PageHeader codes="D05-01 · IF-01~13" title={G.title} lead={G.lead} message={{ tone: 'neutral', value: sys.data ? items.length : '—', text: G.key(mock, items.length - mock) }} />
       <Tabs tabs={(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] }))}>
         {(tab) => (tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
       </Tabs>
@@ -172,7 +175,15 @@ export function DataSyncScreen() {
   const C = S.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D05-02 · IF-02 · IF-03 · IF-12 · FFG-TEL-005" title={S.title} lead={S.lead} />
+      <PageHeader
+        codes="D05-02 · IF-02 · IF-03 · IF-12 · FFG-TEL-005"
+        title={S.title}
+        lead={S.lead}
+        message={(() => {
+          const bad = rows.filter((r) => r.last && r.last.status !== 'SUCCEEDED').length;
+          return !q.data ? { tone: 'neutral', value: '—', text: S.key.bad } : bad ? { tone: 'warn', value: bad, text: S.key.bad } : { tone: 'ok', text: S.key.clean };
+        })()}
+      />
       <ErrorNote error={run.error} />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
@@ -247,7 +258,15 @@ export function LegacyScreen() {
   const orderRows = orders.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D05-03 · D05-07 · IF-12" title={L.title} lead={L.lead} />
+      <PageHeader
+        codes="D05-03 · D05-07 · IF-12"
+        title={L.title}
+        lead={L.lead}
+        message={(() => {
+          const bad = orderRows.filter((o) => o.unresolved.length).length;
+          return !orders.data ? { tone: 'neutral', value: '—', text: L.key.bad } : bad ? { tone: 'warn', value: bad, text: L.key.bad } : { tone: 'ok', text: L.key.clean };
+        })()}
+      />
       <Panel title={L.mappings}>
         <AsyncView state={asyncState(maps)} error={maps.error?.message} onRetry={() => maps.refetch()}>
           <DataTable caption={L.mappings} rows={maps.data?.items ?? []} rowKey={(r) => r.legacyCode} columns={[

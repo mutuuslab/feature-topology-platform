@@ -14,7 +14,7 @@ export function VehicleRequestPanel({ vin }: { vin: string }) {
   usePlatformEvents(['vehicle.', 'entitlement.'], ['vehicleRequests']);
   const rows = q.data?.items ?? [];
   return (
-    <Panel title={T.title} eyebrow="IF-10 · IF-06" id="vehicle-requests">
+    <Panel title={T.title} codes="IF-10 · IF-06" id="vehicle-requests">
       <p className="ds-lead" style={{ margin: 0 }}>
         {T.lead}
       </p>

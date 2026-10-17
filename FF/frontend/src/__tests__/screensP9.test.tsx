@@ -137,13 +137,9 @@ describe('42 컴포넌트 아키텍처', () => {
     expect(card.getAttribute('data-dim')).toBe('true');
     expect(screen.getByRole('button', { name: /D03-03/ }).getAttribute('data-dim')).toBe('false');
     expect(screen.getByRole('button', { name: /D05-04 .* 계획/ }).getAttribute('data-status')).toBe('planned');
-    expect([...document.querySelectorAll('.ds-kpi__value')].map((k) => k.textContent)).toEqual([
-      '2/3',
-      '1',
-      '1',
-      '1',
-      `${Object.keys(STANDARDS_MAP).filter((id) => RULE_STATUS[id]?.tested).length}/75`,
-    ]);
+    // 핵심 메시지 하나(구현 n/전체) + 회색 요약 한 줄(3초 테스트)
+    expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('2/3');
+    expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['1', '1', '1', `${Object.keys(STANDARDS_MAP).filter((id) => RULE_STATUS[id]?.tested).length}/75`]);
     fireEvent.click(card);
     expect(await screen.findByRole('link', { name: '/policies' })).toBeTruthy();
     expect(screen.getByText('policy.deployed')).toBeTruthy();

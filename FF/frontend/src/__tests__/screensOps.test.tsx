@@ -69,7 +69,9 @@ describe('Fleet 실시간 적용 현황', () => {
     const cells = table.querySelectorAll('.ds-fcell');
     expect([...cells].map((c) => [c.getAttribute('data-v'), c.getAttribute('data-drift')])).toEqual([['safe', 'false'], ['on', 'true'], [null, null]]);
     expect(within(table).getByText('미수신')).toBeTruthy();
-    expect([...document.querySelectorAll('.ds-kpi__value')].map((k) => k.textContent)).toEqual(['2/3', '1', '1', '1']);
+    // 핵심 메시지 = 서버 판단과 다른 차량 측 값 수, 요약 줄 = 연결·전개 중·차단 중
+    expect(document.querySelector('[data-key-message]')?.querySelector('.ds-key__value')?.textContent).toBe('1');
+    expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['2/3', '1', '1']);
     expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('1');
   });
 });

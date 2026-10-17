@@ -118,8 +118,10 @@ describe('체험 전환 분석', () => {
     mount('/biz/trials', '/biz/trials', <TrialAnalyticsScreen />);
     expect(await screen.findByRole('group', { name: '제안 → 수락 → 구매: 제안 3,005, 수락 1,238, 구매 394' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '체험 전환 분석' })).toBeTruthy();
-    const kpis = [...document.querySelectorAll('.ds-kpi')].map((k) => [k.querySelector('.ds-kpi__label')?.textContent, k.querySelector('.ds-kpi__value')?.textContent]);
-    expect(kpis).toEqual([['제안', '3,005'], ['수락률', '41.2%'], ['구매 전환율', '31.8%'], ['제안 → 구매', '13.1%'], ['수락 → 구매 (중앙값)', '18']]);
+    // 핵심 메시지 = 구매 전환율, 나머지는 요약 줄(3초 테스트)
+    expect(document.querySelector('[data-key-message]')?.querySelector('.ds-key__value')?.textContent).toBe('31.8%');
+    const sum = [...document.querySelectorAll('.ds-summary > span')].map((s) => [s.firstChild?.textContent?.trim(), s.querySelector('b')?.textContent]);
+    expect(sum).toEqual([['제안', '3,005'], ['수락률', '41.2%'], ['제안 → 구매', '13.1%'], ['수락 → 구매 (중앙값)', '18']]);
     expect(screen.getByRole('group', { name: '제안 → 수락 → 구매: 제안 3,005, 수락 1,238, 구매 394' })).toBeTruthy();
     const seg = screen.getByRole('table', { name: '주행 성향별 수락률·구매 전환율' });
     expect(within(within(seg).getByText('미상').closest('tr')!).getAllByText('가림 (5대 미만)')).toHaveLength(3);

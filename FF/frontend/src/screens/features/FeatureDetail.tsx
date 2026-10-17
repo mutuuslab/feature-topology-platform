@@ -47,15 +47,15 @@ export default function FeatureDetail() {
           <>
             <PageHeader
               tour="feature-header"
-              eyebrow={<IdChip id={d.feature.featureId} version={d.feature.version} />}
-              title={
-                <>
-                  {d.feature.name}
-                  <LifecycleBadge value={d.feature.lifecycle} showKo />
-                </>
-              }
+              title={d.feature.name}
+              message={{
+                tone: d.feature.lifecycle === 'RELEASED' ? 'ok' : d.feature.lifecycle === 'DEPRECATED' || d.feature.lifecycle === 'RETIRED' ? 'neutral' : 'accent',
+                value: d.feature.lifecycle,
+                text: T.key.gatePass(ko.lifecycle[d.feature.lifecycle as keyof typeof ko.lifecycle] ?? d.feature.lifecycle, Object.values(d.gates).filter((g) => g.status === 'PASS').length, GATES.length),
+              }}
               meta={
                 <>
+                  <IdChip id={d.feature.featureId} version={d.feature.version} />
                   <span className="ds-tag">{scopeOf(d.feature)}</span>
                   <span className="ds-tag">ASIL {d.feature.asil}</span>
                   <SafetyBadges id={id} ver={ver} />
@@ -77,7 +77,7 @@ export default function FeatureDetail() {
               }
             />
 
-            <Panel title={T.transitionTitle} id="lc">
+            <Panel id="lc">
               <LifecycleStepper current={d.feature.lifecycle} transitions={d.transitions} />
               <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'center' }}>
                 {d.transitions

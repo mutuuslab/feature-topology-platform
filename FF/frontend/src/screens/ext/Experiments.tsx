@@ -49,7 +49,15 @@ export function ExperimentsScreen() {
   const C = X.col;
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-07 · EXPERIMENT · FFG-CLS-006" title={X.title} lead={X.lead} />
+      <PageHeader
+        codes="D01-07 · EXPERIMENT · FFG-CLS-006"
+        title={X.title}
+        lead={X.lead}
+        message={(() => {
+          const run = rows.filter((r) => r.status === 'RUNNING').length;
+          return !list.data ? { tone: 'neutral', value: '—', text: X.key.running } : run ? { tone: 'accent', value: run, text: X.key.running } : { tone: 'neutral', text: X.key.none };
+        })()}
+      />
       <CreatePanel />
       <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: X.empty }} error={list.error?.message} onRetry={() => list.refetch()}>
         <DataTable

@@ -54,9 +54,10 @@ export function ProductList() {
   return (
     <div className="ds-screen">
       <PageHeader
-        eyebrow="D01-03 · FEATURE CATALOG"
+        codes="D01-03 · FEATURE CATALOG"
         title={T.title}
         lead={T.lead}
+        message={{ tone: 'neutral', value: q.data ? rows.length : '—', text: T.key.count(rows.filter((r) => r.lifecycle === 'RELEASED').length) }}
         actions={
           <Button variant="primary" icon="layers" disabled={!perm.ok} title={perm.hint} onClick={() => nav('/products/new')}>
             {T.create}
@@ -133,15 +134,15 @@ export function ProductDetail() {
         {d && p && (
           <>
             <PageHeader
-              eyebrow={<IdChip id={p.catalogId} version={p.version} />}
-              title={
-                <>
-                  {p.name}
-                  <LifecycleBadge value={p.lifecycle} showKo />
-                </>
+              title={p.name}
+              message={
+                d.eligibility.eligible
+                  ? { tone: 'ok', value: p.lifecycle, text: T.key.eligible }
+                  : { tone: 'warn', value: p.lifecycle, text: T.key.notEligible(d.eligibility.reasons.length, d.eligibility.reasons[0] ?? '') }
               }
               meta={
                 <>
+                  <IdChip id={p.catalogId} version={p.version} />
                   <span className="ds-tag">{scopeOf(p)}</span>
                   <span className="ds-tag">{p.saleType}</span>
                   <span className="ds-tag ds-mono">{p.type}</span>
@@ -151,7 +152,7 @@ export function ProductDetail() {
               lead={p.description}
               actions={<ProductVersionActions key={`${p.catalogId}@${p.version}`} p={p} latest={d.versions[d.versions.length - 1]?.version === p.version} />}
             />
-            <Panel title={ko.detail.transitionTitle} id="plc">
+            <Panel id="plc">
               <LifecycleStepper current={p.lifecycle} transitions={d.transitions.map((t) => ({ to: t.to, blockers: t.blockers.map((m) => ({ message: m })) }))} />
               <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)', flexWrap: 'wrap' }}>
                 {d.transitions.map((t) => (
@@ -168,7 +169,6 @@ export function ProductDetail() {
               <Panel title={T.eligibility} id="elig">
                 <KeyValue
                   rows={[
-                    { k: T.eligibility, v: <VerdictBadge value={d.eligibility.eligible ? 'PASS' : 'FAIL'} />, note: d.eligibility.eligible ? T.eligible : T.notEligible },
                     { k: T.col.validity, v: <span className="ds-mono">{p.validFrom ?? '—'} ~ {p.validTo ?? '—'}</span> },
                   ]}
                 />
@@ -240,7 +240,7 @@ export function ProductCompose() {
   const rows = cands.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-03 · COMPOSE" title={T.create} lead={T.lead} />
+      <PageHeader codes="D01-03 · COMPOSE" title={T.create} message={perm.ok ? { tone: 'accent', text: T.key.can } : { tone: 'warn', text: T.key.cannot }} />
       <div className="ds-split">
         <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
           <Panel title={ko.registry.col.scope} id="scope">

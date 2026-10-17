@@ -126,6 +126,7 @@ async function main() {
   const rbDeps = await save('rollbackDeployments');
   for (const d of rbDeps.items) if (d.deploymentId) await save('rollbackDeployment', { deploymentId: d.deploymentId });
   await save('rollbacks');
+  await save('rollbackRequests', {}, { status: 'REQUESTED' }); // 롤백 화면 핵심 메시지 — 승인 대기 건수
   await save('killRequests', {}, { status: 'ACTIVE' });
   await save('killPreview', {}, { featureId: 'FEAT-00022', featureVersion: '1.0.0' });
   // 가상검증(CARLA) — 정적 배포에는 검증 서버가 없다(상태는 미연결로 찍힌다)

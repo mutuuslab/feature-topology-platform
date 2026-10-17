@@ -2,8 +2,9 @@
 // 긴급 차단 종료·복원 시간 기록, 보안 이벤트·SBOM 본문·차량 키 epoch. ko.p11로 쓴다.
 export const p11 = {
   retire: {
+    key: { overdue: '코드 삭제 기한을 넘긴 은퇴', count: '진행 중인 은퇴 기록', none: '은퇴 기록이 없습니다' },
     title: 'Flag 은퇴',
-    lead: '다 쓴 Flag를 6단계로 은퇴시킵니다 — 승인 → 남은 차량 확인 → 최종 상태 확정 → 코드 참조 0건 → Registry 퇴역 → 기록 보존. 단계는 순서대로만 기록되고, 코드 삭제 기한을 넘기면 빨간색으로 표시합니다 (보고서 6.5 · FFG-LCY-011).',
+    lead: '다 쓴 Flag를 6단계로 은퇴시킵니다.',
     request: '은퇴 요청',
     flag: '대상 Flag',
     reason: '은퇴 사유',
@@ -31,8 +32,9 @@ export const p11 = {
     done: '완료',
   },
   data: {
+    key: { deletable: '보존 기간이 지난 행(삭제 대상)', clean: '보존 기간이 지난 행이 없습니다' },
     title: '데이터·규제 기록',
-    lead: '차량 명령마다 남는 SUMS 기록(RXSWIN·형식승인 영향·사용자 고지), EU Data Act 데이터 접근 요청 처리, 저장소별 보존 기간과 삭제 기록을 봅니다.',
+    lead: 'SUMS 기록, 데이터 접근 요청, 보존·삭제 기록.',
     tabs: { sums: 'SUMS 기록', dataAct: 'EU Data Act', retention: '보존·삭제' },
     sums: {
       empty: '아직 차량 명령이 없습니다 — 긴급 차단·복원을 발행하면 기록됩니다',
@@ -83,8 +85,9 @@ export const p11 = {
     },
   },
   oversight: {
+    key: { conflicts: '겸직 계정 — 직무 분리 위반', overdue: '긴급 권한 사후 검토 기한 초과', clean: '겸직 계정 0 · 사후 검토 기한 초과 0' },
     title: '감독 기록',
-    lead: '직무 분리(겸직 계정), 긴급 권한(Kill 발행)의 24시간 사후 독립 검토, AI 생성 코드 표시가 붙은 변경 기록, 재-HARA 요청을 한곳에서 봅니다.',
+    lead: '직무 분리, 긴급 권한 사후 검토, 변경 기록, 재-HARA 요청.',
     tabs: { sod: '직무 분리', review: '긴급 권한 사후 검토', changes: '변경 기록', rehara: '재-HARA 요청' },
     sod: {
       conflicts: '겸직 계정',

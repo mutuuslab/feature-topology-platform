@@ -419,6 +419,7 @@ export function RollbackScreen() {
   const me = actorFor(role).id;
   const [sp, setSp] = useSearchParams();
   const deps = useApi<{ items: DeploymentRow[] }>('rollbackDeployments');
+  const pending = useApi<{ items: unknown[] }>('rollbackRequests', { query: { status: 'REQUESTED' } });
   const [status, setStatus] = useState('');
   const hist = useApi<{ items: RollbackExecution[] }>('rollbacks', { query: { status: status || undefined } });
   const reqQ = useApi<RollbackRequest>('rollbackRequest', { params: { id: sp.get('request') ?? '-' } }, { enabled: !!sp.get('request') });
@@ -436,7 +437,12 @@ export function RollbackScreen() {
   const rows = useMemo(() => (deps.data?.items ?? []).filter((d) => d.deploymentId), [deps.data]);
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow={R.eyebrow} title={R.title} lead={R.lead} />
+      <PageHeader
+        codes={R.eyebrow}
+        title={R.title}
+        lead={R.lead}
+        message={!pending.data ? { tone: 'neutral', value: '—', text: R.key.waiting } : pending.data.items.length ? { tone: 'warn', value: pending.data.items.length, text: R.key.waiting } : { tone: 'ok', text: R.key.clean }}
+      />
       <Panel title={R.deployments} id="rb-deployments">
         <AsyncView state={asyncState(deps, rows.length === 0)} onRetry={() => deps.refetch()}>
           <DataTable

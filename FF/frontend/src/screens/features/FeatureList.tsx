@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { F_CLASSES, LIFECYCLE, type FClass, type Lifecycle, type SafetyProfile } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, ClassBadges, DataTable, IdChip, Kpi, LifecycleBadge, PageHeader, Segmented, Select, Toolbar } from '../../design';
+import { AsyncView, ClassBadges, DataTable, IdChip, LifecycleBadge, PageHeader, Segmented, Select, SummaryLine, Toolbar } from '../../design';
 import { MiniGates, scopeOf, Segments } from '../shared';
 import type { FeatureList as FeatureListT } from '../types';
 
@@ -48,15 +48,13 @@ export default function FeatureList() {
 
   return (
     <div className="ds-screen">
-      <PageHeader eyebrow="D01-01 · FEATURE REGISTRY" title={T.title} lead={T.lead} />
-
-      <div className="ds-kpis" aria-busy={all.isPending}>
-        <Kpi label={T.kpiVersions} value={all.data ? stats.versions : '—'} />
-        <Kpi label={T.kpiIds} value={all.data ? stats.ids : '—'} />
-        <Kpi label={T.kpiReleased} value={all.data ? stats.released : '—'} tone="ok" />
-        <Kpi label={T.kpiProposed} value={all.data ? stats.proposed : '—'} />
-        <Kpi label={T.kpiBaselined} value={all.data ? stats.baselined : '—'} tone="accent" />
-      </div>
+      <PageHeader
+        codes="D01-01 · FEATURE REGISTRY"
+        title={T.title}
+        lead={T.lead}
+        message={{ tone: 'neutral', value: all.data ? stats.ids : '—', text: `${T.key.ids} · ${T.key.versions(stats.versions)}` }}
+      />
+      <SummaryLine items={[{ k: T.kpiBaselined, v: all.data ? stats.baselined : '—' }]} />
 
       <Toolbar label={T.title}>
         <input

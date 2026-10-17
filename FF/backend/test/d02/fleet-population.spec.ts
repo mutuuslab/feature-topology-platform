@@ -2,7 +2,7 @@
 // 대규모 표본 지도: 범위 안 표본이 상한을 넘으면 점 대신 격자 집계(대표 대수)만, 국가 요약은 가중 전체 기준. 판매 전·말소 차량은 빠진다.
 Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal' });
 import { INestApplication } from '@nestjs/common';
-import { MAP_POINT_LIMIT, ONBOARD_MAX_PROFILES, platformStart, sampleVehicles, type VehicleProfile } from '@ff/contracts';
+import { MAP_CLUSTER_LIMIT, MAP_POINT_LIMIT, ONBOARD_MAX_PROFILES, platformStart, sampleVehicles, type VehicleProfile } from '@ff/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuditService } from '../../src/kernel/audit.service';
 import { actor, bootApp } from '../helpers';
@@ -86,6 +86,16 @@ describe('5년 운영 모집단·신차 등록·대규모 지도 (D02-03)', () =
     }
     expect(r.items.some((v: { weight: number }) => v.weight > 1)).toBe(true);
     expect(r.pointsOmitted).toBe(0);
+  });
+
+  it('확대한 채 범위 없이 불러도 격자 수는 상한 안 — 범위를 주면 그 안의 격자만', async () => {
+    // 회귀: 5년 운영 DB에서 zoom=11·bbox 없음 → 1.5만 격자, 2 MB 응답
+    const wide = (await http().get('/api/fleet/map?source=SYNTHETIC&zoom=11').set(OPERATOR).expect(200)).body;
+    expect(wide.clusters.length).toBeLessThanOrEqual(MAP_CLUSTER_LIMIT);
+    expect(JSON.stringify(wide).length).toBeLessThan(500_000);
+    const seoul = (await http().get('/api/fleet/map?source=SYNTHETIC&zoom=11&bbox=126.8,37.4,127.2,37.7').set(OPERATOR).expect(200)).body;
+    expect(seoul.clusters.length).toBeGreaterThan(0);
+    for (const c of seoul.clusters) expect(c.lat >= 37.4 && c.lat <= 37.7 && c.lng >= 126.8 && c.lng <= 127.2).toBe(true);
   });
 
   it('판매 전·말소 차량은 지도에서 빠진다', async () => {

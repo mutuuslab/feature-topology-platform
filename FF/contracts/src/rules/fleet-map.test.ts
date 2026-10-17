@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { EntitlementSchema, type Entitlement } from '../schemas/policy';
 import { ROUTES } from '../routes';
 import { HUMAN_ROLES } from './access';
-import { LOCATION_VIEW_ROLES, MAP_PRECISION_DEG, activationState, coarsen, locationConsent, mockPosition, regionPoint, subscriptionState, summarize, type FleetMapVehicle } from './fleet-map';
+import { LOCATION_VIEW_ROLES, MAP_CLUSTER_LIMIT, MAP_PRECISION_DEG, activationState, clusterCellDeg, clusterizeWithin, coarsen, locationConsent, mockPosition, regionPoint, subscriptionState, summarize, type FleetMapVehicle } from './fleet-map';
 
 const G = (o: Partial<Entitlement>): Entitlement => EntitlementSchema.parse({ grantId: 'ENT-00001', vin: 'v', catalogId: 'CAT-00019', kind: '체험', validFrom: '2026-10-01', validTo: '2026-10-30', status: 'ACTIVE', ...o });
 const km = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
@@ -100,5 +100,26 @@ describe('전세계 차량 지도 — 위치 경로 불변식(하네스)', () =>
     for (const role of HUMAN_ROLES) expect(LOCATION_VIEW_ROLES).toContain(role);
     expect(LOCATION_VIEW_ROLES).not.toContain('VEHICLE');
     expect(MAP_PRECISION_DEG).toBeGreaterThanOrEqual(0.01); // 지도 목록은 약 1 km보다 정밀하지 않게
+  });
+});
+
+describe('전세계 차량 지도 — 격자 상한(5년 운영 표본 5만 대)', () => {
+  // 회귀: 확대 11에서 범위 없이 부르면 세계 전체가 0.03° 격자로 쪼개져 1.5만 격자·2 MB 응답이 나갔다
+  const vs: FleetMapVehicle[] = Array.from({ length: 50_000 }, (_, i) => ({
+    vin: `V${i}`, label: null, source: 'SYNTHETIC', country: 'KR', region: '수도권', vehicleModel: 'NX4 PE', trim: 'Premium',
+    position: { lat: -60 + ((i * 7919) % 12000) / 100, lng: -170 + ((i * 104729) % 34000) / 100, city: null, heading: null, precision: 'COARSE', accuracyM: 1000 },
+    moving: false, stale: false, link: null, subscription: 'NONE', activation: null, kills: [], weight: 200,
+  }));
+  it('범위 없이 확대해도 격자 수는 상한 안, 대표 대수는 그대로', () => {
+    const { clusters, cellDeg } = clusterizeWithin(vs, [-180, -90, 180, 90], 11);
+    expect(clusters.length).toBeLessThanOrEqual(MAP_CLUSTER_LIMIT);
+    expect(cellDeg).toBeGreaterThan(clusterCellDeg(11));
+    expect(clusters.reduce((t, c) => t + c.count, 0)).toBe(10_000_000);
+  });
+  it('화면 범위 밖 차량은 격자에 넣지 않는다', () => {
+    const { clusters } = clusterizeWithin(vs, [126, 37, 128, 38], 8);
+    const sample = clusters.reduce((t, c) => t + c.sample, 0);
+    expect(sample).toBe(vs.filter((v) => v.position!.lat >= 37 && v.position!.lat <= 38 && v.position!.lng >= 126 && v.position!.lng <= 128).length);
+    for (const c of clusters) expect(c.lat >= 37 && c.lat <= 38 && c.lng >= 126 && c.lng <= 128).toBe(true);
   });
 });

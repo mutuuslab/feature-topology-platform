@@ -3,8 +3,7 @@
 import { Controller, Get, Inject, Injectable, Param, Query } from '@nestjs/common';
 import {
   activationState,
-  clusterCellDeg,
-  clusterize,
+  clusterizeWithin,
   coarsen,
   DETAIL_PRECISION_DEG,
   inBbox,
@@ -53,6 +52,8 @@ export const MAP_PROVIDER = '데모 모의 위치 공급자 (국가·지역 도�
 export class FleetMapService {
   /** 계정별 마지막 지도 열람 감사 시각 */
   private readonly lastMapAudit = new Map<string, number>();
+  /** 표본 차량 지도 행 — 표본·권한이 그대로(revision)이고 같은 날·같은 상품이면 다시 만들지 않는다(5년 운영 표본 5만 대) */
+  private synCache: { key: string; vehicles: FleetMapVehicle[] } | null = null;
 
   constructor(
     @Inject(DB) private readonly db: Db,
@@ -149,7 +150,13 @@ export class FleetMapService {
     }
     const syn = this.fleet.syntheticGrants();
     if (source !== 'DEMO') {
-      for (const p of profiles.values()) if (p.source === 'SYNTHETIC' && inService(p, today)) synthetic.push(this.syntheticVehicle(p, syn.byVin.get(p.vin) ?? [], today, catalogId, false));
+      const key = `${this.fleet.revision}|${today}|${catalogId ?? ''}`;
+      if (this.synCache?.key !== key) {
+        const vehicles: FleetMapVehicle[] = [];
+        for (const p of profiles.values()) if (p.source === 'SYNTHETIC' && inService(p, today)) vehicles.push(this.syntheticVehicle(p, syn.byVin.get(p.vin) ?? [], today, catalogId, false));
+        this.synCache = { key, vehicles };
+      }
+      synthetic.push(...this.synCache.vehicles);
     }
     const all = [...items, ...synthetic];
     const inView = synthetic.filter((v) => v.position && inBbox(v.position, bbox));
@@ -160,6 +167,7 @@ export class FleetMapService {
       .filter((p) => used.has(p.catalogId))
       .map((p) => ({ catalogId: p.catalogId, name: p.name }))
       .sort((a, b) => a.catalogId.localeCompare(b.catalogId));
+    const cl = clusterizeWithin(synthetic, bbox, zoom);
     const represented = Math.round(all.reduce((t, v) => t + (v.weight ?? 1), 0));
     const audited = this.auditMap(actor, { source, catalogId, flagKey }, represented);
     return {
@@ -176,7 +184,9 @@ export class FleetMapService {
       items: [...items, ...points],
       /** 범위 안 표본이 상한을 넘어 점으로 보내지 않은 수(0이면 범위 안 전부 보냄) */
       pointsOmitted: inView.length - points.length,
-      clusters: clusterize(all.filter((v) => v.source === 'SYNTHETIC'), clusterCellDeg(zoom)),
+      /** 범위 안 격자(대표 대수) — 격자 수 상한을 넘으면 격자를 키운다 */
+      clusters: cl.clusters,
+      clusterCellDeg: cl.cellDeg,
       represented,
       summary: summarize(all),
     };

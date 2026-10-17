@@ -292,5 +292,19 @@ export function clusterize(vs: FleetMapVehicle[], cellDeg: number): FleetMapClus
     .sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
 }
 
+/** 한 응답의 격자 상한 — 넘으면 격자를 두 배씩 키운다(확대한 채 범위 없이 부르면 세계 전체가 잘게 쪼개져 수 MB가 된다) */
+export const MAP_CLUSTER_LIMIT = 1500;
+
+/** 화면 범위 안 차량만 격자로 모은다 — 격자 수가 MAP_CLUSTER_LIMIT를 넘지 않을 때까지 격자를 키운다 */
+export function clusterizeWithin(vs: FleetMapVehicle[], bbox: MapBbox, zoom: number): { clusters: FleetMapCluster[]; cellDeg: number } {
+  const inView = vs.filter((v) => v.position && inBbox(v.position, bbox));
+  let cellDeg = clusterCellDeg(zoom);
+  for (;;) {
+    const clusters = clusterize(inView, cellDeg);
+    if (clusters.length <= MAP_CLUSTER_LIMIT || cellDeg >= 180) return { clusters, cellDeg };
+    cellDeg *= 2;
+  }
+}
+
 export const MAP_PRIVACY_NOTE =
   '위치는 데모용 모의 좌표입니다. 지도에는 약 1 km로 낮춘 위치만 보이고, 한 대의 정밀 위치는 상세에서만 열리며 열람이 감사에 남습니다. 위치는 저장하지 않습니다. 개인정보 처리 기준(D5)이 정해지면 정밀도·보존·열람 역할을 그 기준으로 바꿉니다.';

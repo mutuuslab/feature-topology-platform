@@ -101,6 +101,19 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     expect(link.getAttribute('href')).toBe('/features?lifecycle=PROPOSED');
   });
 
+  it('5년 운영 데이터면 대상 차량 수를 모집단 모델에서 만 단위로 — 시연 데이터면 보이지 않는다', async () => {
+    handler = (url) => (url === '/api/fleet/population' ? { body: { dataset: { kind: 'ops5y', start: '2021-10-18' }, funnel: { active: 9_607_437 } } } : inboxApi(url));
+    mount('steward', '/', <HomeScreen />);
+    const v = await screen.findByTitle('9,607,437');
+    expect(v.textContent).toBe('961만');
+    expect(v.closest('.ds-summary > span')?.textContent).toContain('대상 차량(운행 중)');
+    cleanup();
+    handler = (url) => (url === '/api/fleet/population' ? { body: { dataset: { kind: 'demo', start: '2021-10-18' }, funnel: { active: 9_607_437 } } } : inboxApi(url));
+    mount('steward', '/', <HomeScreen />);
+    await screen.findByRole('link', { name: /Feature Registry/ });
+    expect(screen.queryByText('대상 차량(운행 중)')).toBeNull();
+  });
+
   it('Feature 제안 — 필수 항목 전에는 막히고, 등록하면 새 Feature 상세로 간다', async () => {
     handler = (url, init) => (url === '/api/features' && init?.method === 'POST' ? { status: 201, body: { featureId: 'FEAT-00500', version: '0.1.0' } } : undefined);
     mount('author', '/feature/propose', <ProposeScreen />, <Route path="/features/:id/:ver" element={<div>detail-page</div>} />);

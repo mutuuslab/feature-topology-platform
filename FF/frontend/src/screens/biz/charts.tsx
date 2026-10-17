@@ -3,6 +3,7 @@
 // 색은 tokens.css --viz-1..3 (제안·수락·구매 고정 순서).
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { ko } from '../../copy/ko';
+import { formatCount } from '../../design/format';
 
 export const STAGE_COLOR = { offered: 'var(--viz-1)', accepted: 'var(--viz-2)', converted: 'var(--viz-3)' } as const;
 export type Stage = keyof typeof STAGE_COLOR;
@@ -96,7 +97,7 @@ export function FunnelChart({ stages, label }: { stages: { key: Stage; label: st
               </text>
               <path d={hbar(labelW, y, Math.max(w, 2), bar)} fill={STAGE_COLOR[s.key]} />
               <text x={labelW + w + 8} y={y + bar / 2} className="ds-viz__value" dominantBaseline="central">
-                {nf(s.value)}
+                {formatCount(s.value)}
                 <tspan className="ds-viz__muted"> {s.note}</tspan>
               </text>
               {/* 표적은 막대보다 크게 — 줄 전체 */}
@@ -213,7 +214,10 @@ export function TrendChart({ weeks, series, label, weekLabel }: { weeks: string[
   const x = (i: number) => left + (weeks.length <= 1 ? 0 : (i / (weeks.length - 1)) * plotW);
   const y = (v: number) => top + plotH - (v / max) * plotH;
   const ticks = [0, 0.25, 0.5, 0.75, 1].map((t) => t * max);
-  const fmt = (n: number) => (n >= 1000 ? `${+(n / 1000).toFixed(1)}K` : nf(n));
+  const fmt = formatCount;
+  // 주 눈금 — 반년 넘게 보면 월(YYYY-MM)로, 5년이면 반년마다
+  const long = weeks.length > 60;
+  const step = weeks.length <= 30 ? 4 : long ? 26 : 8;
   // 끝 표기 — 서로 12px 넘게 떨어진 것만(겹치면 범례·툴팁이 맡는다)
   const ends = series.map((s) => ({ s, yy: y(s.values.at(-1) ?? 0) })).sort((a, b) => a.yy - b.yy);
   const labeled = new Set(ends.filter((e, i) => (i === 0 || e.yy - ends[i - 1].yy >= 12) && (i === ends.length - 1 || ends[i + 1].yy - e.yy >= 12)).map((e) => e.s.key));
@@ -247,9 +251,9 @@ export function TrendChart({ weeks, series, label, weekLabel }: { weeks: string[
           </g>
         ))}
         {weeks.map((w, i) =>
-          i % 4 === 0 || (i === weeks.length - 1 && i % 4 >= 3) ? (
+          i % step === 0 || (i === weeks.length - 1 && i % step >= step - 1) ? (
             <text key={w} x={x(i)} y={h - 6} className="ds-viz__tick" textAnchor="middle">
-              {w.slice(5)}
+              {long ? w.slice(0, 7) : w.slice(5)}
             </text>
           ) : null,
         )}
@@ -263,7 +267,7 @@ export function TrendChart({ weeks, series, label, weekLabel }: { weeks: string[
               <circle cx={x(weeks.length - 1)} cy={y(v)} r={4} fill={STAGE_COLOR[s.key]} className="ds-viz__dot" />
               {labeled.has(s.key) && (
                 <text x={x(weeks.length - 1) + 10} y={y(v)} className="ds-viz__value ds-viz__value--sm" dominantBaseline="central">
-                  {s.label} {nf(v)}
+                  {s.label} {formatCount(v)}
                 </text>
               )}
             </g>

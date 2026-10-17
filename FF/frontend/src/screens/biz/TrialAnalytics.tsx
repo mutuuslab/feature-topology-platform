@@ -5,11 +5,17 @@ import { Link } from 'react-router-dom';
 import { addDays, SEGMENT_DIMENSIONS, trialAnalyticsQuery, type SegmentDimension, type TrialSource } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { ops5y } from '../../copy/ops5y';
+import { formatCount, formatExact } from '../../design/format';
 import { AsyncView, DataTable, PageHeader, Panel, Segmented, Select, SummaryLine, Toolbar } from '../../design';
 import { FunnelChart, pct, SegmentChart, TrendChart } from './charts';
 
 const B = ko.bizTrial;
 const T = ko.trial;
+const O = ops5y.trial;
+/** 추이 기간(주) — 5년 운영이면 260주까지 */
+const PERIODS = [26, 52, 260] as const;
+type Period = (typeof PERIODS)[number];
 
 interface Group {
   key: string;
@@ -33,6 +39,8 @@ interface Analytics {
   groupBy: SegmentDimension | null;
   k: number;
   counts: { demo: number; synthetic: number };
+  /** 대표 대수(가중) — 표본 한 대가 여러 대를 대표한다 */
+  represented?: number;
   total: Group;
   groups: Group[];
   trend: { week: string; offered: number; accepted: number; converted: number }[];
@@ -43,8 +51,9 @@ const nf = (n: number) => n.toLocaleString('ko-KR');
 export function TrialAnalyticsScreen() {
   const [source, setSource] = useState<TrialSource>('ALL');
   const [groupBy, setGroupBy] = useState<SegmentDimension | ''>('drivingStyle');
+  const [weeks, setWeeks] = useState<Period>(26);
   const catalogId = 'CAT-00019';
-  const q = useApi<Analytics>('trialAnalytics', { query: trialAnalyticsQuery({ catalogId, source, groupBy }) }, { placeholderData: (prev) => prev });
+  const q = useApi<Analytics>('trialAnalytics', { query: { ...trialAnalyticsQuery({ catalogId, source, groupBy }), weeks } }, { placeholderData: (prev) => prev });
   const d = q.data;
   const t = d?.total;
   // 진행 중인 주는 그래프에서 뺀다(덜 찬 주가 급락처럼 보임) — 표에는 남긴다
@@ -57,11 +66,12 @@ export function TrialAnalyticsScreen() {
         title={B.title}
         lead={B.lead}
         message={{ tone: 'ok', value: t ? pct(t.conversionRate) : '—', text: B.key }}
-        meta={d ? `${B.asOf(d.today)} · ${B.counts(d.counts.demo, d.counts.synthetic)}` : undefined}
+        meta={d ? `${B.asOf(d.today)} · ${B.counts(d.counts.demo, d.counts.synthetic)}${d.represented && d.represented > d.counts.demo + d.counts.synthetic ? ` · ${O.represented(d.represented)}` : ''}` : undefined}
         actions={<Link to="/entitlements">{ko.entitlement.tabs.trials}</Link>}
       />
       <Toolbar label={B.filters}>
         <Segmented label={T.source} options={(['ALL', 'DEMO', 'SYNTHETIC'] as const).map((v) => ({ value: v, label: T.sources[v] }))} value={source} onChange={(v) => setSource(v as TrialSource)} />
+        <Segmented label={O.period} options={PERIODS.map((w) => ({ value: String(w), label: O.periods[w] }))} value={String(weeks)} onChange={(v) => setWeeks(Number(v) as Period)} />
         <Select label={B.groupBy} value={groupBy} onChange={(e) => setGroupBy(e.target.value as SegmentDimension | '')}>
           <option value="">{B.none}</option>
           {SEGMENT_DIMENSIONS.map((dim) => (
@@ -77,7 +87,7 @@ export function TrialAnalyticsScreen() {
           <div className="ds-stack" style={{ opacity: q.isPlaceholderData ? 0.6 : 1 }}>
             <SummaryLine
               items={[
-                { k: B.kpi.offered, v: nf(t.offered) },
+                { k: B.kpi.offered, v: <span title={formatExact(t.offered)}>{formatCount(t.offered)}</span> },
                 { k: B.kpi.accepted, v: pct(t.acceptRate) },
                 { k: B.kpi.overall, v: pct(t.overallRate) },
                 { k: B.kpi.median, v: t.medianDaysToConvert === null ? '—' : String(t.medianDaysToConvert) },

@@ -2132,6 +2132,13 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   height: 6px;
   background: var(--ink-2);
 }
+/* 지도의 대상 차량 묶음(cl-bubble)과 같은 모양 */
+.fm-chip__dot--cluster {
+  width: 12px;
+  height: 12px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border: 1.5px solid var(--accent);
+}
 .fm-chip__dot[data-hollow] {
   background: transparent;
   box-sizing: border-box;

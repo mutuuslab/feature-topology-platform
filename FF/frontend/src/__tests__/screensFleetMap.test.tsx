@@ -33,6 +33,9 @@ const ITEMS = [
   V('TMA-NX4-0001', { country: 'EU', region: 'DE', position: { lat: 48.14, lng: 11.58, precision: 'COARSE', accuracyM: 1100, city: 'München', heading: 10 } }),
 ];
 const MAP = { generatedAt: '2026-10-17T04:00:00.000Z', source: 'DEMO', catalogId: null, flagKey: null, flagKeys: ['care_00022_param'], catalogs: [{ catalogId: 'CAT-00019', name: '전방 안전거리 체험' }], precision: { level: 'COARSE', label: '약 1 km', degrees: 0.01 }, provider: '데모 모의 위치 공급자', privacy: '위치는 데모용 모의 좌표입니다.', audited: true, items: ITEMS, summary: summarize(ITEMS) };
+// 5년 운영 표본 — 범위 안 표본이 많아 점 대신 가중 격자·요약만 온다
+const SYN_SUMMARY = [{ country: 'KR', total: 9_607_629, located: 9_607_629, subscription: { PAID: 96_800, TRIAL: 26_003, OFFERED: 1, ENDED: 594_008, NONE: 8_890_817 }, activation: { ON: 0, OFF: 0, DISABLED: 0, UNKNOWN: 0 } }];
+const SYN = { ...MAP, source: 'SYNTHETIC', items: [], pointsOmitted: 48_041, represented: 9_607_629, clusters: [{ id: '2:6', lat: 37.5, lng: 127, count: 9_607_629, sample: 48_041, subscription: SYN_SUMMARY[0].subscription }], summary: SYN_SUMMARY };
 const DETAIL = { vehicle: { ...ITEMS[0], position: { ...ITEMS[0].position!, lat: 37.5712, lng: 126.9803, precision: 'PRECISE', accuracyM: 11 } }, grants: [{ grantId: 'ENT-00001', catalogId: 'CAT-00002', kind: '구독', state: 'ACTIVE', validFrom: '2026-01-01', validTo: '2027-01-01', effective: true }], runtime: { featureState: {}, flags: [{ flagKey: 'care_00022_param', local: { value: false, reason: 'KILL_SWITCH' }, drift: false }], quality: 'GOOD', last: null }, audited: true };
 
 beforeEach(() => {
@@ -44,7 +47,7 @@ beforeEach(() => {
     vi.fn(async (url: string, init?: RequestInit) => {
       calls.push({ url, headers: (init?.headers ?? {}) as Record<string, string> });
       if (status !== 200) return new Response(JSON.stringify({ code: 'FORBIDDEN', message: 'Feature 작성자 역할로는 이 작업을 할 수 없습니다.' }), { status, headers: { 'Content-Type': 'application/json' } });
-      const body = url.startsWith('/api/fleet/map/vehicles/') ? DETAIL : url.startsWith('/api/fleet/map') ? MAP : { items: [] };
+      const body = url.startsWith('/api/fleet/map/vehicles/') ? DETAIL : url.startsWith('/api/fleet/map') ? (url.includes('source=SYNTHETIC') ? SYN : MAP) : { items: [] };
       return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }),
   );
@@ -110,6 +113,21 @@ describe('전세계 차량 지도 화면', () => {
     expect(within(detail).getByText('ENT-00001')).toBeTruthy();
     expect(within(detail).getByText('KILL_SWITCH')).toBeTruthy();
     expect(calls.find((c) => c.url === '/api/fleet/map/vehicles/KMH-NX4-0001')!.headers['X-Actor-Role']).toBe('AUDITOR');
+  });
+
+  it('대상 차량(가중 표본)을 켜면 국가별 현황·범례가 대표 대수(만 단위)로, 지도는 묶음으로 안내한다', async () => {
+    mount('operator');
+    await screen.findByRole('table', { name: '차량 목록' });
+    fireEvent.click(screen.getByRole('radio', { name: '시연 + 대상 차량(가중 표본)' }));
+    expect(await screen.findByText(/표본 48,041대가 대상 차량 961만대를 대표합니다/)).toBeTruthy();
+    const summary = screen.getByRole('table', { name: '국가별 현황' });
+    // KR = 시연 2대 + 표본 대표 9,607,629대
+    expect(within(summary).getByTitle('9,607,631')).toBeTruthy();
+    expect(within(summary).getByTitle('9,607,631').textContent).toBe('961만');
+    const legend = screen.getByRole('list', { name: '범례' });
+    expect(within(legend).getByText('대상 차량 묶음 — 숫자는 대표 대수')).toBeTruthy();
+    // 지도 범위를 아직 모르면(WebGL 없음) 확대 1 전체로 받는다
+    expect(calls.some((c) => c.url.includes('source=SYNTHETIC') && c.url.includes('zoom=1'))).toBe(true);
   });
 
   it('위치 열람이 거부되면(차량 신원 등) 지도·표 대신 안내만 보인다', async () => {

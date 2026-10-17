@@ -125,7 +125,7 @@ test('도시 단위로 확대하면 합성 차량도 자동차로 그린다(서�
   await page.goto('/fleet/map');
   const canvas = page.getByTestId('fleet-map-canvas');
   await canvas.waitFor();
-  await page.getByRole('radio', { name: '데모 + 합성 모집단' }).click();
+  await page.getByRole('radio', { name: '시연 + 대상 차량(가중 표본)' }).click();
   await page.getByRole('radio', { name: '한국' }).click();
   const before = await settled(canvas);
   expect(before.rendered).toBeGreaterThan(before.cars); // 국가 단위 — 합성은 점

@@ -8,11 +8,14 @@ import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { ops5y } from '../../copy/ops5y';
+import { formatCount, formatExact } from '../../design/format';
 import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, SummaryLine, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
 
 const I = ko.master.inbox;
+const O = ops5y.home;
 const t16 = (iso: string | null | undefined) => (iso ? iso.slice(0, 16).replace('T', ' ') : '—');
 
 interface Item {
@@ -148,6 +151,9 @@ export function HomeScreen() {
   const kills = useApi<{ items: unknown[] }>('killRequests', { query: { status: 'ACTIVE' } });
   const anms = useApi<{ items: { status: string }[] }>('anomalies');
   const fleet = useApi<{ items: unknown[] }>('vehicles');
+  // 5년 운영 데이터면 대상 차량은 모집단 모델(가정값)에서 — 시연·수신 차량 행 수가 아니다
+  const pop = useApi<{ dataset: { kind: string }; funnel: { active: number } }>('fleetPopulation', {}, { staleTime: 300_000 });
+  const target = pop.data?.dataset?.kind === 'ops5y' && typeof pop.data.funnel?.active === 'number' ? pop.data.funnel.active : null;
   const f = feats.data?.items ?? [];
   const byLc = f.reduce<Record<string, number>>((m, x) => ((m[x.lifecycle] = (m[x.lifecycle] ?? 0) + 1), m), {});
   const activeKills = kills.data?.items.length ?? 0;
@@ -169,6 +175,7 @@ export function HomeScreen() {
           { k: H.kpi.released, v: byLc.RELEASED ?? 0 },
           { k: H.kpi.policies, v: pols.data?.items.length ?? '—' },
           { k: H.kpi.anomalies, v: (anms.data?.items ?? []).filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length },
+          ...(target !== null ? [{ k: O.target, v: <span title={formatExact(target)}>{formatCount(target)}</span> }] : []),
           { k: H.kpi.online, v: fleet.data?.items.length ?? '—' },
         ]}
       />

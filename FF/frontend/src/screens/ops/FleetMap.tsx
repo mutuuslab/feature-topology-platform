@@ -1,18 +1,21 @@
 // /fleet/map — 전세계 차량 지도 (D02-03). 차량마다 위치·구독 상태·기능 활성(차단·미확인 포함)을 지도와 표로 보여 준다.
 // 위치는 데모 모의값·약 1 km(D5 결정 전 잠정 기본값). 정밀 위치는 한 대 상세에서만 열리고 열람마다 감사된다.
 // 데모 Fleet 위치는 5초마다, 상태는 SSE(차단·배포·회신·체험) 변경 때 바로 새로 고친다. 모든 값은 백엔드 응답 그대로다.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ACTIVATION_LABEL, ACTIVATION_STATES, LOCATION_PRECISION_LABEL, SUBSCRIPTION_LABEL, SUBSCRIPTION_STATES, summarize, type FleetMapSummaryRow, type FleetMapVehicle, type MapLens } from '@ff/contracts';
+import { ACTIVATION_LABEL, ACTIVATION_STATES, LOCATION_PRECISION_LABEL, SUBSCRIPTION_LABEL, SUBSCRIPTION_STATES, summarize, type FleetMapCluster, type FleetMapSummaryRow, type FleetMapVehicle, type MapLens } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { ops5y } from '../../copy/ops5y';
+import { formatCount, formatExact } from '../../design/format';
 import { AsyncView, DataTable, EventStream, KeyValue, PageHeader, Panel, Segmented, Select } from '../../design';
 import { when } from '../shared';
-import { ACTIVATION_VAR, FleetMapCanvas, HOLLOW_VAR, NO_RUNTIME_VAR, stateLabel, stateVar, SUBSCRIPTION_VAR, VIEWS, type MapView } from './FleetMapCanvas';
+import { ACTIVATION_VAR, FleetMapCanvas, HOLLOW_VAR, NO_RUNTIME_VAR, stateLabel, stateVar, SUBSCRIPTION_VAR, VIEWS, type MapView, type MapViewport } from './FleetMapCanvas';
 
 const F = ko.fleetMap;
+const O = ops5y.fleetMap;
 const STREAM = ['kill.', 'publication.', 'vehicle.', 'trial.', 'entitlement.', 'readback.'];
 
 interface MapResponse {
@@ -26,6 +29,36 @@ interface MapResponse {
   audited: boolean;
   items: FleetMapVehicle[];
   summary: FleetMapSummaryRow[];
+  /** 범위 안 표본이 상한을 넘어 점으로 보내지 않은 수 */
+  pointsOmitted?: number;
+  clusters?: FleetMapCluster[];
+  /** 대표 대수(가중) */
+  represented?: number;
+}
+
+/** 시연 차량 요약(행 수)과 표본 요약(가중 대수)을 국가별로 합친다 */
+function mergeSummary(a: FleetMapSummaryRow[], b: FleetMapSummaryRow[]): FleetMapSummaryRow[] {
+  const m = new Map<string, FleetMapSummaryRow>();
+  for (const r of [...a, ...b]) {
+    const c = m.get(r.country);
+    if (!c) {
+      m.set(r.country, { ...r, subscription: { ...r.subscription }, activation: { ...r.activation } });
+      continue;
+    }
+    c.total += r.total;
+    c.located += r.located;
+    for (const k of SUBSCRIPTION_STATES) c.subscription[k] += r.subscription[k];
+    for (const k of ACTIVATION_STATES) c.activation[k] += r.activation[k];
+  }
+  return [...m.values()].sort((x, y) => y.total - x.total);
+}
+
+/** 화면 범위를 요청 값으로 — 확대는 정수, 범위는 바깥쪽으로 0.5° 맞춤(조금 움직일 때마다 다시 받지 않게) */
+function viewQuery(v: MapViewport | null) {
+  if (!v) return { zoom: 1 };
+  const out = (x: number, f: (n: number) => number) => f(x * 2) / 2;
+  const [w, so, e, n] = v.bbox;
+  return { zoom: Math.round(v.zoom), bbox: [out(w, Math.floor), out(so, Math.floor), out(e, Math.ceil), out(n, Math.ceil)].join(',') };
 }
 interface DetailResponse {
   vehicle: FleetMapVehicle;
@@ -62,29 +95,34 @@ export function StateChip({ cssVar, label }: { cssVar: string; label: string }) 
   );
 }
 
-function Legend({ lens, items }: { lens: MapLens; items: FleetMapVehicle[] }) {
+function Legend({ lens, items, summary, clustered }: { lens: MapLens; items: FleetMapVehicle[]; summary: FleetMapSummaryRow[]; clustered: boolean }) {
+  // 수는 국가 요약(표본은 가중 대수)에서 — 그린 점 수가 아니라 대표 대수
+  const sub = (s: (typeof SUBSCRIPTION_STATES)[number]) => summary.reduce((t, r) => t + r.subscription[s], 0);
+  const act = (s: (typeof ACTIVATION_STATES)[number]) => summary.reduce((t, r) => t + r.activation[s], 0);
+  const total = summary.reduce((t, r) => t + r.total, 0);
+  const noRuntime = total - ACTIVATION_STATES.reduce((t, s) => t + act(s), 0);
   const rows =
     lens === 'subscription'
       ? SUBSCRIPTION_STATES.map((s) => ({
           key: s,
           v: SUBSCRIPTION_VAR[s],
           label: SUBSCRIPTION_LABEL[s],
-          n: items.filter((x) => x.subscription === s).length,
+          n: sub(s),
         }))
       : [
           ...ACTIVATION_STATES.map((s) => ({
             key: s,
             v: ACTIVATION_VAR[s],
             label: ACTIVATION_LABEL[s],
-            n: items.filter((x) => x.activation === s).length,
+            n: act(s),
           })),
-          ...(items.some((x) => !x.activation)
+          ...(noRuntime > 0
             ? [
                 {
                   key: 'none',
                   v: NO_RUNTIME_VAR,
                   label: '런타임 없음(합성)',
-                  n: items.filter((x) => !x.activation).length,
+                  n: noRuntime,
                 },
               ]
             : []),
@@ -94,7 +132,9 @@ function Legend({ lens, items }: { lens: MapLens; items: FleetMapVehicle[] }) {
       {rows.map((r) => (
         <li key={r.key}>
           <StateChip cssVar={r.v} label={r.label} />
-          <span className="fm-legend__n">{r.n.toLocaleString('ko-KR')}</span>
+          <span className="fm-legend__n" title={formatExact(r.n)}>
+            {formatCount(r.n)}
+          </span>
         </li>
       ))}
       <li>
@@ -111,6 +151,14 @@ function Legend({ lens, items }: { lens: MapLens; items: FleetMapVehicle[] }) {
               <path d="M3.4 7.6h5.2l-.6 2.8H4z" className="fm-chip__glass" />
             </svg>
             {F.legendCar}
+          </span>
+        </li>
+      )}
+      {clustered && (
+        <li>
+          <span className="fm-chip">
+            <span className="fm-chip__dot fm-chip__dot--cluster" aria-hidden="true" />
+            {O.legendCluster}
           </span>
         </li>
       )}
@@ -278,9 +326,16 @@ export function FleetMapScreen() {
       placeholderData: (prev) => prev,
     },
   );
+  const [viewport, setViewport] = useState<MapViewport | null>(null);
+  const settle = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(settle.current), []);
+  const onViewChange = (v: MapViewport) => {
+    clearTimeout(settle.current);
+    settle.current = setTimeout(() => setViewport(v), 250);
+  };
   const syn = useApi<MapResponse>(
     'fleetMap',
-    { query: { source: 'SYNTHETIC', catalogId } },
+    { query: { source: 'SYNTHETIC', catalogId, ...viewQuery(viewport) } },
     {
       enabled: withSynthetic,
       staleTime: 60_000,
@@ -290,7 +345,11 @@ export function FleetMapScreen() {
   const live = usePlatformEvents(STREAM, ['fleetMap']);
 
   const items = useMemo(() => [...(demo.data?.items ?? []), ...(withSynthetic ? (syn.data?.items ?? []) : [])], [demo.data, syn.data, withSynthetic]);
-  const summary = useMemo(() => summarize(items), [items]);
+  const synData = withSynthetic ? syn.data : undefined;
+  const summary = useMemo(() => (synData ? mergeSummary(summarize(demo.data?.items ?? []), synData.summary) : summarize(items)), [items, demo.data, synData]);
+  const clusters = useMemo(() => (synData && synData.pointsOmitted ? (synData.clusters ?? []) : []), [synData]);
+  const represented = summary.reduce((t, r) => t + r.total, 0);
+  const sampled = clusters.reduce((t, c) => t + c.sample, 0);
   const count = (pred: (v: FleetMapVehicle) => boolean) => items.filter(pred).length.toLocaleString('ko-KR');
   const demoItems = demo.data?.items ?? [];
   const forbidden = demo.error?.status === 403;
@@ -312,7 +371,7 @@ export function FleetMapScreen() {
         onChange={(v) => setWithSynthetic(v === 'all')}
         options={[
           { value: 'demo', label: F.sourceDemo },
-          { value: 'all', label: F.sourceAll },
+          { value: 'all', label: O.sourceAll },
         ]}
       />
       {lens === 'subscription' ? (
@@ -350,20 +409,20 @@ export function FleetMapScreen() {
         {
           key: 't',
           header: F.col.total,
-          cell: (r) => r.total.toLocaleString('ko-KR'),
+          cell: (r) => <span title={formatExact(r.total)}>{formatCount(r.total)}</span>,
           align: 'right',
         },
         ...(lens === 'subscription'
           ? (['PAID', 'TRIAL', 'OFFERED'] as const).map((s) => ({
               key: s,
               header: SUBSCRIPTION_LABEL[s],
-              cell: (r: FleetMapSummaryRow) => r.subscription[s].toLocaleString('ko-KR'),
+              cell: (r: FleetMapSummaryRow) => <span title={formatExact(r.subscription[s])}>{formatCount(r.subscription[s])}</span>,
               align: 'right' as const,
             }))
           : (['ON', 'DISABLED', 'UNKNOWN'] as const).map((s) => ({
               key: s,
               header: ACTIVATION_LABEL[s].replace(/\(.*\)/, ''),
-              cell: (r: FleetMapSummaryRow) => r.activation[s].toLocaleString('ko-KR'),
+              cell: (r: FleetMapSummaryRow) => <span title={formatExact(r.activation[s])}>{formatCount(r.activation[s])}</span>,
               align: 'right' as const,
             }))),
       ]}
@@ -405,13 +464,14 @@ export function FleetMapScreen() {
                   }))}
                 />
               }
-              eyebrow={`${F.kpi.located} ${count((v) => !!v.position)}/${items.length.toLocaleString('ko-KR')}${demo.data ? ` · ${F.updated(when(demo.data.generatedAt))}` : ''}`}
+              eyebrow={`${synData ? O.represented(represented) : `${F.kpi.located} ${count((v) => !!v.position)}/${items.length.toLocaleString('ko-KR')}`}${demo.data ? ` · ${F.updated(when(demo.data.generatedAt))}` : ''}`}
             >
               {controls}
               <AsyncView state={asyncState(demo, false)} error={demo.error?.message} onRetry={() => demo.refetch()}>
-                <FleetMapCanvas items={items} lens={lens} selected={selected} onSelect={select} view={view} />
-                <Legend lens={lens} items={items} />
-                {withSynthetic && lens === 'activation' && syn.data && <p className="fm-note">{F.syntheticNote(syn.data.items.length)}</p>}
+                <FleetMapCanvas items={items} lens={lens} selected={selected} onSelect={select} view={view} clusters={clusters} onViewChange={onViewChange} />
+                <Legend lens={lens} items={items} summary={summary} clustered={clusters.length > 0} />
+                {synData && (clusters.length ? <p className="fm-note">{O.clusterNote(represented, sampled)}</p> : synData.items.length > 0 && <p className="fm-note">{O.pointsNote(synData.items.length)}</p>)}
+                {synData && lens === 'activation' && <p className="fm-note">{O.activationNote}</p>}
               </AsyncView>
             </Panel>
             <div id="fm-side" className="fm-side">

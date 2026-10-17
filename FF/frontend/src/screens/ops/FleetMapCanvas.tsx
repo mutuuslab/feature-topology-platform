@@ -3,10 +3,11 @@
 // 차량 좌표는 GeoJSON으로 브라우저 안에서만 그린다 — 타일 요청에는 보고 있는 지도 범위만 담긴다.
 // 색은 CSS 토큰에서 읽는다(밝은/어두운 테마를 따라간다). 모든 값은 백엔드 /api/fleet/map 응답 그대로다.
 import { useEffect, useRef, useState } from 'react';
-import type { ActivationState, FleetMapVehicle, MapLens, SubscriptionState } from '@ff/contracts';
+import type { ActivationState, FleetMapCluster, FleetMapVehicle, MapLens, SubscriptionState } from '@ff/contracts';
 import { ACTIVATION_LABEL, LOCATION_PRECISION_LABEL, SUBSCRIPTION_LABEL } from '@ff/contracts';
 import { ko } from '../../copy/ko';
 import { CAR_PIXEL_RATIO, carIconName, carImage } from './carIcon';
+import { formatCount } from '../../design/format';
 
 const F = ko.fleetMap;
 export const MAP_STYLE_URL: string = import.meta.env.VITE_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/positron';
@@ -147,19 +148,40 @@ async function loadStyle(el: Element): Promise<{ style: any; fallback: boolean }
 
 const reducedMotion = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/** 화면 범위 — 확대 수준과 [서, 남, 동, 북] */
+export interface MapViewport {
+  zoom: number;
+  bbox: [number, number, number, number];
+}
+
+function toClusterGeoJSON(clusters: FleetMapCluster[]) {
+  return {
+    type: 'FeatureCollection' as const,
+    features: clusters.map((c) => ({
+      type: 'Feature' as const,
+      geometry: { type: 'Point' as const, coordinates: [c.lng, c.lat] },
+      properties: { id: c.id, count: c.count, label: formatCount(c.count) },
+    })),
+  };
+}
+
 interface Props {
   items: FleetMapVehicle[];
   lens: MapLens;
   selected: string | null;
   onSelect: (vin: string) => void;
   view: MapView;
+  /** 표본 격자(가중 대수) — 범위 안 표본이 많아 점을 받지 못했을 때 그린다 */
+  clusters?: FleetMapCluster[];
+  /** 이동·확대가 끝날 때마다 화면 범위를 알린다 — 표본 격자·점을 그 범위로 다시 받는다 */
+  onViewChange?: (v: MapViewport) => void;
 }
 
-export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props) {
+export function FleetMapCanvas({ items, lens, selected, onSelect, view, clusters = [], onViewChange }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
-  const latest = useRef({ items, lens, onSelect });
-  latest.current = { items, lens, onSelect };
+  const latest = useRef({ items, lens, onSelect, clusters, onViewChange });
+  latest.current = { items, lens, onSelect, clusters, onViewChange };
   const [phase, setPhase] = useState<'loading' | 'ready' | 'nogl'>(hasWebGL() ? 'loading' : 'nogl');
   const [fallback, setFallback] = useState(false);
 
@@ -194,6 +216,27 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
         if (dead) return;
         const { items: xs, lens: l } = latest.current;
         m.addSource('veh', { type: 'geojson', data: toGeoJSON(el, xs, l) });
+        // 표본 격자 — 원 넓이가 대표 대수에 비례(로그 아님: 수도권과 지방의 차이를 그대로), 숫자는 만·억
+        m.addSource('cl', { type: 'geojson', data: toClusterGeoJSON(latest.current.clusters) });
+        m.addLayer({
+          id: 'cl-bubble',
+          type: 'circle',
+          source: 'cl',
+          paint: {
+            'circle-color': cssVar(el, '--accent'),
+            'circle-opacity': 0.18,
+            'circle-stroke-color': cssVar(el, '--accent'),
+            'circle-stroke-width': 1.5,
+            'circle-radius': ['interpolate', ['linear'], ['sqrt', ['get', 'count']], 0, 8, 400, 18, 2000, 40],
+          },
+        });
+        m.addLayer({
+          id: 'cl-label',
+          type: 'symbol',
+          source: 'cl',
+          layout: { 'text-field': ['get', 'label'], 'text-size': 11, 'text-allow-overlap': false },
+          paint: { 'text-color': cssVar(el, '--ink'), 'text-halo-color': cssVar(el, '--surface'), 'text-halo-width': 1.6 },
+        });
         const surface = cssVar(el, '--surface');
         // 상태 색마다 자동차 아이콘 하나 — 유리·바퀴는 테마와 무관하게 어두운 색
         const carColors = { outline: surface, glass: isDark(el) ? cssVar(el, '--paper') : cssVar(el, '--ink-2') };
@@ -303,14 +346,16 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
             id: 'veh-label',
             type: 'symbol',
             source: 'veh',
-            minzoom: 4,
+            // 국가 단위(5단계 미만)에서는 이름표가 몰려 겹친다 — 자동차만
+            minzoom: 5,
             filter: ['get', 'demo'],
             layout: {
               'text-field': ['get', 'short'],
               'text-font': font,
               'text-size': 11,
               'text-variable-anchor': ['top', 'bottom', 'right', 'left'],
-              'text-radial-offset': 0.9,
+              // 받침 원(반지름 12~19px) 밖에 붙는다 — 자동차를 덮지 않게
+              'text-radial-offset': ['interpolate', ['linear'], ['zoom'], 5, 1.3, 12, 1.6, 16, 2],
               'text-justify': 'auto',
               'text-padding': 1,
             },
@@ -320,6 +365,19 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
               'text-halo-width': 1.8,
             },
           });
+        // 격자를 누르면 그 자리로 두 단계 확대 — 더 작은 격자나 표본 차량이 보인다
+        m.on('click', 'cl-bubble', (e: any) => {
+          const f = e.features?.[0];
+          if (f) m.easeTo({ center: f.geometry.coordinates, zoom: Math.min(m.getZoom() + 2, 14), duration: reducedMotion() ? 0 : 500 });
+        });
+        m.on('mouseenter', 'cl-bubble', () => (m.getCanvas().style.cursor = 'pointer'));
+        m.on('mouseleave', 'cl-bubble', () => (m.getCanvas().style.cursor = ''));
+        const report = () => {
+          const b = m.getBounds();
+          latest.current.onViewChange?.({ zoom: m.getZoom(), bbox: [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()] });
+        };
+        m.on('moveend', report);
+        report();
         m.on('click', 'veh-hit', (e: any) => {
           const vin = e.features?.[0]?.properties?.vin;
           if (vin) latest.current.onSelect(vin);
@@ -365,6 +423,7 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
           );
           host.current.dataset.style = fb ? 'fallback' : isDark(el) ? 'dark' : 'light';
           host.current.dataset.zoom = m.getZoom().toFixed(2);
+          host.current.dataset.clusters = String(m.queryRenderedFeatures({ layers: ['cl-bubble'] }).length);
         });
         setPhase('ready');
       });
@@ -381,6 +440,12 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view }: Props)
     if (phase !== 'ready' || !m?.getSource('veh')) return;
     m.getSource('veh').setData(toGeoJSON(host.current!, items, lens));
   }, [items, lens, phase]);
+
+  useEffect(() => {
+    const m = map.current;
+    if (phase !== 'ready' || !m?.getSource('cl')) return;
+    m.getSource('cl').setData(toClusterGeoJSON(clusters));
+  }, [clusters, phase]);
 
   useEffect(() => {
     const m = map.current;

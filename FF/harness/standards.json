@@ -427,7 +427,8 @@
         "contracts/src/rules/rollout-stage.test.ts",
         "backend/test/d01/policy.spec.ts",
         "backend/test/d01/rollout-stage.spec.ts",
-        "backend/test/d03/delivery.spec.ts"
+        "backend/test/d03/delivery.spec.ts",
+        "tools/ads-team.test.ts"
       ]
     },
     {
@@ -670,7 +671,8 @@
         "frontend/src/__tests__/designSafety.test.tsx",
         "frontend/src/__tests__/screensOps.test.tsx",
         "frontend/src/__tests__/screensSafety.test.tsx",
-        "e2e/tests/poc.spec.ts"
+        "e2e/tests/poc.spec.ts",
+        "tools/ads-team.test.ts"
       ]
     },
     {

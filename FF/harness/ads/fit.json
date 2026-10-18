@@ -1,0 +1,1389 @@
+{
+  "method": "설계 적합성 검토(ADS): catalog.json acceptance·TC 기대값, review.json gap·plan, design.json 항목 ui/fe/be/db/api/tests를 요건별로 대조. plan 항목 문장이 gap 각 요소와 acceptance의 집행 지점(거부 위치·사유 코드)을 모두 명시해야 yes. 시험은 acceptance를 직접 단언하는 TC·회귀 시험이 plan 항목 tests에 있을 때 true. 결함 항목은 backend/test/ads/defects.spec.ts·requirements/defects.spec.ts의 it.fails probe와 대조. 차량·CCS 소관 요건은 계약·시뮬레이터 범위로 판단. / 설계 적합성 검토(Orca): harness/orca/catalog.json(사례 steps·video.limit·metric, 6축 guard, 지표 분모·성공·mustKeep, HT given/then)과 review.json gap을 기준으로, review plan ∪ design.json items 중 cases에 키가 있는 항목을 연결 설계로 잡아 ui/fe/be/db/api/tests 내용과 대조했다. covers는 gap과 catalog 요구를 모두 닫을 때만 yes. testPlanned는 연결 항목 tests가 HT then 또는 사례 합격 조건을 직접 단언할 때만 true(모호한 '시나리오'·다른 목적 TC는 false). limitRisk는 연결 항목 ui/fe 문구가 사례 video.limit 또는 원칙 P-8을 어길 소지. itemIssues는 design.json phases 단계와 deps의 역전·중복·플랫폼≠고객 앱 범위. 코드 근거: backend/test/ads/defects.spec.ts(FFP-F036·F007·ORCA-HT06 it.fails), harness/ads/catalog.json TC 정의. / fit-ads-r2: 2회차 반대 입장 재검토(ADS): 판정 부분·미구현 58개를 catalog acceptance·TC 기대값, review gap, 연결 항목(review plan ∪ design items.req) 문장과 다시 대조. 1회차 반영 문장이 gap·acceptance의 집행 지점·사유 코드·데이터 출처·단계 순서까지 닫는지 보고, 현행 코드와 충돌하는지(safety-profile.service.ts confirm·evaluate.ts:128) 확인. 문장 추가만으로 yes로 하지 않음. itemIssues는 1회차 이슈의 실제 반영 여부와 반영으로 새로 생긴 중복·모순·단계 문제만. / orca: 설계 적합성 2회차 재검토(Orca, 반대 입장): 1회차 판정·제안 반영 여부를 믿지 않고 45개 키를 처음부터 다시 판단했다. 기준은 harness/orca/catalog.json(사례 steps·잘 안될 때·video.limit, HT given/then, 축 states·guard, 지표 분모·성공·mustKeep)과 review.json gap. 연결 항목 = review plan ∪ design.json items 중 cases에 그 키가 있는 것(연결 밖 항목에 들어간 반영 문장은 그 키를 닫은 것으로 보지 않고 연결 누락으로 지적). covers=yes는 gap 요소와 사례 합격 조건·지표 계약을 문장이 실제로 집행(거부 위치·상태값·출처)할 때만. testPlanned=true는 연결 항목 tests가 HT then·사례 합격 조건·mustKeep을 직접 단언할 때만. limitRisk는 연결 항목 ui/fe 문구가 사례 video.limit·P-8~P-13을 어길 소지. itemIssues는 1회차 이슈 중 남은 것과 이번에 새로 생긴 단계·deps·필드 오류·원칙 충돌만. / fit-ads-r3: 3회차(최종) 반대 입장 재검토(ADS): 58개 요건을 처음부터 다시 판단. 기준 = catalog acceptance·TC 기대값, review gap, 연결 항목(review plan ∪ design items.req)의 ui/fe/be/db/api/tests 문장. 3회차 반영 문장이 들어갔다는 사실만으로 yes로 하지 않고, gap 각 요소와 acceptance의 집행 지점·사유 코드·데이터 출처·단계 순서가 닫히는지와 현행 코드(safety-profile.service.ts confirm의 jcs 서명 대상, feature_state_profile db 정의) 충돌을 확인. testPlanned=true는 연결 항목 tests가 acceptance를 직접 단언(또는 그 기대값을 가진 catalog TC)할 때만. partial의 missing은 '구현 착수 전 상세 설계에서 닫을 것'으로, suggest는 설계에 바로 넣을 문장만. itemIssues는 2회차 36건(fit.json itemIssues)의 실제 반영 여부를 .sim/design.before-r3.json 대비 diff로 확인해 남은 것과 3회차 반영으로 새로 생긴 중복·모순·지시문·단계 역전만 적음(#2·3·6·9·12~16·20·21·24~27·30·33 해소, #36은 harness/orca/review.json plan으로 해소). / orca: 설계 적합성 3회차(최종) 재검토(Orca, 반대 입장): 2회차 판정·'applied' 표시를 믿지 않고 45개 키를 처음부터 다시 판단했다. 기준은 harness/orca/catalog.json(사례 steps·잘 안될 때·video.limit, HT given/then, 축 states·guard, 지표 분모·성공·mustKeep)과 review.json gap. 연결 항목 = review plan ∪ design.json items 중 cases에 그 키가 있는 것(연결 밖 항목의 문장은 그 키를 닫지 않음). 문장이 들어간 것만으로 yes로 보지 않았다 — 같은 항목에 옛 문장이 남아 새 문장과 모순되면 닫힌 것으로 보지 않고, deps·cases를 본문 문장('X 추가')으로만 적고 배열에 없으면 연결·단계가 닫힌 것으로 보지 않았다. 단계표(phases)로 소유 항목과 사용 항목의 단계 역전을 확인했다. covers=yes는 gap 요소와 사례 합격 조건·지표 계약을 문장이 실제로 집행(거부 위치·상태값·출처)할 때만, testPlanned=true는 연결 항목 tests가 HT then·사례 합격 조건·mustKeep을 직접 단언할 때만. limitRisk는 지금 연결 항목 ui/fe 문구가 사례 video.limit·P-8~P-13을 어길 소지(2회차 4건의 수정 여부 포함). partial의 missing은 구현 착수 전 상세 설계에서 닫을 수 있게 위치·값·시험으로 적었다. itemIssues는 남은 것·새로 생긴 것만. / fit-ads-r4: 4회차(마지막) 확인 패스, 반대 입장(ADS): 58개 요건 전체 키를 다시 판단. 기준 = catalog acceptance·review gap, 연결 항목(review plan ∪ design items.req)의 ui/fe/be/db/api/tests/deps/later. .sim/design.before-r4.json 대비 diff로 3회차 itemIssues 30건의 실제 반영을 한 건씩 확인 — 26건 완전 반영, 4건(ADS-BE01 report_budget_ms 열, ORC-UI10·ORC-BE08 지시문 조각, ORC-UI03 후속 단계 필드)은 일부 남음. later 필드는 '뒤 단계 입력의 지금 대체값'이 같은 항목 본문에 적혀 있을 때만 단계 역전 해소로 인정. 현행 코드 대조: contracts/src/rules/compliance-profile.ts(Profile.status는 법규 원문 확인 상태, profileFinding은 F2 미만 통과), safety-profile confirm()의 서명 대상. partial의 missing은 '구현 착수 전 상세 설계에서 닫을 것'으로 구체화, suggest는 covers가 no가 될 만큼 중요한 것만(ADS에는 없음). itemIssues는 남은 것·4회차 반영으로 새로 생긴 것만. / fit-orca-r4: 4회차(마지막) 확인 패스, 반대 입장(Orca): 45개 키 전체를 다시 판단. 기준 = harness/orca/catalog.json(사례 steps·잘 안될 때·video.limit, HT, 축, 지표 분모·성공·mustKeep)과 review gap, 연결 항목 = review plan ∪ design items의 cases. 3회차 itemIssues의 반영을 design.before-r4.json 대비 diff로 확인하고, 문장이 들어간 것만으로 yes로 하지 않았다(later는 대체값이 본문에 있을 때만 인정). 새로 확인한 현행 코드: 시장 Compliance Profile(EU CONFIRMED, F2 미만 게이트 통과)과 catalog에 시장 필드 없음 → ORC-BE02 1단계 시장 입력·내부 상품 승인 출처 빈칸. partial의 missing은 '구현 착수 전 상세 설계에서 닫을 것'으로, suggest는 B01 내부 상품 승인 출처 1건만(사례 핵심 실패 조건이 1~2단계에 집행되지 않거나 모든 구매가 막히는 수준). / fit-ads-r5: 5회차 확인 패스, 반대 입장(ADS): 58개 요건 전체 키를 담되, `ads-team --stale`의 '적합성'(연결 항목이 바뀐) 17개 키(FFP-F002·003·005·007·018·022·023·024·029·030·031·034·044·049·051·058·062)만 다시 판단하고 나머지는 4회차 판단을 옮겼다. 바뀐 항목은 .sim/apply_r5.mjs 문장 단위로 확인(ADS-BE08·BE01·BE20·UI01, ORC-BE01·BE02·UI01·UI03·UI10). 4회차 itemIssues 12건 중 ADS 4건: ADS-BE01·ADS-UI01 해소, ADS-BE20은 범위 문장은 고쳤으나 be 첫 줄 'F2+' 규칙이 남아 2단계 규칙이 둘(새 문제), ADS-BE08은 자리·시험은 생겼지만 확인자 역할·config_ref 일치 조건이 빠짐(일부 남음). 재판단 결과 F003·F005는 4회차 빈칸 1개씩 닫혔으나 market_baseline 승인 열·config_set 정책 단위가 남아 partial, F049 불변 partial, 나머지는 yes 유지. 문장이 들어간 것만으로 yes로 하지 않았다(옛 문장이 남아 새 문장과 갈리면 해소로 보지 않음). suggest는 covers가 no가 될 만한 것이 없어 비움. itemIssues는 남은 것·5회차 반영으로 새로 생긴 것만(dbTables 요약 누락 포함). / fit-orca-r5: 5회차 확인 패스, 반대 입장(Orca): 45개 키 전체를 담되, `ads-team --stale`의 '적합성' 40개 키만 다시 판단(대부분은 ORC-BE03 금지어 한 줄·ORC-UI10/BE08 지시문 정리·ORC-UI11 표지 기준 변경이라 판단 불변), 나머지 5개(HT02·05·06·07·08)는 4회차 판단을 옮겼다. 4회차 Orca itemIssues 8건을 apply_r5 문장과 현재 design.json으로 대조: 지시문 조각(ORC-UI10·BE08)·MARKET_NOT_APPROVED 시험·형상 대체값 위치·ORC-UI01 later·ORC-UI03 later·ORC-UI03 '차량 확인 중' 화면 문구는 해소, 1단계 법적 승인 고정은 해소됐으나 내부 상품 승인을 '판단 불가'(4상태 밖)로 둬 새 문제, '차량 확인 중' 금지는 ux.json(ORC-UI03 시험 기준)과 반대·조건부 lint 집행 불가로 새 문제, ORC-UI11은 ui만 고치고 시험이 옛 기준. 재판단: C2·B01·B02는 4회차 빈칸 일부가 닫혔지만 partial 유지(B01 status 열·사유 코드·시드 KR/EU 미반영), C8 limitRisk 해소. covers=yes는 사례 합격 조건을 문장이 실제로 집행할 때만, suggest는 covers가 no가 될 만한 새 것이 없어 B01 기존 1건(일부 반영 표시)만.",
+  "reviewedAt": "2026-10-18",
+  "ads": {
+    "FFP-F001": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: (1) '확정 서명 대상에 ddt_impact 포함'인데 db는 그대로 feature_version.ddt_impact다. 현행 safety-profile confirm()은 SafetyProfile(featureId·version)만 jcs 서명하므로, ddt_impact를 SafetyProfile 필드로 옮길지(feature_version은 읽기 사본) 서명 대상에 feature_version 값을 넣을지 정하고, 확정 뒤 ddt_impact를 바꾸면 status를 DRAFT로 되돌리는 지점을 적는다. (2) ADS-UI12 '거부 규칙을 켜기 전'의 스위치 — 설정 키·켜는 조건(미분류 0건 또는 Safety Manager 승인)·감사 기록과, 2단계 이후 새 Feature(즉시)와 기존 Feature(스위치 이후)의 집행 시점을 정한다. 4회차 변경(ADS-BE16 판정 키 두 줄 → 한 줄)은 이 둘을 바꾸지 않았다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI12": "3d33e4031282",
+        "ADS-BE16": "fbb511b4cfa0",
+        "ORC-UI02": "1d2993cfd186"
+      }
+    },
+    "FFP-F002": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI09": "cc4fa95f338a",
+        "ADS-BE08": "0b079759c97e"
+      }
+    },
+    "FFP-F003": {
+      "covers": "partial",
+      "missing": "5회차에 4회차 (3)의 1단계 규칙은 닫혔다(ORC-BE02 '1단계 법적 승인 = Profile 있음 ∧ status=CONFIRMED, F 등급 무관, ADS Feature는 ADS Profile도 CONFIRMED', ORC-BE01 시험 VERIFY_REQUIRED·Profile 없음 → MARKET_NOT_APPROVED). 구현 착수 전 상세 설계에서 닫을 것: (1) market_baseline에 version·status(DRAFT|APPROVED)·approved_by(R-REG)·approved_at이 없다(dbTables 열 4개 그대로) — 대조는 APPROVED 행만 쓰고 DRAFT뿐인 시장은 MARKET_NOT_APPROVED, 그 시험(TC01 변형). (2) ODD_NOT_APPROVED 대조 입력 odd_profile(ADS-BE09)이 ADS-BE16 deps에 여전히 없다. (3) ADS-BE16 market_baseline으로 바꿀 때 1단계 Profile 기준으로 저장된 eligibility_check·진행 중 주문을 다시 판정하는 규칙이 없고, 'ADS Feature는 ADS Profile도 CONFIRMED'를 단언하는 시험이 ORC-BE01·ORC-BE02 어디에도 없다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI12": "3d33e4031282",
+        "ADS-BE16": "fbb511b4cfa0",
+        "ORC-UI02": "1d2993cfd186",
+        "ORC-UI05": "5ab2d52dc249",
+        "ORC-BE02": "c4278f4f618c"
+      }
+    },
+    "FFP-F004": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI12": "3d33e4031282",
+        "ADS-BE16": "fbb511b4cfa0"
+      }
+    },
+    "FFP-F005": {
+      "covers": "partial",
+      "missing": "5회차에 4회차 (2)는 닫혔다 — 1단계 형상 대체값('지원 조건(Variant) SW 대조, 출처 기록 — ADS-BE10 뒤 config_set')이 판정 소유자 ORC-BE01(isReadyConfirmed)·ORC-BE02에 들어갔고 ORC-UI01 줄은 지워졌으며 ORC-BE01 later에 ADS-BE10. 구현 착수 전 상세 설계에서 닫을 것: config_set members의 '정책' 단위가 없다(ADS-BE10 그대로) — 개정본이면 정책을 개정할 때마다 전 차량이 승인 조합 밖이 되어 CONFIG_SET_NOT_APPROVED로 막히고, 정책 ID면 ODD를 넓힌 개정이 조합 재승인 없이 통과한다. 정책 ID + 허용 odd_profile_ref로 두고 SW·MODEL·ODD 종류 개정(ADS-BE08 change_kind)만 새 config_set 승인을 요구하게 정하고 시험한다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI05": "725b4e300fb2",
+        "ADS-BE10": "691960251954",
+        "ORC-UI02": "1d2993cfd186",
+        "ORC-UI08": "2386241f55f6",
+        "ORC-BE02": "c4278f4f618c"
+      }
+    },
+    "FFP-F007": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI09": "cc4fa95f338a",
+        "ADS-BE06": "4505b593ab00",
+        "ADS-BE08": "0b079759c97e"
+      }
+    },
+    "FFP-F008": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI09": "cc4fa95f338a"
+      }
+    },
+    "FFP-F010": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI08": "19c2fffb1471",
+        "ADS-BE14": "3f61238f29b6"
+      }
+    },
+    "FFP-F012": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI11": "be7e21cdd388",
+        "ADS-BE12": "e43436ff57b5"
+      }
+    },
+    "FFP-F013": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE11": "586f365a6843"
+      }
+    },
+    "FFP-F014": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE05": "bfbc50447197"
+      }
+    },
+    "FFP-F015": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE07": "3eed3ab54478"
+      }
+    },
+    "FFP-F016": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI04": "bcf2ff6f93ca",
+        "ADS-BE09": "e2b745897c37"
+      }
+    },
+    "FFP-F017": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE17": "12094270f670"
+      }
+    },
+    "FFP-F018": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40",
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM04": "c77a90e22fe0"
+      }
+    },
+    "FFP-F019": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE04": "f69b93c892d1"
+      }
+    },
+    "FFP-F020": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI11": "be7e21cdd388",
+        "ADS-BE12": "e43436ff57b5"
+      }
+    },
+    "FFP-F021": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-SIM01": "e2ffd8abb74d"
+      }
+    },
+    "FFP-F022": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-BE20": "169076386ebd",
+        "ADS-SIM03": "748ef9aa1cd5",
+        "ORC-BE01": "9081c87c9273"
+      }
+    },
+    "FFP-F023": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI06": "5ac37c0f047b",
+        "ADS-BE01": "9f9bf78f3533"
+      }
+    },
+    "FFP-F024": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM01": "e2ffd8abb74d"
+      }
+    },
+    "FFP-F025": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI04": "bcf2ff6f93ca",
+        "ADS-BE09": "e2b745897c37"
+      }
+    },
+    "FFP-F026": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI04": "bcf2ff6f93ca",
+        "ADS-BE09": "e2b745897c37"
+      }
+    },
+    "FFP-F027": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI06": "5ac37c0f047b",
+        "ADS-SIM01": "e2ffd8abb74d"
+      }
+    },
+    "FFP-F028": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-SIM01": "e2ffd8abb74d"
+      }
+    },
+    "FFP-F029": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI06": "5ac37c0f047b",
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM01": "e2ffd8abb74d"
+      }
+    },
+    "FFP-F030": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM01": "e2ffd8abb74d"
+      }
+    },
+    "FFP-F031": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI02": "bfe4ab9e71dd",
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM03": "748ef9aa1cd5"
+      }
+    },
+    "FFP-F032": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE14": "3f61238f29b6",
+        "ADS-SIM03": "748ef9aa1cd5"
+      }
+    },
+    "FFP-F033": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE07": "3eed3ab54478",
+        "ADS-SIM02": "ed9d6ba25249",
+        "ORC-SIM01": "5897091ae6c0"
+      }
+    },
+    "FFP-F034": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI02": "bfe4ab9e71dd",
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM03": "748ef9aa1cd5"
+      }
+    },
+    "FFP-F035": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI02": "bfe4ab9e71dd",
+        "ADS-BE02": "cec7be1cbf9f",
+        "ADS-SIM04": "c77a90e22fe0"
+      }
+    },
+    "FFP-F036": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI02": "bfe4ab9e71dd",
+        "ADS-BE03": "a1b9a3711943"
+      }
+    },
+    "FFP-F037": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-OTA01": "deedbbb69f7e"
+      }
+    },
+    "FFP-F038": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-OTA01": "deedbbb69f7e"
+      }
+    },
+    "FFP-F039": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI05": "725b4e300fb2",
+        "ADS-BE10": "691960251954",
+        "ADS-OTA01": "deedbbb69f7e",
+        "ORC-SIM01": "5897091ae6c0"
+      }
+    },
+    "FFP-F040": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE10": "691960251954"
+      }
+    },
+    "FFP-F041": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-SIM02": "ed9d6ba25249"
+      }
+    },
+    "FFP-F042": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-SIM02": "ed9d6ba25249"
+      }
+    },
+    "FFP-F043": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: (1) 합격 조건 '상태 저장 중 전원 손실 후 허용 상태로 임의 초기화되지 않는다'를 직접 단언하는 시험이 없다 — 지금 시험(TC12)은 저장 완료 뒤 재부팅이다. 쓰기 도중(epoch 갱신 후·inhibit 기록 전 등 일부만 기록된 상태) 전원 손실 주입 → STORE_INTEGRITY_UNKNOWN·신규 활성화 DENY·저장 전 ON 복귀 0건을 ADS-SIM02 tests에 둔다. (2) '진행 중 업데이트 복원'의 설치 상태는 ADS-OTA01(5단계)이 정의하는데 ADS-SIM02는 4단계다 — 4단계용 시뮬레이터 내부 install_state 최소 모델과 OTA01 뒤 교체를 later로 적는다.",
+      "suggest": [],
+      "testPlanned": false,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-SIM02": "ed9d6ba25249"
+      }
+    },
+    "FFP-F044": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40",
+        "ORC-UI03": "7bcdef7cdbea"
+      }
+    },
+    "FFP-F045": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-SIM01": "e2ffd8abb74d"
+      }
+    },
+    "FFP-F049": {
+      "covers": "partial",
+      "missing": "5회차 변경(ADS-BE01 예산 열·사건 기록, ADS-UI01 시험 낱말, ORC-UI01 1단계 건수 표시)은 이 빈칸을 바꾸지 않았다. 구현 착수 전 상세 설계에서 닫을 것: active_exposure 정의에 관측 신선도 조건이 없어 지연·오프라인·미확인 차량의 마지막 ACTIVE 보고가 실제 노출로 세어질 수 있다(P-4·P-9 — ADS-UI01은 화면 칸만 '미확인'으로 바꾼다). ADS-BE01에 active_exposure = runtime_state ACTIVE ∧ freshness FRESH ∧ RESTORE_UNVERIFIED 아님, 나머지 ACTIVE는 '미확인 Active' 별도 수로 정의하고, 운행 시간 노출량의 출처(IF-15 Lake 집계, 연동 전 '출처 미연결')를 적고, ADS-BE12 '허용 100·Active 60' 시험에 지연 차량 분리 사례를 더한다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40",
+        "ADS-BE12": "e43436ff57b5",
+        "ORC-UI01": "7769ee6c81e5"
+      }
+    },
+    "FFP-F050": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI07": "c4f52054b1a9",
+        "ADS-BE13": "77608e522130",
+        "ADS-BE19": "1ffcdad747f1",
+        "ADS-BE21": "ad56fcfa1015",
+        "ORC-UI09": "8a0eee78b1d2"
+      }
+    },
+    "FFP-F051": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI11": "be7e21cdd388",
+        "ADS-BE12": "e43436ff57b5",
+        "ORC-UI10": "d432a1e3813a"
+      }
+    },
+    "FFP-F052": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI07": "c4f52054b1a9",
+        "ADS-BE13": "77608e522130"
+      }
+    },
+    "FFP-F053": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI08": "19c2fffb1471",
+        "ADS-BE14": "3f61238f29b6"
+      }
+    },
+    "FFP-F054": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: 합격 조건의 '요구별 정상/실패 시나리오 결과'가 단언되지 않는다 — 시험이 정상 케이스인지 실패 케이스인지 구분하는 표식 형식이 없다(ADS-BE18 '정상/실패 케이스 구분' 한 마디). '@ffp FFP-Fxxx case=normal|failure' 같은 형식과 case 없는 표식의 래칫 실패를 ADS-BE18에 정하고, ADS-UI10 시험에 요구 행의 '정상 n/n · 실패 m/m' 열 단언을 둔다.",
+      "suggest": [],
+      "testPlanned": false,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI10": "de1b6ca84e3e",
+        "ADS-BE18": "77bd9fa47b12"
+      }
+    },
+    "FFP-F055": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI08": "19c2fffb1471",
+        "ADS-BE14": "3f61238f29b6"
+      }
+    },
+    "FFP-F056": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI08": "19c2fffb1471",
+        "ADS-BE14": "3f61238f29b6"
+      }
+    },
+    "FFP-F057": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI03": "5e1001028604",
+        "ADS-BE15": "6891df6ebb2d",
+        "ORC-UI07": "6ca1b3bbf417"
+      }
+    },
+    "FFP-F058": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40"
+      }
+    },
+    "FFP-F059": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: Kill 경로만 닫혔다(targetDigest·발행 시 재계산·서명 대상 digest 검증·시험 2건). ADS-UI03 범위인 정책 배포·롤백 Drawer는 be '발행 시 재계산·비교' 문장만 있고 API(미리보기는 kill-requests/preview뿐)·불일치 사유 코드·시험이 없으며, ADS-BE05의 서명 대상 검증도 Kill 게이트만이다. 정책 배포·롤백 미리보기 API의 targetDigest, publishPolicy·롤백 발행 시 TARGET_DIGEST_MISMATCH 거부와 그 시험(미리보기 뒤 cohort 변경 → 거부)을 정한다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI03": "5e1001028604",
+        "ADS-BE05": "bfbc50447197"
+      }
+    },
+    "FFP-F060": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE19": "1ffcdad747f1"
+      }
+    },
+    "FFP-F061": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: ADS-LC01은 '와이어·시뮬레이터에서 검증' 한 줄과 TC23뿐이다. 정책을 Shadow로 표시하는 와이어 필드(예: policy_push.mode LIVE|SHADOW), Shadow 판정 결과를 내보내는 경로(shadow_result 보고), Shadow 정책이 delivery_stage APPLIED·feature_epoch·runtime_state·INSTALL/ACTIVATE 입력에 쓰이지 않는다는 규칙과 그 검사 위치(계약 검사·시뮬레이터 Guard), 시험(SHADOW ON + LIVE OFF → APPLIED ACK 0·runtime 불변)을 정한다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-LC01": "f323740ba3a7"
+      }
+    },
+    "FFP-F062": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40",
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-BE20": "169076386ebd",
+        "ORC-UI01": "7769ee6c81e5",
+        "ORC-UI03": "7bcdef7cdbea",
+        "ORC-UI04": "b26ee46f2cdc",
+        "ORC-UI06": "648173bd0cba",
+        "ORC-BE01": "9081c87c9273",
+        "ORC-BE04": "fb9c7a3edade"
+      }
+    },
+    "FFP-F063": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: ADS-LC02는 연습 시나리오 한 줄과 TC23뿐이다. 서버 교체 때 차량이 새 서버 키를 신뢰하는 경로(이전 키로 서명된 trust anchor 전환 공지 없이는 새 키 정책 거부), 지원 종료 뒤 기준선 정책 valid_until 만료 시의 동작(ADS-SIM02 오프라인 기준선 표의 신규 활성화 불가와 연결), 종료 차단의 무기한 유지와 각 시험, deps(ADS-SIM02·ADS-BE07)를 정한다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-LC02": "e66f7644fbe8"
+      }
+    },
+    "FFP-F064": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: 합격 조건 '표준 개정 시 영향받는 요구·시험·미확인 항목 조회'를 단언하는 시험이 연결 항목(ADS-UI10·ADS-BE18)에 없다 — UI10 시험은 행 수·결함 probe, BE18 시험은 도구·시나리오 연결 래칫이다. standard_source sha 변경 → 그 문서를 근거로 가진 FFP 요구·TC·미판정 항목 목록과 담당 재검토 작업 1건 생성, 접근 제한 문서는 메타데이터만 표시하는 시험을 ADS-BE18에 둔다.",
+      "suggest": [],
+      "testPlanned": false,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI10": "de1b6ca84e3e",
+        "ADS-BE18": "77bd9fa47b12"
+      }
+    }
+  },
+  "orca": {
+    "C2": {
+      "covers": "partial",
+      "missing": "5회차에 4회차 (3)은 닫혔다(ORC-BE02 1단계 형상 = Variant SW 대조·출처 기록, 1단계 법적 승인 = Profile CONFIRMED·F 등급 무관). 구현 착수 전 상세 설계에서 닫을 것: (1) '이미 결제했다면 활성 예상 시점 또는 취소 경로' — 고객 앱이 읽는 customer-state(ORC-UI03)에 주문 단위 상태(결제 후 준비 미확인·환불 대기)와 취소 요청 경로가 여전히 없다(원장은 ORC-BE01 order_link, 고객 상태는 그 투영). (2) refresh API의 '새 보고 전까지 차량 확인 필요 유지·구매 거부'를 단언하는 시험이 없다. (3) 5회차로 새로 생김 — 내부 상품 승인 기록이 없으면 '판단 불가'로 둔다는데 이는 사례의 4상태(바로 가능·업데이트 후 가능·부품 미장착·차량 확인 필요) 밖이고, ORC-BE02 체험 수락·구매 전환 거부 목록('차량 확인 필요'·'부품 미장착')에도 없어 '판정 불가를 구매 가능으로 바꾸지 않는다'가 주문 확정(ORC-BE01 재판정) 밖 경로에서 집행되지 않을 수 있다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI01": "7769ee6c81e5",
+        "ORC-UI02": "1d2993cfd186",
+        "ORC-UI03": "7bcdef7cdbea",
+        "ORC-BE02": "c4278f4f618c",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "C3": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: (1) '장기간 활성되지 않으면 이용기간 조정 또는 환불 절차로 연결' — ORC-UI04 ui에 경로만 있고, 무엇이 '장기 미활성'인지(ADS-UI01 기준 시간 표의 미사용 일수·사용 확인 기한 중 무엇인지)와 그때 생기는 상태(조정·환불 후보와 사유, 자동 환불·연장 금지)가 없다. (2) 갱신 전 고지(renewal_notice_at 이벤트)가 갱신 시각 전에 1건 발행되고 해지된 권리에는 0건인지 단언하는 시험이 없다 — C3·B05 공통 합격 조건이다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI03": "7bcdef7cdbea",
+        "ORC-UI04": "b26ee46f2cdc",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "C5": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": false,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI05": "5ab2d52dc249",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-BE04": "fb9c7a3edade"
+      }
+    },
+    "C7": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI06": "648173bd0cba",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-BE04": "fb9c7a3edade"
+      }
+    },
+    "B01": {
+      "covers": "partial",
+      "missing": "5회차에 4회차 (4)의 출처 빈칸은 닫혔다 — product_market_approval(catalog_id, market, approved_by, approved_at, rationale) 신설, 결정 D-ORC-5, 1단계 법적 승인 = Profile CONFIRMED(F 등급 무관). 구현 착수 전 상세 설계에서 닫을 것: (1) 화면 사유 낱말 — ORC-UI02 ui 사유 목록이 여전히 '시장 승인' 하나라 법적·내부 상품 승인 두 사유가 화면에서 합쳐진다(limitRisk). (2) '설치가 필요한 차량은 OTA 완료 후 정책 대상 → 준비 확인한 차량에만 알림' — 설치 검증 이벤트 없이 편입·알림 0건 시험이 없다. (3) 출시 지표 '승인 대기와 전달 지연 분리'는 ORC-UI10 db 문장뿐이고 시험이 없다. (4) 5회차로 새로 생김 — 승인 기록 없음 = '판단 불가'는 4상태 밖이고 사유 코드 이름(법적·내부)이 없으며, product_market_approval에 status가 없어 사례의 '유럽은 검토 중'을 행으로 표현할 수 없다. 시드 시장도 정하지 않아 EU가 시드에 들어가면 핵심 '유럽은 승인 전 결제를 열지 않는다'가 1~2단계에 통과로 바뀐다(4회차 제안의 status 열·PRODUCT_NOT_APPROVED·시드 KR 승인/EU 미승인은 반영되지 않음).",
+      "suggest": [
+        {
+          "item": "ORC-BE02",
+          "field": "db",
+          "text": "product_market_approval{catalog_id, market, status(APPROVED|PENDING), approved_by(상품 담당), approved_at} 신설 — '내부 상품 승인'의 단일 출처(1단계부터). 행이 없거나 PENDING이면 '바로 가능' 아님(사유 PRODUCT_NOT_APPROVED, 법적 승인 사유와 별도). 1단계 시연 데이터는 KR APPROVED·EU PENDING으로 넣어 B01과 HT01을 함께 실행 가능하게 한다.",
+          "status": "applied",
+          "note": "ORC-BE02 be·db에 product_market_approval, 결정 D-ORC-5 — 5회차 확인: status 열·PRODUCT_NOT_APPROVED·시드 KR/EU 값은 빠짐(itemIssues ORC-BE02로)",
+          "op": "add"
+        }
+      ],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": {
+        "text": "ORC-UI02 ui \"바로 가능 · 업데이트 후 가능 · 부품 미장착 · 차량 확인 필요 + 사유(시장 승인·SW·HW·권리)\"",
+        "why": "2회차 위험이 그대로다. 백엔드는 법적 승인·내부 상품 승인을 다른 사유 코드로 나눴는데 화면 낱말은 하나라, 내부 미승인을 규제 승인 대기로 읽게 하고 '전 시장 동시 승인' 오해(B01 limit)를 막지 못한다."
+      },
+      "shas": {
+        "ORC-UI02": "1d2993cfd186",
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-BE01": "9081c87c9273",
+        "ORC-BE02": "c4278f4f618c",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "B02": {
+      "covers": "partial",
+      "missing": "5회차에 4회차 (2)는 닫혔다(ORC-UI01 fe '1단계에는 확인율을 표시하지 않고 isReadyConfirmed 결과 건수만', later ORC-UI10). 구현 착수 전 상세 설계에서 닫을 것: '환불 뒤 권리 회수도 확인하며 미회수는 운영 예외' — ORC-BE01 be '환불 후 권리 회수 확인' 한 마디뿐이고, 회수 미확인 상태·운영 예외 목록·시험(환불 완료 후 차량 보고로 회수 확인 전 '회수 미확인' 1건·회수 완료 0건)이 없다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI01": "7769ee6c81e5",
+        "ORC-UI02": "1d2993cfd186",
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-BE01": "9081c87c9273",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-SIM01": "5897091ae6c0"
+      }
+    },
+    "B05": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI04": "b26ee46f2cdc",
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-UI11": "8d1f45e942ac",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "B09": {
+      "covers": "partial",
+      "missing": "4회차에 ORC-UI07 deps(ORC-BE02)는 닫혔다. 구현 착수 전 상세 설계에서 닫을 것: (1) '계약 종료로 주행 중 안전 기능을 갑자기 중단하지 않는다' — corporate_contract 종료에 따른 권리 회수가 Active·DDT 중 차량에서 '다음 활성화 제한'(ADS-BE20 규칙, 다음 시동)으로만 처리된다는 규칙과 시험이 ORC-UI07·ORC-BE04에 없다. (2) '오프라인 권리 유효기간을 계약에 맞춰 설계' — 계약 종료 시각을 정책 게시본 valid_until로 싣는 규칙이 ORC-UI04(개인 권리)에만 있고 법인 계약에는 없다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI07": "6ca1b3bbf417",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-BE04": "fb9c7a3edade"
+      }
+    },
+    "B11": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: (1) ORC-BE04 'commit 시 재판정이 미리보기와 다르면 보류·재동의'에 시험이 없다 — 미리보기와 실제 불일치가 이 사례의 핵심 지표다. (2) '지원되지 않는 콘텐츠는 이유·대안·환불 조건을 알림' — 미리보기 응답에 대체 수단은 있으나 종료 항목별 환불 조건이 없다. (3) 지표 '동의 누락'의 원천인 동의 기록(누가·언제·어느 미리보기 버전에 동의)이 market_change 엔티티에 없다(ORC-UI05 ui '동의 기록' 문장뿐).",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI03": "7bcdef7cdbea",
+        "ORC-UI05": "5ab2d52dc249",
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-BE04": "fb9c7a3edade"
+      }
+    },
+    "B12": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI06": "648173bd0cba",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-BE04": "fb9c7a3edade"
+      }
+    },
+    "HT01": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI01": "7769ee6c81e5",
+        "ORC-BE01": "9081c87c9273"
+      }
+    },
+    "HT08": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI06": "648173bd0cba",
+        "ORC-BE04": "fb9c7a3edade"
+      }
+    },
+    "axis:상품 권리": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40",
+        "ORC-BE01": "9081c87c9273",
+        "ORC-BE04": "fb9c7a3edade"
+      }
+    },
+    "metric:사용 준비 완료율": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI10": "d432a1e3813a"
+      }
+    },
+    "metric:공통화와 사업 효과": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-UI11": "8d1f45e942ac"
+      }
+    },
+    "R01": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI02": "bfe4ab9e71dd",
+        "ADS-BE02": "cec7be1cbf9f",
+        "ADS-BE03": "a1b9a3711943",
+        "ADS-BE12": "e43436ff57b5",
+        "ADS-BE21": "ad56fcfa1015",
+        "ADS-SIM02": "ed9d6ba25249",
+        "ADS-SIM03": "748ef9aa1cd5",
+        "ORC-UI03": "7bcdef7cdbea",
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "R02": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI04": "bcf2ff6f93ca",
+        "ADS-BE09": "e2b745897c37",
+        "ADS-SIM01": "e2ffd8abb74d",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "R03": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40",
+        "ADS-BE02": "cec7be1cbf9f",
+        "ADS-BE03": "a1b9a3711943",
+        "ADS-BE07": "3eed3ab54478",
+        "ADS-SIM02": "ed9d6ba25249",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-SIM01": "5897091ae6c0"
+      }
+    },
+    "R04": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI05": "725b4e300fb2",
+        "ADS-BE10": "691960251954",
+        "ADS-OTA01": "deedbbb69f7e",
+        "ORC-UI03": "7bcdef7cdbea",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-SIM01": "5897091ae6c0"
+      }
+    },
+    "R05": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI07": "c4f52054b1a9",
+        "ADS-BE13": "77608e522130",
+        "ADS-BE19": "1ffcdad747f1",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "B03": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI11": "be7e21cdd388",
+        "ADS-BE12": "e43436ff57b5",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "C6": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI11": "be7e21cdd388",
+        "ADS-BE12": "e43436ff57b5",
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-BE05": "10ac90743497",
+        "ORC-BE08": "a53ca6426061"
+      }
+    },
+    "C8": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-SIM02": "ed9d6ba25249",
+        "ORC-UI03": "7bcdef7cdbea",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "HT02": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE06": "4505b593ab00",
+        "ADS-BE09": "e2b745897c37"
+      }
+    },
+    "HT03": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-BE02": "cec7be1cbf9f",
+        "ADS-BE03": "a1b9a3711943",
+        "ADS-SIM02": "ed9d6ba25249"
+      }
+    },
+    "HT04": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM03": "748ef9aa1cd5"
+      }
+    },
+    "HT05": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE10": "691960251954",
+        "ADS-OTA01": "deedbbb69f7e",
+        "ORC-UI09": "8a0eee78b1d2"
+      }
+    },
+    "HT06": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI07": "c4f52054b1a9",
+        "ADS-BE13": "77608e522130",
+        "ADS-BE19": "1ffcdad747f1"
+      }
+    },
+    "axis:정책 의도·전달": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40",
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM04": "c77a90e22fe0"
+      }
+    },
+    "axis:활성 적격": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM01": "e2ffd8abb74d"
+      }
+    },
+    "axis:실제 기능 실행": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE01": "9f9bf78f3533",
+        "ADS-SIM03": "748ef9aa1cd5"
+      }
+    },
+    "axis:관측 신선도": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40",
+        "ADS-SIM02": "ed9d6ba25249"
+      }
+    },
+    "metric:영향 차량 식별 정확도": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE02": "cec7be1cbf9f",
+        "ADS-BE21": "ad56fcfa1015",
+        "ORC-UI10": "d432a1e3813a"
+      }
+    },
+    "metric:안전 종료 결과 확인": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-SIM03": "748ef9aa1cd5",
+        "ORC-UI10": "d432a1e3813a"
+      }
+    },
+    "B04": {
+      "covers": "partial",
+      "missing": "4회차에 단계 역전(재사용 확인 증거의 2단계 대체값)과 deps·cases(HT05)는 닫혔다. 구현 착수 전 상세 설계에서 닫을 것: '다음 안전한 전환 시점에 검증된 대체 경로 적용 / 주행 중 임의 원격 전환 금지' — remote_action_ref(롤백 ID) 참조뿐이고, 원격 조치를 차량이 정한 안전 전환 시점(정차·다음 시동 등 Feature 상태 프로필 조건)에만 적용하는 예약 명령 규칙, 주행 중 즉시 전환 요청의 거부 사유, 그 시험이 ORC-UI09에 없다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI09": "8a0eee78b1d2",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "B06": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: (1) '누락 부품을 정책 ON으로 보정하지 않는다' — ORC-UI08 ui 문장뿐이고, eol_check 미해소 VIN을 해당 Feature 정책 발행 대상에서 빼는 백엔드 규칙이 없다(ORC-BE02 AS_BUILT_UNKNOWN은 구매 판정만 막는다). (2) '최신 부품 정보가 없는 차량을 자동 적합 처리하지 않는다' — as-built 미수신 VIN의 EOL 대조 결과(미확인, 출고 증거 저장 불가)가 없다. (3) 화면 문구가 판정 주체 없이 '품질 보류'다(limitRisk).",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": {
+        "text": "ORC-UI08 ui \"BOM 기준선 화면 확장: 주문 사양 vs as-built(VIN 스캔) 대조, 불일치는 품질 보류\"",
+        "why": "2회차 위험이 그대로다(제목도 '품질 보류'). db에 decided_by(생산 품질)가 생겼지만 화면 문장은 FF가 출고 품질 판정을 내리는 것처럼 읽혀 B06 limit(FF가 PLM·공장 품질 대체 금지)에 걸린다."
+      },
+      "shas": {
+        "ORC-UI08": "2386241f55f6",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "B07": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI02": "1d2993cfd186",
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-BE02": "c4278f4f618c",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-BE06": "6aed24388c94"
+      }
+    },
+    "B08": {
+      "covers": "partial",
+      "missing": "4회차에 ADS-BE08 deps(ADS-BE10)는 닫혔다. 구현 착수 전 상세 설계에서 닫을 것: (1) 실패 조건 '추적 링크가 없는 기능을 영향 없음으로 분류하지 않는다' — change_impact.scope_status 기본값과 '추적 링크(요구·인터페이스·시험) 하나라도 없으면 CONFIRMED 저장 거부' 규칙이 없어 링크 누락이 CONFIRMED로 저장될 수 있다. (2) RELEASE_DRIFT(출시 후 attestation ≠ 승인 release manifest → 예외·담당자 배정)를 단언하는 시험이 없다.",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI09": "cc4fa95f338a",
+        "ADS-BE08": "0b079759c97e",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "B10": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE10": "691960251954",
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-UI11": "8d1f45e942ac",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-BE07": "04267fde52fe"
+      }
+    },
+    "C1": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-OTA01": "deedbbb69f7e",
+        "ORC-UI03": "7bcdef7cdbea",
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-BE03": "5fbd690f6cc7",
+        "ORC-BE08": "a53ca6426061"
+      }
+    },
+    "C4": {
+      "covers": "partial",
+      "missing": "구현 착수 전 상세 설계에서 닫을 것: '기능 간 영향 분석과 검증을 거쳐 해당 화면만 제한하고 관련 없는 기능은 가능한 범위에서 유지, 공통 부품·안전 영향이면 함께 제한' — ORC-UI09 ui '영향 없는 기능은 유지(부분 제한) 표시'의 근거가 없다. 어떤 기록(영향 분석·진단)이 있어야 '유지'로 표시하는지, 근거가 없을 때 무엇으로 표시하는지(예: '영향 미확인'), 공통 부품·안전 영향일 때 함께 제한하는 규칙을 service_case에 정한다(limitRisk).",
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": {
+        "text": "ORC-UI09 ui \"\\\"이관 시각은 해결이 아님\\\", 영향 없는 기능은 유지(부분 제한) 표시\"",
+        "why": "2회차 위험이 그대로다. 영향 분석 근거 없이 '유지'를 표시하면 관련 기능의 정상 동작을 보장하는 문구로 읽힌다(C4 limit: 즉시 해결·한 번의 방문 보장 금지와 같은 과잉 약속)."
+      },
+      "shas": {
+        "ORC-UI03": "7bcdef7cdbea",
+        "ORC-UI09": "8a0eee78b1d2",
+        "ORC-BE03": "5fbd690f6cc7"
+      }
+    },
+    "HT07": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-BE10": "691960251954",
+        "ADS-BE14": "3f61238f29b6",
+        "ORC-BE07": "04267fde52fe"
+      }
+    },
+    "axis:구성과 설치": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ADS-UI01": "a6c06bd10f40",
+        "ADS-OTA01": "deedbbb69f7e"
+      }
+    },
+    "metric:고객 과업 성공률": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI10": "d432a1e3813a",
+        "ORC-BE08": "a53ca6426061"
+      }
+    },
+    "metric:실제 문제 해결 시간": {
+      "covers": "yes",
+      "missing": null,
+      "suggest": [],
+      "testPlanned": true,
+      "scope": null,
+      "limitRisk": null,
+      "shas": {
+        "ORC-UI09": "8a0eee78b1d2",
+        "ORC-UI10": "d432a1e3813a"
+      }
+    }
+  },
+  "itemIssues": [
+    {
+      "item": "ADS-BE08",
+      "issue": "4회차 #0 일부 남음: db safety_case_confirmation{by, at, rationale, sig, config_ref}에서 4회차 fix의 'by(Safety Manager)' 역할 조건이 빠졌고, 기록의 config_ref가 이 change_impact의 대상 형상과 같아야 유효하다는 규칙이 없다. tests는 '확인자 = 요청자'만 거부하므로 Safety Manager가 아닌 사용자의 확인이나 이전 형상에 대한 확인으로 IMPACT_REVIEW_OPEN을 통과할 수 있다(FFP-F007 '영향 검토 미완료 변경은 서명 단계로 승격되지 않는다'의 2단계 대체 경로).",
+      "fix": "be에 'safety_case_confirmation은 by의 역할 = Safety Manager ∧ config_ref = change_impact 대상 형상일 때만 유효, 아니면 IMPACT_REVIEW_OPEN(detail SAFETY_CASE_UNVERIFIED)', tests에 '확인자 역할이 Safety Manager 아님 → 거부 / config_ref 불일치 → 거부' 2줄.",
+      "status": "declined",
+      "source": "ads",
+      "note": "5회차 확인에서 남은 문장 결함 — 회차를 멈추고 구현 착수 전 상세 설계에서 닫는다(보고서 하네스 멤버 장·BACKLOG 착수 전 확인)"
+    },
+    {
+      "item": "ADS-BE20",
+      "issue": "5회차 반영으로 새로 생김(옛 문장 남음): 범위 문장은 'ddt_impact≠NONE 또는 미입력(UNCLASSIFIED), 1단계에는 F2 이상'으로 바뀌었는데 be 첫 줄은 여전히 'F2+ Feature에서 ENTITLEMENT FALSE는 즉시 DENY가 아니라 … 투영'이라 2단계 규칙이 둘이다 — F2이면서 ddt_impact=NONE으로 확정된 Feature는 첫 줄로는 투영, 범위 문장·새 경계 시험('2단계 ddt_impact=NONE 확정 → 즉시 DENY')으로는 즉시 DENY. F1이면서 미입력인 Feature도 반대로 갈린다.",
+      "fix": "be 첫 줄의 target 'contracts/src/flags/evaluate.ts: F2+ Feature에서 ENTITLEMENT FALSE는'을 'contracts/src/flags/evaluate.ts: 아래 범위 문장에 든 Feature에서 ENTITLEMENT FALSE는'으로 바꾼다(replace).",
+      "status": "declined",
+      "source": "ads",
+      "note": "5회차 확인에서 남은 문장 결함 — 회차를 멈추고 구현 착수 전 상세 설계에서 닫는다(보고서 하네스 멤버 장·BACKLOG 착수 전 확인)"
+    },
+    {
+      "item": "design.dbTables",
+      "issue": "5회차 반영으로 새로 생김(요약 표 누락): ORC-BE02 db의 product_market_approval 신설(1단계 항목, 결정 D-ORC-5)과 ADS-BE08 db의 change_impact.safety_case_confirmation, ADS-BE01 db의 feature_state_profile.report_budget_ms·budget_status가 design.json dbTables에 없다(change_impact 열은 id·subject·kind·paths·status 그대로, feature_state_profile·product_market_approval 행 없음). 마이그레이션을 dbTables 기준으로 짜면 B01·HT01에 필요한 1단계 테이블이 빠진다.",
+      "fix": "dbTables에 'product_market_approval'(items ORC-BE02, columns catalog_id·market·status·approved_by·approved_at·rationale), change_impact 열에 safety_case_confirmation, 'feature_state_profile'(items ADS-BE01, columns feature·allowed_states·report_budget_ms·budget_status) 행을 둔다.",
+      "status": "declined",
+      "source": "ads",
+      "note": "5회차 확인에서 남은 문장 결함 — 회차를 멈추고 구현 착수 전 상세 설계에서 닫는다(보고서 하네스 멤버 장·BACKLOG 착수 전 확인)"
+    },
+    {
+      "item": "ORC-BE02 / ORC-BE01",
+      "issue": "4회차 #6·B01 제안 반영으로 새로 생김: '내부 상품 승인 기록이 없으면 판단 불가'는 eligibility 4상태(바로 가능·업데이트 후 가능·부품 미장착·차량 확인 필요) 밖의 다섯째 값이고, 같은 항목의 체험 수락·구매 전환·직접 주문 거부 목록('차량 확인 필요'·'부품 미장착')에 없어 주문 확정(ORC-BE01 '가능 외 상태면 거부') 밖 경로에서는 열릴 수 있다. '판단 불가'(P-9, 관측 없음)는 시장 미출시라는 확정 사실에 맞지 않고, 법적·내부 사유 코드 이름도 없다. product_market_approval에 status(APPROVED|PENDING)가 없고 시드 시장이 정해지지 않아 EU가 시드에 들어가면 B01 핵심 시험이 통과로 바뀐다.",
+      "fix": "target '결정 D-ORC-5 전에는 승인 기록이 없으면 판단 불가로 두되, 데모·시험 시장(시드 승인 기록)만 통과'를 '법적·내부 승인 중 하나라도 없으면 4상태 판정 전에 판매 대상 아님 — 사유 MARKET_NOT_APPROVED / PRODUCT_NOT_APPROVED, 체험 수락·구매 전환·직접 주문 모두 거부(판단 불가·차량 확인 필요 낱말 쓰지 않음). 결정 D-ORC-5 전 시드 = KR APPROVED·EU PENDING'으로 바꾸고(replace), db product_market_approval에 status(APPROVED|PENDING), tests에 'EU(법적 CONFIRMED·내부 PENDING) VIN의 체험 수락·구매 전환·주문 → 모두 거부, 권리·order_link 0건'.",
+      "status": "declined",
+      "source": "orca",
+      "note": "5회차 확인에서 남은 문장 결함 — 회차를 멈추고 구현 착수 전 상세 설계에서 닫는다(보고서 하네스 멤버 장·BACKLOG 착수 전 확인)"
+    },
+    {
+      "item": "ORC-UI03 / ORC-BE03 / ux.json",
+      "issue": "4회차 #10 반영으로 새로 생김: 설계는 '차량 확인 중'을 금지어로 넣었지만 ORC-UI03 tests가 단언 기준으로 삼는 harness/ads/ux.json(ORC-UI03)은 여전히 오프라인·기준 시간 초과 때 고객 문구를 '차량 확인 중'으로 정한다 — 시험 기준과 lint가 서로 반대다. 또 lint-copy는 copy/*.ts 고정 문자열 검사라 '진행 중인 확인 요청이 없을 때'라는 조건을 판정할 수 없어 규칙이 집행되지 않고, 새 금지어 시험도 없다. C8 시험 'C8 오프라인 → 마지막 확인 시각'은 '현재 상태 미확인'·이전 답 미표시를 단언하지 않는다.",
+      "fix": "ux.json ORC-UI03 고객 문구를 '오프라인 — 마지막 확인 {시각}, 현재 상태 미확인'으로 맞춘다(UX 재검토 몫). ORC-BE03 target \"금지어 추가: '차량 확인 중'(진행 중인 확인 요청이 없을 때 — 결과가 곧 나올 것처럼 읽힌다)\"를 \"금지어 추가: '차량 확인 중'(조건 없음 — 재확인 요청이 진행 중이면 '새 확인 요청함 — 결과 대기')\"로 바꾸고(replace), tests에 lint 1줄, ORC-UI03 C8 시험을 '오프라인 → 마지막 확인 시각 + 현재 상태 미확인, 이전 답 미표시'로.",
+      "status": "declined",
+      "source": "orca",
+      "note": "5회차 확인에서 남은 문장 결함 — 회차를 멈추고 구현 착수 전 상세 설계에서 닫는다(보고서 하네스 멤버 장·BACKLOG 착수 전 확인)"
+    },
+    {
+      "item": "ORC-UI11",
+      "issue": "4회차 #11 반영으로 새로 생김: ui는 'basis=ASSUMED 입력이 하나라도 섞인 결과만 가정값 표지'로 바뀌었는데 tests는 여전히 '입력 경계값·검증 실패 시험, 결과에 가정값 표지 단언'(조건 없음)이라, MEASURED만으로 계산한 결과에도 표지를 기대하는지 시험이 정하지 않는다.",
+      "fix": "tests target '입력 경계값·검증 실패 시험, 결과에 가정값 표지 단언'을 '입력 경계값·검증 실패 시험, ASSUMED 입력 1건 섞임 → 가정값 표지 / MEASURED만 → 표지 없음·가정 실험 탭 밖 노출 0'으로 바꾼다(replace).",
+      "status": "declined",
+      "source": "orca",
+      "note": "5회차 확인에서 남은 문장 결함 — 회차를 멈추고 구현 착수 전 상세 설계에서 닫는다(보고서 하네스 멤버 장·BACKLOG 착수 전 확인)"
+    }
+  ]
+}

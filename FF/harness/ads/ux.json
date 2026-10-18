@@ -1,0 +1,3057 @@
+{
+  "member": "UI/UX 디자이너",
+  "method": "UI/UX 디자이너 5회차 확인 — 5회차 설계(apply_r5: ADS-UI01 시험 '전달 보류 구간', ORC-UI01 1단계 확인율 대신 isReadyConfirmed 건수, ORC-UI03 오프라인 문구 '오프라인 — 마지막 확인 {시각}, 현재 상태 미확인'·뒤 단계 필드 '해당 정보 없음', ORC-UI10 실제 이용 세션 출처 문장, ORC-UI11 가정값 표지 기준)를 문장 단위로 대조했다. 설계 판 해시가 달라진 5개 항목(ADS-UI01, ORC-UI01·UI03·UI10·UI11)만 다시 판단하고 나머지는 4회차 그대로 옮겼다. 반영으로 닫힌 것은 resolved(ORC-UI03 고객·운영자 문구 대응, ORC-UI11 basis 표지), 반쪽 반영은 accepted + 남은 문장 명시(ADS-UI01 구간 주변 문장, ORC-UI10 세 문장 중 둘). 확정안을 새 설계에 맞춰 고쳤다 — ORC-UI03 핵심 메시지·unknown에서 금지어 '차량 확인 중' 제거, ORC-UI01 SummaryLine 확인율 → 건수·분모, ORC-UI11 결과 표지. 새 문제는 blocker 기준(설계 수정 없이 구현 불가)에 해당하는 것이 없어 major 4·minor 1을 accepted로 올렸다. 공통 #14·#19 resolution에 5회차 반영을 더했다. 확정안 문구는 tools/ads-team.ts uxProblems 규칙으로 검사했다.",
+  "reviewedAt": "2026-10-18",
+  "components": {
+    "PageHeader": {
+      "purpose": "화면 머리 — 제목·핵심 메시지·설명 한 줄·meta·행동",
+      "existing": "frontend/src/design/page.tsx",
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI02",
+        "ADS-UI04",
+        "ADS-UI05",
+        "ADS-UI06",
+        "ADS-UI07",
+        "ADS-UI08",
+        "ADS-UI09",
+        "ADS-UI10",
+        "ADS-UI11",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI03",
+        "ORC-UI06",
+        "ORC-UI07",
+        "ORC-UI08",
+        "ORC-UI09",
+        "ORC-UI10",
+        "ORC-SIM01",
+        "ORC-UI11"
+      ]
+    },
+    "KeyMessage": {
+      "purpose": "화면당 하나뿐인 핵심 메시지(data-key-message) — 큰 값 하나 + 한 줄 문장",
+      "existing": "frontend/src/design/page.tsx",
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI02",
+        "ADS-UI04",
+        "ADS-UI05",
+        "ADS-UI06",
+        "ADS-UI07",
+        "ADS-UI08",
+        "ADS-UI09",
+        "ADS-UI10",
+        "ADS-UI11",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI03",
+        "ORC-UI06",
+        "ORC-UI07",
+        "ORC-UI08",
+        "ORC-UI09",
+        "ORC-UI10",
+        "ORC-SIM01",
+        "ORC-UI11"
+      ]
+    },
+    "SummaryLine": {
+      "purpose": "핵심 메시지 밖의 회색 보조 요약 한 줄(KPI 타일 대신) — 누적 단계·다른 숫자는 여기로(P-11)",
+      "existing": "frontend/src/design/page.tsx",
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI02",
+        "ADS-UI08",
+        "ADS-UI09",
+        "ADS-UI10",
+        "ADS-UI11",
+        "ORC-UI01",
+        "ORC-UI06",
+        "ORC-UI09"
+      ]
+    },
+    "KeyValue": {
+      "purpose": "키-값 격자(조건·요금·형상 같은 속성 나열)",
+      "existing": "frontend/src/design/page.tsx",
+      "usedBy": [
+        "ADS-UI12",
+        "ORC-UI03",
+        "ORC-UI04",
+        "ORC-UI10",
+        "ORC-UI11"
+      ]
+    },
+    "Segmented": {
+      "purpose": "분절 필터(전체·미수신·로컬 거부·미확인 같은 상태 거르기)",
+      "existing": "frontend/src/design/page.tsx",
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI10",
+        "ORC-UI05",
+        "ADS-BE21"
+      ]
+    },
+    "DataTable": {
+      "purpose": "정렬·캡션·행 열기를 갖춘 공통 표(th scope 포함)",
+      "existing": "frontend/src/design/table.tsx",
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI02",
+        "ADS-UI04",
+        "ADS-UI05",
+        "ADS-UI06",
+        "ADS-UI07",
+        "ADS-UI08",
+        "ADS-UI09",
+        "ADS-UI10",
+        "ADS-UI11",
+        "ADS-UI12",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI04",
+        "ORC-UI05",
+        "ORC-UI06",
+        "ORC-UI07",
+        "ORC-UI08",
+        "ORC-UI09",
+        "ORC-UI10",
+        "ORC-SIM01",
+        "ADS-BE21"
+      ]
+    },
+    "Tabs": {
+      "purpose": "URL ?tab=과 동기화되는 탭 — 화면 안 영역 나누기",
+      "existing": "frontend/src/design/primitives.tsx",
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI04",
+        "ADS-UI05",
+        "ADS-UI06",
+        "ADS-UI07",
+        "ADS-UI09",
+        "ADS-UI10",
+        "ADS-UI11",
+        "ADS-UI12",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI03",
+        "ORC-UI10",
+        "ORC-UI11"
+      ]
+    },
+    "AsyncView": {
+      "purpose": "로딩·빈·오류·권한 없음·오래됨(stale)을 같은 모양으로 감싸는 데이터 영역",
+      "existing": "frontend/src/design/primitives.tsx",
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI02",
+        "ADS-UI04",
+        "ADS-UI05",
+        "ADS-UI06",
+        "ADS-UI07",
+        "ADS-UI08",
+        "ADS-UI09",
+        "ADS-UI10",
+        "ADS-UI11",
+        "ADS-UI12",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI07",
+        "ORC-UI08",
+        "ORC-SIM01",
+        "ADS-BE21",
+        "ORC-UI11"
+      ]
+    },
+    "Panel": {
+      "purpose": "제목 있는 묶음 상자 — 패널 머리 문장은 data-key-message를 쓰지 않는다",
+      "existing": "frontend/src/design/primitives.tsx",
+      "usedBy": [
+        "ORC-UI03"
+      ]
+    },
+    "DiffView": {
+      "purpose": "변경 전후 필드 비교",
+      "existing": "frontend/src/design/primitives.tsx",
+      "usedBy": [
+        "ADS-UI03",
+        "ADS-UI04",
+        "ADS-UI09",
+        "ORC-UI03"
+      ]
+    },
+    "IdChip": {
+      "purpose": "ID·버전 칩(복사·이동)",
+      "existing": "frontend/src/design/primitives.tsx",
+      "usedBy": [
+        "ADS-UI03",
+        "ADS-UI08",
+        "ADS-UI10",
+        "ORC-UI06",
+        "ORC-UI09",
+        "ADS-BE21",
+        "ORC-UI11"
+      ]
+    },
+    "Drawer": {
+      "purpose": "오른쪽 상세·미리보기 패널 — 머리 문장은 Drawer 머리 스타일, data-key-message 금지",
+      "existing": "frontend/src/design/overlay.tsx",
+      "usedBy": [
+        "ADS-UI02",
+        "ADS-UI03",
+        "ADS-UI08",
+        "ADS-UI10",
+        "ORC-UI04",
+        "ORC-UI05",
+        "ORC-UI06",
+        "ORC-UI08",
+        "ORC-UI09",
+        "ORC-UI10",
+        "ADS-BE21"
+      ]
+    },
+    "DangerConfirm": {
+      "purpose": "되돌리기 어려운 행동의 확인 단어 입력 대화상자",
+      "existing": "frontend/src/design/overlay.tsx",
+      "usedBy": [
+        "ADS-UI02",
+        "ADS-UI03",
+        "ADS-UI11",
+        "ORC-UI04",
+        "ORC-UI06"
+      ]
+    },
+    "VerdictBadge": {
+      "purpose": "판정 색·글리프 배지(PASS·검토·미판정·FAIL) — VerdictReason의 바탕",
+      "existing": "frontend/src/design/status.tsx",
+      "usedBy": [
+        "ADS-UI01"
+      ]
+    },
+    "ClassBadges": {
+      "purpose": "F등급·DC·R 등급 배지(위험 표시)",
+      "existing": "frontend/src/design/safety.tsx",
+      "usedBy": [
+        "ADS-UI03",
+        "ADS-UI12"
+      ]
+    },
+    "ApprovalSlots": {
+      "purpose": "요청자·승인자 칸(직무 분리) 표시",
+      "existing": "frontend/src/design/safety.tsx",
+      "usedBy": [
+        "ADS-UI02",
+        "ADS-UI04",
+        "ADS-UI08"
+      ]
+    },
+    "StageStrip": {
+      "purpose": "순차 단계 진행(글리프+번호+글자, 현재 단계 aria-current) — 비활성화 단계 전용을 일반 단계 목록으로 넓혀 설치·주문 단계에 재사용",
+      "existing": "frontend/src/design/safety.tsx",
+      "usedBy": [
+        "ADS-OTA01",
+        "ORC-UI01"
+      ]
+    },
+    "ExtRefChip": {
+      "purpose": "외부 원장(OTA·JIRA·codeBeamer 등) 참조 칩 — 소유 시스템과 동기 상태",
+      "existing": "frontend/src/design/ext-ref.tsx",
+      "usedBy": [
+        "ADS-UI07",
+        "ADS-OTA01",
+        "ORC-UI08"
+      ]
+    },
+    "AxisStateTable": {
+      "purpose": "6축 표 — 축 · 현재 값 · 판단 주체 · 마지막 관측. 차량 보고 축은 '차량 보고' 표기, 오래되면 값 대신 UnknownMark",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI06",
+        "ADS-UI13",
+        "ADS-OTA01",
+        "ORC-UI03",
+        "ORC-UI09"
+      ]
+    },
+    "StageCounts": {
+      "purpose": "분리 수치 막대 — 배타 구간만 받는다(합 = 분모, P-11). 구간마다 글자 라벨+수, 미확인·판단 불가 구간은 빗금 패턴+글자로 따로. 누적 단계는 SummaryLine",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI02",
+        "ADS-UI06",
+        "ADS-UI10",
+        "ADS-UI11",
+        "ORC-UI01",
+        "ORC-UI10"
+      ]
+    },
+    "VerdictReason": {
+      "purpose": "판정 배지 + 한국어 사유 한 줄 + 사유 코드(보조, mono). 허용·거부·판단 불가와 부합·불일치 같은 판정 공통",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI02",
+        "ADS-UI04",
+        "ADS-UI05",
+        "ADS-UI06",
+        "ADS-UI07",
+        "ADS-UI08",
+        "ADS-UI10",
+        "ADS-UI11",
+        "ADS-UI12",
+        "ADS-UI13",
+        "ADS-OTA01",
+        "ORC-UI02",
+        "ORC-UI05",
+        "ORC-UI08",
+        "ORC-SIM01"
+      ]
+    },
+    "UnknownMark": {
+      "purpose": "'판단 불가'(차량 판정 UNKNOWN·근거 부족)·'미확인'(관측 없음·기준 시간 초과·연동 전·결제 직후 미보고) 두 낱말만 낸다(P-9) — 회색 글리프+글자+이유. 정상 집계에 넣지 않는다. 미판정·구성 불일치는 이 부품이 아니라 VerdictReason.",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI02",
+        "ADS-UI03",
+        "ADS-UI04",
+        "ADS-UI05",
+        "ADS-UI06",
+        "ADS-UI07",
+        "ADS-UI08",
+        "ADS-UI09",
+        "ADS-UI10",
+        "ADS-UI11",
+        "ADS-UI12",
+        "ADS-UI13",
+        "ADS-OTA01",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI03",
+        "ORC-UI04",
+        "ORC-UI05",
+        "ORC-UI06",
+        "ORC-UI07",
+        "ORC-UI08",
+        "ORC-UI09",
+        "ORC-UI10",
+        "ADS-BE21"
+      ]
+    },
+    "BlockedAction": {
+      "purpose": "버튼 대신 사유(P-12) — 행동이 막히면 비활성 버튼+title 대신 보이는 글자로 무엇이 막았는지와 누가 무엇을 하면 풀리는지를 쓴다. 고객 동의 범위 밖 가림은 이 부품이 아니라 칸 글자",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI02",
+        "ADS-UI03",
+        "ADS-UI04",
+        "ADS-UI05",
+        "ADS-UI07",
+        "ADS-UI08",
+        "ADS-UI09",
+        "ADS-UI11",
+        "ADS-UI12",
+        "ADS-UI13",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI04",
+        "ORC-UI05",
+        "ORC-UI06",
+        "ORC-UI07",
+        "ORC-UI08",
+        "ORC-UI09",
+        "ORC-SIM01",
+        "ORC-UI11"
+      ]
+    },
+    "FreshnessChip": {
+      "purpose": "마지막 관측 시각 — 상대 시각+절대 시각을 글자로, 기준 시간 초과면 '오래됨' 글자와 경고 글리프(TL-UI01과 같은 부품)",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI01",
+        "ADS-UI05",
+        "ADS-UI06",
+        "ADS-UI11",
+        "ADS-OTA01",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI03",
+        "ORC-UI04",
+        "ORC-UI06",
+        "ORC-UI09",
+        "ORC-UI10"
+      ]
+    },
+    "BulkPreview": {
+      "purpose": "일괄 명령 미리보기 — 대상 수·제외 사유별 수·해제 범위·위험·서명 대상 digest, 서버 재계산 차이",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI02",
+        "ADS-UI03",
+        "ADS-UI11",
+        "ORC-UI07"
+      ]
+    },
+    "CaseTimeline": {
+      "purpose": "사건·주문·지원 건 타임라인 — 차량 시각과 서버 수신 시각 두 열, 행위 주체·제어 책임 열",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI02",
+        "ADS-UI07",
+        "ORC-UI01",
+        "ORC-UI09"
+      ]
+    },
+    "SimulatedDataNotice": {
+      "purpose": "'가상 데이터·목표 설계'·'가정값'·'출처 미연결' 표기 — PageHeader meta 줄과 행 단위 표지(글자+아이콘), 핵심 메시지보다 작게",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI06",
+        "ADS-OTA01",
+        "ORC-UI01",
+        "ORC-UI04",
+        "ORC-UI05",
+        "ORC-UI10",
+        "ORC-SIM01",
+        "ORC-UI11"
+      ]
+    },
+    "CustomerStatePreview": {
+      "purpose": "'고객에게 보이는 상태' 4질문 미리보기 — '미리보기' 테두리 라벨, 고객 문구는 인용 표시",
+      "existing": null,
+      "usedBy": [
+        "ORC-UI03"
+      ]
+    },
+    "ChangeKindBadge": {
+      "purpose": "변경 종류 배지(정책·설정·SW·모델·ODD) — 글자 라벨, 색은 보조",
+      "existing": null,
+      "usedBy": [
+        "ADS-UI04",
+        "ADS-UI09"
+      ]
+    }
+  },
+  "items": {
+    "ADS-UI01": {
+      "screens": [
+        {
+          "path": "/fleet/vehicles/:vin",
+          "kind": "modify"
+        },
+        {
+          "path": "/deployments/:id",
+          "kind": "modify"
+        },
+        {
+          "path": "/fleet/live",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "현재 상태 미확인 기능 2개 — 마지막 차량 보고 3시간 전",
+      "lead": "정책 의도와 차량이 보고한 실제 상태를 축별로 나눠 봅니다.",
+      "perScreen": {
+        "/deployments/:id": {
+          "keyMessage": "적용 확인 안 된 차량 20대 — 대상 100대 중",
+          "lead": "게시본이 차량에 닿고 적용됐는지 단계별로 나눠 셉니다."
+        },
+        "/fleet/live": {
+          "keyMessage": "실제 상태 미확인 차량 14대 — 고속도로 자율주행, 기준 15분 넘음",
+          "lead": "Feature를 고르면 차량들의 축별 상태 분포를 봅니다."
+        }
+      },
+      "states": {
+        "normal": "차량 화면 '상태(6축)' 탭(기본): Feature마다 AxisStateTable 6행(상품 권리 · 구성과 설치 · 정책 의도·전달 · 활성 적격 · 실제 실행 · 관측 신선도) — 열은 축 · 현재 값 · 판단 주체 · 마지막 관측(FreshnessChip, 기준 시간 글자 함께). 활성 적격·실제 실행 값 옆에 '차량 보고'. 활성 적격 칸 값은 허용 · ODD 밖 · 금지 · 조건 부족 · 판단 불가 다섯 낱말만(판단 불가는 차량 판정 UNKNOWN), 마지막 관측이 기준 시간을 넘으면 값 대신 '미확인'. 상품 권리 칸 값은 없음·체험·구매·만료·이전 심사만(1단계는 '해당 없음 · 연동 전'), 결제 상태는 칸에 쓰지 않고 '주문 추적' 링크. 구성과 설치 칸은 OTA 단계와 승인 조합 대조로 정한다(다운로드됨·설치 준비 → 미설치, 설치 확인됨+조합 불일치 → 부분 실패), OTA 연동 전이면 '미확인 · OTA 연동 전'. 관측 신선도 칸은 최신 확인 · 지연 · 오프라인 · 미확인 네 낱말만. 재연결 직후 FreshnessChip 보조 글자 '미확인 기간 3시간 · 10:42 재연결'. 배포 상세: 핵심 값 '적용 확인 안 된 차량 20대', 아래 StageCounts 배타 7구간(적용 확인 80 · 수락(실행 대기) 4 · 전달 보류 2 · 수신만 됨 2 · 미수신 6 · 로컬 거부 3 · 미확인 3, 합 100 = 대상), 보조 줄 '누적: 수신 94 · 수락 84'. '수신만 됨'은 수신 회신 뒤 기준 시간 안에 수락·거부 보고가 아직 없는 차량이고, 기준 시간을 넘기면 '미확인'으로 옮긴다(두 구간에 같이 세지 않음). 구간 거르기는 Segmented 분절 필터 — 설계 문장의 '구간별 탭'은 화면 탭이 아니라 이 필터다(핵심 메시지는 화면당 하나, P-10). 전달 보류 행에는 차량이 보고한 사유 글자 — DEFERRED 보고가 기준 시간을 넘기면 미확인으로 옮기고 '마지막 보고: 전달 보류 · 사유' 회색 보조 글자. Fleet: Feature 선택 뒤 축별 StageCounts 6줄, 기존 차량×flag 행렬은 '정책 값 대조' 탭.",
+        "empty": "이 차량에 배포·권한이 있는 Feature가 없습니다 — 권한이나 배포가 생기면 축별 상태가 보입니다. (배포 상세: 대상 차량 0대 — 회신을 셀 대상이 없습니다)",
+        "unknown": "마지막 관측이 기준 시간(Feature별 보고 주기, 기본 15분 · 가정값)을 넘으면 활성 적격·실제 실행 칸은 값 대신 '미확인 · 마지막 보고 3시간 전'을 보이고, 과거 값은 '그때 보고: Active'로 회색 보조 글자에만 둔다. 차량이 판정 UNKNOWN을 보고했을 때만 '판단 불가'. 배포 상세의 미확인 구간은 수신 뒤 기준 시간이 지나도록 결과 보고가 없는 차량. 미확인·판단 불가는 정상·적용 확인 집계에서 빼고 따로 센다.",
+        "error": "상태를 불러오지 못했습니다 — 지난 값을 현재처럼 보이지 않도록 표를 비웁니다. 다시 시도",
+        "noPermission": null
+      },
+      "primaryAction": {
+        "label": "차량 보고 이력 열기",
+        "blockedReason": null,
+        "readOnly": true
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "SummaryLine",
+        "AxisStateTable",
+        "StageCounts",
+        "FreshnessChip",
+        "UnknownMark",
+        "Segmented",
+        "Tabs",
+        "DataTable",
+        "AsyncView",
+        "VerdictBadge"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로 — 6축 표는 축 이름이 행 머리(th scope=row)",
+        "StageCounts는 막대 아래 같은 순서의 글자 목록(구간 이름+수+비율)을 함께 두고 막대는 aria-hidden",
+        "미확인 구간은 색이 아닌 빗금 패턴+'미확인' 글자",
+        "SSE 갱신은 aria-live=polite로 핵심 메시지 변화만 알리고 표 전체를 읽히지 않는다",
+        "마지막 관측 시각은 title이 아닌 글자(상대+절대)로"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "세 화면 핵심 메시지 예시가 숫자 4~5개를 한 줄에 나열한다('적용 확인 80 · 미수신 12 · 로컬 거부 3 · 판단 불가 5') — 큰 값이 여럿이라 3초 규칙 ②(가장 큰 글자 하나)와 '지금 알아야 할 한 가지'가 깨진다.",
+          "fix": "핵심 메시지는 처리할 일 하나를 값으로 둔다(예: 값 '20', 문장 '적용 확인 안 된 차량 — 미수신 12 · 로컬 거부 3 · 미확인 5'). 전체 분포(적용 확인 80 포함)는 머리 아래 StageCounts가 맡는다.",
+          "status": "resolved",
+          "resolution": "4회차 확인: 옛 예시 문장('미수신·로컬 거부·미확인은 배타 구간 탭')이 \"핵심 메시지는 UX 확정안('적용 확인 안 된 차량 N대'), 분포는 구간별 탭\"으로 바뀌어 항목 안 핵심 메시지 문장이 하나가 됐고, stateModel.example도 '적용 확인 안 된 차량 20대 — 분포(배타, 합 = 대상 100) … / 보조 줄(누적)' 형식으로 교체됨."
+        },
+        {
+          "severity": "major",
+          "issue": "같은 '보고 오래됨'을 bullet 3은 '확인 불가', bullet 4는 '판단 불가'로 부르고, 배포 예시의 '판단 불가 5'는 판정이 아니라 회신 없음이다. [2회차 다시 엶] 1회차 공통 해소에서 '확인 불가'를 일괄 '판단 불가'로 바꾸면서, 오래된 보고(관측 없음·기준 시간 초과 = P-9의 미확인)가 오히려 '판단 불가'로 고정됐다 — ui 3·4번째 줄, fe '연동 전 — 판단 불가', tests '임계를 넘은 차량의 활성 적격 칸이 판단 불가로'. 화면 시험이 틀린 낱말을 단언하게 된다(공통 blocker #0).",
+          "fix": "오래된 보고·OTA 연동 전·재연결 공백은 '미확인', 차량 판정 UNKNOWN만 '판단 불가'로 설계 문장 4곳과 tests 문장을 고친다. P-7 apply 문장도 같이.",
+          "status": "resolved",
+          "resolution": "3회차 확인: P-7 apply 마지막 문장 '보고가 오래되면 \"미확인\"(P-9)', ui 3·4번째 줄(오래된 보고 → 실제 칸 '미확인', '판단 불가'는 차량 판정 UNKNOWN만), fe '연동 전 — 미확인', tests '임계를 넘은 차량의 실제 칸이 미확인으로'로 모두 바뀜."
+        },
+        {
+          "severity": "major",
+          "issue": "'오래된 보고'의 기준 시간이 설계에 없다 — 미확인 판정과 핵심 메시지 숫자가 이 값에 달려 있다.",
+          "fix": "Feature별 관측 기준 시간(기본값은 '가정값' 표기)을 설계에 넣고, FreshnessChip과 미확인 칸에 '기준 15분' 글자를 함께 보인다.",
+          "status": "resolved",
+          "resolution": "be 3번째 줄(4회차에 세 줄을 한 줄로): freshness{observed_at, stale_after_ms, state ∈ FRESH|DELAYED|OFFLINE|UNOBSERVED}, 임계 = Feature별 expected_report_interval, 화면 낱말 최신 확인/지연/오프라인/미확인 + be 4번째 줄 기준 시간 표(기본값 '가정값')·FreshnessChip 단일 부품."
+        },
+        {
+          "severity": "major",
+          "issue": "Fleet 실시간에 '축별 분포'를 더하면 현재 차량×flag 행렬과 한 화면에서 경쟁한다. 6축은 (차량, Feature) 단위라 Feature를 고르지 않으면 합산이 의미 없다.",
+          "fix": "Fleet 실시간에 Feature 선택(Select, 기본: ADS Feature 중 미확인 최다)을 두고 6축 분포를 기본 영역으로, 기존 행렬은 '정책 값 대조' 탭으로 옮긴다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "차량별 적용 상태 화면은 지금도 패널 8개이고, ADS-UI06·ORC-UI03·ORC-UI05·ORC-UI06·ADS-OTA01이 같은 화면에 더 얹힌다.",
+          "fix": "차량 화면을 탭으로 나눈다: '상태(6축)'(기본) · '판정' · '고객에게 보이는 상태' · '정책 게시본·수신 기록' · '차량 발신 요청'. 국가 이동·소유권 이전은 머리 행동에서 여는 Drawer로.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-10(탭이 있으면 활성 탭이 핵심 메시지를 고른다)이 탭 분할을 뒷받침"
+        },
+        {
+          "severity": "minor",
+          "issue": "배포 상세의 현재 핵심 값이 영문 상태 코드('CONFIRMED')이다.",
+          "fix": "핵심 값을 '적용 확인 안 된 차량 수'로 바꾸고 게시본 상태는 VerdictBadge 글자로 meta 줄에.",
+          "status": "resolved",
+          "resolution": "ui 첫 줄 '첫 작업'으로 배포 상세 핵심 값 교체가 설계에 들어감"
+        },
+        {
+          "severity": "minor",
+          "issue": "배포 상세 H1이 지금 '차단 · FEAT-00022'로 '차단'을 단독으로 쓴다(9012 DOM 측정, PUB-00094) — P-13 래칫 대상인데 이 화면 개편 범위에 없다.",
+          "fix": "긴급 차단 게시본이면 H1을 '긴급 차단 게시본 · 기능 이름'으로, 코드(FEAT-)는 meta 줄로."
+        },
+        {
+          "severity": "minor",
+          "issue": "ui 마지막 줄 '재연결 직후 미확인 기간 n시간 표시'의 자리가 없다 — 배너로 두면 차량 화면 핵심 메시지와 다툰다.",
+          "fix": "FreshnessChip 보조 글자('미확인 기간 3시간 · 10:42 재연결')로만 두고, 공백 기간에 들어온 지연 보고는 차량 보고 이력에서 '지연 도착' 표지."
+        },
+        {
+          "severity": "minor",
+          "issue": "ui 2번째 줄 '미수신·로컬 거부·미확인 탭 분리'를 탭으로 만들면 P-10에 따라 탭마다 핵심 메시지가 바뀌어 같은 게시본의 머리 숫자가 탭마다 달라진다.",
+          "fix": "분절 필터(Segmented)로 두고 핵심 메시지는 고정 — 탭은 '차량별 회신'·'회신 원본'·'외부 연계 호출'처럼 성격이 다른 영역에만."
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로] 배포 상세 분포 구간을 두 문장이 다르게 정한다 — ui 3번째 줄은 '미수신·로컬 거부·미확인은 배타 구간 탭', ui 8번째 줄은 '적용 확인·수락(실행 대기)·보류(DEFERRED, 사유)·미수신·로컬 거부'(미확인 없음), tests 6번째 줄은 '보류 구간'. 구간 목록이 다르면 합 = 대상이 어느 쪽에서도 맞지 않고, '보류' 단독은 P-13 래칫 대상이며, '탭'은 P-10(핵심 메시지 화면당 하나)과 부딪힌다.",
+          "fix": "구현 사양: 배타 6구간 = 적용 확인 · 수락(실행 대기) · 전달 보류(차량 보고 사유) · 미수신 · 로컬 거부 · 미확인(수신 뒤 기준 시간 안 결과 보고 없음), 합 = 대상 차량. 핵심 값은 '적용 확인 안 된 차량 N대'(= 대상 − 적용 확인), 누적 '수신·수락'은 보조 줄. 구간 거르기는 Segmented 분절 필터(탭 아님). DEFERRED 화면 낱말은 '전달 보류', 시험 문장의 '보류 구간'은 '전달 보류 구간'으로 읽는다. be 기준 시간 표의 '상품별 사용 확인 기한'은 '사용 준비 확인 기한'(P-13).",
+          "status": "resolved",
+          "resolution": "4회차 확인: 분포 구간 문장이 ui 8번째 줄 하나로 — 적용 확인 · 수락(실행 대기) · 전달 보류(DEFERRED, 사유) · 수신만 됨 · 미수신 · 로컬 거부 · 미확인, 배타·합 = 대상 차량. 옛 '보류(DEFERRED)'·미확인 없는 목록은 지워졌다. 확정안 normal을 이 7구간('수신만 됨' 추가)으로 고쳤다."
+        },
+        {
+          "severity": "major",
+          "issue": "[4회차 새로] 구간 정의는 하나가 됐지만 주변 문장이 확정안과 다르다 — ui 3번째 줄 '분포는 구간별 탭'(탭이면 P-10에 따라 구간마다 핵심 메시지가 바뀜), tests 6번째 줄 'DEFERRED 보고 차량은 보류 구간에만'('보류' 단독), be 4번째 줄 '상품별 사용 확인 기한'(P-13 밖 낱말). 새 구간 '수신만 됨'과 '미확인'의 경계(기준 시간)를 단언하는 시험이 없다.",
+          "fix": "구현 사양: 구간 거르기는 Segmented 분절 필터(탭 아님), 시험의 '보류 구간'은 '전달 보류 구간', 기한 이름은 '사용 준비 확인 기한'. 수신 회신 뒤 기준 시간 안 → '수신만 됨', 넘기면 → '미확인'(한 차량은 한 구간) 경계 시험을 화면 시험에 더한다.",
+          "status": "accepted",
+          "resolution": "5회차 확인 — 일부 반영: tests 6번째 줄이 'DEFERRED 보고 차량은 전달 보류 구간에만 1회 집계되고 수신만 됨·미수신·적용 확인 어디에도 들지 않음'으로 바뀌어 '보류' 단독이 없어졌다. 남은 것: ui 3번째 줄 '분포는 구간별 탭'(확정안은 Segmented 분절 필터), be 4번째 줄 '상품별 사용 확인 기한'(확정안은 '사용 준비 확인 기한'), '수신만 됨'↔'미확인' 기준 시간 경계 시험 — UX 사양으로 채택, 구현 때 fix를 따른다."
+        },
+        {
+          "severity": "major",
+          "issue": "[5회차 새로] 전달 보류 구간의 출구가 없다 — tests 6번째 줄은 DEFERRED 차량을 '전달 보류에만' 세라고 하지만, 차량이 미룬 뒤 다음 보고 없이 기준 시간을 넘기면 '수신만 됨'(기준 시간 넘기면 미확인)과 달리 전달 보류에 무기한 남는다. 오래된 보류가 '차량이 이유를 대고 미루는 중'처럼 보이고(ui 5번째 줄 '과거 상태를 현재처럼 보이지 않게'와 충돌), 시험이 빼는 구간 목록에 수락·로컬 거부·미확인이 없어 한 차량이 두 구간에 들어가는 경우를 잡지 못한다.",
+          "fix": "구현 사양: 전달 보류는 DEFERRED 보고가 기준 시간 안일 때만, 넘기면 '미확인'으로 옮기고 행에 회색 보조 글자 '마지막 보고: 전달 보류 · 사유 · 3시간 전'. 화면 시험은 'DEFERRED 차량은 전달 보류 한 구간에만'을 7구간 전체 배타로 단언하고, 기준 시간 넘긴 DEFERRED → 미확인 경계 1건을 더한다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 때 fix를 따른다"
+        }
+      ],
+      "verdict": "통과",
+      "sha": "a6c06bd10f40"
+    },
+    "ADS-UI02": {
+      "screens": [
+        {
+          "path": "/ops/kill",
+          "kind": "modify"
+        },
+        {
+          "path": "/ops/rollback",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "종료 확인 안 된 차량 12대 — 진행 중 종료 요청 1건",
+      "lead": "원격 종료 요청부터 차량의 종료 확인까지 단계별로 셉니다.",
+      "perScreen": {
+        "/ops/rollback": {
+          "keyMessage": "복구 검증 대기 차량 6대 — 종료 차단은 그대로 유지",
+          "lead": "배포된 정책을 이전 버전으로 되돌립니다 — 실행은 승인 뒤에만."
+        }
+      },
+      "states": {
+        "normal": "목록: 원격 종료 요청(대상 수·종료 확인 수)과 '종료 차단(재활성화 금지)' 목록 — 종료 사건 → Feature → 차량 수, 설정·해제 시각, 영향 차량 산정 3열(ADS-BE21: 영향 후보 · 구성 미확인 · 연결 이력 없음). 지금 목록 머리 문구는 '긴급 차단 적용 중'으로 바꾼다. 핵심 값은 '종료 확인 안 된 차량 N대'(= 전환 중 + 미수신 + 미확인 + 판단 불가) 하나. 상세 Drawer(머리 문장은 Drawer 머리 스타일, data-key-message 없음): StageCounts 배타 6구간 — 비활성 확인 · MRC 도달 · 전환 중 · 미수신 · 미확인(시간 한계 초과) · 판단 불가(MRC 근거 부족), 합 = 요청 대상(지표 계약의 안전 종료 결과와 같은 정의), 보조 줄 '누적: 요청 100 · 수신 92'. 타임라인 열: 차량 시각 · 서버 수신 시각 · 단계 · 제어 책임(ADS·운전자·확인 안 됨, 공백이면 '제어 책임 없음' 경고 행) · MRC 근거 · 비활성화(별도 열). 복원: 독립 사실 3줄 '복구 검증 완료 · 종료 차단 해제 · 현재 활성화: 불가(ODD 밖)' + '종료 차단 해제는 활성화가 아닙니다 — 차량이 다시 판정합니다'. 해제 미리보기는 고른 종료 사건 범위만, '남는 종료 차단: 다른 종료 사건 2건'을 글자 목록으로.",
+        "empty": "진행 중인 종료 요청과 종료 차단이 없습니다 — 요청 폼은 접고 '종료 요청 작성' 버튼만 둔다.",
+        "unknown": "수신했지만 시간 한계 안에 단계 보고가 없는 차량은 '미확인', MRC 도달 보고는 있으나 정지 유지 근거가 없으면 '판단 불가 — MRC 근거 부족'으로 따로 — 비활성 확인·MRC 도달에 넣지 않는다. 복원 3줄의 '현재 활성화'는 차량 판정이 없으면 '판단 불가'(활성화 불가와도 다르다).",
+        "error": "종료 현황을 불러오지 못했습니다 — 숫자를 지난 값으로 남기지 않고 비웁니다. 다시 시도",
+        "noPermission": "원격 종료 요청·종료 차단 해제는 운영자·기능안전 담당자(FSM) 역할이 할 수 있습니다 — 현황은 볼 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "선택한 종료 사건의 종료 차단 해제 요청",
+        "blockedReason": "복구 검증이 끝나지 않은 차량 6대가 있어 종료 차단 해제를 요청할 수 없습니다 — 롤백 화면에서 복구 검증부터 확인하세요."
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "SummaryLine",
+        "StageCounts",
+        "UnknownMark",
+        "CaseTimeline",
+        "BulkPreview",
+        "BlockedAction",
+        "Drawer",
+        "DangerConfirm",
+        "ApprovalSlots",
+        "DataTable",
+        "AsyncView",
+        "VerdictReason"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "타임라인은 표(ol 아님)로 두 시각 열을 머리에 '차량 시각'·'서버 수신 시각'으로 명시",
+        "제어 공백 경고는 경고 글리프+'제어 책임 없음' 글자",
+        "해제 미리보기에서 '남는 차단' 목록은 글자 목록(다른 사건 2건 유지)으로"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "예시 '종료 요청 100 · 수신 92 · 전환 중 8 · 종료 확인 80 · 미확인 12'는 누적 단계(수신 92)와 배타 상태(전환 중·종료 확인·미확인 = 100)를 한 줄에 섞어, 읽는 사람이 더해 맞추려다 틀린다(80+8+12=100인데 수신 92는 어디에도 맞지 않음). stateModel.example도 같다.",
+          "fix": "StageCounts는 배타 구간만(종료 확인 80 · 전환 중 8 · 수신 뒤 보고 없음 4 · 미수신 8 = 100) 쓰고, 누적 '수신 92'는 SummaryLine 보조 줄로 따로. design.json stateModel.example도 같은 방식으로 고친다.",
+          "status": "resolved",
+          "resolution": "4회차 확인: stateModel.example이 배타 분포(합 = 대상 100) + 보조 줄(누적 '수신 92') 형식으로 교체되고, 옛 예시·4구간을 담던 ui 1번째 줄이 지워짐 — 핵심 메시지 문장은 ui 6번째 줄 하나."
+        },
+        {
+          "severity": "major",
+          "issue": "핵심 메시지에 숫자 5개 — 목록 화면에는 요청이 여러 건이라 한 요청의 깔때기를 머리에 둘 수 없다.",
+          "fix": "/ops/kill 핵심 메시지는 '종료 확인이 안 된 차량 N대'(전체 진행 중 요청 합), 요청별 깔때기는 상세 Drawer 머리 문장(data-key-message 아님)과 StageCounts로.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-10(Drawer 머리 문장은 핵심 메시지가 아님)이 뒷받침. 4회차에 ui 1번째 줄이 지워져 예시 충돌은 없어짐"
+        },
+        {
+          "severity": "major",
+          "issue": "같은 화면에 '긴급 차단'(Kill 요청)과 '종료 차단'(재활성화 금지 상태)이 함께 나오고 현재 핵심 문구는 맨 '차단 중 62'이다.",
+          "fix": "'차단'을 단독으로 쓰지 않는다: 요청은 '긴급 차단' 또는 '원격 종료 요청', 상태는 항상 '종료 차단(재활성화 금지)', 해제는 '종료 차단 해제'. 현재 '차단 중' 문구를 '긴급 차단 적용 중'으로.",
+          "status": "resolved",
+          "resolution": "P-13(긴급 차단·종료 차단·종료 차단 해제, '차단' 단독 금지 래칫) + ORC-BE03 be 3번째 줄 금지어('차단'·'보류' 단독)"
+        },
+        {
+          "severity": "major",
+          "issue": "복원 3단 문구가 ADS-UI06의 '복구 완료 / 차단 해제 / 현재 활성화 불가'와 다르고, 3단 단계표처럼 보이면 해제 → 활성화가 이어지는 순서로 읽힌다.",
+          "fix": "두 항목 모두 '복구 검증 완료 · 종료 차단 해제 · 현재 활성화: 가능/불가/판단 불가'의 독립 사실 3줄(체크리스트, 단계표 아님)로 같은 문구 사전에서 가져오고, 아래에 '차단 해제는 활성화가 아닙니다 — 차량이 다시 판정합니다'를 둔다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "타임라인 '제어 책임(DDT owner)' 열의 값과 제어 공백 표시 규칙이 없다. MRC와 비활성화를 한 칸에 두면 R01 표현 경계('MRC와 비활성 일괄 동일시 금지')를 어긴다.",
+          "fix": "제어 책임 값을 'ADS · 운전자 · 확인 안 됨'으로 정하고, 두 행 사이 제어 책임이 비면 '제어 책임 없음' 경고 행을 넣는다. MRC 달성과 비활성화는 별도 열.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "'사건'이 종료 사건·규제 사건 보고(ADS-UI07)·지원 건(ORC-UI09)에서 다른 뜻으로 쓰인다.",
+          "fix": "이 화면은 '종료 사건'으로 고정한다(공통 문제 참조).",
+          "status": "resolved",
+          "resolution": "P-13 '종료 사건'(종료 차단 단위) 고정"
+        },
+        {
+          "severity": "minor",
+          "issue": "3초 테스트 보류 항목(차단 없을 때 요청 폼 접기)이 아직 지금 화면에 있다 — 지금은 요청 폼 패널이 항상 왼쪽 반을 차지한다.",
+          "fix": "진행 중 요청·차단이 0이면 폼을 접고, 열린 폼 안의 사전점검 불일치는 BlockedAction으로 보인다.",
+          "status": "accepted",
+          "resolution": "설계 ui 마지막 줄 '3초 테스트 보류: 차단이 없으면 요청 폼 접기·사전점검 불일치 해소'로 명시 — 구현 때 따름(9012 측정: 요청 폼 패널 그대로, '차단 요청' 비활성+title)"
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로] 한 항목 ui에 핵심 메시지와 종료 결과 구간 정의가 둘이다 — 1번째 줄(3회차 교체) '종료 확인 안 된 차량 N대' + 구간 4개(전환 중·MRC·비활성·미확인), 7번째 줄(적합성 제안) '종료 결과 미확인 차량 N대' + 구간 6개(MRC 도달·비활성 확인·전환 중·미수신·시간 초과·증거 부족). 1번째 줄은 'ORC-UI10 안전 종료 결과와 같은 정의'라면서 ORC-UI10 db safe_termination 결과 6값과 개수가 다르다. 또 2회차 확정안 문구('차단 해제' 단독, Drawer 머리를 perScreen 핵심 메시지로 둔 것)가 P-13·P-10과 어긋났다.",
+          "fix": "구현 사양: 핵심 메시지는 '종료 확인 안 된 차량 N대' 하나(N = 전환 중 + 미수신 + 미확인 + 판단 불가). 구간은 safe_termination 결과 6값과 1:1 — 비활성 확인(DISABLED) · MRC 도달(MRC) · 전환 중(IN_TRANSITION) · 미수신(NO_CONTACT) · 미확인 — 시간 한계 초과(TIMEOUT) · 판단 불가 — MRC 근거 부족(EVIDENCE_MISSING), 합 = 요청 대상. '증거 부족'·'시간 초과' 낱말은 UnknownMark 두 낱말 + 사유로 바꾼다. 행동·권한 문구는 '종료 차단 해제'로만. 상세 Drawer 머리는 핵심 메시지가 아니다(perScreen에서 뺐다).",
+          "status": "resolved",
+          "resolution": "4회차 확인: ui 1번째 줄(4구간·'ORC-UI10 안전 종료 결과와 같은 정의')이 지워지고 6번째 줄 하나만 남음 — 구간 6개(MRC 도달·비활성 확인·전환 중·미수신·시간 초과·증거 부족)가 safe_termination 결과 6값과 1:1. 낱말 차이는 4회차 새 major."
+        },
+        {
+          "severity": "minor",
+          "issue": "제목('종료·차단·복원')·ui 2·3번째 줄('사건별 종료 차단', '다른 사건 차단')·be('사건별 차단 집합')에 '사건'·'차단' 단독이 남았다. ui 6번째 줄 '3초 테스트 보류'도 '보류' 단독.",
+          "fix": "설계 문장을 '종료 사건'·'종료 차단'으로 고친다. 화면 문구는 이미 확정안이 '종료 사건'·'종료 차단'만 쓴다.",
+          "status": "open",
+          "resolution": "4회차에도 설계 미수정 — 제목, ui 1번째 줄 '사건별 종료 차단 목록', 2번째 줄 '다른 사건 차단', 5번째 줄 '3초 테스트 보류', be '사건별 차단 집합'. 화면 문구는 ORC-BE03 래칫('차단'·'보류' 단독)이 잡는다."
+        },
+        {
+          "severity": "major",
+          "issue": "[4회차 새로] 남은 ui 6번째 줄 핵심 메시지 '종료 결과 미확인 차량 N대'는 P-9 '미확인'(관측 없음·기준 시간 초과)을 전환 중(차량 보고 있음)·미수신·근거 부족까지 덮는 말로 쓴다. 구간 낱말 '시간 초과'·'증거 부족'도 UnknownMark 두 낱말 밖이라 화면 시험이 설계 문장을 그대로 단언하면 P-9와 어긋난다.",
+          "fix": "구현 사양: 핵심 메시지는 확정안 '종료 확인 안 된 차량 N대'(N = 전환 중 + 미수신 + 미확인 — 시간 한계 초과 + 판단 불가 — MRC 근거 부족), 구간 낱말은 확정안 normal(비활성 확인 · MRC 도달 · 전환 중 · 미수신 · 미확인 — 시간 한계 초과 · 판단 불가 — MRC 근거 부족). 화면 시험은 ux.json 문장을 단언한다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 때 fix를 따른다"
+        }
+      ],
+      "verdict": "수정 필요",
+      "sha": "bfe4ab9e71dd"
+    },
+    "ADS-UI03": {
+      "screens": [
+        {
+          "path": "/ops/kill",
+          "kind": "modify"
+        },
+        {
+          "path": "/ops/rollback",
+          "kind": "modify"
+        },
+        {
+          "path": "/policies/:id",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "서명 대상 1,240대 — 제외 37대(오프라인 21 · 미지원 SW 16)",
+      "lead": "서명 직전 서버가 다시 센 대상과 미리보기가 같은지 확인합니다.",
+      "states": {
+        "normal": "Drawer(머리 문장은 Drawer 머리 스타일, data-key-message 없음): 대상 수 · 제외 사유별 수 · 해제 범위(종료 사건 단위) · 위험(F등급·DC 배지) · 서명 대상 digest 앞 12자+복사. 서명 직전 서버 재계산과 같으면 서명 버튼, 다르면 버튼 자리에 차이 표(DiffView)와 BlockedAction.",
+        "empty": "대상 차량이 0대입니다 — 서명할 대상이 없습니다. 범위를 다시 고르세요.",
+        "unknown": "형상·연결 상태를 모르는 차량은 '대상 판단 불가 N대'로 따로 — 포함·제외 어느 쪽에도 넣지 않고, 서명 전에 '제외하고 진행'을 직접 고르게 한다.",
+        "error": "미리보기를 계산하지 못했습니다 — 서명 버튼을 보이지 않습니다. 다시 계산",
+        "noPermission": "서명·발행은 운영자·기능안전 담당자(FSM) 역할이 할 수 있습니다 — 미리보기는 볼 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "서명하고 발행",
+        "blockedReason": "서버가 다시 센 대상이 미리보기와 다릅니다 — 대상 +3대, 제외 사유 변경 2건. 미리보기를 새로 고친 뒤 서명하세요."
+      },
+      "components": [
+        "BulkPreview",
+        "Drawer",
+        "ClassBadges",
+        "DiffView",
+        "BlockedAction",
+        "UnknownMark",
+        "DangerConfirm",
+        "IdChip"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "Drawer 열림 시 포커스를 Drawer 제목으로, 닫힘 시 연 버튼으로 돌려준다(Esc로 닫기)",
+        "digest는 mono 글자와 '복사' 버튼, 스크린리더용 aria-label에 전체 digest",
+        "재계산 차이는 DiffView 표(필드·미리보기·서버)로 글자 비교"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "'권한 없는 역할(분석 전용)'은 계약 역할 목록(contracts ROLE_LABEL)에 없다.",
+          "fix": "실제 역할 이름으로 쓴다: 조회만 하는 역할은 '운영·감사 조회자'. 사유 문구는 기존 ko.page.noPermission(역할 목록) 형식을 쓴다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · 결정 D-ADS-7(목록에 없는 역할을 기존 역할로 바꿀지·신설할지) 등록 — 결정 전 화면 문구는 '운영·감사 조회자'"
+        },
+        {
+          "severity": "major",
+          "issue": "공용 미리보기가 Drawer 안에서 핵심 메시지 부품을 쓰면 화면의 data-key-message가 2개가 되어 3초 규칙 ①이 깨진다.",
+          "fix": "BulkPreview 머리 문장은 Drawer 머리 스타일(핵심 메시지보다 작은 글자)로 하고 data-key-message를 붙이지 않는다는 규칙을 부품 설명에 넣는다.",
+          "status": "resolved",
+          "resolution": "P-10: data-key-message는 PageHeader만 붙이고 Drawer 머리 문장은 핵심 메시지가 아니다"
+        },
+        {
+          "severity": "major",
+          "issue": "형상·연결 상태를 모르는 대상의 처리가 설계에 없다 — 기본 포함이면 미확인 차량에 서명이 나가고, 기본 제외면 대상이 조용히 줄어든다.",
+          "fix": "'대상 판단 불가 N대'를 별도 줄로 두고 서명 전에 '제외하고 진행'을 명시적으로 고르게 한다(서명 대상 digest에 이 선택이 포함됨).",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "digest 전체를 그대로 보이면 줄이 넘치고 비교가 어렵다.",
+          "fix": "앞 12자 + 복사, 서명 장치에 보이는 digest와 같은 앞자리 형식."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "5e1001028604"
+    },
+    "ADS-UI04": {
+      "screens": [
+        {
+          "path": "/config/odd",
+          "kind": "new"
+        }
+      ],
+      "keyMessage": "승인 상한을 넘는 배포 설정 3건 — 판단 불가 1건 별도",
+      "lead": "Feature별 운행 조건(ODD)과 승인 상한을 배포 설정과 대조합니다.",
+      "states": {
+        "normal": "프로파일 목록(Feature · 버전 · 초안/승인 · 승인 상한 대비 배포 설정 VerdictReason). 상세: 축별 조건(지리·도로·환경·동적·배제 — 배제 맨 위), 값은 '80 km/h 이하(포함)'처럼 단위와 경계를 글자로. 의미 검증 결과와 연결된 정책·Feature Version. 변경 전후 DiffView. '적용 장소' 탭: 장소 행(주차장·구역 · 지도 버전 · 인프라 버전) · 상태(승인됨 · 승인 대기 · 노출 보류) · 사유 글자(예: '노출 보류 — 지도 버전 2.3이 승인 상한 밖'). 장소 상태 수는 탭 머리 SummaryLine, 핵심 메시지로 올리지 않는다(P-15).",
+        "empty": "ODD 프로파일이 없습니다 — ADS Feature는 승인된 프로파일 없이 배포 설정을 대조할 수 없습니다. '프로파일 초안 만들기'",
+        "unknown": "배포 설정 값이 없거나 단위를 해석하지 못한 비교는 '판단 불가 N건'으로 따로 — '모두 상한 안'은 판단 불가가 0건일 때만 쓴다.",
+        "error": "ODD 프로파일을 불러오지 못했습니다 — 대조 결과를 보이지 않습니다. 다시 시도",
+        "noPermission": "프로파일 승인은 기능안전 담당자(FSM) 역할이 할 수 있습니다 — 초안은 Feature 작성자가 만듭니다."
+      },
+      "primaryAction": {
+        "label": "프로파일 승인",
+        "blockedReason": "의미 검증 오류 2건(속도 단위 혼용 km/h·m/s, 승인 상한 초과)이 남아 승인할 수 없습니다 — 초안에서 고친 뒤 다시 검증하세요."
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "DataTable",
+        "VerdictReason",
+        "UnknownMark",
+        "DiffView",
+        "ApprovalSlots",
+        "BlockedAction",
+        "Tabs",
+        "AsyncView",
+        "ChangeKindBadge"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "경계 포함 여부는 ≤·< 기호 대신 '이하(포함)'·'미만' 글자",
+        "배제 조건은 '배제' 글자 라벨로 앞에 두고 색으로만 구분하지 않는다"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "핵심 메시지 '모두 상한 안'이 판단할 수 없는 비교(값 없음·단위 오류)를 안에 섞을 수 있다(원칙 P-4).",
+          "fix": "'모두 상한 안'은 판단 불가 0건일 때만, 판단 불가가 있으면 '판단 불가 N건'을 값으로 둔다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-9(판단 불가 = 근거 부족)와 같은 방향"
+        },
+        {
+          "severity": "major",
+          "issue": "ODD 확대(시나리오 09) 비교의 승인 순서가 없다 — 프로파일 승인과 정책 배포 중 무엇이 먼저인지, 확대가 변경 영향(ADS-UI09)의 'ODD' 변경 종류로 넘어가는지 정해지지 않았다.",
+          "fix": "흐름을 '프로파일 초안 → 의미 검증 → 기능안전 승인 → 정책 연결 → 배포'로 적고, 확대 변경은 ChangeKindBadge 'ODD'로 변경 영향 화면에 자동 등록된다고 설계에 넣는다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "경로 접두어 /config/* 는 구성 그룹의 다른 화면(/arch/topology·/variant-conditions·/baselines)에 없는 새 관례다.",
+          "fix": "구성 그룹 메뉴에 두되 경로는 '/odd-profiles'처럼 기존 관례(업무 이름)로 하거나, /config/*를 쓰려면 ADS-UI05와 함께 정한다."
+        },
+        {
+          "severity": "minor",
+          "issue": "'승인 상한(Envelope)'과 '상한'·'Envelope'가 섞여 나온다.",
+          "fix": "화면 문구는 '승인 상한'으로 고정하고 첫 등장에만 '(Envelope)' 병기."
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로] ui 6번째 줄(적합성 제안) site 행 '승인/노출 보류 상태와 보류 사유'가 놓일 자리가 없고(P-15), '승인 보류'는 P-13의 보류 네 종류(전달·확대·설치·품질)에 없는 낱말이다 — 아직 승인 안 한 것(대기)과 승인했지만 내보내지 않은 것(노출 보류)이 같은 '보류'로 읽힌다.",
+          "fix": "구현 사양: 프로파일 상세 '적용 장소' 탭에 장소 행, 상태 낱말은 '승인됨 · 승인 대기 · 노출 보류' 셋, 사유는 BlockedAction이 아닌 행 글자(행동이 아니라 상태라서). '노출 보류'는 P-13 보류 목록에 더해 copy/ads.ts 용어표에 올린다.",
+          "status": "accepted",
+          "resolution": "3회차 확정안이 자리('적용 장소' 탭)와 낱말(승인 대기 · 노출 보류)을 정했다 — 용어표 추가는 ADS-UI13 구현 때 함께."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "bcf2ff6f93ca"
+    },
+    "ADS-UI05": {
+      "screens": [
+        {
+          "path": "/config/compat",
+          "kind": "new"
+        }
+      ],
+      "keyMessage": "승인 조합 밖 차량 7대 — 부분 복구 3대 포함",
+      "lead": "승인된 HW·SW·모델·보정 조합과 차량이 보고한 형상을 대조합니다.",
+      "states": {
+        "normal": "승인 조합 표(1행 = 한 조합: HW · ECU SW · 모델 · 보정 · ODD 프로파일 · 정책) + 조합별 차량 수. 차량 대조 탭: 부합 · 불일치 · 부분 복구(일부 ECU만 복구) VerdictReason, 보안 최소 버전 아래 후보는 '복구 후보 불가 — 보안 최소 버전 미달'.",
+        "empty": "등록된 승인 조합이 없습니다 — 조합이 없으면 모든 차량이 '대조 불가'로 남습니다. '조합 등록'",
+        "unknown": "형상 보고가 없거나 기준 시간을 넘긴 차량은 '형상 미확인 N대'로 따로 — 부합으로 세지 않는다.",
+        "error": "승인 조합을 불러오지 못했습니다 — 대조 결과를 보이지 않습니다. 다시 시도",
+        "noPermission": "조합 등록은 차량 사양·Variant 담당자 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "승인 조합 등록",
+        "blockedReason": "ECU SW 하나가 보안 최소 버전보다 낮아 이 조합을 등록할 수 없습니다."
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "DataTable",
+        "VerdictReason",
+        "UnknownMark",
+        "FreshnessChip",
+        "Tabs",
+        "BlockedAction",
+        "AsyncView"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "부분 복구는 ECU별 글자 목록(복구됨·미복구)으로 — 막대 색만으로 표시하지 않는다"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "같은 대상의 이름이 넷이다 — 제목 '호환 형상', 코드 ConfigSets, 6축 '구성과 설치', API config-sets.",
+          "fix": "화면 문구를 '승인 구성 조합'(줄여 '승인 조합')으로 고정하고, 6축 행 이름과 메뉴 이름을 같게 맞춘다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "'승인 조합 행렬'은 6개 차원을 행렬로 펴면 폭이 폭발해 1366px에서 읽을 수 없다.",
+          "fix": "행렬이 아니라 '1행 = 한 조합' 표로 하고 차원은 열로 둔다. 차량별 대조는 별도 탭.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "'지원 조건'(/variant-conditions — 지원 안 됨 차량)과 '복구 후보'(/ops/rollback — eligible·차단 사유)가 같은 형상 판단을 따로 한다 — 세 화면이 다른 답을 낼 수 있다.",
+          "fix": "승인 조합의 원장을 이 화면으로 하고, 롤백 화면의 복구 후보 판정과 지원 조건 화면의 형상 판정은 이 판정을 읽어 사유 문구를 그대로 쓴다고 설계에 적는다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-14(원장 화면·읽기 화면 구분) 신설 — 승인 조합 원장 지정은 이 항목 사양으로 따름"
+        },
+        {
+          "severity": "minor",
+          "issue": "R04 표현 경계 — '모든 차량에 무조건 이전 버전 복귀'로 읽히는 문구 위험.",
+          "fix": "복구 후보 문구는 '승인 조합으로 복구 가능/불가'로, '이전 버전 복귀'를 기본 해법처럼 쓰지 않는다."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "725b4e300fb2"
+    },
+    "ADS-UI06": {
+      "screens": [
+        {
+          "path": "/fleet/vehicles/:vin",
+          "kind": "modify"
+        },
+        {
+          "path": "/fleet/live",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "활성화 거부 — 현재 운행 조건 밖, 차량 보고 2분 전",
+      "lead": "차량이 행위마다 보고한 판정과 사유를 봅니다.",
+      "states": {
+        "normal": "차량 화면 '판정' 탭(활성일 때 PageHeader 핵심 메시지가 판정 기준으로 바뀐다, P-10): 행위(활성화·인계·설치·MRC·종료 확인·재활성화)별 VerdictReason — 허용 · 거부 · 판단 불가 + 한국어 사유('현재 운행 조건 밖') + 보조 코드. 탭 머리 회색 한 줄 '차량이 보고한 판정 — 플랫폼 허가가 아닙니다'. 상태 조합 문구 예: '구매됨 · 현재 운행 조건에서 사용 불가', '복구 검증 완료 · 종료 차단 해제 · 현재 활성화 불가'. 시뮬레이터 전 예시 데이터로 그릴 때는 행마다 '가상 데이터' 표지. Fleet: 거부·판단 불가 사유 분포 StageCounts(사유별 차량 수, 배타).",
+        "empty": "이 차량이 보고한 판정이 없습니다 — 판정은 차량이 행위를 시도하거나 주기 보고할 때 생깁니다.",
+        "unknown": "판정 UNKNOWN은 '판단 불가'(사유 예: 입력 신호가 오래됨), 판정 보고 자체가 기준 시간을 넘겼으면 행 전체를 '미확인'. 둘 다 허용으로 세지 않는다.",
+        "error": "판정을 불러오지 못했습니다 — 지난 판정을 현재처럼 보이지 않습니다. 다시 시도",
+        "noPermission": null
+      },
+      "primaryAction": {
+        "label": "판정 이력 열기",
+        "blockedReason": null,
+        "readOnly": true
+      },
+      "components": [
+        "VerdictReason",
+        "UnknownMark",
+        "FreshnessChip",
+        "StageCounts",
+        "AxisStateTable",
+        "Tabs",
+        "DataTable",
+        "AsyncView",
+        "PageHeader",
+        "KeyMessage",
+        "SimulatedDataNotice"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로 — 행위가 행 머리",
+        "사유 코드는 보조 글자(mono)로 두고 스크린리더에는 한국어 사유를 먼저 읽힌다",
+        "판정 배지 옆 '차량 보고' 글자로 판단 주체를 밝힌다"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "이 항목은 자기 화면이 없다 — ADS-UI01과 같은 차량·Fleet 화면에 '핵심 메시지' 후보를 하나 더 만든다(화면당 1개 규칙 위반 위험).",
+          "fix": "판정은 차량 화면의 '판정' 탭과 Fleet 화면의 패널로만 두고, 화면 핵심 메시지는 ADS-UI01이 소유한다. 판정 탭을 열었을 때만 핵심 메시지를 판정 기준으로 바꿀지는 공통 규칙(탭별 핵심 메시지)을 따른다.",
+          "status": "resolved",
+          "resolution": "P-10: 탭이 있으면 활성 탭이 핵심 메시지를 고르고 PageHeader만 data-key-message — 판정 탭이 고를 때만 이 문장"
+        },
+        {
+          "severity": "major",
+          "issue": "행위별 3값(ALLOW·DENY·UNKNOWN)과 6축 '활성 적격' 5값(허용·ODD 밖·금지·조건 부족·확인 불가)의 대응이 없다.",
+          "fix": "허용=ALLOW, 거부=DENY(사유: ODD 밖·금지·조건 부족), 판단 불가=UNKNOWN 으로 대응표를 설계에 넣고, 6축 값 '확인 불가'는 '판단 불가'로 바꾼다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · stateModel 활성 적격 값 '판단 불가'로 바뀜. ALLOW·DENY·UNKNOWN ↔ 허용·거부(ODD 밖·금지·조건 부족)·판단 불가 대응표는 아직 설계에 없어 이 사양으로 따름"
+        },
+        {
+          "severity": "major",
+          "issue": "사유 코드 분포 예시가 영문 코드(ODD_OUT·ODD_UNKNOWN·INPUT_INVALID_OR_STALE)를 주 글자로 쓴다.",
+          "fix": "주 글자는 한국어 사유('운행 조건 밖'·'운행 조건 판단 불가'·'입력 신호 이상·오래됨'), 코드는 보조 mono. 사유 사전은 contracts → copy 한 곳에서.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "상태 조합 문구 '복구 완료 / 차단 해제 / 현재 활성화 불가'가 ADS-UI02의 '복구 검증 완료 / 종료 차단 해제'와 다르다. '복구 완료'는 사용 가능으로 오해된다.",
+          "fix": "용어집대로 '복구 검증 완료 · 종료 차단 해제 · 현재 활성화 불가'로 통일하고 같은 문구 키를 두 항목과 ORC-UI03이 함께 쓴다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · 설계 ui 2번째 줄은 아직 '복구 완료 / 차단 해제'(P-13상 '종료 차단 해제')"
+        },
+        {
+          "severity": "minor",
+          "issue": "판정이 차량 보고값이라는 점(클라우드 복사 판정은 실행 허가 아님)이 표시 규칙에 없다.",
+          "fix": "판정 영역 머리에 '차량이 보고한 판정 — 플랫폼 허가가 아닙니다'를 회색 한 줄로."
+        },
+        {
+          "severity": "minor",
+          "issue": "fe 3번째 줄 '시뮬레이터 전에는 상태 보고 계약 2.1의 예시 데이터로 표시'에 출처 표지가 없다 — 1단계로 앞당겨진 화면이 예시 판정을 실제 차량 판정처럼 보인다(P-8).",
+          "fix": "예시 데이터 행에는 SimulatedDataNotice '가상 데이터'를 붙이고, 예시만 있는 동안 판정 탭 머리에 '예시 판정 — 차량 연결 전'."
+        },
+        {
+          "severity": "minor",
+          "issue": "ui 2번째 줄 상태 조합 예시 '복구 완료 / 차단 해제 / 현재 활성화 불가'가 ADS-UI02 ui '복구 검증 완료 / 종료 차단 해제 / 현재 활성화 가능 여부'와 다르다 — 같은 3줄을 두 화면이 다른 글자로 그린다.",
+          "fix": "두 화면 모두 '복구 검증 완료 · 종료 차단 해제 · 현재 활성화 불가' 한 문구(copy/ads.ts 하나). 확정안 normal은 이미 이 문구.",
+          "status": "open",
+          "resolution": "설계 문장 미수정 — 구현은 확정안 문구."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "5ac37c0f047b"
+    },
+    "ADS-UI07": {
+      "screens": [
+        {
+          "path": "/ops/incident-reports",
+          "kind": "new"
+        },
+        {
+          "path": "/ops/incident-reports/:id",
+          "kind": "new"
+        }
+      ],
+      "keyMessage": "단기 보고 기한이 7일 안인 ADS 사건 2건 — 가장 가까운 기한 10월 24일",
+      "lead": "ADS 사건의 인지 시각·보고 기한과 근거 기록을 한곳에서 봅니다.",
+      "states": {
+        "normal": "목록: ADS 사건(인지 시각 · 최초 통지 '지체 없이 — 인지 후 3시간 경과' · 단기 보고 기한 · 정기 보고 포함 여부 · 보고 대상 VerdictReason). 열 '30초 활성 창'(차량 보고 기준) 값은 해당 · 해당 없음 · 판단 불가(근거 부족) 셋. '해당'이면 '보고 대상 후보 — 안전·법규 담당 판단 필요'로 두고, 담당 판단 전에는 보고 대상 수·기한 경보에 세지 않는다(후보 수는 SummaryLine). '해당 없음'은 후보에서 빠지지만 비대상 확정도 아니다 — 보고 대상 확정(대상/비대상)은 안전·법규 담당의 기록 행위. 상세: CaseTimeline(정책·형상·ODD·판정·전환 이력, 차량 시각·서버 수신 시각 두 열), '운영 감사 기록'과 'DSSAD 기록은 차량 소관 — 상관 ID 링크'를 다른 라벨로. 정기 보고 탭: 노출량(운행 시간·거리)당 ADS 사건.",
+        "empty": "보고 대상 후보 ADS 사건이 없습니다 — 장애·VOC의 지원 건을 ADS 사건 보고 후보로 올릴 수 있습니다.",
+        "unknown": "사건 당시나 직전 30초 안의 ADS 활성 여부를 차량 보고로 확인할 수 없으면 30초 활성 창 값을 '판단 불가 — 근거 부족'으로 따로 두고, 해당 없음·비대상으로 세지 않는다. 시장별 기한 표가 승인 전이면 기한 칸은 '기한 기준 미등록'.",
+        "error": "사건 보고를 불러오지 못했습니다 — 기한을 계산하지 않습니다. 다시 시도",
+        "noPermission": "보고 대상 확정·보고 초안 작성·제출 기록은 안전·법규 담당 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "단기 보고 초안 만들기",
+        "blockedReason": "이 시장의 기한 기준이 아직 승인되지 않아 기한을 계산할 수 없습니다 — 법규 담당의 기한 표 승인이 필요합니다."
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "DataTable",
+        "VerdictReason",
+        "UnknownMark",
+        "CaseTimeline",
+        "Tabs",
+        "BlockedAction",
+        "ExtRefChip",
+        "AsyncView"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "기한 임박은 색 외에 '7일 남음' 글자와 경고 글리프",
+        "차량 시각과 서버 수신 시각이 순서가 다를 때 '순서 다름' 글자 표지"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "R05 표현 경계·원칙 P-6 — '보고 대상 판정'을 플랫폼이 확정하는 것처럼 쓰면 규제 판단을 대체하는 표현이 된다.",
+          "fix": "화면 문구를 '보고 대상 후보'로 하고, 확정은 법규 담당의 기록 행위('보고 대상으로 확정')로 분리한다.",
+          "status": "resolved",
+          "resolution": "4회차 확인: 플랫폼이 판정하는 문장('보고 대상 판정: 사건 당시 또는 직전 30초 안 ADS 활성')이 지워지고 ui 2번째 줄 '30초 활성 창 값 = 해당 / 해당 없음 / 판단 불가(근거 부족) — 보고 대상 확정은 안전·법규 담당', 6번째 줄 '보고 대상 후보 — 안전·법규 담당 판단 필요, 판단 전에는 보고 대상으로 세지 않음'으로 바뀜."
+        },
+        {
+          "severity": "major",
+          "issue": "기존 '장애·VOC'(/ops/incidents)와 이름·메뉴가 가깝고, 어떤 건이 어떻게 사건 보고로 넘어오는지 흐름이 없다.",
+          "fix": "메뉴 이름을 'ADS 사건 보고(규제)'로 하고, 장애·VOC 상세와 지원 건(ORC-UI09)에 '보고 후보로 올리기' 행동을 두는 흐름을 설계에 넣는다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-13 'ADS 사건'(규제 보고) 고정"
+        },
+        {
+          "severity": "major",
+          "issue": "한 화면에 5묶음(기한 진행·대상 판정·타임라인·DSSAD 구분·정기 보고) — 첫 화면 정보 과다.",
+          "fix": "목록(기한 중심) + 사건 상세 하위 경로(/ops/incident-reports/:id, 타임라인·근거) + '정기 보고' 탭으로 나눈다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "'지체 없이'는 숫자 기한이 아니라 카운트다운으로 보이면 틀린다.",
+          "fix": "'지체 없이 — 인지 후 N시간 경과'처럼 경과 시간으로 보인다."
+        },
+        {
+          "severity": "minor",
+          "issue": "'사건'이 종료 사건(ADS-UI02)·지원 건(ORC-UI09)과 섞인다.",
+          "fix": "이 화면은 'ADS 사건'으로 고정(공통 문제 참조).",
+          "status": "resolved",
+          "resolution": "P-13 'ADS 사건' 고정"
+        }
+      ],
+      "verdict": "통과",
+      "sha": "c4f52054b1a9"
+    },
+    "ADS-UI08": {
+      "screens": [
+        {
+          "path": "/verify/safety-case",
+          "kind": "new"
+        }
+      ],
+      "keyMessage": "다음 단계로 승격할 수 없음 — 열린 중대 발견 1건",
+      "lead": "주장·논거·Evidence의 연결과 독립 검토 발견사항을 봅니다.",
+      "states": {
+        "normal": "주장–논거–Evidence 트리(주장 6개부터, 고유 ID 칩). Evidence 상세: 요구·위험 ID, 형상(정책·ODD·HW·SW·모델·보정), 도구·시나리오, 예상/실제 전이, 시간, 결과 digest, 검토 승인. 독립 검토 발견사항 표(중대도·상태·검토자 독립성) — 열린 중대 발견이 있으면 Gate 칸에 '승격 불가 — 열린 중대 발견 1건'. 핵심 메시지는 하나만: 열린 중대 발견이 있으면 위 문장, 없으면 'Evidence 없는 주장 4건'. 다른 숫자는 SummaryLine 보조 줄('Evidence 없는 주장 4건 · 미검토 Evidence 2건').",
+        "empty": "이 Feature에 등록된 주장이 없습니다 — 안전 조직이 주장을 등록하면 Evidence 연결 상태가 보입니다.",
+        "unknown": "형상이 다른 Evidence는 '형상 불일치 — 재사용 불가', 도구 유효 범위 밖 결과는 '한계' 글자 배지, 검토 전 Evidence는 '미검토'. 셋 다 주장을 뒷받침한 것으로 세지 않는다.",
+        "error": "근거 지도를 불러오지 못했습니다 — 다시 시도",
+        "noPermission": "발견사항 등록·종결은 독립 검토 역할이 할 수 있습니다 — Evidence 작성자는 검토자가 될 수 없습니다."
+      },
+      "primaryAction": {
+        "label": "발견사항 등록",
+        "blockedReason": "이 Evidence를 만든 사람은 독립 검토자로 발견사항을 등록할 수 없습니다."
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "IdChip",
+        "VerdictReason",
+        "UnknownMark",
+        "DataTable",
+        "Drawer",
+        "ApprovalSlots",
+        "BlockedAction",
+        "AsyncView",
+        "SummaryLine"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "트리는 role=tree·treeitem, 화살표 키로 펼치기·이동, 각 노드에 'Evidence 2/3 연결' 글자",
+        "'한계'·'형상 불일치' 배지는 글자 라벨"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "핵심 메시지 예시 '증거 없는 주장 N · 열린 중대 발견 M'이 용어 규칙('증적·증거' 대신 Evidence)과 맞지 않고 숫자가 둘이다.",
+          "fix": "우선순위 하나: 열린 중대 발견이 있으면 '다음 단계 전이 차단 — 열린 중대 발견 M건', 없으면 'Evidence 없는 주장 N건'. 화면 문구는 Evidence로.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-11 신설. 단 설계 ui 마지막 줄은 아직 '증거 없는 주장 N · 열린 중대 발견 M' 두 숫자(공통 문제)"
+        },
+        {
+          "severity": "major",
+          "issue": "R05 표현 경계 — 화면 이름 'Safety Case'가 플랫폼이 Safety Case 자체를 소유·대체하는 것처럼 읽힌다.",
+          "fix": "화면 이름을 'Safety Case 근거 지도'로 하고 머리 meta에 '원본 Safety Case는 안전 조직 소유'를 회색 한 줄로.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "같은 그룹의 '품질 기준·Evidence'(/verify/evidence), '요구·안전 추적'(/trace/design), 운행 중 감시 지표의 'Safety Case 기준 기록 0/18'과 역할이 겹친다.",
+          "fix": "Evidence 원장은 /verify/evidence로 두고 이 화면은 주장 ↔ Evidence 연결만 소유한다고 적는다. 서로 IdChip으로 이동하고, 감시 지표 요약의 같은 숫자는 이 화면 링크로.",
+          "status": "resolved",
+          "resolution": "P-14 예시 \"Evidence 원장은 /verify/evidence\" — 이 화면은 주장 ↔ Evidence 연결만"
+        },
+        {
+          "severity": "major",
+          "issue": "'독립 검토자'와 '검토자 독립성'을 판정할 역할이 계약 역할 목록에 없다.",
+          "fix": "RACI(독립 검토 활동)에서 역할을 정하고 기존 역할(예: Gate 판정자·기능안전 담당자) 중 무엇이 맡는지, 작성자≠검토자 규칙을 설계에 넣는다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · 결정 D-ADS-7 등록(독립 검토자 역할)"
+        },
+        {
+          "severity": "minor",
+          "issue": "'승격 차단'은 플랫폼의 기존 단어('전이')와 다르다.",
+          "fix": "'다음 단계 전이 차단'으로 쓴다."
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로 — 2회차 공통 #3 잔여] ui 마지막 줄 핵심 메시지가 여전히 숫자 둘('증거 없는 주장 N · 열린 중대 발견 M')이고, ui 4번째 줄 '승격 차단'은 P-13의 차단 세 낱말 밖이다. 2회차 확정안 핵심 메시지 '다음 단계 전이 차단'도 같은 문제였다. '증거'도 P-5·용어표의 'Evidence'와 다르다.",
+          "fix": "구현 사양: 핵심 메시지는 처리할 일 하나 — 열린 중대 발견이 있으면 '다음 단계로 승격할 수 없음 — 열린 중대 발견 N건', 없으면 'Evidence 없는 주장 N건'. 나머지 수는 SummaryLine. Gate 칸 낱말은 '승격 불가 — 사유'('차단' 쓰지 않음). 화면 낱말은 'Evidence'.",
+          "status": "accepted",
+          "resolution": "3회차 확정안 핵심 메시지·Gate 낱말을 고쳤다 — 설계 ui 4·5번째 줄은 남아 있어 구현은 확정안을 따른다(tests 3번째 줄이 ux.json 단언)."
+        }
+      ],
+      "verdict": "수정 필요",
+      "sha": "19c2fffb1471"
+    },
+    "ADS-UI09": {
+      "screens": [
+        {
+          "path": "/analysis/impact",
+          "kind": "modify"
+        },
+        {
+          "path": "/policies/:id",
+          "kind": "modify"
+        },
+        {
+          "path": "/features/:id/:ver",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "끝나지 않은 승인 경로 3건 — 재-HARA 1 · R156 영향 평가 1 · SUMS 1",
+      "lead": "변경 종류별로 필요한 승인 경로와 남은 항목을 봅니다.",
+      "states": {
+        "normal": "변경 영향 화면: 변경 종류 배지(정책·설정·SW·모델·ODD)별 승인 경로 표(재-HARA·R156 영향·SUMS)와 미완료 항목, Gate 재판정 수는 SummaryLine 보조 줄. '릴리스 비교' 탭: 대상 · 의존 Feature · 운행 조건(축별 확대/축소) · 종료 동작(DC 등급·대체 동작·MRC 계약) 필드별 DiffView, 확대 방향 행은 '운행 조건 확대' 글자와 경고 글리프로 강조. 정책 개정·Feature Version 목록에는 ChangeKindBadge와 이 탭 링크만.",
+        "empty": "변경 종류가 정해진 변경이 없습니다 — 다시 판정할 승인 경로가 없습니다.",
+        "unknown": "변경 종류를 판정할 정보(어느 ECU·모델이 바뀌었는지)가 없으면 '변경 종류 판단 불가'로 따로 — 정책 변경으로 가볍게 분류하지 않는다.",
+        "error": "변경 영향을 불러오지 못했습니다 — 다시 시도",
+        "noPermission": "승인 경로 종결은 기능안전 담당자(FSM)·사이버보안 담당자(CSM) 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "배포 서명",
+        "blockedReason": "출시 뒤 열린 재-HARA 1건이 있어 배포·서명할 수 없습니다 — 기능안전 담당자의 종결이 필요합니다."
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "ChangeKindBadge",
+        "DataTable",
+        "DiffView",
+        "Tabs",
+        "BlockedAction",
+        "UnknownMark",
+        "AsyncView",
+        "SummaryLine"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "변경 종류 배지는 글자 라벨(색은 보조)",
+        "약어(재-HARA·SUMS·R156)는 첫 등장에 풀이 글자(abbr title만 쓰지 않음)",
+        "확대 방향 강조 행은 색 외에 '확대' 글자와 경고 글리프, 행 머리(th scope=row)에 필드 이름"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "'릴리스 전후 비교'가 어느 화면에 있는지 정해지지 않았다(변경 영향·정책 개정·Feature Version 셋 다 후보).",
+          "fix": "릴리스 비교는 /analysis/impact의 '릴리스 비교' 탭 하나로 두고, 정책·Feature 화면에서는 배지와 링크만.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "'배포·서명 버튼 대신 사유'가 정책 상세·배포 Drawer·Feature Release Sign-off에 흩어져 각자 다른 문구가 될 위험 — 지금은 비활성 버튼+title 방식이다.",
+          "fix": "BlockedAction 하나와 같은 사유 문구 키를 세 위치가 함께 쓴다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-12(BlockedAction) 신설"
+        },
+        {
+          "severity": "minor",
+          "issue": "변경 영향 화면의 현재 핵심 메시지('다시 판정할 Gate 없음 — Feature')를 대체할지 함께 둘지 없다.",
+          "fix": "핵심 메시지를 '끝나지 않은 승인 경로 N건'으로 바꾸고, Gate 재판정 수는 SummaryLine 보조 줄로."
+        },
+        {
+          "severity": "minor",
+          "issue": "'변경 종류 판단 불가' 상태가 없다.",
+          "fix": "변경 종류를 모르면 가장 가벼운 '정책'으로 두지 말고 '판단 불가'로 따로 세어 승인 경로를 막는다."
+        },
+        {
+          "severity": "minor",
+          "issue": "be 2번째 줄 diff가 축별 확대/축소·DC 등급·fallback·MRC 계약까지 필드를 펴서, 비교 표가 1366px에서 행이 수십 개가 된다.",
+          "fix": "기본은 바뀐 필드만(확대 방향 먼저), '같은 필드도 보기' 토글. 종료 동작 묶음은 접힘 머리 한 줄 요약('MRC 계약 변경 1')."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "cc4fa95f338a"
+    },
+    "ADS-UI10": {
+      "screens": [
+        {
+          "path": "/verify/compliance",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "구현되지 않은 요구 21개 — 부분 구현 포함, 64개 중",
+      "lead": "ADS·UNECE 요구별 구현 판정과 근거, 인수시험 상태를 봅니다.",
+      "states": {
+        "normal": "컴플라이언스 화면 새 탭 'ADS·UNECE 요구'(활성이면 이 탭이 핵심 메시지를 고른다): 요구 64(구현·부분·미구현·범위 밖) 표 — 기본 열은 요구 · 판정 · 시나리오 결과(정상 3 · 실패 1) · 열린 결함 수 · 담당, 근거 경로·Backlog ID·결함 probe ID는 행 열기 Drawer. 영역·우선·담당 필터. 인수시험 24 상태, 시나리오 10 현재 → 목표. SummaryLine '인수시험 통과 9/24'. 탭 머리 회색 한 줄 '플랫폼 구현 현황 — 차량 인증 상태가 아닙니다'. 원본 판(sha 앞 8자)·검토 시점, 표준 개정 영향 조회는 검토 전 요구·시험을 '미판정'으로 함께 보인다.",
+        "empty": "카탈로그가 비었습니다 — 요구 카탈로그 생성 단계를 먼저 실행해야 합니다.",
+        "unknown": "근거 경로가 없는 '구현' 판정은 '근거 없음'으로 따로 — 구현으로 세지 않는다. 원본 판(sha)이 바뀌었는데 재검토하지 않은 요구는 '원본 변경 — 재검토 필요', 아직 검토하지 않은 요구·시험은 '미판정'(미확인 아님 — 관측 대상이 아니다).",
+        "error": "요구 카탈로그를 불러오지 못했습니다 — 다시 시도",
+        "noPermission": null
+      },
+      "primaryAction": {
+        "label": "표준 개정 영향 요구 조회",
+        "blockedReason": null,
+        "readOnly": true
+      },
+      "components": [
+        "Tabs",
+        "DataTable",
+        "Segmented",
+        "StageCounts",
+        "VerdictReason",
+        "UnknownMark",
+        "IdChip",
+        "AsyncView",
+        "PageHeader",
+        "KeyMessage",
+        "SummaryLine",
+        "Drawer"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "필터는 Segmented(라디오 그룹 키보드 이동)",
+        "sha는 mono+복사, 스크린리더에는 '원본 판' 라벨"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "새 경로 /trace/ads는 같은 성격의 '컴플라이언스'(/verify/compliance — 보고서 v1.1 플랫폼 규칙의 구현·시험 추적, '규칙 추적'·'시장 Profile' 탭)와 겹친다.",
+          "fix": "새 메뉴를 만들지 말고 /verify/compliance에 'ADS·UNECE 요구' 탭을 더한다. 화면 핵심 메시지는 탭별 핵심 메시지 규칙을 따른다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · 설계 제목·fe는 아직 /trace/ads 신설 — 이 사양(컴플라이언스 탭)으로 따름. P-14 원장 지정 대상"
+        },
+        {
+          "severity": "minor",
+          "issue": "요구 코드(FFP-)·Backlog ID가 핵심 메시지·머리 설명에 들어가면 3초 규칙 ⑤ 위반.",
+          "fix": "코드는 표 칸과 설명 모드에만, 핵심 메시지는 숫자와 한국어 문장만."
+        },
+        {
+          "severity": "minor",
+          "issue": "구현 판정은 플랫폼 팀 작업 현황이라 운영자 업무 흐름과 거리가 있다.",
+          "fix": "탭 머리에 '플랫폼 구현 현황 — 차량 인증 상태가 아닙니다'를 회색 한 줄로(원칙 P-8)."
+        },
+        {
+          "severity": "major",
+          "issue": "ui 마지막 줄 '표준 개정 영향 조회에 미확인(UNVERIFIED) 요구·시험 포함'은 P-9의 '미확인'(관측 없음·기준 시간 초과)과 다른 뜻이다. 검토 전 요구는 관측 대상이 아니라 아직 판정하지 않은 것 — P-9가 정한 '미판정'이다.",
+          "fix": "설계 문장을 '미판정(UNVERIFIED) 요구·시험'으로 고치고 화면 값도 '미판정'. 공통 blocker #0 목록에 포함.",
+          "status": "resolved",
+          "resolution": "3회차 확인: ui 5번째 줄이 '표준 개정 영향 조회에 미판정(UNVERIFIED) 요구·시험 포함'으로 바뀜(apply_r3 ADS-UI10). P-9에 '검토·Gate 전은 미판정'도 들어감."
+        },
+        {
+          "severity": "minor",
+          "issue": "적합성 제안으로 요구 행 열이 판정·근거 경로·Backlog ID·영역·우선·담당·시나리오 결과 수·열린 결함(probe ID)까지 9개가 되어 1366px에서 말줄임이 생긴다.",
+          "fix": "기본 5열(요구·판정·시나리오 결과·열린 결함 수·담당), 경로·ID는 행 Drawer. probe ID 같은 코드는 표 칸·Drawer에만."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "de1b6ca84e3e"
+    },
+    "ADS-UI11": {
+      "screens": [
+        {
+          "path": "/policies/:id",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "확대 보류 — 감시 지표가 2시간 지연",
+      "lead": "확대 판정은 차량이 보고한 Active 노출량과 감시 지표로만 냅니다.",
+      "states": {
+        "normal": "정책 상세 '확대 판정' 탭(배포 중 정책이면 기본 탭, TL-UI02 Canary 관측과 같은 탭): 맨 위 판정 4종 VerdictReason(확대 가능 · 중단 · 확대 보류(지표 지연) · 동결) + SummaryLine '차량 보고 Active 1,820대 · 미확인 140대'. 그 아래 Active 노출량과 미확인 차량 StageCounts, 감시 지표와 FreshnessChip. '조합별 근거' 영역은 기본 접힘 — 판정을 막은 조합만 펼쳐 보이고 열은 조합 · 차량 보고 Active · 실사용 확인 · 오류 · 표본 수 · 관측 기간. 동결 상태(사유·범위·설정자·시각)와 해제. 동결 대화상자는 판정 담당·심각도 입력과 BulkPreview(범위·대상 수).",
+        "empty": "아직 배포되지 않은 정책입니다 — 확대 판정은 첫 단계 배포 뒤에 생깁니다.",
+        "unknown": "미확인 차량은 노출량에서 빼고 '미확인 N대'로 따로. 지표가 기준 시간을 넘기면 판정은 '확대 보류 — 지표 지연'이고 '확대 가능'을 내지 않는다.",
+        "error": "확대 판정을 불러오지 못했습니다 — 확대 버튼을 보이지 않습니다. 다시 시도",
+        "noPermission": "동결·해제·확대는 Feature 출시 담당자·운영 리더 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "다음 단계로 확대",
+        "blockedReason": "감시 지표가 기준 시간(30분)보다 오래됐습니다 — 새 지표가 들어올 때까지 확대할 수 없습니다."
+      },
+      "components": [
+        "Tabs",
+        "VerdictReason",
+        "StageCounts",
+        "FreshnessChip",
+        "UnknownMark",
+        "BlockedAction",
+        "BulkPreview",
+        "DangerConfirm",
+        "DataTable",
+        "AsyncView",
+        "PageHeader",
+        "KeyMessage",
+        "SummaryLine"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "동결 확인은 DangerConfirm(확인 단어 입력)과 범위 글자 요약",
+        "지표 추이는 차트 아래 같은 값의 표를 함께(차트만으로 전달하지 않음)"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "정책 상세는 이미 핵심 메시지(검증·승인 판정)가 있고 패널이 12개다. 확대 판정을 '핵심 메시지'로 더하면 화면당 1개 규칙이 깨진다.",
+          "fix": "정책 상세를 탭으로 나누고('검증·승인' 기본 · '확대 판정' · '개정 이력' · '연계'), 배포 중인 정책이면 기본 탭과 핵심 메시지를 확대 판정으로 바꾼다는 규칙을 설계에 넣는다. (2회차: 확대 판정 핵심 메시지는 숫자 하나 — Active·미확인 대수는 SummaryLine)",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-10(활성 탭이 핵심 메시지를 고른다) 신설"
+        },
+        {
+          "severity": "major",
+          "issue": "TL-UI02(Canary 관측)·TL-UI03(중단 기준 Drawer)와 '같은 패널'이라고만 적혀 있어 누가 어떤 영역을 만드는지 겹친다.",
+          "fix": "탭 하나에 위: 확대 판정(이 항목), 아래: 적용군·대조군 추이(TL-UI02), 확대 행동의 중단 기준 Drawer(TL-UI03)로 배치를 고정한다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "'중단'과 '동결'의 차이가 화면 문구에 없다 — 둘 다 멈춤으로 읽힌다.",
+          "fix": "'중단' = 지표가 중단 기준을 넘어 판정이 멈춤을 권고, '동결' = 사람이 사유·범위를 정해 확대를 막은 상태. 동결은 설정자·시각과 해제 행동을 함께 보인다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "동결 범위가 넓을 때 영향 차량을 미리 보지 않는다.",
+          "fix": "동결·해제에도 BulkPreview(범위·대상 수)를 쓴다."
+        },
+        {
+          "severity": "major",
+          "issue": "ui 4번째 줄(적합성 제안) '조합별 행: 노출·활성·사용 성공·오류·표본 수·관측 기간 + 동결 시 판정 담당·심각도 입력'이 확대 판정 탭에 7열 표와 입력 칸을 더한다 — 이미 판정·StageCounts·감시 지표·TL-UI02 추이·동결 상태가 있는 탭이라 첫 화면 정보 과다, 그리고 '활성'·'사용 성공'이 P-1의 차량 보고 Active·사용 확인과 다른 낱말이다.",
+          "fix": "조합별 표는 '조합별 근거' 접힘 영역(판정을 막은 조합만 기본 펼침), 열 이름은 '차량 보고 Active'·'사용 확인'. 판정 담당·심각도는 동결 대화상자 안 입력으로만. 설계 ui 문장을 같은 낱말로 고친다.",
+          "status": "resolved",
+          "resolution": "3회차 확인: ui 4번째 줄이 '조합별 근거는 접힘 영역(판정을 막은 조합만 기본 펼침), 열: 차량 보고 Active·사용 확인·오류·표본 수·관측 기간. 판정 담당·심각도는 동결 대화상자 안 입력으로만'으로 바뀌고 api는 비워 fe 'API는 ADS-BE12'로 옮김."
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로] ui 2번째 줄 핵심 메시지 '확대 가능 / 중단 / 지표 지연 — 보류 / 동결'의 '보류'가 단독이다(P-13은 '확대 보류'). ui 4번째 줄 열 '사용 확인'은 P-13이 정한 두 낱말('사용 준비 확인'·'실사용 확인') 어느 것도 아니다.",
+          "fix": "구현 사양: 판정 4종 낱말은 '확대 가능 · 중단 · 확대 보류(지표 지연) · 동결'. 조합별 열은 '실사용 확인'(실제 이용 기록 — 확대 판정은 준비 보고가 아니라 실제 이용을 본다).",
+          "status": "accepted",
+          "resolution": "4회차 확인 — 반쪽 반영: ui 2번째 줄이 '확대 가능 / 중단 / 지표 지연 — 확대 보류 / 동결'로 바뀜. ui 4번째 줄 열 '사용 확인'은 그대로 — 확정안 normal의 '실사용 확인'을 따른다."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "be7e21cdd388"
+    },
+    "ADS-UI12": {
+      "screens": [
+        {
+          "path": "/features/:id/:ver",
+          "kind": "modify"
+        },
+        {
+          "path": "/master/define",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "출시 단계로 전이할 수 없습니다 — ADS 분류 미입력",
+      "lead": "Feature의 ADS 여부·DDT 영향·안전 관련성과 담당을 정합니다.",
+      "states": {
+        "normal": "Feature Version 상세 '안전 분류' 탭에 ADS 여부·DDT 영향·안전 관련성·담당, 시장 기준선(승인 유형·규정 series·승인 ODD 프로파일)은 시장별 행. Lifecycle 단계마다 책임자 이름. Feature 등록 목록에 'ADS 분류' 열('미분류' 글자).",
+        "empty": "시장 기준선이 없습니다 — 출시 시장을 정하면 시장별 승인 기준을 입력할 수 있습니다.",
+        "unknown": "분류를 입력하지 않았거나 확정하지 않았으면 '미분류' — ADS 아님으로 보지 않고 출시 전이를 막는다. 출처가 추정(INFERRED)인 값은 '추정 — 확정 전' 글자 배지로 보이되 판정은 확정 여부만 보므로 미분류로 센다. 시장 기준선의 승인 상태를 모르면 '판단 불가'.",
+        "error": "Feature 분류를 불러오지 못했습니다 — 다시 시도",
+        "noPermission": "분류 입력은 Feature 작성자, 확정은 기능안전 담당자(FSM) 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "RELEASED로 전이",
+        "blockedReason": "ADS 여부·DDT 영향 분류가 없어 출시 단계로 전이할 수 없습니다 — Feature 작성자가 분류를 입력하세요."
+      },
+      "components": [
+        "Tabs",
+        "KeyValue",
+        "DataTable",
+        "ClassBadges",
+        "BlockedAction",
+        "UnknownMark",
+        "VerdictReason",
+        "AsyncView"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "'미분류'는 빈칸·대시가 아니라 글자"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "'시장 기준선'이 컴플라이언스 화면의 기존 '시장 Profile' 탭과 겹친다.",
+          "fix": "시장별 규정 series·승인 유형은 '시장 Profile' 한 곳을 원장으로 하고, Feature 화면은 해당 Feature의 시장 행만 읽어 보인다.",
+          "status": "resolved",
+          "resolution": "P-14 예시 \"시장 기준은 시장 Profile\" — Feature 화면은 해당 시장 행을 읽어 보인다"
+        },
+        {
+          "severity": "major",
+          "issue": "Feature 상세는 지금 'RELEASED로 전이' 버튼이 늘 보이고 Release Sign-off는 비활성 버튼+title이다 — '버튼 대신 사유' 설계와 맞지 않는다.",
+          "fix": "미분류·Gate 미충족이면 전이 버튼 자리에 BlockedAction(사유·담당)을 둔다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-12(BlockedAction) 신설"
+        },
+        {
+          "severity": "minor",
+          "issue": "미분류일 때 Feature 상세 핵심 메시지('검증 완료 · Gate PASS 7/9')와 분류 경고 중 무엇이 먼저인지 없다.",
+          "fix": "출시를 막는 미분류가 있으면 핵심 메시지를 분류 경고로 바꾸고 Gate 요약은 meta로."
+        },
+        {
+          "severity": "minor",
+          "issue": "'Lifecycle별 책임자'를 새로 만들 필요 없이 기존 LifecycleStepper에 담당 표시를 더하면 된다.",
+          "fix": "design/lifecycle.tsx LifecycleStepper에 단계별 책임자 글자를 더한다."
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로] ui 4번째 줄(2단계 전환 첫 화면 '미분류 Feature N건'과 축별 빈칸 목록)은 Feature 한 건 화면이 아니라 목록 화면의 핵심 메시지인데 어느 화면인지 없고, ADS-BE16 be가 '출처(INFERRED)는 판정에 쓰지 않는다'로 바뀌어 추정값이 화면에서 분류된 것처럼 보일 위험이 생겼다.",
+          "fix": "구현 사양: /master/define 목록 핵심 메시지 '미분류 Feature N건 — 출시 전이 거부 규칙을 켜기 전 점검'(perScreen), 표는 Feature · 빈 축 이름 글자 · 담당. Feature 상세 핵심 메시지는 기존('출시 단계로 전이할 수 없습니다 — ADS 분류 미입력'). 추정값은 '추정 — 확정 전' 배지 + 미분류 집계.",
+          "status": "accepted",
+          "resolution": "3회차 확정안 perScreen·unknown으로 정했다."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "3d33e4031282",
+      "perScreen": {
+        "/master/define": {
+          "keyMessage": "미분류 Feature 14건 — 출시 전이 거부 규칙을 켜기 전 점검",
+          "lead": "ADS 분류 축 중 빈칸이 있는 Feature를 거부 규칙 전에 먼저 채웁니다."
+        }
+      }
+    },
+    "ADS-UI13": {
+      "screens": [
+        {
+          "path": "*",
+          "kind": "all"
+        }
+      ],
+      "keyMessage": null,
+      "lead": null,
+      "states": {
+        "normal": "화면 전체: 정책 ON(의도) · Available · Active · 원격 종료 요청 · 긴급 차단 · 수신 · 수락 · 전달 보류 · 적용 · 전환 중 · MRC · 종료 확인(차량 보고) · 비활성(Inactive) · 복구 검증 대기 · 종료 차단 · 종료 차단 해제 · 종료 사건 · ADS 사건 · 지원 건 · 확대 보류 · 설치 보류 · 품질 보류 · 노출 보류 · 사용 준비 확인 · 실사용 확인 · 판단 불가 · 미확인 · 미판정 · 구성 불일치를 용어집 정의 그대로 쓴다. stateModel 값과 copy/ads.ts 값은 같은 글자. 문구 원본은 copy/ads.ts 한 곳, 금지 규칙은 ORC-BE03 목록 하나.",
+        "empty": null,
+        "unknown": "'모름'은 두 낱말만 — '판단 불가'(차량 판정 UNKNOWN·근거 부족)와 '미확인'(관측 없음·기준 시간 초과·연동 전·결제 직후 미보고). 검토·Gate 전은 '미판정', 서로 어긋나면 '구성 불일치'(모름이 아니라 어긋남).",
+        "error": null,
+        "noPermission": null
+      },
+      "primaryAction": null,
+      "components": [
+        "UnknownMark",
+        "VerdictReason",
+        "AxisStateTable",
+        "BlockedAction"
+      ],
+      "a11y": [
+        "같은 상태는 모든 화면에서 같은 글자·같은 글리프(스크린리더가 같은 낱말을 읽음)",
+        "금지 표기(P-9 목록 세 가지, '차단'·'보류' 단독)는 lint-copy가 copy/*.ts 전체에서 잡는다 — 문구 사양 필드에는 쓰지 않는다",
+        "막힌 행동은 Button disabled+title 대신 BlockedAction 글자 — 래칫으로 줄인다"
+      ],
+      "findings": [
+        {
+          "severity": "blocker",
+          "issue": "'모름'을 뜻하는 표기가 설계·코드에 다섯 가지다 — '판단 불가'(UI01·UI04·UI07·P-4), '확인 불가'(6축 활성 적격 값·P-7·UI01), '미확인'(관측 신선도·ORC), '판정 불명'(지금 Variant·지원 조건 화면), '판단 보류'(TL-UI01). 같은 차량이 화면마다 다른 낱말로 보인다.",
+          "fix": "용어표를 고정한다: 판단 불가 = 판정 UNKNOWN·근거 부족, 미확인 = 관측 없음·기준 시간 초과, 미판정 = Gate 미실행. '확인 불가'·'판정 불명'·'판단 보류'를 lint-copy 금지어로 넣고 stateModel의 '확인 불가'를 '판단 불가'로 고친다.",
+          "status": "resolved",
+          "resolution": "design.json P-9 신설·lint 금지어(ORC-BE03 be 3번째 줄 — 4회차에 ADS-UI13은 용어표만 소유)·stateModel 활성 적격 값 '판단 불가'. 일괄 치환이 오래된 보고까지 '판단 불가'로 바꾼 문제는 공통 blocker #0에서 다시 열었다가 3회차에 닫힘"
+        },
+        {
+          "severity": "major",
+          "issue": "stateModel '실제 기능 실행' 값('종료 전이'·'종료 완료')이 용어집('전환 중'·'종료 확인')과 다르다. '종료 완료'는 수신 ACK에도 잘못 붙기 쉬운 말이다. [2회차 다시 엶] stateModel '실제 기능 실행' 값은 여전히 '종료 전이'·'종료 완료'이고, 이번에 ORC-BE03 be가 '종료 완료(확인 전)'를 금지 정규식에 넣었다 — stateModel 값을 copy/ads.ts로 옮기면 lint가 실패하거나 래칫 예외를 만든다. 사양으로 따를 수 없고 설계 표를 고쳐야 한다.",
+          "fix": "stateModel 값을 '전환 중'·'종료 확인(차량 보고)'·'비활성(Inactive)'으로 고치고 '종료 완료'는 래칫 0.",
+          "status": "resolved",
+          "resolution": "3회차 확인: stateModel '실제 기능 실행' 값이 비활성(Inactive)·Available·Active·전환 중·MRC·종료 확인(차량 보고)·복구 검증 대기로 바뀌어 '종료 전이'·'종료 완료'가 없어짐. '정책 의도·전달' 값 '보류'도 '전달 보류'로."
+        },
+        {
+          "severity": "major",
+          "issue": "lint-copy는 금지어 검사를 copy/ko.ts에만 한다(COPY_FILE). 새 copy/ads.ts에 쓴 문구는 금지어 검사를 받지 않는다.",
+          "fix": "copy/ads.ts를 ko.ts에 합치거나 lint-copy의 금지어 검사 대상을 copy/*.ts 전체로 넓힌다.",
+          "status": "resolved",
+          "resolution": "ORC-BE03 be 2번째 줄 '검사 대상 copy/*.ts 전체' — 4회차에 ADS-UI13 fe·tests가 'ORC-BE03 목록 하나(이 항목은 용어표만 소유)'로 바뀌어 규칙 소유가 한 곳"
+        },
+        {
+          "severity": "major",
+          "issue": "Orca 사례별 표현 경계(catalog scenarios[].video.limit)가 lint 규칙으로 옮겨지지 않았다.",
+          "fix": "사례 경계를 금지 표현 정규식으로 옮긴다: '사용 준비 완료'(주문 성공·활성 미확인에), '즉시 Active', '자동 전환·자동 유지'(국가 이동), '평생 유지·자동 양도'(소유권 이전), '항상 동작'(오프라인), '무조건 무료'(체험).",
+          "status": "resolved",
+          "resolution": "ORC-BE03 be 2번째 줄 금지 표현 정규식(사용 준비 완료·즉시 Active·자동 유지/전환·평생 유지·자동 양도·항상 동작·무조건 무료·즉시 해결) + 구조 규칙"
+        },
+        {
+          "severity": "minor",
+          "issue": "'정책 ON'이 맨 'ON'으로 큰 글자에 쓰인다(지금 활성화 판단 화면).",
+          "fix": "'ON'을 단독 표기하지 않고 '정책 ON'으로, 핵심 값으로 쓰지 않는다.",
+          "status": "resolved",
+          "resolution": "ORC-UI02 ui 첫 줄: 값 'ON' 대신 '정책 ON(의도) — 차량 실행은 차량이 판단'"
+        },
+        {
+          "severity": "minor",
+          "issue": "'Inactive'만 영문이고 다른 값은 한국어다.",
+          "fix": "'비활성(Inactive)' 또는 용어집 '비활성화' 상태명으로 한국어를 앞에."
+        },
+        {
+          "severity": "minor",
+          "issue": "P-11(배타 구간·처리할 일 하나)은 원칙만 있고 기계 검사가 없다 — lint·3초 e2e 어디에도 StageCounts 합=분모 단언이 없다.",
+          "fix": "StageCounts가 합≠분모면 개발 모드에서 throw(부품 단위 시험), 3초 e2e에 핵심 메시지 큰 값 1개(숫자 글자 덩어리 수) 검사 추가."
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로] 용어를 소유하는 이 항목의 ui 1번째 줄 목록이 지금 P-13·stateModel과 다르다 — '비활성화'(stateModel '비활성(Inactive)'), '복구 검증'(stateModel '복구 검증 대기'), '차단 해제'(P-13 '종료 차단 해제'), 그리고 P-13이 새로 정한 보류 네 종류·사용 준비 확인·실사용 확인·미판정·구성 불일치가 없다. copy/ads.ts를 이 줄로 만들면 원칙과 다른 용어표가 생긴다.",
+          "fix": "구현 사양: copy/ads.ts 용어표 = 3회차 확정안 normal 목록(stateModel 값과 같은 글자). 이 목록에 없는 상태 낱말은 화면에 쓰지 않는다. lint 규칙은 ORC-BE03 하나(tests 2번째 줄 그대로).",
+          "status": "accepted",
+          "resolution": "4회차 확인 — 금지 규칙 소유는 정리됨: fe 'copy/ads.ts 용어표 — 금지 표현은 ORC-BE03 목록을 쓴다', tests 2번째 줄 'ORC-BE03 목록 하나'. ui 1번째 줄 용어 목록('비활성화'·'복구 검증'·'차단 해제', 보류 네 종류·사용 준비 확인·실사용 확인·미판정·구성 불일치 없음)은 그대로 — copy/ads.ts는 확정안 normal 목록을 따른다."
+        }
+      ],
+      "verdict": "수정 필요",
+      "sha": "b4ac93e26558"
+    },
+    "ADS-BE21": {
+      "sha": "ad56fcfa1015",
+      "screens": [
+        {
+          "path": "/ops/kill",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "영향 후보 1,240대 — 구성 미확인 37 · 연결 이력 없음 12",
+      "lead": null,
+      "states": {
+        "normal": "종료 사건 목록(ADS-UI02 화면) 행마다 3열 — 영향 후보(조건으로 고른 차량 수) · 구성 미확인(구성 보고가 산정 기준 시각보다 오래됨) · 연결 이력 없음. 열 머리 옆 회색 글자 '산정 10:42 기준 고정 · 재산정 2회'. 이 항목의 keyMessage는 종료 사건 행의 보조 글자 예시이고 data-key-message가 아니다. 행 열기 Drawer: 3분류 차량 목록(DataTable, 분류 Segmented), 잠정·불확실 조건과 제외 조건(조건 · 근거) 목록, 재산정 이력(이전 결과는 바뀌지 않음). 확정 영향 차량(확정자·분석 참조가 있는 집합)은 별도 묶음 '확정 영향 차량 N대' — 후보와 같은 열·같은 수로 합치지 않는다. 화면 핵심 메시지는 ADS-UI02의 '종료 확인 안 된 차량 N대'.",
+        "empty": "이 종료 사건에는 산정된 영향 후보가 없습니다 — 조건(형상·운행 조건·구성 시점)이 정해지면 산정됩니다.",
+        "unknown": "구성 보고가 산정 기준 시각보다 오래된 차량은 '구성 미확인', 연결 이력이 없는 차량은 '연결 이력 없음'으로 따로 — 후보에 넣지도 빼지도 않는다. 확정 영향 차량이 없으면 식별 정확도(누락률·과잉 포함률)는 '판단 불가 — 확정 영향군 없음'으로 수치를 비운다.",
+        "error": "영향 차량 산정을 불러오지 못했습니다 — 지난 수를 남기지 않고 비웁니다. 다시 시도",
+        "noPermission": null
+      },
+      "primaryAction": {
+        "label": "영향 차량 목록 열기",
+        "blockedReason": null,
+        "readOnly": true
+      },
+      "components": [
+        "DataTable",
+        "Drawer",
+        "Segmented",
+        "UnknownMark",
+        "IdChip",
+        "AsyncView"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로 — 3열 머리는 분류 이름 글자",
+        "구성 미확인·연결 이력 없음은 빗금 패턴+글자(UnknownMark), 수만 회색으로 두지 않는다",
+        "산정 기준 시각은 title이 아닌 글자(상대+절대)로"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "ui 1번째 줄의 셋째 열 이름 '미수신'(NO_CONTACT = 연결 이력 없음)이 같은 /ops/kill 화면의 종료 결과 구간 '미수신'(종료 요청을 받지 못함)과 같은 낱말이다. 같은 화면에서 한 낱말이 다른 차량 집합을 센다(P-13). 영문 enum 이름도 ORC-UI10 safe_termination의 NO_CONTACT와 겹친다.",
+          "fix": "구현 사양: 영향 산정 셋째 열은 '연결 이력 없음', 둘째 열은 '구성 미확인'. '미수신'은 종료 요청 전달 단계에서만 쓴다. copy/ads.ts에서 두 enum을 다른 키로 둔다.",
+          "status": "accepted",
+          "resolution": "3회차 확정안 낱말로 정했다 — 설계 ui 1번째 줄 낱말은 남아 있다."
+        },
+        {
+          "severity": "major",
+          "issue": "db에 CANDIDATE·CONFIRMED 두 종류 집합이 있는데 ui는 '후보' 한 열뿐이다 — 후보 수가 '영향 차량'으로 읽혀 종료 범위나 보고 수치로 쓰일 위험(후보 ≠ 확정). 확정 집합이 없을 때 정확도 표시도 화면 문장에 없다.",
+          "fix": "구현 사양: 후보는 '영향 후보', 확정은 Drawer 안 별도 묶음 '확정 영향 차량 N대(확정자·분석 참조)'. 확정이 없으면 정확도는 '판단 불가 — 확정 영향군 없음'(ORC-UI10과 같은 문구). '영향 차량 N대'라는 낱말은 확정 집합에만.",
+          "status": "accepted",
+          "resolution": "3회차 확정안 normal·unknown으로 정했다."
+        },
+        {
+          "severity": "minor",
+          "issue": "db 첫 줄 status(CONFIG_UNKNOWN|HOLD 별도)의 HOLD 뜻이 설계에 없다 — 화면에 그대로 옮기면 '보류' 단독이 된다.",
+          "fix": "뜻이 정해지기 전에는 화면에 올리지 않는다(P-15 '자세히' 접힘의 원문 값만). 뜻이 정해지면 P-13 형식('○○ 보류').",
+          "status": "open",
+          "resolution": "HOLD 뜻은 BE 상세 설계에서 정한다 — 화면은 그때까지 표시하지 않음."
+        }
+      ],
+      "verdict": "수정 필요"
+    },
+    "ADS-OTA01": {
+      "screens": [
+        {
+          "path": "/fleet/vehicles/:vin",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "설치 중 3/5 단계 — 마지막 OTA 보고 4분 전",
+      "lead": "OTA가 보고한 설치 단계를 차량 화면에서 순서대로 봅니다.",
+      "states": {
+        "normal": "6축 표 '구성과 설치' 행을 펼친 상세(머리 문장은 행 상세 머리, data-key-message 아님): StageStrip 선형 5단계 — 설치 전(예정 창 · '약 25분 운행 제한(예상)' 글자) · 다운로드됨 · 설치 준비 · 설치 중 · 설치 확인됨. 갈림 상태 5개(설치 보류 · 실패 · 복구 · 정지 유지 · 정비 필요)는 단계가 아니라 현재 단계 옆 VerdictReason 줄로: '설치 보류 — 전원 부족(차량 보고)', '실패 — 검증 오류 · 이전 이미지로 복구 중', '정지 유지 · 정비 필요'. 실패 원인은 전원 · 통신 · 검증 세 글자로 따로 센다. 복구 뒤 승인 조합 밖이면 활성 적격 칸은 '조건 부족 — 승인 조합 밖(복구 뒤 재검증)'. 6축 요약 값 대응: 설치 확인됨 → 호환(승인 조합 대조 뒤), 실패·복구 → 부분 실패/복구 필요. 운행 제한이 있는 설치 예약은 고객 상태 API에도 같은 값('설치 중 운행 제한 약 25분(예상)')으로 나가고, 예약 구간만으로 사용 가능 시각을 만들지 않는다(고객 미리보기 2번 답 아래 줄과 같은 값). 출처는 ExtRefChip(OTA 원장), 모의 OTA면 SimulatedDataNotice.",
+        "empty": "이 차량에 진행 중이거나 최근 설치가 없습니다.",
+        "unknown": "OTA 보고가 기준 시간을 넘기면 현재 단계 대신 '미확인 · 마지막 보고: 설치 중'으로 — 진행 중으로 보이지 않게. 다운로드됨만 있는 차량은 호환·설치 확인으로 세지 않는다.",
+        "error": "설치 단계를 불러오지 못했습니다 — OTA 원장에서 확인하세요.",
+        "noPermission": null
+      },
+      "primaryAction": {
+        "label": "OTA 원장에서 보기",
+        "blockedReason": null,
+        "readOnly": true
+      },
+      "components": [
+        "StageStrip",
+        "AxisStateTable",
+        "FreshnessChip",
+        "UnknownMark",
+        "ExtRefChip",
+        "VerdictReason",
+        "SimulatedDataNotice"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "StageStrip은 ol + aria-current=step, 단계마다 번호(3/6)와 글자",
+        "실패·정비 필요는 경고 글리프+글자",
+        "갈림 상태(설치 보류·실패)는 StageStrip 단계가 아니라 별도 글자 줄로 — 스크린리더가 '3/5 단계, 설치 보류: 전원 부족' 순으로 읽게"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "설치 단계 6개(다운로드됨…안전 상태·정비 필요)가 6축 '구성과 설치' 값(미설치·설치 중·호환·부분 실패·복구 필요)과 다르다 — 같은 행에서 두 체계가 나온다.",
+          "fix": "6축 값은 요약(설치 중·호환·부분 실패·복구 필요·미설치), 설치 단계는 그 행의 상세 단계로 대응표를 설계에 넣는다(예: 검증됨 → 호환).",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "'검증됨'은 용어집 '복구 검증'(승인 조합 확인)과 다른 뜻인데 같은 낱말을 쓴다. 설치 성공은 재활성화 허가가 아니다.",
+          "fix": "설치 단계 이름을 '설치 확인됨'으로 하고, '복구 검증'은 승인 조합 대조(ADS-UI05) 결과에만 쓴다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "'안전 상태'가 MRC(운행 중 위험 완화 정지)와 혼동된다. C1 표현 경계 — 설치 중 운행 가능을 약속하면 안 된다.",
+          "fix": "단계 이름을 '정지 유지·정비 필요'로 하고, 설치 단계 어디에도 '운행 가능'을 쓰지 않는다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "어느 화면에 두는지(fe 비어 있음)가 설계에 없다.",
+          "fix": "차량별 적용 상태의 6축 '구성과 설치' 행 상세로 고정하고, OTA는 외부 위임(D7)이라 출처 칩으로 원장 링크."
+        },
+        {
+          "severity": "major",
+          "issue": "적합성 제안이 be·api에 설치 보류(INSTALL_DEFERRED{전원·정지 유지·DDT}), 실패 원인(POWER·LINK·VERIFY), 설치 전 상태(예정 창·예상 소요·운행 제한), 안전 상태 도달 증거를 더했지만 ui 첫 줄 단계 목록 6개에는 없다. 보류·실패는 순서 단계가 아니라 갈림이라 선형 StageStrip에 넣으면 '보류 → 설치 중'이 정상 진행처럼 읽힌다.",
+          "fix": "ui 단계 목록을 선형 5단계(설치 전·다운로드됨·설치 준비·설치 중·설치 확인됨) + 갈림 상태 3개(설치 보류·실패·복구·정지 유지·정비 필요)로 고쳐 쓴다. 설치 전 칸의 운행 제한은 '약 25분 운행 제한(예상)'처럼 예상 표기 — 완료 시각 약속 금지.",
+          "status": "resolved",
+          "resolution": "3회차 확인: ui 1번째 줄이 '선형 5단계(설치 전 · 다운로드됨 · 설치 준비 · 설치 중 · 설치 확인됨) + 갈림 상태(설치 보류 · 실패 · 복구 · 정지 유지 · 정비 필요)', 운행 제한은 '약 25분 운행 제한(예상)' — 완료 시각 약속 금지로 바뀜."
+        },
+        {
+          "severity": "major",
+          "issue": "be 4번째 줄 '승인 조합 밖이면 활성 적격 보류'의 '보류'는 stateModel 활성 적격 값(허용·ODD 밖·금지·조건 부족·판단 불가)에 없고, 정책 전달 축의 '보류'(차량이 미룸)와 같은 낱말이다 — 6축 표 한 화면에 '보류'가 두 축에서 다른 뜻으로 나온다.",
+          "fix": "활성 적격 값은 기존 '조건 부족', 사유 '승인 조합 밖(복구 뒤 재검증)'으로 쓰고 설계 문장을 고친다. '보류' 단독 표기 금지(공통 문제).",
+          "status": "resolved",
+          "resolution": "3회차 확인: be 4번째 줄이 \"승인 조합 밖이면 활성 적격 '조건 부족'(사유: 승인 조합 밖, 복구 뒤 재검증)\"으로 바뀌고 deps에 ADS-BE10, stateModel 전달 값은 '전달 보류'로."
+        },
+        {
+          "severity": "minor",
+          "issue": "tests 6번째 줄 '설치 완료로 세지 않음'의 '설치 완료'가 화면 단계 이름 '설치 확인됨'과 다르다.",
+          "fix": "시험·문구 모두 '설치 확인됨'으로 맞춘다."
+        },
+        {
+          "severity": "minor",
+          "issue": "[4회차 새로] ORC-UI03(1단계)에서 옮겨 온 시험 'drive_restriction 예약 → customer-state에 설치 중 운행 제한'이 이 항목(6단계)에 들어와, 그 전 단계 고객 미리보기에는 운행 제한 줄이 없다. 시험 낱말 '설치 중 운행 제한'과 ui '약 25분 운행 제한(예상)'도 다르다.",
+          "fix": "문구는 하나로 '설치 중 운행 제한 약 25분(예상)'. 연동 전 고객 미리보기는 '설치 상태 연동 전'(ORC-UI03 확정안)."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "deedbbb69f7e"
+    },
+    "ORC-UI01": {
+      "screens": [
+        {
+          "path": "/entitlements",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "기한 넘긴 사용 준비 미확인 주문 9건 — 결제 후 24시간(가정값) 기준",
+      "lead": "주문부터 차량의 사용 준비 확인까지 단계와 경과 시간을 봅니다.",
+      "states": {
+        "normal": "'주문 추적' 탭(활성이면 이 탭이 핵심 메시지를 고른다): 주문 ID마다 StageStrip 5단계 — 주문 · 권리 · 정책 적용(차량 적용 회신, 수신 아님) · 사용 준비 확인(차량 준비 보고) · 실사용 확인(선택, 점선). 단계 칸에 시각과 경과 시간, 기한 초과는 글자 '기한 초과 2시간'. 핵심 값은 기한을 넘긴 주문 중 사용 준비 확인이 없는 것(미확인 · 오프라인 · 부분 실패 합) 하나. 아래 StageCounts 배타 구간 — 사용 준비 확인 · 미확인 · 오프라인 · 부분 실패(4조건 중 1~3개 확인) · 취소 · 환불, 합 = 주문 수(ORC-BE01 isReadyConfirmed 하나 — ORC-UI10 지표 계약과 같은 판정 함수). SummaryLine '기한 넘김 9 = 미확인 4 · 오프라인 3 · 부분 실패 2 · 사용 준비 확인 108건 / 주문 120건' — 1단계에는 확인율(%)을 보이지 않고 isReadyConfirmed 결과 건수와 분모(주문 수)만, 끝에 회색 '확인율은 지표 계약 뒤 표시'. ORC-UI10 지표 계약이 생기면 같은 자리에 '사용 준비 확인율(차량 보고 기준) 90%'를 읽어 붙인다(자리·낱말은 그대로). 환불 요청 → 완료 경과 시간은 환불 행에만 열로. 과금 모의·시뮬레이터 출처면 SimulatedDataNotice '개념 시연 — 가상 데이터'.",
+        "empty": "추적할 주문이 없습니다 — 결제 연동 이벤트가 들어오면 주문별 단계가 보입니다.",
+        "unknown": "차량 응답이 없거나 기준 시간을 넘긴 주문은 '사용 준비 미확인' — 확인으로 세지 않는다. 결제 직후 차량 보고가 아직 없으면 '주문 성공 · 활성 미확인'. 재연결 뒤 들어온 보고가 주문 이전 시각이면 '주문 전 보고 — 준비로 세지 않음' 표지.",
+        "error": "주문 추적을 불러오지 못했습니다 — 다시 시도",
+        "noPermission": "환불·재전송 기록은 운영자 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "기한 초과 주문 처리(재전송·환불 검토)",
+        "blockedReason": "결제 연동이 모의 단계라 실제 환불은 실행하지 않습니다 — 처리 기록만 남깁니다."
+      },
+      "components": [
+        "Tabs",
+        "StageStrip",
+        "StageCounts",
+        "CaseTimeline",
+        "FreshnessChip",
+        "UnknownMark",
+        "BlockedAction",
+        "DataTable",
+        "AsyncView",
+        "SimulatedDataNotice",
+        "PageHeader",
+        "KeyMessage",
+        "SummaryLine"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "기한 초과 강조는 색 외에 '기한 초과 N시간' 글자와 경고 글리프"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "탭에 핵심 메시지를 따로 두면 화면 핵심 메시지('체험 중 차량')와 2개가 된다. 예시도 숫자 3개다.",
+          "fix": "탭별 핵심 메시지 규칙(공통)을 따르고, 값은 처리할 일 하나('사용 확인 안 된 주문 37건'), 나머지는 StageCounts로.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-10·P-11 신설"
+        },
+        {
+          "severity": "major",
+          "issue": "'기한 내 활성 92%'의 '활성'이 비 ADS Feature에서는 차량 사용 확인을, ADS에서는 Active를 뜻해 섞인다(원칙 P-1).",
+          "fix": "'기한 안 사용 확인 92%'처럼 '차량 사용 확인'으로 쓰고, ADS Feature는 '차량 보고 Active'로 따로.",
+          "status": "resolved",
+          "resolution": "4회차 확인: '기한 내 활성 92% · 활성 미확인 37건' 예시 문장이 설계에서 없어졌다. 5회차 확인: fe 2번째 줄이 '1단계에는 확인율을 표시하지 않고 isReadyConfirmed 결과 건수만(핵심 메시지와 같은 출처) — ORC-UI10 지표 계약이 생기면 확인율을 읽어 보인다'로 바뀌어 '활성'·'확인율' 낱말이 1단계 화면에서 빠지고, 지표 이름 '사용 준비 확인율(차량 보고 기준)'은 ORC-UI10 db에만 남는다(later ORC-UI10). 확정안 SummaryLine을 건수·분모로 고쳤다."
+        },
+        {
+          "severity": "major",
+          "issue": "'기한'의 정의(주문 뒤 몇 시간 안에 사용 확인)가 없다.",
+          "fix": "상품별 사용 확인 기한(기본값은 가정값 표기)을 설계에 넣고 탭 머리에 '기한: 결제 후 24시간(가정값)'처럼 보인다.",
+          "status": "resolved",
+          "resolution": "ADS-UI01 be 5번째 줄 기준 시간 표(Feature·상품별 사용 확인 기한, 기본값 '가정값')"
+        },
+        {
+          "severity": "minor",
+          "issue": "B02 표현 경계 — 결제 → 즉시 Active의 단일 점등.",
+          "fix": "5단계마다 시각을 따로 보이고 마지막 단계는 차량 보고가 있을 때만 채운다.",
+          "status": "resolved",
+          "resolution": "ORC-BE01 be isReadyConfirmed = 권리 ACTIVE ∧ 형상 호환 ∧ 정책 적용 ACK(수신 아님) ∧ 차량 준비 보고(최신 확인) — 4회차에 ORC-UI01 be 1번째 줄이 이 함수를 쓴다로 바뀜, tests 3번째 줄 HT01"
+        },
+        {
+          "severity": "major",
+          "issue": "단계 이름이 항목 안에서 둘로 갈렸다 — ui 첫 줄 5단계 끝은 '실사용 확인', 적합성 제안 ui 4번째 줄은 '사용 준비 확인'(실사용 확인은 별도 선택 단계), fe 2번째 줄과 ORC-UI10 db는 지표 이름 '사용 준비 완료율'. '사용 준비 완료'는 ORC-BE03이 금지한 표현이라 지표 이름을 화면에 그대로 쓰면 lint가 걸리고, 쓰지 않으면 운영자는 두 화면에서 다른 이름을 본다.",
+          "fix": "단계는 '정책 적용 → 사용 준비 확인 → 실사용 확인(선택)'으로 고정하고 ui 첫 줄을 고친다. 지표 이름은 '사용 준비 확인율(차량 보고 기준)', '사용 준비 완료'는 지표 이름에도 쓰지 않는다(공통 문제).",
+          "status": "resolved",
+          "resolution": "3회차 확인: 제목·ui 1번째 줄이 '주문 → 권리 → 정책 적용 → 사용 준비 확인 → 실사용 확인(선택)', fe 2번째 줄 지표 이름이 '사용 준비 확인율(차량 보고 기준)', ORC-UI10 db도 같은 이름, P-13에 낱말 고정('사용 준비 완료' 래칫 0)으로 바뀜."
+        },
+        {
+          "severity": "minor",
+          "issue": "적합성 제안으로 '환불 요청→완료 경과 시간'이 더해져 주문 표가 주문 ID·5단계 시각·경과·기한·환불까지 9열 이상이 된다.",
+          "fix": "단계 시각은 StageStrip 안 글자로, 환불 경과는 환불 진행 주문에만 보이는 열로."
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로 — 2회차 공통 #3 잔여] 핵심 메시지가 두 문장이다 — ui 2번째 줄(3회차 교체) '사용 준비 확인 안 된 주문 N건(기한 초과 강조)', ui 5번째 줄(적합성 제안) '기한 넘긴 사용 준비 미확인 주문 N건'. 구간도 ui 5번째 줄(확인됨·미확인·오프라인·부분 실패 + 환불 별도 줄)과 ORC-UI10 tests(준비 확인·기한 내 미확인·오프라인·부분 실패·취소·환불)가 다르다 — '기한 내 미확인'만 있고 기한 넘긴 미확인이 없어 합 = 분모가 성립하지 않는다. 2회차 확정안 unknown 문구에 금지 표현 '사용 준비 완료'가 들어 있었다.",
+          "fix": "구현 사양: 핵심 메시지 '기한 넘긴 사용 준비 미확인 주문 N건'(N = 기한 넘김 ∧ (미확인 ∨ 오프라인 ∨ 부분 실패)). 구간은 상태로만 나눈 배타 6개 — 사용 준비 확인 · 미확인 · 오프라인 · 부분 실패 · 취소 · 환불(합 = 주문 수), 기한은 구간이 아니라 SummaryLine 분해. ORC-UI10 시험의 '기한 내 미확인'은 '미확인'으로 읽는다(판정 함수 isReadyConfirmed 하나를 공유). 문구에 '사용 준비 완료'를 부정문으로도 쓰지 않는다.",
+          "status": "accepted",
+          "resolution": "4회차 확인 — 핵심 메시지는 하나로: ui 2번째 줄(옛 '사용 준비 확인 안 된 주문 N건')이 지워지고 ui 4번째 줄 '기한 넘긴 사용 준비 미확인 주문 N건'만 남아 확정안 keyMessage와 같다. 남은 것: ui 4번째 줄 구간(확인됨·미확인·오프라인·부분 실패 + 환불 별도 결과 줄)과 ORC-UI10 tests 9번째 줄 6구간(준비 확인·기한 내 미확인·오프라인·부분 실패·취소·환불)이 다르다 — 구현은 확정안 6구간(취소·환불 포함, 합 = 주문 수)과 isReadyConfirmed 하나를 따른다. 5회차에도 ORC-UI10 tests 9번째 줄 '기한 내 미확인'은 그대로 — 같은 구현 사양을 따른다."
+        },
+        {
+          "severity": "minor",
+          "issue": "[5회차 새로] 1단계에 확인율을 빼고 건수만 보이면 운영자가 SummaryLine 숫자를 직접 나눠 '확인율'로 보고하게 되고, ORC-UI10 계약이 생긴 뒤 계약 분모(취소·환불 처리 규칙)와 다른 값이 돌 수 있다.",
+          "fix": "건수 옆에 분모를 글자로('108건 / 주문 120건') 두고 비율은 만들지 않는다. 계약 전에는 '확인율은 지표 계약 뒤 표시' 회색 보조 글자, 계약이 생기면 같은 자리에 계약 값.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 때 fix를 따른다"
+        }
+      ],
+      "verdict": "수정 필요",
+      "sha": "7769ee6c81e5"
+    },
+    "ORC-UI02": {
+      "screens": [
+        {
+          "path": "/activation/decide",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "차량 확인 필요 — SW 1.3.0 필요, 설치 기록 연동 전이라 미확인",
+      "lead": "VIN과 상품으로 이 차량에서 쓸 수 있는지 네 가지로 판정합니다.",
+      "states": {
+        "normal": "VIN 지원 판정 4상태 VerdictReason(바로 구매 가능(지원 확인됨) · 업데이트 후 가능 · 부품 미장착 · 차량 확인 필요) + 사유 4칸 표(시장 승인·SW·HW·권리, 각각 충족/미충족/판단 불가 + 근거). 판정 기준 시각은 FreshnessChip(ORC-BE02 eligibility_check). 1단계 시장 승인 칸 근거는 '시장 Profile(승인 시장) 기준'. 필요 HW는 출고 구성 기록 또는 차량 보고 구성으로 확인될 때만 충족. OTA 설치 기록이 연동되기 전(뒤 단계)에는 '업데이트 후 가능'을 내지 않고 '차량 확인 필요 — 미확인(설치 기록 연동 전)' + 필요한 SW 버전을 SW 칸에 둔다 — 4상태 목록에서 '업데이트 후 가능'은 회색 '설치 기록 연동 뒤 판정' 글자로 남긴다. 아래 회색 한 줄 '결제 직전 다시 확인합니다 — 그때 판정이 바뀌면 주문을 받지 않습니다'. 서버 정책 평가는 '정책 평가' 탭으로, 값은 '정책 ON(의도) — 차량 실행은 차량이 판단', 판정 코드는 보조 글자.",
+        "empty": "VIN과 상품을 고르면 판정이 보입니다.",
+        "unknown": "차량 형상 보고가 없거나 오래되면 '차량 확인 필요 — 미확인(형상 보고 3일 전)', 출고 구성 기록과 차량 보고 구성이 모두 없어 HW를 판정할 수 없으면 '차량 확인 필요 — 판단 불가(출고 구성 기록 없음)'. 어느 쪽이든 구매 가능으로 표시하지 않는다. 사유 칸 중 하나라도 판단 불가·미확인이면 전체 판정도 '차량 확인 필요'.",
+        "error": "판정을 불러오지 못했습니다 — 구매 가능 여부를 보이지 않습니다. 다시 시도",
+        "noPermission": null
+      },
+      "primaryAction": {
+        "label": "지금 차량 보고로 다시 판정",
+        "blockedReason": null,
+        "readOnly": true
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "VerdictReason",
+        "UnknownMark",
+        "FreshnessChip",
+        "Tabs",
+        "BlockedAction",
+        "DataTable",
+        "AsyncView"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "사유 4칸은 표(사유 · 결과 · 근거)로 — 아이콘 줄만으로 두지 않는다"
+      ],
+      "findings": [
+        {
+          "severity": "blocker",
+          "issue": "지금 활성화 판단 화면의 핵심 값이 'ON'(가장 큰 글자)이고 문장이 'ALLOW · POLICY_MATCH' 코드다 — '정책 ON = 쓸 수 있음'으로 읽혀 원칙 P-1과 정면으로 어긋난다. 이 화면에 VIN 지원 판정을 더하면 '정책 평가'와 '지원 판정' 두 질문이 핵심 메시지를 다툰다.",
+          "fix": "화면 핵심 메시지를 VIN 지원 판정 4상태로 하고, 서버 정책 평가는 '정책 평가' 탭으로 옮겨 값 'ON' 대신 '정책 ON(의도) — 차량 실행은 차량이 판단'으로 쓴다. 판정 코드는 보조 글자로.",
+          "status": "resolved",
+          "resolution": "ORC-UI02 ui 첫 줄 \"첫 작업: 핵심 값 ON 교체 — VIN 지원 판정 4상태, 정책 평가는 탭\""
+        },
+        {
+          "severity": "major",
+          "issue": "'바로 가능'은 결제만 하면 바로 쓸 수 있다는 약속으로 읽힌다(C2·B02 표현 경계).",
+          "fix": "'바로 구매 가능(지원 확인됨)'으로 하고 '결제 뒤 차량 확인 전에는 사용 준비 완료가 아닙니다'를 함께.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "'판정 불가는 구매 가능으로 표시하지 않음'의 상태 이름이 '차량 확인 필요'인지 '판단 불가'인지 섞인다.",
+          "fix": "전체 판정은 '차량 확인 필요', 사유 칸 값은 '판단 불가'로 구분한다."
+        },
+        {
+          "severity": "minor",
+          "issue": "설계 db 첫 줄이 '기준 시각)' 한 조각뿐이다(적합성 제안 반영 중 잘린 문장으로 보임) — 판정 기준 시각을 저장하는지 알 수 없어 FreshnessChip에 무엇을 보일지 정할 수 없다.",
+          "fix": "db 문장을 복원한다(예: eligibility_decision에 판정 기준 시각·입력 형상 보고 시각).",
+          "status": "resolved",
+          "resolution": "조각 문장이 설계 db에서 없어지고, fe 2번째 줄 '판정 결과는 ORC-BE02 eligibility_check(판정 기준 시각 포함)를 읽는다'로 FreshnessChip 값의 출처가 정해짐."
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로] '모름' 계열 낱말이 이 항목 주변에서 셋이 됐다 — 4상태 이름 '차량 확인 필요', ui 3번째 줄 '판정 불가는 구매 가능으로 표시하지 않음'(P-9의 '판단 불가'와 한 글자 다름, ORC-BE03 금지어 목록에도 없음), ORC-BE02 be \"'확인 필요'(판단 불가)\"(4상태 이름을 줄여 '모름' 뜻으로 씀). 운영자는 '차량 확인 필요'가 행동(재보고 요청)인지 상태(모름)인지 구분하지 못한다.",
+          "fix": "구현 사양: '차량 확인 필요'는 4상태 이름(다음 행동)으로만 쓰고, 옆에 반드시 UnknownMark 두 낱말 중 하나와 사유(미확인 — 형상 보고 3일 전 / 판단 불가 — 출고 구성 기록 없음). '확인 필요' 단독·'판정 불가'는 쓰지 않는다 — ORC-BE03 금지어 목록 구현 때 '판정 불가'를 더한다.",
+          "status": "accepted",
+          "resolution": "4회차 확인 — 반쪽: ORC-BE02 be \"'확인 필요'(판단 불가)\" 문장은 지워졌다. ORC-UI02 ui 3번째 줄 '판정 불가는 구매 가능으로 표시하지 않음'과 ORC-BE02 be 1번째 줄 '판정 불가 ≠ 가능'은 남아 있어 화면 문구는 이 확정안 unknown을 따른다."
+        },
+        {
+          "severity": "major",
+          "issue": "[4회차 새로] ORC-BE02 be 새 문장 'OTA 설치 이벤트가 없으면 업데이트 후 가능 판정에만 차량 확인 필요' + later ADS-OTA01(6단계) 때문에, 1단계 화면에서 4상태 중 '업데이트 후 가능'은 6단계 전까지 나오지 않는다. 3회차 확정안 핵심 메시지 예시가 바로 그 상태였고, 화면이 실제로 나오지 않는 상태를 정상 결과처럼 보이게 된다.",
+          "fix": "구현 사양: 1~5단계에는 '업데이트 후 가능' 대상 차량을 '차량 확인 필요 — 미확인(설치 기록 연동 전)'으로, SW 칸에 필요 버전. 4상태 VerdictReason 목록은 유지하되 '업데이트 후 가능'에 '설치 기록 연동 뒤 판정' 회색 글자. 핵심 메시지 예시를 그 상태로 바꿨다. 6단계 연동 뒤에는 회색 글자를 뗀다(later 교체).",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 때 fix를 따른다"
+        }
+      ],
+      "verdict": "통과",
+      "sha": "1d2993cfd186"
+    },
+    "ORC-UI03": {
+      "screens": [
+        {
+          "path": "/fleet/vehicles/:vin",
+          "kind": "modify"
+        },
+        {
+          "path": "/field",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "고객 화면: 오프라인 — 마지막 확인 3시간 전, 현재 상태 미확인",
+      "lead": "고객 앱이 받을 상태를 미리 봅니다 — 고객 앱 화면이 아닙니다.",
+      "states": {
+        "normal": "차량 화면 '고객에게 보이는 상태' 탭(현장 지원에서는 'Feature 상태' 패널 안 접힘 영역): CustomerStatePreview('미리보기' 테두리 라벨) 4질문(쓸 수 있나 · 언제 쓸 수 있나 · 얼마·무엇을 얻나 · 문제 생기면 누가 해결하나)에 고객 문구 답(인용 표시)과 근거 6축 값 링크, 마지막 확인 시각(오프라인이면 '오프라인 — 마지막 확인 {시각}, 현재 상태 미확인'). 자리 고정: 1번 답 아래 사용 제한 사유·대체 이용 한 줄, 2번 답 아래 설치 예약이 있으면 '설치 중 운행 제한 약 25분(예상)'(OTA 설치 기록 연동 뒤 — 연동 전에는 설치 칸 '설치 상태 연동 전', '언제 쓸 수 있나'는 시각 없이 조건만), 3번 답 아래 이용 기간·다음 결제일·갱신 상태·해지 효력 시각(KeyValue 한 줄 — 갱신·해지 기능 전에는 운영자만 보임 영역에 '해당 정보 없음 · 갱신·해지 연동 전', 고객 미리보기에는 행을 두지 않음), 4번 답 아래 지원 경로(지원 건 상태 '원격 시도 중'·'방문 필요'·'정비 예약', 지원 건 기능 전에는 '지원 경로 안내만'). '언제'는 차량 설치 확인·사용 준비 확인 전에는 '예정 · 조건부'. 4질문 아래 접힘 한 줄 '지난 확인 이후 바뀐 점 2개'(펼치면 DiffView: 축 · 전 · 후 · 사유 — 국가 이동·소유권 이전 변경도 여기, 그 기능 전에는 행 대신 '국가 이동·소유권 이전: 해당 정보 없음' 회색 줄). 맨 아래 회색 줄 '사용 가능 알림 근거: 차량 준비 확인 10:42'. 고객 앱에 가지 않는 운영자용 필드는 '운영자만 보임' 라벨로 미리보기 테두리 밖. 원격 종료(긴급 차단) 대상 차량이면 1번 답은 '안전 점검으로 지금은 사용이 제한됩니다'와 대체 이용 한 줄, 2번 답은 시각 없이 '차량 확인 뒤 알려 드립니다' — 종료가 끝났다고 단정하거나 다시 쓸 수 있는 시각을 약속하지 않고, 운영자용 근거(종료 단계 구간 링크)는 테두리 밖. 복구 뒤 정상 복귀는 설치 검증 → 활성 적격 → 사용 준비 확인 3단계가 모두 있을 때만.",
+        "empty": "이 차량에 고객에게 보일 기능이 없습니다.",
+        "unknown": "오프라인이면 4질문 답 대신 '오프라인 — 마지막 확인 07:42, 현재 상태 미확인' 한 줄만(오프라인은 아니지만 보고가 기준 시간을 넘었으면 '마지막 확인 07:42, 현재 상태 미확인') — 이전 답을 현재처럼 보이지 않는다. 운영자 미리보기와 고객 API가 같은 문장을 쓴다. 확인이 곧 끝날 것처럼 읽히는 진행형 문구는 쓰지 않는다(금지어 목록) — 진행 중인 확인 요청이 있을 때만 '확인 요청 보냄 10:40 · 응답 대기'. 뒤 단계 필드(갱신·해지 · 국가 이동 · 소유권 이전)는 그 항목 구현 전 '해당 정보 없음'(값을 짐작해 채우지 않음).",
+        "error": "고객 상태를 만들지 못했습니다 — 고객 앱도 같은 오류를 받습니다. 다시 시도",
+        "noPermission": null
+      },
+      "primaryAction": {
+        "label": "고객 상태 원문(API 응답) 보기",
+        "blockedReason": null,
+        "readOnly": true
+      },
+      "components": [
+        "CustomerStatePreview",
+        "FreshnessChip",
+        "UnknownMark",
+        "AxisStateTable",
+        "Panel",
+        "DiffView",
+        "Tabs",
+        "PageHeader",
+        "KeyMessage",
+        "KeyValue"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "미리보기는 role=region, 이름 '고객에게 보이는 상태 미리보기'",
+        "고객 문구는 인용(blockquote)로 운영자 문구와 구분"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "미리보기가 고객 앱처럼 보이면 '플랫폼은 고객 앱이 아니다'(D-ORC-1) 경계를 흐린다.",
+          "fix": "패널 테두리에 '미리보기' 라벨, 고객 문구는 인용 표시, 각 답 옆에 근거 축(6축 값) 링크를 둔다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "4질문 답이 약속이 되면 사례 경계를 어긴다 — '언제 쓸 수 있나'(C1: 항상 밤새 완료 약속 금지), '누가 해결하나'(C4·B04: 한 번 방문·즉시 해결 보장 금지), 오프라인(C8: 모든 구독 항상 동작 금지).",
+          "fix": "답 문구 사전을 상태 조합으로만 만든다: '차량 확인 후 알려 드립니다', '원격 확인 후 가까운 정비 거점으로 안내' 등. 시각 약속·보장 낱말을 lint 금지어로.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "고객 문구 '차량 확인 중'과 운영자 문구 '미확인', 그리고 ADS-UI06 상태 조합 문구('구매됨 · 현재 운행 조건에서 사용 불가')가 서로 다른 곳에서 만들어질 위험.",
+          "fix": "운영자 상태 → 고객 문구 대응표를 copy 한 곳에 두고 미리보기·고객 API가 같은 표를 쓴다.",
+          "status": "resolved",
+          "resolution": "5회차 확인: ui 2번째 줄이 \"마지막 확인 시각, 오프라인이면 '오프라인 — 마지막 확인 {시각}, 현재 상태 미확인'\"로 바뀌어 고객 미리보기와 운영자 표기가 같은 낱말 '미확인'을 쓰고, ORC-BE03 be에 금지어 '차량 확인 중'(진행 중인 확인 요청이 없을 때)이 생겨 두 곳에서 다른 문구가 만들어질 길이 막혔다. 나머지 상태 조합 문구(ADS-UI06 등)는 copy 한 곳의 대응표로 — 확정안 keyMessage·unknown을 새 문장으로 고쳤다."
+        },
+        {
+          "severity": "minor",
+          "issue": "현장 지원 화면은 이미 패널 6개다.",
+          "fix": "현장 지원에서는 'Feature 상태' 패널 안 접힘 영역으로 두고, 차량 화면에서는 '고객에게 보이는 상태' 탭으로.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택(9012 측정: 현장 지원 섹션 6개 그대로) — 구현 때 따름"
+        },
+        {
+          "severity": "major",
+          "issue": "적합성 제안이 be·api에 사용 제한 사유·대체 이용·지원 경로·지난 확인 이후 변경 목록·사용 가능 알림 근거·복구 3단계 순서를 더해, 4질문 미리보기 하나가 답 4개 + 목록 3개 + 근거 줄을 가진다. 현장 지원 화면 안 접힘 영역으로는 다 들어가지 않고, 고객 앱이 받는 것보다 운영자 미리보기가 더 많아져 '고객에게 보이는 상태'가 무엇인지 흐려진다.",
+          "fix": "자리를 고정한다: 제한 사유·대체 이용은 1번 답 아래, 지원 경로는 4번 답 아래, 바뀐 점은 접힘 한 줄, 알림 근거는 맨 아래 회색 줄. 고객 앱에 가지 않는 운영자용 필드는 '운영자만 보임' 라벨로 미리보기 테두리 밖에 둔다.",
+          "status": "resolved",
+          "resolution": "3회차 확인: ui 4번째 줄 '자리 고정: 제한 사유·대체 이용은 1번 답 아래, 지원 경로는 4번 답 아래, 바뀐 점은 접힘 한 줄, 알림 근거는 맨 아래 회색 줄. 운영자용 필드는 운영자만 보임 라벨로 미리보기 테두리 밖' 신설, fe 3번째 줄 지원 경로 투영 순서, deps ORC-BE01."
+        },
+        {
+          "severity": "minor",
+          "issue": "be 3번째 줄 '복구 후 설치 검증 → 활성 적격 → 사용 확인'의 '복구'·'설치 검증'·'사용 확인'이 ADS-UI02 복원 3줄('복구 검증 완료·종료 차단 해제')·ADS-OTA01 '설치 확인됨'·ORC-UI01 '사용 준비 확인'과 낱말이 다르다.",
+          "fix": "운영자 쪽 낱말은 '설치 확인됨 → 활성 적격 허용 → 사용 준비 확인'으로 맞추고, 고객 문구는 대응표에서만 바꾼다."
+        },
+        {
+          "severity": "major",
+          "issue": "[3회차 새로] 3회차 적합성 반영으로 api에 entitlement{access_until, next_charge_at, renewal_state, cancel_effective_at}·market_change{type, status, items}가 들어왔는데 ui 자리 고정 줄에는 자리가 없다(P-15). be 3번째 줄 복구 3단계의 '사용 확인'은 P-13의 두 낱말 어느 것도 아니고, market_change.status UNCONFIRMED는 화면 낱말이 정해지지 않았다.",
+          "fix": "구현 사양: entitlement 필드는 3번 답 아래 KeyValue 한 줄, market_change는 '지난 확인 이후 바뀐 점' 접힘 안 DiffView 행(UNCONFIRMED → '미확인'), drive_restriction은 2번 답 아래. 복구 3단계 마지막은 '사용 준비 확인'. 이 밖의 필드는 '자세히' 접힘(P-15).",
+          "status": "accepted",
+          "resolution": "3회차 확정안 normal에 자리를 정했다. 4회차: drive_restriction 시험이 ADS-OTA01(6단계)로 옮겨지고 later에 ADS-OTA01 — 그 전 2번 답 아래 줄은 '설치 상태 연동 전'(확정안 normal 반영). be 3번째 줄 복구 3단계 '사용 확인'은 그대로. 5회차: fe 2번째 줄 'entitlement 갱신·해지 필드(ORC-UI04)와 market_change·소유권 이전(ORC-BE04)은 그 항목 구현 전 null + 해당 정보 없음'과 later ORC-UI04·ORC-BE04가 생겨 뒤 단계 필드 투영이 정해졌다 — 확정안 normal에 자리별 '해당 정보 없음'을 넣었다. 복구 3단계 '사용 확인'은 그대로."
+        },
+        {
+          "severity": "major",
+          "issue": "[4회차 새로] cases에 R01(원격 종료·MRC)이 더해졌지만 고객 미리보기 4질문에 원격 종료 중 답이 없다 — 지금 투영 규칙대로면 Kill 대상 차량도 권리·설치만 보고 '쓸 수 있음'에 가깝게 보이거나, 종료 진행을 '종료됨'으로 단정하는 고객 문구가 생긴다(R01 경계: 종료 요청 ≠ 안전 전환 완료).",
+          "fix": "구현 사양: 종료 진행·종료 차단 상태면 1번 답 '안전 점검으로 지금은 사용이 제한됩니다' + 대체 이용, 2번 답 시각 없이 조건만, 종료 단계 근거는 운영자만 보임 영역. 문구는 운영자 상태 → 고객 문구 대응표 한 곳(확정안 3번째 finding).",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 때 fix를 따른다"
+        },
+        {
+          "severity": "major",
+          "issue": "[5회차 새로] fe 2번째 줄 '해당 정보 없음'이 고객 미리보기 3번 답(다음 결제일·갱신 상태·해지 효력)에 그대로 보이면 고객은 '다음 결제가 없다·해지됐다'로 읽는다 — 단정 금지 의도와 반대로 사실처럼 읽히는 문구가 된다. 같은 '연동 전' 뜻이 이 항목 안에서 '설치 상태 연동 전'·'지원 경로 안내만'·'해당 정보 없음' 셋이고, 출처 글자가 없어 기능이 붙은 뒤 무엇이 바뀌었는지 모른다(공통 #19).",
+          "fix": "구현 사양: 고객 API는 null을 보내고 고객 문구 대응표는 그 행을 만들지 않는다(빈 행·'없음' 금지). '해당 정보 없음'은 운영자만 보임 영역에서만, 출처 글자와 함께 — '해당 정보 없음 · 갱신·해지 연동 전', '해당 정보 없음 · 국가 이동 연동 전'. 기능이 붙으면 같은 자리에서 값으로 바뀐다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 때 fix를 따른다"
+        }
+      ],
+      "verdict": "통과",
+      "sha": "7bcdef7cdbea"
+    },
+    "ORC-UI04": {
+      "screens": [
+        {
+          "path": "/entitlements",
+          "kind": "modify"
+        },
+        {
+          "path": "/biz/trials",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "오래 사용하지 않은 권한 12건 — 기간 조정·환불 검토 필요",
+      "lead": "권한별 요금·갱신·해지 조건과 해지 후 종료 시점을 확인합니다.",
+      "states": {
+        "normal": "목록에는 상태만, 권한 상세 Drawer: 첫 줄 갱신 조건(자동 갱신 여부·다음 결제일·갱신 전 고지 예정일), 요금, 해지 조건, 통신 음영 시 동작, 이용 기간 시작 기준('사용 준비 확인 시각부터' 또는 '권리 부여 시각부터')을 KeyValue로. 해지는 고객 앱·고객센터가 접수하고 이 화면은 '해지 요청 — 처리 중 · 종료 시점 · 다음 결제 없음' 상태만 보인다. 안전·기본 기능에는 '기간제·체험 판매 대상 아님' 배지. '무료'는 단독 큰 글자로 쓰지 않는다('30일 무료 후 자동 갱신 — 월 9,900원').",
+        "empty": "조정이 필요한 권한이 없습니다.",
+        "unknown": "사용 기록이 오래되어 실제 사용 여부를 모르면 '사용 미확인' — 미사용으로 세어 환불 대상에 넣지 않는다. 통신 음영 차량은 고지된 종료 시각까지만 허용되고(연장 추정 없음) 차량 반영은 '차량 확인 후 종료'.",
+        "error": "권한 조건을 불러오지 못했습니다 — 다시 시도",
+        "noPermission": "해지·기간 조정은 운영자 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "기간 조정",
+        "blockedReason": "이 권한은 안전·기본 기능이라 기간제 판매 대상이 아닙니다 — 기간 조정 대신 상품 담당에게 확인하세요."
+      },
+      "components": [
+        "Drawer",
+        "KeyValue",
+        "BlockedAction",
+        "UnknownMark",
+        "FreshnessChip",
+        "DangerConfirm",
+        "DataTable",
+        "SimulatedDataNotice"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "해지 확인은 DangerConfirm, 확인 문장에 종료 시점과 '다음 결제 없음'을 글자로"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "'요금·갱신·해지·통신 음영 조건 한 화면'은 목록 화면에 넣으면 정보 과다다.",
+          "fix": "목록에는 상태만 두고 조건은 권한 상세 Drawer로 옮긴다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "C3 표현 경계 — 자동 갱신 조건이 아래로 밀리거나 '무료'만 크게 보이면 안 된다.",
+          "fix": "Drawer 첫 줄을 갱신 조건으로 고정하고 '무료'는 단독 큰 글자로 쓰지 않는다('30일 무료 후 자동 갱신 — 월 9,900원').",
+          "status": "resolved",
+          "resolution": "ORC-BE03 fe 2번째 줄 lint '체험 화면 무료 단독 표기 금지(갱신 조건 동반 필수)' + be 2번째 줄 체험 게시 시 갱신·요금 조건 필드가 비면 게시 거부"
+        },
+        {
+          "severity": "major",
+          "issue": "'장기 미활성'의 기준(며칠)과 '미활성'이라는 말이 Active(ADS)와 섞인다.",
+          "fix": "'오래 사용하지 않음(N일, 가정값)'으로 쓰고 기준 일수를 설계에 넣는다.",
+          "status": "resolved",
+          "resolution": "ADS-UI01 be 5번째 줄 기준 시간 표(미사용 일수, 기본값 '가정값')"
+        },
+        {
+          "severity": "minor",
+          "issue": "/biz/trials는 TL-UI08·ORC-UI10도 같은 화면을 고친다.",
+          "fix": "체험 분석 화면 변경 순서를 하나로 정한다(지표 계약 탭 → 고지 조건 → 실사용 연관)."
+        },
+        {
+          "severity": "minor",
+          "issue": "db 2번째 줄 이용 기간 기산 기준이 둘(권리 부여·사용 준비 확인)인데 화면 어디에 보일지 없다 — 같은 30일 체험이 차량마다 다른 날 끝난다.",
+          "fix": "Drawer KeyValue에 '이용 기간 시작 기준'과 기산 시각을 보이고, 사용 준비 확인 전이면 '시작 전 — 차량 준비 확인을 기다림'."
+        },
+        {
+          "severity": "minor",
+          "issue": "api 첫 줄 해지 요청은 고객 앱·고객센터가 호출한다 — 운영자 화면에 '해지' 버튼을 두면 D-ORC-1(플랫폼은 고객 앱이 아님)과 어긋난다.",
+          "fix": "운영자 화면은 해지 처리 상태만 보이고, 운영자 행동은 '기간 조정'(사유 기록)만 둔다."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "b26ee46f2cdc"
+    },
+    "ORC-UI05": {
+      "screens": [
+        {
+          "path": "/fleet/vehicles/:vin",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "등록 국가 변경 시 종료되는 기능 1개 — 유지 5 · 전환 2",
+      "lead": "여행과 등록 국가 변경을 나눠 기능 유지·전환·종료와 비용을 봅니다.",
+      "states": {
+        "normal": "차량 화면 머리 행동 '국가 이동 미리보기' Drawer(머리 문장은 Drawer 머리 스타일): 여행(일시) / 등록 국가 변경 분절(사람이 고른다 — 위치로 자동 선택 안 함), 기능별 유지·전환·종료와 비용(가정값), 고객 동의 기록. 여행을 고르면 '권리·정책 변경 없음' 고정 줄. '주행 기능은 자동으로 바뀌지 않습니다' 고정 문구. 기록된 시장 변경은 지원 건·현장 지원에서 읽기 전용으로 보인다.",
+        "empty": "이 차량에 국가 이동 영향을 받는 기능이 없습니다.",
+        "unknown": "대상 국가의 시장 승인 정보가 없는 기능은 '판단 불가' — 유지로 세지 않는다.",
+        "error": "미리보기를 계산하지 못했습니다 — 다시 시도",
+        "noPermission": "동의 기록은 운영자 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "고객 동의 기록",
+        "blockedReason": "시장 승인 정보가 없는 기능 1개가 있어 미리보기를 확정할 수 없습니다 — 판단 불가 기능을 먼저 확인하세요."
+      },
+      "components": [
+        "Drawer",
+        "Segmented",
+        "DataTable",
+        "VerdictReason",
+        "UnknownMark",
+        "BlockedAction",
+        "SimulatedDataNotice"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "유지·전환·종료는 글자 열(색 칩만으로 두지 않음)"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "'차량별 상태 탭'에 두면 차량 화면의 탭이 계속 늘고 탭 핵심 메시지 경쟁이 생긴다.",
+          "fix": "머리 행동에서 여는 Drawer로 하고 Drawer 머리 문장은 data-key-message를 쓰지 않는다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-10(Drawer 머리 문장은 핵심 메시지가 아님)"
+        },
+        {
+          "severity": "major",
+          "issue": "C5·B11 표현 경계 — 여행 위치만으로 계약·주행 설정을 바꾸는 연출 금지, 국경 통과 시 자동 전환·유지 약속 금지.",
+          "fix": "여행/등록 국가 변경은 사람이 고르는 분절로만 시작하고, 위치 정보로 자동 선택하지 않는다. '자동 유지' 문구 금지.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "비용은 결제 연동이 모의 단계(D-ORC-3)다.",
+          "fix": "비용 칸에 SimulatedDataNotice '가정값'."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "5ab2d52dc249"
+    },
+    "ORC-UI06": {
+      "screens": [
+        {
+          "path": "/fleet/vehicles/:vin",
+          "kind": "modify"
+        },
+        {
+          "path": "/fleet/vehicles/:vin/statement",
+          "kind": "new"
+        }
+      ],
+      "keyMessage": "인도 뒤 사라지는 기능 2개 — 이전 소유자의 개인 구독",
+      "lead": "소유권 이전 때 남는 기능과 사라지는 기능을 명세로 확인합니다.",
+      "states": {
+        "normal": "소유권 이전 Drawer와 인쇄용 명세(같은 표): 머리에 명세 기준 시각·마지막 차량 확인 시각(FreshnessChip)과 '작성 시각 기준 — 이후 권리 변경은 반영되지 않습니다'. 구역 순서: 기본 · 승계 가능 구매 · 종료되는 개인 구독 · 남은 체험 · 새 소유자가 따로 구매해야 쓰는 기능 · 미확인(보장 안 함) · 구성 불일치(지원 건 열림). SummaryLine '승계 3 · 따로 구매 1 · 미확인 1'. 이전 소유자 개인정보 삭제 확인 줄(데이터 관리 삭제 기록 IdChip). 기록 행동은 ORC-BE04 소유권 이전 API를 부르고(이 화면 원장은 명세 feature-statement), 기록 뒤 상태는 '이전 기록됨 — 새 소유자 등록·차량 대조 대기' — 대조 전에는 '이전 완료'를 쓰지 않는다.",
+        "empty": "이 차량에 이전할 디지털 기능이 없습니다 — 기본 기능만 있습니다.",
+        "unknown": "권리·형상 보고를 확인하지 못한 기능은 '미확인 — 보장하지 않음'으로 따로, 승계 목록에 넣지 않는다. 출고 구성·차량 보고·권리가 서로 다르면 '구성 불일치'(모름이 아니라 어긋남)로 따로 두고 지원 건을 연다.",
+        "error": "명세를 만들지 못했습니다 — 인쇄하지 마세요. 다시 시도",
+        "noPermission": "소유권 이전 기록은 운영자 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "소유권 이전 기록",
+        "blockedReason": "이전 소유자 개인정보 삭제 확인이 끝나지 않았습니다 — 삭제 확인 뒤 기록할 수 있습니다."
+      },
+      "components": [
+        "Drawer",
+        "DataTable",
+        "UnknownMark",
+        "BlockedAction",
+        "DangerConfirm",
+        "FreshnessChip",
+        "PageHeader",
+        "KeyMessage",
+        "SummaryLine",
+        "IdChip"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "인쇄 화면은 색 없이(흑백) 구분되도록 상태 글자와 머리 행 반복(print 시 thead 반복)"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "C7·B12 표현 경계 — 명세가 '모든 구매 기능 자동 양도·평생 유지'나 '잔가 상승'으로 읽히면 안 된다.",
+          "fix": "명세 머리에 '작성 시각 기준 — 이후 권리 변경은 반영되지 않습니다'와 미확인 줄을 고정하고, '평생'·'자동 양도'·'가치 상승' 낱말을 금지어로.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "인쇄용 명세는 새 경로라 3초 테스트(DRILLDOWNS)에 걸리는데, 인쇄 문서에는 핵심 메시지 규칙이 맞지 않는다.",
+          "fix": "인쇄 명세를 '/fleet/vehicles/:vin/statement'로 두고 3초 테스트 제외 목록(SKIP)에 사유와 함께 넣거나, 핵심 메시지 규칙을 그대로 지키는 인쇄 머리를 쓴다 — 둘 중 하나를 설계에 적는다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "개인정보 삭제 확인의 담당(데이터 관리)과 근거 기록 위치가 없다.",
+          "fix": "데이터 관리 화면(/admin/data) 삭제 기록 ID를 이 줄에 IdChip으로 연결한다."
+        },
+        {
+          "severity": "major",
+          "issue": "be 3번째 줄 '불일치 항목은 확인 필요'가 '모름' 계열 세 번째 낱말이 된다(같은 명세에 '미확인'도 있음). 적합성 제안의 '추가 구매 필요' 구역까지 더해 명세 구역이 7개다 — 인쇄 한 장에서 무엇이 넘어가는지가 묻힌다.",
+          "fix": "불일치는 '구성 불일치 — 지원 건 열림'(어긋남), 관측 없음은 '미확인'으로 나누고 설계 문장을 고친다. 핵심 메시지는 사라지는 기능 하나, 나머지 구역 수는 SummaryLine. '추가 구매 필요'는 판매 권유로 읽히지 않게 '새 소유자가 따로 구매해야 쓰는 기능'.",
+          "status": "resolved",
+          "resolution": "3회차 확인: be 3번째 줄이 \"불일치 항목은 '구성 불일치 — 지원 건 열림', 관측 없음은 '미확인'\"으로, ui 4번째 줄 '명세 핵심 메시지는 사라지는 기능 하나, 나머지 구역 수는 보조 줄. 추가 구매 필요는 새 소유자가 따로 구매해야 쓰는 기능으로' 신설, 소유권 이전 처리는 ORC-BE04로 이동."
+        },
+        {
+          "severity": "minor",
+          "issue": "be 2번째 줄 이전 완료 판정(새 소유자 등록 + 차량 보고 대조)과 화면 행동 '소유권 이전 기록'이 같은 순간으로 읽힐 수 있다.",
+          "fix": "기록 뒤 상태를 '이전 기록됨 — 차량 대조 대기'로 두고 완료는 대조 뒤에만.",
+          "status": "resolved",
+          "resolution": "4회차: be '이전 완료 판정은 새 소유자 등록 + 차량 보고 대조 후에만' 문장과 api ownership-transfer가 ORC-BE04로 옮겨짐(ORC-BE04 tests 'HT08: 이전 후 차량 보고 대조 전 이전 완료 금지') — 확정안 '이전 기록됨 — 새 소유자 등록·차량 대조 대기'와 맞음."
+        },
+        {
+          "severity": "minor",
+          "issue": "be 5번째 줄 'ORC-UI08, ORC-UI09 추가'는 화면·서버 문장이 아니라 의존 메모다(deps에 이미 있음).",
+          "fix": "설계 문장에서 지운다 — 화면 영향 없음.",
+          "status": "resolved",
+          "resolution": "4회차: be의 의존 메모 문장 'ORC-UI08, ORC-UI09 추가'가 지워지고 deps에만 남음."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "648173bd0cba"
+    },
+    "ORC-UI07": {
+      "screens": [
+        {
+          "path": "/fleet/corporate",
+          "kind": "new"
+        }
+      ],
+      "keyMessage": "반납 뒤 회수되지 않은 권리 4건",
+      "lead": "법인 차량의 소유자·관리자·운전자·권리 주체를 나눠 봅니다.",
+      "states": {
+        "normal": "법인 계약 목록 → 계약 상세: 차량별 소유자 · 관리자 · 운전자(관계만 — 개인 프로필은 차량·고객 앱 소관) · 권리 주체 열(같은 사람이어도 칸을 합치지 않음), 반납 시 권리 회수 상태, 미회수 예외 목록(사유·기한). 일괄 회수·일괄 적용은 BulkPreview(대상 수·예외 제외 수) — 일괄 적용은 차량마다 지원 판정을 다시 하고 '바로 가능' 밖 차량은 '적용 제외 N대(사유별)'로 따로.",
+        "empty": "등록된 법인 계약이 없습니다.",
+        "unknown": "반납 뒤 차량이 권리 회수를 보고하지 않았거나 오프라인이면 '회수 미확인'으로 미회수 예외 목록에 남긴다 — 회수 완료 수에 넣지 않는다.",
+        "error": "법인 계약을 불러오지 못했습니다 — 다시 시도",
+        "noPermission": "권리 회수·예외 등록은 운영자 역할이 할 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "반납 차량 권리 회수",
+        "blockedReason": "예외 목록에 오른 차량 1대는 기한(10월 31일)까지 회수하지 않습니다."
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "DataTable",
+        "UnknownMark",
+        "BlockedAction",
+        "BulkPreview",
+        "AsyncView"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다"
+      ],
+      "findings": [
+        {
+          "severity": "minor",
+          "issue": "B09 표현 경계 — 계약 경쟁력 비교 문구 금지.",
+          "fix": "화면에 경쟁사 비교·우위 문구를 두지 않는다."
+        },
+        {
+          "severity": "minor",
+          "issue": "'/fleet/corporate'를 차량 운영 그룹에 둘지 상품·출시 그룹에 둘지 없다(권리 주체는 권한 화면과 가깝다).",
+          "fix": "메뉴는 상품·출시 그룹 '사용 권한·체험권' 옆에, 경로는 그대로 두고 그룹만 정한다."
+        },
+        {
+          "severity": "minor",
+          "issue": "반납 일괄 회수는 다수 차량 명령이다.",
+          "fix": "회수 행동에 BulkPreview(대상 수·예외 제외 수)를 쓴다."
+        },
+        {
+          "severity": "minor",
+          "issue": "tests는 '미회수 예외', 이 사양은 '회수 미확인'으로 같은 차량을 부른다.",
+          "fix": "상태 값은 '회수 미확인'(P-9), 목록 이름은 '미회수 예외'로 역할을 나눠 시험 문장도 맞춘다."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "6ca1b3bbf417"
+    },
+    "ORC-UI08": {
+      "screens": [
+        {
+          "path": "/baselines/eol",
+          "kind": "new"
+        }
+      ],
+      "keyMessage": "품질 보류 차량 3대 — 주문 사양과 실물 구성 불일치",
+      "lead": "주문 사양과 출고 차량의 실물 구성(VIN 스캔)을 대조합니다.",
+      "states": {
+        "normal": "VIN별 대조 표(주문 사양 · 실물 구성 · 판정 VerdictReason 일치/불일치/실물 미확인), 불일치는 '품질 보류' 상태와 부품 목록. 행 상세 Drawer: 원인 · 결정 주체 · 재작업 참조 · 재대조 결과 · 출고 근거, 아래 '인도 때 확인' 두 묶음(정차 중 확인 가능 / 주행 조건에서 확인할 항목) — 주행 조건 항목은 '인도 후 확인 대기'로 남고 인수 완료 수에 넣지 않는다. 화면 meta에 '실물 구성 원장: 공장 품질 시스템'(ExtRefChip).",
+        "empty": "대조할 출고 차량이 없습니다 — 공장 VIN 스캔이 들어오면 보입니다.",
+        "unknown": "VIN 스캔 기록이 없거나 일부 부품만 스캔됐으면 '실물 미확인' — 일치로 세지 않는다.",
+        "error": "출고 대조를 불러오지 못했습니다 — 다시 시도",
+        "noPermission": "품질 보류 해제는 공장 품질 담당 역할이 할 수 있습니다(역할 신설 필요)."
+      },
+      "primaryAction": {
+        "label": "품질 보류 해제",
+        "blockedReason": "불일치 부품 2개가 남아 있습니다 — 공장 품질 시스템에서 해소한 뒤 다시 대조하세요."
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "DataTable",
+        "VerdictReason",
+        "UnknownMark",
+        "BlockedAction",
+        "AsyncView",
+        "Drawer",
+        "ExtRefChip"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "불일치 부품은 주문·실물 두 열 글자 비교"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "'BOM 기준선 화면 탭'은 업무 흐름이 맞지 않는다 — /baselines는 BOM 승인자의 Feature Version 기준선 확정 대기열이고, 출고 대조는 공장 품질의 VIN 단위 업무다. 탭으로 넣으면 화면 핵심 메시지('확정 승인 대기')와 다툰다.",
+          "fix": "부모 /baselines 아래 하위 경로 '/baselines/eol'(자기 핵심 메시지)로 두고, 기준선 화면에는 링크만.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "B06 표현 경계 — 플랫폼이 PLM·공장 품질을 대체하거나 없는 HW를 활성화하는 것처럼 보이면 안 된다.",
+          "fix": "'품질 보류 해제'는 공장 품질 시스템 기록을 반영하는 행동으로 쓰고, 화면 meta에 '실물 구성 원장: 공장 품질 시스템'(ExtRefChip).",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "품질 보류를 해제할 역할이 계약 역할 목록에 없다.",
+          "fix": "RACI에서 역할을 정한다(공장 품질 담당 신설 또는 기존 BOM 승인자 위임).",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · 결정 D-ADS-7 등록 — db eol_check.decided_by(생산 품질)도 같은 결정 대상"
+        },
+        {
+          "severity": "minor",
+          "issue": "be 2번째 줄 인도 인수 항목 '주행조건 확인 필요'가 '확인 필요' 낱말을 또 쓰고, 이 화면 어디에 둘지 없다.",
+          "fix": "행 상세 '인도 때 확인' 묶음으로 두고 이름은 '주행 조건에서 확인할 항목'(모름이 아니라 할 일)."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "2386241f55f6"
+    },
+    "ORC-UI09": {
+      "screens": [
+        {
+          "path": "/ops/incidents",
+          "kind": "modify"
+        },
+        {
+          "path": "/field",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "해결이 확인되지 않은 지원 건 5건 — 가장 오래된 건 3일째",
+      "lead": "한 지원 건에 주문·설치·차량 상태·조치·정비 인계를 묶어 봅니다.",
+      "states": {
+        "normal": "장애·VOC 목록 핵심 메시지는 위 문장, SummaryLine '정비 이관 3 · 원격 조치 결과 미확인 2 · 고객 확인 대기 1'. 지원 건 상세 Drawer: CaseTimeline(주문 · 설치 · 차량 상태 · 원격 조치(롤백 ID) · 정비 거점 인계), 인계 묶음(진단 요약 · 부품 · 작업 항목 · 거점), 기능별 영향(영향 받음 · 유지(부분 제한)) 표, 상태 '이관됨 — 해결 미확인'. 해결은 차량 결과와 해결 후 실사용 확인이 모두 있을 때만 — 실사용 확인 옆에 출처 글자(과업 세션 · 고객 확인 응답 · 담당자 확인 기록), 과업 세션 연결(뒤 단계) 전에는 고객 응답이나 담당자 기록만. 고객 응답이 없으면 '고객 확인 대기'(해결과 구분). 볼 수 없는 칸은 두 가지로 나눠 보인다 — 역할 때문이면 BlockedAction(누가 볼 수 있는지), 고객 동의 범위 밖이면 칸마다 '고객 동의 범위 밖'(요청 경로 없음). 복구 불가·정지 유지 차량으로 자동 생성된 건은 '자동 생성' 표지, 다시 연 건은 이전 건 IdChip(측정은 최초 접수 시각부터). ADS 관련이면 'ADS 사건 보고 후보로 올리기'.",
+        "empty": "열린 지원 건이 없습니다.",
+        "unknown": "정비 거점에서 결과를 받지 못했으면 '이관됨 — 해결 미확인', 원격 조치 명령 회신만 있고 차량 결과 보고가 없으면 '조치 결과 미확인' — 이관 시각·회신 시각을 해결 시각으로 쓰지 않는다.",
+        "error": "지원 건을 불러오지 못했습니다 — 다시 시도",
+        "noPermission": "원격 조치·이관 기록은 운영자 역할이 할 수 있습니다. 고객이 동의하지 않은 정보(예: 위치·주행 기록)는 역할과 관계없이 가려지고 '고객 동의 범위 밖' 글자로 보입니다."
+      },
+      "primaryAction": {
+        "label": "정비 거점으로 이관",
+        "blockedReason": "원격 조치 결과(차량 보고)를 아직 받지 못했습니다 — 결과를 받은 뒤 이관하거나 '결과 없이 이관'을 사유와 함께 고르세요."
+      },
+      "components": [
+        "Drawer",
+        "CaseTimeline",
+        "DataTable",
+        "UnknownMark",
+        "BlockedAction",
+        "AxisStateTable",
+        "FreshnessChip",
+        "PageHeader",
+        "KeyMessage",
+        "SummaryLine",
+        "IdChip"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "'사건 번호'의 '사건'이 규제 ADS 사건(ADS-UI07)·종료 사건(ADS-UI02)과 같은 낱말이다.",
+          "fix": "이 화면은 '지원 건'(번호 '지원 건 번호')으로 쓰고, ADS 관련이면 'ADS 사건 보고 후보로 올리기'로 연결한다.",
+          "status": "resolved",
+          "resolution": "P-13 '지원 건'(고객 지원) 고정"
+        },
+        {
+          "severity": "major",
+          "issue": "C4·B04 표현 경계 — 한 번 방문·즉시 해결·모든 거점이 모든 작업 가능 약속 금지.",
+          "fix": "인계 문구는 '정비 거점 안내'로, '해결'은 정비 결과 보고가 있을 때만 쓴다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "minor",
+          "issue": "지금 장애·VOC 핵심 메시지('연결 안 된 열린 장애·VOC')와 새 문장 중 무엇을 쓸지 없다.",
+          "fix": "핵심 메시지를 '해결 확인 안 된 지원 건'으로 바꾸고 연결 안 된 건 수는 SummaryLine으로.",
+          "status": "resolved",
+          "resolution": "2회차 확정안: 핵심 메시지 '해결이 확인되지 않은 지원 건', 연결 안 된 건 수는 SummaryLine"
+        },
+        {
+          "severity": "major",
+          "issue": "be 3번째 줄(적합성 제안) 직무 Roles + 고객 동의 범위 검사로 '볼 수 없음'이 두 종류가 됐다 — 역할 때문에 막힌 것과 고객이 동의하지 않아 가려진 것. 같은 비활성·빈칸으로 보이면 운영자는 권한 요청을 하거나 고객에게 다시 묻는 잘못된 행동을 한다.",
+          "fix": "역할 막힘은 BlockedAction(누가 할 수 있는지), 동의 범위 밖은 칸마다 '고객 동의 범위 밖' 글자(요청 경로 없음)로 나누고, 설계 ui에 두 표시 규칙을 적는다.",
+          "status": "resolved",
+          "resolution": "3회차 확인: ui 3번째 줄 '볼 수 없음 두 종류를 나눈다 — 역할 때문이면 BlockedAction(누가 할 수 있는지), 고객 동의 범위 밖이면 칸마다 고객 동의 범위 밖(요청 경로 없음)' 신설."
+        },
+        {
+          "severity": "minor",
+          "issue": "db 3번째 줄 resolved_at에 '차량 결과·재사용 확인 증거 필수'가 붙어, 이관만 된 건과 결과는 있으나 재사용 확인이 없는 건의 상태 이름이 없다.",
+          "fix": "상태를 '이관됨 — 해결 미확인' · '조치 결과 받음 — 재사용 미확인' · '해결 확인'으로 셋으로 고정."
+        },
+        {
+          "severity": "minor",
+          "issue": "제목 '사건 번호 하나로'와 ui 1번째 줄 '사건 하나에'가 P-13의 '지원 건'이 아니다(2회차 공통 #15와 같은 문제).",
+          "fix": "제목을 '지원 건 번호 하나로'로. 화면 문구는 확정안이 이미 '지원 건'.",
+          "status": "open",
+          "resolution": "설계 제목 미수정 — 화면은 ORC-BE03 '사건' 단독 래칫(2회차 공통 #15 제안)이 생기면 잡힌다."
+        },
+        {
+          "severity": "minor",
+          "issue": "[4회차 새로] db resolved_at 문장의 '재사용 확인'이 P-13 두 낱말('사용 준비 확인'·'실사용 확인') 밖의 새 변형이고, 4회차 대체 출처(고객 확인 응답·담당자 확인 기록)가 화면에서 과업 세션 근거와 같은 모양으로 보일 위험이 있다.",
+          "fix": "화면 낱말은 '해결 후 실사용 확인' + 출처 글자(과업 세션 · 고객 확인 응답 · 담당자 확인 기록). 담당자 기록만으로 해결된 건은 재발률 Drawer에서 따로 센다."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "8a0eee78b1d2"
+    },
+    "ORC-UI10": {
+      "screens": [
+        {
+          "path": "/biz/trials",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "합성 모집단 기준 구매 전환율 27.6% — 가정값, 실측 아님",
+      "lead": "지표마다 분모·제외 사유·성공 조건과 최신성을 확인합니다.",
+      "states": {
+        "normal": "기본 탭(체험 전환): 핵심 값 중립 톤 + SimulatedDataNotice '가정값'. '지표 계약' 탭(활성이면 이 탭이 핵심 메시지를 고른다): GET /api/metric-contracts 등록분이 분모 — 표는 영역별 묶음(출시 · 주문 · 국가 이동 · 종료 결과 · 지원 · 공통화)으로, 열은 계약 필드 7개(지표 · 분모 · 성공 조건 · 제외 사유 · 계산 버전 · 최신성(FreshnessChip) · 실측/가정값/출처 미연결). 보조 수치(측정 가능 세션 비율 · 중도 포기 · 보고 누락 · 누락률·과잉 포함률 · 완료 건만 P95 범위 · 승인 대기/전달 지연 구간)는 행 열기 Drawer. 종료 결과 행 Drawer의 구간은 ADS-UI02와 같은 6개(비활성 확인 · MRC 도달 · 전환 중 · 미수신 · 미확인 — 시간 한계 초과 · 판단 불가 — MRC 근거 부족). 사용 준비 확인율(차량 보고 기준) 행 Drawer의 구간은 ORC-UI01과 같은 6개(ORC-BE01 isReadyConfirmed 하나). 출처가 뒤 단계인 지표(종료 결과 · 과업 세션 · 영향 차량)는 행에 '출처 미연결 — 가정값'을 두고 성과로 세지 않는다. 비용 입력·순기여·손익분기는 이 탭에 없다 — '가정 실험' 탭(ORC-UI11).",
+        "empty": "등록된 지표 계약이 없습니다 — 지표를 화면에 성과로 쓰려면 계약이 먼저 필요합니다.",
+        "unknown": "데이터 신선도가 기준을 넘거나 분모가 작으면(5대 미만 가림 포함) '판단 불가' — 0%나 직전 값으로 채우지 않는다. 확정 영향군이 없는 정확도 지표는 '판단 불가 — 확정 영향군 없음'으로 수치를 비운다. 출처가 아직 없는 지표는 '출처 미연결 — 가정값'.",
+        "error": "지표 계약을 불러오지 못했습니다 — 다시 시도",
+        "noPermission": null
+      },
+      "primaryAction": {
+        "label": "지표 계약 상세 열기",
+        "blockedReason": null,
+        "readOnly": true
+      },
+      "components": [
+        "Tabs",
+        "DataTable",
+        "FreshnessChip",
+        "SimulatedDataNotice",
+        "UnknownMark",
+        "KeyValue",
+        "PageHeader",
+        "KeyMessage",
+        "StageCounts",
+        "Drawer"
+      ],
+      "a11y": [
+        "판정·상태는 색과 함께 글리프와 글자로(색만으로 구분 금지)",
+        "표는 caption과 th scope(열 머리·행 머리)를 갖추고, 행 열기는 Enter·Space로",
+        "막힌 행동은 비활성 버튼의 title(마우스 전용·스크린리더 누락) 대신 BlockedAction 글자로 보이고 포커스 순서에 둔다",
+        "'가정값' 표지는 글자+아이콘, 스크린리더가 숫자보다 먼저 읽게"
+      ],
+      "findings": [
+        {
+          "severity": "blocker",
+          "issue": "지금 체험 전환 분석의 핵심 메시지가 합성 모집단에서 나온 '27.6% 구매 전환율'을 녹색(ok) 성과로 가장 크게 보인다 — 원칙 P-8(실측 전 수치를 성과로 표시하지 않음) 위반이고, 이 항목이 같은 화면을 고친다.",
+          "fix": "지표 계약이 '실측'이 아니면 핵심 메시지 톤을 중립으로, 값 옆에 SimulatedDataNotice '가정값'을 붙이고 문장을 '합성 모집단 기준 구매 전환율(가정값)'으로 바꾼다.",
+          "status": "resolved",
+          "resolution": "ORC-UI10 ui 첫 줄 \"첫 작업: 가정값 표지·중립 톤\""
+        },
+        {
+          "severity": "major",
+          "issue": "'지표 계약' 탭이 화면 핵심 메시지와 따로 핵심 메시지를 가지려 한다.",
+          "fix": "탭별 핵심 메시지 규칙(공통)을 따른다.",
+          "status": "resolved",
+          "resolution": "P-10(활성 탭이 핵심 메시지를 고른다)"
+        },
+        {
+          "severity": "minor",
+          "issue": "텔레메트리 Closed loop 지표(TL-B08)와 '같은 계약'이라고만 적혀 있다.",
+          "fix": "지표 계약 원장을 하나(API /api/metric-contracts)로 하고 Closed loop 화면도 같은 행을 읽는다고 적는다."
+        },
+        {
+          "severity": "blocker",
+          "issue": "ui는 '지표 6개'인데 적합성 제안으로 db에 지표 계약이 출시·국가 이동·사용 준비·충전소 과업·종료 결과·장기 차량 지원·공통화 효과 등 7개 이상 들어왔다 — 핵심 메시지 분모와 표 행 수가 정해지지 않고, 비용 입력(effect_input)까지 지표처럼 섞인다. [3회차 blocker 승격] 3회차 설계가 ORC-UI11(사업 효과 가정 실험, 3단계)을 새로 만들고 ui 3번째 줄에 '등록분이 분모'를 넣었지만, 분리가 반쪽이다 — ① be에서 effect_input 문장을 지운 뒤 적합성 제안 일괄 반영 단계가 다시 넣어 be 3번째 줄('결제액만으로 이익 표시 금지')·be 9번째 줄(effect_input 필수 유형, '입력 누락: 유형' 순효과 표시)·tests 1번째 줄(계산기 경계값)·tests 4번째 줄(시간 절약 현금 합계)·tests 11번째 줄(검증비·순효과 미표시)이 ORC-UI10(2단계)에 남았다. ② ui 2번째 줄 '지표 6개마다'가 3번째 줄 '등록분이 분모'와 어긋난다. 2단계 구현자가 이 시험을 맞추려면 실측 지표 화면에 비용 계산기를 다시 그리게 되고(P-8 실측·가정 혼합), 3단계 ORC-UI11과 같은 기능을 두 번 만든다.",
+          "fix": "설계 수정: ORC-UI10 be 3·9번째 줄과 tests 1·4·11번째 줄을 ORC-UI11 be·tests로 옮긴다. ORC-UI10 ui 2번째 줄 '지표 6개마다' → '등록된 지표마다'. ORC-UI10 be 4번째 줄 \"정확도 '확정 불가'\" → \"정확도 '판단 불가 — 확정 영향군 없음'\"(apply_r3 치환이 따옴표 때문에 맞지 않았다). 그 뒤 ORC-UI10 화면에는 비용 입력·순기여가 없다(3회차 확정안 normal 마지막 문장).",
+          "status": "resolved",
+          "resolution": "4회차 확인: be '같은 항목이 두 입력에 있으면 계산 거부, 결제액만으로 이익 표시 금지'·'effect_input 필수 유형 … 입력 누락: 유형'과 tests '시간 절약을 현금 절감 합계에 넣으면 실패'·'검증비 입력이 없는 계산 → 순효과 미표시'가 ORC-UI11로 옮겨지고, ORC-UI11 be에 'effect_input·필수 유형 검사·순효과 계산은 이 항목만 소유 — ORC-UI10에는 공통화 효과 계약 필드만'이 생김. be '확정 불가' → '판단 불가(확정 영향군 없음)'. 2단계 구현자가 비용 계산기를 그릴 문장은 없어졌다 — 남은 ui 2번째 줄 '지표 6개마다'와 tests 1번째 줄 '계산기 경계값'은 4회차 새 major(구현 사양으로 해석 가능)."
+        },
+        {
+          "severity": "major",
+          "issue": "be·tests(적합성 제안)가 지표마다 보조 수치를 요구한다 — 측정 가능 세션 비율·중도 포기·보고 누락·누락률·과잉 포함률·P95 범위 표기·승인 대기/전달 지연 구간. 표 열로 펴면 20열이 넘고 성과 숫자가 화면 가장 큰 글자를 다툰다.",
+          "fix": "표는 계약 필드 7열만, 보조 수치는 행 Drawer. 가장 큰 글자는 핵심 메시지 하나(3초 규칙 ②).",
+          "status": "resolved",
+          "resolution": "3회차 확인: ui 3번째 줄 '표는 영역별 묶음·계약 필드 7열, 보조 수치는 행 Drawer' 신설."
+        },
+        {
+          "severity": "major",
+          "issue": "be 4번째 줄 '확정 영향군이 없으면 정확도 확정 불가'가 P-9 두 낱말 밖의 세 번째 '모름' 표기이고, db 4번째 줄 지표 이름 '사용 준비 완료율'은 ORC-BE03 금지 표현이다(공통 문제).",
+          "fix": "'판단 불가 — 확정 영향군 없음', 지표 이름 '사용 준비 확인율(차량 보고 기준)'로 설계 문장을 고친다.",
+          "status": "resolved",
+          "resolution": "4회차: be 3번째 줄 '확정 영향군이 없으면 판단 불가(확정 영향군 없음), 있으면 누락률·과잉 포함률' — db 지표 이름 '사용 준비 확인율(차량 보고 기준)'은 3회차에 바뀜."
+        },
+        {
+          "severity": "minor",
+          "issue": "db 7번째 줄 종료 결과 계약 값(MRC·DISABLED·IN_TRANSITION·NO_CONTACT·TIMEOUT·EVIDENCE_MISSING)에 한국어 라벨이 없고, MRC와 비활성을 한 숫자로 합치면 R01 경계를 어긴다.",
+          "fix": "배타 구간 StageCounts 라벨 'MRC 달성 · 비활성화 확인 · 전환 중 · 연락 없음 · 시간 초과 · 근거 없음'을 copy/ads.ts에."
+        },
+        {
+          "severity": "major",
+          "issue": "[4회차 새로] 사업 효과 분리 뒤에도 세 문장이 남았다 — ui 2번째 줄 '지표 6개마다'(3번째 줄 '등록분이 분모'와 다른 분모), tests 1번째 줄 '계산기 경계값(0.01대 미만·달성 불가·100% 초과)'(손익분기 계산기의 시험으로, ORC-UI11 '입력 경계값'과 겹침), be 5번째 줄 'ORC-BE08 추가(…출처)'(의존 메모 꼬리 — 4회차에 later로 옮긴 것과 중복).",
+          "fix": "구현 사양: 분모·표 행은 GET /api/metric-contracts 등록분(고정 6개 아님). tests 1번째 줄은 이 항목에서 지표 계약 계산의 비율 경계(0% 미만·100% 초과 거부)로만 해석하고, 손익분기 '달성 불가' 경계는 ORC-UI11 '입력 경계값' 시험이 맡는다. 'ORC-BE08 추가'는 later(ORC-BE08)로 읽는다.",
+          "status": "accepted",
+          "resolution": "5회차 확인 — 일부 반영: be 5번째 줄 'ORC-BE08 추가(…출처)'가 '체험 평가의 실제 이용 세션 = ORC-BE08 task_session(연결 전에는 출처 미연결)'로 바뀌어 지시문 꼬리가 없어지고 출처 규칙이 문장이 됐다. 남은 것: ui 2번째 줄 '지표 6개마다'(분모는 3번째 줄 '등록분'), tests 1번째 줄 '계산기 경계값(… 달성 불가 …)' — UX 사양으로 채택, 구현 때 fix를 따른다."
+        },
+        {
+          "severity": "major",
+          "issue": "[5회차 새로] 실제 이용 세션의 출처가 두 문장이다 — be 2번째 줄 '체험 평가 입력: 실제 이용 세션(IF-15)…'과 be 5번째 줄 '실제 이용 세션 = ORC-BE08 task_session(연결 전에는 출처 미연결)'. 지표 계약 표의 '실측 / 가정값 / 출처 미연결' 열이 어느 연결 여부로 바뀌는지 정해지지 않아, 텔레메트리 수신만 붙어도 체험 전환 지표가 '실측'으로 넘어갈 수 있다(P-8).",
+          "fix": "구현 사양: 출처 열은 지표 계약이 선언한 출처(task_session) 연결 여부 하나로 정한다 — 텔레메트리 수신은 task_session의 원천으로 읽고 단독으로 '실측'을 만들지 않는다. 행 Drawer에 '출처: 과업 세션 — 미연결'처럼 출처 이름을 글자로(화면에는 항목 코드 대신 이름만).",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 때 fix를 따른다"
+        }
+      ],
+      "verdict": "수정 필요",
+      "sha": "d432a1e3813a",
+      "perScreen": {
+        "/biz/trials?tab=contracts": {
+          "keyMessage": "실측으로 계산되는 지표 0개 — 등록된 지표 계약 모두 가정값",
+          "lead": null
+        }
+      }
+    },
+    "ORC-UI11": {
+      "sha": "8d1f45e942ac",
+      "screens": [
+        {
+          "path": "/biz/trials",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "손익분기 전환율 4.2% — 가정값 포함 가정 실험, 실측 지표 아님",
+      "lead": "비용·결제액·잠식 가정을 넣어 순기여와 손익분기 전환율을 계산해 봅니다.",
+      "perScreen": {
+        "/biz/trials?tab=(가정 실험)": {
+          "keyMessage": "손익분기 전환율 4.2% — 가정값 포함 가정 실험, 실측 지표 아님",
+          "lead": null
+        }
+      },
+      "states": {
+        "normal": "체험 분석 '가정 실험' 탭(활성이면 이 탭이 핵심 메시지를 고른다, P-10): 왼쪽 입력 KeyValue — 비용 유형별(공통 구축 · 차종 적응 · 차이 검증 · 운영 · 지원비 · 환불 · 기본 상품 잠식) 금액, 현금/시간 구분, 관측 범위, 출처(입력 행마다 '실측'·'가정' 글자 — basis). 오른쪽 결과 — 순기여 · 손익분기 전환율, 결과 표지는 입력 basis로 정한다 — 가정(ASSUMED) 입력이 하나라도 섞이면 결과 옆 SimulatedDataNotice '가정값'과 섞인 가정 입력 수('가정 입력 3개'), 실측(MEASURED) 입력만이면 '실측 입력만 · 가정 실험 결과'(가정값 표지 없음). 어느 쪽이든 계산 버전 IdChip. 결과는 중립 톤(성과 색·녹색 쓰지 않음), 지표 계약 탭의 실측 지표와 같은 표에 섞지 않는다. 시간 절약은 현금 합계에 넣지 않고 따로 '시간 — 현금 환산 안 함' 줄. 결제액만으로 이익을 보이지 않는다(비용 유형이 모두 있어야 순기여 표시).",
+        "empty": "가정 입력이 없습니다 — 비용 항목을 넣으면 순기여와 손익분기 전환율을 계산합니다. 계산 결과는 저장되지 않습니다.",
+        "unknown": "필수 비용 유형이 빠지면 순기여 대신 '입력 누락: 차이 검증 비용'처럼 빠진 유형을 글자로 — 0으로 채우지 않는다. 입력의 관측 범위가 서로 다르면 결과를 비우고 '관측 범위 다름 — 비교하지 않음'. 같은 비용 항목이 두 입력에 있으면 '중복 입력: 지원비'처럼 글자로 두고 계산하지 않는다.",
+        "error": "계산하지 못했습니다 — 지난 결과를 남기지 않고 비웁니다. 다시 계산",
+        "noPermission": "가정 입력 세트 저장은 상품 작성자 역할이 할 수 있습니다 — 계산은 저장 없이 누구나 해 볼 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "가정 실험 계산",
+        "blockedReason": "입력한 전환율이 0~100% 밖입니다 — 입력 검증을 통과해야 계산합니다.",
+        "readOnly": true
+      },
+      "components": [
+        "PageHeader",
+        "KeyMessage",
+        "Tabs",
+        "KeyValue",
+        "SimulatedDataNotice",
+        "IdChip",
+        "BlockedAction",
+        "AsyncView"
+      ],
+      "a11y": [
+        "'가정값' 표지는 글자+아이콘, 스크린리더가 숫자보다 먼저 읽게(aria-describedby)",
+        "입력 오류는 필드 옆 글자와 aria-invalid·aria-describedby로 — 색 테두리만으로 두지 않는다",
+        "결과 갱신은 aria-live=polite로 핵심 값만 알린다",
+        "현금·시간 구분은 글자 라벨(단위 원·시간)로, 아이콘만으로 두지 않는다"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "db에 effect_input 신설(비용 항목 유형·현금/시간·관측 범위·출처)이 있는데 api는 POST simulate 하나뿐이다 — 입력을 저장하는지, 누가 저장하는지, 저장된 가정이 다른 사람 화면에 실측처럼 남는지가 없다.",
+          "fix": "구현 사양: 계산은 저장하지 않는다(readOnly 행동, 결과는 화면에만). 입력 세트를 남길 때만 '가정 입력 저장'(상품 작성자 역할, 작성자·시각·계산 버전 기록, 목록에 '가정값' 표지). 저장 API를 만들지 않으면 effect_input 표는 계산 요청의 입력 스키마로만 쓴다 — 어느 쪽인지 구현 착수 때 정한다.",
+          "status": "accepted",
+          "resolution": "3회차 확정안 primaryAction(readOnly)·noPermission으로 정했다."
+        },
+        {
+          "severity": "major",
+          "issue": "이 항목이 소유해야 할 문장(필수 비용 유형·'입력 누락: 유형' 표시, 결제액만으로 이익 표시 금지, 계산기 경계값·시간 절약·검증비 시험)이 아직 ORC-UI10(2단계) be·tests에 있다 — 이 항목 tests는 경계값·가정값 표지 두 줄뿐이라 3단계 구현 범위가 비어 보인다.",
+          "fix": "ORC-UI10 blocker 수정(문장 이동)과 함께 닫힌다. 화면 사양은 3회차 확정안 normal·unknown(입력 누락 글자, 시간 따로, 관측 범위 다름).",
+          "status": "resolved",
+          "resolution": "4회차 확인: ORC-UI10에서 be '같은 항목이 두 입력에 있으면 계산 거부, 결제액만으로 이익 표시 금지'·'effect_input 필수 유형 … 입력 누락: 유형', tests '시간 절약을 현금 절감 합계에 넣으면 실패'·'검증비 입력이 없는 계산 → 순효과 미표시, 관측 범위 다르면 비교 거부'가 이 항목으로 옮겨지고, be에 'effect_input·필수 유형 검사·순효과 계산은 이 항목만 소유(basis MEASURED|ASSUMED)'가 생김. ORC-UI10에 남은 tests '계산기 경계값'은 ORC-UI10 4회차 major."
+        },
+        {
+          "severity": "minor",
+          "issue": "[4회차 새로] be가 effect_input에 basis MEASURED|ASSUMED를 두는데 ui 1번째 줄은 '모든 값에 가정값 표지'다 — 실측 입력에 '가정값'을 붙이거나, 실측 입력이 섞인 결과를 실측처럼 보일 수 있다.",
+          "fix": "입력 행마다 '실측'·'가정' 글자, 결과(순기여·손익분기)는 입력이 하나라도 가정이면 '가정값'(지금은 전부 가정) — 성과 색 금지는 그대로.",
+          "status": "resolved",
+          "resolution": "5회차 확인: ui 1번째 줄 '모든 값에 가정값 표지'가 'basis=ASSUMED 입력이 하나라도 섞인 결과는 가정값 표지, MEASURED만으로 계산돼도 가정 실험 탭 안에서만(실측 지표 ORC-UI10과 섞지 않음)'으로 바뀌어 표지 기준이 입력 basis가 됐다. 확정안 normal 결과 표지와 keyMessage를 이 기준으로 고쳤다."
+        },
+        {
+          "severity": "major",
+          "issue": "[5회차 새로] 실측 입력만으로 계산한 결과의 표지가 설계에 없다 — ui 1번째 줄은 '가정값 표지 없음'과 '탭 안에서만'만 정해, 표지 없는 순기여·손익분기 값이 실측 성과처럼 읽힐 수 있다(계산식·잠식 가정 자체는 실측이 아님). fe '성과 색을 쓰지 않는다'만으로는 글자 구분이 없다.",
+          "fix": "구현 사양: MEASURED만이면 결과 옆 글자 '실측 입력만 · 가정 실험 결과'와 계산 버전, 중립 톤 그대로. 핵심 메시지 문장 끝은 '실측 지표 아님'으로 고정(가정값 포함 여부와 무관). 화면 시험에 MEASURED만 입력 → 가정값 표지 없음 ∧ '실측 입력만' 글자 ∧ 성과 색 없음 1건.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 때 fix를 따른다"
+        }
+      ],
+      "verdict": "통과"
+    },
+    "ORC-SIM01": {
+      "screens": [
+        {
+          "path": "/validations/virtual",
+          "kind": "modify"
+        },
+        {
+          "path": "/fleet/vehicles/:vin",
+          "kind": "modify"
+        },
+        {
+          "path": "/fleet/live",
+          "kind": "modify"
+        },
+        {
+          "path": "/entitlements",
+          "kind": "modify"
+        },
+        {
+          "path": "/biz/trials",
+          "kind": "modify"
+        }
+      ],
+      "keyMessage": "가상 시연 3개 중 기대와 다르게 끝난 1개 — 부분 설치 실패",
+      "lead": "가상 VIN으로 결제 뒤 미활성·재부팅·부분 설치 실패를 재생합니다.",
+      "states": {
+        "normal": "가상 검증 화면: 시연 3개(결제 뒤 미활성 · 재부팅·지연 ON·잘못된 해제 · 부분 설치 실패)마다 기대 전이 · 실제 전이 · 결과(VerdictReason, 배지 옆 '가상 시연 판정'). 가상 VIN·합성 데이터가 하나라도 섞인 화면은 PageHeader meta 줄에 SimulatedDataNotice '가상 데이터·목표 설계', 섞인 표는 해당 행 '출처' 열에 같은 표지.",
+        "empty": "재생한 가상 시연이 없습니다 — 시나리오를 고르고 재생하면 기대 전이와 실제 전이가 보입니다.",
+        "unknown": "데이터 출처가 가상인지 실측인지 API가 알려 주지 않으면 '출처 미확인' 표지 — 실측으로 보지 않는다.",
+        "error": "시연 결과를 불러오지 못했습니다 — 다시 시도",
+        "noPermission": "시연 재생은 운영자·구현 담당자 역할이 할 수 있습니다 — 결과는 볼 수 있습니다."
+      },
+      "primaryAction": {
+        "label": "시나리오 재생",
+        "blockedReason": "차량 시뮬레이터가 연결되지 않아 재생할 수 없습니다 — 시뮬레이터를 먼저 켜세요."
+      },
+      "components": [
+        "SimulatedDataNotice",
+        "PageHeader",
+        "KeyMessage",
+        "VerdictReason",
+        "BlockedAction",
+        "DataTable",
+        "AsyncView"
+      ],
+      "a11y": [
+        "표지는 글자+아이콘(색 띠만 쓰지 않음)",
+        "행 단위 표지는 표 열 '출처'로 두어 스크린리더가 행마다 읽게"
+      ],
+      "findings": [
+        {
+          "severity": "major",
+          "issue": "표지를 어디에 두는지 없다 — 머리표(.ds-eyebrow)는 3초 규칙 ③으로 금지되고, 핵심 메시지보다 크면 규칙 ②를 깬다.",
+          "fix": "PageHeader meta 줄(핵심 메시지보다 작은 회색 글자+아이콘)과 표의 '출처' 열로 위치를 고정한다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\")"
+        },
+        {
+          "severity": "major",
+          "issue": "화면이 가상 VIN인지 알 근거 필드가 계약에 없다 — 지금은 차량 이름('PoC 시연 차량 (BeamNG/UE…)')·필터 이름('합성 모집단')에 기대고 있다.",
+          "fix": "API 응답에 출처 필드(simulated: true / source: 'simulator')를 넣고 SimulatedDataNotice는 그 필드만 읽는다고 설계에 넣는다.",
+          "status": "accepted",
+          "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · be에는 아직 출처 필드가 없다 — 이 사양으로 따름"
+        },
+        {
+          "severity": "minor",
+          "issue": "R03 표현 경계 — 모의 이벤트 애니메이션을 양산 검증 결과처럼 보이면 안 된다.",
+          "fix": "가상 시연 화면의 판정 배지 옆에 '가상 시연 판정'을 붙이고 Gate 근거로 쓰일 때는 출처를 함께 남긴다."
+        },
+        {
+          "severity": "minor",
+          "issue": "가상 검증 화면(/validations/virtual)의 기존 핵심 메시지와 이 항목 시연 결과 중 무엇이 화면 핵심 메시지인지 없다.",
+          "fix": "시연 결과를 '가상 VIN 시연' 탭으로 두고 그 탭이 활성일 때만 위 핵심 메시지(P-10)."
+        }
+      ],
+      "verdict": "통과",
+      "sha": "5897091ae6c0"
+    }
+  },
+  "crossCutting": [
+    {
+      "severity": "blocker",
+      "issue": "[2회차 다시 엶] P-9로 두 낱말(판단 불가·미확인)은 정했지만 1회차 해소가 '확인 불가'를 일괄 '판단 불가'로 바꾸면서 관측 없음·오래됨까지 '판단 불가'가 됐다 — P-7 apply '보고가 오래되면 판단 불가', ADS-UI01 ui 3·4번째 줄·fe '연동 전 — 판단 불가'·tests '임계를 넘은 차량의 활성 적격 칸이 판단 불가로', ORC-BE01 tests '결제 직후 실제 실행 칸 판단 불가'. 적합성 제안은 새 표기를 또 들였다 — ORC-UI10 be '확정 불가', ORC-UI06 be '확인 필요', ADS-UI10 ui '미확인(UNVERIFIED)'(P-9의 미판정). 원칙 둘(P-7·P-9)이 서로 다르게 말하고 시험이 틀린 낱말을 단언한다.",
+      "fix": "설계 문장을 P-9 기준으로 고친다: 오래됨·관측 없음·연동 전·결제 직후 미보고 → '미확인', 차량 판정 UNKNOWN·근거 부족 → '판단 불가', 검토·Gate 전 → '미판정', 어긋남 → '구성 불일치'. P-7 apply 마지막 문장을 '보고가 오래되면 미확인'으로. '확정 불가'·'확인 필요'(모름 뜻)도 lint 금지어 후보로.",
+      "items": [
+        "ADS-UI01",
+        "ADS-UI10",
+        "ADS-UI13",
+        "ORC-UI06",
+        "ORC-UI10"
+      ],
+      "status": "resolved",
+      "resolution": "3회차 확인: P-9 문장이 '판단 불가(차량 판정 UNKNOWN·근거 부족) · 미확인(관측 없음·기준 시간 초과·연동 전·결제 직후 미보고). 검토·Gate 전은 미판정, 서로 어긋나면 구성 불일치'로, P-7 apply가 '보고가 오래되면 \"미확인\"(P-9)'로, ADS-UI01 ui 3·4번째 줄·fe·tests, ADS-UI10 ui '미판정(UNVERIFIED)', ORC-UI06 be '구성 불일치 — 지원 건 열림 / 미확인'으로 바뀌고 P-9 apply와 ORC-BE03 be가 '확정 불가'까지 금지어로 묶었다. 원칙끼리의 모순과 틀린 낱말을 단언하던 시험은 없어졌다. 남은 것 — ORC-UI10 be '확정 불가'(치환 실패)는 ORC-UI10 blocker로 옮겼고, 세 번째 변형 낱말(P-4 '판정 불가' 등)은 새 공통 major로 분리. 4회차: ORC-UI10 be '확정 불가'도 '판단 불가(확정 영향군 없음)'로 바뀜."
+    },
+    {
+      "severity": "blocker",
+      "issue": "여러 항목이 같은 화면에 '핵심 메시지'를 하나씩 더한다 — 차량별 적용 상태(ADS-UI01·UI06·OTA01·ORC-UI03·UI05·UI06), 정책 상세(기존 검증 판정 + ADS-UI11 + TL-UI02), 사용 권한(기존 + ORC-UI01·UI04), 체험 분석(기존 + ORC-UI10), 컴플라이언스(ADS-UI10). 탭·Drawer에 핵심 메시지를 둘 규칙이 없고, 3초 e2e는 ?tab= 화면을 열지 않는다(DRILLDOWNS는 parent 라우트만).",
+      "fix": "공통 규칙을 설계에 넣는다: (1) data-key-message는 화면당 1개, PageHeader만 붙인다. (2) 탭이 있는 화면은 활성 탭이 핵심 메시지를 고른다(탭마다 key 함수 하나). (3) Drawer·패널 머리 문장은 별도 스타일, data-key-message 금지. (4) e2e menu.ts SAMPLE에 탭 URL(?tab=)을 더해 탭마다 3초 규칙을 검사한다.",
+      "items": [
+        "ADS-UI01",
+        "ADS-UI06",
+        "ADS-OTA01",
+        "ORC-UI03",
+        "ORC-UI05",
+        "ORC-UI06",
+        "ADS-UI11",
+        "ORC-UI01",
+        "ORC-UI04",
+        "ORC-UI10",
+        "ADS-UI10",
+        "ADS-UI03"
+      ],
+      "status": "resolved",
+      "resolution": "P-10 신설(화면당 1·탭이 고름·Drawer 금지), ADS-UI13 tests 3번째 줄 탭 URL 3초 e2e"
+    },
+    {
+      "severity": "blocker",
+      "issue": "고치는 기존 화면이 이미 원칙을 어긴다 — 활성화 판단(/activation/decide) 핵심 값 'ON'과 'ALLOW · POLICY_MATCH'(P-1), 체험 분석 핵심 값 '27.6%'가 합성 모집단에서 나온 녹색 성과(P-8), 배포 상세 핵심 값이 영문 'CONFIRMED'. 새 항목을 얹기 전에 이 핵심 메시지를 바꿔야 한다.",
+      "fix": "각 항목 설계에 '현재 핵심 메시지 교체'를 첫 작업으로 넣는다: 활성화 판단 → VIN 지원 판정 4상태(정책 평가는 탭, '정책 ON(의도)'), 체험 분석 → '가정값' 표지·중립 톤, 배포 상세 → '적용 확인 안 된 차량 수'.",
+      "items": [
+        "ORC-UI02",
+        "ORC-UI10",
+        "ADS-UI01",
+        "ORC-SIM01"
+      ],
+      "status": "resolved",
+      "resolution": "ORC-UI02·ORC-UI10·ADS-UI01 ui 첫 줄 \"첫 작업: …\" (9012 측정: 세 화면 현재 값 ON·27.6%·CONFIRMED 그대로 — 구현 대기)"
+    },
+    {
+      "severity": "major",
+      "issue": "[2회차 다시 엶] P-11(처리할 일 하나·배타 구간)은 신설됐지만 항목 ui의 예시 문장이 옛 형식 그대로다 — ADS-UI01 ui 2번째 줄 '적용 확인 80 · 미수신 12 · 로컬 거부 3 · 판단 불가 5', ADS-UI02 ui 첫 줄 '종료 요청 100 · 수신 92 · 전환 중 8 · 종료 확인 80 · 미확인 12', ORC-UI01 ui 2번째 줄 숫자 3개, ADS-UI08 ui 마지막 줄 숫자 2개, stateModel.example 누적·배타 혼합. 구현자는 원칙과 항목 예시 중 하나를 고르게 된다.",
+      "fix": "항목 예시 문장을 UX 확정안 핵심 메시지로 바꾸거나 '예시는 ux.json 확정안' 한 줄로 대체하고, stateModel.example은 배타 구간 + 보조 줄 형식으로 고친다.",
+      "items": [
+        "ADS-UI01",
+        "ADS-UI02",
+        "ORC-UI01",
+        "ADS-UI08"
+      ],
+      "status": "accepted",
+      "resolution": "4회차 확인 — 거의 반영: stateModel.example이 '적용 확인 안 된 차량 20대 — 분포(배타, 합 = 대상 100): 적용 확인 80 · 수락 대기 7 · 전달 보류 5 · 미확인 8 / 보조 줄(누적): 수신 92'로 교체(합 100), ADS-UI02 ui 1번째 줄·ORC-UI01 ui 2번째 줄의 두 번째 핵심 메시지 문장이 지워져 항목마다 문장 하나. example의 4구간은 ADS-UI01 7구간을 줄인 예시로 읽는다(미수신은 '미확인 8'에 묶임). 남은 것: ADS-UI08 ui 5번째 줄 '증거 없는 주장 N · 열린 중대 발견 M'(숫자 둘) — 확정안 '다음 단계로 승격할 수 없음 — 열린 중대 발견 1건'을 따른다."
+    },
+    {
+      "severity": "major",
+      "issue": "설계의 '버튼 대신 사유'와 지금 코드가 다르다 — 모든 화면이 비활성 Button + title(usePermission().hint)을 쓴다. title은 마우스를 올려야 보이고 비활성 버튼은 포커스·스크린리더에서 빠져 사유가 사실상 안 보인다.",
+      "fix": "공통 부품 BlockedAction(글자 사유 + 누가·무엇을 하면 풀리는지 + 필요하면 이동 링크)을 만들고, 권한 없음·전제 미충족·서버 재계산 차이를 모두 이것으로 보인다. 기존 Button disabled+title은 래칫으로 줄인다.",
+      "items": [
+        "ADS-UI02",
+        "ADS-UI03",
+        "ADS-UI04",
+        "ADS-UI05",
+        "ADS-UI07",
+        "ADS-UI08",
+        "ADS-UI09",
+        "ADS-UI11",
+        "ADS-UI12",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI04",
+        "ORC-UI05",
+        "ORC-UI06",
+        "ORC-UI07",
+        "ORC-UI08",
+        "ORC-UI09",
+        "ORC-UI10"
+      ],
+      "status": "resolved",
+      "resolution": "P-12 신설(BlockedAction), ORC-BE03 be 3번째 줄 Button disabled+title 래칫 (9012 측정: /entitlements 비활성+title 버튼 5개 등 — 래칫 기준선)"
+    },
+    {
+      "severity": "major",
+      "issue": "'사건'이 세 뜻이다 — 종료 차단의 단위(ADS-UI02 '사건별 종료 차단'), 규제 보고 대상(ADS-UI07 '사건 보고'), 고객 지원 묶음(ORC-UI09 '사건 번호 하나로'). 같은 '사건 ID'가 서로 다른 원장을 가리키게 된다.",
+      "fix": "화면 문구를 '종료 사건'·'ADS 사건'(규제 보고)·'지원 건'으로 고정하고 ID 접두어도 나눈다. 지원 건 → ADS 사건 보고 후보로 올리는 연결 행동만 둔다.",
+      "items": [
+        "ADS-UI02",
+        "ADS-UI07",
+        "ORC-UI09"
+      ],
+      "status": "resolved",
+      "resolution": "P-13 신설(종료 사건·ADS 사건·지원 건) — '사건' 단독 래칫이 없는 점은 새 minor로 분리"
+    },
+    {
+      "severity": "major",
+      "issue": "'차단'이 긴급 차단(Kill 요청)·종료 차단(재활성화 금지 상태)·차단 해제를 한 화면에서 모두 가리킨다. 지금 /ops/kill 핵심 문구는 맨 '차단 중'.",
+      "fix": "'차단' 단독 사용 금지: '긴급 차단'·'원격 종료 요청'(요청), '종료 차단(재활성화 금지)'(상태), '종료 차단 해제'(행위). lint-copy에 단독 '차단 중' 래칫.",
+      "items": [
+        "ADS-UI02",
+        "ADS-UI06",
+        "ADS-UI13"
+      ],
+      "status": "resolved",
+      "resolution": "P-13 신설(긴급 차단·종료 차단·종료 차단 해제, 단독 차단 금지 래칫)"
+    },
+    {
+      "severity": "major",
+      "issue": "새 화면이 기존 화면과 원장·역할이 겹친다 — ADS 요구 추적 vs 컴플라이언스(규칙 추적), Safety Case vs 품질 기준·Evidence·운행 중 감시 지표의 'Safety Case 기준 기록', 시장 기준선 vs 컴플라이언스 '시장 Profile', 승인 조합 vs Variant·지원 조건·롤백 복구 후보, ADS 사건 보고 vs 장애·VOC.",
+      "fix": "항목마다 '원장 화면'과 '읽기만 하는 화면'을 설계에 적는다: ADS 요구는 컴플라이언스 탭, Evidence 원장은 /verify/evidence, 시장 기준은 시장 Profile, 형상 판단은 승인 조합 화면, 사건 접수는 장애·VOC → 보고 후보 승격.",
+      "items": [
+        "ADS-UI10",
+        "ADS-UI08",
+        "ADS-UI12",
+        "ADS-UI05",
+        "ADS-UI07",
+        "ORC-UI09"
+      ],
+      "status": "accepted",
+      "resolution": "P-14 신설과 예시 2곳(Evidence 원장 /verify/evidence · 시장 기준 시장 Profile). P-14 apply가 요구하는 항목별 원장·읽기 적기는 설계 항목에 아직 없어 각 항목 UX 사양(ADS-UI05·UI07·UI10·ORC-UI09)으로 따름"
+    },
+    {
+      "severity": "major",
+      "issue": "'오래된 보고'·'기한'·'장기 미사용'의 기준 시간이 어느 항목에도 없다 — 미확인·판단 불가·기한 초과 숫자가 모두 이 값에 달려 있다. 마지막 관측 시각 표시도 항목마다 따로 만들 위험.",
+      "fix": "Feature·상품별 기준 시간(관측 신선도·사용 확인 기한·미사용 일수)을 설계 표로 넣고 기본값은 '가정값' 표기. 모든 마지막 관측 표시는 FreshnessChip 하나(TL-UI01과 같은 부품)로, 기준 시간을 글자로 함께 보인다.",
+      "items": [
+        "ADS-UI01",
+        "ADS-UI06",
+        "ADS-UI11",
+        "ADS-OTA01",
+        "ORC-UI01",
+        "ORC-UI03",
+        "ORC-UI04",
+        "ORC-UI10"
+      ],
+      "status": "resolved",
+      "resolution": "ADS-UI01 be에 기준 시간 표·FreshnessChip 단일 부품"
+    },
+    {
+      "severity": "major",
+      "issue": "Orca 사례별 표현 경계와 ADS 금지 표현이 화면 문구 규칙(lint-copy)으로 옮겨지지 않았고, 새 copy/ads.ts는 지금 lint 금지어 검사 범위(copy/ko.ts만) 밖이다.",
+      "fix": "금지 표현 정규식을 lint-copy에 넣는다(사용 준비 완료·즉시 Active·종료 완료·자동 유지/전환·평생 유지·자동 양도·항상 동작·무조건 무료·즉시 해결). 금지어 검사 대상을 copy/*.ts 전체로 넓힌다.",
+      "items": [
+        "ADS-UI13",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI03",
+        "ORC-UI04",
+        "ORC-UI05",
+        "ORC-UI06",
+        "ORC-UI09",
+        "ADS-UI02",
+        "ADS-OTA01"
+      ],
+      "status": "resolved",
+      "resolution": "ORC-BE03 be 2번째 줄 금지 표현 정규식·검사 대상 copy/*.ts 전체 — 4회차에 ADS-UI13은 용어표만, 금지 규칙은 ORC-BE03 목록 하나(ADS-UI13 fe·tests 2번째 줄). 사용 준비 계열 낱말 충돌은 별도 major"
+    },
+    {
+      "severity": "major",
+      "issue": "설계가 쓰는 역할이 계약 역할 목록(contracts ROLE_LABEL)에 없다 — '분석 전용'(ADS-UI03), '독립 검토자'(ADS-UI08), 공장 품질 담당(ORC-UI08). 권한 없음 상태와 BlockedAction 문구를 쓸 수 없다.",
+      "fix": "RACI(FPW.8·FPW.13 등)에서 역할을 정하고 기존 역할(운영·감사 조회자 등)로 바꾸거나 신설을 업무 절차 세션에 제안한다(D-ADS-4 방식).",
+      "items": [
+        "ADS-UI03",
+        "ADS-UI08",
+        "ORC-UI08"
+      ],
+      "status": "resolved",
+      "resolution": "결정 D-ADS-7 신설(기존 역할로 바꿀지·신설할지) — 결정 전 화면 문구는 각 항목 UX 사양"
+    },
+    {
+      "severity": "minor",
+      "issue": "설계 fe 경로가 실제 코드와 다르다 — screens/release/Entitlements·Activation(실제 screens/policy/Entitlements.tsx·Runtime.tsx), screens/ops/Incidents·Field(실제 screens/ext/Incidents.tsx), VehicleRuntime(실제 screens/ops/FleetLive.tsx 안), Kill*(실제 KillConsole.tsx). 새 경로 접두어 /config/*는 구성 그룹에 없는 관례다.",
+      "fix": "fe 경로를 실제 파일로 고치고, 새 라우트는 routes.tsx 규칙(메뉴 항목이거나 parent, 그룹 8개 고정)을 따른다고 적는다. /config/* 사용 여부는 ADS-UI04·UI05가 함께 정한다.",
+      "items": [
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI04",
+        "ORC-UI09",
+        "ADS-UI01",
+        "ADS-UI02",
+        "ADS-UI04",
+        "ADS-UI05"
+      ],
+      "status": "accepted",
+      "resolution": "UX 사양으로 채택 — 해당 항목 구현 때 fix를 따른다"
+    },
+    {
+      "severity": "major",
+      "issue": "적합성 제안 183개 중 화면에 보일 필드가 대부분 ui가 아니라 be·db·api·tests에 들어갔다(ui 6 · fe 2 · 나머지 175). 응답 필드를 받은 구현자가 패널을 그대로 펼치면 핵심 메시지 경쟁과 첫 화면 과다가 다시 생긴다 — ORC-UI03(제한 사유·대체 이용·지원 경로·바뀐 점·알림 근거), ORC-UI06(추가 구매·불일치), ORC-UI08(인도 인수 2묶음·eol_check), ORC-UI09(인계 묶음·재개·동의 범위), ORC-UI10(지표별 보조 수치), ADS-OTA01(설치 보류·실패 원인·예정 창), ADS-UI11(조합별 행), ADS-UI09(필드별 diff).",
+      "fix": "설계 공통 규칙 하나를 둔다: be·db 필드가 화면에 보일 때는 그 항목 UX 확정안(ux.json states.normal)이 정한 자리(탭·Drawer·접힘·SummaryLine)에만 둔다. 확정안에 없는 필드는 기본 접힘 '자세히'로 시작하고 핵심 메시지·첫 화면에 올리지 않는다. 2회차 확정안이 위 항목 자리를 정했다.",
+      "items": [
+        "ORC-UI03",
+        "ORC-UI06",
+        "ORC-UI08",
+        "ORC-UI09",
+        "ORC-UI10",
+        "ADS-OTA01",
+        "ADS-UI11",
+        "ADS-UI09"
+      ],
+      "status": "resolved",
+      "resolution": "3회차 확인: P-15 신설 — 'be·db 필드는 그 항목 UX 확정안(harness/ads/ux.json)이 정한 자리(탭·Drawer·접힘·보조 줄)에만 보인다 / 확정안에 없는 필드는 기본 접힘 \"자세히\"로 시작하고 핵심 메시지·첫 화면에 올리지 않는다'. 3회차에 새로 들어온 필드(ORC-UI03 entitlement·market_change, ADS-UI04 site 행, ORC-UI08 인도 후 확인 대기, ORC-UI09 고객 확인 대기·조치 결과 미확인, ADS-BE21 3분류·확정 집합)의 자리는 각 항목 3회차 확정안이 정했다."
+    },
+    {
+      "severity": "major",
+      "issue": "'사용 준비' 낱말이 넷으로 갈렸다 — ORC-UI01 ui '사용 준비 확인'(단계)·'실사용 확인'(선택 단계), ORC-UI01 fe·ORC-UI10 db '사용 준비 완료율'(지표), ORC-UI03 be '사용 확인'(복구 3단계), ORC-BE03 금지 표현 '사용 준비 완료(검증 전)'. 금지어와 한 글자 차이인 지표 이름이 화면에 나오면 lint 예외가 생기고, 운영자는 '확인'과 '완료'의 차이를 읽지 못한다.",
+      "fix": "용어표에 고정: '사용 준비 확인'(차량 준비 보고가 있음) · '실사용 확인'(선택, 실제 이용 기록) — 지표 이름은 '사용 준비 확인율(차량 보고 기준)'. '사용 준비 완료'는 지표 이름을 포함해 어디에도 쓰지 않는다(래칫 0).",
+      "items": [
+        "ORC-UI01",
+        "ORC-UI03",
+        "ORC-UI10",
+        "ADS-UI13",
+        "ORC-UI09",
+        "ADS-UI11"
+      ],
+      "status": "accepted",
+      "resolution": "3회차 핵심 반영(P-13 낱말 고정·'사용 준비 완료' 래칫 0·ORC-UI01·ORC-UI10 이름). 4회차 확인: 남은 '사용 확인' 세 곳(ADS-UI11 ui 4번째 줄 열, ORC-UI03 be 3번째 줄 복구 3단계, ADS-UI01 be 4번째 줄 '상품별 사용 확인 기한')은 그대로이고, ORC-UI09 db resolved_at에 '재사용 확인'이 네 번째 변형으로 생겼다. 구현 사양: 확대 판정 열·지원 건 해결 확인은 '실사용 확인'(출처 글자 함께), 복구 3단계 마지막·기한 이름은 '사용 준비 확인'(각 항목 확정안에 반영)."
+    },
+    {
+      "severity": "major",
+      "issue": "'보류'가 '차단'과 같은 문제를 다시 만든다 — 정책 전달 축 값 '보류'(차량이 미룸, stateModel), 확대 판정 '보류(지표 지연)', 설치 보류(INSTALL_DEFERRED), ADS-OTA01 be '활성 적격 보류'(stateModel에 없는 값), 품질 보류. 차량 화면 6축 표 한 장에 두 축의 '보류'가 다른 뜻으로 나온다.",
+      "fix": "'보류' 단독 표기 금지 래칫(P-13과 같은 방식): '전달 보류(차량이 미룸)' · '확대 보류' · '설치 보류' · '품질 보류'. 활성 적격에는 '보류'를 쓰지 않고 stateModel 값 '조건 부족'(사유: 승인 조합 밖).",
+      "items": [
+        "ADS-OTA01",
+        "ADS-UI11",
+        "ADS-UI01",
+        "ORC-UI08",
+        "ADS-UI13"
+      ],
+      "status": "accepted",
+      "resolution": "3회차 핵심 반영(P-13 보류 네 종류·래칫, stateModel '전달 보류', ADS-OTA01 '조건 부족'). 4회차 확인: ADS-UI01 ui 분포 구간 '전달 보류(DEFERRED, 사유)', ADS-UI11 ui '확대 보류'로 바뀜. 남은 단독 '보류' — P-2 apply '수신·수락·보류·실행', ADS-BE01 be 'policy_push 수신·수락·보류·실행 ACK', ADS-UI04 ui '승인/노출 보류', ADS-UI02 ui 5번째 줄 '3초 테스트 보류'(설계 메모). 화면 낱말은 각 항목 확정안(전달 보류·확대 보류·노출 보류·승인 대기)을 따르고 lint 래칫이 나머지를 잡는다. 5회차 확인: ADS-UI01 tests 6번째 줄이 '전달 보류 구간'으로 바뀌어 남은 목록에서 빠졌다."
+    },
+    {
+      "severity": "minor",
+      "issue": "P-13 apply는 '차단' 단독만 래칫하고 '사건' 단독은 막지 않는다 — 설계 항목 제목·ui에 '사건별 종료 차단'(ADS-UI02), '사건 보고 화면'(ADS-UI07), '사건 번호 하나로'(ORC-UI09)가 그대로다.",
+      "fix": "'사건' 단독 표기 래칫을 같은 lint 묶음에 더하고 세 항목 제목을 '종료 사건'·'ADS 사건 보고'·'지원 건 번호 하나로'로.",
+      "items": [
+        "ADS-UI02",
+        "ADS-UI07",
+        "ORC-UI09",
+        "ADS-UI13"
+      ],
+      "status": "open",
+      "resolution": "4회차에도 설계 미수정 — ADS-UI02 제목·ui 1·2번째 줄, ADS-UI07 제목 '신설 사건 보고 화면', ORC-UI09 제목 '사건 번호 하나로'. 화면 문구는 확정안이 '종료 사건'·'ADS 사건'·'지원 건'만 쓴다."
+    },
+    {
+      "severity": "minor",
+      "issue": "단계 이동으로 1단계 UI 항목(ADS-UI06·ORC-UI01·ORC-UI02·ORC-UI03)이 BE·시뮬레이터 데이터보다 먼저 화면을 만든다 — 예시·모의 데이터로 그린 판정과 상태가 실제 차량 값처럼 보일 위험(P-8).",
+      "fix": "예시·모의 데이터로 그린 영역은 SimulatedDataNotice를 붙이고, 출처 필드(simulated/source)가 생기기 전에는 화면 쪽 고정 표지로 시작한다.",
+      "items": [
+        "ADS-UI06",
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI03",
+        "ADS-OTA01"
+      ],
+      "status": "accepted",
+      "resolution": "3회차 확인: ORC-UI01 fe 'SimulatedDataNotice 개념 시연 — 가상 데이터', ADS-UI06 fe '시뮬레이터 전에는 계약 2.1 예시 데이터로' + 확정안 행 표지, ORC-UI10 fe '출처 미연결 — 가정값'이 생겼다. ORC-UI02·ORC-UI03은 설계 문장이 없어 확정안 사양으로 따른다 — 예시·모의 데이터로 그린 영역은 SimulatedDataNotice."
+    },
+    {
+      "severity": "major",
+      "issue": "[3회차 새로] P-9 두 낱말 밖의 '모름' 변형이 원칙과 항목에 남았다 — P-4 apply '판정 불가로 따로 보이고', ORC-UI02 ui '판정 불가는 구매 가능으로 표시하지 않음', ORC-BE02 be \"'확인 필요'(판단 불가)\", ORC-BE06 be '지속 지원 판단 보류'(금지어), ORC-UI10 be '확정 불가'(금지어). '판정 불가'는 ORC-BE03 금지어 목록에도 없어 lint가 잡지 못한다 — 원칙(P-4)이 금지 낱말을 권하는 꼴이다.",
+      "fix": "구현 사양: 화면에는 UnknownMark 두 낱말만(판단 불가 · 미확인) + 미판정 · 구성 불일치. ORC-BE03 금지어 목록 구현 때 '판정 불가'와 '확인 필요' 단독(모름 뜻)을 더한다. ORC-BE06 화면 낱말은 '지속 지원 판단 불가 — 사후 관찰 지표 미연결'. 설계 문장(P-4 apply '판정 불가' → '판단 불가')은 다음 설계 정리 때 고친다.",
+      "items": [
+        "ADS-UI13",
+        "ORC-UI02",
+        "ORC-UI10"
+      ],
+      "status": "accepted",
+      "resolution": "4회차 확인: ORC-BE02 \"'확인 필요'(판단 불가)\" 문장 삭제, ORC-BE06 '지속 지원 판단 보류' → '지속 지원 판단 불가(관찰 지표 미연결)', ORC-UI10 '확정 불가' → '판단 불가(확정 영향군 없음)'. 남은 '판정 불가' — P-4 apply, ORC-UI02 ui 3번째 줄, ORC-BE02 be 1번째 줄(ORC-BE03 금지어 목록에 아직 없음). 화면 문구는 확정안(ORC-UI02·ORC-UI10·ADS-UI13 unknown)이 두 낱말만 쓰고, '판정 불가' 금지어 추가는 ORC-BE03 구현 사양으로 따른다."
+    },
+    {
+      "severity": "minor",
+      "issue": "[3회차 새로] 2회차 확정안(ux.json) 문구 자신이 P-13을 어겼다 — ADS-UI02 '차단 해제'·'현재 차단 중 문구', ADS-UI08 '다음 단계 전이 차단', ADS-UI11 '보류 — 지표 지연', ADS-UI07 '사건' 단독, ORC-UI01 '사용 준비 완료로 표시하지 않는다'. uxProblems 금지어 목록(FORBIDDEN)에 '차단'·'보류' 단독·'사용 준비 완료'가 없어 검사기가 잡지 못했다.",
+      "fix": "3회차 확정안에서 모두 고쳤다. tools/ads-team.ts FORBIDDEN에 ORC-BE03과 같은 규칙('차단'·'보류' 단독, '사용 준비 완료', '확정 불가', '판정 불가')을 더하면 다음 검토부터 기계가 잡는다.",
+      "items": [
+        "ADS-UI02",
+        "ADS-UI07",
+        "ADS-UI08",
+        "ADS-UI11",
+        "ORC-UI01"
+      ],
+      "status": "resolved",
+      "resolution": "3회차 확정안 문구 교체(이 파일). 검사기 규칙 추가는 하네스 몫."
+    },
+    {
+      "severity": "major",
+      "issue": "[4회차 새로] 새 필드 later(후속 교체 입력)로 여러 항목이 뒤 단계 입력을 지금은 대체값으로 쓴다 — ORC-BE02 시장 승인 = 시장 Profile(ORC-UI02), ORC-UI03 설치 칸 '연동 전'·지원 경로 안내만, ORC-UI09 실사용 확인 = 고객 응답·담당자 기록, ORC-UI10 뒤 단계 지표 = 고정 입력 계산, ADS-BE01 보고 간격 예산 = feature_state_profile(ASSUMED). 화면에서 대체값과 원래 출처 값이 같은 모양이면, 출처가 연결된 뒤 값이 바뀌어도 운영자는 무엇이 바뀌었는지 모른다.",
+      "fix": "구현 사양: later 입력으로 낸 값에는 출처 글자를 붙인다('시장 Profile 기준'·'설치 기록 연동 전'·'담당자 확인 기록'·'가정값'). 원래 출처가 연결되면 그 글자만 바뀌고 자리·낱말은 그대로. 대체값으로 낸 '확인'은 성과 색을 쓰지 않는다(P-8).",
+      "items": [
+        "ORC-UI02",
+        "ORC-UI03",
+        "ORC-UI09",
+        "ORC-UI10"
+      ],
+      "status": "accepted",
+      "resolution": "UX 사양으로 채택 — 구현 때 fix를 따른다 · 5회차: ORC-UI10 be '실제 이용 세션 = ORC-BE08 task_session(연결 전에는 출처 미연결)', ORC-UI03 fe '뒤 단계 필드는 null + 해당 정보 없음', ORC-UI01 fe '확인율은 ORC-UI10 뒤'로 later 대체값 문장이 생겼다 — 화면 출처 글자는 각 항목 5회차 확정안('해당 정보 없음 · 갱신·해지 연동 전', '확인율은 지표 계약 뒤 표시')을 따른다."
+    }
+  ]
+}

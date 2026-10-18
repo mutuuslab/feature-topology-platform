@@ -1,0 +1,3477 @@
+{
+  "member": "업무 절차 담당",
+  "method": "업무 절차 담당 5회차 확인. 4회차 import 뒤 바뀐 12항목(--stale: ADS-UI01·BE01·BE08·BE20, ORC-UI01·UI03·UI10·UI11·BE01·BE02·BE03·BE08)만 .sim/apply_r5.mjs의 문장 단위 변경과 대조해 다시 판단했다 — ADS-BE08 Safety Case 수동 확인 기록 필드·직무 분리(D-ADS-8)를 FPW.7-A03에, ADS-BE01 보고 예산 상태·사건 기록을 FPW.8-A06에, ADS-BE20 범위(미분류 포함, '없음' 확정만 즉시 거부)를 FPW.7-A07·A05에, ORC-BE02 법적 승인 = Profile CONFIRMED·내부 상품 승인 product_market_approval(D-ORC-5)·1단계 Variant 형상 대체값을 FPW.1-A02·7-A10·13-A02에 반영하고 FPW.13-A03(검증 필요 시장 해소 기한)을 더했다. D-ORC-5 제안의 'FPW.7-A11'은 모델상 Canary 활성화라 FPW.7-A10으로 고치길 요청(FPW.7-A11은 dismissed). 공유 새 활동(주문별 사용 준비 확인 추적·지표 계약 승인·'차량 확인 필요' 건 처리)은 같은 문장으로 맞췄고, ADS-UI01은 시험 구간 이름만 바뀌어 문장 유지, ORC-BE03은 영향 없음 유지. 자동 후보는 candidates로 다시 계산해 누락 0, roleSummary는 R·A 기준으로 다시 셌다. 바뀌지 않은 50항목과 절차 문장 충돌 39건은 workflows.json 원문이 그대로라 유지했다. 이전 회차: 업무 절차 담당 4회차(마지막) 확인 패스. 3회차 판(.sim/design.before-r4.json — 62항목 해시가 workflow.json과 모두 일치)과 지금 설계를 필드별로 대조해 바뀐 31항목(옛 문장 삭제·지시문 → deps/cases/later 배열·중복 규칙 정리·effect_input의 ORC-UI10 → ORC-UI11 이관·ORC-BE02 1단계 시장 승인 입력 = 현행 Compliance Profile·ADS-BE08 Safety Case 수동 확인(D-ADS-8)·isReadyConfirmed의 ORC-BE01 소유)만 다시 판단했다. 자동 후보는 ads-team.ts candidates로 다시 계산했고(ADS-UI02에서 FPW.8-A02·A11이 후보에서 빠졌으나 사건별 종료 차단 목록·드릴 구간 정의가 남아 activities 유지), 해소된 설계 요청 3건(ADS-UI02 4구간 문장, ORC-UI11 effect_input 이관, ORC-BE06 '판단 보류')은 문장에서 지웠다. ORC-BE02에 FPW.13-A02(Profile 승인 시장 = 1단계 구매 판정 입력)를 더했고, ORC-UI06 새 활동은 소유권 이전 처리(ORC-BE04로 이관)에서 기능 명세 발행·구성 불일치 처리로 바꿨다. 바뀌지 않은 31항목과 절차 문장 충돌 39건은 workflows.json 원문이 그대로라 유지했다. 이전 회차: 업무 절차 담당 3회차(최종) 재검토. 2회차 판(.sim/design.before-r3.json — 61항목 해시가 workflow.json과 모두 일치)과 지금 설계(62항목, ORC-UI11 신설)를 필드별로 대조해 바뀐 56항목의 추가·삭제 문장을 모두 읽고 workflows.json 81개 활동의 steps·checks와 다시 대조했다. 자동 후보는 ads-team.ts candidates 규칙으로 다시 계산해(새로 겹친 ADS-BE14→FPW.8-A06, ADS-SIM03→FPW.7-A07 포함) 전부 activities 또는 dismissed에 두었다. 바뀐 원칙 P-9(모름 = 판단 불가·미확인, 검토·Gate 전은 미판정)·P-13(종료 사건·ADS 사건·지원 건, 긴급 차단·종료 차단·종료 차단 해제, '보류' 단독 금지, 사용 준비 확인·실사용 확인)으로 활동 문장 전체를 다시 훑어 원문 그대로 인용한 충돌을 추가하고, 2회차 고침 문장·활동 설명의 '보류' 단독·'판단 불가' 오용·'사용 준비 완료'도 고쳤다. 새 절차 이름은 P-13에 맞춰 '판매·주문 → 사용 준비 확인'으로 바꿨다. 설계 쪽 낱말 문제(ADS-UI02 종료 구간 정의 두 개, ADS-BE01 'RESTORE_UNVERIFIED 사건', ORC-BE06 '판단 보류', ORC-UI10에 남은 effect_input 문장)는 해당 활동 설명에 요청으로 남겼다.",
+  "reviewedAt": "2026-10-18",
+  "items": {
+    "ADS-FIX01": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "verify:full 복구(시험 행 수·정적 스냅샷·시각 기준) — 개발 하네스 항목",
+      "sha": "d241cbb07e67"
+    },
+    "ADS-UI01": {
+      "activities": [
+        {
+          "id": "FPW.8-A06",
+          "change": "modify",
+          "what": "차량별 상태를 적용 확인·수락(실행 대기)·전달 보류(DEFERRED, 사유)·수신만 됨·미수신·로컬 거부·미확인의 배타 구간(합 = 대상 차량)으로 나눠 추적하고, 수신 ACK만 있는 차량('수신만 됨')은 적용으로 세지 않는다. 점검 기준은 '적용 확인 안 된 차량 N대'이며, 재연결 차량은 미확인 기간을 함께 기록한다. 활동 이름 '차단 전달·적용 추적'은 P-13에 따라 '긴급 차단 전달·종료 확인 추적'으로 바꾼다"
+        },
+        {
+          "id": "FPW.7-A11",
+          "change": "modify",
+          "what": "Canary 노출·관측을 차량 보고값(활성 적격·실제 실행 축)으로만 세고, 활성 적격은 허용·ODD 밖·금지·조건 부족·판단 불가로 기록한다. 마지막 관측이 기준 시간(Feature별 보고 기대 간격)을 넘은 차량은 실제 칸을 '미확인'(P-9)으로 따로 두며 노출로 세지 않는다. '판단 불가'는 차량이 UNKNOWN으로 판정한 경우에만 쓴다"
+        },
+        {
+          "id": "FPW.6-A06",
+          "change": "modify",
+          "what": "배포 완료를 차량 효력으로 알리지 않고, 게시는 의도·실제 Active는 차량 보고로만 따로 확인한다고 운영 조직에 알린다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.12",
+          "name": "Feature별 보고 기대 간격·상품별 확인 기한 표 확정",
+          "raci": {
+            "R": [
+              "R-OPS"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-FO",
+              "R-PO",
+              "R-TST"
+            ],
+            "I": [
+              "R-REL",
+              "R-QA"
+            ]
+          },
+          "inputs": [
+            "Feature 등급별 기대 보고 간격(expected_report_interval) 초안",
+            "상품별 사용 확인 기한·미사용 일수 초안"
+          ],
+          "outputs": [
+            "승인된 기준 시간 표 버전(관측 신선도·사용 확인 기한·미사용 일수) — 차량 팀 확정 전 값은 '가정값' 표기"
+          ],
+          "why": "관측 신선도(최신 확인·지연·오프라인·미확인)를 서버가 Feature별 보고 기대 간격(expected_report_interval)으로 계산하는데, 그 값과 상품별 사용 확인 기한·미사용 일수를 누가 정하고 바꾸는지 절차에 없다(기본값은 등급별 가정값, D-ADS-5)"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.6-A04",
+          "why": "/deployments 화면만 공유 — 서명 패키지 작성 문장은 그대로다"
+        },
+        {
+          "id": "FPW.7-A01",
+          "why": "확대 기준 정의 변경은 ADS-UI11·BE12에서 다룬다"
+        },
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "why": "같은 문장(복원 뒤 활성 확인) 수정은 ADS-BE03에서 다룬다 — 이 항목은 표시만 공유"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "a6c06bd10f40"
+    },
+    "ADS-UI02": {
+      "activities": [
+        {
+          "id": "FPW.8-A02",
+          "change": "modify",
+          "what": "긴급 차단 판단을 종료 사건 단위로 하고, 같은 차량·Feature에 다른 종료 사건의 종료 차단이 남아 있는지 사건별 종료 차단 목록에서 확인한다"
+        },
+        {
+          "id": "FPW.8-A06",
+          "change": "modify",
+          "what": "종료 결과를 배타 구간(MRC 도달·비활성 확인·전환 중·미수신·시간 초과·증거 부족, 합 = 종료 요청 차량)으로 나누고 요청·수신은 누적 단계로 따로 센다. 점검 기준은 '종료 결과 미확인 차량 N대'(미수신·시간 초과·증거 부족의 합)이고, 제어 책임(DDT owner)·MRC 근거(정지 유지 수단)로 종료 확인을 판단한다"
+        },
+        {
+          "id": "FPW.8-A08",
+          "change": "modify",
+          "what": "종료 차단 해제는 해당 종료 사건 범위만 고르고, 해제 뒤에도 다른 종료 사건의 종료 차단이 남는 차량을 미리보기에서 확인해 요청한다"
+        },
+        {
+          "id": "FPW.8-A09",
+          "change": "modify",
+          "what": "승인 전 '복구 검증 완료 / 종료 차단 해제 / 현재 활성화 가능 여부' 3단을 확인하고, 활성화 불가도 정상 결과로 승인할 수 있다"
+        },
+        {
+          "id": "FPW.8-A11",
+          "change": "modify",
+          "what": "드릴에서 적용률 하나 대신 화면과 같은 안전 종료 결과 배타 구간(MRC 도달·비활성 확인·전환 중·미수신·시간 초과·증거 부족)별 비율과 수신률을 따로 잰다(구간 정의는 ORC-UI10 지표 계약과 같다)"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.8-A04",
+          "why": "요청 폼 접기는 화면 배치 — 요청 입력 문장은 그대로다(사건 ID 필수는 ADS-BE02)"
+        },
+        {
+          "id": "FPW.8-A05",
+          "why": "2인 승인 서명 문장은 그대로다(서명 대상 digest 확인은 ADS-UI03)"
+        },
+        {
+          "id": "FPW.9-A03",
+          "why": "ADS-010 규칙만 공유 — Retirement 승인과 무관"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "bfe4ab9e71dd"
+    },
+    "ADS-UI03": {
+      "activities": [
+        {
+          "id": "FPW.8-A02",
+          "change": "modify",
+          "what": "게이트 미리보기에서 대상 수·제외 사유별 수·해제 범위·위험(F등급·DC)·서명 대상 digest를 확인해 판단서에 남긴다"
+        },
+        {
+          "id": "FPW.8-A04",
+          "change": "modify",
+          "what": "요청 직전 미리보기의 서명 대상 digest를 확인하고, 서버 재계산이 다르다고 표시되면 요청하지 않고 범위를 다시 판단한다"
+        },
+        {
+          "id": "FPW.8-A05",
+          "change": "modify",
+          "what": "승인자는 서명 대상 digest가 미리보기와 같은지 확인한 뒤 서명하고, 발행 직전 재계산이 다르면 발행이 거부되므로 판단(A02)으로 돌린다"
+        },
+        {
+          "id": "FPW.8-A08",
+          "change": "modify",
+          "what": "종료 차단 해제 대상 미리보기(대상 수·제외 사유·해제 범위·서명 대상 digest)를 확인해 요청한다"
+        },
+        {
+          "id": "FPW.6-A06",
+          "change": "modify",
+          "what": "배포 전 일괄 미리보기의 대상 수·제외 사유·서명 대상 digest를 확인하고, 발행 직전 서버 재계산이 다르면 배포하지 않는다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.8-A07",
+          "why": "PLT-016(긴급 권한 사후 검토) 규칙만 공유 — 사후 검토 대상·기한·검토자 조건은 그대로다 — 권한 없는 역할의 버튼 대신 사유는 화면 표시"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "5e1001028604"
+    },
+    "ADS-UI04": {
+      "activities": [
+        {
+          "id": "FPW.4-A03",
+          "change": "modify",
+          "what": "정책의 ODD·속도·지역 조건을 승인된 ODD 프로파일 참조(odd_profile_ref)로 쓰고, 승인 상한을 넘는 설정은 검증에서 거부되므로 프로파일 승인부터 받는다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.4",
+          "name": "ODD 프로파일 작성·의미 검증",
+          "raci": {
+            "R": [
+              "R-ARC"
+            ],
+            "A": "R-ARC",
+            "C": [
+              "R-SM",
+              "R-TST"
+            ],
+            "I": [
+              "R-REG"
+            ]
+          },
+          "inputs": [
+            "SOTIF 분석의 성능 한계·트리거 조건",
+            "시장 기준선의 승인 ODD"
+          ],
+          "outputs": [
+            "ODD 프로파일 초안(지리·도로·환경·동적·배제 축, 단위·경계 포함 여부)",
+            "의미 검증 결과(단위 혼용·연산자 오기·상한 초과)"
+          ],
+          "why": "ODD가 정책 안의 조건이 아니라 승인 대상 엔티티(odd_profile)가 되어 작성·검증 활동이 따로 필요하다"
+        },
+        {
+          "process": "FPW.4",
+          "name": "ODD 프로파일 승인(승인 상한 확정)",
+          "raci": {
+            "R": [
+              "R-SM"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-REG",
+              "R-ARC"
+            ],
+            "I": [
+              "R-OPS",
+              "R-REL"
+            ]
+          },
+          "inputs": [
+            "의미 검증을 통과한 ODD 프로파일",
+            "시장 기준선의 승인 ODD",
+            "승인 영향이 정해진 site 조합(주차장 ID·구역·지도 버전·인프라 버전)"
+          ],
+          "outputs": [
+            "승인된 ODD 프로파일 버전(승인 상한 Envelope, 승인 뒤 불변 — 변경은 새 버전)"
+          ],
+          "why": "정책 컴파일이 승인 상한 초과 ODD를 거부하고 승인 조합 밖 site를 노출 보류로 두려면 상한을 확정하는 승인자가 있어야 하고, 작성자(아키텍트)와 달라야 한다. site 승인 조합을 늘릴 때도 확정된 인증·안전 영향 판단(change_impact_ref, CONFIRMED)이 붙어야 승인된다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.6-A06",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다; ODD 프로파일은 정책 설계 단계(FPW.4) 활동이다"
+        },
+        {
+          "id": "FPW.7-A01",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다; ODD 프로파일은 정책 설계 단계(FPW.4) 활동이다"
+        },
+        {
+          "id": "FPW.7-A11",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다; ODD 프로파일은 정책 설계 단계(FPW.4) 활동이다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다; ODD 프로파일은 정책 설계 단계(FPW.4) 활동이다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "bcf2ff6f93ca"
+    },
+    "ADS-UI05": {
+      "activities": [
+        {
+          "id": "FPW.6-A02",
+          "change": "modify",
+          "what": "Baseline 구성이 승인된 호환 형상 집합(HW·ECU SW·모델·보정·ODD·정책) 안에 있는지 대조하고, 승인 형상 집합이 없는 F2 이상 Feature는 발행·적용 후보가 거부(CONFIG_SET_MISSING)되며 F0·F1은 '조합 미검증' 사유가 남는지 확인한다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.6",
+          "name": "호환 형상 집합 등록·승인",
+          "raci": {
+            "R": [
+              "R-INT"
+            ],
+            "A": "R-PLM",
+            "C": [
+              "R-ARC",
+              "R-SM",
+              "R-CSM"
+            ],
+            "I": [
+              "R-REL",
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "G5 판정을 받은 HW·ECU SW·모델·보정·ODD 프로파일·정책 조합",
+            "CSM이 정한 보안 최소 버전",
+            "후속 차종(다른 HW/OS)이면 차이 분석과 차이 영역의 새 검증 결과"
+          ],
+          "outputs": [
+            "승인 조합 행렬(config_set) 버전",
+            "승인 조합 밖 차량 목록(정책 대상·복구 후보에서 제외)"
+          ],
+          "why": "부분 복구·승인 조합 밖 차량 판단의 기준이 되는 형상 집합을 누가 승인하는지 절차에 없다. 차이 분석 없는 후속 차종은 승인하지 않는다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "725b4e300fb2"
+    },
+    "ADS-UI06": {
+      "activities": [
+        {
+          "id": "FPW.8-A01",
+          "change": "modify",
+          "what": "차량 판정 사유 분포(ODD_OUT·ODD_UNKNOWN·INPUT_INVALID_OR_STALE 등)를 함께 보고, UNKNOWN 사유가 늘면 정상으로 보지 않고 이상 징후 건을 연다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다 — 행위별 판정 표시는 운영 화면"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "5ac37c0f047b"
+    },
+    "ADS-UI07": {
+      "activities": [
+        {
+          "id": "FPW.12-A01",
+          "change": "modify",
+          "what": "운행 감시 지표에 정기 보고 분모인 노출량(운행 시간·거리)을 포함하고 데이터 범주를 정한다"
+        },
+        {
+          "id": "FPW.12-A05",
+          "change": "modify",
+          "what": "열린 종료 사건·ADS 사건·지원 건·이상 징후 건과 보고 기한이 남은 ADS 사건 보고·정기 보고에 연결된 데이터는 삭제에서 제외하고, 제외 사유를 삭제 기록에 남긴다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.8",
+          "name": "ADS 사건 보고 대상 판정·최초 통지·30일 보고",
+          "raci": {
+            "R": [
+              "R-REG"
+            ],
+            "A": "R-REG",
+            "C": [
+              "R-SM",
+              "R-OPS",
+              "R-LEG"
+            ],
+            "I": [
+              "R-QA",
+              "R-FO"
+            ]
+          },
+          "inputs": [
+            "ADS 사건 인지 시각과 공통 사건 ID 타임라인(차량 순서·서버 수신 순서 각각, 누락 구간 표시)",
+            "사건 당시·직전 30초 ADS 활성 여부(차량 보고, 모르면 판단 불가)",
+            "시장별 사건 보고 기한 표"
+          ],
+          "outputs": [
+            "보고 대상 판정(대상·비대상·판단 불가)과 판단자·근거·판정 버전",
+            "최초 통지·단기 보고 기록과 기한 준수 여부"
+          ],
+          "why": "GTR 사건 보고(지체 없이·인지 후 30일)는 긴급 차단·종료 차단 해제와 다른 법정 의무다. 플랫폼은 30초 활성 창 값(해당·해당 없음·판단 불가(근거 부족))으로 '보고 대상 후보'만 내고 보고 대상 확정은 법규 담당이 한다. 담당 판단 전에는 보고 대상으로 세지 않으며, 판단 불가를 비대상으로도 처리하지 않도록 담당이 근거를 남겨 판정해야 한다(담당 판단 없는 분류는 저장 거부)"
+        },
+        {
+          "process": "FPW.13",
+          "name": "시장별 사건 보고 기한·양식 표 승인",
+          "raci": {
+            "R": [
+              "R-REG"
+            ],
+            "A": "R-REG",
+            "C": [
+              "R-LEG",
+              "R-SM"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "시장별 법령의 보고 기한·양식"
+          ],
+          "outputs": [
+            "승인된 기한 표 버전(플랫폼 기한 계산 입력)"
+          ],
+          "why": "D-ADS-3 — 플랫폼은 기한 계산·초안만 하고 시장별 기한 표는 법규 담당 승인 데이터다"
+        },
+        {
+          "process": "FPW.13",
+          "name": "ADS 정기 보고(연 1회) 확정·제출",
+          "raci": {
+            "R": [
+              "R-REG"
+            ],
+            "A": "R-REG",
+            "C": [
+              "R-SM",
+              "R-OPS"
+            ],
+            "I": [
+              "R-QA"
+            ]
+          },
+          "inputs": [
+            "노출량(운행 시간·거리)당 사건 집계 초안"
+          ],
+          "outputs": [
+            "정기 보고서와 제출 기록"
+          ],
+          "why": "정기 보고는 분기 Profile 점검과 주기·근거가 달라 기존 활동에 없다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "c4f52054b1a9"
+    },
+    "ADS-UI08": {
+      "activities": [
+        {
+          "id": "FPW.7-A03",
+          "change": "modify",
+          "what": "주장·논거·증거에 고유 ID를 붙이고(C01~C06에서 시작), 증거는 정확한 형상에 묶인 Evidence manifest로만 연결한다"
+        },
+        {
+          "id": "FPW.7-A04",
+          "change": "modify",
+          "what": "발견사항을 중대도·상태·검토자 독립성과 함께 등록하고, 열린 중대 발견은 승격 거부 사유로 남긴다"
+        },
+        {
+          "id": "FPW.5-A05",
+          "change": "modify",
+          "what": "제출 결과마다 형상(정책·ODD·HW·SW·모델·보정)·도구·시나리오·예상/실제 전이·결과 digest를 담은 Evidence manifest를 만든다"
+        },
+        {
+          "id": "FPW.5-A06",
+          "change": "modify",
+          "what": "다른 형상에서 나온 PASS는 근거로 쓰지 않고, 도구 유효 범위 밖 결과는 '한계'로 보고 판정한다"
+        },
+        {
+          "id": "FPW.7-A08",
+          "change": "modify",
+          "what": "Safety Case에 증거 없는 주장이나 열린 중대 발견이 있으면 FAIL로 판정한다"
+        },
+        {
+          "id": "FPW.4-A02",
+          "change": "modify",
+          "what": "TCL과 함께 도구별 유효 범위를 기록해, 범위 밖 결과가 '한계'로 표시되게 한다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.7",
+          "name": "독립 검토 발견사항 조치·종결 확인",
+          "raci": {
+            "R": [
+              "R-SM"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-QA",
+              "R-TST"
+            ],
+            "I": [
+              "R-FO",
+              "R-REL"
+            ]
+          },
+          "inputs": [
+            "독립 검토 발견사항(중대도·상태)"
+          ],
+          "outputs": [
+            "발견사항별 조치·종결 기록(검토자 확인 포함)"
+          ],
+          "why": "열린 중대 발견이 승격을 막으므로 발견사항을 닫는 책임과 검토자 확인이 활동으로 있어야 한다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.1-A05",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.2-A05",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.3-A03",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.3-A04",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.4-A05",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.6-A05",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.5-A01",
+          "why": "확인 조치 독립성 수준 지정 문장은 그대로다 — 검토자 독립성은 FPW.7-A04 발견사항 기록에서 다룬다"
+        },
+        {
+          "id": "FPW.5-A02",
+          "why": "시나리오 Version·도구 분류 문장은 그대로다 — 형상 결합은 FPW.5-A05 manifest에서 다룬다"
+        },
+        {
+          "id": "FPW.7-A12",
+          "why": "Sign-off는 G8·G9 판정에 묶여 있어 승격 차단이 G9 FAIL로 그대로 반영된다"
+        },
+        {
+          "id": "FPW.8-A07",
+          "why": "PLT-016(긴급 권한 사후 검토) 규칙만 공유 — 사후 검토 대상·기한·검토자 조건은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "19c2fffb1471"
+    },
+    "ADS-UI09": {
+      "activities": [
+        {
+          "id": "FPW.2-A01",
+          "change": "modify",
+          "what": "변경마다 변경 종류(정책·설정·SW·모델·ODD)를 정하고 종류별 필수 경로(재-HARA·R156 영향·SUMS)의 미완료 항목과 릴리스 전후 비교(대상·의존 Feature·ODD 축별 확대/축소·종료 동작)를 확인한다. 확대 방향으로 표시된 행은 근거를 남긴다"
+        },
+        {
+          "id": "FPW.2-A04",
+          "change": "modify",
+          "what": "형식승인 영향을 변경 종류별 필수 경로(R156 §7.1.1.9~11)에 따라 판단한다"
+        },
+        {
+          "id": "FPW.6-A03",
+          "change": "modify",
+          "what": "SUMS 기록에 변경 종류와 종류별 영향 평가 결과를 남긴다"
+        },
+        {
+          "id": "FPW.6-A06",
+          "change": "modify",
+          "what": "OTA Gate PASS와 함께 출시 뒤 열린 재-HARA가 없는지 확인하고, 있으면 배포하지 않는다(플랫폼이 거부)"
+        },
+        {
+          "id": "FPW.7-A09",
+          "change": "modify",
+          "what": "Gate PASS·Sign-off와 함께 열린 재-HARA가 없는지 확인한 뒤에만 RELEASED로 전이한다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "cc4fa95f338a"
+    },
+    "ADS-UI10": {
+      "activities": [
+        {
+          "id": "FPW.13-A03",
+          "change": "modify",
+          "what": "표준·원본 판이 바뀌면 영향 받는 FFP 요구·인수시험 목록(미판정 UNVERIFIED 요구·시험 포함)을 요건·시험 추적 화면에서 조회해 Feature Owner 알림에 붙이고, 열린 결함 probe(ID·실패 수)와 정상·실패 시나리오 결과를 함께 본다. 실행 결과가 없는 요구는 '결과 없음'(통과 아님)으로 본다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.5-A04",
+          "why": "시험 수행 문장은 그대로다 — 인수시험 상태는 조회 화면"
+        },
+        {
+          "id": "FPW.13-A01",
+          "why": "표준 판 고정 문장은 그대로다"
+        },
+        {
+          "id": "FPW.13-A02",
+          "why": "Profile 정의 문장은 그대로다 — 원본 sha는 추적 화면 표시"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "de1b6ca84e3e"
+    },
+    "ADS-UI11": {
+      "activities": [
+        {
+          "id": "FPW.7-A01",
+          "change": "modify",
+          "what": "단계별 기준을 대상 차량 수(정책 허용)가 아니라 실제 Active 노출량으로 정하고, 미확인 차량 비율 상한·데이터 신선도 기준·동결 조건·조합별 표본 하한을 함께 적는다. 안전 관련 변경은 Safety Manager가 승인한 안전 지표 집합(지표·임계·승인자·시각)만 확대 판정 입력으로 쓰고 사업 지표는 넣지 않는다"
+        },
+        {
+          "id": "FPW.7-A11",
+          "change": "modify",
+          "what": "확대 판정을 '확대 가능/중단/확대 보류(지표 지연·표본 부족)/동결'로 결정하고, 미확인 묶음·표본 하한 미달(INSUFFICIENT)은 성공으로 세지 않는다. 판정은 형상 조합(config_set)별로 보고 조합 하나의 경보는 그 조합만 확대 보류·동결한다. 중단 기준에 걸리면 동결 대화상자에서 판정 담당·심각도를 적어 동결 명령(사유·범위)을 낸다. 사건 연결·안전 지표 경보(METRIC_ALERT)로 자동 동결된 확대도 같은 해제 판단을 거친다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "change": "modify",
+          "what": "종료 차단 해제 뒤 단계 확대도 같은 확대 판정으로 하고, 미확인·판단 불가는 만족으로 보지 않고 확대 보류로 둔다"
+        },
+        {
+          "id": "FPW.8-A01",
+          "change": "modify",
+          "what": "감시 지표가 기준 시간을 넘어 지연되면 '미확인', 근거·표본이 부족하면 '판단 불가'로 이상 건을 열어 두고 '이상 아님'으로 기각하지 않는다(P-9)"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.7",
+          "name": "확대 동결 해제 판단",
+          "raci": {
+            "R": [
+              "R-OPS"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-TST"
+            ],
+            "I": [
+              "R-REL",
+              "R-FO"
+            ]
+          },
+          "inputs": [
+            "동결 명령(사유·범위·판정 담당·심각도) 또는 사건 연결로 걸린 자동 동결",
+            "해소된 감시 지표·데이터 신선도 관측"
+          ],
+          "outputs": [
+            "동결 해제 결정과 사유(해제 전 예약 확대 0건 확인)"
+          ],
+          "why": "동결은 운영 조직이 걸거나 사건 연결·승인된 안전 지표 경보(METRIC_ALERT)로 자동으로 걸리는데, 해제를 같은 사람이 근거 없이 하지 않도록 Safety Manager 책임으로 분리한다(해제는 판정 담당 입력 뒤, 조합별로)"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.6-A06",
+          "why": "패키지 배포 활동 — 확대 판정과 무관"
+        },
+        {
+          "id": "FPW.7-A02",
+          "why": "CLS-006(F2+ Experiment Flag 금지) 규칙만 공유 — 실험 계획 문장은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "be7e21cdd388"
+    },
+    "ADS-UI12": {
+      "activities": [
+        {
+          "id": "FPW.1-A01",
+          "change": "modify",
+          "what": "Feature 등록 때 ADS 여부·DDT 영향·안전 관련성·Lifecycle별 담당을 함께 입력한다"
+        },
+        {
+          "id": "FPW.1-A03",
+          "change": "modify",
+          "what": "네 축에 더해 ADS 여부·DDT 영향 축을 채우고, 미분류(UNCLASSIFIED)로 남기면 출시가 거부됨을 확인한다. 2단계 거부 규칙을 켜기 전에 '미분류 Feature N건'과 축별 빈칸 목록을 먼저 확정해 기존 Feature가 한꺼번에 출시 거부되지 않게 한다"
+        },
+        {
+          "id": "FPW.1-A05",
+          "change": "modify",
+          "what": "ADS 여부·DDT 영향이 미분류이면 FAIL로 판정한다"
+        },
+        {
+          "id": "FPW.1-A04",
+          "change": "modify",
+          "what": "시장별 승인 유형·규정 series(예: R156 01)·승인 ODD 프로파일을 시장 기준선으로 기록한다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.2-A02",
+          "why": "ADS 여부가 명시 필드가 될 뿐 HARA·TARA 공동 수행 문장은 그대로다"
+        },
+        {
+          "id": "FPW.9-A03",
+          "why": "ADS-010 규칙만 공유 — ADS 폐기 승인 조건 문장은 그대로다"
+        },
+        {
+          "id": "FPW.9-A04",
+          "why": "LCY-011 규칙만 공유 — RETIRED·DEPRECATED 정책 생성 거부는 플랫폼 검사이고 삭제 기록 문장은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "3d33e4031282"
+    },
+    "ADS-UI13": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "화면 용어표 고정 — 문구 lint 금지어는 ORC-BE03 목록 하나(확인 불가·판정 불명·판단 보류·확정 불가, '차단'·'보류' 단독, '사용 준비 완료')를 쓰는 화면 문구 규칙이다. 절차 문장의 같은 용어 충돌(P-9·P-13)은 conflicts에 기록했다",
+      "sha": "b4ac93e26558"
+    },
+    "ADS-BE01": {
+      "activities": [
+        {
+          "id": "FPW.8-A06",
+          "change": "modify",
+          "what": "상태 보고 2.1의 전달 단계·제어 책임(DDT owner)·MRC 도달·종료 차단 목록을 근거로 수신과 종료 확인을 구분해 추적한다. MRC 보고에 정지 유지 수단·위험 저감 근거가 비면 MRC 미달성(증거 부족)으로 보고, 종료 진행 중 제어 책임 공백(RESPONSIBILITY_GAP) 건이 열리면 기한을 기다리지 않고 Safety Manager가 상위 대응을 정한다. 보고 간격 예산은 Feature 상태 프로필의 보고 예산이고 상태(가정값·승인값)가 함께 있다 — 공백 건에 남은 예산 값·출처·상태를 대응 기록에 옮겨 적고, 가정값 기준 공백도 무시하지 않는다. 승인값은 ADS-BE14 위험별 시간 예산 승인(FPW.3)으로 바뀐다. 재부팅 보고에 종료 차단 복원 확인(inhibits_restored)이 빠지거나 무결성이 OK가 아니면 RESTORE_UNVERIFIED로 Active에 세지 않고 이상 징후 건으로 넘긴다(설계의 'RESTORE_UNVERIFIED 사건'은 P-13상 종료 사건·ADS 사건이 아니므로 '이상 징후 건'으로 부르길 요청)"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다 — 와이어 필드 확장"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "9f9bf78f3533"
+    },
+    "ADS-BE02": {
+      "activities": [
+        {
+          "id": "FPW.8-A02",
+          "change": "modify",
+          "what": "사유 분류와 함께 종료 사건 ID를 정하고 긴급 차단 범위를 종료 사건 단위로 정한다"
+        },
+        {
+          "id": "FPW.8-A04",
+          "change": "modify",
+          "what": "F2 이상 종료 요청에는 종료 사건 ID를 반드시 붙이고(서명 대상 포함), 종료 사건 ID 없는 요청은 거부된다"
+        },
+        {
+          "id": "FPW.8-A08",
+          "change": "modify",
+          "what": "종료 차단 해제는 지정한 종료 사건의 종료 차단만 풀도록 종료 사건 ID로 요청한다 — 다른 종료 사건의 종료 차단은 남는다"
+        },
+        {
+          "id": "FPW.8-A09",
+          "change": "modify",
+          "what": "승인 전 해제 대상이 지정 종료 사건의 종료 차단뿐인지, 다른 종료 사건의 종료 차단이 남는 차량 목록을 확인한다"
+        },
+        {
+          "id": "FPW.13-A04",
+          "change": "modify",
+          "what": "시스템 설명에 종료 사건별 종료 차단과 종료 사건 범위의 종료 차단 해제 규칙을 FPW.8과 같게 적는다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.8-A05",
+          "why": "사건 ID는 서명 대상에 자동 포함 — 2인 승인 문장은 그대로다"
+        },
+        {
+          "id": "FPW.8-A07",
+          "why": "PLT-016(긴급 권한 사후 검토) 규칙만 공유 — 사후 검토 대상·기한·검토자 조건은 그대로다"
+        },
+        {
+          "id": "FPW.9-A03",
+          "why": "ADS-010 규칙만 공유 — Retirement 승인과 무관"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "cec7be1cbf9f"
+    },
+    "ADS-BE03": {
+      "activities": [
+        {
+          "id": "FPW.8-A08",
+          "change": "modify",
+          "what": "종료 차단 해제 요청의 목표를 '복구 검증 완료(Available 후보)'까지로 적고, Active 복귀는 요청 대상이 아님을 명시한다"
+        },
+        {
+          "id": "FPW.8-A09",
+          "change": "modify",
+          "what": "복원 승인은 종료 차단 해제·복구 검증에 대한 승인이며 활성화 허가가 아님을 확인한다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "change": "modify",
+          "what": "복원 뒤 확인 대상을 '활성 복귀'에서 '복구 검증 완료'로 바꾸고, Active는 차량 재판정(ODD·형상·사용자 절차)이 ALLOW일 때 차량이 보고한 결과로만 따로 기록한다 — 플랫폼은 Active로 자동 전이하지 않는다. 2.0 보고의 ACTIVE는 재판정 근거(decision ALLOW)가 없으므로 '재판정 근거 없음'으로 따로 세고 Active에 넣지 않는다"
+        },
+        {
+          "id": "FPW.13-A04",
+          "change": "modify",
+          "what": "시스템 설명에 복원 뒤 차량 재판정을 거쳐야 Active가 된다고 적는다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "a1b9a3711943"
+    },
+    "ADS-BE04": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "같은 명령 재전송을 멱등 ACK로 처리하는 백엔드 결함 수정 — 재전송·보안 이벤트에 관한 절차 문장은 이미 맞다",
+      "sha": "f69b93c892d1"
+    },
+    "ADS-BE05": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.8-A02",
+          "why": "게이트 내부 서명 대상 검증 — 판단 문장은 그대로다"
+        },
+        {
+          "id": "FPW.8-A05",
+          "why": "서명 길이 대신 서명 대상 검증은 게이트 내부 — 승인 문장은 그대로다"
+        },
+        {
+          "id": "FPW.11-A01",
+          "why": "SEC-002 키 규칙만 공유 — 키 계층·HSM 문장은 그대로다"
+        },
+        {
+          "id": "FPW.11-A02",
+          "why": "SEC-002 키 규칙만 공유 — 키 교체 문장은 그대로다"
+        },
+        {
+          "id": "FPW.11-A03",
+          "why": "SEC-002 키 규칙만 공유 — epoch 상향 문장은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "대상 밖 차량 적용·서명 대상 미검증 결함 수정 — 절차가 이미 전제한 동작을 플랫폼이 지키게 하는 것이라 활동 문장은 그대로다(승인자 digest 확인은 ADS-UI03)",
+      "sha": "bfbc50447197"
+    },
+    "ADS-BE06": {
+      "activities": [
+        {
+          "id": "FPW.2-A01",
+          "change": "modify",
+          "what": "출시 뒤 재-HARA 조건이 생기면 열린 재-HARA로 등록해 출시·배포·서명이 막히게 하고 Release Manager에게 알린다"
+        },
+        {
+          "id": "FPW.2-A05",
+          "change": "modify",
+          "what": "열린 재-HARA는 G2 재판정 PASS로만 닫는다"
+        },
+        {
+          "id": "FPW.6-A04",
+          "change": "modify",
+          "what": "서명 요청 전 열린 재-HARA가 없는지 확인한다 — 있으면 출시 전이·정책 발행·서명 세 곳이 같은 사유(REHARA_OPEN)로 거부한다"
+        },
+        {
+          "id": "FPW.6-A06",
+          "change": "modify",
+          "what": "OTA Gate PASS와 함께 출시 뒤 열린 재-HARA가 없는지 확인하고, 있으면 배포하지 않는다(플랫폼이 거부)"
+        },
+        {
+          "id": "FPW.7-A09",
+          "change": "modify",
+          "what": "Gate PASS·Sign-off와 함께 열린 재-HARA가 없는지 확인한 뒤에만 RELEASED로 전이한다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "4505b593ab00"
+    },
+    "ADS-BE07": {
+      "activities": [
+        {
+          "id": "FPW.8-A06",
+          "change": "modify",
+          "what": "재연결한 차량은 서버 의도(종료 차단·Feature epoch)와 차량 보고의 불일치 목록(차량별 대조)과 미확인 기간(offline_since~재연결 시각)을 확인하고, 불일치 차량은 이상 징후 건으로 넘긴다. 차량이 낮은 epoch 정책 게시본을 거부(STALE_EPOCH)한 것은 정상 결과로 본다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "3eed3ab54478"
+    },
+    "ADS-BE08": {
+      "activities": [
+        {
+          "id": "FPW.2-A01",
+          "change": "modify",
+          "what": "변경마다 변경 종류를 정하되, 플랫폼이 diff에서 더 무거운 종류(예: 허용 ODD·속도 범위 확대 → ODD)를 산출하면 신고 종류가 아니라 그 경로를 따른다. 종류별 필수 영향 분석 표(승인 전 가정값)에 따라 진입하고 복수 종류면 필수 항목의 합집합을 따른다. ODD·MODEL·SW 변경은 Safety Case 갱신(현재 형상 Evidence manifest 재결합)도 필수 항목이다. 검토 필요(REVIEW_REQUIRED) 범위는 담당을 지정하고, 남아 있는 조합은 출시 계획에 넣지 않는다"
+        },
+        {
+          "id": "FPW.2-A04",
+          "change": "modify",
+          "what": "형식승인 영향을 변경 종류별 필수 경로(R156 §7.1.1.9~11)에 따라 판단한다"
+        },
+        {
+          "id": "FPW.6-A03",
+          "change": "modify",
+          "what": "SUMS 기록에 변경 종류와 종류별 영향 평가 결과를 남긴다"
+        },
+        {
+          "id": "FPW.3-A01",
+          "change": "modify",
+          "what": "안전 관련 변경요청(JIRA CR)에 변경 종류를 적어 종류별 영향 분석을 붙인다"
+        },
+        {
+          "id": "FPW.10-A06",
+          "change": "modify",
+          "what": "납품물 입고 기록에 협력사 납품 ID(IF-08)와 연결된 변경요청(CR)을 함께 남겨 변경 종류별 영향 경로로 이어지게 한다"
+        },
+        {
+          "id": "FPW.7-A03",
+          "change": "modify",
+          "what": "ODD·MODEL·SW 종류 변경이면 현재 형상 Evidence manifest로 Safety Case를 다시 결합해야 정책 발행·서명이 열린다. ADS-BE14(3단계) 전에는 Safety Manager가 Safety Case 갱신을 수동으로 확인하고 변경 영향 기록에 확인 기록(확인자·시각·확인 근거·서명·대상 형상)을 남긴다(결정 D-ADS-8) — 기록이 없으면 발행·서명이 IMPACT_REVIEW_OPEN(Safety Case 갱신 미확인)으로 거부되고, 확인자가 발행 요청자와 같으면 직무 분리로 거부되니 요청자가 아닌 Safety Manager가 확인한다. ADS-BE14 뒤에는 수동 기록 대신 Evidence manifest 참조로 확인한다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.2",
+          "name": "변경 종류별 필수 영향 분석 표 승인",
+          "raci": {
+            "R": [
+              "R-REG"
+            ],
+            "A": "R-REG",
+            "C": [
+              "R-SM",
+              "R-CSM"
+            ],
+            "I": [
+              "R-FO",
+              "R-REL"
+            ]
+          },
+          "why": "종류(정책·설정·SW·모델·ODD)별 필수 영향 분석 표(contracts change-kind)는 승인 전 '가정값'이고 복수 종류 개정은 합집합으로 진입한다 — 표를 승인·개정할 담당이 절차에 없다"
+        },
+        {
+          "process": "FPW.2",
+          "name": "출시 후 형상 이탈(RELEASE_DRIFT) 예외 처리",
+          "raci": {
+            "R": [
+              "R-INT"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-REG",
+              "R-PLM",
+              "R-REL"
+            ],
+            "I": [
+              "R-OPS",
+              "R-QA"
+            ]
+          },
+          "why": "차량 attestation 형상이 승인 release manifest와 다르면 변경 영향 예외(RELEASE_DRIFT)가 열리고 담당자가 배정되는데(형상 기준은 ADS-BE10 호환 형상), 원인 확인·영향 판단·종결을 맡을 활동이 없다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "0b079759c97e"
+    },
+    "ADS-BE09": {
+      "activities": [
+        {
+          "id": "FPW.4-A03",
+          "change": "modify",
+          "what": "정책의 ODD·속도·지역 조건을 승인된 ODD 프로파일 참조(odd_profile_ref)로 쓰고, 승인 상한을 넘는 설정은 검증에서 거부되므로 프로파일 승인부터 받는다"
+        },
+        {
+          "id": "FPW.7-A05",
+          "change": "modify",
+          "what": "판매 대상 site(주차장 ID·구역·지도·인프라 버전)가 승인된 ODD 프로파일의 site 조합 안에 있는지 구성 검증에서 확인하고, 밖이면 카탈로그 노출 보류·활성 허용 거부가 사유와 함께 남는지 확인한다. site 승인 조합을 늘리려면 확정된 인증·안전 영향 판단(change_impact_ref)을 먼저 붙인다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.4",
+          "name": "ODD 프로파일 작성·의미 검증",
+          "raci": {
+            "R": [
+              "R-ARC"
+            ],
+            "A": "R-ARC",
+            "C": [
+              "R-SM",
+              "R-TST"
+            ],
+            "I": [
+              "R-REG"
+            ]
+          },
+          "inputs": [
+            "SOTIF 분석의 성능 한계·트리거 조건",
+            "시장 기준선의 승인 ODD"
+          ],
+          "outputs": [
+            "ODD 프로파일 초안(지리·도로·환경·동적·배제 축, 단위·경계 포함 여부)",
+            "의미 검증 결과(단위 혼용·연산자 오기·상한 초과)"
+          ],
+          "why": "ODD가 정책 안의 조건이 아니라 승인 대상 엔티티(odd_profile)가 되어 작성·검증 활동이 따로 필요하다"
+        },
+        {
+          "process": "FPW.4",
+          "name": "ODD 프로파일 승인(승인 상한 확정)",
+          "raci": {
+            "R": [
+              "R-SM"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-REG",
+              "R-ARC"
+            ],
+            "I": [
+              "R-OPS",
+              "R-REL"
+            ]
+          },
+          "inputs": [
+            "의미 검증을 통과한 ODD 프로파일",
+            "시장 기준선의 승인 ODD",
+            "승인 영향이 정해진 site 조합(주차장 ID·구역·지도 버전·인프라 버전)"
+          ],
+          "outputs": [
+            "승인된 ODD 프로파일 버전(승인 상한 Envelope, 승인 뒤 불변 — 변경은 새 버전)"
+          ],
+          "why": "정책 컴파일이 승인 상한 초과 ODD를 거부하고 승인 조합 밖 site를 노출 보류로 두려면 상한을 확정하는 승인자가 있어야 하고, 작성자(아키텍트)와 달라야 한다. site 승인 조합을 늘릴 때도 확정된 인증·안전 영향 판단(change_impact_ref, CONFIRMED)이 붙어야 승인된다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.6-A06",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다; ODD 프로파일은 정책 설계 단계(FPW.4) 활동이다"
+        },
+        {
+          "id": "FPW.7-A01",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다; ODD 프로파일은 정책 설계 단계(FPW.4) 활동이다"
+        },
+        {
+          "id": "FPW.7-A11",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다; ODD 프로파일은 정책 설계 단계(FPW.4) 활동이다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다; ODD 프로파일은 정책 설계 단계(FPW.4) 활동이다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "e2b745897c37"
+    },
+    "ADS-BE10": {
+      "activities": [
+        {
+          "id": "FPW.6-A02",
+          "change": "modify",
+          "what": "Baseline 구성이 승인된 호환 형상 집합(HW·ECU SW·모델·보정·ODD·정책) 안에 있는지 대조하고, 승인 형상 집합이 없는 F2 이상 Feature는 발행·적용 후보가 거부(CONFIG_SET_MISSING)되며 F0·F1은 '조합 미검증' 사유가 남는지 확인한다"
+        },
+        {
+          "id": "FPW.11-A04",
+          "change": "modify",
+          "what": "업데이트로 대응하면 보안 최소 버전(복구 후보 하한)을 올려 그 아래 형상이 복구 후보에서 빠지게 한다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "change": "modify",
+          "what": "ECU·모델·보정 중 일부만 복구된 차량(형상 집합 불일치, RECOVERY_PARTIAL)은 '복구 검증 완료'로 세지 않고 따로 두며(설치 manifest만으로 완료 처리하지 않고 차량 attestation으로 대조), 복구 후보 정책의 서명 유효기간·epoch가 현재 기준을 통과했는지 확인한다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.6",
+          "name": "호환 형상 집합 등록·승인",
+          "raci": {
+            "R": [
+              "R-INT"
+            ],
+            "A": "R-PLM",
+            "C": [
+              "R-ARC",
+              "R-SM",
+              "R-CSM"
+            ],
+            "I": [
+              "R-REL",
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "G5 판정을 받은 HW·ECU SW·모델·보정·ODD 프로파일·정책 조합",
+            "CSM이 정한 보안 최소 버전",
+            "후속 차종(다른 HW/OS)이면 차이 분석과 차이 영역의 새 검증 결과"
+          ],
+          "outputs": [
+            "승인 조합 행렬(config_set) 버전",
+            "승인 조합 밖 차량 목록(정책 대상·복구 후보에서 제외)"
+          ],
+          "why": "부분 복구·승인 조합 밖 차량 판단의 기준이 되는 형상 집합을 누가 승인하는지 절차에 없다. 차이 분석 없는 후속 차종은 승인하지 않는다"
+        },
+        {
+          "process": "FPW.8",
+          "name": "복구 경로 결정(이전 형상 복구·수정 적용·안전 상태·정비 입고)",
+          "raci": {
+            "R": [
+              "R-OPS"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-INT",
+              "R-PLM",
+              "R-CSM"
+            ],
+            "I": [
+              "R-REL",
+              "NEW:고객 지원 담당"
+            ]
+          },
+          "why": "복구 결정(recovery_decision: 경로·결정자·근거·형상 집합)이 생겨 부분 복구·복구 실패 차량의 경로를 사람이 근거와 함께 정해야 하는데 결정 담당이 없다. 서명 유효기간·epoch가 지난 이전 Binary는 후보가 아니고, 정비 경로는 지원 건(입고)으로 넘긴다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.11-A01",
+          "why": "SEC-002 키 규칙만 공유 — 키 운영 문장은 그대로다(보안 최소 버전은 FPW.11-A04)"
+        },
+        {
+          "id": "FPW.11-A02",
+          "why": "SEC-002 키 규칙만 공유 — 키 운영 문장은 그대로다(보안 최소 버전은 FPW.11-A04)"
+        },
+        {
+          "id": "FPW.11-A03",
+          "why": "SEC-002 키 규칙만 공유 — 키 운영 문장은 그대로다(보안 최소 버전은 FPW.11-A04)"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "691960251954"
+    },
+    "ADS-BE11": {
+      "activities": [
+        {
+          "id": "FPW.6-A04",
+          "change": "modify",
+          "what": "정규화 내용 digest와 컴파일러 버전을 기록하고, 재빌드 digest가 승인 해시와 같은지 확인한다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "586f365a6843"
+    },
+    "ADS-BE12": {
+      "activities": [
+        {
+          "id": "FPW.7-A01",
+          "change": "modify",
+          "what": "단계별 기준을 대상 차량 수(정책 허용)가 아니라 실제 Active 노출량으로 정하고, 미확인 차량 비율 상한·데이터 신선도 기준·동결 조건·조합별 표본 하한을 함께 적는다. 안전 관련 변경은 Safety Manager가 승인한 안전 지표 집합(지표·임계·승인자·시각)만 확대 판정 입력으로 쓰고 사업 지표는 넣지 않는다"
+        },
+        {
+          "id": "FPW.7-A11",
+          "change": "modify",
+          "what": "확대 판정을 '확대 가능/중단/확대 보류(지표 지연·표본 부족)/동결'로 결정하고, 미확인 묶음·표본 하한 미달(INSUFFICIENT)은 성공으로 세지 않는다. 판정은 형상 조합(config_set)별로 보고 조합 하나의 경보는 그 조합만 확대 보류·동결한다. 중단 기준에 걸리면 동결 대화상자에서 판정 담당·심각도를 적어 동결 명령(사유·범위)을 낸다. 사건 연결·안전 지표 경보(METRIC_ALERT)로 자동 동결된 확대도 같은 해제 판단을 거친다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "change": "modify",
+          "what": "종료 차단 해제 뒤 단계 확대도 같은 확대 판정으로 하고, 미확인·판단 불가는 만족으로 보지 않고 확대 보류로 둔다"
+        },
+        {
+          "id": "FPW.8-A01",
+          "change": "modify",
+          "what": "감시 지표가 기준 시간을 넘어 지연되면 '미확인', 근거·표본이 부족하면 '판단 불가'로 이상 건을 열어 두고 '이상 아님'으로 기각하지 않는다(P-9)"
+        },
+        {
+          "id": "FPW.12-A01",
+          "change": "modify",
+          "what": "운행 감시 지표 중 확대 판정에 쓰는 것을 안전 지표 집합(safety_metric_set)으로 묶어 승인자·승인 시각과 함께 기록하고, 정책 발행 때 그 집합 버전에 결합한다. 승인된 임계를 넘는 경보는 해당 조합 확대를 자동 동결(METRIC_ALERT)한다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.7",
+          "name": "확대 동결 해제 판단",
+          "raci": {
+            "R": [
+              "R-OPS"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-TST"
+            ],
+            "I": [
+              "R-REL",
+              "R-FO"
+            ]
+          },
+          "inputs": [
+            "동결 명령(사유·범위·판정 담당·심각도) 또는 사건 연결로 걸린 자동 동결",
+            "해소된 감시 지표·데이터 신선도 관측"
+          ],
+          "outputs": [
+            "동결 해제 결정과 사유(해제 전 예약 확대 0건 확인)"
+          ],
+          "why": "동결은 운영 조직이 걸거나 사건 연결·승인된 안전 지표 경보(METRIC_ALERT)로 자동으로 걸리는데, 해제를 같은 사람이 근거 없이 하지 않도록 Safety Manager 책임으로 분리한다(해제는 판정 담당 입력 뒤, 조합별로)"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.6-A06",
+          "why": "패키지 배포 활동 — 확대 판정과 무관"
+        },
+        {
+          "id": "FPW.7-A02",
+          "why": "CLS-006 규칙만 공유 — 실험 계획 문장은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "e43436ff57b5"
+    },
+    "ADS-BE13": {
+      "activities": [
+        {
+          "id": "FPW.12-A01",
+          "change": "modify",
+          "what": "운행 감시 지표에 정기 보고 분모인 노출량(운행 시간·거리)을 포함하고 데이터 범주를 정한다"
+        },
+        {
+          "id": "FPW.12-A05",
+          "change": "modify",
+          "what": "열린 종료 사건·ADS 사건·지원 건·이상 징후 건과 보고 기한이 남은 ADS 사건 보고·정기 보고에 연결된 데이터는 삭제에서 제외하고, 제외 사유를 삭제 기록에 남긴다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.8",
+          "name": "ADS 사건 보고 대상 판정·최초 통지·30일 보고",
+          "raci": {
+            "R": [
+              "R-REG"
+            ],
+            "A": "R-REG",
+            "C": [
+              "R-SM",
+              "R-OPS",
+              "R-LEG"
+            ],
+            "I": [
+              "R-QA",
+              "R-FO"
+            ]
+          },
+          "inputs": [
+            "ADS 사건 인지 시각과 공통 사건 ID 타임라인(차량 순서·서버 수신 순서 각각, 누락 구간 표시)",
+            "사건 당시·직전 30초 ADS 활성 여부(차량 보고, 모르면 판단 불가)",
+            "시장별 사건 보고 기한 표"
+          ],
+          "outputs": [
+            "보고 대상 판정(대상·비대상·판단 불가)과 판단자·근거·판정 버전",
+            "최초 통지·단기 보고 기록과 기한 준수 여부"
+          ],
+          "why": "GTR 사건 보고(지체 없이·인지 후 30일)는 긴급 차단·종료 차단 해제와 다른 법정 의무다. 플랫폼은 30초 활성 창 값(해당·해당 없음·판단 불가(근거 부족))으로 '보고 대상 후보'만 내고 보고 대상 확정은 법규 담당이 한다. 담당 판단 전에는 보고 대상으로 세지 않으며, 판단 불가를 비대상으로도 처리하지 않도록 담당이 근거를 남겨 판정해야 한다(담당 판단 없는 분류는 저장 거부)"
+        },
+        {
+          "process": "FPW.13",
+          "name": "시장별 사건 보고 기한·양식 표 승인",
+          "raci": {
+            "R": [
+              "R-REG"
+            ],
+            "A": "R-REG",
+            "C": [
+              "R-LEG",
+              "R-SM"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "시장별 법령의 보고 기한·양식"
+          ],
+          "outputs": [
+            "승인된 기한 표 버전(플랫폼 기한 계산 입력)"
+          ],
+          "why": "D-ADS-3 — 플랫폼은 기한 계산·초안만 하고 시장별 기한 표는 법규 담당 승인 데이터다"
+        },
+        {
+          "process": "FPW.13",
+          "name": "ADS 정기 보고(연 1회) 확정·제출",
+          "raci": {
+            "R": [
+              "R-REG"
+            ],
+            "A": "R-REG",
+            "C": [
+              "R-SM",
+              "R-OPS"
+            ],
+            "I": [
+              "R-QA"
+            ]
+          },
+          "inputs": [
+            "노출량(운행 시간·거리)당 사건 집계 초안"
+          ],
+          "outputs": [
+            "정기 보고서와 제출 기록"
+          ],
+          "why": "정기 보고는 분기 Profile 점검과 주기·근거가 달라 기존 활동에 없다"
+        },
+        {
+          "process": "FPW.9",
+          "name": "ADS 사건 시정 조치·종결 판단",
+          "raci": {
+            "R": [
+              "R-SM"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-TST",
+              "R-REG",
+              "R-FO"
+            ],
+            "I": [
+              "R-QA",
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "ADS 사건 보고와 연결된 정책 게시본·형상·odd_profile_ref·판정·전환 보고",
+            "종결 기준(closure_criteria)"
+          ],
+          "outputs": [
+            "시정 조치 기록(가설·조치·재현 시험·릴리스·Safety Case 참조)",
+            "종결 판단(필수 증거 누락이면 종결하지 않음)"
+          ],
+          "why": "사건 보고와 별도로 원인 가설·재현 시험·시정 릴리스를 Safety Case에 잇고, 종결 기준(관측 범위 config_set·ODD·기간·노출량 하한, 재발 확인 결과)으로 닫는 책임이 절차에 없다 — 관측 노출량이 하한 미달이면 종결이 거부된다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "77608e522130"
+    },
+    "ADS-BE14": {
+      "activities": [
+        {
+          "id": "FPW.7-A03",
+          "change": "modify",
+          "what": "주장·논거·증거에 고유 ID를 붙이고(C01~C06에서 시작), 증거는 정확한 형상에 묶인 Evidence manifest로만 연결한다"
+        },
+        {
+          "id": "FPW.7-A04",
+          "change": "modify",
+          "what": "발견사항을 중대도·상태·검토자 독립성과 함께 등록하고, 열린 중대 발견은 승격 거부 사유로 남긴다. 검토자가 근거 작성자·변경 요청자와 같으면 독립 검토로 기록하지 않는다(D-ADS-7 제안 'Safety Manager 중 비작성자'는 이 활동의 수행자 품질 조직과 달라 결정 필요)"
+        },
+        {
+          "id": "FPW.5-A05",
+          "change": "modify",
+          "what": "제출 결과마다 형상(정책·ODD·HW·SW·모델·보정)·도구·시나리오·예상/실제 전이·결과 digest를 담은 Evidence manifest를 만든다"
+        },
+        {
+          "id": "FPW.5-A06",
+          "change": "modify",
+          "what": "다른 형상에서 나온 PASS나 재사용(REUSED) 증거는 현재 config_set 근거로 쓰지 않고, 도구 유효 범위 밖 결과는 '한계'로 보고 판정한다. 현재 형상과 맞는 manifest가 없으면 G9·출시 승격이 거부된다"
+        },
+        {
+          "id": "FPW.7-A08",
+          "change": "modify",
+          "what": "Safety Case에 증거 없는 주장이나 열린 중대 발견이 있으면 FAIL로 판정한다"
+        },
+        {
+          "id": "FPW.4-A02",
+          "change": "modify",
+          "what": "TCL과 함께 도구별 유효 범위(도구 버전·ODD 범위·시나리오 종류)와 실차·시험장 상관 결과를 기록해, 범위 밖 결과가 '한계'로 표시되게 한다"
+        },
+        {
+          "id": "FPW.8-A06",
+          "change": "modify",
+          "what": "위험별 시간 예산(act_ms)이 승인되면 종료 진행 중 보고 간격·적용 기한 경보의 기준이 Feature 상태 프로필 보고 예산(가정값)에서 이 값으로 바뀐다. 경보에 예산 상태(가정값/승인값)를 함께 보이고, 가정값 기준 경보도 무시하지 않고 Safety Manager 상위 대응(s2)으로 넘긴다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.7",
+          "name": "독립 검토 발견사항 조치·종결 확인",
+          "raci": {
+            "R": [
+              "R-SM"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-QA",
+              "R-TST"
+            ],
+            "I": [
+              "R-FO",
+              "R-REL"
+            ]
+          },
+          "inputs": [
+            "독립 검토 발견사항(중대도·상태)"
+          ],
+          "outputs": [
+            "발견사항별 조치·종결 기록(검토자 확인 포함)"
+          ],
+          "why": "열린 중대 발견이 승격을 막으므로 발견사항을 닫는 책임과 검토자 확인이 활동으로 있어야 한다"
+        },
+        {
+          "process": "FPW.3",
+          "name": "위험별 시간 예산 승인(가정값 → 승인값)",
+          "raci": {
+            "R": [
+              "R-SM"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-ARC",
+              "R-TST",
+              "R-INT"
+            ],
+            "I": [
+              "R-REQ",
+              "R-REL"
+            ]
+          },
+          "why": "감지·판단·실행 시간 예산(hazard_time_budget)은 차량 팀 확정값(D-ADS-5)을 등록·승인하는 경로가 있어야 하고, 승인 전 가정값(ASSUMED)으로 얻은 PASS는 승격 근거로 쓰지 않는다 — 승인자가 절차에 없다"
+        },
+        {
+          "process": "FPW.5",
+          "name": "필수 시험 집합(Feature 등급·변경 종류별) 승인",
+          "raci": {
+            "R": [
+              "R-TST"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-QA",
+              "R-REG"
+            ],
+            "I": [
+              "R-REL",
+              "R-FO"
+            ]
+          },
+          "why": "required_test_set이 Evidence manifest 필수 슬롯을 만들고 빈 슬롯은 EVIDENCE_MISSING이 되는데, 등급·변경 종류별 필수 TC·시나리오 클래스를 누가 정하고 승인하는지 절차에 없다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.1-A05",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.2-A05",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.3-A03",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.3-A04",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.4-A05",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.6-A05",
+          "why": "LCY-001·002(Gate Decision Record) 규칙만 공유 — Safety Case와 무관한 Gate라 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.5-A01",
+          "why": "확인 조치 독립성 수준 지정 문장은 그대로다 — 검토자 독립성은 FPW.7-A04 발견사항 기록에서 다룬다"
+        },
+        {
+          "id": "FPW.5-A02",
+          "why": "시나리오 Version·도구 분류 문장은 그대로다 — 형상 결합은 FPW.5-A05 manifest에서 다룬다"
+        },
+        {
+          "id": "FPW.7-A12",
+          "why": "Sign-off는 G8·G9 판정에 묶여 있어 승격 차단이 G9 FAIL로 그대로 반영된다"
+        },
+        {
+          "id": "FPW.8-A07",
+          "why": "PLT-016(긴급 권한 사후 검토) 규칙만 공유 — 사후 검토 대상·기한·검토자 조건은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "3f61238f29b6"
+    },
+    "ADS-BE15": {
+      "activities": [
+        {
+          "id": "FPW.8-A04",
+          "change": "modify",
+          "what": "요청자는 대상 시장·Feature·환경 범위 권한이 있어야 하고, 분석 전용 사용자(D-ADS-7: 감사 조회자 — 품질 조직 AUDITOR)는 요청할 수 없다"
+        },
+        {
+          "id": "FPW.8-A05",
+          "change": "modify",
+          "what": "승인자도 대상 시장·Feature·환경 범위 권한이 있어야 한다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.11",
+          "name": "역할 권한 범위(시장·Feature·환경) 지정·정기 검토",
+          "raci": {
+            "R": [
+              "R-CSM"
+            ],
+            "A": "R-CSM",
+            "C": [
+              "R-QA",
+              "R-REG"
+            ],
+            "I": [
+              "R-OPS",
+              "R-SM"
+            ]
+          },
+          "inputs": [
+            "역할 × 시장·Feature·환경 요청"
+          ],
+          "outputs": [
+            "role_scope 부여 기록과 정기 검토 결과"
+          ],
+          "why": "권한이 역할만이 아니라 시장·Feature·환경 범위로 나뉘면 범위 부여·회수 활동이 필요하다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.8-A07",
+          "why": "PLT-016(긴급 권한 사후 검토) 규칙만 공유 — 사후 검토 대상·기한·검토자 조건은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "6891df6ebb2d"
+    },
+    "ADS-BE16": {
+      "activities": [
+        {
+          "id": "FPW.1-A03",
+          "change": "modify",
+          "what": "네 축에 더해 ADS 여부·DDT 영향 축을 채우고, Safety Manager 확정(CONFIRMED)·DDT 영향·상태별 책임자 중 하나라도 없으면 미분류(UNCLASSIFIED)로 출시·정책 발행·서명이 거부됨을 확인한다. 출처(추정 초안·보고서 예시·수동 입력)는 판정에 쓰지 않으며, 확정 뒤 DDT 영향을 바꾸면 다시 확정해야 한다"
+        },
+        {
+          "id": "FPW.1-A05",
+          "change": "modify",
+          "what": "ADS 여부·DDT 영향이 미분류이면 FAIL로 판정한다"
+        },
+        {
+          "id": "FPW.1-A04",
+          "change": "modify",
+          "what": "시장별 승인 유형·규정 series(예: R156 01)·승인 ODD 프로파일을 시장 기준선으로 기록한다 — 기준선 밖 차량은 정책 후보에서 빠지고 제외 사유가 미리보기에 남는다"
+        },
+        {
+          "id": "FPW.1-A01",
+          "change": "modify",
+          "what": "Feature 등록 때 ADS 여부·DDT 영향·안전 관련성을 입력하고, 생성·운영·중단·폐기 상태별 책임자를 지정한다"
+        },
+        {
+          "id": "FPW.7-A09",
+          "change": "modify",
+          "what": "RELEASED 전이 전에 운영 단계 책임자가 지정됐는지 확인한다 — 미지정이면 전이가 거부된다"
+        },
+        {
+          "id": "FPW.9-A05",
+          "change": "modify",
+          "what": "DEPRECATED·RETIRED 전이 때 상태별 책임자를 지정하고, 전이 뒤 그 Feature의 신규 허용 정책이 만들어지지 않는지 확인한다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.2-A02",
+          "why": "ADS 여부가 명시 필드가 될 뿐 HARA·TARA 공동 수행 문장은 그대로다"
+        },
+        {
+          "id": "FPW.9-A03",
+          "why": "ADS-010 규칙만 공유 — ADS 폐기 승인 조건 문장은 그대로다"
+        },
+        {
+          "id": "FPW.9-A04",
+          "why": "LCY-011 규칙만 공유 — RETIRED·DEPRECATED 정책 생성 거부는 플랫폼 검사이고 삭제 기록 문장은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "fbb511b4cfa0"
+    },
+    "ADS-BE17": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "캠페인 ↔ 릴리스 조회 API — 담당자 활동 문장에 영향 없음",
+      "sha": "12094270f670"
+    },
+    "ADS-BE18": {
+      "activities": [
+        {
+          "id": "FPW.13-A01",
+          "change": "modify",
+          "what": "고정한 표준 판을 표준 원본 대장(문서·판·sha·접근 수준·담당·마지막 검토일)에 등록한다"
+        },
+        {
+          "id": "FPW.13-A03",
+          "change": "modify",
+          "what": "원본 개정이 감지되면 생기는 재검토 작업을 담당이 처리하고 종결(영향 없음 포함)을 기록한다. 기준 기간보다 오래된 시험 결과('오래됨' 표시)는 영향 판단 근거로 쓰기 전에 다시 실행한다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.5-A04",
+          "why": "@ffp 시험 결과 수집은 개발 도구 — 시험 수행 문장은 그대로다"
+        },
+        {
+          "id": "FPW.13-A02",
+          "why": "개발 도구 — Profile 정의 문장은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "77bd9fa47b12"
+    },
+    "ADS-BE19": {
+      "activities": [
+        {
+          "id": "FPW.8-A01",
+          "change": "modify",
+          "what": "이상 징후·사건의 발생 시각을 모르면 수신 시각으로 채우지 않고 빈 값('미확인')으로 남긴다"
+        },
+        {
+          "id": "FPW.11-A01",
+          "change": "modify",
+          "what": "키 대장에 감사 체인 서명 키 용도를 추가해 DB·앱 설정 밖(KMS/HSM)에 두고, 체크포인트에 남는 key_id와 교체 주기를 기록한다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.11",
+          "name": "감사 체인 체크포인트 외부 고정·정기 대조",
+          "raci": {
+            "R": [
+              "R-QA"
+            ],
+            "A": "R-QA",
+            "C": [
+              "R-CSM",
+              "R-PKI"
+            ],
+            "I": [
+              "R-SM",
+              "R-REG"
+            ]
+          },
+          "inputs": [
+            "감사 체인 head와 서명된 체크포인트"
+          ],
+          "outputs": [
+            "대조 결과(일치·변조 의심)와 조치 기록"
+          ],
+          "why": "끝 행 삭제·재계산 탐지는 DB·앱 설정 밖 체크포인트(감사 쓰기마다 또는 N행·T초, key_id 기록)와 외부 append-only 사본을 사람이 대조해야 효력이 있고, 불일치 seq 구간이 나오면 조사·보고할 담당이 필요하다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.12-A01",
+          "why": "이전 판 요건(FFP-F052)의 TEL-001 규칙 공유 — 지금은 자동 후보가 아니며 감시 지표 문장은 그대로다"
+        },
+        {
+          "id": "FPW.12-A05",
+          "why": "이전 판 요건의 TEL-008 규칙 공유 — 삭제 대상은 데이터 범주 행이며 감사 체인 문장은 없다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "1ffcdad747f1"
+    },
+    "ADS-BE20": {
+      "activities": [
+        {
+          "id": "FPW.7-A07",
+          "change": "modify",
+          "what": "DDT 영향 Feature(DDT 영향이 '없음'으로 확정되지 않은 Feature — 미분류 포함, 분류가 생기기 전 1단계는 F2 이상)의 권리 만료·상품 회수가 작동 중 즉시 종료가 아니라 '다음 시동 비활성화(DC3)·사용자 안내'로 처리되는지와 그 고지 문구가 준비됐는지 활성화 조건 확인서에 넣는다. 1단계 F1과 DDT 영향 '없음' 확정 Feature는 즉시 거부 경로이므로 고지 문구도 그 경로로 확인한다"
+        },
+        {
+          "id": "FPW.7-A05",
+          "change": "modify",
+          "what": "상품에 DDT 영향 Feature(DDT 영향 '없음' 확정이 아닌 Feature — 미분류 포함, 분류 전 1단계는 F2 이상)를 넣으면 권리 만료·회수 처리 방식(다음 시동 비활성화·사용자 안내, 회수 대기 중 값은 안전 허가로 쓰지 않음)을 구성 조건으로 적고, 결제 성공을 '사용 준비 확인'으로 쓰지 않는다 — 결제는 정책 의도 ON만 만든다(P-13). 즉시 거부 경로로 바꾸려면 FPW.1-A03에서 DDT 영향 '없음'을 확정해야 한다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "169076386ebd"
+    },
+    "ADS-BE21": {
+      "activities": [
+        {
+          "id": "FPW.8-A01",
+          "change": "modify",
+          "what": "영향 차량을 조건(형상·ODD·구성 시점)으로 후보·구성 미확인·통신 미수신 3분류로 산정하고 그 스냅샷을 이상 징후 건에 고정한다. 구성 미확인 차량을 영향 없음으로 빼지 않는다"
+        },
+        {
+          "id": "FPW.8-A02",
+          "change": "modify",
+          "what": "긴급 차단 범위는 영향 후보 스냅샷으로 정하고, 구성 미확인·통신 미수신 차량의 처리(추가 확인 요청·포함·제외 사유)를 긴급 차단 판단서에 따로 적는다"
+        },
+        {
+          "id": "FPW.11-A04",
+          "change": "modify",
+          "what": "취약점 영향 차량도 후보·구성 미확인·통신 미수신으로 나눠 특정하고, 구성 미확인은 VEX 판정 대상에서 빼지 않는다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.8",
+          "name": "영향 차량 확정·재평가",
+          "raci": {
+            "R": [
+              "R-OPS"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-PLM",
+              "R-TST"
+            ],
+            "I": [
+              "R-REG",
+              "R-QA"
+            ]
+          },
+          "inputs": [
+            "영향 후보 스냅샷(후보·구성 미확인·통신 미수신)",
+            "원인 분석·재현 결과"
+          ],
+          "outputs": [
+            "확정 영향군(CONFIRMED) 버전과 재평가 이력",
+            "식별 정확도 입력(누락률·과잉 포함률 — 확정 영향군이 없으면 '확정 불가')"
+          ],
+          "why": "후보 산정은 플랫폼 계산이지만 확정 영향군(CONFIRMED)은 판단이라 확정자·분석 근거가 있어야 하고, 후보 산정 결과를 그대로 복사해 확정할 수 없다. 재평가는 이전 스냅샷을 바꾸지 않고 이력으로 남긴다. 리콜 범위와 영향 차량 식별 정확도 지표가 이것을 분모로 쓴다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "ad56fcfa1015"
+    },
+    "ADS-SIM01": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "계약 검증용 차량 시뮬레이터(TOCTOU 재검증·관리자 강제 활성화 거부·AVP 거절, 세션 결과 NORMAL_END/EXCEPTION_TRANSITION 구분, 해제 뒤 ODD OUT이면 Available 유지 시험) — 실차 판정은 차량 팀, 담당자 활동 문장은 그대로다",
+      "sha": "e2ffd8abb74d"
+    },
+    "ADS-SIM02": {
+      "activities": [
+        {
+          "id": "FPW.4-A01",
+          "change": "modify",
+          "what": "오프라인 기준선 표(최초 부팅·연결 상실·캐시 만료·저장 무결성 실패별 신규 활성화 금지·Active 유지 규칙)를 차량 내 설계 요소로 정의하고, 서명 검증 실패·epoch 역행 캐시 정책은 오프라인에서도 평가하지 않으며, 차량 팀 확정 전 값은 '가정값'으로 둔다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.8-A06",
+          "why": "SEC-004 규칙만 공유 — 전달 추적 문장은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "ed9d6ba25249"
+    },
+    "ADS-SIM03": {
+      "activities": [
+        {
+          "id": "FPW.3-A01",
+          "change": "modify",
+          "what": "위험(hazard)별 시간 예산(감지·판단·실행 ms)을 안전요구로 등록해 결함 주입 측정(구간 경계 시각별 비교)의 판정 기준(BUDGET_EXCEEDED, 넘은 구간 표시)이 되게 하고, 승인 전 예산(가정값) 기준 PASS는 Evidence manifest에 '한계'로 남긴다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.8-A06",
+          "why": "SEC-004·DEAC-013 규칙만 공유 — 종료 확인 구분은 ADS-UI02·BE01에서 다룬다"
+        },
+        {
+          "id": "FPW.7-A07",
+          "why": "FFP-F022(LCY-010)로 새로 겹침 — TC11 시뮬레이터 시험은 ADS-BE20이 고친 FPW.7-A07 확인서 문장(작동 중 즉시 종료 없음·다음 시동 비활성화)의 근거를 낼 뿐이라 이 항목으로는 문장이 바뀌지 않는다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "748ef9aa1cd5"
+    },
+    "ADS-SIM04": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.8-A04",
+          "why": "와이어 동기만 — 차단·복원 절차 문장 변경은 ADS-BE02·BE03에서 다룬다"
+        },
+        {
+          "id": "FPW.8-A05",
+          "why": "와이어 동기만 — 차단·복원 절차 문장 변경은 ADS-BE02·BE03에서 다룬다"
+        },
+        {
+          "id": "FPW.8-A08",
+          "why": "와이어 동기만 — 차단·복원 절차 문장 변경은 ADS-BE02·BE03에서 다룬다"
+        },
+        {
+          "id": "FPW.8-A09",
+          "why": "와이어 동기만 — 차단·복원 절차 문장 변경은 ADS-BE02·BE03에서 다룬다"
+        },
+        {
+          "id": "FPW.9-A03",
+          "why": "와이어 동기만 — 차단·복원 절차 문장 변경은 ADS-BE02·BE03에서 다룬다"
+        }
+      ],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "FF_IMP GLEO 와이어 동기(D-ADS-1) — 시험 하네스·외부 저장소 항목",
+      "sha": "c77a90e22fe0"
+    },
+    "ADS-OTA01": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "OTA 설치는 외부 OTA 시스템 소유(결정 D7) — 플랫폼은 설치 단계(선형 5단계 + 설치 보류·실패·복구·정지 유지·정비 필요)·실패 종류(failure_kind)·운행 제한 '예상' 표시·복구 뒤 형상 재검증만 하고, 담당자 활동 문장은 그대로다(형상 승인은 ADS-BE10 '호환 형상 집합 등록·승인', 복구 경로는 ADS-BE10 '복구 경로 결정')",
+      "sha": "deedbbb69f7e"
+    },
+    "ADS-LC01": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [
+        {
+          "id": "FPW.7-A01",
+          "why": "Shadow 확인 문장이 이미 있다 — 계약 시험은 근거 제공"
+        },
+        {
+          "id": "FPW.7-A02",
+          "why": "Shadow 비간섭 입증 계획 문장이 이미 있다"
+        },
+        {
+          "id": "FPW.7-A11",
+          "why": "TST-010 규칙만 공유 — 확대 문장 변경은 ADS-BE12"
+        }
+      ],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "Shadow 격리 계약 시험 — FPW.7-A01이 이미 Shadow 비간섭 확인을 요구하고 이 항목은 그 근거를 제공할 뿐이다",
+      "sha": "f323740ba3a7"
+    },
+    "ADS-LC02": {
+      "activities": [
+        {
+          "id": "FPW.9-A04",
+          "change": "modify",
+          "what": "잔존 차량 0을 상태 보고로 확인된 잔존 0과 미확인 차량 0 둘 다로 확인한 뒤 마지막 단계를 닫는다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.9",
+          "name": "지원 종료·서버 교체 연습",
+          "raci": {
+            "R": [
+              "R-OPS",
+              "R-INT"
+            ],
+            "A": "R-REL",
+            "C": [
+              "R-SM",
+              "R-CSM",
+              "R-PKI"
+            ],
+            "I": [
+              "R-QA",
+              "R-REG"
+            ]
+          },
+          "inputs": [
+            "지원 종료 연습 시나리오",
+            "기준선·차단 집합·키 대장"
+          ],
+          "outputs": [
+            "연습 결과(기준선·차단·키 갱신 유지, 미승인 ON 초기화 0건)"
+          ],
+          "why": "지원 종료·서버 교체 때 종료 차단과 키가 유지되는지 확인하는 활동이 Retirement 절차에 없다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.9-A03",
+          "why": "ADS-010 규칙만 공유 — ADS 폐기 승인 조건 문장은 그대로다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "e66f7644fbe8"
+    },
+    "ORC-UI01": {
+      "activities": [],
+      "newActivities": [
+        {
+          "process": "NEW:판매·주문 → 사용 준비 확인",
+          "name": "주문별 사용 준비 확인 추적·기한 초과 처리",
+          "raci": {
+            "R": [
+              "R-PDA"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-OPS"
+            ],
+            "I": [
+              "R-FO"
+            ]
+          },
+          "inputs": [
+            "주문↔권리↔게시본↔차량 응답 연결, 활성 기한",
+            "사용 준비 확인 = 권리 ACTIVE·형상 호환·정책 적용 ACK·차량 준비 보고(최신 확인)"
+          ],
+          "outputs": [
+            "주문별 단계 기록(사용 준비 확인은 차량 보고 시각 기준, 형상 판정 출처 포함)",
+            "기한 초과 건의 취소·환불 결정과 환불 요청→완료 경과 시간",
+            "1단계 보고는 '기한 넘긴 사용 준비 미확인 주문' 건수(확인율 없음)"
+          ],
+          "why": "주문·결제 성공을 사용 준비 확인으로 보지 않으려면 차량 준비 보고까지 추적하고 '기한 넘긴 사용 준비 미확인 주문'을 처리할 담당이 필요하다(D-ADS-7: 커머스 운영은 기존 상품 기획이 수행). 준비 판정은 ORC-BE01 isReadyConfirmed 하나(권리 ACTIVE ∧ 형상 호환 ∧ 정책 적용 ACK(수신 아님) ∧ 차량 준비 보고 최신 확인)이고, 1단계 형상 호환은 지원 조건(Variant) SW 대조이며 사용한 출처가 판정 기록에 남는다(ADS-BE10 뒤 config_set). Profile이 없거나 검증 필요인 시장의 주문은 결제 전에 MARKET_NOT_APPROVED로 거부돼 권리·주문 연결이 생기지 않으므로 추적 대상이 아니다. 1단계에는 확인율 대신 확인 건수로 보고하고, 확인율은 ORC-UI10 지표 계약이 생긴 뒤 그 계약으로 본다"
+        },
+        {
+          "process": "NEW:판매·주문 → 사용 준비 확인",
+          "name": "환불 후 권리 회수 확인",
+          "raci": {
+            "R": [
+              "R-PDA"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-LEG"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "환불 완료 주문"
+          ],
+          "outputs": [
+            "권리 회수 확인 기록(회수는 COMMERCIAL 입력 — 작동 중이면 다음 시동 비활성화)"
+          ],
+          "why": "환불과 권리 회수가 따로 끝나면 권리가 남는다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.6-A06",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다"
+        },
+        {
+          "id": "FPW.7-A01",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다"
+        },
+        {
+          "id": "FPW.7-A05",
+          "why": "/entitlements 화면만 공유 — 상품 구성 작성 문장은 그대로다"
+        },
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다"
+        },
+        {
+          "id": "FPW.7-A11",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다"
+        }
+      ],
+      "newProcess": "판매·주문 → 사용 준비 확인",
+      "none": false,
+      "noneWhy": null,
+      "sha": "7769ee6c81e5"
+    },
+    "ORC-UI02": {
+      "activities": [
+        {
+          "id": "FPW.1-A02",
+          "change": "modify",
+          "what": "지원 조건을 시장 승인·최소 SW·필요 HW로 나눠 등록해 VIN 지원 판정 4상태(바로 가능·업데이트 후 가능·부품 미장착·차량 확인 필요)의 근거가 되게 한다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "NEW:판매·주문 → 사용 준비 확인",
+          "name": "'차량 확인 필요' 지원 판정 건 처리",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-PLM",
+              "R-REG"
+            ],
+            "I": [
+              "R-PDA"
+            ]
+          },
+          "inputs": [
+            "VIN 지원 판정 4상태와 사유(시장 법적 승인·내부 상품 승인·형상 출처 별도 코드)"
+          ],
+          "outputs": [
+            "확인 결과와 고객 안내 기록(주문 확정 직전 재판정 결과 포함)",
+            "사유가 내부 상품 승인 기록 없음이면 차량 재보고가 아니라 상품 Owner(FPW.7-A10)에게 넘긴 기록"
+          ],
+          "why": "지원 판정 '차량 확인 필요'(판단 불가 — as-built·차량 보고 구성 모두 없음(AS_BUILT_UNKNOWN), OTA 설치 이벤트가 아직 없는 '업데이트 후 가능' 후보 등)를 구매 가능으로 표시하지 않으면, 그 건을 차량 재보고 요청(eligibility refresh)으로 다시 판정하고 고객에게 안내할 사람이 있어야 한다. 내부 상품 승인 기록이 없어 판단 불가가 된 건(D-ORC-5 전 시드 시장 외)은 차량 쪽에서 풀리지 않으므로 상품 Owner에게 넘긴다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.1-A03",
+          "why": "CLS 규칙만 공유 — 안전 분류 문장은 그대로다"
+        },
+        {
+          "id": "FPW.1-A05",
+          "why": "CLS-001 규칙만 공유 — G1 판정 문장은 그대로다"
+        },
+        {
+          "id": "FPW.2-A02",
+          "why": "ADS-002 규칙만 공유 — HARA·TARA 문장은 그대로다"
+        },
+        {
+          "id": "FPW.7-A01",
+          "why": "/activation/decide 화면만 공유 — Canary 기준 정의와 무관"
+        },
+        {
+          "id": "FPW.7-A08",
+          "why": "/activation/decide 화면만 공유 — G7 판정과 무관"
+        },
+        {
+          "id": "FPW.7-A11",
+          "why": "/activation/decide 화면만 공유 — 단계적 확대와 무관"
+        }
+      ],
+      "newProcess": "판매·주문 → 사용 준비 확인",
+      "none": false,
+      "noneWhy": null,
+      "sha": "1d2993cfd186"
+    },
+    "ORC-UI03": {
+      "activities": [],
+      "newActivities": [
+        {
+          "process": "NEW:고객 지원 건 → 정비 이관 → 해결 확인",
+          "name": "고객에게 보이는 상태 확인·안내",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당"
+            ],
+            "A": "R-OPS",
+            "C": [
+              "R-REG"
+            ],
+            "I": []
+          },
+          "inputs": [
+            "고객 상태 API(6축 투영·사용 제한 사유·대체 이용·지원 경로)와 마지막 확인 시각"
+          ],
+          "outputs": [
+            "4가지 질문에 대한 안내 기록 — '언제 쓸 수 있나'는 설치 검증·준비 확인 뒤에만 시각을 말하고 그 전엔 '예정·조건부', 미확인은 단정하지 않음",
+            "오프라인 차량은 '오프라인 — 마지막 확인 시각, 현재 상태 미확인'으로 안내('차량 확인 중'처럼 결과가 곧 나올 듯 말하지 않음)",
+            "갱신·해지(ORC-UI04)·국가 이동·소유권 이전(ORC-BE04) 정보는 그 항목 구현 전에는 '해당 정보 없음'으로 두고 추정해 안내하지 않음"
+          ],
+          "why": "운영자가 고객 앱과 같은 원천(customer-state: 권리·해지 효력 시각·다음 결제·국가 이동 상태·지원 건 상태)으로 고객에게 보이는 상태를 안내하는 활동이 없다. 설치 상태 연동 전에는 '언제 쓸 수 있나'를 시각 없이 조건만, 지원 건 화면(ORC-UI09) 전에는 지원 경로 안내만 하고, 아직 원천이 없는 필드는 '해당 정보 없음'으로 둔다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다 — 고객 상태 미리보기는 운영자용 표시"
+        }
+      ],
+      "newProcess": "고객 지원 건 → 정비 이관 → 해결 확인",
+      "none": false,
+      "noneWhy": null,
+      "sha": "7bcdef7cdbea"
+    },
+    "ORC-UI04": {
+      "activities": [
+        {
+          "id": "FPW.7-A05",
+          "change": "modify",
+          "what": "상품마다 요금·갱신·해지·통신 음영·데이터 조건과 이용기간 기산 기준(권리 부여·사용 준비 확인)을 등록하고(비면 체험 상품 게시 거부), 안전·기본 기능을 기간제·체험으로 구성하지 않았는지 구성 검증으로 확인한다"
+        },
+        {
+          "id": "FPW.7-A06",
+          "change": "modify",
+          "what": "승인 전에 해지 후 종료 시점·다음 결제 없음 고지 조건을 확인한다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "NEW:판매·주문 → 사용 준비 확인",
+          "name": "해지·환불·이용기간 조정 처리",
+          "raci": {
+            "R": [
+              "R-PDA"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-LEG"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "고객 앱·고객센터의 해지 요청(플랫폼은 처리 상태만)",
+            "장기 미활성 권리와 이용기간 기산 기준(권리 부여·사용 준비 확인)"
+          ],
+          "outputs": [
+            "종료 시점·다음 결제 없음 확인, 사유가 남은 기간 조정·환불 기록",
+            "갱신 전 고지 발송 확인"
+          ],
+          "why": "구독 해지·환불·기간 조정 상태 전이가 신설되며 기존 상품 절차는 출시까지만 다룬다. 해지 효력 시각은 정책 게시본 valid_until로 실려 오프라인 차량도 고지 시각까지만 허용하므로, 해지 처리와 게시본 갱신 확인이 함께 있어야 한다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다 — 요금·해지 고지는 상품 구성(소비자법) 쪽"
+        }
+      ],
+      "newProcess": "판매·주문 → 사용 준비 확인",
+      "none": false,
+      "noneWhy": null,
+      "sha": "b26ee46f2cdc"
+    },
+    "ORC-UI05": {
+      "activities": [],
+      "newActivities": [
+        {
+          "process": "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+          "name": "국가 이동 미리보기·동의 기록·권리 재판정",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당"
+            ],
+            "A": "R-REG",
+            "C": [
+              "R-LEG",
+              "R-SM"
+            ],
+            "I": [
+              "R-PO"
+            ]
+          },
+          "inputs": [
+            "여행·등록 국가 변경 구분(여행은 권리·정책 변경 0건)",
+            "대상 시장 Compliance Profile·시장 기준선"
+          ],
+          "outputs": [
+            "유지·전환·종료 기능과 비용 미리보기, 동의 기록",
+            "차량 적용 결과 대조(적용·미확인) — 등록 확인 증거 없이 확정하지 않음"
+          ],
+          "why": "주행 기능을 자동 변경하지 않으면서 시장 변경을 처리할 절차가 없다. 등록 확인 증거 없는 commit은 거부되고, commit 뒤 차량 대조 전에는 '미확인'(전환 완료 아님)이며, 목적 시장 재판정이 미리보기와 다르면 commit을 멈추고 다시 동의를 받는다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": "권리 변동(국가 이동·소유권 이전·법인 반납)",
+      "none": false,
+      "noneWhy": null,
+      "sha": "5ab2d52dc249"
+    },
+    "ORC-UI06": {
+      "activities": [],
+      "newActivities": [
+        {
+          "process": "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+          "name": "디지털 기능 명세 발행·구성 불일치 지원 건 확인",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-PLM",
+              "R-PDA"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "why": "기능 명세는 as-built 구성·최신 차량 보고·권리를 대조한 발행본(버전 불변)이고, 인도·이전 확인에서 발행본과 차량 보고가 다르면 '구성 불일치 — 지원 건 열림'으로 판매 책임자가 배정된다. 관측 없는 항목은 '미확인'으로 보장하지 않는다 — 이 발행·불일치 처리 책임이 절차에 없다. 승계 판정·권리 회수·이전 소유자 데이터 삭제는 ORC-BE04 '소유권 이전 승계 판정' 활동에서 다룬다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다"
+        }
+      ],
+      "newProcess": "권리 변동(국가 이동·소유권 이전·법인 반납)",
+      "none": false,
+      "noneWhy": null,
+      "sha": "648173bd0cba"
+    },
+    "ORC-UI07": {
+      "activities": [],
+      "newActivities": [
+        {
+          "process": "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+          "name": "법인·플릿 반납 권리 회수·예외 목록 관리",
+          "raci": {
+            "R": [
+              "R-PDA"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-LEG",
+              "R-DPO"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "반납 차량·권리 주체(계약 ID) 정보"
+          ],
+          "outputs": [
+            "차량 보고로 확인된 권리 잔존 0과 미회수 예외 목록(오프라인·미보고 차량)"
+          ],
+          "why": "소유자·관리자·운전자·권리 주체가 분리되면 반납 시 회수 책임이 필요하다. 일괄 적용은 VIN마다 지원 판정해 '바로 가능' 밖 VIN을 제외 목록(사유)으로 남기고, 법인 관리자는 운전자 개인 계정 귀속 구독·이용 기록을 볼 수 없다(데이터 보호 담당 협의)"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.8-A07",
+          "why": "PLT-016(긴급 권한 사후 검토) 규칙만 공유 — 사후 검토 대상·기한·검토자 조건은 그대로다"
+        }
+      ],
+      "newProcess": "권리 변동(국가 이동·소유권 이전·법인 반납)",
+      "none": false,
+      "noneWhy": null,
+      "sha": "6ca1b3bbf417"
+    },
+    "ORC-UI08": {
+      "activities": [
+        {
+          "id": "FPW.10-A07",
+          "change": "modify",
+          "what": "EOL 기록과 함께 주문 사양과 as-built(VIN 스캔) 대조 결과를 남기고, 재검사 결과가 없는 출고 증거는 남기지 않는다(대조 결정은 생산 품질 역할만)"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.10",
+          "name": "EOL 실물 구성 대조·품질 보류",
+          "raci": {
+            "R": [
+              "R-INT"
+            ],
+            "A": "R-QA",
+            "C": [
+              "R-PLM"
+            ],
+            "I": [
+              "R-OPS",
+              "R-PDA"
+            ]
+          },
+          "inputs": [
+            "주문 사양",
+            "as-built 구성(VIN 스캔)"
+          ],
+          "outputs": [
+            "불일치 목록·원인·품질 보류 기록(판단: 생산 품질 — D-ADS-7에 따라 품질 조직)",
+            "재작업 참조·재검사 결과·출고 증거, 인도 인수 항목(정차 확인 가능 / 주행조건 확인 필요)"
+          ],
+          "why": "부품 누락을 정책 ON으로 덮지 않도록 출고 전 대조·품질 보류 판정 책임이 필요하다. 재검사 결과 없는 출고 증거는 저장되지 않고, 결정은 생산 품질 역할(품질 조직)만 저장한다"
+        },
+        {
+          "process": "NEW:판매·주문 → 사용 준비 확인",
+          "name": "인도 인수 확인·인도 후 확인 대기 처리",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-QA",
+              "R-PLM"
+            ],
+            "I": [
+              "R-OPS",
+              "R-PDA"
+            ]
+          },
+          "why": "인도 인수가 계약 기능 × 최신 차량 보고 대조로 바뀌고 주행조건 항목은 '인도 후 확인 대기'로 남아 인수 완료에서 빠진다 — 대기 항목을 이어 확인하고 차이를 지원 건으로 넘길 담당이 필요하다(판매 거점 역할은 workflows.json에 없어 고객 지원 담당이 맡는 안)"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": "판매·주문 → 사용 준비 확인",
+      "none": false,
+      "noneWhy": null,
+      "sha": "2386241f55f6"
+    },
+    "ORC-UI09": {
+      "activities": [
+        {
+          "id": "FPW.8-A01",
+          "change": "modify",
+          "what": "VOC에서 연 건은 지원 건 번호에 연결하고(종료 사건·ADS 사건과 다른 번호), 정비 거점 이관을 해결로 닫지 않는다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "change": "modify",
+          "what": "종료 차단 해제 뒤 복구 불가·안전 상태로 남은 차량은 지원 건(입고 경로)으로 넘기고 확대 판정 분모에서 따로 둔다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "NEW:고객 지원 건 → 정비 이관 → 해결 확인",
+          "name": "지원 건 접수·연결(주문·설치·상태·원격 조치)",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당"
+            ],
+            "A": "R-OPS",
+            "C": [
+              "R-DPO"
+            ],
+            "I": [
+              "R-PO"
+            ]
+          },
+          "inputs": [
+            "고객 앱·딜러 접수(동의 범위 참조), 복구 불가·안전 상태 차량의 자동 생성 건, 이전 명세 불일치 건"
+          ],
+          "outputs": [
+            "지원 건 번호와 연결된 주문·설치·차량 상태·원격 조치 기록(직무·동의 범위 밖 조회 거부)"
+          ],
+          "why": "지원 건 하나로 묶는 접수 활동이 운영 절차(FPW.8)에 없다. ADS 사건·종료 사건과 다른 원장이다(P-13). 같은 VIN·Feature의 미해결 지원 건이 있으면 새 접수를 연결하고(시작은 최초 접수 시각), 해결 뒤 기준 기간 안 같은 증상은 재오픈으로 잇는다. 안전 상태 도달 보고 차량은 입고 경로 지원 건이 자동으로 1건 생긴다"
+        },
+        {
+          "process": "NEW:고객 지원 건 → 정비 이관 → 해결 확인",
+          "name": "정비 거점 인계·해결 확인",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당",
+              "NEW:정비 거점 담당"
+            ],
+            "A": "R-OPS",
+            "C": [
+              "R-SM"
+            ],
+            "I": [
+              "R-PO",
+              "R-QA"
+            ]
+          },
+          "inputs": [
+            "지원 건, 정비 거점 인계 요청(진단 요약·부품·작업 항목·거점)"
+          ],
+          "outputs": [
+            "인계 시각과 별도의 해결 확인 기록(차량 결과·재사용 확인 증거 필수), 재개 이력, 부분 제한 기능 목록"
+          ],
+          "why": "이관 시각은 해결이 아니므로 해결 확인을 별도 활동으로 둔다. 해결 = 차량 결과 보고 + 재사용 확인이며, 과업 세션이 연결되기 전에는 재사용 확인을 고객 확인 응답 또는 담당자 확인 기록으로 남기고 출처를 표기한다. 원격 조치 명령 ACK만 있으면 '조치 결과 미확인', 고객 미응답은 '고객 확인 대기'로 해결과 구분한다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": "고객 지원 건 → 정비 이관 → 해결 확인",
+      "none": false,
+      "noneWhy": null,
+      "sha": "8a0eee78b1d2"
+    },
+    "ORC-UI10": {
+      "activities": [
+        {
+          "id": "FPW.7-A01",
+          "change": "modify",
+          "what": "판정 지표는 등록된 지표 계약(분모·제외 사유·성공 조건·계산 버전)을 참조해 정한다"
+        },
+        {
+          "id": "FPW.8-A11",
+          "change": "modify",
+          "what": "드릴의 안전 종료 결과를 지표 계약(분모 = 종료 사건·명령·VIN, 결과 = MRC 도달·비활성 확인·전환 중·미수신·시간 초과·증거 부족의 배타 구간)으로 세고, 수신 ACK만 있는 차량은 성공으로 세지 않는다. MRC 보고에 정지 유지 수단이 없으면 증거 부족이다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.12",
+          "name": "지표 계약 정의·계산 버전 승인",
+          "raci": {
+            "R": [
+              "R-PDA",
+              "R-OPS"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-SM",
+              "R-QA",
+              "R-DPO"
+            ],
+            "I": [
+              "R-FO"
+            ]
+          },
+          "inputs": [
+            "지표의 분모·제외 사유·성공 조건·관측 기간 키 초안(사용 준비 확인율·안전 종료 결과·과업 성공률·출시·국가 이동·장기 차량 지원·공통화 효과)",
+            "과업 정의(성공 기준: 정확성 조건·시간 한계·허용 오류, 담당)와 과업 세션 이벤트 계약(결과 4값·보고 누락) — 체험 평가의 실제 이용 세션 출처",
+            "안전 종료 시간 한계 = 차량 팀 확정값(그 전엔 '가정값')"
+          ],
+          "outputs": [
+            "지표 계약 버전(계산 버전·최신성 기준) — 출처가 연결되지 않은 지표(종료 결과·과업 세션·영향 차량)는 '출처 미연결 — 가정값'으로 성과에서 제외"
+          ],
+          "why": "사용 준비 확인율(차량 보고 기준, 준비 판정은 ORC-BE01 isReadyConfirmed)·안전 종료 결과·영향 차량 식별 정확도·과업 성공률 등 지표의 분모·제외 사유·결과 구간(배타, 합 = 분모)·계산 버전과 과업 정의(성공 기준·담당)를 누가 정하고 바꾸는지 절차에 없다(실측 전 가정값, 보고 누락 세션은 성공·실패 어느 쪽에도 넣지 않음, 확정 영향군이 없으면 판단 불가). 체험 평가의 실제 이용 세션은 과업 세션(ORC-BE08)이고 연결 전에는 출처 미연결이다. 사업 효과(effect_input)는 ORC-UI11 몫이다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.6-A06",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다"
+        },
+        {
+          "id": "FPW.7-A11",
+          "why": "확대 판정 문장 변경은 ADS-BE12에서 다룬다"
+        },
+        {
+          "id": "FPW.8-A01",
+          "why": "TEL-009 규칙만 공유 — 판단 불가 기각 금지는 ADS-BE12에서 다룬다"
+        },
+        {
+          "id": "FPW.8-A10",
+          "why": "LCY-009(단계적 활성화) 규칙만 공유 — 이 항목은 그 활동 문장을 바꾸지 않는다"
+        },
+        {
+          "id": "FPW.7-A02",
+          "why": "사업 효과 가정 실험이 ORC-UI11로 분리돼 2회차의 '가정 실험 표시' 변경은 ORC-UI11로 옮겼다 — 지표 계약(분모·제외 사유·계산 버전)은 실험 계획 문장을 바꾸지 않는다"
+        }
+      ],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "d432a1e3813a"
+    },
+    "ORC-UI11": {
+      "sha": "8d1f45e942ac",
+      "activities": [
+        {
+          "id": "FPW.7-A02",
+          "change": "modify",
+          "what": "실험 계획에 사업 효과 가정 실험(순기여·손익분기 전환율)을 붙일 때 가정값 입력이 하나라도 섞인 결과는 '가정값'으로 표시하고, 실측 입력만으로 계산한 결과도 가정 실험 결과로만 두어 실측 지표(지표 계약)·확대 판정 입력으로 쓰지 않는다. 비용 입력의 필수 유형(공통 구축·차종 적응·차이 검증·운영·지원비·환불·기본 상품 잠식)이 빠지면 순효과 대신 '입력 누락: 유형'으로 두고, 결제액만으로 이익을 말하거나 시간 절약을 현금 절감에 더하지 않는다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.7",
+          "name": "사업 효과 가정값 입력·검토",
+          "raci": {
+            "R": [
+              "R-PDA"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-FO",
+              "R-QA"
+            ],
+            "I": [
+              "R-REL",
+              "R-OPS"
+            ]
+          },
+          "why": "순기여·손익분기 전환율 가정 실험의 비용 입력(effect_input: 항목 유형·현금/시간·관측 범위·출처, basis 실측/가정)과 계산식 버전을 누가 넣고 검토하는지 없다. 같은 항목의 이중 입력·필수 유형 누락·관측 범위가 다른 비교는 계산이 거부되며, 가정값 입력이 섞인 결과는 '가정값' 표지로, 실측 입력만의 결과도 가정 실험 탭 안에서만 보이고 실측 지표·확대 판정 입력에 쓰지 않는다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null
+    },
+    "ORC-BE01": {
+      "activities": [],
+      "newActivities": [
+        {
+          "process": "NEW:판매·주문 → 사용 준비 확인",
+          "name": "주문별 사용 준비 확인 추적·기한 초과 처리",
+          "raci": {
+            "R": [
+              "R-PDA"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-OPS"
+            ],
+            "I": [
+              "R-FO"
+            ]
+          },
+          "inputs": [
+            "주문↔권리↔게시본↔차량 응답 연결, 활성 기한",
+            "사용 준비 확인 = 권리 ACTIVE·형상 호환·정책 적용 ACK·차량 준비 보고(최신 확인)"
+          ],
+          "outputs": [
+            "주문별 단계 기록(사용 준비 확인은 차량 보고 시각 기준, 형상 판정 출처 포함)",
+            "기한 초과 건의 취소·환불 결정과 환불 요청→완료 경과 시간",
+            "1단계 보고는 '기한 넘긴 사용 준비 미확인 주문' 건수(확인율 없음)"
+          ],
+          "why": "주문·결제 성공을 사용 준비 확인으로 보지 않으려면 차량 준비 보고까지 추적하고 '기한 넘긴 사용 준비 미확인 주문'을 처리할 담당이 필요하다(D-ADS-7: 커머스 운영은 기존 상품 기획이 수행). 준비 판정은 ORC-BE01 isReadyConfirmed 하나(권리 ACTIVE ∧ 형상 호환 ∧ 정책 적용 ACK(수신 아님) ∧ 차량 준비 보고 최신 확인)이고, 1단계 형상 호환은 지원 조건(Variant) SW 대조이며 사용한 출처가 판정 기록에 남는다(ADS-BE10 뒤 config_set). Profile이 없거나 검증 필요인 시장의 주문은 결제 전에 MARKET_NOT_APPROVED로 거부돼 권리·주문 연결이 생기지 않으므로 추적 대상이 아니다. 1단계에는 확인율 대신 확인 건수로 보고하고, 확인율은 ORC-UI10 지표 계약이 생긴 뒤 그 계약으로 본다"
+        },
+        {
+          "process": "NEW:판매·주문 → 사용 준비 확인",
+          "name": "환불 후 권리 회수 확인",
+          "raci": {
+            "R": [
+              "R-PDA"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-LEG"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "환불 완료 주문"
+          ],
+          "outputs": [
+            "권리 회수 확인 기록(회수는 COMMERCIAL 입력 — 작동 중이면 다음 시동 비활성화)"
+          ],
+          "why": "환불과 권리 회수가 따로 끝나면 권리가 남는다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다"
+        },
+        {
+          "id": "FPW.13-A03",
+          "why": "Profile 검증 필요 시장의 주문 거부(MARKET_NOT_APPROVED)는 ORC-BE02 판정과 같은 입력 — 해소 기한 문장 수정은 ORC-BE02에서 다룬다"
+        }
+      ],
+      "newProcess": "판매·주문 → 사용 준비 확인",
+      "none": false,
+      "noneWhy": null,
+      "sha": "9081c87c9273"
+    },
+    "ORC-BE02": {
+      "activities": [
+        {
+          "id": "FPW.1-A02",
+          "change": "modify",
+          "what": "지원 조건을 시장 승인·최소 SW·필요 HW로 나눠 등록해 VIN 지원 판정 4상태의 근거가 되게 한다. 1단계에는 이 지원 조건(Variant)의 SW 대조가 형상 판정의 대체값이고 판정 기록에 그 출처가 남는다 — ADS-BE10 호환 형상 집합(config_set)이 생기면 그것으로 넘어간다"
+        },
+        {
+          "id": "FPW.7-A10",
+          "change": "modify",
+          "what": "고객 출시 승인을 상품 × 시장 단위로 기록한다(내부 상품 승인 = product_market_approval: 상품·시장·승인자·시각·근거, 결정 D-ORC-5). VIN 지원 판정에서 시장 법적 승인과 내부 상품 승인은 서로 다른 사유 코드로 나오고 둘 다 있어야 '바로 가능'이다 — 승인 기록이 없는 시장은 판단 불가로 남고, D-ORC-5 결정 전에는 데모·시험 시장(시드 승인 기록)만 통과한다. 시장 법적 승인은 1단계에 시장 Compliance Profile이 있고 확정(CONFIRMED)인지로 보고(F 등급과 무관, ADS Feature는 ADS Profile도 확정), ADS-BE16 뒤에는 시장 기준선(market_baseline)을 쓴다. 결정 D-ORC-5 제안의 'FPW.7-A11'은 절차 모델에서 Canary 활성화이므로 이 활동(FPW.7-A10 상품 고객 출시 승인)으로 고치길 요청"
+        },
+        {
+          "id": "FPW.13-A02",
+          "change": "modify",
+          "what": "시장별 Profile을 정의할 때 Profile의 확정 상태(CONFIRMED)가 1단계 VIN 구매 판정·주문의 시장 법적 승인 입력(Kill 게이트와 같은 원천)으로 쓰임을 적는다 — Profile이 없거나 검증 필요(VERIFY_REQUIRED)면 법적 승인 불충족(MARKET_NOT_APPROVED)이고, ADS Feature는 ADS Profile도 확정이어야 한다. 상태·승인 시장 변경은 Profile 새 버전으로만 반영해 판정 기록에 Profile 버전이 남게 하고, ADS-BE16 시장 기준선이 생기면 그 기준선으로 넘긴다"
+        },
+        {
+          "id": "FPW.13-A03",
+          "change": "modify",
+          "what": "Profile에 '검증 필요'로 남은 시장은 1단계 VIN 구매 판정·주문이 법적 승인 불충족(MARKET_NOT_APPROVED)으로 막히므로, 해소(확정) 기한과 담당을 정할 때 그 시장의 상품 출시 일정과 맞추고 상품 Owner에게도 알린다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "NEW:판매·주문 → 사용 준비 확인",
+          "name": "'차량 확인 필요' 지원 판정 건 처리",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-PLM",
+              "R-REG"
+            ],
+            "I": [
+              "R-PDA"
+            ]
+          },
+          "inputs": [
+            "VIN 지원 판정 4상태와 사유(시장 법적 승인·내부 상품 승인·형상 출처 별도 코드)"
+          ],
+          "outputs": [
+            "확인 결과와 고객 안내 기록(주문 확정 직전 재판정 결과 포함)",
+            "사유가 내부 상품 승인 기록 없음이면 차량 재보고가 아니라 상품 Owner(FPW.7-A10)에게 넘긴 기록"
+          ],
+          "why": "지원 판정 '차량 확인 필요'(판단 불가 — as-built·차량 보고 구성 모두 없음(AS_BUILT_UNKNOWN), OTA 설치 이벤트가 아직 없는 '업데이트 후 가능' 후보 등)를 구매 가능으로 표시하지 않으면, 그 건을 차량 재보고 요청(eligibility refresh)으로 다시 판정하고 고객에게 안내할 사람이 있어야 한다. 내부 상품 승인 기록이 없어 판단 불가가 된 건(D-ORC-5 전 시드 시장 외)은 차량 쪽에서 풀리지 않으므로 상품 Owner에게 넘긴다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.7-A11",
+          "why": "결정 D-ORC-5가 '상품 출시 승인'으로 가리킨 ID이지만 절차 모델에서는 Canary 활성화·단계적 확대 — 상품 × 시장 승인 기록은 FPW.7-A10에 넣었다"
+        }
+      ],
+      "newProcess": "판매·주문 → 사용 준비 확인",
+      "none": false,
+      "noneWhy": null,
+      "sha": "c4278f4f618c"
+    },
+    "ORC-BE03": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "lint-copy 금지 표현 규칙(확인 불가·판정 불명·판단 보류·확정 불가, '차단'·'보류' 단독, '사용 준비 완료', 동일 바이너리·전 시장 동시 승인, 5회차 추가 '차량 확인 중' 등) — 개발 하네스. '차량 확인 중'은 절차 모델 문장에 없다(workflows.json 0건). 같은 낱말의 절차 문장 충돌은 conflicts에 기록했다",
+      "sha": "5fbd690f6cc7"
+    },
+    "ORC-BE04": {
+      "activities": [],
+      "newActivities": [
+        {
+          "process": "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+          "name": "국가 이동 미리보기·동의 기록·권리 재판정",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당"
+            ],
+            "A": "R-REG",
+            "C": [
+              "R-LEG",
+              "R-SM"
+            ],
+            "I": [
+              "R-PO"
+            ]
+          },
+          "inputs": [
+            "여행·등록 국가 변경 구분(여행은 권리·정책 변경 0건)",
+            "대상 시장 Compliance Profile·시장 기준선"
+          ],
+          "outputs": [
+            "유지·전환·종료 기능과 비용 미리보기, 동의 기록",
+            "차량 적용 결과 대조(적용·미확인) — 등록 확인 증거 없이 확정하지 않음"
+          ],
+          "why": "주행 기능을 자동 변경하지 않으면서 시장 변경을 처리할 절차가 없다. 등록 확인 증거 없는 commit은 거부되고, commit 뒤 차량 대조 전에는 '미확인'(전환 완료 아님)이며, 목적 시장 재판정이 미리보기와 다르면 commit을 멈추고 다시 동의를 받는다"
+        },
+        {
+          "process": "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+          "name": "소유권 이전 승계 판정·권리 회수·이전 소유자 데이터 삭제",
+          "raci": {
+            "R": [
+              "NEW:고객 지원 담당"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-DPO",
+              "R-LEG"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "소유권 이전 신청",
+            "권리 귀속(차량·계정)·승계 가능 여부·약관 버전"
+          ],
+          "outputs": [
+            "디지털 기능 명세(승계·종료·남은 체험·추가 구매 필요, 불일치는 '확인 필요'와 지원 건)",
+            "이전 완료 판정(새 소유자 등록 + 차량 보고 대조 뒤)과 데이터 삭제 범위(플랫폼·차량 확인) 기록"
+          ],
+          "why": "승계 가능 여부·회수·삭제를 한 번에 판정하는 활동이 없다. 이전 심사 중은 이전 완료가 아니다. 디지털 기능 명세는 발행본(버전) 불변이며, 이전·인도 확인에서 발행본과 차량 보고가 다르면 '구성 불일치'로 지원 건을 연다"
+        },
+        {
+          "process": "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+          "name": "법인·플릿 반납 권리 회수·예외 목록 관리",
+          "raci": {
+            "R": [
+              "R-PDA"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-LEG",
+              "R-DPO"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "반납 차량·권리 주체(계약 ID) 정보"
+          ],
+          "outputs": [
+            "차량 보고로 확인된 권리 잔존 0과 미회수 예외 목록(오프라인·미보고 차량)"
+          ],
+          "why": "소유자·관리자·운전자·권리 주체가 분리되면 반납 시 회수 책임이 필요하다. 일괄 적용은 VIN마다 지원 판정해 '바로 가능' 밖 VIN을 제외 목록(사유)으로 남기고, 법인 관리자는 운전자 개인 계정 귀속 구독·이용 기록을 볼 수 없다(데이터 보호 담당 협의)"
+        },
+        {
+          "process": "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+          "name": "국가 이동 뒤 주행 관련 기능 검토(REVIEW_REQUIRED)",
+          "raci": {
+            "R": [
+              "R-SM"
+            ],
+            "A": "R-SM",
+            "C": [
+              "R-REG",
+              "R-FO"
+            ],
+            "I": [
+              "NEW:고객 지원 담당",
+              "R-PO"
+            ]
+          },
+          "why": "commit이 주행 관련(안전 등급) Feature를 자동 전환하지 않고 검토 필요(REVIEW_REQUIRED)로 남기므로, 목적 시장 기준선으로 유지·전환·종료를 판단할 담당이 필요하다. 미리보기에는 종료 기능별 대체 수단을 함께 보인다"
+        }
+      ],
+      "dismissed": [
+        {
+          "id": "FPW.7-A07",
+          "why": "LCY-010 규칙만 공유 — 형식승인·사용자 고지·활성 효력 조건 확인 문장은 그대로다"
+        }
+      ],
+      "newProcess": "권리 변동(국가 이동·소유권 이전·법인 반납)",
+      "none": false,
+      "noneWhy": null,
+      "sha": "fb9c7a3edade"
+    },
+    "ORC-BE05": {
+      "activities": [
+        {
+          "id": "FPW.9-A01",
+          "change": "modify",
+          "what": "VOC에서 나온 개선 후보를 다음 Feature Version과 배포에 연결하고, 수집 데이터는 동의 범위(consent_scope) 안의 것만 쓴다. 원인이 데이터 제공자(지도·충전사업자)면 Feature 개선 후보가 아니라 외부 조치 건으로 넘긴다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.9",
+          "name": "VOC 개선 반영 변경 안내 확인",
+          "raci": {
+            "R": [
+              "R-PO"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-FO",
+              "R-DPO",
+              "NEW:고객 지원 담당"
+            ],
+            "I": [
+              "R-OPS"
+            ]
+          },
+          "inputs": [
+            "VOC ↔ 개선 후보(Feature Version) ↔ 배포 연결",
+            "동의 범위 참조"
+          ],
+          "outputs": [
+            "변경 안내(release note) 발행 기록 — 차량 적용 확인 전에는 반영 완료로 안내하지 않음"
+          ],
+          "why": "개선이 배포돼도 VOC를 낸 고객에게 무엇이 바뀌었는지 안내하는 책임이 절차에 없다. 개선 배포 뒤 release note가 없으면 '변경 안내 미발행'으로 남고, 안내는 고객 상태의 '마지막 확인 이후 바뀐 점'으로 보인다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "10ac90743497"
+    },
+    "ORC-BE06": {
+      "activities": [
+        {
+          "id": "FPW.7-A10",
+          "change": "modify",
+          "what": "기존 차량군 제공 결정(승인·축소 버전·거부)이 없는 차량군은 고객 출시 승인 대상에 넣지 않는다"
+        }
+      ],
+      "newActivities": [
+        {
+          "process": "FPW.7",
+          "name": "기존 차량 제공 후보·지속 지원 범위 결정",
+          "raci": {
+            "R": [
+              "R-PDA"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-FO",
+              "R-PLM",
+              "R-SM"
+            ],
+            "I": [
+              "R-OPS",
+              "R-REL"
+            ]
+          },
+          "inputs": [
+            "기존 차량군·기대 효과·지원비 추정·축소 버전 여부"
+          ],
+          "outputs": [
+            "제공·미제공 결정과 지속 지원 범위",
+            "사후 관찰 지표 연결(지원 차량 실제 이용·실패·지원비, 미지원 사유별 문의)"
+          ],
+          "why": "출시된 차량군에 새 기능을 줄지(승인·축소 버전·거부)와 지원을 언제까지 할지 결정하는 활동이 없다. 결정 없는 차량군은 정책 대상 편입이 거부되고, 사후 관찰 지표가 연결되지 않으면 지속 지원은 '판단 불가(관찰 지표 미연결)'로 둔다 — 효과는 지표 계약으로만 판단한다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "6aed24388c94"
+    },
+    "ORC-BE07": {
+      "activities": [
+        {
+          "id": "FPW.2-A01",
+          "change": "modify",
+          "what": "후속 차종(다른 표시·연산·OS·지역)이 기존 자산을 재사용하면 차이 영역마다 영향 분석을 하고, 재사용 증거와 새 검증이 필요한 영역을 나눠 기록한다"
+        },
+        {
+          "id": "FPW.5-A06",
+          "change": "modify",
+          "what": "후속 차종의 차이 영역에 새 검증 결과가 없고 재사용(REUSED) 증거만 있으면 FAIL로 판정하고, 다른 config_set의 통과 결과는 대상 근거 수에 넣지 않는다"
+        },
+        {
+          "id": "FPW.10-A05",
+          "change": "modify",
+          "what": "재사용·인수 구현의 차이 보고에 원 차종과 차이 영역(표시·연산·OS·지역)을 함께 적는다"
+        },
+        {
+          "id": "FPW.7-A10",
+          "change": "modify",
+          "what": "고객 출시 승인을 브랜드별로 남겨, 그 브랜드 상품 승인 없는 다른 브랜드 대상 정책 발행이 거부되게 한다"
+        }
+      ],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "04267fde52fe"
+    },
+    "ORC-BE08": {
+      "activities": [],
+      "newActivities": [
+        {
+          "process": "FPW.12",
+          "name": "지표 계약 정의·계산 버전 승인",
+          "raci": {
+            "R": [
+              "R-PDA",
+              "R-OPS"
+            ],
+            "A": "R-PO",
+            "C": [
+              "R-SM",
+              "R-QA",
+              "R-DPO"
+            ],
+            "I": [
+              "R-FO"
+            ]
+          },
+          "inputs": [
+            "지표의 분모·제외 사유·성공 조건·관측 기간 키 초안(사용 준비 확인율·안전 종료 결과·과업 성공률·출시·국가 이동·장기 차량 지원·공통화 효과)",
+            "과업 정의(성공 기준: 정확성 조건·시간 한계·허용 오류, 담당)와 과업 세션 이벤트 계약(결과 4값·보고 누락) — 체험 평가의 실제 이용 세션 출처",
+            "안전 종료 시간 한계 = 차량 팀 확정값(그 전엔 '가정값')"
+          ],
+          "outputs": [
+            "지표 계약 버전(계산 버전·최신성 기준) — 출처가 연결되지 않은 지표(종료 결과·과업 세션·영향 차량)는 '출처 미연결 — 가정값'으로 성과에서 제외"
+          ],
+          "why": "사용 준비 확인율(차량 보고 기준, 준비 판정은 ORC-BE01 isReadyConfirmed)·안전 종료 결과·영향 차량 식별 정확도·과업 성공률 등 지표의 분모·제외 사유·결과 구간(배타, 합 = 분모)·계산 버전과 과업 정의(성공 기준·담당)를 누가 정하고 바꾸는지 절차에 없다(실측 전 가정값, 보고 누락 세션은 성공·실패 어느 쪽에도 넣지 않음, 확정 영향군이 없으면 판단 불가). 체험 평가의 실제 이용 세션은 과업 세션(ORC-BE08)이고 연결 전에는 출처 미연결이다. 사업 효과(effect_input)는 ORC-UI11 몫이다"
+        }
+      ],
+      "dismissed": [],
+      "newProcess": null,
+      "none": false,
+      "noneWhy": null,
+      "sha": "a53ca6426061"
+    },
+    "ORC-SIM01": {
+      "activities": [],
+      "newActivities": [],
+      "dismissed": [],
+      "newProcess": null,
+      "none": true,
+      "noneWhy": "가상 VIN 시연 시뮬레이터 — 시험·시연 하네스",
+      "sha": "5897091ae6c0"
+    }
+  },
+  "conflicts": [
+    {
+      "activity": "FPW.8-A10",
+      "text": "Canary Cohort부터 복원을 적용하고 차량이 다음 시동 자체 시험 뒤 활성으로 돌아왔는지 확인한다",
+      "principle": "복원 ≠ 활성화",
+      "designItem": "ADS-BE03",
+      "fix": "Canary Cohort부터 종료 차단 해제(해당 종료 사건의 종료 차단만)를 적용하고, 차량이 다음 시동 자체 시험 뒤 '복구 검증 완료(Available 후보)'를 보고했는지 확인한다. Active 여부는 차량 재판정 결과로 따로 기록하고, 활성화 불가도 정상 결과로 본다"
+    },
+    {
+      "activity": "FPW.8-A10",
+      "text": "사전에 정한 관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다",
+      "principle": "판단 불가 ≠ 정상 (P-4·P-9)",
+      "designItem": "ADS-BE12",
+      "fix": "사전에 정한 관측 기간 동안 중단 기준을 감시하고, 최신 관측이 충분하고 중단 기준에 걸리지 않을 때만 다음 Cohort로 넓힌다. '미확인'(관측 없음·기준 시간 초과)·'판단 불가'(근거·표본 부족)는 만족으로 보지 않고 확대 보류로 둔다"
+    },
+    {
+      "activity": "FPW.7-A11",
+      "text": "승인 범위 안에서 Canary Cohort부터 활성화를 적용한다",
+      "principle": "정책 ON ≠ Active",
+      "designItem": "ADS-UI01",
+      "fix": "승인 범위 안에서 Canary Cohort부터 활성화 정책을 발행하고, 노출은 차량이 보고한 실제 Active 대수로만 센다"
+    },
+    {
+      "activity": "FPW.7-A11",
+      "text": "관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다",
+      "principle": "판단 불가 ≠ 정상 (P-4·P-9)",
+      "designItem": "ADS-BE12",
+      "fix": "관측 기간 동안 중단 기준을 감시하고, 실제 Active 노출량과 최신 관측이 충분하며 중단 기준에 걸리지 않을 때만 다음 Cohort로 넓힌다. '미확인'·'판단 불가'(표본 하한 미달 포함)는 만족으로 보지 않고 확대 보류로 둔다"
+    },
+    {
+      "activity": "FPW.6-A06",
+      "text": "이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다",
+      "principle": "정책 ON ≠ Active",
+      "designItem": "ADS-UI01",
+      "fix": "이 배포는 패키지 전달(의도)까지이며, G7 승인 뒤 Canary부터 활성화를 허용하더라도 실제 Active 여부는 차량 보고로만 확인한다고 운영 조직에 알린다"
+    },
+    {
+      "activity": "FPW.8-A06",
+      "text": "차량별 전달·적용 상태를 유효한 상태 보고와 영속 저장 확인으로만 '적용'으로 본다",
+      "principle": "종료 요청 ≠ 종료 완료",
+      "designItem": "ADS-UI02",
+      "fix": "차량별 종료 결과를 배타 구간(MRC 도달·비활성 확인·전환 중·미수신·시간 초과·증거 부족)으로 나누고 요청·수신은 누적 단계로 따로 센다. 유효한 상태 보고에서 종료 완료(또는 정지 유지 근거가 있는 MRC 도달)와 영속 저장이 함께 확인된 차량만 '종료 확인'으로 센다. 수신 ACK만 있는 차량은 종료 확인으로 세지 않는다"
+    },
+    {
+      "activity": "FPW.8-A11",
+      "text": "시험 Cohort로 차단·복원 드릴을 수행해 전달 시간·적용률·보고 정확도를 잰다",
+      "principle": "종료 요청 ≠ 종료 완료 · P-13('차단' 단독)",
+      "designItem": "ADS-UI02",
+      "fix": "시험 Cohort로 긴급 차단·종료 차단 해제 드릴을 수행해 전달 시간과 수신률, 안전 종료 결과 배타 구간(MRC 도달·비활성 확인·전환 중·미수신·시간 초과·증거 부족)별 비율, 보고 정확도를 따로 잰다"
+    },
+    {
+      "activity": "FPW.8-A01",
+      "text": "확인 결과 이상이 아니면 사유를 남기고 이상 건을 기각한다",
+      "principle": "판단 불가 ≠ 정상 (P-4·P-9)",
+      "designItem": "ADS-BE12",
+      "fix": "최신 관측으로 이상이 아님이 확인될 때만 사유를 남기고 이상 건을 기각한다. 지표가 기준 시간을 넘어 지연되면 '미확인', 근거·표본이 부족하면 '판단 불가'로 이상 건을 열어 두고 기각하지 않는다"
+    },
+    {
+      "activity": "FPW.9-A04",
+      "text": "Retirement 단계가 순서대로 모두 기록되고 잔존 차량이 0이다",
+      "principle": "판단 불가 ≠ 정상 (P-4·P-9)",
+      "designItem": "ADS-LC02",
+      "fix": "Retirement 단계가 순서대로 모두 기록되고, 상태 보고로 확인된 잔존 차량이 0이며 보고가 없는 '미확인' 차량도 0이다"
+    },
+    {
+      "activity": "FPW.8-A02",
+      "text": "사유 분류·유효 등급·범위·누적 상한 대조가 차단 판단서에 있다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI02",
+      "fix": "사유 분류·종료 사건 ID·유효 등급·범위·누적 상한 대조가 긴급 차단 판단서에 있다"
+    },
+    {
+      "activity": "FPW.8-A03",
+      "text": "결함을 완화하는 F2 이상 안전 차단이면 시장별 리콜 번호나 봉쇄 결정 근거를 확보한다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI02",
+      "fix": "결함을 완화하는 F2 이상 안전 사유 긴급 차단이면 시장별 리콜 번호나 봉쇄 결정 근거를 확보한다"
+    },
+    {
+      "activity": "FPW.8-A03",
+      "text": "근거 ID를 운영 조직에 넘겨 차단 요청에 붙이게 한다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI02",
+      "fix": "근거 ID를 운영 조직에 넘겨 긴급 차단 요청에 붙이게 한다"
+    },
+    {
+      "activity": "FPW.8-A03",
+      "text": "안전 차단 요청에 붙일 리콜·봉쇄 근거 ID가 있다(근거가 없으면 게이트가 차단한다)",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI02",
+      "fix": "안전 사유 긴급 차단 요청에 붙일 리콜·봉쇄 근거 ID가 있다(근거가 없으면 게이트가 요청을 거부한다)"
+    },
+    {
+      "activity": "FPW.8-A05",
+      "text": "승인자 2명이 각자 개인 서명으로 승인한다. F2 이상 안전·보안 차단에는 Safety Manager가 반드시 포함된다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI02",
+      "fix": "승인자 2명이 각자 개인 서명으로 승인한다. F2 이상 안전·보안 사유 긴급 차단에는 Safety Manager가 반드시 포함된다"
+    },
+    {
+      "activity": "FPW.8-A07",
+      "text": "차단 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI02",
+      "fix": "긴급 차단 명령 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다"
+    },
+    {
+      "activity": "FPW.8-A08",
+      "text": "직전 차단 승인자를 복원 승인 후보에서 뺀다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-BE02",
+      "fix": "해당 종료 사건의 긴급 차단 승인자를 종료 차단 해제 승인 후보에서 뺀다"
+    },
+    {
+      "activity": "FPW.8-A09",
+      "text": "직전 차단을 승인하지 않은 승인자 2명이 개인 서명으로 승인한다. F2 이상은 Safety Manager가 포함된다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-BE02",
+      "fix": "해당 종료 사건의 긴급 차단을 승인하지 않은 승인자 2명이 개인 서명으로 종료 차단 해제를 승인한다. F2 이상은 Safety Manager가 포함된다"
+    },
+    {
+      "activity": "FPW.8-A09",
+      "text": "플랫폼 감사 원장이 차단 승인자와의 중복을 판정하므로 거부되면 다른 승인자로 다시 승인한다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-BE02",
+      "fix": "플랫폼 감사 원장이 긴급 차단 승인자와의 중복을 판정하므로 거부되면 다른 승인자로 다시 승인한다"
+    },
+    {
+      "activity": "FPW.8-A09",
+      "text": "복원 승인자 중 직전 차단 승인자가 없다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-BE02",
+      "fix": "종료 차단 해제 승인자 중 해당 종료 사건의 긴급 차단 승인자가 없다"
+    },
+    {
+      "activity": "FPW.8-A10",
+      "text": "이상이 보이면 확대를 멈추고 다시 차단 판단(A02)으로 넘긴다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI02",
+      "fix": "이상이 보이면 확대를 멈추고 다시 긴급 차단 판단(A02)으로 넘긴다"
+    },
+    {
+      "activity": "FPW.8-A11",
+      "text": "분기 차단 건의 추적표·사후 검토 결과와 드릴 결과를 묶어 운영 상태를 점검한다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI02",
+      "fix": "분기 종료 사건(긴급 차단 건)의 추적표·사후 검토 결과와 드릴 결과를 묶어 운영 상태를 점검한다"
+    },
+    {
+      "activity": "FPW.11-A01",
+      "text": "활성화·차단·복원·정책 서명 키를 용도별로 나눠 HSM에 보관하고 키 계층을 대장에 적는다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI13",
+      "fix": "활성화·긴급 차단·종료 차단 해제·정책 서명 키를 용도별로 나눠 HSM에 보관하고 키 계층을 대장에 적는다"
+    },
+    {
+      "activity": "FPW.11-A02",
+      "text": "교체 사유와 용도(정책·차단·복원)를 기록하고 Safety Manager에게 결과를 알린다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI13",
+      "fix": "교체 사유와 용도(정책·긴급 차단·종료 차단 해제)를 기록하고 Safety Manager에게 결과를 알린다"
+    },
+    {
+      "activity": "FPW.11-A03",
+      "text": "보안 사유 차단이 필요하면 FPW.8 차단 판단으로 Safety Manager에게 요청한다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI13",
+      "fix": "보안 사유 긴급 차단이 필요하면 FPW.8 긴급 차단 판단으로 Safety Manager에게 요청한다"
+    },
+    {
+      "activity": "FPW.11-A04",
+      "text": "위험도에 따라 보안 사유 차단 또는 업데이트를 정하고 CSMS에 대응 기한을 둔다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI13",
+      "fix": "위험도에 따라 보안 사유 긴급 차단 또는 업데이트를 정하고 CSMS에 대응 기한을 둔다"
+    },
+    {
+      "activity": "FPW.11-A04",
+      "text": "Kill 경로 구성요소의 취약점이면 최우선으로 처리하고 운영 조직과 차단 준비를 맞춘다",
+      "principle": "P-13 같은 낱말 두 원장 금지('차단' 단독 → 긴급 차단(요청)·종료 차단(상태)·종료 차단 해제(행위))",
+      "designItem": "ADS-UI13",
+      "fix": "Kill 경로 구성요소의 취약점이면 최우선으로 처리하고 운영 조직과 긴급 차단 준비를 맞춘다"
+    },
+    {
+      "activity": "FPW.12-A05",
+      "text": "열린 Incident·이상 건에 연결된 데이터는 삭제에서 제외한다",
+      "principle": "P-13 같은 낱말 두 원장 금지('사건' → 종료 사건·ADS 사건·지원 건)",
+      "designItem": "ADS-BE13",
+      "fix": "열린 종료 사건·ADS 사건·지원 건·이상 징후 건과 보고 기한이 남은 ADS 사건 보고·정기 보고에 연결된 데이터는 삭제에서 제외한다"
+    },
+    {
+      "activity": "FPW.10-A02",
+      "text": "법규 담당이 당국 보고·리콜 판단·사건 조사에 필요한 안전 정보의 제공 범위와 기한을 정해 넣는다",
+      "principle": "P-13 같은 낱말 두 원장 금지('사건' → 종료 사건·ADS 사건·지원 건)",
+      "designItem": "ADS-BE13",
+      "fix": "법규 담당이 당국 보고(ADS 사건 보고)·리콜 판단·ADS 사건 조사에 필요한 안전 정보의 제공 범위와 기한을 정해 넣는다"
+    },
+    {
+      "activity": "FPW.8-A06",
+      "text": "기한 안에 적용되지 않은 차량은 이상 징후 건으로 넘긴다",
+      "principle": "종료 요청 ≠ 종료 완료",
+      "designItem": "ADS-UI02",
+      "fix": "기한 안에 종료 확인되지 않은 차량(미수신·시간 초과·증거 부족)은 이상 징후 건으로 넘긴다"
+    },
+    {
+      "activity": "FPW.8-A06",
+      "text": "기한 초과 미적용 차량마다 연결된 이상 징후 건이 있다",
+      "principle": "종료 요청 ≠ 종료 완료",
+      "designItem": "ADS-UI02",
+      "fix": "기한까지 종료 확인되지 않은 차량마다 연결된 이상 징후 건이 있다"
+    },
+    {
+      "activity": "FPW.8-A08",
+      "text": "복원 범위와 시작 Canary Cohort를 정해 복원을 요청한다",
+      "principle": "P-13 '종료 차단 해제'(행위) — 같은 행위를 '복원'으로 따로 부르면 해제·복구 검증·재활성화가 섞인다(복원 ≠ 활성화)",
+      "designItem": "ADS-BE02",
+      "fix": "해제할 종료 사건 범위와 시작 Canary Cohort를 정해 종료 차단 해제를 요청한다"
+    },
+    {
+      "activity": "FPW.8-A08",
+      "text": "복원 요청에 재검증 Evidence 참조와 Canary Cohort가 있다",
+      "principle": "P-13 '종료 차단 해제'(행위) — 같은 행위를 '복원'으로 따로 부르면 해제·복구 검증·재활성화가 섞인다(복원 ≠ 활성화)",
+      "designItem": "ADS-BE02",
+      "fix": "종료 차단 해제 요청에 종료 사건 ID·재검증 Evidence 참조·Canary Cohort가 있다"
+    },
+    {
+      "activity": "FPW.8-A09",
+      "text": "두 번째 승인 뒤 게이트 판정과 복원 게시 ID를 확인한다",
+      "principle": "P-13 '종료 차단 해제'(행위) — 같은 행위를 '복원'으로 따로 부르면 해제·복구 검증·재활성화가 섞인다(복원 ≠ 활성화)",
+      "designItem": "ADS-BE03",
+      "fix": "두 번째 승인 뒤 게이트 판정과 종료 차단 해제 게시 ID를 확인한다(해제 승인은 활성화 허가가 아니다)"
+    },
+    {
+      "activity": "FPW.13-A04",
+      "text": "원격 종료·복원 방법을 시스템 설명 문서에 적는다",
+      "principle": "P-13 '종료 차단 해제'(행위) — 같은 행위를 '복원'으로 따로 부르면 해제·복구 검증·재활성화가 섞인다(복원 ≠ 활성화)",
+      "designItem": "ADS-BE03",
+      "fix": "원격 종료(긴급 차단)와 종료 사건 단위 종료 차단 해제 방법을, 해제 뒤 차량 재판정을 거쳐야 Active가 된다는 조건과 함께 시스템 설명 문서에 적는다"
+    },
+    {
+      "activity": "FPW.9-A01",
+      "text": "분기 드릴·복원 관측·이상 징후 결과에서 개선 항목을 추린다",
+      "principle": "P-13 '종료 차단 해제'(행위) — 같은 행위를 '복원'으로 따로 부르면 해제·복구 검증·재활성화가 섞인다(복원 ≠ 활성화)",
+      "designItem": "ADS-BE03",
+      "fix": "분기 드릴·종료 차단 해제 뒤 관측·이상 징후 결과에서 개선 항목을 추린다"
+    },
+    {
+      "activity": "FPW.12-A05",
+      "text": "삭제 기록에 범주별 건수와 보류 사유가 있다",
+      "principle": "P-13 '보류' 단독 금지(전달 보류·확대 보류·설치 보류·품질 보류와 섞임)",
+      "designItem": "ADS-BE13",
+      "fix": "삭제 기록에 범주별 삭제 건수와 삭제 제외 사유(연결된 종료 사건·ADS 사건·지원 건·이상 징후 건·보고 기한)가 있다"
+    },
+    {
+      "activity": "FPW.6-A03",
+      "text": "형식승인 영향이 있으면 승인 기관의 개정·확장 결정이 나왔는지 확인하고, 없으면 배포를 보류시킨다",
+      "principle": "P-13 '보류' 단독 금지 — 차량의 전달 보류(DEFERRED)와 섞임",
+      "designItem": "ADS-UI09",
+      "fix": "형식승인 영향이 있으면 승인 기관의 개정·확장 결정이 나왔는지 확인하고, 없으면 SUMS 기록에 '기관 결정 없음'을 남겨 OTA Gate가 통과되지 않게 한다(배포하지 않음)"
+    },
+    {
+      "activity": "FPW.3-A02",
+      "text": "F2 이상 Feature에 연결되지 않은 요구가 남아 있으면 판정 요청을 보류한다",
+      "principle": "P-9 검토·Gate 전은 미판정 · P-13 '보류' 단독 금지",
+      "designItem": "ADS-UI10",
+      "fix": "F2 이상 Feature에 연결되지 않은 요구가 남아 있으면 판정을 요청하지 않고 미판정으로 둔다"
+    },
+    {
+      "activity": "FPW.2-A02",
+      "text": "각 분석의 결과(위험 사건·위협 시나리오)를 상대 분석에 넘겨 교차 검토하고 반영 내용을 기록한다",
+      "principle": "P-13 '사건'은 종료 사건·ADS 사건만 — HARA의 hazardous event를 '사건'으로 부르지 않음",
+      "designItem": "ADS-UI13",
+      "fix": "각 분석의 결과(위험 사상(hazardous event)·위협 시나리오)를 상대 분석에 넘겨 교차 검토하고 반영 내용을 기록한다"
+    }
+  ],
+  "newRoles": [
+    {
+      "name": "고객 지원 담당",
+      "why": "VIN 지원 판정 '차량 확인 필요' 건, 고객에게 보이는 상태 안내, 국가 이동·소유권 이전 처리, 지원 건 접수·정비 인계를 맡을 역할이 workflows.json에 없다(R-OPS는 운행 감시·긴급 차단 담당). D-ADS-7이 신설을 제안한 2개 중 하나",
+      "items": [
+        "ADS-BE10",
+        "ORC-UI02",
+        "ORC-UI03",
+        "ORC-UI05",
+        "ORC-UI06",
+        "ORC-UI08",
+        "ORC-UI09",
+        "ORC-BE02",
+        "ORC-BE04",
+        "ORC-BE05"
+      ]
+    },
+    {
+      "name": "정비 거점 담당",
+      "why": "정비 이관을 받는 외부(서비스 센터) 역할 — 인계와 해결 확인을 분리하려면 RACI에 있어야 한다. D-ADS-7이 신설을 제안한 2개 중 하나",
+      "items": [
+        "ORC-UI09"
+      ]
+    }
+  ],
+  "newProcesses": [
+    {
+      "name": "판매·주문 → 사용 준비 확인",
+      "items": [
+        "ORC-UI01",
+        "ORC-UI02",
+        "ORC-UI04",
+        "ORC-UI08",
+        "ORC-BE01",
+        "ORC-BE02"
+      ],
+      "roles": [
+        "NEW:고객 지원 담당",
+        "R-FO",
+        "R-LEG",
+        "R-OPS",
+        "R-PDA",
+        "R-PLM",
+        "R-PO",
+        "R-QA",
+        "R-REG"
+      ]
+    },
+    {
+      "name": "권리 변동(국가 이동·소유권 이전·법인 반납)",
+      "items": [
+        "ORC-UI05",
+        "ORC-UI06",
+        "ORC-UI07",
+        "ORC-BE04"
+      ],
+      "roles": [
+        "NEW:고객 지원 담당",
+        "R-DPO",
+        "R-FO",
+        "R-LEG",
+        "R-OPS",
+        "R-PDA",
+        "R-PO",
+        "R-REG",
+        "R-SM"
+      ]
+    },
+    {
+      "name": "고객 지원 건 → 정비 이관 → 해결 확인",
+      "items": [
+        "ORC-UI03",
+        "ORC-UI09"
+      ],
+      "roles": [
+        "NEW:고객 지원 담당",
+        "NEW:정비 거점 담당",
+        "R-DPO",
+        "R-OPS",
+        "R-PO",
+        "R-QA",
+        "R-REG",
+        "R-SM"
+      ]
+    }
+  ],
+  "roleSummary": {
+    "NEW:고객 지원 담당": {
+      "modify": 0,
+      "new": 8,
+      "processes": [
+        "NEW:고객 지원 건 → 정비 이관 → 해결 확인",
+        "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+        "NEW:판매·주문 → 사용 준비 확인"
+      ]
+    },
+    "NEW:정비 거점 담당": {
+      "modify": 0,
+      "new": 1,
+      "processes": [
+        "NEW:고객 지원 건 → 정비 이관 → 해결 확인"
+      ]
+    },
+    "R-ARC": {
+      "modify": 2,
+      "new": 1,
+      "processes": [
+        "FPW.4"
+      ]
+    },
+    "R-CSM": {
+      "modify": 4,
+      "new": 1,
+      "processes": [
+        "FPW.11",
+        "FPW.13",
+        "FPW.8"
+      ]
+    },
+    "R-FO": {
+      "modify": 5,
+      "new": 0,
+      "processes": [
+        "FPW.1",
+        "FPW.7",
+        "FPW.9"
+      ]
+    },
+    "R-INT": {
+      "modify": 2,
+      "new": 4,
+      "processes": [
+        "FPW.10",
+        "FPW.2",
+        "FPW.6",
+        "FPW.9"
+      ]
+    },
+    "R-OPS": {
+      "modify": 9,
+      "new": 9,
+      "processes": [
+        "FPW.12",
+        "FPW.13",
+        "FPW.7",
+        "FPW.8",
+        "FPW.9",
+        "NEW:고객 지원 건 → 정비 이관 → 해결 확인"
+      ]
+    },
+    "R-PDA": {
+      "modify": 1,
+      "new": 7,
+      "processes": [
+        "FPW.12",
+        "FPW.7",
+        "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+        "NEW:판매·주문 → 사용 준비 확인"
+      ]
+    },
+    "R-PKI": {
+      "modify": 1,
+      "new": 0,
+      "processes": [
+        "FPW.11"
+      ]
+    },
+    "R-PLM": {
+      "modify": 2,
+      "new": 1,
+      "processes": [
+        "FPW.1",
+        "FPW.6"
+      ]
+    },
+    "R-PO": {
+      "modify": 2,
+      "new": 12,
+      "processes": [
+        "FPW.12",
+        "FPW.7",
+        "FPW.9",
+        "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)",
+        "NEW:판매·주문 → 사용 준비 확인"
+      ]
+    },
+    "R-QA": {
+      "modify": 6,
+      "new": 2,
+      "processes": [
+        "FPW.10",
+        "FPW.11",
+        "FPW.5",
+        "FPW.7",
+        "FPW.8",
+        "FPW.9"
+      ]
+    },
+    "R-REG": {
+      "modify": 8,
+      "new": 5,
+      "processes": [
+        "FPW.1",
+        "FPW.12",
+        "FPW.13",
+        "FPW.2",
+        "FPW.6",
+        "FPW.7",
+        "FPW.8",
+        "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)"
+      ]
+    },
+    "R-REL": {
+      "modify": 4,
+      "new": 1,
+      "processes": [
+        "FPW.6",
+        "FPW.7",
+        "FPW.9"
+      ]
+    },
+    "R-REQ": {
+      "modify": 1,
+      "new": 0,
+      "processes": [
+        "FPW.3"
+      ]
+    },
+    "R-SM": {
+      "modify": 16,
+      "new": 11,
+      "processes": [
+        "FPW.1",
+        "FPW.12",
+        "FPW.13",
+        "FPW.2",
+        "FPW.3",
+        "FPW.4",
+        "FPW.5",
+        "FPW.7",
+        "FPW.8",
+        "FPW.9",
+        "NEW:권리 변동(국가 이동·소유권 이전·법인 반납)"
+      ]
+    },
+    "R-TST": {
+      "modify": 3,
+      "new": 1,
+      "processes": [
+        "FPW.10",
+        "FPW.5"
+      ]
+    }
+  }
+}

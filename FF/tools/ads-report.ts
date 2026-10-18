@@ -6,11 +6,13 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { FF, readJson } from './lib.ts';
 import { CATALOG, REVIEW, OUT, verdictCounts, type AdsCatalog, type AdsReview } from './ads-sync.ts';
+import { FILES as TEAM, openConflicts, teamProblems, type Fit, type Ux, type Wf, type Workflows } from './ads-team.ts';
 import { CATALOG as ORCA_CATALOG, REVIEW as ORCA_REVIEW, metricName, type OrcaCatalog, type OrcaReview } from './orca-sync.ts';
 
 export const DESIGN = join(OUT, 'design.json');
 export const HTML = join(FF, '..', 'docs', '10-requirements', 'ads-unece-v3', 'report.html');
 export const BACKLOG = join(FF, 'BACKLOG.md');
+const WORKFLOWS_JSON = join(FF, '..', 'docs', '65-workflows', 'out', 'workflows.json');
 const BEGIN = '<!-- ads:begin (tools/ads-report.ts가 harness/ads/design.json에서 생성 — 직접 고치지 말 것) -->';
 const END = '<!-- ads:end -->';
 
@@ -31,6 +33,8 @@ interface Item {
   coord: string;
   /** Orca R3 사례·HT ID(B02·C2·HT01 …) */
   cases?: string[];
+  /** 후속 교체 입력 — 뒤 단계 항목이 생기면 바꿔 쓸 입력(그 전에는 대체값). deps와 달리 단계 순서를 막지 않는다 */
+  later?: string[];
 }
 export interface Design {
   title: string;
@@ -49,6 +53,32 @@ export interface Orca {
   c: OrcaCatalog;
   r: OrcaReview | null;
 }
+/** db 칸 한 줄이 신설하는 테이블 — "name", "name 신설", "name(열…)", "name — 설명". 열 추가("x에 …", "x.y", "x 열 추가")는 신설이 아니다 */
+export function declaredTables(line: string): string[] {
+  return line
+    .replace(/\([^)]*\)|\{[^}]*\}/g, '')
+    .split(/[,·;]/)
+    .map((s) => s.trim().replace(/\.$/, ''))
+    .flatMap((s) => /^([a-z][a-z0-9_]+)(\s*신설)?(\s*—.*)?$/.exec(s)?.[1] ?? []);
+}
+
+/** 설계 문장에 남은 반영 지시문 — "deps에 X", "cases에 X 추가", "… 삭제 —", "…로 옮긴다" */
+export const INSTRUCTION = /deps(에| 배열)|cases에|(추가|삭제|제거)\s*—|(으로|로) 옮(긴다|겨)|— deps |(?:ADS|ORC)-[A-Z]+\d{2}[^.]{0,40}\s추가($|\()|(?:\b[BCR]\d{1,2}\b|HT\d{2}|metric:)[^.]{0,60}\s추가$/;
+
+/** 두 문장이 거의 같은가 — 공백·기호를 뺀 글자 2-gram의 겹침(작은 쪽 기준) 0.8 이상 */
+export function nearDuplicate(a: string, b: string): boolean {
+  const grams = (s: string) => {
+    const t = s.replace(/[\s.,·()'"→:—-]/g, '');
+    return new Set(Array.from({ length: Math.max(0, t.length - 1) }, (_, k) => t.slice(k, k + 2)));
+  };
+  const x = grams(a);
+  const y = grams(b);
+  if (x.size < 8 || y.size < 8) return false;
+  let n = 0;
+  for (const g of x) if (y.has(g)) n++;
+  return n / Math.min(x.size, y.size) >= 0.8;
+}
+
 export function designProblems(c: AdsCatalog, r: AdsReview, d: Design, orca: Orca | null = null): string[] {
   const p: string[] = [];
   const ids = new Set(d.items.map((i) => i.id));
@@ -73,13 +103,40 @@ export function designProblems(c: AdsCatalog, r: AdsReview, d: Design, orca: Orc
   const fixes = d.items.filter((i) => i.defect);
   for (const [k, v] of Object.entries(r.requirements)) if (v.defect && !fixes.some((i) => i.req.includes(k))) p.push(`${k} 결함을 고치는 [결함] 설계 항목이 없음`);
   for (const [k, v] of Object.entries(orca?.r?.items ?? {})) if (v.defect && !fixes.some((i) => i.cases?.includes(k))) p.push(`Orca ${k} 결함을 고치는 [결함] 설계 항목이 없음(cases)`);
+  // 선행 항목은 같은 단계나 앞 단계에 있어야 한다 — 앞 단계 항목이 뒤 단계를 기다리면 단계 완료 조건을 못 지킨다
+  const phaseOf = new Map(d.phases.flatMap((x, n) => x.items.map((id) => [id, n] as const)));
+  for (const i of d.items) for (const dep of i.deps) if ((phaseOf.get(dep) ?? -1) > (phaseOf.get(i.id) ?? Infinity)) p.push(`${i.id}(${phaseOf.get(i.id)}단계)의 선행 ${dep}가 더 뒤 ${phaseOf.get(dep)}단계에 있음`);
+  // 후속 교체 입력(later)은 실재하고 정말 뒤 단계여야 한다 — 같은·앞 단계면 deps로
+  for (const i of d.items)
+    for (const x of i.later ?? []) {
+      if (!ids.has(x)) p.push(`${i.id}의 후속 교체 입력 ${x}가 없음`);
+      else if ((phaseOf.get(x) ?? -1) <= (phaseOf.get(i.id) ?? -1)) p.push(`${i.id}의 후속 교체 입력 ${x}는 같은·앞 단계 — deps로`);
+      if (i.deps.includes(x)) p.push(`${i.id}: ${x}가 deps와 later에 함께 있음`);
+    }
+  // DB 테이블 신설은 한 항목만 — 다른 항목은 그 항목을 선행으로 둔다
+  const owners = new Map<string, string[]>();
+  for (const i of d.items) for (const t of new Set(i.db.flatMap(declaredTables))) owners.set(t, [...(owners.get(t) ?? []), i.id]);
+  for (const [t, ids] of owners) if (ids.length > 1) p.push(`DB ${t}를 ${ids.join('·')}가 함께 신설 — 소유 항목 하나로`);
+  // 반영 실수 — db·api 칸에 지시문이 들어가거나, 같은 칸에 거의 같은 문장이 두 줄
+  const FIELDS = ['ui', 'fe', 'be', 'tests'] as const;
+  for (const i of d.items) {
+    for (const f of ['db', 'api'] as const) for (const x of i[f]) if (/\bdeps\b|(?:ADS|ORC)-[A-Z]+\d{2}/.test(x)) p.push(`${i.id} ${f} 칸에 지시문·설계 ID — "${x.slice(0, 50)}"(의존은 deps 배열로)`);
+    // 반영 지시문이 본문으로 남은 것 — 의존·연결은 deps·cases 배열로, 바꾸기·지우기는 문장 자체를 고친다
+    for (const f of FIELDS) for (const x of i[f]) if (INSTRUCTION.test(x)) p.push(`${i.id} ${f} 칸에 반영 지시문 — "${x.slice(0, 60)}"`);
+    // 화면에 나갈 설계 문장(ui·fe)의 '모름' 금지 표기(P-9)
+    for (const f of ['ui', 'fe'] as const) for (const x of i[f]) if (/확인 불가|판정 불명|판단 보류|확정 불가/.test(x)) p.push(`${i.id} ${f} 칸에 '모름' 금지 표기(P-9) — "${x.slice(0, 60)}"`);
+    for (const f of FIELDS) {
+      const xs = i[f];
+      for (let a = 0; a < xs.length; a++) for (let b = a + 1; b < xs.length; b++) if (nearDuplicate(xs[a], xs[b])) p.push(`${i.id} ${f} 칸에 거의 같은 문장 두 줄 — "${xs[b].slice(0, 50)}"`);
+    }
+  }
   // 단계 완료 조건에 적은 "결함 N건"은 [결함] 항목 수와 같아야 한다
   for (const x of d.phases) for (const m of x.exit.matchAll(/결함 (\d+)건/g)) if (Number(m[1]) !== fixes.length) p.push(`단계 '${x.phase}' 완료 조건의 결함 ${m[1]}건 ≠ [결함] 항목 ${fixes.length}개`);
   return p;
 }
 
 // ── HTML ──
-const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const esc = (s: string | null | undefined) => (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const VERDICT = {
   구현: { cls: 'v-ok', icon: '✓' },
   부분: { cls: 'v-part', icon: '◐' },
@@ -150,8 +207,71 @@ ${groups.map((g) => `<h3 style="margin-top:14px">${g} 사례</h3><table><thead><
   return { nav: '<a href="#orca">Orca 사례 25</a>', html, summary };
 }
 
-export function renderHtml(c: AdsCatalog, r: AdsReview, d: Design, orca: Orca | null = null): string {
+/** 하네스 멤버 검토 결과 — ads-team.ts가 검사하고, 여기서는 보인다 */
+export interface Team {
+  ux: Ux | null;
+  wf: Wf | null;
+  fit: Fit | null;
+  workflows: Workflows | null;
+  problems: string[];
+  log?: { rounds: { round: number; design: string; ux: { blocker: number; major: number }; fitAds: Record<string, number>; fitOrca: Record<string, number>; workflow: Record<string, number>; itemIssues: number; applied: string }[] } | null;
+}
+function renderTeam(t: Team, r: AdsReview, d: Design): { nav: string; html: string } {
+  if (!t.ux && !t.wf && !t.fit) return { nav: '', html: '' };
+  const vc = verdictCounts(r);
+  const sev = (fs: { severity: string; status?: string }[]) => ['blocker', 'major', 'minor'].map((s) => fs.filter((f) => f.severity === s && f.status !== 'resolved').length).join(' · ');
+  const uxF = t.ux ? Object.values(t.ux.items).flatMap((i) => i.findings) : [];
+  const fitAll = t.fit ? [...Object.values(t.fit.ads), ...Object.values(t.fit.orca)] : [];
+  const cov = (x: string) => fitAll.filter((f) => f.covers === x).length;
+  const acts = t.workflows?.processes.flatMap((p) => p.activities) ?? [];
+  const roleName = (id: string) => (t.workflows?.roles as { id: string; name?: string }[] | undefined)?.find((x) => x.id === id)?.name ?? id;
+  const wfItems = Object.values(t.wf?.items ?? {});
+  const modified = new Set(wfItems.flatMap((i) => i.activities.map((a) => a.id)));
+  const newActs = wfItems.flatMap((i) => i.newActivities);
+  const byRole = new Map<string, { m: Set<string>; n: number }>();
+  const bump = (role: string, m?: string) => {
+    const e = byRole.get(role) ?? { m: new Set<string>(), n: 0 };
+    if (m) e.m.add(m);
+    else e.n++;
+    byRole.set(role, e);
+  };
+  for (const id of modified) {
+    const a = acts.find((x) => x.id === id);
+    if (a) for (const role of new Set([...a.raci.R, a.raci.A])) bump(role, id);
+  }
+  for (const n of newActs) for (const role of new Set([...n.raci.R, n.raci.A])) bump(role);
+  const open = t.wf && t.workflows ? openConflicts(t.wf, t.workflows) : [];
+  const status = t.problems.length ? `<span class="badge v-miss">검사 실패 ${t.problems.length}건</span>` : '<span class="badge v-ok">검사 통과</span>';
+  const members = [
+    ['판정(코드 대조)', '요건 64·Orca 45를 코드·시험과 대조', 'harness/ads·orca review.json', `구현 ${vc.구현} · 부분 ${vc.부분} · 미구현 ${vc.미구현} · 범위 밖 ${vc['범위 밖']}`],
+    ['적대적 재검증', "'구현' 판정을 시험 단언까지 반대 입장에서 다시 확인", 'review.json(판정 갱신)', `구현 7 → ${vc.구현}`],
+    ['결함 기록 점검', 'it.fails가 요구 단언에서 실패하는지(tools/defect-probes.ts)', 'verify ads:probes', `결함 ${vc.defects}건 + 기능명세서 기록`],
+    ['UI/UX 디자이너', '화면 설계안: 핵심 메시지·상태(판단 불가 포함)·행동과 막힘 사유·공통 부품·접근성·금지 표현', 'harness/ads/ux.json', t.ux ? `항목 ${Object.keys(t.ux.items).length} · 공통 부품 ${Object.keys(t.ux.components).length} · 열린 발견 blocker·major·minor ${sev(uxF)}` : '검토 전'],
+    ['업무 절차 담당', '설계 항목 ↔ 담당자 절차 활동(FPW) 연결, 절차 문장과 원칙 충돌', 'harness/ads/workflow.json', t.wf ? `바뀌는 활동 ${modified.size} · 새 활동 ${newActs.length} · 새 절차 후보 ${t.wf.newProcesses.length} · 새 역할 후보 ${t.wf.newRoles.length} · 문장 충돌 ${t.wf.conflicts.length}(모델에 남음 ${open.length})` : '검토 전'],
+    ['설계 적합성 검토', '부분·미구현 요건마다 설계가 합격 조건을 닫는지 반대 입장에서', 'harness/ads/fit.json', t.fit ? `닫음 ${cov('yes')} · 일부 ${cov('partial')} · 못 닫음 ${cov('no')}` : '검토 전'],
+  ];
+  const roles = [...byRole.entries()].sort((a, b) => b[1].m.size + b[1].n - (a[1].m.size + a[1].n));
+  const html = `
+<section id="team"><h2>하네스 멤버 검토 — 구현 전에 여러 역할이 설계를 검토하고, 그 결과를 기계가 검사</h2>
+<p>검토마다 대상 설계 항목의 해시를 남긴다. 설계를 고치면 그 항목은 다시 검토할 때까지 verify가 실패한다(<code>node tools/ads-team.ts --stale</code>). ${status}</p>
+<table><thead><tr><th>멤버</th><th>무엇을 보나</th><th>산출물</th><th>결과</th></tr></thead><tbody>${members.map((m) => `<tr><td class="nw"><b>${esc(m[0])}</b></td><td>${esc(m[1])}</td><td class="mono">${esc(m[2])}</td><td>${esc(m[3])}</td></tr>`).join('')}</tbody></table>
+${t.log?.rounds.length ? `<h3 style="margin-top:16px">회차별 추이 — 검토 → 설계 반영 → 다시 검토</h3><table><thead><tr><th>회차</th><th>설계</th><th>UX blocker · major</th><th>적합성 ADS<br><span class="sub">닫음·일부·못 닫음</span></th><th>적합성 Orca</th><th>절차<br><span class="sub">바뀜·새·문장 충돌</span></th><th>항목 문제</th><th>그 뒤 반영</th></tr></thead><tbody>${t.log.rounds.map((x) => `<tr><td class="nw">${x.round}회차</td><td class="nw">${esc(x.design)}</td><td class="nw">${x.ux.blocker} · ${x.ux.major}</td><td class="nw">${x.fitAds.yes} · ${x.fitAds.partial} · ${x.fitAds.no}</td><td class="nw">${x.fitOrca.yes} · ${x.fitOrca.partial} · ${x.fitOrca.no}</td><td class="nw">${x.workflow.modified} · ${x.workflow.new} · ${x.workflow.conflicts}</td><td>${x.itemIssues}</td><td>${esc(x.applied)}</td></tr>`).join('')}</tbody></table>` : ''}
+${t.problems.length ? `<details><summary>검사 실패 ${t.problems.length}건</summary><ul>${t.problems.slice(0, 80).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}
+${roles.length ? `<h3 style="margin-top:16px">담당자별로 바뀌는 업무 절차</h3><table><thead><tr><th>담당(R·A)</th><th>바뀌는 활동</th><th>새 활동</th><th>활동 ID</th></tr></thead><tbody>${roles.map(([role, e]) => `<tr><td class="nw"><b>${esc(roleName(role))}</b><div class="sub mono">${esc(role)}</div></td><td>${e.m.size}</td><td>${e.n}</td><td class="mono wrap">${esc([...e.m].sort().join(' · '))}</td></tr>`).join('')}</tbody></table>` : ''}
+${t.wf?.conflicts.length ? `<h3 style="margin-top:16px">절차 문장이 원칙과 부딪히는 곳 — 절차 모델 소유 세션이 고친다</h3><table><thead><tr><th>활동</th><th>지금 문장</th><th>원칙</th><th>고칠 문장</th><th>설계</th></tr></thead><tbody>${t.wf.conflicts.map((x) => `<tr><td class="mono">${esc(x.activity)}${open.includes(x) ? '' : '<div class="sub">반영됨</div>'}</td><td>${esc(x.text)}</td><td class="nw">${esc(x.principle)}</td><td>${esc(x.fix)}</td><td class="mono">${link(x.designItem)}</td></tr>`).join('')}</tbody></table>` : ''}
+${t.wf?.newProcesses.length || t.wf?.newRoles.length ? `<h3 style="margin-top:16px">새 절차·새 역할 후보 (결정 필요 — 역할을 늘리면 IAM·데모 계정·정합성 게이트도 바뀐다)</h3><ul>${(t.wf?.newProcesses ?? []).map((x) => `<li><b>${esc(x.name)}</b> — ${x.items.map(link).join(' ')} · ${esc(x.roles.join(', '))}</li>`).join('')}${(t.wf?.newRoles ?? []).map((x) => `<li>역할 <b>${esc(x.name)}</b> — ${esc(x.why)}</li>`).join('')}</ul>` : ''}
+${t.ux ? `<h3 style="margin-top:16px">UI/UX 디자이너 — 화면별 확정안</h3><table><thead><tr><th>설계</th><th>화면</th><th>핵심 메시지 초안 · 머리 설명</th><th>판단 불가일 때</th><th>열린 발견<br><span class="sub">blocker·major·minor</span></th></tr></thead><tbody>${Object.entries(t.ux.items).map(([id, u]) => `<tr><td class="mono nw">${link(id)}</td><td class="mono">${u.screens.map((s) => `${esc(s.path)}${s.kind === 'new' ? ' <span class="pill">신설</span>' : ''}`).join('<br>')}</td><td><b>${esc(u.keyMessage)}</b><div class="sub">${esc(u.lead)}</div></td><td>${esc(u.states.unknown ?? '—')}</td><td class="nw">${sev(u.findings)}</td></tr>`).join('')}</tbody></table>
+<h3 style="margin-top:16px">공통 부품 — 여러 화면이 같은 개념을 같은 부품으로</h3><table><thead><tr><th>부품</th><th>용도</th><th>기존 파일</th><th>쓰는 설계</th></tr></thead><tbody>${Object.entries(t.ux.components).map(([n, c]) => `<tr><td class="nw"><b>${esc(n)}</b></td><td>${esc(c.purpose)}</td><td class="mono">${esc(c.existing ?? '신설')}</td><td class="mono wrap">${c.usedBy.map(link).join(' ')}</td></tr>`).join('')}</tbody></table>` : ''}
+${t.fit ? `<h3 style="margin-top:16px">설계 적합성 — 합격 조건을 아직 일부만 닫는 요건</h3><details><summary>일부 ${cov('partial')} · 못 닫음 ${cov('no')}</summary><table><thead><tr><th>요건·사례</th><th>판정</th><th>빠진 것</th></tr></thead><tbody>${[...Object.entries(t.fit.ads), ...Object.entries(t.fit.orca)].filter(([, f]) => f.covers !== 'yes').map(([k, f]) => `<tr><td class="mono nw">${esc(k)}</td><td class="nw">${f.covers === 'no' ? '<span class="badge v-miss">못 닫음</span>' : '<span class="badge v-part">일부</span>'}</td><td>${esc(f.missing ?? '')}</td></tr>`).join('')}</tbody></table></details>` : ''}
+${t.fit?.itemIssues.some((x) => x.status === 'declined') ? `<h3 style="margin-top:16px">회차를 멈추며 남긴 설계 항목 문제 — 구현 착수 전 상세 설계에서 닫는다</h3><table><thead><tr><th>항목</th><th>문제</th><th>고칠 방향</th></tr></thead><tbody>${t.fit.itemIssues.filter((x) => x.status === 'declined').map((x) => `<tr><td class="mono nw">${esc(x.item)}</td><td>${esc(x.issue)}</td><td>${esc(x.fix)}</td></tr>`).join('')}</tbody></table>` : ''}
+</section>`;
+  void d;
+  return { nav: '<a href="#team">하네스 멤버</a>', html };
+}
+
+export function renderHtml(c: AdsCatalog, r: AdsReview, d: Design, orca: Orca | null = null, team: Team | null = null): string {
   const o = orca ? renderOrca(orca, d) : { nav: '', html: '', summary: '' };
+  const tm = team ? renderTeam(team, r, d) : { nav: '', html: '' };
   const reqIds = c.requirements.map((x) => x.id);
   const all = tally(reqIds, r);
   const cats = [...new Set(c.requirements.map((x) => x.category))];
@@ -218,7 +338,7 @@ ${i.deps.length ? `<p class="sub">선행 ${i.deps.map(link).join(', ')}</p>` : '
 header{background:var(--surface);border-bottom:1px solid var(--line);padding:28px 40px}header h1{margin:0 0 6px;font-size:24px}
 .thesis{font-size:20px;font-weight:700;margin:14px 0 4px}.meta{color:var(--muted);font-size:13px}
 nav{position:sticky;top:0;height:38px;background:var(--surface);border-bottom:1px solid var(--line);padding:0 40px;display:flex;align-items:center;gap:14px;font-size:13px;z-index:2;overflow-x:auto;white-space:nowrap}
-section,[id]{scroll-margin-top:56px}tr[id]{scroll-margin-top:96px}.nw{white-space:nowrap}td.cat{min-width:8.5em;word-break:keep-all}td.mono,td.nw{white-space:nowrap;overflow-wrap:normal}
+section,[id]{scroll-margin-top:56px}tr[id]{scroll-margin-top:96px}.nw{white-space:nowrap}td.cat{min-width:8.5em;word-break:keep-all}td.mono,td.nw{white-space:nowrap;overflow-wrap:normal}td.wrap{white-space:normal;overflow-wrap:anywhere}
 nav a{color:var(--accent);text-decoration:none}main{padding:24px 40px;max-width:1500px}
 section{margin:0 0 40px}h2{font-size:20px;border-bottom:2px solid var(--ink);padding-bottom:6px}h3{font-size:16px;margin:0 0 8px}h4{margin:0 0 4px;font-size:13px;color:var(--ink2)}
 .key{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:14px 18px;font-size:17px;font-weight:700;margin-bottom:16px}
@@ -239,6 +359,7 @@ table{border-collapse:collapse;width:100%;background:var(--surface);font-size:13
 .phase{margin-bottom:28px}.phase .item{margin-bottom:12px}.exit{background:#e7ebfb;padding:6px 10px;border-radius:4px;font-size:13px}.coord{font-size:12px;color:var(--ink2)}
 .caveat{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
 @media print{nav{display:none}th{position:static}}
+li,.card p,.card h3{overflow-wrap:anywhere}
 @media (max-width:760px){header,main{padding-left:14px;padding-right:14px}nav{padding:0 14px}.grid2,.cards,.item .layers{grid-template-columns:1fr}.bar-row{grid-template-columns:96px 1fr 72px}table{display:block;overflow-x:auto}th{position:static}}`;
 
   const filterJs = `
@@ -252,7 +373,7 @@ document.querySelectorAll('[data-f]').forEach(el=>el.addEventListener('input',e=
 <header><h1>${esc(d.title)}</h1>
 <p class="thesis">“${esc(c.vision.thesis)}”</p>
 <p class="meta">원본 ${esc(c.source.file)} · Revision ${c.source.revision} (${c.source.date}) · sha256 ${c.source.sha256.slice(0, 12)}… · 판정 ${esc(r.source.reviewedAt)} @ ${esc(r.source.reviewedCommit)} · 설계 ${esc(d.date)}</p></header>
-<nav><a href="#summary">요약</a><a href="#principles">원칙</a><a href="#state">상태 모델</a><a href="#integration">다른 세션과 통합</a><a href="#req">기능요건 64</a><a href="#tests">인수시험 24</a><a href="#scenarios">시나리오 10</a>${o.nav}<a href="#design">수정 설계</a><a href="#db">DB·API</a><a href="#decisions">결정 필요</a><a href="#appendix">부록</a></nav>
+<nav><a href="#summary">요약</a><a href="#principles">원칙</a><a href="#state">상태 모델</a><a href="#integration">다른 세션과 통합</a><a href="#req">기능요건 64</a><a href="#tests">인수시험 24</a><a href="#scenarios">시나리오 10</a>${o.nav}${tm.nav}<a href="#design">수정 설계</a><a href="#db">DB·API</a><a href="#decisions">결정 필요</a><a href="#appendix">부록</a></nav>
 <main>
 <section id="summary"><h2>요약</h2>
 <div class="key">기능요건 64개 중 플랫폼이 합격 조건을 다 채운 것은 ${all.구현}개 — ${all.부분}개는 부분, ${all.미구현}개는 미구현, 결함 ${defects.length}건.<small>${o.summary} 반영은 UI/UX부터 — 설계 항목 ${d.items.length}개를 ${d.phases.length}단계로.</small></div>
@@ -279,6 +400,7 @@ document.querySelectorAll('[data-f]').forEach(el=>el.addEventListener('input',e=
 <section id="scenarios"><h2>상세 시나리오 10 — 지금 → 목표</h2><div class="cards">${scenarioCards}</div></section>
 
 ${o.html}
+${tm.html}
 
 <section id="design"><h2>수정 설계 — 단계별 (UI/UX · 프론트 · 백엔드 · DB · API · 시험)</h2>${phaseBlocks}</section>
 
@@ -300,8 +422,12 @@ ${o.html}
 }
 
 // ── BACKLOG.md ADS 절 ──
-export function renderBacklog(c: AdsCatalog, r: AdsReview, d: Design): string {
-  const row = (i: Item) => `| ${i.id} | 대기 | ${i.priority} | ${i.layer} | ${i.defect ? '**[결함]** ' : ''}${i.title.replace(/^\[결함\]\s*/, '')} | ${i.req.map((q) => q.replace('FFP-', '')).join('·') || '—'} | ${i.deps.join('·') || '—'} |`;
+export function renderBacklog(c: AdsCatalog, r: AdsReview, d: Design, team: Team | null = null): string {
+  // 착수 전 확인 — 구현 때 따를 UX 사양(채택된 major) 수와, 이 항목에 연결된 요건 중 설계가 아직 일부만 닫는 것의 수
+  const uxSpec = (id: string) => team?.ux?.items[id]?.findings.filter((f) => f.status === 'accepted').length ?? 0;
+  const fitGap = (id: string) => (team?.fit ? [...Object.values(team.fit.ads), ...Object.values(team.fit.orca)].filter((x) => x.covers !== 'yes' && id in x.shas).length : 0);
+  const before = (id: string) => [uxSpec(id) ? `UX 사양 ${uxSpec(id)}` : '', fitGap(id) ? `적합성 빈칸 ${fitGap(id)}` : ''].filter(Boolean).join(' · ') || '—';
+  const row = (i: Item) => `| ${i.id} | 대기 | ${i.priority} | ${i.layer} | ${i.defect ? '**[결함]** ' : ''}${i.title.replace(/^\[결함\]\s*/, '')} | ${i.req.map((q) => q.replace('FFP-', '')).join('·') || '—'} | ${i.deps.join('·') || '—'} | ${before(i.id)} |`;
   const v = Object.values(r.requirements);
   const n = (x: string) => v.filter((y) => y.verdict === x).length;
   return [
@@ -316,15 +442,16 @@ export function renderBacklog(c: AdsCatalog, r: AdsReview, d: Design): string {
     `- 판정: \`harness/ads/review.json\` — 요건 64 중 구현 ${n('구현')} · 부분 ${n('부분')} · 미구현 ${n('미구현')} · 범위 밖 ${n('범위 밖')}`,
     '- 설계: `harness/ads/design.json`',
     '- 보고서: `docs/10-requirements/ads-unece-v3/report.html`',
-    '- 반영 순서: 설계 단계 0 → 5. UI/UX가 먼저이고 결함 4건은 1단계에서 회귀 시험과 함께 고친다.',
+    `- 반영 순서: 설계 단계 0 → 5. UI/UX가 먼저이고 [결함] 항목 ${d.items.filter((i) => i.defect).length}개는 1단계에서 회귀 시험과 함께 고친다.`,
+    '- 착수 전 확인: UX 사양(harness/ads/ux.json의 채택 사항)과 적합성 빈칸(harness/ads/fit.json에서 일부만 닫힌 요건)을 상세 설계에서 닫은 뒤 구현한다.',
     '- 이 절은 `npm run ads:report`로 생성한다. 상태를 바꿀 때는 design.json을 고친다.',
     '',
     ...d.phases.flatMap((ph) => [
       `### ${ph.phase}`,
       `- 완료 기준: ${ph.exit}`,
       '',
-      '| ID | 상태 | 우선 | 층 | 내용 | 요구(FFP-) | 선행 |',
-      '|---|---|---|---|---|---|---|',
+      '| ID | 상태 | 우선 | 층 | 내용 | 요구(FFP-) | 선행 | 착수 전 확인 |',
+      '|---|---|---|---|---|---|---|---|',
       ...ph.items.map((id) => row(d.items.find((i) => i.id === id)!)),
       '',
     ]),
@@ -360,8 +487,9 @@ function main() {
   const orca: Orca | null = existsSync(ORCA_CATALOG) ? { c: readJson<OrcaCatalog>(ORCA_CATALOG), r: existsSync(ORCA_REVIEW) ? readJson<OrcaReview>(ORCA_REVIEW) : null } : null;
   const problems = designProblems(c, r, d, orca);
   for (const f of DOCS_WITH_COUNTS) problems.push(...docCountProblems(readFileSync(f, 'utf8'), f.split(/[\\/]/).pop()!, r));
-  const html = renderHtml(c, r, d, orca);
-  const backlog = mergeBacklog(readFileSync(BACKLOG, 'utf8').replace(/\r\n/g, '\n'), renderBacklog(c, r, d));
+  const team: Team = { ux: existsSync(TEAM.ux) ? readJson<Ux>(TEAM.ux) : null, wf: existsSync(TEAM.workflow) ? readJson<Wf>(TEAM.workflow) : null, fit: existsSync(TEAM.fit) ? readJson<Fit>(TEAM.fit) : null, workflows: existsSync(WORKFLOWS_JSON) ? readJson<Workflows>(WORKFLOWS_JSON) : null, problems: teamProblems(), log: existsSync(join(OUT, 'team-log.json')) ? readJson<NonNullable<Team['log']>>(join(OUT, 'team-log.json')) : null };
+  const html = renderHtml(c, r, d, orca, team);
+  const backlog = mergeBacklog(readFileSync(BACKLOG, 'utf8').replace(/\r\n/g, '\n'), renderBacklog(c, r, d, team));
   if (process.argv.includes('--check')) {
     if (!existsSync(HTML) || readFileSync(HTML, 'utf8').replace(/\r\n/g, '\n') !== html) problems.push('report.html이 최신이 아님 — npm run ads:report');
     if (readFileSync(BACKLOG, 'utf8').replace(/\r\n/g, '\n') !== backlog) problems.push('BACKLOG.md ADS 절이 최신이 아님 — npm run ads:report');

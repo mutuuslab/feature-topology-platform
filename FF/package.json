@@ -49,6 +49,8 @@
     "orca:sync": "node tools/orca-sync.ts",
     "orca:check": "node tools/orca-sync.ts --check",
     "defect:probes": "node tools/defect-probes.ts",
+    "ads:team": "node tools/ads-team.ts --check",
+    "ads:stale": "node tools/ads-team.ts --stale",
     "siblings": "node tools/siblings.ts",
     "integration:status": "node tools/integration-status.ts",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { readJson } from './lib.ts';
 import { CATALOG, REVIEW, catalogProblems, reviewProblems, text, verdictCounts, type AdsCatalog, type AdsReview } from './ads-sync.ts';
-import { DESIGN, designProblems, docCountProblems, mergeBacklog, type Design } from './ads-report.ts';
+import { DESIGN, INSTRUCTION, declaredTables, designProblems, docCountProblems, mergeBacklog, nearDuplicate, type Design } from './ads-report.ts';
 
 test('HTML 조각을 글자로 — 태그·엔티티·공백 정리', () => {
   assert.equal(text('<b>FFP-F001</b> &amp; <a href="#H01">H01</a><br>시험'), 'FFP-F001 & H01 시험');
@@ -69,6 +69,21 @@ test('오류 주입 — 근거 파일 없음·줄 초과·구현인데 시험 �
   assert.equal(run({ verdict: '부분', evidence: ['b.ts:1', 'b.ts:4'], gap: '', plan: ['X'] }), '');
 });
 
+test('오류 주입 — 선행 항목이 더 뒤 단계에 있거나, 같은 DB 테이블을 두 항목이 신설하면 잡는다', { skip: !existsSync(REVIEW) || !existsSync(DESIGN) }, () => {
+  const c = readJson<AdsCatalog>(CATALOG);
+  const r = readJson<AdsReview>(REVIEW);
+  const d = readJson<Design>(DESIGN);
+  const early = d.phases[1].items[0];
+  const late = d.phases[d.phases.length - 1].items[0];
+  const inverted = { ...d, items: d.items.map((i) => (i.id === early ? { ...i, deps: [...i.deps, late] } : i)) };
+  assert.match(designProblems(c, r, inverted).join('\n'), new RegExp(`${early}\\(1단계\\)의 선행 ${late}가 더 뒤`));
+  const owner = d.items.find((i) => i.db.length)!;
+  const table = owner.db[0].split(/[\s(·]/)[0];
+  const other = d.items.find((i) => i.id !== owner.id)!;
+  const dup = { ...d, items: d.items.map((i) => (i.id === other.id ? { ...i, db: [...i.db, `${table} 신설`] } : i)) };
+  assert.match(designProblems(c, r, dup).join('\n'), new RegExp(`DB ${table}를 .*함께 신설`));
+});
+
 test('오류 주입 — 결함 기록에 고칠 [결함] 설계 항목이 없거나, 단계 완료 조건의 결함 수가 항목 수와 다르면 잡는다', { skip: !existsSync(REVIEW) || !existsSync(DESIGN) }, () => {
   const c = readJson<AdsCatalog>(CATALOG);
   const r = readJson<AdsReview>(REVIEW);
@@ -100,4 +115,28 @@ test('Backlog 절은 표식 사이만 바꾸고 나머지 내용은 그대로 �
   assert.match(twice, /TL-UI01/);
   assert.match(twice, /\nB\n/);
   assert.doesNotMatch(twice, /\nA\n/);
+});
+
+test('반영 실수 탐지 규칙 — 문장 중간 테이블·본문 지시문·거의 같은 문장', () => {
+  assert.deepEqual(declaredTables('delivery_ack, safety_verdict, vehicle_feature_status 열 추가'), ['delivery_ack', 'safety_verdict']);
+  assert.deepEqual(declaredTables('hazard_time_budget(hazard_id, detect_ms) 신설.'), ['hazard_time_budget']);
+  assert.deepEqual(declaredTables('ownership_transfer.deletion_scope(PLATFORM)'), []);
+  assert.deepEqual(declaredTables('entitlement에 binding 열'), []);
+  for (const x of ['원인 분류 — deps ORC-BE08·ORC-UI09', '세션 결과 구분 — cases에 R02 추가', '멱등 주문 문장 삭제 — 멱등은 BE01', '시험을 SIM01 tests로 옮긴다', 'ORC-UI08, ORC-UI09 추가']) assert.match(x, INSTRUCTION, x);
+  for (const x of ['DSSAD 기록은 차량 소관', '정책 게시본 추가 전달', '확대 보류 사유 표시']) assert.doesNotMatch(x, INSTRUCTION, x);
+  assert.equal(nearDuplicate('defects.spec.ts FFP-F019 it.fails를 it로 전환.', '수정 후 backend/test/ads/defects.spec.ts FFP-F019 it.fails → it 전환(회귀 시험)'), true);
+  assert.equal(nearDuplicate('종료 결과는 배타 구간', '주문 원장은 ORC-BE01'), false);
+});
+
+test('오류 주입 — 후속 교체 입력(later)이 없거나 같은·앞 단계, ui 문장의 모름 금지 표기', { skip: !existsSync(REVIEW) || !existsSync(DESIGN) }, () => {
+  const c = readJson<AdsCatalog>(CATALOG);
+  const r = readJson<AdsReview>(REVIEW);
+  const d = readJson<Design>(DESIGN);
+  const first = d.phases[1].items[0];
+  const sibling = d.phases[1].items[1];
+  const run = (patch: object) => designProblems(c, r, { ...d, items: d.items.map((i) => (i.id === first ? { ...i, ...patch } : i)) }).join('\n');
+  assert.match(run({ later: ['ADS-ZZ99'] }), /후속 교체 입력 ADS-ZZ99가 없음/);
+  assert.match(run({ later: [sibling] }), /같은·앞 단계 — deps로/);
+  assert.match(run({ ui: ['상태 칸은 확인 불가로 표시'] }), /모름' 금지 표기/);
+  assert.match(run({ be: ['원인 분류 — deps ORC-BE08'] }), /반영 지시문/);
 });

@@ -39,6 +39,7 @@ const STEPS: Step[] = [
   { id: 'standards', title: '보고서 v1.1 규칙 추적 (ID 실재·플랫폼 규칙 구현·시험 래칫)', cmd: `node --test tools/standards.test.ts tools/ratchet.test.ts && node tools/standards.ts` },
   { id: 'req', title: '기능명세서 요구사항 반영 추적 (원본 해시·판정 628건·@req 표식·결함 기록 it.fails·래칫)', cmd: `node --test tools/xlsx.test.ts tools/requirements.test.ts && node tools/requirements.ts` },
   { id: 'ads', title: 'ADS·UNECE v3.0 + Orca R3 반영 추적 (카탈로그 무결성·원본 해시·판정 완비·근거 줄 내용·결함 기록·설계 계획 ID·문서 숫자·보고서 최신)', cmd: `node --test tools/ads-sync.test.ts tools/orca-sync.test.ts tools/defect-probes.test.ts && node tools/ads-sync.ts --check && node tools/orca-sync.ts --check && node tools/ads-report.ts --check` },
+  { id: 'ads:team', title: '하네스 멤버 검토 (UI/UX 디자이너·업무 절차 담당·설계 적합성 — 검토가 지금 설계 판 기준인지, 열린 blocker 0, 화면 문구 규칙)', cmd: `node --test tools/ads-team.test.ts && node tools/ads-team.ts --check` },
   { id: 'ads:probes', title: '결함 기록(it.fails)이 재현 단계가 아니라 요구 단언에서 실패하는지 (사본을 it로 바꿔 실행)', cmd: `node tools/defect-probes.ts` },
   { id: 'build:frontend', title: '프론트 빌드', cmd: `${npx} vite build`, cwd: 'frontend' },
   { id: 'budget', title: '성능 예산 (첫 화면·화면 묶음 gzip, harness/budgets.json)', cmd: `node --test tools/bundle-budget.test.ts && node tools/bundle-budget.ts` },

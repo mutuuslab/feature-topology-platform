@@ -35,12 +35,47 @@
     {
       "id": "P-7",
       "text": "같은 단어 \"적격\"이 두 층이다 — 플랫폼의 VIN 적격(구성·권리·시장)과 차량의 활성 적격(ODD·고장·신호). (Orca R3)",
-      "apply": "6축 표마다 판단 주체를 적고, 활성 적격·실제 실행은 차량 보고값만 쓴다. 보고가 오래되면 \"확인 불가\"."
+      "apply": "6축 표마다 판단 주체를 적고, 활성 적격·실제 실행은 차량 보고값만 쓴다. 보고가 오래되면 \"미확인\"(P-9)."
     },
     {
       "id": "P-8",
       "text": "가상 시연을 양산 구현·안전 인증처럼 표시하지 않는다. 실측 전 수치를 성과로 표시하지 않는다. (Orca R3 표현 경계)",
       "apply": "시뮬레이션·5년 재생 화면에 \"가상 데이터·목표 설계\" 표기, 사례별 금지 표현을 lint-copy 규칙으로."
+    },
+    {
+      "id": "P-9",
+      "text": "'모름'은 두 낱말만 — 판단 불가(차량 판정 UNKNOWN·근거 부족) · 미확인(관측 없음·기준 시간 초과·연동 전·결제 직후 미보고). 검토·Gate 전은 미판정, 서로 어긋나면 구성 불일치.",
+      "apply": "공통 부품 UnknownMark가 두 낱말만 낸다. 확인 불가·판정 불명·판단 보류·확정 불가는 문구 lint 금지어(ORC-BE03 목록)."
+    },
+    {
+      "id": "P-10",
+      "text": "핵심 메시지는 화면당 하나 — 탭이 있으면 활성 탭이 고르고, Drawer·패널 머리 문장은 핵심 메시지가 아니다.",
+      "apply": "data-key-message는 PageHeader만 붙인다. 탭 화면도 3초 e2e로 검사한다(menu.ts SAMPLE에 ?tab= URL)."
+    },
+    {
+      "id": "P-11",
+      "text": "핵심 메시지는 처리할 일 하나를 큰 값으로 — 분포는 배타 구간(합 = 분모)만, 누적 단계는 보조 줄.",
+      "apply": "공통 부품 StageCounts는 배타 구간만 받는다. 예: \"적용 확인 안 된 차량 12대\" + 보조 줄 \"수신 92 · 적용 확인 80\"."
+    },
+    {
+      "id": "P-12",
+      "text": "막힌 행동은 비활성 버튼과 마우스 툴팁이 아니라 글자 사유로 보인다 — 무엇이 막았는지, 누가 무엇을 하면 풀리는지.",
+      "apply": "공통 부품 BlockedAction. 기존 Button disabled + title 사용은 래칫으로 줄인다."
+    },
+    {
+      "id": "P-13",
+      "text": "같은 낱말이 두 원장을 가리키지 않는다 — '종료 사건'(종료 차단 단위) · 'ADS 사건'(규제 보고) · '지원 건'(고객 지원), '긴급 차단'(요청) · '종료 차단'(재활성화 금지 상태) · '종료 차단 해제'(행위). '보류'도 단독으로 쓰지 않는다 — 전달 보류(차량이 미룸) · 확대 보류 · 설치 보류 · 품질 보류. '사용 준비 확인'(차량 준비 보고 있음) · '실사용 확인'(선택, 실제 이용 기록) — 지표 이름은 '사용 준비 확인율(차량 보고 기준)'.",
+      "apply": "'차단' 단독 표기 금지 래칫. ID 접두어도 나눈다. '보류' 단독·'사용 준비 완료' 래칫 0."
+    },
+    {
+      "id": "P-14",
+      "text": "새 화면은 원장 화면과 읽기 화면을 구분한다 — 같은 원장을 두 화면이 쓰지 않는다.",
+      "apply": "항목마다 원장(쓰는 곳)·읽기(보여 주는 곳)를 적는다. 예: Evidence 원장은 /verify/evidence, 시장 기준은 시장 Profile."
+    },
+    {
+      "id": "P-15",
+      "text": "be·db 필드는 그 항목 UX 확정안(harness/ads/ux.json)이 정한 자리(탭·Drawer·접힘·보조 줄)에만 보인다.",
+      "apply": "확정안에 없는 필드는 기본 접힘 \"자세히\"로 시작하고 핵심 메시지·첫 화면에 올리지 않는다."
     }
   ],
   "stateModel": {
@@ -76,7 +111,7 @@
           "발행",
           "수신",
           "수락",
-          "보류",
+          "전달 보류",
           "적용",
           "거부"
         ],
@@ -90,7 +125,7 @@
           "ODD 밖",
           "금지",
           "조건 부족",
-          "확인 불가"
+          "판단 불가"
         ],
         "source": "safety_verdict(행위별 + reasonCode) — 판단 주체: 차량(보고값만 표시)",
         "owner": "차량"
@@ -98,12 +133,12 @@
       {
         "name": "실제 기능 실행",
         "values": [
-          "Inactive",
+          "비활성(Inactive)",
           "Available",
           "Active",
-          "종료 전이",
+          "전환 중",
           "MRC",
-          "종료 완료",
+          "종료 확인(차량 보고)",
           "복구 검증 대기"
         ],
         "source": "status_report 2.1 runtime_state·ddt_owner — 판단 주체: 차량",
@@ -121,7 +156,7 @@
         "owner": "플랫폼"
       }
     ],
-    "example": "종료 요청 100 / 수신 92 / 전환 중 8 / 종료 확인 80 / 미확인 12 · 주문 성공 / 활성 미확인 — 하나의 ON/OFF나 \"사용 준비 완료\"로 합치지 않는다."
+    "example": "적용 확인 안 된 차량 20대 — 분포(배타, 합 = 대상 100): 적용 확인 80 · 수락 대기 7 · 전달 보류 5 · 미확인 8 / 보조 줄(누적): 수신 92 · 주문 성공 / 활성 미확인 — 하나의 ON/OFF나 '사용 준비 확인'으로 합치지 않는다."
   },
   "integration": [
     {
@@ -195,31 +230,44 @@
         "FFP-F062"
       ],
       "ui": [
+        "첫 작업: 배포 상세 핵심 메시지를 '적용 확인 안 된 차량 N대'로(P-11) — 분포는 StageCounts",
         "차량별 적용 상태 /fleet/vehicles/:vin: 6축 표(축 · 현재 값 · 판단 주체 · 마지막 관측) — 활성 적격·실제 실행은 차량 보고값만",
-        "배포 상세 /deployments/:id 핵심 메시지 \"적용 확인 80 · 미수신 12 · 로컬 거부 3 · 판단 불가 5\", 미수신·로컬 거부·미확인 탭 분리",
-        "Fleet 실시간: 축별 분포와 \"판단 불가\" 따로, 오래된 보고는 실제 칸을 \"확인 불가\"로",
-        "마지막 관측이 오래되면 실제 칸을 '판단 불가'로(과거 상태를 현재처럼 보이지 않게)"
+        "배포 상세 /deployments/:id: 핵심 메시지는 UX 확정안('적용 확인 안 된 차량 N대'), 분포는 구간별 탭",
+        "Fleet 실시간: 축별 분포와 \"판단 불가\"(차량 판정 UNKNOWN) 따로, 오래된 보고는 실제 칸을 \"미확인\"으로",
+        "마지막 관측이 오래되면 실제 칸을 '미확인'으로(과거 상태를 현재처럼 보이지 않게)",
+        "재연결 직후 '미확인 기간 n시간' 표시",
+        "상품 권리 칸 = 없음/체험/구매/만료/이전 심사만, 결제 상태(PAID)는 이 칸에 쓰지 않고 주문 추적 링크로 — 1단계는 이전 심사 대신 '해당 없음(연동 전)'",
+        "배포 상세 분포 구간 = 적용 확인 · 수락(실행 대기) · 전달 보류(DEFERRED, 사유) · 수신만 됨 · 미수신 · 로컬 거부 · 미확인 — 배타, 합 = 대상 차량",
+        "활성 적격 칸 값 = 허용 / ODD 밖 / 금지 / 조건 부족 / 판단 불가(Orca 인계 축 표기에 대응하는 낱말), 기준 시간 초과는 미확인"
       ],
       "fe": [
         "design: StageCounts(분리 수치 막대), FreshnessChip(TL-UI01 공용)",
         "copy/ads.ts 상태 용어",
-        "screens/ops/Deployments.tsx·FleetLive.tsx·VehicleRuntime"
+        "screens/ops/Deployments.tsx·FleetLive.tsx·VehicleRuntime",
+        "구성과 설치 칸: OTA 데이터 없으면 '연동 전 — 미확인', 호환은 config_set 대조값",
+        "테이블은 ADS-BE01(delivery_ack·vehicle_feature_status)을 읽는다"
       ],
       "be": [
         "GET /api/publications/:id/convergence — 단계별·사유별 집계",
-        "GET /api/vehicles/:vin/feature-state — 의도·전달·실제·최신성 한 번에"
+        "GET /api/vehicles/:vin/feature-state — 의도·전달·실제·최신성 한 번에",
+        "feature-state 응답에 freshness{observed_at, stale_after_ms, state ∈ FRESH|DELAYED|OFFLINE|UNOBSERVED}를 서버가 계산 — 임계 = Feature별 expected_report_interval, 화면 낱말은 최신 확인/지연/오프라인/미확인",
+        "기준 시간 표 — Feature별 expected_report_interval(기본값은 등급별 가정값)·상품별 사용 확인 기한·미사용 일수, 기본값은 \"가정값\" 표기. 모든 마지막 관측 표시는 FreshnessChip 하나(기준 시간을 글자로 함께)",
+        "축 값 = OTA 단계 × config_set 대조: 다운로드됨·설치 준비→미설치, 설치 중→설치 중, 검증됨∧부합→호환, 검증됨∧불일치→부분 실패, 실패·복구·안전 상태→복구 필요"
       ],
-      "db": [
-        "delivery_ack 신설",
-        "vehicle_feature_status에 runtime_state·ddt_owner·observed_at·last_report_at"
-      ],
+      "db": [],
       "api": [
         "GET /api/publications/:id/convergence",
         "GET /api/vehicles/:vin/feature-state"
       ],
       "tests": [
         "TC15",
-        "screens 시험: 수신 ACK만 있는 차량은 적용으로 세지 않음"
+        "screens 시험: 수신 ACK만 있는 차량은 적용으로 세지 않음",
+        "화면 시험: 마지막 관측이 임계를 넘은 차량의 실제 칸이 '미확인'으로 보이고 ALLOW로 보이지 않음.",
+        "화면 시험: 미수신 목록과 로컬 거부 목록이 서로 다른 차량 집합을 보인다.",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "DEFERRED 보고 차량은 전달 보류 구간에만 1회 집계되고 수신만 됨·미수신·적용 확인 어디에도 들지 않음",
+        "경계 3건: expected_report_interval 초과·offline_since 없음 → 지연, offline_since 있음 → 오프라인, 보고 이력 없음 → 미확인",
+        "검증됨이지만 config_set 불일치 차량 → '부분 실패', 호환으로 세지 않음"
       ],
       "deps": [
         "ADS-BE01"
@@ -238,12 +286,12 @@
         "FFP-F036"
       ],
       "ui": [
-        "/ops/kill 핵심 메시지 '종료 요청 100 · 수신 92 · 전환 중 8 · 종료 확인 80 · 미확인 12'",
         "사건별 종료 차단 목록(사건 → Feature → 차량 수, 설정·해제 시각)",
         "선택 해제는 사건 범위만 고르게(다른 사건 차단은 남는 것을 미리보기에서 보임)",
         "복원 3단 표시: '복구 검증 완료 / 종료 차단 해제 / 현재 활성화 가능 여부'(활성화 불가도 정상 조합으로 표시)",
         "타임라인에 제어 책임(DDT owner)·MRC 근거 열",
-        "3초 테스트 보류: 차단이 없으면 요청 폼 접기·사전점검 불일치 해소"
+        "3초 테스트 보류: 차단이 없으면 요청 폼 접기·사전점검 불일치 해소",
+        "핵심 메시지 큰 값 하나 '종료 결과 미확인 차량 N대', 분포는 MRC 도달·비활성 확인·전환 중·미수신·시간 초과·증거 부족 배타 구간(P-11)"
       ],
       "fe": [
         "screens/ops/Kill*·Rollback.tsx, kill-timeline 패널",
@@ -253,9 +301,7 @@
         "GET /api/termination/inhibits — 사건별 차단 집합",
         "kill timeline 응답에 ddtOwner·mrc"
       ],
-      "db": [
-        "termination_inhibit 신설"
-      ],
+      "db": [],
       "api": [
         "GET /api/termination/inhibits",
         "POST /api/kill-requests/:id/rescind"
@@ -263,7 +309,8 @@
       "tests": [
         "TC12",
         "S02",
-        "S10"
+        "S10",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE02",
@@ -298,7 +345,8 @@
       ],
       "tests": [
         "TC20",
-        "회귀: 미리보기 뒤 대상이 바뀌면 발행 거부"
+        "회귀: 미리보기 뒤 대상이 바뀌면 발행 거부",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE05"
@@ -320,7 +368,8 @@
         "축별 조건: 지리·도로·환경·동적·배제(배제 우선 표기), 단위·경계 포함 여부를 글자로",
         "의미 검증 결과(단위 혼용·연산자 오기·상한 초과)와 연결된 정책·Feature Version",
         "핵심 메시지 '승인 상한을 넘는 배포 설정 N건' / '모두 상한 안'",
-        "변경 전후 비교(ODD 확대 시나리오 09)"
+        "변경 전후 비교(ODD 확대 시나리오 09)",
+        "site 행(주차장·구역·지도·인프라 버전) — 승인/노출 보류 상태와 보류 사유를 글자로(P-12)"
       ],
       "fe": [
         "screens/config/OddProfiles.tsx(신설), routes·메뉴(구성 그룹)",
@@ -329,16 +378,15 @@
       "be": [
         "ODD 프로파일 CRUD·승인·검증"
       ],
-      "db": [
-        "odd_profile 신설"
-      ],
+      "db": [],
       "api": [
         "GET/POST /api/odd-profiles",
         "POST /api/odd-profiles/:id/approve"
       ],
       "tests": [
         "TC03",
-        "S09"
+        "S09",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE09"
@@ -366,9 +414,7 @@
       "be": [
         "형상 집합 CRUD·차량 형상 대조"
       ],
-      "db": [
-        "config_set 신설"
-      ],
+      "db": [],
       "api": [
         "GET/POST /api/config-sets",
         "GET /api/config-sets/:id/vehicles"
@@ -376,7 +422,8 @@
       "tests": [
         "TC17",
         "S05",
-        "S06"
+        "S06",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE10"
@@ -401,25 +448,25 @@
       ],
       "fe": [
         "contracts reasonCode 사전 → copy/ads.ts 설명",
-        "screens/ops/FleetLive·VehicleRuntime"
+        "screens/ops/FleetLive·VehicleRuntime",
+        "시뮬레이터(ADS-SIM01) 전에는 상태 보고 계약 2.1의 예시 데이터로 표시",
+        "판정은 ADS-BE01 safety_verdict를 읽는다"
       ],
       "be": [
         "safety_verdict 수신·조회"
       ],
-      "db": [
-        "safety_verdict 신설"
-      ],
+      "db": [],
       "api": [
         "GET /api/vehicles/:vin/verdicts"
       ],
       "tests": [
         "TC04",
         "TC05",
-        "S01"
+        "S01",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
-        "ADS-BE01",
-        "ADS-SIM01"
+        "ADS-BE01"
       ],
       "coord": ""
     },
@@ -434,10 +481,11 @@
       ],
       "ui": [
         "사건별 인지 시각·최초 통지(지체 없이)·단기 보고 기한(인지 후 30일)·정기 보고(연 1회) 진행",
-        "보고 대상 판정: 사건 당시 또는 직전 30초 안 ADS 활성(아니면 '판단 불가'·근거 부족)",
+        "30초 활성 창 값 = 해당 / 해당 없음 / 판단 불가(근거 부족) — 보고 대상 확정은 안전·법규 담당",
         "공통 사건 ID로 정책·형상·ODD·판정·전환 이력 타임라인(차량 순서와 서버 수신 순서 구분)",
         "DSSAD는 '차량 기록' 링크·상관 ID만 — 운영 감사 기록과 구분 표기",
-        "정기 보고 초안: 노출량(운행 시간·거리)당 사건 집계"
+        "정기 보고 초안: 노출량(운행 시간·거리)당 사건 집계",
+        "'보고 대상 후보(30초 활성 창 해당) — 안전·법규 담당 판단 필요', 판단 전에는 보고 대상으로 세지 않음"
       ],
       "fe": [
         "screens/ops/IncidentReports.tsx(신설), 장애·VOC에서 연결"
@@ -445,16 +493,15 @@
       "be": [
         "사건 보고 엔티티·기한 계산·정기 집계"
       ],
-      "db": [
-        "incident_report·periodic_report 신설"
-      ],
+      "db": [],
       "api": [
         "GET/POST /api/incident-reports",
         "GET /api/periodic-reports/:year"
       ],
       "tests": [
         "TC24",
-        "기한 계산 단위 시험(발생일·인지일 구분)"
+        "기한 계산 단위 시험(발생일·인지일 구분)",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE13"
@@ -485,9 +532,7 @@
       "be": [
         "CAE 노드·manifest·발견사항, 승격 게이트 연결"
       ],
-      "db": [
-        "safety_case_node·evidence_manifest·review_finding 신설"
-      ],
+      "db": [],
       "api": [
         "GET /api/safety-case/:featureId",
         "GET /api/evidence-manifests/:id",
@@ -495,7 +540,8 @@
       ],
       "tests": [
         "TC21",
-        "회귀: 다른 형상의 PASS 재사용 거부"
+        "회귀: 다른 형상의 PASS 재사용 거부",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE14"
@@ -522,7 +568,8 @@
         "screens/governance/Impact.tsx, policy/PolicyVersions.tsx"
       ],
       "be": [
-        "변경 종류 분류·영향 경로"
+        "변경 종류 분류·영향 경로",
+        "릴리스 diff = 대상·의존 Feature·odd_profile_ref(축별 확대/축소)·종료 동작(DC 등급·fallback·MRC 계약) 필드별 변경, 확대 방향은 위험 표식."
       ],
       "db": [
         "policy_revision·feature_version에 change_kind"
@@ -532,11 +579,14 @@
       ],
       "tests": [
         "TC02",
-        "S09"
+        "S09",
+        "화면 시험: ODD 확대와 종료 동작 변경이 있는 두 릴리스 비교 시 두 항목이 강조 행으로 보임.",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE06",
-        "ADS-BE08"
+        "ADS-BE08",
+        "ADS-BE09"
       ],
       "coord": "JIRA CR 필드 매핑(IF-14)"
     },
@@ -552,20 +602,23 @@
       "ui": [
         "FFP 64 판정(구현·부분·미구현·범위 밖)·근거 경로·Backlog ID, 영역·우선·담당 필터",
         "인수시험 24 상태, 시나리오 10 현재→목표",
-        "원본 판(sha)·검토 시점, 표준 개정 시 영향 요구 조회"
+        "원본 판(sha)·검토 시점, 표준 개정 시 영향 요구 조회",
+        "요구 행에 정상·실패 시나리오 결과 수와 열린 결함(probe ID) 열.",
+        "표준 개정 영향 조회에 미판정(UNVERIFIED) 요구·시험 포함."
       ],
       "fe": [
-        "contracts generated ads-catalog.ts(카탈로그·판정) → screens/trace/AdsTrace.tsx"
+        "contracts generated ads-catalog.ts(카탈로그·판정) → screens/trace/AdsTrace.tsx",
+        "판정·근거는 harness/ads·orca review.json에서 읽는다(@ffp 표식 ADS-BE18은 뒤에 보강)"
       ],
       "be": [],
       "db": [],
       "api": [],
       "tests": [
-        "화면 시험: 64·24·10 행"
+        "화면 시험: 64·24·10 행",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "결함 probe가 열린 요구(예: FFP-F007) 행에 probe ID·실패 수가 보이고 it 전환 후 사라짐, 실행 결과가 없는 요구는 '결과 없음'(통과 아님)으로 보임 단언."
       ],
-      "deps": [
-        "ADS-BE18"
-      ],
+      "deps": [],
       "coord": ""
     },
     {
@@ -580,24 +633,22 @@
       ],
       "ui": [
         "정책 상세: 실제 Active 노출량·미확인 차량(분리)·감시 지표·데이터 신선도·동결 상태",
-        "핵심 메시지 '확대 가능 / 중단 / 지표 지연 — 보류 / 동결'",
-        "동결 명령(사유·범위)과 해제"
+        "핵심 메시지 '확대 가능 / 중단 / 지표 지연 — 확대 보류 / 동결'",
+        "동결 명령(사유·범위)과 해제",
+        "조합별 근거는 접힘 영역(판정을 막은 조합만 기본 펼침), 열: 차량 보고 Active·사용 확인·오류·표본 수·관측 기간. 판정 담당·심각도는 동결 대화상자 안 입력으로만"
       ],
       "fe": [
-        "screens/policy/Policies.tsx 패널"
+        "screens/policy/Policies.tsx 패널",
+        "API는 ADS-BE12(확대 판정·동결)를 쓴다"
       ],
       "be": [
         "판정 엔진(ADS-BE12 = TL-B01·B02)"
       ],
-      "db": [
-        "rollout_freeze 신설"
-      ],
-      "api": [
-        "POST /api/policies/:id/freeze",
-        "GET /api/policies/:id/expansion"
-      ],
+      "db": [],
+      "api": [],
       "tests": [
-        "TC19"
+        "TC19",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE12"
@@ -617,7 +668,8 @@
       "ui": [
         "Feature 등록·상세: ADS 여부·DDT 영향·안전 관련성·담당, 미분류면 출시 버튼 대신 사유",
         "시장 기준선: 승인 유형·규정 series(R156 01 등)·승인 ODD 프로파일",
-        "Lifecycle별 책임자 표시"
+        "Lifecycle별 책임자 표시",
+        "2단계 전환 첫 화면: 핵심 메시지 '미분류 Feature N건'과 축별 빈칸 목록을 거부 규칙을 켜기 전에 먼저 보인다(기존 Feature 일괄 차단 방지)."
       ],
       "fe": [
         "screens/features/*, master/Define"
@@ -625,12 +677,11 @@
       "be": [
         "분류 보강·기준선"
       ],
-      "db": [
-        "feature_version에 ddt_impact, market_baseline 신설"
-      ],
+      "db": [],
       "api": [],
       "tests": [
-        "TC01"
+        "TC01",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE16"
@@ -647,15 +698,20 @@
         "정책 ON·Available·Active·종료 요청·MRC(Mitigated Risk Condition)·비활성화·복구 검증·차단 해제를 화면 전체에서 같은 뜻으로"
       ],
       "fe": [
-        "copy/ads.ts 용어 + lint-copy 금지 표현(예: '종료 완료'를 수신 ACK에 쓰지 않기) 래칫"
+        "copy/ads.ts 용어표 — 금지 표현은 ORC-BE03 목록을 쓴다"
       ],
       "be": [],
       "db": [],
       "api": [],
       "tests": [
-        "lint:copy"
+        "lint:copy",
+        "문구 lint 규칙은 ORC-BE03 목록 하나를 쓴다(이 항목은 용어표만 소유)",
+        "e2e menu.ts SAMPLE에 탭 URL(?tab=)을 더해 탭마다 3초 규칙 검사",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
-      "deps": [],
+      "deps": [
+        "ORC-BE03"
+      ],
       "coord": "3초 테스트 세션 copy 소유 존중"
     },
     {
@@ -669,25 +725,49 @@
         "FFP-F029",
         "FFP-F030",
         "FFP-F031",
-        "FFP-F034"
+        "FFP-F034",
+        "FFP-F062"
       ],
       "ui": [],
       "fe": [],
       "be": [
         "contracts/src/schemas/wire.ts: StatusReportV2_1 = 2.0 + decision{action, verdict, reason_codes, session_id, sample_ref, config_ref, odd_ref, input_quality} · delivery_stage · ddt_owner · inhibits[] · mrc{reached_at, hold_means} · reported_at",
         "2.0과 2.1 동시 수락(하위 호환), status-v2 검사 확장",
-        "policy_push에도 수신·수락·보류·실행 ACK"
+        "policy_push에도 수신·수락·보류·실행 ACK",
+        "decision에 decision_id·valid_until(로컬 단조 시각)·evaluated_state_digest를 추가하고, 실행/설치 보고는 사용한 decision_id를 참조한다.",
+        "decision에 odd_state(IN|OUT|UNKNOWN)·odd_input_valid_until 명시.",
+        "status/decision에 odd_exit_forecast{expected_exit_at, required_transition_ms, plan_started_at} 추가.",
+        "decision.inputs[]: {signal, source, valid, trust, local_ts, max_age_ms} 배열로 정의, 하나라도 노후·무효면 ALLOW 금지(계약 검사).",
+        "status-v2.1 검사: mrc.reached_at가 있으나 hold_means·위험 저감 근거가 비면 MRC 미달성으로 기록.",
+        "종료 진행 중 ddt_owner가 NONE·UNKNOWN이거나 보고 간격이 예산을 넘으면 RESPONSIBILITY_GAP 사건을 연다.",
+        "allowed_target_count·active_exposure 집계 함수(단일 출처)는 이 항목이 소유 — ADS-UI01 수렴 API와 ADS-BE12 확대 판정이 읽는다",
+        "내부 시뮬레이터(vehicle-runtime) 상태 보고에 수신·적용 시각을 따로 기록(received_at ≠ applied_at)",
+        "RESPONSIBILITY_GAP의 보고 간격 예산은 feature_state_profile.report_budget_ms(ASSUMED 표시)에서 읽는다 — ADS-BE14 hazard_time_budget이 승인되면 그 값으로 바꾼다",
+        "policy_push·StatusReportV2_1에 commercial{entitlement_state, effective_at} 블록을 decision과 분리해 두고, 차량 판정 입력 inputs[]에는 넣지 않는다(계약 검사).",
+        "booted_at가 이전 보고보다 새로우면 restore 필수 — 누락·integrity≠OK·inhibits_restored ⊉ 서버 inhibit이면 RESTORE_UNVERIFIED 사건, 활성 집계 제외",
+        "RESPONSIBILITY_GAP 사건에 사용한 예산 값·출처·상태(ASSUMED|APPROVED)를 함께 기록"
       ],
       "db": [
-        "delivery_ack, safety_verdict, vehicle_feature_status 열 추가"
+        "delivery_ack, safety_verdict, vehicle_feature_status 열 추가",
+        "feature_state_profile(기능별 허용 상태 집합 · report_budget_ms · budget_status ASSUMED|APPROVED) — runtime_state는 프로필 안 값만"
       ],
-      "api": [],
+      "api": [
+        "StatusReportV2_1.restore{booted_at, integrity, inhibits_restored}"
+      ],
       "tests": [
         "TC15",
-        "계약 시험 2.0/2.1"
+        "계약 시험 2.0/2.1",
+        "계약 시험: received_at만 있는 보고는 delivery_stage=RECEIVED로 남고 적용 집계에 들어가지 않음.",
+        "계약 시험: ODD_OUT과 INPUT_INVALID_OR_STALE가 서로 다른 reason_code로 기록되고 과거 ALLOW 재사용 없음(TC06).",
+        "비 ADS 기능에 MRC 상태 보고 → 거부, 종료 완료와 MRC 별도 집계",
+        "보고열 ADS→UNKNOWN→MRC이면 RESPONSIBILITY_GAP 1건, ADS→FALLBACK→MRC 연속이면 0건, 종료 진행 중 보고 간격 초과면 1건 단언.",
+        "재부팅 보고에 inhibits_restored가 서버 차단 1건을 빠뜨림 → RESTORE_UNVERIFIED, 그 차량 Active로 세지 않음"
       ],
       "deps": [],
-      "coord": "FF_IMP gleo/ 와이어 정본 — ADS-SIM04, D-ADS-1"
+      "coord": "FF_IMP gleo/ 와이어 정본 — ADS-SIM04, D-ADS-1",
+      "later": [
+        "ADS-BE14"
+      ]
     },
     {
       "id": "ADS-BE02",
@@ -732,12 +812,16 @@
       "fe": [],
       "be": [
         "복원 뒤 RESTORE_PENDING → '복구 검증 완료(Available 후보)'로, Active는 차량 재판정(ODD·형상·사용자 절차) 뒤에만",
-        "집계에서 복원 완료와 Active를 분리(지금은 ACTIVE를 '적용됨'으로 셈)"
+        "집계에서 복원 완료와 Active를 분리(지금은 ACTIVE를 '적용됨'으로 셈)",
+        "Active 재진입은 차량 재판정(ADS-SIM01 계약) 결과가 ALLOW일 때만 — 플랫폼은 RESTORE_PENDING → ACTIVE 자동 전이를 하지 않는다",
+        "RESTORE_PENDING 이후 ACTIVE 보고는 2.1 decision(action=ACTIVATE, verdict=ALLOW, decision_id 유효)을 동반할 때만 Active로 집계하고, 2.0 보고는 'ACTIVE(재판정 근거 없음)'으로 따로 센다."
       ],
       "db": [],
       "api": [],
       "tests": [
-        "회귀 시험(수정 전 실패): 복원 직후 자동 ACTIVE 금지"
+        "회귀 시험(수정 전 실패): 복원 직후 자동 ACTIVE 금지",
+        "수정 후 backend/test/ads/defects.spec.ts FFP-F036 it.fails → it 전환(회귀 시험), review.json defect 삭제·판정 갱신 — 플랫폼은 RESTORE_PENDING → ACTIVE 자동 전이를 하지 않고, 2.0 보고의 ACTIVE는 재판정 근거 없음으로 따로 센다",
+        "복원 뒤 2.0 ACTIVE 보고 → Active 집계 0·'재판정 근거 없음' 1 단언."
       ],
       "deps": [],
       "coord": "vehicle-runtime.service.ts:221 · status-ingest.service.ts:171",
@@ -764,7 +848,8 @@
       "db": [],
       "api": [],
       "tests": [
-        "회귀 시험: 재전송 → 보안 이벤트 0, 전이 1회"
+        "회귀 시험: 재전송 → 보안 이벤트 0, 전이 1회",
+        "수정 후 backend/test/ads/defects.spec.ts FFP-F019 it.fails → it 전환(회귀 시험), review.json defect 삭제·판정 갱신"
       ],
       "deps": [],
       "coord": "status-v2.ts:96 · deactivation.ts:133"
@@ -788,7 +873,8 @@
       "db": [],
       "api": [],
       "tests": [
-        "회귀 시험 2건(수정 전 실패)"
+        "회귀 시험 2건(수정 전 실패)",
+        "수정 후 requirements/defects.spec.ts FR-RTE-001-004·ads/defects.spec.ts FFP-F059 it.fails → it 전환(회귀 시험), review.json defect 삭제·판정 갱신 — 타 VIN 게시본 거부·기록(TC14), 서명 대상 digest 불일치 거부"
       ],
       "deps": [],
       "coord": "기능명세서 결함 추적(review.json defects)과 연결"
@@ -805,12 +891,14 @@
       "ui": [],
       "fe": [],
       "be": [
-        "lifecycle 출시 전이·publishPolicy·서명이 열린 재-HARA 확인"
+        "lifecycle 출시 전이·publishPolicy·서명이 열린 재-HARA 확인",
+        "열린 재-HARA 거부는 출시 전이·publishPolicy·서명 세 곳에서 같은 사유 코드 REHARA_OPEN으로 응답한다."
       ],
       "db": [],
       "api": [],
       "tests": [
-        "회귀 시험: G8·G9 PASS 뒤 재-HARA 열림 → 출시·배포 거부"
+        "회귀 시험: G8·G9 PASS 뒤 재-HARA 열림 → 출시·배포 거부",
+        "수정 후 backend/test/ads/defects.spec.ts FFP-F007 it.fails → it 전환(회귀 시험), review.json defect 삭제·판정 갱신 — change_impact 미완료 → 서명 거부 시험 추가"
       ],
       "deps": [],
       "coord": "",
@@ -829,15 +917,23 @@
       "ui": [],
       "fe": [],
       "be": [
-        "정책 게시본 순번 공간(flag:키)과 Feature 명령 순번을 하나의 Feature epoch로 묶음"
+        "정책 게시본 순번 공간(flag:키)과 Feature 명령 순번을 하나의 Feature epoch로 묶음",
+        "재연결 대조: 서버 의도(inhibit·epoch)와 차량 보고 불일치 목록·미확인 기간",
+        "FF 내부 시뮬레이터(vehicle-runtime) Guard에 Feature epoch 검사 — KILL epoch보다 낮은 정책 게시본은 STALE_EPOCH 거부(TC13, FF_IMP 동기는 ADS-SIM04)",
+        "contracts wire 정책 게시본 envelope에 feature_epoch를 정의하고, FF 백엔드 내부 GLEO 시뮬레이터 receive의 STALE_EPOCH 거부를 BE07 범위로 둔다. ADS-SIM04는 같은 규칙의 FF_IMP 동기만 맡는다."
       ],
       "db": [
         "command_ledger에 feature epoch"
       ],
-      "api": [],
+      "api": [
+        "GET /api/vehicles/:vin/reconcile — 서버 의도(inhibit·epoch) vs 차량 보고 불일치 목록"
+      ],
       "tests": [
         "TC13",
-        "S07"
+        "S07",
+        "TC13: KILL 뒤 늦게 도착한 과거 ON 게시본을 시뮬 차량이 거부하고 kill 상태 유지에 의존하지 않음을 단언.",
+        "TC13은 FF 내부 시뮬레이터 경로로 2단계에 실행하고, FF_IMP 벡터 시험은 ADS-SIM04 gleo 벡터 시험에 같은 사례로 둔다.",
+        "오프라인 중 서버 inhibit 설정 → 재연결 보고에 inhibit 없음 → 불일치 1건·미확인 기간 = offline_since~재연결 시각"
       ],
       "deps": [],
       "coord": "FF_IMP 와이어"
@@ -854,17 +950,37 @@
       "ui": [],
       "fe": [],
       "be": [
-        "change_kind: POLICY·CONFIG·SW·MODEL·ODD, 유형별 필수 영향 분석(재-HARA·R156 §7.1.1.9~11 영향·SUMS 기록)"
+        "change_kind: POLICY·CONFIG·SW·MODEL·ODD, 유형별 필수 영향 분석(재-HARA·R156 §7.1.1.9~11 영향·SUMS 기록)",
+        "change_kind는 diff에서 산출한다: 정책 개정이라도 허용 기능·ODD·속도 범위가 넓어지면 ODD(또는 기능) 종류로 강제 승격하고 선언값보다 무거운 경로를 택한다.",
+        "change_impact의 필수 항목(재-HARA·R156 영향·SUMS 기록) 중 하나라도 미완료면 서명·출시 전이를 IMPACT_REVIEW_OPEN으로 거부한다.",
+        "change_impact.scope_status(CONFIRMED|REVIEW_REQUIRED)·assignee, IF-08 납품 ID ↔ CR 연결",
+        "contracts rules/change-kind.ts에 종류→필수 영향 분석 표(POLICY·CONFIG·SW·MODEL·ODD 각각의 필수 항목, 값은 규제 담당 승인 전 '가정값')를 두고, 복수 종류 개정은 필수 항목의 합집합으로 진입한다.",
+        "ODD·MODEL·SW 종류의 change_impact 필수 항목에 'Safety Case 갱신(현재 형상 evidence_manifest 재결합, ADS-BE14)'을 넣고 미완료면 publishPolicy·서명을 IMPACT_REVIEW_OPEN으로 거부한다.",
+        "출시 후 attestation 형상 ≠ 승인 release manifest이면 change_impact 예외 RELEASE_DRIFT를 열고 담당자 배정",
+        "ADS-BE14(3단계) 전에는 Safety Case 갱신 확인을 Safety Manager 수동 확인 기록으로 대신한다(결정 D-ADS-8) — 기록이 없으면 IMPACT_REVIEW_OPEN(detail=SAFETY_CASE_UNVERIFIED)",
+        "safety_case_confirmation은 ADS-BE14 뒤 evidence_manifest_ref로 바꾼다"
       ],
       "db": [
-        "change_kind 열·change_impact 기록"
+        "change_kind 열·change_impact 기록",
+        "change_impact.safety_case_confirmation{by, at, rationale, sig, config_ref}"
       ],
       "api": [],
       "tests": [
-        "TC02"
+        "TC02",
+        "TC02 변형: Flag만 바꿔 ODD를 넓힌 개정이 POLICY로 신고돼도 ODD 경로(재-HARA·R156 영향)로 진입함을 단언.",
+        "검토 필요 범위가 남은 조합은 출시 계획 편입 거부",
+        "5종 각각의 필수 분석 집합이 표와 같고 서로 다름, SW+ODD 동시 변경은 합집합 경로 단언(TC02).",
+        "TC02: 재-HARA·R156 영향 완료, Safety Case 미갱신인 Flag ODD 확대 개정 → publishPolicy 거부.",
+        "필수 영향 분석이 모두 완료되면 publishPolicy 허용(정상 경로)",
+        "Safety Case 수동 확인: 기록 있음 → 허용 / 없음 → IMPACT_REVIEW_OPEN(detail SAFETY_CASE_UNVERIFIED) / 확인자 = 요청자 → 직무 분리 거부"
       ],
-      "deps": [],
-      "coord": "JIRA CR 필드(IF-14)"
+      "deps": [
+        "ADS-BE10"
+      ],
+      "coord": "JIRA CR 필드(IF-14)",
+      "later": [
+        "ADS-BE14"
+      ]
     },
     {
       "id": "ADS-BE09",
@@ -880,16 +996,23 @@
       "fe": [],
       "be": [
         "contracts rules/odd-profile.ts: 축·단위·경계·배제 우선 스키마, 의미 검증",
-        "정책 컴파일이 승인 상한 초과 ODD·속도·지역을 거부, 정책·로그에 odd_profile_ref"
+        "정책 컴파일이 승인 상한 초과 ODD·속도·지역을 거부, 정책·로그에 odd_profile_ref",
+        "승인된 odd_profile 버전은 불변, 변경은 새 버전. 판정·로그·정책 집계 키에 odd_profile_ref를 포함해 서로 다른 버전을 섞지 않는다.",
+        "상품 노출 게이트: 승인 조합 밖 site는 카탈로그 노출·활성 허용 보류(사유 기록)",
+        "site 승인 조합 추가는 change_impact_ref(인증·안전 판단, scope_status=CONFIRMED) 없으면 승인 거부(IMPACT_REVIEW_OPEN)"
       ],
       "db": [
-        "odd_profile"
+        "odd_profile",
+        "odd_profile에 site(주차장 ID·구역·지도 버전·인프라 버전) 승인 조합"
       ],
       "api": [
         "/api/odd-profiles"
       ],
       "tests": [
-        "TC03 경계값·단위 시험"
+        "TC03 경계값·단위 시험",
+        "같은 Feature의 두 ODD 버전 로그가 집계·Evidence에서 분리되는지 단언.",
+        "km/h↔m/s 혼용, '<'↔'<=' 경계 오기, 배제 우선 위반 각 1건 이상의 명시 시험.",
+        "HT02: 승인 영향 미결 site를 정책에 추가 → 노출·활성 승격 보류, 사유 코드 기록, 허용 범위 불변"
       ],
       "deps": [],
       "coord": "기존 odd-restriction.ts(SOT-002)와 통합"
@@ -908,17 +1031,27 @@
       "fe": [],
       "be": [
         "config_set(HW·ECU SW·모델·보정·ODD·정책) 승인·대조, 부분 복구 판정",
-        "보안 최소 버전(anti-rollback 하한)으로 복구 후보 거부"
+        "보안 최소 버전(anti-rollback 하한)으로 복구 후보 거부",
+        "정책 발행 대상 계산과 차량 attestation이 보고 형상을 승인 config_set과 대조하여 조합 밖이면 적용 후보에서 제외하고 CONFIG_SET_NOT_APPROVED로 거부한다(개별 버전이 모두 유효해도).",
+        "복구 명령 target을 ECU 목록으로 확장하고 attestation이 ECU·모델·보정 전체를 보고, config_set 불일치면 RECOVERY_PARTIAL로 복원 완료·재활성화 후보에서 제외.",
+        "복구 후보의 정책 메타데이터(서명 유효기간·epoch·형상 참조)를 현재 기준으로 재검증",
+        "승인 config_set이 없는 F2+ Feature는 발행·적용 후보를 CONFIG_SET_MISSING으로 거부한다. F0·F1은 기존 Variant 규칙으로 허용하되 '조합 미검증' 사유를 기록하고 UI05 핵심 메시지에 수를 보인다."
       ],
       "db": [
-        "config_set"
+        "config_set",
+        "recovery_decision{vin, path(RESTORE_PREVIOUS|APPLY_FIX|SAFE_STATE|SERVICE), decided_by, rationale, config_set_ref}"
       ],
       "api": [
         "/api/config-sets"
       ],
       "tests": [
         "TC14",
-        "TC17"
+        "TC17",
+        "개별 부품 버전은 모두 최소 이상이지만 조합이 미승인인 차량에 적용 거부를 단언하는 시험.",
+        "TC17: ECU A만 복구된 상태에서 '복구 완료' 표시·Available 전이 없음 단언.",
+        "config_set 미등록 F2+ Feature 발행 거부, F0 Feature는 '조합 미검증' 사유와 함께 허용 단언.",
+        "서명 유효기간이 지났거나 epoch가 현재보다 낮은 정책 메타데이터를 가진 이전 정상 Binary로 복구 후보 → 거부(사유)",
+        "manifest는 ECU A·B 설치, 차량 attestation은 A만 → RECOVERY_PARTIAL·활성 후보 아님(manifest 단독으로 완료 처리 0건)"
       ],
       "deps": [],
       "coord": "attestation.ts 확장"
@@ -939,7 +1072,7 @@
       "db": [],
       "api": [],
       "tests": [
-        "TC21 재빌드 digest 동일"
+        "TC21 재빌드 시험에서 digest 동일과 함께 compilerVersion이 manifest에 기록됨을 단언."
       ],
       "deps": [],
       "coord": ""
@@ -959,7 +1092,14 @@
       "fe": [],
       "be": [
         "입력: 실제 Active 노출량·미확인 분리·감시 지표 경보·데이터 신선도",
-        "동결 명령(F0~F3 모두), 미확인·관측 부족은 성공으로 세지 않음"
+        "동결 명령(F0~F3 모두), 미확인·관측 부족은 성공으로 세지 않음",
+        "cohort 자동 확대 스케줄러와 publishPolicy·수동 확대(F0~F3)가 활성 rollout_freeze를 확인해 ROLLOUT_FROZEN으로 거부·보류한다.",
+        "cohort 구성 시 config_set(ADS-BE10)·market_baseline(ADS-BE16) 밖 차량을 제외하고, 무회신·UNKNOWN 차량은 별도 '미확인' 묶음으로 분리해 확대 판정 분모에서 성공으로 세지 않는다.",
+        "safety_metric_set(승인자·승인 시각·지표·임계)을 정책에 결합하고, 안전 관련 변경의 확대 판정은 이 집합만 입력으로 쓴다(사업 지표 개선은 무시).",
+        "사건 연결 시 해당 Feature 확대 자동 동결",
+        "확대 판정 입력을 config_set(조합)별로 분할, 표본 하한 미달 조합은 INSUFFICIENT",
+        "노출량(F049)은 ADS-BE01 집계 함수를 읽는다(출처 하나)",
+        "승인된 safety_metric_set 임계 초과 경보 → 해당 조합 자동 rollout_freeze(사유 METRIC_ALERT), 해제는 판정 담당 입력 후"
       ],
       "db": [
         "rollout_freeze"
@@ -969,12 +1109,22 @@
         "/api/policies/:id/freeze"
       ],
       "tests": [
-        "TC19"
+        "TC19",
+        "동결 설정 후 예약 시각이 지나도 다음 cohort 배포 0건, 해제 후 재개를 단언.",
+        "정책 허용 100·실제 Active 60인 cohort에서 두 값이 따로 나오는지 단언.",
+        "전환율 개선·안전 지표 미달 시 확대 거부 단언.",
+        "표본 하한 미달 조합은 INSUFFICIENT로 '확대 가능'에 들지 않음, 조합 A 오류 경보 시 A만 보류되고 B 판정은 독립",
+        "종료 사건이 연결되면 바로 다음 cohort 확대 0건(자동 동결) 단언"
       ],
       "deps": [
-        "ADS-BE01"
+        "ADS-BE01",
+        "ADS-BE10",
+        "ADS-BE16"
       ],
-      "coord": "TL-B01·B02·IF-15"
+      "coord": "TL-B01·B02·IF-15",
+      "cases": [
+        "R01"
+      ]
     },
     {
       "id": "ADS-BE13",
@@ -990,20 +1140,32 @@
       "be": [
         "incident_report: 인지 시각·30초 활성 창 판정·최초 통지·30일 기한·상태",
         "정기 보고 집계(노출량당)",
-        "표준 추적표 FFG-TEL-004 상태 정정(플랫폼 로그 ≠ DSSAD)"
+        "표준 추적표 FFG-TEL-004 상태 정정(플랫폼 로그 ≠ DSSAD)",
+        "incident_id를 정책 게시본·형상·odd_profile_ref·safety_verdict·전환 보고에 연결하고, 각 이벤트에 vehicle_seq와 ingest_seq를 따로 저장.",
+        "incident_report(법정 사건 보고)와 service_case(고객 서비스 사건, ORC-UI09)는 다른 개념 — service_case가 incident_report를 참조할 수 있다"
       ],
       "db": [
         "incident_report",
-        "periodic_report"
+        "periodic_report",
+        "incident_report.classification{decided_by, decided_at, rationale, version}, corrective_action(가설·조치·재현 시험·릴리스·safety_case_ref), closure_criteria",
+        "incident_event.ingest_seq, gap_marker; classification 판단 이력(R05 제안과 같음)",
+        "closure_criteria{observation_scope(config_set·odd_profile_ref·기간·노출량 하한), recurrence_check_result}"
       ],
       "api": [
         "/api/incident-reports",
         "/api/periodic-reports/:year"
       ],
       "tests": [
-        "TC24"
+        "TC24",
+        "차량 순서와 서버 수신 순서가 뒤바뀐 이벤트에서 두 순서가 각각 보존·표시됨을 단언.",
+        "standards 추적표 FFG-TEL-004가 '구현'이 아님을 단언하는 시험 + ORC-BE03 DSSAD 규칙이 운영 로그 화면 문구에 걸리는지 확인(TC24)",
+        "필수 증거 누락 시 사건 종료 거부, 담당자 판단 없는 보고 분류 저장 거부",
+        "HT06: 차량 시계 역전·지연 수집 시 두 순서 모두 보존, 누락 구간은 '누락'으로",
+        "관측 노출량이 하한 미달이면 종료 기준 미충족으로 사건 종료 거부"
       ],
-      "deps": [],
+      "deps": [
+        "ORC-BE03"
+      ],
       "coord": "IF-15 노출량 · 시장별 기한 소유(D-ADS-3)"
     },
     {
@@ -1015,18 +1177,27 @@
         "FFP-F010",
         "FFP-F053",
         "FFP-F055",
-        "FFP-F056"
+        "FFP-F056",
+        "FFP-F032"
       ],
       "ui": [],
       "fe": [],
       "be": [
         "CAE 노드 고유 ID, manifest가 형상 전체에 결합(evidenceManifestId 실제 채움)",
-        "도구 유효 범위 검사, 독립 검토 발견사항 → 열린 중대 발견이면 승격 차단"
+        "도구 유효 범위 검사, 독립 검토 발견사항 → 열린 중대 발견이면 승격 차단",
+        "운영 승격(G9·출시)은 현재 형상과 일치하는 evidence_manifest가 없거나 필수 시험 항목이 비면 EVIDENCE_MISSING으로 거부한다.",
+        "review_finding.reviewer가 근거 작성자·변경 요청자와 같으면 독립 검토로 인정하지 않는다.",
+        "Evidence manifest 항목에 origin(REUSED|NEW)·대상 config_set, 다른 형상 통과 결과는 승인 근거로 불가",
+        "시간 예산은 차량 팀 확정값(D-ADS-5) 등록·승인 경로 — 승인 전에는 ASSUMED(가정값)로 표시",
+        "ASSUMED(가정값) 시간 예산으로 얻은 PASS는 승격 근거로 쓰지 않는다"
       ],
       "db": [
         "safety_case_node",
         "evidence_manifest",
-        "review_finding"
+        "review_finding",
+        "tool_validity(tool_version, odd_range, scenario_class, correlation_ref, 근거) 신설 — 실차·시험장 상관 결과에 연결.",
+        "hazard_time_budget(hazard_id, detect_ms, decide_ms, act_ms, status ASSUMED|APPROVED, 승인 근거) 신설",
+        "required_test_set(Feature 등급·change_kind → 필수 TC·시나리오 클래스, 승인자·승인 시각) 신설 — evidence_manifest 필수 슬롯을 여기서 생성한다."
       ],
       "api": [
         "/api/safety-case/:featureId",
@@ -1034,7 +1205,11 @@
         "/api/review-findings"
       ],
       "tests": [
-        "TC21"
+        "TC21",
+        "TC21: manifest 없는 릴리스·승인 후 아티팩트 해시 변경 릴리스 승격 거부.",
+        "범위 밖 시나리오 결과가 한계 표시 없이 manifest PASS로 쓰이면 거부.",
+        "열린 중대(major) 발견이 있는 변경의 승격 거부, 종결 후 허용 시험.",
+        "필수 TC 하나가 manifest에 없으면 EVIDENCE_MISSING, 다른 TC·다른 형상 결과로 그 슬롯을 채우면 거부."
       ],
       "deps": [],
       "coord": "codeBeamer 검증 결과 쓰기(IF-01)"
@@ -1076,17 +1251,23 @@
       "fe": [],
       "be": [
         "ddt_impact 축, 미분류(UNCLASSIFIED) 상태 → 출시 거부",
-        "market_baseline(승인 유형·규정 series·승인 ODD)",
-        "RETIRED·DEPRECATED 정책 생성 거부 직접 시험"
+        "RETIRED·DEPRECATED 정책 생성 거부 직접 시험",
+        "정책 대상 해석·publishPolicy가 market_baseline(국가·승인 유형·규정 series·승인 ODD 프로파일)과 대조해 밖의 차량을 후보에서 제외하고 제외 사유 MARKET_NOT_APPROVED/ODD_NOT_APPROVED를 미리보기에 낸다.",
+        "미등록 판정 = SafetyProfile.status≠CONFIRMED ∨ ddt_impact 미입력 ∨ 상태별 책임자 미지정. source(INFERRED·REPORT_EXAMPLE·MANUAL)는 판정에 쓰지 않는다. ddt_impact를 확정 서명 대상 필드에 포함해 확정 뒤 바꾸면 재확정이 필요하다. 미등록이면 출시 전이·publishPolicy·서명에서 CLS_UNREGISTERED로 거부"
       ],
       "db": [
         "feature_version.ddt_impact",
-        "market_baseline"
+        "market_baseline",
+        "feature_lifecycle_owner(feature_id, state, owner_id, assigned_at, assigned_by) 신설 — 생성·운영·중단·폐기 상태별 책임자 기록."
       ],
       "api": [],
       "tests": [
         "TC01",
-        "TC23"
+        "TC23",
+        "단위·통합 시험: INFERRED 초안만 있는 Feature의 정책 발행·출시 거부, 4축 확정 후 허용(@ffp FFP-F001).",
+        "TC01: 미승인 국가·ODD 대상 차량이 배포 후보 수에서 빠지고 사유가 기록됨을 단언.",
+        "상태 전이 시 책임자 미지정이면 전이 거부, RETIRED·DEPRECATED Feature의 신규 허용 정책 생성 거부 직접 시험(TC23).",
+        "INFERRED 초안을 Safety Manager가 확정한 프로파일은 출시·발행 허용, ddt_impact만 빈 Feature는 CLS_UNREGISTERED 거부, 확정 뒤 ddt_impact 변경 시 재확정 전 거부(@ffp FFP-F001)."
       ],
       "deps": [],
       "coord": ""
@@ -1108,7 +1289,9 @@
       "api": [
         "GET /api/campaigns/:id"
       ],
-      "tests": [],
+      "tests": [
+        "캠페인 ↔ 릴리스 양방향 조회 API 시험 — 없는 campaignId → 404, 연결 없는 캠페인 → 빈 목록"
+      ],
       "deps": [],
       "coord": ""
     },
@@ -1124,12 +1307,17 @@
       "ui": [],
       "fe": [],
       "be": [
-        "tools: @ffp FFP-Fxxx 표식 스캔, 구현 수 래칫, 원본 판 변경 시 영향 요구·시험 목록"
+        "tools: @ffp FFP-Fxxx 표식 스캔, 구현 수 래칫, 원본 판 변경 시 영향 요구·시험 목록",
+        "@ffp 표식 시험의 최근 실행 결과(정상/실패 케이스 구분)와 it.fails 결함 목록을 요구별로 수집해 ads-catalog에 싣는다.",
+        "ads-catalog에 싣는 결과마다 실행 시각·커밋을 함께 두고, 기준 기간보다 오래된 결과는 '오래됨'으로 표시한다."
       ],
-      "db": [],
+      "db": [
+        "standard_source(doc, version, sha, access_level, owner, last_review_at) — 개정 감지 시 담당 재검토 작업 생성·종결 기록."
+      ],
       "api": [],
       "tests": [
-        "tools 시험"
+        "tools 시험",
+        "입력 노후(TC06)·부분 복구(TC17) 시나리오가 각 요구에 연결됐는지 래칫."
       ],
       "deps": [],
       "coord": "requirements.ts·standards.ts 패턴"
@@ -1142,7 +1330,7 @@
       "title": "[결함] 기록 신뢰도 — 감사 체인 끝 외부 고정, 발생 시각 미상 보존",
       "req": [
         "FFP-F060",
-        "FFP-F052"
+        "FFP-F050"
       ],
       "ui": [],
       "fe": [
@@ -1152,21 +1340,94 @@
         "감사 체인 head를 DB 밖(서명된 체크포인트 파일·외부 저장소)에 주기적으로 고정 — 끝 행 삭제·재계산 탐지",
         "체인 해시에 플랫폼 키 서명(HMAC 또는 PKI) — DB 권한만으로 재계산 불가",
         "hash가 빈 행 편입은 마이그레이션 1회로 한정, 이후 부팅에서는 변조로 보고",
-        "사건 접수 occurredAt 미제공 시 null 유지(수신 시각으로 채우지 않음)"
+        "사건 접수 occurredAt 미제공 시 null 유지(수신 시각으로 채우지 않음)",
+        "체크포인트는 감사 쓰기마다(또는 N행·T초 중 먼저, 설정값으로 최대 미고정 구간 명시) 갱신하고, 체인 키는 DB·앱 설정 밖(KMS/HSM)에 두어 체크포인트에 key_id를 기록한다."
       ],
       "db": [
         "audit_checkpoint"
       ],
       "api": [
-        "/api/audit/chain (checkpoint 대조 포함)"
+        "/api/audit/chain (checkpoint 대조 포함)",
+        "/api/audit/chain 대조 결과로 마지막 일치 체크포인트와 불일치 seq 구간을 반환하고, 체크포인트 사이 행 사본을 외부 append-only 저장소에서 대조해 원본을 보인다."
       ],
       "tests": [
-        "결함 기록 FFP-F060·ORCA-HT06(it.fails) → 수정 후 it로 전환"
+        "결함 기록 FFP-F060·ORCA-HT06(it.fails) → 수정 후 it로 전환",
+        "defects.spec.ts FFP-F060 it.fails → it 전환, 마지막 행 삭제·DB 권한자 재계산 탐지 시험(TC20 감사 이력).",
+        "체크포인트 직후 쓴 마지막 행 삭제 → 다음 대조에서 탐지·불일치 구간 반환, 앱 설정 권한만 가진 사용자의 재계산 → 서명 불일치 탐지."
       ],
       "deps": [],
       "coord": "보고서 재검증(2026-10-18)에서 F060 '구현' 반려, Orca HT06",
       "cases": [
         "HT06"
+      ]
+    },
+    {
+      "id": "ADS-BE20",
+      "priority": "P1",
+      "layer": "BE",
+      "title": "상품 권리 ↔ 안전 허가 분리 — 권한 변화는 COMMERCIAL 입력, 즉시 DENY 아님",
+      "req": [
+        "FFP-F022",
+        "FFP-F062"
+      ],
+      "ui": [],
+      "fe": [],
+      "be": [
+        "contracts/src/flags/evaluate.ts: F2+ Feature에서 ENTITLEMENT FALSE는 즉시 DENY가 아니라 '상품 회수 요청'(COMMERCIAL·DC3 다음 시동)으로 투영하고, 차량은 Active 중이면 DDT를 유지한 채 승인된 종료 절차·사용자 안내로 처리한다(체험권 만료와 같은 경로).",
+        "권한 어댑터: entitlement 변화는 차량에 COMMERCIAL 입력으로만 전달하고 DDT 소유권·Active 상태 결정에는 쓰지 않는다(FFP-F022와 같은 항목).",
+        "범위: ddt_impact≠NONE 또는 미입력(UNCLASSIFIED)인 Feature(ADS-BE16) — 분류가 생기기 전(1단계)에는 F2 이상을 보수적으로 대상에 넣는다",
+        "ENTITLEMENT TRUE(결제 성공)는 정책 의도 ON만 만들고, Active·ddt_owner는 차량 2.1 decision(ACTIVATE ALLOW) 보고로만 바뀐다고 명시한다."
+      ],
+      "db": [],
+      "api": [
+        "평가 응답에 commercial_state(상품 상태)와 safety_permission(안전 허가)을 따로 싣는다",
+        "OFREP·정책 평가 응답에 entitlement_state(ACTIVE|REVOKE_PENDING|REVOKED)·effective_at(NEXT_IGNITION 등)을 value와 별도 필드로 두고, REVOKE_PENDING 동안 value를 안전 허가로 쓰지 않는다고 contracts에 명시한다."
+      ],
+      "tests": [
+        "TC11: Active·DDT 수행 중 일반 구독 만료·상품 회수 → 즉시 OFF 없음, DC3 예약·안내 이벤트, 다음 시동에서 비활성화 단언(evaluate 단위 시험 — 시뮬레이터 시험은 ADS-SIM03).",
+        "TC11: 결제 성공 → 즉시 Active 아님(로컬 판정 통과 필요), 일반 구독 만료 → ddt_owner 불변.",
+        "범위 경계: 1단계 F1 만료 → 즉시 DENY · F2 → REVOKE_PENDING, 2단계 ddt_impact=NONE 확정 → 즉시 DENY · 미입력 → 투영"
+      ],
+      "deps": [],
+      "coord": "하네스 멤버 검토(설계 적합성) 2026-10-18에서 신설",
+      "later": [
+        "ADS-BE16"
+      ]
+    },
+    {
+      "id": "ADS-BE21",
+      "priority": "P1",
+      "layer": "BE",
+      "title": "영향 차량 산정 — 후보·구성 미확인·통신 미수신 3분류와 식별 정확도",
+      "req": [
+        "FFP-F050"
+      ],
+      "ui": [
+        "종료 사건별 행에 후보·구성 미확인·미수신 3열(ADS-UI02 화면)"
+      ],
+      "fe": [],
+      "be": [
+        "영향 후보 산정: 조건(형상·ODD·구성 시점)으로 VIN을 CANDIDATE/CONFIG_UNKNOWN/NO_CONTACT로 분류, 결과 스냅샷 고정, 재평가 이력"
+      ],
+      "db": [
+        "impact_set{incident_id, kind(CANDIDATE|CONFIRMED), config_as_of, vins[], status(CONFIG_UNKNOWN|HOLD 별도)}",
+        "impact_set에 provisional_conditions·uncertain_conditions·exclusions[{condition, rationale}]",
+        "impact_set(CONFIRMED)에 confirmed_by·analysis_ref 필수 — CANDIDATE 산정 결과를 복사해 만든 집합(같은 산정 ID)은 CONFIRMED 저장 거부"
+      ],
+      "api": [
+        "GET /api/incidents/:id/impact-set — 3분류 수·VIN 목록"
+      ],
+      "tests": [
+        "CANDIDATE·CONFIG_UNKNOWN·NO_CONTACT 분리 집계, 스냅샷 고정 뒤 재평가 이력, 확정 영향군이 없으면 정확도 판단 불가",
+        "구성 보고가 config_as_of보다 오래된 VIN → CONFIG_UNKNOWN, 연결 이력 없는 VIN → NO_CONTACT, 재평가 시 이전 스냅샷 불변·이력 1건 추가"
+      ],
+      "deps": [
+        "ADS-BE02",
+        "ADS-BE10"
+      ],
+      "coord": "하네스 멤버 검토(설계 적합성) 2026-10-18에서 신설",
+      "cases": [
+        "R01"
       ]
     },
     {
@@ -1187,19 +1448,31 @@
       "fe": [],
       "be": [
         "프론트 twin Local Guard 판정을 contracts로 올려 백엔드 GLEO 내부 시뮬레이터와 공용",
-        "행위 6종 × 입력(최신성·건전성·형상·정책·차단·ODD·사용자·정지·유지·전원·DDT), ODD IN/OUT/UNKNOWN·경계 접근, 실행 직전 재검증(TOCTOU)"
+        "행위 6종 × 입력(최신성·건전성·형상·정책·차단·ODD·사용자·정지·유지·전원·DDT), ODD IN/OUT/UNKNOWN·경계 접근, 실행 직전 재검증(TOCTOU)",
+        "AVP 세션 결과를 NORMAL_END와 EXCEPTION_TRANSITION(사유)으로 구분 보고"
       ],
       "db": [],
       "api": [],
       "tests": [
         "TC04~TC07",
         "S01",
-        "S08"
+        "S08",
+        "TC16: 판정 후 차량 이동·hold 상실 → 만료/불일치 판정으로 설치·활성화 보류(TOCTOU).",
+        "TC07: 지도상 종료 경계 접근 시 plan_started_at < expected_exit_at - required_transition_ms 단언.",
+        "TC08: 정차 입력만 참이고 hold·주변 위험 불충족이면 HANDOVER·INSTALL·MRC 모두 DENY, ACTIVATE 판정과 독립.",
+        "TC06: 타임스탬프 역전·차륜/IMU 불일치 입력별 사유 기록 단언.",
+        "로컬 DENY(ODD OUT·차단) 상태에서 관리자 강제 활성화·SDK 직접 activate 호출 → ACTIVE 전이 0, 사유 기록.",
+        "미지원·판단 불가 구역 AVP 요청 → 시작 거절·수동 주차 안내 사유",
+        "TC08 MRC 진입 시험",
+        "해제 뒤 ODD OUT이면 Available 유지(TC04)"
       ],
       "deps": [
         "ADS-BE01"
       ],
-      "coord": "실차 판정은 차량 팀 — 플랫폼은 계약 검증용"
+      "coord": "실차 판정은 차량 팀 — 플랫폼은 계약 검증용",
+      "cases": [
+        "R02"
+      ]
     },
     {
       "id": "ADS-SIM02",
@@ -1214,19 +1487,30 @@
       "ui": [],
       "fe": [],
       "be": [
-        "최초 부팅(정책 없음) 신규 활성화 불가, 연결 상실 중 DDT 유지, 저장 중 전원 손실 후 epoch·차단·진행 중 업데이트 복원"
+        "최초 부팅(정책 없음) 신규 활성화 불가, 연결 상실 중 DDT 유지, 저장 중 전원 손실 후 epoch·차단·진행 중 업데이트 복원",
+        "오프라인 기준선 표: 최초 부팅(정책 없음)·연결 상실·캐시 만료 각각의 신규 활성화/Active 유지 규칙을 contracts에 정의하고 시뮬레이터가 따른다.",
+        "저장 무결성 검사 실패 시 기능별 안전 전략으로 허용 보류·보고 사유 STORE_INTEGRITY_UNKNOWN",
+        "오프라인 중 캐시 정책 유효기간 만료 → 신규 활성 불가·기존 동작은 안전 규칙"
       ],
       "db": [],
       "api": [],
       "tests": [
         "TC10",
         "TC13",
-        "S07"
+        "S07",
+        "TC12: KILL 후 시뮬 차량 재부팅·전원 손실 → 캐시된 ON 정책을 평가해도 차단 유지·ACTIVE 보고 없음(보고 직접 주입 금지, 시뮬레이터 경로로).",
+        "TC10: 정책 없는 최초 부팅에서 신규 활성화 DENY, 캐시 만료 후 신규 활성화 DENY·Active 유지.",
+        "HT03 통합: 재부팅→오래된 ON·중복·다른 사건 해제 각각 거절 사유, 유효 해제 후 ACTIVE 아님",
+        "같은 사건·같은 Feature지만 대상 VIN 집합 밖 차량에 대한 해제 → 거절 사유 TARGET_MISMATCH",
+        "서명 검증 실패·epoch 역행 캐시 정책은 오프라인에서도 평가하지 않고 사유 기록, 기존 Active는 기능별 안전 규칙"
       ],
       "deps": [
         "ADS-SIM01"
       ],
-      "coord": ""
+      "coord": "",
+      "cases": [
+        "R01"
+      ]
     },
     {
       "id": "ADS-SIM03",
@@ -1236,12 +1520,14 @@
       "req": [
         "FFP-F031",
         "FFP-F032",
-        "FFP-F034"
+        "FFP-F034",
+        "FFP-F022"
       ],
       "ui": [],
       "fe": [],
       "be": [
-        "DDT owner 전이, MRC 근거(정지·유지 수단·주변 위험), 고장 주입 반응 시간 측정(CARLA 연계)"
+        "DDT owner 전이, MRC 근거(정지·유지 수단·주변 위험), 고장 주입 반응 시간 측정(CARLA 연계)",
+        "고장 주입 측정은 detect·decide·act 구간 경계 시각을 각각 기록해 hazard_time_budget 구간별로 비교하고, 결과를 ADS-BE14 evidence_manifest 항목(형상·도구 버전 포함)으로 저장한다."
       ],
       "db": [],
       "api": [],
@@ -1249,10 +1535,16 @@
         "TC08",
         "TC09",
         "TC22",
-        "S02"
+        "S02",
+        "TC22: 고장 주입 측정값이 예산 이하면 PASS, 초과면 BUDGET_EXCEEDED 단언.",
+        "TC09: 인계 불가·미응답 시 ddt_owner가 ADS에서 fallback/MRC로 공백 없이 이어짐 단언.",
+        "TC11 시뮬레이터: Active·DDT 수행 중 구독 만료 → 즉시 OFF 없음, 다음 시동에서 비활성(ADS-BE20 계약)",
+        "TC22: act 구간만 예산 초과 시 BUDGET_EXCEEDED(구간 표시), ASSUMED 예산 기준 PASS는 manifest에서 '한계' 표시."
       ],
       "deps": [
-        "ADS-SIM01"
+        "ADS-SIM01",
+        "ADS-BE20",
+        "ADS-BE14"
       ],
       "coord": "CARLA 가상검증 · 대표 ADS Feature 지정(D-ADS-2)"
     },
@@ -1268,7 +1560,8 @@
       "ui": [],
       "fe": [],
       "be": [
-        "FF_IMP gleo/ 스키마·차량 Guard에 2.1 필드, siblings pin 갱신"
+        "FF_IMP gleo/ 스키마·차량 Guard에 2.1 필드, siblings pin 갱신",
+        "FF_IMP GLEO 와이어 2.1 동기 — Feature epoch(ADS-BE07)·수신/수락/적용 시각 분리·DEFERRED 결과 필드를 FF_IMP 쪽에 반영(D-ADS-1 승인 뒤)"
       ],
       "db": [],
       "api": [],
@@ -1277,7 +1570,8 @@
       ],
       "deps": [
         "ADS-BE01",
-        "ADS-BE02"
+        "ADS-BE02",
+        "ADS-BE07"
       ],
       "coord": "FF_IMP 소유 — 사용자 승인 후(D-ADS-1)"
     },
@@ -1292,20 +1586,35 @@
         "FFP-F039"
       ],
       "ui": [
-        "설치 단계 표시: 다운로드됨 / 설치 준비 / 설치 중 / 검증됨 / 실패·복구 / 안전 상태·정비 필요"
+        "설치 단계: 선형 5단계(설치 전 · 다운로드됨 · 설치 준비 · 설치 중 · 설치 확인됨) + 갈림 상태(설치 보류 · 실패 · 복구 · 정지 유지 · 정비 필요). 설치 전 칸의 운행 제한은 '약 25분 운행 제한(예상)' — 완료 시각 약속 금지"
       ],
       "fe": [],
       "be": [
-        "IF-05 계약: 설치 보류 사유(전원·정지 유지·DDT), 복구 결과, 안전 상태 도달 증거"
+        "IF-05 계약: 설치 보류 사유(전원·정지 유지·DDT), 복구 결과, 안전 상태 도달 증거",
+        "OTA 모의(IF-05)에 이전 이미지 손상 경로: 안전 상태 진입·증거(safe_state_reached_at, 근거) 보고 후 재시작 상태 일관성.",
+        "시뮬 차량 설치 직전 사전조건 검사(SOC·정지 유지·DDT 없음) 실패 시 INSTALL_DEFERRED{reason} 보고.",
+        "복구 뒤 형상 집합(ADS-BE10) 재검증 — 승인 조합 밖이면 활성 적격 '조건 부족'(사유: 승인 조합 밖, 복구 뒤 재검증)"
       ],
       "db": [],
-      "api": [],
+      "api": [
+        "install_result.failure_kind(POWER|LINK|VERIFY) 필수",
+        "IF-05 install manifest 수신·저장(형상 대조 입력)",
+        "IF-05: scheduled_window, est_duration, drive_restriction, state NOT_STARTED"
+      ],
       "tests": [
         "TC16",
         "TC18",
-        "S04"
+        "S04",
+        "TC18 시뮬레이터 시험.",
+        "TC16: 배터리 부족·hold 상실 시 설치 보류 단언.",
+        "다운로드됨 상태 차량은 호환·설치 완료로 세지 않음, 부분 실패와 복구 필요 구분",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "failure_kind 없는 install_result 거부, POWER·LINK·VERIFY가 집계에서 따로 셈",
+        "drive_restriction이 있는 예약 → customer-state에 '설치 중 운행 제한'이 함께 나오고 예약 구간만으로 사용 가능 시각 미표시"
       ],
-      "deps": [],
+      "deps": [
+        "ADS-BE10"
+      ],
       "coord": "OTA 결정 D7(외부 위임) 유지"
     },
     {
@@ -1354,7 +1663,7 @@
       "id": "ORC-UI01",
       "priority": "P1",
       "layer": "UI",
-      "title": "주문별 타임라인 — 주문 → 권리 → 정책 → 차량 응답 → 실사용 확인",
+      "title": "주문별 타임라인 — 주문 → 권리 → 정책 적용 → 사용 준비 확인 → 실사용 확인(선택)",
       "req": [
         "FFP-F049",
         "FFP-F062"
@@ -1365,33 +1674,40 @@
         "HT01"
       ],
       "ui": [
-        "/entitlements 새 탭 \"주문 추적\": 주문 ID마다 5단계와 경과 시간, 기한 초과 강조",
-        "핵심 메시지 \"기한 내 활성 92% · 활성 미확인 37건 · 환불 대기 4건\"",
-        "\"주문 성공·활성 미확인\"을 \"사용 준비 완료\"로 표시하지 않음(HT01)"
+        "/entitlements 새 탭 \"주문 추적\": 주문 ID마다 단계(주문 → 권리 → 정책 적용 → 사용 준비 확인 → 실사용 확인(선택))와 경과 시간, 기한 초과 강조",
+        "\"주문 성공·활성 미확인\"을 \"사용 준비 완료\"로 표시하지 않음(HT01)",
+        "환불 요청 → 완료 경과 시간은 보조 줄",
+        "핵심 메시지는 큰 값 하나 '기한 넘긴 사용 준비 미확인 주문 N건' — 확인됨/미확인/오프라인/부분 실패는 배타 구간 StageCounts, 환불은 별도 결과 줄"
       ],
       "fe": [
-        "screens/release/Entitlements 탭, design StageCounts 재사용"
+        "screens/release/Entitlements 탭, design StageCounts 재사용",
+        "1단계에는 확인율을 표시하지 않고 isReadyConfirmed 결과 건수만(핵심 메시지와 같은 출처) — ORC-UI10 지표 계약이 생기면 확인율을 읽어 보인다",
+        "주문 원장·멱등은 ORC-BE01 — 이 항목은 timeline 조회만",
+        "주문·차량 데이터가 과금 모의·시뮬레이터 출처면 SimulatedDataNotice '개념 시연 — 가상 데이터' 표시"
       ],
       "be": [
-        "주문↔권리↔게시본↔차량 응답 연결, 멱등 주문(같은 주문 키는 권리 1건)",
-        "사용 준비 완료율 계산(분모 = 모든 유효 결제 주문, 미확인·오프라인은 분모에 남김)"
+        "준비 판정은 ORC-BE01 isReadyConfirmed를 쓴다"
       ],
-      "db": [
-        "order_link 신설"
-      ],
+      "db": [],
       "api": [
         "GET /api/orders/:id/timeline",
         "GET /api/orders?status="
       ],
       "tests": [
         "HT01",
-        "회귀: 오프라인 차량 결제 → 활성 미확인"
+        "회귀: 오프라인 차량 결제 → 활성 미확인",
+        "HT01: 결제 성공+오프라인 → '주문 성공·활성 미확인', 재연결 후 보고 시각이 주문 이전이면 준비로 세지 않음",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "재연결 후 주문 이후 시각의 보고로 4조건 충족 → '사용 준비 확인'으로 전이, 조건 하나(정책 ACK=RECEIVED)만 빠져도 미확인 유지"
       ],
       "deps": [
         "ADS-UI01",
         "ORC-BE01"
       ],
-      "coord": "과금 모의(if_call BILLING, billing.controller) · D-ORC-3"
+      "coord": "과금 모의(if_call BILLING, billing.controller) · D-ORC-3",
+      "later": [
+        "ORC-UI10"
+      ]
     },
     {
       "id": "ORC-UI02",
@@ -1410,26 +1726,26 @@
         "B07"
       ],
       "ui": [
+        "첫 작업: /activation/decide 핵심 값 'ON'·'ALLOW · POLICY_MATCH'를 VIN 지원 판정 4상태로 교체 — 서버 정책 평가는 '정책 평가' 탭, 값은 '정책 ON(의도) — 차량 실행은 차량이 판단', 판정 코드는 보조 글자",
         "/activation/decide 확장: 바로 가능 · 업데이트 후 가능 · 부품 미장착 · 차량 확인 필요 + 사유(시장 승인·SW·HW·권리)",
         "판정 불가는 구매 가능으로 표시하지 않음, 결제 직전 재확인 표시"
       ],
       "fe": [
-        "screens/release/Activation 확장"
+        "screens/release/Activation 확장",
+        "판정 결과는 ORC-BE02 eligibility_check(판정 기준 시각 포함)를 읽는다"
       ],
       "be": [
         "지원 판정 API(VIN × 상품): 시장 승인·as-built·SW·형상 집합·권리"
       ],
-      "db": [
-        "eligibility_check 신설(판정 기록·기준 시각)"
-      ],
+      "db": [],
       "api": [
         "GET /api/vehicles/:vin/eligibility?catalogId="
       ],
       "tests": [
-        "C2·B02 시나리오"
+        "C2·B02 시나리오",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
-        "ADS-BE10",
         "ORC-BE02"
       ],
       "coord": ""
@@ -1448,32 +1764,55 @@
         "C2",
         "C3",
         "C4",
-        "C5",
-        "C7",
-        "C8"
+        "C8",
+        "R01"
       ],
       "ui": [
         "차량별 상태·현장 지원 화면에 패널: 가능한가 · 언제 쓸 수 있나 · 얼마·무엇을 얻나 · 문제 생기면 누가 해결하나",
-        "마지막 확인 시각, 오프라인이면 \"차량 확인 중\"",
-        "플랫폼은 고객 앱이 아니다 — 고객 앱이 읽을 상태 API와 운영자용 미리보기만"
+        "마지막 확인 시각, 오프라인이면 '오프라인 — 마지막 확인 {시각}, 현재 상태 미확인'",
+        "플랫폼은 고객 앱이 아니다 — 고객 앱이 읽을 상태 API와 운영자용 미리보기만",
+        "자리 고정: 제한 사유·대체 이용은 1번 답 아래, 지원 경로는 4번 답 아래, 바뀐 점은 접힘 한 줄, 알림 근거는 맨 아래 회색 줄. 운영자용 필드는 '운영자만 보임' 라벨로 미리보기 테두리 밖"
       ],
       "fe": [
-        "components CustomerStatePreview"
+        "components CustomerStatePreview",
+        "entitlement 갱신·해지 필드(ORC-UI04)와 market_change·소유권 이전(ORC-BE04)은 그 항목 구현 전에는 null + '해당 정보 없음'(단정 금지)",
+        "지원 경로는 ORC-UI09(2단계) 전까지 '지원 경로 안내만'으로 투영"
       ],
       "be": [
-        "고객 상태 API(6축을 고객 문구로 투영, 미확인은 단정하지 않음)"
+        "고객 상태 API(6축을 고객 문구로 투영, 미확인은 단정하지 않음)",
+        "customer-state에 사용 제한 사유·대체 이용·지원 경로(사건 연결)",
+        "복구 후 '설치 검증 → 활성 적격 → 사용 확인' 3단계 순서로만 정상 복귀 표시",
+        "'언제 쓸 수 있나'는 차량 설치 검증·준비 확인 뒤에만 시각 표시, 그 전엔 '예정·조건부'",
+        "ADS-OTA01 연동 전에는 설치 칸 '설치 상태 연동 전', '언제 쓸 수 있나'는 시각 없이 조건만",
+        "'누가 해결하나' = service_case 상태(원격 시도 중·방문 필요·정비 예약) 그대로 투영, 사건 없으면 지원 경로 안내만"
       ],
       "db": [],
       "api": [
-        "GET /api/vehicles/:vin/customer-state"
+        "GET /api/vehicles/:vin/customer-state",
+        "사용 준비 확인 시 고객 앱용 상태 변경 이벤트(웹훅/구독) — '사용 가능 알림'의 근거는 차량 보고 기반 준비 확인 시각",
+        "customer-state에 changes_since_last_seen[{axis, before, after, reason}]",
+        "customer-state에 entitlement{access_until, next_charge_at, renewal_state(ON|CANCELLED), cancel_effective_at} — 해지 직후 고객 앱이 같은 값을 읽는다",
+        "customer-state.market_change{type, status(PREVIEWED|COMMITTED|APPLIED|UNCONFIRMED), items[]} — 거점 화면과 같은 원천"
       ],
       "tests": [
-        "C8 오프라인 → 마지막 확인 시각"
+        "C8 오프라인 → 마지막 확인 시각",
+        "C1: 설치 미시작 → '설치 전', 서버 전송 완료만으로 '설치 완료' 아님",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "재연결 후 권리 만료·정책 변경 각 1건 → changes_since_last_seen 2행(이유 포함), 변경 없으면 0행"
       ],
       "deps": [
-        "ADS-UI01"
+        "ADS-UI01",
+        "ADS-BE01",
+        "ORC-BE02",
+        "ORC-BE01"
       ],
-      "coord": "D-ORC-1"
+      "coord": "D-ORC-1",
+      "later": [
+        "ORC-UI09",
+        "ADS-OTA01",
+        "ORC-UI04",
+        "ORC-BE04"
+      ]
     },
     {
       "id": "ORC-UI04",
@@ -1496,20 +1835,27 @@
         "screens/release/Entitlements, biz/TrialAnalytics"
       ],
       "be": [
-        "권리 갱신·해지·환불·기간 조정 상태 전이, 안전 기능 판매 금지 검사"
+        "권리 갱신·해지·환불·기간 조정 상태 전이, 안전 기능 판매 금지 검사",
+        "권리에 next_renewal_at·renewal_notice_at, 갱신 전 고지 이벤트 발행; 체험 상품 게시 시 갱신·요금·데이터 조건 필드가 비면 게시 거부",
+        "권리 만료·해지 효력 시각을 정책 게시본에 valid_until로 실어 오프라인 차량이 고지된 시각까지만 허용(연장 추정 금지)"
       ],
       "db": [
-        "entitlement 열 추가(renewal·cancel_at·refund)"
+        "entitlement 열 추가(renewal·cancel_at·refund)",
+        "entitlement.term_start_basis(ENTITLED|READY_CONFIRMED)와 기산 시각"
       ],
       "api": [
-        "POST /api/entitlements/:id/cancel",
-        "POST /api/entitlements/:id/adjust"
+        "POST /api/entitlements/:id/cancel-requests (고객 앱·고객센터가 호출, 플랫폼은 처리 상태만)",
+        "POST /api/entitlements/:id/adjustments (운영자 조정, 사유 기록)"
       ],
       "tests": [
-        "C3 해지 후 다음 결제 없음"
+        "C3 해지 후 다음 결제 없음",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "해지 요청 후 customer-state가 cancel_effective_at·next_charge_at=null을 반환, 게시본 valid_until이 cancel_effective_at을 넘지 않음",
+        "안전·기본 기능(Feature 안전 등급)을 체험·기간제 상품으로 게시 → 거부(사유 코드), 편의 기능은 허용",
+        "READY_CONFIRMED 기산: 권리 D0·준비 확인 D3이면 30일 이용권 종료는 D33, ENTITLED 기산이면 D30"
       ],
       "deps": [
-        "ORC-UI01"
+        "ORC-BE01"
       ],
       "coord": ""
     },
@@ -1533,20 +1879,22 @@
         "차량별 상태 탭"
       ],
       "be": [
-        "시장 변경 엔티티·권리 재판정"
+        "market_change를 service_case(ORC-UI09)와 현장 지원 포털에서 조회 가능하게",
+        "국가 이동 미리보기 조회와 권리 재판정 호출만 — 엔티티는 ORC-BE04, 재판정은 ORC-BE02"
       ],
-      "db": [
-        "market_change 신설"
-      ],
+      "db": [],
       "api": [
         "POST /api/vehicles/:vin/market-change/preview"
       ],
       "tests": [
-        "B11 사전 고지와 실제 일치"
+        "B11 사전 고지와 실제 일치",
+        "C5: 여행(TRIP) 유형은 권리·정책 변경 0건",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-BE16",
-        "ORC-UI02"
+        "ORC-BE04",
+        "ORC-BE02"
       ],
       "coord": ""
     },
@@ -1565,26 +1913,33 @@
       ],
       "ui": [
         "기능 명세: 기본 · 승계 가능 구매 · 종료되는 개인 구독 · 남은 체험, 미확인은 보장하지 않음",
-        "이전 소유자 개인정보 삭제 확인"
+        "이전 소유자 개인정보 삭제 확인",
+        "명세에 '추가 구매 필요' 구역과 명세 기준 시각·마지막 차량 확인 시각",
+        "명세 핵심 메시지는 사라지는 기능 하나, 나머지 구역 수는 보조 줄. '추가 구매 필요'는 '새 소유자가 따로 구매해야 쓰는 기능'으로"
       ],
       "fe": [
         "차량별 상태 탭 + 인쇄용 명세"
       ],
       "be": [
-        "소유권 이전 처리(승계 판정·권리 회수·데이터 삭제)"
+        "디지털 기능 명세 조회·발행만 — 소유권 이전 처리(승계 판정·권리 회수·데이터 삭제)는 ORC-BE04",
+        "feature-statement는 as_built_config + 최신 차량 보고 + 권리를 대조, 불일치 항목은 '구성 불일치 — 지원 건 열림', 관측 없음은 '미확인'",
+        "불일치 시 service_case 자동 생성(판매 책임자 배정)"
       ],
       "db": [
-        "ownership_transfer 신설"
+        "feature_statement{vin, version, issued_at, items[], basis_refs} 발행본 불변 — 인도 확인은 발행 버전과 차량 보고 대조, 차이는 service_case"
       ],
       "api": [
-        "POST /api/vehicles/:vin/ownership-transfer",
         "GET /api/vehicles/:vin/feature-statement"
       ],
       "tests": [
-        "HT08"
+        "HT08",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "명세 v1 발행 후 권리 변경 → 인도 확인에서 v1 대비 차이 항목 표시·service_case 1건"
       ],
       "deps": [
-        "ORC-BE04"
+        "ORC-BE04",
+        "ORC-UI08",
+        "ORC-UI09"
       ],
       "coord": "데이터·규제 기록(Data Act·삭제)"
     },
@@ -1600,25 +1955,30 @@
         "B09"
       ],
       "ui": [
-        "소유자·관리자·운전자·권리 주체 분리, 반납 시 권리 회수, 예외 목록"
+        "소유자·관리자·운전자·권리 주체 분리, 반납 시 권리 회수, 예외 목록",
+        "운전자 개인 프로필은 차량·고객 앱 소관 — 플랫폼은 권리 주체 관계와 회수 상태만 보인다"
       ],
       "fe": [
         "신설 /fleet/corporate"
       ],
       "be": [
-        "권리 주체 모델"
+        "권리 주체 모델",
+        "회수는 차량 보고로 확인될 때만 완료, 미보고·오프라인은 예외 목록",
+        "차량군 일괄 적용 = VIN마다 ORC-BE02 판정, '바로 가능' 외 VIN은 적용 제외 목록(사유)으로"
       ],
-      "db": [
-        "entitlement_party 신설"
-      ],
+      "db": [],
       "api": [
         "GET /api/corporate-fleets/:id"
       ],
       "tests": [
-        "B09 반납 후 권리 잔존 0"
+        "B09 반납 후 권리 잔존 0",
+        "반납 시 오프라인 차량은 '미회수 예외'로 남고 완료 수에 포함되지 않음",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "법인 관리자 역할로 운전자 ACCOUNT 귀속 구독·이용 기록 조회 → 거부, 회사 계약 권리만 조회"
       ],
       "deps": [
-        "ORC-BE04"
+        "ORC-BE04",
+        "ORC-BE02"
       ],
       "coord": ""
     },
@@ -1641,16 +2001,21 @@
         "screens/bom/BaselineQueue 탭"
       ],
       "be": [
-        "as-built 구성 수신(IF-12 해외 공장 모의 확장)·대조"
+        "as-built 구성 수신(IF-12 해외 공장 모의 확장)·대조",
+        "인도 인수 항목: 정차 확인 가능 / 주행조건 확인 필요 분리",
+        "인도 인수 = 계약 기능 × 최신 차량 보고 대조, 주행조건 항목은 '인도 후 확인 대기'로 남고 인수 완료 수에서 제외"
       ],
       "db": [
-        "as_built_config 신설"
+        "as_built_config 신설",
+        "eol_check{cause, decided_by(생산 품질), rework_ref, recheck_result, shipped_evidence}"
       ],
       "api": [
         "GET /api/plants/eol/mismatches"
       ],
       "tests": [
-        "B06 불일치 유출 0"
+        "B06 불일치 유출 0",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "recheck_result 없는 eol_check에 shipped_evidence 저장 → 거부, decided_by가 생산 품질 역할이 아니면 결정 저장 거부"
       ],
       "deps": [
         "ADS-BE10"
@@ -1667,37 +2032,53 @@
       ],
       "cases": [
         "B04",
-        "C4"
+        "C4",
+        "HT05"
       ],
       "ui": [
         "장애·VOC·현장 지원: 사건 하나에 주문·설치·차량 상태·조치·정비 거점 인계를 묶음",
-        "\"이관 시각은 해결이 아님\", 영향 없는 기능은 유지(부분 제한) 표시"
+        "\"이관 시각은 해결이 아님\", 영향 없는 기능은 유지(부분 제한) 표시",
+        "볼 수 없음 두 종류를 나눈다 — 역할 때문이면 BlockedAction(누가 할 수 있는지), 고객 동의 범위 밖이면 칸마다 '고객 동의 범위 밖'(요청 경로 없음)"
       ],
       "fe": [
         "screens/ops/Incidents·Field"
       ],
       "be": [
-        "서비스 사건 연결·직무별 권한·동의 범위"
+        "서비스 사건 연결·직무별 권한·동의 범위",
+        "복구 불가·안전 상태 차량은 service_case 자동 생성(입고 경로)",
+        "현장 지원·service_case 조회에 직무 Roles + 고객 동의 범위 검사(동의 참조는 고객 앱이 전달)",
+        "원격 조치 종료는 차량 보고로 결과 확인 후",
+        "해결 후 고객 확인 요청 이벤트(고객 앱) — 미응답은 '고객 확인 대기'로 해결과 구분",
+        "같은 VIN·같은 Feature의 미해결 service_case가 있으면 새 접수를 연결(시작은 최초 접수 시각), 해결 후 기준 기간 내 같은 증상은 reopened_from으로"
       ],
       "db": [
-        "service_case 신설"
+        "service_case 신설",
+        "service_case.handover{diagnosis_summary, parts, work_items, site}, remote_action_ref(롤백 ID)",
+        "service_case.first_reported_at, resolved_at(차량 결과 + 재사용 확인 — 과업 세션 연결 전에는 고객 확인 응답 또는 담당자 확인 기록, 출처 표기), reopened_from"
       ],
       "api": [
-        "GET /api/service-cases/:id"
+        "GET /api/service-cases/:id",
+        "POST /api/service-cases(고객 앱·딜러 접수, consent_scope 참조)"
       ],
       "tests": [
-        "C4 재문의 없이 상태 조회"
+        "C4 재문의 없이 상태 조회",
+        "권한 없는 직무·동의 범위 밖 조회 거부(수정 전 실패)",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "safe_state_reached_at 보고 차량 → service_case 1건(입고 경로) 자동 생성, 중복 보고에도 1건",
+        "차량 결과만 있고 재사용 확인 없는 service_case의 resolved 저장 → 거부, 이관만 된 건은 resolved_at null",
+        "원격 조치 명령 ACK만 있고 차량 결과 보고 없음 → '조치 결과 미확인', 복구 완료 아님"
       ],
-      "deps": [
-        "ADS-BE13"
-      ],
-      "coord": ""
+      "deps": [],
+      "coord": "",
+      "later": [
+        "ORC-BE08"
+      ]
     },
     {
       "id": "ORC-UI10",
       "priority": "P2",
       "layer": "UI",
-      "title": "지표 계약과 사업 효과 계산",
+      "title": "지표 계약 — 분모·제외 사유·계산 버전·최신성",
       "req": [
         "FFP-F051"
       ],
@@ -1709,26 +2090,103 @@
         "R01"
       ],
       "ui": [
+        "첫 작업: 체험 전환 분석 핵심 메시지(합성 모집단 27.6% 녹색)를 중립 톤 + '가정값' 표지(SimulatedDataNotice)로 — 지표 계약이 실측이 아니면 성과 색을 쓰지 않는다",
         "지표 6개마다 분모·제외 사유·성공 조건·계산 버전·최신성, 실측 전에는 \"가정값\"",
-        "사업 효과 계산(순기여·손익분기 전환율, 입력 검증 규칙)은 체험 분석에 \"가정 실험\"으로"
+        "지표 목록은 GET /api/metric-contracts 등록분이 분모(핵심 메시지는 실측 지표 수 하나), 표는 영역별 묶음·계약 필드 7열, 보조 수치는 행 Drawer"
       ],
       "fe": [
-        "screens/biz/TrialAnalytics 탭"
+        "screens/biz/TrialAnalytics 탭",
+        "출처가 아직 없는 지표(종료 결과 ADS-SIM03·과업 세션 ORC-BE08·영향 차량 ADS-BE21)는 \"출처 미연결 — 가정값\"으로 표시하고 성과로 세지 않는다"
       ],
       "be": [
-        "지표 계약 저장·계산 버전"
+        "지표 계약 저장·계산 버전",
+        "체험 평가 입력: 실제 이용 세션(IF-15)·해지·환불·청구 오류·지원비를 같은 관측 기간 키로 결합",
+        "확정 영향군이 없으면 판단 불가(확정 영향군 없음), 있으면 누락률·과잉 포함률",
+        "성공률과 함께 측정 가능 세션 비율·중도 포기·보고 누락 별도, 누락 보정 금지",
+        "체험 평가의 실제 이용 세션 = ORC-BE08 task_session(연결 전에는 출처 미연결)",
+        "준비 판정은 ORC-BE01 isReadyConfirmed를 쓴다('부분 실패' = 4조건 중 1~3개만 확인된 주문)"
       ],
       "db": [
-        "metric_contract 신설"
+        "metric_contract 신설",
+        "출시 지표: 현지 승인 시각·제공 시각, 승인 대기·전달 지연 구간 분리",
+        "국가 이동 지표: 처리시간·잘못된 판매·재문의·동의 누락, 국가·이동 유형 차원",
+        "metric_contract 사용 준비 확인율(차량 보고 기준): 분모·성공 구성·기한·별도 결과(취소·환불·부분 실패) 필드",
+        "충전소 선택 과업 성공률 계약(C6) 등록 — 충전 속도와 별개 지표",
+        "safe_termination 계약: 분모 키(incident_id, command_id, vin), 결과(MRC|DISABLED|IN_TRANSITION|NO_CONTACT|TIMEOUT|EVIDENCE_MISSING), time_limit_ref=차량 팀 확정값",
+        "장기 차량 지원 지표: 지원 차량 실제 이용·실패·지원비, 미지원 사유별 문의",
+        "공통화 효과 계약과 과업 성공률을 브랜드·차종 차원으로"
       ],
       "api": [
         "GET /api/metric-contracts"
       ],
       "tests": [
-        "계산기 경계값(0.01대 미만·달성 불가·100% 초과)"
+        "계산기 경계값(0.01대 미만·달성 불가·100% 초과)",
+        "관측 기간이 다른 입력 결합 시 계산 거부",
+        "오프라인·부분 실패·환불 주문이 분모에 남고 분자에서 빠짐, 중복 거래는 주문 ID로 1건",
+        "확정 집합 없음 → 수치 미표시, 구성 미확인 VIN은 분모 밖 별도 행",
+        "명령 수신 ACK만 있는 차량은 성공 아님, 체험 만료 기한은 시간 한계 입력으로 거부",
+        "보고 누락 세션이 성공·실패 어느 쪽에도 들어가지 않음",
+        "이관만 된 건은 미해결로 남음, P95에 '완료 건만' 범위 표기",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "결과 구간(준비 확인·기한 내 미확인·오프라인·부분 실패·취소·환불)이 배타이고 합이 분모와 같음, 취소·환불이 미확인 수에 중복되지 않음",
+        "후보 10·확정 8·교집합 6 → 누락률 2/8·과잉 포함률 4/10, config_as_of가 다르면 계산 거부",
+        "time_limit_ref 초과·보고 없음 → TIMEOUT, mrc.reached_at 있으나 hold_means 없음 → EVIDENCE_MISSING(MRC로 세지 않음)",
+        "재오픈 건은 최초 접수 시각부터 측정되고 재발률 분자에 포함, 미해결 건수·경과시간이 P95와 함께 반환",
+        "뒤 단계 출처(종료 결과·과업 세션·영향 차량) 지표는 계약 계산기에 고정 입력(fixture)을 넣은 계산 시험으로 — 출처가 연결되면 실데이터 시험으로 바꾼다"
       ],
-      "deps": [],
-      "coord": "텔레메트리 Closed loop 지표(BACKLOG TL-B08)와 같은 계약"
+      "deps": [
+        "ORC-BE01",
+        "ORC-UI09",
+        "ADS-UI01",
+        "ADS-BE02",
+        "ADS-BE01"
+      ],
+      "coord": "텔레메트리 Closed loop 지표(BACKLOG TL-B08)와 같은 계약",
+      "later": [
+        "ADS-SIM03",
+        "ORC-BE08",
+        "ADS-BE21"
+      ]
+    },
+    {
+      "id": "ORC-UI11",
+      "priority": "P3",
+      "layer": "UI",
+      "title": "사업 효과 가정 실험 — 순기여·손익분기 전환율(체험 분석)",
+      "req": [],
+      "ui": [
+        "체험 분석 화면 '가정 실험' 탭: 비용 입력(effect_input)·순기여·손익분기 전환율 — basis=ASSUMED 입력이 하나라도 섞인 결과는 가정값 표지, MEASURED만으로 계산돼도 가정 실험 탭 안에서만(실측 지표 ORC-UI10과 섞지 않음)",
+        "입력 검증 규칙(음수·범위 밖)과 계산 버전 표시"
+      ],
+      "fe": [
+        "실측 지표(ORC-UI10)와 섞지 않는다 — 가정 실험 결과는 성과 색을 쓰지 않는다"
+      ],
+      "be": [
+        "effect_input(비용·결제액·잠식 가정)과 계산식 버전",
+        "같은 항목이 두 입력에 있으면 계산 거부, 결제액만으로 이익 표시 금지",
+        "effect_input 필수 유형(공통 구축·차종 적응·차이 검증·운영·지원비·환불·기본 상품 잠식) 중 빠진 유형이 있으면 순효과 대신 '입력 누락: 유형' 표시",
+        "effect_input·필수 유형 검사·순효과 계산은 이 항목만 소유(basis MEASURED|ASSUMED) — ORC-UI10에는 공통화 효과 계약 필드만"
+      ],
+      "db": [
+        "effect_input(신설 — 비용 항목 유형·현금/시간 구분·관측 범위·출처)"
+      ],
+      "api": [
+        "POST /api/business-effect/simulate"
+      ],
+      "tests": [
+        "입력 경계값·검증 실패 시험, 결과에 가정값 표지 단언",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)",
+        "시간 절약을 현금 절감 합계에 넣으면 실패",
+        "검증비 입력이 없는 계산 → 순효과 미표시, 기존·신규 비용의 관측 범위가 다르면 비교 거부"
+      ],
+      "deps": [
+        "ORC-UI10"
+      ],
+      "coord": "하네스 멤버 검토 2회차(설계 적합성·UX)에서 ORC-UI10과 분리",
+      "cases": [
+        "B05",
+        "B10"
+      ]
     },
     {
       "id": "ORC-BE01",
@@ -1744,17 +2202,30 @@
       "ui": [],
       "fe": [],
       "be": [
-        "같은 주문 키 = 권리 1건, 활성 결과를 주문에 연결, 기한 초과 → 취소·환불, 환불 후 권리 회수 확인"
+        "같은 주문 키 = 권리 1건, 활성 결과를 주문에 연결, 기한 초과 → 취소·환불, 환불 후 권리 회수 확인",
+        "주문 생성 시 시장 법적 승인 미충족이면 결제 거부(MARKET_NOT_APPROVED)",
+        "주문 확정 직전 ORC-BE02 재판정, 가능 외 상태면 주문 거부·사유 반환",
+        "준비 판정 단일 함수 isReadyConfirmed(contracts rules/readiness.ts) 소유 — 권리 ACTIVE ∧ 형상 호환 ∧ 정책 적용 ACK(수신 아님) ∧ 차량 준비 보고(관측 신선도 '최신 확인')",
+        "1단계 형상 호환 = 지원 조건(Variant) SW 대조, 사용한 출처를 판정 기록에 남긴다 — ADS-BE10 뒤 config_set으로 바꾼다"
       ],
       "db": [
         "order_link"
       ],
       "api": [],
       "tests": [
-        "중복 결제 0"
+        "중복 결제 0",
+        "결제 직전 판정이 바뀐 VIN(가능→확인 필요) 주문 거부",
+        "결제(PAID) 직후 vehicle_feature_status.runtime_state 불변",
+        "Profile 상태가 VERIFY_REQUIRED인 시장 또는 Profile 없는 시장의 VIN 주문 → MARKET_NOT_APPROVED, 권리·order_link 0건",
+        "결제 직후 6축: 상품 권리=구매, 실제 실행=미확인(P-9 낱말) — '판단 불가' 문구로 단언하지 않음"
       ],
-      "deps": [],
-      "coord": "D-ORC-3"
+      "deps": [
+        "ORC-BE02"
+      ],
+      "coord": "D-ORC-3",
+      "later": [
+        "ADS-BE10"
+      ]
     },
     {
       "id": "ORC-BE02",
@@ -1773,19 +2244,38 @@
       "ui": [],
       "fe": [],
       "be": [
-        "contracts rules/eligibility.ts: 시장 승인·as-built·SW·형상 집합·권리 → 4상태 + 사유, 판정 불가 ≠ 가능"
+        "contracts rules/eligibility.ts: 시장 승인·as-built·SW·형상 집합·권리 → 4상태 + 사유, 판정 불가 ≠ 가능",
+        "entitlement.service 체험 수락·구매 전환·직접 주문 경로가 모두 eligibility 4상태를 쓰고 '차량 확인 필요'·'부품 미장착'이면 거부(기존 UNKNOWN 통과 제거)",
+        "시장 승인 = ADS-BE16 market_baseline(법적 승인 유형) AND 내부 상품 승인 — 둘을 별도 사유 코드로",
+        "OTA 설치 검증 이벤트(IF-05, ADS-OTA01) 수신 시 해당 VIN을 정책 대상에 편입하고 준비 확인 후 알림",
+        "기존 구매 게이트(entitlement.service.ts:239 — UNKNOWN 통과)를 이 판정으로 대체한다. 판정은 한 곳",
+        "'업데이트 후 가능'은 필요 HW가 as_built_config(ORC-UI08) 또는 차량 보고 구성(Attestation)으로 확인된 VIN에만. 둘 다 없으면 '차량 확인 필요'(사유 AS_BUILT_UNKNOWN)",
+        "1단계 법적 승인 = 시장 Compliance Profile이 있고 status=CONFIRMED(F 등급과 무관), ADS Feature는 ADS Profile도 CONFIRMED — ADS-BE16 뒤 market_baseline으로 바꾼다",
+        "OTA 설치 이벤트가 없으면 '업데이트 후 가능' 판정에만 '차량 확인 필요'를 적용한다(바로 가능 판정에는 쓰지 않음) — ADS-OTA01 뒤 설치 이벤트로 바꾼다",
+        "내부 상품 승인 = product_market_approval(상품·시장·승인자·시각) — 결정 D-ORC-5 전에는 승인 기록이 없으면 판단 불가로 두되, 데모·시험 시장(시드 승인 기록)만 통과",
+        "1단계 형상 = 지원 조건(Variant) SW 대조(출처 기록) — ADS-BE10 뒤 config_set으로 바꾼다"
       ],
       "db": [
-        "eligibility_check"
+        "eligibility_check",
+        "product_market_approval(catalog_id, market, approved_by, approved_at, rationale) 신설"
       ],
-      "api": [],
+      "api": [
+        "POST /api/vehicles/:vin/eligibility/refresh — 마지막 보고가 기준 시간을 넘으면 차량 재보고를 요청하고 결과 전까지 '차량 확인 필요' 유지"
+      ],
       "tests": [
-        "4상태 단위 시험"
+        "4상태 단위 시험",
+        "회귀: verdict=UNKNOWN/NOT_APPLICABLE 차량의 구매 전환 → 거부(수정 전 실패)",
+        "SW 조건 충족 + as-built·차량 보고 구성 모두 없음 → '업데이트 후 가능' 아님('차량 확인 필요')",
+        "법적 승인 있음·내부 상품 승인 없음 / 그 반대 → 서로 다른 사유 코드로 '바로 가능' 아님, 둘 다 있어야 '바로 가능'"
       ],
-      "deps": [
+      "deps": [],
+      "coord": "",
+      "later": [
+        "ADS-BE16",
+        "ORC-UI08",
+        "ADS-OTA01",
         "ADS-BE10"
-      ],
-      "coord": ""
+      ]
     },
     {
       "id": "ORC-BE03",
@@ -1794,21 +2284,52 @@
       "title": "사례별 금지 표현 lint-copy 규칙",
       "req": [],
       "cases": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
         "B01",
-        "R01",
-        "R04",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
         "B07",
-        "C7"
+        "B08",
+        "B09",
+        "B10",
+        "B11",
+        "B12",
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05"
       ],
       "ui": [],
       "fe": [
-        "tools/lint-copy 규칙: 사례 25의 표현 경계에서 뽑은 금지 표현(예: \"즉시 끕니다\", \"알아서 되돌아갑니다\", \"모든 구형차\")"
+        "tools/lint-copy 규칙: 사례 25의 표현 경계에서 뽑은 금지 표현(예: \"즉시 끕니다\", \"알아서 되돌아갑니다\", \"모든 구형차\")",
+        "lint-copy: 체험 화면 '무료' 단독 표기 금지(갱신 조건 동반 필수)"
       ],
-      "be": [],
+      "be": [
+        "고정 문자열(사례 25의 표현 경계)에 더해 구조 규칙: 결제와 Active를 한 상태로 합친 문구 금지, 예시 수치는 \"가정값\" 표시 필수, MRC와 비활성을 합친 숫자 금지",
+        "금지 표현 정규식: 사용 준비 완료(검증 전)·즉시 Active·종료 완료(확인 전)·자동 유지/전환·평생 유지·자동 양도·항상 동작·무조건 무료·즉시 해결 — 검사 대상 copy/*.ts 전체",
+        "금지어 추가: 확인 불가·판정 불명·판단 보류·확정 불가('모름' 표기), '차단'·'보류' 단독, '사용 준비 완료', Button disabled+title(래칫), DSSAD 단독 표기(FFP-F052 — 'DSSAD 기록은 차량 소관')",
+        "금지 정규식에 '동일 바이너리'·'전 시장 동시 (승인|출시)' 추가",
+        "금지 정규식에 '(안전|필수 경고).*A/B'·'A/B.*(안전|경고)' 추가",
+        "금지 정규식에 '(증거|승인).*자동 승계' 추가",
+        "금지어 추가: '차량 확인 중'(진행 중인 확인 요청이 없을 때 — 결과가 곧 나올 것처럼 읽힌다)"
+      ],
       "db": [],
       "api": [],
       "tests": [
-        "lint:copy 래칫"
+        "lint:copy 래칫",
+        "사례 25 × 규칙 매핑 단언 — 사례마다 표현 경계 규칙이 1개 이상",
+        "가정값 표기 없는 수치 화면 1건을 넣으면 lint가 실패하는 시험"
       ],
       "deps": [],
       "coord": "3초 테스트 세션의 copy 소유 존중"
@@ -1831,19 +2352,146 @@
       "ui": [],
       "fe": [],
       "be": [
-        "entitlement_party·ownership_transfer·market_change, 승계 판정·회수·데이터 삭제"
+        "entitlement_party·ownership_transfer·market_change, 승계 판정·회수·데이터 삭제",
+        "전환 후 ADS-UI01 feature-state로 차량 적용 결과를 대조해 market_change 상태를 APPLIED/UNCONFIRMED로",
+        "market_change commit은 주행 관련(안전 등급) Feature를 자동 전환하지 않고 REVIEW_REQUIRED 항목으로 남김. 미리보기 응답에 종료 기능별 대체 수단(지원 시장·수동 기능)",
+        "commit 시 목적 시장 market_baseline·ORC-BE02 재판정으로 유지/전환/종료를 재확정, 미리보기와 다르면 commit 보류·재동의 요청"
       ],
       "db": [
         "entitlement_party",
         "ownership_transfer",
-        "market_change"
+        "market_change",
+        "entitlement에 binding(VEHICLE|ACCOUNT)·transferable·상품 약관 버전 열",
+        "corporate_contract(차량군·기간·상품) — entitlement_party에 contract_id",
+        "ownership_transfer.deletion_scope(PLATFORM|VEHICLE_CONFIRMED)",
+        "entitlement.status에 TRANSFER_REVIEW(이전 심사) 추가, 6축 상품 권리 값 매핑(없음/체험/구매/만료/이전 심사)"
       ],
-      "api": [],
+      "api": [
+        "POST /api/vehicles/:vin/market-change/:id/commit(등록 확인 증거 필수) — preview와 분리",
+        "POST /api/vehicles/:vin/ownership-transfer"
+      ],
       "tests": [
-        "HT08"
+        "HT08",
+        "HT08: VEHICLE 귀속 구매만 이전, ACCOUNT 구독 종료, 이전 소유자 데이터 삭제 기록, 이전 후 차량 보고 대조 전 '이전 완료' 금지",
+        "등록 확인 증거 없는 commit → 거부, commit 후 feature-state 대조 전 market_change=UNCONFIRMED이고 '전환 완료' 표시 0건"
       ],
       "deps": [],
       "coord": ""
+    },
+    {
+      "id": "ORC-BE05",
+      "priority": "P2",
+      "layer": "BE",
+      "title": "VOC → 개선 후보 → 배포 → 변경 안내 연결(동의 범위 참조)",
+      "req": [],
+      "ui": [],
+      "fe": [],
+      "be": [
+        "VOC ↔ 개선 후보(Feature Version) ↔ 배포 ↔ 변경 안내(release note) 연결 엔티티, 수집 데이터에 consent_scope 참조",
+        "원인 분류 DATA_PROVIDER(지도·충전사업자)는 Feature 개선 후보로 넘기지 않고 외부 조치 건으로",
+        "변경 안내는 ORC-UI03 changes_since_last_seen으로 투영"
+      ],
+      "db": [],
+      "api": [
+        "GET /api/voc/:id/trace — VOC·후보·배포·안내 단계 상태"
+      ],
+      "tests": [
+        "VOC → 개선 후보 → 배포 → 변경 안내 연결 조회 시험, consent_scope 없는 데이터는 수집 거부",
+        "consent_scope 밖 데이터가 붙은 VOC 수집 → 저장 거부, 개선 배포 후 release note 없으면 '변경 안내 미발행'으로 남음"
+      ],
+      "deps": [
+        "ORC-UI09",
+        "ORC-BE08"
+      ],
+      "coord": "하네스 멤버 검토(설계 적합성) 2026-10-18에서 신설",
+      "cases": [
+        "C6"
+      ]
+    },
+    {
+      "id": "ORC-BE06",
+      "priority": "P3",
+      "layer": "BE",
+      "title": "기존 차량 제공 후보·지속 지원 범위 판단",
+      "req": [],
+      "ui": [],
+      "fe": [],
+      "be": [
+        "legacy_offer 후보(차량군·효과·지원비 추정·축소 버전 여부)·검토 결정·사후 관찰 지표 연결",
+        "legacy_offer 검토 결정(APPROVED|REDUCED_VERSION|REJECTED) 없는 차량군은 정책 대상 편입 거부, 사후 관찰 기간 지표가 연결 안 되면 '지속 지원 판단 불가(관찰 지표 미연결)'"
+      ],
+      "db": [],
+      "api": [],
+      "tests": [
+        "legacy_offer 후보 → 검토 결정 → 사후 관찰 지표 연결 시험",
+        "결정 없는 legacy 차량군으로 정책 발행 → 거부, REDUCED_VERSION은 축소 Feature Version만 대상"
+      ],
+      "deps": [
+        "ORC-BE02",
+        "ADS-BE10",
+        "ORC-BE08"
+      ],
+      "coord": "하네스 멤버 검토(설계 적합성) 2026-10-18에서 신설",
+      "cases": [
+        "B07"
+      ]
+    },
+    {
+      "id": "ORC-BE07",
+      "priority": "P3",
+      "layer": "BE",
+      "title": "재사용 자산·차종 차이 분석 — 차이 영역은 새 검증 필수",
+      "req": [],
+      "ui": [],
+      "fe": [],
+      "be": [
+        "후속 차종 승인 시 diff 영역마다 새 검증 결과 필수, 재사용 증거와 새 증거 구분",
+        "브랜드별 상품 승인 없는 다른 브랜드 대상 정책 발행 거부, 공통화 효과 계약은 재사용 자산 수 단독 지표를 받지 않음"
+      ],
+      "db": [
+        "reuse_asset{origin_vehicle_line, kind(구성·시험), evidence_ref}·variant_diff{display, compute, os, region}·brand"
+      ],
+      "api": [],
+      "tests": [
+        "HT07: 공통 Feature ID·다른 HW/OS 후속 차종 → 차이 분석·대상 검증 없으면 승인 거부",
+        "variant_diff 영역 중 새 검증 결과 없는 영역이 하나라도 있으면 후속 차종 승인 거부, 재사용 증거만으로 통과 0건",
+        "후속 차종 Evidence 조회에서 REUSED·NEW가 구분되고, 다른 config_set의 통과 결과는 대상 근거 수에 들지 않음"
+      ],
+      "deps": [
+        "ADS-BE10",
+        "ADS-BE14"
+      ],
+      "coord": "하네스 멤버 검토(설계 적합성) 2026-10-18에서 신설",
+      "cases": [
+        "B10",
+        "HT07"
+      ]
+    },
+    {
+      "id": "ORC-BE08",
+      "priority": "P2",
+      "layer": "BE",
+      "title": "과업 세션 이벤트 계약(IF-15) — 고객 과업 성공률의 분모",
+      "req": [],
+      "ui": [],
+      "fe": [],
+      "be": [
+        "task_session 이벤트 계약(IF-15/TL): task_id, outcome(SUCCESS|FAIL|ABANDONED|NOT_REPORTED), duration, error"
+      ],
+      "db": [
+        "task_definition{task_id, version, success_criteria(정확성 조건·시간 한계·허용 오류), owner} — outcome은 세션 사실(완료 대상·시간·오류)을 기준과 대조해 서버가 산출"
+      ],
+      "api": [],
+      "tests": [
+        "task_session 계약 스키마 시험 — outcome 4값, NOT_REPORTED·ABANDONED 분리, 측정 가능 세션 비율",
+        "시간 한계 초과 완료 → SUCCESS 아님, 클릭 수 감소·잘못된 충전소 선택 → FAIL"
+      ],
+      "deps": [],
+      "coord": "텔레메트리 TL-* 수집 정책과 한 계약(80-70)",
+      "cases": [
+        "C1",
+        "C6"
+      ]
     },
     {
       "id": "ORC-SIM01",
@@ -1869,11 +2517,17 @@
       "db": [],
       "api": [],
       "tests": [
-        "HT01·HT03·HT05 시뮬레이터 시험"
+        "HT01·HT03·HT05 시뮬레이터 시험",
+        "UX 사양(harness/ads/ux.json)의 핵심 메시지·판단 불가·미확인·막힘 사유를 화면 시험으로 단언(3초 e2e 포함)"
       ],
       "deps": [
         "ADS-SIM01",
-        "ADS-SIM02"
+        "ADS-SIM02",
+        "ORC-BE01",
+        "ADS-BE02",
+        "ADS-BE03",
+        "ADS-BE10",
+        "ADS-OTA01"
       ],
       "coord": "Orca 기술 시연 권고"
     }
@@ -1938,6 +2592,24 @@
       "question": "내부 참고자료 I1~I5(Hyundai 아키텍처 슬라이드·CCS/OTA 메시지 아키텍처 등) 원본을 받을 수 있나?",
       "why": "Orca 보고서가 출처로 적었지만 zip에 없다. 6축·경계 설계의 원 근거다.",
       "proposal": "받으면 sources에 sha로 고정하고 영향 문장을 재검토."
+    },
+    {
+      "id": "D-ADS-7",
+      "question": "설계가 쓰는 역할 중 계약 역할 목록에 없는 것(분석 전용·독립 검토자·공장 품질 담당, 새 절차 후보의 고객 지원·커머스 운영·정비 거점)을 기존 역할로 바꿀지, 신설할지?",
+      "why": "역할을 늘리면 IAM·데모 계정·업무 절차 정합성 게이트(check.py --live)가 함께 바뀐다. 정하지 않으면 권한 없음 상태와 막힘 사유 문구를 쓸 수 없다.",
+      "proposal": "분석 전용 → 감사 조회자(기존), 독립 검토자 → Safety Manager 중 비작성자(직무 분리 규칙). 신설은 고객 지원·정비 거점 2개만 업무 절차 세션에 제안(D-ADS-4 방식)."
+    },
+    {
+      "id": "D-ADS-8",
+      "question": "2단계(Safety Case 화면·manifest 전) 동안 SW·MODEL·ODD 개정의 Safety Case 갱신 확인을 Safety Manager 수동 확인 기록으로 통과시킬지?",
+      "why": "수단이 없다고 막으면 2~3단계 동안 해당 종류 개정을 하나도 발행할 수 없다.",
+      "proposal": "수동 확인 기록(사유·서명)으로 통과, ADS-BE14 뒤 evidence_manifest 확인으로 교체."
+    },
+    {
+      "id": "D-ORC-5",
+      "question": "내부 상품 승인(상품 × 시장)의 출처를 어디로 할까? 지금 플랫폼에는 시장별 상품 출시 승인 기록이 없다.",
+      "why": "없으면 1~2단계에 법적 승인만으로 결제가 열리거나(예: 유럽), 반대로 모든 구매가 막혀 HT01 시험을 못 돌린다.",
+      "proposal": "상품 출시 승인(FPW.7-A10)에 시장을 넣어 product_market_approval로 기록하고, 결정 전에는 시드 승인 시장만 통과."
     }
   ],
   "phases": [
@@ -1966,13 +2638,18 @@
         "ADS-BE05",
         "ADS-BE06",
         "ADS-BE19",
-        "ORC-BE03"
+        "ORC-BE03",
+        "ADS-BE20",
+        "ADS-BE02",
+        "ORC-BE01",
+        "ORC-BE02"
       ],
       "exit": "결함 5건 회귀 시험 통과, 의도·전달·실제 분리 화면, 대표 Feature 2개의 상태 계약 합의(보고서 1단계) · 6축 상태와 주문 추적이 HT01을 통과"
     },
     {
       "phase": "2 · 구성 관리 화면·엔티티",
       "items": [
+        "ADS-BE10",
         "ADS-UI04",
         "ADS-UI05",
         "ADS-UI09",
@@ -1980,7 +2657,6 @@
         "ADS-BE07",
         "ADS-BE08",
         "ADS-BE09",
-        "ADS-BE10",
         "ADS-BE11",
         "ADS-BE16",
         "ORC-UI04",
@@ -1989,8 +2665,7 @@
         "ORC-UI08",
         "ORC-UI09",
         "ORC-UI10",
-        "ORC-BE01",
-        "ORC-BE02"
+        "ORC-BE04"
       ],
       "exit": "P0 요구 중 CP 담당 통과, TC01~03·13·14·17·21 자동 시험"
     },
@@ -2000,7 +2675,6 @@
         "ADS-UI07",
         "ADS-UI08",
         "ADS-UI11",
-        "ADS-BE02",
         "ADS-BE12",
         "ADS-BE13",
         "ADS-BE14",
@@ -2008,7 +2682,12 @@
         "ADS-BE17",
         "ADS-BE18",
         "ORC-UI07",
-        "ORC-BE04"
+        "ADS-BE21",
+        "ORC-BE05",
+        "ORC-BE06",
+        "ORC-BE07",
+        "ORC-BE08",
+        "ORC-UI11"
       ],
       "exit": "TC12·15·19·20·24 자동 시험, 확대 판정이 미확인·지연을 성공으로 세지 않음"
     },
@@ -2018,8 +2697,7 @@
         "ADS-SIM01",
         "ADS-SIM02",
         "ADS-SIM03",
-        "ADS-SIM04",
-        "ORC-SIM01"
+        "ADS-SIM04"
       ],
       "exit": "TC04~10·22 시뮬레이터 시험, FF_IMP 2.1 반영"
     },
@@ -2028,7 +2706,8 @@
       "items": [
         "ADS-OTA01",
         "ADS-LC01",
-        "ADS-LC02"
+        "ADS-LC02",
+        "ORC-SIM01"
       ],
       "exit": "TC16·18·23"
     }

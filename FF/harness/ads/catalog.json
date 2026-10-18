@@ -1,0 +1,2221 @@
+{
+  "source": {
+    "file": "ADS_UNECE_Document_Comparison_Korean_Report_v3.0.html",
+    "sha256": "712e75bc65426b1c2a763e8b008ff72b6f34f7bc39e52b0a569b11a324764832",
+    "bytes": 1200160,
+    "revision": "3.0",
+    "date": "2026-10-18"
+  },
+  "vision": {
+    "thesis": "플랫폼은 승인된 정책을 관리하고, 차량이 현재 상태의 실행 가능성을 판단한다.",
+    "lead": [
+      "Revision 3.0 · 2026-10-18 · 정식 GTR 26 재대조 · ODD · 차량 안전 판정 · 플랫폼 요건 64개 · 타사 공개 사례"
+    ]
+  },
+  "requirements": [
+    {
+      "id": "FFP-F001",
+      "title": "Feature 분류",
+      "category": "카탈로그·적용성",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H01"
+      ],
+      "claims": [
+        "C01"
+      ],
+      "content": "각 Feature에 ADS 여부·DDT 영향·안전 관련성·담당자를 등록해야 한다.",
+      "acceptance": "분류 미등록 항목의 차량 릴리스를 거부한다.",
+      "basis": "GTR §2.6; §5.3.1.1",
+      "tests": [
+        "TC01"
+      ]
+    },
+    {
+      "id": "FFP-F002",
+      "title": "변경 종류 분류",
+      "category": "카탈로그·적용성",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H01"
+      ],
+      "claims": [
+        "C01"
+      ],
+      "content": "정책·보정/설정·실행 SW·모델·ODD 변경을 별도 변경 유형으로 관리해야 한다.",
+      "acceptance": "각 유형이 서로 다른 영향 분석 경로로 진입한다.",
+      "basis": "R156 §2.3; GTR §4.3.3",
+      "tests": [
+        "TC02"
+      ]
+    },
+    {
+      "id": "FFP-F003",
+      "title": "시장 적용 기준선",
+      "category": "카탈로그·적용성",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H01"
+      ],
+      "claims": [
+        "C01"
+      ],
+      "content": "국가·승인 유형·적용 규정 series·승인 ODD를 Feature 기준선에 연결해야 한다.",
+      "acceptance": "미승인 시장/ODD 대상은 배포 후보에서 제외된다.",
+      "basis": "GTR §1; N3·N9 적용 범위",
+      "tests": [
+        "TC01"
+      ]
+    },
+    {
+      "id": "FFP-F004",
+      "title": "수명주기 소유권",
+      "category": "카탈로그·적용성",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H01"
+      ],
+      "claims": [
+        "C01"
+      ],
+      "content": "Feature의 생성·운영·중단·폐기 상태와 각 책임자를 기록해야 한다.",
+      "acceptance": "폐기된 Feature의 신규 허용 정책 생성을 거부한다.",
+      "basis": "GTR §5.1 SMS에서 도출",
+      "tests": [
+        "TC23"
+      ]
+    },
+    {
+      "id": "FFP-F005",
+      "title": "호환 형상 집합",
+      "category": "형상·영향 분석",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H01"
+      ],
+      "claims": [
+        "C01"
+      ],
+      "content": "Feature별 HW·ECU SW·모델·보정·ODD 프로파일의 허용 조합을 등록해야 한다.",
+      "acceptance": "개별 부품 버전은 유효해도 조합이 미승인이면 적용을 거부한다.",
+      "basis": "GTR §5.3.1.4.1.2; R156 호환성",
+      "tests": [
+        "TC17"
+      ]
+    },
+    {
+      "id": "FFP-F006",
+      "title": "의존성 그래프",
+      "category": "형상·영향 분석",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H01"
+      ],
+      "claims": [
+        "C01"
+      ],
+      "content": "활성화·업데이트·복구에 필요한 Feature/ECU 의존성과 금지 조합을 검증해야 한다.",
+      "acceptance": "순환 의존성·선행 기능 누락을 빌드 단계에서 탐지한다.",
+      "basis": "GTR §5.3.1.15에서 도출",
+      "tests": [
+        "TC17"
+      ]
+    },
+    {
+      "id": "FFP-F007",
+      "title": "승인 영향 판정",
+      "category": "형상·영향 분석",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H01"
+      ],
+      "claims": [
+        "C01"
+      ],
+      "content": "새 기능 허용 및 성능·ODD·안전 동작 변경의 승인 영향을 검토해야 한다.",
+      "acceptance": "영향 검토 미완료 변경은 서명 단계로 승격되지 않는다.",
+      "basis": "R156 00 §7.1.1.8~10 / 01 §7.1.1.9~11",
+      "tests": [
+        "TC02"
+      ]
+    },
+    {
+      "id": "FFP-F008",
+      "title": "릴리스 비교",
+      "category": "형상·영향 분석",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H01"
+      ],
+      "claims": [
+        "C01"
+      ],
+      "content": "변경 전후 타기팅·의존성·ODD·fallback 계약의 차이를 표시해야 한다.",
+      "acceptance": "리뷰어가 확장된 ODD와 변경된 종료 동작을 비교 화면에서 식별한다.",
+      "basis": "GTR §4.3.3; Waymo에서 착안",
+      "tests": [
+        "TC02"
+      ]
+    },
+    {
+      "id": "FFP-F009",
+      "title": "직무 분리",
+      "category": "승인·변경 통제",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "안전 관련 변경의 작성자와 승인자를 분리해야 한다.",
+      "acceptance": "동일 사용자의 자기 승인을 거부하고 시도를 기록한다.",
+      "basis": "SMS 기반 프로젝트 통제 제안",
+      "tests": [
+        "TC20"
+      ]
+    },
+    {
+      "id": "FFP-F010",
+      "title": "증거 기반 승격",
+      "category": "승인·변경 통제",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "승인 형상·시험·Safety Case 근거를 충족한 릴리스만 운영 환경으로 승격해야 한다.",
+      "acceptance": "시험 누락 또는 승인 후 아티팩트 변경 시 승격을 거부한다.",
+      "basis": "GTR §5.3.3; Waymo 공개 사례",
+      "tests": [
+        "TC21"
+      ]
+    },
+    {
+      "id": "FFP-F011",
+      "title": "긴급 종료 승인",
+      "category": "승인·변경 통제",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "긴급 종료 명령에 사유·대상·권한·승인 경로를 지정해야 한다.",
+      "acceptance": "허용된 긴급 경로만 실행되며 사후 검토 대상이 생성된다.",
+      "basis": "GTR §4.1.4.4에서 도출",
+      "tests": [
+        "TC12"
+      ]
+    },
+    {
+      "id": "FFP-F012",
+      "title": "승인 취소·동결",
+      "category": "승인·변경 통제",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "중대한 사건이 발생한 릴리스의 추가 승격·대상 확대를 동결할 수 있어야 한다.",
+      "acceptance": "동결 후 예약된 다음 cohort가 배포되지 않는다.",
+      "basis": "GTR §5.4; LD 패턴 참고",
+      "tests": [
+        "TC19"
+      ]
+    },
+    {
+      "id": "FFP-F013",
+      "title": "결정적 정책 빌드",
+      "category": "정책 빌드·보안",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "같은 승인 입력으로 같은 정규화 정책과 digest를 생성해야 한다.",
+      "acceptance": "재빌드한 payload digest가 같고 빌드 도구 버전을 추적한다.",
+      "basis": "형상·증거 재현성의 설계 제안",
+      "tests": [
+        "TC21"
+      ]
+    },
+    {
+      "id": "FFP-F014",
+      "title": "정책 서명 검증",
+      "category": "정책 빌드·보안",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "차량은 신뢰된 키로 검증된 정책만 수락해야 한다.",
+      "acceptance": "비신뢰 키·변조된 본문·잘못된 대상 정책을 거부한다.",
+      "basis": "GTR §4.3.2; 보안 설계 제안",
+      "tests": [
+        "TC14"
+      ]
+    },
+    {
+      "id": "FFP-F015",
+      "title": "단조 증가 epoch",
+      "category": "정책 빌드·보안",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "정책 수락 순서를 보호하는 영속 epoch로 오래된 정책의 재생을 거부해야 한다.",
+      "acceptance": "새 종료 정책 뒤 도착한 과거 ON 정책이 상태를 되돌리지 못한다.",
+      "basis": "GTR §4.1.4.4.2; Uptane 패턴 참고",
+      "tests": [
+        "TC13"
+      ]
+    },
+    {
+      "id": "FFP-F016",
+      "title": "승인 범위 제한",
+      "category": "정책 빌드·보안",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "정책 컴파일러는 승인 범위보다 넓은 ODD·성능·차량 형상을 발행하지 못해야 한다.",
+      "acceptance": "허용 지역·속도 구간의 경계 초과 변경을 빌드에서 거부한다.",
+      "basis": "GTR §4.1.5; §4.3.3에서 도출",
+      "tests": [
+        "TC03"
+      ]
+    },
+    {
+      "id": "FFP-F017",
+      "title": "CCS 전송 분리",
+      "category": "CCS 전달·수렴",
+      "priority": "P0",
+      "owner": "CCS",
+      "hazards": [
+        "H03"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "Feature 정책 발행과 CCS/OTA의 전달 결과를 별도 식별자로 추적해야 한다.",
+      "acceptance": "정책 릴리스 ID와 전송 campaign ID가 양방향으로 조회된다.",
+      "basis": "플랫폼 책임 분리 제안",
+      "tests": [
+        "TC15"
+      ]
+    },
+    {
+      "id": "FFP-F018",
+      "title": "수신·적용 ACK 분리",
+      "category": "CCS 전달·수렴",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H03"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "전송 수신·정책 수락·적용 보류·실행 상태 확인을 별도 ACK로 제공해야 한다.",
+      "acceptance": "수신 ACK만 온 차량을 적용 완료로 집계하지 않는다.",
+      "basis": "안전 운영 상태 모델 제안",
+      "tests": [
+        "TC15"
+      ]
+    },
+    {
+      "id": "FFP-F019",
+      "title": "명령 멱등성",
+      "category": "CCS 전달·수렴",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H03"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "같은 commandId의 재전송을 중복 효과 없이 처리해야 한다.",
+      "acceptance": "네트워크 재시도에도 종료·해제 전이가 한 번만 수행된다.",
+      "basis": "분산 전달 설계 제안",
+      "tests": [
+        "TC13"
+      ]
+    },
+    {
+      "id": "FFP-F020",
+      "title": "cohort 단계 제어",
+      "category": "CCS 전달·수렴",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H03"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "호환 형상·시장·증거 기준에 맞는 cohort만 단계적으로 확대해야 한다.",
+      "acceptance": "관측 기준 미달 시 확대가 정지되고 미확인 차량이 분리된다.",
+      "basis": "Waymo·LD 패턴; §5.1.8.4",
+      "tests": [
+        "TC19"
+      ]
+    },
+    {
+      "id": "FFP-F021",
+      "title": "신규 활성화 게이트",
+      "category": "차량 로컬 평가",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H04"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "차량은 로컬에서 정책·형상·차단·ODD·건전성·필요한 사용자 조건을 재평가해야 한다.",
+      "acceptance": "클라우드 허용 상태라도 ODD OUT이면 활성화되지 않는다.",
+      "basis": "GTR §4.1.4~5; §4.2.2",
+      "tests": [
+        "TC04"
+      ]
+    },
+    {
+      "id": "FFP-F022",
+      "title": "Active 중 정책 회수",
+      "category": "차량 로컬 평가",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H04"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "Active 중 정책 OFF/권한 만료를 기능별 안전 전환 요청으로 처리해야 한다.",
+      "acceptance": "DDT 수행 중 상품 권한 만료가 액추에이터 제어 단절을 만들지 않는다.",
+      "basis": "GTR §4.1.4.4.1; 적용 해석",
+      "tests": [
+        "TC11"
+      ]
+    },
+    {
+      "id": "FFP-F023",
+      "title": "판정 사유 계약",
+      "category": "차량 로컬 평가",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H04"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "허용·거부·판정 불가 결과에 reasonCode와 근거 형상·샘플 식별자를 제공해야 한다.",
+      "acceptance": "ODD 불충족과 센서 입력 노후가 다른 사유로 기록된다.",
+      "basis": "안전 판정 인터페이스 제안",
+      "tests": [
+        "TC06"
+      ]
+    },
+    {
+      "id": "FFP-F024",
+      "title": "동작 시점 재검증",
+      "category": "차량 로컬 평가",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H04"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "활성화·설치 직전의 관련 상태를 같은 로컬 판정 경계에서 재검증해야 한다.",
+      "acceptance": "판정 후 차량이 움직이면 오래된 설치 허가를 실행하지 않는다.",
+      "basis": "R156 §7.2.2.1.3; TOCTOU 대응",
+      "tests": [
+        "TC16"
+      ]
+    },
+    {
+      "id": "FFP-F025",
+      "title": "ODD 프로파일 버전",
+      "category": "ODD 관리",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H04"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "기능·승인 형상에 결합된 버전형 ODD 프로파일을 관리해야 한다.",
+      "acceptance": "같은 Feature라도 서로 다른 승인 ODD의 로그와 정책이 혼용되지 않는다.",
+      "basis": "GTR §2.12; §5.3.1.3",
+      "tests": [
+        "TC03"
+      ]
+    },
+    {
+      "id": "FFP-F026",
+      "title": "ODD 의미 검증",
+      "category": "ODD 관리",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H04"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "ODD 조건의 단위·경계 포함 여부·필수 조건·배제 조건을 검증해야 한다.",
+      "acceptance": "km/h와 m/s 혼용 및 경계 연산자 오기를 탐지한다.",
+      "basis": "ISO 34503 범위 참고; 프로젝트 규칙",
+      "tests": [
+        "TC03"
+      ]
+    },
+    {
+      "id": "FFP-F027",
+      "title": "ODD 불확실성 처리",
+      "category": "ODD 관리",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H04"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "ODD 판정은 IN·OUT·UNKNOWN을 구분하고 입력 품질·유효 시간을 반영해야 한다.",
+      "acceptance": "센서/지도 근거가 부족하면 IN으로 추정하지 않는다.",
+      "basis": "GTR §4.1.5; SOTIF에서 도출",
+      "tests": [
+        "TC05"
+      ]
+    },
+    {
+      "id": "FFP-F028",
+      "title": "ODD 경계 예측",
+      "category": "ODD 관리",
+      "priority": "P1",
+      "owner": "차량",
+      "hazards": [
+        "H04"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "예측 가능한 ODD 이탈에 대해 필요한 전환 준비 시간을 평가해야 한다.",
+      "acceptance": "지도상 종료 경계 접근 시 기능별 전환 계획이 이탈 전에 시작된다.",
+      "basis": "GTR §4.1.5.5",
+      "tests": [
+        "TC07"
+      ]
+    },
+    {
+      "id": "FFP-F029",
+      "title": "행위별 readiness",
+      "category": "안전 상태 판정",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H05"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "활성화·인계·설치·종료 완료·재활성화 판정을 서로 다른 계약으로 제공해야 한다.",
+      "acceptance": "정차 판정만으로 인계/설치/MRC 전체가 허용되지 않는다.",
+      "basis": "GTR §4.1.6; §4.2.2; R156",
+      "tests": [
+        "TC08"
+      ]
+    },
+    {
+      "id": "FFP-F030",
+      "title": "차량 신호 유효성",
+      "category": "안전 상태 판정",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H05"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "readiness 입력마다 출처·유효 비트·신뢰 상태·로컬 시간·허용 노후 기준을 검사해야 한다.",
+      "acceptance": "노후/비정상 신호가 최종 ALLOW 판정에 재사용되지 않는다.",
+      "basis": "ISO 26262·SOTIF 기반 제안",
+      "tests": [
+        "TC06"
+      ]
+    },
+    {
+      "id": "FFP-F031",
+      "title": "MRC 달성 확인",
+      "category": "안전 상태 판정",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H05"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "정지·안정·위험 저감 근거와 정지 유지 수단을 확인하여 MRC 달성을 기록해야 한다.",
+      "acceptance": "교차로 일시 정차만으로 MRC 완료를 선언하지 않는다.",
+      "basis": "GTR §2.20; §5.3.1.14",
+      "tests": [
+        "TC08"
+      ]
+    },
+    {
+      "id": "FFP-F032",
+      "title": "반응 시간 예산",
+      "category": "안전 상태 판정",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H05"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "위험별 탐지·판정·조치 시간 예산을 할당하고 초과를 검출해야 한다.",
+      "acceptance": "고장 주입에서 측정한 반응 시간이 승인된 안전 분석 예산 안에 든다.",
+      "basis": "ISO 26262 기반 프로젝트 분석",
+      "tests": [
+        "TC22"
+      ]
+    },
+    {
+      "id": "FFP-F033",
+      "title": "종료 차단 영속성",
+      "category": "종료·차단 해제",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H06"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "유효한 원격 종료는 기능별 차단 상태로 영속 유지해야 한다.",
+      "acceptance": "재부팅·전원 손실·캐시 ON 정책으로 재활성화되지 않는다.",
+      "basis": "GTR §4.1.4.4.2",
+      "tests": [
+        "TC12"
+      ]
+    },
+    {
+      "id": "FFP-F034",
+      "title": "안전 종료 진행 관리",
+      "category": "종료·차단 해제",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H06"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "DDT 수행 중 종료 시 해당 fallback/인계 절차와 제어 책임을 추적해야 한다.",
+      "acceptance": "요청 수락과 종료 완료가 분리되고 전환 중 책임 공백이 없다.",
+      "basis": "GTR §4.1.4.4.1; §4.1.6",
+      "tests": [
+        "TC09"
+      ]
+    },
+    {
+      "id": "FFP-F035",
+      "title": "선택적 차단 해제",
+      "category": "종료·차단 해제",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H06"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "차단 해제는 원 종료 사건과 대상 Feature·범위를 명시해야 한다.",
+      "acceptance": "다른 사건/Feature의 차단을 해제하지 못한다.",
+      "basis": "GTR §4.1.4.4.2에서 도출",
+      "tests": [
+        "TC12"
+      ]
+    },
+    {
+      "id": "FFP-F036",
+      "title": "해제와 활성화 분리",
+      "category": "종료·차단 해제",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H06"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "종료 차단 해제가 곧바로 Active 전이를 발생시키지 않아야 한다.",
+      "acceptance": "해제 후에도 ODD·형상·사용자 절차를 새로 통과해야 한다.",
+      "basis": "GTR §4.1.5.3; §4.2.2",
+      "tests": [
+        "TC04"
+      ]
+    },
+    {
+      "id": "FFP-F037",
+      "title": "복구 전략 선택",
+      "category": "복구·업데이트",
+      "priority": "P0",
+      "owner": "CCS",
+      "hazards": [
+        "H07"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "업데이트 실패·중단 시 검증된 복구 또는 안전 상태 전략을 적용해야 한다.",
+      "acceptance": "복구 불가 시험에서 안전 상태 경로의 달성 증거가 남는다.",
+      "basis": "R156 §7.2.2.1.1",
+      "tests": [
+        "TC18"
+      ]
+    },
+    {
+      "id": "FFP-F038",
+      "title": "설치 사전조건",
+      "category": "복구·업데이트",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H07"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "설치 시 차량 기술 상태와 설치·복구에 필요한 전원을 로컬에서 검증해야 한다.",
+      "acceptance": "배터리 부족 또는 안전한 정지 유지 불충족 시 설치를 보류한다.",
+      "basis": "R156 §7.2.2.1.2~3",
+      "tests": [
+        "TC16"
+      ]
+    },
+    {
+      "id": "FFP-F039",
+      "title": "형상 집합 복구",
+      "category": "복구·업데이트",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H07"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "복구 후 ECU·모델·보정·정책의 전체 호환 형상을 재검증해야 한다.",
+      "acceptance": "일부 ECU만 복구된 조합은 복구 완료/사용 재개로 표시되지 않는다.",
+      "basis": "R156 호환성; §4.3.3",
+      "tests": [
+        "TC17"
+      ]
+    },
+    {
+      "id": "FFP-F040",
+      "title": "승인된 내용 복원",
+      "category": "복구·업데이트",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H07"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "과거 내용을 복원할 때도 새 승인 메타데이터와 보안 최소 버전을 준수해야 한다.",
+      "acceptance": "rollback 명목의 취약 이미지·오래된 메타데이터 우회를 거부한다.",
+      "basis": "Uptane 2.1.0; 보안 설계 제안",
+      "tests": [
+        "TC14"
+      ]
+    },
+    {
+      "id": "FFP-F041",
+      "title": "오프라인 기준선",
+      "category": "오프라인·재시작",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H06"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "초기 부팅·연결 상실·캐시 만료별 승인된 로컬 기준선을 정의해야 한다.",
+      "acceptance": "최초 부팅에 정책이 없으면 미승인 기능의 신규 활성화를 허용하지 않는다.",
+      "basis": "Unleash 패턴; 안전 통합 제안",
+      "tests": [
+        "TC10"
+      ]
+    },
+    {
+      "id": "FFP-F042",
+      "title": "연결 상실 대응",
+      "category": "오프라인·재시작",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H06"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "클라우드 연결 상실 시 현재 운전 상태의 대응은 차량 안전 개념으로 결정해야 한다.",
+      "acceptance": "연결이 끊겨도 네트워크 타임아웃만으로 DDT가 단절되지 않는다.",
+      "basis": "GTR §4.1 성능·fallback에서 도출",
+      "tests": [
+        "TC10"
+      ]
+    },
+    {
+      "id": "FFP-F043",
+      "title": "재시작 상태 복원",
+      "category": "오프라인·재시작",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H06"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "재시작 시 정책 epoch·종료 차단·진행 중 업데이트 상태를 일관되게 복원해야 한다.",
+      "acceptance": "상태 저장 중 전원 손실 후 허용 상태로 임의 초기화되지 않는다.",
+      "basis": "종료 지속·복구를 위한 설계 제안",
+      "tests": [
+        "TC13"
+      ]
+    },
+    {
+      "id": "FFP-F044",
+      "title": "최신성 표시",
+      "category": "오프라인·재시작",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H06"
+      ],
+      "claims": [
+        "C04"
+      ],
+      "content": "관제 화면의 상태에 마지막 관측 시각·연결 상태·불확실성을 표시해야 한다.",
+      "acceptance": "오프라인 차량의 과거 readiness가 현재 안전 허가로 노출되지 않는다.",
+      "basis": "상태 오인 방지 설계 제안",
+      "tests": [
+        "TC15"
+      ]
+    },
+    {
+      "id": "FFP-F045",
+      "title": "로컬 최종 권한",
+      "category": "런타임 통합",
+      "priority": "P0",
+      "owner": "차량",
+      "hazards": [
+        "H05"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "로컬 Safety Supervisor가 현재 차량 행위의 최종 안전 허용을 결정해야 한다.",
+      "acceptance": "CP 관리자나 일반 SDK가 로컬 DENY를 우회할 수 없다.",
+      "basis": "GTR 차량 요구의 책임 할당 제안",
+      "tests": [
+        "TC04"
+      ]
+    },
+    {
+      "id": "FFP-F046",
+      "title": "실행 감시 연계",
+      "category": "런타임 통합",
+      "priority": "P1",
+      "owner": "차량",
+      "hazards": [
+        "H05"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "프로세스 생존·deadline·순서 감시 결과를 기능 건전성 판단에 연결해야 한다.",
+      "acceptance": "프로세스가 살아 있어도 deadline 위반을 별도 오류로 탐지한다.",
+      "basis": "AUTOSAR R25-11 HM/PHM",
+      "tests": [
+        "TC22"
+      ]
+    },
+    {
+      "id": "FFP-F047",
+      "title": "의미·출력 감시",
+      "category": "런타임 통합",
+      "priority": "P1",
+      "owner": "차량",
+      "hazards": [
+        "H05"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "헬스 감시 외에 센서 일관성·출력 제한·제어 경계 위반을 감시해야 한다.",
+      "acceptance": "정상 heartbeat를 내는 비정상 제어 출력이 허용되지 않는다.",
+      "basis": "GTR §4.1.4; SOTIF에서 도출",
+      "tests": [
+        "TC22"
+      ]
+    },
+    {
+      "id": "FFP-F048",
+      "title": "제어 경로 격리",
+      "category": "런타임 통합",
+      "priority": "P1",
+      "owner": "차량",
+      "hazards": [
+        "H05"
+      ],
+      "claims": [
+        "C03"
+      ],
+      "content": "정책 평가 경로와 안전 중요 제어 경로 사이의 간섭을 분석·통제해야 한다.",
+      "acceptance": "정책 폭주·CPU/메모리 부하 주입이 할당된 제어 deadline을 침해하지 않는다.",
+      "basis": "ISO 26262 기반 설계 제안",
+      "tests": [
+        "TC22"
+      ]
+    },
+    {
+      "id": "FFP-F049",
+      "title": "실제 상태 수집",
+      "category": "관측·사건 대응",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C05"
+      ],
+      "content": "정책 의도와 차량의 실제 적용·Active·전환·차단 상태를 별도 수집해야 한다.",
+      "acceptance": "허용 대상 수와 실제 Active 노출량이 별도 집계된다.",
+      "basis": "GTR §5.1.8.4; §5.4",
+      "tests": [
+        "TC15"
+      ]
+    },
+    {
+      "id": "FFP-F050",
+      "title": "사건 타임라인",
+      "category": "관측·사건 대응",
+      "priority": "P1",
+      "owner": "공동",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C05"
+      ],
+      "content": "사건에 연관된 정책·형상·ODD·판정·전환 이력을 공통 식별자로 연결해야 한다.",
+      "acceptance": "동일 사건의 차량 로컬 순서와 서버 수신 순서가 구별된다.",
+      "basis": "GTR §5.3.3; §5.4에서 도출",
+      "tests": [
+        "TC19"
+      ]
+    },
+    {
+      "id": "FFP-F051",
+      "title": "안전 지표 승격 기준",
+      "category": "관측·사건 대응",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C05"
+      ],
+      "content": "사전에 승인한 노출량·사건·판정 실패 지표로 cohort 확대 여부를 평가해야 한다.",
+      "acceptance": "거래/클릭률 개선만으로 안전 관련 변경이 승격되지 않는다.",
+      "basis": "Waymo·LD 패턴의 제한적 적용",
+      "tests": [
+        "TC19"
+      ]
+    },
+    {
+      "id": "FFP-F052",
+      "title": "법정 기록 경계",
+      "category": "관측·사건 대응",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C05"
+      ],
+      "content": "운영 로그와 DSSAD·법정 사건 보고의 책임·보존 경계를 구분해야 한다.",
+      "acceptance": "FFP 로그 존재만으로 DSSAD 충족으로 표기하지 않는다.",
+      "basis": "GTR §4.3.1; §5.4; Annex 6",
+      "tests": [
+        "TC24"
+      ]
+    },
+    {
+      "id": "FFP-F053",
+      "title": "실행 형상 추적",
+      "category": "검증·증거",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C06"
+      ],
+      "content": "시험 결과를 정책·ODD·HW/SW·도구·시나리오 버전에 결합해야 한다.",
+      "acceptance": "다른 형상의 통과 결과를 현재 릴리스 증거로 자동 재사용하지 않는다.",
+      "basis": "GTR §5.3.3.9.3",
+      "tests": [
+        "TC21"
+      ]
+    },
+    {
+      "id": "FFP-F054",
+      "title": "고장 경로 검증",
+      "category": "검증·증거",
+      "priority": "P0",
+      "owner": "공동",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C06"
+      ],
+      "content": "종료·입력 노후·통신 단절·부분 복구를 포함한 시험을 수행해야 한다.",
+      "acceptance": "요구별 정상/실패 시나리오의 결과와 미해결 결함이 조회된다.",
+      "basis": "GTR §5.2~3에서 도출",
+      "tests": [
+        "TC22"
+      ]
+    },
+    {
+      "id": "FFP-F055",
+      "title": "시뮬레이션 신뢰성",
+      "category": "검증·증거",
+      "priority": "P1",
+      "owner": "공동",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C06"
+      ],
+      "content": "시뮬레이션 증거의 유효 범위와 실차/시험장 상관성을 관리해야 한다.",
+      "acceptance": "도구 검증 범위 밖의 결과는 한계 표시 없이 승인 증거로 사용되지 않는다.",
+      "basis": "GTR §5.2.1.8.1; §5.2.1.14.2",
+      "tests": [
+        "TC21"
+      ]
+    },
+    {
+      "id": "FFP-F056",
+      "title": "독립 검토 추적",
+      "category": "검증·증거",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C06"
+      ],
+      "content": "안전 근거 검토의 담당·독립성·발견사항·종결을 기록해야 한다.",
+      "acceptance": "열린 중대 발견사항이 있는 변경의 승격을 차단한다.",
+      "basis": "GTR §5.3.4; SMS 감사와 별도",
+      "tests": [
+        "TC20"
+      ]
+    },
+    {
+      "id": "FFP-F057",
+      "title": "권한 범위 제어",
+      "category": "운영 UI·접근 통제",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "역할별 환경·시장·Feature·명령 권한을 제한해야 한다.",
+      "acceptance": "분석 전용 사용자의 종료·해제·정책 발행을 거부한다.",
+      "basis": "보안·운영 통제 설계 제안",
+      "tests": [
+        "TC20"
+      ]
+    },
+    {
+      "id": "FFP-F058",
+      "title": "의도·실제 비교 UI",
+      "category": "운영 UI·접근 통제",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "정책 의도·전달 단계·차량 실제 상태·사유를 동시에 표시해야 한다.",
+      "acceptance": "운영자가 미수신과 로컬 거부 차량을 다른 목록으로 조회한다.",
+      "basis": "관측 오인 방지 설계 제안",
+      "tests": [
+        "TC15"
+      ]
+    },
+    {
+      "id": "FFP-F059",
+      "title": "일괄 명령 미리보기",
+      "category": "운영 UI·접근 통제",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "대량 조작 전에 대상 수·제외 사유·위험·차단 해제 범위를 표시해야 한다.",
+      "acceptance": "서버 계산과 서명된 대상 집합이 일치하지 않으면 발행을 막는다.",
+      "basis": "운영 오류 방지 설계 제안",
+      "tests": [
+        "TC20"
+      ]
+    },
+    {
+      "id": "FFP-F060",
+      "title": "운영 감사 추적",
+      "category": "운영 UI·접근 통제",
+      "priority": "P0",
+      "owner": "CP",
+      "hazards": [
+        "H02"
+      ],
+      "claims": [
+        "C02"
+      ],
+      "content": "승인·정책 발행·긴급 명령·해제에 대해 변경 전후와 행위자를 감사 가능하게 남겨야 한다.",
+      "acceptance": "변경 이력이 무단 수정/삭제된 경우 탐지하고 원본 근거를 추적한다.",
+      "basis": "GTR SMS; 보안 설계 제안",
+      "tests": [
+        "TC20"
+      ]
+    },
+    {
+      "id": "FFP-F061",
+      "title": "Shadow 격리",
+      "category": "도입·수명주기",
+      "priority": "P1",
+      "owner": "공동",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C06"
+      ],
+      "content": "평가용 Shadow 정책이 실제 제어·활성화·설치 권한을 쓰지 못하게 해야 한다.",
+      "acceptance": "실운행 Shadow 결과가 액추에이터/정책 수락 상태를 변경하지 못한다.",
+      "basis": "시험 안전을 위한 설계 제안",
+      "tests": [
+        "TC23"
+      ]
+    },
+    {
+      "id": "FFP-F062",
+      "title": "상품 권한 어댑터",
+      "category": "도입·수명주기",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C06"
+      ],
+      "content": "상품 권한을 안전 허가와 구분된 입력으로 차량에 전달해야 한다.",
+      "acceptance": "결제 성공·구독 만료가 직접 DDT 소유권을 변경하지 않는다.",
+      "basis": "Feature 범위·안전 전환 해석",
+      "tests": [
+        "TC11"
+      ]
+    },
+    {
+      "id": "FFP-F063",
+      "title": "장기 지원 기준선",
+      "category": "도입·수명주기",
+      "priority": "P1",
+      "owner": "공동",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C06"
+      ],
+      "content": "Feature 종료·서버 교체 이후에도 차량의 필요한 기준선·차단·키 갱신을 유지해야 한다.",
+      "acceptance": "지원 종료 연습에서 기능이 미승인 ON으로 초기화되지 않는다.",
+      "basis": "차량 수명주기 운영 제안",
+      "tests": [
+        "TC23"
+      ]
+    },
+    {
+      "id": "FFP-F064",
+      "title": "규정·표준 변경 관리",
+      "category": "도입·수명주기",
+      "priority": "P1",
+      "owner": "CP",
+      "hazards": [
+        "H08"
+      ],
+      "claims": [
+        "C06"
+      ],
+      "content": "근거 문서의 버전·접근 수준·변경 영향·담당 재검토를 관리해야 한다.",
+      "acceptance": "표준 개정 시 영향받는 요구·시험·미확인 항목을 조회한다.",
+      "basis": "SMS 및 근거 최신성 관리 제안",
+      "tests": [
+        "TC24"
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "id": "TC01",
+      "name": "적용 범위",
+      "input": "승인되지 않은 국가·차종·L2/ADS 분류 혼동",
+      "expected": "승인 범위 밖 배포/ADS 의무 자동 전용을 거부",
+      "evidence": "규정·상품 기준선 리뷰",
+      "requirements": [
+        "FFP-F001",
+        "FFP-F003"
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "변경 영향",
+      "input": "같은 SW에서 Flag로 새 운전 기능·ODD 허용",
+      "expected": "승인 영향 분석과 Safety Case 갱신 전 발행 금지",
+      "evidence": "정책 diff·승인 로그",
+      "requirements": [
+        "FFP-F002",
+        "FFP-F007",
+        "FFP-F008"
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "ODD 의미",
+      "input": "경계값·단위 오류·배제 지역·프로파일 불일치",
+      "expected": "컴파일 오류 또는 로컬 활성화 DENY",
+      "evidence": "경계값 단위시험·프로파일 검사",
+      "requirements": [
+        "FFP-F016",
+        "FFP-F025",
+        "FFP-F026"
+      ]
+    },
+    {
+      "id": "TC04",
+      "name": "신규 활성화",
+      "input": "정책 ON이지만 ODD OUT/종료 차단/미승인 형상",
+      "expected": "Active 전이 없음, 구체적 reasonCode",
+      "evidence": "SIL/HIL 전이 로그",
+      "requirements": [
+        "FFP-F021",
+        "FFP-F036",
+        "FFP-F045"
+      ]
+    },
+    {
+      "id": "TC05",
+      "name": "불확실한 ODD",
+      "input": "안개 판단 불가·지도 갱신 실패·측위 불확실",
+      "expected": "UNKNOWN; 신규 활성화 거부, Active는 안전 개념의 대응",
+      "evidence": "기록 재생·인지/측위 고장 주입",
+      "requirements": [
+        "FFP-F027"
+      ]
+    },
+    {
+      "id": "TC06",
+      "name": "입력 품질",
+      "input": "차속 노후·타임스탬프 역전·차륜/IMU 불일치",
+      "expected": "과거 ALLOW 재사용 없음; 불일치 사유 기록",
+      "evidence": "시간·센서 fault injection",
+      "requirements": [
+        "FFP-F023",
+        "FFP-F030"
+      ]
+    },
+    {
+      "id": "TC07",
+      "name": "경계 접근",
+      "input": "고속도로 종료 또는 예상 가능한 날씨 한계 접근",
+      "expected": "예측 가능한 전환 준비와 승인된 fallback 계획 실행",
+      "evidence": "시나리오 시뮬레이션·시험장",
+      "requirements": [
+        "FFP-F028"
+      ]
+    },
+    {
+      "id": "TC08",
+      "name": "정지와 MRC",
+      "input": "교차로 임시 정지·경사로 hold 불능",
+      "expected": "정지 사실만으로 MRC/설치 허가 완료 없음",
+      "evidence": "상황·구동/제동 HIL",
+      "requirements": [
+        "FFP-F029",
+        "FFP-F031"
+      ]
+    },
+    {
+      "id": "TC09",
+      "name": "인계·종료",
+      "input": "DMS상 인계 불가·사용자 미응답",
+      "expected": "해당 ADSF 절차 유지; 인계 실패 시 해당 fallback/MRC",
+      "evidence": "DMS·인계 HIL·시험장",
+      "requirements": [
+        "FFP-F034"
+      ]
+    },
+    {
+      "id": "TC10",
+      "name": "연결 상실",
+      "input": "최초 부팅 캐시 없음/Active 중 CCS 단절",
+      "expected": "신규 허용과 기존 운전 대응 구별; 제어 공백 없음",
+      "evidence": "네트워크 차단·재부팅",
+      "requirements": [
+        "FFP-F041",
+        "FFP-F042"
+      ]
+    },
+    {
+      "id": "TC11",
+      "name": "상품 권한",
+      "input": "Active 중 구독 만료·상품 회수",
+      "expected": "즉시 DDT 단절 없음; 승인된 종료 절차/사용자 안내",
+      "evidence": "권한 이벤트 통합시험",
+      "requirements": [
+        "FFP-F022",
+        "FFP-F062"
+      ]
+    },
+    {
+      "id": "TC12",
+      "name": "종료·해제",
+      "input": "종료 후 재부팅·다른 사건의 rescind",
+      "expected": "해당 차단 지속; 정당한 선택적 해제 후에도 자동 Active 없음",
+      "evidence": "영속 저장·사건 범위 시험",
+      "requirements": [
+        "FFP-F011",
+        "FFP-F033",
+        "FFP-F035"
+      ]
+    },
+    {
+      "id": "TC13",
+      "name": "지연·중복",
+      "input": "오래된 ON·중복 종료·저장 중 전원 손실",
+      "expected": "epoch 후퇴 없음; 중복 효과 없음; 안전한 상태 복원",
+      "evidence": "전송·스토리지 fault injection",
+      "requirements": [
+        "FFP-F015",
+        "FFP-F019",
+        "FFP-F043"
+      ]
+    },
+    {
+      "id": "TC14",
+      "name": "보안 복원",
+      "input": "변조 정책·타 VIN·만료 메타데이터·취약 구버전",
+      "expected": "서명·대상·최소 버전 위반 거부",
+      "evidence": "보안 음성시험",
+      "requirements": [
+        "FFP-F014",
+        "FFP-F040"
+      ]
+    },
+    {
+      "id": "TC15",
+      "name": "운영 상태",
+      "input": "수신 ACK만 존재·오프라인 차량·로컬 적용 거부",
+      "expected": "수신/수락/적용/실행을 분리, 최신성 표시",
+      "evidence": "CCS 계약·관제 E2E",
+      "requirements": [
+        "FFP-F017",
+        "FFP-F018",
+        "FFP-F044",
+        "FFP-F049",
+        "FFP-F058"
+      ]
+    },
+    {
+      "id": "TC16",
+      "name": "설치 시점",
+      "input": "충분치 않은 전원·정차 후 이동·hold 상실",
+      "expected": "직전 재검증에서 설치 보류/중단 경로 실행",
+      "evidence": "OTA/전원/차량 상태 HIL",
+      "requirements": [
+        "FFP-F024",
+        "FFP-F038"
+      ]
+    },
+    {
+      "id": "TC17",
+      "name": "부분 복구",
+      "input": "ECU A만 복구되고 B/모델/보정은 신버전",
+      "expected": "호환 집합 확인 전 복구 완료·활성화 금지",
+      "evidence": "multi-ECU 복구 매트릭스",
+      "requirements": [
+        "FFP-F005",
+        "FFP-F006",
+        "FFP-F039"
+      ]
+    },
+    {
+      "id": "TC18",
+      "name": "복구 실패",
+      "input": "이전 이미지 손상·업데이트 중 전원 단절",
+      "expected": "검증된 안전 상태 경로와 재시작 후 상태 일관성",
+      "evidence": "부트/전원 fault injection",
+      "requirements": [
+        "FFP-F037"
+      ]
+    },
+    {
+      "id": "TC19",
+      "name": "cohort 관측",
+      "input": "안전 지표 악화·노출량 부족·데이터 지연",
+      "expected": "추가 확대 정지; 누락을 성공으로 처리하지 않음",
+      "evidence": "지표 재생·단계 승격 시험",
+      "requirements": [
+        "FFP-F012",
+        "FFP-F020",
+        "FFP-F050",
+        "FFP-F051"
+      ]
+    },
+    {
+      "id": "TC20",
+      "name": "운영 오조작",
+      "input": "자기 승인·다른 시장 명령·과도한 대량 해제",
+      "expected": "권한 거부·대상 미리보기·감사 이력 생성",
+      "evidence": "권한·워크플로 E2E",
+      "requirements": [
+        "FFP-F009",
+        "FFP-F056",
+        "FFP-F057",
+        "FFP-F059",
+        "FFP-F060"
+      ]
+    },
+    {
+      "id": "TC21",
+      "name": "증거 재현",
+      "input": "승인 후 아티팩트 변경·다른 형상 통과 결과",
+      "expected": "승격 거부; 재현 가능한 정확한 형상 증거 요구",
+      "evidence": "digest·시험 실행 manifest",
+      "requirements": [
+        "FFP-F010",
+        "FFP-F013",
+        "FFP-F053",
+        "FFP-F055"
+      ]
+    },
+    {
+      "id": "TC22",
+      "name": "감시·시간",
+      "input": "heartbeat 정상/제어 출력 오류·deadline 초과·부하",
+      "expected": "의미 감시·격리·시간 예산에 따른 대응",
+      "evidence": "SIL/HIL·시간 측정",
+      "requirements": [
+        "FFP-F032",
+        "FFP-F046",
+        "FFP-F047",
+        "FFP-F048",
+        "FFP-F054"
+      ]
+    },
+    {
+      "id": "TC23",
+      "name": "Shadow·폐기",
+      "input": "Shadow 경로 제어 시도·폐기 Feature·지원 종료",
+      "expected": "출력 권한 없음; 승인되지 않은 신규 허용 없음",
+      "evidence": "권한 격리·수명주기 시험",
+      "requirements": [
+        "FFP-F004",
+        "FFP-F061",
+        "FFP-F063"
+      ]
+    },
+    {
+      "id": "TC24",
+      "name": "근거·기록",
+      "input": "표준 버전 변경·운영 로그를 DSSAD로 오인",
+      "expected": "영향 요구 조회; 별도 DSSAD/사건 보고 책임 유지",
+      "evidence": "문서 trace·기록 인터페이스 리뷰",
+      "requirements": [
+        "FFP-F052",
+        "FFP-F064"
+      ]
+    }
+  ],
+  "hazards": [
+    {
+      "id": "H01",
+      "condition": "승인 범위·형상 초과",
+      "outcome": "미승인 지역·기능·구성의 사용"
+    },
+    {
+      "id": "H02",
+      "condition": "무권한·잘못된 변경",
+      "outcome": "오조작·위조·과도한 범위의 명령"
+    },
+    {
+      "id": "H03",
+      "condition": "전달/실제 상태 오인",
+      "outcome": "수신을 적용·안전 완료로 오판"
+    },
+    {
+      "id": "H04",
+      "condition": "ODD·입력 판단 오류",
+      "outcome": "한계 밖 또는 불확실 상태에서 활성화"
+    },
+    {
+      "id": "H05",
+      "condition": "제어 책임/반응 실패",
+      "outcome": "인계 공백·오래된 허가·감시 사각"
+    },
+    {
+      "id": "H06",
+      "condition": "종료 차단 상실",
+      "outcome": "재부팅·지연 ON·잘못된 해제로 재활성화"
+    },
+    {
+      "id": "H07",
+      "condition": "설치·복구 불일치",
+      "outcome": "전원 부족·부분 복구·취약 버전 복원"
+    },
+    {
+      "id": "H08",
+      "condition": "증거·관측 부족",
+      "outcome": "검증되지 않은 확대·사건 미추적"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C01",
+      "claim": "승인 범위 안의 구성만 허용",
+      "basis": "GTR §4.1.5, §4.3.3 및 R156의 호환성·승인 영향. 직접 요구를 프로젝트 통제로 도출.",
+      "platform": "카탈로그·형상·변경 영향·ODD 범위 검증"
+    },
+    {
+      "id": "C02",
+      "claim": "정당한 정책만 정확한 대상에 적용",
+      "basis": "GTR §4.3.2와 SMS 요구를 근거로 한 보안·운영 설계.",
+      "platform": "승인·서명·epoch·CCS ACK·권한·감사"
+    },
+    {
+      "id": "C03",
+      "claim": "차량 현재 상태에 맞게 행위를 허용",
+      "basis": "GTR §4.1.4~6, §4.2.2; R156 설치 조건. 직접 요구 + 차량 할당 제안.",
+      "platform": "로컬 ODD·건전성·행위별 readiness·제어 감시"
+    },
+    {
+      "id": "C04",
+      "claim": "종료·복구 중 제어 공백과 재활성화 오류 방지",
+      "basis": "GTR §4.1.4.4.1~2; R156 §7.2.2.1.1. 직접 요구 + 상태 저장 제안.",
+      "platform": "fallback·영속 차단·선택 해제·호환 복구"
+    },
+    {
+      "id": "C05",
+      "claim": "의도와 실제 운행 결과를 관측",
+      "basis": "GTR §5.1.8.4, §5.4 및 DSSAD 요구.",
+      "platform": "실제 노출·판정 사유·사건 타임라인·기록 책임"
+    },
+    {
+      "id": "C06",
+      "claim": "변경을 재현 가능한 증거로 승인",
+      "basis": "GTR §5.2, §5.3.3~4; Waymo 사례는 참고.",
+      "platform": "시험 manifest·도구 신뢰성·독립 검토·승격 게이트"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "S01",
+      "title": "구매는 완료됐지만 ODD 밖인 경우",
+      "situation": "사용자가 고속도로 ADS 상품을 구매했지만 현재 차량은 도심 이면도로에 있다.",
+      "handling": "상품 권한은 유효로 표시하고 차량 활성화는 거부한다. 고속도로 진입 후에도 센서·고장·적용 구성과 필요한 사용자 절차를 확인한다.",
+      "show": "“구매됨 / 현재 운행 조건에서 사용 불가”.",
+      "record": "구매·정책과 별개인 ODD 판정, 활성화 시도 결과.",
+      "basis": "GTR §4.1.5.3·§4.2.2.2."
+    },
+    {
+      "id": "S02",
+      "title": "고속 주행 중 결함으로 원격 종료",
+      "situation": "ADS가 DDT를 수행하는 동안 해당 구성에서 안전 결함이 확인돼 종료 요청이 도착한다.",
+      "handling": "차량은 요청을 검증하고, 종료 후 재활성화 차단을 유지하면서 현재 상태에 맞는 fallback을 수행한다. 사용자 인계가 가능한 기능은 해당 인계 조건을 따르고, 인계 불가·실패 시 적용되는 MRC 경로를 따른다.",
+      "show": "수신·fallback 진행·실제 종료를 구분.",
+      "record": "제어 책임, 전환 이벤트, 차단·종료 상태.",
+      "basis": "GTR §4.1.4.4·§4.1.6·해당 시 §4.2.2.3.6. 구체적 종료 시간은 예시 숫자를 규정값으로 만들지 않는다."
+    },
+    {
+      "id": "S03",
+      "title": "국가 타기팅 오류를 정책 롤백",
+      "situation": "허용되지 않은 시장의 일부 차량에 ADS 활성화 정책이 전달됐다.",
+      "handling": "신규 대상 확대를 중단하고 잘못 포함된 차량을 식별한다. 비활성 차량은 새 활성화를 막고, 이미 active인 차량은 안전 종료 경로를 따른다. 단순히 과거 정책을 복원하는 것 외에 이미 발생한 운행·사건을 평가한다.",
+      "show": "대상 구성별 미수신·차단·종료 현황.",
+      "record": "정책 전후 차이, 영향 차량, 실제 활성 이력과 시정 결과.",
+      "basis": "타기팅·명령 처리 방식은 설계 제안."
+    },
+    {
+      "id": "S04",
+      "title": "OTA 설치 도중 전원 차단",
+      "situation": "업데이트 적용 중 전원이 끊겨 설치가 완료되지 않았다.",
+      "handling": "검증된 이전 구성을 복구하거나 해당 고장에 대한 안전 상태를 유지한다. 복구를 위한 에너지를 포함한 전원 조건과 사용자 안내를 설계한다.",
+      "show": "설치 실패 / 복구 완료 또는 안전 상태·정비 필요.",
+      "record": "실패 지점, 버전 무결성, 진단, 복구/안전 상태 도달 시험.",
+      "basis": "R156 §7.2.2.1.1~3. 이전 버전 복원이 유일한 허용 수단은 아니다."
+    },
+    {
+      "id": "S05",
+      "title": "모델만 복원했지만 설정이 맞지 않는 경우",
+      "situation": "인지 모델을 이전 것으로 되돌렸으나 센서 보정과 전처리는 최신 구성으로 남았다.",
+      "handling": "파일 교체 성공과 ADS 복구 성공을 구분한다. 검증된 조합에 없으면 ADS 활성화를 차단하고 호환 구성을 복구하거나 안전한 수정 버전을 적용한다.",
+      "show": "",
+      "record": "모델·런타임·센서·캘리브레이션·정책 조합, 회귀 검증, 적용 구성 확인.",
+      "basis": "GTR §4.3.3.1·안전 논증, R156 호환성·의존성 평가. 구체적 조합 관리 방식은 설계 제안."
+    },
+    {
+      "id": "S06",
+      "title": "구버전은 안정적이지만 보안 취약점이 있는 경우",
+      "situation": "최신 버전에 성능 문제가 있지만 과거 버전에는 악용 가능한 취약점이 있다.",
+      "handling": "구버전이라는 이유만으로 안전하다고 판단하지 않는다. 양쪽 위험을 평가해 안전 상태 유지·검증된 수정 버전·정비 조치를 선택한다.",
+      "show": "",
+      "record": "복구 후보 위험 평가, 허용 버전 목록과 승인 근거, 보안·안전 재검증.",
+      "basis": "GTR §4.3.2~4.3.4 및 R156 안전·보안 업데이트 요구. 항상 롤백하라는 규정은 확인되지 않는다."
+    },
+    {
+      "id": "S07",
+      "title": "종료 뒤 오래된 ON 요청이 도착",
+      "situation": "결함 대응으로 원격 종료가 완료된 뒤 네트워크에 지연된 과거 허용 정책이 도착한다.",
+      "handling": "과거 ON으로 종료 차단을 해제하지 않는다. 정당한 rescind 요청과 최신 상태·형상 검사를 구분한다.",
+      "show": "",
+      "record": "요청 순서, 차단의 지속, 재부팅 후 상태, 거부 사유.",
+      "basis": "GTR §4.1.4.4.2. 버전 번호·중복 방지 구현은 설계 제안."
+    },
+    {
+      "id": "S08",
+      "title": "주행 중 상품 이용 기간 만료",
+      "situation": "ADS가 active인 동안 사용 권한의 유효기간이 끝난다.",
+      "handling": "상품 운영 정책과 DDT 책임을 구분한다. 종료가 필요하면 해당 안전 절차로 전환하고 다음 활성화를 제한한다. 일률적 만료 처리 방식은 이 규정이 정하지 않는다.",
+      "show": "",
+      "record": "약관·승인 범위에 맞는 운영 결정, HMI 안내, 주행 중·정차 중 만료 시험.",
+      "basis": "GTR의 안전 활성화·비활성화 요구에서 도출한 설계 판단."
+    },
+    {
+      "id": "S09",
+      "title": "One-Binary에서 ODD만 확대",
+      "situation": "재빌드 없이 설정으로 운행 지역·도로 조건을 넓힌다.",
+      "handling": "바이너리 동일성과 검증·승인 범위 동일성을 분리한다. 변경된 ODD의 위험·시나리오·동작·형상과 필요한 승인 절차를 평가한다.",
+      "show": "",
+      "record": "ODD 전후 비교, 추가 시험·한계, SW/설정·승인 관련 식별.",
+      "basis": "GTR §5.3.1.3·§5.3.2.12~16, R156 설정·형식승인 영향 평가."
+    },
+    {
+      "id": "S10",
+      "title": "Rollback 성공 후 원격 종료 해제",
+      "situation": "결함 있는 구성을 복구했고 운영자가 다시 사용 허용을 요청한다.",
+      "handling": "복구된 전체 구성·결함 조치·검증 결과를 확인한 뒤 종료 차단 해제를 처리한다. 이때 차량이 ODD 밖이거나 고장이 남아 있으면 여전히 활성화하지 않는다.",
+      "show": "“복구 완료 / 종료 차단 해제 / 현재 활성화 불가”도 정상적인 상태 조합.",
+      "record": "복구 검증, 해제 근거, 로컬 활성화 판단.",
+      "basis": "GTR §4.1.4.4.2·§4.1.5.3·§4.3.3."
+    }
+  ],
+  "oddResults": [
+    {
+      "result": "IN",
+      "newActivation": "다른 활성화 조건도 충족하면 활성화 절차 진행 가능",
+      "whileActive": "현재 기능의 운전 지속 조건·건전성을 계속 감시"
+    },
+    {
+      "result": "OUT",
+      "newActivation": "활성화 거부",
+      "whileActive": "해당 ODD 이탈 fallback 수행. 토글 false로 DDT 제어를 끊지 않음."
+    },
+    {
+      "result": "UNKNOWN",
+      "newActivation": "충족 근거가 없으므로 활성화 거부",
+      "whileActive": "관측 불확실성의 종류·지속시간에 따라 검증된 제한 운전/전환/fallback 경로를 적용. IN으로 임의 유지하지 않음."
+    },
+    {
+      "result": "경계 접근 예측",
+      "newActivation": "IN/OUT과 별도 지표로 취급",
+      "whileActive": "전환에 필요한 시간·거리와 예상 이탈 시점을 비교하여 준비. debounce/hysteresis가 실제 이탈 대응을 부당하게 지연하지 않아야 함."
+    }
+  ],
+  "safeStateContracts": [
+    {
+      "contract": "ActivateAllowed",
+      "conditions": "정책·승인 형상·종료 차단·ODD IN·관련 기능 건전성·적용 가능한 사용자 절차. 상품 권한은 필요한 기능에서만 추가 입력.",
+      "notCompletion": "결제 완료, cloud ON, 과거 ODD IN, 센서 프로세스 생존"
+    },
+    {
+      "contract": "HandoverReady",
+      "conditions": "해당 ADSF와 인계 절차에서 필요한 사용자 존재·역할 인지·응답·운전 수행 가능 상태 및 현재 동작의 인계 가능성.",
+      "notCompletion": "스티어링 접촉 한 번, DMS 점수 하나, 앱의 인계 요청 수신"
+    },
+    {
+      "contract": "UpdateInstallAllowed",
+      "conditions": "업데이트가 허용되는 기술 상태, 적합한 정지·움직임 방지, 제어 비사용 조건, 호환 형상, 설치/복구 전원과 상태 전이 관리.",
+      "notCompletion": "차속 0 하나, P 표시 하나, 다운로드 완료"
+    },
+    {
+      "contract": "MRCReached",
+      "conditions": "해당 위험을 줄이는 안정된 정지 상태, 주변 맥락 평가, 정지 유지와 남은 위험·제어 책임 확인.",
+      "notCompletion": "신호 대기 정지, GPS 속도 0, 단순 OFF ACK"
+    },
+    {
+      "contract": "TerminationComplete",
+      "conditions": "해당 종료 절차의 완료 조건과 실제 DDT 책임·비활성화 여부. ADSF-2 경로에서는 MRC 달성과 정지 유지 주체도 추적.",
+      "notCompletion": "종료 요청 발행·수신·fallback 시작 또는 MRC만 단독 확인"
+    },
+    {
+      "contract": "ReactivationEligible",
+      "conditions": "정당한 차단 해제, 결함 조치·복구 형상 검증, 현재 활성화 조건의 재평가.",
+      "notCompletion": "SW 설치 성공, 사건 티켓 종료, 정책 ON"
+    }
+  ],
+  "modules": [
+    {
+      "area": "CP · 정의/승인",
+      "modules": "Feature Catalog, Risk/Applicability Record, Config Compatibility Graph, ODD Registry, Change Impact, Approval Workflow",
+      "responsibility": "상품·플랫폼·차량 안전/승인 담당 공동 검토. 기존 조직/컴포넌트 ID와의 실제 매핑은 별도 기준선 확정 필요."
+    },
+    {
+      "area": "CP · 발행/운영",
+      "modules": "Deterministic Policy Compiler, Signing Service, Release/Cohort Manager, Emergency Command Workflow, Actual State View",
+      "responsibility": "정책 발행과 CCS 전송을 분리. 서명된 불변 아티팩트만 campaign에 연결."
+    },
+    {
+      "area": "CCS/OTA",
+      "modules": "Transport Adapter, Delivery Receipt, Installation/Recovery Adapter, Vehicle Result Relay",
+      "responsibility": "전달/설치 책임. 전송 성공이 실제 Feature Active 또는 안전 종료 완료를 뜻하지 않음."
+    },
+    {
+      "area": "차량",
+      "modules": "Policy Agent, Durable Inhibit Store, ODD Evaluator, Action Readiness Evaluator, Safety Supervisor Adapter",
+      "responsibility": "차량 팀이 safety allocation·실시간성·신호/버스·OS/AUTOSAR 통합과 검증을 책임."
+    },
+    {
+      "area": "공통 증거",
+      "modules": "Evidence Manifest, State/Decision Event Schema, Requirement-Test Trace, Incident Correlation",
+      "responsibility": "운영 로그와 DSSAD를 혼동하지 않고 필요한 공식 기록 시스템에 연계."
+    }
+  ],
+  "contracts": [
+    {
+      "contract": "PolicyBundle",
+      "fields": "featureId, policyRevision/epoch, target/configSet, ODD profileRef, approval/evidenceRef, action intent, validity rule, signer/digest",
+      "invariant": "새 정책 수락에 신뢰·대상·순서·범위를 검사. 복구 내용이 과거 버전이어도 승인 메타데이터는 새 발행."
+    },
+    {
+      "contract": "Termination / Rescind Command",
+      "fields": "commandId, incidentId, feature/scope, reason, authorizationRef, sequence, signer, validity",
+      "invariant": "종료 차단은 해제 전까지 영속. 정책 만료나 명령 TTL이 종료 차단을 자동 해제하지 않음. 해제는 관련 사건 범위만 처리."
+    },
+    {
+      "contract": "Local SafetyVerdict",
+      "fields": "action, ALLOW/DENY/UNKNOWN, reasonCodes, sessionId, monotonicSampleRef, config/policy/ODD refs, evaluated input quality",
+      "invariant": "현재 행위·세션·상태와 결합. 오래된 verdict 또는 클라우드 복사본으로 실행 권한을 재사용하지 않음."
+    },
+    {
+      "contract": "ActualState / EvidenceEvent",
+      "fields": "commandId/releaseId, received/accepted/deferred/applied, runtime state, DDT owner, inhibit set, evidenceRef, observation age/quality",
+      "invariant": "DDT 소유권과 MRC·비활성화·업데이트 상태를 별도 필드로 보존. reportedAt와 observedAt 구분."
+    }
+  ],
+  "apis": [
+    {
+      "api": "POST /change-requests → /approvals",
+      "role": "변경 영향·증거·검토자·승인 범위 저장",
+      "boundary": "자기 승인 방지, 승인 후 digest 변경 시 재승인"
+    },
+    {
+      "api": "POST /releases → CCS campaign adapter",
+      "role": "불변 PolicyBundle을 승인된 대상에 발행",
+      "boundary": "대상 미리보기와 실제 서명 대상 일치; CCS delivery ID 보존"
+    },
+    {
+      "api": "POST /termination-commands / /rescinds",
+      "role": "사건·권한·선택 범위가 있는 명령 생성",
+      "boundary": "전달 수신을 완료로 표시하지 않음; 해제 후 자동 활성화 없음"
+    },
+    {
+      "api": "GET /vehicles/{id}/feature-state",
+      "role": "마지막 의도·수신·실제 상태·최신성 조회",
+      "boundary": "이 조회 응답은 차량 행동을 허가하는 safety token이 아님"
+    },
+    {
+      "api": "차량 내부 requestAction(action, context)",
+      "role": "현재 정책/형상/로컬 관측으로 typed verdict 생성",
+      "boundary": "동작 직전에 재검증하고 해당 상태 전이와 함께 처리하여 TOCTOU 방지"
+    }
+  ],
+  "peers": [
+    {
+      "who": "Waymo · 2025-06 공개 글 P11",
+      "observed": "주요 안전 관련 SW 업데이트·새 운행 지역·차량 플랫폼 변화에 readiness 판단을 적용. 12개 수락 기준과 승인 governance 공개.",
+      "proposal": "ODD·형상·주요 동작 변화마다 증거 기반 승격과 운행 후 피드백을 연결. FFP-F007/010/051.",
+      "caveat": "내부 Flag vendor·서비스 분리·제어 인터페이스는 이 자료로 확인 불가."
+    },
+    {
+      "who": "Mercedes-Benz · 2024-12-17 독일 승인 발표 P12",
+      "observed": "특정 조건의 독일 고속도로 DRIVE PILOT 최고 95 km/h 승인 사례.",
+      "proposal": "ODD를 시장·도로·속도·조건·승인 버전과 함께 관리. FFP-F003/025/026.",
+      "caveat": "역사적·시장 한정 사례. 2026년 전 세계 판매 조건이나 내부 Flag 설계로 확대하지 않음."
+    },
+    {
+      "who": "Tesla · 한국어 업데이트 지원 P13",
+      "observed": "다운로드와 설치를 구분. 설치 중 주행 불가. 소유자의 이전 SW 복원은 지원하지 않는다고 안내.",
+      "proposal": "downloaded/ready/installing/verified를 분리하고 차량 로컬 설치 조건을 검사. FFP-F038/039.",
+      "caveat": "사용자 메뉴 미지원이 제조사 내부 복구 경로의 부재를 뜻하지 않음."
+    },
+    {
+      "who": "Rivian · 공식 기술/OTA 안내 P14",
+      "observed": "Park 상태에서 OTA 안내, 최소 배터리 같은 사전조건을 설명.",
+      "proposal": "앱/클라우드의 설치 요청과 차량의 최종 설치 허용을 분리. FFP-F024/038.",
+      "caveat": "공개 자료만으로 모든 신호·임계값·안전 등급/알고리즘 확인 불가."
+    },
+    {
+      "who": "Mobileye · RSS P15",
+      "observed": "주행 행동의 수학적 안전 모델을 설명.",
+      "proposal": "행동/출력 제한 감시를 단순 프로세스 생존 감시와 분리. FFP-F047.",
+      "caveat": "ODD·고장·MRC·차량 전체 안전성을 단독 보증하지 않음."
+    },
+    {
+      "who": "LaunchDarkly · Guarded rollouts P16",
+      "observed": "선택 지표를 감시하며 단계 확대, 회귀 검출 시 알림·중지 및 설정에 따른 자동 rollback 지원.",
+      "proposal": "형상 cohort·실제 노출·안전 지표로 확대를 통제. 자동 조치는 검증된 정책 범위에서 수행. FFP-F012/020/051.",
+      "caveat": "통계적 회귀 검출은 차량의 즉시 안전 대응 또는 호환 형상 복구 입증이 아님."
+    },
+    {
+      "who": "Unleash · SDK P17",
+      "observed": "backend SDK가 로컬 평가·캐시 지원. 첫 초기화/첫 부팅에는 bootstrap 등 별도 준비가 필요.",
+      "proposal": "검증된 오프라인 기준선·캐시·재시작·종료 차단 보존을 설계. FFP-F041~043.",
+      "caveat": "모든 SDK의 실행 위치가 같은 것은 아님. 자동차 기능안전 인증 근거로 사용하지 않음."
+    },
+    {
+      "who": "OpenFeature · C++ SDK P18",
+      "observed": "Provider로 Flag 제공 시스템을 추상화하는 공통 API를 지원.",
+      "proposal": "앱 계층의 정책 조회 어댑터 선택지. 로컬 안전 판정은 별도 typed contract. FFP-F045.",
+      "caveat": "C++ SDK 존재가 하드 실시간·안전 제어·ASIL 적합성 증거는 아님."
+    },
+    {
+      "who": "Uptane · 2.1.0 P19",
+      "observed": "차량 SW 업데이트의 메타데이터·서명/버전/만료/일관성 검증을 명세.",
+      "proposal": "기존 OTA 보안 경로와 결합하고 승인된 과거 내용 복원도 재생 공격과 구별. FFP-F040.",
+      "caveat": "기능 호환성·MRC 달성·설치 안전 상태는 별도 검증 필요."
+    }
+  ],
+  "phases": [
+    {
+      "phase": "1 · 기준선/계약",
+      "build": "Feature 분류·시장/승인 범위·ODD·호환 형상, CP/CCS/차량 책임, typed readiness·ACK·종료 차단 계약 확정",
+      "exit": "대표 ADS 1개와 비 ADS 1개에 대한 정상·실패 전이 및 담당/증거를 합의"
+    },
+    {
+      "phase": "2 · CP/차량 최소 연동",
+      "build": "카탈로그·변경 검토·승인·서명·epoch, CCS adapter, 로컬 게이트·영속 차단·reasonCode, 실제 상태 UI",
+      "exit": "P0 중 해당 범위 요구 통과. TC04/06/10/12/13/15 등 핵심 실패 경로를 벤치에서 입증"
+    },
+    {
+      "phase": "3 · OTA/복구·안전 통합",
+      "build": "설치 사전조건·복구·multi-ECU 형상·보안 최소 버전, ODD/헬스/인계 연계, 시간 예산 검증",
+      "exit": "해당 SIL/HIL/시험장 근거와 Safety Case/승인 영향 검토 완료. 미해결 위험에 따른 배포 제한"
+    },
+    {
+      "phase": "4 · 제한 운영/확대",
+      "build": "승인된 범위 내 cohort, 실제 노출·사건·판정 지표, 배포 동결·긴급 종료·선택 해제 훈련",
+      "exit": "사전 수락 기준 충족 후 확대. 미확인/오프라인/관측 부족은 성공으로 계산하지 않음"
+    },
+    {
+      "phase": "5 · 수명주기 운영",
+      "build": "표준/시장 변경 관리, 키/기준선 지원, Feature 폐기, 도구 신뢰성·독립 검토 지속",
+      "exit": "지원 종료·서버 장애·규정 개정에도 안전 계약과 추적성 유지"
+    }
+  ],
+  "vehicleDecisions": [
+    {
+      "decision": "안전 목표·ASIL·독립성·시간 예산",
+      "owner": "차량 안전 담당의 정식 HARA·safety concept·안전 할당. CP/CCS의 고장 영향 포함."
+    },
+    {
+      "decision": "ODD 신호·품질·한계·fallback",
+      "owner": "ADS/인지/측위/제어 팀의 승인 ODD·실증 데이터·시나리오 근거."
+    },
+    {
+      "decision": "설치·정지 유지·전원 기준",
+      "owner": "OTA·전원·제동/주차·차량 통합 팀의 기술 상태/회복 분석."
+    },
+    {
+      "decision": "현행 컴포넌트/버스/API 대응",
+      "owner": "기존 설계 기준선과 실제 컴포넌트 ID를 요구에 매핑. 본 보고서가 미제공 내부 구조를 검증했다고 주장하지 않음."
+    },
+    {
+      "decision": "시장·승인·소비자 운영 절차",
+      "owner": "규정/승인·법무·서비스 담당이 긴급 종료 사유·공지·복구·권한 정책을 확인."
+    }
+  ],
+  "featureRules": [
+    {
+      "situation": "ODD 불충족",
+      "regulation": "활성화 방지. GTR §4.1.5.1~3.",
+      "design": "클라우드 허용과 차량의 ODD 확인을 별도 표시. 정책 ON을 active로 표시하지 않음."
+    },
+    {
+      "situation": "관련 고장",
+      "regulation": "고장 심각도에 따라 적합한 성능 조정 또는 fallback·영향 기능 활성화 금지. §4.1.4.2~3.",
+      "design": "일률적 OFF 대신 안전 개념에서 정한 고장 반응을 구현. 성능 저하 운행이 허용되는 조건도 증거화."
+    },
+    {
+      "situation": "사용자의 활성화 시도",
+      "regulation": "§4.2.2 적용 기능은 안전한 활성화와 성공·실패의 즉각적 피드백. §4.2.2.2.1~2.",
+      "design": "대기·거부·성공 및 사유를 운전자 HMI와 운영 화면에 구분. 규정이 구체적 밀리초 수치를 지정한 것으로 표현하지 않음."
+    },
+    {
+      "situation": "ADSF-1 활성화",
+      "regulation": "fallback user에게 기대 역할을 즉시·명확하게 안내. §4.2.2.2.4.",
+      "design": "운전 인계 준비 책임을 사용자가 이해하도록 표시."
+    },
+    {
+      "situation": "ADSF-2 → ADSF-1",
+      "regulation": "매 전환 전에 승객의 fallback user 역할 동의 필요. §4.2.2.2.5.",
+      "design": "서버에서 기능 유형을 바꾸는 것만으로 사람에게 인계 책임을 넘길 수 없음."
+    },
+    {
+      "situation": "사용자에게 수동운전 인계",
+      "regulation": "운전자 역할 수행 가능성 및 적절한 참여 상태 확인. 상황이 부적합·불안전하면 비활성화를 지연하고 사용자에게 안내. §4.2.2.3.4~8.",
+      "design": "사용자 OFF 요청과 실제 DDT 인계 완료를 구분. 이 조항은 수동운전 인계를 허용하는 기능의 요구임."
+    },
+    {
+      "situation": "인계 진행 중",
+      "regulation": "§4.2.2.3.6 적용 시 인계 완료 또는 MRC 도달까지 기능 active 유지.",
+      "design": "중앙 정책 변경이 제어 출력의 즉시 차단으로 연결되지 않도록 한다. 원격 종료 자체의 별도 근거는 §4.1.4.4.1."
+    },
+    {
+      "situation": "ODD 이탈 / 인계 실패",
+      "regulation": "ODD 이탈 fallback, ADSF-2의 MRC, ADSF-1의 시스템 인계 미완료 시 MRC 대응. §4.1.5.4~5·4.1.6.",
+      "design": "도로·고장·사용자 상태에 맞는 경로를 검증. MRC는 이 문서에서 위험을 줄이는 안정되고 정지한 상태를 의미함(§2.20)."
+    },
+    {
+      "situation": "사용자 인계 불가 기능",
+      "regulation": "승객에게 정지 요청 수단과 안전 정보를 제공. §4.2.3.1~2.",
+      "design": "조향 장치가 없는 무인 차량에 “운전자에게 넘기기”를 기본 복구 경로로 두지 않음."
+    },
+    {
+      "situation": "원격 종료 해제",
+      "regulation": "종료가 해제되기 전 활성화 불가. §4.1.4.4.2.",
+      "design": "해제는 필요 조건이다. 이후 ODD·고장·호환성 등 다른 조건과 별도 활성화 절차까지 확인한다."
+    }
+  ],
+  "transitions": [
+    {
+      "transition": "정책 허용 → 활성화 시도",
+      "allowed": "대상·권한·형상·정책 유효성 및 차량 ODD·고장 조건 확인. 필요한 사용자 절차 충족.",
+      "onFailure": "거부 사유를 제공하며 현재 제어 상태 유지."
+    },
+    {
+      "transition": "Active → 원격 종료 요청 수락",
+      "allowed": "인증된 요청의 차량 수신·검증. 현재 DDT 책임과 fallback 경로를 함께 결정.",
+      "onFailure": "통신 실패는 미수신/미확인으로 표시. 성공으로 간주하지 않음."
+    },
+    {
+      "transition": "안전 전환 → 종료 완료",
+      "allowed": "해당 인계 완료 또는 안전 개념에서 정한 MRC·종료 조건 달성.",
+      "onFailure": "진행 상태·남은 위험을 보고. 정해진 대응 시간과 비상 경로는 시스템 안전 분석으로 결정."
+    },
+    {
+      "transition": "종료 차단 → 재활성화 가능성 재평가",
+      "allowed": "정당한 해제와 결함 조치, 형상·검증 상태 확인.",
+      "onFailure": "차단 유지. 과거의 허용 정책이 재부팅·지연 수신으로 차단을 풀지 않도록 설계."
+    },
+    {
+      "transition": "Rollback 성공 → 기능 사용 재개",
+      "allowed": "복구된 전체 구성 확인. 종료 해제와 로컬 활성화 판단은 별도.",
+      "onFailure": "복구 성공·활성화 불가가 함께 존재할 수 있음. 실패·차단 원인 구분."
+    }
+  ],
+  "rollbackKinds": [
+    {
+      "kind": "타기팅·허용 정책 복원",
+      "target": "국가·차종·코호트·사용 조건",
+      "recheck": "잘못 열린 대상의 현재 사용 상태, 종료 차단, 정책 유효성·버전 순서.",
+      "misconception": "이전 정책 복원만으로 주행 중 기능이 안전하게 종료됐다고 볼 수 없음."
+    },
+    {
+      "kind": "안전 관련 설정 복원",
+      "target": "ODD 범위·임계값·제어·캘리브레이션",
+      "recheck": "SW 업데이트 해당 여부, 승인 영향, 기존 시험의 커버리지와 안전 논증.",
+      "misconception": "바이너리가 동일하다는 사실만으로 규제 영향이 없어지지 않음."
+    },
+    {
+      "kind": "AI 모델 복원",
+      "target": "모델 가중치·전처리·후처리·관련 설정",
+      "recheck": "센서·런타임·캘리브레이션과 검증된 조합인지, 복원 대상의 알려진 결함·보안 문제.",
+      "misconception": "모델 파일 하나만 교체하면 전체 시스템이 과거 검증 형상으로 돌아간다고 단정하지 않음."
+    },
+    {
+      "kind": "단일 ECU SW 복구",
+      "target": "실행 이미지·부팅 슬롯·데이터 형식",
+      "recheck": "복구 가능성, 전원, 데이터 마이그레이션·부트 체인·진단.",
+      "misconception": "A/B 파티션은 구현 대안이며 R156이 해당 기술을 일률적으로 지정하지 않음."
+    },
+    {
+      "kind": "여러 ECU·서비스 복구",
+      "target": "버전 의존성을 가진 여러 구성요소",
+      "recheck": "통신 인터페이스·의존성·복구 순서·부분 실패·혼합 버전의 활성화 차단.",
+      "misconception": "각 ECU의 “성공” 응답만으로 차량 전체 복구 성공을 선언하지 않음."
+    },
+    {
+      "kind": "업데이트 실패 후 안전 상태",
+      "target": "사용 가능 기능·정비·운행 조건",
+      "recheck": "해당 고장에 대해 안전 개념상 수용 가능한 상태인지, 사용자 안내와 복구 절차.",
+      "misconception": "안전 상태와 GTR의 MRC를 무조건 같은 상태로 취급하지 않음."
+    },
+    {
+      "kind": "승인 상태 복원",
+      "target": "승인 관련 문서·신고·증거",
+      "recheck": "실제 승인 구성과 조치·추가 평가 여부.",
+      "misconception": "서버의 rollback 버튼이 법적 승인 상태까지 자동으로 되돌리지 않음."
+    }
+  ],
+  "rollbackProcess": [
+    {
+      "step": "1. 위험·대상 확정",
+      "responsibility": "운영·안전·릴리스 담당이 사건, 영향 기능, 차량·국가·HW/SW 구성을 식별.",
+      "exit": "사유, 영향 범위, 증거 기준선, 적용 법·승인 조건."
+    },
+    {
+      "step": "2. 조치 선택",
+      "responsibility": "신규 활성화 금지 / 안전 종료 / 정책 복원 / SW 복구 / 수정 버전 적용을 구분.",
+      "exit": "선택 이유와 조치하지 않을 때의 위험. 모든 결함을 SW rollback으로 처리하지 않음."
+    },
+    {
+      "step": "3. 후보 구성 검증",
+      "responsibility": "이전 버전의 결함·취약점·의존성·호환성과 승인 영향을 검토.",
+      "exit": "허용 구성표, V&V 결과, 복구 실패 대응. GTR §4.3.3.1과 R156 관련 요구를 만족시키는 증거."
+    },
+    {
+      "step": "4. 요청 승인·전달",
+      "responsibility": "권한·대상·무결성을 확인하고 요청을 전송. 서비스 경로는 구현에 따라 CCS·OTA 등과 연계 가능.",
+      "exit": "요청 ID, 대상, 사유, 승인 근거, 유효기간·버전. 수신 미확인 차량은 별도 분류."
+    },
+    {
+      "step": "5. 차량 로컬 판단",
+      "responsibility": "현재 제어 책임·도로·사용자·고장 상태에 맞는 안전 경로 선택.",
+      "exit": "요청 수락/거부, 실제 차량 상태, fallback 시작·진행·완료."
+    },
+    {
+      "step": "6. 안전한 적용·복구",
+      "responsibility": "업데이트 적용 가능 상태·전원·통신·호환성을 확인. 부분 실패는 운행 가능한 혼합 버전으로 간주하지 않음.",
+      "exit": "ECU별 결과와 차량 전체 유효 구성 확인. 실패 시 검증된 복구 또는 안전 상태."
+    },
+    {
+      "step": "7. 복구 후 확인",
+      "responsibility": "부팅·진단·버전·모델·설정·정책·승인 관련 상태 확인.",
+      "exit": "설치 성공과 운행 준비 완료를 분리. 차단을 자동으로 삭제하지 않음."
+    },
+    {
+      "step": "8. 종료 차단 해제",
+      "responsibility": "해제 권한·사유·결함 조치·유효 구성을 확인.",
+      "exit": "해제 이력과 다음 활성화 판단. ODD·사용자 조건이 안 되면 여전히 활성화 불가."
+    },
+    {
+      "step": "9. 운행 후 검증",
+      "responsibility": "의도한 위험 저감, 잔존 문제·새 위험, 사건 보고 필요성을 평가.",
+      "exit": "ISMR·상태 기록·증거 갱신·추가 시정조치. 보고 대상은 Annex 1과 §5.4 조건으로 판단."
+    }
+  ],
+  "exceptions": [
+    {
+      "exception": "명령 중복·순서 역전",
+      "design": "요청 ID와 정책 순서를 검증. 오래된 허용 요청이 유효한 종료 차단을 풀지 않게 함.",
+      "verify": "동일 요청 재전송, 과거 ON 지연 도착, 다른 서버의 상충 정책."
+    },
+    {
+      "exception": "차량 오프라인",
+      "design": "미수신 차량의 실제 상태를 “종료 완료”로 표시하지 않음. 로컬 안전 개념에 따른 운행·다음 활성화 조건 유지.",
+      "verify": "복구 통신 후 최신 상태 수렴, 이미 처리된 요청 중복, 장기 미수신 조치."
+    },
+    {
+      "exception": "정책 TTL 만료",
+      "design": "새 활성화의 처리와 이미 진행 중인 DDT의 처리 분리. 만료만으로 주행 제어를 끊지 않음.",
+      "verify": "주행 중 만료, 재부팅, 시계 오류·시간 동기화 실패."
+    },
+    {
+      "exception": "보안상 구버전 금지",
+      "design": "서명·허용 버전 정책을 유지하며 복구 가능 구성을 선택. 취약한 구버전 강제 적용을 복구 성공으로 취급하지 않음.",
+      "verify": "안티롤백 제한과 안전 복구의 충돌, 대체 수정 버전·정비 경로."
+    },
+    {
+      "exception": "다중 ECU 일부만 복구",
+      "design": "호환 구성 확인 전 ADS 활성화 차단. 복구 순서와 재시도·정비 경로를 설계.",
+      "verify": "ECU 전원 차단·부팅 순서·인터페이스 버전 혼합·일부 성공 응답."
+    },
+    {
+      "exception": "해제 명령만 성공",
+      "design": "해제 후 차량의 ODD·고장·형상 검사를 수행. 해제와 운전 개시를 분리.",
+      "verify": "결함 미조치 상태의 해제, 승인 범위 밖 설정, 사용자 준비 미충족."
+    }
+  ],
+  "screenMustShow": "Feature별 의도 정책과 실제 차량 상태, 승인/형상·ODD 버전, 종료 차단의 사건별 목록, 수신·수락·보류·실행 ACK, reasonCode와 마지막 관측 시각, cohort 노출량·지표·미확인 차량, 변경 전후 비교와 승인/증거 링크를 함께 보여준다. “OFF 100%” 대신 “종료 요청 100 / 수신 92 / 전환 중 8 / 종료 확인 80 / 미확인 12”처럼 서로 다른 수치를 분리할 수 있어야 한다. 이 숫자는 화면 설명용 예다.",
+  "evidenceManifest": "요구 ID·안전 주장·검토용 위험 ID, 정책/ODD/HW/SW/모델/보정 형상, 시나리오·입력·신호 품질, 도구/벤치 버전, 예상 전이·실제 전이·시간 측정, pass/fail·미해결 사항, 결과 digest·검토 승인을 함께 저장한다. 시간·반응 한계는 기능별 안전 분석에서 가져와 시험 파라미터로 고정한다.",
+  "verdictModel": {
+    "actions": [
+      {
+        "id": "activate",
+        "label": "신규 활성화"
+      },
+      {
+        "id": "handover",
+        "label": "사용자 인계 준비"
+      },
+      {
+        "id": "install",
+        "label": "업데이트 설치"
+      },
+      {
+        "id": "mrc",
+        "label": "MRC 달성 근거"
+      },
+      {
+        "id": "terminate",
+        "label": "ADSF-2 종료 확인 예시"
+      },
+      {
+        "id": "reactivate",
+        "label": "재활성화 조건 재평가"
+      }
+    ],
+    "inputs": [
+      {
+        "id": "fresh",
+        "label": "입력 품질·최신성 유효",
+        "initial": true
+      },
+      {
+        "id": "healthy",
+        "label": "해당 기능 건전성 충족",
+        "initial": true
+      },
+      {
+        "id": "config",
+        "label": "승인 호환 형상",
+        "initial": true
+      },
+      {
+        "id": "policy",
+        "label": "정책·필요 권한 허용",
+        "initial": true
+      },
+      {
+        "id": "user",
+        "label": "해당 인계/활성화 사용자 조건 충족",
+        "initial": true
+      },
+      {
+        "id": "stopped",
+        "label": "정지 근거 충족",
+        "initial": true
+      },
+      {
+        "id": "hold",
+        "label": "정지 유지 수단 유효",
+        "initial": true
+      },
+      {
+        "id": "power",
+        "label": "설치·복구 전원 충족",
+        "initial": true
+      },
+      {
+        "id": "context",
+        "label": "정지 위치·주변 위험 저감 근거",
+        "initial": true
+      }
+    ],
+    "reasonCodes": [
+      "ALREADY_ACTIVE",
+      "CONFIG_NOT_APPROVED",
+      "DDT_ACTIVE",
+      "DDT_STILL_ACTIVE",
+      "FEATURE_HEALTH_NOT_READY",
+      "HOLD_NOT_CONFIRMED",
+      "INPUT_INVALID_OR_STALE",
+      "NOT_STOPPED",
+      "NO_ACTIVE_DDT_TO_HANDOVER",
+      "NO_TERMINATION_INHIBIT",
+      "POLICY_OR_ENTITLEMENT_DENIED",
+      "PROPOSED_NOT_VEHICLE_VALIDATED",
+      "RECOVERY_POWER_NOT_READY",
+      "RISK_MITIGATION_NOT_CONFIRMED",
+      "TERMINATION_INHIBIT",
+      "UPDATE_PATH_NOT_HEALTHY",
+      "USER_NOT_READY",
+      "USER_PROCEDURE_NOT_READY"
+    ]
+  }
+}

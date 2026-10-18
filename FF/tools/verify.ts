@@ -38,6 +38,7 @@ const STEPS: Step[] = [
   { id: 'conformance', title: '42 컴포넌트 준수 (--strict: 42/42가 아니면 실패)', cmd: `node --test tools/verify.test.ts && node tools/conformance.ts --strict` },
   { id: 'standards', title: '보고서 v1.1 규칙 추적 (ID 실재·플랫폼 규칙 구현·시험 래칫)', cmd: `node --test tools/standards.test.ts tools/ratchet.test.ts && node tools/standards.ts` },
   { id: 'req', title: '기능명세서 요구사항 반영 추적 (원본 해시·판정 628건·@req 표식·결함 기록 it.fails·래칫)', cmd: `node --test tools/xlsx.test.ts tools/requirements.test.ts && node tools/requirements.ts` },
+  { id: 'ads', title: 'ADS·UNECE 보고서 v3.0 반영 추적 (요건 64·시험 24·시나리오 10 카탈로그 무결성·판정 완비·원본 해시·설계 계획 ID·보고서 최신)', cmd: `node --test tools/ads-sync.test.ts && node tools/ads-sync.ts --check && node tools/ads-report.ts --check` },
   { id: 'build:frontend', title: '프론트 빌드', cmd: `${npx} vite build`, cwd: 'frontend' },
   { id: 'budget', title: '성능 예산 (첫 화면·화면 묶음 gzip, harness/budgets.json)', cmd: `node --test tools/bundle-budget.test.ts && node tools/bundle-budget.ts` },
   { id: 'e2e', title: 'e2e (기능·접근성·레이아웃)', cmd: `${npx} playwright test --grep-invert @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },

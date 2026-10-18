@@ -3,6 +3,33 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## ADS·UNECE 보고서 v3.0 반영 (2026-10-18 사용자 요청 "FF Platform 목적·vision·시나리오가 들어 있으니 모두 반영 — 분석·저장·HTML 보고" → "다른 세션과 통합, UI/UX·프론트·백엔드·DB 수정 설계")
+- **원본 보관**: 저장소 밖(사용자 결정 — FF repo 공개). 위치 `C:/project/2026-06-04_Feature_Platform_sources/ads-unece-v3.0/`, sha256 `712e75bc…`, 1,200,160 B.
+  - 다운로드 폴더의 확장자 없는 파일이 실제 HTML이었다.
+  - 이전 판 2개(10/4 607 KB, 10/18 11:34 909 KB)는 쓰지 않았다.
+- **저장소 자료**
+  - `harness/ads/catalog.json`: 추출본(`npm run ads:sync`). 요건 FFP-F001~064(P0 45) · TC01~24 · H01~08 · C01~06 · 시나리오 10 · 계약 4 · API 5 · 사유 코드 18
+  - `review.json`: 판정(코드 경로·줄 근거)
+  - `design.json`: 수정 설계 39항목·6단계
+  - `docs/10-requirements/10-70-ads-unece-v3-reflection.md`: 정본
+  - `docs/10-requirements/ads-unece-v3/report.html`: `npm run ads:report`로 생성
+  - BACKLOG ADS 절: `npm run ads:report`로 생성
+  - 용어집 '차량 상태 용어 고정', 표준 등록부 ADS 절(GTR 26·R185·R156 01·R157)
+  - verify 단계 `ads`
+- **판정 결과**
+  - 요건: 구현 7 · 부분 48 · 미구현 6 · 범위 밖 3
+  - 인수시험: 자동 3 · 일부 17 · 없음 4
+- **결함 6건**(설계 1단계에서 회귀 시험과 함께 수정)
+  1. 복원 뒤 자동 ACTIVE(F036)
+  2. 재전송 REPLAY(F019)
+  3. 대상 밖 적용(F014)
+  4. Kill 서명 대상 미검증(F059)
+  5. 출시 뒤 재-HARA 미확인(F007)
+  6. FFG-TEL-004 표시(F052)
+- **다른 세션과 통합**: 3초 테스트(Kill 보류 항목은 ADS-UI02), 업무 절차 FPW.8·FPW.13, FF_IMP 와이어 2.1, 텔레메트리 TL-UI02·TL-B01/B02, 양방향 연계
+- **확인 필요(사용자)**: D-ADS-1~6. FF_IMP 와이어 2.1, 대표 Feature 2개, 사건 보고 기한 소유, RACI 모델 수정 주체, 차량 팀 결정 5건, FFP 요구의 codeBeamer 등록.
+- **다음**: ADS-FIX01(양방향 연계 작업으로 깨진 verify:full 복구) → 1단계
+
 ## 차량 텔레메트리 → Data Lake → 분석·학습 (2026-10-18 사용자 요청 "현대차 Data Lake와 인터페이스, 차량 데이터를 텔레메트리로 받아 분석·학습 — 너가 설계해")
 - 설계 `docs/80-integration/80-70-telemetry-datalake-ml.md`. 구현은 아직 없다.
 - **경계(사용자 지적)**: Data Lake는 외부 시스템이다. 우리가 설계하지만 FF와 서버가 다르다(별도 workspace `datalake/`, 포트 9301). FF ↔ Lake는 IF-15 하나로만 연결한다.

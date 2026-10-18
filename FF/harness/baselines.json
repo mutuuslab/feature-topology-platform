@@ -63,5 +63,10 @@
     "value": 5,
     "direction": "max",
     "note": "미해결 결함(it.fails 결함 기록) 수 — 늘면 안 된다"
+  },
+  "platformTermLines": {
+    "value": 0,
+    "direction": "max",
+    "note": "플랫폼 용어 규칙 위반 줄 수(은퇴→Retirement) — 0까지"
   }
 }

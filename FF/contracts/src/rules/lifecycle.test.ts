@@ -13,6 +13,7 @@ const at = (lc: Lifecycle, patch: Partial<FeatureVersionRow> = {}): FeatureVersi
 const pass = (...gs: GateId[]) => Object.fromEntries(gs.map((g) => [g, 'PASS' as GateStatus]));
 const ctx = (p: Partial<TransitionContext> = {}): TransitionContext => ({ latestGates: {}, dependencies: [], policyCoverage: 99, ...p });
 const codes = (r: ReturnType<typeof evaluateTransition>) => r.blockers.map((b) => b.code);
+const SIGNED = { signedBy: 'usr-author', signedAt: '2026-10-18T09:00:00+09:00' };
 
 describe('Lifecycle 전이 표', () => {
   it('7단계 전이 규칙이 설계서 순서대로 정의되어 있다', () => {
@@ -27,7 +28,7 @@ describe('Lifecycle 전이 표', () => {
     ['VERIFIED', 'RELEASED', ['G8', 'G9']],
   ] as const)('%s → %s 는 %j PASS가 필요하다', (from, to, gates) => {
     const actorRole = to === 'APPROVED' ? 'FEATURE_APPROVER' : to === 'RELEASED' ? 'RELEASE_MANAGER' : 'SYSTEM';
-    const ok = evaluateTransition(at(from), to, ctx({ latestGates: pass(...gates), actor: { id: 'a', role: actorRole }, reason: '근거 확인' }));
+    const ok = evaluateTransition(at(from), to, ctx({ latestGates: pass(...gates), actor: { id: 'a', role: actorRole }, reason: '근거 확인', releaseSignoff: SIGNED }));
     expect(ok.blockers).toEqual([]);
     for (const g of gates) {
       const missing = evaluateTransition(at(from), to, ctx({ latestGates: pass(...gates.filter((x) => x !== g)) }));
@@ -35,6 +36,16 @@ describe('Lifecycle 전이 표', () => {
       const review = evaluateTransition(at(from), to, ctx({ latestGates: { ...pass(...gates), [g]: '검토 중' } }));
       expect(review.blockers).toContainEqual(expect.objectContaining({ code: 'GATE_NOT_PASSED', ref: g }));
     }
+  });
+
+  it('출시(VERIFIED→RELEASED)는 Feature Owner의 Release Sign-off가 있어야 한다 — 보고서 6.1 G7 승인자(사용자 결정 2026-10-18)', () => {
+    const base = { latestGates: pass('G8', 'G9'), actor: { id: 'han.release', role: 'RELEASE_MANAGER' as const }, reason: '출시' };
+    const none = evaluateTransition(at('VERIFIED'), 'RELEASED', ctx(base));
+    expect(none.blockers).toEqual([expect.objectContaining({ code: 'RELEASE_SIGNOFF_MISSING' })]);
+    expect(codes(evaluateTransition(at('VERIFIED'), 'RELEASED', ctx({ ...base, releaseSignoff: null })))).toEqual(['RELEASE_SIGNOFF_MISSING']);
+    expect(evaluateTransition(at('VERIFIED'), 'RELEASED', ctx({ ...base, releaseSignoff: SIGNED })).blockers).toEqual([]);
+    // 출시 외 전이에는 요구하지 않는다
+    expect(codes(evaluateTransition(at('VERIFIED'), 'DEVELOPING', ctx({ actor: { id: 'q', role: 'GATE_JUDGE' }, reason: '재검증' })))).toEqual([]);
   });
 
   it('정의되지 않은 전이(되돌리기·건너뛰기)는 NO_RULE', () => {

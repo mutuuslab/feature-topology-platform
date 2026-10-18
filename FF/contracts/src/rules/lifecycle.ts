@@ -32,7 +32,7 @@ export const FEATURE_TRANSITIONS: TransitionRule[] = [
 
 export const LIFECYCLE_RANK: Record<Lifecycle, number> = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
+export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
 
 export interface Blocker {
   code: BlockerCode;
@@ -52,6 +52,12 @@ export interface TransitionContext {
   actor?: { id: string; role: Role };
   /** 이 버전을 작성한 행위자 (작성자는 자기 요청을 최종 승인할 수 없다) */
   createdBy?: string | null;
+  /**
+   * Feature Owner의 Release Sign-off(출시 책임 확인 개인 서명) — 현재 G8·G9 판정에 묶인 유효한 서명만.
+   * 보고서 6.1 G7(출시·활성화) 승인자는 Feature Owner·Safety Manager다. Safety Manager는 Operations Gate 판정으로,
+   * Feature Owner는 이 서명으로 승인한다(사용자 결정 2026-10-18). 없으면(undefined·null) 출시를 막는다.
+   */
+  releaseSignoff?: { signedBy: string; signedAt: string } | null;
   reason?: string;
 }
 
@@ -82,6 +88,9 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
   if (rule.to === 'APPROVED')
     for (const d of ctx.dependencies)
       if (!d.targetVersion) blockers.push({ code: 'DEPENDENCY_UNRESOLVED', message: `${d.dependencyId} 대상 Version 미확정`, ref: d.dependencyId });
+
+  if (rule.from === 'VERIFIED' && rule.to === 'RELEASED' && !ctx.releaseSignoff)
+    blockers.push({ code: 'RELEASE_SIGNOFF_MISSING', message: 'Feature Owner의 Release Sign-off(출시 책임 확인 개인 서명)가 없습니다 — G8·G9 PASS 뒤 Feature Owner가 서명합니다.' });
 
   if (rule.from === 'DEVELOPING' && rule.to === 'VERIFIED' && ctx.policyCoverage < f.controlPoints.length)
     blockers.push({ code: 'POLICY_MISSING', message: `Control Point ${f.controlPoints.length}개 중 정책 등록 ${ctx.policyCoverage}개` });

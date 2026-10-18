@@ -1,0 +1,185 @@
+process:
+  id: FPW.10
+  name: Supplier Management
+  name_ko: 협력사 관리
+  related: [FLW-SUPPLIER-INTAKE, INT-SUPPLIER-PKG]
+  gates: []
+  ref: 표준 보고서 16장(ASPICE 평가), 17장(협력사), 9.11절 FFG-VEH-016, 14·15장(원산지)
+  purpose_ko: >-
+    Feature Flag 관련 SW·서비스를 공급하는 협력사를 계약 전에 평가하고, 보고서 요구를 DIA·CIA에 넣어 계약한 뒤,
+    Gate별 납품물을 OEM 환경에서 독립적으로 입고 검사해 통합과 V&V의 입력으로 넘긴다.
+  outcomes:
+    - {id: O1, text_ko: 협력사 역량(ASPICE·사이버보안·SMS)이 계약 전에 확인된다.}
+    - {id: O2, text_ko: DIA·CIA에 보고서 Version·RASIC·납품물·통지 기한·안전 정보 제공 의무가 들어간다.}
+    - {id: O3, text_ko: 기존 구현을 재사용하면 차이가 진단되어 G2에 보고된다.}
+    - {id: O4, text_ko: 납품물이 독립성이 보장된 확인 조치와 OEM 입고 검사로 판정된다.}
+    - {id: O5, text_ko: 공급망 원산지와 EOL 프로비저닝이 기록·검증된다.}
+  rules: [FFG-SUP-003, FFG-SUP-005, FFG-SUP-004, FFG-SUP-017, FFG-SUP-016, FFG-SUP-014, FFG-SUP-008,
+          FFG-SUP-009, FFG-SEC-006, FFG-SBOM-007, FFG-VEH-016, FFG-SUP-006, FFG-SUP-010]
+  entry_criteria:
+    - Feature Flag 관련 SW·서비스의 외부 조달이 결정되었다
+  exit_criteria:
+    - 계약(DIA·CIA)이 체결되고 납품물이 Gate별 합격 기준으로 판정되었다
+    - 원산지 속성과 EOL 프로비저닝 검증이 기록되었다
+  work_products:
+    - key: WP-SUPPLIER-CANDIDATE
+      name: 협력사 후보·공급 범위
+      en: Supplier Candidate & Scope
+      kind: input
+      from: 구매(조달 계획)
+      content:
+        - 후보 협력사와 공급할 SW·서비스 범위(LPC, Safety Guard, 시험 도구, 운영 서비스)
+        - ADS 관련 여부와 대상 시장
+    - key: WP-SUPPLIER-ASSESS
+      name: 협력사 역량 평가 결과
+      en: Supplier Capability Assessment
+      kind: output
+      content:
+        - ASPICE·사이버보안 평가 결과와 Feature Flag 특화 평가 질문 결과
+        - ADS 협력사의 SMS 역량 평가, 부족 항목의 개선 계획과 기한
+    - key: WP-DIA
+      name: DIA·CIA 계약 부속서
+      en: Development / Cybersecurity Interface Agreement
+      kind: output
+      content:
+        - 인용한 보고서 Version과 적용 장, RASIC, Gate별 납품물
+        - 시간 예산 부속서, 결함·변경 통지 기한, 현장 지원 SLA
+        - 당국 보고·리콜 판단을 위한 안전 정보 제공 범위와 기한
+    - key: WP-SUPPLIER-DIFF
+      name: 기존 구현 차이 보고
+      en: Legacy Implementation Gap Report
+      kind: output
+      content:
+        - 재사용·인수한 Feature Flag 구현과 보고서 요구의 차이
+        - 차이별 위험과 보완 계획
+    - key: WP-CONFIRMATION-PLAN
+      name: 확인 조치 계획
+      en: Confirmation Measures Plan
+      kind: output
+      content:
+        - 협력사 범위의 확인 검토·감사·기능안전 평가와 수행자
+        - 수행자 독립성 수준과 근거
+    - key: WP-INTAKE-RESULT
+      name: 입고 검사 결과
+      en: Incoming Inspection Result
+      kind: output
+      content:
+        - 검사 항목(IN-01~IN-12)별 OEM 환경 재실행 결과
+        - Gate별 합격 판정과 Supplier Gate 기록
+        - Safety Manual 사용 가정(AoU) 목록
+    - key: WP-ORIGIN-RECORD
+      name: 공급망 원산지 기록
+      en: Supply Chain Origin Record
+      kind: output
+      content:
+        - 구성요소별 개발 주체·국가·소유·통제 속성(SBOM 연계)
+        - 미국 시장 적합성 선언 근거와 10년 보존 위치
+    - key: WP-EOL-RECORD
+      name: EOL 프로비저닝 검증 기록
+      en: EOL Provisioning Verification
+      kind: output
+      retained: true
+      content:
+        - Feature별 초기 기록 쓰기와 프로비저닝 표식 설정 결과
+        - 표식이 있는 ECU의 기록 누락 시 동작 확인 결과
+  activities:
+    - id: FPW.10-A01
+      name: 계약 전 협력사 역량 확인
+      outcomes: [O1]
+      rules: [FFG-SUP-005, FFG-SUP-003]
+      raci: {R: [R-QA], A: R-PUR, C: [R-CSM, R-SM], I: [R-INT]}
+      inputs: [WP-SUPPLIER-CANDIDATE]
+      outputs: [WP-SUPPLIER-ASSESS]
+      steps:
+        - 후보 협력사의 ASPICE·사이버보안 평가 결과를 계약 전에 받아 확인한다
+        - 평가 계획에 Feature Flag 특화 평가 질문을 넣고 결과를 기록한다
+        - ADS 관련 협력사는 SMS 역량 평가를 추가하고, 부족하면 개선 계획과 기한을 합의한다
+      checks:
+        - 계약 전에 평가 결과와 부족 항목의 개선 계획이 있다
+      next: [FPW.10-A02]
+    - id: FPW.10-A02
+      name: DIA·CIA 체결
+      outcomes: [O2]
+      rules: [FFG-SUP-004, FFG-SUP-017, FFG-SUP-010]
+      raci: {R: [R-PUR, R-REG], A: R-PUR, C: [R-LEG, R-SM, R-CSM, R-QA], I: [R-INT]}
+      inputs: [WP-SUPPLIER-ASSESS]
+      outputs: [WP-DIA]
+      steps:
+        - DIA·CIA에 보고서 Version과 적용 장, RASIC, Gate별 납품물, 시간 예산 부속서, 통지 기한, 현장 지원 SLA를 넣는다
+        - 법규 담당이 당국 보고·리콜 판단·사건 조사에 필요한 안전 정보의 제공 범위와 기한을 정해 넣는다
+        - 법무가 계약 조항을 검토하고 구매가 체결한다
+      checks:
+        - 일곱 항목과 안전 정보 제공 조항이 모두 계약에 있다
+      next: [FPW.10-A03, FPW.10-A04]
+    - id: FPW.10-A03
+      name: 확인 조치 독립성 지정
+      outcomes: [O4]
+      rules: [FFG-SUP-014]
+      raci: {R: [R-SM], A: R-SM, C: [R-QA], I: [R-PUR]}
+      inputs: [WP-DIA]
+      outputs: [WP-CONFIRMATION-PLAN]
+      steps:
+        - 협력사 범위의 확인 검토·감사·기능안전 평가를 계획한다
+        - 참조 ASIL에 맞는 독립성 수준을 만족하는 수행자를 지정한다
+        - 협력사 자체 선언만으로 승인하지 않도록 확인 결과를 입고 판정의 조건으로 건다
+      checks:
+        - 확인 조치마다 독립성을 만족하는 수행자가 지정되었다
+      next: [FPW.10-A06]
+    - id: FPW.10-A04
+      name: 공급망 원산지 속성 관리
+      outcomes: [O5]
+      rules: [FFG-SEC-006, FFG-SBOM-007]
+      raci: {R: [R-PUR], A: R-PUR, C: [R-CSM, R-REG], I: [R-INT]}
+      inputs: [WP-DIA]
+      outputs: [WP-ORIGIN-RECORD]
+      steps:
+        - 텔레매틱스·OTA·Feature Flag SW 구성요소의 개발 주체와 원산지를 SBOM과 함께 받는다
+        - 미국 시장 차량의 해당 구성요소는 개발 주체·국가·소유·통제 속성을 SBOM에 기록한다
+        - 적합성 선언 근거로 10년 보존 위치를 지정한다
+      checks:
+        - 대상 구성요소 모두에 원산지 속성이 있다
+      next: [FPW.10-A06]
+    - id: FPW.10-A05
+      name: 기존 구현 진단
+      trigger: 기존 Feature Flag 구현의 재사용·인수 결정
+      outcomes: [O3]
+      rules: [FFG-SUP-016]
+      raci: {R: [R-QA], A: R-QA, C: [R-ARC, R-INT], I: [R-SM]}
+      inputs: [WP-SUPPLIER-ASSESS]
+      outputs: [WP-SUPPLIER-DIFF]
+      steps:
+        - 재사용·인수할 구현을 보고서 요구와 대조하는 진단을 수행한다
+        - 차이마다 위험과 보완 계획을 정리한다
+        - 차이 보고를 Safety Manager에게 넘겨 G2 영향 분석에 넣게 한다
+      checks:
+        - 차이 보고가 G2 영향 분석의 입력으로 등록되었다
+    - id: FPW.10-A06
+      name: Gate별 납품물 입고 검사
+      outcomes: [O4]
+      rules: [FFG-SUP-008, FFG-SUP-009, FFG-SUP-006]
+      raci: {R: [R-QA, R-TST], A: R-QA, C: [R-INT, R-SM], I: [R-PUR]}
+      inputs: [WP-DIA, WP-CONFIRMATION-PLAN]
+      outputs: [WP-INTAKE-RESULT]
+      steps:
+        - 협력사가 정한 형식으로 낸 Gate별 납품물을 협력사 이관 포털에서 받는다
+        - 입고 검사 항목을 OEM 환경에서 다시 실행하고, 수정 납품이면 일부가 아니라 전 항목을 다시 검사한다
+        - Safety Manual의 사용 가정 목록을 통합 조직에 넘긴다
+        - 합격 기준으로 판정해 Supplier Gate 기록에 남긴다
+      checks:
+        - 모든 검사 항목이 OEM 환경에서 재실행되었다
+        - 판정 결과가 Supplier Gate 기록에 있다
+      platform: {actions: [judgeGate], screens: [/supplier/portal], gates: [G6]}
+      next: [FPW.10-A07]
+    - id: FPW.10-A07
+      name: EOL 프로비저닝 검증
+      outcomes: [O5]
+      rules: [FFG-VEH-016]
+      raci: {R: [R-INT], A: R-INT, C: [R-TST, R-PLM], I: [R-QA]}
+      inputs: [WP-INTAKE-RESULT]
+      outputs: [WP-EOL-RECORD]
+      steps:
+        - EOL에서 인증된 진단 세션으로 Feature별 초기 기록을 쓰고 지울 수 없는 프로비저닝 표식을 설정한다
+        - 표식이 있는 ECU에서 기록이 없을 때 첫 시동으로 보지 않는지 확인한다
+        - 결과를 생산 기준정보와 함께 기록한다
+      checks:
+        - 대상 ECU 모두 표식과 초기 기록이 확인되었다

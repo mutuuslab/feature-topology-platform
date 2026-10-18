@@ -45,7 +45,7 @@ describe('Registry 스냅샷 — 기존 Feature Registry + 안전 분류에서 �
     expect(s.ledger).toMatchObject({ last_order_seq: 10, last_kill_approvers: ['u-3003', 'u-4004'] });
     expect(s).toMatchObject({ nextSeq: 11, window: { hours: 24, deactivate: 3, cap: 5000 } });
   });
-  it('지원 종료·은퇴는 폐기로 본다 — 비활성화만', () => {
+  it('지원 종료·Retirement는 폐기로 본다 — 비활성화만', () => {
     expect(['RELEASED', 'DEPRECATED', 'RETIRED', 'DEVELOPING'].map(gateStatusOf)).toEqual(['RELEASED', 'DECOMMISSIONED', 'DECOMMISSIONED', 'DEVELOPING']);
   });
 });

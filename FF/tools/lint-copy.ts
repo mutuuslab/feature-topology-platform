@@ -2,9 +2,11 @@
 // 검사: (1) JSX 텍스트·속성에 한글 직접 기입 금지, (2) 카탈로그·라우트 제목·신규 UI 금지어, (3) 레거시 FEAT-BDC 하드코딩 래칫,
 // (4) 레거시 화면에 남은 'Twin/트윈' 표기 래칫(사용자 결정 2026-10-12: Digital Twin 용어 금지 → 0까지),
 // (5) 국제표준 대응방안 보고서 v1.1 용어 규칙(harness/guide/harness/terms.json) — 플랫폼 화면에 해당하는 금지어만, 허용 문맥은 보고서 원본 정규식. 줄 수 래칫 → 0.
+// (6) 플랫폼 용어 규칙(tools/platform-terms.ts, 예: 은퇴 → Retirement) — 화면·API 요약·오류 메시지(frontend·contracts·backend). 줄 수 래칫 → 0.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { guideTermHits, loadGuideTerms } from './guide-terms.ts';
+import { platformTermHits } from './platform-terms.ts';
 import { FF, ratchet, rel, walk } from './lib.ts';
 
 const SRC = join(FF, 'frontend', 'src');
@@ -78,6 +80,17 @@ for (const f of walk(SRC, ['.ts', '.tsx'])) {
     });
 }
 
+// 플랫폼 용어 — 보고서 원문 생성물(contracts/src/generated)과 마이그레이션 SQL은 제외
+const PLATFORM_DIRS = [SRC, join(FF, 'contracts', 'src'), join(FF, 'backend', 'src')];
+const platformHits: string[] = [];
+for (const dir of PLATFORM_DIRS)
+  for (const f of walk(dir, ['.ts', '.tsx'], ['node_modules', 'dist', '__tests__', 'test', 'generated'])) {
+    if (/\.test\.|kernel[\\/]migrations\.ts$/.test(f)) continue;
+    readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
+      for (const h of platformTermHits(line)) platformHits.push(`${rel(f)}:${i + 1}  ${h.term} → ${h.fix} — ${h.why}`);
+    });
+  }
+
 console.log('lint:copy');
 let ok = true;
 if (errors.length) {
@@ -90,4 +103,7 @@ ok = ratchet('twinTermLines', twinLines, 'max', "레거시 화면에 보이는 '
 const termOk = ratchet('guideTermLines', termHits.length, 'max', "보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지");
 if (!termOk || process.argv.includes('--terms')) for (const h of process.argv.includes('--terms') ? termHits : termHits.slice(0, 15)) console.error('    ' + h);
 ok = termOk && ok;
+const platformOk = ratchet('platformTermLines', platformHits.length, 'max', "플랫폼 용어 규칙 위반 줄 수(은퇴→Retirement) — 0까지");
+if (!platformOk || process.argv.includes('--terms')) for (const h of platformHits.slice(0, 15)) console.error('    ' + h);
+ok = platformOk && ok;
 process.exit(ok ? 0 : 1);

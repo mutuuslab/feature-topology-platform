@@ -1,4 +1,4 @@
-// P11 화면 — API만 있던 기능: Flag 은퇴(FFG-LCY-011), 데이터·규제 기록(SUMS·Data Act·보존), 감독 기록(직무 분리·사후 검토·변경 기록·재-HARA). 모의 API.
+// P11 화면 — API만 있던 기능: Flag Retirement(FFG-LCY-011), 데이터·규제 기록(SUMS·Data Act·보존), 감독 기록(직무 분리·사후 검토·변경 기록·재-HARA). 모의 API.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -51,7 +51,7 @@ const RET = (o: object = {}) => ({
   requiredApprovals: ['FEATURE_APPROVER'], codeRemovalDue: '2026-04-01T00:00:00.000Z', overdue: true, next: 'FINAL_STATE', ...o,
 });
 
-describe('Flag 은퇴 (FFG-LCY-011)', () => {
+describe('Flag Retirement (FFG-LCY-011)', () => {
   it('진행 표 — 단계 수·다음 단계·기한 초과는 빨간색, 열면 다음 단계(최종 상태) 기록 본문을 그대로 보낸다', async () => {
     handler = (url, init) => {
       if (url.startsWith('/api/flag-retirements/RET-00001/steps') && init?.method === 'POST') return { status: 201, body: RET({ next: 'CODE_REMOVED' }) };

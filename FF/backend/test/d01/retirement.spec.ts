@@ -1,4 +1,4 @@
-// Flag 은퇴 6단계 (D01-01, 보고서 v1.1 6.5 · FFG-LCY-011 플랫폼 몫) — 순서대로만 진행, 승인은 Feature Owner와 F2 이상 Safety Manager(요청자 제외),
+// Flag Retirement 6단계 (D01-01, 보고서 v1.1 6.5 · FFG-LCY-011 플랫폼 몫) — 순서대로만 진행, 승인은 Feature Owner와 F2 이상 Safety Manager(요청자 제외),
 // 코드 참조 0건 전 퇴역 금지, 퇴역하면 배포 정책 RETIRED·Flag ID 재사용 금지, 코드 삭제 기한(6개월·다음 릴리스 중 이른 쪽)이 지나면 기한 초과.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Clock } from '../../src/kernel/clock';
@@ -11,7 +11,7 @@ const IMPL = actor('jung.impl', 'IMPLEMENTER');
 const REG = actor('usr-reg', 'REGULATORY_OWNER');
 const FLAG = 'care_00022_signal';
 
-describe('Flag 은퇴 6단계 (FFG-LCY-011)', () => {
+describe('Flag Retirement 6단계 (FFG-LCY-011)', () => {
   let b: Awaited<ReturnType<typeof bootApp>>;
   let id: string;
   beforeAll(async () => {
@@ -51,7 +51,7 @@ describe('Flag 은퇴 6단계 (FFG-LCY-011)', () => {
     expect((await step({ step: 'REGISTRY_RETIRED' }).expect(201)).body.status).toBe('RETIRED');
     const pols = (await http().get(`/api/policies?flagKey=${FLAG}`).expect(200)).body.items;
     expect(pols.some((p: any) => p.status === 'DEPLOYED')).toBe(false);
-    const reuse = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00024', featureVersion: '1.0.0', controlPoint: 'Flag', flagKey: FLAG, description: '은퇴한 ID 재사용 시도', safeDefault: false });
+    const reuse = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00024', featureVersion: '1.0.0', controlPoint: 'Flag', flagKey: FLAG, description: 'Retirement한 ID 재사용 시도', safeDefault: false });
     expect(reuse.status).toBe(409);
     const closed = (await step({ step: 'RECORDS_RETAINED', markets: ['KR'], basis: 'Safety Case 보존 기간(13.7) — 감사·Gate 결정' }, REG).expect(201)).body;
     expect(closed).toMatchObject({ status: 'CLOSED', next: null });

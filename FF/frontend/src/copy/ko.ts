@@ -1025,7 +1025,7 @@ export const ko = {
     classes: '등급',
     times: '시간값 (밀리초 · 0 = 해당 없음)',
     more: '추가 속성',
-    f: { fClass: '처리강도 F', deactClass: '비활성화 등급 DC', regClass: '법규 등급 R', flagType: 'Flag 유형', takeoverMs: '인계 시간', rampMs: '효과 감소 시간', faultRampMs: '고장 램프 시간', faultTolerantTimeMs: 'FTTI', maxPendingMs: '비작동 대기 상한', maxCycleWaitMs: '다음 시동 대기 상한', safeState: 'Safe State', markets: '승인 시장 (쉼표로 구분)', expiresAt: '만료일', retirementPlan: '은퇴 계획', adsFeature: 'ADS 기능', adsfType: 'ADSF 유형', gsrMandatory: '법규 의무 기능(GSR)' },
+    f: { fClass: '처리강도 F', deactClass: '비활성화 등급 DC', regClass: '법규 등급 R', flagType: 'Flag 유형', takeoverMs: '인계 시간', rampMs: '효과 감소 시간', faultRampMs: '고장 램프 시간', faultTolerantTimeMs: 'FTTI', maxPendingMs: '비작동 대기 상한', maxCycleWaitMs: '다음 시동 대기 상한', safeState: 'Safe State', markets: '승인 시장 (쉼표로 구분)', expiresAt: '만료일', retirementPlan: 'Retirement 계획', adsFeature: 'ADS 기능', adsfType: 'ADSF 유형', gsrMandatory: '법규 의무 기능(GSR)' },
     seconds: (ms: number) => (ms >= 3600000 ? `${+(ms / 3600000).toFixed(1)}시간` : ms >= 60000 ? `${Math.round(ms / 60000)}분` : `${(ms / 1000).toFixed(1)}초`),
     findings: '조합 검사 (FFG-CLS-009 외)',
     findingsList: '규칙별 결과',

@@ -14,6 +14,7 @@ const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
 const RELEASE = actor('han.release', 'RELEASE_MANAGER');
 const OPERATOR = actor('seo.ops', 'OPERATOR');
 const SAFETY = actor('park.safety', 'SAFETY_OFFICER');
+const CSM = actor('usr-csm', 'SECURITY_OFFICER');
 const SYSTEM = actor('fleet-collector', 'SYSTEM');
 
 /** FEAT-00022 적용 범위(KR/NX4 PE/Premium) 차량 — KMH-NX4-0003은 통신 단절(OFFLINE) */
@@ -252,7 +253,7 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
       await http().post('/api/telemetry/readback').set(SYSTEM).send(body).expect(400);
     });
 
-    it('키 교체는 안전 담당만 — 용도(차단)별로 새 키로 서명하고, 이전 키로 서명한 게시본은 계속 검증된다', async () => {
+    it('키 교체는 안전·보안 담당만 — 용도(차단)별로 새 키로 서명하고, 이전 키로 서명한 게시본은 계속 검증된다', async () => {
       const before = (await http().get('/api/publications?kind=KILL').expect(200)).body.items.at(-1);
       const oldKey = (await pub(before.publicationId)).publication.signature.keyId;
       await http().post('/api/pki/rotate').set(OPERATOR).send({ reason: '정기 교체', purpose: 'kill' }).expect(403);
@@ -264,6 +265,13 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
       expect((await pub(before.publicationId)).verification.valid).toBe(true);
       const k = await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: '새 키 확인', confirm: 'FEAT-00022' }, OPERATOR);
       expect((await pub(k.publicationId)).publication.signature.keyId).toBe(r.body.keyId);
+    });
+
+    it('보안 담당(CSM)도 키를 교체한다 — 서명·키 관리는 보안 업무(FFG-SEC-002, 사용자 결정 2026-10-18)', async () => {
+      const r = await http().post('/api/pki/rotate').set(CSM).send({ reason: '키 유출 의심 대응', purpose: 'restore' }).expect(201);
+      expect(r.body).toMatchObject({ status: 'ACTIVE', purpose: 'restore' });
+      const audit = (await http().get('/api/audit?actorId=usr-csm').expect(200)).body.items;
+      expect(audit.some((a: any) => a.action === 'PKI_ROTATE' && a.actorRole === 'SECURITY_OFFICER' && a.result === 'ALLOWED')).toBe(true);
     });
   });
 });

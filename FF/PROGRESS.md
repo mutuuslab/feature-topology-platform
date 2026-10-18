@@ -140,6 +140,9 @@
     - 화면 `/ops/rollback`: 배포 → 복구 가능 버전·이력 → 미리보기·요청 → 승인·실행 → 이력.
 
 ## 다음 세션 시작점
+- **업무 절차 반영 C1·C2 완료(2026-10-18)** — `/procedures`(허브: 핵심 메시지 '내가 맡은 활동 n건' + 내 업무 + 13개 절차 카드)·`/procedures/:id`(스윔레인 흐름도·활동 선택 `?a=`·역할별 RACI·산출물), 상단 바 '이 화면의 업무 절차' 패널(현재 화면 경로를 쓰는 활동, 내 역할 R/A 먼저). 데이터 `data/workflows.ts`가 `contracts/src/generated/workflows.ts`를 **지연 로딩**(211 KB — 첫 화면 273/290 KiB 유지; contracts index에는 타입·도우미만 내보내고 데이터는 넣지 않는다). RACI 표는 R=A면 'R·A'로 보인다. verify:full 중 내 몫은 통과. **남은 실패는 다른 세션 몫: e2e `p10.spec.ts:74`(외부 연계 현황 표 구조)·e2e:static(`integrations_sync_*` 스냅샷 누락 — tools/snapshot-api.ts)·e2e:visual 8건(JIRA·codeBeamer 칩·연계 탭으로 갤러리·feature-detail 달라짐, 기능안전 패널 1px) — 그 세션이 기준 이미지·스냅샷을 갱신해야 verify:full이 초록.** 다음: C3(검토함·알림 큐)·C4(표준 따라하기 앵커).
+- **업무 절차 반영 B단계 완료(2026-10-18)** — 업무 절차 모델은 이제 같은 저장소 `docs/65-workflows`(병합 313b68f). `out/workflows.json` → `npm run workflow:sync` → `contracts/src/generated/workflows.ts`(손으로 고치지 않음), verify 단계 `workflow:check`. 정합성 시험 `contracts/src/rules/workflows.test.ts`(활동 action = 변경 권한, 첫 수행 역할에 허용, 규칙·Gate·데모 계정)·`frontend/src/__tests__/workflowScreens.test.ts`(화면 경로). **route 권한·화면 경로·DEMO_PERSONAS를 바꾸면 이 시험이 실패한다 → `docs/65-workflows` 모델을 고치고 `python -I scripts/check.py` → `npm run workflow:sync`.** 다음: C1 화면 절차 패널·C2 `/procedures`·C3 검토함·알림·C4 표준 따라하기.
+- **업무 절차 반영 A단계 완료(2026-10-18, 커밋 719079e)** — 계획 `~/.claude/plans/feature-platform-crystalline-snowglobe.md`, 업무 절차 모델 worktree `../2026-06-04_Feature_Platform-wf/docs/65-workflows`(브랜치 `docs/workflows`). ① 플랫폼 용어 '은퇴' → 'Retirement'(퇴역 RETIRED는 그대로) + `lint:copy` 플랫폼 용어 래칫 `platformTermLines`=0(`tools/platform-terms.ts`, 범위 frontend·contracts·backend src, 주석·test·migrations 제외) · ② `rotateKey` = SECURITY_OFFICER·SAFETY_OFFICER(routes·`@Roles`·Deployments 화면 함께) · ③ G7 Feature Owner 승인 = **Release Sign-off**: `POST /api/features/:id/versions/:ver/release-signoff`(FEATURE_AUTHOR, 사유, HSM 개인 서명, migration 042 `release_signoff` 추가 전용), Version이 VERIFIED이고 G8·G9 최신 PASS일 때만, 서명은 그 G8·G9 판정 기록에 묶여 다시 판정되면 효력 없음(stale). 서명 없으면 VERIFIED→RELEASED가 `RELEASE_SIGNOFF_MISSING`. 시드 `ownerId`는 사람이 아니라 팀(예 Parking기획팀)이라 서명자 = FEATURE_AUTHOR 역할로 하고 소유 조직(`ownerId`)을 기록에 남긴다. **새 시험·e2e에서 RELEASED로 전이할 때는 먼저 G8·G9 PASS → Release Sign-off.** verify·verify:full 통과. **9101 서버(ops5y serve)는 옛 코드 — 재시작해야 화면에 반영.** 다음: B단계(`docs/workflows` 병합 승인 필요) → C1~C4.
 - **보고서 v1.1 남은 결정 5건 처리(2026-10-17, 사용자 "현명히 판단")**: ① 데모 계정 겸직 0건 — 계정 수는 기능명세서 9로 고정이라 9계정 안에서 재배치(구성 승인=요구 승인만, 출시=협의 이관, OPS_LEAD 데모 계정 없음, 부 FSM=시스템 연계; 승인 화면은 빈 칸에 맞는 역할로 서명 `actorRole`) · ② 상태 보고·적용 확인 보존 730일(정기 보고 전년 비교, 가정값), 차량 발신 보고 30일 유지 · ③ 새 Version은 기준 Version의 분류를 잇는다(높은 Version을 잇던 결함 수정) · ④ F2 이상 배포는 Canary 5%에서 시작 + 지정 Canary 차량(`Vehicle.canary`, ego-01·lead-01) — vECU `js/vendor/ff_evaluate.js`도 재생성 · ⑤ 지원하지 않는 차량(NOT_SUPPORTED)에는 체험 제안·수락·구매 전환을 하지 않는다(FFG-VEH-006). 실제 값이 없는 항목(HW 리비전·보정 데이터·센서 조건, EU 출시일, Data Act 계약 문서)은 지어내지 않고 UNKNOWN·확인 필요로 둔다. 구성 증명 발신(시뮬레이터·FF_IMP 모의 차량)은 아직 없음.
 - **국제표준 보고서 v1.1 실제 개발 WP10 완료 — 플랫폼 규칙 75개 모두 구현·시험 추적 완료 — 다음은 WP6 /verify/compliance 교체·WP2 은퇴 6단계부터 — WP6 화면·WP2 은퇴 6단계 반영 완료(은퇴·Data Act·사후 검토·변경 기록 화면은 아직 API만)**(아래 표, 상세 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`). U0·U1·WP0·WP1·WP3·WP4·WP5·WP9 완료. 규칙 추적 75/75. **사용자 결정 대기: 데모 계정 겸직 3건(approver 요구 승인+출시, steward 요구 승인+복원 승인, coordinator 출시+Kill 실행) — FFG-PLT-016 합격(겸직 0건)에는 계정 재구성 필요, PoC·e2e 흐름 영향**. 화면 확인: `/learn`, `/_design`, `/features?f=F3`, `/features/FEAT-00022/1.0.0?tab=safety`(UX 검토 사진 `node e2e/scripts/shot-safety.mjs` → `e2e/shots/safety-*`).
 - **WP1 이후 규칙**: Gate G2 이후 PASS는 안전 분류 확정(SAFETY_OFFICER 개인 서명)이 전제(FFG-CLS-001), G1은 조합 위반(blocking)만 막는다. 새 시험·e2e에서 G2 이상을 판정하면 먼저 `confirmSafety(http, id, ver)`(backend `test/helpers.ts`) 또는 `POST …/safety/confirm`. 초안 시드는 `tools/dataset/safety-infer.ts` → `data/fixtures/safety/profiles.json`(80개, FEAT-00022@1.0.0만 확정 F3·DC2·R1). standards 래칫 구현·시험 13·13, TC-FF 3.
@@ -256,6 +259,7 @@
 | 2026-10-17 | 가상검증 실행기를 vECU에서 CARLA 0.9.16(`sim/carla`, LearnCarla 설치본)으로 완전 대체. 검증 전용 서버 RPC 2100 — 공유 서버 2000은 쓰지 않는다. 판정 의미(기준·한계·재현 정보)는 그대로, 판단(evaluation)은 FF evaluateFlag가 넣는다. 이전 실행 기록은 Evidence 불인정 |
 | 2026-10-17 | EA(Enterprise Architect)는 쓰지 않는다 — EA 원본 .qea·화면 패널·ea:check 하네스 제거(e7898ee 되돌림). 아키텍처 기준은 42 컴포넌트 manifest + 기능명세서 요구사항(req 하네스) |
 | 2026-10-17 | 보고서 v1.1 남은 결정(사용자 위임): 데모 9계정 겸직 0 재배치 · 상태 보고 보존 730일 · 새 Version 분류는 기준 Version 승계 · F2+ 배포 Canary 5% 시작 + 지정 Canary 차량 · NOT_SUPPORTED 차량 체험권 제외 |
+| 2026-10-18 | 플랫폼 용어 '은퇴' → 'Retirement'(lint 래칫으로 재발 금지) · `rotateKey`에 보안 담당(SECURITY_OFFICER) 추가 · G7 Feature Owner 승인 수단 = Release Sign-off(G8·G9 PASS 뒤 FEATURE_AUTHOR 개인 서명, 판정 기록에 묶임, 없으면 출시 전이 차단) |
 
 ## 알려진 이슈·주의
 - 프론트 `package.json`에 UTF-8 BOM이 들어가면 Vite/Vitest가 깨진다 — 하네스 `readJson`은 BOM을 벗긴다. 편집기 저장 형식 주의.
@@ -265,40 +269,40 @@
 
 ## 준수 현황 (자동 생성 — `npm run progress`)
 <!-- AUTO:conformance -->
-**컴포넌트 35/42** — D01 9/10 · D02 3/3 · D03 4/4 · D04 5/6 · D05 3/7 · D06 11/12
+**컴포넌트 42/42** — D01 10/10 · D02 3/3 · D03 4/4 · D04 6/6 · D05 7/7 · D06 12/12
 
 | ID | 컴포넌트 | Tier | 상태 | 화면 | 테스트 |
 |---|---|---|---|---|---|
-| D01-01 | Feature Registry | A | ✅ | /features /features/:id/:ver /baselines | 4 |
-| D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /analysis/impact /precheck | 6 |
+| D01-01 | Feature Registry | A | ✅ | /features /features/:id/:ver /baselines /change/cr /master/taxonomy | 8 |
+| D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /analysis/impact /precheck /master/upg /master/artifacts /master/structure /master/control-points /trace/design /change/eo | 9 |
 | D01-03 | Feature Catalog | A | ✅ | /products /products/new /products/:id/:ver | 3 |
 | D01-04 | 적용 대상 선정 규칙 | A | ✅ | /activation/decide | 5 |
 | D01-05 | 사용 권한 관리 | A | ✅ | /entitlements | 6 |
 | D01-06 | 정책 저장·버전 관리 | A | ✅ | /policies /policies/new /policies/:id | 7 |
-| D01-07 | 실험·효과 검증 관리 | B | · | — | 0 |
+| D01-07 | 실험·효과 검증 관리 | B | ✅ | /experiments | 4 |
 | D01-08 | 단계적 기능 배포 | B | ✅ | /policies/:id | 4 |
 | D01-09 | 정책 기반 활성화 제어 | A | ✅ | /activation/decide | 5 |
 | D01-10 | 감사 이력 관리 | A | ✅ | /audit | 2 |
 | D02-01 | Variant 조건 관리 | A | ✅ | /variant-conditions | 3 |
 | D02-02 | 기능 지원 조건 관리 | B | ✅ | /variant-conditions /fleet/vehicles/:vin | 3 |
-| D02-03 | 차량 런타임 실행 모듈 | A | ✅ | /fleet/live /fleet/vehicles/:vin | 7 |
+| D02-03 | 차량 런타임 실행 모듈 | A | ✅ | /fleet/live /fleet/vehicles/:vin /fleet/map | 12 |
 | D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations | 4 |
 | D03-02 | 배포 안전성 검증 | A | ✅ | /policies/:id /validations | 5 |
 | D03-03 | 긴급 기능 차단 | A | ✅ | /ops/kill | 4 |
-| D03-04 | 이전 상태 복구 | A | ✅ | /ops/kill | 3 |
+| D03-04 | 이전 상태 복구 | A | ✅ | /ops/kill /ops/rollback | 6 |
 | D04-01 | 배포 파이프라인 연계 | A | ✅ | /deployments /deployments/:id | 3 |
-| D04-02 | 품질 기준 검증 | B | ✅ | /policies/:id /validations /validations/virtual | 5 |
-| D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id | 3 |
+| D04-02 | 품질 기준 검증 | B | ✅ | /policies/:id /validations /validations/virtual /verify/evidence | 7 |
+| D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id /ops/telemetry /ops/safety-kpi | 4 |
 | D04-04 | 이벤트 이력 추적 | A | ✅ | /events | 2 |
-| D04-05 | 장애·VOC 이력 연계 | C | · | — | 0 |
+| D04-05 | 장애·VOC 이력 연계 | C | ✅ | /ops/incidents | 4 |
 | D04-06 | 품질 피드백 반영 | A | ✅ | /quality/feedback | 4 |
-| D05-01 | API Gateway | C | ✅ | /activation/decide | 4 |
-| D05-02 | 데이터 동기화 | C | · | — | 0 |
-| D05-03 | Legacy 시스템 연계 | C | · | — | 0 |
+| D05-01 | API Gateway | C | ✅ | /activation/decide /integration/openfeature /integration/connectors /supplier/portal | 10 |
+| D05-02 | 데이터 동기화 | C | ✅ | /integration/sync | 4 |
+| D05-03 | Legacy 시스템 연계 | C | ✅ | /integration/legacy | 4 |
 | D05-04 | 과금 시스템 연계 | C | ✅ | /entitlements | 3 |
-| D05-05 | 현장 지원 포털 | C | · | — | 0 |
+| D05-05 | 현장 지원 포털 | C | ✅ | /field | 3 |
 | D05-06 | 사업 지표 모니터링 | C | ✅ | /biz/trials | 4 |
-| D05-07 | Legacy-SDV Interface | C | · | — | 0 |
+| D05-07 | Legacy-SDV Interface | C | ✅ | /integration/legacy | 4 |
 | D06-01 | 정책 검증 | A | ✅ | /policies/:id /validations | 4 |
 | D06-02 | 시스템 연동 검증 | B | ✅ | /policies/:id /validations | 4 |
 | D06-03 | 차량 시나리오 검증 | B | ✅ | /policies/:id /validations /validations/virtual | 7 |
@@ -308,20 +312,26 @@
 | D06-07 | 안전 요구사항 추적 | B | ✅ | /policies/:id /validations | 4 |
 | D06-08 | 보안 배포 관리 | A | ✅ | /deployments /deployments/:id /fleet/live | 3 |
 | D06-09 | 플랫폼 인증·권한 관리(IAM) | A | ✅ | /admin/iam | 3 |
-| D06-10 | 인증서·키 관리(PKI/KMS) | A | ✅ | /deployments | 2 |
-| D06-11 | 보안 취약점 모니터링 | C | · | — | 0 |
+| D06-10 | 인증서·키 관리(PKI/KMS) | A | ✅ | /deployments /admin/security | 3 |
+| D06-11 | 보안 취약점 모니터링 | C | ✅ | /admin/security | 3 |
 | D06-12 | 이상 징후 대응 | B | ✅ | /ops/anomalies | 4 |
 
 **래칫 기준** (`harness/baselines.json`)
 
 | 지표 | 현재 기준 | 방향 | 설명 |
 |---|---|---|---|
-| rawColors | 818 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
-| featBdcFiles | 37 | ↓ 줄이기 | FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지 |
-| implementedComponents | 35 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
+| rawColors | 0 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
+| featBdcFiles | 0 | ↓ 줄이기 | FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지 |
+| implementedComponents | 42 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
 | twinTermLines | 0 | ↓ 줄이기 | 레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지 |
-| guideTermLines | 144 | ↓ 줄이기 | 보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지 |
-| platformRulesImplemented | 2 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 @rule 표식으로 구현이 추적되는 규칙 수 — 늘려 나간다 |
-| platformRulesTested | 2 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 시험이 있는 규칙 수 — 늘려 나간다 |
-| reportTestsReferenced | 1 | ↑ 늘리기 | 시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다 |
+| guideTermLines | 0 | ↓ 줄이기 | 보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지 |
+| platformRulesImplemented | 75 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 @rule 표식으로 구현이 추적되는 규칙 수 — 늘려 나간다 |
+| platformRulesTested | 75 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 시험이 있는 규칙 수 — 늘려 나간다 |
+| reportTestsReferenced | 16 | ↑ 늘리기 | 시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다 |
+| req.verdict.implemented | 194 | ↑ 늘리기 | 기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다 |
+| req.verdict.missing | 172 | ↓ 줄이기 | 기능명세서 말단 요구사항 중 미구현 판정 수 — 늘면 안 된다 |
+| req.traced | 40 | ↑ 늘리기 | @req 표식으로 코드에 추적된 요구사항 수 |
+| req.untracedImplemented | 155 | ↓ 줄이기 | 구현 판정인데 @req 표식이 없는 요구사항 수 — 줄여 나간다 |
+| req.defects | 5 | ↓ 줄이기 | 미해결 결함(it.fails 결함 기록) 수 — 늘면 안 된다 |
+| platformTermLines | 0 | ↓ 줄이기 | 플랫폼 용어 규칙 위반 줄 수(은퇴→Retirement) — 0까지 |
 <!-- /AUTO:conformance -->

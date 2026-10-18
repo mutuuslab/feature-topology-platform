@@ -19,7 +19,7 @@ import { SafetyProfileService } from '../../d01-policy/registry/safety-profile.s
 /** 커밋된 원장 시드(보고서 예시 ledger) — repo 루트 기준 */
 const FIXTURE = join(__dirname, '..', '..', '..', '..', '..', 'data', 'fixtures', 'safety', 'command-ledger.json');
 
-/** Feature 수명주기 → 게이트 상태. 지원 종료·은퇴는 폐기로 본다(비활성화만 허용 — FFG-PLT-002·FFG-ADS-010) */
+/** Feature 수명주기 → 게이트 상태. 지원 종료·Retirement는 폐기로 본다(비활성화만 허용 — FFG-PLT-002·FFG-ADS-010) */
 export function gateStatusOf(lifecycle: string): string {
   if (lifecycle === 'RELEASED') return 'RELEASED';
   if (lifecycle === 'DEPRECATED' || lifecycle === 'RETIRED') return 'DECOMMISSIONED';

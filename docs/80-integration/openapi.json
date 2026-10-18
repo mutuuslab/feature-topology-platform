@@ -773,6 +773,110 @@
         }
       }
     },
+    "/api/features/{id}/versions/{ver}/release-signoff": {
+      "get": {
+        "summary": "Release Sign-off(출시 책임 확인) 조회 — 현재 G8·G9 판정에 묶인 서명인지",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "releaseSignoff",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "Release Sign-off — Feature Owner가 G8·G9 PASS 뒤 출시 책임을 개인 서명으로 확인(보고서 6.1 G7)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "signRelease",
+        "description": "허용 역할: Feature 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/audit": {
       "get": {
         "summary": "감사 이력",
@@ -4522,7 +4626,7 @@
           "D06-10"
         ],
         "operationId": "rotateKey",
-        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 사이버보안 담당자(CSM), 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -4720,7 +4824,7 @@
     },
     "/api/flag-retirements": {
       "get": {
-        "summary": "Flag 은퇴 6단계 진행·코드 삭제 기한·기한 초과(보고서 6.5, FFG-LCY-011)",
+        "summary": "Flag Retirement 6단계 진행·코드 삭제 기한·기한 초과(보고서 6.5, FFG-LCY-011)",
         "tags": [
           "D01-01"
         ],
@@ -4739,7 +4843,7 @@
         }
       },
       "post": {
-        "summary": "Flag 은퇴 요청 — 다음 정기 릴리스 예정일(선택)",
+        "summary": "Flag Retirement 요청 — 다음 정기 릴리스 예정일(선택)",
         "tags": [
           "D01-01"
         ],
@@ -4802,7 +4906,7 @@
     },
     "/api/flag-retirements/{id}/approvals": {
       "post": {
-        "summary": "은퇴 승인 — Feature Owner, F2 이상은 Safety Manager도(요청자 제외)",
+        "summary": "Retirement 승인 — Feature 승인자, F2 이상은 Safety Manager도(요청자 제외)",
         "tags": [
           "D01-01"
         ],
@@ -4853,7 +4957,7 @@
     },
     "/api/flag-retirements/{id}/steps": {
       "post": {
-        "summary": "은퇴 2~6단계 기록 — 순서·완료 조건, 5단계 Registry 퇴역(ID 재사용 금지)",
+        "summary": "Retirement 2~6단계 기록 — 순서·완료 조건, 5단계 Registry 퇴역(ID 재사용 금지)",
         "tags": [
           "D01-01"
         ],
@@ -11487,7 +11591,7 @@
     },
     "/api/integrations/systems": {
       "get": {
-        "summary": "IF-01~13 연결 현황 (모의·실연동·호출 수)",
+        "summary": "IF-01~14 연결 현황 (모의·실연동·호출 수)",
         "tags": [
           "D05-01"
         ],
@@ -11608,6 +11712,663 @@
           },
           "404": {
             "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync": {
+      "get": {
+        "summary": "양방향 연계 현황 — 시스템별 연결·보내는 중·실패·충돌·거부, 주인 규칙",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extSync",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/features/{id}/{ver}": {
+      "get": {
+        "summary": "Feature 버전 추적 — 요구(codeBeamer)·Epic·CR(JIRA)·MR·파이프라인(GitLab)·정책",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extFeatureTrace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/change-requests": {
+      "get": {
+        "summary": "JIRA 변경요청(CR)과 연결된 정책 상태",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extChangeRequests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/conflicts": {
+      "get": {
+        "summary": "동기화 충돌 — 양쪽 값, 처리 결과",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extConflicts",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/conflicts/{id}/resolve": {
+      "post": {
+        "summary": "충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "resolveExtConflict",
+        "description": "허용 역할: 구현 담당자, Feature 출시 담당자, Feature 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "choose": {
+                    "type": "string",
+                    "enum": [
+                      "PLATFORM",
+                      "EXTERNAL"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "choose",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/outbox": {
+      "get": {
+        "summary": "보낼 함 — 외부 쓰기 작업(대기·완료·실패·충돌)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extOutbox",
+        "parameters": [
+          {
+            "name": "system",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/inbox": {
+      "get": {
+        "summary": "받은 함 — 외부 변경과 처리 결과(반영·거부·매핑 없음)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extInbox",
+        "parameters": [
+          {
+            "name": "system",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/drain": {
+      "post": {
+        "summary": "보낼 함 지금 보내기",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "drainExtSync",
+        "description": "허용 역할: 시스템, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/ext-links": {
+      "get": {
+        "summary": "정책에 연결된 외부 항목(JIRA CR)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "policyExtLinks",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/change-request": {
+      "post": {
+        "summary": "정책 ↔ 근거 JIRA CR 연결",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "linkPolicyChangeRequest",
+        "description": "허용 역할: Feature 작성자, Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "crKey": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9]+-\\d+$"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "crKey"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/webhooks/{system}": {
+      "post": {
+        "summary": "외부 webhook 수신(gitlab·jira·codebeamer) — 서명 확인 후 주인 규칙으로 처리",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extWebhook",
+        "parameters": [
+          {
+            "name": "system",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "nullable": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/mock/{system}/items": {
+      "get": {
+        "summary": "모의 외부 시스템 항목(실서버 없을 때)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "mockExtItems",
+        "parameters": [
+          {
+            "name": "system",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "모의 외부 시스템에 항목 만들기(CR·MR·요구)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "mockExtCreate",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "system",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "REQUIREMENT",
+                      "EPIC",
+                      "CHANGE_REQUEST",
+                      "DEFECT",
+                      "MERGE_REQUEST"
+                    ]
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  },
+                  "body": {
+                    "type": "string",
+                    "maxLength": 4000,
+                    "default": ""
+                  },
+                  "externalUser": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "kind",
+                  "title",
+                  "externalUser"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/mock/{system}/act": {
+      "post": {
+        "summary": "모의 외부 시스템에서 사람이 한 일 — 상태 변경·편집·병합·파이프라인(webhook으로 들어옴)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "mockExtAct",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "system",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "TRANSITION",
+                      "EDIT",
+                      "MERGE",
+                      "PIPELINE"
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  },
+                  "body": {
+                    "type": "string",
+                    "maxLength": 4000
+                  },
+                  "externalUser": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "coverage": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "deliver": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": [
+                  "key",
+                  "action",
+                  "externalUser"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
           }
         }
       }

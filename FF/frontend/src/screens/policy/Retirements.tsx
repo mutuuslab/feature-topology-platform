@@ -1,4 +1,4 @@
-// /flag-retirements — Flag 은퇴 6단계 (D01-01, 보고서 6.5 · FFG-LCY-011). 서버가 순서·완료 조건·직무 분리(요청자 승인 불가)를 다시 검사한다.
+// /flag-retirements — Flag Retirement 6단계 (D01-01, 보고서 6.5 · FFG-LCY-011). 서버가 순서·완료 조건·직무 분리(요청자 승인 불가)를 다시 검사한다.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RETIREMENT_STEPS, ROLE_LABEL, type Role } from '@ff/contracts';

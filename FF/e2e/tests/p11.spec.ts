@@ -1,5 +1,5 @@
 // P11 화면 — 실제 백엔드(메모리 DB·v0.81)와 API만 있던 기능의 화면: 응답 형태가 화면 가정과 맞는지 끝까지 밟는다.
-// Flag 은퇴는 ivi_00024_guide(F0, Feature 승인자 1명)로 2단계(남은 차량 확인)까지만 — 퇴역(5단계)은 다른 시험의 평가를 바꾸므로 하지 않는다.
+// Flag Retirement는 ivi_00024_guide(F0, Feature 승인자 1명)로 2단계(남은 차량 확인)까지만 — 퇴역(5단계)은 다른 시험의 평가를 바꾸므로 하지 않는다.
 import { expect, test, type Page } from '@playwright/test';
 
 /** Panel의 id는 제목(h2)에 `${id}-h`로 붙는다 — 그 제목을 가진 패널 */
@@ -13,13 +13,13 @@ async function asRole(page: Page, role: string) {
   }, role);
 }
 
-test('Flag 은퇴: 작성자 요청 → 승인자 승인 → 2단계 남은 차량 확인 (FFG-LCY-011)', async ({ page }) => {
+test('Flag Retirement: 작성자 요청 → 승인자 승인 → 2단계 남은 차량 확인 (FFG-LCY-011)', async ({ page }) => {
   await page.goto('/flag-retirements');
   await asRole(page, 'author');
   await page.reload();
   await page.getByRole('combobox', { name: '대상 Flag' }).selectOption('ivi_00024_guide');
-  await page.getByLabel('은퇴 사유').fill('안내 문구 기능 종료 — e2e');
-  await page.getByRole('button', { name: '은퇴 요청 등록' }).click();
+  await page.getByLabel('Retirement 사유').fill('안내 문구 기능 종료 — e2e');
+  await page.getByRole('button', { name: 'Retirement 요청 등록' }).click();
   const row = page.getByRole('row').filter({ hasText: 'ivi_00024_guide' });
   await expect(row).toContainText('승인 대기');
 

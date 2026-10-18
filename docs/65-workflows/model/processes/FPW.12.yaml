@@ -1,0 +1,135 @@
+process:
+  id: FPW.12
+  name: Operational Data & Data Protection
+  name_ko: 운영 데이터·데이터 보호
+  related: [INT-MQTT]
+  gates: []
+  ref: 표준 보고서 13장(텔레메트리·데이터), 11장 FFG-OFT-003
+  purpose_ko: >-
+    운행 감시에 쓰는 데이터의 범주·접근·보존을 정하고, 평가 컨텍스트에 개인정보가 들어가지 않게 하며,
+    시장별 데이터 이전·접근권·보존 의무를 지킨다.
+  outcomes:
+    - {id: O1, text_ko: 운행 중 감시 지표와 경보 기준이 Safety Case에 맞춰 기록된다.}
+    - {id: O2, text_ko: Flag 평가 컨텍스트에서 개인정보·위치·주행 상태가 배제된다.}
+    - {id: O3, text_ko: 중국 데이터는 현지 처리되고 국외 이전은 심사를 거친다.}
+    - {id: O4, text_ko: EU 사용자·제3자 데이터 접근 요청과 OEM 이용 계약 근거가 처리·기록된다.}
+    - {id: O5, text_ko: 범주별 보존 기간이 지난 데이터가 삭제되고 기록된다.}
+  rules: [FFG-OFT-003, FFG-TEL-005, FFG-TEL-006, FFG-TEL-008, FFG-TEL-001]
+  entry_criteria:
+    - Feature가 운영 데이터 수집 범위에 등록되어 있다
+  exit_criteria:
+    - 감시 지표·데이터 범주·보존 기간이 정해지고 접근·이전·삭제 기록이 남았다
+  work_products:
+    - key: WP-KPI-PLAN
+      name: 운행 감시 지표·경보 기준
+      en: Safety KPI Plan
+      kind: output
+      content:
+        - Safety Case 주장과 연결한 운행 감시 지표
+        - 지표별 경보 기준과 데이터 범주
+    - key: WP-CONTEXT-REVIEW
+      name: 평가 컨텍스트 속성 검토 기록
+      en: Evaluation Context Review
+      kind: output
+      retained: true
+      content:
+        - 허용 속성(가명 차량 ID 등)과 금지 속성 목록
+        - 금지 속성 거부 시험 결과
+    - key: WP-DATA-TRANSFER
+      name: 데이터 국외 이전 심사 기록
+      en: Cross-border Transfer Assessment
+      kind: output
+      retained: true
+      content:
+        - 중요 데이터 식별 결과와 현지 처리 위치
+        - 이전 경로별 심사 방식(안전 평가·표준 계약·인증)
+    - key: WP-DATA-ACCESS
+      name: 데이터 접근 요청·계약 근거 기록
+      en: Data Access & Contract Basis
+      kind: output
+      retained: true
+      content:
+        - 요청자·대상 차량·제공한 Feature 상태·이력
+        - OEM 비개인 데이터 이용 계약 근거 문서 ID
+    - key: WP-RETENTION-LOG
+      name: 보존·삭제 기록
+      en: Retention & Deletion Log
+      kind: output
+      retained: true
+      content:
+        - 범주별 삭제 건수와 시각
+        - 열린 Incident·이상 건에 연결되어 보류한 데이터
+  activities:
+    - id: FPW.12-A01
+      name: 운행 감시 지표·경보 기준 기록
+      outcomes: [O1]
+      rules: [FFG-TEL-001]
+      raci: {R: [R-SM], A: R-SM, C: [R-OPS, R-DPO], I: [R-QA]}
+      inputs: [WP-SAFETY-CASE]
+      outputs: [WP-KPI-PLAN]
+      steps:
+        - Safety Case 주장과 연결되는 운행 감시 지표를 고른다
+        - 지표마다 경보 기준과 데이터 범주(목적별 접근 권한·보존 기간)를 정한다
+        - 기준을 추가 기록으로 남기고 운영 조직에 감시를 맡긴다
+      checks:
+        - 지표마다 경보 기준과 데이터 범주가 있다
+      platform: {actions: [recordSafetyKpiPlan], screens: [/ops/safety-kpi]}
+    - id: FPW.12-A02
+      name: 평가 컨텍스트 개인정보 검토
+      trigger: 정책 작성·변경으로 평가 컨텍스트가 바뀔 때
+      outcomes: [O2]
+      rules: [FFG-OFT-003]
+      raci: {R: [R-DPO], A: R-DPO, C: [R-ARC, R-LEG], I: [R-INT]}
+      inputs: [WP-POLICY]
+      outputs: [WP-CONTEXT-REVIEW]
+      steps:
+        - 정책의 targeting key가 가명 차량 ID인지 확인한다
+        - 위치·운전자 식별·연락처·차량 동적 상태가 평가 컨텍스트에 들어가지 않는지 검토한다
+        - 금지 속성이 들어오면 평가 전에 거부되는지 시험 결과를 확인한다
+      checks:
+        - 금지 속성 거부 시험이 통과했다
+      platform: {screens: [/integration/openfeature]}
+    - id: FPW.12-A03
+      name: 중국 데이터 현지 처리·이전 심사
+      trigger: 중국 시장 출시 또는 국외 조회 요청
+      outcomes: [O3]
+      rules: [FFG-TEL-005]
+      raci: {R: [R-LEG], A: R-LEG, C: [R-DPO, R-REG], I: [R-OPS]}
+      inputs: [WP-KPI-PLAN]
+      outputs: [WP-DATA-TRANSFER]
+      steps:
+        - 텔레메트리·OTA 데이터 중 중요 데이터를 식별하고 현지 처리 위치를 정한다
+        - 국외 이전(국외 조회 포함) 경로마다 안전 평가·표준 계약·인증 중 하나를 거친다
+        - 심사 결과를 기록하고 운영 조직에 허용 경로를 알린다
+      checks:
+        - 모든 국외 이전 경로에 심사 방식과 결과가 있다
+    - id: FPW.12-A04
+      name: EU 데이터 접근 요청 처리
+      trigger: EU 차량 사용자·제3자 데이터 접근 요청
+      outcomes: [O4]
+      rules: [FFG-TEL-006]
+      raci: {R: [R-REG], A: R-REG, C: [R-LEG, R-DPO], I: [R-OPS]}
+      inputs: [WP-KPI-PLAN]
+      outputs: [WP-DATA-ACCESS]
+      steps:
+        - 요청자와 대상 차량을 확인하고 Feature 상태·이력 데이터를 제공한다
+        - 제3자 공유 요청이면 사용자 동의와 공유 절차를 확인한다
+        - OEM이 비개인 데이터를 쓰는 경우 법무가 검토한 이용 계약 근거 문서 ID를 등록한다
+      checks:
+        - 요청마다 제공 내용과 계약 근거가 기록되었다
+      platform: {actions: [createDataAccessRequest, recordDataActContractBasis], screens: [/admin/data]}
+    - id: FPW.12-A05
+      name: 보존 기간 경과 데이터 삭제
+      trigger: 정기 보존 기간 점검
+      outcomes: [O5]
+      rules: [FFG-TEL-008]
+      raci: {R: [R-REG], A: R-REG, C: [R-DPO, R-OPS], I: [R-QA]}
+      inputs: [WP-KPI-PLAN]
+      outputs: [WP-RETENTION-LOG]
+      steps:
+        - 데이터 범주별 보존 기간이 지난 행을 찾는다
+        - 열린 Incident·이상 건에 연결된 데이터는 삭제에서 제외한다
+        - 삭제를 실행하고 범주별 삭제 기록을 남긴다
+      checks:
+        - 삭제 기록에 범주별 건수와 보류 사유가 있다
+      platform: {actions: [retentionSweep], screens: [/admin/data]}

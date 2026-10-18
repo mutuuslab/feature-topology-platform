@@ -34,6 +34,7 @@ import { ChangeRecordBody } from './rules/change-record';
 import { RetirementRequestBody, RetirementStepBody } from './rules/retirement';
 import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
+import { ReleaseSignoffBody } from './schemas/release-signoff';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { KillCommandV2, StatusReportV2 } from './schemas/wire';
@@ -87,6 +88,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'safetyProfile', method: 'GET', path: '/api/features/:id/versions/:ver/safety', summary: '안전 분류 + 조합 검사 (FFG-CLS-009)', component: 'D01-01' },
   { name: 'updateSafetyProfile', method: 'PUT', path: '/api/features/:id/versions/:ver/safety', summary: '안전 분류 초안 수정 (확정 후 불가, FFG-CLS-004)', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'SAFETY_OFFICER'], body: SafetyProfilePatch },
   { name: 'confirmSafetyProfile', method: 'POST', path: '/api/features/:id/versions/:ver/safety/confirm', summary: '안전 분류 확정 — Safety Manager 개인 서명', component: 'D01-01', roles: ['SAFETY_OFFICER'], body: SafetyConfirmBody },
+  { name: 'releaseSignoff', method: 'GET', path: '/api/features/:id/versions/:ver/release-signoff', summary: 'Release Sign-off(출시 책임 확인) 조회 — 현재 G8·G9 판정에 묶인 서명인지', component: 'D01-01' },
+  { name: 'signRelease', method: 'POST', path: '/api/features/:id/versions/:ver/release-signoff', summary: 'Release Sign-off — Feature Owner가 G8·G9 PASS 뒤 출시 책임을 개인 서명으로 확인(보고서 6.1 G7)', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: ReleaseSignoffBody },
   { name: 'audit', method: 'GET', path: '/api/audit', summary: '감사 이력', component: 'D01-10', query: ['target', 'actorId', 'result', 'limit'] },
   { name: 'auditChain', method: 'GET', path: '/api/audit/chain', summary: '감사 해시 체인 무결성 (FFG-PLT-015)', component: 'D01-10' },
 
@@ -161,15 +164,15 @@ export const ROUTES: RouteDef[] = [
   { name: 'ofrepBulk', method: 'POST', path: '/ofrep/v1/evaluate/flags', summary: 'OFREP 전체 flag 평가 (ETag)', component: 'D05-01', body: OfrepBody, public: true },
   // 배포·차단 전달 (PoC ④⑤⑥) — 서명 게시본 → 파이프라인 → 차량 런타임·GLEO → 회신 집계
   { name: 'pkiKeys', method: 'GET', path: '/api/pki/keys', summary: '서명 키 (공개키·지문·유효기간)', component: 'D06-10' },
-  { name: 'rotateKey', method: 'POST', path: '/api/pki/rotate', summary: '서명 키 교체 (이전 키는 검증용으로 유지, 용도별)', component: 'D06-10', roles: ['SAFETY_OFFICER'], body: KeyRotateBody },
+  { name: 'rotateKey', method: 'POST', path: '/api/pki/rotate', summary: '서명 키 교체 (이전 키는 검증용으로 유지, 용도별)', component: 'D06-10', roles: ['SECURITY_OFFICER', 'SAFETY_OFFICER'], body: KeyRotateBody },
   { name: 'hsmStatus', method: 'GET', path: '/api/pki/hsm', summary: '소프트웨어 HSM — 차량 키 epoch·승인자 키 수', component: 'D06-10' },
   { name: 'bumpEpoch', method: 'POST', path: '/api/pki/epoch', summary: '차량 키 epoch 상향 (키 유출 대응, FFG-SEC-002)', component: 'D06-10', roles: ['SECURITY_OFFICER', 'SAFETY_OFFICER'], body: EpochBumpBody },
   { name: 'publications', method: 'GET', path: '/api/publications', summary: '서명 게시본 (정책·차단·복구) 목록', component: 'D06-08', query: ['kind', 'status'] },
   { name: 'publicationDetail', method: 'GET', path: '/api/publications/:id', summary: '게시본 — 서명 검증·차량별 회신·외부 연계 호출', component: 'D06-08' },
-  { name: 'flagRetirements', method: 'GET', path: '/api/flag-retirements', summary: 'Flag 은퇴 6단계 진행·코드 삭제 기한·기한 초과(보고서 6.5, FFG-LCY-011)', component: 'D01-01' },
-  { name: 'requestFlagRetirement', method: 'POST', path: '/api/flag-retirements', summary: 'Flag 은퇴 요청 — 다음 정기 릴리스 예정일(선택)', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: RetirementRequestBody },
-  { name: 'approveFlagRetirement', method: 'POST', path: '/api/flag-retirements/:id/approvals', summary: '은퇴 승인 — Feature Owner, F2 이상은 Safety Manager도(요청자 제외)', component: 'D01-01', roles: ['FEATURE_APPROVER', 'SAFETY_OFFICER'], body: EmptyBody },
-  { name: 'recordFlagRetirementStep', method: 'POST', path: '/api/flag-retirements/:id/steps', summary: '은퇴 2~6단계 기록 — 순서·완료 조건, 5단계 Registry 퇴역(ID 재사용 금지)', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER', 'IMPLEMENTER', 'REGULATORY_OWNER'], body: RetirementStepBody },
+  { name: 'flagRetirements', method: 'GET', path: '/api/flag-retirements', summary: 'Flag Retirement 6단계 진행·코드 삭제 기한·기한 초과(보고서 6.5, FFG-LCY-011)', component: 'D01-01' },
+  { name: 'requestFlagRetirement', method: 'POST', path: '/api/flag-retirements', summary: 'Flag Retirement 요청 — 다음 정기 릴리스 예정일(선택)', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: RetirementRequestBody },
+  { name: 'approveFlagRetirement', method: 'POST', path: '/api/flag-retirements/:id/approvals', summary: 'Retirement 승인 — Feature 승인자, F2 이상은 Safety Manager도(요청자 제외)', component: 'D01-01', roles: ['FEATURE_APPROVER', 'SAFETY_OFFICER'], body: EmptyBody },
+  { name: 'recordFlagRetirementStep', method: 'POST', path: '/api/flag-retirements/:id/steps', summary: 'Retirement 2~6단계 기록 — 순서·완료 조건, 5단계 Registry 퇴역(ID 재사용 금지)', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER', 'IMPLEMENTER', 'REGULATORY_OWNER'], body: RetirementStepBody },
   { name: 'changeRecords', method: 'GET', path: '/api/change-records', summary: '변경 기록 감사 — AI 생성 표시·도구·범위, 검토·정적 분석·시험·커버리지 근거 누락(FFG-CODE-030)', component: 'D04-01', query: ['swId'] },
   { name: 'registerChangeRecord', method: 'POST', path: '/api/change-records', summary: 'CI/CD(IF-13) 변경 기록 등록 — 추가만', component: 'D04-01', roles: ['IMPLEMENTER', 'SYSTEM'], body: ChangeRecordBody },
   { name: 'integrationCalls', method: 'GET', path: '/api/integrations/calls', summary: '외부 연계 호출 기록 (IF-05·IF-13, 멱등 키)', component: 'D04-01', query: ['ifId', 'key'] },

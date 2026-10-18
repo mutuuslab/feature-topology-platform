@@ -1,11 +1,11 @@
-// Flag 은퇴 6단계 — FFG-LCY-011 플랫폼 몫: 순서·완료 조건, 코드 삭제 기한(6개월·다음 정기 릴리스 중 이른 쪽), F2 이상은 Safety Manager 승인
+// Flag Retirement 6단계 — FFG-LCY-011 플랫폼 몫: 순서·완료 조건, 코드 삭제 기한(6개월·다음 정기 릴리스 중 이른 쪽), F2 이상은 Safety Manager 승인
 import { describe, expect, it } from 'vitest';
 import { codeRemovalDue, RETIREMENT_STEPS, retirementApprovers, retirementBlocker, type RetirementState } from './retirement';
 
 const approved: RetirementState = { approvals: [{ by: 'a', role: 'FEATURE_APPROVER', at: '2026-10-15T00:00:00Z' }], approvedAt: '2026-10-15T00:00:00.000Z', steps: {} };
 const done = (keys: string[]): RetirementState => ({ ...approved, steps: Object.fromEntries(keys.map((k) => [k, { at: 'x', by: 'y', data: {} }])) });
 
-describe('Flag 은퇴 6단계 (FFG-LCY-011)', () => {
+describe('Flag Retirement 6단계 (FFG-LCY-011)', () => {
   it('FFG-LCY-011 6단계 순서와 승인 역할 — F2 이상은 Safety Manager도', () => {
     expect(RETIREMENT_STEPS.map((s) => s.key)).toEqual(['APPROVED', 'REMAINING_VEHICLES', 'FINAL_STATE', 'CODE_REMOVED', 'REGISTRY_RETIRED', 'RECORDS_RETAINED']);
     expect(retirementApprovers('F1')).toEqual(['FEATURE_APPROVER']);

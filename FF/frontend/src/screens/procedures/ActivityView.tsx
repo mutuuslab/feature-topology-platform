@@ -98,7 +98,7 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
       />
       {a.outcomes.length > 0 && (
         <>
-          <h4>{P.detail.outcomes}</h4>
+          <h3>{P.detail.outcomes}</h3>
           <ul className="pr-steps">
             {a.outcomes.map((id) => (
               <li key={id}>{here?.process.outcomes.find((o) => o.id === id)?.text ?? id}</li>
@@ -106,31 +106,31 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
           </ul>
         </>
       )}
-      <h4>{P.detail.steps}</h4>
+      <h3>{P.detail.steps}</h3>
       <ol className="pr-steps">
         {a.steps.map((s, i) => (
           <li key={i}>{s}</li>
         ))}
       </ol>
-      <h4>{P.detail.checks}</h4>
+      <h3>{P.detail.checks}</h3>
       <ul className="pr-steps">
         {a.checks.map((s, i) => (
           <li key={i}>{s}</li>
         ))}
       </ul>
-      <h4>{P.detail.inputs}</h4>
+      <h3>{P.detail.inputs}</h3>
       <WorkProducts keys={a.inputs} index={index} />
-      <h4>{P.detail.outputs}</h4>
+      <h3>{P.detail.outputs}</h3>
       <WorkProducts keys={a.outputs} index={index} />
       {a.platform.actions.length > 0 && (
         <>
-          <h4>{P.detail.actions}</h4>
+          <h3>{P.detail.actions}</h3>
           <p className="ds-mono ds-field__hint">{a.platform.actions.join(' · ')}</p>
         </>
       )}
       {a.platform.gates.length > 0 && (
         <>
-          <h4>{P.detail.gates}</h4>
+          <h3>{P.detail.gates}</h3>
           <p className="pr-screens">
             {a.platform.gates.map((g) => (
               <span key={g} className="ds-tag ds-mono">{g}</span>
@@ -138,9 +138,9 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
           </p>
         </>
       )}
-      <h4>{P.detail.where}</h4>
+      <h3>{P.detail.where}</h3>
       <ScreenLinks patterns={a.platform.screens} />
-      <h4>{P.detail.next}</h4>
+      <h3>{P.detail.next}</h3>
       {a.next.length ? (
         <ul className="pr-steps">
           {a.next.map((id) => {

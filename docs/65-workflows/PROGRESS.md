@@ -31,6 +31,7 @@
 - **메뉴**: 정본 30화면 계약(MENU 1.3)을 유지하려고 새 메뉴를 만들지 않고 '업무 절차' 메뉴의 기능을 내 업무 큐로 확장했다. 정의는 [`UI.md`](UI.md).
 - **시험**: `frontend/src/__tests__/screensProcedures.test.tsx` 10건(진행률·다음 할 일·입력/산출/action/다음·완료).
 - **남은 것**: 완료 상태의 서버 저장(활동 완료 API·감사), 화면 필드/버튼 단위 `ui` 매핑, Evidence·서명, 알림·SLA, 메뉴 배지용 요약 파일.
+- **18규칙 감사(2026-10-18)**: 라이브 8화면 × light/dark × 1280/1600 — **FAIL 0 · WARN 32 · PASS 334**, axe serious/critical/moderate 0. WARN은 모두 표 인라인 링크의 타깃 크기(2.5.8 인라인 예외). 활동 상세 제목 `h4`→`h3`로 제목 단계 건너뜀 4건 해소. 산출물 `out/_uiux/`.
 
 ## 이전 상태 — 2단계 완료 (2026-10-18)
 - **최종 게이트:** `check.py --live` → ALL GATES PASS

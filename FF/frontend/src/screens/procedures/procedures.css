@@ -15,7 +15,7 @@
 .pr-raci[data-raci='R'], .pr-raci[data-raci='A'] { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
 .pr-raci[data-raci='none'] { color: var(--muted); }
 .pr-body { display: grid; gap: var(--sp-3); }
-.pr-body h4 { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--ink-2); }
+.pr-body h3 { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--ink-2); }
 .pr-steps { margin: 0; padding-left: var(--sp-5); display: grid; gap: var(--sp-1); }
 .pr-screens { display: inline-flex; flex-wrap: wrap; gap: var(--sp-2); }
 .pr-flow__scroll { overflow-x: auto; }

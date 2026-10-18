@@ -3,8 +3,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { readJson } from './lib.ts';
-import { CATALOG, REVIEW, catalogProblems, reviewProblems, text, type AdsCatalog, type AdsReview } from './ads-sync.ts';
-import { DESIGN, designProblems, mergeBacklog, type Design } from './ads-report.ts';
+import { CATALOG, REVIEW, catalogProblems, reviewProblems, text, verdictCounts, type AdsCatalog, type AdsReview } from './ads-sync.ts';
+import { DESIGN, designProblems, docCountProblems, mergeBacklog, type Design } from './ads-report.ts';
 
 test('HTML 조각을 글자로 — 태그·엔티티·공백 정리', () => {
   assert.equal(text('<b>FFP-F001</b> &amp; <a href="#H01">H01</a><br>시험'), 'FFP-F001 & H01 시험');
@@ -39,6 +39,57 @@ test('설계 — 판정의 계획 ID가 모두 설계 항목이고, 항목은 �
   assert.deepEqual(designProblems(c, r, d), []);
   const broken = { ...d, items: d.items.filter((i) => i.id !== 'ADS-BE03') };
   assert.match(designProblems(c, r, broken).join('\n'), /ADS-BE03가 설계에 없음/);
+});
+
+// ── 오류 주입: 검사기가 일부러 넣은 잘못을 모두 잡는지(검사기 자체의 검증) ──
+test('오류 주입 — 근거 파일 없음·줄 초과·구현인데 시험 없음·결함 기록 없음·고친 결함을 모두 잡는다', () => {
+  const c = readJson<AdsCatalog>(CATALOG);
+  const r = readJson<AdsReview>(REVIEW);
+  const id = c.requirements[0].id;
+  const files: Record<string, string> = { 'a.ts': 'x\ny\n', 'p.spec.ts': `it.fails('${id} 재현', () => {});\n` };
+  const read = (rel: string) => files[rel] ?? null;
+  const base = Object.fromEntries(Object.keys(r.requirements).map((k) => [k, { verdict: '범위 밖' as const, evidence: [], gap: '', plan: [] }]));
+  const tests = Object.fromEntries(Object.keys(r.tests).map((k) => [k, { status: '없음' as const, evidence: [], plan: [] }]));
+  const sc = Object.fromEntries(Object.keys(r.scenarios).map((k) => [k, { current: '', gap: '', plan: [] }]));
+  const run = (v: AdsReview['requirements'][string]) => reviewProblems(c, { source: r.source, requirements: { ...base, [id]: v }, tests, scenarios: sc }, read).join('\n');
+  assert.equal(run({ verdict: '부분', evidence: ['a.ts:2'], gap: '', plan: ['X'] }), '');
+  assert.match(run({ verdict: '부분', evidence: ['없는.ts:1'], gap: '', plan: ['X'] }), /근거 경로 없음/);
+  assert.match(run({ verdict: '부분', evidence: ['a.ts:99'], gap: '', plan: ['X'] }), /근거 줄이 파일보다 김/);
+  assert.match(run({ verdict: '구현', evidence: ['a.ts:1'], gap: '', plan: [] }), /시험이 없음/);
+  assert.match(run({ verdict: '구현', evidence: ['a.ts:1'], tests: ['없는.spec.ts'], gap: '', plan: [] }), /시험 파일 없음/);
+  assert.match(run({ verdict: '미구현', evidence: [], gap: '', plan: [] }), /반영 계획/);
+  assert.equal(run({ verdict: '부분', evidence: ['a.ts:1'], gap: '', plan: ['X'], defect: { probe: 'p.spec.ts' } }), '');
+  // 결함을 고쳐 it.fails를 it으로 바꿨는데 판정에 결함이 남아 있으면 잡는다
+  files['p.spec.ts'] = `it('${id} 고침', () => {});\n`;
+  assert.match(run({ verdict: '부분', evidence: ['a.ts:1'], gap: '', plan: ['X'], defect: { probe: 'p.spec.ts' } }), /it\.fails 기록이 없음/);
+  // 줄 번호가 밀려 빈 줄·닫는 괄호를 가리키면 잡는다(주석·코드 줄은 인정)
+  files['b.ts'] = 'const a = 1;\n\n  });\n// @rule FFG-X\n';
+  assert.match(run({ verdict: '부분', evidence: ['b.ts:2'], gap: '', plan: ['X'] }), /내용이 없음/);
+  assert.match(run({ verdict: '부분', evidence: ['b.ts:3'], gap: '', plan: ['X'] }), /내용이 없음/);
+  assert.equal(run({ verdict: '부분', evidence: ['b.ts:1', 'b.ts:4'], gap: '', plan: ['X'] }), '');
+});
+
+test('오류 주입 — 결함 기록에 고칠 [결함] 설계 항목이 없거나, 단계 완료 조건의 결함 수가 항목 수와 다르면 잡는다', { skip: !existsSync(REVIEW) || !existsSync(DESIGN) }, () => {
+  const c = readJson<AdsCatalog>(CATALOG);
+  const r = readJson<AdsReview>(REVIEW);
+  const d = readJson<Design>(DESIGN);
+  const [k] = Object.entries(r.requirements).find(([, v]) => v.defect)!;
+  const fixer = d.items.find((i) => i.defect && i.req.includes(k))!;
+  const noFix = { ...d, items: d.items.map((i) => (i.id === fixer.id ? { ...i, req: i.req.filter((q) => q !== k) } : i)) };
+  assert.match(designProblems(c, r, noFix).join('\n'), new RegExp(`${k} 결함을 고치는`));
+  const n = d.items.filter((i) => i.defect).length;
+  const drift = { ...d, phases: d.phases.map((p, i) => (i === 0 ? { ...p, exit: `${p.exit} · 결함 ${n + 1}건` } : p)) };
+  assert.match(designProblems(c, r, drift).join('\n'), new RegExp(`결함 ${n + 1}건 ≠ \\[결함\\] 항목 ${n}개`));
+});
+
+test('오류 주입 — 문서의 판정 숫자·결함 수가 판정 파일과 다르면 잡는다', () => {
+  const r = readJson<AdsReview>(REVIEW);
+  const n = verdictCounts(r);
+  const ok = `구현 ${n.구현} · 부분 ${n.부분} · 미구현 ${n.미구현} · 범위 밖 ${n['범위 밖']}, 결함 ${n.defects}건`;
+  assert.deepEqual(docCountProblems(ok, 'doc.md', r), []);
+  assert.match(docCountProblems(ok.replace(`구현 ${n.구현}`, `구현 ${n.구현 + 1}`), 'doc.md', r).join('\n'), /≠ 판정/);
+  assert.match(docCountProblems(ok.replace(`결함 ${n.defects}건`, `결함 ${n.defects + 1}건`), 'doc.md', r).join('\n'), /결함/);
+  assert.match(docCountProblems('숫자 없음', 'doc.md', r).join('\n'), /집계 문장이 없음/);
 });
 
 test('Backlog 절은 표식 사이만 바꾸고 나머지 내용은 그대로 둔다', () => {

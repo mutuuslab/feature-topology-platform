@@ -1,0 +1,793 @@
+{
+  "source": {
+    "sha256": "74f625faf7b9c428d784107cf8f04c916c756d720e45c491905430c4077745ac",
+    "reviewedAt": "2026-10-18",
+    "reviewedCommit": "87714c1",
+    "method": "분야별 서브에이전트 3개(상품·권리·커머스 / 운영·안전 / 생산·서비스·데이터)가 코드를 직접 열어 판정, 근거 줄은 orca-sync --check가 실재·내용을 검사, 결함은 it.fails 기록으로 고정"
+  },
+  "items": {
+    "C2": {
+      "verdict": "부분",
+      "current": "체험 제안·수락·구매 전환 때 차량 SW가 요구 Version보다 낮으면(NOT_SUPPORTED) 거부하고, 활성 판단은 결제와 별개로 평가기가 수행한다.",
+      "evidence": [
+        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:242",
+        "contracts/src/rules/variant.ts:52",
+        "backend/src/domains/d05-ext/billing/billing.controller.ts:30"
+      ],
+      "tests": [
+        "backend/test/d05/trials.spec.ts",
+        "backend/test/d02/support-activation.spec.ts"
+      ],
+      "gap": "4상태(바로 이용·업데이트 후·부품 미장착·확인 필요) 판정과 사용 가능 알림이 없고, UNKNOWN·NOT_APPLICABLE은 구매를 막지 않아(entitlement.service.ts:239 주석) 판정 불가가 구매 가능으로 통과한다.",
+      "plan": [
+        "ORC-UI02",
+        "ORC-BE02",
+        "ORC-UI03"
+      ]
+    },
+    "C3": {
+      "verdict": "부분",
+      "current": "체험권은 제안 14일·수락 후 30일 기간형이며 만료 3일 전 사전 고지와 만료 후 상업 사유 차단을 수행한다.",
+      "evidence": [
+        "contracts/src/rules/trial.ts:57",
+        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:165",
+        "contracts/src/schemas/policy.ts:111"
+      ],
+      "tests": [
+        "backend/test/d05/trial-expiry.spec.ts",
+        "backend/test/d03/trial-expiry-kill.spec.ts",
+        "contracts/src/rules/trial.test.ts"
+      ],
+      "gap": "구독 자동 갱신·고객 해지·'언제까지 이용·다음 결제 없음' 표시와 요금·데이터 조건 고지 화면이 없다.",
+      "plan": [
+        "ORC-UI04"
+      ]
+    },
+    "C5": {
+      "verdict": "미구현",
+      "current": "시장별 Compliance Profile로 미확인 시장의 F2+ 활성화를 막을 뿐, 등록 국가 변경·여행/이전 구분 흐름은 없다.",
+      "evidence": [
+        "contracts/src/rules/compliance-profile.ts:51",
+        "contracts/src/rules/variant.ts:45"
+      ],
+      "tests": [],
+      "gap": "국가 이동 신청, 권리 유지·변경·종료 미리보기, 등록 확인 후 전환이 전혀 없다.",
+      "plan": [
+        "ORC-UI05",
+        "ORC-BE04"
+      ]
+    },
+    "C7": {
+      "verdict": "미구현",
+      "current": "권리는 VIN에 묶인 구독·구매·체험만 있고 승계 가능 여부나 소유자 개념이 없다.",
+      "evidence": [
+        "contracts/src/schemas/policy.ts:107",
+        "contracts/src/schemas/policy.ts:115"
+      ],
+      "tests": [],
+      "gap": "중고차 기능 명세(기본/승계/종료 구독/잔여 체험) 발행과 새 소유자 등록·권리 이전이 없다.",
+      "plan": [
+        "ORC-UI06",
+        "ORC-BE04"
+      ]
+    },
+    "B01": {
+      "verdict": "부분",
+      "current": "상품이 국가·차종·트림 단위로 만들어지고 구성 승인과 출시 승인이 다른 승인자로 분리되며, 미확인 시장 Profile은 F2+ 활성화를 막는다.",
+      "evidence": [
+        "contracts/src/rules/catalog.ts:39",
+        "backend/src/domains/d01-policy/catalog/catalog.service.ts:118",
+        "contracts/src/rules/compliance-profile.ts:51"
+      ],
+      "tests": [
+        "backend/test/d01/topology-catalog.spec.ts",
+        "contracts/src/rules/compliance-profile.test.ts",
+        "contracts/src/rules/catalog.test.ts"
+      ],
+      "gap": "법적 승인과 내부 상품 승인 구분, 시장별 결제 차단, OTA 완료 후 정책 대상 편입·사용 가능 알림 연결이 없다.",
+      "plan": [
+        "ORC-UI02",
+        "ORC-BE02",
+        "ORC-BE03"
+      ]
+    },
+    "B02": {
+      "verdict": "부분",
+      "current": "구매 전환 직전 지원 조건을 재확인하고, 과금 모의는 멱등 키(체험권:요금제)로 주문·권리를 한 번만 만든다.",
+      "evidence": [
+        "backend/src/domains/d05-ext/billing/billing.controller.ts:32",
+        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:188",
+        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:198"
+      ],
+      "tests": [
+        "backend/test/d05/trials.spec.ts"
+      ],
+      "gap": "구매는 체험 전환 경로뿐이고 주문(PAID)과 차량 활성 결과를 잇는 상태·타임라인이 없어 결제 완료와 사용 가능을 따로 보이지 못한다.",
+      "plan": [
+        "ORC-UI01",
+        "ORC-BE01"
+      ]
+    },
+    "B05": {
+      "verdict": "부분",
+      "current": "기간형 체험·만료 사전 고지·만료 차단과 제안→수락→구매 깔때기·성향별 전환율 분석을 제공한다.",
+      "evidence": [
+        "frontend/src/screens/biz/TrialAnalytics.tsx:1",
+        "backend/src/domains/d05-ext/biz-metrics/biz-metrics.controller.ts:51",
+        "contracts/src/rules/trial.ts:57"
+      ],
+      "tests": [
+        "backend/test/d05/trials.spec.ts",
+        "backend/test/d05/trial-expiry.spec.ts",
+        "frontend/src/__tests__/screensTrials.test.tsx"
+      ],
+      "gap": "자동 갱신·해지 후 종료 시점, 기산점 약관, 실제 이용량·해지·환불·지원비 분석이 없다.",
+      "plan": [
+        "ORC-UI04",
+        "ORC-UI10"
+      ]
+    },
+    "B09": {
+      "verdict": "미구현",
+      "current": "차량 Fleet 구분은 DEMO/SAMPLE 데모용뿐이고 법인 계약·관리자·직원 프로필 분리 모델이 없다.",
+      "evidence": [
+        "contracts/src/schemas/policy.ts:99",
+        "contracts/src/schemas/policy.ts:109"
+      ],
+      "tests": [],
+      "gap": "계약 단위 권리 부여·회수, 직원 교체 시 개인 프로필 분리, 미회수·오프라인 예외 목록이 없다.",
+      "plan": [
+        "ORC-UI07",
+        "ORC-BE04"
+      ]
+    },
+    "B11": {
+      "verdict": "미구현",
+      "current": "권리·지원 판정은 차량의 현재 country와 Feature 범위 비교뿐이며 국가 변경에 따른 권리 재평가가 없다.",
+      "evidence": [
+        "contracts/src/rules/variant.ts:53",
+        "contracts/src/rules/compliance-profile.ts:37"
+      ],
+      "tests": [],
+      "gap": "이동 신청·등록 확인, 권리 유지/전환/종료·추가 비용 사전 안내, 현지 거점 공유 상태가 없다.",
+      "plan": [
+        "ORC-UI05",
+        "ORC-BE04"
+      ]
+    },
+    "B12": {
+      "verdict": "미구현",
+      "current": "소유자 변경·권리 승계는 없고, 개인정보 삭제는 보존 기간 초과 sweep과 EU Data Act 접근 요청 처리뿐이다.",
+      "evidence": [
+        "contracts/src/rules/retention.ts:63",
+        "contracts/src/rules/data-act.ts:32"
+      ],
+      "tests": [
+        "backend/test/d04/retention.spec.ts",
+        "backend/test/d05/data-act.spec.ts"
+      ],
+      "gap": "기능 명세 발행, 인도 시 소유자 변경·이전 소유자 데이터 삭제·승계 권리 이전과 불일치 사건 연결이 없다.",
+      "plan": [
+        "ORC-UI06",
+        "ORC-BE04"
+      ]
+    },
+    "HT01": {
+      "verdict": "부분",
+      "current": "결제 후 새 권리는 생기지만 활성은 평가기가 별도로 판단하고 문맥 품질이 TRUSTED가 아니면 HOLD(Safe Default)로 둔다.",
+      "evidence": [
+        "backend/src/domains/d01-policy/activation/activation.service.ts:36",
+        "contracts/src/flags/evaluate.ts:126",
+        "backend/src/domains/d05-ext/billing/billing.controller.ts:17"
+      ],
+      "tests": [
+        "backend/test/d05/trials.spec.ts"
+      ],
+      "gap": "'주문 성공·활성 미확인' 상태와 주문↔차량 상태 대조가 없고 차량 오프라인 결제 시험도 없다.",
+      "plan": [
+        "ORC-UI01",
+        "ORC-BE01"
+      ]
+    },
+    "HT08": {
+      "verdict": "미구현",
+      "current": "차량 귀속 구매와 개인 구독을 구분하는 필드나 소유권 이전 처리가 없다.",
+      "evidence": [
+        "contracts/src/schemas/policy.ts:111",
+        "contracts/src/rules/trial.ts:41"
+      ],
+      "tests": [],
+      "gap": "승계 대상 판정·이전 소유자 데이터 삭제·종료 권리·실차 명세 확인 기능과 시험이 모두 없다.",
+      "plan": [
+        "ORC-UI06",
+        "ORC-BE04"
+      ]
+    },
+    "axis:상품 권리": {
+      "verdict": "부분",
+      "current": "권리 종류(구독·구매·체험)와 상태(OFFERED·ACTIVE·DECLINED·EXPIRED·CONVERTED·REVOKED)를 한 곳에서 판정하고, 활성은 평가기의 ENTITLEMENT 단계 하나로만 반영한다.",
+      "evidence": [
+        "contracts/src/rules/trial.ts:44",
+        "contracts/src/schemas/policy.ts:115",
+        "contracts/src/flags/evaluate.ts:128"
+      ],
+      "tests": [
+        "contracts/src/rules/trial.test.ts",
+        "backend/test/d05/trials.spec.ts"
+      ],
+      "gap": "'이전 심사' 상태가 없고 '결제 성공 ≠ 기능 Active' 가드가 명시적 상태·시험으로 고정돼 있지 않다.",
+      "plan": [
+        "ADS-UI01",
+        "ORC-BE01"
+      ]
+    },
+    "metric:사용 준비 완료율": {
+      "verdict": "미구현",
+      "current": "사업 지표는 체험 제안·수락·구매 깔때기뿐이며 결제 주문 대비 기한 내 사용 준비 확인 비율은 계산하지 않는다.",
+      "evidence": [
+        "backend/src/domains/d05-ext/biz-metrics/biz-metrics.controller.ts:51",
+        "frontend/src/screens/biz/TrialAnalytics.tsx:1"
+      ],
+      "tests": [],
+      "gap": "주문 분모, 권리·호환·정책 적용 확인 분자, 오프라인·부분 실패·환불 별도 집계가 없다.",
+      "plan": [
+        "ORC-UI10"
+      ]
+    },
+    "metric:공통화와 사업 효과": {
+      "verdict": "미구현",
+      "current": "비용·결제액·이익 데이터 없이 체험 전환율과 주별 추이만 보인다.",
+      "evidence": [
+        "frontend/src/screens/biz/TrialAnalytics.tsx:1",
+        "backend/src/domains/d05-ext/biz-metrics/biz-metrics.controller.ts:51"
+      ],
+      "tests": [],
+      "gap": "공통 구축·차종 적응·검증·운영비와 지원비·환불·잠식을 포함한 순효과 산정이 없다.",
+      "plan": [
+        "ORC-UI10"
+      ]
+    },
+    "R01": {
+      "verdict": "부분",
+      "current": "Kill v2는 사유·2인 승인·게이트를 거쳐 국가/차종/트림 범위로 대상 VIN을 잡고, DC2는 경고·인계→램프→DISABLED로 진행하며 수락과 완료를 명령 ID로 따로 기록한다.",
+      "evidence": [
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:105",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:255",
+        "contracts/src/rules/kill-timeline.ts:64"
+      ],
+      "tests": [
+        "backend/test/d03/kill-v2.spec.ts",
+        "backend/test/d03/kill-timeline.spec.ts",
+        "backend/test/d04/status-v2.spec.ts"
+      ],
+      "gap": "영향 후보·구성 미확인·통신 미수신 VIN 3분류와 MRC 도달·제어권 확인이 없고, 해제 후 로컬 활성 조건 재평가 없이 자동 ACTIVE가 된다.",
+      "plan": [
+        "ADS-UI02",
+        "ADS-BE02",
+        "ADS-BE03",
+        "ADS-SIM03"
+      ]
+    },
+    "R02": {
+      "verdict": "부분",
+      "current": "ODD·시장·Variant 확대는 재-HARA 요청을 열어 G3 이후 PASS를 막고 ODD 축소는 새 Version으로 강제한다.",
+      "evidence": [
+        "contracts/src/rules/rehara.ts:3",
+        "backend/src/domains/d01-policy/topology/gate.service.ts:138",
+        "contracts/src/rules/odd-restriction.ts:38"
+      ],
+      "tests": [
+        "backend/test/d06/rehara.spec.ts",
+        "contracts/src/rules/odd-restriction.test.ts",
+        "backend/test/d01/odd-restriction.spec.ts"
+      ],
+      "gap": "AVP·주차장 ID·구역·지도·인프라 승인 조합 모델과 차량 측 위치·전제 확인·시작 거절 흐름이 코드 어디에도 없다.",
+      "plan": [
+        "ADS-UI04",
+        "ADS-BE09"
+      ]
+    },
+    "R03": {
+      "verdict": "부분",
+      "current": "Feature별 vehicle_seq로 오래된 명령을 REPLAY 거부하고 DISABLED 상태의 activate를 막으며, 복원 없는 ACTIVE 보고는 위반으로 판정한다.",
+      "evidence": [
+        "contracts/src/rules/status-v2.ts:96",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:198",
+        "contracts/src/rules/status-v2.ts:64"
+      ],
+      "tests": [
+        "backend/test/d04/status-v2.spec.ts",
+        "backend/test/d03/delivery.spec.ts",
+        "contracts/src/rules/status-v2.test.ts"
+      ],
+      "gap": "시뮬레이터에 재부팅·전원손실 복원 경로가 없고, 해제는 Feature 단위(사건 단위 아님)이며 RESTORE_PENDING 뒤 ODD·고장 재평가 없이 ACTIVE가 된다.",
+      "plan": [
+        "ADS-BE07",
+        "ADS-SIM02",
+        "ADS-BE03"
+      ]
+    },
+    "R04": {
+      "verdict": "부분",
+      "current": "정책 롤백은 검증·승인·서명된 후보만 고르고 Attestation이 정책 해시·Feature Version·BOM 대조로 DIVERGED/PARTIAL을 판정하지만 SW 롤백은 OTA에 위임한다.",
+      "evidence": [
+        "contracts/src/rules/rollback.ts:7",
+        "contracts/src/rules/rollback.ts:252",
+        "contracts/src/rules/attestation.ts:44"
+      ],
+      "tests": [
+        "backend/test/d03/rollback.spec.ts",
+        "backend/test/d02/attestation.spec.ts"
+      ],
+      "gap": "설치 중 전원·연결·검증 실패 구분, 다중 ECU 호환 조합 복구, 설치 성공→활성 적격→사용 성공 순차 확인이 없다.",
+      "plan": [
+        "ADS-UI05",
+        "ADS-BE10",
+        "ADS-OTA01"
+      ]
+    },
+    "R05": {
+      "verdict": "부분",
+      "current": "Incident는 발생·수신 시각을 따로 두고 Kill 시간 기록은 차량 observed_at과 time_sync 신뢰도를 표시하며 감사 로그는 해시 체인, 리콜 보고 기한 계산이 있다.",
+      "evidence": [
+        "backend/src/domains/d04-ops/incident-voc/incident.service.ts:56",
+        "contracts/src/rules/kill-timeline.ts:43",
+        "contracts/src/rules/recall.ts:34"
+      ],
+      "tests": [
+        "backend/test/d03/kill-timeline.spec.ts",
+        "backend/test/kernel/audit-chain.spec.ts",
+        "backend/test/d03/recall.spec.ts"
+      ],
+      "gap": "사건을 당시 VIN·구성·정책·ODD·Active 이력과 묶는 공통 사건 ID, 보고 분류 담당 판단·원인/조치 버전·종료 기준 관리가 없다.",
+      "plan": [
+        "ADS-UI07",
+        "ADS-BE13"
+      ]
+    },
+    "B03": {
+      "verdict": "부분",
+      "current": "F2 이상은 Canary(≤5%)부터 시작해 24시간 관측·열린 이상 징후·진행 중 차단을 중단 기준으로 확대를 막고 배포자와 확대 승인자를 분리한다.",
+      "evidence": [
+        "contracts/src/rules/rollout-stage.ts:52",
+        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:45",
+        "contracts/src/rules/ext.ts:88"
+      ],
+      "tests": [
+        "backend/test/d01/rollout-stage.spec.ts",
+        "contracts/src/rules/rollout-stage.test.ts",
+        "contracts/src/rules/ext.test.ts"
+      ],
+      "gap": "F0·F1 화면 기능은 단계 보류 대상이 아니고 차량 구성별 노출·활성·사용 성공·오류의 분리 집계와 심각도 판정 담당 흐름이 없다.",
+      "plan": [
+        "ADS-UI11",
+        "ADS-BE12"
+      ]
+    },
+    "C6": {
+      "verdict": "부분",
+      "current": "고객센터 VOC를 HMI 등 범주로 Incident화하고, A/B 실험은 효과를 BETTER/WORSE/INSUFFICIENT로 판정한다.",
+      "evidence": [
+        "backend/src/domains/d04-ops/incident-voc/incident.service.ts:74",
+        "contracts/src/rules/ext.ts:15",
+        "contracts/src/rules/ext.ts:88"
+      ],
+      "tests": [
+        "backend/test/ext/p10.spec.ts",
+        "contracts/src/rules/ext.test.ts"
+      ],
+      "gap": "동의 범위 기반 수집, 과업 성공률 지표, VOC→개선 후보→배포→고객 변경 안내로 이어지는 연결이 없다.",
+      "plan": [
+        "ADS-UI11",
+        "ADS-BE12"
+      ]
+    },
+    "C8": {
+      "verdict": "부분",
+      "current": "운영 콘솔 차량 화면 엔진은 오프라인 정책 캐시 유효기간과 신호 TTL을 검사하고, 오래된 보고는 STALE_REPORT로 UNKNOWN 처리하며 재연결 HELLO에 누락 게시본을 재전달한다.",
+      "evidence": [
+        "frontend/src/data/twin/engine.ts:409",
+        "contracts/src/flags/p0.ts:224",
+        "backend/src/domains/d02-runtime/vehicle-requests/vehicle-request.service.ts:203"
+      ],
+      "tests": [
+        "frontend/src/__tests__/twinEngine.test.ts",
+        "backend/test/d02/vehicle-requests.spec.ts"
+      ],
+      "gap": "백엔드 Guard 시뮬레이터는 오프라인 시 로컬 정책 서명·유효기간을 평가하지 않고, 재동기화 뒤 달라진 상태와 이유를 고객에게 안내하는 흐름이 없다.",
+      "plan": [
+        "ADS-SIM02",
+        "ORC-UI03"
+      ]
+    },
+    "HT02": {
+      "verdict": "부분",
+      "current": "범위 확대(ODD 포함) 시 재-HARA가 열려 G3~G9 PASS를 보류한다.",
+      "evidence": [
+        "contracts/src/rules/rehara.ts:3",
+        "backend/src/domains/d01-policy/topology/gate.service.ts:138"
+      ],
+      "tests": [
+        "backend/test/d06/rehara.spec.ts",
+        "contracts/src/rules/rehara.test.ts"
+      ],
+      "gap": "주차 구역 단위 승인 미결 상태로 노출·활성을 보류하는 시험이 없고, G8·G9 PASS 뒤 열린 재-HARA는 출시를 막지 않는다(FFP-F007 결함 기록과 같은 원인).",
+      "plan": [
+        "ADS-BE09",
+        "ADS-BE06"
+      ],
+      "defect": {
+        "probe": "backend/test/ads/defects.spec.ts",
+        "probeId": "FFP-F007"
+      }
+    },
+    "HT03": {
+      "verdict": "부분",
+      "current": "오래된 순번·이전 key_epoch 명령은 거부되고 DISABLED에서 activate는 STATE_NOT_ALLOWED로 막히며 해제 없는 ACTIVE 보고는 위반으로 잡는다.",
+      "evidence": [
+        "contracts/src/rules/status-v2.ts:96",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:198",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:226"
+      ],
+      "tests": [
+        "backend/test/d04/status-v2.spec.ts",
+        "backend/test/d03/delivery.spec.ts"
+      ],
+      "gap": "재부팅 후 상태 복원 시험이 없고(보고 직접 주입), 다른 사건 해제 거절도 없으며 유효 해제 뒤 자동 ACTIVE가 되어 합격 조건과 정반대다(FFP-F036 결함 기록).",
+      "plan": [
+        "ADS-BE03",
+        "ADS-BE02",
+        "ADS-SIM02"
+      ],
+      "defect": {
+        "probe": "backend/test/ads/defects.spec.ts",
+        "probeId": "FFP-F036"
+      }
+    },
+    "HT04": {
+      "verdict": "부분",
+      "current": "DC2 종료는 DEACT_WARNING→DEACT_RAMP→DISABLED로 전이하고 수락(ACCEPTED)과 완료 상태를 따로 기록해 ACK만으로 완료 처리하지 않는다.",
+      "evidence": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:255",
+        "contracts/src/rules/kill-timeline.ts:33",
+        "contracts/src/rules/kill-timeline.ts:64"
+      ],
+      "tests": [
+        "backend/test/d03/kill-timeline.spec.ts",
+        "backend/test/d04/status-v2.spec.ts",
+        "backend/test/d03/kill-v2.spec.ts"
+      ],
+      "gap": "DDT 수행 중 인계 실패·MRC 경로가 없어 mrc가 항상 null이고 제어권 소유 주체가 보고·기록되지 않는다.",
+      "plan": [
+        "ADS-SIM03",
+        "ADS-BE01"
+      ]
+    },
+    "HT05": {
+      "verdict": "부분",
+      "current": "Attestation이 보고 구성과 기대 구성의 불일치를 찾고 정책 롤백은 검증된 후보로 제한한다.",
+      "evidence": [
+        "contracts/src/rules/attestation.ts:44",
+        "contracts/src/rules/rollback.ts:252",
+        "contracts/src/rules/rollback.ts:7"
+      ],
+      "tests": [
+        "backend/test/d02/attestation.spec.ts",
+        "backend/test/d03/rollback.spec.ts"
+      ],
+      "gap": "일부 ECU/모델 설치 실패 상황의 혼합 구성 시험, 비호환 조합 활성 금지, 실제 manifest 기반 복구 조합 검증이 없다.",
+      "plan": [
+        "ADS-BE10",
+        "ADS-OTA01"
+      ]
+    },
+    "HT06": {
+      "verdict": "부분",
+      "current": "Incident는 occurredAt·receivedAt을 나누고 Kill 시간 기록은 time_sync가 SYNCED가 아니면 UNCERTAIN으로 표시한다.",
+      "evidence": [
+        "backend/src/domains/d04-ops/incident-voc/incident.service.ts:56",
+        "contracts/src/rules/kill-timeline.ts:43",
+        "backend/src/kernel/audit.service.ts:75"
+      ],
+      "tests": [
+        "contracts/src/rules/kill-timeline.test.ts",
+        "backend/test/d03/kill-timeline.spec.ts",
+        "backend/test/kernel/audit-chain.spec.ts"
+      ],
+      "gap": "발생 시각이 없으면 수신 시각으로 채워(누락을 정상값으로 대체) 합격 조건을 어기고, 서버 수신 순서·보고 분류 담당 판단 추적이 없다.",
+      "plan": [
+        "ADS-BE13",
+        "ADS-UI07"
+      ],
+      "defect": {
+        "probe": "backend/test/ads/defects.spec.ts",
+        "probeId": "ORCA-HT06"
+      }
+    },
+    "axis:정책 의도·전달": {
+      "verdict": "부분",
+      "current": "게시본 전달은 ackOnly·unreachable을 나누고 kill/restore 회신은 ACCEPTED·ACCEPTED_NOT_DURABLE·REJECTED와 별도 state로 구분한다.",
+      "evidence": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:84",
+        "contracts/src/schemas/wire.ts:144",
+        "contracts/src/schemas/wire.ts:142"
+      ],
+      "tests": [
+        "backend/test/d03/delivery.spec.ts",
+        "backend/test/d04/status-v2.spec.ts",
+        "backend/test/d03/gleo-v2.spec.ts"
+      ],
+      "gap": "보류(DEFERRED) 결과가 없고 policy_push에는 ACK가 없으며 시뮬레이터가 수신·적용 시각을 같게 넣어 수신과 적용을 구별하지 못한다.",
+      "plan": [
+        "ADS-BE01",
+        "ADS-UI01"
+      ]
+    },
+    "axis:활성 적격": {
+      "verdict": "부분",
+      "current": "평가기는 NOT_APPLICABLE·NOT_SUPPORTED·NO_ENTITLEMENT·COHORT_MISS를 나누고 운영 콘솔 차량 화면 엔진의 Local Guard는 차단·서명·신호·전원을 재평가한다.",
+      "evidence": [
+        "contracts/src/flags/evaluate.ts:128",
+        "frontend/src/data/twin/engine.ts:623",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:212"
+      ],
+      "tests": [
+        "frontend/src/__tests__/twinEngine.test.ts",
+        "backend/test/d02/support-activation.spec.ts"
+      ],
+      "gap": "ODD 밖·확인 불가 판정이 없고 백엔드 Guard 시뮬레이터의 activate는 로컬 조건 평가 없이 ACTIVE로 간다.",
+      "plan": [
+        "ADS-SIM01",
+        "ADS-BE01"
+      ]
+    },
+    "axis:실제 기능 실행": {
+      "verdict": "부분",
+      "current": "Guard 상태는 ACT_PENDING·ACTIVE·DEACT_WARNING·DEACT_RAMP·DISABLED·RESTORE_PENDING 등으로 종료 전이를 나눈다.",
+      "evidence": [
+        "contracts/src/schemas/safety.ts:39",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:255",
+        "contracts/src/rules/kill-timeline.ts:64"
+      ],
+      "tests": [
+        "backend/test/d04/status-v2.spec.ts",
+        "backend/test/d03/kill-timeline.spec.ts"
+      ],
+      "gap": "MRC 상태·도달 시각과 정지 유지·제어권 소유 확인이 모델링되지 않는다.",
+      "plan": [
+        "ADS-SIM03",
+        "ADS-BE01"
+      ]
+    },
+    "axis:관측 신선도": {
+      "verdict": "부분",
+      "current": "보고 나이가 기대 상한을 넘으면 UNKNOWN(STALE_REPORT)으로 두고 라이브 화면은 링크 상태·신호 나이를 계산하며 와이어에 offline_since가 있다.",
+      "evidence": [
+        "contracts/src/flags/p0.ts:224",
+        "frontend/src/components/liveMonitor.ts:80",
+        "contracts/src/schemas/wire.ts:160"
+      ],
+      "tests": [
+        "frontend/src/__tests__/twinEngine.test.ts",
+        "frontend/src/__tests__/twinLiveMonitor.test.tsx"
+      ],
+      "gap": "운영 화면의 차량 Feature 상태 표에 마지막 관측 시각·지연/오프라인 불확실성 표시가 없어 서버 마지막 값이 현재 상태처럼 보일 수 있다.",
+      "plan": [
+        "ADS-UI01",
+        "ADS-SIM02"
+      ]
+    },
+    "metric:영향 차량 식별 정확도": {
+      "verdict": "미구현",
+      "current": "Kill 대상은 배포 정책의 국가/차종/트림 범위로만 정해지고 범위 밖 VIN은 거부된다.",
+      "evidence": [
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:105",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:179"
+      ],
+      "tests": [],
+      "gap": "독립 확정 영향군과의 대조, 누락률·과잉 포함률 계산, 구성 미확인·판정 보류 차량 별도 집계가 전혀 없다.",
+      "plan": [
+        "ORC-UI10",
+        "ADS-BE02"
+      ]
+    },
+    "metric:안전 종료 결과 확인": {
+      "verdict": "부분",
+      "current": "Kill 적용 지연 p95·미완료 비활성화 비율·대기 상한 초과 수를 지표로 정의해 계산하고 overdue 무회신을 Incident로 다룬다.",
+      "evidence": [
+        "contracts/src/rules/safety-kpi.ts:22",
+        "contracts/src/rules/safety-kpi.ts:23",
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:190"
+      ],
+      "tests": [
+        "backend/test/d04/safety-kpi.spec.ts",
+        "backend/test/d03/kill-timeline.spec.ts"
+      ],
+      "gap": "MRC 증거가 없어 명령 수신·MRC·종료 완료를 실제로 구별하지 못하고, 사건·명령·차량 고정 분모의 증거 부족 상태 집계가 없다.",
+      "plan": [
+        "ADS-SIM03",
+        "ORC-UI10"
+      ]
+    },
+    "B04": {
+      "verdict": "부분",
+      "current": "현장 지원 포털에서 VIN 하나로 flag 판단·권한·긴급 차단·이상 건·장애 이력을 한 번에 조회하고 현장 접수를 장애·VOC로 넘길 수 있다.",
+      "evidence": [
+        "backend/src/domains/d05-ext/field-portal/field.service.ts:29",
+        "backend/src/domains/d05-ext/field-portal/field.service.ts:45",
+        "backend/src/domains/d04-ops/incident-voc/incident.service.ts:44"
+      ],
+      "tests": [
+        "backend/test/ext/p10.spec.ts",
+        "frontend/src/__tests__/screensP10.test.tsx"
+      ],
+      "gap": "조회에 동의·권한 범위 검사가 없고(GET에 Roles 없음), 원격 조치 결과 확인·화면 재사용 성공 확인·부품/작업 정보의 정비 거점 인계 흐름이 없다.",
+      "plan": [
+        "ORC-UI09"
+      ]
+    },
+    "B06": {
+      "verdict": "미구현",
+      "current": "해외공장(IF-12) 주문의 레거시 옵션 코드를 FEAT ID로 해석하고 미해석 코드를 남길 뿐, 생산라인 최종 검사(EOL)에서 주문 옵션과 실제 부품·SW·승인 구성을 대조하는 기능은 없다.",
+      "evidence": [
+        "contracts/src/rules/ext.ts:228",
+        "backend/src/domains/d05-ext/legacy/legacy.service.ts:42",
+        "backend/src/kernel/migrations.ts:330"
+      ],
+      "tests": [
+        "backend/test/ext/p10.spec.ts"
+      ],
+      "gap": "EOL 대조·불일치 원인별 격리·재작업 후 재검증·출고 증거·인도 시점 인수 항목이 모두 없고, 차량 Attestation은 운행 중 정책 보고 비교일 뿐 출고 검사와 연결되지 않는다.",
+      "plan": [
+        "ORC-UI08"
+      ]
+    },
+    "B07": {
+      "verdict": "부분",
+      "current": "Variant·지원 조건 판정으로 차량별 적용 가능/SW 미달/범위 밖을 구체 사유와 함께 내고, 지원 조건 미달 차량은 활성화하지 않는다.",
+      "evidence": [
+        "contracts/src/rules/variant.ts:44",
+        "contracts/src/rules/variant.ts:55",
+        "backend/src/domains/d02-runtime/support-conditions/support.service.ts:19"
+      ],
+      "tests": [
+        "backend/test/d02/support-activation.spec.ts",
+        "backend/test/d06/iam-variant.spec.ts"
+      ],
+      "gap": "기존 차량 제공 후보 선정(고객 효과·지원 비용 평가), 축소 버전 검토, 제공 후 사용·오류 관찰에 따른 지속 지원 범위 판단 흐름이 없다.",
+      "plan": [
+        "ORC-UI02",
+        "ORC-BE02"
+      ]
+    },
+    "B08": {
+      "verdict": "부분",
+      "current": "Feature 변경 영향(의존 Feature·Baseline·상품·재판정 Gate·담당자) 분석, JIRA CR 연결·승인 연동, 차량 보고 구성과 기대 구성을 비교하는 Attestation이 있다.",
+      "evidence": [
+        "backend/src/domains/d01-policy/topology/topology.service.ts:157",
+        "contracts/src/rules/ext-sync.ts:177",
+        "contracts/src/rules/attestation.ts:1"
+      ],
+      "tests": [
+        "backend/test/d01/topology-catalog.spec.ts",
+        "backend/test/d05/ext-sync.spec.ts",
+        "backend/test/d02/attestation.spec.ts"
+      ],
+      "gap": "IF-08 협력사 납품은 모의 조회뿐이라 변경요청과 연결되지 않고, 영향 확인됨과 검토 필요 범위를 구분해 담당자에게 전달하는 기능이 없다.",
+      "plan": [
+        "ADS-UI09",
+        "ADS-BE08"
+      ]
+    },
+    "B10": {
+      "verdict": "미구현",
+      "current": "Baseline과 상품이 국가/차종/트림 범위에 묶여 있어 범위가 다르면 SCOPE_MISMATCH로 구성을 거부할 뿐, 선행 차종 자산을 등록·재사용하는 흐름은 없다.",
+      "evidence": [
+        "contracts/src/rules/catalog.ts:69",
+        "contracts/src/rules/catalog.ts:42"
+      ],
+      "tests": [
+        "contracts/src/rules/catalog.test.ts"
+      ],
+      "gap": "재사용 자산 등록, 화면·연산 자원·OS·지역 차이 분석, 브랜드 구분, 동일 정의 고객 과업 성공률 비교가 모두 없다.",
+      "plan": [
+        "ADS-BE10",
+        "ORC-UI10"
+      ]
+    },
+    "C1": {
+      "verdict": "미구현",
+      "current": "정책 게시본에서 서버 전송(DISPATCHED)과 차량 되읽기 확인(CONFIRMED/PARTIAL)을 구분하지만, 소비자용 변경 내용·예상 설치시간 안내, 설치 예약, 첫 사용 과업 확인은 없다.",
+      "evidence": [
+        "contracts/src/schemas/ops.ts:16",
+        "contracts/src/rules/rollback.ts:218"
+      ],
+      "tests": [
+        "backend/test/d03/delivery.spec.ts"
+      ],
+      "gap": "SW 설치는 OTA(IF-05)에 위임돼 설치 예약·전원/주차 조건·설치 중 운행 제한·설치 실패 복구 상태와 실제 경로 검색 성공 확인이 플랫폼에 없다.",
+      "plan": [
+        "ORC-UI03",
+        "ADS-OTA01"
+      ]
+    },
+    "C4": {
+      "verdict": "부분",
+      "current": "딜러/운영자가 VIN 기준으로 현장 건을 접수하면 같은 장애 이력으로 연결되고 SOTIF 범주는 이상 징후로 넘어간다.",
+      "evidence": [
+        "backend/src/domains/d05-ext/field-portal/field.service.ts:45",
+        "backend/src/domains/d04-ops/incident-voc/incident.service.ts:67",
+        "contracts/src/rules/ext.ts:128"
+      ],
+      "tests": [
+        "backend/test/ext/p10.spec.ts",
+        "frontend/src/__tests__/screensP10.test.tsx"
+      ],
+      "gap": "고객 측 접수·공유 범위 동의, 원격 조치 vs 방문 판단 설명, 실차 결과 확인, 정비 담당자에게 진단 요약 전달이 없다.",
+      "plan": [
+        "ORC-UI09"
+      ]
+    },
+    "HT07": {
+      "verdict": "부분",
+      "current": "범위(국가/차종/트림)가 다른 Baseline을 상품에 넣으면 SCOPE_MISMATCH로 FAIL 처리해 자동 승인을 막는다.",
+      "evidence": [
+        "contracts/src/rules/catalog.ts:69",
+        "contracts/src/rules/catalog.test.ts:48",
+        "backend/test/d01/topology-catalog.spec.ts:83"
+      ],
+      "tests": [
+        "contracts/src/rules/catalog.test.ts",
+        "backend/test/d01/topology-catalog.spec.ts"
+      ],
+      "gap": "같은 Feature ID에 HW/OS가 다른 경우의 차이 분석, 재사용 자산과 새 검증 결과를 구별하는 모델·시험이 없다.",
+      "plan": [
+        "ADS-BE10"
+      ]
+    },
+    "axis:구성과 설치": {
+      "verdict": "부분",
+      "current": "정책 전달은 SIGNED→DISPATCHED→CONFIRMED/PARTIAL/DIVERGED/TIMEOUT으로 나뉘어 전송 완료와 차량 확인을 구분하고, Variant 판정으로 호환 여부를 낸다.",
+      "evidence": [
+        "contracts/src/schemas/ops.ts:16",
+        "backend/test/d03/delivery.spec.ts:87",
+        "contracts/src/rules/variant.ts:32"
+      ],
+      "tests": [
+        "backend/test/d03/delivery.spec.ts",
+        "backend/test/d02/support-activation.spec.ts"
+      ],
+      "gap": "SW 설치 상태(미설치/설치 중/부분 실패/복구 필요)는 OTA(IF-05) 위임으로 모델링되지 않고, 다운로드와 설치를 구분하는 상태도 없다.",
+      "plan": [
+        "ADS-UI01",
+        "ADS-OTA01"
+      ]
+    },
+    "metric:고객 과업 성공률": {
+      "verdict": "미구현",
+      "current": "실험 지표는 FAULT_RATE·HARSH_DECEL_RATE·ENGAGEMENT·DECISION_AGREEMENT뿐이고, 고객 과업 시도 세션을 분모로 하는 성공률 측정이 없다.",
+      "evidence": [
+        "backend/src/domains/d01-policy/experiment/experiment.service.ts:23"
+      ],
+      "tests": [],
+      "gap": "과업 정의, 정확성·시간·오류 기준, 보고 누락·중도 포기의 별도 표시, 측정 가능 세션 비율 공개가 모두 없다.",
+      "plan": [
+        "ORC-UI10"
+      ]
+    },
+    "metric:실제 문제 해결 시간": {
+      "verdict": "미구현",
+      "current": "장애에는 occurredAt/receivedAt과 OPEN|LINKED|CLOSED 상태가 있지만, CLOSED로 바꾸는 경로나 해결 시각·재사용 확인 조건이 없다.",
+      "evidence": [
+        "backend/src/domains/d04-ops/incident-voc/incident.service.ts:56",
+        "contracts/src/rules/ext.ts:128"
+      ],
+      "tests": [],
+      "gap": "원격·방문·반복 접수를 한 사건으로 묶는 연결, 차량 조치 결과 기반 종료 시각, 미해결 건수·경과시간·재발률 집계가 없다.",
+      "plan": [
+        "ORC-UI10",
+        "ORC-UI09"
+      ]
+    }
+  }
+}

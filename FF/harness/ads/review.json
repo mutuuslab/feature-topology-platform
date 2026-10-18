@@ -3,7 +3,7 @@
     "sha256": "712e75bc65426b1c2a763e8b008ff72b6f34f7bc39e52b0a569b11a324764832",
     "reviewedAt": "2026-10-18",
     "reviewedCommit": "0681305",
-    "method": "분야별 서브에이전트 3개가 각 요건의 합격 조건을 실제 코드·시험과 대조(경로·줄 근거). 구현 = 합격 조건 충족 + 시험 존재. 차량·CCS 소관 요건은 플랫폼 몫(계약·서버 검사·시뮬레이터)으로 판정."
+    "method": "분야별 서브에이전트 3개가 각 요건의 합격 조건을 실제 코드·시험과 대조(경로·줄 근거). 구현 = 합격 조건 충족 + 시험 존재. 차량·CCS 소관 요건은 플랫폼 몫(계약·서버 검사·시뮬레이터)으로 판정. · 2026-10-18 '구현' 7건 적대적 재검증(4건 반려) + 근거 줄 내용 검사"
   },
   "requirements": {
     "FFP-F001": {
@@ -106,7 +106,7 @@
     "FFP-F006": {
       "verdict": "구현",
       "evidence": [
-        "contracts/src/rules/topology.ts:58",
+        "contracts/src/rules/topology.ts:55",
         "contracts/src/rules/catalog.ts:82",
         "contracts/src/rules/lifecycle.ts:88"
       ],
@@ -123,7 +123,7 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d01-policy/topology/gate.service.ts:138",
-        "contracts/src/rules/rehara.ts:21",
+        "contracts/src/rules/rehara.ts:20",
         "backend/src/domains/d01-policy/registry/lifecycle.service.ts:60"
       ],
       "tests": [
@@ -138,7 +138,9 @@
       "rules": [
         "FFG-LCY-003"
       ],
-      "defect": true
+      "defect": {
+        "probe": "backend/test/ads/defects.spec.ts"
+      }
     },
     "FFP-F008": {
       "verdict": "부분",
@@ -169,7 +171,7 @@
         "backend/test/d01/registry.spec.ts",
         "backend/test/d03/kill-v2.spec.ts"
       ],
-      "gap": "자기 승인은 Feature 전이·정책 승인·Kill 승인에서 거부되고 감사에 남는다.",
+      "gap": "자기 승인은 Feature 전이·정책 승인·Kill 승인에서 거부된다. 거부와 감사 기록을 함께 단언하는 시험은 Kill 승인(kill-v2.spec.ts:40)뿐이고, 정책·Feature 전이 시험은 403만 본다(재검증 2026-10-18).",
       "plan": [],
       "rules": [
         "FFG-PLT-016",
@@ -274,7 +276,10 @@
       "rules": [
         "FFG-SEC-002"
       ],
-      "defect": true
+      "defect": {
+        "probe": "backend/test/requirements/defects.spec.ts",
+        "probeId": "FR-RTE-001-004"
+      }
     },
     "FFP-F015": {
       "verdict": "부분",
@@ -373,7 +378,9 @@
         "FFG-VEH-013",
         "FFG-PLT-017"
       ],
-      "defect": true
+      "defect": {
+        "probe": "backend/test/ads/defects.spec.ts"
+      }
     },
     "FFP-F020": {
       "verdict": "부분",
@@ -411,7 +418,7 @@
       ]
     },
     "FFP-F022": {
-      "verdict": "구현",
+      "verdict": "부분",
       "evidence": [
         "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
         "contracts/src/rules/deactivation.ts:8",
@@ -421,8 +428,12 @@
         "backend/test/d03/trial-expiry-kill.spec.ts",
         "contracts/src/rules/deactivation.test.ts"
       ],
-      "gap": "권한 만료(F2+)는 COMMERCIAL·DC3(다음 시동)·INACTIVE로만 처리되어 플랫폼 조건은 만족. DDT 중 연속성은 시뮬레이터가 시간 지연으로만 흉내 낸다.",
-      "plan": [],
+      "gap": "체험권 만료(F2+)만 COMMERCIAL·DC3(다음 시동)로 처리된다. 일반 구독 만료와 결제는 평가기 ENTITLEMENT 단계를 바로 DENY/ALLOW로 바꿔 OFREP·차량 측 평가가 즉시 OFF가 된다(evaluate.ts:128). DDT 중 연속성을 단언하는 시험이 없다(재검증 2026-10-18).",
+      "plan": [
+        "ADS-BE01",
+        "ADS-SIM03",
+        "ORC-BE01"
+      ],
       "rules": [
         "FFG-LCY-010",
         "FFG-DEAC-004",
@@ -601,17 +612,20 @@
       ]
     },
     "FFP-F033": {
-      "verdict": "구현",
+      "verdict": "부분",
       "evidence": [
         "contracts/src/rules/status-v2.ts:64",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:196",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:198",
         "contracts/src/schemas/wire.ts:165"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts"
       ],
-      "gap": "재부팅 뒤 복원 없는 ACTIVE를 Incident로, DISABLED 상태의 activate를 거부한다. 시뮬레이터에 재부팅·전원손실 경로는 없고 시험이 보고를 직접 넣는다.",
-      "plan": [],
+      "gap": "재부팅 뒤 복원 없는 ACTIVE는 사후에 Incident로 탐지할 뿐 막지 못한다. 시뮬레이터에 재부팅·전원손실 경로가 없고, 캐시된 ON 정책 평가 시험도 없다(시험은 보고를 직접 주입, 재검증 2026-10-18).",
+      "plan": [
+        "ADS-SIM02",
+        "ADS-BE07"
+      ],
       "rules": [
         "FFG-DEAC-007",
         "FFG-ADS-004",
@@ -622,7 +636,7 @@
     "FFP-F034": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:251",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:255",
         "contracts/src/rules/kill-timeline.ts:33",
         "contracts/src/schemas/wire.ts:142"
       ],
@@ -681,7 +695,9 @@
         "FFG-DEAC-008",
         "FFG-CLS-007"
       ],
-      "defect": true
+      "defect": {
+        "probe": "backend/test/ads/defects.spec.ts"
+      }
     },
     "FFP-F037": {
       "verdict": "부분",
@@ -953,7 +969,7 @@
         "contracts/src/rules/kill-timeline.test.ts",
         "backend/test/d04/safety-kpi.spec.ts"
       ],
-      "gap": "주석에는 'DSSAD는 차량 기록'이라 적었지만 운영 로그와 DSSAD·법정 보고의 경계를 데이터·화면으로 구분하지 않고, 표준 추적표가 FFG-TEL-004를 구현으로 표시한다(합격 조건과 충돌).",
+      "gap": "주석에는 'DSSAD는 차량 기록'이라 적었지만 운영 로그와 DSSAD·법정 보고의 경계를 데이터·화면으로 구분하지 않고, 표준 추적표가 FFG-TEL-004를 구현으로 표시한다(합격 조건과 충돌). (결함이 아닌 표시 정정 대상 — ADS-BE13에서 표준 추적표 상태를 고친다)",
       "plan": [
         "ADS-UI07",
         "ADS-BE13"
@@ -962,8 +978,7 @@
         "FFG-TEL-004",
         "FFG-TEL-001",
         "FFG-TEL-008"
-      ],
-      "defect": true
+      ]
     },
     "FFP-F053": {
       "verdict": "부분",
@@ -1107,10 +1122,12 @@
         "FFG-SEC-003",
         "FFG-PLT-008"
       ],
-      "defect": true
+      "defect": {
+        "probe": "backend/test/ads/defects.spec.ts"
+      }
     },
     "FFP-F060": {
-      "verdict": "구현",
+      "verdict": "부분",
       "evidence": [
         "backend/src/kernel/audit.service.ts:75",
         "backend/src/kernel/audit.service.ts:146"
@@ -1118,11 +1135,16 @@
       "tests": [
         "backend/test/kernel/audit-chain.spec.ts"
       ],
-      "gap": "추가 전용 트리거와 해시 체인으로 수정·삭제를 탐지하고 처음 어긋난 행을 보고한다.",
-      "plan": [],
+      "gap": "중간 행 수정·삭제는 탐지하지만 체인 끝이 DB 밖에 고정되지 않아 마지막 행 삭제를 놓치고(결함 기록), 키 없는 해시라 DB 권한자가 재계산할 수 있으며 hash가 빈 삽입 행은 부팅 때 정상 행으로 편입된다(재검증 2026-10-18).",
+      "plan": [
+        "ADS-BE14"
+      ],
       "rules": [
         "FFG-PLT-015"
-      ]
+      ],
+      "defect": {
+        "probe": "backend/test/ads/defects.spec.ts"
+      }
     },
     "FFP-F061": {
       "verdict": "부분",
@@ -1145,19 +1167,23 @@
       ]
     },
     "FFP-F062": {
-      "verdict": "구현",
+      "verdict": "부분",
       "evidence": [
         "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
         "contracts/src/flags/evaluate.ts:107",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:244"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:246"
       ],
       "tests": [
         "backend/test/d03/trial-expiry-kill.spec.ts",
         "backend/test/d05/trial-expiry.spec.ts",
         "contracts/src/rules/deactivation.test.ts"
       ],
-      "gap": "상품 권한은 평가의 별도 입력(ENTITLEMENT)이고 F2+ 만료는 고지 뒤 DC3로 처리된다. 일반 구독 만료와 주행·정차 중 HMI 안내 시험은 없다.",
-      "plan": [],
+      "gap": "상품 권한은 평가의 별도 입력이지만 F2+에서도 권한 변화가 평가 결과(DENY/ALLOW)를 직접 바꾼다. DC3 경로는 체험권 만료뿐이고 결제 성공·일반 구독 만료 시험이 없다(재검증 2026-10-18).",
+      "plan": [
+        "ADS-BE01",
+        "ORC-BE01",
+        "ORC-UI01"
+      ],
       "rules": [
         "FFG-DEAC-004",
         "FFG-LCY-010",

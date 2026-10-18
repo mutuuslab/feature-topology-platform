@@ -258,29 +258,85 @@ export function catalogProblems(c: AdsCatalog): string[] {
 export const VERDICTS = ['구현', '부분', '미구현', '범위 밖'] as const;
 export interface AdsReview {
   source: { sha256: string; reviewedAt: string; reviewedCommit: string; method?: string };
-  requirements: Record<string, { verdict: (typeof VERDICTS)[number]; evidence: string[]; gap: string; plan: string[]; rules?: string[] }>;
+  requirements: Record<
+    string,
+    {
+      verdict: (typeof VERDICTS)[number];
+      evidence: string[];
+      tests?: string[];
+      gap: string;
+      plan: string[];
+      rules?: string[];
+      /** 판정 중 찾은 결함 — 실행되는 결함 기록(시험 파일의 it.fails 줄)이 있어야 한다 */
+      defect?: Defect;
+    }
+  >;
   tests: Record<string, { status: '자동 시험 있음' | '일부' | '없음'; evidence: string[]; plan: string[] }>;
   scenarios: Record<string, { current: string; gap: string; plan: string[] }>;
 }
 
-/** review.json — 모든 요건·시험·시나리오에 판정이 있고, 근거 경로가 실제로 있는지 */
-export function reviewProblems(c: AdsCatalog, r: AdsReview): string[] {
+/** 파일 읽기 — 시험에서 가짜 파일 체계로 바꿀 수 있게 주입받는다 */
+export type ReadFile = (rel: string) => string | null;
+export const repoFile: ReadFile = (rel) => (existsSync(join(FF, rel)) ? readFileSync(join(FF, rel), 'utf8') : null);
+
+/** "path:line" 근거가 실제로 있는 파일·줄인지 — 줄 번호가 파일 길이를 넘으면(코드가 바뀌어 근거가 낡음) 실패 */
+export function evidenceProblem(e: string, read: ReadFile): string | null {
+  const m = /^(.+?)(?::(\d+))?$/.exec(e)!;
+  const text = read(m[1]);
+  if (text === null) return `근거 경로 없음: ${e}`;
+  if (!m[2]) return null;
+  const lines = text.split('\n');
+  const n = Number(m[2]);
+  if (n < 1 || n > lines.length) return `근거 줄이 파일보다 김: ${e} (${lines.length}줄)`;
+  // 줄 번호가 밀리면 빈 줄·닫는 괄호를 가리킨다 — 내용이 있는 줄만 근거로 인정
+  if (/^[\s})\];,]*$/.test(lines[n - 1])) return `근거 줄에 내용이 없음(빈 줄·닫는 괄호): ${e} — 줄 번호가 밀렸는지 확인`;
+  return null;
+}
+
+export interface Defect {
+  probe: string;
+  probeId?: string;
+}
+/** 결함 기록 — probe 파일에 id를 담은 it.fails가 있어야 한다(고치면 it.fails가 실패 → defect를 지우고 판정 갱신) */
+export function defectProblem(key: string, d: Defect, read: ReadFile): string | null {
+  const id = d.probeId ?? key;
+  const recorded = read(d.probe)?.split('\n').some((line) => /\b(?:it|test)\.fails\(/.test(line) && line.includes(id));
+  return recorded ? null : `${key} 결함 — ${d.probe}에 '${id}'를 담은 it.fails 기록이 없음(고쳤다면 defect를 지우고 판정 갱신)`;
+}
+
+/** review.json — 모든 요건·시험·시나리오에 판정, 근거 파일·줄 실재, '구현'은 시험 실재, 결함은 실행되는 it.fails 기록 */
+export function reviewProblems(c: AdsCatalog, r: AdsReview, read: ReadFile = repoFile): string[] {
   const p: string[] = [];
   if (r.source.sha256 !== c.source.sha256) p.push('review가 다른 원본 판을 기준으로 함');
   for (const q of c.requirements) {
     const v = r.requirements[q.id];
-    if (!v) p.push(`${q.id} 판정 없음`);
-    else {
-      if (!VERDICTS.includes(v.verdict)) p.push(`${q.id} 판정 값 ${v.verdict}`);
-      if ((v.verdict === '구현' || v.verdict === '부분') && !v.evidence.length) p.push(`${q.id} 근거 경로 없음`);
-      if (v.verdict !== '구현' && v.verdict !== '범위 밖' && !v.plan.length) p.push(`${q.id} 반영 계획(Backlog ID) 없음`);
+    if (!v) {
+      p.push(`${q.id} 판정 없음`);
+      continue;
     }
+    if (!VERDICTS.includes(v.verdict)) p.push(`${q.id} 판정 값 ${v.verdict}`);
+    if ((v.verdict === '구현' || v.verdict === '부분') && !v.evidence.length) p.push(`${q.id} 근거 경로 없음`);
+    if (v.verdict === '구현' && !v.tests?.length) p.push(`${q.id} '구현'인데 시험이 없음 — 합격 조건을 시험으로 보이지 못하면 '부분'`);
+    if (v.verdict !== '구현' && v.verdict !== '범위 밖' && !v.plan.length) p.push(`${q.id} 반영 계획(Backlog ID) 없음`);
+    for (const t of v.tests ?? []) if (read(t) === null) p.push(`${q.id} 시험 파일 없음: ${t}`);
+    const d = v.defect && defectProblem(q.id, v.defect, read);
+    if (d) p.push(d);
   }
   for (const t of c.tests) if (!r.tests[t.id]) p.push(`${t.id} 대응 없음`);
   for (const s of c.scenarios) if (!r.scenarios[s.id]) p.push(`${s.id} 대응 없음`);
   const paths = [...Object.values(r.requirements), ...Object.values(r.tests)].flatMap((v) => v.evidence);
-  for (const e of new Set(paths)) if (!existsSync(join(FF, e.split(':')[0]))) p.push(`근거 경로 없음: ${e}`);
+  for (const e of new Set(paths)) {
+    const x = evidenceProblem(e, read);
+    if (x) p.push(x);
+  }
   return p;
+}
+
+/** 판정 집계 — 문서·보고서에 적는 숫자는 이 값과 같아야 한다(ads-report --check가 문서 숫자를 대조) */
+export function verdictCounts(r: AdsReview): Record<(typeof VERDICTS)[number], number> & { defects: number } {
+  const v = Object.values(r.requirements);
+  const n = (x: string) => v.filter((y) => y.verdict === x).length;
+  return { 구현: n('구현'), 부분: n('부분'), 미구현: n('미구현'), '범위 밖': n('범위 밖'), defects: v.filter((y) => y.defect).length };
 }
 
 export const fileSha = (b: Buffer) => createHash('sha256').update(b).digest('hex');

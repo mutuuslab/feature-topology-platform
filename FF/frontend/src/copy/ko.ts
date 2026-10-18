@@ -433,7 +433,7 @@ export const ko = {
     hashOk: '검증한 내용과 현재 내용이 같습니다',
     hashStale: '검증 이후 내용이 바뀌었습니다 — 다시 검증하세요',
     notValidated: '아직 검증하지 않았습니다',
-    notValidatedLive: '분야별 검증 기록 없이 진행 중 — 검증을 실행하세요',
+    notValidatedLive: '분야별 검증 기록 없이 진행된 정책입니다',
     validatorsEmpty: "'분야별 검증 실행'을 누르면 8종 결과가 여기에 나옵니다",
     history: '검증 이력',
     versions: {
@@ -542,7 +542,7 @@ export const ko = {
     steps: { DEPLOYED: '배포', KILL: '긴급 차단', APPLICABILITY: '적용 범위', SUPPORT: '지원 조건', ENTITLEMENT: '사용 권한', TARGETING: '대상 규칙', COHORT: '코호트', DECIDE: '결정' },
   },
   fleet: {
-    key: { drift: '서버 판단과 다른 차량 측 값', clean: '서버 판단과 차량 측 값이 모두 같습니다' },
+    key: { drift: '서버 판단과 다른 차량 측 값', unsure: '차량 값 미확인 — 미수신·신뢰 낮음', clean: '서버 판단과 차량 측 값이 모두 같습니다' },
     title: 'Fleet 실시간 적용 현황',
     lead: '배포·차단이 차량에 실제로 적용됐는지 실시간으로 봅니다.',
     kpi: { online: '연결 차량', inflight: '전달 중 게시본', kills: '차단 중', drift: '판단 불일치' },

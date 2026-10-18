@@ -56,13 +56,15 @@ export function FleetLive() {
   const pubRows = (pubs.data?.items ?? []).slice(0, 12);
   const inflight = pubRows.filter((p) => !p.closedAt).length;
   const drift = rows.reduce((n, r) => n + r.flags.filter((f) => f.drift).length, 0);
+  // 차량 측 값을 받지 못했거나(미수신) 신뢰할 수 없는 차량 — 이들이 있으면 "모두 같다"고 말할 수 없다
+  const unsure = rows.filter((r) => r.quality !== 'TRUSTED' || flagKeys.some((k) => !r.flags.some((f) => f.flagKey === k))).length;
   return (
     <div className="ds-screen">
       <PageHeader
         codes="D02-03 · D04-03 · D06-08 · LIVE"
         title={F.title}
         lead={F.lead}
-        message={!fleet.data ? { tone: 'neutral', value: '—', text: F.key.drift } : drift ? { tone: 'warn', value: drift, text: F.key.drift } : { tone: 'ok', text: F.key.clean }}
+        message={!fleet.data ? { tone: 'neutral', value: '—', text: F.key.drift } : drift ? { tone: 'warn', value: drift, text: F.key.drift } : unsure ? { tone: 'warn', value: unsure, text: F.key.unsure } : { tone: 'ok', text: F.key.clean }}
       />
       <SummaryLine
         items={[

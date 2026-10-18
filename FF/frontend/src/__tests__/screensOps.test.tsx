@@ -74,6 +74,23 @@ describe('Fleet 실시간 적용 현황', () => {
     expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['2/3', '1', '1']);
     expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('1');
   });
+
+  // 회귀(2026-10-18 S4 재검토): 불일치가 0이어도 미수신·STALE 차량이 있는데 초록 "모두 같습니다"를 보였다 — 거짓 안심
+  it('불일치 0이어도 미수신·신뢰 낮은 차량이 있으면 핵심 메시지는 warn(일치 여부 미확인)', async () => {
+    const clean = { ...FLEET, items: FLEET.items.map((r) => ({ ...r, flags: r.flags.map((f) => ({ ...f, drift: false })) })) };
+    handler = (url) => {
+      if (url.startsWith('/api/fleet/runtime')) return { body: clean };
+      if (url.startsWith('/api/publications')) return { body: { items: [] } };
+      if (url.startsWith('/api/kill-requests')) return { body: { items: [] } };
+      if (url.startsWith('/api/gleo/status')) return { body: { mode: 'internal', connected: false, lastError: null, messages: [] } };
+    };
+    mount('/fleet/live', '/fleet/live', <FleetLive />);
+    await screen.findByRole('table', { name: /차량 × flag/ });
+    const key = document.querySelector('[data-key-message]')!;
+    expect(key.getAttribute('data-tone')).toBe('warn');
+    expect(key.querySelector('.ds-key__value')?.textContent).toBe('1'); // 단절·STALE·미수신 차량 1대
+    expect(key.textContent).not.toMatch(/모두 같습니다/);
+  });
 });
 
 describe('차량별 적용 상태', () => {

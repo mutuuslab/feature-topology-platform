@@ -43,7 +43,7 @@ export interface ClassFinding {
  * 프로파일 조합 검사 — Registry 확정, 정책 게이트, Guard 초기화가 같은 조합을 검사한다.
  * @rule FFG-CLS-009 — DC0은 F0·F1만, 등급별 시간값 > 0, F2 이상 Safe State·FTTI, R1 이상 시장
  * @rule FFG-CLS-006 — F2 이상 Experiment Flag 금지
- * 보고서 FFG-CLS-008(적용: Feature Owner — 플랫폼은 누락 경고만): Release·Experiment는 만료일·은퇴 계획(만료 30일 전 알림은 WP2)
+ * 보고서 FFG-CLS-008(적용: Feature Owner — 플랫폼은 누락 경고만): Release·Experiment는 만료일·Retirement 계획(만료 30일 전 알림은 WP2)
  * @rule FFG-ADS-002 — ADS Feature는 DC4가 아니고 ADSF 유형을 정한다(원격 경로 검사는 정책 게이트 WP3)
  */
 export function checkProfile(p: SafetyProfile): ClassFinding[] {
@@ -72,7 +72,7 @@ export function checkProfile(p: SafetyProfile): ClassFinding[] {
     need(p.faultTolerantTimeMs > 0 || dc === 'DC4', 'FFG-CLS-009', 'faultTolerantTimeMs', 'F2 이상은 FTTI(fault_tolerant_time)를 정합니다');
   }
   if (p.regClass !== 'R0') need(p.markets.length > 0, 'FFG-CLS-009', 'markets', 'R1 이상은 승인 시장을 정합니다');
-  if (p.flagType === 'RELEASE' || p.flagType === 'EXPERIMENT') need(!!p.expiresAt && !!p.retirementPlan, 'FFG-CLS-008', 'expiresAt', 'Release·Experiment Flag는 만료일과 은퇴 계획을 둡니다');
+  if (p.flagType === 'RELEASE' || p.flagType === 'EXPERIMENT') need(!!p.expiresAt && !!p.retirementPlan, 'FFG-CLS-008', 'expiresAt', 'Release·Experiment Flag는 만료일과 Retirement 계획을 둡니다');
   return out;
 }
 

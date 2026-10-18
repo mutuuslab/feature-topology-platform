@@ -172,13 +172,13 @@ export class SafetyProfileService implements OnModuleInit {
   }
 
   /**
-   * Flag ID 결합 — 한 flagKey는 한 Feature에만. 다른 Feature에 묶였던(은퇴 포함) 키는 다시 쓰지 않는다.
-   * @rule FFG-CODE-020 — Flag ID 재사용 금지(플랫폼 몫). 은퇴 Flag 코드 제거 기한은 은퇴 절차(WP2)
+   * Flag ID 결합 — 한 flagKey는 한 Feature에만. 다른 Feature에 묶였던(Retirement 포함) 키는 다시 쓰지 않는다.
+   * @rule FFG-CODE-020 — Flag ID 재사용 금지(플랫폼 몫). Retirement Flag 코드 제거 기한은 Retirement 절차(WP2)
    */
   bindFlag(flagKey: string, featureId: string): string | null {
     const bound = this.db.get<{ feature_id: string; retired_at: string | null }>('SELECT feature_id, retired_at FROM flag_registry WHERE flag_key = ?', flagKey);
     const other = bound?.feature_id ?? this.db.get<{ feature_id: string }>('SELECT feature_id FROM policy WHERE flag_key = ? AND feature_id <> ? LIMIT 1', flagKey, featureId)?.feature_id;
-    if (other && other !== featureId) return `flagKey ${flagKey}는 ${other}에 ${bound?.retired_at ? '쓰였다가 은퇴한' : '묶인'} 키입니다 — Flag ID는 다른 Feature에 다시 쓰지 않습니다 (FFG-CODE-020).`;
+    if (other && other !== featureId) return `flagKey ${flagKey}는 ${other}에 ${bound?.retired_at ? '쓰였다가 Retirement된' : '묶인'} 키입니다 — Flag ID는 다른 Feature에 다시 쓰지 않습니다 (FFG-CODE-020).`;
     if (!bound) this.db.run('INSERT INTO flag_registry (flag_key, feature_id, bound_at) VALUES (?, ?, ?)', flagKey, featureId, this.clock.iso());
     return null;
   }

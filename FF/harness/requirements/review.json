@@ -219,7 +219,7 @@
     },
     "FR-REG-002-016": {
       "verdict": "미구현",
-      "evidence": "(Flag 은퇴 승인은 별도: `registry/retirement.service.ts`)",
+      "evidence": "(Flag Retirement 승인은 별도: `registry/retirement.service.ts`)",
       "gap": "폐기 승인자 확인(직무 분리 포함)"
     },
     "FR-REG-002-017": {
@@ -369,8 +369,8 @@
     },
     "FR-REG-005-017": {
       "verdict": "부분",
-      "evidence": "Feature DEPRECATED→RETIRED는 사유만 (`lifecycle.ts:34`); Flag 은퇴 6단계는 별도로 순서·승인 검사 (`T/d01/retirement.spec.ts`)",
-      "gap": "Feature RETIRED 전이를 은퇴 단계(완료) 조건과 연결"
+      "evidence": "Feature DEPRECATED→RETIRED는 사유만 (`lifecycle.ts:34`); Flag Retirement 6단계는 별도로 순서·승인 검사 (`T/d01/retirement.spec.ts`)",
+      "gap": "Feature RETIRED 전이를 Retirement 단계(완료) 조건과 연결"
     },
     "FR-REG-005-018": {
       "verdict": "부분",

@@ -41,7 +41,7 @@ last_updated: 2026-10-16
 ▸ 검증·Gate        품질 기준·Evidence /verify/evidence · 분야별 검증 이력 /validations · 컴플라이언스 /verify/compliance · 품질 피드백 /quality/feedback
                    · CARLA 가상검증 /validations/virtual · 실험·효과 /experiments · 요구·안전 추적 /trace/design
 ▸ 상품·출시        Feature Catalog 상품 /products · 사용 권한·체험권 /entitlements · 활성화 판단 /activation/decide · 정책·검증·승인 /policies
-                   · Flag 은퇴 /flag-retirements · 서명 배포·차량 회신 /deployments
+                   · Flag Retirement /flag-retirements · 서명 배포·차량 회신 /deployments
 ▸ 차량 운영·안전   Fleet 실시간 적용 현황 /fleet/live · 차량별 적용 상태 /fleet/vehicles/ego-01 · 긴급 차단·복구 /ops/kill · 이상 징후 대응 /ops/anomalies
   (관제실 톤)      · 운행 중 감시 지표 /ops/safety-kpi · 장애·VOC /ops/incidents · 운영 데이터·이벤트 /ops/telemetry · Platform 이벤트 /events
 ⚙ 연계·감사·관리   외부 연계 현황 /integration/connectors · OpenFeature 범위 /integration/openfeature · 데이터 동기화 /integration/sync · Legacy 연계 /integration/legacy
@@ -79,5 +79,5 @@ last_updated: 2026-10-16
 | 버전 | 날짜 | 내용 |
 |---|---|---|
 | 0.1.0 | 2026-06-05 | 초안 (사용자 확정: 좌측 그룹 사이드바·하이브리드·KO+EN) |
-| 2.1.0 | 2026-10-16 | P11 — API만 있던 기능의 화면: Flag 은퇴, 감독 기록(직무 분리·사후 검토·변경 기록·재-HARA), 데이터·규제 기록(SUMS·Data Act·보존), 운행 중 감시 지표 반영 (메뉴 55) |
+| 2.1.0 | 2026-10-16 | P11 — API만 있던 기능의 화면: Flag Retirement, 감독 기록(직무 분리·사후 검토·변경 기록·재-HARA), 데이터·규제 기록(SUMS·Data Act·보존), 운행 중 감시 지표 반영 (메뉴 55) |
 | 2.0.0 | 2026-10-14 | MENU 2.0 구현 반영 — 업무 기준 8그룹·메뉴 51, 하위 화면·이전 주소 규칙, 역할 첫 진입·검토함, 접근성 하드 규칙 (P10) |

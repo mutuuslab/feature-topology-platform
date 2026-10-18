@@ -42,7 +42,7 @@ test('Registry: 안전 분류 확정(FSM) → Gate 판정(품질) → 정의 승
   await asRole(page, 'quality');
   // 안전 분류 탭 — 추정 초안을 Safety Manager가 개인 서명으로 확정(FFG-CLS-001), 확정 뒤 잠김(FFG-CLS-004)
   await page.goto(`/features/${f.featureId}/0.1.0?tab=safety`);
-  // QM 추정 초안은 Release Flag — 만료일·은퇴 계획 누락은 경고(FFG-CLS-008)일 뿐 확정을 막지 않는다
+  // QM 추정 초안은 Release Flag — 만료일·Retirement 계획 누락은 경고(FFG-CLS-008)일 뿐 확정을 막지 않는다
   await expect(page.getByText('대기 1건')).toBeVisible();
   await expect(page.getByRole('button', { name: '확정 — 개인 서명' })).toBeEnabled();
   await page.getByRole('button', { name: '확정 — 개인 서명' }).click();

@@ -942,6 +942,7 @@
         "backend/src/domains/d06-qsec/pki-kms/pki.service.ts"
       ],
       "tested": [
+        "backend/test/d03/delivery.spec.ts",
         "backend/test/d04/status-v2.spec.ts",
         "backend/test/d06/hsm.spec.ts"
       ]

@@ -164,6 +164,7 @@ async function main() {
   for (const f of all.items as { featureId: string; version: string }[]) {
     const p = { id: f.featureId, ver: f.version };
     await save('safetyProfile', p);
+    await save('releaseSignoff', p); // Feature 상세(VERIFIED)의 Release Sign-off 상태
     await save('designTrace', p);
     await save('gateSnapshot', p);
   }
@@ -192,7 +193,7 @@ async function main() {
   for (const b of sboms.items as { serial: string }[]) await save('sbomDetail', { serial: b.serial });
   await save('vexList');
   await save('securityEvents');
-  // P11 — Flag 은퇴·감독 기록·데이터·규제 기록
+  // P11 — Flag Retirement·감독 기록·데이터·규제 기록
   for (const m of ['flagRetirements', 'iamSodAudit', 'killPostReviews', 'changeRecords', 'reharaRequests', 'sumsRecords', 'dataAccessRequests', 'retention']) await save(m);
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }

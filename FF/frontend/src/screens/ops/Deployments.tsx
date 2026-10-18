@@ -31,7 +31,7 @@ interface KeyInfo {
 
 function Keys() {
   const q = useApi<{ items: KeyInfo[] }>('pkiKeys');
-  const perm = usePermission(['SAFETY_OFFICER']);
+  const perm = usePermission(['SECURITY_OFFICER', 'SAFETY_OFFICER']);
   const rotate = useApiMutation('rotateKey', ['pkiKeys']);
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');

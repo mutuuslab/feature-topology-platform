@@ -121,7 +121,7 @@ const VALIDATOR: Impl = { screens: ['/policies/:id', '/validations'], tests: [BE
 /** via — 자기 API 없이 다른 컴포넌트의 라우트 안에서 호출되는 컴포넌트(예: 병렬 검증기)가 그 라우트 이름을 적는다 */
 type Impl = Pick<ComponentEntry, 'screens' | 'tests'> & { via?: string[] };
 const IMPLEMENTED: Record<string, Impl> = {
-  'D01-01': { screens: ['/features', '/features/:id/:ver', '/baselines', '/change/cr', '/master/taxonomy'], tests: [...BE_D01, FE_V2, E2E_GOV, BE_MASTER, FE_MASTER] },
+  'D01-01': { screens: ['/features', '/features/:id/:ver', '/baselines', '/change/cr', '/master/taxonomy'], tests: [...BE_D01, FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, 'backend/test/d01/release-signoff.spec.ts', 'frontend/src/__tests__/screensReleaseSignoff.test.tsx'] },
   'D01-02': { screens: ['/features/:id/:ver', '/analysis/impact', '/precheck', '/master/upg', '/master/artifacts', '/master/structure', '/master/control-points', '/trace/design', '/change/eo'], tests: [...BE_D01, 'contracts/src/rules/topology.test.ts', 'contracts/src/rules/precheck.test.ts', FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, FE_OPSADMIN] },
   'D01-03': { screens: ['/products', '/products/new', '/products/:id/:ver'], tests: ['backend/test/d01/topology-catalog.spec.ts', 'contracts/src/rules/catalog.test.ts', E2E_GOV] },
   'D01-10': { screens: ['/audit'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },

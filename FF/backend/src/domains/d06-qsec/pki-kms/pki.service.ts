@@ -164,7 +164,7 @@ export class PkiController {
   }
 
   @Post('rotate')
-  @Roles('SAFETY_OFFICER')
+  @Roles('SECURITY_OFFICER', 'SAFETY_OFFICER')
   @AuditAction('PKI_ROTATE')
   rotate(@CurrentActor() actor: Actor, @Body(new ZodPipe(KeyRotateBody)) body: KeyRotateBody) {
     return this.pki.rotate(actor, body.reason, body.purpose);

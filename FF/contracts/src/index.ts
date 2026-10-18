@@ -50,6 +50,7 @@ export * from './rules/deactivation';
 export * from './rules/standards';
 export * from './rules/tutorial';
 export * from './schemas/safety-profile';
+export * from './schemas/release-signoff';
 export * from './rules/classification';
 export * from './rules/standards-map';
 export * from './generated/standards-status';

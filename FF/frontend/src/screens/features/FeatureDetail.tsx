@@ -25,6 +25,7 @@ import {
   Icon,
 } from '../../design';
 import { scopeOf, usePermission, when } from '../shared';
+import { ReleaseSignoffBar } from './ReleaseSignoff';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
 import { FeatureVersionActions } from './VersionEdit';
 import type { AuditEntry, ChecklistItem, FeatureDetail as Detail, GateView } from '../types';
@@ -89,6 +90,7 @@ export default function FeatureDetail() {
                   ))}
                 {d.transitions.some((t) => t.auto) && <span className="ds-field__hint">{T.autoNote}</span>}
               </div>
+              {d.feature.lifecycle === 'VERIFIED' && <ReleaseSignoffBar id={id} ver={ver} gatesPassed={d.gates.G8?.status === 'PASS' && d.gates.G9?.status === 'PASS'} />}
             </Panel>
 
             <Tabs

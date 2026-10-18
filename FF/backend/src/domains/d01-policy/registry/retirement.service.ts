@@ -1,6 +1,6 @@
-// Flag 은퇴 6단계 (D01-01 Registry, 보고서 v1.1 6.5 · FFG-LCY-011 플랫폼 몫) — 은퇴 요청 → 승인(Feature Owner, F2 이상은 Safety Manager도, 요청자 제외)
+// Flag Retirement 6단계 (D01-01 Registry, 보고서 v1.1 6.5 · FFG-LCY-011 플랫폼 몫) — Retirement 요청 → 승인(Feature Owner, F2 이상은 Safety Manager도, 요청자 제외)
 // → 남은 차량 집계(상태 보고) → 최종 상태 고정 SW 배포 완료율 → 코드 참조 0건 → Registry 퇴역(flag_registry.retired_at, 배포 정책 RETIRED — ID 재사용 금지)
-// → 기록 보존(시장). 진행 기록은 037(은퇴 건 doc)과 감사에 남는다. 코드 삭제 기한(승인 후 6개월·다음 정기 릴리스 중 이른 쪽)이 지나면 발견으로 보인다.
+// → 기록 보존(시장). 진행 기록은 037(Retirement 건 doc)과 감사에 남는다. 코드 삭제 기한(승인 후 6개월·다음 정기 릴리스 중 이른 쪽)이 지나면 발견으로 보인다.
 import { Body, Controller, Get, HttpCode, Inject, Injectable, Param, Post } from '@nestjs/common';
 import { codeRemovalDue, RETIREMENT_STEPS, retirementApprovers, retirementBlocker, RetirementRequestBody, RetirementStepBody, type RetirementState } from '@ff/contracts';
 import { z } from 'zod';
@@ -45,7 +45,7 @@ export class RetirementService {
 
   private load(id: string): Retirement {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM flag_retirement WHERE retirement_id = ?', id);
-    if (!r) throw new DomainError('NOT_FOUND', `${id} 은퇴 건을 찾을 수 없습니다.`);
+    if (!r) throw new DomainError('NOT_FOUND', `${id} Retirement 건을 찾을 수 없습니다.`);
     return JSON.parse(r.doc) as Retirement;
   }
 
@@ -66,7 +66,7 @@ export class RetirementService {
   request(actor: Actor, body: RetirementRequestBody) {
     const p = this.policies.all().find((x) => x.flagKey === body.flagKey && (x.status === 'DEPLOYED' || x.status === 'APPROVED')) ?? this.policies.all().filter((x) => x.flagKey === body.flagKey).at(-1);
     if (!p) throw new DomainError('NOT_FOUND', `${body.flagKey} 정책이 없습니다.`);
-    if (this.db.get("SELECT 1 FROM flag_retirement WHERE flag_key = ? AND status != 'CLOSED'", body.flagKey)) throw new DomainError('CONFLICT', `${body.flagKey}은(는) 이미 은퇴 진행 중입니다.`);
+    if (this.db.get("SELECT 1 FROM flag_retirement WHERE flag_key = ? AND status != 'CLOSED'", body.flagKey)) throw new DomainError('CONFLICT', `${body.flagKey}은(는) 이미 Retirement 진행 중입니다.`);
     const n = (this.db.get<{ n: number }>('SELECT count(*) AS n FROM flag_retirement')?.n ?? 0) + 1;
     const r: Retirement = {
       retirementId: `RET-${pad(n)}`,
@@ -94,7 +94,7 @@ export class RetirementService {
   approve(actor: Actor, id: string) {
     const r = this.load(id);
     const need = retirementApprovers(r.fClass);
-    if (r.status !== 'REQUESTED') throw new DomainError('GUARD_FAILED', `${r.status} 은퇴 건은 승인할 수 없습니다.`);
+    if (r.status !== 'REQUESTED') throw new DomainError('GUARD_FAILED', `${r.status} Retirement 건은 승인할 수 없습니다.`);
     if (actor.id === r.requestedBy || r.approvals.some((a) => a.by === actor.id)) {
       this.audit.failed(actor, 'FLAG_RETIREMENT_APPROVE', id, '요청자·같은 승인자 중복', 'D01-01');
       throw new DomainError('SEPARATION_OF_DUTY', '요청자나 이미 승인한 사람은 승인할 수 없습니다.');

@@ -483,6 +483,17 @@ CREATE INDEX entitlement_status ON entitlement(status);
 `,
   },
   {
+    // Release Sign-off(출시 책임 확인) — 보고서 6.1 G7 승인자 Feature Owner의 개인 서명(사용자 결정 2026-10-18).
+    // 추가만: 다시 판정되면 새 서명을 더한다(이전 서명은 판정 기록이 달라 효력 없음).
+    name: '042_release_signoff',
+    sql: `
+CREATE TABLE release_signoff (signoff_id INTEGER PRIMARY KEY AUTOINCREMENT, feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, g8_record TEXT NOT NULL, g9_record TEXT NOT NULL, signed_by TEXT NOT NULL, signed_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX release_signoff_version ON release_signoff (feature_id, feature_version);
+CREATE TRIGGER release_signoff_no_update BEFORE UPDATE ON release_signoff BEGIN SELECT RAISE(ABORT, 'release_signoff은 추가만 가능'); END;
+CREATE TRIGGER release_signoff_no_delete BEFORE DELETE ON release_signoff BEGIN SELECT RAISE(ABORT, 'release_signoff은 추가만 가능'); END;
+`,
+  },
+  {
     // GitLab · JIRA · codeBeamer 양방향 연계(사용자 결정 2026-10-18) — 외부 항목 마지막 관측 값·연결·보낼 함·받은 함·충돌,
     // 그리고 실서버가 없을 때의 모의 외부 시스템(mock_ext_*). 보낼 함은 변경과 같은 트랜잭션에서 쌓인다.
     name: '043_ext_sync',

@@ -56,7 +56,7 @@ export const STANDARDS_MAP: Readonly<Record<string, RulePlacement>> = {
   'FFG-VEH-006': { components: ['D02-02'], wp: 'WP5' },
   'FFG-VEH-007': { components: ['D02-03', 'D04-03'], wp: 'WP5' },
 
-  // Gate 결정 기록·재-HARA·은퇴 (6장)
+  // Gate 결정 기록·재-HARA·Retirement (6장)
   'FFG-LCY-001': { components: ['D01-02'], wp: 'WP2' },
   'FFG-LCY-002': { components: ['D01-02'], wp: 'WP2' },
   'FFG-LCY-003': { components: ['D06-05', 'D01-02'], wp: 'WP2' },

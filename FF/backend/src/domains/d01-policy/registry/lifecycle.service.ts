@@ -22,6 +22,7 @@ import { PolicyRepo } from '../policy-repos';
 import { BaselineRepo, FeatureRepo, GateRepo, TopologyRepo } from '../repos';
 import { GateDecisionService } from '../topology/gate-decision.service';
 import { TopologyService } from '../topology/topology.service';
+import { ReleaseSignoffService } from './release-signoff.service';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
 
@@ -47,6 +48,7 @@ export class LifecycleService {
     private readonly topologyService: TopologyService,
     private readonly policies: PolicyRepo,
     private readonly decisions: GateDecisionService,
+    private readonly signoffs: ReleaseSignoffService,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -66,6 +68,8 @@ export class LifecycleService {
       // Control Point 중 승인·배포 정책이 있는 수 (정책 저장소 D01-06)
       policyCoverage: this.policies.coverage(f.featureId, f.version),
       createdBy: this.features.meta(f.featureId, f.version).createdBy,
+      // 보고서 6.1 G7 — Feature Owner의 Release Sign-off(현재 G8·G9 판정에 묶인 유효 서명만)
+      releaseSignoff: f.lifecycle === 'VERIFIED' ? this.signoffs.current(f.featureId, f.version) : null,
       ...extra,
     };
   }

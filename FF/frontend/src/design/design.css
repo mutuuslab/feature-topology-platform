@@ -2197,3 +2197,11 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   flex-wrap: wrap;
   gap: var(--sp-2);
 }
+/* 긴 글자 한 줄 말줄임 — 전체는 title로 */
+.ds-clip {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}

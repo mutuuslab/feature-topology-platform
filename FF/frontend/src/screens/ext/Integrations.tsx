@@ -26,11 +26,14 @@ interface SystemRow {
 
 export function IntegrationsScreen() {
   const sys = useApi<{ items: SystemRow[] }>('integrationSystems');
+  const sync = useApi<{ items: { conflicts: number; failed: number }[] }>('extSync');
   const items = sys.data?.items ?? [];
   const mock = items.filter((s) => s.mode === 'mock').length;
+  const attention = (sync.data?.items ?? []).reduce((t, x) => t + x.conflicts + x.failed, 0);
   return (
     <div className="ds-screen">
-      <PageHeader codes="D05-01 · IF-01~14" title={G.title} lead={G.lead} message={{ tone: 'neutral', value: sys.data ? items.length : '—', text: G.key(mock, items.length - mock) }} />
+      <PageHeader codes="D05-01 · IF-01~14" title={G.title} lead={G.lead} message={!sync.data ? { tone: 'neutral', value: '—', text: extSync.sync.key.ok } : attention ? { tone: 'warn', value: attention, text: extSync.sync.key.attention } : { tone: 'ok', text: extSync.sync.key.ok }}
+        meta={sys.data ? G.key(mock, items.length - mock) : undefined} />
       <Tabs tabs={[{ key: 'sync', label: extSync.sync.tab }, ...(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] }))]}>
         {(tab) => (tab === 'sync' ? <ExtSyncTab /> : tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
       </Tabs>

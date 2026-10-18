@@ -13,6 +13,7 @@ import {
   JIRA_CR_STATUS,
   JIRA_EPIC_STATUS,
   lifecycleOfEpicStatus,
+  parseRefs,
   SYNC_OWNERSHIP,
   type ExtChange,
   type ExtIdentity,
@@ -638,7 +639,8 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     const fields: Record<string, unknown> = { ...(body.fields ?? {}) };
     if (system === 'GITLAB') {
       fields.sha ??= createHash('sha1').update(`${body.title}:${this.clock.iso()}`).digest('hex');
-      fields.sourceBranch ??= `feature/${body.title.replace(/[^A-Za-z0-9-]+/g, '-').slice(0, 40).toLowerCase()}`;
+      const r = parseRefs(`${body.title}\n${body.body}`);
+      fields.sourceBranch ??= r.featureId ? `feature/${r.featureId.toLowerCase()}${r.version ? `-${r.version}` : ''}-${createHash('sha1').update(body.title).digest('hex').slice(0, 6)}` : `feature/${body.title.replace(/[^A-Za-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40).toLowerCase()}`;
       fields.targetBranch ??= 'main';
     }
     const it = this.store.create(system, kind, { title: body.title, body: body.body, status, by: body.externalUser, fields });

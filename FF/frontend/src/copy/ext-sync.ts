@@ -32,7 +32,8 @@ export const extSync = {
     none: '없음',
     noCr: '근거 변경요청 없음',
     pipeline: '파이프라인',
-    col: { key: '키', title: '제목', status: '상태', sync: '동기', branch: '브랜치', policy: '정책', flag: 'Flag', cr: '변경요청' },
+    col: { key: '키', reqId: '요구 ID', cbItem: 'codeBeamer', title: '제목', status: '상태', sync: '동기', branch: '브랜치', policy: '정책', flag: 'Flag', cr: '변경요청' },
+    latest: (n: number, total: number) => `최근 ${n}건 · 전체 ${total}건`,
   },
 
   // 변경요청(CR) 목록
@@ -58,6 +59,7 @@ export const extSync = {
   // 외부 연계 — 양방향 탭
   sync: {
     tab: '양방향 연계',
+    key: { ok: '외부 연계 — 충돌·실패 없이 맞습니다', attention: '외부 연계에서 처리할 것 — 충돌·보내기 실패' },
     summary: '시스템별 연결',
     col: { system: '시스템', ifId: 'IF', mode: '연결', links: '연결 항목', pending: '보내는 중', failed: '실패', conflicts: '충돌', rejected: '거부', lastIn: '마지막 수신', lastOut: '마지막 송신' },
     ownership: '누가 주인인가 — 주인이 아닌 쪽 변경은 요청으로 처리',
@@ -81,6 +83,7 @@ export const extSync = {
     simStatus: '새 상태',
     simUser: '외부 계정',
     simSend: '보내기',
+    open: '열기',
     revised: (title: string) => `${title} (개정)`,
     simResult: (outcome: string, summary: string) => `${outcome} — ${summary}`,
   },

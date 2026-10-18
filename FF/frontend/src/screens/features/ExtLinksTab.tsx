@@ -38,12 +38,12 @@ export function RequirementChips({ id, ver, ids }: { id: string; ver: string; id
   const q = useFeatureTrace(id, ver);
   const byReq = new Map((q.data?.requirements ?? []).map((r) => [String(r.extra.reqId ?? ''), r]));
   return (
-    <span className="ds-ext-list">
+    <span className="ds-ext-list" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
       {ids.map((reqId) => {
         const r = byReq.get(reqId);
         return r ? (
-          <span key={reqId} style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
-            <span className="ds-mono">{reqId}</span>
+          <span key={reqId} style={{ display: 'grid', gap: 2, justifyItems: 'start' }}>
+            <span className="ds-mono ds-nowrap">{reqId}</span>
             <ExtRefChip r={r} showStatus />
           </span>
         ) : (
@@ -57,6 +57,14 @@ export function RequirementChips({ id, ver, ids }: { id: string; ver: string; id
 }
 
 const rowKey = (r: ExtLink) => `${r.system}:${r.key}`;
+/** 키 숫자 순서(FFD-2 < FFD-10) */
+const byKeyNumber = (a: ExtLink, b: ExtLink) => Number(a.key.replace(/\D+/g, '')) - Number(b.key.replace(/\D+/g, '')) || a.key.localeCompare(b.key);
+const clip = (text: string, ch = 48) => (
+  <span className="ds-clip" title={text} style={{ maxWidth: `${ch}ch` }}>
+    {text}
+  </span>
+);
+const DEFECT_LIMIT = 10;
 
 export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
   const q = useFeatureTrace(id, ver);
@@ -71,7 +79,7 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
     : [];
   const columns = [
     { key: 'k', header: X.col.key, cell: (r: ExtLink) => <ExtRefChip r={r} showStatus={false} /> },
-    { key: 't', header: X.col.title, cell: (r: ExtLink) => r.title },
+    { key: 't', header: X.col.title, cell: (r: ExtLink) => clip(r.title) },
     { key: 's', header: X.col.status, cell: (r: ExtLink) => r.status },
   ];
   return (
@@ -94,19 +102,22 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
             )}
           </ul>
           <Panel title={X.requirements} id="ext-req">
-            {t.requirements.length ? <DataTable caption={X.requirements} rows={t.requirements} rowKey={rowKey} columns={[{ key: 'id', header: X.col.key, cell: (r) => <span className="ds-mono">{String(r.extra.reqId ?? '')}</span> }, ...columns]} /> : <p className="ds-field__hint">{X.none}</p>}
+            {t.requirements.length ? <DataTable caption={X.requirements} rows={t.requirements} rowKey={rowKey} columns={[{ key: 'id', header: X.col.reqId, cell: (r) => <span className="ds-mono ds-nowrap">{String(r.extra.reqId ?? '')}</span> }, { ...columns[0], header: X.col.cbItem }, ...columns.slice(1)]} /> : <p className="ds-field__hint">{X.none}</p>}
           </Panel>
-          <div className="ds-split">
-            <Panel title={X.changeRequests} id="ext-cr" eyebrow={t.epic ? undefined : X.none}>
+          <Panel title={X.changeRequests} id="ext-cr" eyebrow={t.epic ? undefined : X.none}>
               {t.epic && (
                 <p>
                   {X.epic} <ExtRefChip r={t.epic} />
                 </p>
               )}
               {t.changeRequests.length ? <DataTable caption={X.changeRequests} rows={t.changeRequests} rowKey={rowKey} columns={columns} /> : <p className="ds-field__hint">{X.none}</p>}
-              {!!t.defects.length && <DataTable caption={X.defects} rows={t.defects} rowKey={rowKey} columns={columns} />}
+          </Panel>
+          {!!t.defects.length && (
+            <Panel title={X.defects} id="ext-defects" eyebrow={t.defects.length > DEFECT_LIMIT ? X.latest(DEFECT_LIMIT, t.defects.length) : undefined}>
+              <DataTable caption={X.defects} rows={[...t.defects].sort(byKeyNumber).reverse().slice(0, DEFECT_LIMIT)} rowKey={rowKey} columns={columns} />
             </Panel>
-            <Panel title={X.code} id="ext-code">
+          )}
+          <Panel title={X.code} id="ext-code">
               {t.mergeRequests.length ? (
                 <DataTable
                   caption={X.code}
@@ -114,15 +125,14 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
                   rowKey={rowKey}
                   columns={[
                     ...columns,
-                    { key: 'b', header: X.col.branch, cell: (r) => <span className="ds-mono">{String(r.extra.sourceBranch ?? '—')}</span> },
+                    { key: 'b', header: X.col.branch, cell: (r) => <span className="ds-mono">{clip(String(r.extra.sourceBranch ?? '—'), 40)}</span> },
                     { key: 'p', header: X.pipeline, cell: (r) => String((r.extra.pipeline as { status?: string } | undefined)?.status ?? '—') },
                   ]}
                 />
               ) : (
                 <p className="ds-field__hint">{X.none}</p>
               )}
-            </Panel>
-          </div>
+          </Panel>
           <Panel title={X.policies} id="ext-pol">
             {t.policies.length ? (
               <DataTable

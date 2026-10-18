@@ -72,8 +72,7 @@ export function ExtSyncTab() {
         </AsyncView>
       </Panel>
 
-      <div className="ds-split">
-        <Panel title={X.inbox} id="sync-inbox">
+      <Panel title={X.inbox} id="sync-inbox">
           <AsyncView state={asyncState(inbox)} error={inbox.error?.message} onRetry={() => inbox.refetch()}>
             <DataTable
               caption={X.inbox}
@@ -89,7 +88,8 @@ export function ExtSyncTab() {
               ]}
             />
           </AsyncView>
-        </Panel>
+      </Panel>
+      {(failed.data?.items ?? []).length > 0 && (
         <Panel title={X.outbox} id="sync-failed">
           <AsyncView state={asyncState(failed)} error={failed.error?.message} onRetry={() => failed.refetch()}>
             {(failed.data?.items ?? []).length ? (
@@ -111,7 +111,7 @@ export function ExtSyncTab() {
             )}
           </AsyncView>
         </Panel>
-      </div>
+      )}
 
       <Panel title={X.ownership} id="sync-ownership">
         <DataTable
@@ -172,6 +172,18 @@ function ConflictTable({ rows }: { rows: Conflict[] }) {
 }
 
 function Simulate() {
+  const [open, setOpen] = useState(false);
+  return (
+    <details className="ds-panel" id="sync-simulate" onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
+      <summary>
+        <strong>{X.simulate}</strong>
+      </summary>
+      {open && <SimulateForm />}
+    </details>
+  );
+}
+
+function SimulateForm() {
   const [system, setSystem] = useState<ExtSystem>('JIRA');
   const [key, setKey] = useState('');
   const [status, setStatus] = useState('');
@@ -180,7 +192,7 @@ function Simulate() {
   const act = useApiMutation<{ result: { outcome: string; summary: string } | null }>('mockExtAct', INVALIDATE);
   const list = (items.data?.items ?? []).filter((x) => x.kind !== 'PIPELINE').slice(-200);
   return (
-    <Panel title={X.simulate} id="sync-simulate">
+    <div style={{ display: 'grid', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
       <p className="ds-field__hint">{X.simulateHint}</p>
       <form
         style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-end', flexWrap: 'wrap' }}
@@ -216,6 +228,6 @@ function Simulate() {
       </form>
       {act.data?.result && <p className="ds-field__hint" data-testid="simulate-result">{X.simResult(X.outcome[act.data.result.outcome] ?? act.data.result.outcome, act.data.result.summary)}</p>}
       <ErrorNote error={act.error} />
-    </Panel>
+    </div>
   );
 }

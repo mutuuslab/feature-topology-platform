@@ -177,8 +177,10 @@ export function ChangesScreen() {
   const q = useApi<{ items: { featureId: string; name: string | null; fromVersion: string; toVersion: string; toBaselineId: string | null; rationale: string; fromDescription: string; toDescription: string; coreSw: string; lifecycle: string | null }[] }>('versionChanges');
   const crs = useApi<{ items: ChangeRequestRow[] }>('extChangeRequests');
   const rows = q.data?.items ?? [];
-  const crRows = crs.data?.items ?? [];
-  const drift = crRows.filter((r) => r.policies.some((p) => p.expectedCrStatus && p.expectedCrStatus !== r.status)).length;
+  const off = (r: ChangeRequestRow) => r.policies.some((p) => p.expectedCrStatus && p.expectedCrStatus !== r.status);
+  // 어긋난 것 먼저, 그다음 키 숫자 순서(FFCR-2 < FFCR-10)
+  const crRows = [...(crs.data?.items ?? [])].sort((a, b) => Number(off(b)) - Number(off(a)) || Number(a.key.replace(/\D+/g, '')) - Number(b.key.replace(/\D+/g, '')));
+  const drift = crRows.filter(off).length;
   const C = M.changes.col;
   const R = extSync.cr;
   return (

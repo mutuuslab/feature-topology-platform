@@ -121,6 +121,8 @@ describe('변경요청 목록 (JIRA)', () => {
     expect(key.querySelector('.ds-key__value')?.textContent).toBe('1');
     expect(key.textContent).toContain('플랫폼 정책 상태와 다릅니다');
     const table = screen.getByRole('table', { name: 'JIRA 변경요청' });
+    // 어긋난 CR이 먼저
+    expect(within(table).getAllByRole('link', { name: /^FFCR-/ }).map((l) => l.textContent)).toEqual(['FFCR-1', 'FFCR-2']);
     expect(within(table).getByRole('link', { name: 'POL-00001' }).getAttribute('href')).toBe('/policies/POL-00001');
   });
 });
@@ -142,6 +144,13 @@ describe('정책 근거 CR', () => {
     fireEvent.click(screen.getByRole('button', { name: '변경요청 연결' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST' && (c.body as { crKey: string }).crKey === 'FFCR-7')).toBe(true));
     expect(await screen.findByRole('link', { name: 'FFCR-7' })).toBeTruthy();
+  });
+
+  it('조회 역할에는 연결 입력을 보이지 않는다', async () => {
+    handler = () => ({ body: { items: [] } });
+    mount('viewer', <PolicyCrPanel policyId="POL-00009" />);
+    expect(await screen.findByText(/연결된 변경요청이 없습니다/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '변경요청 연결' })).toBeNull();
   });
 });
 

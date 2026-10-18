@@ -20,7 +20,7 @@ export function PolicyCrPanel({ policyId }: { policyId: string }) {
         {crs.length ? (
           <span className="ds-ext-list" data-testid="policy-cr">
             {crs.map((c) => (
-              <ExtRefChip key={c.key} r={c} title />
+              <ExtRefChip key={c.key} r={c} />
             ))}
           </span>
         ) : (
@@ -29,6 +29,7 @@ export function PolicyCrPanel({ policyId }: { policyId: string }) {
           </p>
         )}
       </AsyncView>
+      {perm.ok && (
       <form
         style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-end', marginTop: 'var(--sp-3)', flexWrap: 'wrap' }}
         onSubmit={(e) => {
@@ -43,6 +44,7 @@ export function PolicyCrPanel({ policyId }: { policyId: string }) {
           {link.isPending ? X.linking : X.link}
         </Button>
       </form>
+      )}
       <ErrorNote error={link.error} />
     </Panel>
   );

@@ -5,7 +5,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { FF, readJson } from './lib.ts';
-import { CATALOG, REVIEW, OUT, type AdsCatalog, type AdsReview } from './ads-sync.ts';
+import { CATALOG, REVIEW, OUT, verdictCounts, type AdsCatalog, type AdsReview } from './ads-sync.ts';
+import { CATALOG as ORCA_CATALOG, REVIEW as ORCA_REVIEW, metricName, type OrcaCatalog, type OrcaReview } from './orca-sync.ts';
 
 export const DESIGN = join(OUT, 'design.json');
 export const HTML = join(FF, '..', 'docs', '10-requirements', 'ads-unece-v3', 'report.html');
@@ -28,12 +29,14 @@ interface Item {
   tests: string[];
   deps: string[];
   coord: string;
+  /** Orca R3 사례·HT ID(B02·C2·HT01 …) */
+  cases?: string[];
 }
 export interface Design {
   title: string;
   date: string;
   principles: { id: string; text: string; apply: string }[];
-  stateModel: { layers: { name: string; values: string[]; source: string }[]; example: string };
+  stateModel: { layers: { name: string; values: string[]; source: string; owner?: string }[]; example: string };
   integration: { session: string; overlap: string; action: string }[];
   items: Item[];
   decisions: { id: string; question: string; why: string; proposal: string }[];
@@ -42,12 +45,23 @@ export interface Design {
 }
 
 /** 설계가 판정·카탈로그와 맞물리는지 — 계획 ID 실재, 요구 ID 실재, 미구현·부분 요건은 모두 어떤 항목이 맡는다 */
-export function designProblems(c: AdsCatalog, r: AdsReview, d: Design): string[] {
+export interface Orca {
+  c: OrcaCatalog;
+  r: OrcaReview | null;
+}
+export function designProblems(c: AdsCatalog, r: AdsReview, d: Design, orca: Orca | null = null): string[] {
   const p: string[] = [];
   const ids = new Set(d.items.map((i) => i.id));
   const reqs = new Set(c.requirements.map((x) => x.id));
   if (ids.size !== d.items.length) p.push('설계 항목 ID 중복');
-  const plans = [...Object.entries(r.requirements), ...Object.entries(r.tests), ...Object.entries(r.scenarios)];
+  const plans = [...Object.entries(r.requirements), ...Object.entries(r.tests), ...Object.entries(r.scenarios), ...Object.entries(orca?.r?.items ?? {})];
+  if (orca) {
+    const known = new Set([...orca.c.scenarios.map((s) => s.id), ...orca.c.tests.map((t) => t.id)]);
+    for (const i of d.items) for (const k of i.cases ?? []) if (!known.has(k)) p.push(`${i.id}가 없는 Orca 사례 ${k}를 가리킴`);
+    // 판정에서 미구현·부분인 Orca 사례는 모두 어떤 설계 항목이 맡는다(계획 ID 또는 항목의 cases)
+    const covered = new Set(d.items.flatMap((i) => i.cases ?? []));
+    for (const [k, v] of Object.entries(orca.r?.items ?? {})) if ((v.verdict === '미구현' || v.verdict === '부분') && !v.plan.length && !covered.has(k)) p.push(`Orca ${k}를 맡는 설계 항목이 없음`);
+  }
   for (const [k, v] of plans) for (const id of v.plan) if (!ids.has(id)) p.push(`${k}의 계획 ${id}가 설계에 없음`);
   for (const i of d.items) {
     for (const q of i.req) if (!reqs.has(q)) p.push(`${i.id}가 없는 요건 ${q}를 가리킴`);
@@ -55,6 +69,12 @@ export function designProblems(c: AdsCatalog, r: AdsReview, d: Design): string[]
   }
   const phased = new Set(d.phases.flatMap((x) => x.items));
   for (const i of d.items) if (!phased.has(i.id)) p.push(`${i.id}가 어느 단계에도 없음`);
+  // 결함 기록(it.fails)마다 그것을 고치는 [결함] 설계 항목이 있어야 한다 — 기록만 하고 고칠 계획이 없는 결함 방지
+  const fixes = d.items.filter((i) => i.defect);
+  for (const [k, v] of Object.entries(r.requirements)) if (v.defect && !fixes.some((i) => i.req.includes(k))) p.push(`${k} 결함을 고치는 [결함] 설계 항목이 없음`);
+  for (const [k, v] of Object.entries(orca?.r?.items ?? {})) if (v.defect && !fixes.some((i) => i.cases?.includes(k))) p.push(`Orca ${k} 결함을 고치는 [결함] 설계 항목이 없음(cases)`);
+  // 단계 완료 조건에 적은 "결함 N건"은 [결함] 항목 수와 같아야 한다
+  for (const x of d.phases) for (const m of x.exit.matchAll(/결함 (\d+)건/g)) if (Number(m[1]) !== fixes.length) p.push(`단계 '${x.phase}' 완료 조건의 결함 ${m[1]}건 ≠ [결함] 항목 ${fixes.length}개`);
   return p;
 }
 
@@ -92,7 +112,46 @@ function tally(ids: string[], r: AdsReview): Record<V, number> {
   return t;
 }
 
-export function renderHtml(c: AdsCatalog, r: AdsReview, d: Design): string {
+/** Orca R3 장 — 사례 25 · HT 8 · 지표 6 · 6축 판정, 실증 흐름. 판정이 아직 없으면 '판정 전'으로 */
+function renderOrca(o: Orca, d: Design): { nav: string; html: string; summary: string } {
+  const item = (k: string) => o.r?.items[k];
+  const vb = (k: string) => {
+    const v = item(k);
+    if (!v) return '<span class="badge v-out">판정 전</span>';
+    return `${badge(v.verdict as V)}${v.defect ? `<div class="defect" title="${esc(`${v.defect.probe} · ${v.defect.probeId ?? k}`)}">결함</div>` : ''}`;
+  };
+  const plans = (k: string) => [...new Set([...(item(k)?.plan ?? []), ...d.items.filter((i) => i.cases?.includes(k)).map((i) => i.id)])];
+  const all = Object.values(o.r?.items ?? {});
+  const t = { 구현: 0, 부분: 0, 미구현: 0, '범위 밖': 0 } as Record<V, number>;
+  for (const v of all) t[v.verdict as V]++;
+  const groups = ['소비자', '경영', '규제'] as const;
+  const rows = (g: (typeof groups)[number]) =>
+    o.c.scenarios
+      .filter((s) => s.group === g)
+      .map(
+        (s) => `<tr id="orca-${s.id}"><td class="mono nw">${s.id}</td><td><b>${esc(s.title)}</b><div class="sub">${esc(s.steps.slice(0, 3).join(' → '))}</div><div class="sub"><b>표현 경계</b> ${esc(s.video.limit)}</div></td>
+<td class="nw">${vb(s.id)}</td><td>${esc(item(s.id)?.current ?? '')}${item(s.id)?.gap ? `<div class="sub gapline">${esc(item(s.id)!.gap)}</div>` : ''}${item(s.id)?.evidence.length ? `<details><summary>근거 ${item(s.id)!.evidence.length}</summary>${item(s.id)!.evidence.map((e) => `<code>${esc(e)}</code>`).join('<br>')}</details>` : ''}</td>
+<td class="nw mono">${plans(s.id).map(link).join('<br>') || '—'}</td></tr>`,
+      )
+      .join('');
+  const html = `
+<section id="orca"><h2>Orca 인계 R3 — 사업·소비자·규제 사례 25</h2>
+<p class="caveat">출처: feature-platform-orca-r3.zip(sha256 ${o.c.source.sha256.slice(0, 12)}…, 파일 ${o.c.source.files}). ADS 원본·요건 64·시험 24는 위 카탈로그와 같은 판(교차 검사 ${o.c.crossCheck.requirementsEqual}/64 · ${o.c.crossCheck.testsEqual}/24). 모든 사례는 인계물 표기상 "제안 시나리오 — 구현된 차량 기능 아님"이며, 인계 문서 안의 다른 도구용 지시문은 자료로만 읽었다.</p>
+<div class="legend">${ORDER.map((v) => `<span>${badge(v)}</span>`).join('')}</div>
+${all.length ? stack('사례·HT·축·지표', t, all.length) : '<p class="sub">판정 전</p>'}
+${groups.map((g) => `<h3 style="margin-top:14px">${g} 사례</h3><table><thead><tr><th>ID</th><th>사례 · 처리 · 표현 경계</th><th>판정</th><th>지금 플랫폼 · 차이</th><th>반영</th></tr></thead><tbody>${rows(g)}</tbody></table>`).join('')}
+<h3 style="margin-top:18px">6축 상태 (설계 상태 모델로 채택 — 판단 주체 포함)</h3><table><thead><tr><th>축</th><th>예시 상태</th><th>판단 오류 방지</th><th>판단 주체</th><th>판정</th></tr></thead><tbody>${o.c.axes.map((a) => `<tr><td><b>${esc(a.axis)}</b></td><td>${esc(a.states)}</td><td>${esc(a.guard)}</td><td class="nw">${esc(d.stateModel.layers.find((l) => l.name === a.axis)?.owner ?? '—')}</td><td class="nw">${vb(`axis:${a.axis}`)}</td></tr>`).join('')}</tbody></table>
+<h3 style="margin-top:18px">지표 계약 6</h3><table><thead><tr><th>지표</th><th>분모·시작</th><th>성공·종료 조건</th><th>빠뜨리면 안 되는 값</th><th>판정</th></tr></thead><tbody>${o.c.metrics.map((m) => `<tr><td><b>${esc(m.metric)}</b></td><td>${esc(m.denominator)}</td><td>${esc(m.success)}</td><td>${esc(m.mustKeep)}</td><td class="nw">${vb(`metric:${metricName(m.metric)}`)}</td></tr>`).join('')}</tbody></table>
+<h3 style="margin-top:18px">제품 시험 HT01~08</h3><table><thead><tr><th>ID</th><th>시험</th><th>Given / When</th><th>Then</th><th>판정</th><th>반영</th></tr></thead><tbody>${o.c.tests.map((x) => `<tr id="orca-${x.id}"><td class="mono">${x.id}</td><td><b>${esc(x.title)}</b><div class="sub">${esc(x.cases.join('·'))}</div></td><td>${esc(x.given)}</td><td>${esc(x.then)}</td><td class="nw">${vb(x.id)}</td><td class="nw mono">${plans(x.id).map(link).join('<br>') || '—'}</td></tr>`).join('')}</tbody></table>
+<h3 style="margin-top:18px">실증 5흐름 · 고객 여정 7</h3><table><thead><tr><th>실증 흐름</th><th>산출물</th><th>요구·시험</th><th>완료 조건</th></tr></thead><tbody>${o.c.pilot.map((p) => `<tr><td><b>${esc(p.flow)}</b></td><td>${esc(p.outputs)}</td><td class="mono">${esc(p.refs)}</td><td>${esc(p.exit)}</td></tr>`).join('')}</tbody></table>
+<table style="margin-top:10px"><thead><tr><th>시점</th><th>고객이 보는 것</th><th>플랫폼이 뒤에서 확인</th><th>잘못되면</th></tr></thead><tbody>${o.c.journey.map((j) => `<tr><td class="nw"><b>${esc(j.when)}</b></td><td>${esc(j.customer)}</td><td>${esc(j.platform)}</td><td>${esc(j.failure)}</td></tr>`).join('')}</tbody></table>
+</section>`;
+  const summary = all.length ? `Orca 사례·HT·축·지표 ${all.length}개 중 구현 ${t.구현} · 부분 ${t.부분} · 미구현 ${t.미구현} · 범위 밖 ${t['범위 밖']}.` : 'Orca R3 판정 전.';
+  return { nav: '<a href="#orca">Orca 사례 25</a>', html, summary };
+}
+
+export function renderHtml(c: AdsCatalog, r: AdsReview, d: Design, orca: Orca | null = null): string {
+  const o = orca ? renderOrca(orca, d) : { nav: '', html: '', summary: '' };
   const reqIds = c.requirements.map((x) => x.id);
   const all = tally(reqIds, r);
   const cats = [...new Set(c.requirements.map((x) => x.category))];
@@ -134,7 +193,7 @@ export function renderHtml(c: AdsCatalog, r: AdsReview, d: Design): string {
     .join('\n');
 
   const itemCard = (i: Item) => `<article class="card item" id="${i.id}"><h3><span class="mono">${i.id}</span> ${esc(i.title)} <span class="pill">${esc(i.priority)} · ${esc(i.layer)}</span>${i.defect ? ' <span class="defect">결함</span>' : ''}</h3>
-${i.req.length ? `<p class="sub">요구 ${i.req.map(link).join(', ')}</p>` : ''}
+${i.req.length ? `<p class="sub">요구 ${i.req.map(link).join(', ')}</p>` : ''}${i.cases?.length ? `<p class="sub">Orca 사례 ${i.cases.map((k) => `<a href="#orca-${esc(k)}">${esc(k)}</a>`).join(', ')}</p>` : ''}
 <div class="layers">${[
     ['UI/UX', i.ui],
     ['프론트', i.fe],
@@ -159,7 +218,7 @@ ${i.deps.length ? `<p class="sub">선행 ${i.deps.map(link).join(', ')}</p>` : '
 header{background:var(--surface);border-bottom:1px solid var(--line);padding:28px 40px}header h1{margin:0 0 6px;font-size:24px}
 .thesis{font-size:20px;font-weight:700;margin:14px 0 4px}.meta{color:var(--muted);font-size:13px}
 nav{position:sticky;top:0;height:38px;background:var(--surface);border-bottom:1px solid var(--line);padding:0 40px;display:flex;align-items:center;gap:14px;font-size:13px;z-index:2;overflow-x:auto;white-space:nowrap}
-section,[id]{scroll-margin-top:56px}.nw{white-space:nowrap}td.cat{min-width:8.5em;word-break:keep-all}
+section,[id]{scroll-margin-top:56px}tr[id]{scroll-margin-top:96px}.nw{white-space:nowrap}td.cat{min-width:8.5em;word-break:keep-all}td.mono,td.nw{white-space:nowrap;overflow-wrap:normal}
 nav a{color:var(--accent);text-decoration:none}main{padding:24px 40px;max-width:1500px}
 section{margin:0 0 40px}h2{font-size:20px;border-bottom:2px solid var(--ink);padding-bottom:6px}h3{font-size:16px;margin:0 0 8px}h4{margin:0 0 4px;font-size:13px;color:var(--ink2)}
 .key{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:14px 18px;font-size:17px;font-weight:700;margin-bottom:16px}
@@ -169,9 +228,9 @@ section{margin:0 0 40px}h2{font-size:20px;border-bottom:2px solid var(--ink);pad
 .seg.v-ok,.badge.v-ok{background:var(--ok)}.seg.v-part,.badge.v-part{background:var(--part)}.seg.v-miss,.badge.v-miss{background:var(--miss)}.seg.v-out,.badge.v-out{background:var(--out)}
 .badge{display:inline-block;color:#fff;border-radius:3px;padding:1px 7px;font-size:12px;font-weight:700;white-space:nowrap}
 .legend{display:flex;gap:14px;font-size:12px;margin:6px 0 10px}.legend .badge{margin-right:4px}
-table{border-collapse:collapse;width:100%;background:var(--surface);font-size:13px}th,td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}th{background:#ecebe4;position:sticky;top:38px;white-space:nowrap}td.note{min-width:14em}
+table{border-collapse:collapse;width:100%;background:var(--surface);font-size:13px}th,td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;word-break:keep-all;overflow-wrap:anywhere}th{background:#ecebe4;position:sticky;top:38px;white-space:nowrap}td.note{min-width:14em}
 .mono,code{font-family:'JetBrains Mono',Consolas,monospace;font-size:12px}code{background:#efede6;padding:0 3px;border-radius:2px;word-break:break-all}
-.sub{color:var(--muted);font-size:12px;margin-top:2px}.defect{display:inline-block;margin-top:3px;font-size:11px;font-weight:700;color:var(--miss);border:1px solid var(--miss);border-radius:3px;padding:0 4px}
+.sub{color:var(--muted);font-size:12px;margin-top:2px}.defect{display:inline-block;margin:3px 0 0 4px;font-size:12px;font-weight:700;color:var(--miss);border:1px solid var(--miss);border-radius:3px;padding:0 4px}
 .filters{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0;font-size:13px}.filters select,.filters input{font:inherit;padding:3px 6px}.filters input{width:16em}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px}.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px}
 .card p{margin:4px 0;font-size:13px}.card .now{border-left:3px solid var(--out);padding-left:8px}.card .gap{border-left:3px solid var(--miss);padding-left:8px}
@@ -179,7 +238,8 @@ table{border-collapse:collapse;width:100%;background:var(--surface);font-size:13
 .pill{font-size:11px;font-weight:600;color:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:1px 8px;margin-left:6px}
 .phase{margin-bottom:28px}.phase .item{margin-bottom:12px}.exit{background:#e7ebfb;padding:6px 10px;border-radius:4px;font-size:13px}.coord{font-size:12px;color:var(--ink2)}
 .caveat{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
-@media print{nav{display:none}th{position:static}}`;
+@media print{nav{display:none}th{position:static}}
+@media (max-width:760px){header,main{padding-left:14px;padding-right:14px}nav{padding:0 14px}.grid2,.cards,.item .layers{grid-template-columns:1fr}.bar-row{grid-template-columns:96px 1fr 72px}table{display:block;overflow-x:auto}th{position:static}}`;
 
   const filterJs = `
 const f={cat:'',pri:'',owner:'',verdict:'',q:''};
@@ -192,10 +252,10 @@ document.querySelectorAll('[data-f]').forEach(el=>el.addEventListener('input',e=
 <header><h1>${esc(d.title)}</h1>
 <p class="thesis">“${esc(c.vision.thesis)}”</p>
 <p class="meta">원본 ${esc(c.source.file)} · Revision ${c.source.revision} (${c.source.date}) · sha256 ${c.source.sha256.slice(0, 12)}… · 판정 ${esc(r.source.reviewedAt)} @ ${esc(r.source.reviewedCommit)} · 설계 ${esc(d.date)}</p></header>
-<nav><a href="#summary">요약</a><a href="#principles">원칙</a><a href="#state">상태 모델</a><a href="#integration">다른 세션과 통합</a><a href="#req">기능요건 64</a><a href="#tests">인수시험 24</a><a href="#scenarios">시나리오 10</a><a href="#design">수정 설계</a><a href="#db">DB·API</a><a href="#decisions">결정 필요</a><a href="#appendix">부록</a></nav>
+<nav><a href="#summary">요약</a><a href="#principles">원칙</a><a href="#state">상태 모델</a><a href="#integration">다른 세션과 통합</a><a href="#req">기능요건 64</a><a href="#tests">인수시험 24</a><a href="#scenarios">시나리오 10</a>${o.nav}<a href="#design">수정 설계</a><a href="#db">DB·API</a><a href="#decisions">결정 필요</a><a href="#appendix">부록</a></nav>
 <main>
 <section id="summary"><h2>요약</h2>
-<div class="key">기능요건 64개 중 플랫폼이 합격 조건을 다 채운 것은 ${all.구현}개 — ${all.부분}개는 부분, ${all.미구현}개는 미구현, 결함 ${defects.length}건.<small>반영은 UI/UX부터 — 설계 항목 ${d.items.length}개를 ${d.phases.length}단계로(9장).</small></div>
+<div class="key">기능요건 64개 중 플랫폼이 합격 조건을 다 채운 것은 ${all.구현}개 — ${all.부분}개는 부분, ${all.미구현}개는 미구현, 결함 ${defects.length}건.<small>${o.summary} 반영은 UI/UX부터 — 설계 항목 ${d.items.length}개를 ${d.phases.length}단계로.</small></div>
 <div class="legend">${ORDER.map((v) => `<span>${badge(v)}</span>`).join('')}</div>
 <div class="grid2"><div class="panel"><h3>전체 · 우선순위 · 담당</h3>${stack('전체', all, 64)}${byPri}${byOwner}
 <p class="sub">인수시험 24: 자동 시험 있음 ${tcount('자동 시험 있음')} · 일부 ${tcount('일부')} · 없음 ${tcount('없음')}</p></div>
@@ -206,7 +266,7 @@ document.querySelectorAll('[data-f]').forEach(el=>el.addEventListener('input',e=
 
 <section id="principles"><h2>원칙 — 보고서 비전을 플랫폼 원칙으로</h2><table><thead><tr><th>ID</th><th>원칙</th><th>플랫폼에 적용</th></tr></thead><tbody>${d.principles.map((p) => `<tr><td class="mono">${p.id}</td><td><b>${esc(p.text)}</b></td><td>${esc(p.apply)}</td></tr>`).join('')}</tbody></table></section>
 
-<section id="state"><h2>상태 모델 — 하나의 ON/OFF로 합치지 않는다</h2><table><thead><tr><th>층</th><th>값</th><th>출처</th></tr></thead><tbody>${d.stateModel.layers.map((l) => `<tr><td><b>${esc(l.name)}</b></td><td>${esc(l.values.join(' · '))}</td><td>${esc(l.source)}</td></tr>`).join('')}</tbody></table><p class="key" style="margin-top:12px">${esc(d.stateModel.example)}</p></section>
+<section id="state"><h2>상태 모델 — 하나의 ON/OFF로 합치지 않는다</h2><table><thead><tr><th>축</th><th>값</th><th>판단 주체</th><th>출처</th></tr></thead><tbody>${d.stateModel.layers.map((l) => `<tr><td><b>${esc(l.name)}</b></td><td>${esc(l.values.join(' · '))}</td><td class="nw">${esc(l.owner ?? '—')}</td><td>${esc(l.source)}</td></tr>`).join('')}</tbody></table><p class="key" style="margin-top:12px">${esc(d.stateModel.example)}</p></section>
 
 <section id="integration"><h2>다른 세션 작업과 통합</h2><table><thead><tr><th>세션</th><th>겹치는 부분</th><th>통합 방법</th></tr></thead><tbody>${d.integration.map((x) => `<tr><td><b>${esc(x.session)}</b></td><td>${esc(x.overlap)}</td><td>${esc(x.action)}</td></tr>`).join('')}</tbody></table></section>
 
@@ -217,6 +277,8 @@ document.querySelectorAll('[data-f]').forEach(el=>el.addEventListener('input',e=
 <section id="tests"><h2>인수시험 24 — 자동 시험 대응</h2><table><thead><tr><th>ID</th><th>시험</th><th>요구</th><th>상태</th><th>지금 있는 시험</th><th>반영</th></tr></thead><tbody>${testRows}</tbody></table></section>
 
 <section id="scenarios"><h2>상세 시나리오 10 — 지금 → 목표</h2><div class="cards">${scenarioCards}</div></section>
+
+${o.html}
 
 <section id="design"><h2>수정 설계 — 단계별 (UI/UX · 프론트 · 백엔드 · DB · API · 시험)</h2>${phaseBlocks}</section>
 
@@ -279,12 +341,26 @@ export function mergeBacklog(current: string, section: string): string {
   return `${current.replace(/\s*$/, '')}\n\n${section}\n`;
 }
 
+/** 사람이 쓴 문서의 숫자가 판정과 같은지 — "구현 N · 부분 N · 미구현 N · 범위 밖 N"과 "결함 N건"을 모두 대조(문서가 낡아 거짓 숫자를 말하지 않게) */
+export const DOCS_WITH_COUNTS = [join(FF, '..', 'docs', '10-requirements', '10-70-ads-unece-v3-reflection.md')];
+export function docCountProblems(text: string, file: string, r: AdsReview): string[] {
+  const n = verdictCounts(r);
+  const p: string[] = [];
+  for (const m of text.matchAll(/구현 (\d+) · 부분 (\d+) · 미구현 (\d+) · 범위 밖 (\d+)/g))
+    if (+m[1] !== n.구현 || +m[2] !== n.부분 || +m[3] !== n.미구현 || +m[4] !== n['범위 밖']) p.push(`${file}: '${m[0]}' ≠ 판정(구현 ${n.구현} · 부분 ${n.부분} · 미구현 ${n.미구현} · 범위 밖 ${n['범위 밖']})`);
+  for (const m of text.matchAll(/결함 (\d+)건/g)) if (+m[1] !== n.defects) p.push(`${file}: '${m[0]}' ≠ 판정 결함 ${n.defects}건`);
+  if (!/구현 \d+ · 부분 \d+ · 미구현 \d+ · 범위 밖 \d+/.test(text)) p.push(`${file}: 판정 집계 문장이 없음`);
+  return p;
+}
+
 function main() {
   const c = readJson<AdsCatalog>(CATALOG);
   const r = readJson<AdsReview>(REVIEW);
   const d = readJson<Design>(DESIGN);
-  const problems = designProblems(c, r, d);
-  const html = renderHtml(c, r, d);
+  const orca: Orca | null = existsSync(ORCA_CATALOG) ? { c: readJson<OrcaCatalog>(ORCA_CATALOG), r: existsSync(ORCA_REVIEW) ? readJson<OrcaReview>(ORCA_REVIEW) : null } : null;
+  const problems = designProblems(c, r, d, orca);
+  for (const f of DOCS_WITH_COUNTS) problems.push(...docCountProblems(readFileSync(f, 'utf8'), f.split(/[\\/]/).pop()!, r));
+  const html = renderHtml(c, r, d, orca);
   const backlog = mergeBacklog(readFileSync(BACKLOG, 'utf8').replace(/\r\n/g, '\n'), renderBacklog(c, r, d));
   if (process.argv.includes('--check')) {
     if (!existsSync(HTML) || readFileSync(HTML, 'utf8').replace(/\r\n/g, '\n') !== html) problems.push('report.html이 최신이 아님 — npm run ads:report');

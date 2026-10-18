@@ -119,6 +119,13 @@ describe('Feature Version 상세', () => {
     expect(screen.getByText('미입력')).toBeTruthy();
   });
 
+  it('없는 Version은 404 화면 — 재시도 버튼을 두지 않는다', async () => {
+    handler = () => ({ status: 404, body: { error: { code: 'NOT_FOUND', message: '없는 데이터입니다' } } });
+    mount('/features/FEAT-99999/9.9.9', '/features/:id/:ver', <FeatureDetail />);
+    await waitFor(() => expect(document.querySelector('[data-not-found]')).toBeTruthy());
+    expect(screen.queryByRole('button', { name: '다시 시도' })).toBeNull();
+  });
+
   it('작성자 역할로는 정의 승인 전이를 실행할 수 없다 (버튼 비활성·이유 표시)', async () => {
     handler = () => ({ body: DETAIL });
     mount('/features/FEAT-00013/0.3.0', '/features/:id/:ver', <FeatureDetail />, 'author');
@@ -193,6 +200,14 @@ describe('BOM 확정 승인 큐', () => {
     expect(h['X-Actor-Role']).toBe('BOM_APPROVER');
     expect(h['Idempotency-Key']).toMatch(/[0-9a-f-]{36}/);
     expect(JSON.parse(post.init!.body as string)).toEqual({ decision: 'REJECT', reason: 'SW 형상 재확인 필요' });
+  });
+
+  it('확정 요청이 없으면 데이터가 있는 Baseline 탭으로 시작한다', async () => {
+    const BL = { baselineId: 'BL-00028', featureId: 'FEAT-00022', version: '1.0.0', contentHash: 'sha256:' + 'a'.repeat(64), snapshot: { name: '전방 안전거리 3단계' }, products: ['CAT-00001'] };
+    handler = (url) => (url.startsWith('/api/baselines/requests') ? { body: { items: [] } } : { body: { items: [BL] } });
+    mount('/baselines', '/baselines', <BaselineQueue />, 'steward');
+    await waitFor(() => expect(screen.getByRole('tab', { name: '확정된 Baseline' }).getAttribute('aria-selected')).toBe('true'));
+    expect(await screen.findByText('전방 안전거리 3단계')).toBeTruthy();
   });
 });
 

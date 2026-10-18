@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { ReleaseSignoffView } from '@ff/contracts';
 import { useApi, useApiMutation } from '../../api/hooks';
+import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { Button, Drawer, ErrorNote, Field } from '../../design';
 import { usePermission } from '../shared';
@@ -26,7 +27,7 @@ export function ReleaseSignoffBar({ id, ver, gatesPassed }: { id: string; ver: s
         </span>
       )}
       {!v?.valid && (
-        <Button icon="pen" disabled={!perm.ok || !gatesPassed} title={perm.hint ?? (gatesPassed ? undefined : S.needGates)} onClick={() => setOpen(true)} data-tour="release-signoff">
+        <Button icon="pen" disabled={STATIC_MODE || !perm.ok || !gatesPassed} title={STATIC_MODE ? ko.page.readOnly : perm.hint ?? (gatesPassed ? undefined : S.needGates)} onClick={() => setOpen(true)} data-tour="release-signoff">
           {S.sign}
         </Button>
       )}
@@ -40,7 +41,7 @@ export function ReleaseSignoffBar({ id, ver, gatesPassed }: { id: string; ver: s
           <Button
             variant="primary"
             icon="pen"
-            disabled={!perm.ok || reason.trim().length < 2 || sign.isPending}
+            disabled={STATIC_MODE || !perm.ok || reason.trim().length < 2 || sign.isPending}
             onClick={() => sign.mutate({ params: { id, ver }, body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}
           >
             {S.sign}

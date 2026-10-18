@@ -362,6 +362,8 @@ export const ko = {
     decidedBy: '결정자',
     sod: '요청자 본인은 승인할 수 없습니다',
     failing: (n: number) => `${n}개 항목 미충족 — 확정할 수 없습니다`,
+    emptyRequests: '대기 중인 확정 요청이 없습니다',
+    viewBaselines: '확정된 Baseline 보기',
     col: { request: '요청', feature: 'Feature', status: '상태', requestedAt: '요청 시각', baseline: 'Baseline', hash: '해시', products: '사용 상품' },
   },
   product: {

@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { GATES, type GateId, type Lifecycle } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { extSync } from '../../copy/ext-sync';
+import { NotFound } from '../../components/patterns';
 import {
   AsyncView,
   Button,
@@ -42,9 +44,14 @@ export default function FeatureDetail() {
   const q = useApi<Detail>('featureDetail', { params: { id, ver } });
   const d = q.data;
   const [transitionTo, setTransitionTo] = useState<Lifecycle | null>(null);
+  // 없는 Version/ID는 재시도해도 없는 데이터다 — 일반 오류 카드 대신 404 화면으로 보낸다(정적 호스팅은 HTTP 200이지만 화면 의미는 404)
+  const notFound = q.error?.status === 404;
 
   return (
     <div className="ds-screen">
+      {notFound ? (
+        <NotFound />
+      ) : (
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
           <>
@@ -87,7 +94,7 @@ export default function FeatureDetail() {
                 {d.transitions
                   .filter((t) => !t.auto)
                   .map((t) => (
-                    <Button key={t.to} variant={t.to === 'DEPRECATED' || t.to === 'RETIRED' ? 'default' : 'primary'} onClick={() => setTransitionTo(t.to)}>
+                    <Button key={t.to} variant={t.to === 'DEPRECATED' || t.to === 'RETIRED' ? 'default' : 'primary'} disabled={STATIC_MODE} title={STATIC_MODE ? ko.page.readOnly : undefined} onClick={() => setTransitionTo(t.to)}>
                       {T.transition(t.to)}
                     </Button>
                   ))}
@@ -133,6 +140,7 @@ export default function FeatureDetail() {
           </>
         )}
       </AsyncView>
+      )}
     </div>
   );
 }

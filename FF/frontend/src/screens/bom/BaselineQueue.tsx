@@ -13,7 +13,14 @@ const STATUS_VERDICT = { PENDING: 'CONDITIONAL', APPROVED: 'PASS', REJECTED: 'FA
 
 export default function BaselineQueue() {
   const reqs = useApi<{ items: BaselineRequest[] }>('baselineRequests');
+  const [sp] = useSearchParams();
   const pending = (reqs.data?.items ?? []).filter((r) => r.status === 'PENDING').length;
+  // 확정 요청이 없으면 데이터가 있는 '확정된 Baseline'을 먼저 보여 준다 — 데모 랜딩이 빈 화면이 되지 않게.
+  // ?request= 로 승인 서랍을 열 때는 요청 탭이 먼저여야 서랍이 렌더된다.
+  const requestsFirst = !!sp.get('request') || sp.get('tab') === 'requests' || !reqs.data || reqs.data.items.length > 0;
+  const tabs = requestsFirst
+    ? [{ key: 'requests', label: T.tabRequests }, { key: 'baselines', label: T.tabBaselines }]
+    : [{ key: 'baselines', label: T.tabBaselines }, { key: 'requests', label: T.tabRequests }];
   return (
     <div className="ds-screen">
       <PageHeader
@@ -22,7 +29,7 @@ export default function BaselineQueue() {
         lead={T.lead}
         message={!reqs.data ? { tone: 'neutral', value: '—', text: T.key.pending } : pending ? { tone: 'warn', value: pending, text: T.key.pending } : { tone: 'ok', text: T.key.none }}
       />
-      <Tabs tabs={[{ key: 'requests', label: T.tabRequests }, { key: 'baselines', label: T.tabBaselines }]}>
+      <Tabs tabs={tabs}>
         {(tab) => (tab === 'requests' ? <Requests /> : <Baselines />)}
       </Tabs>
     </div>
@@ -42,6 +49,11 @@ function Requests() {
     else n.delete('request');
     setSp(n, { replace: true });
   };
+  const showBaselines = () => {
+    const n = new URLSearchParams(sp);
+    n.set('tab', 'baselines');
+    setSp(n, { replace: true });
+  };
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
       <Segmented
@@ -55,7 +67,12 @@ function Requests() {
           { value: '', label: ko.page.all, count: all.data?.items.length },
         ]}
       />
-      <AsyncView state={asyncState(all, rows.length === 0)} error={all.error?.message} onRetry={() => all.refetch()}>
+      <AsyncView
+        state={asyncState(all, rows.length === 0)}
+        error={all.error?.message}
+        onRetry={() => all.refetch()}
+        empty={{ title: T.emptyRequests, action: <Button onClick={showBaselines}>{T.viewBaselines}</Button> }}
+      >
         <DataTable
           caption={T.tabRequests}
           rows={rows}

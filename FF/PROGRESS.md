@@ -28,7 +28,13 @@
   6. FFG-TEL-004 표시(F052)
 - **다른 세션과 통합**: 3초 테스트(Kill 보류 항목은 ADS-UI02), 업무 절차 FPW.8·FPW.13, FF_IMP 와이어 2.1, 텔레메트리 TL-UI02·TL-B01/B02, 양방향 연계
 - **확인 필요(사용자)**: D-ADS-1~6. FF_IMP 와이어 2.1, 대표 Feature 2개, 사건 보고 기한 소유, RACI 모델 수정 주체, 차량 팀 결정 5건, FFP 요구의 codeBeamer 등록.
-- **다음**: ADS-FIX01(양방향 연계 작업으로 깨진 verify:full 복구) → 1단계
+- **main 통합(2026-10-18 사용자 "커밋한 것 모두 통합")**
+  - `npm run verify` 전 단계 통과(e2e 460·정적 데모 72) 뒤 `main`을 `feat/v081-integration`으로 빨리감기했다. p10·docs/workflows는 이미 포함돼 있었다.
+  - FF_IMP도 `main`을 `docs/standards-report-v1.1`(2cf3f10, 영상 문서 포함)로 빨리감기했다.
+  - push는 하지 않았다. 로컬 main이 origin/main보다 앞서 있다.
+- **다음**
+  1. ADS-FIX01 남은 것: 시각 기준 8장(verify:full 전용, 서브에이전트 판정 후 갱신)
+  2. 설계 1단계
 
 ## 차량 텔레메트리 → Data Lake → 분석·학습 (2026-10-18 사용자 요청 "현대차 Data Lake와 인터페이스, 차량 데이터를 텔레메트리로 받아 분석·학습 — 너가 설계해")
 - 설계 `docs/80-integration/80-70-telemetry-datalake-ml.md`. 구현은 아직 없다.

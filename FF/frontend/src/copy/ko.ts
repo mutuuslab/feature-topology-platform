@@ -12,7 +12,7 @@ export const ko = {
     skip: '본문으로 건너뛰기',
   },
   shell: {
-    search: 'Feature ID·이름 검색',
+    search: 'Feature ID·이름·Owner·Tag 검색',
     searchHint: 'FEAT-00022처럼 ID를 입력하면 바로 이동합니다',
     command: '명령',
     palette: {
@@ -204,7 +204,7 @@ export const ko = {
   state: {
     loading: '불러오는 중',
     emptyTitle: '표시할 항목이 없습니다',
-    emptyBody: '조건을 바꾸거나 새 항목을 등록하세요.',
+    emptyBody: '조건을 바꿔 보세요. 새 항목은 백엔드에 연결된 환경에서 등록할 수 있습니다.',
     errorTitle: '불러오지 못했습니다',
     errorBody: '잠시 후 다시 시도하세요. 반복되면 감사 이력의 상관 ID로 문의하세요.',
     forbiddenTitle: '이 역할로는 볼 수 없습니다',
@@ -285,7 +285,7 @@ export const ko = {
     sample: { feature: 'Feature', name: '이름', lifecycle: 'Lifecycle', asil: 'ASIL', owner: 'Owner', baseline: 'Baseline' },
   },
   page: {
-    readOnly: '읽기 전용 데모 — 변경은 백엔드에 연결된 환경에서 할 수 있습니다',
+    readOnly: '읽기 전용 데모 — 변경은 백엔드에 연결된 환경에서만 할 수 있습니다',
     noPermission: (roles: string) => `이 작업은 ${roles} 역할이 할 수 있습니다`,
     saved: '저장했습니다',
     reason: '사유',

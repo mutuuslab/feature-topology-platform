@@ -191,6 +191,8 @@ async function main() {
   await save('extInbox');
   await save('extOutbox', {}, { status: 'FAILED' });
   await save('extChangeRequests');
+  // Feature 상세 '양방향 연계' 탭 — 버전마다 추적을 읽는다(e2e:static이 모든 탭을 연다)
+  for (const f of all.items as { featureId: string; version: string }[]) await save('extFeatureTrace', { id: f.featureId, ver: f.version });
   const targets = await get('/api/sync/targets');
   for (const t of (targets.items ?? targets) as { targetId: string }[]) await save('syncRuns', {}, { targetId: t.targetId });
   await save('virtualCombinations', {}, { featureId: 'FEAT-00022' });

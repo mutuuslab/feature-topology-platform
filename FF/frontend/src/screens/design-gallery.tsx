@@ -20,6 +20,7 @@ import {
   GateBadge,
   GateRail,
   IdChip,
+  ExtRefChip,
   KeyMessage,
   Kpi,
   LifecycleBadge,
@@ -147,6 +148,8 @@ export default function DesignGallery() {
           <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', alignItems: 'center' }}>
             <IdChip id="FEAT-00022" version="1.0.0" to="/features?q=FEAT-00022" />
             <IdChip id="BL-00028" />
+            <ExtRefChip r={{ system: 'JIRA', kind: 'CHANGE_REQUEST', key: 'FFCR-12', url: 'https://jira.ff.example/browse/FFCR-12', title: '', status: 'In Review', syncState: 'SYNCED', stale: false }} />
+            <ExtRefChip r={{ system: 'CODEBEAMER', kind: 'REQUIREMENT', key: 'CB-10001', url: 'https://codebeamer.ff.example/cb/issue/10001', title: '', status: 'Approved', syncState: 'CONFLICT', stale: true }} />
             <IdChip id="CAT-00019" version="1.0.0" />
             <IdChip id="SIM-G8-000193" copy={false} />
           </div>

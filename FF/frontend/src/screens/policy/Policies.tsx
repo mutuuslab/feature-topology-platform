@@ -8,6 +8,7 @@ import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge, Icon } from '../../design';
 import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
+import { PolicyCrPanel } from './PolicyCr';
 import { VirtualPanel } from './Virtual';
 import { UnleashPanel } from './Unleash';
 import { PolicyVersions } from './PolicyVersions';
@@ -184,6 +185,8 @@ export function PolicyDetail() {
               }
             />
             <ErrorNote error={validate.error} />
+
+            <PolicyCrPanel policyId={p.policyId} />
 
             <Panel
               title={T.validators}

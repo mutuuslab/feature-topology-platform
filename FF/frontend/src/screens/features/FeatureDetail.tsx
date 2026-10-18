@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { GATES, type GateId, type Lifecycle } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { extSync } from '../../copy/ext-sync';
 import {
   AsyncView,
   Button,
@@ -26,6 +27,7 @@ import {
 } from '../../design';
 import { scopeOf, usePermission, when } from '../shared';
 import { ReleaseSignoffBar } from './ReleaseSignoff';
+import { EpicChip, ExtLinksTab, RequirementChips } from './ExtLinksTab';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
 import { FeatureVersionActions } from './VersionEdit';
 import type { AuditEntry, ChecklistItem, FeatureDetail as Detail, GateView } from '../types';
@@ -62,6 +64,7 @@ export default function FeatureDetail() {
                   <SafetyBadges id={id} ver={ver} />
                   <span className="ds-tag">{d.feature.ownerId}</span>
                   {d.feature.baselineId && <IdChip id={d.feature.baselineId} copy={false} />}
+                  <EpicChip id={id} ver={ver} />
                 </>
               }
               actions={
@@ -100,6 +103,7 @@ export default function FeatureDetail() {
                 { key: 'gates', label: T.tabs.gates, count: Object.keys(d.gates).length },
                 { key: 'deps', label: T.tabs.deps, count: d.dependencies.outgoing.length + d.dependencies.incoming.length },
                 { key: 'trace', label: T.tabs.trace, count: d.trace.length },
+                { key: 'ext', label: extSync.feature.tab },
                 { key: 'baseline', label: T.tabs.baseline },
                 { key: 'audit', label: T.tabs.audit },
               ]}
@@ -115,6 +119,8 @@ export default function FeatureDetail() {
                   <Deps d={d} />
                 ) : tab === 'trace' ? (
                   <Trace d={d} />
+                ) : tab === 'ext' ? (
+                  <ExtLinksTab id={id} ver={ver} />
                 ) : tab === 'baseline' ? (
                   <BaselineTab d={d} />
                 ) : (
@@ -137,6 +143,7 @@ function Overview({ d }: { d: Detail }) {
   const show = (k: string) => {
     const v = f[k];
     if (k === 'lifecycle') return <LifecycleBadge value={v} />;
+    if (k === 'requirementIds' && Array.isArray(v) && v.length) return <RequirementChips id={d.feature.featureId} ver={d.feature.version} ids={v} />;
     if (k === 'functions') return (v as { functionId: string; label: string }[]).map((x) => <span key={x.functionId} className="ds-tag"><span className="ds-mono">{x.functionId}</span> {x.label}</span>);
     if (Array.isArray(v)) return v.length ? v.map((x: string, i: number) => <span key={i} className={/^[A-Z0-9-.@]+$/.test(x) ? 'ds-mono' : undefined}>{x}{i < v.length - 1 ? ',' : ''}</span>) : null;
     if (v === null || v === '') return null;

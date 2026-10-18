@@ -2143,3 +2143,57 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   background: transparent;
   box-sizing: border-box;
 }
+
+/* 외부 항목 칩 (GitLab·JIRA·codeBeamer) — IdChip과 같은 높이, 도구 이름은 글자 표지 */
+.ds-ext {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  font-size: 0.92em;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  padding: 0 6px 0 0;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.ds-ext__sys {
+  font-size: 0.82em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink-2);
+  background: var(--surface-sunk);
+  border-right: 1px solid var(--line);
+  border-radius: var(--r-sm) 0 0 var(--r-sm);
+  padding: 1px 6px;
+}
+.ds-ext__key {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.ds-ext__title {
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 28ch;
+}
+.ds-ext__status {
+  color: var(--muted);
+}
+.ds-ext__sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+.ds-ext__sync[data-trouble] {
+  color: var(--danger);
+  font-weight: 600;
+}
+.ds-ext-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}

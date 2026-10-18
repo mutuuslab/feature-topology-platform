@@ -97,9 +97,9 @@ describe('장애·VOC · 현장 지원', () => {
 });
 
 describe('외부 연계 · 동기화 · Legacy', () => {
-  it('연결 현황 13행 — 방식 표시', async () => {
+  it('연결 현황 — 방식 표시(양방향 연계 탭 다음)', async () => {
     handler = (url) => (url.startsWith('/api/integrations/systems') ? { body: { items: [{ ifId: 'IF-01', name: '요구관리 연계 (ALM)', mode: 'mock', adapter: 'adapters/if-mocks', components: ['D01-01'], calls: 3, lastAt: null }, { ifId: 'IF-10', name: 'OpenFeature SDK', mode: 'internal', adapter: 'OFREP', components: ['D05-01'], calls: 0, lastAt: null }] } } : undefined);
-    mount('/integration/connectors', '/integration/connectors', <IntegrationsScreen />);
+    mount('/integration/connectors?tab=systems', '/integration/connectors', <IntegrationsScreen />);
     const row = (await screen.findByText('IF-01')).closest('tr')!;
     expect(within(row).getByText('모의')).toBeTruthy();
     expect(screen.getByText('내장')).toBeTruthy();

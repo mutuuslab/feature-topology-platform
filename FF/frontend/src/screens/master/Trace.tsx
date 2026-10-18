@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, GateBadge, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Select, Toolbar, type KeyMessageSpec } from '../../design';
+import type { ExtRef } from '@ff/contracts';
+import { extSync } from '../../copy/ext-sync';
+import { AsyncView, DataTable, ExtRefChip, GateBadge, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Select, Tabs, Toolbar, type KeyMessageSpec } from '../../design';
 
 const M = ko.master;
 
@@ -173,28 +175,89 @@ export function EvidenceScreen() {
 
 export function ChangesScreen() {
   const q = useApi<{ items: { featureId: string; name: string | null; fromVersion: string; toVersion: string; toBaselineId: string | null; rationale: string; fromDescription: string; toDescription: string; coreSw: string; lifecycle: string | null }[] }>('versionChanges');
+  const crs = useApi<{ items: ChangeRequestRow[] }>('extChangeRequests');
   const rows = q.data?.items ?? [];
+  const crRows = crs.data?.items ?? [];
+  const drift = crRows.filter((r) => r.policies.some((p) => p.expectedCrStatus && p.expectedCrStatus !== r.status)).length;
   const C = M.changes.col;
+  const R = extSync.cr;
   return (
     <div className="ds-screen">
-      <PageHeader codes="D01-01 · Version_Rationale" title={M.changes.title} lead={M.changes.lead} message={{ tone: 'neutral', value: q.data ? rows.length : '—', text: M.changes.key }} />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
-        <DataTable
-          caption={M.changes.title}
-          rows={rows}
-          rowKey={(r) => `${r.featureId}:${r.fromVersion}:${r.toVersion}`}
-          maxHeight="66vh"
-          columns={[
-            { key: 'f', header: C.feature, cell: (r) => <span className="ds-nowrap"><span className="ds-mono">{r.featureId}</span> {r.name ?? ''}</span>, sort: (r) => r.featureId },
-            { key: 'a', header: C.from, cell: (r) => <IdChip id={r.featureId} version={r.fromVersion} to={`/features/${r.featureId}/${r.fromVersion}`} copy={false} /> },
-            { key: 'b', header: C.to, cell: (r) => <IdChip id={r.featureId} version={r.toVersion} to={`/features/${r.featureId}/${r.toVersion}`} copy={false} /> },
-            { key: 'r', header: C.rationale, cell: (r) => <span title={`${M.changes.before}: ${r.fromDescription}\n${M.changes.after}: ${r.toDescription}`}>{r.rationale}</span> },
-            { key: 's', header: C.sw, cell: (r) => <span className="ds-mono ds-nowrap">{r.coreSw}</span> },
-            { key: 'bl', header: C.baseline, cell: (r) => <span className="ds-mono">{r.toBaselineId ?? '—'}</span> },
-            { key: 'l', header: C.lifecycle, cell: (r) => (r.lifecycle ? <LifecycleBadge value={r.lifecycle} /> : '—') },
-          ]}
-        />
-      </AsyncView>
+      <PageHeader
+        codes="D05-01 · IF-14 JIRA"
+        title={R.title}
+        lead={R.lead}
+        message={!crs.data ? { tone: 'neutral', value: '—', text: R.key.ok } : drift ? { tone: 'warn', value: drift, text: R.key.drift(drift) } : { tone: 'ok', value: crRows.length, text: R.key.ok }}
+      />
+      <Tabs tabs={[{ key: 'jira', label: R.tabs.jira, count: crRows.length }, { key: 'rationale', label: R.tabs.rationale, count: rows.length }]}>
+        {(tab) =>
+          tab === 'jira' ? (
+            <AsyncView state={asyncState(crs, crRows.length === 0)} error={crs.error?.message} onRetry={() => crs.refetch()}>
+              <p className="ds-field__hint">{R.note}</p>
+              <DataTable
+                caption={R.tabs.jira}
+                rows={crRows}
+                rowKey={(r) => r.key}
+                maxHeight="62vh"
+                columns={[
+                  { key: 'k', header: R.col.key, cell: (r) => <ExtRefChip r={r} showStatus={false} />, sort: (r) => r.key },
+                  { key: 't', header: R.col.title, cell: (r) => r.title },
+                  { key: 'j', header: R.col.jira, cell: (r) => r.status, sort: (r) => r.status },
+                  {
+                    key: 'p',
+                    header: R.col.policy,
+                    cell: (r) =>
+                      r.policies.length ? (
+                        r.policies.map((p) => (
+                          <span key={p.policyId} className="ds-nowrap">
+                            <Link to={`/policies/${p.policyId}`}>{p.policyId}</Link> <span className="ds-mono">{p.flagKey}</span>
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ color: 'var(--faint)' }}>{R.unlinked}</span>
+                      ),
+                  },
+                  { key: 'f', header: R.col.ffStatus, cell: (r) => r.policies.map((p) => p.status).join(', ') || '—' },
+                  {
+                    key: 'e',
+                    header: R.col.expected,
+                    cell: (r) => {
+                      const exp = r.policies.map((p) => p.expectedCrStatus).filter(Boolean).join(', ');
+                      const off = r.policies.some((p) => p.expectedCrStatus && p.expectedCrStatus !== r.status);
+                      return <span style={off ? { color: 'var(--danger)', fontWeight: 600 } : undefined}>{exp || '—'}</span>;
+                    },
+                  },
+                  { key: 'ft', header: R.col.feature, cell: (r) => r.features.map((f) => { const [fid, ver] = f.split('@'); return <IdChip key={f} id={fid} version={ver} to={`/features/${fid}/${ver}`} copy={false} />; }) },
+                ]}
+              />
+            </AsyncView>
+          ) : (
+            <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+              <DataTable
+                caption={M.changes.title}
+                rows={rows}
+                rowKey={(r) => `${r.featureId}:${r.fromVersion}:${r.toVersion}`}
+                maxHeight="62vh"
+                columns={[
+                  { key: 'f', header: C.feature, cell: (r) => <span className="ds-nowrap"><span className="ds-mono">{r.featureId}</span> {r.name ?? ''}</span>, sort: (r) => r.featureId },
+                  { key: 'a', header: C.from, cell: (r) => <IdChip id={r.featureId} version={r.fromVersion} to={`/features/${r.featureId}/${r.fromVersion}`} copy={false} /> },
+                  { key: 'b', header: C.to, cell: (r) => <IdChip id={r.featureId} version={r.toVersion} to={`/features/${r.featureId}/${r.toVersion}`} copy={false} /> },
+                  { key: 'r', header: C.rationale, cell: (r) => <span title={`${M.changes.before}: ${r.fromDescription}
+${M.changes.after}: ${r.toDescription}`}>{r.rationale}</span> },
+                  { key: 's', header: C.sw, cell: (r) => <span className="ds-mono ds-nowrap">{r.coreSw}</span> },
+                  { key: 'bl', header: C.baseline, cell: (r) => <span className="ds-mono">{r.toBaselineId ?? '—'}</span> },
+                  { key: 'l', header: C.lifecycle, cell: (r) => (r.lifecycle ? <LifecycleBadge value={r.lifecycle} /> : '—') },
+                ]}
+              />
+            </AsyncView>
+          )
+        }
+      </Tabs>
     </div>
   );
+}
+
+interface ChangeRequestRow extends ExtRef {
+  policies: { policyId: string; flagKey: string | null; status: string | null; stage: number | null; expectedCrStatus: string | null }[];
+  features: string[];
 }

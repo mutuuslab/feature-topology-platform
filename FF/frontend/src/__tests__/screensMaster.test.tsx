@@ -113,8 +113,9 @@ describe('추적·Evidence·변경', () => {
   });
 
   it('변경요청 — Version 변경 사유 목록', async () => {
-    handler = () => ({ body: { items: [{ featureId: 'FEAT-00001', name: '주차', fromVersion: '2.1.0', toVersion: '2.2.0', toBaselineId: 'BL-00002', rationale: '센서 신뢰도 개선', fromDescription: 'a', toDescription: 'b', coreSw: '1.0 → 1.1', lifecycle: 'RELEASED' }] } });
-    mount('/change/cr', '/change/cr', <ChangesScreen />);
+    // JIRA 변경요청 탭이 기본 — Version 변경 근거는 두 번째 탭(?tab=rationale)
+    handler = (url) => (url.startsWith('/api/changes') ? { body: { items: [{ featureId: 'FEAT-00001', name: '주차', fromVersion: '2.1.0', toVersion: '2.2.0', toBaselineId: 'BL-00002', rationale: '센서 신뢰도 개선', fromDescription: 'a', toDescription: 'b', coreSw: '1.0 → 1.1', lifecycle: 'RELEASED' }] } } : { body: { items: [] } });
+    mount('/change/cr?tab=rationale', '/change/cr', <ChangesScreen />);
     expect(await screen.findByText('센서 신뢰도 개선')).toBeTruthy();
     expect(screen.getByText('1.0 → 1.1')).toBeTruthy();
   });

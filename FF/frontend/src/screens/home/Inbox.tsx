@@ -54,7 +54,9 @@ export function useInbox() {
   const prod = useApi<{ items: { catalogId: string; version: string; name: string; lifecycle: string }[] }>('listProducts');
   const saf = useApi<{ items: { featureId: string; version: string; status: string; fClass: string }[] }>('safetyProfiles');
   const kills = useApi<{ items: KillRow[] }>('killRequests');
-  const queries = [bl, pol, prod, saf, kills];
+  // GitLab·JIRA·codeBeamer 동기화 충돌 — 사람이 플랫폼 값·외부 값 중 골라야 한다
+  const sync = useApi<{ items: { conflictId: number; system: string; key: string; field: string; platformValue: string; externalValue: string; createdAt: string }[] }>('extConflicts', { query: { status: 'OPEN' } });
+  const queries = [bl, pol, prod, saf, kills, sync];
   const reportRoles = reportRolesOf(mine);
   const killCheck = (k: KillRow, request: 'deactivate' | 'restore') => {
     const rr = k.restoreRequest;
@@ -83,6 +85,7 @@ export function useInbox() {
         const c = killCheck(k, 'restore');
         return { key: `restore:${k.killId}`, queue: 'restore' as const, item: k.killId, detail: `${k.featureId} ${k.featureVersion} · ${I.approvals(k.restoreRequest!.approvals.length, 2)}`, since: k.restoreRequest!.requestedAt, who: k.restoreRequest!.requestedBy, mine: c.ok, why: 'message' in c ? c.message : null, to: `/ops/kill?id=${k.killId}` };
       }),
+    ...(sync.data?.items ?? []).map((c) => ({ key: `sync:${c.conflictId}`, queue: 'sync' as const, item: `${c.system} ${c.key}`, detail: `${c.field}: ${c.platformValue} ↔ ${c.externalValue}`, since: c.createdAt, who: null, mine: has('IMPLEMENTER') || has('RELEASE_MANAGER') || has('FEATURE_APPROVER'), why: null, to: '/integration/connectors?tab=sync' })),
   ];
   const failed = queries.find((q) => q.isError);
   // 여러 큐를 합친다 — 하나라도 실패하면 그 상태(권한 거부면 forbidden)를 그대로 보인다

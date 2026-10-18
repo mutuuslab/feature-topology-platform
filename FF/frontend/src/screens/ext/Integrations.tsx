@@ -7,6 +7,8 @@ import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, PageHeader, Panel, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
+import { extSync } from '../../copy/ext-sync';
+import { ExtSyncTab } from './ExtSyncTab';
 
 const G = ko.p10.integrations;
 const S = ko.p10.sync;
@@ -28,9 +30,9 @@ export function IntegrationsScreen() {
   const mock = items.filter((s) => s.mode === 'mock').length;
   return (
     <div className="ds-screen">
-      <PageHeader codes="D05-01 · IF-01~13" title={G.title} lead={G.lead} message={{ tone: 'neutral', value: sys.data ? items.length : '—', text: G.key(mock, items.length - mock) }} />
-      <Tabs tabs={(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] }))}>
-        {(tab) => (tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
+      <PageHeader codes="D05-01 · IF-01~14" title={G.title} lead={G.lead} message={{ tone: 'neutral', value: sys.data ? items.length : '—', text: G.key(mock, items.length - mock) }} />
+      <Tabs tabs={[{ key: 'sync', label: extSync.sync.tab }, ...(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] }))]}>
+        {(tab) => (tab === 'sync' ? <ExtSyncTab /> : tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
       </Tabs>
     </div>
   );

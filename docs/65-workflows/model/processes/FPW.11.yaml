@@ -1,0 +1,149 @@
+process:
+  id: FPW.11
+  name: Security, Key & Vulnerability Management
+  name_ko: 보안·키·취약점 관리
+  gates: []
+  ref: 표준 보고서 14장(서명·키·R155), 15장(SBOM·VEX·OSS), 8장 FFG-PLT-005
+  purpose_ko: >-
+    명령 서명 키를 용도별로 분리해 HSM에서 운영하고, 키 유출과 새 취약점에 대해 영향 Feature·차량을 특정해
+    보안 사유 차단 또는 업데이트를 결정하며, 그 Evidence를 CSMS와 승인 기관 보고에 쓴다.
+  outcomes:
+    - {id: O1, text_ko: 서명 키 계층·용도 분리·HSM 보관·승인 서명 기준 수가 운영된다.}
+    - {id: O2, text_ko: 키 교체와 유출 대응(차량 key epoch 상향)이 기록된다.}
+    - {id: O3, text_ko: 새 취약점의 영향 Feature·차량이 특정되고 차단 또는 업데이트가 결정된다.}
+    - {id: O4, text_ko: 사이버보안 Evidence가 CSMS로 관리되고 승인 기관 보고에 쓰인다.}
+    - {id: O5, text_ko: OSS 라이선스·보안 관리 프로그램이 운영된다.}
+  rules: [FFG-SEC-002, FFG-SBOM-005, FFG-SEC-005, FFG-SBOM-006, FFG-SBOM-001]
+  entry_criteria:
+    - 플랫폼 서명 서비스와 HSM·KMS가 구축되어 있다
+  exit_criteria:
+    - 키 계층과 교체 이력이 최신이다
+    - 공지된 취약점마다 VEX 판정과 대응 결정이 있다
+  work_products:
+    - key: WP-KEY-REGISTER
+      name: 서명 키 대장
+      en: Signing Key Register
+      kind: output
+      content:
+        - 용도별 키(활성화·차단·복원·정책 서명) 계층과 HSM 보관 위치
+        - 승인 서명 기준 수와 긴급 절차
+        - 교체 주기와 교체 이력
+    - key: WP-KEY-INCIDENT
+      name: 키 사고 대응 기록
+      en: Key Incident Record
+      kind: output
+      content:
+        - 유출·오사용 징후, 영향 차량 범위
+        - key epoch 상향 시각과 대상 차량
+    - key: WP-VEX-DECISION
+      name: VEX 판정·대응 결정
+      en: VEX Assessment & Response
+      kind: output
+      content:
+        - 취약점별 영향 Feature·차량(SBOM 대조)과 VEX 상태
+        - 위험도와 대응(보안 사유 차단·업데이트)·CSMS 대응 기한
+    - key: WP-CSMS-EVIDENCE
+      name: CSMS Evidence·R155 보고
+      en: CSMS Evidence & R155 Report
+      kind: output
+      retained: true
+      content:
+        - TARA·보안 요구·시험·모니터링 결과의 Evidence 목록
+        - 승인 기관 보고 내용과 제출 시각
+    - key: WP-OSS-PROGRAM
+      name: OSS 관리 프로그램 기록
+      en: OSS Program Record
+      kind: output
+      retained: true
+      content:
+        - 라이선스(ISO/IEC 5230)·보안(ISO/IEC 18974) 프로그램 운영 결과
+        - 구성요소별 라이선스 의무 이행 상태
+  activities:
+    - id: FPW.11-A01
+      name: 서명 키 계층·HSM 운영
+      outcomes: [O1]
+      rules: [FFG-SEC-002]
+      raci: {R: [R-PKI], A: R-CSM, C: [R-SM], I: [R-REL, R-OPS]}
+      inputs: [WP-HARA-TARA]
+      outputs: [WP-KEY-REGISTER]
+      steps:
+        - 활성화·차단·복원·정책 서명 키를 용도별로 나눠 HSM에 보관하고 키 계층을 대장에 적는다
+        - 서명 HSM이 승인 서명이 기준 수에 이르기 전에는 명령 키를 쓰지 않도록 정책을 설정한다
+        - 정기 교체 주기와 긴급 교체 절차를 정해 운영한다
+      checks:
+        - 키마다 용도·보관 위치·교체 주기가 대장에 있다
+      platform: {screens: [/admin/security]}
+      next: [FPW.11-A02]
+    - id: FPW.11-A02
+      name: 키 교체 플랫폼 기록
+      outcomes: [O2]
+      rules: [FFG-SEC-002]
+      raci: {R: [R-CSM], A: R-CSM, C: [R-PKI, R-SM], I: [R-OPS]}
+      inputs: [WP-KEY-REGISTER]
+      outputs: [WP-KEY-REGISTER]
+      steps:
+        - PKI 운영이 HSM에서 교체한 키를 플랫폼에 등록하고 이전 키는 검증 전용으로 남긴다
+        - 교체 결과를 키 대장에 반영한다
+        - 교체 사유와 용도(정책·차단·복원)를 기록하고 Safety Manager에게 결과를 알린다
+      checks:
+        - 이전 키가 검증 전용으로 남고 대장이 갱신되었다
+      platform: {actions: [rotateKey], screens: [/admin/security]}
+    - id: FPW.11-A03
+      name: 키 유출 대응·epoch 상향
+      trigger: 키 유출·오사용 징후
+      outcomes: [O2]
+      rules: [FFG-SEC-002]
+      raci: {R: [R-CSM], A: R-CSM, C: [R-PKI, R-SM], I: [R-OPS, R-REG]}
+      inputs: [WP-KEY-REGISTER]
+      outputs: [WP-KEY-INCIDENT]
+      steps:
+        - 유출·오사용 징후의 범위(키 용도·영향 차량)를 확인한다
+        - 영향 차량의 key epoch를 올려 유출 키로 서명한 명령을 무효로 만든다
+        - 보안 사유 차단이 필요하면 FPW.8 차단 판단으로 Safety Manager에게 요청한다
+      checks:
+        - epoch 상향 대상과 시각이 기록되었다
+      platform: {actions: [bumpEpoch], screens: [/admin/security]}
+      next: [FPW.11-A05]
+    - id: FPW.11-A04
+      name: 취약점 영향 특정·대응 결정
+      trigger: 새 취약점 공지
+      outcomes: [O3]
+      rules: [FFG-SBOM-005, FFG-SBOM-001]
+      raci: {R: [R-CSM], A: R-CSM, C: [R-OPS, R-SM, R-INT], I: [R-REL]}
+      inputs: [WP-RELEASE-BASELINE, WP-ORIGIN-RECORD]
+      outputs: [WP-VEX-DECISION]
+      steps:
+        - 배포 단위별 SBOM과 대조해 영향 Feature와 차량을 특정하고 VEX 판정을 기록한다
+        - 위험도에 따라 보안 사유 차단 또는 업데이트를 정하고 CSMS에 대응 기한을 둔다
+        - Kill 경로 구성요소의 취약점이면 최우선으로 처리하고 운영 조직과 차단 준비를 맞춘다
+      checks:
+        - 공지된 취약점마다 VEX 판정과 대응 기한이 있다
+      platform: {actions: [recordVex], screens: [/admin/security]}
+      next: [FPW.11-A05]
+    - id: FPW.11-A05
+      name: CSMS Evidence·R155 보고
+      outcomes: [O4]
+      rules: [FFG-SEC-005]
+      raci: {R: [R-CSM], A: R-CSM, C: [R-REG], I: [R-QA]}
+      inputs: [WP-HARA-TARA, WP-VEX-DECISION, WP-KEY-INCIDENT]
+      outputs: [WP-CSMS-EVIDENCE]
+      steps:
+        - 플랫폼·차량 런타임의 TARA·보안 요구·시험·모니터링 결과를 CSMS Evidence로 모은다
+        - 키 사고와 취약점 대응 결과를 Evidence에 연결한다
+        - 법규 담당과 승인 기관 보고 내용을 확정해 제출한다
+      checks:
+        - 보고 내용의 각 항목이 Evidence ID로 연결되었다
+    - id: FPW.11-A06
+      name: OSS 라이선스·보안 프로그램 운영
+      trigger: OSS 구성요소 추가·변경
+      outcomes: [O5]
+      rules: [FFG-SBOM-006]
+      raci: {R: [R-LEG], A: R-LEG, C: [R-CSM, R-PUR], I: [R-INT]}
+      inputs: [WP-ORIGIN-RECORD]
+      outputs: [WP-OSS-PROGRAM]
+      steps:
+        - 추가·변경된 OSS 구성요소의 라이선스 의무를 확인한다
+        - 라이선스·보안 관리 프로그램 기준에 따라 의무 이행 상태를 기록한다
+        - 이행할 수 없는 구성요소는 통합 조직에 교체를 요청한다
+      checks:
+        - 모든 OSS 구성요소의 의무 이행 상태가 기록되었다

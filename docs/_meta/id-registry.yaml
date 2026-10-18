@@ -24,6 +24,7 @@ prefixes:
   FEAT: "피처 공통키 / Feature key"
   PAT:  "UI 공통 패턴 / Cross-cutting Pattern"
   DS:   "디자인 시스템 토큰/컴포넌트 / Design System"
+  WF:   "업무 절차 / Role Workflow (65-workflows, 생성 문서)"
 
 # ── 요구사항 (FR-1..FR-30) ────────────────────────────────
 requirements:
@@ -79,7 +80,7 @@ requirements:
 entities:
   master:        [ENT-TAXONOMYNODE, ENT-FEATUREBOM, ENT-BOMITEM, ENT-REQUIREMENT, ENT-FEATURE]
   arch_if:       [ENT-SWCOMPONENT, ENT-ECU, ENT-APISERVICE, ENT-SIGNAL, ENT-DTC]
-  control_deploy:[ENT-VARIANTRULE, ENT-CONTROLPOINT, ENT-DEPLOYMENTUNIT, ENT-ROLLBACKPLAN]
+  control_deploy: [ENT-VARIANTRULE, ENT-CONTROLPOINT, ENT-DEPLOYMENTUNIT, ENT-ROLLBACKPLAN]
   verify_ops:    [ENT-TESTCASE, ENT-TESTEVIDENCE, ENT-SUPPLIERFUNCTION, ENT-TELEMETRYEVENT]
 
 # ── 타입 엣지 (10) ─────────────────────────────────────────
@@ -155,7 +156,7 @@ screens:
 flows:
   FLW-FEATURE-REGISTER: "Feature 등록(7-criteria)"
   FLW-CHANGE-REQUEST:   "CR→Topology→Impact→Verify→Deploy→Supplier→Report"
-  FLW-RELEASE-READINESS:"9-Gate→HOLD/RELEASE"
+  FLW-RELEASE-READINESS: "9-Gate→HOLD/RELEASE"
   FLW-VARIANT-AUTHOR:   "Variant 규칙 작성→Export to Policy"
   FLW-KILLSWITCH:       "Kill Switch→Safe Default→단계 복구"
   FLW-SUPPLIER-INTAKE:  "Supplier 패키지 인수→Gate"
@@ -168,7 +169,46 @@ integrations:
   INT-UNLEASH:    "Feature Flag (OpenFeature provider)"
   INT-OTA:        "OTA 플랫폼 (ISO 24089 / R156)"
   INT-MQTT:       "Telemetry / Policy 배포 (MQTT 5.0)"
-  INT-SUPPLIER-PKG:"Supplier API Release Package (OpenAPI 3.2)"
+  INT-SUPPLIER-PKG: "Supplier API Release Package (OpenAPI 3.2)"
+
+# ── 업무 절차 (65-workflows) ─────────────────────────────
+# 생성 문서 ID. 모델(65-workflows/model)의 process_plan·roles와 일치해야 한다(wf_model.py가 검사).
+workflows:
+  index:
+    WF-INDEX: "65-workflows README — 담당자 업무 절차 안내"
+  processes:
+    WF-FPW-1: "FPW.1 Feature 등록·분류"
+    WF-FPW-2: "FPW.2 HARA·변경 영향 판단"
+    WF-FPW-3: "FPW.3 안전요구 확정"
+    WF-FPW-4: "FPW.4 안전 설계·정책 설계"
+    WF-FPW-5: "FPW.5 검증·V&V"
+    WF-FPW-6: "FPW.6 서명 배포"
+    WF-FPW-7: "FPW.7 출시·활성화·단계적 확대"
+    WF-FPW-8: "FPW.8 운영·긴급 차단·복원"
+    WF-FPW-9: "FPW.9 사후 검토·Flag Retirement"
+    WF-FPW-10: "FPW.10 협력사 관리"
+    WF-FPW-11: "FPW.11 보안·키·취약점 관리"
+    WF-FPW-12: "FPW.12 운영 데이터·데이터 보호"
+    WF-FPW-13: "FPW.13 규정·Compliance Profile 관리"
+  roles:
+    WF-ROLE-FO: "Feature Owner 업무 절차서"
+    WF-ROLE-REQ: "요구 Owner 업무 절차서"
+    WF-ROLE-SM: "Safety Manager 업무 절차서"
+    WF-ROLE-CSM: "CSM 업무 절차서"
+    WF-ROLE-REG: "법규 담당 업무 절차서"
+    WF-ROLE-TST: "시험 조직 업무 절차서"
+    WF-ROLE-QA: "품질 조직 업무 절차서"
+    WF-ROLE-OPS: "운영 조직 업무 절차서"
+    WF-ROLE-ARC: "아키텍트 업무 절차서"
+    WF-ROLE-INT: "통합 조직 업무 절차서"
+    WF-ROLE-REL: "Release Manager 업무 절차서"
+    WF-ROLE-PUR: "구매 업무 절차서"
+    WF-ROLE-LEG: "법무 업무 절차서"
+    WF-ROLE-PKI: "PKI 운영 업무 절차서"
+    WF-ROLE-DPO: "데이터 보호 담당 업무 절차서"
+    WF-ROLE-PLM: "기준정보 담당 업무 절차서"
+    WF-ROLE-PDA: "상품 기획 업무 절차서"
+    WF-ROLE-PO: "상품 Owner 업무 절차서"
 
 # ── 다이어그램 타입 ───────────────────────────────────────
 diagram_types: [ERD, CLS, STA, SEQ, FLW, C4, JNY]

@@ -7,12 +7,12 @@ $schema: "feature-topology/frontmatter/1.0"
 required_fields:
   id:        # 전역 유일 ID. id-registry.yaml 의 prefix 규칙 준수.
     type: string
-    pattern: "^(FR|NFR|ARC|ENT|EDG|REL|RULE|ENG|GATE|LCS|SCR|FLW|INT|DIAG|TC|FEAT|PAT|DS)-[A-Z0-9-]+$"
+    pattern: "^(FR|NFR|ARC|ENT|EDG|REL|RULE|ENG|GATE|LCS|SCR|FLW|INT|DIAG|TC|FEAT|PAT|DS|WF)-[A-Z0-9-]+$"
   type:
     type: enum
     values: [overview, requirement, nfr, architecture, entity, edge, relationship,
              rule, engine, gate, lifecycle, screen, flow, integration, diagram,
-             reference, design-system, glossary, meta, template]
+             reference, design-system, glossary, meta, template, workflow]
   title:     { type: string, note: "한글 / English 병기 권장" }
   status:    { type: enum, values: [draft, in-review, approved, baselined, deprecated] }
   version:   { type: semver, example: "0.1.0" }

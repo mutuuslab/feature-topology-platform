@@ -19,6 +19,7 @@
 | `40-rules-engines/` | 12 Consistency Rules·4 Decision Engines·Lifecycle·9 Gates·Baseline/ChangeSet |
 | `50-screens/` | 화면 인벤토리·IA/사이드바·60개 화면 (1파일/화면) |
 | `60-flows/` | E2E 사용자/시스템 플로 |
+| `65-workflows/` | 담당자 업무 절차 — 조직 역할별 RACI·스윔레인 (YAML 모델 → 생성 HTML·MD, /admin/iam 정합성 검사) |
 | `70-design-system/` | 디자인 원칙·네비셸·컴포넌트·토큰·KO/EN 라벨·접근성 |
 | `80-integration/` | Codebeamer·PLM·Unleash·OTA·MQTT·Supplier Package·API 계약 |
 | `90-diagrams/` | Mermaid 소스 (erd/class/state/sequence/flowchart/c4/journey) |

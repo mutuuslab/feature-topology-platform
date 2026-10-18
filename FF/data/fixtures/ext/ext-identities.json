@@ -1,0 +1,10 @@
+[
+  { "system": "JIRA", "externalId": "kim.author", "actorId": "usr-author", "roles": ["FEATURE_AUTHOR"], "name": "김민서 (Feature 작성)" },
+  { "system": "JIRA", "externalId": "lee.approver", "actorId": "usr-approver", "roles": ["FEATURE_APPROVER", "PRODUCT_APPROVER"], "name": "이준호 (구성 승인)" },
+  { "system": "JIRA", "externalId": "park.release", "actorId": "usr-coordinator", "roles": ["RELEASE_MANAGER"], "name": "박지원 (출시)" },
+  { "system": "JIRA", "externalId": "choi.quality", "actorId": "usr-quality", "roles": ["GATE_JUDGE", "SAFETY_OFFICER"], "name": "최유나 (품질 검토)" },
+  { "system": "GITLAB", "externalId": "kim.author", "actorId": "usr-author", "roles": ["FEATURE_AUTHOR"], "name": "김민서" },
+  { "system": "GITLAB", "externalId": "han.dev", "actorId": "usr-integrator", "roles": ["IMPLEMENTER"], "name": "한도윤 (구현)" },
+  { "system": "CODEBEAMER", "externalId": "jung.req", "actorId": "usr-author", "roles": ["FEATURE_AUTHOR"], "name": "정하늘 (요구 담당)" },
+  { "system": "CODEBEAMER", "externalId": "seo.safety", "actorId": "usr-quality", "roles": ["SAFETY_OFFICER"], "name": "서보람 (기능안전)" }
+]

@@ -40,6 +40,7 @@ import { KillCommandV2, StatusReportV2 } from './schemas/wire';
 import { ConcludeExperimentBody, CreateExperimentBody, CreateIncidentBody, FieldCaseBody, ImportOrdersBody, RunSyncBody, TranslateLegacyBody } from './rules/ext';
 import { z } from 'zod';
 import { VexStatement } from './rules/sbom';
+import { LinkChangeRequestBody, MockExtActionBody, MockExtCreateBody, ResolveConflictBody } from './rules/ext-sync';
 
 const EmptyBody = z.object({}).strict();
 const ReasonBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
@@ -294,10 +295,25 @@ export const ROUTES: RouteDef[] = [
   { name: 'fieldVehicle', method: 'GET', path: '/api/field/vehicles/:vin', summary: '현장 지원 — 차량 종합 조회', component: 'D05-05', sample: { vin: 'ego-01' } },
   { name: 'createFieldCase', method: 'POST', path: '/api/field/cases', summary: '현장 접수 → 장애·VOC(D04-05)', component: 'D05-05', roles: ['OPERATOR'], body: FieldCaseBody },
   // 외부 연계 모의 어댑터
-  { name: 'integrationSystems', method: 'GET', path: '/api/integrations/systems', summary: 'IF-01~13 연결 현황 (모의·실연동·호출 수)', component: 'D05-01' },
+  { name: 'integrationSystems', method: 'GET', path: '/api/integrations/systems', summary: 'IF-01~14 연결 현황 (모의·실연동·호출 수)', component: 'D05-01' },
   { name: 'almRequirements', method: 'GET', path: '/api/integrations/alm/requirements', summary: 'IF-01 ALM 요구사항 (Feature Version별)', component: 'D01-01', query: ['featureId', 'version'], sample: { featureId: 'FEAT-00022', version: '1.0.0' } },
   { name: 'supplierDeliveries', method: 'GET', path: '/api/integrations/supplier/deliveries', summary: 'IF-08 협력사 SW 납품', component: 'D05-01', query: ['supplier'] },
   { name: 'otelSpans', method: 'GET', path: '/api/integrations/otel/spans', summary: 'IF-11 OpenTelemetry 수집기 (모의) — 평가·이벤트 span', component: 'D04-03', query: ['name', 'limit'] },
+  // GitLab · JIRA · codeBeamer 양방향 연계(IF-13·IF-14·IF-01) — 주인 규칙 contracts/rules/ext-sync
+  { name: 'extSync', method: 'GET', path: '/api/integrations/sync', summary: '양방향 연계 현황 — 시스템별 연결·보내는 중·실패·충돌·거부, 주인 규칙', component: 'D05-01' },
+  { name: 'extFeatureTrace', method: 'GET', path: '/api/integrations/sync/features/:id/:ver', summary: 'Feature 버전 추적 — 요구(codeBeamer)·Epic·CR(JIRA)·MR·파이프라인(GitLab)·정책', component: 'D05-01', sample: { id: 'FEAT-00022', ver: '1.0.0' } },
+  { name: 'extChangeRequests', method: 'GET', path: '/api/integrations/sync/change-requests', summary: 'JIRA 변경요청(CR)과 연결된 정책 상태', component: 'D05-01' },
+  { name: 'extConflicts', method: 'GET', path: '/api/integrations/sync/conflicts', summary: '동기화 충돌 — 양쪽 값, 처리 결과', component: 'D05-01', query: ['status'] },
+  { name: 'resolveExtConflict', method: 'POST', path: '/api/integrations/sync/conflicts/:id/resolve', summary: '충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용)', component: 'D05-01', roles: ['IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER'], body: ResolveConflictBody },
+  { name: 'extOutbox', method: 'GET', path: '/api/integrations/sync/outbox', summary: '보낼 함 — 외부 쓰기 작업(대기·완료·실패·충돌)', component: 'D05-01', query: ['system', 'status'] },
+  { name: 'extInbox', method: 'GET', path: '/api/integrations/sync/inbox', summary: '받은 함 — 외부 변경과 처리 결과(반영·거부·매핑 없음)', component: 'D05-01', query: ['system', 'outcome'] },
+  { name: 'drainExtSync', method: 'POST', path: '/api/integrations/sync/drain', summary: '보낼 함 지금 보내기', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER'], body: EmptyBody },
+  { name: 'policyExtLinks', method: 'GET', path: '/api/policies/:id/ext-links', summary: '정책에 연결된 외부 항목(JIRA CR)', component: 'D05-01', sample: { id: 'POL-00001' } },
+  { name: 'linkPolicyChangeRequest', method: 'POST', path: '/api/policies/:id/change-request', summary: '정책 ↔ 근거 JIRA CR 연결', component: 'D05-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: LinkChangeRequestBody },
+  { name: 'extWebhook', method: 'POST', path: '/api/webhooks/:system', summary: '외부 webhook 수신(gitlab·jira·codebeamer) — 서명 확인 후 주인 규칙으로 처리', component: 'D05-01', body: z.record(z.unknown()), public: true },
+  { name: 'mockExtItems', method: 'GET', path: '/api/integrations/mock/:system/items', summary: '모의 외부 시스템 항목(실서버 없을 때)', component: 'D05-01', query: ['kind'], sample: { system: 'jira' } },
+  { name: 'mockExtAct', method: 'POST', path: '/api/integrations/mock/:system/act', summary: '모의 외부 시스템에서 사람이 한 일 — 상태 변경·편집·병합·파이프라인(webhook으로 들어옴)', component: 'D05-01', roles: HUMAN_ROLES, body: MockExtActionBody },
+  { name: 'mockExtCreate', method: 'POST', path: '/api/integrations/mock/:system/items', summary: '모의 외부 시스템에 항목 만들기(CR·MR·요구)', component: 'D05-01', roles: HUMAN_ROLES, body: MockExtCreateBody },
   // P10-B OpenFeature — 범위·flagd 내보내기·매니페스트(D05-01), 차량 내장 provider(D02-03)
   { name: 'openfeatureScope', method: 'GET', path: '/api/openfeature/scope', summary: 'OpenFeature 반영 범위 (OF-1~7·경계·SDK 고정·flag 목록)', component: 'D05-01' },
   { name: 'openfeatureFlagd', method: 'GET', path: '/api/openfeature/flagd', summary: 'flagd 내보내기 — F0·F1만, defaultVariant=off (FFG-OFT-005·002)', component: 'D05-01' },

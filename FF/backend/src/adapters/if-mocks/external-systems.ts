@@ -12,6 +12,7 @@ import { FleetRepo } from '../../domains/d01-policy/policy-repos';
 import { FeatureRepo, TopologyRepo } from '../../domains/d01-policy/repos';
 import { IfCallRepo } from '../if-call/if-call.repo';
 import { OtelExporter } from './otel.exporter';
+import { modeOf } from '../../domains/d05-ext/api-gateway/ext-sync/adapters';
 
 export const EXT_FIXTURES = join(__dirname, '..', '..', '..', '..', 'data', 'fixtures', 'ext');
 const fixture = <T>(name: string): T => JSON.parse(readFileSync(join(process.env.FF_EXT_FIXTURES ?? EXT_FIXTURES, `${name}.json`), 'utf8'));
@@ -38,7 +39,8 @@ const USERS: Record<string, string[]> = {
   'IF-10': ['D05-01'],
   'IF-11': ['D04-03', 'D04-04'],
   'IF-12': ['D05-02', 'D05-03'],
-  'IF-13': ['D04-01'],
+  'IF-13': ['D04-01', 'D05-01'],
+  'IF-14': ['D05-01'],
 };
 
 @Injectable()
@@ -163,7 +165,8 @@ export class ExternalSystems {
       'IF-07': { mode: (process.env.GLEO_MODE as IfSystemStatus['mode']) ?? 'internal', adapter: 'adapters/gleo (정책·차단 전달)' },
       'IF-09': { mode: 'mock', adapter: 'tms (검증 Gate 제출 모의)' },
       'IF-10': { mode: 'internal', adapter: 'OFREP /ofrep/v1 · /vehicle/v1' },
-      'IF-13': { mode: 'mock', adapter: 'pipeline-link (CI/CD 산출물 모의)' },
+      'IF-13': { mode: modeOf('GITLAB'), adapter: 'pipeline-link (CI/CD 산출물) · ext-sync (GitLab MR·파이프라인 양방향)' },
+      'IF-14': { mode: modeOf('JIRA'), adapter: 'ext-sync (JIRA Epic·CR 양방향)' },
     };
     return Object.entries(INTERFACES).map(([ifId, name]) => {
       const mock = (MOCK_IFS as readonly string[]).includes(ifId);

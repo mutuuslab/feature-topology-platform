@@ -66,7 +66,7 @@ const SEEDS: Seed[] = [
   ['D04-05', '장애·VOC 이력 연계', 'C', 'domains/d04-ops/incident-voc', [], []],
   ['D04-06', '품질 피드백 반영', 'A', 'domains/d04-ops/quality-feedback', [], [6]],
   // 05. 시스템 연계·확장 (7)
-  ['D05-01', 'API Gateway', 'C', 'domains/d05-ext/api-gateway', ['IF-01', 'IF-02', 'IF-03', 'IF-08', 'IF-09', 'IF-10'], []],
+  ['D05-01', 'API Gateway', 'C', 'domains/d05-ext/api-gateway', ['IF-01', 'IF-02', 'IF-03', 'IF-08', 'IF-09', 'IF-10', 'IF-13', 'IF-14'], []],
   ['D05-02', '데이터 동기화', 'C', 'domains/d05-ext/data-sync', ['IF-02', 'IF-03', 'IF-12'], []],
   ['D05-03', 'Legacy 시스템 연계', 'C', 'domains/d05-ext/legacy', ['IF-12'], []],
   ['D05-04', '과금 시스템 연계', 'C', 'domains/d05-ext/billing', [], []],
@@ -141,7 +141,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'contracts/src/rules/unleash.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts'] },
   'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
   'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
-  'D05-01': { screens: ['/activation/decide', '/integration/openfeature', '/integration/connectors', '/supplier/portal'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ, 'backend/test/d05/openfeature.spec.ts', 'contracts/src/flags/openfeature.test.ts', FE_P10, FE_OPSADMIN] },
+  'D05-01': { screens: ['/activation/decide', '/integration/openfeature', '/integration/connectors', '/supplier/portal'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ, 'backend/test/d05/openfeature.spec.ts', 'contracts/src/flags/openfeature.test.ts', FE_P10, FE_OPSADMIN, 'backend/test/d05/ext-sync.spec.ts', 'contracts/src/rules/ext-sync.test.ts'] },
   'D06-01': VALIDATOR,
   'D06-02': VALIDATOR,
   'D06-03': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_POL, FE_OPS, E2E_POL, E2E_OPS], via: ['validatePolicy'] },
@@ -199,7 +199,7 @@ export const POC_STEPS = [
 
 /** 외부 연계 인터페이스 (PPT 카드 라벨) */
 export const INTERFACES: Record<string, string> = {
-  'IF-01': '요구관리 연계 (ALM)',
+  'IF-01': '요구관리 연계 (ALM · codeBeamer)',
   'IF-02': '차량·SW·HW 기준정보 연계',
   'IF-03': 'MDM · DW/DM',
   'IF-04': 'Policy Tool',
@@ -211,5 +211,7 @@ export const INTERFACES: Record<string, string> = {
   'IF-10': 'OpenFeature SDK',
   'IF-11': 'OpenTelemetry Collector',
   'IF-12': 'Overseas Plant',
-  'IF-13': 'CI/CD 파이프라인 연계',
+  'IF-13': 'CI/CD · 소스 저장소 연계 (GitLab)',
+  // 사용자 결정 2026-10-18 — Feature 상태·Flag 변경요청(CR)은 JIRA에서 관리, 양방향 연계
+  'IF-14': '작업·변경요청 연계 (JIRA)',
 };

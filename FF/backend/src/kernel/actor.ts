@@ -32,6 +32,12 @@ export const AuditAction = (action: string) => SetMetadata(ACTION_KEY, action);
  * (UL-044 serviceMTLS). 헤더 값만으로 인증서 체인 검증을 마쳤다고 주장하지 않는다(C47).
  */
 export const VehicleEndpoint = () => SetMetadata(VEHICLE_KEY, true);
+const WEBHOOK_KEY = 'ff:webhook';
+/**
+ * 외부 시스템 webhook 창구(GitLab·JIRA·codeBeamer) — 사람 행위자 헤더가 없다. 서명(비밀 토큰·HMAC)은 처리 서비스가 원문으로 확인하고,
+ * 맞지 않으면 401로 거부한다. 받아들인 변경이 플랫폼 상태를 바꿀 때는 매핑된 사람 행위자로 다시 가드를 탄다(ext-sync).
+ */
+export const WebhookEndpoint = () => SetMetadata(WEBHOOK_KEY, true);
 
 export function actorOf(req: Request): Actor {
   const r = req as Request & { actor?: Actor };
@@ -62,6 +68,10 @@ export class RolesGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest<Request>();
     if (this.reflector.getAllAndOverride<boolean>(READONLY_KEY, [ctx.getHandler(), ctx.getClass()])) {
       (req as Request & { actor?: Actor }).actor ??= { id: (req.header('x-actor-id') ?? '').trim() || 'anonymous-sdk', role: 'AUDITOR', correlationId: randomUUID() };
+      return true;
+    }
+    if (this.reflector.getAllAndOverride<boolean>(WEBHOOK_KEY, [ctx.getHandler(), ctx.getClass()])) {
+      (req as Request & { actor?: Actor }).actor = { id: `webhook:${req.params?.system ?? 'unknown'}`, role: 'SYSTEM', correlationId: (req.header('x-correlation-id') ?? '').trim() || randomUUID() };
       return true;
     }
     if (this.reflector.getAllAndOverride<boolean>(VEHICLE_KEY, [ctx.getHandler(), ctx.getClass()])) {

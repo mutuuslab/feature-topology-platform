@@ -15,7 +15,7 @@ describe('42 컴포넌트 manifest (PPT v0.50)', () => {
     for (const c of COMPONENTS) expect(DOMAINS[c.domain]).toBeDefined();
   });
 
-  it('참조하는 IF는 IF-01~IF-13 안에 있다', () => {
+  it('참조하는 IF는 IF-01~IF-14 안에 있다', () => {
     for (const c of COMPONENTS) for (const i of c.ifs) expect(INTERFACES[i], `${c.id} → ${i}`).toBeDefined();
   });
 

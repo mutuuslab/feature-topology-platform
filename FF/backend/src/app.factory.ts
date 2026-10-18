@@ -9,6 +9,8 @@ import { AppModule } from './app.module';
 export async function createApp(opts: { logger?: false } = {}): Promise<INestApplication> {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(), {
     logger: opts.logger ?? ['log', 'error', 'warn'],
+    // 원문 본문 보관 — 외부 webhook HMAC 서명은 파싱 전 바이트로 확인한다(ext-sync)
+    rawBody: true,
   });
   app.enableCors({ origin: true });
   return app;

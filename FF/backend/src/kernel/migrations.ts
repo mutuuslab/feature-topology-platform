@@ -482,4 +482,20 @@ CREATE TRIGGER rollback_execution_no_delete BEFORE DELETE ON rollback_execution 
 CREATE INDEX entitlement_status ON entitlement(status);
 `,
   },
+  {
+    // GitLab · JIRA · codeBeamer 양방향 연계(사용자 결정 2026-10-18) — 외부 항목 마지막 관측 값·연결·보낼 함·받은 함·충돌,
+    // 그리고 실서버가 없을 때의 모의 외부 시스템(mock_ext_*). 보낼 함은 변경과 같은 트랜잭션에서 쌓인다.
+    name: '043_ext_sync',
+    sql: `
+CREATE TABLE ext_item (system TEXT NOT NULL, ext_key TEXT NOT NULL, kind TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (system, ext_key));
+CREATE TABLE ext_link (link_id INTEGER PRIMARY KEY AUTOINCREMENT, system TEXT NOT NULL, ext_key TEXT NOT NULL, entity TEXT NOT NULL, entity_id TEXT NOT NULL, created_at TEXT NOT NULL, created_by TEXT NOT NULL, UNIQUE (system, ext_key, entity, entity_id));
+CREATE INDEX ext_link_entity ON ext_link (entity, entity_id);
+CREATE TABLE sync_outbox (job_id INTEGER PRIMARY KEY AUTOINCREMENT, system TEXT NOT NULL, idem_key TEXT NOT NULL UNIQUE, status TEXT NOT NULL, attempts INTEGER NOT NULL, next_at TEXT NOT NULL, created_at TEXT NOT NULL, done_at TEXT, doc TEXT NOT NULL);
+CREATE INDEX sync_outbox_due ON sync_outbox (status, next_at);
+CREATE TABLE sync_inbox (system TEXT NOT NULL, delivery_id TEXT NOT NULL, received_at TEXT NOT NULL, ext_key TEXT NOT NULL, outcome TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (system, delivery_id));
+CREATE TABLE sync_conflict (conflict_id INTEGER PRIMARY KEY AUTOINCREMENT, system TEXT NOT NULL, ext_key TEXT NOT NULL, field TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE mock_ext_item (system TEXT NOT NULL, ext_key TEXT NOT NULL, kind TEXT NOT NULL, revision INTEGER NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (system, ext_key));
+CREATE TABLE mock_ext_seq (scope TEXT PRIMARY KEY, n INTEGER NOT NULL);
+`,
+  },
 ];

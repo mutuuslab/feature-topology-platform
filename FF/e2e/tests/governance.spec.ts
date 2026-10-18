@@ -123,7 +123,7 @@ test('Catalog: 후보 선택 중 실시간 구성 검증(REQUIRES 누락 FAIL �
   await page.getByLabel('설명').fill('전방 안전거리 체험');
   await page.getByLabel('From', { exact: true }).fill('2026-11-01');
   await page.getByLabel('To', { exact: true }).fill('2026-11-30');
-  await page.getByLabel('Owner').fill('선행상품기획팀');
+  await page.getByLabel('Owner', { exact: true }).fill('선행상품기획팀');
   await page.getByRole('button', { name: '새 상품 구성' }).last().click();
   await expect(page).toHaveURL(/\/products\/CAT-\d{5}\/1\.0\.0$/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText(name);

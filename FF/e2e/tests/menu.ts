@@ -28,6 +28,7 @@ const SAMPLE: Record<string, string> = {
   '/policies/:id': '/policies/POL-00001',
   '/deployments/:id': '/deployments/PUB-00001',
   '/learn/:id': '/learn/CS-01',
+  '/procedures/:id': '/procedures/FPW.7',
   '/twin/vehicle/:vin': '/twin/vehicle/VIN-DEMO-017',
 };
 export const DRILLDOWNS: { path: string; title: string; url: string }[] = [...src.matchAll(/\{ path: '([^']+)', element: ([^\n]*?), title: '([^']+)'[^\n]*parent: '/g)]

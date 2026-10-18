@@ -1,0 +1,36 @@
+/* 업무 절차 화면 — 색은 모두 토큰(var) */
+.pr-mine { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.pr-mine li { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: baseline; padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
+.pr-mine__id { color: var(--muted); font-size: var(--fs-xs); }
+.pr-mine__go { margin-left: auto; }
+.pr-group { display: grid; gap: var(--sp-3); }
+.pr-raci { display: inline-block; padding: 0 var(--sp-2); border-radius: var(--r-sm); font-size: var(--fs-xs); background: var(--surface-3); color: var(--ink-2); }
+.pr-raci[data-raci='R'], .pr-raci[data-raci='A'] { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.pr-raci[data-raci='none'] { color: var(--muted); }
+.pr-body { display: grid; gap: var(--sp-3); }
+.pr-body h4 { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--ink-2); }
+.pr-steps { margin: 0; padding-left: var(--sp-5); display: grid; gap: var(--sp-1); }
+.pr-screens { display: inline-flex; flex-wrap: wrap; gap: var(--sp-2); }
+.pr-flow__scroll { overflow-x: auto; }
+.pr-flow { display: block; font-family: var(--font-sans); }
+.pr-lane--0 { fill: var(--surface); }
+.pr-lane--1 { fill: var(--surface-2); }
+.pr-lane__label { fill: var(--ink-2); font-size: 12px; font-weight: 600; }
+.pr-edge { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+.pr-edge--trigger { stroke-dasharray: 4 3; }
+.pr-arrow { fill: var(--muted); }
+.pr-join { fill: var(--muted); }
+.pr-start { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.5; }
+.pr-end { fill: var(--surface-3); stroke: var(--ink-2); stroke-width: 2; }
+.pr-node { cursor: pointer; outline: none; }
+.pr-node rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.2; }
+.pr-node[data-mine] rect { fill: var(--accent-soft); stroke: var(--accent); }
+.pr-node[data-selected] rect, .pr-node:focus-visible rect { stroke: var(--focus); stroke-width: 2.5; }
+.pr-node__id { fill: var(--muted); font-size: 10px; }
+.pr-node__name { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.pr-matrix { margin: var(--sp-3) 0; }
+.pr-matrix summary { cursor: pointer; color: var(--accent); }
+.pr-matrix__scroll { overflow-x: auto; }
+.pr-defs dt { font-weight: 600; margin-top: var(--sp-3); }
+.pr-defs dd { margin: 0; }
+.pr-purpose { margin: 0 0 var(--sp-3); color: var(--ink-2); }

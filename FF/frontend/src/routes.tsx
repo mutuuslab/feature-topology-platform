@@ -81,6 +81,7 @@ const anomalyScreens = () => import('./screens/ops/Anomalies');
 const kpiScreens = () => import('./screens/ops/SafetyKpi');
 const accessScreens = () => import('./screens/admin/Access');
 const learnScreens = () => import('./screens/learn/Learn');
+const procedureScreens = () => import('./screens/procedures/Procedures');
 
 export const ROUTES: AppRoute[] = [
   // 1 홈
@@ -88,6 +89,8 @@ export const ROUTES: AppRoute[] = [
   { path: '/admin/approval', element: named(homeScreens, 'ApprovalInboxScreen'), title: '검토함', group: 'home', menu: '/admin/approval', v2: true },
   { path: '/learn', element: named(learnScreens, 'LearnHub'), title: '표준 따라하기', group: 'home', menu: '/learn', v2: true },
   { path: '/learn/:id', element: named(learnScreens, 'LearnRun'), title: '따라하기 시나리오', group: 'home', parent: '/learn', v2: true },
+  { path: '/procedures', element: named(procedureScreens, 'ProceduresHub'), title: '업무 절차', group: 'home', menu: '/procedures', v2: true },
+  { path: '/procedures/:id', element: named(procedureScreens, 'ProcessDetail'), title: '업무 절차 상세', group: 'home', parent: '/procedures', v2: true },
   { path: '/poc', element: named(() => import('./screens/home/Poc'), 'PocScreen'), title: 'PoC 6단계 진행', group: 'home', menu: '/poc', v2: true },
   { path: '/arch/components', element: named(() => import('./screens/home/Architecture'), 'ArchitectureScreen'), title: '42 컴포넌트 아키텍처', group: 'home', menu: '/arch/components', v2: true },
   { path: '/notifications', element: named(() => import('./screens/home/Notifications'), 'NotificationsScreen'), title: '알림', group: 'home', menu: '/notifications', components: ['D04-04'], v2: true },

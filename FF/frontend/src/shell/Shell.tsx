@@ -1,9 +1,10 @@
 // 앱 셸 — 상단바(검색·⌘K·역할·내 역할 필터·시연 모드·테마·모션·알림) + 아이콘 레일(8그룹) + 그룹 패널 + 본문.
 // 운영·안전 그룹 화면은 본문을 어두운 관제실 톤(data-zone="ops")으로 바꿔 운영 모드임을 분명히 한다.
-import { Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
+import { procedures } from '../copy/procedures';
 import { profileOf, roleLabel, roles } from '../data/refdata';
 import { Button, Icon } from '../design';
 import { useMotion } from '../state/motion';
@@ -14,6 +15,9 @@ import { FeaturePeek } from './FeaturePeek';
 import { learnStore, useExplain, useLearn } from './learn';
 import { NotificationBell } from './NotificationBell';
 import './shell.css';
+
+// 업무 절차 데이터는 패널을 열 때만 불러온다(첫 화면 번들 예산)
+const ScreenProcedure = lazy(() => import('./ScreenProcedure'));
 
 const LS_PRESENT = 'ff.present';
 const LS_MYROLE = 'ff.myRole';
@@ -43,6 +47,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const [myRole, setMyRole] = usePersistent(LS_MYROLE, false);
   const [panelOpen, setPanelOpen] = usePersistent(LS_PANEL, true);
   const [q, setQ] = useState('');
+  const [procOpen, setProcOpen] = useState(false);
   // 따라하기 진행 중이면 오른쪽에 가이드 패널 열(접으면 떠 있는 버튼만) · 표준 설명 모드는 html[data-explain]
   const learning = useLearn();
   const explain = useExplain();
@@ -118,6 +123,7 @@ export function Shell({ children }: { children: ReactNode }) {
               ))}
             </select>
           </div>
+          <Button variant="ghost" icon="layers" aria-label={procedures.panel.button} title={procedures.panel.button} onClick={() => setProcOpen(true)} />
           <Button variant="ghost" icon="book" aria-pressed={explain} aria-label={ko.learn.explain.label} title={ko.learn.explain.hint} onClick={() => learnStore.setExplain(!explain)} />
           <Button variant="ghost" icon="present" aria-pressed={present} aria-label={present ? ko.shell.presentOn : ko.shell.presentOff} title={present ? ko.shell.presentOn : ko.shell.presentOff} onClick={() => setPresent(!present)} />
           <Button variant="ghost" icon={motion.running ? 'pause' : 'play'} aria-pressed={motion.running} aria-label={ko.shell.motion} title={ko.shell.motion} onClick={() => motion.setLive(!motion.live)} />
@@ -196,6 +202,11 @@ export function Shell({ children }: { children: ReactNode }) {
       </main>
       <GuideDock />
       <RuleDrawer />
+      {procOpen && (
+        <Suspense fallback={null}>
+          <ScreenProcedure onClose={() => setProcOpen(false)} />
+        </Suspense>
+      )}
       <FeaturePeek />
     </div>
   );

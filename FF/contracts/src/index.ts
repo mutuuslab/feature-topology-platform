@@ -66,3 +66,4 @@ export * from './rules/rollback';
 export * from './rules/fleet-map';
 export * from './rules/population';
 export * from './rules/ext-sync';
+export * from './rules/workflows';

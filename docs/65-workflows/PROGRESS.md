@@ -10,7 +10,8 @@
 - 커밋은 사용자 요청 시에만 한다.
 
 ## 현재 상태 — 플랫폼 반영 A·B단계 완료 (2026-10-18)
-- **계획:** `~/.claude/plans/feature-platform-crystalline-snowglobe.md` — A(결정 3건)·B(데이터 연동·정합성 시험) 완료, 다음은 C1~C4(화면 반영).
+- **계획:** `~/.claude/plans/feature-platform-crystalline-snowglobe.md` — A(결정 3건)·B(데이터 연동·정합성 시험) 완료, C1·C2 완료, 다음은 C3·C4.
+- **C1·C2 완료(2026-10-18):** FF `/procedures`·`/procedures/:id`·상단 바 '이 화면의 업무 절차' 패널 — `out/workflows.json`의 활동·스윔레인 좌표를 그대로 그린다. 활동의 `platform.screens`가 그 패널이 보여 줄 화면이다(경로 패턴 = FF 화면 경로). 다음 C3(검토함·알림)·C4(활동별 `platform.anchor` 추가 → 표준 따라하기).
 - **A단계 결과(FF 커밋 719079e, FF verify·verify:full 통과):**
   - 은퇴 → Retirement: 모델 문구 전부, 금지어에 '은퇴' 추가. FF는 lint 래칫 `platformTermLines`=0.
   - rotateKey: FF가 SECURITY_OFFICER를 허용 → FPW.11-A02 실행자 R-CSM.

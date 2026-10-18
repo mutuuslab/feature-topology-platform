@@ -1,0 +1,109 @@
+process:
+  id: FPW.13
+  name: Regulatory & Compliance Profile Management
+  name_ko: 규정·Compliance Profile 관리
+  gates: []
+  ref: 표준 보고서 2장(규정·표준 관리), 3장(ADS 규정), 7.10절(거버넌스)
+  purpose_ko: >-
+    프로젝트가 따를 표준 판을 고정하고, 시장별 적용 법규·필수 Evidence·게이트 파라미터를 버전 관리되는
+    Compliance Profile로 운영하며, 원격 종료 절차를 시스템 설명 문서에 운영 절차와 같은 내용으로 적는다.
+  outcomes:
+    - {id: O1, text_ko: ISO 26262·21448·21434의 판이 프로젝트 단위로 고정된다.}
+    - {id: O2, text_ko: 시장별 Compliance Profile이 정의되고 모든 정책·명령이 그 버전을 기록한다.}
+    - {id: O3, text_ko: 분기마다 표준·법규 개정이 점검되어 Profile이 갱신된다.}
+    - {id: O4, text_ko: 원격 종료·복원 절차가 시스템 설명 문서에 운영 절차와 같게 적힌다.}
+  rules: [FFG-GEN-002, FFG-GEN-001, FFG-ADS-001, FFG-GEN-004, FFG-ADS-006]
+  entry_criteria:
+    - 프로젝트의 대상 시장과 차종이 정해졌다
+  exit_criteria:
+    - 표준 판·Compliance Profile·시스템 설명이 최신 버전으로 승인되어 있다
+  work_products:
+    - key: WP-REG-SOURCES
+      name: 법규·표준 원문
+      en: Regulations & Standards Sources
+      kind: input
+      from: 승인 기관 공보, 표준 기구, 법규 DB
+      content:
+        - 시장별 법규 최종 법문과 발효·적용일
+        - 표준 판과 개정 예고
+    - key: WP-STANDARD-EDITIONS
+      name: 표준 판 고정 기록(Safety Plan)
+      en: Fixed Standard Editions
+      kind: output
+      content:
+        - ISO 26262·ISO 21448·ISO/SAE 21434의 적용 판
+        - 정식 발행 전 개정 요구를 Gate 판정 기준에서 뺀다는 표시
+    - key: WP-COMPLIANCE-PROFILE
+      name: 시장별 Compliance Profile
+      en: Compliance Profile
+      kind: output
+      content:
+        - 시장별 적용 법규·의무 기능·필수 Evidence·게이트 파라미터
+        - ADS 규정의 국내 도입·발효 상태와 최종 법문 대조 결과
+        - Profile 버전과 갱신 이력, '검증 필요' 항목과 해소 기한
+    - key: WP-SYSTEM-DESCRIPTION
+      name: 원격 종료 시스템 설명
+      en: Remote Termination System Description
+      kind: output
+      retained: true
+      content:
+        - 원격 종료·복원 방법과 발동 사유·승인자·긴급 권한·해제 기준
+        - 시장별 차이와 운영 절차(FPW.8)와의 대응
+  activities:
+    - id: FPW.13-A01
+      name: 표준 판 고정
+      outcomes: [O1]
+      rules: [FFG-GEN-002]
+      raci: {R: [R-SM], A: R-SM, C: [R-CSM, R-REG], I: [R-QA]}
+      inputs: [WP-REG-SOURCES]
+      outputs: [WP-STANDARD-EDITIONS]
+      steps:
+        - 프로젝트가 따를 ISO 26262·ISO 21448·ISO/SAE 21434의 판을 정해 Safety Plan에 적는다
+        - 정식 발행 전 개정판의 요구는 참고로만 두고 Gate 판정 기준에서 뺀다
+        - 고정한 판을 법규 담당과 CSM에게 알려 Profile과 CSMS에 맞춘다
+      checks:
+        - Safety Plan에 세 표준의 적용 판이 적혀 있다
+      next: [FPW.13-A02]
+    - id: FPW.13-A02
+      name: Compliance Profile 정의
+      outcomes: [O2]
+      rules: [FFG-GEN-001, FFG-ADS-001]
+      raci: {R: [R-REG], A: R-REG, C: [R-SM, R-CSM, R-LEG], I: [R-FO, R-OPS]}
+      inputs: [WP-STANDARD-EDITIONS, WP-REG-SOURCES]
+      outputs: [WP-COMPLIANCE-PROFILE]
+      steps:
+        - 시장별 적용 법규·의무 기능·필수 Evidence·게이트 파라미터를 Profile로 정의하고 버전을 붙인다
+        - ADS 관련 시장은 UN 규정·GTR의 국내 도입·발효 상태를 따로 적고, 제안문 조항은 최종 법문과 대조한 뒤에만 기준으로 쓴다
+        - 정책과 명령이 생성 시점의 Profile 버전을 기록하는지 플랫폼 컴플라이언스 화면에서 확인한다
+      checks:
+        - 대상 시장마다 Profile 버전이 있고 ADS 조항의 대조 결과가 있다
+      platform: {screens: [/verify/compliance]}
+      next: [FPW.13-A04]
+    - id: FPW.13-A03
+      name: 분기 법규 감시·Profile 갱신
+      trigger: 분기 정기 점검
+      outcomes: [O3]
+      rules: [FFG-GEN-004]
+      raci: {R: [R-REG, R-SM, R-CSM], A: R-REG, C: [R-LEG], I: [R-FO, R-OPS, R-QA]}
+      inputs: [WP-REG-SOURCES, WP-COMPLIANCE-PROFILE]
+      outputs: [WP-COMPLIANCE-PROFILE]
+      steps:
+        - 법규 담당·Safety Manager·CSM이 분기마다 표준·법규 개정을 각자 범위에서 점검한다
+        - 개정 사항을 Profile 새 버전에 반영하고 영향 받는 Feature를 Feature Owner에게 알린다
+        - 검증이 필요하다고 표시된 항목은 해당 시장 SOP 전까지 해소 기한과 담당을 정한다
+      checks:
+        - 분기 점검 기록과 Profile 새 버전(또는 무변경 확인)이 있다
+      platform: {screens: [/verify/compliance]}
+    - id: FPW.13-A04
+      name: 원격 종료 시스템 설명 작성
+      outcomes: [O4]
+      rules: [FFG-ADS-006]
+      raci: {R: [R-REG, R-OPS], A: R-REG, C: [R-SM, R-CSM], I: [R-QA]}
+      inputs: [WP-COMPLIANCE-PROFILE, WP-DRILL-REPORT]
+      outputs: [WP-SYSTEM-DESCRIPTION]
+      steps:
+        - 원격 종료·복원 방법을 시스템 설명 문서에 적는다
+        - 발동 사유·승인자·긴급 권한·해제 기준·시장별 차이를 운영 절차(FPW.8)와 같은 내용으로 맞춘다
+        - 운영 조직이 드릴 결과로 실제 운영과 문서가 같은지 확인한다
+      checks:
+        - 시스템 설명과 FPW.8 운영 절차의 승인자·기준이 일치한다

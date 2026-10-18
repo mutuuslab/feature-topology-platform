@@ -1,0 +1,248 @@
+# 업무 절차 공통 정의 — 역할 카탈로그, Gate 대응표, 직무 분리 쌍, 정합성 결정.
+# 사실 소스: _source/guide_rules.json (표준 보고서), _source/platform_iam.json (/admin/iam).
+# 이 파일과 model/processes/*.yaml 이 단일 소스이며 out/ 은 모두 생성물이다.
+
+meta:
+  title: Feature Platform 담당자 업무 절차
+  title_en: Feature Platform Role Workflows
+  version: 0.1.0
+  owner: governance
+  last_updated: 2026-10-17
+
+# ── 역할 카탈로그 ──────────────────────────────────────────────
+# source: report = 표준 보고서 1.5절 통제 어휘, report-gate = 6.1절 Gate 표 승인 칸, iam = /admin/iam 역할(보고서 어휘에 없음)
+# platform_roles: 이 조직 역할이 플랫폼에서 받는 IAM 역할. 활동의 platform.actions 는 R 역할의 platform_roles 로 허용돼야 한다.
+# basis: 매핑 근거. REPORT_APPROVER_ROLES(플랫폼이 정한 보고서 승인 역할 대응)를 우선한다.
+roles:
+  - id: R-FO
+    name: Feature Owner
+    en: Feature Owner
+    source: report
+    desc: Feature의 대상·분류·출시 판단을 책임진다. Feature와 정책 초안을 작성한다.
+    platform_roles: [FEATURE_AUTHOR]
+    basis: "6.4절 시나리오 G1 'Feature Owner가 등록' ↔ createFeature·createPolicy·requestFlagRetirement(FEATURE_AUTHOR)"
+  - id: R-REQ
+    name: 요구 Owner
+    en: Requirement Owner
+    source: report
+    desc: 안전요구를 확정하고 Feature 정의(G1~G3 묶음)를 승인한다.
+    platform_roles: [FEATURE_APPROVER]
+    basis: "IAM 직무 REQUIREMENT_APPROVAL ∋ FEATURE_APPROVER, 6.1절 G3 승인=요구 Owner, 전이 PROPOSED→APPROVED(G1~G3)=FEATURE_APPROVER"
+  - id: R-SM
+    name: Safety Manager
+    en: Safety Manager (FSM)
+    source: report
+    desc: 안전 분류·HARA·Safety Case를 책임지고 F2 이상 Kill·복원을 승인한다.
+    platform_roles: [SAFETY_OFFICER]
+    basis: "REPORT_APPROVER_ROLES FSM→SAFETY_OFFICER"
+  - id: R-CSM
+    name: CSM
+    en: Cybersecurity Manager
+    source: report
+    desc: TARA·보안 Incident·취약점 대응과 보안 사유 Kill을 책임진다.
+    platform_roles: [SECURITY_OFFICER]
+    basis: "REPORT_APPROVER_ROLES CSM→SECURITY_OFFICER"
+  - id: R-REG
+    name: 법규 담당
+    en: Regulatory Owner
+    source: report
+    desc: 형식승인 영향 판단·Compliance Profile·리콜 연계를 책임진다.
+    platform_roles: [REGULATORY_OWNER]
+    basis: "REPORT_APPROVER_ROLES REGULATORY→REGULATORY_OWNER"
+  - id: R-TST
+    name: 시험 조직
+    en: Test Organization
+    source: report
+    desc: 시험 명세·실행·Evidence 제출과 독립 V&V를 수행한다.
+    platform_roles: [GATE_JUDGE]
+    basis: "GATE_META G5 판정자=검증시험 책임자, submitTms·runVirtual(GATE_JUDGE)"
+  - id: R-QA
+    name: 품질 조직
+    en: Quality Organization
+    source: report
+    desc: 독립 검토·Gate 판정 확인·감사·품질 피드백을 수행한다.
+    platform_roles: [GATE_JUDGE, AUDITOR]
+    basis: "REPORT_APPROVER_ROLES QA→GATE_JUDGE, 감사 조회 AUDITOR"
+  - id: R-OPS
+    name: 운영 조직
+    en: Operations Organization
+    source: report
+    desc: 운행 감시·이상 징후 대응·긴급 차단 요청·드릴을 수행한다. 운영 리더는 차단·복원 승인에 참여한다.
+    platform_roles: [OPERATOR, OPS_LEAD]
+    basis: "REPORT_APPROVER_ROLES OPS_LEAD→OPS_LEAD, IAM 직무 KILL_EXECUTION = OPERATOR·OPS_LEAD"
+  - id: R-ARC
+    name: 아키텍트
+    en: Architect
+    source: report
+    desc: 안전 설계·정책·Control Point·차량 내 감시 구조를 설계한다.
+    platform_roles: [IMPLEMENTER]
+    basis: "정책 작성·검증(createPolicy·validatePolicy)과 Control Point 설계를 IMPLEMENTER가 수행"
+  - id: R-INT
+    name: 통합 조직
+    en: Integration Organization
+    source: report
+    desc: 차량 SW·협력사 컴포넌트 통합과 변경 기록, EOL 프로비저닝을 수행한다.
+    platform_roles: [IMPLEMENTER]
+    basis: "registerChangeRecord·submitTms(IMPLEMENTER), 데모 계정 integrator"
+  - id: R-REL
+    name: Release Manager
+    en: Release Manager
+    source: report-gate
+    desc: 서명 배포·단계적 확대·Lifecycle 출시 전이를 수행한다.
+    platform_roles: [RELEASE_MANAGER]
+    basis: "6.1절 G6 승인=Release Manager ↔ RELEASE_MANAGER(IAM 직무 RELEASE)"
+  - id: R-PUR
+    name: 구매
+    en: Purchasing
+    source: report
+    desc: 협력사 선정·DIA/CIA 계약·공급망 원산지 관리를 수행한다.
+    platform_roles: []
+    basis: 플랫폼 밖 업무(계약·조달)
+  - id: R-LEG
+    name: 법무
+    en: Legal
+    source: report
+    desc: 소비자법·데이터 이전·OSS 라이선스 검토를 수행한다.
+    platform_roles: []
+    basis: 플랫폼 밖 업무. 플랫폼 기록 입력은 법규 담당이 대행(ALN-03)
+  - id: R-PKI
+    name: PKI 운영
+    en: PKI Operations
+    source: report
+    desc: 서명 키·인증서 수명주기와 HSM 정책을 운영한다.
+    platform_roles: []
+    basis: 키 운영은 HSM·KMS에서 수행. 플랫폼 키 교체 기록은 Safety Manager·CSM 권한(ALN-04)
+  - id: R-DPO
+    name: 데이터 보호 담당
+    en: Data Protection Officer
+    source: report
+    desc: 개인정보·위치·주행 데이터의 수집 범위와 보존을 검토한다.
+    platform_roles: []
+    basis: 플랫폼 밖 검토 업무
+  - id: R-PLM
+    name: 기준정보 담당
+    en: PLM Master Data Steward
+    source: iam
+    desc: 차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.
+    platform_roles: [VARIANT_OWNER, BOM_APPROVER]
+    basis: "보고서 어휘 밖. IAM VARIANT_OWNER·BOM_APPROVER, 데모 계정 steward"
+  - id: R-PDA
+    name: 상품 기획
+    en: Product Author
+    source: iam
+    desc: Feature Catalog 상품 구성과 체험 제안을 작성한다.
+    platform_roles: [PRODUCT_AUTHOR]
+    basis: "보고서 어휘 밖. IAM PRODUCT_AUTHOR, 데모 계정 commerce"
+  - id: R-PO
+    name: 상품 Owner
+    en: Product Owner
+    source: iam
+    desc: 상품 구성과 고객 출시를 승인한다.
+    platform_roles: [PRODUCT_APPROVER]
+    basis: "REPORT_APPROVER_ROLES PRODUCT_OWNER→PRODUCT_APPROVER"
+
+# 6.1절 승인 칸의 이름 중 통제 어휘가 아닌 것 → 카탈로그 역할
+gate_approver_alias:
+  Release Manager: R-REL
+  독립 검토자: R-QA
+  독립 V&V: R-TST
+
+# ── 보고서 Gate ↔ 플랫폼 Gate 대응 ─────────────────────────────
+# 보고서 G1~G8(6.1절)과 플랫폼 GATE_META G1~G9는 번호와 범위가 다르다. 양쪽 모두 빠짐없이 대응시킨다.
+gate_crosswalk:
+  - {report: G1, platform: [G1, G3], note: "등록·분류 = Feature Gate + Variant Gate(대상 차량 사양)"}
+  - {report: G2, platform: [G7], note: "HARA·TARA 영향 = Safety/Security Gate의 분석 입력"}
+  - {report: G3, platform: [G2], note: "안전요구 = Requirement Gate"}
+  - {report: G4, platform: [G4, G7], note: "안전설계 = Control Gate + Safety/Security Gate 설계 검토"}
+  - {report: G5, platform: [G5, G6], note: "V&V = Verification Gate + Supplier Gate(협력사 납품 입고 검사)"}
+  - {report: G6, platform: [G8], note: "배포 = OTA Gate"}
+  - {report: G7, platform: [G9], approval_actions: [signRelease], note: "출시·활성화 = Operations Gate(Safety Manager 판정) + Release Sign-off(Feature Owner 개인 서명)"}
+  - {report: G8, platform: [], note: "운영·종료는 플랫폼 Gate가 아니라 Kill·복원·이상 징후·Retirement 절차로 수행"}
+
+# ── 직무 분리 쌍 ──────────────────────────────────────────────
+# level: role   → first 활동의 R 역할과 second 활동의 R·A 역할이 겹치면 안 된다(조직 역할이 다름).
+# level: person → 같은 조직 역할이 양쪽에 나올 수 있다(예: 복원도 Safety Manager 승인 필요). 사람 분리는 플랫폼
+#                 감사 원장이 강제하므로 second 활동은 그 판정을 하는 플랫폼 action을 가져야 한다.
+sod:
+  - {id: SOD-01, level: role, rules: [], first: FPW.1-A01, second: FPW.1-A05, note: Feature 작성자는 자기 Feature를 판정·승인하지 않는다}
+  - {id: SOD-02, level: role, rules: [], first: FPW.6-A01, second: FPW.6-A02, note: Baseline 확정 요청자와 BOM 승인자는 다르다}
+  - {id: SOD-03, level: role, rules: [], first: FPW.7-A05, second: FPW.7-A06, note: 상품 작성자는 자기 상품을 승인하지 않는다}
+  - {id: SOD-04, level: person, rules: [], first: FPW.7-A06, second: FPW.7-A10, note: 구성 승인자와 고객 출시 승인자는 다른 사람이다}
+  - {id: SOD-05, level: role, rules: [], first: FPW.4-A03, second: FPW.4-A04, note: 정책 작성자는 자기 정책을 승인하지 않는다}
+  - {id: SOD-08, level: role, rules: [FFG-PLT-005], first: FPW.8-A04, second: FPW.8-A05, note: 차단 요청자는 승인자가 될 수 없다}
+  - {id: SOD-09, level: person, rules: [FFG-DEAC-008], first: FPW.8-A05, second: FPW.8-A09, note: 복원 승인자는 직전 차단 승인자와 다른 사람이다}
+  - {id: SOD-11, level: role, rules: [FFG-PLT-016], first: FPW.8-A05, second: FPW.8-A07, note: 긴급 권한 사용은 요청·승인자 밖의 역할이 24시간 안에 검토한다}
+
+# ── 정합성 결정 (보고서 ↔ 플랫폼 IAM) ───────────────────────────
+# 검증기가 자동 검출한 불일치(key)와 수작업으로 확인한 불일치는 모두 여기 결정을 둔다. 결정 없는 불일치는 게이트 실패.
+# status: resolved-in-model(절차 모델로 해소) | resolved-in-platform(플랫폼을 고쳐 해소 — 결정 이력으로 남김)
+#         | open-platform(플랫폼 수정 필요) | open-report(보고서 수정 필요)
+#         | not-applicable(자동 검출 오탐, 사유 기록)
+alignment:
+  - id: ALN-01
+    key: "gate-approval:G1:R-FO"
+    topic: G1 승인자와 Feature 작성자 자기 승인 금지
+    report: "6.1절 G1 승인 = Feature Owner, Safety Manager. 6.4절 시나리오에서 Feature Owner가 등록도 한다."
+    platform: "SOD-01 작성자≠승인자. G1 판정 judgeGate = GATE_JUDGE·SAFETY_OFFICER, 정의 승인 전이 = FEATURE_APPROVER"
+    decision: "G1 판정은 Safety Manager가 실행(R)하고 Feature Owner는 협의(C)한다. 정의 승인(PROPOSED→APPROVED)은 G3 뒤 요구 Owner가 한다."
+    status: resolved-in-model
+  - id: ALN-02
+    key: "perm:approveFlagRetirement:Feature Owner"
+    topic: Flag Retirement 승인 주체
+    report: "FFG-CLS-008·6.5절: Retirement는 Feature Owner 책임"
+    platform: "approveFlagRetirement 요약은 'Feature Owner'이나 허용 역할은 FEATURE_APPROVER·SAFETY_OFFICER"
+    decision: "Retirement 요청은 Feature Owner(FEATURE_AUTHOR), 승인은 요구 Owner(FEATURE_APPROVER)로 둔다. 플랫폼 라우트 요약을 'Retirement 승인 — Feature 승인자, F2 이상은 Safety Manager도'로 고쳤다(2026-10-18, 용어 은퇴→Retirement와 함께)."
+    status: resolved-in-platform
+  - id: ALN-03
+    key: "perm:recordDataActContractBasis:법무"
+    topic: Data Act 계약 근거 등록
+    report: "13장: 데이터 이용 계약 검토는 법무"
+    platform: "recordDataActContractBasis 허용 역할 = REGULATORY_OWNER"
+    decision: "법무가 검토하고 법규 담당이 플랫폼에 등록한다(R=법규 담당, C=법무)."
+    status: resolved-in-model
+  - id: ALN-04
+    key: "role-without-platform:R-PKI"
+    topic: 서명 키 교체 권한
+    report: "FFG-SEC-002: 서명·키 관리는 PKI 운영"
+    platform: "rotateKey는 SAFETY_OFFICER만 허용이었다. PKI 운영 역할은 IAM에 없다"
+    decision: "키 생성·교체는 PKI 운영이 HSM에서 수행한다(FPW.11-A01). 플랫폼 키 교체 기록(rotateKey)에 SECURITY_OFFICER를 추가했고(2026-10-18 사용자 결정), CSM이 실행·책임진다(FPW.11-A02). PKI 운영은 플랫폼 밖 HSM·KMS 업무로 둔다."
+    status: resolved-in-platform
+  - id: ALN-05
+    key: "gate-approval:G4:R-ARC"
+    topic: G4 안전설계 판정 주체
+    report: "6.1절 G4 승인 = 아키텍트, 독립 검토자"
+    platform: "G4 Control Gate·G7 판정 judgeGate = GATE_JUDGE·SAFETY_OFFICER. 아키텍트(IMPLEMENTER)는 판정 권한 없음"
+    decision: "독립 검토자(품질 조직, GATE_JUDGE)가 judgeGate를 실행(R)하고 아키텍트가 설계 적합성에 책임(A)진다. 작성자 자기 판정을 막는 현재 권한이 맞다."
+    status: resolved-in-model
+  - id: ALN-06
+    key: "gate-approval:G7:R-FO"
+    topic: G7 출시·활성화 판정 주체
+    report: "6.1절 G7 승인 = Feature Owner, Safety Manager"
+    platform: "G9 Operations Gate 판정 = GATE_JUDGE·SAFETY_OFFICER, 출시 전이 = RELEASE_MANAGER. Feature Owner(FEATURE_AUTHOR)는 승인 기록 수단이 없었다"
+    decision: "Release Sign-off(출시 책임 확인)를 플랫폼에 추가했다(2026-10-18): G8·G9 PASS 뒤 Feature Owner가 개인 서명하고, 서명은 그 시점의 G8·G9 판정에 묶이며, 없으면 출시 전이가 막힌다(signRelease, FPW.7-A12). Safety Manager는 G9 판정으로 승인한다."
+    status: resolved-in-platform
+  - id: ALN-07
+    key: "perm:purchaseTrial:구매"
+    topic: 라우트 요약의 '구매'
+    report: "1.5절 '구매'는 조달 조직"
+    platform: "purchaseTrial 요약 '체험 → 구독·구매 전환'의 구매는 고객 결제 행위"
+    decision: 조직 역할과 무관한 단어 일치다.
+    status: not-applicable
+
+# ── 프로세스 계획 ─────────────────────────────────────────────
+# 생애주기(보고서 Gate) 순서 + 지원 프로세스. model/processes/<id>.yaml 이 아직 없으면 '작성 예정'으로 표시한다.
+# gates: 이 프로세스가 Gate 판정 활동을 가져야 하는 보고서 Gate.
+process_plan:
+  - {id: FPW.1, name_ko: Feature 등록·분류, group: 생애주기, gates: [G1]}
+  - {id: FPW.2, name_ko: HARA·변경 영향 판단, group: 생애주기, gates: [G2]}
+  - {id: FPW.3, name_ko: 안전요구 확정, group: 생애주기, gates: [G3]}
+  - {id: FPW.4, name_ko: 안전 설계·정책 설계, group: 생애주기, gates: [G4]}
+  - {id: FPW.5, name_ko: 검증·V&V, group: 생애주기, gates: [G5]}
+  - {id: FPW.6, name_ko: 서명 배포, group: 생애주기, gates: [G6]}
+  - {id: FPW.7, name_ko: 출시·활성화·단계적 확대, group: 생애주기, gates: [G7]}
+  - {id: FPW.8, name_ko: 운영·긴급 차단·복원, group: 생애주기, gates: [G8]}
+  - {id: FPW.9, name_ko: 사후 검토·Flag Retirement, group: 생애주기, gates: []}
+  - {id: FPW.10, name_ko: 협력사 관리, group: 지원, gates: []}
+  - {id: FPW.11, name_ko: 보안·키·취약점 관리, group: 지원, gates: []}
+  - {id: FPW.12, name_ko: 운영 데이터·데이터 보호, group: 지원, gates: []}
+  - {id: FPW.13, name_ko: 규정·Compliance Profile 관리, group: 지원, gates: []}

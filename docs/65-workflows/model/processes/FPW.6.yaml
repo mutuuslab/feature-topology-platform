@@ -1,0 +1,155 @@
+process:
+  id: FPW.6
+  name: Signed Deployment
+  name_ko: 서명 배포
+  related: [FLW-RELEASE-READINESS, INT-OTA]
+  gates: [G6]
+  ref: 표준 보고서 6.1절 G6, 6장 FFG-LCY-008·009, 8장(보안 배포), 15장(SBOM)
+  purpose_ko: >-
+    검증을 마친 Feature Version의 출시 Baseline을 확정하고, 서명된 패키지를 SUMS 기록과 함께 대상 차량에
+    전달할 수 있는 상태로 배포한다. 패키지 전달(G6)은 차량 내 효력(G7)과 따로 승인한다.
+  outcomes:
+    - {id: O1, text_ko: 출시 Baseline이 요청자와 다른 승인자에 의해 확정된다.}
+    - {id: O2, text_ko: Flag·파라미터 변경 명령이 SW 업데이트로 SUMS에 기록된다.}
+    - {id: O3, text_ko: 서명·SBOM이 결합된 패키지가 OTA Gate를 거쳐 서버에 배포된다.}
+  rules: [FFG-LCY-008, FFG-LCY-009, FFG-GEN-006, FFG-LCY-001]
+  entry_criteria:
+    - G5 판정이 PASS이고 승인된 정책 개정본이 있다
+    - 형식승인 영향 판단이 끝났다
+  exit_criteria:
+    - 출시 Baseline이 확정되고 SUMS 기록이 남았다
+    - 서명된 정책이 서버에 배포되고 Unleash와 동기화되었다(차량 내 효력은 아직 없음)
+  work_products:
+    - key: WP-BASELINE-REQ
+      name: Baseline 확정 요청
+      en: Baseline Request
+      kind: output
+      content:
+        - 포함 Feature Version·정책 개정본·Artifact 목록
+        - 요청자와 요청 사유
+    - key: WP-RELEASE-BASELINE
+      name: 출시 Baseline
+      en: Release Baseline
+      kind: output
+      content:
+        - 확정된 BOM 구성(Feature·SW·Variant)과 해시
+        - 승인자(요청자와 다른 사람)·승인 시각
+    - key: WP-SUMS-RECORD
+      name: SUMS 업데이트 기록
+      en: SUMS Update Record
+      kind: output
+      content:
+        - 대상 RXSWIN과 형식승인 영향 평가 결과
+        - 사용자 고지 내용과 시장별 보존 기간
+    - key: WP-SIGNED-PACKAGE
+      name: 서명 배포 패키지
+      en: Signed Deployment Package
+      kind: output
+      content:
+        - 정책·설정 Artifact와 서명, 대상 해시
+        - 결합된 SBOM과 패키지 식별자
+    - key: WP-OTA-GATE
+      name: OTA Gate 판정 기록
+      en: OTA Gate Record
+      kind: output
+      content:
+        - R156 사전조건·대상·호환성 확인 결과
+        - 판정자 서명과 시각
+    - key: WP-G6-DECISION
+      name: G6 배포 기록
+      en: G6 Deployment Record
+      kind: output
+      content:
+        - 서버 배포(평가 기준 전환) 시각과 게시본 ID
+        - Unleash 동기화 결과(flag·전략·환경)
+        - Release Manager 판정과 근거 Evidence ID
+  activities:
+    - id: FPW.6-A01
+      name: 출시 Baseline 확정 요청
+      outcomes: [O1]
+      rules: []
+      raci: {R: [R-FO], A: R-FO, C: [R-REL, R-ARC], I: [R-PLM]}
+      inputs: [WP-G5-DECISION, WP-POLICY]
+      outputs: [WP-BASELINE-REQ]
+      steps:
+        - G5 판정을 받은 Feature Version과 승인된 정책 개정본으로 출시 구성을 정한다
+        - BOM 기준선 화면에서 Baseline 확정을 요청한다
+        - 요청자는 같은 Baseline의 승인자로 지정하지 않는다
+      checks:
+        - 요청에 포함 Version·정책 개정본·Artifact가 빠짐없이 있다
+      platform: {actions: [requestBaseline], screens: [/baselines]}
+      next: [FPW.6-A02]
+    - id: FPW.6-A02
+      name: 출시 Baseline 확정 승인
+      outcomes: [O1]
+      rules: []
+      raci: {R: [R-PLM], A: R-PLM, C: [R-REL], I: [R-FO, R-REG]}
+      inputs: [WP-BASELINE-REQ]
+      outputs: [WP-RELEASE-BASELINE]
+      steps:
+        - 요청된 구성이 PLM 기준정보(차종·Variant·SW)와 일치하는지 대조한다
+        - 일치하면 확정 승인하고, 다르면 사유를 남겨 반려한다
+        - 확정된 Baseline 해시를 Release Manager에게 알린다
+      checks:
+        - 승인자가 요청자와 다르고 Baseline 해시가 고정되었다
+      platform: {actions: [decideBaseline], screens: [/baselines]}
+      next: [FPW.6-A03, FPW.6-A04]
+    - id: FPW.6-A03
+      name: SUMS 기록·형식승인 확인
+      outcomes: [O2]
+      rules: [FFG-LCY-008, FFG-GEN-006]
+      raci: {R: [R-REG], A: R-REG, C: [R-REL], I: [R-FO, R-OPS]}
+      inputs: [WP-RELEASE-BASELINE, WP-HOMOLOGATION-IMPACT]
+      outputs: [WP-SUMS-RECORD]
+      steps:
+        - Flag·파라미터를 바꾸는 명령을 SW 업데이트로 보고 대상 RXSWIN과 형식승인 영향 평가를 SUMS에 기록한다
+        - 형식승인 영향이 있으면 승인 기관의 개정·확장 결정이 나왔는지 확인하고, 없으면 배포를 보류시킨다
+        - 사용자 고지 내용과 가장 긴 시장 요건의 보존 기간을 기록한다
+      checks:
+        - SUMS 기록에 RXSWIN·영향 평가·고지 내용·보존 기간이 있다
+      next: [FPW.6-A05]
+    - id: FPW.6-A04
+      name: 서명 패키지 작성·SBOM 결합
+      outcomes: [O3]
+      rules: []
+      raci: {R: [R-INT], A: R-REL, C: [R-PKI, R-CSM], I: [R-QA]}
+      inputs: [WP-RELEASE-BASELINE]
+      outputs: [WP-SIGNED-PACKAGE]
+      steps:
+        - 확정 Baseline의 정책·설정 Artifact를 묶어 대상 해시를 계산한다
+        - PKI 운영이 관리하는 배포 용도 서명 키로 서명을 요청하고, 다른 용도의 키는 쓰지 않는다
+        - SBOM을 결합하고 CI/CD 변경 기록을 플랫폼에 등록한다
+      checks:
+        - 패키지 서명이 배포 용도 키로 검증되고 SBOM이 결합되었다
+      platform: {actions: [registerChangeRecord], screens: [/deployments, /master/artifacts]}
+      next: [FPW.6-A05]
+    - id: FPW.6-A05
+      name: OTA Gate 판정 등록
+      outcomes: [O3]
+      rules: [FFG-LCY-001]
+      raci: {R: [R-QA], A: R-REL, C: [R-REG, R-CSM], I: [R-OPS]}
+      inputs: [WP-SIGNED-PACKAGE, WP-SUMS-RECORD]
+      outputs: [WP-OTA-GATE]
+      steps:
+        - R156 사전조건(대상 식별·호환성·사용자 고지 준비)을 확인한다
+        - 서명·해시 검증 결과와 SUMS 기록을 근거로 OTA Gate를 판정 등록한다
+        - FAIL이면 사유를 Release Manager에게 돌려보낸다
+      checks:
+        - 판정 근거에 서명 검증·SUMS 기록 ID가 있다
+      platform: {actions: [judgeGate], screens: [/features/:id/:ver], gates: [G8]}
+      next: [FPW.6-A06]
+    - id: FPW.6-A06
+      name: G6 서명 배포 실행
+      gate_decision: G6
+      outcomes: [O3]
+      rules: [FFG-LCY-009]
+      raci: {R: [R-REL], A: R-REL, C: [R-OPS], I: [R-FO, R-SM, R-QA]}
+      inputs: [WP-OTA-GATE, WP-RELEASE-BASELINE]
+      outputs: [WP-G6-DECISION]
+      steps:
+        - OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다
+        - Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다
+        - 이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다
+      checks:
+        - 게시본 ID와 Unleash 동기화 결과가 G6 배포 기록에 있다
+      platform: {actions: [deployPolicy, syncUnleash], screens: [/deployments, /integration/connectors]}

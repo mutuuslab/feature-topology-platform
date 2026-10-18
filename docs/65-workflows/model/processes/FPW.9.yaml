@@ -1,0 +1,132 @@
+process:
+  id: FPW.9
+  name: Post-Operation Review & Flag Retirement
+  name_ko: 사후 검토·Flag Retirement
+  gates: []
+  ref: 표준 보고서 6.5절(Retirement), 5장 FFG-CLS-008, 6장 FFG-LCY-011, 14장 FFG-SOT-003, 3장 FFG-ADS-010
+  purpose_ko: >-
+    운영 중 드러난 이상·복원 결과를 품질 피드백으로 되돌려 시나리오와 다음 Version에 반영하고, 만료되었거나
+    대체된 Flag를 승인된 Retirement 절차로 처리해 코드·설정·시험을 정리한다.
+  outcomes:
+    - {id: O1, text_ko: 운영 결과와 새 트리거 조건이 품질 피드백으로 수용되어 시나리오와 다음 Version에 반영된다.}
+    - {id: O2, text_ko: Flag Retirement가 요청자와 다른 승인자의 승인을 받는다.}
+    - {id: O3, text_ko: Retirement 대상 Flag의 코드·설정·시험이 기한 안에 삭제되고 Lifecycle이 종료된다.}
+  rules: [FFG-SOT-003, FFG-CLS-008, FFG-LCY-011, FFG-ADS-010]
+  entry_criteria:
+    - 분기 드릴·복원 결과 또는 Flag 만료 알림이 있다
+  exit_criteria:
+    - 수용한 품질 피드백이 시나리오 저장소와 개선 과제에 연결되었다
+    - Retirement된 Flag의 삭제 단계가 모두 기록되고 Lifecycle이 RETIRED가 되었다
+  work_products:
+    - key: WP-QUALITY-FEEDBACK
+      name: 품질 피드백 기록
+      en: Quality Feedback Record
+      kind: output
+      retained: true
+      content:
+        - 이상·복원·드릴에서 나온 개선 항목과 담당
+        - 시나리오 저장소에 추가한 트리거 조건과 재평가 대상
+    - key: WP-RETIRE-REQ
+      name: Flag Retirement 요청
+      en: Flag Retirement Request
+      kind: output
+      content:
+        - Retirement 사유(만료·대체·폐기)와 다음 정기 릴리스 예정일
+        - 영향 받는 차량·Variant와 구 Version 잔존 여부
+    - key: WP-RETIRE-APPROVAL
+      name: Retirement 승인 기록
+      en: Retirement Approval
+      kind: output
+      content:
+        - 승인자(F2 이상은 Safety Manager 포함)와 시각
+        - 삭제 기한(승인 후 6개월 또는 다음 정기 릴리스 중 이른 시점)
+    - key: WP-RETIRE-LOG
+      name: Retirement 단계 기록
+      en: Retirement Step Log
+      kind: output
+      content:
+        - 코드·설정·시험 삭제 단계별 완료 시각
+        - 상태 보고로 확인한 구 Version 잔존 차량 수
+    - key: WP-RETIRE-CLOSE
+      name: Lifecycle 종료 기록
+      en: Lifecycle Closure
+      kind: output
+      retained: true
+      content:
+        - DEPRECATED·RETIRED 전이 시각
+        - Flag ID 재사용 금지 표시와 Catalog 퇴역 결과
+  activities:
+    - id: FPW.9-A01
+      name: 운영 결과 품질 피드백 수용
+      outcomes: [O1]
+      rules: [FFG-SOT-003]
+      raci: {R: [R-QA], A: R-QA, C: [R-SM, R-TST], I: [R-FO, R-OPS]}
+      inputs: [WP-DRILL-REPORT, WP-RESTORE-ROLLOUT]
+      outputs: [WP-QUALITY-FEEDBACK]
+      steps:
+        - 분기 드릴·복원 관측·이상 징후 결과에서 개선 항목을 추린다
+        - 텔레메트리와 사고 데이터에서 찾은 트리거 조건·오용을 시험 조직에 넘겨 시나리오 저장소에 추가하게 한다
+        - 품질 피드백을 수용하고 다음 Version 개선 과제로 Feature Owner에게 연결한다
+      checks:
+        - 수용한 피드백마다 담당과 반영 대상(시나리오·Version)이 있다
+      platform: {actions: [acceptFeedback], screens: [/quality/feedback]}
+    - id: FPW.9-A02
+      name: Flag Retirement 요청
+      trigger: Flag 만료 30일 전 알림, 기능 대체·폐기 결정
+      outcomes: [O2]
+      rules: [FFG-CLS-008]
+      raci: {R: [R-FO], A: R-FO, C: [R-REL, R-INT], I: [R-SM, R-REQ]}
+      inputs: [WP-FEAT-REG]
+      outputs: [WP-RETIRE-REQ]
+      steps:
+        - 만료 알림을 받은 Release·Experiment Flag의 연장 또는 Retirement를 정한다
+        - Retirement면 사유·영향 차량·다음 정기 릴리스 예정일을 적어 요청한다
+        - 구 Version이 남은 차량이 있는지 Fleet 적용 현황으로 확인해 요청에 붙인다
+      checks:
+        - Retirement 요청에 사유와 영향 범위가 있다
+      platform: {actions: [requestFlagRetirement], screens: [/flag-retirements]}
+      next: [FPW.9-A03]
+    - id: FPW.9-A03
+      name: Flag Retirement 승인
+      outcomes: [O2]
+      rules: [FFG-ADS-010]
+      raci: {R: [R-REQ, R-SM], A: R-FO, C: [R-REL], I: [R-INT, R-OPS]}
+      inputs: [WP-RETIRE-REQ]
+      outputs: [WP-RETIRE-APPROVAL]
+      steps:
+        - 요청자가 아닌 요구 Owner가 Retirement를 승인하고, F2 이상이면 Safety Manager도 승인한다
+        - ADS Feature를 폐기하는 경우 영구 비활성화·명령 키 폐기·Catalog 퇴역을 승인 조건으로 단다
+        - 승인 후 삭제 기한을 정해 Feature Owner와 통합 조직에 알린다
+      checks:
+        - 승인자가 요청자와 다르고 F2 이상에 Safety Manager 승인이 있다
+      platform: {actions: [approveFlagRetirement], screens: [/flag-retirements]}
+      next: [FPW.9-A04]
+    - id: FPW.9-A04
+      name: 코드·설정·시험 삭제 기록
+      outcomes: [O3]
+      rules: [FFG-LCY-011]
+      raci: {R: [R-FO], A: R-FO, C: [R-INT, R-TST], I: [R-REL]}
+      inputs: [WP-RETIRE-APPROVAL]
+      outputs: [WP-RETIRE-LOG]
+      steps:
+        - 삭제 기한 안에 해당 Flag의 차량 SW 코드·설정·시험을 지우도록 통합 조직과 계획을 세운다
+        - 단계마다 완료 조건을 확인하고 Retirement 단계로 기록한다
+        - 구 Version이 남은 차량은 상태 보고로 잔존이 0이 된 것을 확인한 뒤 마지막 단계를 닫는다
+      checks:
+        - Retirement 단계가 순서대로 모두 기록되고 잔존 차량이 0이다
+      platform: {actions: [recordFlagRetirementStep], screens: [/flag-retirements]}
+      next: [FPW.9-A05]
+    - id: FPW.9-A05
+      name: Lifecycle 종료 전이
+      outcomes: [O3]
+      rules: []
+      raci: {R: [R-REL], A: R-REL, C: [R-FO], I: [R-PO, R-OPS]}
+      inputs: [WP-RETIRE-LOG]
+      outputs: [WP-RETIRE-CLOSE]
+      steps:
+        - Feature Version을 DEPRECATED로 전이해 신규 사용을 막는다
+        - Retirement 단계가 모두 끝나면 RETIRED로 전이한다
+        - Flag ID를 재사용 금지로 남기고 상품 Owner에게 Catalog 반영을 알린다
+      checks:
+        - Lifecycle이 RETIRED이고 Flag ID 재사용 금지 표시가 있다
+      platform: {actions: [transition], screens: [/features/:id/:ver]}

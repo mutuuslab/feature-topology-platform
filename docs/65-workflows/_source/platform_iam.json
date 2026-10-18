@@ -1,0 +1,1660 @@
+{
+ "source": {
+  "iam_url": "http://localhost:9113/admin/iam",
+  "api": [
+   "/api/iam/roles",
+   "/api/iam/sod-audit"
+  ],
+  "fetched_at": "2026-10-18T00:08:29.101Z",
+  "server_seed": "v0.81",
+  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-10-17T23:56:09.071Z",
+  "ff_git": {
+   "head": "23d1e1d5c273c3dc4243beb276b1f1eaae98df0d",
+   "dirty_files": 18
+  },
+  "iam_sha256": "59a8b911dc63302af53eec6b88d264fbbc00378555baa25162fc4198d2179541"
+ },
+ "roles": [
+  {
+   "role": "FEATURE_AUTHOR",
+   "label": "Feature 작성자",
+   "human": true
+  },
+  {
+   "role": "SAFETY_OFFICER",
+   "label": "기능안전 담당자(FSM)",
+   "human": true
+  },
+  {
+   "role": "VARIANT_OWNER",
+   "label": "차량 사양·Variant 담당자",
+   "human": true
+  },
+  {
+   "role": "FEATURE_APPROVER",
+   "label": "Feature 승인자",
+   "human": true
+  },
+  {
+   "role": "IMPLEMENTER",
+   "label": "구현 담당자",
+   "human": true
+  },
+  {
+   "role": "RELEASE_MANAGER",
+   "label": "Feature 출시 담당자",
+   "human": true
+  },
+  {
+   "role": "BOM_APPROVER",
+   "label": "BOM 승인자",
+   "human": true
+  },
+  {
+   "role": "PRODUCT_AUTHOR",
+   "label": "상품 작성자",
+   "human": true
+  },
+  {
+   "role": "PRODUCT_APPROVER",
+   "label": "상품 승인자",
+   "human": true
+  },
+  {
+   "role": "GATE_JUDGE",
+   "label": "Gate 판정자",
+   "human": true
+  },
+  {
+   "role": "OPERATOR",
+   "label": "운영자",
+   "human": true
+  },
+  {
+   "role": "SECURITY_OFFICER",
+   "label": "사이버보안 담당자(CSM)",
+   "human": true
+  },
+  {
+   "role": "OPS_LEAD",
+   "label": "운영 리더",
+   "human": true
+  },
+  {
+   "role": "REGULATORY_OWNER",
+   "label": "법규 담당",
+   "human": true
+  },
+  {
+   "role": "AUDITOR",
+   "label": "운영·감사 조회자",
+   "human": true
+  },
+  {
+   "role": "SYSTEM",
+   "label": "시스템",
+   "human": false
+  },
+  {
+   "role": "VEHICLE",
+   "label": "차량",
+   "human": false
+  }
+ ],
+ "permissions": [
+  {
+   "name": "readNotification",
+   "method": "POST",
+   "path": "/api/notifications/:id/read",
+   "summary": "알림 읽음 표시(계정별)",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "readAllNotifications",
+   "method": "POST",
+   "path": "/api/notifications/read-all",
+   "summary": "알림 모두 읽음(범주 선택)",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "saveNotificationPrefs",
+   "method": "POST",
+   "path": "/api/notifications/preferences",
+   "summary": "알림 메일 설정 저장(감사)",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "updateSafetyProfile",
+   "method": "PUT",
+   "path": "/api/features/:id/versions/:ver/safety",
+   "summary": "안전 분류 초안 수정 (확정 후 불가, FFG-CLS-004)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "confirmSafetyProfile",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/safety/confirm",
+   "summary": "안전 분류 확정 — Safety Manager 개인 서명",
+   "component": "D01-01",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "signRelease",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/release-signoff",
+   "summary": "Release Sign-off — Feature Owner가 G8·G9 PASS 뒤 출시 책임을 개인 서명으로 확인(보고서 6.1 G7)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "createFeature",
+   "method": "POST",
+   "path": "/api/features",
+   "summary": "Feature 등록 (PROPOSED 0.1.0)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "createVersion",
+   "method": "POST",
+   "path": "/api/features/:id/versions",
+   "summary": "새 Version 생성",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "updateDraft",
+   "method": "PATCH",
+   "path": "/api/features/:id/versions/:ver",
+   "summary": "PROPOSED 초안 수정",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "transition",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/transitions",
+   "summary": "Lifecycle 전이",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_APPROVER",
+    "RELEASE_MANAGER",
+    "GATE_JUDGE"
+   ]
+  },
+  {
+   "name": "judgeGate",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/gates",
+   "summary": "Gate 판정 등록",
+   "component": "D01-02",
+   "roles": [
+    "GATE_JUDGE",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "requestBaseline",
+   "method": "POST",
+   "path": "/api/baselines/requests",
+   "summary": "Baseline 확정 요청",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "decideBaseline",
+   "method": "POST",
+   "path": "/api/baselines/requests/:rid/decision",
+   "summary": "Baseline 확정 승인·반려",
+   "component": "D01-01",
+   "roles": [
+    "BOM_APPROVER"
+   ]
+  },
+  {
+   "name": "createDependency",
+   "method": "POST",
+   "path": "/api/dependencies",
+   "summary": "의존관계 등록·판정",
+   "component": "D01-02",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "createProduct",
+   "method": "POST",
+   "path": "/api/products",
+   "summary": "상품 등록 (PROPOSED 1.0.0)",
+   "component": "D01-03",
+   "roles": [
+    "PRODUCT_AUTHOR"
+   ]
+  },
+  {
+   "name": "validateComposition",
+   "method": "POST",
+   "path": "/api/products/validate",
+   "summary": "구성 검증 (저장 없음)",
+   "component": "D01-03",
+   "roles": [
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER"
+   ]
+  },
+  {
+   "name": "updateProductDraft",
+   "method": "PATCH",
+   "path": "/api/products/:id/versions/:ver",
+   "summary": "PROPOSED 상품 수정",
+   "component": "D01-03",
+   "roles": [
+    "PRODUCT_AUTHOR"
+   ]
+  },
+  {
+   "name": "createProductVersion",
+   "method": "POST",
+   "path": "/api/products/:id/versions",
+   "summary": "새 Catalog Version (구성·기간 변경)",
+   "component": "D01-03",
+   "roles": [
+    "PRODUCT_AUTHOR"
+   ]
+  },
+  {
+   "name": "productTransition",
+   "method": "POST",
+   "path": "/api/products/:id/versions/:ver/transitions",
+   "summary": "상품 Lifecycle 전이 (구성 승인·고객 출시 승인 분리)",
+   "component": "D01-03",
+   "roles": [
+    "PRODUCT_APPROVER"
+   ]
+  },
+  {
+   "name": "createPolicy",
+   "method": "POST",
+   "path": "/api/policies",
+   "summary": "정책 작성 (DRAFT)",
+   "component": "D01-06",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "updatePolicy",
+   "method": "PATCH",
+   "path": "/api/policies/:id",
+   "summary": "정책 수정 (새 개정본·재검증 필요)",
+   "component": "D01-06",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "restorePolicyRevision",
+   "method": "POST",
+   "path": "/api/policies/:id/revisions/:revision/restore",
+   "summary": "정책 버전 복원 (새 개정본·DRAFT, 재검증·재승인 필요)",
+   "component": "D01-06",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "validatePolicy",
+   "method": "POST",
+   "path": "/api/policies/:id/validate",
+   "summary": "분야별 검증 8종 병렬 → 배포 안전성 판정",
+   "component": "D06-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "IMPLEMENTER",
+    "GATE_JUDGE"
+   ]
+  },
+  {
+   "name": "decidePolicy",
+   "method": "POST",
+   "path": "/api/policies/:id/decision",
+   "summary": "정책 승인·반려 (작성자≠승인자, 해시·GO 확인)",
+   "component": "D01-06",
+   "roles": [
+    "FEATURE_APPROVER"
+   ]
+  },
+  {
+   "name": "deployPolicy",
+   "method": "POST",
+   "path": "/api/policies/:id/deploy",
+   "summary": "서버 배포 (평가 기준 전환)",
+   "component": "D01-06",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "stageRollout",
+   "method": "POST",
+   "path": "/api/policies/:id/rollout",
+   "summary": "단계적 기능 배포 — 승인 범위 안 코호트 단계",
+   "component": "D01-08",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "offerTrials",
+   "method": "POST",
+   "path": "/api/trials/offers",
+   "summary": "차량별 체험 제안 (14일 안에 수락)",
+   "component": "D01-05",
+   "roles": [
+    "PRODUCT_AUTHOR",
+    "OPERATOR",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "acceptTrial",
+   "method": "POST",
+   "path": "/api/trials/:grantId/accept",
+   "summary": "체험 수락 → 30일 기능 ON",
+   "component": "D01-05",
+   "roles": [
+    "OPERATOR",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "declineTrial",
+   "method": "POST",
+   "path": "/api/trials/:grantId/decline",
+   "summary": "체험 거절",
+   "component": "D01-05",
+   "roles": [
+    "OPERATOR",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "purchaseTrial",
+   "method": "POST",
+   "path": "/api/trials/:grantId/purchase",
+   "summary": "체험 → 구독·구매 전환 (과금 연계)",
+   "component": "D05-04",
+   "roles": [
+    "OPERATOR",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "rotateKey",
+   "method": "POST",
+   "path": "/api/pki/rotate",
+   "summary": "서명 키 교체 (이전 키는 검증용으로 유지, 용도별)",
+   "component": "D06-10",
+   "roles": [
+    "SECURITY_OFFICER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "bumpEpoch",
+   "method": "POST",
+   "path": "/api/pki/epoch",
+   "summary": "차량 키 epoch 상향 (키 유출 대응, FFG-SEC-002)",
+   "component": "D06-10",
+   "roles": [
+    "SECURITY_OFFICER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "requestFlagRetirement",
+   "method": "POST",
+   "path": "/api/flag-retirements",
+   "summary": "Flag Retirement 요청 — 다음 정기 릴리스 예정일(선택)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "approveFlagRetirement",
+   "method": "POST",
+   "path": "/api/flag-retirements/:id/approvals",
+   "summary": "Retirement 승인 — Feature 승인자, F2 이상은 Safety Manager도(요청자 제외)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_APPROVER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "recordFlagRetirementStep",
+   "method": "POST",
+   "path": "/api/flag-retirements/:id/steps",
+   "summary": "Retirement 2~6단계 기록 — 순서·완료 조건, 5단계 Registry 퇴역(ID 재사용 금지)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "RELEASE_MANAGER",
+    "IMPLEMENTER",
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "registerChangeRecord",
+   "method": "POST",
+   "path": "/api/change-records",
+   "summary": "CI/CD(IF-13) 변경 기록 등록 — 추가만",
+   "component": "D04-01",
+   "roles": [
+    "IMPLEMENTER",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "ingestReadback",
+   "method": "POST",
+   "path": "/api/telemetry/readback",
+   "summary": "IF-06 차량 회신 수집",
+   "component": "D04-03",
+   "roles": [
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "fleetOnboard",
+   "method": "POST",
+   "path": "/api/fleet/onboard",
+   "summary": "신차 커넥티드 등록(IF-06 Fleet 연계 모의) — 가중 표본 차량·수신 표본 등록",
+   "component": "D02-03",
+   "roles": [
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "vehicleQueryAll",
+   "method": "POST",
+   "path": "/vehicle/v1/:vin/flags",
+   "summary": "IF-10 차량 발신 전체 flag 조회 (OFREP 형식, ETag)",
+   "component": "D05-01",
+   "roles": [
+    "VEHICLE"
+   ]
+  },
+  {
+   "name": "vehicleQuery",
+   "method": "POST",
+   "path": "/vehicle/v1/:vin/flags/:key",
+   "summary": "IF-10 차량 발신 단일 flag 조회 (OFREP 형식)",
+   "component": "D05-01",
+   "roles": [
+    "VEHICLE"
+   ]
+  },
+  {
+   "name": "vehicleStatus",
+   "method": "POST",
+   "path": "/vehicle/v1/:vin/status",
+   "summary": "IF-06 차량 상태 보고 v2 — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 위반은 이상 징후로",
+   "component": "D04-03",
+   "roles": [
+    "VEHICLE"
+   ]
+  },
+  {
+   "name": "vehicleReport",
+   "method": "POST",
+   "path": "/vehicle/v1/:vin/reports",
+   "summary": "IF-06 차량 보고 — 재연결 대사·관측값·체험 수락·오류·회신 (Flag 직접 변경은 거부), 재평가 결과 응답",
+   "component": "D02-03",
+   "roles": [
+    "VEHICLE"
+   ]
+  },
+  {
+   "name": "gatePreview",
+   "method": "POST",
+   "path": "/api/gate/preview",
+   "summary": "정책 게이트 미리보기 — kill_command v2 판정(스키마·규칙), 원장 변경 없음. 스키마 오류도 SCHEMA_FAIL 결과로 돌려준다",
+   "component": "D03-02",
+   "roles": [
+    "OPERATOR",
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "issueKill",
+   "method": "POST",
+   "path": "/api/kill-requests",
+   "summary": "긴급 차단 요청 (type-to-confirm·사유 분류) — 2인 승인 뒤 게이트·서명·차량별 봉투",
+   "component": "D03-03",
+   "roles": [
+    "OPERATOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "approveKill",
+   "method": "POST",
+   "path": "/api/kill-requests/:id/approvals",
+   "summary": "긴급 차단 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 발행",
+   "component": "D03-03",
+   "roles": [
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "rejectKill",
+   "method": "POST",
+   "path": "/api/kill-requests/:id/reject",
+   "summary": "긴급 차단 요청 거절",
+   "component": "D03-03",
+   "roles": [
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "requestRestore",
+   "method": "POST",
+   "path": "/api/kill-requests/:id/restore",
+   "summary": "복원 요청 — 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명",
+   "component": "D03-04",
+   "roles": [
+    "OPERATOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "approveRestore",
+   "method": "POST",
+   "path": "/api/kill-requests/:id/restore/approvals",
+   "summary": "복원 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 복구 게시",
+   "component": "D03-04",
+   "roles": [
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "rejectRestore",
+   "method": "POST",
+   "path": "/api/kill-requests/:id/restore/reject",
+   "summary": "복원 요청 거절",
+   "component": "D03-04",
+   "roles": [
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "previewRollback",
+   "method": "POST",
+   "path": "/api/rollbacks/preview",
+   "summary": "롤백 미리보기 — 영향 Feature·차량 그룹·적용 범위·적용 가능 여부(기록 없음)",
+   "component": "D03-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "createRollbackPlan",
+   "method": "POST",
+   "path": "/api/rollback-plans",
+   "summary": "Rollback Plan 생성 — 자동 롤백 조건·복구 기준 버전·범위·승인대상자",
+   "component": "D03-04",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "decideRollbackPlan",
+   "method": "POST",
+   "path": "/api/rollback-plans/:id/decision",
+   "summary": "Rollback Plan 승인·반려 — 지정 승인대상자(요청자 아님)",
+   "component": "D03-04",
+   "roles": [
+    "OPS_LEAD",
+    "SAFETY_OFFICER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "createRollbackRequest",
+   "method": "POST",
+   "path": "/api/rollback-requests",
+   "summary": "수동 롤백 요청 — 복구 기준 버전·사유·승인대상자",
+   "component": "D03-04",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "decideRollbackRequest",
+   "method": "POST",
+   "path": "/api/rollback-requests/:id/decision",
+   "summary": "수동 롤백 승인·반려 — 지정 승인대상자(요청자 아님)",
+   "component": "D03-04",
+   "roles": [
+    "OPS_LEAD",
+    "SAFETY_OFFICER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "executeRollbackRequest",
+   "method": "POST",
+   "path": "/api/rollback-requests/:id/execute",
+   "summary": "승인된 수동 롤백 실행 — 재검증 후 복구 기준 버전 재게시",
+   "component": "D03-04",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "releaseKill",
+   "method": "POST",
+   "path": "/api/kill-requests/:id/release",
+   "summary": "레거시(v1) 차단 해제 — v2 차단은 복원 요청·승인으로",
+   "component": "D03-04",
+   "roles": [
+    "OPERATOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "recordVex",
+   "method": "POST",
+   "path": "/api/vex",
+   "summary": "VEX 판정 기록 — 저장된 SBOM으로 영향 Feature·조치 특정",
+   "component": "D06-11",
+   "roles": [
+    "SECURITY_OFFICER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "retentionSweep",
+   "method": "POST",
+   "path": "/api/retention/sweep",
+   "summary": "보존 기간이 지난 행 삭제 — 열린 Incident·이상 건에 연결된 행은 남기고 삭제 기록(FFG-TEL-008)",
+   "component": "D04-03",
+   "roles": [
+    "REGULATORY_OWNER",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "recordSafetyKpiPlan",
+   "method": "PUT",
+   "path": "/api/safety-kpi/:featureId/:version/plan",
+   "summary": "Safety Case 경보 기준 기록(FSM, 추가만 — 최신 기록 유효)",
+   "component": "D04-03",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "createDataAccessRequest",
+   "method": "POST",
+   "path": "/api/data-access-requests",
+   "summary": "EU 차량 사용자·제3자 데이터 접근 요청 처리 — Feature 상태·이력 제공 또는 거부(처리 기록, Art.4·5)",
+   "component": "D05-01",
+   "roles": [
+    "OPERATOR",
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "recordDataActContractBasis",
+   "method": "POST",
+   "path": "/api/data-act/contract-basis",
+   "summary": "OEM 비개인 데이터 이용 계약 근거(문서 ID) 등록 — 법무",
+   "component": "D05-01",
+   "roles": [
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "runVirtual",
+   "method": "POST",
+   "path": "/api/virtual-validations",
+   "summary": "정책을 CARLA 가상 차량에 적용해 시나리오 실행 (판정·Evidence)",
+   "component": "D06-03",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "IMPLEMENTER",
+    "GATE_JUDGE"
+   ]
+  },
+  {
+   "name": "submitTms",
+   "method": "POST",
+   "path": "/api/virtual-validations/:id/tms",
+   "summary": "IF-09 TMS Evidence 제출 (G5 근거)",
+   "component": "D04-02",
+   "roles": [
+    "GATE_JUDGE",
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "acknowledgeAnomaly",
+   "method": "POST",
+   "path": "/api/anomalies/:id/acknowledge",
+   "summary": "이상 건 확인",
+   "component": "D06-12",
+   "roles": [
+    "OPERATOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "mitigateAnomaly",
+   "method": "POST",
+   "path": "/api/anomalies/:id/mitigate",
+   "summary": "조치 완료 (차단 외 조치)",
+   "component": "D06-12",
+   "roles": [
+    "OPERATOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "dismissAnomaly",
+   "method": "POST",
+   "path": "/api/anomalies/:id/dismiss",
+   "summary": "이상 건 기각",
+   "component": "D06-12",
+   "roles": [
+    "OPERATOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "acceptFeedback",
+   "method": "POST",
+   "path": "/api/quality-feedback/:id/accept",
+   "summary": "품질 피드백 수용",
+   "component": "D04-06",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "GATE_JUDGE",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "syncUnleash",
+   "method": "POST",
+   "path": "/api/policies/:id/unleash/sync",
+   "summary": "Unleash 동기화 (flag·태그·의존·전략·환경)",
+   "component": "D01-06",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "recordKillPostReview",
+   "method": "POST",
+   "path": "/api/kill-requests/:id/post-review",
+   "summary": "긴급 권한 사후 독립 검토 기록 — 요청자·승인자 제외, 한 번(FFG-PLT-016)",
+   "component": "D06-09",
+   "roles": [
+    "SECURITY_OFFICER",
+    "SAFETY_OFFICER",
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "startPoc",
+   "method": "POST",
+   "path": "/api/poc/runs",
+   "summary": "PoC 실행 시작 (이전 PoC 차단 복구 후)",
+   "component": "KERNEL",
+   "roles": [
+    "OPERATOR",
+    "RELEASE_MANAGER",
+    "FEATURE_APPROVER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "advancePoc",
+   "method": "POST",
+   "path": "/api/poc/runs/:id/advance",
+   "summary": "PoC 다음 단계 실행 (진행 중 단계는 완료 확인)",
+   "component": "KERNEL",
+   "roles": [
+    "OPERATOR",
+    "RELEASE_MANAGER",
+    "FEATURE_APPROVER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "createExperiment",
+   "method": "POST",
+   "path": "/api/experiments",
+   "summary": "실험 등록 — F2 이상은 Shadow만 (FFG-CLS-006)",
+   "component": "D01-07",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "startExperiment",
+   "method": "POST",
+   "path": "/api/experiments/:id/start",
+   "summary": "실험 시작",
+   "component": "D01-07",
+   "roles": [
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "concludeExperiment",
+   "method": "POST",
+   "path": "/api/experiments/:id/conclude",
+   "summary": "실험 종료·결정 (채택·기각·연장)",
+   "component": "D01-07",
+   "roles": [
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "createIncident",
+   "method": "POST",
+   "path": "/api/incidents",
+   "summary": "장애·VOC 접수 — SOTIF 트리거면 이상 징후로 (FFG-SOT-003)",
+   "component": "D04-05",
+   "roles": [
+    "OPERATOR",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "importVoc",
+   "method": "POST",
+   "path": "/api/incidents/import-voc",
+   "summary": "고객센터 VOC 가져오기 (모의 원천)",
+   "component": "D04-05",
+   "roles": [
+    "OPERATOR",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "runSync",
+   "method": "POST",
+   "path": "/api/sync/runs",
+   "summary": "동기화·대사 실행",
+   "component": "D05-02",
+   "roles": [
+    "OPERATOR",
+    "SYSTEM",
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "importPlantOrders",
+   "method": "POST",
+   "path": "/api/legacy/orders/import",
+   "summary": "해외공장 주문 가져오기 (IF-12) → 옵션 코드 해석",
+   "component": "D05-03",
+   "roles": [
+    "OPERATOR",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "translateLegacy",
+   "method": "POST",
+   "path": "/api/legacy-sdv/translate",
+   "summary": "Feature 켜기·끄기 → 딜러 코딩 계획 (F2 이상 거부)",
+   "component": "D05-07",
+   "roles": [
+    "OPERATOR",
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "createFieldCase",
+   "method": "POST",
+   "path": "/api/field/cases",
+   "summary": "현장 접수 → 장애·VOC(D04-05)",
+   "component": "D05-05",
+   "roles": [
+    "OPERATOR"
+   ]
+  }
+ ],
+ "sod": [
+  {
+   "id": "SOD-01",
+   "subject": "Feature 정의 승인",
+   "rule": "Feature 작성자는 자기 Feature를 승인할 수 없다",
+   "component": "D01-01"
+  },
+  {
+   "id": "SOD-02",
+   "subject": "BOM Baseline 확정",
+   "rule": "확정 요청자와 BOM 승인자는 달라야 한다",
+   "component": "D01-01"
+  },
+  {
+   "id": "SOD-03",
+   "subject": "상품 구성 승인",
+   "rule": "상품 작성자는 자기 상품을 승인할 수 없다",
+   "component": "D01-03"
+  },
+  {
+   "id": "SOD-04",
+   "subject": "상품 고객 출시",
+   "rule": "구성 승인자와 고객 출시 승인자는 달라야 한다",
+   "component": "D01-03"
+  },
+  {
+   "id": "SOD-05",
+   "subject": "정책 승인",
+   "rule": "정책 작성자는 자기 정책을 승인할 수 없다 (P0 publishCheck SELF_APPROVAL)",
+   "component": "D03-02"
+  },
+  {
+   "id": "SOD-06",
+   "subject": "G5 Evidence",
+   "rule": "가상검증(CARLA)은 TMS 제출(IF-09)된 실제 실행 PASS만 G5 PASS 근거가 된다",
+   "component": "D04-02"
+  },
+  {
+   "id": "SOD-07",
+   "subject": "차량 신원",
+   "rule": "차량은 자기 VIN만 조회·보고하고 Flag 값을 직접 바꿀 수 없다",
+   "component": "D02-03"
+  },
+  {
+   "id": "SOD-08",
+   "subject": "긴급 차단 승인",
+   "rule": "차단 요청자는 같은 명령의 승인자가 될 수 없다 — 서로 다른 2인 승인, F2 이상 안전·보안 사유는 FSM 포함 (FFG-PLT-005·016)",
+   "component": "D03-03"
+  },
+  {
+   "id": "SOD-09",
+   "subject": "복원 승인",
+   "rule": "복원 승인자는 직전 차단 승인자와 겹칠 수 없다 (FFG-DEAC-008)",
+   "component": "D03-04"
+  },
+  {
+   "id": "SOD-10",
+   "subject": "대량 차단",
+   "rule": "24시간 누적 상한을 넘는 차단은 FSM과 CSM이 함께 승인한다 (FFG-SEC-003)",
+   "component": "D03-03"
+  },
+  {
+   "id": "SOD-11",
+   "subject": "원격 종료 권한",
+   "rule": "원격 종료(Kill) 실행 권한은 별도 역할로 두고, 긴급 사용은 24시간 안에 사후 독립 검토 (FFG-SEC-008·FFG-PLT-016)",
+   "component": "D06-09"
+  },
+  {
+   "id": "SOD-12",
+   "subject": "서명 키 용도",
+   "rule": "활성화·차단·복원·정책 서명 키는 용도별로 분리 — 다른 용도의 키로 서명한 명령은 무효 (FFG-SEC-002)",
+   "component": "D06-10"
+  }
+ ],
+ "duties": {
+  "REQUIREMENT_APPROVAL": [
+   "FEATURE_APPROVER",
+   "PRODUCT_APPROVER",
+   "BOM_APPROVER"
+  ],
+  "RELEASE": [
+   "RELEASE_MANAGER"
+  ],
+  "KILL_EXECUTION": [
+   "OPERATOR",
+   "OPS_LEAD"
+  ],
+  "RESTORE_APPROVAL": [
+   "SAFETY_OFFICER",
+   "SECURITY_OFFICER"
+  ]
+ },
+ "accounts": {
+  "author": [
+   "FEATURE_AUTHOR"
+  ],
+  "approver": [
+   "FEATURE_APPROVER",
+   "PRODUCT_APPROVER"
+  ],
+  "quality": [
+   "GATE_JUDGE",
+   "SAFETY_OFFICER"
+  ],
+  "operator": [
+   "OPERATOR"
+  ],
+  "steward": [
+   "BOM_APPROVER",
+   "VARIANT_OWNER",
+   "REGULATORY_OWNER"
+  ],
+  "commerce": [
+   "PRODUCT_AUTHOR"
+  ],
+  "integrator": [
+   "IMPLEMENTER",
+   "SECURITY_OFFICER",
+   "SAFETY_OFFICER"
+  ],
+  "coordinator": [
+   "RELEASE_MANAGER"
+  ],
+  "viewer": [
+   "AUDITOR"
+  ]
+ },
+ "report_approver_roles": {
+  "FSM": "SAFETY_OFFICER",
+  "CSM": "SECURITY_OFFICER",
+  "OPS_LEAD": "OPS_LEAD",
+  "PRODUCT_OWNER": "PRODUCT_APPROVER",
+  "QA": "GATE_JUDGE",
+  "REGULATORY": "REGULATORY_OWNER"
+ },
+ "gates": [
+  {
+   "id": "G1",
+   "name": "Feature Gate",
+   "judgeRole": "Feature 정의 승인자",
+   "stage": "PROPOSED"
+  },
+  {
+   "id": "G2",
+   "name": "Requirement Gate",
+   "judgeRole": "요구사항 검토 책임자",
+   "stage": "PROPOSED"
+  },
+  {
+   "id": "G3",
+   "name": "Variant Gate",
+   "judgeRole": "차량 사양 승인자",
+   "stage": "PROPOSED"
+  },
+  {
+   "id": "G4",
+   "name": "Control Gate",
+   "judgeRole": "제어 통합 책임자",
+   "stage": "DEVELOPING"
+  },
+  {
+   "id": "G5",
+   "name": "Verification Gate",
+   "judgeRole": "검증시험 책임자",
+   "stage": "DEVELOPING"
+  },
+  {
+   "id": "G6",
+   "name": "Supplier Gate",
+   "judgeRole": "협력사 품질 승인자",
+   "stage": "DEVELOPING"
+  },
+  {
+   "id": "G7",
+   "name": "Safety/Security Gate",
+   "judgeRole": "기능안전·보안 승인자",
+   "stage": "DEVELOPING"
+  },
+  {
+   "id": "G8",
+   "name": "OTA Gate",
+   "judgeRole": "OTA 릴리스 승인자",
+   "stage": "VERIFIED"
+  },
+  {
+   "id": "G9",
+   "name": "Operations Gate",
+   "judgeRole": "운영 출시 승인자",
+   "stage": "VERIFIED"
+  }
+ ],
+ "lifecycle": [
+  "PROPOSED",
+  "APPROVED",
+  "DEVELOPING",
+  "VERIFIED",
+  "RELEASED",
+  "DEPRECATED",
+  "RETIRED"
+ ],
+ "transitions": [
+  {
+   "from": "PROPOSED",
+   "to": "APPROVED",
+   "gates": [
+    "G1",
+    "G2",
+    "G3"
+   ],
+   "roles": [
+    "FEATURE_APPROVER"
+   ],
+   "auto": false,
+   "ko": "정의 승인"
+  },
+  {
+   "from": "APPROVED",
+   "to": "DEVELOPING",
+   "gates": [],
+   "roles": [
+    "SYSTEM"
+   ],
+   "auto": true,
+   "ko": "개발 착수 (Control Point 1개 이상)"
+  },
+  {
+   "from": "DEVELOPING",
+   "to": "VERIFIED",
+   "gates": [
+    "G4",
+    "G5",
+    "G6",
+    "G7"
+   ],
+   "roles": [
+    "SYSTEM"
+   ],
+   "auto": true,
+   "ko": "검증 완료"
+  },
+  {
+   "from": "VERIFIED",
+   "to": "RELEASED",
+   "gates": [
+    "G8",
+    "G9"
+   ],
+   "roles": [
+    "RELEASE_MANAGER"
+   ],
+   "auto": false,
+   "ko": "출시"
+  },
+  {
+   "from": "VERIFIED",
+   "to": "DEVELOPING",
+   "gates": [],
+   "roles": [
+    "GATE_JUDGE",
+    "RELEASE_MANAGER"
+   ],
+   "auto": false,
+   "ko": "검증 실패 — 개발로 되돌림"
+  },
+  {
+   "from": "RELEASED",
+   "to": "DEPRECATED",
+   "gates": [],
+   "roles": [
+    "RELEASE_MANAGER"
+   ],
+   "auto": false,
+   "ko": "신규 사용 중단"
+  },
+  {
+   "from": "DEPRECATED",
+   "to": "RETIRED",
+   "gates": [],
+   "roles": [
+    "RELEASE_MANAGER"
+   ],
+   "auto": false,
+   "ko": "종료"
+  }
+ ],
+ "screens": [
+  {
+   "path": "/",
+   "title": "내 대시보드",
+   "group": "home"
+  },
+  {
+   "path": "/admin/approval",
+   "title": "검토함",
+   "group": "home"
+  },
+  {
+   "path": "/learn",
+   "title": "표준 따라하기",
+   "group": "home"
+  },
+  {
+   "path": "/learn/:id",
+   "title": "따라하기 시나리오",
+   "group": "home"
+  },
+  {
+   "path": "/poc",
+   "title": "PoC 6단계 진행",
+   "group": "home"
+  },
+  {
+   "path": "/arch/components",
+   "title": "42 컴포넌트 아키텍처",
+   "group": "home"
+  },
+  {
+   "path": "/notifications",
+   "title": "알림",
+   "group": "home"
+  },
+  {
+   "path": "/feature/propose",
+   "title": "Feature 제안",
+   "group": "feature"
+  },
+  {
+   "path": "/features",
+   "title": "Feature Registry",
+   "group": "feature"
+  },
+  {
+   "path": "/features/:id/:ver",
+   "title": "Feature Version 상세",
+   "group": "feature"
+  },
+  {
+   "path": "/master/define",
+   "title": "Feature 등록",
+   "group": "feature"
+  },
+  {
+   "path": "/change/cr",
+   "title": "변경요청",
+   "group": "feature"
+  },
+  {
+   "path": "/master/taxonomy",
+   "title": "Taxonomy",
+   "group": "feature"
+  },
+  {
+   "path": "/baselines",
+   "title": "BOM 기준선·확정 승인",
+   "group": "config"
+  },
+  {
+   "path": "/arch/topology",
+   "title": "Topology·의존관계 검증",
+   "group": "config"
+  },
+  {
+   "path": "/analysis/impact",
+   "title": "변경 영향 분석",
+   "group": "config"
+  },
+  {
+   "path": "/variant-conditions",
+   "title": "Variant·지원 조건",
+   "group": "config"
+  },
+  {
+   "path": "/master/upg",
+   "title": "UPG·UPG-VC",
+   "group": "master"
+  },
+  {
+   "path": "/master/artifacts",
+   "title": "SW·Artifact",
+   "group": "master"
+  },
+  {
+   "path": "/master/structure",
+   "title": "SW 구조",
+   "group": "master"
+  },
+  {
+   "path": "/change/eo",
+   "title": "SW EO",
+   "group": "master"
+  },
+  {
+   "path": "/master/control-points",
+   "title": "제어점",
+   "group": "master"
+  },
+  {
+   "path": "/precheck",
+   "title": "데이터 사전점검",
+   "group": "master"
+  },
+  {
+   "path": "/verify/evidence",
+   "title": "품질 기준·Evidence",
+   "group": "verify"
+  },
+  {
+   "path": "/validations",
+   "title": "분야별 검증 이력",
+   "group": "verify"
+  },
+  {
+   "path": "/verify/compliance",
+   "title": "컴플라이언스",
+   "group": "verify"
+  },
+  {
+   "path": "/quality/feedback",
+   "title": "품질 피드백",
+   "group": "verify"
+  },
+  {
+   "path": "/validations/virtual",
+   "title": "CARLA 가상검증",
+   "group": "verify"
+  },
+  {
+   "path": "/experiments",
+   "title": "실험·효과",
+   "group": "verify"
+  },
+  {
+   "path": "/trace/design",
+   "title": "요구·안전 추적",
+   "group": "verify"
+  },
+  {
+   "path": "/products",
+   "title": "Feature Catalog 상품",
+   "group": "release"
+  },
+  {
+   "path": "/products/new",
+   "title": "새 상품 구성",
+   "group": "release"
+  },
+  {
+   "path": "/products/:id/:ver",
+   "title": "상품 Version 상세",
+   "group": "release"
+  },
+  {
+   "path": "/entitlements",
+   "title": "사용 권한·체험권",
+   "group": "release"
+  },
+  {
+   "path": "/activation/decide",
+   "title": "활성화 판단",
+   "group": "release"
+  },
+  {
+   "path": "/policies",
+   "title": "정책·검증·승인",
+   "group": "release"
+  },
+  {
+   "path": "/policies/new",
+   "title": "새 정책",
+   "group": "release"
+  },
+  {
+   "path": "/policies/:id",
+   "title": "정책 상세",
+   "group": "release"
+  },
+  {
+   "path": "/flag-retirements",
+   "title": "Flag Retirement",
+   "group": "release"
+  },
+  {
+   "path": "/deployments",
+   "title": "서명 배포·차량 회신",
+   "group": "release"
+  },
+  {
+   "path": "/deployments/:id",
+   "title": "게시본 상세",
+   "group": "release"
+  },
+  {
+   "path": "/fleet/live",
+   "title": "Fleet 실시간 적용 현황",
+   "group": "ops"
+  },
+  {
+   "path": "/fleet/map",
+   "title": "전세계 차량 지도",
+   "group": "ops"
+  },
+  {
+   "path": "/fleet/vehicles/:vin",
+   "title": "차량별 적용 상태",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/kill",
+   "title": "긴급 차단·복구",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/rollback",
+   "title": "롤백",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/anomalies",
+   "title": "이상 징후 대응",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/safety-kpi",
+   "title": "운행 중 감시 지표",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/incidents",
+   "title": "장애·VOC",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/telemetry",
+   "title": "운영 데이터·이벤트",
+   "group": "ops"
+  },
+  {
+   "path": "/events",
+   "title": "Platform 이벤트",
+   "group": "ops"
+  },
+  {
+   "path": "/integration/connectors",
+   "title": "외부 연계 현황",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/openfeature",
+   "title": "OpenFeature 범위",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/sync",
+   "title": "데이터 동기화",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/legacy",
+   "title": "Legacy 연계",
+   "group": "admin"
+  },
+  {
+   "path": "/field",
+   "title": "현장 지원 포털",
+   "group": "admin"
+  },
+  {
+   "path": "/supplier/portal",
+   "title": "협력사 이관",
+   "group": "admin"
+  },
+  {
+   "path": "/audit",
+   "title": "감사 이력",
+   "group": "admin"
+  },
+  {
+   "path": "/audit/oversight",
+   "title": "감독 기록",
+   "group": "admin"
+  },
+  {
+   "path": "/admin/iam",
+   "title": "플랫폼 인증·권한",
+   "group": "admin"
+  },
+  {
+   "path": "/admin/security",
+   "title": "보안·인증서",
+   "group": "admin"
+  },
+  {
+   "path": "/admin/data",
+   "title": "데이터·규제 기록",
+   "group": "admin"
+  },
+  {
+   "path": "/biz/trials",
+   "title": "체험 전환 분석",
+   "group": "admin"
+  },
+  {
+   "path": "/admin/settings",
+   "title": "설정",
+   "group": "admin"
+  }
+ ],
+ "dist_diff": []
+}

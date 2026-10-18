@@ -3,20 +3,26 @@
 새 세션은 이 파일을 먼저 읽는다. 완료 기준: `python -I scripts/check.py --live` → `ALL GATES PASS`.
 
 ## 작업 위치
-- worktree `C:\project\2026-06-04_Feature_Platform-wf`, 브랜치 `docs/workflows` (기점 2b70c46).
-  - 본 checkout(`feat/v081-integration`)은 다른 세션도 FF 코드를 수정 중이다. FF 수정은 사용자 결정이 있을 때만, 파일 목록을 먼저 공유하고 한다(A단계 2026-10-18).
-- `extract_platform.mjs`는 본 checkout의 `FF/contracts/dist`(node_modules 있음)를 읽는다. worktree에는 node_modules가 없다.
-- 커밋하지 않음. 사용자 요청 시에만 커밋한다.
+- **2026-10-18부터 본 checkout** `C:\project\2026-06-04_Feature_Platform`(브랜치 `feat/v081-integration`)의 `docs/65-workflows`가 원천이다. `docs/workflows` 브랜치는 313b68f로 병합했다. worktree `-wf`는 더 쓰지 않는다(정리는 사용자 확인 후).
+- 같은 브랜치에서 다른 세션도 FF 코드를 고친다. 커밋은 경로를 지정해 담는다(`git add -A` 금지).
+- `extract_platform.mjs`는 `FF/contracts/dist`를 읽는다.
+- **모델을 고친 뒤 순서:** `python -I scripts/check.py` → `cd ../../FF && npm run workflow:sync` → FF `npm run verify`(workflow:check·정합성 시험).
+- 커밋은 사용자 요청 시에만 한다.
 
-## 현재 상태 — 플랫폼 반영 A단계 완료 (2026-10-18)
-- **계획:** `~/.claude/plans/feature-platform-crystalline-snowglobe.md` — A(결정 3건) 완료, 다음은 B(`workflows.json`·FF 동기화, `docs/workflows` 병합 승인 필요) → C1~C4(화면 반영).
-- **A단계 결과(FF 본 checkout, 미커밋, FF verify·verify:full 통과):**
+## 현재 상태 — 플랫폼 반영 A·B단계 완료 (2026-10-18)
+- **계획:** `~/.claude/plans/feature-platform-crystalline-snowglobe.md` — A(결정 3건)·B(데이터 연동·정합성 시험) 완료, 다음은 C1~C4(화면 반영).
+- **A단계 결과(FF 커밋 719079e, FF verify·verify:full 통과):**
   - 은퇴 → Retirement: 모델 문구 전부, 금지어에 '은퇴' 추가. FF는 lint 래칫 `platformTermLines`=0.
   - rotateKey: FF가 SECURITY_OFFICER를 허용 → FPW.11-A02 실행자 R-CSM.
   - G7 Feature Owner 승인: FF `signRelease`(Release Sign-off, 개인 서명) → FPW.7-A12 추가, 출시 전이(A09)의 입력. `gate_crosswalk` G7 `approval_actions: [signRelease]`.
   - ALN-02·04·06 → `resolved-in-platform`(검증기가 아직 검출되면 오류). 열린 정합성 항목 0.
   - 검증기 회귀: 상태 목록을 `wf_model.ALIGNMENT_STATUSES` 한 곳에 두고 HTML 이름표가 같은지 시험(`resolved-in-platform` 이름표 누락으로 생성이 깨졌다).
 - **스냅샷 주의:** 9101(다른 세션의 ops5y serve)이 옛 코드라 임시 백엔드 9113(메모리 DB)에서 추출했다 → `iam_url`이 `localhost:9113`이다. 9101을 재시작한 뒤 `node scripts/extract_platform.mjs`(기본 9012)로 다시 뽑아야 `--live`가 9012를 본다.
+
+- **B단계(2026-10-18):** `scripts/build_json.py` → `out/workflows.json`(역할·페르소나·프로세스·활동·스윔레인 좌표, check.py에 포함).
+  FF `tools/workflow-sync.ts` → `contracts/src/generated/workflows.ts`, verify 단계 `workflow:check`.
+  FF 정합성 시험: `contracts/src/rules/workflows.test.ts`(action 권한·R[0] 역할·규칙·Gate·데모 계정, 결함 주입 포함), `frontend/src/__tests__/workflowScreens.test.ts`(활동 화면 경로).
+  route 권한·화면 경로·데모 계정이 바뀌면 FF verify가 실패한다 → 이 모델을 고치고 다시 생성한다.
 
 ## 이전 상태 — 2단계 완료 (2026-10-18)
 - **최종 게이트:** `check.py --live` → ALL GATES PASS

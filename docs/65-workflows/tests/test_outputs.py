@@ -53,3 +53,26 @@ def test_markdown_front_matter_follows_docs_schema():
 def test_every_alignment_status_has_html_label():
     # 상태를 새로 추가하면 HTML 이름표도 있어야 한다(resolved-in-platform 누락으로 생성이 깨졌던 회귀)
     assert set(build_html.STATUS_KO) == wm.ALIGNMENT_STATUSES
+
+
+def test_workflows_json_is_deterministic_and_complete(model):
+    import json
+    import build_json
+    text = build_json.render(model)
+    assert text == build_json.render(wm.load_model())          # 같은 모델 → 같은 바이트(FF 생성 모듈 --check가 기대)
+    doc = json.loads(text)
+    acts = [a["id"] for p in doc["processes"] for a in p["activities"]]
+    assert sorted(acts) == sorted(model["acts_by_id"])
+    for p in doc["processes"]:
+        nodes = {n["id"] for n in p["layout"]["nodes"]}
+        assert {a["id"] for a in p["activities"]} <= nodes
+        assert all(e["from"] in nodes and e["to"] in nodes and len(e["points"]) >= 2 for e in p["layout"]["edges"])
+
+
+def test_workflows_json_personas_follow_iam_accounts(model):
+    import build_json
+    per = build_json.personas(model)
+    assert set(per) == set(model["iam"]["accounts"])
+    assert "R-FO" in per["author"]                              # FEATURE_AUTHOR = Feature Owner
+    assert "R-CSM" in per["integrator"]                         # SECURITY_OFFICER = 보안 담당
+    assert all(per.values()), [a for a, r in per.items() if not r]

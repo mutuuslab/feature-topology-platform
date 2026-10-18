@@ -38,6 +38,8 @@
     "sim:test": "node tools/carla-doctor.ts --pytest",
     "guide:sync": "node tools/guide-sync.ts",
     "guide:check": "node tools/guide-sync.ts --check",
+    "workflow:sync": "node tools/workflow-sync.ts",
+    "workflow:check": "node tools/workflow-sync.ts --check",
     "standards": "node tools/standards.ts",
     "req": "node tools/requirements.ts",
     "req:sync": "node tools/requirements.ts --sync",

@@ -1,4 +1,4 @@
-"""단일 게이트: 모델 검증 → (선택) /admin/iam 실시간 대조 → HTML·MD 생성 → pytest.
+"""단일 게이트: 모델 검증 → (선택) /admin/iam 실시간 대조 → HTML·MD·JSON 생성 → pytest.
 
 사용:
   python -I scripts/check.py            최종 게이트(모든 프로세스·규칙 커버리지 필수)
@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_model as wm  # noqa: E402
 import build_html  # noqa: E402
 import build_md  # noqa: E402
+import build_json  # noqa: E402
 
 
 def iam_shape(roles_doc: dict) -> dict:
@@ -71,7 +72,8 @@ def main(argv) -> int:
     if not failed:
         html = build_html.build(partial=partial)
         mds = build_md.build(partial=partial)
-        print(f"[3] 생성: {html.name}, Markdown {len(mds)}개")
+        js = build_json.build()
+        print(f"[3] 생성: {html.name}, Markdown {len(mds)}개, {js.name}")
     r = subprocess.run([sys.executable, "-I", "-m", "pytest", "-q", str(wm.ROOT / "tests"), "-p", "no:cacheprovider"],
                        cwd=wm.ROOT, capture_output=True, text=True)
     print(f"[4] pytest: {r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr.strip()[-300:]}")

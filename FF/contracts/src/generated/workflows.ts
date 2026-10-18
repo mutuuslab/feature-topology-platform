@@ -1,0 +1,10106 @@
+// 생성 파일 — tools/workflow-sync.ts가 docs/65-workflows/out/workflows.json(업무 절차 모델)에서 만든다. 손으로 고치지 않는다(workflow:check가 잡는다).
+import type { WorkflowDoc } from '../rules/workflows';
+
+export const WORKFLOWS: WorkflowDoc = {
+ "schema": 1,
+ "note": "docs/65-workflows/scripts/build_json.py가 모델(model/*.yaml)에서 만든다. 손으로 고치지 않는다.",
+ "roles": [
+  {
+   "id": "R-FO",
+   "name": "Feature Owner",
+   "en": "Feature Owner",
+   "desc": "Feature의 대상·분류·출시 판단을 책임진다. Feature와 정책 초안을 작성한다.",
+   "platformRoles": [
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "id": "R-REQ",
+   "name": "요구 Owner",
+   "en": "Requirement Owner",
+   "desc": "안전요구를 확정하고 Feature 정의(G1~G3 묶음)를 승인한다.",
+   "platformRoles": [
+    "FEATURE_APPROVER"
+   ]
+  },
+  {
+   "id": "R-SM",
+   "name": "Safety Manager",
+   "en": "Safety Manager (FSM)",
+   "desc": "안전 분류·HARA·Safety Case를 책임지고 F2 이상 Kill·복원을 승인한다.",
+   "platformRoles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "id": "R-CSM",
+   "name": "CSM",
+   "en": "Cybersecurity Manager",
+   "desc": "TARA·보안 Incident·취약점 대응과 보안 사유 Kill을 책임진다.",
+   "platformRoles": [
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "id": "R-REG",
+   "name": "법규 담당",
+   "en": "Regulatory Owner",
+   "desc": "형식승인 영향 판단·Compliance Profile·리콜 연계를 책임진다.",
+   "platformRoles": [
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "id": "R-TST",
+   "name": "시험 조직",
+   "en": "Test Organization",
+   "desc": "시험 명세·실행·Evidence 제출과 독립 V&V를 수행한다.",
+   "platformRoles": [
+    "GATE_JUDGE"
+   ]
+  },
+  {
+   "id": "R-QA",
+   "name": "품질 조직",
+   "en": "Quality Organization",
+   "desc": "독립 검토·Gate 판정 확인·감사·품질 피드백을 수행한다.",
+   "platformRoles": [
+    "GATE_JUDGE",
+    "AUDITOR"
+   ]
+  },
+  {
+   "id": "R-OPS",
+   "name": "운영 조직",
+   "en": "Operations Organization",
+   "desc": "운행 감시·이상 징후 대응·긴급 차단 요청·드릴을 수행한다. 운영 리더는 차단·복원 승인에 참여한다.",
+   "platformRoles": [
+    "OPERATOR",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "id": "R-ARC",
+   "name": "아키텍트",
+   "en": "Architect",
+   "desc": "안전 설계·정책·Control Point·차량 내 감시 구조를 설계한다.",
+   "platformRoles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "id": "R-INT",
+   "name": "통합 조직",
+   "en": "Integration Organization",
+   "desc": "차량 SW·협력사 컴포넌트 통합과 변경 기록, EOL 프로비저닝을 수행한다.",
+   "platformRoles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "id": "R-REL",
+   "name": "Release Manager",
+   "en": "Release Manager",
+   "desc": "서명 배포·단계적 확대·Lifecycle 출시 전이를 수행한다.",
+   "platformRoles": [
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "id": "R-PUR",
+   "name": "구매",
+   "en": "Purchasing",
+   "desc": "협력사 선정·DIA/CIA 계약·공급망 원산지 관리를 수행한다.",
+   "platformRoles": []
+  },
+  {
+   "id": "R-LEG",
+   "name": "법무",
+   "en": "Legal",
+   "desc": "소비자법·데이터 이전·OSS 라이선스 검토를 수행한다.",
+   "platformRoles": []
+  },
+  {
+   "id": "R-PKI",
+   "name": "PKI 운영",
+   "en": "PKI Operations",
+   "desc": "서명 키·인증서 수명주기와 HSM 정책을 운영한다.",
+   "platformRoles": []
+  },
+  {
+   "id": "R-DPO",
+   "name": "데이터 보호 담당",
+   "en": "Data Protection Officer",
+   "desc": "개인정보·위치·주행 데이터의 수집 범위와 보존을 검토한다.",
+   "platformRoles": []
+  },
+  {
+   "id": "R-PLM",
+   "name": "기준정보 담당",
+   "en": "PLM Master Data Steward",
+   "desc": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.",
+   "platformRoles": [
+    "VARIANT_OWNER",
+    "BOM_APPROVER"
+   ]
+  },
+  {
+   "id": "R-PDA",
+   "name": "상품 기획",
+   "en": "Product Author",
+   "desc": "Feature Catalog 상품 구성과 체험 제안을 작성한다.",
+   "platformRoles": [
+    "PRODUCT_AUTHOR"
+   ]
+  },
+  {
+   "id": "R-PO",
+   "name": "상품 Owner",
+   "en": "Product Owner",
+   "desc": "상품 구성과 고객 출시를 승인한다.",
+   "platformRoles": [
+    "PRODUCT_APPROVER"
+   ]
+  }
+ ],
+ "personas": {
+  "approver": [
+   "R-REQ",
+   "R-PO"
+  ],
+  "author": [
+   "R-FO"
+  ],
+  "commerce": [
+   "R-PDA"
+  ],
+  "coordinator": [
+   "R-REL"
+  ],
+  "integrator": [
+   "R-SM",
+   "R-CSM",
+   "R-ARC",
+   "R-INT"
+  ],
+  "operator": [
+   "R-OPS"
+  ],
+  "quality": [
+   "R-SM",
+   "R-TST",
+   "R-QA"
+  ],
+  "steward": [
+   "R-REG",
+   "R-PLM"
+  ],
+  "viewer": [
+   "R-QA"
+  ]
+ },
+ "gateCrosswalk": [
+  {
+   "report": "G1",
+   "platform": [
+    "G1",
+    "G3"
+   ],
+   "approvalActions": []
+  },
+  {
+   "report": "G2",
+   "platform": [
+    "G7"
+   ],
+   "approvalActions": []
+  },
+  {
+   "report": "G3",
+   "platform": [
+    "G2"
+   ],
+   "approvalActions": []
+  },
+  {
+   "report": "G4",
+   "platform": [
+    "G4",
+    "G7"
+   ],
+   "approvalActions": []
+  },
+  {
+   "report": "G5",
+   "platform": [
+    "G5",
+    "G6"
+   ],
+   "approvalActions": []
+  },
+  {
+   "report": "G6",
+   "platform": [
+    "G8"
+   ],
+   "approvalActions": []
+  },
+  {
+   "report": "G7",
+   "platform": [
+    "G9"
+   ],
+   "approvalActions": [
+    "signRelease"
+   ]
+  },
+  {
+   "report": "G8",
+   "platform": [],
+   "approvalActions": []
+  }
+ ],
+ "processes": [
+  {
+   "id": "FPW.1",
+   "name": "Feature 등록·분류",
+   "en": "Feature Registration & Classification",
+   "group": "생애주기",
+   "gates": [
+    "G1"
+   ],
+   "ref": "표준 보고서 5장(분류), 6.1절 G1, 6.4절 시나리오",
+   "purpose": "통제할 Feature Version의 대상·소유자·적용 차량을 Registry에 등록하고, 네 축 안전 분류와 법규 등급을 확정해 이후 모든 Gate가 같은 분류를 기준으로 판단하게 한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "Feature Version이 소유자·대상 차량 사양·의존 관계와 함께 Registry에 등록된다."
+    },
+    {
+     "id": "O2",
+     "text": "F 등급·비활성화 등급·법규 등급·Flag 유형이 근거와 함께 확정된다."
+    },
+    {
+     "id": "O3",
+     "text": "G1 판정이 서명된 Decision Record로 남고 다음 단계(G2)로 넘어간다."
+    }
+   ],
+   "rules": [
+    "FFG-CLS-001",
+    "FFG-CLS-003",
+    "FFG-CLS-005",
+    "FFG-CLS-008",
+    "FFG-CLS-009",
+    "FFG-LCY-001",
+    "FFG-LCY-002"
+   ],
+   "entry": [
+    "Feature 제안 또는 변경요청이 접수되어 담당 Feature Owner가 지정되었다",
+    "대상 시장의 Compliance Profile 판이 고정되어 있다"
+   ],
+   "exit": [
+    "Feature Version이 PROPOSED 상태로 등록되고 네 축 분류가 Safety Manager 서명으로 확정되었다",
+    "법규 의무 기능 여부가 판정되어 분류에 반영되었다",
+    "G1 Decision Record(판정·근거 Evidence·승인자 역할)가 남았다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-FEAT-PROPOSAL",
+     "name": "Feature 제안·변경요청",
+     "en": "Feature Proposal / Change Request",
+     "kind": "input",
+     "retained": false,
+     "content": [
+      "기능 목적과 사용자 가치, 대상 시장·차종",
+      "관련 요구 ID(ALM)와 기존 Feature와의 관계",
+      "희망 출시 시점과 판매 방식(구독·구매·체험)"
+     ]
+    },
+    {
+     "key": "WP-FEAT-REG",
+     "name": "Feature 등록 기록",
+     "en": "Feature Registry Entry",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Feature ID·Version(PROPOSED 0.1.0)·소유자·설명",
+      "Flag 유형과 Release·Experiment Flag의 만료일·Retirement 계획",
+      "관련 요구 ID와 판매 방식"
+     ]
+    },
+    {
+     "key": "WP-FEAT-SCOPE",
+     "name": "대상 차량 사양·의존 관계",
+     "en": "Variant Scope & Dependencies",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "적용 차종·Trim·시장과 지원 조건",
+      "필요(REQUIRES)·배타(EXCLUDES) 의존 관계와 판정",
+      "Topology에서 위험 전파 관계가 있는 Feature 목록"
+     ]
+    },
+    {
+     "key": "WP-SAFETY-PROFILE",
+     "name": "안전 분류(네 축)",
+     "en": "Safety Profile",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "F 등급과 판정 근거(위험 전파 관계 포함)",
+      "비활성화 등급·Safe State·인계·감소 시간 프로파일",
+      "Safety Manager 개인 서명과 확정 시각"
+     ]
+    },
+    {
+     "key": "WP-REG-CLASS",
+     "name": "법규 등급 판정 기록",
+     "en": "Regulatory Classification Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "시장별 의무 기능 해당 여부와 근거 조항",
+      "의무 기능일 때 DC4·R2 지정과 원격 요청 거부 대상 표시"
+     ]
+    },
+    {
+     "key": "WP-G1-DECISION",
+     "name": "G1 Decision Record",
+     "en": "G1 Decision Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "판정(PASS·CONDITIONAL PASS·FAIL)과 근거 Evidence ID",
+      "판정자 역할·서명·시각, 조건부 통과 시 기한과 책임자"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.1-A01",
+     "name": "Feature 등록·초안 작성",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-CLS-008"
+     ],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-ARC",
+       "R-REQ"
+      ],
+      "I": [
+       "R-SM"
+      ]
+     },
+     "inputs": [
+      "WP-FEAT-PROPOSAL"
+     ],
+     "outputs": [
+      "WP-FEAT-REG"
+     ],
+     "steps": [
+      "제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다",
+      "Feature 등록 화면에서 이름·설명·관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다",
+      "Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다",
+      "아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다"
+     ],
+     "checks": [
+      "Registry에 PROPOSED Version이 생기고 소유자가 지정되었다",
+      "만료일이 필요한 Flag 유형에 만료일과 Retirement 계획이 비어 있지 않다"
+     ],
+     "platform": {
+      "actions": [
+       "createFeature",
+       "createVersion",
+       "updateDraft"
+      ],
+      "screens": [
+       "/master/define",
+       "/features"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.1-A02",
+      "FPW.1-A03"
+     ]
+    },
+    {
+     "id": "FPW.1-A02",
+     "name": "대상 차량 사양·의존 등록",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-PLM"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-ARC"
+      ],
+      "I": [
+       "R-SM"
+      ]
+     },
+     "inputs": [
+      "WP-FEAT-REG"
+     ],
+     "outputs": [
+      "WP-FEAT-SCOPE"
+     ],
+     "steps": [
+      "적용 차종·Trim·시장을 PLM 기준정보와 대조해 지원 조건을 등록한다",
+      "다른 Feature와의 필요·배타 관계를 등록하고 의존 판정 결과를 확인한다",
+      "Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다"
+     ],
+     "checks": [
+      "모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다"
+     ],
+     "platform": {
+      "actions": [
+       "createDependency"
+      ],
+      "screens": [
+       "/variant-conditions",
+       "/arch/topology"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.1-A05"
+     ]
+    },
+    {
+     "id": "FPW.1-A03",
+     "name": "안전 분류(네 축) 확정",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-CLS-001",
+      "FFG-CLS-003",
+      "FFG-CLS-009"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-FO",
+       "R-ARC"
+      ],
+      "I": [
+       "R-REQ"
+      ]
+     },
+     "inputs": [
+      "WP-FEAT-REG",
+      "WP-FEAT-SCOPE"
+     ],
+     "outputs": [
+      "WP-SAFETY-PROFILE"
+     ],
+     "steps": [
+      "F 등급·비활성화 등급·법규 등급·Flag 유형 네 축을 모두 채운다",
+      "비활성화 등급과 F 등급이 서로 허용되는 조합인지, 시간 프로파일 값이 0보다 큰지 확인한다",
+      "위험 전파 관계가 있는 Feature의 F 등급을 낮추는 경우 영향 재분석 결과를 붙인다",
+      "확정 버튼으로 개인 서명해 분류를 고정한다. 확정 뒤에는 초안 수정이 막힌다"
+     ],
+     "checks": [
+      "네 축 중 빈 값이 없고 분류 확정 서명이 남았다",
+      "F 등급 하향이면 재분석 Evidence가 연결되었다"
+     ],
+     "platform": {
+      "actions": [
+       "updateSafetyProfile",
+       "confirmSafetyProfile"
+      ],
+      "screens": [
+       "/features/:id/:ver"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.1-A04"
+     ]
+    },
+    {
+     "id": "FPW.1-A04",
+     "name": "법규 의무 기능 판정",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-CLS-005"
+     ],
+     "raci": {
+      "R": [
+       "R-REG"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-SM"
+      ],
+      "I": [
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-PROFILE",
+      "WP-COMPLIANCE-PROFILE"
+     ],
+     "outputs": [
+      "WP-REG-CLASS"
+     ],
+     "steps": [
+      "대상 시장 Compliance Profile의 의무 기능 목록과 Feature 기능을 대조한다",
+      "의무 기능이면 법규 등급과 비활성화 등급을 의무 기능 기준으로 지정하도록 Safety Manager에게 요청한다",
+      "판정 근거 조항과 시장을 기록하고 Feature Owner에게 원격 요청 제한을 알린다"
+     ],
+     "checks": [
+      "대상 시장마다 의무 기능 해당 여부가 기록되었다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.1-A05"
+     ]
+    },
+    {
+     "id": "FPW.1-A05",
+     "name": "G1 등록·분류 판정",
+     "trigger": null,
+     "gateDecision": "G1",
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-LCY-001",
+      "FFG-LCY-002",
+      "FFG-CLS-001"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-FO",
+       "R-REG"
+      ],
+      "I": [
+       "R-REQ",
+       "R-PLM",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-FEAT-REG",
+      "WP-FEAT-SCOPE",
+      "WP-SAFETY-PROFILE",
+      "WP-REG-CLASS"
+     ],
+     "outputs": [
+      "WP-G1-DECISION"
+     ],
+     "steps": [
+      "등록 기록·대상 사양·분류·법규 판정이 모두 있는지 확인하고, 하나라도 없으면 FAIL로 판정한다",
+      "Feature Owner의 의견을 받아 판정(PASS·CONDITIONAL PASS·FAIL)과 근거 Evidence ID를 입력한다",
+      "Gate G1(Feature)·G3(Variant)을 개인 서명으로 판정 등록한다",
+      "조건부 통과면 기한과 책임자를 등록하고 요구 Owner에게 G2·G3 착수를 알린다"
+     ],
+     "checks": [
+      "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다",
+      "Feature 작성자와 판정자가 다른 사람이다"
+     ],
+     "platform": {
+      "actions": [
+       "judgeGate"
+      ],
+      "screens": [
+       "/features/:id/:ver",
+       "/admin/approval"
+      ],
+      "gates": [
+       "G1",
+       "G3"
+      ]
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1366,
+    "height": 392,
+    "lanes": [
+     {
+      "role": "R-FO",
+      "label": "Feature Owner",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-PLM",
+      "label": "기준정보 담당",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-SM",
+      "label": "Safety Manager",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-REG",
+      "label": "법규 담당",
+      "x": 0,
+      "y": 294,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.1-A01",
+      "kind": "action",
+      "label": "Feature 등록·초안 작성",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-A02",
+      "kind": "action",
+      "label": "대상 차량 사양·의존 등록",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-A03",
+      "kind": "action",
+      "label": "안전 분류(네 축) 확정",
+      "x": 478,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-A05",
+      "kind": "action",
+      "label": "G1 등록·분류 판정",
+      "x": 1038,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-A04",
+      "kind": "action",
+      "label": "법규 의무 기능 판정",
+      "x": 758,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.1-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.1-S1",
+      "to": "FPW.1-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A01",
+      "to": "FPW.1-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A01",
+      "to": "FPW.1-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        245
+       ],
+       [
+        478,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A02",
+      "to": "FPW.1-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A03",
+      "to": "FPW.1-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        746,
+        343
+       ],
+       [
+        758,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A04",
+      "to": "FPW.1-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        343
+       ],
+       [
+        1026,
+        343
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A05",
+      "to": "FPW.1-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        245
+       ],
+       [
+        1240,
+        245
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1026,
+      245
+     ]
+    ]
+   }
+  },
+  {
+   "id": "FPW.2",
+   "name": "HARA·변경 영향 판단",
+   "en": "HARA & Change Impact",
+   "group": "생애주기",
+   "gates": [
+    "G2"
+   ],
+   "ref": "표준 보고서 6.1절 G2·6.4절 재-HARA 조건, 3장(ADS), 14장(HARA·TARA·SOTIF)",
+   "purpose": "등록·분류된 Feature Version이나 그 변경이 차량 위험에 어떤 영향을 주는지 HARA·TARA·SOTIF로 분석하고, Topology의 위험 전파 범위와 형식승인 영향을 확정해 안전요구 작성(G3)의 입력을 만든다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "재-HARA가 필요한 변경이 자동 검출되어 Safety Manager에게 요청된다."
+    },
+    {
+     "id": "O2",
+     "text": "같은 Item 정의 위에서 HARA와 TARA가 수행되고 서로 교차 검토된다."
+    },
+    {
+     "id": "O3",
+     "text": "거동을 바꾸는 Version의 SOTIF 분석(성능 한계·트리거 조건)이 갱신된다."
+    },
+    {
+     "id": "O4",
+     "text": "형식승인 영향 1차 판단과 G2 판정이 기록된다."
+    }
+   ],
+   "rules": [
+    "FFG-LCY-003",
+    "FFG-SEC-001",
+    "FFG-ADS-002",
+    "FFG-SOT-001",
+    "FFG-GEN-006",
+    "FFG-CLS-004",
+    "FFG-LCY-001"
+   ],
+   "entry": [
+    "G1 판정이 PASS 또는 기한이 있는 CONDITIONAL PASS다",
+    "Feature Version의 대상 차량 사양과 의존 관계가 Topology에 등록되어 있다"
+   ],
+   "exit": [
+    "HARA·TARA 결과와 교차 검토 기록이 Feature Version에 연결되었다",
+    "SOTIF 분석이 이 Version 기준으로 갱신되었다",
+    "G2 Decision Record가 Safety Manager 서명으로 남았다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-IMPACT-ANALYSIS",
+     "name": "변경 영향 분석서",
+     "en": "Change Impact Analysis",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "이전 Version과 바뀐 Registry 속성·Topology 관계",
+      "재-HARA 조건 해당 여부와 근거",
+      "영향 받는 Feature·차량 사양·회귀 시험 범위"
+     ]
+    },
+    {
+     "key": "WP-HARA-TARA",
+     "name": "HARA·TARA 결과",
+     "en": "HARA / TARA Results",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Item 정의와 위험 사건·ASIL·Safety Goal",
+      "위협 시나리오·위험 값·보안 목표",
+      "두 분석의 교차 검토 결과와 반영 내용",
+      "ADS Feature면 원격 종료 경로와 비활성화 등급 확인 결과"
+     ]
+    },
+    {
+     "key": "WP-SOTIF-ANALYSIS",
+     "name": "SOTIF 분석",
+     "en": "SOTIF Analysis",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "기능 사양과 성능 한계",
+      "트리거 조건과 위험 시나리오 평가"
+     ]
+    },
+    {
+     "key": "WP-HOMOLOGATION-IMPACT",
+     "name": "형식승인 영향 판단서",
+     "en": "Type Approval Impact Assessment",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "영향 여부와 근거 조항, 대상 RXSWIN",
+      "승인 기관 결정(개정·확장)이 필요한 경우 그 목록",
+      "법규 담당 서명과 판단 시각"
+     ]
+    },
+    {
+     "key": "WP-G2-DECISION",
+     "name": "G2 Decision Record",
+     "en": "G2 Decision Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "판정과 근거 Evidence ID(HARA·TARA·SOTIF·영향 분석)",
+      "Safety Manager 서명·시각, 조건부 통과 시 기한과 책임자"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.2-A01",
+     "name": "재-HARA 조건 검출·영향 범위 산정",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-LCY-003",
+      "FFG-CLS-004"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-ARC",
+       "R-FO"
+      ],
+      "I": [
+       "R-REQ",
+       "R-TST"
+      ]
+     },
+     "inputs": [
+      "WP-G1-DECISION",
+      "WP-FEAT-SCOPE",
+      "WP-SAFETY-PROFILE",
+      "WP-SUPPLIER-DIFF"
+     ],
+     "outputs": [
+      "WP-IMPACT-ANALYSIS"
+     ],
+     "steps": [
+      "이전 Version과 Registry 속성·Topology 관계를 비교한 변경 영향 분석 결과를 연다",
+      "재-HARA 조건(비활성화 등급·Safe State 변경, 위험 전파 관계 추가 등)에 걸리는 변경을 표시한다",
+      "비활성화 등급이나 Safe State를 바꾸는 변경이면 새 Version과 G2~G5 재수행을 요구한다",
+      "협력사 기존 구현을 재사용하면 차이 보고를 영향 분석에 반영한다"
+     ],
+     "checks": [
+      "재-HARA 조건 해당 여부가 근거와 함께 기록되었다",
+      "영향 받는 Feature와 회귀 시험 범위가 산정되었다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/analysis/impact",
+       "/arch/topology"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.2-A02",
+      "FPW.2-A03",
+      "FPW.2-A04"
+     ]
+    },
+    {
+     "id": "FPW.2-A02",
+     "name": "HARA·TARA 공동 수행",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-SEC-001",
+      "FFG-ADS-002"
+     ],
+     "raci": {
+      "R": [
+       "R-SM",
+       "R-CSM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-ARC",
+       "R-FO"
+      ],
+      "I": [
+       "R-REQ",
+       "R-REG"
+      ]
+     },
+     "inputs": [
+      "WP-IMPACT-ANALYSIS"
+     ],
+     "outputs": [
+      "WP-HARA-TARA"
+     ],
+     "steps": [
+      "Safety Manager와 CSM이 같은 Item 정의를 기준으로 Kill·활성화 경로의 HARA와 TARA를 진행한다",
+      "각 분석의 결과(위험 사건·위협 시나리오)를 상대 분석에 넘겨 교차 검토하고 반영 내용을 기록한다",
+      "ADS Feature는 원격 종료가 가능한 비활성화 등급과 요청 경로(봉투·명령 인증·Guard)를 갖췄는지 확인한다"
+     ],
+     "checks": [
+      "교차 검토 기록이 양쪽 분석에 남았다",
+      "ADS Feature가 원격 종료 불가 등급으로 분류되지 않았다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.2-A05"
+     ]
+    },
+    {
+     "id": "FPW.2-A03",
+     "name": "SOTIF 분석 갱신",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-SOT-001"
+     ],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-ARC",
+       "R-TST"
+      ],
+      "I": [
+       "R-REQ"
+      ]
+     },
+     "inputs": [
+      "WP-IMPACT-ANALYSIS"
+     ],
+     "outputs": [
+      "WP-SOTIF-ANALYSIS"
+     ],
+     "steps": [
+      "거동을 바꾸는 Version이면 기능 사양과 성능 한계를 이 Version 기준으로 다시 쓴다",
+      "알려진 트리거 조건과 운영에서 들어온 새 트리거 조건을 반영해 위험 시나리오를 평가한다",
+      "평가 결과를 Safety Manager에게 넘겨 안전 판단에 쓰게 한다"
+     ],
+     "checks": [
+      "SOTIF 분석의 대상 Version이 현재 Version과 같다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.2-A05"
+     ]
+    },
+    {
+     "id": "FPW.2-A04",
+     "name": "형식승인 영향 1차 판단",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-GEN-006"
+     ],
+     "raci": {
+      "R": [
+       "R-REG"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-SM",
+       "R-FO"
+      ],
+      "I": [
+       "R-REL"
+      ]
+     },
+     "inputs": [
+      "WP-IMPACT-ANALYSIS"
+     ],
+     "outputs": [
+      "WP-HOMOLOGATION-IMPACT"
+     ],
+     "steps": [
+      "변경이 대상 시장 형식승인 범위(RXSWIN)에 영향을 주는지 조항별로 판단한다",
+      "영향이 있으면 승인 기관에 필요한 개정·확장 절차와 예상 시점을 정한다",
+      "판단 결과에 서명하고 Feature Owner와 Release Manager에게 활성화 조건을 알린다"
+     ],
+     "checks": [
+      "판단서에 법규 담당 서명과 대상 RXSWIN이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.2-A05"
+     ]
+    },
+    {
+     "id": "FPW.2-A05",
+     "name": "G2 HARA 영향 판정",
+     "trigger": null,
+     "gateDecision": "G2",
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-LCY-001"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-CSM",
+       "R-REG"
+      ],
+      "I": [
+       "R-FO",
+       "R-REQ",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-HARA-TARA",
+      "WP-SOTIF-ANALYSIS",
+      "WP-HOMOLOGATION-IMPACT"
+     ],
+     "outputs": [
+      "WP-G2-DECISION"
+     ],
+     "steps": [
+      "HARA·TARA·SOTIF·형식승인 판단이 모두 현재 Version 기준인지 확인하고, 빠진 것이 있으면 FAIL로 판정한다",
+      "판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다",
+      "판정 결과를 요구 Owner에게 넘겨 안전요구 작성을 시작하게 한다"
+     ],
+     "checks": [
+      "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다"
+     ],
+     "platform": {
+      "actions": [
+       "judgeGate"
+      ],
+      "screens": [
+       "/features/:id/:ver",
+       "/admin/approval"
+      ],
+      "gates": [
+       "G7"
+      ]
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1086,
+    "height": 294,
+    "lanes": [
+     {
+      "role": "R-SM",
+      "label": "Safety Manager",
+      "x": 0,
+      "y": 0,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "role": "R-FO",
+      "label": "Feature Owner",
+      "x": 0,
+      "y": 98,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "role": "R-REG",
+      "label": "법규 담당",
+      "x": 0,
+      "y": 196,
+      "w": 1086,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.2-A01",
+      "kind": "action",
+      "label": "재-HARA 조건 검출·영향 범위 산정",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-A02",
+      "kind": "action",
+      "label": "HARA·TARA 공동 수행",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-A05",
+      "kind": "action",
+      "label": "G2 HARA 영향 판정",
+      "x": 758,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-A03",
+      "kind": "action",
+      "label": "SOTIF 분석 갱신",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-A04",
+      "kind": "action",
+      "label": "형식승인 영향 1차 판단",
+      "x": 478,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.2-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 960,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.2-S1",
+      "to": "FPW.2-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A04",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        245
+       ],
+       [
+        478,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A02",
+      "to": "FPW.2-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A03",
+      "to": "FPW.2-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A04",
+      "to": "FPW.2-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A05",
+      "to": "FPW.2-E1",
+      "kind": "end",
+      "points": [
+       [
+        946,
+        49
+       ],
+       [
+        960,
+        49
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      746,
+      49
+     ],
+     [
+      746,
+      147
+     ]
+    ]
+   }
+  },
+  {
+   "id": "FPW.3",
+   "name": "안전요구 확정",
+   "en": "Safety Requirements Baseline",
+   "group": "생애주기",
+   "gates": [
+    "G3"
+   ],
+   "ref": "표준 보고서 6.1절 G3, 6장 FFG-LCY-004·005, 16장(ASPICE SYS.2·SWE.1)",
+   "purpose": "HARA 결과로부터 검증 가능한 안전요구를 확정하고, Safety Goal부터 출시 Baseline까지 끊김 없이 추적되게 한 뒤, Feature 정의(G1~G3)를 승인해 개발 단계로 넘긴다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "비활성화 동작을 포함한 안전요구가 Safety Goal에서 도출된다."
+    },
+    {
+     "id": "O2",
+     "text": "F2 이상 Feature의 안전요구가 양방향으로 빠짐없이 추적된다."
+    },
+    {
+     "id": "O3",
+     "text": "요구 검토가 판정되고 Feature 정의가 승인되어 APPROVED로 전이된다."
+    }
+   ],
+   "rules": [
+    "FFG-LCY-004",
+    "FFG-LCY-005",
+    "FFG-LCY-012"
+   ],
+   "entry": [
+    "G2 판정이 PASS이고 HARA·TARA·SOTIF 결과가 현재 Version 기준이다"
+   ],
+   "exit": [
+    "안전요구가 Feature Version에 연결되고 추적 단절이 없다",
+    "G3 판정과 정의 승인(PROPOSED→APPROVED)이 남았다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-SAFETY-REQ",
+     "name": "안전요구·추적 연결",
+     "en": "Safety Requirements & Trace",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Safety Goal부터 기능·기술·SW 안전요구까지의 도출 관계",
+      "비활성화 등급·경고·인계·감소 시간·Safe State·끝 상태·운전자 정보 요구",
+      "요구별 검증 기준과 ALM 요구 ID"
+     ]
+    },
+    {
+     "key": "WP-TRACE-REPORT",
+     "name": "추적성 점검 결과",
+     "en": "Traceability Check Report",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "요구↔설계↔시험↔Baseline 양방향 연결 현황",
+      "끊긴 연결과 조치 담당"
+     ]
+    },
+    {
+     "key": "WP-REQ-REVIEW",
+     "name": "요구 검토 판정 기록",
+     "en": "Requirement Review Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "요구 특성(검증 가능성·일관성·완전성) 검토 결과",
+      "Requirement Gate 판정과 판정자 서명"
+     ]
+    },
+    {
+     "key": "WP-G3-DECISION",
+     "name": "G3 Decision Record·정의 승인",
+     "en": "G3 Decision Record & Definition Approval",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "G3 판정과 근거 Evidence ID",
+      "PROPOSED→APPROVED 전이 기록과 승인자(작성자와 다른 사람)"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.3-A01",
+     "name": "안전요구 도출·명세",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-LCY-005",
+      "FFG-LCY-012"
+     ],
+     "raci": {
+      "R": [
+       "R-REQ"
+      ],
+      "A": "R-REQ",
+      "C": [
+       "R-SM",
+       "R-ARC"
+      ],
+      "I": [
+       "R-TST",
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-G2-DECISION",
+      "WP-HARA-TARA",
+      "WP-SOTIF-ANALYSIS"
+     ],
+     "outputs": [
+      "WP-SAFETY-REQ"
+     ],
+     "steps": [
+      "Safety Goal별로 기능·기술 안전요구를 도출하고 SW에 할당된 요구를 SW 안전요구로 나눈다",
+      "F2 이상 Feature는 비활성화 등급·경고·인계·감소 시간·Safe State·끝 상태·운전자 정보를 요구로 쓴다",
+      "안전 관련 Flag·파라미터·임계값 변경은 소스 변경이 없어도 변경요청과 영향 분석을 붙인다",
+      "요구마다 검증 기준을 적고 ALM 요구 ID로 등록한다"
+     ],
+     "checks": [
+      "모든 Safety Goal에 하나 이상의 안전요구가 있고 요구마다 검증 기준이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/trace/design",
+       "/change/cr"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.3-A02"
+     ]
+    },
+    {
+     "id": "FPW.3-A02",
+     "name": "양방향 추적성 점검",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-LCY-004"
+     ],
+     "raci": {
+      "R": [
+       "R-REQ"
+      ],
+      "A": "R-REQ",
+      "C": [
+       "R-ARC",
+       "R-TST"
+      ],
+      "I": [
+       "R-SM"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-REQ"
+     ],
+     "outputs": [
+      "WP-TRACE-REPORT"
+     ],
+     "steps": [
+      "요구·안전 추적 화면에서 Safety Goal→요구→설계→시험→Baseline 연결을 양방향으로 확인한다",
+      "끊긴 연결마다 조치 담당과 기한을 지정한다",
+      "F2 이상 Feature에 연결되지 않은 요구가 남아 있으면 판정 요청을 보류한다"
+     ],
+     "checks": [
+      "F2 이상 Feature의 끊긴 연결이 0건이다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/trace/design"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.3-A03"
+     ]
+    },
+    {
+     "id": "FPW.3-A03",
+     "name": "요구 검토 판정 등록",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [
+      "FPW.3-A01"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-LCY-001"
+     ],
+     "raci": {
+      "R": [
+       "R-QA"
+      ],
+      "A": "R-REQ",
+      "C": [
+       "R-SM"
+      ],
+      "I": [
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-REQ",
+      "WP-TRACE-REPORT"
+     ],
+     "outputs": [
+      "WP-REQ-REVIEW"
+     ],
+     "steps": [
+      "요구 특성(검증 가능성·일관성·완전성)을 체크리스트로 검토한다",
+      "결과를 플랫폼 Requirement Gate에 판정으로 등록한다",
+      "결함이 있으면 요구 Owner에게 돌려보내고 재검토 일정을 잡는다"
+     ],
+     "checks": [
+      "검토자가 요구 작성자와 다른 조직이다"
+     ],
+     "platform": {
+      "actions": [
+       "judgeGate"
+      ],
+      "screens": [
+       "/features/:id/:ver"
+      ],
+      "gates": [
+       "G2"
+      ]
+     },
+     "next": [
+      "FPW.3-A04"
+     ]
+    },
+    {
+     "id": "FPW.3-A04",
+     "name": "G3 판정·Feature 정의 승인",
+     "trigger": null,
+     "gateDecision": "G3",
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-LCY-001",
+      "FFG-LCY-002"
+     ],
+     "raci": {
+      "R": [
+       "R-REQ"
+      ],
+      "A": "R-REQ",
+      "C": [
+       "R-SM",
+       "R-FO"
+      ],
+      "I": [
+       "R-ARC",
+       "R-PLM",
+       "R-TST"
+      ]
+     },
+     "inputs": [
+      "WP-REQ-REVIEW",
+      "WP-G1-DECISION",
+      "WP-G2-DECISION"
+     ],
+     "outputs": [
+      "WP-G3-DECISION"
+     ],
+     "steps": [
+      "G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다",
+      "판정 근거를 정리해 G3 판정을 남긴다",
+      "Lifecycle을 PROPOSED에서 APPROVED로 전이한다. 작성자는 이 전이를 할 수 없다",
+      "아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다"
+     ],
+     "checks": [
+      "Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다"
+     ],
+     "platform": {
+      "actions": [
+       "transition"
+      ],
+      "screens": [
+       "/features/:id/:ver",
+       "/admin/approval"
+      ],
+      "gates": []
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1366,
+    "height": 196,
+    "lanes": [
+     {
+      "role": "R-REQ",
+      "label": "요구 Owner",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-QA",
+      "label": "품질 조직",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.3-A01",
+      "kind": "action",
+      "label": "안전요구 도출·명세",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A02",
+      "kind": "action",
+      "label": "양방향 추적성 점검",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A04",
+      "kind": "action",
+      "label": "G3 판정·Feature 정의 승인",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A03",
+      "kind": "action",
+      "label": "요구 검토 판정 등록",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.3-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.3-S1",
+      "to": "FPW.3-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A01",
+      "to": "FPW.3-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A03",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A04",
+      "to": "FPW.3-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1240,
+        49
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  },
+  {
+   "id": "FPW.4",
+   "name": "안전 설계·정책 설계",
+   "en": "Safety Design & Policy Design",
+   "group": "생애주기",
+   "gates": [
+    "G4"
+   ],
+   "ref": "표준 보고서 6.1절 G4, 6장 FFG-LCY-006, 7.7절 FFG-DEAC-001, 8장(정책·TCL), 13장 FFG-TEL-007",
+   "purpose": "안전요구를 차량 내 감시·Safety Guard 동작·플랫폼 정책과 Control Point 설계로 구현하고, 정책을 분야별로 검증·승인한 뒤 독립 검토자가 설계 적합성(G4)을 판정하게 한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "F2 이상 Feature의 고장 대응이 차량 내부 감시와 안전기제로 설계된다."
+    },
+    {
+     "id": "O2",
+     "text": "플랫폼 컴포넌트의 도구 신뢰도(TCL)와 확보 방법이 정해진다."
+    },
+    {
+     "id": "O3",
+     "text": "Flag 정책이 작성·검증되고 작성자가 아닌 승인자가 승인한다."
+    },
+    {
+     "id": "O4",
+     "text": "독립 검토로 G4 설계 판정이 남는다."
+    }
+   ],
+   "rules": [
+    "FFG-LCY-006",
+    "FFG-DEAC-001",
+    "FFG-TEL-007",
+    "FFG-PLT-013",
+    "FFG-CLS-002",
+    "FFG-LCY-001"
+   ],
+   "entry": [
+    "Feature Version이 APPROVED이고 안전요구가 추적 연결되어 있다"
+   ],
+   "exit": [
+    "설계서·정책이 승인되고 정책 해시가 고정되었다",
+    "G4 Decision Record가 독립 검토자 판정으로 남았다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-SAFETY-DESIGN",
+     "name": "안전 설계서",
+     "en": "Safety Design Specification",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "FTTI 안의 차량 내 고장 감지(독립 센서 plausibility 등)와 Safety Guard 보고 경로",
+      "원격 Kill을 안전기제에 넣지 않았다는 근거와 차량 내부 안전기제",
+      "텔레메트리 도착 여부가 안전 판정에 영향을 주지 않는 구조",
+      "Control Point와 Flag가 상속하는 ASIL"
+     ]
+    },
+    {
+     "key": "WP-TCL-RECORD",
+     "name": "플랫폼 도구 신뢰도(TCL) 기록",
+     "en": "Tool Confidence Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "컴포넌트별 오류 출력 유형과 TI·TD·TCL",
+      "TD1 주장 시 출력 유형별 검출 수단",
+      "TCL2 이상 컴포넌트의 신뢰도 확보 방법"
+     ]
+    },
+    {
+     "key": "WP-POLICY",
+     "name": "Flag 정책(검증·승인본)",
+     "en": "Flag Policy",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "대상 규칙·Variant 조건·기본값과 개정 번호",
+      "분야별 검증 8종 결과와 배포 안전성 판정",
+      "승인자·정책 해시·승인 시각"
+     ]
+    },
+    {
+     "key": "WP-G4-DECISION",
+     "name": "G4 Decision Record",
+     "en": "G4 Decision Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "설계 적합성 판정과 근거 Evidence ID",
+      "독립 검토자 서명과 아키텍트 책임 확인"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.4-A01",
+     "name": "차량 내 감시·안전기제 설계",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-LCY-006",
+      "FFG-DEAC-001",
+      "FFG-TEL-007",
+      "FFG-CLS-002"
+     ],
+     "raci": {
+      "R": [
+       "R-ARC"
+      ],
+      "A": "R-ARC",
+      "C": [
+       "R-SM",
+       "R-INT"
+      ],
+      "I": [
+       "R-TST",
+       "R-REQ"
+      ]
+     },
+     "inputs": [
+      "WP-G3-DECISION",
+      "WP-SAFETY-REQ"
+     ],
+     "outputs": [
+      "WP-SAFETY-DESIGN"
+     ],
+     "steps": [
+      "F2 이상 Feature가 FTTI 안에서 자기 고장을 감지해 Safety Guard에 보고하는 감시 구조를 설계한다",
+      "원격 Kill은 FTTI 밖의 요청 경로로만 두고 FTTI 안의 대응은 차량 내부 안전기제로 설계한다",
+      "텔레메트리가 늦거나 오지 않아도 차량 안전 판정이 바뀌지 않게 데이터 경로를 분리한다",
+      "안전 거동을 바꾸는 Flag와 전달 경로가 사용 SW의 최고 ASIL을 상속하도록 Control Point를 정의한다"
+     ],
+     "checks": [
+      "안전요구마다 설계 요소가 연결되었다",
+      "원격 Kill이 안전기제로 쓰인 곳이 없다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/master/control-points",
+       "/trace/design"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.4-A03"
+     ]
+    },
+    {
+     "id": "FPW.4-A02",
+     "name": "플랫폼 도구 신뢰도 분류",
+     "trigger": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-PLT-013"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-ARC",
+       "R-CSM"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-REQ"
+     ],
+     "outputs": [
+      "WP-TCL-RECORD"
+     ],
+     "steps": [
+      "이 Feature가 쓰는 플랫폼 컴포넌트마다 오류 출력 유형과 TI·TD를 정해 TCL을 기록한다",
+      "TD1은 출력 유형별 검출 수단을 지정할 수 있을 때만 주장하고, 서명 서비스에는 쓰지 않는다",
+      "TCL2 이상 컴포넌트의 신뢰도 확보 방법을 Safety Plan에 넣는다"
+     ],
+     "checks": [
+      "사용 컴포넌트 모두에 TCL과 확보 방법이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/arch/components"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.4-A05"
+     ]
+    },
+    {
+     "id": "FPW.4-A03",
+     "name": "Flag 정책 작성·검증",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-CLS-002"
+     ],
+     "raci": {
+      "R": [
+       "R-ARC"
+      ],
+      "A": "R-ARC",
+      "C": [
+       "R-PLM",
+       "R-FO"
+      ],
+      "I": [
+       "R-REQ"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-DESIGN",
+      "WP-FEAT-SCOPE"
+     ],
+     "outputs": [
+      "WP-POLICY"
+     ],
+     "steps": [
+      "대상 규칙·Variant 조건·기본값을 정책으로 작성한다",
+      "분야별 검증 8종을 실행해 배포 안전성 판정을 받는다",
+      "수정하면 새 개정본이 되므로 다시 검증한다"
+     ],
+     "checks": [
+      "최신 개정본의 분야별 검증이 모두 통과했다"
+     ],
+     "platform": {
+      "actions": [
+       "createPolicy",
+       "updatePolicy",
+       "validatePolicy"
+      ],
+      "screens": [
+       "/policies/new",
+       "/policies"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.4-A04"
+     ]
+    },
+    {
+     "id": "FPW.4-A04",
+     "name": "정책 승인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-REQ"
+      ],
+      "A": "R-REQ",
+      "C": [
+       "R-SM"
+      ],
+      "I": [
+       "R-ARC",
+       "R-REL"
+      ]
+     },
+     "inputs": [
+      "WP-POLICY"
+     ],
+     "outputs": [
+      "WP-POLICY"
+     ],
+     "steps": [
+      "승인 대상 개정본의 해시와 배포 안전성 판정(GO)을 확인한다",
+      "정책 작성자가 아닌 사람이 승인 또는 반려한다",
+      "반려하면 사유를 남겨 아키텍트에게 돌려보낸다"
+     ],
+     "checks": [
+      "승인자가 정책 작성자와 다르고 승인 해시가 최신 개정본과 같다"
+     ],
+     "platform": {
+      "actions": [
+       "decidePolicy"
+      ],
+      "screens": [
+       "/policies/:id"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.4-A05"
+     ]
+    },
+    {
+     "id": "FPW.4-A05",
+     "name": "G4 설계 독립 검토·판정",
+     "trigger": null,
+     "gateDecision": "G4",
+     "independentOf": [
+      "FPW.4-A01",
+      "FPW.4-A03"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-LCY-001"
+     ],
+     "raci": {
+      "R": [
+       "R-QA"
+      ],
+      "A": "R-ARC",
+      "C": [
+       "R-SM",
+       "R-CSM"
+      ],
+      "I": [
+       "R-TST",
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-DESIGN",
+      "WP-TCL-RECORD",
+      "WP-POLICY"
+     ],
+     "outputs": [
+      "WP-G4-DECISION"
+     ],
+     "steps": [
+      "설계·정책·인터페이스가 안전요구를 충족하는지 설계 작성자와 다른 검토자가 확인한다",
+      "판정을 플랫폼 Control Gate와 Safety/Security Gate에 개인 서명으로 등록한다",
+      "아키텍트가 판정에 대한 설계 책임을 확인하고, FAIL이면 수정 항목을 설계로 돌려보낸다"
+     ],
+     "checks": [
+      "검토자가 설계·정책 작성자와 다른 조직이다",
+      "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다"
+     ],
+     "platform": {
+      "actions": [
+       "judgeGate"
+      ],
+      "screens": [
+       "/features/:id/:ver",
+       "/admin/approval"
+      ],
+      "gates": [
+       "G4",
+       "G7"
+      ]
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1366,
+    "height": 392,
+    "lanes": [
+     {
+      "role": "R-ARC",
+      "label": "아키텍트",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-SM",
+      "label": "Safety Manager",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-REQ",
+      "label": "요구 Owner",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-QA",
+      "label": "품질 조직",
+      "x": 0,
+      "y": 294,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.4-A01",
+      "kind": "action",
+      "label": "차량 내 감시·안전기제 설계",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A03",
+      "kind": "action",
+      "label": "Flag 정책 작성·검증",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A02",
+      "kind": "action",
+      "label": "플랫폼 도구 신뢰도 분류",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A04",
+      "kind": "action",
+      "label": "정책 승인",
+      "x": 758,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A05",
+      "kind": "action",
+      "label": "G4 설계 독립 검토·판정",
+      "x": 1038,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.4-S2",
+      "kind": "start",
+      "label": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
+      "x": 706,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.4-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.4-S1",
+      "to": "FPW.4-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-S2",
+      "to": "FPW.4-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        724,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A01",
+      "to": "FPW.4-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A02",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1026,
+        343
+       ],
+       [
+        1038,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A03",
+      "to": "FPW.4-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A04",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1026,
+        343
+       ],
+       [
+        1038,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A05",
+      "to": "FPW.4-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        343
+       ],
+       [
+        1240,
+        343
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1026,
+      245
+     ]
+    ]
+   }
+  },
+  {
+   "id": "FPW.5",
+   "name": "검증·V&V",
+   "en": "Verification & Validation",
+   "group": "생애주기",
+   "gates": [
+    "G5"
+   ],
+   "ref": "표준 보고서 12장(시험), 6.1절 G5, 6.3절 독립성",
+   "purpose": "Feature Version이 안전요구와 비활성화 동작을 충족한다는 객관적 Evidence를 만들고, 그 Evidence를 Feature Version에 연결해 독립 V&V가 G5를 판정하게 한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "참조 ASIL에 맞는 독립성 수준과 검증 범위가 정해진다."
+    },
+    {
+     "id": "O2",
+     "text": "시나리오·허용 조합·통합 가정이 정의되고 Version으로 관리된다."
+    },
+    {
+     "id": "O3",
+     "text": "비활성화 등급별 동작·결함 주입·장악 가정 시험이 수행된다."
+    },
+    {
+     "id": "O4",
+     "text": "재현 정보를 갖춘 시험 Evidence가 Feature Version과 연결되어 G5 판정을 받는다."
+    }
+   ],
+   "rules": [
+    "FFG-LCY-007",
+    "FFG-TST-001",
+    "FFG-TST-003",
+    "FFG-TST-004",
+    "FFG-TST-005",
+    "FFG-TST-006",
+    "FFG-TST-007",
+    "FFG-TST-009",
+    "FFG-TST-011",
+    "FFG-ADS-009",
+    "FFG-VEH-012",
+    "FFG-LCY-001",
+    "FFG-LCY-002"
+   ],
+   "entry": [
+    "G4 설계 판정이 PASS(또는 기한이 있는 CONDITIONAL PASS)이고 정책·Control Point가 확정되었다",
+    "안전요구가 Feature Version에 추적 연결되어 있다"
+   ],
+   "exit": [
+    "모든 필수 시험이 TMS를 거쳐 Feature Version에 연결되었다",
+    "미해결 결함이 없거나 잔여 위험이 Safety Manager에게 수용되었다",
+    "G5 Decision Record가 독립 V&V 서명으로 남았다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-VV-PLAN",
+     "name": "검증 계획(독립성 수준)",
+     "en": "Verification Plan",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "참조 ASIL과 확인 조치별 독립성 수준",
+      "시험 수준(단위·HIL·차량)과 판정 기준",
+      "시뮬레이션 도구 사용 범위와 도구 분류"
+     ]
+    },
+    {
+     "key": "WP-TEST-SPEC",
+     "name": "시험 명세(시나리오·허용 조합)",
+     "en": "Test Specification",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "시나리오·ODD 정의와 Version",
+      "Topology 의존·충돌로 정한 허용 조합과 covering array, 부정 시험",
+      "결함 주입·LPC 장악 가정 시험 항목"
+     ]
+    },
+    {
+     "key": "WP-INTEGRATION-REC",
+     "name": "통합 검증 기록",
+     "en": "Integration Verification Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "협력사 SEooC 사용 가정과 통합 대상의 대조 결과",
+      "CI/CD 변경 기록(IF-13)과 통합 빌드 식별"
+     ]
+    },
+    {
+     "key": "WP-TEST-RESULT",
+     "name": "시험 결과",
+     "en": "Test Results",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "등급별 시나리오(작동 중·비작동 중·운전자 개입·전원 주기) 결과",
+      "결함 주입별 수렴 상태와 기대 결과 대조",
+      "가상검증(CARLA) 실행 결과와 재현 정보"
+     ]
+    },
+    {
+     "key": "WP-G5-EVIDENCE",
+     "name": "G5 시험 Evidence 묶음",
+     "en": "G5 Test Evidence",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "TMS에 제출된 시험 명세·결과와 Feature ID·Version 연결",
+      "시험 재현 정보(환경·도구·입력·Version)"
+     ]
+    },
+    {
+     "key": "WP-G5-DECISION",
+     "name": "G5 Decision Record",
+     "en": "G5 Decision Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "판정과 근거 Evidence ID, 독립 V&V 서명",
+      "미해결 결함과 잔여 위험 수용 근거"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.5-A01",
+     "name": "독립성 수준·검증 계획 확정",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-LCY-007"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-TST",
+       "R-QA"
+      ],
+      "I": [
+       "R-FO",
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-G4-DECISION",
+      "WP-SAFETY-PROFILE",
+      "WP-SAFETY-REQ"
+     ],
+     "outputs": [
+      "WP-VV-PLAN"
+     ],
+     "steps": [
+      "안전 분류와 안전요구에서 참조 ASIL을 확인한다",
+      "확인 검토·감사·평가의 독립성 수준을 참조 ASIL 기준으로 정하고, 시험·검토의 독립성은 Safety Plan에 따로 적는다",
+      "시험 수준별 범위와 판정 기준을 시험 조직·품질 조직과 합의한다"
+     ],
+     "checks": [
+      "확인 조치마다 독립성 수준과 수행 주체가 지정되었다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.5-A02",
+      "FPW.5-A03"
+     ]
+    },
+    {
+     "id": "FPW.5-A02",
+     "name": "시나리오·허용 조합 정의",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-TST-003",
+      "FFG-TST-006",
+      "FFG-TST-007"
+     ],
+     "raci": {
+      "R": [
+       "R-TST"
+      ],
+      "A": "R-TST",
+      "C": [
+       "R-ARC",
+       "R-SM"
+      ],
+      "I": [
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-VV-PLAN",
+      "WP-FEAT-SCOPE"
+     ],
+     "outputs": [
+      "WP-TEST-SPEC"
+     ],
+     "steps": [
+      "시나리오와 ODD를 정의하고 Version을 붙인다",
+      "Topology의 의존·충돌 관계로 허용 조합을 정하고, 안전 관련 Flag가 상호작용하면 3-way 이상 covering array를 만든다",
+      "허용되지 않는 조합에는 거부를 확인하는 부정 시험을 넣는다",
+      "시뮬레이션 결과를 판정 근거로 쓸 경우 도구 분류와, 시뮬레이션이 판정하지 못하는 항목의 실차·HIL 대체 시험을 정한다"
+     ],
+     "checks": [
+      "모든 시나리오에 Version이 있고 허용 조합 정의가 Topology와 일치한다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/arch/topology",
+       "/validations"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.5-A04"
+     ]
+    },
+    {
+     "id": "FPW.5-A03",
+     "name": "통합 시험·SEooC 가정 확인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-VEH-012"
+     ],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-INT",
+      "C": [
+       "R-ARC",
+       "R-TST"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-VV-PLAN",
+      "WP-INTAKE-RESULT"
+     ],
+     "outputs": [
+      "WP-INTEGRATION-REC"
+     ],
+     "steps": [
+      "협력사가 문서화한 SEooC 사용 가정을 통합 대상 차량 SW 구성과 대조한다",
+      "가정이 맞지 않는 항목은 협력사와 아키텍트에게 넘기고 통합 시험 항목으로 추가한다",
+      "통합 빌드와 변경 기록을 CI/CD에서 플랫폼으로 등록한다"
+     ],
+     "checks": [
+      "모든 SEooC 가정이 충족 또는 조치 중으로 기록되었다"
+     ],
+     "platform": {
+      "actions": [
+       "registerChangeRecord"
+      ],
+      "screens": [
+       "/master/artifacts"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.5-A04"
+     ]
+    },
+    {
+     "id": "FPW.5-A04",
+     "name": "비활성화·결함 주입 시험 수행",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-TST-001",
+      "FFG-TST-004",
+      "FFG-TST-005",
+      "FFG-TST-011"
+     ],
+     "raci": {
+      "R": [
+       "R-TST"
+      ],
+      "A": "R-TST",
+      "C": [
+       "R-INT",
+       "R-SM"
+      ],
+      "I": [
+       "R-QA",
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-TEST-SPEC",
+      "WP-INTEGRATION-REC",
+      "WP-POLICY"
+     ],
+     "outputs": [
+      "WP-TEST-RESULT"
+     ],
+     "steps": [
+      "F2 이상 Feature의 비활성화 등급별 동작을 단위·HIL·차량 수준에서 작동 중·비작동 중·운전자 개입·전원 주기 상황으로 시험한다",
+      "저장 장치 손상, 쓰기 실패, 비트 반전, 신뢰 시간 상실, HSM 오류를 주입하고 Safe State 수렴을 확인한다",
+      "LPC가 장악되었다고 가정한 위조 프레임·변조 요청·위조 상태 보고가 Guard와 플랫폼에서 거부되는지 확인한다",
+      "ADS 기능이면 원격 종료 시나리오(인계 성공·실패 후 MRC·ODD 이탈)를 HIL과 시험장에서 수행한다",
+      "정책을 CARLA 가상 차량에 적용해 시나리오를 실행하되, 결과는 TMS 제출 전까지 G5 근거로 쓰지 않는다"
+     ],
+     "checks": [
+      "시험 명세의 모든 항목에 결과가 있고 실패 항목은 결함으로 등록되었다"
+     ],
+     "platform": {
+      "actions": [
+       "runVirtual"
+      ],
+      "screens": [
+       "/validations/virtual"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.5-A05"
+     ]
+    },
+    {
+     "id": "FPW.5-A05",
+     "name": "시험 Evidence 연결·TMS 제출",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-TST-009",
+      "FFG-ADS-009"
+     ],
+     "raci": {
+      "R": [
+       "R-TST"
+      ],
+      "A": "R-TST",
+      "C": [
+       "R-INT"
+      ],
+      "I": [
+       "R-QA",
+       "R-SM"
+      ]
+     },
+     "inputs": [
+      "WP-TEST-RESULT",
+      "WP-TEST-SPEC"
+     ],
+     "outputs": [
+      "WP-G5-EVIDENCE"
+     ],
+     "steps": [
+      "시험 명세와 결과를 시험관리 도구에서 Feature ID·Version과 연결한다",
+      "결과마다 환경·도구 Version·입력·시나리오 Version 같은 재현 정보를 넣는다",
+      "TMS 연계(IF-09)로 플랫폼 검증 이력에 제출하고 연결되지 않은 시험이 없는지 확인한다"
+     ],
+     "checks": [
+      "제출한 모든 시험이 Feature Version에 연결되고 재현 정보가 비어 있지 않다"
+     ],
+     "platform": {
+      "actions": [
+       "submitTms"
+      ],
+      "screens": [
+       "/verify/evidence"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.5-A06"
+     ]
+    },
+    {
+     "id": "FPW.5-A06",
+     "name": "G5 V&V 판정",
+     "trigger": null,
+     "gateDecision": "G5",
+     "independentOf": [
+      "FPW.5-A04",
+      "FPW.5-A03"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-LCY-001",
+      "FFG-LCY-002"
+     ],
+     "raci": {
+      "R": [
+       "R-QA"
+      ],
+      "A": "R-TST",
+      "C": [
+       "R-SM"
+      ],
+      "I": [
+       "R-FO",
+       "R-REL",
+       "R-ARC"
+      ]
+     },
+     "inputs": [
+      "WP-G5-EVIDENCE",
+      "WP-VV-PLAN"
+     ],
+     "outputs": [
+      "WP-G5-DECISION"
+     ],
+     "steps": [
+      "검증 계획의 판정 기준과 제출된 Evidence를 대조하고, 연결되지 않은 시험이나 빠진 항목이 있으면 FAIL로 판정한다",
+      "미해결 결함의 잔여 위험을 Safety Manager와 검토해 수용 여부를 기록한다",
+      "Gate G5(Verification)·G6(Supplier)를 개인 서명으로 판정 등록한다",
+      "FAIL이면 결함 목록을 통합·시험 조직에 돌려보내 재시험을 요청한다"
+     ],
+     "checks": [
+      "판정자가 시험 수행·통합 담당과 다른 조직이다",
+      "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다"
+     ],
+     "platform": {
+      "actions": [
+       "judgeGate"
+      ],
+      "screens": [
+       "/verify/evidence",
+       "/admin/approval"
+      ],
+      "gates": [
+       "G5",
+       "G6"
+      ]
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1646,
+    "height": 392,
+    "lanes": [
+     {
+      "role": "R-SM",
+      "label": "Safety Manager",
+      "x": 0,
+      "y": 0,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-TST",
+      "label": "시험 조직",
+      "x": 0,
+      "y": 98,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-INT",
+      "label": "통합 조직",
+      "x": 0,
+      "y": 196,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-QA",
+      "label": "품질 조직",
+      "x": 0,
+      "y": 294,
+      "w": 1646,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.5-A01",
+      "kind": "action",
+      "label": "독립성 수준·검증 계획 확정",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A02",
+      "kind": "action",
+      "label": "시나리오·허용 조합 정의",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A04",
+      "kind": "action",
+      "label": "비활성화·결함 주입 시험 수행",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A05",
+      "kind": "action",
+      "label": "시험 Evidence 연결·TMS 제출",
+      "x": 1038,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A03",
+      "kind": "action",
+      "label": "통합 시험·SEooC 가정 확인",
+      "x": 478,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A06",
+      "kind": "action",
+      "label": "G5 V&V 판정",
+      "x": 1318,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.5-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.5-S1",
+      "to": "FPW.5-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A01",
+      "to": "FPW.5-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A01",
+      "to": "FPW.5-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        245
+       ],
+       [
+        478,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A02",
+      "to": "FPW.5-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A03",
+      "to": "FPW.5-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A04",
+      "to": "FPW.5-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1038,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A05",
+      "to": "FPW.5-A06",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        147
+       ],
+       [
+        1306,
+        147
+       ],
+       [
+        1306,
+        343
+       ],
+       [
+        1318,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A06",
+      "to": "FPW.5-E1",
+      "kind": "end",
+      "points": [
+       [
+        1506,
+        343
+       ],
+       [
+        1520,
+        343
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      746,
+      147
+     ]
+    ]
+   }
+  },
+  {
+   "id": "FPW.6",
+   "name": "서명 배포",
+   "en": "Signed Deployment",
+   "group": "생애주기",
+   "gates": [
+    "G6"
+   ],
+   "ref": "표준 보고서 6.1절 G6, 6장 FFG-LCY-008·009, 8장(보안 배포), 15장(SBOM)",
+   "purpose": "검증을 마친 Feature Version의 출시 Baseline을 확정하고, 서명된 패키지를 SUMS 기록과 함께 대상 차량에 전달할 수 있는 상태로 배포한다. 패키지 전달(G6)은 차량 내 효력(G7)과 따로 승인한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "출시 Baseline이 요청자와 다른 승인자에 의해 확정된다."
+    },
+    {
+     "id": "O2",
+     "text": "Flag·파라미터 변경 명령이 SW 업데이트로 SUMS에 기록된다."
+    },
+    {
+     "id": "O3",
+     "text": "서명·SBOM이 결합된 패키지가 OTA Gate를 거쳐 서버에 배포된다."
+    }
+   ],
+   "rules": [
+    "FFG-LCY-008",
+    "FFG-LCY-009",
+    "FFG-GEN-006",
+    "FFG-LCY-001"
+   ],
+   "entry": [
+    "G5 판정이 PASS이고 승인된 정책 개정본이 있다",
+    "형식승인 영향 판단이 끝났다"
+   ],
+   "exit": [
+    "출시 Baseline이 확정되고 SUMS 기록이 남았다",
+    "서명된 정책이 서버에 배포되고 Unleash와 동기화되었다(차량 내 효력은 아직 없음)"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-BASELINE-REQ",
+     "name": "Baseline 확정 요청",
+     "en": "Baseline Request",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "포함 Feature Version·정책 개정본·Artifact 목록",
+      "요청자와 요청 사유"
+     ]
+    },
+    {
+     "key": "WP-RELEASE-BASELINE",
+     "name": "출시 Baseline",
+     "en": "Release Baseline",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "확정된 BOM 구성(Feature·SW·Variant)과 해시",
+      "승인자(요청자와 다른 사람)·승인 시각"
+     ]
+    },
+    {
+     "key": "WP-SUMS-RECORD",
+     "name": "SUMS 업데이트 기록",
+     "en": "SUMS Update Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "대상 RXSWIN과 형식승인 영향 평가 결과",
+      "사용자 고지 내용과 시장별 보존 기간"
+     ]
+    },
+    {
+     "key": "WP-SIGNED-PACKAGE",
+     "name": "서명 배포 패키지",
+     "en": "Signed Deployment Package",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "정책·설정 Artifact와 서명, 대상 해시",
+      "결합된 SBOM과 패키지 식별자"
+     ]
+    },
+    {
+     "key": "WP-OTA-GATE",
+     "name": "OTA Gate 판정 기록",
+     "en": "OTA Gate Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "R156 사전조건·대상·호환성 확인 결과",
+      "판정자 서명과 시각"
+     ]
+    },
+    {
+     "key": "WP-G6-DECISION",
+     "name": "G6 배포 기록",
+     "en": "G6 Deployment Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "서버 배포(평가 기준 전환) 시각과 게시본 ID",
+      "Unleash 동기화 결과(flag·전략·환경)",
+      "Release Manager 판정과 근거 Evidence ID"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.6-A01",
+     "name": "출시 Baseline 확정 요청",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-REL",
+       "R-ARC"
+      ],
+      "I": [
+       "R-PLM"
+      ]
+     },
+     "inputs": [
+      "WP-G5-DECISION",
+      "WP-POLICY"
+     ],
+     "outputs": [
+      "WP-BASELINE-REQ"
+     ],
+     "steps": [
+      "G5 판정을 받은 Feature Version과 승인된 정책 개정본으로 출시 구성을 정한다",
+      "BOM 기준선 화면에서 Baseline 확정을 요청한다",
+      "요청자는 같은 Baseline의 승인자로 지정하지 않는다"
+     ],
+     "checks": [
+      "요청에 포함 Version·정책 개정본·Artifact가 빠짐없이 있다"
+     ],
+     "platform": {
+      "actions": [
+       "requestBaseline"
+      ],
+      "screens": [
+       "/baselines"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.6-A02"
+     ]
+    },
+    {
+     "id": "FPW.6-A02",
+     "name": "출시 Baseline 확정 승인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-PLM"
+      ],
+      "A": "R-PLM",
+      "C": [
+       "R-REL"
+      ],
+      "I": [
+       "R-FO",
+       "R-REG"
+      ]
+     },
+     "inputs": [
+      "WP-BASELINE-REQ"
+     ],
+     "outputs": [
+      "WP-RELEASE-BASELINE"
+     ],
+     "steps": [
+      "요청된 구성이 PLM 기준정보(차종·Variant·SW)와 일치하는지 대조한다",
+      "일치하면 확정 승인하고, 다르면 사유를 남겨 반려한다",
+      "확정된 Baseline 해시를 Release Manager에게 알린다"
+     ],
+     "checks": [
+      "승인자가 요청자와 다르고 Baseline 해시가 고정되었다"
+     ],
+     "platform": {
+      "actions": [
+       "decideBaseline"
+      ],
+      "screens": [
+       "/baselines"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.6-A03",
+      "FPW.6-A04"
+     ]
+    },
+    {
+     "id": "FPW.6-A03",
+     "name": "SUMS 기록·형식승인 확인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-LCY-008",
+      "FFG-GEN-006"
+     ],
+     "raci": {
+      "R": [
+       "R-REG"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-REL"
+      ],
+      "I": [
+       "R-FO",
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-RELEASE-BASELINE",
+      "WP-HOMOLOGATION-IMPACT"
+     ],
+     "outputs": [
+      "WP-SUMS-RECORD"
+     ],
+     "steps": [
+      "Flag·파라미터를 바꾸는 명령을 SW 업데이트로 보고 대상 RXSWIN과 형식승인 영향 평가를 SUMS에 기록한다",
+      "형식승인 영향이 있으면 승인 기관의 개정·확장 결정이 나왔는지 확인하고, 없으면 배포를 보류시킨다",
+      "사용자 고지 내용과 가장 긴 시장 요건의 보존 기간을 기록한다"
+     ],
+     "checks": [
+      "SUMS 기록에 RXSWIN·영향 평가·고지 내용·보존 기간이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.6-A05"
+     ]
+    },
+    {
+     "id": "FPW.6-A04",
+     "name": "서명 패키지 작성·SBOM 결합",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-REL",
+      "C": [
+       "R-PKI",
+       "R-CSM"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-RELEASE-BASELINE"
+     ],
+     "outputs": [
+      "WP-SIGNED-PACKAGE"
+     ],
+     "steps": [
+      "확정 Baseline의 정책·설정 Artifact를 묶어 대상 해시를 계산한다",
+      "PKI 운영이 관리하는 배포 용도 서명 키로 서명을 요청하고, 다른 용도의 키는 쓰지 않는다",
+      "SBOM을 결합하고 CI/CD 변경 기록을 플랫폼에 등록한다"
+     ],
+     "checks": [
+      "패키지 서명이 배포 용도 키로 검증되고 SBOM이 결합되었다"
+     ],
+     "platform": {
+      "actions": [
+       "registerChangeRecord"
+      ],
+      "screens": [
+       "/deployments",
+       "/master/artifacts"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.6-A05"
+     ]
+    },
+    {
+     "id": "FPW.6-A05",
+     "name": "OTA Gate 판정 등록",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-LCY-001"
+     ],
+     "raci": {
+      "R": [
+       "R-QA"
+      ],
+      "A": "R-REL",
+      "C": [
+       "R-REG",
+       "R-CSM"
+      ],
+      "I": [
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-SIGNED-PACKAGE",
+      "WP-SUMS-RECORD"
+     ],
+     "outputs": [
+      "WP-OTA-GATE"
+     ],
+     "steps": [
+      "R156 사전조건(대상 식별·호환성·사용자 고지 준비)을 확인한다",
+      "서명·해시 검증 결과와 SUMS 기록을 근거로 OTA Gate를 판정 등록한다",
+      "FAIL이면 사유를 Release Manager에게 돌려보낸다"
+     ],
+     "checks": [
+      "판정 근거에 서명 검증·SUMS 기록 ID가 있다"
+     ],
+     "platform": {
+      "actions": [
+       "judgeGate"
+      ],
+      "screens": [
+       "/features/:id/:ver"
+      ],
+      "gates": [
+       "G8"
+      ]
+     },
+     "next": [
+      "FPW.6-A06"
+     ]
+    },
+    {
+     "id": "FPW.6-A06",
+     "name": "G6 서명 배포 실행",
+     "trigger": null,
+     "gateDecision": "G6",
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-LCY-009"
+     ],
+     "raci": {
+      "R": [
+       "R-REL"
+      ],
+      "A": "R-REL",
+      "C": [
+       "R-OPS"
+      ],
+      "I": [
+       "R-FO",
+       "R-SM",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-OTA-GATE",
+      "WP-RELEASE-BASELINE"
+     ],
+     "outputs": [
+      "WP-G6-DECISION"
+     ],
+     "steps": [
+      "OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다",
+      "Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다",
+      "이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다"
+     ],
+     "checks": [
+      "게시본 ID와 Unleash 동기화 결과가 G6 배포 기록에 있다"
+     ],
+     "platform": {
+      "actions": [
+       "deployPolicy",
+       "syncUnleash"
+      ],
+      "screens": [
+       "/deployments",
+       "/integration/connectors"
+      ],
+      "gates": []
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1646,
+    "height": 588,
+    "lanes": [
+     {
+      "role": "R-FO",
+      "label": "Feature Owner",
+      "x": 0,
+      "y": 0,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-PLM",
+      "label": "기준정보 담당",
+      "x": 0,
+      "y": 98,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-REG",
+      "label": "법규 담당",
+      "x": 0,
+      "y": 196,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-INT",
+      "label": "통합 조직",
+      "x": 0,
+      "y": 294,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-QA",
+      "label": "품질 조직",
+      "x": 0,
+      "y": 392,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-REL",
+      "label": "Release Manager",
+      "x": 0,
+      "y": 490,
+      "w": 1646,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.6-A01",
+      "kind": "action",
+      "label": "출시 Baseline 확정 요청",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A02",
+      "kind": "action",
+      "label": "출시 Baseline 확정 승인",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A03",
+      "kind": "action",
+      "label": "SUMS 기록·형식승인 확인",
+      "x": 758,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A04",
+      "kind": "action",
+      "label": "서명 패키지 작성·SBOM 결합",
+      "x": 758,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A05",
+      "kind": "action",
+      "label": "OTA Gate 판정 등록",
+      "x": 1038,
+      "y": 408,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A06",
+      "kind": "action",
+      "label": "G6 서명 배포 실행",
+      "x": 1318,
+      "y": 506,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.6-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520,
+      "y": 530,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.6-S1",
+      "to": "FPW.6-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A01",
+      "to": "FPW.6-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A02",
+      "to": "FPW.6-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A02",
+      "to": "FPW.6-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        343
+       ],
+       [
+        758,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A03",
+      "to": "FPW.6-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1026,
+        441
+       ],
+       [
+        1038,
+        441
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A04",
+      "to": "FPW.6-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        343
+       ],
+       [
+        1026,
+        343
+       ],
+       [
+        1026,
+        441
+       ],
+       [
+        1038,
+        441
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A05",
+      "to": "FPW.6-A06",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        441
+       ],
+       [
+        1306,
+        441
+       ],
+       [
+        1306,
+        539
+       ],
+       [
+        1318,
+        539
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A06",
+      "to": "FPW.6-E1",
+      "kind": "end",
+      "points": [
+       [
+        1506,
+        539
+       ],
+       [
+        1520,
+        539
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1026,
+      343
+     ]
+    ]
+   }
+  },
+  {
+   "id": "FPW.7",
+   "name": "출시·활성화·단계적 확대",
+   "en": "Release, Activation & Staged Rollout",
+   "group": "생애주기",
+   "gates": [
+    "G7"
+   ],
+   "ref": "표준 보고서 6.1절 G7, 6장 FFG-LCY-009·010, 12장 FFG-TST-010, 14장(SOTIF), 3장(ADS Safety Case), 5장 FFG-CLS-006",
+   "purpose": "배포된 Feature Version을 차량 안에서 효력을 내도록 허가한다. SOTIF 출시 기준과 Safety Case 독립 검토, Canary·Shadow 판정 기준, 상품 구성 승인, 형식승인·사용자 고지 조건을 확인한 뒤 Canary Cohort부터 단계적으로 넓힌다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "Canary·Shadow 판정 기준과 실험 계획이 안전 등급에 맞게 정해진다."
+    },
+    {
+     "id": "O2",
+     "text": "SOTIF 출시 근거와 Safety Case가 정리되고 편향 없는 검토자가 검토한다."
+    },
+    {
+     "id": "O3",
+     "text": "상품 구성이 작성자와 다른 승인자에게 승인되고 고객 출시는 다시 다른 승인자가 승인한다."
+    },
+    {
+     "id": "O4",
+     "text": "형식승인·사용자 고지 조건을 확인한 G7 판정과 출시 전이가 남는다."
+    },
+    {
+     "id": "O5",
+     "text": "효력이 Canary Cohort부터 관측 기준을 만족할 때만 넓어진다."
+    }
+   ],
+   "rules": [
+    "FFG-TST-010",
+    "FFG-LCY-009",
+    "FFG-CLS-006",
+    "FFG-SOT-004",
+    "FFG-SOT-005",
+    "FFG-ADS-008",
+    "FFG-ADS-012",
+    "FFG-GEN-006",
+    "FFG-LCY-010",
+    "FFG-LCY-001"
+   ],
+   "entry": [
+    "G6 배포가 끝나 서버에 정책이 게시되었다(차량 내 효력 없음)"
+   ],
+   "exit": [
+    "G7 판정과 VERIFIED→RELEASED 전이가 남았다",
+    "Canary 관측 결과에 따라 확대 또는 중단 결정이 기록되었다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-CANARY-PLAN",
+     "name": "Canary·Shadow 판정 기준",
+     "en": "Canary / Shadow Criteria",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Cohort별 차량 수·관측 기간·허용 차이·중단 기준",
+      "Shadow 출력이 제어기에 전달되지 않는다는 확인"
+     ]
+    },
+    {
+     "key": "WP-EXPERIMENT-PLAN",
+     "name": "실험 계획",
+     "en": "Experiment Plan",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "실험 목적·지표·기간과 대상 Cohort",
+      "F2 이상이면 Shadow 방식과 비간섭 입증 근거"
+     ]
+    },
+    {
+     "key": "WP-SAFETY-CASE",
+     "name": "Safety Case·SOTIF 출시 근거",
+     "en": "Safety Case & SOTIF Release Argument",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "주장·논거·증거와 고유 식별자(규칙 ID·시험 ID 재사용)",
+      "ISO 21448 출시 기준 충족 근거와 잔여 위험"
+     ]
+    },
+    {
+     "key": "WP-SC-REVIEW",
+     "name": "Safety Case 독립 검토 기록",
+     "en": "Safety Case Independent Review",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "검토자 자격·검토 기간·대상 Version(Safety Case·도구·ADS)",
+      "검토 방법·재현한 증거·공백과 불확실 영역·개선 조치"
+     ]
+    },
+    {
+     "key": "WP-PRODUCT",
+     "name": "상품 구성안",
+     "en": "Product Composition",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "상품에 포함되는 Feature와 판매 방식(구독·구매·체험)",
+      "구성 검증 결과와 체험 제안 조건"
+     ]
+    },
+    {
+     "key": "WP-PRODUCT-APPROVAL",
+     "name": "상품 구성 승인 기록",
+     "en": "Product Composition Approval",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "구성 승인자(상품 작성자와 다른 사람)와 시각"
+     ]
+    },
+    {
+     "key": "WP-ACTIVATION-PRECHECK",
+     "name": "활성화 조건 확인서",
+     "en": "Activation Precheck",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "형식승인 기관 결정 여부와 근거",
+      "시장별 사용자 고지·확인 준비와 '작동 중이 아닐 때 효력' 조건"
+     ]
+    },
+    {
+     "key": "WP-G7-DECISION",
+     "name": "G7 Decision Record",
+     "en": "G7 Decision Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "출시·활성화 판정과 근거 Evidence ID(SOTIF·Safety Case·Canary 기준)",
+      "Safety Manager 판정 서명, Feature Owner 출시 책임 확인"
+     ]
+    },
+    {
+     "key": "WP-RELEASE-SIGNOFF",
+     "name": "Release Sign-off 기록",
+     "en": "Release Sign-off",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Feature Owner 개인 서명·서명 시각·소유 조직",
+      "서명 시점의 G8·G9 판정 기록 ID(다시 판정되면 효력 없음)"
+     ]
+    },
+    {
+     "key": "WP-RELEASE-RECORD",
+     "name": "출시 전이 기록",
+     "en": "Release Transition Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "VERIFIED→RELEASED 전이 시각과 수행자"
+     ]
+    },
+    {
+     "key": "WP-PRODUCT-RELEASE",
+     "name": "상품 고객 출시 기록",
+     "en": "Product Customer Release",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "고객 출시 승인자(구성 승인자와 다른 사람)와 시각"
+     ]
+    },
+    {
+     "key": "WP-ROLLOUT-RECORD",
+     "name": "단계적 확대 기록",
+     "en": "Staged Rollout Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Cohort 단계별 적용 시각·관측 결과",
+      "확대·중단 결정과 근거"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.7-A01",
+     "name": "Canary·Shadow 판정 기준 정의",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-TST-010",
+      "FFG-LCY-009"
+     ],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-SM",
+       "R-TST"
+      ],
+      "I": [
+       "R-FO",
+       "R-REL"
+      ]
+     },
+     "inputs": [
+      "WP-G6-DECISION",
+      "WP-SAFETY-PROFILE"
+     ],
+     "outputs": [
+      "WP-CANARY-PLAN"
+     ],
+     "steps": [
+      "F2 이상 Feature는 Canary Cohort에서 시작하도록 단계별 차량 수와 관측 기간을 정한다",
+      "단계마다 허용 차이와 중단 기준을 사전에 적고 Safety Manager와 합의한다",
+      "Shadow를 쓰면 출력이 제어기로 가지 않는 구성인지 시험 조직과 확인한다"
+     ],
+     "checks": [
+      "모든 단계에 관측 기간·허용 차이·중단 기준이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/activation/decide"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.7-A08"
+     ]
+    },
+    {
+     "id": "FPW.7-A02",
+     "name": "효과 실험 계획 등록",
+     "trigger": "출시 효과를 실험으로 비교해야 할 때",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-CLS-006"
+     ],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-SM",
+       "R-OPS"
+      ],
+      "I": [
+       "R-REL"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-PROFILE"
+     ],
+     "outputs": [
+      "WP-EXPERIMENT-PLAN"
+     ],
+     "steps": [
+      "실험 목적·지표·기간·Cohort를 정한다",
+      "F2 이상 Feature면 Experiment Flag 대신 Shadow 방식으로 바꾸고 비간섭 입증 계획을 붙인다",
+      "실험을 등록하고 Release Manager에게 시작 시점을 알린다"
+     ],
+     "checks": [
+      "F2 이상 Feature에 Experiment Flag 실험이 등록되지 않았다"
+     ],
+     "platform": {
+      "actions": [
+       "createExperiment"
+      ],
+      "screens": [
+       "/experiments"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.7-A08"
+     ]
+    },
+    {
+     "id": "FPW.7-A03",
+     "name": "Safety Case·SOTIF 근거 정리",
+     "trigger": "G6 배포 완료",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-SOT-004",
+      "FFG-ADS-008"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-FO",
+       "R-TST"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-SOTIF-ANALYSIS",
+      "WP-G5-EVIDENCE",
+      "WP-HARA-TARA"
+     ],
+     "outputs": [
+      "WP-SAFETY-CASE"
+     ],
+     "steps": [
+      "F2 이상 Feature의 ISO 21448 출시 기준 충족 근거와 잔여 위험을 정리한다",
+      "Safety Case의 주장마다 논거를, 논거마다 증거를 두고 규칙 ID·시험 ID를 식별자로 붙인다",
+      "정리한 Safety Case를 독립 검토에 넘긴다"
+     ],
+     "checks": [
+      "모든 주장에 논거와 증거가 하나 이상 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/verify/evidence",
+       "/verify/compliance"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.7-A04"
+     ]
+    },
+    {
+     "id": "FPW.7-A04",
+     "name": "Safety Case 독립 검토",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [
+      "FPW.7-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-ADS-012"
+     ],
+     "raci": {
+      "R": [
+       "R-QA"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-TST"
+      ],
+      "I": [
+       "R-FO",
+       "R-REG"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-CASE"
+     ],
+     "outputs": [
+      "WP-SC-REVIEW"
+     ],
+     "steps": [
+      "Safety Case를 만들지 않은 검토자가 검토 자격과 대상 Version(Safety Case·도구·ADS)을 기록한다",
+      "증거 일부를 다시 실행해 재현하고, 공백과 불확실한 영역을 적는다",
+      "발견사항의 개선 조치와 담당을 기록해 Safety Manager에게 넘긴다"
+     ],
+     "checks": [
+      "검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.7-A08"
+     ]
+    },
+    {
+     "id": "FPW.7-A05",
+     "name": "상품 구성 작성",
+     "trigger": "G6 배포 완료",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-PDA"
+      ],
+      "A": "R-PDA",
+      "C": [
+       "R-FO"
+      ],
+      "I": [
+       "R-PO"
+      ]
+     },
+     "inputs": [
+      "WP-G6-DECISION"
+     ],
+     "outputs": [
+      "WP-PRODUCT"
+     ],
+     "steps": [
+      "상품에 넣을 Feature와 판매 방식을 정해 상품을 등록한다",
+      "구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다",
+      "체험 제안 조건(대상·기간)을 정한다"
+     ],
+     "checks": [
+      "구성 검증 결과에 충돌이 없다"
+     ],
+     "platform": {
+      "actions": [
+       "createProduct",
+       "validateComposition",
+       "offerTrials"
+      ],
+      "screens": [
+       "/products/new",
+       "/entitlements"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.7-A06"
+     ]
+    },
+    {
+     "id": "FPW.7-A06",
+     "name": "상품 구성 승인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-PO"
+      ],
+      "A": "R-PO",
+      "C": [
+       "R-FO"
+      ],
+      "I": [
+       "R-PDA"
+      ]
+     },
+     "inputs": [
+      "WP-PRODUCT"
+     ],
+     "outputs": [
+      "WP-PRODUCT-APPROVAL"
+     ],
+     "steps": [
+      "상품 작성자가 아닌 상품 Owner가 구성과 판매 조건을 검토한다",
+      "승인하면 구성 승인 전이를 하고, 반려하면 사유를 남긴다",
+      "고객 출시 승인은 구성 승인자와 다른 사람이 하도록 승인 후보를 지정한다"
+     ],
+     "checks": [
+      "구성 승인자가 상품 작성자와 다르다"
+     ],
+     "platform": {
+      "actions": [
+       "productTransition"
+      ],
+      "screens": [
+       "/products/:id/:ver"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.7-A08"
+     ]
+    },
+    {
+     "id": "FPW.7-A07",
+     "name": "형식승인·사용자 고지 확인",
+     "trigger": "G6 배포 완료",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-GEN-006",
+      "FFG-LCY-010"
+     ],
+     "raci": {
+      "R": [
+       "R-REG"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-LEG",
+       "R-FO"
+      ],
+      "I": [
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-HOMOLOGATION-IMPACT",
+      "WP-SUMS-RECORD"
+     ],
+     "outputs": [
+      "WP-ACTIVATION-PRECHECK"
+     ],
+     "steps": [
+      "형식승인 영향이 있는 변경이면 승인 기관의 개정·확장 결정이 나왔는지 확인한다",
+      "시장 Profile이 요구하는 사용자 고지·확인 문구와 절차가 준비되었는지 확인한다",
+      "F2 이상 Feature의 활성화가 기능 작동 중이 아닐 때만 효력을 내는지 확인한다"
+     ],
+     "checks": [
+      "활성화 조건 확인서에 기관 결정·고지 준비·효력 조건이 모두 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.7-A08"
+     ]
+    },
+    {
+     "id": "FPW.7-A08",
+     "name": "G7 출시·활성화 판정",
+     "trigger": null,
+     "gateDecision": "G7",
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-SOT-005",
+      "FFG-SOT-004",
+      "FFG-LCY-001"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-OPS",
+       "R-REG"
+      ],
+      "I": [
+       "R-REL",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-CANARY-PLAN",
+      "WP-EXPERIMENT-PLAN",
+      "WP-SC-REVIEW",
+      "WP-PRODUCT-APPROVAL",
+      "WP-ACTIVATION-PRECHECK"
+     ],
+     "outputs": [
+      "WP-G7-DECISION"
+     ],
+     "steps": [
+      "SOTIF 출시 근거·Safety Case 검토·Canary 기준·활성화 조건이 모두 있는지 확인하고 하나라도 없으면 FAIL로 판정한다",
+      "AI·ML 모델을 쓰는 Feature면 데이터·모델 수명주기 요구를 확인하고 모델 교체가 새 Version으로 관리되는지 본다",
+      "Safety Manager가 Operations Gate에 판정을 등록하고, Feature Owner에게 Release Sign-off를 요청한다"
+     ],
+     "checks": [
+      "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다"
+     ],
+     "platform": {
+      "actions": [
+       "judgeGate"
+      ],
+      "screens": [
+       "/activation/decide",
+       "/admin/approval"
+      ],
+      "gates": [
+       "G9"
+      ]
+     },
+     "next": [
+      "FPW.7-A12"
+     ]
+    },
+    {
+     "id": "FPW.7-A12",
+     "name": "Release Sign-off(출시 책임 확인)",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-LCY-001"
+     ],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-SM"
+      ],
+      "I": [
+       "R-REL",
+       "R-PO"
+      ]
+     },
+     "inputs": [
+      "WP-G7-DECISION",
+      "WP-SC-REVIEW",
+      "WP-CANARY-PLAN"
+     ],
+     "outputs": [
+      "WP-RELEASE-SIGNOFF"
+     ],
+     "steps": [
+      "G8·G9 판정과 Safety Case 검토·Canary 기준을 확인한다",
+      "Feature 상세에서 사유를 적고 개인 서명으로 출시 책임을 확인한다",
+      "G8·G9가 다시 판정되면 이전 서명은 효력이 없으므로 다시 서명한다"
+     ],
+     "checks": [
+      "서명이 현재 G8·G9 판정 기록에 묶여 유효하다"
+     ],
+     "platform": {
+      "actions": [
+       "signRelease"
+      ],
+      "screens": [
+       "/features/:id/:ver"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.7-A09"
+     ]
+    },
+    {
+     "id": "FPW.7-A09",
+     "name": "출시 전이",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-REL"
+      ],
+      "A": "R-REL",
+      "C": [
+       "R-FO"
+      ],
+      "I": [
+       "R-OPS",
+       "R-PO"
+      ]
+     },
+     "inputs": [
+      "WP-G7-DECISION",
+      "WP-RELEASE-SIGNOFF"
+     ],
+     "outputs": [
+      "WP-RELEASE-RECORD"
+     ],
+     "steps": [
+      "OTA·Operations Gate PASS와 유효한 Release Sign-off를 확인하고 Lifecycle을 VERIFIED에서 RELEASED로 전이한다",
+      "전이 결과를 운영 조직과 상품 Owner에게 알린다",
+      "판정이 FAIL이면 개발 단계로 되돌리는 전이를 하고 사유를 남긴다"
+     ],
+     "checks": [
+      "Feature Version이 RELEASED이고 전이 수행자가 기록되었다"
+     ],
+     "platform": {
+      "actions": [
+       "transition"
+      ],
+      "screens": [
+       "/features/:id/:ver"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.7-A10",
+      "FPW.7-A11"
+     ]
+    },
+    {
+     "id": "FPW.7-A10",
+     "name": "상품 고객 출시 승인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-PO"
+      ],
+      "A": "R-PO",
+      "C": [
+       "R-FO"
+      ],
+      "I": [
+       "R-PDA",
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-RELEASE-RECORD",
+      "WP-PRODUCT-APPROVAL"
+     ],
+     "outputs": [
+      "WP-PRODUCT-RELEASE"
+     ],
+     "steps": [
+      "구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다",
+      "플랫폼이 구성 승인자와 같은 사람의 승인을 거부하면 다른 승인자로 다시 승인한다",
+      "출시 승인 결과를 상품 기획과 운영 조직에 알린다"
+     ],
+     "checks": [
+      "고객 출시 승인자가 구성 승인자와 다르다"
+     ],
+     "platform": {
+      "actions": [
+       "productTransition"
+      ],
+      "screens": [
+       "/products/:id/:ver"
+      ],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.7-A11",
+     "name": "Canary 활성화·단계적 확대",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [
+      "FFG-LCY-009",
+      "FFG-TST-010"
+     ],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-SM",
+       "R-REL"
+      ],
+      "I": [
+       "R-FO",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-RELEASE-RECORD",
+      "WP-CANARY-PLAN"
+     ],
+     "outputs": [
+      "WP-ROLLOUT-RECORD"
+     ],
+     "steps": [
+      "승인 범위 안에서 Canary Cohort부터 활성화를 적용한다",
+      "관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다",
+      "중단 기준에 걸리면 확대를 멈추고 이상 징후 대응(FPW.8)으로 넘긴다"
+     ],
+     "checks": [
+      "단계마다 관측 결과와 확대·중단 결정이 기록되었다"
+     ],
+     "platform": {
+      "actions": [
+       "stageRollout"
+      ],
+      "screens": [
+       "/activation/decide",
+       "/fleet/live"
+      ],
+      "gates": []
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1926,
+    "height": 784,
+    "lanes": [
+     {
+      "role": "R-OPS",
+      "label": "운영 조직",
+      "x": 0,
+      "y": 0,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "role": "R-FO",
+      "label": "Feature Owner",
+      "x": 0,
+      "y": 98,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "role": "R-SM",
+      "label": "Safety Manager",
+      "x": 0,
+      "y": 196,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "role": "R-QA",
+      "label": "품질 조직",
+      "x": 0,
+      "y": 294,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "role": "R-PDA",
+      "label": "상품 기획",
+      "x": 0,
+      "y": 392,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "role": "R-PO",
+      "label": "상품 Owner",
+      "x": 0,
+      "y": 490,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "role": "R-REG",
+      "label": "법규 담당",
+      "x": 0,
+      "y": 588,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "role": "R-REL",
+      "label": "Release Manager",
+      "x": 0,
+      "y": 686,
+      "w": 1926,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.7-A01",
+      "kind": "action",
+      "label": "Canary·Shadow 판정 기준 정의",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A11",
+      "kind": "action",
+      "label": "Canary 활성화·단계적 확대",
+      "x": 1598,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A02",
+      "kind": "action",
+      "label": "효과 실험 계획 등록",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A12",
+      "kind": "action",
+      "label": "Release Sign-off(출시 책임 확인)",
+      "x": 1038,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A03",
+      "kind": "action",
+      "label": "Safety Case·SOTIF 근거 정리",
+      "x": 198,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A08",
+      "kind": "action",
+      "label": "G7 출시·활성화 판정",
+      "x": 758,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A04",
+      "kind": "action",
+      "label": "Safety Case 독립 검토",
+      "x": 478,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A05",
+      "kind": "action",
+      "label": "상품 구성 작성",
+      "x": 198,
+      "y": 408,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A06",
+      "kind": "action",
+      "label": "상품 구성 승인",
+      "x": 478,
+      "y": 506,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A10",
+      "kind": "action",
+      "label": "상품 고객 출시 승인",
+      "x": 1598,
+      "y": 506,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A07",
+      "kind": "action",
+      "label": "형식승인·사용자 고지 확인",
+      "x": 478,
+      "y": 604,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A09",
+      "kind": "action",
+      "label": "출시 전이",
+      "x": 1318,
+      "y": 702,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-S2",
+      "kind": "start",
+      "label": "출시 효과를 실험으로 비교해야 할 때",
+      "x": 426,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-S3",
+      "kind": "start",
+      "label": "G6 배포 완료",
+      "x": 146,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-S4",
+      "kind": "start",
+      "label": "G6 배포 완료",
+      "x": 146,
+      "y": 432,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-S5",
+      "kind": "start",
+      "label": "G6 배포 완료",
+      "x": 426,
+      "y": 628,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1800,
+      "y": 530,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 1800,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.7-S1",
+      "to": "FPW.7-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-S2",
+      "to": "FPW.7-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        444,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-S3",
+      "to": "FPW.7-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        245
+       ],
+       [
+        198,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-S4",
+      "to": "FPW.7-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        441
+       ],
+       [
+        198,
+        441
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-S5",
+      "to": "FPW.7-A07",
+      "kind": "trigger",
+      "points": [
+       [
+        444,
+        637
+       ],
+       [
+        478,
+        637
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A01",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A02",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A03",
+      "to": "FPW.7-A04",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        245
+       ],
+       [
+        466,
+        245
+       ],
+       [
+        466,
+        343
+       ],
+       [
+        478,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A04",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        343
+       ],
+       [
+        746,
+        343
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A05",
+      "to": "FPW.7-A06",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        441
+       ],
+       [
+        466,
+        441
+       ],
+       [
+        466,
+        539
+       ],
+       [
+        478,
+        539
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A06",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        539
+       ],
+       [
+        746,
+        539
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A07",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        637
+       ],
+       [
+        746,
+        637
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A08",
+      "to": "FPW.7-A12",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1038,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A12",
+      "to": "FPW.7-A09",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        147
+       ],
+       [
+        1306,
+        147
+       ],
+       [
+        1306,
+        735
+       ],
+       [
+        1318,
+        735
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A09",
+      "to": "FPW.7-A10",
+      "kind": "flow",
+      "points": [
+       [
+        1506,
+        735
+       ],
+       [
+        1586,
+        735
+       ],
+       [
+        1586,
+        539
+       ],
+       [
+        1598,
+        539
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A09",
+      "to": "FPW.7-A11",
+      "kind": "flow",
+      "points": [
+       [
+        1506,
+        735
+       ],
+       [
+        1586,
+        735
+       ],
+       [
+        1586,
+        49
+       ],
+       [
+        1598,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A10",
+      "to": "FPW.7-E1",
+      "kind": "end",
+      "points": [
+       [
+        1786,
+        539
+       ],
+       [
+        1800,
+        539
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A11",
+      "to": "FPW.7-E2",
+      "kind": "end",
+      "points": [
+       [
+        1786,
+        49
+       ],
+       [
+        1800,
+        49
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      746,
+      147
+     ],
+     [
+      746,
+      245
+     ],
+     [
+      746,
+      343
+     ],
+     [
+      746,
+      539
+     ]
+    ]
+   }
+  },
+  {
+   "id": "FPW.8",
+   "name": "운영·긴급 차단·복원",
+   "en": "Operation, Kill & Restore",
+   "group": "생애주기",
+   "gates": [
+    "G8"
+   ],
+   "ref": "표준 보고서 7장(비활성화·복원), 8.x FFG-PLT-005·016, 14장 FFG-SEC-003·004, 6.1절 G8",
+   "purpose": "출시된 Feature를 운행 중 감시하고, 이상 징후가 안전·보안·법규 위험으로 확인되면 2인 승인을 거친 긴급 차단을 발행해 차량별 적용을 확인한 뒤, 원인을 해소하고 다른 승인자의 승인으로 단계적으로 복원한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "운행 중 이상 징후가 접수·확인되고 차단 필요성과 범위가 판단된다."
+    },
+    {
+     "id": "O2",
+     "text": "긴급 차단이 리콜·봉쇄 근거와 서로 다른 2인의 승인을 갖춰 발행된다."
+    },
+    {
+     "id": "O3",
+     "text": "차량별 차단 전달·적용이 추적되고 미적용 차량이 후속 조치로 넘어간다."
+    },
+    {
+     "id": "O4",
+     "text": "긴급 권한 사용이 24시간 안에 독립 검토된다."
+    },
+    {
+     "id": "O5",
+     "text": "원인 해소 뒤 차단 승인자와 다른 승인자의 승인으로 단계적으로 복원된다."
+    },
+    {
+     "id": "O6",
+     "text": "정기 드릴로 차단·복원 능력이 측정되고 G8 운영 판정이 남는다."
+    }
+   ],
+   "rules": [
+    "FFG-TEL-009",
+    "FFG-ADS-011",
+    "FFG-SEC-003",
+    "FFG-DEAC-010",
+    "FFG-PLT-005",
+    "FFG-SEC-004",
+    "FFG-DEAC-013",
+    "FFG-PLT-016",
+    "FFG-DEAC-008",
+    "FFG-LCY-009",
+    "FFG-DEAC-012"
+   ],
+   "entry": [
+    "Feature Version이 RELEASED이고 운행 중 감시 지표와 경보 기준이 등록되어 있다",
+    "차단·복원 승인 후보자의 개인 서명 수단이 발급되어 있다"
+   ],
+   "exit": [
+    "발행한 차단마다 차량별 적용 결과·사후 검토·복원 또는 유지 결정이 기록되었다",
+    "분기 드릴 결과와 G8 운영 판정이 남았다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-ANOMALY-CASE",
+     "name": "이상 징후 건",
+     "en": "Anomaly Case",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "이상 징후 출처(운행 지표·장애·VOC·SOTIF 트리거)와 대상 Feature Version",
+      "영향 차량 수·지역·Variant와 확인 결과"
+     ]
+    },
+    {
+     "key": "WP-KILL-PLAN",
+     "name": "차단 판단서",
+     "en": "Kill Decision Basis",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "사유 분류(SAFETY·SECURITY·REGULATORY·COMMERCIAL·OPERATIONAL)와 유효 등급",
+      "대상 범위와 24시간 누적 상한 대조 결과",
+      "대량 원격 종료 계획(단계·순서) 적용 여부"
+     ]
+    },
+    {
+     "key": "WP-RECALL-BASIS",
+     "name": "리콜·봉쇄 근거",
+     "en": "Recall / Containment Basis",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "리콜 번호 또는 봉쇄 결정 근거와 시장",
+      "시장별 보고 기한과 보고 책임자"
+     ]
+    },
+    {
+     "key": "WP-KILL-REQ",
+     "name": "긴급 차단 요청",
+     "en": "Kill Request",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "대상 Feature Version·차량 범위·사유 분류와 리콜·봉쇄 근거 참조",
+      "요청자와 요청 시각"
+     ]
+    },
+    {
+     "key": "WP-KILL-DECISION",
+     "name": "차단 승인 기록",
+     "en": "Kill Approval Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "서로 다른 승인자 2명의 개인 서명과 역할",
+      "게이트 판정(등급·대상 상한) 결과와 발행 명령 ID"
+     ]
+    },
+    {
+     "key": "WP-KILL-TRACE",
+     "name": "차단 적용 추적표",
+     "en": "Kill Delivery Trace",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "차량별 전달·적용 상태(유효한 상태 보고와 영속 저장 확인 기준)",
+      "기한 초과 미적용 차량과 연결된 이상 징후 건",
+      "대기 상한 초과 경보와 상위 대응 기록"
+     ]
+    },
+    {
+     "key": "WP-POST-REVIEW",
+     "name": "긴급 권한 사후 검토 기록",
+     "en": "Emergency Use Post Review",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "검토자(요청자·승인자 제외)와 검토 시각(24시간 이내)",
+      "사유·범위·절차 준수 판단과 개선 조치"
+     ]
+    },
+    {
+     "key": "WP-RESTORE-REQ",
+     "name": "복원 요청",
+     "en": "Restore Request",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "원인 분석·수정 내용과 재검증 Evidence 참조",
+      "복원 대상 범위와 Canary Cohort"
+     ]
+    },
+    {
+     "key": "WP-RESTORE-DECISION",
+     "name": "복원 승인 기록",
+     "en": "Restore Approval Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "차단 승인자와 겹치지 않는 승인자 2명의 개인 서명",
+      "게이트 판정과 복원 게시 ID"
+     ]
+    },
+    {
+     "key": "WP-RESTORE-ROLLOUT",
+     "name": "단계적 복원 관측 기록",
+     "en": "Staged Restore Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Cohort 단계별 확대 시각과 관측 결과",
+      "중단 기준 충족 여부와 재차단 여부"
+     ]
+    },
+    {
+     "key": "WP-DRILL-REPORT",
+     "name": "드릴 결과·G8 판정",
+     "en": "Drill Report & G8 Decision",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "시험 Cohort의 전달 시간·적용률·보고 정확도",
+      "분기 운영 점검 결과와 G8 판정 서명"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.8-A01",
+     "name": "이상 징후 확인",
+     "trigger": "운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-TEL-009"
+     ],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-SM"
+      ],
+      "I": [
+       "R-QA",
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-G7-DECISION",
+      "WP-ROLLOUT-RECORD",
+      "WP-KPI-PLAN",
+      "WP-G5-EVIDENCE"
+     ],
+     "outputs": [
+      "WP-ANOMALY-CASE"
+     ],
+     "steps": [
+      "운행 중 감시 지표와 장애·VOC를 확인해 이상 징후 건을 연다",
+      "대상 Feature Version과 영향 차량 범위를 Fleet 적용 현황에서 확인한다",
+      "안전·보안 영향이 의심되면 즉시 Safety Manager(보안은 CSM)에게 넘긴다",
+      "확인 결과 이상이 아니면 사유를 남기고 이상 건을 기각한다"
+     ],
+     "checks": [
+      "이상 징후 건에 출처·대상 Version·영향 범위가 기록되었다"
+     ],
+     "platform": {
+      "actions": [
+       "acknowledgeAnomaly",
+       "dismissAnomaly",
+       "createIncident"
+      ],
+      "screens": [
+       "/ops/anomalies",
+       "/ops/safety-kpi",
+       "/ops/incidents"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.8-A02"
+     ]
+    },
+    {
+     "id": "FPW.8-A02",
+     "name": "차단 필요성·범위 판단",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-ADS-011",
+      "FFG-SEC-003"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-CSM",
+       "R-REG",
+       "R-OPS"
+      ],
+      "I": [
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-ANOMALY-CASE",
+      "WP-SAFETY-PROFILE",
+      "WP-VEX-DECISION"
+     ],
+     "outputs": [
+      "WP-KILL-PLAN"
+     ],
+     "steps": [
+      "사유를 분류하고 Feature의 설계 비활성화 등급에서 유효 등급을 정한다",
+      "대상 범위를 24시간 누적 상한과 대조하고, 넘으면 CSM 추가 승인과 단계적 실행을 계획한다",
+      "ADS 기능이나 대량 대상이면 대량 원격 종료 계획에 따라 단계와 순서를 정한다",
+      "게이트 미리보기로 요청이 판정을 통과할지 확인한다"
+     ],
+     "checks": [
+      "사유 분류·유효 등급·범위·누적 상한 대조가 차단 판단서에 있다"
+     ],
+     "platform": {
+      "actions": [
+       "gatePreview"
+      ],
+      "screens": [
+       "/ops/kill"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.8-A03"
+     ]
+    },
+    {
+     "id": "FPW.8-A03",
+     "name": "리콜·봉쇄 근거 연계",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-DEAC-010"
+     ],
+     "raci": {
+      "R": [
+       "R-REG"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-SM",
+       "R-LEG"
+      ],
+      "I": [
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-KILL-PLAN"
+     ],
+     "outputs": [
+      "WP-RECALL-BASIS"
+     ],
+     "steps": [
+      "결함을 완화하는 F2 이상 안전 차단이면 시장별 리콜 번호나 봉쇄 결정 근거를 확보한다",
+      "시장별 보고 기한을 정하고 보고 책임자를 지정한다",
+      "근거 ID를 운영 조직에 넘겨 차단 요청에 붙이게 한다"
+     ],
+     "checks": [
+      "안전 차단 요청에 붙일 리콜·봉쇄 근거 ID가 있다(근거가 없으면 게이트가 차단한다)"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.8-A04"
+     ]
+    },
+    {
+     "id": "FPW.8-A04",
+     "name": "긴급 차단 요청",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-PLT-005"
+     ],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-SM"
+      ],
+      "I": [
+       "R-CSM",
+       "R-REG"
+      ]
+     },
+     "inputs": [
+      "WP-KILL-PLAN",
+      "WP-RECALL-BASIS"
+     ],
+     "outputs": [
+      "WP-KILL-REQ"
+     ],
+     "steps": [
+      "긴급 차단 화면에서 대상·범위·사유를 입력하고 확인 문구를 직접 입력해 요청한다",
+      "리콜·봉쇄 근거 ID를 요청에 붙인다",
+      "요청자는 같은 명령의 승인자로 지정하지 않는다"
+     ],
+     "checks": [
+      "요청이 접수되어 승인 대기 상태가 되었다"
+     ],
+     "platform": {
+      "actions": [
+       "issueKill"
+      ],
+      "screens": [
+       "/ops/kill"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.8-A05"
+     ]
+    },
+    {
+     "id": "FPW.8-A05",
+     "name": "긴급 차단 2인 승인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-PLT-005",
+      "FFG-SEC-003"
+     ],
+     "raci": {
+      "R": [
+       "R-SM",
+       "R-CSM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-REG"
+      ],
+      "I": [
+       "R-OPS",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-KILL-REQ",
+      "WP-KILL-PLAN"
+     ],
+     "outputs": [
+      "WP-KILL-DECISION"
+     ],
+     "steps": [
+      "승인자 2명이 각자 개인 서명으로 승인한다. F2 이상 안전·보안 차단에는 Safety Manager가 반드시 포함된다",
+      "누적 상한을 넘는 요청이면 Safety Manager와 CSM이 함께 승인한다",
+      "두 번째 승인 뒤 게이트 판정 결과와 발행 명령 ID를 확인한다"
+     ],
+     "checks": [
+      "서로 다른 2명의 승인 서명이 있고 요청자는 승인자에 없다"
+     ],
+     "platform": {
+      "actions": [
+       "approveKill",
+       "rejectKill"
+      ],
+      "screens": [
+       "/ops/kill"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.8-A06",
+      "FPW.8-A07"
+     ]
+    },
+    {
+     "id": "FPW.8-A06",
+     "name": "차단 전달·적용 추적",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-SEC-004",
+      "FFG-DEAC-013"
+     ],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-CSM"
+      ],
+      "I": [
+       "R-QA",
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-KILL-DECISION"
+     ],
+     "outputs": [
+      "WP-KILL-TRACE"
+     ],
+     "steps": [
+      "차량별 전달·적용 상태를 유효한 상태 보고와 영속 저장 확인으로만 '적용'으로 본다",
+      "기한 안에 적용되지 않은 차량은 이상 징후 건으로 넘긴다",
+      "대기 상한 초과 경보가 오면 Safety Manager가 상위 대응을 정한다"
+     ],
+     "checks": [
+      "기한 초과 미적용 차량마다 연결된 이상 징후 건이 있다"
+     ],
+     "platform": {
+      "actions": [
+       "acknowledgeAnomaly"
+      ],
+      "screens": [
+       "/fleet/live",
+       "/deployments"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.8-A08"
+     ]
+    },
+    {
+     "id": "FPW.8-A07",
+     "name": "긴급 권한 사후 검토",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-PLT-016"
+     ],
+     "raci": {
+      "R": [
+       "R-REG"
+      ],
+      "A": "R-QA",
+      "C": [
+       "R-CSM"
+      ],
+      "I": [
+       "R-SM",
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-KILL-REQ",
+      "WP-KILL-DECISION"
+     ],
+     "outputs": [
+      "WP-POST-REVIEW"
+     ],
+     "steps": [
+      "차단 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다",
+      "검토 결과와 개선 조치를 사후 검토 기록으로 한 번 남긴다",
+      "미흡 사항은 품질 조직이 개선 과제로 등록한다"
+     ],
+     "checks": [
+      "검토 기록이 24시간 안에 있고 검토자가 요청자·승인자와 다르다"
+     ],
+     "platform": {
+      "actions": [
+       "recordKillPostReview"
+      ],
+      "screens": [
+       "/audit/oversight"
+      ],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.8-A08",
+     "name": "원인 조치·복원 요청",
+     "trigger": "원인 수정과 재검증 Evidence 확보",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [
+      "FFG-DEAC-008"
+     ],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-FO",
+       "R-TST"
+      ],
+      "I": [
+       "R-REG"
+      ]
+     },
+     "inputs": [
+      "WP-KILL-TRACE",
+      "WP-G5-EVIDENCE"
+     ],
+     "outputs": [
+      "WP-RESTORE-REQ"
+     ],
+     "steps": [
+      "원인 분석과 수정(정책·SW·운행 조건 축소)을 마치고 재검증 Evidence가 G5 근거로 제출되었는지 확인한다",
+      "복원 범위와 시작 Canary Cohort를 정해 복원을 요청한다",
+      "직전 차단 승인자를 복원 승인 후보에서 뺀다"
+     ],
+     "checks": [
+      "복원 요청에 재검증 Evidence 참조와 Canary Cohort가 있다"
+     ],
+     "platform": {
+      "actions": [
+       "requestRestore"
+      ],
+      "screens": [
+       "/ops/kill"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.8-A09"
+     ]
+    },
+    {
+     "id": "FPW.8-A09",
+     "name": "복원 2인 승인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [
+      "FFG-DEAC-008",
+      "FFG-PLT-005"
+     ],
+     "raci": {
+      "R": [
+       "R-SM",
+       "R-QA"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-CSM"
+      ],
+      "I": [
+       "R-OPS",
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-RESTORE-REQ",
+      "WP-KILL-DECISION"
+     ],
+     "outputs": [
+      "WP-RESTORE-DECISION"
+     ],
+     "steps": [
+      "직전 차단을 승인하지 않은 승인자 2명이 개인 서명으로 승인한다. F2 이상은 Safety Manager가 포함된다",
+      "플랫폼 감사 원장이 차단 승인자와의 중복을 판정하므로 거부되면 다른 승인자로 다시 승인한다",
+      "두 번째 승인 뒤 게이트 판정과 복원 게시 ID를 확인한다"
+     ],
+     "checks": [
+      "복원 승인자 중 직전 차단 승인자가 없다"
+     ],
+     "platform": {
+      "actions": [
+       "approveRestore",
+       "rejectRestore"
+      ],
+      "screens": [
+       "/ops/kill"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.8-A10"
+     ]
+    },
+    {
+     "id": "FPW.8-A10",
+     "name": "단계적 복원·관측",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [
+      "FFG-LCY-009"
+     ],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-SM",
+       "R-REL"
+      ],
+      "I": [
+       "R-FO",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-RESTORE-DECISION"
+     ],
+     "outputs": [
+      "WP-RESTORE-ROLLOUT"
+     ],
+     "steps": [
+      "Canary Cohort부터 복원을 적용하고 차량이 다음 시동 자체 시험 뒤 활성으로 돌아왔는지 확인한다",
+      "사전에 정한 관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다",
+      "이상이 보이면 확대를 멈추고 다시 차단 판단(A02)으로 넘긴다"
+     ],
+     "checks": [
+      "단계마다 관측 결과와 확대·중단 결정이 기록되었다"
+     ],
+     "platform": {
+      "actions": [
+       "stageRollout"
+      ],
+      "screens": [
+       "/fleet/live"
+      ],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.8-A11",
+     "name": "분기 드릴·G8 운영 판정",
+     "trigger": "분기 정기 일정",
+     "gateDecision": "G8",
+     "independentOf": [],
+     "outcomes": [
+      "O6"
+     ],
+     "rules": [
+      "FFG-DEAC-012"
+     ],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-SM",
+       "R-QA"
+      ],
+      "I": [
+       "R-FO",
+       "R-REG"
+      ]
+     },
+     "inputs": [
+      "WP-KILL-TRACE",
+      "WP-POST-REVIEW"
+     ],
+     "outputs": [
+      "WP-DRILL-REPORT"
+     ],
+     "steps": [
+      "시험 Cohort로 차단·복원 드릴을 수행해 전달 시간·적용률·보고 정확도를 잰다",
+      "분기 차단 건의 추적표·사후 검토 결과와 드릴 결과를 묶어 운영 상태를 점검한다",
+      "Safety Manager·품질 조직의 의견을 받아 G8 운영 판정을 남긴다"
+     ],
+     "checks": [
+      "분기마다 드릴 결과와 G8 판정이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/ops/kill",
+       "/audit"
+      ],
+      "gates": []
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 2766,
+    "height": 384,
+    "lanes": [
+     {
+      "role": "R-OPS",
+      "label": "운영 조직",
+      "x": 0,
+      "y": 0,
+      "w": 2766,
+      "h": 188
+     },
+     {
+      "role": "R-SM",
+      "label": "Safety Manager",
+      "x": 0,
+      "y": 188,
+      "w": 2766,
+      "h": 98
+     },
+     {
+      "role": "R-REG",
+      "label": "법규 담당",
+      "x": 0,
+      "y": 286,
+      "w": 2766,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.8-A01",
+      "kind": "action",
+      "label": "이상 징후 확인",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A04",
+      "kind": "action",
+      "label": "긴급 차단 요청",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A06",
+      "kind": "action",
+      "label": "차단 전달·적용 추적",
+      "x": 1598,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A08",
+      "kind": "action",
+      "label": "원인 조치·복원 요청",
+      "x": 1878,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A10",
+      "kind": "action",
+      "label": "단계적 복원·관측",
+      "x": 2438,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A11",
+      "kind": "action",
+      "label": "분기 드릴·G8 운영 판정",
+      "x": 198,
+      "y": 106,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A02",
+      "kind": "action",
+      "label": "차단 필요성·범위 판단",
+      "x": 478,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A05",
+      "kind": "action",
+      "label": "긴급 차단 2인 승인",
+      "x": 1318,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A09",
+      "kind": "action",
+      "label": "복원 2인 승인",
+      "x": 2158,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A03",
+      "kind": "action",
+      "label": "리콜·봉쇄 근거 연계",
+      "x": 758,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A07",
+      "kind": "action",
+      "label": "긴급 권한 사후 검토",
+      "x": 1598,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-S2",
+      "kind": "start",
+      "label": "분기 정기 일정",
+      "x": 146,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1800,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 2640,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.8-S1",
+      "to": "FPW.8-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-S2",
+      "to": "FPW.8-A11",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        139
+       ],
+       [
+        198,
+        139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A01",
+      "to": "FPW.8-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        237
+       ],
+       [
+        478,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A02",
+      "to": "FPW.8-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        746,
+        237
+       ],
+       [
+        746,
+        335
+       ],
+       [
+        758,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A03",
+      "to": "FPW.8-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        335
+       ],
+       [
+        1026,
+        335
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A04",
+      "to": "FPW.8-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1306,
+        49
+       ],
+       [
+        1306,
+        237
+       ],
+       [
+        1318,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A06",
+      "kind": "flow",
+      "points": [
+       [
+        1506,
+        237
+       ],
+       [
+        1586,
+        237
+       ],
+       [
+        1586,
+        49
+       ],
+       [
+        1598,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A07",
+      "kind": "flow",
+      "points": [
+       [
+        1506,
+        237
+       ],
+       [
+        1586,
+        237
+       ],
+       [
+        1586,
+        335
+       ],
+       [
+        1598,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A06",
+      "to": "FPW.8-A08",
+      "kind": "flow",
+      "points": [
+       [
+        1786,
+        49
+       ],
+       [
+        1878,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A08",
+      "to": "FPW.8-A09",
+      "kind": "flow",
+      "points": [
+       [
+        2066,
+        49
+       ],
+       [
+        2146,
+        49
+       ],
+       [
+        2146,
+        237
+       ],
+       [
+        2158,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A09",
+      "to": "FPW.8-A10",
+      "kind": "flow",
+      "points": [
+       [
+        2346,
+        237
+       ],
+       [
+        2426,
+        237
+       ],
+       [
+        2426,
+        49
+       ],
+       [
+        2438,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A07",
+      "to": "FPW.8-E1",
+      "kind": "end",
+      "points": [
+       [
+        1786,
+        335
+       ],
+       [
+        1800,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A10",
+      "to": "FPW.8-E2",
+      "kind": "end",
+      "points": [
+       [
+        2626,
+        49
+       ],
+       [
+        2640,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A11",
+      "to": "FPW.8-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        139
+       ],
+       [
+        400,
+        139
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  },
+  {
+   "id": "FPW.9",
+   "name": "사후 검토·Flag Retirement",
+   "en": "Post-Operation Review & Flag Retirement",
+   "group": "생애주기",
+   "gates": [],
+   "ref": "표준 보고서 6.5절(Retirement), 5장 FFG-CLS-008, 6장 FFG-LCY-011, 14장 FFG-SOT-003, 3장 FFG-ADS-010",
+   "purpose": "운영 중 드러난 이상·복원 결과를 품질 피드백으로 되돌려 시나리오와 다음 Version에 반영하고, 만료되었거나 대체된 Flag를 승인된 Retirement 절차로 처리해 코드·설정·시험을 정리한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "운영 결과와 새 트리거 조건이 품질 피드백으로 수용되어 시나리오와 다음 Version에 반영된다."
+    },
+    {
+     "id": "O2",
+     "text": "Flag Retirement가 요청자와 다른 승인자의 승인을 받는다."
+    },
+    {
+     "id": "O3",
+     "text": "Retirement 대상 Flag의 코드·설정·시험이 기한 안에 삭제되고 Lifecycle이 종료된다."
+    }
+   ],
+   "rules": [
+    "FFG-SOT-003",
+    "FFG-CLS-008",
+    "FFG-LCY-011",
+    "FFG-ADS-010"
+   ],
+   "entry": [
+    "분기 드릴·복원 결과 또는 Flag 만료 알림이 있다"
+   ],
+   "exit": [
+    "수용한 품질 피드백이 시나리오 저장소와 개선 과제에 연결되었다",
+    "Retirement된 Flag의 삭제 단계가 모두 기록되고 Lifecycle이 RETIRED가 되었다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-QUALITY-FEEDBACK",
+     "name": "품질 피드백 기록",
+     "en": "Quality Feedback Record",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "이상·복원·드릴에서 나온 개선 항목과 담당",
+      "시나리오 저장소에 추가한 트리거 조건과 재평가 대상"
+     ]
+    },
+    {
+     "key": "WP-RETIRE-REQ",
+     "name": "Flag Retirement 요청",
+     "en": "Flag Retirement Request",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Retirement 사유(만료·대체·폐기)와 다음 정기 릴리스 예정일",
+      "영향 받는 차량·Variant와 구 Version 잔존 여부"
+     ]
+    },
+    {
+     "key": "WP-RETIRE-APPROVAL",
+     "name": "Retirement 승인 기록",
+     "en": "Retirement Approval",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "승인자(F2 이상은 Safety Manager 포함)와 시각",
+      "삭제 기한(승인 후 6개월 또는 다음 정기 릴리스 중 이른 시점)"
+     ]
+    },
+    {
+     "key": "WP-RETIRE-LOG",
+     "name": "Retirement 단계 기록",
+     "en": "Retirement Step Log",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "코드·설정·시험 삭제 단계별 완료 시각",
+      "상태 보고로 확인한 구 Version 잔존 차량 수"
+     ]
+    },
+    {
+     "key": "WP-RETIRE-CLOSE",
+     "name": "Lifecycle 종료 기록",
+     "en": "Lifecycle Closure",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "DEPRECATED·RETIRED 전이 시각",
+      "Flag ID 재사용 금지 표시와 Catalog 퇴역 결과"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.9-A01",
+     "name": "운영 결과 품질 피드백 수용",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-SOT-003"
+     ],
+     "raci": {
+      "R": [
+       "R-QA"
+      ],
+      "A": "R-QA",
+      "C": [
+       "R-SM",
+       "R-TST"
+      ],
+      "I": [
+       "R-FO",
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-DRILL-REPORT",
+      "WP-RESTORE-ROLLOUT"
+     ],
+     "outputs": [
+      "WP-QUALITY-FEEDBACK"
+     ],
+     "steps": [
+      "분기 드릴·복원 관측·이상 징후 결과에서 개선 항목을 추린다",
+      "텔레메트리와 사고 데이터에서 찾은 트리거 조건·오용을 시험 조직에 넘겨 시나리오 저장소에 추가하게 한다",
+      "품질 피드백을 수용하고 다음 Version 개선 과제로 Feature Owner에게 연결한다"
+     ],
+     "checks": [
+      "수용한 피드백마다 담당과 반영 대상(시나리오·Version)이 있다"
+     ],
+     "platform": {
+      "actions": [
+       "acceptFeedback"
+      ],
+      "screens": [
+       "/quality/feedback"
+      ],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.9-A02",
+     "name": "Flag Retirement 요청",
+     "trigger": "Flag 만료 30일 전 알림, 기능 대체·폐기 결정",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-CLS-008"
+     ],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-REL",
+       "R-INT"
+      ],
+      "I": [
+       "R-SM",
+       "R-REQ"
+      ]
+     },
+     "inputs": [
+      "WP-FEAT-REG"
+     ],
+     "outputs": [
+      "WP-RETIRE-REQ"
+     ],
+     "steps": [
+      "만료 알림을 받은 Release·Experiment Flag의 연장 또는 Retirement를 정한다",
+      "Retirement면 사유·영향 차량·다음 정기 릴리스 예정일을 적어 요청한다",
+      "구 Version이 남은 차량이 있는지 Fleet 적용 현황으로 확인해 요청에 붙인다"
+     ],
+     "checks": [
+      "Retirement 요청에 사유와 영향 범위가 있다"
+     ],
+     "platform": {
+      "actions": [
+       "requestFlagRetirement"
+      ],
+      "screens": [
+       "/flag-retirements"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.9-A03"
+     ]
+    },
+    {
+     "id": "FPW.9-A03",
+     "name": "Flag Retirement 승인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-ADS-010"
+     ],
+     "raci": {
+      "R": [
+       "R-REQ",
+       "R-SM"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-REL"
+      ],
+      "I": [
+       "R-INT",
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-RETIRE-REQ"
+     ],
+     "outputs": [
+      "WP-RETIRE-APPROVAL"
+     ],
+     "steps": [
+      "요청자가 아닌 요구 Owner가 Retirement를 승인하고, F2 이상이면 Safety Manager도 승인한다",
+      "ADS Feature를 폐기하는 경우 영구 비활성화·명령 키 폐기·Catalog 퇴역을 승인 조건으로 단다",
+      "승인 후 삭제 기한을 정해 Feature Owner와 통합 조직에 알린다"
+     ],
+     "checks": [
+      "승인자가 요청자와 다르고 F2 이상에 Safety Manager 승인이 있다"
+     ],
+     "platform": {
+      "actions": [
+       "approveFlagRetirement"
+      ],
+      "screens": [
+       "/flag-retirements"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.9-A04"
+     ]
+    },
+    {
+     "id": "FPW.9-A04",
+     "name": "코드·설정·시험 삭제 기록",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-LCY-011"
+     ],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-INT",
+       "R-TST"
+      ],
+      "I": [
+       "R-REL"
+      ]
+     },
+     "inputs": [
+      "WP-RETIRE-APPROVAL"
+     ],
+     "outputs": [
+      "WP-RETIRE-LOG"
+     ],
+     "steps": [
+      "삭제 기한 안에 해당 Flag의 차량 SW 코드·설정·시험을 지우도록 통합 조직과 계획을 세운다",
+      "단계마다 완료 조건을 확인하고 Retirement 단계로 기록한다",
+      "구 Version이 남은 차량은 상태 보고로 잔존이 0이 된 것을 확인한 뒤 마지막 단계를 닫는다"
+     ],
+     "checks": [
+      "Retirement 단계가 순서대로 모두 기록되고 잔존 차량이 0이다"
+     ],
+     "platform": {
+      "actions": [
+       "recordFlagRetirementStep"
+      ],
+      "screens": [
+       "/flag-retirements"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.9-A05"
+     ]
+    },
+    {
+     "id": "FPW.9-A05",
+     "name": "Lifecycle 종료 전이",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-REL"
+      ],
+      "A": "R-REL",
+      "C": [
+       "R-FO"
+      ],
+      "I": [
+       "R-PO",
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-RETIRE-LOG"
+     ],
+     "outputs": [
+      "WP-RETIRE-CLOSE"
+     ],
+     "steps": [
+      "Feature Version을 DEPRECATED로 전이해 신규 사용을 막는다",
+      "Retirement 단계가 모두 끝나면 RETIRED로 전이한다",
+      "Flag ID를 재사용 금지로 남기고 상품 Owner에게 Catalog 반영을 알린다"
+     ],
+     "checks": [
+      "Lifecycle이 RETIRED이고 Flag ID 재사용 금지 표시가 있다"
+     ],
+     "platform": {
+      "actions": [
+       "transition"
+      ],
+      "screens": [
+       "/features/:id/:ver"
+      ],
+      "gates": []
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1366,
+    "height": 392,
+    "lanes": [
+     {
+      "role": "R-QA",
+      "label": "품질 조직",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-FO",
+      "label": "Feature Owner",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-REQ",
+      "label": "요구 Owner",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-REL",
+      "label": "Release Manager",
+      "x": 0,
+      "y": 294,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.9-A01",
+      "kind": "action",
+      "label": "운영 결과 품질 피드백 수용",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-A02",
+      "kind": "action",
+      "label": "Flag Retirement 요청",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-A04",
+      "kind": "action",
+      "label": "코드·설정·시험 삭제 기록",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-A03",
+      "kind": "action",
+      "label": "Flag Retirement 승인",
+      "x": 478,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-A05",
+      "kind": "action",
+      "label": "Lifecycle 종료 전이",
+      "x": 1038,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.9-S2",
+      "kind": "start",
+      "label": "Flag 만료 30일 전 알림, 기능 대체·폐기 결정",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.9-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.9-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.9-S1",
+      "to": "FPW.9-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-S2",
+      "to": "FPW.9-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A02",
+      "to": "FPW.9-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        466,
+        245
+       ],
+       [
+        478,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A03",
+      "to": "FPW.9-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A04",
+      "to": "FPW.9-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1026,
+        343
+       ],
+       [
+        1038,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A01",
+      "to": "FPW.9-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        400,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A05",
+      "to": "FPW.9-E2",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        343
+       ],
+       [
+        1240,
+        343
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  },
+  {
+   "id": "FPW.10",
+   "name": "협력사 관리",
+   "en": "Supplier Management",
+   "group": "지원",
+   "gates": [],
+   "ref": "표준 보고서 16장(ASPICE 평가), 17장(협력사), 9.11절 FFG-VEH-016, 14·15장(원산지)",
+   "purpose": "Feature Flag 관련 SW·서비스를 공급하는 협력사를 계약 전에 평가하고, 보고서 요구를 DIA·CIA에 넣어 계약한 뒤, Gate별 납품물을 OEM 환경에서 독립적으로 입고 검사해 통합과 V&V의 입력으로 넘긴다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "협력사 역량(ASPICE·사이버보안·SMS)이 계약 전에 확인된다."
+    },
+    {
+     "id": "O2",
+     "text": "DIA·CIA에 보고서 Version·RASIC·납품물·통지 기한·안전 정보 제공 의무가 들어간다."
+    },
+    {
+     "id": "O3",
+     "text": "기존 구현을 재사용하면 차이가 진단되어 G2에 보고된다."
+    },
+    {
+     "id": "O4",
+     "text": "납품물이 독립성이 보장된 확인 조치와 OEM 입고 검사로 판정된다."
+    },
+    {
+     "id": "O5",
+     "text": "공급망 원산지와 EOL 프로비저닝이 기록·검증된다."
+    }
+   ],
+   "rules": [
+    "FFG-SUP-003",
+    "FFG-SUP-005",
+    "FFG-SUP-004",
+    "FFG-SUP-017",
+    "FFG-SUP-016",
+    "FFG-SUP-014",
+    "FFG-SUP-008",
+    "FFG-SUP-009",
+    "FFG-SEC-006",
+    "FFG-SBOM-007",
+    "FFG-VEH-016",
+    "FFG-SUP-006",
+    "FFG-SUP-010"
+   ],
+   "entry": [
+    "Feature Flag 관련 SW·서비스의 외부 조달이 결정되었다"
+   ],
+   "exit": [
+    "계약(DIA·CIA)이 체결되고 납품물이 Gate별 합격 기준으로 판정되었다",
+    "원산지 속성과 EOL 프로비저닝 검증이 기록되었다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-SUPPLIER-CANDIDATE",
+     "name": "협력사 후보·공급 범위",
+     "en": "Supplier Candidate & Scope",
+     "kind": "input",
+     "retained": false,
+     "content": [
+      "후보 협력사와 공급할 SW·서비스 범위(LPC, Safety Guard, 시험 도구, 운영 서비스)",
+      "ADS 관련 여부와 대상 시장"
+     ]
+    },
+    {
+     "key": "WP-SUPPLIER-ASSESS",
+     "name": "협력사 역량 평가 결과",
+     "en": "Supplier Capability Assessment",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "ASPICE·사이버보안 평가 결과와 Feature Flag 특화 평가 질문 결과",
+      "ADS 협력사의 SMS 역량 평가, 부족 항목의 개선 계획과 기한"
+     ]
+    },
+    {
+     "key": "WP-DIA",
+     "name": "DIA·CIA 계약 부속서",
+     "en": "Development / Cybersecurity Interface Agreement",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "인용한 보고서 Version과 적용 장, RASIC, Gate별 납품물",
+      "시간 예산 부속서, 결함·변경 통지 기한, 현장 지원 SLA",
+      "당국 보고·리콜 판단을 위한 안전 정보 제공 범위와 기한"
+     ]
+    },
+    {
+     "key": "WP-SUPPLIER-DIFF",
+     "name": "기존 구현 차이 보고",
+     "en": "Legacy Implementation Gap Report",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "재사용·인수한 Feature Flag 구현과 보고서 요구의 차이",
+      "차이별 위험과 보완 계획"
+     ]
+    },
+    {
+     "key": "WP-CONFIRMATION-PLAN",
+     "name": "확인 조치 계획",
+     "en": "Confirmation Measures Plan",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "협력사 범위의 확인 검토·감사·기능안전 평가와 수행자",
+      "수행자 독립성 수준과 근거"
+     ]
+    },
+    {
+     "key": "WP-INTAKE-RESULT",
+     "name": "입고 검사 결과",
+     "en": "Incoming Inspection Result",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "검사 항목(IN-01~IN-12)별 OEM 환경 재실행 결과",
+      "Gate별 합격 판정과 Supplier Gate 기록",
+      "Safety Manual 사용 가정(AoU) 목록"
+     ]
+    },
+    {
+     "key": "WP-ORIGIN-RECORD",
+     "name": "공급망 원산지 기록",
+     "en": "Supply Chain Origin Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "구성요소별 개발 주체·국가·소유·통제 속성(SBOM 연계)",
+      "미국 시장 적합성 선언 근거와 10년 보존 위치"
+     ]
+    },
+    {
+     "key": "WP-EOL-RECORD",
+     "name": "EOL 프로비저닝 검증 기록",
+     "en": "EOL Provisioning Verification",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "Feature별 초기 기록 쓰기와 프로비저닝 표식 설정 결과",
+      "표식이 있는 ECU의 기록 누락 시 동작 확인 결과"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.10-A01",
+     "name": "계약 전 협력사 역량 확인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-SUP-005",
+      "FFG-SUP-003"
+     ],
+     "raci": {
+      "R": [
+       "R-QA"
+      ],
+      "A": "R-PUR",
+      "C": [
+       "R-CSM",
+       "R-SM"
+      ],
+      "I": [
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-SUPPLIER-CANDIDATE"
+     ],
+     "outputs": [
+      "WP-SUPPLIER-ASSESS"
+     ],
+     "steps": [
+      "후보 협력사의 ASPICE·사이버보안 평가 결과를 계약 전에 받아 확인한다",
+      "평가 계획에 Feature Flag 특화 평가 질문을 넣고 결과를 기록한다",
+      "ADS 관련 협력사는 SMS 역량 평가를 추가하고, 부족하면 개선 계획과 기한을 합의한다"
+     ],
+     "checks": [
+      "계약 전에 평가 결과와 부족 항목의 개선 계획이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.10-A02"
+     ]
+    },
+    {
+     "id": "FPW.10-A02",
+     "name": "DIA·CIA 체결",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-SUP-004",
+      "FFG-SUP-017",
+      "FFG-SUP-010"
+     ],
+     "raci": {
+      "R": [
+       "R-PUR",
+       "R-REG"
+      ],
+      "A": "R-PUR",
+      "C": [
+       "R-LEG",
+       "R-SM",
+       "R-CSM",
+       "R-QA"
+      ],
+      "I": [
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-SUPPLIER-ASSESS"
+     ],
+     "outputs": [
+      "WP-DIA"
+     ],
+     "steps": [
+      "DIA·CIA에 보고서 Version과 적용 장, RASIC, Gate별 납품물, 시간 예산 부속서, 통지 기한, 현장 지원 SLA를 넣는다",
+      "법규 담당이 당국 보고·리콜 판단·사건 조사에 필요한 안전 정보의 제공 범위와 기한을 정해 넣는다",
+      "법무가 계약 조항을 검토하고 구매가 체결한다"
+     ],
+     "checks": [
+      "일곱 항목과 안전 정보 제공 조항이 모두 계약에 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.10-A03",
+      "FPW.10-A04"
+     ]
+    },
+    {
+     "id": "FPW.10-A03",
+     "name": "확인 조치 독립성 지정",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-SUP-014"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-QA"
+      ],
+      "I": [
+       "R-PUR"
+      ]
+     },
+     "inputs": [
+      "WP-DIA"
+     ],
+     "outputs": [
+      "WP-CONFIRMATION-PLAN"
+     ],
+     "steps": [
+      "협력사 범위의 확인 검토·감사·기능안전 평가를 계획한다",
+      "참조 ASIL에 맞는 독립성 수준을 만족하는 수행자를 지정한다",
+      "협력사 자체 선언만으로 승인하지 않도록 확인 결과를 입고 판정의 조건으로 건다"
+     ],
+     "checks": [
+      "확인 조치마다 독립성을 만족하는 수행자가 지정되었다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.10-A06"
+     ]
+    },
+    {
+     "id": "FPW.10-A04",
+     "name": "공급망 원산지 속성 관리",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [
+      "FFG-SEC-006",
+      "FFG-SBOM-007"
+     ],
+     "raci": {
+      "R": [
+       "R-PUR"
+      ],
+      "A": "R-PUR",
+      "C": [
+       "R-CSM",
+       "R-REG"
+      ],
+      "I": [
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-DIA"
+     ],
+     "outputs": [
+      "WP-ORIGIN-RECORD"
+     ],
+     "steps": [
+      "텔레매틱스·OTA·Feature Flag SW 구성요소의 개발 주체와 원산지를 SBOM과 함께 받는다",
+      "미국 시장 차량의 해당 구성요소는 개발 주체·국가·소유·통제 속성을 SBOM에 기록한다",
+      "적합성 선언 근거로 10년 보존 위치를 지정한다"
+     ],
+     "checks": [
+      "대상 구성요소 모두에 원산지 속성이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.10-A06"
+     ]
+    },
+    {
+     "id": "FPW.10-A05",
+     "name": "기존 구현 진단",
+     "trigger": "기존 Feature Flag 구현의 재사용·인수 결정",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-SUP-016"
+     ],
+     "raci": {
+      "R": [
+       "R-QA"
+      ],
+      "A": "R-QA",
+      "C": [
+       "R-ARC",
+       "R-INT"
+      ],
+      "I": [
+       "R-SM"
+      ]
+     },
+     "inputs": [
+      "WP-SUPPLIER-ASSESS"
+     ],
+     "outputs": [
+      "WP-SUPPLIER-DIFF"
+     ],
+     "steps": [
+      "재사용·인수할 구현을 보고서 요구와 대조하는 진단을 수행한다",
+      "차이마다 위험과 보완 계획을 정리한다",
+      "차이 보고를 Safety Manager에게 넘겨 G2 영향 분석에 넣게 한다"
+     ],
+     "checks": [
+      "차이 보고가 G2 영향 분석의 입력으로 등록되었다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.10-A06",
+     "name": "Gate별 납품물 입고 검사",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-SUP-008",
+      "FFG-SUP-009",
+      "FFG-SUP-006"
+     ],
+     "raci": {
+      "R": [
+       "R-QA",
+       "R-TST"
+      ],
+      "A": "R-QA",
+      "C": [
+       "R-INT",
+       "R-SM"
+      ],
+      "I": [
+       "R-PUR"
+      ]
+     },
+     "inputs": [
+      "WP-DIA",
+      "WP-CONFIRMATION-PLAN"
+     ],
+     "outputs": [
+      "WP-INTAKE-RESULT"
+     ],
+     "steps": [
+      "협력사가 정한 형식으로 낸 Gate별 납품물을 협력사 이관 포털에서 받는다",
+      "입고 검사 항목을 OEM 환경에서 다시 실행하고, 수정 납품이면 일부가 아니라 전 항목을 다시 검사한다",
+      "Safety Manual의 사용 가정 목록을 통합 조직에 넘긴다",
+      "합격 기준으로 판정해 Supplier Gate 기록에 남긴다"
+     ],
+     "checks": [
+      "모든 검사 항목이 OEM 환경에서 재실행되었다",
+      "판정 결과가 Supplier Gate 기록에 있다"
+     ],
+     "platform": {
+      "actions": [
+       "judgeGate"
+      ],
+      "screens": [
+       "/supplier/portal"
+      ],
+      "gates": [
+       "G6"
+      ]
+     },
+     "next": [
+      "FPW.10-A07"
+     ]
+    },
+    {
+     "id": "FPW.10-A07",
+     "name": "EOL 프로비저닝 검증",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [
+      "FFG-VEH-016"
+     ],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-INT",
+      "C": [
+       "R-TST",
+       "R-PLM"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-INTAKE-RESULT"
+     ],
+     "outputs": [
+      "WP-EOL-RECORD"
+     ],
+     "steps": [
+      "EOL에서 인증된 진단 세션으로 Feature별 초기 기록을 쓰고 지울 수 없는 프로비저닝 표식을 설정한다",
+      "표식이 있는 ECU에서 기록이 없을 때 첫 시동으로 보지 않는지 확인한다",
+      "결과를 생산 기준정보와 함께 기록한다"
+     ],
+     "checks": [
+      "대상 ECU 모두 표식과 초기 기록이 확인되었다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1646,
+    "height": 482,
+    "lanes": [
+     {
+      "role": "R-QA",
+      "label": "품질 조직",
+      "x": 0,
+      "y": 0,
+      "w": 1646,
+      "h": 188
+     },
+     {
+      "role": "R-PUR",
+      "label": "구매",
+      "x": 0,
+      "y": 188,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-SM",
+      "label": "Safety Manager",
+      "x": 0,
+      "y": 286,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-INT",
+      "label": "통합 조직",
+      "x": 0,
+      "y": 384,
+      "w": 1646,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.10-A01",
+      "kind": "action",
+      "label": "계약 전 협력사 역량 확인",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A05",
+      "kind": "action",
+      "label": "기존 구현 진단",
+      "x": 198,
+      "y": 106,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A06",
+      "kind": "action",
+      "label": "Gate별 납품물 입고 검사",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A02",
+      "kind": "action",
+      "label": "DIA·CIA 체결",
+      "x": 478,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A04",
+      "kind": "action",
+      "label": "공급망 원산지 속성 관리",
+      "x": 758,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A03",
+      "kind": "action",
+      "label": "확인 조치 독립성 지정",
+      "x": 758,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A07",
+      "kind": "action",
+      "label": "EOL 프로비저닝 검증",
+      "x": 1318,
+      "y": 400,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.10-S2",
+      "kind": "start",
+      "label": "기존 Feature Flag 구현의 재사용·인수 결정",
+      "x": 146,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.10-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.10-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520,
+      "y": 424,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.10-S1",
+      "to": "FPW.10-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-S2",
+      "to": "FPW.10-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        139
+       ],
+       [
+        198,
+        139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A01",
+      "to": "FPW.10-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        237
+       ],
+       [
+        478,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        746,
+        237
+       ],
+       [
+        746,
+        335
+       ],
+       [
+        758,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        758,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A03",
+      "to": "FPW.10-A06",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        335
+       ],
+       [
+        1026,
+        335
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A04",
+      "to": "FPW.10-A06",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        237
+       ],
+       [
+        1026,
+        237
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A06",
+      "to": "FPW.10-A07",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1306,
+        49
+       ],
+       [
+        1306,
+        433
+       ],
+       [
+        1318,
+        433
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A05",
+      "to": "FPW.10-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        139
+       ],
+       [
+        400,
+        139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A07",
+      "to": "FPW.10-E2",
+      "kind": "end",
+      "points": [
+       [
+        1506,
+        433
+       ],
+       [
+        1520,
+        433
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1026,
+      237
+     ]
+    ]
+   }
+  },
+  {
+   "id": "FPW.11",
+   "name": "보안·키·취약점 관리",
+   "en": "Security, Key & Vulnerability Management",
+   "group": "지원",
+   "gates": [],
+   "ref": "표준 보고서 14장(서명·키·R155), 15장(SBOM·VEX·OSS), 8장 FFG-PLT-005",
+   "purpose": "명령 서명 키를 용도별로 분리해 HSM에서 운영하고, 키 유출과 새 취약점에 대해 영향 Feature·차량을 특정해 보안 사유 차단 또는 업데이트를 결정하며, 그 Evidence를 CSMS와 승인 기관 보고에 쓴다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "서명 키 계층·용도 분리·HSM 보관·승인 서명 기준 수가 운영된다."
+    },
+    {
+     "id": "O2",
+     "text": "키 교체와 유출 대응(차량 key epoch 상향)이 기록된다."
+    },
+    {
+     "id": "O3",
+     "text": "새 취약점의 영향 Feature·차량이 특정되고 차단 또는 업데이트가 결정된다."
+    },
+    {
+     "id": "O4",
+     "text": "사이버보안 Evidence가 CSMS로 관리되고 승인 기관 보고에 쓰인다."
+    },
+    {
+     "id": "O5",
+     "text": "OSS 라이선스·보안 관리 프로그램이 운영된다."
+    }
+   ],
+   "rules": [
+    "FFG-SEC-002",
+    "FFG-SBOM-005",
+    "FFG-SEC-005",
+    "FFG-SBOM-006",
+    "FFG-SBOM-001"
+   ],
+   "entry": [
+    "플랫폼 서명 서비스와 HSM·KMS가 구축되어 있다"
+   ],
+   "exit": [
+    "키 계층과 교체 이력이 최신이다",
+    "공지된 취약점마다 VEX 판정과 대응 결정이 있다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-KEY-REGISTER",
+     "name": "서명 키 대장",
+     "en": "Signing Key Register",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "용도별 키(활성화·차단·복원·정책 서명) 계층과 HSM 보관 위치",
+      "승인 서명 기준 수와 긴급 절차",
+      "교체 주기와 교체 이력"
+     ]
+    },
+    {
+     "key": "WP-KEY-INCIDENT",
+     "name": "키 사고 대응 기록",
+     "en": "Key Incident Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "유출·오사용 징후, 영향 차량 범위",
+      "key epoch 상향 시각과 대상 차량"
+     ]
+    },
+    {
+     "key": "WP-VEX-DECISION",
+     "name": "VEX 판정·대응 결정",
+     "en": "VEX Assessment & Response",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "취약점별 영향 Feature·차량(SBOM 대조)과 VEX 상태",
+      "위험도와 대응(보안 사유 차단·업데이트)·CSMS 대응 기한"
+     ]
+    },
+    {
+     "key": "WP-CSMS-EVIDENCE",
+     "name": "CSMS Evidence·R155 보고",
+     "en": "CSMS Evidence & R155 Report",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "TARA·보안 요구·시험·모니터링 결과의 Evidence 목록",
+      "승인 기관 보고 내용과 제출 시각"
+     ]
+    },
+    {
+     "key": "WP-OSS-PROGRAM",
+     "name": "OSS 관리 프로그램 기록",
+     "en": "OSS Program Record",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "라이선스(ISO/IEC 5230)·보안(ISO/IEC 18974) 프로그램 운영 결과",
+      "구성요소별 라이선스 의무 이행 상태"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.11-A01",
+     "name": "서명 키 계층·HSM 운영",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-SEC-002"
+     ],
+     "raci": {
+      "R": [
+       "R-PKI"
+      ],
+      "A": "R-CSM",
+      "C": [
+       "R-SM"
+      ],
+      "I": [
+       "R-REL",
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-HARA-TARA"
+     ],
+     "outputs": [
+      "WP-KEY-REGISTER"
+     ],
+     "steps": [
+      "활성화·차단·복원·정책 서명 키를 용도별로 나눠 HSM에 보관하고 키 계층을 대장에 적는다",
+      "서명 HSM이 승인 서명이 기준 수에 이르기 전에는 명령 키를 쓰지 않도록 정책을 설정한다",
+      "정기 교체 주기와 긴급 교체 절차를 정해 운영한다"
+     ],
+     "checks": [
+      "키마다 용도·보관 위치·교체 주기가 대장에 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/admin/security"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.11-A02"
+     ]
+    },
+    {
+     "id": "FPW.11-A02",
+     "name": "키 교체 플랫폼 기록",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-SEC-002"
+     ],
+     "raci": {
+      "R": [
+       "R-CSM"
+      ],
+      "A": "R-CSM",
+      "C": [
+       "R-PKI",
+       "R-SM"
+      ],
+      "I": [
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-KEY-REGISTER"
+     ],
+     "outputs": [
+      "WP-KEY-REGISTER"
+     ],
+     "steps": [
+      "PKI 운영이 HSM에서 교체한 키를 플랫폼에 등록하고 이전 키는 검증 전용으로 남긴다",
+      "교체 결과를 키 대장에 반영한다",
+      "교체 사유와 용도(정책·차단·복원)를 기록하고 Safety Manager에게 결과를 알린다"
+     ],
+     "checks": [
+      "이전 키가 검증 전용으로 남고 대장이 갱신되었다"
+     ],
+     "platform": {
+      "actions": [
+       "rotateKey"
+      ],
+      "screens": [
+       "/admin/security"
+      ],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.11-A03",
+     "name": "키 유출 대응·epoch 상향",
+     "trigger": "키 유출·오사용 징후",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-SEC-002"
+     ],
+     "raci": {
+      "R": [
+       "R-CSM"
+      ],
+      "A": "R-CSM",
+      "C": [
+       "R-PKI",
+       "R-SM"
+      ],
+      "I": [
+       "R-OPS",
+       "R-REG"
+      ]
+     },
+     "inputs": [
+      "WP-KEY-REGISTER"
+     ],
+     "outputs": [
+      "WP-KEY-INCIDENT"
+     ],
+     "steps": [
+      "유출·오사용 징후의 범위(키 용도·영향 차량)를 확인한다",
+      "영향 차량의 key epoch를 올려 유출 키로 서명한 명령을 무효로 만든다",
+      "보안 사유 차단이 필요하면 FPW.8 차단 판단으로 Safety Manager에게 요청한다"
+     ],
+     "checks": [
+      "epoch 상향 대상과 시각이 기록되었다"
+     ],
+     "platform": {
+      "actions": [
+       "bumpEpoch"
+      ],
+      "screens": [
+       "/admin/security"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.11-A05"
+     ]
+    },
+    {
+     "id": "FPW.11-A04",
+     "name": "취약점 영향 특정·대응 결정",
+     "trigger": "새 취약점 공지",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-SBOM-005",
+      "FFG-SBOM-001"
+     ],
+     "raci": {
+      "R": [
+       "R-CSM"
+      ],
+      "A": "R-CSM",
+      "C": [
+       "R-OPS",
+       "R-SM",
+       "R-INT"
+      ],
+      "I": [
+       "R-REL"
+      ]
+     },
+     "inputs": [
+      "WP-RELEASE-BASELINE",
+      "WP-ORIGIN-RECORD"
+     ],
+     "outputs": [
+      "WP-VEX-DECISION"
+     ],
+     "steps": [
+      "배포 단위별 SBOM과 대조해 영향 Feature와 차량을 특정하고 VEX 판정을 기록한다",
+      "위험도에 따라 보안 사유 차단 또는 업데이트를 정하고 CSMS에 대응 기한을 둔다",
+      "Kill 경로 구성요소의 취약점이면 최우선으로 처리하고 운영 조직과 차단 준비를 맞춘다"
+     ],
+     "checks": [
+      "공지된 취약점마다 VEX 판정과 대응 기한이 있다"
+     ],
+     "platform": {
+      "actions": [
+       "recordVex"
+      ],
+      "screens": [
+       "/admin/security"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.11-A05"
+     ]
+    },
+    {
+     "id": "FPW.11-A05",
+     "name": "CSMS Evidence·R155 보고",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-SEC-005"
+     ],
+     "raci": {
+      "R": [
+       "R-CSM"
+      ],
+      "A": "R-CSM",
+      "C": [
+       "R-REG"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-HARA-TARA",
+      "WP-VEX-DECISION",
+      "WP-KEY-INCIDENT"
+     ],
+     "outputs": [
+      "WP-CSMS-EVIDENCE"
+     ],
+     "steps": [
+      "플랫폼·차량 런타임의 TARA·보안 요구·시험·모니터링 결과를 CSMS Evidence로 모은다",
+      "키 사고와 취약점 대응 결과를 Evidence에 연결한다",
+      "법규 담당과 승인 기관 보고 내용을 확정해 제출한다"
+     ],
+     "checks": [
+      "보고 내용의 각 항목이 Evidence ID로 연결되었다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.11-A06",
+     "name": "OSS 라이선스·보안 프로그램 운영",
+     "trigger": "OSS 구성요소 추가·변경",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [
+      "FFG-SBOM-006"
+     ],
+     "raci": {
+      "R": [
+       "R-LEG"
+      ],
+      "A": "R-LEG",
+      "C": [
+       "R-CSM",
+       "R-PUR"
+      ],
+      "I": [
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-ORIGIN-RECORD"
+     ],
+     "outputs": [
+      "WP-OSS-PROGRAM"
+     ],
+     "steps": [
+      "추가·변경된 OSS 구성요소의 라이선스 의무를 확인한다",
+      "라이선스·보안 관리 프로그램 기준에 따라 의무 이행 상태를 기록한다",
+      "이행할 수 없는 구성요소는 통합 조직에 교체를 요청한다"
+     ],
+     "checks": [
+      "모든 OSS 구성요소의 의무 이행 상태가 기록되었다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 806,
+    "height": 384,
+    "lanes": [
+     {
+      "role": "R-PKI",
+      "label": "PKI 운영",
+      "x": 0,
+      "y": 0,
+      "w": 806,
+      "h": 98
+     },
+     {
+      "role": "R-CSM",
+      "label": "CSM",
+      "x": 0,
+      "y": 98,
+      "w": 806,
+      "h": 188
+     },
+     {
+      "role": "R-LEG",
+      "label": "법무",
+      "x": 0,
+      "y": 286,
+      "w": 806,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.11-A01",
+      "kind": "action",
+      "label": "서명 키 계층·HSM 운영",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A02",
+      "kind": "action",
+      "label": "키 교체 플랫폼 기록",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A03",
+      "kind": "action",
+      "label": "키 유출 대응·epoch 상향",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A04",
+      "kind": "action",
+      "label": "취약점 영향 특정·대응 결정",
+      "x": 198,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A05",
+      "kind": "action",
+      "label": "CSMS Evidence·R155 보고",
+      "x": 478,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A06",
+      "kind": "action",
+      "label": "OSS 라이선스·보안 프로그램 운영",
+      "x": 198,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-S2",
+      "kind": "start",
+      "label": "키 유출·오사용 징후",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-S3",
+      "kind": "start",
+      "label": "새 취약점 공지",
+      "x": 146,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-S4",
+      "kind": "start",
+      "label": "OSS 구성요소 추가·변경",
+      "x": 146,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 680,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 680,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.11-S1",
+      "to": "FPW.11-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-S2",
+      "to": "FPW.11-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-S3",
+      "to": "FPW.11-A04",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        237
+       ],
+       [
+        198,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-S4",
+      "to": "FPW.11-A06",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        335
+       ],
+       [
+        198,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A01",
+      "to": "FPW.11-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A03",
+      "to": "FPW.11-A05",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        466,
+        237
+       ],
+       [
+        478,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A04",
+      "to": "FPW.11-A05",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        237
+       ],
+       [
+        478,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A02",
+      "to": "FPW.11-E1",
+      "kind": "end",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        680,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A05",
+      "to": "FPW.11-E2",
+      "kind": "end",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        680,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A06",
+      "to": "FPW.11-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        335
+       ],
+       [
+        400,
+        335
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      466,
+      237
+     ]
+    ]
+   }
+  },
+  {
+   "id": "FPW.12",
+   "name": "운영 데이터·데이터 보호",
+   "en": "Operational Data & Data Protection",
+   "group": "지원",
+   "gates": [],
+   "ref": "표준 보고서 13장(텔레메트리·데이터), 11장 FFG-OFT-003",
+   "purpose": "운행 감시에 쓰는 데이터의 범주·접근·보존을 정하고, 평가 컨텍스트에 개인정보가 들어가지 않게 하며, 시장별 데이터 이전·접근권·보존 의무를 지킨다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "운행 중 감시 지표와 경보 기준이 Safety Case에 맞춰 기록된다."
+    },
+    {
+     "id": "O2",
+     "text": "Flag 평가 컨텍스트에서 개인정보·위치·주행 상태가 배제된다."
+    },
+    {
+     "id": "O3",
+     "text": "중국 데이터는 현지 처리되고 국외 이전은 심사를 거친다."
+    },
+    {
+     "id": "O4",
+     "text": "EU 사용자·제3자 데이터 접근 요청과 OEM 이용 계약 근거가 처리·기록된다."
+    },
+    {
+     "id": "O5",
+     "text": "범주별 보존 기간이 지난 데이터가 삭제되고 기록된다."
+    }
+   ],
+   "rules": [
+    "FFG-OFT-003",
+    "FFG-TEL-005",
+    "FFG-TEL-006",
+    "FFG-TEL-008",
+    "FFG-TEL-001"
+   ],
+   "entry": [
+    "Feature가 운영 데이터 수집 범위에 등록되어 있다"
+   ],
+   "exit": [
+    "감시 지표·데이터 범주·보존 기간이 정해지고 접근·이전·삭제 기록이 남았다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-KPI-PLAN",
+     "name": "운행 감시 지표·경보 기준",
+     "en": "Safety KPI Plan",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Safety Case 주장과 연결한 운행 감시 지표",
+      "지표별 경보 기준과 데이터 범주"
+     ]
+    },
+    {
+     "key": "WP-CONTEXT-REVIEW",
+     "name": "평가 컨텍스트 속성 검토 기록",
+     "en": "Evaluation Context Review",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "허용 속성(가명 차량 ID 등)과 금지 속성 목록",
+      "금지 속성 거부 시험 결과"
+     ]
+    },
+    {
+     "key": "WP-DATA-TRANSFER",
+     "name": "데이터 국외 이전 심사 기록",
+     "en": "Cross-border Transfer Assessment",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "중요 데이터 식별 결과와 현지 처리 위치",
+      "이전 경로별 심사 방식(안전 평가·표준 계약·인증)"
+     ]
+    },
+    {
+     "key": "WP-DATA-ACCESS",
+     "name": "데이터 접근 요청·계약 근거 기록",
+     "en": "Data Access & Contract Basis",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "요청자·대상 차량·제공한 Feature 상태·이력",
+      "OEM 비개인 데이터 이용 계약 근거 문서 ID"
+     ]
+    },
+    {
+     "key": "WP-RETENTION-LOG",
+     "name": "보존·삭제 기록",
+     "en": "Retention & Deletion Log",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "범주별 삭제 건수와 시각",
+      "열린 Incident·이상 건에 연결되어 보류한 데이터"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.12-A01",
+     "name": "운행 감시 지표·경보 기준 기록",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-TEL-001"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-OPS",
+       "R-DPO"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-CASE"
+     ],
+     "outputs": [
+      "WP-KPI-PLAN"
+     ],
+     "steps": [
+      "Safety Case 주장과 연결되는 운행 감시 지표를 고른다",
+      "지표마다 경보 기준과 데이터 범주(목적별 접근 권한·보존 기간)를 정한다",
+      "기준을 추가 기록으로 남기고 운영 조직에 감시를 맡긴다"
+     ],
+     "checks": [
+      "지표마다 경보 기준과 데이터 범주가 있다"
+     ],
+     "platform": {
+      "actions": [
+       "recordSafetyKpiPlan"
+      ],
+      "screens": [
+       "/ops/safety-kpi"
+      ],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.12-A02",
+     "name": "평가 컨텍스트 개인정보 검토",
+     "trigger": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-OFT-003"
+     ],
+     "raci": {
+      "R": [
+       "R-DPO"
+      ],
+      "A": "R-DPO",
+      "C": [
+       "R-ARC",
+       "R-LEG"
+      ],
+      "I": [
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-POLICY"
+     ],
+     "outputs": [
+      "WP-CONTEXT-REVIEW"
+     ],
+     "steps": [
+      "정책의 targeting key가 가명 차량 ID인지 확인한다",
+      "위치·운전자 식별·연락처·차량 동적 상태가 평가 컨텍스트에 들어가지 않는지 검토한다",
+      "금지 속성이 들어오면 평가 전에 거부되는지 시험 결과를 확인한다"
+     ],
+     "checks": [
+      "금지 속성 거부 시험이 통과했다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/integration/openfeature"
+      ],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.12-A03",
+     "name": "중국 데이터 현지 처리·이전 심사",
+     "trigger": "중국 시장 출시 또는 국외 조회 요청",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-TEL-005"
+     ],
+     "raci": {
+      "R": [
+       "R-LEG"
+      ],
+      "A": "R-LEG",
+      "C": [
+       "R-DPO",
+       "R-REG"
+      ],
+      "I": [
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-KPI-PLAN"
+     ],
+     "outputs": [
+      "WP-DATA-TRANSFER"
+     ],
+     "steps": [
+      "텔레메트리·OTA 데이터 중 중요 데이터를 식별하고 현지 처리 위치를 정한다",
+      "국외 이전(국외 조회 포함) 경로마다 안전 평가·표준 계약·인증 중 하나를 거친다",
+      "심사 결과를 기록하고 운영 조직에 허용 경로를 알린다"
+     ],
+     "checks": [
+      "모든 국외 이전 경로에 심사 방식과 결과가 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.12-A04",
+     "name": "EU 데이터 접근 요청 처리",
+     "trigger": "EU 차량 사용자·제3자 데이터 접근 요청",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-TEL-006"
+     ],
+     "raci": {
+      "R": [
+       "R-REG"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-LEG",
+       "R-DPO"
+      ],
+      "I": [
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-KPI-PLAN"
+     ],
+     "outputs": [
+      "WP-DATA-ACCESS"
+     ],
+     "steps": [
+      "요청자와 대상 차량을 확인하고 Feature 상태·이력 데이터를 제공한다",
+      "제3자 공유 요청이면 사용자 동의와 공유 절차를 확인한다",
+      "OEM이 비개인 데이터를 쓰는 경우 법무가 검토한 이용 계약 근거 문서 ID를 등록한다"
+     ],
+     "checks": [
+      "요청마다 제공 내용과 계약 근거가 기록되었다"
+     ],
+     "platform": {
+      "actions": [
+       "createDataAccessRequest",
+       "recordDataActContractBasis"
+      ],
+      "screens": [
+       "/admin/data"
+      ],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.12-A05",
+     "name": "보존 기간 경과 데이터 삭제",
+     "trigger": "정기 보존 기간 점검",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [
+      "FFG-TEL-008"
+     ],
+     "raci": {
+      "R": [
+       "R-REG"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-DPO",
+       "R-OPS"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-KPI-PLAN"
+     ],
+     "outputs": [
+      "WP-RETENTION-LOG"
+     ],
+     "steps": [
+      "데이터 범주별 보존 기간이 지난 행을 찾는다",
+      "열린 Incident·이상 건에 연결된 데이터는 삭제에서 제외한다",
+      "삭제를 실행하고 범주별 삭제 기록을 남긴다"
+     ],
+     "checks": [
+      "삭제 기록에 범주별 건수와 보류 사유가 있다"
+     ],
+     "platform": {
+      "actions": [
+       "retentionSweep"
+      ],
+      "screens": [
+       "/admin/data"
+      ],
+      "gates": []
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 526,
+    "height": 482,
+    "lanes": [
+     {
+      "role": "R-SM",
+      "label": "Safety Manager",
+      "x": 0,
+      "y": 0,
+      "w": 526,
+      "h": 98
+     },
+     {
+      "role": "R-DPO",
+      "label": "데이터 보호 담당",
+      "x": 0,
+      "y": 98,
+      "w": 526,
+      "h": 98
+     },
+     {
+      "role": "R-LEG",
+      "label": "법무",
+      "x": 0,
+      "y": 196,
+      "w": 526,
+      "h": 98
+     },
+     {
+      "role": "R-REG",
+      "label": "법규 담당",
+      "x": 0,
+      "y": 294,
+      "w": 526,
+      "h": 188
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.12-A01",
+      "kind": "action",
+      "label": "운행 감시 지표·경보 기준 기록",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A02",
+      "kind": "action",
+      "label": "평가 컨텍스트 개인정보 검토",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A03",
+      "kind": "action",
+      "label": "중국 데이터 현지 처리·이전 심사",
+      "x": 198,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A04",
+      "kind": "action",
+      "label": "EU 데이터 접근 요청 처리",
+      "x": 198,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A05",
+      "kind": "action",
+      "label": "보존 기간 경과 데이터 삭제",
+      "x": 198,
+      "y": 400,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-S2",
+      "kind": "start",
+      "label": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-S3",
+      "kind": "start",
+      "label": "중국 시장 출시 또는 국외 조회 요청",
+      "x": 146,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-S4",
+      "kind": "start",
+      "label": "EU 차량 사용자·제3자 데이터 접근 요청",
+      "x": 146,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-S5",
+      "kind": "start",
+      "label": "정기 보존 기간 점검",
+      "x": 146,
+      "y": 424,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E4",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E5",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 424,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.12-S1",
+      "to": "FPW.12-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-S2",
+      "to": "FPW.12-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-S3",
+      "to": "FPW.12-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        245
+       ],
+       [
+        198,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-S4",
+      "to": "FPW.12-A04",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        343
+       ],
+       [
+        198,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-S5",
+      "to": "FPW.12-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        433
+       ],
+       [
+        198,
+        433
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A01",
+      "to": "FPW.12-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        400,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A02",
+      "to": "FPW.12-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        400,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A03",
+      "to": "FPW.12-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        245
+       ],
+       [
+        400,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A04",
+      "to": "FPW.12-E4",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        343
+       ],
+       [
+        400,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A05",
+      "to": "FPW.12-E5",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        433
+       ],
+       [
+        400,
+        433
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  },
+  {
+   "id": "FPW.13",
+   "name": "규정·Compliance Profile 관리",
+   "en": "Regulatory & Compliance Profile Management",
+   "group": "지원",
+   "gates": [],
+   "ref": "표준 보고서 2장(규정·표준 관리), 3장(ADS 규정), 7.10절(거버넌스)",
+   "purpose": "프로젝트가 따를 표준 판을 고정하고, 시장별 적용 법규·필수 Evidence·게이트 파라미터를 버전 관리되는 Compliance Profile로 운영하며, 원격 종료 절차를 시스템 설명 문서에 운영 절차와 같은 내용으로 적는다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "ISO 26262·21448·21434의 판이 프로젝트 단위로 고정된다."
+    },
+    {
+     "id": "O2",
+     "text": "시장별 Compliance Profile이 정의되고 모든 정책·명령이 그 버전을 기록한다."
+    },
+    {
+     "id": "O3",
+     "text": "분기마다 표준·법규 개정이 점검되어 Profile이 갱신된다."
+    },
+    {
+     "id": "O4",
+     "text": "원격 종료·복원 절차가 시스템 설명 문서에 운영 절차와 같게 적힌다."
+    }
+   ],
+   "rules": [
+    "FFG-GEN-002",
+    "FFG-GEN-001",
+    "FFG-ADS-001",
+    "FFG-GEN-004",
+    "FFG-ADS-006"
+   ],
+   "entry": [
+    "프로젝트의 대상 시장과 차종이 정해졌다"
+   ],
+   "exit": [
+    "표준 판·Compliance Profile·시스템 설명이 최신 버전으로 승인되어 있다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-REG-SOURCES",
+     "name": "법규·표준 원문",
+     "en": "Regulations & Standards Sources",
+     "kind": "input",
+     "retained": false,
+     "content": [
+      "시장별 법규 최종 법문과 발효·적용일",
+      "표준 판과 개정 예고"
+     ]
+    },
+    {
+     "key": "WP-STANDARD-EDITIONS",
+     "name": "표준 판 고정 기록(Safety Plan)",
+     "en": "Fixed Standard Editions",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "ISO 26262·ISO 21448·ISO/SAE 21434의 적용 판",
+      "정식 발행 전 개정 요구를 Gate 판정 기준에서 뺀다는 표시"
+     ]
+    },
+    {
+     "key": "WP-COMPLIANCE-PROFILE",
+     "name": "시장별 Compliance Profile",
+     "en": "Compliance Profile",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "시장별 적용 법규·의무 기능·필수 Evidence·게이트 파라미터",
+      "ADS 규정의 국내 도입·발효 상태와 최종 법문 대조 결과",
+      "Profile 버전과 갱신 이력, '검증 필요' 항목과 해소 기한"
+     ]
+    },
+    {
+     "key": "WP-SYSTEM-DESCRIPTION",
+     "name": "원격 종료 시스템 설명",
+     "en": "Remote Termination System Description",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "원격 종료·복원 방법과 발동 사유·승인자·긴급 권한·해제 기준",
+      "시장별 차이와 운영 절차(FPW.8)와의 대응"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.13-A01",
+     "name": "표준 판 고정",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [
+      "FFG-GEN-002"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-CSM",
+       "R-REG"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-REG-SOURCES"
+     ],
+     "outputs": [
+      "WP-STANDARD-EDITIONS"
+     ],
+     "steps": [
+      "프로젝트가 따를 ISO 26262·ISO 21448·ISO/SAE 21434의 판을 정해 Safety Plan에 적는다",
+      "정식 발행 전 개정판의 요구는 참고로만 두고 Gate 판정 기준에서 뺀다",
+      "고정한 판을 법규 담당과 CSM에게 알려 Profile과 CSMS에 맞춘다"
+     ],
+     "checks": [
+      "Safety Plan에 세 표준의 적용 판이 적혀 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": [
+      "FPW.13-A02"
+     ]
+    },
+    {
+     "id": "FPW.13-A02",
+     "name": "Compliance Profile 정의",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-GEN-001",
+      "FFG-ADS-001"
+     ],
+     "raci": {
+      "R": [
+       "R-REG"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-SM",
+       "R-CSM",
+       "R-LEG"
+      ],
+      "I": [
+       "R-FO",
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-STANDARD-EDITIONS",
+      "WP-REG-SOURCES"
+     ],
+     "outputs": [
+      "WP-COMPLIANCE-PROFILE"
+     ],
+     "steps": [
+      "시장별 적용 법규·의무 기능·필수 Evidence·게이트 파라미터를 Profile로 정의하고 버전을 붙인다",
+      "ADS 관련 시장은 UN 규정·GTR의 국내 도입·발효 상태를 따로 적고, 제안문 조항은 최종 법문과 대조한 뒤에만 기준으로 쓴다",
+      "정책과 명령이 생성 시점의 Profile 버전을 기록하는지 플랫폼 컴플라이언스 화면에서 확인한다"
+     ],
+     "checks": [
+      "대상 시장마다 Profile 버전이 있고 ADS 조항의 대조 결과가 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/verify/compliance"
+      ],
+      "gates": []
+     },
+     "next": [
+      "FPW.13-A04"
+     ]
+    },
+    {
+     "id": "FPW.13-A03",
+     "name": "분기 법규 감시·Profile 갱신",
+     "trigger": "분기 정기 점검",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-GEN-004"
+     ],
+     "raci": {
+      "R": [
+       "R-REG",
+       "R-SM",
+       "R-CSM"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-LEG"
+      ],
+      "I": [
+       "R-FO",
+       "R-OPS",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-REG-SOURCES",
+      "WP-COMPLIANCE-PROFILE"
+     ],
+     "outputs": [
+      "WP-COMPLIANCE-PROFILE"
+     ],
+     "steps": [
+      "법규 담당·Safety Manager·CSM이 분기마다 표준·법규 개정을 각자 범위에서 점검한다",
+      "개정 사항을 Profile 새 버전에 반영하고 영향 받는 Feature를 Feature Owner에게 알린다",
+      "검증이 필요하다고 표시된 항목은 해당 시장 SOP 전까지 해소 기한과 담당을 정한다"
+     ],
+     "checks": [
+      "분기 점검 기록과 Profile 새 버전(또는 무변경 확인)이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/verify/compliance"
+      ],
+      "gates": []
+     },
+     "next": []
+    },
+    {
+     "id": "FPW.13-A04",
+     "name": "원격 종료 시스템 설명 작성",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-ADS-006"
+     ],
+     "raci": {
+      "R": [
+       "R-REG",
+       "R-OPS"
+      ],
+      "A": "R-REG",
+      "C": [
+       "R-SM",
+       "R-CSM"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-COMPLIANCE-PROFILE",
+      "WP-DRILL-REPORT"
+     ],
+     "outputs": [
+      "WP-SYSTEM-DESCRIPTION"
+     ],
+     "steps": [
+      "원격 종료·복원 방법을 시스템 설명 문서에 적는다",
+      "발동 사유·승인자·긴급 권한·해제 기준·시장별 차이를 운영 절차(FPW.8)와 같은 내용으로 맞춘다",
+      "운영 조직이 드릴 결과로 실제 운영과 문서가 같은지 확인한다"
+     ],
+     "checks": [
+      "시스템 설명과 FPW.8 운영 절차의 승인자·기준이 일치한다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": []
+     },
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1086,
+    "height": 196,
+    "lanes": [
+     {
+      "role": "R-SM",
+      "label": "Safety Manager",
+      "x": 0,
+      "y": 0,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "role": "R-REG",
+      "label": "법규 담당",
+      "x": 0,
+      "y": 98,
+      "w": 1086,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.13-A01",
+      "kind": "action",
+      "label": "표준 판 고정",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.13-A02",
+      "kind": "action",
+      "label": "Compliance Profile 정의",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.13-A03",
+      "kind": "action",
+      "label": "분기 법규 감시·Profile 갱신",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.13-A04",
+      "kind": "action",
+      "label": "원격 종료 시스템 설명 작성",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.13-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.13-S2",
+      "kind": "start",
+      "label": "분기 정기 점검",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.13-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.13-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 960,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.13-S1",
+      "to": "FPW.13-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-S2",
+      "to": "FPW.13-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-A01",
+      "to": "FPW.13-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-A02",
+      "to": "FPW.13-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-A03",
+      "to": "FPW.13-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        400,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-A04",
+      "to": "FPW.13-E2",
+      "kind": "end",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        960,
+        147
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  }
+ ]
+};

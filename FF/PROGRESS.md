@@ -3,6 +3,11 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## 차량 텔레메트리 → Data Lake → 분석·학습 (2026-10-18 사용자 요청 "현대차 Data Lake와 인터페이스, 차량 데이터를 텔레메트리로 받아 분석·학습 — 너가 설계해")
+- 설계 `docs/80-integration/80-70-telemetry-datalake-ml.md` (커밋 dd33c04). 구현은 아직 없음 — 단계 T1~T6, 재생 불변식 INV-16~19.
+- 핵심 결정(내가 정함): 제어 채널(상태 보고, 지금 그대로)과 데이터 채널(MQTT→Kafka→Lake) 분리 · 원천 원장은 Lake, 플랫폼은 Gold 집계·안전 이벤트·모델 점수만 받음 · 플랫폼→Lake 라벨 CDC(보낼 함 재사용) · 수집 정책은 서명 게시본 경로 · ML 점수는 권고(Evidence), 자동 HOLD는 사전 등록 통계 규칙과 신선도 초과만 · CN은 현지 학습, 국외는 k≥5 집계·점수만.
+- **확인 필요(사용자)**: Lake 제품·접근(Kafka·REST·SQL)·인증, 신호 목록 소유 조직·로거 용량, 동의·위치(D5)·CN, 안전 지표 신선도 SLA(제안 10분), ISO/PAS 8800 적용 범위.
+
 ## GitLab · JIRA · codeBeamer 양방향 연계 (2026-10-18 사용자 요청 "소스는 GitLab, CR·Feature 상태는 JIRA, 사양은 codeBeamer — 사이트에 반영, 방향 의견" → "양방향이 되게끔")
 - 계획 `~/.claude/plans/c-users-taehokim-downloads-feature-flag-snappy-heron.md`.
 - 주인 규칙(`contracts/src/rules/ext-sync.ts`)

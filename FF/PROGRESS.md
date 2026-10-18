@@ -4,7 +4,10 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 차량 텔레메트리 → Data Lake → 분석·학습 (2026-10-18 사용자 요청 "현대차 Data Lake와 인터페이스, 차량 데이터를 텔레메트리로 받아 분석·학습 — 너가 설계해")
-- 설계 `docs/80-integration/80-70-telemetry-datalake-ml.md` (커밋 dd33c04). 구현은 아직 없음 — 단계 T1~T6, 재생 불변식 INV-16~19.
+- 설계 `docs/80-integration/80-70-telemetry-datalake-ml.md`. 구현은 아직 없다.
+- **경계(사용자 지적)**: Data Lake는 외부 시스템이다. 우리가 설계하지만 FF와 서버가 다르다(별도 workspace `datalake/`, 포트 9301). FF ↔ Lake는 IF-15 하나로만 연결한다.
+- **Closed loop(사용자 요청)**: Lake의 Feature별 데이터로 4축(동작·문제·개선·위험)을 계속 판정한다. 흐름은 점검 결과(Finding) → 조치(JIRA·codeBeamer·정책) → 효과 확인 → 닫기/다시 열기이고, 결과는 라벨로 Lake에 돌려보낸다. 80-70 9장, INV-20·21.
+- **Backlog**: [`BACKLOG.md`](BACKLOG.md) 텔레메트리 절(TL-*). P1 UI/UX(TL-UI01~15, IF-15 mock fixture로 먼저)를 먼저 하고, 그다음 P2 계약·FF backend → P3 Lake 서버 → P4 차량 → P5 실제 연결 순이다.
 - 핵심 결정(내가 정함): 제어 채널(상태 보고, 지금 그대로)과 데이터 채널(MQTT→Kafka→Lake) 분리 · 원천 원장은 Lake, 플랫폼은 Gold 집계·안전 이벤트·모델 점수만 받음 · 플랫폼→Lake 라벨 CDC(보낼 함 재사용) · 수집 정책은 서명 게시본 경로 · ML 점수는 권고(Evidence), 자동 HOLD는 사전 등록 통계 규칙과 신선도 초과만 · CN은 현지 학습, 국외는 k≥5 집계·점수만.
 - **확인 필요(사용자)**: Lake 제품·접근(Kafka·REST·SQL)·인증, 신호 목록 소유 조직·로거 용량, 동의·위치(D5)·CN, 안전 지표 신선도 SLA(제안 10분), ISO/PAS 8800 적용 범위.
 

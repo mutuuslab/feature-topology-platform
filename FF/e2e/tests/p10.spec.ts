@@ -70,7 +70,9 @@ test('실험·효과: F2 이상 Feature의 A/B는 FFG-CLS-006으로 거부, Shad
   await expect(page.getByRole('table', { name: '실험·효과' })).toContainText('Shadow');
   await noSeriousAxe(page);
 
-  await page.goto('/integration/connectors');
-  await expect(page.getByRole('table', { name: '연결 현황' }).getByRole('row')).toHaveCount(14);
+  // 첫 탭은 '양방향 연계'(GitLab·JIRA·codeBeamer) — 연결 현황 표는 '연결 현황' 탭
+  await page.goto('/integration/connectors?tab=systems');
+  // 머리 행 1 + IF-01~14(IF-13 GitLab·IF-14 JIRA 포함) — contracts INTERFACES와 같은 수
+  await expect(page.getByRole('table', { name: '연결 현황' }).getByRole('row')).toHaveCount(15);
   await noSeriousAxe(page);
 });

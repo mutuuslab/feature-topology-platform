@@ -68,6 +68,8 @@ async function main() {
     const p = { id: f.featureId, ver: f.version };
     await save('featureDetail', p);
     await save('gates', p);
+    // Feature 상세 '연계' 탭 — codeBeamer 요구·JIRA Epic/CR·GitLab MR 추적
+    await save('extFeatureTrace', p);
     await save('baselineChecklist', p);
     await save('audit', {}, { target: `${f.featureId}@${f.version}`, limit: 100 });
     await save('impact', p);
@@ -90,6 +92,7 @@ async function main() {
   await save('listPolicies', {}, { status: 'DEPLOYED' });
   for (const p of policies.items) {
     await save('policyDetail', { id: p.policyId });
+    await save('policyExtLinks', { id: p.policyId });
     // 정책 상세의 버전 이력 — 목록과 변경 이력(버전 내용은 행을 열 때 읽으므로 개정본마다)
     const revs = await save('policyRevisions', { id: p.policyId });
     await save('policyChanges', { id: p.policyId });
@@ -182,6 +185,12 @@ async function main() {
   for (const m of ['syncTargets', 'legacyMappings', 'legacyOrders', 'legacyVehicles', 'integrationSystems', 'supplierDeliveries', 'openfeatureScope', 'openfeatureManifest', 'openfeatureFlagd', 'integrationCalls']) await save(m);
   for (const f of all.items as { featureId: string; version: string }[]) await save('almRequirements', {}, { featureId: f.featureId, version: f.version });
   await save('otelSpans', {}, { limit: 100 });
+  // GitLab·JIRA·codeBeamer 양방향 연계 — 외부 연계 현황 '양방향 연계' 탭·검토함 충돌·변경요청 목록
+  await save('extSync');
+  await save('extConflicts', {}, { status: 'OPEN' });
+  await save('extInbox');
+  await save('extOutbox', {}, { status: 'FAILED' });
+  await save('extChangeRequests');
   const targets = await get('/api/sync/targets');
   for (const t of (targets.items ?? targets) as { targetId: string }[]) await save('syncRuns', {}, { targetId: t.targetId });
   await save('virtualCombinations', {}, { featureId: 'FEAT-00022' });

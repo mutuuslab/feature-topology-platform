@@ -213,7 +213,8 @@
       ],
       "tested": [
         "contracts/src/rules/change-record.test.ts",
-        "backend/test/d04/change-record.spec.ts"
+        "backend/test/d04/change-record.spec.ts",
+        "backend/test/d05/ext-sync.spec.ts"
       ]
     },
     {
@@ -942,6 +943,7 @@
         "backend/src/domains/d06-qsec/pki-kms/pki.service.ts"
       ],
       "tested": [
+        "contracts/src/rules/workflows.test.ts",
         "backend/test/d03/delivery.spec.ts",
         "backend/test/d04/status-v2.spec.ts",
         "backend/test/d06/hsm.spec.ts"

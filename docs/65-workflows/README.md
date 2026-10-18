@@ -21,6 +21,7 @@ Feature Platform의 각 담당자가 **언제, 무엇을 받아, 무엇을 하�
   - `out/processes/FPW.<n>.md`: 프로세스별 문서. docs 프런트매터와 Mermaid 흐름도를 포함한다.
   - `out/roles/<R-ID>.md`: 담당자별 업무 절차서
   - `out/workflows.json`: Feature Platform이 읽는 데이터(FF `npm run workflow:sync` → `contracts/src/generated/workflows.ts`). 스윔레인 좌표 포함
+  - [`UI.md`](UI.md): 플랫폼 화면에서 절차를 일로 만드는 방법 — 내 업무 큐·완료 표시·활동 상세·메뉴 연결
 - **단일 소스:** `model/common.yaml`, `model/processes/*.yaml`. `out/`은 생성물이므로 손으로 고치지 않는다.
 - **사실 소스:** `_source/`. 손으로 고치지 않고 추출기로 만든다.
 

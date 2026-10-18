@@ -1,6 +1,13 @@
 /* 업무 절차 화면 — 색은 모두 토큰(var) */
 .pr-mine { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
 .pr-mine li { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: baseline; padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
+.pr-mine li[data-done] { opacity: 0.55; }
+.pr-mine li[data-done] a { text-decoration: line-through; }
+.pr-done { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.pr-done input { inline-size: 16px; block-size: 16px; accent-color: var(--accent); }
+.pr-progress { margin: 0 0 var(--sp-2); }
+.pr-next { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: baseline; padding: var(--sp-2) 0; border-bottom: 1px dashed var(--line); }
+.pr-next__go { margin-left: auto; }
 .pr-mine__id { color: var(--muted); font-size: var(--fs-xs); }
 .pr-mine__go { margin-left: auto; }
 .pr-group { display: grid; gap: var(--sp-3); }

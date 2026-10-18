@@ -5,6 +5,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { myActivities, raciOf, type RaciKey, type WorkflowDoc, type WorkflowActivity, type WorkflowLayout, type WorkflowProcess } from '@ff/contracts';
 import { procedures as P } from '../../copy/procedures';
 import { useWorkflows } from '../../data/workflows';
+import { useProgress } from '../../data/procedureProgress';
 import { roleLabel } from '../../data/refdata';
 import { PageHeader, Panel } from '../../design';
 import { useAppShell } from '../../store';
@@ -28,7 +29,11 @@ const firstStatic = (screens: string[]) => screens.find((s) => !s.includes(':'))
 
 function Hub({ doc }: { doc: WorkflowDoc }) {
   const { role, roleIds } = useMe(doc);
+  const { isDone, toggle, doneCount } = useProgress(role);
   const mine = useMemo(() => myActivities(doc, roleIds), [doc, roleIds]);
+  const next = mine.find(({ activity }) => !isDone(activity.id));
+  const nextScreen = next ? firstStatic(next.activity.platform.screens) : undefined;
+  const done = doneCount(mine.map(({ activity }) => activity.id));
   const groups = useMemo(() => {
     const out: { name: string; list: WorkflowProcess[] }[] = [];
     for (const p of doc.processes) {
@@ -46,11 +51,23 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
       />
       {mine.length > 0 && (
         <Panel title={P.mine.sectionTitle} eyebrow={P.mine.sectionHint(roleLabel(role))}>
+          <p className="ds-field__hint pr-progress">{P.mine.progress(done, mine.length)}</p>
+          {next && (
+            <div className="pr-next">
+              <span className="ds-eyebrow">{P.mine.nextTitle}</span>
+              <Link to={`/procedures/${next.process.id}?a=${next.activity.id}`}>{next.activity.name}</Link>
+              {nextScreen && <Link to={nextScreen} className="pr-next__go">{P.mine.open}</Link>}
+            </div>
+          )}
           <ul className="pr-mine">
             {mine.map(({ process, activity: a }) => {
               const screen = firstStatic(a.platform.screens);
+              const ok = isDone(a.id);
               return (
-                <li key={a.id}>
+                <li key={a.id} data-done={ok ? '' : undefined}>
+                  <label className="pr-done" title={ok ? P.mine.markUndone : P.mine.markDone}>
+                    <input type="checkbox" checked={ok} onChange={() => toggle(a.id)} aria-label={`${a.name} ${P.mine.markDone}`} />
+                  </label>
                   <span className="ds-mono pr-mine__id">{a.id}</span>
                   <Link to={`/procedures/${process.id}?a=${a.id}`}>{a.name}</Link>
                   <RaciBadge k={raciOf(a, roleIds)} />

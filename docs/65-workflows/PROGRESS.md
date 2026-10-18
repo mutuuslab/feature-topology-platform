@@ -25,6 +25,13 @@
   FF 정합성 시험: `contracts/src/rules/workflows.test.ts`(action 권한·R[0] 역할·규칙·Gate·데모 계정, 결함 주입 포함), `frontend/src/__tests__/workflowScreens.test.ts`(활동 화면 경로).
   route 권한·화면 경로·데모 계정이 바뀌면 FF verify가 실패한다 → 이 모델을 고치고 다시 생성한다.
 
+## 실행 UI 1차 — 내 업무 큐·활동 상세 (2026-10-18)
+- **허브 `/procedures`**: 내 역할 R/A 활동에 **완료 표시**(`localStorage ff.proc.done`, 키 `역할:활동ID`), 진행률(`n건 중 m건 완료`), **다음 할 일**(미완료 첫 활동)과 화면 링크. 완료는 절차 상세·화면 패널과 즉시 공유된다(`data/procedureProgress.ts`).
+- **활동 상세**(절차 상세·이 화면의 업무 절차 패널): 모델의 `inputs`/`outputs`(산출물 이름), `outcomes`, `platform.actions`/`gates`, `next`를 표시하고 완료 토글을 둔다.
+- **메뉴**: 정본 30화면 계약(MENU 1.3)을 유지하려고 새 메뉴를 만들지 않고 '업무 절차' 메뉴의 기능을 내 업무 큐로 확장했다. 정의는 [`UI.md`](UI.md).
+- **시험**: `frontend/src/__tests__/screensProcedures.test.tsx` 10건(진행률·다음 할 일·입력/산출/action/다음·완료).
+- **남은 것**: 완료 상태의 서버 저장(활동 완료 API·감사), 화면 필드/버튼 단위 `ui` 매핑, Evidence·서명, 알림·SLA, 메뉴 배지용 요약 파일.
+
 ## 이전 상태 — 2단계 완료 (2026-10-18)
 - **최종 게이트:** `check.py --live` → ALL GATES PASS
   - 모델 오류 0, 경고 0

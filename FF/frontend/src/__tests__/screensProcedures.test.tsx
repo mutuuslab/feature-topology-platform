@@ -1,7 +1,7 @@
 // 업무 절차 화면 — 허브("내 업무"), 절차 상세(스윔레인·활동 선택·RACI), 화면 패널(이 화면의 업무 절차).
 // 데이터는 docs/65-workflows 모델에서 생성된 모듈 그대로 쓴다(모의 없음).
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { ProceduresHub, ProcessDetail } from '../screens/procedures/Procedures';
@@ -41,6 +41,21 @@ describe('업무 절차 허브', () => {
     expect(links.length).toBeGreaterThan(0);
     expect(document.querySelectorAll('.ds-learn-card').length).toBe(13);
   });
+
+  it('내 업무에서 완료를 표시하면 진행률이 오르고 다음 할 일이 바뀐다', async () => {
+    mount('/procedures', 'author');
+    await screen.findByText('내가 맡은 활동');
+    const progress = document.querySelector('.pr-progress')?.textContent ?? '';
+    const beforeNext = document.querySelector('.pr-next')?.textContent ?? '';
+    expect(progress).toMatch(/건 중 .*건 완료/);
+    const box = () => screen.getAllByRole('checkbox')[0] as HTMLInputElement;
+    expect(box().checked).toBe(false);
+    fireEvent.click(box());
+    await waitFor(() => expect(box().checked).toBe(true));
+    await waitFor(() => expect(document.querySelector('.pr-progress')?.textContent ?? '').not.toBe(progress));
+    await waitFor(() => expect(document.querySelector('.pr-next')?.textContent ?? '').not.toBe(beforeNext));
+    expect(localStorage.getItem('ff.proc.done')).toContain(':');
+  });
 });
 
 describe('절차 상세', () => {
@@ -70,6 +85,18 @@ describe('절차 상세', () => {
     const t = table ?? document.querySelector('table[aria-label="역할별 RACI"]')!;
     const rows = within(t as HTMLElement).getAllByRole('row').slice(1);
     for (const r of rows) expect(within(r).getAllByRole('cell').filter((c) => (c.textContent ?? '').split('·').includes('A')).length).toBe(1);
+  });
+
+  it('활동 상세가 입력·산출·플랫폼 action·다음 활동을 보여 주고 완료를 표시한다', async () => {
+    mount('/procedures/FPW.8?a=FPW.8-A05', 'operator');
+    expect(await screen.findByText('입력 산출물')).toBeTruthy();
+    expect(screen.getByText('산출 산출물')).toBeTruthy();
+    expect(screen.getByText('플랫폼 action')).toBeTruthy();
+    expect(screen.getByText('다음 활동')).toBeTruthy();
+    const box = () => document.querySelector('.pr-done input') as HTMLInputElement;
+    expect(box()).toBeTruthy();
+    fireEvent.click(box());
+    await waitFor(() => expect(box().checked).toBe(true));
   });
 });
 

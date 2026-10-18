@@ -1,5 +1,5 @@
 // /features — Feature Registry 목록 (v2). 백엔드 GET /api/features (D01-01).
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { F_CLASSES, LIFECYCLE, type FClass, type Lifecycle, type SafetyProfile } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
@@ -13,7 +13,12 @@ const T = ko.registry;
 export default function FeatureList() {
   const nav = useNavigate();
   const [sp, setSp] = useSearchParams();
-  const [q, setQ] = useState(sp.get('q') ?? '');
+  const qParam = sp.get('q') ?? '';
+  const [q, setQ] = useState(qParam);
+  // 상단 검색창처럼 URL로 들어온 검색어를 입력칸에 반영한다(같은 화면에서 다시 검색해도 어긋나지 않게)
+  useEffect(() => {
+    setQ(qParam);
+  }, [qParam]);
   const lifecycle = (sp.get('lifecycle') ?? '') as Lifecycle | '';
   const country = sp.get('country') ?? '';
   const latestOnly = sp.get('latest') !== '0';
@@ -24,9 +29,18 @@ export default function FeatureList() {
     else n.delete(k);
     setSp(n, { replace: true });
   };
+  // 검색어는 URL에도 남기되(공유·뒤로가기) 목록은 서버 왕복 없이 즉시 거른다
+  const search = (v: string) => {
+    setQ(v);
+    const n = new URLSearchParams(sp);
+    if (v) n.set('q', v);
+    else n.delete('q');
+    setSp(n, { replace: true });
+  };
 
   const all = useApi<FeatureListT>('listFeatures', { query: { latestOnly: false } });
-  const list = useApi<FeatureListT>('listFeatures', { query: { q: sp.get('q') ?? undefined, lifecycle: lifecycle || undefined, country: country || undefined, latestOnly } });
+  // q는 서버로 보내지 않는다 — 정적 데모는 임의 검색어의 스냅샷을 미리 뜰 수 없어, 받아 온 목록을 클라이언트에서 거른다
+  const list = useApi<FeatureListT>('listFeatures', { query: { lifecycle: lifecycle || undefined, country: country || undefined, latestOnly } });
 
   const stats = useMemo(() => {
     const items = all.data?.items ?? [];
@@ -43,7 +57,10 @@ export default function FeatureList() {
   const profiles = useApi<{ items: SafetyProfile[] }>('safetyProfiles');
   const cls = useMemo(() => new Map((profiles.data?.items ?? []).map((p) => [`${p.featureId}@${p.version}`, p])), [profiles.data]);
   const fCount = useMemo(() => Object.fromEntries(F_CLASSES.map((f) => [f, (profiles.data?.items ?? []).filter((p) => p.fClass === f).length])), [profiles.data]);
-  const rows = (list.data?.items ?? []).filter((r) => !fClass || cls.get(`${r.featureId}@${r.version}`)?.fClass === fClass);
+  const needle = q.trim().toLowerCase();
+  const rows = (list.data?.items ?? [])
+    .filter((r) => !fClass || cls.get(`${r.featureId}@${r.version}`)?.fClass === fClass)
+    .filter((r) => !needle || [r.featureId, r.name, r.ownerId, ...(r.tags ?? [])].join(' ').toLowerCase().includes(needle));
   const facets = all.data?.facets;
 
   return (
@@ -63,9 +80,8 @@ export default function FeatureList() {
           aria-label={T.search}
           placeholder={T.search}
           value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && set('q', q.trim())}
-          onBlur={() => set('q', q.trim())}
+          onChange={(e) => search(e.target.value)}
+          onKeyDown={(e) => e.key === 'Escape' && search('')}
         />
         <Segmented
           label="Lifecycle"

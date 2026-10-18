@@ -61,6 +61,17 @@ describe('Feature Registry 목록', () => {
     expect(calls.some((c) => c.url.startsWith('/api/features?') && c.url.includes('latestOnly=true'))).toBe(true);
   });
 
+  it('검색어로 목록을 즉시 거르고, 없는 값은 빈 상태', async () => {
+    handler = () => ({ body: LIST });
+    mount('/features', '/features', <FeatureList />);
+    const box = await screen.findByRole('searchbox', { name: 'ID·이름·Owner·Tag 검색' });
+    fireEvent.change(box, { target: { value: '예측' } });
+    await waitFor(() => expect(screen.queryByText('전방 안전거리 3단계')).toBeNull());
+    expect(screen.getByText('예측 공조')).toBeTruthy();
+    fireEvent.change(box, { target: { value: 'ZZZZ' } });
+    await waitFor(() => expect(document.querySelector('[data-state="empty"]')).toBeTruthy());
+  });
+
   it('API 오류면 오류 상태와 다시 시도 버튼', async () => {
     handler = () => ({ status: 500, body: { error: { code: 'INTERNAL', message: '서버 내부 오류' } } });
     mount('/features', '/features', <FeatureList />);

@@ -35,6 +35,23 @@ function usePersistent(key: string, initial: boolean): [boolean, (v: boolean) =>
   return [v, set];
 }
 
+/** 그룹 패널이 본문 위 드로어가 되는 폭 — shell.css의 미디어 쿼리와 같은 값 */
+const NARROW_QUERY = '(max-width: 1279px)';
+
+/** 좁은 화면인가 — 패널 기본값·스크림·Esc 닫기에 쓴다(jsdom처럼 matchMedia가 없는 환경은 넓은 화면) */
+function useNarrow(): boolean {
+  const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(NARROW_QUERY).matches);
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia(NARROW_QUERY);
+    const on = () => setNarrow(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return narrow;
+}
+
 export function Shell({ children }: { children: ReactNode }) {
   const nav = useNavigate();
   const loc = useLocation();
@@ -42,10 +59,12 @@ export function Shell({ children }: { children: ReactNode }) {
   const { dispatch } = useAppApi();
   const motion = useMotion();
   const current = routeOf(loc.pathname);
+  const narrow = useNarrow();
   const [group, setGroup] = useState<GroupKey>(current?.group ?? 'home');
   const [present, setPresent] = usePersistent(LS_PRESENT, false);
   const [myRole, setMyRole] = usePersistent(LS_MYROLE, false);
-  const [panelOpen, setPanelOpen] = usePersistent(LS_PANEL, true);
+  // 좁은 화면에서는 패널이 본문을 덮는 드로어라 기본을 닫아 둔다 — 저장된 값이 있으면 그 값을 따른다
+  const [panelOpen, setPanelOpen] = usePersistent(LS_PANEL, !narrow);
   const [q, setQ] = useState('');
   const [procOpen, setProcOpen] = useState(false);
   // 따라하기 진행 중이면 오른쪽에 가이드 패널 열(접으면 떠 있는 버튼만) · 표준 설명 모드는 html[data-explain]
@@ -58,6 +77,19 @@ export function Shell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (current) setGroup(current.group);
   }, [current]);
+
+  // 좁은 화면 드로어: 화면을 옮기면 닫고 Esc로도 닫는다(넓은 화면은 늘 보이는 패널이라 영향 없음)
+  useEffect(() => {
+    if (narrow) setPanelOpen(false);
+  }, [narrow, loc.pathname, setPanelOpen]);
+  useEffect(() => {
+    if (!narrow || !panelOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPanelOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [narrow, panelOpen, setPanelOpen]);
 
   // 시연 모드 — <html data-present="on">, 단축키 P (입력 중에는 무시)
   useEffect(() => {
@@ -161,6 +193,10 @@ export function Shell({ children }: { children: ReactNode }) {
       </nav>
 
       <aside className="sh-panel" aria-label={GROUPS.find((g) => g.key === group)!.ko} data-zone={GROUPS.find((g) => g.key === group)?.zone}>
+        {/* 좁은 화면 드로어에서만 보인다 — 레일 토글까지 내려가지 않아도 닫을 수 있게 */}
+        <button type="button" className="sh-panel__close" aria-label={ko.action.close} title={ko.action.close} onClick={() => setPanelOpen(false)}>
+          <Icon name="close" size={18} />
+        </button>
         <div className="sh-panel__head">
           <h2>{GROUPS.find((g) => g.key === group)!.ko}</h2>
           {/* 메뉴를 거르는 스위치는 메뉴 머리에 — 상단 막대 조작을 줄인다(3초 테스트) */}
@@ -180,6 +216,9 @@ export function Shell({ children }: { children: ReactNode }) {
         </ul>
         {items.length === 0 && <p className="sh-panel__empty">{ko.shell.noItems}</p>}
       </aside>
+
+      {/* 좁은 화면 드로어가 열려 있으면 본문을 가리는 대신 스크림을 둔다 — 바깥을 누르면 닫힌다 */}
+      {narrow && panelOpen && !present && <div className="sh-scrim" onClick={() => setPanelOpen(false)} aria-hidden />}
 
       <main className="sh-main" id="main" data-zone={zone}>
         {STATIC_MODE && (

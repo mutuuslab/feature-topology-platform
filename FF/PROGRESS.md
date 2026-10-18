@@ -3,6 +3,34 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## GitLab · JIRA · codeBeamer 양방향 연계 (2026-10-18 사용자 요청 "소스는 GitLab, CR·Feature 상태는 JIRA, 사양은 codeBeamer — 사이트에 반영, 방향 의견" → "양방향이 되게끔")
+- 계획 `~/.claude/plans/c-users-taehokim-downloads-feature-flag-snappy-heron.md`.
+- 주인 규칙(`contracts/src/rules/ext-sync.ts`)
+  - 요구=codeBeamer(IF-01), 변경요청 흐름=JIRA(IF-14 신설), MR·파이프라인=GitLab(IF-13).
+  - Lifecycle·정책·서명·긴급 차단·감사=플랫폼.
+  - 주인이 아닌 쪽의 변경은 매핑된 플랫폼 계정의 요청이 되어 같은 가드를 탄다.
+  - 거부되면 외부 값을 되돌리고 사유를 댓글로 남긴다. 외부 값이 몰래 바뀌어 있으면 충돌로 남기고 사람이 고른다.
+- 커밋
+  - c7e0d7d: 엔진·webhook·모의 외부 시스템
+  - 487451d: 화면
+  - 4d58724: 5년 재생 INV-13~15, live REST 어댑터
+- 시험
+  - backend: ext-sync 14, live 어댑터 4
+  - frontend: screensExtSync 6
+  - e2e: ext-sync 3
+  - 5년 재생: 15/15 PASS. CR 28, MR 28, codeBeamer 개정 60, JIRA 승인 14, 우회 시도 10건 모두 거부.
+- 화면
+  - Feature 상세 "연계" 탭과 Epic 칩, 요구 칩
+  - `/change/cr`: JIRA 변경요청과 플랫폼 정책 상태
+  - 정책 근거 CR
+  - `/integration/connectors?tab=sync`: 연결·충돌·받은 변경·보내기 실패·주인 규칙·모의 "외부에서 바꿔 보기"
+  - 검토함: 연계 충돌
+- **확인 필요(사용자)**
+  1. 실서버 주소·토큰·프로젝트 키(GitLab project, JIRA project, codeBeamer tracker·"Requirement ID" 필드명)
+  2. 회사 JIRA 워크플로 상태 이름: `JIRA_EPIC_STATUS`·`JIRA_CR_STATUS` 매핑
+  3. 외부 계정 ↔ 플랫폼 계정 매핑: 지금은 `data/fixtures/ext/ext-identities.json`, 실제는 IAM/SSO
+  4. 정책 배포에 CR 연결을 필수로 할지. 지금은 경고(연계 탭·정책 패널)이고, 재생 불변식 INV-14로만 강제한다.
+
 ## 전체 화면 3초 테스트 (2026-10-17 사용자 요청 "핵심 메시지 하나가 가장 먼저 보이게, 방해하는 장식·중복은 빼줘", 계획 `~/.claude/plans/feature-flag-iso26262-wise-tide.md`)
 - [x] **S1 공통 부품** (9382f0e) — `KeyMessage`(`[data-key-message]`, 값 `--fs-2xl`·tone)·`SummaryLine`, `PageHeader message`·`codes`(설명 모드 전용), 머리 설명 한 줄 말줄임, H1 `--fs-lg`, 대문자·자간·Panel 그림자·점 격자 제거, 경로 표시는 상위만(그룹 번호 제거), 복사 아이콘 hover.
 - [x] **S2 화면 64개** (3b5c1e9) — 모든 PageHeader에 데이터로 만든 핵심 메시지 1개, 머리표 0(codes로 15곳 이전), KPI 줄 → 요약 한 줄, 설명 57개 70자 이하·코드 제거, 배지 하나(VerdictBadge label·PubStatus), 사전점검 예외 먼저. 결함 수정: 불러오는 중 빈 목록을 '없음'(ok)으로 읽던 거짓 안심 → neutral(`keyMessageLoading.test`).

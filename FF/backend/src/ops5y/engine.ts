@@ -92,6 +92,9 @@ export const OPS_PEOPLE = {
   system: h('fleet-if06', 'SYSTEM'),
 };
 
+/** 외부 도구 계정 — JIRA·GitLab·codeBeamer에서 일하는 같은 사람들(플랫폼 계정 매핑: data/fixtures/ext/ext-identities.json) */
+export const EXT_PEOPLE = { jiraAuthor: 'kim.author', jiraApprover: 'lee.approver', jiraRelease: 'park.release', dev: 'han.dev', req: 'jung.req', stranger: 'contractor.x' };
+
 interface PolicyTrack {
   policyId: string;
   flagKey: string;
@@ -205,14 +208,34 @@ export async function replay(api: Api, hd: ReplayHandles, o: ReplayOptions): Pro
       });
       if (c.status !== 201) continue;
       const id = c.body.policyId as string;
+      // 변경요청은 JIRA에서 — 본문의 정책 ID로 플랫폼 정책에 연결된다(webhook)
+      const cr = await call('JIRA 변경요청', 'POST', '/api/integrations/mock/jira/items', author, { kind: 'CHANGE_REQUEST', title: `${flagKey} — ${l.featureId}@${l.version} 출시`, body: `정책 ${id} (${cp}) · ${l.featureId}@${l.version}`, externalUser: EXT_PEOPLE.jiraAuthor });
+      const crKey = cr.body?.item?.key as string | undefined;
+      // 구현 MR — 병합 → 파이프라인(커버리지 보고) → SW 변경 기록(IF-13)
+      const sw = f.swIds?.[0] && f.swVersions?.[0] ? ` ${f.swIds[0]}@${f.swVersions[0]}` : '';
+      const mr = await call('GitLab MR', 'POST', '/api/integrations/mock/gitlab/items', author, { kind: 'MERGE_REQUEST', title: `feat(${l.featureId}@${l.version}): ${cp} ${flagKey}${crKey ? ` ${crKey}` : ''}`, body: `구현${sw}`, externalUser: EXT_PEOPLE.dev });
+      const mrKey = mr.body?.item?.key as string | undefined;
+      if (mrKey) {
+        await call('GitLab 병합', 'POST', '/api/integrations/mock/gitlab/act', author, { key: mrKey, action: 'MERGE', externalUser: EXT_PEOPLE.dev });
+        await call('GitLab 파이프라인', 'POST', '/api/integrations/mock/gitlab/act', author, { key: mrKey, action: 'PIPELINE', status: 'success', coverage: 82 + Math.round(r() * 13), externalUser: EXT_PEOPLE.dev });
+      }
       // CARLA 가상검증은 차량 측 런타임이 있는 Feature(시나리오 정의)만 — 나머지는 다른 검증기가 판정한다
       if (VIRTUAL_SCENARIOS.some((x) => x.featureId === l.featureId)) await call('가상검증', 'POST', '/api/virtual-validations', author, { policyId: id });
       const v = await call('정책 검증', 'POST', `/api/policies/${id}/validate`, author, {});
       const track: PolicyTrack = { policyId: id, flagKey, featureId: l.featureId, version: l.version, deployedAt: null, publicationId: null, stages: [] };
       tracks.push(track);
       if (v.body?.run?.decision !== 'GO') continue;
-      const ap = await call('정책 승인', 'POST', `/api/policies/${id}/decision`, pick(OPS_PEOPLE.approvers), { decision: 'APPROVE', reason: '검증 GO 확인' });
-      if (ap.status >= 400) continue;
+      await call('연계 보내기', 'POST', '/api/integrations/sync/drain', OPS_PEOPLE.system, {});
+      // 승인 — 절반은 JIRA에서 CR을 승인(플랫폼 정책 승인 요청이 되어 직무 분리를 다시 확인), 나머지는 플랫폼에서
+      let approved = false;
+      if (crKey && r() < 0.5) {
+        const j = await call('JIRA CR 승인', 'POST', '/api/integrations/mock/jira/act', author, { key: crKey, action: 'TRANSITION', status: 'Approved', externalUser: EXT_PEOPLE.jiraApprover });
+        approved = j.body?.result?.outcome === 'APPLIED';
+      }
+      if (!approved) {
+        const ap = await call('정책 승인', 'POST', `/api/policies/${id}/decision`, pick(OPS_PEOPLE.approvers), { decision: 'APPROVE', reason: '검증 GO 확인' });
+        if (ap.status >= 400) continue;
+      }
       const deployer = pick(OPS_PEOPLE.release);
       const d = await call('정책 배포', 'POST', `/api/policies/${id}/deploy`, deployer, { reason: `${l.featureId} ${l.version} 출시` });
       if (d.status >= 400) continue;
@@ -377,9 +400,26 @@ export async function replay(api: Api, hd: ReplayHandles, o: ReplayOptions): Pro
       await call('상업 비활성화 승인', 'POST', `/api/kill-requests/${k.killId}/approvals`, OPS_PEOPLE.safety[1], { comment: '체험 만료 — 고지 확인' });
     }
     hd.retentionSweep();
+    if (today.endsWith('-15')) {
+      // 요구 담당이 codeBeamer에서 요구 하나를 개정 — 연결된 Feature에 G2 재검토 표시
+      const reqs = ((await call('codeBeamer 요구 조회', 'GET', '/api/integrations/mock/codebeamer/items', OPS_PEOPLE.system)).body?.items ?? []) as { key: string; title: string }[];
+      const target = reqs.length ? reqs[Math.floor(r() * reqs.length)] : null;
+      if (target) await call('codeBeamer 요구 개정', 'POST', '/api/integrations/mock/codebeamer/act', OPS_PEOPLE.authors[0], { key: target.key, action: 'EDIT', title: target.title.replace(/ \(r\d+\)$/, '') + ` (r${m + 2})`, body: `${today} 개정 — 기준값 조정`, externalUser: EXT_PEOPLE.req });
+    }
+    if (today.endsWith('-06-01')) {
+      // 외부 우회 시도 — 매핑 없는 계정의 Epic 상태 변경, 승인 권한 없는 사람의 CR 승인. 둘 다 거부·되돌림이어야 한다(INV-15)
+      const epics = ((await call('JIRA 항목 조회', 'GET', '/api/integrations/mock/jira/items?kind=EPIC', OPS_PEOPLE.system)).body?.items ?? []) as { key: string; status: string }[];
+      const e = epics.find((x) => x.status === 'Released');
+      if (e) await call('JIRA 우회 시도', 'POST', '/api/integrations/mock/jira/act', OPS_PEOPLE.authors[0], { key: e.key, action: 'TRANSITION', status: 'Closed', externalUser: EXT_PEOPLE.stranger });
+      const crs = ((await call('JIRA 항목 조회', 'GET', '/api/integrations/mock/jira/items?kind=CHANGE_REQUEST', OPS_PEOPLE.system)).body?.items ?? []) as { key: string; status: string }[];
+      const c = crs.find((x) => x.status === 'Deployed');
+      if (c) await call('JIRA 우회 시도', 'POST', '/api/integrations/mock/jira/act', OPS_PEOPLE.authors[0], { key: c.key, action: 'TRANSITION', status: 'Rejected', externalUser: EXT_PEOPLE.jiraAuthor });
+    }
+    await call('연계 보내기', 'POST', '/api/integrations/sync/drain', OPS_PEOPLE.system, {});
     if (today.endsWith('-01-01') || i === days - 1) log(`${today} — 정책 ${tracks.filter((t) => t.deployedAt).length}건 배포, 차단 ${report.kills.length}건, 결함 ${report.errors.length}건, ${Math.round((Date.now() - t0) / 1000)}초`);
   }
   hd.scheduler.advanceTo(morning(last) + DAY - 1);
+  await call('연계 보내기', 'POST', '/api/integrations/sync/drain', OPS_PEOPLE.system, {});
   report.policies = tracks.map(({ stages: _s, ...t }) => t);
   report.elapsedMs = Date.now() - t0;
   return report;

@@ -80,7 +80,7 @@ describe('5년 운영 재생 — 짧은 재생', () => {
       for (const [k, v] of Object.entries(y)) acc[k] = (acc[k] ?? 0) + v.ok;
       return acc;
     }, {});
-    for (const op of ['신차 등록', '정책 배포', '단계 확대', '체험 제안', '체험 수락', '차량 보고', '이상 징후 확인', '긴급 차단 승인', '복원 승인', '롤백 실행']) expect(ops[op] ?? 0, op).toBeGreaterThan(0);
+    for (const op of ['신차 등록', '정책 배포', '단계 확대', '체험 제안', '체험 수락', '차량 보고', '이상 징후 확인', '긴급 차단 승인', '복원 승인', '롤백 실행', 'JIRA 변경요청', 'GitLab 병합', 'GitLab 파이프라인', 'codeBeamer 요구 개정', '연계 보내기']) expect(ops[op] ?? 0, op).toBeGreaterThan(0);
     expect(report.kills[0]).toMatchObject({ featureId: 'FEAT-00022' });
     expect(report.kills[0].restoredAt).not.toBeNull();
     expect(report.receivers).toBeGreaterThan(0);
@@ -89,6 +89,6 @@ describe('5년 운영 재생 — 짧은 재생', () => {
   it('불변식 전부 통과', () => {
     const failed = inv.filter((x) => !x.ok);
     expect(failed, JSON.stringify(failed, null, 1)).toEqual([]);
-    expect(inv.length).toBeGreaterThanOrEqual(8);
+    expect(inv.map((x) => x.id)).toEqual(expect.arrayContaining(['INV-13', 'INV-14', 'INV-15']));
   });
 });

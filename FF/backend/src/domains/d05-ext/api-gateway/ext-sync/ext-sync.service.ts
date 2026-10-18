@@ -255,14 +255,13 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
           if (!f) return this.skip(j, 'Feature 없음');
           const missing: string[] = [];
           for (const reqId of f.requirementIds ?? []) {
-            const it = this.store.all('CODEBEAMER', 'REQUIREMENT').find((x) => x.fields.reqId === reqId);
-            const remote = it ? await a.read(it.key) : null;
+            const remote = await a.findRequirement(reqId);
             if (!remote) {
               missing.push(reqId);
               continue;
             }
             this.db.tx(() => {
-              this.observe(remote, 'SYNCED');
+              this.observe(remote, 'SYNCED', { reqId });
               this.repo.link('CODEBEAMER', remote.key, 'FEATURE', fid(f.featureId, f.version), PLATFORM_USER);
             });
           }

@@ -1,6 +1,9 @@
 // 5년 운영 재생의 불변식 — 재생이 끝난 DB를 다시 읽어 확인한다. 하나라도 어긋나면 재생 데이터를 쓰지 않는다.
 // 판정은 저장된 기록(정책·검증 실행·차단 요청·감사·보존 대상 표)만 보고, 재생 엔진의 내부 상태를 믿지 않는다.
-import { grantState, inService, populationAt, retentionCutoff, RETENTION_POLICIES, weightOf, type Entitlement, type KillRequest, type Policy, type VehicleProfile } from '@ff/contracts';
+import { grantState, inService, JIRA_CR_STATUS, JIRA_EPIC_STATUS, populationAt, retentionCutoff, RETENTION_POLICIES, weightOf, type Entitlement, type KillRequest, type Lifecycle, type Policy, type VehicleProfile } from '@ff/contracts';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { EXT_FIXTURES } from '../adapters/if-mocks/external-systems';
 import type { AuditService } from '../kernel/audit.service';
 import type { Db } from '../kernel/db';
 import type { ReplayReport } from './engine';
@@ -95,5 +98,41 @@ export function checkInvariants(db: Db, audit: AuditService, report: ReplayRepor
 
   const stuck = kills.filter((k) => k.status === 'REQUESTED' && k.expiresAt && k.expiresAt < now).length;
   add('INV-12', '처리되지 않고 유효 시간이 지난 차단·비활성화 요청 0건', stuck === 0, `${stuck}건`);
+
+  // ── GitLab · JIRA · codeBeamer 양방향 연계 ──
+  const mock = (system: string, key: string) => {
+    const r = db.get<{ doc: string }>('SELECT doc FROM mock_ext_item WHERE system = ? AND ext_key = ?', system, key);
+    return r ? (JSON.parse(r.doc) as { status: string; kind: string }) : null;
+  };
+  const lifecycleOf = new Map(docs<{ featureId: string; version: string; lifecycle: Lifecycle }>(db, 'SELECT doc FROM feature_version').map((f) => [`${f.featureId}@${f.version}`, f.lifecycle]));
+  const epicOff: string[] = [];
+  for (const l of db.all<{ ext_key: string; entity_id: string }>("SELECT l.ext_key, l.entity_id FROM ext_link l JOIN ext_item i ON i.system = l.system AND i.ext_key = l.ext_key WHERE l.system = 'JIRA' AND l.entity = 'FEATURE' AND i.kind = 'EPIC'")) {
+    const lc = lifecycleOf.get(l.entity_id);
+    const it = mock('JIRA', l.ext_key);
+    if (lc && it && it.status !== JIRA_EPIC_STATUS[lc]) epicOff.push(`${l.ext_key} ${it.status}≠${JIRA_EPIC_STATUS[lc]}`);
+  }
+  const crExpected: Record<string, string> = { APPROVED: JIRA_CR_STATUS.APPROVED, DEPLOYED: JIRA_CR_STATUS.DEPLOYED };
+  const crOff: string[] = [];
+  for (const l of db.all<{ ext_key: string; entity_id: string }>("SELECT ext_key, entity_id FROM ext_link WHERE system = 'JIRA' AND entity = 'POLICY'")) {
+    const p = policies.find((x) => x.policyId === l.entity_id);
+    const it = mock('JIRA', l.ext_key);
+    const want = p ? crExpected[p.status] : undefined;
+    if (want && it && it.status !== want && !(p!.status === 'DEPLOYED' && it.status === JIRA_CR_STATUS.ROLLED_BACK)) crOff.push(`${l.ext_key} ${it.status}≠${want}`);
+  }
+  const pendingJobs = db.get<{ n: number }>("SELECT count(*) AS n FROM sync_outbox WHERE status IN ('PENDING', 'FAILED')")?.n ?? 0;
+  const openConflicts = db.get<{ n: number }>("SELECT count(*) AS n FROM sync_conflict WHERE status = 'OPEN'")?.n ?? 0;
+  add('INV-13', '외부 도구가 주인 규칙대로 수렴 — Epic = Lifecycle, CR = 정책 상태, 보낼 함·충돌 0', !epicOff.length && !crOff.length && pendingJobs === 0 && openConflicts === 0, `Epic 불일치 ${epicOff.length}${epicOff[0] ? ` (${epicOff[0]})` : ''} · CR 불일치 ${crOff.length}${crOff[0] ? ` (${crOff[0]})` : ''} · 남은 작업 ${pendingJobs} · 충돌 ${openConflicts}`);
+
+  const linked = (entity: string, id: string, system: string, kind?: string) =>
+    (db.get<{ n: number }>(`SELECT count(*) AS n FROM ext_link l JOIN ext_item i ON i.system = l.system AND i.ext_key = l.ext_key WHERE l.entity = ? AND l.entity_id = ? AND l.system = ?${kind ? ' AND i.kind = ?' : ''}`, ...(kind ? [entity, id, system, kind] : [entity, id, system]))?.n ?? 0) > 0;
+  const untraced = deployed.filter((p) => !linked('POLICY', p.policyId, 'JIRA', 'CHANGE_REQUEST') || !linked('FEATURE', `${p.featureId}@${p.featureVersion}`, 'CODEBEAMER') || !linked('FEATURE', `${p.featureId}@${p.featureVersion}`, 'GITLAB', 'MERGE_REQUEST'));
+  add('INV-14', '배포된 정책마다 JIRA 변경요청·codeBeamer 요구·GitLab MR 연결', untraced.length === 0, `배포 ${deployed.length}건 중 추적 빠짐 ${untraced.map((p) => p.policyId).join(', ') || 0}`);
+
+  const ids = JSON.parse(readFileSync(join(process.env.FF_EXT_FIXTURES ?? EXT_FIXTURES, 'ext-identities.json'), 'utf8')) as { actorId: string; roles: string[] }[];
+  const viaExt = db.all<{ actor_id: string; actor_role: string; action: string; target: string }>("SELECT actor_id, actor_role, action, target FROM audit WHERE result = 'ALLOWED' AND (correlation_id LIKE 'jira:%' OR correlation_id LIKE 'gitlab:%' OR correlation_id LIKE 'codebeamer:%') AND actor_role != 'SYSTEM'");
+  const unmapped = viaExt.filter((a) => !ids.some((i) => i.actorId === a.actor_id && i.roles.includes(a.actor_role)));
+  const selfViaExt = viaExt.filter((a) => a.action.startsWith('POLICY_DECISION') || a.action.startsWith('POLICY_APPROVE')).filter((a) => policies.find((p) => p.policyId === a.target)?.createdBy === a.actor_id);
+  const rejected = db.get<{ n: number }>("SELECT count(*) AS n FROM sync_inbox WHERE outcome IN ('REJECTED', 'UNMAPPED')")?.n ?? 0;
+  add('INV-15', '외부에서 들어온 변경으로 직무 분리가 깨진 적 0건 — 매핑된 계정·허용 역할만, 우회 시도는 거부', unmapped.length === 0 && selfViaExt.length === 0, `외부 경유 반영 ${viaExt.length}건 · 매핑 밖 ${unmapped.length} · 자기 승인 ${selfViaExt.length} · 거부·되돌림 ${rejected}건`);
   return out;
 }

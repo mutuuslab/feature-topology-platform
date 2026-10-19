@@ -29,7 +29,7 @@ const firstStatic = (screens: string[]) => screens.find((s) => !s.includes(':'))
 
 function Hub({ doc }: { doc: WorkflowDoc }) {
   const { role, roleIds } = useMe(doc);
-  const { isDone, toggle, doneCount, doneIds } = useProgress(role);
+  const { isDone, toggle, doneCount, doneIds, status: progressStatus, error: progressError } = useProgress(role);
   const inbox = useProcedureInbox(role);
   const mine = useMemo(() => myActivities(doc, roleIds), [doc, roleIds]);
   // 준비된 활동 — 앞 활동이 끝나야 시작할 수 있다(서버 검토함과 같은 규칙, contracts readyActivityIds)
@@ -57,6 +57,16 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
         lead={P.lead}
         message={mine.length ? { tone: 'accent', value: mine.length, text: P.mine.key } : { tone: 'neutral', text: P.mine.none }}
       />
+      {(progressStatus === 'loading' || inbox.status === 'loading') && (
+        <p className="ds-field__hint" data-state="loading" role="status">
+          {P.loading}
+        </p>
+      )}
+      {(progressError || inbox.error) && (
+        <p className="ds-error" data-state="error" role="alert">
+          {progressError || inbox.error}
+        </p>
+      )}
       {reviews.length > 0 && (
         <Panel title={P.inbox.title} eyebrow={P.inbox.hint}>
           <ul className="pr-inbox">

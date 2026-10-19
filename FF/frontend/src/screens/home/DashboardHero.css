@@ -26,8 +26,9 @@
 .dh__copy { position: relative; display: grid; gap: 4px; align-content: center; }
 .dh__copy h2 {
   margin: 2px 0 6px;
-  font-size: clamp(20px, 2.1vw, 30px);
-  line-height: 1.22;
+  /* 3초 규칙 — 핵심 메시지(PageHeader)보다 큰 글자를 만들지 않는다 */
+  font-size: clamp(18px, 1.5vw, 22px);
+  line-height: 1.3;
   letter-spacing: -0.015em;
   white-space: pre-line;
 }

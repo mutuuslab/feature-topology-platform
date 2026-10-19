@@ -53,4 +53,11 @@ describe('로그인 화면', () => {
     fireEvent.click(screen.getByRole('button', { name: '숨기기' }));
     expect(pw.type).toBe('password');
   });
+
+  it('문의 담당자와 메일 링크를 보여 준다', () => {
+    mount();
+    const link = screen.getByRole('link', { name: 'tobiaskim@mutuus-lab.com' });
+    expect(link.getAttribute('href')).toBe('mailto:tobiaskim@mutuus-lab.com');
+    expect(link.closest('.lg__contact')?.textContent).toContain('김태호');
+  });
 });

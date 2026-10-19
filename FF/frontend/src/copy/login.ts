@@ -12,6 +12,11 @@ export const login = {
   submitting: '확인 중…',
   error: 'ID 또는 비밀번호가 맞지 않습니다.',
   footer: '읽기 전용 데모 · Feature Platform',
+  contact: {
+    label: '문의 담당자',
+    name: '김태호',
+    email: 'tobiaskim@mutuus-lab.com',
+  },
   logout: '로그아웃',
   visual: {
     eyebrow: 'WORK PROCEDURE / FEATURE → GATE → FLEET',

@@ -143,7 +143,12 @@ export function LoginScreen() {
           </Button>
         </form>
 
-        <footer className="lg__foot">{L.footer}</footer>
+        <footer className="lg__foot">
+          <span>{L.footer}</span>
+          <span className="lg__contact">
+            {L.contact.label} — {L.contact.name} · <a href={`mailto:${L.contact.email}`}>{L.contact.email}</a>
+          </span>
+        </footer>
       </section>
 
       <aside className="lg__motion" data-zone="ops" aria-labelledby="lg-brief-title">

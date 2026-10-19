@@ -8,6 +8,45 @@ import { Button } from '../../design';
 import './login.css';
 
 const PATH = 'M 74 566 C 156 520 142 444 236 408 S 366 344 350 250 S 452 132 548 84';
+const TRACE = 'M 34 860 C 24 700 28 520 44 380 S 70 170 190 70 S 420 34 600 34';
+
+/** 왼쪽 종이 면의 플로터 모션 — ODD → ACTIVE → SAFE STOP → RECOVERY를 그린다(장식). */
+function LeftMotion() {
+  return (
+    <div className="lg-blue" aria-hidden>
+      <svg viewBox="0 0 640 900" preserveAspectRatio="xMidYMid slice" role="presentation">
+        <defs>
+          <pattern id="lg-blue-grid" width="28" height="28" patternUnits="userSpaceOnUse">
+            <path d="M28 0H0V28" />
+          </pattern>
+        </defs>
+        <rect width="640" height="900" fill="url(#lg-blue-grid)" className="lg-blue__grid" />
+        <path d={TRACE} className="lg-blue__track" />
+        <path d={TRACE} className="lg-blue__flow" pathLength={1} />
+        <circle r="3.4" className="lg-blue__pulse">
+          <animateMotion dur="9s" repeatCount="indefinite" path={TRACE} />
+        </circle>
+        {[
+          { x: 34, y: 860 },
+          { x: 44, y: 380 },
+          { x: 190, y: 70 },
+          { x: 600, y: 34 },
+        ].map((n) => (
+          <g key={`${n.x}-${n.y}`} className="lg-blue__node">
+            <circle cx={n.x} cy={n.y} r="8" />
+            <circle cx={n.x} cy={n.y} r="2.2" className="lg-blue__dot" />
+          </g>
+        ))}
+        <g className="lg-blue__mark lg-blue__mark--tl">
+          <path d="M0 10H20M10 0V20" />
+        </g>
+        <g className="lg-blue__mark lg-blue__mark--br">
+          <path d="M0 10H20M10 0V20" />
+        </g>
+      </svg>
+    </div>
+  );
+}
 
 function BrandMark() {
   return (
@@ -86,6 +125,7 @@ export function LoginScreen() {
   return (
     <main id="main" className="lg" data-login>
       <section className="lg__form">
+        <LeftMotion />
         <header className="lg__brand">
           <img className="lg__logo" src="/brand/mutuuslab_logo01.png" alt="Mutuus Lab" width="894" height="171" />
           <span className="lg__divider" aria-hidden />
@@ -99,6 +139,7 @@ export function LoginScreen() {
         <div className="lg__intro">
           <p className="ds-eyebrow">{L.eyebrow}</p>
           <h1>{L.title}</h1>
+          <span className="lg__rule" aria-hidden />
           <p className="lg__lead">{L.lead}</p>
         </div>
 

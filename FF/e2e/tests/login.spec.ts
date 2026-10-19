@@ -36,6 +36,18 @@ test('로그인 — 이미 로그인한 브라우저에서도 /login은 로그�
   await expect(page.locator('.lg__logo')).toBeVisible();
 });
 
+test('로그인 — 큰 화면에서 폼·글자가 비례해 커지고 왼쪽 플로터가 보인다', async ({ page }) => {
+  await page.setViewportSize({ width: 1764, height: 957 });
+  await page.goto('/login');
+  const h1 = parseFloat(await page.locator('h1').evaluate((e) => getComputedStyle(e).fontSize));
+  const card = await page.locator('.lg__card').boundingBox();
+  expect(h1).toBeGreaterThan(50);
+  expect(card!.width).toBeGreaterThan(500);
+  await expect(page.locator('.lg-blue')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true);
+});
+
 test('로그인 — 좁은 화면은 모션 대신 브리프, 가로 넘침 없음', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/login');

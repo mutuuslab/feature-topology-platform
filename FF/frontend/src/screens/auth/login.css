@@ -7,6 +7,7 @@
   color: var(--ink);
 }
 .lg__form {
+  position: relative;
   inline-size: 100%;
   max-inline-size: 660px;
   margin-inline: auto;
@@ -16,18 +17,61 @@
   justify-content: center;
   gap: var(--sp-6);
 }
+.lg__form > :not(.lg-blue) { position: relative; z-index: 1; }
 .lg__brand { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .lg__logo { block-size: 26px; inline-size: auto; flex: none; }
 .lg__divider { inline-size: 1px; block-size: 18px; background: var(--line-strong); margin-inline: 2px; }
 .lg__mark { display: inline-flex; color: var(--accent); }
 .lg__brand-name { font-weight: 700; letter-spacing: -0.01em; }
 .lg__brand-sub { color: var(--muted); font-size: var(--fs-xs); letter-spacing: 0.08em; text-transform: uppercase; }
+/* 왼쪽 플로터 모션 — 폼 뒤에 ODD·활성·안전 종료·복구 궤적을 아주 옅게 그린다 */
+.lg-blue {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  color: var(--ink);
+  pointer-events: none;
+}
+.lg-blue svg { display: block; inline-size: 100%; block-size: 100%; }
+.lg-blue__grid { fill: none; stroke: currentColor; stroke-opacity: 0.05; stroke-width: 1; }
+.lg-blue__track { fill: none; stroke: currentColor; stroke-opacity: 0.11; stroke-width: 1.2; }
+.lg-blue__flow {
+  fill: none;
+  stroke: var(--accent);
+  stroke-opacity: 0.45;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-dasharray: 0.08 0.92;
+  animation: lg-blue-flow 6.8s linear infinite;
+}
+@keyframes lg-blue-flow { to { stroke-dashoffset: -1; } }
+.lg-blue__pulse { fill: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
+.lg-blue__node { animation: lg-blue-node 3.6s ease-in-out infinite; }
+.lg-blue__node > circle:first-child { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
+.lg-blue__dot { fill: var(--accent); }
+@keyframes lg-blue-node { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.lg-blue__mark { stroke: currentColor; stroke-opacity: 0.14; stroke-width: 1; }
+.lg-blue__mark--tl { transform: translate(24px, 24px); }
+.lg-blue__mark--br { transform: translate(596px, 856px); }
+.lg__rule {
+  display: block;
+  inline-size: clamp(120px, 34%, 320px);
+  block-size: 2px;
+  margin: 8px 0 12px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 8%, transparent));
+  transform-origin: left;
+  animation: lg-rule 0.9s ease-out both;
+}
+@keyframes lg-rule { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+
 .lg__intro h1 {
   margin: 6px 0 10px;
   font-size: clamp(28px, 3.4vw, 44px);
   line-height: 1.15;
   letter-spacing: -0.02em;
   white-space: pre-line;
+  word-break: keep-all;
 }
 .lg__lead { margin: 0; max-inline-size: 46ch; color: var(--ink-2); line-height: 1.6; }
 .lg__card {
@@ -190,8 +234,43 @@
   font-size: var(--fs-xs);
 }
 
+/* 큰 모니터 — 폼·글자·입력이 화면 폭에 비례해 커진다(1366 이하는 기존 크기 유지) */
+@media (min-width: 1440px) {
+  .lg__form {
+    max-inline-size: clamp(660px, 46vw, 1100px);
+    padding: clamp(40px, 4vw, 100px);
+    gap: clamp(24px, 1.8vw, 40px);
+  }
+  .lg__logo { block-size: clamp(30px, 2vw, 42px); }
+  .lg__brand-name { font-size: clamp(15px, 1vw, 20px); }
+  .lg__brand-sub { font-size: clamp(11px, 0.75vw, 14px); }
+  .lg__intro h1 { font-size: clamp(44px, 3vw, 76px); }
+  .lg__lead { max-inline-size: 50ch; font-size: clamp(15px, 1.05vw, 21px); }
+  .lg__card {
+    max-inline-size: clamp(380px, 30vw, 680px);
+    padding: clamp(24px, 1.8vw, 36px);
+    gap: clamp(14px, 1.1vw, 22px);
+  }
+  .lg__card h2 { font-size: clamp(18px, 1.2vw, 24px); }
+  .lg__field { gap: 8px; font-size: clamp(14px, 0.9vw, 17px); }
+  .lg__field input { block-size: clamp(34px, 2.2vw, 46px); font-size: clamp(14px, 0.95vw, 18px); }
+  .lg__pw input { padding-inline-end: 78px; }
+  .lg__show { font-size: clamp(11px, 0.8vw, 14px); }
+  .lg__submit { min-block-size: clamp(36px, 2.4vw, 48px); font-size: clamp(14px, 0.95vw, 18px); }
+  .lg__error { font-size: clamp(13px, 0.9vw, 17px); }
+  .lg__foot { font-size: clamp(11px, 0.75vw, 14px); }
+  .lg-motion__caption h2 { font-size: clamp(26px, 2.6vw, 42px); }
+  .lg-motion__caption p { font-size: clamp(13px, 0.95vw, 17px); }
+  .lg-brief { max-inline-size: 860px; margin-inline: auto; padding: clamp(20px, 1.8vw, 34px); }
+  .lg-brief h2 { font-size: clamp(24px, 2vw, 34px); }
+  .lg-brief__sub { font-size: clamp(13px, 0.95vw, 17px); }
+  .lg-brief__body { font-size: clamp(13px, 0.95vw, 17px); }
+  .lg-brief__chips li { font-size: clamp(11px, 0.8vw, 14px); }
+}
+
 @media (max-width: 900px) {
   .lg { grid-template-columns: 1fr; background: var(--paper); }
+  .lg-blue { display: none; }
   .lg__motion { display: block; border-inline-start: 0; border-block-start: 1px solid var(--line); }
   .lg-motion__svg,
   .lg-motion__caption,
@@ -218,6 +297,10 @@
   .lg-motion__node,
   .lg-motion__orbit,
   .lg-motion__halo,
-  .lg-motion__live i { animation: none; }
-  .lg-motion__pulse { display: none; }
+  .lg-motion__live i,
+  .lg-blue__flow,
+  .lg-blue__node,
+  .lg__rule { animation: none; }
+  .lg-motion__pulse,
+  .lg-blue__pulse { display: none; }
 }

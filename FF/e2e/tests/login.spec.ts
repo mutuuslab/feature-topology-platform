@@ -28,6 +28,14 @@ test('로그인 — 틀린 비밀번호는 막고, FF/platform이면 내 대시�
   await expect(page.getByRole('button', { name: '플랫폼 들어가기' })).toBeVisible();
 });
 
+test('로그인 — 이미 로그인한 브라우저에서도 /login은 로그인 화면을 보여 준다', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('ff.auth', '1'));
+  await page.goto('/login');
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole('button', { name: '플랫폼 들어가기' })).toBeVisible();
+  await expect(page.locator('.lg__logo')).toBeVisible();
+});
+
 test('로그인 — 좁은 화면은 모션 대신 브리프, 가로 넘침 없음', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/login');

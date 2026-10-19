@@ -11,14 +11,9 @@ export default function App() {
   const loc = useLocation();
   const authed = useAuth();
 
-  // 로그인 화면은 셸 밖에서 그린다 — 메뉴·역할 전환 없이 게이트만 보인다
-  if (loc.pathname === '/login') {
-    if (authed) {
-      const from = (loc.state as { from?: string } | null)?.from;
-      return <Navigate to={from && from !== '/login' ? from : '/'} replace />;
-    }
-    return <LoginScreen />;
-  }
+  // 로그인 화면은 셸 밖에서 그린다 — 이미 로그인했어도 /login은 항상 로그인 화면을 보여 준다
+  // (세션이 남은 브라우저에서 로그인 화면이 '사라지는' 문제 방지). 로그인 성공 시 화면이 직접 이동한다.
+  if (loc.pathname === '/login') return <LoginScreen />;
   if (!authed) return <Navigate to="/login" replace state={{ from: loc.pathname + loc.search }} />;
 
   return (

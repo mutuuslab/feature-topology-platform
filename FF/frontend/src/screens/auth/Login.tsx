@@ -1,8 +1,8 @@
 // /login — 플랫폼 게이트. 실제 IAM이 아닌 데모 세션(auth.ts)이며, 정적 데모에서도 클라이언트에서 동작한다.
 // 오른쪽은 업무 절차(Gate 흐름)를 모티프로 한 모션 그래픽 — CSS/SVG만 쓰고 prefers-reduced-motion에서 멈춘다.
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { login as authLogin, useAuth } from '../../auth';
+import { login as authLogin } from '../../auth';
 import { login as L } from '../../copy/login';
 import { Button } from '../../design';
 import './login.css';
@@ -68,20 +68,19 @@ function MotionGraphic() {
 export function LoginScreen() {
   const nav = useNavigate();
   const loc = useLocation();
-  const authed = useAuth();
   const from = (loc.state as { from?: string } | null)?.from;
   const [id, setId] = useState('');
   const [pw, setPw] = useState('');
   const [show, setShow] = useState(false);
   const [err, setErr] = useState(false);
 
-  useEffect(() => {
-    if (authed) nav(from && from !== '/login' ? from : '/', { replace: true });
-  }, [authed, from, nav]);
-
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErr(!authLogin(id, pw));
+    if (!authLogin(id, pw)) {
+      setErr(true);
+      return;
+    }
+    nav(from && from !== '/login' ? from : '/', { replace: true });
   };
 
   return (

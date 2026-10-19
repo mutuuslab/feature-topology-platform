@@ -23,16 +23,16 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}-{projectName}{ext}',
   use: {
     baseURL: `http://localhost:${WEB}`,
+    // 로그인 게이트를 기본 통과 — 로그인 화면 시험만 storageState를 비운다.
+    storageState: { cookies: [], origins: [{ origin: `http://localhost:${WEB}`, localStorage: [{ name: 'ff.auth', value: '1' }] }] },
     locale: 'ko-KR',
     timezoneId: 'Asia/Seoul',
     trace: 'retain-on-failure',
     ...devices['Desktop Chrome'],
   },
-  // poc.spec은 FEAT-00022를 실제로 긴급 차단·이상 건을 만든다 — 다른 시험이 모두 끝난 뒤 따로 돈다
-  // 시각 회귀(visual.spec)는 따로 — poc의 의존 프로젝트로 chromium이 돌 때 --grep-invert가 적용되지 않아 CI(Linux)에서 Windows 기준과 비교되던 문제
+  // 시각 회귀(visual.spec)는 따로 — chromium이 돌 때 --grep-invert가 적용되지 않아 CI(Linux)에서 Windows 기준과 비교되던 문제
   projects: [
-    { name: 'chromium', testIgnore: /(poc|visual)\.spec\.ts/ },
-    { name: 'poc', testMatch: /poc\.spec\.ts/, dependencies: ['chromium'] },
+    { name: 'chromium', testIgnore: /visual\.spec\.ts/ },
     { name: 'visual', testMatch: /visual\.spec\.ts/ },
   ],
   webServer: [

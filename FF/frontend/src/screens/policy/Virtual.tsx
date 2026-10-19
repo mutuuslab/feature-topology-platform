@@ -497,7 +497,7 @@ export function VirtualValidationScreen() {
                 </option>
               ))}
             </Select>
-            <Button variant="primary" data-tour="virtual-run" disabled={!perm.ok || !pick || run.isPending} title={perm.hint} onClick={() => run.mutate({ body: { policyId: pick } })}>
+            <Button variant="primary" data-tour="virtual-run" data-ui="runVirtual" disabled={!perm.ok || !pick || run.isPending} title={perm.hint} onClick={() => run.mutate({ body: { policyId: pick } })}>
               {T.run}
             </Button>
           </div>

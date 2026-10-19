@@ -129,7 +129,12 @@ process:
         - 정책을 CARLA 가상 차량에 적용해 시나리오를 실행하되, 결과는 TMS 제출 전까지 G5 근거로 쓰지 않는다
       checks:
         - 시험 명세의 모든 항목에 결과가 있고 실패 항목은 결함으로 등록되었다
-      platform: {actions: [runVirtual], screens: [/validations/virtual]}
+      platform:
+        actions: [runVirtual]
+        screens: [/validations/virtual]
+        anchor: virtual-run
+        ui: {buttons: [runVirtual]}
+      sla_hours: 24
       next: [FPW.5-A05]
     - id: FPW.5-A05
       name: 시험 Evidence 연결·TMS 제출

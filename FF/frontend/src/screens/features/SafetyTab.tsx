@@ -300,6 +300,7 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
                       title={sign.hint ?? (dirty ? S.dirty : blockers.length ? S.confirmBlocked : undefined)}
                       onClick={() => setOpen(true)}
                       data-tour="safety-confirm"
+                      data-ui="confirmSafetyProfile"
                     >
                       {S.confirm}
                     </Button>

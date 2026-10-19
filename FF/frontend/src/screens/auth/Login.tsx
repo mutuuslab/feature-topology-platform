@@ -1,0 +1,162 @@
+// /login — 플랫폼 게이트. 실제 IAM이 아닌 데모 세션(auth.ts)이며, 정적 데모에서도 클라이언트에서 동작한다.
+// 오른쪽은 업무 절차(Gate 흐름)를 모티프로 한 모션 그래픽 — CSS/SVG만 쓰고 prefers-reduced-motion에서 멈춘다.
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { login as authLogin, useAuth } from '../../auth';
+import { login as L } from '../../copy/login';
+import { Button } from '../../design';
+import './login.css';
+
+const PATH = 'M 74 566 C 156 520 142 444 236 408 S 366 344 350 250 S 452 132 548 84';
+
+function BrandMark() {
+  return (
+    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M6 21V3.5" />
+      <path d="M6 4h11l-2.5 3.5L17 11H6" />
+      <path d="M3 21h6M10 15v2M13 15v2M16 15v2M19 15v2" />
+    </svg>
+  );
+}
+
+/** 절차 흐름 그래픽 — 경로 위를 도는 펄스와 Gate 노드. 장식이므로 aria-hidden. */
+function MotionGraphic() {
+  const nodes = [
+    { x: 74, y: 566, g: 'G1' },
+    { x: 160, y: 500, g: 'G2' },
+    { x: 236, y: 408, g: 'G3' },
+    { x: 310, y: 360, g: 'G4' },
+    { x: 350, y: 250, g: 'G5' },
+    { x: 420, y: 190, g: 'G7' },
+    { x: 548, y: 84, g: 'G8' },
+  ];
+  return (
+    <svg className="lg-motion__svg" viewBox="0 0 620 660" role="presentation">
+      <defs>
+        <pattern id="lg-grid" width="34" height="34" patternUnits="userSpaceOnUse">
+          <path d="M34 0H0V34" className="lg-motion__grid" />
+        </pattern>
+        <linearGradient id="lg-line" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stopColor="currentColor" stopOpacity="0.12" />
+          <stop offset="0.55" stopColor="currentColor" stopOpacity="0.5" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0.9" />
+        </linearGradient>
+      </defs>
+      <rect width="620" height="660" fill="url(#lg-grid)" />
+      <path d={PATH} className="lg-motion__path" />
+      <path d={PATH} className="lg-motion__flow" pathLength={1} />
+      <circle r="5" className="lg-motion__pulse">
+        <animateMotion dur="7s" repeatCount="indefinite" path={PATH} />
+      </circle>
+      {nodes.map((n, i) => (
+        <g key={n.g} className="lg-motion__node" style={{ animationDelay: `${i * 0.45}s` }}>
+          <circle cx={n.x} cy={n.y} r="15" />
+          <circle cx={n.x} cy={n.y} r="4" className="lg-motion__dot" />
+          <text x={n.x + 24} y={n.y + 5} className="lg-motion__gate">{n.g}</text>
+        </g>
+      ))}
+      <g className="lg-motion__orbit">
+        <circle cx="310" cy="330" r="212" />
+        <circle cx="310" cy="330" r="268" className="lg-motion__orbit-inner" />
+      </g>
+      <text x="74" y="620" className="lg-motion__axis">FEATURE</text>
+      <text x="474" y="70" className="lg-motion__axis">FLEET</text>
+    </svg>
+  );
+}
+
+export function LoginScreen() {
+  const nav = useNavigate();
+  const loc = useLocation();
+  const authed = useAuth();
+  const from = (loc.state as { from?: string } | null)?.from;
+  const [id, setId] = useState('');
+  const [pw, setPw] = useState('');
+  const [show, setShow] = useState(false);
+  const [err, setErr] = useState(false);
+
+  useEffect(() => {
+    if (authed) nav(from && from !== '/login' ? from : '/', { replace: true });
+  }, [authed, from, nav]);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErr(!authLogin(id, pw));
+  };
+
+  return (
+    <main id="main" className="lg" data-login>
+      <section className="lg__form">
+        <header className="lg__brand">
+          <span className="lg__mark" aria-hidden>
+            <BrandMark />
+          </span>
+          <span className="lg__brand-name">Feature Platform</span>
+          <span className="lg__brand-sub">Feature · Gate · Fleet</span>
+        </header>
+
+        <div className="lg__intro">
+          <p className="ds-eyebrow">{L.eyebrow}</p>
+          <h1>{L.title}</h1>
+          <p className="lg__lead">{L.lead}</p>
+        </div>
+
+        <form className="lg__card" onSubmit={submit} noValidate>
+          <h2>{L.formTitle}</h2>
+          <label className="lg__field">
+            <span>{L.id}</span>
+            <input
+              className="ds-input ds-input--mono"
+              name="username"
+              autoComplete="username"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              autoFocus
+              aria-invalid={err || undefined}
+            />
+          </label>
+          <label className="lg__field">
+            <span>{L.password}</span>
+            <span className="lg__pw">
+              <input
+                className="ds-input ds-input--mono"
+                name="password"
+                type={show ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={pw}
+                onChange={(e) => setPw(e.target.value)}
+                aria-invalid={err || undefined}
+              />
+              <button type="button" className="lg__show" onClick={() => setShow(!show)} aria-label={show ? L.hide : L.show}>
+                {show ? L.hide : L.show}
+              </button>
+            </span>
+          </label>
+          {err && (
+            <p className="lg__error" role="alert">
+              {L.error}
+            </p>
+          )}
+          <Button type="submit" variant="primary" className="lg__submit">
+            {L.submit}
+          </Button>
+        </form>
+
+        <footer className="lg__foot">{L.footer}</footer>
+      </section>
+
+      <aside className="lg__motion" data-zone="ops" aria-hidden>
+        <div className="lg-motion__halo" />
+        <MotionGraphic />
+        <div className="lg-motion__caption">
+          <p className="ds-eyebrow">{L.visual.eyebrow}</p>
+          <h2>{L.visual.title}</h2>
+          <p>{L.visual.caption}</p>
+          <span className="lg-motion__live">
+            <i aria-hidden /> {L.visual.live}
+          </span>
+        </div>
+      </aside>
+    </main>
+  );
+}

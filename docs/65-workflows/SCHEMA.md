@@ -59,8 +59,21 @@ process:
         actions: [approveKill]    # /admin/iam 권한표 action 이름. R[0] 역할의 IAM 역할이 허용돼야 한다
         screens: [/ops/kill]      # frontend 라우트 경로
         gates: [G5, G6]           # 판정 등록하는 플랫폼 Gate(GATE_META)
+        anchor: kill-approve      # 선택. screens 중 한 화면의 data-tour(또는 Panel tour=) 앵커
+        ui:                       # 선택. 화면의 입력 필드·버튼 단위 매핑(둘 다 8개 이하)
+          fields: [reason]        #   실제 input/textarea의 name= 값
+          buttons: [requestRestore] # 실제 버튼의 data-ui= 값
+      sla_hours: 24               # 선택. 앞 활동이 끝난 뒤 완료까지 허용 시간(1~720, 정수)
       next: [FPW.8-A06]           # 같은 프로세스 안의 다음 활동. 되돌림은 steps에 쓰고 next로 만들지 않는다
 ```
+
+- **anchor**는 그 화면에서 활동을 따라 할 때 스포트라이트할 요소다. 앵커가 없으면 플랫폼은 "따라하기"를 숨긴다.
+  `screens`가 있어야 하고(어느 화면인지 알 수 없으면 오류), 소문자·숫자·하이픈 2~48자다.
+  화면 코드에 `data-tour="..."`(또는 `Panel tour="..."`)로 실제 존재해야 한다 — `workflowScreens.test.ts`가 검사한다.
+- **ui**는 화면의 필드·버튼과 활동을 1:1로 잇는다. `fields`는 `name=`, `buttons`는 `data-ui=`로 실제 코드에 있어야
+  같은 시험이 검사한다. 아직 일부 활동만 채워져 있다(파일럿).
+- **sla_hours**는 앞 활동이 모두 끝난 시각부터 센다. 검토함의 기한·기한 초과 알림이 이 값을 쓴다.
+  첫 활동(앞 활동 없음)은 기한을 세지 않는다 — 프로세스 시작 시각을 따로 저장하지 않기 때문이다.
 
 ## RACI 규칙
 

@@ -7,7 +7,7 @@ import { REPORT_RULES } from '../generated/report-catalog';
 import { WORKFLOWS } from '../generated/workflows';
 import { HUMAN_ROLES } from './access';
 import { DEMO_PERSONAS } from './duty-separation';
-import { activitiesForScreen, myActivities, raciOf, workflowProblems, type WorkflowPlatformFacts } from './workflows';
+import { activitiesForScreen, myActivities, predecessorsOf, raciOf, readyActivityIds, workflowIndexOf, workflowProblems, type WorkflowPlatformFacts } from './workflows';
 
 const FACTS: WorkflowPlatformFacts = {
   routes: ROUTES,
@@ -55,6 +55,35 @@ describe('업무 절차 ↔ 플랫폼 정합성', () => {
     const p = workflowProblems(WORKFLOWS, { ...FACTS, ruleIds: FACTS.ruleIds.filter((id) => id !== 'FFG-SEC-002'), gates: GATES.filter((g) => g !== 'G9') });
     expect(p.some((x) => x.includes('없는 규칙 FFG-SEC-002'))).toBe(true);
     expect(p.some((x) => x.includes('없는 Gate G9'))).toBe(true);
+  });
+});
+
+describe('실행 색인 (서버·검토함)', () => {
+  const index = workflowIndexOf(WORKFLOWS);
+
+  it('색인은 전체 활동을 프로세스·페르소나·역할과 함께 담는다', () => {
+    expect(index.activities).toHaveLength(WORKFLOWS.processes.flatMap((p) => p.activities).length);
+    expect(index.personas).toEqual(WORKFLOWS.personas);
+    expect(index.activities.find((a) => a.id === 'FPW.7-A12')).toMatchObject({ processId: 'FPW.7', raci: { A: 'R-FO' } });
+  });
+
+  it('앵커·UI 매핑·SLA는 형식과 범위를 지킨다', () => {
+    for (const a of index.activities) {
+      if (a.anchor !== null) expect(a.anchor).toMatch(/^[a-z0-9][a-z0-9-]{1,47}$/);
+      expect(a.anchor === null || a.screens.length > 0).toBe(true);
+      expect(a.slaHours === null || (Number.isInteger(a.slaHours) && a.slaHours >= 1 && a.slaHours <= 720)).toBe(true);
+    }
+  });
+
+  it('앞 활동이 끝나야 다음 활동이 준비된다 — A01 전에는 A02가 준비되지 않는다', () => {
+    const preds = predecessorsOf(index);
+    expect(preds.get('FPW.1-A02')).toContain('FPW.1-A01');
+    const start = readyActivityIds(index, new Set());
+    expect(start.has('FPW.1-A01')).toBe(true);
+    expect(start.has('FPW.1-A02')).toBe(false);
+    const after = readyActivityIds(index, new Set(['FPW.1-A01']));
+    expect(after.has('FPW.1-A02')).toBe(true);
+    expect(after.has('FPW.1-A03')).toBe(true);
   });
 });
 

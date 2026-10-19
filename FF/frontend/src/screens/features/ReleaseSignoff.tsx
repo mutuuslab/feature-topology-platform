@@ -27,7 +27,7 @@ export function ReleaseSignoffBar({ id, ver, gatesPassed }: { id: string; ver: s
         </span>
       )}
       {!v?.valid && (
-        <Button icon="pen" disabled={STATIC_MODE || !perm.ok || !gatesPassed} title={STATIC_MODE ? ko.page.readOnly : perm.hint ?? (gatesPassed ? undefined : S.needGates)} onClick={() => setOpen(true)} data-tour="release-signoff">
+        <Button icon="pen" disabled={STATIC_MODE || !perm.ok || !gatesPassed} title={STATIC_MODE ? ko.page.readOnly : perm.hint ?? (gatesPassed ? undefined : S.needGates)} onClick={() => setOpen(true)} data-tour="release-signoff" data-ui="signRelease">
           {S.sign}
         </Button>
       )}
@@ -35,7 +35,7 @@ export function ReleaseSignoffBar({ id, ver, gatesPassed }: { id: string; ver: s
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
           <p style={{ margin: 0 }}>{S.body}</p>
           <Field label={ko.page.reason}>
-            <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
+            <textarea className="ds-input" name="reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
           </Field>
           <ErrorNote error={sign.error} />
           <Button

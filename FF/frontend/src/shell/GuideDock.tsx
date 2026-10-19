@@ -9,62 +9,10 @@ import { roleLabel } from '../data/refdata';
 import { Button, ClauseChip, Drawer, Icon, KeyValue, RULE_EVENT, RuleText, StatusGlyph, openRule } from '../design';
 import { useAppApi, useAppShell } from '../store';
 import { learnStore, useLearn } from './learn';
+import { useSpotlight } from './spotlight';
 
 const L = ko.learn;
 const D = L.dock;
-
-/** 대상 요소를 찾아 위치를 따라간다 — 비동기로 그려지는 화면을 위해 짧게 폴링한다 */
-function useSpotlight(anchor: string | null, describedBy: string) {
-  const [rect, setRect] = useState<{ top: number; left: number; width: number; height: number; tight: boolean } | null>(null);
-  const { pathname, search } = useLocation();
-  useEffect(() => {
-    if (!anchor) {
-      setRect(null);
-      return;
-    }
-    let el: Element | null = null;
-    let scrolled = false;
-    let prevDesc: string | null = null;
-    const release = () => {
-      if (!el) return;
-      el.removeAttribute('data-tour-active');
-      if (prevDesc === null) el.removeAttribute('aria-describedby');
-      else el.setAttribute('aria-describedby', prevDesc);
-    };
-    const tick = () => {
-      const cur = document.querySelector(`[data-tour="${CSS.escape(anchor)}"]`);
-      if (cur !== el) {
-        release();
-        el = cur;
-        if (el) {
-          prevDesc = el.getAttribute('aria-describedby');
-          el.setAttribute('data-tour-active', 'true');
-          el.setAttribute('aria-describedby', [prevDesc, describedBy].filter(Boolean).join(' '));
-        }
-      }
-      if (!el) return setRect((r) => (r ? null : r));
-      if (!scrolled) {
-        el.scrollIntoView?.({ block: 'center', behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-        scrolled = true;
-      }
-      const b = el.getBoundingClientRect();
-      // 레일·표 안의 칸이면 고리를 촘촘하게 — 바깥 고리가 이웃 칸(G6 상태 점 등)을 가리지 않게
-      const next = { top: b.top, left: b.left, width: b.width, height: b.height, tight: !!el.parentElement?.closest('.ds-gates, .ds-table, .ds-kv') };
-      setRect((r) => (r && r.top === next.top && r.left === next.left && r.width === next.width && r.height === next.height && r.tight === next.tight ? r : next));
-    };
-    tick();
-    const id = window.setInterval(tick, 400);
-    window.addEventListener('resize', tick);
-    document.addEventListener('scroll', tick, true);
-    return () => {
-      window.clearInterval(id);
-      window.removeEventListener('resize', tick);
-      document.removeEventListener('scroll', tick, true);
-      release();
-    };
-  }, [anchor, describedBy, pathname, search]);
-  return rect;
-}
 
 /** 근거 조항은 두 개까지 펼치고 나머지는 접는다 — 전체 목록은 규칙 Drawer·시나리오 화면에 있다 */
 function StepRules({ step }: { step: TutorialStep }) {

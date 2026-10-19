@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { RULE_STATUS, STANDARDS_MAP } from '@ff/contracts';
 import { AppProvider } from '../store';
-import { PocScreen } from '../screens/home/Poc';
 import { ArchitectureScreen } from '../screens/home/Architecture';
 import { OpenFeaturePanel } from '../screens/policy/OpenFeaturePanel';
 
@@ -52,64 +51,6 @@ function mount(path: string, routePath: string, el: JSX.Element, role = 'operato
   );
 }
 
-const STEP = (no: number, status: string, extra: Record<string, unknown> = {}) => ({
-  no,
-  title: ['Feature 등록·상품 구성', '정책 준비·검증·승인', '사용 권한·서버 활성화 판단', '정책 배포·차량 수신', '차량 평가·체험 제안·기능 적용', '이상 확인·긴급 차단·차단 적용'][no - 1],
-  status,
-  startedAt: null,
-  endedAt: null,
-  actions: [],
-  evidence: {},
-  components: ['D01-01'],
-  note: null,
-  ...extra,
-});
-const RUN = (steps: unknown[], status = 'RUNNING') => ({
-  runId: 'POC-00001',
-  status,
-  startedAt: '2026-10-12T01:00:00Z',
-  startedBy: 'seo.ops',
-  subject: { featureId: 'FEAT-00022', version: '1.0.0', flagKey: 'care_00022_param', vin: 'ego-01' },
-  refs: {},
-  steps,
-});
-
-describe('PoC 6단계 러너', () => {
-  it('실행이 없으면 안내, 시작하면 6단계가 보이고 다음 단계는 advance를 부른다', async () => {
-    let started = false;
-    const run1 = RUN([
-      STEP(1, 'DONE', {
-        actions: [{ at: 'x', actor: 'poc.author', role: 'FEATURE_AUTHOR', route: 'featureDetail', summary: 'FEAT-00022 1.0.0 RELEASED', ok: true }],
-        evidence: { lifecycle: 'RELEASED', gatesPass: '9/9' },
-      }),
-      ...[2, 3, 4, 5, 6].map((n) => STEP(n, 'PENDING')),
-    ]);
-    handler = (url, init) => {
-      if (init?.method === 'POST' && url.endsWith('/api/poc/runs')) return ((started = true), { status: 201, body: run1 });
-      if (init?.method === 'POST') return { body: run1 };
-      if (url.startsWith('/api/poc/runs/POC-00001')) return { body: run1 };
-      if (url.startsWith('/api/poc/runs')) return { body: { items: started ? [run1] : [] } };
-    };
-    mount('/poc', '/poc', <PocScreen />);
-    expect(await screen.findByText('아직 실행이 없습니다 — 새 실행을 시작하세요')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: '새 실행 시작' }));
-    const steps = await screen.findByRole('list', { name: 'PoC 6단계 진행' });
-    expect(within(steps).getAllByRole('button')).toHaveLength(6);
-    // 현재 단계(②)가 표시되고, ①을 고르면 행위·Evidence
-    fireEvent.click(within(steps).getAllByRole('button')[0]);
-    expect(await screen.findByText('FEAT-00022 1.0.0 RELEASED')).toBeTruthy();
-    expect(screen.getByText('9/9')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: '다음 단계' }));
-    await waitFor(() => expect(calls.some((c) => c.init?.method === 'POST' && c.url.endsWith('/api/poc/runs/POC-00001/advance'))).toBe(true));
-  });
-
-  it('작성자는 실행할 수 없다', async () => {
-    handler = (url) => (url.startsWith('/api/poc/runs') ? { body: { items: [] } } : undefined);
-    mount('/poc', '/poc', <PocScreen />, 'author');
-    expect(((await screen.findByRole('button', { name: '새 실행 시작' })) as HTMLButtonElement).disabled).toBe(true);
-  });
-});
-
 const COMP = (id: string, status: string, pocSteps: number[]) => ({
   id,
   ko: `컴포넌트 ${id}`,
@@ -126,15 +67,15 @@ const COMP = (id: string, status: string, pocSteps: number[]) => ({
 });
 
 describe('42 컴포넌트 아키텍처', () => {
-  it('도메인별 카드, PoC 단계 필터는 관여하지 않는 컴포넌트를 흐리게, 카드를 열면 화면·시험', async () => {
+  it('도메인별 카드, 카드를 열면 화면·시험', async () => {
     handler = (url) => {
       if (url.startsWith('/api/components/activity'))
         return { body: { since: 'x', items: [{ id: 'D01-06', events: 5, lastAt: '2026-10-12T01:00:00Z', lastType: 'policy.deployed', audits: 2, refused: 0 }] } };
       if (url.startsWith('/api/components')) return { body: { items: [COMP('D01-06', 'implemented', [2, 3]), COMP('D03-03', 'implemented', [6]), COMP('D05-04', 'planned', [])] } };
     };
-    mount('/arch/components?step=6', '/arch/components', <ArchitectureScreen />);
+    mount('/arch/components', '/arch/components', <ArchitectureScreen />);
     const card = await screen.findByRole('button', { name: /D01-06 컴포넌트 D01-06 구현/ });
-    expect(card.getAttribute('data-dim')).toBe('true');
+    expect(card.getAttribute('data-dim')).toBe('false');
     expect(screen.getByRole('button', { name: /D03-03/ }).getAttribute('data-dim')).toBe('false');
     expect(screen.getByRole('button', { name: /D05-04 .* 계획/ }).getAttribute('data-status')).toBe('planned');
     // 핵심 메시지 하나(구현 n/전체) + 회색 요약 한 줄(3초 테스트)

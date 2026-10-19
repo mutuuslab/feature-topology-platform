@@ -36,7 +36,7 @@ last_updated: 2026-10-17
 - 프로세스: FPW.1 Feature 등록·분류
 - 시작: 앞 활동 완료
 - 입력: WP-FEAT-PROPOSAL → 출력: WP-FEAT-REG
-- 플랫폼: `createFeature`, `createVersion`, `updateDraft`, `/master/define`, `/features`
+- 플랫폼: `createFeature`, `createVersion`, `updateDraft`, `/master/define`, `/feature/propose`, `/features`
 1. 제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다
 2. Feature 등록 화면에서 이름·설명·관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다
 3. Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다

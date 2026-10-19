@@ -20,9 +20,9 @@ const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning',
 });
 
 // 역할이 걸린 조회(보안 이벤트·Data Act·차량 상태 등)는 그 경로가 허용하는 첫 역할로 받는다 — 정적 데모는 읽기 전용 공개본이다
-async function get<T = any>(url: string, name?: string): Promise<T> {
+async function get<T = any>(url: string, name?: string, headers?: Record<string, string>): Promise<T> {
   const role = (ROUTES.find((x: { name: string }) => x.name === name) as { roles?: string[] } | undefined)?.roles?.[0];
-  const r = await fetch(BASE + url, { headers: role ? { 'X-Actor-Id': 'usr-snapshot', 'X-Actor-Role': role } : {} });
+  const r = await fetch(BASE + url, { headers: { ...(role ? { 'X-Actor-Id': 'usr-snapshot', 'X-Actor-Role': role } : {}), ...headers } });
   if (!r.ok) throw new Error(`${url} → ${r.status}`);
   return r.json() as Promise<T>;
 }
@@ -38,9 +38,9 @@ async function main() {
   }
   rmSync(join(OUT, 'api-snapshot'), { recursive: true, force: true });
   let n = 0;
-  const save = async (name: string, params: Record<string, string> = {}, query: Record<string, any> = {}) => {
+  const save = async (name: string, params: Record<string, string> = {}, query: Record<string, any> = {}, headers?: Record<string, string>) => {
     const url = routeUrl(name, params, query);
-    const body = await get(url, name);
+    const body = await get(url, name, headers);
     const file = join(OUT, snapshotFile(url));
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, JSON.stringify(body));
@@ -54,6 +54,12 @@ async function main() {
   await save('precheck');
   await save('events', {}, { limit: 500 });
   await save('audit', {}, { limit: 500 });
+
+  // 업무 절차 — 개인 조회(내 차례·요약)라 데모 기본 역할(Feature 설계)로 찍는다. 정적 데모는 읽기 전용.
+  const PROC = { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' };
+  await save('procedureState', {}, {}, PROC);
+  await save('procedureSummary', {}, {}, PROC);
+  await save('procedureInbox', {}, {}, PROC);
 
   // Feature Registry 목록 — FeatureList의 질의 모양: { q, lifecycle, country, latestOnly }
   const all = await save('listFeatures', {}, { latestOnly: false });
@@ -152,8 +158,7 @@ async function main() {
   for (const v of vehicles.items) await save('vehicleSupport', { vin: v.vin });
   await save('unleashStatus');
   for (const p of policies.items) await save('policyUnleash', { id: p.policyId });
-  // P9 — PoC 실행 목록(정적 데모는 실행 불가)·42 컴포넌트 활동
-  await save('pocRuns');
+  // 42 컴포넌트 활동(아키텍처 화면)
   await save('componentActivity', {}, { minutes: 60 });
   // P10·P11·보고서 v1.1 화면 — e2e:static(정적 데모 하네스)이 메뉴·하위 화면·탭을 열어 찾은 요청 모양 그대로
   for (const reasonCategory of ['SAFETY', 'SECURITY', 'REGULATORY', 'COMMERCIAL', 'OPERATIONAL']) await save('killPreview', {}, { featureId: 'FEAT-00022', featureVersion: '1.0.0', reasonCategory });

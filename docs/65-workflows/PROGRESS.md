@@ -10,8 +10,21 @@
 - 커밋은 사용자 요청 시에만 한다.
 
 ## 현재 상태 — 플랫폼 반영 A·B단계 완료 (2026-10-18)
-- **계획:** `~/.claude/plans/feature-platform-crystalline-snowglobe.md` — A(결정 3건)·B(데이터 연동·정합성 시험) 완료, C1·C2 완료, 다음은 C3·C4.
-- **C1·C2 완료(2026-10-18):** FF `/procedures`·`/procedures/:id`·상단 바 '이 화면의 업무 절차' 패널 — `out/workflows.json`의 활동·스윔레인 좌표를 그대로 그린다. 활동의 `platform.screens`가 그 패널이 보여 줄 화면이다(경로 패턴 = FF 화면 경로). 다음 C3(검토함·알림)·C4(활동별 `platform.anchor` 추가 → 표준 따라하기).
+- **계획:** `~/.claude/plans/feature-platform-crystalline-snowglobe.md` — A·B·C1·C2 완료, **C3·C4와 실행 UI 잔여 1차 완료(2026-10-19)**.
+- **C1·C2 완료(2026-10-18):** FF `/procedures`·`/procedures/:id`·상단 바 '이 화면의 업무 절차' 패널 — `out/workflows.json`의 활동·스윔레인 좌표를 그대로 그린다. 활동의 `platform.screens`가 그 패널이 보여 줄 화면이다(경로 패턴 = FF 화면 경로).
+- **C3·C4·실행 UI 완료(2026-10-19):**
+  - **서버 저장:** migration `044_procedure`(`procedure_completion`·`procedure_overdue`), `backend/src/workflows/procedure.service.ts` —
+    `GET /api/procedures/state·inbox·summary`, `POST/DELETE /api/procedures/activities/:id/complete`.
+    완료는 조직 역할 R·A로 인가하고, 앞 활동이 남으면 422, 이미 완료면 409. Evidence·HSM 개인 서명(선택)·감사·이벤트를 한 트랜잭션에 남긴다.
+  - **C3:** `/procedures` “내 차례”(책임 A 준비 활동·기한 초과), 진행률의 할 일/검토/초과 수, 인계 알림(`PROCEDURE` 범주),
+    60초 SLA 초과 훑기(활동당 1회), 업무 절차 메뉴 배지(할 일+검토).
+  - **C4:** 모델 `platform.anchor`·`platform.ui`·`sla_hours`, 생성 색인 `backend/src/generated/workflow-index.ts`(서버가 211KB 문서를 안 읽게),
+    파일럿 10개 활동 앵커, 화면 패널 “표준 따라하기” → 서랍을 닫고 셸 가이드가 `data-tour`를 스포트라이트(`shell/spotlight.ts` 재사용).
+  - **메인 화면 절차 지도(2026-10-19):** `/`에 HARA(FPW.2)를 뺀 12개 절차를 생애주기·지원 가로 흐름으로 — Gate·완료·내 차례·“다음” 표시, 칸을 누르면 절차 상세.
+    구조는 생성 `contracts/src/generated/workflow-map.ts`(전체 13개 중 12개 표시), 진행률은 `summary.processes`. 211KB 문서는 첫 화면에 넣지 않는다.
+  - **검증:** backend `test/d04/procedure.spec.ts` 9건(프로세스별 지도 요약 포함), frontend `screensProcedures` 13건·`screensProcedureGuide` 1건·
+    `workflowScreens` 3건·`screensHome` 10건(지도), contracts `workflows.test` 11건, e2e `tests/procedures.spec.ts` 3건(메인 지도·빠른 완료·따라하기).
+    `python -I scripts/check.py` ALL GATES PASS, `npm run workflow:sync`·`build:contracts`·`openapi` 완료, verify 비-e2e 전 단계 통과, 셸 e2e 68건 통과.
 - **A단계 결과(FF 커밋 719079e, FF verify·verify:full 통과):**
   - 은퇴 → Retirement: 모델 문구 전부, 금지어에 '은퇴' 추가. FF는 lint 래칫 `platformTermLines`=0.
   - rotateKey: FF가 SECURITY_OFFICER를 허용 → FPW.11-A02 실행자 R-CSM.
@@ -30,7 +43,8 @@
 - **활동 상세**(절차 상세·이 화면의 업무 절차 패널): 모델의 `inputs`/`outputs`(산출물 이름), `outcomes`, `platform.actions`/`gates`, `next`를 표시하고 완료 토글을 둔다.
 - **메뉴**: 정본 30화면 계약(MENU 1.3)을 유지하려고 새 메뉴를 만들지 않고 '업무 절차' 메뉴의 기능을 내 업무 큐로 확장했다. 정의는 [`UI.md`](UI.md).
 - **시험**: `frontend/src/__tests__/screensProcedures.test.tsx` 10건(진행률·다음 할 일·입력/산출/action/다음·완료).
-- **남은 것**: 완료 상태의 서버 저장(활동 완료 API·감사), 화면 필드/버튼 단위 `ui` 매핑, Evidence·서명, 알림·SLA, 메뉴 배지용 요약 파일.
+- **남은 것(2026-10-19 갱신)**: 앵커·`ui` 커버리지 확대(81개 중 파일럿 10개), 파일 Evidence·자동 연결, 역할별 에스컬레이션 정책,
+  프로세스 착수 시각 기반 SLA(첫 활동), 실제 IAM 주체로의 서버 큐 인증 교체. (완료 저장·Evidence/서명·알림·SLA·배지는 위 C3·C4 절에서 완료)
 - **18규칙 감사(2026-10-18)**: 라이브 8화면 × light/dark × 1280/1600 — **FAIL 0 · WARN 32 · PASS 334**, axe serious/critical/moderate 0. WARN은 모두 표 인라인 링크의 타깃 크기(2.5.8 인라인 예외). 활동 상세 제목 `h4`→`h3`로 제목 단계 건너뜀 4건 해소. 산출물 `out/_uiux/`.
 
 ## 이전 상태 — 2단계 완료 (2026-10-18)

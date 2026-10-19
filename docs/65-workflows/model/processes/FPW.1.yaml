@@ -84,7 +84,12 @@ process:
       checks:
         - Registry에 PROPOSED Version이 생기고 소유자가 지정되었다
         - 만료일이 필요한 Flag 유형에 만료일과 Retirement 계획이 비어 있지 않다
-      platform: {actions: [createFeature, createVersion, updateDraft], screens: [/master/define, /features]}
+      platform:
+        actions: [createFeature, createVersion, updateDraft]
+        screens: [/master/define, /feature/propose, /features]
+        anchor: feature-form
+        ui: {fields: [name, description, ownerId], buttons: [createFeature]}
+      sla_hours: 48
       next: [FPW.1-A02, FPW.1-A03]
     - id: FPW.1-A02
       name: 대상 차량 사양·의존 등록
@@ -99,7 +104,12 @@ process:
         - Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다
       checks:
         - 모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다
-      platform: {actions: [createDependency], screens: [/variant-conditions, /arch/topology]}
+      platform:
+        actions: [createDependency]
+        screens: [/variant-conditions, /arch/topology]
+        anchor: variant-conditions
+        ui: {fields: [featureId, version]}
+      sla_hours: 24
       next: [FPW.1-A05]
     - id: FPW.1-A03
       name: 안전 분류(네 축) 확정
@@ -116,7 +126,12 @@ process:
       checks:
         - 네 축 중 빈 값이 없고 분류 확정 서명이 남았다
         - F 등급 하향이면 재분석 Evidence가 연결되었다
-      platform: {actions: [updateSafetyProfile, confirmSafetyProfile], screens: [/features/:id/:ver]}
+      platform:
+        actions: [updateSafetyProfile, confirmSafetyProfile]
+        screens: [/features/:id/:ver]
+        anchor: safety-tab
+        ui: {buttons: [confirmSafetyProfile]}
+      sla_hours: 48
       next: [FPW.1-A04]
     - id: FPW.1-A04
       name: 법규 의무 기능 판정

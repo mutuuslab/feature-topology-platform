@@ -27,6 +27,9 @@ BANNED = [re.compile(p, re.I) for p in (r"digital\s*twin", r"디지털\s*트윈"
                                         r"은퇴")]   # 은퇴 → Retirement (플랫폼 용어, 사용자 결정 2026-10-18)
 ACT_ID = re.compile(r"^FPW\.\d+-A\d{2}$")
 WP_KEY = re.compile(r"^WP-[A-Z0-9-]+$")
+ANCHOR = re.compile(r"^[a-z0-9][a-z0-9-]{1,47}$")      # 화면의 data-tour 앵커
+UI_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]{0,63}$")  # 필드·버튼 식별자
+SLA_MAX_HOURS = 24 * 30
 COPY_RUN = 15          # 보고서 규칙 문장과 연속 일치를 허용하지 않는 어절 수
 NAME_MAX = 24
 TEXT_LISTS = ("steps", "checks", "content", "entry_criteria", "exit_criteria")
@@ -328,6 +331,32 @@ def validate(m: dict, partial: bool = False) -> Report:
             for path in plat.get("screens", []):
                 if path not in m["screen_by_path"]:
                     err(f"{aid}: 화면 {path}이(가) frontend routes에 없다")
+            anchor = plat.get("anchor")
+            if anchor is not None:
+                if not isinstance(anchor, str) or not ANCHOR.match(anchor):
+                    err(f"{aid}: platform.anchor '{anchor}' 형식은 소문자·숫자·하이픈(2~48자)")
+                if not plat.get("screens"):
+                    err(f"{aid}: platform.anchor가 있는데 screens가 없다 — 따라 할 화면을 알 수 없다")
+            ui = plat.get("ui")
+            if ui is not None:
+                if not isinstance(ui, dict):
+                    err(f"{aid}: platform.ui는 fields·buttons를 가진 맵이다")
+                else:
+                    for key in ui:
+                        if key not in ("fields", "buttons"):
+                            err(f"{aid}: platform.ui.{key} — fields·buttons만 쓴다")
+                    for key in ("fields", "buttons"):
+                        vals = ui.get(key, [])
+                        if not isinstance(vals, list) or len(vals) > 8:
+                            err(f"{aid}: platform.ui.{key}는 8개 이하 목록이다")
+                        else:
+                            for v in vals:
+                                if not isinstance(v, str) or not UI_KEY.match(v):
+                                    err(f"{aid}: platform.ui.{key} '{v}'는 식별자(영문·숫자·_ . -)다")
+            sla = a.get("sla_hours")
+            if sla is not None:
+                if not isinstance(sla, int) or isinstance(sla, bool) or not 1 <= sla <= SLA_MAX_HOURS:
+                    err(f"{aid}: sla_hours는 1~{SLA_MAX_HOURS} 정수(시간)다")
             for g in plat.get("gates", []):
                 if g not in {x["id"] for x in m["iam"]["gates"]}:
                     err(f"{aid}: 플랫폼 Gate {g} 없음")

@@ -34,7 +34,7 @@ describe('⌘K 이동·실행', () => {
   it('검색어를 넣으면 Feature 검색이 맨 앞, 이름이 맞는 화면이 뒤에 온다', () => {
     const items = paletteItems('feat-00022');
     expect(items[0].to).toBe('/features?q=FEAT-00022');
-    expect(paletteItems('PoC').some((i) => i.to === '/poc')).toBe(true);
+    expect(paletteItems('업무 절차').some((i) => i.to === '/procedures')).toBe(true);
   });
 
   it('키보드만으로: Ctrl+K → 입력 → ↓ → Enter로 이동하고 닫힌다', () => {
@@ -42,16 +42,16 @@ describe('⌘K 이동·실행', () => {
     openPalette();
     const box = screen.getByRole('combobox', { name: '이동·실행' });
     expect(document.activeElement).toBe(box);
-    fireEvent.change(box, { target: { value: 'PoC' } });
+    fireEvent.change(box, { target: { value: '업무 절차' } });
     const opts = screen.getAllByRole('option');
     expect(opts[0].getAttribute('aria-selected')).toBe('true');
     fireEvent.keyDown(box, { key: 'ArrowDown' });
     const target = screen.getAllByRole('option')[1];
     expect(target.getAttribute('aria-selected')).toBe('true');
     expect(box.getAttribute('aria-activedescendant')).toBe(target.id);
-    expect(target.textContent).toContain('PoC');
+    expect(target.textContent).toContain('업무 절차');
     fireEvent.keyDown(box, { key: 'Enter' });
-    expect(screen.getByTestId('where').textContent).toBe('/poc');
+    expect(screen.getByTestId('where').textContent).toBe('/procedures');
     expect(screen.queryByRole('combobox')).toBeNull();
   });
 

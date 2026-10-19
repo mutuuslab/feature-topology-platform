@@ -9,10 +9,14 @@ import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { ops5y } from '../../copy/ops5y';
+import { procedures as PR } from '../../copy/procedures';
+import { useProcedureSummary } from '../../data/procedureProgress';
 import { formatCount, formatExact } from '../../design/format';
 import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, SummaryLine, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
+import { DashboardHero } from './DashboardHero';
+import { ProcedureMap } from './ProcedureMap';
 
 const I = ko.master.inbox;
 const O = ops5y.home;
@@ -95,6 +99,8 @@ export function useInbox() {
 
 export function ApprovalInboxScreen() {
   const [scope, setScope] = useState<'mine' | 'all'>('mine');
+  const { role } = useAppShell();
+  const proc = useProcedureSummary(role);
   const inbox = useInbox();
   const rows = scope === 'mine' ? inbox.items.filter((i) => i.mine) : inbox.items;
   const mineCount = inbox.items.filter((i) => i.mine).length;
@@ -109,6 +115,11 @@ export function ApprovalInboxScreen() {
         message={inbox.loading ? { tone: 'neutral', value: '—', text: I.key.mine } : mineCount ? { tone: 'warn', value: mineCount, text: I.key.mine } : { tone: 'ok', text: I.key.clear }}
         actions={<Segmented label={I.scope} options={(['mine', 'all'] as const).map((v) => ({ value: v, label: I.scopes[v], count: v === 'all' ? inbox.items.length : undefined }))} value={scope} onChange={(v) => setScope(v as typeof scope)} />}
       />
+      {proc && proc.review > 0 && (
+        <Panel title={PR.inbox.title} eyebrow={PR.inbox.hint} actions={<Link to="/procedures">{PR.inbox.open}</Link>}>
+          <p>{PR.inbox.summary(proc.review, proc.overdue)}</p>
+        </Panel>
+      )}
       <AsyncView state={inbox.state === 'ready' && rows.length === 0 ? 'empty' : inbox.state} empty={{ title: I.empty }} error={inbox.error?.message} onRetry={inbox.retry}>
         {queues
           .filter((q) => rows.some((r) => r.queue === q))
@@ -137,17 +148,20 @@ export function ApprovalInboxScreen() {
 // ───────── 내 대시보드 ─────────
 
 /** 핵심 메시지 — 걸린 긴급 차단이 가장 먼저, 없으면 내 차례인 검토 */
-function homeMessage(activeKills: number, mine: number, loaded: boolean): KeyMessageSpec {
+function homeMessage(activeKills: number, mine: number, procMine: number, loaded: boolean): KeyMessageSpec {
   const H = ko.master.home;
   // 데이터가 오기 전에는 판정하지 않는다 — 빈 목록을 '없음'으로 읽으면 거짓 안심
   if (!loaded) return { tone: 'neutral', value: '—', text: H.key.inbox };
   if (activeKills) return { tone: 'danger', value: activeKills, text: H.key.kills, action: <Link to="/ops/kill">{H.key.open}</Link> };
   if (mine) return { tone: 'warn', value: mine, text: H.key.inbox, action: <Link to="/admin/approval">{H.key.open}</Link> };
+  if (procMine) return { tone: 'warn', value: procMine, text: PR.inbox.title, action: <Link to="/procedures">{PR.inbox.go}</Link> };
   return { tone: 'ok', text: H.key.clear };
 }
 
 export function HomeScreen() {
   const H = ko.master.home;
+  const { role } = useAppShell();
+  const proc = useProcedureSummary(role);
   const inbox = useInbox();
   const feats = useApi<{ items: { featureId: string; version: string; lifecycle: string }[] }>('listFeatures', { query: { latestOnly: true } });
   const pols = useApi<{ items: { status: string }[] }>('listPolicies', { query: { status: 'DEPLOYED' } });
@@ -162,19 +176,22 @@ export function HomeScreen() {
   // 상업 비활성화(체험 만료 등)는 긴급 차단이 아니다 — 5년 운영이면 수십 건이 늘 걸려 있다
   const activeKills = (kills.data?.items ?? []).filter((k) => k.reasonCategory !== 'COMMERCIAL').length;
   const mine = inbox.items.filter((i) => i.mine).length;
+  const procMine = proc ? proc.todo + proc.review : 0;
+  const procValue = proc ? procMine : '—';
   const LINKS: [string, string][] = [
     ['/admin/approval', I.title],
     ['/features', 'Feature Registry'],
     ['/fleet/live', ko.fleet.title],
     ['/ops/kill', ko.kill.title],
-    ['/poc', ko.poc.title],
     ['/integration/openfeature', 'OpenFeature'],
   ];
   return (
     <div className="ds-screen">
-      <PageHeader title={H.title} lead={H.lead} message={homeMessage(activeKills, mine, !!kills.data && !inbox.loading)} />
+      <PageHeader title={H.title} lead={H.lead} message={homeMessage(activeKills, mine, procMine, !!kills.data && !inbox.loading)} />
+      <DashboardHero />
       <SummaryLine
         items={[
+          { k: PR.inbox.title, v: procValue },
           { k: H.kpi.features, v: f.length },
           { k: H.kpi.released, v: byLc.RELEASED ?? 0 },
           { k: H.kpi.policies, v: pols.data?.items.length ?? '—' },
@@ -184,6 +201,7 @@ export function HomeScreen() {
           { k: H.kpi.online, v: fleet.data ? fleet.data.items.filter((v) => v.fleet !== 'SAMPLE').length : '—' },
         ]}
       />
+      <ProcedureMap summary={proc} role={role} />
       <div className="ds-split">
         <Panel title={H.lifecycle} id="home-lc">
           <ul className="ds-chain">
@@ -224,18 +242,20 @@ export function ProposeScreen() {
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
   const text = (k: keyof typeof f, label: string, wide = false) => (
     <Field label={label}>
-      <input className={`ds-input${wide ? '' : ' ds-input--mono'}`} value={f[k]} onChange={set(k)} />
+      <input className={`ds-input${wide ? '' : ' ds-input--mono'}`} name={k} value={f[k]} onChange={set(k)} />
     </Field>
   );
   return (
     <div className="ds-screen">
       <PageHeader codes="D01-01 · PROPOSED 0.1.0" title={P.title} lead={P.lead} message={perm.ok ? { tone: 'accent', text: P.key.can } : { tone: 'warn', text: P.key.cannot }} />
-      <Panel id="propose-form">
+      <Panel id="propose-form" tour="feature-form">
         <div className="ds-split">
           <div className="ds-stack">
-            {text('name', P.name, true)}
+            <Field label={P.name}>
+              <input className="ds-input" name="name" value={f.name} onChange={set('name')} />
+            </Field>
             <Field label={P.description}>
-              <textarea className="ds-input" value={f.description} onChange={set('description')} rows={3} />
+              <textarea className="ds-input" name="description" value={f.description} onChange={set('description')} rows={3} />
             </Field>
             {text('requirementIds', P.requirements)}
             {text('tags', P.tags)}
@@ -244,7 +264,9 @@ export function ProposeScreen() {
             {text('country', P.country)}
             {text('vehicleModel', P.vehicleModel)}
             {text('trim', P.trim)}
-            {text('ownerId', P.owner, true)}
+            <Field label={P.owner}>
+              <input className="ds-input" name="ownerId" value={f.ownerId} onChange={set('ownerId')} />
+            </Field>
             <Select label={P.asil} value={f.asil} onChange={set('asil')}>
               {['QM', 'A', 'B', 'C', 'D'].map((a) => (
                 <option key={a} value={a}>{a}</option>
@@ -265,6 +287,7 @@ export function ProposeScreen() {
         <ErrorNote error={create.error} />
         <Button
           variant="primary"
+          data-ui="createFeature"
           disabled={!perm.ok || STATIC_MODE || !f.name.trim() || !f.description.trim() || !f.ownerId.trim() || create.isPending}
           title={perm.hint}
           onClick={() =>

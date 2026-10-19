@@ -11,7 +11,14 @@ export default defineConfig({
   fullyParallel: true,
   workers: process.env.CI ? 2 : 4,
   reporter: [['list']],
-  use: { baseURL: `http://localhost:${WEB}`, locale: 'ko-KR', timezoneId: 'Asia/Seoul', ...devices['Desktop Chrome'] },
+  use: {
+    baseURL: `http://localhost:${WEB}`,
+    // 정적 데모도 로그인 게이트가 있다 — 하네스는 미리 로그인한 상태로 메뉴를 돈다.
+    storageState: { cookies: [], origins: [{ origin: `http://localhost:${WEB}`, localStorage: [{ name: 'ff.auth', value: '1' }] }] },
+    locale: 'ko-KR',
+    timezoneId: 'Asia/Seoul',
+    ...devices['Desktop Chrome'],
+  },
   webServer: {
     command: `npm run build -w feature-topology-backend && npm run snapshot:api && npm exec -w feature-topology-frontend -- vite build --outDir dist-static --emptyOutDir && npm exec -w feature-topology-frontend -- vite preview --outDir dist-static --port ${WEB} --strictPort`,
     cwd: '..',

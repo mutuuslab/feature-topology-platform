@@ -10,10 +10,14 @@ import { Button, Icon } from '../design';
 import { useMotion } from '../state/motion';
 import { roleHome, useAppApi, useAppShell } from '../store';
 import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '../routes';
+import { logout } from '../auth';
+import { login as L } from '../copy/login';
 import { GuideDock, RuleDrawer } from './GuideDock';
+import { ProcedureGuideHost } from './ProcedureGuideHost';
 import { FeaturePeek } from './FeaturePeek';
 import { learnStore, useExplain, useLearn } from './learn';
 import { NotificationBell } from './NotificationBell';
+import { useProcedureSummary } from '../data/procedureProgress';
 import './shell.css';
 
 // 업무 절차 데이터는 패널을 열 때만 불러온다(첫 화면 번들 예산)
@@ -113,6 +117,9 @@ export function Shell({ children }: { children: ReactNode }) {
   }, [group, myRole, role]);
   const trail = trailOf(loc.pathname);
   const me = profileOf(role);
+  // 업무 절차 메뉴 배지 — 내가 지금 할 수 있는 활동(할 일 + 검토). 서버가 정본이라 역할을 바꾸면 다시 읽는다.
+  const proc = useProcedureSummary(role);
+  const procCount = proc ? proc.todo + proc.review : 0;
 
   const search = () => {
     const v = q.trim();
@@ -163,6 +170,15 @@ export function Shell({ children }: { children: ReactNode }) {
           <Button variant="ghost" className="sh-lang" aria-label={ko.shell.language} title={ko.shell.language} onClick={() => dispatch({ t: 'LANG', lang: lang === 'ko' ? 'en' : 'ko' })}>
             {lang.toUpperCase()}
           </Button>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              logout();
+              nav('/login');
+            }}
+          >
+            {L.logout}
+          </Button>
           <NotificationBell />
         </div>
       </header>
@@ -208,8 +224,18 @@ export function Shell({ children }: { children: ReactNode }) {
         <ul className="sh-panel__list">
           {items.map((r) => (
             <li key={r.path}>
-              <NavLink to={r.menu!} end={r.menu === '/'} className={() => (current && (current.path === r.path || isUnder(current.path, r.path)) ? 'active' : '')}>
+              <NavLink
+                to={r.menu!}
+                end={r.menu === '/'}
+                aria-label={r.menu === '/procedures' && procCount ? `${r.title} — 내 차례 ${procCount}건` : undefined}
+                className={() => (current && (current.path === r.path || isUnder(current.path, r.path)) ? 'active' : '')}
+              >
                 {r.title}
+                {r.menu === '/procedures' && procCount > 0 && (
+                  <span className="sh-panel__count" data-overdue={proc && proc.overdue > 0 ? '' : undefined} aria-hidden>
+                    {procCount}
+                  </span>
+                )}
               </NavLink>
             </li>
           ))}
@@ -240,6 +266,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <Suspense fallback={<div className="ds-skel" data-state="loading"><span /><span /><span /></div>}>{children}</Suspense>
       </main>
       <GuideDock />
+      <ProcedureGuideHost />
       <RuleDrawer />
       {procOpen && (
         <Suspense fallback={null}>

@@ -55,7 +55,14 @@ def activity_json(a: dict) -> dict:
         "outputs": a.get("outputs", []),
         "steps": a.get("steps", []),
         "checks": a.get("checks", []),
-        "platform": {"actions": plat.get("actions", []), "screens": plat.get("screens", []), "gates": plat.get("gates", [])},
+        "platform": {
+            "actions": plat.get("actions", []),
+            "screens": plat.get("screens", []),
+            "gates": plat.get("gates", []),
+            "anchor": plat.get("anchor") or None,
+            "ui": {"fields": (plat.get("ui") or {}).get("fields", []), "buttons": (plat.get("ui") or {}).get("buttons", [])},
+        },
+        "slaHours": a.get("sla_hours"),
         "next": a.get("next", []),
     }
 

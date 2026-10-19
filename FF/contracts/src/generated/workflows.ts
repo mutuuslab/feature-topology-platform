@@ -425,10 +425,23 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "screens": [
        "/master/define",
+       "/feature/propose",
        "/features"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "feature-form",
+      "ui": {
+       "fields": [
+        "name",
+        "description",
+        "ownerId"
+       ],
+       "buttons": [
+        "createFeature"
+       ]
+      }
      },
+     "slaHours": 48,
      "next": [
       "FPW.1-A02",
       "FPW.1-A03"
@@ -478,8 +491,17 @@ export const WORKFLOWS: WorkflowDoc = {
        "/variant-conditions",
        "/arch/topology"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "variant-conditions",
+      "ui": {
+       "fields": [
+        "featureId",
+        "version"
+       ],
+       "buttons": []
+      }
      },
+     "slaHours": 24,
      "next": [
       "FPW.1-A05"
      ]
@@ -536,8 +558,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/features/:id/:ver"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "safety-tab",
+      "ui": {
+       "fields": [],
+       "buttons": [
+        "confirmSafetyProfile"
+       ]
+      }
      },
+     "slaHours": 48,
      "next": [
       "FPW.1-A04"
      ]
@@ -584,8 +614,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.1-A05"
      ]
@@ -649,8 +685,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "gates": [
        "G1",
        "G3"
-      ]
+      ],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -1071,8 +1113,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/analysis/impact",
        "/arch/topology"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.2-A02",
       "FPW.2-A03",
@@ -1125,8 +1173,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.2-A05"
      ]
@@ -1173,8 +1227,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.2-A05"
      ]
@@ -1221,8 +1281,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.2-A05"
      ]
@@ -1280,8 +1346,14 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "gates": [
        "G7"
-      ]
+      ],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -1679,8 +1751,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/trace/design",
        "/change/cr"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.3-A02"
      ]
@@ -1729,8 +1807,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/trace/design"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.3-A03"
      ]
@@ -1785,8 +1869,14 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "gates": [
        "G2"
-      ]
+      ],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.3-A04"
      ]
@@ -1844,8 +1934,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/features/:id/:ver",
        "/admin/approval"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -2168,8 +2264,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/master/control-points",
        "/trace/design"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.4-A03"
      ]
@@ -2218,8 +2320,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/arch/components"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.4-A05"
      ]
@@ -2274,8 +2382,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/policies/new",
        "/policies"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.4-A04"
      ]
@@ -2324,8 +2438,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/policies/:id"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.4-A05"
      ]
@@ -2387,8 +2507,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "gates": [
        "G4",
        "G7"
-      ]
+      ],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -2811,8 +2937,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.5-A02",
       "FPW.5-A03"
@@ -2867,8 +2999,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/arch/topology",
        "/validations"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.5-A04"
      ]
@@ -2920,8 +3058,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/master/artifacts"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.5-A04"
      ]
@@ -2980,8 +3124,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/validations/virtual"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "virtual-run",
+      "ui": {
+       "fields": [],
+       "buttons": [
+        "runVirtual"
+       ]
+      }
      },
+     "slaHours": 24,
      "next": [
       "FPW.5-A05"
      ]
@@ -3034,8 +3186,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/verify/evidence"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.5-A06"
      ]
@@ -3098,8 +3256,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "gates": [
        "G5",
        "G6"
-      ]
+      ],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -3529,8 +3693,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/baselines"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": 24,
      "next": [
       "FPW.6-A02"
      ]
@@ -3579,8 +3749,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/baselines"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "baseline-approve",
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": 24,
      "next": [
       "FPW.6-A03",
       "FPW.6-A04"
@@ -3630,8 +3806,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.6-A05"
      ]
@@ -3681,8 +3863,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/deployments",
        "/master/artifacts"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.6-A05"
      ]
@@ -3736,8 +3924,14 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "gates": [
        "G8"
-      ]
+      ],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.6-A06"
      ]
@@ -3792,8 +3986,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/deployments",
        "/integration/connectors"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -4332,8 +4532,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/activation/decide"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.7-A08"
      ]
@@ -4384,8 +4590,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/experiments"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.7-A08"
      ]
@@ -4438,8 +4650,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/verify/evidence",
        "/verify/compliance"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.7-A04"
      ]
@@ -4488,8 +4706,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.7-A08"
      ]
@@ -4540,8 +4764,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/products/new",
        "/entitlements"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.7-A06"
      ]
@@ -4589,8 +4819,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/products/:id/:ver"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.7-A08"
      ]
@@ -4639,8 +4875,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.7-A08"
      ]
@@ -4701,8 +4943,14 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "gates": [
        "G9"
-      ]
+      ],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.7-A12"
      ]
@@ -4755,8 +5003,18 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/features/:id/:ver"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "release-signoff",
+      "ui": {
+       "fields": [
+        "reason"
+       ],
+       "buttons": [
+        "signRelease"
+       ]
+      }
      },
+     "slaHours": 24,
      "next": [
       "FPW.7-A09"
      ]
@@ -4806,8 +5064,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/features/:id/:ver"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.7-A10",
       "FPW.7-A11"
@@ -4858,8 +5122,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/products/:id/:ver"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -4912,8 +5182,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/activation/decide",
        "/fleet/live"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -5776,8 +6052,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/ops/safety-kpi",
        "/ops/incidents"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.8-A02"
      ]
@@ -5833,8 +6115,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/ops/kill"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.8-A03"
      ]
@@ -5881,8 +6169,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.8-A04"
      ]
@@ -5934,8 +6228,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/ops/kill"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "kill-request",
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": 2,
      "next": [
       "FPW.8-A05"
      ]
@@ -5990,8 +6290,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/ops/kill"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "kill-approve",
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": 2,
      "next": [
       "FPW.8-A06",
       "FPW.8-A07"
@@ -6045,8 +6351,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/fleet/live",
        "/deployments"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "vehicle-status-v2",
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": 4,
      "next": [
       "FPW.8-A08"
      ]
@@ -6098,8 +6410,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/audit/oversight"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -6149,8 +6467,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/ops/kill"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "kill-restore",
+      "ui": {
+       "fields": [],
+       "buttons": [
+        "requestRestore"
+       ]
+      }
      },
+     "slaHours": 4,
      "next": [
       "FPW.8-A09"
      ]
@@ -6205,8 +6531,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/ops/kill"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.8-A10"
      ]
@@ -6258,8 +6590,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/fleet/live"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": "vehicle-status-v2",
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": 24,
      "next": []
     },
     {
@@ -6309,8 +6647,14 @@ export const WORKFLOWS: WorkflowDoc = {
        "/ops/kill",
        "/audit"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -6909,8 +7253,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/quality/feedback"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -6960,8 +7310,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/flag-retirements"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.9-A03"
      ]
@@ -7013,8 +7369,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/flag-retirements"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.9-A04"
      ]
@@ -7065,8 +7427,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/flag-retirements"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.9-A05"
      ]
@@ -7115,8 +7483,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/features/:id/:ver"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -7562,8 +7936,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.10-A02"
      ]
@@ -7615,8 +7995,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.10-A03",
       "FPW.10-A04"
@@ -7663,8 +8049,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.10-A06"
      ]
@@ -7712,8 +8104,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.10-A06"
      ]
@@ -7760,8 +8158,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -7818,8 +8222,14 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "gates": [
        "G6"
-      ]
+      ],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.10-A07"
      ]
@@ -7866,8 +8276,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -8356,8 +8772,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/admin/security"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.11-A02"
      ]
@@ -8408,8 +8830,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/admin/security"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -8459,8 +8887,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/admin/security"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.11-A05"
      ]
@@ -8514,8 +8948,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/admin/security"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.11-A05"
      ]
@@ -8563,8 +9003,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -8609,8 +9055,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -9085,8 +9537,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/ops/safety-kpi"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -9133,8 +9591,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/integration/openfeature"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -9179,8 +9643,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -9230,8 +9700,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/admin/data"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -9280,8 +9756,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/admin/data"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],
@@ -9743,8 +10225,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.13-A02"
      ]
@@ -9797,8 +10285,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/verify/compliance"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": [
       "FPW.13-A04"
      ]
@@ -9851,8 +10345,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/verify/compliance"
       ],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     },
     {
@@ -9899,8 +10399,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [],
-      "gates": []
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
      },
+     "slaHours": null,
      "next": []
     }
    ],

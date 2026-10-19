@@ -35,6 +35,7 @@ import { RetirementRequestBody, RetirementStepBody } from './rules/retirement';
 import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { ReleaseSignoffBody } from './schemas/release-signoff';
+import { ProcedureCompleteBody } from './schemas/procedure';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { KillCommandV2, StatusReportV2 } from './schemas/wire';
@@ -92,6 +93,13 @@ export const ROUTES: RouteDef[] = [
   { name: 'signRelease', method: 'POST', path: '/api/features/:id/versions/:ver/release-signoff', summary: 'Release Sign-off — Feature Owner가 G8·G9 PASS 뒤 출시 책임을 개인 서명으로 확인(보고서 6.1 G7)', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: ReleaseSignoffBody },
   { name: 'audit', method: 'GET', path: '/api/audit', summary: '감사 이력', component: 'D01-10', query: ['target', 'actorId', 'result', 'limit'] },
   { name: 'auditChain', method: 'GET', path: '/api/audit/chain', summary: '감사 해시 체인 무결성 (FFG-PLT-015)', component: 'D01-10' },
+
+  // 업무 절차 실행 (docs/65-workflows) — 완료는 서버 저장·감사·이벤트, 검토함은 내 역할 기준
+  { name: 'procedureState', method: 'GET', path: '/api/procedures/state', summary: '업무 절차 활동 완료 상태(서버 저장) — Evidence·서명 포함', component: 'D04-04', personal: true },
+  { name: 'procedureInbox', method: 'GET', path: '/api/procedures/inbox', summary: '내 업무 절차 검토함 — 준비된 수행(R)·책임(A) 활동, SLA 기한·초과', component: 'D04-04', personal: true },
+  { name: 'procedureSummary', method: 'GET', path: '/api/procedures/summary', summary: '내 업무 절차 요약 — 메뉴 배지(할 일·검토·기한 초과)', component: 'D04-04', personal: true },
+  { name: 'completeProcedureActivity', method: 'POST', path: '/api/procedures/activities/:id/complete', summary: '활동 완료 — Evidence·개인 서명(선택), 감사·인계 알림', component: 'D04-04', roles: HUMAN_ROLES, body: ProcedureCompleteBody },
+  { name: 'undoProcedureActivity', method: 'DELETE', path: '/api/procedures/activities/:id/complete', summary: '활동 완료 취소 — 감사 기록, 다음 활동 인계를 되돌린다', component: 'D04-04', roles: HUMAN_ROLES, body: EmptyBody },
 
   // Feature Registry (D01-01)
   { name: 'listFeatures', method: 'GET', path: '/api/features', summary: 'Feature 버전 목록', component: 'D01-01', query: ['q', 'lifecycle', 'country', 'vehicleModel', 'latestOnly'] },
@@ -267,11 +275,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'iamMe', method: 'GET', path: '/api/iam/me', summary: '현재 행위자·허용 작업', component: 'D06-09' },
   { name: 'variantMatrix', method: 'GET', path: '/api/variants/:featureId/:version', summary: 'Variant·지원 조건 × Fleet 매트릭스', component: 'D02-01' },
   { name: 'vehicleSupport', method: 'GET', path: '/api/support/:vin', summary: '차량별 배포 Feature 지원 여부', component: 'D02-02' },
-  // PoC 6단계 러너 (P9) — 실제 서비스를 역할별 행위자로 차례로 실행·상태 저장, 42 컴포넌트 활동
-  { name: 'pocRuns', method: 'GET', path: '/api/poc/runs', summary: 'PoC 실행 목록', component: 'KERNEL' },
-  { name: 'pocRun', method: 'GET', path: '/api/poc/runs/:id', summary: 'PoC 실행 — 단계·행위·Evidence', component: 'KERNEL' },
-  { name: 'startPoc', method: 'POST', path: '/api/poc/runs', summary: 'PoC 실행 시작 (이전 PoC 차단 복구 후)', component: 'KERNEL', roles: ['OPERATOR', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER'], body: EmptyBody },
-  { name: 'advancePoc', method: 'POST', path: '/api/poc/runs/:id/advance', summary: 'PoC 다음 단계 실행 (진행 중 단계는 완료 확인)', component: 'KERNEL', roles: ['OPERATOR', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER'], body: EmptyBody },
+  // 42 컴포넌트 활동 (아키텍처 화면)
   { name: 'componentActivity', method: 'GET', path: '/api/components/activity', summary: '컴포넌트별 최근 활동 (이벤트·감사)', component: 'KERNEL', query: ['minutes'] },
   // P10 — 실험·효과(D01-07)
   { name: 'experiments', method: 'GET', path: '/api/experiments', summary: '실험 목록 (A/B·Shadow)', component: 'D01-07', query: ['policyId', 'status'] },

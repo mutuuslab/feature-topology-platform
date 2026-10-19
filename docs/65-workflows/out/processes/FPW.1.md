@@ -49,7 +49,7 @@ flowchart LR
 
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
-| FPW.1-A01 | Feature 등록·초안 작성 | R Feature Owner · A Feature Owner · C 아키텍트, 요구 Owner · I Safety Manager | WP-FEAT-PROPOSAL | WP-FEAT-REG | `createFeature`, `createVersion`, `updateDraft`, `/master/define`, `/features` | FFG-CLS-008 |
+| FPW.1-A01 | Feature 등록·초안 작성 | R Feature Owner · A Feature Owner · C 아키텍트, 요구 Owner · I Safety Manager | WP-FEAT-PROPOSAL | WP-FEAT-REG | `createFeature`, `createVersion`, `updateDraft`, `/master/define`, `/feature/propose`, `/features` | FFG-CLS-008 |
 | FPW.1-A02 | 대상 차량 사양·의존 등록 | R 기준정보 담당 · A Feature Owner · C 아키텍트 · I Safety Manager | WP-FEAT-REG | WP-FEAT-SCOPE | `createDependency`, `/variant-conditions`, `/arch/topology` | – |
 | FPW.1-A03 | 안전 분류(네 축) 확정 | R Safety Manager · A Safety Manager · C Feature Owner, 아키텍트 · I 요구 Owner | WP-FEAT-REG, WP-FEAT-SCOPE | WP-SAFETY-PROFILE | `updateSafetyProfile`, `confirmSafetyProfile`, `/features/:id/:ver` | FFG-CLS-001, FFG-CLS-003, FFG-CLS-009 |
 | FPW.1-A04 | 법규 의무 기능 판정 | R 법규 담당 · A 법규 담당 · C Safety Manager · I Feature Owner | WP-SAFETY-PROFILE, WP-COMPLIANCE-PROFILE | WP-REG-CLASS | 플랫폼 밖 | FFG-CLS-005 |

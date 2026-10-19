@@ -27,7 +27,17 @@ export interface WorkflowActivity {
   steps: string[];
   checks: string[];
   /** 플랫폼에서 이 활동을 하는 곳 — actions는 contracts ROUTES 이름, screens는 프론트 화면 경로 패턴 */
-  platform: { actions: string[]; screens: string[]; gates: string[] };
+  platform: {
+    actions: string[];
+    screens: string[];
+    gates: string[];
+    /** 화면에서 이 활동을 따라 할 때 스포트라이트할 data-tour 앵커. 없으면 null(따라하기 미지원) */
+    anchor: string | null;
+    /** 화면의 입력 필드·버튼 단위 매핑 — 모델 platform.ui 그대로. 비어 있으면 필드 수준 연결 없음 */
+    ui: { fields: string[]; buttons: string[] };
+  };
+  /** 활동이 준비된 뒤 완료까지 허용하는 시간(시간 단위). 없으면 null — 알림·SLA 계산에 쓴다 */
+  slaHours: number | null;
   next: string[];
 }
 
@@ -117,6 +127,98 @@ export function myActivities(doc: WorkflowDoc, roleIds: readonly string[]): Acti
     const k = raciOf(activity, roleIds);
     return k === 'R' || k === 'A';
   });
+}
+
+// ── 서버용 색인 ─────────────────────────────────────────────
+// 211 KB 전체 문서를 백엔드가 매번 들고 다니지 않도록, workflow-sync가 backend/src/generated/workflow-index.ts에
+// 활동·페르소나·역할만 담은 작은 색인을 만든다. 화면은 전체 문서를, 서버는 이 색인을 쓴다(같은 JSON에서 생성).
+
+export interface WorkflowIndexActivity {
+  id: string;
+  processId: string;
+  processName: string;
+  name: string;
+  trigger: string | null;
+  gateDecision: string | null;
+  raci: WorkflowActivity['raci'];
+  next: string[];
+  screens: string[];
+  actions: string[];
+  anchor: string | null;
+  slaHours: number | null;
+}
+
+export interface WorkflowIndexDoc {
+  schema: number;
+  personas: Record<string, string[]>;
+  roles: { id: string; name: string; platformRoles: string[] }[];
+  processes: { id: string; name: string }[];
+  activities: WorkflowIndexActivity[];
+}
+
+export function workflowIndexOf(doc: WorkflowDoc): WorkflowIndexDoc {
+  return {
+    schema: doc.schema,
+    personas: doc.personas,
+    roles: doc.roles.map((r) => ({ id: r.id, name: r.name, platformRoles: r.platformRoles })),
+    processes: doc.processes.map((p) => ({ id: p.id, name: p.name })),
+    activities: doc.processes.flatMap((p) =>
+      p.activities.map((a) => ({
+        id: a.id,
+        processId: p.id,
+        processName: p.name,
+        name: a.name,
+        trigger: a.trigger,
+        gateDecision: a.gateDecision,
+        raci: a.raci,
+        next: a.next,
+        screens: a.platform.screens,
+        actions: a.platform.actions,
+        anchor: a.platform.anchor,
+        slaHours: a.slaHours,
+      })),
+    ),
+  };
+}
+
+// ── 메인 화면 절차 지도용 메타데이터 ─────────────────────────
+// 211 KB 전체 문서 대신 프로세스 13개의 이름·단계·Gate·활동 수만 담는다(첫 화면에 실어도 되는 크기).
+export interface WorkflowMapProcess {
+  id: string;
+  name: string;
+  group: string;
+  gates: string[];
+  activities: number;
+}
+
+export interface WorkflowMapDoc {
+  processes: WorkflowMapProcess[];
+}
+
+export function workflowMapOf(doc: WorkflowDoc): WorkflowMapDoc {
+  return {
+    processes: doc.processes.map((p) => ({ id: p.id, name: p.name, group: p.group, gates: p.gates, activities: p.activities.length })),
+  };
+}
+
+export type WorkflowPredecessors = Map<string, string[]>;
+
+/** 활동 ID → 앞 활동 ID 목록(같은 프로세스의 next 역방향) */
+export function predecessorsOf(index: WorkflowIndexDoc): WorkflowPredecessors {
+  const out: WorkflowPredecessors = new Map(index.activities.map((a) => [a.id, []]));
+  for (const a of index.activities) for (const n of a.next) out.get(n)?.push(a.id);
+  return out;
+}
+
+/** 완료 집합 기준으로 지금 시작할 수 있는 활동 — 앞 활동이 모두 끝났거나, 사건으로 시작하는 활동(trigger) */
+export function readyActivityIds(index: WorkflowIndexDoc, done: ReadonlySet<string>, preds = predecessorsOf(index)): Set<string> {
+  const out = new Set<string>();
+  for (const a of index.activities) {
+    if (done.has(a.id)) continue;
+    const p = preds.get(a.id) ?? [];
+    if (!p.length || a.trigger || p.every((id) => done.has(id))) out.add(a.id);
+  }
+  return out;
 }
 
 /** 플랫폼 쪽 사실 — 시험은 실제 ROUTES·DEMO_PERSONAS·보고서 카탈로그·GATES를 넘긴다(결함 주입 시험은 바꾼 사본을 넘긴다) */

@@ -1,23 +1,25 @@
 // 앱 루트 — 셸(MENU 2.0) + routes.tsx의 라우트. 화면·메뉴 구성은 routes.tsx 한 곳에서 바꾼다.
-import { useEffect, useRef } from 'react';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { useAuth } from './auth';
 import { NotFound } from './components/patterns';
 import RouteBoundary from './components/RouteBoundary';
 import { ROUTES } from './routes';
+import { LoginScreen } from './screens/auth/Login';
 import { Shell } from './shell/Shell';
-import { roleHome, useAppShell } from './store';
 
 export default function App() {
-  const nav = useNavigate();
   const loc = useLocation();
-  const { role } = useAppShell();
-  // 최초 진입 시 현재 역할의 기본 화면으로 (이후 '내 대시보드'는 메뉴로 이동)
-  const landed = useRef(false);
-  useEffect(() => {
-    if (landed.current) return;
-    landed.current = true;
-    if (loc.pathname === '/') nav(roleHome[role] || '/features', { replace: true });
-  }, []);
+  const authed = useAuth();
+
+  // 로그인 화면은 셸 밖에서 그린다 — 메뉴·역할 전환 없이 게이트만 보인다
+  if (loc.pathname === '/login') {
+    if (authed) {
+      const from = (loc.state as { from?: string } | null)?.from;
+      return <Navigate to={from && from !== '/login' ? from : '/'} replace />;
+    }
+    return <LoginScreen />;
+  }
+  if (!authed) return <Navigate to="/login" replace state={{ from: loc.pathname + loc.search }} />;
 
   return (
     <Shell>

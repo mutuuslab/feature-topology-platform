@@ -30,7 +30,7 @@ export default function BaselineQueue() {
         message={!reqs.data ? { tone: 'neutral', value: '—', text: T.key.pending } : pending ? { tone: 'warn', value: pending, text: T.key.pending } : { tone: 'ok', text: T.key.none }}
       />
       <Tabs tabs={tabs}>
-        {(tab) => (tab === 'requests' ? <Requests /> : <Baselines />)}
+        {(tab) => (tab === 'requests' ? <div data-tour="baseline-approve"><Requests /></div> : <Baselines />)}
       </Tabs>
     </div>
   );

@@ -4,11 +4,11 @@
 // 수신자: 개인(요청자·작성자·배포자), 역할(승인 대상자·운영 담당자, 본인·직무 분리 제외 계정 빼고), 팀(Feature Owner = ownerId 팀).
 // 채널: Web 알림은 항상, 이메일은 수신자 설정(범주별)에 따른다 — 승인 요청·긴급(CRITICAL)은 끌 수 없다.
 import { z } from 'zod';
-import { KILL_APPROVER_ROLES } from './access';
+import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './access';
 import { DEMO_PERSONAS } from './duty-separation';
 import type { Role } from '../enums';
 
-export const NOTIFICATION_CATEGORIES = ['APPROVAL', 'SAFETY', 'DEPLOY', 'GATE', 'OPS', 'INTEGRATION'] as const;
+export const NOTIFICATION_CATEGORIES = ['APPROVAL', 'SAFETY', 'DEPLOY', 'GATE', 'OPS', 'INTEGRATION', 'PROCEDURE'] as const;
 export const NotificationCategory = z.enum(NOTIFICATION_CATEGORIES);
 export type NotificationCategory = z.infer<typeof NotificationCategory>;
 
@@ -19,6 +19,7 @@ export const NOTIFICATION_CATEGORY_LABEL: Record<NotificationCategory, string> =
   GATE: 'Gate 판정',
   OPS: '이상 징후',
   INTEGRATION: '외부 연계',
+  PROCEDURE: '업무 절차',
 };
 
 export const NotificationSeverity = z.enum(['INFO', 'WARNING', 'CRITICAL']);
@@ -82,6 +83,11 @@ const featureLabel = (ctx: NotificationContext, featureId: string) => (ctx.featu
 const scopeOf = (k: NonNullable<NotificationContext['kill']>) => `차량 ${k.vins.length}대 · flag ${k.flagKeys.join(', ') || '-'}${k.featureIds.length > 1 ? ` · 의존 Feature ${k.featureIds.filter((f) => f !== k.featureId).join(', ')}` : ''}`;
 const reasonOf = (k: NonNullable<NotificationContext['kill']>) => [k.reasonCategory && k.reasonCode ? `${k.reasonCategory}/${k.reasonCode}` : null, k.reason].filter(Boolean).join(' — ');
 const roles = (rs: readonly Role[]): Recipient[] => rs.map((role) => ({ kind: 'role', role }));
+/** 이벤트 payload의 플랫폼 역할 문자열 → 수신자(모르는 역할은 버린다 — 절차 모델의 org 역할을 서버가 플랫폼 역할로 풀어 넘긴다) */
+const roleNames = (rs: unknown): Recipient[] =>
+  (Array.isArray(rs) ? rs : [])
+    .filter((r): r is Role => typeof r === 'string' && (HUMAN_ROLES as readonly string[]).includes(r))
+    .map((role) => ({ kind: 'role', role }));
 
 /**
  * 이벤트 종류 → 알림 규칙. 없는 이벤트는 알림을 만들지 않는다(이벤트 이력에만 남는다).
@@ -272,6 +278,55 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
       };
     },
   },
+  // 업무 절차(docs/65-workflows) — 활동 완료가 다음 활동의 수행(R)·책임(A) 역할에 인계되고, 기한 초과는 담당 역할에 경고한다.
+  // 수신자 역할은 서버(ProcedureService)가 절차 모델의 org 역할을 플랫폼 역할로 풀어 payload에 싣는다(맥락 조회 불필요).
+  'procedure.activity.completed': {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const next: { id: string; name: string; platformRoles?: string[] }[] = Array.isArray(p.next) ? p.next : [];
+      const recipients = roleNames([...new Set(next.flatMap((n) => n.platformRoles ?? []))]);
+      if (!next.length || !recipients.length) return null;
+      return {
+        category: 'PROCEDURE',
+        severity: 'INFO',
+        title: `이어서 할 일 — ${p.activityName} 완료`,
+        fields: [
+          { label: '완료 활동', value: `${p.activityId} ${p.activityName}` },
+          { label: '다음 활동', value: next.map((n) => `${n.id} ${n.name}`).join(', ') },
+          { label: '담당 역할', value: String(p.nextRoleNames ?? '-') },
+          { label: '완료자', value: String(p.by ?? '-') },
+        ],
+        link: `/procedures/${p.processId}?a=${next[0].id}`,
+        recipients,
+        exclude: [String(p.by ?? '')].filter(Boolean),
+        requirementIds: [],
+      };
+    },
+  },
+  'procedure.activity.overdue': {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const recipients = roleNames([...new Set((p.platformRoles as string[]) ?? [])]);
+      if (!recipients.length) return null;
+      return {
+        category: 'PROCEDURE',
+        severity: 'WARNING',
+        title: `기한 초과 — ${p.activityId} ${p.activityName}`,
+        fields: [
+          { label: '활동', value: `${p.activityId} ${p.activityName}` },
+          { label: '절차', value: `${p.processId} ${p.processName}` },
+          { label: '책임 역할', value: String(p.roleNames ?? '-') },
+          { label: '기한', value: String(p.dueAt ?? '-') },
+        ],
+        link: `/procedures/${p.processId}?a=${p.activityId}`,
+        recipients,
+        exclude: [],
+        requirementIds: [],
+      };
+    },
+  },
 };
 
 /** 롤백 승인 요청 — 이벤트가 알림에 필요한 값을 모두 싣는다(Plan·수동 요청 기록을 다시 읽지 않는다) */
@@ -389,7 +444,7 @@ export const accountKeys = (a: Pick<NotificationAccount, 'id' | 'roles' | 'teams
 
 /** 끌 수 없는 이메일 — 승인 요청(처리 기한이 있다)과 긴급(CRITICAL) */
 export const EMAIL_LOCKED: NotificationCategory[] = ['APPROVAL', 'SAFETY'];
-export const DEFAULT_EMAIL: Record<NotificationCategory, boolean> = { APPROVAL: true, SAFETY: true, DEPLOY: false, GATE: false, OPS: true, INTEGRATION: false };
+export const DEFAULT_EMAIL: Record<NotificationCategory, boolean> = { APPROVAL: true, SAFETY: true, DEPLOY: false, GATE: false, OPS: true, INTEGRATION: false, PROCEDURE: true };
 
 export const NotificationPrefsBody = z.object({ email: z.record(NotificationCategory, z.boolean()) }).strict();
 export type NotificationPrefsBody = z.infer<typeof NotificationPrefsBody>;

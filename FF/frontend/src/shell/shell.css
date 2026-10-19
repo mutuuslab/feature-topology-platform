@@ -299,7 +299,10 @@
   padding: 0 var(--sp-2) var(--sp-4);
 }
 .sh-panel__list a {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
   padding: 7px var(--sp-3);
   border-radius: var(--r);
   color: var(--ink-2);
@@ -307,6 +310,23 @@
   font-size: var(--fs-sm);
   font-weight: 500;
   line-height: 1.35;
+}
+/* 내 차례 수 — 업무 절차 메뉴에만 붙는다(이모지·아이콘 없이 숫자만, 3초 테스트) */
+.sh-panel__count {
+  flex: none;
+  min-inline-size: 20px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+.sh-panel__count[data-overdue] {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 .sh-panel__list a:hover {
   background: var(--surface-3);

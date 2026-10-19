@@ -149,10 +149,10 @@ export function VariantScreen() {
       />
       <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
         <Field label={VC.feature}>
-          <input className="ds-input ds-input--mono" value={featureId} onChange={(e) => set(e.target.value.trim().toUpperCase(), version)} />
+          <input className="ds-input ds-input--mono" name="featureId" value={featureId} onChange={(e) => set(e.target.value.trim().toUpperCase(), version)} />
         </Field>
         <Field label={VC.version}>
-          <input className="ds-input ds-input--mono" value={version} onChange={(e) => set(featureId, e.target.value.trim())} />
+          <input className="ds-input ds-input--mono" name="version" value={version} onChange={(e) => set(featureId, e.target.value.trim())} />
         </Field>
       </div>
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
@@ -165,7 +165,7 @@ export function VariantScreen() {
                 { k: VC.verdict.UNKNOWN, v: d.summary.unknown },
               ]}
             />
-            <Panel title={VC.conditions} id="conditions">
+            <Panel title={VC.conditions} id="conditions" tour="variant-conditions">
               <KeyValue
                 rows={[
                   { k: VC.col.scope, v: <span className="ds-mono">{d.conditions.scope}</span> },

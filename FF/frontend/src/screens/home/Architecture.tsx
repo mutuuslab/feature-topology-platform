@@ -80,7 +80,6 @@ export function ArchitectureScreen() {
   const live = usePlatformEvents([''], ['componentActivity'], 50);
   const [hot, setHot] = useState<Record<string, number>>({});
   const [open, setOpen] = useState<string | null>(null);
-  const step = sp.get('step') ?? 'ALL';
   const wp = sp.get('wp') ?? 'ALL';
   const setParam = (k: string, v: string) => {
     const n = new URLSearchParams(sp);
@@ -111,7 +110,6 @@ export function ArchitectureScreen() {
         title={A.title}
         lead={A.lead}
         message={{ tone: 'ok', value: `${implemented}/${comps.length || 42}`, text: A.implemented }}
-        actions={<Link to="/poc">{ko.poc.title} →</Link>}
       />
       <SummaryLine
         items={[
@@ -120,12 +118,6 @@ export function ArchitectureScreen() {
           { k: A.interfaces, v: new Set(comps.filter((c) => c.status === 'implemented').flatMap((c) => c.ifs)).size },
           { k: A.standards, v: `${RULE_IDS.filter(done).length}/${RULE_IDS.length}` },
         ]}
-      />
-      <Segmented
-        label={A.step}
-        options={[{ value: 'ALL', label: A.all }, ...[1, 2, 3, 4, 5, 6].map((n) => ({ value: String(n), label: ['①', '②', '③', '④', '⑤', '⑥'][n - 1] }))]}
-        value={step}
-        onChange={(v) => setParam('step', v)}
       />
       <Segmented
         label={A.wp}
@@ -151,7 +143,7 @@ export function ArchitectureScreen() {
                           className="ds-comp"
                           data-status={c.status}
                           data-hot={!!hot[c.id]}
-                          data-dim={(step !== 'ALL' && !c.pocSteps.includes(Number(step))) || (wp !== 'ALL' && rules.length === 0)}
+                          data-dim={wp !== 'ALL' && rules.length === 0}
                           onClick={() => setOpen(c.id)}
                           aria-label={`${c.id} ${c.ko} ${c.status === 'implemented' ? A.implemented : A.planned}`}
                         >
@@ -175,8 +167,7 @@ export function ArchitectureScreen() {
               rows={[
                 { k: 'status', v: <VerdictBadge value={sel.status === 'implemented' ? 'PASS' : '미판정'} />, note: sel.registered ? sel.providers.join(', ') : undefined },
                 { k: 'Tier', v: <span className="ds-mono">{sel.tier}</span> },
-                { k: A.step, v: <span className="ds-mono">{sel.pocSteps.map((n) => ['①', '②', '③', '④', '⑤', '⑥'][n - 1]).join(' ') || '—'}</span> },
-                { k: A.interfaces, v: <span className="ds-mono">{sel.ifs.join(', ') || '—'}</span> },
+                  { k: A.interfaces, v: <span className="ds-mono">{sel.ifs.join(', ') || '—'}</span> },
                 {
                   k: A.screens,
                   v: sel.screens.length ? (

@@ -242,7 +242,12 @@ process:
         - G8·G9가 다시 판정되면 이전 서명은 효력이 없으므로 다시 서명한다
       checks:
         - 서명이 현재 G8·G9 판정 기록에 묶여 유효하다
-      platform: {actions: [signRelease], screens: [/features/:id/:ver]}
+      platform:
+        actions: [signRelease]
+        screens: [/features/:id/:ver]
+        anchor: release-signoff
+        ui: {fields: [reason], buttons: [signRelease]}
+      sla_hours: 24
       next: [FPW.7-A09]
     - id: FPW.7-A09
       name: 출시 전이

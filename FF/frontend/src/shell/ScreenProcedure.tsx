@@ -5,10 +5,11 @@ import { Link } from 'react-router-dom';
 import { activitiesForScreen, raciOf } from '@ff/contracts';
 import { procedures as P } from '../copy/procedures';
 import { useWorkflows } from '../data/workflows';
-import { Drawer } from '../design';
+import { Button, Drawer } from '../design';
 import { ActivityBody, RaciBadge } from '../screens/procedures/ActivityView';
 import { routeOf } from '../routes';
 import { useAppShell } from '../store';
+import { procedureGuideStore } from './procedureGuide';
 
 export default function ScreenProcedure({ onClose }: { onClose: () => void }) {
   const loc = useLocation();
@@ -38,6 +39,18 @@ export default function ScreenProcedure({ onClose }: { onClose: () => void }) {
             <p className="ds-field__hint">
               {process.id} {process.name} · <Link to={`/procedures/${process.id}?a=${a.id}`} onClick={onClose}>{P.panel.openProcess}</Link>
             </p>
+            {a.platform.anchor && (
+              <Button
+                icon="target"
+                aria-label={`${a.id} ${P.guide.eyebrow}`}
+                onClick={() => {
+                  onClose();
+                  procedureGuideStore.open(a.id, process.id);
+                }}
+              >
+                {P.guide.eyebrow}
+              </Button>
+            )}
             <ActivityBody doc={doc} a={a} />
           </section>
         ))}

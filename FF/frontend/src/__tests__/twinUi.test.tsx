@@ -47,6 +47,8 @@ function renderTwin(ui: ReactNode, opts: { route?: string; initial?: string; rol
 }
 
 beforeEach(() => {
+  // 로그인 게이트 — App을 통째로 그리는 시험은 데모 세션을 미리 둔다
+  localStorage.setItem('ff.auth', '1');
   // rate 0 → provider 가 스스로 tick 하지 않는다 (setInterval 없음 · 결정적 렌더)
   localStorage.setItem('fp.twin.v1', JSON.stringify({ rate: 0 }));
 });

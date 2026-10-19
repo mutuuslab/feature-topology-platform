@@ -615,6 +615,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
                   <ErrorNote error={requestRestore.error} />
                   <Button
                     variant="primary"
+                    data-ui="requestRestore"
                     disabled={!perm.ok || reason.trim().length < 2 || requestRestore.isPending}
                     title={perm.hint}
                     onClick={() => requestRestore.mutate({ params: { id: k.killId }, body: { reason } }, { onSuccess: () => setReason('') })}
@@ -671,7 +672,7 @@ export function KillConsole() {
       />
       <div className="ds-split ds-split--wide-side">
         <NewKill onDone={(k) => setOpen(k.killId)} />
-        <Panel title={K.list} id="kills">
+        <Panel title={K.list} id="kills" tour="kill-approve">
           <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
             <DataTable
               caption={K.title}

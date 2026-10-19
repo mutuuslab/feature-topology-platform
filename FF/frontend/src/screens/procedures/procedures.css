@@ -41,3 +41,35 @@
 .pr-defs dt { font-weight: 600; margin-top: var(--sp-3); }
 .pr-defs dd { margin: 0; }
 .pr-purpose { margin: 0 0 var(--sp-3); color: var(--ink-2); }
+.pr-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; }
+.pr-evidence { display: grid; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+.pr-evidence__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; gap: var(--sp-2); align-items: end; }
+.pr-sign { margin-top: var(--sp-2); }
+.pr-complete { display: grid; gap: var(--sp-2); }
+.pr-complete h3 { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--ink-2); }
+/* 화면 패널의 따라하기 — 서랍(41)보다 위에 뜨고, 스포트라이트는 문서 좌표를 그대로 쓴다 */
+.pr-guide {
+  position: fixed;
+  inset-block-end: var(--sp-4);
+  inset-inline-start: var(--sp-4);
+  z-index: 45;
+  width: min(420px, calc(100vw - 48px));
+  max-height: min(72vh, 640px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  box-shadow: var(--e-2);
+}
+.pr-guide__head { display: flex; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3); border-bottom: 1px solid var(--line); }
+.pr-guide__head h2 { margin: 2px 0 0; font-size: var(--fs-lg); line-height: 1.3; }
+.pr-guide__body { padding: var(--sp-3); overflow: auto; display: grid; gap: var(--sp-2); align-content: start; }
+.pr-guide__body h3 { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--ink-2); }
+.pr-guide__foot { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); padding: var(--sp-3); border-top: 1px solid var(--line); }
+.pr-guide__miss { color: var(--warn); }
+.pr-inbox { display: grid; gap: var(--sp-2); margin: 0 0 var(--sp-3); padding: 0; list-style: none; }
+.pr-inbox li { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: baseline; padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
+.pr-inbox li[data-overdue] { color: var(--danger); }
+.pr-inbox__go { margin-left: auto; }

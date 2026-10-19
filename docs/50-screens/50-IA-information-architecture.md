@@ -30,11 +30,11 @@ last_updated: 2026-10-16
 └────┴──────────────┴─┴──────────────────────────────────────┴────────────────────┘
 ```
 - **차량 운영·안전** 그룹은 어두운 관제실 톤(`data-zone="ops"`)으로 바뀌어 지금 운영 모드임을 보인다.
-- 밀도(1366~1536 compact · 1920 comfortable)와 **시연 모드**(`P`, 18px 기준·고대비·PoC 단계 표시줄 고정)는 같은 토큰의 다른 값이다.
+- 밀도(1366~1536 compact · 1920 comfortable)와 **시연 모드**(`P`, 18px 기준·고대비·상단바 고정)는 같은 토큰의 다른 값이다.
 
 ## 2. 메뉴 트리 — 업무 기준 8그룹 (메뉴 55)
 ```
-⌂ 홈              내 대시보드 / · 검토함 /admin/approval · 표준 따라하기 /learn · PoC 6단계 진행 /poc · 42 컴포넌트 아키텍처 /arch/components
+⌂ 홈              내 대시보드 / · 검토함 /admin/approval · 표준 따라하기 /learn · 42 컴포넌트 아키텍처 /arch/components
 ▸ Feature 정의     Feature 제안 /feature/propose · Feature Registry /features · Feature 등록 /master/define · 변경요청 /change/cr · Taxonomy /master/taxonomy
 ▸ 구성·Topology    BOM 기준선·확정 승인 /baselines · Topology·의존관계 검증 /arch/topology · 변경 영향 분석 /analysis/impact · Variant·지원 조건 /variant-conditions
 ▸ 기준정보         UPG·UPG-VC /master/upg · SW·Artifact /master/artifacts · SW 구조 /master/structure · SW EO /change/eo · 제어점 /master/control-points · 데이터 사전점검 /precheck

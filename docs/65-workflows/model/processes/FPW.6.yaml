@@ -77,7 +77,10 @@ process:
         - 요청자는 같은 Baseline의 승인자로 지정하지 않는다
       checks:
         - 요청에 포함 Version·정책 개정본·Artifact가 빠짐없이 있다
-      platform: {actions: [requestBaseline], screens: [/baselines]}
+      platform:
+        actions: [requestBaseline]
+        screens: [/baselines]
+      sla_hours: 24
       next: [FPW.6-A02]
     - id: FPW.6-A02
       name: 출시 Baseline 확정 승인
@@ -92,7 +95,11 @@ process:
         - 확정된 Baseline 해시를 Release Manager에게 알린다
       checks:
         - 승인자가 요청자와 다르고 Baseline 해시가 고정되었다
-      platform: {actions: [decideBaseline], screens: [/baselines]}
+      platform:
+        actions: [decideBaseline]
+        screens: [/baselines]
+        anchor: baseline-approve
+      sla_hours: 24
       next: [FPW.6-A03, FPW.6-A04]
     - id: FPW.6-A03
       name: SUMS 기록·형식승인 확인

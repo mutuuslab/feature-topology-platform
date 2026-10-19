@@ -1,18 +1,25 @@
 # Feature Platform (FF/)
 
-통합 상세설계서 v0.81 · Topology 정의서 v0.62 · 42컴포넌트 PoC 워크플로우 v0.50 · Catalog BOM DATASET v0.81 · 국제표준 대응방안 보고서 v1.1을
+통합 상세설계서 v0.81 · Topology 정의서 v0.62 · 42 컴포넌트 아키텍처 · Catalog BOM DATASET v0.81 · 국제표준 대응방안 보고서 v1.1을
 **동작하는 플랫폼**으로 구현한 저장소. 품질은 사람이 아니라 `npm run verify` 하네스가 보증한다. 진행 상태는 [`PROGRESS.md`](PROGRESS.md).
 
 공개 데모(읽기 전용 정적 모드): https://feature-topology.pages.dev
+
+## 데모 로그인
+
+- **ID `FF` · 비밀번호 `platform`** — `/login`에서 로그인하면 플랫폼으로 들어간다.
+- 정적 데모(Cloudflare)에서도 같은 게이트가 동작한다(브라우저 `localStorage.ff.auth`). 실제 IAM·SSO가 아니라
+  화면 게이트이며, 서버 인증은 여전히 데모 행위자 헤더(`X-Actor-Id`/`X-Actor-Role`)다. 운영 배치에서는 SSO/OIDC로 교체한다.
+- 상단바의 **로그아웃**으로 세션을 지우고 `/login`으로 돌아간다.
 
 ## 구성 (npm workspaces)
 
 | 폴더 | 내용 |
 |---|---|
 | `contracts/` | 프론트·백엔드 공용 순수 TS — zod 스키마, Lifecycle·Gate·Catalog·Kill v2 규칙 표, 평가기(`flags/evaluate.ts`), OpenFeature 경계, 42 컴포넌트 manifest, API 경로 표(`routes.ts` → OpenAPI) |
-| `backend/` | NestJS — `kernel/`(node:sqlite·tx·outbox·SSE·감사·역할·멱등), `domains/d01…d06`(42 컴포넌트), `adapters/`(IF 모의·GLEO·Unleash·CARLA 가상검증), `workflows/poc1` |
+| `backend/` | NestJS — `kernel/`(node:sqlite·tx·outbox·SSE·감사·역할·멱등), `domains/d01…d06`(42 컴포넌트), `adapters/`(IF 모의·GLEO·Unleash·CARLA 가상검증), `workflows/`(업무 절차 완료·SLA) |
 | `frontend/` | Vite + React 18 — 디자인 시스템(`design/`), MENU 2.0(`routes.tsx` 한 곳), 화면(`screens/`), react-query 데이터 계층(`api/`) |
-| `e2e/` | Playwright — 기능·PoC 6단계·접근성(axe)·레이아웃·시각 회귀 |
+| `e2e/` | Playwright — 기능·로그인·업무 절차·접근성(axe)·레이아웃·시각 회귀 |
 | `tools/` | 데이터 적재·lint·래칫·준수·표준 추적·OpenAPI·CARLA 서버 점검·고아 모듈 검사 |
 | `sim/carla/` | 가상검증 실행기(Python, CARLA 0.9.16) — 기능 런타임·차량 Guard·차량 내 감지·판정 기준과 CARLA 구동, CLI(`ffcarla_cli.py`), 검증 서버 스크립트 |
 | `data/` | v0.81 데이터셋 원본(xlsx)과 결정적 픽스처(`fixtures/v0.81`, sha256 매니페스트) |
@@ -40,7 +47,7 @@ npm run dev:frontend     # http://127.0.0.1:9012       (/api → 9101 프록시)
 
 ## 화면 — MENU 2.0 (업무 기준 8그룹, `frontend/src/routes.tsx`)
 
-- **홈**: 내 대시보드 · 검토함 · 표준 따라하기 · PoC 6단계 진행 · 42 컴포넌트 아키텍처
+- **홈**: 내 대시보드 · 검토함 · 표준 따라하기 · 42 컴포넌트 아키텍처
 - **Feature 정의**: Feature 제안 · Feature Registry · Feature 등록 · 변경요청 · Taxonomy
 - **구성·Topology**: BOM 기준선·확정 승인 · Topology·의존관계 검증 · 변경 영향 분석 · Variant·지원 조건
 - **기준정보**: UPG·UPG-VC · SW·Artifact · SW 구조 · SW EO · 제어점 · 데이터 사전점검
@@ -71,7 +78,7 @@ F2 이상은 Safe Default + `DISABLED`(`decided_by=vehicle_safety_guard`)로 돌
 4. 데이터셋 픽스처 정합 · OpenAPI 최신 여부(`docs/80-integration/openapi.json`)
 5. contracts · 백엔드 · 프론트 테스트
 6. 42 컴포넌트 준수(`--strict`, 42/42가 아니면 실패) · 보고서 v1.1 규칙 추적(75/75)
-7. 프론트 빌드 · e2e(기능·PoC·**메뉴 55 + 하위 화면 전부 axe serious/critical 0**·레이아웃)
+7. 프론트 빌드 · e2e(기능·로그인·업무 절차·**메뉴 + 하위 화면 전부 axe serious/critical 0**·레이아웃)
 
 `npm run verify:full`은 시각 회귀(Windows 기준 스크린샷)를 더한다.
 래칫(`harness/baselines.json`)은 나빠질 수 없고, 좋아지면 `npm run ratchet -- --update`로 잠근다.

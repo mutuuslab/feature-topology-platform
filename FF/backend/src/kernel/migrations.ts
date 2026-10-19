@@ -509,4 +509,27 @@ CREATE TABLE mock_ext_item (system TEXT NOT NULL, ext_key TEXT NOT NULL, kind TE
 CREATE TABLE mock_ext_seq (scope TEXT PRIMARY KEY, n INTEGER NOT NULL);
 `,
   },
+  {
+    // 업무 절차 실행(docs/65-workflows C3) — 활동 완료를 서버에 저장한다. 취소는 undone_at으로 남기고 행은 지우지 않는다(감사 추적).
+    // procedure_overdue는 SLA 초과 알림을 활동당 한 번만 보내기 위한 표시다(완료·취소 시 지운다).
+    name: '044_procedure',
+    sql: `
+CREATE TABLE procedure_completion (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  activity_id TEXT NOT NULL,
+  process_id TEXT NOT NULL,
+  role_id TEXT NOT NULL,
+  completed_by TEXT NOT NULL,
+  completed_role TEXT NOT NULL,
+  completed_at TEXT NOT NULL,
+  note TEXT,
+  evidence_doc TEXT NOT NULL,
+  signature_doc TEXT,
+  undone_at TEXT,
+  undone_by TEXT
+);
+CREATE INDEX procedure_completion_current ON procedure_completion (activity_id, undone_at);
+CREATE TABLE procedure_overdue (activity_id TEXT PRIMARY KEY, notified_at TEXT NOT NULL, due_at TEXT NOT NULL);
+`,
+  },
 ];

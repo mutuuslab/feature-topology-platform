@@ -2,10 +2,10 @@
 // 데이터는 지연 로딩(data/workflows.ts). 흐름도 좌표는 모델이 계산해 넣었으므로 여기서는 그리기만 한다.
 import { useMemo } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { myActivities, raciOf, type RaciKey, type WorkflowDoc, type WorkflowActivity, type WorkflowLayout, type WorkflowProcess } from '@ff/contracts';
+import { myActivities, raciOf, readyActivityIds, workflowIndexOf, type RaciKey, type WorkflowDoc, type WorkflowActivity, type WorkflowLayout, type WorkflowProcess } from '@ff/contracts';
 import { procedures as P } from '../../copy/procedures';
 import { useWorkflows } from '../../data/workflows';
-import { useProgress } from '../../data/procedureProgress';
+import { useProcedureInbox, useProgress } from '../../data/procedureProgress';
 import { roleLabel } from '../../data/refdata';
 import { PageHeader, Panel } from '../../design';
 import { useAppShell } from '../../store';
@@ -29,11 +29,19 @@ const firstStatic = (screens: string[]) => screens.find((s) => !s.includes(':'))
 
 function Hub({ doc }: { doc: WorkflowDoc }) {
   const { role, roleIds } = useMe(doc);
-  const { isDone, toggle, doneCount } = useProgress(role);
+  const { isDone, toggle, doneCount, doneIds } = useProgress(role);
+  const inbox = useProcedureInbox(role);
   const mine = useMemo(() => myActivities(doc, roleIds), [doc, roleIds]);
-  const next = mine.find(({ activity }) => !isDone(activity.id));
+  // 준비된 활동 — 앞 활동이 끝나야 시작할 수 있다(서버 검토함과 같은 규칙, contracts readyActivityIds)
+  const ready = readyActivityIds(workflowIndexOf(doc), new Set(doneIds()));
+  const next = mine.find(({ activity }) => ready.has(activity.id) && !isDone(activity.id));
   const nextScreen = next ? firstStatic(next.activity.platform.screens) : undefined;
   const done = doneCount(mine.map(({ activity }) => activity.id));
+  const summary = inbox.data?.summary;
+  const now = inbox.data?.items ?? [];
+  // 검토함 = 내가 책임(A)인 준비 활동 + 기한이 지난 내 활동
+  const reviews = now.filter((i) => i.kind === 'REVIEW' || i.overdue);
+  const dt = (iso: string) => iso.slice(0, 16).replace('T', ' ');
   const groups = useMemo(() => {
     const out: { name: string; list: WorkflowProcess[] }[] = [];
     for (const p of doc.processes) {
@@ -49,9 +57,27 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
         lead={P.lead}
         message={mine.length ? { tone: 'accent', value: mine.length, text: P.mine.key } : { tone: 'neutral', text: P.mine.none }}
       />
+      {reviews.length > 0 && (
+        <Panel title={P.inbox.title} eyebrow={P.inbox.hint}>
+          <ul className="pr-inbox">
+            {reviews.map((i) => (
+              <li key={i.activityId} data-overdue={i.overdue ? '' : undefined}>
+                <span className="ds-tag">{P.inbox.review}</span>
+                <Link to={`/procedures/${i.processId}?a=${i.activityId}`}>{i.activityName}</Link>
+                <span className="ds-field__hint">{i.processName} · {i.roleName}</span>
+                {i.dueAt && <span className="ds-field__hint">{i.overdue ? `${P.inbox.overdue} · ` : ''}{P.inbox.due(dt(i.dueAt))}</span>}
+                <Link to={`/procedures/${i.processId}?a=${i.activityId}`} className="pr-inbox__go">{P.inbox.open}</Link>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
       {mine.length > 0 && (
         <Panel title={P.mine.sectionTitle} eyebrow={P.mine.sectionHint(roleLabel(role))}>
-          <p className="ds-field__hint pr-progress">{P.mine.progress(done, mine.length)}</p>
+          <p className="ds-field__hint pr-progress">
+            {P.mine.progress(done, mine.length)}
+            {summary ? ` · ${P.inbox.todo} ${summary.todo} · ${P.inbox.review} ${summary.review}${summary.overdue ? ` · ${P.inbox.overdue} ${summary.overdue}` : ''}` : ''}
+          </p>
           {next && (
             <div className="pr-next">
               <span className="ds-eyebrow">{P.mine.nextTitle}</span>
@@ -72,6 +98,7 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
                   <Link to={`/procedures/${process.id}?a=${a.id}`}>{a.name}</Link>
                   <RaciBadge k={raciOf(a, roleIds)} />
                   <span className="ds-field__hint">{process.name}</span>
+                  {!ok && !ready.has(a.id) && <span className="ds-field__hint">{P.inbox.waiting}</span>}
                   {screen && <Link to={screen} className="pr-mine__go">{P.mine.open}</Link>}
                 </li>
               );

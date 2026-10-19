@@ -231,7 +231,8 @@
                       "DEPLOY",
                       "GATE",
                       "OPS",
-                      "INTEGRATION"
+                      "INTEGRATION",
+                      "PROCEDURE"
                     ]
                   }
                 },
@@ -315,6 +316,9 @@
                         "type": "boolean"
                       },
                       "INTEGRATION": {
+                        "type": "boolean"
+                      },
+                      "PROCEDURE": {
                         "type": "boolean"
                       }
                     }
@@ -948,6 +952,213 @@
           },
           "404": {
             "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/procedures/state": {
+      "get": {
+        "summary": "업무 절차 활동 완료 상태(서버 저장) — Evidence·서명 포함",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "procedureState",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/procedures/inbox": {
+      "get": {
+        "summary": "내 업무 절차 검토함 — 준비된 수행(R)·책임(A) 활동, SLA 기한·초과",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "procedureInbox",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/procedures/summary": {
+      "get": {
+        "summary": "내 업무 절차 요약 — 메뉴 배지(할 일·검토·기한 초과)",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "procedureSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/procedures/activities/{id}/complete": {
+      "post": {
+        "summary": "활동 완료 — Evidence·개인 서명(선택), 감사·인계 알림",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "completeProcedureActivity",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  "evidence": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "LINK",
+                            "TEST",
+                            "GATE",
+                            "DOC"
+                          ],
+                          "default": "LINK"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "ref": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "ref"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 10,
+                    "default": []
+                  },
+                  "sign": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      },
+      "delete": {
+        "summary": "활동 완료 취소 — 감사 기록, 다음 활동 인계를 되돌린다",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "undoProcedureActivity",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
           }
         }
       }
@@ -10556,148 +10767,6 @@
           },
           "404": {
             "description": "없음 (오류 봉투)"
-          }
-        }
-      }
-    },
-    "/api/poc/runs": {
-      "get": {
-        "summary": "PoC 실행 목록",
-        "tags": [
-          "KERNEL"
-        ],
-        "operationId": "pocRuns",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "400": {
-            "description": "입력 검증 실패 (오류 봉투)"
-          },
-          "404": {
-            "description": "없음 (오류 봉투)"
-          }
-        }
-      },
-      "post": {
-        "summary": "PoC 실행 시작 (이전 PoC 차단 복구 후)",
-        "tags": [
-          "KERNEL"
-        ],
-        "operationId": "startPoc",
-        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": false
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "201": {
-            "description": "생성"
-          },
-          "400": {
-            "description": "입력 검증 실패 (오류 봉투)"
-          },
-          "403": {
-            "description": "역할·직무 분리 위반 (오류 봉투)"
-          },
-          "404": {
-            "description": "없음 (오류 봉투)"
-          },
-          "422": {
-            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
-          }
-        }
-      }
-    },
-    "/api/poc/runs/{id}": {
-      "get": {
-        "summary": "PoC 실행 — 단계·행위·Evidence",
-        "tags": [
-          "KERNEL"
-        ],
-        "operationId": "pocRun",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "400": {
-            "description": "입력 검증 실패 (오류 봉투)"
-          },
-          "404": {
-            "description": "없음 (오류 봉투)"
-          }
-        }
-      }
-    },
-    "/api/poc/runs/{id}/advance": {
-      "post": {
-        "summary": "PoC 다음 단계 실행 (진행 중 단계는 완료 확인)",
-        "tags": [
-          "KERNEL"
-        ],
-        "operationId": "advancePoc",
-        "description": "허용 역할: 운영자, Feature 출시 담당자, Feature 승인자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": false
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "201": {
-            "description": "생성"
-          },
-          "400": {
-            "description": "입력 검증 실패 (오류 봉투)"
-          },
-          "403": {
-            "description": "역할·직무 분리 위반 (오류 봉투)"
-          },
-          "404": {
-            "description": "없음 (오류 봉투)"
-          },
-          "422": {
-            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
           }
         }
       }

@@ -143,6 +143,23 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     expect(post.body).toMatchObject({ name: '좌석 열선 원격', requirementIds: ['REQ-1', 'REQ-2'], controlPoints: ['Flag'], asil: 'QM' });
   });
 
+  it('메인 화면 업무 절차 지도 — 13개 절차 중 완료·내 차례·Gate를 한눈에', async () => {
+    handler = (url) => {
+      if (url === '/api/procedures/summary')
+        return { body: { todo: 1, review: 1, overdue: 0, done: 1, total: 10, processes: [{ id: 'FPW.1', total: 5, done: 1, todo: 1, review: 1, overdue: 0 }] } };
+      return inboxApi(url);
+    };
+    mount('author', '/', <HomeScreen />);
+    expect(await screen.findByText('업무 절차 지도')).toBeTruthy();
+    const node = await screen.findByRole('link', { name: /FPW\.1 Feature 등록·분류/ });
+    expect(node.textContent).toContain('1/5');
+    expect(node.textContent).toContain('내 차례 2');
+    expect(within(node).getByText('G1')).toBeTruthy();
+    // 메인 지도는 HARA(FPW.2) 제외 — 12개(생애주기 8 + 지원 4)
+    expect(document.querySelectorAll('.pm-node').length).toBe(12);
+    expect(screen.queryByText(/HARA/)).toBeNull();
+  });
+
   it('Feature 등록 — 출시 전 Version만, 다음 할 일과 Gate PASS 수', async () => {
     handler = () => ({ body: { items: [{ featureId: 'FEAT-1', version: '1.0.0', name: 'a', lifecycle: 'RELEASED', ownerId: 'o', gates: {} }, { featureId: 'FEAT-2', version: '0.1.0', name: 'b', lifecycle: 'PROPOSED', ownerId: 'o', gates: { G1: 'PASS', G2: 'PASS', G3: 'REVIEW' } }] } });
     mount('author', '/master/define', <DefineScreen />);

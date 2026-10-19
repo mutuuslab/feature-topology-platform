@@ -172,13 +172,15 @@ export function Shell({ children }: { children: ReactNode }) {
           </Button>
           <Button
             variant="ghost"
+            icon="logout"
+            className="sh-logout"
+            aria-label={L.logout}
+            title={L.logout}
             onClick={() => {
               logout();
               nav('/login');
             }}
-          >
-            {L.logout}
-          </Button>
+          />
           <NotificationBell />
         </div>
       </header>

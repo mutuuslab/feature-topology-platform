@@ -33,6 +33,41 @@
   white-space: pre-line;
 }
 .dh__lead { margin: 0; max-inline-size: 54ch; color: var(--ink-2); line-height: 1.55; }
+/* 작은 Feature Flag 모션 — Safe Default → Canary 흐름을 점 하나로 보여 준다 */
+.dh-flag {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  inline-size: fit-content;
+  margin-block-start: var(--sp-2);
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+}
+.dh-flag__icon { display: inline-flex; color: var(--accent); }
+.dh-flag__icon svg { inline-size: 14px; block-size: 14px; }
+.dh-flag__label { color: var(--ink); font-weight: 600; }
+.dh-flag__track { position: relative; inline-size: 30px; block-size: 16px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent-soft); }
+.dh-flag__track i {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: dh-flag 3.4s ease-in-out infinite;
+}
+@keyframes dh-flag {
+  0%, 45% { transform: translateX(0); }
+  55%, 100% { transform: translateX(14px); }
+}
+.dh-flag__state { color: var(--accent); font-family: var(--font-mono); font-weight: 600; }
+.dh-flag__flow { color: var(--muted); }
 .dh__live { display: inline-flex; align-items: center; gap: 6px; margin-block-start: var(--sp-2); color: var(--muted); font-size: var(--fs-xs); }
 .dh__live i {
   inline-size: 6px;
@@ -68,9 +103,13 @@
   .dh { grid-template-columns: 1fr; }
   .dh__motion { display: none; }
 }
+@media (max-width: 640px) {
+  .dh-flag__flow { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .dh-flow,
   .dh-node,
-  .dh__live i { animation: none; }
+  .dh__live i,
+  .dh-flag__track i { animation: none; }
   .dh-pulse { display: none; }
 }

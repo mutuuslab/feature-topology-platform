@@ -16,7 +16,9 @@
   justify-content: center;
   gap: var(--sp-6);
 }
-.lg__brand { display: flex; align-items: center; gap: 10px; }
+.lg__brand { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.lg__logo { block-size: 26px; inline-size: auto; flex: none; }
+.lg__divider { inline-size: 1px; block-size: 18px; background: var(--line-strong); margin-inline: 2px; }
 .lg__mark { display: inline-flex; color: var(--accent); }
 .lg__brand-name { font-weight: 700; letter-spacing: -0.01em; }
 .lg__brand-sub { color: var(--muted); font-size: var(--fs-xs); letter-spacing: 0.08em; text-transform: uppercase; }
@@ -32,7 +34,7 @@
   display: grid;
   gap: var(--sp-3);
   inline-size: 100%;
-  max-inline-size: 440px;
+  max-inline-size: 360px;
   padding: var(--sp-5);
   background: var(--surface);
   border: 1px solid var(--line);
@@ -146,10 +148,56 @@
 @keyframes lg-blink {
   50% { opacity: 0.35; }
 }
+/* 자율주행 안전 운영 하이라이트 — 오른쪽 모션 위에 떠 있는 브리프 */
+.lg-brief {
+  position: absolute;
+  z-index: 2;
+  inset-inline: clamp(20px, 3.4vw, 44px);
+  inset-block-end: clamp(20px, 4vh, 40px);
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--e-2);
+  backdrop-filter: blur(10px);
+}
+.lg-brief__eyebrow { color: var(--accent); letter-spacing: 0.12em; }
+.lg-brief h2 {
+  margin: 4px 0 6px;
+  font-size: clamp(19px, 1.7vw, 25px);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  white-space: pre-line;
+}
+.lg-brief__sub { margin: 0 0 8px; color: var(--accent); font-size: var(--fs-sm); font-weight: 600; }
+.lg-brief__body { margin: 0 0 10px; color: var(--ink-2); font-size: var(--fs-sm); line-height: 1.55; }
+.lg-brief__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.lg-brief__chips li {
+  padding: 3px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+}
+
 @media (max-width: 900px) {
   .lg { grid-template-columns: 1fr; background: var(--paper); }
-  .lg__motion { display: none; }
-  .lg__form { min-block-size: 100dvh; }
+  .lg__motion { display: block; border-inline-start: 0; border-block-start: 1px solid var(--line); }
+  .lg-motion__svg,
+  .lg-motion__caption,
+  .lg-motion__halo { display: none; }
+  .lg__form { min-block-size: auto; padding-block-end: var(--sp-5); }
+  .lg-brief {
+    position: static;
+    margin: 0;
+    padding: var(--sp-4) 18px var(--sp-5);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
 }
 @media (max-width: 640px) {
   .lg__form { padding: 28px 18px; gap: var(--sp-5); }

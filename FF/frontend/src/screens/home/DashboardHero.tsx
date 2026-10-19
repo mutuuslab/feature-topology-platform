@@ -11,6 +11,20 @@ export function DashboardHero() {
         <p className="ds-eyebrow">{D.eyebrow}</p>
         <h2>{D.title}</h2>
         <p className="dh__lead">{D.lead}</p>
+        <div className="dh-flag">
+          <span className="dh-flag__icon" aria-hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 21V4" />
+              <path d="M6 5h10l-2.5 3.5L16 12H6" />
+            </svg>
+          </span>
+          <span className="dh-flag__label">{D.flag.label}</span>
+          <span className="dh-flag__track" aria-hidden>
+            <i />
+          </span>
+          <span className="dh-flag__state">{D.flag.state}</span>
+          <span className="dh-flag__flow">{D.flag.flow}</span>
+        </div>
         <span className="dh__live">
           <i aria-hidden /> {D.live}
         </span>

@@ -88,6 +88,8 @@ export function LoginScreen() {
     <main id="main" className="lg" data-login>
       <section className="lg__form">
         <header className="lg__brand">
+          <img className="lg__logo" src="/brand/mutuuslab_logo01.png" alt="Mutuus Lab" width="894" height="171" />
+          <span className="lg__divider" aria-hidden />
           <span className="lg__mark" aria-hidden>
             <BrandMark />
           </span>
@@ -145,7 +147,7 @@ export function LoginScreen() {
         <footer className="lg__foot">{L.footer}</footer>
       </section>
 
-      <aside className="lg__motion" data-zone="ops" aria-hidden>
+      <aside className="lg__motion" data-zone="ops" aria-labelledby="lg-brief-title">
         <div className="lg-motion__halo" />
         <MotionGraphic />
         <div className="lg-motion__caption">
@@ -155,6 +157,17 @@ export function LoginScreen() {
           <span className="lg-motion__live">
             <i aria-hidden /> {L.visual.live}
           </span>
+        </div>
+        <div className="lg-brief">
+          <p className="ds-eyebrow lg-brief__eyebrow">{L.brief.eyebrow}</p>
+          <h2 id="lg-brief-title">{L.brief.title}</h2>
+          <p className="lg-brief__sub">{L.brief.sub}</p>
+          <p className="lg-brief__body">{L.brief.body}</p>
+          <ul className="lg-brief__chips">
+            {L.brief.chips.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
         </div>
       </aside>
     </main>

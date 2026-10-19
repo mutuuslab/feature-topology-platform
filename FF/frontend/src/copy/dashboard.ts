@@ -6,4 +6,5 @@ export const dashboard = {
   lead: '등록·분류·검증·출시·운영의 절차가 지금 이 순간에도 이어집니다.',
   flow: '등록 → Gate → 배포 → 운영',
   live: '절차 흐름',
+  flag: { label: 'Feature Flag', state: 'ON', flow: 'Safe Default → Canary → Fleet' },
 };

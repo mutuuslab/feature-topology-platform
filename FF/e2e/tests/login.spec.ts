@@ -28,10 +28,12 @@ test('로그인 — 틀린 비밀번호는 막고, FF/platform이면 내 대시�
   await expect(page.getByRole('button', { name: '플랫폼 들어가기' })).toBeVisible();
 });
 
-test('로그인 — 좁은 화면에서 모션은 숨고 가로 넘침이 없다', async ({ page }) => {
+test('로그인 — 좁은 화면은 모션 대신 브리프, 가로 넘침 없음', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/login');
   await expect(page.getByRole('button', { name: '플랫폼 들어가기' })).toBeVisible();
-  await expect(page.locator('.lg__motion')).toBeHidden();
+  // 모바일은 모션 SVG 대신 하이라이트 브리프를 보여 준다
+  await expect(page.locator('.lg-motion__svg')).toBeHidden();
+  await expect(page.locator('.lg-brief')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 });

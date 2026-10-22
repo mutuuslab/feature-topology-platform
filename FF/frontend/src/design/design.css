@@ -64,9 +64,9 @@ h3 {
   gap: var(--sp-2);
   height: calc(var(--row-h) - 4px);
   padding: 0 var(--sp-3);
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--control-line);
   border-radius: var(--r);
-  background: var(--surface);
+  background: var(--control-bg);
   color: var(--ink);
   font: inherit;
   font-size: var(--fs-sm);
@@ -81,9 +81,29 @@ h3 {
   transform: translateY(1px);
 }
 .ds-btn[disabled] {
-  opacity: 0.45;
+  /* 투명도만 낮추면 다크 테마에서 활성 버튼과 구분이 안 됐다(하네스 2판 결함 6) — 면·테두리·글자를 바꾼다.
+     면을 sunk로 두면 다크에서 카드에 구멍처럼 보였다 — 투명 면 + 점선 */
+  background: transparent;
+  border-color: var(--control-line);
+  border-style: dashed;
+  color: var(--faint);
   cursor: not-allowed;
   transform: none;
+}
+/* 이유 글자는 흐름 밖(버튼 바로 아래)에 둔다 — 흐름 안에 두면 끝 맞춤 폼에서 버튼이 입력칸보다 올라갔다 */
+.ds-btn-why {
+  position: relative;
+  display: inline-flex;
+}
+.ds-btn-why__text {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  width: max-content;
+  max-width: 32ch;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  pointer-events: none;
 }
 .ds-btn--primary {
   background: var(--accent);
@@ -151,10 +171,10 @@ h3 {
   align-items: center;
   gap: 2px;
   font-family: var(--font-mono);
-  font-size: 0.92em;
+  font-size: max(var(--fs-xs), 0.92em); /* 표(sm) 안에서 0.92em이 하한 아래로 내려가지 않게 */
   font-weight: 600;
   color: var(--ink);
-  background: var(--surface-sunk);
+  background: var(--chip-code-bg);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   padding: 0 2px 0 6px;
@@ -407,9 +427,12 @@ button.ds-gate:hover {
   border-radius: var(--r-lg);
   background: var(--surface);
 }
-.ds-state h3 {
+.ds-state .ds-state__title {
   margin: 0;
+  max-width: none;
   font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--ink);
 }
 .ds-state p {
   margin: 0;
@@ -420,10 +443,10 @@ button.ds-gate:hover {
   border-color: color-mix(in srgb, var(--danger) 45%, transparent);
   color: var(--ink-2);
 }
-.ds-state[data-state='error'] h3 {
+.ds-state[data-state='error'] .ds-state__title {
   color: var(--danger);
 }
-.ds-state[data-state='forbidden'] h3 {
+.ds-state[data-state='forbidden'] .ds-state__title {
   color: var(--warn);
 }
 .ds-skel {
@@ -641,7 +664,16 @@ button.ds-gate:hover {
 .ds-panel__body {
   padding: var(--sp-4);
 }
+/* 접는 패널(details.ds-panel)에는 머리·본문 래퍼가 없다 — 안쪽 여백을 직접 준다(글자가 테두리에 붙었다) */
+details.ds-panel {
+  padding: var(--sp-3) var(--sp-4);
+}
+details.ds-panel[open] {
+  /* 마지막 버튼 아래 비활성 이유 한 줄(흐름 밖)이 테두리에 붙지 않게 */
+  padding-bottom: calc(var(--sp-4) + 1.2em);
+}
 .ds-eyebrow {
+  overflow-wrap: anywhere; /* 'POST /ofrep/v1/…' 같은 긴 토큰이 패널 폭을 넘지 않게 */
   /* 3초 테스트 — 대문자·자간 확장·고정폭은 한글을 읽기 어렵게 하고 제목보다 먼저 읽힌다 */
   font-size: var(--fs-xs);
   font-weight: 600;
@@ -851,7 +883,8 @@ button.ds-gate:hover {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  font-family: var(--font-mono);
+  /* 한글 이름은 sans — 고정폭 글꼴의 한글 대체 글꼴은 글자 사이가 벌어져 '미 구 현'처럼 보인다. 숫자는 .ds-seg__count가 고정폭 */
+  font-family: var(--font-sans);
 }
 .ds-seg__opt:hover {
   background: var(--surface-3);
@@ -864,6 +897,7 @@ button.ds-gate:hover {
 .ds-seg__count {
   color: var(--muted);
   font-weight: 500;
+  font-family: var(--font-mono);
 }
 .ds-field {
   display: grid;
@@ -992,6 +1026,10 @@ textarea.ds-input {
 .ds-split--wide-side {
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
 }
+.ds-split > * {
+  /* 격자 칸은 기본 min-width:auto(내용 최소 폭) — 긴 코드 줄이 칸을 트랙 밖으로 밀지 않게 */
+  min-width: 0;
+}
 @media (max-width: 1279px) {
   .ds-split,
   .ds-split--wide-side {
@@ -1034,7 +1072,8 @@ textarea.ds-input {
 .ds-chips {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: var(--sp-1) var(--sp-2);
+  /* 줄 간격 10px — 링크 칩의 누르는 영역(24.6px, .ds-id a)이 위아래 줄과 겹치지 않는다(WCAG 2.5.8 target-size) */
+  gap: 10px var(--sp-2);
 }
 .ds-chain {
   display: grid;
@@ -1251,8 +1290,9 @@ textarea.ds-input {
   transition: background var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
 }
 .ds-fcell[data-v='on'] {
+  /* 허용 칸마다 녹색 테두리를 그리면 표 전체가 형광 격자가 됐다 — 글자색과 옅은 면만 */
   color: var(--ok);
-  border-color: var(--ok);
+  border-color: var(--line);
   background: var(--ok-soft);
 }
 .ds-fcell[data-v='off'] {
@@ -1289,8 +1329,8 @@ textarea.ds-input {
 .ds-progress__track {
   height: 8px;
   border-radius: 4px;
-  background: var(--surface-sunk);
-  border: 1px solid var(--line);
+  background: var(--track-bg);
+  border: 1px solid var(--control-line);
   overflow: hidden;
 }
 .ds-progress__fill {
@@ -1429,12 +1469,12 @@ textarea.ds-input {
 /* 보고서 v1.1 반영률 — 컴포넌트가 집행할 규칙 중 구현·시험된 수 */
 .ds-comp__std {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--accent);
 }
 .ds-comp__meta {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1760,7 +1800,7 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
 
 .ds-window { display: grid; gap: var(--sp-1); }
 .ds-window__head { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: baseline; font-size: var(--fs-sm); }
-.ds-window__track { position: relative; height: 10px; border-radius: 5px; background: var(--surface-3); overflow: hidden; }
+.ds-window__track { position: relative; height: 10px; border-radius: 5px; background: var(--track-bg); overflow: hidden; }
 .ds-window__used,
 .ds-window__add { position: absolute; top: 0; bottom: 0; left: 0; }
 .ds-window__used { background: color-mix(in srgb, var(--ink-2) 55%, var(--surface-3)); }
@@ -1814,8 +1854,8 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-learn-card[data-status='planned'] h3 { color: var(--ink-2); font-weight: 600; }
 .ds-learn-card__foot .ds-btn { margin-left: auto; }
 .ds-learn-card__head { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: center; }
-.ds-learn-card h3 { margin: 0; font-size: var(--fs-md); line-height: 1.35; }
-.ds-learn-card h3 a { color: inherit; }
+.ds-learn-card h2 { margin: 0; font-size: var(--fs-md); line-height: 1.35; }
+.ds-learn-card h2 a { color: inherit; }
 .ds-learn-card__sum { margin: 0; font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.5; }
 .ds-learn-card__foot { display: flex; justify-content: space-between; gap: var(--sp-2); flex-wrap: wrap; }
 .ds-learn-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); }
@@ -1878,7 +1918,7 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   stroke-linejoin: round;
 }
 .ds-topo-edge {
-  stroke: var(--line-strong);
+  stroke: var(--chart-line);
   stroke-width: 2;
 }
 .ds-topo-edge[data-type='EXCLUDES'] {
@@ -1888,6 +1928,8 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   stroke: var(--gate-PASS);
 }
 .ds-topo-edge[data-verdict='FAIL'] {
+  /* 색만으로 구분하지 않는다 — FAIL은 점선 */
+  stroke-dasharray: 5 3;
   stroke: var(--gate-FAIL);
 }
 .ds-topo-arrow {
@@ -1895,7 +1937,7 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 }
 .ds-topo-node circle {
   fill: var(--surface);
-  stroke: var(--line-strong);
+  stroke: var(--chart-line);
   stroke-width: 2;
 }
 .ds-topo-node[data-focus='true'] circle {
@@ -2074,6 +2116,26 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   font-size: var(--fs-xs);
   color: var(--muted);
 }
+/* 지도 확대·축소 컨트롤 — maplibre 기본 흰 상자를 테마 면으로 */
+:root .maplibregl-ctrl-group:not(:empty) {
+  background: var(--map-ctrl-bg);
+  border: 1px solid var(--control-line);
+  box-shadow: var(--e-1);
+}
+/* maplibre 기본(.maplibregl-ctrl.maplibregl-ctrl-attrib, 반투명 흰색)보다 구체적으로 — 다크에서 흰 알약에 밝은 링크가 됐다 */
+:root .maplibregl-ctrl.maplibregl-ctrl-attrib {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  color: var(--muted);
+}
+:root .maplibregl-ctrl-attrib a {
+  color: var(--ink-2);
+}
+:root .maplibregl-ctrl-group button + button {
+  border-top-color: var(--line);
+}
+[data-theme='dark'] .maplibregl-ctrl-group .maplibregl-ctrl-icon {
+  filter: invert(1) hue-rotate(180deg);
+}
 .fm-pop .maplibregl-popup-content {
   padding: var(--sp-2) var(--sp-3);
   font: inherit;
@@ -2204,4 +2266,72 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: bottom;
+}
+
+/* 칩·배지는 줄을 바꾸지 않는다 — 'VIN-DEMO-001'·'FEAT-00002@1.5.0'이 하이픈 뒤에서 두 줄로 갈리지 않게(하네스 UX-19, 2026-10-23).
+   설명이 붙는 태그(Function 'FUNC-000056 …Extended Gap Control 기능')는 칸 안에서 줄을 바꿔야 하므로 ID 부분만 묶는다 */
+.ds-id,
+.ds-badge,
+.ds-tag .ds-mono,
+.ds-tag:not(:has(.ds-mono)) {
+  white-space: nowrap;
+}
+/* 날짜(YYYY-MM-DD)는 하이픈 뒤에서 끊지 않는다 — 기간 '2027-01-15 ~ 2027-12-31'은 '~'에서만 줄을 바꾼다 */
+.ds-date {
+  white-space: nowrap;
+}
+/* 가로로 넘치는 표 영역은 키보드 초점을 받는다(DataTable) — 초점 표시 */
+.ds-table-wrap:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* 목록 속 링크 — 클릭 대상 높이 24px 이상(WCAG 2.5.8, UI 하네스 2판 6단계) */
+.ds-linklist a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: 24px;
+}
+/* ID 칩 링크 — 칩 모양은 그대로 두고 누르는 영역만 위아래 4px 넓힌다(16.6px → 24.6px, WCAG 2.5.8) */
+.ds-id a {
+  padding-block: 4px;
+  margin-block: -4px;
+}
+/* 표 첫 줄의 칩 링크가 고정 머리글(th)에 가려지지 않게 — 넓힌 4px만큼 칸 안쪽으로 */
+.ds-table td .ds-chips {
+  padding-block: 4px;
+}
+/* 접기 제목(details > summary) — 클릭 대상 24px 이상 */
+.ds-screen summary {
+  min-height: 24px;
+  padding-block: 2px;
+}
+/* 체크박스 목록 — 줄 높이 28px, 상자 사이 간격이 24px 원을 넘는다 */
+.ds-screen li > label:has(> input[type='checkbox']),
+.ds-screen li > label:has(> input[type='radio']) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 28px;
+}
+
+/* Registry 목록 JIRA Epic 칸 — 칩과 어긋남 표시를 세로로 */
+/* 표 칸의 min-width는 무시된다 — 칸 안 상자로 최소 폭을 준다(1366에서 이름이 세 줄로 갈렸다) */
+.ds-name-cell {
+  display: inline-block;
+  min-width: 6.5em;
+}
+.ds-epic-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+/* 열 머리가 'JIRA Epic'이라 칸마다 'JIRA' 표지는 반복이다 — 1366에서 이름·범위 열이 눌렸다 */
+.ds-epic-cell .ds-ext__sys {
+  display: none;
+}
+.ds-epic-cell .ds-ext {
+  white-space: nowrap;
 }

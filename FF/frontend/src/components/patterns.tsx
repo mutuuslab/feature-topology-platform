@@ -16,13 +16,14 @@ export function ErrorState({ msg, onRetry }: { msg: string; onRetry?: () => void
 }
 export function NoPermission({ verb }: { verb: string }) {
   const { t } = useT();
-  return <span className="pill" title={`${t('noPerm')}: ${verb}`} style={{ opacity: .6 }}>🔒 {verb}</span>;
+  // 투명도로 흐리게 하면 밝은 면에서 대비가 4.5:1 아래로 떨어진다(axe color-contrast) — 글자색으로만 낮춘다
+  return <span className="pill" title={`${t('noPerm')}: ${verb}`} style={{ color: 'var(--ink-2)', borderStyle: 'dashed' }}>🔒 {verb}</span>;
 }
 
 // 권한 게이팅 버튼
 export function GButton({ verb, children, ...rest }: any) {
   const { can } = useApp();
-  if (!can(verb)) return <span className="btn" style={{ opacity: .5, cursor: 'not-allowed' }} title={`권한 필요: ${verb}`}>🔒 {children}</span>;
+  if (!can(verb)) return <span className="btn" style={{ color: 'var(--ink-2)', borderStyle: 'dashed', cursor: 'not-allowed' }} title={`권한 필요: ${verb}`}>🔒 {children}</span>;
   return <button {...rest} className={rest.className || 'btn'}>{children}</button>;
 }
 
@@ -54,4 +55,10 @@ export function NotFound() {
   const { t } = useT();
   // BrowserRouter이므로 '#/'가 아니라 라우터 링크로 홈에 간다 (IA 감사: 깨진 링크 수정)
   return <div data-not-found><EmptyState title={t('notFound')} cta={<Link className="btn" to="/">{t('home')}</Link>} /></div>;
+}
+
+/** 문장 속 날짜·시각(2026-09-13, 2026-09-13T10:00:00Z)이 하이픈 뒤에서 두 줄로 갈리지 않게 묶는다(UI 하네스 2판, 2026-10-23) */
+export function DateText({ text }: { text: string }) {
+  const parts = text.split(/(\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?Z?)?)/);
+  return <>{parts.map((p, i) => (i % 2 ? <span key={i} style={{ whiteSpace: 'nowrap' }}>{p}</span> : p))}</>;
 }

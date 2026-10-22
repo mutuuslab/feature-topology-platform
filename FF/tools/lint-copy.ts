@@ -7,6 +7,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { guideTermHits, loadGuideTerms } from './guide-terms.ts';
 import { platformTermHits } from './platform-terms.ts';
+import { TWIN, twinVisible } from './twin-terms.ts';
 import { FF, ratchet, rel, walk } from './lib.ts';
 
 const SRC = join(FF, 'frontend', 'src');
@@ -26,9 +27,6 @@ const BANNED: [RegExp, string][] = [
   [/에러가 발생했습니다/, '원인과 다음 행동을 함께 쓰기'],
   [/디지털\s?트윈|digital\s?twin|트윈|\btwin\b/i, "'Fleet 실시간 적용 현황'·'차량별 적용 상태' 등 업무 용어 (Digital Twin 용어 금지)"],
 ];
-const TWIN = /디지털\s?트윈|digital\s?twin|트윈|\btwin\b/i;
-/** 화면에 보이는 문자열(따옴표·JSX 텍스트) 안의 Twin 표기 — 경로·식별자(/twin/…, TwinVehicle)는 제외 */
-const TWIN_VISIBLE = /['"`>][^'"`<]*?(디지털\s?트윈|[Dd]igital\s?[Tt]win|트윈|(?<![/\w])Twin(?![\w/]))/;
 
 const HANGUL_JSX_TEXT = />[^<>{}]*[가-힣][^<>{}]*</;
 const HANGUL_ATTR = /\b(?:title|placeholder|aria-label|alt|label)=["'][^"']*[가-힣]/;
@@ -53,7 +51,7 @@ for (const f of walk(SRC, ['.tsx'])) {
   const r = rel(f);
   if (!NEW_UI_DIRS.some((d) => r.startsWith(d + '/'))) continue;
   readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
-    if (!line.trim().startsWith('//') && TWIN_VISIBLE.test(line)) errors.push(`${r}:${i + 1}  금지어 Twin/트윈 → 업무 용어`);
+    if (twinVisible(line)) errors.push(`${r}:${i + 1}  금지어 Twin/트윈 → 업무 용어`);
     if (!line.trim().startsWith('//') && OLD_RUNNER_VISIBLE.test(line)) errors.push(`${r}:${i + 1}  금지어 ${OLD_RUNNER} → 가상검증(CARLA)`);
   });
 }
@@ -71,7 +69,7 @@ let twinLines = 0;
 for (const f of walk(SRC, ['.ts', '.tsx'])) {
   const text = readFileSync(f, 'utf8');
   if (text.includes('FEAT-BDC')) bdcFiles++;
-  if (f.endsWith('.tsx')) for (const line of text.split('\n')) if (!line.trim().startsWith('//') && !line.trim().startsWith('*') && TWIN_VISIBLE.test(line)) twinLines++;
+  if (f.endsWith('.tsx')) for (const line of text.split('\n')) if (twinVisible(line)) twinLines++;
   if (!/__tests__|\.test\./.test(f))
     text.split('\n').forEach((line, i) => {
       const t = line.trim();

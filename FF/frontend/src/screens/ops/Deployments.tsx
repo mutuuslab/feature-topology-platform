@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
+import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 import { Progress, PubStatus, type Delivery } from './shared';
 
@@ -54,7 +54,7 @@ function Keys() {
           { key: 'id', header: D.col.key, cell: (k) => <span className="ds-mono">{k.keyId}</span> },
           { key: 's', header: D.col.status, cell: (k) => <VerdictBadge value={k.status === 'ACTIVE' ? 'PASS' : '미판정'} /> },
           { key: 'f', header: 'Fingerprint', cell: (k) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{k.fingerprint}</span> },
-          { key: 'n', header: 'notAfter', cell: (k) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{k.notAfter.slice(0, 10)}</span> },
+          { key: 'n', header: 'notAfter', cell: (k) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{k.notAfter.slice(0, 10)}</span> },
         ]}
       />
       <Drawer open={open} title={D.rotate} onClose={() => setOpen(false)}>
@@ -64,7 +64,7 @@ function Keys() {
             <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
           </Field>
           <ErrorNote error={rotate.error} />
-          <Button variant="primary" disabled={reason.trim().length < 2 || rotate.isPending} onClick={() => rotate.mutate({ body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}>
+          <Button variant="primary" disabled={reason.trim().length < 2 || rotate.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => rotate.mutate({ body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}>
             {D.rotate}
           </Button>
         </div>
@@ -105,7 +105,7 @@ export function DeploymentList() {
               { key: 's', header: D.col.status, cell: (p) => <PubStatus status={p.status} /> },
               { key: 'p', header: D.col.progress, cell: (p) => <Progress d={p} /> },
               { key: 'c', header: D.col.channel, cell: (p) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{p.channel}</span> },
-              { key: 'at', header: D.col.at, cell: (p) => <span className="ds-mono">{when(p.createdAt)}</span>, sort: (p) => p.createdAt },
+              { key: 'at', header: D.col.at, cell: (p) => <span className="ds-mono ds-nowrap">{when(p.createdAt)}</span>, sort: (p) => p.createdAt },
             ]}
           />
         </AsyncView>
@@ -154,7 +154,7 @@ export function DeploymentDetail() {
                     { k: D.sequence, v: <span className="ds-mono">#{p.payload.sequence}</span> },
                     { k: 'desired', v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', wordBreak: 'break-all' }}>{p.payload.desired}</span> },
                     { k: D.campaign, v: <span className="ds-mono">{p.campaignId ?? '—'}</span> },
-                    { k: D.deadline, v: <span className="ds-mono">{when(p.deadlineAt)}</span>, note: p.closedAt ? when(p.closedAt) : undefined },
+                    { k: D.deadline, v: <span className="ds-mono ds-nowrap">{when(p.deadlineAt)}</span>, note: p.closedAt ? when(p.closedAt) : undefined },
                     ...(p.ackOnly?.length ? [{ k: D.ackOnly, v: <span className="ds-mono">{p.ackOnly.join(', ')}</span> }] : []),
                   ]}
                 />
@@ -179,7 +179,7 @@ export function DeploymentDetail() {
                   rows={[...d.readbacks].reverse()}
                   rowKey={(r) => `${r.vin}-${r.at}-${r.observed}`}
                   columns={[
-                    { key: 'at', header: D.col.at, cell: (r) => <span className="ds-mono">{when(r.at)}</span> },
+                    { key: 'at', header: D.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
                     { key: 'v', header: ko.fleet.vehicle, cell: (r) => <span className="ds-mono">{r.vin}</span> },
                     { key: 'o', header: 'observed', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', wordBreak: 'break-all' }}>{r.rejectReason ? `REJECTED · ${r.rejectReason}` : r.observed}</span> },
                     { key: 'via', header: 'via', cell: (r) => <span className="ds-tag">{r.via}</span> },

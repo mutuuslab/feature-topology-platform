@@ -104,7 +104,7 @@ export function IamScreen() {
               rows={den.data?.items ?? []}
               rowKey={(r) => `${r.at}-${r.actorId}-${r.action}`}
               columns={[
-                { key: 'at', header: I.col.at, cell: (r) => <span className="ds-mono">{when(r.at)}</span> },
+                { key: 'at', header: I.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
                 { key: 'a', header: I.col.actor, cell: (r) => <span className="ds-mono">{`${r.actorId} · ${r.actorRole}`}</span> },
                 { key: 'x', header: I.col.action, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.action}</span> },
                 { key: 'r', header: ko.audit.col.reason, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.reason ?? ''}</span> },

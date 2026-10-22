@@ -92,6 +92,8 @@
 }
 .sh-search input {
   flex: 1;
+  /* 클릭 대상은 상자 높이 전체(WCAG 2.5.8 24px 이상) */
+  align-self: stretch;
   min-width: 0;
   border: 0;
   outline: 0;
@@ -100,6 +102,7 @@
   font: inherit;
 }
 .sh-kbd {
+  min-height: 24px;
   border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--muted);
@@ -125,6 +128,7 @@
   font-weight: 600;
   color: var(--ink-2);
   padding: 0 var(--sp-2);
+  min-height: 28px;
   cursor: pointer;
   white-space: nowrap;
   border: 0;
@@ -183,6 +187,7 @@
   font-weight: 600;
   cursor: pointer;
   max-width: 150px;
+  min-height: 28px;
 }
 .sh-tools .ds-btn {
   width: 32px;
@@ -355,13 +360,25 @@
   color: var(--ink);
   min-width: 0;
 }
-.sh-main[data-zone='ops'] {
-  /* 운영 영역 표식은 빨강이 아니다(빨강은 파괴적 액션·FAIL 전용) — 본문 위 얇은 주의선 */
-  box-shadow: inset 0 2px 0 var(--warn);
+.sh-main[data-area='ops'] {
+  /* 운영 영역 표식 — 빨강(파괴·FAIL)도 앰버(주의)도 아닌 청록 띠. 테마는 바꾸지 않는다 */
+  box-shadow: inset 0 3px 0 var(--area-ops);
 }
-.sh-panel[data-zone='ops'] {
-  background: var(--surface);
+.sh-panel[data-area='ops'] {
+  box-shadow: inset 3px 0 0 var(--area-ops);
+}
+.sh-panel__area {
+  margin: 0;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r);
+  background: var(--area-ops-soft);
   color: var(--ink);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  justify-self: start;
+}
+.sh-rail__btn[data-group-zone='ops'][aria-current='true']::before {
+  background: var(--area-ops);
 }
 .sh-trail ol {
   display: flex;
@@ -642,7 +659,7 @@
   border-radius: 8px;
   background: var(--danger);
   color: var(--surface);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 16px;
   text-align: center;
@@ -773,6 +790,7 @@
 }
 .ntf-prefs li {
   display: flex;
+  min-height: 28px; /* 체크박스 줄 간격 — 클릭 대상 24px 원이 이웃과 겹치지 않게(WCAG 2.5.8) */
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-2);

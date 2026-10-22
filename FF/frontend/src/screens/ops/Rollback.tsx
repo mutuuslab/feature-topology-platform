@@ -30,7 +30,7 @@ import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, Segmented, Select, VerdictBadge } from '../../design';
+import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, Segmented, Select, VerdictBadge } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission, when } from '../shared';
 
@@ -198,7 +198,7 @@ function RollbackForm({ d, me }: { d: DeploymentDetail; me: string }) {
       </Select>
       <p className="pv-lead">{F.approversHint}</p>
       <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
-        <Button disabled={!recovery || STATIC_MODE || preview.isPending} onClick={() => preview.mutate({ body: { deploymentId: d.deploymentId, recovery: { policyId: recovery }, scope } })}>
+        <Button disabled={!recovery || STATIC_MODE || preview.isPending} reason={whyDisabled([STATIC_MODE, ko.page.readOnly], [!recovery, ko.why.recovery])} onClick={() => preview.mutate({ body: { deploymentId: d.deploymentId, recovery: { policyId: recovery }, scope } })}>
           {F.preview}
         </Button>
         <Button
@@ -269,7 +269,7 @@ function PendingItem({ x, me }: { x: (RollbackRequest & { kind: 'request' }) | (
         <span className="ds-tag">{R.kind[x.kind]}</span>
         <span className="ds-mono">{id}</span>
         <span>{label}</span>
-        <span className="ds-mono">{when(x.requestedAt)}</span>
+        <span className="ds-mono ds-nowrap">{when(x.requestedAt)}</span>
       </div>
       <KeyValue
         rows={[
@@ -287,7 +287,7 @@ function PendingItem({ x, me }: { x: (RollbackRequest & { kind: 'request' }) | (
             <Field label={R.comment}>
               <input className="ds-input" value={comment} onChange={(e) => setComment(e.target.value)} />
             </Field>
-            <Button variant="primary" disabled={comment.trim().length < 2 || decide.isPending} onClick={() => decide.mutate({ params: { id }, body: { decision: 'APPROVE', comment } })}>
+            <Button variant="primary" disabled={comment.trim().length < 2 || decide.isPending} reason={whyDisabled([comment.trim().length < 2, ko.why.comment])} onClick={() => decide.mutate({ params: { id }, body: { decision: 'APPROVE', comment } })}>
               {R.approve}
             </Button>
             <Button disabled={comment.trim().length < 2 || decide.isPending} onClick={() => decide.mutate({ params: { id }, body: { decision: 'REJECT', comment } })}>
@@ -325,7 +325,7 @@ function DeploymentPanel({ id, me }: { id: string; me: string }) {
               rowKey={(c) => c.policyId}
               columns={[
                 { key: 'v', header: F.recovery, cell: (c) => <span className="ds-mono">{versionText(c)}</span> },
-                { key: 'at', header: R.hcol.at, cell: (c) => <span className="ds-mono">{when(c.deployedAt)}</span> },
+                { key: 'at', header: R.hcol.at, cell: (c) => <span className="ds-mono ds-nowrap">{when(c.deployedAt)}</span> },
                 { key: 'e', header: R.eligible, cell: (c) => <VerdictBadge value={c.eligible ? 'PASS' : 'FAIL'} /> },
                 { key: 'b', header: R.failure, cell: (c) => (c.eligible ? <span className="ds-mono">{c.artifactId}</span> : c.blockers.map((b) => b.message).join(' · ')) },
               ]}
@@ -343,7 +343,7 @@ function DeploymentPanel({ id, me }: { id: string; me: string }) {
                   { key: 'p', header: R.col.deployed, cell: (h) => <span className="ds-mono">{h.policyId} r{h.revision}</span> },
                   { key: 's', header: R.col.artifact, cell: (h) => `${h.status} ${h.confirmed}/${h.denominator}` },
                   { key: 'r', header: R.title, cell: (h) => h.rollback ?? '—' },
-                  { key: 'at', header: R.hcol.at, cell: (h) => <span className="ds-mono">{when(h.createdAt)}</span> },
+                  { key: 'at', header: R.hcol.at, cell: (h) => <span className="ds-mono ds-nowrap">{when(h.createdAt)}</span> },
                 ]}
               />
             </details>
@@ -493,7 +493,7 @@ export function RollbackScreen() {
               { key: 'a', header: R.hcol.after, cell: (x) => <span className="ds-mono">{x.after.policyId} r{x.after.revision}</span> },
               { key: 'st', header: R.hcol.status, cell: (x) => <><VerdictBadge value={STATUS_VERDICT[x.status] ?? '미판정'} /> {ROLLBACK_STATUS_LABEL[x.status]}</> },
               { key: 'r', header: R.hcol.result, cell: (x) => (x.result ? ROLLBACK_RESULT_LABEL[x.result] : '—') },
-              { key: 'at', header: R.hcol.at, cell: (x) => <span className="ds-mono">{when(x.startedAt)}</span>, sort: (x) => x.startedAt },
+              { key: 'at', header: R.hcol.at, cell: (x) => <span className="ds-mono ds-nowrap">{when(x.startedAt)}</span>, sort: (x) => x.startedAt },
             ]}
           />
         </AsyncView>

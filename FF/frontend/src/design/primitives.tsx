@@ -1,18 +1,36 @@
 // 디자인 키트 기본 부품 — 버튼·ID 칩·패널·지표·비동기 상태·탭·Diff·이벤트 스트림.
-import { useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { useId, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ko } from '../copy/ko';
 import { Icon, type IconName } from './icons';
 
-export function Button({ variant = 'default', icon, children, ...rest }: { variant?: 'default' | 'primary' | 'danger' | 'ghost'; icon?: IconName } & ButtonHTMLAttributes<HTMLButtonElement>) {
+/**
+ * reason — 비활성일 때 버튼 아래에 보이는 이유("권한이 없습니다", "대상을 고르세요"). 회색 버튼만 두면
+ * 사용자가 왜 못 누르는지 모른다(하네스 2판 결함 6). 활성일 때는 그리지 않는다.
+ */
+export function Button({ variant = 'default', icon, children, reason, ...rest }: { variant?: 'default' | 'primary' | 'danger' | 'ghost'; icon?: IconName; reason?: ReactNode } & ButtonHTMLAttributes<HTMLButtonElement>) {
+  const rid = useId();
   const cls = ['ds-btn', variant !== 'default' && `ds-btn--${variant}`, !children && 'ds-btn--icon', rest.className].filter(Boolean).join(' ');
-  return (
-    <button type="button" {...rest} className={cls}>
+  const why = rest.disabled && reason ? reason : null;
+  const btn = (
+    <button type="button" {...rest} className={cls} aria-describedby={why ? rid : rest['aria-describedby']}>
       {icon && <Icon name={icon} size={16} />}
       {children}
     </button>
   );
+  if (!why) return btn;
+  return (
+    <span className="ds-btn-why">
+      {btn}
+      <span className="ds-btn-why__text" id={rid}>
+        {why}
+      </span>
+    </span>
+  );
 }
+
+/** 비활성 이유 고르기 — 먼저 걸린 조건의 문구. 처리 중(isPending)은 이유로 쓰지 않는다(잠깐이다) */
+export const whyDisabled = (...rules: [unknown, ReactNode][]): ReactNode | undefined => rules.find(([hit]) => !!hit)?.[1];
 
 /** Feature·Baseline·Catalog 등 ID — 모노 글꼴, 복사, 딥링크 */
 /** Feature 요약 서랍 — 어디서든 Feature ID 옆 버튼으로 연다(셸의 FeaturePeek가 듣는다, 설계안 2.1 우측 컨텍스트 서랍) */
@@ -95,8 +113,10 @@ export type AsyncState = 'loading' | 'ready' | 'empty' | 'error' | 'forbidden';
  * 모든 재디자인 화면의 데이터 영역은 이것으로 감싼다 — 로딩·빈·오류·권한 없음을 같은 모양으로,
  * data-state 속성으로 노출해 e2e 상태 체크리스트가 검증한다.
  */
-export function AsyncView({ state, stale, onRetry, empty, error, children, rows = 6 }: {
+export function AsyncView({ state, stale, onRetry, empty, error, children, rows = 6, filtered }: {
   state: AsyncState;
+  /** 검색·필터가 걸린 상태 — 빈 결과일 때만 "조건을 바꿔 보세요"를 말한다(필터 없는 화면에서 같은 말이 반복됐다) */
+  filtered?: boolean;
   stale?: boolean;
   onRetry?: () => void;
   empty?: { title?: string; body?: string; action?: ReactNode };
@@ -111,11 +131,12 @@ export function AsyncView({ state, stale, onRetry, empty, error, children, rows 
       </div>
     );
   if (state === 'error' || state === 'forbidden' || state === 'empty') {
-    const t = state === 'error' ? [ko.state.errorTitle, error ?? ko.state.errorBody] : state === 'forbidden' ? [ko.state.forbiddenTitle, ko.state.forbiddenBody] : [empty?.title ?? ko.state.emptyTitle, empty?.body ?? ko.state.emptyBody];
+    const t = state === 'error' ? [ko.state.errorTitle, error ?? ko.state.errorBody] : state === 'forbidden' ? [ko.state.forbiddenTitle, ko.state.forbiddenBody] : [empty?.title ?? (filtered ? ko.state.emptyFilteredTitle : ko.state.emptyTitle), empty?.body ?? (filtered ? ko.state.emptyFilteredBody : ko.state.emptyBody)];
     return (
       <div className="ds-state" data-state={state} role={state === 'error' ? 'alert' : 'status'}>
         <Icon name={state === 'empty' ? 'grid' : 'alert'} size={22} />
-        <h3>{t[0]}</h3>
+        {/* 제목 요소가 아니다 — 화면 h1 바로 아래·패널 h2 아래 어디서든 제목 단계를 건너뛰지 않게(axe heading-order) */}
+        <p className="ds-state__title">{t[0]}</p>
         <p>{t[1]}</p>
         {state === 'error' && onRetry && <Button onClick={onRetry}>{ko.state.retry}</Button>}
         {state === 'empty' && empty?.action}
@@ -207,8 +228,8 @@ export interface StreamItem {
   summary?: ReactNode;
 }
 
-export function EventStream({ items, max = 50 }: { items: StreamItem[]; max?: number }) {
-  if (!items.length) return <p className="ds-kpi__hint">{ko.stream.empty}</p>;
+export function EventStream({ items, max = 50, empty }: { items: StreamItem[]; max?: number; empty?: ReactNode }) {
+  if (!items.length) return <p className="ds-kpi__hint">{empty ?? ko.stream.empty}</p>;
   return (
     <ol className="ds-stream" aria-live="polite">
       {items.slice(-max).reverse().map((e) => (

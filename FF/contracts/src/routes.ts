@@ -309,6 +309,7 @@ export const ROUTES: RouteDef[] = [
   // GitLab · JIRA · codeBeamer 양방향 연계(IF-13·IF-14·IF-01) — 주인 규칙 contracts/rules/ext-sync
   { name: 'extSync', method: 'GET', path: '/api/integrations/sync', summary: '양방향 연계 현황 — 시스템별 연결·보내는 중·실패·충돌·거부, 주인 규칙', component: 'D05-01' },
   { name: 'extFeatureTrace', method: 'GET', path: '/api/integrations/sync/features/:id/:ver', summary: 'Feature 버전 추적 — 요구(codeBeamer)·Epic·CR(JIRA)·MR·파이프라인(GitLab)·정책', component: 'D05-01', sample: { id: 'FEAT-00022', ver: '1.0.0' } },
+  { name: 'extFeatureEpics', method: 'GET', path: '/api/integrations/sync/epics', summary: 'Feature 버전별 JIRA Epic — 키·상태·동기 상태·플랫폼 Lifecycle 기준 상태(목록 화면용 한 번 조회)', component: 'D05-01' },
   { name: 'extChangeRequests', method: 'GET', path: '/api/integrations/sync/change-requests', summary: 'JIRA 변경요청(CR)과 연결된 정책 상태', component: 'D05-01' },
   { name: 'extConflicts', method: 'GET', path: '/api/integrations/sync/conflicts', summary: '동기화 충돌 — 양쪽 값, 처리 결과', component: 'D05-01', query: ['status'] },
   { name: 'resolveExtConflict', method: 'POST', path: '/api/integrations/sync/conflicts/:id/resolve', summary: '충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용)', component: 'D05-01', roles: ['IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER'], body: ResolveConflictBody },

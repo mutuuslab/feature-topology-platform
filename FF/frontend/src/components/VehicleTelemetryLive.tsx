@@ -70,12 +70,12 @@ export function VehicleTelemetryLive({ snapshot, vin, lang }: VehicleTelemetryLi
 
       <div className="vtel-grid">
         <div className="vtel-col">
-          <h4 className="vtel-sub">
+          <h2 className="vtel-sub">
             {lang === 'en' ? 'Signal TTL freshness' : '신호 TTL 신선도'}
             <span className="muted small">
               {lang === 'en' ? ' — receipt resets the timer' : ' — 수신하면 타이머가 되감깁니다'}
             </span>
-          </h4>
+          </h2>
           {rows.map((r) => (
             <div
               className="vtel-sig"
@@ -84,7 +84,7 @@ export function VehicleTelemetryLive({ snapshot, vin, lang }: VehicleTelemetryLi
               data-signal={r.key}
               data-stale={r.unusable}
             >
-              <span className="vtel-sig-nm">
+              <span className="vtel-sig-nm" title={`${T.pick(r.label, lang)} ${r.vss.split(':').slice(-1)[0]}`}>
                 {T.pick(r.label, lang)}
                 <span className="vtel-vss mono">{r.vss.split(':').slice(-1)[0]}</span>
               </span>
@@ -103,14 +103,14 @@ export function VehicleTelemetryLive({ snapshot, vin, lang }: VehicleTelemetryLi
         </div>
 
         <div className="vtel-col">
-          <h4 className="vtel-sub">
+          <h2 className="vtel-sub">
             {lang === 'en' ? 'Receipt stream' : '수신 이벤트 스트림'}
             <span className="muted small">
               {lang === 'en'
                 ? ` — last ${RX_WINDOW_S}s counts as flowing`
                 : ` — 최근 ${RX_WINDOW_S}초 수신이면 정상`}
             </span>
-          </h4>
+          </h2>
           <div className="vtel-stream" data-testid="vtel-stream" tabIndex={0} role="log" aria-label="telemetry stream">
             {frames.length === 0 ? (
               <p className="muted small vtel-empty" data-testid="vtel-stream-empty">

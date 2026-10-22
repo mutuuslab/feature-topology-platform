@@ -75,7 +75,7 @@ function AnomalyDrawer({ id, onClose }: { id: string | null; onClose: () => void
             rows={[...a.signals].reverse()}
             rowKey={(s) => `${s.at}-${s.vin}-${s.code}-${s.ref}`}
             columns={[
-              { key: 'at', header: A.col.updated, cell: (s) => <span className="ds-mono">{when(s.at)}</span> },
+              { key: 'at', header: A.col.updated, cell: (s) => <span className="ds-mono ds-nowrap">{when(s.at)}</span> },
               { key: 'v', header: A.col.vehicles, cell: (s) => <span className="ds-mono">{s.vin ?? '—'}</span> },
               { key: 'c', header: 'code', cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.code}</span> },
               { key: 's', header: A.col.severity, cell: (s) => <VerdictBadge value={SEVERITY_VERDICT[s.severity] ?? '미판정'} /> },
@@ -128,7 +128,7 @@ export function AnomalyScreen() {
         lead={A.lead}
         message={(() => {
           const n = all.filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length;
-          return !q.data ? { tone: 'neutral', value: '—', text: A.key.open } : n ? { tone: 'warn', value: n, text: A.key.open } : { tone: 'ok', text: A.key.clean };
+          return !q.data ? { tone: 'neutral', value: '—', text: A.key.open } : all.length === 0 ? { tone: 'neutral', value: 0, text: A.key.none } : n ? { tone: 'warn', value: n, text: A.key.open } : { tone: 'ok', text: A.key.clean };
         })()}
       />
       <Segmented
@@ -154,7 +154,7 @@ export function AnomalyScreen() {
             { key: 'a', header: A.col.advice, cell: (a) => <span style={{ fontWeight: a.advice === 'KILL' ? 600 : 400 }}>{A.advice[a.advice]}</span> },
             { key: 'v', header: A.col.vehicles, cell: (a) => <span className="ds-mono">{a.vins.length}</span>, align: 'right' },
             { key: 'st', header: A.col.status, cell: (a) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{A.status[a.status]}</span> },
-            { key: 'u', header: A.col.updated, cell: (a) => <span className="ds-mono">{when(a.updatedAt)}</span>, sort: (a) => a.updatedAt },
+            { key: 'u', header: A.col.updated, cell: (a) => <span className="ds-mono ds-nowrap">{when(a.updatedAt)}</span>, sort: (a) => a.updatedAt },
           ]}
         />
       </AsyncView>
@@ -193,8 +193,9 @@ export function FeedbackScreen() {
         title={FB.title}
         lead={FB.lead}
         message={(() => {
-          const open = rows.filter((r) => r.status === 'OPEN').length;
-          return !q.data ? { tone: 'neutral', value: '—', text: FB.key.open } : open ? { tone: 'warn', value: open, text: FB.key.open } : { tone: 'ok', text: FB.key.clean };
+          // 표의 '검토 중'(ACCEPTED)도 아직 끝나지 않은 피드백이다 — 헤드라인이 초록인데 표에 검토 중 행이 보였다
+          const open = rows.filter((r) => r.status === 'OPEN' || r.status === 'ACCEPTED').length;
+          return !q.data ? { tone: 'neutral', value: '—', text: FB.key.open } : rows.length === 0 ? { tone: 'neutral', value: 0, text: FB.key.none } : open ? { tone: 'warn', value: open, text: FB.key.open } : { tone: 'ok', text: FB.key.clean };
         })()}
       />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
@@ -209,7 +210,7 @@ export function FeedbackScreen() {
             { key: 'a', header: FB.col.actions, cell: (f) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{f.actions.map((x) => x.ref).join(' · ')}</span> },
             { key: 'st', header: FB.col.status, cell: (f) => <VerdictBadge value={f.status === 'RESOLVED' ? 'PASS' : f.status === 'ACCEPTED' ? '검토 중' : 'CONDITIONAL'} /> },
             { key: 'an', header: FB.col.anomaly, cell: (f) => <Link className="ds-mono" to={`/ops/anomalies?id=${f.anomalyId}`}>{f.anomalyId}</Link> },
-            { key: 'c', header: FB.col.created, cell: (f) => <span className="ds-mono">{when(f.createdAt)}</span>, sort: (f) => f.createdAt },
+            { key: 'c', header: FB.col.created, cell: (f) => <span className="ds-mono ds-nowrap">{when(f.createdAt)}</span>, sort: (f) => f.createdAt },
           ]}
         />
       </AsyncView>

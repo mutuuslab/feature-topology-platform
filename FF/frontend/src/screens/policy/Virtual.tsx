@@ -200,7 +200,7 @@ function RunTable({ rows, currentHash, onOpen }: { rows: VRun[]; currentHash?: s
           ),
         },
         { key: 't', header: C.tms, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.tms?.tmsId ?? '—'}</span> },
-        { key: 'at', header: C.at, cell: (r) => <span className="ds-mono">{when(r.at)}</span>, sort: (r) => r.at },
+        { key: 'at', header: C.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span>, sort: (r) => r.at },
       ]}
     />
   );

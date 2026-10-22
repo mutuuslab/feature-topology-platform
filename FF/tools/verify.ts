@@ -23,7 +23,7 @@ const STEPS: Step[] = [
   { id: 'typecheck:backend', title: '백엔드 타입 검사', cmd: `${npx} tsc -p tsconfig.json --noEmit`, cwd: 'backend' },
   { id: 'typecheck:frontend', title: '프론트 타입 검사', cmd: `${npx} tsc -b`, cwd: 'frontend' },
   { id: 'lint:tokens', title: '디자인 토큰 lint', cmd: `node tools/lint-tokens.ts` },
-  { id: 'lint:copy', title: '문구 lint (+ 보고서 v1.1 용어 규칙 래칫)', cmd: `node --test tools/guide-terms.test.ts tools/platform-terms.test.ts && node tools/lint-copy.ts` },
+  { id: 'lint:copy', title: '문구 lint (+ 보고서 v1.1 용어 규칙 래칫)', cmd: `node --test tools/guide-terms.test.ts tools/platform-terms.test.ts tools/twin-terms.test.ts && node tools/lint-copy.ts` },
   { id: 'sim:test', title: 'CARLA 실행기 판정 핵심 (서버 없는 pytest — 기준 운동학 재현·Guard·CLI 계약, LearnCarla venv 없으면 건너뜀)', cmd: `node --test tools/carla-doctor.test.ts && node tools/carla-doctor.ts --pytest` },
   { id: 'guide:check', title: '보고서 v1.1 코드 패키지 정합 (허용 목록·해시·규칙 카탈로그)', cmd: `node --test tools/guide-sync.test.ts && node tools/guide-sync.ts --check` },
   { id: 'workflow:check', title: '담당자 업무 절차 정합 (docs/65-workflows 생성 모듈)', cmd: `node --test tools/workflow-sync.test.ts && node tools/workflow-sync.ts --check` },

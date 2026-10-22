@@ -12,7 +12,7 @@ import { useTwin, useTwinVerdict } from '../state/twinStore';
 import * as T from '../data/twin/types';
 import * as E from '../data/twin/engine';
 import { Bars, LiveDot, StatTile, Steps, Timeline } from '../components/charts';
-import { EmptyState, GButton, NoPermission } from '../components/patterns';
+import { DateText, EmptyState, GButton, NoPermission } from '../components/patterns';
 import { LOOP_STEP_MS, closedLoopView, loopLine } from '../components/closedLoop';
 import { VehicleTelemetryLive } from '../components/VehicleTelemetryLive';
 import { webglSupported } from '../scene/webgl';
@@ -755,7 +755,7 @@ export function TwinIncident() {
       <Breadcrumb />
       <PageTitle fallback="Closed-Loop" detail="Incident & Kill-Switch" suffix={<LiveDot />} />
       <p className="page-sub">
-        장애 주입 → Twin 이상 감지 → Rollout 자동 일시정지 → 운영자 판단 → Kill-Switch → 차량 확인 → 재수렴 → Incident 종료의
+        장애 주입 → 차량 상태 이상 감지 → Rollout 자동 일시정지 → 운영자 판단 → Kill-Switch → 차량 확인 → 재수렴 → Incident 종료의
         12단계 폐루프를 검증합니다.
       </p>
 
@@ -921,7 +921,7 @@ export function TwinIncident() {
                             <span className="mono small ml" data-testid="incident-loop-countdown">{view.nextInS}s</span>
                           )}
                         </td>
-                        <td className="small muted">{loc(s.detail)}</td>
+                        <td className="small muted"><DateText text={loc(s.detail)} /></td>
                       </tr>
                     ))}
                   </tbody>

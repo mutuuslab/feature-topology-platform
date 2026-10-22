@@ -1,5 +1,6 @@
 // 앱 셸 — 상단바(검색·⌘K·역할·내 역할 필터·시연 모드·테마·모션·알림) + 아이콘 레일(8그룹) + 그룹 패널 + 본문.
-// 운영·안전 그룹 화면은 본문을 어두운 관제실 톤(data-zone="ops")으로 바꿔 운영 모드임을 분명히 한다.
+// 운영·안전 그룹 화면은 청록 표식(data-area="ops")으로 운영 모드임을 알린다. 본문만 어둡게 바꾸면 상단바·레일과
+// 톤이 반쯤 갈려 의도가 읽히지 않았다(하네스 2판 결함 5) — 테마는 사용자 설정(라이트·다크)을 그대로 따른다.
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
@@ -210,13 +211,14 @@ export function Shell({ children }: { children: ReactNode }) {
         </button>
       </nav>
 
-      <aside className="sh-panel" aria-label={GROUPS.find((g) => g.key === group)!.ko} data-zone={GROUPS.find((g) => g.key === group)?.zone}>
+      <aside className="sh-panel" aria-label={GROUPS.find((g) => g.key === group)!.ko} data-area={GROUPS.find((g) => g.key === group)?.zone}>
         {/* 좁은 화면 드로어에서만 보인다 — 레일 토글까지 내려가지 않아도 닫을 수 있게 */}
         <button type="button" className="sh-panel__close" aria-label={ko.action.close} title={ko.action.close} onClick={() => setPanelOpen(false)}>
           <Icon name="close" size={18} />
         </button>
         <div className="sh-panel__head">
           <h2>{GROUPS.find((g) => g.key === group)!.ko}</h2>
+          {GROUPS.find((g) => g.key === group)?.zone === 'ops' && <p className="sh-panel__area">{ko.shell.opsArea}</p>}
           {/* 메뉴를 거르는 스위치는 메뉴 머리에 — 상단 막대 조작을 줄인다(3초 테스트) */}
           <button type="button" role="switch" className="sh-switch" aria-checked={myRole} title={ko.shell.myRole} onClick={() => setMyRole(!myRole)}>
             <span className="sh-switch__track" aria-hidden><span /></span>
@@ -248,7 +250,7 @@ export function Shell({ children }: { children: ReactNode }) {
       {/* 좁은 화면 드로어가 열려 있으면 본문을 가리는 대신 스크림을 둔다 — 바깥을 누르면 닫힌다 */}
       {narrow && panelOpen && !present && <div className="sh-scrim" onClick={() => setPanelOpen(false)} aria-hidden />}
 
-      <main className="sh-main" id="main" data-zone={zone}>
+      <main className="sh-main" id="main" data-area={zone}>
         {STATIC_MODE && (
           <div className="ds-stale" role="status" data-static-demo>
             <Icon name="alert" size={16} />

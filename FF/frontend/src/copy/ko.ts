@@ -24,6 +24,7 @@ export const ko = {
     },
     role: '역할',
     myRole: '내 역할 메뉴만',
+    opsArea: '운영 영역 — 실차·안전에 영향',
     present: '시연 모드',
     presentOn: '시연 모드 끄기 (P)',
     presentOff: '시연 모드 켜기 (P)',
@@ -201,10 +202,24 @@ export const ko = {
     vehicles: '대상 차량',
     staticNote: '읽기 전용 데모에서는 롤백을 요청할 수 없습니다.',
   },
+  // 비활성 버튼 아래에 보이는 이유(하네스 2판 결함 6) — "무엇을 하면 누를 수 있는지"로 쓴다
+  why: {
+    reason: '사유를 2자 이상 적으면 누를 수 있습니다',
+    comment: '의견을 2자 이상 적으면 누를 수 있습니다',
+    recovery: '먼저 복구 기준(정책 Version)을 고르세요',
+    name: '이름을 적으세요',
+    baselines: '포함할 Baseline을 하나 이상 고르세요',
+    bp: '비율은 0~10000 사이 정수(bp)여야 합니다',
+    key: '먼저 대상 항목을 고르세요',
+    user: '먼저 외부 사용자를 고르세요',
+    title: '제목을 2자 이상 적으세요',
+  },
   state: {
     loading: '불러오는 중',
     emptyTitle: '표시할 항목이 없습니다',
-    emptyBody: '조건을 바꿔 보세요. 새 항목은 백엔드에 연결된 환경에서 등록할 수 있습니다.',
+    emptyBody: '아직 기록이 없습니다. 항목이 생기면 여기에 표시됩니다.',
+    emptyFilteredTitle: '조건에 맞는 항목이 없습니다',
+    emptyFilteredBody: '검색어나 필터를 바꾸거나 지워 보세요.',
     errorTitle: '불러오지 못했습니다',
     errorBody: '잠시 후 다시 시도하세요. 반복되면 감사 이력의 상관 ID로 문의하세요.',
     forbiddenTitle: '이 역할로는 볼 수 없습니다',
@@ -222,6 +237,11 @@ export const ko = {
     peek: '요약 보기',
     sortAsc: '오름차순 정렬',
     sortDesc: '내림차순 정렬',
+    /** 머리글이 빈 열(행 버튼·선택 칸)의 화면낭독기 전용 이름 */
+    column: '작업',
+    select: '선택',
+    /** 가로로 넘친 표 영역(region)의 이름 — 패널 제목과 겹치지 않게(axe landmark-unique) */
+    scrollTable: (caption: string) => `${caption} 표 — 가로 스크롤`,
   },
   danger: {
     typeToConfirm: (word: string) => `확인을 위해 ${word} 를 입력하세요`,
@@ -395,7 +415,7 @@ export const ko = {
     none: '영향 없음',
   },
   precheck: {
-    key: { issues: (c: number) => `FAIL · CONDITIONAL ${c}건`, clean: '모든 사전점검 규칙 PASS' },
+    key: { issues: (fail: number, cond: number) => `사전점검 규칙 FAIL ${fail} · CONDITIONAL ${cond}`, clean: '모든 사전점검 규칙 PASS' },
     title: '데이터 사전점검',
     lead: '원본 데이터 오류를 지우지 않고 경고로 보여 줍니다.',
     rules: '사전점검 규칙',
@@ -405,7 +425,7 @@ export const ko = {
     col: { rule: '규칙', criterion: '점검 기준', result: '판정', expected: '예시', summary: '요약' },
   },
   audit: {
-    key: { ok: (n: number) => `해시 체인 정상 — ${n}건 검증, 위변조 없음`, broken: '해시 체인이 끊겼습니다 — 위변조 의심', checking: '해시 체인 확인 중' },
+    key: { ok: (n: number) => `해시 체인 정상 — ${n}건 검증, 위변조 없음`, okFailed: (n: number) => `해시 체인은 정상 · 처리에 실패한 요청 ${n}건(FAILED)이 표에 있습니다`, broken: '해시 체인이 끊겼습니다 — 위변조 의심', checking: '해시 체인 확인 중' },
     title: '감사 이력',
     lead: '모든 등록·변경·승인·거부·실패 기록 — 추가만 되고 위변조를 검출합니다.',
     result: '결과',
@@ -413,10 +433,19 @@ export const ko = {
     col: { at: '시각', actor: '행위자', role: '역할', action: '행위', target: '대상', result: '결과', reason: '사유' },
   },
   events: {
-    key: '최근 이벤트 — 실시간으로 이어 받습니다',
+    key: '최근 이벤트(최대 500건)',
     title: 'Platform 이벤트',
     lead: '커밋된 변경의 이벤트를 실시간으로 받습니다.',
     live: '실시간',
+    content: '내용',
+    // 실시간 패널은 화면을 연 뒤 새로 들어온 이벤트만 보인다 — 표(이력)가 있는데 '없음'이라 모순처럼 읽혔다
+    sse: {
+      static: '읽기 전용 데모라 실시간 연결이 없습니다. 이력은 왼쪽 표에 있습니다.',
+      connecting: '실시간 연결 중…',
+      open: '연결됨 — 화면을 연 뒤 들어온 새 이벤트가 여기에 쌓입니다.',
+      error: '실시간 연결이 끊겼습니다. 이력 표는 새로 고침하면 갱신됩니다.',
+    },
+    status: { static: '정적 데모', connecting: '연결 중', open: '연결됨', error: '끊김' },
   },
   policy: {
     key: { pending: '승인 대기 정책(검증 완료)', none: '승인 대기 정책이 없습니다', deployWait: '배포 대기', deployed: '배포 중', can: '작성한 정책은 검증 8종 뒤 다른 사람이 승인합니다', cannot: 'Feature 작성자·구현 담당만 정책을 만들 수 있습니다' },
@@ -467,7 +496,7 @@ export const ko = {
     off: 'OFF',
   },
   validations: {
-    key: { held: 'BLOCKED·HOLD 검증', clean: '모든 검증이 GO' },
+    key: { held: 'BLOCKED·HOLD 검증', clean: '모든 검증이 GO', none: '아직 검증 기록이 없습니다' },
     title: '분야별 검증 이력',
     lead: '정책마다 실행한 검증 8종의 결과와 근거.',
   },
@@ -774,7 +803,7 @@ export const ko = {
     noValue: '표본 없음',
   },
   anomaly: {
-    key: { open: '열린 이상 징후(확인됨 포함)', clean: '열린 이상 징후가 없습니다' },
+    key: { open: '열린 이상 징후(확인됨 포함)', clean: '열린 이상 징후가 없습니다', none: '아직 감지된 이상 징후가 없습니다' },
     title: '이상 징후 대응',
     lead: '차량 고장·서명 거부·회신 이상을 Feature별로 묶어 권고합니다.',
     kind: { FEATURE_FAULT: '기능 고장', SECURITY: '보안', DELIVERY: '배포 전달' },
@@ -791,7 +820,7 @@ export const ko = {
     empty: '열린 이상 건이 없습니다',
   },
   feedback: {
-    key: { open: '열린 품질 피드백', clean: '열린 품질 피드백이 없습니다' },
+    key: { open: '열린·검토 중 품질 피드백', clean: '열린·검토 중 품질 피드백이 없습니다', none: '아직 받은 품질 피드백이 없습니다' },
     title: '품질 피드백',
     lead: '현장 이상이 다음 Version에 남긴 재검증 요구.',
     status: { OPEN: '열림', ACCEPTED: '수용', RESOLVED: '해소' },

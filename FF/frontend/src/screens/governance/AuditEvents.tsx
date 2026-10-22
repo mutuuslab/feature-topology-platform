@@ -17,13 +17,15 @@ export function AuditScreen() {
   const rows = q.data?.items ?? [];
   const chain = useApi<{ ok: boolean; verified: number; head: string | null; broken: { id: number; kind: string } | null }>('auditChain');
   const c = chain.data;
+  // 체인이 정상이어도 표에 FAILED가 보이면 초록 한 줄만 두지 않는다(헤드라인·데이터 모순, 하네스 2판 결함 4)
+  const failed = rows.filter((r) => r.result === 'FAILED').length;
   return (
     <div className="ds-screen">
       <PageHeader
         codes="D01-10 · AUDIT"
         title={ko.audit.title}
         lead={ko.audit.lead}
-        message={!c ? { tone: 'neutral', value: '—', text: ko.audit.key.checking } : c.ok ? { tone: 'ok', text: ko.audit.key.ok(c.verified) } : { tone: 'danger', text: ko.audit.key.broken }}
+        message={!c ? { tone: 'neutral', value: '—', text: ko.audit.key.checking } : !c.ok ? { tone: 'danger', text: ko.audit.key.broken } : failed ? { tone: 'warn', value: failed, text: ko.audit.key.okFailed(failed) } : { tone: 'ok', text: ko.audit.key.ok(c.verified) }}
         tour="audit-chain"
       />
       {c?.broken && (
@@ -54,7 +56,7 @@ export function AuditScreen() {
           ]}
         />
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} filtered={!!(applied || result)}>
         <AuditTable rows={rows} />
       </AsyncView>
     </div>
@@ -78,16 +80,21 @@ const summarize = (p: unknown) => {
   if (o.status) return String(o.status);
   if (o.verdict) return String(o.verdict);
   if (o.baselineId) return String(o.baselineId);
-  return '';
+  // 알려진 필드가 없어도 빈 칸으로 두지 않는다 — 앞의 두 값을 보인다
+  const kv = Object.entries(o).filter(([, v]) => v != null && typeof v !== 'object').slice(0, 2);
+  return kv.length ? kv.map(([k, v]) => `${k}: ${String(v)}`).join(' · ') : '—';
 };
 
 export function EventsScreen() {
   const qc = useQueryClient();
   const q = useApi<{ items: PlatformEvent[] }>('events', { query: { limit: 500 } });
   const [live, setLive] = useState<PlatformEvent[]>([]);
+  const [sse, setSse] = useState<'static' | 'connecting' | 'open' | 'error'>(STATIC_MODE ? 'static' : 'connecting');
   useEffect(() => {
-    if (STATIC_MODE || typeof EventSource === 'undefined') return;
+    if (STATIC_MODE || typeof EventSource === 'undefined') return setSse('static');
     const es = new EventSource('/api/events/stream');
+    es.onopen = () => setSse('open');
+    es.onerror = () => setSse('error');
     es.addEventListener('platform', (m) => {
       const e = JSON.parse((m as MessageEvent).data) as PlatformEvent;
       setLive((xs) => [...xs, e].slice(-200));
@@ -99,7 +106,8 @@ export function EventsScreen() {
   const stream: StreamItem[] = live.map((e) => ({ seq: e.seq, at: e.at, type: e.type, aggregate: e.aggregate, summary: summarize(e.payload) }));
   return (
     <div className="ds-screen">
-      <PageHeader codes="D04-04 · EVENT HISTORY" title={ko.events.title} lead={ko.events.lead} message={{ tone: 'accent', value: q.data ? q.data.items.length : '—', text: ko.events.key }} />
+      <PageHeader codes="D04-04 · EVENT HISTORY" title={ko.events.title} lead={ko.events.lead} message={{ tone: 'neutral', value: q.data ? q.data.items.length : '—', text: ko.events.key }}
+        meta={<span className="ds-badge" data-sse={sse}>SSE · {ko.events.status[sse]}</span>} />
       <div className="ds-split">
         <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
           <DataTable
@@ -110,16 +118,16 @@ export function EventsScreen() {
             initialSort={{ key: 'seq', dir: 'desc' }}
             columns={[
               { key: 'seq', header: '#', cell: (r) => <span className="ds-mono">{r.seq}</span>, sort: (r) => r.seq, align: 'right' },
-              { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono">{when(r.at)}</span> },
+              { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
               { key: 'type', header: 'Type', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--accent)' }}>{r.type}</span>, sort: (r) => r.type },
-              { key: 'agg', header: ko.audit.col.target, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.aggregate}</span> },
+              { key: 'agg', header: ko.audit.col.target, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{r.aggregate}</span> },
               { key: 'c', header: 'Component', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.componentId ?? '—'}</span> },
-              { key: 'p', header: ko.audit.col.reason, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{summarize(r.payload)}</span> },
+              { key: 'p', header: ko.events.content, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{summarize(r.payload)}</span> },
             ]}
           />
         </AsyncView>
         <Panel title={ko.events.live} eyebrow="SSE /api/events/stream" id="live">
-          <EventStream items={stream} />
+          <EventStream items={stream} empty={ko.events.sse[sse]} />
         </Panel>
       </div>
     </div>

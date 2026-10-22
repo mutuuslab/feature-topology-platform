@@ -27,7 +27,7 @@ export default function BaselineQueue() {
         codes="D01-01 · FEATURE BOM"
         title={T.title}
         lead={T.lead}
-        message={!reqs.data ? { tone: 'neutral', value: '—', text: T.key.pending } : pending ? { tone: 'warn', value: pending, text: T.key.pending } : { tone: 'ok', text: T.key.none }}
+        message={!reqs.data ? { tone: 'neutral', value: '—', text: T.key.pending } : pending ? { tone: 'warn', value: pending, text: T.key.pending } : { tone: 'neutral', value: 0, text: T.key.none }}
       />
       <Tabs tabs={tabs}>
         {(tab) => (tab === 'requests' ? <div data-tour="baseline-approve"><Requests /></div> : <Baselines />)}
@@ -83,7 +83,7 @@ function Requests() {
             { key: 'f', header: T.col.feature, cell: (r) => <IdChip id={r.featureId} version={r.version} to={`/features/${r.featureId}/${r.version}?tab=baseline`} copy={false} /> },
             { key: 'st', header: T.col.status, cell: (r) => <VerdictBadge value={STATUS_VERDICT[r.status]} /> },
             { key: 'by', header: T.requestedBy, cell: (r) => <span className="ds-mono">{r.requestedBy}</span> },
-            { key: 'at', header: T.col.requestedAt, cell: (r) => <span className="ds-mono">{when(r.requestedAt)}</span>, sort: (r) => r.requestedAt },
+            { key: 'at', header: T.col.requestedAt, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.requestedAt)}</span>, sort: (r) => r.requestedAt },
             { key: 'bl', header: T.col.baseline, cell: (r) => (r.baselineId ? <IdChip id={r.baselineId} copy={false} /> : '—') },
             { key: 'why', header: ko.page.reason, cell: (r) => r.reason },
           ]}

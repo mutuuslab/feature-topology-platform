@@ -5,7 +5,7 @@ import type { ReleaseSignoffView } from '@ff/contracts';
 import { useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
-import { Button, Drawer, ErrorNote, Field } from '../../design';
+import { Button, Drawer, ErrorNote, Field, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
 
 const S = ko.p11.signoff;
@@ -42,6 +42,7 @@ export function ReleaseSignoffBar({ id, ver, gatesPassed }: { id: string; ver: s
             variant="primary"
             icon="pen"
             disabled={STATIC_MODE || !perm.ok || reason.trim().length < 2 || sign.isPending}
+            reason={whyDisabled([!perm.ok, perm.hint], [reason.trim().length < 2, ko.why.reason])}
             onClick={() => sign.mutate({ params: { id, ver }, body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}
           >
             {S.sign}

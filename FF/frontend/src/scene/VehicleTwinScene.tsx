@@ -10,7 +10,7 @@
  * `clock.rate === 0` 이면 부품 펄스 · 흐름 패킷 · 카메라 투어가 전부 멈춘다.
  */
 import { LEGACY_PAL } from '../design/legacy-palette';
-import { Component, Suspense, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
@@ -576,7 +576,18 @@ export default function VehicleTwinScene({
   const paused = clock.rate === 0;
   // 정지 상태(rate 0 또는 사용자가 모션 정지)에서는 GPU 렌더 루프도 멈춘다 — 화면은 마지막 프레임으로 남는다.
   const motion = useMotion();
-  const sceneLoop = paused || !motion.running ? 'demand' : 'always';
+  // 화면 밖(1366에서 씬은 탭 아래)에서는 렌더 루프를 멈춘다 — 그림자·dpr 2 씬이 계속 돌면 본문 스레드가 수 초씩 막혔다
+  // (GPU 없는 CI에서 차량 상세 시험이 60초 시간 초과, 2026-10-23).
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(true);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin: '120px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [webgl]);
+  const sceneLoop = paused || !motion.running || !inView ? 'demand' : 'always';
 
   if (!webgl) {
     return (
@@ -587,7 +598,7 @@ export default function VehicleTwinScene({
   }
 
   return (
-    <div className={`veh-root${paused ? ' veh-paused' : ''}`} data-paused={paused ? 'true' : 'false'} data-testid="veh-scene-root">
+    <div ref={rootRef} className={`veh-root${paused ? ' veh-paused' : ''}`} data-paused={paused ? 'true' : 'false'} data-in-view={inView ? 'true' : 'false'} data-testid="veh-scene-root">
       <div className="veh-canvas-wrap" style={{ height }}>
         {paused && (
           <span className="veh-paused-banner" data-testid="veh-paused-banner">

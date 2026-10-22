@@ -187,7 +187,7 @@ export function FieldPortalScreen() {
                     { key: 'g', header: C.grant, cell: (r) => <span className="ds-mono">{`${r.grantId} · ${r.catalogId}`}</span> },
                     { key: 'k', header: C.kind, cell: (r) => r.kind },
                     { key: 's', header: C.state, cell: (r) => <span className="ds-mono">{r.state}</span> },
-                    { key: 'u', header: C.until, cell: (r) => <span className="ds-mono">{r.validTo}</span> },
+                    { key: 'u', header: C.until, cell: (r) => <span className="ds-mono ds-nowrap">{r.validTo}</span> },
                   ]} />
                 ) : (
                   <p className="ds-field__hint">{F.none}</p>

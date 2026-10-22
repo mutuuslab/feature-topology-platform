@@ -79,7 +79,7 @@ export function ProductList() {
             { key: 'type', header: C.type, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.type}</span> },
             { key: 'lc', header: C.lifecycle, cell: (r) => <LifecycleBadge value={r.lifecycle} />, sort: (r) => LIFECYCLE.indexOf(r.lifecycle) },
             { key: 'n', header: C.features, cell: (r) => <span className="ds-mono">{r.baselineIds.length}</span>, align: 'right', sort: (r) => r.baselineIds.length },
-            { key: 'valid', header: C.validity, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.validFrom ?? '—'} ~ {r.validTo ?? '—'}</span> },
+            { key: 'valid', header: C.validity, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}><span className="ds-date">{r.validFrom ?? '—'}</span> ~ <span className="ds-date">{r.validTo ?? '—'}</span></span> },
           ]}
         />
       </AsyncView>
@@ -169,7 +169,7 @@ export function ProductDetail() {
               <Panel title={T.eligibility} id="elig">
                 <KeyValue
                   rows={[
-                    { k: T.col.validity, v: <span className="ds-mono">{p.validFrom ?? '—'} ~ {p.validTo ?? '—'}</span> },
+                    { k: T.col.validity, v: <span className="ds-mono"><span className="ds-date">{p.validFrom ?? '—'}</span> ~ <span className="ds-date">{p.validTo ?? '—'}</span></span> },
                   ]}
                 />
                 {d.eligibility.reasons.length > 0 && <ErrorNote error={{ message: T.notEligible, details: { blockers: d.eligibility.reasons } }} />}
@@ -261,7 +261,7 @@ export function ProductCompose() {
                 onOpen={(r) => toggle(r.baselineId)}
                 maxHeight="420px"
                 columns={[
-                  { key: 'pick', header: '', width: '36px', cell: (r) => <input type="checkbox" aria-label={r.baselineId} checked={picked.includes(r.baselineId)} onChange={() => toggle(r.baselineId)} onClick={(e) => e.stopPropagation()} /> },
+                  { key: 'pick', header: '', srHeader: ko.action.select, width: '36px', cell: (r) => <input type="checkbox" aria-label={r.baselineId} checked={picked.includes(r.baselineId)} onChange={() => toggle(r.baselineId)} onClick={(e) => e.stopPropagation()} /> },
                   { key: 'bl', header: 'Baseline', cell: (r) => <span className="ds-mono">{r.baselineId}</span> },
                   { key: 'f', header: 'Feature', cell: (r) => <IdChip id={r.featureId} version={r.version} copy={false} /> },
                   { key: 'n', header: ko.registry.col.name, cell: (r) => r.name },

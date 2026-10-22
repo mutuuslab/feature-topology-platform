@@ -151,7 +151,7 @@ h3 {
   align-items: center;
   gap: 2px;
   font-family: var(--font-mono);
-  font-size: 0.92em;
+  font-size: max(var(--fs-xs), 0.92em); /* 표(sm) 안에서 0.92em이 하한 아래로 내려가지 않게 */
   font-weight: 600;
   color: var(--ink);
   background: var(--surface-sunk);
@@ -407,9 +407,12 @@ button.ds-gate:hover {
   border-radius: var(--r-lg);
   background: var(--surface);
 }
-.ds-state h3 {
+.ds-state .ds-state__title {
   margin: 0;
+  max-width: none;
   font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--ink);
 }
 .ds-state p {
   margin: 0;
@@ -420,10 +423,10 @@ button.ds-gate:hover {
   border-color: color-mix(in srgb, var(--danger) 45%, transparent);
   color: var(--ink-2);
 }
-.ds-state[data-state='error'] h3 {
+.ds-state[data-state='error'] .ds-state__title {
   color: var(--danger);
 }
-.ds-state[data-state='forbidden'] h3 {
+.ds-state[data-state='forbidden'] .ds-state__title {
   color: var(--warn);
 }
 .ds-skel {
@@ -642,6 +645,7 @@ button.ds-gate:hover {
   padding: var(--sp-4);
 }
 .ds-eyebrow {
+  overflow-wrap: anywhere; /* 'POST /ofrep/v1/…' 같은 긴 토큰이 패널 폭을 넘지 않게 */
   /* 3초 테스트 — 대문자·자간 확장·고정폭은 한글을 읽기 어렵게 하고 제목보다 먼저 읽힌다 */
   font-size: var(--fs-xs);
   font-weight: 600;
@@ -851,7 +855,8 @@ button.ds-gate:hover {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  font-family: var(--font-mono);
+  /* 한글 이름은 sans — 고정폭 글꼴의 한글 대체 글꼴은 글자 사이가 벌어져 '미 구 현'처럼 보인다. 숫자는 .ds-seg__count가 고정폭 */
+  font-family: var(--font-sans);
 }
 .ds-seg__opt:hover {
   background: var(--surface-3);
@@ -864,6 +869,7 @@ button.ds-gate:hover {
 .ds-seg__count {
   color: var(--muted);
   font-weight: 500;
+  font-family: var(--font-mono);
 }
 .ds-field {
   display: grid;
@@ -991,6 +997,10 @@ textarea.ds-input {
 /* 오른쪽도 표를 담는 화면(긴급 차단 이력 등) — 3:2 */
 .ds-split--wide-side {
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+.ds-split > * {
+  /* 격자 칸은 기본 min-width:auto(내용 최소 폭) — 긴 코드 줄이 칸을 트랙 밖으로 밀지 않게 */
+  min-width: 0;
 }
 @media (max-width: 1279px) {
   .ds-split,
@@ -1429,12 +1439,12 @@ textarea.ds-input {
 /* 보고서 v1.1 반영률 — 컴포넌트가 집행할 규칙 중 구현·시험된 수 */
 .ds-comp__std {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--accent);
 }
 .ds-comp__meta {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1814,8 +1824,8 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-learn-card[data-status='planned'] h3 { color: var(--ink-2); font-weight: 600; }
 .ds-learn-card__foot .ds-btn { margin-left: auto; }
 .ds-learn-card__head { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: center; }
-.ds-learn-card h3 { margin: 0; font-size: var(--fs-md); line-height: 1.35; }
-.ds-learn-card h3 a { color: inherit; }
+.ds-learn-card h2 { margin: 0; font-size: var(--fs-md); line-height: 1.35; }
+.ds-learn-card h2 a { color: inherit; }
 .ds-learn-card__sum { margin: 0; font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.5; }
 .ds-learn-card__foot { display: flex; justify-content: space-between; gap: var(--sp-2); flex-wrap: wrap; }
 .ds-learn-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); }
@@ -2204,4 +2214,22 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: bottom;
+}
+
+/* 칩·배지는 줄을 바꾸지 않는다 — 'VIN-DEMO-001'·'FEAT-00002@1.5.0'이 하이픈 뒤에서 두 줄로 갈리지 않게(하네스 UX-19, 2026-10-23).
+   설명이 붙는 태그(Function 'FUNC-000056 …Extended Gap Control 기능')는 칸 안에서 줄을 바꿔야 하므로 ID 부분만 묶는다 */
+.ds-id,
+.ds-badge,
+.ds-tag .ds-mono,
+.ds-tag:not(:has(.ds-mono)) {
+  white-space: nowrap;
+}
+/* 날짜(YYYY-MM-DD)는 하이픈 뒤에서 끊지 않는다 — 기간 '2027-01-15 ~ 2027-12-31'은 '~'에서만 줄을 바꾼다 */
+.ds-date {
+  white-space: nowrap;
+}
+/* 가로로 넘치는 표 영역은 키보드 초점을 받는다(DataTable) — 초점 표시 */
+.ds-table-wrap:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }

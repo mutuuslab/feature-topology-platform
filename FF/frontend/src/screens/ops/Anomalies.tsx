@@ -75,7 +75,7 @@ function AnomalyDrawer({ id, onClose }: { id: string | null; onClose: () => void
             rows={[...a.signals].reverse()}
             rowKey={(s) => `${s.at}-${s.vin}-${s.code}-${s.ref}`}
             columns={[
-              { key: 'at', header: A.col.updated, cell: (s) => <span className="ds-mono">{when(s.at)}</span> },
+              { key: 'at', header: A.col.updated, cell: (s) => <span className="ds-mono ds-nowrap">{when(s.at)}</span> },
               { key: 'v', header: A.col.vehicles, cell: (s) => <span className="ds-mono">{s.vin ?? '—'}</span> },
               { key: 'c', header: 'code', cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.code}</span> },
               { key: 's', header: A.col.severity, cell: (s) => <VerdictBadge value={SEVERITY_VERDICT[s.severity] ?? '미판정'} /> },
@@ -154,7 +154,7 @@ export function AnomalyScreen() {
             { key: 'a', header: A.col.advice, cell: (a) => <span style={{ fontWeight: a.advice === 'KILL' ? 600 : 400 }}>{A.advice[a.advice]}</span> },
             { key: 'v', header: A.col.vehicles, cell: (a) => <span className="ds-mono">{a.vins.length}</span>, align: 'right' },
             { key: 'st', header: A.col.status, cell: (a) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{A.status[a.status]}</span> },
-            { key: 'u', header: A.col.updated, cell: (a) => <span className="ds-mono">{when(a.updatedAt)}</span>, sort: (a) => a.updatedAt },
+            { key: 'u', header: A.col.updated, cell: (a) => <span className="ds-mono ds-nowrap">{when(a.updatedAt)}</span>, sort: (a) => a.updatedAt },
           ]}
         />
       </AsyncView>
@@ -209,7 +209,7 @@ export function FeedbackScreen() {
             { key: 'a', header: FB.col.actions, cell: (f) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{f.actions.map((x) => x.ref).join(' · ')}</span> },
             { key: 'st', header: FB.col.status, cell: (f) => <VerdictBadge value={f.status === 'RESOLVED' ? 'PASS' : f.status === 'ACCEPTED' ? '검토 중' : 'CONDITIONAL'} /> },
             { key: 'an', header: FB.col.anomaly, cell: (f) => <Link className="ds-mono" to={`/ops/anomalies?id=${f.anomalyId}`}>{f.anomalyId}</Link> },
-            { key: 'c', header: FB.col.created, cell: (f) => <span className="ds-mono">{when(f.createdAt)}</span>, sort: (f) => f.createdAt },
+            { key: 'c', header: FB.col.created, cell: (f) => <span className="ds-mono ds-nowrap">{when(f.createdAt)}</span>, sort: (f) => f.createdAt },
           ]}
         />
       </AsyncView>

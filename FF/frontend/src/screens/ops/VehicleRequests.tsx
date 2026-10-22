@@ -32,7 +32,7 @@ export function VehicleRequestPanel({ vin }: { vin: string }) {
           rowKey={(r) => r.requestId}
           columns={[
             { key: 'id', header: T.col.id, cell: (r) => <span className="ds-mono">{r.requestId}</span>, sort: (r) => r.requestId },
-            { key: 'at', header: T.col.at, cell: (r) => <span className="ds-mono">{when(r.at)}</span> },
+            { key: 'at', header: T.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
             { key: 't', header: T.col.type, cell: (r) => <span className="ds-tag">{r.channel === 'QUERY' ? T.channel.QUERY : r.type}</span> },
             { key: 's', header: T.col.summary, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.summary}</span> },
             { key: 'q', header: T.col.seq, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.bootId ? `${r.bootId} · #${r.sequence}` : '—'}</span> },

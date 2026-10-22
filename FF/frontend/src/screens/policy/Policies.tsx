@@ -232,7 +232,7 @@ export function PolicyDetail() {
                     { key: 'id', header: 'Run', cell: (r) => <span className="ds-mono">{r.runId}</span> },
                     { key: 'rev', header: T.col.revision, cell: (r) => <span className="ds-mono">r{r.policyRevision}</span> },
                     { key: 'dec', header: T.safety, cell: (r) => <VerdictBadge value={DECISION_VERDICT[r.decision]} /> },
-                    { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono">{when(r.at)}</span> },
+                    { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
                   ]}
                 />
               </Panel>
@@ -411,7 +411,7 @@ export function ValidationHistory() {
             { key: 'dec', header: T.safety, cell: (r) => <VerdictBadge value={DECISION_VERDICT[r.decision]} />, sort: (r) => r.decision },
             { key: 'sum', header: T.validators, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.results.filter((x) => x.result === 'PASS').length}/8 PASS</span> },
             { key: 'by', header: ko.bom.requestedBy, cell: (r) => <span className="ds-mono">{r.by}</span> },
-            { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono">{when(r.at)}</span>, sort: (r) => r.at },
+            { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span>, sort: (r) => r.at },
           ]}
         />
       </AsyncView>

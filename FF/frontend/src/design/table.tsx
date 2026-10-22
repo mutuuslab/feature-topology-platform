@@ -1,5 +1,5 @@
 // 데이터 표 — 고정 머리글, 열 정렬, 키보드 행 이동(↑↓·Home·End·Enter). 행 수가 수백 단위인 거버넌스 목록 기준.
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ko } from '../copy/ko';
 
 export interface Column<T> {
@@ -12,6 +12,8 @@ export interface Column<T> {
   width?: string;
   /** 보조 열 — 좁은 화면(1600px 미만)에서는 숨긴다. 상세 화면에 같은 값이 있는 열에만 쓴다 */
   minor?: boolean;
+  /** 머리글을 비운 열의 화면낭독기 전용 이름 — 없으면 '작업'(빈 th는 axe empty-table-header) */
+  srHeader?: string;
 }
 
 /** 셀 안의 버튼·링크·입력(IdChip 복사·요약 보기 등)에서 온 클릭·키는 행 열기로 올리지 않는다 */
@@ -32,6 +34,20 @@ export function DataTable<T>({ rows, columns, rowKey, onOpen, caption, maxHeight
   const [sort, setSort] = useState(initialSort ?? null);
   const [active, setActive] = useState<string | null>(null);
   const body = useRef<HTMLTableSectionElement>(null);
+  const wrap = useRef<HTMLDivElement>(null);
+  // 열이 단어보다 좁아지지 않으므로 좁은 패널에서는 표가 가로로 넘친다 — 넘칠 때만 키보드로 스크롤할 수 있게(axe scrollable-region-focusable)
+  const [scrolls, setScrolls] = useState(false);
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const check = () => setScrolls(el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1);
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    check();
+    return () => ro.disconnect();
+  }, []);
+  const keyScroll = scrolls && !onOpen;
 
   const sorted = useMemo(() => {
     if (!sort) return rows;
@@ -54,7 +70,14 @@ export function DataTable<T>({ rows, columns, rowKey, onOpen, caption, maxHeight
   };
 
   return (
-    <div className="ds-table-wrap" style={maxHeight ? ({ '--table-max-h': maxHeight } as React.CSSProperties) : undefined}>
+    <div
+      ref={wrap}
+      className="ds-table-wrap"
+      style={maxHeight ? ({ '--table-max-h': maxHeight } as React.CSSProperties) : undefined}
+      tabIndex={keyScroll ? 0 : undefined}
+      role={keyScroll ? 'region' : undefined}
+      aria-label={keyScroll ? ko.action.scrollTable(caption) : undefined}
+    >
       <table className="ds-table">
         <caption className="ds-sr">{caption}</caption>
         <thead>
@@ -72,6 +95,8 @@ export function DataTable<T>({ rows, columns, rowKey, onOpen, caption, maxHeight
                       {c.header}
                       <span aria-hidden>{dir === 'asc' ? '▲' : dir === 'desc' ? '▼' : '↕'}</span>
                     </button>
+                  ) : c.header === '' ? (
+                    <span className="ds-sr">{c.srHeader ?? ko.action.column}</span>
                   ) : (
                     c.header
                   )}

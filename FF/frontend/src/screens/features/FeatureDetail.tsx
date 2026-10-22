@@ -400,7 +400,7 @@ export function AuditTable({ rows }: { rows: AuditEntry[] }) {
       rows={rows}
       rowKey={(r) => String(r.id)}
       columns={[
-        { key: 'at', header: C.at, cell: (r) => <span className="ds-mono">{when(r.at)}</span>, sort: (r) => r.at },
+        { key: 'at', header: C.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span>, sort: (r) => r.at },
         { key: 'actor', header: C.actor, cell: (r) => <span className="ds-mono">{r.actorId}</span>, sort: (r) => r.actorId },
         { key: 'role', header: C.role, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.actorRole}</span> },
         { key: 'action', header: C.action, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.action}</span>, sort: (r) => r.action },

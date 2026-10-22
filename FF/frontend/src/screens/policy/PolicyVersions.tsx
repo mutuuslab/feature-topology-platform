@@ -124,7 +124,7 @@ export function PolicyVersions({ policyId }: { policyId: string }) {
               { key: 'rev', header: V.col.rev, cell: (r) => <span className="ds-mono">r{r.revision}{r.current ? ` · ${V.current}` : ''}</span>, sort: (r) => r.revision },
               { key: 'kind', header: V.col.kind, cell: (r) => <span className="ds-tag">{POLICY_REVISION_KIND_LABEL[r.kind]}{r.restoredFrom !== null ? ` · ${V.from(r.restoredFrom)}` : ''}</span> },
               { key: 'by', header: V.col.by, cell: (r) => <span className="ds-mono">{r.changedBy}</span> },
-              { key: 'at', header: V.col.at, cell: (r) => <span className="ds-mono">{when(r.changedAt)}</span> },
+              { key: 'at', header: V.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.changedAt)}</span> },
               {
                 key: 'changes',
                 header: V.col.changes,

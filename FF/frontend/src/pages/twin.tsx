@@ -13,7 +13,7 @@ import { WhatIfRunner } from '../components/WhatIfRunner';
 import * as T from '../data/twin/types';
 import * as E from '../data/twin/engine';
 import { Bars, CountUp, Donut, GaugeArc, LiveDot, Steps, Timeline, dist } from '../components/charts';
-import { EmptyState } from '../components/patterns';
+import { DateText, EmptyState } from '../components/patterns';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { PageTitle } from '../components/PageTitle';
 import {
@@ -389,7 +389,7 @@ function FleetFilterBlock() {
         <p className="small muted">수렴 실패·Stale·Drift·Kill-Switch 대상만 추린 목록입니다. Unknown 은 원인과 조치를 함께 표시합니다.</p>
         <div className="table-wrap mt">
           <table>
-            <thead><tr><th>VIN</th><th>상태</th><th>Health</th><th>Reason Code</th><th>원인 / 조치</th><th></th></tr></thead>
+            <thead><tr><th>VIN</th><th>상태</th><th>Health</th><th>Reason Code</th><th>원인 / 조치</th><th><span className="ds-sr">작업</span></th></tr></thead>
             <tbody>
               {problem.map((v) => (
                 <tr key={v.twin.vin}>
@@ -600,7 +600,7 @@ export function TwinImpact() {
         <div className="table-wrap mt">
           <table>
             <thead>
-              <tr><th>VIN</th><th>Cohort</th><th>Model / Region / MY</th><th>UPG-VC</th><th>One-Binary</th><th>BMS SW</th><th>Entitlement</th><th>Policy</th><th>D→R→E</th><th>Eligibility</th><th>제외 / 판정 사유</th><th></th></tr>
+              <tr><th>VIN</th><th>Cohort</th><th>Model / Region / MY</th><th>UPG-VC</th><th>One-Binary</th><th>BMS SW</th><th>Entitlement</th><th>Policy</th><th>D→R→E</th><th>Eligibility</th><th>제외 / 판정 사유</th><th><span className="ds-sr">작업</span></th></tr>
             </thead>
             <tbody>
               {rows.map((r) => (
@@ -781,7 +781,7 @@ export function TwinSimulation() {
                   <tr key={g.id}>
                     <td className="small"><b className="mono">{g.id}</b> {loc(g.label)}</td>
                     <td><GatePill status={g.status} /></td>
-                    <td className="small muted">{loc(g.detail)}</td>
+                    <td className="small muted"><DateText text={loc(g.detail)} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -836,7 +836,7 @@ export function TwinSimulation() {
                   <tr key={ev.id}>
                     <td className="small"><b className="mono">{ev.id}</b> {loc(ev.label)}</td>
                     <td><span className="badge" style={{ background: 'var(--info)' }}>{ev.kind}</span></td>
-                    <td className="small mono">{ev.capturedAt.replace('T', ' ').slice(0, 19)}</td>
+                    <td className="small mono" style={{ whiteSpace: 'nowrap' }}>{ev.capturedAt.replace('T', ' ').slice(0, 19)}</td>
                   </tr>
                 ))}
                 {!r.evidence.length && <tr><td colSpan={3} className="muted small">생성된 Evidence 가 없습니다.</td></tr>}

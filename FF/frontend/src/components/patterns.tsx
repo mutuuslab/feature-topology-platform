@@ -55,3 +55,9 @@ export function NotFound() {
   // BrowserRouter이므로 '#/'가 아니라 라우터 링크로 홈에 간다 (IA 감사: 깨진 링크 수정)
   return <div data-not-found><EmptyState title={t('notFound')} cta={<Link className="btn" to="/">{t('home')}</Link>} /></div>;
 }
+
+/** 문장 속 날짜·시각(2026-09-13, 2026-09-13T10:00:00Z)이 하이픈 뒤에서 두 줄로 갈리지 않게 묶는다(UI 하네스 2판, 2026-10-23) */
+export function DateText({ text }: { text: string }) {
+  const parts = text.split(/(\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?Z?)?)/);
+  return <>{parts.map((p, i) => (i % 2 ? <span key={i} style={{ whiteSpace: 'nowrap' }}>{p}</span> : p))}</>;
+}

@@ -55,7 +55,7 @@ function SystemsTab() {
           { key: 'if', header: C.if, cell: (r) => <span className="ds-mono ds-nowrap">{r.ifId}</span> },
           { key: 'n', header: C.name, cell: (r) => r.name },
           { key: 'm', header: C.mode, cell: (r) => <VerdictBadge value={r.mode === 'off' ? 'FAIL' : r.mode === 'live' ? 'PASS' : 'CONDITIONAL'} />, sort: (r) => r.mode },
-          { key: 'm2', header: '', cell: (r) => <span className="ds-nowrap">{G.modes[r.mode] ?? r.mode}</span> },
+          { key: 'm2', header: '', srHeader: C.mode, cell: (r) => <span className="ds-nowrap">{G.modes[r.mode] ?? r.mode}</span> },
           { key: 'a', header: C.adapter, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.adapter}</span> },
           { key: 'c', header: C.components, cell: (r) => <span className="ds-mono ds-nowrap">{r.components.join(' · ')}</span> },
           { key: 'n2', header: C.calls, cell: (r) => <span className="ds-mono">{r.calls}</span>, align: 'right', sort: (r) => r.calls },

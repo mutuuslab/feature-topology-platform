@@ -43,7 +43,13 @@
 }
 .sh-main td {
   word-break: keep-all;
-  overflow-wrap: anywhere;
+  /* anywhere 금지 — 최소 폭(min-content)을 글자 1개로 줄여 'RELEASED'·'SEC-2'가 글자 단위로 끊긴다.
+     break-word는 칸이 이미 최소 폭일 때만 끊으므로 열이 단어보다 좁아지지 않는다(넘치면 .ds-table-wrap이 가로 스크롤) */
+  overflow-wrap: break-word;
+}
+/* 레거시 표의 짧은 식별자(VIN 등) — 하이픈 뒤 줄바꿈 금지 */
+.sh-main td .mono {
+  white-space: nowrap;
 }
 .sh-main table {
   font-size: var(--fs-sm);

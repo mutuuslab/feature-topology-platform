@@ -115,7 +115,8 @@ export function AsyncView({ state, stale, onRetry, empty, error, children, rows 
     return (
       <div className="ds-state" data-state={state} role={state === 'error' ? 'alert' : 'status'}>
         <Icon name={state === 'empty' ? 'grid' : 'alert'} size={22} />
-        <h3>{t[0]}</h3>
+        {/* 제목 요소가 아니다 — 화면 h1 바로 아래·패널 h2 아래 어디서든 제목 단계를 건너뛰지 않게(axe heading-order) */}
+        <p className="ds-state__title">{t[0]}</p>
         <p>{t[1]}</p>
         {state === 'error' && onRetry && <Button onClick={onRetry}>{ko.state.retry}</Button>}
         {state === 'empty' && empty?.action}

@@ -110,7 +110,7 @@ export function EventsScreen() {
             initialSort={{ key: 'seq', dir: 'desc' }}
             columns={[
               { key: 'seq', header: '#', cell: (r) => <span className="ds-mono">{r.seq}</span>, sort: (r) => r.seq, align: 'right' },
-              { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono">{when(r.at)}</span> },
+              { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
               { key: 'type', header: 'Type', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--accent)' }}>{r.type}</span>, sort: (r) => r.type },
               { key: 'agg', header: ko.audit.col.target, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.aggregate}</span> },
               { key: 'c', header: 'Component', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.componentId ?? '—'}</span> },

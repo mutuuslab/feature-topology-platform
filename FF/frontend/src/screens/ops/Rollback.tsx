@@ -269,7 +269,7 @@ function PendingItem({ x, me }: { x: (RollbackRequest & { kind: 'request' }) | (
         <span className="ds-tag">{R.kind[x.kind]}</span>
         <span className="ds-mono">{id}</span>
         <span>{label}</span>
-        <span className="ds-mono">{when(x.requestedAt)}</span>
+        <span className="ds-mono ds-nowrap">{when(x.requestedAt)}</span>
       </div>
       <KeyValue
         rows={[
@@ -325,7 +325,7 @@ function DeploymentPanel({ id, me }: { id: string; me: string }) {
               rowKey={(c) => c.policyId}
               columns={[
                 { key: 'v', header: F.recovery, cell: (c) => <span className="ds-mono">{versionText(c)}</span> },
-                { key: 'at', header: R.hcol.at, cell: (c) => <span className="ds-mono">{when(c.deployedAt)}</span> },
+                { key: 'at', header: R.hcol.at, cell: (c) => <span className="ds-mono ds-nowrap">{when(c.deployedAt)}</span> },
                 { key: 'e', header: R.eligible, cell: (c) => <VerdictBadge value={c.eligible ? 'PASS' : 'FAIL'} /> },
                 { key: 'b', header: R.failure, cell: (c) => (c.eligible ? <span className="ds-mono">{c.artifactId}</span> : c.blockers.map((b) => b.message).join(' · ')) },
               ]}
@@ -343,7 +343,7 @@ function DeploymentPanel({ id, me }: { id: string; me: string }) {
                   { key: 'p', header: R.col.deployed, cell: (h) => <span className="ds-mono">{h.policyId} r{h.revision}</span> },
                   { key: 's', header: R.col.artifact, cell: (h) => `${h.status} ${h.confirmed}/${h.denominator}` },
                   { key: 'r', header: R.title, cell: (h) => h.rollback ?? '—' },
-                  { key: 'at', header: R.hcol.at, cell: (h) => <span className="ds-mono">{when(h.createdAt)}</span> },
+                  { key: 'at', header: R.hcol.at, cell: (h) => <span className="ds-mono ds-nowrap">{when(h.createdAt)}</span> },
                 ]}
               />
             </details>
@@ -493,7 +493,7 @@ export function RollbackScreen() {
               { key: 'a', header: R.hcol.after, cell: (x) => <span className="ds-mono">{x.after.policyId} r{x.after.revision}</span> },
               { key: 'st', header: R.hcol.status, cell: (x) => <><VerdictBadge value={STATUS_VERDICT[x.status] ?? '미판정'} /> {ROLLBACK_STATUS_LABEL[x.status]}</> },
               { key: 'r', header: R.hcol.result, cell: (x) => (x.result ? ROLLBACK_RESULT_LABEL[x.result] : '—') },
-              { key: 'at', header: R.hcol.at, cell: (x) => <span className="ds-mono">{when(x.startedAt)}</span>, sort: (x) => x.startedAt },
+              { key: 'at', header: R.hcol.at, cell: (x) => <span className="ds-mono ds-nowrap">{when(x.startedAt)}</span>, sort: (x) => x.startedAt },
             ]}
           />
         </AsyncView>

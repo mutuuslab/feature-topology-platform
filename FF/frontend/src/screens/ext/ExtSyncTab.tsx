@@ -80,7 +80,7 @@ export function ExtSyncTab() {
               rowKey={(r) => `${r.system}:${r.deliveryId}`}
               maxHeight="40vh"
               columns={[
-                { key: 'at', header: X.inboxCol.at, cell: (r) => <span className="ds-mono">{when(r.receivedAt)}</span> },
+                { key: 'at', header: X.inboxCol.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.receivedAt)}</span> },
                 { key: 'k', header: X.inboxCol.key, cell: (r) => <span className="ds-mono">{r.key}</span> },
                 { key: 'o', header: X.inboxCol.outcome, cell: (r) => <span style={r.outcome === 'REJECTED' || r.outcome === 'UNMAPPED' ? { color: 'var(--danger)', fontWeight: 600 } : undefined}>{X.outcome[r.outcome] ?? r.outcome}</span> },
                 { key: 's', header: X.inboxCol.summary, cell: (r) => r.summary },
@@ -99,7 +99,7 @@ export function ExtSyncTab() {
                 rowKey={(r) => String(r.jobId)}
                 maxHeight="40vh"
                 columns={[
-                  { key: 'at', header: X.outboxCol.at, cell: (r) => <span className="ds-mono">{when(r.createdAt)}</span> },
+                  { key: 'at', header: X.outboxCol.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.createdAt)}</span> },
                   { key: 's', header: X.outboxCol.system, cell: (r) => extSync.system[r.system] },
                   { key: 'o', header: X.outboxCol.op, cell: (r) => <span className="ds-mono">{r.job.op}</span> },
                   { key: 'n', header: X.outboxCol.attempts, cell: (r) => r.attempts, align: 'right' },
@@ -145,7 +145,7 @@ function ConflictTable({ rows }: { rows: Conflict[] }) {
         rows={rows}
         rowKey={(r) => String(r.conflictId)}
         columns={[
-          { key: 'at', header: X.conflictCol.at, cell: (r) => <span className="ds-mono">{when(r.createdAt)}</span> },
+          { key: 'at', header: X.conflictCol.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.createdAt)}</span> },
           { key: 's', header: X.conflictCol.system, cell: (r) => extSync.system[r.system] },
           { key: 'k', header: X.conflictCol.key, cell: (r) => <span className="ds-mono">{r.key}</span> },
           { key: 'f', header: X.conflictCol.field, cell: (r) => r.field },

@@ -222,6 +222,11 @@ export const ko = {
     peek: '요약 보기',
     sortAsc: '오름차순 정렬',
     sortDesc: '내림차순 정렬',
+    /** 머리글이 빈 열(행 버튼·선택 칸)의 화면낭독기 전용 이름 */
+    column: '작업',
+    select: '선택',
+    /** 가로로 넘친 표 영역(region)의 이름 — 패널 제목과 겹치지 않게(axe landmark-unique) */
+    scrollTable: (caption: string) => `${caption} 표 — 가로 스크롤`,
   },
   danger: {
     typeToConfirm: (word: string) => `확인을 위해 ${word} 를 입력하세요`,

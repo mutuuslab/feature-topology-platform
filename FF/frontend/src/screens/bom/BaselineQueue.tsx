@@ -83,7 +83,7 @@ function Requests() {
             { key: 'f', header: T.col.feature, cell: (r) => <IdChip id={r.featureId} version={r.version} to={`/features/${r.featureId}/${r.version}?tab=baseline`} copy={false} /> },
             { key: 'st', header: T.col.status, cell: (r) => <VerdictBadge value={STATUS_VERDICT[r.status]} /> },
             { key: 'by', header: T.requestedBy, cell: (r) => <span className="ds-mono">{r.requestedBy}</span> },
-            { key: 'at', header: T.col.requestedAt, cell: (r) => <span className="ds-mono">{when(r.requestedAt)}</span>, sort: (r) => r.requestedAt },
+            { key: 'at', header: T.col.requestedAt, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.requestedAt)}</span>, sort: (r) => r.requestedAt },
             { key: 'bl', header: T.col.baseline, cell: (r) => (r.baselineId ? <IdChip id={r.baselineId} copy={false} /> : '—') },
             { key: 'why', header: ko.page.reason, cell: (r) => r.reason },
           ]}

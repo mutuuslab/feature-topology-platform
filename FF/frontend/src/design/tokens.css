@@ -122,8 +122,10 @@
   --gate-REVIEW: var(--warn);
   --gate-UNJUDGED: var(--faint);
   --gate-FAIL: var(--danger);
-  --fs-xs: calc(var(--fs-base) * 0.786);
-  --fs-sm: calc(var(--fs-base) * 0.857);
+  /* 하한 — 노트북(1599px 이하, base 13px)에서 xs가 10.2px·sm이 11.1px로 떨어져 화면 글자의 82%가 10~11px였다(하네스 DS-03·04, 2026-10-23).
+     보조 글자는 11px, 표 본문은 12px 아래로 내려가지 않는다 */
+  --fs-xs: max(11px, calc(var(--fs-base) * 0.786));
+  --fs-sm: max(12px, calc(var(--fs-base) * 0.857));
   --fs-md: calc(var(--fs-base) * 1.071);
   --fs-lg: calc(var(--fs-base) * 1.286);
   --fs-xl: calc(var(--fs-base) * 1.571);
@@ -209,6 +211,9 @@
 /* 시연·발표 모드 — 큰 글자, 넓은 행, 굵은 초점 */
 [data-present='on'] {
   --fs-base: 18px;
+  /* 화면 글자 대부분이 sm·xs라 base만 키우면 표가 15px에 머문다 — 투사 거리에서 읽히도록 비율을 좁힌다 */
+  --fs-xs: 15px;
+  --fs-sm: 17px;
   --row-h: 46px;
   --panel-w: 0px;
   --line: var(--line-strong);

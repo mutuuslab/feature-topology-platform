@@ -29,9 +29,9 @@ function Card({ t }: { t: Tutorial }) {
         </span>
         {t.status !== 'ready' && <span className="ds-field__hint">{L.status[t.status]}</span>}
       </div>
-      <h3>
+      <h2>
         <Link to={`/learn/${t.id}`}>{t.title}</Link>
-      </h3>
+      </h2>
       <p className="ds-learn-card__sum">{t.summaryKo}</p>
       {/* 근거 규칙 칩은 설명 모드에서만(3초 테스트) — 카드는 제목·요약·시작 버튼 */}
       <Explain rules={t.rules} />

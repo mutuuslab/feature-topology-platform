@@ -237,7 +237,7 @@ export function VehicleRuntimeScreen() {
                 rows={[...d.runtime.log].reverse()}
                 rowKey={(l) => `${l.at}-${l.publicationId}-${l.detail}`}
                 columns={[
-                  { key: 'at', header: ko.audit.col.at, cell: (l) => <span className="ds-mono">{when(l.at)}</span> },
+                  { key: 'at', header: ko.audit.col.at, cell: (l) => <span className="ds-mono ds-nowrap">{when(l.at)}</span> },
                   { key: 'p', header: ko.deploy.col.id, cell: (l) => <IdChip id={l.publicationId} to={`/deployments/${l.publicationId}`} copy={false} /> },
                   { key: 'k', header: ko.deploy.col.kind, cell: (l) => <span className="ds-tag">{l.kind}</span> },
                   { key: 'r', header: ko.audit.col.result, cell: (l) => <VerdictBadge value={l.result === 'APPLIED' ? 'PASS' : 'FAIL'} /> },

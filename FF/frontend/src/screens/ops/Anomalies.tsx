@@ -128,7 +128,7 @@ export function AnomalyScreen() {
         lead={A.lead}
         message={(() => {
           const n = all.filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length;
-          return !q.data ? { tone: 'neutral', value: '—', text: A.key.open } : n ? { tone: 'warn', value: n, text: A.key.open } : { tone: 'ok', text: A.key.clean };
+          return !q.data ? { tone: 'neutral', value: '—', text: A.key.open } : all.length === 0 ? { tone: 'neutral', value: 0, text: A.key.none } : n ? { tone: 'warn', value: n, text: A.key.open } : { tone: 'ok', text: A.key.clean };
         })()}
       />
       <Segmented
@@ -193,8 +193,9 @@ export function FeedbackScreen() {
         title={FB.title}
         lead={FB.lead}
         message={(() => {
-          const open = rows.filter((r) => r.status === 'OPEN').length;
-          return !q.data ? { tone: 'neutral', value: '—', text: FB.key.open } : open ? { tone: 'warn', value: open, text: FB.key.open } : { tone: 'ok', text: FB.key.clean };
+          // 표의 '검토 중'(ACCEPTED)도 아직 끝나지 않은 피드백이다 — 헤드라인이 초록인데 표에 검토 중 행이 보였다
+          const open = rows.filter((r) => r.status === 'OPEN' || r.status === 'ACCEPTED').length;
+          return !q.data ? { tone: 'neutral', value: '—', text: FB.key.open } : rows.length === 0 ? { tone: 'neutral', value: 0, text: FB.key.none } : open ? { tone: 'warn', value: open, text: FB.key.open } : { tone: 'ok', text: FB.key.clean };
         })()}
       />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>

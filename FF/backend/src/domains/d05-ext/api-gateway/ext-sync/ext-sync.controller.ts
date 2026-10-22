@@ -29,6 +29,11 @@ export class ExtSyncController {
     return this.s.featureTrace(id, ver);
   }
 
+  @Get('api/integrations/sync/epics')
+  epics() {
+    return { items: this.s.featureEpics() };
+  }
+
   @Get('api/integrations/sync/change-requests')
   changeRequests() {
     return { items: this.s.changeRequests() };

@@ -102,7 +102,7 @@ export function DesignTraceScreen() {
               </Panel>
               <Panel title={`${T.baseline} · ${T.policies}`} id="trace-bl">
                 <p className="ds-mono">{d.baseline ? <Link to={`/baselines/${d.baseline}`}>{d.baseline}</Link> : '—'}</p>
-                <ul className="ds-mono">{d.policies.map((p) => <li key={p.policyId}><Link to={`/policies/${p.policyId}`}>{`${p.policyId} · ${p.flagKey} · ${p.status}`}</Link></li>)}</ul>
+                <ul className="ds-mono ds-linklist">{d.policies.map((p) => <li key={p.policyId}><Link to={`/policies/${p.policyId}`}>{`${p.policyId} · ${p.flagKey} · ${p.status}`}</Link></li>)}</ul>
               </Panel>
             </div>
           </>

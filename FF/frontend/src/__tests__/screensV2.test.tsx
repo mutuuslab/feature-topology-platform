@@ -58,7 +58,46 @@ describe('Feature Registry 목록', () => {
     // 핵심 메시지 = Feature 수, 요약 줄 = Baseline 확정 수(출시·제안 수는 Lifecycle 탭이 보인다)
     expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('2');
     expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['1']);
-    expect(calls.some((c) => c.url.startsWith('/api/features?') && c.url.includes('latestOnly=true'))).toBe(true);
+    expect(calls.some((c) => c.url.startsWith('/api/features?') && c.url.includes('latestOnly=false'))).toBe(true);
+  });
+
+  // UI 하네스 2판 5단계(2026-10-23): 홈 'VERIFIED 3'을 눌러 오면 칩은 6(모든 Version), 표는 3행(최신만)이었다 —
+  // 칩·국가 수·표가 같은 대상(최신 Version 여부·국가·검색·F 분류)을 같은 규칙으로 센다.
+  it('Lifecycle 칩·국가 수·표 행 수가 같은 범위를 센다(최신 Version만이면 옛 Version은 빠진다)', async () => {
+    const OLD = { ...F22, version: '0.9.0', isLatest: false };
+    const US = { ...F13, featureId: 'FEAT-00090', name: '미국 전용', country: 'US', lifecycle: 'RELEASED' };
+    handler = () => ({ body: { total: 4, items: [F22, OLD, F13, US], facets: { lifecycle: { RELEASED: 3, PROPOSED: 1 }, country: { KR: 3, US: 1 }, vehicleModel: {} } } });
+    mount('/features?lifecycle=RELEASED', '/features', <FeatureList />);
+    await screen.findByText('전방 안전거리 3단계');
+    const chip = (label: string) => [...document.querySelectorAll('.ds-seg__opt')].find((b) => b.firstChild?.textContent === label)?.querySelector('.ds-seg__count')?.textContent;
+    expect(chip('RELEASED')).toBe('2');
+    expect(document.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(chip('PROPOSED')).toBe('1');
+    expect(chip('전체')).toBe('3');
+    const country = screen.getByRole('combobox', { name: '국가' }) as HTMLSelectElement;
+    expect([...country.options].map((o) => o.textContent)).toEqual(['전체', 'KR (1)', 'US (1)']);
+    fireEvent.change(country, { target: { value: 'KR' } });
+    await waitFor(() => expect(chip('RELEASED')).toBe('1'));
+    expect(document.querySelectorAll('tbody tr')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('checkbox'));
+    await waitFor(() => expect(chip('RELEASED')).toBe('2'));
+    expect(document.querySelectorAll('tbody tr')).toHaveLength(2);
+  });
+
+  // 사용자 결정(2026-10-23): Lifecycle은 플랫폼·JIRA 양쪽에서 관리 — 목록에서 JIRA Epic 상태를 Lifecycle 옆에 보이고, 어긋나면 표시
+  it('JIRA Epic 열 — 키·상태를 Lifecycle 옆에, Lifecycle 기준 상태와 다르면 어긋남 표시', async () => {
+    const EPICS = { items: [
+      { feature: 'FEAT-00022@1.0.0', key: 'FFE-22', url: 'https://jira.ff.example/browse/FFE-22', status: 'In Progress', syncState: 'SYNCED', expected: 'Released' },
+      { feature: 'FEAT-00013@0.3.0', key: 'FFE-13', url: 'https://jira.ff.example/browse/FFE-13', status: 'Proposed', syncState: 'SYNCED', expected: 'Proposed' },
+    ] };
+    handler = (url) => ({ body: url.startsWith('/api/integrations/sync/epics') ? EPICS : LIST });
+    mount('/features', '/features', <FeatureList />);
+    await screen.findByText('전방 안전거리 3단계');
+    const row = (id: string) => document.querySelector(`tbody tr[data-key^="${id}"]`) as HTMLElement;
+    await waitFor(() => expect(within(row('FEAT-00022')).getByRole('link', { name: 'FFE-22' })).toBeTruthy());
+    expect(within(row('FEAT-00022')).getByText("Lifecycle 기준 'Released'과 다름")).toBeTruthy();
+    expect(within(row('FEAT-00013')).getByText('Proposed')).toBeTruthy();
+    expect(within(row('FEAT-00013')).queryByText(/Lifecycle 기준/)).toBeNull();
   });
 
   it('검색어로 목록을 즉시 거르고, 없는 값은 빈 상태', async () => {

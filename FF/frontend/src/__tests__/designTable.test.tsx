@@ -31,7 +31,8 @@ describe('Segments — 구분자에서만 줄바꿈', () => {
   it('항목마다 줄바꿈 금지 상자로 감싸고 사이에 구분자를 둔다', () => {
     const { container } = render(<Segments items={['KR/GN7/Calligraphy', 'EU/NX4 PE/Ultimate']} />);
     const boxes = [...container.querySelectorAll('.ds-nowrap')].map((e) => e.textContent);
-    expect(boxes).toEqual(['KR/GN7/Calligraphy', 'EU/NX4 PE/Ultimate']);
+    // 회귀(2026-10-23, 1366 Registry): 구분자가 상자 밖에 있으면 '·'만 한 줄에 남았다 — 뒤 항목 상자에 붙인다
+    expect(boxes).toEqual(['KR/GN7/Calligraphy', '· EU/NX4 PE/Ultimate']);
     expect(container.textContent).toBe('KR/GN7/Calligraphy · EU/NX4 PE/Ultimate');
   });
 });

@@ -88,12 +88,12 @@ export function AreaChart({ data, height = 160, color = LEGACY_PAL['lg-0b5fff'],
         onMouseMove={e => { const r = (e.currentTarget as SVGSVGElement).getBoundingClientRect(); const rel = (e.clientX - r.left) / r.width * W; setHi(Math.max(0, Math.min(data.length - 1, Math.round((rel - padL) / ((W - padL * 2) / (data.length - 1)))))); }}>
         <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.35" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient></defs>
         {grid.map((g, i) => { const yy = padT + g * (H - padT - padB); const val = up - g * span; return (
-          <g key={i}><line x1={padL} y1={yy} x2={W - padL} y2={yy} stroke="var(--line)" strokeWidth="0.5" strokeDasharray="3 3" />
+          <g key={i}><line x1={padL} y1={yy} x2={W - padL} y2={yy} stroke="var(--chart-grid)" strokeWidth="1" strokeDasharray="3 3" />
             <text x={W - padL} y={yy - 2} textAnchor="end" fontSize="8" fill="var(--muted)">{fmt ? fmt(val) : val.toFixed(0)}</text></g>); })}
         <path d={area} fill={`url(#${gid})`} />
         <path className="draw" d={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
         {hi != null && <><line x1={x(hi)} y1={padT} x2={x(hi)} y2={H - padB} stroke={color} strokeWidth="0.7" strokeDasharray="2 2" />
-          <circle cx={x(hi)} cy={y(data[hi])} r="3.5" fill={color} stroke={LEGACY_PAL['lg-ffffff']} strokeWidth="1.5" /></>}
+          <circle cx={x(hi)} cy={y(data[hi])} r="3.5" fill={color} stroke="var(--surface)" strokeWidth="1.5" /></>}
         <circle cx={x(data.length - 1)} cy={y(data[data.length - 1])} r="3" fill={color}><animate attributeName="opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite" /></circle>
       </svg>
       {hi != null && <div className="chart-tip" style={{ left: `${(x(hi) / W) * 100}%` }}>{fmt ? fmt(data[hi]) : data[hi]}</div>}
@@ -115,7 +115,7 @@ export function Donut({ segments, size = 130, center }: { segments: { label: str
   return (
     <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--surface-3)" strokeWidth={14} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--track-bg)" strokeWidth={14} />
         <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
           {segments.map((s, i) => { const len = (s.value / total) * c; const el = (
             <circle key={i} cx={size / 2} cy={size / 2} r={r} fill="none" stroke={s.color} strokeWidth={14} strokeLinecap="round"
@@ -140,7 +140,7 @@ export function Bars({ data, fmt, labelWidth = 120 }: { data: Record<string, num
     <div>{Object.entries(data).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
       <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '5px 0' }}>
         <span className="small" title={k} style={{ flex: `0 0 ${labelWidth}px`, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k}</span>
-        <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 5, overflow: 'hidden' }}>
+        <div style={{ flex: 1, background: 'var(--track-bg)', borderRadius: 5, overflow: 'hidden' }}>
           <div style={{ width: `${(v / max) * 100}%`, background: `linear-gradient(90deg,${LEGACY_PAL['lg-0b5fff']},${LEGACY_PAL['lg-0ea5e9']})`, height: 16, borderRadius: 5, transition: 'width .8s ease' }} />
         </div>
         <span className="small mono" style={{ width: 92, textAlign: 'right' }}>{fmt ? fmt(v) : v}</span>
@@ -159,9 +159,9 @@ export function GaugeArc({ value, label, size = 150 }: { value: number; label?: 
   return (
     <div style={{ textAlign: 'center' }}>
       <svg width={size} height={size / 2 + 16} viewBox={`0 0 ${size} ${size / 2 + 16}`}>
-        <path d={arc(Math.PI, 0)} fill="none" stroke="var(--surface-3)" strokeWidth="12" strokeLinecap="round" />
+        <path d={arc(Math.PI, 0)} fill="none" stroke="var(--track-bg)" strokeWidth="12" strokeLinecap="round" />
         <path d={arc(Math.PI, ang)} fill="none" stroke={color} strokeWidth="12" strokeLinecap="round" style={{ transition: 'all .6s' }} />
-        <circle cx={ex} cy={ey} r="6" fill={color} stroke={LEGACY_PAL['lg-ffffff']} strokeWidth="2" />
+        <circle cx={ex} cy={ey} r="6" fill={color} stroke="var(--surface)" strokeWidth="2" />
         <text x={cx} y={cy} textAnchor="middle" fontSize="22" fontWeight="800" fill="var(--ink)">{v.toFixed(1)}%</text>
       </svg>
       {label && <div className="small muted">{label}</div>}
@@ -175,7 +175,7 @@ export function RadialProgress({ value, size = 92, color = LEGACY_PAL['lg-0b5fff
   return (
     <div style={{ textAlign: 'center' }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--surface-3)" strokeWidth="8" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--track-bg)" strokeWidth="8" />
         <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
           <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
             strokeDasharray={`${(v / 100) * c} ${c}`} style={{ transition: 'stroke-dasharray .8s ease' }} />

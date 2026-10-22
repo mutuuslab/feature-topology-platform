@@ -3,7 +3,7 @@
 // (요청자·이미 승인한 사람·FSM 칸·복원은 차단 승인자 제외 — FFG-PLT-005·DEAC-008).
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { approvalCheck, approvalPlan, reportRolesOf, type Role } from '@ff/contracts';
+import { approvalCheck, approvalPlan, LIFECYCLE, reportRolesOf, type Role } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -204,8 +204,9 @@ export function HomeScreen() {
       <ProcedureMap summary={proc} role={role} />
       <div className="ds-split">
         <Panel title={H.lifecycle} id="home-lc">
-          <ul className="ds-chain">
-            {Object.entries(byLc).map(([lc, n]) => (
+          {/* Registry와 같은 범위(최신 Version) — 누르면 같은 수의 행이 보인다 */}
+          <ul className="ds-chain ds-linklist">
+            {LIFECYCLE.filter((lc) => byLc[lc]).map((lc) => [lc, byLc[lc]] as const).map(([lc, n]) => (
               <li key={lc} style={{ listStyle: 'none' }}>
                 <Link to={`/features?lifecycle=${lc}`}>
                   <LifecycleBadge value={lc} /> <span className="ds-mono">{n}</span>
@@ -215,7 +216,7 @@ export function HomeScreen() {
           </ul>
         </Panel>
         <Panel title={H.links} id="home-links">
-          <ul>
+          <ul className="ds-linklist">
             {LINKS.map(([to, label]) => (
               <li key={to}>
                 <Link to={to}>{label}</Link>

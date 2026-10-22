@@ -2,6 +2,7 @@
 //   ① Feature 상세 "연계" 탭: codeBeamer 요구·JIRA Epic·GitLab MR이 새 탭 링크로 보인다
 //   ② JIRA에서 권한 없는 사람이 Epic을 승인 상태로 바꾸면 플랫폼이 거부하고 되돌린다 → 외부 연계 "받은 변경"에 거부·되돌림
 //   ③ 변경요청 화면: JIRA CR과 플랫폼 정책 상태가 나란히, 핵심 메시지는 하나
+//   ④ JIRA에서 Epic을 만들면 PROPOSED Feature 자동 등록 → Registry 목록에 Lifecycle과 JIRA Epic이 나란히(사용자 결정 2026-10-23)
 import { expect, test, type Page } from '@playwright/test';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
@@ -51,4 +52,22 @@ test('변경요청 화면 — JIRA CR과 정책 상태, 핵심 메시지 하나'
   const table = page.getByRole('table', { name: 'JIRA 변경요청' });
   await expect(table.locator('a[href^="/policies/POL-"]').first()).toBeVisible();
   await expect(table.locator('.ds-ext[data-system="JIRA"] a').first()).toHaveAttribute('href', /\/browse\/FFCR-\d+$/);
+});
+
+test('JIRA에서 Epic 만들기 → PROPOSED Feature 자동 등록, Registry에 Lifecycle과 Epic이 나란히', async ({ page }) => {
+  await asRole(page, 'author');
+  await page.goto('/integration/connectors?tab=sync');
+  await page.locator('#sync-simulate > summary').click();
+  const form = page.locator('section[aria-labelledby="sync-epic-new"]');
+  const title = `야간 차선 유지 확장 ${Date.now() % 100000}`;
+  await form.getByLabel('Epic 제목 (= Feature 이름)').fill(title);
+  await form.getByLabel('담당 조직').fill('주행보조개발팀');
+  await form.getByRole('button', { name: 'Epic 만들기' }).click();
+  await expect(page.getByTestId('epic-create-result')).toContainText(/FEAT-\d{5}@[\d.]+ 자동 등록/);
+  await page.goto(`/features?q=${encodeURIComponent(title)}`);
+  const row = page.locator('tbody tr', { hasText: title });
+  await expect(row).toHaveCount(1);
+  await expect(row.locator('.ds-badge[data-lifecycle="PROPOSED"]')).toBeVisible();
+  await expect(row.locator('.ds-ext[data-system="JIRA"] a')).toHaveAttribute('href', /\/browse\/FFE-\d+$/);
+  await expect(row.locator('.ds-ext__status')).toHaveText('Proposed');
 });

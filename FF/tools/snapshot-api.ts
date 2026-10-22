@@ -192,6 +192,7 @@ async function main() {
   await save('otelSpans', {}, { limit: 100 });
   // GitLab·JIRA·codeBeamer 양방향 연계 — 외부 연계 현황 '양방향 연계' 탭·검토함 충돌·변경요청 목록
   await save('extSync');
+  await save('extFeatureEpics');
   await save('extConflicts', {}, { status: 'OPEN' });
   await save('extInbox');
   await save('extOutbox', {}, { status: 'FAILED' });

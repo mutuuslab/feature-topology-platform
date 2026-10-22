@@ -773,7 +773,8 @@ export function TwinSimulation() {
         </div>
         <div className="col card">
           <b>Quality Gate 결과 (QG-01~QG-10)</b>
-          <div className="table-wrap mt">
+          {/* 상세 문장의 날짜를 묶어 표가 가로로 넘칠 수 있다 — 키보드로도 스크롤(axe scrollable-region-focusable) */}
+          <div className="table-wrap mt" tabIndex={0} role="region" aria-label="Quality Gate 결과 표">
             <table>
               <thead><tr><th>Gate</th><th>결과</th><th>상세</th></tr></thead>
               <tbody>
@@ -828,7 +829,8 @@ export function TwinSimulation() {
         </div>
         <div className="col card">
           <b>생성된 Evidence</b>
-          <div className="table-wrap mt">
+          {/* 캡처 시각을 한 줄로 묶어 표가 넘칠 수 있다 — 키보드로도 스크롤 */}
+          <div className="table-wrap mt" tabIndex={0} role="region" aria-label="생성된 Evidence 표">
             <table>
               <thead><tr><th>Evidence</th><th>종류</th><th>캡처 시각</th></tr></thead>
               <tbody>

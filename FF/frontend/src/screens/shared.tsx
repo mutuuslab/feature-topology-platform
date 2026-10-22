@@ -31,8 +31,12 @@ export function Segments({ items, sep = ' · ' }: { items: string[]; sep?: strin
     <>
       {items.map((x, i) => (
         <span key={i}>
-          {i > 0 && sep}
-          <span className="ds-nowrap">{x}</span>
+          {/* 구분자는 뒤 항목과 붙여 둔다 — '·'만 한 줄에 남던 줄바꿈(1366 Registry 적용 범위) 방지 */}
+          {i > 0 && sep.startsWith(' ') && ' '}
+          <span className="ds-nowrap">
+            {i > 0 && sep.trimStart()}
+            {x}
+          </span>
         </span>
       ))}
     </>

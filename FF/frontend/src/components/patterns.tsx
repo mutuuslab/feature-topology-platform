@@ -16,13 +16,14 @@ export function ErrorState({ msg, onRetry }: { msg: string; onRetry?: () => void
 }
 export function NoPermission({ verb }: { verb: string }) {
   const { t } = useT();
-  return <span className="pill" title={`${t('noPerm')}: ${verb}`} style={{ opacity: .6 }}>🔒 {verb}</span>;
+  // 투명도로 흐리게 하면 밝은 면에서 대비가 4.5:1 아래로 떨어진다(axe color-contrast) — 글자색으로만 낮춘다
+  return <span className="pill" title={`${t('noPerm')}: ${verb}`} style={{ color: 'var(--ink-2)', borderStyle: 'dashed' }}>🔒 {verb}</span>;
 }
 
 // 권한 게이팅 버튼
 export function GButton({ verb, children, ...rest }: any) {
   const { can } = useApp();
-  if (!can(verb)) return <span className="btn" style={{ opacity: .5, cursor: 'not-allowed' }} title={`권한 필요: ${verb}`}>🔒 {children}</span>;
+  if (!can(verb)) return <span className="btn" style={{ color: 'var(--ink-2)', borderStyle: 'dashed', cursor: 'not-allowed' }} title={`권한 필요: ${verb}`}>🔒 {children}</span>;
   return <button {...rest} className={rest.className || 'btn'}>{children}</button>;
 }
 

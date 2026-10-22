@@ -30,7 +30,7 @@ import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, Segmented, Select, VerdictBadge } from '../../design';
+import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, Segmented, Select, VerdictBadge } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission, when } from '../shared';
 
@@ -198,7 +198,7 @@ function RollbackForm({ d, me }: { d: DeploymentDetail; me: string }) {
       </Select>
       <p className="pv-lead">{F.approversHint}</p>
       <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
-        <Button disabled={!recovery || STATIC_MODE || preview.isPending} onClick={() => preview.mutate({ body: { deploymentId: d.deploymentId, recovery: { policyId: recovery }, scope } })}>
+        <Button disabled={!recovery || STATIC_MODE || preview.isPending} reason={whyDisabled([STATIC_MODE, ko.page.readOnly], [!recovery, ko.why.recovery])} onClick={() => preview.mutate({ body: { deploymentId: d.deploymentId, recovery: { policyId: recovery }, scope } })}>
           {F.preview}
         </Button>
         <Button
@@ -287,7 +287,7 @@ function PendingItem({ x, me }: { x: (RollbackRequest & { kind: 'request' }) | (
             <Field label={R.comment}>
               <input className="ds-input" value={comment} onChange={(e) => setComment(e.target.value)} />
             </Field>
-            <Button variant="primary" disabled={comment.trim().length < 2 || decide.isPending} onClick={() => decide.mutate({ params: { id }, body: { decision: 'APPROVE', comment } })}>
+            <Button variant="primary" disabled={comment.trim().length < 2 || decide.isPending} reason={whyDisabled([comment.trim().length < 2, ko.why.comment])} onClick={() => decide.mutate({ params: { id }, body: { decision: 'APPROVE', comment } })}>
               {R.approve}
             </Button>
             <Button disabled={comment.trim().length < 2 || decide.isPending} onClick={() => decide.mutate({ params: { id }, body: { decision: 'REJECT', comment } })}>

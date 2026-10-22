@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { ASIL_EXCEPTION_LABEL, checkProfile, DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, proposeClass, REG_CLASSES, type AsilInheritance, type ClassFinding, type ClassifyAnswers, type SafetyProfile } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, ClassBadges, Drawer, ErrorNote, Explain, Field, Icon, KeyValue, Panel, RuleChecklist, Select, StageStrip, StatusGlyph, WindowGauge } from '../../design';
+import { whyDisabled, AsyncView, Button, ClassBadges, Drawer, ErrorNote, Explain, Field, Icon, KeyValue, Panel, RuleChecklist, Select, StageStrip, StatusGlyph, WindowGauge } from '../../design';
 import { usePermission, when } from '../shared';
 
 const S = ko.safetyTab;
@@ -369,6 +369,7 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
                 variant="primary"
                 icon="pen"
                 disabled={!sign.ok || reason.trim().length < 2 || confirm.isPending}
+                reason={whyDisabled([!sign.ok, sign.hint], [reason.trim().length < 2, ko.why.reason])}
                 onClick={() => confirm.mutate({ params: { id, ver }, body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}
               >
                 {S.confirm}

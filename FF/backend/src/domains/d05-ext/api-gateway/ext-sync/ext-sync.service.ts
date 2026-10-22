@@ -6,6 +6,8 @@
 //   매핑된 플랫폼 행위자의 "요청"으로 같은 서비스 경로(가드·직무 분리·감사)를 탄다. 거부되면 외부 값을 되돌리고 사유를 댓글로 남긴다.
 import { Inject, Injectable, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import {
+  CreateFeatureBody,
+  EPIC_SCOPE_LABEL,
   ExtIdentitySchema,
   EXT_SYSTEM_IF,
   EXT_SYSTEMS,
@@ -13,6 +15,7 @@ import {
   JIRA_CR_STATUS,
   JIRA_EPIC_STATUS,
   lifecycleOfEpicStatus,
+  missingEpicScope,
   parseRefs,
   SYNC_OWNERSHIP,
   type ExtChange,
@@ -43,6 +46,7 @@ import { EXT_FIXTURES } from '../../../../adapters/if-mocks/external-systems';
 import { PolicyRepo } from '../../../d01-policy/policy-repos';
 import { PolicyService } from '../../../d01-policy/policy-store/policy.service';
 import { LifecycleService } from '../../../d01-policy/registry/lifecycle.service';
+import { RegistryService } from '../../../d01-policy/registry/registry.service';
 import { FeatureRepo } from '../../../d01-policy/repos';
 import { ChangeRecordService } from '../../../d04-ops/pipeline-link/change-record.service';
 import { ExtAdapters, modeOf, PLATFORM_USER, type RemoteItem, type WriteResult } from './adapters';
@@ -83,6 +87,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     private readonly features: FeatureRepo,
     private readonly policies: PolicyRepo,
     private readonly lifecycle: LifecycleService,
+    private readonly registry: RegistryService,
     private readonly policyService: PolicyService,
     private readonly changeRecords: ChangeRecordService,
   ) {}
@@ -425,7 +430,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       this.repo.putItem(ref);
       if (target) this.repo.link('JIRA', c.key, 'FEATURE', target, c.externalUser);
     });
-    if (!target) return { outcome: 'IGNORED', summary: '연결된 Feature 없는 Epic' };
+    if (!target) return this.featureFromEpic(c, correlationId, actorOverride);
     const { featureId, version } = splitFid(target);
     const f = this.features.get(featureId, version);
     if (!f) return { outcome: 'IGNORED', summary: `${target} 없음` };
@@ -457,6 +462,52 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       return { outcome: 'APPLIED', summary: `${target} ${f.lifecycle} → ${to} (JIRA ${c.key})` };
     } catch (e) {
       return revert(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  /**
+   * 연결된 Feature가 없는 Epic → PROPOSED Feature 자동 등록(사용자 결정 2026-10-23 "JIRA에서 Epic 만들면 Feature 자동 생성").
+   * 플랫폼 등록과 같은 경로(RegistryService.create — 중복 확인·안전 분류 초안·감사·이벤트)를 매핑된 작성자 계정으로 탄다.
+   * 범위 값이 빠졌거나 권한·중복으로 막히면 만들지 않고 Epic에 사유 댓글 — Epic을 고치면(편집 webhook) 다시 시도한다.
+   */
+  private featureFromEpic(c: ExtChange, correlationId: string, actorOverride?: Actor): Outcome {
+    if (process.env.FF_EPIC_AUTOCREATE === 'off') return { outcome: 'IGNORED', summary: '연결된 Feature 없는 Epic (자동 등록 꺼짐)' };
+    const refuse = (why: string, outcome: Outcome['outcome'] = 'REJECTED'): Outcome => {
+      this.db.tx(() => {
+        this.repo.setState('JIRA', c.key, 'REJECTED');
+        this.enqueue('JIRA', { op: 'COMMENT', key: c.key, text: `플랫폼 Feature를 등록하지 않았습니다 — ${why}` }, `epic-new:${c.key}:${c.revision}`);
+      });
+      return { outcome, summary: `${c.key} Feature 자동 등록 안 함 — ${why}` };
+    };
+    let actor: Actor | null = actorOverride ?? null;
+    const who = this.identity('JIRA', c.externalUser);
+    if (!actor) {
+      if (!who) return refuse(`JIRA 계정 '${c.externalUser}'이(가) 플랫폼 계정에 매핑되어 있지 않습니다.`, 'UNMAPPED');
+      actor = this.actorFor(who, ['FEATURE_AUTHOR'], correlationId);
+      if (!actor) return refuse(`${who.name}은(는) Feature 등록 권한(Feature 작성)이 없습니다.`);
+    }
+    const scope = (c.extra.scope ?? {}) as Record<string, string>;
+    const missing = missingEpicScope(scope);
+    if (missing.length) return refuse(`Epic에 ${missing.map((k) => EPIC_SCOPE_LABEL[k]).join('·')} 값이 없거나 형식이 틀립니다. 채우면 다시 등록을 시도합니다.`);
+    const body = CreateFeatureBody.safeParse({ name: c.title, description: String(c.extra.description ?? '').trim() || c.title, country: scope.country, vehicleModel: scope.vehicleModel, trim: scope.trim, asil: scope.asil, ownerId: scope.ownerId, tags: [`jira:${c.key}`] });
+    if (!body.success) return refuse(`Epic 값이 Feature 등록 형식에 맞지 않습니다 — ${body.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
+    // 중복 확인은 트랜잭션 밖에서 — 거부 감사는 트랜잭션 밖에 남겨야 한다(RegistryService.create와 같은 판정)
+    const similar = this.features.similar(body.data.name, body.data.country, body.data.vehicleModel, body.data.trim);
+    if (similar.length) {
+      this.audit.failed(actor, 'FEATURE_CREATE', body.data.name, `JIRA ${c.key}: 같은 적용 범위에 유사 Feature 존재`, 'D05-01');
+      return refuse(`같은 국가·차종·트림에 이름이 비슷한 Feature가 이미 있습니다. 기존 Feature: ${similar.map((s) => fid(s.featureId, s.version)).join(', ')} — 같은 기능이면 Epic 본문에 그 ID를 적어 연결하고, 새 Version이면 플랫폼에서 Version을 만드세요.`);
+    }
+    try {
+      const f = this.db.tx(() => {
+        const f = this.registry.create(actor!, body.data);
+        const id = fid(f.featureId, f.version);
+        this.repo.link('JIRA', c.key, 'FEATURE', id, c.externalUser);
+        this.enqueue('JIRA', { op: 'COMMENT', key: c.key, text: `플랫폼 Feature ${id} 등록(PROPOSED) — ${who?.name ?? actor!.id}. 이 Epic과 Feature Lifecycle이 양방향으로 연결되었습니다(상태 변경은 플랫폼 게이트를 거칩니다).` }, `epic-new:${c.key}:${c.revision}`);
+        return f;
+      });
+      return { outcome: 'APPLIED', summary: `${c.key} → ${fid(f.featureId, f.version)} 자동 등록(PROPOSED)` };
+    } catch (e) {
+      return refuse(e instanceof Error ? e.message : String(e));
     }
   }
 
@@ -616,7 +667,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       if (!body.status) throw new DomainError('VALIDATION', '새 상태(status)가 필요합니다.');
       next = this.store.update(system, it.key, body.externalUser, { status: body.status });
     } else if (body.action === 'EDIT') {
-      next = this.store.update(system, it.key, body.externalUser, { title: body.title, body: body.body });
+      next = this.store.update(system, it.key, body.externalUser, { title: body.title, body: body.body, ...(body.scope ? { fields: { scope: { ...((it.fields.scope ?? {}) as Record<string, unknown>), ...body.scope } } } : {}) });
     } else if (body.action === 'MERGE') {
       if (it.kind !== 'MERGE_REQUEST') throw new DomainError('VALIDATION', 'MR만 병합할 수 있습니다.');
       next = this.store.update(system, it.key, body.externalUser, { status: 'merged' });
@@ -636,7 +687,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     this.needMock(system);
     const kind = body.kind;
     const status = system === 'JIRA' ? (kind === 'EPIC' ? JIRA_EPIC_STATUS.PROPOSED : JIRA_CR_STATUS.OPEN) : system === 'GITLAB' ? 'opened' : 'Draft';
-    const fields: Record<string, unknown> = { ...(body.fields ?? {}) };
+    const fields: Record<string, unknown> = { ...(body.fields ?? {}), ...(body.scope ? { scope: body.scope } : {}) };
     if (system === 'GITLAB') {
       fields.sha ??= createHash('sha1').update(`${body.title}:${this.clock.iso()}`).digest('hex');
       const r = parseRefs(`${body.title}\n${body.body}`);
@@ -701,6 +752,19 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       conflicts,
       stale: of('REQUIREMENT').filter((l) => l.stale).map((l) => l.key),
     };
+  }
+
+  /** Feature 버전별 JIRA Epic — Registry 목록에 Lifecycle과 나란히(버전마다 부르지 않게 한 번에) */
+  featureEpics() {
+    const out = new Map<string, { feature: string; key: string; url: string; status: string; syncState: ExtRef['syncState']; expected: string | null }>();
+    for (const e of this.repo.items('JIRA', 'EPIC'))
+      for (const { entityId } of this.repo.entitiesOf('JIRA', e.key, 'FEATURE')) {
+        if (out.has(entityId)) continue;
+        const { featureId, version } = splitFid(entityId);
+        const f = this.features.get(featureId, version);
+        out.set(entityId, { feature: entityId, key: e.key, url: e.url, status: e.status, syncState: e.syncState, expected: f ? JIRA_EPIC_STATUS[f.lifecycle] : null });
+      }
+    return [...out.values()];
   }
 
   /** 변경요청(CR) 목록 — JIRA CR과 연결된 정책 상태를 나란히 */

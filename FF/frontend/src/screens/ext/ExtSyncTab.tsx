@@ -1,14 +1,15 @@
 // 외부 연계 — 양방향 탭(GitLab·JIRA·codeBeamer). 시스템별 연결·주인 규칙·충돌(사람이 고름)·받은 변경·보내기 실패,
 // 그리고 모의 연결일 때 "외부에서 바꿔 보기"(실제 webhook과 같은 경로로 들어온다).
 import { useState } from 'react';
-import { EXT_SYSTEMS, type ExtSystem, type ExtSystemSummary, type OwnershipRule } from '@ff/contracts';
+import { Asil, EPIC_SCOPE_FIELDS, EPIC_SCOPE_LABEL, EXT_SYSTEMS, type EpicScopeField, type ExtSystem, type ExtSystemSummary, type OwnershipRule } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { extSync } from '../../copy/ext-sync';
-import { AsyncView, Button, DataTable, ErrorNote, Field, Panel, Select } from '../../design';
+import { ko } from '../../copy/ko';
+import { AsyncView, Button, DataTable, ErrorNote, Field, Panel, Select, whyDisabled } from '../../design';
 import { usePermission, when } from '../shared';
 
 const X = extSync.sync;
-const INVALIDATE = ['extSync', 'extConflicts', 'extInbox', 'extOutbox', 'extChangeRequests', 'extFeatureTrace', 'featureDetail', 'policyDetail', 'mockExtItems'];
+const INVALIDATE = ['extSync', 'extConflicts', 'extInbox', 'extOutbox', 'extChangeRequests', 'extFeatureTrace', 'extFeatureEpics', 'featureDetail', 'policyDetail', 'mockExtItems', 'listFeatures'];
 
 interface Conflict {
   conflictId: number;
@@ -73,7 +74,12 @@ export function ExtSyncTab() {
       </Panel>
 
       <Panel title={X.inbox} id="sync-inbox">
-          <AsyncView state={asyncState(inbox)} error={inbox.error?.message} onRetry={() => inbox.refetch()}>
+          <AsyncView
+            state={asyncState(inbox, !(inbox.data?.items ?? []).some((r) => r.key !== '-'))}
+            error={inbox.error?.message}
+            onRetry={() => inbox.refetch()}
+            empty={{ title: X.inboxEmpty, body: X.inboxEmptyBody }}
+          >
             <DataTable
               caption={X.inbox}
               rows={(inbox.data?.items ?? []).filter((r) => r.key !== '-').slice(0, 30)}
@@ -178,7 +184,12 @@ function Simulate() {
       <summary>
         <strong>{X.simulate}</strong>
       </summary>
-      {open && <SimulateForm />}
+      {open && (
+        <>
+          <SimulateForm />
+          <EpicCreateForm />
+        </>
+      )}
     </details>
   );
 }
@@ -222,12 +233,71 @@ function SimulateForm() {
         <Field label={X.simUser}>
           <input className="ds-input ds-input--mono" value={user} onChange={(e) => setUser(e.target.value)} />
         </Field>
-        <Button type="submit" variant="primary" disabled={!key || !user || act.isPending}>
+        <Button type="submit" variant="primary" disabled={!key || !user || act.isPending} reason={whyDisabled([!key, ko.why.key], [!user, ko.why.user])}>
           {X.simSend}
         </Button>
       </form>
       {act.data?.result && <p className="ds-field__hint" data-testid="simulate-result">{X.simResult(X.outcome[act.data.result.outcome] ?? act.data.result.outcome, act.data.result.summary)}</p>}
       <ErrorNote error={act.error} />
     </div>
+  );
+}
+
+/** JIRA에서 Epic을 만든 것처럼 — 범위 값이 다 있으면 PROPOSED Feature가 자동 등록된다(모의 연결일 때만) */
+function EpicCreateForm() {
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [user, setUser] = useState('kim.author');
+  const [scope, setScope] = useState<Record<EpicScopeField, string>>({ country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', asil: 'QM', ownerId: '' });
+  const create = useApiMutation<{ item: { key: string }; result: { outcome: string; summary: string } | null }>('mockExtCreate', INVALIDATE);
+  return (
+    <section aria-labelledby="sync-epic-new" style={{ display: 'grid', gap: 'var(--sp-2)', marginTop: 'var(--sp-4)' }}>
+      <h3 id="sync-epic-new" style={{ margin: 0, fontSize: 'var(--fs-md)' }}>{X.epicNew}</h3>
+      <p className="ds-field__hint">{X.epicNewHint}</p>
+      <form
+        style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-end', flexWrap: 'wrap' }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          // 빈 값은 보내지 않는다 — 빠진 범위는 플랫폼이 Epic 댓글로 알려 준다
+          const filled = Object.fromEntries(Object.entries(scope).filter(([, v]) => v.trim()));
+          create.mutate({ params: { system: 'jira' }, body: { kind: 'EPIC', title: title.trim(), body: body.trim(), externalUser: user, scope: filled } });
+        }}
+      >
+        <Field label={X.epicTitle}>
+          <input className="ds-input" value={title} onChange={(e) => setTitle(e.target.value)} required minLength={2} />
+        </Field>
+        <Field label={X.epicBody}>
+          <input className="ds-input" value={body} onChange={(e) => setBody(e.target.value)} />
+        </Field>
+        {EPIC_SCOPE_FIELDS.map((k) =>
+          k === 'asil' ? (
+            <Select key={k} label={EPIC_SCOPE_LABEL[k]} value={scope.asil} onChange={(e) => setScope({ ...scope, asil: e.target.value })}>
+              <option value="">—</option>
+              {Asil.options.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <Field key={k} label={EPIC_SCOPE_LABEL[k]}>
+              <input className="ds-input" value={scope[k]} onChange={(e) => setScope({ ...scope, [k]: e.target.value })} />
+            </Field>
+          ),
+        )}
+        <Field label={X.simUser}>
+          <input className="ds-input ds-input--mono" value={user} onChange={(e) => setUser(e.target.value)} />
+        </Field>
+        <Button type="submit" variant="primary" disabled={title.trim().length < 2 || !user || create.isPending} reason={whyDisabled([title.trim().length < 2, ko.why.title], [!user, ko.why.user])}>
+          {X.epicCreate}
+        </Button>
+      </form>
+      {create.data?.result && (
+        <p className="ds-field__hint" data-testid="epic-create-result">
+          {create.data.item.key} — {X.simResult(X.outcome[create.data.result.outcome] ?? create.data.result.outcome, create.data.result.summary)}
+        </p>
+      )}
+      <ErrorNote error={create.error} />
+    </section>
   );
 }

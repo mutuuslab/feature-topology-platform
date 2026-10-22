@@ -26,13 +26,15 @@ interface SystemRow {
 
 export function IntegrationsScreen() {
   const sys = useApi<{ items: SystemRow[] }>('integrationSystems');
-  const sync = useApi<{ items: { conflicts: number; failed: number }[] }>('extSync');
+  const sync = useApi<{ items: { conflicts: number; failed: number; lastInboundAt: string | null; lastOutboundAt: string | null }[] }>('extSync');
   const items = sys.data?.items ?? [];
   const mock = items.filter((s) => s.mode === 'mock').length;
   const attention = (sync.data?.items ?? []).reduce((t, x) => t + x.conflicts + x.failed, 0);
+  // 한 번도 주고받지 않았으면 '맞습니다'(초록)는 근거가 없다 — neutral
+  const exchanged = (sync.data?.items ?? []).some((x) => x.lastInboundAt || x.lastOutboundAt);
   return (
     <div className="ds-screen">
-      <PageHeader codes="D05-01 · IF-01~14" title={G.title} lead={G.lead} message={!sync.data ? { tone: 'neutral', value: '—', text: extSync.sync.key.ok } : attention ? { tone: 'warn', value: attention, text: extSync.sync.key.attention } : { tone: 'ok', text: extSync.sync.key.ok }}
+      <PageHeader codes="D05-01 · IF-01~14" title={G.title} lead={G.lead} message={!sync.data ? { tone: 'neutral', value: '—', text: extSync.sync.key.ok } : attention ? { tone: 'warn', value: attention, text: extSync.sync.key.attention } : !exchanged ? { tone: 'neutral', text: extSync.sync.key.idle } : { tone: 'ok', text: extSync.sync.key.ok }}
         meta={sys.data ? G.key(mock, items.length - mock) : undefined} />
       <Tabs tabs={[{ key: 'sync', label: extSync.sync.tab }, ...(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] }))]}>
         {(tab) => (tab === 'sync' ? <ExtSyncTab /> : tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
@@ -185,8 +187,13 @@ export function DataSyncScreen() {
         title={S.title}
         lead={S.lead}
         message={(() => {
-          const bad = rows.filter((r) => r.last && r.last.status !== 'SUCCEEDED').length;
-          return !q.data ? { tone: 'neutral', value: '—', text: S.key.bad } : bad ? { tone: 'warn', value: bad, text: S.key.bad } : { tone: 'ok', text: S.key.clean };
+          // 게이트 보류(표의 '보류')도 문제 대상이다 — 최근 실행만 보면 보류 행이 있는데 헤드라인이 초록이었다
+          const bad = rows.filter((r) => !r.gate.allowed || (r.last && r.last.status !== 'SUCCEEDED')).length;
+          const never = rows.filter((r) => !r.last).length;
+          if (!q.data) return { tone: 'neutral', value: '—', text: S.key.bad };
+          if (rows.length === 0) return { tone: 'neutral', value: 0, text: S.key.none };
+          if (bad) return { tone: 'warn', value: bad, text: S.key.bad };
+          return never ? { tone: 'neutral', value: never, text: S.key.never(never) } : { tone: 'ok', text: S.key.clean };
         })()}
       />
       <ErrorNote error={run.error} />

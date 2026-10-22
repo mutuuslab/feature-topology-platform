@@ -15,6 +15,9 @@ export const extSync = {
   feature: {
     tab: '연계',
     epic: 'JIRA Epic',
+    /** Registry 목록 열 — Epic 상태가 Lifecycle 기준과 다르면 */
+    epicDrift: (expected: string) => `Lifecycle 기준 '${expected}'과 다름`,
+    noEpic: 'Epic 없음',
     key: {
       clean: '요구·변경요청·코드가 모두 연결되어 있고 외부와 상태가 맞습니다',
       issues: '외부 연계에서 확인할 것이 있습니다',
@@ -59,7 +62,9 @@ export const extSync = {
   // 외부 연계 — 양방향 탭
   sync: {
     tab: '양방향 연계',
-    key: { ok: '외부 연계 — 충돌·실패 없이 맞습니다', attention: '외부 연계에서 처리할 것 — 충돌·보내기 실패' },
+    key: { ok: '외부 연계 — 충돌·실패 없이 맞습니다', attention: '외부 연계에서 처리할 것 — 충돌·보내기 실패', idle: '아직 외부와 주고받은 변경이 없습니다' },
+    inboxEmpty: '아직 받은 변경이 없습니다',
+    inboxEmptyBody: '외부 도구에서 상태를 바꾸면 여기에 쌓입니다. 아래 "외부에서 바꿔 보기"로 시험할 수 있습니다.',
     summary: '시스템별 연결',
     col: { system: '시스템', ifId: 'IF', mode: '연결', links: '연결 항목', pending: '보내는 중', failed: '실패', conflicts: '충돌', rejected: '거부', lastIn: '마지막 수신', lastOut: '마지막 송신' },
     ownership: '누가 주인인가 — 주인이 아닌 쪽 변경은 요청으로 처리',
@@ -86,5 +91,11 @@ export const extSync = {
     open: '열기',
     revised: (title: string) => `${title} (개정)`,
     simResult: (outcome: string, summary: string) => `${outcome} — ${summary}`,
+    // JIRA에서 Epic 만들기 → PROPOSED Feature 자동 등록(사용자 결정 2026-10-23)
+    epicNew: 'JIRA에서 Epic 만들기 → Feature 자동 등록',
+    epicNewHint: 'JIRA에서 Epic을 만든 것처럼 보냅니다. 작성 권한이 있는 계정이고 범위(국가·차종·트림·ASIL·담당 조직)가 모두 있으면 플랫폼에 PROPOSED Feature가 등록되고 Epic과 연결됩니다. 빠진 값이 있으면 등록하지 않고 Epic에 이유를 댓글로 남깁니다.',
+    epicTitle: 'Epic 제목 (= Feature 이름)',
+    epicBody: '설명',
+    epicCreate: 'Epic 만들기',
   },
 } as const;

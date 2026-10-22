@@ -3,7 +3,7 @@ import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { Button, Drawer, ErrorNote, Field, Select } from '../../design';
+import { Button, Drawer, ErrorNote, Field, Select, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
 import { CompositionView } from '../products/Products';
 
@@ -40,7 +40,7 @@ function NewVersionForm({ base, onSubmit, pending, error, children }: { base: st
       <TextField label={E.reason} value={reason} onChange={setReason} area />
       {children}
       <ErrorNote error={error} />
-      <Button variant="primary" disabled={reason.trim().length < 2 || pending} onClick={() => onSubmit(bump, reason.trim())}>
+      <Button variant="primary" disabled={reason.trim().length < 2 || pending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => onSubmit(bump, reason.trim())}>
         {E.create}
       </Button>
     </div>
@@ -181,6 +181,7 @@ export function ProductVersionActions({ p, latest }: { p: ProductLike; latest: b
           <Button
             variant="primary"
             disabled={save.isPending || !draft.name.trim() || list(draft.baselineIds).length === 0}
+            reason={whyDisabled([!draft.name.trim(), ko.why.name], [list(draft.baselineIds).length === 0, ko.why.baselines])}
             onClick={() =>
               save.mutate({
                 params: { id: p.catalogId, ver: p.version },
@@ -244,6 +245,7 @@ export function PolicyEdit({ p }: { p: PolicyLike }) {
           <Button
             variant="primary"
             disabled={save.isPending || (f.mode === 'COHORT' && !(Number.isInteger(bp) && bp >= 0 && bp <= 10000))}
+            reason={whyDisabled([f.mode === 'COHORT' && !(Number.isInteger(bp) && bp >= 0 && bp <= 10000), ko.why.bp])}
             onClick={() =>
               save.mutate(
                 { params: { id: p.policyId }, body: { description: f.description.trim(), enabled: f.enabled, safeDefault: f.safeDefault, rollout: { ...p.rollout, mode: f.mode, basisPoints: f.mode === 'COHORT' ? bp : f.mode === 'ALL' ? 10000 : 0 } } },

@@ -5,7 +5,7 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { parseRefs, type ExtChange, type ExtSystem } from '@ff/contracts';
 import { DomainError } from '../../../../kernel/errors';
-import { extUrl, JIRA_PROJECTS, WEBHOOK_SECRET } from './mock-ext.store';
+import { extUrl, JIRA_EPIC_FIELDS, JIRA_PROJECTS, WEBHOOK_SECRET } from './mock-ext.store';
 
 export const hmac = (system: ExtSystem, raw: string) => `sha256=${createHmac('sha256', WEBHOOK_SECRET[system]()).update(raw).digest('hex')}`;
 
@@ -58,7 +58,7 @@ export function normalize(system: ExtSystem, deliveryId: string, body: unknown):
       revision: rev(f.updated),
       externalUser: str(obj(b.user).accountId),
       refs: { ...parseRefs(text, JIRA_PROJECTS.CHANGE_REQUEST()), ...(policy ? { policyId: policy } : {}), ...(obj(f.parent).key ? { epicKey: str(obj(f.parent).key) } : {}) },
-      extra: { created: b.webhookEvent === 'jira:issue_created', description: str(f.description).slice(0, 2000) },
+      extra: { created: b.webhookEvent === 'jira:issue_created', description: str(f.description).slice(0, 2000), ...(kind === 'EPIC' ? { scope: epicScope(f) } : {}) },
     };
   }
   if (system === 'GITLAB') {
@@ -118,4 +118,15 @@ export function normalize(system: ExtSystem, deliveryId: string, body: unknown):
     refs: {},
     extra: { created: b.event === 'ITEM_CREATED', description: str(item.description).slice(0, 2000), tracker: obj(item.tracker).name ?? null },
   };
+}
+
+/** Epic 사용자 정의 필드 → 적용 범위(문자열 또는 선택 목록 { value }·{ name }) — 비어 있는 값은 뺀다 */
+function epicScope(f: Record<string, any>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, id] of Object.entries(JIRA_EPIC_FIELDS)) {
+    const raw = f[id()];
+    const v = typeof raw === 'string' ? raw : raw && typeof raw === 'object' ? (raw.value ?? raw.name) : undefined;
+    if (typeof v === 'string' && v.trim()) out[k] = v.trim();
+  }
+  return out;
 }

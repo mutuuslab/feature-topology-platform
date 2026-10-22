@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ControlPointType } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge, Icon } from '../../design';
+import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge, Icon } from '../../design';
 import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
 import { PolicyCrPanel } from './PolicyCr';
@@ -270,7 +270,7 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
         <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
           {kind === 'decide' ? (
             <>
-              <Button variant="primary" disabled={reason.trim().length < 2 || decide.isPending} onClick={() => decide.mutate({ params: { id: policy.policyId }, body: { decision: 'APPROVE', reason } }, done)}>
+              <Button variant="primary" disabled={reason.trim().length < 2 || decide.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => decide.mutate({ params: { id: policy.policyId }, body: { decision: 'APPROVE', reason } }, done)}>
                 {T.approve}
               </Button>
               <Button disabled={reason.trim().length < 2 || decide.isPending} onClick={() => decide.mutate({ params: { id: policy.policyId }, body: { decision: 'REJECT', reason } }, done)}>
@@ -278,11 +278,11 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
               </Button>
             </>
           ) : kind === 'deploy' ? (
-            <Button variant="primary" icon="release" disabled={reason.trim().length < 2 || deploy.isPending} onClick={() => deploy.mutate({ params: { id: policy.policyId }, body: { reason } }, done)}>
+            <Button variant="primary" icon="release" disabled={reason.trim().length < 2 || deploy.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => deploy.mutate({ params: { id: policy.policyId }, body: { reason } }, done)}>
               {T.deploy}
             </Button>
           ) : (
-            <Button variant="primary" disabled={reason.trim().length < 2 || stage.isPending} onClick={() => stage.mutate({ params: { id: policy.policyId }, body: { basisPoints: bp, reason } }, done)}>
+            <Button variant="primary" disabled={reason.trim().length < 2 || stage.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => stage.mutate({ params: { id: policy.policyId }, body: { basisPoints: bp, reason } }, done)}>
               {T.stage}
             </Button>
           )}
@@ -396,7 +396,7 @@ export function ValidationHistory() {
         lead={ko.validations.lead}
         message={(() => {
           const held = rows.filter((r) => r.decision !== 'GO').length;
-          return !q.data ? { tone: 'neutral', value: '—', text: ko.validations.key.held } : held ? { tone: 'warn', value: held, text: ko.validations.key.held } : { tone: 'ok', text: ko.validations.key.clean };
+          return !q.data ? { tone: 'neutral', value: '—', text: ko.validations.key.held } : rows.length === 0 ? { tone: 'neutral', value: 0, text: ko.validations.key.none } : held ? { tone: 'warn', value: held, text: ko.validations.key.held } : { tone: 'ok', text: ko.validations.key.clean };
         })()}
       />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>

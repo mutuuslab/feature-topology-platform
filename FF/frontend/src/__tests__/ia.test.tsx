@@ -119,9 +119,13 @@ describe('셸', () => {
     expect(trail).not.toContain('Feature 상세');
   });
 
-  it('운영·안전 그룹 화면은 본문이 관제실 톤(data-zone=ops)', () => {
+  it('운영·안전 그룹 화면은 청록 영역 표식(data-area=ops)만 붙고 테마는 바꾸지 않는다', () => {
     renderShell('/fleet');
-    expect(document.getElementById('main')?.getAttribute('data-zone')).toBe('ops');
+    const main = document.getElementById('main')!;
+    expect(main.getAttribute('data-area')).toBe('ops');
+    // 본문만 어둡게 바꾸던 data-zone(관제실 토큰)은 셸에 붙지 않는다 — 상단바·레일과 톤이 갈렸다(하네스 2판 결함 5)
+    expect(main.hasAttribute('data-zone')).toBe(false);
+    expect(screen.getByText('운영 영역 — 실차·안전에 영향')).toBeTruthy();
   });
 
   it('P 키로 시연 모드를 켜고 끈다 (입력 중에는 무시)', () => {

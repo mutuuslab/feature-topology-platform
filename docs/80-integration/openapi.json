@@ -11844,6 +11844,27 @@
         }
       }
     },
+    "/api/integrations/sync/epics": {
+      "get": {
+        "summary": "Feature 버전별 JIRA Epic — 키·상태·동기 상태·플랫폼 Lifecycle 기준 상태(목록 화면용 한 번 조회)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extFeatureEpics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/integrations/sync/change-requests": {
       "get": {
         "summary": "JIRA 변경요청(CR)과 연결된 정책 상태",
@@ -12310,6 +12331,42 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 120
+                  },
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "country": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 8
+                      },
+                      "vehicleModel": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "trim": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "asil": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "ownerId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      }
+                    },
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -12408,6 +12465,42 @@
                   "deliver": {
                     "type": "boolean",
                     "default": true
+                  },
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "country": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 8
+                      },
+                      "vehicleModel": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "trim": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "asil": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "ownerId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      }
+                    },
+                    "additionalProperties": false
                   }
                 },
                 "required": [

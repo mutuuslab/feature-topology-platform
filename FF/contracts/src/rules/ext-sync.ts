@@ -5,7 +5,7 @@
 //   codeBeamer = 요구사항(사양)·시험 원장 → IF-01 · JIRA = 작업·변경요청(CR) 원장 → IF-14 · GitLab = 코드·MR·파이프라인 원장 → IF-13
 //   Feature Lifecycle·정책·서명·긴급 차단·감사 = 플랫폼 원장
 import { z } from 'zod';
-import { LIFECYCLE, type Lifecycle } from '../enums';
+import { Asil, LIFECYCLE, type Lifecycle } from '../enums';
 
 export const EXT_SYSTEMS = ['CODEBEAMER', 'JIRA', 'GITLAB'] as const;
 export type ExtSystem = (typeof EXT_SYSTEMS)[number];
@@ -77,7 +77,7 @@ export interface OwnershipRule {
 export const SYNC_OWNERSHIP: readonly OwnershipRule[] = [
   { fact: '요구사항 내용·상태·개정', owner: 'CODEBEAMER', reverse: '플랫폼은 Feature 연결과 검증 결과(G2·G5 판정·Evidence)만 codeBeamer에 씁니다. 요구가 개정되면 연결된 Feature에 G2 재검토 표시가 붙습니다.' },
   { fact: '변경요청(CR) 작업 흐름', owner: 'JIRA', reverse: '플랫폼은 정책 검증·승인·배포·확대·긴급 차단 결과를 CR 상태와 댓글로 씁니다. JIRA에서 CR을 승인하면 플랫폼 정책 승인 요청이 됩니다.' },
-  { fact: 'Feature Lifecycle', owner: 'PLATFORM', reverse: 'JIRA Epic 상태를 바꾸면 전이 요청이 됩니다. 게이트·직무 분리를 통과하면 반영, 아니면 Epic 상태를 되돌리고 사유를 댓글로 남깁니다.' },
+  { fact: 'Feature Lifecycle', owner: 'PLATFORM', reverse: '플랫폼과 JIRA 양쪽에서 관리합니다. JIRA에서 Epic을 만들면 PROPOSED Feature가 자동 등록되고, Epic 상태를 바꾸면 전이 요청이 됩니다. 게이트·직무 분리 판정은 플랫폼이 하며, 통과하면 반영, 아니면 Epic 상태를 되돌리고 사유를 댓글로 남깁니다.' },
   { fact: '코드·MR·파이프라인', owner: 'GITLAB', reverse: 'MR 병합·파이프라인 결과는 변경 기록·Evidence로 들어옵니다. 플랫폼은 게이트 결과를 MR commit status로 씁니다.' },
   { fact: '정책·서명·긴급 차단·감사', owner: 'PLATFORM', reverse: '외부에서 바꿀 수 없습니다. 정책에는 근거가 된 JIRA CR을 연결합니다.' },
 ];
@@ -95,6 +95,31 @@ export const JIRA_EPIC_STATUS: Record<Lifecycle, string> = {
 export function lifecycleOfEpicStatus(status: string): Lifecycle | null {
   const hit = (LIFECYCLE as readonly Lifecycle[]).find((l) => JIRA_EPIC_STATUS[l].toLowerCase() === status.trim().toLowerCase());
   return hit ?? null;
+}
+
+/**
+ * JIRA Epic → Feature 자동 등록에 쓰는 적용 범위 값(사용자 결정 2026-10-23 "JIRA에서 Epic 만들면 Feature 자동 생성").
+ * 국가·차종·트림은 Feature ID를 가르는 값이라 짐작해 채우지 않는다 — 빠지면 등록하지 않고 Epic 댓글로 알린다.
+ * 실제 JIRA에서는 Epic의 사용자 정의 필드에서 읽는다(필드 ID는 환경 변수 JIRA_FIELD_COUNTRY 등).
+ */
+export const EPIC_SCOPE_FIELDS = ['country', 'vehicleModel', 'trim', 'asil', 'ownerId'] as const;
+export type EpicScopeField = (typeof EPIC_SCOPE_FIELDS)[number];
+export const EPIC_SCOPE_LABEL: Record<EpicScopeField, string> = { country: '국가', vehicleModel: '차종', trim: '트림', asil: 'ASIL', ownerId: '담당 조직' };
+export const EpicScope = z
+  .object({
+    country: z.string().trim().min(1).max(8),
+    vehicleModel: z.string().trim().min(1).max(80),
+    trim: z.string().trim().min(1).max(80),
+    asil: Asil,
+    ownerId: z.string().trim().min(1).max(100),
+  })
+  .partial()
+  .strict();
+export type EpicScope = z.infer<typeof EpicScope>;
+/** 빠졌거나 형식이 틀린 범위 값 */
+export function missingEpicScope(scope: Record<string, unknown> | null | undefined): EpicScopeField[] {
+  const s = scope ?? {};
+  return EPIC_SCOPE_FIELDS.filter((k) => !EpicScope.shape[k].unwrap().safeParse(s[k]).success);
 }
 
 /** JIRA CR 상태 — 플랫폼 정책 상태를 거울로 */
@@ -154,6 +179,8 @@ export const MockExtActionBody = z
     coverage: z.number().min(0).max(100).optional(),
     /** false면 webhook이 오지 않은 것으로(유실) — 플랫폼이 나중에 되쓰다 충돌을 만난다 */
     deliver: z.boolean().default(true),
+    /** EDIT(Epic): 적용 범위 필드를 채우거나 고친다 */
+    scope: EpicScope.optional(),
   })
   .strict();
 export type MockExtActionBody = z.infer<typeof MockExtActionBody>;
@@ -165,6 +192,8 @@ export const MockExtCreateBody = z
     title: z.string().trim().min(2).max(200),
     body: z.string().trim().max(4000).default(''),
     externalUser: z.string().trim().min(1).max(120),
+    /** EPIC: 적용 범위(Feature 자동 등록에 필요) */
+    scope: EpicScope.optional(),
   })
   .strict();
 export type MockExtCreateBody = z.infer<typeof MockExtCreateBody>;

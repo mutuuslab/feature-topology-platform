@@ -19,7 +19,7 @@ const t19 = (iso: string | null | undefined) => (iso ? iso.slice(0, 19).replace(
 // ───────── 운영 데이터·이벤트 ─────────
 
 export function TelemetryScreen() {
-  const rb = useApi<{ items: { observed: string }[] }>('readbacks');
+  const rb = useApi<{ items: { observed: string; rejectReason?: string | null }[] }>('readbacks');
   const T = M.telemetry;
   return (
     <div className="ds-screen">
@@ -28,7 +28,8 @@ export function TelemetryScreen() {
         title={T.title}
         lead={T.lead}
         message={(() => {
-          const n = (rb.data?.items ?? []).filter((r) => r.observed === 'REJECTED').length;
+          // 거부는 rejectReason으로 표시된다(표의 FAIL 배지) — observed는 지표 값이라 'REJECTED'와 같아질 일이 없었다
+          const n = (rb.data?.items ?? []).filter((r) => !!r.rejectReason).length;
           return !rb.data ? { tone: 'neutral', value: '—', text: T.key.rejected } : n ? { tone: 'warn', value: n, text: T.key.rejected } : { tone: 'ok', text: T.key.clean };
         })()}
         actions={<Link to="/events">{T.events}</Link>}

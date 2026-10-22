@@ -42,7 +42,7 @@ export const p11 = {
     done: '완료',
   },
   data: {
-    key: { deletable: '보존 기간이 지난 행(삭제 대상)', clean: '보존 기간이 지난 행이 없습니다' },
+    key: { deletable: '보존 기간이 지난 행(삭제 대상)', clean: '보존 기간이 지난 행이 없습니다', attention: (del: number, miss: number) => `보존 기간이 지난 행 ${del} · 필수 항목이 빠진 SUMS 기록 ${miss}`, cleanAll: '보존 기간이 지난 행도, 필수 항목이 빠진 SUMS 기록도 없습니다' },
     title: '데이터·규제 기록',
     lead: 'SUMS 기록, 데이터 접근 요청, 보존·삭제 기록.',
     tabs: { sums: 'SUMS 기록', dataAct: 'EU Data Act', retention: '보존·삭제' },

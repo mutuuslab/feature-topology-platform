@@ -30,7 +30,7 @@ export default function Precheck() {
           !d
             ? { tone: 'neutral', value: '—', text: T.key.clean }
             : d.summary.FAIL + d.summary.CONDITIONAL
-              ? { tone: d.summary.FAIL ? 'danger' : 'warn', value: `${d.summary.FAIL} · ${d.summary.CONDITIONAL}`, text: T.key.issues(d.summary.FAIL + d.summary.CONDITIONAL) }
+              ? { tone: d.summary.FAIL ? 'danger' : 'warn', value: d.summary.FAIL + d.summary.CONDITIONAL, text: T.key.issues(d.summary.FAIL, d.summary.CONDITIONAL) }
               : { tone: 'ok', text: T.key.clean }
         }
       />

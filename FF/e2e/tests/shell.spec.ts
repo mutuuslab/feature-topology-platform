@@ -64,11 +64,21 @@ test('시연 모드: P 키로 켜면 글자가 커지고 그룹 패널이 숨는
   await expect(page.locator('.sh-panel')).toBeHidden();
 });
 
-test('운영·안전 화면은 관제실 톤(어두운 본문)', async ({ page }) => {
+// 2026-10-23 톤 결정(하네스 2판 결함 5): 본문만 어둡게 바꾸면 상단바·레일과 톤이 갈렸다.
+// 운영·안전 화면은 사용자 테마를 그대로 두고 청록 띠·'운영 영역' 표식으로 구분한다.
+test('운영·안전 화면은 테마를 바꾸지 않고 청록 영역 표식을 단다', async ({ page }) => {
   await page.goto('/fleet');
-  const bg = await page.locator('#main').evaluate((el) => getComputedStyle(el).backgroundColor);
-  const [r, g, b] = bg.match(/\d+/g)!.map(Number);
-  expect((r + g + b) / 3).toBeLessThan(40);
+  const main = page.locator('#main');
+  await expect(main).toHaveAttribute('data-area', 'ops');
+  const tone = await main.evaluate((el) => {
+    const avg = (c: string) => c.match(/\d+/g)!.slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
+    const top = getComputedStyle(document.querySelector('.sh-top') ?? document.body).backgroundColor;
+    return { main: avg(getComputedStyle(el).backgroundColor), top: avg(top), stripe: getComputedStyle(el).boxShadow };
+  });
+  // 본문과 상단바가 같은 쪽(라이트)이다 — 반쯤만 어두운 화면이 아니다
+  expect(Math.abs(tone.main - tone.top)).toBeLessThan(40);
+  expect(tone.stripe).toContain('inset');
+  await expect(page.locator('.sh-panel__area')).toHaveText('운영 영역 — 실차·안전에 영향');
 });
 
 test('위험 액션은 대상 ID를 정확히 입력해야 실행된다 (type-to-confirm)', async ({ page }) => {

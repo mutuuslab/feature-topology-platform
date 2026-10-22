@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
+import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 import { Progress, PubStatus, type Delivery } from './shared';
 
@@ -64,7 +64,7 @@ function Keys() {
             <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
           </Field>
           <ErrorNote error={rotate.error} />
-          <Button variant="primary" disabled={reason.trim().length < 2 || rotate.isPending} onClick={() => rotate.mutate({ body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}>
+          <Button variant="primary" disabled={reason.trim().length < 2 || rotate.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => rotate.mutate({ body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}>
             {D.rotate}
           </Button>
         </div>

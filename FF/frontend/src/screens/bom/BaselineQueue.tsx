@@ -27,7 +27,7 @@ export default function BaselineQueue() {
         codes="D01-01 · FEATURE BOM"
         title={T.title}
         lead={T.lead}
-        message={!reqs.data ? { tone: 'neutral', value: '—', text: T.key.pending } : pending ? { tone: 'warn', value: pending, text: T.key.pending } : { tone: 'ok', text: T.key.none }}
+        message={!reqs.data ? { tone: 'neutral', value: '—', text: T.key.pending } : pending ? { tone: 'warn', value: pending, text: T.key.pending } : { tone: 'neutral', value: 0, text: T.key.none }}
       />
       <Tabs tabs={tabs}>
         {(tab) => (tab === 'requests' ? <div data-tour="baseline-approve"><Requests /></div> : <Baselines />)}

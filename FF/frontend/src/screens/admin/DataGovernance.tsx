@@ -11,13 +11,16 @@ const mono = (s: string | number | null | undefined) => <span className="ds-mono
 export function DataGovernanceScreen() {
   const ret = useApi<{ policies: { deletable: number }[] }>('retention');
   const del = (ret.data?.policies ?? []).reduce((n, p) => n + (p.deletable ?? 0), 0);
+  // 첫 탭(SUMS)의 '빠진 항목'도 헤드라인에 센다 — 보존 탭만 보고 초록을 띄우면 첫 화면의 빨간 칸과 모순됐다
+  const sums = useApi<{ items: { missing: string[] }[] }>('sumsRecords');
+  const miss = (sums.data?.items ?? []).filter((r) => r.missing.length > 0).length;
   return (
     <div className="ds-screen">
       <PageHeader
         codes="D06-08 · D05-01 · D04-03"
         title={T.title}
         lead={T.lead}
-        message={!ret.data ? { tone: 'neutral', value: '—', text: T.key.deletable } : del ? { tone: 'warn', value: del, text: T.key.deletable } : { tone: 'ok', text: T.key.clean }}
+        message={!ret.data || !sums.data ? { tone: 'neutral', value: '—', text: T.key.deletable } : del + miss ? { tone: 'warn', value: del + miss, text: T.key.attention(del, miss) } : { tone: 'ok', text: T.key.cleanAll }}
       />
       <Tabs tabs={[{ key: 'sums', label: T.tabs.sums }, { key: 'data-act', label: T.tabs.dataAct }, { key: 'retention', label: T.tabs.retention }]}>
         {(tab) => (tab === 'data-act' ? <DataAct /> : tab === 'retention' ? <Retention /> : <Sums />)}

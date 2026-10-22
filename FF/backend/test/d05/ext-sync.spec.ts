@@ -36,6 +36,9 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     const s = (await http().get('/api/integrations/sync').expect(200)).body;
     expect(s.items.map((x: any) => [x.system, x.ifId, x.mode])).toEqual([['CODEBEAMER', 'IF-01', 'mock'], ['JIRA', 'IF-14', 'mock'], ['GITLAB', 'IF-13', 'mock']]);
     expect(s.ownership.find((o: any) => o.fact === 'Feature Lifecycle').owner).toBe('PLATFORM');
+    // Registry 목록용 한 번 조회 — Feature 버전별 Epic과 플랫폼 Lifecycle 기준 상태
+    const epics = (await http().get('/api/integrations/sync/epics').expect(200)).body.items;
+    expect(epics.find((e: any) => e.feature === 'FEAT-00001@2.1.0')).toMatchObject({ key: t.epic.key, status: 'In Verification', expected: 'In Verification', syncState: 'SYNCED' });
     const crs = (await http().get('/api/integrations/sync/change-requests').expect(200)).body.items;
     expect(crs.length).toBeGreaterThan(0);
     expect(crs[0].policies[0]).toMatchObject({ policyId: expect.stringMatching(/^POL-/) });
@@ -214,6 +217,70 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
       const t = await trace(fid, '0.1.0');
       expect(t.mergeRequests.map((m: any) => m.key)).toContain(key);
       expect(t.pipelines.length).toBe(2);
+    });
+  });
+
+  // 사용자 결정(2026-10-23): Lifecycle은 플랫폼·JIRA 양쪽에서 관리하고, JIRA에서 Epic을 만들면 Feature를 자동으로 만든다.
+  describe('JIRA Epic 생성 → PROPOSED Feature 자동 등록', () => {
+    const SCOPE = { country: 'KR', vehicleModel: 'NE1', trim: 'Prestige', asil: 'B', ownerId: '주행보조개발팀' };
+    const createEpic = async (body: Record<string, unknown>) => (await http().post('/api/integrations/mock/jira/items').set(AUTHOR).send({ kind: 'EPIC', ...body }).expect(201)).body;
+    const featuresNamed = async (name: string) => (await http().get(`/api/features?q=${encodeURIComponent(name)}`).expect(200)).body.items.filter((x: any) => x.name === name);
+
+    it('작성 권한이 있는 사람이 범위(국가·차종·트림·ASIL·담당 조직)를 채워 Epic을 만들면 PROPOSED 0.1.0이 등록되고 Epic과 연결된다', async () => {
+      const r = await createEpic({ title: '차선 변경 보조 고속도로 확장', body: '고속도로 진출입로까지 차선 변경 보조 확장', externalUser: 'kim.author', scope: SCOPE });
+      expect(r.result).toMatchObject({ outcome: 'APPLIED', summary: expect.stringMatching(/FEAT-\d{5}@0\.1\.0 자동 등록/) });
+      const [f] = await featuresNamed('차선 변경 보조 고속도로 확장');
+      expect(f).toMatchObject({ version: '0.1.0', lifecycle: 'PROPOSED', country: 'KR', vehicleModel: 'NE1', trim: 'Prestige', asil: 'B', ownerId: '주행보조개발팀' });
+      await drain();
+      const t = await trace(f.featureId, '0.1.0');
+      expect(t.epic).toMatchObject({ key: r.item.key, status: 'Proposed', syncState: 'SYNCED' });
+      const it = await mockItem('jira', r.item.key);
+      expect(it.comments.some((c: any) => c.by === 'feature-platform' && c.text.includes(`${f.featureId}@0.1.0`))).toBe(true);
+      const audit = (await http().get(`/api/audit?target=${f.featureId}@0.1.0`).expect(200)).body.items;
+      expect(audit.some((a: any) => a.action === 'FEATURE_CREATE' && a.actorId === 'usr-author')).toBe(true);
+      // 이후 Lifecycle은 양쪽에서 — 플랫폼 상태와 같은 Epic이 하나만 있다(EPIC_MIRROR가 새 Epic을 또 만들지 않음)
+      expect((await mockItem('jira', r.item.key)).fields.featureId ?? f.featureId).toBe(f.featureId);
+      const epics = (await http().get('/api/integrations/mock/jira/items').expect(200)).body.items.filter((x: any) => x.kind === 'EPIC' && x.title.includes('차선 변경 보조 고속도로 확장'));
+      expect(epics).toHaveLength(1);
+    });
+
+    it('범위 값이 빠지면 등록하지 않고 빠진 항목을 Epic 댓글로 — 채우면 그때 등록한다', async () => {
+      const r = await createEpic({ title: '주차 경로 기억 확장', body: '', externalUser: 'kim.author', scope: { country: 'KR', vehicleModel: 'NE1' } });
+      expect(r.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('트림') });
+      expect(await featuresNamed('주차 경로 기억 확장')).toHaveLength(0);
+      await drain();
+      const it = await mockItem('jira', r.item.key);
+      expect(it.comments.at(-1)).toMatchObject({ by: 'feature-platform', text: expect.stringMatching(/트림.*ASIL.*담당 조직/) });
+      const fixed = (await act('jira', { key: r.item.key, action: 'EDIT', externalUser: 'kim.author', scope: { trim: 'Exclusive', asil: 'QM', ownerId: '주차개발팀' } })).body;
+      expect(fixed.result).toMatchObject({ outcome: 'APPLIED' });
+      const [f] = await featuresNamed('주차 경로 기억 확장');
+      expect(f).toMatchObject({ lifecycle: 'PROPOSED', trim: 'Exclusive', asil: 'QM' });
+    });
+
+    it('작성 권한이 없거나 매핑되지 않은 계정의 Epic으로는 Feature를 만들지 않는다', async () => {
+      const byApprover = await createEpic({ title: '승인자가 만든 Epic', externalUser: 'lee.approver', scope: SCOPE });
+      expect(byApprover.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('권한') });
+      const byStranger = await createEpic({ title: '외부인이 만든 Epic', externalUser: 'stranger', scope: SCOPE });
+      expect(byStranger.result.outcome).toBe('UNMAPPED');
+      expect(await featuresNamed('승인자가 만든 Epic')).toHaveLength(0);
+      expect(await featuresNamed('외부인이 만든 Epic')).toHaveLength(0);
+    });
+
+    it('같은 범위에 이름이 비슷한 Feature가 있으면 새로 만들지 않고 기존 Feature를 댓글로 알려 준다', async () => {
+      const first = await createEpic({ title: '야간 보행자 경고', externalUser: 'kim.author', scope: SCOPE });
+      expect(first.result.outcome).toBe('APPLIED');
+      const r = await createEpic({ title: '야간 보행자 경고', externalUser: 'kim.author', scope: SCOPE });
+      expect(r.result, JSON.stringify(r.result)).toMatchObject({ outcome: 'REJECTED', summary: expect.stringMatching(/FEAT-\d{5}/) });
+      expect(await featuresNamed('야간 보행자 경고')).toHaveLength(1);
+    });
+
+    it('본문에 FEAT-xxxxx@버전이 있으면 새로 만들지 않고 그 Feature에 연결한다', async () => {
+      const r = await createEpic({ title: '기존 Feature 추적용 Epic', body: '대상 FEAT-00013@0.3.0', externalUser: 'kim.author', scope: SCOPE });
+      expect(r.result.outcome).not.toBe('REJECTED');
+      expect(await featuresNamed('기존 Feature 추적용 Epic')).toHaveLength(0);
+      const t = await trace('FEAT-00013', '0.3.0');
+      expect((await http().get(`/api/integrations/sync/features/FEAT-00013/0.3.0`).expect(200)).body.epic).toBeTruthy();
+      expect(t.featureId).toBe('FEAT-00013');
     });
   });
 });

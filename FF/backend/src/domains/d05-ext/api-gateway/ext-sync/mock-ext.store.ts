@@ -3,7 +3,7 @@
 // (실서버와 같은 정규화·서명 검증 경로를 탄다). 실제 연결(IF_MODE_xx=live)이면 이 저장소를 쓰지 않는다.
 import { Inject, Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
-import type { ExtKind, ExtSystem } from '@ff/contracts';
+import type { EpicScopeField, ExtKind, ExtSystem } from '@ff/contracts';
 import { Clock } from '../../../../kernel/clock';
 import { DB, type Db } from '../../../../kernel/db';
 
@@ -36,6 +36,14 @@ export const EXT_BASE_URL: Record<ExtSystem, () => string> = {
 };
 export const GITLAB_PROJECT = () => process.env.GITLAB_PROJECT ?? 'vehicle/feature-sw';
 export const JIRA_PROJECTS = { EPIC: () => process.env.JIRA_EPIC_PROJECT ?? 'FFE', CHANGE_REQUEST: () => process.env.JIRA_CR_PROJECT ?? 'FFCR', DEFECT: () => process.env.JIRA_DEFECT_PROJECT ?? 'FFD' };
+/** Epic 적용 범위가 들어 있는 JIRA 사용자 정의 필드 ID — 회사 JIRA 필드 ID(customfield_xxxxx)를 환경 변수로 준다 */
+export const JIRA_EPIC_FIELDS: Record<EpicScopeField, () => string> = {
+  country: () => process.env.JIRA_FIELD_COUNTRY ?? 'ffCountry',
+  vehicleModel: () => process.env.JIRA_FIELD_VEHICLE_MODEL ?? 'ffVehicleModel',
+  trim: () => process.env.JIRA_FIELD_TRIM ?? 'ffTrim',
+  asil: () => process.env.JIRA_FIELD_ASIL ?? 'ffAsil',
+  ownerId: () => process.env.JIRA_FIELD_OWNER ?? 'ffOwner',
+};
 export const CODEBEAMER_TRACKER = () => Number(process.env.CODEBEAMER_REQ_TRACKER ?? 4711);
 
 export function extUrl(system: ExtSystem, kind: string, key: string): string {
@@ -141,6 +149,8 @@ export class MockExtStore {
             status: { name: it.status },
             updated: it.updatedAt,
             ...(it.fields.parentKey ? { parent: { key: it.fields.parentKey } } : {}),
+            // Epic 적용 범위 — 실제 JIRA처럼 사용자 정의 필드(선택 목록은 { value })로 싣는다
+            ...Object.fromEntries(Object.entries((it.fields.scope ?? {}) as Record<string, unknown>).filter(([, v]) => v !== undefined).map(([k, v]) => [JIRA_EPIC_FIELDS[k as EpicScopeField](), { value: v }])),
           },
         },
         ...(change.fromStatus !== null && change.fromStatus !== it.status ? { changelog: { items: [{ field: 'status', fromString: change.fromStatus, toString: it.status }] } } : {}),

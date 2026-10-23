@@ -1,9 +1,12 @@
 // 기능안전 부품 — 국제표준 대응방안 보고서 v1.1의 분류(5장)·비활성화(7장)·승인·원장(8장)·결과 코드(9장)를 화면마다 같은 모양으로 보여 준다.
 // 색만으로 구분하지 않는다: 등급은 모양 글리프 + 텍스트, 판정은 StatusGlyph. 빨강은 위반(FAIL)에만 쓰고 막힘·대기는 warn.
 import type { CSSProperties, ReactNode } from 'react';
-import { reasonAction, reportRule, type DeactClass, type DeactStage, type FClass, type FlagType, type RegClass, type RejectCode, type RequestResult } from '@ff/contracts';
+import { reasonAction, reportRule, ROLE_LABEL, ROLES, type DeactClass, type DeactStage, type FClass, type FlagType, type RegClass, type RejectCode, type RequestResult } from '@ff/contracts';
 import { ko } from '../copy/ko';
 import { Icon, StatusGlyph } from './icons';
+
+/** 역할 enum → 한글 라벨(원문은 툴팁) — 화면에 OPS_LEAD 같은 코드를 보이지 않는다(UX3-02) */
+const roleLabel = (role: string) => ((ROLES as readonly string[]).includes(role) ? ROLE_LABEL[role as keyof typeof ROLE_LABEL] : role);
 
 const S = ko.safety;
 
@@ -284,7 +287,7 @@ export function ApprovalSlots({ requester, slots, now = Date.now() }: { requeste
             return (
               <li key={i} className="ds-approvals__slot" data-done={done || undefined} data-blocked={(!done && !!s.blocked) || undefined}>
                 <span className="ds-eyebrow ds-eyebrow--ko">
-                  {S.approver(i + 1)} · <span className="ds-rule-id">{s.role}</span>
+                  {S.approver(i + 1)} · <span className="ds-approvals__role" title={s.role}>{roleLabel(s.role)}</span>
                 </span>
                 {done ? (
                   <>
@@ -298,7 +301,7 @@ export function ApprovalSlots({ requester, slots, now = Date.now() }: { requeste
                 ) : (
                   <>
                     <span className="ds-approvals__who ds-approvals__who--empty">
-                      <StatusGlyph kind={s.blocked ? 'REVIEW' : 'UNJUDGED'} /> {S.needRole(s.role)}
+                      <StatusGlyph kind={s.blocked ? 'REVIEW' : 'UNJUDGED'} /> {S.needRole(roleLabel(s.role))}
                     </span>
                     <span className="ds-field__hint">
                       {typeof s.blocked === 'string' ? (

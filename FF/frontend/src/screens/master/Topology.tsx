@@ -186,7 +186,8 @@ function TopologyGraph({ data, focus, selected }: { data: Graph; focus: string; 
       </ul>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="group" aria-label={`${T.graph} — ${focus}`} className="ds-topo">
         <defs>
-          <marker id="topo-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          {/* userSpaceOnUse — 선택 관계를 굵게 그려도 화살촉은 같은 크기(선 굵기 2 × 7) */}
+          <marker id="topo-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="14" markerHeight="14" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" className="ds-topo-arrow" />
           </marker>
         </defs>

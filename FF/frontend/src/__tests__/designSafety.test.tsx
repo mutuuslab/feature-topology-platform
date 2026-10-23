@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import { deactStages, stageIndexOf } from '@ff/contracts';
+import { deactStages, ROLE_LABEL, stageIndexOf } from '@ff/contracts';
 import * as Kit from '../design';
 import { ApprovalSlots, ClassBadge, ClassBadges, ReasonActionNote, RuleChecklist, StageStrip, WindowGauge } from '../design';
 
@@ -103,6 +103,9 @@ describe('승인 칸·누적 상한 (FFG-PLT-005·016·SEC-003)', () => {
     );
     expect(screen.getByText(/FFG-PLT-016/)).toBeTruthy();
     expect(screen.getByText('대기 02:31')).toBeTruthy();
+    // 회귀(하네스 3판 시각 검토): 승인 칸에 역할 enum(OPS_LEAD)이 그대로 보였다 → 한글 라벨, 원문은 툴팁
+    expect(screen.queryByText(/OPS_LEAD/)).toBeNull();
+    expect(screen.getByTitle('OPS_LEAD').textContent).toBe(ROLE_LABEL.OPS_LEAD);
   });
   it('상한을 넘으면 meter 값은 상한에서 멈추고 FSM+CSM 안내', () => {
     render(<WindowGauge used={4200} adding={1200} cap={5000} />);

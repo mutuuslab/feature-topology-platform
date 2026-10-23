@@ -846,9 +846,8 @@ details.ds-panel[open] {
   border-radius: 50%;
   background: var(--c);
 }
-/* 상태 pill — Lifecycle·배포 상태처럼 낱말인 상태. 숫자보다 작게 */
+/* 상태 pill — Lifecycle·배포 상태처럼 낱말인 상태. 숫자보다 작게. 글줄 기준선에 맞춘다(가운데 맞춤은 큰 숫자 줄에서 위로 떴다) */
 .ds-key__status {
-  align-self: center;
   display: inline-flex;
   align-items: center;
   height: 24px;

@@ -265,7 +265,7 @@ export default function DesignGallery() {
           <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
             <ApprovalSlots
               now={NOW}
-              requester={{ id: 'u-2001', name: '박운영 (OPERATOR)' }}
+              requester={{ id: 'u-2001', name: '박운영' }}
               slots={[
                 { role: 'FSM', approver: { id: 'u-3003', name: '김안전', signedAt: '2026-10-13T10:02:41Z' } },
                 { role: 'OPS_LEAD', waitingSince: '2026-10-13T10:02:41Z' },

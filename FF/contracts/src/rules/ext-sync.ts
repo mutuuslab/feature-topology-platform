@@ -132,6 +132,94 @@ export const JIRA_CR_STATUS = {
   REJECTED: 'Rejected',
   CLOSED: 'Closed',
 } as const;
+export type JiraCrState = keyof typeof JIRA_CR_STATUS;
+export const JIRA_CR_STATES = Object.keys(JIRA_CR_STATUS) as JiraCrState[];
+/** JIRA 이슈 유형 이름 — 실제 연결 어댑터·webhook 정규화가 이 이름으로 가른다(프로젝트에 같은 이름의 유형이 있어야 한다) */
+export const JIRA_ISSUE_TYPE = { EPIC: 'Epic', CHANGE_REQUEST: 'Change Request', DEFECT: 'Bug' } as const;
+
+/**
+ * 회사 워크플로 상태 이름 덮어쓰기 — 환경 변수 JIRA_EPIC_STATUS·JIRA_CR_STATUS(JSON, 바꿀 상태만).
+ *   JIRA_EPIC_STATUS='{"PROPOSED":"Idea","DEVELOPING":"In Development"}'
+ * 키는 플랫폼 상태(Lifecycle·CR 상태)만, 값은 비어 있지 않은 이름. Epic 상태는 서로 달라야 하고(되읽기로 Lifecycle을 고른다),
+ * CR의 APPROVED·REJECTED는 다른 상태와 겹치면 안 된다(JIRA에서 승인·반려를 그 이름으로 알아본다).
+ * 순수 함수 — 읽기·적용은 백엔드(ext-sync live-config)와 tools/ext-check가 같은 규칙으로 한다.
+ */
+export function parseJiraStatusMap(kind: 'EPIC' | 'CR', raw: string | undefined): { map: Record<string, string> } | { error: string } {
+  const name = kind === 'EPIC' ? 'JIRA_EPIC_STATUS' : 'JIRA_CR_STATUS';
+  const keys: readonly string[] = kind === 'EPIC' ? LIFECYCLE : JIRA_CR_STATES;
+  if (!raw || !raw.trim()) return { map: {} };
+  let v: unknown;
+  try {
+    v = JSON.parse(raw);
+  } catch {
+    return { error: `${name}는 JSON 객체여야 합니다 — 예: {"PROPOSED":"Idea"}` };
+  }
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return { error: `${name}는 JSON 객체여야 합니다 — 예: {"PROPOSED":"Idea"}` };
+  const map: Record<string, string> = {};
+  for (const [k, x] of Object.entries(v as Record<string, unknown>)) {
+    if (!keys.includes(k)) return { error: `${name}의 '${k}'는 플랫폼 상태가 아닙니다 — 쓸 수 있는 키: ${keys.join(', ')}` };
+    if (typeof x !== 'string' || !x.trim()) return { error: `${name}.${k} 값이 비어 있습니다` };
+    map[k] = x.trim();
+  }
+  const base: Record<string, string> = kind === 'EPIC' ? { ...JIRA_EPIC_STATUS_DEFAULT } : { ...JIRA_CR_STATUS_DEFAULT };
+  const full = { ...base, ...map };
+  const clash = (a: string) => keys.filter((b) => b !== a && full[b].toLowerCase() === full[a].toLowerCase());
+  for (const a of kind === 'EPIC' ? keys : ['APPROVED', 'REJECTED']) {
+    const c = clash(a);
+    if (c.length) return { error: `${name}: ${a}와 ${c.join('·')}가 같은 JIRA 상태 '${full[a]}'를 씁니다 — 서로 달라야 합니다` };
+  }
+  return { map };
+}
+/** 덮어쓰기 전 기본 이름(모의 연결·시험 기준) */
+export const JIRA_EPIC_STATUS_DEFAULT: Readonly<Record<Lifecycle, string>> = Object.freeze({ ...JIRA_EPIC_STATUS });
+export const JIRA_CR_STATUS_DEFAULT: Readonly<Record<JiraCrState, string>> = Object.freeze({ ...JIRA_CR_STATUS });
+
+/** 실제 연결(IF_MODE_xx=live)에 쓰는 환경 변수 — 백엔드 시작 검사(빠지면 시작하지 않음)와 tools/ext-check가 같은 표를 쓴다 */
+export interface ExtLiveEnv {
+  key: string;
+  what: string;
+  /** 값을 출력하지 않는다 */
+  secret?: boolean;
+  /** live에서 꼭 있어야 한다. 'epic-autocreate'는 FF_EPIC_AUTOCREATE=off가 아닐 때만 */
+  required: true | false | 'epic-autocreate';
+}
+export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
+  JIRA: [
+    { key: 'JIRA_URL', what: 'JIRA 주소(https://…)', required: true },
+    { key: 'JIRA_USER', what: 'Cloud: 사용자 이메일(Basic) · Data Center: 비움(개인 접근 토큰 Bearer)', required: false },
+    { key: 'JIRA_TOKEN', what: 'API 토큰(Cloud)·개인 접근 토큰(Data Center)', secret: true, required: true },
+    { key: 'JIRA_EPIC_PROJECT', what: 'Epic 프로젝트 키', required: true },
+    { key: 'JIRA_CR_PROJECT', what: '변경요청(CR) 프로젝트 키', required: true },
+    { key: 'JIRA_DEFECT_PROJECT', what: '결함(긴급 차단) 프로젝트 키', required: true },
+    { key: 'JIRA_WEBHOOK_SECRET', what: 'webhook HMAC 비밀값(JIRA webhook 설정과 같은 값)', secret: true, required: true },
+    { key: 'JIRA_FIELD_COUNTRY', what: 'Epic 사용자 정의 필드 ID — 국가', required: 'epic-autocreate' },
+    { key: 'JIRA_FIELD_VEHICLE_MODEL', what: 'Epic 사용자 정의 필드 ID — 차종', required: 'epic-autocreate' },
+    { key: 'JIRA_FIELD_TRIM', what: 'Epic 사용자 정의 필드 ID — 트림', required: 'epic-autocreate' },
+    { key: 'JIRA_FIELD_ASIL', what: 'Epic 사용자 정의 필드 ID — ASIL', required: 'epic-autocreate' },
+    { key: 'JIRA_FIELD_OWNER', what: 'Epic 사용자 정의 필드 ID — 담당 조직', required: 'epic-autocreate' },
+    { key: 'JIRA_EPIC_STATUS', what: 'Epic 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
+    { key: 'JIRA_CR_STATUS', what: 'CR 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
+  ],
+  GITLAB: [
+    { key: 'GITLAB_URL', what: 'GitLab 주소(https://…)', required: true },
+    { key: 'GITLAB_TOKEN', what: '접근 토큰(api 범위, Developer 이상)', secret: true, required: true },
+    { key: 'GITLAB_PROJECT', what: '프로젝트 경로(그룹/이름) 또는 숫자 ID', required: true },
+    { key: 'GITLAB_WEBHOOK_TOKEN', what: 'webhook 비밀 토큰(GitLab webhook 설정과 같은 값)', secret: true, required: true },
+  ],
+  CODEBEAMER: [
+    { key: 'CODEBEAMER_URL', what: 'codeBeamer 주소(https://…, /api 앞까지)', required: true },
+    { key: 'CODEBEAMER_USER', what: '사용자 이름(Basic)', required: true },
+    { key: 'CODEBEAMER_TOKEN', what: '비밀번호 또는 토큰', secret: true, required: true },
+    { key: 'CODEBEAMER_WEBHOOK_SECRET', what: 'webhook HMAC 비밀값(codeBeamer webhook 설정과 같은 값)', secret: true, required: true },
+    { key: 'CODEBEAMER_REQ_TRACKER', what: '요구사항 tracker ID(숫자, 비우면 전체에서 찾음)', required: false },
+    { key: 'CODEBEAMER_REQ_ID_FIELD', what: "요구 ID 필드 이름(기본 'Requirement ID')", required: false },
+  ],
+};
+/** live에서 빠진 필수 환경 변수 */
+export function missingLiveEnv(system: ExtSystem, get: (key: string) => string | undefined): string[] {
+  const autocreate = (get('FF_EPIC_AUTOCREATE') ?? '').trim() !== 'off';
+  return EXT_LIVE_ENV[system].filter((e) => (e.required === true || (e.required === 'epic-autocreate' && autocreate)) && !(get(e.key) ?? '').trim()).map((e) => e.key);
+}
 
 /** 외부 계정 → 플랫폼 행위자 (매핑이 없으면 외부 요청을 거부한다 — 직무 분리를 외부로 우회하지 못하게) */
 /** roles: 이 사람이 플랫폼에서 맡은 역할 — 요청마다 그 작업이 허용하는 역할 중 맡은 것을 고른다(화면 actorFor와 같은 규칙) */

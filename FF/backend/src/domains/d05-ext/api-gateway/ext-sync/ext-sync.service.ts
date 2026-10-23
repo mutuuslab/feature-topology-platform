@@ -52,12 +52,18 @@ import { ChangeRecordService } from '../../../d04-ops/pipeline-link/change-recor
 import { ExtAdapters, modeOf, PLATFORM_USER, type RemoteItem, type WriteResult } from './adapters';
 import { ExtSyncRepo, type ConflictRow, type InboxRow, type OutboxJob, type OutboxOp } from './ext-sync.repo';
 import { extUrl, MockExtStore } from './mock-ext.store';
+import { applyExtLiveConfig } from './live-config';
 import { deliveryIdOf, hmac, normalize, verifyWebhook } from './normalize';
 
 /** 외부 drain 주기(실시간 모드) */
 const DRAIN_MS = 3_000;
 /** 정책 상태 → JIRA CR 상태(거울) */
-const CR_OF_POLICY: Record<string, string> = { DRAFT: JIRA_CR_STATUS.OPEN, VALIDATED: JIRA_CR_STATUS.IN_REVIEW, APPROVED: JIRA_CR_STATUS.APPROVED, DEPLOYED: JIRA_CR_STATUS.DEPLOYED, REJECTED: JIRA_CR_STATUS.REJECTED, RETIRED: JIRA_CR_STATUS.CLOSED };
+//   상태 이름은 시작 때 JIRA_CR_STATUS 환경 변수로 바뀔 수 있어(live-config) 부를 때마다 읽는다
+const CR_OF_POLICY_STATE: Record<string, keyof typeof JIRA_CR_STATUS> = { DRAFT: 'OPEN', VALIDATED: 'IN_REVIEW', APPROVED: 'APPROVED', DEPLOYED: 'DEPLOYED', REJECTED: 'REJECTED', RETIRED: 'CLOSED' };
+const crOfPolicy = (status: string): string | undefined => {
+  const s = CR_OF_POLICY_STATE[status];
+  return s ? JIRA_CR_STATUS[s] : undefined;
+};
 /** codeBeamer에 검증 결과를 쓰는 게이트 — 요구(G2)·SW 검증(G5)·통합 검증(G6) */
 const VERIFY_GATES = new Set(['G2', 'G5', 'G6']);
 
@@ -93,6 +99,8 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
   ) {}
 
   onModuleInit() {
+    // 실제 연결 설정 — live인데 필수 값이 빠졌으면 여기서 시작을 멈춘다(빠진 변수 이름을 알려 줌)
+    applyExtLiveConfig();
     this.events.onPublish((ev) => this.onEvent(ev));
   }
 
@@ -525,11 +533,11 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     const decision = c.status === JIRA_CR_STATUS.APPROVED ? 'APPROVE' : c.status === JIRA_CR_STATUS.REJECTED ? 'REJECT' : null;
     if (!statusChanged || !decision || !policyId) return { outcome: 'APPLIED', summary: `CR ${c.key} ${c.status}${policyId ? ` · 정책 ${policyId}` : ''}` };
     const p = this.policies.get(policyId)!;
-    if (CR_OF_POLICY[p.status] === c.status) return { outcome: 'IGNORED', summary: '정책 상태와 같음' };
+    if (crOfPolicy(p.status) === c.status) return { outcome: 'IGNORED', summary: '정책 상태와 같음' };
     const revert = (why: string): Outcome => {
       this.db.tx(() => {
         this.repo.setState('JIRA', c.key, 'REJECTED');
-        this.repo.enqueue('JIRA', { op: 'CR_STATUS', key: c.key, status: CR_OF_POLICY[p.status] ?? JIRA_CR_STATUS.OPEN, comment: `플랫폼이 이 ${decision === 'APPROVE' ? '승인' : '반려'}를 받지 않았습니다 — ${why}` }, `revert:${correlationId}`);
+        this.repo.enqueue('JIRA', { op: 'CR_STATUS', key: c.key, status: crOfPolicy(p.status) ?? JIRA_CR_STATUS.OPEN, comment: `플랫폼이 이 ${decision === 'APPROVE' ? '승인' : '반려'}를 받지 않았습니다 — ${why}` }, `revert:${correlationId}`);
       });
       return { outcome: 'REJECTED', summary: `${c.key} ${c.status} 거부 — ${why}` };
     };
@@ -637,7 +645,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       this.repo.link('JIRA', crKey, 'POLICY', policyId, actor.id);
       this.repo.link('JIRA', crKey, 'FEATURE', fid(p.featureId, p.featureVersion), actor.id);
       this.audit.record(actor, 'EXT_CR_LINK', policyId, { after: { crKey }, componentId: 'D05-01' });
-      this.enqueue('JIRA', { op: 'CR_STATUS', key: crKey, status: CR_OF_POLICY[p.status] ?? JIRA_CR_STATUS.OPEN, comment: `플랫폼 정책 ${policyId}(${p.flagKey})에 연결 — ${actor.id}` }, `crlink:${policyId}:${crKey}:${this.clock.iso()}`);
+      this.enqueue('JIRA', { op: 'CR_STATUS', key: crKey, status: crOfPolicy(p.status) ?? JIRA_CR_STATUS.OPEN, comment: `플랫폼 정책 ${policyId}(${p.flagKey})에 연결 — ${actor.id}` }, `crlink:${policyId}:${crKey}:${this.clock.iso()}`);
     });
     await this.drain();
     return this.repo.linksOf('POLICY', policyId);
@@ -772,7 +780,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     return this.repo.items('JIRA', 'CHANGE_REQUEST').map((cr) => {
       const policies = this.repo.entitiesOf('JIRA', cr.key, 'POLICY').map((e) => {
         const p = this.policies.get(e.entityId);
-        return { policyId: e.entityId, flagKey: p?.flagKey ?? null, status: p?.status ?? null, stage: p?.stageBasisPoints ?? null, expectedCrStatus: p ? (CR_OF_POLICY[p.status] ?? null) : null };
+        return { policyId: e.entityId, flagKey: p?.flagKey ?? null, status: p?.status ?? null, stage: p?.stageBasisPoints ?? null, expectedCrStatus: p ? (crOfPolicy(p.status) ?? null) : null };
       });
       const features = this.repo.entitiesOf('JIRA', cr.key, 'FEATURE').map((e) => e.entityId);
       return { ...cr, policies, features };
@@ -829,7 +837,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       for (const p of this.policies.all()) {
         const id = fid(p.featureId, p.featureVersion);
         const epicKey = this.repo.linksOf('FEATURE', id, 'JIRA').find((l) => l.kind === 'EPIC')?.key ?? null;
-        const cr = this.store.create('JIRA', 'CHANGE_REQUEST', { title: `${p.flagKey} 정책 변경 — ${id}`, body: `정책 ${p.policyId} (${p.controlPoint})`, status: CR_OF_POLICY[p.status] ?? JIRA_CR_STATUS.OPEN, by: 'kim.author', fields: { parentKey: epicKey, policyId: p.policyId } });
+        const cr = this.store.create('JIRA', 'CHANGE_REQUEST', { title: `${p.flagKey} 정책 변경 — ${id}`, body: `정책 ${p.policyId} (${p.controlPoint})`, status: crOfPolicy(p.status) ?? JIRA_CR_STATUS.OPEN, by: 'kim.author', fields: { parentKey: epicKey, policyId: p.policyId } });
         this.repo.putItem(at(cr));
         this.repo.link('JIRA', cr.key, 'POLICY', p.policyId, 'seed');
         this.repo.link('JIRA', cr.key, 'FEATURE', id, 'seed');

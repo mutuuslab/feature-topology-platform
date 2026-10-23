@@ -14,7 +14,7 @@ const fake = (route: Route) => {
   }) as unknown as typeof fetch;
   return { fn, calls };
 };
-const ENV = ['JIRA_URL', 'JIRA_USER', 'JIRA_TOKEN', 'GITLAB_URL', 'GITLAB_TOKEN', 'GITLAB_PROJECT', 'CODEBEAMER_URL', 'CODEBEAMER_USER', 'CODEBEAMER_TOKEN'];
+const ENV = ['JIRA_URL', 'JIRA_USER', 'JIRA_TOKEN', 'JIRA_EPIC_PROJECT', 'GITLAB_URL', 'GITLAB_TOKEN', 'GITLAB_PROJECT', 'CODEBEAMER_URL', 'CODEBEAMER_USER', 'CODEBEAMER_TOKEN'];
 afterEach(() => {
   for (const k of ENV) delete process.env[k];
 });
@@ -54,6 +54,29 @@ describe('실제 연결 어댑터', () => {
     expect(f.calls.find((c) => c.url.endsWith('/transitions') && c.method === 'POST')!.body).toEqual({ transition: { id: '31' } });
     expect(f.calls.find((c) => c.url.endsWith('/comment'))!.body).toEqual({ body: '플랫폼 Lifecycle RELEASED → DEPRECATED' });
     await expect(a.write('FFE-7', { status: 'In Verification' }, null)).rejects.toThrow(/워크플로 전이가 없습니다/);
+  });
+
+  it('JIRA 만들기 — 새 이슈가 이미 원하는 첫 상태면 전이하지 않는다(자기 전이가 없어 만들기가 실패하던 결함)', async () => {
+    Object.assign(process.env, { JIRA_URL: 'https://jira.corp.example', JIRA_TOKEN: 'pat', JIRA_EPIC_PROJECT: 'FFE' });
+    let status = 'Proposed';
+    const f = fake((m, url, body) => {
+      if (m === 'POST' && url.endsWith('/rest/api/2/issue')) return { status: 201, body: { key: 'FFE-9' } };
+      if (m === 'GET' && url.includes('/rest/api/2/issue/FFE-9?')) return { status: 200, body: { key: 'FFE-9', fields: { summary: 'FEAT-00030@1.0.0', status: { name: status }, issuetype: { name: 'Epic' }, updated: '2026-10-24T01:00:00.000+0000' } } };
+      // 워크플로: Proposed에서 갈 수 있는 곳은 Approved뿐(자기 자신 없음)
+      if (m === 'GET' && url.endsWith('/rest/api/2/issue/FFE-9/transitions')) return { status: 200, body: { transitions: [{ id: '11', to: { name: 'Approved' } }] } };
+      if (m === 'POST' && url.endsWith('/transitions')) {
+        status = body.transition.id === '11' ? 'Approved' : status;
+        return { status: 204, body: {} };
+      }
+      return undefined;
+    });
+    const a = new LiveAdapter('JIRA', () => 'live', f.fn);
+    expect(await a.create('EPIC', { title: 'FEAT-00030@1.0.0', body: '', status: 'Proposed' })).toMatchObject({ key: 'FFE-9', status: 'Proposed' });
+    expect(f.calls.some((c) => c.url.includes('/transitions'))).toBe(false);
+    expect(f.calls[0].headers.authorization).toBe('Bearer pat');
+    // 다른 상태를 원하면 전이한다
+    status = 'Proposed';
+    expect(await a.create('EPIC', { title: 'FEAT-00030@1.0.0', body: '', status: 'Approved' })).toMatchObject({ status: 'Approved' });
   });
 
   it('GitLab — PRIVATE-TOKEN, MR 읽기, commit status는 병합 커밋 SHA에', async () => {

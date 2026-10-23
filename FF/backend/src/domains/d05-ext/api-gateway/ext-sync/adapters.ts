@@ -40,8 +40,8 @@ export interface ExtAdapter {
   write(key: string, patch: WritePatch, expectedRevision: number | null): Promise<WriteResult>;
 }
 
-export const modeOf = (system: ExtSystem): AdapterMode => {
-  const v = process.env[`IF_MODE_${EXT_SYSTEM_IF[system].slice(3)}`];
+export const modeOf = (system: ExtSystem, env: Record<string, string | undefined> = process.env): AdapterMode => {
+  const v = env[`IF_MODE_${EXT_SYSTEM_IF[system].slice(3)}`];
   return v === 'off' ? 'off' : v === 'live' ? 'live' : 'mock';
 };
 

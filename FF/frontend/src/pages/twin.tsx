@@ -99,7 +99,7 @@ function ConvergenceStack({ counts, total }: { counts: Record<T.Reconciliation, 
           );
         })}
       </div>
-      <div className="row small mt" style={{ flexWrap: 'wrap', gap: 10 }}>
+      <div className="row small mt" style={{ flexWrap: 'wrap', gap: 8 }}>
         {CONVERGENCE_ORDER.map((k) => (
           <span key={k} className="twin-legend">
             <span className="twin-square" style={{ background: toneColor(T.RECONCILIATION_TOKEN[k]) }} />

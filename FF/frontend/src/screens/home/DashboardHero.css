@@ -38,12 +38,12 @@
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   inline-size: fit-content;
   margin-block-start: var(--sp-2);
-  padding: 4px 9px;
+  padding: 4px 8px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--surface-2);
   color: var(--ink-2);
   font-size: var(--fs-xs);
@@ -51,7 +51,7 @@
 .dh-flag__icon { display: inline-flex; color: var(--accent); }
 .dh-flag__icon svg { inline-size: 14px; block-size: 14px; }
 .dh-flag__label { color: var(--ink); font-weight: 600; }
-.dh-flag__track { position: relative; inline-size: 30px; block-size: 16px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent-soft); }
+.dh-flag__track { position: relative; inline-size: 30px; block-size: 16px; border: 1px solid var(--accent); border-radius: var(--r-pill); background: var(--accent-soft); }
 .dh-flag__track i {
   position: absolute;
   inset-block-start: 2px;

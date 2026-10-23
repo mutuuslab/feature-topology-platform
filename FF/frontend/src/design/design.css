@@ -16,6 +16,17 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
+/* 브라우저 기본 여백(1em·0.83em·3px)은 글자 크기를 따라 11·13·15px가 되어 간격 스케일을 벗어난다.
+   본문 안에서는 스케일 값으로 바꾼다 — :where라 특이도 0, 화면이 직접 준 여백은 그대로 이긴다(tools/spacing-scale.ts). */
+:where(#main) :where(p, ul, ol, dl, h2, h3, h4) {
+  margin-block: var(--sp-3);
+}
+:where(#main) :where(input[type='checkbox'], input[type='radio']) {
+  margin: 0 var(--sp-1h) 0 0;
+}
+:where(#main) :where(fieldset) {
+  padding: var(--sp-1h) var(--sp-3) var(--sp-2);
+}
 ::selection {
   background: var(--accent-soft);
   color: var(--ink);
@@ -233,7 +244,7 @@ h3 {
 .ds-step {
   --c: var(--line-strong);
   position: relative;
-  padding: 10px 10px 8px;
+  padding: 8px 8px 8px;
   background: var(--surface);
   border-top: 3px solid var(--c);
   min-width: 0;
@@ -295,7 +306,7 @@ h3 {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  padding: 8px 10px;
+  padding: 8px 8px;
   border: 0;
   border-right: 1px solid var(--line);
   background: none;
@@ -877,7 +888,7 @@ details.ds-panel[open] {
   font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--ink-2);
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-radius: var(--r-sm);
   cursor: pointer;
   display: inline-flex;
@@ -958,7 +969,7 @@ textarea.ds-input {
 }
 .ds-error ul {
   margin: 4px 0 0;
-  padding-left: 18px;
+  padding-left: 16px;
 }
 .ds-error__code {
   margin-left: var(--sp-2);
@@ -984,7 +995,7 @@ textarea.ds-input {
   display: grid;
   grid-template-columns: 132px 1fr;
   gap: var(--sp-3);
-  padding: 7px 0;
+  padding: 6px 0;
   border-bottom: 1px solid var(--line);
   min-width: 0;
 }
@@ -1011,7 +1022,7 @@ textarea.ds-input {
 }
 .ds-mini-gates {
   display: inline-flex;
-  gap: 3px;
+  gap: 2px;
 }
 .ds-mini-gates span {
   display: inline-flex;
@@ -1073,7 +1084,7 @@ textarea.ds-input {
   display: inline-flex;
   flex-wrap: wrap;
   /* 줄 간격 10px — 링크 칩의 누르는 영역(24.6px, .ds-id a)이 위아래 줄과 겹치지 않는다(WCAG 2.5.8 target-size) */
-  gap: 10px var(--sp-2);
+  gap: 8px var(--sp-2);
 }
 .ds-chain {
   display: grid;
@@ -1190,7 +1201,7 @@ textarea.ds-input {
   --c: var(--gate-UNJUDGED);
   border-top: 3px solid var(--c);
   background: var(--surface);
-  padding: 8px 10px;
+  padding: 8px 8px;
   min-width: 0;
 }
 .ds-trace li[data-result='TRUE'] {
@@ -1328,7 +1339,7 @@ textarea.ds-input {
 }
 .ds-progress__track {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--r-pill);
   background: var(--track-bg);
   border: 1px solid var(--control-line);
   overflow: hidden;
@@ -1559,13 +1570,13 @@ textarea.ds-input {
 .ds-viz__swatch {
   width: 10px;
   height: 10px;
-  border-radius: 2px;
+  border-radius: var(--r-sm);
 }
 .ds-viz__key {
   display: inline-block;
   width: 14px;
   height: 2px;
-  border-radius: 1px;
+  border-radius: var(--r-pill);
 }
 .ds-viz__tip {
   position: absolute;
@@ -1675,9 +1686,9 @@ textarea.ds-input {
   --c: var(--ink-2);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   height: 22px;
-  padding: 0 7px 0 6px;
+  padding: 0 6px 0 6px;
   border-radius: var(--r-sm);
   border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
   background: color-mix(in srgb, var(--c) 7%, var(--surface));
@@ -1727,7 +1738,7 @@ textarea.ds-input {
   grid-template-columns: 16px max-content 1fr;
   gap: var(--sp-2);
   align-items: start;
-  padding: 5px var(--sp-2);
+  padding: 4px var(--sp-2);
   border-radius: var(--r-sm);
   font-size: var(--fs-sm);
 }
@@ -1758,7 +1769,7 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
   display: grid;
   /* 최대 단계 수(DC2 5단계)에 맞춰 열을 고정 — 등급이 달라도 같은 단계가 같은 너비 */
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 3px;
+  gap: 2px;
 }
 .ds-stages__step {
   position: relative;
@@ -1774,7 +1785,7 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
 .ds-stages__step[data-status='current'] { border-top-color: var(--accent); background: var(--accent-soft); }
 .ds-stages__step[data-stage='REJECTED'] { border-top-style: dashed; }
 .ds-stages__step[data-stage='REJECTED'][data-status='current'] { border-top-color: var(--warn); background: var(--warn-soft); }
-.ds-stages__label { font-weight: 700; font-size: var(--fs-sm); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.ds-stages__label { font-weight: 700; font-size: var(--fs-sm); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .ds-stages__step[data-status='done'] .ds-stages__label > svg { color: var(--ok); }
 .ds-stages__step[data-status='current'] .ds-stages__label > svg { color: var(--accent); }
 .ds-stages__no { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); color: var(--muted); }
@@ -1800,7 +1811,7 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
 
 .ds-window { display: grid; gap: var(--sp-1); }
 .ds-window__head { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: baseline; font-size: var(--fs-sm); }
-.ds-window__track { position: relative; height: 10px; border-radius: 5px; background: var(--track-bg); overflow: hidden; }
+.ds-window__track { position: relative; height: 10px; border-radius: var(--r-pill); background: var(--track-bg); overflow: hidden; }
 .ds-window__used,
 .ds-window__add { position: absolute; top: 0; bottom: 0; left: 0; }
 .ds-window__used { background: color-mix(in srgb, var(--ink-2) 55%, var(--surface-3)); }
@@ -1829,7 +1840,7 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
   gap: 4px;
   height: 20px;
   padding: 0 6px;
-  border-radius: 10px;
+  border-radius: var(--r-pill);
   border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink-2);
@@ -1861,7 +1872,7 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-learn-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); }
 .ds-learn-steps li { display: grid; grid-template-columns: 28px 1fr; gap: var(--sp-2); }
 .ds-learn-steps li[aria-current='step'] .ds-learn-steps__no { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.ds-learn-steps__no { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 12px; border: 1px solid var(--line-strong); font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 700; }
+.ds-learn-steps__no { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line-strong); font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 700; }
 .ds-learn-steps li[data-kind='act'] .ds-learn-steps__no { border-style: solid; border-width: 2px; }
 .ds-learn-steps li[data-kind='fail'] .ds-learn-steps__no { border-color: var(--warn); }
 .ds-learn-steps__title { font-weight: 700; font-size: var(--fs-sm); }
@@ -2246,7 +2257,7 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-ext__sync {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   color: var(--muted);
   font-size: 0.9em;
 }

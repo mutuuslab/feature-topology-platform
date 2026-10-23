@@ -8,7 +8,7 @@ export function EmptyState({ title, cta }: { title: string; cta?: React.ReactNod
 }
 export function Skeleton({ rows = 5 }: { rows?: number }) {
   return <div className="card">{Array.from({ length: rows }).map((_, i) =>
-    <div key={i} className="skel" style={{ height: 16, margin: '8px 0', borderRadius: 4 }} />)}</div>;
+    <div key={i} className="skel" style={{ height: 16, margin: '8px 0', borderRadius: 'var(--r-sm)' }} />)}</div>;
 }
 export function ErrorState({ msg, onRetry }: { msg: string; onRetry?: () => void }) {
   const { t } = useT();

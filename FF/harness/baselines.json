@@ -68,5 +68,20 @@
     "value": 0,
     "direction": "max",
     "note": "플랫폼 용어 규칙 위반 줄 수(은퇴→Retirement) — 0까지"
+  },
+  "offScaleSpacing": {
+    "value": 0,
+    "direction": "max",
+    "note": "스케일 밖 간격(padding·margin·gap px) 선언 수 — 0을 유지한다"
+  },
+  "rawRadius": {
+    "value": 0,
+    "direction": "max",
+    "note": "px 리터럴 반경 선언 수 — 반경 토큰(--r-sm·--r·--r-lg·--r-pill)만 쓴다"
+  },
+  "leadCopyHits": {
+    "value": 0,
+    "direction": "max",
+    "note": "문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14)"
   }
 }

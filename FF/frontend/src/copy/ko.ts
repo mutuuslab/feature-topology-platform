@@ -469,7 +469,7 @@ export const ko = {
     history: '검증 이력',
     versions: {
       title: '버전 이력',
-      lead: '개정본마다 정책 내용 전체를 남깁니다. 이전 버전을 고르면 지금 내용과의 차이를 보고, 그 내용으로 새 개정본을 만들 수 있습니다 — 되살린 개정본은 DRAFT라 검증·승인을 다시 받아야 배포됩니다.',
+      lead: '개정본마다 정책 전체를 남깁니다. 이전 버전으로 되살리면 DRAFT라 검증·승인을 다시 받습니다.',
       lockedNote: (status: string) => `${status} 정책은 버전을 되살릴 수 없습니다. 배포본을 이전 내용으로 되돌리려면 롤백을 쓰세요.`,
       col: { rev: '개정', kind: '변경', by: '변경자', at: '시각', changes: '바뀐 항목', validation: '검증' },
       current: '현재',
@@ -699,7 +699,7 @@ export const ko = {
   // 차량 상태 보고 v2 (D04-03, 보고서 v1.1 9·13장)
   statusV2: {
     title: '상태 보고 v2 — 차량 Guard',
-    lead: '차량이 단계마다 차량 키로 서명(state_auth)해 보낸 보고입니다. 플랫폼은 스키마·서명·순번·대상·명령 이력·영속을 검사한 뒤에만 받아들이고, 위반은 이상 징후로 넘깁니다.',
+    lead: '차량이 단계마다 서명해 보낸 보고입니다. 수신 검사를 통과해야 받고, 위반은 이상 징후로 넘깁니다.',
     none: '받아들인 상태 보고가 없습니다 — 확인 전에는 비활성으로 보지 않습니다(UNKNOWN)',
     col: { feature: 'Feature', state: '상태', hmi: '운전자 표시', result: '요청 결과', seq: 'report_seq (시동 · 순번)', sync: '시각 · 영속', at: '시각', accepted: '수신 검사', via: '경로', violation: '위반' },
     accepted: '통과',
@@ -709,7 +709,7 @@ export const ko = {
   },
   vehicleRequests: {
     title: '차량 발신 요청',
-    lead: '차량이 먼저 보낸 조회(IF-10)와 보고(IF-06) — 자기 VIN만 받고, Flag 값 직접 변경과 국가·트림·사용 권한 같은 신뢰 원천 변경은 거부합니다. 같은 (부팅, 순번) 재시도는 한 번만 처리합니다.',
+    lead: '차량이 먼저 보낸 조회와 보고입니다. 자기 VIN만 받고, Flag 값·신뢰 원천 변경은 거부합니다.',
     cursor: '보고 위치 (부팅 · 순번)',
     limit: (n: number, sec: number) => `빈도 한도 ${n}회 / ${sec}초 (넘으면 429 · Retry-After)`,
     none: '아직 이 차량이 보낸 요청이 없습니다',
@@ -763,7 +763,7 @@ export const ko = {
   },
   openfeature: {
     title: 'OpenFeature 클라이언트 (웹 SDK · OFREP)',
-    lead: '앱이 쓰는 공식 OpenFeature 웹 SDK가 FF에 OFREP로 붙어 받은 값 — 서버 판단과 같아야 합니다. 차단·배포가 바뀌면 ETag 폴링으로 다시 받습니다.',
+    lead: '앱의 OpenFeature 웹 SDK가 OFREP로 받은 값입니다. 서버 판단과 같아야 하고, 바뀌면 다시 받습니다.',
     value: '값',
     reason: '사유',
     variant: 'variant',
@@ -830,7 +830,7 @@ export const ko = {
   },
   unleash: {
     title: 'Policy Tool 연계 (Unleash · IF-04)',
-    lead: '배포된 정책만 Unleash 정의로 내보냅니다 — FP가 승인·서명·감사의 원천이고 Unleash는 사본입니다. 부분 롤아웃은 서명 코호트 목록으로 표현합니다.',
+    lead: '배포된 정책만 Unleash 정의로 내보냅니다 — 원천은 FP이고 Unleash는 사본입니다.',
     sync: 'Unleash 동기화',
     evaluate: '차량별 대조',
     plan: '내보낼 정의',
@@ -901,7 +901,7 @@ export const ko = {
       `${s.deactClass} · 인계 ${s.takeoverMs / 1000} s · 램프 ${s.rampMs / 1000} s · 고장 램프 ${s.faultRampMs / 1000} s · FTTI ${s.faultTolerantTimeMs / 1000} s`,
     combo: {
       title: '조합 시험 계획',
-      lead: 'Topology의 의존(REQUIRES)·충돌(EXCLUDES)로 허용 조합을 정하고, 안전 관련 Flag(F2 이상)가 둘 이상 상호작용하면 3-way covering array로 시험합니다. 허용되지 않는 조합은 부정 시험으로 실제 거부를 확인합니다.',
+      lead: '의존·충돌 관계로 허용 조합을 정하고, 안전 Flag(F2 이상) 상호작용은 3-way 조합으로 시험합니다.',
       group: '상호작용 범위',
       strength: (want: number, t: number, n: number, negatives: number) =>
         `시험 ${n}행 — ${want > t ? `Flag ${t}개라 허용 조합 모두(전수)` : `${t}-way 조합 모두`} · 금지 조합은 부정 시험 ${negatives}건`,
@@ -914,7 +914,7 @@ export const ko = {
     },
     compare: {
       title: '원격 차단 대 차량 내 감지',
-      lead: '같은 거리 추정 오류(17 s)를 두 경로로 처리했을 때 기능 효과가 언제 사라지는지 비교합니다. FTTI 안에 BASE_ONLY에 닿아야 합니다(보고서 CS-01).',
+      lead: '같은 고장을 두 경로로 처리할 때 기능 효과가 FTTI 안에 사라지는지 비교합니다.',
       onboard: '차량 내 감지',
       remote: '원격 차단 (DC2)',
       fault: '고장 시작',
@@ -1020,7 +1020,7 @@ export const ko = {
   // 안전 분류 탭 — 보고서 v1.1 5장(F·DC·R·Flag 유형, 5.7 Registry 필수 안전 속성)
   safetyTab: {
     title: '안전 분류',
-    lead: 'Feature Version의 처리강도(F)·비활성화 등급(DC)·법규 등급(R)·Flag 유형과 시간값입니다. 초안은 작성자가 고치고, Safety Manager가 개인 서명으로 확정하면 원천이 됩니다. 확정 뒤 변경은 새 Version으로 합니다.',
+    lead: 'Feature Version의 F·DC·R 등급과 시간값입니다. Safety Manager가 서명해 확정하면 원천이 됩니다.',
     status: { DRAFT: '초안', CONFIRMED: '확정' },
     source: { INFERRED: 'ASIL·SW 등급에서 추정', REPORT_EXAMPLE: '보고서 예시(5.6·D.6)', MANUAL: '담당자 입력' },
     wizard: '판정 흐름으로 제안 받기 (보고서 그림 2)',

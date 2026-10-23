@@ -17,7 +17,7 @@
   color: var(--veh-ink);
   font-family: inherit;
   border: 1px solid var(--veh-line);
-  border-radius: 10px;
+  border-radius: var(--r-lg);
   overflow: hidden;
   background: var(--veh-bg);
 }
@@ -52,8 +52,8 @@
   color: var(--lg-ffcf94);
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 999px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
 }
 
 /* -------------------------------------------------------------------- HUD */
@@ -62,7 +62,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: var(--veh-panel);
   border-top: 1px solid var(--veh-line);
   font-size: 12px;
@@ -89,8 +89,8 @@
   border: 1px solid var(--veh-line);
   background: var(--veh-panel-2);
   color: var(--veh-muted);
-  border-radius: 999px;
-  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  padding: 2px 8px;
   font: inherit;
   font-size: 11px;
   cursor: pointer;
@@ -109,8 +109,8 @@
   border: 1px solid var(--veh-line);
   background: var(--veh-panel-2);
   color: var(--veh-ink);
-  border-radius: 6px;
-  padding: 4px 9px;
+  border-radius: var(--r);
+  padding: 4px 8px;
   font: inherit;
   font-size: 11px;
   cursor: pointer;
@@ -141,17 +141,17 @@
 .veh-part-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
 }
 
 .veh-part-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   border: 1px solid var(--veh-line);
   background: var(--veh-panel-2);
   color: var(--veh-ink);
-  border-radius: 7px;
+  border-radius: var(--r-lg);
   padding: 4px 8px;
   font: inherit;
   font-size: 11px;
@@ -175,7 +175,7 @@
 .veh-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   color: var(--veh-muted);
   font-size: 11px;
 }
@@ -183,13 +183,13 @@
 .veh-legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .veh-legend-swatch {
   width: 9px;
   height: 9px;
-  border-radius: 3px;
+  border-radius: var(--r-sm);
   flex: 0 0 auto;
 }
 
@@ -210,8 +210,8 @@
 .veh-credit {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 14px;
-  padding-top: 5px;
+  gap: 4px 12px;
+  padding-top: 4px;
   border-top: 1px solid var(--veh-line);
   color: var(--veh-muted);
   font-size: 10px;
@@ -241,7 +241,7 @@
   color: var(--veh-ink);
   font-size: 10px;
   padding: 2px 6px;
-  border-radius: 5px;
+  border-radius: var(--r);
   white-space: nowrap;
 }
 

@@ -261,7 +261,7 @@
 ### 항목
 | ID | 상태 | 우선 | 화면 · 파일 | 문제(S4 근거) | 고칠 것 | 선행 |
 |---|---|---|---|---|---|---|
-| UX3-01 | 완료 — 3판 ⑨(허용 목록 2: /arch/components·/admin/iam) | P1 | 공통 — 본문 표·카드의 규칙 코드 | 설명 모드를 꺼도 본문에 코드가 보인다.<br>• 컴플라이언스 `master/Ops.tsx`: 행마다 FFG-*·D01-01<br>• 정책 상세 `policy/Policies.tsx`: IF-04, D06-03/D06-06 시나리오 경로<br>• 따라하기 카드 `learn/Learn.tsx`: CS-01·CLASSIFY-GATE·KILL-DC2<br>• 긴급 차단 `ops/KillConsole.tsx`: FFG-PLT-003, 1920에서는 FFG-PLT-009·FFG-DEAC-010도 | 코드는 `Explain` 칩(설명 모드)이나 `title` 툴팁으로 옮긴다.<br>하네스: `three-second.spec`에 "`#main`의 보이는 글자에 CODE 정규식 없음(`.ds-explain`·`.ds-page__codes` 제외)" 검사를 넣는다. 처음에는 허용 목록 래칫으로 걸고 0까지 줄인다. | — |
+| UX3-01 | 완료 — 3판 ⑨(허용 목록 0 — 2026-10-24 /arch/components 이름 중심 카드·/admin/iam 요약문 표시 층 코드 분리) | P1 | 공통 — 본문 표·카드의 규칙 코드 | 설명 모드를 꺼도 본문에 코드가 보인다.<br>• 컴플라이언스 `master/Ops.tsx`: 행마다 FFG-*·D01-01<br>• 정책 상세 `policy/Policies.tsx`: IF-04, D06-03/D06-06 시나리오 경로<br>• 따라하기 카드 `learn/Learn.tsx`: CS-01·CLASSIFY-GATE·KILL-DC2<br>• 긴급 차단 `ops/KillConsole.tsx`: FFG-PLT-003, 1920에서는 FFG-PLT-009·FFG-DEAC-010도 | 코드는 `Explain` 칩(설명 모드)이나 `title` 툴팁으로 옮긴다.<br>하네스: `three-second.spec`에 "`#main`의 보이는 글자에 CODE 정규식 없음(`.ds-explain`·`.ds-page__codes` 제외)" 검사를 넣는다. 처음에는 허용 목록 래칫으로 걸고 0까지 줄인다. | — |
 | UX3-02 | 완료 | P1 | 감사 `governance/AuditEvents.tsx`, 컴플라이언스 `master/Ops.tsx` | • 행마다 PASS 배지나 초록 점이 있다.<br>• 감사: 결과 열은 PASS인데 필터 용어는 ALLOWED라 어긋나 보인다.<br>• 대문자 역할 enum(FEATURE_AUTHOR…)이 그대로 노출된다. | • 예외만 배지로 보이고, 충족은 `Done` 작은 표시나 빈칸으로 둔다(`master/Ops.tsx`의 `Done` 재사용).<br>• 역할 enum은 ko 역할 라벨로 바꾼다.<br>• 필터와 결과 열의 용어를 하나로 맞춘다. | — |
 | UX3-03 | 대기 | P1 | 긴급 차단 `ops/KillConsole.tsx` (`NewKill`) | • 차단이 없는데도 요청 폼이 펼쳐진 채 미리 채워져 있다.<br>• 1920에서 빨간 사전점검 "위반 1건 · 대기 1건"이 초록 핵심 메시지 "걸린 긴급 차단이 없습니다"와 모순된다.<br>• 5단계 타일이 시선을 다툰다. | • 요청 폼은 머리의 행동 버튼에서 여는 Drawer로 옮긴다(3초 규칙 9: 결과가 위, 입력은 아래).<br>• 사전점검은 폼 안에서만 보인다.<br>• 위반이 있을 때 실행 버튼이 꺼지는지 시험한다.<br>• ADS-UI02(종료·차단·복원 개편)와 같은 화면이므로 함께 진행한다. ADS 절은 생성물이라 연결은 여기에만 적는다. | ADS-UI02와 조율 |
 | UX3-04 | 완료 | P1 | Topology `master/Topology.tsx` | • 핵심 메시지는 "5 미판정·FAIL 관계"인데, 그래프 기본 선택은 초록 관계 1개라 실패가 보이지 않는다.<br>• 실패로 가는 링크가 없고, 데이터 사전점검 링크만 있다.<br>• 시연 모드에서 노드 라벨이 핵심 메시지보다 크다. | • 핵심 메시지 `action`으로 미판정·FAIL 필터 목록을 연결한다.<br>• 그래프 기본 선택을 첫 실패 관계로 한다.<br>• 시연 모드 노드 라벨을 `--fs-md` 이하로 줄인다. | — |
@@ -269,7 +269,7 @@
 | UX3-06 | 완료 | P1 | 정책 상세 `policy/Policies.tsx` | • H1이 코드 `care_00022_signal`(flagKey)이다.<br>• 미검증 warn인데 첫 화면에 "분야별 검증 실행" 행동이 없다.<br>• 파란 "가상검증 실행" 버튼이 첫 시선을 가져간다. | • H1을 Feature 이름 + 제어점 같은 표시 이름으로 바꾸고, flagKey는 meta의 `IdChip`으로 옮긴다.<br>• 핵심 메시지 `action`을 "분야별 검증 실행"으로 한다(작성자 권한이 있을 때).<br>• "가상검증 실행"은 보조 버튼으로 낮춘다. | — |
 | UX3-07 | 완료 | P2 | 따라하기 허브 `learn/Learn.tsx` | • 채워진 파란 "시작 · 7단계 15분" 버튼과 강조 카드가 핵심 메시지 "1 준비된 실습"보다 먼저 보인다.<br>• "준비 중"이 11번 되풀이된다. | • 카드 시작 버튼을 보조 버튼으로 바꾸고 강조 테두리를 없앤다.<br>• 준비 중 카드는 한 묶음으로 접고, 개수만 `SummaryLine`에 둔다. | UX3-01 |
 | UX3-08 | 완료 | P2 | Feature 목록·상세 `features/FeatureList.tsx`·`FeatureDetail.tsx` | • 목록: 핵심 메시지 "68 Feature · Version 80개"는 개수뿐이라 행동으로 이어지지 않는다. "Baseline 확정 67" 줄이 남아 있고, Lifecycle 탭이 대문자 고정폭이다.<br>• 상세: RELEASED가 4번 나온다(핵심 메시지·단계 표시·Lifecycle 필드·Version 선택). 칩이 9개이고, 역할 코드 "(RELEASE_MANAGER)"가 보인다. | • 목록 핵심 메시지는 행동이 필요한 수로 한다(예: "Gate 대기 N"·"제안 검토 N").<br>• 상세는 Lifecycle을 핵심 메시지 하나로 남긴다(3초 규칙 6). 역할 코드는 한글 라벨로 바꾼다.<br>• 탭은 한글 일반 서체로 한다. | — |
-| UX3-09 | 완료(D-UX3-2 미결정 — ⑦ 확장 안 함) | P2 | 검토함 `home/Inbox.tsx`, Baseline `bom/BaselineQueue.tsx` | • 핵심 메시지가 "…이 없습니다"인데, 빈 상자가 같은 말("기다리는 일이 없습니다")과 일반 안내("조건을 바꾸거나 새 항목을 등록하세요")를 또 보인다.<br>• Baseline 탭 "확정 0 반려 0 전체 0"도 같은 말이다. | • 핵심 메시지가 "없음"이면 빈 상자를 그리지 않는다(`AsyncView` empty 생략 옵션).<br>• 하네스 ⑦은 지금 글자가 똑같은 반복만 잡는다. 뜻이 같은 반복까지 막을지는 결정이 필요하다(D-UX3-2). | — |
+| UX3-09 | 완료(D-UX3-2 결정 — ⑩ 좁은 규칙, ⑦ 확장 안 함) | P2 | 검토함 `home/Inbox.tsx`, Baseline `bom/BaselineQueue.tsx` | • 핵심 메시지가 "…이 없습니다"인데, 빈 상자가 같은 말("기다리는 일이 없습니다")과 일반 안내("조건을 바꾸거나 새 항목을 등록하세요")를 또 보인다.<br>• Baseline 탭 "확정 0 반려 0 전체 0"도 같은 말이다. | • 핵심 메시지가 "없음"이면 빈 상자를 그리지 않는다(`AsyncView` empty 생략 옵션).<br>• 하네스 ⑦은 지금 글자가 똑같은 반복만 잡는다. 뜻이 같은 반복까지 막을지는 결정이 필요하다(D-UX3-2). | — |
 | UX3-10 | 완료 | P2 | 공통 Shell `shell/Shell.tsx`·`shell.css` | • 위치가 아직 3번 보인다(레일, 섹션 내비 제목, 선택 항목 = H1).<br>• 머리의 빨간 알림 배지 "2"가 모든 화면에서 가장 진한 요소다. | • 섹션 내비 제목이 H1과 같으면 생략한다.<br>• 알림 배지는 중립색으로 두고, 긴급 차단이 걸렸을 때만 위험색으로 한다. | — |
 | UX3-11 | 완료(4곳, e2e panel-title) | P2 | 공통 `design/primitives.tsx` `Panel` | 계획 S1에서 남은 일. Panel 제목이 H1이나 현재 탭 이름과 같아도 머리를 그린다(조사 때 약 7곳). | • `PageHeader`가 `PageContext`로 H1 문자열을 제공하고, `Panel`은 제목이 같으면 머리를 생략한다(`aria-labelledby`는 H1로).<br>• 하네스에 "Panel 제목 ≠ H1" 검사를 넣는다. | — |
 | UX3-12 | 대기 | P3 | 실험 `ext/Experiments.tsx` 외 만들기 폼 | 계획 3초 규칙 9에서 남은 일. 만들기 폼이 결과 위에 펼쳐져 있다. 상세는 Drawer인데 생성만 본문에 있다. | 생성은 머리의 행동 버튼에서 여는 Drawer로 옮긴다. 본문 위에 폼이 있는 같은 형태의 화면을 조사해 함께 옮긴다. | UX3-03(같은 형태) |
@@ -280,6 +280,8 @@
 - **D-UX3-1** UX3-03을 ADS-UI02와 한 항목으로 합칠까?
   - 제안: 합치지 않고 같은 작업에서 함께 진행한다.
   - 3초 기준(폼 → Drawer, 모순 제거)은 UX3-03의 완료 기준으로 남긴다.
-- **D-UX3-2** 뜻이 같은 반복(예: "없습니다"를 다른 말로 되풀이)을 하네스로 막을까?
-  - 제안: 빈 상자 생략 옵션(UX3-09)만 넣는다.
-  - 문장 뜻 비교는 오탐 위험이 있어 하네스에 넣지 않는다.
+- **D-UX3-2** 뜻이 같은 반복(예: "없습니다"를 다른 말로 되풀이)을 하네스로 막을까? — **결정(2026-10-24)**
+  - 문장 뜻 비교(의미·NLP)는 하지 않는다. 오탐 위험이 있다.
+  - 대신 좁은 결정적 규칙 ⑩을 `three-second.spec`에 둔다: 핵심 메시지에 숫자 값이 없고 톤이 neutral이며 문장이 "없습니다"·"없음"으로 끝나면, 그 화면 기본 보기의 `#main`에 보이는 빈 상자(`[data-state="empty"]`·`.ds-state`)가 없어야 한다.
+  - 고치는 방법은 `AsyncView`의 `emptyHidden`. 고친 화면: CARLA 가상검증 `/validations/virtual`, Flag Retirement `/flag-retirements`.
+  - 남은 화면은 `EMPTY_BOX_ALLOW` 래칫(줄이기만 한다): 실험 `/experiments`, 외부 연계 현황 `/integration/connectors` — `screens/ext/*`는 다른 작업 범위.

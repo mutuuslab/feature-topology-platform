@@ -1496,11 +1496,6 @@ textarea.ds-input {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
-.ds-comp__id {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--muted);
-}
 .ds-comp__name {
   font-size: var(--fs-xs);
   font-weight: 600;

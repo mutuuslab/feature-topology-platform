@@ -740,6 +740,9 @@ export const ko = {
     tests: '시험',
     endpoints: 'API',
     interfaces: '외부 연계',
+    // 카드는 이름 중심(2026-10-24) — 컴포넌트·IF ID는 설명 모드·툴팁으로
+    tier: (t: string) => `Tier ${t}`,
+    ifCount: (n: number) => `외부 연계 ${n}`,
     events: '이벤트',
     lastEvent: '마지막 이벤트',
     // 보고서 v1.1 반영 — 규칙마다 집행할 기존 컴포넌트(contracts rules/standards-map)

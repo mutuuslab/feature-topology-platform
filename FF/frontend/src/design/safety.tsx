@@ -54,6 +54,49 @@ export function RuleText({ text, explain = false }: { text: string; explain?: bo
   );
 }
 
+// ── 문장 속 추적 코드 분리(UX3-01 잔여, 2026-10-24) ─────────────
+// 계약(contracts routes summary·SoD 규칙)의 문장은 OpenAPI·감사 문구라 그대로 둔다 — 화면에 그릴 때만 코드를 떼어 설명 모드로(screens/shared CodeFreeText).
+// RuleText explain은 괄호 안이 ID뿐인 묶음만 뗀다. 여기서는 '(확정 후 불가, 규칙 ID)'·'IF-06 차량 …'·'… — 규칙 ID'·
+// '규칙 ID·003·TEL-004'(같은 접두 줄임)처럼 문장에 섞인 코드까지 뗀다.
+const C_RULE = String.raw`FFG-[A-Z]{3,4}-\d{3}`;
+const C_HEAD = String.raw`${C_RULE}|IF-\d{2}(?:~\d{2})?|D0\d-\d{2}|보고서 \d[\d.]*(?:\s+[A-Z]\d+)?|§\d[\d.]*`;
+const C_LIST = String.raw`(?:${C_HEAD})(?:\s*[·,]\s*(?:${C_HEAD}|(?:[A-Z]{3,4}-)?\d{3}))*`;
+const C_START = new RegExp(String.raw`^(${C_LIST})(?:\s*[,—]\s*|\s+|$)`);
+const C_END = new RegExp(String.raw`\s*[,—]\s*(${C_LIST})$`);
+
+/** 문장 → 코드를 뗀 문장 + 규칙 ID(줄임은 앞 규칙의 접두로 펼친다) + 그 밖의 코드(IF·컴포넌트·보고서 절) */
+export function splitCodes(text: string): { text: string; rules: string[]; codes: string[] } {
+  const lists: string[] = [];
+  const peel = (s: string) => {
+    let t = s.trim();
+    for (let m = t.match(C_START) ?? t.match(C_END); m; m = t.match(C_START) ?? t.match(C_END)) {
+      lists.push(m[1]);
+      t = (t.slice(0, m.index) + t.slice(m.index! + m[0].length)).trim();
+    }
+    return t;
+  };
+  const inParens = text.replace(/(\s*)\(([^()]*)\)/g, (all, ws: string, inner: string) => {
+    const before = lists.length;
+    const rest = peel(inner);
+    if (lists.length === before) return all;
+    return rest ? `${ws}(${rest})` : '';
+  });
+  const out = peel(inParens).replace(/\s{2,}/g, ' ');
+  const rules: string[] = [];
+  const codes: string[] = [];
+  for (const list of lists) {
+    let prefix = '';
+    for (const atom of list.split(/\s*[·,]\s*/)) {
+      const full = new RegExp(`^${C_RULE}$`).test(atom) ? atom : /^[A-Z]{3,4}-\d{3}$/.test(atom) ? `FFG-${atom}` : /^\d{3}$/.test(atom) && prefix ? `${prefix}-${atom}` : null;
+      if (full) {
+        prefix = full.slice(0, full.lastIndexOf('-'));
+        if (!rules.includes(full)) rules.push(full);
+      } else if (!codes.includes(atom)) codes.push(atom);
+    }
+  }
+  return { text: out, rules, codes };
+}
+
 // ── 등급 배지 ─────────────────────────────────────────
 /** 처리강도 F0~F4 — 다섯 칸 중 채운 칸 수로 강도를 보인다 */
 function FGlyph({ f }: { f: FClass }) {

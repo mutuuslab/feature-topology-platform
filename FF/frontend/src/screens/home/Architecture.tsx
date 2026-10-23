@@ -7,7 +7,7 @@ import { componentTcl, QUALIFICATION_METHODS, reportRule, RULE_STATUS, rulesOfCo
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Drawer, KeyValue, PageHeader, RuleChecklist, Segmented, SummaryLine, VerdictBadge } from '../../design';
+import { AsyncView, Drawer, ExplainCodes, KeyValue, PageHeader, RuleChecklist, Segmented, SummaryLine, VerdictBadge } from '../../design';
 import { when } from '../shared';
 
 const A = ko.arch;
@@ -145,11 +145,15 @@ export function ArchitectureScreen() {
                           data-hot={!!hot[c.id]}
                           data-dim={wp !== 'ALL' && rules.length === 0}
                           onClick={() => setOpen(c.id)}
-                          aria-label={`${c.id} ${c.ko} ${c.status === 'implemented' ? A.implemented : A.planned}`}
+                          aria-label={`${c.ko} ${c.status === 'implemented' ? A.implemented : A.planned} · ${c.id}`}
+                          title={[c.id, ...c.ifs].join(' · ')}
                         >
-                          <span className="ds-comp__id">{`${c.id} · ${c.tier}`}</span>
-                          <span className="ds-comp__name">{c.ko}</span>
-                          <span className="ds-comp__meta">{`${c.status === 'implemented' ? '●' : '○'} ${a?.events ? `${A.events} ${a.events}` : ''}${c.ifs.length ? ` · ${c.ifs.join(' ')}` : ''}`}</span>
+                          {/* 이름 중심 카드 — 컴포넌트·IF ID는 설명 모드와 툴팁에서만(3초 테스트 ⑨) */}
+                          <span className="ds-comp__name">
+                            {c.ko}
+                            <ExplainCodes codes={[c.id, ...c.ifs]} />
+                          </span>
+                          <span className="ds-comp__meta">{[`${c.status === 'implemented' ? '●' : '○'} ${A.tier(c.tier)}`, a?.events ? `${A.events} ${a.events}` : '', c.ifs.length ? A.ifCount(c.ifs.length) : ''].filter(Boolean).join(' · ')}</span>
                           {rules.length > 0 && <span className="ds-comp__std">{A.standardsCard(rules.filter(done).length, rules.length)}</span>}
                         </button>
                       </li>

@@ -28,6 +28,7 @@ import {
   Icon,
 } from '../../design';
 import { scopeOf, usePermission, when } from '../shared';
+import { AuditLog } from '../governance/AuditLog';
 import { ReleaseSignoffBar } from './ReleaseSignoff';
 import { EpicChip, ExtLinksTab, RequirementChips } from './ExtLinksTab';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
@@ -387,28 +388,8 @@ function AuditTab({ target }: { target: string }) {
   const q = useApi<{ items: AuditEntry[] }>('audit', { query: { target, limit: 100 } });
   return (
     <AsyncView state={asyncState(q, (q.data?.items.length ?? 0) === 0)} error={q.error?.message}>
-      <AuditTable rows={q.data?.items ?? []} />
+      <AuditLog rows={q.data?.items ?? []} />
     </AsyncView>
-  );
-}
-
-export function AuditTable({ rows }: { rows: AuditEntry[] }) {
-  const C = ko.audit.col;
-  return (
-    <DataTable
-      caption={ko.audit.title}
-      rows={rows}
-      rowKey={(r) => String(r.id)}
-      columns={[
-        { key: 'at', header: C.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span>, sort: (r) => r.at },
-        { key: 'actor', header: C.actor, cell: (r) => <span className="ds-mono">{r.actorId}</span>, sort: (r) => r.actorId },
-        { key: 'role', header: C.role, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.actorRole}</span> },
-        { key: 'action', header: C.action, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.action}</span>, sort: (r) => r.action },
-        { key: 'target', header: C.target, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.target}</span> },
-        { key: 'result', header: C.result, cell: (r) => <VerdictBadge value={r.result === 'ALLOWED' ? 'PASS' : r.result === 'DENIED' ? 'CONDITIONAL' : 'FAIL'} />, sort: (r) => r.result },
-        { key: 'reason', header: C.reason, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.reason ?? ''}</span> },
-      ]}
-    />
   );
 }
 

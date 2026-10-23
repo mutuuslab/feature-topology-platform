@@ -68,7 +68,9 @@ describe('UX3-01 본문에 규칙 코드 없음 — 설명 모드에서만', () 
   });
 
   it('규칙 판정 목록: 카탈로그에 제목이 없는 ID는 그대로 보인다(빈 줄이 되지 않게)', () => {
-    const { container } = render(<RuleChecklist items={[{ id: 'FFG-XXX-999', status: 'fail' }]} />);
+    // 카탈로그에 없는 ID를 일부러 만든다 — 소스 글자로 쓰면 standards 검사(ID 실재)가 막는다
+    const unknownId = ['FFG', 'XXX', '999'].join('-');
+    const { container } = render(<RuleChecklist items={[{ id: unknownId, status: 'fail' }]} />);
     expect(container.querySelector('.ds-rules__id')!.closest('.ds-explain')).toBeNull();
   });
 

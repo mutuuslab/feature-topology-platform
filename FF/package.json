@@ -54,6 +54,7 @@
     "ads:stale": "node tools/ads-team.ts --stale",
     "siblings": "node tools/siblings.ts",
     "integration:status": "node tools/integration-status.ts",
+    "ext:check": "node tools/ext-check.ts",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",
     "unleash:down": "docker compose -f docker/unleash/docker-compose.yml down",
     "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web"

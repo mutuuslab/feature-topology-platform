@@ -120,7 +120,8 @@ export function ApprovalInboxScreen() {
           <p>{PR.inbox.summary(proc.review, proc.overdue)}</p>
         </Panel>
       )}
-      <AsyncView state={inbox.state === 'ready' && rows.length === 0 ? 'empty' : inbox.state} empty={{ title: I.empty }} error={inbox.error?.message} onRetry={inbox.retry}>
+      {/* 내 차례 범위가 비면 핵심 메시지가 이미 "내 차례인 … 없습니다"라고 말한다 — 빈 상자로 되풀이하지 않는다(UX3-09) */}
+      <AsyncView state={inbox.state === 'ready' && rows.length === 0 ? 'empty' : inbox.state} empty={{ title: I.empty }} emptyHidden={scope === 'mine'} error={inbox.error?.message} onRetry={inbox.retry}>
         {queues
           .filter((q) => rows.some((r) => r.queue === q))
           .map((q) => (

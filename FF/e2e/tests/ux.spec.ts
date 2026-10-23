@@ -15,7 +15,8 @@ async function forceApi(page: Page, status: number, delayMs = 0) {
   await page.route(/\/api\/(?!health|events\/stream)/, async (route) => {
     // 상단바 종의 최근 알림(limit=6)은 셸 공통 조회 — 화면 상태 검사 대상이 아니다
     // 상단바 종·업무 절차 배지(셸 공통 조회)는 화면 상태 검사 대상이 아니다
-    if (/\/api\/(notifications\?limit=6|procedures\/summary)$/.test(route.request().url())) return route.continue();
+    // 종 배지 색을 정하는 걸린 긴급 차단 조회(kill-requests?status=ACTIVE, UX3-10)도 셸 공통 조회다
+    if (/\/api\/(notifications\?limit=6|procedures\/summary|kill-requests\?status=ACTIVE)$/.test(route.request().url())) return route.continue();
     hits++;
     if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
     await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify({ error: { code: status === 403 ? 'FORBIDDEN' : 'INTERNAL', message: status === 403 ? '권한이 없습니다' : '시험용 서버 오류' } }) });

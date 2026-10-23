@@ -7,7 +7,7 @@ import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
 import { procedures } from '../copy/procedures';
 import { profileOf, roleLabel, roles } from '../data/refdata';
-import { Button, Icon } from '../design';
+import { Button, Icon, PageTitleProvider, usePageTitle } from '../design';
 import { useMotion } from '../state/motion';
 import { roleHome, useAppApi, useAppShell } from '../store';
 import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '../routes';
@@ -57,8 +57,18 @@ function useNarrow(): boolean {
   return narrow;
 }
 
+/** 화면 이름(H1)을 셸 전체가 안다 — 메뉴 제목·Panel 제목이 H1을 되풀이하지 않게(UX3-10·11) */
 export function Shell({ children }: { children: ReactNode }) {
+  return (
+    <PageTitleProvider>
+      <ShellFrame>{children}</ShellFrame>
+    </PageTitleProvider>
+  );
+}
+
+function ShellFrame({ children }: { children: ReactNode }) {
   const nav = useNavigate();
+  const page = usePageTitle();
   const loc = useLocation();
   const { role, theme, lang } = useAppShell();
   const { dispatch } = useAppApi();
@@ -217,7 +227,8 @@ export function Shell({ children }: { children: ReactNode }) {
           <Icon name="close" size={18} />
         </button>
         <div className="sh-panel__head">
-          <h2>{GROUPS.find((g) => g.key === group)!.ko}</h2>
+          {/* 위치는 한 번만(3초 테스트 UX3-10) — 메뉴 제목이 H1과 같으면 H1이 말한다. 이름은 aside aria-label에 남는다 */}
+          {GROUPS.find((g) => g.key === group)!.ko !== page?.title && <h2>{GROUPS.find((g) => g.key === group)!.ko}</h2>}
           {GROUPS.find((g) => g.key === group)?.zone === 'ops' && <p className="sh-panel__area">{ko.shell.opsArea}</p>}
           {/* 메뉴를 거르는 스위치는 메뉴 머리에 — 상단 막대 조작을 줄인다(3초 테스트) */}
           <button type="button" role="switch" className="sh-switch" aria-checked={myRole} title={ko.shell.myRole} onClick={() => setMyRole(!myRole)}>

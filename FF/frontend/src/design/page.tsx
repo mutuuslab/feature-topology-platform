@@ -1,6 +1,30 @@
 // 화면 골격 부품 — 머리말·도구 줄·분절 필터·폼 필드·오류 안내·키-값 격자.
-import type { ReactNode, SelectHTMLAttributes } from 'react';
+import { createContext, useContext, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type SelectHTMLAttributes } from 'react';
 import { Icon } from './icons';
+
+/** 화면 이름(H1) — 글자와 요소 id. Panel·셸 메뉴 제목이 같은 말을 되풀이하지 않게 비교한다(3초 테스트 UX3-10·11) */
+export interface PageTitle {
+  title: string;
+  id: string;
+}
+type PageTitleSlot = { value: PageTitle | null; set: (f: (prev: PageTitle | null) => PageTitle | null) => void };
+const PageTitleContext = createContext<PageTitleSlot | null>(null);
+
+/** 셸이 본문 전체를 감싼다 — PageHeader가 H1을 알리고, 형제인 Panel과 셸 메뉴가 읽는다 */
+export function PageTitleProvider({ children }: { children: ReactNode }) {
+  const [value, set] = useState<PageTitle | null>(null);
+  const slot = useMemo(() => ({ value, set }), [value]);
+  return <PageTitleContext.Provider value={slot}>{children}</PageTitleContext.Provider>;
+}
+
+/** 지금 화면의 H1(없으면 null — 셸 밖 단위 시험 등) */
+export const usePageTitle = (): PageTitle | null => useContext(PageTitleContext)?.value ?? null;
+
+/** 비교용 글자 — 공백을 하나로. 글자가 아닌 노드는 비교하지 않는다(null) */
+export function plainText(node: ReactNode): string | null {
+  if (typeof node === 'string' || typeof node === 'number') return String(node).replace(/\s+/g, ' ').trim();
+  return null;
+}
 
 /** 판정 색은 세 가지 + 실제 위험(해시 체인 깨짐·차단 걸림 등)만 danger. 안내·권한은 neutral(하네스 3판) */
 export type KeyTone = 'ok' | 'warn' | 'danger' | 'neutral';
@@ -84,11 +108,24 @@ export function PageHeader({
   tour?: string;
 }) {
   const trace = codes;
+  const h1Id = useId();
+  const h1 = useRef<HTMLHeadingElement>(null);
+  const slot = useContext(PageTitleContext);
+  const set = slot?.set;
+  // 렌더마다 H1 글자를 읽어 알린다 — 같으면 이전 값을 그대로 둬 다시 그리지 않는다
+  useLayoutEffect(() => {
+    const text = h1.current?.textContent?.replace(/\s+/g, ' ').trim();
+    if (!set || !text) return;
+    set((prev) => (prev && prev.title === text && prev.id === h1Id ? prev : { title: text, id: h1Id }));
+  });
+  useLayoutEffect(() => () => set?.((prev) => (prev?.id === h1Id ? null : prev)), [set, h1Id]);
   return (
     <header className="ds-page" data-tour={tour}>
       <div className="ds-page__main">
         {trace && <div className="ds-page__codes">{trace}</div>}
-        <h1 className="ds-page__title">{title}</h1>
+        <h1 className="ds-page__title" id={h1Id} ref={h1}>
+          {title}
+        </h1>
         {message && <KeyMessage {...message} />}
         {meta && <div className="ds-page__meta">{meta}</div>}
         {lead && (

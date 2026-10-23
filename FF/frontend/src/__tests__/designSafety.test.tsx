@@ -12,8 +12,8 @@ afterEach(cleanup);
 describe('디자인 키트 → 갤러리', () => {
   it('키트가 내보내는 화면 부품(대문자 함수)은 모두 /_design 갤러리에 있다 — 시각 회귀·접근성 검사 대상', () => {
     const gallery = readFileSync(join(__dirname, '..', 'screens', 'design-gallery.tsx'), 'utf8');
-    // 갤러리 밖에서만 의미가 있는 셸·내부 부품
-    const exempt = new Set(['Icon', 'StatusGlyph', 'PageHeader', 'Toolbar', 'Segmented', 'Select', 'Field', 'ErrorNote', 'KeyValue']);
+    // 갤러리 밖에서만 의미가 있는 셸·내부 부품(PageTitleProvider는 그리는 것이 없는 H1 공유 문맥 — UX3-11)
+    const exempt = new Set(['Icon', 'StatusGlyph', 'PageHeader', 'PageTitleProvider', 'Toolbar', 'Segmented', 'Select', 'Field', 'ErrorNote', 'KeyValue']);
     const missing = Object.entries(Kit)
       .filter(([k, v]) => typeof v === 'function' && /^[A-Z]/.test(k) && !exempt.has(k))
       .map(([k]) => k)

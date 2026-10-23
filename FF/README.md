@@ -42,8 +42,17 @@ npm run dev:frontend     # http://127.0.0.1:9012       (/api → 9101 프록시)
 | `FF_DB` | 파일 경로 · `:memory:` | 저장소 |
 | `GLEO_MODE` | `off` · `internal` · `ws` | 차량 연결 — `ws`는 FF_IMP 모의 브로커(ws://127.0.0.1:8765) |
 | `UNLEASH_MODE` | `mock` · `live` | IF-04 정책 도구 — `live`는 `npm run unleash:up`(공식 8.2.0, 4242) |
-| `IF_MODE_xx` | `off` | IF 모의 어댑터 끄기(연결 실패 재현) |
+| `IF_MODE_xx` | `off` · `live`(01·13·14) | IF 모의 어댑터 끄기(연결 실패 재현) · 실제 연결(아래) |
 | `VITE_DATA_MODE` | `static` | 정적 데모 — `npm run snapshot:api` 결과를 읽고 쓰기는 막는다(Cloudflare Pages) |
+
+### 외부 연계 실제 연결 (codeBeamer IF-01 · GitLab IF-13 · JIRA IF-14)
+
+기본은 모의 연결이다. 실서버로 바꿀 때는 값을 넣고 **점검 → 붙여넣기 → live 켜기** 순서로 한다.
+
+1. `FF/.env.ext`(git 무시)에 주소·토큰·프로젝트 키를 넣는다 — 예: `JIRA_URL=…`, `JIRA_TOKEN=…`(Cloud면 `JIRA_USER=이메일`도), `GITLAB_URL/TOKEN/PROJECT`, `CODEBEAMER_URL/USER/TOKEN`.
+2. `npm run ext:check -- --env-file .env.ext [--jira-project <키>]` — 읽기 전용(GET만)으로 연결·인증, 프로젝트·이슈 유형(`Epic`·`Change Request`·`Bug`), 워크플로 상태 ↔ 플랫폼 Lifecycle·CR 상태(제안 매핑·못 맞춘 것), Epic 적용 범위 사용자 정의 필드 후보 ID를 보여 주고 **붙여넣을 환경 변수 묶음**을 찍는다. 토큰은 출력하지 않는다. ✕가 있으면 종료 코드 1.
+3. 묶음의 `!` 제안 값(상태 `JIRA_EPIC_STATUS`·`JIRA_CR_STATUS` JSON, `JIRA_FIELD_*`)을 확인해 `.env.ext`에 붙여 넣고, webhook 비밀값(`JIRA_WEBHOOK_SECRET`·`GITLAB_WEBHOOK_TOKEN`·`CODEBEAMER_WEBHOOK_SECRET`)을 각 도구의 webhook 설정과 같게 정한다. ✕가 없어질 때까지 2를 다시 돈다.
+4. `IF_MODE_14=live`(GitLab `IF_MODE_13`, codeBeamer `IF_MODE_01`)를 켜고 그 환경으로 백엔드를 띄운다. live인데 필수 값이 빠졌으면 백엔드가 빠진 변수 이름을 말하고 시작하지 않는다(필수 표 `contracts EXT_LIVE_ENV`).
 
 ## 화면 — MENU 2.0 (업무 기준 8그룹, `frontend/src/routes.tsx`)
 

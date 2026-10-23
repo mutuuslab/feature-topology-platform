@@ -916,6 +916,9 @@ details.ds-panel[open] {
   font-weight: 600;
   color: var(--ink-2);
   padding: 4px 8px;
+  /* 대상 크기 24px(WCAG 2.5.8) — 한 글자 선택지('1'·'2'·'3')도. 간격 스케일 정리(10→8px)로 23px가 된 회귀(하네스 3판) */
+  min-width: 24px;
+  justify-content: center;
   border-radius: var(--r-sm);
   cursor: pointer;
   display: inline-flex;

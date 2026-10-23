@@ -45,7 +45,8 @@ export function UnleashPanel({ policyId, deployed }: { policyId: string; deploye
   return (
     <Panel
       title={U.title}
-      eyebrow={d ? `${U.mode[d.status.mode]}${d.status.version ? ` · ${d.status.version}` : ''}` : 'IF-04'}
+      codes="D01-06 · IF-04"
+      eyebrow={d ? `${U.mode[d.status.mode]}${d.status.version ? ` · ${d.status.version}` : ''}` : undefined}
       id="unleash"
       actions={
         <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>

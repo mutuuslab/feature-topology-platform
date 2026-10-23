@@ -1,30 +1,72 @@
 // 화면 골격 부품 — 머리말·도구 줄·분절 필터·폼 필드·오류 안내·키-값 격자.
-import type { ReactNode, SelectHTMLAttributes } from 'react';
+import { createContext, useContext, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type SelectHTMLAttributes } from 'react';
 import { Icon } from './icons';
 
-export type KeyTone = 'ok' | 'warn' | 'danger' | 'accent' | 'neutral';
+/** 화면 이름(H1) — 글자와 요소 id. Panel·셸 메뉴 제목이 같은 말을 되풀이하지 않게 비교한다(3초 테스트 UX3-10·11) */
+export interface PageTitle {
+  title: string;
+  id: string;
+}
+type PageTitleSlot = { value: PageTitle | null; set: (f: (prev: PageTitle | null) => PageTitle | null) => void };
+const PageTitleContext = createContext<PageTitleSlot | null>(null);
+
+/** 셸이 본문 전체를 감싼다 — PageHeader가 H1을 알리고, 형제인 Panel과 셸 메뉴가 읽는다 */
+export function PageTitleProvider({ children }: { children: ReactNode }) {
+  const [value, set] = useState<PageTitle | null>(null);
+  const slot = useMemo(() => ({ value, set }), [value]);
+  return <PageTitleContext.Provider value={slot}>{children}</PageTitleContext.Provider>;
+}
+
+/** 지금 화면의 H1(없으면 null — 셸 밖 단위 시험 등) */
+export const usePageTitle = (): PageTitle | null => useContext(PageTitleContext)?.value ?? null;
+
+/** 비교용 글자 — 공백을 하나로. 글자가 아닌 노드는 비교하지 않는다(null) */
+export function plainText(node: ReactNode): string | null {
+  if (typeof node === 'string' || typeof node === 'number') return String(node).replace(/\s+/g, ' ').trim();
+  return null;
+}
+
+/** 판정 색은 세 가지 + 실제 위험(해시 체인 깨짐·차단 걸림 등)만 danger. 안내·권한은 neutral(하네스 3판) */
+export type KeyTone = 'ok' | 'warn' | 'danger' | 'neutral';
 export interface KeyMessageSpec {
-  /** 판정 색 — 행동이 필요하면 warn·danger, 정상이면 ok */
+  /** 판정 색 — 행동이 필요하면 warn·danger, 정상이면 ok. 값이 0이면 neutral로 고정된다 */
   tone?: KeyTone;
-  /** 큰 숫자·판정(선택) — 있으면 화면에서 가장 큰 글자 */
-  value?: ReactNode;
-  /** 한 줄 문장 */
+  /** 큰 숫자(건수·비율·분수, 선택) — 있으면 화면에서 가장 큰 글자. 낱말 상태(DEPLOYED·ON)는 status로 */
+  value?: number | string;
+  /** 한 줄 문장 — 색을 입히지 않는다(색은 숫자·상태 pill·표식에만) */
   text: ReactNode;
+  /** 상태 pill — Lifecycle·배포 상태·판정처럼 낱말인 상태(선택) */
+  status?: { label: ReactNode; tone?: KeyTone };
   /** 바로 갈 수 있는 행동(링크·버튼, 선택) */
   action?: ReactNode;
 }
 
+/** '0'·'0%'·'0/5'처럼 0을 뜻하는 값 — 0건에 초록·주황을 칠하지 않는다(헤드라인 결함 3) */
+export function isZeroValue(value: KeyMessageSpec['value']): boolean {
+  if (value == null) return false;
+  return /^\s*0+(?:\.0+)?\s*(?:%|건|개|대)?(?:\s*\/\s*\d+)?\s*$/.test(String(value));
+}
+
 /**
  * 핵심 메시지 — 3초 테스트(2026-10-17): 화면마다 하나, H1 바로 아래, 화면에서 가장 큰 글자.
- * 데이터에서 만든 판정·처리할 일 수·상태 한 줄. 하네스(e2e three-second.spec)가 화면마다 정확히 1개인지 본다.
+ * 한 패턴(하네스 3판): [큰 숫자] + 문장 + [상태 pill]. 숫자가 없으면 문장이 크고, 판정 색은 앞 표식에만.
+ * 하네스(e2e three-second.spec ①②⑧)가 개수·크기·값 형식·톤을 본다.
  */
-export function KeyMessage({ tone = 'neutral', value, text, action }: KeyMessageSpec) {
+export function KeyMessage({ tone = 'neutral', value, text, status, action }: KeyMessageSpec) {
+  const t: KeyTone = isZeroValue(value) ? 'neutral' : tone;
+  const solo = value == null;
   return (
-    <div className="ds-key" data-key-message data-tone={tone}>
-      {value != null && <strong className="ds-key__value">{value}</strong>}
-      <span className="ds-key__text" data-solo={value == null ? '' : undefined}>
+    <div className="ds-key" data-key-message data-tone={t}>
+      {!solo && <strong className="ds-key__value">{value}</strong>}
+      {solo && t !== 'neutral' && <span className="ds-key__mark" aria-hidden />}
+      <span className="ds-key__text" data-solo={solo ? '' : undefined}>
         {text}
       </span>
+      {status && (
+        <span className="ds-key__status" data-tone={status.tone ?? 'neutral'}>
+          {status.label}
+        </span>
+      )}
       {action && <span className="ds-key__action">{action}</span>}
     </div>
   );
@@ -66,11 +108,24 @@ export function PageHeader({
   tour?: string;
 }) {
   const trace = codes;
+  const h1Id = useId();
+  const h1 = useRef<HTMLHeadingElement>(null);
+  const slot = useContext(PageTitleContext);
+  const set = slot?.set;
+  // 렌더마다 H1 글자를 읽어 알린다 — 같으면 이전 값을 그대로 둬 다시 그리지 않는다
+  useLayoutEffect(() => {
+    const text = h1.current?.textContent?.replace(/\s+/g, ' ').trim();
+    if (!set || !text) return;
+    set((prev) => (prev && prev.title === text && prev.id === h1Id ? prev : { title: text, id: h1Id }));
+  });
+  useLayoutEffect(() => () => set?.((prev) => (prev?.id === h1Id ? null : prev)), [set, h1Id]);
   return (
     <header className="ds-page" data-tour={tour}>
       <div className="ds-page__main">
         {trace && <div className="ds-page__codes">{trace}</div>}
-        <h1 className="ds-page__title">{title}</h1>
+        <h1 className="ds-page__title" id={h1Id} ref={h1}>
+          {title}
+        </h1>
         {message && <KeyMessage {...message} />}
         {meta && <div className="ds-page__meta">{meta}</div>}
         {lead && (

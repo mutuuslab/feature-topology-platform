@@ -4,6 +4,7 @@
 //  ② 패널 오른쪽 잘림: 좌우 분할(.ds-split) 칸이 긴 코드 줄 때문에 트랙보다 넓어져 /activation/decide 오른쪽 패널이 화면 밖으로 나갔다.
 //  ③ 짧은 식별자 칩(.ds-id·.ds-tag·.ds-badge)이 하이픈 뒤에서 두 줄로 갈렸다.
 //  ④ 그 수정이 과해 설명이 붙은 Function 태그가 줄을 못 바꿔 카드 밖으로 나갔고, 상품 유효 기간 날짜가 '2027-12-|31'로 갈렸다(시각 회귀에서 발견).
+//  ⑤ 하네스 3판(결함 7): 간격 6px가 토큰 없이 5,797회, 4px 격자 밖 간격 2,556회, 반경 13종 — 스케일 밖 계산값 0건.
 import { expect, test, type Page } from '@playwright/test';
 import { DRILLDOWNS, MENU_ENTRIES } from './menu';
 
@@ -67,7 +68,25 @@ async function measure(page: Page) {
     const chipOverflow = [...document.querySelectorAll('#main .ds-id, #main .ds-tag, #main .ds-badge')]
       .filter((e) => { if (!vis(e) || scrolls(e)) return false; const b = blockOf(e); return !!b && e.getBoundingClientRect().right > b.getBoundingClientRect().right + 1; })
       .map((e) => (e.textContent ?? '').trim().slice(0, 40));
-    return { midBreaks: [...new Set(midBreaks)], chipBreaks: [...new Set(chipBreaks)], clipped, dateBreaks: [...new Set(dateBreaks)], chipOverflow: [...new Set(chipOverflow)] };
+    // ⑤ 간격·반경 스케일(tools/spacing-scale.ts와 같은 규칙): 계산된 간격은 2px 이하·4px 격자·6px, 40px 초과는 8의 배수,
+    //    반경은 3·5·8px·알약·원. 지도 엔진(MapLibre) 컨트롤과 auto 여백(가운데 맞춤)은 제외.
+    const onScale = (v: number) => { const a = Math.abs(Math.round(v)); return a <= 2 || a === 6 || (a <= 40 ? a % 4 === 0 && a !== 28 && a !== 36 : a % 8 === 0); };
+    const RADII = new Set(['3px', '5px', '8px', '999px', '50%']);
+    const sig = (e: Element) => `${e.tagName.toLowerCase()}.${[...e.classList].slice(0, 2).join('.')}`;
+    const offScale = new Set<string>();
+    for (const e of document.querySelectorAll('#main *')) {
+      if (e.closest('[class*="maplibregl"]') || !vis(e)) continue;
+      const cs = getComputedStyle(e);
+      const spec = (e as HTMLElement).computedStyleMap?.();
+      for (const [k, css] of [['paddingTop', 'padding-top'], ['paddingLeft', 'padding-left'], ['marginTop', 'margin-top'], ['marginBottom', 'margin-bottom'], ['rowGap', 'row-gap'], ['columnGap', 'column-gap']] as const) {
+        const v = parseFloat(cs[k]);
+        if (!v || onScale(v) || String(spec?.get(css)) === 'auto') continue;
+        offScale.add(`${css}=${Math.round(v)} ${sig(e)}`);
+      }
+      const r = cs.borderTopLeftRadius;
+      if (r && r !== '0px' && !RADII.has(r)) offScale.add(`radius=${r} ${sig(e)}`);
+    }
+    return { midBreaks: [...new Set(midBreaks)], chipBreaks: [...new Set(chipBreaks)], clipped, dateBreaks: [...new Set(dateBreaks)], chipOverflow: [...new Set(chipOverflow)], offScale: [...offScale] };
   }, MAX_TOKEN);
 }
 
@@ -115,6 +134,7 @@ for (const s of SCREENS) {
       expect(m.clipped, `@${width} 화면 오른쪽 밖으로 잘린 요소: ${m.clipped.slice(0, 3).join(', ')}`).toEqual([]);
       expect(m.dateBreaks, `@${width} 날짜가 두 줄로 갈림: ${m.dateBreaks.slice(0, 3).join(', ')}`).toEqual([]);
       expect(m.chipOverflow, `@${width} 칩이 칸 밖으로 넘침: ${m.chipOverflow.slice(0, 3).join(', ')}`).toEqual([]);
+      expect(m.offScale, `@${width} 간격·반경 스케일 밖: ${m.offScale.slice(0, 5).join(', ')}`).toEqual([]);
     }
   });
 }

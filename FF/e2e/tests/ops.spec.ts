@@ -17,17 +17,20 @@ test.beforeEach(async ({ page }) => {
 test('긴급 차단 v2: 요청 → FSM·운영 리더 승인 → 게이트·서명·긴급 전달 → 회신 CONFIRMED → Fleet → 복원 요청 → 다른 2인 승인 → 복구', async ({ page }) => {
   await asRole(page, 'operator');
   await page.goto('/ops/kill');
-  await expect(page.getByText('care_00022_param, care_00022_signal')).toBeVisible();
+  // 요청 폼은 머리의 행동 버튼으로 여는 Drawer(UX3-03)
+  await page.getByRole('button', { name: '긴급 차단 요청' }).click();
+  const form = page.getByRole('dialog');
+  await expect(form.getByText('care_00022_param, care_00022_signal')).toBeVisible();
   // lead-01만 남긴다
-  for (const box of await page.getByRole('group', { name: '대상 차량' }).getByRole('checkbox').all()) {
+  for (const box of await form.getByRole('group', { name: '대상 차량' }).getByRole('checkbox').all()) {
     const label = (await box.locator('xpath=..').textContent()) ?? '';
     if (!label.includes('lead-01')) await box.uncheck();
   }
   // F3 안전 차단 — 봉쇄 결정 근거(FFG-PLT-009·DEAC-010), 비활성화 방식은 Registry 등급(DC2)
-  await page.getByLabel(/봉쇄 결정 근거/).fill('e2e — 원인 분석 전 봉쇄');
-  await page.getByLabel('사유', { exact: true }).fill('e2e — 전방 거리 오추정');
-  await expect(page.locator('#new-kill-h').locator('xpath=ancestor::section').locator('.ds-rules__item[data-status="fail"]')).toHaveCount(0);
-  await page.getByRole('button', { name: '차단 요청' }).click();
+  await form.getByLabel(/봉쇄 결정 근거/).fill('e2e — 원인 분석 전 봉쇄');
+  await form.getByLabel('사유', { exact: true }).fill('e2e — 전방 거리 오추정');
+  await expect(form.locator('.ds-rules__item[data-status="fail"]')).toHaveCount(0);
+  await form.getByRole('button', { name: '차단 요청', exact: true }).click();
   const dlg = page.getByRole('alertdialog');
   await dlg.getByRole('textbox').fill('FEAT-00022');
   await dlg.getByRole('button', { name: '차단 요청' }).click();

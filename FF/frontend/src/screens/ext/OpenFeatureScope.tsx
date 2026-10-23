@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, PageHeader, Panel, Select, SummaryLine, Tabs, VerdictBadge } from '../../design';
+import { AsyncView, DataTable, Explain, PageHeader, Panel, RuleText, Select, SummaryLine, Tabs, VerdictBadge } from '../../design';
 
 const O = ko.p10.openfeature;
 
@@ -44,7 +44,7 @@ export function OpenFeatureScopeScreen() {
         codes="D05-01 · IF-10 · OpenFeature · FFG-OFT · FFG-PLT-011"
         title={O.title}
         lead={O.lead}
-        message={{ tone: 'ok', value: d ? d.catalog.filter((c) => c.openFeature).length : '—', text: O.key }}
+        message={{ tone: 'neutral', value: d ? d.catalog.filter((c) => c.openFeature).length : '—', text: O.key }}
       />
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (
@@ -72,8 +72,17 @@ export function OpenFeatureScopeScreen() {
                   { key: 't', header: O.col.title, cell: (r) => <strong className="ds-nowrap">{r.title}</strong> },
                   { key: 'side', header: O.col.side, cell: (r) => <span className="ds-nowrap">{O.sides[r.side]}</span> },
                   { key: 's', header: O.col.status, cell: (r) => <span className="ds-nowrap"><VerdictBadge value={r.status === 'done' ? 'PASS' : 'UNJUDGED'} /> {O.status[r.status]}</span> },
-                  { key: 'w', header: O.col.what, cell: (r) => r.what },
-                  { key: 'r', header: O.col.rules, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.rules.join(' · ') || '—'}</span> },
+                  // 근거 규칙 ID는 설명 모드 칩으로(UX3-01) — 본문은 내용
+                  {
+                    key: 'w',
+                    header: O.col.what,
+                    cell: (r) => (
+                      <>
+                        <RuleText text={r.what} explain />
+                        <Explain rules={r.rules} />
+                      </>
+                    ),
+                  },
                   { key: 'e', header: O.col.endpoints, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.endpoints.join(' · ') || '—'}</span> },
                 ]}
               />
@@ -93,7 +102,7 @@ export function OpenFeatureScopeScreen() {
                 ]}
               />
             </Panel>
-            <Panel title={O.pins} id="of-pins">
+            <Panel title={O.pins} codes="FFG-OFT-007" id="of-pins">
               <ul className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
                 <li>{`${O.spec} ${d.pins.spec}`}</li>
                 {Object.entries(d.pins.sdks).map(([k, v]) => (

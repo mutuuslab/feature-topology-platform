@@ -106,7 +106,8 @@ test('BOM: 작성자 확정 요청 → BOM 승인자가 체크리스트 확인 �
 
   await page.goto(`/features/${f.featureId}/0.1.0?tab=baseline`);
   await expect(page.locator('.ds-kv').getByText(/^sha256:[0-9a-f]{64}$/)).toBeVisible();
-  await expect(page.locator('.ds-page').getByText(/^BL-\d{5}$/)).toBeVisible();
+  // 발급된 BL은 Baseline 탭에 — 머리 칩에서는 뺐다(UX3-08: 머리 칩 9개 → 정체만)
+  await expect(page.locator('.ds-kv').getByText(/^BL-\d{5}$/)).toBeVisible();
 });
 
 test('Catalog: 후보 선택 중 실시간 구성 검증(REQUIRES 누락 FAIL → 보완 PASS) → 등록 → 구성 승인', async ({ page }) => {

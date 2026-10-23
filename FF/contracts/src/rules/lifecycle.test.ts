@@ -75,6 +75,14 @@ describe('Lifecycle 전이 표', () => {
     expect(codes(evaluateTransition(at('PROPOSED'), 'APPROVED', ctx({ latestGates: g, actor: { id: 'u2', role: 'FEATURE_APPROVER' }, reason: ' ' })))).toEqual(['REASON_REQUIRED']);
   });
 
+  // UX3-08(3초 테스트 S4): Feature 상세 스테퍼에 "허용 역할이 아닙니다 (RELEASE_MANAGER)"처럼 역할 코드가 보였다 — 한글 역할 라벨로
+  it('역할 막힘 사유는 역할 코드가 아니라 한글 역할 라벨', () => {
+    const r = evaluateTransition(at('RELEASED'), 'DEPRECATED', ctx({ actor: { id: 'u1', role: 'FEATURE_AUTHOR' }, reason: '확인' }));
+    const role = r.blockers.find((b) => b.code === 'ROLE')!;
+    expect(role.message).toBe('허용 역할이 아닙니다 (Feature 출시 담당자)');
+    expect(role.message).not.toMatch(/[A-Z]+_[A-Z]+/);
+  });
+
   it('자동 전이: CP가 있으면 APPROVED→DEVELOPING, G4~G7 PASS면 DEVELOPING→VERIFIED', () => {
     expect(autoTransition(at('APPROVED'), ctx())?.to).toBe('DEVELOPING');
     expect(autoTransition(at('APPROVED', { controlPoints: [] }), ctx())).toBeUndefined();

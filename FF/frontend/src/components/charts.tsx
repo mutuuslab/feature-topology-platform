@@ -126,8 +126,8 @@ export function Donut({ segments, size = 130, center }: { segments: { label: str
         <text x="50%" y="62%" textAnchor="middle" fontSize="8" fill="var(--muted)">TOTAL</text>
       </svg>
       <div className="small">{segments.map(s => (
-        <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '3px 0' }}>
-          <span style={{ width: 10, height: 10, borderRadius: 3, background: s.color, display: 'inline-block' }} />{s.label} <b>{s.value}</b>
+        <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '2px 0' }}>
+          <span style={{ width: 10, height: 10, borderRadius: 'var(--r-sm)', background: s.color, display: 'inline-block' }} />{s.label} <b>{s.value}</b>
         </div>))}</div>
     </div>
   );
@@ -138,10 +138,10 @@ export function Bars({ data, fmt, labelWidth = 120 }: { data: Record<string, num
   const max = Math.max(1, ...Object.values(data));
   return (
     <div>{Object.entries(data).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
-      <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '5px 0' }}>
+      <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0' }}>
         <span className="small" title={k} style={{ flex: `0 0 ${labelWidth}px`, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k}</span>
-        <div style={{ flex: 1, background: 'var(--track-bg)', borderRadius: 5, overflow: 'hidden' }}>
-          <div style={{ width: `${(v / max) * 100}%`, background: `linear-gradient(90deg,${LEGACY_PAL['lg-0b5fff']},${LEGACY_PAL['lg-0ea5e9']})`, height: 16, borderRadius: 5, transition: 'width .8s ease' }} />
+        <div style={{ flex: 1, background: 'var(--track-bg)', borderRadius: 'var(--r)', overflow: 'hidden' }}>
+          <div style={{ width: `${(v / max) * 100}%`, background: `linear-gradient(90deg,${LEGACY_PAL['lg-0b5fff']},${LEGACY_PAL['lg-0ea5e9']})`, height: 16, borderRadius: 'var(--r)', transition: 'width .8s ease' }} />
         </div>
         <span className="small mono" style={{ width: 92, textAlign: 'right' }}>{fmt ? fmt(v) : v}</span>
       </div>))}</div>
@@ -219,7 +219,7 @@ export function Gauge({ value, label }: { value: number; label?: string }) {
   const color = value >= 95 ? 'var(--pass)' : value >= 80 ? 'var(--pending)' : 'var(--fail)';
   return (
     <div>
-      <div style={{ background: 'var(--surface-3)', borderRadius: 8, height: 10, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface-3)', borderRadius: 'var(--r-lg)', height: 10, overflow: 'hidden' }}>
         <div style={{ width: `${Math.min(100, value)}%`, background: color, height: '100%', transition: 'width .4s' }} />
       </div>
       {label && <div className="small muted mt">{label} <b style={{ color }}>{value}%</b></div>}
@@ -228,7 +228,7 @@ export function Gauge({ value, label }: { value: number; label?: string }) {
 }
 
 export function LiveDot() {
-  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--pass)' }}>
+  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--pass)' }}>
     <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--pass)', animation: 'pulse 1.4s infinite' }} /> LIVE</span>;
 }
 
@@ -289,13 +289,13 @@ export function GroupedBars({ rows, fmt }: { rows: { label: string; a: number; b
   return (
     <div>{rows.map(r => (
       <div key={r.label} style={{ margin: '8px 0' }}>
-        <div className="small" style={{ marginBottom: 3 }}>{r.label}</div>
+        <div className="small" style={{ marginBottom: 2 }}>{r.label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4, height: 12 }}><div style={{ width: `${r.a / max * 100}%`, height: 12, borderRadius: 4, background: LEGACY_PAL['lg-9aa7b8'], transition: 'width .7s' }} /></div>
+          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 'var(--r-sm)', height: 12 }}><div style={{ width: `${r.a / max * 100}%`, height: 12, borderRadius: 'var(--r-sm)', background: LEGACY_PAL['lg-9aa7b8'], transition: 'width .7s' }} /></div>
           <span className="small mono muted" style={{ width: 64, textAlign: 'right' }}>{f(r.a)}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 4, height: 12 }}><div style={{ width: `${r.b / max * 100}%`, height: 12, borderRadius: 4, background: `linear-gradient(90deg,${LEGACY_PAL['lg-0b5fff']},${LEGACY_PAL['lg-16a34a']})`, transition: 'width .7s' }} /></div>
+          <div style={{ flex: 1, background: 'var(--surface-3)', borderRadius: 'var(--r-sm)', height: 12 }}><div style={{ width: `${r.b / max * 100}%`, height: 12, borderRadius: 'var(--r-sm)', background: `linear-gradient(90deg,${LEGACY_PAL['lg-0b5fff']},${LEGACY_PAL['lg-16a34a']})`, transition: 'width .7s' }} /></div>
           <span className="small mono" style={{ width: 64, textAlign: 'right' }}>{f(r.b)}</span>
         </div>
       </div>

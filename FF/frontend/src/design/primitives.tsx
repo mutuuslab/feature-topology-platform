@@ -1,8 +1,12 @@
 // 디자인 키트 기본 부품 — 버튼·ID 칩·패널·지표·비동기 상태·탭·Diff·이벤트 스트림.
-import { useId, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { createContext, useContext, useId, useMemo, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ko } from '../copy/ko';
 import { Icon, type IconName } from './icons';
+import { plainText, usePageTitle, type PageTitle } from './page';
+
+/** 지금 열린 탭의 이름과 탭 요소 id — 탭 안 Panel이 같은 제목을 되풀이하지 않게(UX3-11) */
+const ActiveTabContext = createContext<PageTitle | null>(null);
 
 /**
  * reason — 비활성일 때 버튼 아래에 보이는 이유("권한이 없습니다", "대상을 고르세요"). 회색 버튼만 두면
@@ -80,14 +84,21 @@ export function IdChip({ id, version, to, copy = true }: { id: string; version?:
  * eyebrow: 제목 위 보조 정보(개수·기준 시각 등 사람이 읽는 말). 컴포넌트·규칙·IF 코드는 codes — 설명 모드에서만 보인다(3초 테스트).
  */
 export function Panel({ title, eyebrow, codes, actions, children, id, tour }: { title?: ReactNode; eyebrow?: ReactNode; codes?: ReactNode; actions?: ReactNode; children: ReactNode; id?: string; tour?: string }) {
+  const page = usePageTitle();
+  const tab = useContext(ActiveTabContext);
+  // 제목이 H1이나 지금 탭 이름과 같으면 머리 제목을 그리지 않는다 — 같은 말 반복(3초 테스트 UX3-11). 이름은 그 제목 요소가 준다
+  const text = plainText(title);
+  const same = text ? [page, tab].find((x) => x?.title === text) : undefined;
+  const heading = title && !same;
+  const labelledBy = same ? same.id : id && title ? `${id}-h` : undefined;
   return (
-    <section className="ds-panel" aria-labelledby={id && title ? `${id}-h` : undefined} data-tour={tour}>
-      {(title || actions) && (
+    <section className="ds-panel" aria-labelledby={labelledBy} data-tour={tour} data-title-same={same ? '' : undefined}>
+      {(heading || actions || (same && (codes || eyebrow))) && (
         <header className="ds-panel__head">
           <div>
             {codes && <div className="ds-page__codes">{codes}</div>}
             {eyebrow && <div className="ds-eyebrow">{eyebrow}</div>}
-            {title && <h2 id={id ? `${id}-h` : undefined}>{title}</h2>}
+            {heading && <h2 id={id ? `${id}-h` : undefined}>{title}</h2>}
           </div>
           {actions}
         </header>
@@ -113,8 +124,13 @@ export type AsyncState = 'loading' | 'ready' | 'empty' | 'error' | 'forbidden';
  * 모든 재디자인 화면의 데이터 영역은 이것으로 감싼다 — 로딩·빈·오류·권한 없음을 같은 모양으로,
  * data-state 속성으로 노출해 e2e 상태 체크리스트가 검증한다.
  */
-export function AsyncView({ state, stale, onRetry, empty, error, children, rows = 6, filtered }: {
+export function AsyncView({ state, stale, onRetry, empty, emptyHidden, error, children, rows = 6, filtered }: {
   state: AsyncState;
+  /**
+   * 빈 상자를 그리지 않는다 — 핵심 메시지가 이미 "…이 없습니다"라고 말할 때(3초 테스트 UX3-09). 같은 말과 일반 안내를
+   * 또 보이지 않는다. data-state="empty" 표식은 남겨 e2e 상태 점검이 읽는다
+   */
+  emptyHidden?: boolean;
   /** 검색·필터가 걸린 상태 — 빈 결과일 때만 "조건을 바꿔 보세요"를 말한다(필터 없는 화면에서 같은 말이 반복됐다) */
   filtered?: boolean;
   stale?: boolean;
@@ -130,6 +146,7 @@ export function AsyncView({ state, stale, onRetry, empty, error, children, rows 
         {Array.from({ length: rows }, (_, i) => <span key={i} />)}
       </div>
     );
+  if (state === 'empty' && emptyHidden) return <div data-state="empty" data-empty-hidden="" />;
   if (state === 'error' || state === 'forbidden' || state === 'empty') {
     const t = state === 'error' ? [ko.state.errorTitle, error ?? ko.state.errorBody] : state === 'forbidden' ? [ko.state.forbiddenTitle, ko.state.forbiddenBody] : [empty?.title ?? (filtered ? ko.state.emptyFilteredTitle : ko.state.emptyTitle), empty?.body ?? (filtered ? ko.state.emptyFilteredBody : ko.state.emptyBody)];
     return (
@@ -160,6 +177,8 @@ export function AsyncView({ state, stale, onRetry, empty, error, children, rows 
 export function Tabs({ tabs, param = 'tab', children }: { tabs: { key: string; label: ReactNode; count?: number }[]; param?: string; children: (active: string) => ReactNode }) {
   const [sp, setSp] = useSearchParams();
   const active = tabs.some((t) => t.key === sp.get(param)) ? sp.get(param)! : tabs[0]?.key;
+  const activeLabel = plainText(tabs.find((t) => t.key === active)?.label);
+  const activeTab = useMemo(() => (activeLabel ? { title: activeLabel, id: `tab-${active}` } : null), [activeLabel, active]);
   const select = (key: string) => {
     const next = new URLSearchParams(sp);
     next.set(param, key);
@@ -192,7 +211,7 @@ export function Tabs({ tabs, param = 'tab', children }: { tabs: { key: string; l
         ))}
       </div>
       <div role="tabpanel" id={`panel-${active}`} aria-labelledby={`tab-${active}`}>
-        {active && children(active)}
+        <ActiveTabContext.Provider value={activeTab}>{active && children(active)}</ActiveTabContext.Provider>
       </div>
     </>
   );

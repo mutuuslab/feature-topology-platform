@@ -4,10 +4,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, ChainStatus, DataTable, EventStream, PageHeader, Panel, Segmented, Toolbar, type StreamItem } from '../../design';
-import { AuditTable } from '../features/FeatureDetail';
-import { when } from '../shared';
+import { AsyncView, ChainStatus, DataTable, EventStream, PageHeader, Panel, RuleText, Segmented, Toolbar, VerdictBadge, type StreamItem } from '../../design';
+import { ComponentName, when } from '../shared';
+import { AuditLog } from './AuditLog';
 import type { AuditEntry } from '../types';
+
+const RESULTS = ['ALLOWED', 'DENIED', 'FAILED'] as const;
+
 
 export function AuditScreen() {
   const [result, setResult] = useState<'' | 'ALLOWED' | 'DENIED' | 'FAILED'>('');
@@ -48,16 +51,11 @@ export function AuditScreen() {
           label={ko.audit.result}
           value={result}
           onChange={(v) => setResult(v as typeof result)}
-          options={[
-            { value: '', label: ko.page.all },
-            { value: 'ALLOWED', label: 'ALLOWED' },
-            { value: 'DENIED', label: 'DENIED' },
-            { value: 'FAILED', label: 'FAILED' },
-          ]}
+          options={[{ value: '', label: ko.page.all }, ...RESULTS.map((r) => ({ value: r, label: ko.audit.results[r] }))]}
         />
       </Toolbar>
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} filtered={!!(applied || result)}>
-        <AuditTable rows={rows} />
+        <AuditLog rows={rows} />
       </AsyncView>
     </div>
   );
@@ -121,7 +119,7 @@ export function EventsScreen() {
               { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
               { key: 'type', header: 'Type', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--accent)' }}>{r.type}</span>, sort: (r) => r.type },
               { key: 'agg', header: ko.audit.col.target, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{r.aggregate}</span> },
-              { key: 'c', header: 'Component', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.componentId ?? '—'}</span> },
+              { key: 'c', header: 'Component', cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.componentId ? <ComponentName id={r.componentId} /> : '—'}</span> },
               { key: 'p', header: ko.events.content, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{summarize(r.payload)}</span> },
             ]}
           />

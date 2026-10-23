@@ -51,8 +51,9 @@ export function SafetyBadges({ id, ver }: { id: string; ver: string }) {
   const p = q.data?.profile;
   if (!p) return null;
   return (
-    <span className="ds-cls-row" data-tour="feature-classes" title={`${S.status[p.status]} · ${S.source[p.source]}`}>
-      <ClassBadges f={p.fClass} dc={p.deactClass} r={p.regClass} type={p.flagType} short />
+    // 머리 칩 줄이기(UX3-08) — Flag 유형은 툴팁과 안전 분류 탭에
+    <span className="ds-cls-row" data-tour="feature-classes" title={`${ko.safety.typeShort[p.flagType]} · ${S.status[p.status]} · ${S.source[p.source]}`}>
+      <ClassBadges f={p.fClass} dc={p.deactClass} r={p.regClass} short />
       {p.status === 'DRAFT' && <span className="ds-tag">{S.status.DRAFT}</span>}
     </span>
   );

@@ -3,9 +3,11 @@
 // (4) 레거시 화면에 남은 'Twin/트윈' 표기 래칫(사용자 결정 2026-10-12: Digital Twin 용어 금지 → 0까지),
 // (5) 국제표준 대응방안 보고서 v1.1 용어 규칙(harness/guide/harness/terms.json) — 플랫폼 화면에 해당하는 금지어만, 허용 문맥은 보고서 원본 정규식. 줄 수 래칫 → 0.
 // (6) 플랫폼 용어 규칙(tools/platform-terms.ts, 예: 은퇴 → Retirement) — 화면·API 요약·오류 메시지(frontend·contracts·backend). 줄 수 래칫 → 0.
+// (7) 설명문(lead) 규칙(tools/lead-copy.ts) — 문구 카탈로그 lead 키의 70자 초과·코드 포함. 줄 수 래칫 → 0.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { guideTermHits, loadGuideTerms } from './guide-terms.ts';
+import { leadHits } from './lead-copy.ts';
 import { platformTermHits } from './platform-terms.ts';
 import { TWIN, twinVisible } from './twin-terms.ts';
 import { FF, ratchet, rel, walk } from './lib.ts';
@@ -104,4 +106,11 @@ ok = termOk && ok;
 const platformOk = ratchet('platformTermLines', platformHits.length, 'max', "플랫폼 용어 규칙 위반 줄 수(은퇴→Retirement) — 0까지");
 if (!platformOk || process.argv.includes('--terms')) for (const h of platformHits.slice(0, 15)) console.error('    ' + h);
 ok = platformOk && ok;
+
+const leads: string[] = [];
+for (const f of walk(join(SRC, 'copy'), ['.ts']))
+  for (const h of leadHits(readFileSync(f, 'utf8'))) leads.push(`${rel(f)}:${h.line}  ${h.why === 'code' ? '코드' : `${[...h.text].length}자`} — ${h.text.slice(0, 50)}`);
+const leadOk = ratchet('leadCopyHits', leads.length, 'max', '문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14)');
+if (!leadOk || process.argv.includes('--terms')) for (const h of leads) console.error('    ' + h);
+ok = leadOk && ok;
 process.exit(ok ? 0 : 1);

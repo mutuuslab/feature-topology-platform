@@ -1,7 +1,7 @@
 /* §17.4 — 실시간 수렴 모니터 (Twin Fleet). LiveConvergenceMonitor 전용 스타일. */
 
 .livemon {
-  padding: 14px 16px;
+  padding: 12px 16px;
   background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
 }
 
@@ -15,7 +15,7 @@
 .livemon-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   font-size: 13px;
 }
@@ -24,8 +24,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 9px;
-  border-radius: 999px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: .04em;
@@ -63,7 +63,7 @@
 .livemon-summary {
   font-size: 12px;
   color: var(--ink);
-  padding: 6px 10px;
+  padding: 6px 8px;
   border-left: 3px solid var(--brand);
   background: var(--surface-3);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
@@ -82,7 +82,7 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
-  padding: 10px 12px;
+  padding: 8px 12px;
 }
 
 .livemon-panel-cap {
@@ -137,7 +137,7 @@
 
 .livemon-legend {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
   color: var(--muted);
   margin-top: 6px;
@@ -146,8 +146,8 @@
   display: inline-block;
   width: 12px;
   height: 3px;
-  border-radius: 2px;
-  margin-right: 5px;
+  border-radius: var(--r-pill);
+  margin-right: 4px;
   vertical-align: middle;
 }
 .sw-brand { background: var(--brand); }
@@ -158,7 +158,7 @@
 .livemon-mix {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 .livemon-mix-row {
   display: grid;
@@ -179,7 +179,7 @@
 .livemon-mix-label i {
   width: 7px;
   height: 7px;
-  border-radius: 2px;
+  border-radius: var(--r-sm);
   flex: none;
   background: var(--muted);
 }
@@ -191,14 +191,14 @@
 
 .livemon-mix-track {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--r-pill);
   background: var(--surface-3);
   overflow: hidden;
 }
 .livemon-mix-track i {
   display: block;
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--r-sm);
   background: var(--muted);
   transition: width .45s cubic-bezier(.35, 0, .25, 1);
 }
@@ -225,12 +225,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 .livemon-dchip {
   font-size: 10.5px;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   border: 1px solid var(--line);
   background: var(--surface-3);
   color: var(--muted);
@@ -282,7 +282,7 @@
 .livemon-cell {
   position: relative;
   height: 30px;
-  border-radius: 4px;
+  border-radius: var(--r-sm);
   background: var(--surface-3);
   border: 1px solid var(--line);
   overflow: hidden;
@@ -330,7 +330,7 @@
   display: grid;
   grid-template-columns: 60px 84px 90px 74px 84px minmax(0, 1fr);
   gap: 8px;
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-top: 1px solid var(--line);
   background: var(--surface);
 }

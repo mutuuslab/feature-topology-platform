@@ -187,6 +187,7 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
   it('영향 범위·Registry 등급·게이트 사전 점검 → 봉쇄 근거 없으면 요청 불가 → 확인 입력이 맞아야 요청, 본문에 사유 분류 — 비활성화 방식은 고르지 않는다', async () => {
     handler = api;
     mount('/ops/kill', '/ops/kill', <KillConsole />);
+    fireEvent.click(await screen.findByRole('button', { name: '긴급 차단 요청' })); // 요청 폼은 머리 행동으로 여는 Drawer(UX3-03)
     expect(await screen.findByText('care_00022_param, care_00022_signal')).toBeTruthy();
     fireEvent.click(screen.getByRole('checkbox', { name: /KMH-NX4-0003/ })); // 통신 단절 차량 제외
     expect(screen.queryByRole('radio', { name: /Safe Stop/ })).toBeNull(); // 운영자 선택 UI 없음
@@ -200,9 +201,12 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
     fireEvent.change(screen.getByLabelText('사유'), { target: { value: '전방 거리 오추정' } });
     const btn = screen.getByRole('button', { name: '차단 요청' }) as HTMLButtonElement;
     expect(btn.disabled).toBe(true); // F3 안전 — 리콜 ID나 봉쇄 근거 필요
+    expect(document.getElementById(btn.getAttribute('aria-describedby')!)!.textContent).toContain('봉쇄 결정 근거'); // 꺼진 이유가 버튼 아래에
     fireEvent.change(screen.getByLabelText(/봉쇄 결정 근거/), { target: { value: '원인 분석 전 봉쇄' } });
-    await waitFor(() => expect(btn.disabled).toBe(false));
-    fireEvent.click(btn);
+    // 이유 문구가 사라지면 버튼을 감싼 요소가 바뀐다 — 다시 찾는다
+    const enabled = () => screen.getByRole('button', { name: '차단 요청' }) as HTMLButtonElement;
+    await waitFor(() => expect(enabled().disabled).toBe(false));
+    fireEvent.click(enabled());
     const dlg = await screen.findByRole('alertdialog');
     const go = within(dlg).getByRole('button', { name: '차단 요청' }) as HTMLButtonElement;
     expect(go.disabled).toBe(true);
@@ -223,9 +227,57 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
     expect(new Headers(p.init!.headers).get('X-Actor-Role')).toBe('OPERATOR');
   });
 
+  // 회귀(UX3-03): 차단이 없을 때 요청 폼이 펼쳐져 있으면 사전 점검(위반·대기)이 초록 핵심 메시지와 모순된다 — 폼은 머리 행동으로 여는 Drawer에만
+  it('요청 폼은 머리의 행동 버튼으로 여는 Drawer에 있고, 사전 점검은 그 안에서만 보인다', async () => {
+    handler = api;
+    mount('/ops/kill', '/ops/kill', <KillConsole />);
+    expect(await screen.findByText('걸린 긴급 차단이 없습니다')).toBeTruthy();
+    expect(screen.queryByLabelText('사유')).toBeNull();
+    expect(document.querySelector('.ds-rules')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '긴급 차단 요청' }));
+    const dlg = await screen.findByRole('dialog');
+    expect(await within(dlg).findByText('care_00022_param, care_00022_signal')).toBeTruthy();
+    expect(within(dlg).getByLabelText('사유')).toBeTruthy();
+    expect(dlg.querySelector('.ds-rules')).toBeTruthy();
+  });
+
+  // 회귀(UX3-03): 사전 점검에 위반이 있으면 요청 버튼이 꺼지고 이유가 보인다 — 최종 게이트에서 막힐 요청을 받지 않는다
+  it('사전 점검 위반이 있으면 차단 요청 버튼이 꺼지고 이유가 보인다', async () => {
+    const failing = { ...PREVIEW, checks: PREVIEW.checks.map((c) => (c.rule === 'FFG-PLT-009' ? { ...c, ok: false, message: '시장·법규 사전조건 미충족' } : c)) };
+    handler = (url, init) => (url.startsWith('/api/kill-requests/preview') ? { body: failing } : api(url, init));
+    mount('/ops/kill', '/ops/kill', <KillConsole />);
+    fireEvent.click(await screen.findByRole('button', { name: '긴급 차단 요청' }));
+    expect(await screen.findByText('care_00022_param, care_00022_signal')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('사유'), { target: { value: '전방 거리 오추정' } });
+    fireEvent.change(screen.getByLabelText(/봉쇄 결정 근거/), { target: { value: '원인 분석 전 봉쇄' } });
+    const btn = screen.getByRole('button', { name: '차단 요청' }) as HTMLButtonElement;
+    await waitFor(() => expect(btn.disabled).toBe(true));
+    expect(btn.getAttribute('aria-describedby')).toBeTruthy();
+    expect(document.getElementById(btn.getAttribute('aria-describedby')!)!.textContent).toContain('사전 점검 위반 해소');
+  });
+
+  // 회귀(UX3-03): 확인 창이 요청 Drawer 위에 겹친다 — Esc는 맨 위 창만 닫고 입력한 요청은 남는다
+  it('확인 창에서 Esc를 누르면 확인 창만 닫히고 요청 Drawer와 입력은 남는다', async () => {
+    handler = api;
+    mount('/ops/kill', '/ops/kill', <KillConsole />);
+    fireEvent.click(await screen.findByRole('button', { name: '긴급 차단 요청' }));
+    expect(await screen.findByText('care_00022_param, care_00022_signal')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('사유'), { target: { value: '전방 거리 오추정' } });
+    fireEvent.change(screen.getByLabelText(/봉쇄 결정 근거/), { target: { value: '원인 분석 전 봉쇄' } });
+    const btn = screen.getByRole('button', { name: '차단 요청' }) as HTMLButtonElement;
+    await waitFor(() => expect(btn.disabled).toBe(false));
+    fireEvent.click(btn);
+    await screen.findByRole('alertdialog');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(screen.getByRole('dialog')).toBeTruthy();
+    expect((screen.getByLabelText('사유') as HTMLTextAreaElement).value).toBe('전방 거리 오추정');
+  });
+
   it('운영자·안전 담당이 아니면 요청 버튼이 막힌다', async () => {
     handler = api;
     mount('/ops/kill', '/ops/kill', <KillConsole />, 'author');
+    fireEvent.click(await screen.findByRole('button', { name: '긴급 차단 요청' }));
     await screen.findByText('care_00022_param, care_00022_signal');
     fireEvent.change(screen.getByLabelText('사유'), { target: { value: '시험' } });
     fireEvent.change(screen.getByLabelText(/봉쇄 결정 근거/), { target: { value: '봉쇄' } });
@@ -240,7 +292,7 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
     await within(dlg).findByText('요청자는 같은 명령을 승인할 수 없습니다(직무 분리)');
     expect((within(dlg).getByRole('button', { name: '승인 — 개인 서명' }) as HTMLButtonElement).disabled).toBe(true);
     // 회귀: FSM이 필요한 칸은 하나 — 두 칸 모두 FSM으로 보이던 문제
-    expect([...dlg.querySelectorAll('.ds-approvals__slot .ds-eyebrow .ds-rule-id')].map((x) => x.textContent)).toEqual(['FSM', 'CSM·운영 리더 등']);
+    expect([...dlg.querySelectorAll('.ds-approvals__slot .ds-approvals__role')].map((x) => x.textContent)).toEqual(['FSM', 'CSM·운영 리더 등']);
     cleanup();
     handler = (url, init) =>
       url.startsWith('/api/kill-requests/KILL-') && init?.method !== 'POST'

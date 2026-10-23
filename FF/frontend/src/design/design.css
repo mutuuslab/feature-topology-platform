@@ -16,6 +16,17 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
+/* 브라우저 기본 여백(1em·0.83em·3px)은 글자 크기를 따라 11·13·15px가 되어 간격 스케일을 벗어난다.
+   본문 안에서는 스케일 값으로 바꾼다 — :where라 특이도 0, 화면이 직접 준 여백은 그대로 이긴다(tools/spacing-scale.ts). */
+:where(#main) :where(p, ul, ol, dl, h2, h3, h4) {
+  margin-block: var(--sp-3);
+}
+:where(#main) :where(input[type='checkbox'], input[type='radio']) {
+  margin: 0 var(--sp-1h) 0 0;
+}
+:where(#main) :where(fieldset) {
+  padding: var(--sp-1h) var(--sp-3) var(--sp-2);
+}
 ::selection {
   background: var(--accent-soft);
   color: var(--ink);
@@ -233,7 +244,7 @@ h3 {
 .ds-step {
   --c: var(--line-strong);
   position: relative;
-  padding: 10px 10px 8px;
+  padding: 8px 8px 8px;
   background: var(--surface);
   border-top: 3px solid var(--c);
   min-width: 0;
@@ -295,7 +306,7 @@ h3 {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  padding: 8px 10px;
+  padding: 8px 8px;
   border: 0;
   border-right: 1px solid var(--line);
   background: none;
@@ -804,10 +815,10 @@ details.ds-panel[open] {
   gap: var(--sp-2) var(--sp-3);
   margin-top: var(--sp-2);
 }
-.ds-key[data-tone='ok'] { --c: var(--ok); }
-.ds-key[data-tone='warn'] { --c: var(--warn); }
-.ds-key[data-tone='danger'] { --c: var(--danger); }
-.ds-key[data-tone='accent'] { --c: var(--accent); }
+.ds-key[data-tone='ok'], .ds-key__status[data-tone='ok'] { --c: var(--ok); }
+.ds-key[data-tone='warn'], .ds-key__status[data-tone='warn'] { --c: var(--warn); }
+.ds-key[data-tone='danger'], .ds-key__status[data-tone='danger'] { --c: var(--danger); }
+.ds-key__status[data-tone='neutral'] { --c: var(--faint); }
 .ds-key__value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -824,10 +835,36 @@ details.ds-panel[open] {
 .ds-key__text[data-solo] {
   font-size: var(--fs-xl);
   font-weight: 700;
-  color: var(--c);
   line-height: 1.2;
 }
-.ds-key[data-tone='neutral'] .ds-key__text[data-solo] { color: var(--ink); }
+/* 판정 표식 — 숫자가 없는 문장형에서 색은 여기에만(문장 글자는 본문색) */
+.ds-key__mark {
+  align-self: center;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c);
+}
+/* 상태 pill — Lifecycle·배포 상태처럼 낱말인 상태. 숫자보다 작게. 글줄 기준선에 맞춘다(가운데 맞춤은 큰 숫자 줄에서 위로 떴다) */
+.ds-key__status {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-pill);
+  border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+  background: color-mix(in srgb, var(--c) 12%, var(--surface));
+  color: color-mix(in srgb, var(--c) 72%, var(--ink));
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+[data-present='on'] .ds-key__status {
+  height: 30px;
+}
 .ds-key__action {
   font-size: var(--fs-sm);
 }
@@ -877,7 +914,10 @@ details.ds-panel[open] {
   font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--ink-2);
-  padding: 4px 10px;
+  padding: 4px 8px;
+  /* 대상 크기 24px(WCAG 2.5.8) — 한 글자 선택지('1'·'2'·'3')도. 간격 스케일 정리(10→8px)로 23px가 된 회귀(하네스 3판) */
+  min-width: 24px;
+  justify-content: center;
   border-radius: var(--r-sm);
   cursor: pointer;
   display: inline-flex;
@@ -958,7 +998,7 @@ textarea.ds-input {
 }
 .ds-error ul {
   margin: 4px 0 0;
-  padding-left: 18px;
+  padding-left: 16px;
 }
 .ds-error__code {
   margin-left: var(--sp-2);
@@ -984,7 +1024,7 @@ textarea.ds-input {
   display: grid;
   grid-template-columns: 132px 1fr;
   gap: var(--sp-3);
-  padding: 7px 0;
+  padding: 6px 0;
   border-bottom: 1px solid var(--line);
   min-width: 0;
 }
@@ -1011,7 +1051,7 @@ textarea.ds-input {
 }
 .ds-mini-gates {
   display: inline-flex;
-  gap: 3px;
+  gap: 2px;
 }
 .ds-mini-gates span {
   display: inline-flex;
@@ -1073,7 +1113,7 @@ textarea.ds-input {
   display: inline-flex;
   flex-wrap: wrap;
   /* 줄 간격 10px — 링크 칩의 누르는 영역(24.6px, .ds-id a)이 위아래 줄과 겹치지 않는다(WCAG 2.5.8 target-size) */
-  gap: 10px var(--sp-2);
+  gap: 8px var(--sp-2);
 }
 .ds-chain {
   display: grid;
@@ -1190,7 +1230,7 @@ textarea.ds-input {
   --c: var(--gate-UNJUDGED);
   border-top: 3px solid var(--c);
   background: var(--surface);
-  padding: 8px 10px;
+  padding: 8px 8px;
   min-width: 0;
 }
 .ds-trace li[data-result='TRUE'] {
@@ -1328,7 +1368,7 @@ textarea.ds-input {
 }
 .ds-progress__track {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--r-pill);
   background: var(--track-bg);
   border: 1px solid var(--control-line);
   overflow: hidden;
@@ -1456,11 +1496,6 @@ textarea.ds-input {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
-.ds-comp__id {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--muted);
-}
 .ds-comp__name {
   font-size: var(--fs-xs);
   font-weight: 600;
@@ -1559,13 +1594,13 @@ textarea.ds-input {
 .ds-viz__swatch {
   width: 10px;
   height: 10px;
-  border-radius: 2px;
+  border-radius: var(--r-sm);
 }
 .ds-viz__key {
   display: inline-block;
   width: 14px;
   height: 2px;
-  border-radius: 1px;
+  border-radius: var(--r-pill);
 }
 .ds-viz__tip {
   position: absolute;
@@ -1675,9 +1710,9 @@ textarea.ds-input {
   --c: var(--ink-2);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   height: 22px;
-  padding: 0 7px 0 6px;
+  padding: 0 6px 0 6px;
   border-radius: var(--r-sm);
   border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
   background: color-mix(in srgb, var(--c) 7%, var(--surface));
@@ -1727,7 +1762,7 @@ textarea.ds-input {
   grid-template-columns: 16px max-content 1fr;
   gap: var(--sp-2);
   align-items: start;
-  padding: 5px var(--sp-2);
+  padding: 4px var(--sp-2);
   border-radius: var(--r-sm);
   font-size: var(--fs-sm);
 }
@@ -1746,6 +1781,10 @@ textarea.ds-input {
   color: inherit;
   text-align: left;
 }
+/* 제목이 있는 규칙은 ID를 설명 모드에서만(UX3-01) — 꺼져 있으면 ID 칸 없이 표식·제목 두 칸 */
+.ds-rules__item[data-titled] { grid-template-columns: 16px 1fr; }
+[data-explain='on'] .ds-rules__item[data-titled] { grid-template-columns: 16px max-content 1fr; }
+[data-explain='on'] .ds-rules__code.ds-explain { margin-inline: 0; }
 button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
 .ds-rules__text { display: grid; gap: 1px; min-width: 0; }
 .ds-rules__title { font-weight: 600; }
@@ -1758,7 +1797,7 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
   display: grid;
   /* 최대 단계 수(DC2 5단계)에 맞춰 열을 고정 — 등급이 달라도 같은 단계가 같은 너비 */
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 3px;
+  gap: 2px;
 }
 .ds-stages__step {
   position: relative;
@@ -1774,7 +1813,7 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
 .ds-stages__step[data-status='current'] { border-top-color: var(--accent); background: var(--accent-soft); }
 .ds-stages__step[data-stage='REJECTED'] { border-top-style: dashed; }
 .ds-stages__step[data-stage='REJECTED'][data-status='current'] { border-top-color: var(--warn); background: var(--warn-soft); }
-.ds-stages__label { font-weight: 700; font-size: var(--fs-sm); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.ds-stages__label { font-weight: 700; font-size: var(--fs-sm); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .ds-stages__step[data-status='done'] .ds-stages__label > svg { color: var(--ok); }
 .ds-stages__step[data-status='current'] .ds-stages__label > svg { color: var(--accent); }
 .ds-stages__no { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); color: var(--muted); }
@@ -1800,7 +1839,7 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
 
 .ds-window { display: grid; gap: var(--sp-1); }
 .ds-window__head { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: baseline; font-size: var(--fs-sm); }
-.ds-window__track { position: relative; height: 10px; border-radius: 5px; background: var(--track-bg); overflow: hidden; }
+.ds-window__track { position: relative; height: 10px; border-radius: var(--r-pill); background: var(--track-bg); overflow: hidden; }
 .ds-window__used,
 .ds-window__add { position: absolute; top: 0; bottom: 0; left: 0; }
 .ds-window__used { background: color-mix(in srgb, var(--ink-2) 55%, var(--surface-3)); }
@@ -1829,7 +1868,7 @@ button.ds-rules__id { cursor: pointer; text-decoration: underline dotted; text-u
   gap: 4px;
   height: 20px;
   padding: 0 6px;
-  border-radius: 10px;
+  border-radius: var(--r-pill);
   border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink-2);
@@ -1842,14 +1881,22 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── 표준 설명 모드 (Explain) — html[data-explain='on']일 때만 근거 규칙 칩을 보인다 ── */
 .ds-explain { display: none; }
+.ds-explain-block { display: none; }
+[data-explain='on'] .ds-explain-block { display: block; }
 [data-explain='on'] .ds-explain { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; margin-inline: 4px; }
+/* 충족 표시(UX3-02) — 예외가 아닌 행은 배지 대신 작은 초록 표식 */
+.ds-done { color: var(--ok); display: inline-flex; vertical-align: middle; }
+.ds-explain__code { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--muted); padding: 0 4px; border: 1px solid var(--line); border-radius: var(--r-sm); white-space: nowrap; }
 /* 따라하기 대상 요소 — 스포트라이트 고리와 함께 살짝 띄운다 */
 [data-tour-active='true'] { scroll-margin: 96px; }
 
 /* ── 표준 따라하기 허브·시나리오 (screens/learn) ── */
 .ds-learn-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--sp-3); }
 .ds-learn-card { display: grid; gap: var(--sp-2); align-content: start; padding: var(--sp-4); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
-.ds-learn-card[data-status='ready'] { border-top: 3px solid var(--accent); }
+/* 준비 중 묶음(UX3-07) — 카드 대신 접힌 목록 한 줄씩 */
+.ds-learn-planned > summary { cursor: pointer; font-size: var(--fs-sm); color: var(--ink-2); }
+.ds-learn-planned__list { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: var(--sp-1); }
+.ds-learn-planned__list li { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: baseline; font-size: var(--fs-sm); }
 .ds-learn-card[data-status='planned'] { background: var(--surface-2); }
 .ds-learn-card[data-status='planned'] h3 { color: var(--ink-2); font-weight: 600; }
 .ds-learn-card__foot .ds-btn { margin-left: auto; }
@@ -1861,7 +1908,7 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-learn-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); }
 .ds-learn-steps li { display: grid; grid-template-columns: 28px 1fr; gap: var(--sp-2); }
 .ds-learn-steps li[aria-current='step'] .ds-learn-steps__no { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.ds-learn-steps__no { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 12px; border: 1px solid var(--line-strong); font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 700; }
+.ds-learn-steps__no { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line-strong); font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 700; }
 .ds-learn-steps li[data-kind='act'] .ds-learn-steps__no { border-style: solid; border-width: 2px; }
 .ds-learn-steps li[data-kind='fail'] .ds-learn-steps__no { border-color: var(--warn); }
 .ds-learn-steps__title { font-weight: 700; font-size: var(--fs-sm); }
@@ -1931,6 +1978,15 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   /* 색만으로 구분하지 않는다 — FAIL은 점선 */
   stroke-dasharray: 5 3;
   stroke: var(--gate-FAIL);
+}
+/* 핵심 메시지가 가리키는 첫 미판정·FAIL 관계 — 굵게(UX3-04) */
+.ds-topo-edge[data-selected] {
+  stroke-width: 4;
+}
+/* 시연 모드: 그래프가 viewBox(760)보다 넓게 늘어나면 노드 라벨이 핵심 메시지보다 커졌다(UX3-04) — 1배를 넘겨 키우지 않는다.
+   라벨은 --fs-sm(시연 17px)이라 화면에서 --fs-md 이하가 된다 */
+[data-present='on'] .ds-topo {
+  max-width: 760px;
 }
 .ds-topo-arrow {
   fill: var(--ink-2);
@@ -2164,6 +2220,19 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .fm-linkbtn:hover {
   text-decoration: underline;
 }
+/* 핵심 메시지 행동(UX3-05) — 다른 화면의 행동 링크와 같은 크기 */
+.ds-key__action .fm-linkbtn {
+  font-size: inherit;
+}
+/* 국가별 현황 접기(UX3-05) — 보조 정보라 제목은 작고 회색 */
+.fm-fold > summary {
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.fm-fold[open] > summary {
+  margin-bottom: var(--sp-2);
+}
 .fm-detail {
   display: grid;
   gap: var(--sp-3);
@@ -2246,7 +2315,7 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-ext__sync {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   color: var(--muted);
   font-size: 0.9em;
 }

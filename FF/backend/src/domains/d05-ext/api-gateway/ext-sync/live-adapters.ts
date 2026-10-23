@@ -106,7 +106,10 @@ export class LiveAdapter implements ExtAdapter {
     const issuetype = kind === 'EPIC' ? 'Epic' : kind === 'DEFECT' ? 'Bug' : 'Change Request';
     const parent = f.fields?.parentKey ? { parent: { key: f.fields.parentKey } } : {};
     const r = await this.req<{ key: string }>('POST', '/rest/api/2/issue', { fields: { project: { key: project }, summary: f.title, description: f.body, issuetype: { name: issuetype }, ...parent } });
-    if (f.status) await this.transition(r.data.key, f.status);
+    // 새 이슈는 워크플로 첫 상태로 생긴다 — 이미 그 상태면 전이하지 않는다(자기 자신으로 가는 전이는 보통 없다)
+    const made = (await this.read(r.data.key))!;
+    if (!f.status || made.status.toLowerCase() === f.status.toLowerCase()) return made;
+    await this.transition(r.data.key, f.status);
     return (await this.read(r.data.key))!;
   }
 

@@ -89,9 +89,9 @@ test('정책: 작성 → 8종 검증 GO → 승인 → Feature VERIFIED → 서�
   await page.getByRole('link', { name: '활성화 판단 →' }).click();
   await expect(page).toHaveURL(new RegExp(`/activation/decide\\?flagKey=${flagKey}`));
   // 판정은 화면 머리의 핵심 메시지 하나(3초 테스트)
-  await expect(page.locator('#main [data-key-message] .ds-key__value')).toHaveText('ON');
+  await expect(page.locator('#main [data-key-message] .ds-key__status')).toHaveText('ON'); // 낱말 상태는 상태 pill(하네스 3판 ⑧)
   await expect(page.locator('.ds-trace li')).toHaveCount(8); // 배포·차단·범위·지원 조건(FFG-VEH-006)·권한·대상·코호트·판정
-  await expect(page.getByRole('region', { name: 'OFREP 응답 (IF-10)' }).locator('pre')).toContainText(`"key": "${flagKey}"`);
+  await expect(page.getByRole('region', { name: 'OFREP 응답' }).locator('pre')).toContainText(`"key": "${flagKey}"`);
 });
 
 // 체험권 제안·수락·구매 전환 흐름은 trials.spec.ts

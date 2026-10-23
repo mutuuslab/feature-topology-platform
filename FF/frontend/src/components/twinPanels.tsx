@@ -257,7 +257,7 @@ export function TwinLeftPanel({
           <KV k="분석 시각" v={impact.analyzedAt.slice(11, 19)} mono />
         </div>
         {impact.blockReasons.length > 0 && (
-          <div className="small" style={{ marginTop: 5, color: LEGACY_PAL['lg-ffc9c5'] }}>
+          <div className="small" style={{ marginTop: 4, color: LEGACY_PAL['lg-ffc9c5'] }}>
             {impact.blockReasons.map((r) => loc(r)).join(' · ')}
           </div>
         )}
@@ -268,7 +268,7 @@ export function TwinLeftPanel({
         tone={convergence.convergenceRate < convergence.threshold ? 'warn' : undefined}
         right={`임계 ${convergence.threshold}%`}
       >
-        <div className="trow" style={{ alignItems: 'center', gap: 10 }}>
+        <div className="trow" style={{ alignItems: 'center', gap: 8 }}>
           <div style={{ flex: '0 0 auto' }}>
             <Donut segments={segments} size={104} center={`${Math.round(convergence.convergenceRate)}%`} />
           </div>
@@ -313,7 +313,7 @@ export function TwinLeftPanel({
             ⚡ 주입
           </button>
         </div>
-        <div className="small muted" style={{ marginTop: 5 }}>
+        <div className="small muted" style={{ marginTop: 4 }}>
           {loc(T.FAULTS.find((f) => f.id === fault)?.triggers)}
         </div>
 
@@ -324,7 +324,7 @@ export function TwinLeftPanel({
             {openIncidents.map((inc) => {
               const view = closedLoopView(inc, snapshot.clock.simTimeMs);
               return (
-                <div key={inc.incidentId} style={{ padding: '5px 6px', border: '1px solid var(--line)', borderRadius: 8 }}>
+                <div key={inc.incidentId} style={{ padding: '4px 6px', border: '1px solid var(--line)', borderRadius: 'var(--r-lg)' }}>
                   <div className="trow gap">
                     <span
                       className="tdot"
@@ -337,12 +337,12 @@ export function TwinLeftPanel({
                       {inc.status}
                     </span>
                   </div>
-                  <div className="small" style={{ marginTop: 3 }}>
+                  <div className="small" style={{ marginTop: 2 }}>
                     {loc(E.reason(inc.reasonCode).label)}
                   </div>
                   <div className="small muted mono">{loopLine(view, lang)}</div>
                   <Bar pct={view.pct * 100} tone={inc.status === 'OPEN' ? 'pending' : 'info'} />
-                  <div className="trow gap" style={{ marginTop: 5 }}>
+                  <div className="trow gap" style={{ marginTop: 4 }}>
                     <button
                       className="btn small"
                       onClick={() => advanceLoop(inc.incidentId, view.done, undefined)}
@@ -399,7 +399,7 @@ export function TwinLeftPanel({
           ))}
           <span className="tsc mono">tick {snapshot.clock.simTick}</span>
         </div>
-        <div className="small muted" style={{ marginTop: 5 }}>
+        <div className="small muted" style={{ marginTop: 4 }}>
           정지(×0) 상태에서는 모든 파생 애니메이션이 함께 멈춥니다 — 화면은 클럭을 거짓으로 앞지르지 않습니다.
         </div>
       </Section>

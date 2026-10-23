@@ -54,7 +54,7 @@ export function ActivationScreen() {
         codes="D01-09 · ACTIVATION"
         title={A.title}
         lead={A.lead}
-        message={d ? { tone: d.result.value ? 'ok' : 'neutral', value: d.result.value ? 'ON' : 'OFF', text: A.key(vin, flagKey, d.result.decision, d.result.reason) } : { tone: 'neutral', value: '—', text: A.key(vin, flagKey, '…', '…') }}
+        message={d ? { tone: d.result.value ? 'ok' : 'neutral', status: { label: d.result.value ? 'ON' : 'OFF', tone: d.result.value ? 'ok' : 'neutral' }, text: A.key(vin, flagKey, d.result.decision, d.result.reason) } : { tone: 'neutral', status: { label: '—' }, text: A.key(vin, flagKey, '…', '…') }}
         actions={
           <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
             <Select label={A.vehicle} value={vin} onChange={(e) => set('vin', e.target.value)}>
@@ -104,7 +104,7 @@ export function ActivationScreen() {
               </Panel>
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-3)', alignContent: 'start' }}>
                 <OpenFeaturePanel vin={vin} flagKey={flagKey} serverValue={d.result.value} />
-                <Panel title={A.ofrep} eyebrow={`POST /ofrep/v1/evaluate/flags/${flagKey}`} id="ofrep">
+                <Panel title={A.ofrep} codes="IF-10" eyebrow={`POST /ofrep/v1/evaluate/flags/${flagKey}`} id="ofrep">
                   <pre className="ds-code" tabIndex={0}>{STATIC_MODE ? A.ofrepStatic : ofrep ? JSON.stringify(ofrep, null, 2) : '…'}</pre>
                 </Panel>
               </div>

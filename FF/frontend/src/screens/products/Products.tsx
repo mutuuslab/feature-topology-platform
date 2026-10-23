@@ -137,8 +137,8 @@ export function ProductDetail() {
               title={p.name}
               message={
                 d.eligibility.eligible
-                  ? { tone: 'ok', value: p.lifecycle, text: T.key.eligible }
-                  : { tone: 'warn', value: p.lifecycle, text: T.key.notEligible(d.eligibility.reasons.length, d.eligibility.reasons[0] ?? '') }
+                  ? { tone: 'ok', status: { label: p.lifecycle }, text: T.key.eligible }
+                  : { tone: 'warn', status: { label: p.lifecycle }, text: T.key.notEligible(d.eligibility.reasons.length, d.eligibility.reasons[0] ?? '') }
               }
               meta={
                 <>
@@ -240,7 +240,7 @@ export function ProductCompose() {
   const rows = cands.data?.items ?? [];
   return (
     <div className="ds-screen">
-      <PageHeader codes="D01-03 · COMPOSE" title={T.create} message={perm.ok ? { tone: 'accent', text: T.key.can } : { tone: 'warn', text: T.key.cannot }} />
+      <PageHeader codes="D01-03 · COMPOSE" title={T.create} message={{ tone: 'neutral', text: perm.ok ? T.key.can : T.key.cannot }} />
       <div className="ds-split">
         <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
           <Panel title={ko.registry.col.scope} id="scope">

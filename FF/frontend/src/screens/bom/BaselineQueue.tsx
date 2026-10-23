@@ -42,6 +42,7 @@ function Requests() {
   const all = useApi<{ items: BaselineRequest[] }>('baselineRequests');
   const rows = (all.data?.items ?? []).filter((r) => !status || r.status === status);
   const count = (s: string) => (all.data?.items ?? []).filter((r) => r.status === s).length;
+  const total = all.data?.items.length ?? 0;
   const open = sp.get('request');
   const select = (id: string | null) => {
     const n = new URLSearchParams(sp);
@@ -56,22 +57,27 @@ function Requests() {
   };
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
-      <Segmented
-        label={T.col.status}
-        value={status}
-        onChange={(v) => setStatus(v as typeof status)}
-        options={[
-          { value: 'PENDING', label: T.status.PENDING },
-          { value: 'APPROVED', label: T.status.APPROVED, count: count('APPROVED') },
-          { value: 'REJECTED', label: T.status.REJECTED, count: count('REJECTED') },
-          { value: '', label: ko.page.all, count: all.data?.items.length },
-        ]}
-      />
+      {/* 요청이 하나도 없으면 상태 필터는 "확정 0 반려 0 전체 0" — 핵심 메시지와 같은 말이라 그리지 않는다(UX3-09) */}
+      {total > 0 && (
+        <Segmented
+          label={T.col.status}
+          value={status}
+          onChange={(v) => setStatus(v as typeof status)}
+          options={[
+            { value: 'PENDING', label: T.status.PENDING },
+            { value: 'APPROVED', label: T.status.APPROVED, count: count('APPROVED') },
+            { value: 'REJECTED', label: T.status.REJECTED, count: count('REJECTED') },
+            { value: '', label: ko.page.all, count: total },
+          ]}
+        />
+      )}
       <AsyncView
         state={asyncState(all, rows.length === 0)}
         error={all.error?.message}
         onRetry={() => all.refetch()}
         empty={{ title: T.emptyRequests, action: <Button onClick={showBaselines}>{T.viewBaselines}</Button> }}
+        // 대기 필터가 비면 핵심 메시지 "확정 승인 대기가 없습니다"와 같은 말이다 — 확정·반려를 고른 경우에만 빈 상자(UX3-09)
+        emptyHidden={status === 'PENDING' || total === 0}
       >
         <DataTable
           caption={T.tabRequests}

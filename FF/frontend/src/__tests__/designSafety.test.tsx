@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import { deactStages, stageIndexOf } from '@ff/contracts';
+import { deactStages, ROLE_LABEL, stageIndexOf } from '@ff/contracts';
 import * as Kit from '../design';
 import { ApprovalSlots, ClassBadge, ClassBadges, ReasonActionNote, RuleChecklist, StageStrip, WindowGauge } from '../design';
 
@@ -12,8 +12,8 @@ afterEach(cleanup);
 describe('디자인 키트 → 갤러리', () => {
   it('키트가 내보내는 화면 부품(대문자 함수)은 모두 /_design 갤러리에 있다 — 시각 회귀·접근성 검사 대상', () => {
     const gallery = readFileSync(join(__dirname, '..', 'screens', 'design-gallery.tsx'), 'utf8');
-    // 갤러리 밖에서만 의미가 있는 셸·내부 부품
-    const exempt = new Set(['Icon', 'StatusGlyph', 'PageHeader', 'Toolbar', 'Segmented', 'Select', 'Field', 'ErrorNote', 'KeyValue']);
+    // 갤러리 밖에서만 의미가 있는 셸·내부 부품(PageTitleProvider는 그리는 것이 없는 H1 공유 문맥 — UX3-11)
+    const exempt = new Set(['Icon', 'StatusGlyph', 'PageHeader', 'PageTitleProvider', 'Toolbar', 'Segmented', 'Select', 'Field', 'ErrorNote', 'KeyValue']);
     const missing = Object.entries(Kit)
       .filter(([k, v]) => typeof v === 'function' && /^[A-Z]/.test(k) && !exempt.has(k))
       .map(([k]) => k)
@@ -103,6 +103,9 @@ describe('승인 칸·누적 상한 (FFG-PLT-005·016·SEC-003)', () => {
     );
     expect(screen.getByText(/FFG-PLT-016/)).toBeTruthy();
     expect(screen.getByText('대기 02:31')).toBeTruthy();
+    // 회귀(하네스 3판 시각 검토): 승인 칸에 역할 enum(OPS_LEAD)이 그대로 보였다 → 한글 라벨, 원문은 툴팁
+    expect(screen.queryByText(/OPS_LEAD/)).toBeNull();
+    expect(screen.getByTitle('OPS_LEAD').textContent).toBe(ROLE_LABEL.OPS_LEAD);
   });
   it('상한을 넘으면 meter 값은 상한에서 멈추고 FSM+CSM 안내', () => {
     render(<WindowGauge used={4200} adding={1200} cap={5000} />);

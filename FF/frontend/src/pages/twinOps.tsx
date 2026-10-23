@@ -220,7 +220,7 @@ export function TwinVehicle() {
         <b>7단계 상태 스트립</b>
         <span className="small muted ml">As-Designed → As-Built → As-Deployed → Desired → Reported → Effective → Observed</span>
         <StageStrip vin={twin.vin} verdict={verdict} />
-        <div className="row mt" style={{ gap: 10, alignItems: 'center' }}>
+        <div className="row mt" style={{ gap: 8, alignItems: 'center' }}>
           <span className="small muted">최종 판정</span>
           <ReasonChip def={verdict.verdictReason} />
           <span className="small muted">{loc(verdict.verdictReason.desc)}</span>
@@ -955,7 +955,7 @@ export function TwinIncident() {
                 <KvRow k="Safe State"><span className="badge" style={{ background: 'var(--pending)' }}>OFF</span></KvRow>
                 <KvRow k="예상 도달 시간">≤ 60초 (Online) · 다음 접속 시 (Offline)</KvRow>
               </div>
-              <div className="row mt" style={{ gap: 10, alignItems: 'center' }}>
+              <div className="row mt" style={{ gap: 8, alignItems: 'center' }}>
                 <label className="small">
                   <input type="radio" name="ks-scope" checked={scope === 'INCIDENT'} onChange={() => setScope('INCIDENT')} /> Incident 영향 VIN
                 </label>

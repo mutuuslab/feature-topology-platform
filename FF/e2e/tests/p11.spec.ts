@@ -17,9 +17,13 @@ test('Flag Retirement: 작성자 요청 → 승인자 승인 → 2단계 남은 
   await page.goto('/flag-retirements');
   await asRole(page, 'author');
   await page.reload();
-  await page.getByRole('combobox', { name: '대상 Flag' }).selectOption('ivi_00024_guide');
-  await page.getByLabel('Retirement 사유').fill('안내 문구 기능 종료 — e2e');
-  await page.getByRole('button', { name: 'Retirement 요청 등록' }).click();
+  // 요청 폼은 머리의 행동 버튼으로 여는 Drawer(UX3-12)
+  await page.getByRole('button', { name: 'Retirement 요청', exact: true }).click();
+  const req = page.getByRole('dialog', { name: 'Retirement 요청' });
+  await req.getByRole('combobox', { name: '대상 Flag' }).selectOption('ivi_00024_guide');
+  await req.getByLabel('Retirement 사유').fill('안내 문구 기능 종료 — e2e');
+  await req.getByRole('button', { name: 'Retirement 요청 등록' }).click();
+  await expect(req).toHaveCount(0);
   const row = page.getByRole('row').filter({ hasText: 'ivi_00024_guide' });
   await expect(row).toContainText('승인 대기');
 

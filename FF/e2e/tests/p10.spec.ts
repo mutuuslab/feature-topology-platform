@@ -59,14 +59,17 @@ test('실험·효과: F2 이상 Feature의 A/B는 FFG-CLS-006으로 거부, Shad
   await page.goto('/_design');
   await asRole(page, 'release');
   await page.goto('/experiments');
-  const create = page.getByRole('region', { name: '실험 등록' });
+  // 등록 폼은 머리의 행동 버튼으로 여는 Drawer(UX3-12)
+  await page.getByRole('button', { name: '실험 등록' }).click();
+  const create = page.getByRole('dialog', { name: '실험 등록' });
   await create.getByLabel('대상 정책').selectOption('POL-00002');
   await create.getByLabel('유형').selectOption('AB');
   await create.getByLabel('가설').fill('간격 단계를 앞당기면 고장 보고가 준다');
-  await create.getByRole('button', { name: '등록' }).click();
+  await create.getByRole('button', { name: '등록', exact: true }).click();
   await expect(create).toContainText('A/B 실험을 할 수 없습니다');
   await create.getByLabel('유형').selectOption('SHADOW');
-  await create.getByRole('button', { name: '등록' }).click();
+  await create.getByRole('button', { name: '등록', exact: true }).click();
+  await expect(create).toHaveCount(0); // 등록되면 Drawer가 닫힌다
   await expect(page.getByRole('table', { name: '실험·효과' })).toContainText('Shadow');
   await noSeriousAxe(page);
 

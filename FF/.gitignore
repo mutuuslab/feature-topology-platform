@@ -5,3 +5,5 @@
 __pycache__/
 # Unleash 실연동 토큰 (로컬 전용)
 docker/unleash/.env
+# 외부 연계 실제 연결 값(토큰 포함 — npm run ext:check -- --env-file .env.ext)
+.env.ext

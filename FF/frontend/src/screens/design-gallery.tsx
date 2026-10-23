@@ -17,6 +17,7 @@ import {
   Drawer,
   EventStream,
   Explain,
+  ExplainCodes,
   GateBadge,
   GateRail,
   IdChip,
@@ -251,6 +252,7 @@ export default function DesignGallery() {
             <ClauseChip id="ISO 26262-3 cl.7" />
             {/* 표준 설명 모드(상단 책 아이콘)를 켜면 보인다 */}
             <Explain rules={['FFG-CLS-001', 'FFG-CLS-009']} />
+            <ExplainCodes codes={['D06-03', 'IF-09']} />
           </div>
         </div>
       </Panel>
@@ -263,7 +265,7 @@ export default function DesignGallery() {
           <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
             <ApprovalSlots
               now={NOW}
-              requester={{ id: 'u-2001', name: '박운영 (OPERATOR)' }}
+              requester={{ id: 'u-2001', name: '박운영' }}
               slots={[
                 { role: 'FSM', approver: { id: 'u-3003', name: '김안전', signedAt: '2026-10-13T10:02:41Z' } },
                 { role: 'OPS_LEAD', waitingSince: '2026-10-13T10:02:41Z' },

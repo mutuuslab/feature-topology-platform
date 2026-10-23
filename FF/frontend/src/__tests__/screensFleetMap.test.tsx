@@ -130,6 +130,30 @@ describe('전세계 차량 지도 화면', () => {
     expect(calls.some((c) => c.url === '/api/fleet/map?source=SYNTHETIC')).toBe(true);
   });
 
+  it('핵심 메시지 행동이 긴급 차단 차량을 먼저 고르고, 다시 누르면 다음 미확인 차량으로 — 상세가 열린다(UX3-05)', async () => {
+    mount('operator');
+    const key = await screen.findByText('긴급 차단·미확인 차량');
+    const box = key.closest('[data-key-message]') as HTMLElement;
+    await waitFor(() => expect(within(box).getByText('2')).toBeTruthy());
+    expect(box.getAttribute('data-tone')).toBe('danger');
+    fireEvent.click(within(box).getByRole('button', { name: '지도에서 보기' }));
+    expect(within(await screen.findByTestId('fleet-map-detail')).getByText('37.5712, 126.9803')).toBeTruthy();
+    expect(calls.some((c) => c.url === '/api/fleet/map/vehicles/KMH-NX4-0001')).toBe(true);
+    // 고른 뒤에는 다음 차량(미확인) — 누를 때마다 돌아간다
+    fireEvent.click(within(box).getByRole('button', { name: '다음 차량 보기' }));
+    await waitFor(() => expect(calls.some((c) => c.url === '/api/fleet/map/vehicles/KMH-NX4-0003')).toBe(true));
+  });
+
+  it('국가별 현황은 접힌 보조 정보 — 국가 수만 보이고 펼치면 같은 표(UX3-05)', async () => {
+    mount('operator');
+    await screen.findByRole('table', { name: '차량 목록' });
+    const fold = screen.getByTestId('fleet-map-summary') as HTMLDetailsElement;
+    expect(fold.tagName).toBe('DETAILS');
+    expect(fold.open).toBe(false);
+    expect(await within(fold).findByText('국가별 현황 · 2개국')).toBeTruthy();
+    expect(within(fold).getByRole('table', { name: '국가별 현황' })).toBeTruthy();
+  });
+
   it('위치 열람이 거부되면(차량 신원 등) 지도·표 대신 안내만 보인다', async () => {
     status = 403;
     mount('author');

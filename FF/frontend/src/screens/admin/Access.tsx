@@ -7,8 +7,8 @@ import { asyncState, useApi } from '../../api/hooks';
 import { PLATFORM_ROLES } from '../../api/actor';
 import { roleLabel } from '../../data/refdata';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, Field, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge } from '../../design';
-import { when } from '../shared';
+import { AsyncView, DataTable, Field, KeyValue, PageHeader, Panel, RuleText, SummaryLine, VerdictBadge } from '../../design';
+import { CodeFreeText, ComponentName, when } from '../shared';
 
 const I = ko.iam;
 const VC = ko.variant;
@@ -50,10 +50,13 @@ export function IamScreen() {
                   {d.permissions.map((p) => (
                     <tr key={p.name}>
                       <th scope="row" title={`${p.method} ${p.path}`}>
-                        <span style={{ fontSize: 'var(--fs-xs)' }}>{p.summary}</span>
+                        {/* 요약문은 계약(OpenAPI) 원문 그대로 — 화면에서만 IF·규칙 코드를 설명 모드로 뗀다 */}
+                        <span style={{ fontSize: 'var(--fs-xs)' }}>
+                          <CodeFreeText text={p.summary} />
+                        </span>
                       </th>
-                      <td className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
-                        {p.component}
+                      <td style={{ fontSize: 'var(--fs-xs)' }}>
+                        <ComponentName id={p.component} />
                       </td>
                       {roles.map((r) => (
                         <td key={r.role} aria-label={`${r.label} ${p.roles.includes(r.role) ? 'O' : '-'}`}>
@@ -70,7 +73,7 @@ export function IamScreen() {
       </AsyncView>
       <Panel title={I.reportRoles} id="report-roles" tour="report-roles">
         <p className="ds-field__hint" style={{ marginTop: 0 }}>
-          {I.reportRolesLead}
+          <RuleText text={I.reportRolesLead} explain />
         </p>
         <DataTable
           caption={I.reportRoles}
@@ -92,8 +95,8 @@ export function IamScreen() {
             columns={[
               { key: 'id', header: 'ID', cell: (r) => <span className="ds-mono">{r.id}</span> },
               { key: 's', header: I.col.subject, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.subject}</span> },
-              { key: 'r', header: I.col.rule, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.rule}</span> },
-              { key: 'c', header: I.col.component, cell: (r) => <span className="ds-mono">{r.component}</span> },
+              { key: 'r', header: I.col.rule, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}><CodeFreeText text={r.rule} /></span> },
+              { key: 'c', header: I.col.component, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}><ComponentName id={r.component} /></span> },
             ]}
           />
         </Panel>
@@ -107,7 +110,7 @@ export function IamScreen() {
                 { key: 'at', header: I.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
                 { key: 'a', header: I.col.actor, cell: (r) => <span className="ds-mono">{`${r.actorId} · ${r.actorRole}`}</span> },
                 { key: 'x', header: I.col.action, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.action}</span> },
-                { key: 'r', header: ko.audit.col.reason, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.reason ?? ''}</span> },
+                { key: 'r', header: ko.audit.col.reason, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}><RuleText text={r.reason ?? ''} explain /></span> },
               ]}
             />
           </AsyncView>

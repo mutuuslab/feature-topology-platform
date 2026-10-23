@@ -28,6 +28,7 @@ import {
   Icon,
 } from '../../design';
 import { scopeOf, usePermission, when } from '../shared';
+import { AuditLog } from '../governance/AuditLog';
 import { ReleaseSignoffBar } from './ReleaseSignoff';
 import { EpicChip, ExtLinksTab, RequirementChips } from './ExtLinksTab';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
@@ -35,7 +36,8 @@ import { FeatureVersionActions } from './VersionEdit';
 import type { AuditEntry, ChecklistItem, FeatureDetail as Detail, GateView } from '../types';
 
 const T = ko.detail;
-const ATTR_ORDER = ['featureId', 'name', 'description', 'requirementIds', 'country', 'vehicleModel', 'trim', 'version', 'baselineId', 'lifecycle', 'ownerId', 'tags', 'asil', 'upgVc', 'functions', 'swIds', 'swVersions', 'ecuPnos', 'controlPoints', 'dependencyIds'] as const;
+// Lifecycle은 핵심 메시지 상태 pill과 스테퍼가 보인다 — 속성 표에서 한 번 더 보이지 않는다(3초 규칙 6, UX3-08)
+const ATTR_ORDER = ['featureId', 'name', 'description', 'requirementIds', 'country', 'vehicleModel', 'trim', 'version', 'baselineId', 'ownerId', 'tags', 'asil', 'upgVc', 'functions', 'swIds', 'swVersions', 'ecuPnos', 'controlPoints', 'dependencyIds'] as const;
 const INVALIDATE = ['featureDetail', 'listFeatures', 'gates', 'audit', 'baselineRequests', 'baselineChecklist', 'baselines'];
 
 export default function FeatureDetail() {
@@ -59,18 +61,17 @@ export default function FeatureDetail() {
               tour="feature-header"
               title={d.feature.name}
               message={{
-                tone: d.feature.lifecycle === 'RELEASED' ? 'ok' : d.feature.lifecycle === 'DEPRECATED' || d.feature.lifecycle === 'RETIRED' ? 'neutral' : 'accent',
-                value: d.feature.lifecycle,
-                text: T.key.gatePass(ko.lifecycle[d.feature.lifecycle as keyof typeof ko.lifecycle] ?? d.feature.lifecycle, Object.values(d.gates).filter((g) => g.status === 'PASS').length, GATES.length),
+                tone: Object.values(d.gates).filter((g) => g.status === 'PASS').length === GATES.length ? 'ok' : 'neutral',
+                value: `${Object.values(d.gates).filter((g) => g.status === 'PASS').length}/${GATES.length}`,
+                text: T.key.gateLabel,
+                status: { label: ko.lifecycle[d.feature.lifecycle as keyof typeof ko.lifecycle] ?? d.feature.lifecycle, tone: d.feature.lifecycle === 'RELEASED' ? 'ok' : 'neutral' },
               }}
+              // 머리 칩은 정체(ID·적용 범위·안전 분류·JIRA Epic)만 — ASIL·Owner·Baseline은 속성 표와 Baseline 탭에 있다(UX3-08: 칩 9개)
               meta={
                 <>
                   <IdChip id={d.feature.featureId} version={d.feature.version} />
                   <span className="ds-tag">{scopeOf(d.feature)}</span>
-                  <span className="ds-tag">ASIL {d.feature.asil}</span>
                   <SafetyBadges id={id} ver={ver} />
-                  <span className="ds-tag">{d.feature.ownerId}</span>
-                  {d.feature.baselineId && <IdChip id={d.feature.baselineId} copy={false} />}
                   <EpicChip id={id} ver={ver} />
                 </>
               }
@@ -78,9 +79,10 @@ export default function FeatureDetail() {
                 <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                   <FeatureVersionActions key={`${id}@${ver}`} f={d.feature} latest={d.versions[d.versions.length - 1]?.version === ver} />
                   <Select label={T.versions} value={ver} onChange={(e) => nav(`/features/${id}/${e.target.value}`)}>
+                    {/* 고른 Version의 Lifecycle은 핵심 메시지가 말한다 — 닫힌 선택 상자에 되풀이하지 않고, 다른 Version만 상태를 붙인다 */}
                     {d.versions.map((v) => (
                       <option key={v.version} value={v.version}>
-                        {v.version} · {v.lifecycle}
+                        {v.version === ver ? v.version : `${v.version} · ${ko.lifecycle[v.lifecycle]}`}
                       </option>
                     ))}
                   </Select>
@@ -150,7 +152,6 @@ function Overview({ d }: { d: Detail }) {
   const missing = (d.feature._missing ?? {}) as Record<string, string>;
   const show = (k: string) => {
     const v = f[k];
-    if (k === 'lifecycle') return <LifecycleBadge value={v} />;
     if (k === 'requirementIds' && Array.isArray(v) && v.length) return <RequirementChips id={d.feature.featureId} ver={d.feature.version} ids={v} />;
     if (k === 'functions') return (v as { functionId: string; label: string }[]).map((x) => <span key={x.functionId} className="ds-tag"><span className="ds-mono">{x.functionId}</span> {x.label}</span>);
     if (Array.isArray(v)) return v.length ? v.map((x: string, i: number) => <span key={i} className={/^[A-Z0-9-.@]+$/.test(x) ? 'ds-mono' : undefined}>{x}{i < v.length - 1 ? ',' : ''}</span>) : null;
@@ -387,28 +388,8 @@ function AuditTab({ target }: { target: string }) {
   const q = useApi<{ items: AuditEntry[] }>('audit', { query: { target, limit: 100 } });
   return (
     <AsyncView state={asyncState(q, (q.data?.items.length ?? 0) === 0)} error={q.error?.message}>
-      <AuditTable rows={q.data?.items ?? []} />
+      <AuditLog rows={q.data?.items ?? []} />
     </AsyncView>
-  );
-}
-
-export function AuditTable({ rows }: { rows: AuditEntry[] }) {
-  const C = ko.audit.col;
-  return (
-    <DataTable
-      caption={ko.audit.title}
-      rows={rows}
-      rowKey={(r) => String(r.id)}
-      columns={[
-        { key: 'at', header: C.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span>, sort: (r) => r.at },
-        { key: 'actor', header: C.actor, cell: (r) => <span className="ds-mono">{r.actorId}</span>, sort: (r) => r.actorId },
-        { key: 'role', header: C.role, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.actorRole}</span> },
-        { key: 'action', header: C.action, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.action}</span>, sort: (r) => r.action },
-        { key: 'target', header: C.target, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.target}</span> },
-        { key: 'result', header: C.result, cell: (r) => <VerdictBadge value={r.result === 'ALLOWED' ? 'PASS' : r.result === 'DENIED' ? 'CONDITIONAL' : 'FAIL'} />, sort: (r) => r.result },
-        { key: 'reason', header: C.reason, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.reason ?? ''}</span> },
-      ]}
-    />
   );
 }
 

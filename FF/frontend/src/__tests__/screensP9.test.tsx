@@ -74,10 +74,10 @@ describe('42 컴포넌트 아키텍처', () => {
       if (url.startsWith('/api/components')) return { body: { items: [COMP('D01-06', 'implemented', [2, 3]), COMP('D03-03', 'implemented', [6]), COMP('D05-04', 'planned', [])] } };
     };
     mount('/arch/components', '/arch/components', <ArchitectureScreen />);
-    const card = await screen.findByRole('button', { name: /D01-06 컴포넌트 D01-06 구현/ });
+    const card = await screen.findByRole('button', { name: /^컴포넌트 D01-06 구현 · D01-06$/ });
     expect(card.getAttribute('data-dim')).toBe('false');
     expect(screen.getByRole('button', { name: /D03-03/ }).getAttribute('data-dim')).toBe('false');
-    expect(screen.getByRole('button', { name: /D05-04 .* 계획/ }).getAttribute('data-status')).toBe('planned');
+    expect(screen.getByRole('button', { name: /D05-04 계획/ }).getAttribute('data-status')).toBe('planned');
     // 핵심 메시지 하나(구현 n/전체) + 회색 요약 한 줄(3초 테스트)
     expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('2/3');
     expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['1', '1', '1', `${Object.keys(STANDARDS_MAP).filter((id) => RULE_STATUS[id]?.tested).length}/75`]);
@@ -93,7 +93,7 @@ describe('42 컴포넌트 아키텍처', () => {
       return undefined;
     };
     mount('/arch/components?wp=WP3', '/arch/components', <ArchitectureScreen />);
-    const gate = await screen.findByRole('button', { name: /D03-02 컴포넌트 D03-02/ });
+    const gate = await screen.findByRole('button', { name: /^컴포넌트 D03-02 / });
     expect(gate.getAttribute('data-dim')).toBe('false');
     expect(screen.getByRole('button', { name: /D05-04/ }).getAttribute('data-dim')).toBe('true'); // 보고서 규칙 배치 없음
     const wp3 = Object.keys(STANDARDS_MAP).filter((id) => STANDARDS_MAP[id].wp === 'WP3' && STANDARDS_MAP[id].components.includes('D03-02'));
@@ -112,12 +112,12 @@ describe('42 컴포넌트 아키텍처', () => {
       return undefined;
     };
     mount('/arch/components', '/arch/components', <ArchitectureScreen />);
-    fireEvent.click(await screen.findByRole('button', { name: /D06-10 컴포넌트 D06-10/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /^컴포넌트 D06-10 / }));
     let tq = await screen.findByTestId('tool-qualification');
     expect(tq.textContent).toContain('TCL3');
     expect(tq.textContent).toContain('TI2·TD3 → TCL3 · 검출 수단: 후속 검출 수단 없음');
     expect(tq.textContent).toContain('1c 도구 검증(validation)');
-    fireEvent.click(screen.getByRole('button', { name: /D05-04 컴포넌트 D05-04/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^컴포넌트 D05-04 / }));
     tq = await screen.findByTestId('tool-qualification');
     await waitFor(() => expect(screen.getByTestId('tool-qualification').textContent).toContain('분류 안 됨'));
   });

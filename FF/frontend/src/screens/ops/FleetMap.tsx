@@ -302,6 +302,8 @@ export function FleetMapScreen() {
   const [catalogId, setCatalogId] = useState('');
   const [flagKey, setFlagKey] = useState('');
   const [view, setView] = useState<MapView>('world');
+  // 핵심 메시지 행동을 누를 때마다 늘린다 — 같은 차량을 다시 눌러도(지도를 옮긴 뒤) 지도가 그 차량으로 돌아간다
+  const [focus, setFocus] = useState(0);
   const selected = sp.get('vin');
   const select = (vin: string, scroll = false) => {
     setSp((p) => {
@@ -439,9 +441,33 @@ export function FleetMapScreen() {
         title={F.title}
         lead={F.lead}
         message={(() => {
-          const n = items.filter((v) => v.activation === 'DISABLED' || v.activation === 'UNKNOWN').length;
-          const killed = items.some((v) => v.activation === 'DISABLED');
-          return forbidden ? { tone: 'neutral', text: F.key.forbidden } : !demo.data ? { tone: 'neutral', value: '—', text: F.key.attention } : n ? { tone: killed ? 'danger' : 'warn', value: n, text: F.key.attention } : { tone: 'ok', text: F.key.clean };
+          if (forbidden) return { tone: 'neutral', text: F.key.forbidden };
+          if (!demo.data) return { tone: 'neutral', value: '—', text: F.key.attention };
+          // 긴급 차단 먼저, 위치가 있는 차량 먼저 — 행동은 그 차량을 골라 지도를 옮긴다(여러 대면 누를 때마다 다음 차량)
+          const rank = (v: FleetMapVehicle) => (v.activation === 'DISABLED' ? 0 : 2) + (v.position ? 0 : 1);
+          const attention = items.filter((v) => v.activation === 'DISABLED' || v.activation === 'UNKNOWN').sort((a, b) => rank(a) - rank(b));
+          if (!attention.length) return { tone: 'ok', text: F.key.clean };
+          const at = attention.findIndex((v) => v.vin === selected);
+          const next = attention[(at + 1) % attention.length];
+          return {
+            tone: attention[0].activation === 'DISABLED' ? 'danger' : 'warn',
+            value: attention.length,
+            text: F.key.attention,
+            action: (
+              <button
+                type="button"
+                className="fm-linkbtn"
+                data-vin={next.vin}
+                onClick={() => {
+                  select(next.vin);
+                  setFocus((x) => x + 1);
+                  document.getElementById('fm-map')?.scrollIntoView?.({ block: 'nearest' });
+                }}
+              >
+                {at >= 0 && attention.length > 1 ? F.key.next : F.key.locate}
+              </button>
+            ),
+          };
         })()}
       />
       {forbidden ? (
@@ -471,7 +497,7 @@ export function FleetMapScreen() {
             >
               {controls}
               <AsyncView state={asyncState(demo, false)} error={demo.error?.message} onRetry={() => demo.refetch()}>
-                <FleetMapCanvas items={items} lens={lens} selected={selected} onSelect={select} view={view} clusters={clusters} onViewChange={onViewChange} />
+                <FleetMapCanvas items={items} lens={lens} selected={selected} focus={focus} onSelect={select} view={view} clusters={clusters} onViewChange={onViewChange} />
                 <Legend lens={lens} items={items} summary={summary} clustered={clusters.length > 0} />
                 {synData && (clusters.length ? <p className="fm-note">{O.clusterNote(inView, sampled)}</p> : synData.items.length > 0 && <p className="fm-note">{O.pointsNote(synData.items.length)}</p>)}
                 {synData && lens === 'activation' && <p className="fm-note">{O.activationNote}</p>}
@@ -479,7 +505,7 @@ export function FleetMapScreen() {
             </Panel>
             <div id="fm-side" className="fm-side">
               <Panel
-                title={selected ? F.detail(selected) : F.summary}
+                title={selected ? F.detail(selected) : F.side}
                 id="fm-detail"
                 actions={
                   selected ? (
@@ -494,7 +520,11 @@ export function FleetMapScreen() {
                 ) : (
                   <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
                     <p className="fm-note">{F.pick}</p>
-                    {summaryTable}
+                    {/* 국가별 현황은 보조 정보 — 접어 두어 핵심 메시지·지도와 시선을 다투지 않게(UX3-05). 펼치면 같은 표 */}
+                    <details className="fm-fold" data-testid="fleet-map-summary">
+                      <summary>{F.summaryFold(summary.length)}</summary>
+                      {summaryTable}
+                    </details>
                   </div>
                 )}
               </Panel>

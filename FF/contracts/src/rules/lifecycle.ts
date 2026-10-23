@@ -1,6 +1,6 @@
 // Feature Lifecycle 전이 표 — 통합 상세설계서 v0.81 §2.5 (표 10) 그대로를 데이터로 둔다.
 // 평가는 순수 함수: 백엔드(전이 실행)·프론트(스테퍼의 막힌 사유 표시)가 같은 결과를 본다.
-import { GATE_META, LIFECYCLE, type GateId, type GateStatus, type Lifecycle, type Role } from '../enums';
+import { GATE_META, LIFECYCLE, ROLE_LABEL, type GateId, type GateStatus, type Lifecycle, type Role } from '../enums';
 import type { DependencyRow, FeatureVersionRow } from '../schemas/dataset';
 
 export interface TransitionRule {
@@ -96,7 +96,7 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
     blockers.push({ code: 'POLICY_MISSING', message: `Control Point ${f.controlPoints.length}개 중 정책 등록 ${ctx.policyCoverage}개` });
 
   if (ctx.actor) {
-    if (!rule.roles.includes(ctx.actor.role)) blockers.push({ code: 'ROLE', message: `허용 역할이 아닙니다 (${rule.roles.join(', ')})` });
+    if (!rule.roles.includes(ctx.actor.role)) blockers.push({ code: 'ROLE', message: `허용 역할이 아닙니다 (${rule.roles.map((r) => ROLE_LABEL[r]).join(' · ')})` }); // 역할 코드 대신 한글 라벨(UX3-08)
     if (!rule.auto && ctx.createdBy && ctx.createdBy === ctx.actor.id)
       blockers.push({ code: 'SEPARATION_OF_DUTY', message: '작성자는 자기 Feature 버전을 승인·출시할 수 없습니다.' });
   }

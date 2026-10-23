@@ -141,6 +141,7 @@
         "contracts/src/rules/classification.test.ts",
         "contracts/src/rules/ext.test.ts",
         "backend/test/ext/p10.spec.ts",
+        "frontend/src/__tests__/bodyCodes.test.tsx",
         "e2e/tests/p10.spec.ts"
       ]
     },
@@ -280,7 +281,8 @@
       ],
       "tested": [
         "contracts/src/rules/recall.test.ts",
-        "backend/test/d03/recall.spec.ts"
+        "backend/test/d03/recall.spec.ts",
+        "frontend/src/__tests__/bodyCodes.test.tsx"
       ]
     },
     {
@@ -469,8 +471,7 @@
         "backend/test/d01/policy.spec.ts",
         "backend/test/d05/openfeature.spec.ts",
         "frontend/src/__tests__/screensP10.test.tsx",
-        "frontend/src/__tests__/screensP9.test.tsx",
-        "e2e/tests/poc.spec.ts"
+        "frontend/src/__tests__/screensP9.test.tsx"
       ]
     },
     {
@@ -626,8 +627,10 @@
         "contracts/src/rules/policy-gate.test.ts",
         "backend/test/d03/delivery.spec.ts",
         "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/bodyCodes.test.tsx",
         "frontend/src/__tests__/screensLearn.test.tsx",
-        "frontend/src/__tests__/screensOps.test.tsx"
+        "frontend/src/__tests__/screensOps.test.tsx",
+        "tools/lead-copy.test.ts"
       ]
     },
     {
@@ -668,10 +671,10 @@
         "backend/test/d03/policy-gate.spec.ts",
         "backend/test/d06/hsm.spec.ts",
         "backend/test/helpers.ts",
+        "frontend/src/__tests__/bodyCodes.test.tsx",
         "frontend/src/__tests__/designSafety.test.tsx",
         "frontend/src/__tests__/screensOps.test.tsx",
         "frontend/src/__tests__/screensSafety.test.tsx",
-        "e2e/tests/poc.spec.ts",
         "tools/ads-team.test.ts"
       ]
     },
@@ -739,6 +742,7 @@
         "contracts/src/rules/policy-gate.test.ts",
         "contracts/src/rules/recall.test.ts",
         "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/bodyCodes.test.tsx",
         "frontend/src/__tests__/designSafety.test.tsx",
         "frontend/src/__tests__/screensOps.test.tsx",
         "e2e/tests/ops.spec.ts"
@@ -757,8 +761,7 @@
       ],
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
-        "backend/test/d05/openfeature.spec.ts",
-        "e2e/tests/poc.spec.ts"
+        "backend/test/d05/openfeature.spec.ts"
       ]
     },
     {

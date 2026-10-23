@@ -55,9 +55,9 @@ describe('Feature Registry 목록', () => {
     mount('/features', '/features', <FeatureList />);
     expect(await screen.findByText('전방 안전거리 3단계')).toBeTruthy();
     expect(document.querySelector('[data-state="ready"]')).toBeTruthy();
-    // 핵심 메시지 = Feature 수, 요약 줄 = Baseline 확정 수(출시·제안 수는 Lifecycle 탭이 보인다)
-    expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('2');
-    expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['1']);
+    // 핵심 메시지 = 승인을 기다리는 제안 수(UX3-08), 요약 줄 = Feature ID·Version 수(Baseline 확정 줄은 뺐다)
+    expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1');
+    expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['2', '2']);
     expect(calls.some((c) => c.url.startsWith('/api/features?') && c.url.includes('latestOnly=false'))).toBe(true);
   });
 
@@ -70,17 +70,19 @@ describe('Feature Registry 목록', () => {
     mount('/features?lifecycle=RELEASED', '/features', <FeatureList />);
     await screen.findByText('전방 안전거리 3단계');
     const chip = (label: string) => [...document.querySelectorAll('.ds-seg__opt')].find((b) => b.firstChild?.textContent === label)?.querySelector('.ds-seg__count')?.textContent;
-    expect(chip('RELEASED')).toBe('2');
+    // 탭 이름은 한글(UX3-08) — 출시 = RELEASED, 제안 = PROPOSED
+    const RELEASED = '출시';
+    expect(chip(RELEASED)).toBe('2');
     expect(document.querySelectorAll('tbody tr')).toHaveLength(2);
-    expect(chip('PROPOSED')).toBe('1');
+    expect(chip('제안')).toBe('1');
     expect(chip('전체')).toBe('3');
     const country = screen.getByRole('combobox', { name: '국가' }) as HTMLSelectElement;
     expect([...country.options].map((o) => o.textContent)).toEqual(['전체', 'KR (1)', 'US (1)']);
     fireEvent.change(country, { target: { value: 'KR' } });
-    await waitFor(() => expect(chip('RELEASED')).toBe('1'));
+    await waitFor(() => expect(chip(RELEASED)).toBe('1'));
     expect(document.querySelectorAll('tbody tr')).toHaveLength(1);
     fireEvent.click(screen.getByRole('checkbox'));
-    await waitFor(() => expect(chip('RELEASED')).toBe('2'));
+    await waitFor(() => expect(chip(RELEASED)).toBe('2'));
     expect(document.querySelectorAll('tbody tr')).toHaveLength(2);
   });
 
@@ -98,6 +100,27 @@ describe('Feature Registry 목록', () => {
     expect(within(row('FEAT-00022')).getByText("Lifecycle 기준 'Released'과 다름")).toBeTruthy();
     expect(within(row('FEAT-00013')).getByText('Proposed')).toBeTruthy();
     expect(within(row('FEAT-00013')).queryByText(/Lifecycle 기준/)).toBeNull();
+  });
+
+  // UX3-08(3초 테스트 S4): 핵심 메시지 "68 Feature · Version 80개"는 개수뿐이라 행동으로 이어지지 않았고, "Baseline 확정 67" 줄이 남아 있었다.
+  // Lifecycle 탭은 대문자 코드(PROPOSED…)였다 — 한글 이름, 코드는 툴팁.
+  it('핵심 메시지 = 승인을 기다리는 제안 수(최신 Version) + 제안만 보기, 탭은 한글 이름', async () => {
+    const OLD13 = { ...F13, version: '0.2.0', isLatest: false };
+    handler = () => ({ body: { total: 3, items: [F22, F13, OLD13], facets: { lifecycle: {}, country: {}, vehicleModel: {} } } });
+    mount('/features', '/features', <FeatureList />);
+    await screen.findByText('전방 안전거리 3단계');
+    const key = document.querySelector('[data-key-message]') as HTMLElement;
+    expect(key.querySelector('.ds-key__value')?.textContent).toBe('1');
+    expect(key.getAttribute('data-tone')).toBe('warn');
+    expect(key.querySelector('.ds-key__text')?.textContent).toBe('승인을 기다리는 제안');
+    expect(document.body.textContent).not.toMatch(/Baseline 확정/);
+    const opts = [...document.querySelectorAll('.ds-seg__opt')].map((b) => b.firstChild?.textContent);
+    expect(opts).toEqual(['전체', '제안', '정의 승인', '개발', '검증 완료', '출시', '신규 중단', '종료']);
+    expect(document.querySelector('.ds-seg__opt [title="PROPOSED"]')?.textContent).toBe('제안');
+    fireEvent.click(within(key).getByRole('link', { name: '제안만 보기 →' }));
+    await waitFor(() => expect(document.querySelectorAll('tbody tr')).toHaveLength(1));
+    expect(screen.getByText('예측 공조')).toBeTruthy();
+    expect(within(document.querySelector('[data-key-message]') as HTMLElement).queryByRole('link')).toBeNull();
   });
 
   it('검색어로 목록을 즉시 거르고, 없는 값은 빈 상태', async () => {
@@ -149,6 +172,23 @@ describe('Feature Version 상세', () => {
     expect(current.getAttribute('data-lifecycle')).toBe('PROPOSED');
     const next = document.querySelector('.ds-step[data-lifecycle="APPROVED"]')!;
     expect(within(next as HTMLElement).getByText('G1 Feature Gate 미판정')).toBeTruthy();
+  });
+
+  // UX3-08(3초 테스트 S4): 상세에서 RELEASED가 4번(핵심 메시지·스테퍼·Lifecycle 속성·Version 선택) 보였고 머리 칩이 9개였다.
+  // Lifecycle은 핵심 메시지 상태 pill + 스테퍼로, 머리 칩은 ID·적용 범위·안전 분류·Epic만.
+  it('Lifecycle은 핵심 메시지 pill과 스테퍼에만 — 속성 표·닫힌 Version 선택에 되풀이하지 않고, 머리 칩은 줄인다', async () => {
+    const REL = { ...DETAIL, feature: { ...DETAIL.feature, ...F22, baselineId: 'BL-00028' }, versions: [{ version: '0.9.0', lifecycle: 'DEPRECATED', baselineId: null }, { version: '1.0.0', lifecycle: 'RELEASED', baselineId: 'BL-00028' }], transitions: [] };
+    handler = () => ({ body: REL });
+    mount('/features/FEAT-00022/1.0.0', '/features/:id/:ver', <FeatureDetail />);
+    await screen.findByRole('heading', { level: 1 });
+    expect(document.querySelector('[data-key-message] .ds-key__status')?.textContent).toBe('출시');
+    expect(document.querySelector('.ds-step[data-state="current"]')?.getAttribute('data-lifecycle')).toBe('RELEASED');
+    expect([...document.querySelectorAll('.ds-kv dt')].map((e) => e.textContent)).not.toContain('Lifecycle');
+    const sel = screen.getByRole('combobox', { name: 'Version' }) as HTMLSelectElement;
+    expect(sel.selectedOptions[0].textContent).toBe('1.0.0');
+    expect([...sel.options].map((o) => o.textContent)).toEqual(['0.9.0 · 신규 중단', '1.0.0']);
+    const meta = document.querySelector('.ds-page__meta') as HTMLElement;
+    expect(meta.textContent).not.toMatch(/ASIL|ADAS상품기획팀|BL-00028/);
   });
 
   it('자리표시(미발급·미입력)를 속성 옆에 표시한다', async () => {

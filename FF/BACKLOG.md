@@ -289,4 +289,4 @@
   - 문장 뜻 비교(의미·NLP)는 하지 않는다. 오탐 위험이 있다.
   - 대신 좁은 결정적 규칙 ⑩을 `three-second.spec`에 둔다: 핵심 메시지에 숫자 값이 없고 톤이 neutral이며 문장이 "없습니다"·"없음"으로 끝나면, 그 화면 기본 보기의 `#main`에 보이는 빈 상자(`[data-state="empty"]`·`.ds-state`)가 없어야 한다.
   - 고치는 방법은 `AsyncView`의 `emptyHidden`. 고친 화면: CARLA 가상검증 `/validations/virtual`, Flag Retirement `/flag-retirements`.
-  - 남은 화면은 `EMPTY_BOX_ALLOW` 래칫(줄이기만 한다): 실험 `/experiments`, 외부 연계 현황 `/integration/connectors` — `screens/ext/*`는 다른 작업 범위.
+  - 남은 화면 0 — 실험 `/experiments`·외부 연계 현황 `/integration/connectors`도 `emptyHidden`으로 고쳤다(3판 통합). `EMPTY_BOX_ALLOW`는 빈 래칫으로 남는다.

@@ -38,7 +38,8 @@ interface Job {
   job: { op: string };
 }
 
-export function ExtSyncTab() {
+/** quiet: 화면 핵심 메시지가 '아직 주고받은 변경이 없습니다'일 때 — 수신함 빈 상자로 되풀이하지 않는다(3초 ⑩) */
+export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
   const s = useApi<{ items: ExtSystemSummary[]; ownership: OwnershipRule[] }>('extSync', {}, { refetchInterval: 10_000 });
   const conflicts = useApi<{ items: Conflict[] }>('extConflicts', { query: { status: 'OPEN' } });
   const inbox = useApi<{ items: InboxRow[] }>('extInbox');
@@ -78,6 +79,7 @@ export function ExtSyncTab() {
             state={asyncState(inbox, !(inbox.data?.items ?? []).some((r) => r.key !== '-'))}
             error={inbox.error?.message}
             onRetry={() => inbox.refetch()}
+            emptyHidden={quiet}
             empty={{ title: X.inboxEmpty, body: X.inboxEmptyBody }}
           >
             <DataTable

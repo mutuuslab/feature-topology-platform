@@ -19,6 +19,10 @@ import { Shell } from '../shell/Shell';
 import { GROUPS } from '../routes';
 import { RetirementsScreen } from '../screens/policy/Retirements';
 import { VirtualValidationScreen } from '../screens/policy/Virtual';
+import { ExperimentsScreen } from '../screens/ext/Experiments';
+import { IntegrationsScreen } from '../screens/ext/Integrations';
+import { extSync } from '../copy/ext-sync';
+import { p10 } from '../copy/p10';
 
 type Handler = (url: string) => { status?: number; body: unknown } | undefined;
 let handler: Handler;
@@ -212,5 +216,27 @@ describe('UX3-10 셸 — 위치 한 번, 알림 배지 색', () => {
     wrap('/', <NotificationBell />, 'approver');
     const badge = await screen.findByTestId('notify-badge');
     await waitFor(() => expect(badge.hasAttribute('data-alarm')).toBe(true));
+  });
+
+});
+
+// ⑩ — 마지막 허용 목록 두 화면(3판 통합 때 해소): 핵심 메시지가 '없음'이면 빈 상자로 되풀이하지 않는다
+describe('3초 ⑩ 실험·외부 연계', () => {
+  it('⑩ 실험: 실험이 없으면 핵심 메시지만 "진행 중인 실험이 없습니다"', async () => {
+    wrap('/experiments', <ExperimentsScreen />, 'author');
+    expect(await screen.findByText(p10.experiment.key.none)).toBeTruthy();
+    await waitFor(() => expect(document.querySelector('[data-state="empty"][data-empty-hidden]')).toBeTruthy());
+    expect(screen.queryByText(p10.experiment.empty)).toBeNull();
+  });
+  it('⑩ 외부 연계 현황: 주고받은 변경이 없으면 수신함 빈 상자를 그리지 않고, 주고받은 뒤에는 보인다', async () => {
+    wrap('/integration/connectors', <IntegrationsScreen />, 'integrator');
+    expect(await screen.findByText(extSync.sync.key.idle)).toBeTruthy();
+    await waitFor(() => expect(document.querySelector('[data-state="empty"][data-empty-hidden]')).toBeTruthy());
+    expect(screen.queryByText(extSync.sync.inboxEmpty)).toBeNull();
+    cleanup();
+    const row = { system: 'JIRA', ifId: 'IF-14', mode: 'mock', baseUrl: 'mock://jira', links: 1, pending: 0, failed: 0, conflicts: 0, rejected: 0, lastInboundAt: null, lastOutboundAt: '2026-10-20T00:00:00.000Z' };
+    handler = (url) => (url.split('?')[0] === '/api/integrations/sync' ? { body: { items: [row], ownership: [] } } : undefined);
+    wrap('/integration/connectors', <IntegrationsScreen />, 'integrator');
+    expect(await screen.findByText(extSync.sync.inboxEmpty)).toBeTruthy();
   });
 });

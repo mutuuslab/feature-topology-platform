@@ -29,10 +29,7 @@ const BODY_CODE = new RegExp(String.raw`${CODE.source}|\bCS-\d|\bCLASSIFY-GATE\b
 /** ⑨ 래칫 — 본문에 코드가 아직 보이는 화면(URL → 사유). 줄이기만 한다 */
 const BODY_CODE_ALLOW: Record<string, string> = {};
 /** ⑩ 래칫 — 핵심 메시지가 '없습니다'라고 말하는데 빈 상자가 아직 보이는 화면(URL → 사유). 줄이기만 한다 */
-const EMPTY_BOX_ALLOW: Record<string, string> = {
-  '/experiments': '실험 목록(screens/ext/Experiments) — 다른 작업 범위. 핵심 메시지 "진행 중인 실험이 없습니다" + 빈 상자 "등록된 실험이 없습니다", emptyHidden 필요',
-  '/integration/connectors': '외부 연계 현황(screens/ext/Integrations) — 다른 작업 범위. 핵심 메시지 "아직 외부와 주고받은 변경이 없습니다" + 빈 상자 "아직 받은 변경이 없습니다", emptyHidden 필요',
-};
+const EMPTY_BOX_ALLOW: Record<string, string> = {};
 /** ⑩ 핵심 메시지 문장이 '없다'로 끝난다 */
 const SAYS_NOTHING = /(?:없습니다|없음)[.。]?$/;
 const ZERO = /^0+(?:\.0+)?\s*(?:%|건|개|대)?(?:\s*\/\s*\d+)?$/;

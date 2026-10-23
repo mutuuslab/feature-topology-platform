@@ -25,19 +25,35 @@ interface Graph {
   edges: { id: string; source: string; target: string; type: 'REQUIRES' | 'EXCLUDES'; verdict: string }[];
 }
 
+/** 미판정·FAIL 관계 — FAIL을 앞에(핵심 메시지 "FAIL 포함"과 그래프 기본 초점이 같은 관계를 가리키게) */
+const OPEN = 'open';
+const openRelations = (items: Dep[]) => [...items.filter((d) => d.verdict === 'FAIL'), ...items.filter((d) => d.verdict !== 'PASS' && d.verdict !== 'FAIL')];
+
 export function TopologyScreen() {
   const [sp, setSp] = useSearchParams();
-  const focus = sp.get('feature') ?? 'FEAT-00022';
   const [depth, setDepth] = useState<'1' | '2' | '3'>('2');
   const [type, setType] = useState('');
-  const [verdict, setVerdict] = useState('');
-  const deps = useApi<{ items: Dep[] }>('dependencies', { query: { type: type || undefined, verdict: verdict || undefined } }, { placeholderData: (p) => p });
+  // 판정 필터는 주소에 둔다 — 핵심 메시지 행동(미판정·FAIL만)이 같은 목록을 연다(UX3-04)
+  const verdict = sp.get('verdict') ?? '';
+  const setParam = (k: string, v: string) => {
+    const n = new URLSearchParams(sp);
+    if (v) n.set(k, v);
+    else n.delete(k);
+    setSp(n, { replace: true });
+  };
+  const deps = useApi<{ items: Dep[] }>('dependencies', { query: { type: type || undefined, verdict: verdict && verdict !== OPEN ? verdict : undefined } }, { placeholderData: (p) => p });
   const all = useApi<{ items: Dep[] }>('dependencies');
-  const graph = useApi<Graph>('topologyGraph', { query: { featureId: focus, depth } });
-  const feats = useApi<{ items: { featureId: string; version: string; name: string }[] }>('listFeatures', { query: { latestOnly: true } });
-  const rows = deps.data?.items ?? [];
   const total = all.data?.items ?? [];
+  const open = openRelations(total);
+  // 그래프 기본 초점 = 첫 미판정·FAIL 관계(S4: 핵심 메시지는 실패를 말하는데 그래프는 초록 관계만 보였다). 관계를 받기 전에는 그리지 않는다
+  const focus = sp.get('feature') ?? (all.data || all.isError ? (open[0]?.sourceFeatureId ?? 'FEAT-00022') : null);
+  const selected = open.find((d) => d.sourceFeatureId === focus || d.targetFeatureId === focus)?.dependencyId ?? null;
+  const graph = useApi<Graph>('topologyGraph', { query: { featureId: focus ?? '', depth } }, { enabled: !!focus });
+  const feats = useApi<{ items: { featureId: string; version: string; name: string }[] }>('listFeatures', { query: { latestOnly: true } });
+  const rows = (deps.data?.items ?? []).filter((d) => verdict !== OPEN || d.verdict !== 'PASS');
   const C = T.col;
+  const openList = new URLSearchParams(sp);
+  openList.set('verdict', OPEN);
   return (
     <div className="ds-screen">
       <PageHeader
@@ -45,10 +61,20 @@ export function TopologyScreen() {
         title={T.title}
         lead={T.lead}
         message={(() => {
-          const open = total.filter((d) => d.verdict !== 'PASS').length;
           const fail = total.some((d) => d.verdict === 'FAIL');
           if (!all.data) return { tone: 'neutral', value: '—', text: T.key.open };
-          return open ? { tone: fail ? 'danger' : 'warn', value: open, text: fail ? T.key.fail : T.key.open } : { tone: 'ok', text: T.key.clean };
+          return open.length
+            ? {
+                tone: fail ? 'danger' : 'warn',
+                value: open.length,
+                text: fail ? T.key.fail : T.key.open,
+                action: (
+                  <Link to={{ search: `?${openList}` }} replace onClick={() => document.getElementById('topo-table')?.scrollIntoView?.({ block: 'start' })}>
+                    {T.key.show}
+                  </Link>
+                ),
+              }
+            : { tone: 'ok', text: T.key.clean };
         })()}
         actions={<Link to="/precheck">{T.precheck}</Link>}
       />
@@ -61,27 +87,30 @@ export function TopologyScreen() {
       />
       <Panel title={T.graph} id="topo-graph">
         <Toolbar label={T.graph}>
-          <Select label={T.focus} value={focus} onChange={(e) => setSp({ feature: e.target.value })}>
-            {!feats.data?.items.some((f) => f.featureId === focus) && <option value={focus}>{focus}</option>}
+          <Select label={T.focus} value={focus ?? ''} onChange={(e) => setParam('feature', e.target.value)}>
+            {focus && !feats.data?.items.some((f) => f.featureId === focus) && <option value={focus}>{focus}</option>}
             {(feats.data?.items ?? []).map((f) => (
               <option key={f.featureId} value={f.featureId}>{`${f.featureId} · ${f.name}`}</option>
             ))}
           </Select>
           <Segmented label={T.depth} options={(['1', '2', '3'] as const).map((v) => ({ value: v, label: v }))} value={depth} onChange={(v) => setDepth(v as typeof depth)} />
         </Toolbar>
-        <AsyncView state={asyncState(graph)} error={graph.error?.message} onRetry={() => graph.refetch()}>
-          {graph.data && <TopologyGraph data={graph.data} focus={focus} />}
+        <AsyncView state={focus ? asyncState(graph) : 'loading'} error={graph.error?.message} onRetry={() => graph.refetch()}>
+          {graph.data && focus && <TopologyGraph data={graph.data} focus={focus} selected={selected} />}
         </AsyncView>
       </Panel>
-      <Panel id="topo-table">
+      {/* 핵심 메시지 행동(미판정·FAIL만)이 스크롤해 오는 자리 — Panel은 id를 요소에 두지 않는다 */}
+      <div id="topo-table">
+      <Panel>
         <Toolbar label={T.verdict}>
           <Select label={T.type} value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">{T.all}</option>
             <option value="REQUIRES">REQUIRES</option>
             <option value="EXCLUDES">EXCLUDES</option>
           </Select>
-          <Select label={T.verdict} value={verdict} onChange={(e) => setVerdict(e.target.value)}>
+          <Select label={T.verdict} value={verdict} onChange={(e) => setParam('verdict', e.target.value)}>
             <option value="">{T.all}</option>
+            <option value={OPEN}>{T.openOnly}</option>
             {[...new Set(total.map((d) => d.verdict))].map((v) => (
               <option key={v} value={v}>{v}</option>
             ))}
@@ -97,20 +126,21 @@ export function TopologyScreen() {
               { key: 'i', header: C.id, cell: (r) => <span className="ds-mono ds-nowrap">{r.dependencyId}</span> },
               { key: 't', header: C.type, cell: (r) => <span className="ds-tag">{r.type}</span> },
               { key: 's', header: C.source, cell: (r) => <Link to={`/features/${r.sourceFeatureId}/${r.sourceVersion}`} className="ds-mono ds-nowrap">{`${r.sourceFeatureId}@${r.sourceVersion}`}</Link> },
-              { key: 'g', header: C.target, cell: (r) => <button type="button" className="ds-btn ds-btn--ghost ds-mono" onClick={() => setSp({ feature: r.targetFeatureId })}>{r.targetVersion ? `${r.targetFeatureId}@${r.targetVersion}` : r.targetFeatureId}</button> },
+              { key: 'g', header: C.target, cell: (r) => <button type="button" className="ds-btn ds-btn--ghost ds-mono" onClick={() => setParam('feature', r.targetFeatureId)}>{r.targetVersion ? `${r.targetFeatureId}@${r.targetVersion}` : r.targetFeatureId}</button> },
               { key: 'v', header: C.verdict, cell: (r) => <GateBadge status={r.verdict === '미판정' ? null : r.verdict} /> },
               { key: 'r', header: C.rationale, cell: (r) => r.rationale ?? '—' },
             ]}
           />
         </AsyncView>
       </Panel>
+      </div>
       <CreateDependency />
     </div>
   );
 }
 
 /** 동심원 배치 — 고른 Feature(의 버전들)를 가운데, 관계 거리별로 바깥 원 */
-function TopologyGraph({ data, focus }: { data: Graph; focus: string }) {
+function TopologyGraph({ data, focus, selected }: { data: Graph; focus: string; selected: string | null }) {
   const nav = useNavigate();
   const W = 760;
   const H = 420;
@@ -178,6 +208,7 @@ function TopologyGraph({ data, focus }: { data: Graph; focus: string }) {
               className="ds-topo-edge"
               data-type={e.type}
               data-verdict={e.verdict}
+              data-selected={e.id === selected || undefined}
               markerEnd={e.type === 'REQUIRES' ? 'url(#topo-arrow)' : undefined}
             >
               <title>{`${e.id} ${e.type} ${e.verdict}`}</title>

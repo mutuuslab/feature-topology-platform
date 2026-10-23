@@ -1970,6 +1970,15 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   stroke-dasharray: 5 3;
   stroke: var(--gate-FAIL);
 }
+/* 핵심 메시지가 가리키는 첫 미판정·FAIL 관계 — 굵게(UX3-04) */
+.ds-topo-edge[data-selected] {
+  stroke-width: 4;
+}
+/* 시연 모드: 그래프가 viewBox(760)보다 넓게 늘어나면 노드 라벨이 핵심 메시지보다 커졌다(UX3-04) — 1배를 넘겨 키우지 않는다.
+   라벨은 --fs-sm(시연 17px)이라 화면에서 --fs-md 이하가 된다 */
+[data-present='on'] .ds-topo {
+  max-width: 760px;
+}
 .ds-topo-arrow {
   fill: var(--ink-2);
 }

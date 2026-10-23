@@ -4,7 +4,7 @@ import { COMPONENTS, GATES, INTERFACES, ROLE_LABEL, ROLES, type Role } from '@ff
 import { canAct } from '../api/actor';
 import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
-import { ExplainCodes, StatusGlyph, VerdictBadge, gateKind } from '../design';
+import { Explain, ExplainCodes, StatusGlyph, VerdictBadge, gateKind, splitCodes } from '../design';
 import { useAppShell } from '../store';
 
 /** G1~G9 판정을 점 9개로 — 표 안에서 쓰는 축약형 */
@@ -80,6 +80,19 @@ export function ComponentName({ id }: { id: string }) {
     <span title={id}>
       {name}
       <ExplainCodes codes={[id]} />
+    </span>
+  );
+}
+
+/** 계약 문장을 코드 없이 그린다 — 뗀 코드는 설명 모드 칩과 툴팁으로(3초 테스트 ⑨) */
+export function CodeFreeText({ text }: { text: string }) {
+  const s = splitCodes(text);
+  if (!s.rules.length && !s.codes.length) return <>{text}</>;
+  return (
+    <span title={[...s.rules, ...s.codes].join(' · ')}>
+      {s.text}
+      {s.rules.length > 0 && <Explain rules={s.rules} />}
+      {s.codes.length > 0 && <ExplainCodes codes={s.codes} />}
     </span>
   );
 }

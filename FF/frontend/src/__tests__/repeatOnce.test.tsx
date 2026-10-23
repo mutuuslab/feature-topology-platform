@@ -2,6 +2,7 @@
 // ① UX3-09 핵심 메시지가 "…이 없습니다"인데 빈 상자가 같은 말과 일반 안내를 또 보였다(검토함·Baseline, Baseline 필터 "확정 0 반려 0 전체 0").
 // ② UX3-10 셸 메뉴 제목이 H1과 같아도 그렸다. 알림 배지는 긴급 차단이 없어도 빨강이라 모든 화면에서 가장 진한 요소였다.
 // ③ UX3-11 Panel 제목이 H1이나 지금 탭 이름과 같아도 머리를 그렸다.
+// ④ 3초 ⑩(D-UX3-2, 2026-10-24) 숫자 없는 neutral 핵심 메시지가 '없습니다'인데 Retirement·CARLA 가상검증이 빈 상자를 또 보였다.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -16,6 +17,8 @@ import BaselineQueue from '../screens/bom/BaselineQueue';
 import { NotificationBell } from '../shell/NotificationBell';
 import { Shell } from '../shell/Shell';
 import { GROUPS } from '../routes';
+import { RetirementsScreen } from '../screens/policy/Retirements';
+import { VirtualValidationScreen } from '../screens/policy/Virtual';
 
 type Handler = (url: string) => { status?: number; body: unknown } | undefined;
 let handler: Handler;
@@ -85,6 +88,36 @@ describe('UX3-09 빈 상자 생략', () => {
     wrap('/baselines', <BaselineQueue />);
     expect(await screen.findByRole('radiogroup')).toBeTruthy();
     expect(screen.queryByText('대기 중인 확정 요청이 없습니다')).toBeNull();
+  });
+  // ⑩ — 빈 상자 표식(data-empty-hidden)만 남고 글자 상자(.ds-state)는 없다
+  const emptyHidden = async () => {
+    await waitFor(() => expect(document.querySelector('[data-state="empty"][data-empty-hidden]')).toBeTruthy());
+    expect(document.querySelector('.ds-state')).toBeNull();
+  };
+
+  it('⑩ Flag Retirement: 기록이 없으면 핵심 메시지만 "Retirement 기록이 없습니다"', async () => {
+    wrap('/flag-retirements', <RetirementsScreen />, 'author');
+    expect(await screen.findByText('Retirement 기록이 없습니다')).toBeTruthy();
+    await emptyHidden();
+    expect(screen.queryByText('진행 중인 Retirement가 없습니다')).toBeNull();
+  });
+
+  const SIM = { available: true, mode: 'auto', simulator: 'CARLA', host: '127.0.0.1', port: 2100, server: { version: '0.9.16', map: 'Town04', synchronous: false, vehicles: 0, foreignVehicles: 0 }, runner: 'r', python: 'py', reason: null, queue: { running: 0, waiting: 0 } };
+  const COMBO = { featureId: 'FEAT-00022', group: ['FEAT-00022'], safetyFlags: ['FEAT-00022'], strength: 1, requestedStrength: 1, basis: 'b', array: { factors: ['FEAT-00022'], strength: 1, rows: [[true]], tuples: 1, covered: 1, infeasible: 0 }, negatives: [] };
+  const sim = (status: unknown): Handler => (url) => (url.startsWith('/api/sim/status') ? { body: status } : url.startsWith('/api/virtual-validations/combinations') ? { body: COMBO } : undefined);
+
+  it('⑩ CARLA 가상검증: 실행 기록이 없으면 핵심 메시지만 — 서버 미연결(warn)이면 빈 상자는 그대로', async () => {
+    handler = sim(SIM);
+    wrap('/validations/virtual', <VirtualValidationScreen />, 'quality');
+    expect(await screen.findByText('차량 내 감지 실행 기록이 아직 없습니다')).toBeTruthy();
+    await emptyHidden();
+  });
+
+  it('⑩ CARLA 가상검증: 서버 미연결이면 핵심 메시지가 "없습니다"가 아니므로 빈 상자를 보인다', async () => {
+    handler = sim({ ...SIM, available: false, server: null, reason: 'down' });
+    wrap('/validations/virtual', <VirtualValidationScreen />, 'quality');
+    expect(await screen.findByText('검증 서버 미연결 — 실행할 수 없습니다')).toBeTruthy();
+    await waitFor(() => expect(document.querySelector('.ds-state[data-state="empty"]')).toBeTruthy());
   });
 });
 

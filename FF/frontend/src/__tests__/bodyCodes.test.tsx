@@ -7,13 +7,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { reportRule, TUTORIALS } from '@ff/contracts';
+import { COMPONENTS, permissions, reportRule, ROUTES, rolesView, SOD_RULES, TUTORIALS } from '@ff/contracts';
 import { AppProvider } from '../store';
-import { RuleChecklist, RuleText } from '../design';
+import { RuleChecklist, RuleText, splitCodes } from '../design';
+import { CodeFreeText } from '../screens/shared';
 import { ComplianceScreen } from '../screens/master/Ops';
 import { AuditScreen } from '../screens/governance/AuditEvents';
 import { PolicyDetail } from '../screens/policy/Policies';
 import { LearnHub } from '../screens/learn/Learn';
+import { IamScreen } from '../screens/admin/Access';
+import { ArchitectureScreen } from '../screens/home/Architecture';
 
 /** e2e three-second.spec ⑨와 같은 뜻의 코드 식 */
 const CODE = /FFG-[A-Z]+-\d|\bIF-\d|\bD0\d-\d|보고서 \d|§\d|\bCS-\d|\bCLASSIFY-GATE\b|\bKILL-DC\d/;
@@ -181,5 +184,56 @@ describe('UX3-07 따라하기 허브 — 시작은 보조 버튼, 준비 중은 
     // '준비 중'은 요약 한 줄에만 — 카드마다 되풀이하지 않는다
     expect((visibleText().match(/준비 중(?!인)/g) ?? []).length).toBe(1);
     expect(visibleText()).not.toMatch(CODE);
+  });
+});
+
+// 2026-10-24 ⑨ 허용 목록 0 — /arch/components(이름 중심 카드)·/admin/iam(계약 요약문은 그대로, 화면에서만 코드 분리)
+const summaryOf = (name: string) => ROUTES.find((r) => r.name === name)!.summary;
+
+describe('⑨ 잔여 — 계약 문장의 코드는 화면에서만 뗀다', () => {
+  it('모든 API 요약문·직무 분리 규칙: 뗀 문장에 코드 없음, 뗀 코드는 설명 모드', () => {
+    for (const text of [...ROUTES.map((r) => r.summary), ...SOD_RULES.map((r) => r.rule)]) {
+      const s = splitCodes(text);
+      expect(s.text, text).not.toMatch(CODE);
+      if (CODE.test(text)) expect(s.rules.length + s.codes.length, text).toBeGreaterThan(0);
+      cleanup();
+      const { container } = render(<p><CodeFreeText text={text} /></p>);
+      expect(visibleText(container), text).not.toMatch(CODE);
+    }
+  });
+
+  it('괄호 안 설명은 남기고 코드만 — 줄인 규칙 ID(·016)는 앞 규칙 접두로 펼친다', () => {
+    const s = splitCodes(summaryOf('updateSafetyProfile'));
+    expect(s.text).toContain('(확정 후 불가)');
+    expect(s.rules).toHaveLength(1);
+    const sod = SOD_RULES.find((r) => /·\d{3}\)/.test(r.rule))!;
+    const r = splitCodes(sod.rule).rules;
+    expect(r.length).toBe(2);
+    for (const id of r) expect(reportRule(id), id).toBeTruthy();
+    // 'IF-06 차량 회신 수집'처럼 문장 앞에 붙은 인터페이스 ID
+    const lead = ROUTES.find((x) => /^IF-\d{2} /.test(x.summary))!;
+    expect(splitCodes(lead.summary).text).toBe(lead.summary.replace(/^IF-\d{2} /, ''));
+  });
+
+  it('/admin/iam: 요약문·직무 분리 규칙·컴포넌트 열에 코드가 보이지 않는다 — 컴포넌트는 이름, ID는 설명 모드·툴팁', async () => {
+    handler = (u) => (u.startsWith('/api/iam/roles') ? { roles: rolesView(), humanRoles: [], permissions: permissions(), sod: SOD_RULES } : u.startsWith('/api/iam/denials') ? { items: [], byRole: {} } : undefined);
+    mount('/admin/iam', '/admin/iam', <IamScreen />);
+    const table = await screen.findByRole('table', { name: '역할 × 변경 권한' });
+    expect(visibleText(document.body)).not.toMatch(CODE);
+    const row = table.querySelector('tbody tr')!;
+    const comp = COMPONENTS.find((c) => c.id === permissions()[0].component)!;
+    expect(row.textContent).toContain(comp.ko);
+    expect(row.querySelector(`[data-explain-codes="${comp.id}"]`), '추적성 — ID는 설명 모드').toBeTruthy();
+  });
+
+  it('/arch/components: 카드 제목은 컴포넌트 이름, 컴포넌트·IF ID는 설명 모드·툴팁', async () => {
+    const [c] = COMPONENTS.filter((x) => x.ifs.length > 0);
+    handler = (u) => (u.startsWith('/api/components/activity') ? { since: 'x', items: [] } : u.startsWith('/api/components') ? { items: [{ ...c, domain: c.id.slice(0, 3), status: 'implemented', endpoints: [], screens: [], tests: [], registered: true, providers: [] }] } : undefined);
+    mount('/arch/components', '/arch/components', <ArchitectureScreen />);
+    const card = await screen.findByRole('button', { name: new RegExp(`^${c.ko} `) });
+    expect(card.querySelector('.ds-comp__name')!.firstChild!.textContent).toBe(c.ko);
+    expect(visibleText(document.body)).not.toMatch(CODE);
+    expect(card.querySelector(`[data-explain-codes="${[c.id, ...c.ifs].join(' ')}"]`)).toBeTruthy();
+    expect(card.getAttribute('title')).toBe([c.id, ...c.ifs].join(' · '));
   });
 });

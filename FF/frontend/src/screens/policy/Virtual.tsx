@@ -465,9 +465,10 @@ export function VirtualValidationScreen() {
   const pols = policies.data?.items ?? [];
   const pick = policyId || pols.at(-1)?.policyId || '';
   const rows = runs.data?.items ?? [];
+  const message = virtualMessage(status.data, latestOf(rows, 'FAULT_ONBOARD'));
   return (
     <div className="ds-screen">
-      <PageHeader codes="D06-03 · D04-02 · CARLA" title={T.title} lead={T.lead} message={virtualMessage(status.data, latestOf(rows, 'FAULT_ONBOARD'))} actions={<ReportLink run={latestOf(rows, 'FAULT_ONBOARD')} />} />
+      <PageHeader codes="D06-03 · D04-02 · CARLA" title={T.title} lead={T.lead} message={message} actions={<ReportLink run={latestOf(rows, 'FAULT_ONBOARD')} />} />
       <Panel title={T.status} id="sim" tour="sim-status" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
         {status.data && (
           <KeyValue
@@ -527,7 +528,8 @@ export function VirtualValidationScreen() {
         }
       >
         <ErrorNote error={run.error} />
-        <AsyncView state={asyncState(runs, rows.length === 0)} error={runs.error?.message} onRetry={() => runs.refetch()}>
+        {/* 핵심 메시지가 이미 '실행 기록이 없습니다'라고 하면 빈 상자를 또 그리지 않는다(3초 테스트 ⑩, D-UX3-2) */}
+        <AsyncView state={asyncState(runs, rows.length === 0)} emptyHidden={message.text === T.key.none} error={runs.error?.message} onRetry={() => runs.refetch()}>
           <RunTable rows={rows} onOpen={setOpen} />
         </AsyncView>
       </Panel>

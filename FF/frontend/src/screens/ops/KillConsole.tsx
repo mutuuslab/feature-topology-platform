@@ -214,18 +214,11 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
     !/^[A-Z0-9_]{3,40}$/.test(code) && K.needCode,
     needContainment && K.containment,
     reason.trim().length < 2 && ko.page.reason,
+    p?.checks.some((c) => !c.ok) && K.precheckFail, // 최종 게이트에서 막힐 요청은 받지 않는다(UX3-03)
   ].filter(Boolean) as string[];
   const ready = !!p && !missing.length;
   return (
-    <Panel
-      title={
-        <>
-          {K.create} <Explain rules={['FFG-PLT-005', 'FFG-PLT-003', 'FFG-SEC-003', 'FFG-DEAC-010']} />
-        </>
-      }
-      id="new-kill"
-      tour="kill-request"
-    >
+    <div id="new-kill">
       <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
         <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
           <Field label={K.feature}>
@@ -314,10 +307,9 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
         {p && reg && <RuleChecklist live caption={K.checks} items={gateItems(p.checks, fsm)} />}
         <ErrorNote error={issue.error} />
         <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
-          <Button variant="danger" icon="alert" disabled={!ready || issue.isPending} title={perm.hint} onClick={() => setConfirm(true)}>
+          <Button variant="danger" icon="alert" disabled={!ready || issue.isPending} title={perm.hint} reason={p && missing.length ? K.needs(missing) : undefined} onClick={() => setConfirm(true)}>
             {K.issue}
           </Button>
-          {p && missing.length > 0 && <span className="ds-field__hint">{K.needs(missing)}</span>}
         </div>
       </div>
       <DangerConfirm
@@ -355,7 +347,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
           )
         }
       />
-    </Panel>
+    </div>
   );
 }
 
@@ -657,6 +649,8 @@ export function KillConsole() {
   // 상세는 라우터 검색 파라미터로 연다 — 검토함 등 앱 안 이동(/ops/kill?id=…)에서도 열린다
   const [sp] = useSearchParams();
   const [open, setOpen] = useState<string | null>(() => sp.get('id'));
+  // 요청 폼은 머리의 행동으로 여는 Drawer — 결과(이력)가 위, 입력은 Drawer(3초 규칙 9, UX3-03). 이상 건에서 넘어오면 바로 연다
+  const [composing, setComposing] = useState(() => sp.has('featureId') || sp.has('anomaly'));
   const rows = q.data?.items ?? [];
   return (
     <div className="ds-screen">
@@ -671,48 +665,61 @@ export function KillConsole() {
           if (waiting) return { tone: 'warn', value: waiting, text: K.key.waiting(active) };
           return active ? { tone: 'danger', value: active, text: K.key.active } : { tone: 'ok', text: K.key.clean };
         })()}
+        actions={
+          <Button icon="alert" data-tour="kill-request" onClick={() => setComposing(true)}>
+            {K.create}
+          </Button>
+        }
       />
-      <div className="ds-split ds-split--wide-side">
-        <NewKill onDone={(k) => setOpen(k.killId)} />
-        <Panel title={K.list} id="kills" tour="kill-approve">
-          <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
-            <DataTable
-              caption={K.title}
-              rows={rows}
-              rowKey={(k) => k.killId}
-              onOpen={(k) => setOpen(k.killId)}
-              columns={[
-                {
-                  key: 'id',
-                  header: K.col.id,
-                  cell: (k) => (
-                    <span style={{ display: 'grid', gap: 2 }} title={when(k.requestedAt)}>
-                      <span className="ds-mono ds-nowrap">{k.killId}</span>
-                      <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>
-                        {K.rowScope(k.featureIds.join(', '), k.vins.length)}
-                      </span>
+      <Drawer
+        open={composing}
+        title={
+          <>
+            {K.create} <Explain rules={['FFG-PLT-005', 'FFG-PLT-003', 'FFG-SEC-003', 'FFG-DEAC-010']} />
+          </>
+        }
+        onClose={() => setComposing(false)}
+      >
+        <NewKill onDone={(k) => (setComposing(false), setOpen(k.killId))} />
+      </Drawer>
+      <Panel title={K.list} id="kills" tour="kill-approve">
+        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+          <DataTable
+            caption={K.title}
+            rows={rows}
+            rowKey={(k) => k.killId}
+            onOpen={(k) => setOpen(k.killId)}
+            columns={[
+              {
+                key: 'id',
+                header: K.col.id,
+                cell: (k) => (
+                  <span style={{ display: 'grid', gap: 2 }} title={when(k.requestedAt)}>
+                    <span className="ds-mono ds-nowrap">{k.killId}</span>
+                    <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>
+                      {K.rowScope(k.featureIds.join(', '), k.vins.length)}
                     </span>
+                  </span>
+                ),
+                sort: (k) => k.killId,
+              },
+              {
+                key: 's',
+                header: K.col.status,
+                cell: (k) =>
+                  k.status === 'ACTIVE' ? (
+                    <PubStatus status={k.delivery?.status ?? 'SIGNED'} />
+                  ) : k.status === 'REQUESTED' ? (
+                    <span className="ds-tag">{K.approvalsCount(k.approvals?.length ?? 0)}</span>
+                  ) : (
+                    <span className="ds-mono">{K.status[k.status]}</span>
                   ),
-                  sort: (k) => k.killId,
-                },
-                {
-                  key: 's',
-                  header: K.col.status,
-                  cell: (k) =>
-                    k.status === 'ACTIVE' ? (
-                      <PubStatus status={k.delivery?.status ?? 'SIGNED'} />
-                    ) : k.status === 'REQUESTED' ? (
-                      <span className="ds-tag">{K.approvalsCount(k.approvals?.length ?? 0)}</span>
-                    ) : (
-                      <span className="ds-mono">{K.status[k.status]}</span>
-                    ),
-                },
-                { key: 'd', header: K.col.delivery, cell: (k) => <Progress d={k.status === 'RELEASED' ? k.restore : k.delivery} /> },
-              ]}
-            />
-          </AsyncView>
-        </Panel>
-      </div>
+              },
+              { key: 'd', header: K.col.delivery, cell: (k) => <Progress d={k.status === 'RELEASED' ? k.restore : k.delivery} /> },
+            ]}
+          />
+        </AsyncView>
+      </Panel>
       <KillDrawer id={open} onClose={() => setOpen(null)} />
     </div>
   );

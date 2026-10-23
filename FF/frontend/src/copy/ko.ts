@@ -675,6 +675,7 @@ export const ko = {
     lockedDc4: 'DC4·법규 의무 기능은 원격 비활성화 대상이 아님',
     needVehicles: '대상 차량',
     needCode: '사유 코드(영문 대문자·숫자·_)',
+    precheckFail: '사전 점검 위반 해소',
     needs: (items: string[]) => `필요: ${items.join(' · ')}`,
     offline: '통신 단절 — 회신 불가',
   },

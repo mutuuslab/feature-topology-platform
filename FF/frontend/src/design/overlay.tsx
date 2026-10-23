@@ -11,6 +11,9 @@ function useOverlay(open: boolean, onClose: () => void) {
     const prev = document.activeElement as HTMLElement | null;
     const t = window.setTimeout(() => box.current?.querySelector<HTMLElement>('input, button, [tabindex]')?.focus(), 0);
     const onKey = (e: KeyboardEvent) => {
+      // 창이 겹치면(요청 Drawer 위의 확인 창) 맨 위 창만 닫는다 — 아래 창의 입력이 함께 사라지지 않게
+      const top = [...document.querySelectorAll('[aria-modal="true"]')].at(-1);
+      if (box.current && top && top !== box.current) return;
       if (e.key === 'Escape') onClose();
       if (e.key === 'Tab' && box.current) {
         const f = [...box.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])')];

@@ -45,6 +45,8 @@ const INVALIDATE = ['experiments', 'experiment', 'events', 'audit'];
 export function ExperimentsScreen() {
   const list = useApi<{ items: Experiment[] }>('experiments');
   const [open, setOpen] = useState<string | null>(null);
+  // 등록은 머리의 행동으로 여는 Drawer — 결과(목록)가 위, 입력은 Drawer(3초 규칙 9, UX3-12)
+  const [creating, setCreating] = useState(false);
   const rows = list.data?.items ?? [];
   const C = X.col;
   return (
@@ -57,8 +59,11 @@ export function ExperimentsScreen() {
           const run = rows.filter((r) => r.status === 'RUNNING').length;
           return !list.data ? { tone: 'neutral', value: '—', text: X.key.running } : run ? { tone: 'neutral', value: run, text: X.key.running } : { tone: 'neutral', text: X.key.none };
         })()}
+        actions={STATIC_MODE ? undefined : <Button onClick={() => setCreating(true)}>{X.create}</Button>}
       />
-      <CreatePanel />
+      <Drawer open={creating} title={X.create} onClose={() => setCreating(false)}>
+        <CreateForm onDone={() => setCreating(false)} />
+      </Drawer>
       <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: X.empty }} error={list.error?.message} onRetry={() => list.refetch()}>
         <DataTable
           caption={X.title}
@@ -82,7 +87,7 @@ export function ExperimentsScreen() {
   );
 }
 
-function CreatePanel() {
+function CreateForm({ onDone }: { onDone: () => void }) {
   const policies = useApi<{ items: { policyId: string; flagKey: string; featureId: string; featureVersion: string; status: string }[] }>('listPolicies');
   const perm = usePermission(['FEATURE_AUTHOR', 'RELEASE_MANAGER']);
   const create = useApiMutation('createExperiment', INVALIDATE);
@@ -95,9 +100,8 @@ function CreatePanel() {
   const pols = policies.data?.items ?? [];
   const pick = policyId || pols[0]?.policyId || '';
   const metrics = type === 'SHADOW' ? ['DECISION_AGREEMENT'] : ['FAULT_RATE', 'HARSH_DECEL_RATE', 'ENGAGEMENT'];
-  if (STATIC_MODE) return null;
   return (
-    <Panel title={X.create} id="experiment-create">
+    <div className="ds-stack" id="experiment-create" style={{ gap: 'var(--sp-3)' }}>
       <div className="ds-toolbar">
         <Select label={X.policy} value={pick} onChange={(e) => setPolicyId(e.target.value)}>
           {pols.map((p) => (
@@ -131,11 +135,11 @@ function CreatePanel() {
         variant="primary"
         disabled={!perm.ok || !pick || hypothesis.trim().length < 5 || create.isPending}
         title={perm.hint}
-        onClick={() => create.mutate({ body: { policyId: pick, type, metric, treatmentBp: Math.round(bp * 100), minSamples, hypothesis: hypothesis.trim() } }, { onSuccess: () => setHyp('') })}
+        onClick={() => create.mutate({ body: { policyId: pick, type, metric, treatmentBp: Math.round(bp * 100), minSamples, hypothesis: hypothesis.trim() } }, { onSuccess: () => (setHyp(''), onDone()) })}
       >
         {X.submit}
       </Button>
-    </Panel>
+    </div>
   );
 }
 

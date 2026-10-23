@@ -148,10 +148,10 @@ function ShellFrame({ children }: { children: ReactNode }) {
       <a className="sh-skip" href="#main">{ko.app.skip}</a>
 
       <header className="sh-top">
-        <Link to="/" className="sh-brand" aria-label={ko.app.name}>
-          <span className="sh-brand__mark" aria-hidden>
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 21V3.5" /><path d="M6 4h11l-2.5 3.5L17 11H6" /><path d="M3 21h6M10 15v2M13 15v2M16 15v2M19 15v2" /></svg>
-          </span>
+        <Link to="/" className="sh-brand" aria-label={`Mutuus Lab ${ko.app.name}`}>
+          {/* 회사 로고(심볼 + Mutuus Lab) — 로그인 화면과 같은 파일 */}
+          <img className="sh-brand__logo" src="/brand/mutuuslab_logo.png" alt="" width="788" height="101" />
+          <span className="sh-brand__divider" aria-hidden />
           <span className="sh-brand__name">{ko.app.name}</span>
           <span className="sh-brand__sub">{ko.app.tagline}</span>
         </Link>

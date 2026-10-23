@@ -53,6 +53,20 @@ for (const [w, h] of [
   });
 }
 
+// 회사 로고(2026-10-24 사용자 요청) — 셸 상단 바에 Mutuus Lab 로고, 다크 테마에서는 밝게 뒤집어 보인다. 파비콘은 심볼
+test('셸 상단 바에 회사 로고가 보이고, 다크 테마에서도 읽힌다', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/features');
+  const logo = page.locator('.sh-top .sh-brand__logo');
+  await expect(logo).toBeVisible();
+  expect(await logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0), '로고 파일을 실제로 읽었다').toBe(true);
+  expect((await logo.boundingBox())!.height).toBeGreaterThanOrEqual(14);
+  expect(await logo.evaluate((e) => getComputedStyle(e).filter)).toBe('none');
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/brand/mutuus-symbol.svg');
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  expect(await logo.evaluate((e) => getComputedStyle(e).filter), '다크 테마에서 남색 로고가 배경에 묻히지 않게 밝게').toContain('invert');
+});
+
 test('시연 모드: P 키로 켜면 글자가 커지고 그룹 패널이 숨는다', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/_design');

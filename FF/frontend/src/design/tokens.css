@@ -2,7 +2,7 @@
    디자인 토큰 — "Engineering Instrument"
    색·글꼴·간격·모션을 정의하는 유일한 파일(lint:tokens가 다른 파일의 원시 색을 막는다).
    · 밝은 종이 위 고밀도 거버넌스 화면 / 운영·안전 화면은 사용자 테마를 따르고 청록 표식(data-area="ops")만 붙인다.
-     어두운 관제실 톤(data-zone="ops")은 장식 패널(로그인 절차 모션·대시보드 히어로)에만 쓴다
+     어두운 관제실 톤(data-zone="ops")은 로그인 절차 모션에만 쓴다 — 본문(#main)에는 두지 않는다(대시보드 히어로도 본문 테마, UX3-15)
    · 강조색은 코발트 하나, 빨강은 파괴적 액션(Kill)과 FAIL 전용
    · 밀도: 1920 comfortable · 1366~1599 compact · 시연 모드(data-present) 18px 고대비
    ───────────────────────────────────────────────────────────────────────────── */
@@ -109,6 +109,8 @@
   --e-1: 0 1px 0 rgba(21, 23, 27, 0.04), 0 1px 2px rgba(21, 23, 27, 0.06);
   --e-2: 0 6px 24px rgba(21, 23, 27, 0.1), 0 1px 3px rgba(21, 23, 27, 0.08);
   --e-3: 0 18px 48px rgba(21, 23, 27, 0.18);
+  /* 회사 로고(Mutuus Lab 남색 PNG) — 어두운 면에서는 밝게 뒤집는다 */
+  --logo-filter: none;
   --scrim: rgba(21, 23, 27, 0.32);
 
   /* 셸 치수 */
@@ -184,6 +186,7 @@
   --paper: #0d0f12;
   --surface: #15181d;
   --surface-2: #0d0f12;
+  --logo-filter: brightness(0) invert(0.96);
   --surface-3: #1e2229;
   --surface-sunk: #0a0c0e;
   --ink: #ebe9e2;

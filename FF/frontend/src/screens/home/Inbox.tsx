@@ -192,7 +192,8 @@ export function HomeScreen() {
       <DashboardHero />
       <SummaryLine
         items={[
-          { k: PR.inbox.title, v: procValue },
+          // 내 차례는 핵심 메시지가 다른 일(긴급 차단·승인)을 말할 때만 — 핵심 메시지가 이미 말하거나 0이면 되풀이하지 않는다(UX3-15, 3초 ⑪)
+          ...(procMine > 0 && (activeKills > 0 || mine > 0) ? [{ k: H.kpi.procMine, v: procValue }] : []),
           { k: H.kpi.features, v: f.length },
           { k: H.kpi.released, v: byLc.RELEASED ?? 0 },
           { k: H.kpi.policies, v: pols.data?.items.length ?? '—' },

@@ -127,7 +127,7 @@ export function LoginScreen() {
       <section className="lg__form">
         <LeftMotion />
         <header className="lg__brand">
-          <img className="lg__logo" src="/brand/mutuuslab_logo01.png" alt="Mutuus Lab" width="894" height="171" />
+          <img className="lg__logo" src="/brand/mutuuslab_logo.png" alt="Mutuus Lab" width="788" height="101" />
           <span className="lg__divider" aria-hidden />
           <span className="lg__mark" aria-hidden>
             <BrandMark />

@@ -192,7 +192,7 @@ export const master = {
   home: {
     title: '내 대시보드',
     lead: '내 차례인 일과 플랫폼 운영 상태.',
-    kpi: { inbox: '내 차례 검토', features: 'Feature (최신 Version)', released: '출시(RELEASED)', policies: '배포 정책', kills: '걸린 긴급 차단', anomalies: '열린 이상 건', online: '데모 Fleet 차량' },
+    kpi: { procMine: '업무 절차 내 차례', inbox: '내 차례 검토', features: 'Feature (최신 Version)', released: '출시(RELEASED)', policies: '배포 정책', kills: '걸린 긴급 차단', anomalies: '열린 이상 건', online: '데모 Fleet 차량' },
     links: '바로 가기',
     lifecycle: 'Lifecycle 분포 — Feature별 최신 Version',
     key: { kills: '긴급 차단이 걸려 있습니다', inbox: '내 차례인 검토', clear: '내 차례인 검토가 없습니다', open: '열기 →' },

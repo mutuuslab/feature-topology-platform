@@ -169,6 +169,8 @@ interface Props {
   items: FleetMapVehicle[];
   lens: MapLens;
   selected: string | null;
+  /** 바뀔 때마다 고른 차량으로 지도를 다시 옮긴다(같은 차량을 다시 골라도) — 핵심 메시지 행동 */
+  focus?: number;
   onSelect: (vin: string) => void;
   view: MapView;
   /** 표본 격자(가중 대수) — 범위 안 표본이 많아 점을 받지 못했을 때 그린다 */
@@ -177,7 +179,7 @@ interface Props {
   onViewChange?: (v: MapViewport) => void;
 }
 
-export function FleetMapCanvas({ items, lens, selected, onSelect, view, clusters = [], onViewChange }: Props) {
+export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, view, clusters = [], onViewChange }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
   const latest = useRef({ items, lens, onSelect, clusters, onViewChange });
@@ -456,7 +458,7 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view, clusters
     // 고른 차량으로 지도를 옮긴다 — 표에서 골라도 그 차량이 지도 가운데 보이게(도시 단위까지 확대)
     const v = selected ? latest.current.items.find((x) => x.vin === selected) : null;
     if (v?.position) m.easeTo({ center: [v.position.lng, v.position.lat], zoom: Math.max(m.getZoom(), SELECT_ZOOM), duration: reducedMotion() ? 0 : 700 });
-  }, [selected, phase]);
+  }, [selected, focus, phase]);
 
   useEffect(() => {
     const m = map.current;
@@ -470,7 +472,8 @@ export function FleetMapCanvas({ items, lens, selected, onSelect, view, clusters
 
   if (phase === 'nogl') return <p className="fm-empty">{F.noWebgl}</p>;
   return (
-    <div className="fm-map">
+    // 지도 준비 중은 aria-busy — 하네스·캡처가 '불러오는 중'이 아니라 그린 지도를 기다린다(UX3-05: 캡처가 모두 이 안내에서 멈췄다)
+    <div className="fm-map" data-phase={phase} aria-busy={phase === 'loading' || undefined}>
       <div ref={host} className="fm-map__canvas" data-testid="fleet-map-canvas" role="region" aria-label={F.map} />
       {phase === 'loading' && <p className="fm-map__note">{F.loading}</p>}
       {phase === 'ready' && fallback && <p className="fm-map__note">{F.fallback}</p>}

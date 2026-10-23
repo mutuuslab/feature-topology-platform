@@ -2225,6 +2225,19 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .fm-linkbtn:hover {
   text-decoration: underline;
 }
+/* 핵심 메시지 행동(UX3-05) — 다른 화면의 행동 링크와 같은 크기 */
+.ds-key__action .fm-linkbtn {
+  font-size: inherit;
+}
+/* 국가별 현황 접기(UX3-05) — 보조 정보라 제목은 작고 회색 */
+.fm-fold > summary {
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.fm-fold[open] > summary {
+  margin-bottom: var(--sp-2);
+}
 .fm-detail {
   display: grid;
   gap: var(--sp-3);

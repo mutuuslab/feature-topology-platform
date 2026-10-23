@@ -75,7 +75,7 @@ export const ko = {
     },
   },
   fleetMap: {
-    key: { attention: '긴급 차단·미확인 차량', clean: '긴급 차단·미확인 차량이 없습니다', forbidden: '이 역할로는 차량 위치를 볼 수 없습니다' },
+    key: { attention: '긴급 차단·미확인 차량', clean: '긴급 차단·미확인 차량이 없습니다', forbidden: '이 역할로는 차량 위치를 볼 수 없습니다', locate: '지도에서 보기', next: '다음 차량 보기' },
     eyebrow: 'D02-03 · LIVE',
     title: '전세계 차량 지도',
     lead: '차량 위치와 구독·기능 상태를 지도에서 봅니다.',
@@ -108,6 +108,8 @@ export const ko = {
     auditedNow: '이번 열람이 감사에 기록되었습니다.',
     auditedWindow: '같은 계정의 지도 열람은 10분에 한 번 감사에 남습니다.',
     summary: '국가별 현황',
+    summaryFold: (countries: number) => `국가별 현황 · ${countries}개국`,
+    side: '차량 상세',
     vehicles: '차량 목록',
     col: { country: '국가', total: '차량', located: '위치', vehicle: '차량', place: '위치', subscription: '구독 상태', activation: '기능 활성', link: '연결' },
     detail: (vin: string) => `차량 ${vin}`,

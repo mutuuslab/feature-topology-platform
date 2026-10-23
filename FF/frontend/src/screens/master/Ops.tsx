@@ -145,7 +145,7 @@ export function SupplierScreen() {
   const C = S.col;
   return (
     <div className="ds-screen">
-      <PageHeader codes="D05-01 · IF-08 Supplier Portal" title={S.title} lead={S.lead} message={{ tone: 'neutral', value: pick || '—', text: S.key(mine.length, new Set(mine.flatMap(featuresOf)).size) }} />
+      <PageHeader codes="D05-01 · IF-08 Supplier Portal" title={S.title} lead={S.lead} message={{ tone: 'neutral', value: pick ? mine.length : '—', text: S.keyLabel(new Set(mine.flatMap(featuresOf)).size) }} />
       <Toolbar label={S.supplier}>
         <Select label={S.supplier} value={pick} onChange={(e) => setSupplier(e.target.value)}>
           {suppliers.map((s) => (

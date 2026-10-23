@@ -149,7 +149,7 @@ function fieldMessage(d: FieldView | undefined): KeyMessageSpec {
   const kills = d.kills.filter((k) => k.status === 'ACTIVE').length;
   if (kills) return { tone: 'danger', value: kills, text: F.key.kill(line) };
   if (d.anomalies.length) return { tone: 'warn', value: d.anomalies.length, text: F.key.anomaly(line) };
-  return { tone: 'ok', value: `${d.flags.filter((f) => f.value).length}/${d.flags.length}`, text: F.key.ok(line) };
+  return { tone: 'neutral', value: `${d.flags.filter((f) => f.value).length}/${d.flags.length}`, text: F.key.ok(line) };
 }
 
 export function FieldPortalScreen() {

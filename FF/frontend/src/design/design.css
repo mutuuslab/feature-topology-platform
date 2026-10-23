@@ -815,10 +815,10 @@ details.ds-panel[open] {
   gap: var(--sp-2) var(--sp-3);
   margin-top: var(--sp-2);
 }
-.ds-key[data-tone='ok'] { --c: var(--ok); }
-.ds-key[data-tone='warn'] { --c: var(--warn); }
-.ds-key[data-tone='danger'] { --c: var(--danger); }
-.ds-key[data-tone='accent'] { --c: var(--accent); }
+.ds-key[data-tone='ok'], .ds-key__status[data-tone='ok'] { --c: var(--ok); }
+.ds-key[data-tone='warn'], .ds-key__status[data-tone='warn'] { --c: var(--warn); }
+.ds-key[data-tone='danger'], .ds-key__status[data-tone='danger'] { --c: var(--danger); }
+.ds-key__status[data-tone='neutral'] { --c: var(--faint); }
 .ds-key__value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -835,10 +835,37 @@ details.ds-panel[open] {
 .ds-key__text[data-solo] {
   font-size: var(--fs-xl);
   font-weight: 700;
-  color: var(--c);
   line-height: 1.2;
 }
-.ds-key[data-tone='neutral'] .ds-key__text[data-solo] { color: var(--ink); }
+/* 판정 표식 — 숫자가 없는 문장형에서 색은 여기에만(문장 글자는 본문색) */
+.ds-key__mark {
+  align-self: center;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c);
+}
+/* 상태 pill — Lifecycle·배포 상태처럼 낱말인 상태. 숫자보다 작게 */
+.ds-key__status {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-pill);
+  border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+  background: color-mix(in srgb, var(--c) 12%, var(--surface));
+  color: color-mix(in srgb, var(--c) 72%, var(--ink));
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+[data-present='on'] .ds-key__status {
+  height: 30px;
+}
 .ds-key__action {
   font-size: var(--fs-sm);
 }

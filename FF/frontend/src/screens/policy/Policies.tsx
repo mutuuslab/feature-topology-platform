@@ -145,7 +145,7 @@ export function PolicyDetail() {
               title={<span className="ds-mono">{p.flagKey}</span>}
               message={{
                 tone: d.lastRun ? (d.lastRun.decision === 'GO' && d.hashMatchesValidation ? 'ok' : d.lastRun.decision === 'BLOCKED' ? 'danger' : 'warn') : p.status === 'DRAFT' ? 'neutral' : 'warn',
-                value: p.status,
+                status: { label: p.status },
                 text: d.lastRun ? `${T.safetyDecision[d.lastRun.decision]} · ${d.hashMatchesValidation ? T.hashOk : T.hashStale}` : p.status === 'DRAFT' ? T.notValidated : T.notValidatedLive,
               }}
               meta={
@@ -300,7 +300,7 @@ export function PolicyCreate() {
   const F = T.field;
   return (
     <div className="ds-screen">
-      <PageHeader codes="D01-06 · NEW POLICY" title={T.create} message={perm.ok ? { tone: 'accent', text: T.key.can } : { tone: 'warn', text: T.key.cannot }} />
+      <PageHeader codes="D01-06 · NEW POLICY" title={T.create} message={{ tone: 'neutral', text: perm.ok ? T.key.can : T.key.cannot }} />
       <Panel id="new-policy">
         <form
           style={{ display: 'grid', gap: 'var(--sp-3)', maxWidth: 720 }}

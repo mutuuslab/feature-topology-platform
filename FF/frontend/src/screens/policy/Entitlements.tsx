@@ -82,7 +82,7 @@ export function EntitlementsScreen() {
         codes="D01-05 · ENTITLEMENT · D05-04 BILLING"
         title={E.title}
         lead={E.lead}
-        message={{ tone: 'ok', value: active == null ? '—' : active.toLocaleString('ko-KR'), text: E.key }}
+        message={{ tone: 'neutral', value: active == null ? '—' : active.toLocaleString('ko-KR'), text: E.key }}
         actions={<Link to="/biz/trials">{T.toAnalytics}</Link>}
       />
       <Tabs tabs={[{ key: 'trials', label: E.tabs.trials }, { key: 'grants', label: E.tabs.grants }]}>{(tab) => (tab === 'grants' ? <GrantsTable /> : <TrialVehicles />)}</Tabs>

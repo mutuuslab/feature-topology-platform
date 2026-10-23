@@ -336,7 +336,7 @@ export const ko = {
     tabs: { overview: '19 속성', safety: '안전 분류', gates: 'Gate 판정', deps: '의존관계', trace: '구현 추적', baseline: 'BOM Baseline', audit: '감사 이력' },
     transition: (to: string) => `${to}로 전이`,
     transitionTitle: 'Lifecycle 전이',
-    key: { gatePass: (lcKo: string, pass: number, total: number) => `${lcKo} · Gate PASS ${pass}/${total}` },
+    key: { gateLabel: 'Gate PASS' },
     autoNote: '조건이 갖춰지면 시스템이 자동으로 전이합니다',
     attrs: {
       featureId: 'Feature ID', name: '명칭', description: '설명', requirementIds: 'Requirement ID', country: '국가', vehicleModel: '차종', trim: '트림',
@@ -678,7 +678,7 @@ export const ko = {
     offline: '통신 단절 — 회신 불가',
   },
   deploy: {
-    key: { bad: '회신 미완(PARTIAL·TIMEOUT·DIVERGED) 게시본', clean: '회신이 끝나지 않은 게시본이 없습니다', detail: (c: number, n: number) => `차량 회신 ${c}/${n}` },
+    key: { bad: '회신 미완(PARTIAL·TIMEOUT·DIVERGED) 게시본', clean: '회신이 끝나지 않은 게시본이 없습니다', detailLabel: '차량 회신' },
     title: '서명 배포·차량 회신',
     lead: '서명된 게시본이 차량에 닿았는지 회신으로 확인합니다.',
     col: { id: '게시본', kind: '종류', target: '대상', status: '상태', progress: '회신', channel: '채널', key: '서명 키', at: '시각' },
@@ -974,7 +974,7 @@ export const ko = {
       resume: '이어하기 →',
       inProgress: '단계 진행 중',
       steps: (n: number) => `${n}단계`,
-      minutes: (m: number) => `약 ${m}분 · 보기 → 자동 → 직접 하기`,
+      stepsMinutes: (m: number) => `단계 · 약 ${m}분 · 보기 → 자동 → 직접 하기`,
     },
     compare: '가이드 적용 전·후 (보고서 18.6)',
     before: '적용 전',

@@ -55,7 +55,7 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
       <PageHeader
         title={P.title}
         lead={P.lead}
-        message={mine.length ? { tone: 'accent', value: mine.length, text: P.mine.key } : { tone: 'neutral', text: P.mine.none }}
+        message={mine.length ? { tone: 'neutral', value: mine.length, text: P.mine.key } : { tone: 'neutral', text: P.mine.none }}
       />
       {(progressStatus === 'loading' || inbox.status === 'loading') && (
         <p className="ds-field__hint" data-state="loading" role="status">
@@ -245,7 +245,7 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
       <PageHeader
         codes={p.ref}
         title={`${p.id} ${p.name}`}
-        message={n ? { tone: 'accent', value: n, text: P.detail.keyMine, action: <Link to="/procedures">{P.detail.back}</Link> } : { tone: 'neutral', text: P.mine.none, action: <Link to="/procedures">{P.detail.back}</Link> }}
+        message={n ? { tone: 'neutral', value: n, text: P.detail.keyMine, action: <Link to="/procedures">{P.detail.back}</Link> } : { tone: 'neutral', text: P.mine.none, action: <Link to="/procedures">{P.detail.back}</Link> }}
       />
       <Panel title={P.detail.flow} eyebrow={P.detail.pick}>
         <p className="pr-purpose">{p.purpose}</p>

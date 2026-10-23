@@ -49,8 +49,8 @@ function Card({ t }: { t: Tutorial }) {
 
 /** 핵심 메시지 — 진행 중인 실습이 먼저, 없으면 준비된 실습 수와 첫 실습 */
 function hubMessage(running: Tutorial | undefined, ready: Tutorial[]): KeyMessageSpec {
-  if (running) return { tone: 'accent', text: L.key.running(running.title), action: <Link to={`/learn/${running.id}`}>{L.key.resume}</Link> };
-  return { tone: 'accent', value: ready.length, text: L.key.ready };
+  if (running) return { tone: 'neutral', text: L.key.running(running.title), action: <Link to={`/learn/${running.id}`}>{L.key.resume}</Link> };
+  return { tone: 'neutral', value: ready.length, text: L.key.ready };
 }
 
 export function LearnHub() {
@@ -102,8 +102,8 @@ export function LearnRun() {
           !t.steps.length
             ? { tone: 'neutral', text: L.plannedNote }
             : running
-              ? { tone: 'accent', value: `${st!.step + 1}/${t.steps.length}`, text: L.key.inProgress }
-              : { tone: 'accent', value: L.key.steps(t.steps.length), text: L.key.minutes(t.minutes) }
+              ? { tone: 'neutral', value: `${st!.step + 1}/${t.steps.length}`, text: L.key.inProgress }
+              : { tone: 'neutral', value: t.steps.length, text: L.key.stepsMinutes(t.minutes) }
         }
       />
       <div className="ds-split">

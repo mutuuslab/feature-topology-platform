@@ -55,7 +55,7 @@ export function ExperimentsScreen() {
         lead={X.lead}
         message={(() => {
           const run = rows.filter((r) => r.status === 'RUNNING').length;
-          return !list.data ? { tone: 'neutral', value: '—', text: X.key.running } : run ? { tone: 'accent', value: run, text: X.key.running } : { tone: 'neutral', text: X.key.none };
+          return !list.data ? { tone: 'neutral', value: '—', text: X.key.running } : run ? { tone: 'neutral', value: run, text: X.key.running } : { tone: 'neutral', text: X.key.none };
         })()}
       />
       <CreatePanel />

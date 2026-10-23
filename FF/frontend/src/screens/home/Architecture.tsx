@@ -109,7 +109,7 @@ export function ArchitectureScreen() {
         codes="42 COMPONENTS · 6 DOMAINS"
         title={A.title}
         lead={A.lead}
-        message={{ tone: 'ok', value: `${implemented}/${comps.length || 42}`, text: A.implemented }}
+        message={{ tone: comps.length > 0 && implemented === comps.length ? 'ok' : 'neutral', value: `${implemented}/${comps.length || 42}`, text: A.implemented }}
       />
       <SummaryLine
         items={[

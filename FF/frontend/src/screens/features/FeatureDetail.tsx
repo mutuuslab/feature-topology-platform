@@ -59,9 +59,10 @@ export default function FeatureDetail() {
               tour="feature-header"
               title={d.feature.name}
               message={{
-                tone: d.feature.lifecycle === 'RELEASED' ? 'ok' : d.feature.lifecycle === 'DEPRECATED' || d.feature.lifecycle === 'RETIRED' ? 'neutral' : 'accent',
-                value: d.feature.lifecycle,
-                text: T.key.gatePass(ko.lifecycle[d.feature.lifecycle as keyof typeof ko.lifecycle] ?? d.feature.lifecycle, Object.values(d.gates).filter((g) => g.status === 'PASS').length, GATES.length),
+                tone: Object.values(d.gates).filter((g) => g.status === 'PASS').length === GATES.length ? 'ok' : 'neutral',
+                value: `${Object.values(d.gates).filter((g) => g.status === 'PASS').length}/${GATES.length}`,
+                text: T.key.gateLabel,
+                status: { label: ko.lifecycle[d.feature.lifecycle as keyof typeof ko.lifecycle] ?? d.feature.lifecycle, tone: d.feature.lifecycle === 'RELEASED' ? 'ok' : 'neutral' },
               }}
               meta={
                 <>

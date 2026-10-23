@@ -2,29 +2,47 @@
 import type { ReactNode, SelectHTMLAttributes } from 'react';
 import { Icon } from './icons';
 
-export type KeyTone = 'ok' | 'warn' | 'danger' | 'accent' | 'neutral';
+/** 판정 색은 세 가지 + 실제 위험(해시 체인 깨짐·차단 걸림 등)만 danger. 안내·권한은 neutral(하네스 3판) */
+export type KeyTone = 'ok' | 'warn' | 'danger' | 'neutral';
 export interface KeyMessageSpec {
-  /** 판정 색 — 행동이 필요하면 warn·danger, 정상이면 ok */
+  /** 판정 색 — 행동이 필요하면 warn·danger, 정상이면 ok. 값이 0이면 neutral로 고정된다 */
   tone?: KeyTone;
-  /** 큰 숫자·판정(선택) — 있으면 화면에서 가장 큰 글자 */
-  value?: ReactNode;
-  /** 한 줄 문장 */
+  /** 큰 숫자(건수·비율·분수, 선택) — 있으면 화면에서 가장 큰 글자. 낱말 상태(DEPLOYED·ON)는 status로 */
+  value?: number | string;
+  /** 한 줄 문장 — 색을 입히지 않는다(색은 숫자·상태 pill·표식에만) */
   text: ReactNode;
+  /** 상태 pill — Lifecycle·배포 상태·판정처럼 낱말인 상태(선택) */
+  status?: { label: ReactNode; tone?: KeyTone };
   /** 바로 갈 수 있는 행동(링크·버튼, 선택) */
   action?: ReactNode;
 }
 
+/** '0'·'0%'·'0/5'처럼 0을 뜻하는 값 — 0건에 초록·주황을 칠하지 않는다(헤드라인 결함 3) */
+export function isZeroValue(value: KeyMessageSpec['value']): boolean {
+  if (value == null) return false;
+  return /^\s*0+(?:\.0+)?\s*(?:%|건|개|대)?(?:\s*\/\s*\d+)?\s*$/.test(String(value));
+}
+
 /**
  * 핵심 메시지 — 3초 테스트(2026-10-17): 화면마다 하나, H1 바로 아래, 화면에서 가장 큰 글자.
- * 데이터에서 만든 판정·처리할 일 수·상태 한 줄. 하네스(e2e three-second.spec)가 화면마다 정확히 1개인지 본다.
+ * 한 패턴(하네스 3판): [큰 숫자] + 문장 + [상태 pill]. 숫자가 없으면 문장이 크고, 판정 색은 앞 표식에만.
+ * 하네스(e2e three-second.spec ①②⑧)가 개수·크기·값 형식·톤을 본다.
  */
-export function KeyMessage({ tone = 'neutral', value, text, action }: KeyMessageSpec) {
+export function KeyMessage({ tone = 'neutral', value, text, status, action }: KeyMessageSpec) {
+  const t: KeyTone = isZeroValue(value) ? 'neutral' : tone;
+  const solo = value == null;
   return (
-    <div className="ds-key" data-key-message data-tone={tone}>
-      {value != null && <strong className="ds-key__value">{value}</strong>}
-      <span className="ds-key__text" data-solo={value == null ? '' : undefined}>
+    <div className="ds-key" data-key-message data-tone={t}>
+      {!solo && <strong className="ds-key__value">{value}</strong>}
+      {solo && t !== 'neutral' && <span className="ds-key__mark" aria-hidden />}
+      <span className="ds-key__text" data-solo={solo ? '' : undefined}>
         {text}
       </span>
+      {status && (
+        <span className="ds-key__status" data-tone={status.tone ?? 'neutral'}>
+          {status.label}
+        </span>
+      )}
       {action && <span className="ds-key__action">{action}</span>}
     </div>
   );

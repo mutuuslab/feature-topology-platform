@@ -280,7 +280,7 @@ function virtualMessage(sim: SimStatus | undefined, onboard: VRun | null): KeyMe
   const K = T.key;
   if (!onboard) return sim && !sim.available ? { tone: 'warn', text: K.off } : { tone: 'neutral', text: K.none };
   const margin = val(onboard, 'ftti_margin');
-  return { tone: onboard.gateResult === 'PASS' ? 'ok' : 'danger', value: onboard.gateResult, text: K.g5(margin == null ? '—' : `${margin >= 0 ? '+' : ''}${margin.toFixed(2)} s`) };
+  return { tone: onboard.gateResult === 'PASS' ? 'ok' : 'danger', status: { label: `G5 ${onboard.gateResult}`, tone: onboard.gateResult === 'PASS' ? 'ok' : 'danger' }, text: K.g5(margin == null ? '—' : `${margin >= 0 ? '+' : ''}${margin.toFixed(2)} s`) };
 }
 
 /** 그 역할의 가장 최근 CARLA 실행 (실행 번호가 클수록 나중) */

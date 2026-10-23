@@ -248,7 +248,7 @@ export function ProposeScreen() {
   );
   return (
     <div className="ds-screen">
-      <PageHeader codes="D01-01 · PROPOSED 0.1.0" title={P.title} lead={P.lead} message={perm.ok ? { tone: 'accent', text: P.key.can } : { tone: 'warn', text: P.key.cannot }} />
+      <PageHeader codes="D01-01 · PROPOSED 0.1.0" title={P.title} lead={P.lead} message={{ tone: 'neutral', text: perm.ok ? P.key.can : P.key.cannot }} />
       <Panel id="propose-form" tour="feature-form">
         <div className="ds-split">
           <div className="ds-stack">
@@ -316,7 +316,7 @@ export function DefineScreen() {
         codes="D01-01 · Registry"
         title={D.title}
         lead={D.lead}
-        message={q.data ? (rows.length ? { tone: 'accent', value: rows.length, text: D.key.open } : { tone: 'ok', text: D.key.none }) : { tone: 'neutral', value: '—', text: D.key.open }}
+        message={q.data ? (rows.length ? { tone: 'neutral', value: rows.length, text: D.key.open } : { tone: 'neutral', text: D.key.none }) : { tone: 'neutral', value: '—', text: D.key.open }}
         actions={<Link to="/feature/propose">{D.newProposal}</Link>}
       />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>

@@ -4,12 +4,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
+import { whyDisabled, type KeyTone, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 import { Progress, PubStatus, type Delivery } from './shared';
 
 const D = ko.deploy;
-const PUB_TONE: Record<string, 'ok' | 'warn' | 'danger' | 'accent' | 'neutral'> = { CONFIRMED: 'ok', PARTIAL: 'warn', TIMEOUT: 'danger', DIVERGED: 'danger', DISPATCHED: 'accent', SIGNED: 'neutral' };
+const PUB_TONE: Record<string, KeyTone> = { CONFIRMED: 'ok', PARTIAL: 'warn', TIMEOUT: 'danger', DIVERGED: 'danger', DISPATCHED: 'neutral', SIGNED: 'neutral' };
 
 interface Pub extends Delivery {
   kind: 'POLICY' | 'KILL' | 'RESTORE';
@@ -132,7 +132,7 @@ export function DeploymentDetail() {
                   {D.kind[p.kind]} · <span className="ds-mono">{p.payload.flagKey ?? p.payload.featureId}</span>
                 </>
               }
-              message={{ tone: PUB_TONE[p.status] ?? 'neutral', value: p.status, text: D.key.detail(p.confirmed, p.denominator) }}
+              message={{ tone: p.denominator > 0 && p.confirmed === p.denominator ? 'ok' : 'neutral', value: `${p.confirmed}/${p.denominator}`, text: D.key.detailLabel, status: { label: p.status, tone: PUB_TONE[p.status] ?? 'neutral' } }}
               meta={
                 <>
                   <IdChip id={p.publicationId} version={`#${p.payload.sequence}`} />

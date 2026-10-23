@@ -69,7 +69,7 @@ export function TrialAnalyticsScreen() {
         codes={`D05-06 · BIZ METRICS · ${catalogId}`}
         title={B.title}
         lead={B.lead}
-        message={{ tone: 'ok', value: t ? pct(t.conversionRate) : '—', text: B.key }}
+        message={{ tone: 'neutral', value: t ? pct(t.conversionRate) : '—', text: B.key }}
         meta={d ? `${B.asOf(d.today)} · ${B.counts(d.counts.demo, d.counts.synthetic)}` : undefined}
         actions={<Link to="/entitlements">{ko.entitlement.tabs.trials}</Link>}
       />

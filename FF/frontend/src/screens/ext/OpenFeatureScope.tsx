@@ -44,7 +44,7 @@ export function OpenFeatureScopeScreen() {
         codes="D05-01 · IF-10 · OpenFeature · FFG-OFT · FFG-PLT-011"
         title={O.title}
         lead={O.lead}
-        message={{ tone: 'ok', value: d ? d.catalog.filter((c) => c.openFeature).length : '—', text: O.key }}
+        message={{ tone: 'neutral', value: d ? d.catalog.filter((c) => c.openFeature).length : '—', text: O.key }}
       />
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && (

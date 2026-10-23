@@ -90,7 +90,7 @@ export const master = {
     events: '이벤트 이력 보기',
   },
   supplier: {
-    key: (n: number, f: number) => `납품 SW ${n}건 · 재검증 범위 Feature ${f}개`,
+    keyLabel: (f: number) => `납품 SW · 재검증 범위 Feature ${f}개`,
     title: '협력사 이관',
     lead: '협력사 SW 납품과 재검증할 Feature 범위.',
     supplier: '공급사',

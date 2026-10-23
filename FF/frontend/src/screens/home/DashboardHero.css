@@ -26,8 +26,9 @@
 .dh__copy { position: relative; display: grid; gap: 4px; align-content: center; }
 .dh__copy h2 {
   margin: 2px 0 6px;
-  /* 3초 규칙 — 핵심 메시지(PageHeader)보다 큰 글자를 만들지 않는다 */
-  font-size: clamp(18px, 1.5vw, 22px);
+  /* 3초 규칙 — 핵심 메시지(PageHeader)보다 큰 글자를 만들지 않는다. 숫자 없는 문장형 핵심 메시지(--fs-xl)보다도 작게:
+     예전 clamp(18px, 1.5vw, 22px)는 1366(20.5px)·1920(22px)에서 문장형(20.4·22px)을 넘었다(UX3-13, e2e home.spec) */
+  font-size: var(--fs-lg);
   line-height: 1.3;
   letter-spacing: -0.015em;
   white-space: pre-line;

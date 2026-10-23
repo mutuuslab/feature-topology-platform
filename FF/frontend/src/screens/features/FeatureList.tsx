@@ -1,6 +1,6 @@
 // /features — Feature Registry 목록 (v2). 백엔드 GET /api/features (D01-01).
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { F_CLASSES, LIFECYCLE, type FClass, type Lifecycle, type SafetyProfile, type SyncState } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { extSync } from '../../copy/ext-sync';
@@ -37,12 +37,13 @@ export default function FeatureList() {
   const country = sp.get('country') ?? '';
   const latestOnly = sp.get('latest') !== '0';
   const fClass = (sp.get('f') ?? '') as FClass | '';
-  const set = (k: string, v: string) => {
+  const withParam = (k: string, v: string) => {
     const n = new URLSearchParams(sp);
     if (v) n.set(k, v);
     else n.delete(k);
-    setSp(n, { replace: true });
+    return n;
   };
+  const set = (k: string, v: string) => setSp(withParam(k, v), { replace: true });
   // 검색어는 URL에도 남기되(공유·뒤로가기) 목록은 서버 왕복 없이 즉시 거른다
   const search = (v: string) => {
     setQ(v);
@@ -62,9 +63,8 @@ export default function FeatureList() {
     return {
       versions: items.length,
       ids: new Set(items.map((i) => i.featureId)).size,
-      released: items.filter((i) => i.lifecycle === 'RELEASED').length,
-      proposed: items.filter((i) => i.lifecycle === 'PROPOSED').length,
-      baselined: items.filter((i) => i.baselineId).length,
+      // 핵심 메시지 = 행동이 필요한 수(UX3-08): 승인을 기다리는 제안 — Feature별 최신 Version 기준
+      proposed: items.filter((i) => i.isLatest !== false && i.lifecycle === 'PROPOSED').length,
     };
   }, [all.data]);
 
@@ -95,9 +95,19 @@ export default function FeatureList() {
         codes="D01-01 · FEATURE REGISTRY"
         title={T.title}
         lead={T.lead}
-        message={{ tone: 'neutral', value: all.data ? stats.ids : '—', text: `${T.key.ids} · ${T.key.versions(stats.versions)}` }}
+        message={
+          all.data
+            ? {
+                tone: stats.proposed ? 'warn' : 'neutral',
+                value: stats.proposed,
+                text: T.key.proposed,
+                action: stats.proposed && lifecycle !== 'PROPOSED' ? <Link to={{ search: `?${withParam('lifecycle', 'PROPOSED')}` }} replace>{T.key.showProposed}</Link> : undefined,
+              }
+            : { tone: 'neutral', value: '—', text: T.key.proposed }
+        }
       />
-      <SummaryLine items={[{ k: T.kpiBaselined, v: all.data ? stats.baselined : '—' }]} />
+      {/* 전체 개수는 보조 요약으로 — 핵심 메시지는 행동이 필요한 수(3초 테스트 S4: "68 Feature · Version 80개"는 개수뿐) */}
+      <SummaryLine items={[{ k: T.kpiIds, v: all.data ? stats.ids : '—' }, { k: T.kpiVersions, v: all.data ? stats.versions : '—' }]} />
 
       <Toolbar label={T.title}>
         <input
@@ -115,7 +125,8 @@ export default function FeatureList() {
           onChange={(v) => set('lifecycle', v)}
           options={[
             { value: '' as const, label: ko.page.all, count: facets ? inCountry.length : undefined },
-            ...LIFECYCLE.map((l) => ({ value: l, label: l, count: facets?.lifecycle[l] ?? 0 })),
+            // 탭 이름은 한글(일반 서체) — 대문자 코드는 툴팁으로 남긴다(UX3-08, 추적성)
+            ...LIFECYCLE.map((l) => ({ value: l, label: <span title={l}>{ko.lifecycle[l]}</span>, count: facets?.lifecycle[l] ?? 0 })),
           ]}
         />
         <Select label={T.country} value={country} onChange={(e) => set('country', e.target.value)}>

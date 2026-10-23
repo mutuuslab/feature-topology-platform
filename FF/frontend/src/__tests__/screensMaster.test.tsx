@@ -151,4 +151,41 @@ describe('Topology·의존관계 검증', () => {
     fireEvent.click(screen.getByRole('button', { name: 'FEAT-00145' }));
     await waitFor(() => expect(calls.some((c) => c.startsWith('/api/topology/graph?featureId=FEAT-00145'))).toBe(true));
   });
+
+  // UX3-04(3초 테스트 S4): 핵심 메시지는 "N 미판정·FAIL 관계"인데 그래프 기본 선택은 초록 관계(FEAT-00022)였고, 실패로 가는 링크가 없었다.
+  it('그래프 기본 초점 = 첫 FAIL(없으면 미판정) 관계, 핵심 메시지 행동으로 미판정·FAIL 목록을 연다', async () => {
+    const DEPS = [
+      { dependencyId: 'DEP-00001', type: 'REQUIRES', sourceFeatureId: 'FEAT-00022', sourceVersion: '1.0.0', targetFeatureId: 'FEAT-00145', targetVersion: null, verdict: 'PASS', rationale: '전제' },
+      { dependencyId: 'DEP-00002', type: 'REQUIRES', sourceFeatureId: 'FEAT-00013', sourceVersion: '0.3.0', targetFeatureId: 'FEAT-00174', targetVersion: null, verdict: '미판정', rationale: null },
+      { dependencyId: 'DEP-00003', type: 'EXCLUDES', sourceFeatureId: 'FEAT-00030', sourceVersion: '1.0.0', targetFeatureId: 'FEAT-00031', targetVersion: null, verdict: 'FAIL', rationale: '충돌' },
+    ];
+    handler = (url) => {
+      if (url.startsWith('/api/dependencies')) return { body: { items: DEPS } };
+      if (url.startsWith('/api/topology/graph'))
+        return {
+          body: {
+            nodes: [
+              { id: 'FEAT-00030@1.0.0', featureId: 'FEAT-00030', version: '1.0.0', name: '가', lifecycle: 'RELEASED' },
+              { id: 'FEAT-00031', featureId: 'FEAT-00031', version: null, name: '나', lifecycle: null },
+            ],
+            edges: [{ id: 'DEP-00003', source: 'FEAT-00030@1.0.0', target: 'FEAT-00031', type: 'EXCLUDES', verdict: 'FAIL' }],
+          },
+        };
+      if (url.startsWith('/api/features')) return { body: { items: [] } };
+    };
+    mount('/arch/topology', '/arch/topology', <TopologyScreen />);
+    expect(await screen.findByText('DEP-00001')).toBeTruthy();
+    const key = document.querySelector('[data-key-message]') as HTMLElement;
+    expect(key.querySelector('.ds-key__value')?.textContent).toBe('2');
+    expect(key.getAttribute('data-tone')).toBe('danger');
+    // 관계를 받기 전에 FEAT-00022 그래프를 먼저 부르지 않는다 — 첫 FAIL 관계의 원천이 초점
+    await screen.findByRole('group', { name: '관계 그래프 — FEAT-00030' });
+    expect(calls.filter((c) => c.startsWith('/api/topology/graph')).every((c) => c.includes('featureId=FEAT-00030'))).toBe(true);
+    expect(document.querySelector('.ds-topo-edge[data-selected]')?.getAttribute('data-verdict')).toBe('FAIL');
+    fireEvent.click(within(key).getByRole('link', { name: '관계 목록에서 보기 →' }));
+    await waitFor(() => expect(screen.queryByText('DEP-00001')).toBeNull());
+    expect(screen.getByText('DEP-00002')).toBeTruthy();
+    expect(screen.getByText('DEP-00003')).toBeTruthy();
+    expect((screen.getByRole('combobox', { name: '판정' }) as HTMLSelectElement).value).toBe('open');
+  });
 });

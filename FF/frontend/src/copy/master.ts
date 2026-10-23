@@ -152,7 +152,7 @@ export const master = {
     onlyMulti: 'Version이 여러 개인 SW만',
   },
   topology: {
-    key: { open: '미판정·FAIL 관계', fail: 'FAIL 포함 — 미판정·FAIL 관계', clean: '모든 관계 PASS' },
+    key: { open: '미판정·FAIL 관계', fail: 'FAIL 포함 — 미판정·FAIL 관계', clean: '모든 관계 PASS', show: '관계 목록에서 보기 →' },
     title: 'Topology·의존관계 검증',
     lead: 'Feature 사이의 REQUIRES·EXCLUDES 관계와 판정.',
     kpi: { total: '관계', requires: 'REQUIRES', excludes: 'EXCLUDES', open: '미판정·FAIL' },
@@ -162,6 +162,7 @@ export const master = {
     all: '전체',
     type: '유형',
     verdict: '판정',
+    openOnly: '미판정·FAIL만',
     legend: { requires: 'REQUIRES (필요)', excludes: 'EXCLUDES (배타)' },
     col: { id: '관계', type: '유형', source: '원천', target: '대상', verdict: '판정', rationale: '근거' },
     create: '관계 등록',

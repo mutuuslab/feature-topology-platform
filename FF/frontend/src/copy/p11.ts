@@ -49,7 +49,7 @@ export const p11 = {
     sums: {
       empty: '아직 차량 명령이 없습니다 — 긴급 차단·복원을 발행하면 기록됩니다',
       col: { command: '명령', feature: 'Feature', request: '요청', market: '시장', vehicles: '차량', rxswin: 'RXSWIN', impact: '형식승인 영향', notice: '사용자 고지', result: '결과', missing: '누락' },
-      retention: (years: number, basis: string) => `보존: 생산 종료 후 ${years}년 (${basis})`,
+      retention: (years: number) => `보존: 생산 종료 후 ${years}년`,
       noticeRequired: '필요',
       noticeNone: '불필요',
       complete: '완비',

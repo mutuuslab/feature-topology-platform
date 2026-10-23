@@ -4,19 +4,34 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 /** 준비된 시나리오를 앞에 — 지금 따라 할 수 있는 것이 먼저 보이게 */
 const readyFirst = (a: Tutorial, b: Tutorial) => Number(b.status === 'ready') - Number(a.status === 'ready');
-import { clausesOfRules, reportRule, tutorialById, TUTORIALS, type ReadingPath, type Tutorial } from '@ff/contracts';
+import { clausesOfRules, tutorialById, TUTORIALS, type ReadingPath, type Tutorial } from '@ff/contracts';
 import { ko } from '../../copy/ko';
 import { roleLabel } from '../../data/refdata';
-import { Button, ClauseChip, Explain, KeyValue, PageHeader, Panel, Segmented, openRule, type KeyMessageSpec } from '../../design';
+import { Button, Explain, ExplainCodes, KeyValue, PageHeader, Panel, RuleText, Segmented, SummaryLine, type KeyMessageSpec } from '../../design';
 import { learnStore, useLearn } from '../../shell/learn';
 
 const L = ko.learn;
 const PATHS = ['ALL', 'BASIS', 'DESIGN', 'BUILD', 'VERIFY_OPERATE'] as const;
 
+/** 제목 끝의 케이스 번호 '(CS-05)'는 본문에서 뺀다 — 번호는 트랙 표시의 툴팁·설명 모드에 있다(UX3-01) */
+const titleOf = (t: Tutorial) => t.title.replace(/\s*\(CS-\d+\)$/, '');
+
 function rolesOfTutorial(t: Tutorial): string[] {
   return [...new Set(t.steps.map((s) => s.role))];
 }
 
+/** 시나리오 코드(CS-01·CLASSIFY-GATE)는 툴팁·설명 모드에서만(UX3-01) — 본문은 트랙 이름 */
+function TrackLabel({ t }: { t: Tutorial }) {
+  const code = t.cs ?? t.id;
+  return (
+    <span className="ds-eyebrow ds-eyebrow--ko" title={code}>
+      {L.track[t.track]}
+      <ExplainCodes codes={[code]} />
+    </span>
+  );
+}
+
+/** 준비된 시나리오 카드 — 시작은 보조 버튼(핵심 메시지보다 먼저 보이지 않게, UX3-07) */
 function Card({ t }: { t: Tutorial }) {
   const st = useLearn();
   const nav = useNavigate();
@@ -24,32 +39,46 @@ function Card({ t }: { t: Tutorial }) {
   return (
     <li className="ds-learn-card" data-status={t.status}>
       <div className="ds-learn-card__head">
-        <span className="ds-eyebrow">
-          {t.cs ?? t.id} · {L.track[t.track]}
-        </span>
-        {t.status !== 'ready' && <span className="ds-field__hint">{L.status[t.status]}</span>}
+        <TrackLabel t={t} />
       </div>
       <h2>
-        <Link to={`/learn/${t.id}`}>{t.title}</Link>
+        <Link to={`/learn/${t.id}`}>{titleOf(t)}</Link>
       </h2>
-      <p className="ds-learn-card__sum">{t.summaryKo}</p>
+      <p className="ds-learn-card__sum">
+        <RuleText text={t.summaryKo} explain />
+      </p>
       {/* 근거 규칙 칩은 설명 모드에서만(3초 테스트) — 카드는 제목·요약·시작 버튼 */}
       <Explain rules={t.rules} />
-      {t.status === 'ready' && (
-        <div className="ds-learn-card__foot">
-          <span className="ds-field__hint">{rolesOfTutorial(t).map(roleLabel).join(', ')}</span>
-          <Button variant={active ? 'default' : 'primary'} icon="play" onClick={() => nav(`/learn/${t.id}`)}>
-            {active && st ? L.resumeRun(st.step + 1, t.steps.length) : L.startCta(t.steps.length, t.minutes)}
-          </Button>
-        </div>
-      )}
+      <div className="ds-learn-card__foot">
+        <span className="ds-field__hint">{rolesOfTutorial(t).map(roleLabel).join(', ')}</span>
+        <Button icon="play" onClick={() => nav(`/learn/${t.id}`)}>
+          {active && st ? L.resumeRun(st.step + 1, t.steps.length) : L.startCta(t.steps.length, t.minutes)}
+        </Button>
+      </div>
     </li>
+  );
+}
+
+/** 준비 중 시나리오 — 카드마다 '준비 중'을 되풀이하지 않고 한 묶음으로 접는다(UX3-07). 개수는 SummaryLine */
+function PlannedGroup({ list }: { list: Tutorial[] }) {
+  return (
+    <details className="ds-learn-planned">
+      <summary>{L.plannedGroup}</summary>
+      <ul className="ds-learn-planned__list">
+        {list.map((t) => (
+          <li key={t.id} data-status={t.status}>
+            <Link to={`/learn/${t.id}`}>{titleOf(t)}</Link>
+            <TrackLabel t={t} />
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 
 /** 핵심 메시지 — 진행 중인 실습이 먼저, 없으면 준비된 실습 수와 첫 실습 */
 function hubMessage(running: Tutorial | undefined, ready: Tutorial[]): KeyMessageSpec {
-  if (running) return { tone: 'neutral', text: L.key.running(running.title), action: <Link to={`/learn/${running.id}`}>{L.key.resume}</Link> };
+  if (running) return { tone: 'neutral', text: L.key.running(titleOf(running)), action: <Link to={`/learn/${running.id}`}>{L.key.resume}</Link> };
   return { tone: 'neutral', value: ready.length, text: L.key.ready };
 }
 
@@ -57,6 +86,8 @@ export function LearnHub() {
   const [sp, setSp] = useSearchParams();
   const path = (sp.get('path') ?? 'ALL') as (typeof PATHS)[number];
   const list = TUTORIALS.filter((t) => path === 'ALL' || t.readingPath === path).sort(readyFirst);
+  const open = list.filter((t) => t.status === 'ready');
+  const planned = list.filter((t) => t.status !== 'ready');
   const st = useLearn();
   const running = st ? tutorialById(st.scenarioId) : undefined;
   const ready = TUTORIALS.filter((t) => t.status === 'ready');
@@ -70,11 +101,15 @@ export function LearnHub() {
         onChange={(v) => setSp(v === 'ALL' ? {} : { path: v }, { replace: true })}
         options={PATHS.map((p) => ({ value: p, label: L.path[p], count: counts[p] }))}
       />
-      <ul className="ds-learn-grid">
-        {list.map((t) => (
-          <Card key={t.id} t={t} />
-        ))}
-      </ul>
+      {planned.length > 0 && <SummaryLine label={L.title} items={[{ k: L.status.planned, v: planned.length }]} />}
+      {open.length > 0 && (
+        <ul className="ds-learn-grid">
+          {open.map((t) => (
+            <Card key={t.id} t={t} />
+          ))}
+        </ul>
+      )}
+      {planned.length > 0 && <PlannedGroup list={planned} />}
     </div>
   );
 }
@@ -97,7 +132,7 @@ export function LearnRun() {
     <div className="ds-screen">
       <PageHeader
         codes={`${t.cs ?? t.id} · ${L.track[t.track]} · ${L.path[t.readingPath as ReadingPath]}`}
-        title={t.title}
+        title={titleOf(t)}
         message={
           !t.steps.length
             ? { tone: 'neutral', text: L.plannedNote }
@@ -111,7 +146,7 @@ export function LearnRun() {
           {/* 시나리오 요약은 학습 본문 — 머리 설명(한 줄)이 아니라 본문 맨 위에 */}
           <p className="ds-learn-card__sum">{t.summaryKo}</p>
           {(t.before || t.after) && (
-            <Panel title={L.compare} id="learn-compare" tour="learn-compare">
+            <Panel title={L.compare} codes={L.compareRef} id="learn-compare" tour="learn-compare">
               <KeyValue
                 rows={[
                   { k: L.before, v: t.before ?? '—' },
@@ -131,11 +166,8 @@ export function LearnRun() {
                         {s.title} <span className="ds-field__hint">· {L.kind[s.kind]} · {roleLabel(s.role)}</span>
                       </div>
                       <p className="ds-field__hint">{s.doKo}</p>
-                      <div className="ds-cls-row">
-                        {s.rules.map((r) => (
-                          <ClauseChip key={r} id={r} title={reportRule(r)?.title} onOpen={openRule} />
-                        ))}
-                      </div>
+                      {/* 단계 근거 규칙 칩은 설명 모드에서만(UX3-01) */}
+                      <Explain rules={s.rules} />
                     </div>
                   </li>
                 ))}
@@ -158,15 +190,18 @@ export function LearnRun() {
               ))}
             </div>
           </Panel>
-          <Panel title={L.clauses} id="learn-clauses">
-            <ul className="sh-guide__clauses">
-              {clauses.map((c) => (
-                <li key={c}>
-                  <span className="ds-rule-id">{c}</span>
-                </li>
-              ))}
-            </ul>
-          </Panel>
+          {/* 근거 조항 목록은 추적 정보 — 설명 모드에서만 보인다(UX3-01) */}
+          <div className="ds-explain-block">
+            <Panel title={L.clauses} id="learn-clauses">
+              <ul className="sh-guide__clauses">
+                {clauses.map((c) => (
+                  <li key={c}>
+                    <span className="ds-rule-id">{c}</span>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          </div>
         </div>
       </div>
     </div>

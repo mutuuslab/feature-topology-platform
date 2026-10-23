@@ -17,6 +17,7 @@ import {
   Drawer,
   EventStream,
   Explain,
+  ExplainCodes,
   GateBadge,
   GateRail,
   IdChip,
@@ -251,6 +252,7 @@ export default function DesignGallery() {
             <ClauseChip id="ISO 26262-3 cl.7" />
             {/* 표준 설명 모드(상단 책 아이콘)를 켜면 보인다 */}
             <Explain rules={['FFG-CLS-001', 'FFG-CLS-009']} />
+            <ExplainCodes codes={['D06-03', 'IF-09']} />
           </div>
         </div>
       </Panel>

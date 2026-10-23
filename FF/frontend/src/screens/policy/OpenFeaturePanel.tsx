@@ -7,7 +7,7 @@ import { OpenFeature, ProviderEvents, type EvaluationDetails, type FlagValue } f
 import { OFREPWebProvider } from '@openfeature/ofrep-web-provider';
 import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
-import { KeyValue, Panel, VerdictBadge } from '../../design';
+import { KeyValue, Panel, RuleText, VerdictBadge } from '../../design';
 import { OpenFeatureScopeLink } from '../ext/OpenFeatureScope';
 
 const O = ko.openfeature;
@@ -60,7 +60,7 @@ export function OpenFeaturePanel({ vin, flagKey, serverValue, pollInterval = 300
       <p className="ds-field__hint">{O.lead}</p>
       {guarded && (
         <p className="ds-stale" role="note" data-testid="of-guarded">
-          {ko.p10.openfeature.guarded}
+          <RuleText text={ko.p10.openfeature.guarded} explain />
         </p>
       )}
       {error && <p className="ds-stale">{error}</p>}

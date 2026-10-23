@@ -104,7 +104,7 @@ describe('헤드라인과 데이터가 맞는다', () => {
           ? { items: [{ id: 3, at: '2026-10-12T01:00:00.000Z', actorId: 'kim', action: 'policy.approve', target: 'POL-00001', result: 'FAILED', reason: 'x', correlationId: 'c' }] }
           : undefined;
     mount('/audit', <AuditScreen />);
-    expect(await keyOf('warn')).toContain('FAILED');
+    expect(await keyOf('warn')).toContain('실패'); // 필터·결과 열과 같은 낱말(UX3-02)
   });
 
   it('사전점검 — "0 · 4" 대신 합계 숫자와 FAIL·CONDITIONAL 라벨', async () => {

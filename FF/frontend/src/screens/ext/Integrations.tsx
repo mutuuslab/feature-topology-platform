@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, PageHeader, Panel, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
-import { usePermission } from '../shared';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, PageHeader, Panel, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
+import { ComponentList, usePermission } from '../shared';
 import { extSync } from '../../copy/ext-sync';
 import { ExtSyncTab } from './ExtSyncTab';
 
@@ -54,12 +54,12 @@ function SystemsTab() {
         rows={rows}
         rowKey={(r) => r.ifId}
         columns={[
-          { key: 'if', header: C.if, cell: (r) => <span className="ds-mono ds-nowrap">{r.ifId}</span> },
-          { key: 'n', header: C.name, cell: (r) => r.name },
+          // IF 번호·컴포넌트 ID는 툴팁·설명 모드로(UX3-01) — 본문은 이름
+          { key: 'n', header: C.name, cell: (r) => <span title={r.ifId}>{r.name}<ExplainCodes codes={[r.ifId]} /></span>, sort: (r) => r.ifId },
           { key: 'm', header: C.mode, cell: (r) => <VerdictBadge value={r.mode === 'off' ? 'FAIL' : r.mode === 'live' ? 'PASS' : 'CONDITIONAL'} />, sort: (r) => r.mode },
           { key: 'm2', header: '', srHeader: C.mode, cell: (r) => <span className="ds-nowrap">{G.modes[r.mode] ?? r.mode}</span> },
           { key: 'a', header: C.adapter, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.adapter}</span> },
-          { key: 'c', header: C.components, cell: (r) => <span className="ds-mono ds-nowrap">{r.components.join(' · ')}</span> },
+          { key: 'c', header: C.components, cell: (r) => <ComponentList ids={r.components} /> },
           { key: 'n2', header: C.calls, cell: (r) => <span className="ds-mono">{r.calls}</span>, align: 'right', sort: (r) => r.calls },
           { key: 'l', header: C.last, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{r.lastAt?.slice(0, 19).replace('T', ' ') ?? '—'}</span> },
         ]}
@@ -205,8 +205,7 @@ export function DataSyncScreen() {
           onOpen={(r) => setOpen(r.targetId)}
           columns={[
             { key: 't', header: C.target, cell: (r) => <span><span className="ds-mono ds-nowrap">{r.targetId}</span><br />{r.name}</span> },
-            { key: 'i', header: C.if, cell: (r) => <span className="ds-mono">{r.ifId}</span> },
-            { key: 's', header: C.system, cell: (r) => <span className="ds-nowrap">{r.system}</span> },
+            { key: 's', header: C.system, cell: (r) => <span className="ds-nowrap" title={r.ifId}>{r.system}<ExplainCodes codes={[r.ifId]} /></span> },
             { key: 'm', header: C.market, cell: (r) => <span className="ds-nowrap"><span className="ds-tag">{r.market}</span>{r.localProcessing ? ` ${S.local}` : ''}</span> },
             { key: 'd', header: C.direction, cell: (r) => S.directions[r.direction] },
             { key: 'g', header: C.gate, cell: (r) => <span title={r.gate.reason ?? undefined} className="ds-nowrap"><VerdictBadge value={r.gate.allowed ? 'PASS' : 'CONDITIONAL'} /> {r.gate.allowed ? S.allowed : S.held}</span> },

@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ControlPointType } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge, Icon } from '../../design';
+import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge, Icon } from '../../design';
 import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
 import { PolicyCrPanel } from './PolicyCr';
@@ -108,7 +108,9 @@ export function ValidatorGrid({ run }: { run: Run }) {
       {run.results.map((r) => (
         <article key={r.componentId} role="listitem" className="ds-validator" data-result={r.result}>
           <header>
-            <span className="ds-mono ds-validator__id">{r.componentId}</span>
+            <span className="ds-validator__id" title={r.componentId}>
+              <ExplainCodes codes={[r.componentId]} />
+            </span>
             <VerdictBadge value={r.result} />
           </header>
           <h3>{r.ko}</h3>
@@ -136,24 +138,35 @@ export function PolicyDetail() {
   const [drawer, setDrawer] = useState<null | 'decide' | 'deploy' | 'stage'>(null);
   const d = q.data;
   const p = d?.policy;
+  // 다시 검증할 수 있는 상태(서버 EDITABLE)에서 검증이 없거나 낡았으면 검증이 다음 행동
+  const editable = !!p && ['DRAFT', 'VALIDATED', 'REJECTED'].includes(p.status);
+  const needsValidation = editable && (!d?.lastRun || !d.hashMatchesValidation);
+  const keyValidate = needsValidation && author.ok;
+  const validateButton = (variant: 'primary' | 'default') => (
+    <Button variant={variant} icon="check" disabled={!author.ok || validate.isPending} title={author.hint} onClick={() => validate.mutate({ params: { id }, body: {} })}>
+      {T.validate}
+    </Button>
+  );
   return (
     <div className="ds-screen">
       <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
         {d && p && (
           <>
             <PageHeader
-              title={<span className="ds-mono">{p.flagKey}</span>}
+              // H1은 Feature 이름 + 제어점(UX3-06) — flagKey는 코드라 meta의 IdChip으로
+              title={d.feature?.name ? T.detailTitle(d.feature.name, T.cpLabel[p.controlPoint] ?? p.controlPoint) : p.policyId}
               message={{
                 tone: d.lastRun ? (d.lastRun.decision === 'GO' && d.hashMatchesValidation ? 'ok' : d.lastRun.decision === 'BLOCKED' ? 'danger' : 'warn') : p.status === 'DRAFT' ? 'neutral' : 'warn',
                 status: { label: p.status },
                 text: d.lastRun ? `${T.safetyDecision[d.lastRun.decision]} · ${d.hashMatchesValidation ? T.hashOk : T.hashStale}` : p.status === 'DRAFT' ? T.notValidated : T.notValidatedLive,
+                // 검증이 없거나 낡았으면 다음 행동은 분야별 검증 — 작성 권한이 있을 때만 핵심 메시지에 둔다
+                action: keyValidate ? validateButton('primary') : undefined,
               }}
               meta={
                 <>
+                  <IdChip id={p.flagKey} />
                   <IdChip id={p.policyId} version={`r${p.revision}`} />
                   <IdChip id={p.featureId} version={p.featureVersion} to={`/features/${p.featureId}/${p.featureVersion}`} copy={false} />
-                  {d.feature && <span className="ds-tag">{d.feature.name}</span>}
-                  <span className="ds-tag">{p.controlPoint}</span>
                   {d.feature && <span className="ds-tag">ASIL {d.feature.asil}</span>}
                 </>
               }
@@ -161,11 +174,7 @@ export function PolicyDetail() {
               actions={
                 <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
                   <PolicyEdit key={`${p.policyId}@${p.revision}`} p={p} />
-                  {['DRAFT', 'VALIDATED', 'REJECTED'].includes(p.status) && (
-                    <Button variant="primary" icon="check" disabled={!author.ok || validate.isPending} title={author.hint} onClick={() => validate.mutate({ params: { id }, body: {} })}>
-                      {T.validate}
-                    </Button>
-                  )}
+                  {editable && !keyValidate && validateButton(needsValidation ? 'primary' : 'default')}
                   {['DRAFT', 'VALIDATED'].includes(p.status) && (
                     <Button disabled={!approver.ok} title={approver.hint} onClick={() => setDrawer('decide')}>
                       {T.approve} / {T.reject}

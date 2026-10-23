@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DangerConfirm, DataTable, ErrorNote, Field, KeyValue, PageHeader, Panel, Select, Tabs, VerdictBadge } from '../../design';
+import { AsyncView, Button, DangerConfirm, DataTable, ErrorNote, ExplainCodes, Field, KeyValue, PageHeader, Panel, Select, Tabs, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 
 const T = ko.p11.data;
@@ -51,7 +51,7 @@ function Sums() {
   const rows = [...(q.data?.items ?? [])].reverse();
   const C = S.col;
   return (
-    <Panel title={T.tabs.sums} eyebrow={q.data ? S.retention(q.data.retention.yearsAfterProductionEnd, q.data.retention.basis) : undefined} id="sums">
+    <Panel title={T.tabs.sums} eyebrow={q.data ? <span title={q.data.retention.basis}>{S.retention(q.data.retention.yearsAfterProductionEnd)}<ExplainCodes codes={[q.data.retention.basis]} /></span> : undefined} id="sums">
       <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: S.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.tabs.sums}

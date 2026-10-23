@@ -5,7 +5,7 @@ import { Asil, EPIC_SCOPE_FIELDS, EPIC_SCOPE_LABEL, EXT_SYSTEMS, type EpicScopeF
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { extSync } from '../../copy/ext-sync';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, Field, Panel, Select, whyDisabled } from '../../design';
+import { AsyncView, Button, DataTable, ErrorNote, ExplainCodes, Field, Panel, Select, whyDisabled } from '../../design';
 import { usePermission, when } from '../shared';
 
 const X = extSync.sync;
@@ -52,8 +52,8 @@ export function ExtSyncTab() {
             rows={s.data?.items ?? []}
             rowKey={(r) => r.system}
             columns={[
-              { key: 's', header: X.col.system, cell: (r) => <strong>{extSync.system[r.system]}</strong> },
-              { key: 'i', header: X.col.ifId, cell: (r) => <span className="ds-mono">{r.ifId}</span> },
+              // IF 번호는 툴팁·설명 모드로(UX3-01)
+              { key: 's', header: X.col.system, cell: (r) => <strong title={r.ifId}>{extSync.system[r.system]}<ExplainCodes codes={[r.ifId]} /></strong> },
               { key: 'm', header: X.col.mode, cell: (r) => extSync.mode[r.mode] ?? r.mode },
               { key: 'l', header: X.col.links, cell: (r) => r.links.toLocaleString('ko-KR'), align: 'right' },
               { key: 'p', header: X.col.pending, cell: (r) => r.pending, align: 'right' },

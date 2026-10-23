@@ -4,10 +4,40 @@ import { useQueryClient } from '@tanstack/react-query';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, ChainStatus, DataTable, EventStream, PageHeader, Panel, Segmented, Toolbar, type StreamItem } from '../../design';
-import { AuditTable } from '../features/FeatureDetail';
-import { when } from '../shared';
+import { AsyncView, ChainStatus, DataTable, EventStream, PageHeader, Panel, RuleText, Segmented, Toolbar, VerdictBadge, type StreamItem } from '../../design';
+import { ComponentName, Done, roleText, when } from '../shared';
 import type { AuditEntry } from '../types';
+
+const RESULTS = ['ALLOWED', 'DENIED', 'FAILED'] as const;
+
+/** 결과 — 예외(거부·실패)만 배지, 허용은 작은 표시(UX3-02). 필터와 같은 낱말(ko.audit.results) */
+function AuditResult({ result }: { result: AuditEntry['result'] }) {
+  const label = ko.audit.results[result] ?? result;
+  if (result === 'ALLOWED') return <Done ok title={label} />;
+  return <VerdictBadge value={result === 'DENIED' ? 'CONDITIONAL' : 'FAIL'} label={label} />;
+}
+
+/** 감사 표 — 역할은 한글 라벨(원문 enum은 툴팁), 결과는 예외만 배지 */
+function AuditLog({ rows }: { rows: AuditEntry[] }) {
+  const C = ko.audit.col;
+  return (
+    <DataTable
+      caption={ko.audit.title}
+      rows={rows}
+      rowKey={(r) => String(r.id)}
+      columns={[
+        { key: 'at', header: C.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span>, sort: (r) => r.at },
+        { key: 'actor', header: C.actor, cell: (r) => <span className="ds-mono">{r.actorId}</span>, sort: (r) => r.actorId },
+        { key: 'role', header: C.role, cell: (r) => <span title={r.actorRole}>{roleText(r.actorRole)}</span>, sort: (r) => roleText(r.actorRole) },
+        { key: 'action', header: C.action, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.action}</span>, sort: (r) => r.action },
+        { key: 'target', header: C.target, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.target}</span> },
+        { key: 'result', header: C.result, cell: (r) => <AuditResult result={r.result} />, sort: (r) => r.result },
+        // 서버 사유의 규칙 ID('FFG-CLS-006: …')는 설명 모드로(UX3-01)
+        { key: 'reason', header: C.reason, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.reason ? <RuleText text={r.reason} explain /> : ''}</span> },
+      ]}
+    />
+  );
+}
 
 export function AuditScreen() {
   const [result, setResult] = useState<'' | 'ALLOWED' | 'DENIED' | 'FAILED'>('');
@@ -48,16 +78,11 @@ export function AuditScreen() {
           label={ko.audit.result}
           value={result}
           onChange={(v) => setResult(v as typeof result)}
-          options={[
-            { value: '', label: ko.page.all },
-            { value: 'ALLOWED', label: 'ALLOWED' },
-            { value: 'DENIED', label: 'DENIED' },
-            { value: 'FAILED', label: 'FAILED' },
-          ]}
+          options={[{ value: '', label: ko.page.all }, ...RESULTS.map((r) => ({ value: r, label: ko.audit.results[r] }))]}
         />
       </Toolbar>
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} filtered={!!(applied || result)}>
-        <AuditTable rows={rows} />
+        <AuditLog rows={rows} />
       </AsyncView>
     </div>
   );
@@ -121,7 +146,7 @@ export function EventsScreen() {
               { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
               { key: 'type', header: 'Type', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--accent)' }}>{r.type}</span>, sort: (r) => r.type },
               { key: 'agg', header: ko.audit.col.target, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{r.aggregate}</span> },
-              { key: 'c', header: 'Component', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.componentId ?? '—'}</span> },
+              { key: 'c', header: 'Component', cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.componentId ? <ComponentName id={r.componentId} /> : '—'}</span> },
               { key: 'p', header: ko.events.content, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{summarize(r.payload)}</span> },
             ]}
           />

@@ -245,7 +245,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
                     v: <IdChip id={p.feature.featureId} version={p.feature.version} to={`/features/${p.feature.featureId}/${p.feature.version}?tab=safety`} copy={false} />,
                     note: `${p.feature.name} · ${p.feature.lifecycle} · ${K.asilRef(p.feature.asil)}`,
                   },
-                  { k: K.deactMode, v: reg ? <ClassBadges f={reg.f_class} dc={reg.deact_class} /> : '—', note: K.deactByRegistry },
+                  { k: K.deactMode, v: reg ? <ClassBadges f={reg.f_class} dc={reg.deact_class} /> : '—', note: <RuleText text={K.deactByRegistry} explain /> },
                   { k: K.dependents, v: <span className="ds-mono">{p.dependents.map((d) => d.featureId).join(', ') || '—'}</span> },
                   { k: K.flags, v: <span className="ds-mono">{p.flagKeys.join(', ') || '—'}</span> },
                 ]}
@@ -302,7 +302,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
               <Field label={K.recall}>
                 <input className="ds-input ds-input--mono" value={recall} onChange={(e) => setRecall(e.target.value)} />
               </Field>
-              <Field label={K.containment} hint={needContainment ? <RuleText text={K.containmentNeed} /> : undefined}>
+              <Field label={K.containment} hint={needContainment ? <RuleText text={K.containmentNeed} explain /> : undefined}>
                 <input className="ds-input" value={containment} onChange={(e) => setContainment(e.target.value)} />
               </Field>
             </>
@@ -590,7 +590,9 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               <h3 className="ds-eyebrow ds-eyebrow--ko">
                 {K.restoreTitle} <Explain rules={['FFG-DEAC-008', 'FFG-PLT-008', 'FFG-PLT-010']} />
               </h3>
-              <p className="ds-field__hint">{K.restoreBody}</p>
+              <p className="ds-field__hint">
+                <RuleText text={K.restoreBody} explain />
+              </p>
               {rr?.status === 'REQUESTED' ? (
                 <ApprovalBox
                   requestedBy={rr.requestedBy}

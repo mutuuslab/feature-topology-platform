@@ -6,8 +6,8 @@ import { Link } from 'react-router-dom';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Icon, IdChip, KeyValue, PageHeader, Panel, Select, VerdictBadge, type KeyMessageSpec } from '../../design';
-import { usePermission, when } from '../shared';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Icon, IdChip, KeyValue, PageHeader, Panel, RuleText, Select, VerdictBadge, type KeyMessageSpec } from '../../design';
+import { ComponentName, usePermission, when } from '../shared';
 
 const T = ko.virtual;
 const RUN_ROLES = ['FEATURE_AUTHOR', 'IMPLEMENTER', 'GATE_JUDGE'] as const;
@@ -361,7 +361,10 @@ export function CompareTimeline({ onboard, remote, faultAt }: { onboard: VRun | 
           </text>
         ))}
       </svg>
-      <figcaption className="ds-field__hint">{`${C.axis} · ${onboard.runId} / ${remote.runId} · ${C.stepNote}`}</figcaption>
+      <figcaption className="ds-field__hint">
+        {`${C.axis} · ${onboard.runId} / ${remote.runId} · `}
+        <RuleText text={C.stepNote} explain />
+      </figcaption>
     </figure>
   );
 }
@@ -411,14 +414,22 @@ export function VirtualPanel({ policy }: { policy: { policyId: string; featureId
       codes="D06-03 · IF-09"
       id="virtual"
       actions={
-        <Button variant="primary" disabled={!perm.ok || run.isPending} title={perm.hint} onClick={() => run.mutate({ body: { policyId: policy.policyId } })}>
+        // 정책 상세의 첫 행동은 핵심 메시지(분야별 검증) — 가상검증은 보조 버튼(UX3-06)
+        <Button disabled={!perm.ok || run.isPending} title={perm.hint} onClick={() => run.mutate({ body: { policyId: policy.policyId } })}>
           {T.run}
         </Button>
       }
     >
       <div style={{ display: 'grid', gap: 'var(--sp-2)' }}>
         <p className="ds-field__hint">
-          {scenarios.map((s) => `${s.scenarioId} → ${s.validator === 'BASELINE' ? T.role.BASELINE_REMOTE : s.validator}`).join(' · ')} · <Link to="/validations/virtual">{T.title} →</Link>
+          {/* 시나리오 → 검증 컴포넌트 이름(ID는 툴팁·설명 모드, UX3-01) */}
+          {scenarios.map((s, i) => (
+            <span key={s.scenarioId}>
+              {i > 0 && ' · '}
+              {s.scenarioId} → {s.validator === 'BASELINE' ? T.role.BASELINE_REMOTE : <ComponentName id={s.validator} />}
+            </span>
+          ))}{' '}
+          · <Link to="/validations/virtual">{T.title} →</Link>
         </p>
         <ErrorNote error={run.error} />
         <AsyncView state={asyncState(runs, !Array.isArray(runs.data?.items) || runs.data!.items.length === 0)} error={runs.error?.message} onRetry={() => runs.refetch()} rows={2}>
@@ -427,6 +438,18 @@ export function VirtualPanel({ policy }: { policy: { policyId: string; featureId
       </div>
       <RunDrawer id={open} onClose={() => setOpen(null)} />
     </Panel>
+  );
+}
+
+/** 시나리오 목적 — '(보고서 CS-01: 감지 19.11 s …)'의 보고서 케이스 번호는 설명 모드로, 값은 본문에 남긴다(UX3-01) */
+function Purpose({ text }: { text: string }) {
+  const m = text.match(/보고서 [A-Z0-9][\w.-]*:?\s*/);
+  if (!m) return <>{text}</>;
+  return (
+    <>
+      {text.replace(m[0], '')}
+      <ExplainCodes codes={[m[0].replace(/:?\s*$/, '')]} />
+    </>
   );
 }
 
@@ -470,8 +493,8 @@ export function VirtualValidationScreen() {
             { key: 'id', header: T.col.scenario, cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', whiteSpace: 'nowrap' }}>{s.scenarioId}</span> },
             { key: 'n', header: ko.registry.col.name, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)', display: 'inline-block', minWidth: '16ch' }}>{s.name}</span> },
             { key: 'r', header: T.col.role, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }}>{T.role[s.role]}</span> },
-            { key: 'v', header: T.validator, cell: (s) => <span className="ds-mono" title={s.validator === 'BASELINE' ? T.baselineNote : undefined}>{s.validator === 'BASELINE' ? '—' : s.validator}</span> },
-            { key: 'p', header: T.purpose, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }}>{s.purpose}</span> },
+            { key: 'v', header: T.validator, cell: (s) => (s.validator === 'BASELINE' ? <span title={T.baselineNote}>—</span> : <span style={{ fontSize: 'var(--fs-xs)' }}><ComponentName id={s.validator} /></span>) },
+            { key: 'p', header: T.purpose, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }}><Purpose text={s.purpose} /></span> },
           ]}
         />
       </Panel>

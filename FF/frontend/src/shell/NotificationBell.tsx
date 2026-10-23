@@ -36,7 +36,11 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const q = useApi<Inbox>('notifications', { query: { limit: 6 } }, { enabled: !STATIC_MODE });
-  usePlatformEvents(NOTIFY_EVENTS, ['notifications']);
+  // 배지 색: 평소에는 중립(모든 화면에서 가장 진한 요소였다), 긴급 차단이 걸려 있을 때만 위험색(3초 테스트 UX3-10).
+  // 상업 비활성화(체험 만료 등)는 긴급 차단이 아니다 — 내 대시보드 핵심 메시지와 같은 기준
+  const kills = useApi<{ items: { reasonCategory?: string }[] }>('killRequests', { query: { status: 'ACTIVE' } }, { enabled: !STATIC_MODE });
+  const alarm = (kills.data?.items ?? []).some((k) => k.reasonCategory !== 'COMMERCIAL');
+  usePlatformEvents(NOTIFY_EVENTS, ['notifications', 'killRequests']);
   const read = useApiMutation('readNotification', ['notifications']);
   const readAll = useApiMutation('readAllNotifications', ['notifications']);
   const unread = q.data?.unread ?? 0;
@@ -63,7 +67,7 @@ export function NotificationBell() {
     <div className="sh-ntf" ref={root}>
       <Button variant="ghost" icon="bell" aria-label={ko.shell.notificationsUnread(unread)} title={ko.shell.notificationsUnread(unread)} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(!open)} />
       {unread > 0 && (
-        <span className="sh-ntf__badge" aria-hidden data-testid="notify-badge">
+        <span className="sh-ntf__badge" aria-hidden data-testid="notify-badge" data-alarm={alarm ? '' : undefined}>
           {unread > 99 ? '99+' : unread}
         </span>
       )}

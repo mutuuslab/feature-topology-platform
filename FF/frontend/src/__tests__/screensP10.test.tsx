@@ -56,9 +56,14 @@ describe('실험·효과', () => {
     };
     mount('/experiments', '/experiments', <ExperimentsScreen />, 'release');
     await screen.findByText('EXP-00001');
-    fireEvent.change(screen.getByLabelText('가설'), { target: { value: '새 기준으로도 판단이 같다' } });
-    fireEvent.click(screen.getByRole('button', { name: '등록' }));
+    // 회귀(UX3-12): 등록 폼이 결과 위에 펼쳐져 있지 않다 — 머리의 행동 버튼으로 여는 Drawer에만 있고, 등록하면 닫힌다
+    expect(screen.queryByLabelText('가설')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '실험 등록' }));
+    const dlg = await screen.findByRole('dialog', { name: '실험 등록' });
+    fireEvent.change(within(dlg).getByLabelText('가설'), { target: { value: '새 기준으로도 판단이 같다' } });
+    fireEvent.click(within(dlg).getByRole('button', { name: '등록' }));
     await waitFor(() => expect(posted('/api/experiments')).toBeTruthy());
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: '실험 등록' })).toBeNull());
     expect(JSON.parse(String(posted('/api/experiments')!.init!.body))).toEqual({ policyId: 'POL-00002', type: 'SHADOW', metric: 'DECISION_AGREEMENT', treatmentBp: 1000, minSamples: 1000, hypothesis: '새 기준으로도 판단이 같다' });
     fireEvent.click(screen.getByText('EXP-00001'));
     expect(await screen.findByText('판단 일치')).toBeTruthy();

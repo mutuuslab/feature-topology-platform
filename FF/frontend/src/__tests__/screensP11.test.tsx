@@ -72,6 +72,25 @@ describe('Flag Retirement (FFG-LCY-011)', () => {
     expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ step: 'FINAL_STATE', swVersion: '1.3.0', completionRate: 100, requiredRate: 95, evidenceRef: 'EVD-RET-1' });
   });
 
+  // 회귀(UX3-12): 요청 폼이 목록 위에 펼쳐져 있지 않다 — 머리의 행동 버튼으로 여는 Drawer에만 있고, 등록하면 닫힌다
+  it('Retirement 요청은 머리의 행동으로 여는 Drawer에서 등록한다', async () => {
+    handler = (url, init) => {
+      if (url.startsWith('/api/flag-retirements') && init?.method === 'POST') return { status: 201, body: RET() };
+      if (url.startsWith('/api/flag-retirements')) return { body: { items: [RET()] } };
+      if (url.startsWith('/api/policies')) return { body: { items: [{ policyId: 'POL-00003', flagKey: 'ivi_00024_guide', featureId: 'FEAT-00024', featureVersion: '1.0.0', status: 'DEPLOYED' }] } };
+    };
+    mount('author', '/flag-retirements', <RetirementsScreen />);
+    await screen.findByText('RET-00001');
+    expect(screen.queryByLabelText('Retirement 사유')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Retirement 요청' }));
+    const dlg = await screen.findByRole('dialog', { name: 'Retirement 요청' });
+    fireEvent.change(await within(dlg).findByRole('combobox', { name: '대상 Flag' }), { target: { value: 'ivi_00024_guide' } });
+    fireEvent.change(within(dlg).getByLabelText('Retirement 사유'), { target: { value: '안내 문구 기능 종료' } });
+    fireEvent.click(within(dlg).getByRole('button', { name: 'Retirement 요청 등록' }));
+    await vi.waitFor(() => expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ flagKey: 'ivi_00024_guide', reason: '안내 문구 기능 종료', nextReleaseAt: null }));
+    await vi.waitFor(() => expect(screen.queryByRole('dialog', { name: 'Retirement 요청' })).toBeNull());
+  });
+
   it('승인 대기 — 필요한 승인 역할을 보이고, 작성자는 승인할 수 없다', async () => {
     handler = (url) => (url.startsWith('/api/flag-retirements') ? { body: { items: [RET({ status: 'REQUESTED', approvals: [], approvedAt: null, steps: {}, requiredApprovals: ['FEATURE_APPROVER', 'SAFETY_OFFICER'], next: 'APPROVED', overdue: false, codeRemovalDue: null })] } } : undefined);
     mount('author', '/flag-retirements', <RetirementsScreen />);

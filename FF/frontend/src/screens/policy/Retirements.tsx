@@ -38,6 +38,8 @@ const doneCount = (r: Retirement) => RETIREMENT_STEPS.filter((s) => r.steps[s.ke
 export function RetirementsScreen() {
   const q = useApi<{ items: Retirement[] }>('flagRetirements');
   const [open, setOpen] = useState<string | null>(null);
+  // 요청은 머리의 행동으로 여는 Drawer — 결과(목록)가 위, 입력은 Drawer(3초 규칙 9, UX3-12)
+  const [requesting, setRequesting] = useState(false);
   const rows = q.data?.items ?? [];
   const C = T.col;
   return (
@@ -50,8 +52,11 @@ export function RetirementsScreen() {
           const overdue = rows.filter((r) => r.overdue).length;
           return !q.data ? { tone: 'neutral', value: '—', text: T.key.count } : overdue ? { tone: 'danger', value: overdue, text: T.key.overdue } : rows.length ? { tone: 'neutral', value: rows.length, text: T.key.count } : { tone: 'neutral', text: T.key.none };
         })()}
+        actions={<Button onClick={() => setRequesting(true)}>{T.request}</Button>}
       />
-      <RequestForm />
+      <Drawer open={requesting} title={T.request} onClose={() => setRequesting(false)}>
+        <RequestForm onDone={() => setRequesting(false)} />
+      </Drawer>
       <Panel title={T.list} id="retirements">
         <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: T.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
           <DataTable
@@ -85,7 +90,7 @@ export function RetirementsScreen() {
   );
 }
 
-function RequestForm() {
+function RequestForm({ onDone }: { onDone: () => void }) {
   const pols = useApi<{ items: { policyId: string; flagKey: string; featureId: string; featureVersion: string; status: string }[] }>('listPolicies');
   const perm = usePermission(['FEATURE_AUTHOR', 'RELEASE_MANAGER']);
   const create = useApiMutation<Retirement>('requestFlagRetirement', INVALIDATE);
@@ -94,7 +99,7 @@ function RequestForm() {
   const [nextRelease, setNextRelease] = useState('');
   const flags = [...new Set((pols.data?.items ?? []).map((p) => p.flagKey))].sort();
   return (
-    <Panel title={T.request} id="retire-request">
+    <div className="ds-stack" id="retire-request" style={{ gap: 'var(--sp-3)' }}>
       <div className="ds-split">
         <Select label={T.flag} value={flagKey} onChange={(e) => setFlagKey(e.target.value)}>
           <option value="">—</option>
@@ -117,13 +122,13 @@ function RequestForm() {
         onClick={() =>
           create.mutate(
             { body: { flagKey, reason: reason.trim(), nextReleaseAt: nextRelease ? new Date(`${nextRelease}T00:00:00+09:00`).toISOString() : null } },
-            { onSuccess: () => (setFlagKey(''), setReason(''), setNextRelease('')) },
+            { onSuccess: () => (setFlagKey(''), setReason(''), setNextRelease(''), onDone()) },
           )
         }
       >
         {T.submit}
       </Button>
-    </Panel>
+    </div>
   );
 }
 

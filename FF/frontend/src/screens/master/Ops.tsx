@@ -5,8 +5,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { COMPLIANCE_PROFILES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
-import { usePermission } from '../shared';
+import { AsyncView, Button, DataTable, ErrorNote, Explain, ExplainCodes, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, RuleText, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
+import { ComponentName, Done, usePermission } from '../shared';
 import { EpochBump, SbomDrawer, SecurityEventsPanel } from './Security';
 
 const M = ko.master;
@@ -95,7 +95,7 @@ function StatusTab() {
               { key: 'a', header: M.telemetry.rbCol.at, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{t19(r.at)}</span> },
               { key: 'f', header: ko.master.common.feature, cell: (r) => <span className="ds-mono">{r.featureId}</span> },
               { key: 's', header: M.telemetry.rbCol.observed, cell: (r) => <span className="ds-mono">{`${r.state} #${r.reportSeq}`}</span> },
-              { key: 'ok', header: M.telemetry.rbCol.reason, cell: (r) => (r.accepted ? <VerdictBadge value="PASS" /> : <span title={r.violation?.message}><VerdictBadge value="FAIL" /> <span className="ds-mono">{r.violation?.code}</span></span>) },
+              { key: 'ok', header: M.telemetry.rbCol.reason, cell: (r) => (r.accepted ? <Done ok /> : <span title={r.violation?.message}><VerdictBadge value="FAIL" /> <span className="ds-mono">{r.violation?.code}</span></span>) },
             ]}
           />
         )}
@@ -216,8 +216,10 @@ export function SecurityScreen() {
             <KeyValue rows={Object.entries(hsm.data ?? {}).map(([k, v]) => ({ k: <span className="ds-mono">{k}</span>, v: <span className="ds-mono">{String(v)}</span> }))} />
           </AsyncView>
         </Panel>
-        <Panel title={S.vuln} id="sec-vuln">
-          <p className="ds-field__hint">{S.vulnNote}</p>
+        <Panel title={S.vuln} codes="D06-11" id="sec-vuln">
+          <p className="ds-field__hint">
+            <RuleText text={S.vulnNote} explain />
+          </p>
         </Panel>
       </div>
       <SecurityEventsPanel />
@@ -378,8 +380,18 @@ export function SettingsScreen() {
             rows={sys.data?.items ?? []}
             rowKey={(r) => r.ifId}
             columns={[
-              { key: 'i', header: ko.p10.integrations.col.if, cell: (r) => <span className="ds-mono">{r.ifId}</span> },
-              { key: 'n', header: ko.p10.integrations.col.name, cell: (r) => r.name },
+              // IF 번호는 툴팁·설명 모드로(UX3-01) — 본문은 연계 이름
+              {
+                key: 'n',
+                header: ko.p10.integrations.col.name,
+                cell: (r) => (
+                  <>
+                    <span title={r.ifId}>{r.name}</span>
+                    <ExplainCodes codes={[r.ifId]} />
+                  </>
+                ),
+                sort: (r) => r.ifId,
+              },
               { key: 'm', header: ko.p10.integrations.col.mode, cell: (r) => ko.p10.integrations.modes[r.mode] ?? r.mode },
             ]}
           />
@@ -404,9 +416,6 @@ function complianceMessage(profiles: boolean): KeyMessageSpec {
   return { tone: impl === ids.length && tested === ids.length ? 'ok' : 'warn', value: `${impl}/${ids.length}`, text: K.rules(tested, ids.length) };
 }
 
-/** 예외만 강조 — 충족이면 작은 표시, 미충족만 배지 */
-const Done = ({ ok }: { ok: boolean }) => (ok ? <span title="PASS" style={{ color: 'var(--ok)' }}><StatusGlyph kind="PASS" /></span> : <VerdictBadge value="UNJUDGED" />);
-
 function RulesTab() {
   const [filter, setFilter] = useState<'all' | 'open' | 'done'>('all');
   const C = M.compliance;
@@ -429,11 +438,31 @@ function RulesTab() {
         rowKey={(r) => r.id}
         maxHeight="62vh"
         columns={[
-          { key: 'i', header: C.col.id, cell: (r) => <span className="ds-mono ds-nowrap">{r.id}</span>, sort: (r) => r.id },
-          { key: 't', header: C.col.title, cell: (r) => r.rule?.title ?? '—' },
+          // 규칙 ID는 본문에서 빼고 툴팁·설명 모드로(UX3-01) — 제목이 규칙을 대표하고, 정렬은 ID 순서를 유지한다
+          {
+            key: 't',
+            header: C.col.title,
+            cell: (r) => (
+              <>
+                <span title={r.id}>{r.rule?.title ?? '—'}</span>
+                <Explain rules={[r.id]} />
+              </>
+            ),
+            sort: (r) => r.id,
+          },
           { key: 'l', header: C.col.level, cell: (r) => <span className="ds-nowrap">{r.rule?.level ?? '—'}</span> },
           { key: 'w', header: C.col.wp, cell: (r) => <span className="ds-mono">{r.wp}</span>, sort: (r) => r.wp },
-          { key: 'c', header: C.col.components, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.components.join(' · ')}</span> },
+          { key: 'c', header: C.col.components, cell: (r) => (
+              <span style={{ fontSize: 'var(--fs-xs)' }}>
+                {r.components.map((id, i) => (
+                  <span key={id}>
+                    {i > 0 && ' · '}
+                    <ComponentName id={id} />
+                  </span>
+                ))}
+              </span>
+            ),
+          },
           { key: 'im', header: C.col.impl, cell: (r) => <Done ok={r.status.implemented} /> },
           { key: 'te', header: C.col.test, cell: (r) => <Done ok={r.status.tested} /> },
         ]}
@@ -502,7 +531,7 @@ function ProfilesTab() {
           // 날짜(YYYY-MM-DD)가 줄바꿈에 갈리지 않게 줄바꿈 없는 하이픈으로
           { key: 'o', header: C.col.obligations, cell: (p) => p.obligations.replace(/(\d{4})-(\d{2})-(\d{2})/g, '$1‑$2‑$3') },
           { key: 's', header: C.col.settings, cell: (p) => p.settings },
-          { key: 'st', header: C.col.status, cell: (p) => <VerdictBadge value={p.status === 'CONFIRMED' ? 'PASS' : 'CONDITIONAL'} />, sort: (p) => p.status },
+          { key: 'st', header: C.col.status, cell: (p) => <Done ok={p.status === 'CONFIRMED'} title={p.status} otherwise={<VerdictBadge value="CONDITIONAL" label={p.status} />} />, sort: (p) => p.status },
         ]}
       />
     </div>

@@ -8,8 +8,34 @@ import { Icon, StatusGlyph } from './icons';
 const S = ko.safety;
 
 const ID_TOKEN = /(FFG-[A-Z]{3,4}-\d{3}|TC-FF-\d{2})/;
-/** 문장 속 규칙·시험 ID를 고정폭·줄바꿈 금지로 — SUIT에서 0과 O가 비슷해 안전 ID를 잘못 읽지 않게 */
-export function RuleText({ text }: { text: string }) {
+/** 괄호 안이 규칙·시험 ID뿐인 묶음 '(FFG-PLT-009·FFG-DEAC-010)', 또는 보고서 절·인터페이스·컴포넌트 번호뿐인 묶음 '(보고서 6.3.1)'·'(IF-11)' */
+const ID_GROUP = /\s*\(((?:FFG-[A-Z]{3,4}-\d{3}|TC-FF-\d{2})(?:\s*[·,]\s*(?:FFG-[A-Z]{3,4}-\d{3}|TC-FF-\d{2}))*)\)|\s*\(((?:보고서 [A-Z0-9][\w.-]*|§[\d.]+|IF-\d{2}|D0\d-\d{2})(?:\s*[·,]\s*(?:[\d.]+|IF-\d{2}|D0\d-\d{2}))*)\)/;
+/** 문장 앞에 붙은 규칙 ID 'FFG-CLS-006: …'(서버 거부 사유 형식) */
+const ID_PREFIX = /^(FFG-[A-Z]{3,4}-\d{3}):\s*/;
+
+/**
+ * 문장 속 규칙·시험 ID를 고정폭·줄바꿈 금지로 — SUIT에서 0과 O가 비슷해 안전 ID를 잘못 읽지 않게.
+ * explain: 괄호로 덧붙인 ID·절 번호 묶음은 본문에서 빼고 설명 모드 칩으로 — 3초 테스트 UX3-01(본문에 규칙 코드 없음)
+ */
+export function RuleText({ text, explain = false }: { text: string; explain?: boolean }) {
+  if (explain) {
+    const lead = text.match(ID_PREFIX);
+    if (lead)
+      return (
+        <>
+          <RuleText text={text.slice(lead[0].length)} explain />
+          <Explain rules={[lead[1]]} />
+        </>
+      );
+    const parts = text.split(ID_GROUP);
+    const out: ReactNode[] = [];
+    for (let i = 0; i < parts.length; i += 3) {
+      if (parts[i]) out.push(<RuleText key={i} text={parts[i]} />);
+      if (parts[i + 1]) out.push(<Explain key={`r${i}`} rules={parts[i + 1].split(/\s*[·,]\s*/)} />);
+      if (parts[i + 2]) out.push(<ExplainCodes key={`c${i}`} codes={[parts[i + 2]]} />);
+    }
+    return <>{out}</>;
+  }
   return (
     <>
       {text.split(ID_TOKEN).map((part, i) =>
@@ -118,8 +144,10 @@ export function RuleChecklist({ items, caption = S.ruleList, live, onRule }: { i
         </span>
       </div>
       <ul className="ds-rules__list">
-        {items.map((it) => (
-          <li key={it.id} className="ds-rules__item" data-status={it.status}>
+        {items.map((it) => {
+          const title = it.title ?? reportRule(it.id)?.title;
+          return (
+          <li key={it.id} className="ds-rules__item" data-status={it.status} data-titled={title ? '' : undefined}>
             <span
               className="ds-rules__mark"
               style={
@@ -131,19 +159,27 @@ export function RuleChecklist({ items, caption = S.ruleList, live, onRule }: { i
               <StatusGlyph kind={RULE_GLYPH[it.status]} />
               <span className="ds-sr">{S.rule[it.status]}</span>
             </span>
-            {onRule ? (
-              <button type="button" className="ds-rules__id" onClick={() => onRule(it.id)}>
-                {it.id}
-              </button>
-            ) : (
-              <span className="ds-rules__id">{it.id}</span>
-            )}
+            {/* 규칙 제목을 알면 ID는 설명 모드에서만(UX3-01) — 제목의 툴팁·설명 모드 칩으로 추적성은 남긴다 */}
+            <span className={title ? 'ds-explain ds-rules__code' : 'ds-rules__code'}>
+              {onRule ? (
+                <button type="button" className="ds-rules__id" onClick={() => onRule(it.id)}>
+                  {it.id}
+                </button>
+              ) : (
+                <span className="ds-rules__id">{it.id}</span>
+              )}
+            </span>
             <span className="ds-rules__text">
-              {it.title && <span className="ds-rules__title">{it.title}</span>}
-              {it.reason && <span className="ds-rules__reason">{typeof it.reason === 'string' ? <RuleText text={it.reason} /> : it.reason}</span>}
+              {title && (
+                <span className="ds-rules__title" title={it.id}>
+                  {title}
+                </span>
+              )}
+              {it.reason && <span className="ds-rules__reason">{typeof it.reason === 'string' ? <RuleText text={it.reason} explain /> : it.reason}</span>}
             </span>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );
@@ -239,7 +275,7 @@ export function ApprovalSlots({ requester, slots, now = Date.now() }: { requeste
           <span className="ds-eyebrow ds-eyebrow--ko">{S.requester}</span>
           <span className={requester.name ? 'ds-approvals__who' : 'ds-approvals__who ds-rule-id'}>{requester.name ?? requester.id}</span>
           <span className="ds-field__hint">
-            <RuleText text={S.requesterNote} />
+            <RuleText text={S.requesterNote} explain />
           </span>
         </div>
         <ol className="ds-approvals__slots" aria-label={S.approvals}>
@@ -266,7 +302,7 @@ export function ApprovalSlots({ requester, slots, now = Date.now() }: { requeste
                     </span>
                     <span className="ds-field__hint">
                       {typeof s.blocked === 'string' ? (
-                        <RuleText text={s.blocked} />
+                        <RuleText text={s.blocked} explain />
                       ) : (
                         (s.blocked ?? (s.waitingSince ? <span className="ds-rule-id">{S.waitFor(elapsed(s.waitingSince, now))}</span> : S.waiting))
                       )}
@@ -309,7 +345,7 @@ export function WindowGauge({ used, adding, cap }: { used: number; adding: numbe
         <p className="ds-window__over" role="status">
           <StatusGlyph kind="REVIEW" />
           <span>
-            <RuleText text={S.windowOver} />
+            <RuleText text={S.windowOver} explain />
           </span>
         </p>
       )}
@@ -386,6 +422,19 @@ export function Explain({ rules }: { rules: readonly string[] }) {
     <span className="ds-explain" data-explain-rules={rules.join(' ')}>
       {rules.map((id) => (
         <ClauseChip key={id} id={id} title={reportRule(id)?.title} onOpen={openRule} />
+      ))}
+    </span>
+  );
+}
+
+/** 규칙이 아닌 추적 코드(컴포넌트 D0x-xx·인터페이스 IF-xx·시나리오 ID) — 설명 모드에서만 보인다(UX3-01) */
+export function ExplainCodes({ codes }: { codes: readonly string[] }) {
+  return (
+    <span className="ds-explain" data-explain-codes={codes.join(' ')}>
+      {codes.map((c) => (
+        <span key={c} className="ds-explain__code">
+          {c}
+        </span>
       ))}
     </span>
   );

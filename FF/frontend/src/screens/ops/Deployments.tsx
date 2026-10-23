@@ -5,7 +5,7 @@ import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
 import { whyDisabled, type KeyTone, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
-import { usePermission, when } from '../shared';
+import { InterfaceName, usePermission, when } from '../shared';
 import { Progress, PubStatus, type Delivery } from './shared';
 
 const D = ko.deploy;
@@ -182,7 +182,7 @@ export function DeploymentDetail() {
                     { key: 'at', header: D.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
                     { key: 'v', header: ko.fleet.vehicle, cell: (r) => <span className="ds-mono">{r.vin}</span> },
                     { key: 'o', header: 'observed', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', wordBreak: 'break-all' }}>{r.rejectReason ? `REJECTED · ${r.rejectReason}` : r.observed}</span> },
-                    { key: 'via', header: 'via', cell: (r) => <span className="ds-tag">{r.via}</span> },
+                    { key: 'via', header: 'via', cell: (r) => <InterfaceName id={r.via} /> },
                   ]}
                 />
               </Panel>

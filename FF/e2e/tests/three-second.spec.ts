@@ -9,6 +9,8 @@
 //   ⑦ 핵심 메시지 문장·행동 링크를 본문에서 글자 그대로 되풀이하지 않는다
 //   ⑧ 헤드라인 한 패턴(하네스 3판, 결함 3): 큰 값은 숫자(건수·비율·분수)만 — 낱말 상태(DEPLOYED·ON)는 상태 pill,
 //      톤은 ok·warn·danger·neutral, 문장 글자는 본문색(색은 숫자·pill·표식에만), 값이 0이면 neutral
+//   ⑨ 본문(#main)의 보이는 글자에 규칙·컴포넌트 코드 없음(UX3-01) — 코드는 설명 모드(.ds-explain·.ds-page__codes)나 title 툴팁에서만.
+//      원시 데이터(pre — JSON 덤프)와 접힌 내용은 제외. 아직 못 고친 화면은 BODY_CODE_ALLOW(경로 → 사유) 래칫 — 고치면 목록에서 빼야 통과한다
 // BDC 데모(/twin/*)는 별도 레거시 화면 묶음이라, 디자인 갤러리(/_design)는 부품 견본이라 대상에서 뺀다.
 import { expect, test, type Page } from '@playwright/test';
 import { DRILLDOWNS, MENU_ENTRIES } from './menu';
@@ -17,6 +19,13 @@ const SKIP = (u: string) => u.startsWith('/twin') || u.startsWith('/_design');
 const CODE = /FFG-[A-Z]+-\d|\bIF-\d|\bD0\d-\d|보고서 \d|§\d/;
 /** 헤드라인 값 — 숫자·비율·분수·시간, 아직 모름(—) */
 const KEY_VALUE = /^(?:[—…]|[+−-]?\d[\d,.]*\s*(?:%|s|ms|분|건|개|대|일)?(?:\s*\/\s*\d[\d,.]*)?)$/;
+/** ⑨ 본문 코드 — CODE + 따라하기 시나리오 코드(CS-01·CLASSIFY-GATE·KILL-DC2) */
+const BODY_CODE = new RegExp(String.raw`${CODE.source}|\bCS-\d|\bCLASSIFY-GATE\b|\bKILL-DC\d`);
+/** ⑨ 래칫 — 본문에 코드가 아직 보이는 화면(URL → 사유). 줄이기만 한다 */
+const BODY_CODE_ALLOW: Record<string, string> = {
+  '/arch/components': '42 컴포넌트 카탈로그 — 컴포넌트·IF ID가 카드의 식별자(FEAT ID와 같은 역할). 이름 중심 카드로 바꿀지 결정 필요',
+  '/admin/iam': '권한 표 — 컴포넌트 ID 열과 API 요약문(contracts routes.ts summary)의 IF·FFG 코드. 요약문 정리는 계약 쪽 작업',
+};
 const ZERO = /^0+(?:\.0+)?\s*(?:%|건|개|대)?(?:\s*\/\s*\d+)?$/;
 
 async function threeSeconds(page: Page, url: string) {
@@ -95,6 +104,26 @@ async function threeSeconds(page: Page, url: string) {
     if (ZERO.test(head.value)) expect(head.tone, `값이 0이면 neutral: "${head.value}"`).toBe('neutral');
   }
   expect(head.textColor, '헤드라인 문장 글자는 본문색 — 판정 색은 숫자·pill·표식에만').toBe(head.ink);
+
+  // ⑨ 본문 코드(UX3-01) — 설명 모드를 끈 기본 화면에서 보이는 글자만 본다
+  const codes = await page.evaluate((src) => {
+    const re = new RegExp(src);
+    const out: string[] = [];
+    const main = document.querySelector('#main')!;
+    const walk = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      const t = n.textContent!.trim();
+      const el = n.parentElement;
+      if (!t || !el || !re.test(t) || el.closest('.ds-explain, .ds-explain-block, .ds-page__codes, [aria-hidden="true"], svg, canvas, script, style, option, pre, details:not([open]) > :not(summary)')) continue;
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      if (![...range.getClientRects()].some((r) => r.width && r.height) || getComputedStyle(el).visibility === 'hidden') continue;
+      out.push(`${el.tagName}.${el.className} "${t.slice(0, 50)}"`);
+    }
+    return out;
+  }, BODY_CODE.source);
+  if (BODY_CODE_ALLOW[url]) expect(codes.length, `⑨ 허용 목록(${BODY_CODE_ALLOW[url]})에 있는데 본문 코드가 없다 — BODY_CODE_ALLOW에서 빼라`).toBeGreaterThan(0);
+  else expect(codes, '⑨ 본문에 규칙·컴포넌트 코드 없음 — 설명 모드(Explain·codes)나 title 툴팁으로').toEqual([]);
 
   const h1 = (await page.locator('#main h1').first().innerText()).trim();
   expect((await page.locator('.sh-trail li').allInnerTexts()).map((t) => t.trim()), '경로 표시는 H1을 되풀이하지 않는다').not.toContain(h1);

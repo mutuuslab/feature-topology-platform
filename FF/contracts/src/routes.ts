@@ -173,7 +173,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'stageRollout', method: 'POST', path: '/api/policies/:id/rollout', summary: '단계적 기능 배포 — 승인 범위 안 코호트 단계', component: 'D01-08', roles: ['RELEASE_MANAGER', 'OPERATOR'], body: RolloutStageBody },
 
   // 사용 권한 (D01-05) · 적용 대상 (D01-04) · 활성화 제어 (D01-09)
-  { name: 'vehicles', method: 'GET', path: '/api/vehicles', summary: '데모 Fleet 차량', component: 'D01-04' },
+  { name: 'vehicles', method: 'GET', path: '/api/vehicles', summary: 'Fleet 차량 — limit·cursor를 주면 VIN 순 페이지(응답 nextCursor), 없으면 전체. total·sample(표본 차량 수)은 늘 함께', component: 'D01-04', query: ['limit', 'cursor'] },
   { name: 'entitlements', method: 'GET', path: '/api/entitlements', summary: '사용 권한 (체험권·구독·구매)', component: 'D01-05', query: ['vin', 'source'] },
   { name: 'trials', method: 'GET', path: '/api/trials', summary: '체험권 차량 목록 (상태·성향 필터)', component: 'D01-05', query: ['catalogId', 'state', 'source', 'country', 'region', 'vehicleModel', 'trim', 'ageBand', 'drivingStyle', 'adasUsage', 'q', 'page', 'pageSize'] },
   { name: 'offerTrials', method: 'POST', path: '/api/trials/offers', summary: '차량별 체험 제안 (14일 안에 수락)', component: 'D01-05', roles: ['PRODUCT_AUTHOR', 'OPERATOR', 'SYSTEM'], body: OfferTrialsBody },

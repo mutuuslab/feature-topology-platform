@@ -49,11 +49,15 @@ const STEPS: Step[] = [
   { id: 'build:frontend', title: '프론트 빌드', cmd: `${npx} vite build`, cwd: 'frontend' },
   { id: 'build:prod', title: '운영 빌드 (VITE_AUTH=oidc — 데모 로그인·데모 역할 선택기가 번들에 없다, dist-prod는 검사 뒤 지움)', cmd: `node --test tools/prod-bundle.test.ts` },
   { id: 'budget', title: '성능 예산 (첫 화면·화면 묶음 gzip, harness/budgets.json)', cmd: `node --test tools/bundle-budget.test.ts && node tools/bundle-budget.ts` },
-  { id: 'e2e', title: 'e2e (기능·접근성·레이아웃)', cmd: `${npx} playwright test --grep-invert @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
+  // 부하 시험(RD-P2-01) — 축소 데이터로 주요 API 예산(harness/perf-budgets.json)·질의 계획은 backend 시험(query-plans.spec)이 본다. 포트 E2E_LOAD_PORT(기본 9659)
+  { id: 'perf', title: '부하 시험 light (Feature 200·차량 5천·감사 5만 — 시나리오별 p95 예산, 빌드된 백엔드 별도 프로세스)', cmd: `${npm} run build -w feature-topology-backend && node --test tools/load/stats.test.ts && node tools/load/run.ts --profile light` },
+  { id: 'perf:full', title: '부하 시험 full (Feature 2천·차량 10만·감사 100만·이벤트 50만·알림 10만 — 첫 실행은 시드 2~3분, .sim/load에 캐시)', cmd: `node tools/load/run.ts --profile full`, full: true },
+  { id: 'e2e', title: 'e2e (기능·접근성·레이아웃 — chromium 전체 + firefox·webkit 핵심 흐름 스모크 + 768·390 좁은 폭)', cmd: `${npx} playwright test --grep-invert @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
   { id: 'e2e:static', title: '정적 데모 (공개 사이트 방식 빌드 — 모든 메뉴·하위 화면·탭이 스냅샷만으로 열린다)', cmd: `${npx} playwright test -c playwright.static.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.static.config.ts')) },
   { id: 'e2e:oidc', title: 'SSO 로그인 (시험 IdP·FF_AUTH=oidc 백엔드·VITE_AUTH=oidc 빌드 — 로그인·부여 역할·승인·로그아웃·헤더 위조 401)', cmd: `${npx} playwright test -c playwright.oidc.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.oidc.config.ts')) },
   { id: 'e2e:firstrun', title: '빈 DB 첫 실행 (FF_SEED=none 파일 DB — 모든 메뉴 오류·영원한 로딩·데모 식별자 없음 · 화면으로 첫 Feature 등록, RD-OPS-02)', cmd: `${npx} playwright test -c playwright.firstrun.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.firstrun.config.ts')) },
   { id: 'test:pg', title: '백엔드 시험을 PostgreSQL 16에서 (Docker postgres:16 127.0.0.1:9690 — 통과 수 래칫 pgBackendPass, 20-92 §6)', cmd: `node tools/test-pg.ts`, full: true },
+  { id: 'e2e:engines', title: '좁은 폭을 다른 엔진으로 (tablet 768 firefox · mobile 390 webkit, RD-P2-03)', cmd: `${npx} playwright test --project=tablet-firefox --project=mobile-webkit`, cwd: 'e2e', env: { E2E_WEB: 'preview', E2E_ALL_ENGINES: '1' }, full: true, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
   { id: 'e2e:visual', title: '시각 회귀', cmd: `${npx} playwright test --grep @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, full: true, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
 ];
 

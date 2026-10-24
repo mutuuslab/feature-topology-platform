@@ -12,8 +12,9 @@ export class AuditHistoryService {
   list(q: AuditQuery) {
     return this.audit.list(q);
   }
+  /** 감사 체인 검증 — 묶음으로 나눠 이벤트 루프를 막지 않는다(AuditService.verifyChainAsync) */
   chain() {
-    return this.audit.verifyChain();
+    return this.audit.verifyChainAsync();
   }
 }
 

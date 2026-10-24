@@ -67,6 +67,44 @@ describe('감사 해시 체인 (FFG-PLT-015)', () => {
   });
 });
 
+describe('감사 체인 묶음 검증 — HTTP 창구가 이벤트 루프를 막지 않는다(출시 준비 RD-P2-01)', () => {
+  it('동기 검증과 같은 판정(무결·내용 수정·행 삭제·끝 행 삭제)을 묶음으로 나눠 내고, 묶음 사이에 다른 일이 끼어든다', async () => {
+    const { http, db, audit } = await boot();
+    for (let i = 0; i < 4; i++) await http().post('/api/pki/rotate').set(actor('u-safety', 'SAFETY_OFFICER')).send({ reason: `교체 ${i}` }).expect(201);
+    expect(await audit.verifyChainAsync(2)).toEqual(audit.verifyChain());
+    expect((await http().get('/api/audit/chain').expect(200)).body).toEqual(audit.verifyChain());
+    // 감사 100만 행에서 한 번에 검증하면 요청 하나가 이벤트 루프를 약 30 s 막았다 — 묶음 사이에 앞서 예약된 일이 돈다
+    let ran = false;
+    setImmediate(() => (ran = true));
+    const { ranBefore } = await audit.verifyChainAsync(1).then(() => ({ ranBefore: ran }));
+    expect(ranBefore).toBe(true);
+    // 동시에 부르면 진행 중인 검증 하나를 함께 기다린다
+    const a = audit.verifyChainAsync(1);
+    expect(audit.verifyChainAsync(1)).toBe(a);
+    await a;
+
+    const ids = db.all<{ id: number }>('SELECT id FROM audit ORDER BY id').map((r) => r.id);
+    db.run('DROP TRIGGER audit_no_update');
+    db.run('DROP TRIGGER audit_no_delete');
+    db.run("UPDATE audit SET reason = '조작' WHERE id = ?", ids[1]);
+    expect(await audit.verifyChainAsync(2)).toEqual(audit.verifyChain());
+    expect(audit.verifyChain()).toMatchObject({ ok: false, broken: { id: ids[1], kind: 'hash' } });
+    db.run('DELETE FROM audit WHERE id = ?', ids[1]);
+    expect(await audit.verifyChainAsync(2)).toEqual(audit.verifyChain());
+    expect(audit.verifyChain()).toMatchObject({ ok: false, broken: { id: ids[2], kind: 'prev' } });
+  });
+
+  it('끝 행을 지우면 묶음 검증도 기억한 끝(head)으로 잡는다', async () => {
+    const { http, db, audit } = await boot();
+    for (let i = 0; i < 3; i++) await http().post('/api/pki/rotate').set(actor('u-safety', 'SAFETY_OFFICER')).send({ reason: `교체 ${i}` }).expect(201);
+    const last = db.get<{ id: number }>('SELECT id FROM audit ORDER BY id DESC LIMIT 1')!.id;
+    db.run('DROP TRIGGER audit_no_delete');
+    db.run('DELETE FROM audit WHERE id = ?', last);
+    expect(await audit.verifyChainAsync(2)).toMatchObject({ ok: false, broken: { id: last, kind: 'head' } });
+    expect(await audit.verifyChainAsync(2)).toEqual(audit.verifyChain());
+  });
+});
+
 describe('감사 체인 고정점 — DB 밖 서명(FF_AUDIT_KEY · FF_AUDIT_ANCHOR_FILE)', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ff-anchor-'));
   afterEach(() => {
@@ -113,6 +151,7 @@ describe('감사 체인 고정점 — DB 밖 서명(FF_AUDIT_KEY · FF_AUDIT_ANC
     }
     forget(audit);
     expect(audit.verifyChain()).toMatchObject({ ok: false, broken: { kind: 'anchor' } });
+    expect(await audit.verifyChainAsync(2)).toEqual(audit.verifyChain()); // 묶음 검증도 같은 판정(RD-P2-01)
   });
 
   it('고정점 파일의 서명을 바꾸면(키 없이 위조) 잡는다', async () => {

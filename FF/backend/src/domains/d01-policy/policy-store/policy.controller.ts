@@ -4,6 +4,7 @@ import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, PolicyDecisionBody
 import { z } from 'zod';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { DomainError } from '../../../kernel/errors';
+import { decodeCursor, encodeCursor, pageLimit } from '../../../kernel/paging';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { ActivationService } from '../activation/activation.service';
 import { EntitlementService } from '../entitlement/entitlement.service';
@@ -113,9 +114,21 @@ export class RuntimeController {
     private readonly activation: ActivationService,
   ) {}
 
+  /** limit을 주면 VIN 순 한 페이지(cursor = 이전 응답 nextCursor), 없으면 전체(뒤 호환). total·sample(5년 재생 표본 차량 수)은 늘 함께 —
+   *  대시보드 가젯은 limit=1로 수만 읽는다(차량 10만 대 전체 목록이 24 MiB·요청당 수 초였다, 출시 준비 RD-P2-01) */
   @Get('vehicles')
-  vehicles() {
-    return { items: this.targeting.vehicles() };
+  vehicles(@Query('limit') limit?: string, @Query('cursor') cursor?: string) {
+    const counts = this.targeting.vehicleCounts();
+    const n = pageLimit(limit);
+    if (n === undefined) return { items: this.targeting.vehicles(), ...counts, nextCursor: null };
+    let after: string | undefined;
+    if (cursor) {
+      const c = decodeCursor(cursor);
+      if (!c || typeof c.v !== 'string') throw new DomainError('VALIDATION', '목록 커서를 읽을 수 없습니다. 처음 페이지부터 다시 불러오세요.', { field: 'cursor' });
+      after = c.v;
+    }
+    const items = this.targeting.vehiclePage(n, after);
+    return { items, ...counts, nextCursor: items.length === n ? encodeCursor({ v: items[items.length - 1].vin }) : null };
   }
 
   @Get('entitlements')

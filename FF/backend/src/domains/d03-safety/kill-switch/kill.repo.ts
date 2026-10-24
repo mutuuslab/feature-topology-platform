@@ -26,6 +26,10 @@ export class KillRepo implements KillState {
     const rows = status ? this.db.all<{ doc: string }>('SELECT doc FROM kill_request WHERE status = ? ORDER BY kill_id DESC', status) : this.db.all<{ doc: string }>('SELECT doc FROM kill_request ORDER BY kill_id DESC');
     return rows.map((r) => JSON.parse(r.doc));
   }
+  /** 한 Feature의 요청만(최신 순) — 진행 중 차단 확인이 모든 요청을 읽지 않게(색인 kill_request_feature) */
+  forFeature(featureId: string): KillRequest[] {
+    return this.db.all<{ doc: string }>('SELECT doc FROM kill_request WHERE feature_id = ? ORDER BY kill_id DESC', featureId).map((r) => JSON.parse(r.doc));
+  }
   active(): KillRequest[] {
     return this.list('ACTIVE');
   }

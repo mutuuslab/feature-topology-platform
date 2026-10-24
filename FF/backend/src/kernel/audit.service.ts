@@ -232,6 +232,43 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
     return { ok: true, verified: rows.length, head: end, broken: null, anchors: anchors.info };
   }
 
+  private chainRun: Promise<ChainReport> | null = null;
+  /**
+   * 체인 검증(HTTP 창구용) — verifyChain과 같은 판정을 id 순 묶음(chunk 행)으로 나눠 하고, 묶음 사이에 이벤트 루프를 놓아 준다.
+   * 감사 100만 행을 한 번에 읽어 검증하면 요청 하나가 이벤트 루프를 약 30 s 막아 차량 요청까지 멈췄다(출시 준비 RD-P2-01 부하 시험).
+   * 동시에 여러 번 부르면 진행 중인 검증 하나를 함께 기다린다(같은 일을 겹쳐 하지 않는다). 결과를 시간 동안 캐시하지는 않는다 — 부를 때마다 전체를 다시 본다.
+   */
+  verifyChainAsync(chunk = 1000): Promise<ChainReport> {
+    this.chainRun ??= this.runChain(chunk).finally(() => (this.chainRun = null));
+    return this.chainRun;
+  }
+  private async runChain(chunk: number): Promise<ChainReport> {
+    const anchors = this.anchorsReport();
+    const fail = (verified: number, head: string | null, id: number, kind: NonNullable<ChainReport['broken']>['kind']): ChainReport => ({ ok: false, verified, head, broken: { id, kind }, anchors: anchors.info });
+    let prev = AUDIT_GENESIS;
+    let lastId = 0;
+    let verified = 0;
+    for (;;) {
+      const rows = this.db.all<any>('SELECT * FROM audit WHERE id > ? ORDER BY id LIMIT ?', lastId, chunk);
+      for (const r of rows) {
+        if (r.prev_hash !== prev) return fail(verified, prev, r.id, 'prev');
+        if (r.hash !== chainHash(prev, r)) return fail(verified, prev, r.id, 'hash');
+        prev = r.hash;
+        lastId = r.id;
+        verified++;
+      }
+      if (rows.length < chunk) break;
+      await new Promise<void>((res) => setImmediate(res));
+    }
+    const end = verified ? prev : null;
+    const hashAt = (id: number) => this.db.get<{ hash: string | null }>('SELECT hash FROM audit WHERE id = ?', id)?.hash ?? undefined;
+    // ① 기억한 끝 · ② 서명한 고정점 — verifyChain과 같다(검증한 행의 hash와 비교)
+    if (this.head && hashAt(this.head.id) !== this.head.hash) return fail(verified, end, this.head.id, 'head');
+    if (anchors.broken !== null) return fail(verified, end, anchors.broken, 'anchor');
+    for (const a of anchors.list) if (hashAt(a.id) !== a.hash) return fail(verified, end, a.id, 'anchor');
+    return { ok: true, verified, head: end, broken: null, anchors: anchors.info };
+  }
+
   /** 고정점 파일 읽기 — 서명이 틀린(또는 읽을 수 없는) 첫 줄의 고정 id를 broken으로(-1 = id도 못 읽음) */
   private anchorsReport(): { list: AuditAnchor[]; broken: number | null; info: ChainReport['anchors'] } {
     const cfg = this.anchorFile();

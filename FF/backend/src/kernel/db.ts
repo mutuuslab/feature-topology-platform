@@ -37,6 +37,9 @@ export class SqliteDb implements Db {
     this.db = new DatabaseSync(path);
     // secure_delete — 지운·덮어쓴 내용을 0으로 채운다(봉인 전 평문 비밀이 빈 페이지에 남지 않게, RD-SEC-06)
     this.db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA secure_delete = ON;');
+    // 읽기 캐시 — 기본 2 MiB 페이지 캐시는 감사 100만·이벤트 50만 행 DB에서 흩어진 행 읽기(대상별 이벤트·감사)가 매번 디스크로 갔다.
+    // 64 MiB 캐시 + 256 MiB 메모리 매핑(읽기만, 쓰기·내구성 설정은 그대로). 출시 준비 RD-P2-01 부하 시험
+    this.db.exec('PRAGMA cache_size = -65536; PRAGMA mmap_size = 268435456;');
   }
 
   get inTransaction() {

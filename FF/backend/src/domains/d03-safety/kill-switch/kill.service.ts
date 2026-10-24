@@ -86,6 +86,12 @@ export class KillService {
     private readonly profiles: SafetyProfileService,
   ) {}
 
+  /** 대상 차량의 시장(국가) — 차량마다 전체 차량 목록을 읽어 찾던 것(차량 10만 대에서 요청 하나 0.4 s, 출시 준비 RD-P2-01)을 한 번의 VIN 조회로 */
+  private countriesOf(vins: string[]): string[] {
+    const by = new Map(this.fleet.vehiclesByVin(vins).map((v) => [v.vin, v.country]));
+    return vins.map((v) => by.get(v) ?? 'OTHER');
+  }
+
   /** 차단 영향 범위 — 대상 Feature + 이를 REQUIRES하는 Feature(전이), 그 배포 flag, 적용 범위에 드는 차량. 게이트가 보는 등급·24시간 누적도 함께 */
   /** category — 새 요청의 사유 분류. 생략하면 긴급(안전·보안·규제) 요청으로 본다 */
   preview(featureId: string, featureVersion: string, vins?: string[], category?: ReasonCategory) {
@@ -102,9 +108,14 @@ export class KillService {
     const deployed = this.policies.all().filter((p) => p.status === 'DEPLOYED' && ids.includes(p.featureId));
     // 차량 범위: 배포 정책이 있으면 그 Feature들의 적용 범위, 없으면 대상 Feature의 적용 범위
     const scopes = deployed.length ? deployed.map((p) => this.features.get(p.featureId, p.featureVersion)).filter((x) => !!x) : [f];
-    const inScope = this.fleet.vehicles().filter((v) => scopes.some((s) => s!.country === v.country && s!.vehicleModel === v.vehicleModel && s!.trim === v.trim));
-    const unknown = (vins ?? []).filter((v) => !inScope.some((x) => x.vin === v));
-    const vehicles = vins?.length ? inScope.filter((v) => vins.includes(v.vin)) : inScope;
+    // 차량을 지정하면 그 차량만 읽어 범위를 확인하고, 아니면 범위가 맞는 차량만 SQL로 고른다 — 차량 10만 대 전체를 읽어 거르면
+    // 요청 하나가 1초 넘게 이벤트 루프를 막았다(출시 준비 RD-P2-01 부하 시험)
+    const fits = (v: { country: string; vehicleModel: string; trim: string }) => scopes.some((s) => s!.country === v.country && s!.vehicleModel === v.vehicleModel && s!.trim === v.trim);
+    const inScope = vins?.length ? this.fleet.vehiclesByVin(vins).filter(fits) : this.fleet.vehiclesInScope(scopes as { country: string; vehicleModel: string; trim: string }[]);
+    const inScopeVins = new Set(inScope.map((x) => x.vin));
+    const unknown = (vins ?? []).filter((v) => !inScopeVins.has(v));
+    const vehicles = inScope;
+    const vehicleVins = new Set(vehicles.map((x) => x.vin));
     const snap = this.gate.snapshot(featureId, featureVersion);
     return {
       feature: { featureId, version: featureVersion, name: f.name, lifecycle: f.lifecycle, asil: f.asil },
@@ -117,13 +128,13 @@ export class KillService {
       // (5년 운영 재생에서 발견: 만료된 체험 한 대의 상업 비활성화가 기능 전체의 안전 Kill을 '이미 차단 중'으로 거부했다)
       activeKill:
         this.kills
-          .list()
+          .forFeature(featureId)
           .find(
             (k) =>
               k.featureId === featureId &&
               (k.status === 'ACTIVE' || this.effective(k).status === 'REQUESTED') &&
               !(k.reasonCategory === 'COMMERCIAL' && category !== 'COMMERCIAL') &&
-              k.vins.some((v) => vehicles.some((x) => x.vin === v)),
+              k.vins.some((v) => vehicleVins.has(v)),
           )?.killId ?? null,
       // 게이트가 보는 이 Version(D.6) — 화면 체크리스트·누적 게이지
       registry: snap.feature,
@@ -220,7 +231,7 @@ export class KillService {
         expiresAt: new Date(now.getTime() + APPROVAL_TTL_MS).toISOString(),
         recallCampaignId: body.recallCampaignId ?? null,
         containmentJustification: body.containmentJustification ?? null,
-        ...(safetyKill ? { defectDeterminedAt: body.defectDeterminedAt ?? null, recallReports: recallReportDue(pv.vehicles.map((v) => this.fleet.vehicles().find((x) => x.vin === v.vin)?.country ?? 'OTHER'), body.defectDeterminedAt ?? null) } : {}),
+        ...(safetyKill ? { defectDeterminedAt: body.defectDeterminedAt ?? null, recallReports: recallReportDue(this.countriesOf(pv.vehicles.map((v) => v.vin)), body.defectDeterminedAt ?? null) } : {}),
         userNoticeRef: opts.userNoticeRef ?? null,
         gate: null,
         command: null,

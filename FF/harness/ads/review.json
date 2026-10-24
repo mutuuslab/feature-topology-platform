@@ -202,7 +202,7 @@
     "FFP-F011": {
       "verdict": "구현",
       "evidence": [
-        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:172",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:183",
         "contracts/src/rules/policy-gate.ts:119",
         "backend/src/domains/d06-qsec/iam/post-review.service.ts:31"
       ],
@@ -242,7 +242,7 @@
     "FFP-F013": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d01-policy/policy-repos.ts:20",
+        "backend/src/domains/d01-policy/policy-repos.ts:21",
         "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:33",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:115"
       ],
@@ -338,7 +338,7 @@
       "evidence": [
         "contracts/src/schemas/wire.ts:144",
         "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:173",
-        "backend/src/adapters/gleo/gleo.adapter.ts:70"
+        "backend/src/adapters/gleo/gleo.adapter.ts:69"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts",
@@ -653,7 +653,7 @@
       "evidence": [
         "contracts/src/schemas/wire.ts:68",
         "backend/src/domains/d03-safety/restore/restore.service.ts:64",
-        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:178"
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:189"
       ],
       "tests": [
         "backend/test/d03/kill-v2.spec.ts",
@@ -1100,7 +1100,7 @@
       "evidence": [
         "backend/src/domains/d03-safety/deploy-safety/policy-gate.service.ts:159",
         "backend/src/domains/d03-safety/deploy-safety/policy-gate.service.ts:155",
-        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:274",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:285",
         "contracts/src/rules/kill-v2.ts:167",
         "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts:146",
         "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts:103"

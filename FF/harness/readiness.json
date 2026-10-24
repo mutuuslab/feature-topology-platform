@@ -32,7 +32,7 @@
         "frontend/src/api/actor.ts:15-19"
       ],
       "criteria": "운영 빌드에는 역할 선택기가 없고 역할은 서버(/api/iam/me)가 준다. 역할 선택기는 데모 빌드에서만",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -50,7 +50,7 @@
         "frontend/src/auth.ts:7-9,30"
       ],
       "criteria": "운영 빌드는 OIDC(인가 코드 + PKCE)로 로그인하고 데모 자격 증명이 번들에 없다. 데모 로그인은 데모 빌드에서만",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

@@ -25,6 +25,7 @@ import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
 import { DomainError, type ErrorCode } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
+import { SHARED_STATE, type SharedStateStore } from '../../../kernel/shared-state';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { ActivationService } from '../../d01-policy/activation/activation.service';
 import { EntitlementService } from '../../d01-policy/entitlement/entitlement.service';
@@ -45,9 +46,6 @@ type Rejection = { code: ErrorCode; message: string; details?: unknown };
 @Injectable()
 @PlatformComponent(COMPONENT)
 export class VehicleRequestService {
-  /** 차량별 고정 창 빈도 카운터 (프로세스 메모리 — 재시작하면 초기화) */
-  private readonly windows = new Map<string, { start: number; count: number }>();
-
   constructor(
     private readonly repo: VehicleRequestRepo,
     private readonly fleet: FleetRepo,
@@ -61,6 +59,8 @@ export class VehicleRequestService {
     private readonly clock: Clock,
     @Inject(DB) private readonly db: Db,
     private readonly features: FeatureRepo,
+    /** 차량별 고정 창 빈도 카운터 — 공유 상태(DB): 인스턴스가 여럿이어도·재시작해도 같은 창(RD-OPS-14) */
+    @Inject(SHARED_STATE) private readonly shared: SharedStateStore,
   ) {}
 
   // ---- 공통 관문 ----
@@ -80,13 +80,8 @@ export class VehicleRequestService {
   /** VIN별 고정 창 빈도 한도 — 넘으면 429와 Retry-After(초) */
   private limit(actor: Actor, vin: string, channel: 'QUERY' | 'REPORT', type: VehicleReportType | 'QUERY', summary: string, res: Response) {
     const now = this.clock.now().getTime();
-    const w = this.windows.get(vin);
-    if (!w || now - w.start >= VEHICLE_RATE_LIMIT.windowMs) {
-      this.windows.set(vin, { start: now, count: 1 });
-      return;
-    }
-    w.count++;
-    if (w.count <= VEHICLE_RATE_LIMIT.requests) return;
+    const w = this.shared.hit(`vehicle-rate:${vin}`, VEHICLE_RATE_LIMIT.windowMs, now);
+    if (w.n <= VEHICLE_RATE_LIMIT.requests) return;
     const retryAfter = Math.max(1, Math.ceil((w.start + VEHICLE_RATE_LIMIT.windowMs - now) / 1000));
     res.setHeader('Retry-After', String(retryAfter));
     this.reject(actor, vin, channel, type, null, summary, { code: 'RATE_LIMITED', message: `요청이 너무 잦습니다 — ${retryAfter}초 뒤에 다시 보내세요.`, details: { retryAfterSec: retryAfter, limit: VEHICLE_RATE_LIMIT } }, false);

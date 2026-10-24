@@ -90,8 +90,13 @@
     "note": "출시 준비 열린 P0 수(harness/readiness.json) — 0까지"
   },
   "readinessOpenP1": {
-    "value": 1,
+    "value": 0,
     "direction": "max",
     "note": "출시 준비 열린 P1 수 — 0까지"
+  },
+  "pgBackendPass": {
+    "value": 769,
+    "direction": "min",
+    "note": "백엔드 시험의 PostgreSQL 16 통과 수(npm run test:pg, 20-92 §6) — 늘어나기만 한다. 2026-10-25 1단계 769/775(건너뜀 6: 실서버 없음 4 · GLEO 준비 대기 시간 한도 2)"
   }
 }

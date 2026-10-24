@@ -58,6 +58,7 @@
     "ota:reference": "node tools/ota-reference/server.ts",
     "ota:conformance": "node tools/ota-reference/conformance.ts",
     "readiness": "node tools/readiness.ts",
+    "test:pg": "node tools/test-pg.ts",
     "migrations:lock": "node tools/migrations-lock.ts --update",
     "evidence:remap": "node tools/evidence-remap.ts",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",

@@ -52,6 +52,7 @@ const STEPS: Step[] = [
   { id: 'e2e:static', title: '정적 데모 (공개 사이트 방식 빌드 — 모든 메뉴·하위 화면·탭이 스냅샷만으로 열린다)', cmd: `${npx} playwright test -c playwright.static.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.static.config.ts')) },
   { id: 'e2e:oidc', title: 'SSO 로그인 (시험 IdP·FF_AUTH=oidc 백엔드·VITE_AUTH=oidc 빌드 — 로그인·부여 역할·승인·로그아웃·헤더 위조 401)', cmd: `${npx} playwright test -c playwright.oidc.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.oidc.config.ts')) },
   { id: 'e2e:firstrun', title: '빈 DB 첫 실행 (FF_SEED=none 파일 DB — 모든 메뉴 오류·영원한 로딩·데모 식별자 없음 · 화면으로 첫 Feature 등록, RD-OPS-02)', cmd: `${npx} playwright test -c playwright.firstrun.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.firstrun.config.ts')) },
+  { id: 'test:pg', title: '백엔드 시험을 PostgreSQL 16에서 (Docker postgres:16 127.0.0.1:9690 — 통과 수 래칫 pgBackendPass, 20-92 §6)', cmd: `node tools/test-pg.ts`, full: true },
   { id: 'e2e:visual', title: '시각 회귀', cmd: `${npx} playwright test --grep @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, full: true, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
 ];
 

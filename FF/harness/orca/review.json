@@ -408,7 +408,7 @@
       "evidence": [
         "frontend/src/data/twin/engine.ts:409",
         "contracts/src/flags/p0.ts:224",
-        "backend/src/domains/d02-runtime/vehicle-requests/vehicle-request.service.ts:203"
+        "backend/src/domains/d02-runtime/vehicle-requests/vehicle-request.service.ts:198"
       ],
       "tests": [
         "frontend/src/__tests__/twinEngine.test.ts",
@@ -645,7 +645,7 @@
       "evidence": [
         "contracts/src/rules/ext.ts:229",
         "backend/src/domains/d05-ext/legacy/legacy.service.ts:42",
-        "backend/src/kernel/migrations.ts:330"
+        "backend/src/kernel/migrations.ts:331"
       ],
       "tests": [
         "backend/test/ext/p10.spec.ts"

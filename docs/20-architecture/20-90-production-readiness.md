@@ -278,7 +278,7 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 - 화면: 데모 설치 "모의(연결 전)", 운영 설치·꺼진 연결 "연결 안 됨"(`ConnectionBadge`). 메일 발송 기록의 SENT는 "모의 발송"·"보내지 않음"으로, 체험 구매는 안내 + 운영에서 버튼 비활성, 게시본 연계 호출(IF-05)에 표시, 외부 연계 현황에 연결 상태 표(Data Lake 포함). live가 되면 표시가 사라진다.
 - 운영 모드에서 과금이 live가 아니면 백엔드가 구매를 GUARD_FAILED로 거부한다(모의 결제가 실제 구독처럼 남지 않게).
 - 시험: `backend/test/kernel/connections.spec.ts`, `frontend/src/__tests__/mockConnections.test.tsx`, e2e `e2e/tests/mock-connections.spec.ts`.
-- 남은 것: 실제 메일(SMTP)·과금·OTA(IF-05)·Data Lake(IF-15) 어댑터 — 연결 대상 시스템은 사용자 결정이 필요하다. Data Lake는 별도 서버로 만든다(사용자 결정 2026-10-24) — v1 설계·IF-15 계약은 [80-75](../80-integration/80-75-data-lake-server.md), Lake 삭제는 RD-P2-05와 함께 닫는다(80-75 5.4).
+- 남은 것: 실제 메일(SMTP)·과금·OTA(IF-05)·Data Lake(IF-15) 어댑터 — 연결 대상 시스템은 사용자 결정이 필요하다. Data Lake는 별도 서버로 만들고, 차량이 올려 보내는 자료는 모두 Lake를 거쳐 FF로 온다(사용자 결정 2026-10-24 "차량 → Lake → FF") — v1 설계·IF-15 계약·지금 차량 창구의 전환 계획은 [80-75](../80-integration/80-75-data-lake-server.md). 운영에서 오르는 길이 Lake면 Lake 연결이 차단 **확인**의 필수 경로가 된다(명령은 아님, 80-75 4.5). Lake 삭제는 RD-P2-05와 함께 닫는다(80-75 7장).
 - 첫 화면 묶음: 이 작업 뒤 309.8/310 KiB(병합 기준 308.3, +1.5) — 오류 문장·종류는 연결이 끊겨도 보여야 하므로 첫 화면에 두고, 다음 행동 본체(design/error-next.tsx·copy/error-actions.ts)·세션 안내 띠·칸 오류·쪽 넘김·연결 표시는 필요할 때 읽는 묶음으로 나눴다. 남은 여유 0.2 KiB — 다음 첫 화면 추가 전에 예산 조정이 필요하다.
 
 ## 9. 단독 설치·백업·첫 실행 — RD-OPS-05·RD-OPS-09·RD-OPS-02·RD-SEC-09·RD-P2-04 (2026-10-24 구현)

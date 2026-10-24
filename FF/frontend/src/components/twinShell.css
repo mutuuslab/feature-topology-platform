@@ -263,7 +263,7 @@ body.twin-page #twin-root {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.14s, color 0.14s, border-color 0.14s;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
 }
 .tshell-viewbtn:hover {
   background: var(--surface-3);
@@ -506,7 +506,7 @@ body.twin-page #twin-root {
   height: 100%;
   border-radius: var(--r-pill);
   background: linear-gradient(90deg, var(--brand), var(--lg-63d1ff));
-  transition: width 0.4s ease;
+  transition: width var(--t-slow) ease;
 }
 .tbar.is-pending > i {
   background: linear-gradient(90deg, var(--pending), var(--lg-f0c65a));
@@ -680,7 +680,7 @@ body.twin-page #twin-root {
   margin-right: 4px;
 }
 .tevt-row.is-new {
-  animation: tsFlash 1.6s ease-out 1;
+  animation: tsFlash var(--t-slow) ease-out 1;
 }
 @keyframes tsFlash {
   0% {

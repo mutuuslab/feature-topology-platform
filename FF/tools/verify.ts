@@ -23,6 +23,7 @@ const STEPS: Step[] = [
   { id: 'typecheck:backend', title: '백엔드 타입 검사', cmd: `${npx} tsc -p tsconfig.json --noEmit`, cwd: 'backend' },
   { id: 'typecheck:frontend', title: '프론트 타입 검사', cmd: `${npx} tsc -b`, cwd: 'frontend' },
   { id: 'lint:tokens', title: '디자인 토큰 lint', cmd: `node tools/lint-tokens.ts` },
+  { id: 'lint:motion', title: '모션 lint (시간 토큰·무한 반복 허용 목록)', cmd: `node --test tools/motion-rules.test.ts && node tools/lint-motion.ts` },
   { id: 'lint:spacing', title: '간격·반경 lint (스케일·반경 토큰)', cmd: `node --test tools/spacing-scale.test.ts && node tools/lint-spacing.ts` },
   { id: 'lint:copy', title: '문구 lint (+ 보고서 v1.1 용어 규칙 래칫)', cmd: `node --test tools/guide-terms.test.ts tools/platform-terms.test.ts tools/twin-terms.test.ts tools/lead-copy.test.ts && node tools/lint-copy.ts` },
   { id: 'sim:test', title: 'CARLA 실행기 판정 핵심 (서버 없는 pytest — 기준 운동학 재현·Guard·CLI 계약, LearnCarla venv 없으면 건너뜀)', cmd: `node --test tools/carla-doctor.test.ts && node tools/carla-doctor.ts --pytest` },

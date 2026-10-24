@@ -83,5 +83,15 @@
     "value": 0,
     "direction": "max",
     "note": "문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14)"
+  },
+  "motionLiteralLegacy": {
+    "value": 7,
+    "direction": "max",
+    "note": "레거시 화면의 토큰이 아닌 전이·애니메이션 시간 수 — 0까지"
+  },
+  "motionLoopsLegacy": {
+    "value": 22,
+    "direction": "max",
+    "note": "레거시 화면의 허용 목록 밖 무한 반복 애니메이션 수 — 0까지"
   }
 }

@@ -64,7 +64,7 @@
   display: block;
   height: 100%;
   background: linear-gradient(90deg, color-mix(in srgb, var(--brand, var(--lg-0b5fff)) 70%, transparent), color-mix(in srgb, var(--brand, var(--lg-0b5fff)) 35%, transparent));
-  transition: width 0.45s linear;
+  transition: width var(--t-slow) linear;
   box-shadow: 0 0 12px color-mix(in srgb, var(--brand, var(--lg-0b5fff)) 55%, transparent);
 }
 
@@ -131,7 +131,7 @@
   border: 1px solid var(--lg-rgba-148-163-184-0p25);
   background: var(--lg-rgba-148-163-184-0p07);
   padding: 8px 8px 6px;
-  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s, background 0.25s;
+  transition: border-color var(--t-base), box-shadow var(--t-base), transform var(--t-base), background var(--t-base);
 }
 
 .wif-node.pass {
@@ -233,7 +233,7 @@
 .wif-node-events li {
   font-size: 10px;
   opacity: 0.32;
-  transition: opacity 0.3s;
+  transition: opacity var(--t-slow);
 }
 
 .wif-node-events li.on {
@@ -336,7 +336,7 @@
   border-left: 2px solid var(--tone, var(--brand, var(--lg-0b5fff)));
   background: color-mix(in srgb, var(--tone, var(--lg-0b5fff)) 8%, transparent);
   border-radius: var(--r-sm);
-  animation: wif-in 0.35s ease-out;
+  animation: wif-in var(--t-slow) ease-out;
 }
 
 @keyframes wif-in {
@@ -374,7 +374,7 @@
   border-style: solid;
   border-color: color-mix(in srgb, var(--brand, var(--lg-0b5fff)) 45%, transparent);
   background: color-mix(in srgb, var(--brand, var(--lg-0b5fff)) 8%, transparent);
-  animation: wif-in 0.4s ease-out;
+  animation: wif-in var(--t-slow) ease-out;
 }
 
 .wif-verdict-title {

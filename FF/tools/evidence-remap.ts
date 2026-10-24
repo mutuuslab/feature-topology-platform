@@ -28,8 +28,22 @@ for (const f of changed) {
 const walk = (d: string): string[] => readdirSync(d).flatMap((n) => (statSync(join(d, n)).isDirectory() ? walk(join(d, n)) : n.endsWith('.json') ? [join(d, n)] : []));
 let moved = 0;
 const lost: string[] = [];
+const REF = /"[\w./-]+\.tsx?:\d+"/g;
 for (const file of walk(join(FF, 'harness'))) {
   const raw = readFileSync(file, 'utf8');
+  // 한 번만 적용한다 — 근거가 기준 커밋 뒤에 이미 바뀌었으면(옮겼으면) 다시 옮기지 않고 멈춘다. 같은 문자열 근거가 우연히 겹쳐 두 번 밀리는 것을 막는다
+  const rel = file.slice(FF.length).replace(/\\/g, '/').replace(/^\//, '');
+  let base = '';
+  try {
+    base = execFileSync('git', ['show', `${BASE}:FF/${rel}`], { cwd: FF, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch {
+    continue;
+  }
+  const refs = (t: string) => (t.match(REF) ?? []).join('\n');
+  if (refs(base) !== refs(raw)) {
+    console.error(`✕ ${rel}의 근거가 ${BASE} 뒤에 이미 바뀌었다 — 기준은 근거를 마지막으로 맞춘 커밋(코드를 고치기 전)으로 주세요`);
+    process.exit(1);
+  }
   const next = raw.replace(/"([\w./-]+\.tsx?):(\d+)"/g, (all: string, p: string, n: string) => {
     const o = oldOf.get(p);
     const nw = newOf.get(p);

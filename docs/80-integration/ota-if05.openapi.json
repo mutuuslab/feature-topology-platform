@@ -397,8 +397,8 @@
     "vehicleResults": {
       "post": {
         "operationId": "receiveOtaEvent",
-        "summary": "OTA 서버 → FF: 차량별 전달 결과(vehicle.results)·작업 상태(job.state) — 전달 기록. FF 주소 POST {FF_PUBLIC_URL}/api/ota/v1/events",
-        "description": "전달 기록일 뿐 회신 집계에 쓰지 않는다 — 차량 회신은 차량 → Data Lake → FF(IF-06)로 오며 끝 상태는 그것만 정한다(80-45 §7.5). 서명: X-OTA-Signature = 'sha256=' + hex(HMAC-SHA256(비밀, X-OTA-Timestamp + '.' + 원문 본문)). FF는 시각 ±300초 밖·서명 불일치를 401, 이미 받은 eventId(같은 본문)를 202 duplicate로, 같은 eventId·다른 본문을 409로 답한다. 2xx면 다시 보내지 않는다. 5xx·408·429·네트워크 실패는 같은 eventId·같은 본문으로 지수 간격 재전송(24시간까지), 그 밖의 4xx는 보내지 않는다(운영 경보).",
+        "summary": "OTA 서버 → FF: 차량별 전달 사실(vehicle.results)·작업 상태(job.state). FF 주소 POST {FF_PUBLIC_URL}/api/ota/v1/events",
+        "description": "OTA 서버 자신의 사실(전송 중·넘김·못 닿음·취소·보낼 수 없음)만 싣는다. 회신 집계에 쓰지 않는다 — 차량 결과는 차량 → Data Lake → FF(차량 서명 FFV1-MSG)로 오며 FF가 서명을 확인한 뒤 끝 상태를 정한다(80-45 §7.5). 서명: X-OTA-Signature = 'sha256=' + hex(HMAC-SHA256(비밀, X-OTA-Timestamp + '.' + 원문 본문)). FF는 시각 ±300초 밖·서명 불일치를 401, 이미 받은 eventId(같은 본문)를 202 duplicate로, 같은 eventId·다른 본문을 409로 답한다. 2xx면 다시 보내지 않는다. 5xx·408·429·네트워크 실패는 같은 eventId·같은 본문으로 지수 간격 재전송(24시간까지), 그 밖의 4xx는 보내지 않는다(운영 경보).",
         "security": [],
         "parameters": [
           {
@@ -614,15 +614,13 @@
       "VehicleOutcome": {
         "type": "string",
         "enum": [
+          "DELIVERING",
           "DELIVERED",
-          "APPLIED",
-          "REFUSED",
-          "SIGNATURE_FAILED",
           "NO_RESPONSE",
           "CANCELLED",
           "NOT_ELIGIBLE"
         ],
-        "description": "OTA 서버가 아는 전달 결과. DELIVERED만 중간 경과. APPLIED·REFUSED·SIGNATURE_FAILED는 차량이 OTA 서버에 알린 결과로 OTA 서버의 추정(NO_RESPONSE·CANCELLED·NOT_ELIGIBLE)보다 앞선다(전달 기록 안에서). 게시본 회신 집계의 끝 상태는 차량 회신(차량 → Lake → FF)이 정한다"
+        "description": "OTA 서버 자신의 사실만 — DELIVERING(전송 중·재시도), DELIVERED(차량에 넘김), NO_RESPONSE(기한까지 못 닿음), CANCELLED(취소로 안 보냄), NOT_ELIGIBLE(보낼 수 없는 대상). 차량이 만든 결과(적용·거부·상태 보고)는 싣지 않는다 — 차량 서명이 없어 OTA 서버가 지어낼 수 있다. 그것은 차량 → Data Lake → FF로 차량 서명(FFV1-MSG)과 함께 오고 FF가 확인한 뒤 끝 상태를 정한다(80-45 §7.5, 80-75 C8·결정 U-17 기본안). 받는 쪽은 모르는 값을 무시한다"
       },
       "ErrorCode": {
         "type": "string",
@@ -945,6 +943,7 @@
           "outcome",
           "at"
         ],
+        "description": "OTA 서버의 전달 사실 — 회신 집계에 쓰지 않는다(전달 진행·사유 표시만)",
         "properties": {
           "vin": {
             "$ref": "#/components/schemas/Vin"
@@ -955,19 +954,23 @@
           "at": {
             "type": "string",
             "format": "date-time",
-            "description": "OTA 서버가 결과를 안 시각"
+            "description": "OTA 서버가 그 사실을 안 시각"
           },
-          "rejectReason": {
+          "attempts": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "지금까지의 전송 시도 수"
+          },
+          "code": {
             "type": "string",
             "maxLength": 60,
-            "description": "REFUSED·SIGNATURE_FAILED — 차량이 OTA 서버에 알린 거부 코드(그대로)"
+            "description": "OTA 서버 자신의 사유 코드 — 예 NOT_CONNECTED·UNKNOWN_VEHICLE·NOT_SUBSCRIBED·DEADLINE"
           },
           "detail": {
             "type": "string",
             "maxLength": 500
           }
-        },
-        "description": "OTA 서버의 전달 기록 — 회신 집계에 쓰지 않는다. 차량 회신(되읽은 값·부팅·서명된 상태 보고)은 차량 → Data Lake → FF(IF-06)로 오며 끝 상태는 그것만 정한다(80-45 §7.5)"
+        }
       },
       "OtaEvent": {
         "type": "object",

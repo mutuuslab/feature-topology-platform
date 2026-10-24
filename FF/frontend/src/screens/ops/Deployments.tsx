@@ -131,7 +131,7 @@ interface OtaDeliveryView {
   counts: Record<string, number>;
   vehicles: { vin: string; outcome: string; detail: string | null; at: string }[];
 }
-const OTA_OUTCOME_LOZENGE: Record<string, LozengeAppearance> = { APPLIED: 'success', REFUSED: 'removed', SIGNATURE_FAILED: 'removed', NO_RESPONSE: 'moved', NOT_ELIGIBLE: 'moved', CANCELLED: 'default', DELIVERED: 'inprogress' };
+const OTA_OUTCOME_LOZENGE: Record<string, LozengeAppearance> = { DELIVERING: 'inprogress', DELIVERED: 'success', NO_RESPONSE: 'moved', NOT_ELIGIBLE: 'moved', CANCELLED: 'default' };
 const OTA_LOZENGE: Record<string, LozengeAppearance> = { QUEUED: 'default', SUBMITTED: 'inprogress', RETRY_WAIT: 'moved', FAILED: 'removed', EXPIRED: 'removed', CANCELLED: 'default', COMPLETED: 'success' };
 
 function OtaDelivery({ d }: { d: OtaDeliveryView }) {
@@ -174,7 +174,7 @@ function OtaDelivery({ d }: { d: OtaDeliveryView }) {
         rowKey={(v) => v.vin}
         columns={[
           { key: 'v', header: O.col.vin, cell: (v) => <span className="ds-mono">{v.vin}</span> },
-          // 전달 기록(판정 아님) — 배포 확인은 차량 회신이 정한다(80-45 §7.5). 그래서 PASS·FAIL 배지 대신 상태 표시
+          // OTA 사실(판정 아님) — 적용 확인은 차량 결과가 정한다(80-45 §7.5). 그래서 PASS·FAIL 배지 대신 상태 표시
           { key: 'o', header: O.col.outcome, cell: (v) => <Lozenge appearance={OTA_OUTCOME_LOZENGE[v.outcome] ?? 'default'}>{O.outcome[v.outcome] ?? v.outcome}</Lozenge> },
           { key: 'd', header: O.col.detail, cell: (v) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{v.detail ?? ''}</span> },
           { key: 'at', header: O.col.at, cell: (v) => <span className="ds-mono ds-nowrap">{when(v.at)}</span> },

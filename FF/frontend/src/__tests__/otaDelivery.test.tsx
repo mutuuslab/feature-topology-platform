@@ -110,12 +110,13 @@ describe('게시본 상세 — OTA 서버 전달(IF-05)', () => {
 
   it('접수 뒤에는 다시 제출 단추가 없고 차량별 결과를 보인다', async () => {
     otaMode = 'live';
-    delivery = { ...FAILED, state: 'COMPLETED', otaJobId: 'ota-1', attempts: 1, lastError: null, nextAttemptAt: null, counts: { APPLIED: 1, NO_RESPONSE: 1 }, vehicles: [{ vin: 'ego-01', outcome: 'APPLIED', detail: null, at: '2026-10-24T01:00:05.000Z' }, { vin: 'lead-01', outcome: 'NO_RESPONSE', detail: '기한까지 응답 없음', at: '2026-10-24T02:00:00.000Z' }] };
+    delivery = { ...FAILED, state: 'COMPLETED', otaJobId: 'ota-1', attempts: 1, lastError: null, nextAttemptAt: null, counts: { DELIVERED: 1, NO_RESPONSE: 1 }, vehicles: [{ vin: 'ego-01', outcome: 'DELIVERED', detail: '시도 1', at: '2026-10-24T01:00:05.000Z' }, { vin: 'lead-01', outcome: 'NO_RESPONSE', detail: 'NOT_CONNECTED', at: '2026-10-24T02:00:00.000Z' }] };
     mount();
     const panel = (await screen.findByText(O.title)).closest('section') as HTMLElement;
     expect(within(panel).getByText(O.state.COMPLETED)).toBeTruthy();
     expect(within(panel).queryByRole('button', { name: O.retry })).toBeNull();
     expect(within(panel).getByText(O.outcome.NO_RESPONSE)).toBeTruthy();
-    expect(within(panel).getByText('기한까지 응답 없음')).toBeTruthy();
+    expect(within(panel).getByText('NOT_CONNECTED')).toBeTruthy();
+    expect(within(panel).getByText(O.outcome.DELIVERED)).toBeTruthy();
   });
 });

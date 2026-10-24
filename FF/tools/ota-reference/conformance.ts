@@ -11,8 +11,9 @@ import type { AddressInfo } from 'node:net';
 import { pathToFileURL } from 'node:url';
 
 export const SPEC_VERSION = '1.0';
-const OUTCOMES = ['DELIVERED', 'APPLIED', 'REFUSED', 'SIGNATURE_FAILED', 'NO_RESPONSE', 'CANCELLED', 'NOT_ELIGIBLE'];
-const FINAL = OUTCOMES.filter((o) => o !== 'DELIVERED');
+/** OTA 서버 자신의 사실만(80-45 §7.1) — 차량이 만든 APPLIED·거부를 보내면 C16이 실패한다 */
+const OUTCOMES = ['DELIVERING', 'DELIVERED', 'NO_RESPONSE', 'CANCELLED', 'NOT_ELIGIBLE'];
+const FINAL = OUTCOMES.filter((o) => o !== 'DELIVERING');
 const JOB_STATES = ['ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED', 'FAILED'];
 const TOLERANCE_SEC = 300;
 
@@ -237,7 +238,7 @@ export async function runConformance(o: ConformanceOptions): Promise<{ ok: boole
           (b.state === undefined || JOB_STATES.includes(b.state))
         );
       });
-    check('C16', 'webhook 본문 — eventId(머리글과 같음)·specVersion·type·occurredAt·results[vin·outcome·at]', shapeOk, '');
+    check('C16', 'webhook 본문 — eventId(머리글과 같음)·specVersion·type·occurredAt·results[vin·outcome(OTA 사실만)·at]', shapeOk, '');
     const byId = new Map<string, string[]>();
     for (const r of forJob) byId.set(r.body?.eventId, [...(byId.get(r.body?.eventId) ?? []), r.raw]);
     const retried = failedOnce ? (byId.get(failedOnce) ?? []) : [];

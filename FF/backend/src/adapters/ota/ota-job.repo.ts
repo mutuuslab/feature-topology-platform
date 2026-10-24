@@ -1,6 +1,6 @@
 // OTA 작업 저장소(049_ota_job) — 게시본마다 OTA 작업 1건, 차량별 결과, 받은 webhook 이벤트 ID.
 import { Inject, Injectable } from '@nestjs/common';
-import { OTA_VEHICLE_REPORTED, type OtaDeliveryState, type OtaVehicleOutcome } from '@ff/contracts';
+import { OTA_STICKY_OUTCOMES, type OtaDeliveryState, type OtaVehicleOutcome } from '@ff/contracts';
 import { DB, type Db } from '../../kernel/db';
 
 export interface OtaJobRow {
@@ -36,8 +36,8 @@ export interface OtaJobView {
   vehicles: { vin: string; outcome: OtaVehicleOutcome; detail: string | null; at: string }[];
 }
 
-/** 끝 결과 — 이 결과를 받은 차량은 더 기다리지 않는다(DELIVERED만 중간 경과) */
-export const isFinalOutcome = (o: OtaVehicleOutcome) => o !== 'DELIVERED';
+/** 끝 결과 — 이 결과를 받은 차량은 OTA 서버가 더 다루지 않는다(DELIVERING만 중간 경과) */
+export const isFinalOutcome = (o: OtaVehicleOutcome) => o !== 'DELIVERING';
 
 @Injectable()
 export class OtaJobRepo {
@@ -89,16 +89,14 @@ export class OtaJobRepo {
   }
 
   /**
-   * 차량별 결과 기록 — 차량이 직접 알린 결과(APPLIED·REFUSED·SIGNATURE_FAILED)는 OTA 서버의 추정(NO_RESPONSE·CANCELLED·NOT_ELIGIBLE)·경과(DELIVERED)로 덮지 않는다.
-   * 늦게 온 차량 결과는 추정을 덮는다(순서가 바뀌어 와도 같은 끝 상태). 바뀌었으면 true
+   * 차량별 전달 결과 기록 — 차량에 넘긴 뒤(DELIVERED)에는 늦게 온 다른 결과로 덮지 않고, 끝 결과는 중간 경과(DELIVERING)로 덮지 않는다
+   * (순서가 바뀌어 와도 같은 끝 상태). 바뀌었으면 true
    */
   setVehicle(jobId: string, vin: string, outcome: OtaVehicleOutcome, detail: string | null, at: string, eventId: string): boolean {
     const prev = this.db.get<{ outcome: OtaVehicleOutcome }>('SELECT outcome FROM ota_job_vehicle WHERE job_id = ? AND vin = ?', jobId, vin);
     if (prev) {
-      const prevReported = OTA_VEHICLE_REPORTED.includes(prev.outcome);
-      const nextReported = OTA_VEHICLE_REPORTED.includes(outcome);
-      if (prevReported && !nextReported) return false;
-      if (!prevReported && !nextReported && isFinalOutcome(prev.outcome) && !isFinalOutcome(outcome)) return false;
+      if (OTA_STICKY_OUTCOMES.includes(prev.outcome) && prev.outcome !== outcome) return false;
+      if (isFinalOutcome(prev.outcome) && !isFinalOutcome(outcome)) return false;
     }
     this.db.run('INSERT INTO ota_job_vehicle (job_id, vin, outcome, detail, at, event_id) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (job_id, vin) DO UPDATE SET outcome = excluded.outcome, detail = excluded.detail, at = excluded.at, event_id = excluded.event_id', jobId, vin, outcome, detail, at, eventId);
     return true;

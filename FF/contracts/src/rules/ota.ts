@@ -9,14 +9,16 @@ export const OTA_SPEC_VERSION = '1.0';
 export const OTA_SPEC_HEADER = 'ota-spec-version';
 
 /**
- * 차량별 전달 결과(OTA 서버의 전달 기록) — DELIVERED만 중간 경과, 나머지는 그 차량의 끝 결과.
- * 회신 집계(IF-06)에는 들어가지 않는다: 차량 자신의 회신(적용 readback·서명된 status_report v2·확인)은 차량 → Data Lake → FF로 오고,
- * 그것이 끝 상태를 정한다(80-45 §7.5). OTA 결과는 전달 진행·차량 회신이 없을 때의 사유 표시에만 쓴다.
+ * 차량별 전달 결과 — **OTA 서버 자신의 사실만**(80-45 §7.1, 80-75 C8·결정 U-17 기본안): 전송 중·재시도(DELIVERING) → 차량에 넘김(DELIVERED)
+ * 또는 기한까지 못 닿음(NO_RESPONSE)·취소(CANCELLED)·보낼 수 없음(NOT_ELIGIBLE). DELIVERING만 중간 경과.
+ * 차량이 만든 결과(적용·거부·상태 보고)는 싣지 않는다 — 차량 서명이 없어 OTA 서버가 지어낼 수 있다. 그것은 차량 → Data Lake → FF로
+ * 차량 서명(FFV1-MSG)과 함께 오고, FF가 서명을 확인한 뒤 끝 상태를 정한다(80-45 §7.5).
  */
-export const OTA_VEHICLE_OUTCOMES = ['DELIVERED', 'APPLIED', 'REFUSED', 'SIGNATURE_FAILED', 'NO_RESPONSE', 'CANCELLED', 'NOT_ELIGIBLE'] as const;
+export const OTA_VEHICLE_OUTCOMES = ['DELIVERING', 'DELIVERED', 'NO_RESPONSE', 'CANCELLED', 'NOT_ELIGIBLE'] as const;
 export type OtaVehicleOutcome = (typeof OTA_VEHICLE_OUTCOMES)[number];
-/** 차량이 OTA 서버에 알린 결과 — OTA 서버가 추정한 결과(NO_RESPONSE·CANCELLED·NOT_ELIGIBLE)보다 앞선다(OTA 전달 기록 안에서) */
-export const OTA_VEHICLE_REPORTED: readonly OtaVehicleOutcome[] = ['APPLIED', 'REFUSED', 'SIGNATURE_FAILED'];
+export const isOtaVehicleOutcome = (v: string): v is OtaVehicleOutcome => (OTA_VEHICLE_OUTCOMES as readonly string[]).includes(v);
+/** 덮지 않는 결과 — 차량에 넘긴 뒤(DELIVERED)에는 늦게 온 NO_RESPONSE·CANCELLED·DELIVERING이 바꾸지 못한다 */
+export const OTA_STICKY_OUTCOMES: readonly OtaVehicleOutcome[] = ['DELIVERED'];
 
 /** OTA 서버의 작업 상태(조회 응답·job.state 이벤트) */
 export const OTA_SERVER_JOB_STATES = ['ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED', 'FAILED'] as const;
@@ -53,14 +55,19 @@ export const OTA_WEBHOOK_TOLERANCE_SEC = 300;
 
 const vin = z.string().trim().min(1).max(64);
 
-/** 차량 1대의 전달 결과(webhook results[]) — 전달 기록. 차량 회신(readback·상태 보고)은 싣지 않는다(차량 → Lake → FF) */
+/**
+ * 차량 1대의 전달 결과(webhook results[]) — OTA 서버의 사실. 차량 회신(readback·상태 보고)은 싣지 않는다(차량 → Lake → FF).
+ * outcome은 문자열로 받는다 — 모르는 값(뒤 판에서 추가)은 FF가 무시한다(10장 호환 규칙). 알려진 값은 OTA_VEHICLE_OUTCOMES
+ */
 export const OtaVehicleResult = z.object({
   vin,
-  outcome: z.enum(OTA_VEHICLE_OUTCOMES),
+  outcome: z.string().trim().min(1).max(40),
   /** OTA 서버가 결과를 안 시각(ISO 8601) */
   at: z.string().min(1).max(40),
-  /** REFUSED·SIGNATURE_FAILED — 차량이 OTA 서버에 알린 거부 코드(그대로) */
-  rejectReason: z.string().trim().min(1).max(60).optional(),
+  /** 지금까지의 전송 시도 수(선택) */
+  attempts: z.number().int().min(0).max(1_000_000).optional(),
+  /** OTA 서버 자신의 사유 코드(선택) — 예 NOT_CONNECTED·UNKNOWN_VEHICLE·NOT_SUBSCRIBED */
+  code: z.string().trim().min(1).max(60).optional(),
   /** 사람이 읽을 설명(선택) */
   detail: z.string().max(500).optional(),
 });

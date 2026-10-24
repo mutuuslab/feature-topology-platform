@@ -37,10 +37,10 @@ describe('OTA 서버 적합성 검사 (IF-05 v1)', () => {
     assert.ok(r.checks.length >= 18, `검사 ${r.checks.length}개`);
   });
 
-  it('규격을 어기면 해당 검사가 실패한다 — 멱등 키 무시·틀린 webhook 서명·재전송 안 함', async () => {
-    const r = await run(['no-idempotency', 'bad-webhook-signature', 'no-webhook-retry']);
+  it('규격을 어기면 해당 검사가 실패한다 — 멱등 키 무시·틀린 webhook 서명·재전송 안 함·차량 결과(APPLIED)를 webhook에', async () => {
+    const r = await run(['no-idempotency', 'bad-webhook-signature', 'no-webhook-retry', 'vehicle-results-in-webhook']);
     const failed = new Set(r.checks.filter((c) => !c.ok).map((c) => c.id));
-    for (const id of ['C09', 'C10', 'C15', 'C17']) assert.ok(failed.has(id), `${id}가 실패해야 한다 (실패: ${[...failed].join(',')})`);
+    for (const id of ['C09', 'C10', 'C15', 'C16', 'C17']) assert.ok(failed.has(id), `${id}가 실패해야 한다 (실패: ${[...failed].join(',')})`);
     assert.equal(r.ok, false);
   });
 

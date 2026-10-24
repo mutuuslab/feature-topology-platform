@@ -6,7 +6,7 @@
 // 제출은 outbox — 게시본을 만든 트랜잭션에서 QUEUED로 넣고 커밋 뒤 보낸다. 실패해도 게시본은 그대로, 전달만 RETRY_WAIT(전달 실패·재시도 가능)
 // → 지수 간격 자동 재시도 → 횟수가 다하거나 고칠 수 없는 오류면 FAILED(화면에서 다시 제출). 회신 기한이 지나면 EXPIRED.
 import { Body, Controller, Get, HttpCode, Inject, Injectable, OnApplicationBootstrap, Param, Post, Query, Req } from '@nestjs/common';
-import { DATA_CATEGORY_ACCESS, OTA_RETRYABLE_STATES, OTA_SPEC_VERSION, OTA_WEBHOOK_TOLERANCE_SEC, OtaEvent, OtaJobActionBody, otaSpecCompatible, type OtaDeliveryState, type OtaServerJobState, type Publication } from '@ff/contracts';
+import { DATA_CATEGORY_ACCESS, isOtaVehicleOutcome, OTA_RETRYABLE_STATES, OTA_SPEC_VERSION, OTA_WEBHOOK_TOLERANCE_SEC, OtaEvent, OtaJobActionBody, otaSpecCompatible, type OtaDeliveryState, type OtaServerJobState, type Publication } from '@ff/contracts';
 import type { Request } from 'express';
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { AuditAction, CurrentActor, Roles, WebhookEndpoint, type Actor } from '../../kernel/actor';
@@ -293,8 +293,13 @@ export class OtaServerAdapter implements OnApplicationBootstrap {
           ignored.push({ vin: r.vin, reason: 'NOT_A_TARGET' });
           continue;
         }
+        // 모르는 결과 값(뒤 판에서 추가된 값·차량이 만든 APPLIED 등)은 받기만 하고 쓰지 않는다(10장 호환 규칙·7.1)
+        if (!isOtaVehicleOutcome(r.outcome)) {
+          ignored.push({ vin: r.vin, reason: 'UNKNOWN_OUTCOME' });
+          continue;
+        }
         // 전달 기록만 — 회신 집계(IF-06)에 넣지 않는다. 차량 회신이 없는 동안 노드 사유(OTA:<결과>)로 보인다(보안 배포 evaluate)
-        if (this.jobs.setVehicle(row.job_id, r.vin, r.outcome, r.rejectReason ?? r.detail ?? null, r.at, ev.eventId)) applied++;
+        if (this.jobs.setVehicle(row.job_id, r.vin, r.outcome, [r.code, r.attempts !== undefined ? `시도 ${r.attempts}` : null, r.detail].filter(Boolean).join(' · ') || null, r.at, ev.eventId)) applied++;
         else ignored.push({ vin: r.vin, reason: 'SUPERSEDED' });
       }
       const patch: Partial<OtaJobRow> = { updated_at: now };

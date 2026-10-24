@@ -1,6 +1,6 @@
 // OTA 서버 연동(IF-05) 통합 — FF + 시험 OTA 서버(tools/ota-reference, 별도 프로세스·OS가 고른 포트):
-// 게시본 → OTA 작업 제출 → 시험 서버가 webhook으로 차량별 전달 결과(전달 기록) + 차량 회신은 차량 → Lake → FF(시험 서버의 Lake 흉내가 IF-06 입구로)
-// → 회신 집계 CONFIRMED·PARTIAL. 끝 상태는 차량 회신만 정한다 — OTA 결과만으로는 닫히지 않고, 둘이 다르면 차량 회신이 이긴다(80-45 §7.5).
+// 게시본 → OTA 작업 제출 → 시험 서버가 webhook으로 OTA 사실(DELIVERING·DELIVERED·NO_RESPONSE…) + 차량 결과는 차량 → Lake → FF(시험 서버의 Lake 흉내가
+// 지금의 IF-06 입구로) → 회신 집계 CONFIRMED·PARTIAL. 끝 상태는 차량 결과만 정한다 — OTA 사실만으로는 닫히지 않고, 어긋나면 차량 결과가 이긴다(80-45 §7.5).
 // 보안(틀린 HMAC·오래된 서명·이벤트 재전송·같은 ID 다른 본문), 멱등 재제출, 제출 실패 → 전달 실패(재시도 가능) → 자동·수동 재시도.
 // readiness: RD-OPS-04
 // readiness: RD-UX-04
@@ -122,7 +122,8 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
     expect(done.publication.payload.targets).toContain('KMH-NX4-0003');
     const d = await until(() => pub(first), (p) => p.delivery?.state === 'COMPLETED');
     expect(d.delivery).toMatchObject({ jobId: `OTJ-${first}`, channel: 'ota', state: 'COMPLETED', serverState: 'COMPLETED', otaJobId: expect.stringMatching(/^ota-/), attempts: 1, lastError: null });
-    expect(d.delivery.vehicles.every((v: any) => v.outcome === 'APPLIED')).toBe(true);
+    // webhook은 OTA 사실만 — 차량에 넘겼다(DELIVERED). 적용은 차량 결과(Lake 경로)가 알린다
+    expect(d.delivery.vehicles.every((v: any) => v.outcome === 'DELIVERED')).toBe(true);
     expect(d.readbacks.every((r: any) => r.via === 'IF-06')).toBe(true);
     // 게시본 화면의 연계 호출(IF-05)은 실제 요청 요약과 OTA 서버 응답 — 모의 캠페인(CMP-)이 아니다
     const call = d.calls.find((c: any) => c.ifId === 'IF-05');
@@ -154,28 +155,34 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
     expect(done.publication.nodes.find((x: any) => x.nodeId === silent[0].vin)).toMatchObject({ state: 'UNKNOWN', reason: 'OTA:NO_RESPONSE' });
   });
 
-  it('OTA 결과만으로는 닫히지 않는다 — 끝 상태는 차량 회신(Lake → IF-06)이 정하고, 다르면 차량 회신이 이긴다', async () => {
-    await sim({ scenario: 'signature-failure', lakeUrl: null });
+  it('OTA 사실만으로는 닫히지 않는다 — 끝 상태는 차량 결과(Lake → FF)가 정하고, 어긋나면 차량 결과가 이긴다', async () => {
+    await sim({ scenario: 'some-no-response', lakeUrl: null });
     const id = await deploy();
-    const sent = await until(() => pub(id), (p) => p.delivery?.state === 'COMPLETED');
+    const targets = (await pub(id)).publication.payload.targets as string[];
+    const sent = await until(() => pub(id), (p) => p.delivery?.vehicles.length === targets.length);
     expect(sent.publication.status).toBe('DISPATCHED');
     expect(sent.readbacks).toEqual([]);
-    const [first, second, third] = sent.publication.payload.targets as string[];
-    expect(sent.delivery.vehicles.find((v: any) => v.vin === first).outcome).toBe('SIGNATURE_FAILED');
-    expect(sent.publication.nodes.find((x: any) => x.nodeId === third)).toMatchObject({ state: 'UNKNOWN', reason: 'OTA:APPLIED' });
-    // 차량 → Lake → FF: OTA는 서명 실패라 했지만 차량은 적용했다고 회신 → 차량 회신이 이긴다(CONFIRMED). OTA는 적용이라 했지만 차량은 거부 → 거부
+    const [second, third] = targets;
+    const last = targets[targets.length - 1];
+    expect(sent.delivery.vehicles.find((v: any) => v.vin === last)).toMatchObject({ outcome: 'DELIVERING', detail: expect.stringContaining('NOT_CONNECTED') });
+    expect(sent.publication.nodes.find((x: any) => x.nodeId === third)).toMatchObject({ state: 'UNKNOWN', reason: 'OTA:DELIVERED' });
+    // 차량 결과(지금은 IF-06 입구, Lake 중계 뒤에는 차량 서명 FFV1-MSG): OTA는 아직 못 닿았다는데 차량은 적용 → 차량 결과가 이긴다.
+    // OTA는 넘겼다는데 차량은 거부 → 거부
     const p = sent.publication;
     const readback = (vin: string, extra: Record<string, unknown>) =>
       b.http().post('/api/telemetry/readback').set(actor('data-lake', 'SYSTEM')).send({ vin, publicationId: id, metricType: 'READBACK', policyHash: p.signature.payloadHash, featureVersion: p.payload.featureVersion, bootId: `BOOT-${vin}-1`, sequence: p.payload.sequence, ...extra }).expect(202);
-    await readback(first, { observed: p.payload.desired });
+    await readback(last, { observed: p.payload.desired });
     await readback(second, { observed: 'REJECTED', rejectReason: 'TARGET_MISMATCH' });
     const after = await pub(id);
-    expect(after.publication.nodes.find((x: any) => x.nodeId === first)).toMatchObject({ state: 'CONFIRMED' });
+    expect(after.publication.nodes.find((x: any) => x.nodeId === last)).toMatchObject({ state: 'CONFIRMED' });
     expect(after.publication.nodes.find((x: any) => x.nodeId === second)).toMatchObject({ state: 'UNKNOWN', reason: 'REJECTED:TARGET_MISMATCH' });
-    expect(after.publication.nodes.find((x: any) => x.nodeId === third)).toMatchObject({ reason: 'OTA:APPLIED' });
+    expect(after.publication.nodes.find((x: any) => x.nodeId === third)).toMatchObject({ reason: 'OTA:DELIVERED' });
     const closed = await until(() => pub(id), (q) => !!q.publication.closedAt);
     expect(closed.publication.status).toBe('PARTIAL');
     expect(closed.publication.confirmed).toBe(1);
+    // 기한에 OTA가 NO_RESPONSE라 알려도 차량 결과로 확인된 노드는 그대로
+    const final = await until(() => pub(id), (q) => q.delivery?.vehicles.find((v: any) => v.vin === last)?.outcome === 'NO_RESPONSE');
+    expect(final.publication.nodes.find((x: any) => x.nodeId === last)).toMatchObject({ state: 'CONFIRMED' });
     await sim({ scenario: 'all-applied', lakeUrl: ffUrl });
   });
 
@@ -185,12 +192,13 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
     const done = await until(() => pub(id), (p) => !!p.publication.closedAt);
     expect(done.publication.status).toBe('PARTIAL');
     expect(done.publication.nodes.some((x: any) => x.reason === 'REJECTED:SIGNATURE_INVALID')).toBe(true);
-    expect(done.delivery.vehicles.some((v: any) => v.outcome === 'SIGNATURE_FAILED')).toBe(true);
+    // 차량이 서명 검증에서 거부한 것은 차량 결과로만 드러난다 — OTA 사실은 넘겼다(DELIVERED)
+    expect(done.delivery.vehicles.every((v: any) => v.outcome === 'DELIVERED')).toBe(true);
   });
 
   it('webhook 보안 — 틀린 HMAC·서명 없음·오래된 시각은 401, 상태는 바뀌지 않는다', async () => {
     const before = (await pub(first)).readbacks.length;
-    const ev = { specVersion: '1.0', eventId: randomUUID(), type: 'vehicle.results', jobId: `OTJ-${first}`, occurredAt: new Date().toISOString(), results: [{ vin: 'lead-01', outcome: 'REFUSED', at: new Date().toISOString(), rejectReason: 'REPLAY' }] };
+    const ev = { specVersion: '1.0', eventId: randomUUID(), type: 'vehicle.results', jobId: `OTJ-${first}`, occurredAt: new Date().toISOString(), results: [{ vin: 'lead-01', outcome: 'NO_RESPONSE', at: new Date().toISOString() }] };
     expect((await post(ev, { secret: 'w'.repeat(40) })).status).toBe(401);
     expect((await b.http().post('/api/ota/v1/events').send(ev)).status).toBe(401);
     const stale = await post(ev, { ts: Math.floor(Date.now() / 1000) - 3600 });
@@ -210,14 +218,21 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
     const r1 = await post(ev);
     expect(r1.status).toBe(202);
     expect(r1.body).toMatchObject({ duplicate: false });
-    // 늦게 온 추정(NO_RESPONSE)은 차량이 알린 APPLIED를 덮지 않는다
-    expect((await pub(first)).delivery.vehicles.find((v: any) => v.vin === vin).outcome).toBe('APPLIED');
+    // 늦게 온 NO_RESPONSE는 이미 넘긴(DELIVERED) 사실을 덮지 않는다
+    expect(r1.body).toMatchObject({ applied: 0, ignored: 1 });
+    expect((await pub(first)).delivery.vehicles.find((v: any) => v.vin === vin).outcome).toBe('DELIVERED');
     const r2 = await post(ev);
     expect(r2.status).toBe(202);
     expect(r2.body).toMatchObject({ duplicate: true, applied: 0 });
     expect((await post({ ...ev, type: 'job.state', state: 'COMPLETED' })).status).toBe(409);
     expect((await post({ ...ev, eventId: randomUUID(), jobId: 'OTJ-PUB-99999' })).status).toBe(404);
-    expect((await post({ ...ev, eventId: randomUUID(), results: [{ vin, outcome: 'MAYBE', at: 'x' }] })).status).toBe(400);
+    // 모르는 결과 값(뒤 판 추가·차량이 만든 APPLIED)은 받기만 하고 쓰지 않는다(호환 규칙·OTA 사실만)
+    for (const outcome of ['QUEUED_AT_EDGE', 'APPLIED']) {
+      const u = await post({ ...ev, eventId: randomUUID(), results: [{ vin, outcome, at: new Date().toISOString() }] });
+      expect(u.status).toBe(202);
+      expect(u.body).toMatchObject({ applied: 0, ignored: 1, ignoredResults: [{ vin, reason: 'UNKNOWN_OUTCOME' }] });
+    }
+    expect((await post({ ...ev, eventId: randomUUID(), results: [{ vin, at: 'x' }] })).status).toBe(400);
     expect((await post({ ...ev, eventId: randomUUID(), specVersion: '2.0' })).status).toBe(400);
   });
 

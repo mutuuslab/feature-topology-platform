@@ -1,8 +1,8 @@
 // 시험용 OTA 서버(참조 구현) — FF ↔ OTA 서버 연동 규격 IF-05 v1(docs/80-integration/80-45-ota-server-if05.md)을 그대로 따른다.
 //   npm run ota:reference -- [--port 9590] [--scenario all-applied] [--webhook-url http://127.0.0.1:9001/api/ota/v1/events] [--lake-url http://127.0.0.1:9001]
 // 의존성 없음(node:http·node:crypto만) — 고객 OTA 서버를 만드는 쪽이 이 파일을 읽고 동작을 그대로 확인할 수 있게 FF 코드를 가져오지 않는다.
-// 진짜 차량은 없다: 시나리오(모두 적용·일부 응답 없음·서명 실패·거부·무응답·제출 실패)대로 차량별 전달 결과를 지어 FF webhook으로 보낸다.
-// webhook은 OTA 서버의 전달 기록일 뿐이다 — 차량 회신(readback)은 실제로 차량 → Data Lake → FF로 간다(80-45 §7.5).
+// 진짜 차량은 없다: 시나리오(모두 적용·일부 응답 없음·서명 실패·거부·무응답·제출 실패)대로 차량을 흉내 내고, FF webhook에는
+// OTA 서버 자신의 사실(DELIVERING·DELIVERED·NO_RESPONSE·CANCELLED·NOT_ELIGIBLE)만 보낸다 — 차량 회신은 실제로 차량 → Data Lake → FF(80-45 §7.5).
 // --lake-url을 주면 그 경로도 흉내 낸다: 차량이 알린 결과를 FF IF-06 입구(POST /api/telemetry/readback, 데모 인증 SYSTEM)로 넣는다.
 //   · 차량 서명(게시본 검증)은 흉내만 낸다 — SIGNATURE_FAILED는 시나리오가 정한다(실제 OTA 서버도 서명을 검증하지 않는다: 차량 몫)
 //   · 차단·복원 v2 봉투의 끝 상태(차량 키로 서명한 status_report v2)는 만들 수 없다 — v2 차단 시험은 차량 시뮬레이터·실차로
@@ -13,20 +13,23 @@ import type { AddressInfo } from 'node:net';
 import { pathToFileURL } from 'node:url';
 
 export const SPEC_VERSION = '1.0';
-export const OUTCOMES = ['DELIVERED', 'APPLIED', 'REFUSED', 'SIGNATURE_FAILED', 'NO_RESPONSE', 'CANCELLED', 'NOT_ELIGIBLE'] as const;
+/** webhook 전달 결과 — OTA 서버 자신의 사실만(80-45 §7.1). 차량이 만든 결과(적용·거부)는 싣지 않는다 */
+export const OUTCOMES = ['DELIVERING', 'DELIVERED', 'NO_RESPONSE', 'CANCELLED', 'NOT_ELIGIBLE'] as const;
 export type Outcome = (typeof OUTCOMES)[number];
+/** 흉내 낸 차량의 행동 — 적용·거부·서명 실패는 차량 회신(Lake 경로)으로만 드러나고, webhook에는 DELIVERED로 보인다 */
+export type VehicleBehavior = 'APPLIED' | 'REFUSED' | 'SIGNATURE_FAILED' | 'NO_RESPONSE';
 const MAX_BODY = 16 * 1024 * 1024;
 const MAX_TARGETS = 10_000;
 
 export interface Scenario {
-  /** 대상 차량 기본 결과 */
-  default: Outcome;
-  /** VIN별 결과 */
-  overrides?: Record<string, Outcome>;
+  /** 대상 차량 기본 행동 */
+  default: VehicleBehavior;
+  /** VIN별 행동 */
+  overrides?: Record<string, VehicleBehavior>;
   /** 작업마다 마지막 n대는 응답 없음(NO_RESPONSE — 기한에 알린다) */
   lastNoResponse?: number;
   /** 작업마다 첫 차량의 결과 */
-  first?: Outcome;
+  first?: VehicleBehavior;
   /** true면 webhook을 보내지 않는다(FF가 기한에 TIMEOUT으로 닫는다) */
   silent?: boolean;
   /** 처음 n번 제출은 503(재시도 시험) */
@@ -45,7 +48,7 @@ export const SCENARIOS: Record<string, Scenario> = {
 };
 
 /** 일부러 규격을 어기는 동작 — 적합성 검사가 실제로 잡는지 보는 시험용 */
-export type Fault = 'no-idempotency' | 'bad-webhook-signature' | 'no-webhook-retry';
+export type Fault = 'no-idempotency' | 'bad-webhook-signature' | 'no-webhook-retry' | 'vehicle-results-in-webhook';
 
 export interface RefOptions {
   port?: number;
@@ -217,24 +220,24 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
 
   const finishIfDone = (job: Job) => {
     if (job.state !== 'IN_PROGRESS' && job.state !== 'ACCEPTED') return;
-    if ([...job.vehicles.values()].every((v) => v.outcome !== 'PENDING' && v.outcome !== 'DELIVERED')) {
+    if ([...job.vehicles.values()].every((v) => v.outcome !== 'PENDING' && v.outcome !== 'DELIVERING')) {
       job.state = 'COMPLETED';
       job.updatedAt = new Date().toISOString();
       emit(job, 'job.state', { state: 'COMPLETED' });
     }
   };
 
-  /** 전달 결과(webhook results[]) — 전달 기록만. 차량의 되읽은 값·부팅은 싣지 않는다(차량 회신은 Lake 경로) */
-  const vehicleResult = (_job: Job, vin: string, outcome: Outcome) => {
-    const base = { vin, outcome, at: new Date().toISOString() };
-    if (outcome === 'REFUSED') return { ...base, rejectReason: 'REPLAY' };
-    if (outcome === 'SIGNATURE_FAILED') return { ...base, rejectReason: 'SIGNATURE_INVALID' };
-    if (outcome === 'NO_RESPONSE') return { ...base, detail: '기한까지 차량이 응답하지 않았습니다(시험 서버)' };
-    return base;
-  };
+  /** 전달 결과(webhook results[]) — OTA 서버 자신의 사실만. 차량의 적용·거부·되읽은 값은 싣지 않는다(차량 회신은 Lake 경로) */
+  const vehicleResult = (_job: Job, vin: string, outcome: Outcome, extra: { attempts?: number; code?: string; detail?: string } = {}) => ({
+    vin,
+    // 시험용 규격 위반 — 차량이 만든 결과(APPLIED)를 webhook에 싣는다(적합성 검사 C16이 잡아야 한다)
+    outcome: cfg.faults.has('vehicle-results-in-webhook') && outcome === 'DELIVERED' ? 'APPLIED' : outcome,
+    at: new Date().toISOString(),
+    ...extra,
+  });
 
   /** 차량 → Data Lake → FF 흉내 — 차량이 알린 결과를 FF IF-06 회신 입구로(데모 인증 SYSTEM). 실제 OTA 서버의 일이 아니다 */
-  const lake = (job: Job, results: [string, Outcome][]) => {
+  const lake = (job: Job, results: [string, VehicleBehavior][]) => {
     if (!cfg.lakeUrl) return;
     const pub = job.request.publication ?? {};
     for (const [vin, o] of results) {
@@ -260,9 +263,9 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
   const run = (job: Job) => {
     const sc = cfg.scenario;
     const vins = [...job.vehicles.keys()].filter((v) => job.vehicles.get(v)!.outcome === 'PENDING');
-    const plan = new Map<string, Outcome>();
+    const plan = new Map<string, VehicleBehavior>();
     vins.forEach((vin, i) => {
-      let o: Outcome = sc.overrides?.[vin] ?? sc.default;
+      let o: VehicleBehavior = sc.overrides?.[vin] ?? sc.default;
       if (i === 0 && sc.first && !sc.overrides?.[vin]) o = sc.first;
       if (sc.lastNoResponse && i >= vins.length - sc.lastNoResponse && vins.length > 1 && !sc.overrides?.[vin]) o = 'NO_RESPONSE';
       plan.set(vin, o);
@@ -271,9 +274,14 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
       later(cfg.delayMs, () => {
         if (job.state !== 'ACCEPTED') return;
         job.state = 'IN_PROGRESS';
+        // 닿은 차량은 DELIVERED(OTA 사실), 닿지 않은 차량은 DELIVERING(재시도 중) — 차량의 적용·거부는 Lake 흉내로만
         const now = [...plan].filter(([, o]) => o !== 'NO_RESPONSE');
-        for (const [vin, o] of now) job.vehicles.set(vin, { vin, outcome: o, at: new Date().toISOString() });
-        if (now.length) emit(job, 'vehicle.results', { results: now.map(([vin, o]) => vehicleResult(job, vin, o)) });
+        const waiting = [...plan].filter(([, o]) => o === 'NO_RESPONSE').map(([v]) => v);
+        const at = new Date().toISOString();
+        for (const [vin] of now) job.vehicles.set(vin, { vin, outcome: 'DELIVERED', at });
+        for (const vin of waiting) job.vehicles.set(vin, { vin, outcome: 'DELIVERING', at });
+        const results = [...now.map(([vin]) => vehicleResult(job, vin, 'DELIVERED', { attempts: 1 })), ...waiting.map((vin) => vehicleResult(job, vin, 'DELIVERING', { attempts: 1, code: 'NOT_CONNECTED' }))];
+        if (results.length) emit(job, 'vehicle.results', { results });
         lake(job, now);
         finishIfDone(job);
       }),
@@ -285,7 +293,7 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
         later(due, () => {
           if (job.state !== 'IN_PROGRESS' && job.state !== 'ACCEPTED') return;
           for (const vin of silentVins) job.vehicles.set(vin, { vin, outcome: 'NO_RESPONSE', at: new Date().toISOString() });
-          emit(job, 'vehicle.results', { results: silentVins.map((vin) => vehicleResult(job, vin, 'NO_RESPONSE')) });
+          emit(job, 'vehicle.results', { results: silentVins.map((vin) => vehicleResult(job, vin, 'NO_RESPONSE', { code: 'NOT_CONNECTED', detail: '기한까지 차량에 닿지 못했습니다(시험 서버)' })) });
           finishIfDone(job);
         }),
       );
@@ -409,9 +417,9 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
       job.timers.push(
         later(Math.max(0, Date.parse(b.deadlineAt) - Date.now()), () => {
           if (job.state !== 'ACCEPTED' && job.state !== 'IN_PROGRESS') return;
-          const left = [...job.vehicles.values()].filter((v) => v.outcome === 'PENDING' || v.outcome === 'DELIVERED');
+          const left = [...job.vehicles.values()].filter((v) => v.outcome === 'PENDING' || v.outcome === 'DELIVERING');
           for (const v of left) job.vehicles.set(v.vin, { vin: v.vin, outcome: 'NO_RESPONSE', at: new Date().toISOString() });
-          if (left.length) emit(job, 'vehicle.results', { results: left.map((v) => vehicleResult(job, v.vin, 'NO_RESPONSE')) });
+          if (left.length) emit(job, 'vehicle.results', { results: left.map((v) => vehicleResult(job, v.vin, 'NO_RESPONSE', { code: 'DEADLINE' })) });
           job.state = left.length ? 'EXPIRED' : 'COMPLETED';
           emit(job, 'job.state', { state: job.state });
         }),
@@ -429,7 +437,7 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
       await readBody(req);
       if (job.state === 'CANCELLED') return send(res, 202, { jobId: job.jobId, state: job.state, cancelledTargets: 0 });
       if (job.state !== 'ACCEPTED' && job.state !== 'IN_PROGRESS') return fail(res, 409, 'JOB_FINAL', `작업이 이미 ${job.state}입니다`);
-      const left = [...job.vehicles.values()].filter((v) => v.outcome === 'PENDING' || v.outcome === 'DELIVERED');
+      const left = [...job.vehicles.values()].filter((v) => v.outcome === 'PENDING' || v.outcome === 'DELIVERING');
       for (const t of job.timers) clearTimeout(t);
       const now = new Date().toISOString();
       for (const v of left) job.vehicles.set(v.vin, { vin: v.vin, outcome: 'CANCELLED', at: now });

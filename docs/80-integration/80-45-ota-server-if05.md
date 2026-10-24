@@ -27,20 +27,22 @@ OTA 서버는 고객이 따로 만든다(사용자 결정 2026-10-24: "OTA 서�
 
 > **두 갈래 — 내려가는 전달과 올라오는 회신** (사용자 결정 2026-10-24 "차량 → Lake → FF")
 > - 내려가는 길: **FF → OTA 서버 → 차량**(이 규격의 작업 제출·조회·취소).
-> - OTA 서버가 FF에 알리는 차량별 결과(적용·거부·응답 없음 등)는 **OTA 서버의 전달 기록**이다(webhook, 7장).
-> - **차량 자신의 회신**(적용 후 되읽은 값 readback·서명된 status_report v2·확인)은 **차량 → Data Lake → FF**(IF-06 입구)로 온다 — Data Lake 설계(브랜치 `docs/data-lake-design`, 80-70)가 정한다.
-> - FF 회신 집계(CONFIRMED·PARTIAL·TIMEOUT·DIVERGED)의 **끝 상태는 차량 회신만 정한다.** OTA webhook은 전달 진행일 뿐이다(7.5).
+> - OTA webhook은 **OTA 서버 자신의 사실만** 싣는다 — 작업 접수·거절, 전송 시도(`DELIVERING`), 차량에 넘김(`DELIVERED`), 기한까지 못 닿음(`NO_RESPONSE`), 취소(`CANCELLED`), 보낼 수 없는 대상(`NOT_ELIGIBLE`). **전달 진행 정보**다(7장).
+> - **차량이 만든 결과**(적용 `APPLIED`·거부·되읽은 값 readback·상태 보고 v2·전달 확인)는 OTA webhook에 싣지 않는다 — 차량 서명이 없어 OTA 서버가 지어낼 수 있다. 차량 결과는 **차량 → Data Lake → FF**로 **차량 서명(FFV1-MSG)과 함께** 오고, FF가 차량 서명을 확인한 뒤에만 끝 상태를 정한다([80-75] §3.2·§4.1, C8).
+> - FF 회신 집계(CONFIRMED·PARTIAL·TIMEOUT·DIVERGED)의 **끝 상태는 서명 확인된 차량 결과만 정한다.** OTA webhook은 사유 표시용(7.5).
+> - Lake 중계가 구현되기 전(BACKLOG TL-M*, [80-75] §10)에는 지금의 차량 직접 창구(`/vehicle/v1/*`·IF-06 `POST /api/telemetry/readback`)로 받는다.
+> - 이 나눔은 [80-75] 결정 **U-17**(사용자 결정 대기)의 기본안이다. 사용자가 다르게 정하면(예: OTA webhook의 차량 결과도 받기) 7.1·7.5를 바꾼다 — 그때도 차량 서명 없는 결과가 끝 상태를 정하지 않게 한다.
 
 ## 1. 책임 나눔
 
 | 누가 | 하는 일 | 하지 않는 일 |
 |---|---|---|
 | **FF** | 정책·긴급 차단·복원을 **서명한 게시본**으로 만든다(D06-08·D06-10). **대상 차량**(VIN)과 **회신 기한**을 정한다. 작업을 제출·취소한다. **차량 회신**(Lake → FF)으로 회신 집계(CONFIRMED·PARTIAL·TIMEOUT·DIVERGED)를 내고, OTA 전달 기록은 진행·사유로 보인다 | 차량에 직접 연결하지 않는다(ota 채널일 때) |
-| **OTA 서버** | 작업을 받아 대상 차량에 **게시본·봉투를 바꾸지 않고** 전달한다. 차량 연결(온라인·오프라인)·진행을 추적한다. 차량별 **전달 결과**를 webhook으로 FF에 알린다 | 게시본을 고치거나 다시 서명하지 않는다. 대상을 늘리지 않는다. 차량 회신을 대신 지어내지 않는다. 서명을 검증할 필요는 없다(해도 된다) |
-| **차량** | 서명(신뢰 앵커 공개키)·순번(재전송)·대상(자기 VIN)을 **스스로 검증**하고 적용한다. 적용 후 되읽은 값(readback)·서명된 상태 보고를 **Data Lake로** 보낸다(→ FF IF-06) | OTA 서버를 신뢰 근거로 삼지 않는다 |
-| **Data Lake** | 차량 회신을 받아 FF IF-06 입구로 넘긴다(80-70, 설계 중) | 회신 내용을 바꾸지 않는다 |
+| **OTA 서버** | 작업을 받아 대상 차량에 **게시본·봉투를 바꾸지 않고** 전달한다. 차량 연결(온라인·오프라인)·진행을 추적한다. 차량별 **전달 사실**(넘김·못 닿음·취소 등)을 webhook으로 FF에 알린다 | 게시본을 고치거나 다시 서명하지 않는다. 대상을 늘리지 않는다. 차량 결과(적용·거부)를 webhook에 싣지 않는다. 서명을 검증할 필요는 없다(해도 된다) |
+| **차량** | 서명(신뢰 앵커 공개키)·순번(재전송)·대상(자기 VIN)을 **스스로 검증**하고 적용한다. 결과(되읽은 값·상태 보고·전달 확인)를 **차량 서명(FFV1-MSG)으로** Data Lake에 보낸다 | OTA 서버를 신뢰 근거로 삼지 않는다 |
+| **Data Lake** | 차량 서명 메시지를 원문 그대로 FF에 중계한다([80-75] §4) | 신뢰 경계가 아니다 — 내용을 바꾸지 않는다, FF가 차량 서명을 직접 확인한다 |
 
-**OTA 서버는 신뢰 경계가 아니다.** 위조·변조된 게시본은 차량이 거부하고(`SIGNATURE_FAILED`), FF는 차량이 거부한 회신을 집계에 넣지 않는다(위조 사본 한 건이 진짜 게시본을 닫지 못하게). OTA 서버가 해킹돼도 차량에 새 정책을 넣을 수 없고, OTA webhook은 집계의 끝 상태를 바꾸지 못한다(전달 기록일 뿐) — 할 수 있는 최악은 전달하지 않기·거짓 진행 표시(가용성)다.
+**OTA 서버는 신뢰 경계가 아니다.** 위조·변조된 게시본은 차량이 거부하고(차량 결과의 거부 코드), FF는 차량이 거부한 회신을 집계에 넣지 않는다(위조 사본 한 건이 진짜 게시본을 닫지 못하게). OTA 서버가 해킹돼도 차량에 새 정책을 넣을 수 없고, OTA webhook은 집계의 끝 상태를 바꾸지 못한다(전달 기록일 뿐) — 할 수 있는 최악은 전달하지 않기·거짓 진행 표시(가용성)다.
 
 ## 2. 흐름
 
@@ -49,9 +51,9 @@ FF                                  OTA 서버                         차량
 │ 게시본 서명(같은 트랜잭션에 OTA 작업 QUEUED — outbox)
 │ ── POST /ota/v1/jobs (Idempotency-Key=jobId) ──▶ 202 ACCEPTED
 │                                     │ ── 게시본(+봉투) 그대로 ────▶ 서명·순번·대상 검증 → 적용
-│                                     │ ◀──── 전달 결과(받음·거부 등) ──────────┘
-│ ◀── POST /api/ota/v1/events (HMAC) ─┤ 전달 기록(vehicle.results·job.state) — 진행·사유만
-│ ◀──────── IF-06 차량 회신(readback·서명 상태 보고): 차량 → Data Lake → FF ────────
+│                                     │ ◀──── 전송 결과(넘김·연결 안 됨) ───────┘
+│ ◀── POST /api/ota/v1/events (HMAC) ─┤ OTA 사실(vehicle.results·job.state) — 진행·사유만
+│ ◀──── 차량 결과(FFV1-MSG 차량 서명 — readback·상태 보고·확인): 차량 → Data Lake → FF, FF가 서명 확인 ────
 │ 회신 집계 — 차량 회신만 끝 상태를 정한다. 기한(deadlineAt): 전부 일치 CONFIRMED · 일부 PARTIAL · 없음 TIMEOUT
 ```
 
@@ -66,7 +68,7 @@ FF는 차량 전달을 어댑터 뒤에 숨긴다(`VehicleDeliveryAdapter`, [[80
 |---|---|---|---|
 | `sim` | 내부 차량 시뮬레이터(데모·시험, 운영 거부) | 모의(`CMP-…`) | 시뮬레이터 |
 | `pull` | 차량이 FF 전달함을 당겨 감(80-40 §3) | 모의(`CMP-…`) — 화면에 "모의" 표시 | 차량이 FF에 직접 확인 |
-| **`ota`** | **고객 OTA 서버가 전달** | **실제 작업 제출**(캠페인 = `OTJ-<게시본 ID>`) | 차량 → Lake → FF(IF-06). OTA webhook은 전달 기록 |
+| **`ota`** | **고객 OTA 서버가 전달** | **실제 작업 제출**(캠페인 = `OTJ-<게시본 ID>`) | 차량 → Lake → FF(차량 서명). OTA webhook은 OTA 사실(진행) |
 | `<게이트웨이>` | 고객 텔레매틱스 게이트웨이 어댑터 | 모의 | 게이트웨이 중계 |
 
 결정:
@@ -151,24 +153,22 @@ FF는 차량 전달을 어댑터 뒤에 숨긴다(`VehicleDeliveryAdapter`, [[80
   "otaJobId": "CAMP-7731",
   "occurredAt": "2026-10-24T02:00:05.000Z",
   "results": [
-    { "vin": "KMH-NX4-0001", "outcome": "APPLIED", "at": "…" },
-    { "vin": "KMH-NX4-0002", "outcome": "SIGNATURE_FAILED", "at": "…", "rejectReason": "SIGNATURE_INVALID" }
+    { "vin": "KMH-NX4-0001", "outcome": "DELIVERED", "at": "…", "attempts": 1 },
+    { "vin": "KMH-NX4-0002", "outcome": "DELIVERING", "at": "…", "attempts": 3, "code": "NOT_CONNECTED" }
   ]
 }
 ```
 `type: "job.state"`이면 `state`(작업 상태). 한 이벤트에 결과 최대 1,000건(더 많으면 나눠 보낸다). 모르는 `type`은 FF가 받기만 한다.
 
-| `outcome` | 뜻(OTA 서버가 아는 전달 결과) | 필드 |
+| `outcome` | 뜻 — **OTA 서버 자신의 사실** | 필드 |
 |---|---|---|
-| `DELIVERED` | 차량이 받았다(중간 경과, 선택) | — |
-| `APPLIED` | 차량이 OTA 서버에 적용했다고 알렸다 | — |
-| `REFUSED` | 차량이 거부했다고 알렸다(재전송·대상 밖·형식 등) | `rejectReason` 권장(차량 코드 그대로) |
-| `SIGNATURE_FAILED` | 차량이 서명 검증 실패를 알렸다 | `rejectReason` 권장 |
-| `NO_RESPONSE` | 기한까지 차량 응답 없음(오프라인 포함) | — |
-| `CANCELLED` | 취소로 보내지 않음 | — |
-| `NOT_ELIGIBLE` | OTA 서버가 이 차량에 보낼 수 없음 | `detail` 권장 |
+| `DELIVERING` | 전송 중·재시도 중(중간 경과, 선택) | `attempts`·`code`(예 `NOT_CONNECTED`) 권장 |
+| `DELIVERED` | 차량(차량의 OTA 클라이언트)에 게시본·봉투를 넘겼다 — **적용 여부는 아니다** | `attempts` 권장 |
+| `NO_RESPONSE` | 기한까지 차량에 닿지 못했다(오프라인 포함) | `code` 권장 |
+| `CANCELLED` | 취소로 보내지 않았다 | — |
+| `NOT_ELIGIBLE` | 이 OTA 서버가 보낼 수 없는 대상(등록 안 됨·구독 없음 등) | `code`·`detail` 권장 |
 
-webhook에는 차량 회신 내용(되읽은 값·부팅 식별자·서명된 상태 보고)을 **싣지 않는다** — 그것은 차량 → Lake → FF로 온다. 실어 보내도 FF는 모르는 필드로 버린다(집계에 쓰지 않는다).
+차량이 만든 결과 — 적용(`APPLIED`)·거부·서명 실패·되읽은 값·부팅 식별자·상태 보고 — 는 **싣지 않는다**. 차량 서명이 없어 OTA 서버가 지어낼 수 있기 때문이다. 그것은 차량 → Data Lake → FF로 차량 서명과 함께 온다(7.5). 실어 보내도 FF는 모르는 필드·모르는 `outcome`으로 받기만 하고 쓰지 않는다(`ignored`, 적합성 검사 C16은 실패).
 
 ### 7.2 서명 — HMAC-SHA256 (ext-sync webhook과 같은 형식)
 
@@ -201,23 +201,24 @@ GitLab·JIRA·codeBeamer webhook(`X-Hub-Signature: sha256=<HMAC(원문)>`, D05-0
 
 `5xx`·`408`·`429`·연결 실패·제한 시간 → **같은 eventId·같은 본문**(시각·서명은 새로)으로 지수 간격 재전송, 최소 24시간 또는 `deadlineAt` + 24시간까지. 그 밖의 `4xx`는 재전송하지 않는다. 지터(무작위 간격) 권장.
 
-### 7.5 OTA 전달 기록과 차량 회신 — 무엇이 끝 상태를 정하나
+### 7.5 OTA 사실과 차량 결과 — 무엇이 끝 상태를 정하나
 
-| | OTA 서버 webhook (이 규격) | 차량 회신 (차량 → Data Lake → FF) |
+| | OTA 서버 webhook (이 규격) | 차량 결과 (차량 → Data Lake → FF) |
 |---|---|---|
-| 내용 | 전달 진행·결과(`DELIVERED`·`APPLIED`·`REFUSED`·`SIGNATURE_FAILED`·`NO_RESPONSE`·`CANCELLED`·`NOT_ELIGIBLE`) | 적용 후 되읽은 값(readback: `observed`·`policyHash`·`bootId`·`sequence`), 거부 코드, 차단·복원 v2의 서명된 `status_report v2`(차량 키 CMAC) |
+| 내용 | OTA 서버 자신의 사실 — 작업 상태, 전송 시도(`DELIVERING`)·넘김(`DELIVERED`)·못 닿음(`NO_RESPONSE`)·취소·보낼 수 없음 | 차량이 만든 결과 — 적용 후 되읽은 값(readback: `observed`·`policyHash`·`bootId`·`sequence`), 거부 코드, 상태 보고 v2(`state_auth`), 전달 확인 |
 | 누가 만드나 | OTA 서버 | 차량 |
-| 진위 | HMAC(OTA 서버 신원) | 차량 회신 — 서명 보고는 FF가 차량 키로 검증(80-40·보고서 9장) |
-| FF 입구 | `POST /api/ota/v1/events` | IF-06(`POST /api/telemetry/readback` 등, Data Lake 설계 80-70) |
-| 저장 | `ota_job_vehicle`(전달 기록) | readback·status_report |
-| 집계에 | **쓰지 않는다** | **끝 상태를 정한다** |
+| 진위 | HMAC(OTA 서버 신원) — OTA 서버가 지어낼 수 있다 | **차량 서명 FFV1-MSG**(+상태 보고는 `state_auth` 두 겹) — FF가 차량 키로 직접 확인, Lake는 신뢰 경계가 아니다([80-75] §3.2·§4.1) |
+| FF 입구 | `POST /api/ota/v1/events` | Lake 중계([80-75] §4, BACKLOG TL-M*). 그 전까지는 차량 직접 창구(`/vehicle/v1/*`)·IF-06 `POST /api/telemetry/readback` |
+| 저장 | `ota_job_vehicle`(전달 사실) | readback·status_report |
+| 집계에 | **쓰지 않는다**(사유 표시만) | **서명 확인 뒤 끝 상태를 정한다** |
 
 규칙:
-1. **차량 회신이 끝 상태를 정한다.** 차량별 최신 유효 회신 → CONFIRMED(되읽은 값 = 원하는 상태)·DIVERGED(다름). 차량이 거부한 회신은 집계하지 않고 노드 사유 `REJECTED:<코드>`.
-2. **OTA webhook은 전달 진행일 뿐이다.** 차량 회신이 없는 노드에만 사유 `OTA:<결과>`(예 `OTA:NO_RESPONSE`, `OTA:APPLIED` = 전달됐다지만 차량 회신 대기)로 보인다. OTA 결과만으로는 CONFIRMED·DIVERGED가 되지 않는다.
-3. **둘이 다르면 차량 회신이 이긴다** — OTA는 `SIGNATURE_FAILED`인데 차량이 적용 회신을 보내면 CONFIRMED, OTA는 `APPLIED`인데 차량이 거부하면 거부, OTA는 `NO_RESPONSE`인데 기한 전에 차량 회신이 오면 그 회신대로.
-4. 회신 기한(`deadlineAt`)에 일부만 확인되면 PARTIAL, 하나도 없으면 TIMEOUT — OTA가 모두 `APPLIED`라고 해도 차량 회신이 없으면 TIMEOUT이다(Lake 경로 장애를 숨기지 않는다).
-5. OTA 전달 기록 안에서는 차량이 OTA에 알린 결과(`APPLIED`·`REFUSED`·`SIGNATURE_FAILED`)를 OTA 추정(`NO_RESPONSE` 등)으로 덮지 않는다. 늦게 온 차량 결과는 추정을 덮는다. 모든 대상이 끝 결과를 받거나 `job.state`가 끝 상태면 FF의 OTA 작업이 닫힌다(게시본 집계와 별개).
+1. **서명 확인된 차량 결과만 끝 상태를 정한다.** 차량별 최신 유효 결과 → CONFIRMED(되읽은 값 = 원하는 상태)·DIVERGED(다름). 차량이 거부한 결과는 집계하지 않고 노드 사유 `REJECTED:<코드>`.
+2. **OTA webhook은 전달 진행 정보다.** 차량 결과가 없는 노드에만 사유 `OTA:<사실>`(예 `OTA:DELIVERED` = 넘겼지만 차량 결과 대기, `OTA:NO_RESPONSE`)로 보인다. OTA 사실만으로는 CONFIRMED·DIVERGED가 되지 않는다.
+3. **둘이 어긋나면 차량 결과가 이긴다** — OTA는 `NO_RESPONSE`인데 기한 전에 차량 결과가 오면 그 결과대로, OTA는 `DELIVERED`인데 차량이 거부하면 거부.
+4. 회신 기한(`deadlineAt`)에 일부만 확인되면 PARTIAL, 하나도 없으면 TIMEOUT — OTA가 모두 `DELIVERED`여도 차량 결과가 없으면 TIMEOUT이다(Lake 경로 장애를 숨기지 않는다, [80-75] §4.5).
+5. OTA 사실 안에서는 `DELIVERED`를 늦게 온 다른 값으로 덮지 않고, 끝 사실(`DELIVERED`·`NO_RESPONSE`·`CANCELLED`·`NOT_ELIGIBLE`)을 `DELIVERING`으로 덮지 않는다. 모든 대상이 끝 사실을 받거나 `job.state`가 끝 상태면 FF의 OTA 작업이 닫힌다(게시본 집계와 별개).
+6. 전환 기간([80-75] §10.1)에 같은 차량 결과가 직접 창구와 Lake 둘 다로 오면 FF가 (vin, publicationId, sequence)로 합친다 — 어느 쪽이든 차량 결과다.
 
 ## 8. 오류 코드 (OTA 서버 응답)
 
@@ -301,7 +302,7 @@ npm run ota:reference -- --port 9590 --scenario all-applied --webhook-url http:/
 ```
 - 의존성 없음(`node:http`·`node:crypto`), FF 코드를 가져오지 않는다 — 규격대로만 만든 별도 구현.
 - 시나리오 `--scenario`: `all-applied`(모두 적용) · `some-no-response`(마지막 차량 응답 없음 → 기한에 NO_RESPONSE) · `signature-failure`(첫 차량 서명 실패) · `refused`(첫 차량 거부) · `silent`(webhook 없음 → FF TIMEOUT) · `flaky`(처음 두 번 제출 503 → FF 자동 재시도).
-- 실제 차량은 없다. webhook은 전달 기록만 보낸다. `--lake-url <FF 주소>`를 주면 **차량 → Lake → FF 경로도 흉내** 낸다 — 차량이 알린 결과를 FF IF-06 입구(`POST /api/telemetry/readback`, 데모 인증 SYSTEM)로 넣는다(`APPLIED`는 되읽은 값 = 게시본 `desired`). 실제 OTA 서버의 일이 아니다. 차단·복원 v2의 차량 서명 상태 보고는 만들 수 없다(차량 키가 없다).
+- 실제 차량은 없다. 시나리오는 **흉내 낸 차량의 행동**(적용·거부·서명 실패·응답 없음)이고, webhook에는 OTA 사실만 보낸다(닿은 차량 `DELIVERED`, 닿지 않은 차량 `DELIVERING` → 기한에 `NO_RESPONSE`). `--lake-url <FF 주소>`를 주면 차량 결과 경로도 흉내 낸다 — 지금 FF의 IF-06 입구(`POST /api/telemetry/readback`, 데모 인증 SYSTEM, **차량 서명 없음**)로 넣는다(적용이면 되읽은 값 = 게시본 `desired`). Lake 중계(M1, 차량 서명 FFV1-MSG)가 생기면 참조 Lake 서버(`tools/lake-reference`, [80-75] §10.3)가 이 자리를 맡는다. 실제 OTA 서버의 일이 아니다. 차단·복원 v2의 차량 서명 상태 보고는 만들 수 없다(차량 키가 없다).
 - 시험 손잡이(규격 밖): `POST /_sim/config`·`GET /_sim/state`, 머리글 `x-sim-admin: <클라이언트 비밀>`. 비밀은 `OTA_REF_CLIENT_SECRET`·`OTA_REF_WEBHOOK_SECRET`(기본은 공개된 시험 값 — 시험 전용).
 
 ### 12.2 적합성 검사 — 실제 OTA 서버에 대고 돌린다
@@ -311,7 +312,7 @@ OTA_CLIENT_SECRET=… OTA_WEBHOOK_SECRET=… npm run ota:conformance -- \
   --url https://ota-test.customer.example --token-url https://sso.customer.example/oauth2/token \
   --client-id ff-platform --webhook-host 0.0.0.0 --webhook-port 9599 --vins TESTVIN1,TESTVIN2 --deadline-sec 60
 ```
-OTA 서버의 webhook 주소를 `http://<검사기 호스트>:9599/ota-conformance/events`, 비밀을 `OTA_WEBHOOK_SECRET`로 맞춰 둔다. 검사기는 **시험 차량**(`--vins`)에 검사용 작업 2건을 실제로 만든다(정책 게시본 형식, 서명은 형식만 — 차량은 `SIGNATURE_FAILED`로 거부해야 맞다). 종료 코드 0 = 통과.
+OTA 서버의 webhook 주소를 `http://<검사기 호스트>:9599/ota-conformance/events`, 비밀을 `OTA_WEBHOOK_SECRET`로 맞춰 둔다. 검사기는 **시험 차량**(`--vins`)에 검사용 작업 2건을 실제로 만든다(정책 게시본 형식, 서명은 형식만 — 차량은 서명 검증에서 거부해야 맞다(그 결과는 Lake 경로로 간다)). 종료 코드 0 = 통과.
 
 | 검사 | 내용 |
 |---|---|
@@ -327,7 +328,7 @@ OTA 서버의 webhook 주소를 `http://<검사기 호스트>:9599/ota-conforman
 | C13 | 취소 202·다시 취소 202·조회 CANCELLED·없는 작업 404 |
 | C14 | 모든 대상이 기한(+여유) 안에 끝 결과 |
 | C15 | webhook 서명·시각 |
-| C16 | webhook 본문 형식(eventId = 머리글, 결과 값) |
+| C16 | webhook 본문 형식(eventId = 머리글, 결과 값은 OTA 사실만 — `APPLIED` 등 차량 결과를 실으면 실패) |
 | C17 | 503을 받은 이벤트를 같은 eventId·같은 본문으로 재전송 |
 | C18 | 같은 eventId에 다른 본문 없음 |
 
@@ -340,8 +341,8 @@ FF 저장소에서는 `node --test tools/ota-reference/conformance.test.ts`(veri
 | O1 | 토큰 발급 방식 — 자체 `/oauth/token` 또는 기존 IdP의 클라이언트(범위 이름이 다르면 `FF_OTA_SCOPE`) | 설정만 |
 | O2 | FF webhook 주소·비밀을 넣는 곳(OTA 서버 설정)과 비밀 교체 절차(7.2) | 설정만 |
 | O3 | 오프라인 차량 처리 — 기한까지 대기열, 깨우기(SMS·CCS) 여부, `EMERGENCY` 우선 경로 | 기한(`PUBLICATION_TIMEOUT_MS`·`KILL_TIMEOUT_MS`)을 차량 연결 주기에 맞춘다 |
-| O4 | 차량 → OTA 서버 전달 결과(받음·적용·거부 코드)를 어떻게 얻는가(차량 에이전트·OTA 클라이언트와의 계약) | 전달 기록·사유 표시 |
-| O5 | 차량 회신(readback·서명 상태 보고)이 차량 → Data Lake → FF로 가는 경로 — OTA 서버가 Lake 수집을 겸해도 그 경로는 IF-06 규격(80-70)을 따른다, 이 webhook이 아니다 | 없으면 CONFIRMED가 나지 않는다(기한에 TIMEOUT) |
+| O4 | "차량에 넘겼다(`DELIVERED`)"를 무엇으로 판단하나(전송 완료·차량 OTA 클라이언트의 수신 확인 등) | 진행·사유 표시 |
+| O5 | 차량 결과(차량 서명 FFV1-MSG)를 Data Lake로 보내는 길 — OTA 서버가 차량 통신을 겸해도 차량 결과는 Lake 규격([80-75])으로, 이 webhook이 아니다 | 없으면 CONFIRMED가 나지 않는다(기한에 TIMEOUT) |
 | O6 | `rejectedTargets` 코드 목록(등록 안 됨·구독 없음 등) | 기록만 |
 | O7 | 처리량 한도 — 작업당 최대 대상 수(규격 하한 10,000)·본문 한도·`429` 정책 | 10,000대 넘으면 지금은 나누지 않는다(14장) |
 | O8 | 서명 검증을 OTA 서버도 할지(선택 — 해도 차량 검증은 그대로) | 없음 |
@@ -350,8 +351,9 @@ FF 저장소에서는 `node --test tools/ota-reference/conformance.test.ts`(veri
 
 ## 14. 한계(정직하게)
 
-- **집계는 차량 회신만**: Data Lake → FF 회신 경로(IF-06, 80-70)는 설계 중이다. 그 경로가 없으면 OTA가 모두 적용이라 해도 기한에 TIMEOUT이다(의도 — 차량 회신 없는 확인을 만들지 않는다). 지금은 IF-06 입구(`POST /api/telemetry/readback`)·차량 직접 창구로 받는다.
-- **전달 기록과 차량 회신의 불일치 경보 없음**: 둘이 다르면 차량 회신이 이기지만, 그 차이(OTA는 적용, 차량은 거부 등)를 이상 징후로 올리지는 않는다(노드 사유·OTA 전달 패널로만 보인다).
+- **집계는 차량 결과만**: Lake → FF 중계(차량 서명 FFV1-MSG, [80-75] §10, TL-M*)는 아직 구현 전이다. 그 전에는 차량 직접 창구·IF-06 `POST /api/telemetry/readback`(시스템 계정, 차량 서명 없음)으로 받는다. 경로가 없으면 OTA가 모두 `DELIVERED`여도 기한에 TIMEOUT이다(의도).
+- **U-17 대기**: OTA webhook을 OTA 사실만으로 둔 것은 [80-75] U-17의 기본안이다. 사용자 결정에 따라 7.1·7.5가 바뀔 수 있다.
+- **OTA 사실과 차량 결과의 불일치 경보 없음**: 어긋나면 차량 결과가 이기지만, 그 차이(OTA는 넘겼다, 차량 결과는 없다 등)를 이상 징후로 올리지는 않는다(노드 사유·OTA 전달 패널로만 보인다).
 - **조회 보충 없음**: OTA 전달 기록은 webhook만 본다. webhook이 끝내 오지 않으면 OTA 작업이 SUBMITTED로 남는다 — `GET /ota/v1/jobs`로 메우는 대사(reconcile)는 아직 없다.
 - **나누기 없음**: 작업 하나 = 게시본 하나 = 대상 전부. 10,000대가 넘는 게시본은 OTA 서버가 받아야 한다(FF가 작업을 나누지 않는다).
 - **mTLS는 FF 코드에 없다** — OAuth2 + TLS만. 송신 프록시로 붙인다(9.1).
@@ -363,4 +365,6 @@ FF 저장소에서는 `node --test tools/ota-reference/conformance.test.ts`(veri
 
 | 판 | 날짜 | 내용 |
 |---|---|---|
-| 1.0.0 | 2026-10-24 | 첫 판 — 책임·흐름·API 4개·webhook·HMAC·OAuth2 client credentials·멱등·재시도·오류 표·판 규칙, FF 어댑터·시험 OTA 서버·적합성 검사. 사용자 결정 "차량 → Lake → FF": webhook은 전달 기록, 끝 상태는 차량 회신(7.5) |
+| 1.0.0 | 2026-10-24 | 첫 판 — 책임·흐름·API 4개·webhook·HMAC·OAuth2 client credentials·멱등·재시도·오류 표·판 규칙, FF 어댑터·시험 OTA 서버·적합성 검사. 사용자 결정 "차량 → Lake → FF"·[80-75] C8: webhook은 OTA 사실만(DELIVERING·DELIVERED·NO_RESPONSE·CANCELLED·NOT_ELIGIBLE), 끝 상태는 서명 확인된 차량 결과(7.5, U-17 기본안) |
+
+[80-75]: 80-75-data-lake-server.md

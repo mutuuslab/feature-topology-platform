@@ -5,7 +5,7 @@
   "passed": 799,
   "failed": 0,
   "skipped": 20,
-  "minutes": 11,
+  "minutes": 10,
   "causes": {
     "준비 단계(beforeAll) 실패 — 메시지 없음(시간 한도를 시험이 직접 정한 경우가 많다)": 1
   },

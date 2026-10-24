@@ -3,7 +3,7 @@ import { Controller, Get, Injectable, Query } from '@nestjs/common';
 import { AuditService, type AuditQuery, type AuditResult } from '../../../kernel/audit.service';
 import { PlatformComponent } from '../../../kernel/components';
 import { DomainError } from '../../../kernel/errors';
-import { decodeCursor, encodeCursor } from '@ff/contracts';
+import { decodeCursor, encodeCursor } from '../../../kernel/paging';
 
 @Injectable()
 @PlatformComponent('D01-10')

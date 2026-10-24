@@ -32,26 +32,12 @@ export function configureErrorActions(a: ErrorActions) {
 /** 문자열 오류(옛 호출)와 객체 오류를 하나로 */
 export const asErrorLike = (e: string | ErrorLike | null | undefined): ErrorLike | null => (e == null ? null : typeof e === 'string' ? { message: e } : e);
 
-/** 사용자에게 보여 줄 만한 오류 코드인가 — 업무 규칙 코드는 보이고, 상태 코드 대용(HTTP_500)·연결·세션 코드는 숨긴다 */
-export const showsCode = (e: ErrorLike) => !!e.code && !/^HTTP_/.test(e.code) && !['network', 'auth', 'server', 'rateLimit'].includes(e.kind ?? '') && e.code !== 'NETWORK' && e.code !== 'INTERNAL';
+/** 사용자에게 보여 줄 만한 오류 코드인가 — 업무 규칙 코드는 보이고, 상태 코드 대용(HTTP_500)·연결·세션·서버 코드는 숨긴다 */
+export const showsCode = (e: ErrorLike) => !!e.code && !/^(HTTP_|NETWORK|INTERNAL)/.test(e.code) && !/^(network|auth|server|rateLimit)$/.test(e.kind ?? '');
 
+const TITLE: Record<string, string> = { auth: E.authTitle, conflict: E.conflictTitle, validation: E.validationTitle, rateLimit: E.rateLimitTitle, server: E.serverTitle };
 /** 오류 종류 → 제목(조회 실패 상자) */
-export function errorTitle(e: ErrorLike | null, fallback: string): string {
-  switch (e?.kind) {
-    case 'auth':
-      return E.authTitle;
-    case 'conflict':
-      return E.conflictTitle;
-    case 'validation':
-      return E.validationTitle;
-    case 'rateLimit':
-      return E.rateLimitTitle;
-    case 'server':
-      return E.serverTitle;
-    default:
-      return fallback;
-  }
-}
+export const errorTitle = (e: ErrorLike | null, fallback: string): string => TITLE[e?.kind ?? ''] ?? fallback;
 
 /** 오류 아래 다음 행동 — 종류별 안내 한 줄과 버튼, 서버 오류의 문의 번호 */
 export function ErrorNextStep({ error }: { error: ErrorLike | null | undefined }) {

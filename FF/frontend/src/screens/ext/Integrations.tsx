@@ -4,8 +4,8 @@
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
-import { useConnections } from '../../api/connections';
-import { connectionLabel, type ConnectionStatus } from '@ff/contracts';
+import { connectionLabel, useConnections } from '../../api/connections';
+import type { ConnectionStatus } from '@ff/contracts';
 import { connections as CN } from '../../copy/connections';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, ExplainCodes, PageHeader, Panel, Select, Tabs, Toolbar, VerdictBadge } from '../../design';

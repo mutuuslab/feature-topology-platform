@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { approvalCheck, approvalPlan, reportRolesOf, type Role } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { STATIC_MODE } from '../../api/client';
-import { fieldErrors } from '../../api/errors';
+import { fieldErrors } from '../../api/field-errors';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { procedures as PR } from '../../copy/procedures';

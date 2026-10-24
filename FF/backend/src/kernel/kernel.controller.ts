@@ -10,7 +10,8 @@ import { DB, type Db } from './db';
 import { MIGRATIONS } from './migrations';
 import { Metrics, metricsEndpoint } from './observability';
 import { isProduction } from './runtime-config';
-import { connectionStatuses, type ConnectionsResponse } from '@ff/contracts';
+import type { ConnectionsResponse } from '@ff/contracts';
+import { connectionStatuses } from './connections';
 
 /** 배포 판 — package.json 판 + 빌드 커밋(FF_BUILD_SHA, 이미지 빌드가 넣는다) */
 const VERSION = (() => {

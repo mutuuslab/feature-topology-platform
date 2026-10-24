@@ -5,6 +5,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import type { ConnectionsResponse } from '@ff/contracts';
+import { connectionLabel } from '../api/connections';
 import { ConnectionBadge } from '../design';
 import { connections as CN } from '../copy/connections';
 import { AppProvider } from '../store';
@@ -54,6 +55,14 @@ async function renderNotifications() {
 }
 
 describe('모의 연계 표시 (RD-UX-04)', () => {
+  it('표시 규칙 — live는 표시 없음, 데모는 모의(연결 전), 운영·꺼짐은 연결 안 됨, 상태를 못 읽으면 모의', () => {
+    expect(connectionLabel({ mode: 'live' }, 'production')).toBe('none');
+    expect(connectionLabel({ mode: 'mock' }, 'demo')).toBe('mock');
+    expect(connectionLabel({ mode: 'mock' }, 'production')).toBe('disconnected');
+    expect(connectionLabel({ mode: 'off' }, 'demo')).toBe('disconnected');
+    expect(connectionLabel(null, null)).toBe('mock');
+  });
+
   it('ConnectionBadge — 모의·연결 안 됨은 글자와 설명, 실제 연결이면 그리지 않는다', () => {
     const { container, rerender } = render(<ConnectionBadge state="mock" system={CN.system.mail} />);
     expect(screen.getByText(CN.label.mock)).toBeTruthy();

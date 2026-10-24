@@ -1,6 +1,6 @@
 // readiness: RD-UX-03 — 목록 커서 페이지 나눔: limit이 없으면 전체(뒤 호환), 커서는 불투명·위조 거부.
 import { describe, expect, it } from 'vitest';
-import { decodeCursor, encodeCursor, pageLimit, pageOf } from './paging';
+import { decodeCursor, encodeCursor, pageLimit, pageOf } from '../../src/kernel/paging';
 
 describe('목록 페이지 나눔 (RD-UX-03)', () => {
   const rows = Array.from({ length: 10_000 }, (_, i) => i);

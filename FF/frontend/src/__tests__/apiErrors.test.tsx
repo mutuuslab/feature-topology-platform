@@ -64,7 +64,7 @@ describe('API 오류 → 사용자 안내 (client.ts)', () => {
   it('400 VALIDATION·422 — 입력 오류, 칸별 오류를 읽을 수 있다', async () => {
     const e = await callWith(json(envelope('VALIDATION', '요청 본문이 올바르지 않습니다.', [{ path: 'name', message: '2자 이상' }, { path: 'tags.0', message: '빈 값' }]), 400), 'createFeature');
     expect(e).toMatchObject({ kind: 'validation' });
-    const { fieldErrors } = await import('../api/errors');
+    const { fieldErrors } = await import('../api/field-errors');
     expect(fieldErrors(e)).toMatchObject({ name: '2자 이상', tags: '빈 값', 'tags.0': '빈 값' });
     const g = await callWith(json(envelope('GUARD_FAILED', '국가·차종·트림이 바뀌면 새 Feature ID로 등록해야 합니다.', { fields: ['country', 'trim'] }), 422), 'createFeature');
     expect(fieldErrors(g)).toEqual({ country: g.message, trim: g.message });

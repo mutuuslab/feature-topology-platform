@@ -1,7 +1,8 @@
 // 과금 시스템 연계 (D05-04) — 체험 → 구독·구매 전환. 결제는 모의 과금 시스템(if_call 'BILLING', 멱등 키 = 체험권:요금제)이 맡고,
 // 결제가 확인되면 같은 트랜잭션에서 체험을 CONVERTED로, 새 구독·구매 권한을 만든다(D01-05).
 import { Body, Controller, HttpCode, Inject, Injectable, Param, Post } from '@nestjs/common';
-import { PurchaseTrialBody, connectionStatuses } from '@ff/contracts';
+import { PurchaseTrialBody } from '@ff/contracts';
+import { connectionStatuses } from '../../../kernel/connections';
 import { DomainError } from '../../../kernel/errors';
 import { isProduction } from '../../../kernel/runtime-config';
 import { IfCallRepo } from '../../../adapters/if-call/if-call.repo';

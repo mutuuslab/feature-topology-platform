@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LIFECYCLE, type Lifecycle } from '@ff/contracts';
 import { call } from '../../api/client';
-import { fieldErrors } from '../../api/errors';
+import { fieldErrors } from '../../api/field-errors';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, LifecycleBadge, LifecycleStepper, PageHeader, Panel, VerdictBadge, Icon } from '../../design';

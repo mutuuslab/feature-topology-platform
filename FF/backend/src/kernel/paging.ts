@@ -1,4 +1,4 @@
-// 목록 페이지 나눔(출시 준비 RD-UX-03) — 커서는 불투명 문자열(base64url JSON). limit이 없으면 예전처럼 전체(뒤 호환).
+// 목록 페이지 나눔(출시 준비 RD-UX-03) — 커서는 불투명 문자열(base64url JSON). limit이 없으면 예전처럼 전체(뒤 호환). 백엔드 전용(프론트 첫 화면 묶음에 넣지 않는다).
 // 응답은 { items, nextCursor } — nextCursor가 null이면 마지막 페이지.
 
 export const PAGE_LIMIT_MAX = 500;

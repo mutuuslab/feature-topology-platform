@@ -7,7 +7,6 @@ import {
   changedKeys,
   compareVersion,
   gatesToRejudge,
-  pageOf,
   SCOPE_KEYS,
   type CreateFeatureBody,
   type CreateVersionBody,
@@ -23,6 +22,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from '../repos';
 import { LifecycleService } from './lifecycle.service';
+import { pageOf } from '../../../kernel/paging';
 
 export interface FeatureQuery {
   q?: string;

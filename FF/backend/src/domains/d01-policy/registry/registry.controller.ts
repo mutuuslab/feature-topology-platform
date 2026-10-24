@@ -6,12 +6,12 @@ import {
   CreateFeatureBody,
   CreateVersionBody,
   JudgeGateBody,
-  pageLimit,
   TransitionBody,
   UpdateDraftBody,
 } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { ZodPipe } from '../../../kernel/zod.pipe';
+import { pageLimit } from '../../../kernel/paging';
 import { GateService } from '../topology/gate.service';
 import { BaselineService } from './baseline.service';
 import { LifecycleService } from './lifecycle.service';

@@ -1,39 +1,27 @@
-/* 대시보드 히어로 — 관제실 톤(data-zone='ops') 위의 절차 흐름 모션 */
+/* 대시보드 히어로 — 본문 테마 위의 절차 흐름 모션. 핵심 메시지보다 약하게: 낮은 높이, 광택 없음(UX3-15) */
 .dh {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: var(--sp-4);
   align-items: center;
-  padding: var(--sp-5);
+  padding: var(--sp-3) var(--sp-4);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   background: var(--surface);
   overflow: hidden;
 }
-.dh::before {
-  content: '';
-  position: absolute;
-  inset-inline-end: -10%;
-  inset-block-start: -60%;
-  inline-size: 60%;
-  block-size: 160%;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--accent-soft), transparent 68%);
-  opacity: 0.7;
-  pointer-events: none;
-}
 .dh__copy { position: relative; display: grid; gap: 4px; align-content: center; }
 .dh__copy h2 {
-  margin: 2px 0 6px;
+  margin: 0;
   /* 3초 규칙 — 핵심 메시지(PageHeader)보다 큰 글자를 만들지 않는다. 숫자 없는 문장형 핵심 메시지(--fs-xl)보다도 작게:
      예전 clamp(18px, 1.5vw, 22px)는 1366(20.5px)·1920(22px)에서 문장형(20.4·22px)을 넘었다(UX3-13, e2e home.spec) */
-  font-size: var(--fs-lg);
-  line-height: 1.3;
-  letter-spacing: -0.015em;
-  white-space: pre-line;
+  /* 한 줄, 본문 크기 — 히어로 제목이 핵심 메시지와 같은 무게로 읽혔다(UX3-15 시각 검토) */
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
 }
-.dh__lead { margin: 0; max-inline-size: 54ch; color: var(--ink-2); line-height: 1.55; }
 /* 작은 Feature Flag 모션 — Safe Default → Canary 흐름을 점 하나로 보여 준다 */
 .dh-flag {
   display: inline-flex;
@@ -69,18 +57,8 @@
 }
 .dh-flag__state { color: var(--accent); font-family: var(--font-mono); font-weight: 600; }
 .dh-flag__flow { color: var(--muted); }
-.dh__live { display: inline-flex; align-items: center; gap: 6px; margin-block-start: var(--sp-2); color: var(--muted); font-size: var(--fs-xs); }
-.dh__live i {
-  inline-size: 6px;
-  block-size: 6px;
-  border-radius: 50%;
-  background: var(--ok);
-  box-shadow: 0 0 0 3px var(--ok-soft);
-  animation: dh-blink 1.6s ease-in-out infinite;
-}
-@keyframes dh-blink { 50% { opacity: 0.35; } }
 
-.dh__motion { position: relative; inline-size: 100%; block-size: 160px; color: var(--ink); }
+.dh__motion { position: relative; inline-size: 100%; block-size: 80px; color: var(--ink); }
 .dh-grid { fill: none; stroke: currentColor; stroke-opacity: 0.08; stroke-width: 1; }
 .dh-path { fill: none; stroke: currentColor; stroke-opacity: 0.18; stroke-width: 1.5; }
 .dh-flow {
@@ -92,13 +70,13 @@
   animation: dh-flow 4.6s linear infinite;
 }
 @keyframes dh-flow { to { stroke-dashoffset: -1; } }
-.dh-pulse { fill: var(--accent); filter: drop-shadow(0 0 7px var(--accent)); }
+.dh-pulse { fill: var(--accent); }
 .dh-node { animation: dh-node 3s ease-in-out infinite; }
 .dh-node > circle:first-child { fill: var(--surface); stroke: var(--line-strong); }
 .dh-dot { fill: var(--accent); }
 @keyframes dh-node { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
-.dh-gate { fill: currentColor; font-family: var(--font-mono); font-size: 11px; opacity: 0.7; }
-.dh-axis { fill: currentColor; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; opacity: 0.4; }
+.dh-gate { fill: currentColor; font-family: var(--font-mono); font-size: 26px; opacity: 0.7; } /* viewBox 단위 — 80px 높이로 줄면 약 11px */
+.dh-axis { fill: currentColor; font-family: var(--font-sans); font-size: 20px; opacity: 0.55; } /* 한글 캡션 — 자간을 벌리면 '등 록'처럼 읽힌다 */
 
 @media (max-width: 900px) {
   .dh { grid-template-columns: 1fr; }
@@ -110,7 +88,6 @@
 @media (prefers-reduced-motion: reduce) {
   .dh-flow,
   .dh-node,
-  .dh__live i,
   .dh-flag__track i { animation: none; }
   .dh-pulse { display: none; }
 }

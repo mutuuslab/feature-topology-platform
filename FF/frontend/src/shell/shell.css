@@ -51,9 +51,21 @@
 .sh[data-panel='closed'] .sh-brand {
   width: auto;
 }
-.sh-brand__mark {
-  color: var(--accent);
-  display: inline-flex;
+.sh-brand__logo {
+  /* 여백을 잘라 낸 로고(788×101) — 글자 높이가 제품 이름과 비슷하게 */
+  block-size: 15px;
+  inline-size: auto;
+  flex: none;
+  filter: var(--logo-filter);
+}
+[data-present='on'] .sh-brand__logo {
+  block-size: 20px;
+}
+.sh-brand__divider {
+  flex: none;
+  inline-size: 1px;
+  block-size: 16px;
+  background: var(--line-strong);
 }
 .sh-brand__name {
   font-weight: 800;

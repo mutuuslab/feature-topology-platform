@@ -4,7 +4,9 @@
 //   ① 핵심 메시지 정확히 1개, 첫 화면 위쪽(320px 안)  ② 화면에서 가장 큰 글자(H1보다 크다)
 //   ③ 핵심 메시지 문장·행동 링크를 본문에서 글자 그대로 되풀이하지 않는다  ④ 헤드라인 한 패턴(숫자 값·톤·본문색 문장)
 //   ⑤ 본문(#main)의 보이는 글자에 규칙·컴포넌트 코드 없음  ⑥ 머리표·KPI 타일 줄 없음, 머리 설명 한 줄
+//   ⑦ 요약 줄 '내 차례 0'이 핵심 메시지와 같은 말 · 어두운 히어로가 가장 진한 요소(UX3-15) — key-message-rules.ts ⑪⑫
 import { expect, test, type Page } from '@playwright/test';
+import { summaryAndZone } from './key-message-rules';
 
 const ROLES = ['author', 'approver', 'quality', 'operator', 'steward', 'commerce', 'integrator', 'coordinator', 'viewer'];
 const CODE = /FFG-[A-Z]+-\d|\bIF-\d|\bD0\d-\d|보고서 \d|§\d/;
@@ -100,6 +102,15 @@ async function home(page: Page, role: string, width: number) {
     return out;
   }, BODY_CODE.source);
   expect(codes, '본문에 규칙·컴포넌트 코드 없음 — 설명 모드나 title 툴팁으로').toEqual([]);
+  await summaryAndZone(page);
+  // UX3-15 시각 검토: 히어로가 210px·제목 16px 두 줄로 핵심 메시지와 같은 무게였다 — 낮고 작은 보조 요소로
+  const hero = await page.evaluate(() => {
+    const px = (e: Element | null) => (e ? parseFloat(getComputedStyle(e).fontSize) : 0);
+    const h = document.querySelector('#main .dh');
+    return { height: h?.getBoundingClientRect().height ?? 0, title: px(h?.querySelector('h2') ?? null), key: px(document.querySelector('#main [data-key-message] .ds-key__text')) };
+  });
+  expect(hero.height, '홈 히어로 높이').toBeLessThanOrEqual(160);
+  expect(hero.title, '히어로 제목은 핵심 메시지 문장보다 작다').toBeLessThan(hero.key);
 }
 
 for (const width of [1366, 1920]) for (const role of ROLES) test(`3초(홈): ${role} ${width}`, ({ page }) => home(page, role, width));

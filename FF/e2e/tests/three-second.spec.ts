@@ -16,8 +16,10 @@
 //      핵심 메시지에 숫자 값이 없고(.ds-key__value 없음·숫자 없음) 톤이 neutral이고 문장이 '없습니다'·'없음'으로 끝나면,
 //      그 화면 기본 보기의 #main에 보이는 빈 상자([data-state="empty"]·.ds-state)가 없어야 한다 — AsyncView emptyHidden으로 감춘다.
 //      다른 작업이 맡은 화면은 EMPTY_BOX_ALLOW(경로 → 사유) 래칫
+//   ⑪ 요약 줄 항목 이름을 핵심 메시지에서 되풀이하지 않는다 · ⑫ 본문에 어두운 관제실 구역(data-zone="ops") 없음 — key-message-rules.ts(UX3-15)
 // BDC 데모(/twin/*)는 별도 레거시 화면 묶음이라, 디자인 갤러리(/_design)는 부품 견본이라 대상에서 뺀다.
 import { expect, test, type Page } from '@playwright/test';
+import { summaryAndZone } from './key-message-rules';
 import { DRILLDOWNS, MENU_ENTRIES } from './menu';
 
 const SKIP = (u: string) => u.startsWith('/twin') || u.startsWith('/_design');
@@ -149,6 +151,8 @@ async function threeSeconds(page: Page, url: string) {
 
   const h1 = (await page.locator('#main h1').first().innerText()).trim();
   expect((await page.locator('.sh-trail li').allInnerTexts()).map((t) => t.trim()), '경로 표시는 H1을 되풀이하지 않는다').not.toContain(h1);
+
+  await summaryAndZone(page);
 }
 
 for (const m of MENU_ENTRIES.filter((x) => !SKIP(x.menu))) test(`3초: ${m.title} (${m.menu})`, ({ page }) => threeSeconds(page, m.menu));

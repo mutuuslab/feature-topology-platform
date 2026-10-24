@@ -269,8 +269,10 @@ export class KillService {
       this.audit.failed(actor, action, subject.killId, `${check.code}: ${check.message}`, request === 'restore' ? 'D03-04' : 'D03-03');
       throw new DomainError(check.code === 'SELF_APPROVAL' || check.code === 'NO_APPROVER_ROLE' ? 'FORBIDDEN' : 'CONFLICT', check.message, { code: check.code });
     }
-    const sig = this.hsm.approve(actor.id, jcs(approvalSubject({ ...subject, request })));
-    return { approverId: actor.id, platformRole: actor.role, role: check.role, signedAt: this.clock.iso(), kid: sig.kid, sig: sig.value, comment: comment?.trim() || null };
+    // 서명 대상 = 명령에서 다시 만들 수 있는 대상 집합 + 이 승인 칸(승인자·역할·서명 시각) — 게이트가 같은 값으로 검증한다(D-RD-5)
+    const signedAt = this.clock.iso();
+    const sig = this.hsm.approve(actor.id, jcs(approvalSubject({ ...subject, request, approverId: actor.id, role: check.role, signedAt })));
+    return { approverId: actor.id, platformRole: actor.role, role: check.role, signedAt, kid: sig.kid, sig: sig.value, comment: comment?.trim() || null };
   }
 
   /**
@@ -447,7 +449,7 @@ export class KillService {
    * @rule FFG-VEH-002, FFG-VEH-013 — 플랫폼 쪽: 차량 키 CMAC 봉투·차량·Feature별 순번 발급(epoch 갱신·재동기 절차는 WP5)
    */
   issueCommand(actor: Actor, k: { killId: string; vins: string[] }, draft: KillCommandV2): IssuedCommand {
-    this.gate.commit(actor, draft, { killId: k.killId }); // FFP-F059 — 승인 서명을 발행 대상 집합으로 다시 검증
+    this.gate.commit(actor, draft); // FFP-F059·D-RD-5 — 게이트가 승인 서명을 등록된 승인자 키·발행 대상 집합으로 다시 검증
     const purpose = COMMAND_KEY_PURPOSE[draft.request];
     const { signature: _unsigned, ...body } = draft;
     const sig = this.hsm.signDetached(purpose, jcs(body));

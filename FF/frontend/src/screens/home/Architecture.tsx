@@ -7,7 +7,7 @@ import { componentTcl, QUALIFICATION_METHODS, reportRule, RULE_STATUS, rulesOfCo
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Drawer, ExplainCodes, KeyValue, PageHeader, RuleChecklist, Segmented, SummaryLine, VerdictBadge } from '../../design';
+import { AsyncView, Drawer, ExplainCodes, KeyValue, PageHeader, RuleChecklist, Segmented, SummaryLine, VerdictBadge, useReportCatalog } from '../../design';
 import { when } from '../shared';
 
 const A = ko.arch;
@@ -74,6 +74,7 @@ interface Activity {
 }
 
 export function ArchitectureScreen() {
+  useReportCatalog();
   const [sp, setSp] = useSearchParams();
   const q = useApi<Comp[] | { items: Comp[] }>('components');
   const act = useApi<{ items: Activity[] }>('componentActivity', { query: { minutes: 60 } });

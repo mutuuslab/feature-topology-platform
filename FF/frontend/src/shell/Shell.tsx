@@ -15,7 +15,7 @@ import { logout } from '../auth';
 import { DemoRoleSwitcher } from './DemoRoleSwitcher';
 import { SsoRoleSwitcher } from './SsoRoleSwitcher';
 import { login as L } from '../copy/login';
-import { GuideDock, RuleDrawer } from './GuideDock';
+import { GuideDockHost, RuleDrawerHost } from './docks';
 import { UnsavedPrompt } from '../design/unsaved';
 import { useSessionExpired } from '../api/session';
 // 세션 만료 안내 띠 — 401 뒤에만 그리므로 첫 화면 묶음에서 뺀다(RD-UX-01)
@@ -287,9 +287,9 @@ function ShellFrame({ children }: { children: ReactNode }) {
         )}
         <Suspense fallback={<div className="ds-skel" data-state="loading"><span /><span /><span /></div>}>{children}</Suspense>
       </main>
-      <GuideDock />
+      <GuideDockHost />
       <ProcedureGuideHost />
-      <RuleDrawer />
+      <RuleDrawerHost />
       <UnsavedPrompt />
       {procOpen && (
         <Suspense fallback={null}>

@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { REPORT_APPROVER_ROLES, ROLE_LABEL, type ApproverRole } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { PLATFORM_ROLES } from '../../api/actor';
+import { useDefaultFeature } from '../../data/first-run';
 import { roleLabel } from '../../data/refdata';
 import { ko } from '../../copy/ko';
 import { AsyncView, DataTable, Field, KeyValue, PageHeader, Panel, RuleText, SummaryLine, VerdictBadge } from '../../design';
@@ -130,12 +131,16 @@ const V_VERDICT: Record<string, string> = { APPLICABLE: 'PASS', NOT_SUPPORTED: '
 
 export function VariantScreen() {
   const [sp, setSp] = useSearchParams();
-  const [featureId, setFeatureId] = useState(sp.get('featureId') ?? 'FEAT-00022');
-  const [version, setVersion] = useState(sp.get('version') ?? '1.0.0');
+  // 기본 대상 — 예시 Feature가 있으면 그것, 없으면 첫 Feature, 하나도 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const [picked, setPicked] = useState<{ f: string; v: string } | null>(sp.get('featureId') ? { f: sp.get('featureId')!, v: sp.get('version') ?? '1.0.0' } : null);
+  const fallback = useDefaultFeature({ featureId: 'FEAT-00022', version: '1.0.0' }, !picked);
+  const featureId = picked?.f ?? fallback?.featureId ?? '';
+  const version = picked?.v ?? fallback?.version ?? '';
+  const none = !picked && fallback === null;
   const valid = /^FEAT-\d{5}$/.test(featureId) && /^\d+\.\d+\.\d+$/.test(version);
   const q = useApi<Matrix>('variantMatrix', { params: { featureId, version } }, { enabled: valid });
   const d = q.data;
-  const set = (f: string, v: string) => (setFeatureId(f), setVersion(v), setSp({ featureId: f, version: v }, { replace: true }));
+  const set = (f: string, v: string) => (setPicked({ f, v }), setSp({ featureId: f, version: v }, { replace: true }));
   return (
     <div className="ds-screen">
       <PageHeader
@@ -143,7 +148,9 @@ export function VariantScreen() {
         title={VC.title}
         lead={VC.lead}
         message={
-          d
+          none
+            ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }
+            : d
             ? d.summary.notSupported
               ? { tone: 'warn', value: d.summary.notSupported, text: VC.key.notSupported(`${d.feature.featureId} ${d.feature.version} ${d.feature.name}`) }
               : { tone: 'ok', text: VC.key.ok(`${d.feature.featureId} ${d.feature.version} ${d.feature.name}`) }
@@ -158,7 +165,7 @@ export function VariantScreen() {
           <input className="ds-input ds-input--mono" name="version" value={version} onChange={(e) => set(featureId, e.target.value.trim())} />
         </Field>
       </div>
-      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
         {d && (
           <>
             <SummaryLine

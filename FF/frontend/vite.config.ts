@@ -58,5 +58,8 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     // 기계 부하가 크면(병렬 작업) jsdom 준비·모듈 변환만으로 5초 기본값을 넘는다 — 실제로 멈춘 시험은 여전히 실패
     testTimeout: 20_000,
+    // 작업자 상한 — 코어 수만큼 jsdom 작업자를 띄우면 여러 작업이 함께 도는 기계에서 "Failed to start forks worker"(작업자 응답 대기 초과)로
+    // 파일이 통째로 빠졌다(2026-10-24). 백엔드와 같은 방식(backend/vitest.config.ts).
+    maxWorkers: 6,
   },
 });

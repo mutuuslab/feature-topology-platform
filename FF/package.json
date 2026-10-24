@@ -57,6 +57,7 @@
     "ext:check": "node tools/ext-check.ts",
     "readiness": "node tools/readiness.ts",
     "migrations:lock": "node tools/migrations-lock.ts --update",
+    "evidence:remap": "node tools/evidence-remap.ts",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",
     "unleash:down": "docker compose -f docker/unleash/docker-compose.yml down",
     "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web"

@@ -211,27 +211,28 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 | 경우 | 화면 | 다음 행동 |
 |---|---|---|
 | 401 세션 만료 | 제목 "다시 로그인해야 합니다", 셸 안내 띠 | **다시 로그인**(SSO는 `/api/auth/login?returnTo=지금 화면`). 저장하지 않은 입력이 있으면 바로 옮기지 않고 띠가 묻는다(입력을 복사할 시간) |
-| 409·412 충돌 | 서버 업무 문장 + "최신 내용을 다시 불러온 뒤 확인하고 다시 저장" | **최신 내용 다시 불러오기** — 서버 상태(쿼리)만 다시 읽고 폼 입력은 그대로 |
+| 409·412 충돌 | 서버 업무 문장 + "최신 내용을 다시 불러온 뒤 확인하고 다시 저장" | **최신 내용 불러오기** — 서버 상태(쿼리)만 다시 읽고 폼 입력은 그대로 |
 | 400 VALIDATION·422 | 서버 문장 + 칸 옆 오류(`aria-invalid`) | 오류 상세 `[{path,message}]`·`{fields:[…]}`·`{field}`를 칸 이름으로 읽는다(Feature 제안·상품 구성 폼) |
 | 429 | "요청이 너무 잦습니다. N초 뒤에…" | `Retry-After`(초·날짜) 또는 `details.retryAfterSec` |
 | 5xx | 서버 내부 문장 대신 안내 + **문의 번호**(`X-Correlation-Id`, 복사 가능) | 자동 재시도 1회, 지원 담당자에게 문의 번호 전달 |
 | 연결 끊김 | "서버에 연결할 수 없습니다…"(오프라인이면 오프라인 안내) | 다시 시도. 포트·서버 프로그램 이름은 쓰지 않는다(client.ts에 `9101` 없음 — readiness absent 검사) |
 
-- 코드: `frontend/src/api/errors.ts`(종류·문장·칸 오류·재시도 대상), `api/client.ts`(ApiError.kind·correlationId·retryAfterSec, JSON이 아닌 본문에도 멈추지 않음), `api/session.ts`·`shell/SessionBanner.tsx`, 디자인 키트 `design/errors.tsx`(ErrorNextStep — ErrorNote·AsyncView 공통), 문구 `copy/errors.ts`.
+- 코드: `frontend/src/api/errors.ts`(종류·문장·재시도 대상), `api/field-errors.ts`(칸 오류 — 폼 화면 전용), `api/client.ts`(ApiError.kind·correlationId·retryAfterSec, JSON이 아닌 본문에도 멈추지 않음), `api/session.ts`·`shell/SessionBanner.tsx`, 디자인 키트 `design/errors.tsx`(ErrorNextStep — ErrorNote·AsyncView 공통), 문구 `copy/errors.ts`.
 - 조회 자동 재시도는 연결 끊김·서버 오류만(401·403·409·입력 오류는 다시 보내도 같다).
 - 시험: `frontend/src/__tests__/apiErrors.test.tsx`, e2e `e2e/tests/error-ux.spec.ts`(page.route로 401·409·400·422·429·500·연결 끊김 주입).
 
 ### 7.2 큰 목록 (RD-UX-03)
 
-- API: `GET /api/features`에 `limit`·`cursor`(없으면 예전처럼 전체 — 뒤 호환), `GET /api/audit`에 `cursor`(최신순 키셋), `GET /api/events`는 `after`가 커서. 응답 `nextCursor`(마지막이면 null), 위조 커서는 400 VALIDATION(`field: cursor`). 규칙 `contracts/src/rules/paging.ts`.
+- API: `GET /api/features`에 `limit`·`cursor`(없으면 예전처럼 전체 — 뒤 호환), `GET /api/audit`에 `cursor`(최신순 키셋), `GET /api/events`는 `after`가 커서. 응답 `nextCursor`(마지막이면 null), 위조 커서는 400 VALIDATION(`field: cursor`). 규칙 `backend/src/kernel/paging.ts`(백엔드 전용).
 - 표: 디자인 키트 `DataTable`이 100행을 넘으면 쪽 넘김(`Pager`)으로 나눠 그린다 — 정렬은 전체에, DOM 행은 한 쪽만(1만 행 시험). 감사 이력은 커서로 "더 불러오기".
-- 시험: `contracts/src/rules/paging.test.ts`, `backend/test/kernel/list-paging.spec.ts`, `frontend/src/__tests__/largeLists.test.tsx`, e2e `e2e/tests/large-lists.spec.ts`.
+- 시험: `backend/test/kernel/paging-units.spec.ts`, `backend/test/kernel/list-paging.spec.ts`, `frontend/src/__tests__/largeLists.test.tsx`, e2e `e2e/tests/large-lists.spec.ts`.
 - 남은 것: Feature 목록 화면은 국가·Lifecycle 집계 때문에 아직 전체를 한 번 받는다(그리기만 나눔). 서버 쪽 집계·검색이 붙으면 화면도 커서 조회로 바꾼다.
 
 ### 7.3 모의 연계 표시 (RD-UX-04)
 
-- `GET /api/system/connections` → `{ mode: production|demo, items: [{ key, mode: live|mock|off, ifId, liveAdapter }] }`. 설정 `FF_CONN_MAIL`·`FF_CONN_BILLING`·`FF_CONN_OTA`·`FF_CONN_DATALAKE` = `live|mock|off`(OTA는 `IF_MODE_05=off`도 따른다). **실제 어댑터가 없으면 live로 골라도 live가 되지 않는다**(`liveAdapter=false` — 지금 넷 다).
+- `GET /api/system/connections` → `{ mode: production|demo, items: [{ key, mode: live|mock|off, ifId, liveAdapter }] }`. 계산 `backend/src/kernel/connections.ts`(형식 `contracts/src/rules/connections.ts`). 설정 `FF_CONN_MAIL`·`FF_CONN_BILLING`·`FF_CONN_OTA`·`FF_CONN_DATALAKE` = `live|mock|off`(OTA는 `IF_MODE_05=off`도 따른다). **실제 어댑터가 없으면 live로 골라도 live가 되지 않는다**(`liveAdapter=false` — 지금 넷 다).
 - 화면: 데모 설치 "모의(연결 전)", 운영 설치·꺼진 연결 "연결 안 됨"(`ConnectionBadge`). 메일 발송 기록의 SENT는 "모의 발송"·"보내지 않음"으로, 체험 구매는 안내 + 운영에서 버튼 비활성, 게시본 연계 호출(IF-05)에 표시, 외부 연계 현황에 연결 상태 표(Data Lake 포함). live가 되면 표시가 사라진다.
 - 운영 모드에서 과금이 live가 아니면 백엔드가 구매를 GUARD_FAILED로 거부한다(모의 결제가 실제 구독처럼 남지 않게).
-- 시험: `contracts/src/rules/connections.test.ts`, `backend/test/kernel/connections.spec.ts`, `frontend/src/__tests__/mockConnections.test.tsx`, e2e `e2e/tests/mock-connections.spec.ts`.
+- 시험: `backend/test/kernel/connections.spec.ts`, `frontend/src/__tests__/mockConnections.test.tsx`, e2e `e2e/tests/mock-connections.spec.ts`.
 - 남은 것: 실제 메일(SMTP)·과금·OTA(IF-05)·Data Lake(IF-15) 어댑터 — 연결 대상 시스템은 사용자 결정이 필요하다.
+- 첫 화면 묶음: 이 작업 뒤 309.8/310 KiB(병합 기준 307.9) — 오류 안내는 연결이 끊겨도 보여야 하므로 첫 화면에 둔다. 칸 오류·쪽 넘김·연결 표시는 화면 묶음으로 나눴다.

@@ -91,19 +91,26 @@ export class VehicleRuntimeService {
    * IF-07 전개 — 연결된 차량만 받는다. GLEO 실연동 차량은 GLEO 어댑터가, 나머지는 고른 전달 채널(FF_VEHICLE_CHANNEL)이 맡는다.
    * 회신 의무가 없는 차량 목록을 돌려준다.
    */
-  deliver(pub: Publication): { ackOnly: string[]; unreachable: string[] } {
+  deliver(pub: Publication): { ackOnly: string[]; unreachable: string[]; campaignId?: string } {
     const unreachable: string[] = [];
     const viaGleo: string[] = [];
     const viaChannel: string[] = [];
+    // OTA 서버 채널은 연결이 끊긴 차량도 맡긴다 — 차량 연결은 OTA 서버가 더 잘 알고, 기한까지 기다렸다가 NO_RESPONSE로 알린다(80-45 4장)
+    const queuesOffline = this.channels.active === 'ota';
     for (const vin of pub.payload.targets) {
       const v = this.fleet.vehicle(vin);
-      if (!v || v.link === 'OFFLINE' || (v.gleo && this.gleo.mode === 'off')) unreachable.push(vin);
+      if (!v || (v.link === 'OFFLINE' && !queuesOffline) || (v.gleo && this.gleo.mode === 'off')) unreachable.push(vin);
       else if (v.gleo && this.gleo.mode === 'ws') viaGleo.push(vin);
       else viaChannel.push(vin);
     }
     const ackOnly = viaGleo.length ? this.gleo.send(pub, viaGleo) : [];
-    if (viaChannel.length) ackOnly.push(...this.channels.current().deliver(pub, viaChannel).ackOnly);
-    return { ackOnly, unreachable };
+    let campaignId: string | undefined;
+    if (viaChannel.length) {
+      const r = this.channels.current().deliver(pub, viaChannel);
+      ackOnly.push(...r.ackOnly);
+      campaignId = r.campaignId;
+    }
+    return { ackOnly, unreachable, ...(campaignId ? { campaignId } : {}) };
   }
 
   /** 차량 측 수신 — 서명·재전송 확인 → 적용 → 회신 */

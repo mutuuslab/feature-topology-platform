@@ -27,7 +27,7 @@
 | RD-OPS-01 | 저장 | 기본 DB가 `:memory:`이고 부팅마다 데모 데이터(차량·3000 시행)를 넣는다 | kernel.module.ts:27-29, seed.ts:109,114 |
 | RD-OPS-02 | 첫 실행 | 빈 DB(`FF_SEED=none`) 부팅·화면을 검사하는 시험이 하나도 없다 — **완료 2026-10-24**: 운영 모드 첫 실행 시험 + 빈 DB e2e(모든 메뉴), 데모 ID 기본값 14곳 수정(§8) | test/helpers.ts:10, e2e/playwright.config.ts:47 |
 | RD-OPS-03 | 데이터 모델 | 권한 출처·Fleet 값이 `DEMO|SYNTHETIC`/`DEMO|SAMPLE`만 허용, 만료 처리도 DEMO만 | contracts/src/schemas/policy.ts:99,123, trial-expiry.service.ts:64 |
-| RD-OPS-04 | 차량 채널 | 실제 차량 전달 경로가 없다(내부 시뮬레이터가 기본, OTA IF-05·IF-09 모의 고정) — **완료(2026-10-24)**: 전달 어댑터(sim·pull·고객 게이트웨이), 운영 기본 당겨받기 HTTPS(7장·80-40) | vehicle-runtime.service.ts:80-89, if-mocks/external-systems.ts:163,166 |
+| RD-OPS-04 | 차량 채널 | 실제 차량 전달 경로가 없다(내부 시뮬레이터가 기본, OTA IF-05·IF-09 모의 고정) — **완료(2026-10-24)**: 전달 어댑터(sim·pull·고객 게이트웨이), 운영 기본 당겨받기 HTTPS(7장·80-40). 고객 OTA 서버 어댑터(`ota`, IF-05 v1 규격·시험 OTA 서버·적합성 검사, 7.4·80-45) | vehicle-runtime.service.ts:80-89, if-mocks/external-systems.ts:170,173 |
 | RD-OPS-05 | 배포 | 백엔드 배포 산출물(Dockerfile·배포 작업·환경 템플릿)이 없다 — **완료 2026-10-24**: `docker/app/`(이미지·compose·환경 템플릿), 이미지 빌드 CI(§8) | docker/(Unleash만), .github/workflows/cloudflare.yml |
 | RD-FN-01 | 정확성 | 결함 기록(it.fails) 12건 — 명세 결함 5 + ADS 결함 7 — **완료(2026-10-24)**: 열린 결함 기록 9건(명세 FR-RTE-005-001·FR-RTE-001-004·FR-REG-002-019·FR-REG-002-008/009, ADS F036·F019·F059·F007·Orca HT06)을 고치고 it.fails → it 회귀 시험으로 | backend/test/requirements/defects.spec.ts, test/ads/defects.spec.ts |
 | RD-FN-02 | 되돌리기 | 롤백(요구 28건)·정책 버전 이력이 없다 — 잘못된 배포를 되돌릴 수 없다 — **완료(2026-10-24)**: 정책 상세 `배포 이력·되돌리기`(GET /api/policies/:id/history, POST /api/policies/:id/rollback — 재검증·지정 승인·실행·감사, 412 기준 배포 바뀜·409 진행 중·이미 실행) | harness/requirements/REPORT.md §3 B2·B3 |
@@ -54,7 +54,7 @@
 | RD-UX-01 | 오류 화면 | 403만 구분 — 401 재로그인·409/412 충돌·422 필드 오류·네트워크 끊김 처리 없음, 개발자 문구("백엔드(9101)") — **완료(2026-10-24, 8장)** |
 | RD-UX-02 | 입력 보호 | 저장하지 않은 변경 보호가 SafetyTab 한 곳뿐 |
 | RD-UX-03 | 큰 데이터 | 목록 페이지 나눔·가상화 없음 — 전체를 받아 클라이언트에서 거른다 — **완료(2026-10-24, 8장)** |
-| RD-UX-04 | 연계 | 과금·OTA·Data Lake가 모의 — **표시 완료(2026-10-24, 8장)**, 실제 연결은 남음. 알림 메일은 채널을 두지 않는다(D-RD-7) |
+| RD-UX-04 | 연계 | 과금·OTA·Data Lake가 모의 — **표시 완료(2026-10-24, 8장)**. OTA(IF-05)는 실제 어댑터가 생겨 설정(`FF_OTA_URL`)이 있으면 live·표시 없음(7.4). 과금·Data Lake 실제 연결은 남음. 알림 메일은 채널을 두지 않는다(D-RD-7) |
 
 ### P2 — 다듬기
 
@@ -250,7 +250,18 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 - epoch를 올리면 이전 epoch 요청은 즉시 거부(유예 없음) — 차량 키 갱신 경로는 v2 봉투 SYNC 설계를 따른다.
 - mTLS 체인·폐기 확인은 프록시 몫. nonce·전달함은 단일 인스턴스 SQLite(RD-OPS-14).
 - 당겨받기는 차량 조회 주기만큼 늦다 — 긴급 차단 도달 목표가 짧으면 고객 게이트웨이(푸시) 어댑터가 필요하다.
-- OTA 캠페인(IF-05)·TMS(IF-09)는 여전히 모의(RD-UX-04).
+- TMS(IF-09)는 여전히 모의(RD-UX-04). OTA 캠페인(IF-05)은 7.4의 OTA 서버 어댑터로 실제 연결할 수 있다.
+
+### 7.4 고객 OTA 서버 연동(IF-05 v1, 2026-10-24)
+
+사용자 결정: OTA 서버는 고객이 따로 만든다 → FF는 연동 규격·FF 어댑터·시험용 OTA 서버를 준비한다. 규격 [[80-45-ota-server-if05]] · OpenAPI `docs/80-integration/ota-if05.openapi.json`.
+- 채널: `FF_VEHICLE_CHANNEL=ota`(`FF_OTA_URL`이 있으면 기본). OTA 서버가 차량 전달 어댑터 하나다 — 연결이 끊긴 차량도 맡기고, 기한까지 못 보낸 차량은 `NO_RESPONSE`로 받는다.
+- FF → OTA: `POST /ota/v1/jobs`(서명 게시본 + 대상 + 기한, 멱등 키 = `OTJ-<게시본 ID>`)·조회·취소·상태 점검, **OAuth2 client credentials**(TLS, 운영 https만). outbox(게시본 트랜잭션에서 QUEUED) → 실패하면 게시본은 그대로, 전달만 `RETRY_WAIT`(전달 실패·재시도 가능) → 지수 간격 자동 재시도 → `FAILED`(화면에서 다시 제출, 감사).
+- OTA → FF: webhook `POST /api/ota/v1/events`, `X-OTA-Signature: sha256=HMAC(비밀, "<시각>.<원문>")`(ext-sync와 같은 형식 + 시각) · 시각 ±300초 · eventId 한 번만. **OTA 서버 자신의 사실만**(DELIVERING·DELIVERED·NO_RESPONSE·CANCELLED·NOT_ELIGIBLE — 80-75 C8, U-17 기본안) — 사용자 결정 "차량 → Lake → FF": 차량 결과(readback·상태 보고·확인)는 차량 서명(FFV1-MSG)으로 차량 → Data Lake → FF로 오고, FF가 서명을 확인한 뒤 집계 끝 상태(CONFIRMED·PARTIAL·TIMEOUT)를 정한다. 차량 결과가 없는 노드는 사유 `OTA:<사실>`, 어긋나면 차량 결과가 이긴다(80-45 §7.5). Lake 중계(TL-M*) 전에는 지금의 차량 직접 창구·IF-06 입구.
+- 설정 검사: ota를 고르면 `FF_OTA_URL`·`FF_OTA_TOKEN_URL`·`FF_OTA_CLIENT_ID`·`FF_OTA_CLIENT_SECRET`·`FF_OTA_WEBHOOK_SECRET` 필수(운영 모드가 아니어도). 연결 상태 OTA는 설정이 있으면 live(화면의 모의 표시가 사라진다, RD-UX-04).
+- 시험 OTA 서버 `npm run ota:reference`(의존성 없음, 시나리오 6종), 적합성 검사 `npm run ota:conformance -- --url …`(검사 18개, verify `ota:conformance`).
+- 시험: `backend/test/d04/ota-adapter.spec.ts`(클라이언트·설정·연결 상태), `backend/test/d04/ota-server.spec.ts`(FF + 시험 OTA 서버 별도 프로세스·Lake 흉내: CONFIRMED·PARTIAL·서명 실패·OTA 결과만으로는 닫히지 않음·차량 회신 우선·위조 HMAC·오래된 서명·재전송·멱등 재제출·자동/수동 재시도·취소), `tools/ota-reference/conformance.test.ts`, `frontend/src/__tests__/otaDelivery.test.tsx`.
+- 남은 것: webhook이 끝내 오지 않을 때 작업 조회로 메우는 대사, 1만 대 넘는 게시본 나누기, FF 코드 안의 mTLS(지금은 송신 프록시로) — 80-45 §14. OTA 서버를 만드는 쪽이 정할 것은 80-45 §13.
 
 ## 8. 화면 출시 품질 — RD-UX-01·03·04 (2026-10-24 구현)
 
@@ -278,11 +289,11 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 
 ### 8.3 모의 연계 표시 (RD-UX-04)
 
-- `GET /api/system/connections` → `{ mode: production|demo, items: [{ key, mode: live|mock|off, ifId, liveAdapter }] }`. 계산 `backend/src/kernel/connections.ts`(형식 `contracts/src/rules/connections.ts`). 설정 `FF_CONN_BILLING`·`FF_CONN_OTA`·`FF_CONN_DATALAKE` = `live|mock|off`(OTA는 `IF_MODE_05=off`도 따른다). **실제 어댑터가 없으면 live로 골라도 live가 되지 않는다**(`liveAdapter=false` — 지금 넷 다).
+- `GET /api/system/connections` → `{ mode: production|demo, items: [{ key, mode: live|mock|off, ifId, liveAdapter }] }`. 계산 `backend/src/kernel/connections.ts`(형식 `contracts/src/rules/connections.ts`). 설정 `FF_CONN_BILLING`·`FF_CONN_OTA`·`FF_CONN_DATALAKE` = `live|mock|off`(OTA는 `IF_MODE_05=off`도 따른다). **실제 어댑터가 없으면 live로 골라도 live가 되지 않는다**(`liveAdapter=false` — 과금·Data Lake). OTA는 실제 어댑터가 있어(`liveAdapter=true`) OTA 서버 설정(`FF_OTA_URL`, 채널 ota)이 있으면 live, 없으면 모의(7.4).
 - 화면: 데모 설치 "모의(연결 전)", 운영 설치·꺼진 연결 "연결 안 됨"(`ConnectionBadge`). 체험 구매는 안내 + 운영에서 버튼 비활성, 게시본 연계 호출(IF-05)에 표시, 외부 연계 현황에 연결 상태 표(Data Lake 포함). live가 되면 표시가 사라진다.
 - 운영 모드에서 과금이 live가 아니면 백엔드가 구매를 GUARD_FAILED로 거부한다(모의 결제가 실제 구독처럼 남지 않게).
 - 시험: `backend/test/kernel/connections.spec.ts`, `frontend/src/__tests__/mockConnections.test.tsx`, e2e `e2e/tests/mock-connections.spec.ts`.
-- 남은 것: 실제 과금·OTA(IF-05)·Data Lake(IF-15) 어댑터 — 연결 대상 시스템은 사용자 결정이 필요하다. Data Lake는 별도 서버로 만들고, 차량이 올려 보내는 자료는 모두 Lake를 거쳐 FF로 온다(사용자 결정 2026-10-24 "차량 → Lake → FF") — v1 설계·IF-15 계약·지금 차량 창구의 전환 계획은 [80-75](../80-integration/80-75-data-lake-server.md). 운영에서 오르는 길이 Lake면 Lake 연결이 차단 **확인**의 필수 경로가 된다(명령은 아님, 80-75 4.5). Lake 삭제는 RD-P2-05와 함께 닫는다(80-75 7장). 알림 메일(SMTP)은 D-RD-7로 두지 않는다(메일 연결·`FF_CONN_MAIL` 삭제).
+- 남은 것: 실제 과금·Data Lake(IF-15) 어댑터(OTA IF-05는 7.4 — 규격·어댑터·시험 서버, OTA webhook은 전달 기록이고 차량 회신은 Lake 경로) — 연결 대상 시스템은 사용자 결정이 필요하다. Data Lake는 별도 서버로 만들고, 차량이 올려 보내는 자료는 모두 Lake를 거쳐 FF로 온다(사용자 결정 2026-10-24 "차량 → Lake → FF") — v1 설계·IF-15 계약·지금 차량 창구의 전환 계획은 [80-75](../80-integration/80-75-data-lake-server.md). 운영에서 오르는 길이 Lake면 Lake 연결이 차단 **확인**의 필수 경로가 된다(명령은 아님, 80-75 4.5). Lake 삭제는 RD-P2-05와 함께 닫는다(80-75 7장). 알림 메일(SMTP)은 D-RD-7로 두지 않는다(메일 연결·`FF_CONN_MAIL` 삭제).
 - 첫 화면 묶음: 이 작업 뒤 309.8/310 KiB(병합 기준 308.3, +1.5) — 오류 문장·종류는 연결이 끊겨도 보여야 하므로 첫 화면에 두고, 다음 행동 본체(design/error-next.tsx·copy/error-actions.ts)·세션 안내 띠·칸 오류·쪽 넘김·연결 표시는 필요할 때 읽는 묶음으로 나눴다. 남은 여유 0.2 KiB — 다음 첫 화면 추가 전에 예산 조정이 필요하다.
 
 ## 9. 단독 설치·백업·첫 실행 — RD-OPS-05·RD-OPS-09·RD-OPS-02·RD-SEC-09·RD-P2-04 (2026-10-24 구현)

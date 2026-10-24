@@ -1,12 +1,13 @@
-// /deployments · /deployments/:id — 서명 배포·차량 회신 (D06-08 보안 배포 · D06-10 PKI · D04-01 IF-05/13 · D04-03 IF-06 회신)
+// /deployments · /deployments/:id — 서명 배포·차량 회신 (D06-08 보안 배포 · D06-10 PKI · D04-01 IF-05/13 · D04-03 IF-06 회신 · IF-05 OTA 서버 전달)
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { useConnectionLabel } from '../../api/connections';
 import { connections as CN } from '../../copy/connections';
+import { ota as O } from '../../copy/ota';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { whyDisabled, type KeyTone, AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
+import { whyDisabled, type KeyTone, type LozengeAppearance, AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, Lozenge, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
 import { InterfaceName, usePermission, when } from '../shared';
 import { Progress, PubStatus, type Delivery } from './shared';
 
@@ -117,13 +118,91 @@ export function DeploymentList() {
   );
 }
 
+/** OTA 서버 전달(IF-05, 채널 ota) — 게시본 상세 GET /api/publications/:id 의 delivery */
+interface OtaDeliveryView {
+  jobId: string;
+  state: string;
+  serverState: string | null;
+  otaJobId: string | null;
+  attempts: number;
+  nextAttemptAt: string | null;
+  lastError: { code: string; status: number | null; message: string } | null;
+  targets: number;
+  counts: Record<string, number>;
+  vehicles: { vin: string; outcome: string; detail: string | null; at: string }[];
+}
+const OTA_OUTCOME_LOZENGE: Record<string, LozengeAppearance> = { DELIVERING: 'inprogress', DELIVERED: 'success', NO_RESPONSE: 'moved', NOT_ELIGIBLE: 'moved', CANCELLED: 'default' };
+const OTA_LOZENGE: Record<string, LozengeAppearance> = { QUEUED: 'default', SUBMITTED: 'inprogress', RETRY_WAIT: 'moved', FAILED: 'removed', EXPIRED: 'removed', CANCELLED: 'default', COMPLETED: 'success' };
+
+function OtaDelivery({ d }: { d: OtaDeliveryView }) {
+  const perm = usePermission(['RELEASE_MANAGER', 'OPS_LEAD', 'OPERATOR']);
+  const retry = useApiMutation('otaJobRetry', ['publicationDetail']);
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const canRetry = (d.state === 'RETRY_WAIT' || d.state === 'FAILED') && !d.otaJobId;
+  return (
+    <Panel
+      title={O.title}
+      codes={O.codes}
+      id="ota"
+      actions={
+        <>
+          <Lozenge appearance={OTA_LOZENGE[d.state] ?? 'default'}>{O.state[d.state] ?? d.state}</Lozenge>
+          {canRetry && (
+            <Button disabled={!perm.ok} title={perm.hint} onClick={() => setOpen(true)}>
+              {O.retry}
+            </Button>
+          )}
+        </>
+      }
+    >
+      {canRetry && <p className="ds-field__hint">{O.kept}</p>}
+      <KeyValue
+        rows={[
+          { k: O.row.job, v: <span className="ds-mono">{d.jobId}</span> },
+          { k: O.row.otaJob, v: <span className="ds-mono">{d.otaJobId ?? '—'}</span>, note: d.serverState ?? undefined },
+          { k: O.row.attempts, v: <span className="ds-mono">{d.attempts}</span> },
+          ...(d.nextAttemptAt ? [{ k: O.row.next, v: <span className="ds-mono ds-nowrap">{when(d.nextAttemptAt)}</span> }] : []),
+          ...(d.lastError ? [{ k: O.row.error, v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', wordBreak: 'break-all' }}>{`${d.lastError.code}${d.lastError.status ? ` · HTTP ${d.lastError.status}` : ''} — ${d.lastError.message}`}</span> }] : []),
+          { k: O.row.targets, v: <span className="ds-mono">{`${d.targets} · ${Object.entries(d.counts).map(([k, n]) => `${O.outcome[k] ?? k} ${n}`).join(' · ') || '—'}`}</span> },
+        ]}
+      />
+      {!d.vehicles.length && <p className="ds-field__hint">{O.noVehicles}</p>}
+      <DataTable
+        caption={O.vehicles}
+        rows={d.vehicles}
+        rowKey={(v) => v.vin}
+        columns={[
+          { key: 'v', header: O.col.vin, cell: (v) => <span className="ds-mono">{v.vin}</span> },
+          // OTA 사실(판정 아님) — 적용 확인은 차량 결과가 정한다(80-45 §7.5). 그래서 PASS·FAIL 배지 대신 상태 표시
+          { key: 'o', header: O.col.outcome, cell: (v) => <Lozenge appearance={OTA_OUTCOME_LOZENGE[v.outcome] ?? 'default'}>{O.outcome[v.outcome] ?? v.outcome}</Lozenge> },
+          { key: 'd', header: O.col.detail, cell: (v) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{v.detail ?? ''}</span> },
+          { key: 'at', header: O.col.at, cell: (v) => <span className="ds-mono ds-nowrap">{when(v.at)}</span> },
+        ]}
+      />
+      <Drawer open={open} title={O.retry} onClose={() => setOpen(false)}>
+        <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+          <p className="ds-field__hint">{O.retryBody}</p>
+          <Field label={ko.page.reason}>
+            <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
+          </Field>
+          <ErrorNote error={retry.error} />
+          <Button variant="primary" disabled={reason.trim().length < 2 || retry.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => retry.mutate({ params: { jobId: d.jobId }, body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}>
+            {O.retry}
+          </Button>
+        </div>
+      </Drawer>
+    </Panel>
+  );
+}
+
 export function DeploymentDetail() {
   const { id = '' } = useParams();
-  const q = useApi<{ publication: Pub; verification: { valid: boolean; reason: string }; readbacks: { vin: string; observed: string; via: string; at: string; rejectReason?: string }[]; calls: { ifId: string; at: string; request: unknown; response: unknown }[] }>('publicationDetail', { params: { id } });
-  usePlatformEvents(['publication.', 'vehicle.readback'], ['publicationDetail']);
+  const q = useApi<{ publication: Pub; verification: { valid: boolean; reason: string }; readbacks: { vin: string; observed: string; via: string; at: string; rejectReason?: string }[]; calls: { ifId: string; at: string; request: unknown; response: unknown }[]; delivery?: OtaDeliveryView | null }>('publicationDetail', { params: { id } });
+  usePlatformEvents(['publication.', 'vehicle.readback', 'ota.job.'], ['publicationDetail']);
   const d = q.data;
   const p = d?.publication;
-  // OTA 배포 캠페인 요청(IF-05)이 아직 모의 — 캠페인 응답을 실제처럼 보이지 않게(RD-UX-04)
+  // OTA 배포 캠페인 요청(IF-05) — 모의면 캠페인 응답을 실제처럼 보이지 않게, OTA 서버 연동(live)이면 표시 없음(RD-UX-04)
   const ota = useConnectionLabel('ota');
   return (
     <div className="ds-screen">
@@ -194,6 +273,7 @@ export function DeploymentDetail() {
                 <pre className="ds-code" tabIndex={0}>{JSON.stringify(d.calls.map((c) => ({ ifId: c.ifId, at: c.at, request: c.request, response: c.response })), null, 2)}</pre>
               </Panel>
             </div>
+            {d.delivery && <OtaDelivery d={d.delivery} />}
           </>
         )}
       </AsyncView>

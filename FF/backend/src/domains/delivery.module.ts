@@ -1,5 +1,5 @@
 // 배포·차단 전달 모듈 (PoC ④⑤⑥) — 도메인을 가로지르는 한 흐름이라 한 모듈로 묶는다:
-// 보안 배포(D06-08)·PKI(D06-10) → 배포 파이프라인(D04-01, IF-05/13) → 차량 런타임(D02-03, IF-07)·GLEO
+// 보안 배포(D06-08)·PKI(D06-10) → 배포 파이프라인(D04-01, IF-05/13) → 차량 런타임(D02-03, IF-07)·GLEO·고객 OTA 서버(IF-05, adapters/ota)
 // → 운영 데이터 수집(D04-03, IF-06) → 회신 집계. 긴급 차단(D03-03)·이전 상태 복구(D03-04)가 같은 경로를 쓴다.
 // 의존 방향: 수집 → ReadbackBus → 보안 배포 (순환 없음).
 // 차량 발신 요청(조회·보고)도 여기 — 회신은 수집(D04-03)으로, 재연결 대사는 게시본(D06-08)을 읽는다.
@@ -34,11 +34,13 @@ import { RetentionController, RetentionService } from './d04-ops/telemetry-inges
 import { SafetyKpiController, SafetyKpiService } from './d04-ops/telemetry-ingest/safety-kpi.service';
 import { PublicationRepo, RuntimeRepo } from './d06-qsec/secure-deploy/publication.repo';
 import { PublicationController, SecureDeployService } from './d06-qsec/secure-deploy/secure-deploy.service';
+import { OtaController, OtaServerAdapter } from '../adapters/ota/ota-server.adapter';
+import { OtaJobRepo } from '../adapters/ota/ota-job.repo';
 
 @Module({
   imports: [D01PolicyModule, TrustModule],
-  controllers: [VehicleOpenFeatureController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, FleetMapController, FleetPopulationController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, RollbackController, RollbackPlanController, RollbackRequestController, PolicyHistoryController, PolicyGateController, StatusIngestController, VehicleStatusController, VariantConditionsController, SupportConditionsController, SbomController, RetentionController, SafetyKpiController, ChangeRecordController, VehicleInboxController, VehicleChannelController],
-  providers: [OtelExporter, VehicleOpenFeatureService, PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, FleetMapService, FleetPopulationService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, SbomService, KillService, TrialExpiryListener, RestoreService, RollbackRepo, RollbackService, PolicyGateService, EnvelopeRepo, StatusIngestService, VariantConditionsService, SupportConditionsService, RetentionService, SafetyKpiService, ChangeRecordService, VehicleChannelRegistry, PullChannelService],
+  controllers: [VehicleOpenFeatureController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, FleetMapController, FleetPopulationController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, RollbackController, RollbackPlanController, RollbackRequestController, PolicyHistoryController, PolicyGateController, StatusIngestController, VehicleStatusController, VariantConditionsController, SupportConditionsController, SbomController, RetentionController, SafetyKpiController, ChangeRecordController, VehicleInboxController, VehicleChannelController, OtaController],
+  providers: [OtelExporter, VehicleOpenFeatureService, PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, FleetMapService, FleetPopulationService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, SbomService, KillService, TrialExpiryListener, RestoreService, RollbackRepo, RollbackService, PolicyGateService, EnvelopeRepo, StatusIngestService, VariantConditionsService, SupportConditionsService, RetentionService, SafetyKpiService, ChangeRecordService, VehicleChannelRegistry, PullChannelService, OtaJobRepo, OtaServerAdapter],
   exports: [TrustModule, SecureDeployService, VehicleRuntimeService, VehicleChannelRegistry, GleoAdapter, PublicationRepo, KillService, RestoreService, VehicleRequestService, PolicyGateService],
 })
 export class DeliveryModule {}

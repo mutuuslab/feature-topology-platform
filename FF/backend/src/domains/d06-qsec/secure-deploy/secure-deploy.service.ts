@@ -20,6 +20,7 @@ import { ReadbackBus } from '../../d04-ops/telemetry-ingest/telemetry.service';
 import { PkiService } from '../pki-kms/pki.service';
 import { PublicationRepo } from './publication.repo';
 import { SbomService } from '../vuln-monitor/sbom.service';
+import { OtaJobRepo } from '../../../adapters/ota/ota-job.repo';
 
 const OTA_TIMEOUT_MS = Number(process.env.PUBLICATION_TIMEOUT_MS ?? 8000);
 const EMERGENCY_TIMEOUT_MS = Number(process.env.KILL_TIMEOUT_MS ?? 5000);
@@ -52,6 +53,7 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     private readonly bus: ReadbackBus,
     private readonly policies: PolicyRepo,
     private readonly sbom: SbomService,
+    private readonly otaJobs: OtaJobRepo,
   ) {}
 
   onModuleInit() {
@@ -191,7 +193,11 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       desired: pub.payload.desired,
     });
     // 차량이 거부한 회신은 거부 사유를 그대로 보인다 (서명 불일치·재전송)
-    const nodes = agg.nodes.map((n) => (n.state === 'UNKNOWN' && rejected.has(n.nodeId) ? { ...n, reason: `REJECTED:${rejected.get(n.nodeId)}` } : n));
+    // OTA 서버 전달 기록(IF-05 webhook)은 차량 회신이 없을 때 사유로만 보인다(OTA:NO_RESPONSE 등) — 끝 상태는 차량 회신(차량 → Lake → FF)이 정한다(80-45 §7.5)
+    const ota = this.otaJobs.outcomes(pub.publicationId);
+    const nodes = agg.nodes.map((n) =>
+      n.state !== 'UNKNOWN' ? n : rejected.has(n.nodeId) ? { ...n, reason: `REJECTED:${rejected.get(n.nodeId)}` } : n.reason === 'NO_REPORT' && ota.has(n.nodeId) ? { ...n, reason: `OTA:${ota.get(n.nodeId)}` } : n,
+    );
     return { required, agg: { ...agg, nodes } };
   }
 
@@ -232,6 +238,8 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       verification: this.pki.verify(publication.payload, publication.signature, undefined, PUBLICATION_KEY_PURPOSE[publication.kind]),
       readbacks: this.repo.readbacks({ publicationId: id }),
       calls: this.pipeline.calls({ key: id }),
+      // OTA 서버 전달(IF-05, 채널 ota) — 전달 상태(전달 실패·재시도 대기 포함)·차량별 결과. 다른 채널이면 null
+      delivery: this.otaJobs.view(this.otaJobs.forPublication(id)),
     };
   }
 }

@@ -40,6 +40,7 @@
     "045_auth_session": "f0abd770506dbabbc0263b09c231f22d12f0d8ab47d3318ceb99f8c72514999f",
     "046_vehicle_channel": "3ef4e9af377ba1a5a695f4c40b51ce7a2882708f7879761c65add4774d2f8a2a",
     "047_dashboard": "0416425933a0a5324b00930cb1bb94b7c5498881f9809da835afc2e10a522f17",
-    "048_drop_notification_email": "cb7a750c0669f7fe847f73b6595f69dd08e689c2a89d966c937f0c2ad6a989a6"
+    "048_drop_notification_email": "cb7a750c0669f7fe847f73b6595f69dd08e689c2a89d966c937f0c2ad6a989a6",
+    "049_ota_job": "dbe5ca5e472e6e1a45396aa0b6797c6478d7f0872498bb86cd5a6739c60ee2fd"
   }
 }

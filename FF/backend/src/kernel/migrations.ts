@@ -605,4 +605,38 @@ DROP TABLE IF EXISTS notification_email;
 DROP TABLE IF EXISTS notification_pref;
 `,
   },
+  {
+    // OTA 서버 연동(IF-05, FF_VEHICLE_CHANNEL=ota) — 게시본마다 OTA 작업 1건(job_id = 멱등 키). 게시본을 만든 트랜잭션에서 QUEUED로 넣고(outbox),
+    // 커밋 뒤 제출한다. 실패하면 게시본은 그대로 두고 전달만 RETRY_WAIT(전달 실패·재시도 가능)·FAILED로 남긴다.
+    // ota_job_vehicle은 OTA 서버가 webhook으로 알린 차량별 결과, ota_event는 받은 webhook 이벤트 ID(재전송 방지·같은 이벤트는 한 번만).
+    name: '049_ota_job',
+    sql: `
+CREATE TABLE ota_job (
+  job_id TEXT PRIMARY KEY,
+  publication_id TEXT NOT NULL UNIQUE,
+  state TEXT NOT NULL,
+  targets TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  next_attempt_at TEXT,
+  last_error TEXT,
+  ota_job_id TEXT,
+  server_state TEXT,
+  created_at TEXT NOT NULL,
+  submitted_at TEXT,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX ota_job_due ON ota_job (state, next_attempt_at);
+CREATE TABLE ota_job_vehicle (
+  job_id TEXT NOT NULL,
+  vin TEXT NOT NULL,
+  outcome TEXT NOT NULL,
+  detail TEXT,
+  at TEXT NOT NULL,
+  event_id TEXT,
+  PRIMARY KEY (job_id, vin)
+);
+CREATE TABLE ota_event (event_id TEXT PRIMARY KEY, job_id TEXT NOT NULL, body_sha256 TEXT NOT NULL, received_at TEXT NOT NULL, outcome TEXT NOT NULL);
+CREATE INDEX ota_event_received ON ota_event (received_at);
+`,
+  },
 ];

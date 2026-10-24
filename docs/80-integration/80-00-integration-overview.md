@@ -35,7 +35,7 @@ Feature ID 공통 Key·양방향 sync·outbox(코어 격리)·모든 sync Audit.
 - outbox 패턴으로 외부 장애가 코어 트랜잭션 차단 안 함(NFR-3).
 
 ## 4. 상세
-[[80-60-supplier-api-package]] · 차량 채널(요청 인증·당겨받기 전달) [[80-40-vehicle-channel]] · API 계약 [[80-90-api-contracts]] · 텔레메트리·Data Lake·Closed loop [[80-70-telemetry-datalake-ml]] · Data Lake 서버 v1(IF-15) [[80-75-data-lake-server]].
+[[80-60-supplier-api-package]] · 차량 채널(요청 인증·당겨받기 전달) [[80-40-vehicle-channel]] · OTA 서버 연동 규격(IF-05 v1, INT-OTA) [[80-45-ota-server-if05]] · API 계약 [[80-90-api-contracts]] · 텔레메트리·Data Lake·Closed loop [[80-70-telemetry-datalake-ml]] · Data Lake 서버 v1(IF-15) [[80-75-data-lake-server]].
 
 ## 변경 이력
 | 0.1.0 | 2026-06-05 | 초안 (PPT S7,S13,S38,S39) |

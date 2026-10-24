@@ -43,7 +43,8 @@ describe('외부 연결 상태 (RD-UX-04)', () => {
     const r = await http().get('/api/system/connections').expect(200);
     expect(r.body.mode).toBe('demo');
     expect(Object.fromEntries(r.body.items.map((i: any) => [i.key, i.mode]))).toEqual({ billing: 'mock', ota: 'mock', datalake: 'off' });
-    expect(r.body.items.every((i: any) => i.liveAdapter === false)).toBe(true);
+    // 실제 어댑터는 OTA(IF-05 OTA 서버 어댑터)만 — 설정(FF_OTA_URL)이 없으니 모의
+    expect(Object.fromEntries(r.body.items.map((i: any) => [i.key, i.liveAdapter]))).toEqual({ billing: false, ota: true, datalake: false });
   });
 
   it('설정을 따른다 — 실제 어댑터가 없으면 live로 바꿔도 모의, IF_MODE_05=off면 OTA 꺼짐', async () => {

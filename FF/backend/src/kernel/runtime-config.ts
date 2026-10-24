@@ -1,9 +1,10 @@
-// 실행 모드 설정 검사 — 출시 준비 RD-OPS-01·RD-OPS-04·RD-OPS-12·RD-SEC-06·RD-SEC-07·RD-SEC-08·RD-SEC-09 (docs/20-architecture/20-90-production-readiness.md).
+// 실행 모드 설정 검사 — 출시 준비 RD-OPS-01·RD-OPS-04(OTA IF-05 포함)·RD-OPS-12·RD-SEC-06·RD-SEC-07·RD-SEC-08·RD-SEC-09 (docs/20-architecture/20-90-production-readiness.md).
 // FF_ENV=production(운영 모드)이면 데모·시험용 기본값을 받아들이지 않는다. 문제를 한 번에 모두 알려 주고 부팅을 멈춘다.
 // 운영 모드가 아니면(기본 개발·데모·시험) 지금까지의 기본값을 그대로 쓴다. 값(비밀)은 메시지에 넣지 않는다.
 // 인증(FF_AUTH·OIDC_*·FF_SESSION_*)은 auth/auth-config.ts — FF_AUTH=oidc면 운영 모드가 아니어도 검사한다(RD-SEC-01).
 import { authConfigProblems } from './auth/auth-config';
 import { kekConfigProblems } from './kms/key-protection';
+import { otaConfigProblems } from './ota-config';
 import { vehicleChannelConfigProblems } from './vehicle-auth-config';
 
 type Env = Record<string, string | undefined>;
@@ -32,7 +33,7 @@ export function corsOrigins(env: Env = process.env): true | string[] {
 /** 문제 목록(비었으면 시작해도 됨) — 시험과 시작 검사가 같은 함수를 쓴다 */
 export function runtimeConfigProblems(env: Env = process.env): string[] {
   // 키 암호화 키(RD-SEC-06) — 운영 모드는 필수, 그 밖에는 주었을 때만 형식을 본다
-  if (!isProduction(env)) return [...kekConfigProblems(env, false), ...vehicleChannelConfigProblems(env), ...authConfigProblems(env)];
+  if (!isProduction(env)) return [...kekConfigProblems(env, false), ...vehicleChannelConfigProblems(env), ...otaConfigProblems(env), ...authConfigProblems(env)];
   const out: string[] = [];
   const db = (env.FF_DB ?? '').trim();
   if (!db || db === ':memory:') out.push('FF_DB가 없거나 :memory:입니다 — 운영 모드는 재시작 뒤에도 남는 DB 파일이 필요합니다');
@@ -56,6 +57,8 @@ export function runtimeConfigProblems(env: Env = process.env): string[] {
   out.push(...kekConfigProblems(env, true));
   // 차량 채널 — 요청 인증 required(RD-SEC-08), 전달은 실제 채널(RD-OPS-04)
   out.push(...vehicleChannelConfigProblems(env));
+  // OTA 서버 연동(IF-05) — ota 채널을 고르면 주소·OAuth2 클라이언트·webhook 비밀이 필수(80-45)
+  out.push(...otaConfigProblems(env));
   out.push(...authConfigProblems(env));
   return out;
 }

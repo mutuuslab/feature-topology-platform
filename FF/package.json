@@ -55,6 +55,8 @@
     "siblings": "node tools/siblings.ts",
     "integration:status": "node tools/integration-status.ts",
     "ext:check": "node tools/ext-check.ts",
+    "ota:reference": "node tools/ota-reference/server.ts",
+    "ota:conformance": "node tools/ota-reference/conformance.ts",
     "readiness": "node tools/readiness.ts",
     "migrations:lock": "node tools/migrations-lock.ts --update",
     "evidence:remap": "node tools/evidence-remap.ts",

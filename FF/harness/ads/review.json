@@ -326,7 +326,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:18",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:148",
-        "contracts/src/routes.ts:170"
+        "contracts/src/routes.ts:171"
       ],
       "tests": [
         "backend/test/d03/delivery.spec.ts"
@@ -894,7 +894,7 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:142",
-        "frontend/src/screens/ops/Deployments.tsx:158",
+        "frontend/src/screens/ops/Deployments.tsx:162",
         "frontend/src/screens/ops/FleetLive.tsx:60"
       ],
       "tests": [
@@ -1093,7 +1093,7 @@
     "FFP-F058": {
       "verdict": "부분",
       "evidence": [
-        "frontend/src/screens/ops/Deployments.tsx:162",
+        "frontend/src/screens/ops/Deployments.tsx:166",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:193"
       ],
       "tests": [],
@@ -1130,9 +1130,9 @@
     "FFP-F060": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/kernel/audit.service.ts:237",
-        "backend/src/kernel/audit.service.ts:210",
-        "backend/src/kernel/audit.service.ts:144"
+        "backend/src/kernel/audit.service.ts:240",
+        "backend/src/kernel/audit.service.ts:213",
+        "backend/src/kernel/audit.service.ts:146"
       ],
       "tests": [
         "backend/test/kernel/audit-chain.spec.ts"

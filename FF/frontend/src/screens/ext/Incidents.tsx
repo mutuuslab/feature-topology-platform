@@ -66,7 +66,7 @@ export function IncidentsScreen() {
           ))}
         </Select>
       </Toolbar>
-      <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: I.empty }} error={list.error?.message} onRetry={() => list.refetch()}>
+      <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: I.empty }} error={list.error} onRetry={() => list.refetch()}>
         <DataTable
           caption={I.title}
           rows={rows}
@@ -169,7 +169,7 @@ export function FieldPortalScreen() {
         </label>
         <Button onClick={() => setSp({ vin: input })}>{F.lookup}</Button>
       </Toolbar>
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <div className="ds-split">

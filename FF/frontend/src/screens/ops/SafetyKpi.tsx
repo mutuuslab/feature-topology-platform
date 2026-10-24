@@ -118,7 +118,7 @@ function Annex1Section({ item }: { item: Item }) {
       <h3 style={{ margin: 0, fontSize: 'var(--fs-md)', fontWeight: 600 }}>
         {K.annex.title}
       </h3>
-      <AsyncView state={asyncState(q, false)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, false)} error={q.error} onRetry={() => q.refetch()}>
         {r && !r.applicable ? (
           <p style={{ margin: 0, color: 'var(--muted)' }}>{K.annex.notAds}</p>
         ) : r ? (
@@ -211,7 +211,7 @@ export function SafetyKpiScreen() {
           { k: K.kpi.recorded, v: `${items.length - (d?.coverage.exampleOnly.length ?? 0)}/${items.length}` },
         ]}
       />
-      <AsyncView state={asyncState(q, items.length === 0)} empty={{ title: K.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, items.length === 0)} empty={{ title: K.empty }} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={K.title}
           rows={items}

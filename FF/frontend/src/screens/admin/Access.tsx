@@ -28,7 +28,7 @@ export function IamScreen() {
   return (
     <div className="ds-screen">
       <PageHeader codes="D06-09 · IAM" title={I.title} lead={I.lead} message={{ tone: 'neutral', value: den.data ? den.data.items.length : '—', text: I.key }} />
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <Panel title={I.matrix} id="matrix">
             {/* 스크롤 영역은 키보드로도 움직일 수 있어야 한다(표 안에 포커스 가능한 요소가 없다) */}
@@ -101,7 +101,7 @@ export function IamScreen() {
           />
         </Panel>
         <Panel title={I.denials} id="denials" actions={<Link to="/audit">{ko.audit.title} →</Link>}>
-          <AsyncView state={asyncState(den, (den.data?.items ?? []).length === 0)} error={den.error?.message} onRetry={() => den.refetch()} rows={3}>
+          <AsyncView state={asyncState(den, (den.data?.items ?? []).length === 0)} error={den.error} onRetry={() => den.refetch()} rows={3}>
             <DataTable
               caption={I.denials}
               rows={den.data?.items ?? []}
@@ -158,7 +158,7 @@ export function VariantScreen() {
           <input className="ds-input ds-input--mono" name="version" value={version} onChange={(e) => set(featureId, e.target.value.trim())} />
         </Field>
       </div>
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <SummaryLine
@@ -202,7 +202,7 @@ export function SupportPanel({ vin }: { vin: string }) {
   const q = useApi<{ items: { featureId: string; version: string; name: string; flagKeys: string[]; verdict: keyof typeof VC.verdict; reason: string }[] }>('vehicleSupport', { params: { vin } });
   return (
     <Panel title={VC.support} codes="D02-02" id="support">
-      <AsyncView state={asyncState(q, (q.data?.items ?? []).length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={2}>
+      <AsyncView state={asyncState(q, (q.data?.items ?? []).length === 0)} error={q.error} onRetry={() => q.refetch()} rows={2}>
         <DataTable
           caption={VC.support}
           rows={q.data?.items ?? []}

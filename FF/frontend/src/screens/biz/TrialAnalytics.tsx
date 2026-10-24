@@ -86,7 +86,7 @@ export function TrialAnalyticsScreen() {
         </Select>
       </Toolbar>
       {source !== 'DEMO' && <p className="ds-field__hint">{T.syntheticNote}</p>}
-      <AsyncView state={asyncState(q, !t || t.offered === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, !t || t.offered === 0)} error={q.error} onRetry={() => q.refetch()}>
         {d && t && (
           <div className="ds-stack" style={{ opacity: q.isPlaceholderData ? 0.6 : 1 }}>
             <SummaryLine

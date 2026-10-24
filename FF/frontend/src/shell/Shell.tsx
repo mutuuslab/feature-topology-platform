@@ -17,6 +17,7 @@ import { SsoRoleSwitcher } from './SsoRoleSwitcher';
 import { login as L } from '../copy/login';
 import { GuideDock, RuleDrawer } from './GuideDock';
 import { UnsavedPrompt } from '../design/unsaved';
+import { SessionBanner } from './SessionBanner';
 import { ProcedureGuideHost } from './ProcedureGuideHost';
 import { FeaturePeek } from './FeaturePeek';
 import { learnStore, useExplain, useLearn } from './learn';
@@ -266,6 +267,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
             {ko.page.readOnly}
           </div>
         )}
+        <SessionBanner />
         {/* 위치는 한 번만(3초 테스트) — 현재 화면 이름은 H1이 말한다. 상위 화면이 있을 때만 그룹·상위까지 */}
         {trail.length > 2 && (
           <nav className="sh-trail" aria-label="breadcrumb">

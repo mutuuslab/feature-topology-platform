@@ -6,6 +6,7 @@ import {
   CreateFeatureBody,
   CreateVersionBody,
   JudgeGateBody,
+  pageLimit,
   TransitionBody,
   UpdateDraftBody,
 } from '@ff/contracts';
@@ -26,8 +27,8 @@ export class RegistryController {
   ) {}
 
   @Get()
-  list(@Query('q') q?: string, @Query('lifecycle') lifecycle?: string, @Query('country') country?: string, @Query('vehicleModel') vehicleModel?: string, @Query('latestOnly') latestOnly?: string) {
-    return this.registry.list({ q, lifecycle, country, vehicleModel, latestOnly: latestOnly === 'true' });
+  list(@Query('q') q?: string, @Query('lifecycle') lifecycle?: string, @Query('country') country?: string, @Query('vehicleModel') vehicleModel?: string, @Query('latestOnly') latestOnly?: string, @Query('limit') limit?: string, @Query('cursor') cursor?: string) {
+    return this.registry.list({ q, lifecycle, country, vehicleModel, latestOnly: latestOnly === 'true', limit: pageLimit(limit), cursor });
   }
 
   @Post()

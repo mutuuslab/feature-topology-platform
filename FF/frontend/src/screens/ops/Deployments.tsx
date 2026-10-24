@@ -2,9 +2,11 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { useConnectionLabel } from '../../api/connections';
+import { connections as CN } from '../../copy/connections';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { whyDisabled, type KeyTone, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
+import { whyDisabled, type KeyTone, AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
 import { InterfaceName, usePermission, when } from '../shared';
 import { Progress, PubStatus, type Delivery } from './shared';
 
@@ -92,7 +94,7 @@ export function DeploymentList() {
       />
       <Segmented label={D.col.kind} options={(['ALL', 'POLICY', 'KILL', 'RESTORE'] as const).map((k) => ({ value: k, label: k === 'ALL' ? ko.page.all : D.kind[k] }))} value={kind} onChange={(v) => setKind(v as typeof kind)} />
       <div className="ds-split">
-        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
           <DataTable
             caption={D.title}
             rows={rows}
@@ -121,9 +123,11 @@ export function DeploymentDetail() {
   usePlatformEvents(['publication.', 'vehicle.readback'], ['publicationDetail']);
   const d = q.data;
   const p = d?.publication;
+  // OTA 배포 캠페인 요청(IF-05)이 아직 모의 — 캠페인 응답을 실제처럼 보이지 않게(RD-UX-04)
+  const ota = useConnectionLabel('ota');
   return (
     <div className="ds-screen">
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && p && (
           <>
             <PageHeader
@@ -186,7 +190,7 @@ export function DeploymentDetail() {
                   ]}
                 />
               </Panel>
-              <Panel title={D.calls} codes="IF-13 · IF-05" id="calls">
+              <Panel title={D.calls} codes="IF-13 · IF-05" id="calls" actions={<ConnectionBadge state={ota} system={CN.system.ota} />}>
                 <pre className="ds-code" tabIndex={0}>{JSON.stringify(d.calls.map((c) => ({ ifId: c.ifId, at: c.at, request: c.request, response: c.response })), null, 2)}</pre>
               </Panel>
             </div>

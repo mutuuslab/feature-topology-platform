@@ -228,7 +228,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
             <input className="ds-input ds-input--mono" value={featureVersion} onChange={(e) => (setVersion(e.target.value.trim()), setPicked(null))} />
           </Field>
         </div>
-        <AsyncView state={asyncState(pv)} error={pv.error?.message} onRetry={() => pv.refetch()}>
+        <AsyncView state={asyncState(pv)} error={pv.error} onRetry={() => pv.refetch()}>
           {p && (
             <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
               <KeyValue
@@ -459,7 +459,7 @@ function KillTimeline({ id }: { id: string }) {
   return (
     <section style={{ display: 'grid', gap: 'var(--sp-2)' }} data-testid="kill-timeline">
       <h3 className="ds-eyebrow ds-eyebrow--ko">{P.timeline}</h3>
-      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: P.timelineEmpty }} error={q.error?.message} rows={2}>
+      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: P.timelineEmpty }} error={q.error} rows={2}>
         <DataTable
           caption={P.timeline}
           rows={rows}
@@ -683,7 +683,7 @@ export function KillConsole() {
         <NewKill onDone={(k) => (setComposing(false), setOpen(k.killId))} />
       </Drawer>
       <Panel title={K.list} id="kills" tour="kill-approve">
-        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
           <DataTable
             caption={K.title}
             rows={rows}

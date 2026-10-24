@@ -179,7 +179,7 @@ function Detail({ vin }: { vin: string }) {
   // 상세는 열람마다 감사되므로 주기적으로 다시 읽지 않는다
   const q = useApi<DetailResponse>('fleetMapVehicle', { params: { vin } }, { staleTime: Infinity });
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       {q.data &&
         (() => {
           const d = q.data;
@@ -496,7 +496,7 @@ export function FleetMapScreen() {
               eyebrow={`${synData ? O.represented(represented) : `${F.kpi.located} ${count((v) => !!v.position)}/${items.length.toLocaleString('ko-KR')}`}${demo.data ? ` · ${F.updated(when(demo.data.generatedAt))}` : ''}`}
             >
               {controls}
-              <AsyncView state={asyncState(demo, false)} error={demo.error?.message} onRetry={() => demo.refetch()}>
+              <AsyncView state={asyncState(demo, false)} error={demo.error} onRetry={() => demo.refetch()}>
                 <FleetMapCanvas items={items} lens={lens} selected={selected} focus={focus} onSelect={select} view={view} clusters={clusters} onViewChange={onViewChange} />
                 <Legend lens={lens} items={items} summary={summary} clustered={clusters.length > 0} />
                 {synData && (clusters.length ? <p className="fm-note">{O.clusterNote(inView, sampled)}</p> : synData.items.length > 0 && <p className="fm-note">{O.pointsNote(synData.items.length)}</p>)}

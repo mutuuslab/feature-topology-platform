@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LIFECYCLE, type Lifecycle } from '@ff/contracts';
 import { call } from '../../api/client';
+import { fieldErrors } from '../../api/errors';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, LifecycleBadge, LifecycleStepper, PageHeader, Panel, VerdictBadge, Icon } from '../../design';
@@ -64,7 +65,7 @@ export function ProductList() {
           </Button>
         }
       />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.title}
           rows={rows}
@@ -130,7 +131,7 @@ export function ProductDetail() {
   const p = d?.product;
   return (
     <div className="ds-screen">
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && p && (
           <>
             <PageHeader
@@ -223,6 +224,8 @@ export function ProductCompose() {
   const cands = useApi<{ items: Candidate[] }>('productCandidates', { query: scope });
   const [comp, setComp] = useState<Composition | null>(null);
   const create = useApiMutation<{ product: Product }>('createProduct', ['listProducts']);
+  // 서버 입력 검사 오류는 해당 칸 옆에(RD-UX-01)
+  const fe = fieldErrors(create.error);
 
   const body = useMemo(
     () => ({ ...scope, type: form.type, baselineIds: picked, validFrom: form.validFrom || null, validTo: form.validTo || null }),
@@ -246,14 +249,14 @@ export function ProductCompose() {
           <Panel title={ko.registry.col.scope} id="scope">
             <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
               {(['country', 'vehicleModel', 'trim'] as const).map((k) => (
-                <Field key={k} label={ko.detail.attrs[k]}>
+                <Field key={k} label={ko.detail.attrs[k]} error={fe[k]}>
                   <input className="ds-input" value={scope[k]} onChange={(e) => (setScope({ ...scope, [k]: e.target.value }), setPicked([]))} />
                 </Field>
               ))}
             </div>
           </Panel>
           <Panel title={T.candidates} id="cands">
-            <AsyncView state={asyncState(cands, rows.length === 0)} error={cands.error?.message}>
+            <AsyncView state={asyncState(cands, rows.length === 0)} error={cands.error}>
               <DataTable
                 caption={T.candidates}
                 rows={rows}
@@ -287,10 +290,10 @@ export function ProductCompose() {
                 );
               }}
             >
-              <Field label={T.col.name}>
+              <Field label={T.col.name} error={fe.name}>
                 <input className="ds-input" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </Field>
-              <Field label={ko.detail.attrs.description}>
+              <Field label={ko.detail.attrs.description} error={fe.description}>
                 <textarea className="ds-input" required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </Field>
               <div style={{ display: 'flex', gap: 'var(--sp-3)' }}>
@@ -306,14 +309,14 @@ export function ProductCompose() {
                 </Field>
               </div>
               <div style={{ display: 'flex', gap: 'var(--sp-3)' }}>
-                <Field label="From">
+                <Field label="From" error={fe.validFrom}>
                   <input className="ds-input ds-input--mono" type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
                 </Field>
-                <Field label="To">
+                <Field label="To" error={fe.validTo}>
                   <input className="ds-input ds-input--mono" type="date" value={form.validTo} onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
                 </Field>
               </div>
-              <Field label={ko.registry.col.owner}>
+              <Field label={ko.registry.col.owner} error={fe.ownerId}>
                 <input className="ds-input" required value={form.ownerId} onChange={(e) => setForm({ ...form, ownerId: e.target.value })} />
               </Field>
               <ErrorNote error={create.error} />

@@ -225,7 +225,7 @@ export function CombinationPanel({ featureId }: { featureId: string }) {
   return (
     <Panel title={C.title} codes="FFG-TST-003" id="combinations" tour="virtual-combinations">
       <p className="ds-field__hint">{C.lead}</p>
-      <AsyncView state={asyncState(q, !p)} error={q.error?.message} onRetry={() => q.refetch()} rows={2}>
+      <AsyncView state={asyncState(q, !p)} error={q.error} onRetry={() => q.refetch()} rows={2}>
         {p && (
           <div style={{ display: 'grid', gap: 'var(--sp-3)' }} data-testid="combo-plan">
             <KeyValue
@@ -432,7 +432,7 @@ export function VirtualPanel({ policy }: { policy: { policyId: string; featureId
           · <Link to="/validations/virtual">{T.title} →</Link>
         </p>
         <ErrorNote error={run.error} />
-        <AsyncView state={asyncState(runs, !Array.isArray(runs.data?.items) || runs.data!.items.length === 0)} error={runs.error?.message} onRetry={() => runs.refetch()} rows={2}>
+        <AsyncView state={asyncState(runs, !Array.isArray(runs.data?.items) || runs.data!.items.length === 0)} error={runs.error} onRetry={() => runs.refetch()} rows={2}>
           <RunTable rows={Array.isArray(runs.data?.items) ? runs.data!.items : []} currentHash={policy.contentHash} onOpen={setOpen} />
         </AsyncView>
       </div>
@@ -529,7 +529,7 @@ export function VirtualValidationScreen() {
       >
         <ErrorNote error={run.error} />
         {/* 핵심 메시지가 이미 '실행 기록이 없습니다'라고 하면 빈 상자를 또 그리지 않는다(3초 테스트 ⑩, D-UX3-2) */}
-        <AsyncView state={asyncState(runs, rows.length === 0)} emptyHidden={message.text === T.key.none} error={runs.error?.message} onRetry={() => runs.refetch()}>
+        <AsyncView state={asyncState(runs, rows.length === 0)} emptyHidden={message.text === T.key.none} error={runs.error} onRetry={() => runs.refetch()}>
           <RunTable rows={rows} onOpen={setOpen} />
         </AsyncView>
       </Panel>

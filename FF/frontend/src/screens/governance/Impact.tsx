@@ -65,7 +65,7 @@ export default function ImpactScreen() {
           </fieldset>
         </div>
       </Panel>
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <SummaryLine

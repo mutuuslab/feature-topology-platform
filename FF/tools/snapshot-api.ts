@@ -51,6 +51,8 @@ async function main() {
   // 공통
   await save('health');
   await save('components');
+  // 외부 연결 상태 — 모의 연계 표시(RD-UX-04). 정적 데모는 모든 연결이 모의다
+  await save('systemConnections');
   await save('precheck');
   await save('events', {}, { limit: 500 });
   await save('audit', {}, { limit: 500 });

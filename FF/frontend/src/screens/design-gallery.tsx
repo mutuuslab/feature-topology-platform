@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, GATES, LIFECYCLE, REG_CLASSES, stageIndexOf, type GateId } from '@ff/contracts';
 import { ko } from '../copy/ko';
+import { connections as CN } from '../copy/connections';
+import { errors as E } from '../copy/errors';
 import {
   ApprovalSlots,
   AsyncView,
@@ -11,10 +13,12 @@ import {
   ClassBadge,
   ClassBadges,
   ClauseChip,
+  ConnectionBadge,
   DangerConfirm,
   DataTable,
   DiffView,
   Drawer,
+  ErrorNextStep,
   EventStream,
   Explain,
   ExplainCodes,
@@ -26,6 +30,7 @@ import {
   Kpi,
   LifecycleBadge,
   LifecycleStepper,
+  Pager,
   Panel,
   ReasonActionNote,
   RuleChecklist,
@@ -96,6 +101,7 @@ export default function DesignGallery() {
   const [state, setState] = useState<AsyncState>('ready');
   const [danger, setDanger] = useState(false);
   const [drawer, setDrawer] = useState(false);
+  const [pagerPage, setPagerPage] = useState(0);
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-5)', maxWidth: 1440 }}>
       <header>
@@ -219,6 +225,18 @@ export default function DesignGallery() {
             ]}
           />
         </AsyncView>
+      </Panel>
+
+      <Panel title={T.errorsKit} id="errors-kit">
+        <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+          <ErrorNextStep error={{ message: E.server, kind: 'server', status: 500, correlationId: 'c0ffee00-0000-4000-8000-000000000001' }} />
+          <ErrorNextStep error={{ message: E.conflictFallback, kind: 'conflict', status: 409 }} />
+          <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+            <ConnectionBadge state="mock" system={CN.system.mail} />
+            <ConnectionBadge state="disconnected" system={CN.system.datalake} />
+          </div>
+          <Pager page={pagerPage} pageSize={100} total={10000} onPage={setPagerPage} />
+        </div>
       </Panel>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 'var(--sp-5)' }}>

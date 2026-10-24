@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { approvalCheck, approvalPlan, reportRolesOf, type Role } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { STATIC_MODE } from '../../api/client';
+import { fieldErrors } from '../../api/errors';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { procedures as PR } from '../../copy/procedures';
@@ -118,7 +119,7 @@ export function ApprovalInboxScreen() {
         </Panel>
       )}
       {/* 내 차례 범위가 비면 핵심 메시지가 이미 "내 차례인 … 없습니다"라고 말한다 — 빈 상자로 되풀이하지 않는다(UX3-09) */}
-      <AsyncView state={inbox.state === 'ready' && rows.length === 0 ? 'empty' : inbox.state} empty={{ title: I.empty }} emptyHidden={scope === 'mine'} error={inbox.error?.message} onRetry={inbox.retry}>
+      <AsyncView state={inbox.state === 'ready' && rows.length === 0 ? 'empty' : inbox.state} empty={{ title: I.empty }} emptyHidden={scope === 'mine'} error={inbox.error} onRetry={inbox.retry}>
         {queues
           .filter((q) => rows.some((r) => r.queue === q))
           .map((q) => (
@@ -192,8 +193,10 @@ export function ProposeScreen() {
   // 입력이 있으면 떠나기 전에 묻는다 — 등록이 끝나면(상세로 이동) 묻지 않는다(출시 준비 RD-UX-02)
   useUnsavedGuard(!create.isSuccess && (Object.entries(f).some(([k, v]) => v !== PROPOSE_INITIAL[k as keyof typeof PROPOSE_INITIAL]) || cps.join() !== 'Flag'));
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
+  // 서버 입력 검사 오류는 해당 칸 옆에(RD-UX-01) — 칸 이름은 요청 본문 키와 같다
+  const fe = fieldErrors(create.error);
   const text = (k: keyof typeof f, label: string, wide = false) => (
-    <Field label={label}>
+    <Field label={label} error={fe[k]}>
       <input className={`ds-input${wide ? '' : ' ds-input--mono'}`} name={k} value={f[k]} onChange={set(k)} />
     </Field>
   );
@@ -203,10 +206,10 @@ export function ProposeScreen() {
       <Panel id="propose-form" tour="feature-form">
         <div className="ds-split">
           <div className="ds-stack">
-            <Field label={P.name}>
+            <Field label={P.name} error={fe.name}>
               <input className="ds-input" name="name" value={f.name} onChange={set('name')} />
             </Field>
-            <Field label={P.description}>
+            <Field label={P.description} error={fe.description}>
               <textarea className="ds-input" name="description" value={f.description} onChange={set('description')} rows={3} />
             </Field>
             {text('requirementIds', P.requirements)}
@@ -216,7 +219,7 @@ export function ProposeScreen() {
             {text('country', P.country)}
             {text('vehicleModel', P.vehicleModel)}
             {text('trim', P.trim)}
-            <Field label={P.owner}>
+            <Field label={P.owner} error={fe.ownerId}>
               <input className="ds-input" name="ownerId" value={f.ownerId} onChange={set('ownerId')} />
             </Field>
             <Select label={P.asil} value={f.asil} onChange={set('asil')}>
@@ -270,7 +273,7 @@ export function DefineScreen() {
         message={q.data ? (rows.length ? { tone: 'neutral', value: rows.length, text: D.key.open } : { tone: 'neutral', text: D.key.none }) : { tone: 'neutral', value: '—', text: D.key.open }}
         actions={<Link to="/feature/propose">{D.newProposal}</Link>}
       />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={D.title}
           rows={rows}

@@ -95,7 +95,7 @@ export function TopologyScreen() {
           </Select>
           <Segmented label={T.depth} options={(['1', '2', '3'] as const).map((v) => ({ value: v, label: v }))} value={depth} onChange={(v) => setDepth(v as typeof depth)} />
         </Toolbar>
-        <AsyncView state={focus ? asyncState(graph) : 'loading'} error={graph.error?.message} onRetry={() => graph.refetch()}>
+        <AsyncView state={focus ? asyncState(graph) : 'loading'} error={graph.error} onRetry={() => graph.refetch()}>
           {graph.data && focus && <TopologyGraph data={graph.data} focus={focus} selected={selected} />}
         </AsyncView>
       </Panel>
@@ -116,7 +116,7 @@ export function TopologyScreen() {
             ))}
           </Select>
         </Toolbar>
-        <AsyncView state={asyncState(deps, rows.length === 0)} error={deps.error?.message} onRetry={() => deps.refetch()}>
+        <AsyncView state={asyncState(deps, rows.length === 0)} error={deps.error} onRetry={() => deps.refetch()}>
           <DataTable
             caption={T.title}
             rows={rows}

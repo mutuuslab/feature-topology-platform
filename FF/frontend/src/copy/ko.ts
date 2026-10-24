@@ -69,7 +69,7 @@ export const ko = {
     },
     emails: {
       title: '메일 발송 기록',
-      lead: '모의 발송입니다 — 실제 메일 서버 연동은 없습니다.',
+      lead: '보낸 알림 메일의 기록입니다. 메일 서버 연결 상태는 오른쪽 위 표시로 봅니다.',
       empty: '보낸 메일이 없습니다.',
       col: { at: '발송', subject: '제목', status: '상태' },
     },
@@ -272,6 +272,7 @@ export const ko = {
   diff: { field: '항목', before: '이전', after: '이후', none: '변경 없음' },
   stream: { empty: '아직 이벤트가 없습니다' },
   design: {
+    errorsKit: '오류 다음 행동 · 모의 연결 · 쪽 넘김',
     safetyClasses: '기능안전 분류 — F·DC·R·Flag 유형',
     safetyRules: '게이트 판정 목록',
     safetyApprovals: '승인 칸·누적 상한',

@@ -125,7 +125,7 @@ export function ArchitectureScreen() {
         value={wp}
         onChange={(v) => setParam('wp', v)}
       />
-      <AsyncView state={asyncState(q, comps.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, comps.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <div className="ds-arch">
           {DOMAINS.map((d) => (
             <section key={d} className="ds-arch__col" aria-label={A.domains[d]}>

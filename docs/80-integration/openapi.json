@@ -266,6 +266,27 @@
         }
       }
     },
+    "/api/system/connections": {
+      "get": {
+        "summary": "외부 연결 상태(메일·과금·OTA·Data Lake) — 모의·연결 안 됨을 화면에 표시하는 근거",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "systemConnections",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/components": {
       "get": {
         "summary": "42 컴포넌트 현황",
@@ -289,7 +310,7 @@
     },
     "/api/events": {
       "get": {
-        "summary": "이벤트 이력",
+        "summary": "이벤트 이력 — after(순번) 커서 페이지 나눔, 응답 nextCursor",
         "tags": [
           "D04-04"
         ],
@@ -1113,7 +1134,7 @@
     },
     "/api/audit": {
       "get": {
-        "summary": "감사 이력",
+        "summary": "감사 이력 — 최신순, cursor 페이지 나눔(응답 nextCursor)",
         "tags": [
           "D01-10"
         ],
@@ -1145,6 +1166,14 @@
           },
           {
             "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
             "in": "query",
             "required": false,
             "schema": {
@@ -1395,7 +1424,7 @@
     },
     "/api/features": {
       "get": {
-        "summary": "Feature 버전 목록",
+        "summary": "Feature 버전 목록 — limit·cursor를 주면 페이지 나눔(응답 nextCursor), 없으면 전체",
         "tags": [
           "D01-01"
         ],
@@ -1435,6 +1464,22 @@
           },
           {
             "name": "latestOnly",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
             "in": "query",
             "required": false,
             "schema": {

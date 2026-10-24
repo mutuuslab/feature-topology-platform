@@ -72,7 +72,7 @@ export function ActivationScreen() {
           </div>
         }
       />
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <Panel title={A.trace} eyebrow={`${d.result.policyId} r${d.result.revision}`} id="result">

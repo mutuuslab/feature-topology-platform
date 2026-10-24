@@ -46,7 +46,7 @@ function ReadbacksTab() {
   const rows = q.data?.items ?? [];
   const C = M.telemetry.rbCol;
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
       <DataTable
         caption={M.telemetry.tabs.readbacks}
         rows={rows}
@@ -85,7 +85,7 @@ function StatusTab() {
   return (
     <>
       <VehiclePicker vin={vin} onChange={setVin} />
-      <AsyncView state={asyncState(q, !d?.features.length && !d?.recent.length)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, !d?.features.length && !d?.recent.length)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <DataTable
             caption={M.telemetry.tabs.status}
@@ -112,7 +112,7 @@ function RequestsTab() {
   return (
     <>
       <VehiclePicker vin={vin} onChange={setVin} />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={M.telemetry.tabs.requests}
           rows={rows}
@@ -153,7 +153,7 @@ export function SupplierScreen() {
           ))}
         </Select>
       </Toolbar>
-      <AsyncView state={asyncState(q, mine.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, mine.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={S.title}
           rows={mine}
@@ -193,7 +193,7 @@ export function SecurityScreen() {
         })()}
       />
       <Panel title={S.keys} id="sec-keys">
-        <AsyncView state={asyncState(keys, rows.length === 0)} error={keys.error?.message} onRetry={() => keys.refetch()}>
+        <AsyncView state={asyncState(keys, rows.length === 0)} error={keys.error} onRetry={() => keys.refetch()}>
           <DataTable
             caption={S.keys}
             rows={rows}
@@ -212,7 +212,7 @@ export function SecurityScreen() {
       </Panel>
       <div className="ds-split">
         <Panel title={S.hsm} id="sec-hsm" actions={<EpochBump />}>
-          <AsyncView state={asyncState(hsm)} error={hsm.error?.message} onRetry={() => hsm.refetch()}>
+          <AsyncView state={asyncState(hsm)} error={hsm.error} onRetry={() => hsm.refetch()}>
             <KeyValue rows={Object.entries(hsm.data ?? {}).map(([k, v]) => ({ k: <span className="ds-mono">{k}</span>, v: <span className="ds-mono">{String(v)}</span> }))} />
           </AsyncView>
         </Panel>
@@ -246,7 +246,7 @@ function SbomPanel() {
   const [open, setOpen] = useState<string | null>(null);
   return (
     <Panel title={S.sbom} codes="D06-11 · FFG-SBOM-002·003" id="sec-sbom">
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={3}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} rows={3}>
         <DataTable
           caption={S.sbom}
           rows={rows}
@@ -325,7 +325,7 @@ function VexPanel() {
         </Button>
       </form>
       <ErrorNote error={rec.error} />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={2} empty={{ title: S.vexNone }}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} rows={2} empty={{ title: S.vexNone }}>
         <DataTable
           caption={S.vex}
           rows={rows}
@@ -354,7 +354,7 @@ export function SettingsScreen() {
       <PageHeader codes="KERNEL · CONFIG" title={S.title} lead={S.lead} message={!h ? { tone: 'neutral', value: '—', text: S.key.bad } : h.status === 'ok' ? { tone: 'ok', text: S.key.ok(h.seed ?? '—') } : { tone: 'danger', text: S.key.bad }} />
       <div className="ds-split">
         <Panel title={S.health} id="set-health">
-          <AsyncView state={asyncState(health)} error={health.error?.message} onRetry={() => health.refetch()}>
+          <AsyncView state={asyncState(health)} error={health.error} onRetry={() => health.refetch()}>
             {h && (
               <KeyValue
                 rows={[
@@ -374,7 +374,7 @@ export function SettingsScreen() {
         </Panel>
       </div>
       <Panel title={S.integrations} id="set-if" actions={<Link to="/integration/connectors">{ko.p10.integrations.title}</Link>}>
-        <AsyncView state={asyncState(sys)} error={sys.error?.message} onRetry={() => sys.refetch()}>
+        <AsyncView state={asyncState(sys)} error={sys.error} onRetry={() => sys.refetch()}>
           <DataTable
             caption={S.integrations}
             rows={sys.data?.items ?? []}
@@ -574,7 +574,7 @@ export function EoScreen() {
           <span className="ds-field__label">{E.onlyMulti}</span>
         </label>
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={E.title}
           rows={rows}

@@ -46,7 +46,7 @@ export function OpenFeatureScopeScreen() {
         lead={O.lead}
         message={{ tone: 'neutral', value: d ? d.catalog.filter((c) => c.openFeature).length : '—', text: O.key }}
       />
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <SummaryLine
@@ -136,7 +136,7 @@ function PathColumn({ title, steps, tone }: { title: string; steps: readonly str
 function JsonPanel({ name }: { name: string }) {
   const q = useApi<unknown>(name);
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       <pre className="ds-code" tabIndex={0} style={{ maxHeight: '50vh', overflow: 'auto' }}>{JSON.stringify(q.data, null, 2)}</pre>
     </AsyncView>
   );
@@ -146,7 +146,7 @@ function ManifestPanel() {
   const q = useApi<{ flags: Record<string, unknown>; findings: { flagKey: string; rule: string; message: string }[] }>('openfeatureManifest');
   const d = q.data;
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       {d && (
         <>
           <p className={d.findings.length ? 'ds-stale' : 'ds-ok'} role="status">
@@ -179,7 +179,7 @@ function VehiclePanel() {
           <option key={v.vin} value={v.vin}>{`${v.vin} ${v.label}`}</option>
         ))}
       </Select>
-      <AsyncView state={asyncState(q, !d?.items.length)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, !d?.items.length)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <p className="ds-field__hint ds-mono">{O.pseudonym(d.pseudonym)}</p>

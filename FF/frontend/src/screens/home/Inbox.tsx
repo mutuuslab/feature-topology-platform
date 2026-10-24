@@ -3,23 +3,20 @@
 // (요청자·이미 승인한 사람·FSM 칸·복원은 차단 승인자 제외 — FFG-PLT-005·DEAC-008).
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { approvalCheck, approvalPlan, LIFECYCLE, reportRolesOf, type Role } from '@ff/contracts';
+import { approvalCheck, approvalPlan, reportRolesOf, type Role } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { ops5y } from '../../copy/ops5y';
 import { procedures as PR } from '../../copy/procedures';
 import { useProcedureSummary } from '../../data/procedureProgress';
-import { formatCount, formatExact } from '../../design/format';
-import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, SummaryLine, VerdictBadge, type KeyMessageSpec } from '../../design';
+import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
-import { DashboardHero } from './DashboardHero';
-import { ProcedureMap } from './ProcedureMap';
+import { DashboardBoard, DashboardTools, GadgetDirectory, useBoard } from './dashboard/Dashboard';
+import { isSafetyKill } from './dashboard/gadgets';
 
 const I = ko.master.inbox;
-const O = ops5y.home;
 const t16 = (iso: string | null | undefined) => (iso ? iso.slice(0, 16).replace('T', ' ') : '—');
 
 interface Item {
@@ -164,69 +161,18 @@ export function HomeScreen() {
   const { role } = useAppShell();
   const proc = useProcedureSummary(role);
   const inbox = useInbox();
-  const feats = useApi<{ items: { featureId: string; version: string; lifecycle: string }[] }>('listFeatures', { query: { latestOnly: true } });
-  const pols = useApi<{ items: { status: string }[] }>('listPolicies', { query: { status: 'DEPLOYED' } });
   const kills = useApi<{ items: { reasonCategory?: string }[] }>('killRequests', { query: { status: 'ACTIVE' } });
-  const anms = useApi<{ items: { status: string }[] }>('anomalies');
-  const fleet = useApi<{ items: { fleet?: string }[] }>('vehicles');
-  // 5년 운영 데이터면 대상 차량은 모집단 모델(가정값)에서 — 시연·수신 차량 행 수가 아니다
-  const pop = useApi<{ dataset: { kind: string }; funnel: { active: number } }>('fleetPopulation', {}, { staleTime: 300_000 });
-  const target = pop.data?.dataset?.kind === 'ops5y' && typeof pop.data.funnel?.active === 'number' ? pop.data.funnel.active : null;
-  const f = feats.data?.items ?? [];
-  const byLc = f.reduce<Record<string, number>>((m, x) => ((m[x.lifecycle] = (m[x.lifecycle] ?? 0) + 1), m), {});
-  // 상업 비활성화(체험 만료 등)는 긴급 차단이 아니다 — 5년 운영이면 수십 건이 늘 걸려 있다
-  const activeKills = (kills.data?.items ?? []).filter((k) => k.reasonCategory !== 'COMMERCIAL').length;
+  const activeKills = (kills.data?.items ?? []).filter(isSafetyKill).length;
   const mine = inbox.items.filter((i) => i.mine).length;
   const procMine = proc ? proc.todo + proc.review : 0;
-  const procValue = proc ? procMine : '—';
-  const LINKS: [string, string][] = [
-    ['/admin/approval', I.title],
-    ['/features', 'Feature Registry'],
-    ['/fleet/live', ko.fleet.title],
-    ['/ops/kill', ko.kill.title],
-    ['/integration/openfeature', 'OpenFeature'],
-  ];
+  // Jira 대시보드식 — 가젯을 끌어 옮기고 추가·빼기·레이아웃을 바꾼다(역할별 저장). 핵심 메시지는 판 위에 하나
+  const board = useBoard(role);
+  const [adding, setAdding] = useState(false);
   return (
     <div className="ds-screen">
-      <PageHeader title={H.title} lead={H.lead} message={homeMessage(activeKills, mine, procMine, !!kills.data && !inbox.loading)} />
-      <DashboardHero />
-      <SummaryLine
-        items={[
-          // 내 차례는 핵심 메시지가 다른 일(긴급 차단·승인)을 말할 때만 — 핵심 메시지가 이미 말하거나 0이면 되풀이하지 않는다(UX3-15, 3초 ⑪)
-          ...(procMine > 0 && (activeKills > 0 || mine > 0) ? [{ k: H.kpi.procMine, v: procValue }] : []),
-          { k: H.kpi.features, v: f.length },
-          { k: H.kpi.released, v: byLc.RELEASED ?? 0 },
-          { k: H.kpi.policies, v: pols.data?.items.length ?? '—' },
-          { k: H.kpi.anomalies, v: (anms.data?.items ?? []).filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length },
-          ...(target !== null ? [{ k: O.target, v: <span title={formatExact(target)}>{formatCount(target)}</span> }] : []),
-          // 수신 표본(SAMPLE)은 시연 Fleet이 아니다
-          { k: H.kpi.online, v: fleet.data ? fleet.data.items.filter((v) => v.fleet !== 'SAMPLE').length : '—' },
-        ]}
-      />
-      <ProcedureMap summary={proc} role={role} />
-      <div className="ds-split">
-        <Panel title={H.lifecycle} id="home-lc">
-          {/* Registry와 같은 범위(최신 Version) — 누르면 같은 수의 행이 보인다 */}
-          <ul className="ds-chain ds-linklist">
-            {LIFECYCLE.filter((lc) => byLc[lc]).map((lc) => [lc, byLc[lc]] as const).map(([lc, n]) => (
-              <li key={lc} style={{ listStyle: 'none' }}>
-                <Link to={`/features?lifecycle=${lc}`}>
-                  <LifecycleBadge value={lc} /> <span className="ds-mono">{n}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-        <Panel title={H.links} id="home-links">
-          <ul className="ds-linklist">
-            {LINKS.map(([to, label]) => (
-              <li key={to}>
-                <Link to={to}>{label}</Link>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-      </div>
+      <PageHeader title={H.title} lead={H.lead} message={homeMessage(activeKills, mine, procMine, !!kills.data && !inbox.loading)} actions={<DashboardTools {...board} onAdd={() => setAdding(true)} />} />
+      <DashboardBoard role={role} board={board.board} update={board.update} />
+      <GadgetDirectory open={adding} onClose={() => setAdding(false)} board={board.board} update={board.update} />
     </div>
   );
 }

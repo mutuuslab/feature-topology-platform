@@ -3,6 +3,14 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## 출시 준비(Production Readiness) + Jira식 대시보드 (2026-10-24 사용자 요청 "전체 하네스 엔지니어링으로 실제 고객이 사용할 수 있을 정도의 퀄리티" · "대시보드는 Jira 스타일, Layout은 Drag로 조정·추가")
+- **브랜치** `feat/prod-readiness` (worktree `-ux`, origin/main에서). 의존성 상향은 별도 worktree `../2026-06-04_Feature_Platform-deps` 브랜치 `feat/deps-upgrade`(에이전트 작업 — Nest 12·zod 4·maplibre 6·react-router 7·CI audit/gitleaks/CodeQL/Dependabot·wrangler 고정, RD-SEC-14·15).
+- **정본** `docs/20-architecture/20-90-production-readiness.md`(점검 3건 종합·결정 D-RD-1~4), 목록 `harness/readiness.json`, 게이트 `tools/readiness.ts`(verify 단계 `readiness`, 래칫 readinessOpenP0·P1).
+- **결정(사용자)** D-RD-1 고객사별 단독 설치 · D-RD-2 OIDC SSO · D-RD-3 PostgreSQL 이전 · D-RD-4 데모 사이트 유지(데모 빌드 분리).
+- **완료(R1)** 운영 모드 설정 검사(runtime-config)·HTTP 기본 방어(http-hardening)·/api/health/live·ready·enableShutdownHooks·webhook 비밀 강제·배포 보안 헤더(_headers = preview, e2e csp.spec 73곳 위반 0). 열린 P0 16→14, P1 19→13.
+- **대시보드** `screens/home/dashboard/` — layout.ts(순수 배치 모델·역할별 localStorage), gadgets.tsx(가젯 9종), Dashboard.tsx(끌어 놓기·배치 메뉴(WCAG 2.5.7 대안)·가젯 추가 창·레이아웃 1/2/2L/3열). 시험: dashboardLayout·screensDashboard(단위), e2e dashboard.spec(실제 끌기 자리·새로 고침 유지).
+- **남은 것(순서)** ① 대시보드 시각 검토 반영 ② 인증 OIDC(RD-SEC-01~05)·데모 빌드 분리 ③ 오류 화면 UX(RD-UX-01)·입력 보호(UX-02) ④ 멱등 경쟁(OPS-13)·예약 작업 복구(OPS-06)·마이그레이션 업그레이드 시험(OPS-10)·관측(OPS-11)·감사 앵커(SEC-13) ⑤ 빈 DB e2e(OPS-02)·운영 출처 값(OPS-03) ⑥ Docker·설치 안내서(OPS-05·SEC-09·P2-04) ⑦ PostgreSQL(OPS-09·14) ⑧ 결함 12건(FN-01)·롤백(FN-02). 대시보드 배치의 서버 저장(사용자 설정 API)은 OIDC 뒤에.
+
 ## ADS·UNECE 보고서 v3.0 반영 (2026-10-18 사용자 요청 "FF Platform 목적·vision·시나리오가 들어 있으니 모두 반영 — 분석·저장·HTML 보고" → "다른 세션과 통합, UI/UX·프론트·백엔드·DB 수정 설계")
 - **원본 보관**: 저장소 밖(사용자 결정 — FF repo 공개). 위치 `C:/project/2026-06-04_Feature_Platform_sources/ads-unece-v3.0/`, sha256 `712e75bc…`, 1,200,160 B.
   - 다운로드 폴더의 확장자 없는 파일이 실제 HTML이었다.

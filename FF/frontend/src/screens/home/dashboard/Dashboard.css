@@ -1,0 +1,362 @@
+/* Jira 대시보드식 가젯 판 — 열 레이아웃·가젯 틀·끌어 놓기 자리·배치 메뉴. 색·간격·시간은 토큰만(lint:tokens·spacing·motion). */
+.db-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.db-board {
+  display: grid;
+  grid-template-columns: repeat(var(--db-cols, 2), minmax(0, 1fr));
+  gap: var(--sp-4);
+  align-items: start;
+}
+.db-board[data-layout='2L'] {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+/* 좁은 창에서는 한 열로 — 배치 순서(열 1 → 열 2 …)는 그대로 */
+@media (max-width: 1100px) {
+  .db-board,
+  .db-board[data-layout='2L'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.db-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+  min-height: 48px;
+  border-radius: var(--r-lg);
+}
+/* 끄는 동안 포인터 아래 열만 받을 자리로 표시한다(모든 열에 테두리를 두르면 시끄럽다) */
+.db-col[data-over] {
+  outline: 1px dashed var(--accent);
+  outline-offset: 2px;
+}
+.db-col__empty {
+  margin: 0;
+  padding: var(--sp-4);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-lg);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.db-gadget {
+  min-width: 0;
+  /* 가젯 폭에 따라 안의 내용을 바꾼다(좁은 열·3열) — 화면 폭이 아니라 가젯 폭 기준 */
+  container: gadget / inline-size;
+  transition: opacity var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+/* 옮기는 중인 원래 자리 — 흐리게 + 점선(비활성처럼 보이지 않게) */
+.db-gadget[data-dragging] {
+  opacity: 0.5;
+  border-style: dashed;
+  border-color: var(--accent);
+}
+.db-gadget:hover,
+.db-gadget:focus-within {
+  box-shadow: var(--e-1);
+}
+.db-gadget__head {
+  align-items: center;
+  gap: var(--sp-2);
+}
+.db-gadget__title {
+  flex: 1;
+  min-width: 0;
+}
+.db-gadget__head {
+  min-block-size: 56px;
+}
+.db-gadget__sub {
+  margin: 0 0 var(--sp-3);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.db-gadget__link {
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+.db-grip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--r-sm);
+  color: var(--ink-2);
+  cursor: grab;
+  /* 손잡이를 빗맞게 끌어도 화면 글자가 선택되지 않게 */
+  user-select: none;
+  touch-action: none;
+}
+.db-board[data-dragging] {
+  user-select: none;
+}
+.db-grip:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.db-grip:active {
+  cursor: grabbing;
+}
+.db-grip svg {
+  inline-size: 12px;
+  block-size: 16px;
+  fill: currentColor;
+}
+
+.db-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border: 2px dashed var(--accent);
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.db-menu {
+  position: relative;
+}
+.db-menu__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.db-menu__btn:hover,
+.db-menu__btn[aria-expanded='true'] {
+  border-color: var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.db-menu__btn svg {
+  inline-size: 16px;
+  block-size: 4px;
+  fill: currentColor;
+}
+.db-menu__list {
+  position: absolute;
+  inset-block-start: calc(100% + 4px);
+  inset-inline-end: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 160px;
+  padding: var(--sp-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--e-2);
+}
+/* 아래 공간이 모자라면 위로 연다(Dashboard.tsx GadgetMenu) */
+.db-menu__list[data-up] {
+  inset-block-start: auto;
+  inset-block-end: calc(100% + 4px);
+}
+.db-menu__list button {
+  min-block-size: 32px;
+  padding: var(--sp-1) var(--sp-3);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: start;
+  cursor: pointer;
+}
+.db-menu__list button:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.db-menu__list button:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+.db-menu__danger {
+  color: var(--danger) !important;
+}
+
+.db-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.db-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.db-list__detail {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.db-directory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin: var(--sp-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.db-directory li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.db-directory p {
+  margin: var(--sp-1) 0 0;
+}
+.db-directory li[data-added] {
+  background: var(--surface-2);
+}
+.db-directory li[data-added] strong {
+  color: var(--ink-2);
+}
+.db-directory__added {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+.db-directory__added svg,
+.db-calm svg {
+  inline-size: 16px;
+  block-size: 16px;
+  fill: none;
+  stroke: var(--ok);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 비어 있는 가젯 — 확인 표시 한 줄 */
+.db-calm {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+}
+
+/* 바로 가기 — 목록 점 대신 줄 단위 링크 */
+.db-gadget .ds-linklist {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.db-gadget .ds-linklist li + li {
+  border-block-start: 1px solid var(--line);
+}
+.db-gadget .ds-linklist a {
+  display: flex;
+  justify-content: space-between;
+  min-block-size: 40px;
+  text-decoration: none;
+}
+.db-gadget .ds-linklist a::after {
+  content: '›';
+  color: var(--muted);
+}
+
+/* 운영 요약 — 문장처럼 이어 쓰지 않고 칸마다 이름 위·값 아래 */
+.db-gadget .ds-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+}
+.db-gadget .ds-summary > span {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-xs);
+}
+.db-gadget .ds-summary b {
+  font-size: var(--fs-md);
+}
+
+/* 거버넌스 현황 — 가젯 틀 안의 두 번째 틀(이중 테두리)을 없애고, 가젯 제목과 같은 영문 머리말은 숨긴다 */
+.db-gadget .dh {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.db-gadget .dh .ds-eyebrow {
+  display: none;
+}
+@container gadget (max-width: 600px) {
+  .dh {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* 좁으면 흐름 그림의 Gate 글자가 읽히지 않는다 — 문장만 */
+  .dh__motion {
+    display: none;
+  }
+}
+
+/* 업무 절차 지도 — 좁은 가젯에서 카드를 한 줄에 몰지 않고 여러 줄로 */
+@container gadget (max-width: 760px) {
+  .pm-flow {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: var(--sp-3);
+  }
+  .pm-flow li + li::before {
+    display: none;
+  }
+}
+
+.db-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Lifecycle 분포 — 좁은 열에서도 칩이 칸 안에서 줄바꿈한다(레이아웃 품질 ⑤) */
+.db-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.db-chips a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  text-decoration: none;
+}

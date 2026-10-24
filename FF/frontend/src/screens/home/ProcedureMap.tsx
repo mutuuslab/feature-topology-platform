@@ -3,9 +3,7 @@
 import { Link } from 'react-router-dom';
 import type { ProcedureSummary, WorkflowMapProcess } from '@ff/contracts';
 import { procedures as P } from '../../copy/procedures';
-import { roleLabel } from '../../data/refdata';
 import { WORKFLOW_MAP } from '../../data/workflowMap';
-import { Panel } from '../../design';
 import './ProcedureMap.css';
 
 type Group = { name: string; items: WorkflowMapProcess[] };
@@ -13,7 +11,8 @@ type Group = { name: string; items: WorkflowMapProcess[] };
 /** 메인 화면 지도에서는 HARA(FPW.2)를 뺀다 — 사용자 지시 2026-10-19. 전체 절차는 /procedures에 그대로 있다. */
 const HOME_EXCLUDED = new Set(['FPW.2']);
 
-export function ProcedureMap({ summary, role }: { summary: ProcedureSummary | null; role: string }) {
+/** 지도 본문 — 대시보드 가젯 틀(Dashboard.tsx) 안에 그대로 넣는다. 머리(제목·전체 보기)는 틀이 그린다 */
+export function ProcedureMapBody({ summary }: { summary: ProcedureSummary | null }) {
   const counts = new Map((Array.isArray(summary?.processes) ? summary.processes : []).map((c) => [c.id, c]));
   const shown = WORKFLOW_MAP.processes.filter((p) => !HOME_EXCLUDED.has(p.id));
   const nextId = shown.find((p) => {
@@ -26,12 +25,7 @@ export function ProcedureMap({ summary, role }: { summary: ProcedureSummary | nu
     g.items.push(p);
   }
   return (
-    <Panel
-      title={P.map.title}
-      eyebrow={P.map.eyebrow(roleLabel(role))}
-      id="home-procedure-map"
-      actions={<Link to="/procedures">{P.map.all}</Link>}
-    >
+    <>
       <p className="ds-field__hint pm-hint">{P.map.hint}</p>
       {!summary && <p className="ds-field__hint pm-note">{P.map.noSummary}</p>}
       <div className="pm-map">
@@ -63,7 +57,8 @@ export function ProcedureMap({ summary, role }: { summary: ProcedureSummary | nu
                           ))}
                         </span>
                       </span>
-                      <span className="pm-node__name">{p.name}</span>
+                      {/* '·' 앞에서 줄이 바뀌어 다음 줄이 '·'로 시작하지 않게 — 앞에 단어 결합 문자(U+2060) */}
+                      <span className="pm-node__name">{p.name.replaceAll('·', '\u2060·')}</span>
                       <span className="pm-node__bar" aria-hidden>
                         <span style={{ width: `${pct}%` }} />
                       </span>
@@ -80,6 +75,6 @@ export function ProcedureMap({ summary, role }: { summary: ProcedureSummary | nu
           </section>
         ))}
       </div>
-    </Panel>
+    </>
   );
 }

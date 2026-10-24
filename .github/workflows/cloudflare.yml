@@ -27,13 +27,14 @@ jobs:
           npm run build -w feature-topology-backend
           npm run snapshot:api
           VITE_DATA_MODE=static npm run build -w feature-topology-frontend
+      # wrangler는 정확한 버전으로 고정한다 — 배포 도구가 몰래 바뀌지 않게(출시 준비 RD-SEC-15). 올릴 때 두 곳을 함께 바꾼다.
       - name: Ensure Pages project
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx --yes wrangler@4 pages project create feature-topology --production-branch=main || true
+        run: npx --yes wrangler@4.152.0 pages project create feature-topology --production-branch=main || true
       - name: Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx --yes wrangler@4 pages deploy FF/frontend/dist --project-name=feature-topology --branch=main --commit-dirty=true
+        run: npx --yes wrangler@4.152.0 pages deploy FF/frontend/dist --project-name=feature-topology --branch=main

@@ -421,7 +421,7 @@
         "../.github/workflows/verify.yml:22-25"
       ],
       "criteria": "CI에 운영 의존성 audit(high 이상 0)·비밀 검사·Dependabot·CodeQL",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "match",
@@ -454,7 +454,7 @@
         "../.github/workflows/cloudflare.yml:34,39"
       ],
       "criteria": "wrangler 정확한 버전 고정, --commit-dirty 없음",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "absent",

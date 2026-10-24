@@ -328,7 +328,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'drainExtSync', method: 'POST', path: '/api/integrations/sync/drain', summary: '보낼 함 지금 보내기', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER'], body: EmptyBody },
   { name: 'policyExtLinks', method: 'GET', path: '/api/policies/:id/ext-links', summary: '정책에 연결된 외부 항목(JIRA CR)', component: 'D05-01', sample: { id: 'POL-00001' } },
   { name: 'linkPolicyChangeRequest', method: 'POST', path: '/api/policies/:id/change-request', summary: '정책 ↔ 근거 JIRA CR 연결', component: 'D05-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: LinkChangeRequestBody },
-  { name: 'extWebhook', method: 'POST', path: '/api/webhooks/:system', summary: '외부 webhook 수신(gitlab·jira·codebeamer) — 서명 확인 후 주인 규칙으로 처리', component: 'D05-01', body: z.record(z.unknown()), public: true },
+  { name: 'extWebhook', method: 'POST', path: '/api/webhooks/:system', summary: '외부 webhook 수신(gitlab·jira·codebeamer) — 서명 확인 후 주인 규칙으로 처리', component: 'D05-01', body: z.record(z.string(), z.unknown()), public: true },
   { name: 'mockExtItems', method: 'GET', path: '/api/integrations/mock/:system/items', summary: '모의 외부 시스템 항목(실서버 없을 때)', component: 'D05-01', query: ['kind'], sample: { system: 'jira' } },
   { name: 'mockExtAct', method: 'POST', path: '/api/integrations/mock/:system/act', summary: '모의 외부 시스템에서 사람이 한 일 — 상태 변경·편집·병합·파이프라인(webhook으로 들어옴)', component: 'D05-01', roles: HUMAN_ROLES, body: MockExtActionBody },
   { name: 'mockExtCreate', method: 'POST', path: '/api/integrations/mock/:system/items', summary: '모의 외부 시스템에 항목 만들기(CR·MR·요구)', component: 'D05-01', roles: HUMAN_ROLES, body: MockExtCreateBody },

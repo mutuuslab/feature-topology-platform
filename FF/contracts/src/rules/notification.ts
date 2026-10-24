@@ -446,7 +446,7 @@ export const accountKeys = (a: Pick<NotificationAccount, 'id' | 'roles' | 'teams
 export const EMAIL_LOCKED: NotificationCategory[] = ['APPROVAL', 'SAFETY'];
 export const DEFAULT_EMAIL: Record<NotificationCategory, boolean> = { APPROVAL: true, SAFETY: true, DEPLOY: false, GATE: false, OPS: true, INTEGRATION: false, PROCEDURE: true };
 
-export const NotificationPrefsBody = z.object({ email: z.record(NotificationCategory, z.boolean()) }).strict();
+export const NotificationPrefsBody = z.object({ email: z.partialRecord(NotificationCategory, z.boolean()) }).strict();
 export type NotificationPrefsBody = z.infer<typeof NotificationPrefsBody>;
 export const NotificationReadAllBody = z.object({ category: NotificationCategory.optional() }).strict();
 export type NotificationReadAllBody = z.infer<typeof NotificationReadAllBody>;

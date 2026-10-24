@@ -787,7 +787,8 @@
                     "nullable": true,
                     "enum": [
                       "ADSF-1",
-                      "ADSF-2"
+                      "ADSF-2",
+                      null
                     ]
                   },
                   "gsrMandatory": {
@@ -830,7 +831,8 @@
                       "DISABLED",
                       "INACTIVE",
                       "HANDOVER",
-                      "MRC"
+                      "MRC",
+                      null
                     ]
                   },
                   "takeoverMs": {
@@ -1672,8 +1674,7 @@
                         "items": {
                           "type": "string",
                           "minLength": 1
-                        },
-                        "default": []
+                        }
                       },
                       "ownerId": {
                         "type": "string",
@@ -1696,16 +1697,14 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 80
-                        },
-                        "default": []
+                        }
                       },
                       "upgVc": {
                         "type": "array",
                         "items": {
                           "type": "string",
                           "minLength": 1
-                        },
-                        "default": []
+                        }
                       },
                       "controlPoints": {
                         "type": "array",
@@ -1717,8 +1716,7 @@
                             "Signal",
                             "DTC"
                           ]
-                        },
-                        "default": []
+                        }
                       },
                       "functions": {
                         "type": "array",
@@ -1884,8 +1882,7 @@
                     "items": {
                       "type": "string",
                       "minLength": 1
-                    },
-                    "default": []
+                    }
                   },
                   "ownerId": {
                     "type": "string",
@@ -1908,16 +1905,14 @@
                       "type": "string",
                       "minLength": 1,
                       "maxLength": 80
-                    },
-                    "default": []
+                    }
                   },
                   "upgVc": {
                     "type": "array",
                     "items": {
                       "type": "string",
                       "minLength": 1
-                    },
-                    "default": []
+                    }
                   },
                   "controlPoints": {
                     "type": "array",
@@ -1929,8 +1924,7 @@
                         "Signal",
                         "DTC"
                       ]
-                    },
-                    "default": []
+                    }
                   },
                   "functions": {
                     "type": "array",
@@ -3117,8 +3111,7 @@
                       "type": "string",
                       "minLength": 1,
                       "maxLength": 80
-                    },
-                    "default": []
+                    }
                   },
                   "saleType": {
                     "type": "string",
@@ -3147,14 +3140,12 @@
                   "validFrom": {
                     "type": "string",
                     "nullable": true,
-                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-                    "default": null
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                   },
                   "validTo": {
                     "type": "string",
                     "nullable": true,
-                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-                    "default": null
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                   },
                   "ownerId": {
                     "type": "string",
@@ -3250,8 +3241,7 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 80
-                        },
-                        "default": []
+                        }
                       },
                       "saleType": {
                         "type": "string",
@@ -3280,14 +3270,12 @@
                       "validFrom": {
                         "type": "string",
                         "nullable": true,
-                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-                        "default": null
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                       },
                       "validTo": {
                         "type": "string",
                         "nullable": true,
-                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-                        "default": null
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                       },
                       "ownerId": {
                         "type": "string",
@@ -3791,18 +3779,15 @@
                     "maxLength": 500
                   },
                   "enabled": {
-                    "type": "boolean",
-                    "default": true
+                    "type": "boolean"
                   },
                   "safeDefault": {
-                    "type": "boolean",
-                    "default": false
+                    "type": "boolean"
                   },
                   "entitlementCatalogId": {
                     "type": "string",
                     "nullable": true,
-                    "pattern": "^CAT-\\d{5}$",
-                    "default": null
+                    "pattern": "^CAT-\\d{5}$"
                   },
                   "strategies": {
                     "type": "array",
@@ -3879,8 +3864,7 @@
                       ],
                       "additionalProperties": false
                     },
-                    "maxItems": 10,
-                    "default": []
+                    "maxItems": 10
                   },
                   "rollout": {
                     "type": "object",
@@ -3905,11 +3889,6 @@
                         "maxLength": 64,
                         "default": "FF-COHORT-SALT-1"
                       }
-                    },
-                    "default": {
-                      "mode": "ALL",
-                      "basisPoints": 10000,
-                      "salt": "FF-COHORT-SALT-1"
                     },
                     "required": [
                       "mode"
@@ -4959,8 +4938,14 @@
                         "minLength": 1
                       }
                     },
-                    "default": {}
+                    "default": {},
+                    "additionalProperties": {
+                      "nullable": true
+                    }
                   }
+                },
+                "additionalProperties": {
+                  "nullable": true
                 }
               }
             }
@@ -5010,8 +4995,14 @@
                         "minLength": 1
                       }
                     },
-                    "default": {}
+                    "default": {},
+                    "additionalProperties": {
+                      "nullable": true
+                    }
                   }
+                },
+                "additionalProperties": {
+                  "nullable": true
                 }
               }
             }
@@ -6342,8 +6333,14 @@
                         "minLength": 1
                       }
                     },
-                    "default": {}
+                    "default": {},
+                    "additionalProperties": {
+                      "nullable": true
+                    }
                   }
+                },
+                "additionalProperties": {
+                  "nullable": true
                 }
               }
             }
@@ -6411,8 +6408,14 @@
                         "minLength": 1
                       }
                     },
-                    "default": {}
+                    "default": {},
+                    "additionalProperties": {
+                      "nullable": true
+                    }
                   }
+                },
+                "additionalProperties": {
+                  "nullable": true
                 }
               }
             }

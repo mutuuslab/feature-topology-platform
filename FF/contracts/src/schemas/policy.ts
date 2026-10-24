@@ -1,6 +1,7 @@
 // 활성화 정책 — 정책 저장·버전 관리(D01-06). Control Point 하나에 대한 Flag 정책.
 // 차량 프로파일 FP-VEHICLE-BOOL-1(P0 BD-08): boolean 값, 15개 명시 연산자, 부분 롤아웃은 FP-COHORT-1 코호트(BD-09).
 import { z } from 'zod';
+import { patchOf } from './patch';
 import { ControlPointType } from '../enums';
 import { CONSTRAINT_OPERATORS } from '../flags/p0';
 import { OddRestriction } from '../rules/odd-restriction';
@@ -72,7 +73,7 @@ export type Policy = z.infer<typeof PolicySchema>;
 
 export const CreatePolicyBody = PolicySpec;
 export type CreatePolicyBody = z.infer<typeof CreatePolicyBody>;
-export const UpdatePolicyBody = PolicySpec.partial().strict();
+export const UpdatePolicyBody = patchOf(PolicySpec).strict();
 export type UpdatePolicyBody = z.infer<typeof UpdatePolicyBody>;
 export const PolicyDecisionBody = z.object({ decision: z.enum(['APPROVE', 'REJECT']), reason: z.string().trim().min(2).max(500) }).strict();
 export type PolicyDecisionBody = z.infer<typeof PolicyDecisionBody>;

@@ -1,3 +1,4 @@
+import './zod-config'; // 맨 먼저 — CSP 아래 zod eval 떠보기 끔
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';

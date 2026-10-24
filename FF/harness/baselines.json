@@ -90,7 +90,7 @@
     "note": "출시 준비 열린 P0 수(harness/readiness.json) — 0까지"
   },
   "readinessOpenP1": {
-    "value": 9,
+    "value": 8,
     "direction": "max",
     "note": "출시 준비 열린 P1 수 — 0까지"
   }

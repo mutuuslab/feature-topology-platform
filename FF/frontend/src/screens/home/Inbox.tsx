@@ -10,7 +10,7 @@ import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { procedures as PR } from '../../copy/procedures';
 import { useProcedureSummary } from '../../data/procedureProgress';
-import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, VerdictBadge, type KeyMessageSpec } from '../../design';
+import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, useUnsavedGuard, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
 import { DashboardBoard, DashboardTools, GadgetDirectory, useBoard } from './dashboard/Dashboard';
@@ -180,14 +180,17 @@ export function HomeScreen() {
 // ───────── Feature 제안 · 등록 ─────────
 
 const list = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean);
+const PROPOSE_INITIAL = { name: '', description: '', requirementIds: '', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: '', asil: 'QM', tags: '', upgVc: '' };
 
 export function ProposeScreen() {
   const P = ko.master.propose;
   const nav = useNavigate();
   const perm = usePermission(['FEATURE_AUTHOR']);
   const create = useApiMutation<{ featureId: string; version: string }>('createFeature', ['listFeatures', 'events', 'audit']);
-  const [f, setF] = useState({ name: '', description: '', requirementIds: '', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: '', asil: 'QM', tags: '', upgVc: '' });
+  const [f, setF] = useState(PROPOSE_INITIAL);
   const [cps, setCps] = useState<string[]>(['Flag']);
+  // 입력이 있으면 떠나기 전에 묻는다 — 등록이 끝나면(상세로 이동) 묻지 않는다(출시 준비 RD-UX-02)
+  useUnsavedGuard(!create.isSuccess && (Object.entries(f).some(([k, v]) => v !== PROPOSE_INITIAL[k as keyof typeof PROPOSE_INITIAL]) || cps.join() !== 'Flag'));
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
   const text = (k: keyof typeof f, label: string, wide = false) => (
     <Field label={label}>

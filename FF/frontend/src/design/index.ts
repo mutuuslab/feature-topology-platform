@@ -8,6 +8,7 @@ export * from './primitives';
 export * from './lifecycle';
 export * from './table';
 export * from './overlay';
+export { hasUnsaved, useUnsavedGuard } from './unsaved';
 export * from './page';
 export * from './safety';
 export * from './ext-ref';

@@ -664,7 +664,7 @@
         "frontend/src/screens/features/SafetyTab.tsx:164"
       ],
       "criteria": "편집 폼 공통 보호 — 저장 안 한 변경이 있으면 이동·창 닫기 전에 확인",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

@@ -14,6 +14,7 @@ import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '
 import { logout } from '../auth';
 import { login as L } from '../copy/login';
 import { GuideDock, RuleDrawer } from './GuideDock';
+import { UnsavedPrompt } from '../design/unsaved';
 import { ProcedureGuideHost } from './ProcedureGuideHost';
 import { FeaturePeek } from './FeaturePeek';
 import { learnStore, useExplain, useLearn } from './learn';
@@ -283,6 +284,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
       <GuideDock />
       <ProcedureGuideHost />
       <RuleDrawer />
+      <UnsavedPrompt />
       {procOpen && (
         <Suspense fallback={null}>
           <ScreenProcedure onClose={() => setProcOpen(false)} />

@@ -2404,3 +2404,23 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-epic-cell .ds-ext {
   white-space: nowrap;
 }
+
+/* 저장하지 않은 변경 — 창을 닫기 전에 창 안에서 묻는다(design/overlay.tsx Drawer dirty, 출시 준비 RD-UX-02) */
+.ds-drawer__ask {
+  display: grid;
+  gap: var(--sp-2);
+  margin: var(--sp-3) var(--sp-4) 0;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--warn);
+  border-radius: var(--r);
+  background: var(--warn-soft);
+}
+.ds-drawer__ask p {
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+.ds-drawer__ask-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}

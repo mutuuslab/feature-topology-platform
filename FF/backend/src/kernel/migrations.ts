@@ -1,6 +1,7 @@
 // 스키마 마이그레이션 — 이름 순 적용, 적용된 것은 다시 실행하지 않는다. 기존 항목은 수정하지 말고 새 항목을 추가한다.
 // 도메인 레코드는 "키 열 + doc(JSON)" 형태로 저장한다: 키·조회 조건은 열로, 본문은 contracts zod 스키마로 파싱.
-export const MIGRATIONS: { name: string; sql: string }[] = [
+// pg — PostgreSQL 방언 번역(pg-dialect.ts)이 감당하지 못하는 항목만 PG용 SQL을 따로 둔다(20-92 §4.3). 잠금(migrations.lock.json)은 sql만 해시한다.
+export const MIGRATIONS: { name: string; sql: string; pg?: string }[] = [
   {
     name: '001_kernel',
     sql: `
@@ -637,6 +638,17 @@ CREATE TABLE ota_job_vehicle (
 );
 CREATE TABLE ota_event (event_id TEXT PRIMARY KEY, job_id TEXT NOT NULL, body_sha256 TEXT NOT NULL, received_at TEXT NOT NULL, outcome TEXT NOT NULL);
 CREATE INDEX ota_event_received ON ota_event (received_at);
+`,
+  },
+  {
+    // 공유 상태(출시 준비 RD-OPS-14 · 20-92 §3) — 프로세스 메모리에 있던 것을 DB로 옮겨 같은 DB를 쓰는 인스턴스가 함께 본다.
+    // shared_reservation: 처리 중 예약(멱등 키 — 같은 키가 다른 인스턴스에 와도 409), 만료 시각(벽시계 ms)이 지나면 다른 쪽이 잡는다.
+    // shared_counter: 고정 창 카운터(차량별 요청 빈도). instance_lease: 단일 실행 인스턴스 임대(두 번째 인스턴스 부팅 거부).
+    name: '075_shared_state',
+    sql: `
+CREATE TABLE shared_reservation (slot TEXT PRIMARY KEY, value TEXT NOT NULL, holder TEXT NOT NULL, expires_at INTEGER NOT NULL);
+CREATE TABLE shared_counter (key TEXT PRIMARY KEY, start_ms INTEGER NOT NULL, n INTEGER NOT NULL);
+CREATE TABLE instance_lease (name TEXT PRIMARY KEY, holder TEXT NOT NULL, acquired_at TEXT NOT NULL, renewed_at TEXT NOT NULL, expires_at INTEGER NOT NULL);
 `,
   },
 ];

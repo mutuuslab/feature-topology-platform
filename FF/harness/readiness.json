@@ -620,10 +620,34 @@
       "decision": "D-RD-3",
       "title": "SSE 버스·요청 제한·주기 작업이 프로세스 메모리",
       "evidence": [
+        "backend/src/kernel/instance-lease.ts",
+        "backend/src/kernel/shared-state.ts",
         "backend/src/kernel/event.service.ts:24,73",
-        "backend/src/domains/d02-runtime/vehicle-request/vehicle-request.service.ts:48-49"
+        "../docs/20-architecture/20-92-postgresql-migration.md"
       ],
       "criteria": "PostgreSQL 이전 시 LISTEN/NOTIFY 버스·주기 작업 잠금. 그 전까지 설치 안내서에 단일 인스턴스 명시 + 두 번째 인스턴스 부팅 거부(DB 잠금)",
+      "status": "done",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ],
+      "note": "2026-10-25 완료(그 전까지 조건): 단일 인스턴스 임대(instance_lease — 두 번째 인스턴스 부팅 거부, SQLite 파일·PG), 설치 안내서 20-91 §6.2, 멱등 예약·차량 빈도 창은 공유 상태(DB). 다중 인스턴스(LISTEN/NOTIFY·예약 작업 지도자 임대·감사 추가 직렬화)는 RD-OPS-15(20-92 3단계)"
+    },
+    {
+      "id": "RD-OPS-15",
+      "priority": "P2",
+      "area": "다중 인스턴스",
+      "phase": "R3",
+      "decision": "D-RD-3",
+      "title": "인스턴스 여럿(이중화) 불가 — SSE 버스·예약 작업·감사 체인 끝·출처별 요청 제한이 인스턴스 안",
+      "evidence": [
+        "backend/src/kernel/event.service.ts:24,73",
+        "backend/src/kernel/scheduler.ts:25-31",
+        "backend/src/kernel/http-hardening.ts:32",
+        "../docs/20-architecture/20-92-postgresql-migration.md"
+      ],
+      "criteria": "PostgreSQL에서 LISTEN/NOTIFY 이벤트 버스, 예약 작업 표 + 지도자 임대, 감사 추가 직렬화, 출처별 요청 제한 공유 — 두 인스턴스 e2e(한쪽 변경이 다른 쪽 SSE로, 예약 작업 한 번)가 통과하면 FF_INSTANCE_LOCK=off를 운영에서 허용",
       "status": "open",
       "checks": [
         {

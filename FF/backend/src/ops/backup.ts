@@ -116,6 +116,9 @@ export function backup(o: BackupOptions): BackupResult {
   const copy = new DatabaseSync(dbOut);
   let sum: ReturnType<typeof summarize>;
   try {
+    // 실행 중 상태는 데이터가 아니다 — 백업한 인스턴스의 단일 인스턴스 임대·처리 중 예약을 사본에서 뺀다(복원본이 부팅을 거부당하지 않게, RD-OPS-14)
+    const has = (t: string) => !!copy.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(t);
+    for (const t of ['instance_lease', 'shared_reservation']) if (has(t)) copy.exec(`DELETE FROM ${t}`);
     sum = summarize(copy);
   } finally {
     copy.close();

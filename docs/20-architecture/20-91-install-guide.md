@@ -25,7 +25,8 @@
 
 - 컨테이너 하나가 API와 화면을 **같은 출처**로 낸다(`FF_WEB_DIR`). SSO 세션 쿠키·CSRF 검사가 그대로 맞는다.
 - 화면은 **운영 빌드**(`VITE_AUTH=oidc`)다 — 데모 로그인·데모 역할 선택기가 번들에 없다.
-- DB는 아직 **SQLite 파일 + 단일 인스턴스**다(결정 D-RD-3 — PostgreSQL 이전 전). 컨테이너를 2개 이상 띄우지 않는다(RD-OPS-14).
+- DB는 아직 **SQLite 파일 + 단일 인스턴스**다(결정 D-RD-3 — PostgreSQL 이전 1단계, PostgreSQL은 미리보기 §6.1). 컨테이너를 2개 이상 띄우지 않는다 —
+  같은 DB에 두 번째 인스턴스를 띄우면 **부팅을 거부한다**(단일 인스턴스 임대, RD-OPS-14 §6.2).
 - 이미지는 비루트 사용자(uid 1000 `node`)로 돌고, compose는 루트 파일시스템 읽기 전용·권한 모두 제거·새 권한 금지로 띄운다.
 
 ## 3. 사전 준비
@@ -122,6 +123,8 @@ IdP에 등록할 값:
 | `FF_INSTANCE_ID` | ✓ | `oem-a-prod` | 설치(고객) 식별 — §1 |
 | `FF_SEED` | | `none` | 운영 모드는 `none`만(데모 데이터 없음) |
 | `FF_DB` | ✓ | `/var/lib/ff/ff.db` | DB 파일(compose가 고정). `:memory:` 금지 |
+| `FF_DB_URL` | | 비움 | **미리보기** — `postgres://…`면 `FF_DB` 대신 PostgreSQL(§6.1) |
+| `FF_INSTANCE_LOCK` · `FF_INSTANCE_LEASE_SEC` | | 켜짐 · `20` | 단일 인스턴스 임대(§6.2). 운영 모드는 `off`를 거부한다 |
 | `FF_AUDIT_ANCHOR_FILE` | ✓ | `/var/lib/ff-anchor/audit-anchor.jsonl` | 감사 체인 고정점 파일 — DB와 다른 볼륨 |
 | `FF_AUDIT_KEY` | ✓ 비밀 | 32자 이상 | 고정점 서명 HMAC 키. 바꾸면 이전 고정점 검증이 깨진다 — 보관소에 따로 |
 | `FF_AUDIT_ANCHOR_MIN` | | `60` | 고정점 주기(분). 부팅·종료 때도 남긴다 |
@@ -162,6 +165,35 @@ IdP에 등록할 값:
 | `FF_BACKUP_DIR` · `FF_BACKUP_KEEP_DAYS` | | `/var/backups/ff` · `35` | 백업 폴더·보관 일수(§9) |
 
 시험·데모 전용 설정(`FF_CLOCK_AT`·`FF_SCHEDULER`·`FF_HSM_VEHICLE_ROOT`·`FF_DEMO_FIXTURES`·`FF_SYNTHETIC`·`FF_EXT_FIXTURES`·`FF_SEED_ANCHOR`)은 운영 모드에서 켜져 있으면 시작을 거부한다.
+
+### 6.1 PostgreSQL — 미리보기(D-RD-3 이전 1단계)
+
+PostgreSQL 이전은 단계로 간다(설계 `20-92-postgresql-migration.md`). 지금(1단계)은 **미리보기**다 — 같은 기능이 돌고 백엔드 시험 묶음의 대부분이
+PostgreSQL 16에서 통과하지만(`harness/pg-compat.json`), 아직 운영 권장이 아니다.
+
+- 질의마다 앱 스레드가 응답을 기다리는 동기 다리(20-92 §4.1)라 SQLite보다 느리다 — 처리량은 2단계(비동기 Db) 뒤에 잰다.
+- 백업 명령(§9 `backup-cli.js`)은 SQLite 파일만 다룬다. PostgreSQL은 `pg_dump -Fc`로 뜨고 감사 고정점 파일을 같은 시각에 함께 복사한다.
+- 이중화(인스턴스 여럿)는 아직 아니다 — §6.2 임대가 PostgreSQL에서도 걸린다.
+
+미리보기로 써 보려면:
+
+1. **C 정렬**로 빈 DB를 만든다(정렬이 SQLite와 같아야 목록 순서가 같다): `createdb --locale=C --encoding=UTF8 --template=template0 -O ff ff`
+2. `.env`에 `FF_DB_URL=postgres://ff:<비밀>@<호스트>:5432/ff`를 넣는다(`FF_DB`는 무시된다). 첫 부팅이 마이그레이션을 PostgreSQL 방언으로 적용한다.
+3. **기존 SQLite 데이터를 옮길 때**(앱을 멈춘 뒤): `docker compose ... run --rm app node backend/dist/ops/sqlite-to-pg.js --from /var/lib/ff/ff.db --to postgres://…` —
+   빈 DB에만 옮기고, 표마다 행 수와 감사 해시 체인(대상에서 다시 계산한 끝 해시 = 원본 끝 해시)을 확인한다. 하나라도 어긋나면 실패(`ok:false`)이고 원본은 그대로다.
+   그 뒤 앱을 띄워 `GET /api/audit/chain`이 `ok: true`(DB 밖 고정점 포함)인지 본다.
+4. **되돌리기**: `FF_DB_URL`을 지우면 원본 SQLite 파일로 부팅한다(이전 도구는 원본을 읽기만 한다). 미리보기 기간에 PostgreSQL에서 생긴 변경은 SQLite로 되돌아가지 않는다.
+
+### 6.2 단일 인스턴스 임대(RD-OPS-14)
+
+실시간 이벤트(SSE)·예약 작업(게시 마감·Kill 지연 감시)·출처별 요청 제한은 아직 인스턴스 안(프로세스 메모리)에 있다. 같은 DB에 인스턴스가 둘이면
+한쪽 변경이 다른 쪽 화면에 실시간으로 안 가고 예약 작업이 두 번 돈다. 그래서 **한 DB에 인스턴스 하나만** 돈다.
+
+- 부팅할 때 DB의 `instance_lease` 행을 잡는다(마이그레이션 전). 살아 있는 다른 인스턴스가 쥐고 있으면 **시작을 거부**하고 로그에 그 인스턴스(호스트·PID)를 적는다.
+- 쥔 인스턴스는 기한(`FF_INSTANCE_LEASE_SEC`, 기본 20초)의 1/3마다 늘리고, 정상 종료 때 놓는다.
+- 비정상 종료 뒤: 같은 호스트에서 다시 띄우면(컨테이너 재시작) 바로 잡는다. 다른 호스트로 옮겨 띄우면 기한이 지난 뒤 잡는다(부팅 중에는 기한이 2분).
+- 멱등 키 처리 중 예약·차량 요청 빈도 창은 이미 DB에 있다(인스턴스 사이 공유) — 다중 인스턴스 2단계의 준비(20-92 §3).
+- 백업 사본에는 임대·처리 중 예약을 넣지 않는다 — 복원한 DB가 옛 인스턴스의 임대 때문에 부팅을 거부당하지 않는다.
 
 ## 7. 첫 시작
 
@@ -308,7 +340,7 @@ curl -s http://127.0.0.1:9101/api/health/ready                       # 5) ready
 1. 릴리스 노트를 읽는다(새 필수 설정이 있으면 `.env.example`에 들어 있다 — 비교: `diff docker/app/.env.example docker/app/.env`).
 2. **백업**(§9.2)을 먼저 뜬다.
 3. 새 이미지를 빌드·반입하고 `.env`의 `FF_IMAGE`를 새 판으로 바꾼다.
-4. `docker compose ... up -d` — 컨테이너가 바뀌며 **마이그레이션이 부팅 때 자동 적용**된다(`schema_migrations`에 적용 기록, 이미 적용한 것은 다시 돌지 않는다). 설정이 새 판 검사를 통과하지 못하면 시작하지 않는다(옛 컨테이너는 이미 멈췄으므로 3으로 돌아가거나 옛 이미지로 되돌린다).
+4. `docker compose ... up -d` — 컨테이너가 바뀌며 **마이그레이션이 부팅 때 자동 적용**된다(옛 컨테이너가 아직 돌면 새 컨테이너는 임대에 막혀 마이그레이션 전에 멈춘다 — §6.2)(`schema_migrations`에 적용 기록, 이미 적용한 것은 다시 돌지 않는다). 설정이 새 판 검사를 통과하지 못하면 시작하지 않는다(옛 컨테이너는 이미 멈췄으므로 3으로 돌아가거나 옛 이미지로 되돌린다).
 5. `/api/health/ready`가 ready이고 `checks.migrations.detail`의 적용 수가 늘었는지, `/api/health/live`의 `version`·`commit`이 새 판인지 본다.
 6. **되돌리기**: 마이그레이션은 앞으로만 간다(내리는 마이그레이션은 없다). 새 판에 문제가 있으면 옛 이미지로 바꾸고 2의 백업을 복원한다(§9.3). 옛 판 앱을 새 스키마 DB로 띄우지 않는다.
 
@@ -326,7 +358,7 @@ curl -s http://127.0.0.1:9101/api/health/ready                       # 5) ready
 
 ## 13. 알려진 한계
 
-- DB는 SQLite 파일 + 단일 인스턴스다(D-RD-3 PostgreSQL 이전 전) — 고가용성(이중화)·무중단 업그레이드는 아직 없다. 업그레이드 중 짧은 중단이 있다.
+- DB는 SQLite 파일 + 단일 인스턴스다(D-RD-3 PostgreSQL 이전 1단계 — PostgreSQL은 미리보기 §6.1) — 고가용성(이중화)·무중단 업그레이드는 아직 없다. 업그레이드 중 짧은 중단이 있다. 두 번째 인스턴스는 부팅을 거부한다(§6.2).
 - 차량 전달은 당겨받기(pull)와 고객 OTA 서버(ota, IF-05 규격 `80-45`)가 실제로 있다 — 푸시가 필요한 고객 게이트웨이 어댑터·공장 차량 키 주입은 고객별로 붙인다(`80-40` §6). OTA 서버 연동의 한계(조회 대사 없음·1만 대 나누기 없음·mTLS는 송신 프록시로)는 `80-45` §14 — OTA webhook은 전달 기록이고 차량 회신은 차량 → Data Lake → FF로 온다(`80-75`). TMS(IF-09)·과금·Data Lake 연계는 모의다(RD-UX-04). 알림은 화면 알림만이다 — 메일 발송·메일 서버 설정은 없다(D-RD-7). 모의 연계의 예시 내용(해외공장 주문·레거시 옵션 코드·VOC)은 시드 없는 설치에서는 비어 있다.
 - 운영 이미지는 디자인 시스템 갤러리(`/_design`)와 표준 따라하기(`/learn`)를 싣지 않는다(D-RD-8) — 연습이 필요하면 데모 빌드 설치를 따로 쓴다.
 - 키는 저장만 KEK로 봉인된다 — 서명·CMAC 연산 중에는 프로세스 메모리에 있다. 고객 KMS·HSM 어댑터는 아직 없다(RD-SEC-06 남은 것).

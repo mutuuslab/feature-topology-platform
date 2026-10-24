@@ -50,7 +50,7 @@
 | RD-OPS-11 | 관측 | 텍스트 로그·요청 로그 없음·상관 ID 없음·지표 없음·경보 없음 |
 | RD-OPS-12 | 운영 기본값 | 운영 모드가 기본값(빈 Unleash 토큰·SIM auto·Windows 경로·모의 비밀)을 거부하지 않는다 |
 | RD-OPS-13 | 멱등 | 멱등 키를 처리 뒤에 저장 — 동시 중복이 둘 다 실행된다 (idempotency.interceptor.ts:37-49) |
-| RD-OPS-14 | 단일 인스턴스 | SSE 버스·요청 제한·주기 작업이 프로세스 메모리 — v1은 단일 인스턴스로 명시하거나 공유 저장소로 |
+| RD-OPS-14 | 단일 인스턴스 | SSE 버스·요청 제한·주기 작업이 프로세스 메모리 — v1은 단일 인스턴스로 명시하거나 공유 저장소로 — **완료(2026-10-25, 10장)**: 단일 인스턴스 임대(같은 DB의 두 번째 인스턴스 부팅 거부, SQLite 파일·PostgreSQL), 설치 안내서 §6.2, 멱등 처리 중 예약·차량 요청 빈도 창은 DB 공유 상태로. 이중화는 RD-OPS-15 |
 | RD-UX-01 | 오류 화면 | 403만 구분 — 401 재로그인·409/412 충돌·422 필드 오류·네트워크 끊김 처리 없음, 개발자 문구("백엔드(9101)") — **완료(2026-10-24, 8장)** |
 | RD-UX-02 | 입력 보호 | 저장하지 않은 변경 보호가 SafetyTab 한 곳뿐 |
 | RD-UX-03 | 큰 데이터 | 목록 페이지 나눔·가상화 없음 — 전체를 받아 클라이언트에서 거른다 — **완료(2026-10-24, 8장)** |
@@ -66,6 +66,7 @@
 | RD-P2-04 | 사용자 설명서·관리자/설치 안내 없음 — **완료 2026-10-24**: `20-91-install-guide.md`, `00-overview/user-manual.md` |
 | RD-P2-05 | 개인정보 삭제·내보내기 절차, 사용자·감사 보존 기한 |
 | RD-P2-06 | 요구사항 반영: 구현 194 · 부분 257 · 미구현 172 (628건), ADS 64건 중 구현 3, ORCA 45건 중 구현 0 |
+| RD-OPS-15 | 이중화(인스턴스 여럿) — SSE 버스·예약 작업·감사 체인 끝·출처별 요청 제한이 인스턴스 안. PostgreSQL LISTEN/NOTIFY·지도자 임대·감사 추가 직렬화 뒤 `FF_INSTANCE_LOCK=off` 허용(20-92 3단계) |
 
 ## 3. 하네스 — 출시 준비 게이트
 
@@ -320,3 +321,22 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 - 이벤트 이력 보존 기한은 고객 정책이 정해지지 않아 기본 "지우지 않음"이다.
 - 화면 일부는 여전히 예시 상품(`CAT-00019`)을 고정해 조회한다(체험 분석·사용 권한 체험 목록) — 빈 설치에서 빈 결과로 보여 오류는 없지만 고객 상품을 고르게 바꿔야 한다.
 - 디자인 시스템 갤러리(`/_design`)는 견본 값(예시 ID)을 보인다 — **해결(D-RD-8)**: 운영 빌드에서 표준 따라하기와 함께 숨긴다.
+
+## 10. 단일 인스턴스·PostgreSQL 이전 1단계 — RD-OPS-14 · D-RD-3 (2026-10-25 구현)
+
+이전의 정본은 [20-92](20-92-postgresql-migration.md)(현재 DB 접근 목록·목표 구조·단계·데이터 이전·위험), 설치 절차는 `20-91` §6.1(PostgreSQL 미리보기)·§6.2(단일 인스턴스 임대).
+
+| 항목 | 내용 |
+|---|---|
+| 단일 인스턴스 임대(RD-OPS-14) | `kernel/instance-lease.ts` — 부팅 때(마이그레이션 전) `instance_lease` 행을 원자적으로 잡는다. 살아 있는 다른 인스턴스가 쥐면 **부팅 거부**(호스트·PID·남은 초를 알린다). 부팅 중 기한 2분 → 부팅 끝에 `FF_INSTANCE_LEASE_SEC`(기본 20초)로, 1/3마다 갱신, 종료 때 반납. 같은 호스트에서 주인 PID가 없으면 바로 넘겨받는다(컨테이너 재시작). `:memory:`는 잡지 않는다. `FF_INSTANCE_LOCK=off`는 다중 인스턴스 검증용 — 운영 모드는 거부. 백업 사본에서는 임대·예약 행을 뺀다(복원본 부팅 거부 방지 — 기존 복원 연습 시험이 잡은 결함) |
+| 공유 상태 | `kernel/shared-state.ts`(`SHARED_STATE`, 마이그레이션 075) — 멱등 키 처리 중 예약(`shared_reservation`, 다른 인스턴스에 같은 키 → 409, 예약 뒤 저장 응답 재확인)·차량별 요청 빈도 창(`shared_counter`, 한 문 UPSERT). 같은 DB를 쓰는 인스턴스가 함께 본다 |
+| PostgreSQL 어댑터(미리보기) | `FF_DB_URL=postgres://…` → `kernel/db-open.ts`. 동기 다리 `kernel/pg-sync-db.ts`(워커 스레드 + Atomics — 동기 Db 계약 그대로), 방언 번역 `kernel/pg-dialect.ts`(자리표시자·INSERT OR IGNORE·RETURNING·json_extract·rowid·트리거 → plpgsql·sqlite_master), 마이그레이션별 `pg` 덮어쓰기(지금 0건). 비동기 Db 계약 `kernel/async-db.ts`(`PgPoolDb`·`SqliteAsyncDb` — 2단계 목표, 첫 사용처 임대 갱신) |
+| 데이터 이전 | `ops/sqlite-to-pg.ts` — 빈 PG에만, 표마다 행 수 + 감사 체인을 대상에서 다시 계산한 끝 해시 = 원본 끝 해시, 정수 키 순번 맞춤. 시험이 이전 → PG 부팅 → 체인·DB 밖 고정점 검증 → 이어 쓰기까지 돈다 |
+| 하네스 | `npm run test:pg`(verify `--full` 단계, Docker `postgres:16` 127.0.0.1:9690) — 같은 백엔드 시험 묶음을 PG에서, 통과 수 래칫 `pgBackendPass`, 결과 `harness/pg-compat.json`. 시험: `multi-instance.spec.ts`(readiness 표식 — 두 번째 인스턴스 거부·기한 만료·같은 호스트 넘겨받기·예약/창 공유·**앱 인스턴스 둘이 같은 DB에서 멱등 키 409**, SQLite 파일·PG 양쪽), `db-adapters.spec.ts`(동기·비동기 계약 양쪽), `pg-dialect.spec.ts`, `sqlite-to-pg.spec.ts` |
+
+### 10.1 남은 것
+
+- 이중화(RD-OPS-15, 20-92 3단계): LISTEN/NOTIFY 이벤트 버스, 예약 작업 표 + 지도자 임대, 감사 추가 직렬화(지금은 프로세스가 끝을 기억), 출처별 요청 제한 공유, 주기 작업은 지도자만.
+- PostgreSQL GA(20-92 2·4단계): 호출부를 비동기 Db로(동기 다리는 질의마다 앱 스레드를 막는다), PG 백업·복원 명령과 복원 연습, compose에 DB 서비스, 부하 시험.
+- PG 호환 측정(2026-10-25): **769/775 통과 · 실패 0** — 건너뜀 6은 실서버가 필요한 시험(Unleash·CARLA 4)과 GLEO 실연동 2(준비 단계 8초 대기가 Windows Docker Desktop 왕복 지연에 걸림). 첫 측정(번역기 보강 전)은 726/748. 상세 `harness/pg-compat.json`·20-92 §6.
+

@@ -36,7 +36,11 @@ export function runtimeConfigProblems(env: Env = process.env): string[] {
   if (!isProduction(env)) return [...kekConfigProblems(env, false), ...vehicleChannelConfigProblems(env), ...otaConfigProblems(env), ...authConfigProblems(env)];
   const out: string[] = [];
   const db = (env.FF_DB ?? '').trim();
-  if (!db || db === ':memory:') out.push('FF_DB가 없거나 :memory:입니다 — 운영 모드는 재시작 뒤에도 남는 DB 파일이 필요합니다');
+  // PostgreSQL(FF_DB_URL=postgres://…)은 미리보기(D-RD-3, 20-92) — 주면 FF_DB 파일 대신 쓴다
+  const pg = /^postgres(ql)?:\/\//i.test((env.FF_DB_URL ?? '').trim());
+  if (!pg && (!db || db === ':memory:')) out.push('FF_DB가 없거나 :memory:입니다 — 운영 모드는 재시작 뒤에도 남는 DB 파일이 필요합니다(또는 FF_DB_URL=postgres://… 미리보기)');
+  // 단일 인스턴스 임대(RD-OPS-14) — SSE 버스·예약 작업이 아직 프로세스 메모리라 운영 모드는 끌 수 없다
+  if ((env.FF_INSTANCE_LOCK ?? '').trim().toLowerCase() === 'off') out.push('FF_INSTANCE_LOCK=off — 운영 모드는 단일 인스턴스 임대를 끌 수 없습니다(이벤트 스트림·예약 작업이 아직 인스턴스 안에 있다, 20-92)');
   const seed = seedOf(env);
   if (seed !== 'none') out.push(`FF_SEED=${seed} — 운영 모드는 데모 데이터를 넣지 않습니다(FF_SEED=none 또는 지우기)`);
   if (env.FF_EXT_SYNC_SEED && env.FF_EXT_SYNC_SEED !== '0') out.push('FF_EXT_SYNC_SEED — 운영 모드는 외부 연계 예시 항목을 넣지 않습니다');

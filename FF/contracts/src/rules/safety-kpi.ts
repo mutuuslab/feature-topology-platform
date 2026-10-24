@@ -28,7 +28,7 @@ export const SAFETY_METRICS: MetricDef[] = [
 ];
 
 /** Safety Case 경보 기준 기록 본문 — 빠진 지표는 직전 기준을 잇는다 */
-export const MetricPlanBody = z.object({ thresholds: z.record(z.enum(['KILL_LATENCY_P95', 'INCOMPLETE_DEACTIVATION', 'PENDING_OVERDUE', 'ONBOARD_FAULT_RATIO', 'STATE_PROOF_FAILURE', 'PERSISTENCE_FAILED']), z.number().min(0)) }).strict();
+export const MetricPlanBody = z.object({ thresholds: z.partialRecord(z.enum(['KILL_LATENCY_P95', 'INCOMPLETE_DEACTIVATION', 'PENDING_OVERDUE', 'ONBOARD_FAULT_RATIO', 'STATE_PROOF_FAILURE', 'PERSISTENCE_FAILED']), z.number().min(0)) }).strict();
 export type MetricPlanBody = z.infer<typeof MetricPlanBody>;
 
 /** Feature Version의 경보 기준 — SAFETY_CASE면 FSM이 기록한 값, EXAMPLE이면 13.5절 예시값 */

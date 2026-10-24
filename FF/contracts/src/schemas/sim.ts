@@ -30,7 +30,7 @@ export const SimRunOutput = z
     minTimeGap: z.number().nullable(),
     evaluation: z.object({ value: z.boolean(), decision: z.string(), reason: z.string() }).passthrough().nullable(),
     /** 재현 정보 — 없으면 FF는 실행을 거부하지 않지만 G5 근거로 인정하지 않는다(rules/virtual.ts judgeVirtual) */
-    repro: z.record(z.unknown()).nullable().optional(),
+    repro: z.record(z.string(), z.unknown()).nullable().optional(),
     dir: z.string().min(1),
     files: z.array(z.object({ name: z.string().min(1), sha256: z.string().regex(/^[0-9a-f]{64}$/), bytes: z.number().int().min(0) })).min(1),
   })

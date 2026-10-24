@@ -52,3 +52,10 @@ export function rateLimit(limit: number, now: () => number = Date.now) {
 }
 
 export const bodyLimitOf = (env: Env = process.env) => env.FF_BODY_LIMIT?.trim() || '100kb';
+
+/** 본문 없는 요청은 빈 본문({}) — express 4(body-parser 1)의 동작을 지킨다.
+ *  body-parser 2(express 5)는 req.body를 undefined로 두어, 빈 본문을 받는 쓰기 경로(알림 모두 읽음 등)가 400이 된다 */
+export function emptyBodyAsObject(req: Request, _res: Response, next: NextFunction) {
+  req.body ??= {};
+  next();
+}

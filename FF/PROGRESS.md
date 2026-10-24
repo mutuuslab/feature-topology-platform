@@ -9,7 +9,8 @@
 - **결정(사용자)** D-RD-1 고객사별 단독 설치 · D-RD-2 OIDC SSO · D-RD-3 PostgreSQL 이전 · D-RD-4 데모 사이트 유지(데모 빌드 분리).
 - **완료(R1)** 운영 모드 설정 검사(runtime-config)·HTTP 기본 방어(http-hardening)·/api/health/live·ready·enableShutdownHooks·webhook 비밀 강제·배포 보안 헤더(_headers = preview, e2e csp.spec 73곳 위반 0). 열린 P0 16→14, P1 19→13.
 - **대시보드** `screens/home/dashboard/` — layout.ts(순수 배치 모델·역할별 localStorage), gadgets.tsx(가젯 9종), Dashboard.tsx(끌어 놓기·배치 메뉴(WCAG 2.5.7 대안)·가젯 추가 창·레이아웃 1/2/2L/3열). 시험: dashboardLayout·screensDashboard(단위), e2e dashboard.spec(실제 끌기 자리·새로 고침 유지).
-- **남은 것(순서)** ① 대시보드 시각 검토 반영 ② 인증 OIDC(RD-SEC-01~05)·데모 빌드 분리 ③ 오류 화면 UX(RD-UX-01)·입력 보호(UX-02) ④ 멱등 경쟁(OPS-13)·예약 작업 복구(OPS-06)·마이그레이션 업그레이드 시험(OPS-10)·관측(OPS-11)·감사 앵커(SEC-13) ⑤ 빈 DB e2e(OPS-02)·운영 출처 값(OPS-03) ⑥ Docker·설치 안내서(OPS-05·SEC-09·P2-04) ⑦ PostgreSQL(OPS-09·14) ⑧ 결함 12건(FN-01)·롤백(FN-02). 대시보드 배치의 서버 저장(사용자 설정 API)은 OIDC 뒤에.
+- **인증 OIDC(2026-10-24, 브랜치 `feat/oidc-auth`, worktree `-auth`)** — RD-SEC-01~05 완료(열린 P0 14→9). 백엔드 `kernel/auth/*`(BFF: PKCE·서명 쿠키·세션 표 045·JWKS·Bearer·CSRF·역할 맵), 승인자 키 로그인 등록(`hsm.service.ts`), 프론트 `auth.ts`/`auth-mode.ts`(VITE_AUTH=oidc 운영 빌드, 데모 모듈 tree-shake), 하네스 `oidc.spec`·`auth-units.spec`·`tools/prod-bundle.test.ts`(build:prod)·`e2e/playwright.oidc.config.ts`(e2e:oidc). 정본 20-90 §6. 남은 것: OFREP SDK 인증, RD-SEC-06·08.
+- **남은 것(순서)** ① 대시보드 시각 검토 반영 ② ~~인증 OIDC(RD-SEC-01~05)·데모 빌드 분리~~ ③ 오류 화면 UX(RD-UX-01)·입력 보호(UX-02) ④ 멱등 경쟁(OPS-13)·예약 작업 복구(OPS-06)·마이그레이션 업그레이드 시험(OPS-10)·관측(OPS-11)·감사 앵커(SEC-13) ⑤ 빈 DB e2e(OPS-02)·운영 출처 값(OPS-03) ⑥ Docker·설치 안내서(OPS-05·SEC-09·P2-04) ⑦ PostgreSQL(OPS-09·14) ⑧ 결함 12건(FN-01)·롤백(FN-02). 대시보드 배치의 서버 저장(사용자 설정 API)은 OIDC 뒤에.
 
 ## ADS·UNECE 보고서 v3.0 반영 (2026-10-18 사용자 요청 "FF Platform 목적·vision·시나리오가 들어 있으니 모두 반영 — 분석·저장·HTML 보고" → "다른 세션과 통합, UI/UX·프론트·백엔드·DB 수정 설계")
 - **원본 보관**: 저장소 밖(사용자 결정 — FF repo 공개). 위치 `C:/project/2026-06-04_Feature_Platform_sources/ads-unece-v3.0/`, sha256 `712e75bc…`, 1,200,160 B.
@@ -485,4 +486,9 @@
 | req.untracedImplemented | 155 | ↓ 줄이기 | 구현 판정인데 @req 표식이 없는 요구사항 수 — 줄여 나간다 |
 | req.defects | 5 | ↓ 줄이기 | 미해결 결함(it.fails 결함 기록) 수 — 늘면 안 된다 |
 | platformTermLines | 0 | ↓ 줄이기 | 플랫폼 용어 규칙 위반 줄 수(은퇴→Retirement) — 0까지 |
+| offScaleSpacing | 0 | ↓ 줄이기 | 스케일 밖 간격(padding·margin·gap px) 선언 수 — 0을 유지한다 |
+| rawRadius | 0 | ↓ 줄이기 | px 리터럴 반경 선언 수 — 반경 토큰(--r-sm·--r·--r-lg·--r-pill)만 쓴다 |
+| leadCopyHits | 0 | ↓ 줄이기 | 문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14) |
+| readinessOpenP0 | 9 | ↓ 줄이기 | 출시 준비 열린 P0 수(harness/readiness.json) — 0까지 |
+| readinessOpenP1 | 13 | ↓ 줄이기 | 출시 준비 열린 P1 수 — 0까지 |
 <!-- /AUTO:conformance -->

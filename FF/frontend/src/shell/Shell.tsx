@@ -6,12 +6,14 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
 import { procedures } from '../copy/procedures';
-import { profileOf, roleLabel, roles } from '../data/refdata';
+import { OIDC_AUTH } from '../auth-mode';
 import { Button, Icon, PageTitleProvider, usePageTitle } from '../design';
 import { useMotion } from '../state/motion';
 import { roleHome, useAppApi, useAppShell } from '../store';
 import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '../routes';
 import { logout } from '../auth';
+import { DemoRoleSwitcher } from './DemoRoleSwitcher';
+import { SsoRoleSwitcher } from './SsoRoleSwitcher';
 import { login as L } from '../copy/login';
 import { GuideDock, RuleDrawer } from './GuideDock';
 import { UnsavedPrompt } from '../design/unsaved';
@@ -128,7 +130,6 @@ function ShellFrame({ children }: { children: ReactNode }) {
     return myRole ? g.items.filter((r) => { const rs = rolesOf(r); return rs === 'all' || rs.includes(role); }) : g.items;
   }, [group, myRole, role]);
   const trail = trailOf(loc.pathname);
-  const me = profileOf(role);
   // 업무 절차 메뉴 배지 — 내가 지금 할 수 있는 활동(할 일 + 검토). 서버가 정본이라 역할을 바꾸면 다시 읽는다.
   const proc = useProcedureSummary(role);
   const procCount = proc ? proc.todo + proc.review : 0;
@@ -139,10 +140,14 @@ function ShellFrame({ children }: { children: ReactNode }) {
     nav('/features?q=' + encodeURIComponent(v.toUpperCase().startsWith('FEAT-') ? v.toUpperCase() : v));
     setQ('');
   };
-  const changeRole = (r: string) => {
-    dispatch({ t: 'ROLE', role: r });
-    nav(roleHome[r] || '/');
-  };
+  // quiet — SSO 역할 선택기가 부여 범위 밖 역할을 바로잡을 때는 화면을 옮기지 않는다
+  const changeRole = useCallback(
+    (r: string, quiet?: boolean) => {
+      dispatch({ t: 'ROLE', role: r });
+      if (!quiet) nav(roleHome[r] || '/');
+    },
+    [dispatch, nav],
+  );
 
   return (
     <div className="sh" data-panel={panelOpen && !present ? 'open' : 'closed'} data-guide={learning && !learning.collapsed ? 'open' : undefined}>
@@ -166,14 +171,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
         </form>
 
         <div className="sh-tools">
-          <div className="sh-user" title={`${me.name} · ${me.empNo} · ${me.org}`}>
-            <span className="sh-user__avatar" aria-hidden>{me.name.slice(0, 1)}</span>
-            <select aria-label={ko.shell.role} value={role} onChange={(e) => changeRole(e.target.value)}>
-              {roles.map((r) => (
-                <option key={r} value={r}>{roleLabel(r)}</option>
-              ))}
-            </select>
-          </div>
+          {OIDC_AUTH ? <SsoRoleSwitcher role={role} onChange={changeRole} /> : <DemoRoleSwitcher role={role} onChange={changeRole} />}
           <Button variant="ghost" icon="layers" aria-label={procedures.panel.button} title={procedures.panel.button} onClick={() => setProcOpen(true)} />
           <Button variant="ghost" icon="book" aria-pressed={explain} aria-label={ko.learn.explain.label} title={ko.learn.explain.hint} onClick={() => learnStore.setExplain(!explain)} />
           <Button variant="ghost" icon="present" aria-pressed={present} aria-label={present ? ko.shell.presentOn : ko.shell.presentOff} title={present ? ko.shell.presentOn : ko.shell.presentOff} onClick={() => setPresent(!present)} />
@@ -189,8 +187,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
             aria-label={L.logout}
             title={L.logout}
             onClick={() => {
-              logout();
-              nav('/login');
+              void logout().then((end) => (end ? window.location.assign(end) : nav('/login')));
             }}
           />
           <NotificationBell />

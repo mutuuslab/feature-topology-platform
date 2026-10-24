@@ -12,7 +12,7 @@
         "backend/src/kernel/actor.ts:42-56"
       ],
       "criteria": "운영 모드(FF_AUTH=oidc)에서 신원·역할은 검증된 OIDC 토큰(서명·발급자·대상·만료)에서만 나온다. X-Actor-Role만 보낸 요청은 401. 데모 헤더 인증은 운영 모드에서 부팅을 거부한다",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -32,7 +32,7 @@
         "frontend/src/api/actor.ts:15-19"
       ],
       "criteria": "운영 빌드에는 역할 선택기가 없고 역할은 서버(/api/iam/me)가 준다. 역할 선택기는 데모 빌드에서만",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -50,7 +50,7 @@
         "frontend/src/auth.ts:7-9,30"
       ],
       "criteria": "운영 빌드는 OIDC(인가 코드 + PKCE)로 로그인하고 데모 자격 증명이 번들에 없다. 데모 로그인은 데모 빌드에서만",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -67,7 +67,7 @@
         "backend/src/kernel/actor.ts:49-51"
       ],
       "criteria": "운영 모드에서 신원 없는 요청은 상태 점검 허용 목록 밖이면 401. 익명 AUDITOR 대체는 데모 모드에서만",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -86,7 +86,7 @@
         "backend/src/domains/d03-safety/kill-switch/kill.service.ts:272-278"
       ],
       "criteria": "승인자는 검증된 토큰의 주체여야 하고, 서명 키는 미리 등록된 사용자 키만 쓴다(운영 모드에서 즉석 생성 금지). 같은 주체의 두 번째 승인은 거부",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

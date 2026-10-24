@@ -36,6 +36,7 @@
     "041_ops5y_indexes": "4fe517f455e0699daef49a34dc39d0f3b8082c7885b634f38a0e00337f8dd9fc",
     "042_release_signoff": "e07c6df8f745f7b1d3705c7c06da417c8ac5fb0f979d9d282cfa0321a686902f",
     "043_ext_sync": "2afeae55bec4eaf98a217b90b0510b4d214c025566601a407a9bf4a27252855f",
-    "044_procedure": "93a3d469746fa91acdd7f4acbb8dcacc137ae829ce3fdec022eb9dba8e84fa99"
+    "044_procedure": "93a3d469746fa91acdd7f4acbb8dcacc137ae829ce3fdec022eb9dba8e84fa99",
+    "045_auth_session": "f0abd770506dbabbc0263b09c231f22d12f0d8ab47d3318ceb99f8c72514999f"
   }
 }

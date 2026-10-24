@@ -532,4 +532,23 @@ CREATE INDEX procedure_completion_current ON procedure_completion (activity_id, 
 CREATE TABLE procedure_overdue (activity_id TEXT PRIMARY KEY, notified_at TEXT NOT NULL, due_at TEXT NOT NULL);
 `,
   },
+  {
+    // OIDC 로그인 세션(출시 준비 RD-SEC-01·04) — 쿠키에는 무작위 32바이트 ID, 표에는 그 SHA-256만 둔다(DB를 읽어도 세션을 훔칠 수 없다).
+    // 절대 수명(expires_at)과 유휴 만료(last_seen_at 기준)를 둘 다 본다. 데모 모드에서는 쓰지 않는다.
+    name: '045_auth_session',
+    sql: `
+CREATE TABLE auth_session (
+  id_hash TEXT PRIMARY KEY,
+  sub TEXT NOT NULL,
+  name TEXT,
+  email TEXT,
+  roles TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  last_seen_at TEXT NOT NULL
+);
+CREATE INDEX auth_session_sub ON auth_session (sub);
+CREATE INDEX auth_session_expires ON auth_session (expires_at);
+`,
+  },
 ];

@@ -3,6 +3,8 @@ import { Global, Inject, Module, OnApplicationShutdown } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import { RolesGuard } from './actor';
 import { AuditService } from './audit.service';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
 import { Clock } from './clock';
 import { ComponentRegistry } from './components';
 import { DB, SqliteDb, migrate, type Db } from './db';
@@ -19,7 +21,7 @@ import { loadFixtures, seedDataset, seedDemo } from './seed';
 @Global()
 @Module({
   imports: [DiscoveryModule],
-  controllers: [KernelController],
+  controllers: [KernelController, AuthController],
   providers: [
     {
       provide: DB,
@@ -40,13 +42,14 @@ import { loadFixtures, seedDataset, seedDemo } from './seed';
     Metrics,
     Scheduler,
     AuditService,
+    AuthService,
     EventService,
     ComponentRegistry,
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: DomainErrorFilter },
   ],
-  exports: [DB, Clock, Metrics, Scheduler, AuditService, EventService, ComponentRegistry],
+  exports: [DB, Clock, Metrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

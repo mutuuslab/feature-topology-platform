@@ -45,9 +45,11 @@ const STEPS: Step[] = [
   { id: 'ads:probes', title: '결함 기록(it.fails)이 재현 단계가 아니라 요구 단언에서 실패하는지 (사본을 it로 바꿔 실행)', cmd: `node tools/defect-probes.ts` },
   { id: 'readiness', title: '출시 준비 게이트 (harness/readiness.json — 완료 항목 되돌아감 0·목록 뒤처짐 0·열린 P0·P1 래칫)', cmd: `node --test tools/readiness.test.ts && node tools/readiness.ts` },
   { id: 'build:frontend', title: '프론트 빌드', cmd: `${npx} vite build`, cwd: 'frontend' },
+  { id: 'build:prod', title: '운영 빌드 (VITE_AUTH=oidc — 데모 로그인·데모 역할 선택기가 번들에 없다, dist-prod는 검사 뒤 지움)', cmd: `node --test tools/prod-bundle.test.ts` },
   { id: 'budget', title: '성능 예산 (첫 화면·화면 묶음 gzip, harness/budgets.json)', cmd: `node --test tools/bundle-budget.test.ts && node tools/bundle-budget.ts` },
   { id: 'e2e', title: 'e2e (기능·접근성·레이아웃)', cmd: `${npx} playwright test --grep-invert @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
   { id: 'e2e:static', title: '정적 데모 (공개 사이트 방식 빌드 — 모든 메뉴·하위 화면·탭이 스냅샷만으로 열린다)', cmd: `${npx} playwright test -c playwright.static.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.static.config.ts')) },
+  { id: 'e2e:oidc', title: 'SSO 로그인 (시험 IdP·FF_AUTH=oidc 백엔드·VITE_AUTH=oidc 빌드 — 로그인·부여 역할·승인·로그아웃·헤더 위조 401)', cmd: `${npx} playwright test -c playwright.oidc.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.oidc.config.ts')) },
   { id: 'e2e:visual', title: '시각 회귀', cmd: `${npx} playwright test --grep @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, full: true, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
 ];
 

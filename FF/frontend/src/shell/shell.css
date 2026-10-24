@@ -190,6 +190,16 @@
   font-weight: 800;
   font-size: var(--fs-sm);
 }
+/* SSO 사용자 이름(운영 빌드) — 역할 선택기 앞 */
+.sh-user__name {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--ink);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .sh-user select {
   border: 0;
   background: transparent;

@@ -3,6 +3,7 @@ import { Controller, Get, HttpCode, Inject, Query, Req, Res } from '@nestjs/comm
 import type { Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { PublicEndpoint } from './actor';
 import { Clock } from './clock';
 import { ComponentRegistry } from './components';
 import { DB, type Db } from './db';
@@ -31,12 +32,14 @@ export class KernelController {
 
   /** 생존(프로세스가 응답하는가) — 오케스트레이터 liveness. DB를 건드리지 않는다(출시 준비 RD-OPS-08) */
   @Get('health/live')
+  @PublicEndpoint()
   live() {
     return { status: 'ok', ...build() };
   }
 
   /** 준비(트래픽을 받아도 되는가) — 마이그레이션이 모두 적용됐고 DB에 쓸 수 있다. 아니면 503 */
   @Get('health/ready')
+  @PublicEndpoint()
   @HttpCode(200)
   ready(@Res({ passthrough: true }) res: Response) {
     const checks: Record<string, { ok: boolean; detail?: string }> = {};
@@ -66,6 +69,7 @@ export class KernelController {
   }
 
   @Get('health')
+  @PublicEndpoint()
   health() {
     const count = (t: string) => (this.db.get<{ n: number }>(`SELECT count(*) AS n FROM ${t}`)?.n ?? 0);
     return {

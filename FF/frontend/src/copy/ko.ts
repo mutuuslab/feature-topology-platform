@@ -493,7 +493,7 @@ export const ko = {
     // 정책 상세의 배포 이력·되돌리기(RD-FN-02) — 롤백 화면(/ops/rollback)과 같은 재검증·승인·실행
     deployHistory: {
       title: '배포 이력·되돌리기',
-      lead: '이 Control Point(flag)로 차량에 배포한 정책 버전입니다. 예전 버전으로 되돌리면 승인대상자 승인 뒤 다시 검증하고, 같은 내용을 새 서명으로 다시 배포합니다.',
+      lead: '이 flag로 배포한 정책 버전입니다. 되돌리면 승인 뒤 다시 검증해 새 서명으로 배포합니다.',
       current: (policyId: string, revision: number, deploymentId: string) => `지금 배포: ${policyId} r${revision} · 배포 ID ${deploymentId}`,
       none: '이 flag에는 지금 배포된 정책이 없습니다 — 되돌릴 배포가 없습니다.',
       deploymentsTitle: '배포한 버전',

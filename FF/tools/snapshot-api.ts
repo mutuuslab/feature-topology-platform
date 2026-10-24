@@ -102,6 +102,8 @@ async function main() {
     // 정책 상세의 버전 이력 — 목록과 변경 이력(버전 내용은 행을 열 때 읽으므로 개정본마다)
     const revs = await save('policyRevisions', { id: p.policyId });
     await save('policyChanges', { id: p.policyId });
+    // 정책 상세의 배포 이력·되돌리기(RD-FN-02) — 정적 데모는 읽기 전용이라 이력만
+    await save('policyHistory', { id: p.policyId });
     for (const r of revs.items) await save('policyRevision', { id: p.policyId, revision: String(r.revision) });
   }
   await save('validations');

@@ -157,7 +157,7 @@
         "backend/src/kernel/kernel.module.ts:30"
       ],
       "criteria": "설치마다 고객 식별(FF_INSTANCE_ID)이 필수이고 상태 점검·감사·로그에 나온다. 운영 모드에서 없으면 부팅 거부. 설치 안내서에 '한 설치 = 한 고객'",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -198,7 +198,7 @@
         "e2e/playwright.config.ts:47"
       ],
       "criteria": "FF_SEED=none 파일 DB로 부팅해 모든 메뉴가 오류 없이 빈 상태 안내를 보인다(e2e)",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -253,7 +253,7 @@
         "../.github/workflows/cloudflare.yml:22-28"
       ],
       "criteria": "백엔드+프론트 이미지(Dockerfile), 단독 설치 compose(앱·PostgreSQL·Keycloak), 환경 템플릿, 이미지 빌드 CI",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "exists",
@@ -534,7 +534,7 @@
         "backend/src/kernel/idempotency.interceptor.ts"
       ],
       "criteria": "백업·복원 절차(설치 안내서)와 복원 시험, 이벤트·멱등·스팬 보존 기한",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -769,7 +769,7 @@
         "README.md"
       ],
       "criteria": "설치 안내서(설치·설정·백업·업그레이드)와 사용자 설명서",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "exists",

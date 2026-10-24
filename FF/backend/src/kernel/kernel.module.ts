@@ -10,6 +10,7 @@ import { ComponentRegistry } from './components';
 import { DB, SqliteDb, migrate, type Db } from './db';
 import { DomainErrorFilter } from './errors';
 import { EventService } from './event.service';
+import { HousekeepingService } from './housekeeping.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
 import { KernelController } from './kernel.controller';
 import { SecretVault, vaultFromEnv } from './kms/key-protection';
@@ -57,6 +58,7 @@ import { VehicleAuthService } from './vehicle-auth';
     AuditService,
     AuthService,
     EventService,
+    HousekeepingService,
     ComponentRegistry,
     VehicleAuthService,
     { provide: APP_GUARD, useClass: RolesGuard },

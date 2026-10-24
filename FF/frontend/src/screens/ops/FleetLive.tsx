@@ -5,6 +5,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { pickDefault } from '../../data/first-run';
 import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, PageHeader, Panel, Select, SummaryLine, VerdictBadge } from '../../design';
 import { when } from '../shared';
 import { Progress, type Delivery } from './shared';
@@ -163,19 +164,24 @@ interface RuntimeView {
 
 export function VehicleRuntimeScreen() {
   const nav = useNavigate();
-  const { vin = 'ego-01' } = useParams();
+  const { vin: param } = useParams();
   const vehicles = useApi<{ items: { vin: string; label: string }[] }>('vehicles');
-  const q = useApi<RuntimeView>('vehicleRuntime', { params: { vin } });
+  // 차량을 고르지 않은 메뉴 주소 — 예시 차량이 있으면 그것, 없으면 첫 차량, 차량이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const fallback = pickDefault(vehicles.data?.items, (v) => v.vin === 'ego-01');
+  const vin = param ?? fallback?.vin ?? (vehicles.isError ? 'ego-01' : '');
+  const none = !param && fallback === null;
+  const q = useApi<RuntimeView>('vehicleRuntime', { params: { vin } }, { enabled: !!vin });
   usePlatformEvents(STREAM, ['vehicleRuntime', 'vehicleStatusView']);
   const d = q.data;
   return (
     <div className="ds-screen">
       <PageHeader
         codes="D02-03 · VEHICLE RUNTIME"
-        title={V.title}
+        title={param ? V.titleFor(param) : V.title}
         lead={V.lead}
         message={(() => {
           const n = d?.evaluations.filter((e) => e.drift).length ?? 0;
+          if (none) return { tone: 'neutral', text: ko.state.noVehicleTitle };
           return !d ? { tone: 'neutral', value: '—', text: V.key.clean(vin) } : n ? { tone: 'warn', value: n, text: V.key.drift(vin) } : { tone: 'ok', text: V.key.clean(vin) };
         })()}
         actions={
@@ -188,7 +194,7 @@ export function VehicleRuntimeScreen() {
           </Select>
         }
       />
-      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error} onRetry={() => q.refetch()} empty={{ title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody }}>
         {d && (
           <>
             <div className="ds-split">

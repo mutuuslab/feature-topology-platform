@@ -10,6 +10,8 @@ import { AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Icon, Id
 import { ComponentName, usePermission, when } from '../shared';
 
 const T = ko.virtual;
+/** CARLA 가상검증 키트의 Feature(영상 키트 차량 ego-01·lead-01이 구동하는 전방 안전거리) */
+const KIT_FEATURE = 'FEAT-00022';
 const RUN_ROLES = ['FEATURE_AUTHOR', 'IMPLEMENTER', 'GATE_JUDGE'] as const;
 const TMS_ROLES = ['GATE_JUDGE', 'IMPLEMENTER'] as const;
 const INVALIDATE = ['virtualRuns', 'virtualRunDetail', 'policyDetail', 'validations', 'integrationCalls', 'audit'];
@@ -455,9 +457,14 @@ function Purpose({ text }: { text: string }) {
 
 export function VirtualValidationScreen() {
   const status = useApi<SimStatus>('simStatus');
-  const sc = useApi<{ items: Scenario[] }>('virtualScenarios', { query: { featureId: 'FEAT-00022' } });
+  // 가상검증 키트 Feature — 이 설치에 없으면(빈 설치) 시나리오·조합 판정 대신 빈 상태 안내(출시 준비 RD-OPS-02)
+  const feats = useApi<{ items: { featureId: string }[] }>('listFeatures', { query: { latestOnly: true } });
+  const noKit = !!feats.data && Array.isArray(feats.data.items) && !feats.data.items.some((f) => f.featureId === KIT_FEATURE);
+  // 목록을 받기 전에는 키트 영역을 그리지 않는다(없는 Feature를 먼저 조회하지 않게). 목록 오류면 예전처럼 키트를 연다
+  const kitReady = feats.isError || (!!feats.data && !noKit);
+  const sc = useApi<{ items: Scenario[] }>('virtualScenarios', { query: { featureId: KIT_FEATURE } });
   const runs = useApi<{ items: VRun[] }>('virtualRuns');
-  const policies = useApi<{ items: { policyId: string; flagKey: string; featureId: string; featureVersion: string; status: string; revision: number }[] }>('listPolicies', { query: { featureId: 'FEAT-00022' } });
+  const policies = useApi<{ items: { policyId: string; flagKey: string; featureId: string; featureVersion: string; status: string; revision: number }[] }>('listPolicies', { query: { featureId: KIT_FEATURE } });
   const perm = usePermission([...RUN_ROLES]);
   const run = useApiMutation('runVirtual', INVALIDATE);
   const [policyId, setPolicyId] = useState('');
@@ -485,6 +492,12 @@ export function VirtualValidationScreen() {
           />
         )}
       </Panel>
+      {noKit ? (
+        <Panel title={T.scenarios} id="scenarios">
+          <AsyncView state="empty" empty={{ title: T.noKitTitle, body: T.noKitBody }} />
+        </Panel>
+      ) : kitReady && (
+      <>
       <Panel title={T.scenarios} id="scenarios">
         <DataTable
           caption={T.scenarios}
@@ -507,7 +520,9 @@ export function VirtualValidationScreen() {
           faultAt={sc.data?.items.find((s) => s.role === 'FAULT_ONBOARD')?.params.fault?.at_s ?? 17}
         />
       </Panel>
-      <CombinationPanel featureId="FEAT-00022" />
+      <CombinationPanel featureId={KIT_FEATURE} />
+      </>
+      )}
       <Panel
         title={T.runs}
         id="runs"

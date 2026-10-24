@@ -1,8 +1,9 @@
 // /analysis/impact — 변경 영향 분석 (v2). Feature → 의존 Feature → Baseline → 상품, 재판정 Gate·담당자.
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { REJUDGE_MAP } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { useDefaultFeature } from '../../data/first-run';
 import { AsyncView, GateBadge, IdChip, LifecycleBadge, PageHeader, Panel, SummaryLine } from '../../design';
 
 const T = ko.impact;
@@ -20,15 +21,18 @@ interface Impact {
 
 export default function ImpactScreen() {
   const [sp, setSp] = useSearchParams();
-  const feature = sp.get('feature') ?? 'FEAT-00145';
-  const version = sp.get('version') ?? '5.4.2';
+  // 기본 대상 — 예시 Feature가 있으면 그것, 없으면 첫 Feature, 하나도 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const fallback = useDefaultFeature({ featureId: 'FEAT-00145', version: '5.4.2' }, !sp.get('feature'));
+  const feature = sp.get('feature') ?? fallback?.featureId ?? '';
+  const version = sp.get('version') ?? (sp.get('feature') ? '5.4.2' : (fallback?.version ?? ''));
+  const none = !sp.get('feature') && fallback === null;
   const changed = (sp.get('changed') ?? '').split(',').filter(Boolean);
   const set = (k: string, v: string) => {
     const n = new URLSearchParams(sp);
     n.set(k, v);
     setSp(n, { replace: true });
   };
-  const q = useApi<Impact>('impact', { params: { id: feature, ver: version }, query: { changed: changed.join(',') || undefined } });
+  const q = useApi<Impact>('impact', { params: { id: feature, ver: version }, query: { changed: changed.join(',') || undefined } }, { enabled: !!feature && !!version });
   const d = q.data;
   return (
     <div className="ds-screen">
@@ -37,7 +41,9 @@ export default function ImpactScreen() {
         title={T.title}
         lead={T.lead}
         message={
-          q.data
+          none
+            ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }
+            : q.data
             ? q.data.summary.rejudgeGates
               ? { tone: 'warn', value: q.data.summary.rejudgeGates, text: T.key.rejudge(`${feature} ${version}`) }
               : { tone: 'ok', text: T.key.none(`${feature} ${version}`) }
@@ -48,11 +54,11 @@ export default function ImpactScreen() {
         <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label className="ds-field">
             <span className="ds-field__label">Feature ID</span>
-            <input className="ds-input ds-input--mono" defaultValue={feature} onBlur={(e) => set('feature', e.target.value.trim().toUpperCase())} />
+            <input key={feature} className="ds-input ds-input--mono" defaultValue={feature} onBlur={(e) => set('feature', e.target.value.trim().toUpperCase())} />
           </label>
           <label className="ds-field">
             <span className="ds-field__label">Version</span>
-            <input className="ds-input ds-input--mono" defaultValue={version} onBlur={(e) => set('version', e.target.value.trim())} />
+            <input key={version} className="ds-input ds-input--mono" defaultValue={version} onBlur={(e) => set('version', e.target.value.trim())} />
           </label>
           <fieldset style={{ border: 0, padding: 0, margin: 0, display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
             <legend className="ds-field__label">{T.changed}</legend>
@@ -65,7 +71,7 @@ export default function ImpactScreen() {
           </fieldset>
         </div>
       </Panel>
-      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
         {d && (
           <>
             <SummaryLine

@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { COMPLIANCE_PROFILES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { useVehiclePick } from '../../data/first-run';
 import { AsyncView, Button, DataTable, ErrorNote, Explain, ExplainCodes, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, RuleText, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { ComponentName, Done, usePermission } from '../shared';
 import { EpochBump, SbomDrawer, SecurityEventsPanel } from './Security';
@@ -79,13 +80,14 @@ function VehiclePicker({ vin, onChange }: { vin: string; onChange: (v: string) =
 }
 
 function StatusTab() {
-  const [vin, setVin] = useState('ego-01');
-  const q = useApi<{ vin: string; features: { featureId: string; state: string; reportSeq: number; updatedAt: string }[]; recent: { featureId: string; state: string; reportSeq: number; accepted: boolean; violation: { code: string; message: string } | null; at: string }[] }>('vehicleStatusView', { params: { vin } });
+  // 예시 차량이 있으면 그것, 없으면 첫 차량 — 차량이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const { vin, setVin, none } = useVehiclePick('ego-01');
+  const q = useApi<{ vin: string; features: { featureId: string; state: string; reportSeq: number; updatedAt: string }[]; recent: { featureId: string; state: string; reportSeq: number; accepted: boolean; violation: { code: string; message: string } | null; at: string }[] }>('vehicleStatusView', { params: { vin } }, { enabled: !!vin });
   const d = q.data;
   return (
     <>
       <VehiclePicker vin={vin} onChange={setVin} />
-      <AsyncView state={asyncState(q, !d?.features.length && !d?.recent.length)} error={q.error} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q, !d?.features.length && !d?.recent.length)} error={q.error} onRetry={() => q.refetch()} empty={none ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : undefined}>
         {d && (
           <DataTable
             caption={M.telemetry.tabs.status}
@@ -105,14 +107,14 @@ function StatusTab() {
 }
 
 function RequestsTab() {
-  const [vin, setVin] = useState('ego-01');
-  const q = useApi<{ items: { requestId: string; at: string; channel: string; type: string; outcome: string; reason: string | null; summary: string }[] }>('vehicleRequests', { params: { vin } });
+  const { vin, setVin, none } = useVehiclePick('ego-01');
+  const q = useApi<{ items: { requestId: string; at: string; channel: string; type: string; outcome: string; reason: string | null; summary: string }[] }>('vehicleRequests', { params: { vin } }, { enabled: !!vin });
   const rows = q.data?.items ?? [];
   const C = M.telemetry.reqCol;
   return (
     <>
       <VehiclePicker vin={vin} onChange={setVin} />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} empty={none ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : undefined}>
         <DataTable
           caption={M.telemetry.tabs.requests}
           rows={rows}

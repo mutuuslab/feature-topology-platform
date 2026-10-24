@@ -7,7 +7,9 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node --disable-warning=ExperimentalWarning dist/main.js",
     "start:dev": "node --disable-warning=ExperimentalWarning -r ts-node/register src/main.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "backup": "node --disable-warning=ExperimentalWarning dist/ops/backup-cli.js backup",
+    "backup:cli": "node --disable-warning=ExperimentalWarning dist/ops/backup-cli.js"
   },
   "dependencies": {
     "@ff/contracts": "*",

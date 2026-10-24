@@ -11,10 +11,14 @@ import { DB, type Db } from '../../src/kernel/db';
 import { Scheduler } from '../../src/kernel/scheduler';
 import { VehicleRuntimeService } from '../../src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service';
 import { AuditService } from '../../src/kernel/audit.service';
+import { HsmService } from '../../src/domains/d06-qsec/pki-kms/hsm.service';
 import { actor, bootApp, confirmSafety, killV2, restoreV2 } from '../helpers';
+import { registerTestApprovers, signApprovals } from '../approver-keys';
 
 const OPS = actor('usr-ops', 'OPERATOR');
 const AUTHOR = actor('usr-author', 'FEATURE_AUTHOR');
+const POLICY_AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
+const POLICY_APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
 const JUDGE = actor('choi.judge', 'GATE_JUDGE');
 const RELEASE = actor('usr-coordinator', 'RELEASE_MANAGER');
 const AT = '2026-10-12T01:00:00.000Z';
@@ -76,15 +80,24 @@ describe('ADS 요구사항 결함 기록 — 종료·해제·명령 전달·승�
     }
   });
 
-  it('FFP-F059 일괄 명령 미리보기 — 대상 집합에 묶이지 않은 승인 서명(길이만 64자 이상)의 차단 명령은 게이트가 거부한다', async () => {
-    const { app, http } = await boot('2026-10-13T00:30:00Z'); // 예시 명령 유효기간 안
+  it('FFP-F059 일괄 명령 미리보기 — 등록된 승인자 키로 검증되지 않거나 대상 집합에 묶이지 않은 승인 서명의 차단 명령은 게이트가 거부한다', async () => {
+    const { app, http, get } = await boot('2026-10-13T00:30:00Z'); // 예시 명령 유효기간 안
     try {
-      const ok: KillCommandV2 = JSON.parse(readFileSync(join(EX, 'kill_safety_dc2_eu.ok.json'), 'utf8'));
+      const example: KillCommandV2 = JSON.parse(readFileSync(join(EX, 'kill_safety_dc2_eu.ok.json'), 'utf8'));
+      // D-RD-5 기준선 변경 — 보고서 예시의 자리표시 서명은 이제 FAIL(승인자 키 미등록). PASS 기준선은 등록된 시험 승인자 키로 서명한 명령
+      const placeholder = (await http().post('/api/gate/preview').set(OPS).send(example).expect(201)).body;
+      expect(placeholder.result).toBe('FAIL');
+      expect(placeholder.findings.filter((f: { ok: boolean }) => !f.ok).map((f: { rule: string }) => f.rule)).toEqual(['FFG-PLT-005']);
+      registerTestApprovers(get(HsmService), example.approvals.map((a) => a.approver_id));
+      const ok = signApprovals(example);
       expect((await http().post('/api/gate/preview').set(OPS).send(ok).expect(201)).body.result).toBe('PASS'); // 기준선
       // 대상 집합과 무관한 임의 문자열 — 어떤 차량에 대해서도 서명이 아니다
       const forged = { ...ok, approvals: ok.approvals.map((a) => ({ ...a, approval_sig: 'x'.repeat(86) })) };
       const v = (await http().post('/api/gate/preview').set(OPS).send(forged).expect(201)).body;
       expect(v.result).toBe('FAIL');
+      // 서명 뒤 대상 차량을 늘린 명령 — 서명은 진짜여도 대상 집합이 다르다
+      const widened = { ...ok, scope: { ...ok.scope, vehicle_ids: [...ok.scope.vehicle_ids, 'VHC-000125'], max_vehicles: 3 } };
+      expect((await http().post('/api/gate/preview').set(OPS).send(widened).expect(201)).body.result).toBe('FAIL');
     } finally {
       await app.close();
     }
@@ -122,6 +135,37 @@ describe('ADS 요구사항 결함 기록 — 종료·해제·명령 전달·승�
       const r = await http().post(`${base}/release-signoff`).set(AUTHOR).send({ reason: '출시 책임 확인' });
       expect(r.status).toBe(422);
       expect(r.body.error.message).toMatch(/재-HARA/);
+    } finally {
+      await app.close();
+    }
+  });
+
+  // D-RD-6(20-90) — 열린 재-HARA는 정책 배포를 막지 않는다(완화·ODD 축소 정책이 재-HARA 중에도 차량에 나가야 한다).
+  // 출시 전이·Release Sign-off만 막는다(위 두 시험). 같은 Feature Version에서 둘을 함께 확인한다.
+  it('D-RD-6 열린 재-HARA 요청이 있어도 정책 배포는 된다 — 같은 Version의 출시 전이는 거부된다', async () => {
+    const { app, http, advance } = await boot('2026-10-18T01:00:00.000Z');
+    try {
+      const base = '/api/features/FEAT-00001/versions/2.1.0';
+      await confirmSafety(http, 'FEAT-00001', '2.1.0');
+      for (const gate of ['G8', 'G9']) await http().post(`${base}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '출시 조건 확인', evidenceRef: `EV-${gate}` }).expect(201);
+      await http().post(`${base}/release-signoff`).set(AUTHOR).send({ reason: '출시 책임 확인' }).expect(201);
+      const src = (await http().post('/api/features/FEAT-00024/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '연동 추가', changes: { description: 'FEAT-00001 연동' } }).expect(201)).body.feature.version;
+      await http().post('/api/dependencies').set(AUTHOR).send({ type: 'REQUIRES', sourceFeatureId: 'FEAT-00024', sourceVersion: src, targetFeatureId: 'FEAT-00001', targetVersion: '2.1.0' }).expect(201);
+      const open = (await http().get('/api/rehara-requests?featureId=FEAT-00001&featureVersion=2.1.0&status=OPEN').expect(200)).body.items;
+      expect(open).toEqual([expect.objectContaining({ condition: 'TOPOLOGY', status: 'OPEN' })]);
+      // 정책 배포 — 재-HARA가 열려 있어도 승인된 정책은 배포된다(완화 정책이 막히지 않게)
+      const c = await http().post('/api/policies').set(POLICY_AUTHOR).send({ featureId: 'FEAT-00001', featureVersion: '2.1.0', controlPoint: 'Flag', flagKey: 'f00001_flag_rehara', description: '재-HARA 중 완화 정책', safeDefault: false, entitlementCatalogId: 'CAT-00001' }).expect(201);
+      const pid = c.body.policyId;
+      expect((await http().post(`/api/policies/${pid}/validate`).set(POLICY_AUTHOR).send({}).expect(200)).body.run.decision).toBe('GO');
+      await http().post(`/api/policies/${pid}/decision`).set(POLICY_APPROVER).send({ decision: 'APPROVE', reason: 'GO 확인' }).expect(200);
+      const d = await http().post(`/api/policies/${pid}/deploy`).set(RELEASE).send({ reason: '재-HARA 중 완화 배포' });
+      expect(d.status).toBe(200);
+      expect(d.body.publicationId).toBeTruthy();
+      advance(12_000);
+      // 같은 Version의 출시 전이는 재-HARA 때문에 거부된다
+      const r = await http().post(`${base}/transitions`).set(RELEASE).send({ to: 'RELEASED', reason: '출시' });
+      expect(r.status).toBe(422);
+      expect(JSON.stringify(r.body)).toMatch(/재-HARA/);
     } finally {
       await app.close();
     }

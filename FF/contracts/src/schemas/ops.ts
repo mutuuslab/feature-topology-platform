@@ -205,4 +205,13 @@ export type KeyPurpose = z.infer<typeof KeyPurpose>;
 export const KeyRotateBody = z.object({ reason: z.string().trim().min(2).max(500), purpose: KeyPurpose.default('policy') }).strict();
 export const EpochBumpBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
 export type EpochBumpBody = z.infer<typeof EpochBumpBody>;
+/** 외부 승인자 공개키 등록(D-RD-5) — 개인키는 승인자 장치(FIDO2·스마트카드·외부 서명 도구)에 남고 플랫폼에는 공개키만 */
+export const ApproverKeyRegisterBody = z
+  .object({
+    userId: z.string().trim().min(1).max(128),
+    publicKeyPem: z.string().trim().min(40).max(4096),
+    reason: z.string().trim().min(2).max(500),
+  })
+  .strict();
+export type ApproverKeyRegisterBody = z.infer<typeof ApproverKeyRegisterBody>;
 export type KeyRotateBody = z.infer<typeof KeyRotateBody>;

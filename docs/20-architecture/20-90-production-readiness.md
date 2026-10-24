@@ -101,6 +101,8 @@
 | D-RD-2 | 로그인 — 고객사 사내 계정(SSO, OIDC 표준)에 붙일지, 자체 계정을 둘지 | OIDC 표준(Azure AD·Keycloak·Okta 모두 연결 가능), 역할은 IdP 그룹에서 |
 | D-RD-3 | DB — PostgreSQL로 옮길지, v1은 SQLite 파일 + 단일 인스턴스로 갈지 | PostgreSQL(백업·암호화·동시성), 옮기기 전까지 SQLite 파일로 운영 모드 검사 |
 | D-RD-4 | 공개 데모 사이트(pages.dev)를 유지할지 | 유지 — 데모 로그인·역할 선택기는 데모 빌드에서만 |
+| D-RD-5 | 긴급 차단 승인 서명 — 승인자 키 등록을 의무로 할지(외부에서 낸 명령 포함) | 의무 — 등록된 공개키로 모든 승인 칸 검증 |
+| D-RD-6 | 열린 재-HARA 요청이 정책 배포도 막을지 | 막지 않음 — 출시 전이·Release Sign-off만 막는다 |
 
 ### 결정(2026-10-24 사용자)
 
@@ -108,6 +110,8 @@
 - **D-RD-2 = OIDC 표준 SSO.** 백엔드는 JWT(서명·발급자·대상·만료)를 검증하고 역할은 IdP 그룹 클레임에서. 로컬 시험은 Keycloak.
 - **D-RD-3 = PostgreSQL로 이전.** 이전 전까지 SQLite 파일 + 단일 인스턴스로 운영 모드 검사를 먼저 세운다.
 - **D-RD-4 = 데모 사이트 유지, 데모 빌드 분리.** 데모 로그인(FF/platform)·역할 선택기는 데모 빌드에서만 보이고, 운영 빌드는 실제 로그인만.
+- **D-RD-5 = 승인자 키 등록 의무.** 긴급 차단(Kill) 명령의 모든 승인 서명은 그 승인자의 **등록된 ACTIVE 공개키**로 검증하고, 서명 대상은 명령에서 다시 만든다(`commandApprovalSubject` — 기능·요청·사유·차량 집합·승인자·역할·서명 시각). 플랫폼이 발행한 명령과 외부에서 낸 명령(`/api/gate/preview`·원장 기록)이 같은 길을 탄다. 키 미등록·검증 실패·대상 집합 불일치·발효 시각과 동떨어진 서명 시각(뒤이거나 24시간 넘게 앞섬)은 기존 규칙 **FFG-PLT-005** FAIL. 외부 장치 승인자는 공개키만 등록한다(`POST /api/pki/approver-keys`, 보안 책임자, 덮어쓰기 거부, Ed25519만). 운영 모드(FF_ENV=production)·SSO에서는 승인 중 키를 즉석으로 만들지 않고 403 `APPROVER_KEY_NOT_ENROLLED`로 거부한다(데모 모드만 즉석 생성). 시험 기준선이 바뀌었다 — 보고서 예시 `kill_safety_dc2_eu.ok.json`의 자리표시 서명은 이제 FAIL이고, PASS 기준선은 시험 승인자 키로 서명한 명령이다(`backend/test/approver-keys.ts`). 근거: 서명 길이·형식만 보면 외부 명령의 승인 위조를 막을 수 없다(ADS FFP-F059).
+- **D-RD-6 = 열린 재-HARA는 정책 배포를 막지 않는다.** 출시 전이(→ RELEASED)와 Release Sign-off만 막는다. 근거: 재-HARA 중에도 현장 위험을 줄이는 완화 정책(ODD 축소·파라미터 하향·기능 끄기)은 바로 차량에 나가야 한다 — 배포까지 막으면 영향 검토가 오히려 위험 완화를 늦춘다. 배포 자체는 여전히 승인·가상검증·Lifecycle(APPROVED~RELEASED)·ODD 축소 규칙을 지난다. 시험: `backend/test/ads/defects.spec.ts`('D-RD-6').
 
 ## 6. 인증(OIDC) — RD-SEC-01~05 (2026-10-24 구현)
 

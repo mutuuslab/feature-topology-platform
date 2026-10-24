@@ -137,7 +137,7 @@ export function approvalCheck(
  * 승인 서명(approval_sig) 형식 검사 — FFP-F059. 길이만 보지 않는다:
  *  · RFC 4648 §5 정준 base64url(패딩 없음)로 정확히 64바이트(Ed25519 서명) — 남는 비트가 0이 아닌 표기는 어떤 서명의 표기도 아니다
  *  · 서로 다른 승인자의 서명 값이 같으면 개인 서명이 아니다(같은 대상에 다른 키로 서명하면 값이 다르다 — 복사·위조)
- * 대상 집합 결속(서명 검증)은 승인자 키를 가진 쪽이 한다(플랫폼 게이트: 등록된 승인자 키 + approvalSubject).
+ * 대상 집합 결속(서명 검증)은 플랫폼 게이트가 등록된 승인자 공개키로 한다(commandApprovalSubject).
  */
 export function approvalSigProblems(approvals: readonly { approver_id: string; approval_sig?: string | null }[]): string[] {
   const out: string[] = [];
@@ -153,9 +153,22 @@ export function approvalSigProblems(approvals: readonly { approver_id: string; a
   return out;
 }
 
-/** 승인 서명 대상 — 명령의 핵심 필드(JCS로 정규화해 개인 키로 서명) */
-export function approvalSubject(k: { killId: string; featureId: string; featureVersion: string; request: KillRequestType; reasonCategory: ReasonCategory; vins: readonly string[] }) {
-  return { kill_id: k.killId, feature: `${k.featureId}@${k.featureVersion}`, request: k.request, reason: k.reasonCategory, vehicles: [...k.vins].sort() };
+/**
+ * 승인 서명 대상 — 명령만으로 다시 만들 수 있는 핵심 필드(JCS로 정규화해 승인자 개인 키로 서명).
+ * 결정(2026-10-24 사용자, 승인자 키 등록 의무 — 20-90 D-RD-5): 게이트는 플랫폼이 발행한 명령이든 외부에서 제출한 명령이든
+ * 승인마다 이 대상을 명령에서 다시 만들어 등록된 승인자 공개키로 검증한다. 그래서 Kill 요청 ID(플랫폼 안 기록)는 넣지 않고,
+ * 대상 집합(Feature·요청·사유·차량)과 그 승인 칸(승인자·역할·서명 시각)을 묶는다 — 다른 대상·다른 칸으로 옮기면 서명이 맞지 않는다.
+ */
+export function approvalSubject(k: { featureId: string; featureVersion: string; request: KillRequestType; reasonCategory: ReasonCategory; vins: readonly string[]; approverId: string; role: string; signedAt: string }) {
+  return { feature: `${k.featureId}@${k.featureVersion}`, request: k.request, reason: k.reasonCategory, vehicles: [...k.vins].sort(), approver: k.approverId, role: k.role, signed_at: k.signedAt };
+}
+
+/** kill_command v2 안의 승인 한 칸이 서명해야 하는 대상 — 명령에서 다시 만든다(게이트 검증·외부 서명 도구 공용) */
+export function commandApprovalSubject(
+  cmd: { feature: { id: string; version: string }; request: KillRequestType; reason: { category: ReasonCategory }; scope: { vehicle_ids: readonly string[] } },
+  a: { approver_id: string; role: string; signed_at: string },
+) {
+  return approvalSubject({ featureId: cmd.feature.id, featureVersion: cmd.feature.version, request: cmd.request, reasonCategory: cmd.reason.category, vins: cmd.scope.vehicle_ids, approverId: a.approver_id, role: a.role, signedAt: a.signed_at });
 }
 
 /** 요청 유형별 서명 키 용도(FFG-SEC-002) — 비활성화는 kill, 복원·활성화·SYNC는 각자의 키. 차량은 이 용도의 kid로 서명된 봉투만 받는다 */

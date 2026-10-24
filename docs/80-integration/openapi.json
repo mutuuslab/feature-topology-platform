@@ -5352,6 +5352,88 @@
         }
       }
     },
+    "/api/pki/approver-keys": {
+      "get": {
+        "summary": "등록된 승인자 키 목록 — 공개키 지문·출처(플랫폼 보관·외부 장치)",
+        "tags": [
+          "D06-10"
+        ],
+        "operationId": "approverKeys",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "외부 승인자 공개키 등록 (긴급 차단 승인 서명 검증용, D-RD-5)",
+        "tags": [
+          "D06-10"
+        ],
+        "operationId": "registerApproverKey",
+        "description": "허용 역할: 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "publicKeyPem": {
+                    "type": "string",
+                    "minLength": 40,
+                    "maxLength": 4096
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "userId",
+                  "publicKeyPem",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/publications": {
       "get": {
         "summary": "서명 게시본 (정책·차단·복구) 목록",

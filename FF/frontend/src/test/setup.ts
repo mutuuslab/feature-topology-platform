@@ -1,4 +1,11 @@
 import '@testing-library/jest-dom';
+import { configure } from '@testing-library/react';
+
+/**
+ * findBy*·waitFor 기본 대기 1초 → 5초. 병렬 작업으로 기계 부하가 크면 화면 데이터 적재(모의 API·지연 import)만으로
+ * 1초를 넘겨 "찾지 못함"으로 흔들렸다(screensProcedures, 2026-10-24). 화면이 끝내 그리지 못하면 여전히 실패한다.
+ */
+configure({ asyncUtilTimeout: 5000 });
 
 /**
  * jsdom 에는 2D 캔버스가 없어 `getContext()` 호출마다 "Not implemented" 스택 트레이스를 console 로

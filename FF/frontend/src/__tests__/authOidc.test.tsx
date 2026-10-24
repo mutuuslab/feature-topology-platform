@@ -32,7 +32,8 @@ afterEach(() => {
   (window as { location: unknown }).location = realLocation;
 });
 
-describe('운영 빌드(SSO) — 부여 역할 안에서만', () => {
+// 시험마다 모듈을 새로 읽는다(resetModules + import) — 화면 모듈 전체를 다시 변환하므로 부하가 큰 기계에서는 5초 기본값을 넘는다
+describe('운영 빌드(SSO) — 부여 역할 안에서만', { timeout: 30_000 }, () => {
   it('정적 데모는 SSO 빌드 설정이어도 데모로 돈다', async () => {
     vi.stubEnv('VITE_AUTH', 'oidc');
     vi.stubEnv('VITE_DATA_MODE', 'static');

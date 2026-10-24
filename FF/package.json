@@ -65,5 +65,8 @@
     "jsdom": "^25.0.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
-  "type": "module"
+  "type": "module",
+  "overrides": {
+    "multer": "^2.5.0"
+  }
 }

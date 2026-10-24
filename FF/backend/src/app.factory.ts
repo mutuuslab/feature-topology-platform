@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter, type NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-import { bodyLimitOf, rateLimit, rateLimitOf, securityHeaders } from './kernel/http-hardening';
+import { bodyLimitOf, emptyBodyAsObject, rateLimit, rateLimitOf, securityHeaders } from './kernel/http-hardening';
 import { assertRuntimeConfig, corsOrigins, isProduction } from './kernel/runtime-config';
 
 /** main.ts와 테스트가 같은 방식으로 앱을 조립한다.
@@ -28,6 +28,7 @@ export function hardenHttp(app: NestExpressApplication, env: Record<string, stri
   app.use(rateLimit(rateLimitOf(env)));
   app.useBodyParser('json', { limit: bodyLimitOf(env) });
   app.useBodyParser('urlencoded', { limit: bodyLimitOf(env), extended: true });
+  app.use(emptyBodyAsObject);
   // 운영 모드는 FF_CORS_ORIGINS 허용 목록만(비었으면 다른 출처 불허), 그 밖에는 모두 허용
   const origins = corsOrigins(env);
   app.enableCors({ origin: origins === true ? true : origins.length ? origins : false });

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/vehicle.status.schema.json",
+  "title": "vehicle.status v1 — 차량 상태 보고 v2와 FF의 검사 판정",
+  "description": "FF 원천: status_report 표(D04-03 StatusIngestService) · 이벤트 vehicle.status.accepted / vehicle.status.rejected. 받아들인 보고는 원문(status_report v2, 이미 차량 가명만 담김)을 그대로 싣는다. 거부된 보고는 원문을 싣지 않는다 — 검사를 통과하지 못한 본문은 무엇이 들었는지 모르므로(개인정보·주입) 위반 판정만 보낸다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["accepted", "via", "report_seq", "action", "violation", "report"],
+  "properties": {
+    "accepted": { "type": "boolean" },
+    "via": { "enum": ["IF-06", "SIM", "GLEO"] },
+    "report_seq": { "type": ["integer", "null"], "minimum": 0 },
+    "action": { "description": "FF 조치 분류(ReasonActionKind: APPLIED·REISSUE_SAME·…). 거부면 null", "type": ["string", "null"], "pattern": "^[A-Z_]+$" },
+    "violation": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["step", "code"],
+      "properties": {
+        "step": { "enum": ["SCHEMA", "AUTH", "SEQUENCE", "TARGET", "HISTORY", "PERSISTENCE"] },
+        "code": { "type": "string", "pattern": "^[A-Z0-9_]+$", "maxLength": 60 }
+      }
+    },
+    "report": { "type": ["object", "null"] }
+  },
+  "if": { "properties": { "accepted": { "const": true } } },
+  "then": {
+    "properties": {
+      "violation": { "type": "null" },
+      "report": { "$ref": "https://example.invalid/ffp/schema/status_report.v2.schema.json" }
+    }
+  },
+  "else": {
+    "properties": {
+      "violation": { "type": "object" },
+      "report": { "type": "null" }
+    }
+  }
+}

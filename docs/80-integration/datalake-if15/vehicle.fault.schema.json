@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/vehicle.fault.schema.json",
+  "title": "vehicle.fault v1 — 차량 애플리케이션·제어기 오류 보고",
+  "description": "FF 원천: 차량 발신 보고 FAULT(contracts rules/vehicle-requests.ts) · 이벤트 vehicle.fault.reported. detail(자유 글)은 보내지 않는다(결정 U-6). featureId는 봉투 feature에 있다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code", "severity", "sequence"],
+  "properties": {
+    "code": { "type": "string", "minLength": 1, "maxLength": 60 },
+    "severity": { "enum": ["INFO", "WARNING", "CRITICAL"] },
+    "sequence": { "description": "부팅 안 보고 번호", "type": "integer", "minimum": 0 }
+  }
+}

@@ -57,6 +57,27 @@
         }
       }
     },
+    "/api/health/metrics": {
+      "get": {
+        "summary": "지표(Prometheus 텍스트) — 운영 모드는 Bearer FF_METRICS_TOKEN",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "healthMetrics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/health/ready": {
       "get": {
         "summary": "준비 점검(마이그레이션·DB 쓰기, 아니면 503)",

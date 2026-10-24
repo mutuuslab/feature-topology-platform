@@ -1,7 +1,7 @@
 // 도메인 오류 → 공통 오류 봉투 {error:{code,message,details}}. 프론트는 code로 분기하고 message(한글)를 그대로 보여 준다.
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { VEHICLE_REJECT, type VehicleReject } from '@ff/contracts';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 
 export type ErrorCode =
   | 'VALIDATION'
@@ -71,8 +71,9 @@ export class DomainErrorFilter implements ExceptionFilter {
       status = err.status;
       body = { error: { code: 'VALIDATION', message: err.type === 'entity.too.large' ? '요청 본문이 너무 큽니다. 나눠서 보내세요.' : '요청 본문을 읽을 수 없습니다(JSON 형식 확인).' } };
     } else {
-      // eslint-disable-next-line no-console
-      console.error(err);
+      // 서버 오류는 상관 ID와 함께 로거로(운영 모드는 JSON 한 줄 — RD-OPS-11). 응답에는 상세를 싣지 않는다
+      const cid = host.switchToHttp().getRequest<Request>()?.header?.('x-correlation-id');
+      Logger.error(`${(err as Error)?.message ?? String(err)}${cid ? ` [correlationId=${cid}]` : ''}`, (err as Error)?.stack, 'HTTP');
       body = { error: { code: 'INTERNAL', message: '서버 내부 오류입니다. 잠시 후 다시 시도하고, 반복되면 감사 이력의 상관 ID로 문의하세요.' } };
     }
     res.status(status).json(body);

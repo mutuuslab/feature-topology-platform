@@ -1,12 +1,13 @@
 // 플랫폼 공통 조회 API — 상태 점검, 42 컴포넌트 현황. (감사 이력은 D01-10, 이벤트 이력은 D04-04 모듈)
-import { Controller, Get, HttpCode, Inject, Query, Res } from '@nestjs/common';
-import type { Response } from 'express';
+import { Controller, Get, HttpCode, Inject, Query, Req, Res } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Clock } from './clock';
 import { ComponentRegistry } from './components';
 import { DB, type Db } from './db';
 import { MIGRATIONS } from './migrations';
+import { Metrics, metricsEndpoint } from './observability';
 import { isProduction } from './runtime-config';
 
 /** 배포 판 — package.json 판 + 빌드 커밋(FF_BUILD_SHA, 이미지 빌드가 넣는다) */
@@ -25,6 +26,7 @@ export class KernelController {
     @Inject(DB) private readonly db: Db,
     private readonly registry: ComponentRegistry,
     private readonly clock: Clock,
+    private readonly metrics: Metrics,
   ) {}
 
   /** 생존(프로세스가 응답하는가) — 오케스트레이터 liveness. DB를 건드리지 않는다(출시 준비 RD-OPS-08) */
@@ -55,6 +57,12 @@ export class KernelController {
     const ok = Object.values(checks).every((c) => c.ok);
     if (!ok) res.status(503);
     return { status: ok ? 'ready' : 'not_ready', ...build(), checks };
+  }
+
+  /** 지표(Prometheus 텍스트) — 운영 모드는 Bearer FF_METRICS_TOKEN, 토큰이 없으면 꺼짐(출시 준비 RD-OPS-11) */
+  @Get('health/metrics')
+  metricsText(@Req() req: Request, @Res() res: Response) {
+    metricsEndpoint(this.metrics)(req, res);
   }
 
   @Get('health')

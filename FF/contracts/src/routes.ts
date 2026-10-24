@@ -77,6 +77,7 @@ export const ROUTES: RouteDef[] = [
   // 커널
   { name: 'health', method: 'GET', path: '/api/health', summary: '상태 점검', component: 'KERNEL' },
   { name: 'healthLive', method: 'GET', path: '/api/health/live', summary: '생존 점검(프로세스 응답)', component: 'KERNEL' },
+  { name: 'healthMetrics', method: 'GET', path: '/api/health/metrics', summary: '지표(Prometheus 텍스트) — 운영 모드는 Bearer FF_METRICS_TOKEN', component: 'KERNEL' },
   { name: 'healthReady', method: 'GET', path: '/api/health/ready', summary: '준비 점검(마이그레이션·DB 쓰기, 아니면 503)', component: 'KERNEL' },
   { name: 'components', method: 'GET', path: '/api/components', summary: '42 컴포넌트 현황', component: 'KERNEL' },
   { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit'] },

@@ -570,7 +570,7 @@
         "backend/src/kernel/errors.ts:72-73"
       ],
       "criteria": "운영 모드 JSON 로그(요청 로그·상관 ID·500 상세), /api/metrics(Prometheus 텍스트)",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

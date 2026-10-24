@@ -1,7 +1,10 @@
 // readiness: RD-UX-01 — 오류 화면: 서버 응답을 page.route로 바꿔 넣고, 경우마다 화면이 사용자 말과 다음 행동으로 안내하는지 본다.
 // 401 다시 로그인 · 409 최신 내용 다시 불러오기(입력 유지) · 400/422 칸 옆 오류 · 429 잠시 뒤 · 5xx 문의 번호 · 연결 끊김. 포트 번호 같은 개발자 문구는 없다.
 import { expect, test, type Page, type Route } from '@playwright/test';
-import { errors as E } from '../../frontend/src/copy/errors';
+import { errorActions } from '../../frontend/src/copy/error-actions';
+import { errors } from '../../frontend/src/copy/errors';
+
+const E = { ...errors, ...errorActions };
 
 const LIST = /\/api\/features(\?.*)?$/;
 const json = (route: Route, status: number, body: unknown, headers: Record<string, string> = {}) =>

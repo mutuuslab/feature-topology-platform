@@ -255,7 +255,7 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 | 400 VALIDATION·422 | 서버 문장 + 칸 옆 오류(`aria-invalid`) | 오류 상세 `[{path,message}]`·`{fields:[…]}`·`{field}`를 칸 이름으로 읽는다(Feature 제안·상품 구성 폼) |
 | 429 | "요청이 너무 잦습니다. N초 뒤에…" | `Retry-After`(초·날짜) 또는 `details.retryAfterSec` |
 | 5xx | 서버 내부 문장 대신 안내 + **문의 번호**(`X-Correlation-Id`, 복사 가능) | 자동 재시도 1회, 지원 담당자에게 문의 번호 전달 |
-| 연결 끊김 | "서버에 연결할 수 없습니다…"(오프라인이면 오프라인 안내) | 다시 시도. 포트·서버 프로그램 이름은 쓰지 않는다(client.ts에 `9101` 없음 — readiness absent 검사) |
+| 연결 끊김·오프라인 | "서버에 연결할 수 없습니다. 인터넷 연결을 확인한 뒤…" | 다시 시도. 포트·서버 프로그램 이름은 쓰지 않는다(client.ts에 `9101` 없음 — readiness absent 검사) |
 
 - 코드: `frontend/src/api/errors.ts`(종류·문장·재시도 대상), `api/field-errors.ts`(칸 오류 — 폼 화면 전용), `api/client.ts`(ApiError.kind·correlationId·retryAfterSec, JSON이 아닌 본문에도 멈추지 않음), `api/session.ts`·`shell/SessionBanner.tsx`, 디자인 키트 `design/errors.tsx`(ErrorNextStep — ErrorNote·AsyncView 공통), 문구 `copy/errors.ts`.
 - 조회 자동 재시도는 연결 끊김·서버 오류만(401·403·409·입력 오류는 다시 보내도 같다).
@@ -275,4 +275,4 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 - 운영 모드에서 과금이 live가 아니면 백엔드가 구매를 GUARD_FAILED로 거부한다(모의 결제가 실제 구독처럼 남지 않게).
 - 시험: `backend/test/kernel/connections.spec.ts`, `frontend/src/__tests__/mockConnections.test.tsx`, e2e `e2e/tests/mock-connections.spec.ts`.
 - 남은 것: 실제 메일(SMTP)·과금·OTA(IF-05)·Data Lake(IF-15) 어댑터 — 연결 대상 시스템은 사용자 결정이 필요하다.
-- 첫 화면 묶음: 이 작업 뒤 309.8/310 KiB(병합 기준 307.9) — 오류 안내는 연결이 끊겨도 보여야 하므로 첫 화면에 둔다. 칸 오류·쪽 넘김·연결 표시는 화면 묶음으로 나눴다.
+- 첫 화면 묶음: 이 작업 뒤 309.8/310 KiB(병합 기준 308.3, +1.5) — 오류 문장·종류는 연결이 끊겨도 보여야 하므로 첫 화면에 두고, 다음 행동 본체(design/error-next.tsx·copy/error-actions.ts)·세션 안내 띠·칸 오류·쪽 넘김·연결 표시는 필요할 때 읽는 묶음으로 나눴다. 남은 여유 0.2 KiB — 다음 첫 화면 추가 전에 예산 조정이 필요하다.

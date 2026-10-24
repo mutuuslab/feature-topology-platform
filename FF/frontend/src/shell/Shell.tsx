@@ -17,7 +17,9 @@ import { SsoRoleSwitcher } from './SsoRoleSwitcher';
 import { login as L } from '../copy/login';
 import { GuideDock, RuleDrawer } from './GuideDock';
 import { UnsavedPrompt } from '../design/unsaved';
-import { SessionBanner } from './SessionBanner';
+import { useSessionExpired } from '../api/session';
+// 세션 만료 안내 띠 — 401 뒤에만 그리므로 첫 화면 묶음에서 뺀다(RD-UX-01)
+const SessionBanner = lazy(() => import('./SessionBanner').then((m) => ({ default: m.SessionBanner })));
 import { ProcedureGuideHost } from './ProcedureGuideHost';
 import { FeaturePeek } from './FeaturePeek';
 import { learnStore, useExplain, useLearn } from './learn';
@@ -72,6 +74,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
 function ShellFrame({ children }: { children: ReactNode }) {
   const nav = useNavigate();
+  const sessionExpired = useSessionExpired();
   const page = usePageTitle();
   const loc = useLocation();
   const { role, theme, lang } = useAppShell();
@@ -267,7 +270,11 @@ function ShellFrame({ children }: { children: ReactNode }) {
             {ko.page.readOnly}
           </div>
         )}
-        <SessionBanner />
+        {sessionExpired && (
+          <Suspense fallback={null}>
+            <SessionBanner />
+          </Suspense>
+        )}
         {/* 위치는 한 번만(3초 테스트) — 현재 화면 이름은 H1이 말한다. 상위 화면이 있을 때만 그룹·상위까지 */}
         {trail.length > 2 && (
           <nav className="sh-trail" aria-label="breadcrumb">

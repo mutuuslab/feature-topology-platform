@@ -2,7 +2,7 @@
 // 입력을 복사해 둘 시간을 주고, 사용자가 고르면 지금 화면으로 돌아오는 로그인으로 간다.
 import { useSessionExpired } from '../api/session';
 import { relogin } from '../auth';
-import { errors as E } from '../copy/errors';
+import { errorActions as E } from '../copy/error-actions';
 import { Button, Icon } from '../design';
 
 export function SessionBanner() {

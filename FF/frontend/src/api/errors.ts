@@ -20,10 +20,10 @@ export function retryAfterSeconds(header: string | null | undefined, details?: u
  * 사용자에게 보일 문장 — 서버가 준 업무 문장(한글)은 4xx에서 그대로, 연결·세션·과부하·서버 오류는 우리 문장으로
  * (서버 내부 문장·포트·프로그램 이름을 화면에 내지 않는다).
  */
-export function userMessage(kind: ErrorKind, status: number, server: string | undefined, o: { online?: boolean; retryAfterSec?: number | null } = {}): string {
-  if (kind === 'network') return o.online === false ? E.offline : E.network;
+export function userMessage(kind: ErrorKind, status: number, server: string | undefined, retryAfterSec: number | null = null): string {
+  if (kind === 'network') return E.network;
   if (kind === 'auth') return E.auth;
-  if (kind === 'rateLimit') return E.rateLimit(o.retryAfterSec ?? null);
+  if (kind === 'rateLimit') return E.rateLimit(retryAfterSec);
   if (kind === 'server') return E.server;
   return server || (kind === 'conflict' ? E.conflictFallback : kind === 'validation' ? E.validationFallback : kind === 'notFound' ? E.notFound : E.failed(status));
 }

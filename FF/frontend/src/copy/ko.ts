@@ -69,7 +69,7 @@ export const ko = {
     },
     emails: {
       title: '메일 발송 기록',
-      lead: '보낸 알림 메일의 기록입니다. 메일 서버 연결 상태는 오른쪽 위 표시로 봅니다.',
+      lead: '보낸 알림 메일 기록입니다.',
       empty: '보낸 메일이 없습니다.',
       col: { at: '발송', subject: '제목', status: '상태' },
     },

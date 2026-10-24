@@ -52,8 +52,6 @@ export const pathOf = (name: string, params: Record<string, string> = {}, query:
 /** 계정마다 결과가 다른 조회인가 — 캐시 키에 역할을 넣는다 */
 export const isPersonal = (name: string) => !!BY_NAME.get(name)?.personal;
 
-const online = () => (typeof navigator === 'undefined' ? undefined : navigator.onLine);
-
 /** 응답 본문 — JSON이 아니면(앞단 프록시의 HTML 오류 쪽 등) null. 깨진 JSON으로 화면이 멈추지 않게 */
 function parseBody(text: string): any {
   if (!text) return null;
@@ -69,12 +67,12 @@ export function toApiError(res: Pick<Response, 'status' | 'headers'>, data: any)
   const err = data?.error;
   const kind = errorKind(res.status);
   const retry = kind === 'rateLimit' ? retryAfterSeconds(res.headers.get('Retry-After'), err?.details) : null;
-  const message = userMessage(kind, res.status, typeof err?.message === 'string' ? err.message : undefined, { retryAfterSec: retry });
+  const message = userMessage(kind, res.status, typeof err?.message === 'string' ? err.message : undefined, retry);
   return new ApiError(res.status, err?.code ?? 'HTTP_' + res.status, message, err?.details, res.headers.get('X-Correlation-Id'), retry);
 }
 
 /** 연결 실패 → ApiError(status 0) */
-export const networkError = () => new ApiError(0, 'NETWORK', userMessage('network', 0, undefined, { online: online() }));
+export const networkError = () => new ApiError(0, 'NETWORK', userMessage('network', 0, undefined));
 
 /** 401 — 입력이 없으면 지금 화면으로 돌아오는 로그인으로, 있으면 셸 안내 띠가 묻는다(입력을 지키기 위해 바로 옮기지 않는다) */
 function onUnauthenticated() {

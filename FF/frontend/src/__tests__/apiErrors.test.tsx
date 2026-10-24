@@ -4,7 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { errors as E } from '../copy/errors';
+import { errorActions } from '../copy/error-actions';
+import { errors } from '../copy/errors';
+
+const E = { ...errors, ...errorActions };
 
 // 모듈을 매 시험 새로 읽는다(세션 상태·빌드 상수) — 첫 읽기가 느린 환경에서도 시간 초과로 흔들리지 않게
 vi.setConfig({ testTimeout: 30_000 });
@@ -37,16 +40,11 @@ describe('API 오류 → 사용자 안내 (client.ts)', () => {
     expect(src).not.toMatch(/백엔드\(|실행 중인지/);
   });
 
-  it('연결 끊김 — status 0, 사용자 말(오프라인이면 오프라인 안내)', async () => {
+  it('연결 끊김 — status 0, 사용자 말(인터넷 연결 확인 안내)', async () => {
     const e = await callWith(() => {
       throw new TypeError('Failed to fetch');
     });
     expect(e).toMatchObject({ status: 0, kind: 'network', message: E.network });
-    vi.stubGlobal('navigator', { onLine: false });
-    const off = await callWith(() => {
-      throw new TypeError('Failed to fetch');
-    });
-    expect(off).toMatchObject({ kind: 'network', message: E.offline });
   });
 
   it('401 — 세션 만료 안내, 세션 만료 상태가 켜진다', async () => {
@@ -98,17 +96,17 @@ describe('오류 안내 부품 (ErrorNote·AsyncView·Field)', () => {
     configureErrorActions({ relogin, reload });
     const { rerender } = render(<ErrorNote error={{ message: E.auth, kind: 'auth', status: 401, code: 'UNAUTHENTICATED' }} />);
     expect(screen.queryByText('UNAUTHENTICATED')).toBeNull(); // 세션 코드는 숨긴다
-    fireEvent.click(screen.getByRole('button', { name: E.relogin }));
+    fireEvent.click(await screen.findByRole('button', { name: E.relogin }));
     expect(relogin).toHaveBeenCalled();
 
     rerender(<ErrorNote error={{ message: '이미 승인됨', kind: 'conflict', status: 409, code: 'CONFLICT' }} />);
-    expect(screen.getByText(E.conflictHint)).toBeTruthy();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: E.reload })));
+    expect(await screen.findByText(E.conflictHint)).toBeTruthy();
+    await act(async () => fireEvent.click(await screen.findByRole('button', { name: E.reload })));
     expect(reload).toHaveBeenCalled();
-    expect(screen.getByText(E.reloaded)).toBeTruthy();
+    expect(await screen.findByText(E.reloaded)).toBeTruthy();
 
     rerender(<ErrorNote error={{ message: E.server, kind: 'server', status: 500, code: 'INTERNAL', correlationId: 'cid-777' }} />);
-    expect(screen.getByText(E.correlation)).toBeTruthy();
+    expect(await screen.findByText(E.correlation)).toBeTruthy();
     expect(document.querySelector('[data-id="cid-777"]')).toBeTruthy();
     expect(screen.queryByText('INTERNAL')).toBeNull();
   });
@@ -125,7 +123,7 @@ describe('오류 안내 부품 (ErrorNote·AsyncView·Field)', () => {
     );
     expect(screen.getByText(E.authTitle)).toBeTruthy();
     expect(screen.queryByRole('button', { name: ko.state.retry })).toBeNull();
-    expect(screen.getByRole('button', { name: E.relogin })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: E.relogin })).toBeTruthy();
     rerender(
       <MemoryRouter>
         <AsyncView state="error" error={{ message: E.rateLimit(5), kind: 'rateLimit', status: 429 }} onRetry={() => undefined} />
@@ -190,7 +188,7 @@ describe('SSO 세션 만료 — 입력을 지킨다', () => {
     });
     expect(assign).not.toHaveBeenCalled();
     expect(document.querySelector('[data-session-expired]')?.textContent).toContain(E.sessionBanner);
-    fireEvent.click(screen.getByRole('button', { name: E.relogin }));
+    fireEvent.click(await screen.findByRole('button', { name: E.relogin }));
     expect(assign).toHaveBeenCalledWith(`/api/auth/login?returnTo=${encodeURIComponent('/feature/propose')}`);
   });
 });

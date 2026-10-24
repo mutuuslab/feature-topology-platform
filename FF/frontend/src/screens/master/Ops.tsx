@@ -6,7 +6,7 @@ import { COMPLIANCE_PROFILES, OPENFEATURE_PINS, profileFinding, reportRule, RULE
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { useVehiclePick } from '../../data/first-run';
-import { AsyncView, Button, DataTable, ErrorNote, Explain, ExplainCodes, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, RuleText, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
+import { AsyncView, Button, DataTable, ErrorNote, Explain, ExplainCodes, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, RuleText, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec, useReportCatalog } from '../../design';
 import { ComponentName, Done, usePermission } from '../shared';
 import { EpochBump, SbomDrawer, SecurityEventsPanel } from './Security';
 
@@ -419,6 +419,7 @@ function complianceMessage(profiles: boolean): KeyMessageSpec {
 }
 
 function RulesTab() {
+  const catalog = useReportCatalog();
   const [filter, setFilter] = useState<'all' | 'open' | 'done'>('all');
   const C = M.compliance;
   const all = useMemo(
@@ -426,7 +427,7 @@ function RulesTab() {
       Object.entries(STANDARDS_MAP)
         .map(([id, p]) => ({ id, rule: reportRule(id), wp: p.wp, components: p.components, status: RULE_STATUS[id] ?? { implemented: false, tested: false } }))
         .sort((a, b) => a.id.localeCompare(b.id)),
-    [],
+    [catalog],
   );
   const rows = all.filter((r) => filter === 'all' || (filter === 'done' ? r.status.implemented : !r.status.implemented));
   return (

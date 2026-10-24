@@ -8,7 +8,7 @@ import { clausesOfRules, tutorialById, TUTORIALS, type ReadingPath, type Tutoria
 import { useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { roleLabel } from '../../data/refdata';
-import { Button, Explain, ExplainCodes, KeyValue, PageHeader, Panel, RuleText, Segmented, SummaryLine, type KeyMessageSpec } from '../../design';
+import { Button, Explain, ExplainCodes, KeyValue, PageHeader, Panel, RuleText, Segmented, SummaryLine, type KeyMessageSpec, useReportCatalog } from '../../design';
 import { learnStore, useLearn } from '../../shell/learn';
 
 const L = ko.learn;
@@ -124,6 +124,7 @@ export function LearnHub() {
 }
 
 export function LearnRun() {
+  useReportCatalog();
   const { id = '' } = useParams();
   const nav = useNavigate();
   const t = tutorialById(id);

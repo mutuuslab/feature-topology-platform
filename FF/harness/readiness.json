@@ -104,7 +104,7 @@
         "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts:66,101-107"
       ],
       "criteria": "저장되는 개인키·비밀은 키 암호화 키(FF_KEK, 운영은 KMS)로 감싼 형태만 DB에 있다. 운영 모드는 FF_HSM_VEHICLE_ROOT 주입·KEK 없음을 거부",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -139,7 +139,7 @@
         "backend/src/domains/d02-runtime/vehicle-request/vehicle-request.service.ts:70"
       ],
       "criteria": "운영 모드에서 차량 요청은 게이트웨이가 검증한 mTLS 인증서 주체(신뢰 프록시 헤더) 또는 CMAC로 VIN이 묶여야 한다. 헤더만 있으면 401",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -154,7 +154,7 @@
       "decision": "D-RD-1",
       "title": "고객 구분이 없다 — 고객사별 단독 설치로 결정",
       "evidence": [
-        "backend/src/kernel/kernel.module.ts:27"
+        "backend/src/kernel/kernel.module.ts:30"
       ],
       "criteria": "설치마다 고객 식별(FF_INSTANCE_ID)이 필수이고 상태 점검·감사·로그에 나온다. 운영 모드에서 없으면 부팅 거부. 설치 안내서에 '한 설치 = 한 고객'",
       "status": "done",
@@ -195,7 +195,7 @@
       "title": "빈 DB 첫 실행을 검사하는 시험이 없다",
       "evidence": [
         "backend/test/helpers.ts:10",
-        "e2e/playwright.config.ts:45"
+        "e2e/playwright.config.ts:47"
       ],
       "criteria": "FF_SEED=none 파일 DB로 부팅해 모든 메뉴가 오류 없이 빈 상태 안내를 보인다(e2e)",
       "status": "done",
@@ -234,7 +234,7 @@
         "backend/src/adapters/if-mocks/external-systems.ts:163,166"
       ],
       "criteria": "운영 모드에서 내부 시뮬레이터는 꺼져 있고(명시적으로만 켬), 차량 전달은 설정된 실제 어댑터(IF-05/IF-07)로만",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

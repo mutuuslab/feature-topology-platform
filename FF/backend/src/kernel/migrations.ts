@@ -551,4 +551,26 @@ CREATE INDEX auth_session_sub ON auth_session (sub);
 CREATE INDEX auth_session_expires ON auth_session (expires_at);
 `,
   },
+  {
+    // 차량 채널(출시 준비 RD-SEC-08·RD-OPS-04) — 서명된 차량 요청의 nonce(재전송 방지, 허용 시각 창이 지나면 지운다)와
+    // 차량 당겨받기 채널의 전달함(차량이 HTTPS로 받아 가고 서명된 확인을 보낸다). 전달함 행은 확인 뒤에도 남긴다(추적).
+    name: '046_vehicle_channel',
+    sql: `
+CREATE TABLE vehicle_request_nonce (vin TEXT NOT NULL, nonce TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY (vin, nonce));
+CREATE INDEX vehicle_request_nonce_at ON vehicle_request_nonce (at);
+CREATE TABLE vehicle_delivery (
+  delivery_id TEXT PRIMARY KEY,
+  vin TEXT NOT NULL,
+  publication_id TEXT NOT NULL,
+  channel TEXT NOT NULL,
+  queued_at TEXT NOT NULL,
+  fetched_at TEXT,
+  fetch_count INTEGER NOT NULL DEFAULT 0,
+  acked_at TEXT,
+  ack_doc TEXT,
+  UNIQUE (vin, publication_id)
+);
+CREATE INDEX vehicle_delivery_pending ON vehicle_delivery (vin, acked_at, queued_at);
+`,
+  },
 ];

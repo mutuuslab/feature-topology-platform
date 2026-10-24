@@ -19,11 +19,16 @@ const entries = text
     return [l.slice(0, i), l.slice(i + 1)] as const;
   });
 const keys = entries.map(([k]) => k);
+/** 주석으로 적어 둔 선택 설정(`# KEY=예`) — 값을 비워 두면 형식 검사에 걸리는 것(FF_VEHICLE_CERT_HEADER)은 주석으로 설명한다 */
+const documented = [...keys, ...[...text.matchAll(/^#\s*([A-Z][A-Z0-9_]*)=/gm)].map((m) => m[1])];
+const SECRET = /SECRET|KEY|TOKEN|^FF_KEK$/;
+/** 비밀 자리에 넣을 시험 값 — KEK는 base64 32바이트 형식이어야 한다 */
+const fillSecret = (k: string) => (k === 'FF_KEK' ? Buffer.alloc(32, 9).toString('base64') : 'z'.repeat(48));
 
 /** 비밀(빈 값)을 채운다 — 설치하는 사람이 할 일을 시험이 대신한다 */
 const filled = (over: Record<string, string> = {}) => {
   const env: Record<string, string> = {};
-  for (const [k, v] of entries) env[k] = v === '' && /SECRET|KEY|TOKEN/.test(k) ? 'z'.repeat(48) : v;
+  for (const [k, v] of entries) env[k] = v === '' && SECRET.test(k) ? fillSecret(k) : v;
   return { ...env, ...over };
 };
 
@@ -41,11 +46,11 @@ describe('설치 환경 템플릿 docker/app/.env.example', () => {
   });
 
   it('비밀을 채우지 않으면 부팅을 거부한다 — 템플릿의 비밀은 비어 있다(값을 커밋하지 않는다)', () => {
-    const secrets = entries.filter(([k]) => /SECRET|KEY|TOKEN/.test(k));
+    const secrets = entries.filter(([k]) => SECRET.test(k));
     expect(secrets.length).toBeGreaterThan(0);
     for (const [k, v] of secrets) expect(v, `${k}는 템플릿에서 비어 있어야 한다`).toBe('');
     const p = runtimeConfigProblems(Object.fromEntries(entries)).join('\n');
-    for (const k of ['FF_AUDIT_KEY', 'FF_SESSION_SECRET', 'OIDC_CLIENT_SECRET']) expect(p).toContain(k);
+    for (const k of ['FF_AUDIT_KEY', 'FF_SESSION_SECRET', 'OIDC_CLIENT_SECRET', 'FF_KEK']) expect(p).toContain(k);
   });
 
   it('템플릿에서 필수 키 하나를 빼면 검사가 그 키를 문제로 낸다 — 시험이 실제로 템플릿에 기대고 있다', () => {
@@ -61,9 +66,10 @@ describe('설치 환경 템플릿 docker/app/.env.example', () => {
   });
 
   it('설정 검사가 읽는 변수는 모두 템플릿에 설명과 함께 있다(시험·데모 손잡이만 예외)', () => {
-    const read = [...sourceKeys('runtime-config.ts'), ...sourceKeys(join('auth', 'auth-config.ts'))].filter((k) => !TEST_KNOBS.includes(k));
+    // KEK는 이름을 조합해 읽는다(kms/key-protection.ts readKeyMaterial) — 이름을 직접 적는다
+    const read = [...sourceKeys('runtime-config.ts'), ...sourceKeys(join('auth', 'auth-config.ts')), ...sourceKeys('vehicle-auth-config.ts'), 'FF_KEK', 'FF_KEK_FILE', 'FF_KEK_PREVIOUS'].filter((k) => !TEST_KNOBS.includes(k));
     expect(read.length).toBeGreaterThan(15);
-    const missing = read.filter((k) => !keys.includes(k));
+    const missing = read.filter((k) => !documented.includes(k));
     expect(missing, '템플릿에 없는 운영 설정 — docker/app/.env.example에 추가').toEqual([]);
   });
 

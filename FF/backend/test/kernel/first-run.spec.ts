@@ -31,6 +31,8 @@ const PROD = {
   UNLEASH_MODE: 'off',
   SIM_MODE: 'off',
   FF_AUDIT_KEY: 'a'.repeat(40),
+  // 키 보호(RD-SEC-06) — 운영 모드 필수
+  FF_KEK: Buffer.alloc(32, 5).toString('base64'),
   FF_AUTH: 'oidc',
   OIDC_ISSUER: ISSUER,
   OIDC_CLIENT_ID: 'ff-platform',

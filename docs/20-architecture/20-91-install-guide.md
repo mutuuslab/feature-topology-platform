@@ -1,6 +1,6 @@
 # 20-91 설치 안내서 — 고객사 단독 설치(운영)
 
-> 대상: 고객사 인프라 담당자·플랫폼 운영 담당자. 출시 준비 RD-OPS-05·RD-OPS-09·RD-OPS-02·RD-SEC-09·RD-P2-04 (`docs/20-architecture/20-90-production-readiness.md`).
+> 대상: 고객사 인프라 담당자·플랫폼 운영 담당자. 출시 준비 RD-OPS-05·RD-OPS-09·RD-OPS-02·RD-SEC-09·RD-P2-04, 키 보호·차량 채널 RD-SEC-06·RD-SEC-08·RD-OPS-04 (`docs/20-architecture/20-90-production-readiness.md`).
 > 설치 산출물: `FF/docker/app/Dockerfile` · `FF/docker/app/docker-compose.yml` · `FF/docker/app/.env.example`. 화면 사용법은 `docs/00-overview/user-manual.md`.
 
 ## 1. 설치 단위 — 한 설치 = 한 고객
@@ -36,7 +36,8 @@
 | 컨테이너 | Docker Engine 24 이상 + Compose v2 (`docker compose version`). 이미지를 직접 빌드하면 인터넷(npm 레지스트리)이 필요하다 — 사내망이면 빌드한 이미지를 반입한다 |
 | 이름·인증서 | 공개 주소(예: `https://ff.oem.example`)의 DNS와 TLS 인증서. 이 주소가 `FF_PUBLIC_URL` |
 | 고객사 IdP | OIDC를 지원하는 IdP(Keycloak·Microsoft Entra ID·Okta 등)에 **기밀(confidential) 클라이언트** 하나, 역할로 쓸 그룹(§5) |
-| 비밀 보관 | `FF_AUDIT_KEY`·`FF_SESSION_SECRET`·`OIDC_CLIENT_SECRET`·지표 토큰·webhook 비밀을 둘 사내 비밀 보관소 |
+| 비밀 보관 | `FF_KEK`(키 암호화 키)·`FF_AUDIT_KEY`·`FF_SESSION_SECRET`·`OIDC_CLIENT_SECRET`·지표 토큰·webhook 비밀을 둘 사내 비밀 보관소. **KEK는 DB 백업과 다른 곳에 따로 백업**한다(§10) |
+| 차량 채널 | 차량(또는 고객 텔레매틱스 게이트웨이)이 `https://ff.oem.example/vehicle/v1/...`에 닿는 경로. 차량 요청은 차량 키 CMAC 서명 또는 게이트웨이 mTLS로 인증한다 — 규격 `docs/80-integration/80-40-vehicle-channel.md` |
 | 백업 대상 | 백업 볼륨을 옮겨 둘 다른 디스크·원격 저장소(§9) |
 | 바깥 연결 | 화면의 지도 바탕은 `https://tiles.openfreemap.org`를 부른다(CSP 허용 출처). 막힌 망이면 지도 화면만 바탕 없이 보인다 |
 
@@ -69,6 +70,15 @@ server { listen 80; server_name ff.oem.example; return 301 https://$host$request
 - 백엔드는 운영 모드에서 프록시가 준 출처 IP(`X-Forwarded-For`)를 `FF_TRUST_PROXY` 범위만큼 믿는다(요청 제한·감사). compose 설치는 호스트 프록시의 요청이 docker 게이트웨이(사설 주소)에서 들어오므로 `uniquelocal`(템플릿 기본값).
 - 보안 헤더(CSP·HSTS·X-Frame-Options·nosniff·Referrer-Policy)는 앱이 붙인다 — 프록시에서 덮어쓰지 않는다.
 - 평문 http로 직접 접속하지 못하게 컨테이너 포트는 127.0.0.1에만 묶여 있다. 다른 호스트의 프록시를 쓰면 방화벽으로 그 프록시만 허용한다.
+- **차량 창구(`/vehicle/`)를 mTLS로 받으면** 프록시가 클라이언트 인증서를 검증하고 주체를 `FF_VEHICLE_CERT_HEADER` 머리글로 넘긴다. 차량이 보낸 같은 이름의 머리글은 반드시 지우고 다시 쓴다(`proxy_set_header`). 백엔드는 `FF_TRUST_PROXY` 범위에서 온 요청의 이 머리글만 믿는다 — `80-40` §2.5.
+  ```nginx
+  location /vehicle/ {
+    # ssl_verify_client on; ssl_client_certificate /etc/ff/vehicle-ca.pem;  (server 블록)
+    proxy_set_header X-Client-Cert-Subject $ssl_client_s_dn;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_pass http://127.0.0.1:9101;
+  }
+  ```
 
 ## 5. 로그인 — 고객사 IdP(OIDC) 설정
 
@@ -115,6 +125,13 @@ IdP에 등록할 값:
 | `FF_AUDIT_ANCHOR_FILE` | ✓ | `/var/lib/ff-anchor/audit-anchor.jsonl` | 감사 체인 고정점 파일 — DB와 다른 볼륨 |
 | `FF_AUDIT_KEY` | ✓ 비밀 | 32자 이상 | 고정점 서명 HMAC 키. 바꾸면 이전 고정점 검증이 깨진다 — 보관소에 따로 |
 | `FF_AUDIT_ANCHOR_MIN` | | `60` | 고정점 주기(분). 부팅·종료 때도 남긴다 |
+| `FF_KEK` | ✓ 비밀 | base64 32바이트 | 키 암호화 키 — 서명 개인키·승인자 키·차량 루트 비밀을 DB 안에서 봉인(§10). `openssl rand -base64 32` |
+| `FF_KEK_FILE` | | 비움 | `FF_KEK` 대신 비밀 파일(docker secret) — 둘 중 하나만 |
+| `FF_KEK_PREVIOUS` | | 비움 | KEK 교체 때만 옛 키(`_FILE`도 된다) — 한 번 시작한 뒤 지운다 |
+| `FF_VEHICLE_AUTH` | ✓ | `required` | 차량 요청 인증 — 운영 모드에서 `demo`는 시작 거부 |
+| `FF_VEHICLE_CHANNEL` | | `pull` | 차량 전달 채널 — `pull`(차량이 당겨 감) 또는 등록한 고객 게이트웨이 어댑터. `sim`은 시작 거부 |
+| `FF_VEHICLE_POLL_SEC` | | `30` | 차량에 권하는 조회 간격(초) — **긴급 차단이 차량에 닿는 시간이 이 값에 달려 있다** |
+| `FF_VEHICLE_CERT_HEADER` | mTLS면 ✓ | 없음(주석) | 게이트웨이가 넣는 인증서 주체 머리글(예: `x-client-cert-subject`). 빈 값으로 두지 않는다 — 안 쓰면 줄을 주석으로 |
 | `FF_AUTH` | ✓ | `oidc` | 운영 모드는 oidc만 |
 | `FF_PUBLIC_URL` | ✓ | `https://ff.oem.example` | 공개 출처(경로 없이, https) |
 | `OIDC_ISSUER` | ✓ | `https://sso.oem.example/realms/ff` | IdP 발급자(https) |
@@ -146,7 +163,7 @@ IdP에 등록할 값:
 
 ```bash
 cd FF
-cp docker/app/.env.example docker/app/.env        # §6대로 채운다
+cp docker/app/.env.example docker/app/.env        # §6대로 채운다 — FF_KEK는 openssl rand -base64 32, 나머지 비밀은 openssl rand -base64 48
 # 이미지 빌드(인터넷 필요) — 또는 반입한 이미지를 쓰고 FF_IMAGE=<이름:판>를 .env에 적는다
 docker build -f docker/app/Dockerfile --build-arg FF_BUILD_SHA=$(git rev-parse --short HEAD) -t ff-platform:0.1.0 .
 docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env up -d
@@ -193,6 +210,7 @@ docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env ps   
 | 업무 DB | `ff-data` 볼륨 `/var/lib/ff/ff.db`(+WAL) | 온라인 백업 명령(`VACUUM INTO` — 앱을 멈추지 않는 한순간의 일관 사본) |
 | 감사 고정점 | `ff-anchor` 볼륨 `/var/lib/ff-anchor/audit-anchor.jsonl` | 같은 명령이 사본의 감사 끝까지의 고정점을 함께 담는다 |
 | 설정·비밀 | `docker/app/.env`, 비밀 보관소 | 별도 보관(백업 폴더에 넣지 않는다). **`FF_AUDIT_KEY`를 잃으면 고정점 검증을 할 수 없다** |
+| 키 암호화 키 | 비밀 보관소(`FF_KEK`·`FF_KEK_FILE`) | **DB 백업과 따로**(다른 보관소·오프라인 사본). DB 백업 안의 개인키·차량 루트 비밀은 KEK로 봉인돼 있다 — **KEK를 잃으면 백업을 복원해도 서명 키·차량 키를 되살릴 수 없다**(§10) |
 
 ### 9.2 온라인 백업
 
@@ -222,6 +240,7 @@ curl -s http://127.0.0.1:9101/api/health/ready                       # 5) ready
 - `--replace`는 기존 DB·WAL·고정점 파일을 지우지 않고 `*.before-restore-<시각>`으로 옆에 옮긴다 — 사고 조사가 끝날 때까지 보관한다.
 - **고정점 파일도 백업 것으로 바뀐다.** 살아 있던 고정점 파일에는 백업 뒤에 생긴(이제 DB에 없는) 감사 행을 가리키는 고정점이 있어, 그대로 쓰면 감사 체인 검증이 "고정점 어긋남"(위변조와 같은 신호)을 낸다. 옮겨 둔 옛 고정점 파일은 백업 시점과 사고 시점 사이에 기록이 있었다는 증거로 남긴다.
 - 백업 시점 뒤의 업무(Feature·승인·배포·감사)는 복원으로 사라진다 — 복원 사실과 잃은 구간을 변경 기록으로 남기고, 차량에 이미 나간 정책·차단과 플랫폼 상태를 맞춰 본다(배포·Fleet 화면).
+- 복원한 DB는 **백업을 뜰 때의 KEK**로 열린다. 그 사이 KEK를 교체했다면 새 키를 `FF_KEK`, 백업 때 키를 `FF_KEK_PREVIOUS`로 주고 한 번 시작한다(§10.2).
 - 다른 설치(고객)의 백업은 거부한다(한 설치 = 한 고객). 같은 고객의 설치를 새 서버로 옮기는 경우에만 `--allow-other-instance`.
 - **복원 연습**: 분기마다 시험 설치에 최신 백업을 복원해 위 5)·6)을 확인한다. 같은 연습이 자동 시험으로 고정돼 있다 — `backend/test/kernel/backup-restore.spec.ts`(돌고 있는 앱 백업 → 백업 뒤 변경 → 새 자리에 복원 → 부팅 → `verifyChain` 고정점까지 통과·데이터 일치·백업 뒤 변경 없음, 해시 변조 거부, 옛 고정점 파일을 쓰면 어긋남 검출).
 
@@ -244,7 +263,42 @@ curl -s http://127.0.0.1:9101/api/health/ready                       # 5) ready
 
 업무·안전 기록의 보존 기간 정의는 `contracts/src/rules/retention.ts`(화면 `데이터·규제 기록`), 운영 보조 저장소는 `backend/src/kernel/housekeeping.service.ts`.
 
-## 10. 업그레이드
+## 10. 키 보호(KEK)·차량 키 프로비저닝
+
+### 10.1 KEK — 무엇을 지키나
+
+서명 개인키(게시본·긴급 차단 서명), 승인자 개인 키, 차량 키 epoch 루트 비밀은 DB에 **레코드마다 새 데이터 키로 AES-256-GCM 암호화**되고, 데이터 키는 **KEK**로 감싸여 저장된다(RD-SEC-06, `20-90` §7.1). DB 파일·WAL·백업만 가져가서는 키를 꺼낼 수 없다.
+
+- KEK는 `FF_KEK`(base64 32바이트) 또는 `FF_KEK_FILE`(비밀 파일)로 준다. 운영 모드에서 없으면 시작하지 않는다.
+- 잘못된 KEK로 띄우면 첫 서명이 아니라 **시작에서** 멈춘다("저장된 비밀이 다른 KEK로 감싸져 있습니다" — 값은 메시지에 없음).
+- docker secret으로 주는 예(compose에 덧붙임):
+  ```yaml
+  services:
+    app:
+      secrets: [ff_kek]
+      environment: { FF_KEK_FILE: /run/secrets/ff_kek }   # 이때 .env의 FF_KEK는 비운다
+  secrets:
+    ff_kek: { file: /etc/ff/secrets/kek.b64 }            # 권한 400, 소유자 root
+  ```
+- **백업**: KEK는 DB 백업과 **다른 곳**에 둔다(사내 키 보관소 + 봉인한 오프라인 사본 2부, 접근 기록). KEK를 잃으면 봉인된 키를 되살릴 방법이 없다 — 새 서명 키·차량 키 epoch로 다시 시작해야 하고, 그 전까지 차량에 서명된 정책·차단을 보낼 수 없다.
+- 고객 KMS·HSM(AWS KMS·Azure Key Vault·PKCS#11)은 `KekProvider` 어댑터로 붙인다 — 아직 구현은 없다(§13).
+
+### 10.2 KEK 교체
+
+1. 백업(§9.2)을 뜬다.
+2. 새 키를 만든다: `openssl rand -base64 32`.
+3. `.env`에서 새 키를 `FF_KEK`, 지금 키를 `FF_KEK_PREVIOUS`로 두고 `docker compose ... up -d` — 시작하면서 데이터 키만 새 KEK로 다시 감싼다(암호문은 그대로).
+4. `/api/health/ready`가 ready면 `FF_KEK_PREVIOUS`를 지우고 다시 `up -d`. 옛 키는 그 시점 전 백업을 복원할 때 필요하므로 백업 보존 기간(§9.4) 동안 보관한다.
+
+### 10.3 차량 키 프로비저닝
+
+- 차량 키는 epoch 루트 비밀에서 VIN마다 파생한다(`K_v = HKDF(루트, "epoch:<n>", VIN)`) — 차량은 루트가 아니라 **자기 차량 키만** 갖는다(`80-40` §2.2).
+- 생산 라인에서 차량 보안 저장소에 차량 키를 주입하는 체계(공장 KMS·키 래핑 전송)는 이 플랫폼 밖이다. 고객 PKI·생산 시스템과 연결 방식을 정한 뒤 붙인다. 시험용 루트 주입(`FF_HSM_VEHICLE_ROOT`)은 운영 모드에서 거부된다.
+- 차량 요청은 `FF_VEHICLE_AUTH=required` — 요청마다 차량 키 파생 CMAC 서명(본문·시각·nonce) 또는 게이트웨이 mTLS 인증서 주체가 있어야 한다. 실패는 401·감사 DENIED·보안 이벤트로 남는다.
+- 전달은 `FF_VEHICLE_CHANNEL=pull` — 차량이 `FF_VEHICLE_POLL_SEC`(권장 30초)마다 서명 요청으로 전달함을 당겨 가 직접 검증하고 확인을 보낸다. **긴급 차단 도달 시간 = 최대 조회 간격 + 네트워크 지연**이다. 더 짧아야 하면 고객 게이트웨이(푸시) 어댑터가 필요하다(`80-40` §4).
+- 채널 상태: `GET /api/vehicle-channel`(고른 어댑터·대기 중 전달 수).
+
+## 11. 업그레이드
 
 1. 릴리스 노트를 읽는다(새 필수 설정이 있으면 `.env.example`에 들어 있다 — 비교: `diff docker/app/.env.example docker/app/.env`).
 2. **백업**(§9.2)을 먼저 뜬다.
@@ -253,20 +307,22 @@ curl -s http://127.0.0.1:9101/api/health/ready                       # 5) ready
 5. `/api/health/ready`가 ready이고 `checks.migrations.detail`의 적용 수가 늘었는지, `/api/health/live`의 `version`·`commit`이 새 판인지 본다.
 6. **되돌리기**: 마이그레이션은 앞으로만 간다(내리는 마이그레이션은 없다). 새 판에 문제가 있으면 옛 이미지로 바꾸고 2의 백업을 복원한다(§9.3). 옛 판 앱을 새 스키마 DB로 띄우지 않는다.
 
-## 11. 보안 점검표
+## 12. 보안 점검표
 
 - [ ] `FF_INSTANCE_ID`가 고객·환경마다 다르다
-- [ ] 비밀 4종(`FF_AUDIT_KEY`·`FF_SESSION_SECRET`·`OIDC_CLIENT_SECRET`·`FF_METRICS_TOKEN`)이 새로 만든 값이고 보관소에 있다. `.env` 권한 `600`
+- [ ] 비밀(`FF_KEK`·`FF_AUDIT_KEY`·`FF_SESSION_SECRET`·`OIDC_CLIENT_SECRET`·`FF_METRICS_TOKEN`)이 새로 만든 값이고 보관소에 있다. `.env` 권한 `600`
+- [ ] KEK의 별도 백업(DB 백업과 다른 곳)이 있고, 복원 연습 때 그 KEK로 열어 봤다
+- [ ] 차량 창구를 mTLS로 받으면 프록시가 차량이 보낸 인증서 주체 머리글을 지우고 다시 쓴다
 - [ ] 컨테이너 포트가 127.0.0.1(또는 프록시 전용 망)에만 열려 있다. 프록시는 TLS 1.2 이상
 - [ ] IdP 그룹 매핑이 직무 분리(작성 ≠ 승인, 차단 승인자 ≠ 복원 승인자)를 지킨다
 - [ ] 고정점 볼륨이 DB 볼륨과 다른 저장소(가능하면 추가 전용)에 있다
 - [ ] 백업이 매일 돌고, 원격 사본이 있고, 분기마다 복원 연습을 했다
 - [ ] 외부 연계를 쓰면 webhook 비밀을 그 시스템과 같은 새 값으로 넣었다(공개된 모의 값은 거부된다)
 
-## 12. 알려진 한계
+## 13. 알려진 한계
 
 - DB는 SQLite 파일 + 단일 인스턴스다(D-RD-3 PostgreSQL 이전 전) — 고가용성(이중화)·무중단 업그레이드는 아직 없다. 업그레이드 중 짧은 중단이 있다.
-- 차량 전달 경로(OTA·차량 채널)는 아직 실제 연결이 없다(RD-OPS-04). 메일·과금·OTA·Data Lake 연계는 모의다(RD-UX-04). 모의 연계의 예시 내용(해외공장 주문·레거시 옵션 코드·VOC)은 시드 없는 설치에서는 비어 있다.
-- 승인자 키·차량 루트 비밀은 아직 소프트웨어 HSM(DB)에 있다(RD-SEC-06 — KMS/HSM 연결 전).
+- 차량 전달은 당겨받기(pull)만 실제로 있다 — 푸시가 필요한 고객 게이트웨이 어댑터·공장 차량 키 주입은 고객별로 붙인다(`80-40` §6). OTA 캠페인(IF-05)·TMS(IF-09)·메일·과금·Data Lake 연계는 모의다(RD-UX-04). 모의 연계의 예시 내용(해외공장 주문·레거시 옵션 코드·VOC)은 시드 없는 설치에서는 비어 있다.
+- 키는 저장만 KEK로 봉인된다 — 서명·CMAC 연산 중에는 프로세스 메모리에 있다. 고객 KMS·HSM 어댑터는 아직 없다(RD-SEC-06 남은 것).
 - OFREP 평가 경로(`/ofrep/v1/*`)는 아직 익명이다(`20-90` §6.6).
 - 이미지는 아직 레지스트리에 올리지 않는다 — CI(`.github/workflows/app-image.yml`)는 빌드·기동·준비 점검까지만 한다.

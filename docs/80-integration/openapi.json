@@ -36,6 +36,48 @@
         }
       }
     },
+    "/api/health/live": {
+      "get": {
+        "summary": "생존 점검(프로세스 응답)",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "healthLive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/health/ready": {
+      "get": {
+        "summary": "준비 점검(마이그레이션·DB 쓰기, 아니면 503)",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "healthReady",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/components": {
       "get": {
         "summary": "42 컴포넌트 현황",

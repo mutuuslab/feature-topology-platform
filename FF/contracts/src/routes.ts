@@ -76,6 +76,8 @@ export interface RouteDef {
 export const ROUTES: RouteDef[] = [
   // 커널
   { name: 'health', method: 'GET', path: '/api/health', summary: '상태 점검', component: 'KERNEL' },
+  { name: 'healthLive', method: 'GET', path: '/api/health/live', summary: '생존 점검(프로세스 응답)', component: 'KERNEL' },
+  { name: 'healthReady', method: 'GET', path: '/api/health/ready', summary: '준비 점검(마이그레이션·DB 쓰기, 아니면 503)', component: 'KERNEL' },
   { name: 'components', method: 'GET', path: '/api/components', summary: '42 컴포넌트 현황', component: 'KERNEL' },
   { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit'] },
   { name: 'notifications', method: 'GET', path: '/api/notifications', summary: '내 알림 — 개인·역할·Owner 팀 수신자, 안 읽음 수·범주별 집계', component: 'D04-04', query: ['unread', 'category', 'limit'], personal: true },

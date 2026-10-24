@@ -2,307 +2,801 @@
   "note": "출시 준비 목록(정본 docs/20-architecture/20-90-production-readiness.md, 규칙 tools/readiness-rules.ts). 결정 2026-10-24: D-RD-1 고객사별 단독 설치 · D-RD-2 OIDC SSO · D-RD-3 PostgreSQL 이전 · D-RD-4 데모 사이트 유지(데모 빌드 분리). 시험 표식은 'readiness: <ID>'.",
   "items": [
     {
-      "id": "RD-SEC-01", "priority": "P0", "area": "인증", "phase": "R2", "decision": "D-RD-2",
+      "id": "RD-SEC-01",
+      "priority": "P0",
+      "area": "인증",
+      "phase": "R2",
+      "decision": "D-RD-2",
       "title": "백엔드가 헤더로 주장한 신원·역할을 믿는다",
-      "evidence": ["backend/src/kernel/actor.ts:42-56"],
+      "evidence": [
+        "backend/src/kernel/actor.ts:42-56"
+      ],
       "criteria": "운영 모드(FF_AUTH=oidc)에서 신원·역할은 검증된 OIDC 토큰(서명·발급자·대상·만료)에서만 나온다. X-Actor-Role만 보낸 요청은 401. 데모 헤더 인증은 운영 모드에서 부팅을 거부한다",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-02", "priority": "P0", "area": "인증", "phase": "R2", "decision": "D-RD-4",
+      "id": "RD-SEC-02",
+      "priority": "P0",
+      "area": "인증",
+      "phase": "R2",
+      "decision": "D-RD-4",
       "title": "프론트가 역할을 스스로 고른다(역할 선택기·localStorage)",
-      "evidence": ["frontend/src/store.tsx:31", "frontend/src/shell/Shell.tsx", "frontend/src/api/actor.ts:15-19"],
+      "evidence": [
+        "frontend/src/store.tsx:31",
+        "frontend/src/shell/Shell.tsx",
+        "frontend/src/api/actor.ts:15-19"
+      ],
       "criteria": "운영 빌드에는 역할 선택기가 없고 역할은 서버(/api/iam/me)가 준다. 역할 선택기는 데모 빌드에서만",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-03", "priority": "P0", "area": "인증", "phase": "R2", "decision": "D-RD-4",
+      "id": "RD-SEC-03",
+      "priority": "P0",
+      "area": "인증",
+      "phase": "R2",
+      "decision": "D-RD-4",
       "title": "데모 ID·비밀번호가 번들에 있고 세션은 localStorage 표식",
-      "evidence": ["frontend/src/auth.ts:7-9,30"],
+      "evidence": [
+        "frontend/src/auth.ts:7-9,30"
+      ],
       "criteria": "운영 빌드는 OIDC(인가 코드 + PKCE)로 로그인하고 데모 자격 증명이 번들에 없다. 데모 로그인은 데모 빌드에서만",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-04", "priority": "P0", "area": "인가", "phase": "R1",
+      "id": "RD-SEC-04",
+      "priority": "P0",
+      "area": "인가",
+      "phase": "R1",
       "title": "헤더 없는 GET을 AUDITOR로 처리 — 익명 읽기",
-      "evidence": ["backend/src/kernel/actor.ts:49-51"],
+      "evidence": [
+        "backend/src/kernel/actor.ts:49-51"
+      ],
       "criteria": "운영 모드에서 신원 없는 요청은 상태 점검 허용 목록 밖이면 401. 익명 AUDITOR 대체는 데모 모드에서만",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-05", "priority": "P0", "area": "승인", "phase": "R2", "decision": "D-RD-2",
+      "id": "RD-SEC-05",
+      "priority": "P0",
+      "area": "승인",
+      "phase": "R2",
+      "decision": "D-RD-2",
       "title": "승인 서명 키를 주장된 사용자마다 즉석 생성 — 2인 승인을 한 사람이 깬다",
-      "evidence": ["backend/src/domains/d06-qsec/pki-kms/hsm.service.ts:62-80", "backend/src/domains/d03-safety/kill-switch/kill.service.ts:272-278"],
+      "evidence": [
+        "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts:62-80",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:272-278"
+      ],
       "criteria": "승인자는 검증된 토큰의 주체여야 하고, 서명 키는 미리 등록된 사용자 키만 쓴다(운영 모드에서 즉석 생성 금지). 같은 주체의 두 번째 승인은 거부",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-06", "priority": "P0", "area": "키", "phase": "R2",
+      "id": "RD-SEC-06",
+      "priority": "P0",
+      "area": "키",
+      "phase": "R2",
       "title": "개인키·차량 루트 비밀이 SQLite에 평문",
-      "evidence": ["backend/src/domains/d06-qsec/pki-kms/pki.service.ts:58-66,102-108", "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts:66,101-107"],
+      "evidence": [
+        "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:58-66,102-108",
+        "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts:66,101-107"
+      ],
       "criteria": "저장되는 개인키·비밀은 키 암호화 키(FF_KEK, 운영은 KMS)로 감싼 형태만 DB에 있다. 운영 모드는 FF_HSM_VEHICLE_ROOT 주입·KEK 없음을 거부",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-07", "priority": "P0", "area": "연계", "phase": "R1",
+      "id": "RD-SEC-07",
+      "priority": "P0",
+      "area": "연계",
+      "phase": "R1",
       "title": "웹훅 비밀이 공개된 모의 값으로 대체",
-      "evidence": ["backend/src/domains/d05-ext/api-gateway/ext-sync/mock-ext.store.ts:58-62"],
+      "evidence": [
+        "backend/src/domains/d05-ext/api-gateway/ext-sync/mock-ext.store.ts:58-62"
+      ],
       "criteria": "운영 모드에서 웹훅 비밀이 비었거나 모의 값이면 부팅 거부",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "done",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-08", "priority": "P0", "area": "차량", "phase": "R2",
+      "id": "RD-SEC-08",
+      "priority": "P0",
+      "area": "차량",
+      "phase": "R2",
       "title": "차량 요청 신원이 X-Vehicle-Id 헤더뿐",
-      "evidence": ["backend/src/kernel/actor.ts:30-34,77-85", "backend/src/domains/d02-runtime/vehicle-request/vehicle-request.service.ts:70"],
+      "evidence": [
+        "backend/src/kernel/actor.ts:30-34,77-85",
+        "backend/src/domains/d02-runtime/vehicle-request/vehicle-request.service.ts:70"
+      ],
       "criteria": "운영 모드에서 차량 요청은 게이트웨이가 검증한 mTLS 인증서 주체(신뢰 프록시 헤더) 또는 CMAC로 VIN이 묶여야 한다. 헤더만 있으면 401",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-09", "priority": "P0", "area": "설치 단위", "phase": "R1", "decision": "D-RD-1",
+      "id": "RD-SEC-09",
+      "priority": "P0",
+      "area": "설치 단위",
+      "phase": "R1",
+      "decision": "D-RD-1",
       "title": "고객 구분이 없다 — 고객사별 단독 설치로 결정",
-      "evidence": ["backend/src/kernel/kernel.module.ts:27"],
+      "evidence": [
+        "backend/src/kernel/kernel.module.ts:27"
+      ],
       "criteria": "설치마다 고객 식별(FF_INSTANCE_ID)이 필수이고 상태 점검·감사·로그에 나온다. 운영 모드에서 없으면 부팅 거부. 설치 안내서에 '한 설치 = 한 고객'",
-      "status": "open", "checks": [{ "kind": "marker" }, { "kind": "match", "path": "../docs/20-architecture/20-91-install-guide.md", "pattern": "한 설치 = 한 고객" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        },
+        {
+          "kind": "match",
+          "path": "../docs/20-architecture/20-91-install-guide.md",
+          "pattern": "한 설치 = 한 고객"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-01", "priority": "P0", "area": "저장", "phase": "R1",
+      "id": "RD-OPS-01",
+      "priority": "P0",
+      "area": "저장",
+      "phase": "R1",
       "title": "기본 DB가 메모리이고 부팅마다 데모 데이터",
-      "evidence": ["backend/src/kernel/kernel.module.ts:27-29", "backend/src/kernel/seed.ts:109,114"],
+      "evidence": [
+        "backend/src/kernel/kernel.module.ts:27-29",
+        "backend/src/kernel/seed.ts:109,114"
+      ],
       "criteria": "운영 모드(FF_ENV=production)는 FF_DB 파일/연결 필수·:memory: 거부·FF_SEED 기본 none·데모 시드 거부",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "done",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-02", "priority": "P0", "area": "첫 실행", "phase": "R1",
+      "id": "RD-OPS-02",
+      "priority": "P0",
+      "area": "첫 실행",
+      "phase": "R1",
       "title": "빈 DB 첫 실행을 검사하는 시험이 없다",
-      "evidence": ["backend/test/helpers.ts:10", "e2e/playwright.config.ts:45"],
+      "evidence": [
+        "backend/test/helpers.ts:10",
+        "e2e/playwright.config.ts:45"
+      ],
       "criteria": "FF_SEED=none 파일 DB로 부팅해 모든 메뉴가 오류 없이 빈 상태 안내를 보인다(e2e)",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-03", "priority": "P0", "area": "데이터 모델", "phase": "R1",
+      "id": "RD-OPS-03",
+      "priority": "P0",
+      "area": "데이터 모델",
+      "phase": "R1",
       "title": "권한 출처·Fleet 값이 데모 전용 열거값",
-      "evidence": ["contracts/src/schemas/policy.ts:99,123", "backend/src/domains/d01-policy/entitlement/trial-expiry.service.ts:64"],
+      "evidence": [
+        "contracts/src/schemas/policy.ts:99,123",
+        "backend/src/domains/d01-policy/entitlement/trial-expiry.service.ts:64"
+      ],
       "criteria": "출처·Fleet에 운영 값(PRODUCTION)이 있고 실제 부여는 운영 값으로 기록되며 만료 처리가 운영 값도 다룬다",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-04", "priority": "P0", "area": "차량 채널", "phase": "R2",
+      "id": "RD-OPS-04",
+      "priority": "P0",
+      "area": "차량 채널",
+      "phase": "R2",
       "title": "실제 차량 전달 경로가 없다(시뮬레이터가 기본)",
-      "evidence": ["backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:80-89", "backend/src/adapters/if-mocks/external-systems.ts:163,166"],
+      "evidence": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:80-89",
+        "backend/src/adapters/if-mocks/external-systems.ts:163,166"
+      ],
       "criteria": "운영 모드에서 내부 시뮬레이터는 꺼져 있고(명시적으로만 켬), 차량 전달은 설정된 실제 어댑터(IF-05/IF-07)로만",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-05", "priority": "P0", "area": "배포", "phase": "R2", "decision": "D-RD-1",
+      "id": "RD-OPS-05",
+      "priority": "P0",
+      "area": "배포",
+      "phase": "R2",
+      "decision": "D-RD-1",
       "title": "백엔드 배포 산출물이 없다",
-      "evidence": ["docker/unleash/docker-compose.yml", "../.github/workflows/cloudflare.yml:22-28"],
+      "evidence": [
+        "docker/unleash/docker-compose.yml",
+        "../.github/workflows/cloudflare.yml:22-28"
+      ],
       "criteria": "백엔드+프론트 이미지(Dockerfile), 단독 설치 compose(앱·PostgreSQL·Keycloak), 환경 템플릿, 이미지 빌드 CI",
-      "status": "open", "checks": [{ "kind": "exists", "path": "docker/app/Dockerfile" }, { "kind": "exists", "path": "docker/app/docker-compose.yml" }, { "kind": "exists", "path": "docker/app/.env.example" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "exists",
+          "path": "docker/app/Dockerfile"
+        },
+        {
+          "kind": "exists",
+          "path": "docker/app/docker-compose.yml"
+        },
+        {
+          "kind": "exists",
+          "path": "docker/app/.env.example"
+        }
+      ]
     },
     {
-      "id": "RD-FN-01", "priority": "P0", "area": "정확성", "phase": "R1",
+      "id": "RD-FN-01",
+      "priority": "P0",
+      "area": "정확성",
+      "phase": "R1",
       "title": "결함 기록(it.fails) 12건이 열려 있다",
-      "evidence": ["backend/test/requirements/defects.spec.ts", "backend/test/ads/defects.spec.ts", "contracts/src/rules/requirements-defects.test.ts"],
+      "evidence": [
+        "backend/test/requirements/defects.spec.ts",
+        "backend/test/ads/defects.spec.ts",
+        "contracts/src/rules/requirements-defects.test.ts"
+      ],
       "criteria": "결함 기록 파일에 it.fails가 없다(각 결함은 고치고 회귀 시험 it로 바꾼다)",
       "status": "open",
       "checks": [
-        { "kind": "absent", "path": "backend/test/requirements/defects.spec.ts", "pattern": "\\bit\\.fails\\(" },
-        { "kind": "absent", "path": "backend/test/ads/defects.spec.ts", "pattern": "\\bit\\.fails\\(" },
-        { "kind": "absent", "path": "contracts/src/rules/requirements-defects.test.ts", "pattern": "\\bit\\.fails\\(" }
+        {
+          "kind": "absent",
+          "path": "backend/test/requirements/defects.spec.ts",
+          "pattern": "\\bit\\.fails\\("
+        },
+        {
+          "kind": "absent",
+          "path": "backend/test/ads/defects.spec.ts",
+          "pattern": "\\bit\\.fails\\("
+        },
+        {
+          "kind": "absent",
+          "path": "contracts/src/rules/requirements-defects.test.ts",
+          "pattern": "\\bit\\.fails\\("
+        }
       ]
     },
     {
-      "id": "RD-FN-02", "priority": "P0", "area": "되돌리기", "phase": "R3",
+      "id": "RD-FN-02",
+      "priority": "P0",
+      "area": "되돌리기",
+      "phase": "R3",
       "title": "롤백·정책 버전 이력이 없다",
-      "evidence": ["harness/requirements/REPORT.md §3 B2·B3"],
+      "evidence": [
+        "harness/requirements/REPORT.md §3 B2·B3"
+      ],
       "criteria": "정책 내용 변경이 버전으로 남고, 이전 버전으로 되돌리는 승인 절차가 있다(백엔드 시험 + e2e)",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-10", "priority": "P1", "area": "CORS", "phase": "R1",
+      "id": "RD-SEC-10",
+      "priority": "P1",
+      "area": "CORS",
+      "phase": "R1",
       "title": "모든 출처 반사(origin: true)",
-      "evidence": ["backend/src/app.factory.ts:15"],
+      "evidence": [
+        "backend/src/app.factory.ts:15"
+      ],
       "criteria": "운영 모드는 FF_CORS_ORIGINS 허용 목록만, 목록 밖 출처에는 CORS 헤더가 없다",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "done",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-11", "priority": "P1", "area": "미들웨어", "phase": "R1",
+      "id": "RD-SEC-11",
+      "priority": "P1",
+      "area": "미들웨어",
+      "phase": "R1",
       "title": "보안 헤더·요청 제한·본문 크기 제한 없음",
-      "evidence": ["backend/package.json:12-19", "backend/src/app.factory.ts"],
+      "evidence": [
+        "backend/package.json:12-19",
+        "backend/src/app.factory.ts"
+      ],
       "criteria": "API 응답에 nosniff·frame-ancestors none·Referrer-Policy, 본문 크기 제한(413), 출처별 요청 제한(429)",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "done",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-12", "priority": "P1", "area": "프론트 헤더", "phase": "R1",
+      "id": "RD-SEC-12",
+      "priority": "P1",
+      "area": "프론트 헤더",
+      "phase": "R1",
       "title": "CSP·HSTS·X-Frame-Options·nosniff·Referrer-Policy 없음",
-      "evidence": ["frontend/public/_headers:1-17"],
+      "evidence": [
+        "frontend/public/_headers:1-17"
+      ],
       "criteria": "_headers의 모든 경로에 다섯 헤더",
       "status": "open",
       "checks": [
-        { "kind": "match", "path": "frontend/public/_headers", "pattern": "Content-Security-Policy:" },
-        { "kind": "match", "path": "frontend/public/_headers", "pattern": "Strict-Transport-Security:" },
-        { "kind": "match", "path": "frontend/public/_headers", "pattern": "X-Frame-Options: DENY" },
-        { "kind": "match", "path": "frontend/public/_headers", "pattern": "X-Content-Type-Options: nosniff" },
-        { "kind": "match", "path": "frontend/public/_headers", "pattern": "Referrer-Policy:" },
-        { "kind": "marker" }
+        {
+          "kind": "match",
+          "path": "frontend/public/_headers",
+          "pattern": "Content-Security-Policy:"
+        },
+        {
+          "kind": "match",
+          "path": "frontend/public/_headers",
+          "pattern": "Strict-Transport-Security:"
+        },
+        {
+          "kind": "match",
+          "path": "frontend/public/_headers",
+          "pattern": "X-Frame-Options: DENY"
+        },
+        {
+          "kind": "match",
+          "path": "frontend/public/_headers",
+          "pattern": "X-Content-Type-Options: nosniff"
+        },
+        {
+          "kind": "match",
+          "path": "frontend/public/_headers",
+          "pattern": "Referrer-Policy:"
+        },
+        {
+          "kind": "marker"
+        }
       ]
     },
     {
-      "id": "RD-SEC-13", "priority": "P1", "area": "감사", "phase": "R1",
+      "id": "RD-SEC-13",
+      "priority": "P1",
+      "area": "감사",
+      "phase": "R1",
       "title": "감사 체인이 키 없는 해시, NULL 해시 보충 경로",
-      "evidence": ["backend/src/kernel/audit.service.ts:45-68"],
+      "evidence": [
+        "backend/src/kernel/audit.service.ts:45-68"
+      ],
       "criteria": "체인 머리를 키(FF_AUDIT_KEY, HMAC)로 서명해 주기적으로 남기고, 운영 모드에서 NULL 해시 보충은 하지 않고 무결성 경보를 낸다",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-SEC-14", "priority": "P1", "area": "공급망", "phase": "R1",
+      "id": "RD-SEC-14",
+      "priority": "P1",
+      "area": "공급망",
+      "phase": "R1",
       "title": "의존성 취약점·CI 보안 검사 없음",
-      "evidence": ["../.github/workflows/verify.yml:22-25"],
+      "evidence": [
+        "../.github/workflows/verify.yml:22-25"
+      ],
       "criteria": "CI에 운영 의존성 audit(high 이상 0)·비밀 검사·Dependabot·CodeQL",
       "status": "open",
       "checks": [
-        { "kind": "match", "path": "../.github/workflows/verify.yml", "pattern": "npm audit --omit=dev --audit-level=high" },
-        { "kind": "exists", "path": "../.github/dependabot.yml" },
-        { "kind": "match", "path": "../.github/workflows/security.yml", "pattern": "gitleaks" },
-        { "kind": "match", "path": "../.github/workflows/security.yml", "pattern": "codeql" }
+        {
+          "kind": "match",
+          "path": "../.github/workflows/verify.yml",
+          "pattern": "npm audit --omit=dev --audit-level=high"
+        },
+        {
+          "kind": "exists",
+          "path": "../.github/dependabot.yml"
+        },
+        {
+          "kind": "match",
+          "path": "../.github/workflows/security.yml",
+          "pattern": "gitleaks"
+        },
+        {
+          "kind": "match",
+          "path": "../.github/workflows/security.yml",
+          "pattern": "codeql"
+        }
       ]
     },
     {
-      "id": "RD-SEC-15", "priority": "P1", "area": "배포", "phase": "R1",
+      "id": "RD-SEC-15",
+      "priority": "P1",
+      "area": "배포",
+      "phase": "R1",
       "title": "wrangler 주 버전만 고정·--commit-dirty",
-      "evidence": ["../.github/workflows/cloudflare.yml:34,39"],
+      "evidence": [
+        "../.github/workflows/cloudflare.yml:34,39"
+      ],
       "criteria": "wrangler 정확한 버전 고정, --commit-dirty 없음",
       "status": "open",
       "checks": [
-        { "kind": "absent", "path": "../.github/workflows/cloudflare.yml", "pattern": "--commit-dirty" },
-        { "kind": "absent", "path": "../.github/workflows/cloudflare.yml", "pattern": "wrangler@4(?!\\.)" }
+        {
+          "kind": "absent",
+          "path": "../.github/workflows/cloudflare.yml",
+          "pattern": "--commit-dirty"
+        },
+        {
+          "kind": "absent",
+          "path": "../.github/workflows/cloudflare.yml",
+          "pattern": "wrangler@4(?!\\.)"
+        }
       ]
     },
     {
-      "id": "RD-OPS-06", "priority": "P1", "area": "재시작", "phase": "R1",
+      "id": "RD-OPS-06",
+      "priority": "P1",
+      "area": "재시작",
+      "phase": "R1",
       "title": "재시작하면 게시 마감·Kill 지연 감시가 사라진다",
-      "evidence": ["backend/src/kernel/scheduler.ts:25-31", "backend/src/domains/d04-ops/secure-deploy/secure-deploy.service.ts:148"],
+      "evidence": [
+        "backend/src/kernel/scheduler.ts:25-31",
+        "backend/src/domains/d04-ops/secure-deploy/secure-deploy.service.ts:148"
+      ],
       "criteria": "부팅 때 열린 게시의 마감과 Kill 지연 감시를 다시 건다(지난 것은 즉시 처리) — 재시작 시험",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-07", "priority": "P1", "area": "종료", "phase": "R1",
+      "id": "RD-OPS-07",
+      "priority": "P1",
+      "area": "종료",
+      "phase": "R1",
       "title": "SIGTERM에 DB를 닫지 않는다",
-      "evidence": ["backend/src/main.ts"],
+      "evidence": [
+        "backend/src/main.ts"
+      ],
       "criteria": "enableShutdownHooks — 종료 신호에 예약 작업 정리·DB 닫기",
-      "status": "open", "checks": [{ "kind": "match", "path": "backend/src/main.ts", "pattern": "enableShutdownHooks\\(\\)" }]
+      "status": "done",
+      "checks": [
+        {
+          "kind": "match",
+          "path": "backend/src/main.ts",
+          "pattern": "enableShutdownHooks\\(\\)"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-08", "priority": "P1", "area": "상태 점검", "phase": "R1",
+      "id": "RD-OPS-08",
+      "priority": "P1",
+      "area": "상태 점검",
+      "phase": "R1",
       "title": "상태 점검이 생존만, 준비·버전 없음",
-      "evidence": ["backend/src/kernel/kernel.controller.ts:15-31"],
+      "evidence": [
+        "backend/src/kernel/kernel.controller.ts:15-31"
+      ],
       "criteria": "/api/health/live(프로세스)·/api/health/ready(마이그레이션·DB 쓰기) 분리, 버전·빌드·설치 ID",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "done",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-09", "priority": "P1", "area": "백업", "phase": "R2", "decision": "D-RD-3",
+      "id": "RD-OPS-09",
+      "priority": "P1",
+      "area": "백업",
+      "phase": "R2",
+      "decision": "D-RD-3",
       "title": "백업·복원 연습·보존 기한 없음",
-      "evidence": ["backend/src/kernel/event.service.ts", "backend/src/kernel/idempotency.interceptor.ts"],
+      "evidence": [
+        "backend/src/kernel/event.service.ts",
+        "backend/src/kernel/idempotency.interceptor.ts"
+      ],
       "criteria": "백업·복원 절차(설치 안내서)와 복원 시험, 이벤트·멱등·스팬 보존 기한",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-10", "priority": "P1", "area": "마이그레이션", "phase": "R1",
+      "id": "RD-OPS-10",
+      "priority": "P1",
+      "area": "마이그레이션",
+      "phase": "R1",
       "title": "채워진 이전 판 DB를 올리는 시험이 없다",
-      "evidence": ["backend/src/kernel/migrations.ts:515", "backend/test/kernel/db.spec.ts"],
+      "evidence": [
+        "backend/src/kernel/migrations.ts:515",
+        "backend/test/kernel/db.spec.ts"
+      ],
       "criteria": "이전 판 스키마에 데이터를 채운 DB를 현재 판으로 올리고 불변식(감사 체인·행 수)을 확인하는 시험",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-11", "priority": "P1", "area": "관측", "phase": "R1",
+      "id": "RD-OPS-11",
+      "priority": "P1",
+      "area": "관측",
+      "phase": "R1",
       "title": "텍스트 로그·요청 로그·상관 ID·지표 없음",
-      "evidence": ["backend/src/app.factory.ts:12", "backend/src/kernel/errors.ts:72-73"],
+      "evidence": [
+        "backend/src/app.factory.ts:12",
+        "backend/src/kernel/errors.ts:72-73"
+      ],
       "criteria": "운영 모드 JSON 로그(요청 로그·상관 ID·500 상세), /api/metrics(Prometheus 텍스트)",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-12", "priority": "P1", "area": "운영 기본값", "phase": "R1",
+      "id": "RD-OPS-12",
+      "priority": "P1",
+      "area": "운영 기본값",
+      "phase": "R1",
       "title": "운영 모드가 위험한 기본값을 거부하지 않는다",
-      "evidence": ["backend/src/adapters/unleash/unleash.client.ts:300-303", "backend/src/adapters/sim/carla.adapter.ts:14,42,48"],
+      "evidence": [
+        "backend/src/adapters/unleash/unleash.client.ts:300-303",
+        "backend/src/adapters/sim/carla.adapter.ts:14,42,48"
+      ],
       "criteria": "운영 모드 설정 검사가 빈 Unleash 토큰·모의 Unleash·SIM auto·개발 경로를 거부(문제 전부를 한 번에 알려 주고 부팅 중단)",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "done",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-13", "priority": "P1", "area": "멱등", "phase": "R1",
+      "id": "RD-OPS-13",
+      "priority": "P1",
+      "area": "멱등",
+      "phase": "R1",
       "title": "멱등 키를 처리 뒤에 저장 — 동시 중복이 둘 다 실행",
-      "evidence": ["backend/src/kernel/idempotency.interceptor.ts:37-49"],
+      "evidence": [
+        "backend/src/kernel/idempotency.interceptor.ts:37-49"
+      ],
       "criteria": "처리 전에 키를 예약하고, 진행 중인 같은 키는 409, 끝난 키는 저장된 응답을 돌려준다",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-OPS-14", "priority": "P1", "area": "단일 인스턴스", "phase": "R2", "decision": "D-RD-3",
+      "id": "RD-OPS-14",
+      "priority": "P1",
+      "area": "단일 인스턴스",
+      "phase": "R2",
+      "decision": "D-RD-3",
       "title": "SSE 버스·요청 제한·주기 작업이 프로세스 메모리",
-      "evidence": ["backend/src/kernel/event.service.ts:24,73", "backend/src/domains/d02-runtime/vehicle-request/vehicle-request.service.ts:48-49"],
+      "evidence": [
+        "backend/src/kernel/event.service.ts:24,73",
+        "backend/src/domains/d02-runtime/vehicle-request/vehicle-request.service.ts:48-49"
+      ],
       "criteria": "PostgreSQL 이전 시 LISTEN/NOTIFY 버스·주기 작업 잠금. 그 전까지 설치 안내서에 단일 인스턴스 명시 + 두 번째 인스턴스 부팅 거부(DB 잠금)",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-UX-01", "priority": "P1", "area": "오류 화면", "phase": "R1",
+      "id": "RD-UX-01",
+      "priority": "P1",
+      "area": "오류 화면",
+      "phase": "R1",
       "title": "403만 구분 — 401·409/412·422·네트워크 처리 없음, 개발자 문구",
-      "evidence": ["frontend/src/api/hooks.ts:35", "frontend/src/api/client.ts:77"],
+      "evidence": [
+        "frontend/src/api/hooks.ts:35",
+        "frontend/src/api/client.ts:77"
+      ],
       "criteria": "401 재로그인 안내, 409/412 다시 불러오기 안내, 422 필드 오류, 네트워크 끊김 안내가 사용자 말로(포트·서버 이름 없이)",
-      "status": "open", "checks": [{ "kind": "marker" }, { "kind": "absent", "path": "frontend/src/api/client.ts", "pattern": "9101" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        },
+        {
+          "kind": "absent",
+          "path": "frontend/src/api/client.ts",
+          "pattern": "9101"
+        }
+      ]
     },
     {
-      "id": "RD-UX-02", "priority": "P1", "area": "입력 보호", "phase": "R1",
+      "id": "RD-UX-02",
+      "priority": "P1",
+      "area": "입력 보호",
+      "phase": "R1",
       "title": "저장하지 않은 변경 보호가 한 곳뿐",
-      "evidence": ["frontend/src/screens/features/SafetyTab.tsx:164"],
+      "evidence": [
+        "frontend/src/screens/features/SafetyTab.tsx:164"
+      ],
       "criteria": "편집 폼 공통 보호 — 저장 안 한 변경이 있으면 이동·창 닫기 전에 확인",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-UX-03", "priority": "P1", "area": "큰 데이터", "phase": "R3",
+      "id": "RD-UX-03",
+      "priority": "P1",
+      "area": "큰 데이터",
+      "phase": "R3",
       "title": "목록 페이지 나눔·가상화 없음",
-      "evidence": ["frontend/src/design/table.tsx"],
+      "evidence": [
+        "frontend/src/design/table.tsx"
+      ],
       "criteria": "목록 API는 커서 페이지 나눔, 표는 큰 데이터에서 나눠 그린다(1만 행 시험)",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-UX-04", "priority": "P1", "area": "연계", "phase": "R3",
+      "id": "RD-UX-04",
+      "priority": "P1",
+      "area": "연계",
+      "phase": "R3",
       "title": "메일·과금·OTA·Data Lake가 모의",
-      "evidence": ["backend/src/adapters/if-mocks/external-systems.ts"],
+      "evidence": [
+        "backend/src/adapters/if-mocks/external-systems.ts"
+      ],
       "criteria": "운영 모드에서 모의 연계는 화면에 '연결 안 됨'으로 보이고 결과를 실제처럼 표시하지 않는다",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-P2-01", "priority": "P2", "area": "성능", "phase": "R3",
+      "id": "RD-P2-01",
+      "priority": "P2",
+      "area": "성능",
+      "phase": "R3",
       "title": "부하 시험 없음·전체 테이블 조회·동기 SQLite",
-      "evidence": ["harness/budgets.json", "backend/src/domains/d01-policy/policy-repos.ts:200-202", "backend/src/kernel/db.ts:5-6"],
+      "evidence": [
+        "harness/budgets.json",
+        "backend/src/domains/d01-policy/policy-repos.ts:200-202",
+        "backend/src/kernel/db.ts:5-6"
+      ],
       "criteria": "OFREP·SSE·게시 부하 시험과 p95 예산",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-P2-02", "priority": "P2", "area": "다국어", "phase": "R3",
+      "id": "RD-P2-02",
+      "priority": "P2",
+      "area": "다국어",
+      "phase": "R3",
       "title": "영어 전환 버튼은 있으나 본문은 한국어만",
-      "evidence": ["frontend/src/i18n.ts", "frontend/src/shell/Shell.tsx"],
+      "evidence": [
+        "frontend/src/i18n.ts",
+        "frontend/src/shell/Shell.tsx"
+      ],
       "criteria": "영어 문구가 모든 화면을 덮거나, 덮기 전까지 운영 빌드에서 전환 버튼을 숨긴다",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-P2-03", "priority": "P2", "area": "브라우저", "phase": "R3",
+      "id": "RD-P2-03",
+      "priority": "P2",
+      "area": "브라우저",
+      "phase": "R3",
       "title": "최소 900px·크롬만 e2e",
-      "evidence": ["e2e/playwright.config.ts:31-36"],
+      "evidence": [
+        "e2e/playwright.config.ts:31-36"
+      ],
       "criteria": "Edge·Firefox 스모크 e2e, 지원 해상도 명시",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     },
     {
-      "id": "RD-P2-04", "priority": "P2", "area": "문서", "phase": "R2",
+      "id": "RD-P2-04",
+      "priority": "P2",
+      "area": "문서",
+      "phase": "R2",
       "title": "사용자 설명서·설치 안내 없음",
-      "evidence": ["README.md"],
+      "evidence": [
+        "README.md"
+      ],
       "criteria": "설치 안내서(설치·설정·백업·업그레이드)와 사용자 설명서",
-      "status": "open", "checks": [{ "kind": "exists", "path": "../docs/20-architecture/20-91-install-guide.md" }, { "kind": "exists", "path": "../docs/00-overview/user-manual.md" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "exists",
+          "path": "../docs/20-architecture/20-91-install-guide.md"
+        },
+        {
+          "kind": "exists",
+          "path": "../docs/00-overview/user-manual.md"
+        }
+      ]
     },
     {
-      "id": "RD-P2-05", "priority": "P2", "area": "개인정보", "phase": "R3",
+      "id": "RD-P2-05",
+      "priority": "P2",
+      "area": "개인정보",
+      "phase": "R3",
       "title": "개인정보 삭제·내보내기 절차·사용자 보존 기한 없음",
-      "evidence": ["backend/src/domains/d04-ops/telemetry-ingest/retention.service.ts:1-50"],
+      "evidence": [
+        "backend/src/domains/d04-ops/telemetry-ingest/retention.service.ts:1-50"
+      ],
       "criteria": "사용자 식별자 가명 처리·삭제 요청 절차",
-      "status": "open", "checks": [{ "kind": "marker" }]
+      "status": "open",
+      "checks": [
+        {
+          "kind": "marker"
+        }
+      ]
     }
   ]
 }

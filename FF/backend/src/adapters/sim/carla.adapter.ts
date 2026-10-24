@@ -8,6 +8,7 @@ import { SimCliOutput, type SimStatus } from '@ff/contracts';
 import { execFile } from 'node:child_process';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { isProduction } from '../../kernel/runtime-config';
 
 /** FF 저장소 루트 (backend/src/adapters/sim 또는 backend/dist/adapters/sim 기준) */
 const FF_ROOT = resolve(__dirname, '..', '..', '..', '..');
@@ -39,7 +40,8 @@ export class CarlaAdapter {
   private probed: { at: number; value: SimStatus['server']; reason: string | null } | null = null;
 
   get mode(): 'auto' | 'off' {
-    return process.env.SIM_MODE === 'off' ? 'off' : 'auto';
+    // 운영 모드는 명시하지 않으면 끈다(출시 준비 RD-OPS-12)
+    return (process.env.SIM_MODE ?? (isProduction() ? 'off' : 'auto')) === 'off' ? 'off' : 'auto';
   }
   get runner(): string {
     return process.env.CARLA_RUNNER ?? join(FF_ROOT, 'sim', 'carla', 'ffcarla_cli.py');

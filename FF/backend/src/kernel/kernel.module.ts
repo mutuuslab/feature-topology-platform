@@ -11,6 +11,7 @@ import { EventService } from './event.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
 import { KernelController } from './kernel.controller';
 import { MIGRATIONS } from './migrations';
+import { seedOf } from './runtime-config';
 import { Scheduler } from './scheduler';
 import { loadFixtures, seedDataset, seedDemo } from './seed';
 
@@ -21,12 +22,12 @@ import { loadFixtures, seedDataset, seedDemo } from './seed';
   providers: [
     {
       provide: DB,
-      // FF_DB 기본 = 메모리 DB(데모·테스트). 파일 경로를 주면 재시작 후에도 유지된다.
+      // FF_DB 기본 = 메모리 DB(데모·테스트). 파일 경로를 주면 재시작 후에도 유지된다. 운영 모드는 파일 필수·시드 기본 none(runtime-config).
       // 마이그레이션·시드는 공급자 생성 시점에 끝낸다 — 어떤 모듈의 onModuleInit이 먼저 돌아도 표가 있다.
       useFactory: () => {
         const db = new SqliteDb(process.env.FF_DB ?? ':memory:');
         migrate(db, MIGRATIONS);
-        const seed = process.env.FF_SEED ?? 'v0.81';
+        const seed = seedOf();
         if (seed !== 'none') {
           seedDataset(db, loadFixtures(), seed);
           seedDemo(db);

@@ -1,12 +1,14 @@
 // GLEO 실연동 (GLEO_MODE=ws) — FF_IMP의 실제 모의 브로커(python -m gleo.mock_broker)와 실제 DecisionEngine·VehicleGuard(v2) 차량 에이전트를 띄워
 // 긴급 차단이 차량마다 서명된 kill_command v2 봉투로 나가고, 차량 Guard가 검증한 뒤 state_auth로 서명한 status_report v2가
 // 6단계 수신 검사를 거쳐 회신 집계(CONFIRMED)로 돌아오는지 본다. 차량 키는 같은 모의 공장 루트(FF_HSM_VEHICLE_ROOT, 시험 전용)에서 파생.
-// FF_IMP 저장소·python websockets가 없으면 건너뛴다(CI). 포트 8798 — GLEO 기본 8765와 겹치지 않게.
+// FF_IMP 저장소·python websockets가 없으면 건너뛴다(CI). 브로커 포트는 시험마다 OS가 비어 있는 것을 고른다 —
+// 고정 포트(8798)는 여러 작업 폴더의 verify가 함께 돌 때 "주소 사용 중"으로 실패했다(2026-10-24).
 // FFG-PLT-012 · FFG-TEL-003 · FFG-VEH-002
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { createServer } from 'node:net';
 import { join, resolve } from 'node:path';
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -15,8 +17,18 @@ import { actor, bootApp, killV2, restoreV2 } from '../helpers';
 
 const FF_IMP_MAIN = resolve(__dirname, '../../../../../2026-09-23_FF_IMP');
 const FF_IMP = process.env.FF_IMP_DIR ?? FF_IMP_MAIN;
-const PORT = 8798;
-const URL = `ws://127.0.0.1:${PORT}`;
+/** 비어 있는 로컬 포트 하나 — 잠깐 열었다 닫아 번호만 얻는다 */
+function freePort(): Promise<number> {
+  return new Promise((ok, fail) => {
+    const s = createServer();
+    s.once('error', fail);
+    s.listen(0, '127.0.0.1', () => {
+      const { port } = s.address() as { port: number };
+      s.close(() => ok(port));
+    });
+  });
+}
+let URL = '';
 // 시험 전용 모의 공장 루트 — gleo-v2-vectors.spec과 같은 값(운영 루트 아님)
 const TEST_ROOT_B64 = createHash('sha256').update('ffp-test-vehicle-root-v1').digest('base64');
 // FF_IMP는 자기 .venv(websockets 17)를 쓴다 — 시스템 python의 다른 websockets 버전으로 돌리면 접속 인자가 맞지 않는다.
@@ -50,7 +62,9 @@ describe.skipIf(!ready)('GLEO 실연동 — FF_IMP 브로커·차량 Guard(v2)',
   const procs: ChildProcess[] = [];
 
   beforeAll(async () => {
-    procs.push(await start(['-m', 'gleo.mock_broker', '--port', String(PORT)], 'listening'));
+    const port = await freePort();
+    URL = `ws://127.0.0.1:${port}`;
+    procs.push(await start(['-m', 'gleo.mock_broker', '--port', String(port)], 'listening'));
     Object.assign(process.env, { GLEO_MODE: 'ws', GLEO_URL: URL, FF_SCHEDULER: 'manual', FF_HSM_VEHICLE_ROOT: TEST_ROOT_B64 });
     ({ app, http } = await bootApp());
     // 차량 신뢰 저장소 = 플랫폼 공개키(용도별), Feature 안전 분류 = Registry 확정값, 대상 = 봉투 target과 같은 값

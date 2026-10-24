@@ -4,6 +4,8 @@
 // 보안(틀린 HMAC·오래된 서명·이벤트 재전송·같은 ID 다른 본문), 멱등 재제출, 제출 실패 → 전달 실패(재시도 가능) → 자동·수동 재시도.
 // readiness: RD-OPS-04
 // readiness: RD-UX-04
+// 실제 시간에 기대지 않는다(2026-10-25 CI 흔들림 — 부하 기계에서 회신 기한 8초가 먼저 지나 TIMEOUT): 회신 기한은 시험보다 길게 두고(10분),
+// 기한이 필요한 시험은 시험 OTA 서버의 /_sim/expire(그 작업의 예약을 지금 실행)와 FF 회신 기한 닫기(close)를 직접 부른다.
 import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
@@ -11,9 +13,17 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { OtaServerAdapter, otaWebhookSignature } from '../../src/adapters/ota/ota-server.adapter';
+import { SecureDeployService } from '../../src/domains/d06-qsec/secure-deploy/secure-deploy.service';
+import { Clock } from '../../src/kernel/clock';
 import { actor, bootApp } from '../helpers';
+
+// 회신 기한은 모듈을 읽을 때 정해진다(secure-deploy.service의 PUBLICATION_TIMEOUT_MS) — import보다 먼저 넣는다.
+// 예전에는 beforeAll에서 넣어 4초가 적용되지 않고 기본 8초가 쓰였다.
+vi.hoisted(() => {
+  process.env.PUBLICATION_TIMEOUT_MS = '600000';
+});
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
@@ -26,9 +36,9 @@ const ENV = {
   FF_OTA_WEBHOOK_SECRET: WEBHOOK_SECRET,
   FF_OTA_RETRY_BASE_MS: '40',
   FF_OTA_RETRY_MAX: '2',
-  FF_OTA_TIMEOUT_MS: '3000',
+  // OTA 호출 제한 시간 — 부하 기계에서 호출이 늦어도 실패·재시도로 번지지 않게(재시도 횟수를 단언한다)
+  FF_OTA_TIMEOUT_MS: '60000',
   FF_BOOT_PUBLISH: '0',
-  PUBLICATION_TIMEOUT_MS: '4000',
   GLEO_MODE: 'internal',
   CARLA_RUNNER: join(__dirname, '..', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'),
   FF_EVIDENCE_DIR: mkdtempSync(join(tmpdir(), 'ff-ota-')),
@@ -52,11 +62,18 @@ async function startReference(): Promise<{ url: string; proc: ChildProcess }> {
   return { url, proc };
 }
 
-describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
+describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', { timeout: 40_000 }, () => {
   let b: Boot;
   let ref: { url: string; proc: ChildProcess };
   let ffUrl: string;
-  const sim = (body: unknown) => fetch(`${ref.url}/_sim/config`, { method: 'POST', headers: { 'x-sim-admin': CLIENT_SECRET, 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const sim = (body: unknown, path = '/_sim/config') => fetch(`${ref.url}${path}`, { method: 'POST', headers: { 'x-sim-admin': CLIENT_SECRET, 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  /** 회신 기한이 지났다 — 시험 OTA 서버가 기한에 할 일(응답 없음·끝 상태)을 지금 하게 한다 */
+  const expireOta = async (publicationId: string) => expect((await sim({ jobId: `OTJ-${publicationId}` }, '/_sim/expire')).status).toBe(200);
+  /** FF 회신 기한 닫기 — 스케줄러가 기한에 부르는 것과 같은 함수 */
+  const closeAtDeadline = async (publicationId: string) => {
+    b.get<SecureDeployService>(SecureDeployService).close(publicationId);
+    return pub(publicationId);
+  };
   const pub = async (id: string) => (await b.http().get(`/api/publications/${id}`).expect(200)).body;
   const until = async <T>(fn: () => Promise<T>, ok: (v: T) => boolean, ms = 12_000) => {
     const end = Date.now() + ms;
@@ -100,7 +117,7 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
   afterAll(async () => {
     await b?.app.close();
     ref?.proc.kill();
-    for (const k of [...Object.keys(ENV), 'FF_OTA_URL', 'FF_OTA_TOKEN_URL']) delete process.env[k];
+    for (const k of [...Object.keys(ENV), 'FF_OTA_URL', 'FF_OTA_TOKEN_URL', 'PUBLICATION_TIMEOUT_MS']) delete process.env[k];
   });
 
   it('설정이 있으면 채널은 ota(기본), 연결 상태는 live — 화면의 OTA 모의 표시가 사라진다(RD-UX-04)', async () => {
@@ -116,6 +133,8 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
     first = await deploy();
     const done = await until(() => pub(first), (p) => p.publication.status !== 'DISPATCHED' && p.publication.status !== 'SIGNED');
     expect(done.publication.status).toBe('CONFIRMED');
+    // 회신 기한은 시험보다 길다(vi.hoisted) — 기한이 시험 속도와 경주하지 않는다
+    expect(Date.parse(done.publication.deadlineAt) - Date.parse(done.publication.createdAt)).toBe(600_000);
     expect(done.publication.campaignId).toBe(`OTJ-${first}`);
     expect(done.publication.confirmed).toBe(done.publication.denominator);
     // FF가 연결 끊김으로 아는 차량(KMH-NX4-0003)도 OTA 서버에 맡긴다 — 연결은 OTA 서버가 추적한다
@@ -145,7 +164,12 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
   it('일부 응답 없음 — 차량이 끝내 답하지 않으면 회신 기한에 PARTIAL, 그 차량은 NO_RESPONSE', async () => {
     await sim({ scenario: 'some-no-response' });
     const id = await deploy();
-    const done = await until(() => pub(id), (p) => !!p.publication.closedAt && p.delivery?.state !== 'SUBMITTED');
+    // 닿은 차량의 회신이 모두 온 뒤(기한 전에는 열려 있다) 기한을 지나게 한다
+    const open = await until(() => pub(id), (p) => p.publication.confirmed === p.publication.denominator - 1);
+    expect(open.publication.closedAt).toBeNull();
+    await expireOta(id);
+    await until(() => pub(id), (p) => p.delivery?.state === 'COMPLETED');
+    const done = await closeAtDeadline(id);
     expect(done.publication.status).toBe('PARTIAL');
     expect(done.publication.confirmed).toBe(done.publication.denominator - 1);
     const silent = done.delivery.vehicles.filter((v: any) => v.outcome === 'NO_RESPONSE');
@@ -177,10 +201,11 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
     expect(after.publication.nodes.find((x: any) => x.nodeId === last)).toMatchObject({ state: 'CONFIRMED' });
     expect(after.publication.nodes.find((x: any) => x.nodeId === second)).toMatchObject({ state: 'UNKNOWN', reason: 'REJECTED:TARGET_MISMATCH' });
     expect(after.publication.nodes.find((x: any) => x.nodeId === third)).toMatchObject({ reason: 'OTA:DELIVERED' });
-    const closed = await until(() => pub(id), (q) => !!q.publication.closedAt);
+    const closed = await closeAtDeadline(id);
     expect(closed.publication.status).toBe('PARTIAL');
     expect(closed.publication.confirmed).toBe(1);
     // 기한에 OTA가 NO_RESPONSE라 알려도 차량 결과로 확인된 노드는 그대로
+    await expireOta(id);
     const final = await until(() => pub(id), (q) => q.delivery?.vehicles.find((v: any) => v.vin === last)?.outcome === 'NO_RESPONSE');
     expect(final.publication.nodes.find((x: any) => x.nodeId === last)).toMatchObject({ state: 'CONFIRMED' });
     await sim({ scenario: 'all-applied', lakeUrl: ffUrl });
@@ -189,7 +214,9 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
   it('서명 실패 — 차량 거부는 집계하지 않고 노드 사유로 보인다(PARTIAL)', async () => {
     await sim({ scenario: 'signature-failure' });
     const id = await deploy();
-    const done = await until(() => pub(id), (p) => !!p.publication.closedAt);
+    // 차량 회신(거부 1 + 적용 나머지)이 모두 온 뒤 회신 기한에 닫는다
+    await until(() => pub(id), (p) => p.readbacks.length === p.publication.denominator);
+    const done = await closeAtDeadline(id);
     expect(done.publication.status).toBe('PARTIAL');
     expect(done.publication.nodes.some((x: any) => x.reason === 'REJECTED:SIGNATURE_INVALID')).toBe(true);
     // 차량이 서명 검증에서 거부한 것은 차량 결과로만 드러난다 — OTA 사실은 넘겼다(DELIVERED)
@@ -236,10 +263,21 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', () => {
     expect((await post({ ...ev, eventId: randomUUID(), specVersion: '2.0' })).status).toBe(400);
   });
 
-  it('제출 실패 — 게시본은 남고 전달만 전달 실패(재시도 가능) → 자동 재시도로 접수', async () => {
+  // 2026-10-25 CI 흔들림의 근본 원인: 재시도 타이머는 단조 시계로 깨는데 '제출할 때가 됐나'는 벽시계로 다시 물었다 —
+  // 타이머가 시계보다 1 ms라도 일찍 깨면 작업이 RETRY_WAIT에 멈춰(다시 걸지도 않아) 회신 기한에 TIMEOUT이 됐다.
+  // 시계를 멈춰(= 타이머가 언제나 시계보다 일찍 깬다) 재현한다. 수정 전: RETRY_WAIT에서 멈춤, 수정 뒤: 예약한 시각까지의 작업을 낸다
+  it('제출 실패 — 게시본은 남고 전달만 전달 실패(재시도 가능) → 자동 재시도로 접수(타이머가 시계보다 일찍 깨도)', async () => {
     await sim({ scenario: 'flaky' }); // 처음 두 번 503
-    const id = await deploy();
-    const done = await until(() => pub(id), (p) => p.delivery?.state === 'COMPLETED' || p.delivery?.state === 'FAILED');
+    const clock = b.get<Clock>(Clock);
+    clock.set(new Date());
+    let done: Awaited<ReturnType<typeof pub>>;
+    let id: string;
+    try {
+      id = await deploy();
+      done = await until(() => pub(id), (p) => p.delivery?.state === 'COMPLETED' || p.delivery?.state === 'FAILED');
+    } finally {
+      clock.set(null);
+    }
     expect(done.delivery).toMatchObject({ state: 'COMPLETED', attempts: 3 });
     const closed = await until(() => pub(id), (p) => !!p.publication.closedAt);
     expect(closed.publication.status).toBe('CONFIRMED');

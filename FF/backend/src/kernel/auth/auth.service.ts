@@ -273,23 +273,30 @@ export class AuthService {
    * 신원이 없으면 null. 데모 모드면 항상 null.
    */
   async identify(req: Request): Promise<Identity | null> {
-    if (!this.cfg) return null;
+    const cfg = this.cfg;
+    if (!cfg) return null;
+    // 자격 증명 하나만 — 머리글이 있으면 그 Bearer(검증 실패는 401), 없으면 세션 쿠키. 어느 쪽이든 검증을 건너뛰는 갈래는 없다
     const authz = req.header('authorization');
-    if (authz !== undefined) {
-      const m = /^Bearer[ ]+([A-Za-z0-9._~+/=-]+)$/.exec(authz.trim());
-      if (!m) throw new DomainError('UNAUTHENTICATED', 'Authorization 머리글은 "Bearer <접근 토큰>" 형식이어야 합니다.');
-      let claims: JwtClaims;
-      try {
-        claims = await this.oidc.verifyAccessToken(m[1]);
-      } catch (e) {
-        const reason = e instanceof JwtError ? e.reason : e instanceof OidcError ? e.reason : 'INVALID';
-        throw new DomainError('UNAUTHENTICATED', `접근 토큰을 받을 수 없습니다 (${reason}).`, { reason });
-      }
-      const roles = mapRoles(claimValues(claims, this.cfg.roleClaim), this.cfg.roleMap);
-      return { id: claims.sub!, name: strClaim(claims, 'name') ?? strClaim(claims, 'preferred_username'), email: strClaim(claims, 'email'), roles, via: 'bearer' };
+    if (authz === undefined) {
+      const u = this.sessionUser(req);
+      return u ? { ...u, via: 'session' } : null;
     }
-    const u = this.sessionUser(req);
-    return u ? { ...u, via: 'session' } : null;
+    return this.bearerIdentity(authz, cfg);
+  }
+
+  /** Bearer 접근 토큰 → 신원. 형식·서명·발급자·대상·만료·ID 토큰 아님(tokenUse access)을 모두 통과해야 한다 */
+  private async bearerIdentity(authz: string, cfg: OidcConfig): Promise<Identity> {
+    const m = /^Bearer[ ]+([A-Za-z0-9._~+/=-]+)$/.exec(authz.trim());
+    if (!m) throw new DomainError('UNAUTHENTICATED', 'Authorization 머리글은 "Bearer <접근 토큰>" 형식이어야 합니다.');
+    let claims: JwtClaims;
+    try {
+      claims = await this.oidc.verifyAccessToken(m[1]);
+    } catch (e) {
+      const reason = e instanceof JwtError ? e.reason : e instanceof OidcError ? e.reason : 'INVALID';
+      throw new DomainError('UNAUTHENTICATED', `접근 토큰을 받을 수 없습니다 (${reason}).`, { reason });
+    }
+    const roles = mapRoles(claimValues(claims, cfg.roleClaim), cfg.roleMap);
+    return { id: claims.sub!, name: strClaim(claims, 'name') ?? strClaim(claims, 'preferred_username'), email: strClaim(claims, 'email'), roles, via: 'bearer' };
   }
 
   /** CSRF — 쿠키로 인증한 변경 요청은 Origin이 설치 출처(또는 FF_CORS_ORIGINS)여야 한다 */

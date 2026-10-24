@@ -10,12 +10,17 @@ const D = dashboard.board.directory;
 const T = dashboard.board.types as Record<string, { title: string; description: string }>;
 const CATS: ('all' | Category)[] = ['all', 'charts', 'lists', 'ops', 'shortcuts'];
 
-export default function Directory({ board, onAdd, onClose }: { board: Board; onAdd: (type: string) => void; onClose: () => void }) {
+/** focusSearch — 사용자가 '가젯 추가'로 열 때만 검색 칸으로 초점. 편집 모드 진입과 함께 열릴 때는 '편집 중' 제목이 초점을 가진다 */
+export default function Directory({ board, onAdd, onClose, focusSearch = true }: { board: Board; onAdd: (type: string) => void; onClose: () => void; focusSearch?: boolean }) {
   const [q, setQ] = useState('');
   const [cat, setCat] = useState<'all' | Category>('all');
   const hid = useId();
   const search = useRef<HTMLInputElement>(null);
-  useEffect(() => search.current?.focus({ preventScroll: true }), []);
+  // 처음 열릴 때 한 번만 — 편집 모드 진입 때 함께 열리면 초점을 가져가지 않는다(제목과 두 곳이 다투면 마지막 자리가 묶음 읽는 속도에 따라 달랐다)
+  useEffect(() => {
+    if (focusSearch) search.current?.focus({ preventScroll: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const needle = q.trim().toLowerCase();
   const list = GADGET_TYPES.filter((g) => (cat === 'all' || g.category === cat) && (!needle || `${T[g.type].title} ${T[g.type].description}`.toLowerCase().includes(needle)));
   return (

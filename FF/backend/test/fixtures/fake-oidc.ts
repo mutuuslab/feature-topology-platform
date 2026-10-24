@@ -28,6 +28,8 @@ export interface FakeOidcOptions {
   /** 디스커버리·토큰에 적는 발급자(예: https://idp.oem.example) — 운영 모드는 https 발급자만 받는다.
    *  서버는 그대로 http 127.0.0.1에서 듣고, 시험이 fetch를 이 주소 → 실제 주소로 바꿔 보낸다(운영 모드 첫 실행 시험) */
   publicIssuer?: string;
+  /** 등록한 로그아웃 뒤 돌아갈 주소(실제 IdP의 post_logout_redirect_uris) — 이 목록에 있는 주소로만 돌려보낸다(열린 리디렉트 방지) */
+  postLogoutRedirectUris?: string[];
 }
 
 export interface SignOptions {
@@ -36,6 +38,8 @@ export interface SignOptions {
   key?: KeyObject;
   /** 서명을 망가뜨린다 */
   tamper?: boolean;
+  /** JOSE 머리 typ(기본 JWT) — RFC 9068 접근 토큰은 at+jwt */
+  typ?: string;
 }
 
 export interface FakeOidc {
@@ -84,7 +88,7 @@ export async function startFakeOidc(o: FakeOidcOptions): Promise<FakeOidc> {
   let issuer = '';
 
   const signJwt = (claims: Record<string, unknown>, so: SignOptions = {}) => {
-    const header = { alg: so.alg ?? 'RS256', typ: 'JWT', kid: so.kid ?? kid };
+    const header = { alg: so.alg ?? 'RS256', typ: so.typ ?? 'JWT', kid: so.kid ?? kid };
     const input = `${b64u(JSON.stringify(header))}.${b64u(JSON.stringify(claims))}`;
     if (header.alg === 'none') return `${input}.`;
     let sig = sign('sha256', Buffer.from(input), so.key ?? privateKey);
@@ -157,6 +161,7 @@ export async function startFakeOidc(o: FakeOidcOptions): Promise<FakeOidc> {
         if (form.get('grant_type') !== 'authorization_code') return send(res, 400, { error: 'unsupported_grant_type' });
         const c = codes.get(form.get('code') ?? '');
         codes.delete(form.get('code') ?? '');
+        // hygiene-ok: 시험 IdP의 인가 코드 수명(60초, 실제 IdP 규칙) — 시험이 이 시간을 기다리지 않는다
         if (!c || Date.now() - c.at > 60_000 || c.redirectUri !== form.get('redirect_uri')) return send(res, 400, { error: 'invalid_grant' });
         const verifier = form.get('code_verifier') ?? '';
         if (createHash('sha256').update(verifier).digest('base64url') !== c.challenge) return send(res, 400, { error: 'invalid_grant' });
@@ -172,7 +177,10 @@ export async function startFakeOidc(o: FakeOidcOptions): Promise<FakeOidc> {
         return o.users[user] ? send(res, 200, { access_token: accessToken(user) }) : send(res, 404, { error: 'unknown_user' });
       }
       if (req.method === 'GET' && url.pathname === '/logout') {
-        const back = url.searchParams.get('post_logout_redirect_uri');
+        // 실제 IdP처럼 등록한 주소로만 돌려보낸다 — 받은 값이 아니라 등록 목록의 값을 쓴다(열린 리디렉트 방지)
+        const asked = url.searchParams.get('post_logout_redirect_uri');
+        const back = (o.postLogoutRedirectUris ?? []).find((u) => u === asked);
+        if (asked && (!back || (url.searchParams.has('client_id') && url.searchParams.get('client_id') !== o.clientId))) return send(res, 400, { error: 'invalid_request', error_description: 'post_logout_redirect_uri가 등록되지 않았습니다' });
         res.writeHead(back ? 302 : 200, back ? { Location: back } : { 'Content-Type': 'text/plain' });
         return res.end(back ? '' : 'logged out');
       }

@@ -98,5 +98,30 @@
     "value": 769,
     "direction": "min",
     "note": "백엔드 시험의 PostgreSQL 16 통과 수(npm run test:pg, 20-92 §6) — 늘어나기만 한다. 2026-10-25 1단계 769/775(건너뜀 6: 실서버 없음 4 · GLEO 준비 대기 시간 한도 2)"
+  },
+  "testHygiene.fixed-port": {
+    "value": 0,
+    "direction": "max",
+    "note": "시험 결정성 — 고정 포트 — listen(0)·OS가 고른 포트를 쓰고 주소를 되읽는다 (예외는 hygiene-ok: 이유)"
+  },
+  "testHygiene.sleep": {
+    "value": 15,
+    "direction": "max",
+    "note": "시험 결정성 — setTimeout 잠자기 — 조건 대기(until·expect.poll·waitFor)로 바꾼다 (예외는 hygiene-ok: 이유)"
+  },
+  "testHygiene.deadline-wait": {
+    "value": 0,
+    "direction": "max",
+    "note": "시험 결정성 — 짧은 실시간 기한 — 가짜 시계·FF_SCHEDULER=manual·기한을 시험이 직접 닫는다 (예외는 hygiene-ok: 이유)"
+  },
+  "testHygiene.date-now": {
+    "value": 3,
+    "direction": "max",
+    "note": "시험 결정성 — Date.now() 비교·경과 시간 단언 — 가짜 시계나 결과 상태로 단언한다 (예외는 hygiene-ok: 이유)"
+  },
+  "testHygiene.wait-for-timeout": {
+    "value": 3,
+    "direction": "max",
+    "note": "시험 결정성 — page.waitForTimeout — 화면 상태를 기다리는 단언(toBeVisible·toHaveURL·expect.poll)으로 (예외는 hygiene-ok: 이유)"
   }
 }

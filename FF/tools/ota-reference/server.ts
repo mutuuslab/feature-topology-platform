@@ -6,7 +6,9 @@
 // --lake-url을 주면 그 경로도 흉내 낸다: 차량이 알린 결과를 FF IF-06 입구(POST /api/telemetry/readback, 데모 인증 SYSTEM)로 넣는다.
 //   · 차량 서명(게시본 검증)은 흉내만 낸다 — SIGNATURE_FAILED는 시나리오가 정한다(실제 OTA 서버도 서명을 검증하지 않는다: 차량 몫)
 //   · 차단·복원 v2 봉투의 끝 상태(차량 키로 서명한 status_report v2)는 만들 수 없다 — v2 차단 시험은 차량 시뮬레이터·실차로
-// /_sim/* 는 규격 밖의 시험 손잡이(시나리오·webhook 주소 바꾸기, 상태 보기) — 머리글 x-sim-admin: <클라이언트 비밀>.
+// /_sim/* 는 규격 밖의 시험 손잡이(시나리오·webhook 주소 바꾸기, 상태 보기, 기한 앞당기기) — 머리글 x-sim-admin: <클라이언트 비밀>.
+//   · /_sim/config의 webhook·Lake 주소는 허용 호스트(기본 loopback, --sim-allow-hosts a,b)·정해진 경로만 — 임의 주소로 요청을 보내게 하지 못한다
+//   · /_sim/expire {jobId}: 그 작업의 예약(차량 결과·응답 없음·기한)을 기한 순서대로 지금 실행 — 시험이 실제 시간을 기다리지 않는다
 import { createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -20,6 +22,14 @@ export type Outcome = (typeof OUTCOMES)[number];
 export type VehicleBehavior = 'APPLIED' | 'REFUSED' | 'SIGNATURE_FAILED' | 'NO_RESPONSE';
 const MAX_BODY = 16 * 1024 * 1024;
 const MAX_TARGETS = 10_000;
+/** 타이머 상한 — 회신 기한은 지금부터 7일 이내만 받는다(그 뒤는 400). setTimeout은 2^31-1 ms를 넘으면 바로 실행된다 */
+export const MAX_TIMER_MS = 7 * 24 * 3600_000;
+/** 시험 손잡이로 바꿀 수 있는 지연 상한 */
+const MAX_SIM_DELAY_MS = 60_000;
+/** 시험 손잡이(/_sim/config)가 webhook·Lake 주소로 받는 호스트 — 기본은 이 기계(loopback)뿐. 늘리려면 시작할 때 --sim-allow-hosts */
+export const SIM_TARGET_HOSTS = ['127.0.0.1', 'localhost', '[::1]'] as const;
+/** FF webhook 경로(IF-05 7장) — 시험 손잡이로는 이 경로만 가리킬 수 있다(다른 경로는 시작할 때 --webhook-url) */
+export const FF_WEBHOOK_PATH = '/api/ota/v1/events';
 
 export interface Scenario {
   /** 대상 차량 기본 행동 */
@@ -67,6 +77,8 @@ export interface RefOptions {
   webhookRetryMs?: number;
   webhookRetries?: number;
   faults?: Fault[];
+  /** /_sim/config가 webhook·Lake 주소로 받는 호스트(기본 SIM_TARGET_HOSTS — loopback) */
+  simAllowedHosts?: string[];
   log?: (event: Record<string, unknown>) => void;
 }
 
@@ -83,7 +95,8 @@ interface Job {
   bodyHash: string;
   response: Record<string, unknown>;
   vehicles: Map<string, VehicleState>;
-  timers: NodeJS.Timeout[];
+  /** 이 작업에 걸린 예약 — 취소하면 지우고, /_sim/expire는 기한 순서대로 지금 실행한다 */
+  timers: { at: number; fn: () => void; t: NodeJS.Timeout }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -143,10 +156,21 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
     const t = setTimeout(() => {
       pending.delete(t);
       fn();
-    }, ms);
+    }, boundedDelay(ms));
     pending.add(t);
     return t;
   };
+  /** 작업에 예약을 건다 — 한 번만 실행(타이머든 /_sim/expire든 먼저 온 쪽) */
+  const schedule = (job: Job, ms: number, fn: () => void) => {
+    let done = false;
+    const once = () => {
+      if (done) return;
+      done = true;
+      fn();
+    };
+    job.timers.push({ at: Date.now() + boundedDelay(ms), fn: once, t: later(ms, once) });
+  };
+  const allowedHosts: readonly string[] = opts.simAllowedHosts?.length ? opts.simAllowedHosts : SIM_TARGET_HOSTS;
 
   const configure: RefServer['configure'] = (o) => {
     if (o.webhookUrl !== undefined) cfg.webhookUrl = o.webhookUrl;
@@ -270,8 +294,7 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
       if (sc.lastNoResponse && i >= vins.length - sc.lastNoResponse && vins.length > 1 && !sc.overrides?.[vin]) o = 'NO_RESPONSE';
       plan.set(vin, o);
     });
-    job.timers.push(
-      later(cfg.delayMs, () => {
+    schedule(job, cfg.delayMs, () => {
         if (job.state !== 'ACCEPTED') return;
         job.state = 'IN_PROGRESS';
         // 닿은 차량은 DELIVERED(OTA 사실), 닿지 않은 차량은 DELIVERING(재시도 중) — 차량의 적용·거부는 Lake 흉내로만
@@ -284,19 +307,16 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
         if (results.length) emit(job, 'vehicle.results', { results });
         lake(job, now);
         finishIfDone(job);
-      }),
-    );
+      });
     const silentVins = [...plan].filter(([, o]) => o === 'NO_RESPONSE').map(([v]) => v);
     if (silentVins.length) {
       const due = Math.max(cfg.delayMs, new Date(job.request.deadlineAt).getTime() - Date.now() - 200);
-      job.timers.push(
-        later(due, () => {
-          if (job.state !== 'IN_PROGRESS' && job.state !== 'ACCEPTED') return;
-          for (const vin of silentVins) job.vehicles.set(vin, { vin, outcome: 'NO_RESPONSE', at: new Date().toISOString() });
-          emit(job, 'vehicle.results', { results: silentVins.map((vin) => vehicleResult(job, vin, 'NO_RESPONSE', { code: 'NOT_CONNECTED', detail: '기한까지 차량에 닿지 못했습니다(시험 서버)' })) });
-          finishIfDone(job);
-        }),
-      );
+      schedule(job, due, () => {
+        if (job.state !== 'IN_PROGRESS' && job.state !== 'ACCEPTED') return;
+        for (const vin of silentVins) job.vehicles.set(vin, { vin, outcome: 'NO_RESPONSE', at: new Date().toISOString() });
+        emit(job, 'vehicle.results', { results: silentVins.map((vin) => vehicleResult(job, vin, 'NO_RESPONSE', { code: 'NOT_CONNECTED', detail: '기한까지 차량에 닿지 못했습니다(시험 서버)' })) });
+        finishIfDone(job);
+      });
     }
   };
 
@@ -309,6 +329,7 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
     if (!Array.isArray(b.targets) || !b.targets.length || b.targets.length > MAX_TARGETS || b.targets.some((v: unknown) => typeof v !== 'string' || !v || v.length > 64)) return `targets(VIN 1~${MAX_TARGETS}개)`;
     if (new Set(b.targets).size !== b.targets.length) return 'targets에 같은 VIN이 두 번';
     if (typeof b.deadlineAt !== 'string' || !Number.isFinite(Date.parse(b.deadlineAt))) return 'deadlineAt(ISO 8601)';
+    if (Date.parse(b.deadlineAt) - Date.now() > MAX_TIMER_MS) return 'deadlineAt(지금부터 7일 이내 — 시험 서버 타이머 상한)';
     const p = b.publication;
     if (!p || typeof p !== 'object' || p.publicationId !== b.publicationId || typeof p.payload !== 'object' || !p.signature || !/^sha256:[0-9a-f]{64}$/.test(p.signature.payloadHash ?? '')) return 'publication(publicationId·payload·signature.payloadHash — 바꾸지 않고 그대로)';
     if (b.envelopes !== undefined && (typeof b.envelopes !== 'object' || Array.isArray(b.envelopes) || Object.keys(b.envelopes).some((v) => !b.targets.includes(v)))) return 'envelopes(대상 VIN → 봉투)';
@@ -356,9 +377,32 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
     if (path.startsWith('/_sim/')) {
       if (!same(String(req.headers['x-sim-admin'] ?? ''), clientSecret)) return fail(res, 401, 'UNAUTHENTICATED', 'x-sim-admin 필요');
       if (method === 'POST' && path === '/_sim/config') {
-        const b = JSON.parse((await readBody(req)) || '{}');
-        configure(b);
+        let b: unknown;
+        try {
+          b = JSON.parse((await readBody(req)) || '{}');
+        } catch {
+          return fail(res, 400, 'VALIDATION', 'JSON이 아닙니다');
+        }
+        const next = simConfig(b, allowedHosts);
+        if (typeof next === 'string') return fail(res, 400, 'VALIDATION', next);
+        configure(next);
         return send(res, 200, { ok: true, webhookUrl: cfg.webhookUrl, lakeUrl: cfg.lakeUrl, scenario: cfg.scenario, delayMs: cfg.delayMs });
+      }
+      // 기한 앞당기기 — 작업에 걸린 예약(차량 결과·응답 없음·회신 기한)을 기한 순서대로 지금 실행한다. 시험이 실제 시간을 기다리지 않게
+      if (method === 'POST' && path === '/_sim/expire') {
+        let b: { jobId?: unknown };
+        try {
+          b = JSON.parse((await readBody(req)) || '{}');
+        } catch {
+          return fail(res, 400, 'VALIDATION', 'JSON이 아닙니다');
+        }
+        const job = typeof b?.jobId === 'string' ? jobs.get(b.jobId) : undefined;
+        if (!job) return fail(res, 404, 'JOB_NOT_FOUND', '없는 작업');
+        for (const x of [...job.timers].sort((p, q) => p.at - q.at)) {
+          clearTimeout(x.t);
+          x.fn();
+        }
+        return send(res, 200, jobView(job));
       }
       if (method === 'GET' && path === '/_sim/state') return send(res, 200, { jobs: [...jobs.values()].map(jobView), sent });
       return fail(res, 404, 'JOB_NOT_FOUND', '없는 시험 손잡이');
@@ -414,16 +458,14 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
       jobs.set(job.jobId, job);
       log({ event: 'job.accepted', jobId: job.jobId, targets: b.targets.length, rejected: rejectedTargets.length });
       // 기한 — 그때까지 끝나지 않은 차량은 NO_RESPONSE, 작업은 EXPIRED
-      job.timers.push(
-        later(Math.max(0, Date.parse(b.deadlineAt) - Date.now()), () => {
-          if (job.state !== 'ACCEPTED' && job.state !== 'IN_PROGRESS') return;
-          const left = [...job.vehicles.values()].filter((v) => v.outcome === 'PENDING' || v.outcome === 'DELIVERING');
-          for (const v of left) job.vehicles.set(v.vin, { vin: v.vin, outcome: 'NO_RESPONSE', at: new Date().toISOString() });
-          if (left.length) emit(job, 'vehicle.results', { results: left.map((v) => vehicleResult(job, v.vin, 'NO_RESPONSE', { code: 'DEADLINE' })) });
-          job.state = left.length ? 'EXPIRED' : 'COMPLETED';
-          emit(job, 'job.state', { state: job.state });
-        }),
-      );
+      schedule(job, Math.max(0, Date.parse(b.deadlineAt) - Date.now()), () => {
+        if (job.state !== 'ACCEPTED' && job.state !== 'IN_PROGRESS') return;
+        const left = [...job.vehicles.values()].filter((v) => v.outcome === 'PENDING' || v.outcome === 'DELIVERING');
+        for (const v of left) job.vehicles.set(v.vin, { vin: v.vin, outcome: 'NO_RESPONSE', at: new Date().toISOString() });
+        if (left.length) emit(job, 'vehicle.results', { results: left.map((v) => vehicleResult(job, v.vin, 'NO_RESPONSE', { code: 'DEADLINE' })) });
+        job.state = left.length ? 'EXPIRED' : 'COMPLETED';
+        emit(job, 'job.state', { state: job.state });
+      });
       run(job);
       return send(res, 202, job.response);
     }
@@ -438,7 +480,7 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
       if (job.state === 'CANCELLED') return send(res, 202, { jobId: job.jobId, state: job.state, cancelledTargets: 0 });
       if (job.state !== 'ACCEPTED' && job.state !== 'IN_PROGRESS') return fail(res, 409, 'JOB_FINAL', `작업이 이미 ${job.state}입니다`);
       const left = [...job.vehicles.values()].filter((v) => v.outcome === 'PENDING' || v.outcome === 'DELIVERING');
-      for (const t of job.timers) clearTimeout(t);
+      for (const x of job.timers) clearTimeout(x.t);
       const now = new Date().toISOString();
       for (const v of left) job.vehicles.set(v.vin, { vin: v.vin, outcome: 'CANCELLED', at: now });
       job.state = 'CANCELLED';
@@ -469,12 +511,79 @@ export async function startOtaReference(opts: RefOptions = {}): Promise<RefServe
     close: () =>
       new Promise<void>((resolve) => {
         for (const t of pending) clearTimeout(t);
-        for (const j of jobs.values()) for (const t of j.timers) clearTimeout(t);
+        for (const j of jobs.values()) for (const x of j.timers) clearTimeout(x.t);
         server.closeAllConnections?.();
         server.close(() => resolve());
       }),
   };
   return api;
+}
+
+/** 타이머 지연 — 0..MAX_TIMER_MS(숫자가 아니면 0). 기한은 validateJob이, 시험 지연은 simConfig가 먼저 거른다 */
+export function boundedDelay(ms: number): number {
+  if (ms >= 0 && ms <= MAX_TIMER_MS) return ms;
+  return ms > MAX_TIMER_MS ? MAX_TIMER_MS : 0;
+}
+
+/**
+ * 시험 손잡이 주소 — 허용 호스트(기본 loopback)와 정해진 경로만. 받은 문자열을 그대로 쓰지 않고 허용 목록의 호스트·포트 숫자·고정 경로로 다시 만든다
+ * (SSRF 방지: /_sim/config로 임의 내부 주소에 요청을 보내게 하지 못한다). null은 끄기, 틀리면 Error.
+ */
+export function simTarget(raw: unknown, allowedHosts: readonly string[], path: string): string | null | Error {
+  if (raw === null) return null;
+  if (typeof raw !== 'string' || raw.length > 2048) return new Error('주소는 문자열');
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    return new Error('주소를 읽을 수 없습니다');
+  }
+  const host = allowedHosts.find((h) => h === u.hostname);
+  if (!host) return new Error(`허용하지 않는 호스트 — 허용: ${allowedHosts.join(', ')} (시작할 때 --sim-allow-hosts로 늘린다)`);
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return new Error('http·https만');
+  if (u.username || u.password || u.search || u.hash) return new Error('사용자 정보·질의·조각 없는 주소만');
+  const want = path || '/';
+  if (u.pathname !== want) return new Error(`경로는 ${want}만 (다른 경로는 시작할 때 --webhook-url·--lake-url)`);
+  const scheme = u.protocol === 'https:' ? 'https' : 'http';
+  const port = u.port ? Number(u.port) : scheme === 'https' ? 443 : 80;
+  if (!Number.isInteger(port) || port < 1 || port > 65_535) return new Error('포트 1~65535');
+  return `${scheme}://${host}:${port}${path}`;
+}
+
+type SimConfig = Partial<Pick<RefOptions, 'webhookUrl' | 'lakeUrl' | 'scenario' | 'delayMs' | 'faults'>>;
+const KNOWN_FAULTS: Fault[] = ['no-idempotency', 'bad-webhook-signature', 'no-webhook-retry', 'vehicle-results-in-webhook'];
+
+/** /_sim/config 본문 → 설정. 틀리면 이유(문자열). 모르는 키는 무시한다 */
+export function simConfig(b: unknown, allowedHosts: readonly string[]): SimConfig | string {
+  if (!b || typeof b !== 'object' || Array.isArray(b)) return '본문은 JSON 객체';
+  const o = b as Record<string, unknown>;
+  const out: SimConfig = {};
+  if (o.webhookUrl !== undefined) {
+    const t = simTarget(o.webhookUrl, allowedHosts, FF_WEBHOOK_PATH);
+    if (t instanceof Error) return `webhookUrl — ${t.message}`;
+    out.webhookUrl = t;
+  }
+  if (o.lakeUrl !== undefined) {
+    const t = simTarget(o.lakeUrl, allowedHosts, '');
+    if (t instanceof Error) return `lakeUrl — ${t.message}`;
+    out.lakeUrl = t;
+  }
+  if (o.scenario !== undefined) {
+    if (typeof o.scenario === 'string') {
+      if (!SCENARIOS[o.scenario]) return `scenario — ${Object.keys(SCENARIOS).join(' · ')}`;
+      out.scenario = o.scenario;
+    } else if (o.scenario && typeof o.scenario === 'object' && !Array.isArray(o.scenario)) out.scenario = o.scenario as Scenario;
+    else return 'scenario는 이름이나 객체';
+  }
+  if (o.delayMs !== undefined) {
+    if (typeof o.delayMs !== 'number' || !Number.isInteger(o.delayMs) || o.delayMs < 0 || o.delayMs > MAX_SIM_DELAY_MS) return `delayMs 0~${MAX_SIM_DELAY_MS}`;
+    out.delayMs = o.delayMs;
+  }
+  if (o.faults !== undefined) {
+    if (!Array.isArray(o.faults) || o.faults.some((f) => !KNOWN_FAULTS.includes(f as Fault))) return `faults — ${KNOWN_FAULTS.join(' · ')}`;
+    out.faults = o.faults as Fault[];
+  }
+  return out;
 }
 
 function resolveScenario(s: Scenario | string): Scenario {
@@ -504,6 +613,10 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     scenario: arg('scenario') ?? process.env.OTA_REF_SCENARIO ?? 'all-applied',
     delayMs: Number(arg('delay-ms') ?? process.env.OTA_REF_DELAY_MS ?? 500),
     lakeUrl: arg('lake-url') ?? process.env.OTA_REF_LAKE_URL ?? null,
+    simAllowedHosts: (arg('sim-allow-hosts') ?? process.env.OTA_REF_SIM_ALLOW_HOSTS ?? '')
+      .split(',')
+      .map((h) => h.trim())
+      .filter(Boolean),
     log: (e) => console.log(JSON.stringify({ at: new Date().toISOString(), ...e })),
   });
   console.log(JSON.stringify({ event: 'listening', url: ref.url, specVersion: SPEC_VERSION, webhookUrl, scenarios: Object.keys(SCENARIOS) }));

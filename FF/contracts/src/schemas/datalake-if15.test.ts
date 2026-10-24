@@ -255,10 +255,11 @@ describe('IF-15 계약 표류 방지', () => {
     expect(Object.keys(SOURCES).sort()).toEqual([...envelope.properties.type.enum].sort());
     const names = new Set<string>();
     const walk = (d: string) => {
-      for (const n of readdirSync(d)) {
-        const p = join(d, n);
-        if (statSync(p).isDirectory()) walk(p);
-        else if (n.endsWith('.ts')) for (const m of readFileSync(p, 'utf8').matchAll(/'([a-z]+(?:\.[a-z_]+)+)'/g)) names.add(m[1]);
+      // 디렉터리 항목 종류를 읽을 때 함께 받는다 — 따로 stat한 뒤 읽지 않는다(검사·사용 사이 경쟁 없음)
+      for (const e of readdirSync(d, { withFileTypes: true })) {
+        const p = join(d, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (e.name.endsWith('.ts')) for (const m of readFileSync(p, 'utf8').matchAll(/'([a-z]+(?:\.[a-z_]+)+)'/g)) names.add(m[1]);
       }
     };
     walk(join(ROOT, 'FF', 'backend', 'src'));

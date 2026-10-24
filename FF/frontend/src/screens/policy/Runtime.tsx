@@ -47,11 +47,12 @@ export function ActivationScreen() {
       .then((r) => r.json())
       .then(setOfrep, () => setOfrep(null));
   }, [vin, flagKey, q.dataUpdatedAt]);
-  // Fleet 전체 판단 — 차량마다 같은 평가기
+  // Fleet 전체 판단 — 차량마다 같은 평가기. flagKey가 정해지기 전(정책 목록이 차량 목록보다 늦게 올 때)에는 묻지 않는다
   const fleet = useQueries({
     queries: (vehicles.data?.items ?? []).map((v) => ({
       queryKey: ['activationDecide', {}, { vin: v.vin, flagKey }],
       queryFn: () => call<Decision>('activationDecide', { query: { vin: v.vin, flagKey } }),
+      enabled: !!flagKey,
     })),
   });
   const d = q.data;

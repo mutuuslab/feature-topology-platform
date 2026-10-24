@@ -21,6 +21,7 @@
 - **결정 D-RD-7·8 반영(2026-10-24, 브랜치 `feat/no-email-prod-hide`, worktree `-mail`)** — D-RD-7 화면 알림만: 알림 메일 설정(`/api/notifications/preferences`)·모의 발송 기록(`/api/notifications/emails`)·메일 연결(`FF_CONN_MAIL`·연결 표 메일 행)·데모 계정 메일 주소 삭제, 새 마이그레이션 `048_drop_notification_email`(notification_email·notification_pref 표 삭제), 알림 화면은 "받는 방법" 안내(끄는 설정 없음 — 승인 요청·긴급도 항상 남음). 알림 요구 14건은 모두 "Web 또는 이메일 중 하나 이상"이라 제외 없음. D-RD-8 운영 빌드(`VITE_AUTH=oidc`)에서 `/_design`·`/learn`·가이드 패널을 빌드 상수(`auth-mode.ts` `DEMO_EXTRAS`)로 빼고 직접 주소는 찾을 수 없음 — 시험 `prodHiddenScreens.test`·`tools/prod-bundle.test`·e2e `oidc/hidden.spec`. 따라하기 전용 백엔드 엔드포인트는 없다. 함께 고친 결함: SSO 로그아웃 뒤 늦게 끝난 조회의 401이 IdP 로그인을 다시 시작해 로그아웃이 되돌려지던 것(e2e:oidc 로그아웃 시험 간헐 실패) — 회귀 시험 authOidc.test.
 - **OTA 서버 연동 IF-05(2026-10-24 사용자 결정 "OTA 서버를 별도로 만들꺼야" → "연동 규격 + FF 어댑터 + 시험용 OTA 서버", 브랜치 `feat/ota-if05`, worktree `-ota`)** — 규격 `docs/80-integration/80-45-ota-server-if05.md` + OpenAPI 3.1 `ota-if05.openapi.json`(작업 제출·조회·취소·상태 점검·webhook, OAuth2 client credentials, webhook HMAC `sha256=HMAC("<시각>.<원문>")`·±300초·eventId, 멱등 키 = `OTJ-<게시본>`, 오류 표·판 규칙·호환 규칙). FF 어댑터 `backend/src/adapters/ota/*`(채널 `ota` = `FF_OTA_URL`이 있으면 기본, outbox 049_ota_job, 실패는 게시본 유지 + 전달 `RETRY_WAIT`→자동 재시도→`FAILED` 수동 다시 제출, webhook은 OTA 서버 자신의 사실만(DELIVERING·DELIVERED·NO_RESPONSE·CANCELLED·NOT_ELIGIBLE — 80-75 C8·U-17 기본안), 집계 끝 상태는 차량 서명 결과(차량 → Lake → FF)만, 어긋나면 차량 결과 우선·OTA는 노드 사유 `OTA:<사실>`), 설정 검사·`.env.example`·설치 안내서, 연결 상태 OTA live(RD-UX-04 표시 사라짐), 게시본 상세 'OTA 전달' 패널. 시험 OTA 서버 `npm run ota:reference`·적합성 검사 `npm run ota:conformance`(검사 18개, verify `ota:conformance`). 시험: 백엔드 통합(별도 프로세스 시험 서버·Lake 흉내 — CONFIRMED·PARTIAL·서명 실패·차량 회신 우선·위조 HMAC·재전송·멱등·재시도·취소)·단위·프론트. 곁가지: e2e:oidc 로그아웃 결함(로그아웃 직후 늦은 401이 로그인 화면 대신 IdP 로그인으로 보냄, ce2437b에서도 실패) 고침 + 회귀 시험. 남은 것: webhook 미도착 시 조회 대사·1만 대 나누기·FF 안 mTLS(80-45 §14).
 - **단일 인스턴스·PostgreSQL 이전 1단계(2026-10-25, D-RD-3, 브랜치 `feat/postgres-phase1`, worktree `-pg`)** — RD-OPS-14 완료(열린 P1 1→0, 이중화는 새 P2 RD-OPS-15). 설계 정본 `docs/20-architecture/20-92-postgresql-migration.md`(현재 DB 접근 목록·목표 구조·5단계·데이터 이전·위험 R1~R11). 단일 인스턴스 임대 `kernel/instance-lease.ts`(두 번째 인스턴스 부팅 거부·같은 호스트 재시작 넘겨받기·백업 사본에서 제외), 공유 상태 `kernel/shared-state.ts`(멱등 예약·차량 빈도 창, 마이그레이션 075), PG 어댑터 미리보기(`FF_DB_URL`, 동기 다리 `pg-sync-db.ts` + 방언 번역 `pg-dialect.ts`, 비동기 Db 계약 `async-db.ts`), SQLite→PG 데이터 이전 `ops/sqlite-to-pg.ts`(감사 체인 다시 계산), 하네스 `npm run test:pg`(verify --full, Docker postgres:16 :9690, 래칫 pgBackendPass) **PG 769/775 통과·실패 0**. 새 의존성 `pg`(표준 드라이버 — 사용자 허용). 남은 것: 20-92 2단계(호출부 비동기화·PG 백업)·3단계(LISTEN/NOTIFY·지도자 임대·감사 추가 직렬화).
+- **CI 녹색·시험 결정성(2026-10-25 사용자 요청 "하네스 엔지니어링으로 품질을 올려", 브랜치 `feat/quality-ci`, worktree `-qci`)** — CodeQL 15건: 제품 코드 2건 수정(Bearer 자리에 ID 토큰을 받지 않음 `ID_TOKEN_AS_ACCESS_TOKEN`·질의 배열/객체 변조로 페이지 나눔 우회 차단, 회귀 시험), 시험 OTA 서버 SSRF·타이머(허용 호스트·경로·지연 상한·7일 기한), 시험 코드 경쟁·escape·약한 키·URL 비교 수정, `snapshot-api.ts`만 이유와 함께 `.github/codeql/codeql-config.yml`. OTA 연동 시험 흔들림 근본 원인 둘: ① 제품 결함 — 재시도 타이머(단조 시계)가 벽시계보다 일찍 깨면 '때가 됐나'를 벽시계로 다시 물어 작업이 RETRY_WAIT에 멈춤(다시 걸지도 않음) → `kick(upTo)`(시계를 멈춰 재현하는 회귀 시험) ② 회신 기한이 모듈 로드 때 정해져 시험의 4초가 아닌 8초가 실시간으로 경주 → `vi.hoisted` 10분 + 시험 OTA 서버 `/_sim/expire`·FF `close()`로 기한을 시험이 직접 닫음. 정적 데모 `/activation/decide` 누락 근본 원인: Fleet 조회(useQueries)에 enabled가 없어 정책 목록보다 차량 목록이 먼저 오면 flagKey 없이 요청 → 수정 + contracts `requiredQuery` + data:check 정적 검사. 하네스 `test:hygiene`(래칫 고정 포트 0·잠자기 15·실시간 기한 0·Date.now 3·waitForTimeout 3, vitest 설정 0)·`npm run flaky -- <시험> --repeat N --parallel K`(tools/README.md). snapshot:api 고정 포트 9199 → OS 포트. CI 차량 상세 흔들림(배치 시험 page.evaluate 60초·3D 보기 뒤 화면 안 판정): 화면 밖 3D 씬이 'demand'로도 시뮬 시계마다 다시 그려 소프트웨어 렌더가 본문 스레드를 막음 → 화면 밖·첫 판정 전 `frameloop=never`(단위 회귀 시험) + e2e 동작 줄이기. 셸 로고 시험 한 번 재기 → expect.poll. 대시보드 메뉴 초점 경합: 편집 모드의 다음 그림 틀 초점 이동이 시험의 초점을 빼앗음 → 편집 제목 초점을 기다린 뒤 진행. 시각 기준 13장 갱신(기능안전 부품·관제실 영역 — 업무 절차 흐름도 화면 기준은 없음·다른 작업이 고치는 중이라 손대지 않음).
 - **남은 것(순서)** ① 대시보드 시각 검토 반영 ② ~~인증 OIDC(RD-SEC-01~05)·데모 빌드 분리~~ ③ 오류 화면 UX(RD-UX-01)·입력 보호(UX-02) ④ 멱등 경쟁(OPS-13)·예약 작업 복구(OPS-06)·마이그레이션 업그레이드 시험(OPS-10)·관측(OPS-11)·감사 앵커(SEC-13) ⑤ 빈 DB e2e(OPS-02)·운영 출처 값(OPS-03) ⑥ Docker·설치 안내서(OPS-05·SEC-09·P2-04) ⑦ PostgreSQL(OPS-09·14) ⑧ 결함 12건(FN-01)·롤백(FN-02). 대시보드 배치의 서버 저장(사용자 설정 API)은 OIDC 뒤에.
 
 ## ADS·UNECE 보고서 v3.0 반영 (2026-10-18 사용자 요청 "FF Platform 목적·vision·시나리오가 들어 있으니 모두 반영 — 분석·저장·HTML 보고" → "다른 세션과 통합, UI/UX·프론트·백엔드·DB 수정 설계")
@@ -453,7 +454,7 @@
 | D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations | 4 |
 | D03-02 | 배포 안전성 검증 | A | ✅ | /policies/:id /validations | 5 |
 | D03-03 | 긴급 기능 차단 | A | ✅ | /ops/kill | 4 |
-| D03-04 | 이전 상태 복구 | A | ✅ | /ops/kill /ops/rollback | 6 |
+| D03-04 | 이전 상태 복구 | A | ✅ | /ops/kill /ops/rollback /policies/:id | 9 |
 | D04-01 | 배포 파이프라인 연계 | A | ✅ | /deployments /deployments/:id | 3 |
 | D04-02 | 품질 기준 검증 | B | ✅ | /policies/:id /validations /validations/virtual /verify/evidence | 7 |
 | D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id /ops/telemetry /ops/safety-kpi | 4 |
@@ -492,15 +493,20 @@
 | platformRulesImplemented | 75 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 @rule 표식으로 구현이 추적되는 규칙 수 — 늘려 나간다 |
 | platformRulesTested | 75 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 시험이 있는 규칙 수 — 늘려 나간다 |
 | reportTestsReferenced | 16 | ↑ 늘리기 | 시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다 |
-| req.verdict.implemented | 194 | ↑ 늘리기 | 기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다 |
+| req.verdict.implemented | 199 | ↑ 늘리기 | 기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다 |
 | req.verdict.missing | 172 | ↓ 줄이기 | 기능명세서 말단 요구사항 중 미구현 판정 수 — 늘면 안 된다 |
-| req.traced | 40 | ↑ 늘리기 | @req 표식으로 코드에 추적된 요구사항 수 |
+| req.traced | 45 | ↑ 늘리기 | @req 표식으로 코드에 추적된 요구사항 수 |
 | req.untracedImplemented | 155 | ↓ 줄이기 | 구현 판정인데 @req 표식이 없는 요구사항 수 — 줄여 나간다 |
-| req.defects | 5 | ↓ 줄이기 | 미해결 결함(it.fails 결함 기록) 수 — 늘면 안 된다 |
+| req.defects | 0 | ↓ 줄이기 | 미해결 결함(it.fails 결함 기록) 수 — 늘면 안 된다 |
 | platformTermLines | 0 | ↓ 줄이기 | 플랫폼 용어 규칙 위반 줄 수(은퇴→Retirement) — 0까지 |
 | offScaleSpacing | 0 | ↓ 줄이기 | 스케일 밖 간격(padding·margin·gap px) 선언 수 — 0을 유지한다 |
 | rawRadius | 0 | ↓ 줄이기 | px 리터럴 반경 선언 수 — 반경 토큰(--r-sm·--r·--r-lg·--r-pill)만 쓴다 |
 | leadCopyHits | 0 | ↓ 줄이기 | 문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14) |
-| readinessOpenP0 | 9 | ↓ 줄이기 | 출시 준비 열린 P0 수(harness/readiness.json) — 0까지 |
-| readinessOpenP1 | 13 | ↓ 줄이기 | 출시 준비 열린 P1 수 — 0까지 |
+| readinessOpenP0 | 1 | ↓ 줄이기 | 출시 준비 열린 P0 수(harness/readiness.json) — 0까지 |
+| readinessOpenP1 | 1 | ↓ 줄이기 | 출시 준비 열린 P1 수 — 0까지 |
+| testHygiene.fixed-port | 0 | ↓ 줄이기 | 시험 결정성 — 고정 포트 — listen(0)·OS가 고른 포트를 쓰고 주소를 되읽는다 (예외는 hygiene-ok: 이유) |
+| testHygiene.sleep | 15 | ↓ 줄이기 | 시험 결정성 — setTimeout 잠자기 — 조건 대기(until·expect.poll·waitFor)로 바꾼다 (예외는 hygiene-ok: 이유) |
+| testHygiene.deadline-wait | 0 | ↓ 줄이기 | 시험 결정성 — 짧은 실시간 기한 — 가짜 시계·FF_SCHEDULER=manual·기한을 시험이 직접 닫는다 (예외는 hygiene-ok: 이유) |
+| testHygiene.date-now | 3 | ↓ 줄이기 | 시험 결정성 — Date.now() 비교·경과 시간 단언 — 가짜 시계나 결과 상태로 단언한다 (예외는 hygiene-ok: 이유) |
+| testHygiene.wait-for-timeout | 3 | ↓ 줄이기 | 시험 결정성 — page.waitForTimeout — 화면 상태를 기다리는 단언(toBeVisible·toHaveURL·expect.poll)으로 (예외는 hygiene-ok: 이유) |
 <!-- /AUTO:conformance -->

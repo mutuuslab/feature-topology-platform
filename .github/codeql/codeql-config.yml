@@ -1,0 +1,8 @@
+# CodeQL 설정 (security.yml에서 씀) — 제품 코드(FF/backend/src·FF/frontend/src·FF/contracts/src의 시험 아닌 파일)는 빼지 않는다.
+# 빼는 것은 검사 결과가 설계상 의도인 것만, 이유를 함께 적는다. 새 항목을 더하려면 PR에서 이유를 검토받는다.
+name: FF CodeQL
+paths-ignore:
+  # js/http-to-file-access — 정적 데모 스냅샷 도구. 이 도구가 띄운 로컬 백엔드(127.0.0.1, OS가 고른 포트·자식 프로세스 생존 확인)의
+  # GET 응답을 frontend/public/api-snapshot/에 쓰는 것이 이 파일의 목적이다. 파일 이름은 contracts snapshotFile()이 안전한 문자로만 만든다.
+  # 운영 빌드·서버에는 들어가지 않는다(e2e:static·Cloudflare 데모 빌드에서만 실행). 2026-10-25 검토.
+  - FF/tools/snapshot-api.ts

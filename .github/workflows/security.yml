@@ -40,6 +40,8 @@ jobs:
           languages: javascript-typescript
           build-mode: none
           queries: security-extended
+          # 설계상 의도인 결과만 이유와 함께 뺀다(제품 코드는 빼지 않는다) — .github/codeql/codeql-config.yml
+          config-file: ./.github/codeql/codeql-config.yml
       - uses: github/codeql-action/analyze@v4
         with:
           category: /language:javascript-typescript

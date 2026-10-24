@@ -4,7 +4,9 @@ import { startFakeOidc } from '../../backend/test/fixtures/fake-oidc.ts';
 import { CLIENT_ID, CLIENT_SECRET, USERS } from './users.mjs';
 
 const port = Number(process.env.E2E_OIDC_IDP_PORT ?? 9613);
-const idp = await startFakeOidc({ port, clientId: CLIENT_ID, clientSecret: CLIENT_SECRET, users: USERS, exposeTestTokens: true });
+// 로그아웃 뒤 돌아갈 주소 — 실제 IdP처럼 등록한 주소만(설정이 E2E_OIDC_PUBLIC으로 준다)
+const postLogoutRedirectUris = process.env.E2E_OIDC_PUBLIC ? [`${process.env.E2E_OIDC_PUBLIC}/login`] : [];
+const idp = await startFakeOidc({ port, clientId: CLIENT_ID, clientSecret: CLIENT_SECRET, users: USERS, exposeTestTokens: true, postLogoutRedirectUris });
 console.log(`fake IdP → ${idp.issuer}`);
 const stop = () => idp.close().then(() => process.exit(0));
 process.on('SIGINT', stop);

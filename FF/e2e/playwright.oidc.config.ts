@@ -27,7 +27,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON oidc/fake-idp.mjs',
-      env: { E2E_OIDC_IDP_PORT: String(IDP) },
+      env: { E2E_OIDC_IDP_PORT: String(IDP), E2E_OIDC_PUBLIC: PUBLIC },
       url: `http://127.0.0.1:${IDP}/.well-known/openid-configuration`,
       reuseExistingServer: false,
       timeout: 30_000,

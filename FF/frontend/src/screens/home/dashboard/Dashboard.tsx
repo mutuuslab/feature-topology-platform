@@ -163,6 +163,8 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
   const { current } = api;
   const [editing, setEditing] = useState(false);
   const [directory, setDirectory] = useState(false);
+  // 디렉터리를 열 때 검색 칸으로 초점을 옮길지 — 사용자가 단추로 열 때만(편집 모드 진입 때는 제목 하나)
+  const [directoryFocus, setDirectoryFocus] = useState(false);
   const [dialog, setDialog] = useState<DialogKind | null>(null);
   const [maximized, setMaximized] = useState<string | null>(null);
   const [configuring, setConfiguring] = useState<Set<string>>(() => new Set());
@@ -204,6 +206,7 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
       say(B.copied(name));
     } else say(B.enteredEdit);
     setEditing(true);
+    setDirectoryFocus(false);
     setDirectory(true);
     requestAnimationFrame(() => editHead.current?.focus());
   };
@@ -330,7 +333,15 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
           </h2>
           <p className="jd-editbar__hint">{B.editingHint}</p>
           <LayoutPicker value={board.layout} onChange={(l) => api.updateBoard((b) => setLayout(b, l, measureGadgets()))} />
-          <button type="button" className="jd-btn" aria-pressed={directory} onClick={() => setDirectory((x) => !x)}>
+          <button
+            type="button"
+            className="jd-btn"
+            aria-pressed={directory}
+            onClick={() => {
+              setDirectoryFocus(true);
+              setDirectory((x) => !x);
+            }}
+          >
             <Glyph name="plus" />
             {B.addGadget}
           </button>
@@ -364,7 +375,7 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
         )}
         {editing && directory && (
           <Suspense fallback={<aside className="jd-directory" aria-busy="true" />}>
-            <Directory board={board} onAdd={add} onClose={() => setDirectory(false)} />
+            <Directory board={board} onAdd={add} onClose={() => setDirectory(false)} focusSearch={directoryFocus} />
           </Suspense>
         )}
       </div>

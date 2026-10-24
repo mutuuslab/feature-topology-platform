@@ -121,9 +121,9 @@ export class OidcClient {
     return verifyJwt(token, { issuer: this.cfg.issuer, audience: this.cfg.clientId, clientId: this.cfg.clientId, nonce, key: (h) => this.key(h) });
   }
 
-  /** Bearer 접근 토큰 — 발급자·대상(OIDC_AUDIENCE)·만료 */
+  /** Bearer 접근 토큰 — 발급자·대상(OIDC_AUDIENCE)·만료, ID 토큰은 거부 */
   verifyAccessToken(token: string): Promise<JwtClaims> {
-    return verifyJwt(token, { issuer: this.cfg.issuer, audience: this.cfg.audience, key: (h) => this.key(h) });
+    return verifyJwt(token, { issuer: this.cfg.issuer, audience: this.cfg.audience, tokenUse: 'access', key: (h) => this.key(h) });
   }
 
   /** 인가 코드 → 토큰(PKCE code_verifier, 기밀 클라이언트 인증) */

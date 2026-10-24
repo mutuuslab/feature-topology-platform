@@ -35,6 +35,16 @@ describe('목록 페이지 나눔 (RD-UX-03)', () => {
     expect(r.body.error).toMatchObject({ code: 'VALIDATION', details: { field: 'cursor' } });
   });
 
+  // CodeQL js/type-confusion-through-parameter-tampering(2026-10-25): limit=5&limit=6은 배열로 와서 Number(배열)=NaN → '전체'로 읽혀 페이지 나눔을 건너뛰었다(수정 전 200·전체)
+  it('같은 질의를 두 번(배열) 보내면 400 VALIDATION — 페이지 나눔을 건너뛰지 못한다', async () => {
+    const twice = await http().get('/api/features?limit=5&limit=6').expect(400);
+    expect(twice.body.error).toMatchObject({ code: 'VALIDATION', details: { field: 'limit' } });
+    await http().get('/api/features?limit=5&cursor=a&cursor=b').expect(400);
+    await http().get('/api/audit?limit=5&limit=6').expect(400);
+    await http().get('/api/audit?cursor=a&cursor=b').expect(400);
+    // 객체(a[b]=c)는 Express 5 기본 질의 해석(simple)이 만들지 않는다 — 단위 시험(paging-units)이 함수 쪽을 지킨다
+  });
+
   it('감사 이력 — 최신순 키셋 커서, 페이지가 이어지고 겹치지 않는다', async () => {
     // 권한 없는 등록 시도는 감사 DENIED로 남는다 — 페이지를 넘길 만큼 기록을 만든다
     for (let i = 0; i < 12; i++) await http().post('/api/features').set(actor('jung.audit', 'AUDITOR')).send({}).expect(403);

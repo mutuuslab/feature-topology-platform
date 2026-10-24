@@ -101,6 +101,7 @@ describe('OTA 설정 — 시작 검사·채널·연결 상태', () => {
     expect(otaConfigProblems({ ...OTA_ENV, FF_ENV: 'production', FF_OTA_URL: 'http://ota.local' }).join('\n')).toContain('https만');
     expect(otaConfigProblems({ ...OTA_ENV, FF_OTA_URL: 'https://user:pw@ota.local' }).join('\n')).toContain('계정');
     expect(otaConfigProblems({ ...OTA_ENV, FF_OTA_WEBHOOK_SECRET: 'short' }).join('\n')).toContain('FF_OTA_WEBHOOK_SECRET');
+    // hygiene-ok: 설정 범위 검사(값만 본다) — 기다리지 않는다
     expect(otaConfigProblems({ ...OTA_ENV, FF_OTA_TIMEOUT_MS: '5' }).join('\n')).toContain('FF_OTA_TIMEOUT_MS');
     expect(otaConfigProblems({ ...OTA_ENV, IF_MODE_05: 'off' }).join('\n')).toContain('IF_MODE_05');
     // 주소가 있는데 다른 채널을 고르면 헷갈린다 — 시작 거부

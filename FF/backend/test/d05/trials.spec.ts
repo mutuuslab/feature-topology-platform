@@ -154,7 +154,7 @@ describe('시드 기준일 회귀 — 고정 날짜 체험권이 시간이 지�
     delete process.env.FF_SYNTHETIC;
     try {
       const r = (await http().get('/api/biz/trials').expect(200)).body;
-      expect(r.counts).toEqual({ demo: 5, synthetic: 0 });
+      expect(r.counts).toEqual({ production: 0, demo: 5, synthetic: 0 });
     } finally {
       await app.close();
     }

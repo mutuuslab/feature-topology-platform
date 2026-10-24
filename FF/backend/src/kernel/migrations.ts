@@ -641,6 +641,66 @@ CREATE INDEX ota_event_received ON ota_event (received_at);
 `,
   },
   {
+    // 고객 기준 값(출시 준비 RD-OPS-03) — 판매국·지역·차종·트림을 설치마다 등록한다. 데모 데이터셋 값은 데모 시드만 넣는다(origin SEED).
+    // 부모가 없는 종류(판매국·차종)는 parent = ''(빈 문자열)로 두어 기본 키가 NULL로 갈라지지 않게 한다. 쓰인 값은 지우지 않고 사용 중지(RETIRED)만.
+    name: '065_reference_value',
+    sql: `
+CREATE TABLE reference_value (
+  kind TEXT NOT NULL CHECK (kind IN ('COUNTRY','REGION','VEHICLE_MODEL','TRIM')),
+  code TEXT NOT NULL,
+  parent TEXT NOT NULL DEFAULT '',
+  label TEXT NOT NULL,
+  origin TEXT NOT NULL CHECK (origin IN ('SEED','CUSTOMER')),
+  status TEXT NOT NULL CHECK (status IN ('ACTIVE','RETIRED')),
+  created_at TEXT NOT NULL,
+  created_by TEXT NOT NULL,
+  retired_at TEXT,
+  retired_reason TEXT,
+  PRIMARY KEY (kind, parent, code)
+);
+CREATE INDEX entitlement_source ON entitlement (source);
+`,
+  },
+  {
+    // 개인정보 삭제·가명 처리(출시 준비 RD-P2-05) — 감사 체인 v2: 행마다 무작위 소금(audit_salt)으로 식별 칸(행위자·대상·사유·전후 문서)의
+    // 해시를 따로 두고(*_d), 행 해시는 그 칸 해시로 잇는다. 가명 처리는 식별 칸 값만 바꾸고 소금을 지운다 — 칸 해시·행 해시가 그대로라 체인 검증이 통과하고,
+    // 소금이 없으면 지운 값을 다시 맞혀 볼 수 없다. 바꾼 행은 audit_redaction(묶음 = 그 처리를 기록한 감사 행 id)에 바뀐 뒤 내용의 해시로 남기고,
+    // 묶음 전체의 해시는 체인 안의 처리 기록이 갖는다 — 처리 기록 없이 바꾼 행·지운 소금은 검증이 잡는다.
+    // 감사 수정·소금 삭제·추가만 알림의 수정·삭제는 처리 트랜잭션(privacy_gate.active = 1) 안에서만 풀린다. 감사 행 삭제는 언제나 막는다.
+    // privacy_subject는 사람·차량 ↔ 가명 대응표(가명처리 추가 정보, 따로 둔다) — 삭제 처리 때 subject_id를 지워 되돌릴 수 없게 한다.
+    name: '066_privacy',
+    sql: `
+CREATE TABLE privacy_gate (id INTEGER PRIMARY KEY CHECK (id = 1), active INTEGER NOT NULL);
+INSERT INTO privacy_gate (id, active) VALUES (1, 0);
+ALTER TABLE audit ADD COLUMN chain_v INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE audit ADD COLUMN actor_d TEXT;
+ALTER TABLE audit ADD COLUMN target_d TEXT;
+ALTER TABLE audit ADD COLUMN reason_d TEXT;
+ALTER TABLE audit ADD COLUMN before_d TEXT;
+ALTER TABLE audit ADD COLUMN after_d TEXT;
+CREATE TABLE audit_salt (audit_id INTEGER PRIMARY KEY, salt TEXT NOT NULL);
+CREATE TRIGGER audit_salt_no_update BEFORE UPDATE ON audit_salt BEGIN SELECT RAISE(ABORT, 'audit_salt는 추가만 가능'); END;
+CREATE TRIGGER audit_salt_no_delete BEFORE DELETE ON audit_salt WHEN (SELECT active FROM privacy_gate WHERE id = 1) = 0 BEGIN SELECT RAISE(ABORT, 'audit_salt는 개인정보 처리 중에만 지울 수 있다'); END;
+CREATE TABLE audit_redaction (audit_id INTEGER NOT NULL, batch_id INTEGER NOT NULL, redacted_digest TEXT NOT NULL, PRIMARY KEY (audit_id, batch_id));
+CREATE INDEX audit_redaction_batch ON audit_redaction (batch_id);
+CREATE TRIGGER audit_redaction_no_update BEFORE UPDATE ON audit_redaction BEGIN SELECT RAISE(ABORT, 'audit_redaction은 추가만 가능'); END;
+CREATE TRIGGER audit_redaction_no_delete BEFORE DELETE ON audit_redaction BEGIN SELECT RAISE(ABORT, 'audit_redaction은 추가만 가능'); END;
+DROP TRIGGER audit_no_update;
+CREATE TRIGGER audit_no_update BEFORE UPDATE ON audit WHEN OLD.hash IS NOT NULL AND NOT (
+  (SELECT active FROM privacy_gate WHERE id = 1) = 1 AND OLD.chain_v = 2 AND NEW.chain_v = 2 AND NEW.id = OLD.id
+  AND NEW.at IS OLD.at AND NEW.actor_role IS OLD.actor_role AND NEW.action IS OLD.action AND NEW.result IS OLD.result
+  AND NEW.correlation_id IS OLD.correlation_id AND NEW.component_id IS OLD.component_id AND NEW.prev_hash IS OLD.prev_hash AND NEW.hash IS OLD.hash
+  AND NEW.actor_d IS OLD.actor_d AND NEW.target_d IS OLD.target_d AND NEW.reason_d IS OLD.reason_d AND NEW.before_d IS OLD.before_d AND NEW.after_d IS OLD.after_d
+) BEGIN SELECT RAISE(ABORT, 'audit is append-only (FFG-PLT-015)'); END;
+DROP TRIGGER notification_no_update;
+CREATE TRIGGER notification_no_update BEFORE UPDATE ON notification WHEN (SELECT active FROM privacy_gate WHERE id = 1) = 0 BEGIN SELECT RAISE(ABORT, 'notification은 추가만 가능(개인정보 처리만 허용)'); END;
+DROP TRIGGER notification_no_delete;
+CREATE TRIGGER notification_no_delete BEFORE DELETE ON notification WHEN (SELECT active FROM privacy_gate WHERE id = 1) = 0 BEGIN SELECT RAISE(ABORT, 'notification은 추가만 가능(보존 기한·개인정보 처리만 허용)'); END;
+CREATE TABLE privacy_subject (pseudonym TEXT PRIMARY KEY, kind TEXT NOT NULL CHECK (kind IN ('USER','VEHICLE')), subject_id TEXT, created_at TEXT NOT NULL, erased_at TEXT, UNIQUE (kind, subject_id));
+CREATE TABLE privacy_request (request_id TEXT PRIMARY KEY, status TEXT NOT NULL CHECK (status IN ('REQUESTED','DONE','REJECTED')), requested_by TEXT NOT NULL, requested_at TEXT NOT NULL, decided_by TEXT, decided_at TEXT, doc TEXT NOT NULL);
+`,
+  },
+  {
     // 공유 상태(출시 준비 RD-OPS-14 · 20-92 §3) — 프로세스 메모리에 있던 것을 DB로 옮겨 같은 DB를 쓰는 인스턴스가 함께 본다.
     // shared_reservation: 처리 중 예약(멱등 키 — 같은 키가 다른 인스턴스에 와도 409), 만료 시각(벽시계 ms)이 지나면 다른 쪽이 잡는다.
     // shared_counter: 고정 창 카운터(차량별 요청 빈도). instance_lease: 단일 실행 인스턴스 임대(두 번째 인스턴스 부팅 거부).

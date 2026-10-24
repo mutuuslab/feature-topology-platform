@@ -39,7 +39,7 @@ interface Analytics {
   source: TrialSource;
   groupBy: SegmentDimension | null;
   k: number;
-  counts: { demo: number; synthetic: number };
+  counts: { production?: number; demo: number; synthetic: number };
   /** 대표 대수(가중) — 표본 한 대가 여러 대를 대표한다 */
   represented?: number;
   total: Group;
@@ -70,11 +70,11 @@ export function TrialAnalyticsScreen() {
         title={B.title}
         lead={B.lead}
         message={{ tone: 'neutral', value: t ? pct(t.conversionRate) : '—', text: B.key }}
-        meta={d ? `${B.asOf(d.today)} · ${B.counts(d.counts.demo, d.counts.synthetic)}` : undefined}
+        meta={d ? `${B.asOf(d.today)} · ${B.counts((d.counts.production ?? 0) + d.counts.demo, d.counts.synthetic)}` : undefined}
         actions={<Link to="/entitlements">{ko.entitlement.tabs.trials}</Link>}
       />
       <Toolbar label={B.filters}>
-        <Segmented label={T.source} options={(['ALL', 'DEMO', 'SYNTHETIC'] as const).map((v) => ({ value: v, label: T.sources[v] }))} value={source} onChange={(v) => setSource(v as TrialSource)} />
+        <Segmented label={T.source} options={(['ALL', 'FLEET', 'SYNTHETIC'] as const).map((v) => ({ value: v, label: T.sources[v] }))} value={source} onChange={(v) => setSource(v as TrialSource)} />
         <Segmented label={O.period} options={PERIODS.map((w) => ({ value: String(w), label: O.periods[w] }))} value={String(weeks)} onChange={(v) => setWeeks(Number(v) as Period)} />
         <Select label={B.groupBy} value={groupBy} onChange={(e) => setGroupBy(e.target.value as SegmentDimension | '')}>
           <option value="">{B.none}</option>
@@ -85,7 +85,7 @@ export function TrialAnalyticsScreen() {
           ))}
         </Select>
       </Toolbar>
-      {source !== 'DEMO' && <p className="ds-field__hint">{T.syntheticNote}</p>}
+      {source !== 'FLEET' && <p className="ds-field__hint">{T.syntheticNote}</p>}
       <AsyncView state={asyncState(q, !t || t.offered === 0)} error={q.error} onRetry={() => q.refetch()}>
         {d && t && (
           <div className="ds-stack" style={{ opacity: q.isPlaceholderData ? 0.6 : 1 }}>

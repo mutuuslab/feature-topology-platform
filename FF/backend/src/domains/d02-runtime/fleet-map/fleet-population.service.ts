@@ -2,8 +2,8 @@
 // 판매 → 서비스 시장 → 플랫폼 탑재 → 커넥티드 → 운행 중 깔때기는 contracts/rules/population(가정값 모델)이 계산하고,
 // 화면 목록·분석은 가중 표본 행이 맡는다. 신차 등록은 IF-06 Fleet 연계의 모의 — 판매월마다 표본·수신 표본을 들인다.
 import { Body, Controller, Get, Inject, Injectable, Post } from '@nestjs/common';
-import { FleetOnboardBody, inService, platformStart, populationAt, VehicleSchema, weightOf, type DatasetInfo, type FleetOnboard } from '@ff/contracts';
-import { CurrentActor, Roles, type Actor } from '../../../kernel/actor';
+import { FleetOnboardBody, inService, platformStart, populationAt, VehicleRegisterBody, vehicleReferenceProblems, VehicleSchema, weightOf, type DatasetInfo, type FleetOnboard } from '@ff/contracts';
+import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
@@ -11,6 +11,7 @@ import { DomainError } from '../../../kernel/errors';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { EntitlementService } from '../../d01-policy/entitlement/entitlement.service';
 import { FleetRepo } from '../../d01-policy/policy-repos';
+import { ReferenceValuesService } from '../variant-conditions/reference-values.service';
 
 /** meta.dataset — 5년 운영 데이터셋이면 개시일을 담는다. 없으면 시연 데이터셋 */
 export function datasetInfo(db: Db): DatasetInfo {
@@ -32,7 +33,24 @@ export class FleetPopulationService {
     private readonly fleet: FleetRepo,
     private readonly entitlements: EntitlementService,
     private readonly audit: AuditService,
+    private readonly references: ReferenceValuesService,
   ) {}
+
+  /**
+   * 운영 차량 등록(IF-06 Fleet 연계, 출시 준비 RD-OPS-03) — Fleet 구분 PRODUCTION. 판매국·차종·트림은 이 설치에 등록된 기준 값이어야 한다
+   * (데모 목록을 그대로 받지 않는다). 같은 VIN·같은 차량 가명은 다시 받지 않는다. 그 차량에 낸 권한은 PRODUCTION 출처로 기록된다.
+   */
+  register(actor: Actor, body: VehicleRegisterBody) {
+    if (this.fleet.vehicle(body.vin) || this.fleet.profiles().has(body.vin)) throw new DomainError('CONFLICT', `이미 등록된 차량입니다: ${body.vin}`);
+    const problems = vehicleReferenceProblems(body, this.references.all());
+    if (problems.length) throw new DomainError('VALIDATION', `${problems.join(' · ')} — 차량 사양 담당자가 기준 값(/master/reference-values)을 먼저 등록합니다.`, { problems });
+    const v = VehicleSchema.parse({ ...body, fleet: 'PRODUCTION' });
+    this.db.tx(() => {
+      this.fleet.insertVehicle(v);
+      this.audit.record(actor, 'FLEET_VEHICLE_REGISTER', v.vin, { after: { fleet: v.fleet, country: v.country, vehicleModel: v.vehicleModel, trim: v.trim, modelYear: v.modelYear }, reason: '운영 차량 등록(IF-06)', componentId: 'D02-03' });
+    });
+    return v;
+  }
 
   population() {
     const today = this.entitlements.today();
@@ -82,6 +100,13 @@ export class FleetPopulationController {
   @Get('population')
   population() {
     return this.s.population();
+  }
+
+  @Post('vehicles')
+  @Roles('SYSTEM', 'VARIANT_OWNER')
+  @AuditAction('FLEET_VEHICLE_REGISTER')
+  register(@CurrentActor() actor: Actor, @Body(new ZodPipe(VehicleRegisterBody)) body: VehicleRegisterBody) {
+    return this.s.register(actor, body);
   }
 
   @Post('onboard')

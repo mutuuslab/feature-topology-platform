@@ -217,7 +217,7 @@ s3://ff-lake-<install_id>/
   | raw/ 30일, quarantine 90일, agg(k≥5·가명 없음) 5년 | |
 
   - 매일 보존이 지난 날짜 파티션을 지운다. **열린 이상 징후·Incident에 묶인 가명·Feature의 줄은 남긴다**(Lake가 받은 `anomaly`·`incident`로 보류 목록을 스스로 만든다 — FF `RetentionService.holds()`와 같은 규칙, FFG-TEL-008). 범주별 삭제 건수·보류 사유를 남긴다(FPW.12-A05).
-  - 가명 단위 삭제: FF가 `POST /v1/erasure` → 즉시 조회에서 가림(MASKED) → 30일 안에 파일 재작성(PURGED), 열린 건에 묶이면 HELD. RD-P2-05 절차에 이 호출을 넣는다.
+  - 가명 단위 삭제: FF가 `POST /v1/erasure` → 즉시 조회에서 가림(MASKED) → 30일 안에 파일 재작성(PURGED), 열린 건에 묶이면 HELD. **FF 쪽 접점 구현(RD-P2-05, 2026-10-25)**: 차량 삭제 요청을 실행하면 커밋 뒤 `backend/src/kernel/lake-erasure.ts`가 `{request_ref, pseudonyms, basis}`로 부른다(`FF_LAKE_URL`·`FF_LAKE_TOKEN`, 없으면 `NOT_CONNECTED`로 요청 기록에 남김). 상태 조회(`GET /v1/erasure/{id}`)·연결 뒤 다시 보내기는 Lake 서버와 함께(20-90 §12.2).
 - **CN**: CN 차량은 CN 설치의 Lake 입구로 보낸다(차량 설정). FF가 CN 밖에 있으면 CN Lake → FF 중계 자체가 국외 이전이다 — FPW.12-A03 심사 대상(결정 U-9).
 
 ## 8. Lake → FF 집계 조회 (Closed loop)

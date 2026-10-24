@@ -16,6 +16,7 @@ import { FleetPopulationController, FleetPopulationService } from './d02-runtime
 import { VehicleOpenFeatureController, VehicleOpenFeatureService } from './d02-runtime/vehicle-runtime/bundle-provider';
 import { OtelExporter } from '../adapters/if-mocks/otel.exporter';
 import { VariantConditionsController, VariantConditionsService } from './d02-runtime/variant-conditions/variant.service';
+import { ReferenceValuesController, ReferenceValuesService } from './d02-runtime/variant-conditions/reference-values.service';
 import { SupportConditionsController, SupportConditionsService } from './d02-runtime/support-conditions/support.service';
 import { KillController, KillService } from './d03-safety/kill-switch/kill.service';
 import { TrialExpiryListener } from './d03-safety/kill-switch/trial-expiry.listener';
@@ -39,8 +40,8 @@ import { OtaJobRepo } from '../adapters/ota/ota-job.repo';
 
 @Module({
   imports: [D01PolicyModule, TrustModule],
-  controllers: [VehicleOpenFeatureController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, FleetMapController, FleetPopulationController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, RollbackController, RollbackPlanController, RollbackRequestController, PolicyHistoryController, PolicyGateController, StatusIngestController, VehicleStatusController, VariantConditionsController, SupportConditionsController, SbomController, RetentionController, SafetyKpiController, ChangeRecordController, VehicleInboxController, VehicleChannelController, OtaController],
-  providers: [OtelExporter, VehicleOpenFeatureService, PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, FleetMapService, FleetPopulationService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, SbomService, KillService, TrialExpiryListener, RestoreService, RollbackRepo, RollbackService, PolicyGateService, EnvelopeRepo, StatusIngestService, VariantConditionsService, SupportConditionsService, RetentionService, SafetyKpiService, ChangeRecordService, VehicleChannelRegistry, PullChannelService, OtaJobRepo, OtaServerAdapter],
+  controllers: [VehicleOpenFeatureController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, FleetMapController, FleetPopulationController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, RollbackController, RollbackPlanController, RollbackRequestController, PolicyHistoryController, PolicyGateController, StatusIngestController, VehicleStatusController, VariantConditionsController, ReferenceValuesController, SupportConditionsController, SbomController, RetentionController, SafetyKpiController, ChangeRecordController, VehicleInboxController, VehicleChannelController, OtaController],
+  providers: [OtelExporter, VehicleOpenFeatureService, PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, FleetMapService, FleetPopulationService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, SbomService, KillService, TrialExpiryListener, RestoreService, RollbackRepo, RollbackService, PolicyGateService, EnvelopeRepo, StatusIngestService, VariantConditionsService, ReferenceValuesService, SupportConditionsService, RetentionService, SafetyKpiService, ChangeRecordService, VehicleChannelRegistry, PullChannelService, OtaJobRepo, OtaServerAdapter],
   exports: [TrustModule, SecureDeployService, VehicleRuntimeService, VehicleChannelRegistry, GleoAdapter, PublicationRepo, KillService, RestoreService, VehicleRequestService, PolicyGateService],
 })
 export class DeliveryModule {}

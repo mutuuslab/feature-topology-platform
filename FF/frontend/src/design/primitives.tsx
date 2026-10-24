@@ -145,7 +145,7 @@ export function AsyncView({ state, stale, onRetry, empty, emptyHidden, error, ch
   const err = asErrorLike(error);
   if (state === 'loading')
     return (
-      <div className="ds-skel" data-state="loading" aria-busy="true" aria-label={ko.state.loading}>
+      <div className="ds-skel" data-state="loading" role="progressbar" aria-busy="true" aria-label={ko.state.loading}>
         {Array.from({ length: rows }, (_, i) => <span key={i} />)}
       </div>
     );

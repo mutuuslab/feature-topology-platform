@@ -10,7 +10,7 @@
       "verdict": "부분",
       "current": "체험 제안·수락·구매 전환 때 차량 SW가 요구 Version보다 낮으면(NOT_SUPPORTED) 거부하고, 활성 판단은 결제와 별개로 평가기가 수행한다.",
       "evidence": [
-        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:242",
+        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:245",
         "contracts/src/rules/variant.ts:52",
         "backend/src/domains/d05-ext/billing/billing.controller.ts:36"
       ],
@@ -29,9 +29,9 @@
       "verdict": "부분",
       "current": "체험권은 제안 14일·수락 후 30일 기간형이며 만료 3일 전 사전 고지와 만료 후 상업 사유 차단을 수행한다.",
       "evidence": [
-        "contracts/src/rules/trial.ts:57",
-        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:165",
-        "contracts/src/schemas/policy.ts:111"
+        "contracts/src/rules/trial.ts:58",
+        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:168",
+        "contracts/src/schemas/policy.ts:112"
       ],
       "tests": [
         "backend/test/d05/trial-expiry.spec.ts",
@@ -62,8 +62,8 @@
       "verdict": "미구현",
       "current": "권리는 VIN에 묶인 구독·구매·체험만 있고 승계 가능 여부나 소유자 개념이 없다.",
       "evidence": [
-        "contracts/src/schemas/policy.ts:107",
-        "contracts/src/schemas/policy.ts:115"
+        "contracts/src/schemas/policy.ts:108",
+        "contracts/src/schemas/policy.ts:116"
       ],
       "tests": [],
       "gap": "중고차 기능 명세(기본/승계/종료 구독/잔여 체험) 발행과 새 소유자 등록·권리 이전이 없다.",
@@ -99,8 +99,8 @@
       "current": "구매 전환 직전 지원 조건을 재확인하고, 과금 모의는 멱등 키(체험권:요금제)로 주문·권리를 한 번만 만든다.",
       "evidence": [
         "backend/src/domains/d05-ext/billing/billing.controller.ts:38",
-        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:188",
-        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:198"
+        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:191",
+        "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:201"
       ],
       "tests": [
         "backend/test/d05/trials.spec.ts"
@@ -117,7 +117,7 @@
       "evidence": [
         "frontend/src/screens/biz/TrialAnalytics.tsx:1",
         "backend/src/domains/d05-ext/biz-metrics/biz-metrics.controller.ts:51",
-        "contracts/src/rules/trial.ts:57"
+        "contracts/src/rules/trial.ts:58"
       ],
       "tests": [
         "backend/test/d05/trials.spec.ts",
@@ -135,7 +135,7 @@
       "current": "차량 Fleet 구분은 DEMO/SAMPLE 데모용뿐이고 법인 계약·관리자·직원 프로필 분리 모델이 없다.",
       "evidence": [
         "contracts/src/schemas/policy.ts:99",
-        "contracts/src/schemas/policy.ts:109"
+        "contracts/src/schemas/policy.ts:110"
       ],
       "tests": [],
       "gap": "계약 단위 권리 부여·회수, 직원 교체 시 개인 프로필 분리, 미회수·오프라인 예외 목록이 없다.",
@@ -198,8 +198,8 @@
       "verdict": "미구현",
       "current": "차량 귀속 구매와 개인 구독을 구분하는 필드나 소유권 이전 처리가 없다.",
       "evidence": [
-        "contracts/src/schemas/policy.ts:111",
-        "contracts/src/rules/trial.ts:41"
+        "contracts/src/schemas/policy.ts:112",
+        "contracts/src/rules/trial.ts:42"
       ],
       "tests": [],
       "gap": "승계 대상 판정·이전 소유자 데이터 삭제·종료 권리·실차 명세 확인 기능과 시험이 모두 없다.",
@@ -212,8 +212,8 @@
       "verdict": "부분",
       "current": "권리 종류(구독·구매·체험)와 상태(OFFERED·ACTIVE·DECLINED·EXPIRED·CONVERTED·REVOKED)를 한 곳에서 판정하고, 활성은 평가기의 ENTITLEMENT 단계 하나로만 반영한다.",
       "evidence": [
-        "contracts/src/rules/trial.ts:44",
-        "contracts/src/schemas/policy.ts:115",
+        "contracts/src/rules/trial.ts:45",
+        "contracts/src/schemas/policy.ts:116",
         "contracts/src/flags/evaluate.ts:128"
       ],
       "tests": [
@@ -502,7 +502,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/incident-voc/incident.service.ts:57",
         "contracts/src/rules/kill-timeline.ts:43",
-        "backend/src/kernel/audit.service.ts:142"
+        "backend/src/kernel/audit.service.ts:184"
       ],
       "tests": [
         "contracts/src/rules/kill-timeline.test.ts",

@@ -1,6 +1,6 @@
 // 정책·검증 이력·차량·사용 권한 저장소 (키 열 + doc JSON)
 import { Inject, Injectable } from '@nestjs/common';
-import { canonicalJson, PolicySpec, policySpecOf, type Entitlement, type Policy, type PolicyRevision, type PolicyRevisionKind, type Vehicle, type VehicleProfile } from '@ff/contracts';
+import { canonicalJson, PolicySpec, policySpecOf, sourcesOf, type Entitlement, type Policy, type PolicyRevision, type PolicyRevisionKind, type SourceFilter, type Vehicle, type VehicleProfile } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { DB, type Db } from '../../kernel/db';
 import type { ValidatorResult } from '@ff/contracts';
@@ -207,15 +207,17 @@ export class FleetRepo {
   updateVehicle(v: Vehicle) {
     this.db.run('UPDATE vehicle SET doc = ? WHERE vin = ?', JSON.stringify(v), v.vin);
   }
-  /** 차량을 지정하면 그 차량의 전부, 아니면 데모 권한만(합성 모집단은 통계·목록 화면에서 따로 고른다) */
-  grants(vin?: string, source: 'DEMO' | 'SYNTHETIC' | 'ALL' = 'DEMO'): Entitlement[] {
+  /** 차량을 지정하면 그 차량의 전부, 아니면 고른 출처만 — 기본 FLEET = 등록 차량(운영 + 시연) 권한. 합성 모집단은 통계·목록 화면에서 따로 고른다(RD-OPS-03) */
+  grants(vin?: string, source: SourceFilter = 'FLEET'): Entitlement[] {
     if (vin) return parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE vin = ? ORDER BY grant_id', vin));
-    return source === 'ALL' ? parse<Entitlement>(this.db.all('SELECT doc FROM entitlement ORDER BY grant_id')) : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE source = ? ORDER BY grant_id', source));
+    const xs = sourcesOf(source);
+    return xs ? parse<Entitlement>(this.db.all(`SELECT doc FROM entitlement WHERE source IN (${xs.map(() => '?').join(', ')}) ORDER BY grant_id`, ...xs)) : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement ORDER BY grant_id'));
   }
-  grantsForCatalog(catalogId: string, source: 'DEMO' | 'SYNTHETIC' | 'ALL'): Entitlement[] {
-    return source === 'ALL'
-      ? parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE catalog_id = ? ORDER BY grant_id', catalogId))
-      : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE catalog_id = ? AND source = ? ORDER BY grant_id', catalogId, source));
+  grantsForCatalog(catalogId: string, source: SourceFilter): Entitlement[] {
+    const xs = sourcesOf(source);
+    return xs
+      ? parse<Entitlement>(this.db.all(`SELECT doc FROM entitlement WHERE catalog_id = ? AND source IN (${xs.map(() => '?').join(', ')}) ORDER BY grant_id`, catalogId, ...xs))
+      : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE catalog_id = ? ORDER BY grant_id', catalogId));
   }
   insertGrant(e: Entitlement) {
     this.rev++;

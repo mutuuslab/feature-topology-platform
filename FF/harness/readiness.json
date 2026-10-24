@@ -212,11 +212,13 @@
       "phase": "R1",
       "title": "권한 출처·Fleet 값이 데모 전용 열거값",
       "evidence": [
-        "contracts/src/schemas/policy.ts:99,123",
-        "backend/src/domains/d01-policy/entitlement/trial-expiry.service.ts:64"
+        "contracts/src/rules/reference-data.ts",
+        "backend/src/domains/d02-runtime/variant-conditions/reference-values.service.ts",
+        "backend/src/domains/d01-policy/entitlement/trial-expiry.service.ts",
+        "backend/test/kernel/production-values.spec.ts"
       ],
       "criteria": "출처·Fleet에 운영 값(PRODUCTION)이 있고 실제 부여는 운영 값으로 기록되며 만료 처리가 운영 값도 다룬다",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
@@ -812,10 +814,13 @@
       "phase": "R3",
       "title": "개인정보 삭제·내보내기 절차·사용자 보존 기한 없음",
       "evidence": [
-        "backend/src/domains/d04-ops/telemetry-ingest/retention.service.ts:1-50"
+        "contracts/src/rules/privacy.ts",
+        "backend/src/kernel/privacy.service.ts",
+        "backend/src/kernel/audit.service.ts",
+        "backend/test/kernel/privacy.spec.ts"
       ],
       "criteria": "사용자 식별자 가명 처리·삭제 요청 절차",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

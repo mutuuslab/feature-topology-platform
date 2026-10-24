@@ -89,7 +89,7 @@ describe('전세계 차량 지도 화면', () => {
     expect(screen.getByText('이번 열람이 감사에 기록되었습니다.')).toBeTruthy();
     // 위치 열람은 계정 단위 감사라 actor 헤더를 싣는다
     const map = calls.find((c) => c.url.startsWith('/api/fleet/map?'))!;
-    expect(map.url).toContain('source=DEMO');
+    expect(map.url).toContain('source=FLEET');
     expect(map.headers['X-Actor-Id']).toBe('usr-operator');
   });
 

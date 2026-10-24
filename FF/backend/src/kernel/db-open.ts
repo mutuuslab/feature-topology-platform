@@ -8,7 +8,7 @@ import { MIGRATIONS } from './migrations';
 import { dialectContextOf } from './pg-dialect';
 import { pgAdmin, PgSyncDb } from './pg-sync-db';
 import { seedOf } from './runtime-config';
-import { loadFixtures, seedAnchor, seedDataset, seedDemo } from './seed';
+import { loadFixtures, seedAnchor, seedDataset, seedDemo, seedReferenceValues } from './seed';
 
 type Env = Record<string, string | undefined>;
 
@@ -28,6 +28,8 @@ export function applySeed(db: Db, env: Env = process.env) {
   if (seed === 'none') return;
   seedDataset(db, loadFixtures(), seed);
   seedDemo(db);
+  // 고객 기준 값(판매국·지역·차종·트림)의 데모 시드(origin SEED, RD-OPS-03)
+  seedReferenceValues(db);
 }
 
 export function openDb(env: Env = process.env): Db {

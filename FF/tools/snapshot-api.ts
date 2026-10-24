@@ -128,8 +128,11 @@ async function main() {
   }
   await save('validations');
   await save('entitlements');
+  // 고객 기준 값(RD-OPS-03) — 사용 권한 성향 필터·차종·판매국 기준 값 화면. 개인정보 목록(RD-P2-05) — 데이터·규제 기록의 개인정보 탭
+  await save('referenceValues');
+  await save('privacyInventory');
   // 체험권 차량 목록(상태별 첫 쪽)·체험 전환 분석(나눠 보기 기준별) — 화면과 같은 질의 함수로 키를 맞춘다
-  for (const source of ['ALL', 'DEMO', 'SYNTHETIC'] as const) {
+  for (const source of ['ALL', 'FLEET', 'SYNTHETIC'] as const) {
     for (const state of ['', ...TRIAL_STATES]) await save('trials', {}, trialListQuery({ catalogId: 'CAT-00019', source, state }));
     for (const groupBy of ['', ...SEGMENT_DIMENSIONS]) {
       await save('trialAnalytics', {}, trialAnalyticsQuery({ catalogId: 'CAT-00019', source, groupBy }));
@@ -145,9 +148,9 @@ async function main() {
   await save('fleetRuntime');
   // 전세계 차량 지도(D02-03) — 정적 데모는 찍은 시점 위치로 멈춰 있다(5초 갱신 없음)
   await save('fleetPopulation');
-  const fm = await save('fleetMap', {}, { source: 'DEMO' });
-  for (const flagKey of fm.flagKeys) await save('fleetMap', {}, { source: 'DEMO', flagKey });
-  for (const c of fm.catalogs) await save('fleetMap', {}, { source: 'DEMO', catalogId: c.catalogId });
+  const fm = await save('fleetMap', {}, { source: 'FLEET' });
+  for (const flagKey of fm.flagKeys) await save('fleetMap', {}, { source: 'FLEET', flagKey });
+  for (const c of fm.catalogs) await save('fleetMap', {}, { source: 'FLEET', catalogId: c.catalogId });
   const fs = await save('fleetMap', {}, { source: 'SYNTHETIC' });
   for (const c of fs.catalogs) await save('fleetMap', {}, { source: 'SYNTHETIC', catalogId: c.catalogId });
   for (const v of fm.items) await save('fleetMapVehicle', { vin: v.vin });

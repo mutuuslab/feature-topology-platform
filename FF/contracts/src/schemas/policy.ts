@@ -5,6 +5,7 @@ import { patchOf } from './patch';
 import { ControlPointType } from '../enums';
 import { CONSTRAINT_OPERATORS } from '../flags/p0';
 import { OddRestriction } from '../rules/odd-restriction';
+import { FLEET_KINDS, GRANT_SOURCES } from '../rules/reference-data';
 
 export const ConstraintSchema = z
   .object({
@@ -96,8 +97,8 @@ export const VehicleSchema = z.object({
   gleo: z.boolean().default(false),
   /** 지정 Canary 차량(시험·사내 차량) — 부분 배포(0% < 범위 < 100%)면 Cohort 버킷과 관계없이 포함한다(FFG-LCY-009 Canary 관측 대상) */
   canary: z.boolean().default(false),
-  /** DEMO = 시연 차량(이름 있는 12대), SAMPLE = 5년 운영 모집단의 수신 표본(실제 OTA 수신·회신, 지도·목록은 표본 성향으로 본다) */
-  fleet: z.enum(['DEMO', 'SAMPLE']).default('DEMO'),
+  /** PRODUCTION = 고객 차량(IF-06 등록, RD-OPS-03), DEMO = 시연 차량(이름 있는 12대), SAMPLE = 5년 운영 모집단의 수신 표본(실제 OTA 수신·회신, 지도·목록은 표본 성향으로 본다). 기본 DEMO는 구분 없이 저장된 옛 시연 문서용 */
+  fleet: z.enum(FLEET_KINDS).default('DEMO'),
 });
 export type Vehicle = z.infer<typeof VehicleSchema>;
 
@@ -121,7 +122,8 @@ export const EntitlementSchema = z.object({
   convertedPlan: z.enum(['구독', '구매']).nullable().default(null),
   /** 체험에서 전환되어 생긴 권한이면 그 체험 */
   fromTrial: z.string().nullable().default(null),
-  source: z.enum(['DEMO', 'SYNTHETIC']).default('DEMO'),
+  /** PRODUCTION = 고객 차량 권한, DEMO = 시연 권한, SYNTHETIC = 통계용 합성·표본(RD-OPS-03). 기본 DEMO는 출처 없이 저장된 옛 시연 문서용 */
+  source: z.enum(GRANT_SOURCES).default('DEMO'),
   note: z.string().nullable().default(null),
   /** 만료 사전 고지 (FFG-LCY-010) — 고지 기록 ID(NTC-NNNNN)·시각, 그리고 고지한 만료일(연장으로 validTo가 바뀌면 다시 고지한다) */
   noticeId: z.string().nullable().default(null),

@@ -26,7 +26,7 @@
 | RD-SEC-09 | 테넌시 | 고객(테넌트) 구분이 어디에도 없다 — **완료 2026-10-24**: 한 설치 = 한 고객(D-RD-1), `FF_INSTANCE_ID` 필수·상태 점검·감사 고정점·백업 manifest에 기록, 다른 설치 백업 복원 거부(§8) | kernel.module.ts:27 |
 | RD-OPS-01 | 저장 | 기본 DB가 `:memory:`이고 부팅마다 데모 데이터(차량·3000 시행)를 넣는다 | kernel.module.ts:27-29, seed.ts:109,114 |
 | RD-OPS-02 | 첫 실행 | 빈 DB(`FF_SEED=none`) 부팅·화면을 검사하는 시험이 하나도 없다 — **완료 2026-10-24**: 운영 모드 첫 실행 시험 + 빈 DB e2e(모든 메뉴), 데모 ID 기본값 14곳 수정(§8) | test/helpers.ts:10, e2e/playwright.config.ts:47 |
-| RD-OPS-03 | 데이터 모델 | 권한 출처·Fleet 값이 `DEMO|SYNTHETIC`/`DEMO|SAMPLE`만 허용, 만료 처리도 DEMO만 | contracts/src/schemas/policy.ts:99,123, trial-expiry.service.ts:64 |
+| RD-OPS-03 | 데이터 모델 | 권한 출처·Fleet 값이 `DEMO|SYNTHETIC`/`DEMO|SAMPLE`만 허용, 만료 처리도 DEMO만 — **완료(2026-10-25)**: 출처·Fleet에 `PRODUCTION`, 고객 차량 권한은 PRODUCTION으로 기록·만료 sweep 포함, 판매국·지역·차종·트림은 설치마다 등록하는 고객 기준 값(데모 목록은 시드만, §10) | contracts/src/rules/reference-data.ts, trial-expiry.service.ts |
 | RD-OPS-04 | 차량 채널 | 실제 차량 전달 경로가 없다(내부 시뮬레이터가 기본, OTA IF-05·IF-09 모의 고정) — **완료(2026-10-24)**: 전달 어댑터(sim·pull·고객 게이트웨이), 운영 기본 당겨받기 HTTPS(7장·80-40). 고객 OTA 서버 어댑터(`ota`, IF-05 v1 규격·시험 OTA 서버·적합성 검사, 7.4·80-45) | vehicle-runtime.service.ts:80-89, if-mocks/external-systems.ts:170,173 |
 | RD-OPS-05 | 배포 | 백엔드 배포 산출물(Dockerfile·배포 작업·환경 템플릿)이 없다 — **완료 2026-10-24**: `docker/app/`(이미지·compose·환경 템플릿), 이미지 빌드 CI(§8) | docker/(Unleash만), .github/workflows/cloudflare.yml |
 | RD-FN-01 | 정확성 | 결함 기록(it.fails) 12건 — 명세 결함 5 + ADS 결함 7 — **완료(2026-10-24)**: 열린 결함 기록 9건(명세 FR-RTE-005-001·FR-RTE-001-004·FR-REG-002-019·FR-REG-002-008/009, ADS F036·F019·F059·F007·Orca HT06)을 고치고 it.fails → it 회귀 시험으로 | backend/test/requirements/defects.spec.ts, test/ads/defects.spec.ts |
@@ -64,7 +64,7 @@
 | RD-P2-02 | 영어 전환 버튼은 있으나 본문은 한국어만 |
 | RD-P2-03 | 반응형 최소 900px, 크롬만 e2e |
 | RD-P2-04 | 사용자 설명서·관리자/설치 안내 없음 — **완료 2026-10-24**: `20-91-install-guide.md`, `00-overview/user-manual.md` |
-| RD-P2-05 | 개인정보 삭제·내보내기 절차, 사용자·감사 보존 기한 |
+| RD-P2-05 | 개인정보 삭제·내보내기 절차, 사용자·감사 보존 기한 — **완료 2026-10-25**: 개인정보 목록(41개 저장소)·정보주체 내보내기(JSON)·삭제/가명 처리 요청(4안 원칙)·감사 체인 v2(가명 처리 뒤에도 검증 통과)·범주별 보존 기한·Data Lake 삭제 접점(§11) |
 | RD-P2-06 | 요구사항 반영: 구현 194 · 부분 257 · 미구현 172 (628건), ADS 64건 중 구현 3, ORCA 45건 중 구현 0 |
 | RD-OPS-15 | 이중화(인스턴스 여럿) — SSE 버스·예약 작업·감사 체인 끝·출처별 요청 제한이 인스턴스 안. PostgreSQL LISTEN/NOTIFY·지도자 임대·감사 추가 직렬화 뒤 `FF_INSTANCE_LOCK=off` 허용(20-92 3단계) |
 
@@ -106,6 +106,9 @@
 | D-RD-6 | 열린 재-HARA 요청이 정책 배포도 막을지 | 막지 않음 — 출시 전이·Release Sign-off만 막는다 |
 | D-RD-7 | 알림 메일 — 늘 켜진 화면 알림(승인 요청·긴급·배포 결과·절차 인계) 위에 메일 발송을 붙일지 | 화면 알림만 — 메일은 뺀다 |
 | D-RD-8 | 운영 설치에서 디자인 갤러리(/_design)와 표준 따라하기(/learn)를 숨길지 | 숨긴다 — 데모·개발 빌드에만 |
+| D-RD-9 | 이벤트 이력(`events`) 보존 일수 — **미정(TBD, 사용자 결정 대기)** | 정할 때까지 기본 "지우지 않음"(`FF_RETENTION_EVENT_DAYS=0`), 설치 설정으로 켠다. Data Lake 라벨 커서 뒤 이벤트는 지우지 않는 조건(80-75 §5)과 함께 정한다 |
+| D-RD-10 | 서명·승인 책임 기록(Feature·Baseline·상품 승인, 긴급 차단 승인 서명, 절차 완료 서명 등)의 사람 식별자 — 삭제 요청이 와도 법정 보존으로 둘지, 보존 기한 뒤 가명 처리할지 — **미정(TBD)** | 지금 구현: 법정 보존(열람·내보내기만). 서명 대상에 승인자 ID가 들어 있어 바꾸면 지난 서명을 다시 검증할 수 없다 — 바꾸려면 서명 검증 기록을 먼저 고정해야 한다 |
+| D-RD-11 | 개인정보 삭제 실행을 요청자와 다른 보안 담당자로 할지(4안 원칙) — **미정(TBD)** | 지금 구현: 다른 보안 담당자(`SECURITY_OFFICER`)만 실행·거절. 보안 담당자가 한 명뿐인 고객은 실행할 수 없다 |
 
 ### 결정(2026-10-24 사용자)
 
@@ -318,7 +321,7 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 
 - 단독 설치 compose에 PostgreSQL·Keycloak은 없다 — DB는 D-RD-3 이전 전 SQLite, IdP는 고객사 것을 쓴다. 이전 뒤 compose에 DB 서비스를 넣는다.
 - 이미지 게시(레지스트리·서명·SBOM 첨부)와 배포 자동화는 없다 — 사람 승인 뒤 따로.
-- 이벤트 이력 보존 기한은 고객 정책이 정해지지 않아 기본 "지우지 않음"이다.
+- 이벤트 이력 보존 기한은 고객 정책이 정해지지 않아 기본 "지우지 않음"이다 — 설정(`FF_RETENTION_EVENT_DAYS`)은 있고 일수는 결정 D-RD-9 대기.
 - 화면 일부는 여전히 예시 상품(`CAT-00019`)을 고정해 조회한다(체험 분석·사용 권한 체험 목록) — 빈 설치에서 빈 결과로 보여 오류는 없지만 고객 상품을 고르게 바꿔야 한다.
 - 디자인 시스템 갤러리(`/_design`)는 견본 값(예시 ID)을 보인다 — **해결(D-RD-8)**: 운영 빌드에서 표준 따라하기와 함께 숨긴다.
 
@@ -340,3 +343,60 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 - PostgreSQL GA(20-92 2·4단계): 호출부를 비동기 Db로(동기 다리는 질의마다 앱 스레드를 막는다), PG 백업·복원 명령과 복원 연습, compose에 DB 서비스, 부하 시험.
 - PG 호환 측정(2026-10-25): **769/775 통과 · 실패 0** — 건너뜀 6은 실서버가 필요한 시험(Unleash·CARLA 4)과 GLEO 실연동 2(준비 단계 8초 대기가 Windows Docker Desktop 왕복 지연에 걸림). 첫 측정(번역기 보강 전)은 726/748. 상세 `harness/pg-compat.json`·20-92 §6.
 
+## 11. 운영 값·고객 기준 값 — RD-OPS-03 (2026-10-25 구현)
+
+| 항목 | 내용 |
+|---|---|
+| 운영 값 | `contracts/src/rules/reference-data.ts` — Fleet 구분 `PRODUCTION|DEMO|SAMPLE`, 권한 출처 `PRODUCTION|DEMO|SYNTHETIC`. 고객 차량(`PRODUCTION`)에 낸 체험권·구매 권한은 `PRODUCTION`으로 기록되고(`entitlement.service.ts`), 체험 만료 sweep이 운영 권한도 고지·만료한다(`trialSweepIncludes`, 예전에는 DEMO만). 목록·지도 질의의 출처 고르기는 `FLEET`(등록 차량 = 운영 + 시연, 기본)·`SYNTHETIC`·`ALL`·정확한 출처 하나. 화면 선택지 "데모 차량"은 "등록 차량"으로 |
+| 고객 기준 값 | 판매국·지역·차종·트림을 설치마다 등록한다 — `GET/POST /api/reference-values`, `POST /api/reference-values/:kind/:code/retire`(차량 사양 담당자 `VARIANT_OWNER`, 감사). 지역은 판매국 아래, 트림은 차종 아래(부모 먼저). 쓰인 값은 지우지 않고 사용 중지만. 마이그레이션 `065_reference_value`. 화면 `/master/reference-values`(차종·판매국 기준 값) |
+| 데모 값은 시드만 | 데모 데이터셋 값(KR·US·EU, 지역, NX4 PE·GN7·NE, 트림)은 데모 시드(`FF_SEED`)가 `origin SEED`로 한 번 넣는다(`seed.ts seedReferenceValues`). 고객 설치(`FF_SEED=none`)는 빈 목록에서 시작한다 — 첫 실행 시험이 확인한다 |
+| 운영 차량 등록 | `POST /api/fleet/vehicles`(IF-06 Fleet 연계 `SYSTEM` 또는 `VARIANT_OWNER`) — Fleet `PRODUCTION`, 판매국·차종·트림이 등록된(ACTIVE) 기준 값이 아니면 400(데모 목록을 그대로 받지 않는다), 같은 VIN 409 |
+| 화면 | 사용 권한 체험 목록의 국가·지역 선택지는 등록된 기준 값에서(예전에는 데모 목록 `TRIAL_COUNTRIES`) |
+| 남긴 표준 열거값 | Gate·ASIL·Lifecycle·역할·메시지 v2 시장(`MARKETS`, UNECE 와이어 규격)·규제 Profile — 표준이 정한 값이라 고객이 바꾸지 않는다 |
+| 시험 | `backend/test/kernel/production-values.spec.ts`(readiness 표식 — 출처·Fleet 운영 값, 기준 값 등록·부모·중복·권한, 차량 등록 거부·PRODUCTION, 고객 체험권 PRODUCTION 기록·목록, **고객 체험권 만료 회귀**, 사용 중지), `first-run.spec.ts`(빈 설치는 기준 값이 비어 있고 등록한 값으로 운영 차량 등록), `frontend/src/__tests__/referencePrivacy.test.tsx` |
+| 남은 것 | Feature 적용 범위(국가·차종·트림)와 상품 범위는 아직 기준 값으로 검사하지 않는다(자유 문자열 — 데모·시험 데이터와 호환). 합성 모집단 생성기(`trial.ts`·`population.ts`)는 데모 통계용 그대로. 일부 입력 화면의 기본값(KR·NX4 PE)은 목록에 있을 때만 쓰는 예시로 남았다 |
+
+## 12. 개인정보 — RD-P2-05 (2026-10-25 구현)
+
+정본 표는 `contracts/src/rules/privacy.ts`(`PERSONAL_DATA_INVENTORY`·`PERSONAL_RETENTION`), 처리는 `backend/src/kernel/privacy.service.ts`, 화면은 데이터·규제 기록(`/admin/data`) → **개인정보** 탭.
+
+### 12.1 개인정보 목록(요약)
+
+| 정보주체 | 범주 | 저장소(칸) | 처리 |
+|---|---|---|---|
+| 사용자(OIDC sub) | 계정·세션 | `auth_session`(sub·이름·이메일·역할), `privacy_subject`(가명 대응표) | 삭제 |
+| | 협업 | `dashboard`(owner_id·이름), `dashboard_star`, `ext_link.created_by` | 삭제(판·별) / 가명(연결) |
+| | 알림 | `notification_read`·`notification_exclude`(user_id), `notification_recipient.rkey`(user:…), `notification.doc` | 삭제 / 가명 |
+| | 활동 기록 | `audit`(actor_id·target·reason·before/after), `events.payload`, `idempotency.response`, `otel_span.doc` | 가명(감사는 체인 v2) |
+| | 서명·승인 기록 | `approver_key`, `procedure_completion`, `feature_version`·`baseline`·`baseline_request`·`product`·`policy_revision`·`validation_run`·`release_signoff`·`kill_request`·`kill_command`·`kill_post_review`·`gate_decision`·`change_record`·`safety_metric_plan`·`rollback_request`·`flag_retirement`·`data_act_contract_basis`·`privacy_request` | 법정 보존(열람·내보내기만, D-RD-10) |
+| 차량(VIN) | 차량 연결 | `vehicle_request`·`vehicle_request_nonce`·`vehicle_profile` | 삭제 |
+| | | `vehicle`·`entitlement`·`data_access_request`·`status_report`·`readback`·`vehicle_delivery` | 법정 보존(리콜·거래·안전 시정·SUMS) |
+
+### 12.2 정보주체 요청
+
+- **내보내기** `POST /api/privacy/export`(보안 담당자) — 목록의 모든 저장소에서 그 사용자·차량의 행을 JSON(`ff.privacy.export/v1`)으로. 비밀·검증 재료(세션 해시·개인키·감사 소금·칸 해시)는 뺀다. 내보낸 사실은 감사에 **가명으로** 남는다(`PRIVACY_EXPORT`, 대상 = 가명).
+- **삭제·가명 처리** `POST /api/privacy/requests` → `…/:id/execute` 또는 `…/reject`. 실행·거절은 요청자와 다른 보안 담당자(4안 원칙, D-RD-11). 요청 때 저장소별 대상 행 수를 센다. 실행은 한 트랜잭션 — DELETE 저장소는 지우고, PSEUDONYMISE 저장소는 식별자를 가명(`psn-` + 16자리)으로 바꾸고, RETAIN_LEGAL은 그대로 두고 센다. 처리 뒤에는 요청 기록·대응표에서 원래 식별자를 지운다. 처리 자체는 감사에 가명으로 남는다(`PRIVACY_REQUEST`·`PRIVACY_REDACT`·`PRIVACY_ERASE`·`PRIVACY_REJECT`).
+- **Data Lake 삭제 접점**(차량만) — 커밋 뒤 `POST {FF_LAKE_URL}/v1/erasure`(IF-15, 80-75 §7) `{request_ref, pseudonyms: [차량 가명], basis}`. 차량 가명은 FF·차량·Lake가 같은 규칙(`sha256("ffp-pseudonym|"+VIN)` 앞 16자) — VIN을 보내지 않는다. 설정(`FF_LAKE_URL`·`FF_LAKE_TOKEN`)이 없으면 보내지 않고 `NOT_CONNECTED`로 요청 기록에 남긴다(Lake 연결 뒤 다시 보내기가 다음 단계). 결과는 감사 `PRIVACY_LAKE_ERASURE`.
+
+### 12.3 감사 체인과 가명 처리
+
+감사 이력은 지울 수 없다(추가 전용·해시 체인). 체인 v2(마이그레이션 `066_privacy`, `audit.service.ts`)는 식별 칸(행위자·대상·사유·전후 문서)마다 행별 무작위 소금으로 칸 해시를 두고, 행 해시는 칸 해시로 잇는다.
+- 소금이 있는 행: 검증이 칸 값과 칸 해시를 맞춘다(칸만 고친 변조 = `hash`).
+- 가명 처리: 칸 값만 바꾸고 소금을 지운다 — 행 해시가 그대로라 **체인 검증이 통과**하고, 소금이 없어 지운 값을 다시 맞혀 볼 수 없다. 바꾼 행의 내용 해시는 `audit_redaction`에, 묶음 해시·행 수는 체인 안의 처리 기록(`PRIVACY_REDACT`)에 — 처리 기록 없이 바꾸거나 소금만 지우면 검증이 `redaction`으로 잡는다.
+- 수정·소금 삭제는 처리 트랜잭션(`privacy_gate`) 안에서만 트리거가 풀린다. 행 삭제는 언제나 막는다. 소금은 DB 권한자에게 비밀이 아니다 — 체인 다시 계산은 여전히 고정점(RD-SEC-13)이 잡는다.
+- 066 전에 쓴 행(체인 v1)은 바꾸면 체인이 깨지므로 그대로 두고 수만 센다(`legacyRows`) — 고객 설치는 첫 실행부터 v2라 해당 없음, 데모 DB의 옛 행만.
+
+### 12.4 보존 기한(하루 한 번, 운영 보조 정리와 함께)
+
+| 범주 | 설정 | 기본 |
+|---|---|---|
+| 끝난 로그인 세션 | `FF_RETENTION_SESSION_DAYS` | 만료 뒤 30일 삭제 |
+| 화면 알림·받는 사람·읽음 | `FF_RETENTION_NOTIFICATION_DAYS` | 0 = 지우지 않음 |
+| 감사 사람 행위자 식별 | `FF_RETENTION_AUDIT_IDENTITY_DAYS` | 0 = 가명 처리 안 함(기록 자체는 Safety Case 보존) |
+| 이벤트 이력 | `FF_RETENTION_EVENT_DAYS` | 0 = 지우지 않음 — **D-RD-9 미정** |
+| 차량 발신 보고 | 보존 규칙(`rules/retention.ts`) | 30일 |
+
+### 12.5 시험과 남은 것
+
+- 시험: `backend/test/kernel/privacy.spec.ts`(readiness 표식 — 식별자 경계, 목록 ↔ DB 표, 내보내기 완전성·비밀 제외·가명 감사, 4안 원칙, 삭제·가명 처리 뒤 원래 식별자 없음 + `verifyChain` 통과, 처리 감사, 처리 기록 없는 변조·소금 삭제 검출, 거절, 차량 삭제 + Lake 요청(시험 서버)·NOT_CONNECTED, 보존 기한 세 범주), `audit-chain.spec.ts`(소금까지 맞춘 공격자도 고정점이 잡는다), `frontend/src/__tests__/referencePrivacy.test.tsx`.
+- 남은 것: Lake `NOT_CONNECTED` 요청 다시 보내기·`GET /v1/erasure/{id}` 상태 조회(Lake 서버 뒤). 서명·승인 기록 식별자(D-RD-10). 백업 파일 안의 지운 개인정보는 백업 보관 기한(`FF_BACKUP_KEEP_DAYS`)이 지나야 사라진다. 이름·이메일은 세션에 남은 것만 찾는다(IdP가 원천 — IdP 쪽 삭제는 고객 절차).

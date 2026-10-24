@@ -29,6 +29,8 @@ import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
 import { LOCATION_VIEW_ROLES } from './rules/fleet-map';
 import { FleetOnboardBody } from './rules/population';
 import { ContractBasisBody, DataAccessRequestBody } from './rules/data-act';
+import { ReferenceRetireBody, ReferenceValueBody, VehicleRegisterBody } from './rules/reference-data';
+import { ErasureExecuteBody, ErasureRejectBody, ErasureRequestBody, PrivacyExportBody } from './rules/privacy';
 import { PostReviewBody } from './rules/duty-separation';
 import { ChangeRecordBody } from './rules/change-record';
 import { RetirementRequestBody, RetirementStepBody } from './rules/retirement';
@@ -208,6 +210,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'fleetMapVehicle', method: 'GET', path: '/api/fleet/map/vehicles/:vin', summary: '지도 차량 상세 — 정밀 위치(약 10 m)·권한·플래그 적용, 열람마다 감사', component: 'D02-03', personal: true, roles: [...LOCATION_VIEW_ROLES], sample: { vin: 'KMH-NX4-0001' } },
   { name: 'fleetPopulation', method: 'GET', path: '/api/fleet/population', summary: '대상 차량 모집단 — 판매 → 서비스 시장 → 플랫폼 탑재 → 커넥티드 → 운행 중 깔때기(가정값 모델)·가중 표본 규모', component: 'D02-03' },
   { name: 'fleetOnboard', method: 'POST', path: '/api/fleet/onboard', summary: '신차 커넥티드 등록(IF-06 Fleet 연계 모의) — 가중 표본 차량·수신 표본 등록', component: 'D02-03', roles: ['SYSTEM'], body: FleetOnboardBody },
+  { name: 'registerVehicle', method: 'POST', path: '/api/fleet/vehicles', summary: '운영 차량 등록(IF-06 Fleet 연계) — Fleet 구분 PRODUCTION, 판매국·차종·트림은 등록된 기준 값이어야 한다(RD-OPS-03)', component: 'D02-03', roles: ['SYSTEM', 'VARIANT_OWNER'], body: VehicleRegisterBody },
   { name: 'vehicleRuntime', method: 'GET', path: '/api/vehicles/:vin/runtime', summary: '차량 런타임 — 적용 게시본·차량 측 평가·서버 판단 비교', component: 'D02-03' },
   { name: 'vehicleRequests', method: 'GET', path: '/api/vehicles/:vin/requests', summary: '차량 발신 요청 기록 — 조회·보고·거부 사유, 보고 위치(bootId·sequence)', component: 'D02-03', dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   // 차량 발신 요청 — 사람 역할이 아니라 차량 신원으로 받는다(RD-SEC-08: 요청 CMAC 또는 mTLS 주체, 데모만 X-Vehicle-Id 단독). 자기 VIN만.
@@ -269,6 +272,17 @@ export const ROUTES: RouteDef[] = [
   { name: 'dataAccessRequests', method: 'GET', path: '/api/data-access-requests', summary: 'EU Data Act 접근 요청 처리 기록·계약 근거·Art.3(1) 직접 접근 대상·발견(FFG-TEL-006)', component: 'D05-01', roles: ['REGULATORY_OWNER', 'OPERATOR', 'AUDITOR', 'SYSTEM'] },
   { name: 'createDataAccessRequest', method: 'POST', path: '/api/data-access-requests', summary: 'EU 차량 사용자·제3자 데이터 접근 요청 처리 — Feature 상태·이력 제공 또는 거부(처리 기록, Art.4·5)', component: 'D05-01', roles: ['OPERATOR', 'REGULATORY_OWNER'], body: DataAccessRequestBody },
   { name: 'recordDataActContractBasis', method: 'POST', path: '/api/data-act/contract-basis', summary: 'OEM 비개인 데이터 이용 계약 근거(문서 ID) 등록 — 법무', component: 'D05-01', roles: ['REGULATORY_OWNER'], body: ContractBasisBody },
+  // 고객 기준 값(출시 준비 RD-OPS-03) — 판매국·지역·차종·트림은 설치마다 등록한다. 데모 데이터셋 값은 시드일 뿐이다
+  { name: 'referenceValues', method: 'GET', path: '/api/reference-values', summary: '고객 기준 값(판매국·지역·차종·트림) — 등록·사용 중지 상태, 시드(SEED)·고객(CUSTOMER) 구분', component: 'D02-01', query: ['kind'] },
+  { name: 'createReferenceValue', method: 'POST', path: '/api/reference-values', summary: '기준 값 등록 — 차량 사양 담당자, 지역·트림은 부모(판매국·차종)가 먼저', component: 'D02-01', roles: ['VARIANT_OWNER'], body: ReferenceValueBody },
+  { name: 'retireReferenceValue', method: 'POST', path: '/api/reference-values/:kind/:code/retire', summary: '기준 값 사용 중지 — 이미 쓰인 기록은 그대로, 새 차량 등록·선택지에서 빠진다', component: 'D02-01', roles: ['VARIANT_OWNER'], body: ReferenceRetireBody },
+  // 개인정보(출시 준비 RD-P2-05) — 목록·내보내기·삭제/가명 처리 요청(요청자와 다른 담당자가 실행)
+  { name: 'privacyInventory', method: 'GET', path: '/api/privacy/inventory', summary: '개인정보 목록 — 저장소·칸·정보주체·처리 방법·보존 기한(설치 설정 반영)', component: 'KERNEL' },
+  { name: 'privacyExport', method: 'POST', path: '/api/privacy/export', summary: '정보주체 내보내기(JSON) — 개인정보 목록의 모든 저장소에서 그 사용자·차량의 행(감사 기록, 식별자 대신 가명)', component: 'KERNEL', roles: ['SECURITY_OFFICER'], body: PrivacyExportBody },
+  { name: 'privacyRequests', method: 'GET', path: '/api/privacy/requests', summary: '삭제·가명 처리 요청 — 상태·대상 행 수·처리 결과(처리 뒤에는 가명만)', component: 'KERNEL', roles: ['SECURITY_OFFICER', 'AUDITOR'] },
+  { name: 'createPrivacyRequest', method: 'POST', path: '/api/privacy/requests', summary: '삭제·가명 처리 요청 — 저장소별 대상 행 수를 미리 센다', component: 'KERNEL', roles: ['SECURITY_OFFICER'], body: ErasureRequestBody },
+  { name: 'executePrivacyRequest', method: 'POST', path: '/api/privacy/requests/:id/execute', summary: '삭제·가명 처리 실행 — 요청자와 다른 보안 담당자, 감사 체인 검증 유지, 차량은 Data Lake 삭제 요청', component: 'KERNEL', roles: ['SECURITY_OFFICER'], body: ErasureExecuteBody },
+  { name: 'rejectPrivacyRequest', method: 'POST', path: '/api/privacy/requests/:id/reject', summary: '삭제·가명 처리 요청 거절 — 사유 필수, 대상 식별자를 지운다', component: 'KERNEL', roles: ['SECURITY_OFFICER'], body: ErasureRejectBody },
   { name: 'securityEvents', method: 'GET', path: '/api/security-events', summary: '보안 이벤트(IdsM) 기록·정의 — 임계값 도달 시 VSOC 경보, 진위 실패는 채널 제한(FFG-SEC-007)', component: 'D06-12', query: ['eventId'], dataCategory: 'SECURITY_MONITORING', roles: [...DATA_CATEGORY_ACCESS.SECURITY_MONITORING] },
   { name: 'sumsRecords', method: 'GET', path: '/api/sums', summary: 'SUMS 기록 — 명령별 RXSWIN·형식승인 영향 평가·사용자 고지·결과, 보존 기간(FFG-LCY-008)', component: 'D06-08', query: ['featureId'] },
   { name: 'reharaRequests', method: 'GET', path: '/api/rehara-requests', summary: '재-HARA 요청 (보고서 6.4 조건 자동 검출) — FFG-LCY-003', component: 'D06-05', query: ['featureId', 'featureVersion', 'status'] },

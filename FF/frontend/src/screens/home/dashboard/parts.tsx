@@ -12,7 +12,7 @@ const Bd = dashboard.board.body;
 export function GadgetState({ state, error, retry, empty, emptyText, children }: { state: 'loading' | 'ready' | 'error'; error?: ApiError | null; retry?: () => void; empty?: boolean; emptyText?: string; children: ReactNode }) {
   if (state === 'loading')
     return (
-      <div className="jd-skel" data-state="loading" aria-busy="true" aria-label={dashboard.board.gadget.loading}>
+      <div className="jd-skel" data-state="loading" role="progressbar" aria-busy="true" aria-label={dashboard.board.gadget.loading}>
         <span />
         <span />
         <span />

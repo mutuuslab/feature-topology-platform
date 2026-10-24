@@ -197,7 +197,7 @@ export const VehicleProfileSchema = z
     ageBand: z.enum(AGE_BANDS),
     drivingStyle: z.enum(DRIVING_STYLES),
     adasUsage: z.enum(ADAS_USAGE),
-    source: z.enum(['DEMO', 'SYNTHETIC']),
+    source: z.enum(['PRODUCTION', 'DEMO', 'SYNTHETIC']),
     weight: z.number().positive().optional(),
     soldMonth: z.string().regex(/^\d{4}-\d{2}$/).optional(),
     retiredAt: z.string().nullable().optional(),

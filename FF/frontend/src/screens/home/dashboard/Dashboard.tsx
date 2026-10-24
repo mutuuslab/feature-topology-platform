@@ -748,7 +748,7 @@ function GadgetCard(p: {
 
 function GadgetLoading() {
   return (
-    <div className="jd-skel" data-state="loading" aria-busy="true" aria-label={G.loading}>
+    <div className="jd-skel" data-state="loading" role="progressbar" aria-busy="true" aria-label={G.loading}>
       <span />
       <span />
       <span />

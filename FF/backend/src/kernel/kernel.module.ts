@@ -15,6 +15,8 @@ import { HousekeepingService } from './housekeeping.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
 import { InstanceLease, leaseAtBoot, releaseBootLease } from './instance-lease';
 import { KernelController } from './kernel.controller';
+import { LakeErasureClient } from './lake-erasure';
+import { PrivacyController, PrivacyService } from './privacy.service';
 import { SecretVault, vaultFromEnv } from './kms/key-protection';
 import { sealSecrets } from './kms/secret-columns';
 import { MIGRATIONS } from './migrations';
@@ -26,7 +28,7 @@ import { VehicleAuthService } from './vehicle-auth';
 @Global()
 @Module({
   imports: [DiscoveryModule],
-  controllers: [KernelController, AuthController],
+  controllers: [KernelController, AuthController, PrivacyController],
   providers: [
     {
       provide: DB,
@@ -69,13 +71,15 @@ import { VehicleAuthService } from './vehicle-auth';
     AuthService,
     EventService,
     HousekeepingService,
+    LakeErasureClient,
+    PrivacyService,
     ComponentRegistry,
     VehicleAuthService,
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: DomainErrorFilter },
   ],
-  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService],
+  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

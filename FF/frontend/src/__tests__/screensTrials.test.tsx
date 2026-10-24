@@ -80,11 +80,13 @@ describe('사용 권한·체험권 — 체험권 차량', () => {
   });
 
   it('필터를 바꾸면 같은 질의 순서로 다시 묻는다 (정적 스냅샷과 같은 키)', async () => {
-    handler = (url) => (url.startsWith('/api/trials') ? { body: PAGE } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : undefined);
+    // 국가·지역 선택지는 설치에 등록된 고객 기준 값(RD-OPS-03)
+    const REF = { items: [{ kind: 'COUNTRY', code: 'US', label: '미국', parent: null, origin: 'SEED', status: 'ACTIVE', createdAt: '2026-10-01T00:00:00Z', createdBy: 'seed' }, { kind: 'REGION', code: 'West', label: 'West', parent: 'US', origin: 'SEED', status: 'ACTIVE', createdAt: '2026-10-01T00:00:00Z', createdBy: 'seed' }] };
+    handler = (url) => (url.startsWith('/api/trials') ? { body: PAGE } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : url.startsWith('/api/reference-values') ? { body: REF } : undefined);
     mount('/entitlements', '/entitlements', <EntitlementsScreen />);
     await screen.findByRole('table', { name: '체험권 차량' });
     expect(calls.some((c) => c.url === '/api/trials?catalogId=CAT-00019&source=ALL&pageSize=50')).toBe(true);
-    fireEvent.change(screen.getByLabelText('국가'), { target: { value: 'US' } });
+    fireEvent.change(await screen.findByLabelText('국가'), { target: { value: 'US' } });
     fireEvent.change(await screen.findByLabelText('지역'), { target: { value: 'West' } });
     fireEvent.change(screen.getByLabelText('상태'), { target: { value: 'CONVERTED' } });
     await waitFor(() => expect(calls.some((c) => c.url === '/api/trials?catalogId=CAT-00019&source=ALL&state=CONVERTED&country=US&region=West&pageSize=50')).toBe(true));

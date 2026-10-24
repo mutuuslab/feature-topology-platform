@@ -1,6 +1,7 @@
 // 차량 전달 채널(출시 준비 RD-OPS-04, IF-07) — 서명된 게시본·차단 봉투를 차량에 보내는 길을 어댑터 뒤로 숨긴다.
 //  · sim  — 내부 차량 시뮬레이터(데모·시험 기본). 운영 모드에서는 쓸 수 없다(runtime-config가 거부).
 //  · pull — 차량 당겨받기 HTTPS(운영 기본): 차량이 서명한 요청으로 전달함을 받아 가고 서명한 확인을 보낸다(pull-channel.service.ts).
+//  · ota  — 고객 OTA 서버(IF-05, adapters/ota): 게시본을 OTA 작업으로 제출하고 차량별 결과를 webhook으로 받는다. FF_OTA_URL이 있으면 기본(80-45).
 //  · 고객 텔레매틱스 게이트웨이 — VehicleDeliveryAdapter를 구현해 이 레지스트리에 register하고 FF_VEHICLE_CHANNEL=<이름>으로 고른다.
 // GLEO 실연동 차량(GLEO_MODE=ws)은 GLEO 어댑터가 따로 맡는다(영상 키트).
 import { Injectable, OnModuleInit } from '@nestjs/common';
@@ -15,8 +16,9 @@ export interface VehicleDeliveryAdapter {
   /**
    * 게시본을 차량들에 보낸다 — 게시본을 만든 트랜잭션 안에서 불린다(전달함 기록도 같이 커밋).
    * 돌려주는 ackOnly는 회신 의무가 없는(받았다는 확인만 하는) 차량 — 회신 집계 분모에서 뺀다.
+   * campaignId — 외부 전달 시스템의 작업 ID(OTA 서버 작업). 주면 게시본의 캠페인으로 남고 모의 캠페인(IF-05 모의)을 만들지 않는다.
    */
-  deliver(pub: Publication, vins: string[]): { ackOnly: string[] };
+  deliver(pub: Publication, vins: string[]): { ackOnly: string[]; campaignId?: string };
   /** 상태 점검 — 대기 중 전달 수 등(선택) */
   status?(): Record<string, unknown>;
 }

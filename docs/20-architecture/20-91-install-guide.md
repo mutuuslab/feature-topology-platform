@@ -129,7 +129,11 @@ IdP에 등록할 값:
 | `FF_KEK_FILE` | | 비움 | `FF_KEK` 대신 비밀 파일(docker secret) — 둘 중 하나만 |
 | `FF_KEK_PREVIOUS` | | 비움 | KEK 교체 때만 옛 키(`_FILE`도 된다) — 한 번 시작한 뒤 지운다 |
 | `FF_VEHICLE_AUTH` | ✓ | `required` | 차량 요청 인증 — 운영 모드에서 `demo`는 시작 거부 |
-| `FF_VEHICLE_CHANNEL` | | `pull` | 차량 전달 채널 — `pull`(차량이 당겨 감) 또는 등록한 고객 게이트웨이 어댑터. `sim`은 시작 거부 |
+| `FF_VEHICLE_CHANNEL` | | `pull` | 차량 전달 채널 — `pull`(차량이 당겨 감), `ota`(고객 OTA 서버, `FF_OTA_URL`이 있으면 기본) 또는 등록한 고객 게이트웨이 어댑터. `sim`은 시작 거부 |
+| `FF_OTA_URL` · `FF_OTA_TOKEN_URL` | ota면 ✓ | 주석 | OTA 서버 API 주소(https)·OAuth2 토큰 끝점(client credentials) — 규격 `80-45` |
+| `FF_OTA_CLIENT_ID` · `FF_OTA_CLIENT_SECRET` | ota면 ✓ (비밀) | 주석 | OTA 서버(또는 그 IdP)에 등록한 FF 클라이언트. 비밀 16자 이상 |
+| `FF_OTA_WEBHOOK_SECRET` | ota면 ✓ 비밀 | 주석 | OTA 서버 webhook HMAC 비밀(32자 이상, OTA 서버 설정과 같은 값). 교체 중에는 옛 값을 `FF_OTA_WEBHOOK_SECRET_PREVIOUS`에 |
+| `FF_OTA_SCOPE` · `FF_OTA_TIMEOUT_MS` · `FF_OTA_RETRY_MAX` · `FF_OTA_RETRY_BASE_MS` | | `ota.jobs.write ota.jobs.read` · `10000` · `8` · `2000` | 범위 · 요청 제한 시간 · 자동 재시도 횟수 · 재시도 간격 시작값. OTA로 실차에 보낼 때는 회신 기한(`PUBLICATION_TIMEOUT_MS`·`KILL_TIMEOUT_MS`)을 차량 연결 주기에 맞춰 늘린다 |
 | `FF_VEHICLE_POLL_SEC` | | `30` | 차량에 권하는 조회 간격(초) — **긴급 차단이 차량에 닿는 시간이 이 값에 달려 있다** |
 | `FF_VEHICLE_CERT_HEADER` | mTLS면 ✓ | 없음(주석) | 게이트웨이가 넣는 인증서 주체 머리글(예: `x-client-cert-subject`). 빈 값으로 두지 않는다 — 안 쓰면 줄을 주석으로 |
 | `FF_AUTH` | ✓ | `oidc` | 운영 모드는 oidc만 |
@@ -296,7 +300,8 @@ curl -s http://127.0.0.1:9101/api/health/ready                       # 5) ready
 - 생산 라인에서 차량 보안 저장소에 차량 키를 주입하는 체계(공장 KMS·키 래핑 전송)는 이 플랫폼 밖이다. 고객 PKI·생산 시스템과 연결 방식을 정한 뒤 붙인다. 시험용 루트 주입(`FF_HSM_VEHICLE_ROOT`)은 운영 모드에서 거부된다.
 - 차량 요청은 `FF_VEHICLE_AUTH=required` — 요청마다 차량 키 파생 CMAC 서명(본문·시각·nonce) 또는 게이트웨이 mTLS 인증서 주체가 있어야 한다. 실패는 401·감사 DENIED·보안 이벤트로 남는다.
 - 전달은 `FF_VEHICLE_CHANNEL=pull` — 차량이 `FF_VEHICLE_POLL_SEC`(권장 30초)마다 서명 요청으로 전달함을 당겨 가 직접 검증하고 확인을 보낸다. **긴급 차단 도달 시간 = 최대 조회 간격 + 네트워크 지연**이다. 더 짧아야 하면 고객 게이트웨이(푸시) 어댑터가 필요하다(`80-40` §4).
-- 채널 상태: `GET /api/vehicle-channel`(고른 어댑터·대기 중 전달 수).
+- 고객 OTA 서버로 전달하면 `FF_VEHICLE_CHANNEL=ota`와 §6의 `FF_OTA_*` — OTA 서버 쪽에는 FF webhook 주소 `https://<FF_PUBLIC_URL>/api/ota/v1/events`와 같은 비밀을 넣는다. 연결 전 `npm run ota:conformance -- --url …`로 OTA 서버가 규격(`80-45`)을 지키는지 확인한다. 제출이 실패하면 게시본은 그대로 두고 전달만 "전달 실패(재시도 가능)"로 남아 자동 재시도한다(게시본 상세 → OTA 전달 → 다시 제출).
+- 채널 상태: `GET /api/vehicle-channel`(고른 어댑터·대기 중 전달 수, ota면 OTA 서버 상태 점검 결과).
 
 ## 11. 업그레이드
 
@@ -322,7 +327,7 @@ curl -s http://127.0.0.1:9101/api/health/ready                       # 5) ready
 ## 13. 알려진 한계
 
 - DB는 SQLite 파일 + 단일 인스턴스다(D-RD-3 PostgreSQL 이전 전) — 고가용성(이중화)·무중단 업그레이드는 아직 없다. 업그레이드 중 짧은 중단이 있다.
-- 차량 전달은 당겨받기(pull)만 실제로 있다 — 푸시가 필요한 고객 게이트웨이 어댑터·공장 차량 키 주입은 고객별로 붙인다(`80-40` §6). OTA 캠페인(IF-05)·TMS(IF-09)·메일·과금·Data Lake 연계는 모의다(RD-UX-04). 모의 연계의 예시 내용(해외공장 주문·레거시 옵션 코드·VOC)은 시드 없는 설치에서는 비어 있다.
+- 차량 전달은 당겨받기(pull)와 고객 OTA 서버(ota, IF-05 규격 `80-45`)가 실제로 있다 — 푸시가 필요한 고객 게이트웨이 어댑터·공장 차량 키 주입은 고객별로 붙인다(`80-40` §6). OTA 서버 연동의 한계(조회 대사 없음·1만 대 나누기 없음·mTLS는 송신 프록시로)는 `80-45` §14. TMS(IF-09)·메일·과금·Data Lake 연계는 모의다(RD-UX-04). 모의 연계의 예시 내용(해외공장 주문·레거시 옵션 코드·VOC)은 시드 없는 설치에서는 비어 있다.
 - 키는 저장만 KEK로 봉인된다 — 서명·CMAC 연산 중에는 프로세스 메모리에 있다. 고객 KMS·HSM 어댑터는 아직 없다(RD-SEC-06 남은 것).
 - OFREP 평가 경로(`/ofrep/v1/*`)는 아직 익명이다(`20-90` §6.6).
 - 이미지는 아직 레지스트리에 올리지 않는다 — CI(`.github/workflows/app-image.yml`)는 빌드·기동·준비 점검까지만 한다.

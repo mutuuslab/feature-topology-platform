@@ -65,9 +65,17 @@ describe('설치 환경 템플릿 docker/app/.env.example', () => {
     expect(runtimeConfigProblems(filled({ UNLEASH_MODE: 'live', UNLEASH_URL: 'https://unleash.customer.example' }))).toEqual([]);
   });
 
+  it('OTA 서버로 전달(IF-05)하면 주석의 키를 풀고 비밀만 채우면 통과한다 — 빠지면 그 키를 문제로 낸다', () => {
+    const ota = Object.fromEntries([...text.matchAll(/^#\s*(FF_OTA_[A-Z_]+)=(.*)$/gm)].map((m) => [m[1], m[2] || (SECRET.test(m[1]) && !m[1].endsWith('_PREVIOUS') ? fillSecret(m[1]) : '')]).filter(([, v]) => v !== ''));
+    expect(Object.keys(ota)).toEqual(expect.arrayContaining(['FF_OTA_URL', 'FF_OTA_TOKEN_URL', 'FF_OTA_CLIENT_ID', 'FF_OTA_CLIENT_SECRET', 'FF_OTA_WEBHOOK_SECRET']));
+    expect(runtimeConfigProblems(filled({ ...ota, FF_VEHICLE_CHANNEL: 'ota' }))).toEqual([]);
+    const { FF_OTA_WEBHOOK_SECRET: _, ...missing } = ota;
+    expect(runtimeConfigProblems(filled({ ...missing, FF_VEHICLE_CHANNEL: 'ota' })).join(' / ')).toContain('FF_OTA_WEBHOOK_SECRET');
+  });
+
   it('설정 검사가 읽는 변수는 모두 템플릿에 설명과 함께 있다(시험·데모 손잡이만 예외)', () => {
     // KEK는 이름을 조합해 읽는다(kms/key-protection.ts readKeyMaterial) — 이름을 직접 적는다
-    const read = [...sourceKeys('runtime-config.ts'), ...sourceKeys(join('auth', 'auth-config.ts')), ...sourceKeys('vehicle-auth-config.ts'), 'FF_KEK', 'FF_KEK_FILE', 'FF_KEK_PREVIOUS'].filter((k) => !TEST_KNOBS.includes(k));
+    const read = [...sourceKeys('runtime-config.ts'), ...sourceKeys(join('auth', 'auth-config.ts')), ...sourceKeys('vehicle-auth-config.ts'), ...sourceKeys('ota-config.ts'), 'FF_KEK', 'FF_KEK_FILE', 'FF_KEK_PREVIOUS'].filter((k) => !TEST_KNOBS.includes(k));
     expect(read.length).toBeGreaterThan(15);
     const missing = read.filter((k) => !documented.includes(k));
     expect(missing, '템플릿에 없는 운영 설정 — docker/app/.env.example에 추가').toEqual([]);

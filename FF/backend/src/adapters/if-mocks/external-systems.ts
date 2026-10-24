@@ -14,6 +14,7 @@ import { IfCallRepo } from '../if-call/if-call.repo';
 import { OtelExporter } from './otel.exporter';
 import { modeOf } from '../../domains/d05-ext/api-gateway/ext-sync/adapters';
 import { seedOf } from '../../kernel/runtime-config';
+import { otaConfigured } from '../../kernel/ota-config';
 
 export const EXT_FIXTURES = join(__dirname, '..', '..', '..', '..', 'data', 'fixtures', 'ext');
 const fixture = <T>(name: string): T => JSON.parse(readFileSync(join(process.env.FF_EXT_FIXTURES ?? EXT_FIXTURES, `${name}.json`), 'utf8'));
@@ -165,7 +166,8 @@ export class ExternalSystems {
     const spanCount = this.db.get<{ n: number; at: string | null }>('SELECT count(*) AS n, max(at) AS at FROM otel_span')!;
     const other: Record<string, Pick<IfSystemStatus, 'mode' | 'adapter'>> = {
       'IF-04': { mode: (process.env.UNLEASH_MODE as IfSystemStatus['mode']) ?? 'mock', adapter: 'adapters/unleash (Unleash OSS 8.2 Admin API)' },
-      'IF-05': { mode: 'mock', adapter: 'pipeline-link (CCS·OTA 캠페인 모의)' },
+      // OTA 서버 설정(FF_OTA_URL, 채널 ota)이 있으면 실제 작업 제출(adapters/ota, 80-45), 없으면 캠페인 모의
+      'IF-05': otaConfigured() ? { mode: 'live', adapter: 'adapters/ota (고객 OTA 서버 IF-05 v1 — 작업 제출·webhook 결과)' } : { mode: 'mock', adapter: 'pipeline-link (CCS·OTA 캠페인 모의)' },
       'IF-06': { mode: (process.env.GLEO_MODE as IfSystemStatus['mode']) ?? 'internal', adapter: 'adapters/gleo · 차량 보고 채널' },
       'IF-07': { mode: (process.env.GLEO_MODE as IfSystemStatus['mode']) ?? 'internal', adapter: 'adapters/gleo (정책·차단 전달)' },
       'IF-09': { mode: 'mock', adapter: 'tms (검증 Gate 제출 모의)' },

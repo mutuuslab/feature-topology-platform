@@ -39,6 +39,7 @@ import { ProcedureCompleteBody } from './schemas/procedure';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { VehicleDeliveryAck } from './rules/vehicle-auth';
+import { OtaEvent, OtaJobActionBody } from './rules/ota';
 import { KillCommandV2, StatusReportV2 } from './schemas/wire';
 import { ConcludeExperimentBody, CreateExperimentBody, CreateIncidentBody, FieldCaseBody, ImportOrdersBody, RunSyncBody, TranslateLegacyBody } from './rules/ext';
 import { z } from 'zod';
@@ -218,6 +219,11 @@ export const ROUTES: RouteDef[] = [
   { name: 'vehicleInbox', method: 'GET', path: '/vehicle/v1/:vin/inbox', summary: 'IF-07 차량 전달함 — 확인하지 않은 서명 게시본(차단·복원은 kill_command v2 봉투 포함), 당겨받기 채널', component: 'D02-03', roles: ['VEHICLE'] },
   { name: 'vehicleDeliveryAck', method: 'POST', path: '/vehicle/v1/:vin/inbox/:deliveryId/ack', summary: 'IF-07 전달 확인 — 적용·거부를 회신(IF-06 readback)으로, 같은 확인 재시도는 같은 응답', component: 'D02-03', roles: ['VEHICLE'], body: VehicleDeliveryAck },
   { name: 'vehicleChannel', method: 'GET', path: '/api/vehicle-channel', summary: '차량 전달 채널 — 고른 어댑터(sim·pull·고객 게이트웨이)·대기 중 전달(설정 상태, 차량 데이터 아님)', component: 'D02-03', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
+  // OTA 서버 연동(IF-05, FF_VEHICLE_CHANNEL=ota) — 작업 제출은 FF가 OTA 서버로, 차량별 결과는 OTA 서버가 webhook으로. docs/80-integration/80-45-ota-server-if05.md
+  { name: 'otaEvents', method: 'POST', path: '/api/ota/v1/events', summary: 'IF-05 OTA 서버 webhook — 차량별 결과·작업 상태(HMAC·시각·이벤트 ID로 재전송 방지) → 회신 집계(IF-06)', component: 'D04-01', body: OtaEvent, public: true },
+  { name: 'otaJobs', method: 'GET', path: '/api/ota/jobs', summary: 'IF-05 OTA 전달 작업 — 상태(전달 실패·재시도 대기 포함)·차량별 결과', component: 'D04-01', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION], query: ['publicationId', 'state'] },
+  { name: 'otaJobRetry', method: 'POST', path: '/api/ota/jobs/:jobId/retry', summary: 'IF-05 전달 실패한 OTA 작업 다시 제출(같은 멱등 키 — 두 번 전달되지 않는다)', component: 'D04-01', roles: ['RELEASE_MANAGER', 'OPS_LEAD', 'OPERATOR'], body: OtaJobActionBody },
+  { name: 'otaJobCancel', method: 'POST', path: '/api/ota/jobs/:jobId/cancel', summary: 'IF-05 OTA 작업 취소 — 아직 전달하지 않은 차량만(이미 적용한 차량은 새 게시본으로 되돌린다)', component: 'D04-01', roles: ['RELEASE_MANAGER', 'OPS_LEAD'], body: OtaJobActionBody },
   { name: 'vehicleReport', method: 'POST', path: '/vehicle/v1/:vin/reports', summary: 'IF-06 차량 보고 — 재연결 대사·관측값·체험 수락·오류·회신 (Flag 직접 변경은 거부), 재평가 결과 응답', component: 'D02-03', roles: ['VEHICLE'], body: VehicleReportBody },
   { name: 'gleoStatus', method: 'GET', path: '/api/gleo/status', summary: 'GLEO Broker 연결·최근 메시지', component: 'D02-03' },
   { name: 'gatePreview', method: 'POST', path: '/api/gate/preview', summary: '정책 게이트 미리보기 — kill_command v2 판정(스키마·규칙), 원장 변경 없음. 스키마 오류도 SCHEMA_FAIL 결과로 돌려준다', component: 'D03-02', roles: ['OPERATOR', 'SAFETY_OFFICER', 'SECURITY_OFFICER', 'OPS_LEAD'], body: KillCommandV2 },

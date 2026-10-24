@@ -99,4 +99,23 @@ describe('운영 빌드(SSO) — 부여 역할 안에서만', { timeout: 30_000 
     expect(sso.ssoStatus()).toBe('anon');
     expect(f.mock.calls.some(([u, init]) => u === '/api/auth/logout' && (init as RequestInit | undefined)?.method === 'POST')).toBe(true);
   });
+
+  // 회귀(e2e:oidc 로그아웃이 로그인 화면 대신 IdP 로그인으로 가던 결함) — 로그아웃 직후 아직 돌던 조회가 401을 받으면
+  // '세션 만료 → 다시 로그인'으로 보고 IdP로 보냈다. 로그아웃한 화면(anon)은 다시 로그인으로 끌고 가지 않는다
+  it('로그아웃한 뒤 늦게 온 401은 SSO 로그인을 시작하지 않는다(로그인 화면에 머문다)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url === '/api/auth/me') return json({ authenticated: true, mode: 'oidc', user: USER });
+        if (url === '/api/auth/logout') return json({});
+        return json({ error: { code: 'UNAUTHENTICATED', message: '로그인이 필요합니다.' } }, 401);
+      }),
+    );
+    const sso = await loadOidc();
+    await sso.refreshSso();
+    const { call } = await import('../api/client');
+    expect(await sso.ssoLogout()).toBeNull();
+    await expect(call('listFeatures', {})).rejects.toMatchObject({ status: 401 });
+    expect(assign).not.toHaveBeenCalled();
+  });
 });

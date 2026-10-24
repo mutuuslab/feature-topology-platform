@@ -7158,6 +7158,298 @@
         }
       }
     },
+    "/api/ota/v1/events": {
+      "post": {
+        "summary": "IF-05 OTA 서버 webhook — 차량별 결과·작업 상태(HMAC·시각·이벤트 ID로 재전송 방지) → 회신 집계(IF-06)",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "otaEvents",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "specVersion": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+$"
+                  },
+                  "eventId": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 100
+                  },
+                  "type": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "jobId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "otaJobId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "results": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "vin": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "DELIVERED",
+                            "APPLIED",
+                            "REFUSED",
+                            "SIGNATURE_FAILED",
+                            "NO_RESPONSE",
+                            "CANCELLED",
+                            "NOT_ELIGIBLE"
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
+                        },
+                        "rejectReason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "detail": {
+                          "type": "string",
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "vin",
+                        "outcome",
+                        "at"
+                      ]
+                    },
+                    "maxItems": 1000
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "ACCEPTED",
+                      "IN_PROGRESS",
+                      "COMPLETED",
+                      "CANCELLED",
+                      "EXPIRED",
+                      "FAILED"
+                    ]
+                  }
+                },
+                "required": [
+                  "specVersion",
+                  "eventId",
+                  "type",
+                  "jobId",
+                  "occurredAt"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/ota/jobs": {
+      "get": {
+        "summary": "IF-05 OTA 전달 작업 — 상태(전달 실패·재시도 대기 포함)·차량별 결과",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "otaJobs",
+        "description": "허용 역할: 기능안전 담당자(FSM), 운영자, 운영 리더, Gate 판정자, Feature 출시 담당자, 구현 담당자, Feature 작성자, Feature 승인자, 법규 담당, 사이버보안 담당자(CSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "publicationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/ota/jobs/{jobId}/retry": {
+      "post": {
+        "summary": "IF-05 전달 실패한 OTA 작업 다시 제출(같은 멱등 키 — 두 번 전달되지 않는다)",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "otaJobRetry",
+        "description": "허용 역할: Feature 출시 담당자, 운영 리더, 운영자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/ota/jobs/{jobId}/cancel": {
+      "post": {
+        "summary": "IF-05 OTA 작업 취소 — 아직 전달하지 않은 차량만(이미 적용한 차량은 새 게시본으로 되돌린다)",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "otaJobCancel",
+        "description": "허용 역할: Feature 출시 담당자, 운영 리더 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/vehicle/v1/{vin}/reports": {
       "post": {
         "summary": "IF-06 차량 보고 — 재연결 대사·관측값·체험 수락·오류·회신 (Flag 직접 변경은 거부), 재평가 결과 응답",

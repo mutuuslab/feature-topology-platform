@@ -8,8 +8,11 @@ export type VehicleAuthMode = 'demo' | 'required';
 export const vehicleAuthModeOf = (env: Env = process.env): VehicleAuthMode =>
   env.FF_VEHICLE_AUTH === 'required' || env.FF_VEHICLE_AUTH === 'demo' ? env.FF_VEHICLE_AUTH : production(env) ? 'required' : 'demo';
 
-/** 차량 전달 채널 — 운영 모드 기본은 실제 채널(pull), 그 밖에는 내부 시뮬레이터(sim). 고객 게이트웨이 어댑터는 등록한 이름 */
-export const vehicleChannelOf = (env: Env = process.env): string => env.FF_VEHICLE_CHANNEL?.trim() || (production(env) ? 'pull' : 'sim');
+/**
+ * 차량 전달 채널 — 운영 모드 기본은 실제 채널(pull), 그 밖에는 내부 시뮬레이터(sim). 고객 게이트웨이 어댑터는 등록한 이름.
+ * OTA 서버 주소(FF_OTA_URL, IF-05)가 있으면 기본은 ota — 설정이 있으면 OTA 서버로 전달한다(80-45).
+ */
+export const vehicleChannelOf = (env: Env = process.env): string => env.FF_VEHICLE_CHANNEL?.trim() || (env.FF_OTA_URL?.trim() ? 'ota' : production(env) ? 'pull' : 'sim');
 
 export function vehicleChannelConfigProblems(env: Env): string[] {
   const out: string[] = [];
@@ -19,7 +22,7 @@ export function vehicleChannelConfigProblems(env: Env): string[] {
   const h = env.FF_VEHICLE_CERT_HEADER;
   if (h !== undefined && !/^[a-z0-9-]{3,64}$/i.test(h)) out.push('FF_VEHICLE_CERT_HEADER — TLS 게이트웨이가 넣는 인증서 주체 머리글 이름(영문·숫자·- 3~64자)');
   const c = env.FF_VEHICLE_CHANNEL?.trim();
-  if (c !== undefined && c !== '' && !/^[a-z][a-z0-9-]{1,31}$/.test(c)) out.push('FF_VEHICLE_CHANNEL — 채널 이름(sim · pull · 등록한 게이트웨이 어댑터 이름)');
-  if (production(env) && vehicleChannelOf(env) === 'sim') out.push('FF_VEHICLE_CHANNEL=sim — 운영 모드에서는 내부 차량 시뮬레이터로 전달하지 않습니다(pull 또는 고객 게이트웨이 어댑터)');
+  if (c !== undefined && c !== '' && !/^[a-z][a-z0-9-]{1,31}$/.test(c)) out.push('FF_VEHICLE_CHANNEL — 채널 이름(sim · pull · ota · 등록한 게이트웨이 어댑터 이름)');
+  if (production(env) && vehicleChannelOf(env) === 'sim') out.push('FF_VEHICLE_CHANNEL=sim — 운영 모드에서는 내부 차량 시뮬레이터로 전달하지 않습니다(pull · ota 또는 고객 게이트웨이 어댑터)');
   return out;
 }

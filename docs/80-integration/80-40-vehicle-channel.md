@@ -169,6 +169,7 @@ location /vehicle/ {
 |---|---|---|
 | `sim` | 운영 모드가 아닐 때 | 내부 차량 시뮬레이터 — 차량 쪽 Guard·적용·회신을 이 프로세스가 대신(데모·시험). **운영 모드에서 고르면 시작 거부** |
 | `pull` | 운영 모드 | 3장 당겨받기 HTTPS |
+| `ota` | `FF_OTA_URL`이 있으면 | 고객 OTA 서버가 전달 — 작업 제출(IF-05)·webhook 전달 기록([[80-45-ota-server-if05]]). 차량 회신은 차량 → Data Lake → FF(IF-06)로 오고 집계 끝 상태는 그것만 정한다. 연결이 끊긴 차량도 OTA 서버에 맡긴다 |
 | `<게이트웨이 이름>` | — | 고객 텔레매틱스 게이트웨이 어댑터(MQTT 브로커·OEM TSP 푸시 등) |
 
 고객 게이트웨이 어댑터는 `VehicleDeliveryAdapter`를 구현해 `VehicleChannelRegistry.register()`를 생성자에서 부른다:
@@ -196,7 +197,7 @@ interface VehicleDeliveryAdapter {
 | `FF_VEHICLE_AUTH` | 운영 `required`, 그 밖 `demo` | `demo`면 시작 거부 |
 | `FF_VEHICLE_CERT_HEADER` | 없음(mTLS 안 씀) | 쓰면 `FF_TRUST_PROXY`를 프록시 주소로 |
 | `FF_TRUST_PROXY` | 운영 `loopback` | 프록시가 다른 호스트면 그 주소·CIDR |
-| `FF_VEHICLE_CHANNEL` | 운영 `pull`, 그 밖 `sim` | `sim`이면 시작 거부 |
+| `FF_VEHICLE_CHANNEL` | `FF_OTA_URL`이 있으면 `ota`, 운영 `pull`, 그 밖 `sim` | `sim`이면 시작 거부. `ota` 설정은 80-45 §11 |
 | `FF_VEHICLE_POLL_SEC` | 30 | 차량 권장 조회 간격 |
 | `FF_HSM_VEHICLE_ROOT` | — | 시험 전용(공장 키 주입 모의). 운영 모드에서 있으면 시작 거부 |
 

@@ -119,3 +119,34 @@ test('메인 화면 업무 절차 가젯 — 내 업무 흐름 작은 판이 지
   await expect(page).toHaveURL(/\/procedures\?view=flow$/);
   await expect(page.getByRole('group', { name: '내 업무 흐름' })).toBeVisible();
 });
+
+for (const w of [1366, 1920]) {
+  test(`담당자별 업무 흐름 ${w} — 메뉴에서 열어 다른 담당자를 고르면 역할 전환 없이 그 흐름이 보이고, 새로 고쳐도 남는다`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: 900 });
+    await asRole(page, 'author');
+    await page.goto('/procedures');
+    await page.getByRole('button', { name: '홈' }).click();
+    await page.getByRole('link', { name: '담당자별 업무 흐름' }).click();
+    await expect(page).toHaveURL(/\/procedures\/roles$/);
+    await expect(page.getByRole('heading', { level: 1, name: '담당자별 업무 흐름' })).toBeVisible();
+    await expect(page.locator('.pf-role[data-me]')).toHaveAttribute('data-persona', 'author');
+
+    await page.locator('.pf-role[data-persona="operator"]').click();
+    await expect(page).toHaveURL(/role=operator/);
+    const flow = page.getByRole('group', { name: /업무 흐름$/ }).filter({ has: page.locator('[data-step]') });
+    await expect(flow.locator('[data-step^="FPW.8-"]').first()).toBeAttached();
+    // 역할 전환기는 그대로
+    await expect(page.getByRole('combobox', { name: '역할' })).toHaveValue('author');
+    expect(await noPageOverflow(page)).toBe(true);
+
+    await page.reload();
+    await expect(page.locator('.pf-role[data-persona="operator"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-step^="FPW.8-"]').first()).toBeAttached();
+    await expect(page.getByRole('combobox', { name: '역할' })).toHaveValue('author');
+
+    // 담당자 × 절차 표의 칸 → 그 절차 흐름도에서 담당자 레인 강조
+    await page.locator('[data-cell="operator:FPW.8"]').click();
+    await expect(page).toHaveURL(/\/procedures\/FPW\.8\?role=operator/);
+    await expect(page.getByRole('group', { name: 'FPW.8 흐름도' }).locator('[data-lane][data-focus]').first()).toBeAttached();
+  });
+}

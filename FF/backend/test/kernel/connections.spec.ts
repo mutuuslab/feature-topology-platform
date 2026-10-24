@@ -11,17 +11,19 @@ const OPERATOR = actor('seo.ops', 'OPERATOR');
 const byKey = (env: Record<string, string | undefined>) => Object.fromEntries(connectionStatuses(env).map((s) => [s.key, s.mode]));
 
 describe('외부 연결 상태 — 설정 규칙 (RD-UX-04)', () => {
-  it('기본 — 메일·과금·OTA는 모의, Data Lake는 연결 없음', () => {
-    expect(byKey({})).toEqual({ mail: 'mock', billing: 'mock', ota: 'mock', datalake: 'off' });
+  it('기본 — 과금·OTA는 모의, Data Lake는 연결 없음 · 메일 연결은 없다(D-RD-7 화면 알림만)', () => {
+    expect(byKey({})).toEqual({ billing: 'mock', ota: 'mock', datalake: 'off' });
     expect(connectionStatuses({}).map((s) => s.key)).toEqual([...CONNECTION_KEYS]);
+    expect(CONNECTION_KEYS).not.toContain('mail');
+    expect(connectionStatuses({ FF_CONN_MAIL: 'live' }).map((s) => s.key)).not.toContain('mail');
   });
 
   it('실제 어댑터가 없으면 FF_CONN_*=live여도 live가 아니다 — 모의를 실제처럼 보이지 않게', () => {
-    expect(byKey({ FF_CONN_MAIL: 'live', FF_CONN_BILLING: 'live', FF_CONN_DATALAKE: 'live' })).toEqual({ mail: 'mock', billing: 'mock', ota: 'mock', datalake: 'off' });
+    expect(byKey({ FF_CONN_BILLING: 'live', FF_CONN_OTA: 'live', FF_CONN_DATALAKE: 'live' })).toEqual({ billing: 'mock', ota: 'mock', datalake: 'off' });
   });
 
   it('끄기 — FF_CONN_*=off, OTA는 IF_MODE_05=off도 따른다', () => {
-    expect(byKey({ FF_CONN_MAIL: 'off', IF_MODE_05: 'off' })).toMatchObject({ mail: 'off', ota: 'off' });
+    expect(byKey({ FF_CONN_BILLING: 'off', IF_MODE_05: 'off' })).toMatchObject({ billing: 'off', ota: 'off' });
   });
 });
 
@@ -33,24 +35,24 @@ describe('외부 연결 상태 (RD-UX-04)', () => {
   afterAll(() => app.close());
   afterEach(() => {
     delete process.env.FF_ENV;
-    delete process.env.FF_CONN_MAIL;
+    delete process.env.FF_CONN_BILLING;
     delete process.env.IF_MODE_05;
   });
 
-  it('데모 설치 — 메일·과금·OTA는 모의, Data Lake는 연결 없음', async () => {
+  it('데모 설치 — 과금·OTA는 모의, Data Lake는 연결 없음', async () => {
     const r = await http().get('/api/system/connections').expect(200);
     expect(r.body.mode).toBe('demo');
-    expect(Object.fromEntries(r.body.items.map((i: any) => [i.key, i.mode]))).toEqual({ mail: 'mock', billing: 'mock', ota: 'mock', datalake: 'off' });
+    expect(Object.fromEntries(r.body.items.map((i: any) => [i.key, i.mode]))).toEqual({ billing: 'mock', ota: 'mock', datalake: 'off' });
     // 실제 어댑터는 OTA(IF-05 OTA 서버 어댑터)만 — 설정(FF_OTA_URL)이 없으니 모의
-    expect(Object.fromEntries(r.body.items.map((i: any) => [i.key, i.liveAdapter]))).toEqual({ mail: false, billing: false, ota: true, datalake: false });
+    expect(Object.fromEntries(r.body.items.map((i: any) => [i.key, i.liveAdapter]))).toEqual({ billing: false, ota: true, datalake: false });
   });
 
   it('설정을 따른다 — 실제 어댑터가 없으면 live로 바꿔도 모의, IF_MODE_05=off면 OTA 꺼짐', async () => {
-    process.env.FF_CONN_MAIL = 'live';
+    process.env.FF_CONN_BILLING = 'live';
     process.env.IF_MODE_05 = 'off';
     const r = await http().get('/api/system/connections').expect(200);
     const by = Object.fromEntries(r.body.items.map((i: any) => [i.key, i.mode]));
-    expect(by.mail).toBe('mock');
+    expect(by.billing).toBe('mock');
     expect(by.ota).toBe('off');
   });
 

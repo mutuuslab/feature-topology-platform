@@ -6,7 +6,8 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { WORKFLOWS } from '../../../contracts/src/generated/workflows';
 import { AppProvider } from '../store';
 import { __resetProcedureStore } from '../data/procedureProgress';
-import { ProceduresHub, ProcessDetail } from '../screens/procedures/Procedures';
+import { ProcedureRolesScreen, ProceduresHub, ProcessDetail } from '../screens/procedures/Procedures';
+import { roleLabel } from '../data/refdata';
 import { ProcedureMapBody } from '../screens/home/ProcedureMap';
 import { myWorkSteps } from '../screens/procedures/flow/myFlow';
 
@@ -51,6 +52,7 @@ function mount(path: string, role = 'author') {
       <AppProvider>
         <Routes>
           <Route path="/procedures" element={<ProceduresHub />} />
+          <Route path="/procedures/roles" element={<ProcedureRolesScreen />} />
           <Route path="/procedures/:id" element={<ProcessDetail />} />
           <Route path="/" element={<ProcedureMapBody summary={null} />} />
         </Routes>
@@ -184,5 +186,70 @@ describe('메인 화면 업무 절차 가젯 — 내 업무 흐름 작은 판', 
     expect(svg.querySelector('.pf-node[data-now]')).toBeTruthy();
     expect(screen.getByRole('link', { name: '내 업무 흐름 전체 보기' }).getAttribute('href')).toBe('/procedures?view=flow');
     expect(document.querySelectorAll('.pm-node').length).toBe(12);
+  });
+});
+
+describe('담당자별 업무 흐름 (?view=roles · /procedures/roles)', () => {
+  const role = () => JSON.parse(localStorage.getItem('fp.state.v2') ?? '{}').role;
+
+  it('모든 담당자를 요약과 함께 보이고 내 역할에 "나"를 붙인다', async () => {
+    mount('/procedures?view=roles', 'author');
+    const list = await screen.findAllByRole('button', { pressed: false });
+    const personas = Object.keys(WORKFLOWS.personas);
+    const cards = document.querySelectorAll('.pf-role');
+    expect(cards.length).toBe(personas.length);
+    expect(list.length).toBeGreaterThanOrEqual(personas.length);
+    const mine = document.querySelector('.pf-role[data-me]')!;
+    expect(mine.getAttribute('data-persona')).toBe('author');
+    expect(mine.textContent).toContain('나');
+    expect(document.querySelector('.pf-role[data-persona="quality"]')!.textContent).toMatch(/활동 \d+ · 절차 \d+/);
+  });
+
+  it('담당자를 고르면 역할을 바꾸지 않고 그 담당자의 흐름이 열리고 주소(?role=)에 남는다', async () => {
+    mount('/procedures?view=roles', 'author');
+    await screen.findByRole('table', { name: /담당자 × 절차/ });
+    const card = document.querySelector('.pf-role[data-persona="operator"]') as HTMLButtonElement;
+    fireEvent.click(card);
+    const svg = await screen.findByRole('group', { name: `${roleLabel('operator')} 업무 흐름` });
+    const ops = myWorkSteps(WORKFLOWS, WORKFLOWS.personas.operator).filter((s) => s.activity.id).map((s) => s.activity.id);
+    const shown = [...svg.querySelectorAll('[data-step]')].map((g) => g.getAttribute('data-step'));
+    expect(shown.every((id) => ops.includes(id!))).toBe(true);
+    expect(shown.length).toBeGreaterThan(0);
+    expect(screen.getByTestId('where').textContent).toContain('role=operator');
+    expect(screen.getByTestId('where').textContent).toContain('view=roles');
+    expect(role()).toBe('author');
+    expect(card.getAttribute('aria-pressed')).toBe('true');
+    // 다른 담당자의 흐름은 '내 차례'가 아니라 '이 담당 차례'로 읽힌다
+    expect(svg.textContent).not.toContain('내 차례');
+    expect(screen.getByRole('radio', { name: /지금 이 담당 차례/ })).toBeTruthy();
+  });
+
+  it('주소로 바로 열면(새로 고침·공유) 고른 담당자의 흐름이 그대로 보인다 — 메뉴 화면 /procedures/roles', async () => {
+    mount('/procedures/roles?role=quality', 'author');
+    expect(await screen.findByRole('heading', { level: 1, name: '담당자별 업무 흐름' })).toBeTruthy();
+    expect(await screen.findByRole('group', { name: `${roleLabel('quality')} 업무 흐름` })).toBeTruthy();
+    expect(document.querySelector('.pf-role[data-persona="quality"]')!.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('담당자 × 절차 표 — 칸은 활동 수이고, 누르면 그 절차 흐름도에서 담당자 레인을 강조한다', async () => {
+    mount('/procedures?view=roles', 'author');
+    const table = await screen.findByRole('table', { name: /담당자 × 절차/ });
+    const p8 = WORKFLOWS.processes.find((x) => x.id === 'FPW.8')!;
+    const ids = WORKFLOWS.personas.operator;
+    const n = p8.activities.filter((a) => a.raci.R.some((r) => ids.includes(r)) || ids.includes(a.raci.A)).length;
+    const cell = table.querySelector('[data-cell="operator:FPW.8"]') as HTMLAnchorElement;
+    expect(cell.textContent?.startsWith(String(n))).toBe(true);
+    expect(cell.getAttribute('href')).toBe('/procedures/FPW.8?role=operator');
+    fireEvent.click(cell);
+    const svg = await screen.findByRole('group', { name: 'FPW.8 흐름도' });
+    const focused = [...svg.querySelectorAll('[data-lane][data-focus]')].map((g) => g.getAttribute('data-lane'));
+    expect(focused.length).toBeGreaterThan(0);
+    for (const l of focused) expect(ids).toContain(l);
+    expect(screen.getByText(/강조한 담당: .*\(운영 조직 레인\) — 이 절차에서 활동 \d+개/)).toBeTruthy();
+    // 핵심 메시지도 강조한 담당자 기준 — 내 역할(Feature Owner)의 "맡은 활동 없음"이 아니다
+    expect(document.querySelector('[data-key-message]')!.textContent).toContain(`${roleLabel('operator')} · 이 절차에서 이 담당자가 맡은 활동`);
+    // 상자를 눌러도 강조(?role=)는 남는다
+    fireEvent.click(svg.querySelector('[data-activity].pf-node--activity')!);
+    await waitFor(() => expect(screen.getByTestId('where').textContent).toMatch(/role=operator.*a=|a=.*role=operator/));
   });
 });

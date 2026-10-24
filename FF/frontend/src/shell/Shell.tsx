@@ -6,7 +6,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
 import { procedures } from '../copy/procedures';
-import { OIDC_AUTH } from '../auth-mode';
+import { DEMO_EXTRAS, OIDC_AUTH } from '../auth-mode';
 import { Button, Icon, PageTitleProvider, usePageTitle } from '../design';
 import { useMotion } from '../state/motion';
 import { roleHome, useAppApi, useAppShell } from '../store';
@@ -90,7 +90,9 @@ function ShellFrame({ children }: { children: ReactNode }) {
   const [q, setQ] = useState('');
   const [procOpen, setProcOpen] = useState(false);
   // 따라하기 진행 중이면 오른쪽에 가이드 패널 열(접으면 떠 있는 버튼만) · 표준 설명 모드는 html[data-explain]
-  const learning = useLearn();
+  // 운영 빌드는 따라하기가 없다(D-RD-8) — 브라우저에 남은 진행 상태가 있어도 패널 자리를 열지 않는다
+  const learnState = useLearn();
+  const learning = DEMO_EXTRAS ? learnState : null;
   const explain = useExplain();
   useEffect(() => {
     document.documentElement.setAttribute('data-explain', explain ? 'on' : 'off');
@@ -287,7 +289,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
         )}
         <Suspense fallback={<div className="ds-skel" data-state="loading"><span /><span /><span /></div>}>{children}</Suspense>
       </main>
-      <GuideDockHost />
+      {DEMO_EXTRAS && <GuideDockHost />}
       <ProcedureGuideHost />
       <RuleDrawerHost />
       <UnsavedPrompt />

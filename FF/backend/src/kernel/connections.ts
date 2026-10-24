@@ -3,12 +3,10 @@
 import type { ConnectionKey, ConnectionMode, ConnectionStatus } from '@ff/contracts';
 import { otaConfigured } from './ota-config';
 
-export const CONNECTION_KEYS: readonly ConnectionKey[] = ['mail', 'billing', 'ota', 'datalake'];
+export const CONNECTION_KEYS: readonly ConnectionKey[] = ['billing', 'ota', 'datalake'];
 
-/** 연결 정의 — 기본 모드와 실제 어댑터 유무. OTA(IF-05)만 실제 어댑터가 있다(adapters/ota, 80-45) */
+/** 연결 정의 — 기본 모드와 실제 어댑터 유무. OTA(IF-05)만 실제 어댑터가 있다(adapters/ota, 80-45). 알림은 화면 알림만 — 메일 연결 없음(D-RD-7) */
 export const CONNECTIONS: Record<ConnectionKey, { ifId: string | null; liveAdapter: boolean; defaultMode: ConnectionMode }> = {
-  // 알림 메일 — 발송 기록만 남긴다(메일 서버 연결 없음)
-  mail: { ifId: null, liveAdapter: false, defaultMode: 'mock' },
   // 체험 → 구독·구매 결제 — 모의 과금 시스템(if_call BILLING)
   billing: { ifId: null, liveAdapter: false, defaultMode: 'mock' },
   // 배포 캠페인 요청(CCS / OTA) — IF-05. OTA 서버 설정(FF_OTA_URL, 채널 ota)이 있으면 실제 연결, 없으면 모의

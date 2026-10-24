@@ -97,6 +97,25 @@ for (const w of [1366, 1920]) {
   await p.close();
 }
 
+// 담당자별 업무 흐름 — 메뉴 화면(Feature Owner로 운영 조직 흐름 보기), 담당자 × 절차 표, 레인 강조
+for (const w of [1366, 1920]) {
+  const h = w === 1366 ? 768 : 1080;
+  let p = await open(w, h, 'author', '/procedures/roles');
+  await p.locator('.pf-roles').waitFor();
+  await shot(p, `roles-${w}`);
+  await shot(p, `roles-${w}-full`, true);
+  await p.close();
+  p = await open(w, h, 'author', '/procedures/roles?role=operator');
+  await p.locator('.pf-my').waitFor();
+  await shot(p, `roles-operator-${w}`);
+  await shot(p, `roles-operator-${w}-full`, true);
+  await p.close();
+  p = await open(w, h, 'author', '/procedures/FPW.8?role=operator');
+  await p.locator('[data-flow="FPW.8"]').waitFor();
+  await shot(p, `lane-focus-fpw8-${w}`);
+  await p.close();
+}
+
 // 흐름도 전체 폭 — 레인 많은 것(FPW.7)·가장 넓은 것(FPW.8)·사건 시작(FPW.12)·짧은 것(FPW.13), 그리고 나머지
 for (const id of ['FPW.1', 'FPW.2', 'FPW.3', 'FPW.4', 'FPW.5', 'FPW.6', 'FPW.7', 'FPW.8', 'FPW.9', 'FPW.10', 'FPW.11', 'FPW.12', 'FPW.13']) {
   const p = await open(1920, 1080, 'quality', `/procedures/${id}`);

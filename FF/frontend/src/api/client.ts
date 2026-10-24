@@ -5,7 +5,7 @@
 // 정적 데모(VITE_DATA_MODE=static, Cloudflare)에서는 GET을 미리 떠 둔 스냅샷에서 읽고 쓰기는 막는다.
 import { ROUTES, routeUrl, snapshotFile, type Role, type RouteDef } from '@ff/contracts';
 import { OIDC_AUTH } from '../auth-mode';
-import { ssoStatus, startSsoLogin } from '../auth-oidc';
+import { ssoLoggedOut, startSsoLogin } from '../auth-oidc';
 import { errors as E } from '../copy/errors';
 import { hasUnsaved } from '../design/unsaved';
 import { actorFor } from './actor';
@@ -76,12 +76,10 @@ export function toApiError(res: Pick<Response, 'status' | 'headers'>, data: any)
 /** 연결 실패 → ApiError(status 0) */
 export const networkError = () => new ApiError(0, 'NETWORK', userMessage('network', 0, undefined));
 
-/**
- * 401 — 입력이 없으면 지금 화면으로 돌아오는 로그인으로, 있으면 셸 안내 띠가 묻는다(입력을 지키기 위해 바로 옮기지 않는다).
- * 로그아웃한(anon) 화면은 끌고 가지 않는다 — 로그아웃 직후 아직 돌던 조회의 401이 로그인 화면 대신 IdP 로그인으로 보냈다(e2e:oidc 회귀)
- */
+/** 401 — 입력이 없으면 지금 화면으로 돌아오는 로그인으로, 있으면 셸 안내 띠가 묻는다(입력을 지키기 위해 바로 옮기지 않는다) */
 function onUnauthenticated() {
-  if (OIDC_AUTH && ssoStatus() === 'anon') return;
+  // 로그아웃한 뒤 늦게 끝난 요청의 401 — 세션 만료가 아니다. 로그인 화면에 머문다
+  if (OIDC_AUTH && ssoLoggedOut()) return;
   markSessionExpired();
   if (OIDC_AUTH && !hasUnsaved()) startSsoLogin();
 }

@@ -16,6 +16,11 @@ const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
 const LOGIN_MARKER = 'ff-demo-login-v1';
 const ROLES_MARKER = 'ff-demo-roles-v1';
+// 데모·개발 전용 화면(결정 D-RD-8) — 디자인 시스템 갤러리·표준 따라하기 화면의 표식
+const GALLERY_MARKER = 'ff-design-gallery-v1';
+const LEARN_MARKER = 'ff-learn-v1';
+/** 라우트 표의 경로 문자열 '/_design'(따옴표로 감싼 값) */
+const DESIGN_ROUTE = /["'`]\/_design["'`]/;
 /** 데모 비밀번호 문자열 — SSE 이벤트 이름 addEventListener("platform")은 같은 글자라 빼고 센다 */
 const passwordLiteral = (text: string) => /(["'`])platform\1/.test(text.replace(/addEventListener\((["'`])platform\1/g, ''));
 
@@ -53,10 +58,19 @@ test('운영 빌드에 데모 역할 선택기(데모 계정 전체 목록)가 �
   assert.ok(prod.includes('/api/auth/me'), '로그인 상태 조회가 없다');
 });
 
+test('운영 빌드에 디자인 시스템 갤러리(/_design)·표준 따라하기(/learn) 화면이 없다(D-RD-8)', () => {
+  assert.equal(prod.includes(GALLERY_MARKER), false, '디자인 갤러리 화면 묶음이 운영 빌드에 실렸다');
+  assert.equal(prod.includes(LEARN_MARKER), false, '표준 따라하기 화면 묶음이 운영 빌드에 실렸다');
+  assert.equal(DESIGN_ROUTE.test(prod), false, '/_design 라우트가 운영 빌드에 있다');
+});
+
 test('데모 빌드(있으면)에는 같은 표식이 있다 — 검사가 실제로 무언가를 찾는다', (t) => {
   if (!existsSync(join(DEMO, 'index.html'))) return t.skip('frontend/dist 없음 — verify의 build:frontend 뒤에 돈다');
   const demo = bundleText(DEMO);
   assert.ok(demo.includes(LOGIN_MARKER), '데모 빌드에 데모 로그인 표식이 없다');
   assert.ok(demo.includes(ROLES_MARKER), '데모 빌드에 데모 역할 선택기 표식이 없다');
   assert.ok(passwordLiteral(demo), '데모 빌드에 데모 비밀번호가 없다(검사 규칙이 낡았다)');
+  assert.ok(demo.includes(GALLERY_MARKER), '데모 빌드에 디자인 갤러리 표식이 없다');
+  assert.ok(demo.includes(LEARN_MARKER), '데모 빌드에 표준 따라하기 표식이 없다');
+  assert.ok(DESIGN_ROUTE.test(demo), '데모 빌드에 /_design 라우트가 없다');
 });

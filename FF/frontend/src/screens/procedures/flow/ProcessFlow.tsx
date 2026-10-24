@@ -20,6 +20,8 @@ type Props = {
   selected: string | null;
   onSelect: (activityId: string) => void;
   fit?: boolean;
+  /** 강조할 레인(조직 역할) — ?role= 담당자 */
+  focusRoles?: readonly string[];
 };
 
 const keyActivate = (fn: () => void) => (e: KeyboardEvent) => {
@@ -29,14 +31,16 @@ const keyActivate = (fn: () => void) => (e: KeyboardEvent) => {
   }
 };
 
-function LaneLabels({ doc, layout }: { doc: WorkflowDoc; layout: ProcessLayout }) {
+function LaneLabels({ doc, layout, focus }: { doc: WorkflowDoc; layout: ProcessLayout; focus: readonly string[] }) {
   return (
     <>
       {layout.lanes.map((ln) => {
         const lines = wrapText(roleNameOf(doc, ln.id), layout.laneLabelW - 20, 12, 3);
+        const on = focus.includes(ln.id);
         return (
-          <g key={ln.id}>
-            <rect className={`pf-lane pf-lane--${ln.index % 2}`} x={0} y={ln.y} width={layout.width} height={ln.h} />
+          <g key={ln.id} data-lane={ln.id} data-focus={on ? '' : undefined}>
+            <rect className={`pf-lane pf-lane--${on ? 'focus' : ln.index % 2}`} data-focus={on ? '' : undefined} x={0} y={ln.y} width={layout.width} height={ln.h} />
+            {on && <rect className="pf-lane__mark" x={0} y={ln.y} width={4} height={ln.h} />}
             <line className="pf-lane__sep" x1={layout.laneLabelW} y1={ln.y} x2={layout.laneLabelW} y2={ln.y + ln.h} />
             {lines.map((t, j) => (
               <text key={j} className="pf-lane__label" x={12} y={ln.y + ln.h / 2 - (lines.length - 1) * 8 + j * 16 + 4}>
@@ -50,7 +54,7 @@ function LaneLabels({ doc, layout }: { doc: WorkflowDoc; layout: ProcessLayout }
   );
 }
 
-export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSelect, fit }: Props) {
+export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSelect, fit, focusRoles = [] }: Props) {
   const { layout } = processFlow(p, F.node.more);
   const marker = `pf-arr-${p.id.replace('.', '-')}-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const act = new Map(p.activities.map((a) => [a.id, a]));
@@ -71,7 +75,7 @@ export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSele
       data-flow={p.id}
     >
       <ArrowDefs id={marker} />
-      <LaneLabels doc={doc} layout={layout} />
+      <LaneLabels doc={doc} layout={layout} focus={focusRoles} />
       <g aria-hidden>
         {layout.edges.map((e) => (
           <polyline key={e.id} className={`pf-edge pf-edge--${e.kind}${e.back ? ' pf-edge--back' : ''}`} points={e.points.map((q) => q.join(',')).join(' ')} markerEnd={`url(#${marker})`} data-edge={e.id} />
@@ -151,7 +155,7 @@ export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSele
 }
 
 /** 텍스트 보기 — 흐름도와 같은 내용을 읽는 순서대로 표로 */
-export function ProcessFlowText({ doc, process: p, statuses, onSelect }: Omit<Props, 'selected' | 'fit'>) {
+export function ProcessFlowText({ doc, process: p, statuses, onSelect }: Omit<Props, 'selected' | 'fit' | 'focusRoles'>) {
   const { layout } = processFlow(p, F.node.more);
   const act = new Map(p.activities.map((a) => [a.id, a]));
   const wpName = new Map(p.workProducts.map((w) => [w.key, w.name]));

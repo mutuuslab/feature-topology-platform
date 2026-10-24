@@ -60,18 +60,10 @@ export const ko = {
     severity: { INFO: '알림', WARNING: '주의', CRITICAL: '긴급' } as Record<string, string>,
     readAt: (t: string) => `읽음 ${t}`,
     staticNote: '읽기 전용 데모에서는 계정별 알림이 없습니다. 플랫폼 백엔드에 연결하면 역할·팀별 알림이 보입니다.',
-    prefs: {
-      title: '메일 알림',
-      lead: 'Web 알림은 항상 받습니다. 메일은 범주별로 고릅니다 — 승인 요청과 긴급 차단·복원은 처리 기한이 있어 끌 수 없습니다.',
-      address: '받는 주소',
-      locked: '항상 발송',
-      saved: '메일 설정을 저장했습니다.',
-    },
-    emails: {
-      title: '메일 발송 기록',
-      lead: '보낸 알림 메일 기록입니다.',
-      empty: '보낸 메일이 없습니다.',
-      col: { at: '발송', subject: '제목', status: '상태' },
+    channel: {
+      title: '받는 방법',
+      lead: '알림은 이 화면과 상단바 종으로만 옵니다. 끄는 설정이 없어 승인 요청·긴급 차단도 항상 남습니다.',
+      note: '메일로는 보내지 않습니다. 읽음·안 읽음은 계정별로 기록됩니다.',
     },
   },
   fleetMap: {

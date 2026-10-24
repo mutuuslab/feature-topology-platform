@@ -268,7 +268,7 @@
     },
     "/api/system/connections": {
       "get": {
-        "summary": "외부 연결 상태(메일·과금·OTA·Data Lake) — 모의·연결 안 됨을 화면에 표시하는 근거",
+        "summary": "외부 연결 상태(과금·OTA·Data Lake) — 모의·연결 안 됨을 화면에 표시하는 근거",
         "tags": [
           "KERNEL"
         ],
@@ -510,127 +510,6 @@
           },
           "422": {
             "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
-          }
-        }
-      }
-    },
-    "/api/notifications/preferences": {
-      "get": {
-        "summary": "알림 메일 설정 — 범주별, 승인 요청·긴급은 고정",
-        "tags": [
-          "D04-04"
-        ],
-        "operationId": "notificationPrefs",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "400": {
-            "description": "입력 검증 실패 (오류 봉투)"
-          },
-          "404": {
-            "description": "없음 (오류 봉투)"
-          }
-        }
-      },
-      "post": {
-        "summary": "알림 메일 설정 저장(감사)",
-        "tags": [
-          "D04-04"
-        ],
-        "operationId": "saveNotificationPrefs",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "object",
-                    "properties": {
-                      "APPROVAL": {
-                        "type": "boolean"
-                      },
-                      "SAFETY": {
-                        "type": "boolean"
-                      },
-                      "DEPLOY": {
-                        "type": "boolean"
-                      },
-                      "GATE": {
-                        "type": "boolean"
-                      },
-                      "OPS": {
-                        "type": "boolean"
-                      },
-                      "INTEGRATION": {
-                        "type": "boolean"
-                      },
-                      "PROCEDURE": {
-                        "type": "boolean"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "email"
-                ],
-                "additionalProperties": false
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "201": {
-            "description": "생성"
-          },
-          "400": {
-            "description": "입력 검증 실패 (오류 봉투)"
-          },
-          "403": {
-            "description": "역할·직무 분리 위반 (오류 봉투)"
-          },
-          "404": {
-            "description": "없음 (오류 봉투)"
-          },
-          "422": {
-            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
-          }
-        }
-      }
-    },
-    "/api/notifications/emails": {
-      "get": {
-        "summary": "알림 메일 발송 기록(모의 — 실 메일 서버 연동 없음)",
-        "tags": [
-          "D04-04"
-        ],
-        "operationId": "notificationEmails",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "400": {
-            "description": "입력 검증 실패 (오류 봉투)"
-          },
-          "404": {
-            "description": "없음 (오류 봉투)"
           }
         }
       }

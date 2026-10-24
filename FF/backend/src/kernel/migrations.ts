@@ -595,10 +595,21 @@ CREATE TABLE dashboard_star (actor_id TEXT NOT NULL, dashboard_id TEXT NOT NULL,
 `,
   },
   {
+    // 알림 메일 채널 제거(사용자 결정 D-RD-7, 2026-10-24: 화면 알림만) — 038의 메일 설정(notification_pref)·모의 발송 기록
+    // (notification_email)을 지운다. 실제 메일은 한 번도 나간 적이 없다(모의 기록뿐). 038은 고치지 않는다(잠금).
+    // SQLite는 DROP TABLE 전에 그 표의 트리거(추가만 가능)를 먼저 지우므로 삭제 금지 트리거가 막지 않는다.
+    // 알림·수신자·제외·읽음 표는 그대로 — 화면 알림과 읽음 상태가 쓴다.
+    name: '048_drop_notification_email',
+    sql: `
+DROP TABLE IF EXISTS notification_email;
+DROP TABLE IF EXISTS notification_pref;
+`,
+  },
+  {
     // OTA 서버 연동(IF-05, FF_VEHICLE_CHANNEL=ota) — 게시본마다 OTA 작업 1건(job_id = 멱등 키). 게시본을 만든 트랜잭션에서 QUEUED로 넣고(outbox),
     // 커밋 뒤 제출한다. 실패하면 게시본은 그대로 두고 전달만 RETRY_WAIT(전달 실패·재시도 가능)·FAILED로 남긴다.
     // ota_job_vehicle은 OTA 서버가 webhook으로 알린 차량별 결과, ota_event는 받은 webhook 이벤트 ID(재전송 방지·같은 이벤트는 한 번만).
-    name: '048_ota_job',
+    name: '049_ota_job',
     sql: `
 CREATE TABLE ota_job (
   job_id TEXT PRIMARY KEY,

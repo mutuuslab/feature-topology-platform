@@ -142,13 +142,16 @@ function FlowGallery() {
   return <FlowSamples doc={doc} />;
 }
 
+/** 운영 빌드 검사 표식(tools/prod-bundle.test.ts) — 운영 설치는 이 갤러리를 싣지 않는다(결정 D-RD-8) */
+const GALLERY_MARKER = 'ff-design-gallery-v1';
+
 export default function DesignGallery() {
   const [state, setState] = useState<AsyncState>('ready');
   const [danger, setDanger] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [pagerPage, setPagerPage] = useState(0);
   return (
-    <div style={{ display: 'grid', gap: 'var(--sp-5)', maxWidth: 1440 }}>
+    <div style={{ display: 'grid', gap: 'var(--sp-5)', maxWidth: 1440 }} data-design-gallery={GALLERY_MARKER}>
       <header>
         <div className="ds-eyebrow">FF · DESIGN SYSTEM</div>
         <h1 style={{ margin: '4px 0 6px', fontSize: 'var(--fs-2xl)' }}>{T.title}</h1>
@@ -281,7 +284,7 @@ export default function DesignGallery() {
           <ErrorNextStep error={{ message: E.server, kind: 'server', status: 500, correlationId: 'c0ffee00-0000-4000-8000-000000000001' }} />
           <ErrorNextStep error={{ message: E.conflictFallback, kind: 'conflict', status: 409 }} />
           <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-            <ConnectionBadge state="mock" system={CN.system.mail} />
+            <ConnectionBadge state="mock" system={CN.system.billing} />
             <ConnectionBadge state="disconnected" system={CN.system.datalake} />
           </div>
           <Pager page={pagerPage} pageSize={100} total={10000} onPage={setPagerPage} />

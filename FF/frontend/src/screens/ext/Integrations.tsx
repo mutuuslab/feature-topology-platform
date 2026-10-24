@@ -75,7 +75,7 @@ function SystemsTab() {
   );
 }
 
-/** 외부 연결 상태(RD-UX-04) — 메일·과금·OTA·Data Lake 중 실제 연결이 아닌 것. 연결되면 상태가 '연결됨' */
+/** 외부 연결 상태(RD-UX-04) — 과금·OTA·Data Lake 중 실제 연결이 아닌 것(알림 메일 채널은 없다, D-RD-7). 연결되면 상태가 '연결됨' */
 function ConnectionsPanel() {
   const q = useConnections();
   const rows = q.data?.items ?? [];

@@ -1,4 +1,4 @@
-// OTA 작업 저장소(048_ota_job) — 게시본마다 OTA 작업 1건, 차량별 결과, 받은 webhook 이벤트 ID.
+// OTA 작업 저장소(049_ota_job) — 게시본마다 OTA 작업 1건, 차량별 결과, 받은 webhook 이벤트 ID.
 import { Inject, Injectable } from '@nestjs/common';
 import { OTA_VEHICLE_REPORTED, type OtaDeliveryState, type OtaVehicleOutcome } from '@ff/contracts';
 import { DB, type Db } from '../../kernel/db';

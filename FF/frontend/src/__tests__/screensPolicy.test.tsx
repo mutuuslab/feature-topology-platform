@@ -1,7 +1,7 @@
 // P7 정책 파이프라인 화면 — 모의 API로 상태·권한·핵심 상호작용을 검증한다.
 // 실제 백엔드와의 끝단 흐름(작성 → 검증 → 승인 → 배포 → 판단)은 e2e(policy.spec.ts)가 맡는다.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
@@ -26,9 +26,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function mount(path: string, routePath: string, el: JSX.Element, role = 'author') {
+function mount(path: string, routePath: string, el: JSX.Element, role = 'author', qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })) {
   localStorage.setItem('fp.state.v2', JSON.stringify({ role }));
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={qc}>
       <MemoryRouter initialEntries={[path]}>
@@ -217,7 +216,8 @@ describe('활성화 판단', () => {
   });
 
   it('배포 정책 목록이 차량 목록보다 늦게 와도 flag 없이 Fleet 판단을 묻지 않는다', async () => {
-    // 회귀(2026-10-25 정적 데모 e2e, 바쁜 기계): 차량 목록이 먼저 오면 Fleet 판단 질의가 flagKey='' 로 차량마다 나갔다
+    // 회귀(2026-10-25 정적 데모 e2e, 바쁜 기계): 차량 목록이 먼저 오면 Fleet 판단 질의가 flagKey='' 로 차량마다 시작됐다 —
+    // routeUrl이 필수 질의 누락으로 요청 전에 던지므로 fetch로는 안 보인다. 질의 캐시에서 빈 flag 질의가 시작되지 않았는지 본다
     let releasePolicies: () => void = () => {};
     const policiesReady = new Promise<void>((r) => (releasePolicies = r));
     vi.stubGlobal('fetch', vi.fn(async (input: string | URL, init?: RequestInit) => {
@@ -235,9 +235,14 @@ describe('활성화 판단', () => {
               : { status: 404, body: {} };
       return new Response(JSON.stringify(r.body), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }));
-    mount('/activation/decide', '/activation/decide', <ActivationScreen />);
-    await waitFor(() => expect(calls.some((c) => String(c.url).startsWith('/api/vehicles'))).toBe(true));
-    await new Promise((r) => setTimeout(r, 50));
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    mount('/activation/decide', '/activation/decide', <ActivationScreen />, 'author', qc);
+    // 차량 목록이 그려질 때까지(정책은 아직) — 그린 뒤의 효과까지 흘려 Fleet 판단 질의가 시작될 기회를 준다
+    expect(await screen.findByRole('option', { name: /KMH-NX4-0003/ })).toBeTruthy();
+    await act(async () => {});
+    const emptyFlag = qc.getQueryCache().findAll({ queryKey: ['activationDecide'] }).filter((x) => !(x.queryKey[2] as { flagKey?: string })?.flagKey);
+    expect(emptyFlag.length).toBeGreaterThanOrEqual(2); // Fleet 차량 2대(+ 선택 차량 판단)
+    expect(emptyFlag.filter((x) => x.state.fetchStatus !== 'idle' || x.state.status !== 'pending' || x.state.errorUpdateCount > 0).map((x) => x.queryKey)).toEqual([]);
     releasePolicies();
     expect(await screen.findByText('CONTEXT_UNKNOWN')).toBeTruthy();
     const decides = calls.filter((c) => String(c.url).startsWith('/api/activation/decide')).map((c) => new URL(c.url, 'http://x').searchParams.get('flagKey'));

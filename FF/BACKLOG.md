@@ -13,8 +13,8 @@
   - "전체 구현을 Backlog에, UI/UX 프론트 우선"
 - 설계 문서는 [`docs/80-integration/80-70-telemetry-datalake-ml.md`](../docs/80-integration/80-70-telemetry-datalake-ml.md)다.
 - **Lake 서버 v1 설계**(2026-10-24 사용자 결정 "OTA처럼 별도 서버로")는 [`docs/80-integration/80-75-data-lake-server.md`](../docs/80-integration/80-75-data-lake-server.md)다. IF-15 계약 초안: [`datalake-if15.openapi.json`](../docs/80-integration/datalake-if15.openapi.json) · 이벤트 스키마 [`datalake-if15/`](../docs/80-integration/datalake-if15/)(형식 시험 `contracts/src/schemas/datalake-if15.test.ts`).
-  - v1은 차량 → FF → Lake(직송 데이터 채널은 3단계), HTTPS 묶음 적재 + S3 호환 Parquet + DuckDB 집계. 80-70과 다르게 정한 것은 80-75 0장 C1~C6.
-  - 아래 TL-C01·C02·B04·L01·L02는 80-75를 완료 기준의 계약으로 삼는다.
+  - 사용자 결정(2026-10-24) **"차량 → Lake → FF"**: 차량이 올려 보내는 자료는 모두 Lake로(상태 보고·전달 확인 포함), FF는 Lake에서 당겨 가 차량 서명(FFV1-MSG·state_auth)을 직접 검증. 내리는 길은 FF → OTA(IF-05) → 차량. 저장은 S3 호환 Parquet + DuckDB. 80-70·지금 구현·80-45와 다른 것은 80-75 0장 C1~C8.
+  - 아래 TL-C01·C02·B04·L01·L02와 새 절 "전환 — 차량 오르는 길을 Lake로(TL-M*)"는 80-75를 완료 기준의 계약으로 삼는다.
 
 ### 경계
 - FF Platform(9101·9012)과 Data Lake 서버(별도, 개발 포트 9301)는 **IF-15** 하나로만 연결된다.
@@ -64,12 +64,12 @@
 ### P2 — 계약 · FF backend
 | ID | 상태 | 내용 | 완료 기준 | 선행 |
 |---|---|---|---|---|
-| TL-C01 | 대기 | contracts: IF-15 매니페스트(D05-01 소속, D04-03·D06-12·D01-07 사용), 응답 스키마(GoldMetric·SafetyEvent·ModelScore·ModelSummary·DataContractStatus·Freshness), 라벨 CDC 스키마, CollectionPolicy, AbortCriteria, routes. **v1 계약은 80-75**: 적재 봉투·종류 8개(`docs/80-integration/datalake-if15/`)와 조회 응답(OpenAPI `datalake-if15.openapi.json`)을 zod로 옮기고, 기존 형식 시험(`datalake-if15.test.ts`)에 zod ↔ JSON Schema 대조를 더한다. `components.manifest.ts` IF 목록에 IF-15 추가 | contracts 시험, openapi 갱신. **P1 화면이 쓸 최소본을 먼저** 만든다 | — |
-| TL-C02 | 대기 | IF-15 어댑터: mock(fixture, 5년 재생 모집단과 맞춤)·live(HTTP pull, 이벤트 구독, 라벨 쓰기), `IF_MODE_15`. live는 80-75 6장 조회 API(5분 pull) — `connections.ts`의 `datalake.ifId`를 `'IF-15'`·`liveAdapter: true`로 | 어댑터 시험(fixture·live fetch 대역) | TL-C01 |
+| TL-C01 | 대기 | contracts: IF-15 매니페스트(D05-01 소속, D04-03·D06-12·D01-07 사용), 응답 스키마(GoldMetric·SafetyEvent·ModelScore·ModelSummary·DataContractStatus·Freshness), 라벨 CDC 스키마, CollectionPolicy, AbortCriteria, routes. **v1 계약은 80-75**: FF 라벨 봉투·종류 6개, 차량 서명 메시지·중계 기록·텔레메트리(`docs/80-integration/datalake-if15/`)와 조회 응답(OpenAPI `datalake-if15.openapi.json`)을 zod로 옮기고, 기존 형식 시험(`datalake-if15.test.ts`)에 zod ↔ JSON Schema 대조를 더한다. `components.manifest.ts` IF 목록에 IF-15 추가 | contracts 시험, openapi 갱신. **P1 화면이 쓸 최소본을 먼저** 만든다 | — |
+| TL-C02 | 대기 | IF-15 어댑터: mock(fixture, 5년 재생 모집단과 맞춤)·live(HTTP pull, 이벤트 구독, 라벨 쓰기), `IF_MODE_15`. live는 80-75 8장 조회 API(5분 pull) — 중계 소비자는 TL-M04 — `connections.ts`의 `datalake.ifId`를 `'IF-15'`·`liveAdapter: true`로 | 어댑터 시험(fixture·live fetch 대역) | TL-C01 |
 | TL-B01 | 대기 | 신선도 HOLD: SLA 초과 지표로 단계 확대 불가 | 시험: 지연 지표 → 확대 거부 + 사유 | TL-C02 |
 | TL-B02 | 대기 | 중단 기준 판정(규칙 ①, Lake 집계 기준) → 자동 HOLD, 사전 등록·변경 감사 | 시험: 임계 초과 → HOLD, 모델 점수만으로는 HOLD 안 됨 | TL-B01 |
 | TL-B03 | 대기 | 이상 징후 자동 생성(규칙·모델 출처) + 사람 판정 → 라벨 | 시험 | TL-C02 |
-| TL-B04 | 대기 | 라벨 CDC: 정책·게시본·단계·차단·롤백·실험 배정·차량별 적용 상태·사람 판정 → Lake. ext-sync 보낼 함 엔진 재사용(`backend/src/domains/d05-ext/api-gateway/ext-sync`). **80-75 3장으로 바꿈**: 보낼 함 행을 따로 만들지 않고 `events` 표 + 커서 하나(재시도·지연 규칙만 ext-sync와 같게), VIN → 가명·자유 글 제외·CN 제외, 커서 뒤 이벤트는 보존 삭제 금지 | 시험: 누락 0, 재시도·멱등, Lake 정지 중 FF 기능 회귀 0 | TL-C02 |
+| TL-B04 | 대기 | 라벨 CDC: 정책·게시본·단계·차단·롤백·실험 배정·차량별 적용 상태·사람 판정 → Lake. ext-sync 보낼 함 엔진 재사용(`backend/src/domains/d05-ext/api-gateway/ext-sync`). **80-75 5장으로 바꿈**: FF가 만든 자료만(변경 라벨·relay.verdict·이상 징후 등 — 차량별 적용 상태는 차량이 Lake로 직접 보냄). 보낼 함 행을 따로 만들지 않고 `events` 표 + 커서 하나(재시도·지연 규칙만 ext-sync와 같게), VIN → 가명·자유 글 제외, 커서 뒤 이벤트는 보존 삭제 금지 | 시험: 누락 0, 재시도·멱등, Lake 정지 중 FF 기능 회귀 0 | TL-C02 |
 | TL-B05 | 대기 | 수집 정책 엔티티·승인·서명 게시본 배포·차량 회신 | 시험: 서명·대상·거부 회신 | TL-C01 |
 | TL-B06 | 대기 | 모델 사용 승인(2인·직무 분리·감사), 드리프트 시 "참고 불가" | 시험: 자기 승인 거부 | TL-C02 |
 | TL-B07 | 대기 | 5년 재생 연동 + INV-16~19(FF 쪽 검사) | 재생 PASS, 보고서 갱신 | TL-B01~B06 |
@@ -80,14 +80,30 @@
 ### P3 — Data Lake 서버 (별도 서버)
 | ID | 상태 | 내용 | 완료 기준 | 선행 |
 |---|---|---|---|---|
-| TL-L01 | 대기 | `datalake/` 별도 workspace·프로세스(포트 9301)·자체 저장소. IF-15 서빙 API. **v1 범위는 80-75 8장**: 적재·cursor·health·freshness·조회 3종·보존 삭제·가명 삭제·`/metrics`, S3 호환(MinIO) + Parquet + DuckDB | 계약 준수 시험(contracts 스키마), FF live 어댑터로 연결 확인 | TL-C01 |
-| TL-L02 | 대기 | 수집 게이트웨이(MQTT 모의) → Bronze(서명 검증, 실패는 격리) → Silver(가명화·라벨 조인) → Gold(5분·1시간·1일 집계). v1은 MQTT 없이 FF 적재만(80-75 4장 raw → curated → agg), MQTT 게이트웨이는 3단계 | 파이프라인 시험, 데이터 계약 품질 검사 | TL-L01 |
-| TL-L03 | 대기 | 차량 신호 합성기. 5년 재생 모집단·배포·차단·롤백 이력과 맞물리고, 사고 달에 DTC를 올린다. **FF가 아니라 Lake로** 보낸다(데이터 채널 흉내 — 80-75 3단계. v1 자료는 FF 시뮬레이터 → FF → Lake로 채운다) | 재생 결과로 Gold가 채워짐 | TL-L02 |
+| TL-L01 | 대기 | `datalake/` 별도 workspace·프로세스(포트 9301)·자체 저장소. IF-15 서빙 API. **v1 범위는 80-75 11장**: 차량 입구 2개·FF 라벨·cursor·health·freshness·조회 3종·보존 삭제·가명 삭제·`/metrics`, S3 호환(MinIO) + Parquet + DuckDB. 중계는 TL-L09 | 계약 준수 시험(contracts 스키마), FF live 어댑터로 연결 확인 | TL-C01 |
+| TL-L02 | 대기 | 수집 게이트웨이(MQTT 모의) → Bronze(서명 검증, 실패는 격리) → Silver(가명화·라벨 조인) → Gold(5분·1시간·1일 집계). v1은 MQTT 없이 HTTPS 차량 입구(mTLS) + FF 라벨(80-75 6장 raw → curated → agg), MQTT 차량 입구는 3단계. 서명 검증은 Lake가 못 한다 — 안전 메시지는 FF 결과(relay.verdict)로 검증 여부 표시 | 파이프라인 시험, 데이터 계약 품질 검사 | TL-L01 |
+| TL-L03 | 대기 | 차량 신호 합성기. 5년 재생 모집단·배포·차단·롤백 이력과 맞물리고, 사고 달에 DTC를 올린다. **FF가 아니라 Lake로** 보낸다(80-75 3장 형식: 텔레메트리 + 서명 메시지 — 시험 키로 FFV1-MSG 서명) | 재생 결과로 Gold가 채워짐 | TL-L02 |
 | TL-L04 | 대기 | 학습 작업(Python, 시드 고정): 규칙 ① 검정, 모델 ② 이상 탐지, ③ 배포 위험(설명 포함), ④ 체험 전환(공정성) | 재현 가능한 평가 지표 | TL-L03 |
 | TL-L05 | 대기 | 모델 레지스트리·모델 카드·드리프트 감시·재학습, Lake 쪽 모델 승인(학습자 ≠ 승인자) | 시험 | TL-L04 |
-| TL-L06 | 대기 | 시장 리전 분리(CN 현지 수집·학습), 국외 반출은 k≥5 집계·점수만. v1은 CN 차량 자료를 내보내지 않고, CN은 전용 Lake 설치(80-75 5.5, 결정 U-9) | 시험: CN 원천 반출 0 | TL-L02 |
+| TL-L06 | 대기 | 시장 리전 분리(CN 현지 수집·학습), 국외 반출은 k≥5 집계·점수만. CN 차량은 CN 설치의 Lake로만, CN Lake → FF 중계는 국외 이전 심사(80-75 7장, 결정 U-9) | 시험: CN 원천 반출 0 | TL-L02 |
 | TL-L07 | 대기 | FF ↔ Lake 대사: 라벨 누락 0, 신선도, INV-16~19 양쪽 검사 | 대사 보고서 | TL-B07·L05 |
 | TL-L08 | 대기 | Feature별 4축 근거 집계(동작·문제·개선·위험 지표: 사용률·수동 끄기·차종/시장 편차·추세·결측)와 조치 전후 비교 데이터셋 | 데이터 계약·계약 시험 | TL-L02 |
+| TL-L09 | 대기 | 차량 서명 메시지 입구(`POST /v1/vehicle/messages`, mTLS·가명 주체) + 중계 저장소(흐름 safety·normal, 가명별 순서, 영속 뒤 STORED) + `GET /v1/relay/{stream}` 긴 대기 + `relay.verdict`로 검증 여부 표시(80-75 3·4장) | 시험: 저장 전 답 없음, 같은 message_id 중복 없음, 가명별 순서, safety p99 ≤ 5초(부하 시험), 7일 보관 | TL-L01 |
+
+### 전환 — 차량 오르는 길을 Lake로 (2026-10-24 사용자 결정 "차량 → Lake → FF", 80-75 10장)
+- 지금은 차량이 FF에 직접 보고한다(`/vehicle/v1/{vin}/status`·`/reports`·`/inbox/{id}/ack`). 아래 순서로 옮긴다. 각 단계 끝에 동작 변화가 없어야 한다(`FF_VEHICLE_UPLINK=direct` 기본).
+| ID | 상태 | 내용 | 완료 기준 | 선행 |
+|---|---|---|---|---|
+| TL-M01 | 대기 | contracts: FFV1-MSG 정규 문자열·시험 벡터, `VehicleMessage`·`RelayRecord`·`RelayVerdict` zod — 80-75 JSON Schema와 대조 시험 | contracts 시험(벡터·대조) | — |
+| TL-M02 | 대기 | FFV1-MSG 검증기(`kernel/vehicle-auth.ts`): 가명 → VIN(등록 때 가명 충돌 거부), 요청 키 K_r, 미래 5분·과거 72시간, nonce 창 72시간(같은 본문 = DUPLICATE, 다른 본문 = REQUEST_REPLAY) | 시험: 위조·변조·다른 종류 서명·FFV1-REQ 서명 재사용 거부, 72시간 초과 STALE | TL-M01 |
+| TL-M03 | 대기 | **결함 성격**: 같은 상태 보고(같은 report_seq·state_auth)를 다시 받으면 지금은 SEQUENCE/REPLAY 위반 → 이상 징후·보안 이벤트. 중계(최소 한 번)에서는 정상 경우 → `DUPLICATE`로 받고 위반을 만들지 않는다. 값이 다른 같은 번호는 지금처럼 REPLAY | 회귀 시험: 같은 보고 두 번 → 위반 0·보안 이벤트 0, 다른 보고 같은 번호 → REPLAY | — |
+| TL-M04 | 대기 | Lake 중계 소비자(D04-03): `GET /v1/relay/safety` 긴 대기 상시·normal 5초, 커서 FF DB(처리 뒤 이동), 종류별로 기존 처리기(`StatusIngestService.ingest`·전달 확인·`VehicleRequestService`)에 `via=LAKE`, 결과를 `relay.verdict`로 내보냄 | 시험(참조 Lake 대역): 재시작 뒤 이어 받기, 중복·순서 뒤집힘 안전, 처리 실패 시 커서 안 옮김 | TL-M02·M03·C01 |
+| TL-M05 | 대기 | 설정 `FF_VEHICLE_UPLINK`(direct·lake·both), `lake`면 `/vehicle/v1/*` 오르는 창구 403 `UPLINK_VIA_LAKE`, 운영 필수 `FF_LAKE_URL`·토큰 파일(runtime-config·`.env.example`·production-mode 시험) | 시험: 설정 조합·운영 거부 | TL-M04 |
+| TL-M06 | 대기 | 확인 지연 표시: 중계 상태(정상·지연·끊김), 차단·배포 확인에 "확인 불가 — 차량 보고 전달 지연(Data Lake)", 자동 완료 없음, `kill.overdue` 이상 징후에 `RELAY_LAG` 힌트, `ConnectionBadge`에 중계 지연 | 시험: Lake 정지 중 CONFIRMED 안 됨·기한 감시 그대로·복구 뒤 채워짐, 화면 시험(문구는 copy 파일) | TL-M04 |
+| TL-M07 | 대기 | 참조 Lake 중계 서버 + 적합성 검사(`tools/lake-reference`, 80-45 ota-reference와 같은 방식) | 적합성 시험이 계약(OpenAPI·스키마)과 맞음 | TL-M01 |
+| TL-M08 | 대기 | 80-45 OTA webhook 범위 맞춤: 차량 결과는 Lake 경유, webhook은 OTA 서버 사실만(결정 U-17). 전환 기간 둘 다면 (vin, publicationId, sequence)로 합침 | 시험: 같은 결과 두 길 → 회신 한 번 | TL-M04, OTA IF-05 |
+| TL-M09 | 대기 | 차량(vECU): FFV1-MSG 서명·Lake 입구 전송·store-and-forward(안전 메시지 72시간·1000건, 한 번에 하나, 오래된 순) | vECU 저장소 변경은 별도 승인 | TL-M01 |
+| TL-M10 | 대기 | 병행(`both`)·전환(`lake`): 지연 SLO·누락 0·차단 확인 결과 동일 대사, 비상 직접 경로 결정(U-19) 반영 | 대사 보고서 | TL-M05~M09·L09 |
 
 ### P4 — 차량 측
 | ID | 상태 | 내용 | 비고 |
@@ -105,7 +121,7 @@
 3. 기능 사용 데이터 동의, 위치 기준(D5), CN 처리
 4. 안전 지표 신선도 SLA(제안 10분), Canary 관측 시간
 5. ISO/PAS 8800 적용 범위(모델 ②③을 안전 관련으로 분류할지)
-6. Lake 서버 v1의 결정(자료 길·저장 엔진·구현 위치·가명·보존·자유 글·인증·상업 자료·CN·고객 Lake·SLA) — 80-75 9장 U-1~U-11. 1번의 "제품·접근·인증"은 v1에서 U-2·U-7로 좁혔다
+6. Lake 서버 v1의 결정 — 80-75 12장 U-1~U-19. **U-1 확정(2026-10-24): 차량 → Lake → FF.** 남은 것: 저장 엔진·구현 위치·가명·보존·자유 글·FF↔Lake 인증·상업 자료·CN·고객 Lake·SLA·차량 인증(Lake 입구)·텔레메트리 키·안전 메시지 SLO·중계 최대 나이·중계 이중화·OTA webhook 범위·차량 기준 정보·비상 직접 경로
 
 <!-- ads:begin (tools/ads-report.ts가 harness/ads/design.json에서 생성 — 직접 고치지 말 것) -->
 ## ADS·UNECE 보고서 v3.0 반영 (2026-10-18)

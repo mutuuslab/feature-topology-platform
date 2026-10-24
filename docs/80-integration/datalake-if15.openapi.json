@@ -1,63 +1,141 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "IF-15 FF Platform ↔ Data Lake 서버 (초안)",
-    "version": "0.1.0-draft",
-    "summary": "적재(FF → Lake)·상태·최소 조회(Lake → FF) — 설계: docs/80-integration/80-75-data-lake-server.md",
-    "description": "Data Lake는 FF와 다른 서버다(고객 설치마다 하나, D-RD-1). 호출하는 쪽은 FF뿐이다 — 적재는 FF의 Lake 내보내기(쓰기 토큰), 조회는 FF 백엔드(읽기 토큰). 이벤트 형식은 datalake-if15/*.schema.json(JSON Schema 2020-12)이 정본이다. 조회 응답은 집계만이며, 서로 다른 차량이 5대 미만인 묶음은 값 없이 suppressed=true로 돌려준다."
+    "title": "IF-15 Data Lake 서버 — 차량 적재 · 안전 메시지 중계 · FF 라벨 · 집계 조회 (초안)",
+    "version": "0.2.0-draft",
+    "summary": "사용자 결정 \"차량 → Lake → FF\" — 설계: docs/80-integration/80-75-data-lake-server.md",
+    "description": "Data Lake는 FF와 다른 서버다(고객 설치마다 하나, D-RD-1). 네 갈래가 있다.\n1) 차량 → Lake 적재(`/v1/vehicle/*`, 차량·OEM 게이트웨이, mTLS): 차량 서명 메시지(상태 보고 v2·전달 확인·차량 보고)와 분석용 텔레메트리.\n2) Lake → FF 안전 메시지 중계(`/v1/relay/*`, FF가 당겨 감): 차량 서명 메시지를 바꾸지 않고 넘긴다 — FF가 차량 키로 직접 검증한다. Lake는 신뢰 경계가 아니다.\n3) FF → Lake 라벨(`/v1/ff/*`): FF가 만든 자료(변경 라벨·중계 검증 결과·이상 징후 등)만.\n4) Lake → FF 집계 조회(`/v1/metrics/*`, `/v1/freshness`): 집계만, 차량 5대 미만 묶음은 suppressed.\n내리는 길(정책·차단 명령)은 이 계약에 없다 — FF → OTA 서버(IF-05, 80-45) → 차량, 또는 80-40 당겨받기.\n이벤트·메시지 형식은 datalake-if15/*.schema.json(JSON Schema 2020-12)이 정본이다."
   },
   "servers": [
-    { "url": "https://lake.customer.internal", "description": "고객 설치(사내망)" },
+    { "url": "https://lake.customer.internal", "description": "고객 설치 — FF·운영용(사내망)" },
+    { "url": "https://lake-vehicle.customer.example", "description": "고객 설치 — 차량·OEM 게이트웨이용 공개 입구(mTLS)" },
     { "url": "http://127.0.0.1:9301", "description": "개발(80-70의 개발 포트)" }
   ],
-  "security": [{ "bearer": [] }],
   "tags": [
-    { "name": "ingest", "description": "FF → Lake 적재" },
-    { "name": "health", "description": "상태" },
+    { "name": "vehicle-ingest", "description": "차량 → Lake" },
+    { "name": "relay", "description": "Lake → FF 안전 메시지 중계" },
+    { "name": "ff-ingest", "description": "FF → Lake 라벨" },
     { "name": "query", "description": "Lake → FF 집계 조회(Closed loop)" },
+    { "name": "health", "description": "상태" },
     { "name": "privacy", "description": "삭제 요청(RD-P2-05)" }
   ],
   "paths": {
-    "/v1/ingest/batches": {
+    "/v1/vehicle/messages": {
       "post": {
-        "tags": ["ingest"],
-        "operationId": "ingestBatch",
-        "summary": "이벤트 묶음 적재 — 한 줄에 Lake 이벤트 하나(NDJSON, gzip 권장)",
-        "description": "전달 보장은 최소 한 번이다. 같은 (install_id, event_id)는 한 번만 저장되고 다시 오면 duplicate로 센다. 형식이 틀린 줄은 버리지 않고 격리(quarantine)한다 — 묶음 전체를 거부하지 않으므로 한 줄이 파이프라인을 막지 않는다. Lake는 원본 파일을 저장소에 쓴 뒤에만 200을 돌려준다(그 뒤 FF가 커서를 옮긴다).",
+        "tags": ["vehicle-ingest"],
+        "operationId": "vehicleMessages",
+        "summary": "차량 서명 메시지 받기 — 저장 뒤 202, FF로 중계",
+        "description": "한 번에 최대 50건(차량이 쌓아 둔 것을 오래된 순으로). Lake는 메시지를 영속 저장한 뒤에만 STORED를 돌려준다 — 차량은 그 뒤에 자기 사본을 지운다. 같은 message_id는 DUPLICATE(정상, 다시 보내도 된다). 형식이 틀린 것은 INVALID로 답하고 격리한다. Lake는 서명(auth.mac)을 검증하지 못한다(차량 키가 없다) — 전송 인증(mTLS 주체 = 가명 또는 등록된 게이트웨이)과 형식만 본다. 가명이 인증서 주체와 다르면(게이트웨이가 아닐 때) 403.",
+        "security": [{ "vehicleMtls": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "required": ["messages"], "additionalProperties": false, "properties": { "messages": { "type": "array", "minItems": 1, "maxItems": 50, "items": { "$ref": "datalake-if15/vehicle-message.schema.json" } } } }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "건별 결과", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VehicleMessageResults" } } } },
+          "400": { "description": "본문을 읽을 수 없음", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
+          "401": { "description": "클라이언트 인증서 없음·검증 실패" },
+          "403": { "description": "인증서 주체와 가명 불일치·폐기된 인증서" },
+          "413": { "description": "50건·256 KiB 초과" },
+          "429": { "description": "역압 — Retry-After 뒤 같은 메시지를 다시", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } } },
+          "503": { "description": "저장 불가 — 차량은 사본을 지우지 않고 다시 보낸다", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } } }
+        }
+      }
+    },
+    "/v1/vehicle/telemetry": {
+      "post": {
+        "tags": ["vehicle-ingest"],
+        "operationId": "vehicleTelemetry",
+        "summary": "분석용 텔레메트리 묶음 — Lake 전용(FF로 중계하지 않음)",
+        "description": "NDJSON 한 줄 = vehicle-telemetry 한 건, 최대 1000줄·압축 전 4 MiB. 저장 뒤 202. (pseudonym, boot_id, seq) 중복은 duplicate. 형식 오류 줄은 격리.",
+        "security": [{ "vehicleMtls": [] }],
+        "parameters": [{ "name": "Content-Encoding", "in": "header", "required": false, "schema": { "enum": ["gzip", "identity"] } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-ndjson": {
+              "schema": { "type": "string" },
+              "itemSchema": { "$ref": "datalake-if15/vehicle-telemetry.schema.json" }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "저장", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BatchResult" } } } },
+          "413": { "description": "상한 초과" },
+          "429": { "description": "역압", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } } },
+          "503": { "description": "저장 불가", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } } }
+        }
+      }
+    },
+    "/v1/relay/{stream}": {
+      "get": {
+        "tags": ["relay"],
+        "operationId": "relayPull",
+        "summary": "차량 서명 메시지 당겨 가기(긴 대기 지원) — FF 전용",
+        "description": "FF가 자기 커서(after = 마지막으로 처리한 relay_seq)로 부른다. 새 메시지가 없으면 wait초까지 기다렸다가 답한다(긴 대기). Lake는 같은 차량의 메시지를 받은 순서대로 내준다. after보다 작은 기록은 FF가 처리한 것으로 보고 7일 뒤 중계 저장소에서 지운다(분석 사본은 남는다). FF가 같은 after로 다시 부르면 같은 기록을 다시 준다(최소 한 번).",
+        "security": [{ "bearer": ["lake.relay"] }],
+        "parameters": [
+          { "name": "stream", "in": "path", "required": true, "schema": { "enum": ["safety", "normal"] } },
+          { "name": "after", "in": "query", "required": true, "schema": { "type": "integer", "minimum": 0 } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 500, "default": 200 } },
+          { "name": "wait", "in": "query", "required": false, "description": "새 기록이 없을 때 기다릴 초", "schema": { "type": "integer", "minimum": 0, "maximum": 25, "default": 25 } }
+        ],
+        "responses": {
+          "200": { "description": "중계 기록 묶음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RelayPage" } } } },
+          "409": { "description": "after가 보관 범위보다 오래됨(7일 넘게 안 읽음) — FF는 운영 경보를 내고 남은 범위부터 읽는다", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } }
+        }
+      }
+    },
+    "/v1/relay/status": {
+      "get": {
+        "tags": ["relay"],
+        "operationId": "relayStatus",
+        "summary": "중계 흐름 상태 — 밀린 수·가장 오래된 안 읽은 기록의 나이·FF가 마지막으로 읽은 위치",
+        "security": [{ "bearer": ["lake.relay"] }, { "bearer": ["lake.read"] }],
+        "responses": { "200": { "description": "흐름별 상태", "content": { "application/json": { "schema": { "type": "object", "required": ["streams"], "properties": { "streams": { "type": "array", "items": { "$ref": "#/components/schemas/RelayLag" } } } } } } } }
+      }
+    },
+    "/v1/ff/events": {
+      "post": {
+        "tags": ["ff-ingest"],
+        "operationId": "ffEvents",
+        "summary": "FF 라벨·판정 묶음 적재 — 한 줄에 FF 이벤트 하나(NDJSON, gzip 권장)",
+        "description": "FF가 만든 자료만(envelope.schema.json). 최소 한 번, (install_id, event_id) 멱등. 형식 오류 줄은 격리하고 묶음은 받는다. 원본을 저장소에 쓴 뒤에만 200(그 뒤 FF가 커서를 옮긴다).",
         "security": [{ "bearer": ["lake.ingest"] }],
         "parameters": [
-          { "name": "Idempotency-Key", "in": "header", "required": true, "description": "<install_id>:<첫 seq>-<마지막 seq> — 같은 묶음을 다시 보내면 첫 결과를 그대로 돌려준다", "schema": { "type": "string", "pattern": "^[^:]{1,64}:[0-9]+-[0-9]+$" } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "description": "<install_id>:<첫 seq>-<마지막 seq>", "schema": { "type": "string", "pattern": "^[^:]{1,64}:[0-9]+-[0-9]+$" } },
           { "name": "Content-Encoding", "in": "header", "required": false, "schema": { "enum": ["gzip", "identity"] } }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/x-ndjson": {
-              "schema": { "type": "string", "description": "줄마다 datalake-if15/envelope.schema.json. 최대 500줄·압축 전 4 MiB" },
+              "schema": { "type": "string", "description": "최대 500줄·압축 전 4 MiB" },
               "itemSchema": { "$ref": "datalake-if15/envelope.schema.json" }
             }
           }
         },
         "responses": {
-          "200": { "description": "저장 완료(줄별 결과 집계)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IngestResult" } } } },
-          "400": { "description": "묶음 자체를 읽을 수 없다(압축 손상·NDJSON 아님) — FF는 커서를 옮기지 않고 경보를 낸다", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
-          "401": { "description": "토큰 없음·만료", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
-          "403": { "description": "다른 설치(install_id 불일치)·쓰기 권한 없음", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
-          "413": { "description": "묶음이 상한보다 크다 — 더 작게 나눠 다시 보낸다", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
-          "429": { "description": "역압 — Retry-After 뒤에 같은 묶음을 다시 보낸다", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } } },
-          "503": { "description": "저장소 장애·점검 — Retry-After 뒤 다시", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } } }
+          "200": { "description": "저장 완료", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IngestResult" } } } },
+          "400": { "description": "묶음 자체를 읽을 수 없다 — FF는 커서를 옮기지 않고 경보", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
+          "403": { "description": "다른 설치(install_id 불일치)·권한 없음" },
+          "413": { "description": "묶음 상한 초과 — 나눠 다시" },
+          "429": { "description": "역압", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } } },
+          "503": { "description": "저장소 장애", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 1 } } } }
         }
       }
     },
-    "/v1/ingest/cursor": {
+    "/v1/ff/cursor": {
       "get": {
-        "tags": ["ingest"],
-        "operationId": "ingestCursor",
-        "summary": "Lake가 받은 마지막 위치 — FF 재시작·대사(누락 0)에 쓴다",
+        "tags": ["ff-ingest"],
+        "operationId": "ffCursor",
+        "summary": "Lake가 받은 FF 이벤트의 마지막 위치 — 재시작·누락 대사",
         "security": [{ "bearer": ["lake.ingest"] }, { "bearer": ["lake.read"] }],
-        "responses": {
-          "200": { "description": "받은 위치", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IngestCursor" } } } }
-        }
+        "responses": { "200": { "description": "받은 위치", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IngestCursor" } } } } }
       }
     },
     "/v1/health/live": {
@@ -67,7 +145,7 @@
       "get": {
         "tags": ["health"],
         "operationId": "healthReady",
-        "summary": "적재·조회를 받을 수 있다(저장소·메타 DB 연결, 디스크 여유)",
+        "summary": "받을 수 있다(중계 저장소·객체 저장소·메타 DB·디스크)",
         "security": [],
         "responses": {
           "200": { "description": "준비됨", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } } },
@@ -79,10 +157,10 @@
       "get": {
         "tags": ["query"],
         "operationId": "freshness",
-        "summary": "자료 종류별 신선도 — FF 화면의 신선도 칩·판단 보류(TL-B01) 근거",
+        "summary": "자료 종류별 신선도 + FF 라벨 워터마크 — 신선도 칩·판단 보류(TL-B01) 근거",
         "security": [{ "bearer": ["lake.read"] }],
         "responses": {
-          "200": { "description": "종류별 신선도", "content": { "application/json": { "schema": { "type": "object", "required": ["as_of", "watermark_seq", "types"], "additionalProperties": false, "properties": { "as_of": { "type": "string", "format": "date-time" }, "watermark_seq": { "type": "integer" }, "types": { "type": "array", "items": { "$ref": "#/components/schemas/Freshness" } } } } } } }
+          "200": { "description": "신선도", "content": { "application/json": { "schema": { "type": "object", "required": ["as_of", "label_watermark_seq", "label_watermark_at", "types"], "additionalProperties": false, "properties": { "as_of": { "type": "string", "format": "date-time" }, "label_watermark_seq": { "type": "integer" }, "label_watermark_at": { "type": ["string", "null"], "format": "date-time" }, "types": { "type": "array", "items": { "$ref": "#/components/schemas/Freshness" } } } } } } }
         }
       }
     },
@@ -90,7 +168,7 @@
       "get": {
         "tags": ["query"],
         "operationId": "metricsDelivery",
-        "summary": "배포 적용 결과 — 적용 성공률·거부 사유·적용 차량 수(단계 확대·Canary 판단)",
+        "summary": "배포 적용 결과 — FF가 검증한 전달 확인·상태 보고 기준 적용 성공률·거부 사유",
         "security": [{ "bearer": ["lake.read"] }],
         "parameters": [
           { "$ref": "#/components/parameters/featureId" },
@@ -103,7 +181,7 @@
         ],
         "responses": {
           "200": { "description": "시간 칸별 적용 결과", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeliveryMetrics" } } } },
-          "400": { "description": "기간이 너무 길다(최대 400일)·칸 수 초과(최대 2000)", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } }
+          "400": { "description": "기간 400일·칸 2000 초과", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } }
         }
       }
     },
@@ -111,46 +189,31 @@
       "get": {
         "tags": ["query"],
         "operationId": "metricsAnomalies",
-        "summary": "이상 징후 추이 — 종류·심각도별 열림·닫힘 건수",
+        "summary": "이상 징후 추이 — 종류·심각도별 열림·닫힘",
         "security": [{ "bearer": ["lake.read"] }],
-        "parameters": [
-          { "$ref": "#/components/parameters/featureIdOptional" },
-          { "$ref": "#/components/parameters/from" },
-          { "$ref": "#/components/parameters/to" },
-          { "$ref": "#/components/parameters/bucket" }
-        ],
-        "responses": {
-          "200": { "description": "시간 칸별 이상 징후 건수", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AnomalyMetrics" } } } }
-        }
+        "parameters": [{ "$ref": "#/components/parameters/featureIdOptional" }, { "$ref": "#/components/parameters/from" }, { "$ref": "#/components/parameters/to" }, { "$ref": "#/components/parameters/bucket" }],
+        "responses": { "200": { "description": "시간 칸별 건수", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AnomalyMetrics" } } } } }
       }
     },
     "/v1/metrics/feature-health": {
       "get": {
         "tags": ["query"],
         "operationId": "metricsFeatureHealth",
-        "summary": "Feature 버전 하나의 4축(동작·문제·개선·위험) 입력 지표 — 이번 창과 앞 창 비교",
+        "summary": "Feature 버전 하나의 4축 입력 지표 — 이번 창과 앞 창",
         "description": "판정(정상·주의·조치 필요·판단 불가)은 FF가 한다(80-70 9장). Lake는 지표·표본 수·신선도만 준다.",
         "security": [{ "bearer": ["lake.read"] }],
-        "parameters": [
-          { "$ref": "#/components/parameters/featureId" },
-          { "$ref": "#/components/parameters/featureVersion" },
-          { "name": "window", "in": "query", "required": false, "schema": { "enum": ["1d", "7d", "28d"], "default": "7d" } }
-        ],
-        "responses": {
-          "200": { "description": "지표 묶음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/FeatureHealthMetrics" } } } }
-        }
+        "parameters": [{ "$ref": "#/components/parameters/featureId" }, { "$ref": "#/components/parameters/featureVersion" }, { "name": "window", "in": "query", "required": false, "schema": { "enum": ["1d", "7d", "28d"], "default": "7d" } }],
+        "responses": { "200": { "description": "지표 묶음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/FeatureHealthMetrics" } } } } }
       }
     },
     "/v1/erasure": {
       "post": {
         "tags": ["privacy"],
         "operationId": "erasureRequest",
-        "summary": "차량 가명 단위 삭제 요청 — 즉시 조회에서 가리고, 30일 안에 파일에서 지운다",
+        "summary": "차량 가명 단위 삭제 요청 — 즉시 조회에서 가리고 30일 안에 파일에서 지운다",
         "security": [{ "bearer": ["lake.ingest"] }],
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErasureRequest" } } } },
-        "responses": {
-          "202": { "description": "접수", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErasureStatus" } } } }
-        }
+        "responses": { "202": { "description": "접수", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErasureStatus" } } } } }
       }
     },
     "/v1/erasure/{request_id}": {
@@ -160,10 +223,7 @@
         "summary": "삭제 진행 상태",
         "security": [{ "bearer": ["lake.ingest"] }, { "bearer": ["lake.read"] }],
         "parameters": [{ "name": "request_id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": {
-          "200": { "description": "상태", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErasureStatus" } } } },
-          "404": { "description": "없는 요청" }
-        }
+        "responses": { "200": { "description": "상태", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErasureStatus" } } } }, "404": { "description": "없는 요청" } }
       }
     }
   },
@@ -172,7 +232,11 @@
       "bearer": {
         "type": "http",
         "scheme": "bearer",
-        "description": "설치마다 발급한 서비스 토큰 두 개 — lake.ingest(적재·삭제 요청), lake.read(조회). 사내망 TLS 1.3. mTLS로 바꿀지는 결정 U-7."
+        "description": "FF 서비스 토큰 셋 — lake.ingest(FF 라벨 적재·삭제 요청), lake.relay(중계 당겨 가기), lake.read(조회). 사내망 TLS 1.3. mTLS로 바꿀지는 결정 U-7."
+      },
+      "vehicleMtls": {
+        "type": "mutualTLS",
+        "description": "차량 또는 OEM 텔레매틱스 게이트웨이의 클라이언트 인증서(고객 PKI). 차량 인증서 주체는 VIN이 아니라 차량 가명(결정 U-12). 전송 인증일 뿐이고, 안전 메시지의 진위는 FF가 FFV1-MSG로 확인한다."
       }
     },
     "parameters": {
@@ -190,6 +254,53 @@
         "required": ["type", "title", "status"],
         "properties": { "type": { "type": "string" }, "title": { "type": "string" }, "status": { "type": "integer" }, "detail": { "type": "string" }, "code": { "type": "string" } }
       },
+      "VehicleMessageResults": {
+        "type": "object",
+        "required": ["results"],
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["message_id", "status"],
+              "properties": {
+                "message_id": { "type": ["string", "null"] },
+                "status": { "enum": ["STORED", "DUPLICATE", "INVALID"] },
+                "reason": { "enum": ["NOT_SCHEMA", "BODY_HASH_MISMATCH", "BODY_TOO_LARGE", "UNKNOWN_KIND"] },
+                "relay_seq": { "type": "integer" }
+              }
+            }
+          }
+        }
+      },
+      "BatchResult": {
+        "type": "object",
+        "required": ["received", "accepted", "duplicate", "quarantined"],
+        "properties": { "received": { "type": "integer" }, "accepted": { "type": "integer" }, "duplicate": { "type": "integer" }, "quarantined": { "type": "integer" } }
+      },
+      "RelayPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stream", "items", "next_after", "more", "lag"],
+        "properties": {
+          "stream": { "enum": ["safety", "normal"] },
+          "items": { "type": "array", "items": { "$ref": "datalake-if15/relay-record.schema.json" } },
+          "next_after": { "type": "integer", "description": "다음 부를 때 after — 처리를 끝낸 뒤에만 옮긴다" },
+          "more": { "type": "boolean" },
+          "lag": { "$ref": "#/components/schemas/RelayLag" }
+        }
+      },
+      "RelayLag": {
+        "type": "object",
+        "required": ["stream", "head_seq", "last_read_after", "backlog", "oldest_unread_age_ms"],
+        "properties": {
+          "stream": { "enum": ["safety", "normal"] },
+          "head_seq": { "type": "integer" },
+          "last_read_after": { "type": ["integer", "null"] },
+          "backlog": { "type": "integer" },
+          "oldest_unread_age_ms": { "type": ["integer", "null"] }
+        }
+      },
       "IngestResult": {
         "type": "object",
         "additionalProperties": false,
@@ -201,58 +312,43 @@
           "duplicate": { "type": "integer", "minimum": 0 },
           "quarantined": { "type": "integer", "minimum": 0 },
           "quarantine_reasons": { "type": "array", "items": { "type": "object", "required": ["line", "reason"], "properties": { "line": { "type": "integer" }, "event_id": { "type": ["string", "null"] }, "reason": { "enum": ["NOT_JSON", "ENVELOPE_INVALID", "UNKNOWN_TYPE", "UNSUPPORTED_VERSION", "PAYLOAD_INVALID", "WRONG_INSTALL"] } } } },
-          "high_water_seq": { "type": "integer", "description": "이 설치에서 받은 가장 큰 seq" }
+          "high_water_seq": { "type": "integer" }
         }
       },
       "IngestCursor": {
         "type": "object",
         "additionalProperties": false,
         "required": ["install_id", "high_water_seq", "accepted_total", "last_batch_at"],
-        "properties": {
-          "install_id": { "type": "string" },
-          "high_water_seq": { "type": "integer" },
-          "accepted_total": { "type": "integer" },
-          "last_batch_at": { "type": ["string", "null"], "format": "date-time" }
-        }
+        "properties": { "install_id": { "type": "string" }, "high_water_seq": { "type": "integer" }, "accepted_total": { "type": "integer" }, "last_batch_at": { "type": ["string", "null"], "format": "date-time" } }
       },
       "Health": {
         "type": "object",
         "required": ["status"],
-        "properties": {
-          "status": { "enum": ["ok", "degraded", "down"] },
-          "version": { "type": "string" },
-          "install_id": { "type": "string" },
-          "checks": { "type": "object", "additionalProperties": { "enum": ["ok", "fail"] } }
-        }
+        "properties": { "status": { "enum": ["ok", "degraded", "down"] }, "version": { "type": "string" }, "install_id": { "type": "string" }, "checks": { "type": "object", "additionalProperties": { "enum": ["ok", "fail"] } } }
       },
       "Freshness": {
         "type": "object",
         "additionalProperties": false,
         "required": ["type", "last_occurred_at", "last_ingested_at", "lag_seconds", "sla_seconds", "stale"],
         "properties": {
-          "type": { "type": "string" },
+          "type": { "type": "string", "description": "자료 종류(vehicle.message·vehicle.telemetry/<signal>·ff.<type>)" },
           "last_occurred_at": { "type": ["string", "null"], "format": "date-time" },
           "last_ingested_at": { "type": ["string", "null"], "format": "date-time" },
-          "lag_seconds": { "type": ["integer", "null"], "description": "지금 − 마지막 적재 시각" },
+          "lag_seconds": { "type": ["integer", "null"] },
           "sla_seconds": { "type": "integer", "description": "안전 지표 600(80-70 제안 10분), 사업 지표 86400" },
           "stale": { "type": "boolean" }
         }
       },
       "Meta": {
         "type": "object",
-        "required": ["as_of", "watermark_seq", "k_min", "freshness"],
+        "required": ["as_of", "label_watermark_seq", "provisional", "k_min", "freshness"],
         "properties": {
           "as_of": { "type": "string", "format": "date-time" },
-          "watermark_seq": { "type": "integer", "description": "이 답에 들어간 마지막 FF seq" },
+          "label_watermark_seq": { "type": "integer", "description": "이 답에 들어간 마지막 FF 이벤트 seq" },
+          "provisional": { "type": "boolean", "description": "라벨이 아직 다 오지 않은 칸이 있다(80-75 8.2) — FF는 판정을 보류한다" },
           "k_min": { "type": "integer", "const": 5 },
           "freshness": { "$ref": "#/components/schemas/Freshness" }
         }
-      },
-      "Counted": {
-        "description": "서로 다른 차량 수가 k_min 미만이면 값은 null, suppressed=true",
-        "type": "object",
-        "required": ["vehicles", "suppressed"],
-        "properties": { "vehicles": { "type": ["integer", "null"] }, "suppressed": { "type": "boolean" } }
       },
       "DeliveryMetrics": {
         "type": "object",
@@ -264,14 +360,16 @@
           "buckets": {
             "type": "array",
             "items": {
-              "allOf": [{ "$ref": "#/components/schemas/Counted" }],
               "type": "object",
-              "required": ["start", "group", "applied", "rejected", "success_rate"],
+              "required": ["start", "group", "vehicles", "suppressed", "applied", "rejected", "unverified", "success_rate"],
               "properties": {
                 "start": { "type": "string", "format": "date-time" },
                 "group": { "type": ["string", "null"] },
+                "vehicles": { "type": ["integer", "null"] },
+                "suppressed": { "type": "boolean" },
                 "applied": { "type": ["integer", "null"] },
                 "rejected": { "type": ["integer", "null"] },
+                "unverified": { "type": ["integer", "null"], "description": "FF 검증 결과(relay.verdict)가 아직 없는 메시지 수 — 성공률에서 뺀다" },
                 "rejected_by_reason": { "type": "object", "additionalProperties": { "type": "integer" } },
                 "success_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
               }
@@ -306,7 +404,7 @@
         "required": ["axis", "name", "current", "previous", "sample_vehicles", "suppressed"],
         "properties": {
           "axis": { "enum": ["OPERATION", "PROBLEM", "IMPROVEMENT", "RISK"] },
-          "name": { "enum": ["delivery_success_rate", "status_rejected_rate", "dtc_vehicle_rate", "fault_rate_per_1k", "incident_count", "anomaly_open_count", "security_alert_count", "disabled_share", "trial_conversion_rate"] },
+          "name": { "enum": ["delivery_success_rate", "status_rejected_rate", "dtc_vehicle_rate", "fault_rate_per_1k", "safety_event_rate_per_1k", "usage_rate", "manual_off_rate", "incident_count", "anomaly_open_count", "security_alert_count", "disabled_share", "trial_conversion_rate", "data_missing_rate"] },
           "current": { "type": ["number", "null"] },
           "previous": { "type": ["number", "null"] },
           "sample_vehicles": { "type": ["integer", "null"] },
@@ -343,7 +441,7 @@
           "status": { "enum": ["MASKED", "PURGING", "PURGED", "HELD"] },
           "masked_at": { "type": "string", "format": "date-time" },
           "purged_at": { "type": ["string", "null"], "format": "date-time" },
-          "held": { "type": "array", "description": "열린 Incident·이상 건으로 보류된 가명과 건 ID", "items": { "type": "object", "properties": { "pseudonym": { "type": "string" }, "refs": { "type": "array", "items": { "type": "string" } } } } }
+          "held": { "type": "array", "items": { "type": "object", "properties": { "pseudonym": { "type": "string" }, "refs": { "type": "array", "items": { "type": "string" } } } } }
         }
       }
     }

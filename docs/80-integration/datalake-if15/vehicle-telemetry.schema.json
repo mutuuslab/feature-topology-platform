@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/vehicle-telemetry.schema.json",
+  "title": "차량 텔레메트리 v1 (ff.vehicle.telemetry/1) — 차량 → Lake, Lake 전용(FF로 중계하지 않음)",
+  "description": "80-70 3장의 TelemetryEnvelope v1을 NDJSON 한 줄로 고정한 것. 기능 상태·진단·주행 안전 이벤트 스냅샷·기능 사용·수집 상태 등 분석용 자료. VIN·원시 위치·운전자 정보는 없다. 서명(auth)은 텔레메트리 전용 키 K_t(80-75 3.3, 결정 U-13) — 정해지기 전에는 null이고 Lake는 전송 인증(mTLS)만 믿는다. 라벨은 차량이 아는 값(적용 중인 Feature 버전·policy_hash·수집 정책)만 — FF 라벨과의 연결은 Lake가 policy_hash로 한다(80-75 8.2).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "pseudonym", "signal_schema", "boot_id", "seq", "observed_at", "time_sync", "data_category", "labels", "payload", "auth"],
+  "properties": {
+    "schema": { "const": "ff.vehicle.telemetry/1" },
+    "pseudonym": { "type": "string", "pattern": "^[a-f0-9]{16,64}$" },
+    "signal_schema": {
+      "description": "payload 형식(데이터 계약) — 예 feature.state@1, dtc@1, safety.snapshot@1, feature.usage.daily@1, collect.status@1",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": { "id": { "type": "string", "pattern": "^[a-z][a-z0-9_.]{1,60}$" }, "version": { "type": "integer", "minimum": 1 } }
+    },
+    "boot_id": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "seq": { "description": "부팅 안 단조 번호 — (pseudonym, boot_id, seq)가 멱등 키", "type": "integer", "minimum": 0 },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "time_sync": { "description": "차량 시각 품질(status_report v2와 같은 값) — SYNCED가 아니면 Lake는 시각 귀속을 '낮음'으로 표시", "enum": ["SYNCED", "DEGRADED", "UNSYNCED"] },
+    "data_category": { "enum": ["SAFETY_OPERATION", "SECURITY_MONITORING", "COMMERCIAL_USAGE"] },
+    "labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature_id", "feature_version", "policy_hash", "collection_policy_id"],
+      "properties": {
+        "feature_id": { "type": ["string", "null"], "pattern": "^FEAT-[0-9]{5}$" },
+        "feature_version": { "type": ["string", "null"], "maxLength": 40 },
+        "policy_hash": { "type": ["string", "null"], "pattern": "^sha256:[a-f0-9]{64}$" },
+        "collection_policy_id": { "type": ["string", "null"], "maxLength": 40 }
+      }
+    },
+    "payload": { "type": "object" },
+    "auth": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["key_epoch", "mac"],
+      "properties": {
+        "key_epoch": { "type": "integer", "minimum": 1 },
+        "mac": { "type": "string", "pattern": "^[A-Za-z0-9_-]{22}$" }
+      }
+    }
+  }
+}

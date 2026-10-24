@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.invalid/ffp/datalake/if15/envelope.schema.json",
-  "title": "IF-15 Lake 이벤트 봉투 v1 (ff.lake.event/1)",
-  "description": "FF가 Data Lake로 보내는 한 줄(NDJSON 한 행). FF 이벤트 이력(events 표) 한 건 = Lake 이벤트 한 건. VIN은 없다 — 차량은 FF의 차량 가명(vehiclePseudonym)으로만 나타난다. 설계: docs/80-integration/80-75-data-lake-server.md 3장.",
+  "title": "IF-15 FF → Lake 이벤트 봉투 v1 (ff.lake.event/1)",
+  "description": "FF가 Data Lake로 보내는 한 줄(NDJSON 한 행) — FF가 만든 자료만(변경 라벨·중계 검증 결과·이상 징후·Incident·보안 경보·사용 권한). 차량이 만든 자료는 이 길로 오지 않는다(차량 → Lake 직접: vehicle-message·vehicle-telemetry 스키마). FF 이벤트 이력(events 표) 한 건 = Lake 이벤트 한 건. VIN은 없다 — 차량은 차량 가명으로만 나타난다. 설계: docs/80-integration/80-75-data-lake-server.md 5장.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "event_id", "seq", "install_id", "type", "type_version", "data_category", "occurred_at", "recorded_at", "feature", "vehicle", "correlation_id", "payload"],
@@ -13,12 +13,12 @@
       "type": "string",
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
     },
-    "seq": { "description": "FF events.seq — 설치 안에서 단조 증가. 보낸 위치(커서)와 누락 대사에 쓴다", "type": "integer", "minimum": 1 },
+    "seq": { "description": "FF events.seq — 설치 안에서 단조 증가. 보낸 위치(커서)·라벨 워터마크·누락 대사에 쓴다", "type": "integer", "minimum": 1 },
     "install_id": { "description": "FF_INSTANCE_ID — 한 설치 = 한 고객(D-RD-1). Lake는 설정된 설치 하나만 받는다", "type": "string", "minLength": 1, "maxLength": 64 },
-    "type": { "enum": ["vehicle.status", "delivery.result", "vehicle.fault", "anomaly", "incident", "security.alert", "entitlement", "ff.change"] },
+    "type": { "enum": ["ff.change", "relay.verdict", "anomaly", "incident", "security.alert", "entitlement"] },
     "type_version": { "description": "payload 형식 판. 필드 추가는 같은 판, 바꾸거나 빼면 판을 올린다", "type": "integer", "minimum": 1 },
     "data_category": { "description": "보고서 13.1 목적 범주(FF DATA_CATEGORIES와 같음)", "enum": ["SAFETY_OPERATION", "SECURITY_MONITORING", "COMMERCIAL_USAGE"] },
-    "occurred_at": { "description": "일이 일어난 시각(차량 관측 시각 등). 모르면 null — 받은 시각으로 채우지 않는다", "type": ["string", "null"], "format": "date-time" },
+    "occurred_at": { "description": "일이 일어난 시각. 모르면 null — 받은 시각으로 채우지 않는다", "type": ["string", "null"], "format": "date-time" },
     "recorded_at": { "description": "FF가 이벤트를 기록한 시각(events.at)", "type": "string", "format": "date-time" },
     "feature": {
       "type": ["object", "null"],
@@ -30,7 +30,7 @@
       }
     },
     "vehicle": {
-      "description": "차량 문맥 — 보내는 시점의 FF 차량 기준 정보(분할·집계용). 이름(label)·VIN은 넣지 않는다",
+      "description": "차량과 관련된 FF 자료일 때 차량 가명과 FF 기준 정보(분할·집계용). 이름(label)·VIN은 넣지 않는다",
       "type": ["object", "null"],
       "additionalProperties": false,
       "required": ["pseudonym", "model", "model_year", "country", "sw_version"],
@@ -47,16 +47,12 @@
   },
   "allOf": [
     {
-      "if": { "properties": { "type": { "const": "vehicle.status" } } },
-      "then": { "properties": { "feature": { "type": "object" }, "vehicle": { "type": "object" }, "payload": { "$ref": "vehicle.status.schema.json" } } }
+      "if": { "properties": { "type": { "const": "ff.change" } } },
+      "then": { "properties": { "data_category": { "const": "SAFETY_OPERATION" }, "vehicle": { "type": "null" }, "payload": { "$ref": "ff.change.schema.json" } } }
     },
     {
-      "if": { "properties": { "type": { "const": "delivery.result" } } },
-      "then": { "properties": { "data_category": { "const": "SAFETY_OPERATION" }, "vehicle": { "type": "object" }, "payload": { "$ref": "delivery.result.schema.json" } } }
-    },
-    {
-      "if": { "properties": { "type": { "const": "vehicle.fault" } } },
-      "then": { "properties": { "data_category": { "const": "SAFETY_OPERATION" }, "feature": { "type": "object" }, "vehicle": { "type": "object" }, "payload": { "$ref": "vehicle.fault.schema.json" } } }
+      "if": { "properties": { "type": { "const": "relay.verdict" } } },
+      "then": { "properties": { "vehicle": { "type": "object" }, "payload": { "$ref": "relay.verdict.schema.json" } } }
     },
     {
       "if": { "properties": { "type": { "const": "anomaly" } } },
@@ -73,10 +69,6 @@
     {
       "if": { "properties": { "type": { "const": "entitlement" } } },
       "then": { "properties": { "data_category": { "const": "COMMERCIAL_USAGE" }, "vehicle": { "type": "object" }, "payload": { "$ref": "entitlement.schema.json" } } }
-    },
-    {
-      "if": { "properties": { "type": { "const": "ff.change" } } },
-      "then": { "properties": { "data_category": { "const": "SAFETY_OPERATION" }, "vehicle": { "type": "null" }, "payload": { "$ref": "ff.change.schema.json" } } }
     }
   ]
 }

@@ -28,7 +28,7 @@ Feature ID 공통 Key·양방향 sync·outbox(코어 격리)·모든 sync Audit.
 | INT-UNLEASH | Feature Flag | Admin/Client API + OpenFeature provider | bi | OpenFeature | ControlPoint↔Flag/Strategy, Variant→Policy export |
 | INT-OTA | OTA 플랫폼 | REST/Webhook | bi | ISO 24089/R156 | DeploymentUnit↔Campaign, RxSWIN 증적 |
 | INT-MQTT | 차량 EventBus | MQTT 5.0(retained+QoS1/2) | in | OASIS MQTT | TelemetryEvent 수집, 정책 배포 |
-| IF-15 | Data Lake(별도 서버, 설치마다 하나) | HTTPS NDJSON 묶음 적재 + REST 집계 조회 | bi(적재 out · 집계 in) | OpenAPI 3.1, JSON Schema 2020-12 | FF 이벤트 이력 → Lake 이벤트(가명), Feature·버전별 집계 → Closed loop |
+| IF-15 | Data Lake(별도 서버, 설치마다 하나) | 차량 → Lake HTTPS(mTLS) · Lake → FF 중계 당겨 가기 · FF 라벨 NDJSON · REST 집계 조회 | bi | OpenAPI 3.1, JSON Schema 2020-12 | 차량 서명 메시지(FFV1-MSG, FF가 직접 검증) → FF, FF 라벨 → Lake, Feature·버전별 집계 → Closed loop |
 
 ## 3. 동기화·충돌
 - source-of-record 우선·timestamp·conflict 큐(SCR-810).

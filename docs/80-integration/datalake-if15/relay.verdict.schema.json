@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/relay.verdict.schema.json",
+  "title": "relay.verdict v1 — Lake가 중계한 차량 서명 메시지에 대한 FF의 검증·처리 결과",
+  "description": "Lake는 차량 키가 없어 차량 서명 메시지(vehicle-message)를 검증할 수 없다. FF가 서명(FFV1-MSG)·상태 보고 6단계 검사(state_auth·report_seq 등)를 하고 결과를 이 이벤트로 돌려준다. Lake 분석은 outcome=ACCEPTED인 메시지만 '검증됨'으로 센다(80-75 4.6). 차량 가명은 봉투 vehicle에 있다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["message_id", "relay_seq", "stream", "kind", "outcome", "check", "relay_latency_ms"],
+  "properties": {
+    "message_id": { "description": "vehicle-message.message_id(<가명>:<nonce>)", "type": "string", "pattern": "^[a-f0-9]{16,64}:[A-Za-z0-9_-]{16,64}$" },
+    "relay_seq": { "type": "integer", "minimum": 1 },
+    "stream": { "enum": ["SAFETY", "NORMAL"] },
+    "kind": { "enum": ["STATUS_REPORT", "INBOX_ACK", "VEHICLE_REPORT"] },
+    "outcome": {
+      "description": "ACCEPTED 처리함 · DUPLICATE 같은 메시지를 이미 처리함(재전송·중복 중계, 보안 이벤트 아님) · REJECTED 서명·검사 실패 · STALE 받을 수 있는 나이(max age)를 넘김",
+      "enum": ["ACCEPTED", "DUPLICATE", "REJECTED", "STALE"]
+    },
+    "check": {
+      "description": "REJECTED·STALE일 때 어디서 무엇으로 떨어졌는가. ACCEPTED·DUPLICATE면 null",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["layer", "step", "code"],
+      "properties": {
+        "layer": { "description": "MESSAGE_AUTH 바깥 서명(FFV1-MSG) · STATUS_CHECK 상태 보고 6단계 · HANDLER 처리기(대상 밖 게시본 등)", "enum": ["MESSAGE_AUTH", "STATUS_CHECK", "HANDLER"] },
+        "step": { "description": "STATUS_CHECK일 때 6단계 이름, 아니면 null", "enum": ["SCHEMA", "AUTH", "SEQUENCE", "TARGET", "HISTORY", "PERSISTENCE", null] },
+        "code": { "type": "string", "pattern": "^[A-Z0-9_]+$", "maxLength": 60 }
+      }
+    },
+    "relay_latency_ms": { "description": "Lake 수신 시각(received_at) → FF 처리 시각. Lake 시계를 믿지 않으므로 참고값(SLO 감시용)", "type": ["integer", "null"] }
+  }
+}

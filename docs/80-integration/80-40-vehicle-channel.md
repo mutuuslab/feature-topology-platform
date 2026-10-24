@@ -1,6 +1,8 @@
 # 80-40 차량 채널 — 요청 인증·당겨받기 전달 프로토콜 (IF-06·IF-07·IF-10)
 
 > 출시 준비 RD-SEC-08(차량 요청 신원)·RD-OPS-04(실제 차량 전달 경로) — `docs/20-architecture/20-90-production-readiness.md`.
+> **전환 예정(2026-10-24 사용자 결정 "차량 → Lake → FF")**: 이 문서의 **오르는 창구**(차량 보고·상태 보고 v2·전달 확인)는 Data Lake를 거치도록 옮긴다 — 차량은 같은 본문을 FFV1-MSG로 서명해 Lake에 보내고, FF는 Lake에서 당겨 와 같은 처리기로 검증한다(서명 보존, [80-75](80-75-data-lake-server.md) 3·4·10장). 내리는 조회(flag 조회·`GET /inbox`)와 2장 요청 인증·키 계층은 그대로다. 전환 전까지는 이 문서가 지금 동작이다.
+>
 > 계약 코드: `FF/contracts/src/rules/vehicle-auth.ts`(정규 문자열·머리글·실패 코드·확인 본문). 서버: `FF/backend/src/kernel/vehicle-auth.ts`(검증),
 > `FF/backend/src/domains/d02-runtime/vehicle-channel/`(전달 어댑터·당겨받기). 차량 쪽 참조 구현: `FF/backend/src/kernel/vehicle-auth-client.ts`.
 

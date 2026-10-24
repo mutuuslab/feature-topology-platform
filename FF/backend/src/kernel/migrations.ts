@@ -573,4 +573,25 @@ CREATE TABLE vehicle_delivery (
 CREATE INDEX vehicle_delivery_pending ON vehicle_delivery (vin, acked_at, queued_at);
 `,
   },
+  {
+    // 대시보드(Jira식 가젯 판) — 사용자가 만든 판을 서버에 둔다. layout은 판 JSON(v2: 열 레이아웃 + 가젯 인스턴스·설정),
+    // shared_roles는 보기를 허용한 플랫폼 역할 JSON 배열, version은 겹친 저장을 막는 낙관적 잠금(If-Match, 412).
+    // favourite는 소유자의 별, 남의 대시보드 별은 dashboard_star(보는 사람별)에 둔다.
+    name: '047_dashboard',
+    sql: `
+CREATE TABLE dashboard (
+  id TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  layout TEXT NOT NULL,
+  shared_roles TEXT NOT NULL DEFAULT '[]',
+  version INTEGER NOT NULL DEFAULT 1,
+  favourite INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX dashboard_owner ON dashboard (owner_id);
+CREATE TABLE dashboard_star (actor_id TEXT NOT NULL, dashboard_id TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY (actor_id, dashboard_id));
+`,
+  },
 ];

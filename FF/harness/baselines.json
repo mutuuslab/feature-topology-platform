@@ -40,7 +40,7 @@
     "note": "시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다"
   },
   "req.verdict.implemented": {
-    "value": 194,
+    "value": 199,
     "direction": "min",
     "note": "기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다"
   },
@@ -50,7 +50,7 @@
     "note": "기능명세서 말단 요구사항 중 미구현 판정 수 — 늘면 안 된다"
   },
   "req.traced": {
-    "value": 40,
+    "value": 45,
     "direction": "min",
     "note": "@req 표식으로 코드에 추적된 요구사항 수"
   },
@@ -60,7 +60,7 @@
     "note": "구현 판정인데 @req 표식이 없는 요구사항 수 — 줄여 나간다"
   },
   "req.defects": {
-    "value": 5,
+    "value": 0,
     "direction": "max",
     "note": "미해결 결함(it.fails 결함 기록) 수 — 늘면 안 된다"
   },
@@ -85,7 +85,7 @@
     "note": "문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14)"
   },
   "readinessOpenP0": {
-    "value": 6,
+    "value": 4,
     "direction": "max",
     "note": "출시 준비 열린 P0 수(harness/readiness.json) — 0까지"
   },

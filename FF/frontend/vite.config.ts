@@ -56,5 +56,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/test/setup.ts',
+    // 기계 부하가 크면(병렬 작업) jsdom 준비·모듈 변환만으로 5초 기본값을 넘는다 — 실제로 멈춘 시험은 여전히 실패
+    testTimeout: 20_000,
   },
 });

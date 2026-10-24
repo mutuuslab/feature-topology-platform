@@ -48,7 +48,7 @@ function Sod() {
   const q = useApi<SodView>('iamSodAudit');
   const d = q.data;
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       {d && (
         <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
           <Panel title={S.conflicts} eyebrow={S.reviews(d.postReviews.issued, d.postReviews.reviewed, d.postReviews.pending, d.postReviews.overdue)} id="sod-conflicts">
@@ -96,7 +96,7 @@ function PostReviews() {
   const C = R.col;
   return (
     <Panel title={T.tabs.review} codes="FFG-PLT-016" id="post-reviews">
-      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: R.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: R.empty }} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.tabs.review}
           rows={rows}
@@ -161,7 +161,7 @@ function Changes() {
   const ev = (e: Change['evidence']) => [e.review, e.staticAnalysis, e.tests, e.coverage ? `${e.coverage.achieved}/${e.coverage.required}%` : null].map((x) => x ?? '—').join(' · ');
   return (
     <Panel title={T.tabs.changes} eyebrow={s ? C.summary(s.total, s.aiGenerated, s.aiComplete, s.withFindings) : 'FFG-CODE-030'} id="change-records">
-      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: C.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: C.empty }} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.tabs.changes}
           rows={rows}
@@ -199,7 +199,7 @@ function Rehara() {
   const C = R.col;
   return (
     <Panel title={T.tabs.rehara} codes="FFG-LCY-006" id="rehara">
-      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: R.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: R.empty }} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.tabs.rehara}
           rows={rows}

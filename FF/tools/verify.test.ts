@@ -17,3 +17,7 @@ test('운영 빌드 검사(build:prod)와 SSO e2e(e2e:oidc)가 verify에 있다 
   assert.match(step('e2e:oidc'), /playwright\.oidc\.config\.ts/);
   assert.ok(src.indexOf("id: 'build:prod'") > src.indexOf("id: 'build:frontend'"), 'build:prod는 build:frontend 뒤(데모 빌드 대조)');
 });
+test('빈 DB 첫 실행 e2e(e2e:firstrun)가 verify에 있고 화면 빌드 뒤에 돈다 — 출시 준비 RD-OPS-02', () => {
+  assert.match(step('e2e:firstrun'), /playwright\.firstrun\.config\.ts/);
+  assert.ok(src.indexOf("id: 'e2e:firstrun'") > src.indexOf("id: 'build:frontend'"), 'e2e:firstrun은 build:frontend 뒤(preview로 dist를 띄운다)');
+});

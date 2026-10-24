@@ -312,7 +312,7 @@ function DeploymentPanel({ id, me }: { id: string; me: string }) {
   const d = q.data;
   const pending = d ? [...d.requests.map((r) => ({ ...r, kind: 'request' as const })), ...d.plans.map((p) => ({ ...p, kind: 'plan' as const }))].sort((a, b) => b.requestedAt.localeCompare(a.requestedAt)) : [];
   return (
-    <AsyncView state={asyncState(q)} onRetry={() => q.refetch()} error={q.error?.message}>
+    <AsyncView state={asyncState(q)} onRetry={() => q.refetch()} error={q.error}>
       {d && (
         <>
           <Panel title={R.detail(d.deploymentId)} eyebrow={`${d.deployed.flagKey} · ${versionText(d.deployed)}`} id="rb-deployment">

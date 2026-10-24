@@ -12,7 +12,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:242",
         "contracts/src/rules/variant.ts:52",
-        "backend/src/domains/d05-ext/billing/billing.controller.ts:30"
+        "backend/src/domains/d05-ext/billing/billing.controller.ts:36"
       ],
       "tests": [
         "backend/test/d05/trials.spec.ts",
@@ -98,7 +98,7 @@
       "verdict": "부분",
       "current": "구매 전환 직전 지원 조건을 재확인하고, 과금 모의는 멱등 키(체험권:요금제)로 주문·권리를 한 번만 만든다.",
       "evidence": [
-        "backend/src/domains/d05-ext/billing/billing.controller.ts:32",
+        "backend/src/domains/d05-ext/billing/billing.controller.ts:38",
         "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:188",
         "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:198"
       ],
@@ -183,7 +183,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/activation/activation.service.ts:36",
         "contracts/src/flags/evaluate.ts:126",
-        "backend/src/domains/d05-ext/billing/billing.controller.ts:17"
+        "backend/src/domains/d05-ext/billing/billing.controller.ts:20"
       ],
       "tests": [
         "backend/test/d05/trials.spec.ts"
@@ -502,7 +502,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/incident-voc/incident.service.ts:57",
         "contracts/src/rules/kill-timeline.ts:43",
-        "backend/src/kernel/audit.service.ts:140"
+        "backend/src/kernel/audit.service.ts:142"
       ],
       "tests": [
         "contracts/src/rules/kill-timeline.test.ts",

@@ -30,6 +30,7 @@ const SAMPLE: Record<string, string> = {
   '/learn/:id': '/learn/CS-01',
   '/procedures/:id': '/procedures/FPW.7',
   '/twin/vehicle/:vin': '/twin/vehicle/VIN-DEMO-017',
+  '/fleet/vehicles/:vin': '/fleet/vehicles/ego-01',
 };
 export const DRILLDOWNS: { path: string; title: string; url: string }[] = [...src.matchAll(/\{ path: '([^']+)', element: ([^\n]*?), title: '([^']+)'[^\n]*parent: '/g)]
   .filter((m) => !/legacyTo\(|Redirect'/.test(m[2]))

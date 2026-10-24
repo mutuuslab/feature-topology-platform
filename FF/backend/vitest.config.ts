@@ -14,5 +14,9 @@ export default defineConfig({
     // (vitest 4부터 poolOptions는 최상위 옵션 — forks 풀은 기본값)
     execArgv: ['--disable-warning=ExperimentalWarning'],
     maxWorkers: 6,
+    // 시험 제한 시간 — 병렬 작업으로 기계 부하가 크면 Nest 부팅·첫 서명만으로 5초 기본값을 넘었다(2026-10-24, conformance·delivery·vehicle-auth).
+    // contracts·frontend와 같은 20초. 실제로 멈춘 시험은 여전히 실패한다
+    testTimeout: 20_000,
+    hookTimeout: 30_000,
   },
 });

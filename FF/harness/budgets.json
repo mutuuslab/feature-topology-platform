@@ -1,6 +1,6 @@
 {
-  "note": "성능 예산(설계안 4e) — gzip 바이트. 넘으면 verify 실패. 올리려면 이유를 남기고 이 파일을 함께 고친다. 2026-10-16 측정: 첫 화면 255 KiB, 화면 묶음 최대 33 KiB(3D 장면 제외). 2026-10-17: 전세계 차량 지도의 MapLibre GL(278 KiB)은 /fleet/map에서만 지연 로드되는 지도 엔진이라 3D 장면처럼 허용 목록에 둔다(첫 화면 합계에는 들어가지 않는다). 2026-10-24: 첫 화면 290→305 KiB — 보안 취약점(high, 2026-10 공지 'Zod can exhaust memory while validating oversized input', zod <4.6.6) 때문에 zod 3→4로 올렸고, zod 4 classic은 같은 스키마에 gzip 약 15 KiB가 더 든다(285→300 KiB, 계약 스키마는 첫 화면의 API 클라이언트·폼 검증이 함께 쓴다). 여유는 전과 같은 5 KiB. 같은 날 305→310 KiB — react-router 6→7(열린 리다이렉트·XSS 공지, react-router <7.18) 공용 묶음이 gzip 약 5.5 KiB 늘었다(300→305.5)",
-  "initialGzipKiB": 310,
+  "note": "성능 예산(설계안 4e) — gzip 바이트. 넘으면 verify 실패. 올리려면 이유를 남기고 이 파일을 함께 고친다. 2026-10-16 측정: 첫 화면 255 KiB, 화면 묶음 최대 33 KiB(3D 장면 제외). 2026-10-17: 전세계 차량 지도의 MapLibre GL(278 KiB)은 /fleet/map에서만 지연 로드되는 지도 엔진이라 3D 장면처럼 허용 목록에 둔다(첫 화면 합계에는 들어가지 않는다). 2026-10-24: 첫 화면 290→305 KiB — 보안 취약점(high, 2026-10 공지 'Zod can exhaust memory while validating oversized input', zod <4.6.6) 때문에 zod 3→4로 올렸고, zod 4 classic은 같은 스키마에 gzip 약 15 KiB가 더 든다(285→300 KiB, 계약 스키마는 첫 화면의 API 클라이언트·폼 검증이 함께 쓴다). 여유는 전과 같은 5 KiB. 같은 날 305→310 KiB — react-router 6→7(열린 리다이렉트·XSS 공지, react-router <7.18) 공용 묶음이 gzip 약 5.5 KiB 늘었다(300→305.5). 같은 날 310→290 KiB — 보고서 규칙 카탈로그(gzip 약 33 KiB)를 첫 화면에서 빼(contracts/src/web.ts 입구, design/rule-catalog.ts가 필요할 때 읽음) 311→278 KiB가 되어 의존성 상향 전 예산으로 되돌린다",
+  "initialGzipKiB": 290,
   "chunkGzipKiB": 40,
   "allow": {
     "VehicleTwinScene": 320,

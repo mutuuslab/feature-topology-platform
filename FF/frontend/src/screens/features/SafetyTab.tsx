@@ -117,7 +117,7 @@ function GatePanel({ id, ver }: { id: string; ver: string }) {
       id="safety-gate"
       tour="safety-gate"
     >
-      <AsyncView state={asyncState(g)} error={g.error?.message} onRetry={() => g.refetch()}>
+      <AsyncView state={asyncState(g)} error={g.error} onRetry={() => g.refetch()}>
         {s && (
           <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
             <p className="ds-field__hint" style={{ margin: 0 }}>
@@ -170,7 +170,7 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
   const patch = () => (p && draft ? Object.fromEntries(EDITABLE.filter((k) => JSON.stringify(p[k]) !== JSON.stringify(draft[k])).map((k) => [k, draft[k]])) : {});
 
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       {p && draft && merged && (
         <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
           <div className="ds-split">

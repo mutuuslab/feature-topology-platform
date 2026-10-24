@@ -1,5 +1,6 @@
 // 화면 골격 부품 — 머리말·도구 줄·분절 필터·폼 필드·오류 안내·키-값 격자.
-import { createContext, useContext, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type SelectHTMLAttributes } from 'react';
+import { cloneElement, createContext, isValidElement, useContext, useId, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type ReactNode, type SelectHTMLAttributes } from 'react';
+import { ErrorNextStep, showsCode, type ErrorLike } from './errors';
 import { Icon } from './icons';
 
 /** 화면 이름(H1) — 글자와 요소 id. Panel·셸 메뉴 제목이 같은 말을 되풀이하지 않게 비교한다(3초 테스트 UX3-10·11) */
@@ -173,17 +174,23 @@ export function Select({ label, children, ...rest }: { label: string } & SelectH
 }
 
 export function Field({ label, hint, error, children }: { label: ReactNode; hint?: ReactNode; error?: ReactNode; children: ReactNode }) {
+  const errId = useId();
+  // 칸 오류(서버 입력 검사 422·400, RD-UX-01) — 입력 요소에 aria-invalid와 오류 문장 연결을 붙인다
+  const control = error && isValidElement(children) ? cloneElement(children as ReactElement<Record<string, unknown>>, { 'aria-invalid': true, 'aria-describedby': errId }) : children;
   return (
-    <label className="ds-field">
+    <label className="ds-field" data-invalid={error ? '' : undefined}>
       <span className="ds-field__label">{label}</span>
-      {children}
-      {error ? <span className="ds-field__error">{error}</span> : hint ? <span className="ds-field__hint">{hint}</span> : null}
+      {control}
+      {error ? <span className="ds-field__error" id={errId}>{error}</span> : hint ? <span className="ds-field__hint">{hint}</span> : null}
     </label>
   );
 }
 
-/** API 오류 — 코드·메시지와, 서버가 준 막힌 사유(blockers·issues·checklist 실패)를 그대로 보여 준다 */
-export function ErrorNote({ error }: { error: { code?: string; message: string; details?: any } | null | undefined }) {
+/**
+ * API 오류 — 사용자 문장과, 서버가 준 막힌 사유(blockers·issues·checklist 실패)를 그대로 보여 주고,
+ * 오류 종류에 맞는 다음 행동(다시 로그인·다시 불러오기·문의 번호)을 붙인다(RD-UX-01).
+ */
+export function ErrorNote({ error }: { error: ErrorLike | null | undefined }) {
   if (!error) return null;
   const d = error.details ?? {};
   const reasons: string[] = [
@@ -197,7 +204,7 @@ export function ErrorNote({ error }: { error: { code?: string; message: string; 
       <Icon name="alert" size={16} />
       <div>
         <strong>{error.message}</strong>
-        {error.code && <span className="ds-error__code">{error.code}</span>}
+        {showsCode(error) && <span className="ds-error__code">{error.code}</span>}
         {reasons.length > 0 && (
           <ul>
             {reasons.map((r) => (
@@ -205,6 +212,7 @@ export function ErrorNote({ error }: { error: { code?: string; message: string; 
             ))}
           </ul>
         )}
+        <ErrorNextStep error={error} />
       </div>
     </div>
   );

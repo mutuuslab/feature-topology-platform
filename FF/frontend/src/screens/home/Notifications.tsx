@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_CATEGORY_LABEL, type NotificationCategory } from '@ff/contracts';
 import { STATIC_MODE } from '../../api/client';
+import { useConnectionLabel } from '../../api/connections';
+import { connections as CN } from '../../copy/connections';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, PageHeader, Panel, Segmented, Select } from '../../design';
+import { AsyncView, Button, ConnectionBadge, DataTable, ErrorNote, PageHeader, Panel, Segmented, Select } from '../../design';
 import { NOTIFY_EVENTS, SeverityBadge, t16, type Inbox, type InboxItem } from '../../shell/NotificationBell';
 
 const N = ko.notify;
@@ -103,8 +105,11 @@ function EmailLog() {
   const q = useApi<{ items: Email[] }>('notificationEmails', {}, { enabled: !STATIC_MODE });
   usePlatformEvents(NOTIFY_EVENTS, ['notificationEmails']);
   const rows = q.data?.items ?? [];
+  // 메일 서버가 실제로 연결되기 전에는 발송 상태를 실제처럼 보이지 않는다(RD-UX-04)
+  const mail = useConnectionLabel('mail');
+  const status = (s: string) => (mail === 'none' ? s : mail === 'mock' ? CN.mail.mockStatus : CN.mail.notSent);
   return (
-    <Panel title={N.emails.title} id="ntf-emails">
+    <Panel title={N.emails.title} id="ntf-emails" actions={<ConnectionBadge state={mail} system={CN.system.mail} />}>
       <p className="ntf-lead">{N.emails.lead}</p>
       <AsyncView state={STATIC_MODE ? 'empty' : asyncState(q, rows.length === 0)} empty={{ body: STATIC_MODE ? N.staticNote : N.emails.empty }} onRetry={() => q.refetch()} rows={3}>
         <DataTable
@@ -115,7 +120,7 @@ function EmailLog() {
           columns={[
             { key: 'at', header: N.emails.col.at, cell: (r) => <span className="ds-mono">{t16(r.at)}</span>, sort: (r) => r.at },
             { key: 'subject', header: N.emails.col.subject, cell: (r) => r.subject },
-            { key: 'status', header: N.emails.col.status, cell: (r) => r.status },
+            { key: 'status', header: N.emails.col.status, cell: (r) => status(r.status) },
           ]}
         />
       </AsyncView>

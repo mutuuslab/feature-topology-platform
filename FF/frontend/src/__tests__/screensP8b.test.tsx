@@ -153,6 +153,23 @@ describe('IAM · Variant', () => {
     expect(screen.getByText('SOD-05')).toBeTruthy();
   });
 
+  it('빈 설치(RD-OPS-02): Feature가 없으면 Variant 매트릭스는 빈 상태 안내 — 데모 Feature를 조회하지 않는다', async () => {
+    const seen: string[] = [];
+    handler = (url: string) => (seen.push(url), url.startsWith('/api/features') ? { body: { items: [] } } : { status: 404, body: {} });
+    mount('/variant-conditions', '/variant-conditions', <VariantScreen />);
+    expect((await screen.findAllByText('아직 등록된 Feature가 없습니다')).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: 'Feature 제안하기' }).getAttribute('href')).toBe('/feature/propose');
+    expect(seen.some((u) => u.includes('FEAT-00022'))).toBe(false);
+  });
+
+  it('Feature가 있으면 예시 대신 첫 Feature의 매트릭스를 연다', async () => {
+    const seen: string[] = [];
+    handler = (url: string) => (seen.push(url), url.startsWith('/api/features') ? { body: { items: [{ featureId: 'FEAT-00777', version: '2.0.0' }] } } : { status: 404, body: {} });
+    mount('/variant-conditions', '/variant-conditions', <VariantScreen />);
+    await waitFor(() => expect(seen.some((u) => u.includes('FEAT-00777') && u.includes('2.0.0'))).toBe(true));
+    expect(seen.some((u) => u.includes('FEAT-00022'))).toBe(false);
+  });
+
   it('Variant 매트릭스: 판정별 지표와 지원 미달 근거', async () => {
     handler = () => ({
       body: {

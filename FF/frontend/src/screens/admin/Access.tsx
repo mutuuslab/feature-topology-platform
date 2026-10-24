@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { REPORT_APPROVER_ROLES, ROLE_LABEL, type ApproverRole } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { PLATFORM_ROLES } from '../../api/actor';
+import { useDefaultFeature } from '../../data/first-run';
 import { roleLabel } from '../../data/refdata';
 import { ko } from '../../copy/ko';
 import { AsyncView, DataTable, Field, KeyValue, PageHeader, Panel, RuleText, SummaryLine, VerdictBadge } from '../../design';
@@ -28,7 +29,7 @@ export function IamScreen() {
   return (
     <div className="ds-screen">
       <PageHeader codes="D06-09 · IAM" title={I.title} lead={I.lead} message={{ tone: 'neutral', value: den.data ? den.data.items.length : '—', text: I.key }} />
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <Panel title={I.matrix} id="matrix">
             {/* 스크롤 영역은 키보드로도 움직일 수 있어야 한다(표 안에 포커스 가능한 요소가 없다) */}
@@ -101,7 +102,7 @@ export function IamScreen() {
           />
         </Panel>
         <Panel title={I.denials} id="denials" actions={<Link to="/audit">{ko.audit.title} →</Link>}>
-          <AsyncView state={asyncState(den, (den.data?.items ?? []).length === 0)} error={den.error?.message} onRetry={() => den.refetch()} rows={3}>
+          <AsyncView state={asyncState(den, (den.data?.items ?? []).length === 0)} error={den.error} onRetry={() => den.refetch()} rows={3}>
             <DataTable
               caption={I.denials}
               rows={den.data?.items ?? []}
@@ -130,12 +131,16 @@ const V_VERDICT: Record<string, string> = { APPLICABLE: 'PASS', NOT_SUPPORTED: '
 
 export function VariantScreen() {
   const [sp, setSp] = useSearchParams();
-  const [featureId, setFeatureId] = useState(sp.get('featureId') ?? 'FEAT-00022');
-  const [version, setVersion] = useState(sp.get('version') ?? '1.0.0');
+  // 기본 대상 — 예시 Feature가 있으면 그것, 없으면 첫 Feature, 하나도 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const [picked, setPicked] = useState<{ f: string; v: string } | null>(sp.get('featureId') ? { f: sp.get('featureId')!, v: sp.get('version') ?? '1.0.0' } : null);
+  const fallback = useDefaultFeature({ featureId: 'FEAT-00022', version: '1.0.0' }, !picked);
+  const featureId = picked?.f ?? fallback?.featureId ?? '';
+  const version = picked?.v ?? fallback?.version ?? '';
+  const none = !picked && fallback === null;
   const valid = /^FEAT-\d{5}$/.test(featureId) && /^\d+\.\d+\.\d+$/.test(version);
   const q = useApi<Matrix>('variantMatrix', { params: { featureId, version } }, { enabled: valid });
   const d = q.data;
-  const set = (f: string, v: string) => (setFeatureId(f), setVersion(v), setSp({ featureId: f, version: v }, { replace: true }));
+  const set = (f: string, v: string) => (setPicked({ f, v }), setSp({ featureId: f, version: v }, { replace: true }));
   return (
     <div className="ds-screen">
       <PageHeader
@@ -143,7 +148,9 @@ export function VariantScreen() {
         title={VC.title}
         lead={VC.lead}
         message={
-          d
+          none
+            ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }
+            : d
             ? d.summary.notSupported
               ? { tone: 'warn', value: d.summary.notSupported, text: VC.key.notSupported(`${d.feature.featureId} ${d.feature.version} ${d.feature.name}`) }
               : { tone: 'ok', text: VC.key.ok(`${d.feature.featureId} ${d.feature.version} ${d.feature.name}`) }
@@ -158,7 +165,7 @@ export function VariantScreen() {
           <input className="ds-input ds-input--mono" name="version" value={version} onChange={(e) => set(featureId, e.target.value.trim())} />
         </Field>
       </div>
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
         {d && (
           <>
             <SummaryLine
@@ -202,7 +209,7 @@ export function SupportPanel({ vin }: { vin: string }) {
   const q = useApi<{ items: { featureId: string; version: string; name: string; flagKeys: string[]; verdict: keyof typeof VC.verdict; reason: string }[] }>('vehicleSupport', { params: { vin } });
   return (
     <Panel title={VC.support} codes="D02-02" id="support">
-      <AsyncView state={asyncState(q, (q.data?.items ?? []).length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={2}>
+      <AsyncView state={asyncState(q, (q.data?.items ?? []).length === 0)} error={q.error} onRetry={() => q.refetch()} rows={2}>
         <DataTable
           caption={VC.support}
           rows={q.data?.items ?? []}

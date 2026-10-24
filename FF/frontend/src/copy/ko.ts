@@ -69,7 +69,7 @@ export const ko = {
     },
     emails: {
       title: '메일 발송 기록',
-      lead: '모의 발송입니다 — 실제 메일 서버 연동은 없습니다.',
+      lead: '보낸 알림 메일 기록입니다.',
       empty: '보낸 메일이 없습니다.',
       col: { at: '발송', subject: '제목', status: '상태' },
     },
@@ -228,6 +228,15 @@ export const ko = {
     forbiddenBody: '역할을 바꾸거나 권한 담당자에게 요청하세요.',
     stale: '표시 중인 정보가 최신이 아닐 수 있습니다',
     retry: '다시 시도',
+    // 빈 설치(첫 실행) — 볼 대상이 아직 없을 때(출시 준비 RD-OPS-02)
+    noFeatureTitle: '아직 등록된 Feature가 없습니다',
+    noFeatureBody: 'Feature를 처음 제안하면 이 화면에서 바로 볼 수 있습니다.',
+    proposeFirst: 'Feature 제안하기',
+    noVehicleTitle: '아직 등록된 차량이 없습니다',
+    noVehicleBody: '차량 채널이 연결되어 차량이 등록되면 이 화면에서 볼 수 있습니다.',
+    noTarget: '볼 대상이 아직 없습니다',
+    noPolicyTitle: '아직 배포된 정책이 없습니다',
+    noPolicyBody: '정책을 작성해 승인·배포하면 차량별 활성화 판단을 여기서 확인할 수 있습니다.',
   },
   action: {
     copy: '복사',
@@ -272,6 +281,7 @@ export const ko = {
   diff: { field: '항목', before: '이전', after: '이후', none: '변경 없음' },
   stream: { empty: '아직 이벤트가 없습니다' },
   design: {
+    errorsKit: '오류 다음 행동 · 모의 연결 · 쪽 넘김',
     safetyClasses: '기능안전 분류 — F·DC·R·Flag 유형',
     safetyRules: '게이트 판정 목록',
     safetyApprovals: '승인 칸·누적 상한',
@@ -624,6 +634,8 @@ export const ko = {
   vehicle: {
     key: { drift: (vin: string) => `서버 판단과 다른 flag — ${vin}`, clean: (vin: string) => `서버 판단과 차량 판단이 같습니다 — ${vin}` },
     title: '차량별 적용 상태',
+    // 차량을 고른 주소(/fleet/vehicles/:vin)는 하위 화면 — 경로 표시의 부모(차량별 적용 상태)와 H1이 같지 않게 차량을 붙인다
+    titleFor: (vin: string) => `차량별 적용 상태 · ${vin}`,
     lead: '차량이 받은 정책과 차량 판단을 서버 판단과 비교합니다.',
     pick: '차량 선택',
     bundles: '적용한 정책 게시본',
@@ -984,11 +996,16 @@ export const ko = {
     staleHash: '이전 정책 내용으로 실행 — 현재 판정 근거 아님',
     col: { run: '실행', scenario: '시나리오', role: '역할', overall: '종합', gate: 'Gate 반영', test: '시험 ID', at: '시각', tms: 'TMS' },
     noScenario: '이 Feature는 가상검증 실행기에 차량 측 런타임이 없어 대상이 아닙니다',
+    // 빈 설치 — 가상검증 시나리오는 검증 키트 Feature(예시 데이터)에 묶여 있다(출시 준비 RD-OPS-02)
+    noKitTitle: '가상검증 시나리오가 연결된 Feature가 아직 없습니다',
+    noKitBody: '가상검증 키트의 Feature가 등록되면 시나리오·조합 판정·실행을 여기서 봅니다. 실행기 상태와 지난 실행 기록은 위·아래에서 그대로 볼 수 있습니다.',
   },
   // 표준 따라하기 — 보고서 v1.1 18장 케이스 시나리오를 실제 화면에서 따라 하며 규칙이 어디서 동작하는지 본다
   learn: {
     title: '표준 따라하기',
     lead: '보고서 케이스를 실제 화면에서 따라 하며 규칙 충족을 확인합니다.',
+    // 빈 설치(예시 데이터 없음) — 시나리오의 Feature·차량 ID는 예시 데이터(데이터셋 v0.81) 기준이다(출시 준비 RD-OPS-02)
+    sampleNotice: '시나리오의 Feature·차량 ID는 예시 데이터(데이터셋 v0.81) 기준입니다. 이 설치에는 예시 데이터가 없어 단계 설명만 읽을 수 있습니다. 실제로 따라 하려면 예시 데이터를 넣은 연습용 설치를 쓰세요.',
     track: { VIRTUAL: 'CARLA 가상검증', DESIGN: '분류·Gate', KILL: '비활성화·Kill', MARKET: '시장·법규', SECURITY: '보안', OPERATE: '운영·점검' },
     path: { ALL: '전체', BASIS: '기준', DESIGN: '설계', BUILD: '구현', VERIFY_OPERATE: '검증·운영' },
     pathLabel: '읽기 경로',

@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
+import { errors } from '../copy/errors';
 import FeatureList from '../screens/features/FeatureList';
 import FeatureDetail from '../screens/features/FeatureDetail';
 import BaselineQueue from '../screens/bom/BaselineQueue';
@@ -138,7 +139,9 @@ describe('Feature Registry 목록', () => {
     handler = () => ({ status: 500, body: { error: { code: 'INTERNAL', message: '서버 내부 오류' } } });
     mount('/features', '/features', <FeatureList />);
     await waitFor(() => expect(document.querySelector('[data-state="error"]')).toBeTruthy());
-    expect(screen.getAllByText('서버 내부 오류').length).toBeGreaterThan(0);
+    // 5xx는 서버 내부 문장 대신 사용자 안내(RD-UX-01) — 서버 문장은 화면에 나오지 않는다
+    expect(screen.getAllByText(errors.server).length).toBeGreaterThan(0);
+    expect(screen.queryByText('서버 내부 오류')).toBeNull();
     expect(screen.getAllByRole('button', { name: '다시 시도' }).length).toBeGreaterThan(0);
   });
 

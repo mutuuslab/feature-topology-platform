@@ -1,5 +1,7 @@
 import '@testing-library/jest-dom';
 import { configure } from '@testing-library/react';
+// 화면은 보고서 규칙 카탈로그를 필요할 때 읽는다(design/rule-catalog.ts) — 시험은 처음부터 설치해 규칙 제목이 바로 보이게 한다
+import '../../../contracts/src/rules/report-catalog-installed';
 
 /**
  * findBy*·waitFor 기본 대기 1초 → 5초. 병렬 작업으로 기계 부하가 크면 화면 데이터 적재(모의 API·지연 import)만으로

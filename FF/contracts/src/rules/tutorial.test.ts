@@ -1,6 +1,7 @@
 // 따라하기 표 정합 — 인용한 규칙·시험 ID가 보고서 카탈로그에 있고, 단계 구성이 완결된다(화면 앵커·라우트는 프론트 시험이 검사).
 import { describe, expect, it } from 'vitest';
-import { clausesOf, clausesOfRules, REPORT_RULES, reportRule, reportTest, standardFamily } from './standards';
+import { REPORT_RULES } from './report-catalog-installed';
+import { clausesOf, clausesOfRules, reportRule, reportTest, standardFamily } from './standards';
 import { TUTORIALS } from './tutorial';
 
 describe('보고서 카탈로그 생성 모듈', () => {

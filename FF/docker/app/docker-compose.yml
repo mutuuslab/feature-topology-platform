@@ -1,0 +1,64 @@
+# Feature Platform 단독 설치 — 출시 준비 RD-OPS-05 (docs/20-architecture/20-91-install-guide.md).
+# 한 설치 = 한 고객(D-RD-1). 이 파일 하나가 한 고객의 설치 하나다 — 고객마다 다른 폴더·다른 .env·다른 볼륨으로 띄운다.
+#
+#   cp docker/app/.env.example docker/app/.env      # 값을 채운다(비밀은 비어 있다)
+#   docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env up -d --build
+#   docker compose -f docker/app/docker-compose.yml ps   # app이 healthy가 될 때까지(준비 점검 /api/health/ready)
+#
+# 앞단에 TLS 프록시(nginx·HAProxy·사내 LB)를 두고 https://FF_PUBLIC_URL → http://127.0.0.1:${FF_HOST_PORT}로 넘긴다.
+# 컨테이너 포트는 로컬(127.0.0.1)에만 연다 — 프록시를 거치지 않은 평문 접근을 막는다.
+# DB는 아직 SQLite 파일 + 단일 인스턴스(D-RD-3: PostgreSQL 이전 전). replicas를 늘리지 마세요(RD-OPS-14).
+name: ${FF_COMPOSE_PROJECT:-ff-platform}
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: docker/app/Dockerfile
+      args:
+        FF_BUILD_SHA: ${FF_BUILD_SHA:-unknown}
+    image: ${FF_IMAGE:-ff-platform:0.1.0}
+    restart: unless-stopped
+    # 신호를 전달하는 init — SIGTERM에 예약 작업 정리·감사 고정점 기록·DB 닫기(RD-OPS-07)
+    init: true
+    stop_grace_period: 30s
+    env_file: .env
+    environment:
+      # 이미지 안 경로는 고정 — 볼륨과 맞물린다(.env에서 바꾸지 않는다)
+      FF_ENV: production
+      FF_DB: /var/lib/ff/ff.db
+      FF_AUDIT_ANCHOR_FILE: /var/lib/ff-anchor/audit-anchor.jsonl
+      FF_BACKUP_DIR: /var/backups/ff
+      FF_WEB_DIR: /app/FF/web
+      PORT: '9101'
+    ports:
+      - '127.0.0.1:${FF_HOST_PORT:-9101}:9101'
+    volumes:
+      # 업무 데이터(SQLite 파일 + WAL)
+      - ff-data:/var/lib/ff
+      # 감사 체인 고정점 — DB와 다른 볼륨(가능하면 WORM·추가 전용 스토리지에 바인드). DB를 잃어도 이 파일로 위변조를 가린다
+      - ff-anchor:/var/lib/ff-anchor
+      # 온라인 백업 대상 — 운영에서는 다른 디스크·원격 백업 대상에 바인드
+      - ff-backups:/var/backups/ff
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:9101/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    logging:
+      # 한 줄 = 한 JSON(FF_LOG_FORMAT=json 운영 기본) — 수집기(Fluent Bit·Vector)가 docker 로그를 그대로 읽는다
+      driver: json-file
+      options:
+        max-size: '50m'
+        max-file: '10'
+volumes:
+  ff-data:
+  ff-anchor:
+  ff-backups:

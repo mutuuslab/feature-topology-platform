@@ -28,7 +28,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     // 공용 계약은 소스(TS)를 직접 번들한다 — CJS dist를 거치지 않아 dev·test·build가 같은 코드를 본다.
-    alias: { '@ff/contracts': fileURLToPath(new URL('../contracts/src/index.ts', import.meta.url)) },
+    alias: { '@ff/contracts': fileURLToPath(new URL('../contracts/src/web.ts', import.meta.url)) },
   },
   server: {
     port: 9012,

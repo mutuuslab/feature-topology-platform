@@ -1,21 +1,34 @@
 // API 클라이언트 — 경로는 @ff/contracts ROUTES 하나에서 온다(백엔드 실제 라우트와 테스트로 일치 보장).
 // 쓰기 요청은 행위자 헤더와 Idempotency-Key를 자동으로 붙이고, 오류 봉투 {error:{code,message}}를 ApiError로 바꾼다.
+// 오류는 종류(kind)로 나눠 사용자 말로 안내한다(출시 준비 RD-UX-01) — 401 다시 로그인·409/412 다시 불러오기·400/422 입력 칸 오류·
+// 429 잠시 뒤·5xx 문의 번호(X-Correlation-Id)·연결 끊김. 문구는 copy/errors.ts.
 // 정적 데모(VITE_DATA_MODE=static, Cloudflare)에서는 GET을 미리 떠 둔 스냅샷에서 읽고 쓰기는 막는다.
 import { ROUTES, routeUrl, snapshotFile, type Role, type RouteDef } from '@ff/contracts';
 import { OIDC_AUTH } from '../auth-mode';
 import { startSsoLogin } from '../auth-oidc';
+import { errors as E } from '../copy/errors';
+import { hasUnsaved } from '../design/unsaved';
 import { actorFor } from './actor';
+import { errorKind, retryAfterSeconds, userMessage, type ErrorKind } from './errors';
+import { markSessionExpired } from './session';
 
 export const STATIC_MODE = import.meta.env.VITE_DATA_MODE === 'static';
 
 export class ApiError extends Error {
+  /** 사용자가 할 다음 행동을 고르는 종류 */
+  readonly kind: ErrorKind;
   constructor(
     readonly status: number,
     readonly code: string,
     message: string,
     readonly details?: any,
+    /** 서버 상관 ID(X-Correlation-Id) — 지원 문의 번호 */
+    readonly correlationId: string | null = null,
+    /** 429 — 다시 시도까지 초 */
+    readonly retryAfterSec: number | null = null,
   ) {
     super(message);
+    this.kind = errorKind(status);
   }
 }
 
@@ -39,17 +52,45 @@ export const pathOf = (name: string, params: Record<string, string> = {}, query:
 /** 계정마다 결과가 다른 조회인가 — 캐시 키에 역할을 넣는다 */
 export const isPersonal = (name: string) => !!BY_NAME.get(name)?.personal;
 
+/** 응답 본문 — JSON이 아니면(앞단 프록시의 HTML 오류 쪽 등) null. 깨진 JSON으로 화면이 멈추지 않게 */
+function parseBody(text: string): any {
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+/** 응답 → ApiError (사용자 문장·문의 번호·다시 시도 초) */
+export function toApiError(res: Pick<Response, 'status' | 'headers'>, data: any): ApiError {
+  const err = data?.error;
+  const kind = errorKind(res.status);
+  const retry = kind === 'rateLimit' ? retryAfterSeconds(res.headers.get('Retry-After'), err?.details) : null;
+  const message = userMessage(kind, res.status, typeof err?.message === 'string' ? err.message : undefined, retry);
+  return new ApiError(res.status, err?.code ?? 'HTTP_' + res.status, message, err?.details, res.headers.get('X-Correlation-Id'), retry);
+}
+
+/** 연결 실패 → ApiError(status 0) */
+export const networkError = () => new ApiError(0, 'NETWORK', userMessage('network', 0, undefined));
+
+/** 401 — 입력이 없으면 지금 화면으로 돌아오는 로그인으로, 있으면 셸 안내 띠가 묻는다(입력을 지키기 위해 바로 옮기지 않는다) */
+function onUnauthenticated() {
+  markSessionExpired();
+  if (OIDC_AUTH && !hasUnsaved()) startSsoLogin();
+}
+
 export async function call<T = any>(name: RouteName | string, opts: CallOptions = {}): Promise<T> {
   const route = BY_NAME.get(name);
-  if (!route) throw new Error(`알 수 없는 API: ${name}`);
+  if (!route) throw new Error(E.unknownApi(name));
   const url = pathOf(name, opts.params, opts.query);
   const write = route.method !== 'GET';
 
   if (STATIC_MODE) {
-    if (write) throw new ApiError(403, 'READ_ONLY_DEMO', '읽기 전용 데모입니다. 변경은 플랫폼 백엔드에 연결된 환경에서만 할 수 있습니다.');
+    if (write) throw new ApiError(403, 'READ_ONLY_DEMO', E.readOnlyDemo);
     const res = await fetch(import.meta.env.BASE_URL + snapshotFile(url), { signal: opts.signal });
     // 정적 호스팅은 없는 파일에 SPA 대체 응답(index.html, 200)을 준다 — JSON이 아니면 '스냅샷에 없음'으로 본다(파싱 오류로 화면이 깨지지 않게)
-    if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) throw new ApiError(404, 'NOT_FOUND', '데모 스냅샷에 없는 데이터입니다.');
+    if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) throw new ApiError(404, 'NOT_FOUND', E.notInSnapshot);
     return res.json();
   }
 
@@ -70,15 +111,11 @@ export async function call<T = any>(name: RouteName | string, opts: CallOptions 
     res = await fetch(url, { method: route.method, headers, body: write ? JSON.stringify(opts.body ?? {}) : undefined, signal: opts.signal });
   } catch (e) {
     if ((e as Error).name === 'AbortError') throw e;
-    throw new ApiError(0, 'NETWORK', '플랫폼 백엔드에 연결할 수 없습니다. 백엔드(9101)가 실행 중인지 확인하세요.');
+    throw networkError();
   }
-  // SSO 세션이 끝났다(유휴·절대 만료) — 지금 화면을 되돌아올 곳으로 다시 로그인
-  if (OIDC_AUTH && res.status === 401) startSsoLogin();
-  const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
-  if (!res.ok) {
-    const err = data?.error;
-    throw new ApiError(res.status, err?.code ?? 'HTTP_' + res.status, err?.message ?? `요청 실패 (${res.status})`, err?.details);
-  }
+  // 세션이 끝났다(SSO 유휴·절대 만료)
+  if (res.status === 401) onUnauthenticated();
+  const data = parseBody(await res.text());
+  if (!res.ok) throw toApiError(res, data);
   return data as T;
 }

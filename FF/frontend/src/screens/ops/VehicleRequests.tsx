@@ -25,7 +25,7 @@ export function VehicleRequestPanel({ vin }: { vin: string }) {
           ]}
         />
       )}
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: T.none }}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} empty={{ title: T.none }}>
         <DataTable
           caption={T.title}
           rows={rows}

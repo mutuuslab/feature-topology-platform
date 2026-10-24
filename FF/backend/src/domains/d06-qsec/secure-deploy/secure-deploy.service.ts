@@ -60,6 +60,9 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
 
   /** 모든 모듈 초기화(정책 시드 포함)가 끝난 뒤 */
   onApplicationBootstrap() {
+    // 재시작 복구(출시 준비 RD-OPS-06) — 회신 기한은 프로세스 타이머라 재시작하면 사라진다.
+    // 아직 닫히지 않은 전달(DISPATCHED) 게시본의 남은 기한을 다시 건다(이미 지났으면 바로 닫는다).
+    for (const pub of this.repo.list({ status: 'DISPATCHED' }).filter((x) => !x.closedAt)) this.armClose(pub);
     // 부팅 동기화 — 배포(DEPLOYED) 상태인데 게시본이 없는 정책(시드·이전 버전 데이터)을 서명해 차량에 보낸다.
     // 이게 없으면 서버는 배포 중이라고 판단하는데 차량은 정책을 받은 적이 없다. FF_BOOT_PUBLISH=0 으로 끈다.
     if (process.env.FF_BOOT_PUBLISH === '0') return;
@@ -146,8 +149,13 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       this.repo.update(next);
       this.events.publish('publication.dispatched', id, { publicationId: id, kind: pub.kind, campaignId: r.campaignId, channel: pub.channel, unreachable: r.unreachable, ackOnly: r.ackOnly }, { componentId: 'D04-01' });
     });
-    this.scheduler.after(Math.max(0, new Date(pub.deadlineAt).getTime() - this.clock.now().getTime()), () => this.close(id));
+    this.armClose(pub);
     this.recompute(id);
+  }
+
+  /** 회신 기한에 닫기 — 남은 시간만큼(지났으면 바로) */
+  private armClose(pub: Publication) {
+    this.scheduler.after(Math.max(0, new Date(pub.deadlineAt).getTime() - this.clock.now().getTime()), () => this.close(pub.publicationId));
   }
 
   private evaluate(pub: Publication) {

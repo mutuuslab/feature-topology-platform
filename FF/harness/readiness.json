@@ -479,7 +479,7 @@
         "backend/src/domains/d04-ops/secure-deploy/secure-deploy.service.ts:148"
       ],
       "criteria": "부팅 때 열린 게시의 마감과 Kill 지연 감시를 다시 건다(지난 것은 즉시 처리) — 재시작 시험",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

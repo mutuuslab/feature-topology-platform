@@ -70,7 +70,9 @@
 /* 내 업무 흐름 — 상대 역할 상자 */
 .pf-peer rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
 .pf-peer[data-mine] rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
-.pf-peer[data-kind='external'] rect, .pf-peer[data-kind='retained'] rect { fill: var(--surface-2); stroke-dasharray: 2 3; }
+.pf-peer[data-kind='external'] rect { fill: var(--surface-2); stroke-dasharray: 2 3; }
+/* 보존 기록 — 대기(점선)와 헷갈리지 않게 실선 이중 테두리 느낌 */
+.pf-peer[data-kind='retained'] rect { fill: var(--surface-3); stroke: var(--ink-2); stroke-width: 1.6; }
 .pf-peer__name { fill: var(--ink); font-size: 12px; font-weight: 600; }
 .pf-peer__sub { fill: var(--muted); font-size: 10px; font-family: var(--font-mono); }
 .pf-my__header { fill: var(--ink-2); font-size: 13px; font-weight: 700; }
@@ -124,3 +126,27 @@
 .pf-node--gate[data-state='mine'] > path:first-of-type { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.6; }
 .pf-node--gate[data-state='overdue'] > path:first-of-type { fill: var(--danger-soft); stroke: var(--danger); stroke-width: 2.6; }
 .pf-node--gate[data-state='waiting'] > path:first-of-type { stroke-dasharray: 4 3; }
+
+/* 담당자별 업무 흐름 — 담당자 목록·담당자 × 절차 표 */
+.pf-roles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--sp-2); }
+.pf-role { inline-size: 100%; block-size: 100%; align-content: start; word-break: keep-all; overflow-wrap: anywhere; display: grid; gap: var(--sp-1); text-align: start; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.pf-role:hover { border-color: var(--focus); }
+.pf-role:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.pf-role[aria-pressed='true'] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.pf-role__name { display: flex; align-items: center; gap: var(--sp-2); font-weight: 600; }
+.pf-role__me { font-size: var(--fs-xs); }
+.pf-role__chips { display: flex; flex-wrap: wrap; gap: var(--sp-1); min-block-size: var(--sp-4); }
+.pf-chip { font-size: var(--fs-xs); padding: 0 var(--sp-1h); border-radius: var(--r-pill); background: var(--accent-soft); color: var(--ink); }
+.pf-chip[data-kind='overdue'] { background: var(--danger-soft); color: var(--danger); }
+.pf-matrix th[scope='col'] { white-space: nowrap; }
+.pf-matrix td { text-align: center; }
+.pf-matrix td[data-n='0'] { color: var(--muted); }
+.pf-matrix tr[data-selected] th[scope='row'] { box-shadow: inset 3px 0 0 var(--accent); }
+.pf-matrix tr[data-selected] td { background: var(--accent-soft); }
+.pf-matrix abbr { text-decoration: none; }
+
+/* 절차 흐름도 — ?role= 담당자 레인 강조 */
+.pf-lane--focus { fill: var(--accent-soft); }
+.pf-lane__mark { fill: var(--accent); }
+.pf-lane[data-focus] + .pf-lane__sep { stroke: var(--accent); }
+.pf-focus-note { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: baseline; margin: 0; }

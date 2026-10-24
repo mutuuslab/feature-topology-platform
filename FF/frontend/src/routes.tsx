@@ -90,6 +90,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/learn', element: named(learnScreens, 'LearnHub'), title: '표준 따라하기', group: 'home', menu: '/learn', v2: true },
   { path: '/learn/:id', element: named(learnScreens, 'LearnRun'), title: '따라하기 시나리오', group: 'home', parent: '/learn', v2: true },
   { path: '/procedures', element: named(procedureScreens, 'ProceduresHub'), title: '업무 절차', group: 'home', menu: '/procedures', v2: true },
+  { path: '/procedures/roles', element: named(procedureScreens, 'ProcedureRolesScreen'), title: '담당자별 업무 흐름', group: 'home', menu: '/procedures/roles', v2: true },
   { path: '/procedures/:id', element: named(procedureScreens, 'ProcessDetail'), title: '업무 절차 상세', group: 'home', parent: '/procedures', v2: true },
   { path: '/arch/components', element: named(() => import('./screens/home/Architecture'), 'ArchitectureScreen'), title: '42 컴포넌트 아키텍처', group: 'home', menu: '/arch/components', v2: true },
   { path: '/notifications', element: named(() => import('./screens/home/Notifications'), 'NotificationsScreen'), title: '알림', group: 'home', menu: '/notifications', components: ['D04-04'], v2: true },

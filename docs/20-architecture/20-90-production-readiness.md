@@ -226,7 +226,7 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 - `FF_VEHICLE_AUTH=required`(운영 기본·고정 — `demo`면 시작 거부) / `demo`(머리글만도 받되 서명이 오면 확인).
 - 실패는 401 `VEHICLE_UNAUTHENTICATED` + `details.code` + 감사 DENIED + 보안 이벤트(진위 실패·재전송, VIN 가명). 규격 전문: `docs/80-integration/80-40-vehicle-channel.md`.
 - 차량 쪽(시험·5년 재생·e2e)은 `backend/src/kernel/vehicle-auth-client.ts`로 서명한다. e2e 백엔드는 `FF_VEHICLE_AUTH=required`.
-- 시험: `backend/test/d02/vehicle-auth.spec.ts`(12건) — 서명 없음·서명 불일치(본문·경로)·재전송·다른 VIN 흉내·시각 밖·지난 epoch·형식, mTLS 주체·불일치·신뢰 안 하는 경로, 진위 실패 3건 → 채널 제한, 데모 호환.
+- 시험: `backend/test/d02/vehicle-auth.spec.ts`(13건) — main.ts 조립(createApp) 원문 확인, 서명 없음·서명 불일치(본문·경로)·재전송·다른 VIN 흉내·시각 밖·지난 epoch·형식, mTLS 주체·불일치·신뢰 안 하는 경로, 진위 실패 3건 → 채널 제한, 데모 호환.
 
 ### 7.3 실제 차량 전달 경로(RD-OPS-04)
 

@@ -10,6 +10,8 @@ import { runtimeConfigProblems } from '../../src/kernel/runtime-config';
 import { signVehicleRequest, vehicleKeyFromRoot } from '../../src/kernel/vehicle-auth-client';
 import { vehicleAuthModeOf } from '../../src/kernel/vehicle-auth-config';
 import { subjectVin } from '../../src/kernel/vehicle-auth';
+import request from 'supertest';
+import { createApp } from '../../src/app.factory';
 import { bootApp } from '../helpers';
 
 const ROOT = randomBytes(32);
@@ -141,6 +143,32 @@ describe('운영 방식(required) — 서명된 차량 요청만', () => {
     const p = b.get(HsmService).factoryProvision(VIN);
     expect(p.epoch).toBe(1);
     expect(p.vehicleKey.equals(vehicleKeyFromRoot(ROOT, 1, VIN))).toBe(true);
+  });
+});
+
+describe('main.ts와 같은 조립(createApp — 원문 본문·빈 본문 처리·보안 미들웨어) — 서명 확인이 같다', () => {
+  let app: Awaited<ReturnType<typeof createApp>>;
+  beforeAll(async () => {
+    Object.assign(process.env, { FF_DB: ':memory:', FF_SEED: 'v0.81', FF_VEHICLE_AUTH: 'required', FF_HSM_VEHICLE_ROOT: ROOT.toString('base64') });
+    app = await createApp({ logger: false });
+    await app.init();
+  });
+  afterAll(async () => {
+    await app.close();
+    for (const k of ENV) delete process.env[k];
+  });
+
+  it('본문 없는 GET(빈 본문 해시)·JSON 본문 POST 모두 원문 바이트로 확인, 본문을 바꾸면 거부', async () => {
+    const http = () => request(app.getHttpServer());
+    const ip = `/vehicle/v1/${VIN}/inbox`;
+    expect((await http().get(ip).set(sign(VIN, 'GET', ip).headers)).status).toBe(200);
+    const fp = `/vehicle/v1/${VIN}/flags`;
+    const s = sign(VIN, 'POST', fp, { context: { targetingKey: VIN } });
+    expect((await http().post(fp).set({ ...s.headers, 'content-type': 'application/json' }).send(s.text!)).status).toBe(200);
+    const t = sign(VIN, 'POST', fp, {});
+    const r = await http().post(fp).set({ ...t.headers, 'content-type': 'application/json' }).send('{ }'); // 같은 JSON, 다른 바이트
+    expect(r.status).toBe(401);
+    expect(r.body.error.details.code).toBe('REQUEST_MAC_INVALID');
   });
 });
 

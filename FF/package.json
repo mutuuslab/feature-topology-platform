@@ -16,6 +16,7 @@
     "verify:full": "node tools/verify.ts --full",
     "lint:tokens": "node tools/lint-tokens.ts",
     "lint:spacing": "node tools/lint-spacing.ts",
+    "lint:motion": "node tools/lint-motion.ts",
     "lint:copy": "node tools/lint-copy.ts",
     "ratchet": "node tools/ratchet.ts",
     "conformance": "node tools/conformance.ts",

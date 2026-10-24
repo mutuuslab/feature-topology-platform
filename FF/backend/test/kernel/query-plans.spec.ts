@@ -18,7 +18,8 @@ const ALLOWED: { sql: RegExp; why: string }[] = [
 
 type Call = { sql: string; params: unknown[] };
 
-describe('질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다', () => {
+// SQLite 플래너(EXPLAIN QUERY PLAN) 판정 — PG 실행(npm run test:pg)에서는 건너뛴다. PG의 질의 계획은 20-92 2단계(부하 시험)에서 본다
+describe.skipIf(!!process.env.FF_TEST_PG_URL)('질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다', () => {
   let app: Awaited<ReturnType<typeof bootApp>>;
   let db: Db;
   let calls: Call[] = [];

@@ -31,6 +31,14 @@ for (const c of CONDITIONS.filter((x) => x.name !== '1536')) {
     await page.addInitScript((present) => localStorage.setItem('ff.present', present ? '1' : '0'), c.present);
     await page.goto('/_design');
     await page.evaluate(() => document.fonts.ready);
+    // 기능안전 패널보다 앞의 갤러리 패널은 숨긴다 — 앞 패널 높이가 바뀌면(2026-10-25 업무 절차 흐름도 표본) 이 패널이 소수점 픽셀만큼
+    // 내려앉아 글자가 다시 래스터화돼 내용 변화 없이 기준과 어긋났다. 비교 대상은 이 패널 자신이다
+    await page.evaluate((first) => {
+      const head = document.getElementById(`${first}-h`)?.closest('section.ds-panel');
+      if (!head) throw new Error(`${first} 패널 없음`);
+      for (const p of document.querySelectorAll<HTMLElement>('section.ds-panel'))
+        if (p !== head && !p.contains(head) && p.compareDocumentPosition(head) & Node.DOCUMENT_POSITION_FOLLOWING) p.style.display = 'none';
+    }, PANELS[0]);
     for (const id of PANELS) {
       const panel = page.locator('section.ds-panel', { has: page.locator(`#${id}-h`) });
       await panel.scrollIntoViewIfNeeded();

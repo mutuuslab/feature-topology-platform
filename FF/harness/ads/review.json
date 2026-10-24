@@ -1123,9 +1123,9 @@
     "FFP-F060": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/kernel/audit.service.ts:349",
-        "backend/src/kernel/audit.service.ts:321",
-        "backend/src/kernel/audit.service.ts:196"
+        "backend/src/kernel/audit.service.ts:406",
+        "backend/src/kernel/audit.service.ts:378",
+        "backend/src/kernel/audit.service.ts:214"
       ],
       "tests": [
         "backend/test/kernel/audit-chain.spec.ts"

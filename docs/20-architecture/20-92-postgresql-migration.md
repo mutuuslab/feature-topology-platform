@@ -140,6 +140,7 @@ interface AsyncDb { run/get/all(sql, ...p): Promise<…>; tx<T>(fn: (t) => Promi
 | 1 (공유 상태 전) | 726/748 | 시험이 `run()`으로 지우는 트리거(`DROP TRIGGER` 번역 빠짐) 5 · `sqlite_master` 1 · 그 여파 1 · 준비 시간 한도 넘김 | DDL은 `run()`으로 와도 DDL로 번역, `sqlite_master` → 카탈로그 |
 | 2 | 744/775 | 시험 손잡이 `FF_TEST_PG_URL`을 운영 모드 검사가 거부해 운영 모드 시험 파일 2개의 준비가 실패 · OTA 시험의 60초 준비 한도(부하) | 손잡이를 운영 거부 목록에서 뺐다(운영 모드는 `:memory:`를 거부하므로 무해) |
 | 3 | **769/775** | 건너뜀 6 = 실서버가 없어 SQLite에서도 건너뛰는 4(Unleash·CARLA) + GLEO 실연동 2(준비 단계의 8초 조건 대기가 PG 왕복 지연에 걸림 — SQLite에서는 통과) | — |
+| 4 (운영 값·개인정보·성능 병합 뒤) | 131/817 → **799/819** | 066 감사 트리거의 `NEW.x IS OLD.x`(PG의 IS는 NULL·TRUE·FALSE만) — PG 부팅 실패 86 · 컴포넌트 최근 활동의 `INDEXED BY`(SQLite 색인 지정) 500 | 값 비교 IS → `IS NOT DISTINCT FROM`, `INDEXED BY`·`NOT INDEXED` 제거(번역 규칙·회귀 시험). SQLite 질의 계획 시험 14는 PG에서 건너뜀 — 실패 0 · 건너뜀 20 |
 
 SQLite 기본 묶음(771건 = 통과 765 + 건너뜀 6: 실서버 4 · `sqlite-to-pg`의 PG 2)과 비교하면 PG에서만 못 한 것은 GLEO 2건(시간)뿐이다. PG 묶음은 `db-adapters`의 PG 경우 4건이 더해져 775건.
 

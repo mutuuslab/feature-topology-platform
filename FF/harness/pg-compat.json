@@ -1,11 +1,11 @@
 {
   "note": "백엔드 시험 묶음의 PostgreSQL 16 호환 — npm run test:pg가 쓴다(손으로 고치지 않는다). 정본 docs/20-architecture/20-92 §6.",
   "measuredAt": "2026-10-24",
-  "total": 775,
-  "passed": 769,
+  "total": 819,
+  "passed": 799,
   "failed": 0,
-  "skipped": 6,
-  "minutes": 13,
+  "skipped": 20,
+  "minutes": 11,
   "causes": {
     "준비 단계(beforeAll) 실패 — 메시지 없음(시간 한도를 시험이 직접 정한 경우가 많다)": 1
   },
@@ -17,11 +17,25 @@
     }
   ],
   "skippedTests": [
+    "test/d01/unleash.spec.ts › Unleash 실연동 (도커 unleashorg/unleash-server:8.2.0) 배포 정책을 실제 Unleash에 동기화하고 차량별 판단이 일치한다",
     "test/d03/gleo.ws.spec.ts › GLEO 실연동 — FF_IMP 브로커·차량 Guard(v2) 긴급 차단(요청 → 2인 승인) → 차량별 v2 봉투 → Guard 검증 → DC2 단계 보고(state_auth) → CONFIRMED 2/2",
     "test/d03/gleo.ws.spec.ts › GLEO 실연동 — FF_IMP 브로커·차량 Guard(v2) 복원(2인 승인) → v2 restore 봉투 → RESTORE_PENDING → 다음 시동 차단 해제(INACTIVE — 활성화는 따로, FFP-F036) → CONFIRMED 2/2",
-    "test/d01/unleash.spec.ts › Unleash 실연동 (도커 unleashorg/unleash-server:8.2.0) 배포 정책을 실제 Unleash에 동기화하고 차량별 판단이 일치한다",
     "test/d06/sim-contract.spec.ts › FF ↔ 가상검증 실행기(CARLA) 연계 계약 실제 실행기 sim/carla (검증 전용 CARLA 서버) ① 실제 실행기 출력이 계약 스키마를 지키고, FF가 판정에 쓰는 기준 ID·Evidence 파일·재현 정보를 시나리오마다 모두 낸다",
     "test/d06/sim-contract.spec.ts › FF ↔ 가상검증 실행기(CARLA) 연계 계약 실제 실행기 sim/carla (검증 전용 CARLA 서버) ② 입력 오류는 종료 2 + error 한 줄",
-    "test/d06/virtual.spec.ts › 실제 CARLA 0.9.16 실행기 판정 (검증 전용 서버) FEAT-00022 (CS-01): 정상 추종 PASS · 차량 내 감지 ≈19.1 s → FTTI 여유 ≥ 0 PASS · 원격 DC2 기준선 FAIL(위험 구간) — Evidence 해시·recorder·재현 정보"
+    "test/d06/virtual.spec.ts › 실제 CARLA 0.9.16 실행기 판정 (검증 전용 서버) FEAT-00022 (CS-01): 정상 추종 PASS · 차량 내 감지 ≈19.1 s → FTTI 여유 ≥ 0 PASS · 원격 DC2 기준선 FAIL(위험 구간) — Evidence 해시·recorder·재현 정보",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 Feature 목록 한 페이지",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 Feature 최신 버전 전체(대시보드)",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 컴포넌트 최근 활동",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 내 알림",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 대시보드 차량 수",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 차량 목록 한 페이지",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 긴급 차단 영향 범위(차량 지정)",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 긴급 차단 영향 범위(범위 전체)",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 OFREP 전체 평가(가명)",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 감사 커서 페이지",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 이벤트 커서 페이지",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 Feature 목록 — Gate 상태를 버전마다 묻지 않는다(N+1 없음)",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 Feature 목록 — 한 번에 읽은 Gate 상태가 버전별 상세의 최신 Gate 판정과 같다",
+    "test/kernel/query-plans.spec.ts › 질의 계획 — 주요 API가 큰 표를 통째로 훑지 않는다 긴급 차단 요청 — 대상 차량의 시장을 차량마다 전체 목록에서 찾지 않는다"
   ]
 }

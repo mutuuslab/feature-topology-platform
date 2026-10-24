@@ -95,9 +95,9 @@
     "note": "출시 준비 열린 P1 수 — 0까지"
   },
   "pgBackendPass": {
-    "value": 769,
+    "value": 799,
     "direction": "min",
-    "note": "백엔드 시험의 PostgreSQL 16 통과 수(npm run test:pg, 20-92 §6) — 늘어나기만 한다. 2026-10-25 1단계 769/775(건너뜀 6: 실서버 없음 4 · GLEO 준비 대기 시간 한도 2)"
+    "note": "백엔드 시험의 PostgreSQL 16 통과 수(npm run test:pg, 20-92 §6) — 늘어나기만 한다. 2026-10-25 1단계 769/775 → 운영 값·개인정보·성능 병합 뒤 799/819(실패 0, 건너뜀 20: SQLite 질의 계획 14 · 실서버 없음 4 · GLEO 준비 대기 2)"
   },
   "testHygiene.fixed-port": {
     "value": 0,

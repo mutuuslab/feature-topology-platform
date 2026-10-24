@@ -6,6 +6,8 @@
 //   · INSERT … → … RETURNING <정수 키 | rowid> (lastInsertRowid 대신)
 //   · json_extract(x, '$.a.b') → (x)::jsonb #>> '{a,b}'
 //   · LIKE → ILIKE (SQLite LIKE는 ASCII 대소문자를 가리지 않는다)
+//   · INDEXED BY 색인 / NOT INDEXED(SQLite 플래너 지정) → 지운다(PG는 색인 지정 문법이 없다, 플래너가 고른다)
+//   · a IS b / a IS NOT b(값 비교) → IS NOT DISTINCT FROM / IS DISTINCT FROM (PG의 IS 뒤는 NULL·TRUE·FALSE·UNKNOWN만)
 //   · 대소문자 섞인 별칭 AS featureId → AS "featureId" (PG는 따옴표 없는 이름을 소문자로 접는다)
 //   · DDL: INTEGER → BIGINT, REAL → DOUBLE PRECISION, BLOB → BYTEA, INTEGER PRIMARY KEY AUTOINCREMENT → IDENTITY,
 //     정수 키 없는 표에 rowid IDENTITY 열 추가, CREATE/DROP TRIGGER … RAISE(ABORT) → plpgsql 함수 + 트리거, PRAGMA 제거
@@ -175,12 +177,16 @@ export function translate(sql: string, ctx: DialectContext, opts: { ddl?: boolea
     const key = table ? ctx.intKey.get(table) : undefined;
     if (key) code = code.replace(/(?<!\bAS\s+)\browid\b/gi, key);
   }
+  code = code.replace(/\s+(?:INDEXED\s+BY\s+\w+|NOT\s+INDEXED)\b/gi, '');
   code = jsonExtract(code, lits);
   // sqlite_master(표·색인·트리거 목록) → 현재 스키마의 카탈로그
   code = code.replace(/\bsqlite_master\b/gi, SQLITE_MASTER);
   code = code.replace(/\bNOT\s+LIKE\b/gi, 'NOT ILIKE').replace(/(?<!NOT\s+|I)\bLIKE\b/gi, 'ILIKE');
   code = code.replace(/\bAS\s+([A-Za-z_]\w*)\b/g, (m, alias: string) => (/[a-z]/.test(alias) && /[A-Z]/.test(alias) ? `AS "${alias}"` : m));
-  code = code.replace(/\bIS\s+NOT\s+\?/gi, 'IS DISTINCT FROM ?').replace(/\bIS\s+\?/gi, 'IS NOT DISTINCT FROM ?');
+  // SQLite의 IS는 NULL을 같게 보는 값 비교(자리표시자·열·리터럴) — PG에서는 DISTINCT FROM. IS NULL·TRUE·FALSE·UNKNOWN·DISTINCT는 그대로
+  code = code
+    .replace(/\bIS\s+NOT\s+(?!NULL\b|TRUE\b|FALSE\b|UNKNOWN\b|DISTINCT\b)/gi, 'IS DISTINCT FROM ')
+    .replace(/\bIS\s+(?!NOT\b|NULL\b|TRUE\b|FALSE\b|UNKNOWN\b|DISTINCT\b)/gi, 'IS NOT DISTINCT FROM ');
 
   let returnsId = false;
   const ignore = /^\s*INSERT\s+OR\s+IGNORE\s+INTO\b/i.test(code);

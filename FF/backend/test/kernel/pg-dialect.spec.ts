@@ -20,6 +20,22 @@ describe('PG 방언 번역 — 질의', () => {
     expect(q('INSERT INTO audit (at) VALUES (?)')).toBe('INSERT INTO audit (at) VALUES ($1) RETURNING id');
   });
 
+  it('값 비교 IS·IS NOT → IS NOT DISTINCT FROM·IS DISTINCT FROM, IS NULL·IS NOT NULL·IS TRUE는 그대로', () => {
+    // 회귀(2026-10-25 병합): 066 감사 트리거 조건 NEW.at IS OLD.at가 PG에서 문법 오류 — PG 백엔드가 부팅하지 못했다
+    expect(q('SELECT 1 FROM audit WHERE at IS ? AND reason IS NOT ?')).toBe('SELECT 1 FROM audit WHERE at IS NOT DISTINCT FROM $1 AND reason IS DISTINCT FROM $2');
+    expect(q("SELECT 1 FROM t WHERE a IS b AND c IS NOT 'x' AND d IS NULL AND e IS NOT NULL AND f IS TRUE AND g IS DISTINCT FROM h")).toBe(
+      "SELECT 1 FROM t WHERE a IS NOT DISTINCT FROM b AND c IS DISTINCT FROM 'x' AND d IS NULL AND e IS NOT NULL AND f IS TRUE AND g IS DISTINCT FROM h",
+    );
+    const trg = translate("CREATE TRIGGER audit_no_update BEFORE UPDATE ON audit WHEN NOT (NEW.at IS OLD.at AND NEW.hash IS OLD.hash) BEGIN SELECT RAISE(ABORT, 'x'); END;", ctx).text;
+    expect(trg).toContain('NEW.at IS NOT DISTINCT FROM OLD.at AND NEW.hash IS NOT DISTINCT FROM OLD.hash');
+  });
+
+  it('SQLite 색인 지정(INDEXED BY·NOT INDEXED)은 지운다', () => {
+    // 회귀(2026-10-25 병합): 컴포넌트 최근 활동(070 색인 고정)의 INDEXED BY가 PG에서 문법 오류 → 500
+    expect(q('SELECT count(*) AS n FROM events e INDEXED BY events_at WHERE at >= ? GROUP BY component_id')).toBe('SELECT count(*) AS n FROM events e WHERE at >= $1 GROUP BY component_id');
+    expect(q('SELECT 1 FROM audit NOT INDEXED WHERE id = ?')).toBe('SELECT 1 FROM audit WHERE id = $1');
+  });
+
   it('json_extract → jsonb #>> 경로, LIKE → ILIKE, 섞인 대소문자 별칭은 따옴표', () => {
     expect(q("SELECT json_extract(doc, '$.featureId') AS featureId FROM vehicle_request WHERE vin LIKE ?")).toBe(`SELECT ((doc)::jsonb #>> '{featureId}') AS "featureId" FROM vehicle_request WHERE vin ILIKE $1`);
     expect(q("SELECT 1 FROM t WHERE x NOT LIKE 'EN-%'")).toBe("SELECT 1 FROM t WHERE x NOT ILIKE 'EN-%'");
@@ -63,6 +79,8 @@ describe('PG 방언 번역 — 마이그레이션', () => {
     for (const m of MIGRATIONS) expect(() => translateMigration(m, ctx), m.name).not.toThrow();
     const all = MIGRATIONS.map((m) => translateMigration(m, ctx)).join('\n');
     expect(all).not.toMatch(/\bAUTOINCREMENT\b|RAISE\s*\(\s*ABORT|\bINSERT OR IGNORE\b|json_extract/i);
+    // PG의 IS 뒤에는 NULL·TRUE·FALSE·UNKNOWN·DISTINCT FROM만 온다(066 감사 트리거의 NEW.x IS OLD.x가 PG 부팅을 막았다)
+    expect(all.match(/\bIS\s+(?:NOT\s+)?(?!NULL\b|TRUE\b|FALSE\b|UNKNOWN\b|DISTINCT\b|NOT\b)\S+/g) ?? []).toEqual([]); // 키워드(대문자)만 — 문자열 안의 is는 아니다
   });
 
   it('번역 문맥은 표의 정수 키와 트리거의 표를 안다', () => {

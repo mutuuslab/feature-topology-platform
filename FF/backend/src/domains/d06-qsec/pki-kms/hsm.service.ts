@@ -3,11 +3,13 @@
 //  · 승인자 개인 서명(approval_sig): 사람마다 키 — 데모에서는 FIDO2·스마트카드 대신 이 서비스가 보관.
 //    oidc(운영)에서는 승인 중에 키를 즉석으로 만들지 않는다 — SSO 로그인(세션 생성) 때 검증된 주체의 키를 등록하고(감사 APPROVER_KEY_ENROLLED),
 //    등록되지 않은 주체의 승인은 거부한다. 헤더로 사용자 ID를 바꿔 승인자 둘을 흉내 내던 길을 막는다(출시 준비 RD-SEC-05).
+//    운영 모드(FF_ENV=production)도 같다. 외부 장치에 개인키를 둔 승인자는 공개키만 등록한다(registerApproverKey, D-RD-5).
+//    정책 게이트는 모든 승인 칸을 등록된 ACTIVE 공개키로 검증한다 — 키가 없으면 승인 서명은 통과하지 못한다.
 //  · 차량 키(epoch별 HKDF 파생)와 AES-CMAC-128 — 봉투 cmd_auth·상태 증명 state_auth(16바이트 → base64url 22자)
 //  · 저장하는 개인키·차량 루트 비밀은 KEK로 봉인한다(출시 준비 RD-SEC-06, kernel/kms) — DB에는 봉인본만 있다
 import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Post } from '@nestjs/common';
-import { b64url, EpochBumpBody, fromB64url, type KeyPurpose } from '@ff/contracts';
-import { createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes, sign, verify } from 'node:crypto';
+import { ApproverKeyRegisterBody, b64url, EpochBumpBody, fromB64url, type KeyPurpose } from '@ff/contracts';
+import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes, sign, verify } from 'node:crypto';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { AuthService, type AuthUser } from '../../../kernel/auth/auth.service';
@@ -21,6 +23,7 @@ import { openFor, sealFor } from '../../../kernel/kms/secret-columns';
 import { EventService } from '../../../kernel/event.service';
 import { VehicleAuthService, type VehicleKeySource } from '../../../kernel/vehicle-auth';
 import { ZodPipe } from '../../../kernel/zod.pipe';
+import { isProduction } from '../../../kernel/runtime-config';
 import { PkiService } from './pki.service';
 
 export interface DetachedSig {
@@ -31,6 +34,8 @@ export interface DetachedSig {
 }
 
 const VEHICLE_ROOT = 'vehicle_root';
+/** 공개키 지문 — SPKI PEM의 SHA-256 앞 16바이트(hex) */
+const fingerprintOf = (pem: string) => createHash('sha256').update(pem.trim()).digest('hex').slice(0, 32);
 
 @Injectable()
 @PlatformComponent('D06-10')
@@ -94,8 +99,8 @@ export class HsmService implements OnModuleInit, VehicleKeySource {
   private approverKey(userId: string): { kid: string; private_pem: string; public_pem: string } {
     const k = this.activeKey(userId);
     if (k) return k;
-    // oidc — 승인 중 즉석 생성 금지(주장된 ID마다 키가 생기면 한 사람이 두 승인자를 흉내 낸다)
-    if (this.auth.mode === 'oidc') {
+    // oidc·운영 모드 — 승인 중 즉석 생성 금지(주장된 ID마다 키가 생기면 한 사람이 두 승인자를 흉내 낸다). 데모 모드만 즉석 생성
+    if (this.auth.mode === 'oidc' || isProduction()) {
       throw new DomainError('FORBIDDEN', '승인 서명 키가 등록되지 않은 계정입니다. 회사 계정(SSO)으로 플랫폼에 로그인하면 키가 등록됩니다 — 그 뒤 다시 승인하세요.', { code: 'APPROVER_KEY_NOT_ENROLLED' });
     }
     return this.generateApproverKey(userId);
@@ -117,13 +122,51 @@ export class HsmService implements OnModuleInit, VehicleKeySource {
   approve(userId: string, canonical: string): { kid: string; value: string } {
     const k = this.approverKey(userId);
     const pem = openFor(this.vault, 'approver_key', 'private_pem', userId, k.private_pem);
+    // 외부 장치 키 — 개인키가 플랫폼에 없다. 승인자가 자기 장치로 서명한 명령을 게이트로 내야 한다
+    if (!pem) throw new DomainError('FORBIDDEN', '이 승인자의 서명 키는 외부 장치에 있습니다. 플랫폼에서 대신 서명할 수 없습니다 — 승인자 장치로 서명한 명령을 정책 게이트에 제출하세요.', { code: 'APPROVER_KEY_EXTERNAL' });
     return { kid: k.kid, value: b64url(sign(null, Buffer.from(canonical), createPrivateKey(pem))) };
   }
 
+  /** 등록된 ACTIVE 승인자 키가 있는가 — 정책 게이트가 승인 칸마다 본다(D-RD-5) */
+  hasApproverKey(userId: string): boolean {
+    return !!this.db.get<{ kid: string }>("SELECT kid FROM approver_key WHERE user_id = ? AND status = 'ACTIVE'", userId);
+  }
+
+  /** 등록된 ACTIVE 공개키로만 검증한다 — 폐기·미등록 키는 false */
   verifyApproval(userId: string, canonical: string, value: string): boolean {
-    const k = this.db.get<{ public_pem: string }>('SELECT public_pem FROM approver_key WHERE user_id = ?', userId);
+    const k = this.db.get<{ public_pem: string }>("SELECT public_pem FROM approver_key WHERE user_id = ? AND status = 'ACTIVE'", userId);
     if (!k || !/^[A-Za-z0-9_-]{64,}$/.test(value)) return false;
     return verify(null, Buffer.from(canonical), createPublicKey(k.public_pem), Buffer.from(fromB64url(value)));
+  }
+
+  /**
+   * 외부 승인자 공개키 등록(D-RD-5) — 개인키는 승인자 장치에 남는다(플랫폼에는 봉인한 빈 값). Ed25519 공개키만 받는다.
+   * 이미 ACTIVE 키가 있으면 거부(덮어쓰기로 다른 사람 키를 바꿔치기하지 못하게). 감사 APPROVER_KEY_REGISTERED.
+   */
+  registerApproverKey(actor: Actor, body: ApproverKeyRegisterBody): { userId: string; kid: string; fingerprint: string; source: 'EXTERNAL' } {
+    let pub;
+    try {
+      pub = createPublicKey(body.publicKeyPem);
+    } catch {
+      throw new DomainError('VALIDATION', '공개키를 읽을 수 없습니다. PEM(SPKI) 형식의 Ed25519 공개키를 넣으세요.', { field: 'publicKeyPem' });
+    }
+    if (pub.asymmetricKeyType !== 'ed25519') throw new DomainError('VALIDATION', `Ed25519 공개키만 등록할 수 있습니다(받은 키: ${pub.asymmetricKeyType ?? '알 수 없음'}).`, { field: 'publicKeyPem' });
+    const publicPem = pub.export({ type: 'spki', format: 'pem' }).toString();
+    const kid = `EXT-${body.userId}`;
+    return this.db.tx(() => {
+      if (this.db.get('SELECT kid FROM approver_key WHERE user_id = ?', body.userId))
+        throw new DomainError('CONFLICT', `${body.userId}에는 이미 승인자 키가 등록되어 있습니다. 다른 사람의 키로 바꿔치기하지 못하도록 덮어쓰기는 허용하지 않습니다.`, { userId: body.userId });
+      this.db.run("INSERT INTO approver_key (user_id, kid, status, created_at, public_pem, private_pem) VALUES (?, ?, 'ACTIVE', ?, ?, ?)", body.userId, kid, this.clock.iso(), publicPem, sealFor(this.vault, 'approver_key', 'private_pem', body.userId, ''));
+      const fingerprint = fingerprintOf(publicPem);
+      this.audit.record(actor, 'APPROVER_KEY_REGISTERED', kid, { after: { userId: body.userId, kid, alg: 'EdDSA', fingerprint, source: 'EXTERNAL' }, reason: body.reason, componentId: 'D06-10' });
+      return { userId: body.userId, kid, fingerprint, source: 'EXTERNAL' as const };
+    });
+  }
+
+  /** 등록된 승인자 키 — 공개키 지문만(개인키는 내보내지 않는다) */
+  approverKeys() {
+    const rows = this.db.all<{ user_id: string; kid: string; status: string; created_at: string; public_pem: string }>('SELECT user_id, kid, status, created_at, public_pem FROM approver_key ORDER BY user_id');
+    return { items: rows.map((r) => ({ userId: r.user_id, kid: r.kid, status: r.status, createdAt: r.created_at, fingerprint: fingerprintOf(r.public_pem), source: r.kid.startsWith('EXT-') ? 'EXTERNAL' : 'PLATFORM' })) };
   }
 
   // ── 차량 키 epoch와 CMAC ─────────────────────────────
@@ -217,6 +260,19 @@ export class HsmController {
   @Get('hsm')
   view() {
     return this.hsm.view();
+  }
+
+  // 조회는 공개키 지문·상태만 — 다른 조회 화면과 같이 열어 둔다(개인키·공개키 본문은 내보내지 않는다)
+  @Get('approver-keys')
+  approverKeys() {
+    return this.hsm.approverKeys();
+  }
+
+  @Post('approver-keys')
+  @Roles('SECURITY_OFFICER')
+  @AuditAction('APPROVER_KEY_REGISTERED')
+  registerApproverKey(@CurrentActor() actor: Actor, @Body(new ZodPipe(ApproverKeyRegisterBody)) body: ApproverKeyRegisterBody) {
+    return this.hsm.registerApproverKey(actor, body);
   }
 
   @Post('epoch')

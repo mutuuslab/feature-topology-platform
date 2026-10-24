@@ -432,7 +432,7 @@
         "backend/test/d06/rehara.spec.ts",
         "contracts/src/rules/rehara.test.ts"
       ],
-      "gap": "주차 구역 단위 승인 미결 상태로 노출·활성을 보류하는 시험이 없다. G8·G9 PASS 뒤 열린 재-HARA는 이제 출시·서명을 막는다(FFP-F007).",
+      "gap": "주차 구역 단위 승인 미결 상태로 노출·활성을 보류하는 시험이 없다. G8·G9 PASS 뒤 열린 재-HARA는 이제 출시·서명을 막는다(FFP-F007). 정책 배포는 막지 않는다 — 완화 정책이 나가야 하므로(결정 D-RD-6).",
       "plan": [
         "ADS-BE09",
         "ADS-BE06"

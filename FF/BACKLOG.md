@@ -111,7 +111,7 @@
 - 이어서: "다른 세션 내용과 통합해 UI/UX·프론트·백엔드·DB 수정 설계"
 - 원본: 저장소 밖(`C:/project/2026-06-04_Feature_Platform_sources/ads-unece-v3.0/`, sha256 `712e75bc6542…`)
 - 추출본: `harness/ads/catalog.json`
-- 판정: `harness/ads/review.json` — 요건 64 중 구현 4 · 부분 51 · 미구현 6 · 범위 밖 3
+- 판정: `harness/ads/review.json` — 요건 64 중 구현 5 · 부분 50 · 미구현 6 · 범위 밖 3
 - 설계: `harness/ads/design.json`
 - 보고서: `docs/10-requirements/ads-unece-v3/report.html`
 - 반영 순서: 설계 단계 0 → 5. UI/UX가 먼저이고 [결함] 항목 5개는 1단계에서 회귀 시험과 함께 고친다.

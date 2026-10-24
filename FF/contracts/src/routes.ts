@@ -20,7 +20,7 @@ import {
 import { RestorePolicyRevisionBody } from './rules/policy-version';
 import { CreateRollbackPlanBody, CreateRollbackRequestBody, PolicyRollbackBody, ROLLBACK_APPROVER_ROLES, ROLLBACK_REQUEST_ROLES, RollbackDecisionBody, RollbackPreviewBody } from './rules/rollback';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
-import { EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody } from './schemas/ops';
+import { ApproverKeyRegisterBody, EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody } from './schemas/ops';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
 import { NotificationPrefsBody, NotificationReadAllBody } from './rules/notification';
 import { RunVirtualBody } from './rules/virtual';
@@ -187,6 +187,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'rotateKey', method: 'POST', path: '/api/pki/rotate', summary: '서명 키 교체 (이전 키는 검증용으로 유지, 용도별)', component: 'D06-10', roles: ['SECURITY_OFFICER', 'SAFETY_OFFICER'], body: KeyRotateBody },
   { name: 'hsmStatus', method: 'GET', path: '/api/pki/hsm', summary: '소프트웨어 HSM — 차량 키 epoch·승인자 키 수', component: 'D06-10' },
   { name: 'bumpEpoch', method: 'POST', path: '/api/pki/epoch', summary: '차량 키 epoch 상향 (키 유출 대응, FFG-SEC-002)', component: 'D06-10', roles: ['SECURITY_OFFICER', 'SAFETY_OFFICER'], body: EpochBumpBody },
+  { name: 'approverKeys', method: 'GET', path: '/api/pki/approver-keys', summary: '등록된 승인자 키 목록 — 공개키 지문·출처(플랫폼 보관·외부 장치)', component: 'D06-10' },
+  { name: 'registerApproverKey', method: 'POST', path: '/api/pki/approver-keys', summary: '외부 승인자 공개키 등록 (긴급 차단 승인 서명 검증용, D-RD-5)', component: 'D06-10', roles: ['SECURITY_OFFICER'], body: ApproverKeyRegisterBody },
   { name: 'publications', method: 'GET', path: '/api/publications', summary: '서명 게시본 (정책·차단·복구) 목록', component: 'D06-08', query: ['kind', 'status'] },
   { name: 'publicationDetail', method: 'GET', path: '/api/publications/:id', summary: '게시본 — 서명 검증·차량별 회신·외부 연계 호출', component: 'D06-08' },
   { name: 'flagRetirements', method: 'GET', path: '/api/flag-retirements', summary: 'Flag Retirement 6단계 진행·코드 삭제 기한·기한 초과(보고서 6.5, FFG-LCY-011)', component: 'D01-01' },

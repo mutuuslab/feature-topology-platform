@@ -1,15 +1,20 @@
-// /procedures, /procedures/:id — 담당자 업무 절차(docs/65-workflows 모델). 허브는 "내 업무"가 먼저, 상세는 스윔레인 흐름도.
-// 데이터는 지연 로딩(data/workflows.ts). 흐름도 좌표는 모델이 계산해 넣었으므로 여기서는 그리기만 한다.
-import { useMemo } from 'react';
+// /procedures, /procedures/:id — 담당자 업무 절차(docs/65-workflows 모델). 허브는 탭 3개(내 업무 흐름·내 업무 목록·전체 지도),
+// 상세는 스윔레인 흐름도(흐름도/텍스트 전환). 데이터는 지연 로딩(data/workflows.ts). 흐름도 배치는 flow/layout.ts가 계산한다.
+import { useEffect, useMemo, useRef } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { myActivities, raciOf, readyActivityIds, workflowIndexOf, type RaciKey, type WorkflowDoc, type WorkflowActivity, type WorkflowLayout, type WorkflowProcess } from '@ff/contracts';
+import { myActivities, raciOf, readyActivityIds, workflowIndexOf, type WorkflowDoc, type WorkflowActivity, type WorkflowProcess } from '@ff/contracts';
+import { procedureFlow as F } from '../../copy/procedureFlow';
 import { procedures as P } from '../../copy/procedures';
 import { useWorkflows } from '../../data/workflows';
 import { useProcedureInbox, useProgress } from '../../data/procedureProgress';
 import { roleLabel } from '../../data/refdata';
-import { PageHeader, Panel } from '../../design';
+import { PageHeader, Panel, Tabs } from '../../design';
 import { useAppShell } from '../../store';
 import { ActivityBody, RaciBadge, roleName } from './ActivityView';
+import { useFlowStatuses } from './flow/FlowParts';
+import { MyWorkFlow } from './flow/MyWorkFlow';
+import { ProcessFlowView } from './flow/ProcessFlow';
+import { ValueChainMap } from './flow/ValueChainMap';
 import './procedures.css';
 
 const Loading = () => (
@@ -82,6 +87,25 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
           </ul>
         </Panel>
       )}
+      <Tabs
+        param="view"
+        tabs={[
+          { key: 'flow', label: F.hub.flow },
+          { key: 'list', label: F.hub.list },
+          { key: 'map', label: F.hub.map },
+        ]}
+      >
+        {(view) =>
+          view === 'flow' ? (
+            <Panel title={F.mine.title} eyebrow={P.mine.progress(done, mine.length)}>
+              <MyWorkFlow doc={doc} />
+            </Panel>
+          ) : view === 'map' ? (
+            <Panel title={F.chain.title}>
+              <ValueChainMap doc={doc} />
+            </Panel>
+          ) : (
+            <>
       {mine.length > 0 && (
         <Panel title={P.mine.sectionTitle} eyebrow={P.mine.sectionHint(roleLabel(role))}>
           <p className="ds-field__hint pr-progress">
@@ -137,6 +161,10 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
           </ul>
         </section>
       ))}
+            </>
+          )
+        }
+      </Tabs>
     </div>
   );
 }
@@ -146,61 +174,6 @@ export function ProceduresHub() {
   if (doc === null) return <Loading />;
   if (doc === 'fail') return <p className="ds-stale">{P.loadFail}</p>;
   return <Hub doc={doc} />;
-}
-
-// ── 스윔레인 ────────────────────────────────────────────────
-const wrap = (s: string, n: number): string[] => {
-  const out: string[] = [];
-  for (let i = 0; i < s.length; i += n) out.push(s.slice(i, i + n));
-  return out;
-};
-
-function Swimlane({ doc, p, layout, roleIds, selected, onSelect }: { doc: WorkflowDoc; p: WorkflowProcess; layout: WorkflowLayout; roleIds: string[]; selected: string | null; onSelect: (id: string) => void }) {
-  const mid = `pr-arr-${p.id.replace('.', '-')}`;
-  const act = new Map(p.activities.map((a) => [a.id, a]));
-  return (
-    <svg className="pr-flow" viewBox={`-2 -2 ${layout.width + 4} ${layout.height + 28}`} width={layout.width} height={layout.height + 24} role="group" aria-label={P.detail.flowLabel(p.id)}>
-      <defs>
-        <marker id={mid} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" className="pr-arrow" /></marker>
-      </defs>
-      {layout.lanes.map((ln, i) => (
-        <g key={ln.role}>
-          <rect className={`pr-lane pr-lane--${i % 2}`} x={ln.x} y={ln.y} width={ln.w} height={ln.h} />
-          {wrap(roleName(doc, ln.role), 8).map((t, j) => (
-            <text key={j} className="pr-lane__label" x={ln.x + 10} y={ln.y + ln.h / 2 - 7 * (wrap(roleName(doc, ln.role), 8).length - 1) + j * 15 + 4}>{t}</text>
-          ))}
-        </g>
-      ))}
-      {layout.edges.map((e, i) => (
-        <polyline key={i} className={`pr-edge pr-edge--${e.kind}`} points={e.points.map((q) => q.join(',')).join(' ')} markerEnd={`url(#${mid})`} />
-      ))}
-      {layout.joins.map(([x, y], i) => <circle key={i} className="pr-join" cx={x} cy={y} r={3} />)}
-      {layout.nodes.map((n) => {
-        if (n.kind !== 'action') return <circle key={n.id} className={`pr-${n.kind}`} cx={n.x + n.w / 2} cy={n.y + n.h / 2} r={n.w / 2} />;
-        const a = act.get(n.id)!;
-        const k: RaciKey | null = raciOf(a, roleIds);
-        const lines = wrap(a.name, 13).slice(0, 3);
-        return (
-          <g
-            key={n.id}
-            role="button"
-            tabIndex={0}
-            aria-label={`${a.id} ${a.name}`}
-            aria-pressed={selected === n.id}
-            className="pr-node"
-            data-mine={k === 'R' || k === 'A' ? '' : undefined}
-            data-selected={selected === n.id ? '' : undefined}
-            onClick={() => onSelect(n.id)}
-            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onSelect(n.id))}
-          >
-            <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={6} />
-            <text className="pr-node__id" x={n.x + 8} y={n.y + 14}>{n.id}{a.gateDecision ? ` · ${a.gateDecision}` : ''}</text>
-            {lines.map((t, j) => <text key={j} className="pr-node__name" x={n.x + 8} y={n.y + 30 + j * 14}>{t}</text>)}
-          </g>
-        );
-      })}
-    </svg>
-  );
 }
 
 /** 한 역할이 맡는 모든 칸(수행이면서 책임이면 R·A) — 책임(A)이 수행(R)에 가려지지 않게 */
@@ -237,8 +210,17 @@ function Matrix({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
 
 function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
   const { roleIds } = useMe(doc);
+  const { statuses } = useFlowStatuses(doc);
   const [sp, setSp] = useSearchParams();
   const sel = p.activities.find((a) => a.id === sp.get('a')) ?? null;
+  const detailRef = useRef<HTMLDivElement | null>(null);
+  const picked = useRef(false);
+  // 흐름도에서 고른 활동의 상세로 눈을 옮긴다(주소로 바로 연 경우는 그대로)
+  useEffect(() => {
+    if (!picked.current || !sel) return;
+    picked.current = false;
+    detailRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+  }, [sel]);
   const n = p.activities.filter((a) => ['R', 'A'].includes(raciOf(a, roleIds) ?? '')).length;
   return (
     <div className="ds-screen">
@@ -249,14 +231,25 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
       />
       <Panel title={P.detail.flow} eyebrow={P.detail.pick}>
         <p className="pr-purpose">{p.purpose}</p>
-        <div className="pr-flow__scroll">
-          <Swimlane doc={doc} p={p} layout={p.layout} roleIds={roleIds} selected={sel?.id ?? null} onSelect={(id) => setSp({ a: id }, { replace: true })} />
-        </div>
+        <ProcessFlowView
+          doc={doc}
+          process={p}
+          statuses={statuses}
+          selected={sel?.id ?? null}
+          onSelect={(id) => {
+            picked.current = true;
+            setSp({ a: id }, { replace: true });
+          }}
+        />
       </Panel>
       {sel && (
-        <Panel title={`${sel.id} ${sel.name}`} eyebrow={<RaciBadge k={raciOf(sel, roleIds)} />}>
-          <ActivityBody doc={doc} a={sel} />
-        </Panel>
+        <div className="pr-activity">
+          {/* 흐름도에서 고르면 상세의 머리만 보이게 조금 스크롤한다(흐름도가 화면에서 사라지지 않게) */}
+          <div ref={detailRef} className="pr-activity__anchor" aria-hidden />
+          <Panel title={`${sel.id} ${sel.name}`} eyebrow={<RaciBadge k={raciOf(sel, roleIds)} />}>
+            <ActivityBody doc={doc} a={sel} />
+          </Panel>
+        </div>
       )}
       <Matrix doc={doc} p={p} />
       <details className="pr-matrix">

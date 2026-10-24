@@ -34,7 +34,7 @@ function mount(path: string, role = 'author', extra?: React.ReactNode) {
 
 describe('업무 절차 허브', () => {
   it('핵심 메시지는 내가 맡은 활동 수 하나이고, 내 업무 목록에 Release Sign-off가 있다(Feature Owner)', async () => {
-    mount('/procedures', 'author');
+    mount('/procedures?view=list', 'author');
     const key = await screen.findByText('내가 맡은 활동');
     expect(key.closest('[data-key-message]')).toBeTruthy();
     expect(document.querySelectorAll('[data-key-message]').length).toBe(1);
@@ -42,7 +42,7 @@ describe('업무 절차 허브', () => {
   });
 
   it('13개 절차가 모두 카드로 보인다', async () => {
-    mount('/procedures', 'viewer');
+    mount('/procedures?view=list', 'viewer');
     await screen.findByText('내가 맡은 활동', {}, { timeout: 5000 }).catch(() => undefined);
     const links = await screen.findAllByRole('link', { name: /Flag Retirement|출시|등록/ });
     expect(links.length).toBeGreaterThan(0);
@@ -50,7 +50,7 @@ describe('업무 절차 허브', () => {
   });
 
   it('내 업무에서 완료를 표시하면 진행률이 오르고 다음 할 일이 바뀐다', async () => {
-    mount('/procedures', 'author');
+    mount('/procedures?view=list', 'author');
     await screen.findByText('내가 맡은 활동');
     const progress = document.querySelector('.pr-progress')?.textContent ?? '';
     const beforeNext = document.querySelector('.pr-next')?.textContent ?? '';
@@ -177,7 +177,7 @@ describe('실행 UI — 서버 저장·Evidence·검토함', () => {
       summary: { todo: 0, review: 1, overdue: 0, done: 0, total: 2 },
       roleIds: ['R-FO'],
     });
-    mount('/procedures', 'author');
+    mount('/procedures?view=list', 'author');
     const title = await screen.findByText('내 차례');
     const panel = title.closest('section') as HTMLElement;
     expect(within(panel).getByText('대상 차량 사양·의존 등록')).toBeTruthy();
@@ -186,7 +186,7 @@ describe('실행 UI — 서버 저장·Evidence·검토함', () => {
 
   it('앞 활동이 남은 활동은 대기로 표시한다', async () => {
     stubProcedureApi();
-    mount('/procedures', 'author');
+    mount('/procedures?view=list', 'author');
     await screen.findByText('내가 맡은 활동');
     expect((await screen.findAllByText('앞 활동 대기')).length).toBeGreaterThan(0);
   });

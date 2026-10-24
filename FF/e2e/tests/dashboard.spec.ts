@@ -21,6 +21,9 @@ async function asRole(page: Page, role: string) {
 async function edit(page: Page) {
   await page.getByRole('button', { name: '편집', exact: true }).click();
   await expect(page.getByRole('region', { name: '대시보드 편집 중' })).toBeVisible();
+  // 편집 모드는 다음 그림 틀(requestAnimationFrame)에 '편집 중' 제목으로 초점을 옮긴다 — 그 전에 시험이 다른 곳에 초점을 두면
+  // 늦게 온 초점 이동이 빼앗아 Enter가 엉뚱한 곳에 갔다(CI 2026-10-25 메뉴 초점 경합). 초점이 자리 잡을 때까지 기다린다
+  await expect(page.locator('#jd-editbar-h')).toBeFocused();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -113,7 +116,7 @@ test('키보드 이동(끌기 대안) — 가젯 메뉴를 키보드로 열어 �
   await expect(page.getByRole('menu', { name: '바로 가기 가젯 메뉴' })).toBeVisible();
   await page.getByRole('menuitem', { name: '왼쪽 열로 이동' }).focus();
   await page.keyboard.press('Enter');
-  expect((await columns(page))[0]).toContain('links');
+  await expect.poll(async () => (await columns(page))[0]).toContain('links');
   await expect(page.locator('.jd .ds-sr[aria-live="polite"]')).toContainText('바로 가기 — 1열');
   await page.getByRole('button', { name: '바로 가기 가젯 메뉴' }).click();
   await page.keyboard.press('Escape');

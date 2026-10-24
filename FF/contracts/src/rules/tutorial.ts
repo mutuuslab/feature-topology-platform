@@ -53,7 +53,8 @@ export interface Tutorial {
 
 const FEAT = '/features/FEAT-00022/1.0.0';
 
-export const TUTORIALS: Tutorial[] = [
+// 순수 표시 — 계약 입구(web.ts)를 함께 읽는 첫 화면 묶음에서 빠지도록. 따라하기는 필요할 때 읽는 화면·패널만 쓴다
+export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
   {
     id: 'CS-01',
     cs: 'CS-01',
@@ -177,7 +178,7 @@ export const TUTORIALS: Tutorial[] = [
     ['CS-10', 'CS-10', 'KILL', 'VERIFY_OPERATE', 'ADS 기능 원격 종료', 'fallback 완료까지 권한 유지, 해제 전 재활성화 금지, DSSAD 기록', ['FFG-ADS-002', 'FFG-ADS-004', 'FFG-ADS-007']],
     ['CS-11', 'CS-11', 'DESIGN', 'BUILD', 'OpenFeature 기본값', 'F2 이상은 OpenFeature로 평가하지 않고 기본값은 Safe State', ['FFG-OFT-001', 'FFG-OFT-002', 'FFG-PLT-011']],
   ]),
-];
+])();
 
 function planned(rows: [string, string | undefined, TutorialTrack, ReadingPath, string, string, string[]][]): Tutorial[] {
   return rows.map(([id, cs, track, readingPath, title, summaryKo, rules]) => ({ id, cs, track, readingPath, title, summaryKo, minutes: 15, status: 'planned' as const, rules, steps: [] }));

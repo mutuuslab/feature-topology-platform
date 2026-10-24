@@ -5,6 +5,7 @@ import { DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, GATES, LIFECYCLE, RE
 import { ko } from '../copy/ko';
 import { connections as CN } from '../copy/connections';
 import { errors as E } from '../copy/errors';
+import '../design/lozenge.css';
 import { procedureFlow as PF } from '../copy/procedureFlow';
 import { useWorkflows } from '../data/workflows';
 import { ArrowDefs, FlowLegend, StateIcon, useFlowStatuses } from './procedures/flow/FlowParts';
@@ -36,6 +37,7 @@ import {
   KeyMessage,
   Kpi,
   LifecycleBadge,
+  Lozenge,
   LifecycleStepper,
   Pager,
   Panel,
@@ -374,6 +376,16 @@ export default function DesignGallery() {
         <Tabs tabs={[{ key: 'a', label: T.lifecycle, count: 7 }, { key: 'b', label: T.gates, count: 9 }, { key: 'c', label: T.stream }]} param="gtab">
           {(k) => <p style={{ margin: 0 }} className="ds-mono">tab={k}</p>}
         </Tabs>
+      </Panel>
+
+      {/* 상태 배지 — 대시보드(Jira식) 표의 상태 칸. 모양(lozenge.css)은 쓰는 화면이 함께 읽는다 */}
+      <Panel title={T.lozenge} id="lozenge">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-2)', alignItems: 'center' }}>
+          {['PROPOSED', 'DEVELOPING', 'RELEASED', 'DEPRECATED', 'RETIRED', 'ACTIVE'].map((s) => (
+            <Lozenge key={s}>{s}</Lozenge>
+          ))}
+          <Lozenge appearance="inprogress">{T.lozengeMine}</Lozenge>
+        </div>
       </Panel>
 
       <section data-zone="ops" style={{ background: 'var(--paper)', color: 'var(--ink)', padding: 'var(--sp-5)', borderRadius: 'var(--r-lg)', border: '1px solid var(--line)', display: 'grid', gap: 'var(--sp-4)' }}>

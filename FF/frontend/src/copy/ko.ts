@@ -282,6 +282,8 @@ export const ko = {
   stream: { empty: '아직 이벤트가 없습니다' },
   design: {
     errorsKit: '오류 다음 행동 · 모의 연결 · 쪽 넘김',
+    lozenge: '상태 배지(Lozenge)',
+    lozengeMine: '내 차례',
     safetyClasses: '기능안전 분류 — F·DC·R·Flag 유형',
     safetyRules: '게이트 판정 목록',
     safetyApprovals: '승인 칸·누적 상한',

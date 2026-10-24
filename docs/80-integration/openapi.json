@@ -13509,6 +13509,589 @@
           }
         }
       }
+    },
+    "/api/dashboards": {
+      "get": {
+        "summary": "내 대시보드 목록 — 내가 만든 것·내 역할에 공유된 것(즐겨찾기는 보는 사람 기준)",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "listDashboards",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "대시보드 만들기(소유자 = 요청자)",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "createDashboard",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "board": {
+                    "type": "object",
+                    "properties": {
+                      "v": {
+                        "type": "number",
+                        "enum": [
+                          2
+                        ]
+                      },
+                      "layout": {
+                        "type": "string",
+                        "enum": [
+                          "1",
+                          "2",
+                          "3",
+                          "2L",
+                          "2R"
+                        ]
+                      },
+                      "columns": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]{1,48}$"
+                          },
+                          "maxItems": 40
+                        },
+                        "minItems": 1,
+                        "maxItems": 3
+                      },
+                      "gadgets": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_-]{1,48}$"
+                            },
+                            "type": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_-]{1,48}$"
+                            },
+                            "config": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 200
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
+                                  },
+                                  {
+                                    "nullable": true
+                                  },
+                                  {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "maxLength": 80
+                                    },
+                                    "maxItems": 20
+                                  }
+                                ]
+                              },
+                              "default": {}
+                            },
+                            "configured": {
+                              "type": "boolean",
+                              "default": true
+                            },
+                            "refresh": {
+                              "anyOf": [
+                                {
+                                  "type": "number",
+                                  "enum": [
+                                    0
+                                  ]
+                                },
+                                {
+                                  "type": "number",
+                                  "enum": [
+                                    1
+                                  ]
+                                },
+                                {
+                                  "type": "number",
+                                  "enum": [
+                                    5
+                                  ]
+                                },
+                                {
+                                  "type": "number",
+                                  "enum": [
+                                    15
+                                  ]
+                                }
+                              ],
+                              "default": 0
+                            },
+                            "minimized": {
+                              "type": "boolean",
+                              "default": false
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "type"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "v",
+                      "layout",
+                      "columns",
+                      "gadgets"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "sharedRoles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "FEATURE_AUTHOR",
+                        "SAFETY_OFFICER",
+                        "VARIANT_OWNER",
+                        "FEATURE_APPROVER",
+                        "IMPLEMENTER",
+                        "RELEASE_MANAGER",
+                        "BOM_APPROVER",
+                        "PRODUCT_AUTHOR",
+                        "PRODUCT_APPROVER",
+                        "GATE_JUDGE",
+                        "OPERATOR",
+                        "SECURITY_OFFICER",
+                        "OPS_LEAD",
+                        "REGULATORY_OWNER",
+                        "AUDITOR",
+                        "SYSTEM",
+                        "VEHICLE"
+                      ]
+                    },
+                    "maxItems": 20,
+                    "default": []
+                  }
+                },
+                "required": [
+                  "name",
+                  "board"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/dashboards/{id}": {
+      "get": {
+        "summary": "대시보드 하나 — 판(레이아웃·가젯 설정)·버전(ETag)",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "getDashboard",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "put": {
+        "summary": "대시보드 바꾸기 — 이름·판·공유 역할, 소유자만, If-Match 버전이 다르면 412",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "updateDashboard",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "board": {
+                    "type": "object",
+                    "properties": {
+                      "v": {
+                        "type": "number",
+                        "enum": [
+                          2
+                        ]
+                      },
+                      "layout": {
+                        "type": "string",
+                        "enum": [
+                          "1",
+                          "2",
+                          "3",
+                          "2L",
+                          "2R"
+                        ]
+                      },
+                      "columns": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]{1,48}$"
+                          },
+                          "maxItems": 40
+                        },
+                        "minItems": 1,
+                        "maxItems": 3
+                      },
+                      "gadgets": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_-]{1,48}$"
+                            },
+                            "type": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_-]{1,48}$"
+                            },
+                            "config": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 200
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
+                                  },
+                                  {
+                                    "nullable": true
+                                  },
+                                  {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "maxLength": 80
+                                    },
+                                    "maxItems": 20
+                                  }
+                                ]
+                              },
+                              "default": {}
+                            },
+                            "configured": {
+                              "type": "boolean",
+                              "default": true
+                            },
+                            "refresh": {
+                              "anyOf": [
+                                {
+                                  "type": "number",
+                                  "enum": [
+                                    0
+                                  ]
+                                },
+                                {
+                                  "type": "number",
+                                  "enum": [
+                                    1
+                                  ]
+                                },
+                                {
+                                  "type": "number",
+                                  "enum": [
+                                    5
+                                  ]
+                                },
+                                {
+                                  "type": "number",
+                                  "enum": [
+                                    15
+                                  ]
+                                }
+                              ],
+                              "default": 0
+                            },
+                            "minimized": {
+                              "type": "boolean",
+                              "default": false
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "type"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "v",
+                      "layout",
+                      "columns",
+                      "gadgets"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "sharedRoles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "FEATURE_AUTHOR",
+                        "SAFETY_OFFICER",
+                        "VARIANT_OWNER",
+                        "FEATURE_APPROVER",
+                        "IMPLEMENTER",
+                        "RELEASE_MANAGER",
+                        "BOM_APPROVER",
+                        "PRODUCT_AUTHOR",
+                        "PRODUCT_APPROVER",
+                        "GATE_JUDGE",
+                        "OPERATOR",
+                        "SECURITY_OFFICER",
+                        "OPS_LEAD",
+                        "REGULATORY_OWNER",
+                        "AUDITOR",
+                        "SYSTEM",
+                        "VEHICLE"
+                      ]
+                    },
+                    "maxItems": 20
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      },
+      "delete": {
+        "summary": "대시보드 지우기 — 소유자만, If-Match 버전",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "deleteDashboard",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/dashboards/{id}/favourite": {
+      "put": {
+        "summary": "대시보드 즐겨찾기(별) — 보는 사람별",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "favouriteDashboard",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "favourite": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "favourite"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
     }
   }
 }

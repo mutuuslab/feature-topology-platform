@@ -15,3 +15,4 @@ export { loadReportCatalog, useReportCatalog } from './rule-catalog';
 export * from './ext-ref';
 export * from './errors';
 export * from './connection';
+export { Lozenge, lozengeAppearance, type LozengeAppearance } from './lozenge';

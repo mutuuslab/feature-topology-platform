@@ -96,7 +96,8 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
       if (url.startsWith('/api/features')) return { body: { items: [{ featureId: 'FEAT-1', version: '1.0.0', lifecycle: 'RELEASED' }, { featureId: 'FEAT-2', version: '0.1.0', lifecycle: 'PROPOSED' }] } };
       return inboxApi(url);
     };
-    mount('steward', '/', <HomeScreen />);
+    // 조회 역할의 시스템 대시보드에 Lifecycle 분포 가젯이 있다(가젯 본문은 필요할 때 읽는다)
+    mount('viewer', '/', <HomeScreen />);
     const link = await screen.findByRole('link', { name: /PROPOSED|제안/ });
     expect(link.getAttribute('href')).toBe('/features?lifecycle=PROPOSED');
   });
@@ -106,7 +107,7 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     mount('steward', '/', <HomeScreen />);
     const v = await screen.findByTitle('9,607,437');
     expect(v.textContent).toBe('961만');
-    expect(v.closest('.ds-summary > span')?.textContent).toContain('대상 차량(운행 중)');
+    expect(v.closest('tr')?.textContent).toContain('대상 차량(운행 중)');
     cleanup();
     handler = (url) => (url === '/api/fleet/population' ? { body: { dataset: { kind: 'demo', start: '2021-10-18' }, funnel: { active: 9_607_437 } } } : inboxApi(url));
     mount('steward', '/', <HomeScreen />);
@@ -124,8 +125,8 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     mount('steward', '/', <HomeScreen />);
     await screen.findByRole('link', { name: /Feature Registry/ });
     await waitFor(() => expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1'));
-    const online = [...document.querySelectorAll('.ds-summary > span')].find((s) => s.textContent?.includes('데모 Fleet'));
-    expect(online?.querySelector('b')?.textContent).toBe('1');
+    const online = [...document.querySelectorAll('.jd-stats tr')].find((s) => s.textContent?.includes('데모 Fleet'));
+    expect(online?.querySelector('.jd-num')?.textContent).toBe('1');
   });
 
   it('Feature 제안 — 필수 항목 전에는 막히고, 등록하면 새 Feature 상세로 간다', async () => {

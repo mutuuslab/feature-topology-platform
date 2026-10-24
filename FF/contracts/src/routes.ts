@@ -44,6 +44,7 @@ import { ConcludeExperimentBody, CreateExperimentBody, CreateIncidentBody, Field
 import { z } from 'zod';
 import { VexStatement } from './rules/sbom';
 import { LinkChangeRequestBody, MockExtActionBody, MockExtCreateBody, ResolveConflictBody } from './rules/ext-sync';
+import { DashboardCreateBody, DashboardDeleteBody, DashboardFavouriteBody, DashboardUpdateBody } from './schemas/dashboard';
 
 const EmptyBody = z.object({}).strict();
 const ReasonBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
@@ -356,6 +357,13 @@ export const ROUTES: RouteDef[] = [
   { name: 'designTrace', method: 'GET', path: '/api/trace/:id/:ver', summary: '요구·안전 추적 — 요구 → Function → SW → ECU, Gate·Evidence, 안전 분류', component: 'D01-02', sample: { id: 'FEAT-00022', ver: '1.0.0' } },
   { name: 'evidenceLedger', method: 'GET', path: '/api/evidence', summary: 'Evidence 원장 (Gate 판정 Evidence)', component: 'D04-02', query: ['featureId', 'gate', 'result'] },
   { name: 'versionChanges', method: 'GET', path: '/api/changes', summary: '변경 이력 — Version 변경 사유(변경요청)', component: 'D01-01', query: ['featureId'] },
+  // 대시보드(Jira식 가젯 판) — 내가 만든 것과 내 역할에 공유된 것. 소유자만 바꾸고 지운다, 버전 충돌은 412(If-Match)
+  { name: 'listDashboards', method: 'GET', path: '/api/dashboards', summary: '내 대시보드 목록 — 내가 만든 것·내 역할에 공유된 것(즐겨찾기는 보는 사람 기준)', component: 'KERNEL', personal: true },
+  { name: 'getDashboard', method: 'GET', path: '/api/dashboards/:id', summary: '대시보드 하나 — 판(레이아웃·가젯 설정)·버전(ETag)', component: 'KERNEL', personal: true },
+  { name: 'createDashboard', method: 'POST', path: '/api/dashboards', summary: '대시보드 만들기(소유자 = 요청자)', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardCreateBody },
+  { name: 'updateDashboard', method: 'PUT', path: '/api/dashboards/:id', summary: '대시보드 바꾸기 — 이름·판·공유 역할, 소유자만, If-Match 버전이 다르면 412', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardUpdateBody },
+  { name: 'deleteDashboard', method: 'DELETE', path: '/api/dashboards/:id', summary: '대시보드 지우기 — 소유자만, If-Match 버전', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardDeleteBody },
+  { name: 'favouriteDashboard', method: 'PUT', path: '/api/dashboards/:id/favourite', summary: '대시보드 즐겨찾기(별) — 보는 사람별', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardFavouriteBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

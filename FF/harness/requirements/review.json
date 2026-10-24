@@ -354,7 +354,7 @@
     },
     "FR-REG-005-014": {
       "verdict": "구현",
-      "evidence": "알림 규칙 `gate.judged` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — Feature Owner 팀 + FEATURE_APPROVER, 판정자 본인 제외",
+      "evidence": "알림 규칙 `gate.judged` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — Feature Owner 팀 + FEATURE_APPROVER, 판정자 본인 제외",
       "gap": ""
     },
     "FR-REG-005-015": {
@@ -1861,7 +1861,7 @@
     },
     "FR-CRC-002-009": {
       "verdict": "구현",
-      "evidence": "알림 규칙 `policy.validated NO-GO` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 배포 ID는 정책 ID(policyId)로 표시 — 별도 배포 ID 개념 없음",
+      "evidence": "알림 규칙 `policy.validated NO-GO` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 배포 ID는 정책 ID(policyId)로 표시 — 별도 배포 ID 개념 없음",
       "gap": ""
     },
     "FR-DSV-001-001": {
@@ -1916,7 +1916,7 @@
     },
     "FR-DSV-001-011": {
       "verdict": "구현",
-      "evidence": "알림 규칙 `policy.validated NO-GO` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 실패 항목·차단 사유를 Owner 팀·요청자(createdBy)에게",
+      "evidence": "알림 규칙 `policy.validated NO-GO` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 실패 항목·차단 사유를 Owner 팀·요청자(createdBy)에게",
       "gap": ""
     },
     "FR-DSV-002-001": {
@@ -2051,7 +2051,7 @@
     },
     "FR-KSW-003-003": {
       "verdict": "구현",
-      "evidence": "알림 규칙 `kill.issued` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — Owner 팀·OPERATOR·OPS_LEAD, 긴급(CRITICAL) 메일 항상 발송",
+      "evidence": "알림 규칙 `kill.issued` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — Owner 팀·OPERATOR·OPS_LEAD, 긴급(CRITICAL)도 끌 수 없는 화면 알림",
       "gap": ""
     },
     "FR-KSW-003-004": {
@@ -2081,7 +2081,7 @@
     },
     "FR-KSW-004-005": {
       "verdict": "구현",
-      "evidence": "알림 규칙 `kill.restore-requested` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 승인 역할에게, 요청자·직전 차단 승인자 제외(SOD-09)",
+      "evidence": "알림 규칙 `kill.restore-requested` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 승인 역할에게, 요청자·직전 차단 승인자 제외(SOD-09)",
       "gap": ""
     },
     "FR-KSW-004-006": {
@@ -2356,7 +2356,7 @@
     },
     "FR-EVT-003-003": {
       "verdict": "구현",
-      "evidence": "알림 규칙 `anomaly.opened / anomaly.escalated` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 알림 대상=OPERATOR·OPS_LEAD·Owner 팀(명세서 비고의 대상·채널 정의를 규칙 표로 확정)",
+      "evidence": "알림 규칙 `anomaly.opened / anomaly.escalated` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — 알림 대상=OPERATOR·OPS_LEAD·Owner 팀(명세서 비고의 대상·채널 정의를 규칙 표로 확정)",
       "gap": ""
     },
     "FR-VOC-001-001": {
@@ -2716,7 +2716,7 @@
     },
     "FR-DSYN-001-004": {
       "verdict": "구현",
-      "evidence": "알림 규칙 `sync.completed FAILED` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 + 모의 메일), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — IMPLEMENTER(연계 담당)에게, FAILED일 때만",
+      "evidence": "알림 규칙 `sync.completed FAILED` `contracts/src/rules/notification.ts` → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7), 화면 `/notifications`·상단바 종 (시험 `backend/test/d04/notifications.spec.ts`) — IMPLEMENTER(연계 담당)에게, FAILED일 때만",
       "gap": ""
     },
     "FR-SDVI-001-001": {
@@ -3371,7 +3371,7 @@
   "themes": [
     {
       "id": "B1",
-      "title": "수신자 지정 알림(Web·메일)",
+      "title": "수신자 지정 알림(Web — 메일은 사용자 결정 D-RD-7로 두지 않음)",
       "current": "SSE 이벤트 방송과 역할 검토함만 있다 — Owner·요청자·승인대상자 알림 없음",
       "requirements": [
         "FR-REG-005-014",

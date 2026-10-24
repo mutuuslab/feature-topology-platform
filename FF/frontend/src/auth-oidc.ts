@@ -15,9 +15,8 @@ export type SsoStatus = 'loading' | 'authed' | 'anon';
 let status: SsoStatus = 'loading';
 let user: SsoUser | null = null;
 let started = false;
-/** 로그아웃 중 — 이미 나간 요청이 401을 받아도 다시 로그인으로 보내지 않는다(로그아웃 화면 이동을 덮어쓰지 않게) */
-let loggingOut = false;
-export const isLoggingOut = () => loggingOut;
+/** 사용자가 로그아웃했다 — 그 뒤 늦게 돌아온 요청의 401로 IdP 로그인을 다시 시작하지 않는다(로그아웃이 되돌려지는 결함) */
+let loggedOut = false;
 let version = 0;
 const listeners = new Set<() => void>();
 const emit = () => {
@@ -31,11 +30,11 @@ export async function refreshSso(): Promise<void> {
     const res = await fetch('/api/auth/me', { headers: { Accept: 'application/json' }, cache: 'no-store' });
     const me = res.ok ? ((await res.json()) as { authenticated?: boolean; user?: SsoUser }) : null;
     user = me?.authenticated && me.user ? me.user : null;
-    if (user) loggingOut = false;
   } catch {
     user = null;
   }
   status = user ? 'authed' : 'anon';
+  if (user) loggedOut = false;
   emit();
 }
 
@@ -47,6 +46,8 @@ const ensure = () => {
 
 export const ssoUser = (): SsoUser | null => user;
 export const ssoStatus = (): SsoStatus => status;
+/** 이 화면에서 로그아웃했는가 — 401 자동 재로그인을 멈춘다(로그인 버튼은 그대로 IdP로 간다) */
+export const ssoLoggedOut = (): boolean => loggedOut;
 
 /** 지금 화면 경로를 되돌아올 곳으로 IdP 로그인을 시작한다 — 경로는 서버가 다시 거른다(같은 출처 상대 경로만) */
 export function startSsoLogin(returnTo?: string): void {
@@ -56,7 +57,8 @@ export function startSsoLogin(returnTo?: string): void {
 
 /** 로그아웃 — 서버 세션을 지우고, IdP 로그아웃 주소가 있으면 그리로 */
 export async function ssoLogout(): Promise<string | null> {
-  loggingOut = true;
+  // 서버 세션을 지우는 동안·뒤에 끝나는 요청(대시보드·알림 조회)은 401을 받는다 — 먼저 표시해 둔다
+  loggedOut = true;
   let end: string | null = null;
   try {
     const res = await fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}' });

@@ -2,12 +2,10 @@
 // 실제 어댑터가 생기면 그 연결의 liveAdapter를 true로 바꾸고 설정(FF_CONN_<KEY>=live)으로 켠다 — 그때 화면 표시가 사라진다.
 import type { ConnectionKey, ConnectionMode, ConnectionStatus } from '@ff/contracts';
 
-export const CONNECTION_KEYS: readonly ConnectionKey[] = ['mail', 'billing', 'ota', 'datalake'];
+export const CONNECTION_KEYS: readonly ConnectionKey[] = ['billing', 'ota', 'datalake'];
 
-/** 연결 정의 — 기본 모드와 실제 어댑터 유무. 지금은 모두 실제 어댑터가 없다 */
+/** 연결 정의 — 기본 모드와 실제 어댑터 유무. 지금은 모두 실제 어댑터가 없다(알림은 화면 알림만 — 메일 연결 없음, D-RD-7) */
 export const CONNECTIONS: Record<ConnectionKey, { ifId: string | null; liveAdapter: boolean; defaultMode: ConnectionMode }> = {
-  // 알림 메일 — 발송 기록만 남긴다(메일 서버 연결 없음)
-  mail: { ifId: null, liveAdapter: false, defaultMode: 'mock' },
   // 체험 → 구독·구매 결제 — 모의 과금 시스템(if_call BILLING)
   billing: { ifId: null, liveAdapter: false, defaultMode: 'mock' },
   // 배포 캠페인 요청(CCS / OTA) — IF-05 모의

@@ -70,7 +70,7 @@ export class KernelController {
     metricsEndpoint(this.metrics)(req, res);
   }
 
-  /** 외부 연결 상태(출시 준비 RD-UX-04) — 화면이 모의 연계(메일·과금·OTA·Data Lake)를 '모의'·'연결 안 됨'으로 표시하는 근거 */
+  /** 외부 연결 상태(출시 준비 RD-UX-04) — 화면이 모의 연계(과금·OTA·Data Lake)를 '모의'·'연결 안 됨'으로 표시하는 근거 */
   @Get('system/connections')
   connections(): ConnectionsResponse {
     return { mode: isProduction() ? 'production' : 'demo', items: connectionStatuses(process.env) };

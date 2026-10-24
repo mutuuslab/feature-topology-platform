@@ -1,13 +1,14 @@
-// readiness: RD-UX-04 — 모의 연계(메일·과금·OTA·Data Lake)는 화면에 '모의(연결 전)'·'연결 안 됨'으로 보이고, 결과를 실제처럼 표시하지 않는다.
+// readiness: RD-UX-04 — 모의 연계(과금·OTA·Data Lake — 알림 메일 채널은 없다, D-RD-7)는 화면에 '모의(연결 전)'·'연결 안 됨'으로 보이고, 결과를 실제처럼 표시하지 않는다.
 // 표시 여부는 서버 설정(/api/system/connections)이 정한다 — 실제 연결(live)이면 표시가 사라진다.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import type { ConnectionsResponse } from '@ff/contracts';
-import { connectionLabel } from '../api/connections';
+import { connectionLabel, useConnectionLabel } from '../api/connections';
 import { ConnectionBadge } from '../design';
 import { connections as CN } from '../copy/connections';
+import { ko } from '../copy/ko';
 import { AppProvider } from '../store';
 
 afterEach(() => {
@@ -16,27 +17,38 @@ afterEach(() => {
 });
 
 const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
-const status = (mode: 'production' | 'demo', mail: 'live' | 'mock' | 'off' = 'mock'): ConnectionsResponse => ({
+const status = (mode: 'production' | 'demo', billing: 'live' | 'mock' | 'off' = 'mock'): ConnectionsResponse => ({
   mode,
   items: [
-    { key: 'mail', mode: mail, ifId: null, liveAdapter: mail === 'live' },
-    { key: 'billing', mode: 'mock', ifId: null, liveAdapter: false },
+    { key: 'billing', mode: billing, ifId: null, liveAdapter: billing === 'live' },
     { key: 'ota', mode: 'mock', ifId: 'IF-05', liveAdapter: false },
     { key: 'datalake', mode: 'off', ifId: null, liveAdapter: false },
   ],
 });
-const EMAILS = { items: [{ id: 'EML-1', notificationId: 'NTF-00002', userId: 'usr-approver', address: 'a@oem.example', subject: '승인 요청', status: 'SENT', at: '2026-10-24T01:00:00.000Z' }] };
 
 function stub(conn: ConnectionsResponse) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string) => {
       if (url.startsWith('/api/system/connections')) return json(conn);
-      if (url.startsWith('/api/notifications/emails')) return json(EMAILS);
-      if (url.startsWith('/api/notifications/preferences')) return json({ userId: 'usr-approver', email: { APPROVAL: true, SAFETY: true, DEPLOY: true, GATE: false, OPS: true, INTEGRATION: false }, locked: ['APPROVAL', 'SAFETY'], address: 'a@oem.example' });
       if (url.startsWith('/api/notifications')) return json({ items: [], unread: 0, byCategory: {} });
       return json({ items: [] });
     }),
+  );
+}
+
+/** 연결 하나를 서버 상태로 표시하는 화면 조각 — 과금 표시(체험 구매)와 같은 훅 */
+function BillingProbe() {
+  const l = useConnectionLabel('billing');
+  return <p data-testid="probe">{l === 'none' ? CN.panel.live : <ConnectionBadge state={l} system={CN.system.billing} />}</p>;
+}
+
+function renderProbe() {
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(
+    <QueryClientProvider client={qc}>
+      <BillingProbe />
+    </QueryClientProvider>,
   );
 }
 
@@ -64,34 +76,39 @@ describe('모의 연계 표시 (RD-UX-04)', () => {
   });
 
   it('ConnectionBadge — 모의·연결 안 됨은 글자와 설명, 실제 연결이면 그리지 않는다', () => {
-    const { container, rerender } = render(<ConnectionBadge state="mock" system={CN.system.mail} />);
+    const { container, rerender } = render(<ConnectionBadge state="mock" system={CN.system.billing} />);
     expect(screen.getByText(CN.label.mock)).toBeTruthy();
-    expect(screen.getByText(CN.hint.mock(CN.system.mail))).toBeTruthy();
+    expect(screen.getByText(CN.hint.mock(CN.system.billing))).toBeTruthy();
     rerender(<ConnectionBadge state="disconnected" system={CN.system.billing} />);
     expect(screen.getByText(CN.label.disconnected)).toBeTruthy();
-    rerender(<ConnectionBadge state="none" system={CN.system.mail} />);
+    rerender(<ConnectionBadge state="none" system={CN.system.billing} />);
     expect(container.textContent).toBe('');
   });
 
-  it('데모 설치 — 메일 기록에 모의(연결 전) 표시, 발송 상태는 "모의 발송"(SENT를 실제처럼 보이지 않는다)', async () => {
+  it('데모 설치 — 모의 연결은 모의(연결 전)', async () => {
+    stub(status('demo'));
+    renderProbe();
+    await waitFor(() => expect(document.querySelector('[data-testid="probe"] [data-connection="mock"]')).toBeTruthy());
+  });
+
+  it('운영 설치 — 같은 모의 연결이 "연결 안 됨"', async () => {
+    stub(status('production'));
+    renderProbe();
+    await waitFor(() => expect(document.querySelector('[data-testid="probe"] [data-connection="disconnected"]')).toBeTruthy());
+  });
+
+  it('실제 연결(live)이면 표시가 사라진다', async () => {
+    stub(status('production', 'live'));
+    renderProbe();
+    await waitFor(() => expect(screen.getByTestId('probe').textContent).toBe(CN.panel.live));
+    expect(document.querySelector('[data-testid="probe"] [data-connection]')).toBeNull();
+  });
+
+  it('알림 화면에는 메일 연결·발송 기록이 없다(D-RD-7 화면 알림만)', async () => {
     stub(status('demo'));
     await renderNotifications();
-    await waitFor(() => expect(document.querySelector('section[aria-labelledby="ntf-emails-h"] [data-connection="mock"]')).toBeTruthy());
-    await waitFor(() => expect(screen.getByText(CN.mail.mockStatus)).toBeTruthy());
-    expect(screen.queryByText('SENT')).toBeNull();
-  });
-
-  it('운영 설치 — 같은 모의 메일이 "연결 안 됨"·"보내지 않음"', async () => {
-    stub(status('production'));
-    await renderNotifications();
-    await waitFor(() => expect(document.querySelector('section[aria-labelledby="ntf-emails-h"] [data-connection="disconnected"]')).toBeTruthy());
-    await waitFor(() => expect(screen.getByText(CN.mail.notSent)).toBeTruthy());
-  });
-
-  it('실제 연결(live)이면 표시가 사라지고 서버 상태를 그대로 보인다', async () => {
-    stub(status('production', 'live'));
-    await renderNotifications();
-    await waitFor(() => expect(screen.getByText('SENT')).toBeTruthy());
-    expect(document.querySelector('section[aria-labelledby="ntf-emails-h"] [data-connection]')).toBeNull();
+    await waitFor(() => expect(screen.getByText(ko.notify.channel.title)).toBeTruthy());
+    expect(document.querySelector('[data-connection]')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/메일 발송|모의 발송/);
   });
 });

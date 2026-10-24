@@ -22,7 +22,7 @@ import { CreateRollbackPlanBody, CreateRollbackRequestBody, PolicyRollbackBody, 
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { ApproverKeyRegisterBody, EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody } from './schemas/ops';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
-import { NotificationPrefsBody, NotificationReadAllBody } from './rules/notification';
+import { NotificationReadAllBody } from './rules/notification';
 import { RunVirtualBody } from './rules/virtual';
 import { MetricPlanBody } from './rules/safety-kpi';
 import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
@@ -87,15 +87,12 @@ export const ROUTES: RouteDef[] = [
   { name: 'authCallback', method: 'GET', path: '/api/auth/callback', summary: 'IdP 콜백 — 코드 교환·id_token 검증·역할 매핑 후 세션 쿠키, 안전한 returnTo로 302', component: 'KERNEL', query: ['code', 'state', 'error'], public: true },
   { name: 'authLogout', method: 'POST', path: '/api/auth/logout', summary: '로그아웃 — 세션 삭제·쿠키 제거, IdP 로그아웃 주소', component: 'KERNEL', body: EmptyBody, public: true },
   { name: 'authMe', method: 'GET', path: '/api/auth/me', summary: '로그인한 사용자 — 이름·이메일·부여 역할(IdP 그룹에서)', component: 'KERNEL', public: true },
-  { name: 'systemConnections', method: 'GET', path: '/api/system/connections', summary: '외부 연결 상태(메일·과금·OTA·Data Lake) — 모의·연결 안 됨을 화면에 표시하는 근거', component: 'KERNEL' },
+  { name: 'systemConnections', method: 'GET', path: '/api/system/connections', summary: '외부 연결 상태(과금·OTA·Data Lake) — 모의·연결 안 됨을 화면에 표시하는 근거', component: 'KERNEL' },
   { name: 'components', method: 'GET', path: '/api/components', summary: '42 컴포넌트 현황', component: 'KERNEL' },
   { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력 — after(순번) 커서 페이지 나눔, 응답 nextCursor', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit'] },
   { name: 'notifications', method: 'GET', path: '/api/notifications', summary: '내 알림 — 개인·역할·Owner 팀 수신자, 안 읽음 수·범주별 집계', component: 'D04-04', query: ['unread', 'category', 'limit'], personal: true },
   { name: 'readNotification', method: 'POST', path: '/api/notifications/:id/read', summary: '알림 읽음 표시(계정별)', component: 'D04-04', roles: HUMAN_ROLES, body: EmptyBody },
   { name: 'readAllNotifications', method: 'POST', path: '/api/notifications/read-all', summary: '알림 모두 읽음(범주 선택)', component: 'D04-04', roles: HUMAN_ROLES, body: NotificationReadAllBody },
-  { name: 'notificationPrefs', method: 'GET', path: '/api/notifications/preferences', summary: '알림 메일 설정 — 범주별, 승인 요청·긴급은 고정', component: 'D04-04', personal: true },
-  { name: 'saveNotificationPrefs', method: 'POST', path: '/api/notifications/preferences', summary: '알림 메일 설정 저장(감사)', component: 'D04-04', roles: HUMAN_ROLES, body: NotificationPrefsBody },
-  { name: 'notificationEmails', method: 'GET', path: '/api/notifications/emails', summary: '알림 메일 발송 기록(모의 — 실 메일 서버 연동 없음)', component: 'D04-04', query: ['limit'], personal: true },
   { name: 'eventStream', method: 'GET', path: '/api/events/stream', summary: '이벤트 실시간 스트림 (SSE)', component: 'D04-04', query: ['types'], stream: true },
   { name: 'safetyProfiles', method: 'GET', path: '/api/safety-profiles', summary: '안전 분류 목록 (보고서 5.7)', component: 'D01-01', query: ['featureId'] },
   { name: 'safetyProfile', method: 'GET', path: '/api/features/:id/versions/:ver/safety', summary: '안전 분류 + 조합 검사 (FFG-CLS-009)', component: 'D01-01' },

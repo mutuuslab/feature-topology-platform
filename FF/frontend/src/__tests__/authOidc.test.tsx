@@ -117,4 +117,30 @@ describe('운영 빌드(SSO) — 부여 역할 안에서만', { timeout: 30_000 
     expect(sso.ssoStatus()).toBe('anon');
     expect(f.mock.calls.some(([u, init]) => u === '/api/auth/logout' && (init as RequestInit | undefined)?.method === 'POST')).toBe(true);
   });
+
+  // 회귀(2026-10-24 e2e:oidc 로그아웃 시험이 간헐 실패): 로그아웃 뒤 늦게 끝난 화면 조회가 401을 받으면
+  // '세션 만료'로 보고 IdP 로그인을 다시 시작해 로그아웃이 되돌려졌다. 로그아웃한 화면에서는 401이 로그인을 시작하지 않는다.
+  it('로그아웃 뒤 늦게 돌아온 요청의 401은 IdP 로그인을 다시 시작하지 않는다 — 로그인 버튼은 그대로', async () => {
+    let session = true;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url === '/api/auth/me') return json(session ? { authenticated: true, mode: 'oidc', user: USER } : { authenticated: false, mode: 'oidc' });
+        if (url === '/api/auth/logout') {
+          session = false;
+          return json({});
+        }
+        return session ? json({ items: [] }) : json({ error: { code: 'UNAUTHENTICATED', message: '로그인이 필요합니다.' } }, 401);
+      }),
+    );
+    const sso = await loadOidc();
+    await sso.refreshSso();
+    const { call } = await import('../api/client');
+    await sso.ssoLogout();
+    await expect(call('listFeatures', {})).rejects.toMatchObject({ status: 401 });
+    expect(assign).not.toHaveBeenCalled();
+    // 사용자가 다시 로그인하면 IdP로 간다
+    sso.startSsoLogin('/');
+    expect(assign).toHaveBeenCalledWith(`/api/auth/login?returnTo=${encodeURIComponent('/')}`);
+  });
 });

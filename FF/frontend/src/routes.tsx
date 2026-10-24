@@ -2,6 +2,7 @@
 // 규칙(__tests__/ia.test.ts가 강제): 모든 라우트는 메뉴 항목이거나 부모(parent)를 가진다 · 경로 중복 없음 ·
 // 메뉴 링크는 실제 라우트로 열린다 · 그룹은 8개. UI01~UI30(MENU 1.3) 코드는 추적 메타로 자동 연결된다.
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
+import { DEMO_EXTRAS } from './auth-mode';
 import { legacyTo } from './screens/legacyRedirect';
 import { SPEC_MENU_ITEM } from './data/specMenu';
 import { screenOfRoute } from './data/uiLinks';
@@ -87,8 +88,13 @@ export const ROUTES: AppRoute[] = [
   // 1 홈
   { path: '/', element: named(homeScreens, 'HomeScreen'), title: '내 대시보드', group: 'home', menu: '/', v2: true },
   { path: '/admin/approval', element: named(homeScreens, 'ApprovalInboxScreen'), title: '검토함', group: 'home', menu: '/admin/approval', v2: true },
-  { path: '/learn', element: named(learnScreens, 'LearnHub'), title: '표준 따라하기', group: 'home', menu: '/learn', v2: true },
-  { path: '/learn/:id', element: named(learnScreens, 'LearnRun'), title: '따라하기 시나리오', group: 'home', parent: '/learn', v2: true },
+  // 표준 따라하기 — 데모·개발 빌드만(결정 D-RD-8). 운영 빌드는 라우트·묶음이 없어 직접 주소도 '찾는 항목이 없습니다'
+  ...(DEMO_EXTRAS
+    ? [
+        { path: '/learn', element: named(learnScreens, 'LearnHub'), title: '표준 따라하기', group: 'home', menu: '/learn', v2: true } as AppRoute,
+        { path: '/learn/:id', element: named(learnScreens, 'LearnRun'), title: '따라하기 시나리오', group: 'home', parent: '/learn', v2: true } as AppRoute,
+      ]
+    : []),
   { path: '/procedures', element: named(procedureScreens, 'ProceduresHub'), title: '업무 절차', group: 'home', menu: '/procedures', v2: true },
   { path: '/procedures/roles', element: named(procedureScreens, 'ProcedureRolesScreen'), title: '담당자별 업무 흐름', group: 'home', menu: '/procedures/roles', v2: true },
   { path: '/procedures/:id', element: named(procedureScreens, 'ProcessDetail'), title: '업무 절차 상세', group: 'home', parent: '/procedures', v2: true },
@@ -230,7 +236,8 @@ export const ROUTES: AppRoute[] = [
   { path: '/insights/reports', element: legacyTo('/biz/trials'), title: '보고서 (이전 주소)', group: 'admin', parent: '/biz/trials' },
   { path: '/cost', element: legacyTo('/biz/trials'), title: '비용 (이전 주소)', group: 'admin', parent: '/biz/trials' },
   { path: '/admin/settings', element: named(opsScreens, 'SettingsScreen'), title: '설정', group: 'admin', menu: '/admin/settings', v2: true },
-  { path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'admin', menu: '/_design', v2: true },
+  // 디자인 시스템 갤러리 — 데모·개발 빌드만(결정 D-RD-8, 견본 ID를 보인다). 갤러리 자체는 그대로 둔다(시각 회귀·키트 규칙)
+  ...(DEMO_EXTRAS ? [{ path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'admin', menu: '/_design', v2: true } as AppRoute] : []),
 ];
 
 // ── 파생 정보 ─────────────────────────────────────────────────────────

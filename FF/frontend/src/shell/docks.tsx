@@ -2,14 +2,17 @@
 // 따라하기가 시작됐을 때, 규칙 칩을 처음 눌렀을 때만 본체(GuideDock.tsx)를 불러 첫 화면 묶음에서 카탈로그를 뺀다(harness/budgets.json).
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { RULE_EVENT } from '../design';
+import { DEMO_EXTRAS } from '../auth-mode';
 import { useLearn } from './learn';
 
-const GuideDock = lazy(() => import('./GuideDock').then((m) => ({ default: m.GuideDock })));
+// 운영 빌드는 따라하기 패널을 싣지 않는다(D-RD-8) — 규칙 Drawer만 남는다
+const GuideDock = DEMO_EXTRAS ? lazy(() => import('./GuideDock').then((m) => ({ default: m.GuideDock }))) : null;
 const RuleDrawer = lazy(() => import('./GuideDock').then((m) => ({ default: m.RuleDrawer })));
 
 /** 따라하기 중일 때만 패널을 불러 그린다 */
 export function GuideDockHost() {
-  return useLearn() ? (
+  const st = useLearn();
+  return GuideDock && st ? (
     <Suspense fallback={null}>
       <GuideDock />
     </Suspense>

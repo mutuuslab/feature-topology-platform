@@ -5,7 +5,7 @@
 // 정적 데모(VITE_DATA_MODE=static, Cloudflare)에서는 GET을 미리 떠 둔 스냅샷에서 읽고 쓰기는 막는다.
 import { ROUTES, routeUrl, snapshotFile, type Role, type RouteDef } from '@ff/contracts';
 import { OIDC_AUTH } from '../auth-mode';
-import { isLoggingOut, startSsoLogin } from '../auth-oidc';
+import { ssoLoggedOut, startSsoLogin } from '../auth-oidc';
 import { errors as E } from '../copy/errors';
 import { hasUnsaved } from '../design/unsaved';
 import { actorFor } from './actor';
@@ -78,9 +78,10 @@ export const networkError = () => new ApiError(0, 'NETWORK', userMessage('networ
 
 /** 401 — 입력이 없으면 지금 화면으로 돌아오는 로그인으로, 있으면 셸 안내 띠가 묻는다(입력을 지키기 위해 바로 옮기지 않는다) */
 function onUnauthenticated() {
+  // 로그아웃한 뒤 늦게 끝난 요청의 401 — 세션 만료가 아니다. 로그인 화면에 머문다
+  if (OIDC_AUTH && ssoLoggedOut()) return;
   markSessionExpired();
-  // 로그아웃 중에 끝난 요청(가젯이 늦게 연 조회 등)의 401은 로그인 화면 이동을 막지 않는다
-  if (OIDC_AUTH && !hasUnsaved() && !isLoggingOut()) startSsoLogin();
+  if (OIDC_AUTH && !hasUnsaved()) startSsoLogin();
 }
 
 export async function call<T = any>(name: RouteName | string, opts: CallOptions = {}): Promise<T> {

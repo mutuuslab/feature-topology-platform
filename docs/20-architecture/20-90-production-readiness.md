@@ -54,7 +54,7 @@
 | RD-UX-01 | 오류 화면 | 403만 구분 — 401 재로그인·409/412 충돌·422 필드 오류·네트워크 끊김 처리 없음, 개발자 문구("백엔드(9101)") — **완료(2026-10-24, 8장)** |
 | RD-UX-02 | 입력 보호 | 저장하지 않은 변경 보호가 SafetyTab 한 곳뿐 |
 | RD-UX-03 | 큰 데이터 | 목록 페이지 나눔·가상화 없음 — 전체를 받아 클라이언트에서 거른다 — **완료(2026-10-24, 8장)** |
-| RD-UX-04 | 연계 | 메일·과금·OTA·Data Lake가 모의 — **표시 완료(2026-10-24, 8장)**, 실제 연결은 남음 |
+| RD-UX-04 | 연계 | 과금·OTA·Data Lake가 모의 — **표시 완료(2026-10-24, 8장)**, 실제 연결은 남음. 알림 메일은 채널을 두지 않는다(D-RD-7) |
 
 ### P2 — 다듬기
 
@@ -103,6 +103,8 @@
 | D-RD-4 | 공개 데모 사이트(pages.dev)를 유지할지 | 유지 — 데모 로그인·역할 선택기는 데모 빌드에서만 |
 | D-RD-5 | 긴급 차단 승인 서명 — 승인자 키 등록을 의무로 할지(외부에서 낸 명령 포함) | 의무 — 등록된 공개키로 모든 승인 칸 검증 |
 | D-RD-6 | 열린 재-HARA 요청이 정책 배포도 막을지 | 막지 않음 — 출시 전이·Release Sign-off만 막는다 |
+| D-RD-7 | 알림 메일 — 늘 켜진 화면 알림(승인 요청·긴급·배포 결과·절차 인계) 위에 메일 발송을 붙일지 | 화면 알림만 — 메일은 뺀다 |
+| D-RD-8 | 운영 설치에서 디자인 갤러리(/_design)와 표준 따라하기(/learn)를 숨길지 | 숨긴다 — 데모·개발 빌드에만 |
 
 ### 결정(2026-10-24 사용자)
 
@@ -112,6 +114,8 @@
 - **D-RD-4 = 데모 사이트 유지, 데모 빌드 분리.** 데모 로그인(FF/platform)·역할 선택기는 데모 빌드에서만 보이고, 운영 빌드는 실제 로그인만.
 - **D-RD-5 = 승인자 키 등록 의무.** 긴급 차단(Kill) 명령의 모든 승인 서명은 그 승인자의 **등록된 ACTIVE 공개키**로 검증하고, 서명 대상은 명령에서 다시 만든다(`commandApprovalSubject` — 기능·요청·사유·차량 집합·승인자·역할·서명 시각). 플랫폼이 발행한 명령과 외부에서 낸 명령(`/api/gate/preview`·원장 기록)이 같은 길을 탄다. 키 미등록·검증 실패·대상 집합 불일치·발효 시각과 동떨어진 서명 시각(뒤이거나 24시간 넘게 앞섬)은 기존 규칙 **FFG-PLT-005** FAIL. 외부 장치 승인자는 공개키만 등록한다(`POST /api/pki/approver-keys`, 보안 책임자, 덮어쓰기 거부, Ed25519만). 운영 모드(FF_ENV=production)·SSO에서는 승인 중 키를 즉석으로 만들지 않고 403 `APPROVER_KEY_NOT_ENROLLED`로 거부한다(데모 모드만 즉석 생성). 시험 기준선이 바뀌었다 — 보고서 예시 `kill_safety_dc2_eu.ok.json`의 자리표시 서명은 이제 FAIL이고, PASS 기준선은 시험 승인자 키로 서명한 명령이다(`backend/test/approver-keys.ts`). 근거: 서명 길이·형식만 보면 외부 명령의 승인 위조를 막을 수 없다(ADS FFP-F059).
 - **D-RD-6 = 열린 재-HARA는 정책 배포를 막지 않는다.** 출시 전이(→ RELEASED)와 Release Sign-off만 막는다. 근거: 재-HARA 중에도 현장 위험을 줄이는 완화 정책(ODD 축소·파라미터 하향·기능 끄기)은 바로 차량에 나가야 한다 — 배포까지 막으면 영향 검토가 오히려 위험 완화를 늦춘다. 배포 자체는 여전히 승인·가상검증·Lifecycle(APPROVED~RELEASED)·ODD 축소 규칙을 지난다. 시험: `backend/test/ads/defects.spec.ts`('D-RD-6').
+- **D-RD-7 = 화면 알림만(메일 없음).** 사용자: "화면 알림만 쓰고 메일은 빼기". 메일 채널을 제품에서 지웠다 — 알림 메일 설정(범주별 켜기·끄기, 받는 주소, `GET/POST /api/notifications/preferences`)·모의 발송 기록(`GET /api/notifications/emails`)·메일 연결(`FF_CONN_MAIL`, 연결 상태 표의 메일 행)·데모 계정의 메일 주소. 남은 것: 화면 알림(상단바 종·`/notifications`), 계정별 읽음·안 읽음, 끄는 설정이 없어 승인 요청·긴급(CRITICAL)을 포함한 모든 알림이 받는 사람 목록에 항상 남는다(알림 화면 "받는 방법"에 안내). DB는 새 마이그레이션 `048_drop_notification_email`로 `notification_email`·`notification_pref` 표를 지웠다(038은 잠금이라 고치지 않는다) — 실제 메일은 한 번도 나간 적이 없고 모의 기록뿐이라 보존할 근거가 없으며, PostgreSQL 이전(D-RD-3) 때 죽은 표를 옮기지 않으려는 것이다. 지난 메일 설정 변경 감사(`NOTIFICATION_PREFS`)는 감사 해시 체인에 그대로 남는다. 기능명세서의 알림 요구 14건(FR-CRC-001-026·FR-CRC-002-009·FR-DSV-001-011·FR-DSV-003-005·FR-KSW-003-003·FR-KSW-004-005·FR-RBK-001-007·FR-RBK-004-005·FR-RBK-005-003·FR-RBK-005-004·FR-EVT-003-003·FR-LGCY-001-008·FR-DSYN-001-004·FR-BIL-001-004)은 모두 "Web 알림 또는 이메일 중 하나 이상"이라 화면 알림으로 충족된다 — 메일을 꼭 요구하는 요구가 없어 제외로 돌린 요구는 없다. 시험: `backend/test/d04/notifications.spec.ts`(알림을 만들어도 메일 기록·표·API가 없다), `contracts/src/rules/notification.test.ts`, `frontend/src/__tests__/screensNotifications.test.tsx`·`mockConnections.test.tsx`, e2e `mock-connections.spec.ts`.
+- **D-RD-8 = 운영 설치에서 갤러리·표준 따라하기를 숨긴다.** 운영 설치의 기준은 **운영 빌드(`VITE_AUTH=oidc`)** 다 — Docker 이미지(`docker/app/Dockerfile`)가 이렇게 빌드하고, 운영 백엔드(`FF_ENV=production`)는 `FF_AUTH=oidc`만 받으므로 데모 빌드로는 운영 설치에 로그인할 수 없어 빌드 기준이 곧 설치 기준이다. 빌드 상수(`frontend/src/auth-mode.ts` `DEMO_EXTRAS`)라 라우트·메뉴·⌘K 항목과 화면 묶음(갤러리·따라하기 화면·가이드 패널 지연 묶음)이 운영 번들에서 통째로 빠진다. 서버가 알려 주는 설치 모드로 고르면 응답 전까지 메뉴가 깜박이고 묶음도 남아 택하지 않았다. 직접 주소(`/_design`·`/learn`·`/learn/:id`)는 기존 "찾는 항목이 없습니다" 화면이고, 브라우저에 남은 따라하기 진행 상태가 있어도 가이드 패널을 그리지 않는다. 따라하기 전용 백엔드 엔드포인트는 없다(보기 모드 U1은 화면만, 백엔드 러너 F1은 아직 없다) — 운영 모드에서 404로 막을 경로가 없다. 공개 데모·개발 빌드는 그대로 보인다(갤러리 자체는 남는다 — 시각 회귀·디자인 키트 규칙). 남긴 것: 상단바 "근거 규칙 보기"(표준 설명 모드)와 업무 절차 가이드(`/procedures`)는 운영에서도 쓰는 기능이라 그대로 둔다. 시험: `frontend/src/__tests__/prodHiddenScreens.test.tsx`, `tools/prod-bundle.test.ts`(verify `build:prod` — 운영 번들에 갤러리·따라하기 표식·`/_design` 경로 없음, 데모 번들에는 있음), e2e `e2e/oidc/hidden.spec.ts`(verify `e2e:oidc` — 메뉴·⌘K에 없음, 직접 주소는 찾을 수 없음).
 
 ## 6. 인증(OIDC) — RD-SEC-01~05 (2026-10-24 구현)
 
@@ -274,11 +278,11 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 
 ### 8.3 모의 연계 표시 (RD-UX-04)
 
-- `GET /api/system/connections` → `{ mode: production|demo, items: [{ key, mode: live|mock|off, ifId, liveAdapter }] }`. 계산 `backend/src/kernel/connections.ts`(형식 `contracts/src/rules/connections.ts`). 설정 `FF_CONN_MAIL`·`FF_CONN_BILLING`·`FF_CONN_OTA`·`FF_CONN_DATALAKE` = `live|mock|off`(OTA는 `IF_MODE_05=off`도 따른다). **실제 어댑터가 없으면 live로 골라도 live가 되지 않는다**(`liveAdapter=false` — 지금 넷 다).
-- 화면: 데모 설치 "모의(연결 전)", 운영 설치·꺼진 연결 "연결 안 됨"(`ConnectionBadge`). 메일 발송 기록의 SENT는 "모의 발송"·"보내지 않음"으로, 체험 구매는 안내 + 운영에서 버튼 비활성, 게시본 연계 호출(IF-05)에 표시, 외부 연계 현황에 연결 상태 표(Data Lake 포함). live가 되면 표시가 사라진다.
+- `GET /api/system/connections` → `{ mode: production|demo, items: [{ key, mode: live|mock|off, ifId, liveAdapter }] }`. 계산 `backend/src/kernel/connections.ts`(형식 `contracts/src/rules/connections.ts`). 설정 `FF_CONN_BILLING`·`FF_CONN_OTA`·`FF_CONN_DATALAKE` = `live|mock|off`(OTA는 `IF_MODE_05=off`도 따른다). **실제 어댑터가 없으면 live로 골라도 live가 되지 않는다**(`liveAdapter=false` — 지금 넷 다).
+- 화면: 데모 설치 "모의(연결 전)", 운영 설치·꺼진 연결 "연결 안 됨"(`ConnectionBadge`). 체험 구매는 안내 + 운영에서 버튼 비활성, 게시본 연계 호출(IF-05)에 표시, 외부 연계 현황에 연결 상태 표(Data Lake 포함). live가 되면 표시가 사라진다.
 - 운영 모드에서 과금이 live가 아니면 백엔드가 구매를 GUARD_FAILED로 거부한다(모의 결제가 실제 구독처럼 남지 않게).
 - 시험: `backend/test/kernel/connections.spec.ts`, `frontend/src/__tests__/mockConnections.test.tsx`, e2e `e2e/tests/mock-connections.spec.ts`.
-- 남은 것: 실제 메일(SMTP)·과금·OTA(IF-05)·Data Lake(IF-15) 어댑터 — 연결 대상 시스템은 사용자 결정이 필요하다. Data Lake는 별도 서버로 만든다(사용자 결정 2026-10-24) — v1 설계·IF-15 계약은 [80-75](../80-integration/80-75-data-lake-server.md), Lake 삭제는 RD-P2-05와 함께 닫는다(80-75 5.4).
+- 남은 것: 실제 과금·OTA(IF-05)·Data Lake(IF-15) 어댑터 — 연결 대상 시스템은 사용자 결정이 필요하다. Data Lake는 별도 서버로 만든다(사용자 결정 2026-10-24) — v1 설계·IF-15 계약은 [80-75](../80-integration/80-75-data-lake-server.md), Lake 삭제는 RD-P2-05와 함께 닫는다(80-75 5.4). 알림 메일(SMTP)은 D-RD-7로 두지 않는다(메일 연결·`FF_CONN_MAIL` 삭제).
 - 첫 화면 묶음: 이 작업 뒤 309.8/310 KiB(병합 기준 308.3, +1.5) — 오류 문장·종류는 연결이 끊겨도 보여야 하므로 첫 화면에 두고, 다음 행동 본체(design/error-next.tsx·copy/error-actions.ts)·세션 안내 띠·칸 오류·쪽 넘김·연결 표시는 필요할 때 읽는 묶음으로 나눴다. 남은 여유 0.2 KiB — 다음 첫 화면 추가 전에 예산 조정이 필요하다.
 
 ## 9. 단독 설치·백업·첫 실행 — RD-OPS-05·RD-OPS-09·RD-OPS-02·RD-SEC-09·RD-P2-04 (2026-10-24 구현)
@@ -304,4 +308,4 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 - 이미지 게시(레지스트리·서명·SBOM 첨부)와 배포 자동화는 없다 — 사람 승인 뒤 따로.
 - 이벤트 이력 보존 기한은 고객 정책이 정해지지 않아 기본 "지우지 않음"이다.
 - 화면 일부는 여전히 예시 상품(`CAT-00019`)을 고정해 조회한다(체험 분석·사용 권한 체험 목록) — 빈 설치에서 빈 결과로 보여 오류는 없지만 고객 상품을 고르게 바꿔야 한다.
-- 디자인 시스템 갤러리(`/_design`)는 견본 값(예시 ID)을 보인다 — 운영 메뉴에서 숨길지 결정이 필요하다.
+- 디자인 시스템 갤러리(`/_design`)는 견본 값(예시 ID)을 보인다 — **해결(D-RD-8)**: 운영 빌드에서 표준 따라하기와 함께 숨긴다.

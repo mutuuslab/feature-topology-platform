@@ -125,6 +125,19 @@ describe('SSO 로그인 흐름 (인가 코드 + PKCE, BFF 세션)', () => {
     expect(audit.list({ actorId: USERS.nobody.sub, result: 'DENIED' }).some((a) => a.action === 'AUTH_LOGIN')).toBe(true);
   });
 
+  it('같은 브라우저에서 다시 로그인하면 새 세션 ID — 이전 세션 쿠키는 더 쓰이지 않는다(세션 고정 방지)', async () => {
+    const { agent, done } = await login('author');
+    const first = ([] as string[]).concat(done.headers['set-cookie'] ?? []).find((c) => c.startsWith('ff_session='))!.split(';')[0];
+    const start = await agent.get('/api/auth/login').query({ login_hint: 'author' }).expect(302);
+    const back = await fetch(start.headers.location, { redirect: 'manual' });
+    const cb = new URL(back.headers.get('location')!);
+    const again = await agent.get(cb.pathname + cb.search).expect(302);
+    const second = ([] as string[]).concat(again.headers['set-cookie'] ?? []).find((c) => c.startsWith('ff_session='))!.split(';')[0];
+    expect(second).not.toBe(first);
+    await http().get('/api/features').set('Cookie', first).expect(401);
+    await http().get('/api/features').set('Cookie', second).expect(200);
+  });
+
   it('로그아웃 — 세션 삭제·쿠키 제거·IdP 로그아웃 주소, 그 뒤 401', async () => {
     const { agent } = await login('author');
     await agent.get('/api/features').expect(200);

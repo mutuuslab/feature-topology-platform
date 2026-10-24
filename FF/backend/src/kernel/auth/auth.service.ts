@@ -243,18 +243,23 @@ export class AuthService {
     return { id: row.sub, name: row.name, email: row.email, roles };
   }
 
-  /** 로그아웃 — 세션을 지운다. IdP 로그아웃 주소(있으면) */
-  async logout(req: Request): Promise<{ endSessionUrl?: string }> {
+  /** 요청 쿠키의 세션을 지운다(있으면 주체) — 로그아웃·다시 로그인(세션 고정 방지)에서 */
+  dropSession(req: Request, action = 'AUTH_LOGOUT'): string | null {
     const id = this.sessionIdOf(req);
-    if (!id || !this.cfg) return {};
+    if (!id) return null;
     const hash = sha256(id);
     const row = this.db.get<SessionRow>('SELECT * FROM auth_session WHERE id_hash = ?', hash);
-    if (row) {
-      this.db.tx(() => {
-        this.db.run('DELETE FROM auth_session WHERE id_hash = ?', hash);
-        this.audit.record(probeActor(row.sub), 'AUTH_LOGOUT', row.sub, { componentId: 'D06-09' });
-      });
-    }
+    if (!row) return null;
+    this.db.tx(() => {
+      this.db.run('DELETE FROM auth_session WHERE id_hash = ?', hash);
+      this.audit.record(probeActor(row.sub), action, row.sub, { componentId: 'D06-09' });
+    });
+    return row.sub;
+  }
+
+  /** 로그아웃 — 세션을 지운다. IdP 로그아웃 주소(있으면) */
+  async logout(req: Request): Promise<{ endSessionUrl?: string }> {
+    if (!this.cfg || !this.dropSession(req)) return {};
     const meta = await this.oidc.meta().catch(() => null);
     if (!meta?.end_session_endpoint) return {};
     const u = new URL(meta.end_session_endpoint);

@@ -63,6 +63,8 @@ export class AuthController {
     clearCookie(res, LOGIN_COOKIE, { ...this.cookieOpts(), path: '/api/auth' });
     try {
       const { sessionCookie, returnTo } = await this.auth.finishLogin(q, loginCookie);
+      // 이 브라우저에 남은 이전 세션은 지운다 — 로그인마다 새 세션 ID(세션 고정 방지)
+      this.auth.dropSession(req, 'AUTH_SESSION_REPLACED');
       setCookie(res, SESSION_COOKIE, sessionCookie, { ...this.cookieOpts(), path: '/', maxAgeSec: this.auth.cfg!.sessionTtlMin * 60 });
       res.setHeader('Cache-Control', 'no-store');
       res.redirect(302, returnTo);

@@ -639,7 +639,7 @@
       "title": "403만 구분 — 401·409/412·422·네트워크 처리 없음, 개발자 문구",
       "evidence": [
         "frontend/src/api/hooks.ts:35",
-        "frontend/src/api/client.ts:120"
+        "frontend/src/api/client.ts:122"
       ],
       "criteria": "401 재로그인 안내, 409/412 다시 불러오기 안내, 422 필드 오류, 네트워크 끊김 안내가 사용자 말로(포트·서버 이름 없이)",
       "status": "done",
@@ -693,7 +693,7 @@
       "priority": "P1",
       "area": "연계",
       "phase": "R3",
-      "title": "메일·과금·OTA·Data Lake가 모의",
+      "title": "과금·OTA·Data Lake가 모의(알림 메일은 채널 없음 — D-RD-7)",
       "evidence": [
         "backend/src/adapters/if-mocks/external-systems.ts"
       ],

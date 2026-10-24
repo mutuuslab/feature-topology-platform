@@ -134,7 +134,7 @@ li,.card p,.card h3{overflow-wrap:anywhere}
 <tr data-cat="CCS 전달·수렴" data-pri="P0" data-owner="CCS" data-verdict="부분" id="FFP-F017">
 <td class="mono nw">FFP-F017</td><td><b>CCS 전송 분리</b><div class="sub">Feature 정책 발행과 CCS/OTA의 전달 결과를 별도 식별자로 추적해야 한다.</div><div class="sub"><b>합격 조건</b> 정책 릴리스 ID와 전송 campaign ID가 양방향으로 조회된다.</div><div class="sub">근거 플랫폼 책임 분리 제안 · 시험 <a href="#TC15">TC15</a></div></td>
 <td class="cat">CCS 전달·수렴</td><td class="nw">P0</td><td class="nw">CCS</td><td class="nw"><span class="badge v-part"><span aria-hidden="true">◐</span> 부분</span></td>
-<td>게시본에 campaignId(CMP-)가 저장되어 게시본→캠페인은 조회되지만 campaignId→게시본·정책 릴리스 역방향 조회가 없다.<details><summary>근거 3</summary><code>backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:18</code><br><code>backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:149</code><br><code>contracts/src/routes.ts:173</code><div class="sub">관련 규칙 FFG-PLT-012</div></details></td>
+<td>게시본에 campaignId(CMP-)가 저장되어 게시본→캠페인은 조회되지만 campaignId→게시본·정책 릴리스 역방향 조회가 없다.<details><summary>근거 3</summary><code>backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:18</code><br><code>backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:149</code><br><code>contracts/src/routes.ts:170</code><div class="sub">관련 규칙 FFG-PLT-012</div></details></td>
 <td class="nw mono"><a href="#ADS-BE17">ADS-BE17</a></td></tr>
 <tr data-cat="CCS 전달·수렴" data-pri="P0" data-owner="공동" data-verdict="부분" id="FFP-F018">
 <td class="mono nw">FFP-F018</td><td><b>수신·적용 ACK 분리</b><div class="sub">전송 수신·정책 수락·적용 보류·실행 상태 확인을 별도 ACK로 제공해야 한다.</div><div class="sub"><b>합격 조건</b> 수신 ACK만 온 차량을 적용 완료로 집계하지 않는다.</div><div class="sub">근거 안전 운영 상태 모델 제안 · 시험 <a href="#TC15">TC15</a></div></td>

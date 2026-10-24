@@ -1,8 +1,9 @@
-// 수신자 지정 알림 (D04-04 이벤트 이력 추적) — 기능명세서 공통 요구 "관련 담당자에게 Web 알림 또는 이메일".
+// 수신자 지정 알림 (D04-04 이벤트 이력 추적) — 기능명세서 공통 요구 "관련 담당자에게 Web 알림 또는 이메일(하나 이상)".
 // 커밋되는 플랫폼 이벤트마다 아래 규칙표가 알림 하나(내용·수신자·링크)를 만든다. 순수 함수 — 백엔드가 이벤트와 같은 트랜잭션에서
 // 부르고(알림만 남고 변경이 롤백되는 일이 없다), 화면은 같은 범주·심각도 표기를 쓴다.
 // 수신자: 개인(요청자·작성자·배포자), 역할(승인 대상자·운영 담당자, 본인·직무 분리 제외 계정 빼고), 팀(Feature Owner = ownerId 팀).
-// 채널: Web 알림은 항상, 이메일은 수신자 설정(범주별)에 따른다 — 승인 요청·긴급(CRITICAL)은 끌 수 없다.
+// 채널: 화면(Web) 알림만 — 사용자 결정 D-RD-7(2026-10-24, 메일 채널 없음). 끄는 설정이 없어 승인 요청·긴급(CRITICAL)을 포함한
+// 모든 알림이 받는 사람의 알림 목록에 항상 남는다(읽음·안 읽음은 계정별).
 import { z } from 'zod';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './access';
 import { DEMO_PERSONAS } from './duty-separation';
@@ -414,7 +415,6 @@ export interface NotificationAccount {
   roles: Role[];
   /** Feature Owner 팀 — '*'는 모든 Owner 팀(데모: Feature 설계 계정이 기획팀을 대신 받는다) */
   teams: string[] | '*';
-  email: string;
 }
 
 /** 데모 IAM 계정(usr-<persona>) — 역할은 DEMO_PERSONAS와 같다. 실제 배치는 전사 IAM 디렉터리·조직도에서 읽는다 */
@@ -422,11 +422,10 @@ export const NOTIFICATION_ACCOUNTS: NotificationAccount[] = Object.entries(DEMO_
   id: `usr-${key}`,
   roles: [...rs],
   teams: key === 'author' ? '*' : [],
-  email: `${key}@ff-demo.invalid`,
 }));
 
 export const accountOf = (id: string, fallbackRole?: Role): NotificationAccount =>
-  NOTIFICATION_ACCOUNTS.find((a) => a.id === id) ?? { id, roles: fallbackRole ? [fallbackRole] : [], teams: [], email: '' };
+  NOTIFICATION_ACCOUNTS.find((a) => a.id === id) ?? { id, roles: fallbackRole ? [fallbackRole] : [], teams: [] };
 
 /** 이 계정이 알림을 받는가 — 제외 계정이면 역할이 맞아도 받지 않는다 */
 export function receives(n: Pick<NotificationDraft, 'recipients' | 'exclude'>, a: Pick<NotificationAccount, 'id' | 'roles' | 'teams'>): boolean {
@@ -440,18 +439,8 @@ export const recipientKey = (r: Recipient) => (r.kind === 'user' ? `user:${r.id}
 /** 계정이 볼 수신자 키(팀 '*'는 'team:*'로 표기 — 저장소가 모든 팀으로 해석) */
 export const accountKeys = (a: Pick<NotificationAccount, 'id' | 'roles' | 'teams'>) => [`user:${a.id}`, ...a.roles.map((r) => `role:${r}`), ...(a.teams === '*' ? ['team:*'] : a.teams.map((t) => `team:${t}`))];
 
-// ─── 이메일 설정 ─────────────────────────────────────────────
+// ─── 읽음 처리 ───────────────────────────────────────────────
 
-/** 끌 수 없는 이메일 — 승인 요청(처리 기한이 있다)과 긴급(CRITICAL) */
-export const EMAIL_LOCKED: NotificationCategory[] = ['APPROVAL', 'SAFETY'];
-export const DEFAULT_EMAIL: Record<NotificationCategory, boolean> = { APPROVAL: true, SAFETY: true, DEPLOY: false, GATE: false, OPS: true, INTEGRATION: false, PROCEDURE: true };
-
-export const NotificationPrefsBody = z.object({ email: z.partialRecord(NotificationCategory, z.boolean()) }).strict();
-export type NotificationPrefsBody = z.infer<typeof NotificationPrefsBody>;
 export const NotificationReadAllBody = z.object({ category: NotificationCategory.optional() }).strict();
 export type NotificationReadAllBody = z.infer<typeof NotificationReadAllBody>;
 
-export function emailEnabled(n: Pick<NotificationDraft, 'category' | 'severity'>, prefs: Partial<Record<NotificationCategory, boolean>> | null): boolean {
-  if (n.severity === 'CRITICAL' || EMAIL_LOCKED.includes(n.category)) return true;
-  return prefs?.[n.category] ?? DEFAULT_EMAIL[n.category];
-}

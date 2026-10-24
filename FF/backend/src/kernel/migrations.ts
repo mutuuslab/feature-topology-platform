@@ -594,4 +594,15 @@ CREATE INDEX dashboard_owner ON dashboard (owner_id);
 CREATE TABLE dashboard_star (actor_id TEXT NOT NULL, dashboard_id TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY (actor_id, dashboard_id));
 `,
   },
+  {
+    // 알림 메일 채널 제거(사용자 결정 D-RD-7, 2026-10-24: 화면 알림만) — 038의 메일 설정(notification_pref)·모의 발송 기록
+    // (notification_email)을 지운다. 실제 메일은 한 번도 나간 적이 없다(모의 기록뿐). 038은 고치지 않는다(잠금).
+    // SQLite는 DROP TABLE 전에 그 표의 트리거(추가만 가능)를 먼저 지우므로 삭제 금지 트리거가 막지 않는다.
+    // 알림·수신자·제외·읽음 표는 그대로 — 화면 알림과 읽음 상태가 쓴다.
+    name: '048_drop_notification_email',
+    sql: `
+DROP TABLE IF EXISTS notification_email;
+DROP TABLE IF EXISTS notification_pref;
+`,
+  },
 ];

@@ -3,13 +3,20 @@
 // 처리 전에 키를 예약한다(출시 준비 RD-OPS-13) — 비동기 처리(외부 연계·가상 검증) 중에 같은 키가 또 오면 두 번 실행하지 않고 409.
 // 처리가 실패하면 예약을 풀어 같은 키로 다시 보낼 수 있다(저장된 응답이 없으니 재실행). 예약은 프로세스 메모리 —
 // 단일 인스턴스 전제(RD-OPS-14). PostgreSQL 이전 때 같은 트랜잭션의 행 예약으로 옮긴다.
-import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor, SetMetadata } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import { createHash } from 'node:crypto';
 import { finalize, Observable, of, tap } from 'rxjs';
 import { Clock } from './clock';
 import { DB, type Db } from './db';
 import { DomainError } from './errors';
+
+const NO_STORE_KEY = 'ff:idempotency-no-store';
+/**
+ * 응답을 재전송 보관함에 남기지 않는 창구 — 응답이 개인정보 사본인 내보내기(RD-P2-05). 같은 키로 다시 보내면 다시 처리한다(읽기 + 감사).
+ */
+export const NoReplayStore = () => SetMetadata(NO_STORE_KEY, true);
 
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {
@@ -19,6 +26,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
   constructor(
     @Inject(DB) private readonly db: Db,
     private readonly clock: Clock,
+    private readonly reflector: Reflector,
   ) {}
 
   intercept(ctx: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -26,6 +34,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
     const res = ctx.switchToHttp().getResponse<Response>();
     const key = req.header('idempotency-key');
     if (!key || ['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next.handle();
+    if (this.reflector.getAllAndOverride<boolean>(NO_STORE_KEY, [ctx.getHandler(), ctx.getClass()])) return next.handle();
 
     const route = `${req.method} ${req.path}`;
     const hash = createHash('sha256').update(JSON.stringify(req.body ?? null)).digest('hex');

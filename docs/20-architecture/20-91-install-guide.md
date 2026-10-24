@@ -158,7 +158,9 @@ IdP에 등록할 값:
 | `SIM_MODE` | | `off` | 가상 검증 실행기 — 운영 모드는 off |
 | `FF_EXT_SYNC_SEED` | | `0` | 외부 연계 예시 항목 — 운영 모드는 0 |
 | `GITLAB_WEBHOOK_TOKEN` · `JIRA_WEBHOOK_SECRET` · `CODEBEAMER_WEBHOOK_SECRET` | 연계하면 ✓ 비밀 | 비움 = 그 webhook 모두 401 | 외부 시스템 webhook 설정과 같은 새 값(공개된 모의 값은 거부) |
-| `FF_RETENTION_IDEMPOTENCY_DAYS` · `FF_RETENTION_SPAN_DAYS` · `FF_RETENTION_EVENT_DAYS` | | `7` · `30` · `0` | 운영 보조 저장소 보존 일수(§9.4). 0 = 지우지 않음 |
+| `FF_RETENTION_IDEMPOTENCY_DAYS` · `FF_RETENTION_SPAN_DAYS` · `FF_RETENTION_EVENT_DAYS` | | `7` · `30` · `0` | 운영 보조 저장소 보존 일수(§9.4). 0 = 지우지 않음. 이벤트 이력 일수는 사용자 결정 대기(D-RD-9) |
+| `FF_RETENTION_SESSION_DAYS` · `FF_RETENTION_NOTIFICATION_DAYS` · `FF_RETENTION_AUDIT_IDENTITY_DAYS` | | `30` · `0` · `0` | 개인정보 보존 기한(§9.4) — 끝난 세션 삭제(만료 뒤 일수)·알림 삭제·감사 사람 행위자 식별 가명 처리. 0 = 하지 않음 |
+| `FF_LAKE_URL` · `FF_LAKE_TOKEN` | 함께, 운영은 https | 비움 = 보내지 않음 | Data Lake 가명 단위 삭제 요청(IF-15 `POST /v1/erasure`, §9.5) — 비우면 차량 삭제 요청은 `NOT_CONNECTED`로 남는다 |
 | `FF_BACKUP_DIR` · `FF_BACKUP_KEEP_DAYS` | | `/var/backups/ff` · `35` | 백업 폴더·보관 일수(§9) |
 
 시험·데모 전용 설정(`FF_CLOCK_AT`·`FF_SCHEDULER`·`FF_HSM_VEHICLE_ROOT`·`FF_DEMO_FIXTURES`·`FF_SYNTHETIC`·`FF_EXT_FIXTURES`·`FF_SEED_ANCHOR`)은 운영 모드에서 켜져 있으면 시작을 거부한다.
@@ -259,13 +261,25 @@ curl -s http://127.0.0.1:9101/api/health/ready                       # 5) ready
 | 보안 로그(`security_event`) | 3년 | UN R155 — 하루 한 번 자동 정리(D04-03, 열린 Incident·이상 건에 묶인 행은 남긴다) |
 | 상태 보고·적용 확인(readback) | 730일 | UN ADS GTR 제안 — 같은 자동 정리 |
 | 차량 발신 보고 | 30일 | GDPR·PIPL 목적 달성 후 삭제 — 같은 자동 정리 |
-| 이벤트 이력(`events`) | 기본 지우지 않음(`FF_RETENTION_EVENT_DAYS=0`) | 이벤트 이력 화면·알림이 읽는다. 고객 정책이 정해지면 일수로 켠다 |
+| 이벤트 이력(`events`) | 기본 지우지 않음(`FF_RETENTION_EVENT_DAYS=0`) | 이벤트 이력 화면·알림·Data Lake 라벨이 읽는다. 일수는 사용자 결정 대기(**D-RD-9**) — 고객 정책이 정해지면 일수로 켠다 |
 | 멱등 키(재전송 응답) | 7일(`FF_RETENTION_IDEMPOTENCY_DAYS`) | 그 뒤 같은 키는 새 요청으로 처리된다 |
 | 추적 스팬(`otel_span`) | 30일(`FF_RETENTION_SPAN_DAYS`) | IF-11 모의 수집기 표 |
-| 로그인 세션 | 절대 8시간·유휴 60분 | `FF_SESSION_TTL_MIN`·`FF_SESSION_IDLE_MIN` |
+| 로그인 세션 | 절대 8시간·유휴 60분, 끝난 세션 행은 만료 뒤 30일에 삭제 | `FF_SESSION_TTL_MIN`·`FF_SESSION_IDLE_MIN` · `FF_RETENTION_SESSION_DAYS`(개인정보) |
+| 화면 알림·받는 사람·읽음 | 기본 지우지 않음(`FF_RETENTION_NOTIFICATION_DAYS=0`) | 개인정보(받는 사람·요청자) — 일수를 주면 그보다 오래된 알림을 지운다 |
+| 감사 이력의 사람 행위자 식별 | 기본 실명 유지(`FF_RETENTION_AUDIT_IDENTITY_DAYS=0`) | 기록은 지우지 않는다. 일수를 주면 그보다 오래된 행의 사람 행위자를 가명으로 바꾼다 — 체인 검증은 그대로 통과(20-90 §11.3) |
+| 개인정보 삭제 요청 | 요청 즉시 처리 | 데이터·규제 기록 → 개인정보(§9.5) — 법정 보존 기록(서명·승인·거래·안전)은 남긴다 |
 | 컨테이너 로그 | 50 MiB × 10개 | compose `logging` — 장기 보존은 로그 수집기 쪽 정책 |
 
-업무·안전 기록의 보존 기간 정의는 `contracts/src/rules/retention.ts`(화면 `데이터·규제 기록`), 운영 보조 저장소는 `backend/src/kernel/housekeeping.service.ts`.
+업무·안전 기록의 보존 기간 정의는 `contracts/src/rules/retention.ts`(화면 `데이터·규제 기록`), 운영 보조 저장소는 `backend/src/kernel/housekeeping.service.ts`, 개인정보 범주별 기한은 `contracts/src/rules/privacy.ts`(`PERSONAL_RETENTION`).
+
+### 9.5 개인정보 요청(열람·내보내기·삭제)
+
+- 화면: 데이터·규제 기록(`/admin/data`) → **개인정보** 탭. 목록(저장소·칸·처리·보존)은 누구나, 요청 목록은 보안 담당자·감사 조회자, 내보내기·요청·실행은 보안 담당자(`SECURITY_OFFICER`).
+- 사용자 식별자는 OIDC `sub`(IdP 계정 ID), 차량은 VIN. IdP의 계정 삭제는 고객 IdP 절차로 따로 한다.
+- 삭제는 요청 → **다른** 보안 담당자가 실행(4안 원칙, D-RD-11). 지운 행·바꾼 식별자는 되돌릴 수 없다. 백업에 남은 개인정보는 백업 보관 기한(`FF_BACKUP_KEEP_DAYS`)이 지나야 사라진다 — 복원했다면 같은 요청을 다시 실행한다.
+- 감사 이력은 지우지 않고 식별자만 가명이 된다. 처리 뒤 `GET /api/audit/chain`이 정상(ok)이어야 한다.
+- 차량 삭제는 Data Lake(설정이 있으면 `FF_LAKE_URL`)에 차량 가명으로 삭제를 요청한다. 연결 전에는 요청 기록에 `NOT_CONNECTED`로 남는다.
+- 설치 첫날 할 일: 판매국·지역·차종·트림 기준 값 등록(기준정보 → 차종·판매국 기준 값, 차량 사양 담당자) — 운영 차량 등록(IF-06 `POST /api/fleet/vehicles`)은 등록된 값만 받는다.
 
 ## 10. 키 보호(KEK)·차량 키 프로비저닝
 

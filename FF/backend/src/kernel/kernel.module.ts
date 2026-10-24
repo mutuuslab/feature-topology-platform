@@ -13,19 +13,21 @@ import { EventService } from './event.service';
 import { HousekeepingService } from './housekeeping.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
 import { KernelController } from './kernel.controller';
+import { LakeErasureClient } from './lake-erasure';
+import { PrivacyController, PrivacyService } from './privacy.service';
 import { SecretVault, vaultFromEnv } from './kms/key-protection';
 import { sealSecrets } from './kms/secret-columns';
 import { MIGRATIONS } from './migrations';
 import { Metrics } from './observability';
 import { seedOf } from './runtime-config';
 import { Scheduler } from './scheduler';
-import { loadFixtures, seedDataset, seedDemo } from './seed';
+import { loadFixtures, seedDataset, seedDemo, seedReferenceValues } from './seed';
 import { VehicleAuthService } from './vehicle-auth';
 
 @Global()
 @Module({
   imports: [DiscoveryModule],
-  controllers: [KernelController, AuthController],
+  controllers: [KernelController, AuthController, PrivacyController],
   providers: [
     {
       provide: DB,
@@ -39,6 +41,7 @@ import { VehicleAuthService } from './vehicle-auth';
         if (seed !== 'none') {
           seedDataset(db, loadFixtures(), seed);
           seedDemo(db);
+          seedReferenceValues(db);
         }
         try {
           sealSecrets(db, vault);
@@ -59,13 +62,15 @@ import { VehicleAuthService } from './vehicle-auth';
     AuthService,
     EventService,
     HousekeepingService,
+    LakeErasureClient,
+    PrivacyService,
     ComponentRegistry,
     VehicleAuthService,
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: DomainErrorFilter },
   ],
-  exports: [DB, SecretVault, Clock, Metrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService],
+  exports: [DB, SecretVault, Clock, Metrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

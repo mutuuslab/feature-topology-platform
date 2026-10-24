@@ -125,7 +125,7 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     mount('steward', '/', <HomeScreen />);
     await screen.findByRole('link', { name: /Feature Registry/ });
     await waitFor(() => expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1'));
-    const online = [...document.querySelectorAll('.jd-stats tr')].find((s) => s.textContent?.includes('데모 Fleet'));
+    const online = [...document.querySelectorAll('.jd-stats tr')].find((s) => s.textContent?.includes('등록 차량'));
     expect(online?.querySelector('.jd-num')?.textContent).toBe('1');
   });
 

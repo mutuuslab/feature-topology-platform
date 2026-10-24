@@ -320,7 +320,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151",
-        "contracts/src/routes.ts:171"
+        "contracts/src/routes.ts:173"
       ],
       "tests": [
         "backend/test/d03/delivery.spec.ts"
@@ -471,7 +471,7 @@
       "evidence": [
         "contracts/src/rules/odd-restriction.ts:8",
         "contracts/src/rules/odd-restriction.ts:37",
-        "contracts/src/schemas/policy.ts:47"
+        "contracts/src/schemas/policy.ts:48"
       ],
       "tests": [
         "contracts/src/rules/odd-restriction.test.ts"
@@ -1123,9 +1123,9 @@
     "FFP-F060": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/kernel/audit.service.ts:240",
-        "backend/src/kernel/audit.service.ts:213",
-        "backend/src/kernel/audit.service.ts:146"
+        "backend/src/kernel/audit.service.ts:349",
+        "backend/src/kernel/audit.service.ts:321",
+        "backend/src/kernel/audit.service.ts:196"
       ],
       "tests": [
         "backend/test/kernel/audit-chain.spec.ts"

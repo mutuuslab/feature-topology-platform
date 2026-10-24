@@ -1,7 +1,10 @@
 // /admin/data — 데이터·규제 기록: SUMS(D06-08, 명령별 RXSWIN·형식승인 영향·사용자 고지) · EU Data Act 접근 요청(D05-01, FFG-TEL-006) · 보존·삭제(D04-03, 13.7)
+//   · 개인정보(출시 준비 RD-P2-05) — 목록·보존 기한·정보주체 내보내기·삭제/가명 처리 요청(요청자와 다른 보안 담당자가 실행)
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { ERASURE_BASES, PRIVACY_SUBJECT_KINDS, type PersonalDataStore, type PrivacyRequestView } from '@ff/contracts';
 import { ko } from '../../copy/ko';
+import { privacy as PV } from '../../copy/privacy';
 import { AsyncView, Button, DangerConfirm, DataTable, ErrorNote, ExplainCodes, Field, KeyValue, PageHeader, Panel, Select, Tabs, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 
@@ -22,8 +25,8 @@ export function DataGovernanceScreen() {
         lead={T.lead}
         message={!ret.data || !sums.data ? { tone: 'neutral', value: '—', text: T.key.deletable } : del + miss ? { tone: 'warn', value: del + miss, text: T.key.attention(del, miss) } : { tone: 'ok', text: T.key.cleanAll }}
       />
-      <Tabs tabs={[{ key: 'sums', label: T.tabs.sums }, { key: 'data-act', label: T.tabs.dataAct }, { key: 'retention', label: T.tabs.retention }]}>
-        {(tab) => (tab === 'data-act' ? <DataAct /> : tab === 'retention' ? <Retention /> : <Sums />)}
+      <Tabs tabs={[{ key: 'sums', label: T.tabs.sums }, { key: 'data-act', label: T.tabs.dataAct }, { key: 'retention', label: T.tabs.retention }, { key: 'privacy', label: PV.tab }]}>
+        {(tab) => (tab === 'data-act' ? <DataAct /> : tab === 'retention' ? <Retention /> : tab === 'privacy' ? <Privacy /> : <Sums />)}
       </Tabs>
     </div>
   );
@@ -287,5 +290,201 @@ function Retention() {
       </Panel>
       <DangerConfirm open={confirm} title={R.sweep} body={R.sweepBody} confirmWord={R.sweepConfirm} actionLabel={R.sweep} onClose={() => setConfirm(false)} onConfirm={() => sweep.mutate({ body: {} }, { onSettled: () => setConfirm(false) })} />
     </div>
+  );
+}
+
+interface PrivacyInventory {
+  stores: PersonalDataStore[];
+  retention: { key: string; store: string; env: string; days: number; action: string; basis: string; decision?: string }[];
+  lake: { configured: boolean };
+}
+
+/** 개인정보 — 목록·보존 기한·정보주체 요청(내보내기·삭제 요청)·요청 목록(실행·거절) */
+function Privacy() {
+  const inv = useApi<PrivacyInventory>('privacyInventory');
+  const reader = usePermission(['SECURITY_OFFICER', 'AUDITOR']);
+  const d = inv.data;
+  const C = PV.col;
+  return (
+    <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
+      <div className="ds-split">
+        <PrivacyRequestForm />
+        <Panel title={PV.retention} id="pv-retention">
+          <AsyncView state={asyncState(inv)} error={inv.error} onRetry={() => inv.refetch()} rows={3}>
+            <KeyValue rows={(d?.retention ?? []).map((r) => ({ k: <span className="ds-mono">{r.env}</span>, v: r.days ? PV.retentionDays(r.days) : PV.retentionNever, note: `${r.basis}${r.decision ? ` · ${PV.decision(r.decision)}` : ''}` }))} />
+          </AsyncView>
+        </Panel>
+      </div>
+      {reader.ok ? <PrivacyRequests /> : <p className="ds-field__hint">{PV.noAccess}</p>}
+      <Panel title={PV.inventory} id="pv-inventory">
+        <p className="ds-field__hint" style={{ marginTop: 0 }}>
+          {PV.inventoryLead}
+        </p>
+        <AsyncView state={asyncState(inv, !d?.stores.length)} error={inv.error} onRetry={() => inv.refetch()}>
+          <DataTable
+            caption={PV.inventory}
+            rows={d?.stores ?? []}
+            rowKey={(r) => `${r.subject}-${r.store}`}
+            maxHeight="60vh"
+            columns={[
+              { key: 's', header: C.store, cell: (r) => mono(r.store) },
+              { key: 'u', header: C.subject, cell: (r) => PV.subject[r.subject] ?? r.subject },
+              { key: 'c', header: C.category, cell: (r) => PV.category[r.category] ?? r.category },
+              { key: 'f', header: C.fields, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{[...r.idColumns, ...r.textColumns].join(', ')}</span> },
+              { key: 't', header: C.treatment, cell: (r) => PV.treatment[r.treatment] ?? r.treatment },
+              { key: 'r', header: C.retention, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.retention}</span> },
+              { key: 'b', header: C.basis, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.basis}</span> },
+            ]}
+          />
+        </AsyncView>
+      </Panel>
+    </div>
+  );
+}
+
+function PrivacyRequestForm() {
+  const perm = usePermission(['SECURITY_OFFICER']);
+  const exp = useApiMutation<{ counts: Record<string, number> }>('privacyExport', ['audit']);
+  const create = useApiMutation('createPrivacyRequest', ['privacyRequests', 'audit']);
+  const [kind, setKind] = useState<(typeof PRIVACY_SUBJECT_KINDS)[number]>('USER');
+  const [subjectId, setSubjectId] = useState('');
+  const [basis, setBasis] = useState<(typeof ERASURE_BASES)[number]>('DATA_SUBJECT_REQUEST');
+  const [reason, setReason] = useState('');
+  const [file, setFile] = useState<{ url: string; rows: number } | null>(null);
+  const ready = perm.ok && subjectId.trim().length >= 2 && reason.trim().length >= 2;
+  const body = { subjectKind: kind, subjectId: subjectId.trim(), reason: reason.trim() };
+  return (
+    <Panel title={PV.request} id="pv-request">
+      <p className="ds-field__hint" style={{ marginTop: 0 }}>
+        {PV.requestLead}
+      </p>
+      <div className="ds-split">
+        <Select label={PV.kind} value={kind} onChange={(e) => setKind(e.target.value as typeof kind)}>
+          {PRIVACY_SUBJECT_KINDS.map((k) => (
+            <option key={k} value={k}>
+              {PV.subject[k]}
+            </option>
+          ))}
+        </Select>
+        <Select label={PV.basisLabel} value={basis} onChange={(e) => setBasis(e.target.value as typeof basis)}>
+          {ERASURE_BASES.filter((b) => kind === 'USER' || b !== 'EMPLOYMENT_END').map((b) => (
+            <option key={b} value={b}>
+              {PV.basis[b]}
+            </option>
+          ))}
+        </Select>
+      </div>
+      <Field label={PV.subjectId}>
+        <input className="ds-input ds-input--mono" value={subjectId} onChange={(e) => setSubjectId(e.target.value)} />
+      </Field>
+      <Field label={PV.reason}>
+        <input className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} />
+      </Field>
+      <ErrorNote error={exp.error ?? create.error} />
+      <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', alignItems: 'center' }}>
+        <Button
+          disabled={!ready || exp.isPending}
+          title={perm.hint}
+          onClick={() =>
+            exp.mutate(
+              { body },
+              {
+                onSuccess: (data) => {
+                  if (file) URL.revokeObjectURL(file.url);
+                  const rows = Object.values(data.counts).reduce((a, b) => a + b, 0);
+                  setFile({ url: URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })), rows });
+                },
+              },
+            )
+          }
+        >
+          {PV.export}
+        </Button>
+        <Button variant="danger" disabled={!ready || create.isPending || (kind === 'VEHICLE' && basis === 'EMPLOYMENT_END')} title={perm.hint} onClick={() => create.mutate({ body: { ...body, basis } }, { onSuccess: () => (setSubjectId(''), setReason('')) })}>
+          {PV.erase}
+        </Button>
+        {file && (
+          <span className="ds-field__hint" data-privacy-export>
+            {PV.exported(file.rows)}{' '}
+            <a href={file.url} download="privacy-export.json">
+              {PV.download}
+            </a>
+          </span>
+        )}
+      </div>
+    </Panel>
+  );
+}
+
+function PrivacyRequests() {
+  const q = useApi<{ items: PrivacyRequestView[] }>('privacyRequests');
+  const perm = usePermission(['SECURITY_OFFICER']);
+  const run = useApiMutation('executePrivacyRequest', ['privacyRequests', 'audit', 'auditChain']);
+  const reject = useApiMutation('rejectPrivacyRequest', ['privacyRequests', 'audit']);
+  const [confirm, setConfirm] = useState<string | null>(null);
+  const [why, setWhy] = useState('');
+  const rows = q.data?.items ?? [];
+  const C = PV.rcol;
+  const sum = (o: Record<string, number> | undefined) => Object.values(o ?? {}).reduce((a, b) => a + b, 0);
+  return (
+    <Panel title={PV.requests} id="pv-requests">
+      <ErrorNote error={run.error ?? reject.error} />
+      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: PV.requestsEmpty }} error={q.error} onRetry={() => q.refetch()} rows={3}>
+        <DataTable
+          caption={PV.requests}
+          rows={rows}
+          rowKey={(r) => r.requestId}
+          columns={[
+            { key: 'i', header: C.id, cell: (r) => mono(r.requestId) },
+            { key: 's', header: C.subject, cell: (r) => <span className="ds-mono">{`${PV.subject[r.subjectKind]} · ${r.subjectId ?? r.pseudonym}`}</span> },
+            { key: 't', header: C.status, cell: (r) => (r.status === 'DONE' ? <VerdictBadge value="PASS" /> : PV.status[r.status]) },
+            { key: 'b', header: C.by, cell: (r) => <span className="ds-mono" title={when(r.requestedAt)}>{r.requestedBy}</span> },
+            { key: 'd', header: C.decided, cell: (r) => <span className="ds-mono" title={r.decisionReason ?? ''}>{r.decidedBy ?? '—'}</span> },
+            {
+              key: 'r',
+              header: C.result,
+              cell: (r) =>
+                r.result ? (
+                  <span style={{ fontSize: 'var(--fs-xs)' }}>
+                    {PV.result(sum(r.result.deleted), sum(r.result.pseudonymised), sum(r.result.retained))}
+                    {PV.lake[r.result.lake.status] ? ` · ${PV.lake[r.result.lake.status]}` : ''}
+                  </span>
+                ) : (
+                  '—'
+                ),
+            },
+            {
+              key: 'a',
+              header: C.act,
+              cell: (r) =>
+                r.status === 'REQUESTED' ? (
+                  <span className="ds-nowrap" style={{ display: 'inline-flex', gap: 'var(--sp-1)' }}>
+                    <Button variant="danger" disabled={!perm.ok || run.isPending} title={perm.hint} onClick={() => setConfirm(r.requestId)}>
+                      {PV.execute}
+                    </Button>
+                    <Button variant="ghost" disabled={!perm.ok || reject.isPending || why.trim().length < 2} title={perm.hint} onClick={() => reject.mutate({ params: { id: r.requestId }, body: { reason: why.trim() } }, { onSuccess: () => setWhy('') })}>
+                      {PV.reject}
+                    </Button>
+                  </span>
+                ) : null,
+            },
+          ]}
+        />
+        {rows.some((r) => r.status === 'REQUESTED') && (
+          <Field label={PV.rejectReason}>
+            <input className="ds-input" value={why} onChange={(e) => setWhy(e.target.value)} />
+          </Field>
+        )}
+      </AsyncView>
+      <DangerConfirm
+        open={confirm !== null}
+        title={PV.confirmTitle}
+        body={PV.confirmBody}
+        confirmWord={PV.confirmWord}
+        actionLabel={PV.execute}
+        onClose={() => setConfirm(null)}
+        onConfirm={() => confirm && run.mutate({ params: { id: confirm }, body: {} }, { onSettled: () => setConfirm(null) })}
+      />
+    </Panel>
   );
 }

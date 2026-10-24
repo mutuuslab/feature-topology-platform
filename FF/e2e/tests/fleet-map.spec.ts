@@ -46,7 +46,7 @@ async function settled(canvas: Locator) {
 function captureDemo(page: Page) {
   const got: Item[][] = [];
   page.on('response', async (r: Response) => {
-    if (/\/api\/fleet\/map\?.*source=DEMO/.test(r.url()) && r.ok()) got.push(((await r.json()) as { items: Item[] }).items);
+    if (/\/api\/fleet\/map\?.*source=FLEET/.test(r.url()) && r.ok()) got.push(((await r.json()) as { items: Item[] }).items);
   });
   return () => got.slice(-2);
 }

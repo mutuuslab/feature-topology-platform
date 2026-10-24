@@ -144,7 +144,7 @@ function Legend({ lens, items, summary, clustered }: { lens: MapLens; items: Fle
           {LOCATION_PRECISION_LABEL.REGION}
         </span>
       </li>
-      {items.some((x) => x.source === 'DEMO') && (
+      {items.some((x) => x.source !== 'SYNTHETIC') && (
         <li>
           <span className="fm-chip">
             <svg className="fm-chip__car" viewBox="0 0 12 20" aria-hidden="true">
@@ -323,7 +323,7 @@ export function FleetMapScreen() {
 
   const demo = useApi<MapResponse>(
     'fleetMap',
-    { query: { source: 'DEMO', catalogId, flagKey } },
+    { query: { source: 'FLEET', catalogId, flagKey } },
     {
       refetchInterval: STATIC_MODE ? false : 5000,
       placeholderData: (prev) => prev,

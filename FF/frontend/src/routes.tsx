@@ -145,6 +145,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/master/structure', element: named(masterScreens, 'StructureScreen'), title: 'SW 구조', group: 'master', menu: '/master/structure', components: ['D01-02'], v2: true },
   { path: '/change/eo', element: named(opsScreens, 'EoScreen'), title: 'SW EO', group: 'master', menu: '/change/eo', v2: true },
   { path: '/master/control-points', element: named(masterScreens, 'ControlPointsScreen'), title: '제어점', group: 'master', menu: '/master/control-points', components: ['D01-02'], v2: true },
+  { path: '/master/reference-values', element: named(() => import('./screens/master/ReferenceValues'), 'ReferenceValuesScreen'), title: '차종·판매국 기준 값', group: 'master', menu: '/master/reference-values', components: ['D02-01'], v2: true },
 
   { path: '/precheck', element: def(() => import('./screens/governance/Precheck')), title: '데이터 사전점검', group: 'master', menu: '/precheck', components: ['D01-02'], v2: true },
 

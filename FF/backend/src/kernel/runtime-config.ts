@@ -4,6 +4,7 @@
 // 인증(FF_AUTH·OIDC_*·FF_SESSION_*)은 auth/auth-config.ts — FF_AUTH=oidc면 운영 모드가 아니어도 검사한다(RD-SEC-01).
 import { authConfigProblems } from './auth/auth-config';
 import { kekConfigProblems } from './kms/key-protection';
+import { lakeErasureConfigProblems } from './lake-erasure';
 import { otaConfigProblems } from './ota-config';
 import { vehicleChannelConfigProblems } from './vehicle-auth-config';
 
@@ -33,7 +34,7 @@ export function corsOrigins(env: Env = process.env): true | string[] {
 /** 문제 목록(비었으면 시작해도 됨) — 시험과 시작 검사가 같은 함수를 쓴다 */
 export function runtimeConfigProblems(env: Env = process.env): string[] {
   // 키 암호화 키(RD-SEC-06) — 운영 모드는 필수, 그 밖에는 주었을 때만 형식을 본다
-  if (!isProduction(env)) return [...kekConfigProblems(env, false), ...vehicleChannelConfigProblems(env), ...otaConfigProblems(env), ...authConfigProblems(env)];
+  if (!isProduction(env)) return [...kekConfigProblems(env, false), ...vehicleChannelConfigProblems(env), ...otaConfigProblems(env), ...authConfigProblems(env), ...lakeErasureConfigProblems(env, false)];
   const out: string[] = [];
   const db = (env.FF_DB ?? '').trim();
   if (!db || db === ':memory:') out.push('FF_DB가 없거나 :memory:입니다 — 운영 모드는 재시작 뒤에도 남는 DB 파일이 필요합니다');
@@ -60,6 +61,8 @@ export function runtimeConfigProblems(env: Env = process.env): string[] {
   // OTA 서버 연동(IF-05) — ota 채널을 고르면 주소·OAuth2 클라이언트·webhook 비밀이 필수(80-45)
   out.push(...otaConfigProblems(env));
   out.push(...authConfigProblems(env));
+  // Data Lake 가명 단위 삭제(RD-P2-05, 80-75 §7) — 주었을 때만, 운영은 https
+  out.push(...lakeErasureConfigProblems(env, true));
   return out;
 }
 

@@ -91,7 +91,7 @@ function toGeoJSON(el: Element, items: FleetMapVehicle[], lens: MapLens) {
         properties: {
           vin: v.vin,
           short: v.label ? v.vin : '',
-          demo: v.source === 'DEMO',
+          demo: v.source !== 'SYNTHETIC',
           region: v.position!.precision === 'REGION',
           stale: v.stale,
           color: cssVar(el, stateVar(v, lens)),

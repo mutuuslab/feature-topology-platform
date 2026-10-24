@@ -173,6 +173,22 @@ describe('운영 모드 첫 실행 — 빈 DB', () => {
     expect(chain.verified).toBeGreaterThan(0);
   });
 
+  it('고객 기준 값은 빈 목록에서 시작한다 — 데모 판매국·차종이 없고, 등록한 값으로 운영 차량(PRODUCTION)을 등록한다(RD-OPS-03)', async () => {
+    const cookie = await login('admin');
+    expect((await http().get('/api/reference-values').set('Cookie', cookie).expect(200)).body.items).toEqual([]);
+    const post = (path: string, body: object, key: string) => http().post(path).set('Cookie', cookie).set('Origin', PUBLIC).set('Idempotency-Key', key).send(body);
+    const vehicle = { vin: 'OEM-0001', label: '고객 1호차', country: 'KR', vehicleModel: 'NE1', trim: 'Base', modelYear: '2027', upgVc: 'UPGVC-A', swVersion: '1.0.0' };
+    // 기준 값이 없으면 차량을 받지 않는다 — 데모 목록(KR·NX4 PE)을 그대로 받지 않는다
+    await post('/api/fleet/vehicles', vehicle, 'veh-0').expect(400);
+    await post('/api/reference-values', { kind: 'COUNTRY', code: 'KR', label: '대한민국' }, 'ref-1').expect(201);
+    await post('/api/reference-values', { kind: 'VEHICLE_MODEL', code: 'NE1', label: 'NE1' }, 'ref-2').expect(201);
+    await post('/api/reference-values', { kind: 'TRIM', code: 'Base', label: 'Base', parent: 'NE1' }, 'ref-3').expect(201);
+    expect((await post('/api/fleet/vehicles', vehicle, 'veh-1').expect(201)).body).toMatchObject({ fleet: 'PRODUCTION' });
+    const values = (await http().get('/api/reference-values').set('Cookie', cookie).expect(200)).body.items;
+    expect(values.map((x: { origin: string }) => x.origin)).toEqual(['CUSTOMER', 'CUSTOMER', 'CUSTOMER']);
+    expect(app.get(AuditService).verifyChain().ok).toBe(true);
+  });
+
   it('재시작해도 데이터가 남고, 감사 고정점에 설치 식별이 적힌다', async () => {
     await app.close();
     await boot();

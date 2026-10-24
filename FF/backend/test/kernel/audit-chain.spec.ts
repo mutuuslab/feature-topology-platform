@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { DB, type Db } from '../../src/kernel/db';
-import { AuditService, chainHash, AUDIT_GENESIS } from '../../src/kernel/audit.service';
+import { AuditService, chainHash, AUDIT_GENESIS, fieldDigest } from '../../src/kernel/audit.service';
 import { actor, bootApp } from '../helpers';
 
 let close: (() => Promise<void>) | null = null;
@@ -101,8 +101,10 @@ describe('감사 체인 고정점 — DB 밖 서명(FF_AUDIT_KEY · FF_AUDIT_ANC
     db.run('DROP TRIGGER audit_no_delete');
     const rows = db.all<any>('SELECT * FROM audit ORDER BY id');
     db.run('DELETE FROM audit WHERE id = ?', rows.at(-1).id);
-    // 남은 행 내용 하나를 고치고 체인 전체를 다시 계산 — 체인만 보면 멀쩡하다
-    db.run("UPDATE audit SET reason = '조작' WHERE id = ?", rows[1].id);
+    // 남은 행 내용 하나를 고치고 체인 전체를 다시 계산 — 체인만 보면 멀쩡하다.
+    // 체인 v2(RD-P2-05)는 칸 해시를 소금으로 묶는데, DB 권한자는 소금도 읽는다 — 칸 해시까지 다시 맞춘 공격자를 가정한다
+    const salt = db.get<{ salt: string }>('SELECT salt FROM audit_salt WHERE audit_id = ?', rows[1].id)!.salt;
+    db.run("UPDATE audit SET reason = '조작', reason_d = ? WHERE id = ?", fieldDigest(salt, 'reason', '조작'), rows[1].id);
     let prev = AUDIT_GENESIS;
     for (const r of db.all<any>('SELECT * FROM audit ORDER BY id')) {
       const hash = chainHash(prev, r);

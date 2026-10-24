@@ -6227,6 +6227,7 @@
                         "source": {
                           "type": "string",
                           "enum": [
+                            "PRODUCTION",
                             "DEMO",
                             "SYNTHETIC"
                           ]
@@ -6319,6 +6320,7 @@
                         "fleet": {
                           "type": "string",
                           "enum": [
+                            "PRODUCTION",
                             "DEMO",
                             "SAMPLE"
                           ],
@@ -6340,6 +6342,97 @@
                     "default": []
                   }
                 },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/fleet/vehicles": {
+      "post": {
+        "summary": "운영 차량 등록(IF-06 Fleet 연계) — Fleet 구분 PRODUCTION, 판매국·차종·트림은 등록된 기준 값이어야 한다(RD-OPS-03)",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "registerVehicle",
+        "description": "허용 역할: 시스템, 차량 사양·Variant 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vin": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 40
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "country": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "vehicleModel": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "trim": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "modelYear": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                  },
+                  "upgVc": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "swVersion": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "canary": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": [
+                  "vin",
+                  "label",
+                  "country",
+                  "vehicleModel",
+                  "trim",
+                  "modelYear",
+                  "upgVc",
+                  "swVersion"
+                ],
                 "additionalProperties": false
               }
             }
@@ -10418,6 +10511,470 @@
                 "required": [
                   "ref",
                   "note"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/reference-values": {
+      "get": {
+        "summary": "고객 기준 값(판매국·지역·차종·트림) — 등록·사용 중지 상태, 시드(SEED)·고객(CUSTOMER) 구분",
+        "tags": [
+          "D02-01"
+        ],
+        "operationId": "referenceValues",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "기준 값 등록 — 차량 사양 담당자, 지역·트림은 부모(판매국·차종)가 먼저",
+        "tags": [
+          "D02-01"
+        ],
+        "operationId": "createReferenceValue",
+        "description": "허용 역할: 차량 사양·Variant 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "COUNTRY",
+                      "REGION",
+                      "VEHICLE_MODEL",
+                      "TRIM"
+                    ]
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[\\p{L}\\p{N}][\\p{L}\\p{N} ._·+-]{0,39}$/u"
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "parent": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^[\\p{L}\\p{N}][\\p{L}\\p{N} ._·+-]{0,39}$/u",
+                    "default": null
+                  }
+                },
+                "required": [
+                  "kind",
+                  "code",
+                  "label"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/reference-values/{kind}/{code}/retire": {
+      "post": {
+        "summary": "기준 값 사용 중지 — 이미 쓰인 기록은 그대로, 새 차량 등록·선택지에서 빠진다",
+        "tags": [
+          "D02-01"
+        ],
+        "operationId": "retireReferenceValue",
+        "description": "허용 역할: 차량 사양·Variant 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 300
+                  },
+                  "parent": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/privacy/inventory": {
+      "get": {
+        "summary": "개인정보 목록 — 저장소·칸·정보주체·처리 방법·보존 기한(설치 설정 반영)",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "privacyInventory",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/privacy/export": {
+      "post": {
+        "summary": "정보주체 내보내기(JSON) — 개인정보 목록의 모든 저장소에서 그 사용자·차량의 행(감사 기록, 식별자 대신 가명)",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "privacyExport",
+        "description": "허용 역할: 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "subjectKind": {
+                    "type": "string",
+                    "enum": [
+                      "USER",
+                      "VEHICLE"
+                    ]
+                  },
+                  "subjectId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "subjectKind",
+                  "subjectId",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/privacy/requests": {
+      "get": {
+        "summary": "삭제·가명 처리 요청 — 상태·대상 행 수·처리 결과(처리 뒤에는 가명만)",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "privacyRequests",
+        "description": "허용 역할: 사이버보안 담당자(CSM), 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "삭제·가명 처리 요청 — 저장소별 대상 행 수를 미리 센다",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "createPrivacyRequest",
+        "description": "허용 역할: 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "subjectKind": {
+                    "type": "string",
+                    "enum": [
+                      "USER",
+                      "VEHICLE"
+                    ]
+                  },
+                  "subjectId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "DATA_SUBJECT_REQUEST",
+                      "CONSENT_WITHDRAWN",
+                      "CONTRACT_END",
+                      "EMPLOYMENT_END"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "subjectKind",
+                  "subjectId",
+                  "basis",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/privacy/requests/{id}/execute": {
+      "post": {
+        "summary": "삭제·가명 처리 실행 — 요청자와 다른 보안 담당자, 감사 체인 검증 유지, 차량은 Data Lake 삭제 요청",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "executePrivacyRequest",
+        "description": "허용 역할: 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/privacy/requests/{id}/reject": {
+      "post": {
+        "summary": "삭제·가명 처리 요청 거절 — 사유 필수, 대상 식별자를 지운다",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "rejectPrivacyRequest",
+        "description": "허용 역할: 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
                 ],
                 "additionalProperties": false
               }

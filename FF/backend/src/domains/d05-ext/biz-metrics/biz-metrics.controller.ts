@@ -35,7 +35,7 @@ export class BizMetricsService {
       source,
       groupBy,
       k: K_ANONYMITY,
-      counts: { demo: trials.filter((g) => g.source === 'DEMO').length, synthetic: trials.filter((g) => g.source === 'SYNTHETIC').length },
+      counts: { production: trials.filter((g) => g.source === 'PRODUCTION').length, demo: trials.filter((g) => g.source === 'DEMO').length, synthetic: trials.filter((g) => g.source === 'SYNTHETIC').length },
       // 가중 표본(5년 운영 모집단)이면 행 수와 대표 대수가 다르다 — 대표 대수는 가중 합계
       represented: Math.round(trials.reduce((s, g) => s + weightOf(profiles.get(g.vin)), 0)),
       ...funnel,

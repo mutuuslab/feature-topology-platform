@@ -76,7 +76,7 @@ export function KeyMessage({ tone = 'neutral', value, text, status, action }: Ke
 /** 보조 요약 한 줄 — 핵심 메시지 밖의 개수·기준(KPI 타일 줄 대신). 핵심보다 작고 회색 */
 export function SummaryLine({ items, label }: { items: { k: ReactNode; v: ReactNode }[]; label?: string }) {
   return (
-    <p className="ds-summary" aria-label={label}>
+    <p className="ds-summary" role={label ? 'group' : undefined} aria-label={label}>
       {items.map((x, i) => (
         <span key={i}>
           {x.k} <b>{x.v}</b>

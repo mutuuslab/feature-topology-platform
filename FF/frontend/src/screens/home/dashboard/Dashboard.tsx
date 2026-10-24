@@ -71,10 +71,11 @@ function Menu({ label, button, children, className = 'jd-iconbtn', align = 'end'
   }, []);
   useEffect(() => {
     if (!open) return;
-    list.current?.querySelector<HTMLButtonElement>('[role^="menuitem"]:not(:disabled)')?.focus();
+    // 첫 항목 초점은 화면을 굴리지 않는다 — 굴리면 아래의 '화면이 움직이면 닫기'가 바로 메뉴를 닫았다(화면 아래쪽 가젯)
+    list.current?.querySelector<HTMLButtonElement>('[role^="menuitem"]:not(:disabled)')?.focus({ preventScroll: true });
     const out = (e: MouseEvent) => !list.current?.contains(e.target as Node) && !btn.current?.contains(e.target as Node) && close(false);
-    // 펼친 채로 화면이 움직이면 단추에서 떨어진다 — 닫는다
-    const away = (e: Event) => !list.current?.contains(e.target as Node) && close(false);
+    // 펼친 채로 화면이 움직이면 단추에서 떨어진다 — 닫는다. 초점이 메뉴 안에 있었으면 단추로 돌려 초점을 잃지 않게
+    const away = (e: Event) => !list.current?.contains(e.target as Node) && close(!!list.current?.contains(document.activeElement));
     document.addEventListener('mousedown', out);
     window.addEventListener('resize', away);
     document.addEventListener('scroll', away, true);

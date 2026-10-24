@@ -145,6 +145,24 @@ describe('내 대시보드 — Jira 대시보드', () => {
     expect(document.activeElement).toBe(btn);
   });
 
+  // 회귀(2026-10-24, e2e 키보드 이동): 화면 아래쪽 가젯의 메뉴를 열면 첫 항목에 초점을 주면서 화면이 굴렀고,
+  // 그 스크롤이 "화면이 움직이면 닫기"를 불러 초점을 돌려주지 않고 닫아 초점이 사라졌다
+  it('메뉴를 열 때 첫 항목 초점은 화면을 굴리지 않고, 스크롤로 닫혀도 초점은 단추로 돌아간다', () => {
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    mount('operator');
+    const btn = screen.getByRole('button', { name: '바로 가기 가젯 메뉴' });
+    fireEvent.click(btn);
+    const items = screen.getAllByRole('menuitem');
+    expect(document.activeElement).toBe(items[0]);
+    const call = focus.mock.contexts.indexOf(items[0]);
+    expect(call).toBeGreaterThanOrEqual(0);
+    expect(focus.mock.calls[call][0]).toMatchObject({ preventScroll: true });
+    fireEvent.scroll(document);
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toBe(btn);
+    focus.mockRestore();
+  });
+
   it('시스템 대시보드를 편집하면 내 사본을 서버에 만들고 편집 모드 — 띠·레이아웃 썸네일·점선 열·디렉터리·손잡이', async () => {
     mount('operator');
     await enterEdit();

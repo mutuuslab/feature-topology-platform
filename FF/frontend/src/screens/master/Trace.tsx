@@ -49,7 +49,7 @@ export function DesignTraceScreen() {
           ))}
         </Select>
       </Toolbar>
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <div className="ds-split">
@@ -153,7 +153,7 @@ export function EvidenceScreen() {
           ))}
         </Select>
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={E.title}
           rows={rows}
@@ -194,7 +194,7 @@ export function ChangesScreen() {
       <Tabs tabs={[{ key: 'jira', label: R.tabs.jira, count: crRows.length }, { key: 'rationale', label: R.tabs.rationale, count: rows.length }]}>
         {(tab) =>
           tab === 'jira' ? (
-            <AsyncView state={asyncState(crs, crRows.length === 0)} error={crs.error?.message} onRetry={() => crs.refetch()}>
+            <AsyncView state={asyncState(crs, crRows.length === 0)} error={crs.error} onRetry={() => crs.refetch()}>
               <p className="ds-field__hint">{R.note}</p>
               <DataTable
                 caption={R.tabs.jira}
@@ -234,7 +234,7 @@ export function ChangesScreen() {
               />
             </AsyncView>
           ) : (
-            <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+            <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
               <DataTable
                 caption={M.changes.title}
                 rows={rows}

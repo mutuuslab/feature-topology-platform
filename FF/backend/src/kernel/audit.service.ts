@@ -38,6 +38,8 @@ export interface AuditQuery {
   actorId?: string;
   result?: AuditResult;
   limit?: number;
+  /** 이 id보다 오래된 것만(최신순 커서) */
+  before?: number;
 }
 
 export const AUDIT_GENESIS = 'GENESIS';
@@ -198,7 +200,8 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
 
   list(q: AuditQuery = {}): AuditEntry[] {
     const where: string[] = [];
-    const params: string[] = [];
+    const params: (string | number)[] = [];
+    if (q.before !== undefined) (where.push('id < ?'), params.push(q.before));
     if (q.target) (where.push('target = ?'), params.push(q.target));
     if (q.actorId) (where.push('actor_id = ?'), params.push(q.actorId));
     if (q.result) (where.push('result = ?'), params.push(q.result));

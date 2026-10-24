@@ -4,9 +4,11 @@ import { useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ADAS_USAGE, AGE_BANDS, DRIVING_STYLES, regionsOf, TRIAL_COUNTRIES, TRIAL_PAGE_SIZE, TRIAL_STATES, trialListQuery, type SegmentDimension, type TrialSource } from '@ff/contracts';
 import { STATIC_MODE } from '../../api/client';
+import { useConnectionLabel } from '../../api/connections';
+import { connections as CN } from '../../copy/connections';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Select, StatusGlyph, Tabs, Toolbar, VerdictBadge } from '../../design';
+import { AsyncView, Button, ConnectionBadge, DataTable, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Select, StatusGlyph, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
 
 const E = ko.entitlement;
@@ -105,6 +107,7 @@ function TrialVehicles() {
   const decline = useApiMutation('declineTrial', invalidate);
   const purchase = useApiMutation('purchaseTrial', invalidate);
   const busy = accept.isPending || decline.isPending || purchase.isPending;
+  const billing = useConnectionLabel('billing');
   const data = list.data;
   const rows = data?.items ?? [];
   const reset = (f: () => void) => (f(), setPage(1));
@@ -144,8 +147,14 @@ function TrialVehicles() {
         </label>
       </Toolbar>
       {source !== 'DEMO' && <p className="ds-field__hint">{T.syntheticNote}</p>}
+      {/* 과금 시스템이 실제로 연결되기 전에는 구매 결과가 실제 결제가 아니다(RD-UX-04) */}
+      {billing !== 'none' && (
+        <p className="ds-field__hint" data-connection-note="billing">
+          <ConnectionBadge state={billing} system={CN.system.billing} /> {billing === 'mock' ? CN.hint.mock(CN.system.billing) : CN.hint.disconnected(CN.system.billing)}
+        </p>
+      )}
       <ErrorNote error={accept.error ?? decline.error ?? purchase.error} />
-      <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: T.empty }} error={list.error?.message} onRetry={() => list.refetch()}>
+      <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: T.empty }} error={list.error} onRetry={() => list.refetch()}>
         <div style={{ opacity: list.isPlaceholderData ? 0.6 : 1 }}>
           <DataTable
             caption={E.tabs.trials}
@@ -184,7 +193,7 @@ function TrialVehicles() {
                     );
                   if (r.acceptedAt && (r.state === 'ACTIVE' || r.state === 'EXPIRED'))
                     return (
-                      <Button disabled={dis} title={perm.hint} style={{ whiteSpace: 'nowrap' }} onClick={() => purchase.mutate({ params: { grantId: r.grantId }, body: { plan: '구독' } })}>
+                      <Button disabled={dis || billing === 'disconnected'} title={billing === 'disconnected' ? CN.billing.blocked : perm.hint} style={{ whiteSpace: 'nowrap' }} onClick={() => purchase.mutate({ params: { grantId: r.grantId }, body: { plan: '구독' } })}>
                         {T.purchase}
                       </Button>
                     );
@@ -269,7 +278,7 @@ function GrantsTable() {
   const rows = q.data?.items ?? [];
   const C = E.col;
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
       <DataTable
         caption={E.tabs.grants}
         rows={rows}

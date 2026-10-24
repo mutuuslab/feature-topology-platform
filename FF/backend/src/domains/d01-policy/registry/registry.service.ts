@@ -22,6 +22,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from '../repos';
 import { LifecycleService } from './lifecycle.service';
+import { pageOf } from '../../../kernel/paging';
 
 export interface FeatureQuery {
   q?: string;
@@ -29,6 +30,10 @@ export interface FeatureQuery {
   country?: string;
   vehicleModel?: string;
   latestOnly?: boolean;
+  /** 페이지 크기 — 없으면 전체(뒤 호환, 출시 준비 RD-UX-03) */
+  limit?: number;
+  /** 이전 응답의 nextCursor */
+  cursor?: string;
 }
 
 @Injectable()
@@ -85,7 +90,10 @@ export class RegistryService {
       for (const f of all) m[f[k]] = (m[f[k]] ?? 0) + 1;
       return m;
     };
-    return { total: items.length, items, facets: { lifecycle: count('lifecycle'), country: count('country'), vehicleModel: count('vehicleModel') } };
+    // 커서 페이지 — total·facets는 필터 결과 전체 기준(페이지마다 같다)
+    const page = pageOf(items, q.limit, q.cursor);
+    if (!page) throw new DomainError('VALIDATION', '목록 커서를 읽을 수 없습니다. 처음 페이지부터 다시 불러오세요.', { field: 'cursor' });
+    return { total: items.length, items: page.items, nextCursor: page.nextCursor, facets: { lifecycle: count('lifecycle'), country: count('country'), vehicleModel: count('vehicleModel') } };
   }
 
   versions(featureId: string) {

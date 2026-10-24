@@ -74,7 +74,7 @@ export function FleetLive() {
         ]}
       />
       <Panel title={F.matrix} id="matrix">
-        <AsyncView state={asyncState(fleet, rows.length === 0)} error={fleet.error?.message} onRetry={() => fleet.refetch()}>
+        <AsyncView state={asyncState(fleet, rows.length === 0)} error={fleet.error} onRetry={() => fleet.refetch()}>
           <div style={{ overflow: 'auto', maxHeight: 'calc(100vh - 420px)' }}>
             <table className="ds-fleet">
               <caption className="ds-sr">{F.matrix}</caption>
@@ -188,7 +188,7 @@ export function VehicleRuntimeScreen() {
           </Select>
         }
       />
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <div className="ds-split">
@@ -283,7 +283,7 @@ function StatusV2Panel({ vin }: { vin: string }) {
       <p className="ds-field__hint" style={{ marginTop: 0 }}>
         {S2.lead}
       </p>
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
             {d.features?.length ? (

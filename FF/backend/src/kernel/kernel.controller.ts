@@ -10,6 +10,8 @@ import { DB, type Db } from './db';
 import { MIGRATIONS } from './migrations';
 import { Metrics, metricsEndpoint } from './observability';
 import { isProduction } from './runtime-config';
+import type { ConnectionsResponse } from '@ff/contracts';
+import { connectionStatuses } from './connections';
 
 /** 배포 판 — package.json 판 + 빌드 커밋(FF_BUILD_SHA, 이미지 빌드가 넣는다) */
 const VERSION = (() => {
@@ -66,6 +68,12 @@ export class KernelController {
   @Get('health/metrics')
   metricsText(@Req() req: Request, @Res() res: Response) {
     metricsEndpoint(this.metrics)(req, res);
+  }
+
+  /** 외부 연결 상태(출시 준비 RD-UX-04) — 화면이 모의 연계(메일·과금·OTA·Data Lake)를 '모의'·'연결 안 됨'으로 표시하는 근거 */
+  @Get('system/connections')
+  connections(): ConnectionsResponse {
+    return { mode: isProduction() ? 'production' : 'demo', items: connectionStatuses(process.env) };
   }
 
   @Get('health')

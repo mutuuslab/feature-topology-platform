@@ -2424,3 +2424,41 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   flex-wrap: wrap;
   gap: var(--sp-2);
 }
+
+/* ── 오류 다음 행동 (출시 준비 RD-UX-01) ───────────────── */
+.ds-error__next {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+  justify-items: start;
+}
+.ds-error__next p {
+  margin: 0;
+}
+.ds-state .ds-error__next {
+  justify-items: center;
+  margin-top: 0;
+}
+.ds-error__cid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.ds-field[data-invalid] .ds-input,
+.ds-field[data-invalid] .ds-select {
+  border-color: var(--danger);
+}
+
+/* ── 쪽 넘김 (출시 준비 RD-UX-03) ───────────────────── */
+.ds-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}

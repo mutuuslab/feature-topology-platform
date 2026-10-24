@@ -2,6 +2,7 @@
 import { createContext, useContext, useId, useMemo, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ko } from '../copy/ko';
+import { asErrorLike, ErrorNextStep, errorTitle, type ErrorLike } from './errors';
 import { Icon, type IconName } from './icons';
 import { plainText, usePageTitle, type PageTitle } from './page';
 
@@ -136,10 +137,12 @@ export function AsyncView({ state, stale, onRetry, empty, emptyHidden, error, ch
   stale?: boolean;
   onRetry?: () => void;
   empty?: { title?: string; body?: string; action?: ReactNode };
-  error?: string;
+  /** 조회 오류 — 문장만 또는 ApiError(종류별 제목·다시 로그인·문의 번호, RD-UX-01) */
+  error?: string | ErrorLike | null;
   rows?: number;
   children?: ReactNode;
 }) {
+  const err = asErrorLike(error);
   if (state === 'loading')
     return (
       <div className="ds-skel" data-state="loading" aria-busy="true" aria-label={ko.state.loading}>
@@ -148,14 +151,15 @@ export function AsyncView({ state, stale, onRetry, empty, emptyHidden, error, ch
     );
   if (state === 'empty' && emptyHidden) return <div data-state="empty" data-empty-hidden="" />;
   if (state === 'error' || state === 'forbidden' || state === 'empty') {
-    const t = state === 'error' ? [ko.state.errorTitle, error ?? ko.state.errorBody] : state === 'forbidden' ? [ko.state.forbiddenTitle, ko.state.forbiddenBody] : [empty?.title ?? (filtered ? ko.state.emptyFilteredTitle : ko.state.emptyTitle), empty?.body ?? (filtered ? ko.state.emptyFilteredBody : ko.state.emptyBody)];
+    const t = state === 'error' ? [errorTitle(err, ko.state.errorTitle), err?.message || ko.state.errorBody] : state === 'forbidden' ? [ko.state.forbiddenTitle, ko.state.forbiddenBody] : [empty?.title ?? (filtered ? ko.state.emptyFilteredTitle : ko.state.emptyTitle), empty?.body ?? (filtered ? ko.state.emptyFilteredBody : ko.state.emptyBody)];
     return (
       <div className="ds-state" data-state={state} role={state === 'error' ? 'alert' : 'status'}>
         <Icon name={state === 'empty' ? 'grid' : 'alert'} size={22} />
         {/* 제목 요소가 아니다 — 화면 h1 바로 아래·패널 h2 아래 어디서든 제목 단계를 건너뛰지 않게(axe heading-order) */}
         <p className="ds-state__title">{t[0]}</p>
         <p>{t[1]}</p>
-        {state === 'error' && onRetry && <Button onClick={onRetry}>{ko.state.retry}</Button>}
+        {state === 'error' && <ErrorNextStep error={err} />}
+        {state === 'error' && onRetry && err?.kind !== 'auth' && <Button onClick={onRetry}>{ko.state.retry}</Button>}
         {state === 'empty' && empty?.action}
       </div>
     );

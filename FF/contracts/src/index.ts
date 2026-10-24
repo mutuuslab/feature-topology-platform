@@ -69,3 +69,4 @@ export * from './rules/population';
 export * from './rules/ext-sync';
 export * from './rules/workflows';
 export * from './schemas/procedure';
+export * from './rules/connections';

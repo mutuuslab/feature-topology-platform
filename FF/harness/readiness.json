@@ -552,7 +552,7 @@
         "backend/test/kernel/db.spec.ts"
       ],
       "criteria": "이전 판 스키마에 데이터를 채운 DB를 현재 판으로 올리고 불변식(감사 체인·행 수)을 확인하는 시험",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

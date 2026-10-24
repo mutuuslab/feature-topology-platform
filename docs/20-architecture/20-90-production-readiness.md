@@ -23,12 +23,12 @@
 | RD-SEC-06 | 키 | 소프트웨어 HSM, 개인키·차량 루트 비밀이 SQLite에 평문 | pki.service.ts:58-66, hsm.service.ts:66,101-107 |
 | RD-SEC-07 | 연계 | 웹훅 비밀이 공개된 모의 값으로 대체됨 — 외부에서 상태 변경 위조 가능 | ext-sync/mock-ext.store.ts:58-62 |
 | RD-SEC-08 | 차량 | 차량 요청 신원이 `X-Vehicle-Id` 헤더뿐(mTLS·CMAC 없음) | actor.ts:30-34, vehicle-request.service.ts:70 |
-| RD-SEC-09 | 테넌시 | 고객(테넌트) 구분이 어디에도 없다 | kernel.module.ts:27 |
+| RD-SEC-09 | 테넌시 | 고객(테넌트) 구분이 어디에도 없다 — **완료 2026-10-24**: 한 설치 = 한 고객(D-RD-1), `FF_INSTANCE_ID` 필수·상태 점검·감사 고정점·백업 manifest에 기록, 다른 설치 백업 복원 거부(§7) | kernel.module.ts:27 |
 | RD-OPS-01 | 저장 | 기본 DB가 `:memory:`이고 부팅마다 데모 데이터(차량·3000 시행)를 넣는다 | kernel.module.ts:27-29, seed.ts:109,114 |
-| RD-OPS-02 | 첫 실행 | 빈 DB(`FF_SEED=none`) 부팅·화면을 검사하는 시험이 하나도 없다 | test/helpers.ts:10, e2e/playwright.config.ts:45 |
+| RD-OPS-02 | 첫 실행 | 빈 DB(`FF_SEED=none`) 부팅·화면을 검사하는 시험이 하나도 없다 — **완료 2026-10-24**: 운영 모드 첫 실행 시험 + 빈 DB e2e(모든 메뉴), 데모 ID 기본값 14곳 수정(§7) | test/helpers.ts:10, e2e/playwright.config.ts:45 |
 | RD-OPS-03 | 데이터 모델 | 권한 출처·Fleet 값이 `DEMO|SYNTHETIC`/`DEMO|SAMPLE`만 허용, 만료 처리도 DEMO만 | contracts/src/schemas/policy.ts:99,123, trial-expiry.service.ts:64 |
 | RD-OPS-04 | 차량 채널 | 실제 차량 전달 경로가 없다(내부 시뮬레이터가 기본, OTA IF-05·IF-09 모의 고정) | vehicle-runtime.service.ts:80-89, if-mocks/external-systems.ts:163,166 |
-| RD-OPS-05 | 배포 | 백엔드 배포 산출물(Dockerfile·배포 작업·환경 템플릿)이 없다 | docker/(Unleash만), .github/workflows/cloudflare.yml |
+| RD-OPS-05 | 배포 | 백엔드 배포 산출물(Dockerfile·배포 작업·환경 템플릿)이 없다 — **완료 2026-10-24**: `docker/app/`(이미지·compose·환경 템플릿), 이미지 빌드 CI(§7) | docker/(Unleash만), .github/workflows/cloudflare.yml |
 | RD-FN-01 | 정확성 | 결함 기록(it.fails) 12건 — 명세 결함 5 + ADS 결함 7 | backend/test/requirements/defects.spec.ts, test/ads/defects.spec.ts |
 | RD-FN-02 | 되돌리기 | 롤백(요구 28건)·정책 버전 이력이 없다 — 잘못된 배포를 되돌릴 수 없다 | harness/requirements/REPORT.md §3 B2·B3 |
 
@@ -45,7 +45,7 @@
 | RD-OPS-06 | 재시작 | 예약 작업이 `setTimeout` — 재시작하면 게시 마감·Kill 지연 감시가 사라진다 (scheduler.ts:25-31) |
 | RD-OPS-07 | 종료 | `enableShutdownHooks` 없음 — SIGTERM에 DB를 닫지 않는다 (main.ts) |
 | RD-OPS-08 | 상태 점검 | `/api/health`가 생존만 — 준비(마이그레이션·DB 쓰기·연계) 신호·버전 없음 |
-| RD-OPS-09 | 백업 | 백업·복원 연습·이벤트/멱등/스팬 보존 기한 없음 |
+| RD-OPS-09 | 백업 | 백업·복원 연습·이벤트/멱등/스팬 보존 기한 없음 — **완료 2026-10-24**: 온라인 백업·복원 명령, 복원 연습 시험, 보존 기한(§7) |
 | RD-OPS-10 | 마이그레이션 | 채워진 이전 판 DB를 올리는 시험 없음, 되돌리기 경로 없음 |
 | RD-OPS-11 | 관측 | 텍스트 로그·요청 로그 없음·상관 ID 없음·지표 없음·경보 없음 |
 | RD-OPS-12 | 운영 기본값 | 운영 모드가 기본값(빈 Unleash 토큰·SIM auto·Windows 경로·모의 비밀)을 거부하지 않는다 |
@@ -63,7 +63,7 @@
 | RD-P2-01 | 성능·부하 시험 없음(번들 크기만) · 전체 테이블을 JS로 읽는 조회 11곳 · 동기 SQLite가 이벤트 루프를 막음 |
 | RD-P2-02 | 영어 전환 버튼은 있으나 본문은 한국어만 |
 | RD-P2-03 | 반응형 최소 900px, 크롬만 e2e |
-| RD-P2-04 | 사용자 설명서·관리자/설치 안내 없음 |
+| RD-P2-04 | 사용자 설명서·관리자/설치 안내 없음 — **완료 2026-10-24**: `20-91-install-guide.md`, `00-overview/user-manual.md` |
 | RD-P2-05 | 개인정보 삭제·내보내기 절차, 사용자·감사 보존 기한 |
 | RD-P2-06 | 요구사항 반영: 구현 194 · 부분 257 · 미구현 172 (628건), ADS 64건 중 구현 3, ORCA 45건 중 구현 0 |
 
@@ -203,3 +203,28 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 - SSE 연결은 연결할 때만 세션을 본다 — 세션이 끝나도 열린 스트림은 닫힐 때까지 유지(읽기 전용 이벤트).
 - 승인자 키는 아직 소프트웨어 HSM에 평문(RD-SEC-06 — KEK/KMS). FIDO2·스마트카드 승인은 그 뒤.
 - 세션·요청 제한은 프로세스 메모리·SQLite — 다중 인스턴스는 RD-OPS-14·D-RD-3(PostgreSQL) 뒤.
+
+## 7. 단독 설치·백업·첫 실행 — RD-OPS-05·RD-OPS-09·RD-OPS-02·RD-SEC-09·RD-P2-04 (2026-10-24 구현)
+
+설치 절차의 정본은 `20-91-install-guide.md`, 화면 사용법은 `00-overview/user-manual.md`.
+
+| 항목 | 내용 |
+|---|---|
+| 이미지(RD-OPS-05) | `FF/docker/app/Dockerfile` — node 24 slim 다단계(의존성 → contracts·backend tsc·운영 화면 `VITE_AUTH=oidc` 빌드 → 운영 의존성만), 비루트(uid 1000), HEALTHCHECK `/api/health/ready`. 백엔드가 화면을 같은 출처로 낸다(`FF_WEB_DIR`, `kernel/web-static.ts` — 화면 응답은 빌드의 `_headers` CSP, 해시 자산 1년 캐시, SPA 대체, API·자산 404는 그대로). 로컬 `docker build` + compose 기동·준비 점검·컨테이너 안 백업/복원까지 확인 |
+| compose | `docker/app/docker-compose.yml` — app 하나, 볼륨 셋(DB `ff-data` · 감사 고정점 `ff-anchor`(DB와 분리, WORM 권장) · 백업 `ff-backups`), 127.0.0.1에만 포트, 읽기 전용 루트·cap_drop ALL·no-new-privileges·init, JSON 로그 회전 |
+| 환경 템플릿 | `docker/app/.env.example` — 운영 필수 설정 전부(비밀은 빈 값)·설명. `backend/test/kernel/env-example.spec.ts`가 비밀만 채우면 `runtimeConfigProblems`가 비고, 필수 키를 빼면 그 키가 문제로 나오고, 검사 소스가 읽는 변수가 모두 템플릿에 있고, 시험 손잡이는 없는지 본다 |
+| CI | `.github/workflows/app-image.yml` — 이미지 빌드 → 운영 모드 기동 → ready·화면·익명 401·백업 명령. 레지스트리 게시는 아직 없다 |
+| 백업·복원(RD-OPS-09) | `backend/src/ops/backup.ts`·`backup-cli.ts`(`node backend/dist/ops/backup-cli.js backup|list|verify|restore`, `npm run backup -w feature-topology-backend`) — `VACUUM INTO` 온라인 사본 + 사본의 감사 끝까지의 고정점 + manifest(SHA-256·감사 끝·마이그레이션·건수·설치 식별·무결성), 보관 기한 정리(가장 새 것은 남김). 복원은 해시 확인 → 기존 파일을 지우지 않고 옆으로 → 새 DB·고정점 → 무결성·감사 끝 대조. 다른 설치 식별의 백업은 거부 |
+| 복원 연습 | `backend/test/kernel/backup-restore.spec.ts` — 돌고 있는 앱 백업 → 백업 뒤 변경 → 새 자리 복원 → 부팅 → `verifyChain` 고정점까지 통과·데이터 일치·백업 뒤 변경 없음 · 살아 있던 고정점 파일을 쓰면 어긋남(anchor) 검출 · 해시 변조 거부 · 자리 점유 거부/옆으로 옮김 · 다른 설치 거부 · 보관 정리 |
+| 보존 기한 | `kernel/housekeeping.service.ts` — 멱등 7일·스팬 30일·이벤트 기본 보존(0), 하루 한 번. 감사·Gate 결정·SUMS는 추가 전용(삭제 없음), 보안 로그 3년·상태 보고 730일·차량 발신 30일은 기존 D04-03. 표는 설치 안내서 §9.4 |
+| 첫 실행(RD-OPS-02) | `backend/test/kernel/first-run.spec.ts` — 운영 모드·새 파일 DB·https 발급자 시험 IdP(fetch 연결)·Secure 쿠키: ready → 익명 401 → SSO 로그인(IdP 그룹 = 역할) → 경로 없는 모든 GET API 5xx 없음 → 모의 연계 예시 내용 없음 → 첫 Feature(CSRF Origin 확인) → 재시작 보존·고정점에 설치 식별. `e2e/playwright.firstrun.config.ts`(verify `e2e:firstrun`) — `FF_SEED=none` 파일 DB로 모든 메뉴: 서버 오류·런타임 오류·오류 안내·영원한 로딩·데모 식별자(FEAT-·CAT-·POL-·PUB-·VIN-DEMO·ego-01·lead-01) 없음, 화면으로 첫 Feature 등록 |
+| 첫 실행에서 고친 것 | 화면이 데모 ID를 기본값으로 박아 두어 빈 설치에서 없는 대상을 조회·표시하던 곳 — Topology(초점·영원한 로딩), 변경 영향, Variant·지원 조건, 요구·안전 추적, 활성화 판단, 차량별 적용 상태(메뉴 주소 `/fleet/vehicles`), 운영 데이터 2탭, 현장 지원 포털, OpenFeature 범위, Legacy 연계 2곳, 긴급 차단 요청 폼, CARLA 가상검증(키트 Feature 없으면 안내). 규칙: 예시 ID가 실제로 있으면 그대로(데모·공개 사이트 불변), 없으면 첫 항목, 목록이 비면 빈 상태 안내(`frontend/src/data/first-run.ts`). 모의 외부 시스템의 예시 내용(해외공장 주문·레거시 옵션 코드·비SDV 차량·VOC)은 시드 없는 설치에서 빈 목록. 표준 따라하기는 예시 데이터 기준임을 먼저 알린다 |
+| 한 설치 = 한 고객(RD-SEC-09) | 운영 모드 `FF_INSTANCE_ID` 필수(부팅 거부 시험), 상태 점검·감사 고정점·백업 manifest에 기록, 복원 때 다른 설치 거부. 설치 안내서 §1 |
+
+### 7.1 남은 것
+
+- 단독 설치 compose에 PostgreSQL·Keycloak은 없다 — DB는 D-RD-3 이전 전 SQLite, IdP는 고객사 것을 쓴다. 이전 뒤 compose에 DB 서비스를 넣는다.
+- 이미지 게시(레지스트리·서명·SBOM 첨부)와 배포 자동화는 없다 — 사람 승인 뒤 따로.
+- 이벤트 이력 보존 기한은 고객 정책이 정해지지 않아 기본 "지우지 않음"이다.
+- 화면 일부는 여전히 예시 상품(`CAT-00019`)을 고정해 조회한다(체험 분석·사용 권한 체험 목록) — 빈 설치에서 빈 결과로 보여 오류는 없지만 고객 상품을 고르게 바꿔야 한다.
+- 디자인 시스템 갤러리(`/_design`)는 견본 값(예시 ID)을 보인다 — 운영 메뉴에서 숨길지 결정이 필요하다.

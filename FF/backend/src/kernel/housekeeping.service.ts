@@ -1,4 +1,4 @@
-// 운영 보조 저장소의 보존 기한 — 출시 준비 RD-OPS-09 (설치 안내서 §8.4).
+// 운영 보조 저장소의 보존 기한 — 출시 준비 RD-OPS-09 (설치 안내서 §9.4).
 // 업무 기록이 아니라 운영을 돕는 표만 지운다. 업무·안전 기록의 보존은 contracts/rules/retention.ts(D04-03 RetentionService),
 // 감사 이력(audit)은 추가 전용(트리거)이라 지우지 않는다.
 //   · idempotency(재전송 응답 보관) — FF_RETENTION_IDEMPOTENCY_DAYS(기본 7일). 이보다 늦게 같은 키로 다시 보내면 새 요청으로 처리된다

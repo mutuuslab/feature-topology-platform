@@ -1,4 +1,4 @@
-// 빈 DB 첫 실행(운영 모드) — 출시 준비 RD-OPS-02 · RD-SEC-09 (설치 안내서 §6 "첫 시작").
+// 빈 DB 첫 실행(운영 모드) — 출시 준비 RD-OPS-02 · RD-SEC-09 (설치 안내서 §7 "첫 시작").
 // 고객 설치를 그대로: FF_ENV=production · 새 파일 DB(시드 없음) · 고객사 IdP SSO(https 발급자 — 시험 IdP를 fetch로 잇는다) · 감사 고정점 파일.
 // 첫 사용자가 겪는 길: 준비 점검 ready → 익명 401 → SSO 로그인 → 모든 조회 API가 빈 DB에서 500 없이 답한다 → 첫 Feature 등록 → 재시작 뒤에도 남는다.
 // 한 설치 = 한 고객: 설치 식별(FF_INSTANCE_ID)이 상태 점검·감사 고정점에 나오고, 없으면 부팅하지 않는다.
@@ -55,7 +55,7 @@ async function login(user: keyof typeof USERS): Promise<string> {
   const authorize = new URL(start.headers.location);
   expect(authorize.origin + authorize.pathname).toBe(`${ISSUER}/authorize`);
   const flow = cookiesOf(start);
-  expect(start.headers['set-cookie'].join(';')).toMatch(/Secure/);
+  expect(([] as string[]).concat(start.headers['set-cookie'] ?? []).join(';')).toMatch(/Secure/);
   const back = await fetch(authorize, { redirect: 'manual' });
   expect(back.status).toBe(302);
   const cb = new URL(back.headers.get('location')!);

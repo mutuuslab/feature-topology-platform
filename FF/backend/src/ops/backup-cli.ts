@@ -1,4 +1,4 @@
-// 백업·복원 명령 — 출시 준비 RD-OPS-09. 사용법은 설치 안내서(docs/20-architecture/20-91-install-guide.md §8).
+// 백업·복원 명령 — 출시 준비 RD-OPS-09. 사용법은 설치 안내서(docs/20-architecture/20-91-install-guide.md §9).
 //   node backend/dist/ops/backup-cli.js backup  [--out 폴더] [--keep-days 일]     (앱이 돌고 있어도 된다)
 //   node backend/dist/ops/backup-cli.js list    [--out 폴더]
 //   node backend/dist/ops/backup-cli.js verify  --from 백업폴더

@@ -85,12 +85,12 @@
     "note": "문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14)"
   },
   "readinessOpenP0": {
-    "value": 9,
+    "value": 6,
     "direction": "max",
     "note": "출시 준비 열린 P0 수(harness/readiness.json) — 0까지"
   },
   "readinessOpenP1": {
-    "value": 5,
+    "value": 4,
     "direction": "max",
     "note": "출시 준비 열린 P1 수 — 0까지"
   }

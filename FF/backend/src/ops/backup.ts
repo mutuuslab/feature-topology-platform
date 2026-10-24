@@ -1,4 +1,4 @@
-// 온라인 백업·복원 — 출시 준비 RD-OPS-09 (docs/20-architecture/20-91-install-guide.md §8).
+// 온라인 백업·복원 — 출시 준비 RD-OPS-09 (docs/20-architecture/20-91-install-guide.md §9).
 // 백업: 돌고 있는 앱의 SQLite 파일 DB를 `VACUUM INTO`로 한순간의 일관된 사본으로 뜬다(앱을 멈추지 않는다 — WAL 모드라 읽기는 쓰기를 막지 않는다).
 //       감사 체인 고정점 파일(FF_AUDIT_ANCHOR_FILE)도 함께 담는다 — 사본의 감사 끝(id)까지의 고정점만(그 뒤 고정점은 사본에 없는 행을 가리킨다).
 //       manifest.json에 파일 SHA-256·감사 끝·마이그레이션·건수·설치 식별을 남긴다. 보관 기한(일)이 지난 백업은 지운다(가장 새 것은 남긴다).

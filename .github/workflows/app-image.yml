@@ -1,0 +1,37 @@
+# 단독 설치 이미지 빌드 (출시 준비 RD-OPS-05) — FF/docker/app/Dockerfile이 깨지지 않았는지 빌드하고, 띄워서 준비 점검까지 본다.
+# 레지스트리에 올리지 않는다(배포는 사람이 승인한 뒤 따로). 설치 방법은 docs/20-architecture/20-91-install-guide.md.
+name: App image
+on:
+  push:
+    branches: [main, 'feat/**']
+    paths: ['FF/**', '.github/workflows/app-image.yml']
+  pull_request:
+    paths: ['FF/**', '.github/workflows/app-image.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    name: 이미지 빌드·준비 점검
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: FF
+    steps:
+      - uses: actions/checkout@v4
+      - name: 이미지 빌드
+        run: docker build -f docker/app/Dockerfile --build-arg FF_BUILD_SHA=${GITHUB_SHA::7} -t ff-platform:ci .
+      - name: 운영 모드로 띄워 준비 점검(빈 DB·시험 비밀)
+        run: |
+          rnd() { openssl rand -base64 48 | tr -d '\n/+='; }
+          sed -e "s|^FF_AUDIT_KEY=$|FF_AUDIT_KEY=$(rnd)|" -e "s|^FF_SESSION_SECRET=$|FF_SESSION_SECRET=$(rnd)|" -e "s|^OIDC_CLIENT_SECRET=$|OIDC_CLIENT_SECRET=$(rnd)|" docker/app/.env.example > docker/app/.env
+          printf 'FF_IMAGE=ff-platform:ci\nFF_COMPOSE_PROJECT=ff-ci\n' >> docker/app/.env
+          docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env up -d --no-build
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:9101/api/health/ready && break; sleep 2; done
+          curl -fsS http://127.0.0.1:9101/api/health/ready | grep -q '"status":"ready"'
+          curl -fsS -o /dev/null http://127.0.0.1:9101/
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:9101/api/features)" = 401
+          docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env exec -T app node backend/dist/ops/backup-cli.js backup
+      - name: 정리
+        if: always()
+        run: docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env down -v || true

@@ -52,14 +52,15 @@ test('편집 → 가젯 추가·구성 → 끌기 → 보기 모드(손잡이 �
   await form.getByLabel('가젯 제목').fill('ASIL 비율');
   await form.getByRole('button', { name: '저장' }).click();
   await expect(page.getByRole('heading', { name: 'ASIL 비율' })).toBeVisible();
-  await expect(page.locator('[data-type="pie"] .jd-legend')).toBeVisible();
+  // 운영 시스템 판에도 원형 차트가 있다 — 방금 만든 가젯으로 좁힌다
+  await expect(page.locator('[data-type="pie"]').filter({ has: page.getByRole('heading', { name: 'ASIL 비율' }) }).locator('.jd-legend')).toBeVisible();
   const pie = (await columns(page))[0][0]!;
   expect(pie).toMatch(/^pie-/);
 
-  // 끌어 옮기기 — 오른쪽 열의 바로 가기를 왼쪽 열 맨 위 가젯 위에 놓는다
-  await page.locator('[data-gadget="links"] .jd-gadget__head').dragTo(page.locator(`[data-gadget="${pie}"] .jd-gadget__head`), { targetPosition: { x: 60, y: 4 } });
-  await expect.poll(async () => (await columns(page))[0][0]).toBe('links');
-  expect((await columns(page))[1]).not.toContain('links');
+  // 끌어 옮기기 — 오른쪽 열 맨 위(운영 요약)를 왼쪽 열 맨 위 가젯 위에 놓는다
+  await page.locator('[data-gadget="summary"] .jd-gadget__head').dragTo(page.locator(`[data-gadget="${pie}"] .jd-gadget__head`), { targetPosition: { x: 60, y: 4 } });
+  await expect.poll(async () => (await columns(page))[0][0]).toBe('summary');
+  expect((await columns(page))[1]).not.toContain('summary');
   await expect(page.locator('.jd-drop')).toHaveCount(0);
 
   // 완료 — 보기 모드에는 손잡이·점선 열이 없다
@@ -78,7 +79,7 @@ test('편집 → 가젯 추가·구성 → 끌기 → 보기 모드(손잡이 �
   await expect(page.locator('.jd-meta')).not.toContainText('저장 중');
   await page.reload();
   await expect(page.locator('#main h1')).toHaveText(name);
-  expect((await columns(page))[0].slice(0, 2)).toEqual(['links', pie]);
+  expect((await columns(page))[0].slice(0, 2)).toEqual(['summary', pie]);
   await expect(page.getByRole('heading', { name: 'ASIL 비율' })).toBeVisible();
 
   // 역할에 공유 — 조회 역할(운영·감사 조회자)
@@ -97,7 +98,7 @@ test('편집 → 가젯 추가·구성 → 끌기 → 보기 모드(손잡이 �
   await group.getByRole('menuitemradio', { name: name }).click();
   await expect(page.locator('#main h1')).toHaveText(name);
   await expect(page.locator('.jd-meta')).toContainText('공유받음');
-  expect((await columns(page))[0].slice(0, 2)).toEqual(['links', pie]);
+  expect((await columns(page))[0].slice(0, 2)).toEqual(['summary', pie]);
   await page.getByRole('button', { name: `${'ASIL 비율'} 가젯 메뉴` }).click();
   await expect(page.getByRole('menuitem', { name: '삭제' })).toHaveCount(0);
   await page.keyboard.press('Escape');

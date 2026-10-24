@@ -130,7 +130,7 @@ const API: Record<Exclude<SourceId, 'myReviews'>, { name: string; query?: Record
   policies: { name: 'listPolicies' },
   kills: { name: 'killRequests' },
   anomalies: { name: 'anomalies' },
-  audit: { name: 'audit', query: { limit: 200 } },
+  audit: { name: 'audit', query: { limit: 500 } }, // 감사 화면과 같은 질의 — 정적 데모 스냅샷·캐시를 함께 쓴다
 };
 
 function toRows(source: Exclude<SourceId, 'myReviews'>, items: unknown[], me: string): Row[] {

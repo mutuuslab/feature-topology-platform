@@ -478,7 +478,7 @@
 }
 /* 가로로 더 있으면 오른쪽 끝을 흐리게 — 잘린 것이 아니라 넘길 수 있다는 표시(끝까지 넘기면 사라진다) */
 .jd-gadget__body[data-more] {
-  mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(90deg, var(--jd-ink) calc(100% - 48px), transparent); /* 마스크는 알파만 본다 — 불투명 토큰이면 된다 */
 }
 .jd-gadget[data-type='procedures'] .pm-flow {
   grid-auto-columns: minmax(112px, 1fr);

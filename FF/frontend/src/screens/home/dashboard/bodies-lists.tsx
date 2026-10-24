@@ -113,7 +113,7 @@ function dayLabel(iso: string, now = new Date()) {
 }
 
 function Activity({ gadget }: GadgetBodyProps) {
-  const q = useApi<{ items?: AuditItem[] }>('audit', { query: { limit: 200 } });
+  const q = useApi<{ items?: AuditItem[] }>('audit', { query: { limit: 500 } });
   const items = (Array.isArray(q.data?.items) ? q.data!.items! : []).slice(0, num(gadget.config.rows, 10));
   const groups: { day: string; items: AuditItem[] }[] = [];
   for (const it of items) {

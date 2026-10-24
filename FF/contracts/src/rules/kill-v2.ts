@@ -133,6 +133,26 @@ export function approvalCheck(
   return { ok: true, role: approver.roles.find((r) => r !== 'FSM') ?? approver.roles[0] };
 }
 
+/**
+ * 승인 서명(approval_sig) 형식 검사 — FFP-F059. 길이만 보지 않는다:
+ *  · RFC 4648 §5 정준 base64url(패딩 없음)로 정확히 64바이트(Ed25519 서명) — 남는 비트가 0이 아닌 표기는 어떤 서명의 표기도 아니다
+ *  · 서로 다른 승인자의 서명 값이 같으면 개인 서명이 아니다(같은 대상에 다른 키로 서명하면 값이 다르다 — 복사·위조)
+ * 대상 집합 결속(서명 검증)은 승인자 키를 가진 쪽이 한다(플랫폼 게이트: 등록된 승인자 키 + approvalSubject).
+ */
+export function approvalSigProblems(approvals: readonly { approver_id: string; approval_sig?: string | null }[]): string[] {
+  const out: string[] = [];
+  const seen = new Map<string, string>();
+  for (const a of approvals) {
+    const s = a.approval_sig ?? '';
+    // 64바이트 = 86자(마지막 글자는 4비트만 의미 — 나머지 2비트 0). 정준 표기만 받는다
+    if (!/^[A-Za-z0-9_-]{85}[AQgw]$/.test(s)) out.push(`${a.approver_id}: approval_sig가 64바이트 서명의 정준 base64url 표기가 아닙니다`);
+    const dup = seen.get(s);
+    if (s && dup && dup !== a.approver_id) out.push(`${a.approver_id}: ${dup}와 같은 서명 값 — 승인자마다 개인 서명이어야 합니다`);
+    if (s && !dup) seen.set(s, a.approver_id);
+  }
+  return out;
+}
+
 /** 승인 서명 대상 — 명령의 핵심 필드(JCS로 정규화해 개인 키로 서명) */
 export function approvalSubject(k: { killId: string; featureId: string; featureVersion: string; request: KillRequestType; reasonCategory: ReasonCategory; vins: readonly string[] }) {
   return { kill_id: k.killId, feature: `${k.featureId}@${k.featureVersion}`, request: k.request, reason: k.reasonCategory, vehicles: [...k.vins].sort() };

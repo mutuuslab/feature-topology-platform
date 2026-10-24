@@ -18,7 +18,7 @@ import {
   ValidateCompositionBody,
 } from './schemas/api';
 import { RestorePolicyRevisionBody } from './rules/policy-version';
-import { CreateRollbackPlanBody, CreateRollbackRequestBody, ROLLBACK_APPROVER_ROLES, ROLLBACK_REQUEST_ROLES, RollbackDecisionBody, RollbackPreviewBody } from './rules/rollback';
+import { CreateRollbackPlanBody, CreateRollbackRequestBody, PolicyRollbackBody, ROLLBACK_APPROVER_ROLES, ROLLBACK_REQUEST_ROLES, RollbackDecisionBody, RollbackPreviewBody } from './rules/rollback';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody } from './schemas/ops';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
@@ -159,6 +159,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'policyRevisions', method: 'GET', path: '/api/policies/:id/revisions', summary: '정책 버전 목록 (개정본마다 내용 보존)', component: 'D01-06' },
   { name: 'policyRevision', method: 'GET', path: '/api/policies/:id/revisions/:revision', summary: '정책 버전 내용', component: 'D01-06' },
   { name: 'restorePolicyRevision', method: 'POST', path: '/api/policies/:id/revisions/:revision/restore', summary: '정책 버전 복원 (새 개정본·DRAFT, 재검증·재승인 필요)', component: 'D01-06', roles: ['FEATURE_AUTHOR', 'IMPLEMENTER'], body: RestorePolicyRevisionBody },
+  { name: 'policyHistory', method: 'GET', path: '/api/policies/:id/history', summary: '정책 버전·배포 이력 — 이 flag로 배포된 버전(서명 게시본)·되돌릴 수 있는 버전·진행 중 되돌리기 요청', component: 'D03-04' },
+  { name: 'requestPolicyRollback', method: 'POST', path: '/api/policies/:id/rollback', summary: '이전 버전으로 되돌리기 요청 — 재검증·지정 승인·실행은 수동 롤백과 같다 (412 기준 배포 바뀜, 409 진행 중 요청)', component: 'D03-04', roles: ROLLBACK_REQUEST_ROLES, body: PolicyRollbackBody },
   { name: 'policyChanges', method: 'GET', path: '/api/policies/:id/changes', summary: '정책 변경 이력 (변경자·시각·변경 전후)', component: 'D01-06' },
   { name: 'validatePolicy', method: 'POST', path: '/api/policies/:id/validate', summary: '분야별 검증 8종 병렬 → 배포 안전성 판정', component: 'D06-04', roles: ['FEATURE_AUTHOR', 'IMPLEMENTER', 'GATE_JUDGE'], body: EmptyBody },
   { name: 'decidePolicy', method: 'POST', path: '/api/policies/:id/decision', summary: '정책 승인·반려 (작성자≠승인자, 해시·GO 확인)', component: 'D01-06', roles: ['FEATURE_APPROVER'], body: PolicyDecisionBody },

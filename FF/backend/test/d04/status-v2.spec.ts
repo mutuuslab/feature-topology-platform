@@ -100,11 +100,18 @@ describe('수신 검사 (FFG-TEL-003 · TC-FF-24)', () => {
 });
 
 describe('차량 Guard (FFG-VEH-002 · FFG-VEH-013)', () => {
-  it('재전송 봉투는 REPLAY, cmd_auth를 바꾸면 서명 불일치, 플랫폼 키로 다시 서명해도 차량 키가 없으면 AUTH_FAILED — 상태는 그대로', async () => {
+  // FFP-F019(명령 멱등성)로 바뀐 기대: 같은 봉투(같은 command_id·내용)의 재전송은 REPLAY가 아니라 멱등 ACK다(backend/test/ads/defects.spec.ts).
+  // REPLAY는 이제 "같은 순번의 다른 명령"으로 본다 — 플랫폼 키로 command_id만 바꿔 다시 서명한 봉투(cmd_auth는 순번·내용 블록이라 그대로 맞다)
+  it('같은 봉투 재전송은 멱등 ACK, 같은 순번의 다른 명령은 REPLAY, cmd_auth를 바꾸면 서명 불일치, 플랫폼 키로 다시 서명해도 차량 키가 없으면 AUTH_FAILED — 상태는 그대로', async () => {
     const { http, advance, runtime, hsm } = await boot();
     const { k } = await killed(http, advance);
     const env: KillCommandV2 = (await http().get(`/api/kill-requests/${k.killId}/envelopes`).expect(200)).body.envelopes.find((e: KillCommandV2) => e.scope.vehicle_ids[0] === 'ego-01');
-    runtime.guard('ego-01', k.publicationId, 'KILL', env, ['FEAT-00022']); // 재전송 — vehicle_seq가 마지막과 같다
+    runtime.guard('ego-01', k.publicationId, 'KILL', env, ['FEAT-00022']); // 네트워크 재시도 — 같은 봉투 그대로
+    {
+      const { signature: _s0, ...b0 } = { ...env, command_id: '00000000-0000-4000-8000-0000000000f1' };
+      const s0 = hsm.signDetached('kill', jcs(b0));
+      runtime.guard('ego-01', k.publicationId, 'KILL', { ...b0, signature: { alg: 'EdDSA', kid: s0.kid, value: s0.value } }, ['FEAT-00022']); // 재전송 — vehicle_seq가 마지막과 같은 다른 명령
+    }
     const tampered = { ...env, vehicle_auth: { ...env.vehicle_auth!, cmd_auth: 'AAAAAAAAAAAAAAAAAAAAAA' } };
     runtime.guard('ego-01', k.publicationId, 'KILL', tampered, ['FEAT-00022']);
     // 서명 키를 가진 내부자라도 차량 키 없이는 cmd_auth를 만들 수 없다 — 순번을 올리고 다시 서명
@@ -115,7 +122,7 @@ describe('차량 Guard (FFG-VEH-002 · FFG-VEH-013)', () => {
     expect(reports.features[0].report).toMatchObject({ request_result: 'REJECTED', reject_code: 'AUTH_FAILED', state: 'DISABLED' });
     expect(reports.recent.slice(0, 3).every((x: any) => x.accepted && x.state === 'DISABLED')).toBe(true);
     const log = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log;
-    expect(log.slice(-3).map((l: any) => l.detail)).toEqual(['REPLAY', 'SIGNATURE_INVALID', 'AUTH_FAILED']); // 서명은 봉투 전체(vehicle_auth 포함)를 덮는다
+    expect(log.slice(-4).map((l: any) => l.detail)).toEqual([expect.stringMatching(/재수신/), 'REPLAY', 'SIGNATURE_INVALID', 'AUTH_FAILED']); // 서명은 봉투 전체(vehicle_auth 포함)를 덮는다
   });
 });
 

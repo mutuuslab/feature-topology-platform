@@ -281,7 +281,7 @@
         "contracts/src/rules/requirements-defects.test.ts"
       ],
       "criteria": "결함 기록 파일에 it.fails가 없다(각 결함은 고치고 회귀 시험 it로 바꾼다)",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "absent",
@@ -310,7 +310,7 @@
         "harness/requirements/REPORT.md §3 B2·B3"
       ],
       "criteria": "정책 내용 변경이 버전으로 남고, 이전 버전으로 되돌리는 승인 절차가 있다(백엔드 시험 + e2e)",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

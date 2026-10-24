@@ -70,6 +70,13 @@ export const RollbackDecisionBody = z.object({ decision: z.enum(['APPROVE', 'REJ
 export type RollbackDecisionBody = z.infer<typeof RollbackDecisionBody>;
 export const RollbackPreviewBody = z.object({ deploymentId, recovery, scope: RollbackScope }).strict();
 export type RollbackPreviewBody = z.infer<typeof RollbackPreviewBody>;
+/**
+ * 정책 상세의 되돌리기 요청(RD-FN-02) — 이 flag의 지금 배포를 고른 예전 버전으로 되돌리는 수동 롤백 요청을 만든다.
+ * expectedDeploymentId = 화면이 본 지금 배포(이력의 deploymentId). 그사이 배포가 바뀌었으면 412 — 낡은 화면으로 되돌리지 않는다.
+ * 범위는 flag 단위(배포 대상 전부), 대상 유형은 정책 버전. 승인(지정 승인대상자, 요청자 아님) → 실행(재검증)은 수동 롤백과 같다.
+ */
+export const PolicyRollbackBody = z.object({ recovery, expectedDeploymentId: deploymentId, reason: z.string().trim().min(2).max(500), approvers }).strict();
+export type PolicyRollbackBody = z.infer<typeof PolicyRollbackBody>;
 
 // ─── 기록 ───────────────────────────────────────────────────
 
@@ -230,6 +237,7 @@ export const ROLLBACK_BLOCKER = {
   ARTIFACT_SIGNATURE_INVALID: '연결된 배포 산출물의 서명을 확인할 수 없습니다',
   ARTIFACT_NOT_COMPLETED: '연결된 배포 산출물이 차량 확인(CONFIRMED·PARTIAL)까지 가지 못했습니다',
   FEATURE_NOT_DEPLOYABLE: '복구 기준 정책의 Feature Version이 지금 배포할 수 없는 상태입니다',
+  CONTENT_TAMPERED: '복구 기준 정책 내용이 승인·검증한 내용(해시)과 다릅니다',
   KILL_ACTIVE: '이 Feature에 진행 중인 긴급 차단이 있습니다 — 차단을 먼저 정리하세요',
   SCOPE_EMPTY: '적용 대상 범위에 드는 배포 대상 차량이 없습니다',
   SCOPE_PARTIAL: '정책 버전 롤백은 flag 단위입니다 — 적용 대상 범위가 배포 대상 차량 전부를 덮어야 합니다',
@@ -246,6 +254,8 @@ export interface RecoveryFacts {
   /** 복구 후보의 배포 산출물 — 최신 POLICY 게시본 */
   artifact: { status: string; signatureValid: boolean } | null;
   featureDeployable: boolean;
+  /** 저장된 내용으로 다시 계산한 해시 = 기록된 해시(배포와 같은 무결성 검사). 생략하면 확인한 것으로 본다 */
+  contentIntact?: boolean;
 }
 
 /** 복구 가능한 버전인가(FR-RBK-001-005·004-004) — 배포 완료·검증 통과·운영 승인·배포 산출물 */
@@ -265,6 +275,7 @@ export function recoveryBlockers(f: RecoveryFacts): RollbackBlocker[] {
     if (!['CONFIRMED', 'PARTIAL'].includes(f.artifact.status)) out.push('ARTIFACT_NOT_COMPLETED');
   }
   if (!f.featureDeployable) out.push('FEATURE_NOT_DEPLOYABLE');
+  if (f.contentIntact === false) out.push('CONTENT_TAMPERED');
   return out;
 }
 

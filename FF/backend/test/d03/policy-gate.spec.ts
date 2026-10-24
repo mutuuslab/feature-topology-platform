@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { KillCommandV2 } from '@ff/contracts';
 import { DB, type Db } from '../../src/kernel/db';
 import { gateStatusOf, PolicyGateService } from '../../src/domains/d03-safety/deploy-safety/policy-gate.service';
-import { actor, bootApp } from '../helpers';
+import { KILL_APPROVERS, KILL_REQUESTER, actor, bootApp } from '../helpers';
 
 const EX = join(__dirname, '..', '..', '..', 'harness', 'guide', 'schema', 'examples');
 const example = (name: string) => JSON.parse(readFileSync(join(EX, name), 'utf8'));
@@ -142,5 +142,36 @@ describe('명령 원장 — PASS 명령만, 순번은 원장+1, 직전 Kill 승�
     const { db } = await boot();
     expect(() => db.run("UPDATE command_window SET vehicles = 0 WHERE feature_id = 'FEAT-00022'")).toThrow('추가만');
     expect(() => db.run("DELETE FROM command_window WHERE feature_id = 'FEAT-00022'")).toThrow('추가만');
+  });
+});
+
+// FFP-F059 — 발행 때 서버가 명령의 대상 집합으로 승인 대상을 다시 만들어 승인자 키로 검증한다(길이만 보지 않는다).
+// 회귀: 예전 게이트는 approval_sig 길이(64자 이상)만 봤다 — 승인 뒤 대상 차량이 바뀌어도(내부자 변경·저장소 조작) 발행됐다.
+describe('승인 서명의 대상 집합 결속 (FFP-F059 · FFG-PLT-005)', () => {
+  it('첫 승인 뒤 대상 차량을 바꾸면 두 번째 승인(발행)은 게이트가 거부하고 차단은 발행되지 않는다', async () => {
+    const { http, db } = await boot();
+    const r = await http()
+      .post('/api/kill-requests')
+      .set(KILL_REQUESTER)
+      .send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: '결속 시험', confirm: 'FEAT-00022', reasonCategory: 'SAFETY', reasonCode: 'FIELD_FAULT', containmentJustification: '원인 분석 전 봉쇄' })
+      .expect(201);
+    await http().post(`/api/kill-requests/${r.body.killId}/approvals`).set(KILL_APPROVERS[0]).send({}).expect(201);
+    // 승인 서명은 ego-01 한 대에 대한 것 — 저장된 요청의 대상을 두 대로 늘린다
+    const row = db.get<{ doc: string }>('SELECT doc FROM kill_request WHERE kill_id = ?', r.body.killId)!;
+    db.run('UPDATE kill_request SET doc = ? WHERE kill_id = ?', JSON.stringify({ ...JSON.parse(row.doc), vins: ['ego-01', 'lead-01'] }), r.body.killId);
+    const two = await http().post(`/api/kill-requests/${r.body.killId}/approvals`).set(KILL_APPROVERS[1]).send({});
+    expect((await http().get(`/api/kill-requests/${r.body.killId}`).expect(200)).body.status).not.toBe('ACTIVE');
+    expect(JSON.stringify(two.body)).toMatch(/FFG-PLT-005/);
+    expect(db.get<{ n: number }>('SELECT COUNT(*) AS n FROM kill_command WHERE kill_id = ?', r.body.killId)!.n).toBe(0);
+  });
+
+  it('형식 — 정준 64바이트 표기가 아니거나 두 승인자의 서명 값이 같으면 FFG-PLT-005 FAIL', async () => {
+    const { gate } = await boot();
+    const ok = example('kill_safety_dc2_eu.ok.json');
+    expect(failed(gate.preview(ok))).toEqual([]);
+    const same = { ...ok, approvals: ok.approvals.map((a: any) => ({ ...a, approval_sig: ok.approvals[0].approval_sig })) };
+    expect(failed(gate.preview(same))).toEqual(['FFG-PLT-005']);
+    const noncanonical = { ...ok, approvals: [{ ...ok.approvals[0], approval_sig: `${ok.approvals[0].approval_sig.slice(0, 85)}h` }, ok.approvals[1]] };
+    expect(failed(gate.preview(noncanonical))).toEqual(['FFG-PLT-005']);
   });
 });

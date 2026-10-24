@@ -4084,6 +4084,127 @@
         }
       }
     },
+    "/api/policies/{id}/history": {
+      "get": {
+        "summary": "정책 버전·배포 이력 — 이 flag로 배포된 버전(서명 게시본)·되돌릴 수 있는 버전·진행 중 되돌리기 요청",
+        "tags": [
+          "D03-04"
+        ],
+        "operationId": "policyHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/rollback": {
+      "post": {
+        "summary": "이전 버전으로 되돌리기 요청 — 재검증·지정 승인·실행은 수동 롤백과 같다 (412 기준 배포 바뀜, 409 진행 중 요청)",
+        "tags": [
+          "D03-04"
+        ],
+        "operationId": "requestPolicyRollback",
+        "description": "허용 역할: Feature 출시 담당자, 운영자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recovery": {
+                    "type": "object",
+                    "properties": {
+                      "policyId": {
+                        "type": "string",
+                        "pattern": "^POL-\\d{5}$"
+                      }
+                    },
+                    "required": [
+                      "policyId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "expectedDeploymentId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "approvers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "minItems": 1,
+                    "maxItems": 5
+                  }
+                },
+                "required": [
+                  "recovery",
+                  "expectedDeploymentId",
+                  "reason",
+                  "approvers"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/policies/{id}/changes": {
       "get": {
         "summary": "정책 변경 이력 (변경자·시각·변경 전후)",

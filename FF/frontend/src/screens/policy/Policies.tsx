@@ -12,6 +12,7 @@ import { PolicyCrPanel } from './PolicyCr';
 import { VirtualPanel } from './Virtual';
 import { UnleashPanel } from './Unleash';
 import { PolicyVersions } from './PolicyVersions';
+import { PolicyHistory } from './PolicyHistory';
 
 const T = ko.policy;
 const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort'];
@@ -247,6 +248,7 @@ export function PolicyDetail() {
               </Panel>
             </div>
             <PolicyVersions key={p.policyId} policyId={p.policyId} />
+            <PolicyHistory key={`h-${p.policyId}`} policyId={p.policyId} />
             <PolicyActionDrawer kind={drawer} policy={p} approval={d.approval} onClose={() => setDrawer(null)} />
           </>
         )}

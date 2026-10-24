@@ -111,12 +111,21 @@ describe.skipIf(!ready)('GLEO 실연동 — FF_IMP 브로커·차량 Guard(v2)',
     expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('DISABLED');
   }, 30_000);
 
-  it('복원(2인 승인) → v2 restore 봉투 → RESTORE_PENDING → 다음 시동 ACTIVE → CONFIRMED 2/2', async () => {
+  // FFP-F036(해제와 활성화 분리)로 바뀐 기대: 복원의 수렴 상태는 INACTIVE(차단 해제)이고 ACTIVE는 활성화 절차로만 간다.
+  // 플랫폼은 복원 뒤 저절로 ACTIVE가 된 보고를 복원 확인(CONFIRMED)으로 세지 않는다. FF_IMP 차량 Guard(gleo/vehicle_guard.py)가 아직
+  // 복원 → ACTIVE로 가면(구현 전) 플랫폼은 확인하지 않은 채로 둔다 — 두 경우 모두 이 시험이 지킨다(FF_IMP 갱신은 그 저장소의 일).
+  it('복원(2인 승인) → v2 restore 봉투 → RESTORE_PENDING → 다음 시동 차단 해제(INACTIVE — 활성화는 따로, FFP-F036) → CONFIRMED 2/2', async () => {
     const k = (await http().get('/api/kill-requests?status=ACTIVE').expect(200)).body.items[0];
     await restoreV2(http, k.killId, '복구', actor('park.safety', 'SAFETY_OFFICER'));
-    await until(async () => (await http().get(`/api/kill-requests/${k.killId}`)).body.restore?.status === 'CONFIRMED', 15_000);
-    const d = (await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body;
-    expect(d.restore).toMatchObject({ confirmed: 2, denominator: 2 });
-    expect((await http().get('/api/vehicles/lead-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('ACTIVE');
-  }, 30_000);
+    const state = async () => (await http().get('/api/vehicles/lead-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022'];
+    await until(async () => ['INACTIVE', 'ACTIVE'].includes(await state()), 15_000);
+    if ((await state()) === 'INACTIVE') {
+      await until(async () => (await http().get(`/api/kill-requests/${k.killId}`)).body.restore?.status === 'CONFIRMED', 15_000);
+      expect((await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body.restore).toMatchObject({ confirmed: 2, denominator: 2 });
+    } else {
+      // FF_IMP Guard가 해제를 활성화로 처리 — 플랫폼은 이를 복원 확인으로 세지 않는다
+      await new Promise((r) => setTimeout(r, 500));
+      expect((await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body.restore?.status).not.toBe('CONFIRMED');
+    }
+  }, 40_000);
 });

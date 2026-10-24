@@ -32,14 +32,17 @@ export function probeProblems(expected: { file: string; titles: string[] }[], re
 }
 
 /** review.json들의 defect.probe 파일 */
-export function probeFiles(): string[] {
-  const reviews = [join(FF, 'harness', 'ads', 'review.json'), join(FF, 'harness', 'orca', 'review.json')].filter(existsSync);
+type ProbeReview = { requirements?: Record<string, { defect?: { probe: string } }>; items?: Record<string, { defect?: { probe: string } }> };
+
+/** 판정(ADS requirements·Orca items)의 결함 기록이 가리키는 probe 파일 — 결함이 없으면 빈 목록(점검할 기록 없음) */
+export function probeFilesOf(reviews: ProbeReview[]): string[] {
   const files = new Set<string>();
-  for (const f of reviews) {
-    const r = readJson<{ requirements?: Record<string, { defect?: { probe: string } }>; items?: Record<string, { defect?: { probe: string } }> }>(f);
-    for (const v of [...Object.values(r.requirements ?? {}), ...Object.values(r.items ?? {})]) if (v.defect) files.add(v.defect.probe);
-  }
+  for (const r of reviews) for (const v of [...Object.values(r.requirements ?? {}), ...Object.values(r.items ?? {})]) if (v.defect) files.add(v.defect.probe);
   return [...files].sort();
+}
+
+export function probeFiles(): string[] {
+  return probeFilesOf([join(FF, 'harness', 'ads', 'review.json'), join(FF, 'harness', 'orca', 'review.json')].filter(existsSync).map((f) => readJson<ProbeReview>(f)));
 }
 
 function main() {

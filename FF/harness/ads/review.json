@@ -72,7 +72,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/policy-store/policy.service.ts:116",
         "contracts/src/rules/lifecycle.ts:29",
-        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:132"
+        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:136"
       ],
       "tests": [
         "backend/test/d01/registry.spec.ts",
@@ -108,7 +108,7 @@
       "evidence": [
         "contracts/src/rules/topology.ts:55",
         "contracts/src/rules/catalog.ts:82",
-        "contracts/src/rules/lifecycle.ts:88"
+        "contracts/src/rules/lifecycle.ts:97"
       ],
       "tests": [
         "contracts/src/rules/topology.test.ts",
@@ -122,14 +122,15 @@
     "FFP-F007": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d01-policy/topology/gate.service.ts:138",
-        "contracts/src/rules/rehara.ts:20",
-        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:60"
+        "contracts/src/rules/lifecycle.ts:106",
+        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:76",
+        "backend/src/domains/d01-policy/registry/release-signoff.service.ts:84"
       ],
       "tests": [
+        "backend/test/ads/defects.spec.ts",
         "backend/test/d06/rehara.spec.ts"
       ],
-      "gap": "열린 재-HARA는 G3~G9 PASS만 막는다. G8·G9 PASS 뒤 열린 요청은 출시 전이·정책 배포·서명이 확인하지 않는다(결함).",
+      "gap": "열린 재-HARA는 G3~G9 PASS·Release Sign-off·출시 전이를 모두 막는다(G8·G9 PASS·서명 뒤에 열린 요청도). 정책 배포는 막지 않는다 — 완화 정책(ODD 축소 등) 배포까지 막지 않기 위해서이며 결정이 필요하다.",
       "plan": [
         "ADS-UI09",
         "ADS-BE06",
@@ -137,17 +138,14 @@
       ],
       "rules": [
         "FFG-LCY-003"
-      ],
-      "defect": {
-        "probe": "backend/test/ads/defects.spec.ts"
-      }
+      ]
     },
     "FFP-F008": {
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/policy-version.ts:59",
         "frontend/src/screens/policy/PolicyVersions.tsx:35",
-        "backend/src/domains/d01-policy/policy-store/policy.service.ts:282"
+        "backend/src/domains/d01-policy/policy-store/policy.service.ts:296"
       ],
       "tests": [
         "contracts/src/rules/policy-version.test.ts",
@@ -162,8 +160,8 @@
     "FFP-F009": {
       "verdict": "구현",
       "evidence": [
-        "contracts/src/rules/lifecycle.ts:100",
-        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:98",
+        "contracts/src/rules/lifecycle.ts:113",
+        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:102",
         "backend/src/domains/d01-policy/policy-store/policy.service.ts:197"
       ],
       "tests": [
@@ -183,7 +181,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/topology/gate.service.ts:89",
         "backend/src/domains/d01-policy/policy-store/policy.service.ts:221",
-        "contracts/src/rules/lifecycle.ts:92"
+        "contracts/src/rules/lifecycle.ts:101"
       ],
       "tests": [
         "backend/test/d01/gate-decision.spec.ts",
@@ -246,7 +244,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/policy-repos.ts:20",
         "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:33",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:112"
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:113"
       ],
       "tests": [
         "backend/test/d06/policy-golden.spec.ts"
@@ -263,29 +261,25 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:123",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:119"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:126"
       ],
       "tests": [
         "backend/test/d03/delivery.spec.ts",
         "backend/test/d06/hsm.spec.ts"
       ],
-      "gap": "비신뢰 키·변조·키 용도 불일치는 거부하지만 시뮬 차량이 자기 VIN이 대상에 있는지 확인하지 않는다(알려진 결함 FR-RTE-001-004와 같은 뿌리).",
+      "gap": "비신뢰 키·변조·키 용도 불일치·대상 밖 차량(POLICY 게시본 payload.targets에 자기 VIN 없음 → TARGET_MISMATCH 기록)을 거부한다. 차량 측 스키마 파싱(필드별 검증)은 시뮬레이터 범위.",
       "plan": [
         "ADS-BE05"
       ],
       "rules": [
         "FFG-SEC-002"
-      ],
-      "defect": {
-        "probe": "backend/test/requirements/defects.spec.ts",
-        "probeId": "FR-RTE-001-004"
-      }
+      ]
     },
     "FFP-F015": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:121",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:56",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:131",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:57",
         "contracts/src/rules/policy-gate.ts:160"
       ],
       "tests": [
@@ -325,8 +319,8 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:18",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:148",
-        "contracts/src/routes.ts:171"
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:149",
+        "contracts/src/routes.ts:173"
       ],
       "tests": [
         "backend/test/d03/delivery.spec.ts"
@@ -360,27 +354,25 @@
       ]
     },
     "FFP-F019": {
-      "verdict": "부분",
+      "verdict": "구현",
       "evidence": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:211",
         "contracts/src/rules/status-v2.ts:96",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:197",
         "contracts/src/rules/deactivation.ts:133"
       ],
       "tests": [
+        "backend/test/ads/defects.spec.ts",
         "backend/test/d04/status-v2.spec.ts",
         "backend/test/d03/policy-gate.spec.ts"
       ],
-      "gap": "전이는 한 번만 일어나지만 같은 command_id 재전송을 REPLAY(보안 이벤트)로 거부해 멱등 ACK를 돌려주지 않는다. REISSUE_SAME 조치와도 충돌한다.",
+      "gap": "같은 command_id·같은 내용(서명 포함) 봉투의 재전송은 차량 Guard가 전이 없이 앞 결과(수락·지금 상태)를 다시 알린다 — REPLAY 보안 이벤트가 아니다. 같은 순번의 다른 명령은 여전히 REPLAY로 거부한다.",
       "plan": [
         "ADS-BE04"
       ],
       "rules": [
         "FFG-VEH-013",
         "FFG-PLT-017"
-      ],
-      "defect": {
-        "probe": "backend/test/ads/defects.spec.ts"
-      }
+      ]
     },
     "FFP-F020": {
       "verdict": "부분",
@@ -404,7 +396,7 @@
       "verdict": "부분",
       "evidence": [
         "frontend/src/data/twin/engine.ts:623",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:227"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:247"
       ],
       "tests": [
         "frontend/src/__tests__/twinEngine.test.ts"
@@ -422,7 +414,7 @@
       "evidence": [
         "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
         "contracts/src/rules/deactivation.ts:8",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:261"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:283"
       ],
       "tests": [
         "backend/test/d03/trial-expiry-kill.spec.ts",
@@ -463,7 +455,7 @@
     "FFP-F024": {
       "verdict": "미구현",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:227",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:247",
         "frontend/src/data/twin/engine.ts:623"
       ],
       "tests": [],
@@ -575,7 +567,7 @@
     "FFP-F031": {
       "verdict": "미구현",
       "evidence": [
-        "contracts/src/rules/kill-timeline.ts:64",
+        "contracts/src/rules/kill-timeline.ts:65",
         "backend/src/domains/d04-ops/telemetry-ingest/safety-kpi.service.ts:154"
       ],
       "tests": [
@@ -616,7 +608,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/status-v2.ts:64",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:213",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:233",
         "contracts/src/schemas/wire.ts:165"
       ],
       "tests": [
@@ -637,7 +629,7 @@
     "FFP-F034": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:270",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:292",
         "contracts/src/rules/kill-timeline.ts:33",
         "contracts/src/schemas/wire.ts:142"
       ],
@@ -681,13 +673,16 @@
     "FFP-F036": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:237",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:188"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:264",
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:105",
+        "contracts/src/rules/kill-timeline.ts:62"
       ],
       "tests": [
-        "backend/test/d04/status-v2.spec.ts"
+        "backend/test/ads/defects.spec.ts",
+        "backend/test/d03/delivery.spec.ts",
+        "backend/test/d03/kill-timeline.spec.ts"
       ],
-      "gap": "restore가 RESTORE_PENDING에서 다음 시동에 곧바로 ACTIVE로 가고 플랫폼도 ACTIVE를 '적용됨'으로 집계한다 — 해제 뒤 ODD·형상·사용자 절차 재통과 단계가 없다(결함).",
+      "gap": "복원은 다음 시동 자체 시험 뒤 INACTIVE(차단 해제)로 끝나고 ACTIVE는 활성화 요청(ACT_PENDING → 비작동 확인 → ACTIVE)으로만 간다. 플랫폼은 INACTIVE를 복원 확인으로 센다. 활성화 때 ODD·형상·사용자 절차 재확인은 시뮬레이터의 비작동 확인뿐이고, 플랫폼에는 v2 활성화 명령 발행 경로가 없다. FF_IMP 차량 Guard는 아직 복원 → ACTIVE(그 저장소 갱신 필요).",
       "plan": [
         "ADS-UI02",
         "ADS-BE03"
@@ -695,16 +690,13 @@
       "rules": [
         "FFG-DEAC-008",
         "FFG-CLS-007"
-      ],
-      "defect": {
-        "probe": "backend/test/ads/defects.spec.ts"
-      }
+      ]
     },
     "FFP-F037": {
       "verdict": "부분",
       "evidence": [
-        "contracts/src/rules/rollback.ts:217",
-        "contracts/src/rules/rollback.ts:252"
+        "contracts/src/rules/rollback.ts:224",
+        "contracts/src/rules/rollback.ts:262"
       ],
       "tests": [
         "backend/test/d03/rollback.spec.ts"
@@ -749,8 +741,8 @@
     "FFP-F040": {
       "verdict": "부분",
       "evidence": [
-        "contracts/src/rules/rollback.ts:252",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:109",
+        "contracts/src/rules/rollback.ts:262",
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:110",
         "contracts/src/rules/status-v2.ts:95"
       ],
       "tests": [
@@ -842,7 +834,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/status-v2.ts:92",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:213",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:233",
         "frontend/src/data/twin/engine.ts:728"
       ],
       "tests": [
@@ -1094,7 +1086,7 @@
       "verdict": "부분",
       "evidence": [
         "frontend/src/screens/ops/Deployments.tsx:162",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:193"
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:194"
       ],
       "tests": [],
       "gap": "게시본 상세에 차량별 상태·사유를 한 표로만 보인다. 미수신과 로컬 거부를 따로 조회하는 목록·필터와 시험이 없다.",
@@ -1106,15 +1098,16 @@
     "FFP-F059": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:91",
-        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:304",
-        "contracts/src/rules/policy-gate.ts:125"
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:450",
+        "backend/src/domains/d03-safety/deploy-safety/policy-gate.service.ts:155",
+        "contracts/src/rules/kill-v2.ts:142"
       ],
       "tests": [
-        "backend/test/d03/delivery.spec.ts",
+        "backend/test/ads/defects.spec.ts",
+        "backend/test/d03/policy-gate.spec.ts",
         "backend/test/d03/kill-v2.spec.ts"
       ],
-      "gap": "미리보기는 대상·의존 Feature·게이트를 보이지만, 발행 시 서버가 대상을 다시 계산해 서명된 승인 대상과 비교하지 않고 게이트는 approval_sig 길이만 확인한다(결함).",
+      "gap": "발행 때 서버가 명령의 대상 집합으로 승인 대상(approvalSubject)을 다시 만들어 승인자 키로 검증한다 — 승인 뒤 대상이 바뀌면 게이트 FFG-PLT-005 FAIL. 게이트는 approval_sig의 정준 64바이트 표기·승인자별 다른 값도 본다. 플랫폼에 키가 없는 외부 승인자(보고서 예시 u-1001 등)의 서명은 대상 결속을 검증할 수 없고, 미리보기 화면의 제외 사유·해제 범위 표시는 일부다.",
       "plan": [
         "ADS-UI03",
         "ADS-BE05"
@@ -1122,10 +1115,7 @@
       "rules": [
         "FFG-SEC-003",
         "FFG-PLT-008"
-      ],
-      "defect": {
-        "probe": "backend/test/ads/defects.spec.ts"
-      }
+      ]
     },
     "FFP-F060": {
       "verdict": "부분",
@@ -1170,7 +1160,7 @@
       "evidence": [
         "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
         "contracts/src/flags/evaluate.ts:107",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:261"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:283"
       ],
       "tests": [
         "backend/test/d03/trial-expiry-kill.spec.ts",

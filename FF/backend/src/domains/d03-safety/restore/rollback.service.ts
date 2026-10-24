@@ -27,6 +27,8 @@ import {
   vehicleInScope,
   versionText,
   HUMAN_ROLES,
+  PolicyRollbackBody,
+  RollbackScope,
   type Policy,
   type PolicyVersionRef,
   type Publication,
@@ -35,7 +37,6 @@ import {
   type RollbackExecution,
   type RollbackPlan,
   type RollbackRequest,
-  type RollbackScope,
   type RollbackTargetType,
   type RollbackTrigger,
 } from '@ff/contracts';
@@ -48,7 +49,7 @@ import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService, type PlatformEvent } from '../../../kernel/event.service';
 import { ZodPipe } from '../../../kernel/zod.pipe';
-import { FleetRepo, PolicyRepo } from '../../d01-policy/policy-repos';
+import { FleetRepo, PolicyRepo, policyHash } from '../../d01-policy/policy-repos';
 import { FeatureRepo } from '../../d01-policy/repos';
 import { PublicationRepo } from '../../d06-qsec/secure-deploy/publication.repo';
 import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.service';
@@ -146,6 +147,8 @@ export class RollbackService implements OnModuleInit {
         validatedGo: !!candidate && this.policies.runs(candidate.policyId).some((r) => r.decision === 'GO' && r.contentHash === candidate.contentHash),
         artifact: pub ? { status: pub.status, signatureValid: this.deploy.detail(pub.publicationId).verification.valid } : null,
         featureDeployable: !!candidate && this.featureDeployable(candidate),
+        // 배포와 같은 무결성 검사 — 저장된 내용의 해시가 승인·검증한 해시와 같아야 한다(RD-FN-02)
+        contentIntact: !candidate || policyHash(candidate) === candidate.contentHash,
       }),
     };
   }
@@ -428,9 +431,13 @@ export class RollbackService implements OnModuleInit {
     });
   }
 
-  /** 승인된 수동 롤백만 실행한다(FR-RBK-004-007) */
+  /** 승인된 수동 롤백만 실행한다(FR-RBK-004-007). 이미 실행한 요청은 409 — 실행 기록을 알려 준다(두 번 되돌리지 않는다, RD-FN-02) */
   executeRequest(actor: Actor, id: string): RollbackExecution {
     const r = this.requireRequest(id);
+    if (r.status === 'EXECUTED') {
+      this.audit.failed(actor, 'ROLLBACK_EXECUTE', id, `이미 실행한 요청 (${r.executionId})`, 'D03-04');
+      throw new DomainError('CONFLICT', `이미 실행한 롤백 요청입니다 — 실행 기록 ${r.executionId}.`, { executionId: r.executionId });
+    }
     if (r.status !== 'APPROVED') {
       this.audit.failed(actor, 'ROLLBACK_EXECUTE', id, `${r.status} 요청 실행 시도`, 'D03-04');
       throw new DomainError('GUARD_FAILED', `승인된 요청만 실행할 수 있습니다 (지금 ${r.status}).`);
@@ -564,6 +571,97 @@ export class RollbackService implements OnModuleInit {
     };
   }
 
+  // ─── 정책 기준 이력·되돌리기 (RD-FN-02) ────────────────────
+
+  /**
+   * 정책 상세의 버전·배포 이력 — 이 정책의 flag(Control Point)로 지금까지 배포된 버전(서명 게시본)·각 정책 버전의 상태와
+   * 되돌릴 수 있는지(재검증 결과)·진행 중인 되돌리기 요청·실행 기록. deploymentId는 되돌리기 요청의 기준(expectedDeploymentId)이다.
+   */
+  policyHistory(policyId: string) {
+    const p = this.policies.get(policyId);
+    if (!p) throw new DomainError('NOT_FOUND', `${policyId}을(를) 찾을 수 없습니다.`);
+    const current = this.policies.deployed(p.flagKey) ?? null;
+    const currentPub = current ? this.latestPublication(current.policyId) : undefined;
+    const deployments = this.publications
+      .list({ kind: 'POLICY' })
+      .filter((x) => x.payload.flagKey === p.flagKey)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.publicationId.localeCompare(a.publicationId))
+      .map((x) => ({
+        publicationId: x.publicationId,
+        policyId: x.payload.policy?.policyId ?? null,
+        revision: x.payload.policy?.revision ?? null,
+        contentHash: x.payload.policy?.contentHash ?? null,
+        status: x.status,
+        confirmed: x.confirmed,
+        denominator: x.denominator,
+        createdAt: x.createdAt,
+        createdBy: x.createdBy,
+        current: x.publicationId === currentPub?.publicationId,
+        rollbackExecutionId: this.repo.executionByArtifact(x.publicationId)?.executionId ?? null,
+      }));
+    const eligibility = new Map((current ? this.candidates(current) : []).map((c) => [c.policyId, c]));
+    const versions = this.policies
+      .byFlag(p.flagKey)
+      .map((v) => {
+        const c = eligibility.get(v.policyId);
+        return {
+          ...ref(v),
+          status: v.status,
+          description: v.description,
+          approvedBy: v.approvedBy,
+          deployedAt: v.deployedAt ?? null,
+          deployedBy: v.deployedBy ?? null,
+          current: !!current && v.policyId === current.policyId,
+          rollback: c ? { eligible: c.eligible, blockers: c.blockers } : null,
+        };
+      })
+      .sort((a, b) => (b.deployedAt ?? '').localeCompare(a.deployedAt ?? '') || b.policyId.localeCompare(a.policyId));
+    const requests = currentPub ? this.repo.requests({ deploymentId: currentPub.publicationId }) : [];
+    const executions = this.repo.executions().filter((x) => x.flagKey === p.flagKey);
+    return {
+      policyId,
+      flagKey: p.flagKey,
+      deploymentId: currentPub?.publicationId ?? null,
+      current: current ? ref(current) : null,
+      deployments,
+      versions,
+      requests,
+      executions,
+    };
+  }
+
+  /**
+   * 정책 상세에서 되돌리기 요청 — 수동 롤백 요청과 같은 재검증·승인(지정 승인대상자)·실행·감사를 거친다.
+   * 412: 화면이 본 배포(expectedDeploymentId)가 지금 배포가 아니다. 409: 이 배포에 진행 중인 되돌리기 요청이 이미 있다.
+   */
+  requestPolicyRollback(actor: Actor, policyId: string, body: PolicyRollbackBody): RollbackRequest {
+    const p = this.policies.get(policyId);
+    if (!p) throw new DomainError('NOT_FOUND', `${policyId}을(를) 찾을 수 없습니다.`);
+    const current = this.policies.deployed(p.flagKey);
+    const pub = current ? this.latestPublication(current.policyId) : undefined;
+    if (!current || !pub) {
+      this.audit.failed(actor, 'ROLLBACK_REQUEST', policyId, `${p.flagKey} 지금 배포 없음`, 'D03-04');
+      throw new DomainError('GUARD_FAILED', `${p.flagKey}에는 지금 배포된 정책이 없습니다 — 되돌릴 배포가 없습니다.`);
+    }
+    if (body.expectedDeploymentId !== pub.publicationId) {
+      this.audit.failed(actor, 'ROLLBACK_REQUEST', pub.publicationId, `기준 배포 ${body.expectedDeploymentId} ≠ 지금 배포 ${pub.publicationId}`, 'D03-04');
+      throw new DomainError('PRECONDITION_FAILED', `화면을 연 뒤 배포가 바뀌었습니다(지금 ${pub.publicationId}) — 이력을 새로 보고 다시 고르세요.`, { deploymentId: pub.publicationId });
+    }
+    const open = this.repo.requests({ deploymentId: pub.publicationId }).find((r) => r.status === 'REQUESTED' || r.status === 'APPROVED');
+    if (open) {
+      this.audit.failed(actor, 'ROLLBACK_REQUEST', pub.publicationId, `진행 중인 요청 ${open.requestId}`, 'D03-04');
+      throw new DomainError('CONFLICT', `이 배포에는 진행 중인 되돌리기 요청 ${open.requestId}(${open.status})이 있습니다 — 그 요청을 승인·실행하거나 반려한 뒤 다시 요청하세요.`, { requestId: open.requestId });
+    }
+    return this.createRequest(actor, {
+      deploymentId: pub.publicationId,
+      targetTypes: ['POLICY_VERSION'],
+      recovery: body.recovery,
+      scope: RollbackScope.parse({ featureIds: [current.featureId] }),
+      reason: body.reason,
+      approvers: body.approvers,
+    });
+  }
+
   execution(id: string) {
     const x = this.repo.execution(id);
     if (!x) throw new DomainError('NOT_FOUND', `롤백 실행 ${id}을(를) 찾을 수 없습니다.`);
@@ -600,6 +698,24 @@ export class RollbackController {
   @Get(':id')
   execution(@Param('id') id: string) {
     return this.s.execution(id);
+  }
+}
+
+/** 정책 상세의 버전·배포 이력과 되돌리기 요청 (RD-FN-02) — 승인·실행은 /api/rollback-requests/:id/decision·execute */
+@Controller('api/policies')
+export class PolicyHistoryController {
+  constructor(private readonly s: RollbackService) {}
+
+  @Get(':id/history')
+  history(@Param('id') id: string) {
+    return this.s.policyHistory(id);
+  }
+
+  @Post(':id/rollback')
+  @Roles(...ROLLBACK_REQUEST_ROLES)
+  @AuditAction('ROLLBACK_REQUEST')
+  rollback(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(PolicyRollbackBody)) body: PolicyRollbackBody) {
+    return this.s.requestPolicyRollback(actor, id, body);
   }
 }
 

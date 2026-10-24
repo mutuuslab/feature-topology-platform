@@ -61,7 +61,7 @@ export interface VehicleRuntimeState {
   featureState: Record<string, string>;
   log: { at: string; publicationId: string; kind: string; result: 'APPLIED' | 'REJECTED'; detail: string }[];
   /** v2 Guard(보고서 9.3) — Feature별 마지막으로 받은 vehicle_seq·epoch(순번 창) */
-  guard?: Record<string, { lastSeq: number; epoch: number }>;
+  guard?: Record<string, { lastSeq: number; epoch: number; /** 마지막으로 받아들인 명령(멱등 재시도 판별 — FFP-F019) */ commandId?: string; digest?: string }>;
   /** 시동 안 상태 보고 순번(report_seq 하위 16비트) */
   reportCounter?: number;
 }

@@ -12,6 +12,7 @@ export type ErrorCode =
   | 'CONFLICT'
   | 'IMMUTABLE'
   | 'GUARD_FAILED'
+  | 'PRECONDITION_FAILED'
   | 'IDEMPOTENCY_KEY_REUSED'
   | 'IDEMPOTENCY_IN_PROGRESS'
   | VehicleReject
@@ -26,6 +27,8 @@ const STATUS: Record<ErrorCode, number> = {
   CONFLICT: 409,
   IMMUTABLE: 409,
   GUARD_FAILED: 422,
+  /** 화면이 본 기준(버전·배포)이 그사이 바뀜 — 새로 보고 다시 (RD-FN-02) */
+  PRECONDITION_FAILED: 412,
   IDEMPOTENCY_KEY_REUSED: 422,
   IDEMPOTENCY_IN_PROGRESS: 409,
   ...VEHICLE_REJECT,

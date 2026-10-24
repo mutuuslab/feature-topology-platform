@@ -39,6 +39,7 @@ export * from './schemas/ops';
 export * from './gleo';
 export * from './rules/virtual';
 export * from './rules/vehicle-requests';
+export * from './rules/vehicle-auth';
 export * from './rules/anomaly';
 export * from './rules/unleash';
 export * from './rules/access';

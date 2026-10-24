@@ -1,5 +1,5 @@
-// 인증서·키 관리 PKI/KMS (D06-10) — 게시본 서명 키(Ed25519, node:crypto). 개인키는 데모용으로 DB에 두며
-// 실제 KMS/HSM 연동은 이 서비스 뒤로 숨긴다. 차량은 공개키(신뢰 앵커)로만 검증한다.
+// 인증서·키 관리 PKI/KMS (D06-10) — 게시본 서명 키(Ed25519, node:crypto). 개인키는 키 암호화 키(KEK)로 봉인해 DB에 두고
+// 서명할 때만 잠시 푼다(출시 준비 RD-SEC-06, kernel/kms). 실제 KMS/HSM 연동은 이 서비스 뒤로 숨긴다. 차량은 공개키(신뢰 앵커)로만 검증한다.
 import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Post } from '@nestjs/common';
 import { canonicalJson, COMMAND_KEY_PURPOSE, KeyRotateBody, type KeyPurpose, type Signature } from '@ff/contracts';
 import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, sign, verify } from 'node:crypto';
@@ -9,6 +9,8 @@ import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
+import { SecretVault } from '../../../kernel/kms/key-protection';
+import { openFor, sealFor } from '../../../kernel/kms/secret-columns';
 import { EventService } from '../../../kernel/event.service';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 
@@ -38,6 +40,7 @@ export class PkiService implements OnModuleInit {
     private readonly clock: Clock,
     private readonly audit: AuditService,
     private readonly events: EventService,
+    private readonly vault: SecretVault,
   ) {}
 
   onModuleInit() {
@@ -63,7 +66,7 @@ export class PkiService implements OnModuleInit {
       now.toISOString(),
       new Date(now.getTime() + KEY_LIFETIME_DAYS * 86400_000).toISOString(),
       publicKey.export({ type: 'spki', format: 'pem' }).toString(),
-      privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(),
+      sealFor(this.vault, 'pki_key', 'private_pem', keyId, privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()),
       purpose,
     );
     return keyId;
@@ -105,7 +108,7 @@ export class PkiService implements OnModuleInit {
     if (Date.parse(k.not_after) < this.clock.now().getTime())
       throw new DomainError('GUARD_FAILED', `${purpose} 서명 키 ${k.key_id}가 ${k.not_after.slice(0, 10)}에 만료되었습니다 — 키를 교체한 뒤 다시 시도하세요(POST /api/pki/rotate).`, { keyId: k.key_id, purpose, notAfter: k.not_after });
     const hash = payloadHash(payload);
-    const signature = sign(null, Buffer.from(hash), createPrivateKey(k.private_pem)).toString('base64');
+    const signature = sign(null, Buffer.from(hash), this.privateKey(k.key_id, k.private_pem)).toString('base64');
     return { keyId: k.key_id, alg: 'Ed25519', payloadHash: hash, signature };
   }
 
@@ -133,7 +136,12 @@ export class PkiService implements OnModuleInit {
     const k = this.db.get<{ key_id: string; private_pem: string; not_after: string }>("SELECT key_id, private_pem, not_after FROM pki_key WHERE status = 'ACTIVE' AND purpose = ?", purpose)!;
     if (Date.parse(k.not_after) < this.clock.now().getTime())
       throw new DomainError('GUARD_FAILED', `${purpose} 서명 키 ${k.key_id}가 ${k.not_after.slice(0, 10)}에 만료되었습니다 — 키를 교체한 뒤 다시 시도하세요(POST /api/pki/rotate).`, { keyId: k.key_id, purpose, notAfter: k.not_after });
-    return { kid: k.key_id, sig: sign(null, bytes, createPrivateKey(k.private_pem)) };
+    return { kid: k.key_id, sig: sign(null, bytes, this.privateKey(k.key_id, k.private_pem)) };
+  }
+
+  /** 봉인된 개인키를 서명 직전에만 푼다 */
+  private privateKey(keyId: string, sealed: string) {
+    return createPrivateKey(openFor(this.vault, 'pki_key', 'private_pem', keyId, sealed));
   }
 
   /** kid의 공개키·용도 — 교체된 키도 검증용으로 남는다 */

@@ -42,6 +42,7 @@ import { TelemetryService } from '../../d04-ops/telemetry-ingest/telemetry.servi
 import { PkiService } from '../../d06-qsec/pki-kms/pki.service';
 import { RuntimeRepo, type VehicleRuntimeState } from '../../d06-qsec/secure-deploy/publication.repo';
 import { GleoAdapter } from '../../../adapters/gleo/gleo.adapter';
+import { VehicleChannelRegistry } from '../vehicle-channel/vehicle-channel';
 
 /** 차량 회신 지연(ms) — 차량마다 조금씩 늦게 돌아와 시연 화면에서 집계가 차오르는 모습이 보인다 */
 const LATENCY = Number(process.env.FLEET_SIM_LATENCY_MS ?? 350);
@@ -73,21 +74,35 @@ export class VehicleRuntimeService {
     private readonly envelopes: EnvelopeRepo,
     private readonly gate: PolicyGateService,
     private readonly status: StatusIngestService,
-  ) {}
+    private readonly channels: VehicleChannelRegistry,
+  ) {
+    // 내부 시뮬레이터도 전달 어댑터 하나다(sim) — 운영 모드 기본은 실제 채널(pull, RD-OPS-04)
+    channels.register({
+      id: 'sim',
+      description: '내부 차량 시뮬레이터(데모·시험) — 차량 쪽 Guard·적용·회신을 이 프로세스가 대신한다',
+      deliver: (pub, vins) => {
+        vins.forEach((vin, i) => this.scheduler.after(LATENCY + i * STAGGER, () => this.receive(vin, pub)));
+        return { ackOnly: [] };
+      },
+    });
+  }
 
-  /** IF-07 전개 — 연결된 차량만 받는다. GLEO 실연동 차량은 GLEO 어댑터가 맡는다. 회신 의무가 없는 차량 목록을 돌려준다. */
+  /**
+   * IF-07 전개 — 연결된 차량만 받는다. GLEO 실연동 차량은 GLEO 어댑터가, 나머지는 고른 전달 채널(FF_VEHICLE_CHANNEL)이 맡는다.
+   * 회신 의무가 없는 차량 목록을 돌려준다.
+   */
   deliver(pub: Publication): { ackOnly: string[]; unreachable: string[] } {
     const unreachable: string[] = [];
     const viaGleo: string[] = [];
-    const sim: string[] = [];
+    const viaChannel: string[] = [];
     for (const vin of pub.payload.targets) {
       const v = this.fleet.vehicle(vin);
       if (!v || v.link === 'OFFLINE' || (v.gleo && this.gleo.mode === 'off')) unreachable.push(vin);
       else if (v.gleo && this.gleo.mode === 'ws') viaGleo.push(vin);
-      else sim.push(vin);
+      else viaChannel.push(vin);
     }
     const ackOnly = viaGleo.length ? this.gleo.send(pub, viaGleo) : [];
-    sim.forEach((vin, i) => this.scheduler.after(LATENCY + i * STAGGER, () => this.receive(vin, pub)));
+    if (viaChannel.length) ackOnly.push(...this.channels.current().deliver(pub, viaChannel).ackOnly);
     return { ackOnly, unreachable };
   }
 

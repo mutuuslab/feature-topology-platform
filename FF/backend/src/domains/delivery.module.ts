@@ -9,6 +9,8 @@ import { D01PolicyModule } from './d01-policy/d01-policy.module';
 import { VehicleRequestRepo } from './d02-runtime/vehicle-requests/vehicle-request.repo';
 import { VehicleRequestController, VehicleRequestLogController, VehicleRequestService } from './d02-runtime/vehicle-requests/vehicle-request.service';
 import { VehicleRuntimeController, VehicleRuntimeService } from './d02-runtime/vehicle-runtime/vehicle-runtime.service';
+import { VehicleChannelRegistry } from './d02-runtime/vehicle-channel/vehicle-channel';
+import { PullChannelService, VehicleChannelController, VehicleInboxController } from './d02-runtime/vehicle-channel/pull-channel.service';
 import { FleetMapController, FleetMapService } from './d02-runtime/fleet-map/fleet-map.service';
 import { FleetPopulationController, FleetPopulationService } from './d02-runtime/fleet-map/fleet-population.service';
 import { VehicleOpenFeatureController, VehicleOpenFeatureService } from './d02-runtime/vehicle-runtime/bundle-provider';
@@ -35,8 +37,8 @@ import { PublicationController, SecureDeployService } from './d06-qsec/secure-de
 
 @Module({
   imports: [D01PolicyModule, TrustModule],
-  controllers: [VehicleOpenFeatureController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, FleetMapController, FleetPopulationController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, RollbackController, RollbackPlanController, RollbackRequestController, PolicyHistoryController, PolicyGateController, StatusIngestController, VehicleStatusController, VariantConditionsController, SupportConditionsController, SbomController, RetentionController, SafetyKpiController, ChangeRecordController],
-  providers: [OtelExporter, VehicleOpenFeatureService, PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, FleetMapService, FleetPopulationService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, SbomService, KillService, TrialExpiryListener, RestoreService, RollbackRepo, RollbackService, PolicyGateService, EnvelopeRepo, StatusIngestService, VariantConditionsService, SupportConditionsService, RetentionService, SafetyKpiService, ChangeRecordService],
-  exports: [TrustModule, SecureDeployService, VehicleRuntimeService, GleoAdapter, PublicationRepo, KillService, RestoreService, VehicleRequestService, PolicyGateService],
+  controllers: [VehicleOpenFeatureController, PublicationController, PipelineController, TelemetryController, VehicleRuntimeController, FleetMapController, FleetPopulationController, VehicleRequestController, VehicleRequestLogController, GleoController, KillController, RestoreController, RollbackController, RollbackPlanController, RollbackRequestController, PolicyHistoryController, PolicyGateController, StatusIngestController, VehicleStatusController, VariantConditionsController, SupportConditionsController, SbomController, RetentionController, SafetyKpiController, ChangeRecordController, VehicleInboxController, VehicleChannelController],
+  providers: [OtelExporter, VehicleOpenFeatureService, PublicationRepo, RuntimeRepo, ReadbackBus, TelemetryService, GleoAdapter, VehicleRuntimeService, FleetMapService, FleetPopulationService, VehicleRequestRepo, VehicleRequestService, PipelineService, SecureDeployService, SbomService, KillService, TrialExpiryListener, RestoreService, RollbackRepo, RollbackService, PolicyGateService, EnvelopeRepo, StatusIngestService, VariantConditionsService, SupportConditionsService, RetentionService, SafetyKpiService, ChangeRecordService, VehicleChannelRegistry, PullChannelService],
+  exports: [TrustModule, SecureDeployService, VehicleRuntimeService, VehicleChannelRegistry, GleoAdapter, PublicationRepo, KillService, RestoreService, VehicleRequestService, PolicyGateService],
 })
 export class DeliveryModule {}

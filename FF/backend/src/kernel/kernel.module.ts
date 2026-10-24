@@ -10,6 +10,7 @@ import { ComponentRegistry } from './components';
 import { DB, SqliteDb, migrate, type Db } from './db';
 import { DomainErrorFilter } from './errors';
 import { EventService } from './event.service';
+import { HousekeepingService } from './housekeeping.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
 import { KernelController } from './kernel.controller';
 import { MIGRATIONS } from './migrations';
@@ -44,6 +45,7 @@ import { loadFixtures, seedDataset, seedDemo } from './seed';
     AuditService,
     AuthService,
     EventService,
+    HousekeepingService,
     ComponentRegistry,
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },

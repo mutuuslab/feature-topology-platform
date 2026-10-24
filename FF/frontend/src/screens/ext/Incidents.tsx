@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
+import { pickDefault } from '../../data/first-run';
 import { AsyncView, Button, DataTable, ErrorNote, Field, PageHeader, Panel, Select, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { usePermission } from '../shared';
 
@@ -154,14 +155,19 @@ function fieldMessage(d: FieldView | undefined): KeyMessageSpec {
 
 export function FieldPortalScreen() {
   const [sp, setSp] = useSearchParams();
-  const vin = sp.get('vin') ?? 'ego-01';
-  const [input, setInput] = useState(vin);
-  const q = useApi<FieldView>('fieldVehicle', { params: { vin } });
+  // 예시 차량이 있으면 그것, 없으면 첫 차량 — 차량이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const vehicles = useApi<{ items: { vin: string }[] }>('vehicles', {}, { enabled: !sp.get('vin') });
+  const fallback = pickDefault(vehicles.data?.items, (v) => v.vin === 'ego-01');
+  const vin = sp.get('vin') ?? fallback?.vin ?? (vehicles.isError ? 'ego-01' : '');
+  const none = !sp.get('vin') && fallback === null;
+  const [typed, setInput] = useState<string | null>(null);
+  const input = typed ?? vin;
+  const q = useApi<FieldView>('fieldVehicle', { params: { vin } }, { enabled: !!vin });
   const d = q.data;
   const C = F.col;
   return (
     <div className="ds-screen">
-      <PageHeader codes="D05-05 · FIELD SUPPORT" title={F.title} lead={F.lead} message={fieldMessage(d)} />
+      <PageHeader codes="D05-05 · FIELD SUPPORT" title={F.title} lead={F.lead} message={none ? { tone: 'neutral', text: ko.state.noVehicleTitle } : fieldMessage(d)} />
       <Toolbar label={F.vin}>
         <label className="ds-field ds-field--inline">
           <span className="ds-field__label">{F.vin}</span>
@@ -169,7 +175,7 @@ export function FieldPortalScreen() {
         </label>
         <Button onClick={() => setSp({ vin: input })}>{F.lookup}</Button>
       </Toolbar>
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody }}>
         {d && (
           <>
             <div className="ds-split">

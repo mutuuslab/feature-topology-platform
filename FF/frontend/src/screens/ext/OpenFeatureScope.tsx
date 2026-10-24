@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { useVehiclePick } from '../../data/first-run';
 import { AsyncView, DataTable, Explain, PageHeader, Panel, RuleText, Select, SummaryLine, Tabs, VerdictBadge } from '../../design';
 
 const O = ko.p10.openfeature;
@@ -167,19 +168,19 @@ interface VehicleEval {
 }
 
 function VehiclePanel() {
-  const vehicles = useApi<{ items: { vin: string; label: string }[] }>('vehicles');
-  const [vin, setVin] = useState('ego-01');
-  const q = useApi<VehicleEval>('vehicleOpenFeature', { params: { vin } });
+  // 예시 차량이 있으면 그것, 없으면 첫 차량 — 차량이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const { vin, setVin, none, vehicles } = useVehiclePick('ego-01');
+  const q = useApi<VehicleEval>('vehicleOpenFeature', { params: { vin } }, { enabled: !!vin });
   const d = q.data;
   const C = O.vehCol;
   return (
     <>
       <Select label={O.vin} value={vin} onChange={(e) => setVin(e.target.value)}>
-        {(vehicles.data?.items ?? [{ vin: 'ego-01', label: '' }]).map((v) => (
+        {(vehicles.data?.items ?? []).map((v) => (
           <option key={v.vin} value={v.vin}>{`${v.vin} ${v.label}`}</option>
         ))}
       </Select>
-      <AsyncView state={asyncState(q, !d?.items.length)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q, !d?.items.length)} error={q.error?.message} onRetry={() => q.refetch()} empty={none ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : undefined}>
         {d && (
           <>
             <p className="ds-field__hint ds-mono">{O.pseudonym(d.pseudonym)}</p>

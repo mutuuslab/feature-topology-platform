@@ -25,6 +25,9 @@ export interface FakeOidcOptions {
   tokenTtlSec?: number;
   /** e2e 전용 — GET /test/token?user=키 로 접근 토큰을 준다(브라우저 밖 API 호출 준비) */
   exposeTestTokens?: boolean;
+  /** 디스커버리·토큰에 적는 발급자(예: https://idp.oem.example) — 운영 모드는 https 발급자만 받는다.
+   *  서버는 그대로 http 127.0.0.1에서 듣고, 시험이 fetch를 이 주소 → 실제 주소로 바꿔 보낸다(운영 모드 첫 실행 시험) */
+  publicIssuer?: string;
 }
 
 export interface SignOptions {
@@ -181,7 +184,7 @@ export async function startFakeOidc(o: FakeOidcOptions): Promise<FakeOidc> {
 
   await new Promise<void>((ok) => server.listen(o.port ?? 0, '127.0.0.1', () => ok()));
   const port = (server.address() as { port: number }).port;
-  issuer = `http://127.0.0.1:${port}`;
+  issuer = o.publicIssuer?.replace(/\/+$/, '') ?? `http://127.0.0.1:${port}`;
   return {
     issuer,
     port,

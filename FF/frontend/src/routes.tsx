@@ -185,7 +185,9 @@ export const ROUTES: AppRoute[] = [
   { path: '/twin/live', element: named(fleetScreens, 'LegacyLiveRedirect'), title: 'Fleet 실시간 적용 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/fleet', element: legacyTo('/fleet/live'), title: '차량 운영 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/twin/fleet', element: named(twin, 'TwinFleet'), title: '3D Fleet (BDC 데모)', group: 'ops', parent: '/fleet/live' },
-  { path: '/fleet/vehicles/:vin', element: named(fleetScreens, 'VehicleRuntimeScreen'), title: '차량별 적용 상태', group: 'ops', menu: '/fleet/vehicles/ego-01', components: ['D02-03'], v2: true },
+  // 메뉴는 차량을 고르지 않은 주소 — 예시 차량(ego-01)이 있으면 그 차량, 없으면 첫 차량, 차량이 없으면 빈 상태(출시 준비 RD-OPS-02)
+  { path: '/fleet/vehicles', element: named(fleetScreens, 'VehicleRuntimeScreen'), title: '차량별 적용 상태', group: 'ops', menu: '/fleet/vehicles', components: ['D02-03'], v2: true },
+  { path: '/fleet/vehicles/:vin', element: named(fleetScreens, 'VehicleRuntimeScreen'), title: '차량별 적용 상태', group: 'ops', parent: '/fleet/vehicles', components: ['D02-03'], v2: true },
   { path: '/twin/applied/:vin', element: legacyTo('/fleet/vehicles/:vin'), title: '차량 적용 상태 (이전 주소)', group: 'ops', parent: '/fleet/vehicles/:vin' },
   { path: '/twin/vehicle/:vin', element: named(twinOps, 'TwinVehicle'), title: '차량 상세 (BDC 데모)', group: 'ops', parent: '/fleet/vehicles/:vin' },
   { path: '/ops/kill', element: named(killScreens, 'KillConsole'), title: '긴급 차단·복구', group: 'ops', menu: '/ops/kill', components: ['D03-03', 'D03-04'], v2: true },

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
+import { useDefaultFeature } from '../../data/first-run';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, PageHeader, Panel, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { ComponentList, usePermission } from '../shared';
 import { extSync } from '../../copy/ext-sync';
@@ -69,9 +70,15 @@ function SystemsTab() {
 }
 
 function AlmTab() {
-  const [featureId, setF] = useState('FEAT-00022');
-  const [version, setV] = useState('1.0.0');
-  const q = useApi<{ items: { reqId: string; title: string; status: string; tracedGate: string; baseline: string | null }[] }>('almRequirements', { query: { featureId, version } });
+  // 기본 대상 — 예시 Feature가 있으면 그것, 없으면 첫 Feature, 하나도 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const [picked, setPicked] = useState<{ f?: string; v?: string }>({});
+  const fallback = useDefaultFeature({ featureId: 'FEAT-00022', version: '1.0.0' }, picked.f === undefined);
+  const featureId = picked.f ?? fallback?.featureId ?? '';
+  const version = picked.v ?? fallback?.version ?? '';
+  const none = picked.f === undefined && fallback === null;
+  const setF = (f: string) => setPicked((x) => ({ v: version, ...x, f }));
+  const setV = (v: string) => setPicked((x) => ({ f: featureId, ...x, v }));
+  const q = useApi<{ items: { reqId: string; title: string; status: string; tracedGate: string; baseline: string | null }[] }>('almRequirements', { query: { featureId, version } }, { enabled: !!featureId && !!version });
   const rows = q.data?.items ?? [];
   const C = G.reqCol;
   return (
@@ -86,7 +93,7 @@ function AlmTab() {
           <input className="ds-input ds-input--mono" value={version} onChange={(e) => setV(e.target.value.trim())} disabled={STATIC_MODE} style={{ width: 80 }} />
         </label>
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} empty={none ? { title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody } : undefined}>
         <DataTable caption={G.tabs.alm} rows={rows} rowKey={(r) => r.reqId} columns={[
           { key: 'i', header: C.id, cell: (r) => <span className="ds-mono">{r.reqId}</span> },
           { key: 't', header: C.title, cell: (r) => r.title },
@@ -324,7 +331,9 @@ function LegacySdvPanel() {
   const tr = useApiMutation<{ supported: boolean; reason: string | null; fClass: string; commands: { unit: string; did: string; value: string; note: string }[] }>('translateLegacy', ['audit']);
   const vs = v.data?.items ?? [];
   const [vin, setVin] = useState('');
-  const [featureId, setF] = useState('FEAT-00024');
+  const [typedF, setF] = useState<string | null>(null);
+  const fallbackF = useDefaultFeature({ featureId: 'FEAT-00024', version: '' }, typedF === null);
+  const featureId = typedF ?? fallbackF?.featureId ?? '';
   const [enable, setEnable] = useState(true);
   const pick = vin || vs[0]?.vin || '';
   const C = L.cmdCol;

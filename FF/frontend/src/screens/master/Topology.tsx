@@ -46,7 +46,8 @@ export function TopologyScreen() {
   const total = all.data?.items ?? [];
   const open = openRelations(total);
   // 그래프 기본 초점 = 첫 미판정·FAIL 관계(S4: 핵심 메시지는 실패를 말하는데 그래프는 초록 관계만 보였다). 관계를 받기 전에는 그리지 않는다
-  const focus = sp.get('feature') ?? (all.data || all.isError ? (open[0]?.sourceFeatureId ?? 'FEAT-00022') : null);
+  // 미판정·FAIL이 없으면 첫 관계, 관계가 하나도 없으면(빈 설치) 초점 없음 — 없는 데모 ID를 그리지 않는다(출시 준비 RD-OPS-02)
+  const focus = sp.get('feature') ?? (all.data ? (open[0]?.sourceFeatureId ?? total[0]?.sourceFeatureId ?? null) : all.isError ? 'FEAT-00022' : null);
   const selected = open.find((d) => d.sourceFeatureId === focus || d.targetFeatureId === focus)?.dependencyId ?? null;
   const graph = useApi<Graph>('topologyGraph', { query: { featureId: focus ?? '', depth } }, { enabled: !!focus });
   const feats = useApi<{ items: { featureId: string; version: string; name: string }[] }>('listFeatures', { query: { latestOnly: true } });
@@ -95,7 +96,7 @@ export function TopologyScreen() {
           </Select>
           <Segmented label={T.depth} options={(['1', '2', '3'] as const).map((v) => ({ value: v, label: v }))} value={depth} onChange={(v) => setDepth(v as typeof depth)} />
         </Toolbar>
-        <AsyncView state={focus ? asyncState(graph) : 'loading'} error={graph.error?.message} onRetry={() => graph.refetch()}>
+        <AsyncView state={focus ? asyncState(graph) : all.data ? 'empty' : 'loading'} error={graph.error?.message} onRetry={() => graph.refetch()}>
           {graph.data && focus && <TopologyGraph data={graph.data} focus={focus} selected={selected} />}
         </AsyncView>
       </Panel>

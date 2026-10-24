@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { bodyLimitOf, rateLimit, rateLimitOf, securityHeaders } from './kernel/http-hardening';
 import { correlation, JsonLogger, logFormat, Metrics, requestLogOn, requestObserver } from './kernel/observability';
 import { assertRuntimeConfig, corsOrigins, isProduction } from './kernel/runtime-config';
+import { serveWeb } from './kernel/web-static';
 
 /** main.ts와 테스트가 같은 방식으로 앱을 조립한다.
  *  어댑터를 명시 주입한다 — workspaces 호이스팅 위치와 무관하게 platform-express를 찾도록. */
@@ -31,6 +32,8 @@ export function hardenHttp(app: NestExpressApplication, env: Record<string, stri
   app.use(correlation());
   const json = new JsonLogger();
   app.use(requestObserver(app.get(Metrics), requestLogOn(env) ? (line) => json.event(line) : null));
+  // 화면 파일(FF_WEB_DIR, 단독 설치 이미지) — 같은 출처 제공. 요청 제한 앞이라 화면 자산은 세지 않는다(RD-OPS-05)
+  serveWeb(app, env);
   app.use(rateLimit(rateLimitOf(env)));
   app.useBodyParser('json', { limit: bodyLimitOf(env) });
   app.useBodyParser('urlencoded', { limit: bodyLimitOf(env), extended: true });

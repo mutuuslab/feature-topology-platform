@@ -13,9 +13,14 @@ import { FeatureRepo, TopologyRepo } from '../../domains/d01-policy/repos';
 import { IfCallRepo } from '../if-call/if-call.repo';
 import { OtelExporter } from './otel.exporter';
 import { modeOf } from '../../domains/d05-ext/api-gateway/ext-sync/adapters';
+import { seedOf } from '../../kernel/runtime-config';
 
 export const EXT_FIXTURES = join(__dirname, '..', '..', '..', '..', 'data', 'fixtures', 'ext');
 const fixture = <T>(name: string): T => JSON.parse(readFileSync(join(process.env.FF_EXT_FIXTURES ?? EXT_FIXTURES, `${name}.json`), 'utf8'));
+/** 모의 외부 시스템의 예시 내용(해외공장 주문·레거시 옵션 코드·비SDV 차량·VOC) — 데모 데이터(시드)와 한 묶음이다.
+ *  시드 없이 띄운 설치(고객 운영·빈 DB 첫 실행)에서는 그 고객의 외부 시스템에 아직 아무것도 없다 — 빈 목록(출시 준비 RD-OPS-02).
+ *  시험은 FF_EXT_FIXTURES로 직접 고른 픽스처를 그대로 받는다. */
+export const sampleFixture = <T>(name: string, env: Record<string, string | undefined> = process.env): T[] => (seedOf(env) === 'none' && !env.FF_EXT_FIXTURES ? [] : fixture<T[]>(name));
 
 export interface VocItem {
   ref: string;
@@ -121,13 +126,13 @@ export class ExternalSystems {
   /** IF-12 해외공장 — 생산 주문(레거시 옵션 코드) */
   plantOrders(plant: string): PlantOrder[] {
     this.need('IF-12');
-    return this.calls.call('IF-12', `orders:${plant}`, { plant }, () => fixture<PlantOrder[]>('plantOrders').filter((o) => o.plant === plant));
+    return this.calls.call('IF-12', `orders:${plant}`, { plant }, () => sampleFixture<PlantOrder>('plantOrders').filter((o) => o.plant === plant));
   }
 
   /** IF-12 해외공장 — 생산 차량(VIN) 목록 */
   plantVehicles(plant: string, runKey: string) {
     this.need('IF-12');
-    return this.calls.call('IF-12', `vehicles:${plant}:${runKey}`, { plant }, () => fixture<PlantOrder[]>('plantOrders').filter((o) => o.plant === plant).map((o) => ({ vin: o.vin, vehicleModel: o.vehicleModel })));
+    return this.calls.call('IF-12', `vehicles:${plant}:${runKey}`, { plant }, () => sampleFixture<PlantOrder>('plantOrders').filter((o) => o.plant === plant).map((o) => ({ vin: o.vin, vehicleModel: o.vehicleModel })));
   }
 
   /** IF-11 OpenTelemetry Collector — span 받기(모의 수집기는 표에 쌓는다) */
@@ -143,15 +148,15 @@ export class ExternalSystems {
 
   /** 고객센터 VOC 원천(모의) — 연계 IF 번호 없음(D04-05 자체 수집) */
   vocFeed(): VocItem[] {
-    return fixture<VocItem[]>('voc');
+    return sampleFixture<VocItem>('voc');
   }
 
   legacyMappings(): LegacyMapping[] {
-    return fixture<LegacyMapping[]>('legacyMappings');
+    return sampleFixture<LegacyMapping>('legacyMappings');
   }
 
   legacyVehicles(): LegacyVehicle[] {
-    return fixture<LegacyVehicle[]>('legacyVehicles');
+    return sampleFixture<LegacyVehicle>('legacyVehicles');
   }
 
   /** IF-01~13 연결 현황 — 모의 어댑터는 mock/off, 나머지는 각 어댑터의 환경 변수 기준 */

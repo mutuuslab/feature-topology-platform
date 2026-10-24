@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { pickDefault } from '../../data/first-run';
 import type { ExtRef } from '@ff/contracts';
 import { extSync } from '../../copy/ext-sync';
 import { AsyncView, DataTable, ExtRefChip, GateBadge, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Select, Tabs, Toolbar, type KeyMessageSpec } from '../../design';
@@ -32,24 +33,27 @@ function traceMessage(d: Trace | undefined): KeyMessageSpec {
 
 export function DesignTraceScreen() {
   const [sp, setSp] = useSearchParams();
-  const pick = sp.get('feature') ?? 'FEAT-00022@1.0.0';
-  const [id, ver] = pick.split('@');
   const feats = useApi<{ items: { featureId: string; version: string; name: string }[] }>('listFeatures', { query: { latestOnly: true } });
-  const q = useApi<Trace>('designTrace', { params: { id, ver } });
+  // 기본 대상 — 예시 Feature가 있으면 그것, 없으면 첫 Feature, 하나도 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const first = pickDefault(feats.data?.items, (f) => f.featureId === 'FEAT-00022');
+  const pick = sp.get('feature') ?? (first ? (first.featureId === 'FEAT-00022' ? 'FEAT-00022@1.0.0' : `${first.featureId}@${first.version}`) : feats.isError ? 'FEAT-00022@1.0.0' : '');
+  const none = !sp.get('feature') && first === null;
+  const [id, ver] = pick.split('@');
+  const q = useApi<Trace>('designTrace', { params: { id, ver } }, { enabled: !!id && !!ver });
   const d = q.data;
   const T = M.trace;
   return (
     <div className="ds-screen">
-      <PageHeader codes="D01-02 · D06-07 · REQ → IMPL → VERIFY" title={T.title} lead={T.lead} message={traceMessage(d)} />
+      <PageHeader codes="D01-02 · D06-07 · REQ → IMPL → VERIFY" title={T.title} lead={T.lead} message={none ? { tone: 'neutral', text: ko.state.noFeatureTitle } : traceMessage(d)} />
       <Toolbar label={T.pick}>
         <Select label={T.pick} value={pick} onChange={(e) => setSp({ feature: e.target.value })}>
-          {!feats.data?.items.some((f) => `${f.featureId}@${f.version}` === pick) && <option value={pick}>{pick}</option>}
+          {!!pick && !feats.data?.items.some((f) => `${f.featureId}@${f.version}` === pick) && <option value={pick}>{pick}</option>}
           {(feats.data?.items ?? []).map((f) => (
             <option key={`${f.featureId}@${f.version}`} value={`${f.featureId}@${f.version}`}>{`${f.featureId} ${f.version} · ${f.name}`}</option>
           ))}
         </Select>
       </Toolbar>
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
         {d && (
           <>
             <div className="ds-split">

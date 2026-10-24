@@ -283,6 +283,17 @@ describe('내 대시보드 — Jira 대시보드', () => {
     await waitFor(() => expect(document.activeElement?.getAttribute('data-ui')).toBe('dashboard-edit'));
   });
 
+  // 회귀(2026-10-25, e2e 편집 초점 3건): 사본을 만든 뒤 편집 띠가 그려지기 전에 다음 그림 틀(requestAnimationFrame)이 먼저 오면
+  // 초점을 줄 '편집 중' 제목이 아직 없어 초점이 본문으로 사라졌다. 그림 틀이 곧바로 오는 경우로 재현한다
+  it('편집 모드 초점은 편집 띠가 그려진 뒤에 준다 — 그림 틀이 먼저 와도 \'편집 중\' 제목에 초점, 완료하면 편집 단추로', async () => {
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => (cb(0), 0));
+    mount('operator');
+    await enterEdit();
+    await waitFor(() => expect(document.activeElement?.id).toBe('jd-editbar-h'));
+    fireEvent.click(screen.getByRole('button', { name: '완료' }));
+    await waitFor(() => expect(document.activeElement?.getAttribute('data-ui')).toBe('dashboard-edit'));
+  });
+
   it('공유 — 고른 역할을 서버에 저장한다(소유자만)', async () => {
     mount('operator');
     await enterEdit();

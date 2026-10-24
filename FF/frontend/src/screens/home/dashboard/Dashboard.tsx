@@ -174,6 +174,16 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
   const refreshApis = useRefreshApis();
   const editBtn = useRef<HTMLButtonElement>(null);
   const editHead = useRef<HTMLHeadingElement>(null);
+  // 편집 모드 들고 날 때의 초점 — 그려진 뒤(effect)에 준다. requestAnimationFrame은 사본을 만든 뒤 편집 띠가 그려지기 전에 와서
+  // 초점이 본문으로 사라졌다(2026-10-25 e2e)
+  const [modeFocus, setModeFocus] = useState<'editHead' | 'editBtn' | null>(null);
+  useEffect(() => {
+    if (!modeFocus) return;
+    const el = modeFocus === 'editHead' ? (editing ? editHead.current : null) : !editing ? editBtn.current : null;
+    if (!el) return;
+    el.focus();
+    setModeFocus(null);
+  });
   const [focusGadget, setFocusGadget] = useState<string | null>(null);
   // 남의 판(시스템·공유)에서 최소화는 이 화면에서만(저장하지 않는다)
   const [localMin, setLocalMin] = useState<Set<string>>(() => new Set());
@@ -208,13 +218,13 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
     setEditing(true);
     setDirectoryFocus(false);
     setDirectory(true);
-    requestAnimationFrame(() => editHead.current?.focus());
+    setModeFocus('editHead');
   };
   const finishEdit = () => {
     setEditing(false);
     setDirectory(false);
     say(B.leftEdit);
-    requestAnimationFrame(() => editBtn.current?.focus());
+    setModeFocus('editBtn');
   };
 
   const add = (type: string) => {

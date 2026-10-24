@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/entitlement.schema.json",
+  "title": "entitlement v1 — 체험·구독 사용 권한 변화(Feature 사용 데이터)",
+  "description": "FF 원천: 이벤트 entitlement.offered·accepted·declined·converted, trial.expired(D01-05·D05-04). COMMERCIAL_USAGE 범주 — 동의·계약 근거가 정해지기 전에는 보내지 않는다(결정 U-8). 주문 번호(orderId)는 보내지 않는다. 차량 안의 사용 횟수·시간은 FF에 없다 — 3단계 데이터 채널에서 온다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["change", "grant_id", "catalog_id", "plan", "valid_from", "valid_to"],
+  "properties": {
+    "change": { "enum": ["OFFERED", "ACCEPTED", "DECLINED", "CONVERTED", "EXPIRED"] },
+    "grant_id": { "type": "string", "minLength": 1, "maxLength": 40 },
+    "catalog_id": { "type": "string", "pattern": "^CAT-[0-9]{5}$" },
+    "plan": { "type": ["string", "null"], "maxLength": 40 },
+    "valid_from": { "type": ["string", "null"], "format": "date-time" },
+    "valid_to": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

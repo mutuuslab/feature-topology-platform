@@ -9,6 +9,10 @@
 > - FF 안에는 Lake의 코드·저장소·학습을 두지 않는다.
 > - 구현 항목은 [`FF/BACKLOG.md`](../../FF/BACKLOG.md) 텔레메트리 절에 있고, UI/UX가 먼저다.
 
+> **Lake 서버 v1 설계(2026-10-24, 사용자 결정 "OTA처럼 별도 서버로")**: [80-75 Data Lake 서버 — 간단 설계](80-75-data-lake-server.md) · 계약 [`datalake-if15.openapi.json`](datalake-if15.openapi.json) · 이벤트 스키마 [`datalake-if15/`](datalake-if15/).
+> - v1은 **차량 → FF → Lake**로 시작한다(FF가 검증해 받은 제어 채널 자료만). 이 문서의 차량 직송 데이터 채널(§2)은 3단계 목표로 남는다.
+> - 이 문서와 다르게 정한 것(Kafka 대신 HTTPS 묶음, 설치마다 Lake 하나·CN 기본 제외, 보안은 경보만 등)은 80-75 0장 표 C1~C6에 있다.
+
 ## 0. 시스템 경계와 주인 규칙
 | 시스템 | 서버 | 하는 일 |
 |---|---|---|
@@ -155,7 +159,7 @@
 - 순서는 다음과 같다.
   - **P1 UI/UX**: IF-15 mock fixture로 화면을 먼저 완성한다.
   - **P2 계약·FF backend**
-  - **P3 Data Lake 서버**: 별도 workspace `datalake/`, 포트 9301.
+  - **P3 Data Lake 서버**: 별도 workspace `datalake/`, 포트 9301. v1 설계·단계는 [80-75](80-75-data-lake-server.md) 8장.
   - **P4 차량 측**
   - **P5 실제 연결**
 - FF backend와 Lake 서버는 코드를 공유하지 않는다. 공유하는 것은 IF-15 계약(contracts 스키마)뿐이고, 양쪽 모두 계약 시험으로 확인한다.
@@ -166,6 +170,8 @@
   - INV-19: CN 원천이 국외로 나간 적 0
 
 ## 8. 정해야 할 것
+- Lake 서버 v1에서 정할 것(자료 길·저장·가명·보존·인증·CN 등)은 [80-75](80-75-data-lake-server.md) 9장 U-1~U-11에 모았다. 아래는 그 밖의 큰 결정이다.
+
 1. Data Lake 제품·위치: Iceberg/Parquet on 객체 저장소, Databricks, Snowflake 등. 접근 방식(Kafka·REST·SQL)과 인증
 2. 차량 신호 목록의 소유 조직, 차량 로거 용량(일 MB/대)
 3. 동의(기능 사용 데이터)·위치 기준(D5)·CN 처리

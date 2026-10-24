@@ -12,6 +12,9 @@
   - "Data Lake도 외부 시스템 — 우리가 설계하지만 FF Platform과 서버가 다르다"
   - "전체 구현을 Backlog에, UI/UX 프론트 우선"
 - 설계 문서는 [`docs/80-integration/80-70-telemetry-datalake-ml.md`](../docs/80-integration/80-70-telemetry-datalake-ml.md)다.
+- **Lake 서버 v1 설계**(2026-10-24 사용자 결정 "OTA처럼 별도 서버로")는 [`docs/80-integration/80-75-data-lake-server.md`](../docs/80-integration/80-75-data-lake-server.md)다. IF-15 계약 초안: [`datalake-if15.openapi.json`](../docs/80-integration/datalake-if15.openapi.json) · 이벤트 스키마 [`datalake-if15/`](../docs/80-integration/datalake-if15/)(형식 시험 `contracts/src/schemas/datalake-if15.test.ts`).
+  - v1은 차량 → FF → Lake(직송 데이터 채널은 3단계), HTTPS 묶음 적재 + S3 호환 Parquet + DuckDB 집계. 80-70과 다르게 정한 것은 80-75 0장 C1~C6.
+  - 아래 TL-C01·C02·B04·L01·L02는 80-75를 완료 기준의 계약으로 삼는다.
 
 ### 경계
 - FF Platform(9101·9012)과 Data Lake 서버(별도, 개발 포트 9301)는 **IF-15** 하나로만 연결된다.
@@ -61,12 +64,12 @@
 ### P2 — 계약 · FF backend
 | ID | 상태 | 내용 | 완료 기준 | 선행 |
 |---|---|---|---|---|
-| TL-C01 | 대기 | contracts: IF-15 매니페스트(D05-01 소속, D04-03·D06-12·D01-07 사용), 응답 스키마(GoldMetric·SafetyEvent·ModelScore·ModelSummary·DataContractStatus·Freshness), 라벨 CDC 스키마, CollectionPolicy, AbortCriteria, routes | contracts 시험, openapi 갱신. **P1 화면이 쓸 최소본을 먼저** 만든다 | — |
-| TL-C02 | 대기 | IF-15 어댑터: mock(fixture, 5년 재생 모집단과 맞춤)·live(HTTP pull, 이벤트 구독, 라벨 쓰기), `IF_MODE_15` | 어댑터 시험(fixture·live fetch 대역) | TL-C01 |
+| TL-C01 | 대기 | contracts: IF-15 매니페스트(D05-01 소속, D04-03·D06-12·D01-07 사용), 응답 스키마(GoldMetric·SafetyEvent·ModelScore·ModelSummary·DataContractStatus·Freshness), 라벨 CDC 스키마, CollectionPolicy, AbortCriteria, routes. **v1 계약은 80-75**: 적재 봉투·종류 8개(`docs/80-integration/datalake-if15/`)와 조회 응답(OpenAPI `datalake-if15.openapi.json`)을 zod로 옮기고, 기존 형식 시험(`datalake-if15.test.ts`)에 zod ↔ JSON Schema 대조를 더한다. `components.manifest.ts` IF 목록에 IF-15 추가 | contracts 시험, openapi 갱신. **P1 화면이 쓸 최소본을 먼저** 만든다 | — |
+| TL-C02 | 대기 | IF-15 어댑터: mock(fixture, 5년 재생 모집단과 맞춤)·live(HTTP pull, 이벤트 구독, 라벨 쓰기), `IF_MODE_15`. live는 80-75 6장 조회 API(5분 pull) — `connections.ts`의 `datalake.ifId`를 `'IF-15'`·`liveAdapter: true`로 | 어댑터 시험(fixture·live fetch 대역) | TL-C01 |
 | TL-B01 | 대기 | 신선도 HOLD: SLA 초과 지표로 단계 확대 불가 | 시험: 지연 지표 → 확대 거부 + 사유 | TL-C02 |
 | TL-B02 | 대기 | 중단 기준 판정(규칙 ①, Lake 집계 기준) → 자동 HOLD, 사전 등록·변경 감사 | 시험: 임계 초과 → HOLD, 모델 점수만으로는 HOLD 안 됨 | TL-B01 |
 | TL-B03 | 대기 | 이상 징후 자동 생성(규칙·모델 출처) + 사람 판정 → 라벨 | 시험 | TL-C02 |
-| TL-B04 | 대기 | 라벨 CDC: 정책·게시본·단계·차단·롤백·실험 배정·차량별 적용 상태·사람 판정 → Lake. ext-sync 보낼 함 엔진 재사용(`backend/src/domains/d05-ext/api-gateway/ext-sync`) | 시험: 누락 0, 재시도·멱등 | TL-C02 |
+| TL-B04 | 대기 | 라벨 CDC: 정책·게시본·단계·차단·롤백·실험 배정·차량별 적용 상태·사람 판정 → Lake. ext-sync 보낼 함 엔진 재사용(`backend/src/domains/d05-ext/api-gateway/ext-sync`). **80-75 3장으로 바꿈**: 보낼 함 행을 따로 만들지 않고 `events` 표 + 커서 하나(재시도·지연 규칙만 ext-sync와 같게), VIN → 가명·자유 글 제외·CN 제외, 커서 뒤 이벤트는 보존 삭제 금지 | 시험: 누락 0, 재시도·멱등, Lake 정지 중 FF 기능 회귀 0 | TL-C02 |
 | TL-B05 | 대기 | 수집 정책 엔티티·승인·서명 게시본 배포·차량 회신 | 시험: 서명·대상·거부 회신 | TL-C01 |
 | TL-B06 | 대기 | 모델 사용 승인(2인·직무 분리·감사), 드리프트 시 "참고 불가" | 시험: 자기 승인 거부 | TL-C02 |
 | TL-B07 | 대기 | 5년 재생 연동 + INV-16~19(FF 쪽 검사) | 재생 PASS, 보고서 갱신 | TL-B01~B06 |
@@ -77,12 +80,12 @@
 ### P3 — Data Lake 서버 (별도 서버)
 | ID | 상태 | 내용 | 완료 기준 | 선행 |
 |---|---|---|---|---|
-| TL-L01 | 대기 | `datalake/` 별도 workspace·프로세스(포트 9301)·자체 저장소. IF-15 서빙 API | 계약 준수 시험(contracts 스키마), FF live 어댑터로 연결 확인 | TL-C01 |
-| TL-L02 | 대기 | 수집 게이트웨이(MQTT 모의) → Bronze(서명 검증, 실패는 격리) → Silver(가명화·라벨 조인) → Gold(5분·1시간·1일 집계) | 파이프라인 시험, 데이터 계약 품질 검사 | TL-L01 |
-| TL-L03 | 대기 | 차량 신호 합성기. 5년 재생 모집단·배포·차단·롤백 이력과 맞물리고, 사고 달에 DTC를 올린다. **FF가 아니라 Lake로** 보낸다 | 재생 결과로 Gold가 채워짐 | TL-L02 |
+| TL-L01 | 대기 | `datalake/` 별도 workspace·프로세스(포트 9301)·자체 저장소. IF-15 서빙 API. **v1 범위는 80-75 8장**: 적재·cursor·health·freshness·조회 3종·보존 삭제·가명 삭제·`/metrics`, S3 호환(MinIO) + Parquet + DuckDB | 계약 준수 시험(contracts 스키마), FF live 어댑터로 연결 확인 | TL-C01 |
+| TL-L02 | 대기 | 수집 게이트웨이(MQTT 모의) → Bronze(서명 검증, 실패는 격리) → Silver(가명화·라벨 조인) → Gold(5분·1시간·1일 집계). v1은 MQTT 없이 FF 적재만(80-75 4장 raw → curated → agg), MQTT 게이트웨이는 3단계 | 파이프라인 시험, 데이터 계약 품질 검사 | TL-L01 |
+| TL-L03 | 대기 | 차량 신호 합성기. 5년 재생 모집단·배포·차단·롤백 이력과 맞물리고, 사고 달에 DTC를 올린다. **FF가 아니라 Lake로** 보낸다(데이터 채널 흉내 — 80-75 3단계. v1 자료는 FF 시뮬레이터 → FF → Lake로 채운다) | 재생 결과로 Gold가 채워짐 | TL-L02 |
 | TL-L04 | 대기 | 학습 작업(Python, 시드 고정): 규칙 ① 검정, 모델 ② 이상 탐지, ③ 배포 위험(설명 포함), ④ 체험 전환(공정성) | 재현 가능한 평가 지표 | TL-L03 |
 | TL-L05 | 대기 | 모델 레지스트리·모델 카드·드리프트 감시·재학습, Lake 쪽 모델 승인(학습자 ≠ 승인자) | 시험 | TL-L04 |
-| TL-L06 | 대기 | 시장 리전 분리(CN 현지 수집·학습), 국외 반출은 k≥5 집계·점수만 | 시험: CN 원천 반출 0 | TL-L02 |
+| TL-L06 | 대기 | 시장 리전 분리(CN 현지 수집·학습), 국외 반출은 k≥5 집계·점수만. v1은 CN 차량 자료를 내보내지 않고, CN은 전용 Lake 설치(80-75 5.5, 결정 U-9) | 시험: CN 원천 반출 0 | TL-L02 |
 | TL-L07 | 대기 | FF ↔ Lake 대사: 라벨 누락 0, 신선도, INV-16~19 양쪽 검사 | 대사 보고서 | TL-B07·L05 |
 | TL-L08 | 대기 | Feature별 4축 근거 집계(동작·문제·개선·위험 지표: 사용률·수동 끄기·차종/시장 편차·추세·결측)와 조치 전후 비교 데이터셋 | 데이터 계약·계약 시험 | TL-L02 |
 
@@ -102,6 +105,7 @@
 3. 기능 사용 데이터 동의, 위치 기준(D5), CN 처리
 4. 안전 지표 신선도 SLA(제안 10분), Canary 관측 시간
 5. ISO/PAS 8800 적용 범위(모델 ②③을 안전 관련으로 분류할지)
+6. Lake 서버 v1의 결정(자료 길·저장 엔진·구현 위치·가명·보존·자유 글·인증·상업 자료·CN·고객 Lake·SLA) — 80-75 9장 U-1~U-11. 1번의 "제품·접근·인증"은 v1에서 U-2·U-7로 좁혔다
 
 <!-- ads:begin (tools/ads-report.ts가 harness/ads/design.json에서 생성 — 직접 고치지 말 것) -->
 ## ADS·UNECE 보고서 v3.0 반영 (2026-10-18)

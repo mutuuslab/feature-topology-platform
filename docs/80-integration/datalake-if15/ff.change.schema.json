@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/ff.change.schema.json",
+  "title": "ff.change v1 — FF가 내린 변경(라벨): 배포·단계·차단·복원·롤백·실험·출시",
+  "description": "FF 원천: 이벤트 이력의 변경 이벤트(source_event). Lake는 이 라벨로 차량 데이터를 'Feature 버전·정책·단계·차단 전후'로 나눈다(80-70 원칙 2 양방향 라벨). 차량별 적용 사실은 delivery.result·vehicle.status가 맡고, 여기는 결정 한 건이다. 승인자·작성자 ID는 보내지 않는다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source_event", "subject_id", "policy_id", "publication_id", "kill_id", "flag_key", "stage", "target_count"],
+  "properties": {
+    "source_event": {
+      "enum": [
+        "policy.deployed",
+        "policy.restored",
+        "rollout.staged",
+        "publication.signed",
+        "publication.dispatched",
+        "publication.closed",
+        "kill.issued",
+        "kill.released",
+        "rollback.started",
+        "rollback.failed",
+        "experiment.created",
+        "release.signed",
+        "flag.retirement.step"
+      ]
+    },
+    "subject_id": { "description": "FF 이벤트의 aggregate(정책·게시본·차단·실험 ID)", "type": "string", "minLength": 1, "maxLength": 80 },
+    "policy_id": { "type": ["string", "null"], "maxLength": 40 },
+    "publication_id": { "type": ["string", "null"], "pattern": "^PUB-[0-9]{5}$" },
+    "kill_id": { "type": ["string", "null"], "maxLength": 40 },
+    "flag_key": { "type": ["string", "null"], "maxLength": 120 },
+    "stage": {
+      "description": "rollout.staged일 때 단계(만분율, basis points)",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["from_bp", "to_bp"],
+      "properties": {
+        "from_bp": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "to_bp": { "type": "integer", "minimum": 0, "maximum": 10000 }
+      }
+    },
+    "target_count": { "description": "대상 차량 수(알 때만)", "type": ["integer", "null"], "minimum": 0 }
+  }
+}

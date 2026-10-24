@@ -108,6 +108,30 @@ export interface RedactionReport {
 }
 
 /** 해시 입력 — v1: 저장된 열 그대로(JSON 문자열 포함), v2: 식별 칸은 칸 해시로. 키 정렬 */
+/** 체인 v2 행의 칸 판정 — verifyChain·verifyChainAsync 공용. 문제가 없으면 null */
+function v2RowFault(r: any, salt: string | undefined, red: { batch: number; digest: string } | undefined): 'hash' | 'redaction' | null {
+  if (Number(r.chain_v) !== 2) return null;
+  // 소금이 있으면 칸 값이 칸 해시와 맞아야 한다 — 칸만 고친 변조
+  if (salt) return REDACTABLE.some(([field, col, dcol]) => r[dcol] !== fieldDigest(salt, field, r[col])) ? 'hash' : null;
+  // 소금이 없으면 뒤에 오는 처리 묶음이 지금 내용을 기억해야 한다 — 처리 기록 없이 바꾸거나 소금만 지움
+  return !red || red.batch <= r.id || red.digest !== redactedDigest(r) ? 'redaction' : null;
+}
+
+/** 처리 묶음 판정 — 체인 안의 처리 기록(PRIVACY_REDACT)이 묶음 해시·행 수를 갖는다. 틀린 묶음 id, 없으면 null */
+function redactionBatchFault(batches: Map<number, { id: number; digest: string }[]>, rowAt: (id: number) => any): number | null {
+  for (const [batch, entries] of batches) {
+    const rec = rowAt(batch);
+    let doc: { rows?: number; rowsDigest?: string } | null = null;
+    try {
+      doc = rec?.action === 'PRIVACY_REDACT' && rec.after_doc ? JSON.parse(rec.after_doc) : null;
+    } catch {
+      doc = null;
+    }
+    if (!doc || doc.rows !== entries.length || doc.rowsDigest !== redactionBatchDigest(entries)) return batch;
+  }
+  return null;
+}
+
 function chainContent(r: any) {
   if (Number(r.chain_v) === 2)
     return canonicalJson({ v: 2, at: r.at, actorRole: r.actor_role, action: r.action, result: r.result, correlationId: r.correlation_id, componentId: r.component_id, actorD: r.actor_d, targetD: r.target_d, reasonD: r.reason_d, beforeD: r.before_d, afterD: r.after_d });
@@ -186,42 +210,18 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
     const anchors = this.anchorsReport();
     const fail = (verified: number, head: string | null, id: number, kind: NonNullable<ChainReport['broken']>['kind']): ChainReport => ({ ok: false, verified, head, broken: { id, kind }, anchors: anchors.info });
     const salts = new Map(this.db.all<{ audit_id: number; salt: string }>('SELECT audit_id, salt FROM audit_salt').map((x) => [x.audit_id, x.salt]));
-    // 행마다 가장 나중 처리 묶음의 내용 해시, 묶음마다 든 행
-    const redacted = new Map<number, { batch: number; digest: string }>();
-    const batches = new Map<number, { id: number; digest: string }[]>();
-    for (const x of this.db.all<{ audit_id: number; batch_id: number; redacted_digest: string }>('SELECT audit_id, batch_id, redacted_digest FROM audit_redaction ORDER BY batch_id')) {
-      redacted.set(x.audit_id, { batch: x.batch_id, digest: x.redacted_digest });
-      batches.set(x.batch_id, [...(batches.get(x.batch_id) ?? []), { id: x.audit_id, digest: x.redacted_digest }]);
-    }
+    const red = this.redactions();
     let prev = AUDIT_GENESIS;
     for (const [i, r] of rows.entries()) {
       if (r.prev_hash !== prev) return fail(i, prev, r.id, 'prev');
       if (r.hash !== chainHash(prev, r)) return fail(i, prev, r.id, 'hash');
-      if (Number(r.chain_v) === 2) {
-        const salt = salts.get(r.id);
-        if (salt) {
-          // 소금이 있으면 칸 값이 칸 해시와 맞아야 한다 — 칸만 고친 변조
-          if (REDACTABLE.some(([field, col, dcol]) => r[dcol] !== fieldDigest(salt, field, r[col]))) return fail(i, prev, r.id, 'hash');
-        } else {
-          // 소금이 없으면 뒤에 오는 처리 묶음이 지금 내용을 기억해야 한다 — 처리 기록 없이 바꾸거나 소금만 지움
-          const red = redacted.get(r.id);
-          if (!red || red.batch <= r.id || red.digest !== redactedDigest(r)) return fail(i, prev, r.id, 'redaction');
-        }
-      }
+      const bad = v2RowFault(r, salts.get(r.id), red.byRow.get(r.id));
+      if (bad) return fail(i, prev, r.id, bad);
       prev = r.hash;
     }
-    // 처리 묶음 — 체인 안의 처리 기록(PRIVACY_REDACT)이 묶음 해시·행 수를 갖는다
     const byId = new Map(rows.map((r) => [r.id as number, r]));
-    for (const [batch, entries] of batches) {
-      const rec = byId.get(batch);
-      let doc: { rows?: number; rowsDigest?: string } | null = null;
-      try {
-        doc = rec?.action === 'PRIVACY_REDACT' && rec.after_doc ? JSON.parse(rec.after_doc) : null;
-      } catch {
-        doc = null;
-      }
-      if (!doc || doc.rows !== entries.length || doc.rowsDigest !== redactionBatchDigest(entries)) return fail(rows.length, prev, batch, 'redaction');
-    }
+    const badBatch = redactionBatchFault(red.batches, (id) => byId.get(id));
+    if (badBatch !== null) return fail(rows.length, prev, badBatch, 'redaction');
     const end = rows.length ? prev : null;
     const at = new Map(rows.map((r) => [r.id as number, r.hash as string]));
     // ① 기억한 끝 — 그 행이 없거나 hash가 다르면 끝 행을 지웠거나 바꿔치기했다
@@ -245,14 +245,21 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
   private async runChain(chunk: number): Promise<ChainReport> {
     const anchors = this.anchorsReport();
     const fail = (verified: number, head: string | null, id: number, kind: NonNullable<ChainReport['broken']>['kind']): ChainReport => ({ ok: false, verified, head, broken: { id, kind }, anchors: anchors.info });
+    // 처리 묶음 기록은 개인정보 처리 때만 생긴다(작다) — 한 번에 읽는다. 소금은 묶음마다 그 id 범위만
+    const red = this.redactions();
     let prev = AUDIT_GENESIS;
     let lastId = 0;
     let verified = 0;
     for (;;) {
       const rows = this.db.all<any>('SELECT * FROM audit WHERE id > ? ORDER BY id LIMIT ?', lastId, chunk);
+      const salts = rows.length
+        ? new Map(this.db.all<{ audit_id: number; salt: string }>('SELECT audit_id, salt FROM audit_salt WHERE audit_id > ? AND audit_id <= ?', lastId, rows.at(-1).id).map((x) => [x.audit_id, x.salt]))
+        : new Map<number, string>();
       for (const r of rows) {
         if (r.prev_hash !== prev) return fail(verified, prev, r.id, 'prev');
         if (r.hash !== chainHash(prev, r)) return fail(verified, prev, r.id, 'hash');
+        const bad = v2RowFault(r, salts.get(r.id), red.byRow.get(r.id));
+        if (bad) return fail(verified, prev, r.id, bad);
         prev = r.hash;
         lastId = r.id;
         verified++;
@@ -261,12 +268,25 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
       await new Promise<void>((res) => setImmediate(res));
     }
     const end = verified ? prev : null;
+    const badBatch = redactionBatchFault(red.batches, (id) => this.db.get<any>('SELECT * FROM audit WHERE id = ?', id));
+    if (badBatch !== null) return fail(verified, end, badBatch, 'redaction');
     const hashAt = (id: number) => this.db.get<{ hash: string | null }>('SELECT hash FROM audit WHERE id = ?', id)?.hash ?? undefined;
     // ① 기억한 끝 · ② 서명한 고정점 — verifyChain과 같다(검증한 행의 hash와 비교)
     if (this.head && hashAt(this.head.id) !== this.head.hash) return fail(verified, end, this.head.id, 'head');
     if (anchors.broken !== null) return fail(verified, end, anchors.broken, 'anchor');
     for (const a of anchors.list) if (hashAt(a.id) !== a.hash) return fail(verified, end, a.id, 'anchor');
     return { ok: true, verified, head: end, broken: null, anchors: anchors.info };
+  }
+
+  /** 개인정보 처리 묶음 — 행마다 가장 나중 묶음의 내용 해시, 묶음마다 든 행 */
+  private redactions() {
+    const byRow = new Map<number, { batch: number; digest: string }>();
+    const batches = new Map<number, { id: number; digest: string }[]>();
+    for (const x of this.db.all<{ audit_id: number; batch_id: number; redacted_digest: string }>('SELECT audit_id, batch_id, redacted_digest FROM audit_redaction ORDER BY batch_id')) {
+      byRow.set(x.audit_id, { batch: x.batch_id, digest: x.redacted_digest });
+      batches.set(x.batch_id, [...(batches.get(x.batch_id) ?? []), { id: x.audit_id, digest: x.redacted_digest }]);
+    }
+    return { byRow, batches };
   }
 
   /** 고정점 파일 읽기 — 서명이 틀린(또는 읽을 수 없는) 첫 줄의 고정 id를 broken으로(-1 = id도 못 읽음) */

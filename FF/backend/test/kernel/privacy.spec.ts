@@ -25,6 +25,13 @@ const CSM = actor('usr-csm', 'SECURITY_OFFICER');
 const CSM2 = actor('usr-csm2', 'SECURITY_OFFICER');
 const AT = '2026-10-20T00:00:00.000Z';
 /** 알림 한 건 — 개인 수신자(user:…)와 읽음, 본문에 요청자 */
+/** 동기 검증과 HTTP 창구의 묶음 검증(작은 묶음으로 경계를 여러 번 넘게)이 같은 판정인지 보고 동기 결과를 돌려준다 */
+async function bothVerify(audit: AuditService) {
+  const sync = audit.verifyChain();
+  expect(await audit.verifyChainAsync(2)).toEqual(sync);
+  return sync;
+}
+
 function seedNotification(db: Db, id: string, user: string, at: string, seq: number) {
   db.run("INSERT INTO notification (notification_id, event_seq, category, severity, created_at, doc) VALUES (?, ?, 'APPROVAL', 'INFO', ?, ?)", id, seq, at, JSON.stringify({ notificationId: id, title: `${user}의 승인 요청`, requestedBy: user }));
   db.run('INSERT INTO notification_recipient (notification_id, rkey) VALUES (?, ?)', id, `user:${user}`);
@@ -148,6 +155,8 @@ describe('개인정보 — 내보내기·삭제 요청·감사 체인', () => {
     // 감사 체인 — 행 해시가 그대로라 검증 통과, 처리 자체가 감사에 남는다(가명만)
     expect(audit.verifyChain()).toMatchObject({ ok: true, broken: null });
     expect((await http().get('/api/audit/chain').expect(200)).body).toMatchObject({ ok: true });
+    // HTTP 창구의 묶음 검증(작은 묶음으로 경계를 여러 번 넘게)도 같은 판정
+    expect(await audit.verifyChainAsync(2)).toEqual(audit.verifyChain());
     const trail = audit.list({ target: req.requestId }).map((a) => a.action);
     expect(trail).toEqual(expect.arrayContaining(['PRIVACY_REQUEST', 'PRIVACY_REDACT', 'PRIVACY_ERASE']));
     expect(JSON.stringify(audit.list({ target: req.requestId }))).not.toContain(LEAVER);
@@ -156,7 +165,8 @@ describe('개인정보 — 내보내기·삭제 요청·감사 체인', () => {
     expect(list[0]).toMatchObject({ requestId: req.requestId, status: 'DONE', subjectId: null });
   });
 
-  it('가명 처리 기록 없이 감사 행을 바꾸거나 소금만 지우면 검증이 잡는다(redaction)', async () => {
+  it('가명 처리 기록 없이 감사 행을 바꾸거나 소금만 지우면 검증이 잡는다(redaction) — 묶음 검증도 같다', async () => {
+    // 회귀(2026-10-25 병합): 묶음 검증(verifyChainAsync, /api/audit/chain)이 체인 v2 칸 해시·처리 묶음을 보지 않아 이 변조를 통과시켰다
     const redacted = db.get<{ audit_id: number }>('SELECT audit_id FROM audit_redaction ORDER BY audit_id LIMIT 1')!.audit_id;
     // 처리 관문 밖에서는 트리거가 막는다
     expect(() => db.run("UPDATE audit SET actor_id = 'someone-else' WHERE id = ?", redacted)).toThrow(/append-only/);
@@ -164,13 +174,20 @@ describe('개인정보 — 내보내기·삭제 요청·감사 체인', () => {
     db.run('DROP TRIGGER audit_no_update');
     const was = db.get<{ actor_id: string }>('SELECT actor_id FROM audit WHERE id = ?', redacted)!.actor_id;
     db.run("UPDATE audit SET actor_id = 'someone-else' WHERE id = ?", redacted);
-    expect(audit.verifyChain()).toMatchObject({ ok: false, broken: { id: redacted, kind: 'redaction' } });
+    expect(await bothVerify(audit)).toMatchObject({ ok: false, broken: { id: redacted, kind: 'redaction' } });
     db.run('UPDATE audit SET actor_id = ? WHERE id = ?', was, redacted);
-    expect(audit.verifyChain().ok).toBe(true);
+    expect((await bothVerify(audit)).ok).toBe(true);
     db.run('DROP TRIGGER audit_salt_no_delete');
     const fresh = db.get<{ audit_id: number }>('SELECT max(audit_id) AS audit_id FROM audit_salt')!.audit_id;
     db.run('DELETE FROM audit_salt WHERE audit_id = ?', fresh);
-    expect(audit.verifyChain()).toMatchObject({ ok: false, broken: { id: fresh, kind: 'redaction' } });
+    expect(await bothVerify(audit)).toMatchObject({ ok: false, broken: { id: fresh, kind: 'redaction' } });
+  });
+
+  it('소금이 있는 행의 칸만 고친 변조는 동기·묶음 검증 모두 hash로 잡는다', async () => {
+    db.run('DROP TRIGGER IF EXISTS audit_no_update');
+    const salted = db.get<{ audit_id: number }>('SELECT min(audit_id) AS audit_id FROM audit_salt')!.audit_id;
+    db.run("UPDATE audit SET reason = 'tampered' WHERE id = ?", salted);
+    expect(await bothVerify(audit)).toMatchObject({ ok: false, broken: { id: salted, kind: 'hash' } });
   });
 });
 
@@ -236,7 +253,7 @@ describe('개인정보 — 거절·차량 삭제·Data Lake 접점', () => {
     expect(received).toEqual([{ auth: 'Bearer lake-ingest-token', body: { request_ref: req.requestId, pseudonyms: [vehiclePseudonym(vin)], basis: 'DATA_SUBJECT_REQUEST' } }]);
     expect(JSON.stringify(received)).not.toContain(vin);
     expect(audit.list({ target: req.requestId }).map((a) => a.action)).toContain('PRIVACY_LAKE_ERASURE');
-    expect(audit.verifyChain().ok).toBe(true);
+    expect((await bothVerify(audit)).ok).toBe(true);
   });
 
   it('Data Lake 설정이 없으면 보내지 않고 NOT_CONNECTED로 남긴다(Lake 연결 전)', async () => {
@@ -285,7 +302,7 @@ describe('개인정보 보존 기한 — 운영 보조 정리와 함께', () => 
     expect(audit.list({ actorId: 'usr-new' })).toHaveLength(1);
     const psn = db.get<{ pseudonym: string }>("SELECT pseudonym FROM privacy_subject WHERE subject_id = 'usr-old'")!.pseudonym;
     expect(audit.list({ actorId: psn })).toHaveLength(1);
-    expect(audit.verifyChain()).toMatchObject({ ok: true });
+    expect(await bothVerify(audit)).toMatchObject({ ok: true });
     // 다시 돌려도 늘지 않는다(이미 가명 처리한 행은 소금이 없다)
     expect(privacy.retentionSweep({ FF_RETENTION_AUDIT_IDENTITY_DAYS: '30' }).audit_identity).toBe(0);
   });

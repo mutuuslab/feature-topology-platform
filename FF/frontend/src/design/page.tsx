@@ -1,5 +1,6 @@
 // 화면 골격 부품 — 머리말·도구 줄·분절 필터·폼 필드·오류 안내·키-값 격자.
 import { createContext, useContext, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type SelectHTMLAttributes } from 'react';
+import { useChangeFlash } from './flash';
 import { Icon } from './icons';
 
 /** 화면 이름(H1) — 글자와 요소 id. Panel·셸 메뉴 제목이 같은 말을 되풀이하지 않게 비교한다(3초 테스트 UX3-10·11) */
@@ -47,6 +48,9 @@ export function isZeroValue(value: KeyMessageSpec['value']): boolean {
   return /^\s*0+(?:\.0+)?\s*(?:%|건|개|대)?(?:\s*\/\s*\d+)?\s*$/.test(String(value));
 }
 
+/** 불러오는 중 자리표시 값 — 화면들이 응답 전 핵심 메시지 값으로 쓴다 */
+const LOADING = '—';
+
 /**
  * 핵심 메시지 — 3초 테스트(2026-10-17): 화면마다 하나, H1 바로 아래, 화면에서 가장 큰 글자.
  * 한 패턴(하네스 3판): [큰 숫자] + 문장 + [상태 pill]. 숫자가 없으면 문장이 크고, 판정 색은 앞 표식에만.
@@ -55,8 +59,10 @@ export function isZeroValue(value: KeyMessageSpec['value']): boolean {
 export function KeyMessage({ tone = 'neutral', value, text, status, action }: KeyMessageSpec) {
   const t: KeyTone = isZeroValue(value) ? 'neutral' : tone;
   const solo = value == null;
+  // 값·판정 색이 바뀐 뒤에만 한 번 강조 — 처음 그릴 때·불러오는 중('—')에서 첫 값이 올 때는 움직이지 않는다(3초 테스트)
+  const changed = useChangeFlash(value === LOADING ? LOADING : `${value ?? ''}|${t}`, (a, b) => a === LOADING || b === LOADING);
   return (
-    <div className="ds-key" data-key-message data-tone={t}>
+    <div className="ds-key" data-key-message data-tone={t} data-changed={changed}>
       {!solo && <strong className="ds-key__value">{value}</strong>}
       {solo && t !== 'neutral' && <span className="ds-key__mark" aria-hidden />}
       <span className="ds-key__text" data-solo={solo ? '' : undefined}>

@@ -5,7 +5,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, PageHeader, Panel, Select, SummaryLine, VerdictBadge } from '../../design';
+import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, PageHeader, Panel, Select, SummaryLine, useChangeFlash, VerdictBadge } from '../../design';
 import { when } from '../shared';
 import { Progress, type Delivery } from './shared';
 import { VehicleRequestPanel } from './VehicleRequests';
@@ -33,14 +33,26 @@ interface Pub extends Delivery {
   payload: { flagKey: string | null; featureId: string; targets: string[] };
 }
 
+/** 차량×flag 칸 — 실시간 회신으로 값(ON·OFF·Safe·불일치)이 바뀌면 그 칸만 한 번 깜빡인다(첫 그림 제외) */
 function Cell({ f }: { f: FleetRow['flags'][number] | undefined }) {
-  if (!f) return <span className="ds-fcell">{F.noBundle}</span>;
-  const v = f.local.reason === 'KILL_SWITCH' ? 'safe' : f.local.value ? 'on' : 'off';
+  const v = !f ? 'none' : f.local.reason === 'KILL_SWITCH' ? 'safe' : f.local.value ? 'on' : 'off';
+  const changed = useChangeFlash(`${v}|${!!f?.drift}`);
+  if (!f) return <span className="ds-fcell" data-changed={changed}>{F.noBundle}</span>;
   return (
-    <span className="ds-fcell" data-v={v} data-drift={f.drift} title={`${f.local.reason}${f.drift ? ` · ${F.drift}: ${f.server?.reason}` : ''}`}>
+    <span className="ds-fcell" data-v={v} data-drift={f.drift} data-changed={changed} title={`${f.local.reason}${f.drift ? ` · ${F.drift}: ${f.server?.reason}` : ''}`}>
       {f.local.value ? 'ON' : 'OFF'}
       {f.drift && <span aria-label={F.drift}>≠</span>}
     </span>
+  );
+}
+
+/** 차량 상태 칸(연결·신뢰도, Feature 상태) — 글자가 바뀌면 한 번 깜빡인다 */
+function LiveTd({ text }: { text: string }) {
+  const changed = useChangeFlash(text);
+  return (
+    <td className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }} data-changed={changed}>
+      {text}
+    </td>
   );
 }
 
@@ -101,17 +113,13 @@ export function FleetLive() {
                       {r.gleo && <span className="ds-tag" style={{ marginLeft: 'var(--sp-1)' }}>GLEO</span>}
                       <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>{r.scope}</div>
                     </th>
-                    <td className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
-                      {F.link[r.link]} · {r.quality}
-                    </td>
+                    <LiveTd text={`${F.link[r.link]} · ${r.quality}`} />
                     {flagKeys.map((k) => (
                       <td key={k}>
                         <Cell f={r.flags.find((f) => f.flagKey === k)} />
                       </td>
                     ))}
-                    <td className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
-                      {Object.entries(r.featureState).map(([fid, st]) => `${fid} ${st}`).join(' · ') || '—'}
-                    </td>
+                    <LiveTd text={Object.entries(r.featureState).map(([fid, st]) => `${fid} ${st}`).join(' · ') || '—'} />
                   </tr>
                 ))}
               </tbody>

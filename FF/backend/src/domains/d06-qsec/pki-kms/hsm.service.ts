@@ -1,14 +1,18 @@
 // 소프트웨어 HSM (D06-10) — 보고서 v1.1 8.2·8.3·9.6의 서명·인증 연산을 한곳에 둔다. 실제 HSM/KMS 연동은 이 서비스 뒤로 숨긴다.
 //  · 분리 서명(JWS detached, EdDSA): 용도별 kid로 JCS 정규화 바이트에 서명 — 64바이트 원시 서명을 base64url(86자)로
-//  · 승인자 개인 서명(approval_sig): 사람마다 키 — 데모에서는 FIDO2·스마트카드 대신 이 서비스가 보관
+//  · 승인자 개인 서명(approval_sig): 사람마다 키 — 데모에서는 FIDO2·스마트카드 대신 이 서비스가 보관.
+//    oidc(운영)에서는 승인 중에 키를 즉석으로 만들지 않는다 — SSO 로그인(세션 생성) 때 검증된 주체의 키를 등록하고(감사 APPROVER_KEY_ENROLLED),
+//    등록되지 않은 주체의 승인은 거부한다. 헤더로 사용자 ID를 바꿔 승인자 둘을 흉내 내던 길을 막는다(출시 준비 RD-SEC-05).
 //  · 차량 키(epoch별 HKDF 파생)와 AES-CMAC-128 — 봉투 cmd_auth·상태 증명 state_auth(16바이트 → base64url 22자)
-import { Body, Controller, Get, Inject, Injectable, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Post } from '@nestjs/common';
 import { b64url, EpochBumpBody, fromB64url, type KeyPurpose } from '@ff/contracts';
 import { createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes, sign, verify } from 'node:crypto';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
+import { AuthService, type AuthUser } from '../../../kernel/auth/auth.service';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
+import { DomainError } from '../../../kernel/errors';
 import { aesCmac, equalBytes, hkdf16 } from '../../../kernel/crypto';
 import { DB, type Db } from '../../../kernel/db';
 import { EventService } from '../../../kernel/event.service';
@@ -26,14 +30,20 @@ const VEHICLE_ROOT = 'vehicle_root';
 
 @Injectable()
 @PlatformComponent('D06-10')
-export class HsmService {
+export class HsmService implements OnModuleInit {
   constructor(
     @Inject(DB) private readonly db: Db,
     private readonly clock: Clock,
     private readonly pki: PkiService,
     private readonly audit: AuditService,
     private readonly events: EventService,
+    private readonly auth: AuthService,
   ) {}
+
+  onModuleInit() {
+    // oidc — 로그인(세션 생성 트랜잭션 안)에서 승인자 키를 등록한다
+    if (this.auth.mode === 'oidc') this.auth.onSessionCreated((u) => this.enrollApprover(u));
+  }
 
   // ── 분리 서명 ─────────────────────────────────────────
   /**
@@ -57,17 +67,39 @@ export class HsmService {
   }
 
   // ── 승인자 개인 서명 ─────────────────────────────────
+  private activeKey(userId: string) {
+    return this.db.get<{ kid: string; private_pem: string; public_pem: string }>("SELECT kid, private_pem, public_pem FROM approver_key WHERE user_id = ? AND status = 'ACTIVE'", userId);
+  }
+
+  /** 검증된 주체(SSO 로그인)의 승인자 키 등록 — 이미 있으면 그대로. 새로 만들면 감사 */
+  enrollApprover(user: AuthUser): { kid: string; created: boolean } {
+    const had = this.activeKey(user.id);
+    if (had) return { kid: had.kid, created: false };
+    const k = this.generateApproverKey(user.id);
+    const put = () =>
+      this.audit.record({ id: user.id, role: user.roles[0] ?? 'AUDITOR', roles: user.roles, correlationId: randomBytes(8).toString('hex') }, 'APPROVER_KEY_ENROLLED', k.kid, { after: { kid: k.kid, alg: 'EdDSA' }, componentId: 'D06-10' });
+    if (this.db.inTransaction) put();
+    else this.db.tx(put);
+    return { kid: k.kid, created: true };
+  }
+
   private approverKey(userId: string): { kid: string; private_pem: string; public_pem: string } {
-    let k = this.db.get<{ kid: string; private_pem: string; public_pem: string }>("SELECT kid, private_pem, public_pem FROM approver_key WHERE user_id = ? AND status = 'ACTIVE'", userId);
-    if (!k) {
-      const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-      const row = { kid: `APR-${userId}`, private_pem: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(), public_pem: publicKey.export({ type: 'spki', format: 'pem' }).toString() };
-      const put = () => this.db.run("INSERT INTO approver_key (user_id, kid, status, created_at, public_pem, private_pem) VALUES (?, ?, 'ACTIVE', ?, ?, ?)", userId, row.kid, this.clock.iso(), row.public_pem, row.private_pem);
-      if (this.db.inTransaction) put();
-      else this.db.tx(put);
-      k = row;
+    const k = this.activeKey(userId);
+    if (k) return k;
+    // oidc — 승인 중 즉석 생성 금지(주장된 ID마다 키가 생기면 한 사람이 두 승인자를 흉내 낸다)
+    if (this.auth.mode === 'oidc') {
+      throw new DomainError('FORBIDDEN', '승인 서명 키가 등록되지 않은 계정입니다. 회사 계정(SSO)으로 플랫폼에 로그인하면 키가 등록됩니다 — 그 뒤 다시 승인하세요.', { code: 'APPROVER_KEY_NOT_ENROLLED' });
     }
-    return k;
+    return this.generateApproverKey(userId);
+  }
+
+  private generateApproverKey(userId: string): { kid: string; private_pem: string; public_pem: string } {
+    const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+    const row = { kid: `APR-${userId}`, private_pem: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(), public_pem: publicKey.export({ type: 'spki', format: 'pem' }).toString() };
+    const put = () => this.db.run("INSERT INTO approver_key (user_id, kid, status, created_at, public_pem, private_pem) VALUES (?, ?, 'ACTIVE', ?, ?, ?)", userId, row.kid, this.clock.iso(), row.public_pem, row.private_pem);
+    if (this.db.inTransaction) put();
+    else this.db.tx(put);
+    return row;
   }
 
   /**

@@ -78,6 +78,12 @@ export const ROUTES: RouteDef[] = [
   { name: 'health', method: 'GET', path: '/api/health', summary: '상태 점검', component: 'KERNEL' },
   { name: 'healthLive', method: 'GET', path: '/api/health/live', summary: '생존 점검(프로세스 응답)', component: 'KERNEL' },
   { name: 'healthReady', method: 'GET', path: '/api/health/ready', summary: '준비 점검(마이그레이션·DB 쓰기, 아니면 503)', component: 'KERNEL' },
+  // 로그인(BFF, FF_AUTH=oidc) — 신원 없이 연다. 브라우저는 httpOnly 세션 쿠키만 가진다(출시 준비 RD-SEC-01·03)
+  { name: 'authConfig', method: 'GET', path: '/api/auth/config', summary: '인증 방식(demo|oidc) — 로그인 화면이 무엇을 그릴지', component: 'KERNEL', public: true },
+  { name: 'authLogin', method: 'GET', path: '/api/auth/login', summary: 'SSO 로그인 시작 — IdP 인가로 302(PKCE S256·state·nonce)', component: 'KERNEL', query: ['returnTo', 'login_hint'], public: true },
+  { name: 'authCallback', method: 'GET', path: '/api/auth/callback', summary: 'IdP 콜백 — 코드 교환·id_token 검증·역할 매핑 후 세션 쿠키, 안전한 returnTo로 302', component: 'KERNEL', query: ['code', 'state', 'error'], public: true },
+  { name: 'authLogout', method: 'POST', path: '/api/auth/logout', summary: '로그아웃 — 세션 삭제·쿠키 제거, IdP 로그아웃 주소', component: 'KERNEL', body: EmptyBody, public: true },
+  { name: 'authMe', method: 'GET', path: '/api/auth/me', summary: '로그인한 사용자 — 이름·이메일·부여 역할(IdP 그룹에서)', component: 'KERNEL', public: true },
   { name: 'components', method: 'GET', path: '/api/components', summary: '42 컴포넌트 현황', component: 'KERNEL' },
   { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit'] },
   { name: 'notifications', method: 'GET', path: '/api/notifications', summary: '내 알림 — 개인·역할·Owner 팀 수신자, 안 읽음 수·범주별 집계', component: 'D04-04', query: ['unread', 'category', 'limit'], personal: true },

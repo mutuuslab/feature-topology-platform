@@ -9,7 +9,17 @@ import { createApp } from '../../src/app.factory';
 import { rateLimit } from '../../src/kernel/http-hardening';
 import { runtimeConfigProblems, seedOf } from '../../src/kernel/runtime-config';
 
-const GOOD = { FF_ENV: 'production', FF_DB: '/var/lib/ff/ff.db', FF_INSTANCE_ID: 'oem-a', UNLEASH_MODE: 'off' };
+// 운영 모드는 고객사 IdP SSO(FF_AUTH=oidc)가 필수 — 인증 설정 자체의 검사는 auth-units.spec.ts
+const OIDC = {
+  FF_AUTH: 'oidc',
+  OIDC_ISSUER: 'https://idp.oem.example/realms/ff',
+  OIDC_CLIENT_ID: 'ff-platform',
+  OIDC_CLIENT_SECRET: 'client-secret-for-tests',
+  FF_PUBLIC_URL: 'https://ff.oem.example',
+  FF_SESSION_SECRET: 'p'.repeat(48),
+  OIDC_ROLE_MAP: 'ff-authors=FEATURE_AUTHOR',
+};
+const GOOD = { FF_ENV: 'production', FF_DB: '/var/lib/ff/ff.db', FF_INSTANCE_ID: 'oem-a', UNLEASH_MODE: 'off', ...OIDC };
 
 describe('운영 모드 설정 검사 — 문제를 한 번에 모두 알려 준다', () => {
   it('운영 모드가 아니면 지금까지의 기본값을 그대로 쓴다(데모 데이터·메모리 DB)', () => {

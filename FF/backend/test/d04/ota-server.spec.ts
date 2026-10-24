@@ -16,6 +16,7 @@ import { createInterface } from 'node:readline';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { OtaServerAdapter, otaWebhookSignature } from '../../src/adapters/ota/ota-server.adapter';
 import { SecureDeployService } from '../../src/domains/d06-qsec/secure-deploy/secure-deploy.service';
+import { Clock } from '../../src/kernel/clock';
 import { actor, bootApp } from '../helpers';
 
 // 회신 기한은 모듈을 읽을 때 정해진다(secure-deploy.service의 PUBLICATION_TIMEOUT_MS) — import보다 먼저 넣는다.
@@ -262,10 +263,21 @@ describe('OTA 서버 연동(IF-05) — FF + 시험 OTA 서버', { timeout: 40_00
     expect((await post({ ...ev, eventId: randomUUID(), specVersion: '2.0' })).status).toBe(400);
   });
 
-  it('제출 실패 — 게시본은 남고 전달만 전달 실패(재시도 가능) → 자동 재시도로 접수', async () => {
+  // 2026-10-25 CI 흔들림의 근본 원인: 재시도 타이머는 단조 시계로 깨는데 '제출할 때가 됐나'는 벽시계로 다시 물었다 —
+  // 타이머가 시계보다 1 ms라도 일찍 깨면 작업이 RETRY_WAIT에 멈춰(다시 걸지도 않아) 회신 기한에 TIMEOUT이 됐다.
+  // 시계를 멈춰(= 타이머가 언제나 시계보다 일찍 깬다) 재현한다. 수정 전: RETRY_WAIT에서 멈춤, 수정 뒤: 예약한 시각까지의 작업을 낸다
+  it('제출 실패 — 게시본은 남고 전달만 전달 실패(재시도 가능) → 자동 재시도로 접수(타이머가 시계보다 일찍 깨도)', async () => {
     await sim({ scenario: 'flaky' }); // 처음 두 번 503
-    const id = await deploy();
-    const done = await until(() => pub(id), (p) => p.delivery?.state === 'COMPLETED' || p.delivery?.state === 'FAILED');
+    const clock = b.get<Clock>(Clock);
+    clock.set(new Date());
+    let done: Awaited<ReturnType<typeof pub>>;
+    let id: string;
+    try {
+      id = await deploy();
+      done = await until(() => pub(id), (p) => p.delivery?.state === 'COMPLETED' || p.delivery?.state === 'FAILED');
+    } finally {
+      clock.set(null);
+    }
     expect(done.delivery).toMatchObject({ state: 'COMPLETED', attempts: 3 });
     const closed = await until(() => pub(id), (p) => !!p.publication.closedAt);
     expect(closed.publication.status).toBe('CONFIRMED');

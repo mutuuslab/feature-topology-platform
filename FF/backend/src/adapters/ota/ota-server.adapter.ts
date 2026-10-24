@@ -105,10 +105,15 @@ export class OtaServerAdapter implements OnApplicationBootstrap {
     return { ackOnly: [], campaignId: jobId };
   }
 
-  /** 제출할 때가 된 작업을 보낸다 — 시험은 기다릴 수 있게 Promise를 돌려준다 */
-  kick(): Promise<void> {
+  /**
+   * 제출할 때가 된 작업을 보낸다 — 시험은 기다릴 수 있게 Promise를 돌려준다.
+   * upTo: 재시도 타이머가 예약한 시각. 타이머(단조 시계)는 벽시계보다 조금 일찍 깰 수 있어, 지금 시각만 보면 그 작업을 놓치고
+   * 다시 걸지도 않아 RETRY_WAIT에 멈췄다(2026-10-25 CI) — 예약한 시각까지의 작업을 낸다.
+   */
+  kick(upTo?: string): Promise<void> {
     if (!this.client) return Promise.resolve();
-    const due = this.jobs.due(this.clock.iso());
+    const now = this.clock.iso();
+    const due = this.jobs.due(upTo && upTo > now ? upTo : now);
     return Promise.all(due.map((j) => this.submitOnce(j.job_id))).then(() => undefined);
   }
 
@@ -123,7 +128,7 @@ export class OtaServerAdapter implements OnApplicationBootstrap {
 
   private arm(at: string | null) {
     const ms = at ? Math.max(0, new Date(at).getTime() - this.clock.now().getTime()) : 0;
-    this.scheduler.after(ms, () => void this.kick());
+    this.scheduler.after(ms, () => void this.kick(at ?? undefined));
   }
 
   /** 규격 5.1 요청 본문 — 같은 작업은 언제 보내도 같은 본문(멱등 키 재사용이 안전하다) */

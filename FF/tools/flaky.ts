@@ -11,13 +11,17 @@ import { FF } from './lib.ts';
 
 export interface Plan {
   cwd: string;
+  /** node로 실행할 인자 — 셸을 거치지 않는다(인용·이스케이프 없음) */
+  args: string[];
+  /** 보여 주기용 */
   cmd: string;
   /** 한 번 실행에 반복이 들어 있다(Playwright --repeat-each) */
   selfRepeating: boolean;
 }
 
-const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-const q = (s: string) => (/[\s"]/.test(s) ? `"${s.replace(/"/g, '\\"')}"` : s);
+const VITEST = join(FF, 'node_modules', 'vitest', 'vitest.mjs');
+const PLAYWRIGHT = join(FF, 'node_modules', '@playwright', 'test', 'cli.js');
+const plan = (cwd: string, args: string[], selfRepeating: boolean, shown: string[]): Plan => ({ cwd, args, selfRepeating, cmd: shown.join(' ') });
 
 /** 시험 파일 → 실행 계획 */
 export function planFor(file: string, repeat: number, grep?: string): Plan {
@@ -28,17 +32,24 @@ export function planFor(file: string, repeat: number, grep?: string): Plan {
   if (ws === 'e2e') {
     const sub = rest[0];
     const config = sub === 'static' ? 'playwright.static.config.ts' : sub === 'oidc' ? 'playwright.oidc.config.ts' : sub === 'firstrun' ? 'playwright.firstrun.config.ts' : 'playwright.config.ts';
-    return { cwd: join(FF, 'e2e'), cmd: `${npx} playwright test -c ${config} ${q(inWs)} --repeat-each ${repeat} --retries 0${grep ? ` --grep ${q(grep)}` : ''}`, selfRepeating: true };
+    const a = ['test', '-c', config, inWs, '--repeat-each', String(repeat), '--retries', '0', ...(grep ? ['--grep', grep] : [])];
+    return plan(join(FF, 'e2e'), [PLAYWRIGHT, ...a], true, ['playwright', ...a]);
   }
-  if (ws === 'tools') return { cwd: FF, cmd: `node --test${grep ? ` --test-name-pattern=${q(grep)}` : ''} ${q(r)}`, selfRepeating: false };
-  if (ws === 'backend' || ws === 'contracts' || ws === 'frontend') return { cwd: join(FF, ws), cmd: `${npx} vitest run ${q(inWs)}${grep ? ` -t ${q(grep)}` : ''}`, selfRepeating: false };
+  if (ws === 'tools') {
+    const a = ['--test', ...(grep ? [`--test-name-pattern=${grep}`] : []), r];
+    return plan(FF, a, false, ['node', ...a]);
+  }
+  if (ws === 'backend' || ws === 'contracts' || ws === 'frontend') {
+    const a = ['run', inWs, ...(grep ? ['-t', grep] : [])];
+    return plan(join(FF, ws), [VITEST, ...a], false, ['vitest', ...a]);
+  }
   throw new Error(`알 수 없는 시험 위치: ${r} — backend·contracts·frontend·e2e·tools 아래 파일을 주세요`);
 }
 
 function runOnce(p: Plan): Promise<{ ok: boolean; ms: number; out: string }> {
   return new Promise((done) => {
     const t0 = performance.now();
-    const child = spawn(p.cmd, { cwd: p.cwd, shell: true, env: { ...process.env, FORCE_COLOR: '0', CI: process.env.CI ?? '' } });
+    const child = spawn(process.execPath, p.args, { cwd: p.cwd, env: { ...process.env, FORCE_COLOR: '0', CI: process.env.CI ?? '' } });
     let out = '';
     child.stdout.on('data', (c) => (out += c));
     child.stderr.on('data', (c) => (out += c));

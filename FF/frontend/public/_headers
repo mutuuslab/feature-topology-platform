@@ -1,5 +1,14 @@
+# 출시 준비 RD-SEC-12 — 모든 경로의 보안 헤더. vite preview(e2e)도 이 파일의 '/*' 묶음을 그대로 쓴다(vite.config.ts) —
+# 시험이 실제 배포와 같은 CSP 아래에서 돈다(e2e/tests/csp.spec.ts: 모든 메뉴에서 CSP 위반 0).
+# style 'unsafe-inline'은 React style 속성, script 'wasm-unsafe-eval'은 3D 모델 압축 해제(WebAssembly)만 — JS eval은 막힌다. 지도 바탕은 tiles.openfreemap.org(VITE_MAP_STYLE_URL을 바꾸면 여기도).
 /*
   X-Robots-Tag: noindex, nofollow
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; font-src 'self' data: https://tiles.openfreemap.org; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 
 # §17.4.6 — 실 자산(glTF 10 MB · HDRI 1.6 MB)은 내용 해시 없이 파일명이 고정이다.
 # 길게 캐시하면 자산을 교체했을 때 브라우저가 옛 파일을 계속 쓰므로 짧은 TTL + 재검증으로 둔다.

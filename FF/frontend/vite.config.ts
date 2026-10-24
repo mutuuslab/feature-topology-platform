@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -8,6 +9,20 @@ const pages = process.env.GITHUB_PAGES === '1';
 // 백엔드 포트 — 개발 9101, e2e는 전용 백엔드(FF_API_PORT=9111). dev·preview가 같은 프록시를 쓴다.
 const API = `http://localhost:${process.env.FF_API_PORT ?? 9101}`;
 const BACKEND_PROXY = { '/api/': API, '/ofrep/': API };
+// 배포 헤더(public/_headers의 '/*' 묶음)를 preview에도 건다 — e2e가 실제 배포와 같은 CSP 아래에서 돈다(출시 준비 RD-SEC-12)
+function deployHeaders(): Record<string, string> {
+  const out: Record<string, string> = {};
+  let inAll = false;
+  for (const line of readFileSync(fileURLToPath(new URL('./public/_headers', import.meta.url)), 'utf8').split(/\r?\n/)) {
+    if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    if (!/^\s/.test(line)) inAll = line.trim() === '/*';
+    else if (inAll) {
+      const i = line.indexOf(':');
+      out[line.slice(0, i).trim()] = line.slice(i + 1).trim();
+    }
+  }
+  return out;
+}
 export default defineConfig({
   base: pages ? '/feature-topology-platform/' : '/',
   plugins: [react()],
@@ -21,7 +36,7 @@ export default defineConfig({
     // '/api/'까지 맞춘다 — '/api'만 쓰면 정적 스냅샷 경로 '/api-snapshot/…'까지 백엔드로 넘어간다
     proxy: BACKEND_PROXY, // 백엔드(NestJS) — FF 루트에서 npm run dev:backend
   },
-  preview: { proxy: BACKEND_PROXY },
+  preview: { proxy: BACKEND_PROXY, headers: deployHeaders() },
   build: {
     rollupOptions: {
       // 두 개의 독립 엔트리: 플랫폼(index.html)과 Twin 콘솔(twin.html).

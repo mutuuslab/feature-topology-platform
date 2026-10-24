@@ -362,7 +362,7 @@
         "frontend/public/_headers:1-17"
       ],
       "criteria": "_headers의 모든 경로에 다섯 헤더",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "match",

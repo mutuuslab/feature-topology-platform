@@ -4,6 +4,7 @@
 //    oidc(운영)에서는 승인 중에 키를 즉석으로 만들지 않는다 — SSO 로그인(세션 생성) 때 검증된 주체의 키를 등록하고(감사 APPROVER_KEY_ENROLLED),
 //    등록되지 않은 주체의 승인은 거부한다. 헤더로 사용자 ID를 바꿔 승인자 둘을 흉내 내던 길을 막는다(출시 준비 RD-SEC-05).
 //  · 차량 키(epoch별 HKDF 파생)와 AES-CMAC-128 — 봉투 cmd_auth·상태 증명 state_auth(16바이트 → base64url 22자)
+//  · 저장하는 개인키·차량 루트 비밀은 KEK로 봉인한다(출시 준비 RD-SEC-06, kernel/kms) — DB에는 봉인본만 있다
 import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Post } from '@nestjs/common';
 import { b64url, EpochBumpBody, fromB64url, type KeyPurpose } from '@ff/contracts';
 import { createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes, sign, verify } from 'node:crypto';
@@ -15,7 +16,10 @@ import { PlatformComponent } from '../../../kernel/components';
 import { DomainError } from '../../../kernel/errors';
 import { aesCmac, equalBytes, hkdf16 } from '../../../kernel/crypto';
 import { DB, type Db } from '../../../kernel/db';
+import { SecretVault } from '../../../kernel/kms/key-protection';
+import { openFor, sealFor } from '../../../kernel/kms/secret-columns';
 import { EventService } from '../../../kernel/event.service';
+import { VehicleAuthService, type VehicleKeySource } from '../../../kernel/vehicle-auth';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { PkiService } from './pki.service';
 
@@ -30,7 +34,7 @@ const VEHICLE_ROOT = 'vehicle_root';
 
 @Injectable()
 @PlatformComponent('D06-10')
-export class HsmService implements OnModuleInit {
+export class HsmService implements OnModuleInit, VehicleKeySource {
   constructor(
     @Inject(DB) private readonly db: Db,
     private readonly clock: Clock,
@@ -38,9 +42,13 @@ export class HsmService implements OnModuleInit {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly auth: AuthService,
+    private readonly vault: SecretVault,
+    private readonly vehicleAuth: VehicleAuthService,
   ) {}
 
   onModuleInit() {
+    // 차량 요청 CMAC(RD-SEC-08) — 요청 키는 이 HSM의 차량 키에서 파생한다
+    this.vehicleAuth.useKeySource(this);
     // oidc — 로그인(세션 생성 트랜잭션 안)에서 승인자 키를 등록한다
     if (this.auth.mode === 'oidc') this.auth.onSessionCreated((u) => this.enrollApprover(u));
   }
@@ -95,7 +103,7 @@ export class HsmService implements OnModuleInit {
 
   private generateApproverKey(userId: string): { kid: string; private_pem: string; public_pem: string } {
     const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-    const row = { kid: `APR-${userId}`, private_pem: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(), public_pem: publicKey.export({ type: 'spki', format: 'pem' }).toString() };
+    const row = { kid: `APR-${userId}`, private_pem: sealFor(this.vault, 'approver_key', 'private_pem', userId, privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()), public_pem: publicKey.export({ type: 'spki', format: 'pem' }).toString() };
     const put = () => this.db.run("INSERT INTO approver_key (user_id, kid, status, created_at, public_pem, private_pem) VALUES (?, ?, 'ACTIVE', ?, ?, ?)", userId, row.kid, this.clock.iso(), row.public_pem, row.private_pem);
     if (this.db.inTransaction) put();
     else this.db.tx(put);
@@ -108,7 +116,8 @@ export class HsmService implements OnModuleInit {
    */
   approve(userId: string, canonical: string): { kid: string; value: string } {
     const k = this.approverKey(userId);
-    return { kid: k.kid, value: b64url(sign(null, Buffer.from(canonical), createPrivateKey(k.private_pem))) };
+    const pem = openFor(this.vault, 'approver_key', 'private_pem', userId, k.private_pem);
+    return { kid: k.kid, value: b64url(sign(null, Buffer.from(canonical), createPrivateKey(pem))) };
   }
 
   verifyApproval(userId: string, canonical: string, value: string): boolean {
@@ -134,15 +143,36 @@ export class HsmService implements OnModuleInit {
     const injected = process.env.FF_HSM_VEHICLE_ROOT;
     if (injected && epoch === 1 && Buffer.from(injected, 'base64').length !== 32) throw new Error('FF_HSM_VEHICLE_ROOT는 base64 32바이트여야 합니다');
     const secret = injected && epoch === 1 ? injected : randomBytes(32).toString('base64');
-    const put = () => this.db.run('INSERT INTO hsm_secret (name, epoch, secret, created_at) VALUES (?, ?, ?, ?)', VEHICLE_ROOT, epoch, secret, this.clock.iso());
+    const sealed = sealFor(this.vault, 'hsm_secret', 'secret', `${VEHICLE_ROOT}:${epoch}`, secret);
+    const put = () => this.db.run('INSERT INTO hsm_secret (name, epoch, secret, created_at) VALUES (?, ?, ?, ?)', VEHICLE_ROOT, epoch, sealed, this.clock.iso());
     if (this.db.inTransaction) put();
     else this.db.tx(put);
   }
 
-  private vehicleKey(vin: string, epoch: number): Buffer {
+  /** 차량 요청 인증용(VehicleKeySource) — 지금 epoch */
+  currentEpoch(): number {
+    return this.epoch();
+  }
+
+  /** 차량 요청 인증용(VehicleKeySource) — 그 epoch가 없으면 null. 키는 이 프로세스 밖으로 내보내지 않는다(요청 키 파생에만) */
+  vehicleKey(vin: string, epoch: number): Buffer | null {
+    if (!this.db.get('SELECT 1 FROM hsm_secret WHERE name = ? AND epoch = ?', VEHICLE_ROOT, epoch)) return null;
+    return this.deriveVehicleKey(vin, epoch);
+  }
+
+  /**
+   * 모의 공장 주입 — 생산 라인이 차량 보안 저장소에 넣는 차량 키(지금 epoch). 내부 시뮬레이터·5년 재생·시험의 차량 쪽만 쓴다.
+   * HTTP로 내보내는 창구는 없다(실제 차량 키 주입은 공장 키 관리 시스템의 일).
+   */
+  factoryProvision(vin: string): { epoch: number; vehicleKey: Buffer } {
+    const epoch = this.epoch();
+    return { epoch, vehicleKey: this.deriveVehicleKey(vin, epoch) };
+  }
+
+  private deriveVehicleKey(vin: string, epoch: number): Buffer {
     const r = this.db.get<{ secret: string }>('SELECT secret FROM hsm_secret WHERE name = ? AND epoch = ?', VEHICLE_ROOT, epoch);
     if (!r) throw new Error(`차량 키 epoch ${epoch}가 없습니다`);
-    return hkdf16(Buffer.from(r.secret, 'base64'), `epoch:${epoch}`, `ffp-vehicle-key|${vin}`);
+    return hkdf16(Buffer.from(openFor(this.vault, 'hsm_secret', 'secret', `${VEHICLE_ROOT}:${epoch}`, r.secret), 'base64'), `epoch:${epoch}`, `ffp-vehicle-key|${vin}`);
   }
 
   /**
@@ -150,14 +180,14 @@ export class HsmService implements OnModuleInit {
    * @rule FFG-VEH-013 — 차량 단위 키 epoch(파생·상향). 순번 창 검사는 차량 쪽(WP5 시뮬레이터)
    */
   cmac(vin: string, epoch: number, frame: Buffer): string {
-    return b64url(aesCmac(this.vehicleKey(vin, epoch), frame));
+    return b64url(aesCmac(this.deriveVehicleKey(vin, epoch), frame));
   }
 
   verifyCmac(vin: string, epoch: number, frame: Buffer, tag: string): boolean {
     if (!/^[A-Za-z0-9_-]{22}$/.test(tag)) return false;
     let key: Buffer;
     try {
-      key = this.vehicleKey(vin, epoch);
+      key = this.deriveVehicleKey(vin, epoch);
     } catch {
       return false;
     }

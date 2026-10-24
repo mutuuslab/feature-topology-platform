@@ -259,7 +259,7 @@
       "current": "Kill v2는 사유·2인 승인·게이트를 거쳐 국가/차종/트림 범위로 대상 VIN을 잡고, DC2는 경고·인계→램프→DISABLED로 진행하며 수락과 완료를 명령 ID로 따로 기록한다.",
       "evidence": [
         "backend/src/domains/d03-safety/kill-switch/kill.service.ts:105",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:255",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:270",
         "contracts/src/rules/kill-timeline.ts:64"
       ],
       "tests": [
@@ -304,7 +304,7 @@
       "current": "Feature별 vehicle_seq로 오래된 명령을 REPLAY 거부하고 DISABLED 상태의 activate를 막으며, 복원 없는 ACTIVE 보고는 위반으로 판정한다.",
       "evidence": [
         "contracts/src/rules/status-v2.ts:96",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:198",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:213",
         "contracts/src/rules/status-v2.ts:64"
       ],
       "tests": [
@@ -446,8 +446,8 @@
       "current": "오래된 순번·이전 key_epoch 명령은 거부되고 DISABLED에서 activate는 STATE_NOT_ALLOWED로 막히며 해제 없는 ACTIVE 보고는 위반으로 잡는다.",
       "evidence": [
         "contracts/src/rules/status-v2.ts:96",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:198",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:226"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:213",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:241"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts",
@@ -469,7 +469,7 @@
       "verdict": "부분",
       "current": "DC2 종료는 DEACT_WARNING→DEACT_RAMP→DISABLED로 전이하고 수락(ACCEPTED)과 완료 상태를 따로 기록해 ACK만으로 완료 처리하지 않는다.",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:255",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:270",
         "contracts/src/rules/kill-timeline.ts:33",
         "contracts/src/rules/kill-timeline.ts:64"
       ],
@@ -530,7 +530,7 @@
       "verdict": "부분",
       "current": "게시본 전달은 ackOnly·unreachable을 나누고 kill/restore 회신은 ACCEPTED·ACCEPTED_NOT_DURABLE·REJECTED와 별도 state로 구분한다.",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:84",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:99",
         "contracts/src/schemas/wire.ts:144",
         "contracts/src/schemas/wire.ts:142"
       ],
@@ -552,7 +552,7 @@
       "evidence": [
         "contracts/src/flags/evaluate.ts:128",
         "frontend/src/data/twin/engine.ts:623",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:212"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:227"
       ],
       "tests": [
         "frontend/src/__tests__/twinEngine.test.ts",
@@ -569,7 +569,7 @@
       "current": "Guard 상태는 ACT_PENDING·ACTIVE·DEACT_WARNING·DEACT_RAMP·DISABLED·RESTORE_PENDING 등으로 종료 전이를 나눈다.",
       "evidence": [
         "contracts/src/schemas/safety.ts:39",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:255",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:270",
         "contracts/src/rules/kill-timeline.ts:64"
       ],
       "tests": [

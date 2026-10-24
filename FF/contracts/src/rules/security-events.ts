@@ -18,8 +18,8 @@ export interface SecurityEventDef {
 
 const MIN = 60_000;
 export const SECURITY_EVENTS: SecurityEventDef[] = [
-  { id: 'AUTH_FAILURE', label: '진위 실패', codes: ['AUTH_FAILED', 'TARGET_MISMATCH', 'SIGNATURE_INVALID'], threshold: { count: 3, windowMs: 10 * MIN, perVehicle: true }, response: 'IdsM 보고, 채널 처리 제한, VSOC 경보', limitChannel: true },
-  { id: 'REPLAY_SEQUENCE', label: '재전송·순번 이상', codes: ['REPLAY', 'SEQ_JUMP', 'KEY_EPOCH_OLD', 'SEQ_AHEAD'], threshold: { count: 1, windowMs: 10 * MIN, perVehicle: true }, response: 'IdsM 보고, 보고 해시 보존', limitChannel: false },
+  { id: 'AUTH_FAILURE', label: '진위 실패', codes: ['AUTH_FAILED', 'TARGET_MISMATCH', 'SIGNATURE_INVALID', 'REQUEST_AUTH_MISSING', 'REQUEST_AUTH_MALFORMED', 'REQUEST_MAC_INVALID', 'REQUEST_KEY_EPOCH', 'REQUEST_IDENTITY_MISMATCH', 'REQUEST_PROXY_UNTRUSTED'], threshold: { count: 3, windowMs: 10 * MIN, perVehicle: true }, response: 'IdsM 보고, 채널 처리 제한, VSOC 경보', limitChannel: true },
+  { id: 'REPLAY_SEQUENCE', label: '재전송·순번 이상', codes: ['REPLAY', 'SEQ_JUMP', 'KEY_EPOCH_OLD', 'SEQ_AHEAD', 'REQUEST_REPLAY', 'REQUEST_TIME_SKEW'], threshold: { count: 1, windowMs: 10 * MIN, perVehicle: true }, response: 'IdsM 보고, 보고 해시 보존', limitChannel: false },
   { id: 'APPROVAL_VIOLATION', label: '승인 위반', codes: ['APPROVALS_INVALID', 'SAME_APPROVER', 'CLASS_MISMATCH', 'DESIGN_CLASS', 'FFG-PLT-005'], threshold: { count: 1, windowMs: 10 * MIN, perVehicle: false }, response: '내부자 오남용 조사(TS-06)', limitChannel: false },
   { id: 'UNTRUSTED_TIME_KILL', label: '신뢰 시간 없는 Kill', codes: ['FF_EV_TIME_UNVERIFIED'], threshold: { count: 1, windowMs: 60 * MIN, perVehicle: false, fleetRatio: 0.01 }, response: '시간 동기 장애 또는 시간 조작 조사(TS-12)', limitChannel: false },
   { id: 'E2E_REPEAT', label: 'E2E 오류 반복', codes: ['E2E_CRC', 'E2E_DATA_ID'], threshold: { count: 10, windowMs: MIN, perVehicle: true }, response: '통신 장애와 공격 구분', limitChannel: false },

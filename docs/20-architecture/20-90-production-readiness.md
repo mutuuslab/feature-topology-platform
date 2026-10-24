@@ -20,14 +20,14 @@
 | RD-SEC-03 | 인증 | 데모 ID/비밀번호가 번들에 들어 있고 세션은 localStorage 표식 하나 | frontend/src/auth.ts:7-9,30 |
 | RD-SEC-04 | 인가 | 헤더 없는 GET은 AUDITOR로 처리 — 감사 기록·HSM 상태·Fleet을 익명으로 읽는다 | actor.ts:49-51 |
 | RD-SEC-05 | 승인 | 승인 서명 키를 주장된 사용자 ID마다 즉석 생성 — 한 사람이 두 승인자를 흉내 내 2인 승인을 깬다 | d06-qsec/pki-kms/hsm.service.ts:62-80 |
-| RD-SEC-06 | 키 | 소프트웨어 HSM, 개인키·차량 루트 비밀이 SQLite에 평문 | pki.service.ts:58-66, hsm.service.ts:66,101-107 |
+| RD-SEC-06 | 키 | 소프트웨어 HSM, 개인키·차량 루트 비밀이 SQLite에 평문 — **완료(2026-10-24)**: 레코드별 DEK(AES-256-GCM) + 외부 KEK 봉투 암호화, 운영 KEK 필수·교체 지원(7장) | pki.service.ts:58-66, hsm.service.ts:66,101-107 |
 | RD-SEC-07 | 연계 | 웹훅 비밀이 공개된 모의 값으로 대체됨 — 외부에서 상태 변경 위조 가능 | ext-sync/mock-ext.store.ts:58-62 |
-| RD-SEC-08 | 차량 | 차량 요청 신원이 `X-Vehicle-Id` 헤더뿐(mTLS·CMAC 없음) | actor.ts:30-34, vehicle-request.service.ts:70 |
+| RD-SEC-08 | 차량 | 차량 요청 신원이 `X-Vehicle-Id` 헤더뿐(mTLS·CMAC 없음) — **완료(2026-10-24)**: 차량 키 파생 요청 CMAC(본문·시각·nonce) 또는 신뢰 프록시 mTLS 주체, 운영 필수(7장) | actor.ts:30-34, vehicle-request.service.ts:70 |
 | RD-SEC-09 | 테넌시 | 고객(테넌트) 구분이 어디에도 없다 | kernel.module.ts:27 |
 | RD-OPS-01 | 저장 | 기본 DB가 `:memory:`이고 부팅마다 데모 데이터(차량·3000 시행)를 넣는다 | kernel.module.ts:27-29, seed.ts:109,114 |
-| RD-OPS-02 | 첫 실행 | 빈 DB(`FF_SEED=none`) 부팅·화면을 검사하는 시험이 하나도 없다 | test/helpers.ts:10, e2e/playwright.config.ts:45 |
+| RD-OPS-02 | 첫 실행 | 빈 DB(`FF_SEED=none`) 부팅·화면을 검사하는 시험이 하나도 없다 | test/helpers.ts:10, e2e/playwright.config.ts:47 |
 | RD-OPS-03 | 데이터 모델 | 권한 출처·Fleet 값이 `DEMO|SYNTHETIC`/`DEMO|SAMPLE`만 허용, 만료 처리도 DEMO만 | contracts/src/schemas/policy.ts:99,123, trial-expiry.service.ts:64 |
-| RD-OPS-04 | 차량 채널 | 실제 차량 전달 경로가 없다(내부 시뮬레이터가 기본, OTA IF-05·IF-09 모의 고정) | vehicle-runtime.service.ts:80-89, if-mocks/external-systems.ts:163,166 |
+| RD-OPS-04 | 차량 채널 | 실제 차량 전달 경로가 없다(내부 시뮬레이터가 기본, OTA IF-05·IF-09 모의 고정) — **완료(2026-10-24)**: 전달 어댑터(sim·pull·고객 게이트웨이), 운영 기본 당겨받기 HTTPS(7장·80-40) | vehicle-runtime.service.ts:80-89, if-mocks/external-systems.ts:163,166 |
 | RD-OPS-05 | 배포 | 백엔드 배포 산출물(Dockerfile·배포 작업·환경 템플릿)이 없다 | docker/(Unleash만), .github/workflows/cloudflare.yml |
 | RD-FN-01 | 정확성 | 결함 기록(it.fails) 12건 — 명세 결함 5 + ADS 결함 7 | backend/test/requirements/defects.spec.ts, test/ads/defects.spec.ts |
 | RD-FN-02 | 되돌리기 | 롤백(요구 28건)·정책 버전 이력이 없다 — 잘못된 배포를 되돌릴 수 없다 | harness/requirements/REPORT.md §3 B2·B3 |
@@ -51,10 +51,10 @@
 | RD-OPS-12 | 운영 기본값 | 운영 모드가 기본값(빈 Unleash 토큰·SIM auto·Windows 경로·모의 비밀)을 거부하지 않는다 |
 | RD-OPS-13 | 멱등 | 멱등 키를 처리 뒤에 저장 — 동시 중복이 둘 다 실행된다 (idempotency.interceptor.ts:37-49) |
 | RD-OPS-14 | 단일 인스턴스 | SSE 버스·요청 제한·주기 작업이 프로세스 메모리 — v1은 단일 인스턴스로 명시하거나 공유 저장소로 |
-| RD-UX-01 | 오류 화면 | 403만 구분 — 401 재로그인·409/412 충돌·422 필드 오류·네트워크 끊김 처리 없음, 개발자 문구("백엔드(9101)") — **완료(2026-10-24, 7장)** |
+| RD-UX-01 | 오류 화면 | 403만 구분 — 401 재로그인·409/412 충돌·422 필드 오류·네트워크 끊김 처리 없음, 개발자 문구("백엔드(9101)") — **완료(2026-10-24, 8장)** |
 | RD-UX-02 | 입력 보호 | 저장하지 않은 변경 보호가 SafetyTab 한 곳뿐 |
-| RD-UX-03 | 큰 데이터 | 목록 페이지 나눔·가상화 없음 — 전체를 받아 클라이언트에서 거른다 — **완료(2026-10-24, 7장)** |
-| RD-UX-04 | 연계 | 메일·과금·OTA·Data Lake가 모의 — **표시 완료(2026-10-24, 7장)**, 실제 연결은 남음 |
+| RD-UX-03 | 큰 데이터 | 목록 페이지 나눔·가상화 없음 — 전체를 받아 클라이언트에서 거른다 — **완료(2026-10-24, 8장)** |
+| RD-UX-04 | 연계 | 메일·과금·OTA·Data Lake가 모의 — **표시 완료(2026-10-24, 8장)**, 실제 연결은 남음 |
 
 ### P2 — 다듬기
 
@@ -199,14 +199,54 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 ### 6.6 남은 것
 
 - OFREP 평가(`/ofrep/v1/*`, `@ReadOnlyEndpoint`)는 아직 익명 — SDK 클라이언트 인증(키·Bearer) 결정이 필요하다.
-- 차량 창구 신원(`X-Vehicle-Id`)은 RD-SEC-08(mTLS·CMAC).
+- ~~차량 창구 신원(`X-Vehicle-Id`)은 RD-SEC-08(mTLS·CMAC).~~ → 7장에서 완료.
 - SSE 연결은 연결할 때만 세션을 본다 — 세션이 끝나도 열린 스트림은 닫힐 때까지 유지(읽기 전용 이벤트).
-- 승인자 키는 아직 소프트웨어 HSM에 평문(RD-SEC-06 — KEK/KMS). FIDO2·스마트카드 승인은 그 뒤.
+- 승인자 키는 소프트웨어 HSM에 KEK로 봉인해 저장(RD-SEC-06, 7장). 서명할 때는 메모리에 풀린다 — FIDO2·스마트카드 승인(키가 사람 장치 밖으로 나오지 않음)은 그 뒤.
 - 세션·요청 제한은 프로세스 메모리·SQLite — 다중 인스턴스는 RD-OPS-14·D-RD-3(PostgreSQL) 뒤.
 
-## 7. 화면 출시 품질 — RD-UX-01·03·04 (2026-10-24 구현)
+## 7. 키 보호·차량 채널 — RD-SEC-06·RD-SEC-08·RD-OPS-04 (2026-10-24 구현)
 
-### 7.1 오류 화면 (RD-UX-01)
+### 7.1 저장 비밀 봉투 암호화(RD-SEC-06)
+
+| 항목 | 내용 |
+|---|---|
+| 대상 | `pki_key.private_pem`(게시본·차단 서명 키), `approver_key.private_pem`(승인자 개인 키), `hsm_secret.secret`(차량 키 epoch 루트) — 목록은 `backend/src/kernel/kms/secret-columns.ts` 한 곳 |
+| 형식 | `ffenc1.<kekId>.<감싼 DEK>.<IV>.<암호문>.<태그>` — 레코드마다 새 32바이트 DEK로 AES-256-GCM, DEK는 KEK로 AES-256-GCM 감싸기. AAD = `<표>.<열>|<레코드 ID>`(다른 행으로 옮긴 암호문은 열리지 않는다) |
+| KEK | `FF_KEK`(base64 32바이트) 또는 `FF_KEK_FILE`(비밀 볼륨 파일 — base64 또는 원시 32바이트). 운영 모드는 필수(없으면 시작 거부). 운영 모드가 아니면 공개된 고정 개발 KEK(`dev-…`, 보호 아님) |
+| 시작 때 | 평문 레코드(이전 판 DB) 봉인 → 이전 KEK 레코드 다시 감싸기 → 모든 레코드가 지금 KEK로 열리는지 확인. 바뀐 게 있으면 WAL 비우기 + VACUUM, `PRAGMA secure_delete=ON`(이전 평문이 빈 페이지에 남지 않게) |
+| 잘못된 KEK | 첫 서명이 아니라 시작에서 멈춘다 — "저장된 비밀이 다른 KEK(<id>)로 감싸져 있습니다 — 지금 KEK는 <id>…" (값은 메시지에 없음) |
+| 교체 | 새 키를 `FF_KEK`, 옛 키를 `FF_KEK_PREVIOUS`(또는 `_FILE`)로 주고 한 번 시작 → DEK만 새 KEK로 다시 감싼다(암호문 그대로). 그 뒤 `FF_KEK_PREVIOUS`를 지운다 |
+| KMS/HSM | `KekProvider { id, wrap(dek), unwrap(wrapped) }` 인터페이스 — 고객 KMS(AWS KMS·Azure Key Vault·PKCS#11 HSM)는 이것만 구현해 `SecretVault` 공급자를 바꿔 끼운다 |
+| 시험 | `backend/test/kernel/key-protection.spec.ts`(9건) — DB 파일·WAL에 PEM 본문 줄·루트 비밀 바이트가 없음(변환 전에는 있음을 먼저 보여 빈 검사 방지), 평문 변환, 교체, 잘못된 KEK·변조·행 바꿔치기, 설정 |
+
+### 7.2 차량 요청 인증(RD-SEC-08)
+
+- 차량 키 `K_v = HKDF(epoch 루트, "epoch:<n>", "ffp-vehicle-key|<VIN>")`(기존 SecOC cmd_auth·state_auth와 같은 차량 키)에서 요청 키를 따로 파생해 AES-CMAC-128로 `메서드·경로·VIN·epoch·시각·nonce·본문 SHA-256`에 서명한다. 시각 ±5분, nonce VIN별 1회(046 `vehicle_request_nonce`).
+- 또는 TLS 게이트웨이가 검증한 인증서 주체(`FF_VEHICLE_CERT_HEADER`, 신뢰 프록시 `FF_TRUST_PROXY`에서 온 요청만). 둘 다 오면 둘 다 확인.
+- `FF_VEHICLE_AUTH=required`(운영 기본·고정 — `demo`면 시작 거부) / `demo`(머리글만도 받되 서명이 오면 확인).
+- 실패는 401 `VEHICLE_UNAUTHENTICATED` + `details.code` + 감사 DENIED + 보안 이벤트(진위 실패·재전송, VIN 가명). 규격 전문: `docs/80-integration/80-40-vehicle-channel.md`.
+- 차량 쪽(시험·5년 재생·e2e)은 `backend/src/kernel/vehicle-auth-client.ts`로 서명한다. e2e 백엔드는 `FF_VEHICLE_AUTH=required`.
+- 시험: `backend/test/d02/vehicle-auth.spec.ts`(13건) — main.ts 조립(createApp) 원문 확인, 서명 없음·서명 불일치(본문·경로)·재전송·다른 VIN 흉내·시각 밖·지난 epoch·형식, mTLS 주체·불일치·신뢰 안 하는 경로, 진위 실패 3건 → 채널 제한, 데모 호환.
+
+### 7.3 실제 차량 전달 경로(RD-OPS-04)
+
+- `VehicleDeliveryAdapter` 레지스트리(`d02-runtime/vehicle-channel`): `sim`(내부 시뮬레이터, 운영 모드 거부) · `pull`(운영 기본) · 고객 게이트웨이 어댑터(이름으로 등록, `FF_VEHICLE_CHANNEL`). 고른 이름이 등록되지 않았으면 시작 거부.
+- `pull` — 게시본마다 차량 전달함(046 `vehicle_delivery`), 차량이 서명 요청으로 `GET /vehicle/v1/{vin}/inbox`(서명 게시본 + 차단·복원 봉투) → 직접 검증 → `POST …/inbox/{deliveryId}/ack`(적용·거부 → IF-06 회신 집계, 봉투는 상태 보고 v2로 끝 상태). 확인 전까지 다시 내준다(최소 한 번), 같은 확인은 멱등.
+- 상태 `GET /api/vehicle-channel`.
+- 시험: `backend/test/d02/vehicle-channel.spec.ts`(10건) — 배포 → 전달함 → 차량 검증·확인 → CONFIRMED, 거부 확인, 남의 전달함·서명 없는 조회, 긴급 차단 봉투, 기한 무회신, 운영 기본 pull·sim 거부·미등록 이름 거부·게이트웨이 어댑터.
+
+### 7.4 한계
+
+- 실제 HSM이 아니다 — KEK·루트 비밀·서명 키는 연산 중 프로세스 메모리에 있다(저장만 봉인). KMS/HSM은 `KekProvider`·`VehicleKeySource` 어댑터로 붙인다(미구현).
+- 공장 차량 키 주입·차량 신뢰 앵커 프로비저닝은 플랫폼 밖(시험은 `FF_HSM_VEHICLE_ROOT`·`factoryProvision` 모의).
+- epoch를 올리면 이전 epoch 요청은 즉시 거부(유예 없음) — 차량 키 갱신 경로는 v2 봉투 SYNC 설계를 따른다.
+- mTLS 체인·폐기 확인은 프록시 몫. nonce·전달함은 단일 인스턴스 SQLite(RD-OPS-14).
+- 당겨받기는 차량 조회 주기만큼 늦다 — 긴급 차단 도달 목표가 짧으면 고객 게이트웨이(푸시) 어댑터가 필요하다.
+- OTA 캠페인(IF-05)·TMS(IF-09)는 여전히 모의(RD-UX-04).
+
+## 8. 화면 출시 품질 — RD-UX-01·03·04 (2026-10-24 구현)
+
+### 8.1 오류 화면 (RD-UX-01)
 
 | 경우 | 화면 | 다음 행동 |
 |---|---|---|
@@ -221,14 +261,14 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 - 조회 자동 재시도는 연결 끊김·서버 오류만(401·403·409·입력 오류는 다시 보내도 같다).
 - 시험: `frontend/src/__tests__/apiErrors.test.tsx`, e2e `e2e/tests/error-ux.spec.ts`(page.route로 401·409·400·422·429·500·연결 끊김 주입).
 
-### 7.2 큰 목록 (RD-UX-03)
+### 8.2 큰 목록 (RD-UX-03)
 
 - API: `GET /api/features`에 `limit`·`cursor`(없으면 예전처럼 전체 — 뒤 호환), `GET /api/audit`에 `cursor`(최신순 키셋), `GET /api/events`는 `after`가 커서. 응답 `nextCursor`(마지막이면 null), 위조 커서는 400 VALIDATION(`field: cursor`). 규칙 `backend/src/kernel/paging.ts`(백엔드 전용).
 - 표: 디자인 키트 `DataTable`이 100행을 넘으면 쪽 넘김(`Pager`)으로 나눠 그린다 — 정렬은 전체에, DOM 행은 한 쪽만(1만 행 시험). 감사 이력은 커서로 "더 불러오기".
 - 시험: `backend/test/kernel/paging-units.spec.ts`, `backend/test/kernel/list-paging.spec.ts`, `frontend/src/__tests__/largeLists.test.tsx`, e2e `e2e/tests/large-lists.spec.ts`.
 - 남은 것: Feature 목록 화면은 국가·Lifecycle 집계 때문에 아직 전체를 한 번 받는다(그리기만 나눔). 서버 쪽 집계·검색이 붙으면 화면도 커서 조회로 바꾼다.
 
-### 7.3 모의 연계 표시 (RD-UX-04)
+### 8.3 모의 연계 표시 (RD-UX-04)
 
 - `GET /api/system/connections` → `{ mode: production|demo, items: [{ key, mode: live|mock|off, ifId, liveAdapter }] }`. 계산 `backend/src/kernel/connections.ts`(형식 `contracts/src/rules/connections.ts`). 설정 `FF_CONN_MAIL`·`FF_CONN_BILLING`·`FF_CONN_OTA`·`FF_CONN_DATALAKE` = `live|mock|off`(OTA는 `IF_MODE_05=off`도 따른다). **실제 어댑터가 없으면 live로 골라도 live가 되지 않는다**(`liveAdapter=false` — 지금 넷 다).
 - 화면: 데모 설치 "모의(연결 전)", 운영 설치·꺼진 연결 "연결 안 됨"(`ConnectionBadge`). 메일 발송 기록의 SENT는 "모의 발송"·"보내지 않음"으로, 체험 구매는 안내 + 운영에서 버튼 비활성, 게시본 연계 호출(IF-05)에 표시, 외부 연계 현황에 연결 상태 표(Data Lake 포함). live가 되면 표시가 사라진다.

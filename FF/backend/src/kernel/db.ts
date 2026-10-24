@@ -30,7 +30,8 @@ export class SqliteDb implements Db {
 
   constructor(path = ':memory:') {
     this.db = new DatabaseSync(path);
-    this.db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
+    // secure_delete — 지운·덮어쓴 내용을 0으로 채운다(봉인 전 평문 비밀이 빈 페이지에 남지 않게, RD-SEC-06)
+    this.db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA secure_delete = ON;');
   }
 
   get inTransaction() {

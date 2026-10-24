@@ -1,8 +1,10 @@
-// 실행 모드 설정 검사 — 출시 준비 RD-OPS-01·RD-OPS-12·RD-SEC-07·RD-SEC-09 (docs/20-architecture/20-90-production-readiness.md).
+// 실행 모드 설정 검사 — 출시 준비 RD-OPS-01·RD-OPS-04·RD-OPS-12·RD-SEC-06·RD-SEC-07·RD-SEC-08·RD-SEC-09 (docs/20-architecture/20-90-production-readiness.md).
 // FF_ENV=production(운영 모드)이면 데모·시험용 기본값을 받아들이지 않는다. 문제를 한 번에 모두 알려 주고 부팅을 멈춘다.
 // 운영 모드가 아니면(기본 개발·데모·시험) 지금까지의 기본값을 그대로 쓴다. 값(비밀)은 메시지에 넣지 않는다.
 // 인증(FF_AUTH·OIDC_*·FF_SESSION_*)은 auth/auth-config.ts — FF_AUTH=oidc면 운영 모드가 아니어도 검사한다(RD-SEC-01).
 import { authConfigProblems } from './auth/auth-config';
+import { kekConfigProblems } from './kms/key-protection';
+import { vehicleChannelConfigProblems } from './vehicle-auth-config';
 
 type Env = Record<string, string | undefined>;
 
@@ -29,7 +31,8 @@ export function corsOrigins(env: Env = process.env): true | string[] {
 
 /** 문제 목록(비었으면 시작해도 됨) — 시험과 시작 검사가 같은 함수를 쓴다 */
 export function runtimeConfigProblems(env: Env = process.env): string[] {
-  if (!isProduction(env)) return authConfigProblems(env);
+  // 키 암호화 키(RD-SEC-06) — 운영 모드는 필수, 그 밖에는 주었을 때만 형식을 본다
+  if (!isProduction(env)) return [...kekConfigProblems(env, false), ...vehicleChannelConfigProblems(env), ...authConfigProblems(env)];
   const out: string[] = [];
   const db = (env.FF_DB ?? '').trim();
   if (!db || db === ':memory:') out.push('FF_DB가 없거나 :memory:입니다 — 운영 모드는 재시작 뒤에도 남는 DB 파일이 필요합니다');
@@ -50,6 +53,9 @@ export function runtimeConfigProblems(env: Env = process.env): string[] {
   if ((env.FF_AUDIT_KEY ?? '').length < 32) out.push('FF_AUDIT_KEY가 없거나 32자보다 짧습니다 — 감사 체인 끝을 DB 밖에서 서명하는 키');
   if (!env.FF_AUDIT_ANCHOR_FILE?.trim()) out.push('FF_AUDIT_ANCHOR_FILE이 없습니다 — 감사 체인 고정점을 추가만 하는 파일(WORM 볼륨)에 남깁니다');
   if (env.SIM_MODE && env.SIM_MODE !== 'off') out.push(`SIM_MODE=${env.SIM_MODE} — 운영 모드에서 가상 검증 실행기는 꺼 둡니다(off)`);
+  out.push(...kekConfigProblems(env, true));
+  // 차량 채널 — 요청 인증 required(RD-SEC-08), 전달은 실제 채널(RD-OPS-04)
+  out.push(...vehicleChannelConfigProblems(env));
   out.push(...authConfigProblems(env));
   return out;
 }
@@ -57,5 +63,5 @@ export function runtimeConfigProblems(env: Env = process.env): string[] {
 /** 시작 때 한 번 — 운영 모드에서 문제가 있으면 멈춘다 */
 export function assertRuntimeConfig(env: Env = process.env): void {
   const problems = runtimeConfigProblems(env);
-  if (problems.length) throw new Error(`${isProduction(env) ? '운영 모드(FF_ENV=production)' : '인증(FF_AUTH=oidc)'} 설정 오류 — 백엔드를 시작하지 않습니다:\n  - ${problems.join('\n  - ')}`);
+  if (problems.length) throw new Error(`${isProduction(env) ? '운영 모드(FF_ENV=production)' : (env.FF_AUTH === 'oidc' ? '인증(FF_AUTH=oidc)' : '실행')} 설정 오류 — 백엔드를 시작하지 않습니다:\n  - ${problems.join('\n  - ')}`);
 }

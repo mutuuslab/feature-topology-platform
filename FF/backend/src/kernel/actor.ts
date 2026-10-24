@@ -12,6 +12,7 @@ import { AuditService } from './audit.service';
 import { authModeOf } from './auth/auth-config';
 import { AuthService } from './auth/auth.service';
 import { DomainError } from './errors';
+import { VehicleAuthService } from './vehicle-auth';
 
 export interface Actor {
   id: string;
@@ -36,8 +37,9 @@ export const ReadOnlyEndpoint = () => SetMetadata(READONLY_KEY, true);
 export const AuditAction = (action: string) => SetMetadata(ACTION_KEY, action);
 /**
  * 차량 발신 요청 창구 — 사람 행위자 헤더 대신 차량 신원으로 식별한다(역할 VEHICLE, id `vehicle:<VIN>`).
- * 데모 신원은 X-Vehicle-Id 헤더다. 실제 배치에서는 mTLS를 끝내는 게이트웨이가 검증한 인증서 주체를 이 자리에 넣는다
- * (UL-044 serviceMTLS). 헤더 값만으로 인증서 체인 검증을 마쳤다고 주장하지 않는다(C47).
+ * 신원은 VehicleAuthService(RD-SEC-08)가 정한다: 차량 키에서 파생한 요청 CMAC(본문·시각·nonce 포함) 또는
+ * mTLS를 끝내는 게이트웨이가 검증한 인증서 주체(신뢰 프록시 머리글, UL-044 serviceMTLS). 운영 모드는 둘 중 하나가 필수,
+ * 데모 모드는 X-Vehicle-Id만 와도 받는다(서명 머리글이 있으면 확인). 머리글 값만으로 인증서 체인 검증을 마쳤다고 주장하지 않는다(C47).
  */
 export const VehicleEndpoint = () => SetMetadata(VEHICLE_KEY, true);
 const WEBHOOK_KEY = 'ff:webhook';
@@ -77,6 +79,7 @@ export class RolesGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly audit: AuditService,
     private readonly auth: AuthService,
+    private readonly vehicleAuth: VehicleAuthService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -90,13 +93,10 @@ export class RolesGuard implements CanActivate {
       return true;
     }
     if (this.reflector.getAllAndOverride<boolean>(VEHICLE_KEY, [ctx.getHandler(), ctx.getClass()])) {
-      const vehicleId = (req.header('x-vehicle-id') ?? '').trim();
       const correlationId = (req.header('x-correlation-id') ?? '').trim() || randomUUID();
-      if (!vehicleId) {
-        this.audit.denied({ id: 'vehicle:unknown', role: 'VEHICLE', correlationId }, 'VEHICLE_REQUEST', req.path, '차량 신원 없음');
-        throw new DomainError('VEHICLE_UNAUTHENTICATED', '차량 요청에는 차량 신원(X-Vehicle-Id)이 필요합니다.');
-      }
-      (req as Request & { actor?: Actor }).actor = { id: `vehicle:${vehicleId}`, role: 'VEHICLE', correlationId };
+      const who = this.vehicleAuth.authenticate(req);
+      (req as Request & { actor?: Actor; vehicleAuth?: string }).vehicleAuth = who.via;
+      (req as Request & { actor?: Actor }).actor = { id: `vehicle:${who.vin}`, role: 'VEHICLE', correlationId };
       return true;
     }
     const roles = this.reflector.getAllAndOverride<RoleT[] | undefined>(ROLES_KEY, [ctx.getHandler(), ctx.getClass()]);

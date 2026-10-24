@@ -38,6 +38,7 @@ import { ReleaseSignoffBody } from './schemas/release-signoff';
 import { ProcedureCompleteBody } from './schemas/procedure';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
+import { VehicleDeliveryAck } from './rules/vehicle-auth';
 import { KillCommandV2, StatusReportV2 } from './schemas/wire';
 import { ConcludeExperimentBody, CreateExperimentBody, CreateIncidentBody, FieldCaseBody, ImportOrdersBody, RunSyncBody, TranslateLegacyBody } from './rules/ext';
 import { z } from 'zod';
@@ -202,11 +203,15 @@ export const ROUTES: RouteDef[] = [
   { name: 'fleetOnboard', method: 'POST', path: '/api/fleet/onboard', summary: '신차 커넥티드 등록(IF-06 Fleet 연계 모의) — 가중 표본 차량·수신 표본 등록', component: 'D02-03', roles: ['SYSTEM'], body: FleetOnboardBody },
   { name: 'vehicleRuntime', method: 'GET', path: '/api/vehicles/:vin/runtime', summary: '차량 런타임 — 적용 게시본·차량 측 평가·서버 판단 비교', component: 'D02-03' },
   { name: 'vehicleRequests', method: 'GET', path: '/api/vehicles/:vin/requests', summary: '차량 발신 요청 기록 — 조회·보고·거부 사유, 보고 위치(bootId·sequence)', component: 'D02-03', dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
-  // 차량 발신 요청 — 사람 역할이 아니라 차량 신원(X-Vehicle-Id, 실제는 mTLS 주체)으로 받는다. 자기 VIN만.
+  // 차량 발신 요청 — 사람 역할이 아니라 차량 신원으로 받는다(RD-SEC-08: 요청 CMAC 또는 mTLS 주체, 데모만 X-Vehicle-Id 단독). 자기 VIN만.
   { name: 'vehicleQueryAll', method: 'POST', path: '/vehicle/v1/:vin/flags', summary: 'IF-10 차량 발신 전체 flag 조회 (OFREP 형식, ETag)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleQuery', method: 'POST', path: '/vehicle/v1/:vin/flags/:key', summary: 'IF-10 차량 발신 단일 flag 조회 (OFREP 형식)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleStatus', method: 'POST', path: '/vehicle/v1/:vin/status', summary: 'IF-06 차량 상태 보고 v2 — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 위반은 이상 징후로', component: 'D04-03', roles: ['VEHICLE'], body: StatusReportV2 },
   { name: 'vehicleStatusView', method: 'GET', path: '/api/vehicles/:vin/status', summary: '차량 상태 보고 v2 — 받아들인 최신 상태·최근 수신(위반 포함)', component: 'D04-03', dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
+  // 차량 당겨받기 채널(RD-OPS-04) — 서명한 요청(RD-SEC-08 CMAC 또는 mTLS)으로 전달함을 받아 가고 확인한다. docs/80-integration/80-40-vehicle-channel.md
+  { name: 'vehicleInbox', method: 'GET', path: '/vehicle/v1/:vin/inbox', summary: 'IF-07 차량 전달함 — 확인하지 않은 서명 게시본(차단·복원은 kill_command v2 봉투 포함), 당겨받기 채널', component: 'D02-03', roles: ['VEHICLE'] },
+  { name: 'vehicleDeliveryAck', method: 'POST', path: '/vehicle/v1/:vin/inbox/:deliveryId/ack', summary: 'IF-07 전달 확인 — 적용·거부를 회신(IF-06 readback)으로, 같은 확인 재시도는 같은 응답', component: 'D02-03', roles: ['VEHICLE'], body: VehicleDeliveryAck },
+  { name: 'vehicleChannel', method: 'GET', path: '/api/vehicle-channel', summary: '차량 전달 채널 — 고른 어댑터(sim·pull·고객 게이트웨이)·대기 중 전달(설정 상태, 차량 데이터 아님)', component: 'D02-03', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   { name: 'vehicleReport', method: 'POST', path: '/vehicle/v1/:vin/reports', summary: 'IF-06 차량 보고 — 재연결 대사·관측값·체험 수락·오류·회신 (Flag 직접 변경은 거부), 재평가 결과 응답', component: 'D02-03', roles: ['VEHICLE'], body: VehicleReportBody },
   { name: 'gleoStatus', method: 'GET', path: '/api/gleo/status', summary: 'GLEO Broker 연결·최근 메시지', component: 'D02-03' },
   { name: 'gatePreview', method: 'POST', path: '/api/gate/preview', summary: '정책 게이트 미리보기 — kill_command v2 판정(스키마·규칙), 원장 변경 없음. 스키마 오류도 SCHEMA_FAIL 결과로 돌려준다', component: 'D03-02', roles: ['OPERATOR', 'SAFETY_OFFICER', 'SECURITY_OFFICER', 'OPS_LEAD'], body: KillCommandV2 },

@@ -1,7 +1,7 @@
 // 시험용 IdP(OIDC 제공자) — node:http, 무작위 포트. 백엔드 시험(test/kernel/oidc.spec.ts)과 브라우저 시험(e2e/oidc/fake-idp.mjs)이 같은 코드를 쓴다.
 //  · 디스커버리·JWKS(프로세스 안에서 만든 RSA 키)·authorize(login_hint의 사용자를 자동 승인, 없으면 사용자 고르기 화면)
 //  · token: 클라이언트 인증(Basic)·일회용 코드·redirect_uri·PKCE(S256 code_verifier) 확인 → RS256 id_token(nonce) + access_token
-//  · userinfo·end_session(로그아웃)
+//  · userinfo·end_session(로그아웃) · (e2e 전용 선택) /test/token
 // Node가 바로 실행할 수 있게 지울 수 있는 타입 표기만 쓴다(enum·매개변수 속성 없음).
 import { createHash, generateKeyPairSync, randomBytes, sign, type KeyObject } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
@@ -23,6 +23,8 @@ export interface FakeOidcOptions {
   /** 접근 토큰 대상(기본 client id) */
   accessAudience?: string;
   tokenTtlSec?: number;
+  /** e2e 전용 — GET /test/token?user=키 로 접근 토큰을 준다(브라우저 밖 API 호출 준비) */
+  exposeTestTokens?: boolean;
 }
 
 export interface SignOptions {
@@ -161,6 +163,10 @@ export async function startFakeOidc(o: FakeOidcOptions): Promise<FakeOidc> {
       if (req.method === 'GET' && url.pathname === '/userinfo') {
         const user = Object.keys(o.users).find((k) => (req.headers.authorization ?? '').includes(o.users[k].sub)) ?? null;
         return user ? send(res, 200, userClaims(user)) : send(res, 401, { error: 'invalid_token' });
+      }
+      if (o.exposeTestTokens && req.method === 'GET' && url.pathname === '/test/token') {
+        const user = url.searchParams.get('user') ?? '';
+        return o.users[user] ? send(res, 200, { access_token: accessToken(user) }) : send(res, 404, { error: 'unknown_user' });
       }
       if (req.method === 'GET' && url.pathname === '/logout') {
         const back = url.searchParams.get('post_logout_redirect_uri');

@@ -2,7 +2,7 @@
 // 차량은 서명(신뢰 앵커 공개키)·순번(재전송)을 확인한 게시본만 적용하고, 적용한 값을 되읽어 회신한다(P0 BD-12 readback).
 // 차량 측 평가는 서버와 같은 단일 평가기(evaluateFlag)를 캐시된 서명 정책으로 돌린다 — 서버 판단과 어긋나면 drift.
 // v2 차단·복원(보고서 v1.1 9장): 게시본과 함께 이 차량의 봉투를 받아 Guard 검증 순서(서명 → cmd_auth → epoch → 순번 창 → 시각 → 등급 → 승인자)를 거치고,
-// DC 단계 상태 기계(DC2: 경고 → 인계 → 램프 → DISABLED, 복원: RESTORE_PENDING → 다음 시동 → ACTIVE)로 진행하며 단계마다 서명된 status_report v2를 보낸다.
+// DC 단계 상태 기계(DC2: 경고 → 인계 → 램프 → DISABLED, 복원: RESTORE_PENDING → 다음 시동 → INACTIVE, 활성화는 따로 — FFP-F036)로 진행하며 단계마다 서명된 status_report v2를 보낸다.
 import { Controller, Get, Inject, Injectable, Param } from '@nestjs/common';
 import {
   authBlock,
@@ -23,8 +23,9 @@ import {
   type Publication,
   type RejectCode,
   type StatusReportV2,
+  variantRow,
 } from '@ff/contracts';
-import { targetHashOf, vehiclePseudonym } from '../../../kernel/crypto';
+import { sha256hex, targetHashOf, vehiclePseudonym } from '../../../kernel/crypto';
 import { EnvelopeRepo } from '../../d03-safety/kill-switch/envelope.repo';
 import { PolicyGateService } from '../../d03-safety/deploy-safety/policy-gate.service';
 import { StatusIngestService } from '../../d04-ops/telemetry-ingest/status-ingest.service';
@@ -103,6 +104,15 @@ export class VehicleRuntimeService {
     // 게시본 종류의 용도 키로 서명된 것만(FFG-SEC-002) — 정책 키로 서명한 차단 명령은 WRONG_KEY_PURPOSE
     const check = this.pki.verify(p, pub.signature, undefined, PUBLICATION_KEY_PURPOSE[pub.kind]);
     if (!check.valid) return reject(check.reason);
+    // @req FR-RTE-001-004
+    // 정책 게시본도 대상(payload.targets)에 자기 VIN이 있어야 적용한다(차단 봉투는 target_hash로 이미 확인).
+    // 대상 밖 게시본은 적용·저장하지 않고 차량 쪽에 거부를 남긴다. 플랫폼은 이 차량에 보낸 적이 없으니 회신(IF-06)은 하지 않는다 —
+    // 수집기(D04-03)가 대상 밖 회신을 거부하는 것은 플랫폼 쪽 2차 방어다.
+    if (p.kind === 'POLICY' && !p.targets.includes(vin)) {
+      s.log.push({ at: this.clock.iso(), publicationId: pub.publicationId, kind: pub.kind, result: 'REJECTED', detail: 'TARGET_MISMATCH' });
+      this.runtime.save(s);
+      return;
+    }
     if (p.sequence <= (s.highest[key] ?? 0)) return reject('REPLAY');
     s.highest[key] = p.sequence;
     // v2 — 이 차량의 봉투가 있으면 Guard 경로(레거시 v1 차단은 아래 기존 경로)
@@ -179,6 +189,16 @@ export class VehicleRuntimeService {
     );
     const design = this.gate.registryEntry(featureId, env.feature.version)?.deact_class ?? 'DC4';
     const last = s.guard?.[featureId];
+    const current0 = (s.featureState[featureId] as GuardState | undefined) ?? 'ACTIVE';
+    // FFP-F019 — 명령 멱등성: 이미 받아들인 명령과 command_id·내용(서명 포함)이 같은 봉투는 네트워크 재시도다.
+    // 순번 창 검사(REPLAY → 보안 이벤트)에 넣지 않고, 전이 없이 앞 결과(수락·지금 상태)를 다시 알린다. 내용이 다르면 재시도가 아니다(아래 검증).
+    const digest = sha256hex(jcs(env));
+    if (last?.commandId === env.command_id && last.digest === digest && last.epoch === va.key_epoch) {
+      s.log.push({ at: this.clock.iso(), publicationId, kind, result: 'APPLIED', detail: `${env.request} 재수신 — 앞 결과 그대로(멱등, 전이 없음)` });
+      this.runtime.save(s);
+      const on = current0 === 'ACTIVE';
+      return this.emit(vin, env, current0, { request_result: 'ACCEPTED', hmi: 'NONE', weight: on ? 1000 : 0, edr: on ? 'AVAILABLE' : 'OFF_BY_COMMAND' });
+    }
     const verified = guardCheck({
       jwsOk,
       cmdAuthOk: this.hsm.verifyCmac(vin, va.key_epoch, block, va.cmd_auth),
@@ -193,7 +213,7 @@ export class VehicleRuntimeService {
       commandClass: env.feature.deact_class,
       approverRefs: [va.approver_refs[0], va.approver_refs[1]],
     });
-    const current = (s.featureState[featureId] as GuardState | undefined) ?? 'ACTIVE';
+    const current = current0;
     // @rule FFG-CLS-007 — TC-FF-15: DISABLED(안전 비활성화)는 활성화로 풀지 않는다, 복원 절차(restore)만. 체험권·구독 변경이 활성화를 보내도 그대로
     const code = verified === 'NONE' && env.request === 'activate' && current === 'DISABLED' ? 'STATE_NOT_ALLOWED' : verified;
     if (code !== 'NONE') {
@@ -202,7 +222,7 @@ export class VehicleRuntimeService {
       // 거부 보고의 vehicle_seq는 마지막으로 받아들인 순번(거부한 명령의 순번을 되풀이하지 않는다)
       return this.emit(vin, env, current, { request_result: 'REJECTED', reject_code: code, vehicleSeq: last?.lastSeq ?? 0 });
     }
-    s.guard = { ...(s.guard ?? {}), [featureId]: { lastSeq: va.vehicle_seq, epoch: va.key_epoch } };
+    s.guard = { ...(s.guard ?? {}), [featureId]: { lastSeq: va.vehicle_seq, epoch: va.key_epoch, commandId: env.command_id, digest } };
     s.log.push({ at: this.clock.iso(), publicationId, kind, result: 'APPLIED', detail: `${env.request} ${env.feature.deact_class} 수락` });
     this.runtime.save(s);
     if (env.request === 'sync') {
@@ -220,12 +240,14 @@ export class VehicleRuntimeService {
       return;
     }
     if (env.request === 'restore') {
-      // 복원 — 다음 시동에서 자체 시험 뒤 ACTIVE(FFG-DEAC-008, 차량 쪽)
+      // 복원 — 다음 시동에서 자체 시험 뒤 차단을 푼다(FFG-DEAC-008, 차량 쪽).
+      // FFP-F036 — 해제는 활성화가 아니다: 차단이 풀린 끝 상태는 INACTIVE이고, ACTIVE는 ODD·형상·사용자 절차를 새로 거치는
+      // 활성화(activate: ACT_PENDING → 비작동 확인 → ACTIVE, FFG-LCY-010)로만 간다. 플랫폼도 복원 효력을 INACTIVE로 집계한다.
       this.setState(vin, featureIds, 'RESTORE_PENDING', false);
       this.emit(vin, env, 'RESTORE_PENDING', { request_result: 'ACCEPTED', hmi: 'INFO_PENDING' });
       this.scheduler.after(SIM_CYCLE_MS * TIME_SCALE, () => {
-        this.setState(vin, featureIds, 'ACTIVE', false);
-        this.emit(vin, env, 'ACTIVE', { request_result: 'NONE', hmi: 'NONE', weight: 1000, edr: 'AVAILABLE', source: 'STARTUP' });
+        this.setState(vin, featureIds, 'INACTIVE', false, true);
+        this.emit(vin, env, 'INACTIVE', { request_result: 'NONE', hmi: 'NONE', weight: 0, edr: 'OFF', source: 'STARTUP' });
       });
       return;
     }
@@ -260,13 +282,13 @@ export class VehicleRuntimeService {
     this.scheduler.after(takeover + ramp, finish);
   }
 
-  /** 차량 상태 반영 — 끝 상태면 차량 측 평가도 차단(kills), ACTIVE면 해제 */
-  private setState(vin: string, featureIds: string[], state: GuardState, killed: boolean) {
+  /** 차량 상태 반영 — 끝 상태면 차량 측 평가도 차단(kills), ACTIVE·복원 완료(released)면 해제 */
+  private setState(vin: string, featureIds: string[], state: GuardState, killed: boolean, released = state === 'ACTIVE') {
     const s = this.runtime.get(vin);
     for (const f of featureIds) {
       s.featureState[f] = state;
       if (killed) s.kills[f] = { killId: 'v2', safeMode: state, publicationId: '-' };
-      if (state === 'ACTIVE') delete s.kills[f];
+      if (released) delete s.kills[f];
     }
     this.runtime.save(s);
   }
@@ -330,6 +352,10 @@ export class VehicleRuntimeService {
         killed: !!s.kills[b.policy.featureId],
         vehicle,
         entitlementActive: b.policy.entitlementCatalogId ? this.entitlements.activeFor(vin, b.policy.featureId).active : null,
+        // @req FR-RTE-005-001
+        // 차량 측 평가도 자기 형상(SW·ECU)으로 지원 조건을 본다. 서버(ActivationService.decide)와 같은 판정이라
+        // 지원 미달 차량에 구독이 생겨도 서버·차량 모두 NOT_SUPPORTED로 OFF(어긋남 없음)
+        support: (({ verdict, reason }) => ({ verdict, reason }))(variantRow({ ...f, featureId: b.policy.featureId, version: b.policy.featureVersion }, vehicle)),
       });
       const server = await this.activation.decide(vin, flagKey).then((d) => d.result, () => null);
       evaluations.push({ flagKey, local, server, drift: !!server && server.value !== local.value });

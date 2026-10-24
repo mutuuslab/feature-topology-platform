@@ -100,8 +100,9 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     return this.create('KILL', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: k.version === 2 ? endState(k.reasonCategory ?? 'SAFETY') : legacyMode(k) }, applyWithinMs);
   }
 
+  /** v2 복원의 수렴 상태는 INACTIVE — 해제는 활성화가 아니다(FFP-F036). 레거시 v1 복원은 flag 평가 재개(ACTIVE) 그대로 */
   publishRestore(k: KillRequest, actor: Actor, applyWithinMs = 0) {
-    return this.create('RESTORE', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: 'ACTIVE' }, applyWithinMs);
+    return this.create('RESTORE', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: k.version === 2 ? 'INACTIVE' : 'ACTIVE' }, applyWithinMs);
   }
 
   /** 서명된 게시본 생성 — 호출자의 트랜잭션 안에서 기록하고, 커밋된 뒤에만 내보낸다 */

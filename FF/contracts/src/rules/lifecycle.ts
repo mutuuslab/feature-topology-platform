@@ -1,6 +1,6 @@
 // Feature Lifecycle 전이 표 — 통합 상세설계서 v0.81 §2.5 (표 10) 그대로를 데이터로 둔다.
 // 평가는 순수 함수: 백엔드(전이 실행)·프론트(스테퍼의 막힌 사유 표시)가 같은 결과를 본다.
-import { GATE_META, LIFECYCLE, ROLE_LABEL, type GateId, type GateStatus, type Lifecycle, type Role } from '../enums';
+import { GATE_META, GATES, LIFECYCLE, ROLE_LABEL, type GateId, type GateStatus, type Lifecycle, type Role } from '../enums';
 import type { DependencyRow, FeatureVersionRow } from '../schemas/dataset';
 
 export interface TransitionRule {
@@ -32,7 +32,7 @@ export const FEATURE_TRANSITIONS: TransitionRule[] = [
 
 export const LIFECYCLE_RANK: Record<Lifecycle, number> = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
+export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
 
 export interface Blocker {
   code: BlockerCode;
@@ -58,6 +58,11 @@ export interface TransitionContext {
    * Feature Owner는 이 서명으로 승인한다(사용자 결정 2026-10-18). 없으면(undefined·null) 출시를 막는다.
    */
   releaseSignoff?: { signedBy: string; signedAt: string } | null;
+  /**
+   * 이 Version에 열린 재-HARA 요청(FFG-LCY-003, FFP-F007) — 영향 검토가 끝나지 않은 변경은 출시로 승격하지 않는다.
+   * G8·G9 PASS·서명 뒤에 열린 요청도 출시를 막는다(Gate PASS 차단만으로는 이미 PASS한 판정을 되돌리지 못한다).
+   */
+  openRehara?: { requestId: string; condition: string; detail?: string }[];
   reason?: string;
 }
 
@@ -77,7 +82,11 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
   if (!rule) return { blockers: [{ code: 'NO_RULE', message: `${f.lifecycle} → ${to} 전이는 정의되어 있지 않습니다.` }] };
   const blockers: Blocker[] = [];
 
-  for (const g of rule.gates) {
+  // @req FR-REG-002-008 FR-REG-002-009
+  // 출시(RELEASED 진입)는 9 Gate 전부를 다시 본다. 표 10의 G8·G9만 보면
+  // VERIFIED 단계에서 G1~G7을 FAIL로 다시 판정해도 출시가 막히지 않는다(앞 단계 통과는 그 시점의 사실일 뿐).
+  const gates = rule.to === 'RELEASED' ? GATES : rule.gates;
+  for (const g of gates) {
     const s = ctx.latestGates[g];
     if (!s) blockers.push({ code: 'GATE_UNJUDGED', message: `${g} ${GATE_META[g].name} 미판정`, ref: g });
     else if (s !== 'PASS') blockers.push({ code: 'GATE_NOT_PASSED', message: `${g} ${GATE_META[g].name} ${s}`, ref: g });
@@ -91,6 +100,10 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
 
   if (rule.from === 'VERIFIED' && rule.to === 'RELEASED' && !ctx.releaseSignoff)
     blockers.push({ code: 'RELEASE_SIGNOFF_MISSING', message: 'Feature Owner의 Release Sign-off(출시 책임 확인 개인 서명)가 없습니다 — G8·G9 PASS 뒤 Feature Owner가 서명합니다.' });
+
+  if (rule.to === 'RELEASED')
+    for (const r of ctx.openRehara ?? [])
+      blockers.push({ code: 'REHARA_OPEN', message: `재-HARA 요청 ${r.requestId}(${r.condition})이 열려 있습니다 — 영향 검토(G2 재판정)를 마친 뒤 출시합니다.`, ref: r.requestId });
 
   if (rule.from === 'DEVELOPING' && rule.to === 'VERIFIED' && ctx.policyCoverage < f.controlPoints.length)
     blockers.push({ code: 'POLICY_MISSING', message: `Control Point ${f.controlPoints.length}개 중 정책 등록 ${ctx.policyCoverage}개` });

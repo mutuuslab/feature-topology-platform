@@ -447,7 +447,7 @@ export class KillService {
    * @rule FFG-VEH-002, FFG-VEH-013 — 플랫폼 쪽: 차량 키 CMAC 봉투·차량·Feature별 순번 발급(epoch 갱신·재동기 절차는 WP5)
    */
   issueCommand(actor: Actor, k: { killId: string; vins: string[] }, draft: KillCommandV2): IssuedCommand {
-    this.gate.commit(actor, draft);
+    this.gate.commit(actor, draft, { killId: k.killId }); // FFP-F059 — 승인 서명을 발행 대상 집합으로 다시 검증
     const purpose = COMMAND_KEY_PURPOSE[draft.request];
     const { signature: _unsigned, ...body } = draft;
     const sig = this.hsm.signDetached(purpose, jcs(body));

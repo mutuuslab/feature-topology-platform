@@ -219,6 +219,7 @@ export class PolicyService implements OnModuleInit {
       throw new DomainError('GUARD_FAILED', `승인된(APPROVED) 정책만 배포할 수 있습니다 (현재 ${p.status}).`);
     }
     if (p.contentHash !== policyHash(p)) throw new DomainError('GUARD_FAILED', '승인 이후 정책 내용이 바뀌었습니다 (해시 불일치).');
+    this.assertDeployableLifecycle(actor, p, 'POLICY_DEPLOY');
     const odd = this.oddFindings(p);
     if (odd.length) {
       this.audit.failed(actor, 'POLICY_DEPLOY', id, odd.map((x) => x.message).join(' · '), 'D01-06');
@@ -241,6 +242,19 @@ export class PolicyService implements OnModuleInit {
       this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId, stage: next.stageBasisPoints, reason }, { componentId: 'D01-06', correlationId: actor.correlationId });
       return { ...next, publicationId: pub.publicationId };
     });
+  }
+
+  /**
+   * @req FR-REG-002-019
+   * 정책 작성뿐 아니라 배포도 Feature Lifecycle을 본다. 승인 뒤 Feature가 사용 중단(DEPRECATED)·
+   * 종료(RETIRED)되면 이미 승인된 정책이라도 차량에 새로 내보내지 않는다(작성 조건과 같은 범위: APPROVED~RELEASED).
+   */
+  private assertDeployableLifecycle(actor: Actor, p: Policy, action: string) {
+    const f = this.features.get(p.featureId, p.featureVersion);
+    if (f && LIFECYCLE_RANK[f.lifecycle] >= LIFECYCLE_RANK.APPROVED && !['DEPRECATED', 'RETIRED'].includes(f.lifecycle)) return;
+    const lc = f?.lifecycle ?? '미등록';
+    this.audit.failed(actor, action, p.policyId, `${p.featureId}@${p.featureVersion} ${lc} Feature — 배포 차단`, 'D01-06');
+    throw new DomainError('GUARD_FAILED', `${lc} Feature의 정책은 배포할 수 없습니다 (APPROVED~RELEASED).`, { rule: 'FR-REG-002-019', lifecycle: lc });
   }
 
   /** ODD 축소 정책 판정 입력 — Registry·안전 분류(확정 서명 검증) — 축소 정책이 아니면 발견 없음 */

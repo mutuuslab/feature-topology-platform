@@ -178,14 +178,14 @@
       "gap": "—"
     },
     "FR-REG-002-008": {
-      "verdict": "부분",
-      "evidence": "VERIFIED→RELEASED는 G8·G9 최신 PASS만 검사 (`lifecycle.ts:31`); 앞 단계는 판정 순서로 간접 보장 (`gate.service.ts:83-84`)",
-      "gap": "VERIFIED 단계에서 G1~G7 재판정 FAIL이 생겨도 출시가 막히지 않음 → 출시 시 9 Gate 전부 재확인"
+      "verdict": "구현",
+      "evidence": "출시(→RELEASED)는 9 Gate 전부의 최신 판정을 다시 본다 — 하나라도 미판정·비PASS·서명 무효면 GATE_* 차단 (`contracts/src/rules/lifecycle.ts` evaluateTransition) · 시험 `contracts/src/rules/requirements-defects.test.ts`",
+      "gap": "—"
     },
     "FR-REG-002-009": {
-      "verdict": "부분",
-      "evidence": "위와 같음",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "위와 같음 — 전이 불가 사유(GATE_NOT_PASSED·GATE_UNJUDGED) 전부를 422 GUARD_FAILED로 표시",
+      "gap": "—"
     },
     "FR-REG-002-010": {
       "verdict": "부분",
@@ -233,9 +233,9 @@
       "gap": "—"
     },
     "FR-REG-002-019": {
-      "verdict": "부분",
-      "evidence": "정책 '작성'은 DEPRECATED·RETIRED 차단 (`B/d01-policy/policy-store/policy.service.ts:115-116`)",
-      "gap": "출시 중 승인된 정책을 DEPRECATED 이후 **배포**하는 것은 막지 않음(deploy에 Lifecycle 검사 없음, `policy.service.ts:214-239`)"
+      "verdict": "구현",
+      "evidence": "정책 작성·배포 모두 Feature Lifecycle 확인 — DEPRECATED·RETIRED는 배포 422 + 감사 FAILED (`policy.service.ts` assertDeployableLifecycle) · 시험 `backend/test/requirements/defects.spec.ts`",
+      "gap": "—"
     },
     "FR-REG-002-020": {
       "verdict": "구현",
@@ -1525,9 +1525,9 @@
       "gap": "차량 측 스키마 파싱(필드별 검증)·유효 기간 파싱 없음"
     },
     "FR-RTE-001-004": {
-      "verdict": "부분",
-      "evidence": "v2 차단 봉투는 VIN 포함 target_hash·차량별 CMAC(VRS:165-184)",
-      "gap": "POLICY 게시본은 `payload.targets`에 자기 VIN 포함 여부 미확인(VRS:94-136), 차량 불일치 오류 기록 없음"
+      "verdict": "구현",
+      "evidence": "v2 차단 봉투는 target_hash·차량별 CMAC, POLICY 게시본은 payload.targets에 자기 VIN이 없으면 적용하지 않고 TARGET_MISMATCH로 차량 기록 (`vehicle-runtime.service.ts` receive) · 시험 `backend/test/requirements/defects.spec.ts`",
+      "gap": "—"
     },
     "FR-RTE-002-001": {
       "verdict": "부분",
@@ -1592,9 +1592,9 @@
       "gap": "차량 측 차단 이력 조회 API는 시뮬 view로 대체"
     },
     "FR-RTE-005-001": {
-      "verdict": "부분",
-      "evidence": "서버 판단만 지원 조건 필수(activation.service.ts:38-45)",
-      "gap": "**차량 측 평가(VRS:327-333)는 `support`를 넘기지 않음** — 지원 미달 차량도 차량 쪽은 ON 가능(drift)"
+      "verdict": "구현",
+      "evidence": "서버 판단(activation.service)·차량 측 평가(vehicle-runtime view) 모두 variantRow 지원 조건을 넘긴다 — 지원 미달 차량은 양쪽 NOT_SUPPORTED · 시험 `backend/test/requirements/defects.spec.ts`",
+      "gap": "—"
     },
     "FR-RTE-005-002": {
       "verdict": "부분",
@@ -3230,33 +3230,7 @@
       "gap": "실패 판정 기준 등록·조회·수정"
     }
   },
-  "defects": [
-    {
-      "id": "FR-RTE-005-001",
-      "summary": "차량 측 평가에 지원 조건(support)이 넘어가지 않는다 — 지원 미달 차량에 사용 권한이 생기면 서버는 OFF(NOT_SUPPORTED), 차량은 ON으로 어긋난다",
-      "probe": "backend/test/requirements/defects.spec.ts"
-    },
-    {
-      "id": "FR-RTE-001-004",
-      "summary": "POLICY 게시본을 받을 때 payload.targets에 자기 VIN이 있는지 확인하지 않는다 — 대상이 아닌 차량도 적용한다(차단 봉투는 확인한다)",
-      "probe": "backend/test/requirements/defects.spec.ts"
-    },
-    {
-      "id": "FR-REG-002-019",
-      "summary": "DEPRECATED Feature라도 이미 승인된 정책은 배포된다 — 정책 작성만 Lifecycle을 보고 배포는 보지 않는다",
-      "probe": "backend/test/requirements/defects.spec.ts"
-    },
-    {
-      "id": "FR-REG-002-008",
-      "summary": "출시(VERIFIED→RELEASED)는 G8·G9만 본다 — VERIFIED에서 G1~G7을 FAIL로 다시 판정해도 출시가 막히지 않는다",
-      "probe": "contracts/src/rules/requirements-defects.test.ts"
-    },
-    {
-      "id": "FR-REG-002-009",
-      "summary": "FR-REG-002-008과 같은 원인 — Gate 미통과 상태로 RELEASED에 들어갈 수 있다",
-      "probe": "contracts/src/rules/requirements-defects.test.ts"
-    }
-  ],
+  "defects": [],
   "decisions": [
     {
       "id": "D1",
@@ -3424,7 +3398,7 @@
     {
       "id": "B2",
       "title": "롤백",
-      "current": "계획·자동·수동 모두 없다 — 이전 정책은 RETIRED가 되어 다시 배포할 수 없다",
+      "current": "Rollback Plan(자동)·수동 롤백(요청→지정 승인→재검증 실행)·정책 상세 되돌리기(이력·412·409)가 있다 — SW 버전 롤백은 OTA 위임(D7)",
       "requirements": [
         "FR-RBK-"
       ]
@@ -3432,7 +3406,7 @@
     {
       "id": "B3",
       "title": "정책 버전 이력",
-      "current": "개정 번호만 오르고 내용은 덮어쓴다 — 감사에는 해시만 남는다",
+      "current": "개정본마다 정책 전체를 남긴다 — 버전 목록·내용·변경 전후·복원(DRAFT), 배포한 버전 이력",
       "requirements": [
         "FR-POL-002-004",
         "FR-PVER-002-"

@@ -29,8 +29,8 @@
 | RD-OPS-03 | 데이터 모델 | 권한 출처·Fleet 값이 `DEMO|SYNTHETIC`/`DEMO|SAMPLE`만 허용, 만료 처리도 DEMO만 | contracts/src/schemas/policy.ts:99,123, trial-expiry.service.ts:64 |
 | RD-OPS-04 | 차량 채널 | 실제 차량 전달 경로가 없다(내부 시뮬레이터가 기본, OTA IF-05·IF-09 모의 고정) | vehicle-runtime.service.ts:80-89, if-mocks/external-systems.ts:163,166 |
 | RD-OPS-05 | 배포 | 백엔드 배포 산출물(Dockerfile·배포 작업·환경 템플릿)이 없다 | docker/(Unleash만), .github/workflows/cloudflare.yml |
-| RD-FN-01 | 정확성 | 결함 기록(it.fails) 12건 — 명세 결함 5 + ADS 결함 7 | backend/test/requirements/defects.spec.ts, test/ads/defects.spec.ts |
-| RD-FN-02 | 되돌리기 | 롤백(요구 28건)·정책 버전 이력이 없다 — 잘못된 배포를 되돌릴 수 없다 | harness/requirements/REPORT.md §3 B2·B3 |
+| RD-FN-01 | 정확성 | 결함 기록(it.fails) 12건 — 명세 결함 5 + ADS 결함 7 — **완료(2026-10-24)**: 열린 결함 기록 9건(명세 FR-RTE-005-001·FR-RTE-001-004·FR-REG-002-019·FR-REG-002-008/009, ADS F036·F019·F059·F007·Orca HT06)을 고치고 it.fails → it 회귀 시험으로 | backend/test/requirements/defects.spec.ts, test/ads/defects.spec.ts |
+| RD-FN-02 | 되돌리기 | 롤백(요구 28건)·정책 버전 이력이 없다 — 잘못된 배포를 되돌릴 수 없다 — **완료(2026-10-24)**: 정책 상세 `배포 이력·되돌리기`(GET /api/policies/:id/history, POST /api/policies/:id/rollback — 재검증·지정 승인·실행·감사, 412 기준 배포 바뀜·409 진행 중·이미 실행) | harness/requirements/REPORT.md §3 B2·B3 |
 
 ### P1 — GA 전에 필요한 것
 

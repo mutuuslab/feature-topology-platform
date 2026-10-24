@@ -169,7 +169,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/activation', element: legacyTo('/activation/decide'), title: '차종별 활성화 (이전 주소)', group: 'release', parent: '/activation/decide' },
   { path: '/policies', element: named(policyScreens, 'PolicyList'), title: '정책·검증·승인', group: 'release', menu: '/policies', components: ['D01-06', 'D01-08'], v2: true },
   { path: '/policies/new', element: named(policyScreens, 'PolicyCreate'), title: '새 정책', group: 'release', parent: '/policies', components: ['D01-06'], v2: true },
-  { path: '/policies/:id', element: named(policyScreens, 'PolicyDetail'), title: '정책 상세', group: 'release', parent: '/policies', components: ['D01-06', 'D06-04', 'D03-02', 'D01-08'], v2: true },
+  { path: '/policies/:id', element: named(policyScreens, 'PolicyDetail'), title: '정책 상세', group: 'release', parent: '/policies', components: ['D01-06', 'D06-04', 'D03-02', 'D01-08', 'D03-04'], v2: true },
   { path: '/ops/policy', element: legacyTo('/policies'), title: '정책 단계 보드 (이전 주소)', group: 'release', parent: '/policies' },
   { path: '/ops/runtime', element: legacyTo('/policies'), title: '정책 평가 시뮬레이터 (이전 주소)', group: 'release', parent: '/policies' },
   { path: '/flag-retirements', element: named(() => import('./screens/policy/Retirements'), 'RetirementsScreen'), title: 'Flag Retirement', group: 'release', menu: '/flag-retirements', components: ['D01-01'], v2: true },

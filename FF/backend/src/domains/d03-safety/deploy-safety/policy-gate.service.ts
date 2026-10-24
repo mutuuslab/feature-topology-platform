@@ -4,7 +4,7 @@
 import { Body, Controller, Get, Inject, Injectable, Param, Post } from '@nestjs/common';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { profileFinding, type ProfileFinding } from '@ff/contracts';
+import { approvalSigProblems, approvalSubject, jcs, profileFinding, type ProfileFinding } from '@ff/contracts';
 import { DEFAULT_GATE_POLICY, gateVerdict, type GateFeature, type GateLedger, type GateRegistry, type GateVerdict, type KillCommandV2 } from '@ff/contracts';
 import { CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
@@ -15,6 +15,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { FeatureRepo } from '../../d01-policy/repos';
 import { SafetyProfileService } from '../../d01-policy/registry/safety-profile.service';
+import { HsmService } from '../../d06-qsec/pki-kms/hsm.service';
 
 /** 커밋된 원장 시드(보고서 예시 ledger) — repo 루트 기준 */
 const FIXTURE = join(__dirname, '..', '..', '..', '..', '..', 'data', 'fixtures', 'safety', 'command-ledger.json');
@@ -47,6 +48,7 @@ export class PolicyGateService {
     private readonly profiles: SafetyProfileService,
     private readonly audit: AuditService,
     private readonly events: EventService,
+    private readonly hsm: HsmService,
   ) {}
 
   onModuleInit() {
@@ -122,8 +124,11 @@ export class PolicyGateService {
   /**
    * 판정만 — 원장은 바꾸지 않는다. 보고서 패키지 게이트와 같은 규칙(gateVerdict, Python 대조) 뒤에 플랫폼 규칙 FFG-GEN-003(시장 Profile)을 붙인다.
    * 판정에 쓴 Compliance Profile 버전을 함께 돌려준다(FFG-GEN-001 — 명령 기록).
+   * FFP-F059 — 승인 서명은 길이만 보지 않는다(FFG-PLT-005 판정에 더한다): 정준 64바이트 표기·승인자별 다른 값. 플랫폼이 발행하는 명령
+   * (binding: 그 Kill 요청)이면 서버가 명령의 대상 집합으로 승인 대상(approvalSubject)을 다시 만들어 승인자 키로 검증한다 —
+   * 서명된 대상과 발행 대상이 다르면 FAIL.
    */
-  preview(cmd: unknown): GateVerdict & { profiles?: ProfileFinding['profiles'] } {
+  preview(cmd: unknown, binding?: { killId: string }): GateVerdict & { profiles?: ProfileFinding['profiles'] } {
     const c = cmd as { feature?: { id?: unknown; version?: unknown }; target?: { market?: unknown }; request?: unknown } | null;
     const id = typeof c?.feature?.id === 'string' ? c.feature.id : '';
     const ver = typeof c?.feature?.version === 'string' ? c.feature.version : '';
@@ -132,8 +137,24 @@ export class PolicyGateService {
     if (v.result === 'SCHEMA_FAIL') return v;
     const feat = registry.features[id];
     const p = profileFinding({ market: String(c?.target?.market ?? ''), request: String(c?.request ?? ''), fClass: feat?.f_class ?? null, adsFeature: !!feat?.ads_feature });
-    const findings = [...v.findings, { rule: p.rule, ok: p.ok, message: p.detail }];
+    const sig = this.approvalProblems(cmd as KillCommandV2, binding);
+    const base = v.findings.map((x) => (x.rule === 'FFG-PLT-005' && sig.length ? { ...x, ok: false, message: `${x.message} — ${sig.join('; ')}` } : x));
+    const findings = [...base, { rule: p.rule, ok: p.ok, message: p.detail }];
     return { ...v, findings, result: findings.every((x) => x.ok) ? 'PASS' : 'FAIL', profiles: p.profiles };
+  }
+
+  /** 승인 서명 문제 — 형식(정준·승인자별)과, 발행 명령이면 대상 집합 결속(승인자 키 검증) */
+  private approvalProblems(cmd: KillCommandV2, binding?: { killId: string }): string[] {
+    const approvals = Array.isArray(cmd?.approvals) ? cmd.approvals : [];
+    const out = approvalSigProblems(approvals);
+    if (!binding) return out;
+    const subject = jcs(
+      approvalSubject({ killId: binding.killId, featureId: cmd.feature.id, featureVersion: cmd.feature.version, request: cmd.request, reasonCategory: cmd.reason.category, vins: cmd.scope.vehicle_ids }),
+    );
+    for (const a of approvals)
+      if (!this.hsm.verifyApproval(a.approver_id, subject, a.approval_sig ?? ''))
+        out.push(`${a.approver_id}: 승인 서명이 발행 대상(${binding.killId} · 차량 ${cmd.scope.vehicle_ids.length}대)에 대한 서명이 아닙니다`);
+    return out;
   }
 
   /**
@@ -155,10 +176,10 @@ export class PolicyGateService {
   /**
    * 호출자 트랜잭션 안에서 판정·원장 갱신 — 그사이 다른 명령이 원장을 바꿨어도 다시 판정한 결과로. 거부하면 GateRejected(감사는 호출자가 트랜잭션 밖에서)
    */
-  commit(actor: Actor, cmd: KillCommandV2): GateVerdict {
+  commit(actor: Actor, cmd: KillCommandV2, binding?: { killId: string }): GateVerdict {
     if (!this.db.inTransaction) throw new Error('commit()은 호출자의 트랜잭션 안에서 부른다');
     {
-      const v = this.preview(cmd);
+      const v = this.preview(cmd, binding);
       if (v.result !== 'PASS') throw new GateRejected(v);
       const approvers = cmd.approvals.map((a) => a.approver_id);
       const prev = this.ledger(cmd.feature.id).last_kill_approvers ?? [];

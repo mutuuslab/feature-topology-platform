@@ -109,3 +109,97 @@
 - **D-RD-3 = PostgreSQL로 이전.** 이전 전까지 SQLite 파일 + 단일 인스턴스로 운영 모드 검사를 먼저 세운다.
 - **D-RD-4 = 데모 사이트 유지, 데모 빌드 분리.** 데모 로그인(FF/platform)·역할 선택기는 데모 빌드에서만 보이고, 운영 빌드는 실제 로그인만.
 
+## 6. 인증(OIDC) — RD-SEC-01~05 (2026-10-24 구현)
+
+결정 D-RD-2(고객사 IdP SSO, 역할은 IdP 그룹)·D-RD-4(데모 빌드 분리)를 따른다. 방식은 **BFF**: 브라우저는 토큰을 보지 않고, 백엔드가 인가 코드를 교환해 서버 쪽 세션을 만들고 httpOnly 쿠키 하나만 준다. SSE(`EventSource`)도 같은 쿠키로 인증된다.
+
+### 6.1 동작
+
+| 항목 | 내용 |
+|---|---|
+| 방식 선택 | `FF_AUTH=demo`(운영 모드가 아닐 때 기본, X-Actor-* 헤더 데모 인증) \| `oidc`. 운영 모드(`FF_ENV=production`)는 `oidc`만 — `demo`면 부팅 거부 |
+| 로그인 | `GET /api/auth/login?returnTo=` → IdP 인가(코드 + PKCE S256 + state + nonce). 셋은 HMAC-SHA256 서명한 10분짜리 httpOnly 쿠키 `ff_oidc`(Path=/api/auth) |
+| 콜백 | `GET /api/auth/callback` → state 확인(상수 시간) → 코드 교환(기밀 클라이언트, client_secret_basic) → id_token 검증(RS256·PS256·ES256만, iss·aud·azp·exp·nbf·iat 60초 허용·nonce) → 역할 매핑 → 세션 → 안전한 returnTo로 302(같은 출처 상대 경로만 — `//evil`·`/\evil`·절대 주소·제어 문자 차단) |
+| 세션 | 표 `auth_session`(마이그레이션 045): 쿠키 `ff_session`(httpOnly·SameSite=Lax·Path=/·운영 모드 Secure)에는 무작위 32바이트 ID(서명), 표에는 SHA-256만. 절대 수명 `FF_SESSION_TTL_MIN`(기본 480분)·유휴 `FF_SESSION_IDLE_MIN`(기본 60분, 미끄럼). 다시 로그인하면 이전 세션 삭제 |
+| 역할 | IdP 그룹 클레임(`OIDC_ROLE_CLAIM`, 기본 `groups`, 점 경로 가능) → `OIDC_ROLE_MAP`. 사람 역할만 매핑 가능(SYSTEM·VEHICLE 불가). 매핑되는 역할이 없으면 로그인 거부(403 안내·감사 DENIED). id_token에 그룹이 없으면 userinfo에서(같은 sub일 때만) |
+| 요청 신원 | 세션 쿠키 또는 `Authorization: Bearer <접근 토큰>`(API 클라이언트, JWKS 검증·대상 `OIDC_AUDIENCE`)에서만. `X-Actor-Id`는 무시. `X-Actor-Role`은 부여 역할 중 하나를 고를 때만 — 부여 밖이면 403·DENIED. 없으면 그 경로가 허용하는 첫 부여 역할 |
+| 익명 | 신원 없는 요청은 401. 예외: `/api/health*`·`/api/auth/*`, webhook(자기 HMAC)·차량 창구(RD-SEC-08), OFREP 평가(`@ReadOnlyEndpoint`, 아래 남은 것) |
+| CSRF | 쿠키로 인증한 변경 요청(GET·HEAD·OPTIONS 밖)은 `Origin`이 `FF_PUBLIC_URL`의 출처(또는 `FF_CORS_ORIGINS`)여야 한다 — 아니면 403·DENIED. 로그아웃도 같다 |
+| 승인자 키(RD-SEC-05) | 로그인(세션 생성) 때 그 주체의 승인 서명 키를 등록(감사 `APPROVER_KEY_ENROLLED`, 이미 있으면 그대로). oidc에서는 승인 중 키 즉석 생성 금지 — 키가 없는 주체(로그인한 적 없는 Bearer 등)의 승인은 403 `APPROVER_KEY_NOT_ENROLLED`. 같은 주체는 역할을 바꿔도 두 번째 승인 칸을 채울 수 없다(DUPLICATE) |
+| JWKS | 캐시 10분, 모르는 kid면 다시 받되 30초에 한 번, 키 64개 상한, 응답 1 MiB·10초 상한. 토큰 12 KiB 상한 |
+| 로그아웃 | `POST /api/auth/logout` → 세션 삭제·쿠키 제거, IdP `end_session_endpoint`가 있으면 그 주소(`post_logout_redirect_uri = FF_PUBLIC_URL/login`)를 돌려준다 |
+| 화면 | `GET /api/auth/config` → `{mode}` · `GET /api/auth/me` → `{authenticated, mode, user:{id,name,email,roles}}` |
+
+### 6.2 환경 변수
+
+| 변수 | 필수 | 설명 |
+|---|---|---|
+| `FF_AUTH` | 운영 | `oidc` |
+| `OIDC_ISSUER` | ✓ | IdP 발급자(디스커버리 `issuer`와 같아야 한다). 운영 모드는 https |
+| `OIDC_CLIENT_ID` · `OIDC_CLIENT_SECRET` | ✓ | IdP에 등록한 기밀 클라이언트 |
+| `FF_PUBLIC_URL` | ✓ | 설치의 공개 출처(경로 없이, 운영 모드 https). redirect URI = `FF_PUBLIC_URL/api/auth/callback` |
+| `FF_SESSION_SECRET` | ✓ | 쿠키 서명 비밀 32자 이상(예: `openssl rand -base64 48`) |
+| `OIDC_ROLE_MAP` | ✓ | `IdP그룹=역할,IdP그룹2=역할|역할2` |
+| `OIDC_ROLE_CLAIM` | | 기본 `groups` (Keycloak 영역 역할이면 `realm_access.roles`) |
+| `OIDC_AUDIENCE` | | Bearer 접근 토큰의 대상, 기본 client id |
+| `OIDC_SCOPES` | | 기본 `openid profile email` |
+| `FF_SESSION_TTL_MIN` · `FF_SESSION_IDLE_MIN` | | 기본 480 · 60 |
+
+설정이 틀리면 백엔드는 문제를 모두 한 번에 알려 주고 시작하지 않는다(값·비밀은 메시지에 넣지 않는다). `FF_AUTH=oidc`면 운영 모드가 아니어도 검사한다.
+
+### 6.3 IdP 설정 예
+
+**Keycloak** (로컬 시험 IdP 기준)
+1. 영역(realm) `ff` → 클라이언트 `ff-platform`: Client authentication **켬**(기밀), Standard flow만, PKCE 방식 `S256`.
+2. Valid redirect URIs `https://ff.oem.example/api/auth/callback`, Valid post logout redirect URIs `https://ff.oem.example/login`, Web origins `https://ff.oem.example`.
+3. 클라이언트 범위에 **Group Membership** 매퍼(토큰 클레임 이름 `groups`, Full group path 끔 → 그룹 이름만; 켜면 `/ff-authors`처럼 경로로 온다), ID 토큰·접근 토큰·userinfo에 추가. 접근 토큰을 API에 쓰면 **Audience** 매퍼로 `ff-platform`을 대상에 넣는다.
+4. 백엔드:
+   ```
+   FF_AUTH=oidc
+   OIDC_ISSUER=https://sso.oem.example/realms/ff
+   OIDC_CLIENT_ID=ff-platform
+   OIDC_CLIENT_SECRET=<클라이언트 Credentials 탭>
+   FF_PUBLIC_URL=https://ff.oem.example
+   FF_SESSION_SECRET=<openssl rand -base64 48>
+   OIDC_ROLE_MAP=ff-authors=FEATURE_AUTHOR,ff-approvers=FEATURE_APPROVER|PRODUCT_APPROVER,ff-quality=GATE_JUDGE|SAFETY_OFFICER,ff-ops=OPERATOR,ff-opslead=OPS_LEAD,ff-security=SECURITY_OFFICER,ff-release=RELEASE_MANAGER,ff-auditors=AUDITOR
+   ```
+
+**Azure AD(Microsoft Entra ID)**
+1. 앱 등록 → 플랫폼 **웹**, 리디렉션 URI `https://ff.oem.example/api/auth/callback`, 로그아웃 URL `https://ff.oem.example/login`. 인증서 및 비밀 → 클라이언트 비밀.
+2. 토큰 구성 → **그룹 클레임 추가**(보안 그룹, ID·액세스 토큰에 **그룹 ID**). 그룹이 200개를 넘는 사용자는 클레임이 빠진다(overage) — 앱 역할(App roles)을 쓰고 `OIDC_ROLE_CLAIM=roles`로 바꾸는 편이 안전하다.
+3. 발급자는 `https://login.microsoftonline.com/<테넌트 ID>/v2.0`(v2 엔드포인트). 그룹 클레임 값은 그룹 **개체 ID(GUID)** 다:
+   ```
+   OIDC_ISSUER=https://login.microsoftonline.com/<tenant-id>/v2.0
+   OIDC_CLIENT_ID=<애플리케이션(클라이언트) ID>
+   OIDC_ROLE_MAP=1b2c…-authors-guid=FEATURE_AUTHOR,9f8e…-ops-guid=OPERATOR,…
+   # 앱 역할을 쓰면: OIDC_ROLE_CLAIM=roles, OIDC_ROLE_MAP=FF.Author=FEATURE_AUTHOR,FF.Operator=OPERATOR,…
+   ```
+4. API 클라이언트용 Bearer는 "API 노출"에서 앱 ID URI를 만들고 `OIDC_AUDIENCE`를 그 값(예: `api://ff-platform`)으로.
+
+Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급자 `https://<org>.okta.com/oauth2/default`).
+
+### 6.4 데모 빌드 / 운영 빌드
+
+| | 데모 빌드(기본, 공개 사이트) | 운영 빌드 |
+|---|---|---|
+| 빌드 | `vite build` (`VITE_AUTH` 없음 = `demo`), 정적 데모(`VITE_DATA_MODE=static`)는 항상 demo | `VITE_AUTH=oidc vite build` |
+| 로그인 | 데모 계정 FF/platform(브라우저 안 표식) | "회사 계정(SSO)으로 로그인" 버튼 → `/api/auth/login` |
+| 역할 선택기 | 데모 9계정 전부 | 사용자 이름 + IdP가 부여한 역할과 겹치는 화면 역할만 |
+| API 머리글 | X-Actor-Id·X-Actor-Role | X-Actor-Role(부여 역할 중 하나)만, 신원은 쿠키. 401이면 지금 화면으로 돌아오는 SSO 로그인 |
+| 백엔드 | `FF_AUTH=demo` | `FF_AUTH=oidc` |
+
+빌드 상수(`frontend/src/auth-mode.ts`의 `OIDC_AUTH`)로 갈래를 나눠 운영 번들에서 데모 모듈(`auth-demo.ts`·`DemoLoginForm`·`DemoRoleSwitcher`)이 빠진다.
+
+### 6.5 하네스
+
+- `backend/test/kernel/oidc.spec.ts`(21건, 시험 IdP `backend/test/fixtures/fake-oidc.ts`): 로그인 전체 흐름(쿠키 저장소), 열린 리디렉트, state 위조, 역할 없는 사용자, 세션 고정, 로그아웃, 익명 401, 헤더 위조 401·403·DENIED, X-Actor-Id 무시, CSRF, Bearer(만료·대상·발급자·서명·다른 키·none·HS256·nbf·크기), JWKS 재조회 상한, 유휴·절대 만료, 승인자 키 등록·두 칸 방지·미등록 거부. `auth-units.spec.ts`(11건): JWT·설정 검사·returnTo·서명 쿠키.
+- `tools/prod-bundle.test.ts`(verify `build:prod`): 운영 번들에 데모 로그인 표식(`ff-demo-login-v1`)·비밀번호·데모 역할 선택기 표식(`ff-demo-roles-v1`)이 없고, 데모 빌드에는 있다(빈 검사 방지).
+- `e2e/playwright.oidc.config.ts`(verify `e2e:oidc`, 포트 IdP 9613·백엔드 9611·화면 9612): SSO 버튼 → IdP → 대시보드 사용자 이름, 역할 선택기 2개, 돌아올 곳 유지, 긴급 차단 승인 개인 서명, 로그아웃, 위조 헤더 401.
+
+### 6.6 남은 것
+
+- OFREP 평가(`/ofrep/v1/*`, `@ReadOnlyEndpoint`)는 아직 익명 — SDK 클라이언트 인증(키·Bearer) 결정이 필요하다.
+- 차량 창구 신원(`X-Vehicle-Id`)은 RD-SEC-08(mTLS·CMAC).
+- SSE 연결은 연결할 때만 세션을 본다 — 세션이 끝나도 열린 스트림은 닫힐 때까지 유지(읽기 전용 이벤트).
+- 승인자 키는 아직 소프트웨어 HSM에 평문(RD-SEC-06 — KEK/KMS). FIDO2·스마트카드 승인은 그 뒤.
+- 세션·요청 제한은 프로세스 메모리·SQLite — 다중 인스턴스는 RD-OPS-14·D-RD-3(PostgreSQL) 뒤.

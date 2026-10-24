@@ -605,7 +605,7 @@
         "backend/src/kernel/idempotency.interceptor.ts:37-49"
       ],
       "criteria": "처리 전에 키를 예약하고, 진행 중인 같은 키는 409, 끝난 키는 저장된 응답을 돌려준다",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

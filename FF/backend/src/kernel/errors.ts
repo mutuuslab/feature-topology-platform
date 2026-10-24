@@ -13,6 +13,7 @@ export type ErrorCode =
   | 'IMMUTABLE'
   | 'GUARD_FAILED'
   | 'IDEMPOTENCY_KEY_REUSED'
+  | 'IDEMPOTENCY_IN_PROGRESS'
   | VehicleReject
   | 'INTERNAL';
 
@@ -26,6 +27,7 @@ const STATUS: Record<ErrorCode, number> = {
   IMMUTABLE: 409,
   GUARD_FAILED: 422,
   IDEMPOTENCY_KEY_REUSED: 422,
+  IDEMPOTENCY_IN_PROGRESS: 409,
   ...VEHICLE_REJECT,
   INTERNAL: 500,
 };

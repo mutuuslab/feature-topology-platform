@@ -1,4 +1,5 @@
-// 흐름도 공용 부품 — 상태 아이콘(색만으로 구분하지 않게 모양·글자를 함께), 화살표 머리, 범례, 상태 읽기 도우미.
+// 흐름도 공용 부품 — 상태 아이콘(색만으로 구분하지 않게 모양·글자를 함께), 화살표 머리(제어·객체 흐름), 문서 모양, 범례, 상태 읽기 도우미.
+// 모양은 엔지니어링 절차서 표기: 활동 = 파란 테두리 상자, 산출물 = 귀퉁이를 접은 문서, 제어 흐름 = 남색 실선, 객체 흐름 = 금색 점선.
 import { useEffect, useRef, useState } from 'react';
 import type { WorkflowDoc } from '@ff/contracts';
 import { procedureFlow as F } from '../../../copy/procedureFlow';
@@ -19,6 +20,9 @@ export const stateText = (s: ActivityStatus | undefined, own = true): string =>
       : s.state === 'mine' && !own
         ? F.state.theirs
         : F.state[s.state];
+
+/** 레인 머리 글자 — [이름, 영문 보조] */
+export const laneTitle = (doc: WorkflowDoc, id: string): string => (id === '__in' ? F.lanes.in : id === '__out' ? F.lanes.out : roleNameOf(doc, id));
 
 /** 담당자(데모 역할) 이름의 레인 이름 — 역할 전환기 이름(차량 운영)과 흐름도 레인(운영 조직)을 잇는다 */
 export const lanesOf = (doc: WorkflowDoc, persona: string) => (doc.personas[persona] ?? []).map((id) => roleNameOf(doc, id)).join('·');
@@ -77,20 +81,41 @@ export function StateIcon({ state, x, y }: { state: ActivityState; x: number; y:
   }
 }
 
+/** 화살표 머리 — id(=id-cf) 제어 흐름(남색), id-of 객체 흐름(금색) */
 export function ArrowDefs({ id }: { id: string }) {
   return (
     <defs>
-      <marker id={id} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-        <path d="M0,0 L10,5 L0,10 z" className="pf-arrow" />
+      {[id, `${id}-cf`].map((m) => (
+        <marker key={m} id={m} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" className="pf-arrow" />
+        </marker>
+      ))}
+      <marker id={`${id}-of`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" className="pf-arrow pf-arrow--of" />
       </marker>
     </defs>
   );
 }
 
+/** 산출물 문서 — 오른쪽 위 귀퉁이를 접은 상자(바깥선 + 접힌 선) */
+export function DocShape({ x, y, w, h, fold = 12 }: { x: number; y: number; w: number; h: number; fold?: number }) {
+  return (
+    <>
+      <path className="pf-doc__body" d={`M${x} ${y} h${w - fold} l${fold} ${fold} v${h - fold} h${-w} z`} />
+      <path className="pf-doc__fold" d={`M${x + w - fold} ${y} v${fold} h${fold}`} />
+    </>
+  );
+}
+
+/** 사건 시작 — 원 안의 번개(글꼴에 기대지 않는 경로). (x, y) = 가운데 */
+export function TriggerBolt({ x, y }: { x: number; y: number }) {
+  return <path className="pf-bolt" d={`M${x + 1.5} ${y - 6.5} L${x - 3.5} ${y + 1} L${x - 0.5} ${y + 1} L${x - 1.5} ${y + 6.5} L${x + 3.5} ${y - 1} L${x + 0.5} ${y - 1} Z`} />;
+}
+
 const STATES: ActivityState[] = ['mine', 'overdue', 'ready', 'waiting', 'done'];
 
 /** 범례 — 상태 5종(아이콘·글자) + 도형 */
-export function FlowLegend({ shapes = true, own = true }: { shapes?: boolean; own?: boolean }) {
+export function FlowLegend({ shapes = true, own = true }: { shapes?: boolean | 'mine'; own?: boolean }) {
   return (
     <div className="pf-legend" role="group" aria-label={F.legend.title}>
       {STATES.map((s) => (
@@ -101,8 +126,98 @@ export function FlowLegend({ shapes = true, own = true }: { shapes?: boolean; ow
           {s === 'mine' && !own ? F.state.theirs : F.state[s]}
         </span>
       ))}
-      {shapes && (
+      {shapes === 'mine' && (
         <>
+          <span className="pf-legend__item">
+            <svg width={24} height={14} viewBox="0 0 24 14" aria-hidden>
+              <rect className="pf-legend__act" x={1} y={1} width={22} height={12} rx={3} />
+            </svg>
+            {F.legend.myActivity}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={24} height={14} viewBox="0 0 24 14" aria-hidden>
+              <rect className="pf-legend__peer" x={1} y={1} width={22} height={12} rx={2} />
+            </svg>
+            {F.legend.peer}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={20} height={16} viewBox="0 0 20 16" aria-hidden>
+              <g className="pf-doc" data-external="">
+                <DocShape x={1} y={1} w={18} h={14} fold={5} />
+              </g>
+            </svg>
+            {F.mine.external}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={20} height={16} viewBox="0 0 20 16" aria-hidden>
+              <g className="pf-doc">
+                <DocShape x={1} y={1} w={18} h={14} fold={5} />
+              </g>
+            </svg>
+            {F.mine.retained}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={26} height={10} viewBox="0 0 26 10" aria-hidden>
+              <line className="pf-legend__of" x1={1} y1={5} x2={20} y2={5} />
+              <path className="pf-arrow pf-arrow--of" d="M19 2 L25 5 L19 8 Z" />
+            </svg>
+            {F.legend.handoff}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={26} height={10} viewBox="0 0 26 10" aria-hidden>
+              <line className="pf-legend__chain" x1={1} y1={5} x2={20} y2={5} />
+              <path className="pf-arrow" d="M19 1.5 L25 5 L19 8.5 Z" />
+            </svg>
+            {F.legend.chain}
+          </span>
+        </>
+      )}
+      {shapes === true && (
+        <>
+          <span className="pf-legend__item">
+            <svg width={24} height={14} viewBox="0 0 24 14" aria-hidden>
+              <rect className="pf-legend__act" x={1} y={1} width={22} height={12} rx={3} />
+            </svg>
+            {F.legend.activity}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={20} height={16} viewBox="0 0 20 16" aria-hidden>
+              <g className="pf-doc">
+                <DocShape x={1} y={1} w={18} h={14} fold={5} />
+              </g>
+            </svg>
+            {F.legend.doc}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={20} height={16} viewBox="0 0 20 16" aria-hidden>
+              <g className="pf-doc" data-external="">
+                <DocShape x={1} y={1} w={18} h={14} fold={5} />
+              </g>
+            </svg>
+            {F.legend.extDoc}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={20} height={16} viewBox="0 0 20 16" aria-hidden>
+              <g className="pf-doc" data-ref="">
+                <DocShape x={1} y={1} w={18} h={14} fold={5} />
+              </g>
+            </svg>
+            {F.legend.refDoc}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={26} height={10} viewBox="0 0 26 10" aria-hidden>
+              <line className="pf-legend__cf" x1={1} y1={5} x2={20} y2={5} />
+              <path className="pf-arrow" d="M19 1.5 L25 5 L19 8.5 Z" />
+            </svg>
+            {F.legend.flow}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={26} height={10} viewBox="0 0 26 10" aria-hidden>
+              <line className="pf-legend__of" x1={1} y1={5} x2={20} y2={5} />
+              <path className="pf-arrow pf-arrow--of" d="M19 2 L25 5 L19 8 Z" />
+            </svg>
+            {F.legend.object}
+          </span>
           <span className="pf-legend__item">
             <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden>
               <path className="pf-legend__gate" d="M8 1 L15 8 L8 15 L1 8 Z" />
@@ -110,28 +225,34 @@ export function FlowLegend({ shapes = true, own = true }: { shapes?: boolean; ow
             {F.legend.gate}
           </span>
           <span className="pf-legend__item">
-            <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden>
-              <circle className="pf-legend__start" cx={8} cy={8} r={6.5} />
+            <svg width={14} height={14} viewBox="0 0 14 14" aria-hidden>
+              <circle className="pf-legend__start" cx={7} cy={7} r={6} />
             </svg>
             {F.legend.start}
           </span>
           <span className="pf-legend__item">
             <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden>
-              <circle className="pf-legend__end" cx={8} cy={8} r={6.5} />
+              <g className="pf-term pf-term--event">
+                <circle cx={8} cy={8} r={7} />
+                <TriggerBolt x={8} y={8} />
+              </g>
+            </svg>
+            {F.legend.event}
+          </span>
+          <span className="pf-legend__item">
+            <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden>
+              <g className="pf-term pf-term--end">
+                <circle cx={8} cy={8} r={7} />
+                <circle className="pf-term__inner" cx={8} cy={8} r={3.5} />
+              </g>
             </svg>
             {F.legend.end}
           </span>
           <span className="pf-legend__item">
-            <svg width={24} height={10} viewBox="0 0 24 10" aria-hidden>
-              <line className="pf-legend__flow" x1={1} y1={5} x2={23} y2={5} />
+            <svg width={12} height={16} viewBox="0 0 12 16" aria-hidden>
+              <line className="pf-legend__bar" x1={6} y1={2} x2={6} y2={14} />
             </svg>
-            {F.legend.flow}
-          </span>
-          <span className="pf-legend__item">
-            <svg width={24} height={10} viewBox="0 0 24 10" aria-hidden>
-              <line className="pf-legend__data" x1={1} y1={5} x2={23} y2={5} />
-            </svg>
-            {F.legend.data}
+            {F.legend.join}
           </span>
         </>
       )}

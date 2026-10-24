@@ -13,6 +13,7 @@ import { useAppShell } from '../../store';
 import { ActivityBody, RaciBadge, roleName } from './ActivityView';
 import { lanesOf, useFlowStatuses } from './flow/FlowParts';
 import { MyWorkFlow } from './flow/MyWorkFlow';
+import { ActivityCards, ProcessCriteria, ProcessLead, WorkProductCards } from './flow/ProcessDoc';
 import { ProcessFlowView } from './flow/ProcessFlow';
 import { personasOf, RoleFlows } from './flow/RoleFlows';
 import { ValueChainMap } from './flow/ValueChainMap';
@@ -231,6 +232,12 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
   const focusIds = focus ? doc.personas[focus] : [];
   const nFocus = p.activities.filter((a) => ['R', 'A'].includes(raciOf(a, focusIds) ?? '')).length;
   const back = <Link to="/procedures">{P.detail.back}</Link>;
+  const select = (id: string) => {
+    picked.current = true;
+    const next = new URLSearchParams(sp);
+    next.set('a', id);
+    setSp(next, { replace: true });
+  };
   const clearFocus = () => {
     const next = new URLSearchParams(sp);
     next.delete('role');
@@ -253,6 +260,7 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
         }
       />
       <Panel title={P.detail.flow} eyebrow={P.detail.pick}>
+        <ProcessLead doc={doc} process={p} />
         <p className="pr-purpose">{p.purpose}</p>
         {focus && (
           <p className="pf-focus-note ds-field__hint" role="status">
@@ -260,45 +268,32 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
             <button type="button" className="pf-linkbtn" onClick={clearFocus}>{F.roles.laneClear}</button>
           </p>
         )}
-        <ProcessFlowView
-          doc={doc}
-          process={p}
-          statuses={statuses}
-          focusRoles={focus ? doc.personas[focus] : []}
-          selected={sel?.id ?? null}
-          onSelect={(id) => {
-            picked.current = true;
-            const next = new URLSearchParams(sp);
-            next.set('a', id);
-            setSp(next, { replace: true });
-          }}
-        />
+        <ProcessFlowView doc={doc} process={p} statuses={statuses} focusRoles={focus ? doc.personas[focus] : []} selected={sel?.id ?? null} onSelect={select} />
+        <ProcessCriteria process={p} />
       </Panel>
       {sel && (
         <div className="pr-activity">
           {/* 흐름도에서 고르면 상세의 머리만 보이게 조금 스크롤한다(흐름도가 화면에서 사라지지 않게) */}
           <div ref={detailRef} className="pr-activity__anchor" aria-hidden />
-          <Panel title={`${sel.id} ${sel.name}`} eyebrow={<RaciBadge k={raciOf(sel, roleIds)} />}>
+          <Panel title={<><span className="ds-mono">{sel.id}</span> {sel.name}</>} eyebrow={<RaciBadge k={raciOf(sel, roleIds)} />}>
             <ActivityBody doc={doc} a={sel} />
           </Panel>
         </div>
       )}
+      {/* 절차서 본문 — 활동·산출물 카드는 판(Panel) 안에 다시 넣지 않고 바로 놓는다 */}
+      <section className="pf-docsec" aria-labelledby="pf-acts">
+        <h2 id="pf-acts" className="pf-section-title">
+          {F.card.activities} <small>{F.card.activitiesSub}</small>
+        </h2>
+        <ActivityCards doc={doc} process={p} statuses={statuses} selected={sel?.id ?? null} onSelect={select} />
+      </section>
+      <section className="pf-docsec" aria-labelledby="pf-wps">
+        <h2 id="pf-wps" className="pf-section-title">
+          {F.card.products} <small>{F.card.productsSub}</small>
+        </h2>
+        <WorkProductCards doc={doc} process={p} onSelect={select} />
+      </section>
       <Matrix doc={doc} p={p} />
-      <details className="pr-matrix">
-        <summary>{P.detail.products}</summary>
-        <dl className="pr-defs">
-          <dt>{P.detail.entry}</dt>
-          <dd><ul>{p.entry.map((x, i) => <li key={i}>{x}</li>)}</ul></dd>
-          <dt>{P.detail.exit}</dt>
-          <dd><ul>{p.exit.map((x, i) => <li key={i}>{x}</li>)}</ul></dd>
-          {p.workProducts.map((w) => (
-            <div key={w.key}>
-              <dt>{w.name}</dt>
-              <dd><ul>{w.content.map((x, i) => <li key={i}>{x}</li>)}</ul></dd>
-            </div>
-          ))}
-        </dl>
-      </details>
     </div>
   );
 }

@@ -68,11 +68,15 @@ describe('업무 절차 허브', () => {
 describe('절차 상세', () => {
   it('흐름도의 활동을 누르면 단계와 완료 기준이 보이고 주소(?a=)에 남는다', async () => {
     mount('/procedures/FPW.7', 'author');
-    const node = await screen.findByRole('button', { name: /FPW\.7-A12/ });
+    const svg = await screen.findByRole('group', { name: 'FPW.7 흐름도' });
+    const node = within(svg).getAllByRole('button', { name: /FPW\.7-A12/ }).find((n) => n.classList.contains('pf-node--activity'))!;
     expect(node.getAttribute('data-mine')).toBe(''); // author = Feature Owner = 수행
     fireEvent.click(node);
-    expect(await screen.findByText('완료 기준')).toBeTruthy();
-    expect(screen.getByText(/서명이 현재 G8·G9 판정 기록에 묶여 유효하다/)).toBeTruthy();
+    // 고른 활동의 상세 판(완료 처리가 있는 곳) — 아래 활동 카드에도 같은 완료 기준이 있으므로 상세 판 안에서 찾는다
+    await waitFor(() => expect(document.querySelector('.pr-activity')).toBeTruthy());
+    const panel = document.querySelector('.pr-activity') as HTMLElement;
+    expect(within(panel).getByText('완료 기준')).toBeTruthy();
+    expect(within(panel).getByText(/서명이 현재 G8·G9 판정 기록에 묶여 유효하다/)).toBeTruthy();
   });
 
   it('?a= 로 열면 그 활동이 선택되어 있다', async () => {

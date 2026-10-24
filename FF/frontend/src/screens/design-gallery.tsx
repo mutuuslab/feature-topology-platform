@@ -8,7 +8,8 @@ import { errors as E } from '../copy/errors';
 import '../design/lozenge.css';
 import { procedureFlow as PF } from '../copy/procedureFlow';
 import { useWorkflows } from '../data/workflows';
-import { ArrowDefs, FlowLegend, StateIcon, useFlowStatuses } from './procedures/flow/FlowParts';
+import { ArrowDefs, DocShape, FlowLegend, StateIcon, TriggerBolt, useFlowStatuses } from './procedures/flow/FlowParts';
+import { ActivityCards, ProcessCriteria, ProcessLead, WorkProductCards } from './procedures/flow/ProcessDoc';
 import { MyWorkFlow, MyWorkFlowCompact } from './procedures/flow/MyWorkFlow';
 import { ProcessFlowDiagram, ProcessFlowText, ProcessFlowView } from './procedures/flow/ProcessFlow';
 import { ValueChainMap } from './procedures/flow/ValueChainMap';
@@ -124,11 +125,29 @@ function FlowSamples({ doc }: { doc: WorkflowDoc }) {
           <StateIcon key={s} state={s} x={6 + i * 22} y={6} />
         ))}
       </svg>
+      <svg width={120} height={40} viewBox="0 0 120 40" role="img" aria-label={PF.legend.doc}>
+        <g className="pf-doc">
+          <DocShape x={4} y={4} w={48} h={32} />
+        </g>
+        <g className="pf-doc" data-external="">
+          <DocShape x={60} y={4} w={48} h={32} />
+        </g>
+      </svg>
+      <svg width={24} height={24} viewBox="0 0 24 24" role="img" aria-label={PF.legend.event}>
+        <g className="pf-term pf-term--event">
+          <circle cx={12} cy={12} r={11} />
+          <TriggerBolt x={12} y={12} />
+        </g>
+      </svg>
+      <ProcessLead doc={doc} process={small} />
+      <ProcessCriteria process={small} />
       <ProcessFlowView doc={doc} process={p} statuses={statuses} selected={sel} onSelect={setSel} />
       <div style={{ overflowX: 'auto' }}>
         <ProcessFlowDiagram doc={doc} process={small} statuses={statuses} selected={sel} onSelect={setSel} />
       </div>
       <ProcessFlowText doc={doc} process={small} statuses={statuses} onSelect={setSel} />
+      <ActivityCards doc={doc} process={small} statuses={statuses} selected={sel} onSelect={setSel} />
+      <WorkProductCards doc={doc} process={small} onSelect={setSel} />
       <MyWorkFlow doc={doc} sample={FLOW_SAMPLE} />
       <MyWorkFlowCompact doc={doc} sample={FLOW_SAMPLE} />
       <ValueChainMap doc={doc} sample={FLOW_SAMPLE} />

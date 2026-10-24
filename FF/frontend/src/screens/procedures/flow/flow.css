@@ -1,49 +1,70 @@
-/* 업무 절차 흐름도 — 색은 모두 토큰(var). 상태는 색 + 아이콘 모양 + 글자로 함께 구분한다 */
+/* 업무 절차 흐름도 — 엔지니어링 절차서 표기(활동 = 파란 테두리 상자, 산출물 = 접힌 문서, 제어 흐름 = 남색 실선, 객체 흐름 = 금색 점선).
+   색은 모두 토큰(var, --pd-* = 절차 도식 토큰·다크 모드 포함). 상태는 색 + 아이콘 모양 + 글자로 함께 구분한다 */
 .pf-view { display: grid; gap: var(--sp-2); min-width: 0; }
 .pf-toolbar { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; }
 .pf-hint, .pf-count { margin: 0; }
-.pf-scroll { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+.pf-scrollhint { margin: 0; font-size: var(--fs-xs); font-weight: 700; color: var(--pd-navy); }
+.pf-scroll { display: flex; align-items: flex-start; overflow-x: auto; overflow-y: hidden; border: 1px solid var(--pd-card-line); border-radius: var(--r); background: var(--surface); position: relative; }
+.pf-scroll > svg { flex: none; }
+.pf-scroll[data-fit] > svg { flex: 1 1 auto; }
 
 .pf-svg { display: block; font-family: var(--font-sans); }
 /* 넓은 흐름도 — 가로 스크롤 막대를 늘 보이고, 오른쪽 가장자리에 그림자를 둬 이어진다는 것을 알린다 */
 .pf-scroll[data-wide] { overflow-x: scroll; box-shadow: inset -16px 0 12px -12px var(--line-strong); }
-.pf-join { fill: var(--muted); }
+/* 가로 스크롤 때 왼쪽에 고정되는 레인 머리(흐름도 안 레인 머리 위에 겹친다) */
+.pf-lanes { position: sticky; inset-inline-start: 0; z-index: 1; display: block; margin-inline-end: calc(var(--pf-lane-w) * -1); box-shadow: 4px 0 6px -4px var(--line-strong); }
+.pf-join { fill: var(--pd-navy); }
+.pf-join--of { fill: var(--pd-gold); }
+.pf-bar { stroke: var(--pd-navy); stroke-width: 5; stroke-linecap: round; }
+.pf-legend__bar { stroke: var(--pd-navy); stroke-width: 4; stroke-linecap: round; }
 
-/* 레인 */
-.pf-lane--0 { fill: var(--surface); }
-.pf-lane--1 { fill: var(--surface-2); }
-.pf-lane__sep { stroke: var(--line); }
-.pf-lane__label { fill: var(--ink-2); font-size: 12px; font-weight: 600; }
+/* 레인 — 역할 레인(옅은 바탕) · 입력/산출물 레인(옅은 금색 바탕) · 왼쪽 머리 열 */
+.pf-lane--role { fill: var(--pd-lane); }
+.pf-lane--io { fill: var(--pd-lane-io); }
+.pf-lane__sep { stroke: var(--pd-lane-line); }
+.pf-lanehead__box { fill: var(--pd-lane-head); stroke: var(--pd-lane-head-line); stroke-width: 1; }
+.pf-lanehead__text { fill: var(--pd-navy); font-size: 12px; font-weight: 700; }
 
-/* 간선 */
-.pf-edge { fill: none; stroke: var(--muted); stroke-width: 1.4; }
-.pf-edge--data { stroke-dasharray: 5 3; }
-.pf-edge--event { stroke-dasharray: 2 3; }
+/* 간선 — 제어 흐름(남색 실선)과 객체 흐름(금색 점선) */
+.pf-edge { fill: none; }
+.pf-cf { stroke: var(--pd-navy); stroke-width: 1.6; }
+.pf-of { stroke: var(--pd-object); stroke-width: 1.2; stroke-dasharray: 5 3; }
 .pf-edge--back { stroke-dasharray: 8 3 2 3; }
-.pf-arrow { fill: var(--muted); }
+.pf-arrow { fill: var(--pd-navy); }
+.pf-arrow--of { fill: var(--pd-gold); }
 .pf-edge__label { fill: var(--ink-2); font-size: 11px; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
-.pf-chain { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 6 4; }
+.pf-chain { fill: none; stroke: var(--pd-navy); stroke-width: 1.8; }
 
-/* 시작·종료·사건 */
-.pf-term circle { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.6; }
-.pf-term--end circle { fill: var(--surface-3); stroke: var(--ink-2); stroke-width: 2; }
-.pf-term--end .pf-term__inner { fill: none; stroke: var(--ink-2); stroke-width: 1; }
-.pf-term--event circle { fill: var(--warn-soft); stroke: var(--warn); stroke-dasharray: 3 2; }
-.pf-term__text { fill: var(--ink); font-size: 11px; font-weight: 600; }
+/* 시작(남색 점)·종료(과녁)·사건(번개) */
+.pf-term--start circle { fill: var(--pd-navy); }
+.pf-term--end circle { fill: var(--pd-act); stroke: var(--pd-navy); stroke-width: 2; }
+.pf-term--end .pf-term__inner { fill: var(--pd-navy); stroke: none; }
+.pf-term--event circle { fill: var(--pd-trigger-soft); stroke: var(--pd-trigger); stroke-width: 1.6; }
+.pf-bolt { fill: var(--pd-trigger); }
 
-/* 활동·Gate 상자 — 상태별 */
+/* 산출물 문서 — 이 절차의 산출물(금색) · 다른 절차·밖에서 오는 입력(회색 점선) */
+.pf-doc__body { fill: var(--pd-doc); stroke: var(--pd-doc-line); stroke-width: 1.2; }
+.pf-doc__fold { fill: none; stroke: var(--pd-doc-line); stroke-width: 1.2; }
+.pf-doc[data-external] .pf-doc__body { fill: var(--pd-ext); stroke: var(--pd-ext-line); stroke-dasharray: 4 3; }
+.pf-doc[data-external] .pf-doc__fold { stroke: var(--pd-ext-line); }
+.pf-doc__tag { fill: var(--pd-gold); font-size: 10.5px; font-weight: 700; }
+.pf-doc[data-ref] .pf-doc__body { stroke-dasharray: 4 3; }
+.pf-doc[data-external] .pf-doc__tag { fill: var(--pd-muted); }
+.pf-doc__name { fill: var(--ink); font-size: 12px; }
+
+/* 활동·Gate 상자 — 기본은 절차서 모양(흰 바탕·파란 테두리), 상태별로 덧칠한다 */
 .pf-node { cursor: pointer; outline: none; }
-.pf-node > rect, .pf-node > path:first-of-type { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.2; }
-.pf-node--gate > path:first-of-type { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 2; }
-.pf-node__id { fill: var(--muted); font-size: 10px; font-family: var(--font-mono); }
-.pf-node__name { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.pf-node > rect, .pf-node > path:first-of-type { fill: var(--pd-act); stroke: var(--pd-act-line); stroke-width: 1.5; }
+.pf-node--gate > path:first-of-type { fill: var(--pd-lane-head); stroke: var(--pd-navy); stroke-width: 1.6; }
+.pf-node__id { fill: var(--pd-blue); font-size: 11px; font-weight: 700; font-family: var(--font-mono); }
+.pf-node__name { fill: var(--ink); font-size: 12px; }
 .pf-node__state { fill: var(--ink-2); font-size: 11px; font-weight: 600; }
-.pf-gate__id { fill: var(--ink); font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+.pf-gate__id { fill: var(--pd-navy); font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
 .pf-node[data-state='done'] > rect { fill: var(--ok-soft); stroke: var(--ok); }
 .pf-node[data-state='done'] .pf-node__state { fill: var(--ok); }
-.pf-node[data-state='waiting'] > rect { fill: var(--surface-2); stroke-dasharray: 4 3; }
+.pf-node[data-state='waiting'] > rect { stroke-dasharray: 4 3; }
 .pf-node[data-state='waiting'] .pf-node__name { fill: var(--ink-2); }
-.pf-node[data-state='ready'] > rect { stroke: var(--info); stroke-width: 1.6; }
+.pf-node[data-state='ready'] > rect { stroke: var(--pd-blue); stroke-width: 2; }
 .pf-node[data-state='mine'] > rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.6; }
 .pf-node[data-state='mine'] .pf-node__state { fill: var(--accent); }
 .pf-node[data-state='overdue'] > rect { fill: var(--danger-soft); stroke: var(--danger); stroke-width: 2.6; }
@@ -53,6 +74,12 @@
 .pf-node[data-selected] > rect, .pf-node[data-selected] > path:first-of-type { stroke: var(--focus); stroke-width: 3; }
 .pf-node:focus-visible > rect, .pf-node:focus-visible > path:first-of-type { stroke: var(--focus); stroke-width: 3; stroke-dasharray: none; }
 .pf-node:hover > rect { stroke: var(--focus); }
+
+/* Gate 마름모 — 판정 활동의 상태를 따른다 */
+.pf-node--gate[data-state='done'] > path:first-of-type { fill: var(--ok-soft); stroke: var(--ok); }
+.pf-node--gate[data-state='mine'] > path:first-of-type { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.6; }
+.pf-node--gate[data-state='overdue'] > path:first-of-type { fill: var(--danger-soft); stroke: var(--danger); stroke-width: 2.6; }
+.pf-node--gate[data-state='waiting'] > path:first-of-type { stroke-dasharray: 4 3; }
 
 /* 상태 아이콘 */
 .pf-ico circle, .pf-ico path { stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
@@ -67,25 +94,32 @@
 .pf-ico--waiting circle { fill: none; stroke: var(--muted); }
 .pf-ico--waiting path { fill: none; stroke: var(--muted); }
 
-/* 내 업무 흐름 — 상대 역할 상자 */
-.pf-peer rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
+/* 내 업무 흐름 — 상대 역할 = 레인 머리 모양, 밖(외부 입력) = 회색 점선 문서, 보존 기록 = 금색 문서 */
+.pf-peer rect { fill: var(--pd-lane-head); stroke: var(--pd-lane-head-line); stroke-width: 1; }
 .pf-peer[data-mine] rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
-.pf-peer[data-kind='external'] rect { fill: var(--surface-2); stroke-dasharray: 2 3; }
-/* 보존 기록 — 대기(점선)와 헷갈리지 않게 실선 이중 테두리 느낌 */
-.pf-peer[data-kind='retained'] rect { fill: var(--surface-3); stroke: var(--ink-2); stroke-width: 1.6; }
-.pf-peer__name { fill: var(--ink); font-size: 12px; font-weight: 600; }
-.pf-peer__sub { fill: var(--muted); font-size: 10px; font-family: var(--font-mono); }
-.pf-my__header { fill: var(--ink-2); font-size: 13px; font-weight: 700; }
+.pf-peer[data-kind='external'] .pf-doc__body { fill: var(--pd-ext); stroke: var(--pd-ext-line); stroke-dasharray: 4 3; }
+.pf-peer[data-kind='external'] .pf-doc__fold { stroke: var(--pd-ext-line); }
+.pf-peer__name { fill: var(--pd-navy); font-size: 12px; font-weight: 700; }
+.pf-peer[data-kind='external'] .pf-peer__name, .pf-peer[data-kind='retained'] .pf-peer__name { fill: var(--ink); font-weight: 600; }
+.pf-legend__peer { fill: var(--pd-lane-head); stroke: var(--pd-lane-head-line); }
+.pf-legend__chain { stroke: var(--pd-navy); stroke-width: 1.8; }
+.pf-peer__sub { fill: var(--pd-muted); font-size: 10px; font-family: var(--font-mono); }
+.pf-my__header { fill: var(--pd-navy); font-size: 13px; font-weight: 700; }
 .pf-my .pf-node[data-now] > rect { stroke-width: 3.2; }
+.pf-my__lane { fill: var(--pd-lane); stroke: var(--pd-lane-line); }
+.pf-my .pf-edge__label { fill: var(--pd-gold); font-weight: 600; }
 
-/* 전체 지도 */
-.pf-chainmap__title { fill: var(--ink-2); font-size: 12px; font-weight: 700; }
-.pf-chainmap__band { fill: var(--surface-2); stroke: var(--line); }
+/* 전체 지도 — 절차서 '프로세스 고르기' 모양: 남색 테두리 상자, 지원 절차는 묶음 판 */
+.pf-chainmap__title { fill: var(--pd-muted); font-size: 12px; font-weight: 700; }
+.pf-chainmap__band { fill: var(--pd-card-io); stroke: var(--pd-card-line); }
 .pf-proc { cursor: pointer; outline: none; }
-.pf-proc > rect:first-of-type { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.2; }
+.pf-proc > rect:first-of-type { fill: var(--pd-act); stroke: var(--pd-navy); stroke-width: 1.5; }
 .pf-proc[data-mine] > rect:first-of-type { stroke: var(--accent); stroke-width: 2; }
 .pf-proc[data-turn] > rect:first-of-type { fill: var(--accent-soft); stroke-width: 2.6; }
 .pf-proc:focus-visible > rect:first-of-type, .pf-proc:hover > rect:first-of-type { stroke: var(--focus); stroke-width: 3; }
+.pf-proc__id { fill: var(--pd-navy); font-size: 12px; font-weight: 700; }
+.pf-proc__gate rect { fill: var(--pd-chip); stroke: var(--pd-card-line); }
+.pf-proc__gate text { fill: var(--pd-navy); font-size: 10px; font-weight: 700; font-family: var(--font-mono); }
 .pf-proc__track { fill: var(--track-bg); }
 .pf-proc__bar { fill: var(--ok); }
 .pf-proc__meta { fill: var(--ink-2); font-size: 11px; }
@@ -94,11 +128,11 @@
 /* 범례·텍스트 보기 */
 .pf-legend { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); font-size: var(--fs-xs); color: var(--ink-2); }
 .pf-legend__item { display: inline-flex; align-items: center; gap: var(--sp-1); }
-.pf-legend__gate { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.5; }
-.pf-legend__start { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.5; }
-.pf-legend__end { fill: var(--surface-3); stroke: var(--ink-2); stroke-width: 2; }
-.pf-legend__flow, .pf-legend__data { stroke: var(--muted); stroke-width: 1.6; }
-.pf-legend__data { stroke-dasharray: 4 3; }
+.pf-legend__act { fill: var(--pd-act); stroke: var(--pd-act-line); stroke-width: 1.5; }
+.pf-legend__gate { fill: var(--pd-lane-head); stroke: var(--pd-navy); stroke-width: 1.5; }
+.pf-legend__start { fill: var(--pd-navy); }
+.pf-legend__cf { stroke: var(--pd-navy); stroke-width: 1.8; }
+.pf-legend__of { stroke: var(--pd-object); stroke-width: 1.4; stroke-dasharray: 4 3; }
 .pf-text { display: grid; gap: var(--sp-3); }
 .pf-text__scroll { overflow-x: auto; }
 .pf-table caption { text-align: start; color: var(--ink-2); font-size: var(--fs-sm); padding-block-end: var(--sp-1); }
@@ -121,25 +155,20 @@
 .pf-compact__head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); }
 .pf-compact__all { font-size: var(--fs-sm); }
 
-/* Gate 마름모 — 판정 활동의 상태를 따른다 */
-.pf-node--gate[data-state='done'] > path:first-of-type { fill: var(--ok-soft); stroke: var(--ok); }
-.pf-node--gate[data-state='mine'] > path:first-of-type { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.6; }
-.pf-node--gate[data-state='overdue'] > path:first-of-type { fill: var(--danger-soft); stroke: var(--danger); stroke-width: 2.6; }
-.pf-node--gate[data-state='waiting'] > path:first-of-type { stroke-dasharray: 4 3; }
-
-/* 담당자별 업무 흐름 — 담당자 목록·담당자 × 절차 표 */
+/* 담당자별 업무 흐름 — 담당자 목록·담당자 × 절차 표(절차서 역할 표 모양) */
 .pf-roles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--sp-2); }
-.pf-role { inline-size: 100%; block-size: 100%; align-content: start; word-break: keep-all; overflow-wrap: anywhere; display: grid; gap: var(--sp-1); text-align: start; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.pf-role { inline-size: 100%; block-size: 100%; align-content: start; word-break: keep-all; overflow-wrap: anywhere; display: grid; gap: var(--sp-1); text-align: start; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--pd-card-line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
 .pf-role:hover { border-color: var(--focus); }
 .pf-role:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .pf-role[aria-pressed='true'] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
-.pf-role__name { display: flex; align-items: center; gap: var(--sp-2); font-weight: 600; }
+.pf-role__name { display: flex; align-items: center; gap: var(--sp-2); font-weight: 700; color: var(--pd-navy); }
 .pf-role__me { font-size: var(--fs-xs); }
 .pf-role__chips { display: flex; flex-wrap: wrap; gap: var(--sp-1); min-block-size: var(--sp-4); }
-.pf-chip { font-size: var(--fs-xs); padding: 0 var(--sp-1h); border-radius: var(--r-pill); background: var(--accent-soft); color: var(--ink); }
+.pf-chip { font-size: var(--fs-xs); padding: 0 var(--sp-1h); border-radius: var(--r-pill); background: var(--pd-chip); color: var(--pd-muted); }
+.pf-chip[data-kind='turn'] { background: var(--accent-soft); color: var(--ink); }
 .pf-chip[data-kind='overdue'] { background: var(--danger-soft); color: var(--danger); }
-.pf-matrix th[scope='col'] { white-space: nowrap; }
-.pf-matrix td { text-align: center; }
+.pf-matrix th[scope='col'] { white-space: nowrap; background: var(--pd-head); color: var(--pd-navy); }
+.pf-matrix td { text-align: end; font-variant-numeric: tabular-nums; }
 .pf-matrix td[data-n='0'] { color: var(--muted); }
 .pf-matrix tr[data-selected] th[scope='row'] { box-shadow: inset 3px 0 0 var(--accent); }
 .pf-matrix tr[data-selected] td { background: var(--accent-soft); }
@@ -148,5 +177,60 @@
 /* 절차 흐름도 — ?role= 담당자 레인 강조 */
 .pf-lane--focus { fill: var(--accent-soft); }
 .pf-lane__mark { fill: var(--accent); }
-.pf-lane[data-focus] + .pf-lane__sep { stroke: var(--accent); }
+.pf-lanehead[data-focus] .pf-lanehead__box { fill: var(--accent-soft); stroke: var(--accent); }
 .pf-focus-note { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: baseline; margin: 0; }
+
+/* 절차서 본문 — 요약 문장·활동 카드·산출물 카드 */
+.pf-lead { margin: 0; font-size: var(--fs-lg); color: var(--pd-muted); line-height: 1.5; }
+.pf-lead b { color: var(--pd-navy); }
+.pf-lead strong { color: var(--ink); }
+.pf-crit { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--sp-3); padding: var(--sp-3); background: var(--pd-card-io); border-radius: var(--r); }
+.pf-crit h4, .pf-card h4 { margin: 0 0 var(--sp-1); font-size: var(--fs-sm); color: var(--ink); }
+.pf-crit ul, .pf-card ul, .pf-card ol { margin: 0; padding-inline-start: var(--sp-5); line-height: 1.7; }
+.pf-section-title { display: flex; align-items: baseline; gap: var(--sp-2); margin: var(--sp-2) 0 0; font-size: var(--fs-md); color: var(--pd-navy); }
+.pf-section-title small { font-size: var(--fs-xs); color: var(--pd-muted); font-weight: 500; }
+.pf-cards { display: grid; gap: var(--sp-3); }
+.pf-card { display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--pd-card-line); border-radius: var(--r-lg); background: var(--pd-act); }
+.pf-docsec { display: grid; gap: var(--sp-2); }
+.pf-wp-refs { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: var(--sp-1) var(--sp-3); align-content: start; }
+.pf-wp-refs dt { font-weight: 700; color: var(--ink); }
+.pf-wp-refs dd { margin: 0; }
+.pf-card[data-selected] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.pf-card__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--sp-2); }
+.pf-card__id { color: var(--pd-blue); font-weight: 700; }
+.pf-card__title { margin: 0; font-size: var(--fs-md); font-weight: 700; color: var(--ink); }
+.pf-card__en { color: var(--pd-muted); font-size: var(--fs-xs); }
+.pf-card__chips { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-inline-start: auto; align-items: center; }
+.pf-card__trigger { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-xs); padding: var(--sp-0h) var(--sp-2); border-radius: var(--r-sm); background: var(--pd-trigger-soft); color: var(--pd-trigger); }
+.pf-card__state { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-xs); color: var(--ink-2); }
+.pf-raci-row { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); }
+.pf-raci-row span { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.pf-raci-badge { display: inline-grid; place-items: center; inline-size: var(--sp-4); block-size: var(--sp-4); border-radius: var(--r-sm); color: var(--surface); font-weight: 700; font-size: var(--fs-xs); }
+.pf-raci-badge[data-k='R'] { background: var(--pd-raci-r); }
+.pf-raci-badge[data-k='A'] { background: var(--pd-raci-a); }
+.pf-raci-badge[data-k='C'] { background: var(--pd-raci-c); }
+.pf-raci-badge[data-k='I'] { background: var(--pd-raci-i); }
+.pf-io { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); padding: var(--sp-3); border-radius: var(--r); background: var(--pd-card-io); font-size: var(--fs-sm); }
+.pf-io ul { list-style: none; padding: 0; line-height: 1.6; }
+.pf-io__ext { color: var(--pd-muted); font-size: var(--fs-xs); }
+.pf-io__ext a, .pf-wp-refs a { color: var(--accent); }
+/* 목록 안 활동·절차 ID 단추 — 누를 자리 24px(타깃 크기) */
+.pf-refbtn { display: inline-flex; align-items: center; min-block-size: var(--sp-6); min-inline-size: var(--sp-6); padding-inline: var(--sp-0h); }
+.pf-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-4); font-size: var(--fs-sm); }
+.pf-checks { list-style: none; padding-inline-start: 0; }
+.pf-checks li::before { content: '✓'; color: var(--ok); font-weight: 700; margin-inline-end: var(--sp-2); }
+.pf-card__foot { display: flex; flex-wrap: wrap; gap: var(--sp-1); align-items: center; }
+.pf-rule { font-size: var(--fs-xs); padding: 0 var(--sp-1h); border: 1px solid var(--pd-card-line); border-radius: var(--r-pill); font-family: var(--font-mono); color: var(--pd-blue); }
+.pf-tag { font-size: var(--fs-xs); padding: 0 var(--sp-1h); border-radius: var(--r-sm); background: var(--pd-chip); color: var(--pd-muted); font-family: var(--font-mono); }
+.pf-tag[data-kind='gold'] { background: var(--pd-doc); color: var(--pd-gold); }
+
+@media (max-width: 720px) {
+  .pf-io { grid-template-columns: 1fr; }
+}
+
+@media print {
+  .pf-lanes { display: none; }
+  .pf-scroll { overflow: visible; box-shadow: none; }
+  .pf-toolbar, .pf-scrollhint { display: none; }
+  .pf-card { break-inside: avoid; }
+}

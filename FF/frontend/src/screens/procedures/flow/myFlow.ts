@@ -112,8 +112,8 @@ export interface MyFlowSize {
   headerH: number;
 }
 
-export const MY_FLOW_FULL: MyFlowSize = { sideW: 192, centerW: 200, sideH: 48, centerH: 80, labelW: 136, headerH: 30 };
-export const MY_FLOW_COMPACT: MyFlowSize = { sideW: 144, centerW: 168, sideH: 44, centerH: 80, labelW: 104, headerH: 0 };
+export const MY_FLOW_FULL: MyFlowSize = { sideW: 192, centerW: 200, sideH: 56, centerH: 80, labelW: 136, headerH: 30 };
+export const MY_FLOW_COMPACT: MyFlowSize = { sideW: 144, centerW: 168, sideH: 56, centerH: 80, labelW: 104, headerH: 0 };
 
 type RowNode = LNode & { side: 'from' | 'center' | 'to'; counterpart: Counterpart | null };
 type RowEdge = LEdge & { wps: string[] };

@@ -73,10 +73,24 @@ describe('절차 흐름도 (/procedures/:id)', () => {
     expect(within(svg).getByRole('button', { name: /G1 판정\(FPW\.1-A05\)/ })).toBeTruthy();
     expect(within(svg).getByRole('img', { name: /시작 — 진입 조건/ })).toBeTruthy();
     expect(within(svg).getByRole('img', { name: /종료 — 완료 조건/ })).toBeTruthy();
-    // 레인 = 수행 역할 4개
-    expect(svg.querySelectorAll('.pf-lane__label').length).toBeGreaterThanOrEqual(4);
-    // 산출물 이름표
-    expect(svg.querySelector('.pf-edge__label')).toBeTruthy();
+    // 레인 = 입력 + 수행 역할 4개 + 산출물(절차서 표기)
+    const heads = [...svg.querySelectorAll('.pf-lanehead__text')].map((t) => t.textContent);
+    expect(heads[0]).toBe('입력 (Inputs)');
+    expect(heads[heads.length - 1]).toBe('산출물 (Outputs)');
+    expect(heads.length).toBeGreaterThanOrEqual(6);
+    // 산출물은 문서 상자 — 이 절차가 만드는 산출물마다 하나, 밖에서 오는 입력은 점선 문서
+    const made = new Set(p.activities.flatMap((a) => a.outputs));
+    expect(svg.querySelectorAll('.pf-doc:not([data-external]):not([data-ref])').length).toBe(made.size);
+    expect(svg.querySelectorAll('.pf-doc[data-external]').length).toBeGreaterThan(0);
+    // 제어 흐름(실선)과 객체 흐름(점선)이 따로 그려지고, 화살 머리도 다르다
+    const cf = svg.querySelectorAll('polyline.pf-cf');
+    const of = svg.querySelectorAll('polyline.pf-of');
+    expect(cf.length).toBeGreaterThan(0);
+    expect(of.length).toBeGreaterThan(0);
+    expect(cf[0].getAttribute('marker-end')).toMatch(/-cf\)$/);
+    expect(of[0].getAttribute('marker-end')).toMatch(/-of\)$/);
+    // 간선 이름표는 없다 — 산출물 이름은 문서 상자에
+    expect(svg.querySelector('.pf-edge__label')).toBeNull();
   });
 
   it('서버 상태를 상자에 얹는다 — 완료·내 차례·기한 초과·앞 활동 대기(글자로도)', async () => {

@@ -15,6 +15,9 @@ export type SsoStatus = 'loading' | 'authed' | 'anon';
 let status: SsoStatus = 'loading';
 let user: SsoUser | null = null;
 let started = false;
+/** 로그아웃 중 — 이미 나간 요청이 401을 받아도 다시 로그인으로 보내지 않는다(로그아웃 화면 이동을 덮어쓰지 않게) */
+let loggingOut = false;
+export const isLoggingOut = () => loggingOut;
 let version = 0;
 const listeners = new Set<() => void>();
 const emit = () => {
@@ -28,6 +31,7 @@ export async function refreshSso(): Promise<void> {
     const res = await fetch('/api/auth/me', { headers: { Accept: 'application/json' }, cache: 'no-store' });
     const me = res.ok ? ((await res.json()) as { authenticated?: boolean; user?: SsoUser }) : null;
     user = me?.authenticated && me.user ? me.user : null;
+    if (user) loggingOut = false;
   } catch {
     user = null;
   }
@@ -52,6 +56,7 @@ export function startSsoLogin(returnTo?: string): void {
 
 /** 로그아웃 — 서버 세션을 지우고, IdP 로그아웃 주소가 있으면 그리로 */
 export async function ssoLogout(): Promise<string | null> {
+  loggingOut = true;
   let end: string | null = null;
   try {
     const res = await fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}' });

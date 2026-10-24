@@ -73,6 +73,24 @@ describe('운영 빌드(SSO) — 부여 역할 안에서만', { timeout: 30_000 
     expect(assign).toHaveBeenCalledWith(`/api/auth/login?returnTo=${encodeURIComponent('/policies?tab=a')}`);
   });
 
+  it('회귀: 로그아웃 중에 끝난 요청의 401은 SSO 로그인으로 되돌리지 않는다(로그아웃 → 로그인 화면)', async () => {
+    // 결함(2026-10-24 e2e:oidc): 로그아웃을 누른 직후 메인 가젯이 늦게 연 업무 절차 조회가 401을 받아 IdP 로그인으로 다시 보냈다
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url === '/api/auth/me') return json({ authenticated: true, mode: 'oidc', user: USER });
+        if (url === '/api/auth/logout') return json({ endSessionUrl: null });
+        return json({ error: { code: 'UNAUTHENTICATED', message: '로그인이 필요합니다.' } }, 401);
+      }),
+    );
+    const sso = await loadOidc();
+    await sso.refreshSso();
+    const { call } = await import('../api/client');
+    await sso.ssoLogout();
+    await expect(call('listFeatures', {})).rejects.toMatchObject({ status: 401 });
+    expect(assign).not.toHaveBeenCalledWith(expect.stringContaining('/api/auth/login'));
+  });
+
   it('로그인 화면은 회사 계정(SSO) 버튼 하나 — 아이디·비밀번호 칸이 없다', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => json({ authenticated: false, mode: 'oidc' })));
     await loadOidc();

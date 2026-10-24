@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { WorkflowDoc } from '@ff/contracts';
 import { procedureFlow as F } from '../../../copy/procedureFlow';
 import { roleLabel } from '../../../data/refdata';
+import { useAppShell } from '../../../store';
 import { Segmented } from '../../../design';
 import { ArrowDefs, EdgeLabel, FlowLegend, roleNameOf, StateIcon, stateText, useFlowStatuses } from './FlowParts';
 import { collapseSides, layoutMyFlow, MY_FLOW_COMPACT, MY_FLOW_FULL, myWorkSteps, wpNameOf, type Counterpart, type MyFlowLayout, type MyFlowSize, type MyStep } from './myFlow';
@@ -16,13 +17,15 @@ type Filter = 'open' | 'now' | 'all';
 
 const isNow = (s: ActivityStatus | undefined) => !!s && s.mine && (s.state === 'mine' || s.state === 'overdue');
 
-function who(doc: WorkflowDoc, c: Counterpart) {
-  const base = c.kind === 'external' ? F.mine.external : c.kind === 'retained' ? F.mine.retained : c.mine ? F.mine.meRole(roleNameOf(doc, c.role)) : roleNameOf(doc, c.role);
+/** own=false — 다른 담당자의 흐름: 그 담당자 자신의 역할은 "(이 담당)"으로 */
+function who(doc: WorkflowDoc, c: Counterpart, own = true) {
+  const name = roleNameOf(doc, c.role);
+  const base = c.kind === 'external' ? F.mine.external : c.kind === 'retained' ? F.mine.retained : c.mine ? (own ? F.mine.meRole(name) : F.roles.selfRole(name)) : name;
   return c.extra ? `${base} ${F.mine.more(c.extra)}` : base;
 }
 const acts = (c: Counterpart) => (c.activities.length ? `${c.activities[0].id}${c.activities.length > 1 ? ` ${F.node.more(c.activities.length - 1)}` : ''}` : '');
 
-function MyFlowSvg({ doc, layout, statuses, size, fit, label }: { doc: WorkflowDoc; layout: MyFlowLayout; statuses: Map<string, ActivityStatus>; size: MyFlowSize; fit: boolean; label: string }) {
+function MyFlowSvg({ doc, layout, statuses, size, fit, label, own = true }: { doc: WorkflowDoc; layout: MyFlowLayout; statuses: Map<string, ActivityStatus>; size: MyFlowSize; fit: boolean; label: string; own?: boolean }) {
   const nav = useNavigate();
   const marker = `pf-my-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   return (
@@ -67,7 +70,7 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label }: { doc: WorkflowD
               .map((n) => {
                 const c = n.counterpart!;
                 const sub = acts(c);
-                const name = who(doc, c);
+                const name = who(doc, c, own);
                 const wps = c.wps.map((k) => wpNameOf(doc, k)).join(', ');
                 return (
                   <g key={n.id} className="pf-peer" data-kind={c.kind} data-mine={c.mine ? '' : undefined} role="img" aria-label={F.mine.sideLabel(n.side === 'from' ? F.mine.from : F.mine.to, name, c.activities.map((x) => x.id).join(', '), wps)}>
@@ -85,7 +88,7 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label }: { doc: WorkflowD
               data-mine=""
               data-now={isNow(st) ? '' : undefined}
               data-activity={s.activity.id}
-              aria-label={F.mine.stepLabel(s.activity.id, s.activity.name, s.process.name, stateText(st))}
+              aria-label={F.mine.stepLabel(s.activity.id, s.activity.name, s.process.name, stateText(st, own))}
               onClick={open}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -103,7 +106,7 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label }: { doc: WorkflowD
                 <text key={j} className="pf-node__name" x={center.x + 8} y={center.y + 32 + j * 15}>{t}</text>
               ))}
               <StateIcon state={st?.state ?? 'waiting'} x={center.x + 8} y={center.y + center.h - 19} />
-              <text className="pf-node__state" x={center.x + 25} y={center.y + center.h - 9}>{stateText(st)}</text>
+              <text className="pf-node__state" x={center.x + 25} y={center.y + center.h - 9}>{stateText(st, own)}</text>
             </g>
           </g>
         );
@@ -112,13 +115,13 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label }: { doc: WorkflowD
   );
 }
 
-function MyFlowText({ doc, steps, statuses }: { doc: WorkflowDoc; steps: MyStep[]; statuses: Map<string, ActivityStatus> }) {
+function MyFlowText({ doc, steps, statuses, own = true, caption }: { doc: WorkflowDoc; steps: MyStep[]; statuses: Map<string, ActivityStatus>; own?: boolean; caption: string }) {
   const side = (cs: Counterpart[]) =>
     cs.length ? (
       <ul className="pf-cell-list">
         {cs.map((c) => (
           <li key={c.id}>
-            {who(doc, c)}
+            {who(doc, c, own)}
             {c.activities.length ? ` · ${c.activities.map((x) => x.id).join(', ')}` : ''}
             {c.wps.length ? ` (${c.wps.map((k) => wpNameOf(doc, k)).join(', ')})` : ''}
           </li>
@@ -130,7 +133,7 @@ function MyFlowText({ doc, steps, statuses }: { doc: WorkflowDoc; steps: MyStep[
   return (
     <div className="pf-text__scroll">
       <table className="ds-table pf-table">
-        <caption>{F.mine.textCaption}</caption>
+        <caption>{caption}</caption>
         <thead>
           <tr>
             <th scope="col">{F.mine.col.order}</th>
@@ -154,7 +157,7 @@ function MyFlowText({ doc, steps, statuses }: { doc: WorkflowDoc; steps: MyStep[
                   <svg width={14} height={14} viewBox="-1 -1 14 14" aria-hidden>
                     <StateIcon state={st?.state ?? 'waiting'} x={0} y={0} />
                   </svg>
-                  {stateText(st)}
+                  {stateText(st, own)}
                 </td>
                 <td>{side(s.from)}</td>
                 <td>{side(s.to)}</td>
@@ -168,8 +171,12 @@ function MyFlowText({ doc, steps, statuses }: { doc: WorkflowDoc; steps: MyStep[
 }
 
 /** /procedures 허브의 내 업무 흐름 */
-export function MyWorkFlow({ doc, sample }: { doc: WorkflowDoc; sample?: readonly string[] }) {
-  const { role, roleIds, statuses } = useFlowStatuses(doc, sample);
+/** persona를 주면 그 담당자의 흐름(역할 전환 없이 보기) — 없으면 지금 역할 */
+export function MyWorkFlow({ doc, sample, persona }: { doc: WorkflowDoc; sample?: readonly string[]; persona?: string }) {
+  const { role: me } = useAppShell();
+  const { role, roleIds, statuses } = useFlowStatuses(doc, sample, persona);
+  const own = role === me;
+  const title = own ? F.mine.title : F.roles.flowLabel(roleLabel(role));
   const [filter, setFilter] = useState<Filter>('open');
   const [mode, setMode] = useState<'diagram' | 'text'>('diagram');
   const all = myWorkSteps(doc, roleIds);
@@ -180,7 +187,7 @@ export function MyWorkFlow({ doc, sample }: { doc: WorkflowDoc; sample?: readonl
   const layout = layoutMyFlow(steps, doc, MY_FLOW_FULL, F.node.more);
   return (
     <div className="pf-view" data-mode={mode} data-role={role}>
-      <p className="ds-field__hint pf-hint">{F.mine.hint(roleLabel(role))}</p>
+      <p className="ds-field__hint pf-hint">{own ? F.mine.hint(roleLabel(role)) : F.roles.hint(roleLabel(role))}</p>
       <div className="pf-toolbar">
         <Segmented<Filter>
           label={F.mine.filter}
@@ -188,7 +195,7 @@ export function MyWorkFlow({ doc, sample }: { doc: WorkflowDoc; sample?: readonl
           onChange={setFilter}
           options={[
             { value: 'open', label: F.mine.open, count: all.filter((s) => statuses.get(s.activity.id)?.state !== 'done').length },
-            { value: 'now', label: F.mine.now, count: all.filter((s) => isNow(statuses.get(s.activity.id))).length },
+            { value: 'now', label: own ? F.mine.now : F.roles.now, count: all.filter((s) => isNow(statuses.get(s.activity.id))).length },
             { value: 'all', label: F.mine.all, count: all.length },
           ]}
         />
@@ -200,14 +207,14 @@ export function MyWorkFlow({ doc, sample }: { doc: WorkflowDoc; sample?: readonl
         <p className="ds-field__hint" role="status">{F.mine.emptyFilter}</p>
       ) : mode === 'diagram' ? (
         <>
-          <FlowLegend shapes={false} />
-          <p className="ds-field__hint pf-count">{F.mine.count(steps.length, all.length)}</p>
+          <FlowLegend shapes={false} own={own} />
+          <p className="ds-field__hint pf-count">{own ? F.mine.count(steps.length, all.length) : F.roles.count(steps.length, all.length)}</p>
           <div className="pf-scroll">
-            <MyFlowSvg doc={doc} layout={layout} statuses={statuses} size={MY_FLOW_FULL} fit={false} label={F.mine.title} />
+            <MyFlowSvg doc={doc} layout={layout} statuses={statuses} size={MY_FLOW_FULL} fit={false} label={title} own={own} />
           </div>
         </>
       ) : (
-        <MyFlowText doc={doc} steps={steps} statuses={statuses} />
+        <MyFlowText doc={doc} steps={steps} statuses={statuses} own={own} caption={own ? F.mine.textCaption : F.roles.textCaption(roleLabel(role))} />
       )}
     </div>
   );

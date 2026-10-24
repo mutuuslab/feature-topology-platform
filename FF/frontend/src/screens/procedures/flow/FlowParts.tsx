@@ -10,15 +10,27 @@ import './flow.css';
 
 export const roleNameOf = (doc: WorkflowDoc, id: string | null) => (id ? doc.roles.find((r) => r.id === id)?.name ?? id : '');
 
-export const stateText = (s: ActivityStatus | undefined): string =>
-  !s ? F.state.waiting : s.state === 'overdue' && s.mine ? F.state.mineOverdue : F.state[s.state];
+/** own=false — 다른 담당자의 흐름을 볼 때: '내 차례' 대신 '이 담당 차례' */
+export const stateText = (s: ActivityStatus | undefined, own = true): string =>
+  !s
+    ? F.state.waiting
+    : s.state === 'overdue' && s.mine
+      ? own ? F.state.mineOverdue : F.state.theirsOverdue
+      : s.state === 'mine' && !own
+        ? F.state.theirs
+        : F.state[s.state];
+
+/** 담당자(데모 역할) 이름의 레인 이름 — 역할 전환기 이름(차량 운영)과 흐름도 레인(운영 조직)을 잇는다 */
+export const lanesOf = (doc: WorkflowDoc, persona: string) => (doc.personas[persona] ?? []).map((id) => roleNameOf(doc, id)).join('·');
 
 /** 내 역할 기준 모든 활동 상태 — 역할 전환·완료가 바뀌면 다시 계산된다.
  *  sample을 주면 서버를 읽지 않고 그 완료 목록으로 그린다(디자인 갤러리 견본) */
-export function useFlowStatuses(doc: WorkflowDoc, sample?: readonly string[]) {
-  const { role } = useAppShell();
+export function useFlowStatuses(doc: WorkflowDoc, sample?: readonly string[], persona?: string) {
+  const { role: me } = useAppShell();
+  // persona — 다른 담당자의 흐름을 볼 때(역할 전환 없이). 완료 상태는 서버 전체 기록이라 같고, 내 차례만 그 담당자 기준
+  const role = persona ?? me;
   const roleIds = doc.personas[role] ?? [];
-  const { doneIds, items } = useProgress(role, !sample);
+  const { doneIds, items } = useProgress(me, !sample);
   const statuses = activityStatuses(doc, { done: new Set(sample ?? doneIds()), items: sample ? [] : items, roleIds, now: Date.now() });
   return { role, roleIds, statuses };
 }
@@ -78,7 +90,7 @@ export function ArrowDefs({ id }: { id: string }) {
 const STATES: ActivityState[] = ['mine', 'overdue', 'ready', 'waiting', 'done'];
 
 /** 범례 — 상태 5종(아이콘·글자) + 도형 */
-export function FlowLegend({ shapes = true }: { shapes?: boolean }) {
+export function FlowLegend({ shapes = true, own = true }: { shapes?: boolean; own?: boolean }) {
   return (
     <div className="pf-legend" role="group" aria-label={F.legend.title}>
       {STATES.map((s) => (
@@ -86,7 +98,7 @@ export function FlowLegend({ shapes = true }: { shapes?: boolean }) {
           <svg width={14} height={14} viewBox="-1 -1 14 14" aria-hidden>
             <StateIcon state={s} x={0} y={0} />
           </svg>
-          {F.state[s]}
+          {s === 'mine' && !own ? F.state.theirs : F.state[s]}
         </span>
       ))}
       {shapes && (

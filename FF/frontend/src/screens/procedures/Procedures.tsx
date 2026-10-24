@@ -11,9 +11,10 @@ import { roleLabel } from '../../data/refdata';
 import { PageHeader, Panel, Tabs } from '../../design';
 import { useAppShell } from '../../store';
 import { ActivityBody, RaciBadge, roleName } from './ActivityView';
-import { useFlowStatuses } from './flow/FlowParts';
+import { lanesOf, useFlowStatuses } from './flow/FlowParts';
 import { MyWorkFlow } from './flow/MyWorkFlow';
 import { ProcessFlowView } from './flow/ProcessFlow';
+import { personasOf, RoleFlows } from './flow/RoleFlows';
 import { ValueChainMap } from './flow/ValueChainMap';
 import './procedures.css';
 
@@ -91,8 +92,9 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
         param="view"
         tabs={[
           { key: 'flow', label: F.hub.flow },
-          { key: 'list', label: F.hub.list },
+          { key: 'roles', label: F.hub.roles },
           { key: 'map', label: F.hub.map },
+          { key: 'list', label: F.hub.list },
         ]}
       >
         {(view) =>
@@ -100,6 +102,8 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
             <Panel title={F.mine.title} eyebrow={P.mine.progress(done, mine.length)}>
               <MyWorkFlow doc={doc} />
             </Panel>
+          ) : view === 'roles' ? (
+            <RoleFlows doc={doc} />
           ) : view === 'map' ? (
             <Panel title={F.chain.title}>
               <ValueChainMap doc={doc} />
@@ -222,23 +226,51 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
     detailRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
   }, [sel]);
   const n = p.activities.filter((a) => ['R', 'A'].includes(raciOf(a, roleIds) ?? '')).length;
+  // ?role= — 담당자별 업무 흐름에서 온 경우 그 담당자의 레인을 강조한다
+  const focus = personasOf(doc).find((x) => x === sp.get('role')) ?? null;
+  const focusIds = focus ? doc.personas[focus] : [];
+  const nFocus = p.activities.filter((a) => ['R', 'A'].includes(raciOf(a, focusIds) ?? '')).length;
+  const back = <Link to="/procedures">{P.detail.back}</Link>;
+  const clearFocus = () => {
+    const next = new URLSearchParams(sp);
+    next.delete('role');
+    setSp(next, { replace: true });
+  };
   return (
     <div className="ds-screen">
       <PageHeader
         codes={p.ref}
         title={`${p.id} ${p.name}`}
-        message={n ? { tone: 'neutral', value: n, text: P.detail.keyMine, action: <Link to="/procedures">{P.detail.back}</Link> } : { tone: 'neutral', text: P.mine.none, action: <Link to="/procedures">{P.detail.back}</Link> }}
+        message={
+          // ?role= 담당자를 강조해 왔으면 핵심 메시지도 그 담당자 기준(내 역할 문장이 강조와 어긋나지 않게)
+          focus
+            ? nFocus
+              ? { tone: 'neutral', value: nFocus, text: `${roleLabel(focus)} · ${F.roles.keyFocus}`, action: back }
+              : { tone: 'neutral', text: `${roleLabel(focus)} · ${F.roles.focusNone}`, action: back }
+            : n
+              ? { tone: 'neutral', value: n, text: P.detail.keyMine, action: back }
+              : { tone: 'neutral', text: P.mine.none, action: back }
+        }
       />
       <Panel title={P.detail.flow} eyebrow={P.detail.pick}>
         <p className="pr-purpose">{p.purpose}</p>
+        {focus && (
+          <p className="pf-focus-note ds-field__hint" role="status">
+            {F.roles.laneFocus(roleLabel(focus), lanesOf(doc, focus), nFocus)}
+            <button type="button" className="pf-linkbtn" onClick={clearFocus}>{F.roles.laneClear}</button>
+          </p>
+        )}
         <ProcessFlowView
           doc={doc}
           process={p}
           statuses={statuses}
+          focusRoles={focus ? doc.personas[focus] : []}
           selected={sel?.id ?? null}
           onSelect={(id) => {
             picked.current = true;
-            setSp({ a: id }, { replace: true });
+            const next = new URLSearchParams(sp);
+            next.set('a', id);
+            setSp(next, { replace: true });
           }}
         />
       </Panel>
@@ -269,6 +301,35 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
       </details>
     </div>
   );
+}
+
+/** /procedures/roles — 담당자별 업무 흐름(메뉴). 허브의 같은 이름 탭과 같은 부품 */
+function RolesScreen({ doc }: { doc: WorkflowDoc }) {
+  const { role } = useMe(doc);
+  const { status, error } = useProgress(role);
+  return (
+    <div className="ds-screen">
+      <PageHeader title={F.roles.title} lead={F.roles.lead} message={{ tone: 'neutral', value: personasOf(doc).length, text: F.roles.key }} />
+      {status === 'loading' && (
+        <p className="ds-field__hint" data-state="loading" role="status">
+          {P.loading}
+        </p>
+      )}
+      {error && (
+        <p className="ds-error" data-state="error" role="alert">
+          {error}
+        </p>
+      )}
+      <RoleFlows doc={doc} />
+    </div>
+  );
+}
+
+export function ProcedureRolesScreen() {
+  const doc = useWorkflows();
+  if (doc === null) return <Loading />;
+  if (doc === 'fail') return <p className="ds-stale">{P.loadFail}</p>;
+  return <RolesScreen doc={doc} />;
 }
 
 export function ProcessDetail() {

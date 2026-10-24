@@ -130,7 +130,8 @@ export class AnomalyService implements OnModuleInit {
         closeReason: null,
         killId: null,
       };
-      const signals = [...base.signals, s].slice(-MAX_SIGNALS);
+      // zod 4 추론은 strictNullChecks 없이 null 허용 필드를 선택 키로 본다 — 저장된 신호는 같은 AnomalySignal 모양이다
+      const signals = [...(base.signals as AnomalySignal[]), s].slice(-MAX_SIGNALS);
       const c = classifyAnomaly(s.kind, signals, { asil: this.asil(s.featureId) });
       const next: Anomaly = { ...base, signals, vins: [...new Set([...base.vins, ...(s.vin ? [s.vin] : [])])].sort(), severity: c.severity, advice: c.advice, reasons: c.reasons, updatedAt: now };
       this.repo.save(next, !prev);

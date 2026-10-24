@@ -44,6 +44,9 @@ export function runtimeConfigProblems(env: Env = process.env): string[] {
     if (!env.UNLEASH_URL?.trim()) out.push('UNLEASH_MODE=live인데 UNLEASH_URL이 없습니다');
     if (!env.UNLEASH_ADMIN_TOKEN?.trim()) out.push('UNLEASH_MODE=live인데 UNLEASH_ADMIN_TOKEN이 없습니다');
   }
+  // 감사 체인 고정점(RD-SEC-13) — 키는 DB 밖, 파일은 추가만 하는 저장소(WORM 볼륨)
+  if ((env.FF_AUDIT_KEY ?? '').length < 32) out.push('FF_AUDIT_KEY가 없거나 32자보다 짧습니다 — 감사 체인 끝을 DB 밖에서 서명하는 키');
+  if (!env.FF_AUDIT_ANCHOR_FILE?.trim()) out.push('FF_AUDIT_ANCHOR_FILE이 없습니다 — 감사 체인 고정점을 추가만 하는 파일(WORM 볼륨)에 남깁니다');
   if (env.SIM_MODE && env.SIM_MODE !== 'off') out.push(`SIM_MODE=${env.SIM_MODE} — 운영 모드에서 가상 검증 실행기는 꺼 둡니다(off)`);
   return out;
 }

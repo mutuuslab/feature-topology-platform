@@ -404,7 +404,7 @@
         "backend/src/kernel/audit.service.ts:45-68"
       ],
       "criteria": "체인 머리를 키(FF_AUDIT_KEY, HMAC)로 서명해 주기적으로 남기고, 운영 모드에서 NULL 해시 보충은 하지 않고 무결성 경보를 낸다",
-      "status": "open",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"

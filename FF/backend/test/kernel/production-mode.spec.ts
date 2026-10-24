@@ -9,7 +9,7 @@ import { createApp } from '../../src/app.factory';
 import { rateLimit } from '../../src/kernel/http-hardening';
 import { runtimeConfigProblems, seedOf } from '../../src/kernel/runtime-config';
 
-const GOOD = { FF_ENV: 'production', FF_DB: '/var/lib/ff/ff.db', FF_INSTANCE_ID: 'oem-a', UNLEASH_MODE: 'off' };
+const GOOD = { FF_ENV: 'production', FF_DB: '/var/lib/ff/ff.db', FF_INSTANCE_ID: 'oem-a', UNLEASH_MODE: 'off', FF_AUDIT_KEY: 'a'.repeat(32), FF_AUDIT_ANCHOR_FILE: '/var/lib/ff-anchor/audit.jsonl' };
 
 describe('운영 모드 설정 검사 — 문제를 한 번에 모두 알려 준다', () => {
   it('운영 모드가 아니면 지금까지의 기본값을 그대로 쓴다(데모 데이터·메모리 DB)', () => {
@@ -33,7 +33,7 @@ describe('운영 모드 설정 검사 — 문제를 한 번에 모두 알려 준
       FF_CORS_ORIGINS: '*,https://ff.oem.example',
       SIM_MODE: 'auto',
     }).join('\n');
-    for (const k of ['FF_DB', 'FF_SEED=v0.81', 'FF_INSTANCE_ID', 'FF_SCHEDULER', 'FF_HSM_VEHICLE_ROOT', 'JIRA_WEBHOOK_SECRET', "'*'", 'UNLEASH_MODE가 mock', 'SIM_MODE=auto']) expect(p).toContain(k);
+    for (const k of ['FF_AUDIT_KEY', 'FF_AUDIT_ANCHOR_FILE', 'FF_DB', 'FF_SEED=v0.81', 'FF_INSTANCE_ID', 'FF_SCHEDULER', 'FF_HSM_VEHICLE_ROOT', 'JIRA_WEBHOOK_SECRET', "'*'", 'UNLEASH_MODE가 mock', 'SIM_MODE=auto']) expect(p).toContain(k);
     expect(p).not.toContain('https://ff.oem.example');
     // 비밀값은 메시지에 나오지 않는다
     expect(p).not.toContain('ff-mock-jira-secret');
@@ -53,7 +53,7 @@ describe('운영 모드 부팅 — 파일 DB · 빈 DB · 보안 헤더 · CORS 
   beforeAll(async () => {
     dir = mkdtempSync(join(tmpdir(), 'ff-prod-'));
     for (const k of ['FF_SEED', 'FF_SCHEDULER', 'FF_CLOCK_AT', 'GITLAB_WEBHOOK_TOKEN', 'JIRA_WEBHOOK_SECRET', 'CODEBEAMER_WEBHOOK_SECRET', 'FF_EXT_SYNC_SEED']) delete process.env[k];
-    Object.assign(process.env, GOOD, { FF_DB: join(dir, 'ff.db'), FF_CORS_ORIGINS: 'https://ff.oem.example', FF_RATE_LIMIT: '40', FF_BUILD_SHA: 'abc1234' });
+    Object.assign(process.env, GOOD, { FF_AUDIT_ANCHOR_FILE: join(dir, 'audit-anchor.jsonl'), FF_DB: join(dir, 'ff.db'), FF_CORS_ORIGINS: 'https://ff.oem.example', FF_RATE_LIMIT: '40', FF_BUILD_SHA: 'abc1234' });
     app = await createApp({ logger: false });
     await app.init();
   });

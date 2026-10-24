@@ -509,7 +509,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/incident-voc/incident.service.ts:56",
         "contracts/src/rules/kill-timeline.ts:43",
-        "backend/src/kernel/audit.service.ts:75"
+        "backend/src/kernel/audit.service.ts:140"
       ],
       "tests": [
         "contracts/src/rules/kill-timeline.test.ts",
@@ -621,7 +621,7 @@
       "evidence": [
         "contracts/src/rules/safety-kpi.ts:22",
         "contracts/src/rules/safety-kpi.ts:23",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:190"
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:207"
       ],
       "tests": [
         "backend/test/d04/safety-kpi.spec.ts",

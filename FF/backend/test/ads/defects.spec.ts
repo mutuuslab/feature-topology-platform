@@ -112,19 +112,7 @@ describe('ADS 요구사항 결함 기록 — 종료·해제·명령 전달·승�
     }
   });
 
-  it.fails('FFP-F060 감사 무결성 — 트리거를 우회해 마지막 감사 행을 지워도 체인 검증이 잡는다', async () => {
-    const { app, http, db } = await boot();
-    try {
-      for (let i = 0; i < 3; i++) await http().post('/api/pki/rotate').set(actor('u-safety', 'SAFETY_OFFICER')).send({ reason: `교체 ${i}` }).expect(201);
-      const last = db.get<{ id: number }>('SELECT id FROM audit ORDER BY id DESC LIMIT 1')!.id;
-      db.run('DROP TRIGGER audit_no_delete'); // 공격자가 DB 권한으로 트리거를 지웠다고 가정
-      db.run('DELETE FROM audit WHERE id = ?', last);
-      // 요구: 끝 행 삭제도 탐지한다 — 체인 끝(head)이 DB 밖에 고정돼 있어야 한다
-      expect(app.get(AuditService).verifyChain().ok).toBe(false);
-    } finally {
-      await app.close();
-    }
-  });
+  // FFP-F060(감사 체인 끝 삭제 미탐지)은 고쳤다 — 회귀 시험은 test/kernel/audit-chain.spec.ts(출시 준비 RD-SEC-13)
 
   it.fails('ORCA-HT06 시각 신뢰도 — 발생 시각 없이 접수한 사건은 발생 시각을 비워 두고 수신 시각으로 채우지 않는다', async () => {
     const { app, http } = await boot();

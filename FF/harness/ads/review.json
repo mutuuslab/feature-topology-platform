@@ -51,7 +51,7 @@
       "evidence": [
         "contracts/src/rules/policy-gate.ts:192",
         "contracts/src/rules/compliance-profile.ts:52",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:72"
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:75"
       ],
       "tests": [
         "backend/test/d03/policy-gate.spec.ts",
@@ -246,7 +246,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/policy-repos.ts:20",
         "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:31",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:109"
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:112"
       ],
       "tests": [
         "backend/test/d06/policy-golden.spec.ts"
@@ -305,7 +305,7 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:37",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:72",
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:75",
         "contracts/src/rules/odd-restriction.ts:38"
       ],
       "tests": [
@@ -325,7 +325,7 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:18",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:145",
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:148",
         "contracts/src/routes.ts:170"
       ],
       "tests": [
@@ -343,7 +343,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/schemas/wire.ts:144",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:156",
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:173",
         "backend/src/adapters/gleo/gleo.adapter.ts:70"
       ],
       "tests": [
@@ -597,7 +597,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/deactivation.ts:139",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:183"
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:200"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts",
@@ -682,7 +682,7 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:222",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:171"
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:188"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts"
@@ -750,7 +750,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/rollback.ts:252",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:106",
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:109",
         "contracts/src/rules/status-v2.ts:95"
       ],
       "tests": [
@@ -788,7 +788,7 @@
       "evidence": [
         "contracts/src/schemas/wire.ts:160",
         "frontend/src/data/twin/engine.ts:80",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:190"
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:207"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts"
@@ -893,7 +893,7 @@
     "FFP-F049": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:125",
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:142",
         "frontend/src/screens/ops/Deployments.tsx:158",
         "frontend/src/screens/ops/FleetLive.tsx:60"
       ],
@@ -917,7 +917,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/kill-timeline.ts:49",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:113",
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:130",
         "backend/src/domains/d04-ops/incident-voc/incident.service.ts:47"
       ],
       "tests": [
@@ -1008,7 +1008,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/virtual.ts:38",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:190",
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:207",
         "tools/requirements.ts:13"
       ],
       "tests": [
@@ -1094,7 +1094,7 @@
       "verdict": "부분",
       "evidence": [
         "frontend/src/screens/ops/Deployments.tsx:162",
-        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:185"
+        "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:193"
       ],
       "tests": [],
       "gap": "게시본 상세에 차량별 상태·사유를 한 표로만 보인다. 미수신과 로컬 거부를 따로 조회하는 목록·필터와 시험이 없다.",
@@ -1130,22 +1130,20 @@
     "FFP-F060": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/kernel/audit.service.ts:75",
-        "backend/src/kernel/audit.service.ts:146"
+        "backend/src/kernel/audit.service.ts:237",
+        "backend/src/kernel/audit.service.ts:210",
+        "backend/src/kernel/audit.service.ts:144"
       ],
       "tests": [
         "backend/test/kernel/audit-chain.spec.ts"
       ],
-      "gap": "중간 행 수정·삭제는 탐지하지만 체인 끝이 DB 밖에 고정되지 않아 마지막 행 삭제를 놓치고(결함 기록), 키 없는 해시라 DB 권한자가 재계산할 수 있으며 hash가 빈 삽입 행은 부팅 때 정상 행으로 편입된다(재검증 2026-10-18).",
+      "gap": "중간 행 수정·삭제, 끝 행 삭제(프로세스가 기억한 끝), DB 권한자의 체인 재계산(DB 밖 HMAC 서명 고정점 FF_AUDIT_KEY·FF_AUDIT_ANCHOR_FILE), 운영 모드의 hash 없는 행 편입 금지까지 탐지한다(출시 준비 RD-SEC-13, 결함 기록 해소 2026-10-24). 남은 것: 고정점 파일의 WORM 보관·외부 시각 인증은 설치 몫(설치 안내서)이고, 변경 이력의 원본 근거 추적 화면(내보내기·필터)은 REQ B4.",
       "plan": [
         "ADS-BE19"
       ],
       "rules": [
         "FFG-PLT-015"
-      ],
-      "defect": {
-        "probe": "backend/test/ads/defects.spec.ts"
-      }
+      ]
     },
     "FFP-F061": {
       "verdict": "부분",

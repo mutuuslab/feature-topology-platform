@@ -80,8 +80,10 @@ beforeAll(async () => {
   const local = `http://127.0.0.1:${idp.port}`;
   // 고객사 IdP(https) — 시험에서는 같은 주소를 로컬 시험 IdP로 잇는다(백엔드 코드는 그대로 https 주소를 부른다)
   globalThis.fetch = ((input: string | URL | Request, init?: RequestInit) => {
-    const u = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-    return realFetch(u.startsWith('https://idp.first-run.example') ? u.replace('https://idp.first-run.example', local) : input, init);
+    const u = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url);
+    // 호스트 비교는 앞부분 문자열이 아니라 출처(origin) 전체로 — https://idp.first-run.example.evil 같은 주소를 잇지 않는다
+    if (u.origin !== ISSUER) return realFetch(input, init);
+    return realFetch(`${local}${u.pathname}${u.search}`, init);
   }) as typeof fetch;
   for (const k of ['FF_SEED', 'FF_SCHEDULER', 'FF_CLOCK_AT', 'FF_SYNTHETIC', 'FF_DEMO_FIXTURES', 'FF_EXT_FIXTURES', 'FF_EXT_SYNC_SEED', 'GITLAB_WEBHOOK_TOKEN', 'JIRA_WEBHOOK_SECRET', 'CODEBEAMER_WEBHOOK_SECRET', 'FF_CORS_ORIGINS']) delete process.env[k];
   Object.assign(process.env, PROD, { FF_DB: join(dir, 'ff.db'), FF_AUDIT_ANCHOR_FILE: join(dir, 'anchor', 'audit-anchor.jsonl') });

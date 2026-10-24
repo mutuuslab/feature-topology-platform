@@ -4,20 +4,36 @@
 import { spawn } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { createServer } from 'node:net';
 import { dirname, join } from 'node:path';
 import { FF } from './lib.ts';
 
 const require = createRequire(import.meta.url);
 const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
 
-const PORT = Number(process.env.SNAPSHOT_PORT ?? 9199); // 8000 금지
-const BASE = `http://localhost:${PORT}`;
+/** 비어 있는 포트 — OS가 고른다. 고정 포트(예전 9199)는 여러 작업 폴더의 e2e:static이 함께 돌면 다른 폴더의 백엔드(다른 커밋·다른 데이터)에서 스냅샷을 받았다 */
+async function freePort(): Promise<number> {
+  return new Promise((ok, fail) => {
+    const s = createServer();
+    s.once('error', fail);
+    s.listen(0, '127.0.0.1', () => {
+      const port = (s.address() as { port: number }).port;
+      s.close(() => ok(port));
+    });
+  });
+}
+
+const PORT = process.env.SNAPSHOT_PORT ? Number(process.env.SNAPSHOT_PORT) : await freePort(); // 8000 금지
+const BASE = `http://127.0.0.1:${PORT}`;
 const OUT = join(FF, 'frontend', 'public');
 
 const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', join(FF, 'backend', 'dist', 'main.js')], {
   env: { ...process.env, PORT: String(PORT), FF_DB: ':memory:', FF_SEED: 'v0.81' },
   stdio: 'ignore',
 });
+// 우리 백엔드가 먼저 끝나면(포트 충돌 등) 다른 서버에 묻지 않고 바로 멈춘다
+let serverExit: number | null = null;
+server.once('exit', (code) => (serverExit = code ?? -1));
 
 // 역할이 걸린 조회(보안 이벤트·Data Act·차량 상태 등)는 그 경로가 허용하는 첫 역할로 받는다 — 정적 데모는 읽기 전용 공개본이다
 async function get<T = any>(url: string, name?: string, headers?: Record<string, string>): Promise<T> {
@@ -28,11 +44,13 @@ async function get<T = any>(url: string, name?: string, headers?: Record<string,
 }
 
 async function main() {
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; ; i++) {
+    if (serverExit !== null) throw new Error(`스냅샷용 백엔드가 시작하지 못했습니다(종료 ${serverExit}, 포트 ${PORT})`);
     try {
       await get('/api/health');
       break;
-    } catch {
+    } catch (e) {
+      if (i >= 120) throw new Error(`스냅샷용 백엔드가 응답하지 않습니다(포트 ${PORT}): ${(e as Error).message}`);
       await new Promise((r) => setTimeout(r, 500));
     }
   }

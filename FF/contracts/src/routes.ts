@@ -64,6 +64,9 @@ export interface RouteDef {
   roles?: Role[];
   body?: ZodTypeAny;
   query?: string[];
+  /** 빠지면 서버가 400을 내는 질의 — routeUrl이 빈 값으로 만들지 않고 던진다. 화면 조회는 enabled로 막아야 한다(data:check가 검사).
+   *  예전(2026-10-25): 활성화 판단 화면의 Fleet 조회가 정책 목록보다 먼저 돌아 flagKey 없이 요청 → 정적 데모 스냅샷 누락이 응답 순서에 따라 났다 */
+  requiredQuery?: string[];
   /** 필수 질의가 있는 GET — 준수 검사가 호출할 예시 값 */
   sample?: Record<string, string>;
   /** 끝나지 않는 스트림(SSE) — 준수 검사는 상태·Content-Type만 본다 */
@@ -177,7 +180,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'purchaseTrial', method: 'POST', path: '/api/trials/:grantId/purchase', summary: '체험 → 구독·구매 전환 (과금 연계)', component: 'D05-04', roles: ['OPERATOR', 'SYSTEM'], body: PurchaseTrialBody },
   { name: 'trialAnalytics', method: 'GET', path: '/api/biz/trials', summary: '체험 전환 분석 (수락률·전환율·성향별·주별)', component: 'D05-06', query: ['catalogId', 'groupBy', 'source', 'weeks'] },
   { name: 'cohort', method: 'GET', path: '/api/targeting/cohort', summary: 'FP-COHORT-1 코호트 소속', component: 'D01-04', query: ['flagKey', 'basisPoints'], sample: { flagKey: 'care_00022_param' } },
-  { name: 'activationDecide', method: 'GET', path: '/api/activation/decide', summary: '서버 기준 활성화 판단 (평가 근거)', component: 'D01-09', query: ['vin', 'flagKey'], sample: { vin: 'ego-01', flagKey: 'care_00022_param' } },
+  { name: 'activationDecide', method: 'GET', path: '/api/activation/decide', summary: '서버 기준 활성화 판단 (평가 근거)', component: 'D01-09', query: ['vin', 'flagKey'], requiredQuery: ['vin', 'flagKey'], sample: { vin: 'ego-01', flagKey: 'care_00022_param' } },
 
   // API Gateway (D05-01) — OpenFeature OFREP (IF-10)
   { name: 'ofrepEvaluate', method: 'POST', path: '/ofrep/v1/evaluate/flags/:key', summary: 'OFREP 단일 flag 평가', component: 'D05-01', body: OfrepBody, public: true },
@@ -379,6 +382,10 @@ export function routeUrl(name: string, params: Record<string, string> = {}, quer
     if (params[k] === undefined) throw new Error(`${name}: 경로 매개변수 ${k} 누락`);
     return encodeURIComponent(params[k]);
   });
+  for (const k of r.requiredQuery ?? []) {
+    const v = query[k];
+    if (v === undefined || v === null || v === '') throw new Error(`${name}: 필수 질의 ${k} 누락 — 화면 조회는 값이 준비될 때까지 enabled: false로 둔다`);
+  }
   const qs = Object.entries(query)
     .filter(([, v]) => v !== undefined && v !== null && v !== '')
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)

@@ -4,7 +4,7 @@
 // readiness: RD-SEC-02, RD-SEC-03
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 import { FF } from './lib.ts';
@@ -27,10 +27,10 @@ const passwordLiteral = (text: string) => /(["'`])platform\1/.test(text.replace(
 function bundleText(dir: string): string {
   const out: string[] = [];
   const walk = (d: string) => {
-    for (const n of readdirSync(d)) {
-      const p = join(d, n);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.(js|html)$/.test(n)) out.push(readFileSync(p, 'utf8'));
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (/\.(js|html)$/.test(e.name)) out.push(readFileSync(p, 'utf8'));
     }
   };
   walk(dir);

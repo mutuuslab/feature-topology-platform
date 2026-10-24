@@ -30,6 +30,15 @@ describe('목록 페이지 나눔 (RD-UX-03)', () => {
     expect(pageLimit(undefined)).toBeUndefined();
   });
 
+  it('질의 값이 배열·객체(매개변수 변조)면 limit은 VALIDATION, 커서는 null — 문자열만 받는다', () => {
+    expect(() => pageLimit(['5', '6'])).toThrow(/limit/);
+    expect(() => pageLimit({ a: '5' })).toThrow(/limit/);
+    expect(pageLimit(25)).toBe(25);
+    expect(decodeCursor(['abc'] as unknown as string)).toBeNull();
+    expect(decodeCursor({ length: 4 } as unknown as string)).toBeNull();
+    expect(pageOf(rows, 10, ['b2'] as unknown as string)).toBeNull();
+  });
+
   it('위조·깨진 커서는 null(호출자가 거부)', () => {
     expect(decodeCursor('***')).toBeNull();
     expect(decodeCursor('bm90LWpzb24')).toBeNull();

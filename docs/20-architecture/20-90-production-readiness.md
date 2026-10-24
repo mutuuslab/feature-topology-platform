@@ -130,7 +130,7 @@
 | 콜백 | `GET /api/auth/callback` → state 확인(상수 시간) → 코드 교환(기밀 클라이언트, client_secret_basic) → id_token 검증(RS256·PS256·ES256만, iss·aud·azp·exp·nbf·iat 60초 허용·nonce) → 역할 매핑 → 세션 → 안전한 returnTo로 302(같은 출처 상대 경로만 — `//evil`·`/\evil`·절대 주소·제어 문자 차단) |
 | 세션 | 표 `auth_session`(마이그레이션 045): 쿠키 `ff_session`(httpOnly·SameSite=Lax·Path=/·운영 모드 Secure)에는 무작위 32바이트 ID(서명), 표에는 SHA-256만. 절대 수명 `FF_SESSION_TTL_MIN`(기본 480분)·유휴 `FF_SESSION_IDLE_MIN`(기본 60분, 미끄럼). 다시 로그인하면 이전 세션 삭제 |
 | 역할 | IdP 그룹 클레임(`OIDC_ROLE_CLAIM`, 기본 `groups`, 점 경로 가능) → `OIDC_ROLE_MAP`. 사람 역할만 매핑 가능(SYSTEM·VEHICLE 불가). 매핑되는 역할이 없으면 로그인 거부(403 안내·감사 DENIED). id_token에 그룹이 없으면 userinfo에서(같은 sub일 때만) |
-| 요청 신원 | 세션 쿠키 또는 `Authorization: Bearer <접근 토큰>`(API 클라이언트, JWKS 검증·대상 `OIDC_AUDIENCE`)에서만. `X-Actor-Id`는 무시. `X-Actor-Role`은 부여 역할 중 하나를 고를 때만 — 부여 밖이면 403·DENIED. 없으면 그 경로가 허용하는 첫 부여 역할 |
+| 요청 신원 | 세션 쿠키 또는 `Authorization: Bearer <접근 토큰>`(API 클라이언트, JWKS 검증·대상 `OIDC_AUDIENCE`, ID 토큰 거부 — nonce·at_hash·c_hash·typ=ID 표지가 있으면 401 `ID_TOKEN_AS_ACCESS_TOKEN`, 머리 typ `at+jwt`는 접근 토큰)에서만. `X-Actor-Id`는 무시. `X-Actor-Role`은 부여 역할 중 하나를 고를 때만 — 부여 밖이면 403·DENIED. 없으면 그 경로가 허용하는 첫 부여 역할 |
 | 익명 | 신원 없는 요청은 401. 예외: `/api/health*`·`/api/auth/*`, webhook(자기 HMAC)·차량 창구(RD-SEC-08), OFREP 평가(`@ReadOnlyEndpoint`, 아래 남은 것) |
 | CSRF | 쿠키로 인증한 변경 요청(GET·HEAD·OPTIONS 밖)은 `Origin`이 `FF_PUBLIC_URL`의 출처(또는 `FF_CORS_ORIGINS`)여야 한다 — 아니면 403·DENIED. 로그아웃도 같다 |
 | 승인자 키(RD-SEC-05) | 로그인(세션 생성) 때 그 주체의 승인 서명 키를 등록(감사 `APPROVER_KEY_ENROLLED`, 이미 있으면 그대로). oidc에서는 승인 중 키 즉석 생성 금지 — 키가 없는 주체(로그인한 적 없는 Bearer 등)의 승인은 403 `APPROVER_KEY_NOT_ENROLLED`. 같은 주체는 역할을 바꿔도 두 번째 승인 칸을 채울 수 없다(DUPLICATE) |

@@ -255,7 +255,7 @@ describe('승인자 키 등록 의무 — 외부 명령의 승인 서명 (D-RD-5
     const r = (await http().post('/api/pki/approver-keys').set(SEC).send({ userId: 'u-7007', publicKeyPem: pem, reason: '외부 승인자' }).expect(201)).body;
     expect(r).toMatchObject({ userId: 'u-7007', kid: 'EXT-u-7007', source: 'EXTERNAL', fingerprint: expect.stringMatching(/^[0-9a-f]{32}$/) });
     await http().post('/api/pki/approver-keys').set(SEC).send({ userId: 'u-7007', publicKeyPem: testApproverKey('u-1001').publicKeyPem, reason: '바꿔치기' }).expect(409);
-    const rsa = generateKeyPairSync('rsa', { modulusLength: 1024 }).publicKey.export({ type: 'spki', format: 'pem' }).toString();
+    const rsa = generateKeyPairSync('rsa', { modulusLength: 2048 }).publicKey.export({ type: 'spki', format: 'pem' }).toString();
     await http().post('/api/pki/approver-keys').set(SEC).send({ userId: 'u-8008', publicKeyPem: rsa, reason: 'RSA 키' }).expect(400);
     const list = (await http().get('/api/pki/approver-keys').set(OPS).expect(200)).body.items;
     expect(list.find((k: { userId: string }) => k.userId === 'u-7007')).toMatchObject({ status: 'ACTIVE', source: 'EXTERNAL' });

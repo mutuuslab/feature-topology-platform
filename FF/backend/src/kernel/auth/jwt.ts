@@ -2,6 +2,7 @@
 //  · 서명 알고리즘 허용 목록: RS256·PS256·ES256 (none·HS* 거부 — 공개키로 HMAC을 위조하는 알고리즘 혼동 방지)
 //  · 발급자(iss)·대상(aud)·만료(exp)·발효(nbf)·발급(iat) — 시계 차이 60초 허용
 //  · 토큰 크기 상한 — 거대한 토큰으로 파싱·서명 검증 비용을 키우지 못하게
+//  · 접근 토큰 자리에 ID 토큰을 받지 않는다(tokenUse: 'access') — OIDC_AUDIENCE가 없으면 대상이 클라이언트 ID로 같아, 로그인용 ID 토큰이 Bearer로 통과했다
 import { constants, createPublicKey, verify as cryptoVerify, type JsonWebKey, type KeyObject } from 'node:crypto';
 
 export const ALLOWED_ALGS = ['RS256', 'PS256', 'ES256'] as const;
@@ -83,7 +84,18 @@ export interface VerifyOptions {
   nonce?: string;
   /** 여러 대상이면 azp가 이 클라이언트여야 한다(OIDC Core 3.1.3.7) */
   clientId?: string;
+  /** access — Bearer 접근 토큰 자리: ID 토큰 표지(nonce·at_hash·c_hash·typ 클레임 ID)가 있으면 거부(머리 typ이 at+jwt면 접근 토큰으로 본다) */
+  tokenUse?: 'id' | 'access';
   nowSec?: number;
+}
+
+/**
+ * ID 토큰 표지 — OIDC Core 2·3.1.3.6: 로그인 요청의 nonce, 접근 토큰·코드 해시(at_hash·c_hash). Keycloak은 typ 클레임 'ID'.
+ * RFC 9068 접근 토큰은 머리 typ을 at+jwt로 밝힌다 — 그러면 표지가 있어도 접근 토큰이다.
+ */
+export function looksLikeIdToken(header: JwtHeader, claims: JwtClaims): boolean {
+  if (typeof header.typ === 'string' && /^(application\/)?at\+jwt$/i.test(header.typ)) return false;
+  return claims.nonce !== undefined || claims.at_hash !== undefined || claims.c_hash !== undefined || claims.typ === 'ID';
 }
 
 /** 검증된 클레임. 실패는 JwtError(reason) — reason에 토큰 값을 넣지 않는다 */
@@ -119,5 +131,6 @@ export async function verifyJwt(token: string, o: VerifyOptions): Promise<JwtCla
   if (claims.iat !== undefined && (typeof claims.iat !== 'number' || now + CLOCK_SKEW_SEC < claims.iat)) throw new JwtError('ISSUED_IN_FUTURE');
   if (typeof claims.sub !== 'string' || !claims.sub || claims.sub.length > 255) throw new JwtError('NO_SUBJECT');
   if (o.nonce !== undefined && claims.nonce !== o.nonce) throw new JwtError('NONCE_MISMATCH');
+  if (o.tokenUse === 'access' && looksLikeIdToken(header, claims)) throw new JwtError('ID_TOKEN_AS_ACCESS_TOKEN');
   return claims;
 }

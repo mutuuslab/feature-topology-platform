@@ -143,7 +143,7 @@ IdP에 등록할 값:
 | `OIDC_CLIENT_SECRET` | ✓ 비밀 | | IdP 클라이언트 비밀 |
 | `OIDC_ROLE_MAP` | ✓ | §5 | IdP 그룹 → 역할 |
 | `OIDC_ROLE_CLAIM` | | `groups` | 역할 클레임(점 경로 가능) |
-| `OIDC_AUDIENCE` | | client id | Bearer 접근 토큰의 대상 |
+| `OIDC_AUDIENCE` | | client id | Bearer 접근 토큰의 대상. 로그인용 ID 토큰은 Bearer로 받지 않는다(nonce 등 표지) — API 클라이언트는 접근 토큰을 쓴다. IdP가 접근 토큰에 nonce를 싣는다면 머리 typ `at+jwt`(RFC 9068)로 발급하거나 API 대상을 따로 둔다 |
 | `OIDC_SCOPES` | | `openid profile email` | |
 | `FF_SESSION_SECRET` | ✓ 비밀 | 32자 이상 | 세션 쿠키 서명 |
 | `FF_SESSION_TTL_MIN` · `FF_SESSION_IDLE_MIN` | | `480` · `60` | 세션 절대 수명·유휴 만료(분) |

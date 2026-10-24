@@ -44,7 +44,7 @@ async function login(user: keyof typeof USERS, returnTo = '/policies?tab=a') {
 }
 
 beforeAll(async () => {
-  idp = await startFakeOidc({ clientId: 'ff-platform', clientSecret: 'idp-client-secret-🙂', users: USERS });
+  idp = await startFakeOidc({ clientId: 'ff-platform', clientSecret: 'idp-client-secret-🙂', users: USERS, postLogoutRedirectUris: [`${PUBLIC}/login`] });
   for (const k of ['FF_ENV', 'FF_CLOCK_AT', 'FF_SCHEDULER']) delete process.env[k];
   Object.assign(process.env, {
     FF_DB: ':memory:',
@@ -147,6 +147,15 @@ describe('SSO 로그인 흐름 (인가 코드 + PKCE, BFF 세션)', () => {
     expect(out.body.endSessionUrl).toContain(`${idp.issuer}/logout`);
     expect(out.body.endSessionUrl).toContain(encodeURIComponent(`${PUBLIC}/login`));
     await agent.get('/api/features').expect(401);
+    // IdP 로그아웃은 등록한 주소로만 돌려보낸다 — 시험 IdP도 열린 리디렉트가 아니다(CodeQL js/server-side-unvalidated-url-redirection)
+    const back = await fetch(out.body.endSessionUrl, { redirect: 'manual' });
+    expect(back.status).toBe(302);
+    expect(back.headers.get('location')).toBe(`${PUBLIC}/login`);
+    const evil = new URL(out.body.endSessionUrl);
+    evil.searchParams.set('post_logout_redirect_uri', 'https://evil.example/phish');
+    const r = await fetch(evil, { redirect: 'manual' });
+    expect(r.status).toBe(400);
+    expect(r.headers.get('location')).toBeNull();
   });
 });
 
@@ -221,6 +230,19 @@ describe('Bearer 접근 토큰(API 클라이언트)', () => {
     expect(big.status).toBe(401);
     expect(big.body.error.details.reason).toBe('TOO_LARGE');
     expect((await http().get('/api/iam/me').set('Authorization', 'Basic abc')).status).toBe(401);
+  });
+
+  // 로그인용 ID 토큰(대상 = 클라이언트 ID, nonce)은 접근 토큰이 아니다 — OIDC_AUDIENCE를 따로 두지 않으면 대상이 같아 Bearer로 통과했다
+  // (CodeQL js/user-controlled-bypass 2026-10-25: 요청이 고른 자격 증명 종류로 세션·로그인 검사를 건너뛴다). 수정 전 200, 수정 뒤 401
+  it('ID 토큰(nonce·at_hash·typ=ID)을 Bearer로 보내면 401 ID_TOKEN_AS_ACCESS_TOKEN — RFC 9068 at+jwt 접근 토큰은 받는다', async () => {
+    const idToken = (over: Record<string, unknown>) => idp.accessToken('author', { azp: 'ff-platform', ...over });
+    for (const over of [{ nonce: 'n-0123456789' }, { at_hash: 'x1y2z3' }, { c_hash: 'c1' }, { typ: 'ID' }]) {
+      const r = await bearer(idToken(over));
+      expect(r.status, JSON.stringify(over)).toBe(401);
+      expect(r.body.error.details?.reason).toBe('ID_TOKEN_AS_ACCESS_TOKEN');
+    }
+    // 머리 typ이 at+jwt면 접근 토큰이라고 IdP가 밝힌 것 — nonce가 실려 있어도(일부 IdP) 받는다
+    await bearer(idp.accessToken('author', { nonce: 'n-0123456789' }, { typ: 'at+jwt' })).expect(200);
   });
 
   it('시계 차이 60초 안의 만료는 받아 준다', async () => {

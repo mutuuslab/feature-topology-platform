@@ -21,12 +21,14 @@ const table = (rows = ROWS, pageSize?: number) => (
 );
 
 const bodyRows = () => document.querySelectorAll('tbody tr');
+/** 문구를 그대로 찾는 정규식 — 정규식 특수 문자(역슬래시 포함)를 모두 이스케이프한다 */
+const literal = (s: string) => new RegExp(s.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&'));
 
 describe('DataTable 나눠 그리기 (RD-UX-03)', () => {
   it('1만 행 — DOM 행은 한 쪽 크기만, 범위·쪽 수를 보인다', () => {
     render(table());
     expect(bodyRows().length).toBe(TABLE_PAGE_SIZE);
-    expect(screen.getByText(new RegExp(L.range(1, 100, 10_000).replace(/[()]/g, '\\$&')))).toBeTruthy();
+    expect(screen.getByText(literal(L.range(1, 100, 10_000)))).toBeTruthy();
     expect(screen.getByRole('button', { name: `큰 목록 ${L.prev}` })).toHaveProperty('disabled', true);
   });
 

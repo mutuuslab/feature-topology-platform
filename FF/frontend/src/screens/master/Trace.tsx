@@ -44,7 +44,7 @@ export function DesignTraceScreen() {
   const T = M.trace;
   return (
     <div className="ds-screen">
-      <PageHeader codes="D01-02 · D06-07 · REQ → IMPL → VERIFY" title={T.title} lead={T.lead} message={none ? { tone: 'neutral', text: ko.state.noFeatureTitle } : traceMessage(d)} />
+      <PageHeader codes="D01-02 · D06-07 · REQ → IMPL → VERIFY" title={T.title} lead={T.lead} message={none ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> } : traceMessage(d)} />
       <Toolbar label={T.pick}>
         <Select label={T.pick} value={pick} onChange={(e) => setSp({ feature: e.target.value })}>
           {!!pick && !feats.data?.items.some((f) => `${f.featureId}@${f.version}` === pick) && <option value={pick}>{pick}</option>}
@@ -53,7 +53,7 @@ export function DesignTraceScreen() {
           ))}
         </Select>
       </Toolbar>
-      <AsyncView state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
         {d && (
           <>
             <div className="ds-split">

@@ -149,7 +149,7 @@ export function VariantScreen() {
         lead={VC.lead}
         message={
           none
-            ? { tone: 'neutral', text: ko.state.noFeatureTitle }
+            ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }
             : d
             ? d.summary.notSupported
               ? { tone: 'warn', value: d.summary.notSupported, text: VC.key.notSupported(`${d.feature.featureId} ${d.feature.version} ${d.feature.name}`) }
@@ -165,7 +165,7 @@ export function VariantScreen() {
           <input className="ds-input ds-input--mono" name="version" value={version} onChange={(e) => set(featureId, e.target.value.trim())} />
         </Field>
       </div>
-      <AsyncView state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
         {d && (
           <>
             <SummaryLine

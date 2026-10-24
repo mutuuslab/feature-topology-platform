@@ -42,7 +42,7 @@ export default function ImpactScreen() {
         lead={T.lead}
         message={
           none
-            ? { tone: 'neutral', text: ko.state.noFeatureTitle }
+            ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }
             : q.data
             ? q.data.summary.rejudgeGates
               ? { tone: 'warn', value: q.data.summary.rejudgeGates, text: T.key.rejudge(`${feature} ${version}`) }
@@ -71,7 +71,7 @@ export default function ImpactScreen() {
           </fieldset>
         </div>
       </Panel>
-      <AsyncView state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }}>
         {d && (
           <>
             <SummaryLine

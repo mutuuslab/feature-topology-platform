@@ -175,7 +175,7 @@ export function FieldPortalScreen() {
         </label>
         <Button onClick={() => setSp({ vin: input })}>{F.lookup}</Button>
       </Toolbar>
-      <AsyncView state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody }}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody }}>
         {d && (
           <>
             <div className="ds-split">

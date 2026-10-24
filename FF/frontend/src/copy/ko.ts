@@ -607,6 +607,8 @@ export const ko = {
   vehicle: {
     key: { drift: (vin: string) => `서버 판단과 다른 flag — ${vin}`, clean: (vin: string) => `서버 판단과 차량 판단이 같습니다 — ${vin}` },
     title: '차량별 적용 상태',
+    // 차량을 고른 주소(/fleet/vehicles/:vin)는 하위 화면 — 경로 표시의 부모(차량별 적용 상태)와 H1이 같지 않게 차량을 붙인다
+    titleFor: (vin: string) => `차량별 적용 상태 · ${vin}`,
     lead: '차량이 받은 정책과 차량 판단을 서버 판단과 비교합니다.',
     pick: '차량 선택',
     bundles: '적용한 정책 게시본',

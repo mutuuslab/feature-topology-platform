@@ -26,11 +26,13 @@ export function ActivationScreen() {
   const policies = useApi<{ items: { flagKey: string; status: string }[] }>('listPolicies', { query: { status: 'DEPLOYED' } });
   const flags = [...new Set((policies.data?.items ?? []).map((p) => p.flagKey))].sort();
   // 기본 대상 — 예시 차량이 있으면 그것, 없으면 첫 차량. 차량·배포 정책이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
-  const vin = sp.get('vin') ?? pickDefault(vehicles.data?.items, (v) => v.vin === 'ego-01')?.vin ?? (vehicles.isError ? 'ego-01' : '');
+  const vin = sp.get('vin') ?? pickDefault(vehicles.data?.items, (v) => v.vin === 'ego-01')?.vin ?? '';
   const flagKey = sp.get('flagKey') ?? flags[0] ?? '';
   const noVehicle = !sp.get('vin') && !!vehicles.data && !vehicles.data.items.length;
   const noPolicy = !sp.get('flagKey') && !!policies.data && !flags.length;
   const none = noVehicle || noPolicy;
+  // 기본 대상을 고를 목록을 못 받으면 그 목록의 오류(권한 없음 포함)를 보인다 — 판단 조회는 하지 않는다
+  const listErr = !sp.get('vin') && vehicles.isError ? vehicles : !sp.get('flagKey') && policies.isError ? policies : null;
   const set = (k: string, v: string) => {
     const n = new URLSearchParams(sp);
     n.set(k, v);
@@ -77,7 +79,7 @@ export function ActivationScreen() {
           </div>
         }
       />
-      <AsyncView state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={noVehicle ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : { title: ko.state.noPolicyTitle, body: ko.state.noPolicyBody }}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(listErr ?? q)} error={(listErr ?? q).error?.message} onRetry={() => (listErr ?? q).refetch()} empty={noVehicle ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : { title: ko.state.noPolicyTitle, body: ko.state.noPolicyBody }}>
         {d && (
           <>
             <Panel title={A.trace} eyebrow={`${d.result.policyId} r${d.result.revision}`} id="result">

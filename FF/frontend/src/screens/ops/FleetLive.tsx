@@ -177,7 +177,7 @@ export function VehicleRuntimeScreen() {
     <div className="ds-screen">
       <PageHeader
         codes="D02-03 · VEHICLE RUNTIME"
-        title={V.title}
+        title={param ? V.titleFor(param) : V.title}
         lead={V.lead}
         message={(() => {
           const n = d?.evaluations.filter((e) => e.drift).length ?? 0;
@@ -194,7 +194,7 @@ export function VehicleRuntimeScreen() {
           </Select>
         }
       />
-      <AsyncView state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody }}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} empty={{ title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody }}>
         {d && (
           <>
             <div className="ds-split">

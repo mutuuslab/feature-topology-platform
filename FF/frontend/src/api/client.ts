@@ -44,6 +44,8 @@ export interface CallOptions {
   /** 이 요청에서 맡을 플랫폼 역할 — 한 사람이 여러 승인 역할을 맡을 때 화면이 정한다(예: 빈 칸이 FSM이면 FSM으로 서명). 맡지 않은 역할이면 무시 */
   actorRole?: Role;
   signal?: AbortSignal;
+  /** 낙관적 잠금 — 화면이 본 버전(If-Match). 다르면 서버가 412 */
+  ifMatch?: string | number;
 }
 
 /** 요청 URL — contracts의 routeUrl (정적 스냅샷 도구와 같은 규칙) */
@@ -105,6 +107,7 @@ export async function call<T = any>(name: RouteName | string, opts: CallOptions 
   if (write) {
     headers['Idempotency-Key'] = crypto.randomUUID();
     headers['Content-Type'] = 'application/json';
+    if (opts.ifMatch !== undefined) headers['If-Match'] = `"${opts.ifMatch}"`;
   }
   let res: Response;
   try {

@@ -14,8 +14,8 @@ import { useProcedureSummary } from '../../data/procedureProgress';
 import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, useUnsavedGuard, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
-import { DashboardBoard, DashboardTools, GadgetDirectory, useBoard } from './dashboard/Dashboard';
-import { isSafetyKill } from './dashboard/gadgets';
+import { DashboardPage } from './dashboard/Dashboard';
+import { isSafetyKill } from './dashboard/catalog';
 
 const I = ko.master.inbox;
 const t16 = (iso: string | null | undefined) => (iso ? iso.slice(0, 16).replace('T', ' ') : '—');
@@ -158,7 +158,6 @@ function homeMessage(activeKills: number, mine: number, procMine: number, loaded
 }
 
 export function HomeScreen() {
-  const H = ko.master.home;
   const { role } = useAppShell();
   const proc = useProcedureSummary(role);
   const inbox = useInbox();
@@ -166,16 +165,8 @@ export function HomeScreen() {
   const activeKills = (kills.data?.items ?? []).filter(isSafetyKill).length;
   const mine = inbox.items.filter((i) => i.mine).length;
   const procMine = proc ? proc.todo + proc.review : 0;
-  // Jira 대시보드식 — 가젯을 끌어 옮기고 추가·빼기·레이아웃을 바꾼다(역할별 저장). 핵심 메시지는 판 위에 하나
-  const board = useBoard(role);
-  const [adding, setAdding] = useState(false);
-  return (
-    <div className="ds-screen">
-      <PageHeader title={H.title} lead={H.lead} message={homeMessage(activeKills, mine, procMine, !!kills.data && !inbox.loading)} actions={<DashboardTools {...board} onAdd={() => setAdding(true)} />} />
-      <DashboardBoard role={role} board={board.board} update={board.update} />
-      <GadgetDirectory open={adding} onClose={() => setAdding(false)} board={board.board} update={board.update} />
-    </div>
-  );
+  // Jira 대시보드 — 이름·바꾸기·별·편집·더 보기, 가젯 인스턴스·구성(서버 저장, 정적 데모는 이 브라우저). 핵심 메시지는 판 위에 하나
+  return <DashboardPage role={role} message={homeMessage(activeKills, mine, procMine, !!kills.data && !inbox.loading)} />;
 }
 
 // ───────── Feature 제안 · 등록 ─────────

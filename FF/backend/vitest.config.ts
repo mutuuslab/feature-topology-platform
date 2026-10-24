@@ -14,5 +14,8 @@ export default defineConfig({
     // (vitest 4부터 poolOptions는 최상위 옵션 — forks 풀은 기본값)
     execArgv: ['--disable-warning=ExperimentalWarning'],
     maxWorkers: 6,
+    // 제한 시간 — vitest 5 기본 5 s는 병렬 작업 부하에서 Nest 부팅·PoC 전달 시험(delivery·virtual)이 넘어 연쇄 실패했다(2026-10-24)
+    testTimeout: 30_000,
+    hookTimeout: 60_000,
   },
 });

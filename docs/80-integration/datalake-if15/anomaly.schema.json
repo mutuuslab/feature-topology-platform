@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/anomaly.schema.json",
+  "title": "anomaly v1 — 이상 징후 건의 상태 변화(스냅샷)",
+  "description": "FF 원천: anomaly 표(D06-12 AnomalyService, contracts rules/anomaly.ts AnomalySchema) · 이벤트 anomaly.opened·escalated·acknowledged·mitigated·dismissed. 이벤트마다 그 시점의 건 전체를 싣는다(Lake가 상태를 다시 만들지 않아도 되게). vins는 차량 가명으로 바꾼다. closeReason(사람이 쓴 글)·처리자 ID는 보내지 않는다. 열린 건(OPEN·ACKNOWLEDGED)의 차량·Feature는 Lake 보존 삭제에서 보류된다(5장).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["change", "anomaly_id", "kind", "status", "severity", "advice", "reasons", "vehicle_pseudonyms", "signal_codes", "opened_at", "updated_at", "closed_at", "kill_id"],
+  "properties": {
+    "change": { "enum": ["OPENED", "ESCALATED", "ACKNOWLEDGED", "MITIGATED", "DISMISSED"] },
+    "anomaly_id": { "type": "string", "pattern": "^ANM-[0-9]{5}$" },
+    "kind": { "enum": ["FEATURE_FAULT", "SECURITY", "DELIVERY", "FIELD_SOTIF"] },
+    "status": { "enum": ["OPEN", "ACKNOWLEDGED", "MITIGATED", "DISMISSED"] },
+    "severity": { "enum": ["INFO", "WARNING", "CRITICAL"] },
+    "advice": { "enum": ["KILL", "INVESTIGATE", "REDELIVER", "SECURITY_REVIEW", "MONITOR"] },
+    "reasons": { "description": "플랫폼이 만든 판정 사유 문장(사람 입력 아님)", "type": "array", "items": { "type": "string", "maxLength": 300 }, "maxItems": 50 },
+    "vehicle_pseudonyms": { "type": "array", "items": { "type": "string", "pattern": "^[a-f0-9]{16,64}$" }, "maxItems": 10000 },
+    "signal_codes": { "description": "근거 신호의 코드(중복 제거)", "type": "array", "items": { "type": "string", "maxLength": 60 }, "maxItems": 200 },
+    "opened_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "closed_at": { "type": ["string", "null"], "format": "date-time" },
+    "kill_id": { "type": ["string", "null"], "maxLength": 40 }
+  }
+}

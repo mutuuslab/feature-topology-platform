@@ -10,6 +10,7 @@ import { PlatformComponent } from '../../../kernel/components';
 import { vehiclePseudonym } from '../../../kernel/crypto';
 import { DB, type Db } from '../../../kernel/db';
 import { EventService } from '../../../kernel/event.service';
+import { VehicleAuthService } from '../../../kernel/vehicle-auth';
 import { FleetRepo } from '../../d01-policy/policy-repos';
 
 const SYSTEM: Actor = { id: 'system', role: 'SYSTEM', correlationId: 'vsoc-monitor' };
@@ -26,9 +27,12 @@ export class SecurityEventService implements OnModuleInit {
     private readonly events: EventService,
     private readonly audit: AuditService,
     private readonly fleet: FleetRepo,
+    private readonly vehicleAuth: VehicleAuthService,
   ) {}
 
   onModuleInit() {
+    // 차량 요청 인증 실패(RD-SEC-08) — 서명 없음·서명 불일치·재전송·시각 밖·다른 VIN 흉내를 IdsM 이벤트로(VIN은 가명)
+    this.vehicleAuth.onRejected((r) => this.observe(r.code, r.vin, { source: 'vehicle.request', method: r.method, path: r.vin ? r.path.split(r.vin).join('<vin>') : r.path, keyEpoch: r.keyEpoch }));
     this.events.stream(['vehicle.status.accepted', 'vehicle.status.rejected', 'kill.rejected']).subscribe((e) => {
       try {
         const p = e.payload as Record<string, any>;

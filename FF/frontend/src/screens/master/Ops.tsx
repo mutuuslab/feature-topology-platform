@@ -5,7 +5,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { COMPLIANCE_PROFILES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, Explain, ExplainCodes, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, RuleText, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
+import { useVehiclePick } from '../../data/first-run';
+import { AsyncView, Button, DataTable, ErrorNote, Explain, ExplainCodes, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, RuleText, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec, useReportCatalog } from '../../design';
 import { ComponentName, Done, usePermission } from '../shared';
 import { EpochBump, SbomDrawer, SecurityEventsPanel } from './Security';
 
@@ -46,7 +47,7 @@ function ReadbacksTab() {
   const rows = q.data?.items ?? [];
   const C = M.telemetry.rbCol;
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
       <DataTable
         caption={M.telemetry.tabs.readbacks}
         rows={rows}
@@ -79,13 +80,14 @@ function VehiclePicker({ vin, onChange }: { vin: string; onChange: (v: string) =
 }
 
 function StatusTab() {
-  const [vin, setVin] = useState('ego-01');
-  const q = useApi<{ vin: string; features: { featureId: string; state: string; reportSeq: number; updatedAt: string }[]; recent: { featureId: string; state: string; reportSeq: number; accepted: boolean; violation: { code: string; message: string } | null; at: string }[] }>('vehicleStatusView', { params: { vin } });
+  // 예시 차량이 있으면 그것, 없으면 첫 차량 — 차량이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const { vin, setVin, none } = useVehiclePick('ego-01');
+  const q = useApi<{ vin: string; features: { featureId: string; state: string; reportSeq: number; updatedAt: string }[]; recent: { featureId: string; state: string; reportSeq: number; accepted: boolean; violation: { code: string; message: string } | null; at: string }[] }>('vehicleStatusView', { params: { vin } }, { enabled: !!vin });
   const d = q.data;
   return (
     <>
       <VehiclePicker vin={vin} onChange={setVin} />
-      <AsyncView state={asyncState(q, !d?.features.length && !d?.recent.length)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q, !d?.features.length && !d?.recent.length)} error={q.error} onRetry={() => q.refetch()} empty={none ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : undefined}>
         {d && (
           <DataTable
             caption={M.telemetry.tabs.status}
@@ -105,14 +107,14 @@ function StatusTab() {
 }
 
 function RequestsTab() {
-  const [vin, setVin] = useState('ego-01');
-  const q = useApi<{ items: { requestId: string; at: string; channel: string; type: string; outcome: string; reason: string | null; summary: string }[] }>('vehicleRequests', { params: { vin } });
+  const { vin, setVin, none } = useVehiclePick('ego-01');
+  const q = useApi<{ items: { requestId: string; at: string; channel: string; type: string; outcome: string; reason: string | null; summary: string }[] }>('vehicleRequests', { params: { vin } }, { enabled: !!vin });
   const rows = q.data?.items ?? [];
   const C = M.telemetry.reqCol;
   return (
     <>
       <VehiclePicker vin={vin} onChange={setVin} />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} empty={none ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : undefined}>
         <DataTable
           caption={M.telemetry.tabs.requests}
           rows={rows}
@@ -153,7 +155,7 @@ export function SupplierScreen() {
           ))}
         </Select>
       </Toolbar>
-      <AsyncView state={asyncState(q, mine.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, mine.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={S.title}
           rows={mine}
@@ -193,7 +195,7 @@ export function SecurityScreen() {
         })()}
       />
       <Panel title={S.keys} id="sec-keys">
-        <AsyncView state={asyncState(keys, rows.length === 0)} error={keys.error?.message} onRetry={() => keys.refetch()}>
+        <AsyncView state={asyncState(keys, rows.length === 0)} error={keys.error} onRetry={() => keys.refetch()}>
           <DataTable
             caption={S.keys}
             rows={rows}
@@ -212,7 +214,7 @@ export function SecurityScreen() {
       </Panel>
       <div className="ds-split">
         <Panel title={S.hsm} id="sec-hsm" actions={<EpochBump />}>
-          <AsyncView state={asyncState(hsm)} error={hsm.error?.message} onRetry={() => hsm.refetch()}>
+          <AsyncView state={asyncState(hsm)} error={hsm.error} onRetry={() => hsm.refetch()}>
             <KeyValue rows={Object.entries(hsm.data ?? {}).map(([k, v]) => ({ k: <span className="ds-mono">{k}</span>, v: <span className="ds-mono">{String(v)}</span> }))} />
           </AsyncView>
         </Panel>
@@ -246,7 +248,7 @@ function SbomPanel() {
   const [open, setOpen] = useState<string | null>(null);
   return (
     <Panel title={S.sbom} codes="D06-11 · FFG-SBOM-002·003" id="sec-sbom">
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={3}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} rows={3}>
         <DataTable
           caption={S.sbom}
           rows={rows}
@@ -325,7 +327,7 @@ function VexPanel() {
         </Button>
       </form>
       <ErrorNote error={rec.error} />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} rows={2} empty={{ title: S.vexNone }}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} rows={2} empty={{ title: S.vexNone }}>
         <DataTable
           caption={S.vex}
           rows={rows}
@@ -354,7 +356,7 @@ export function SettingsScreen() {
       <PageHeader codes="KERNEL · CONFIG" title={S.title} lead={S.lead} message={!h ? { tone: 'neutral', value: '—', text: S.key.bad } : h.status === 'ok' ? { tone: 'ok', text: S.key.ok(h.seed ?? '—') } : { tone: 'danger', text: S.key.bad }} />
       <div className="ds-split">
         <Panel title={S.health} id="set-health">
-          <AsyncView state={asyncState(health)} error={health.error?.message} onRetry={() => health.refetch()}>
+          <AsyncView state={asyncState(health)} error={health.error} onRetry={() => health.refetch()}>
             {h && (
               <KeyValue
                 rows={[
@@ -374,7 +376,7 @@ export function SettingsScreen() {
         </Panel>
       </div>
       <Panel title={S.integrations} id="set-if" actions={<Link to="/integration/connectors">{ko.p10.integrations.title}</Link>}>
-        <AsyncView state={asyncState(sys)} error={sys.error?.message} onRetry={() => sys.refetch()}>
+        <AsyncView state={asyncState(sys)} error={sys.error} onRetry={() => sys.refetch()}>
           <DataTable
             caption={S.integrations}
             rows={sys.data?.items ?? []}
@@ -417,6 +419,7 @@ function complianceMessage(profiles: boolean): KeyMessageSpec {
 }
 
 function RulesTab() {
+  const catalog = useReportCatalog();
   const [filter, setFilter] = useState<'all' | 'open' | 'done'>('all');
   const C = M.compliance;
   const all = useMemo(
@@ -424,7 +427,7 @@ function RulesTab() {
       Object.entries(STANDARDS_MAP)
         .map(([id, p]) => ({ id, rule: reportRule(id), wp: p.wp, components: p.components, status: RULE_STATUS[id] ?? { implemented: false, tested: false } }))
         .sort((a, b) => a.id.localeCompare(b.id)),
-    [],
+    [catalog],
   );
   const rows = all.filter((r) => filter === 'all' || (filter === 'done' ? r.status.implemented : !r.status.implemented));
   return (
@@ -574,7 +577,7 @@ export function EoScreen() {
           <span className="ds-field__label">{E.onlyMulti}</span>
         </label>
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={E.title}
           rows={rows}

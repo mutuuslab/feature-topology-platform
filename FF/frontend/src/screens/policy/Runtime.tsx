@@ -5,6 +5,7 @@ import { useQueries } from '@tanstack/react-query';
 import { STATIC_MODE, call } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { pickDefault } from '../../data/first-run';
 import { AsyncView, Button, DataTable, ErrorNote, IdChip, PageHeader, Panel, Select, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
 import { OpenFeaturePanel } from './OpenFeaturePanel';
@@ -24,18 +25,24 @@ export function ActivationScreen() {
   const vehicles = useApi<{ items: { vin: string; label: string; quality: string }[] }>('vehicles');
   const policies = useApi<{ items: { flagKey: string; status: string }[] }>('listPolicies', { query: { status: 'DEPLOYED' } });
   const flags = [...new Set((policies.data?.items ?? []).map((p) => p.flagKey))].sort();
-  const vin = sp.get('vin') ?? 'ego-01';
-  const flagKey = sp.get('flagKey') ?? flags[0] ?? 'care_00022_param';
+  // 기본 대상 — 예시 차량이 있으면 그것, 없으면 첫 차량. 차량·배포 정책이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const vin = sp.get('vin') ?? pickDefault(vehicles.data?.items, (v) => v.vin === 'ego-01')?.vin ?? '';
+  const flagKey = sp.get('flagKey') ?? flags[0] ?? '';
+  const noVehicle = !sp.get('vin') && !!vehicles.data && !vehicles.data.items.length;
+  const noPolicy = !sp.get('flagKey') && !!policies.data && !flags.length;
+  const none = noVehicle || noPolicy;
+  // 기본 대상을 고를 목록을 못 받으면 그 목록의 오류(권한 없음 포함)를 보인다 — 판단 조회는 하지 않는다
+  const listErr = !sp.get('vin') && vehicles.isError ? vehicles : !sp.get('flagKey') && policies.isError ? policies : null;
   const set = (k: string, v: string) => {
     const n = new URLSearchParams(sp);
     n.set(k, v);
     setSp(n, { replace: true });
   };
-  const q = useApi<Decision>('activationDecide', { query: { vin, flagKey } });
+  const q = useApi<Decision>('activationDecide', { query: { vin, flagKey } }, { enabled: !!vin && !!flagKey });
   const [ofrep, setOfrep] = useState<unknown>(null);
   useEffect(() => {
     setOfrep(null);
-    if (STATIC_MODE) return;
+    if (STATIC_MODE || !vin || !flagKey) return;
     fetch(`/ofrep/v1/evaluate/flags/${encodeURIComponent(flagKey)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: { targetingKey: vin } }) })
       .then((r) => r.json())
       .then(setOfrep, () => setOfrep(null));
@@ -54,7 +61,7 @@ export function ActivationScreen() {
         codes="D01-09 · ACTIVATION"
         title={A.title}
         lead={A.lead}
-        message={d ? { tone: d.result.value ? 'ok' : 'neutral', status: { label: d.result.value ? 'ON' : 'OFF', tone: d.result.value ? 'ok' : 'neutral' }, text: A.key(vin, flagKey, d.result.decision, d.result.reason) } : { tone: 'neutral', status: { label: '—' }, text: A.key(vin, flagKey, '…', '…') }}
+        message={none ? { tone: 'neutral', status: { label: '—' }, text: noVehicle ? ko.state.noVehicleTitle : ko.state.noPolicyTitle } : d ? { tone: d.result.value ? 'ok' : 'neutral', status: { label: d.result.value ? 'ON' : 'OFF', tone: d.result.value ? 'ok' : 'neutral' }, text: A.key(vin, flagKey, d.result.decision, d.result.reason) } : { tone: 'neutral', status: { label: '—' }, text: A.key(vin, flagKey, '…', '…') }}
         actions={
           <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
             <Select label={A.vehicle} value={vin} onChange={(e) => set('vin', e.target.value)}>
@@ -72,7 +79,7 @@ export function ActivationScreen() {
           </div>
         }
       />
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(listErr ?? q)} error={(listErr ?? q).error} onRetry={() => (listErr ?? q).refetch()} empty={noVehicle ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : { title: ko.state.noPolicyTitle, body: ko.state.noPolicyBody }}>
         {d && (
           <>
             <Panel title={A.trace} eyebrow={`${d.result.policyId} r${d.result.revision}`} id="result">

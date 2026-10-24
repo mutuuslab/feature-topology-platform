@@ -33,6 +33,11 @@ export interface ReplayHandles {
   trialSweep: (today: string) => unknown;
   /** 하루 한 번 — 보존 sweep(보존 기간이 지난 상태 보고·readback·차량 발신 기록 삭제) */
   retentionSweep: () => unknown;
+  /**
+   * 차량 쪽 요청 서명(RD-SEC-08) — 공장 주입 차량 키로 CMAC 머리글을 만든다(body는 보낼 JSON 원문). 없으면 데모 머리글(X-Vehicle-Id)만.
+   * 시험·CLI는 kernel/vehicle-auth-client의 signVehicleRequest를 재생 시계로 부른다.
+   */
+  vehicleHeaders?: (vin: string, method: 'GET' | 'POST', path: string, body: string) => Record<string, string>;
 }
 
 export interface Launches {
@@ -289,10 +294,10 @@ export async function replay(api: Api, hd: ReplayHandles, o: ReplayOptions): Pro
     const n = (seqOf.get(vin) ?? 0) + 1;
     seqOf.set(vin, n);
     const boot = `BOOT-${vin}-1`;
-    if (n === 1) {
-      await call('차량 보고', 'POST', `/vehicle/v1/${vin}/reports`, { 'X-Vehicle-Id': vin }, { type: 'HELLO', bootId: boot, sequence: 0, observedAt: new Date(hd.clock.now()).toISOString() });
-    }
-    return call('차량 보고', 'POST', `/vehicle/v1/${vin}/reports`, { 'X-Vehicle-Id': vin }, { bootId: boot, sequence: n, observedAt: new Date(hd.clock.now()).toISOString(), ...body });
+    const path = `/vehicle/v1/${vin}/reports`;
+    const send = (b: Record<string, unknown>) => call('차량 보고', 'POST', path, hd.vehicleHeaders?.(vin, 'POST', path, JSON.stringify(b)) ?? { 'X-Vehicle-Id': vin }, b);
+    if (n === 1) await send({ type: 'HELLO', bootId: boot, sequence: 0, observedAt: new Date(hd.clock.now()).toISOString() });
+    return send({ bootId: boot, sequence: n, observedAt: new Date(hd.clock.now()).toISOString(), ...body });
   }
   const receiversOf = (featureId: string) => {
     const vs = [...features.values()].filter((f) => f.featureId === featureId).map((f) => `${f.country}|${f.vehicleModel}|${f.trim}`);

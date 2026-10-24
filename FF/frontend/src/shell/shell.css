@@ -190,6 +190,16 @@
   font-weight: 800;
   font-size: var(--fs-sm);
 }
+/* SSO 사용자 이름(운영 빌드) — 역할 선택기 앞 */
+.sh-user__name {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--ink);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .sh-user select {
   border: 0;
   background: transparent;
@@ -799,23 +809,4 @@
 .ntf-side {
   display: grid;
   gap: var(--sp-4);
-}
-.ntf-prefs {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--sp-1);
-}
-.ntf-prefs li {
-  display: flex;
-  min-height: 28px; /* 체크박스 줄 간격 — 클릭 대상 24px 원이 이웃과 겹치지 않게(WCAG 2.5.8) */
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-}
-.ntf-prefs label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
 }

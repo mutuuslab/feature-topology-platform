@@ -1,0 +1,293 @@
+[
+  {
+    "schema": "ff.lake.event/1",
+    "event_id": "0b9d3c52-6f1e-4a0b-9c7e-2f1d8a4b6c01",
+    "seq": 48211,
+    "install_id": "acme-prod",
+    "type": "relay.verdict",
+    "type_version": 1,
+    "data_category": "SAFETY_OPERATION",
+    "occurred_at": "2026-10-13T00:01:10Z",
+    "recorded_at": "2026-10-13T00:01:12Z",
+    "feature": {
+      "id": "FEAT-00022",
+      "version": "1.0.0"
+    },
+    "vehicle": {
+      "pseudonym": "9f2c4a7d1e0b5c36",
+      "model": "NE1",
+      "model_year": "2026",
+      "country": "KR",
+      "sw_version": "23.4.1"
+    },
+    "correlation_id": null,
+    "payload": {
+      "message_id": "9f2c4a7d1e0b5c36:q3J8vX0bN2kLmP4sT6wY",
+      "relay_seq": 9001,
+      "stream": "SAFETY",
+      "kind": "STATUS_REPORT",
+      "outcome": "ACCEPTED",
+      "check": null,
+      "relay_latency_ms": 840
+    }
+  },
+  {
+    "schema": "ff.lake.event/1",
+    "event_id": "1c2e4f60-7a8b-4c9d-8e0f-1a2b3c4d5e02",
+    "seq": 48212,
+    "install_id": "acme-prod",
+    "type": "relay.verdict",
+    "type_version": 1,
+    "data_category": "SECURITY_MONITORING",
+    "occurred_at": "2026-10-13T00:01:10Z",
+    "recorded_at": "2026-10-13T00:01:12Z",
+    "feature": {
+      "id": "FEAT-00022",
+      "version": "1.0.0"
+    },
+    "vehicle": {
+      "pseudonym": "4b1d0c9e8a7f6e5d",
+      "model": "NE1",
+      "model_year": "2025",
+      "country": "EU",
+      "sw_version": "23.3.0"
+    },
+    "correlation_id": null,
+    "payload": {
+      "message_id": "4b1d0c9e8a7f6e5d:Zr7uQ1aW9eD3fG5hJ8kL",
+      "relay_seq": 9002,
+      "stream": "SAFETY",
+      "kind": "STATUS_REPORT",
+      "outcome": "REJECTED",
+      "check": {
+        "layer": "STATUS_CHECK",
+        "step": "AUTH",
+        "code": "STATE_AUTH_FAILED"
+      },
+      "relay_latency_ms": 1210
+    }
+  },
+  {
+    "schema": "ff.lake.event/1",
+    "event_id": "2d3f5a71-8b9c-4dae-9f10-2b3c4d5e6f03",
+    "seq": 48230,
+    "install_id": "acme-prod",
+    "type": "relay.verdict",
+    "type_version": 1,
+    "data_category": "SAFETY_OPERATION",
+    "occurred_at": "2026-10-13T00:01:10Z",
+    "recorded_at": "2026-10-13T00:01:12Z",
+    "feature": {
+      "id": "FEAT-00022",
+      "version": "1.0.0"
+    },
+    "vehicle": {
+      "pseudonym": "9f2c4a7d1e0b5c36",
+      "model": "NE1",
+      "model_year": "2026",
+      "country": "KR",
+      "sw_version": "23.4.1"
+    },
+    "correlation_id": null,
+    "payload": {
+      "message_id": "9f2c4a7d1e0b5c36:q3J8vX0bN2kLmP4sT6wY",
+      "relay_seq": 9010,
+      "stream": "SAFETY",
+      "kind": "STATUS_REPORT",
+      "outcome": "DUPLICATE",
+      "check": null,
+      "relay_latency_ms": 15400
+    }
+  },
+  {
+    "schema": "ff.lake.event/1",
+    "event_id": "4f5b7c93-adbe-4fc0-b132-4d5e6f7a8b05",
+    "seq": 48251,
+    "install_id": "acme-prod",
+    "type": "anomaly",
+    "type_version": 1,
+    "data_category": "SAFETY_OPERATION",
+    "occurred_at": "2026-10-13T03:16:00Z",
+    "recorded_at": "2026-10-13T03:16:00Z",
+    "feature": {
+      "id": "FEAT-00022",
+      "version": null
+    },
+    "vehicle": null,
+    "correlation_id": null,
+    "payload": {
+      "change": "OPENED",
+      "anomaly_id": "ANM-00007",
+      "kind": "FEATURE_FAULT",
+      "status": "OPEN",
+      "severity": "WARNING",
+      "advice": "INVESTIGATE",
+      "reasons": [
+        "차량 고장 ECU_TIMEOUT 3대"
+      ],
+      "vehicle_pseudonyms": [
+        "9f2c4a7d1e0b5c36",
+        "4b1d0c9e8a7f6e5d",
+        "a1b2c3d4e5f60718"
+      ],
+      "signal_codes": [
+        "ECU_TIMEOUT"
+      ],
+      "opened_at": "2026-10-13T03:16:00Z",
+      "updated_at": "2026-10-13T03:16:00Z",
+      "closed_at": null,
+      "kill_id": null
+    }
+  },
+  {
+    "schema": "ff.lake.event/1",
+    "event_id": "5a6c8da4-becf-40d1-8243-5e6f7a8b9c06",
+    "seq": 48260,
+    "install_id": "acme-prod",
+    "type": "incident",
+    "type_version": 1,
+    "data_category": "SAFETY_OPERATION",
+    "occurred_at": null,
+    "recorded_at": "2026-10-13T05:00:00Z",
+    "feature": {
+      "id": "FEAT-00022",
+      "version": null
+    },
+    "vehicle": {
+      "pseudonym": "9f2c4a7d1e0b5c36",
+      "model": "NE1",
+      "model_year": "2026",
+      "country": "KR",
+      "sw_version": "23.4.1"
+    },
+    "correlation_id": "c-91aa",
+    "payload": {
+      "incident_id": "INC-00003",
+      "source": "VOC",
+      "category": "UNEXPECTED_ACTIVATION",
+      "severity": "WARNING",
+      "occurred_at": null,
+      "received_at": "2026-10-13T05:00:00Z",
+      "sotif_trigger": true,
+      "status": "LINKED",
+      "anomaly_id": "ANM-00007"
+    }
+  },
+  {
+    "schema": "ff.lake.event/1",
+    "event_id": "6b7d9eb5-cfd0-41e2-9354-6f7a8b9c0d07",
+    "seq": 48270,
+    "install_id": "acme-prod",
+    "type": "security.alert",
+    "type_version": 1,
+    "data_category": "SECURITY_MONITORING",
+    "occurred_at": "2026-10-13T06:00:00Z",
+    "recorded_at": "2026-10-13T06:00:00Z",
+    "feature": null,
+    "vehicle": {
+      "pseudonym": "4b1d0c9e8a7f6e5d",
+      "model": "NE1",
+      "model_year": "2025",
+      "country": "EU",
+      "sw_version": "23.3.0"
+    },
+    "correlation_id": null,
+    "payload": {
+      "alert_id": "AUTH_FAILURE",
+      "count": 3,
+      "threshold": {
+        "count": 3,
+        "window_ms": 600000,
+        "per_vehicle": true
+      },
+      "channel_limited": true
+    }
+  },
+  {
+    "schema": "ff.lake.event/1",
+    "event_id": "7c8eafc6-d0e1-42f3-a465-7a8b9c0d1e08",
+    "seq": 48280,
+    "install_id": "acme-prod",
+    "type": "entitlement",
+    "type_version": 1,
+    "data_category": "COMMERCIAL_USAGE",
+    "occurred_at": "2026-10-13T07:00:00Z",
+    "recorded_at": "2026-10-13T07:00:00Z",
+    "feature": null,
+    "vehicle": {
+      "pseudonym": "9f2c4a7d1e0b5c36",
+      "model": "NE1",
+      "model_year": "2026",
+      "country": "KR",
+      "sw_version": "23.4.1"
+    },
+    "correlation_id": null,
+    "payload": {
+      "change": "ACCEPTED",
+      "grant_id": "GR-00011",
+      "catalog_id": "CAT-00002",
+      "plan": null,
+      "valid_from": "2026-10-13T07:00:00Z",
+      "valid_to": "2026-11-12T07:00:00Z"
+    }
+  },
+  {
+    "schema": "ff.lake.event/1",
+    "event_id": "9e0ac1e8-f203-4415-8687-9c0d1e2f3a10",
+    "seq": 48291,
+    "install_id": "acme-prod",
+    "type": "ff.change",
+    "type_version": 1,
+    "data_category": "SAFETY_OPERATION",
+    "occurred_at": "2026-10-13T00:00:30Z",
+    "recorded_at": "2026-10-13T00:00:30Z",
+    "feature": {
+      "id": "FEAT-00022",
+      "version": "1.0.0"
+    },
+    "vehicle": null,
+    "correlation_id": "c-02bd",
+    "payload": {
+      "source_event": "publication.signed",
+      "subject_id": "PUB-00042",
+      "policy_id": "POL-00005",
+      "publication_id": "PUB-00042",
+      "policy_hash": "sha256:abababababababababababababababababababababababababababababababab",
+      "kill_id": "KILL-00003",
+      "flag_key": null,
+      "stage": null,
+      "target_count": 1200
+    }
+  },
+  {
+    "schema": "ff.lake.event/1",
+    "event_id": "8d9fb0d7-e1f2-4304-b576-8b9c0d1e2f09",
+    "seq": 48290,
+    "install_id": "acme-prod",
+    "type": "ff.change",
+    "type_version": 1,
+    "data_category": "SAFETY_OPERATION",
+    "occurred_at": "2026-10-13T08:00:00Z",
+    "recorded_at": "2026-10-13T08:00:00Z",
+    "feature": {
+      "id": "FEAT-00022",
+      "version": "1.0.0"
+    },
+    "vehicle": null,
+    "correlation_id": "c-02bd",
+    "payload": {
+      "source_event": "rollout.staged",
+      "subject_id": "POL-00005",
+      "policy_id": "POL-00005",
+      "publication_id": null,
+      "kill_id": null,
+      "flag_key": "ff.feat00022.enabled",
+      "stage": {
+        "from_bp": 100,
+        "to_bp": 1000
+      },
+      "target_count": null,
+      "policy_hash": null
+    }
+  }
+]

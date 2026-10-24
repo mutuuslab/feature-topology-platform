@@ -25,6 +25,7 @@ import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { PostReviewForm } from '../admin/Oversight';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { useDefaultFeature } from '../../data/first-run';
 import {
   ApprovalSlots,
   AsyncView,
@@ -173,8 +174,12 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   // 이상 징후 대응(/ops/anomalies)에서 넘어오면 대상 Feature·이상 건을 채워 둔다
   const [sp] = useSearchParams();
   const anomalyId = sp.get('anomaly');
-  const [featureId, setFeatureId] = useState(sp.get('featureId') ?? 'FEAT-00022');
-  const [featureVersion, setVersion] = useState(sp.get('version') ?? '1.0.0');
+  // 사용자가 적기 전에는 예시 Feature(있으면)·첫 Feature — 없는 데모 ID를 미리 채우지 않는다(출시 준비 RD-OPS-02)
+  const [typedId, setFeatureId] = useState<string | null>(sp.get('featureId'));
+  const [typedVer, setVersion] = useState<string | null>(sp.get('featureId') ? (sp.get('version') ?? '1.0.0') : null);
+  const fallback = useDefaultFeature({ featureId: 'FEAT-00022', version: '1.0.0' }, typedId === null);
+  const featureId = typedId ?? fallback?.featureId ?? '';
+  const featureVersion = typedVer ?? (typedId === null ? fallback?.version : undefined) ?? '';
   const [picked, setPicked] = useState<string[] | null>(null);
   const [category, setCategory] = useState<ReasonCategory>('SAFETY');
   const [code, setCode] = useState('FIELD_FAULT');
@@ -228,7 +233,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
             <input className="ds-input ds-input--mono" value={featureVersion} onChange={(e) => (setVersion(e.target.value.trim()), setPicked(null))} />
           </Field>
         </div>
-        <AsyncView state={asyncState(pv)} error={pv.error?.message} onRetry={() => pv.refetch()}>
+        <AsyncView state={asyncState(pv)} error={pv.error} onRetry={() => pv.refetch()}>
           {p && (
             <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
               <KeyValue
@@ -459,7 +464,7 @@ function KillTimeline({ id }: { id: string }) {
   return (
     <section style={{ display: 'grid', gap: 'var(--sp-2)' }} data-testid="kill-timeline">
       <h3 className="ds-eyebrow ds-eyebrow--ko">{P.timeline}</h3>
-      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: P.timelineEmpty }} error={q.error?.message} rows={2}>
+      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: P.timelineEmpty }} error={q.error} rows={2}>
         <DataTable
           caption={P.timeline}
           rows={rows}
@@ -683,7 +688,7 @@ export function KillConsole() {
         <NewKill onDone={(k) => (setComposing(false), setOpen(k.killId))} />
       </Drawer>
       <Panel title={K.list} id="kills" tour="kill-approve">
-        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
           <DataTable
             caption={K.title}
             rows={rows}

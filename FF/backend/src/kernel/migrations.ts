@@ -1,6 +1,7 @@
 // 스키마 마이그레이션 — 이름 순 적용, 적용된 것은 다시 실행하지 않는다. 기존 항목은 수정하지 말고 새 항목을 추가한다.
 // 도메인 레코드는 "키 열 + doc(JSON)" 형태로 저장한다: 키·조회 조건은 열로, 본문은 contracts zod 스키마로 파싱.
-export const MIGRATIONS: { name: string; sql: string }[] = [
+// pg — PostgreSQL 방언 번역(pg-dialect.ts)이 감당하지 못하는 항목만 PG용 SQL을 따로 둔다(20-92 §4.3). 잠금(migrations.lock.json)은 sql만 해시한다.
+export const MIGRATIONS: { name: string; sql: string; pg?: string }[] = [
   {
     name: '001_kernel',
     sql: `
@@ -530,6 +531,124 @@ CREATE TABLE procedure_completion (
 );
 CREATE INDEX procedure_completion_current ON procedure_completion (activity_id, undone_at);
 CREATE TABLE procedure_overdue (activity_id TEXT PRIMARY KEY, notified_at TEXT NOT NULL, due_at TEXT NOT NULL);
+`,
+  },
+  {
+    // OIDC 로그인 세션(출시 준비 RD-SEC-01·04) — 쿠키에는 무작위 32바이트 ID, 표에는 그 SHA-256만 둔다(DB를 읽어도 세션을 훔칠 수 없다).
+    // 절대 수명(expires_at)과 유휴 만료(last_seen_at 기준)를 둘 다 본다. 데모 모드에서는 쓰지 않는다.
+    name: '045_auth_session',
+    sql: `
+CREATE TABLE auth_session (
+  id_hash TEXT PRIMARY KEY,
+  sub TEXT NOT NULL,
+  name TEXT,
+  email TEXT,
+  roles TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  last_seen_at TEXT NOT NULL
+);
+CREATE INDEX auth_session_sub ON auth_session (sub);
+CREATE INDEX auth_session_expires ON auth_session (expires_at);
+`,
+  },
+  {
+    // 차량 채널(출시 준비 RD-SEC-08·RD-OPS-04) — 서명된 차량 요청의 nonce(재전송 방지, 허용 시각 창이 지나면 지운다)와
+    // 차량 당겨받기 채널의 전달함(차량이 HTTPS로 받아 가고 서명된 확인을 보낸다). 전달함 행은 확인 뒤에도 남긴다(추적).
+    name: '046_vehicle_channel',
+    sql: `
+CREATE TABLE vehicle_request_nonce (vin TEXT NOT NULL, nonce TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY (vin, nonce));
+CREATE INDEX vehicle_request_nonce_at ON vehicle_request_nonce (at);
+CREATE TABLE vehicle_delivery (
+  delivery_id TEXT PRIMARY KEY,
+  vin TEXT NOT NULL,
+  publication_id TEXT NOT NULL,
+  channel TEXT NOT NULL,
+  queued_at TEXT NOT NULL,
+  fetched_at TEXT,
+  fetch_count INTEGER NOT NULL DEFAULT 0,
+  acked_at TEXT,
+  ack_doc TEXT,
+  UNIQUE (vin, publication_id)
+);
+CREATE INDEX vehicle_delivery_pending ON vehicle_delivery (vin, acked_at, queued_at);
+`,
+  },
+  {
+    // 대시보드(Jira식 가젯 판) — 사용자가 만든 판을 서버에 둔다. layout은 판 JSON(v2: 열 레이아웃 + 가젯 인스턴스·설정),
+    // shared_roles는 보기를 허용한 플랫폼 역할 JSON 배열, version은 겹친 저장을 막는 낙관적 잠금(If-Match, 412).
+    // favourite는 소유자의 별, 남의 대시보드 별은 dashboard_star(보는 사람별)에 둔다.
+    name: '047_dashboard',
+    sql: `
+CREATE TABLE dashboard (
+  id TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  layout TEXT NOT NULL,
+  shared_roles TEXT NOT NULL DEFAULT '[]',
+  version INTEGER NOT NULL DEFAULT 1,
+  favourite INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX dashboard_owner ON dashboard (owner_id);
+CREATE TABLE dashboard_star (actor_id TEXT NOT NULL, dashboard_id TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY (actor_id, dashboard_id));
+`,
+  },
+  {
+    // 알림 메일 채널 제거(사용자 결정 D-RD-7, 2026-10-24: 화면 알림만) — 038의 메일 설정(notification_pref)·모의 발송 기록
+    // (notification_email)을 지운다. 실제 메일은 한 번도 나간 적이 없다(모의 기록뿐). 038은 고치지 않는다(잠금).
+    // SQLite는 DROP TABLE 전에 그 표의 트리거(추가만 가능)를 먼저 지우므로 삭제 금지 트리거가 막지 않는다.
+    // 알림·수신자·제외·읽음 표는 그대로 — 화면 알림과 읽음 상태가 쓴다.
+    name: '048_drop_notification_email',
+    sql: `
+DROP TABLE IF EXISTS notification_email;
+DROP TABLE IF EXISTS notification_pref;
+`,
+  },
+  {
+    // OTA 서버 연동(IF-05, FF_VEHICLE_CHANNEL=ota) — 게시본마다 OTA 작업 1건(job_id = 멱등 키). 게시본을 만든 트랜잭션에서 QUEUED로 넣고(outbox),
+    // 커밋 뒤 제출한다. 실패하면 게시본은 그대로 두고 전달만 RETRY_WAIT(전달 실패·재시도 가능)·FAILED로 남긴다.
+    // ota_job_vehicle은 OTA 서버가 webhook으로 알린 차량별 결과, ota_event는 받은 webhook 이벤트 ID(재전송 방지·같은 이벤트는 한 번만).
+    name: '049_ota_job',
+    sql: `
+CREATE TABLE ota_job (
+  job_id TEXT PRIMARY KEY,
+  publication_id TEXT NOT NULL UNIQUE,
+  state TEXT NOT NULL,
+  targets TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  next_attempt_at TEXT,
+  last_error TEXT,
+  ota_job_id TEXT,
+  server_state TEXT,
+  created_at TEXT NOT NULL,
+  submitted_at TEXT,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX ota_job_due ON ota_job (state, next_attempt_at);
+CREATE TABLE ota_job_vehicle (
+  job_id TEXT NOT NULL,
+  vin TEXT NOT NULL,
+  outcome TEXT NOT NULL,
+  detail TEXT,
+  at TEXT NOT NULL,
+  event_id TEXT,
+  PRIMARY KEY (job_id, vin)
+);
+CREATE TABLE ota_event (event_id TEXT PRIMARY KEY, job_id TEXT NOT NULL, body_sha256 TEXT NOT NULL, received_at TEXT NOT NULL, outcome TEXT NOT NULL);
+CREATE INDEX ota_event_received ON ota_event (received_at);
+`,
+  },
+  {
+    // 공유 상태(출시 준비 RD-OPS-14 · 20-92 §3) — 프로세스 메모리에 있던 것을 DB로 옮겨 같은 DB를 쓰는 인스턴스가 함께 본다.
+    // shared_reservation: 처리 중 예약(멱등 키 — 같은 키가 다른 인스턴스에 와도 409), 만료 시각(벽시계 ms)이 지나면 다른 쪽이 잡는다.
+    // shared_counter: 고정 창 카운터(차량별 요청 빈도). instance_lease: 단일 실행 인스턴스 임대(두 번째 인스턴스 부팅 거부).
+    name: '075_shared_state',
+    sql: `
+CREATE TABLE shared_reservation (slot TEXT PRIMARY KEY, value TEXT NOT NULL, holder TEXT NOT NULL, expires_at INTEGER NOT NULL);
+CREATE TABLE shared_counter (key TEXT PRIMARY KEY, start_ms INTEGER NOT NULL, n INTEGER NOT NULL);
+CREATE TABLE instance_lease (name TEXT PRIMARY KEY, holder TEXT NOT NULL, acquired_at TEXT NOT NULL, renewed_at TEXT NOT NULL, expires_at INTEGER NOT NULL);
 `,
   },
 ];

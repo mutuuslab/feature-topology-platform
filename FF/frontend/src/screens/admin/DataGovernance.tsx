@@ -52,7 +52,7 @@ function Sums() {
   const C = S.col;
   return (
     <Panel title={T.tabs.sums} eyebrow={q.data ? <span title={q.data.retention.basis}>{S.retention(q.data.retention.yearsAfterProductionEnd)}<ExplainCodes codes={[q.data.retention.basis]} /></span> : undefined} id="sums">
-      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: S.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: S.empty }} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.tabs.sums}
           rows={rows}
@@ -92,7 +92,7 @@ function DataAct() {
     <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
       <AccessForm vins={(d?.vehicles ?? []).map((v) => v.vin)} />
       <Panel title={D.requests} id="dar">
-        <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: D.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
+        <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: D.empty }} error={q.error} onRetry={() => q.refetch()}>
           <DataTable
             caption={D.requests}
             rows={rows}
@@ -248,7 +248,7 @@ function Retention() {
         }
       >
         <ErrorNote error={sweep.error} />
-        <AsyncView state={asyncState(q, !d?.policies.length)} error={q.error?.message} onRetry={() => q.refetch()}>
+        <AsyncView state={asyncState(q, !d?.policies.length)} error={q.error} onRetry={() => q.refetch()}>
           <DataTable
             caption={R.policies}
             rows={d?.policies ?? []}

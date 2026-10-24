@@ -34,6 +34,7 @@ const STEPS: Step[] = [
   { id: 'data:check', title: '데이터셋 픽스처 정합', cmd: `node tools/dataset/check.ts`, when: () => existsSync(join(FF, 'tools', 'dataset', 'check.ts')) },
   { id: 'openapi', title: 'OpenAPI 최신 여부', cmd: `node tools/openapi.ts --check` },
   { id: 'ext:check', title: '외부 연계 연결 점검 도구 (가짜 fetch — 네트워크 없음 · GET만 · 토큰 비출력 · 못 맞춘 상태는 실패)', cmd: `node --test tools/ext-check.test.ts` },
+  { id: 'ota:conformance', title: 'OTA 서버 연동 규격 IF-05 (시험 OTA 서버가 적합성 검사 통과 · 규격 위반을 검사가 잡는다 · OpenAPI 정합, 80-45)', cmd: `node --test tools/ota-reference/conformance.test.ts` },
   { id: 'test:contracts', title: 'contracts 테스트', cmd: `${npm} test -w @ff/contracts` },
   { id: 'test:backend', title: '백엔드 테스트', cmd: `${npm} test -w feature-topology-backend` },
   { id: 'test:frontend', title: '프론트 테스트', cmd: `${npm} test -w feature-topology-frontend` },
@@ -43,10 +44,15 @@ const STEPS: Step[] = [
   { id: 'ads', title: 'ADS·UNECE v3.0 + Orca R3 반영 추적 (카탈로그 무결성·원본 해시·판정 완비·근거 줄 내용·결함 기록·설계 계획 ID·문서 숫자·보고서 최신)', cmd: `node --test tools/ads-sync.test.ts tools/orca-sync.test.ts tools/defect-probes.test.ts && node tools/ads-sync.ts --check && node tools/orca-sync.ts --check && node tools/ads-report.ts --check` },
   { id: 'ads:team', title: '하네스 멤버 검토 (UI/UX 디자이너·업무 절차 담당·설계 적합성 — 검토가 지금 설계 판 기준인지, 열린 blocker 0, 화면 문구 규칙)', cmd: `node --test tools/ads-team.test.ts && node tools/ads-team.ts --check` },
   { id: 'ads:probes', title: '결함 기록(it.fails)이 재현 단계가 아니라 요구 단언에서 실패하는지 (사본을 it로 바꿔 실행)', cmd: `node tools/defect-probes.ts` },
+  { id: 'readiness', title: '출시 준비 게이트 (harness/readiness.json — 완료 항목 되돌아감 0·목록 뒤처짐 0·열린 P0·P1 래칫)', cmd: `node --test tools/readiness.test.ts && node tools/readiness.ts` },
   { id: 'build:frontend', title: '프론트 빌드', cmd: `${npx} vite build`, cwd: 'frontend' },
+  { id: 'build:prod', title: '운영 빌드 (VITE_AUTH=oidc — 데모 로그인·데모 역할 선택기가 번들에 없다, dist-prod는 검사 뒤 지움)', cmd: `node --test tools/prod-bundle.test.ts` },
   { id: 'budget', title: '성능 예산 (첫 화면·화면 묶음 gzip, harness/budgets.json)', cmd: `node --test tools/bundle-budget.test.ts && node tools/bundle-budget.ts` },
   { id: 'e2e', title: 'e2e (기능·접근성·레이아웃)', cmd: `${npx} playwright test --grep-invert @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
   { id: 'e2e:static', title: '정적 데모 (공개 사이트 방식 빌드 — 모든 메뉴·하위 화면·탭이 스냅샷만으로 열린다)', cmd: `${npx} playwright test -c playwright.static.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.static.config.ts')) },
+  { id: 'e2e:oidc', title: 'SSO 로그인 (시험 IdP·FF_AUTH=oidc 백엔드·VITE_AUTH=oidc 빌드 — 로그인·부여 역할·승인·로그아웃·헤더 위조 401)', cmd: `${npx} playwright test -c playwright.oidc.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.oidc.config.ts')) },
+  { id: 'e2e:firstrun', title: '빈 DB 첫 실행 (FF_SEED=none 파일 DB — 모든 메뉴 오류·영원한 로딩·데모 식별자 없음 · 화면으로 첫 Feature 등록, RD-OPS-02)', cmd: `${npx} playwright test -c playwright.firstrun.config.ts`, cwd: 'e2e', when: () => existsSync(join(FF, 'e2e', 'playwright.firstrun.config.ts')) },
+  { id: 'test:pg', title: '백엔드 시험을 PostgreSQL 16에서 (Docker postgres:16 127.0.0.1:9690 — 통과 수 래칫 pgBackendPass, 20-92 §6)', cmd: `node tools/test-pg.ts`, full: true },
   { id: 'e2e:visual', title: '시각 회귀', cmd: `${npx} playwright test --grep @visual`, cwd: 'e2e', env: { E2E_WEB: 'preview' }, full: true, when: () => existsSync(join(FF, 'e2e', 'playwright.config.ts')) },
 ];
 

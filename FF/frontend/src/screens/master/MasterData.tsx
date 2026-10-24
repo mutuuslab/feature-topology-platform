@@ -28,7 +28,7 @@ export function UpgScreen() {
           return !q.data ? { tone: 'neutral', value: '—', text: M.upg.key.mismatch } : bad ? { tone: 'warn', value: bad, text: M.upg.key.mismatch } : { tone: 'ok', text: M.upg.key.clean };
         })()}
       />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={M.upg.title}
           rows={rows}
@@ -83,7 +83,7 @@ function SwTab() {
           <input className="ds-input" value={q} onChange={(e) => setQ(e.target.value)} />
         </label>
       </Toolbar>
-      <AsyncView state={asyncState(list, rows.length === 0)} error={list.error?.message} onRetry={() => list.refetch()}>
+      <AsyncView state={asyncState(list, rows.length === 0)} error={list.error} onRetry={() => list.refetch()}>
         <DataTable
           caption={M.sw.tabs.sw}
           rows={rows}
@@ -112,7 +112,7 @@ function EcuTab() {
   const rows = q.data?.items ?? [];
   const C = M.sw.ecuCol;
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
       <DataTable
         caption={M.sw.tabs.ecu}
         rows={rows}
@@ -145,7 +145,7 @@ export function StructureScreen() {
         lead={S.lead}
         message={{ tone: 'neutral', text: q.data ? S.key(rows.length, rows.reduce((n, e) => n + e.sw.length, 0), rows.reduce((n, e) => n + e.sw.reduce((m, s) => m + s.functions.length, 0), 0)) : '—' }}
       />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <ul className="ds-tree" aria-label={S.title}>
           {rows.map((e) => (
             <li key={e.ecuPno}>
@@ -212,7 +212,7 @@ export function ControlPointsScreen() {
           <span className="ds-field__label">{M.cp.onlyIssues}</span>
         </label>
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={M.cp.title}
           rows={rows}
@@ -239,7 +239,7 @@ export function TaxonomyScreen() {
   return (
     <div className="ds-screen">
       <PageHeader codes="D01-01 · Taxonomy" title={T.title} lead={T.lead} message={{ tone: 'neutral', text: d ? T.key(d.tags.length, d.scopes.length) : '—' }} />
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <div className="ds-split">
             <Panel title={T.tags} id="taxonomy-tags">

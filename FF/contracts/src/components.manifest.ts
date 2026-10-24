@@ -161,7 +161,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   // PoC ④⑤⑥ 배포·차단 전달 (P8a)
   'D02-03': { screens: ['/fleet/live', '/fleet/vehicles/:vin', '/fleet/map'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', 'contracts/src/gleo.test.ts', FE_OPS, E2E_OPS, BE_VREQ, CT_VREQ, 'backend/test/d02/fleet-map.spec.ts', 'contracts/src/rules/fleet-map.test.ts', 'frontend/src/__tests__/screensFleetMap.test.tsx', 'frontend/src/__tests__/carIcon.test.ts', 'e2e/tests/fleet-map.spec.ts'] },
   'D03-03': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', FE_OPS, E2E_OPS] },
-  'D03-04': { screens: ['/ops/kill', '/ops/rollback'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', E2E_OPS, 'backend/test/d03/rollback.spec.ts', 'contracts/src/rules/rollback.test.ts', 'frontend/src/__tests__/screensRollback.test.tsx'] },
+  'D03-04': { screens: ['/ops/kill', '/ops/rollback', '/policies/:id'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', E2E_OPS, 'backend/test/d03/rollback.spec.ts', 'contracts/src/rules/rollback.test.ts', 'frontend/src/__tests__/screensRollback.test.tsx', 'backend/test/d03/policy-history.spec.ts', 'frontend/src/__tests__/policyHistory.test.tsx', 'e2e/tests/policy-rollback.spec.ts'] },
   'D04-01': { screens: ['/deployments', '/deployments/:id'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
   'D04-03': { screens: ['/fleet/live', '/deployments/:id', '/ops/telemetry', '/ops/safety-kpi'], tests: [BE_DLV, FE_OPS, E2E_OPS, FE_OPSADMIN] },
   'D06-08': { screens: ['/deployments', '/deployments/:id', '/fleet/live'], tests: [BE_DLV, FE_OPS, E2E_OPS] },

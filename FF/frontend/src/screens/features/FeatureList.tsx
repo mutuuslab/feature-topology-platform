@@ -151,7 +151,7 @@ export default function FeatureList() {
         </label>
       </Toolbar>
 
-      <AsyncView state={asyncState(all, rows.length === 0)} error={all.error?.message} onRetry={() => all.refetch()} filtered={filtered} empty={filtered ? undefined : { title: T.empty }}>
+      <AsyncView state={asyncState(all, rows.length === 0)} error={all.error} onRetry={() => all.refetch()} filtered={filtered} empty={filtered ? undefined : { title: T.empty }}>
         <DataTable
           caption={T.title}
           rows={rows}

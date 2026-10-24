@@ -1,0 +1,26 @@
+/* Lozenge(상태 배지) — Atlassian식 작은 대문자 배지. 색은 판 토큰(tokens-board.css), 모양으로도 구분(굵은 글자·대문자). */
+@import './tokens-board.css';
+
+.ds-lozenge {
+  display: inline-block;
+  max-inline-size: 100%;
+  padding: 0 var(--sp-1);
+  border-radius: var(--r-sm);
+  background: var(--loz-default-bg);
+  color: var(--loz-default-ink);
+  font-family: var(--jd-font);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: baseline;
+}
+.ds-lozenge[data-appearance='inprogress'] { background: var(--loz-inprogress-bg); color: var(--loz-inprogress-ink); }
+.ds-lozenge[data-appearance='success'] { background: var(--loz-success-bg); color: var(--loz-success-ink); }
+.ds-lozenge[data-appearance='removed'] { background: var(--loz-removed-bg); color: var(--loz-removed-ink); }
+.ds-lozenge[data-appearance='moved'] { background: var(--loz-moved-bg); color: var(--loz-moved-ink); }
+.ds-lozenge[data-appearance='new'] { background: var(--loz-new-bg); color: var(--loz-new-ink); }

@@ -28,3 +28,6 @@ FF/e2e/report/
 FF/e2e/review/
 FF/frontend/public/api-snapshot/
 FF/frontend/dist-static/
+# 운영 빌드 검사(tools/prod-bundle.test.ts)·SSO e2e(e2e/playwright.oidc.config.ts) 산출물
+FF/frontend/dist-prod/
+FF/frontend/dist-oidc/

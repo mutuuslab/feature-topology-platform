@@ -36,7 +36,7 @@ test('메인 화면 — 업무 절차 지도에 13개 절차·Gate·내 차례�
 test('업무 절차 허브 — 빠른 완료가 진행률과 다음 할 일을 바꾼다(서버 저장)', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'author');
-  await page.goto('/procedures');
+  await page.goto('/procedures?view=list');
   await expect(page.getByRole('heading', { level: 1, name: '업무 절차' })).toBeVisible();
   const progress = page.locator('.pr-progress');
   await expect(progress).toContainText('할 일');

@@ -1,0 +1,20 @@
+# docker/app/Dockerfile 빌드 문맥(FF 폴더) — 설치 이미지에 필요 없는 것·비밀·로컬 산출물은 보내지 않는다
+**/node_modules
+**/dist
+**/dist-*
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+!docker/app/.env.example
+.evidence
+.sim
+e2e/test-results
+e2e/report
+e2e/review
+e2e/shots
+frontend/public/api-snapshot
+harness
+sim
+tools
+**/__pycache__
+*.log

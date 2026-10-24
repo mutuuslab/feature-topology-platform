@@ -18,6 +18,8 @@ const same = (a: string, b: string) => {
 /** 서명이 맞지 않으면 401 — 위조 요청으로 상태가 바뀌지 않게 */
 export function verifyWebhook(system: ExtSystem, headers: Record<string, string | undefined>, raw: string): void {
   const h = (k: string) => headers[k] ?? headers[k.toLowerCase()] ?? '';
+  // 비밀값이 비었으면(운영 모드에서 설정 안 함) 어떤 요청도 받지 않는다 — 빈 서명 헤더와 같다고 통과시키지 않는다
+  if (!WEBHOOK_SECRET[system]()) throw new DomainError('UNAUTHENTICATED', `${system} webhook 비밀값이 설정되지 않아 받지 않습니다.`);
   const ok = system === 'GITLAB' ? same(h('x-gitlab-token'), WEBHOOK_SECRET.GITLAB()) : same(h(system === 'JIRA' ? 'x-hub-signature' : 'x-cb-signature'), hmac(system, raw));
   if (!ok) throw new DomainError('UNAUTHENTICATED', `${system} webhook 서명이 맞지 않습니다 — 외부 시스템의 webhook 비밀값 설정을 확인하세요.`);
 }

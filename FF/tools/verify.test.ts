@@ -10,5 +10,14 @@ const step = (id: string) => new RegExp(`\{ id: '${id}',[^\n]*\}`).exec(src)?.[0
 
 test('conformance는 --strict(42/42)로 돈다', () => assert.match(step('conformance'), /conformance\.ts --strict/));
 test('통합 검사(고아 모듈·형제 저장소·CARLA 실행기·정적 데모)가 verify에 있다', () => {
-  for (const id of ['deadcode', 'siblings', 'sim:test', 'e2e:static', 'budget', 'ext:check']) assert.ok(step(id), id);
+  for (const id of ['deadcode', 'siblings', 'sim:test', 'e2e:static', 'budget', 'ext:check', 'ota:conformance']) assert.ok(step(id), id);
+});
+test('운영 빌드 검사(build:prod)와 SSO e2e(e2e:oidc)가 verify에 있다 — 데모 로그인이 운영 번들에 다시 실리지 않게', () => {
+  assert.match(step('build:prod'), /prod-bundle\.test\.ts/);
+  assert.match(step('e2e:oidc'), /playwright\.oidc\.config\.ts/);
+  assert.ok(src.indexOf("id: 'build:prod'") > src.indexOf("id: 'build:frontend'"), 'build:prod는 build:frontend 뒤(데모 빌드 대조)');
+});
+test('빈 DB 첫 실행 e2e(e2e:firstrun)가 verify에 있고 화면 빌드 뒤에 돈다 — 출시 준비 RD-OPS-02', () => {
+  assert.match(step('e2e:firstrun'), /playwright\.firstrun\.config\.ts/);
+  assert.ok(src.indexOf("id: 'e2e:firstrun'") > src.indexOf("id: 'build:frontend'"), 'e2e:firstrun은 build:frontend 뒤(preview로 dist를 띄운다)');
 });

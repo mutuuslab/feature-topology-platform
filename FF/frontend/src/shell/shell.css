@@ -810,3 +810,48 @@
   display: grid;
   gap: var(--sp-4);
 }
+
+/* 태블릿(1024 미만, 출시 준비 RD-P2-03) — 상단바가 화면 폭을 넘지 않게: 브랜드는 로고만, 검색 칸은 줄어들고,
+   도구 줄은 제 상자 안에서 가로로 밀어 본다. 본문 여백도 줄인다 */
+@media (max-width: 1023px) {
+  .sh-top {
+    gap: var(--sp-2);
+  }
+  .sh-brand {
+    min-width: 0;
+    padding-left: var(--sp-3);
+    padding-right: var(--sp-2);
+  }
+  .sh-brand__divider,
+  .sh-brand__name {
+    display: none;
+  }
+  .sh-search {
+    flex: 1 1 auto;
+    min-width: 96px;
+  }
+  .sh-kbd {
+    display: none;
+  }
+  .sh-tools {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .sh-tools > * {
+    flex: none;
+  }
+  .sh-main {
+    padding: var(--sp-4) var(--sp-4) var(--sp-10);
+  }
+}
+/* 휴대폰(600 미만, 보기만) — 검색 칸은 숨긴다(명령 팔레트·검색은 데스크톱 조작). 메뉴는 왼쪽 레일로 연다 */
+@media (max-width: 599px) {
+  .sh-search {
+    display: none;
+  }
+  .sh-main {
+    padding: var(--sp-3) var(--sp-3) var(--sp-8);
+  }
+}

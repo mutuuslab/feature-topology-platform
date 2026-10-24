@@ -119,7 +119,8 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     // 회귀: 5년 운영 DB에서 체험 만료 비활성화 54건이 "긴급 차단"으로, 수신 표본 200대가 시연 Fleet으로 세어졌다
     handler = (url) => {
       if (url.startsWith('/api/kill-requests')) return { body: { items: [{ killId: 'K1', reasonCategory: 'SAFETY' }, { killId: 'K2', reasonCategory: 'COMMERCIAL' }, { killId: 'K3', reasonCategory: 'COMMERCIAL' }] } };
-      if (url.startsWith('/api/vehicles')) return { body: { items: [{ vin: 'ego-01', fleet: 'DEMO' }, { vin: 'KMH-NX4-P000001', fleet: 'SAMPLE' }] } };
+      // 가젯은 차량 수만 읽는다(limit=1 + total·sample, RD-P2-01) — 표본 1대는 빼고 센다
+      if (url.startsWith('/api/vehicles')) return { body: { items: [{ vin: 'ego-01', fleet: 'DEMO' }], total: 2, sample: 1, nextCursor: 'x' } };
       return inboxApi(url);
     };
     mount('steward', '/', <HomeScreen />);

@@ -120,6 +120,8 @@ async function main() {
     }
   }
   const vehicles = await save('vehicles');
+  // 대시보드 차량 가젯 — 수만 읽는다(limit=1 + total·sample)
+  await save('vehicles', {}, { limit: 1 });
   const flagKeys = [...new Set((policies.items as { flagKey: string; status: string }[]).filter((p) => p.status === 'DEPLOYED').map((p) => p.flagKey))];
   for (const v of vehicles.items) for (const flagKey of flagKeys) await save('activationDecide', {}, { vin: v.vin, flagKey });
   // 배포·차단 전달 (PoC ④⑥) — 부팅 동기화 게시본이 차량에 닿은 뒤의 상태를 찍는다

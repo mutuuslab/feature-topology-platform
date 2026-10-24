@@ -21,3 +21,10 @@ test('빈 DB 첫 실행 e2e(e2e:firstrun)가 verify에 있고 화면 빌드 뒤�
   assert.match(step('e2e:firstrun'), /playwright\.firstrun\.config\.ts/);
   assert.ok(src.indexOf("id: 'e2e:firstrun'") > src.indexOf("id: 'build:frontend'"), 'e2e:firstrun은 build:frontend 뒤(preview로 dist를 띄운다)');
 });
+test('부하 시험(perf)·브라우저 엔진(e2e:engines)이 verify에 있다 — 출시 준비 RD-P2-01·03', () => {
+  assert.match(step('perf'), /tools\/load\/run\.ts --profile light/);
+  assert.match(step('perf:full'), /--profile full/);
+  assert.match(step('perf:full'), /full: true/);
+  assert.match(step('e2e:engines'), /E2E_ALL_ENGINES/);
+  assert.ok(src.indexOf("id: 'perf'") < src.indexOf("id: 'e2e',"), 'perf는 e2e 앞(백엔드를 빌드한다)');
+});

@@ -639,4 +639,23 @@ CREATE TABLE ota_event (event_id TEXT PRIMARY KEY, job_id TEXT NOT NULL, body_sh
 CREATE INDEX ota_event_received ON ota_event (received_at);
 `,
   },
+  {
+    // 부하 시험(출시 준비 RD-P2-01, tools/load) 결과 색인 — 측정 전후는 docs/20-architecture/20-92-performance.md.
+    //  · events_at·audit_at: 컴포넌트 최근 활동(at 범위)이 이벤트·감사 전체를 훑던 것(100만 행에서 요청 하나 6 s 루프 막힘)
+    //  · events_component_seq: 컴포넌트별 마지막 이벤트 유형(부질의)
+    //  · audit_unhashed: 부팅 때 해시 없는 감사 행 찾기(채우기)가 매번 전체를 훑던 것 — 부분 색인이라 평소엔 비어 있다
+    //  · vehicle_scope: 긴급 차단 영향 범위가 국가·차종·트림으로 차량을 고른다(전체 차량 문서 파싱 대신)
+    //  · vehicle_fleet: 대시보드 차량 수에서 5년 재생 표본(fleet=SAMPLE)을 뺀다(문서를 풀지 않고 색인으로 센다)
+    //  · kill_request_feature: 진행 중 차단 확인을 Feature 기준으로
+    name: '070_perf_indexes',
+    sql: `
+CREATE INDEX events_at ON events (at, component_id);
+CREATE INDEX events_component_seq ON events (component_id, seq);
+CREATE INDEX audit_at ON audit (at, component_id, result);
+CREATE INDEX audit_unhashed ON audit (id) WHERE hash IS NULL;
+CREATE INDEX vehicle_scope ON vehicle (json_extract(doc, '$.country'), json_extract(doc, '$.vehicleModel'), json_extract(doc, '$.trim'));
+CREATE INDEX vehicle_fleet ON vehicle (json_extract(doc, '$.fleet'));
+CREATE INDEX kill_request_feature ON kill_request (feature_id, kill_id);
+`,
+  },
 ];

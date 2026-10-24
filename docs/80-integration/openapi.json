@@ -4406,12 +4406,29 @@
     },
     "/api/vehicles": {
       "get": {
-        "summary": "데모 Fleet 차량",
+        "summary": "Fleet 차량 — limit·cursor를 주면 VIN 순 페이지(응답 nextCursor), 없으면 전체. total·sample(표본 차량 수)은 늘 함께",
         "tags": [
           "D01-04"
         ],
         "operationId": "vehicles",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "성공"

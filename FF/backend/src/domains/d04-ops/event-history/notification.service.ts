@@ -52,6 +52,7 @@ export class NotificationService implements OnModuleInit {
     const draft = rule.build(this.context(ev, rule.needs));
     if (!draft) return null;
     const n: Notification = { ...draft, notificationId: this.nextId(), eventSeq: ev.seq, eventType: ev.type, aggregate: ev.aggregate, createdAt: ev.at };
+    this.touched();
     this.db.run('INSERT INTO notification (notification_id, event_seq, category, severity, created_at, doc) VALUES (?, ?, ?, ?, ?, ?)', n.notificationId, n.eventSeq, n.category, n.severity, n.createdAt, JSON.stringify(n));
     for (const k of new Set(n.recipients.map(recipientKey))) this.db.run('INSERT INTO notification_recipient (notification_id, rkey) VALUES (?, ?)', n.notificationId, k);
     for (const u of new Set(n.exclude)) this.db.run('INSERT INTO notification_exclude (notification_id, user_id) VALUES (?, ?)', n.notificationId, u);
@@ -97,43 +98,106 @@ export class NotificationService implements OnModuleInit {
   }
 
   private nextId() {
-    const n = this.db.get<{ n: number }>('SELECT COUNT(*) AS n FROM notification')!.n;
+    // 추가만 하는 표(삭제·수정 트리거로 막힘)라 rowid 최댓값 = 행 수 — count(*)는 알림 수만큼 훑는다(이벤트마다 불림)
+    const n = this.db.get<{ n: number | null }>('SELECT max(rowid) AS n FROM notification')!.n ?? 0;
     return `NTF-${String(n + 1).padStart(5, '0')}`;
   }
 
-  /** 계정이 받는 알림 — 개인·역할·팀 수신자, 제외 계정은 빼고, 최신 순 */
-  inbox(actor: Actor, q: { unread?: boolean; category?: Category; limit?: number } = {}): { items: InboxItem[]; unread: number; byCategory: Record<string, number> } {
+  /** 계정이 볼 수 있는 알림 조건(SQL) — 개인·역할·팀 수신자, 제외 계정은 뺀다 */
+  private visibility(actor: Actor): { userId: string; where: string; inWhere: string; params: (string | number)[] } {
     const a = accountOf(actor.id, actor.role);
     const keys = accountKeys(a).filter((k) => k !== 'team:*');
     const anyTeam = a.teams === '*' ? 1 : 0;
-    const visible = `EXISTS (SELECT 1 FROM notification_recipient x WHERE x.notification_id = n.notification_id AND (x.rkey IN (${keys.map(() => '?').join(',')}) OR (? = 1 AND x.rkey LIKE 'team:%')))
+    const where = `EXISTS (SELECT 1 FROM notification_recipient x WHERE x.notification_id = n.notification_id AND (x.rkey IN (${keys.map(() => '?').join(',')}) OR (? = 1 AND x.rkey LIKE 'team:%')))
       AND NOT EXISTS (SELECT 1 FROM notification_exclude e WHERE e.notification_id = n.notification_id AND e.user_id = ?)`;
-    const base = [...keys, anyTeam, a.id];
+    const inWhere = `n.notification_id IN (SELECT x.notification_id FROM notification_recipient x WHERE x.rkey IN (${keys.map(() => '?').join(',')}) OR (? = 1 AND x.rkey LIKE 'team:%'))
+      AND NOT EXISTS (SELECT 1 FROM notification_exclude e WHERE e.notification_id = n.notification_id AND e.user_id = ?)`;
+    return { userId: a.id, where, inWhere, params: [...keys, anyTeam, a.id] };
+  }
+
+  /** 계정이 받는 알림 — 개인·역할·팀 수신자, 제외 계정은 빼고, 최신 순.
+   *  안 읽음 수·범주별 집계는 SQL로 세고, 본문(doc)은 돌려줄 limit건만 읽는다 — 전체를 읽어 JSON으로 풀면 알림 10만 건에서
+   *  요청 하나가 이벤트 루프를 수 초 막았다(출시 준비 RD-P2-01 부하 시험, docs/20-architecture/20-92-performance.md) */
+  inbox(actor: Actor, q: { unread?: boolean; category?: Category; limit?: number } = {}): { items: InboxItem[]; unread: number; byCategory: Record<string, number> } {
+    const v = this.visibility(actor);
+    const cat = q.category ? ' AND n.category = ?' : '';
+    const catParams = q.category ? [q.category] : [];
+    const unreadClause = 'NOT EXISTS (SELECT 1 FROM notification_read r WHERE r.notification_id = n.notification_id AND r.user_id = ?)';
+    const { unread, byCategory } = this.unreadCounts(actor, v, q.category);
+    const limit = Math.min(Math.max(Math.floor(q.limit ?? 100), 0), 500);
     const rows = this.db.all<{ doc: string; read_at: string | null }>(
       `SELECT n.doc, (SELECT r.at FROM notification_read r WHERE r.notification_id = n.notification_id AND r.user_id = ?) AS read_at
-         FROM notification n WHERE ${visible}${q.category ? ' AND n.category = ?' : ''} ORDER BY n.event_seq DESC`,
-      a.id,
-      ...base,
-      ...(q.category ? [q.category] : []),
+         FROM notification n WHERE ${v.where}${cat}${q.unread ? ` AND ${unreadClause}` : ''} ORDER BY n.event_seq DESC LIMIT ?`,
+      v.userId,
+      ...v.params,
+      ...catParams,
+      ...(q.unread ? [v.userId] : []),
+      limit,
     );
-    const all = rows.map((r) => ({ ...(JSON.parse(r.doc) as Notification), readAt: r.read_at }));
-    const unreadItems = all.filter((x) => !x.readAt);
+    const items = rows.map((r) => ({ ...(JSON.parse(r.doc) as Notification), readAt: r.read_at }));
+    return { items, unread, byCategory };
+  }
+
+  /** 안 읽음 수·범주별 집계 — 알림이 늘거나 읽음이 바뀔 때만 다시 센다(rev). 같은 계정·역할의 반복 조회(알림 종·화면)는 캐시에서.
+   *  다시 셀 때는 수신자 색인에서 알림 ID를 먼저 고른다(IN). 그래도 볼 수 있는 알림 수에 비례한다 — 볼 수 있는 알림 5만 건이면
+   *  한 번 세는 데 약 0.3 s(남은 한계, docs/20-architecture/20-92-performance.md). 트랜잭션 안에서는 캐시하지 않는다 */
+  private rev = 0;
+  private counts = new Map<string, { rev: number; unread: number; byCategory: Record<string, number> }>();
+  private unreadCounts(actor: Actor, v: ReturnType<NotificationService['visibility']>, category?: Category): { unread: number; byCategory: Record<string, number> } {
+    const key = `${v.userId}|${actor.role}|${category ?? ''}`;
+    const hit = this.counts.get(key);
+    if (hit?.rev === this.rev) return { unread: hit.unread, byCategory: { ...hit.byCategory } };
+    const rows = this.db.all<{ category: string; k: number }>(
+      `SELECT n.category AS category, count(*) AS k FROM notification n WHERE ${v.inWhere}${category ? ' AND n.category = ?' : ''}
+         AND NOT EXISTS (SELECT 1 FROM notification_read r WHERE r.notification_id = n.notification_id AND r.user_id = ?) GROUP BY n.category ORDER BY n.category`,
+      ...v.params,
+      ...(category ? [category] : []),
+      v.userId,
+    );
     const byCategory: Record<string, number> = {};
-    for (const x of unreadItems) byCategory[x.category] = (byCategory[x.category] ?? 0) + 1;
-    const items = (q.unread ? unreadItems : all).slice(0, Math.min(q.limit ?? 100, 500));
-    return { items, unread: unreadItems.length, byCategory };
+    let unread = 0;
+    for (const c of rows) {
+      byCategory[c.category] = c.k;
+      unread += c.k;
+    }
+    if (!this.db.inTransaction) {
+      if (this.counts.size > 1000) this.counts.clear();
+      this.counts.set(key, { rev: this.rev, unread, byCategory: { ...byCategory } });
+    }
+    return { unread, byCategory };
+  }
+  /** 알림·읽음이 바뀌었다 — 집계 캐시 무효화 */
+  private touched() {
+    this.rev++;
+    this.counts.clear();
+  }
+
+  /** 계정이 볼 수 있는 알림 하나 — 없거나 받는 사람이 아니면 undefined */
+  private visibleOne(actor: Actor, id: string): InboxItem | undefined {
+    const v = this.visibility(actor);
+    const r = this.db.get<{ doc: string; read_at: string | null }>(
+      `SELECT n.doc, (SELECT r.at FROM notification_read r WHERE r.notification_id = n.notification_id AND r.user_id = ?) AS read_at FROM notification n WHERE n.notification_id = ? AND ${v.where}`,
+      v.userId,
+      id,
+      ...v.params,
+    );
+    return r ? { ...(JSON.parse(r.doc) as Notification), readAt: r.read_at } : undefined;
   }
 
   read(actor: Actor, id: string) {
-    const visible = this.inbox(actor, { limit: 500 }).items.find((x) => x.notificationId === id);
+    const visible = this.visibleOne(actor, id);
     if (!visible) throw new DomainError('NOT_FOUND', `${id} 알림을 찾을 수 없습니다(받는 사람이 아닙니다).`);
-    if (!visible.readAt) this.db.run('INSERT OR IGNORE INTO notification_read (notification_id, user_id, at) VALUES (?, ?, ?)', id, actor.id, this.clock.iso());
+    if (!visible.readAt) {
+      this.touched();
+      this.db.run('INSERT OR IGNORE INTO notification_read (notification_id, user_id, at) VALUES (?, ?, ?)', id, actor.id, this.clock.iso());
+    }
     return { notificationId: id, readAt: visible.readAt ?? this.clock.iso() };
   }
 
   readAll(actor: Actor, category?: Category) {
     const unread = this.inbox(actor, { unread: true, category, limit: 500 }).items;
     const at = this.clock.iso();
+    this.touched();
     this.db.tx(() => {
       for (const n of unread) this.db.run('INSERT OR IGNORE INTO notification_read (notification_id, user_id, at) VALUES (?, ?, ?)', n.notificationId, actor.id, at);
     });

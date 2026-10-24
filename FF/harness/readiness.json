@@ -195,7 +195,7 @@
       "title": "빈 DB 첫 실행을 검사하는 시험이 없다",
       "evidence": [
         "backend/test/helpers.ts:10",
-        "e2e/playwright.config.ts:47"
+        "e2e/playwright.config.ts:62"
       ],
       "criteria": "FF_SEED=none 파일 DB로 부팅해 모든 메뉴가 오류 없이 빈 상태 안내를 보인다(e2e)",
       "status": "done",
@@ -712,15 +712,30 @@
       "phase": "R3",
       "title": "부하 시험 없음·전체 테이블 조회·동기 SQLite",
       "evidence": [
-        "harness/budgets.json",
-        "backend/src/domains/d01-policy/policy-repos.ts:200-202",
-        "backend/src/kernel/db.ts:5-6"
+        "tools/load/run.ts",
+        "harness/perf-budgets.json",
+        "backend/test/kernel/query-plans.spec.ts",
+        "../docs/20-architecture/20-92-performance.md"
       ],
-      "criteria": "OFREP·SSE·게시 부하 시험과 p95 예산",
-      "status": "open",
+      "criteria": "주요 API(OFREP·Feature·대시보드·감사/이벤트 커서·차량 채널·게이트·Kill) 부하 시험과 p95 예산, 전체 훑기·N+1 회귀 시험, 동기 SQLite 이벤트 루프 막힘 측정·남은 한계 문서",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
+        },
+        {
+          "kind": "exists",
+          "path": "harness/perf-budgets.json"
+        },
+        {
+          "kind": "match",
+          "path": "tools/verify.ts",
+          "pattern": "tools/load/run.ts --profile light"
+        },
+        {
+          "kind": "match",
+          "path": "../docs/20-architecture/20-92-performance.md",
+          "pattern": "이벤트 루프"
         }
       ]
     },
@@ -749,13 +764,31 @@
       "phase": "R3",
       "title": "최소 900px·크롬만 e2e",
       "evidence": [
-        "e2e/playwright.config.ts:31-36"
+        "e2e/playwright.config.ts",
+        "e2e/tests/browsers.spec.ts",
+        "e2e/tests/narrow.spec.ts",
+        "../docs/20-architecture/20-93-browser-support.md"
       ],
-      "criteria": "Edge·Firefox 스모크 e2e, 지원 해상도 명시",
-      "status": "open",
+      "criteria": "Firefox·WebKit 핵심 흐름 스모크 e2e(Edge는 Chromium 엔진), 768·390 좁은 폭 스모크, 지원 해상도 명시",
+      "status": "done",
       "checks": [
         {
           "kind": "marker"
+        },
+        {
+          "kind": "match",
+          "path": "e2e/playwright.config.ts",
+          "pattern": "devices\\['Desktop Firefox'\\]"
+        },
+        {
+          "kind": "match",
+          "path": "e2e/playwright.config.ts",
+          "pattern": "devices\\['Desktop Safari'\\]"
+        },
+        {
+          "kind": "match",
+          "path": "../docs/20-architecture/20-93-browser-support.md",
+          "pattern": "지원 해상도"
         }
       ]
     },

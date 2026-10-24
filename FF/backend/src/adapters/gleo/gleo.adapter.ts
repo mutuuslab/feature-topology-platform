@@ -6,7 +6,6 @@
 // policy_push는 차량 정책 캐시 알림(회신 없음)이다 — 기능을 끄는 일은 서명된 kill_command만 한다.
 import { Controller, Get, Injectable, Logger, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { gleoMessageErrors, type Publication } from '@ff/contracts';
-import { vehiclePseudonym } from '../../kernel/crypto';
 import { EnvelopeRepo } from '../../domains/d03-safety/kill-switch/envelope.repo';
 import { StatusIngestService } from '../../domains/d04-ops/telemetry-ingest/status-ingest.service';
 import { FleetRepo } from '../../domains/d01-policy/policy-repos';
@@ -105,7 +104,9 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
 
   /** 가명 → VIN(영상 키트 차량 중) — 보고 본문에는 VIN을 싣지 않는다 */
   private vinOf(pseudonym: string): string | null {
-    return this.fleet.vehicles().find((v) => v.gleo && vehiclePseudonym(v.vin) === pseudonym)?.vin ?? null;
+    // 가명 표로 찾는다(전 차량 해시 대신, RD-P2-01) — 영상 키트(gleo) 차량만
+    const vin = this.fleet.vinByPseudonym(pseudonym);
+    return vin && this.fleet.vehicle(vin)?.gleo ? vin : null;
   }
 
   /** 브로커가 중계한 메시지 — 차량 status_report v2만 받는다 (자기가 보낸 명령은 브로커가 되돌려 주지 않는다, v1 보고는 버린다) */

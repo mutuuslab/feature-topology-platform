@@ -34,7 +34,8 @@ function Summary({ role }: GadgetBodyProps) {
   const pols = useApi<{ items?: unknown[] }>('listPolicies', { query: { status: 'DEPLOYED' } });
   const kills = useApi<{ items?: { reasonCategory?: string }[] }>('killRequests', { query: { status: 'ACTIVE' } });
   const anms = useApi<{ items?: { status: string }[] }>('anomalies');
-  const fleet = useApi<{ items?: { fleet?: string }[] }>('vehicles');
+  // 차량 수만 — 목록 전체(대형 Fleet은 수만 대)를 받지 않는다(limit=1 + total·sample, 출시 준비 RD-P2-01)
+  const fleet = useApi<{ total?: number; sample?: number }>('vehicles', { query: { limit: 1 } });
   // 5년 운영 데이터면 대상 차량은 모집단 모델(가정값)에서 — 시연·수신 차량 행 수가 아니다
   const pop = useApi<{ dataset: { kind: string }; funnel: { active: number } }>('fleetPopulation', {}, { staleTime: 300_000 });
   const ota = useConnectionLabel('ota');
@@ -44,7 +45,7 @@ function Summary({ role }: GadgetBodyProps) {
   const mine = inbox.items.filter((i) => i.mine).length;
   const procMine = proc ? proc.todo + proc.review : 0;
   const target = pop.data?.dataset?.kind === 'ops5y' && typeof pop.data.funnel?.active === 'number' ? pop.data.funnel.active : null;
-  const vehicles = list(fleet.data);
+  const vehicleCount = typeof fleet.data?.total === 'number' ? fleet.data.total - (fleet.data.sample ?? 0) : null;
   const stats: Stat[] = [
     // 내 차례는 핵심 메시지가 다른 일(긴급 차단·승인)을 말할 때만 — 핵심 메시지가 이미 말하거나 0이면 되풀이하지 않는다(UX3-15, 3초 ⑪)
     ...(procMine > 0 && (activeKills > 0 || mine > 0) ? [{ k: H.kpi.procMine, v: procMine, to: '/procedures' }] : []),
@@ -54,7 +55,7 @@ function Summary({ role }: GadgetBodyProps) {
     { k: H.kpi.anomalies, v: list(anms.data) ? list(anms.data)!.filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length : null, to: '/ops/anomalies' },
     ...(target !== null ? [{ k: ops5y.home.target, v: target, title: formatExact(target) }] : []),
     // 수신 표본(SAMPLE)은 시연 Fleet이 아니다
-    { k: H.kpi.online, v: vehicles ? vehicles.filter((v) => v.fleet !== 'SAMPLE').length : null, to: '/fleet/vehicles', badge: <ConnectionBadge state={ota} system="OTA" /> },
+    { k: H.kpi.online, v: vehicleCount, to: '/fleet/vehicles', badge: <ConnectionBadge state={ota} system="OTA" /> },
   ];
   const max = Math.max(1, ...stats.map((s) => s.v ?? 0));
   const pending = feats.isPending && !f;

@@ -114,7 +114,7 @@ export class RollbackService implements OnModuleInit {
     if (ev.type === 'vehicle.status.accepted' && Array.isArray(p.dtc) && p.dtc.length) {
       for (const plan of this.repo.plans({ featureId: String(p.featureId), status: 'APPROVED' })) {
         const pub = this.publications.get(plan.deploymentId);
-        const v = this.fleet.vehicles().find((x) => x.vin === p.vin);
+        const v = typeof p.vin === 'string' ? this.fleet.vehicle(p.vin) : undefined;
         if (!pub || !v || !pub.payload.targets.includes(v.vin) || !vehicleInScope(v, plan.featureId, plan.scope)) continue;
         const t = dtcTrigger(plan.conditions, v.vin, p.dtc);
         if (t) this.later(() => this.autoExecute(plan.planId, t));

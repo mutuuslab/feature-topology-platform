@@ -215,4 +215,33 @@ describe('활성화 판단', () => {
     const ofrep = calls.find((c) => c.url.startsWith('/ofrep/v1/evaluate/flags/care_00022_param'))!;
     expect(JSON.parse(String(ofrep.init?.body))).toEqual({ context: { targetingKey: 'ego-01' } });
   });
+
+  it('배포 정책 목록이 차량 목록보다 늦게 와도 flag 없이 Fleet 판단을 묻지 않는다', async () => {
+    // 회귀(2026-10-25 정적 데모 e2e, 바쁜 기계): 차량 목록이 먼저 오면 Fleet 판단 질의가 flagKey='' 로 차량마다 나갔다
+    let releasePolicies: () => void = () => {};
+    const policiesReady = new Promise<void>((r) => (releasePolicies = r));
+    vi.stubGlobal('fetch', vi.fn(async (input: string | URL, init?: RequestInit) => {
+      const url = String(input);
+      calls.push({ url, init });
+      if (url.startsWith('/api/policies')) await policiesReady;
+      const r = url.startsWith('/api/vehicles')
+        ? { body: VEHICLES }
+        : url.startsWith('/api/policies')
+          ? { body: { items: [{ flagKey: 'care_00022_param', status: 'DEPLOYED' }] } }
+          : url.startsWith('/api/activation/decide')
+            ? { body: decision(new URL(url, 'http://x').searchParams.get('vin')!) }
+            : url.startsWith('/ofrep/')
+              ? { body: { key: 'care_00022_param', value: true, reason: 'TARGETING_MATCH' } }
+              : { status: 404, body: {} };
+      return new Response(JSON.stringify(r.body), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }));
+    mount('/activation/decide', '/activation/decide', <ActivationScreen />);
+    await waitFor(() => expect(calls.some((c) => String(c.url).startsWith('/api/vehicles'))).toBe(true));
+    await new Promise((r) => setTimeout(r, 50));
+    releasePolicies();
+    expect(await screen.findByText('CONTEXT_UNKNOWN')).toBeTruthy();
+    const decides = calls.filter((c) => String(c.url).startsWith('/api/activation/decide')).map((c) => new URL(c.url, 'http://x').searchParams.get('flagKey'));
+    expect(decides.length).toBeGreaterThan(0);
+    expect(decides.filter((f) => !f)).toEqual([]);
+  });
 });

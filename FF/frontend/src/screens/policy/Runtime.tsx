@@ -52,6 +52,8 @@ export function ActivationScreen() {
     queries: (vehicles.data?.items ?? []).map((v) => ({
       queryKey: ['activationDecide', {}, { vin: v.vin, flagKey }],
       queryFn: () => call<Decision>('activationDecide', { query: { vin: v.vin, flagKey } }),
+      // 배포 정책 목록이 늦게 오면 flag가 아직 없다 — 그때 묻지 않는다(차량마다 빈 flag 질의가 나가던 회귀)
+      enabled: !!flagKey,
     })),
   });
   const d = q.data;

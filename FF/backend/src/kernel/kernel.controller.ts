@@ -108,12 +108,14 @@ export class KernelController {
     };
   }
 
-  /** 42 컴포넌트별 최근 활동 — 이벤트·감사의 componentId로 센다(아키텍처 화면의 살아 있는 표시) */
+  /** 42 컴포넌트별 최근 활동 — 이벤트·감사의 componentId로 센다(아키텍처 화면의 살아 있는 표시).
+   *  시각 범위 색인(events_at·audit_at, 마이그레이션 070)으로 최근 창만 읽는다 — 이벤트는 GROUP BY 때문에 플래너가 component_id 색인으로
+   *  전체를 훑어(50만 행에서 1 s) INDEXED BY로 고정한다(출시 준비 RD-P2-01)*/
   @Get('components/activity')
   activity(@Query('minutes') minutes?: string) {
     const since = new Date(this.clock.now().getTime() - Math.min(1440, Number(minutes) || 60) * 60_000).toISOString();
     const ev = this.db.all<{ c: string; n: number; last: string; type: string }>(
-      'SELECT component_id AS c, count(*) AS n, max(at) AS last, (SELECT type FROM events e2 WHERE e2.component_id = e.component_id ORDER BY seq DESC LIMIT 1) AS type FROM events e WHERE component_id IS NOT NULL AND at >= ? GROUP BY component_id',
+      'SELECT component_id AS c, count(*) AS n, max(at) AS last, (SELECT type FROM events e2 WHERE e2.component_id = e.component_id ORDER BY seq DESC LIMIT 1) AS type FROM events e INDEXED BY events_at WHERE component_id IS NOT NULL AND at >= ? GROUP BY component_id',
       since,
     );
     const au = this.db.all<{ c: string; n: number; denied: number }>("SELECT component_id AS c, count(*) AS n, sum(CASE WHEN result != 'ALLOWED' THEN 1 ELSE 0 END) AS denied FROM audit WHERE component_id IS NOT NULL AND at >= ? GROUP BY component_id", since);

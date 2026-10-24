@@ -48,7 +48,7 @@ export class FleetPopulationService {
         represented: Math.round(live.reduce((s, p) => s + weightOf(p), 0)),
         // 판매월 전이거나 말소된 표본
         inactive: sample.length - live.length,
-        receivers: this.fleet.vehicles().filter((v) => v.fleet === 'SAMPLE').length,
+        receivers: this.fleet.vehicleCounts().sample,
       },
     };
   }

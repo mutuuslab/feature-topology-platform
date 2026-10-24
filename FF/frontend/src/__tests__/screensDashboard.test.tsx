@@ -176,6 +176,22 @@ describe('내 대시보드 — Jira 대시보드', () => {
     expect(live()).toMatch(/사본 '내 대시보드 사본'을 만들어/);
   });
 
+  // 회귀(2026-10-25 CI 메뉴 초점 경합): 편집 모드에 들어가면 '편집 중' 제목(다음 그림 틀)과 디렉터리 검색 칸(지연 묶음이 읽힌 뒤)이
+  // 서로 초점을 가져가 마지막 자리가 묶음 읽는 속도에 따라 달랐다 — 그 사이 사용자가 옮긴 초점도 빼앗겼다. 초점은 제목 하나로 정한다
+  it('편집 모드 진입 초점은 언제나 편집 중 제목 — 함께 열리는 디렉터리는 검색 칸으로 초점을 가져가지 않는다(단추로 열 때만)', async () => {
+    mount('operator');
+    await enterEdit();
+    await screen.findByRole('complementary', { name: '가젯 추가' });
+    await waitFor(() => expect(document.activeElement?.id).toBe('jd-editbar-h'));
+    // 디렉터리 묶음이 늦게 읽혀도(이미 읽혔어도) 제목 초점은 그대로
+    await new Promise((r) => requestAnimationFrame(() => r(null))); // hygiene-ok: 다음 그림 틀 한 번 — 늦은 초점 이동이 끝난 뒤를 본다
+    expect(document.activeElement?.id).toBe('jd-editbar-h');
+    // 사용자가 '가젯 추가'로 디렉터리를 다시 열면 검색 칸으로
+    fireEvent.click(screen.getByRole('button', { name: /가젯 추가/, pressed: true }));
+    fireEvent.click(screen.getByRole('button', { name: /가젯 추가/, pressed: false }));
+    await waitFor(() => expect((document.activeElement as HTMLInputElement | null)?.type).toBe('search'));
+  });
+
   it('가젯 추가 → 가젯 안 구성 양식 → 저장하면 보기 상태, 같은 종류를 설정만 달리해 또 추가', async () => {
     mount('operator');
     await enterEdit();

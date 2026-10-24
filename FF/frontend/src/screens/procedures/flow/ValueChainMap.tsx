@@ -42,7 +42,7 @@ export function ValueChainMap({ doc, sample }: { doc: WorkflowDoc; sample?: read
             )}
             <g aria-hidden>
               {layout.arrows.map((a) => (
-                <polyline key={`${a.from}>${a.to}`} className="pf-edge pf-edge--flow" points={a.points.map((q) => q.join(',')).join(' ')} markerEnd={`url(#${marker})`} />
+                <polyline key={`${a.from}>${a.to}`} className="pf-edge pf-cf" points={a.points.map((q) => q.join(',')).join(' ')} markerEnd={`url(#${marker})`} />
               ))}
             </g>
             {layout.boxes.map((b) => {
@@ -68,22 +68,29 @@ export function ValueChainMap({ doc, sample }: { doc: WorkflowDoc; sample?: read
                     }
                   }}
                 >
-                  <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={5} />
-                  <text className="pf-node__id" x={b.x + 8} y={b.y + 16}>{ellipsize(`${p.id}${p.gates.length ? ` · ${p.gates.join('·')}` : ''}`, b.w - 16, 10)}</text>
-                  {lines.map((t, j) => (
-                    <text key={j} className="pf-node__name" x={b.x + 8} y={b.y + 34 + j * 15}>{t}</text>
+                  <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={6} />
+                  <text className="pf-proc__id" x={b.x + 10} y={b.y + 18}>{p.id}</text>
+                  {/* Gate는 오른쪽 위 작은 칩 */}
+                  {p.gates.map((g, k) => (
+                    <g key={g} className="pf-proc__gate" aria-hidden>
+                      <rect x={b.x + b.w - 8 - (p.gates.length - k) * 30} y={b.y + 6} width={26} height={16} rx={4} />
+                      <text x={b.x + b.w - 8 - (p.gates.length - k) * 30 + 13} y={b.y + 18} textAnchor="middle">{g}</text>
+                    </g>
                   ))}
-                  <text className="pf-proc__meta" x={b.x + 8} y={b.y + b.h - 30}>
-                    {ellipsize(`${s.mine ? F.chain.mine(s.mine) : F.chain.none}${s.turn ? ` · ${F.chain.turn(s.turn)}` : ''}`, b.w - 16, 11)}
-                  </text>
-                  <rect className="pf-proc__track" x={b.x + 8} y={b.y + b.h - 18} width={b.w - 76} height={4} rx={2} />
-                  <rect className="pf-proc__bar" x={b.x + 8} y={b.y + b.h - 18} width={((b.w - 76) * s.done) / Math.max(1, s.total)} height={4} rx={2} />
-                  <text className="pf-proc__meta" x={b.x + b.w - 8} y={b.y + b.h - 12} textAnchor="end">{F.chain.progress(s.done, s.total)}</text>
+                  {lines.map((t, j) => (
+                    <text key={j} className="pf-node__name" x={b.x + 10} y={b.y + 38 + j * 15}>{t}</text>
+                  ))}
                   {s.mine > 0 && (
                     <g className="pf-proc__marker" aria-hidden>
-                      <circle cx={b.x + b.w - 12} cy={b.y + 12} r={6} />
+                      <circle cx={b.x + 14} cy={b.y + b.h - 34} r={4} />
                     </g>
                   )}
+                  <text className="pf-proc__meta" x={b.x + (s.mine ? 22 : 10)} y={b.y + b.h - 30}>
+                    {ellipsize(`${s.mine ? F.chain.mine(s.mine) : F.chain.none}${s.turn ? ` · ${F.chain.turn(s.turn)}` : ''}`, b.w - 32, 11)}
+                  </text>
+                  <rect className="pf-proc__track" x={b.x + 10} y={b.y + b.h - 18} width={b.w - 76} height={4} rx={2} />
+                  <rect className="pf-proc__bar" x={b.x + 10} y={b.y + b.h - 18} width={((b.w - 76) * s.done) / Math.max(1, s.total)} height={4} rx={2} />
+                  <text className="pf-proc__meta" x={b.x + b.w - 8} y={b.y + b.h - 12} textAnchor="end">{F.chain.progress(s.done, s.total)}</text>
                 </g>
               );
             })}

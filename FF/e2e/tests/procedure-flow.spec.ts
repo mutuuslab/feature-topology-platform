@@ -41,6 +41,40 @@ for (const w of [1366, 1920]) {
   });
 }
 
+test('절차서 표기 — 입력·산출물 레인의 문서, 제어 흐름과 객체 흐름, 고정 레인 머리, 활동·산출물 카드', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await asRole(page, 'operator');
+  await page.goto('/procedures/FPW.8');
+  const flow = page.getByRole('group', { name: 'FPW.8 흐름도' });
+  await expect(flow).toBeVisible();
+  const heads = flow.locator('.pf-lanehead__text');
+  await expect(heads.first()).toHaveText('입력 (Inputs)');
+  await expect(heads.last()).toHaveText('산출물 (Outputs)');
+  // 산출물 = 문서 상자(밖에서 오는 입력은 점선 문서), 제어 흐름(실선)과 객체 흐름(점선)이 따로
+  await expect(flow.locator('.pf-doc[data-external]').first()).toBeVisible();
+  expect(await flow.locator('.pf-doc:not([data-external]):not([data-ref])').count()).toBe(11);
+  expect(await flow.locator('polyline.pf-cf').count()).toBeGreaterThan(10);
+  expect(await flow.locator('polyline.pf-of').count()).toBeGreaterThan(10);
+  // 넓은 흐름도 — 가로로 스크롤해도 레인 머리는 왼쪽에 남는다
+  const scroller = page.locator('.pf-scroll[data-wide]');
+  await expect(scroller).toBeVisible();
+  const sticky = scroller.locator('svg.pf-lanes');
+  await expect(sticky).toBeVisible();
+  const before = await sticky.boundingBox();
+  await scroller.evaluate((el) => (el.scrollLeft = 600));
+  await expect.poll(async () => (await sticky.boundingBox())?.x).toBe(before?.x);
+  // 흐름도 아래 절차서 본문 — 요약 문장, 활동 카드(RACI·입력/출력·수행 절차·완료 기준), 산출물 카드
+  await expect(page.locator('.pf-lead')).toContainText('활동 11개');
+  const card = page.locator('[data-activity-card="FPW.8-A04"]');
+  await expect(card.locator('.pf-raci-badge[data-k="R"]')).toBeVisible();
+  await expect(card.getByText('수행 절차')).toBeVisible();
+  await expect(page.locator('[data-wp-card]').first()).toBeVisible();
+  await card.getByRole('button', { name: '흐름도에서 고르기' }).click();
+  await expect(page).toHaveURL(/a=FPW\.8-A04/);
+  await expect(card).toHaveAttribute('data-selected', '');
+  expect(await noPageOverflow(page)).toBe(true);
+});
+
 test('텍스트 보기 — 흐름도와 같은 활동을 표로 보이고, 다시 흐름도로 돌아온다', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'operator');

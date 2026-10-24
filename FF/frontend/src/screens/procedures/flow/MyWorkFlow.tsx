@@ -1,6 +1,8 @@
 // 내 업무 흐름 — 현재 역할이 13개 절차에서 맡은 활동을 생애주기 사슬로 잇고, 줄마다 받는 곳 → 내 활동 → 넘기는 곳을 그린다.
 // 역할 전환기에서 역할을 바꾸면 그 역할의 흐름으로 바뀐다. 지금 내 차례인 활동은 강조한다.
 // MyWorkFlowCompact는 메인 화면 업무 절차 가젯용 작은 판(지금 내 차례부터 3건, 화면 폭에 맞춤).
+// 모양은 절차 흐름도와 같은 절차서 표기: 내 활동 = 파란 테두리 상자, 상대 역할 = 레인 머리 모양, 외부 입력·보존 기록 = 문서,
+// 주고받는 산출물 = 금색 점선(객체 흐름, 이름표 = 산출물), 내 활동 사이 생애주기 순서 = 남색 점선.
 import { useId, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { WorkflowDoc } from '@ff/contracts';
@@ -8,7 +10,7 @@ import { procedureFlow as F } from '../../../copy/procedureFlow';
 import { roleLabel } from '../../../data/refdata';
 import { useAppShell } from '../../../store';
 import { Segmented } from '../../../design';
-import { ArrowDefs, EdgeLabel, FlowLegend, roleNameOf, StateIcon, stateText, useFlowStatuses } from './FlowParts';
+import { ArrowDefs, DocShape, EdgeLabel, FlowLegend, roleNameOf, StateIcon, stateText, useFlowStatuses } from './FlowParts';
 import { collapseSides, layoutMyFlow, MY_FLOW_COMPACT, MY_FLOW_FULL, myWorkSteps, wpNameOf, type Counterpart, type MyFlowLayout, type MyFlowSize, type MyStep } from './myFlow';
 import type { ActivityStatus } from './status';
 import { ellipsize, wrapText } from './svgText';
@@ -61,7 +63,7 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label, own = true }: { do
             )}
             <g aria-hidden>
               {r.layout.edges.map((e) => (
-                <polyline key={e.id} className="pf-edge pf-edge--flow" points={e.points.map((q) => q.join(',')).join(' ')} markerEnd={`url(#${marker})`} />
+                <polyline key={e.id} className="pf-edge pf-of" points={e.points.map((q) => q.join(',')).join(' ')} markerEnd={`url(#${marker}-of)`} />
               ))}
               {r.layout.edges.map((e) => (e.labelAt && e.label ? <EdgeLabel key={e.id} at={e.labelAt} text={e.label} full={e.wps.map((k) => wpNameOf(doc, k)).join(', ')} /> : null))}
             </g>
@@ -72,11 +74,15 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label, own = true }: { do
                 const sub = acts(c);
                 const name = who(doc, c, own);
                 const wps = c.wps.map((k) => wpNameOf(doc, k)).join(', ');
+                const nameLines = wrapText(name, n.w - 22, 12, 2);
                 return (
                   <g key={n.id} className="pf-peer" data-kind={c.kind} data-mine={c.mine ? '' : undefined} role="img" aria-label={F.mine.sideLabel(n.side === 'from' ? F.mine.from : F.mine.to, name, c.activities.map((x) => x.id).join(', '), wps)}>
-                    <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={5} />
-                    <text className="pf-peer__name" x={n.x + 8} y={n.y + (sub ? 19 : n.h / 2 + 4)}>{ellipsize(name, n.w - 16, 12)}</text>
-                    {sub && <text className="pf-peer__sub" x={n.x + 8} y={n.y + 35}>{ellipsize(sub, n.w - 16, 10)}</text>}
+                    {c.kind === 'role' ? <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={4} /> : <g className="pf-doc"><DocShape x={n.x} y={n.y} w={n.w} h={n.h} fold={10} /></g>}
+                    {/* 이름은 두 줄까지(잘리지 않게), 그 아래 활동 ID */}
+                    {nameLines.map((t, j) => (
+                      <text key={j} className="pf-peer__name" x={n.x + 8} y={n.y + (sub ? 17 : n.h / 2 + 4 - (nameLines.length - 1) * 7) + j * 14}>{t}</text>
+                    ))}
+                    {sub && <text className="pf-peer__sub" x={n.x + 8} y={n.y + 17 + nameLines.length * 14 + 1}>{ellipsize(sub, n.w - 16, 10)}</text>}
                   </g>
                 );
               })}
@@ -97,13 +103,13 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label, own = true }: { do
                 }
               }}
             >
-              <rect x={center.x} y={center.y} width={center.w} height={center.h} rx={5} />
-              {st?.mine && st.state === 'overdue' && <rect className="pf-node__ring" x={center.x + 4} y={center.y + 4} width={center.w - 8} height={center.h - 8} rx={3} />}
-              <text className="pf-node__id" x={center.x + 8} y={center.y + 15}>
-                {ellipsize(`${s.activity.id}${s.activity.gateDecision ? ` · ${s.activity.gateDecision}` : ''}`, center.w - 16, 10)}
+              <rect x={center.x} y={center.y} width={center.w} height={center.h} rx={8} />
+              {st?.mine && st.state === 'overdue' && <rect className="pf-node__ring" x={center.x + 4} y={center.y + 4} width={center.w - 8} height={center.h - 8} rx={5} />}
+              <text className="pf-node__id" x={center.x + center.w / 2} y={center.y + 16} textAnchor="middle">
+                {ellipsize(`${s.activity.id}${s.activity.gateDecision ? ` · ${s.activity.gateDecision}` : ''}`, center.w - 16, 11)}
               </text>
               {lines.map((t, j) => (
-                <text key={j} className="pf-node__name" x={center.x + 8} y={center.y + 32 + j * 15}>{t}</text>
+                <text key={j} className="pf-node__name" x={center.x + center.w / 2} y={center.y + 33 + j * 15 + (lines.length === 1 ? 7 : 0)} textAnchor="middle">{t}</text>
               ))}
               <StateIcon state={st?.state ?? 'waiting'} x={center.x + 8} y={center.y + center.h - 19} />
               <text className="pf-node__state" x={center.x + 25} y={center.y + center.h - 9}>{stateText(st, own)}</text>
@@ -207,7 +213,7 @@ export function MyWorkFlow({ doc, sample, persona }: { doc: WorkflowDoc; sample?
         <p className="ds-field__hint" role="status">{F.mine.emptyFilter}</p>
       ) : mode === 'diagram' ? (
         <>
-          <FlowLegend shapes={false} own={own} />
+          <FlowLegend shapes="mine" own={own} />
           <p className="ds-field__hint pf-count">{own ? F.mine.count(steps.length, all.length) : F.roles.count(steps.length, all.length)}</p>
           <div className="pf-scroll">
             <MyFlowSvg doc={doc} layout={layout} statuses={statuses} size={MY_FLOW_FULL} fit={false} label={title} own={own} />

@@ -39,11 +39,11 @@ const shot = async (p, name, full = false) => {
 };
 /** 흐름도만(가로 스크롤 상자 전체 폭) */
 const shotFlow = async (p, name) => {
-  const svg = p.locator('.pf-scroll svg').first();
+  const svg = p.locator('.pf-scroll svg.pf-svg').first();
   await svg.waitFor();
   // 가로 스크롤 상자를 펼쳐 흐름도 전체를 찍는다
   await p.evaluate(() => {
-    const s = document.querySelector('.pf-scroll svg');
+    const s = document.querySelector('.pf-scroll svg.pf-svg');
     for (let e = s?.parentElement; e; e = e.parentElement) Object.assign(e.style, { overflow: 'visible', maxWidth: 'none', width: 'max-content' });
   });
   await svg.screenshot({ path: `${out}procflow-${name}.png` });
@@ -59,6 +59,8 @@ const shotFlow = async (p, name) => {
   await p.close();
 }
 
+// ONLY=process — 절차 흐름도·절차서 본문만(빠른 반복용)
+const only = process.env.ONLY;
 for (const w of [1366, 1920]) {
   const h = w === 1366 ? 768 : 1080;
   let p = await open(w, h, 'author', '/procedures/FPW.1');
@@ -78,6 +80,7 @@ for (const w of [1366, 1920]) {
   await shot(p, `fpw1-${w}-text`, true);
   await p.close();
 
+  if (only === 'process') continue;
   p = await open(w, h, 'author', '/procedures');
   await p.locator('.pf-my').waitFor();
   await shot(p, `mine-author-${w}`);
@@ -98,7 +101,7 @@ for (const w of [1366, 1920]) {
 }
 
 // 담당자별 업무 흐름 — 메뉴 화면(Feature Owner로 운영 조직 흐름 보기), 담당자 × 절차 표, 레인 강조
-for (const w of [1366, 1920]) {
+for (const w of only === 'process' ? [] : [1366, 1920]) {
   const h = w === 1366 ? 768 : 1080;
   let p = await open(w, h, 'author', '/procedures/roles');
   await p.locator('.pf-roles').waitFor();
@@ -124,7 +127,7 @@ for (const id of ['FPW.1', 'FPW.2', 'FPW.3', 'FPW.4', 'FPW.5', 'FPW.6', 'FPW.7',
 }
 
 // 역할마다 다른 내 업무 흐름
-for (const role of ['operator', 'integrator']) {
+for (const role of only === 'process' ? [] : ['operator', 'integrator']) {
   const p = await open(1366, 768, role, '/procedures');
   await p.locator('.pf-my').waitFor();
   await shot(p, `mine-${role}-1366`);

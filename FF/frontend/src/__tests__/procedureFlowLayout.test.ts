@@ -1,21 +1,24 @@
-// 업무 절차 흐름도 배치 알고리즘 — 13개 절차 모두에서 상자 겹침 0·간선 끝점·직교 경로·간선 겹침 0·결정성.
+// 업무 절차 흐름도 배치 알고리즘 — 13개 절차 모두에서 상자 겹침 0·간선 끝점·직교 경로·상자 관통 0·간선 겹침 0·결정성.
 // 배치는 외부 라이브러리 없이 screens/procedures/flow/layout.ts가 계산한다(열 = 위상 순위, 행 = 레인 × 칸 안 순서).
+// 표기는 절차서 방식: 입력 레인(밖에서 오는 문서) · 역할 레인(활동) · 산출물 레인(만든 문서), 제어 흐름(옆) · 객체 흐름(위아래).
 import { describe, expect, it } from 'vitest';
 import { WORKFLOWS } from '../../../contracts/src/generated/workflows';
 import { crossings, layoutFlow, layoutProblems } from '../screens/procedures/flow/layout';
-import { buildProcessGraph, endId, gateId, startId } from '../screens/procedures/flow/model';
+import { buildProcessGraph, endId, gateId, IN_LANE, inDocId, isObjectFlow, OUT_LANE, outDocId, PROCESS_LAYOUT, startId, wpInfoOf } from '../screens/procedures/flow/model';
 import { layoutMyFlow, MY_FLOW_FULL, myWorkSteps } from '../screens/procedures/flow/myFlow';
 import { layoutValueChain } from '../screens/procedures/flow/valueChain';
 
 const procs = WORKFLOWS.processes;
+const graphOf = (p: (typeof procs)[number]) => buildProcessGraph(p, wpInfoOf(WORKFLOWS));
+const layoutOf = (p: (typeof procs)[number]) => layoutFlow(graphOf(p), PROCESS_LAYOUT);
 
 describe('흐름도 배치 — 13개 절차 전부', () => {
   it('절차는 13개다', () => expect(procs.length).toBe(13));
 
   for (const p of procs) {
     describe(p.id, () => {
-      const g = buildProcessGraph(p);
-      const l = layoutFlow(g);
+      const g = graphOf(p);
+      const l = layoutFlow(g, PROCESS_LAYOUT);
 
       it('상자 겹침·끝점 없는 간선·사선·상자 관통·같은 선 위 겹침이 없다', () => {
         expect(layoutProblems(l)).toEqual([]);
@@ -28,7 +31,59 @@ describe('흐름도 배치 — 13개 절차 전부', () => {
           expect(ids.has(e.from)).toBe(true);
           expect(ids.has(e.to)).toBe(true);
         }
-        expect(l.edges.length).toBe(g.edges.length);
+        // 숨은 간선(산출물 의존 순서)은 그리지 않는다
+        expect(l.edges.length).toBe(g.edges.filter((e) => !e.hidden).length);
+      });
+
+      it('산출물 문서: 만드는 산출물마다 산출물 레인(맨 아래)에, 밖에서 오는 입력마다 입력 레인(맨 위)에 하나씩', () => {
+        const at = new Map(l.nodes.map((n) => [n.id, n]));
+        const made = [...new Set(p.activities.flatMap((a) => a.outputs))];
+        const ext = [...new Set(p.activities.flatMap((a) => a.inputs))].filter((k) => !made.includes(k));
+        for (const k of made) expect(at.get(outDocId(p, k))?.lane).toBe(OUT_LANE);
+        for (const k of ext) {
+          expect(at.get(inDocId(p, k))?.lane).toBe(IN_LANE);
+          expect(at.get(inDocId(p, k))?.external).toBe(true);
+        }
+        // 참조 문서 — 앞 활동 산출물을 다음 활동 연결 없이 쓰면 입력 레인에 그 산출물의 참조를 하나 둔다
+        const refs = l.nodes.filter((n) => n.ref);
+        for (const r of refs) {
+          expect(r.lane).toBe(IN_LANE);
+          expect(made).toContain(r.wp);
+        }
+        expect(l.nodes.filter((n) => n.kind === 'doc').length).toBe(made.length + ext.length + refs.length);
+        expect(l.lanes[l.lanes.length - 1].id).toBe(OUT_LANE);
+        if (ext.length) expect(l.lanes[0].id).toBe(IN_LANE);
+        // 역할 레인에는 활동(과 시작·종료·Gate)만, 입력·산출물 레인에는 문서만
+        for (const n of l.nodes) expect(n.kind === 'doc').toBe(n.lane === IN_LANE || n.lane === OUT_LANE);
+      });
+
+      it('제어 흐름은 상자 옆(오른쪽 변 → 왼쪽 변), 객체 흐름은 상자 위아래 변 — 둘은 모양이 다르고 섞이지 않는다', () => {
+        const at = new Map(l.nodes.map((n) => [n.id, n]));
+        for (const e of l.edges) {
+          const s = at.get(e.from)!;
+          const t = at.get(e.to)!;
+          const [x0, y0] = e.points[0];
+          const [x1, y1] = e.points[e.points.length - 1];
+          if (isObjectFlow(e.kind)) {
+            expect(e.style).toBe('object');
+            // 한쪽 끝은 문서
+            expect([s.kind, t.kind].filter((k) => k === 'doc').length).toBe(1);
+            const onTopOrBottom = (n: typeof s, y: number) => Math.abs(y - n.y) < 0.6 || Math.abs(y - (n.y + n.h)) < 0.6;
+            expect(onTopOrBottom(s, y0)).toBe(true);
+            expect(onTopOrBottom(t, y1)).toBe(true);
+            expect(x0).toBeGreaterThan(s.x);
+            expect(x0).toBeLessThan(s.x + s.w);
+          } else {
+            expect(e.style).toBe('control');
+            expect(s.kind).not.toBe('doc');
+            expect(t.kind).not.toBe('doc');
+            // 첫 구간은 출발 상자에서 오른쪽으로, 마지막 구간은 도착 상자로 오른쪽으로 들어간다
+            expect(e.points[1][0]).toBeGreaterThan(x0 - 0.5);
+            expect(x1).toBeLessThanOrEqual(t.x + t.w / 2 + 0.5);
+            expect(Math.abs(y0 - (s.y + s.h / 2))).toBeLessThanOrEqual(s.h / 2);
+          }
+        }
+        expect(l.edges.some((e) => isObjectFlow(e.kind))).toBe(true);
       });
 
       it('시작은 첫 열, 종료는 마지막 열이고, Gate 판정은 마름모로 판정 활동 바로 뒤에 있다', () => {
@@ -45,17 +100,18 @@ describe('흐름도 배치 — 13개 절차 전부', () => {
 
       it('산출물을 입력으로 쓰는 활동은 만든 활동보다 뒤 열이다(순환 간선 제외)', () => {
         const at = new Map(l.nodes.map((n) => [n.id, n]));
-        for (const e of l.edges.filter((x) => !x.back && x.kind === 'data')) expect(at.get(e.to)!.rank).toBeGreaterThan(at.get(e.from)!.rank);
+        for (const e of g.edges.filter((x) => x.kind === 'data')) expect(at.get(e.to)!.rank).toBeGreaterThan(at.get(e.from)!.rank);
       });
 
       it('레인 = 수행(R) 첫 역할', () => {
         const at = new Map(l.nodes.map((n) => [n.id, n]));
         for (const a of p.activities) expect(at.get(a.id)!.lane).toBe(a.raci.R[0]);
+        expect(l.lanes.filter((x) => x.id !== IN_LANE && x.id !== OUT_LANE).map((x) => x.id).sort()).toEqual([...new Set(p.activities.map((a) => a.raci.R[0]))].sort());
         expect(new Set(l.lanes.map((x) => x.id)).size).toBe(l.lanes.length);
       });
 
       it('같은 입력이면 같은 좌표(결정적)', () => {
-        const again = layoutFlow(buildProcessGraph(p));
+        const again = layoutOf(p);
         expect(JSON.stringify(again)).toBe(JSON.stringify(l));
       });
 
@@ -71,9 +127,9 @@ describe('흐름도 배치 — 13개 절차 전부', () => {
   }
 
   it('간선 교차 수 합이 측정 상한을 넘지 않는다 — 품질 래칫', () => {
-    const total = procs.reduce((s, p) => s + crossings(layoutFlow(buildProcessGraph(p))), 0);
-    // 측정치 49(2026-10-24, 13개 절차 합). 늘면 배치 알고리즘이 나빠진 것이다 — 줄이면 이 상한도 내린다
-    expect(total).toBeLessThanOrEqual(52);
+    const total = procs.reduce((s, p) => s + crossings(layoutOf(p)), 0);
+    // 측정치 253(2026-10-25, 13개 절차 합 — 절차서 표기로 입력·산출물 문서와 객체 흐름이 더해졌다). 늘면 배치 알고리즘이 나빠진 것이다 — 줄이면 이 상한도 내린다
+    expect(total).toBeLessThanOrEqual(260);
   });
 });
 

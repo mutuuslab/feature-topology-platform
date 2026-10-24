@@ -19,7 +19,8 @@ const OIDC = {
   FF_SESSION_SECRET: 'p'.repeat(48),
   OIDC_ROLE_MAP: 'ff-authors=FEATURE_AUTHOR',
 };
-const GOOD = { FF_ENV: 'production', FF_DB: '/var/lib/ff/ff.db', FF_INSTANCE_ID: 'oem-a', UNLEASH_MODE: 'off', FF_AUDIT_KEY: 'a'.repeat(32), FF_AUDIT_ANCHOR_FILE: '/var/lib/ff-anchor/audit.jsonl', ...OIDC };
+// FF_KEK — 개인키·차량 루트 비밀을 감싸는 키 암호화 키(RD-SEC-06). 실제 설치는 FF_KEK_FILE(비밀 볼륨)이나 KMS
+const GOOD = { FF_ENV: 'production', FF_DB: '/var/lib/ff/ff.db', FF_INSTANCE_ID: 'oem-a', UNLEASH_MODE: 'off', FF_AUDIT_KEY: 'a'.repeat(32), FF_AUDIT_ANCHOR_FILE: '/var/lib/ff-anchor/audit.jsonl', FF_KEK: Buffer.alloc(32, 7).toString('base64'), ...OIDC };
 
 describe('운영 모드 설정 검사 — 문제를 한 번에 모두 알려 준다', () => {
   it('운영 모드가 아니면 지금까지의 기본값을 그대로 쓴다(데모 데이터·메모리 DB)', () => {
@@ -43,7 +44,7 @@ describe('운영 모드 설정 검사 — 문제를 한 번에 모두 알려 준
       FF_CORS_ORIGINS: '*,https://ff.oem.example',
       SIM_MODE: 'auto',
     }).join('\n');
-    for (const k of ['FF_AUDIT_KEY', 'FF_AUDIT_ANCHOR_FILE', 'FF_DB', 'FF_SEED=v0.81', 'FF_INSTANCE_ID', 'FF_SCHEDULER', 'FF_HSM_VEHICLE_ROOT', 'JIRA_WEBHOOK_SECRET', "'*'", 'UNLEASH_MODE가 mock', 'SIM_MODE=auto']) expect(p).toContain(k);
+    for (const k of ['FF_KEK', 'FF_AUDIT_KEY', 'FF_AUDIT_ANCHOR_FILE', 'FF_DB', 'FF_SEED=v0.81', 'FF_INSTANCE_ID', 'FF_SCHEDULER', 'FF_HSM_VEHICLE_ROOT', 'JIRA_WEBHOOK_SECRET', "'*'", 'UNLEASH_MODE가 mock', 'SIM_MODE=auto']) expect(p).toContain(k);
     expect(p).not.toContain('https://ff.oem.example');
     // 비밀값은 메시지에 나오지 않는다
     expect(p).not.toContain('ff-mock-jira-secret');

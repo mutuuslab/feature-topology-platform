@@ -55,6 +55,8 @@ const { DB } = dist('kernel/db.js');
 const { AuditService } = dist('kernel/audit.service.js');
 const { RetentionService } = dist('domains/d04-ops/telemetry-ingest/retention.service.js');
 const { TrialExpiryService } = dist('domains/d01-policy/entitlement/trial-expiry.service.js');
+const { HsmService } = dist('domains/d06-qsec/pki-kms/hsm.service.js');
+const { signVehicleRequest } = dist('kernel/vehicle-auth-client.js');
 
 const app = await createApp({ logger: false });
 await app.listen(0, '127.0.0.1');
@@ -82,6 +84,11 @@ const report = await replay(
     db: app.get(DB),
     trialSweep: (today: string) => app.get(TrialExpiryService).sweep(today),
     retentionSweep: () => app.get(RetentionService).sweep({ id: 'system', role: 'SYSTEM', correlationId: 'ops5y-retention' }),
+    // 차량 요청 서명(RD-SEC-08) — 공장 주입 차량 키, 재생 시계
+    vehicleHeaders: (vin: string, method: string, path: string, body: string) => {
+      const { epoch, vehicleKey } = app.get(HsmService).factoryProvision(vin);
+      return signVehicleRequest({ vehicleKey, vin, epoch, method, path, body, now: app.get(Clock).now().getTime() });
+    },
   },
   { end: END, days: DAYS, sample: SAMPLE, receivers: RECEIVERS, launches, log: (l: string) => console.log(l) },
 );

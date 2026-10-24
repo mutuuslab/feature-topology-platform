@@ -5,6 +5,13 @@ import { DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, GATES, LIFECYCLE, RE
 import { ko } from '../copy/ko';
 import { connections as CN } from '../copy/connections';
 import { errors as E } from '../copy/errors';
+import { procedureFlow as PF } from '../copy/procedureFlow';
+import { useWorkflows } from '../data/workflows';
+import { ArrowDefs, FlowLegend, StateIcon, useFlowStatuses } from './procedures/flow/FlowParts';
+import { MyWorkFlow, MyWorkFlowCompact } from './procedures/flow/MyWorkFlow';
+import { ProcessFlowDiagram, ProcessFlowText, ProcessFlowView } from './procedures/flow/ProcessFlow';
+import { ValueChainMap } from './procedures/flow/ValueChainMap';
+import type { WorkflowDoc } from '@ff/contracts';
 import {
   ApprovalSlots,
   AsyncView,
@@ -95,6 +102,42 @@ function Swatch({ v }: { v: string }) {
       {hex}
     </span>
   );
+}
+
+/** 업무 절차 흐름도 부품 — 절차 문서(211 KB)는 열 때 불러온다 */
+/** 견본 완료 상태 — 갤러리는 서버를 부르지 않는다(UX 하네스: API 없는 화면) */
+const FLOW_SAMPLE = ['FPW.1-A01', 'FPW.13-A01'];
+
+function FlowSamples({ doc }: { doc: WorkflowDoc }) {
+  const { statuses } = useFlowStatuses(doc, FLOW_SAMPLE);
+  const [sel, setSel] = useState<string | null>(null);
+  const p = doc.processes[0];
+  const small = doc.processes.find((x) => x.id === 'FPW.13') ?? p;
+  return (
+    <div className="ds-gallery-flow" style={{ display: 'grid', gap: 'var(--sp-4)', minWidth: 0 }}>
+      <FlowLegend />
+      <svg width={120} height={24} viewBox="0 0 120 24" role="img" aria-label={PF.legend.title}>
+        <ArrowDefs id="gallery-arrow" />
+        {(['done', 'mine', 'overdue', 'ready', 'waiting'] as const).map((s, i) => (
+          <StateIcon key={s} state={s} x={6 + i * 22} y={6} />
+        ))}
+      </svg>
+      <ProcessFlowView doc={doc} process={p} statuses={statuses} selected={sel} onSelect={setSel} />
+      <div style={{ overflowX: 'auto' }}>
+        <ProcessFlowDiagram doc={doc} process={small} statuses={statuses} selected={sel} onSelect={setSel} />
+      </div>
+      <ProcessFlowText doc={doc} process={small} statuses={statuses} onSelect={setSel} />
+      <MyWorkFlow doc={doc} sample={FLOW_SAMPLE} />
+      <MyWorkFlowCompact doc={doc} sample={FLOW_SAMPLE} />
+      <ValueChainMap doc={doc} sample={FLOW_SAMPLE} />
+    </div>
+  );
+}
+
+function FlowGallery() {
+  const doc = useWorkflows();
+  if (!doc || doc === 'fail') return <AsyncView state={doc === 'fail' ? 'error' : 'loading'} rows={3} />;
+  return <FlowSamples doc={doc} />;
 }
 
 export default function DesignGallery() {
@@ -225,6 +268,10 @@ export default function DesignGallery() {
             ]}
           />
         </AsyncView>
+      </Panel>
+
+      <Panel title={PF.design.title} eyebrow={PF.design.hint} id="procedure-flow">
+        <FlowGallery />
       </Panel>
 
       <Panel title={T.errorsKit} id="errors-kit">

@@ -36,7 +36,7 @@ import { usePermission, when } from '../shared';
 
 const R = ko.rollback;
 const F = R.form;
-const INVALIDATE = ['rollbackDeployments', 'rollbackDeployment', 'rollbackPlans', 'rollbackRequests', 'rollbacks', 'rollbackExecution', 'listPolicies', 'notifications'];
+const INVALIDATE = ['rollbackDeployments', 'rollbackDeployment', 'rollbackPlans', 'rollbackRequests', 'rollbacks', 'rollbackExecution', 'listPolicies', 'notifications', 'policyHistory', 'policyDetail'];
 const EVENTS = ['rollback.', 'publication.closed', 'policy.deployed'];
 const STATUS_VERDICT: Record<string, string> = { COMPLETED: 'PASS', FAILED: 'FAIL', RUNNING: 'CONDITIONAL', REQUESTED: '미판정' };
 
@@ -254,8 +254,8 @@ function RollbackForm({ d, me }: { d: DeploymentDetail; me: string }) {
   );
 }
 
-/** 요청·계획 한 줄 — 지정 승인대상자는 승인·반려, 승인된 수동 요청은 실행 */
-function PendingItem({ x, me }: { x: (RollbackRequest & { kind: 'request' }) | (RollbackPlan & { kind: 'plan' }); me: string }) {
+/** 요청·계획 한 줄 — 지정 승인대상자는 승인·반려, 승인된 수동 요청은 실행. 정책 상세의 되돌리기(PolicyHistory)도 같은 부품을 쓴다 */
+export function PendingItem({ x, me }: { x: (RollbackRequest & { kind: 'request' }) | (RollbackPlan & { kind: 'plan' }); me: string }) {
   const id = x.kind === 'request' ? x.requestId : x.planId;
   const decide = useApiMutation(x.kind === 'request' ? 'decideRollbackRequest' : 'decideRollbackPlan', INVALIDATE);
   const execute = useApiMutation<RollbackExecution>('executeRollbackRequest', INVALIDATE);
@@ -312,7 +312,7 @@ function DeploymentPanel({ id, me }: { id: string; me: string }) {
   const d = q.data;
   const pending = d ? [...d.requests.map((r) => ({ ...r, kind: 'request' as const })), ...d.plans.map((p) => ({ ...p, kind: 'plan' as const }))].sort((a, b) => b.requestedAt.localeCompare(a.requestedAt)) : [];
   return (
-    <AsyncView state={asyncState(q)} onRetry={() => q.refetch()} error={q.error?.message}>
+    <AsyncView state={asyncState(q)} onRetry={() => q.refetch()} error={q.error}>
       {d && (
         <>
           <Panel title={R.detail(d.deploymentId)} eyebrow={`${d.deployed.flagKey} · ${versionText(d.deployed)}`} id="rb-deployment">

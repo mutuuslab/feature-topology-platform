@@ -54,7 +54,7 @@ export const ExtRefSchema = z
     /** 요구가 바뀌어 연결된 Feature의 G2 재검토가 필요하다(codeBeamer 요구 개정 뒤 G2 판정 전) */
     stale: z.boolean().default(false),
     /** 시스템별 부가 값(파이프라인 결과·MR 대상 브랜치·요구 본문 앞부분 등) */
-    extra: z.record(z.unknown()).default({}),
+    extra: z.record(z.string(), z.unknown()).default({}),
   })
   .strict();
 export type ExtRef = z.infer<typeof ExtRefSchema>;

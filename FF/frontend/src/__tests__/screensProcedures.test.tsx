@@ -34,7 +34,7 @@ function mount(path: string, role = 'author', extra?: React.ReactNode) {
 
 describe('업무 절차 허브', () => {
   it('핵심 메시지는 내가 맡은 활동 수 하나이고, 내 업무 목록에 Release Sign-off가 있다(Feature Owner)', async () => {
-    mount('/procedures', 'author');
+    mount('/procedures?view=list', 'author');
     const key = await screen.findByText('내가 맡은 활동');
     expect(key.closest('[data-key-message]')).toBeTruthy();
     expect(document.querySelectorAll('[data-key-message]').length).toBe(1);
@@ -42,7 +42,7 @@ describe('업무 절차 허브', () => {
   });
 
   it('13개 절차가 모두 카드로 보인다', async () => {
-    mount('/procedures', 'viewer');
+    mount('/procedures?view=list', 'viewer');
     await screen.findByText('내가 맡은 활동', {}, { timeout: 5000 }).catch(() => undefined);
     const links = await screen.findAllByRole('link', { name: /Flag Retirement|출시|등록/ });
     expect(links.length).toBeGreaterThan(0);
@@ -50,7 +50,7 @@ describe('업무 절차 허브', () => {
   });
 
   it('내 업무에서 완료를 표시하면 진행률이 오르고 다음 할 일이 바뀐다', async () => {
-    mount('/procedures', 'author');
+    mount('/procedures?view=list', 'author');
     await screen.findByText('내가 맡은 활동');
     const progress = document.querySelector('.pr-progress')?.textContent ?? '';
     const beforeNext = document.querySelector('.pr-next')?.textContent ?? '';
@@ -68,21 +68,25 @@ describe('업무 절차 허브', () => {
 describe('절차 상세', () => {
   it('흐름도의 활동을 누르면 단계와 완료 기준이 보이고 주소(?a=)에 남는다', async () => {
     mount('/procedures/FPW.7', 'author');
-    const node = await screen.findByRole('button', { name: /FPW\.7-A12/ });
+    const svg = await screen.findByRole('group', { name: '출시·활성화·단계적 확대 흐름도' });
+    const node = within(svg).getAllByRole('button', { name: /Release Sign\-off\(출시 책임 확인\)/ }).find((n) => n.classList.contains('pf-node--activity'))!;
     expect(node.getAttribute('data-mine')).toBe(''); // author = Feature Owner = 수행
     fireEvent.click(node);
-    expect(await screen.findByText('완료 기준')).toBeTruthy();
-    expect(screen.getByText(/서명이 현재 G8·G9 판정 기록에 묶여 유효하다/)).toBeTruthy();
+    // 고른 활동의 상세 판(완료 처리가 있는 곳) — 아래 활동 카드에도 같은 완료 기준이 있으므로 상세 판 안에서 찾는다
+    await waitFor(() => expect(document.querySelector('.pr-activity')).toBeTruthy());
+    const panel = document.querySelector('.pr-activity') as HTMLElement;
+    expect(within(panel).getByText('완료 기준')).toBeTruthy();
+    expect(within(panel).getByText(/서명이 현재 G8·G9 판정 기록에 묶여 유효하다/)).toBeTruthy();
   });
 
   it('?a= 로 열면 그 활동이 선택되어 있다', async () => {
     mount('/procedures/FPW.7?a=FPW.7-A12', 'author');
-    expect(await screen.findByRole('heading', { name: /FPW\.7-A12/ })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 2, name: /Release Sign\-off\(출시 책임 확인\)/ })).toBeTruthy();
   });
 
   it('없는 절차는 안내와 목록 링크를 보인다', async () => {
     mount('/procedures/FPW.99');
-    expect(await screen.findByText(/FPW\.99 절차가 없습니다/)).toBeTruthy();
+    expect(await screen.findByText(/요청한 업무 절차를 찾을 수 없습니다/)).toBeTruthy();
   });
 
   it('RACI 표에 책임(A)이 활동마다 정확히 한 칸이다', async () => {
@@ -145,7 +149,7 @@ describe('실행 UI — 서버 저장·Evidence·검토함', () => {
   it('Evidence·서명 서랍에서 완료하면 서버에 저장하고 완료로 표시한다', async () => {
     const calls = stubProcedureApi();
     mount('/procedures/FPW.1?a=FPW.1-A01', 'author');
-    await screen.findByRole('heading', { name: /FPW\.1-A01/ });
+    await screen.findByRole('heading', { level: 2, name: /Feature 등록·초안 작성/ });
     fireEvent.click(screen.getByRole('button', { name: 'Evidence·서명' }));
     fireEvent.change(screen.getByLabelText(/메모/), { target: { value: '등록 초안 확인' } });
     fireEvent.click(screen.getByRole('button', { name: 'Evidence 추가' }));
@@ -177,7 +181,7 @@ describe('실행 UI — 서버 저장·Evidence·검토함', () => {
       summary: { todo: 0, review: 1, overdue: 0, done: 0, total: 2 },
       roleIds: ['R-FO'],
     });
-    mount('/procedures', 'author');
+    mount('/procedures?view=list', 'author');
     const title = await screen.findByText('내 차례');
     const panel = title.closest('section') as HTMLElement;
     expect(within(panel).getByText('대상 차량 사양·의존 등록')).toBeTruthy();
@@ -186,7 +190,7 @@ describe('실행 UI — 서버 저장·Evidence·검토함', () => {
 
   it('앞 활동이 남은 활동은 대기로 표시한다', async () => {
     stubProcedureApi();
-    mount('/procedures', 'author');
+    mount('/procedures?view=list', 'author');
     await screen.findByText('내가 맡은 활동');
     expect((await screen.findAllByText('앞 활동 대기')).length).toBeGreaterThan(0);
   });

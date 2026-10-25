@@ -30,7 +30,7 @@ describe('표준 따라하기(활동)', () => {
       </MemoryRouter>,
     );
     act(() => procedureGuideStore.open('FPW.1-A01', 'FPW.1'));
-    expect(await screen.findByRole('heading', { name: /FPW\.1-A01/ }, { timeout: 10_000 })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 2, name: /Feature 등록·초안 작성/ }, { timeout: 10_000 })).toBeTruthy();
     await waitFor(() => expect(document.querySelector('[data-tour="feature-form"]')?.getAttribute('data-tour-active')).toBe('true'), { timeout: 3000 });
     expect(screen.getByText('화면의 입력·버튼')).toBeTruthy();
     expect(screen.getByText('name')).toBeTruthy();

@@ -3,6 +3,17 @@
 import { useState } from 'react';
 import { DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, GATES, LIFECYCLE, REG_CLASSES, stageIndexOf, type GateId } from '@ff/contracts';
 import { ko } from '../copy/ko';
+import { connections as CN } from '../copy/connections';
+import { errors as E } from '../copy/errors';
+import '../design/lozenge.css';
+import { procedureFlow as PF } from '../copy/procedureFlow';
+import { useWorkflows } from '../data/workflows';
+import { ArrowDefs, DocShape, FlowLegend, StateIcon, TriggerBolt, useFlowStatuses } from './procedures/flow/FlowParts';
+import { ActivityCards, ProcessCriteria, ProcessLead, WorkProductCards } from './procedures/flow/ProcessDoc';
+import { MyWorkFlow, MyWorkFlowCompact } from './procedures/flow/MyWorkFlow';
+import { ProcessFlowDiagram, ProcessFlowText, ProcessFlowView } from './procedures/flow/ProcessFlow';
+import { ValueChainMap } from './procedures/flow/ValueChainMap';
+import type { WorkflowDoc } from '@ff/contracts';
 import {
   ApprovalSlots,
   AsyncView,
@@ -11,10 +22,12 @@ import {
   ClassBadge,
   ClassBadges,
   ClauseChip,
+  ConnectionBadge,
   DangerConfirm,
   DataTable,
   DiffView,
   Drawer,
+  ErrorNextStep,
   EventStream,
   Explain,
   ExplainCodes,
@@ -25,7 +38,9 @@ import {
   KeyMessage,
   Kpi,
   LifecycleBadge,
+  Lozenge,
   LifecycleStepper,
+  Pager,
   Panel,
   ReasonActionNote,
   RuleChecklist,
@@ -92,12 +107,70 @@ function Swatch({ v }: { v: string }) {
   );
 }
 
+/** 업무 절차 흐름도 부품 — 절차 문서(211 KB)는 열 때 불러온다 */
+/** 견본 완료 상태 — 갤러리는 서버를 부르지 않는다(UX 하네스: API 없는 화면) */
+const FLOW_SAMPLE = ['FPW.1-A01', 'FPW.13-A01'];
+
+function FlowSamples({ doc }: { doc: WorkflowDoc }) {
+  const { statuses } = useFlowStatuses(doc, FLOW_SAMPLE);
+  const [sel, setSel] = useState<string | null>(null);
+  const p = doc.processes[0];
+  const small = doc.processes.find((x) => x.id === 'FPW.13') ?? p;
+  return (
+    <div className="ds-gallery-flow" style={{ display: 'grid', gap: 'var(--sp-4)', minWidth: 0 }}>
+      <FlowLegend />
+      <svg width={120} height={24} viewBox="0 0 120 24" role="img" aria-label={PF.legend.title}>
+        <ArrowDefs id="gallery-arrow" />
+        {(['done', 'mine', 'overdue', 'ready', 'waiting'] as const).map((s, i) => (
+          <StateIcon key={s} state={s} x={6 + i * 22} y={6} />
+        ))}
+      </svg>
+      <svg width={120} height={40} viewBox="0 0 120 40" role="img" aria-label={PF.legend.doc}>
+        <g className="pf-doc">
+          <DocShape x={4} y={4} w={48} h={32} />
+        </g>
+        <g className="pf-doc" data-external="">
+          <DocShape x={60} y={4} w={48} h={32} />
+        </g>
+      </svg>
+      <svg width={24} height={24} viewBox="0 0 24 24" role="img" aria-label={PF.legend.event}>
+        <g className="pf-term pf-term--event">
+          <circle cx={12} cy={12} r={11} />
+          <TriggerBolt x={12} y={12} />
+        </g>
+      </svg>
+      <ProcessLead doc={doc} process={small} />
+      <ProcessCriteria process={small} />
+      <ProcessFlowView doc={doc} process={p} statuses={statuses} selected={sel} onSelect={setSel} />
+      <div style={{ overflowX: 'auto' }}>
+        <ProcessFlowDiagram doc={doc} process={small} statuses={statuses} selected={sel} onSelect={setSel} />
+      </div>
+      <ProcessFlowText doc={doc} process={small} statuses={statuses} onSelect={setSel} />
+      <ActivityCards doc={doc} process={small} statuses={statuses} selected={sel} onSelect={setSel} />
+      <WorkProductCards doc={doc} process={small} onSelect={setSel} />
+      <MyWorkFlow doc={doc} sample={FLOW_SAMPLE} />
+      <MyWorkFlowCompact doc={doc} sample={FLOW_SAMPLE} />
+      <ValueChainMap doc={doc} sample={FLOW_SAMPLE} />
+    </div>
+  );
+}
+
+function FlowGallery() {
+  const doc = useWorkflows();
+  if (!doc || doc === 'fail') return <AsyncView state={doc === 'fail' ? 'error' : 'loading'} rows={3} />;
+  return <FlowSamples doc={doc} />;
+}
+
+/** 운영 빌드 검사 표식(tools/prod-bundle.test.ts) — 운영 설치는 이 갤러리를 싣지 않는다(결정 D-RD-8) */
+const GALLERY_MARKER = 'ff-design-gallery-v1';
+
 export default function DesignGallery() {
   const [state, setState] = useState<AsyncState>('ready');
   const [danger, setDanger] = useState(false);
   const [drawer, setDrawer] = useState(false);
+  const [pagerPage, setPagerPage] = useState(0);
   return (
-    <div style={{ display: 'grid', gap: 'var(--sp-5)', maxWidth: 1440 }}>
+    <div style={{ display: 'grid', gap: 'var(--sp-5)', maxWidth: 1440 }} data-design-gallery={GALLERY_MARKER}>
       <header>
         <div className="ds-eyebrow">FF · DESIGN SYSTEM</div>
         <h1 style={{ margin: '4px 0 6px', fontSize: 'var(--fs-2xl)' }}>{T.title}</h1>
@@ -221,6 +294,22 @@ export default function DesignGallery() {
         </AsyncView>
       </Panel>
 
+      <Panel title={PF.design.title} eyebrow={PF.design.hint} id="procedure-flow">
+        <FlowGallery />
+      </Panel>
+
+      <Panel title={T.errorsKit} id="errors-kit">
+        <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+          <ErrorNextStep error={{ message: E.server, kind: 'server', status: 500, correlationId: 'c0ffee00-0000-4000-8000-000000000001' }} />
+          <ErrorNextStep error={{ message: E.conflictFallback, kind: 'conflict', status: 409 }} />
+          <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+            <ConnectionBadge state="mock" system={CN.system.billing} />
+            <ConnectionBadge state="disconnected" system={CN.system.datalake} />
+          </div>
+          <Pager page={pagerPage} pageSize={100} total={10000} onPage={setPagerPage} />
+        </div>
+      </Panel>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 'var(--sp-5)' }}>
         <Panel title={T.diff} id="diff">
           <DiffView
@@ -309,6 +398,16 @@ export default function DesignGallery() {
         <Tabs tabs={[{ key: 'a', label: T.lifecycle, count: 7 }, { key: 'b', label: T.gates, count: 9 }, { key: 'c', label: T.stream }]} param="gtab">
           {(k) => <p style={{ margin: 0 }} className="ds-mono">tab={k}</p>}
         </Tabs>
+      </Panel>
+
+      {/* 상태 배지 — 대시보드(Jira식) 표의 상태 칸. 모양(lozenge.css)은 쓰는 화면이 함께 읽는다 */}
+      <Panel title={T.lozenge} id="lozenge">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-2)', alignItems: 'center' }}>
+          {['PROPOSED', 'DEVELOPING', 'RELEASED', 'DEPRECATED', 'RETIRED', 'ACTIVE'].map((s) => (
+            <Lozenge key={s}>{s}</Lozenge>
+          ))}
+          <Lozenge appearance="inprogress">{T.lozengeMine}</Lozenge>
+        </div>
       </Panel>
 
       <section data-zone="ops" style={{ background: 'var(--paper)', color: 'var(--ink)', padding: 'var(--sp-5)', borderRadius: 'var(--r-lg)', border: '1px solid var(--line)', display: 'grid', gap: 'var(--sp-4)' }}>

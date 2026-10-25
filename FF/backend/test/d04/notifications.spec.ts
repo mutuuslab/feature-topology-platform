@@ -1,8 +1,10 @@
-// 수신자 지정 알림 (D04-04) — 기능명세서 공통 "관련 담당자에게 Web 알림 또는 이메일".
+// 수신자 지정 알림 (D04-04) — 기능명세서 공통 "관련 담당자에게 Web 알림 또는 이메일(하나 이상)" — 화면(Web) 알림만(D-RD-7).
 // 실제 업무 흐름(정책 검증 NO-GO, 긴급 차단 요청·실행·복원 요청, 동기화 실패)에서 누가 무엇을 받는지,
-// 요청 본인·직무 분리 제외(SOD-09), 계정별 읽음, 메일 설정(승인 요청·긴급은 고정)을 확인한다.
+// 요청 본인·직무 분리 제외(SOD-09), 계정별 읽음, 메일이 나가지 않음(설정·발송 기록·표 없음)을 확인한다.
 Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal' });
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { NOTIFICATION_ACCOUNTS, receives } from '@ff/contracts';
+import { DB, type Db } from '../../src/kernel/db';
 import { actor, bootApp, KILL_APPROVERS, KILL_REQUESTER, RESTORE_APPROVERS } from '../helpers';
 
 const OWNER = actor('usr-author', 'FEATURE_AUTHOR'); // 데모: Feature 설계 계정이 Owner 팀 알림을 받는다
@@ -52,7 +54,7 @@ describe('수신자 지정 알림 (D04-04)', () => {
   });
 
   let killId: string;
-  it('긴급 차단 요청 → 승인 역할에게 승인 요청(CRITICAL), 요청자 본인은 받지 않는다 · 승인 요청 메일은 항상 발송', async () => {
+  it('긴급 차단 요청 → 승인 역할에게 승인 요청(CRITICAL), 요청자 본인은 받지 않는다 · 승인 요청은 승인 역할 모두의 화면 알림에 항상 남는다', async () => {
     const k = await http().post('/api/kill-requests').set(KILL_REQUESTER).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: '현장 결함 확인', confirm: 'FEAT-00022', reasonCategory: 'SAFETY', reasonCode: 'FIELD_FAULT', containmentJustification: '원인 분석 전 봉쇄' }).expect(201);
     killId = k.body.killId;
     const n = find(await inbox(KILL_APPROVERS[0]), 'kill.requested')[0];
@@ -65,9 +67,11 @@ describe('수신자 지정 알림 (D04-04)', () => {
       ['요청 일시', '2026-10-17T01:00:00.000Z'],
     ]);
     expect(find(await inbox(KILL_REQUESTER), 'kill.requested')).toHaveLength(0);
-    const mails = (await http().get('/api/notifications/emails').set(VIEWER).expect(200)).body.items.filter((m: any) => m.notificationId === n.notificationId);
-    expect(mails.map((m: any) => m.userId).sort()).toEqual(['usr-approver', 'usr-integrator', 'usr-quality', 'usr-steward']); // 승인 역할을 가진 데모 계정 — 협의 이관(출시 담당)은 승인 역할 없음(FFG-PLT-016)
-    expect(mails.every((m: any) => m.status === 'SENT' && m.subject.startsWith('[FF] 긴급 차단 승인 요청'))).toBe(true);
+    for (const a of KILL_APPROVERS) expect(find(await inbox(a), 'kill.requested'), a['X-Actor-Id']).toHaveLength(1);
+    // 승인 역할을 가진 데모 계정은 모두 화면 알림으로 받는다 — 협의 이관(출시 담당)은 승인 역할 없음(FFG-PLT-016)
+    const receivers = NOTIFICATION_ACCOUNTS.filter((x) => receives(n, x));
+    expect(receivers.map((x) => x.id).sort()).toEqual(['usr-approver', 'usr-integrator', 'usr-quality', 'usr-steward']);
+    for (const x of receivers) expect(find(await inbox(actor(x.id, x.roles[0])), 'kill.requested'), x.id).toHaveLength(1);
   });
 
   it('FR-KSW-003-003 긴급 차단 실행 → Feature Owner 팀·운영 담당자에게 범위·사유', async () => {
@@ -100,15 +104,21 @@ describe('수신자 지정 알림 (D04-04)', () => {
     expect(n.fields[0].value).toContain('IF_MODE_02=off');
   });
 
-  it('메일 설정 — 범주별 저장(감사), 승인 요청·긴급 차단은 끌 수 없다(400), 켠 범주는 다음 알림부터 메일', async () => {
-    const p = (await http().get('/api/notifications/preferences').set(OWNER).expect(200)).body;
-    expect(p).toMatchObject({ userId: 'usr-author', locked: ['APPROVAL', 'SAFETY'], address: 'author@ff-demo.invalid', email: { APPROVAL: true, DEPLOY: false } });
-    await http().post('/api/notifications/preferences').set(OWNER).send({ email: { SAFETY: false } }).expect(400);
-    const saved = (await http().post('/api/notifications/preferences').set(OWNER).send({ email: { DEPLOY: true } }).expect(201)).body;
-    expect(saved.email.DEPLOY).toBe(true);
+  it('메일은 보내지 않는다(D-RD-7) — 알림을 만들어도 메일 기록·호출이 없고, 메일 설정·발송 기록 API와 표가 없다', async () => {
+    const db = b.get<Db>(DB);
+    const tables = () => db.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'notification%' ORDER BY name").map((r) => r.name);
+    expect(tables()).toEqual(['notification', 'notification_exclude', 'notification_read', 'notification_recipient']);
+    const before = (await inbox(OWNER)).items.length;
+    // 새 알림 하나(배포 차단) — 화면 알림은 생기고, 메일 쪽 흔적(표·기록·주소)은 없다
     await http().post(`/api/policies/${policyId}/validate`).set(OWNER).send({}).expect(200);
-    const mine = (await http().get('/api/notifications/emails').set(OWNER).expect(200)).body.items;
-    expect(mine[0]).toMatchObject({ userId: 'usr-author', subject: expect.stringContaining('배포 차단') });
+    const after = await inbox(OWNER);
+    expect(after.items.length).toBeGreaterThan(before);
+    expect(JSON.stringify(after.items)).not.toMatch(/e-?mail|@ff-demo/i);
+    expect(tables()).toEqual(['notification', 'notification_exclude', 'notification_read', 'notification_recipient']);
+    await http().get('/api/notifications/emails').set(VIEWER).expect(404);
+    await http().get('/api/notifications/preferences').set(OWNER).expect(404);
+    await http().post('/api/notifications/preferences').set(OWNER).send({ email: { DEPLOY: true } }).expect(404);
+    expect(db.get<{ n: number }>("SELECT count(*) AS n FROM audit WHERE action = 'NOTIFICATION_PREFS'")!.n).toBe(0);
   });
 
   it('모두 읽음 — 범주를 고르면 그 범주만', async () => {

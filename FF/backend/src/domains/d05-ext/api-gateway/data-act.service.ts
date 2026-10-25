@@ -51,7 +51,7 @@ export class DataActService {
    * @rule FFG-TEL-006 — EU 차량 사용자·제3자 요청 처리 절차(Art.4·5)와 표본 처리 기록, 계약 근거·직접 접근 대상 표시
    */
   request(actor: Actor, body: DataAccessRequestBody) {
-    const vehicle = this.fleet.vehicles().find((v) => v.vin === body.vin) ?? null;
+    const vehicle = this.fleet.vehicle(body.vin) ?? null;
     const rejections = dataActDecision(vehicle, body);
     const at = this.clock.iso();
     const requestId = `DAR-${pad((this.db.get<{ n: number }>('SELECT count(*) AS n FROM data_access_request')?.n ?? 0) + 1)}`;

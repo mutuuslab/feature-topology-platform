@@ -40,7 +40,7 @@
     "note": "시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다"
   },
   "req.verdict.implemented": {
-    "value": 194,
+    "value": 199,
     "direction": "min",
     "note": "기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다"
   },
@@ -50,7 +50,7 @@
     "note": "기능명세서 말단 요구사항 중 미구현 판정 수 — 늘면 안 된다"
   },
   "req.traced": {
-    "value": 40,
+    "value": 45,
     "direction": "min",
     "note": "@req 표식으로 코드에 추적된 요구사항 수"
   },
@@ -60,7 +60,7 @@
     "note": "구현 판정인데 @req 표식이 없는 요구사항 수 — 줄여 나간다"
   },
   "req.defects": {
-    "value": 5,
+    "value": 0,
     "direction": "max",
     "note": "미해결 결함(it.fails 결함 기록) 수 — 늘면 안 된다"
   },
@@ -83,5 +83,45 @@
     "value": 0,
     "direction": "max",
     "note": "문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14)"
+  },
+  "readinessOpenP0": {
+    "value": 0,
+    "direction": "max",
+    "note": "출시 준비 열린 P0 수(harness/readiness.json) — 0까지"
+  },
+  "readinessOpenP1": {
+    "value": 0,
+    "direction": "max",
+    "note": "출시 준비 열린 P1 수 — 0까지"
+  },
+  "pgBackendPass": {
+    "value": 799,
+    "direction": "min",
+    "note": "백엔드 시험의 PostgreSQL 16 통과 수(npm run test:pg, 20-92 §6) — 늘어나기만 한다. 2026-10-25 1단계 769/775 → 운영 값·개인정보·성능 병합 뒤 799/819(실패 0, 건너뜀 20: SQLite 질의 계획 14 · 실서버 없음 4 · GLEO 준비 대기 2)"
+  },
+  "testHygiene.fixed-port": {
+    "value": 0,
+    "direction": "max",
+    "note": "시험 결정성 — 고정 포트 — listen(0)·OS가 고른 포트를 쓰고 주소를 되읽는다 (예외는 hygiene-ok: 이유)"
+  },
+  "testHygiene.sleep": {
+    "value": 15,
+    "direction": "max",
+    "note": "시험 결정성 — setTimeout 잠자기 — 조건 대기(until·expect.poll·waitFor)로 바꾼다 (예외는 hygiene-ok: 이유)"
+  },
+  "testHygiene.deadline-wait": {
+    "value": 0,
+    "direction": "max",
+    "note": "시험 결정성 — 짧은 실시간 기한 — 가짜 시계·FF_SCHEDULER=manual·기한을 시험이 직접 닫는다 (예외는 hygiene-ok: 이유)"
+  },
+  "testHygiene.date-now": {
+    "value": 3,
+    "direction": "max",
+    "note": "시험 결정성 — Date.now() 비교·경과 시간 단언 — 가짜 시계나 결과 상태로 단언한다 (예외는 hygiene-ok: 이유)"
+  },
+  "testHygiene.wait-for-timeout": {
+    "value": 3,
+    "direction": "max",
+    "note": "시험 결정성 — page.waitForTimeout — 화면 상태를 기다리는 단언(toBeVisible·toHaveURL·expect.poll)으로 (예외는 hygiene-ok: 이유)"
   }
 }

@@ -68,7 +68,7 @@ test('체험 전환 분석: KPI·깔때기·성향별·주별 추이, 데모만 
   await expect(seg.getByRole('row')).toHaveCount(5); // 머리 + 4개 성향
   await page.getByLabel('나눠 보기').selectOption('ageBand');
   await expect(page.getByRole('table', { name: '연령대별 수락률·구매 전환율' })).toBeVisible();
-  await page.getByRole('radio', { name: '데모 차량' }).click();
+  await page.getByRole('radio', { name: '등록 차량' }).click();
   await expect(page.getByRole('table', { name: '연령대별 수락률·구매 전환율' })).toContainText('가림 (5대 미만)');
   // 주별 추이 — 키보드로 주를 옮기면 세 계열 값을 한 툴팁에
   const trend = page.getByRole('img', { name: /주별 추이/ });

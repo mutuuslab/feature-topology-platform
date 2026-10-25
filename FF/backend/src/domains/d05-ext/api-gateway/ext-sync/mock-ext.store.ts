@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import type { EpicScopeField, ExtKind, ExtSystem } from '@ff/contracts';
 import { Clock } from '../../../../kernel/clock';
 import { DB, type Db } from '../../../../kernel/db';
+import { isProduction } from '../../../../kernel/runtime-config';
 
 export interface MockComment {
   at: string;
@@ -54,11 +55,13 @@ export function extUrl(system: ExtSystem, kind: string, key: string): string {
   return `${base}/${GITLAB_PROJECT()}/-/merge_requests/${key.split('!').pop()}`;
 }
 
-/** webhook 비밀값 — 모의는 기본값, 실서버는 환경 변수 */
+/** webhook 비밀값 — 실서버는 환경 변수. 공개된 모의 값은 운영 모드가 아닐 때만 대신 쓴다(출시 준비 RD-SEC-07).
+ *  운영 모드에서 비었으면 ''을 돌려주고 verifyWebhook이 모든 요청을 거부한다. */
+const secret = (env: string, mock: string) => () => process.env[env] || (isProduction() ? '' : mock);
 export const WEBHOOK_SECRET: Record<ExtSystem, () => string> = {
-  GITLAB: () => process.env.GITLAB_WEBHOOK_TOKEN ?? 'ff-mock-gitlab-token',
-  JIRA: () => process.env.JIRA_WEBHOOK_SECRET ?? 'ff-mock-jira-secret',
-  CODEBEAMER: () => process.env.CODEBEAMER_WEBHOOK_SECRET ?? 'ff-mock-codebeamer-secret',
+  GITLAB: secret('GITLAB_WEBHOOK_TOKEN', 'ff-mock-gitlab-token'),
+  JIRA: secret('JIRA_WEBHOOK_SECRET', 'ff-mock-jira-secret'),
+  CODEBEAMER: secret('CODEBEAMER_WEBHOOK_SECRET', 'ff-mock-codebeamer-secret'),
 };
 
 export interface WebhookDelivery {

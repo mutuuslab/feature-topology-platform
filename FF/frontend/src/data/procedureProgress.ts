@@ -38,6 +38,13 @@ let loadedRole: string | null = null;
 /** 백엔드에 닿지 않으면 이 브라우저 저장으로 계속한다 — 완료를 되돌리지 않는다(데모·오프라인) */
 let offline = false;
 let version = 0;
+/** 완료 집합이 실제로 바뀐 횟수 — 검토함·요약은 이것이 바뀔 때만 다시 읽는다(불러오는 중·오류 표시 변화로 다시 읽지 않는다) */
+let doneVersion = 0;
+const sameDone = (a: Done, b: Done) => {
+  const ka = Object.keys(a).filter((k) => a[k]);
+  const kb = Object.keys(b).filter((k) => b[k]);
+  return ka.length === kb.length && ka.every((k) => b[k]);
+};
 const listeners = new Set<() => void>();
 let hydrating: Promise<void> | null = null;
 
@@ -52,6 +59,7 @@ const subscribe = (l: () => void) => {
   };
 };
 const setDone = (next: Done) => {
+  if (!sameDone(done, next)) doneVersion += 1;
   done = next;
   writeLocal(next);
   emit();
@@ -76,7 +84,9 @@ function hydrate(role: string): void {
     .then((s) => {
       items = s.items;
       // 서버가 정본 — 이 브라우저에만 있던 완료는 서버에 없으면 지운다(정적 데모에서는 그대로 둔다)
-      done = Object.fromEntries(s.done.map((id) => [id, true]));
+      const next: Done = Object.fromEntries(s.done.map((id) => [id, true]));
+      if (!sameDone(done, next)) doneVersion += 1;
+      done = next;
       writeLocal(done);
       status = 'ready';
     })
@@ -102,6 +112,8 @@ async function complete(role: string, activityId: string, body: ProcedureComplet
     items = [...items.filter((i) => i.activityId !== activityId), r.completion];
     status = 'ready';
     error = null;
+    // 서버가 완료를 기록했다 — 검토함·요약(기한·다음 차례)을 다시 읽게 한다
+    doneVersion += 1;
   } catch (e) {
     const err = e as ApiError;
     // 백엔드에 닿지 않으면 로컬 저장으로 계속한다 — 방금 표시한 완료를 되돌리지 않는다
@@ -132,6 +144,7 @@ async function undo(role: string, activityId: string): Promise<void> {
     items = s.items;
     status = 'ready';
     error = null;
+    doneVersion += 1;
   } catch (e) {
     const err = e as ApiError;
     if (err.status === 0) {
@@ -160,11 +173,12 @@ export const procedureStore = {
 };
 
 /** 활동 완료 상태 — 역할 기준 진행률과 완료/취소를 함께 준다 */
-export function useProgress(role: string) {
+export function useProgress(role: string, enabled = true) {
   useSyncExternalStore(subscribe, () => version, () => version);
   useEffect(() => {
-    hydrate(role);
-  }, [role]);
+    // enabled=false — 서버를 읽지 않는다(디자인 갤러리 견본처럼 고정 상태로 그릴 때)
+    if (enabled) hydrate(role);
+  }, [role, enabled]);
   return {
     isDone: (activityId: string) => !!done[activityId],
     complete: (activityId: string, body: ProcedureCompleteBody) => complete(role, activityId, body),
@@ -200,7 +214,7 @@ export interface InboxState {
 
 /** 내 검토함 — 서버가 계산한 준비 활동(수행·책임)과 SLA. 완료가 바뀌면 다시 읽는다. */
 export function useProcedureInbox(role: string): InboxState {
-  useSyncExternalStore(subscribe, () => version, () => version);
+  useSyncExternalStore(subscribe, () => doneVersion, () => doneVersion);
   const [state, setState] = useState<InboxState>({ status: STATIC_MODE ? 'ready' : 'idle', data: null, error: null });
   useEffect(() => {
     if (STATIC_MODE) return;
@@ -212,13 +226,13 @@ export function useProcedureInbox(role: string): InboxState {
     return () => {
       live = false;
     };
-  }, [role, version]);
+  }, [role, doneVersion]);
   return state;
 }
 
 /** 메뉴 배지용 요약 — 가볍게 한 번(할 일·검토·기한 초과) */
 export function useProcedureSummary(role: string, enabled = true): ProcedureSummary | null {
-  useSyncExternalStore(subscribe, () => version, () => version);
+  useSyncExternalStore(subscribe, () => doneVersion, () => doneVersion);
   const [summary, setSummary] = useState<ProcedureSummary | null>(null);
   useEffect(() => {
     if (STATIC_MODE || !enabled) return;
@@ -231,6 +245,6 @@ export function useProcedureSummary(role: string, enabled = true): ProcedureSumm
     return () => {
       live = false;
     };
-  }, [role, enabled, version]);
+  }, [role, enabled, doneVersion]);
   return summary;
 }

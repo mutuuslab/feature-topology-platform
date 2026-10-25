@@ -22,6 +22,8 @@ import { RetentionService } from '../../src/domains/d04-ops/telemetry-ingest/ret
 import { TrialExpiryService } from '../../src/domains/d01-policy/entitlement/trial-expiry.service';
 import { replay, type Launches, type ReplayReport } from '../../src/ops5y/engine';
 import { checkInvariants, type InvariantResult } from '../../src/ops5y/invariants';
+import { HsmService } from '../../src/domains/d06-qsec/pki-kms/hsm.service';
+import { signVehicleRequest } from '../../src/kernel/vehicle-auth-client';
 import { bootApp } from '../helpers';
 
 const END = '2026-10-17';
@@ -58,6 +60,11 @@ describe('5년 운영 재생 — 짧은 재생', () => {
         db: app.get(DB),
         trialSweep: (today) => app.get(TrialExpiryService).sweep(today),
         retentionSweep: () => app.get(RetentionService).sweep({ id: 'system', role: 'SYSTEM', correlationId: 'ops5y-retention' } as any),
+        // 차량은 공장 주입 차량 키로 요청에 서명한다(RD-SEC-08) — 재생 시계로 시각을 찍는다
+        vehicleHeaders: (vin, method, path, body) => {
+          const { epoch, vehicleKey } = app.get(HsmService).factoryProvision(vin);
+          return signVehicleRequest({ vehicleKey, vin, epoch, method, path, body, now: app.get(Clock).now().getTime() });
+        },
       },
       { end: END, days: 125, sample: 3000, receivers: 400, launches: LAUNCHES },
     );
@@ -84,6 +91,11 @@ describe('5년 운영 재생 — 짧은 재생', () => {
     expect(report.kills[0]).toMatchObject({ featureId: 'FEAT-00022' });
     expect(report.kills[0].restoredAt).not.toBeNull();
     expect(report.receivers).toBeGreaterThan(0);
+  });
+
+  it('차량 보고는 서명한 요청으로 받아들여졌다 — 요청 인증 거부 0건(RD-SEC-08 서명기가 재생 시계로 맞다)', () => {
+    expect(Object.values(report.years).reduce((n, y) => n + (y['차량 보고']?.ok ?? 0), 0)).toBeGreaterThan(0);
+    expect(report.refusals.filter((r) => r.code === 'VEHICLE_UNAUTHENTICATED')).toEqual([]);
   });
 
   it('불변식 전부 통과', () => {

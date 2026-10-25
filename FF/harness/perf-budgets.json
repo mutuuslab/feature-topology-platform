@@ -1,0 +1,41 @@
+{
+  "note": "API 성능 예산(출시 준비 RD-P2-01) — 시나리오별 p95(ms), full 데이터(Feature 2천·차량 10만·감사 100만·이벤트 50만·알림 10만) 동시 8 기준. tools/load/run.ts가 넘으면 그 시나리오를 한 번 다시 재고, 두 번 다 넘으면 실패. 예산은 고친 뒤 조용한 기계 p95의 약 4~6배 — 측정 기계가 다른 작업(빌드·e2e)과 함께 도는 공용 개발 PC라 p95가 3~5배 흔들린다. 그래도 고치기 전 수치(beforeFixP95, 10~800배)는 반드시 실패하게 둔다(tools/load/stats.test.ts가 확인). light(기본 verify)는 같은 예산 × budgetScale(3)으로 큰 막힘만 잡고, 전체 훑기·N+1 회귀는 시간과 무관한 backend/test/kernel/query-plans.spec.ts가 잡는다. 전후 수치·남은 한계는 docs/20-architecture/20-92-performance.md. 올리려면 이유를 여기에 남긴다",
+  "p95Ms": {
+    "features.page": 500,
+    "features.latest": 1000,
+    "features.search": 500,
+    "features.detail": 400,
+    "dashboard.components": 200,
+    "dashboard.activity": 200,
+    "dashboard.kills": 150,
+    "dashboard.audit500": 400,
+    "dashboard.vehicles": 150,
+    "vehicles.page": 300,
+    "dashboard.safety": 2000,
+    "procedures.summary": 150,
+    "procedures.inbox": 150,
+    "audit.page": 300,
+    "audit.target": 300,
+    "audit.denied": 300,
+    "events.cursor": 300,
+    "events.aggregate": 800,
+    "notifications": 1000,
+    "vehicle.inbox": 400,
+    "vehicle.hello": 600,
+    "vehicle.status": 200,
+    "ofrep.bulk": 500,
+    "ofrep.pseudonym": 600,
+    "gate.preview": 200,
+    "kill.issue": 300
+  },
+  "beforeFixP95": {
+    "features.page": 2179,
+    "features.latest": 2024,
+    "features.search": 1109,
+    "dashboard.activity": 12312,
+    "dashboard.vehicles": 10441,
+    "notifications": 17456,
+    "kill.issue": 1109
+  },
+  "bootMs": 30000
+}

@@ -1,0 +1,23 @@
+# 의존성 갱신 제안 (출시 준비 RD-SEC-14). FF/는 npm workspaces 루트 — 잠금 파일 하나(FF/package-lock.json)로 묶는다.
+# 주 버전 올림은 따로 검토한다(묶음에서 제외) — 프레임워크 주 버전은 이행 작업이 필요하다.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /FF
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      production:
+        dependency-type: production
+        update-types: [minor, patch]
+      development:
+        dependency-type: development
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']

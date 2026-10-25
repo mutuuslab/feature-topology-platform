@@ -21,6 +21,7 @@ import { EventService } from '../../../kernel/event.service';
 import { PolicyRepo } from '../policy-repos';
 import { BaselineRepo, FeatureRepo, GateRepo, TopologyRepo } from '../repos';
 import { GateDecisionService } from '../topology/gate-decision.service';
+import { ReharaRepo } from '../topology/rehara.repo';
 import { TopologyService } from '../topology/topology.service';
 import { ReleaseSignoffService } from './release-signoff.service';
 
@@ -49,6 +50,7 @@ export class LifecycleService {
     private readonly policies: PolicyRepo,
     private readonly decisions: GateDecisionService,
     private readonly signoffs: ReleaseSignoffService,
+    private readonly rehara: ReharaRepo,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -70,6 +72,8 @@ export class LifecycleService {
       createdBy: this.features.meta(f.featureId, f.version).createdBy,
       // 보고서 6.1 G7 — Feature Owner의 Release Sign-off(현재 G8·G9 판정에 묶인 유효 서명만)
       releaseSignoff: f.lifecycle === 'VERIFIED' ? this.signoffs.current(f.featureId, f.version) : null,
+      // FFP-F007 — 열린 재-HARA 요청은 출시 전이를 막는다(Gate PASS 뒤에 열린 것도)
+      openRehara: this.rehara.open(f.featureId, f.version).map((r) => ({ requestId: r.requestId, condition: r.condition, detail: r.detail })),
       ...extra,
     };
   }

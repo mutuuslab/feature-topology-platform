@@ -22,6 +22,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from '../repos';
 import { LifecycleService } from './lifecycle.service';
+import { pageOf } from '../../../kernel/paging';
 
 export interface FeatureQuery {
   q?: string;
@@ -29,6 +30,10 @@ export interface FeatureQuery {
   country?: string;
   vehicleModel?: string;
   latestOnly?: boolean;
+  /** 페이지 크기 — 없으면 전체(뒤 호환, 출시 준비 RD-UX-03) */
+  limit?: number;
+  /** 이전 응답의 nextCursor */
+  cursor?: string;
 }
 
 @Injectable()
@@ -48,8 +53,9 @@ export class RegistryService {
     private readonly safety: SafetyProfileService,
   ) {}
 
-  private summary(f: FeatureVersionRow, latestVersion: string) {
-    const latest = this.gates.latest(f.featureId, f.version);
+  /** gateStatus — 목록은 GateRepo.latestStatuses로 한 번에 읽어 넘긴다(버전마다 Gate 질의를 하면 N+1) */
+  private summary(f: FeatureVersionRow, latestVersion: string, gateStatus?: Record<string, string>) {
+    const gates = gateStatus ?? Object.fromEntries(Object.entries(this.gates.latest(f.featureId, f.version)).map(([g, r]) => [g, r!.status]));
     return {
       featureId: f.featureId,
       version: f.version,
@@ -64,7 +70,7 @@ export class RegistryService {
       asil: f.asil,
       tags: f.tags,
       controlPoints: f.controlPoints,
-      gates: Object.fromEntries(Object.entries(latest).map(([g, r]) => [g, r!.status])),
+      gates,
     };
   }
 
@@ -73,19 +79,24 @@ export class RegistryService {
     const latestOf = new Map<string, string>();
     for (const f of all) if (!latestOf.has(f.featureId) || compareVersion(f.version, latestOf.get(f.featureId)!) > 0) latestOf.set(f.featureId, f.version);
     const needle = q.q?.trim().toLowerCase();
-    const items = all
+    const matched = all
       .filter((f) => !q.lifecycle || f.lifecycle === q.lifecycle)
       .filter((f) => !q.country || f.country === q.country)
       .filter((f) => !q.vehicleModel || f.vehicleModel === q.vehicleModel)
       .filter((f) => !q.latestOnly || latestOf.get(f.featureId) === f.version)
-      .filter((f) => !needle || [f.featureId, f.name, f.ownerId, ...f.tags].some((s) => s.toLowerCase().includes(needle)))
-      .map((f) => this.summary(f, latestOf.get(f.featureId)!));
+      .filter((f) => !needle || [f.featureId, f.name, f.ownerId, ...f.tags].some((s) => s.toLowerCase().includes(needle)));
     const count = (k: 'lifecycle' | 'country' | 'vehicleModel') => {
       const m: Record<string, number> = {};
       for (const f of all) m[f[k]] = (m[f[k]] ?? 0) + 1;
       return m;
     };
-    return { total: items.length, items, facets: { lifecycle: count('lifecycle'), country: count('country'), vehicleModel: count('vehicleModel') } };
+    // 커서 페이지 — total·facets는 필터 결과 전체 기준(페이지마다 같다). 요약(Gate 상태)은 돌려줄 페이지만 만든다(출시 준비 RD-P2-01)
+    const page = pageOf(matched, q.limit, q.cursor);
+    if (!page) throw new DomainError('VALIDATION', '목록 커서를 읽을 수 없습니다. 처음 페이지부터 다시 불러오세요.', { field: 'cursor' });
+    // 큰 페이지(전체·최신 버전 전체)는 Gate 상태 전체를 한 번에, 작은 페이지는 그 Feature들만
+    const gates = this.gates.latestStatuses(page.items.length > 200 ? null : page.items);
+    const items = page.items.map((f) => this.summary(f, latestOf.get(f.featureId)!, gates.get(`${f.featureId}@${f.version}`) ?? {}));
+    return { total: matched.length, items, nextCursor: page.nextCursor, facets: { lifecycle: count('lifecycle'), country: count('country'), vehicleModel: count('vehicleModel') } };
   }
 
   versions(featureId: string) {

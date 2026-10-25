@@ -1,0 +1,47 @@
+# 보안 검사 (출시 준비 RD-SEC-14) — 비밀 유출(gitleaks, 전체 이력)·정적 분석(CodeQL javascript-typescript).
+# 운영 의존성 취약점(npm audit)은 verify.yml 게이트에서 본다.
+name: Security
+on:
+  push:
+    branches: [main, 'feat/**']
+  pull_request:
+  schedule:
+    - cron: '17 3 * * 1' # 매주 월요일 — 새로 알려진 취약 패턴도 다시 본다
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gitleaks:
+    name: 비밀 검사 (gitleaks)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 전체 이력 — 지난 커밋에 들어갔다 지워진 비밀도 잡는다
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 조직 계정으로 옮기면 라이선스가 필요하다(개인 계정은 불필요)
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+  codeql:
+    name: 정적 분석 (codeql)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+          # 설계상 의도인 결과만 이유와 함께 뺀다(제품 코드는 빼지 않는다) — .github/codeql/codeql-config.yml
+          config-file: ./.github/codeql/codeql-config.yml
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:javascript-typescript

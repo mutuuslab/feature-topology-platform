@@ -408,3 +408,33 @@ describe('scene/CarModel — prepareScene(실 glTF 후처리)', () => {
     expect(pivots[0].quaternion.equals(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.25))).toBe(true);
   });
 });
+
+// 회귀(2026-10-25 CI): 화면 밖 씬이 'demand'로도 시뮬 시계가 바뀔 때마다 다시 그려 GPU 없는 CI에서 본문 스레드를 막았다
+// (차량 상세 배치 시험 page.evaluate 60초 초과·3D 보기 단추 뒤 화면 안 판정이 늦음). 화면 밖은 'never', 첫 판정 전에도 그리지 않는다.
+describe('VehicleTwinScene — 화면 밖에서는 그리지 않는다', () => {
+  it('관찰자 첫 판정 전·화면 밖은 frameloop never, 보이면 always, 다시 벗어나면 never', async () => {
+    const { act } = await import('@testing-library/react');
+    let notify: (entries: { isIntersecting: boolean }[]) => void = () => {};
+    class IO {
+      constructor(cb: (entries: { isIntersecting: boolean }[]) => void) {
+        notify = cb;
+      }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('IntersectionObserver', IO);
+    try {
+      const snap = buildSnapshot(1);
+      render(<VehicleTwinScene twin={snap.twins[0]} verdict={snap.verdicts[0]} clock={snap.clock} lang="ko" webgl />);
+      const root = screen.getByTestId('veh-scene-root');
+      expect(root).toHaveAttribute('data-frameloop', 'never');
+      act(() => notify([{ isIntersecting: true }]));
+      expect(root).toHaveAttribute('data-frameloop', 'always');
+      act(() => notify([{ isIntersecting: false }]));
+      expect(root).toHaveAttribute('data-in-view', 'false');
+      expect(root).toHaveAttribute('data-frameloop', 'never');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

@@ -16,7 +16,7 @@ export function PolicyCrPanel({ policyId }: { policyId: string }) {
   const crs = (q.data?.items ?? []).filter((l) => l.kind === 'CHANGE_REQUEST');
   return (
     <Panel title={X.title} id="policy-cr">
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {crs.length ? (
           <span className="ds-ext-list" data-testid="policy-cr">
             {crs.map((c) => (

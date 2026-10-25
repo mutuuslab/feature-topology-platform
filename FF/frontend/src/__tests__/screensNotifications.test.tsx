@@ -1,4 +1,4 @@
-// 알림 센터(D04-04) — 상단바 종(안 읽음 배지·최근 알림)과 /notifications 화면(목록·읽음·메일 설정·발송 기록). 모의 API.
+// 알림 센터(D04-04) — 상단바 종(안 읽음 배지·최근 알림)과 /notifications 화면(목록·읽음·받는 방법 — 화면 알림만, D-RD-7). 모의 API.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -30,7 +30,6 @@ const n = (id: string, over: Record<string, unknown> = {}) => ({
   ...over,
 });
 const ITEMS = [n('NTF-00002'), n('NTF-00001', { category: 'OPS', severity: 'WARNING', title: '이상 징후 ANM-1', link: '/ops/anomalies?id=ANM-1', readAt: '2026-10-17T02:00:00.000Z', fields: [] })];
-const PREFS = { userId: 'usr-approver', email: { APPROVAL: true, SAFETY: true, DEPLOY: true, GATE: false, OPS: true, INTEGRATION: false }, locked: ['APPROVAL', 'SAFETY'], address: 'approver@ff-demo.invalid' };
 
 beforeEach(() => {
   localStorage.clear();
@@ -41,9 +40,7 @@ beforeEach(() => {
       const method = init?.method ?? 'GET';
       calls.push({ url, method, headers: (init?.headers ?? {}) as Record<string, string>, body: init?.body ? JSON.parse(String(init.body)) : undefined });
       let body: unknown = { items: [] };
-      if (url.startsWith('/api/notifications/preferences')) body = method === 'GET' ? PREFS : { ...PREFS, email: (JSON.parse(String(init!.body)) as typeof PREFS).email };
-      else if (url.startsWith('/api/notifications/emails')) body = { items: [{ id: 'EML-1', notificationId: 'NTF-00002', userId: 'usr-approver', address: 'approver@ff-demo.invalid', subject: '[긴급] FEAT-00022 긴급 차단 승인 요청', status: 'SENT', at: '2026-10-17T01:02:00.000Z' }] };
-      else if (url.startsWith('/api/notifications/read-all')) body = { read: 1 };
+      if (url.startsWith('/api/notifications/read-all')) body = { read: 1 };
       else if (/\/api\/notifications\/[^/]+\/read/.test(url)) body = { notificationId: 'NTF-00002', readAt: '2026-10-17T03:00:00.000Z' };
       else if (url.startsWith('/api/notifications')) {
         const unread = url.includes('unread=true');
@@ -104,18 +101,14 @@ describe('알림 화면', () => {
     await vi.waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.url === '/api/notifications/read-all')).toBe(true));
   });
 
-  it('메일 설정 — 승인 요청·긴급 차단은 끌 수 없고, 다른 범주를 바꾸면 전체 설정을 보낸다', async () => {
+  it('받는 방법 — 화면 알림만: 메일 설정·발송 기록이 없고 메일 API를 부르지 않는다, 승인 요청(긴급)도 목록에 그대로 있다', async () => {
     mount('approver', <NotificationsScreen />);
-    const approval = await screen.findByRole('checkbox', { name: '승인 요청' });
-    expect((approval as HTMLInputElement).disabled).toBe(true);
-    expect(screen.getAllByText('항상 발송')).toHaveLength(2);
-    expect(screen.getByText('approver@ff-demo.invalid')).toBeTruthy();
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Gate 판정' }));
-    await vi.waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.url === '/api/notifications/preferences')).toBe(true));
-    const save = calls.find((c) => c.method === 'POST' && c.url === '/api/notifications/preferences')!;
-    expect(save.body).toEqual({ email: { ...PREFS.email, GATE: true } });
-    expect(await screen.findByText('메일 설정을 저장했습니다.')).toBeTruthy();
-    expect(screen.getByText('[긴급] FEAT-00022 긴급 차단 승인 요청')).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '받는 방법' })).toBeTruthy();
+    expect((await screen.findAllByTestId('notification-row')).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('checkbox')).toBeNull();
+    expect(screen.queryByText(/메일 발송 기록|모의 발송|받는 주소/)).toBeNull();
+    expect(calls.some((c) => c.url.startsWith('/api/notifications/preferences') || c.url.startsWith('/api/notifications/emails'))).toBe(false);
+    expect(screen.getAllByText('FEAT-00022 긴급 차단 승인 요청').length).toBeGreaterThan(0);
   });
 });
 

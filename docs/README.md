@@ -21,7 +21,7 @@
 | `60-flows/` | E2E 사용자/시스템 플로 |
 | `65-workflows/` | 담당자 업무 절차 — 조직 역할별 RACI·스윔레인 (YAML 모델 → 생성 HTML·MD, /admin/iam 정합성 검사) |
 | `70-design-system/` | 디자인 원칙·네비셸·컴포넌트·토큰·KO/EN 라벨·접근성 |
-| `80-integration/` | Codebeamer·PLM·Unleash·OTA·MQTT·Supplier Package·API 계약 |
+| `80-integration/` | Codebeamer·PLM·Unleash·OTA·MQTT·Supplier Package·API 계약·Data Lake 서버(IF-15) |
 | `90-diagrams/` | Mermaid 소스 (erd/class/state/sequence/flowchart/c4/journey) |
 | `99-reference-data/` | FEAT-BDC-001 전체 토폴로지 (모델 검증용 worked example) |
 | `_templates/` | 문서 타입별 템플릿 + frontmatter-schema.yaml |

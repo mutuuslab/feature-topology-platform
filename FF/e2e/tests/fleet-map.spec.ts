@@ -46,7 +46,7 @@ async function settled(canvas: Locator) {
 function captureDemo(page: Page) {
   const got: Item[][] = [];
   page.on('response', async (r: Response) => {
-    if (/\/api\/fleet\/map\?.*source=DEMO/.test(r.url()) && r.ok()) got.push(((await r.json()) as { items: Item[] }).items);
+    if (/\/api\/fleet\/map\?.*source=FLEET/.test(r.url()) && r.ok()) got.push(((await r.json()) as { items: Item[] }).items);
   });
   return () => got.slice(-2);
 }
@@ -65,7 +65,7 @@ function watch(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.route(/openfreemap\.org/, (r) => r.abort());
+  await page.route((url) => url.hostname === 'tiles.openfreemap.org', (r) => r.abort());
   await page.addInitScript(() => localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'operator' })));
 });
 

@@ -197,7 +197,8 @@ export interface FleetMapPosition {
 export interface FleetMapVehicle {
   vin: string;
   label: string | null;
-  source: 'DEMO' | 'SYNTHETIC';
+  /** PRODUCTION = 고객 차량, DEMO = 시연 차량, SYNTHETIC = 합성·표본 */
+  source: 'PRODUCTION' | 'DEMO' | 'SYNTHETIC';
   country: string;
   region: string;
   vehicleModel: string;

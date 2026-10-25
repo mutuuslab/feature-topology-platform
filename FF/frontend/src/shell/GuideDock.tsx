@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { clausesOf, reportRule, reportTest, standardFamily, stepPath, tutorialById, type TutorialStep } from '@ff/contracts';
 import { ko } from '../copy/ko';
 import { roleLabel } from '../data/refdata';
-import { Button, ClauseChip, Drawer, Icon, KeyValue, RULE_EVENT, RuleText, StatusGlyph, openRule } from '../design';
+import { Button, ClauseChip, Drawer, Icon, KeyValue, RULE_EVENT, RuleText, StatusGlyph, openRule, useReportCatalog } from '../design';
 import { useAppApi, useAppShell } from '../store';
 import { learnStore, useLearn } from './learn';
 import { useSpotlight } from './spotlight';
@@ -16,6 +16,7 @@ const D = L.dock;
 
 /** 근거 조항은 두 개까지 펼치고 나머지는 접는다 — 전체 목록은 규칙 Drawer·시나리오 화면에 있다 */
 function StepRules({ step }: { step: TutorialStep }) {
+  useReportCatalog();
   const clauses = [...new Set(step.rules.flatMap((id) => clausesOf(reportRule(id) ?? { basis: '' })))];
   const li = (c: string) => (
     <li key={c}>
@@ -204,8 +205,10 @@ export function GuideDock() {
 }
 
 /** 규칙 상세 Drawer — 표준 설명 칩·가이드 패널의 규칙 칩이 연다. 규칙 문장을 맨 위에 크게, 나머지는 표로 */
-export function RuleDrawer() {
-  const [id, setId] = useState<string | null>(null);
+export function RuleDrawer({ initialId = null }: { initialId?: string | null }) {
+  useReportCatalog();
+  // 셸(docks.tsx)이 첫 요청을 받아 이 Drawer를 불러오므로 그 요청은 initialId로 넘겨받는다
+  const [id, setId] = useState<string | null>(initialId);
   useEffect(() => {
     const on = (e: Event) => setId((e as CustomEvent<string>).detail);
     window.addEventListener(RULE_EVENT, on);

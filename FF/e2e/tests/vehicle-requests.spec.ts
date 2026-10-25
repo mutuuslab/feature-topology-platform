@@ -1,11 +1,11 @@
 // 차량 발신 요청 끝단 흐름 — 차량이 실제 백엔드(9111)에 조회·보고를 보내고, 운영자는 차량별 화면에서 처리·거부를 본다.
 // KMH-NX4-0002만 쓴다 — ego-01(체험권)·lead-01(긴급 차단)은 다른 시험 파일이 병렬로 쓴다. 바꾼 관측값은 끝에 되돌린다.
 import { expect, test, type Page } from '@playwright/test';
+import { vehiclePost } from './vehicle';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const VIN = 'KMH-NX4-0002';
 const FLAG = 'care_00022_param';
-const HEAD = { 'X-Vehicle-Id': VIN };
 
 async function asRole(page: Page, role: string) {
   await page.evaluate((r) => {
@@ -18,9 +18,11 @@ async function asRole(page: Page, role: string) {
 test('차량 발신 요청: 조회 → 품질 저하 보고(재평가 HOLD) → Flag 직접 변경 거부 → 다른 VIN 거부 → 화면에 처리·거부 사유', async ({ page, request }) => {
   const boot = `BOOT-e2e-${Date.now()}`; // 재사용 서버에서도 새 부팅으로 시작
   const report = (sequence: number, body: Record<string, unknown>) =>
-    request.post(`${API}/vehicle/v1/${VIN}/reports`, { headers: HEAD, data: { bootId: boot, sequence, observedAt: new Date().toISOString(), ...body } });
+    vehiclePost(request, VIN, `/vehicle/v1/${VIN}/reports`, { bootId: boot, sequence, observedAt: new Date().toISOString(), ...body });
 
-  const q = await request.post(`${API}/vehicle/v1/${VIN}/flags/${FLAG}`, { headers: HEAD, data: {} });
+  // 차량은 서명한 요청만 보낼 수 있다(RD-SEC-08) — 머리글만 보내면 401
+  expect((await request.post(`${API}/vehicle/v1/${VIN}/flags/${FLAG}`, { headers: { 'X-Vehicle-Id': VIN }, data: {} })).status()).toBe(401);
+  const q = await vehiclePost(request, VIN, `/vehicle/v1/${VIN}/flags/${FLAG}`, {});
   expect(q.status()).toBe(200);
   const initial = await q.json(); // 이 차량의 시드 값(코호트·권한에 따라 다름) — 끝에서 같은 값으로 돌아와야 한다
   expect(initial).toMatchObject({ key: FLAG });
@@ -35,7 +37,7 @@ test('차량 발신 요청: 조회 → 품질 저하 보고(재평가 HOLD) → 
   expect((await override.json()).error.code).toBe('VEHICLE_OVERRIDE_FORBIDDEN');
   const trim = await report(3, { type: 'CONTEXT', set: { trim: 'Modern' } });
   expect(trim.status()).toBe(400);
-  const other = await request.post(`${API}/vehicle/v1/ego-01/flags`, { headers: HEAD, data: {} });
+  const other = await vehiclePost(request, VIN, '/vehicle/v1/ego-01/flags', {});
   expect(other.status()).toBe(403);
 
   await page.goto('/_design');

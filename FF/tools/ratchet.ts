@@ -4,8 +4,16 @@ import { FF } from './lib.ts';
 
 let ok = true;
 // 래칫을 쓰는 검사 — 새 래칫 검사를 만들면 여기에 넣는다(빠지면 --update로 잠글 수 없다)
-for (const t of ['tools/lint-tokens.ts', 'tools/lint-copy.ts', 'tools/lint-spacing.ts', 'tools/conformance.ts', 'tools/standards.ts', 'tools/requirements.ts']) {
+for (const t of ['tools/lint-tokens.ts', 'tools/lint-copy.ts', 'tools/lint-spacing.ts', 'tools/conformance.ts', 'tools/standards.ts', 'tools/requirements.ts', 'tools/readiness.ts', 'tools/test-hygiene.ts']) {
   const r = spawnSync(process.execPath, [t, ...process.argv.slice(2)], { cwd: FF, stdio: 'inherit' });
   ok = ok && r.status === 0;
 }
+// 오래 걸리고 Docker가 필요한 래칫 — --with-pg를 줄 때만(PG 호환 pgBackendPass, 약 15분). 따로 잠글 때는 npm run test:pg -- --update
+const SLOW = ['tools/test-pg.ts'];
+if (process.argv.includes('--with-pg')) {
+  for (const t of SLOW) {
+    const r = spawnSync(process.execPath, [t, ...process.argv.slice(2).filter((a) => a !== '--with-pg')], { cwd: FF, stdio: 'inherit' });
+    ok = ok && r.status === 0;
+  }
+} else console.log(`  · 느린 래칫 ${SLOW.join(', ')}은 건너뜀 — --with-pg`);
 process.exit(ok ? 0 : 1);

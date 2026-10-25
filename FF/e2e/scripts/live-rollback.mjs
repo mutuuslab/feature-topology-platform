@@ -83,12 +83,10 @@ const success = art.status === 'CONFIRMED';
 ok(`롤백 결과가 게시본과 맞다 (게시본 ${art.status} ${art.confirmed}/${art.denominator})`, success ? done.status === 'COMPLETED' && done.result === 'SUCCESS' : done.status === 'FAILED' && done.result === 'FAILURE' && done.failureReason.includes(`${art.confirmed}/${art.denominator}`), `${done.status}/${done.result} ${done.failureReason ?? ''}`);
 ok('P1 다시 DEPLOYED·P2 RETIRED', (await api('GET', `/api/policies/${p1.id}`)).policy.status === 'DEPLOYED' && (await api('GET', `/api/policies/${p2.id}`)).policy.status === 'RETIRED');
 
-// 4. 알림·메일
+// 4. 화면 알림(메일 채널 없음 — D-RD-7)
 await sleep(300);
 const leadInbox = await api('GET', '/api/notifications', 'lead');
 ok('승인대상자(coordinator)에게 승인 요청 알림', leadInbox.items.some((i) => i.eventType === 'rollback.requested'), `안 읽음 ${leadInbox.unread}`);
 const opInbox = await api('GET', '/api/notifications', 'operator');
 ok(`요청자(operator)에게 롤백 ${success ? '완료' : '실패'} 알림`, opInbox.items.some((i) => i.eventType === (success ? 'rollback.completed' : 'rollback.failed')), `안 읽음 ${opInbox.unread}`);
-const mails = await api('GET', '/api/notifications/emails', 'lead');
-ok('모의 메일 발송 기록', mails.items.length > 0, `${mails.items.length}건 · 최근 "${mails.items[0]?.subject}"`);
 console.log(`${n}개 확인${process.exitCode ? ' — 실패 있음' : ' — 모두 통과'}`);

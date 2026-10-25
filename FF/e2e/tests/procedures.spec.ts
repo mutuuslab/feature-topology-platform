@@ -24,19 +24,19 @@ test('메인 화면 — 업무 절차 지도에 13개 절차·Gate·내 차례�
   await expect(nodes).toHaveCount(12);
   await expect(page.getByText(/HARA/)).toHaveCount(0);
   const first = page.locator('.pm-node').first();
-  await expect(first).toContainText('FPW.1');
+  await expect(first).toHaveAccessibleName(/Feature 등록·분류/);
   await expect(first).toContainText('G1');
   await expect(first).toContainText('내 차례');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await first.click();
   await expect(page).toHaveURL(/\/procedures\/FPW\.1$/);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('FPW.1');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Feature 등록·분류');
 });
 
 test('업무 절차 허브 — 빠른 완료가 진행률과 다음 할 일을 바꾼다(서버 저장)', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'author');
-  await page.goto('/procedures');
+  await page.goto('/procedures?view=list');
   await expect(page.getByRole('heading', { level: 1, name: '업무 절차' })).toBeVisible();
   const progress = page.locator('.pr-progress');
   await expect(progress).toContainText('할 일');
@@ -57,11 +57,11 @@ test('표준 따라하기 — 화면 패널에서 시작하면 서랍이 닫히�
   await expect(page.locator('[data-tour="feature-form"]')).toBeVisible();
 
   await page.getByRole('button', { name: '이 화면의 업무 절차' }).click();
-  await page.getByRole('button', { name: /FPW\.1-A01 표준 따라하기/ }).click();
+  await page.getByRole('button', { name: /Feature 등록·초안 작성 표준 따라하기/ }).click();
 
   const guide = page.locator('.pr-guide');
   await expect(guide).toBeVisible();
-  await expect(guide.getByRole('heading', { level: 2 })).toContainText('FPW.1-A01');
+  await expect(guide.getByRole('heading', { level: 2 })).toHaveText('Feature 등록·초안 작성');
   await expect(page.locator('[data-tour="feature-form"][data-tour-active="true"]')).toBeVisible();
   await expect(page.locator('.sh-spot')).toBeVisible();
   await expect(guide.getByText('화면의 입력·버튼')).toBeVisible();

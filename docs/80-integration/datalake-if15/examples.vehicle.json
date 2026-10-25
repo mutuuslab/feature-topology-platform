@@ -1,0 +1,172 @@
+{
+  "messages": [
+    {
+      "schema": "ff.vehicle.msg/1",
+      "message_id": "9f2c4a7d1e0b5c36:q3J8vX0bN2kLmP4sT6wY",
+      "pseudonym": "9f2c4a7d1e0b5c36",
+      "kind": "STATUS_REPORT",
+      "ref": null,
+      "auth": {
+        "scheme": "FFV1-MSG",
+        "key_epoch": 1,
+        "timestamp": "1760313670000",
+        "nonce": "q3J8vX0bN2kLmP4sT6wY",
+        "mac": "fyDAwJbxHWhQZ0_k-jTTDA"
+      },
+      "body_b64": "eyJ0eXBlIjoic3RhdHVzX3JlcG9ydCIsInNjaGVtYV92ZXJzaW9uIjoiMi4wIiwidmVoaWNsZV9wc2V1ZG9ueW0iOiI5ZjJjNGE3ZDFlMGI1YzM2IiwiZmVhdHVyZSI6eyJpZCI6IkZFQVQtMDAwMjIiLCJ2ZXJzaW9uIjoiMS4wLjAifSwic3RhdGUiOiJESVNBQkxFRCIsInJlYXNvbiI6eyJjYXRlZ29yeSI6IlNBRkVUWSIsInNvdXJjZSI6IlJFTU9URSJ9LCJyZXF1ZXN0X3Jlc3VsdCI6IkFDQ0VQVEVEIiwidmVoaWNsZV9zZXEiOjExLCJrZXlfZXBvY2giOjAsInJlcG9ydF9zZXEiOjE5NjY1MCwiZHVyYWJsZSI6dHJ1ZSwiaG1pIjoiSU5GT19ESVNBQkxFRCIsImZlYXR1cmVfd2VpZ2h0X3Blcm1pbGxlIjowLCJwb2xpY3lfaGFzaCI6InNoYTI1NjphYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiIiwiZHRjIjpbIkMxQTJCMyJdLCJlZHJfYWxpZ25lZF9zdGF0ZSI6Ik9GRl9CWV9DT01NQU5EIiwicmVjZWl2ZWRfYXQiOiIyMDI2LTEwLTEzVDAwOjAxOjAyWiIsImFwcGxpZWRfYXQiOiIyMDI2LTEwLTEzVDAwOjAxOjA5WiIsIm9ic2VydmVkX2F0IjoiMjAyNi0xMC0xM1QwMDowMToxMFoiLCJ0aW1lX3N5bmMiOiJTWU5DRUQiLCJvZmZsaW5lX3NpbmNlIjpudWxsLCJkYXRhX2NhdGVnb3J5IjoiU0FGRVRZX09QRVJBVElPTiIsInN0YXRlX2F1dGgiOiJmeURBd0pieEhXaFFaMF9rLWpUVERBIiwicGVyc2lzdGVuY2UiOiJEVVJBQkxFIn0=",
+      "body_sha256": "9800c4e2851b9d26ca53e9dae73f508dc7ea9b5fc16e8139459b800bb8a34957"
+    },
+    {
+      "schema": "ff.vehicle.msg/1",
+      "message_id": "9f2c4a7d1e0b5c36:Hk2mN8pQ4rS6tV1wX3yZ",
+      "pseudonym": "9f2c4a7d1e0b5c36",
+      "kind": "INBOX_ACK",
+      "ref": "DLV-3QpZ7a9b",
+      "auth": {
+        "scheme": "FFV1-MSG",
+        "key_epoch": 1,
+        "timestamp": "1760313669000",
+        "nonce": "Hk2mN8pQ4rS6tV1wX3yZ",
+        "mac": "fyDAwJbxHWhQZ0_k-jTTDA"
+      },
+      "body_b64": "eyJib290SWQiOiJCT09ULTciLCJyZXN1bHQiOiJBUFBMSUVEIiwib2JzZXJ2ZWQiOiJzaGEyNTY6Y2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZCIsInBvbGljeUhhc2giOiJzaGEyNTY6YWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYiJ9",
+      "body_sha256": "7355379c785ce86294cc313b5cd204fc400aa3417a9540582eeca50940839793"
+    },
+    {
+      "schema": "ff.vehicle.msg/1",
+      "message_id": "9f2c4a7d1e0b5c36:Lm4nB6vC8xZ0aS2dF4gH",
+      "pseudonym": "9f2c4a7d1e0b5c36",
+      "kind": "VEHICLE_REPORT",
+      "ref": null,
+      "auth": {
+        "scheme": "FFV1-MSG",
+        "key_epoch": 1,
+        "timestamp": "1760325300000",
+        "nonce": "Lm4nB6vC8xZ0aS2dF4gH",
+        "mac": "fyDAwJbxHWhQZ0_k-jTTDA"
+      },
+      "body_b64": "eyJ0eXBlIjoiRkFVTFQiLCJib290SWQiOiJCT09ULTciLCJzZXF1ZW5jZSI6MzEsIm9ic2VydmVkQXQiOiIyMDI2LTEwLTEzVDAzOjE1OjAwWiIsImZlYXR1cmVJZCI6IkZFQVQtMDAwMjIiLCJjb2RlIjoiRUNVX1RJTUVPVVQiLCJzZXZlcml0eSI6IldBUk5JTkcifQ==",
+      "body_sha256": "a20075ad4ac96e6c1de9f7575486a76892f8e6c3d0b63bb2e6174b48b3801a75"
+    }
+  ],
+  "relay": [
+    {
+      "relay_seq": 9000,
+      "stream": "SAFETY",
+      "received_at": "2026-10-13T00:01:09.400Z",
+      "message": {
+        "schema": "ff.vehicle.msg/1",
+        "message_id": "9f2c4a7d1e0b5c36:Hk2mN8pQ4rS6tV1wX3yZ",
+        "pseudonym": "9f2c4a7d1e0b5c36",
+        "kind": "INBOX_ACK",
+        "ref": "DLV-3QpZ7a9b",
+        "auth": {
+          "scheme": "FFV1-MSG",
+          "key_epoch": 1,
+          "timestamp": "1760313669000",
+          "nonce": "Hk2mN8pQ4rS6tV1wX3yZ",
+          "mac": "fyDAwJbxHWhQZ0_k-jTTDA"
+        },
+        "body_b64": "eyJib290SWQiOiJCT09ULTciLCJyZXN1bHQiOiJBUFBMSUVEIiwib2JzZXJ2ZWQiOiJzaGEyNTY6Y2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZGNkY2RjZCIsInBvbGljeUhhc2giOiJzaGEyNTY6YWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYiJ9",
+        "body_sha256": "7355379c785ce86294cc313b5cd204fc400aa3417a9540582eeca50940839793"
+      }
+    },
+    {
+      "relay_seq": 9001,
+      "stream": "SAFETY",
+      "received_at": "2026-10-13T00:01:10.600Z",
+      "message": {
+        "schema": "ff.vehicle.msg/1",
+        "message_id": "9f2c4a7d1e0b5c36:q3J8vX0bN2kLmP4sT6wY",
+        "pseudonym": "9f2c4a7d1e0b5c36",
+        "kind": "STATUS_REPORT",
+        "ref": null,
+        "auth": {
+          "scheme": "FFV1-MSG",
+          "key_epoch": 1,
+          "timestamp": "1760313670000",
+          "nonce": "q3J8vX0bN2kLmP4sT6wY",
+          "mac": "fyDAwJbxHWhQZ0_k-jTTDA"
+        },
+        "body_b64": "eyJ0eXBlIjoic3RhdHVzX3JlcG9ydCIsInNjaGVtYV92ZXJzaW9uIjoiMi4wIiwidmVoaWNsZV9wc2V1ZG9ueW0iOiI5ZjJjNGE3ZDFlMGI1YzM2IiwiZmVhdHVyZSI6eyJpZCI6IkZFQVQtMDAwMjIiLCJ2ZXJzaW9uIjoiMS4wLjAifSwic3RhdGUiOiJESVNBQkxFRCIsInJlYXNvbiI6eyJjYXRlZ29yeSI6IlNBRkVUWSIsInNvdXJjZSI6IlJFTU9URSJ9LCJyZXF1ZXN0X3Jlc3VsdCI6IkFDQ0VQVEVEIiwidmVoaWNsZV9zZXEiOjExLCJrZXlfZXBvY2giOjAsInJlcG9ydF9zZXEiOjE5NjY1MCwiZHVyYWJsZSI6dHJ1ZSwiaG1pIjoiSU5GT19ESVNBQkxFRCIsImZlYXR1cmVfd2VpZ2h0X3Blcm1pbGxlIjowLCJwb2xpY3lfaGFzaCI6InNoYTI1NjphYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFiIiwiZHRjIjpbIkMxQTJCMyJdLCJlZHJfYWxpZ25lZF9zdGF0ZSI6Ik9GRl9CWV9DT01NQU5EIiwicmVjZWl2ZWRfYXQiOiIyMDI2LTEwLTEzVDAwOjAxOjAyWiIsImFwcGxpZWRfYXQiOiIyMDI2LTEwLTEzVDAwOjAxOjA5WiIsIm9ic2VydmVkX2F0IjoiMjAyNi0xMC0xM1QwMDowMToxMFoiLCJ0aW1lX3N5bmMiOiJTWU5DRUQiLCJvZmZsaW5lX3NpbmNlIjpudWxsLCJkYXRhX2NhdGVnb3J5IjoiU0FGRVRZX09QRVJBVElPTiIsInN0YXRlX2F1dGgiOiJmeURBd0pieEhXaFFaMF9rLWpUVERBIiwicGVyc2lzdGVuY2UiOiJEVVJBQkxFIn0=",
+        "body_sha256": "9800c4e2851b9d26ca53e9dae73f508dc7ea9b5fc16e8139459b800bb8a34957"
+      }
+    },
+    {
+      "relay_seq": 5120,
+      "stream": "NORMAL",
+      "received_at": "2026-10-13T03:15:01Z",
+      "message": {
+        "schema": "ff.vehicle.msg/1",
+        "message_id": "9f2c4a7d1e0b5c36:Lm4nB6vC8xZ0aS2dF4gH",
+        "pseudonym": "9f2c4a7d1e0b5c36",
+        "kind": "VEHICLE_REPORT",
+        "ref": null,
+        "auth": {
+          "scheme": "FFV1-MSG",
+          "key_epoch": 1,
+          "timestamp": "1760325300000",
+          "nonce": "Lm4nB6vC8xZ0aS2dF4gH",
+          "mac": "fyDAwJbxHWhQZ0_k-jTTDA"
+        },
+        "body_b64": "eyJ0eXBlIjoiRkFVTFQiLCJib290SWQiOiJCT09ULTciLCJzZXF1ZW5jZSI6MzEsIm9ic2VydmVkQXQiOiIyMDI2LTEwLTEzVDAzOjE1OjAwWiIsImZlYXR1cmVJZCI6IkZFQVQtMDAwMjIiLCJjb2RlIjoiRUNVX1RJTUVPVVQiLCJzZXZlcml0eSI6IldBUk5JTkcifQ==",
+        "body_sha256": "a20075ad4ac96e6c1de9f7575486a76892f8e6c3d0b63bb2e6174b48b3801a75"
+      }
+    }
+  ],
+  "telemetry": [
+    {
+      "schema": "ff.vehicle.telemetry/1",
+      "pseudonym": "9f2c4a7d1e0b5c36",
+      "signal_schema": {
+        "id": "feature.state",
+        "version": 1
+      },
+      "boot_id": "BOOT-7",
+      "seq": 120,
+      "observed_at": "2026-10-13T00:01:10Z",
+      "time_sync": "SYNCED",
+      "data_category": "SAFETY_OPERATION",
+      "labels": {
+        "feature_id": "FEAT-00022",
+        "feature_version": "1.0.0",
+        "policy_hash": "sha256:abababababababababababababababababababababababababababababababab",
+        "collection_policy_id": null
+      },
+      "payload": {
+        "state": "DISABLED",
+        "transition_from": "ACTIVE",
+        "reason_category": "SAFETY"
+      },
+      "auth": null
+    },
+    {
+      "schema": "ff.vehicle.telemetry/1",
+      "pseudonym": "9f2c4a7d1e0b5c36",
+      "signal_schema": {
+        "id": "feature.usage.daily",
+        "version": 1
+      },
+      "boot_id": "BOOT-7",
+      "seq": 121,
+      "observed_at": "2026-10-13T23:59:59Z",
+      "time_sync": "SYNCED",
+      "data_category": "COMMERCIAL_USAGE",
+      "labels": {
+        "feature_id": "FEAT-00031",
+        "feature_version": "2.1.0",
+        "policy_hash": null,
+        "collection_policy_id": "CP-00002"
+      },
+      "payload": {
+        "activations": 4,
+        "active_seconds": 1820,
+        "manual_off": 1
+      },
+      "auth": {
+        "key_epoch": 1,
+        "mac": "Ab3dEf5gHi7jKl9mNo1pQr"
+      }
+    }
+  ]
+}

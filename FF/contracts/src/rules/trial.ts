@@ -24,7 +24,8 @@ export interface VehicleProfile {
   ageBand: '20대' | '30대' | '40대' | '50대' | '60대+';
   drivingStyle: '도심' | '고속도로' | '장거리' | '혼합';
   adasUsage: '낮음' | '보통' | '높음';
-  source: 'DEMO' | 'SYNTHETIC';
+  /** PRODUCTION = 고객 CRM 성향(있으면), DEMO = 시연 차량, SYNTHETIC = 합성 모집단 */
+  source: 'PRODUCTION' | 'DEMO' | 'SYNTHETIC';
   /** 가중 표본(5년 운영 모집단, population.ts) — 이 행 하나가 대표하는 실제 차량 수. 없으면 1 */
   weight?: number;
   /** 판매월(YYYY-MM) — 표본 차량만 */
@@ -263,7 +264,8 @@ export function syntheticTrials(n: number, anchor: string, seed = 20261013, cata
 
 // ---------------- 화면·정적 스냅샷 공용 질의 (같은 질의 → 같은 스냅샷 파일) ----------------
 
-export type TrialSource = 'ALL' | 'DEMO' | 'SYNTHETIC';
+/** 목록·분석의 출처 — FLEET = 등록 차량(운영·시연), SYNTHETIC = 합성 모집단, ALL = 전체(reference-data.ts SourceFilter의 화면 선택지) */
+export type TrialSource = 'ALL' | 'FLEET' | 'SYNTHETIC';
 export const TRIAL_STATES = ['ACTIVE', 'OFFERED', 'CONVERTED', 'DECLINED', 'EXPIRED'] as const;
 export const TRIAL_PAGE_SIZE = 50;
 

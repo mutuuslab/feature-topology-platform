@@ -1,10 +1,11 @@
 // /audit — 감사 이력(D01-10) · /events — Platform 이벤트(D04-04, SSE 실시간) (v2)
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { STATIC_MODE } from '../../api/client';
+import { ApiError, call, STATIC_MODE } from '../../api/client';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, ChainStatus, DataTable, EventStream, PageHeader, Panel, RuleText, Segmented, Toolbar, VerdictBadge, type StreamItem } from '../../design';
+import { lists as L } from '../../copy/lists';
+import { AsyncView, Button, ChainStatus, DataTable, ErrorNote, EventStream, PageHeader, Panel, RuleText, Segmented, Toolbar, VerdictBadge, type StreamItem } from '../../design';
 import { ComponentName, when } from '../shared';
 import { AuditLog } from './AuditLog';
 import type { AuditEntry } from '../types';
@@ -16,8 +17,25 @@ export function AuditScreen() {
   const [result, setResult] = useState<'' | 'ALLOWED' | 'DENIED' | 'FAILED'>('');
   const [target, setTarget] = useState('');
   const [applied, setApplied] = useState('');
-  const q = useApi<{ items: AuditEntry[] }>('audit', { query: { result: result || undefined, target: applied || undefined, limit: 500 } });
-  const rows = q.data?.items ?? [];
+  const query = { result: result || undefined, target: applied || undefined, limit: 500 };
+  const q = useApi<{ items: AuditEntry[]; nextCursor?: string | null }>('audit', { query });
+  // 더 불러오기(커서, RD-UX-03) — 첫 쪽은 위 조회(정적 데모 스냅샷과 같은 주소), 다음 쪽부터 덧붙인다. 조건이 바뀌면 처음부터
+  const [more, setMore] = useState<{ items: AuditEntry[]; cursor: string | null; key: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [moreError, setMoreError] = useState<ApiError | null>(null);
+  const qKey = `${result}|${applied}|${q.dataUpdatedAt}`;
+  const extra = more?.key === qKey ? more : null;
+  const rows = [...(q.data?.items ?? []), ...(extra?.items ?? [])];
+  const nextCursor = extra ? extra.cursor : (q.data?.nextCursor ?? null);
+  const loadMore = () => {
+    if (!nextCursor) return;
+    setLoading(true);
+    setMoreError(null);
+    call<{ items: AuditEntry[]; nextCursor: string | null }>('audit', { query: { ...query, cursor: nextCursor } })
+      .then((r) => setMore({ items: [...(extra?.items ?? []), ...r.items], cursor: r.nextCursor, key: qKey }))
+      .catch((e: ApiError) => setMoreError(e))
+      .finally(() => setLoading(false));
+  };
   const chain = useApi<{ ok: boolean; verified: number; head: string | null; broken: { id: number; kind: string } | null }>('auditChain');
   const c = chain.data;
   // 체인이 정상이어도 표에 FAILED가 보이면 초록 한 줄만 두지 않는다(헤드라인·데이터 모순, 하네스 2판 결함 4)
@@ -54,8 +72,17 @@ export function AuditScreen() {
           options={[{ value: '', label: ko.page.all }, ...RESULTS.map((r) => ({ value: r, label: ko.audit.results[r] }))]}
         />
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()} filtered={!!(applied || result)}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} filtered={!!(applied || result)}>
         <AuditLog rows={rows} />
+        <ErrorNote error={moreError} />
+        {nextCursor && (
+          <div className="ds-pager">
+            <span>{L.loaded(rows.length)}</span>
+            <Button onClick={loadMore} disabled={loading || STATIC_MODE} reason={STATIC_MODE ? L.staticMore : undefined}>
+              {loading ? L.loadingMore : L.loadMore}
+            </Button>
+          </div>
+        )}
       </AsyncView>
     </div>
   );
@@ -107,7 +134,7 @@ export function EventsScreen() {
       <PageHeader codes="D04-04 · EVENT HISTORY" title={ko.events.title} lead={ko.events.lead} message={{ tone: 'neutral', value: q.data ? q.data.items.length : '—', text: ko.events.key }}
         meta={<span className="ds-badge" data-sse={sse}>SSE · {ko.events.status[sse]}</span>} />
       <div className="ds-split">
-        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
           <DataTable
             caption={ko.events.title}
             rows={rows}

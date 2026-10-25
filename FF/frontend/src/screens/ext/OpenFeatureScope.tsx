@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { useVehiclePick } from '../../data/first-run';
 import { AsyncView, DataTable, Explain, PageHeader, Panel, RuleText, Select, SummaryLine, Tabs, VerdictBadge } from '../../design';
 
 const O = ko.p10.openfeature;
@@ -46,7 +47,7 @@ export function OpenFeatureScopeScreen() {
         lead={O.lead}
         message={{ tone: 'neutral', value: d ? d.catalog.filter((c) => c.openFeature).length : '—', text: O.key }}
       />
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <SummaryLine
@@ -136,7 +137,7 @@ function PathColumn({ title, steps, tone }: { title: string; steps: readonly str
 function JsonPanel({ name }: { name: string }) {
   const q = useApi<unknown>(name);
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       <pre className="ds-code" tabIndex={0} style={{ maxHeight: '50vh', overflow: 'auto' }}>{JSON.stringify(q.data, null, 2)}</pre>
     </AsyncView>
   );
@@ -146,7 +147,7 @@ function ManifestPanel() {
   const q = useApi<{ flags: Record<string, unknown>; findings: { flagKey: string; rule: string; message: string }[] }>('openfeatureManifest');
   const d = q.data;
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       {d && (
         <>
           <p className={d.findings.length ? 'ds-stale' : 'ds-ok'} role="status">
@@ -167,19 +168,19 @@ interface VehicleEval {
 }
 
 function VehiclePanel() {
-  const vehicles = useApi<{ items: { vin: string; label: string }[] }>('vehicles');
-  const [vin, setVin] = useState('ego-01');
-  const q = useApi<VehicleEval>('vehicleOpenFeature', { params: { vin } });
+  // 예시 차량이 있으면 그것, 없으면 첫 차량 — 차량이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const { vin, setVin, none, vehicles } = useVehiclePick('ego-01');
+  const q = useApi<VehicleEval>('vehicleOpenFeature', { params: { vin } }, { enabled: !!vin });
   const d = q.data;
   const C = O.vehCol;
   return (
     <>
       <Select label={O.vin} value={vin} onChange={(e) => setVin(e.target.value)}>
-        {(vehicles.data?.items ?? [{ vin: 'ego-01', label: '' }]).map((v) => (
+        {(vehicles.data?.items ?? []).map((v) => (
           <option key={v.vin} value={v.vin}>{`${v.vin} ${v.label}`}</option>
         ))}
       </Select>
-      <AsyncView state={asyncState(q, !d?.items.length)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q, !d?.items.length)} error={q.error} onRetry={() => q.refetch()} empty={none ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : undefined}>
         {d && (
           <>
             <p className="ds-field__hint ds-mono">{O.pseudonym(d.pseudonym)}</p>

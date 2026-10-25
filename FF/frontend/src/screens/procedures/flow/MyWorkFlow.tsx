@@ -6,6 +6,7 @@
 import { useId, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { WorkflowDoc } from '@ff/contracts';
+import { workflowLabels } from '../../../data/workflowLabels';
 import { procedureFlow as F } from '../../../copy/procedureFlow';
 import { roleLabel } from '../../../data/refdata';
 import { useAppShell } from '../../../store';
@@ -25,7 +26,7 @@ function who(doc: WorkflowDoc, c: Counterpart, own = true) {
   const base = c.kind === 'external' ? F.mine.external : c.kind === 'retained' ? F.mine.retained : c.mine ? (own ? F.mine.meRole(name) : F.roles.selfRole(name)) : name;
   return c.extra ? `${base} ${F.mine.more(c.extra)}` : base;
 }
-const acts = (c: Counterpart) => (c.activities.length ? `${c.activities[0].id}${c.activities.length > 1 ? ` ${F.node.more(c.activities.length - 1)}` : ''}` : '');
+const acts = (doc: WorkflowDoc, c: Counterpart) => (c.activities.length ? `${workflowLabels(doc).activity(c.activities[0].id)}${c.activities.length > 1 ? ` ${F.node.more(c.activities.length - 1)}` : ''}` : '');
 
 function MyFlowSvg({ doc, layout, statuses, size, fit, label, own = true }: { doc: WorkflowDoc; layout: MyFlowLayout; statuses: Map<string, ActivityStatus>; size: MyFlowSize; fit: boolean; label: string; own?: boolean }) {
   const nav = useNavigate();
@@ -58,7 +59,7 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label, own = true }: { do
           <g key={s.activity.id} transform={`translate(0 ${r.y})`} data-step={s.activity.id}>
             {r.header && (
               <text className="pf-my__header" x={16} y={-10}>
-                {ellipsize(`${s.process.id} ${s.process.name}`, layout.centerX - 40, 13)}
+                {ellipsize(s.process.name, layout.centerX - 40, 13)}
               </text>
             )}
             <g aria-hidden>
@@ -71,12 +72,12 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label, own = true }: { do
               .filter((n) => n.side !== 'center')
               .map((n) => {
                 const c = n.counterpart!;
-                const sub = acts(c);
+                const sub = acts(doc, c);
                 const name = who(doc, c, own);
                 const wps = c.wps.map((k) => wpNameOf(doc, k)).join(', ');
                 const nameLines = wrapText(name, n.w - 22, 12, 2);
                 return (
-                  <g key={n.id} className="pf-peer" data-kind={c.kind} data-mine={c.mine ? '' : undefined} role="img" aria-label={F.mine.sideLabel(n.side === 'from' ? F.mine.from : F.mine.to, name, c.activities.map((x) => x.id).join(', '), wps)}>
+                  <g key={n.id} className="pf-peer" data-kind={c.kind} data-mine={c.mine ? '' : undefined} role="img" aria-label={F.mine.sideLabel(n.side === 'from' ? F.mine.from : F.mine.to, name, c.activities.map((x) => workflowLabels(doc).activity(x.id)).join(', '), wps)}>
                     {c.kind === 'role' ? <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={4} /> : <g className="pf-doc"><DocShape x={n.x} y={n.y} w={n.w} h={n.h} fold={10} /></g>}
                     {/* 이름은 두 줄까지(잘리지 않게), 그 아래 활동 ID */}
                     {nameLines.map((t, j) => (
@@ -94,7 +95,7 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label, own = true }: { do
               data-mine=""
               data-now={isNow(st) ? '' : undefined}
               data-activity={s.activity.id}
-              aria-label={F.mine.stepLabel(s.activity.id, s.activity.name, s.process.name, stateText(st, own))}
+              aria-label={F.mine.stepLabel(s.activity.name, s.process.name, stateText(st, own))}
               onClick={open}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -105,9 +106,7 @@ function MyFlowSvg({ doc, layout, statuses, size, fit, label, own = true }: { do
             >
               <rect x={center.x} y={center.y} width={center.w} height={center.h} rx={8} />
               {st?.mine && st.state === 'overdue' && <rect className="pf-node__ring" x={center.x + 4} y={center.y + 4} width={center.w - 8} height={center.h - 8} rx={5} />}
-              <text className="pf-node__id" x={center.x + center.w / 2} y={center.y + 16} textAnchor="middle">
-                {ellipsize(`${s.activity.id}${s.activity.gateDecision ? ` · ${s.activity.gateDecision}` : ''}`, center.w - 16, 11)}
-              </text>
+              {s.activity.gateDecision && <text className="pf-node__id" x={center.x + center.w / 2} y={center.y + 16} textAnchor="middle">{F.node.gate(s.activity.gateDecision)}</text>}
               {lines.map((t, j) => (
                 <text key={j} className="pf-node__name" x={center.x + center.w / 2} y={center.y + 33 + j * 15 + (lines.length === 1 ? 7 : 0)} textAnchor="middle">{t}</text>
               ))}
@@ -128,7 +127,7 @@ function MyFlowText({ doc, steps, statuses, own = true, caption }: { doc: Workfl
         {cs.map((c) => (
           <li key={c.id}>
             {who(doc, c, own)}
-            {c.activities.length ? ` · ${c.activities.map((x) => x.id).join(', ')}` : ''}
+            {c.activities.length ? ` · ${c.activities.map((x) => workflowLabels(doc).activity(x.id)).join(', ')}` : ''}
             {c.wps.length ? ` (${c.wps.map((k) => wpNameOf(doc, k)).join(', ')})` : ''}
           </li>
         ))}
@@ -156,8 +155,8 @@ function MyFlowText({ doc, steps, statuses, own = true, caption }: { doc: Workfl
               <tr key={s.activity.id} data-state={st?.state ?? 'waiting'} data-now={isNow(st) ? '' : undefined}>
                 <td>{i + 1}</td>
                 <th scope="row">
-                  <Link to={`/procedures/${s.process.id}?a=${s.activity.id}`}>{s.activity.id} {s.activity.name}</Link>
-                  <span className="ds-field__hint pf-block">{s.process.id} {s.process.name}</span>
+                  <Link to={`/procedures/${s.process.id}?a=${s.activity.id}`}>{s.activity.name}</Link>
+                  <span className="ds-field__hint pf-block">{s.process.name}</span>
                 </th>
                 <td className="pf-state-cell">
                   <svg width={14} height={14} viewBox="-1 -1 14 14" aria-hidden>

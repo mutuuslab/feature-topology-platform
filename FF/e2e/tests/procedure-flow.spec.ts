@@ -18,26 +18,26 @@ for (const w of [1366, 1920]) {
     await page.setViewportSize({ width: w, height: 900 });
     await asRole(page, 'author');
     await page.goto('/procedures/FPW.1');
-    const flow = page.getByRole('group', { name: 'FPW.1 흐름도' });
+    const flow = page.getByRole('group', { name: 'Feature 등록·분류 흐름도' });
     await expect(flow).toBeVisible();
     await expect(flow.locator('.pf-node--activity')).toHaveCount(5);
     await expect(flow.getByRole('button', { name: /G1 판정/ })).toBeVisible();
     await expect(flow.getByRole('img', { name: /시작 — 진입 조건/ })).toBeVisible();
     // 상태는 글자로도 — Feature Owner의 첫 활동은 내 차례이거나 이미 완료
-    await expect(flow.getByRole('button', { name: /FPW\.1-A01 .*(내 차례|완료)/ })).toBeVisible();
+    await expect(flow.getByRole('button', { name: /Feature 등록·초안 작성 .*(내 차례|완료)/ })).toBeVisible();
     expect(await noPageOverflow(page)).toBe(true);
 
     // 키보드로도 연다
-    const a03 = flow.getByRole('button', { name: /^FPW\.1-A03 / });
+    const a03 = flow.getByRole('button', { name: /^안전 분류\(네 축\) 확정 / });
     await a03.focus();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/a=FPW\.1-A03/);
-    await expect(page.getByRole('heading', { name: /FPW\.1-A03/ })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /안전 분류\(네 축\) 확정/ })).toBeVisible();
     await expect(page.getByText('완료 기준').first()).toBeVisible();
 
-    await flow.getByRole('button', { name: /^FPW\.1-A04 / }).click();
+    await flow.getByRole('button', { name: /^법규 의무 기능 판정 / }).click();
     await expect(page).toHaveURL(/a=FPW\.1-A04/);
-    await expect(page.getByRole('heading', { name: /FPW\.1-A04/ })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /법규 의무 기능 판정/ })).toBeVisible();
   });
 }
 
@@ -45,7 +45,7 @@ test('절차서 표기 — 입력·산출물 레인의 문서, 제어 흐름과 
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'operator');
   await page.goto('/procedures/FPW.8');
-  const flow = page.getByRole('group', { name: 'FPW.8 흐름도' });
+  const flow = page.getByRole('group', { name: '운영·긴급 차단·복원 흐름도' });
   await expect(flow).toBeVisible();
   const heads = flow.locator('.pf-lanehead__text');
   await expect(heads.first()).toHaveText('입력 (Inputs)');
@@ -79,14 +79,14 @@ test('텍스트 보기 — 흐름도와 같은 활동을 표로 보이고, 다�
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'operator');
   await page.goto('/procedures/FPW.8');
-  await expect(page.getByRole('group', { name: 'FPW.8 흐름도' })).toBeVisible();
+  await expect(page.getByRole('group', { name: '운영·긴급 차단·복원 흐름도' })).toBeVisible();
   await page.getByRole('radio', { name: '텍스트' }).click();
-  const table = page.getByRole('table', { name: /FPW\.8 활동 순서/ });
+  const table = page.getByRole('table', { name: /운영·긴급 차단·복원 활동 순서/ });
   await expect(table).toBeVisible();
   await expect(table.locator('tbody tr')).toHaveCount(11);
-  await expect(page.getByRole('group', { name: 'FPW.8 흐름도' })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: '운영·긴급 차단·복원 흐름도' })).toHaveCount(0);
   await page.getByRole('radio', { name: '흐름도' }).click();
-  await expect(page.getByRole('group', { name: 'FPW.8 흐름도' })).toBeVisible();
+  await expect(page.getByRole('group', { name: '운영·긴급 차단·복원 흐름도' })).toBeVisible();
   expect(await noPageOverflow(page)).toBe(true);
 });
 
@@ -118,7 +118,7 @@ test('내 업무 흐름 — 역할 전환기에서 역할을 바꾸면 흐름이
   // 내 활동을 누르면 그 절차의 활동 상세로
   await page.getByRole('group', { name: '내 업무 흐름' }).getByRole('button').first().click();
   await expect(page).toHaveURL(/\/procedures\/FPW\.\d+\?a=FPW\.\d+-A\d+/);
-  await expect(page.getByRole('group', { name: /FPW\.\d+ 흐름도/ })).toBeVisible();
+  await expect(page.getByRole('group', { name: /.+ 흐름도$/ })).toBeVisible();
 });
 
 test('내 업무 흐름 텍스트 보기 · 전체 지도에서 절차 흐름도로', async ({ page }) => {
@@ -134,9 +134,9 @@ test('내 업무 흐름 텍스트 보기 · 전체 지도에서 절차 흐름도
   await expect(map.locator('.pf-proc')).toHaveCount(13);
   await expect(map.locator('.pf-proc[data-mine]').first()).toBeVisible();
   expect(await noPageOverflow(page)).toBe(true);
-  await map.getByRole('link', { name: /^FPW\.5 / }).click();
+  await map.getByRole('link', { name: /^검증·V\&V / }).click();
   await expect(page).toHaveURL(/\/procedures\/FPW\.5$/);
-  await expect(page.getByRole('group', { name: 'FPW.5 흐름도' })).toBeVisible();
+  await expect(page.getByRole('group', { name: '검증·V&V 흐름도' })).toBeVisible();
 });
 
 test('메인 화면 업무 절차 가젯 — 내 업무 흐름 작은 판이 지연 로딩되고 전체 보기로 이어진다', async ({ page }) => {
@@ -181,6 +181,6 @@ for (const w of [1366, 1920]) {
     // 담당자 × 절차 표의 칸 → 그 절차 흐름도에서 담당자 레인 강조
     await page.locator('[data-cell="operator:FPW.8"]').click();
     await expect(page).toHaveURL(/\/procedures\/FPW\.8\?role=operator/);
-    await expect(page.getByRole('group', { name: 'FPW.8 흐름도' }).locator('[data-lane][data-focus]').first()).toBeAttached();
+    await expect(page.getByRole('group', { name: '운영·긴급 차단·복원 흐름도' }).locator('[data-lane][data-focus]').first()).toBeAttached();
   });
 }

@@ -167,7 +167,7 @@
 .pf-chip { font-size: var(--fs-xs); padding: 0 var(--sp-1h); border-radius: var(--r-pill); background: var(--pd-chip); color: var(--pd-muted); }
 .pf-chip[data-kind='turn'] { background: var(--accent-soft); color: var(--ink); }
 .pf-chip[data-kind='overdue'] { background: var(--danger-soft); color: var(--danger); }
-.pf-matrix th[scope='col'] { white-space: nowrap; background: var(--pd-head); color: var(--pd-navy); }
+.pf-matrix th[scope='col'] { white-space: normal; min-inline-size: 9ch; max-inline-size: 16ch; word-break: keep-all; background: var(--pd-head); color: var(--pd-navy); }
 .pf-matrix td { text-align: end; font-variant-numeric: tabular-nums; }
 .pf-matrix td[data-n='0'] { color: var(--muted); }
 .pf-matrix tr[data-selected] th[scope='row'] { box-shadow: inset 3px 0 0 var(--accent); }

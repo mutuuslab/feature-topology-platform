@@ -97,10 +97,10 @@ test('메뉴 — 좁은 폭에서도 메뉴를 열어 다른 화면으로 갈 �
 test('업무 절차 흐름도 — 넘침은 기록만(다른 작업이 화면을 고치는 중)', async ({ page }, info) => {
   await asRole(page, 'author');
   await page.goto('/procedures/FPW.1');
-  await expect(page.getByRole('group', { name: 'FPW.1 흐름도' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Feature 등록·분류 흐름도' })).toBeVisible();
   const o = await overflow(page);
   // 흐름도 상자 자체의 가로 스크롤(넓은 스윔레인을 좁은 폭에서 밀어 보는지)도 기록한다
-  const inner = await page.getByRole('group', { name: 'FPW.1 흐름도' }).evaluate((el) => {
+  const inner = await page.getByRole('group', { name: 'Feature 등록·분류 흐름도' }).evaluate((el) => {
     let e: HTMLElement | null = el as HTMLElement;
     while (e && e.scrollWidth <= e.clientWidth + 1 && e.id !== 'main') e = e.parentElement;
     return e ? { scroll: e.scrollWidth, client: e.clientWidth, box: e.id || e.className.toString().split(' ')[0] } : null;

@@ -4,6 +4,7 @@
 import { Fragment, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { RaciKey, WorkflowActivity, WorkflowDoc, WorkflowProcess } from '@ff/contracts';
+import { workflowLabels } from '../../../data/workflowLabels';
 import { procedureFlow as F } from '../../../copy/procedureFlow';
 import { roleNameOf, StateIcon, stateText, TriggerBolt } from './FlowParts';
 import { processFlow, wpInfoOf } from './model';
@@ -79,14 +80,14 @@ function Refs({ ids }: { ids: ReactNode[] }) {
     </>
   );
 }
-const pickBtn = (id: string, onPick: (id: string) => void) => (
+const pickBtn = (doc: WorkflowDoc, id: string, onPick: (id: string) => void) => (
   <button key={id} type="button" className="pf-linkbtn pf-refbtn" onClick={() => onPick(id)}>
-    {id}
+    {workflowLabels(doc).activity(id)}
   </button>
 );
-const procLink = (id: string) => (
+const procLink = (doc: WorkflowDoc, id: string) => (
   <Link key={id} to={`/procedures/${id}`} className="pf-refbtn">
-    {id}
+    {workflowLabels(doc).process(id)}
   </Link>
 );
 
@@ -95,9 +96,9 @@ function ActivityCard({ doc, process: p, a, st, selected, onSelect, onPick }: { 
   const producerIn = (k: string) => p.activities.find((b) => b.id !== a.id && b.outputs.includes(k))?.id ?? null;
   const from = (k: string): ReactNode => {
     const local = producerIn(k);
-    if (local) return pickBtn(local, onPick);
+    if (local) return pickBtn(doc, local, onPick);
     const owner = info(k)?.process;
-    return owner ? procLink(owner) : F.card.outside;
+    return owner ? procLink(doc, owner) : F.card.outside;
   };
   const users = (k: string) => p.activities.filter((b) => b.id !== a.id && b.inputs.includes(k)).map((b) => b.id);
   const raci = (k: RaciKey) => (k === 'A' ? [a.raci.A] : a.raci[k]).filter(Boolean);
@@ -105,7 +106,6 @@ function ActivityCard({ doc, process: p, a, st, selected, onSelect, onPick }: { 
   return (
     <article className="pf-card" data-activity-card={a.id} data-selected={selected ? '' : undefined} data-state={st?.state ?? 'waiting'}>
       <div className="pf-card__head">
-        <span className="pf-card__id">{a.id}</span>
         <h3 className="pf-card__title">{a.name}</h3>
         <span className="pf-card__state">
           <svg width={14} height={14} viewBox="-1 -1 14 14" aria-hidden>
@@ -158,7 +158,7 @@ function ActivityCard({ doc, process: p, a, st, selected, onSelect, onPick }: { 
             <ul>
               {a.outputs.map((k) => (
                 <li key={k}>
-                  {info(k)?.name ?? k} <span className="pf-io__ext">{users(k).length ? <Refs ids={users(k).map((id) => pickBtn(id, onPick))} /> : F.card.usedElsewhere}</span>
+                  {info(k)?.name ?? k} <span className="pf-io__ext">{users(k).length ? <Refs ids={users(k).map((id) => pickBtn(doc, id, onPick))} /> : F.card.usedElsewhere}</span>
                 </li>
               ))}
             </ul>
@@ -218,7 +218,6 @@ export function WorkProductCards({ doc, process: p, onSelect }: { doc: WorkflowD
         return (
           <article key={w.key} className="pf-card pf-wp-card" data-wp-card={w.key}>
             <div className="pf-card__head">
-              <span className="pf-tag">{w.key}</span>
               <h3 className="pf-card__title">{w.name}</h3>
               <span className="pf-card__en">{w.en}</span>
               <span className="pf-tag" data-kind="gold">{F.card.wpKind[w.kind] ?? w.kind}</span>
@@ -231,11 +230,11 @@ export function WorkProductCards({ doc, process: p, onSelect }: { doc: WorkflowD
               </div>
               <dl className="pf-wp-refs">
                 <dt>{F.card.producedBy}</dt>
-                <dd>{made.length ? <Refs ids={made.map((id) => pickBtn(id, onSelect))} /> : F.card.outside}</dd>
+                <dd>{made.length ? <Refs ids={made.map((id) => pickBtn(doc, id, onSelect))} /> : F.card.outside}</dd>
                 <dt>{F.card.usedBy}</dt>
                 <dd>
                   {used.length || other.length ? (
-                    <Refs ids={[...used.map((id) => pickBtn(id, onSelect)), ...other.map(procLink)]} />
+                    <Refs ids={[...used.map((id) => pickBtn(doc, id, onSelect)), ...other.map((id) => procLink(doc, id))]} />
                   ) : (
                     F.card.notUsed
                   )}

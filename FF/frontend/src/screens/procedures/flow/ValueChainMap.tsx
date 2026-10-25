@@ -59,7 +59,7 @@ export function ValueChainMap({ doc, sample }: { doc: WorkflowDoc; sample?: read
                   data-process={p.id}
                   data-mine={s.mine ? '' : undefined}
                   data-turn={s.turn ? '' : undefined}
-                  aria-label={F.chain.boxLabel(p.id, p.name, s.mine, s.turn, s.done, s.total)}
+                  aria-label={F.chain.boxLabel(p.name, s.mine, s.turn, s.done, s.total)}
                   onClick={go}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -69,7 +69,6 @@ export function ValueChainMap({ doc, sample }: { doc: WorkflowDoc; sample?: read
                   }}
                 >
                   <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={6} />
-                  <text className="pf-proc__id" x={b.x + 10} y={b.y + 18}>{p.id}</text>
                   {/* Gate는 오른쪽 위 작은 칩 */}
                   {p.gates.map((g, k) => (
                     <g key={g} className="pf-proc__gate" aria-hidden>
@@ -115,7 +114,7 @@ export function ValueChainMap({ doc, sample }: { doc: WorkflowDoc; sample?: read
                 const s = stats.get(p.id)!;
                 return (
                   <tr key={p.id} data-mine={s.mine ? '' : undefined}>
-                    <th scope="row"><Link to={`/procedures/${p.id}`}>{p.id} {p.name}</Link></th>
+                    <th scope="row"><Link to={`/procedures/${p.id}`}>{p.name}</Link></th>
                     <td>{p.group}</td>
                     <td>{p.gates.join(', ') || F.process.none}</td>
                     <td>{s.mine}</td>

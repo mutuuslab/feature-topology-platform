@@ -247,19 +247,19 @@ export class ProcedureService implements OnModuleInit, OnApplicationShutdown {
   // ── 완료·취소 ─────────────────────────────────────────────
   complete(actor: Actor, activityId: string, body: ProcedureCompleteBody): ProcedureCompletion {
     const a = BY_ID.get(activityId);
-    if (!a) throw new DomainError('NOT_FOUND', `${activityId} 활동이 업무 절차 모델에 없습니다.`);
+    if (!a) throw new DomainError('NOT_FOUND', '요청한 활동을 찾을 수 없습니다.');
     const orgs = this.orgRoles(actor);
     const mine = this.kindOf(a, orgs);
     if (!mine) {
       this.audit.denied(actor, ACTION_COMPLETE, activityId, `내 조직 역할(${orgs.join(', ') || '없음'})의 수행(R)·책임(A) 활동이 아니다`, COMPONENT);
-      throw new DomainError('FORBIDDEN', `${activityId}은(는) 내 역할의 활동이 아닙니다.`);
+      throw new DomainError('FORBIDDEN', `${a.name}은(는) 내 역할의 활동이 아닙니다.`);
     }
     const done = this.doneSet();
-    if (done.has(activityId)) throw new DomainError('CONFLICT', `${activityId}은(는) 이미 완료되었습니다.`);
+    if (done.has(activityId)) throw new DomainError('CONFLICT', `${a.name}은(는) 이미 완료되었습니다.`);
     const blockers = (PREDS.get(activityId) ?? []).filter((id) => !done.has(id)).map((id) => `${id} ${BY_ID.get(id)?.name ?? ''}`.trim());
     if (blockers.length) {
       this.audit.failed(actor, ACTION_COMPLETE, activityId, `앞 활동 미완료: ${blockers.join(', ')}`, COMPONENT);
-      throw new DomainError('GUARD_FAILED', `${activityId}은(는) 앞 활동이 끝나야 시작할 수 있습니다.`, { blockers });
+      throw new DomainError('GUARD_FAILED', `${a.name}은(는) 앞 활동이 끝나야 시작할 수 있습니다.`, { blockers });
     }
     const at = this.clock.iso();
     const base = {
@@ -356,15 +356,15 @@ export class ProcedureService implements OnModuleInit, OnApplicationShutdown {
 
   undo(actor: Actor, activityId: string): ProcedureStateView {
     const a = BY_ID.get(activityId);
-    if (!a) throw new DomainError('NOT_FOUND', `${activityId} 활동이 업무 절차 모델에 없습니다.`);
+    if (!a) throw new DomainError('NOT_FOUND', '요청한 활동을 찾을 수 없습니다.');
     const orgs = this.orgRoles(actor);
     const mine = this.kindOf(a, orgs);
     if (!mine) {
       this.audit.denied(actor, ACTION_UNDO, activityId, '내 역할의 활동이 아니다', COMPONENT);
-      throw new DomainError('FORBIDDEN', `${activityId}은(는) 내 역할의 활동이 아닙니다.`);
+      throw new DomainError('FORBIDDEN', `${a.name}은(는) 내 역할의 활동이 아닙니다.`);
     }
     const row = this.db.get<Row>('SELECT * FROM procedure_completion WHERE activity_id = ? AND undone_at IS NULL ORDER BY id DESC LIMIT 1', activityId);
-    if (!row) throw new DomainError('NOT_FOUND', `${activityId}은(는) 완료되지 않았습니다.`);
+    if (!row) throw new DomainError('NOT_FOUND', `${a.name}은(는) 완료되지 않았습니다.`);
     const at = this.clock.iso();
     this.db.tx(() => {
       this.db.run('UPDATE procedure_completion SET undone_at = ?, undone_by = ? WHERE id = ?', at, actor.id, row.id);

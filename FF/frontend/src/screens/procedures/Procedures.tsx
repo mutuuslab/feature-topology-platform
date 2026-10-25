@@ -133,7 +133,6 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
                   <label className="pr-done" title={ok ? P.mine.markUndone : P.mine.markDone}>
                     <input type="checkbox" checked={ok} onChange={() => toggle(a.id)} aria-label={`${a.name} ${P.mine.markDone}`} />
                   </label>
-                  <span className="ds-mono pr-mine__id">{a.id}</span>
                   <Link to={`/procedures/${process.id}?a=${a.id}`}>{a.name}</Link>
                   <RaciBadge k={raciOf(a, roleIds)} />
                   <span className="ds-field__hint">{process.name}</span>
@@ -154,7 +153,7 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
               return (
                 <li key={p.id} className="ds-learn-card">
                   <div className="ds-learn-card__head">
-                    <span className="ds-eyebrow">{p.id}{p.gates.length ? ` · ${P.card.gates} ${p.gates.join('·')}` : ''}</span>
+                    <span className="ds-eyebrow">{p.group}{p.gates.length ? ` · ${P.card.gates} ${p.gates.join('·')}` : ''}</span>
                     {n > 0 && <span className="ds-tag">{P.card.mine(n)}</span>}
                   </div>
                   <h3><Link to={`/procedures/${p.id}`}>{p.name}</Link></h3>
@@ -202,7 +201,7 @@ function Matrix({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
           <tbody>
             {p.activities.map((a) => (
               <tr key={a.id}>
-                <th scope="row">{a.id} {a.name}</th>
+                <th scope="row">{a.name}</th>
                 {roles.map((r) => <td key={r}>{raciLetters(a, r)}</td>)}
               </tr>
             ))}
@@ -247,7 +246,7 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
     <div className="ds-screen">
       <PageHeader
         codes={p.ref}
-        title={`${p.id} ${p.name}`}
+        title={p.name}
         message={
           // ?role= 담당자를 강조해 왔으면 핵심 메시지도 그 담당자 기준(내 역할 문장이 강조와 어긋나지 않게)
           focus
@@ -275,7 +274,7 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
         <div className="pr-activity">
           {/* 흐름도에서 고르면 상세의 머리만 보이게 조금 스크롤한다(흐름도가 화면에서 사라지지 않게) */}
           <div ref={detailRef} className="pr-activity__anchor" aria-hidden />
-          <Panel title={<><span className="ds-mono">{sel.id}</span> {sel.name}</>} eyebrow={<RaciBadge k={raciOf(sel, roleIds)} />}>
+          <Panel title={sel.name} eyebrow={<RaciBadge k={raciOf(sel, roleIds)} />}>
             <ActivityBody doc={doc} a={sel} />
           </Panel>
         </div>
@@ -333,6 +332,6 @@ export function ProcessDetail() {
   if (doc === null) return <Loading />;
   if (doc === 'fail') return <p className="ds-stale">{P.loadFail}</p>;
   const p = doc.processes.find((x) => x.id === id);
-  if (!p) return <p className="ds-stale">{P.notFound(id)} <Link to="/procedures">{P.detail.back}</Link></p>;
+  if (!p) return <p className="ds-stale">{P.notFound} <Link to="/procedures">{P.detail.back}</Link></p>;
   return <Detail doc={doc} p={p} />;
 }

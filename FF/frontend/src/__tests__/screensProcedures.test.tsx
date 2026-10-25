@@ -68,8 +68,8 @@ describe('업무 절차 허브', () => {
 describe('절차 상세', () => {
   it('흐름도의 활동을 누르면 단계와 완료 기준이 보이고 주소(?a=)에 남는다', async () => {
     mount('/procedures/FPW.7', 'author');
-    const svg = await screen.findByRole('group', { name: 'FPW.7 흐름도' });
-    const node = within(svg).getAllByRole('button', { name: /FPW\.7-A12/ }).find((n) => n.classList.contains('pf-node--activity'))!;
+    const svg = await screen.findByRole('group', { name: '출시·활성화·단계적 확대 흐름도' });
+    const node = within(svg).getAllByRole('button', { name: /Release Sign\-off\(출시 책임 확인\)/ }).find((n) => n.classList.contains('pf-node--activity'))!;
     expect(node.getAttribute('data-mine')).toBe(''); // author = Feature Owner = 수행
     fireEvent.click(node);
     // 고른 활동의 상세 판(완료 처리가 있는 곳) — 아래 활동 카드에도 같은 완료 기준이 있으므로 상세 판 안에서 찾는다
@@ -81,12 +81,12 @@ describe('절차 상세', () => {
 
   it('?a= 로 열면 그 활동이 선택되어 있다', async () => {
     mount('/procedures/FPW.7?a=FPW.7-A12', 'author');
-    expect(await screen.findByRole('heading', { name: /FPW\.7-A12/ })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 2, name: /Release Sign\-off\(출시 책임 확인\)/ })).toBeTruthy();
   });
 
   it('없는 절차는 안내와 목록 링크를 보인다', async () => {
     mount('/procedures/FPW.99');
-    expect(await screen.findByText(/FPW\.99 절차가 없습니다/)).toBeTruthy();
+    expect(await screen.findByText(/요청한 업무 절차를 찾을 수 없습니다/)).toBeTruthy();
   });
 
   it('RACI 표에 책임(A)이 활동마다 정확히 한 칸이다', async () => {
@@ -149,7 +149,7 @@ describe('실행 UI — 서버 저장·Evidence·검토함', () => {
   it('Evidence·서명 서랍에서 완료하면 서버에 저장하고 완료로 표시한다', async () => {
     const calls = stubProcedureApi();
     mount('/procedures/FPW.1?a=FPW.1-A01', 'author');
-    await screen.findByRole('heading', { name: /FPW\.1-A01/ });
+    await screen.findByRole('heading', { level: 2, name: /Feature 등록·초안 작성/ });
     fireEvent.click(screen.getByRole('button', { name: 'Evidence·서명' }));
     fireEvent.change(screen.getByLabelText(/메모/), { target: { value: '등록 초안 확인' } });
     fireEvent.click(screen.getByRole('button', { name: 'Evidence 추가' }));

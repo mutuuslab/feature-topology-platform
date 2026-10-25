@@ -68,10 +68,9 @@ function ProcedureMapView({ summary }: { summary: ProcedureSummary | null }) {
                       data-mine={mine > 0 ? '' : undefined}
                       data-done={full ? '' : undefined}
                       data-next={p.id === nextId ? '' : undefined}
-                      aria-label={`${p.id} ${p.name} — ${P.map.progress(done, p.activities)}${mine ? `, ${P.map.mine(mine)}` : ''}`}
+                      aria-label={`${p.name} — ${P.map.progress(done, p.activities)}${mine ? `, ${P.map.mine(mine)}` : ''}`}
                     >
                       <span className="pm-node__top">
-                        <span className="ds-mono pm-node__id">{p.id}</span>
                         <span className="pm-node__gates">
                           {p.gates.map((g) => (
                             <span key={g} className="ds-tag ds-mono">{g}</span>

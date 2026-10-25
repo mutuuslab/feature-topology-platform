@@ -67,10 +67,10 @@ const node = (id: string) => document.querySelector(`[data-flow] [data-activity=
 describe('절차 흐름도 (/procedures/:id)', () => {
   it('스윔레인·활동 상자·Gate 마름모·시작/종료가 그려진다', async () => {
     mount('/procedures/FPW.1');
-    const svg = await screen.findByRole('group', { name: 'FPW.1 흐름도' });
+    const svg = await screen.findByRole('group', { name: 'Feature 등록·분류 흐름도' });
     const p = WORKFLOWS.processes.find((x) => x.id === 'FPW.1')!;
     expect(svg.querySelectorAll('.pf-node--activity').length).toBe(p.activities.length);
-    expect(within(svg).getByRole('button', { name: /G1 판정\(FPW\.1-A05\)/ })).toBeTruthy();
+    expect(within(svg).getByRole('button', { name: /G1 판정 — / })).toBeTruthy();
     expect(within(svg).getByRole('img', { name: /시작 — 진입 조건/ })).toBeTruthy();
     expect(within(svg).getByRole('img', { name: /종료 — 완료 조건/ })).toBeTruthy();
     // 레인 = 입력 + 수행 역할 4개 + 산출물(절차서 표기)
@@ -108,32 +108,32 @@ describe('절차 흐름도 (/procedures/:id)', () => {
 
   it('백엔드가 없어도 첫 활동은 내 차례로 보인다(Feature Owner)', async () => {
     mount('/procedures/FPW.1');
-    await screen.findByRole('group', { name: 'FPW.1 흐름도' });
+    await screen.findByRole('group', { name: 'Feature 등록·분류 흐름도' });
     await waitFor(() => expect(node('FPW.1-A01')?.getAttribute('data-state')).toBe('mine'));
     expect(node('FPW.1-A01')!.textContent).toContain('내 차례');
   });
 
   it('상자를 누르거나 Enter로 활동 상세가 열리고 주소에 남는다', async () => {
     mount('/procedures/FPW.1');
-    await screen.findByRole('group', { name: 'FPW.1 흐름도' });
+    await screen.findByRole('group', { name: 'Feature 등록·분류 흐름도' });
     fireEvent.click(node('FPW.1-A03')!);
-    expect(await screen.findByRole('heading', { name: /FPW\.1-A03/ })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 2, name: /안전 분류\(네 축\) 확정/ })).toBeTruthy();
     expect(screen.getByTestId('where').textContent).toContain('a=FPW.1-A03');
     fireEvent.keyDown(node('FPW.1-A04')!, { key: 'Enter' });
-    expect(await screen.findByRole('heading', { name: /FPW\.1-A04/ })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 2, name: /법규 의무 기능 판정/ })).toBeTruthy();
     expect(node('FPW.1-A04')!.getAttribute('tabindex')).toBe('0');
   });
 
   it('텍스트 보기는 같은 활동을 표로 보여 주고, 표에서도 활동을 연다', async () => {
     mount('/procedures/FPW.8', 'operator');
-    await screen.findByRole('group', { name: 'FPW.8 흐름도' });
+    await screen.findByRole('group', { name: '운영·긴급 차단·복원 흐름도' });
     fireEvent.click(screen.getByRole('radio', { name: '텍스트' }));
-    const table = await screen.findByRole('table', { name: /FPW\.8 활동 순서/ });
+    const table = await screen.findByRole('table', { name: /운영·긴급 차단·복원 활동 순서/ });
     const p = WORKFLOWS.processes.find((x) => x.id === 'FPW.8')!;
     expect(within(table).getAllByRole('row').length).toBe(p.activities.length + 1);
-    expect(screen.queryByRole('group', { name: 'FPW.8 흐름도' })).toBeNull();
+    expect(screen.queryByRole('group', { name: '운영·긴급 차단·복원 흐름도' })).toBeNull();
     fireEvent.click(within(table).getAllByRole('button')[0]);
-    expect(await screen.findByRole('heading', { name: new RegExp(p.activities[0].id) })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 2, name: p.activities[0].name })).toBeTruthy();
   });
 });
 
@@ -172,7 +172,7 @@ describe('내 업무 흐름 (/procedures 허브 기본 탭)', () => {
   it('흐름의 내 활동을 누르면 그 절차의 활동 상세로 간다', async () => {
     mount('/procedures', 'author');
     await screen.findByRole('group', { name: '내 업무 흐름' });
-    fireEvent.click(screen.getByRole('button', { name: /FPW\.1-A01/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Feature 등록·초안 작성/ }));
     await waitFor(() => expect(screen.getByTestId('where').textContent).toBe('/procedures/FPW.1?a=FPW.1-A01'));
   });
 });
@@ -184,8 +184,8 @@ describe('전체 지도 (/procedures?view=map)', () => {
     expect(svg.querySelectorAll('.pf-proc').length).toBe(13);
     const mine = svg.querySelectorAll('.pf-proc[data-mine]').length;
     expect(mine).toBe(WORKFLOWS.processes.filter((p) => myWorkSteps(WORKFLOWS, WORKFLOWS.personas.author).some((s) => s.process.id === p.id)).length);
-    expect(within(svg).getByRole('link', { name: /FPW\.1 .*내 활동/ })).toBeTruthy();
-    fireEvent.click(within(svg).getByRole('link', { name: /^FPW\.8 / }));
+    expect(within(svg).getByRole('link', { name: /Feature 등록·분류 .*내 활동/ })).toBeTruthy();
+    fireEvent.click(within(svg).getByRole('link', { name: /^운영·긴급 차단·복원 / }));
     await waitFor(() => expect(screen.getByTestId('where').textContent).toBe('/procedures/FPW.8'));
   });
 });
@@ -255,7 +255,7 @@ describe('담당자별 업무 흐름 (?view=roles · /procedures/roles)', () => 
     expect(cell.textContent?.startsWith(String(n))).toBe(true);
     expect(cell.getAttribute('href')).toBe('/procedures/FPW.8?role=operator');
     fireEvent.click(cell);
-    const svg = await screen.findByRole('group', { name: 'FPW.8 흐름도' });
+    const svg = await screen.findByRole('group', { name: '운영·긴급 차단·복원 흐름도' });
     const focused = [...svg.querySelectorAll('[data-lane][data-focus]')].map((g) => g.getAttribute('data-lane'));
     expect(focused.length).toBeGreaterThan(0);
     for (const l of focused) expect(ids).toContain(l);
@@ -265,5 +265,22 @@ describe('담당자별 업무 흐름 (?view=roles · /procedures/roles)', () => 
     // 상자를 눌러도 강조(?role=)는 남는다
     fireEvent.click(svg.querySelector('[data-activity].pf-node--activity')!);
     await waitFor(() => expect(screen.getByTestId('where').textContent).toMatch(/role=operator.*a=|a=.*role=operator/));
+  });
+});
+
+describe('업무 이름으로 읽는 절차 화면', () => {
+  it.each(['/', '/procedures', '/procedures?view=list', '/procedures?view=map', '/procedures/roles', ...WORKFLOWS.processes.map((p) => `/procedures/${p.id}`)])('화면과 접근성 이름에 내부 절차 코드를 표시하지 않는다: %s', async (path) => {
+    stubState([]);
+    mount(path);
+    await waitFor(() => expect(document.querySelector('.pf-svg, .pf-matrix, .ds-learn-grid')).toBeTruthy());
+    const surface = document.querySelector('.ds-screen') ?? document.querySelector('.pm-root') ?? document.querySelector('.pf-view')?.parentElement ?? document.body;
+    const copy = surface.cloneNode(true) as HTMLElement;
+    copy.querySelector('[data-testid="where"]')?.remove();
+    const labels = [...surface.querySelectorAll('[aria-label], [title]')].flatMap((el) => [el.getAttribute('aria-label') ?? '', el.getAttribute('title') ?? '']);
+    expect([copy.textContent, ...labels].join(' ')).not.toMatch(/FPW\.\d/);
+    if (path.startsWith('/procedures/FPW.')) {
+      const process = WORKFLOWS.processes.find((p) => path === `/procedures/${p.id}`)!;
+      expect(screen.getByRole('heading', { level: 1, name: process.name })).toBeTruthy();
+    }
   });
 });

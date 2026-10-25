@@ -153,7 +153,7 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     };
     mount('author', '/', <HomeScreen />);
     expect(await screen.findByText('업무 절차 지도')).toBeTruthy();
-    const node = await screen.findByRole('link', { name: /FPW\.1 Feature 등록·분류/ });
+    const node = await screen.findByRole('link', { name: /Feature 등록·분류/ });
     expect(node.textContent).toContain('1/5');
     expect(node.textContent).toContain('내 차례 2');
     expect(within(node).getByText('G1')).toBeTruthy();

@@ -4,7 +4,8 @@ export const procedures = {
   lead: '담당자별로 누가 언제 무엇을 하는지 — 표준 보고서 v1.1의 역할·Gate 기준 절차입니다.',
   loading: '업무 절차를 불러오는 중입니다.',
   loadFail: '업무 절차를 불러오지 못했습니다. 새로고침 후 다시 시도하세요.',
-  notFound: (id: string) => `${id} 절차가 없습니다 — 업무 절차 목록에서 고르세요.`,
+  notFound: '요청한 업무 절차를 찾을 수 없습니다. 목록에서 다시 골라주세요.',
+  display: { process: '업무 절차', activity: '활동', reference: '관련 업무' },
   groups: '생애주기 단계',
   mine: {
     key: '내가 맡은 활동',
@@ -108,7 +109,7 @@ export const procedures = {
     openDetail: '활동 상세 열기',
   },
   complete: {
-    title: (id: string) => `${id} 활동 완료`,
+    title: (name: string) => `${name} 완료`,
     lead: '완료 기준을 확인하고, Evidence와 개인 서명(선택)을 남깁니다.',
     checks: '완료 기준',
     note: '메모',

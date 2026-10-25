@@ -68,7 +68,7 @@ function WorkProducts({ keys, index }: { keys: string[]; index: Index }) {
         const w = index.wp.get(k);
         return (
           <li key={k}>
-            <span className="ds-mono">{k}</span> {w?.name ?? k}
+            {w?.name ?? P.detail.products}
           </li>
         );
       })}
@@ -222,7 +222,7 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
             const t = index.act.get(id);
             return (
               <li key={id}>
-                {t ? <Link to={`/procedures/${t.process.id}?a=${id}`}>{id} {t.activity.name}</Link> : <span className="ds-mono">{id}</span>}
+                {t ? <Link to={`/procedures/${t.process.id}?a=${id}`}>{t.activity.name}</Link> : <span>{P.display.activity}</span>}
               </li>
             );
           })}
@@ -231,7 +231,7 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
         <p className="ds-field__hint">{P.detail.noNext}</p>
       )}
 
-      <Drawer open={open} title={P.complete.title(a.id)} onClose={() => setOpen(false)}>
+      <Drawer open={open} title={P.complete.title(a.name)} onClose={() => setOpen(false)}>
         <div className="pr-complete">
           <p className="ds-field__hint">{P.complete.lead}</p>
           <h3>{P.complete.checks}</h3>

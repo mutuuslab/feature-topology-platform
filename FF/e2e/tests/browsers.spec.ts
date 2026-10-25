@@ -93,12 +93,12 @@ test('긴급 차단 요청 — 영향 범위·규칙 점검·확인 입력(type-
 test('업무 절차 흐름도 — 스윔레인과 활동 상자가 보이고, 누르면 활동 상세가 열린다', async ({ page }) => {
   await asRole(page, 'author');
   await page.goto('/procedures/FPW.1');
-  const flow = page.getByRole('group', { name: 'FPW.1 흐름도' });
+  const flow = page.getByRole('group', { name: 'Feature 등록·분류 흐름도' });
   await expect(flow).toBeVisible();
   await expect(flow.locator('.pf-node--activity')).toHaveCount(5);
-  await flow.getByRole('button', { name: /^FPW\.1-A03 / }).click();
+  await flow.getByRole('button', { name: /^안전 분류\(네 축\) 확정 / }).click();
   await expect(page).toHaveURL(/a=FPW\.1-A03/);
-  await expect(page.getByRole('heading', { name: /FPW\.1-A03/ })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: /안전 분류\(네 축\) 확정/ })).toBeVisible();
   expect(await noPageOverflow(page)).toBe(true);
 });
 

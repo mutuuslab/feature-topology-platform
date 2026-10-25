@@ -81,7 +81,7 @@ export function RoleFlows({ doc }: { doc: WorkflowDoc }) {
                 <th scope="col">{F.roles.corner}</th>
                 {doc.processes.map((proc) => (
                   <th key={proc.id} scope="col" title={proc.name}>
-                    <abbr title={proc.name}>{proc.id}</abbr>
+                    <span>{proc.name}</span>
                   </th>
                 ))}
               </tr>
@@ -100,7 +100,7 @@ export function RoleFlows({ doc }: { doc: WorkflowDoc }) {
                       return (
                         <td key={c.id} data-n={c.n}>
                           {c.n ? (
-                            <Link to={`/procedures/${c.id}?role=${p}`} aria-label={F.roles.cell(roleLabel(p), `${proc.id} ${proc.name}`, c.n, c.turn)} data-cell={`${p}:${c.id}`}>
+                            <Link to={`/procedures/${c.id}?role=${p}`} aria-label={F.roles.cell(roleLabel(p), proc.name, c.n, c.turn)} data-cell={`${p}:${c.id}`}>
                               {c.n}
                               {c.turn ? ` (${c.turn})` : ''}
                             </Link>

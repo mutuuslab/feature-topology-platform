@@ -4,6 +4,7 @@
 // 같은 내용을 텍스트(표)로도 볼 수 있다 — 화면 낭독기·인쇄용. 넓은 흐름도는 레인 머리를 왼쪽에 고정한 채 가로로 스크롤한다.
 import { type CSSProperties, type KeyboardEvent, useId, useState } from 'react';
 import type { WorkflowDoc, WorkflowProcess } from '@ff/contracts';
+import { workflowLabels } from '../../../data/workflowLabels';
 import { procedureFlow as F } from '../../../copy/procedureFlow';
 import { Segmented } from '../../../design';
 import { ArrowDefs, DocShape, FlowLegend, laneTitle, roleNameOf, StateIcon, stateText, TriggerBolt, useWidth } from './FlowParts';
@@ -72,11 +73,9 @@ function Lanes({ layout, focus }: { layout: ProcessLayout; focus: readonly strin
   );
 }
 
-/** 산출물 키의 짧은 꼴(WP- 머리 뺌) */
-export const shortKey = (k: string) => k.replace(/^WP-/, '');
-/** 문서 상자의 위 칸 글자 — 이 절차 산출물은 짧은 키(보존 기록이면 표시), 참조는 만든 활동, 다른 절차 입력은 만든 절차, 그 밖은 외부 입력 */
-export const docTag = (n: ProcessGraph['nodes'][number]) =>
-  n.ref ? F.doc.ref(n.owner!) : n.external ? (n.owner ? F.doc.from(n.owner) : F.doc.outside) : `${shortKey(n.wp!)}${n.retained ? ` · ${F.doc.retained}` : ''}`;
+/** 문서의 출처는 절차·활동 이름으로 읽고, 이 절차의 문서는 종류를 표시한다. */
+export const docTag = (doc: WorkflowDoc, n: ProcessGraph['nodes'][number]) =>
+  n.ref ? F.doc.ref(workflowLabels(doc).activity(n.owner!)) : n.external ? (n.owner ? F.doc.from(workflowLabels(doc).process(n.owner)) : F.doc.outside) : n.retained ? F.doc.retained : F.doc.produced;
 
 export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSelect, fit, focusRoles = [] }: Props) {
   const { layout } = processFlow(p, doc);
@@ -96,7 +95,7 @@ export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSele
       style={fit ? { maxWidth: layout.width } : undefined}
       preserveAspectRatio="xMinYMin meet"
       role="group"
-      aria-label={F.process.title(p.id)}
+      aria-label={F.process.title(p.name)}
       data-flow={p.id}
     >
       <ArrowDefs id={uid} />
@@ -130,7 +129,7 @@ export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSele
         if (n.kind === 'doc') {
           const name = wpName(n.wp!);
           const lines = wrapText(name, n.w - 16, NAME_FS, 2);
-          const tag = docTag(n);
+          const tag = docTag(doc, n);
           return (
             <g key={id} className="pf-doc" data-external={n.external ? '' : undefined} data-ref={n.ref ? '' : undefined} data-retained={n.retained ? '' : undefined} data-wp={n.wp} role="img" aria-label={F.doc.label(name, tag, n.external)}>
               <title>{`${name}\n${tag}`}</title>
@@ -174,7 +173,7 @@ export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSele
         } as const;
         if (n.kind === 'gate') {
           return (
-            <g key={id} {...common} aria-label={F.node.gateLabel(n.gate!, a.id, txt)} data-activity={a.id} data-gate={n.gate}>
+            <g key={id} {...common} aria-label={F.node.gateLabel(n.gate!, a.name, txt)} data-activity={a.id} data-gate={n.gate}>
               <path d={`M${cx} ${n.y} L${n.x + n.w} ${cy} L${cx} ${n.y + n.h} L${n.x} ${cy} Z`} />
               <text className="pf-gate__id" x={cx} y={cy + 1} textAnchor="middle">{n.gate}</text>
               <StateIcon state={state} x={cx - 6} y={cy + 5} />
@@ -188,12 +187,11 @@ export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSele
         // 상자 안 상태 줄은 짧게 — 내 차례이면서 기한 초과면 날짜는 접근 이름·툴팁에만
         const statusLine = ellipsize(st?.mine || !dueAt ? txt : `${txt} · ${dueAt}`, n.w - 34, 11);
         return (
-          <g key={id} {...common} aria-label={`${F.node.activityLabel(a.id, a.name, roleLabel, txt)}${due}`} data-activity={a.id}>
+          <g key={id} {...common} aria-label={`${F.node.activityLabel(a.name, roleLabel, txt)}${due}`} data-activity={a.id}>
             <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={8} />
             {/* 내 차례이면서 기한 초과 — 빨간 테두리 안쪽에 내 차례 테두리를 함께 */}
             {st?.mine && state === 'overdue' && <rect className="pf-node__ring" x={n.x + 4} y={n.y + 4} width={n.w - 8} height={n.h - 8} rx={5} />}
             {due && <title>{`${txt}${due}`}</title>}
-            <text className="pf-node__id" x={cx} y={n.y + 16} textAnchor="middle">{a.id}</text>
             {lines.map((t, j) => (
               <text key={j} className="pf-node__name" x={cx} y={n.y + 34 + j * 15 + (lines.length === 1 ? 7 : 0)} textAnchor="middle">{t}</text>
             ))}
@@ -232,8 +230,8 @@ export function ProcessFlowText({ doc, process: p, statuses, onSelect }: Omit<Pr
     if (n.kind === 'start') return F.process.fromStart;
     if (n.kind === 'end') return F.process.toEnd;
     if (n.kind === 'event') return act.get(n.activityId!)?.trigger ? F.node.eventLabel(act.get(n.activityId!)!.trigger!) : F.node.readyLabel;
-    if (n.kind === 'doc') return F.doc.text(wpName(n.wp!), docTag(n));
-    return `${n.activityId} ${act.get(n.activityId!)?.name ?? ''}`;
+    if (n.kind === 'doc') return F.doc.text(wpName(n.wp!), docTag(doc, n));
+    return workflowLabels(doc).activity(n.activityId!);
   };
   const wps = (e: ProcessGraph['edges'][number]) => ((e.kind === 'flow' || e.kind === 'data') && e.wps.length ? ` (${e.wps.map(wpName).join(', ')})` : '');
   const line = (e: ProcessGraph['edges'][number], end: 'from' | 'to') => `${isObjectFlow(e.kind) ? F.process.object : ''}${who(e[end])}${wps(e)}`;
@@ -241,7 +239,7 @@ export function ProcessFlowText({ doc, process: p, statuses, onSelect }: Omit<Pr
     <div className="pf-text">
       <div className="pf-text__scroll">
         <table className="ds-table pf-table">
-          <caption>{F.process.textCaption(p.id)}</caption>
+          <caption>{F.process.textCaption(p.name)}</caption>
           <thead>
             <tr>
               <th scope="col">{F.process.col.order}</th>
@@ -263,7 +261,7 @@ export function ProcessFlowText({ doc, process: p, statuses, onSelect }: Omit<Pr
                   <td>{i + 1}</td>
                   <th scope="row">
                     <button type="button" className="pf-linkbtn" onClick={() => onSelect(a.id)}>
-                      {a.id} {a.name}
+                      {a.name}
                     </button>
                     {a.gateDecision && <span className="ds-tag ds-mono pf-gate-tag">{F.node.gate(a.gateDecision)}</span>}
                   </th>

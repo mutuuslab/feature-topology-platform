@@ -138,12 +138,14 @@ export class ProcedureService implements OnModuleInit, OnApplicationShutdown {
       note: r.note,
       evidence: JSON.parse(r.evidence_doc) as ProcedureEvidence[],
     };
-    let signature: ProcedureSignature | null = null;
-    let signatureValid: boolean | null = null;
-    if (r.signature_doc) {
-      signature = JSON.parse(r.signature_doc) as ProcedureSignature;
-      signatureValid = this.hsm.verifyApproval(signature.signedBy, signable(base), signature.value);
-    }
+    const signature = JSON.parse(r.signature_doc ?? 'null') as ProcedureSignature | null;
+    const canonical = signable(base);
+    // 검증할 키는 서명 안의 자기 신고 값이 아니라 서버가 기록한 완료 담당자로 정한다.
+    // 서명 선택 여부와 무관하게 검증한다. 없는 서명은 검증을 통과하지 않으며, API에는 기존대로 null을 돌려준다.
+    const verified = this.hsm.verifyApproval(base.completedBy, canonical, signature?.value ?? '');
+    const signatureValid = signature === null
+      ? null
+      : verified && signature.signedBy === base.completedBy && signature.signedAt === base.completedAt && signature.digest === sha256hex(canonical);
     return { ...base, signature, signatureValid };
   }
 

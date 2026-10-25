@@ -4,6 +4,7 @@
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
 ## 출시 준비(Production Readiness) + Jira식 대시보드 (2026-10-24 사용자 요청 "전체 하네스 엔지니어링으로 실제 고객이 사용할 수 있을 정도의 퀄리티" · "대시보드는 Jira 스타일, Layout은 Drag로 조정·추가")
+- **업무 절차 완료 서명 무결성(2026-10-25)** — CodeQL #28의 선택 서명 검증 경로를 점검하다 실제 변조 사례 3건 재현: 다른 사람의 유효한 서명 대입·서명 시각 변경·해시 변경도 유효로 표시됨. 완료 담당자의 키로 항상 검증하고 서명자·시각·해시를 대조한다. 서명 없는 완료는 기존대로 허용하고 서명·검증 결과 null 유지, 역할 검사는 서명 선택과 무관하게 적용. 수정 전 회귀 시험 3건 실패, 수정 후 업무 절차 시험 14건 모두 통과. 전체 `npm run verify` **35단계 통과**(계약 437·백엔드 814·프론트 819, e2e 787·정적 데모 74·SSO·첫 실행 포함, EXIT=0). --full 전용 4단계는 이번 백엔드 수정에서 재실행하지 않았다.
 - **통합(2026-10-25, 하네스 4갈래 + 절차 흐름 재스타일)** — quality-ci·postgres-phase1·prod-enums-privacy·perf-browsers·procedure-flow를 모두 병합. 출시 준비 **39/41**(열린 P0·P1 0, P2 2: P2-02 영어 본문·OPS-15 이중화). 병합 때 잡은 결함 2건(회귀 시험 포함): ① 감사 체인 묶음 검증(perf, `/api/audit/chain`)이 체인 v2 판정(priv)을 빠뜨려 칸 변조·기록 없는 가명 처리를 통과시킴 → 행·묶음 판정 함수 공용(`v2RowFault`·`redactionBatchFault`), ② 활성화 판단 회귀 시험이 수정을 빼도 통과(빈 필수 질의는 `routeUrl`이 fetch 전에 던짐) → 질의 캐시 단언 + 잠자기 제거(testHygiene.sleep 15 유지). ③ PostgreSQL 부팅 실패(066 감사 트리거의 `NEW.x IS OLD.x` — PG의 IS는 NULL·TRUE·FALSE만, test:pg 131/817) → 번역 규칙 값 비교 IS → `IS NOT DISTINCT FROM`, ④ 컴포넌트 최근 활동 PG 500(`INDEXED BY`) → 번역에서 제거 — test:pg **799/819 실패 0**(래칫 769 → 799, SQLite 질의 계획 시험은 PG에서 건너뜀). ⑤ 시각 기준: 기능안전 패널이 앞 패널(흐름도 표본) 높이에 따라 소수점 픽셀만큼 밀려 내용 변화 없이 어긋남 → 시험이 앞 패널을 숨기고 찍는다, 기준 다시 생성. 대시보드 편집 초점(그린 뒤 effect로 초점) 수정 포함. 남은 사용자 결정: D-RD-9·10·11, U-17, Lake U-2~19, PR #6, main 병합 시점.
 - **브랜치** `feat/prod-readiness` (worktree `-ux`, origin/main에서). 의존성 상향은 별도 worktree `../2026-06-04_Feature_Platform-deps` 브랜치 `feat/deps-upgrade`(에이전트 작업 — Nest 12·zod 4·maplibre 6·react-router 7·CI audit/gitleaks/CodeQL/Dependabot·wrangler 고정, RD-SEC-14·15).
 - **정본** `docs/20-architecture/20-90-production-readiness.md`(점검 3건 종합·결정 D-RD-1~8), 목록 `harness/readiness.json`, 게이트 `tools/readiness.ts`(verify 단계 `readiness`, 래칫 readinessOpenP0·P1).
@@ -451,7 +452,7 @@
 | D01-08 | 단계적 기능 배포 | B | ✅ | /policies/:id | 4 |
 | D01-09 | 정책 기반 활성화 제어 | A | ✅ | /activation/decide | 5 |
 | D01-10 | 감사 이력 관리 | A | ✅ | /audit | 2 |
-| D02-01 | Variant 조건 관리 | A | ✅ | /variant-conditions | 3 |
+| D02-01 | Variant 조건 관리 | A | ✅ | /variant-conditions /master/reference-values | 5 |
 | D02-02 | 기능 지원 조건 관리 | B | ✅ | /variant-conditions /fleet/vehicles/:vin | 3 |
 | D02-03 | 차량 런타임 실행 모듈 | A | ✅ | /fleet/live /fleet/vehicles/:vin /fleet/map | 12 |
 | D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations | 4 |
@@ -505,8 +506,9 @@
 | offScaleSpacing | 0 | ↓ 줄이기 | 스케일 밖 간격(padding·margin·gap px) 선언 수 — 0을 유지한다 |
 | rawRadius | 0 | ↓ 줄이기 | px 리터럴 반경 선언 수 — 반경 토큰(--r-sm·--r·--r-lg·--r-pill)만 쓴다 |
 | leadCopyHits | 0 | ↓ 줄이기 | 문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14) |
-| readinessOpenP0 | 1 | ↓ 줄이기 | 출시 준비 열린 P0 수(harness/readiness.json) — 0까지 |
-| readinessOpenP1 | 1 | ↓ 줄이기 | 출시 준비 열린 P1 수 — 0까지 |
+| readinessOpenP0 | 0 | ↓ 줄이기 | 출시 준비 열린 P0 수(harness/readiness.json) — 0까지 |
+| readinessOpenP1 | 0 | ↓ 줄이기 | 출시 준비 열린 P1 수 — 0까지 |
+| pgBackendPass | 799 | ↑ 늘리기 | 백엔드 시험의 PostgreSQL 16 통과 수(npm run test:pg, 20-92 §6) — 늘어나기만 한다. 2026-10-25 1단계 769/775 → 운영 값·개인정보·성능 병합 뒤 799/819(실패 0, 건너뜀 20: SQLite 질의 계획 14 · 실서버 없음 4 · GLEO 준비 대기 2) |
 | testHygiene.fixed-port | 0 | ↓ 줄이기 | 시험 결정성 — 고정 포트 — listen(0)·OS가 고른 포트를 쓰고 주소를 되읽는다 (예외는 hygiene-ok: 이유) |
 | testHygiene.sleep | 15 | ↓ 줄이기 | 시험 결정성 — setTimeout 잠자기 — 조건 대기(until·expect.poll·waitFor)로 바꾼다 (예외는 hygiene-ok: 이유) |
 | testHygiene.deadline-wait | 0 | ↓ 줄이기 | 시험 결정성 — 짧은 실시간 기한 — 가짜 시계·FF_SCHEDULER=manual·기한을 시험이 직접 닫는다 (예외는 hygiene-ok: 이유) |

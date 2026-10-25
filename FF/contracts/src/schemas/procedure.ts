@@ -50,7 +50,7 @@ export interface ProcedureCompletion {
   note: string | null;
   evidence: ProcedureEvidence[];
   signature: ProcedureSignature | null;
-  /** 서명 검증 결과 — 서명이 없으면 null, 본문이 바뀌었으면 false(감사로 확인) */
+  /** 완료 담당자의 키로 서명·본문·서명자·서명 시각·해시를 검증 — 서명이 없으면 null, 불일치는 false(감사로 확인) */
   signatureValid: boolean | null;
 }
 

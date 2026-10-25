@@ -65,7 +65,7 @@ function watch(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.route(/openfreemap\.org/, (r) => r.abort());
+  await page.route((url) => url.hostname === 'tiles.openfreemap.org', (r) => r.abort());
   await page.addInitScript(() => localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'operator' })));
 });
 

@@ -85,7 +85,7 @@ const PLATFORM_DIRS = [SRC, join(FF, 'contracts', 'src'), join(FF, 'backend', 's
 const platformHits: string[] = [];
 for (const dir of PLATFORM_DIRS)
   for (const f of walk(dir, ['.ts', '.tsx'], ['node_modules', 'dist', '__tests__', 'test', 'generated'])) {
-    if (/\.test\.|kernel[\\/]migrations\.ts$/.test(f)) continue;
+    if (/\.test\./.test(f) || /kernel[\\/]migrations\.ts$/.test(f)) continue;
     readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
       for (const h of platformTermHits(line)) platformHits.push(`${rel(f)}:${i + 1}  ${h.term} → ${h.fix} — ${h.why}`);
     });

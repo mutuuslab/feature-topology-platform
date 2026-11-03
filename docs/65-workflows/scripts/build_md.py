@@ -1,4 +1,5 @@
-"""모델 → out/processes/FPW.<n>.md, out/roles/<R-ID>.md (docs 프런트매터 + Mermaid). 손으로 고치지 않는다.
+"""모델 → out/processes/FPW.<n>.md, out/roles/<R-ID>.md, out/departments/<DEP-ID>.md·README.md·raci.csv
+(docs 프런트매터 + Mermaid). 손으로 고치지 않는다.
 
 사용: python -I scripts/build_md.py [--partial]
 """
@@ -151,13 +152,126 @@ def role_md(m, r) -> str:
     return "\n".join(lines) + "\n"
 
 
+WORKSPACE_KO = {"studio": "기획 스튜디오", "review": "심사 결재함", "console": "엔지니어링 콘솔",
+                "control": "관제실", "portal": "검토 포털"}
+
+
+def dept_doc_id(did: str) -> str:
+    return "WF-" + did
+
+
+def dept_name(m, did: str) -> str:
+    return m["dept_by_id"][did]["name"]
+
+
+def raci_cells(m, did: str) -> dict:
+    """프로세스별 부서 몫 개수 — {FPW.n: {"R": k, ...}}"""
+    out: dict = {}
+    for p, a, _ in wm.dept_activities(m, did):
+        c = out.setdefault(p["id"], {k: 0 for k in wm.RACI_ORDER})
+        for part in wm.dept_parts(m, did, a):
+            c[part] += 1
+    return out
+
+
+def cell_txt(c: dict) -> str:
+    return " ".join(f"{k}{c[k]}" for k in wm.RACI_ORDER if c.get(k)) or "–"
+
+
+def dept_md(m, d) -> str:
+    did = d["id"]
+    first = set(m["common"].get("department_scope", {}).get("first", []))
+    acts = wm.dept_activities(m, did)
+    roles = ", ".join(m["roles_by_id"][r]["name"] for r in d["roles"])
+    related = sorted({doc_id(p["id"]) for p, _, _ in acts}) + [role_doc_id(r) for r in d["roles"]]
+    lines = [front_matter(m, dept_doc_id(did), f"{d['name']} R&R / {d['en']} Roles & Responsibilities", related),
+             f"# {dept_doc_id(did)} · {d['name']} R&R", "",
+             f"> {' '.join(d['desc'].split())}", "",
+             f"- 맡는 조직 역할: {roles}",
+             f"- 화면 유형: {WORKSPACE_KO[d['workspace']]}",
+             f"- 데모 계정: {', '.join(d['personas'])} (첫 번째가 기본)",
+             "- 부서는 OEM 조직 가정안이다. 고객사 조직이 정해지면 model/common.yaml departments만 바꾼다.", ""]
+    for part, title in (("R", "1. 수행하는 업무 (R)"), ("A", "2. 책임지고 승인하는 업무 (A)"),
+                        ("C", "3. 협의하는 업무 (C)"), ("I", "4. 통보받는 업무 (I)")):
+        mine = [(p, a) for p, a, _ in acts if part in wm.dept_parts(m, did, a)]
+        lines += [f"## {title}", ""]
+        if not mine:
+            lines += ["- 없음", ""]
+            continue
+        lines += ["| 활동 | 프로세스 | 입력 → 출력 | 플랫폼 화면 | 범위 |", "|---|---|---|---|---|"]
+        for p, a in mine:
+            plat = a.get("platform") or {}
+            io = f"{', '.join(a.get('inputs', [])) or '–'} → {', '.join(a.get('outputs', [])) or '–'}"
+            scr = ", ".join(f"`{s}`" for s in plat.get("screens", [])) or "플랫폼 밖"
+            gd = f" ({a['gate_decision']} 판정)" if a.get("gate_decision") else ""
+            lines.append(f"| {a['id']} {cell(a['name'] + gd)} | {p['id']} {cell(p['name_ko'])} | {cell(io)} | {scr} | "
+                         f"{'1차' if p['id'] in first else '2차 초안'} |")
+        lines.append("")
+    hand = wm.dept_handoffs(m, did)
+    lines += ["## 5. 부서 간 인계", "", "| 방향 | 보내는 활동 | 받는 활동 | 상대 부서 |", "|---|---|---|---|"]
+    for k, lab in (("in", "받음"), ("out", "보냄")):
+        for s, t, o in hand[k]:
+            lines.append(f"| {lab} | {s} {cell(m['acts_by_id'][s][1]['name'])} | "
+                         f"{t} {cell(m['acts_by_id'][t][1]['name'])} | {dept_name(m, o)} |")
+    if not hand["in"] and not hand["out"]:
+        lines.append("| – | – | – | 인계 없음(협의·통보만) |")
+    scr = wm.dept_screens(m, did)
+    lines += ["", "## 6. 쓰는 화면", "",
+              f"- 주 업무 화면: {', '.join(f'`{s}`' for s in scr['primary']) or '없음'}",
+              f"- 참조 화면(협의·통보): {', '.join(f'`{s}`' for s in scr['reference']) or '없음'}", ""]
+    sod = [x for x in wm.dept_sod_overlaps(m) if x["department"] == did]
+    if sod:
+        lines += ["## 7. 부서 겸직 직무 분리", "",
+                  "같은 부서 안에서도 아래 두 활동은 다른 사람이 해야 한다(플랫폼이 사람 단위로 막는다).", ""]
+        lines += [f"- {x['sod']}: {x['first']} ↔ {x['second']} — {x['note']}" for x in sod] + [""]
+    return "\n".join(lines)
+
+
+def dept_index_md(m) -> str:
+    scope = m["common"].get("department_scope", {})
+    plans = [pl for pl in m["plan"] if pl["id"] in m["proc_by_id"]]
+    lines = [front_matter(m, "WF-DEP-INDEX", "부서별 R&R — 부서×프로세스 RACI / Department RACI",
+                          [dept_doc_id(d["id"]) for d in m["departments"]]),
+             "# WF-DEP-INDEX · 부서별 R&R", "",
+             f"> {scope.get('note', '')}", ""]
+    lines += [f"- 참고: {x}" for x in scope.get("demo_notes", [])] + [""]
+    lines += ["## 1. 부서", "", "| 부서 | 맡는 역할 | 화면 유형 | 데모 계정 |", "|---|---|---|---|"]
+    for d in m["departments"]:
+        lines.append(f"| [{d['name']}]({d['id']}.md) | {', '.join(m['roles_by_id'][r]['name'] for r in d['roles'])} | "
+                     f"{WORKSPACE_KO[d['workspace']]} | {', '.join(d['personas'])} |")
+    head = " | ".join(pl["id"] + ("" if pl["id"] in scope.get("first", []) else "*") for pl in plans)
+    lines += ["", "## 2. 부서×프로세스 RACI", "",
+              "칸 = 그 부서가 맡는 활동 수(R 수행·A 책임·C 협의·I 통보). * = 2차 초안.", "",
+              f"| 부서 | {head} |", "|---|" + "---|" * len(plans)]
+    for d in m["departments"]:
+        cells = raci_cells(m, d["id"])
+        lines.append(f"| {d['name']} | " + " | ".join(cell_txt(cells.get(pl["id"], {})) for pl in plans) + " |")
+    lines += ["", "## 3. 부서 겸직 직무 분리", ""]
+    lines += [f"- {dept_name(m, x['department'])} · {x['sod']}: {x['first']} ↔ {x['second']} — {x['note']}"
+              for x in wm.dept_sod_overlaps(m)] or ["- 없음"]
+    return "\n".join(lines) + "\n"
+
+
+def dept_csv(m) -> str:
+    """부서×활동 RACI 표(Excel에서 연다). BOM 포함 UTF-8."""
+    deps = m["departments"]
+    rows = ["프로세스,활동 ID,활동," + ",".join(d["name"] for d in deps)]
+    for pl in m["plan"]:
+        p = m["proc_by_id"].get(pl["id"])
+        for a in (p or {}).get("activities", []):
+            vals = ["/".join(wm.dept_parts(m, d["id"], a)) for d in deps]
+            name = '"' + a["name"].replace('"', '""') + '"'
+            rows.append(",".join([p["id"], a["id"], name, *vals]))
+    return "﻿" + "\n".join(rows) + "\n"
+
+
 def build(partial: bool = False) -> List[Path]:
     m = wm.load_model()
     rep = wm.validate(m, partial=partial)
     if rep.errors:
         raise SystemExit("모델 오류 — 먼저 scripts/wf_model.py로 확인:\n" + "\n".join(rep.errors))
     written = []
-    for sub in ("processes", "roles"):
+    for sub in ("processes", "roles", "departments"):
         (OUT / sub).mkdir(parents=True, exist_ok=True)
         for old in (OUT / sub).glob("*.md"):
             old.unlink()
@@ -169,6 +283,15 @@ def build(partial: bool = False) -> List[Path]:
         path = OUT / "roles" / f"{r['id']}.md"
         path.write_text(role_md(m, r), encoding="utf-8")
         written.append(path)
+    for d in m["departments"]:
+        path = OUT / "departments" / f"{d['id']}.md"
+        path.write_text(dept_md(m, d), encoding="utf-8")
+        written.append(path)
+    if m["departments"]:
+        for name, text in (("README.md", dept_index_md(m)), ("raci.csv", dept_csv(m))):
+            path = OUT / "departments" / name
+            path.write_text(text, encoding="utf-8", newline="\n")
+            written.append(path)
     return written
 
 

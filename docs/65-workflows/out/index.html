@@ -18,6 +18,7 @@ th{background:#eef2f7}tr.todo td{color:var(--mute)}tr.miss td:last-child{color:#
 .trigger{color:var(--gate);margin:2px 0}.plat{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .plat span{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:1px 6px;font-size:12.5px}.plat.off{color:var(--mute);font-size:12.5px}
 .plat .screen{background:#f0fdf4;border-color:#bbf7d0}.plat .pg{background:#fff7ed;border-color:#fed7aa}
+.dept-raci td.ra{background:#dbeafe;font-weight:600}.dept-raci td.ci{background:#f1f5f9}.dept-raci td,.dept-raci th{white-space:nowrap}
 ul.checks li::marker{content:"✓ "}a.wp{color:#0f766e}.flowwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;padding:6px;background:#fff}
 svg.flow .lane0{fill:#f8fafc;stroke:#cbd5e1}svg.flow .lane1{fill:#fff;stroke:#cbd5e1}svg.flow .lanesep{stroke:#cbd5e1}
 svg.flow .lanelabel{font-size:12.5px;font-weight:600;fill:#334155}svg.flow .act{fill:#fff;stroke:#1d4ed8;stroke-width:1.4}
@@ -29,10 +30,10 @@ svg.flow .end{fill:#fff;stroke:#0f172a;stroke-width:1.5}svg.flow .endin{fill:#0f
 details.more{margin:8px 0}details.more>summary{cursor:pointer;color:var(--acc)}tr.st-open-platform td:last-child{color:#b45309;font-weight:600}
 @media print{.toolbar{display:none}details{display:block}}
 </style></head>
-<body><div class="toolbar"><b>Feature Platform 담당자 업무 절차</b> v0.1.0
+<body><div class="toolbar"><b>Feature Platform 담당자 업무 절차</b> v0.2.0
 <label>내 역할 보기 <select id="rolepick"><option value="">전체</option><option value="R-FO">Feature Owner</option><option value="R-REQ">요구 Owner</option><option value="R-SM">Safety Manager</option><option value="R-CSM">CSM</option><option value="R-REG">법규 담당</option><option value="R-TST">시험 조직</option><option value="R-QA">품질 조직</option><option value="R-OPS">운영 조직</option><option value="R-ARC">아키텍트</option><option value="R-INT">통합 조직</option><option value="R-REL">Release Manager</option><option value="R-PUR">구매</option><option value="R-LEG">법무</option><option value="R-PKI">PKI 운영</option><option value="R-DPO">데이터 보호 담당</option><option value="R-PLM">기준정보 담당</option><option value="R-PDA">상품 기획</option><option value="R-PO">상품 Owner</option></select></label>
-<a href="#overview">고르기</a><a href="#roles">담당자</a><a href="#gates">Gate</a><a href="#alignment">정합성</a><a href="#by-role">담당자별 절차서</a><a href="#coverage">커버리지</a></div><main><h1>Feature Platform 담당자 업무 절차 <small>Feature Platform Role Workflows</small></h1>
-<p class="meta">생성물 — 손으로 고치지 않는다. 원본: model/*.yaml · 사실 소스: _source/*.json · 갱신 2026-10-17</p>
+<a href="#overview">고르기</a><a href="#roles">담당자</a><a href="#gates">Gate</a><a href="#alignment">정합성</a><a href="#by-role">담당자별 절차서</a><a href="#by-department">부서별 R&R</a><a href="#coverage">커버리지</a></div><main><h1>Feature Platform 담당자 업무 절차 <small>Feature Platform Role Workflows</small></h1>
+<p class="meta">생성물 — 손으로 고치지 않는다. 원본: model/*.yaml · 사실 소스: _source/*.json · 갱신 2026-11-04</p>
 <section id="overview"><h2>1. 읽는 법 · 프로세스 고르기</h2>
 <p class="lead">Feature 생애주기(표준 보고서 Gate G1~G8)와 지원 업무를 13개 프로세스로 나누고,
 각 활동에 <b>누가(R) 하고 누가 책임(A)지는지</b>, 무엇을 받아 무엇을 내놓는지, 플랫폼의 어느 권한·화면으로 하는지를 정했다.
@@ -1757,7 +1758,707 @@ details.more{margin:8px 0}details.more>summary{cursor:pointer;color:var(--acc)}t
 <p class="meta">IAM 역할: PRODUCT_APPROVER(상품 승인자) · 데모 계정: approver</p>
 <h4>내가 하는 일 (2)</h4><ol class="role-acts"><li><b><a href="#FPW.7-A06">FPW.7-A06 상품 구성 승인</a></b> <span class="chip">수행·책임</span><br><small>출시·활성화·단계적 확대 · 트리거/선행: 앞 활동 완료 · 권한: <code>productTransition</code></small><ol><li>상품 작성자가 아닌 상품 Owner가 구성과 판매 조건을 검토한다</li><li>승인하면 구성 승인 전이를 하고, 반려하면 사유를 남긴다</li><li>고객 출시 승인은 구성 승인자와 다른 사람이 하도록 승인 후보를 지정한다</li></ol></li><li><b><a href="#FPW.7-A10">FPW.7-A10 상품 고객 출시 승인</a></b> <span class="chip">수행·책임</span><br><small>출시·활성화·단계적 확대 · 트리거/선행: 앞 활동 완료 · 권한: <code>productTransition</code></small><ol><li>구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다</li><li>플랫폼이 구성 승인자와 같은 사람의 승인을 거부하면 다른 승인자로 다시 승인한다</li><li>출시 승인 결과를 상품 기획과 운영 조직에 알린다</li></ol></li></ol>
 <details class="more"><summary>협의·통보 받는 활동 (4)</summary><ul><li><a href="#FPW.7-A05">FPW.7-A05 상품 구성 작성</a> <span class="chip">통보</span></li><li><a href="#FPW.7-A12">FPW.7-A12 Release Sign-off(출시 책임 확인)</a> <span class="chip">통보</span></li><li><a href="#FPW.7-A09">FPW.7-A09 출시 전이</a> <span class="chip">통보</span></li><li><a href="#FPW.9-A05">FPW.9-A05 Lifecycle 종료 전이</a> <span class="chip">통보</span></li></ul></details>
-<details class="more"><summary>보고서가 이 역할에 지정한 규칙 (0)</summary><ul><li>–</li></ul></details></article></section><section id="coverage"><h2>20. 규칙 커버리지</h2>
+<details class="more"><summary>보고서가 이 역할에 지정한 규칙 (0)</summary><ul><li>–</li></ul></details></article></section><section id="by-department"><h2>20. 부서별 R&R</h2>
+<p class="lead">조직 역할 18개를 OEM 부서 가정안 14개에 나눴다. 1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정(FPW.10~13)은 2차 초안이다.
+요청자·승인자 분리는 부서가 아니라 사람 단위다(같은 부서도 다른 사람이면 된다).</p>
+<ul class="meta"><li>긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용하지만 데모 계정에 운영 리더가 없다(9계정·겸직 0건, 2026-10-17).</li></ul>
+<h3>부서×프로세스 RACI</h3><p class="meta">칸 = 활동 수. R 수행 · A 책임 · C 협의 · I 통보. * = 2차 초안. 원본 표: out/departments/raci.csv</p>
+<div class="flowwrap"><table class="dept-raci"><thead><tr><th>부서</th><th>FPW.1</th><th>FPW.2</th><th>FPW.3</th><th>FPW.4</th><th>FPW.5</th><th>FPW.6</th><th>FPW.7</th><th>FPW.8</th><th>FPW.9</th><th>FPW.10*</th><th>FPW.11*</th><th>FPW.12*</th><th>FPW.13*</th></tr></thead><tbody><tr><th><a href="#dep-DEP-PDP">상품기획팀</a></th><td class="ra">R1 A2 C2 I1</td><td class="ra">R1 C3 I1</td><td class="ci">C1 I2</td><td class="ci">C1 I1</td><td class="ci">I3</td><td class="ra">R1 A1 I3</td><td class="ra">R5 A6 C6 I8</td><td class="ci">C1 I6</td><td class="ra">R2 A3 C1 I2</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="ci">I2</td></tr><tr><th><a href="#dep-DEP-SE">시스템엔지니어링팀</a></th><td class="ci">C3 I2</td><td class="ci">C3 I4</td><td class="ra">R3 A4 C2 I1</td><td class="ra">R3 A4 C1 I3</td><td class="ci">C2 I1</td><td class="ci">C1</td><td class="">–</td><td class="">–</td><td class="ra">R1 I1</td><td class="ci">C1</td><td class="">–</td><td class="ci">C1</td><td class="">–</td></tr><tr><th><a href="#dep-DEP-INT">SW통합·릴리스팀</a></th><td class="">–</td><td class="ci">I1</td><td class="">–</td><td class="ci">C1 I1</td><td class="ra">R1 A1 C2 I3</td><td class="ra">R2 A3 C3</td><td class="ra">R1 A1 C1 I4</td><td class="ci">C1</td><td class="ra">R1 A1 C3 I2</td><td class="ra">R1 A1 C2 I3</td><td class="ci">C1 I3</td><td class="ci">I1</td><td class="">–</td></tr><tr><th><a href="#dep-DEP-PLM">PLM·기준정보팀</a></th><td class="ra">R1 I1</td><td class="">–</td><td class="ci">I1</td><td class="ci">C1</td><td class="">–</td><td class="ra">R1 A1 I1</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="ci">C1</td><td class="">–</td><td class="">–</td><td class="">–</td></tr><tr><th><a href="#dep-DEP-FS">기능안전팀</a></th><td class="ra">R2 A2 C1 I2</td><td class="ra">R3 A4 C1</td><td class="ci">C3 I1</td><td class="ra">R1 A1 C3</td><td class="ra">R1 A1 C3 I1</td><td class="ci">I1</td><td class="ra">R2 A2 C4</td><td class="ra">R3 A5 C5 I1</td><td class="ra">R1 C1 I1</td><td class="ra">R1 A1 C3 I1</td><td class="ci">C4</td><td class="ra">R1 A1</td><td class="ra">R2 A1 C2</td></tr><tr><th><a href="#dep-DEP-CS">차량사이버보안팀</a></th><td class="">–</td><td class="ra">R1 C1</td><td class="">–</td><td class="ci">C2</td><td class="">–</td><td class="ci">C2</td><td class="">–</td><td class="ra">R1 C4 I1</td><td class="">–</td><td class="ci">C3</td><td class="ra">R4 A5 C1</td><td class="">–</td><td class="ra">R1 C3</td></tr><tr><th><a href="#dep-DEP-HOM">법규인증팀</a></th><td class="ra">R1 A1 C1</td><td class="ra">R1 A1 C1 I1</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="ra">R1 A1 C1 I1</td><td class="ra">R1 A1 C1 I1</td><td class="ra">R2 A1 C2 I3</td><td class="">–</td><td class="ra">R1 C1</td><td class="ci">C1 I1</td><td class="ra">R2 A2 C1</td><td class="ra">R3 A3 C1</td></tr><tr><th><a href="#dep-DEP-VAL">시험·검증팀</a></th><td class="">–</td><td class="ci">C1 I1</td><td class="ci">C1 I2</td><td class="ci">I2</td><td class="ra">R3 A4 C2</td><td class="">–</td><td class="ci">C3</td><td class="ci">C1</td><td class="ci">C2</td><td class="ra">R1 C1</td><td class="">–</td><td class="">–</td><td class="">–</td></tr><tr><th><a href="#dep-DEP-QA">품질팀</a></th><td class="ci">I1</td><td class="ci">I1</td><td class="ra">R1</td><td class="ra">R1 I1</td><td class="ra">R1 C1 I3</td><td class="ra">R1 I2</td><td class="ra">R1 I3</td><td class="ra">R1 A1 C1 I4</td><td class="ra">R1 A1</td><td class="ra">R3 A2 C2 I1</td><td class="ci">I1</td><td class="ci">I2</td><td class="ci">I3</td></tr><tr><th><a href="#dep-DEP-OPS">OTA·서비스운영팀</a></th><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="ci">C1 I2</td><td class="ra">R2 A2 C2 I3</td><td class="ra">R6 A4 C1 I4</td><td class="ci">I3</td><td class="">–</td><td class="ci">C1 I3</td><td class="ci">C2 I2</td><td class="ra">R1 I2</td></tr><tr><th><a href="#dep-DEP-ITSEC">IT인프라·보안운영팀</a></th><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="ci">C1</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="ra">R1 C2</td><td class="">–</td><td class="">–</td></tr><tr><th><a href="#dep-DEP-PUR">구매팀</a></th><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="ra">R2 A3 I2</td><td class="ci">C1</td><td class="">–</td><td class="">–</td></tr><tr><th><a href="#dep-DEP-LEG">법무팀</a></th><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="ci">C1</td><td class="ci">C1</td><td class="">–</td><td class="ci">C1</td><td class="ra">R1 A1</td><td class="ra">R1 A1 C2</td><td class="ci">C2</td></tr><tr><th><a href="#dep-DEP-DPO">개인정보보호팀</a></th><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="">–</td><td class="ra">R1 A1 C4</td><td class="">–</td></tr></tbody></table></div>
+<h3>부서 겸직 직무 분리</h3><ul><li><b>상품기획팀</b> SOD-03: <a href="#FPW.7-A05">FPW.7-A05 상품 구성 작성</a> ↔ <a href="#FPW.7-A06">FPW.7-A06 상품 구성 승인</a> — 상품 작성자는 자기 상품을 승인하지 않는다</li><li><b>상품기획팀</b> SOD-04: <a href="#FPW.7-A06">FPW.7-A06 상품 구성 승인</a> ↔ <a href="#FPW.7-A10">FPW.7-A10 상품 고객 출시 승인</a> — 구성 승인자와 고객 출시 승인자는 다른 사람이다</li><li><b>시스템엔지니어링팀</b> SOD-05: <a href="#FPW.4-A03">FPW.4-A03 Flag 정책 작성·검증</a> ↔ <a href="#FPW.4-A04">FPW.4-A04 정책 승인</a> — 정책 작성자는 자기 정책을 승인하지 않는다</li><li><b>기능안전팀</b> SOD-09: <a href="#FPW.8-A05">FPW.8-A05 긴급 차단 2인 승인</a> ↔ <a href="#FPW.8-A09">FPW.8-A09 복원 2인 승인</a> — 복원 승인자는 직전 차단 승인자와 다른 사람이다</li></ul>
+<h3>부서 간 흐름</h3><details class="more"><summary>FPW.1 Feature 등록·분류 — 부서 레인</summary><div class="flowwrap"><p class="meta">← 흐름도가 넓다. 가로로 스크롤한다 →</p><svg class="flow" viewBox="-2 -2 1370 420" width="1366" height="416" role="img" aria-label="FPW.1 업무 흐름">
+<defs><marker id="arr-FPW-1-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="53.0">상품기획팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="151.0">PLM·기준정보팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="196"/>
+<rect class="lane0" x="0" y="196" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="249.0">기능안전팀</text>
+<line class="lanesep" x1="132" y1="196" x2="132" y2="294"/>
+<rect class="lane1" x="0" y="294" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="347.0">법규인증팀</text>
+<line class="lanesep" x1="132" y1="294" x2="132" y2="392"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-1-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,147.0 478.0,147.0" marker-end="url(#arr-FPW-1-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,245.0 478.0,245.0" marker-end="url(#arr-FPW-1-dep)"/>
+<polyline class="edge flow" points="666.0,147.0 1026.0,147.0 1026.0,245.0 1038.0,245.0" marker-end="url(#arr-FPW-1-dep)"/>
+<polyline class="edge flow" points="666.0,245.0 746.0,245.0 746.0,343.0 758.0,343.0" marker-end="url(#arr-FPW-1-dep)"/>
+<polyline class="edge flow" points="946.0,343.0 1026.0,343.0 1026.0,245.0 1038.0,245.0" marker-end="url(#arr-FPW-1-dep)"/>
+<polyline class="edge end" points="1226.0,245.0 1240.0,245.0" marker-end="url(#arr-FPW-1-dep)"/>
+<circle class="join" cx="1026.0" cy="245.0" r="3"/>
+<a href="#FPW.1-A01"><g class="node" data-roles="R-FO R-FO R-ARC R-REQ R-SM"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="61.5">Feature 등록·초안 작성</text>
+</g></a>
+<a href="#FPW.1-A02"><g class="node" data-roles="R-PLM R-FO R-ARC R-SM"><rect class="act" x="478" y="114" width="188" height="66" rx="8"/><text class="aid" x="486" y="128">A02</text>
+<text class="aname" x="486" y="159.5">대상 차량 사양·의존 등록</text>
+</g></a>
+<a href="#FPW.1-A03"><g class="node" data-roles="R-SM R-SM R-FO R-ARC R-REQ"><rect class="act" x="478" y="212" width="188" height="66" rx="8"/><text class="aid" x="486" y="226">A03</text>
+<text class="aname" x="486" y="257.5">안전 분류(네 축) 확정</text>
+</g></a>
+<a href="#FPW.1-A05"><g class="node" data-roles="R-SM R-SM R-FO R-REG R-REQ R-PLM R-QA"><rect class="act gate" x="1038" y="212" width="188" height="66" rx="8"/><text class="aid" x="1046" y="226">A05 · G1 판정</text>
+<text class="aname" x="1046" y="257.5">G1 등록·분류 판정</text>
+</g></a>
+<a href="#FPW.1-A04"><g class="node" data-roles="R-REG R-REG R-SM R-FO"><rect class="act" x="758" y="310" width="188" height="66" rx="8"/><text class="aid" x="766" y="324">A04</text>
+<text class="aname" x="766" y="355.5">법규 의무 기능 판정</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="end" cx="1249.0" cy="245.0" r="9.0"/><circle class="endin" cx="1249.0" cy="245.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.2 HARA·변경 영향 판단 — 부서 레인</summary><div class="flowwrap"><svg class="flow" viewBox="-2 -2 1090 322" width="1086" height="318" role="img" aria-label="FPW.2 업무 흐름">
+<defs><marker id="arr-FPW-2-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1086" height="98"/>
+<text class="lanelabel" x="10" y="53.0">기능안전팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="1086" height="98"/>
+<text class="lanelabel" x="10" y="151.0">상품기획팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="196"/>
+<rect class="lane0" x="0" y="196" width="1086" height="98"/>
+<text class="lanelabel" x="10" y="249.0">법규인증팀</text>
+<line class="lanesep" x1="132" y1="196" x2="132" y2="294"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-2-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 478.0,49.0" marker-end="url(#arr-FPW-2-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,147.0 478.0,147.0" marker-end="url(#arr-FPW-2-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,245.0 478.0,245.0" marker-end="url(#arr-FPW-2-dep)"/>
+<polyline class="edge flow" points="666.0,49.0 758.0,49.0" marker-end="url(#arr-FPW-2-dep)"/>
+<polyline class="edge flow" points="666.0,147.0 746.0,147.0 746.0,49.0 758.0,49.0" marker-end="url(#arr-FPW-2-dep)"/>
+<polyline class="edge flow" points="666.0,245.0 746.0,245.0 746.0,49.0 758.0,49.0" marker-end="url(#arr-FPW-2-dep)"/>
+<polyline class="edge end" points="946.0,49.0 960.0,49.0" marker-end="url(#arr-FPW-2-dep)"/>
+<circle class="join" cx="746.0" cy="49.0" r="3"/>
+<circle class="join" cx="746.0" cy="147.0" r="3"/>
+<a href="#FPW.2-A01"><g class="node" data-roles="R-SM R-SM R-ARC R-FO R-REQ R-TST"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="54.0">재-HARA 조건 검출·영향</text>
+<text class="aname" x="206" y="69.0">범위 산정</text>
+</g></a>
+<a href="#FPW.2-A02"><g class="node" data-roles="R-SM R-CSM R-SM R-ARC R-FO R-REQ R-REG"><rect class="act" x="478" y="16" width="188" height="66" rx="8"/><text class="aid" x="486" y="30">A02</text>
+<text class="aname" x="486" y="61.5">HARA·TARA 공동 수행</text>
+</g></a>
+<a href="#FPW.2-A05"><g class="node" data-roles="R-SM R-SM R-CSM R-REG R-FO R-REQ R-QA"><rect class="act gate" x="758" y="16" width="188" height="66" rx="8"/><text class="aid" x="766" y="30">A05 · G2 판정</text>
+<text class="aname" x="766" y="61.5">G2 HARA 영향 판정</text>
+</g></a>
+<a href="#FPW.2-A03"><g class="node" data-roles="R-FO R-SM R-ARC R-TST R-REQ"><rect class="act" x="478" y="114" width="188" height="66" rx="8"/><text class="aid" x="486" y="128">A03</text>
+<text class="aname" x="486" y="159.5">SOTIF 분석 갱신</text>
+</g></a>
+<a href="#FPW.2-A04"><g class="node" data-roles="R-REG R-REG R-SM R-FO R-REL"><rect class="act" x="478" y="212" width="188" height="66" rx="8"/><text class="aid" x="486" y="226">A04</text>
+<text class="aname" x="486" y="257.5">형식승인 영향 1차 판단</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="end" cx="969.0" cy="49.0" r="9.0"/><circle class="endin" cx="969.0" cy="49.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.3 안전요구 확정 — 부서 레인</summary><div class="flowwrap"><p class="meta">← 흐름도가 넓다. 가로로 스크롤한다 →</p><svg class="flow" viewBox="-2 -2 1370 224" width="1366" height="220" role="img" aria-label="FPW.3 업무 흐름">
+<defs><marker id="arr-FPW-3-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="53.0">시스템엔지니어링팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="151.0">품질팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="196"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-3-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 478.0,49.0" marker-end="url(#arr-FPW-3-dep)"/>
+<polyline class="edge flow" points="666.0,49.0 746.0,49.0 746.0,147.0 758.0,147.0" marker-end="url(#arr-FPW-3-dep)"/>
+<polyline class="edge flow" points="946.0,147.0 1026.0,147.0 1026.0,49.0 1038.0,49.0" marker-end="url(#arr-FPW-3-dep)"/>
+<polyline class="edge end" points="1226.0,49.0 1240.0,49.0" marker-end="url(#arr-FPW-3-dep)"/>
+<a href="#FPW.3-A01"><g class="node" data-roles="R-REQ R-REQ R-SM R-ARC R-TST R-FO"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="61.5">안전요구 도출·명세</text>
+</g></a>
+<a href="#FPW.3-A02"><g class="node" data-roles="R-REQ R-REQ R-ARC R-TST R-SM"><rect class="act" x="478" y="16" width="188" height="66" rx="8"/><text class="aid" x="486" y="30">A02</text>
+<text class="aname" x="486" y="61.5">양방향 추적성 점검</text>
+</g></a>
+<a href="#FPW.3-A04"><g class="node" data-roles="R-REQ R-REQ R-SM R-FO R-ARC R-PLM R-TST"><rect class="act gate" x="1038" y="16" width="188" height="66" rx="8"/><text class="aid" x="1046" y="30">A04 · G3 판정</text>
+<text class="aname" x="1046" y="61.5">G3 판정·Feature 정의 승인</text>
+</g></a>
+<a href="#FPW.3-A03"><g class="node" data-roles="R-QA R-REQ R-SM R-FO"><rect class="act" x="758" y="114" width="188" height="66" rx="8"/><text class="aid" x="766" y="128">A03</text>
+<text class="aname" x="766" y="159.5">요구 검토 판정 등록</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="end" cx="1249.0" cy="49.0" r="9.0"/><circle class="endin" cx="1249.0" cy="49.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.4 안전 설계·정책 설계 — 부서 레인</summary><div class="flowwrap"><p class="meta">← 흐름도가 넓다. 가로로 스크롤한다 →</p><svg class="flow" viewBox="-2 -2 1370 322" width="1366" height="318" role="img" aria-label="FPW.4 업무 흐름">
+<defs><marker id="arr-FPW-4-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="53.0">시스템엔지니어링팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="151.0">기능안전팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="196"/>
+<rect class="lane0" x="0" y="196" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="249.0">품질팀</text>
+<line class="lanesep" x1="132" y1="196" x2="132" y2="294"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-4-dep)"/>
+<polyline class="edge trigger" points="724.0,147.0 758.0,147.0" marker-end="url(#arr-FPW-4-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 478.0,49.0" marker-end="url(#arr-FPW-4-dep)"/>
+<polyline class="edge flow" points="946.0,147.0 1026.0,147.0 1026.0,245.0 1038.0,245.0" marker-end="url(#arr-FPW-4-dep)"/>
+<polyline class="edge flow" points="666.0,49.0 758.0,49.0" marker-end="url(#arr-FPW-4-dep)"/>
+<polyline class="edge flow" points="946.0,49.0 1026.0,49.0 1026.0,245.0 1038.0,245.0" marker-end="url(#arr-FPW-4-dep)"/>
+<polyline class="edge end" points="1226.0,245.0 1240.0,245.0" marker-end="url(#arr-FPW-4-dep)"/>
+<circle class="join" cx="1026.0" cy="147.0" r="3"/>
+<a href="#FPW.4-A01"><g class="node" data-roles="R-ARC R-ARC R-SM R-INT R-TST R-REQ"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="61.5">차량 내 감시·안전기제 설계</text>
+</g></a>
+<a href="#FPW.4-A03"><g class="node" data-roles="R-ARC R-ARC R-PLM R-FO R-REQ"><rect class="act" x="478" y="16" width="188" height="66" rx="8"/><text class="aid" x="486" y="30">A03</text>
+<text class="aname" x="486" y="61.5">Flag 정책 작성·검증</text>
+</g></a>
+<a href="#FPW.4-A04"><g class="node" data-roles="R-REQ R-REQ R-SM R-ARC R-REL"><rect class="act" x="758" y="16" width="188" height="66" rx="8"/><text class="aid" x="766" y="30">A04</text>
+<text class="aname" x="766" y="61.5">정책 승인</text>
+</g></a>
+<a href="#FPW.4-A02"><g class="node" data-roles="R-SM R-SM R-ARC R-CSM R-QA"><rect class="act" x="758" y="114" width="188" height="66" rx="8"/><text class="aid" x="766" y="128">A02</text>
+<text class="aname" x="766" y="153.5">플랫폼 도구 신뢰도 분류</text>
+<text class="trig" x="766" y="174">⚡ 설계 착수 또는 사용 플랫…</text>
+</g></a>
+<a href="#FPW.4-A05"><g class="node" data-roles="R-QA R-ARC R-SM R-CSM R-TST R-FO"><rect class="act gate" x="1038" y="212" width="188" height="66" rx="8"/><text class="aid" x="1046" y="226">A05 · G4 판정</text>
+<text class="aname" x="1046" y="257.5">G4 설계 독립 검토·판정</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="start" cx="715.0" cy="147.0" r="9.0"/>
+<circle class="end" cx="1249.0" cy="245.0" r="9.0"/><circle class="endin" cx="1249.0" cy="245.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.5 검증·V&amp;V — 부서 레인</summary><div class="flowwrap"><p class="meta">← 흐름도가 넓다. 가로로 스크롤한다 →</p><svg class="flow" viewBox="-2 -2 1650 420" width="1646" height="416" role="img" aria-label="FPW.5 업무 흐름">
+<defs><marker id="arr-FPW-5-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="53.0">기능안전팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="151.0">시험·검증팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="196"/>
+<rect class="lane0" x="0" y="196" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="249.0">SW통합·릴리스팀</text>
+<line class="lanesep" x1="132" y1="196" x2="132" y2="294"/>
+<rect class="lane1" x="0" y="294" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="347.0">품질팀</text>
+<line class="lanesep" x1="132" y1="294" x2="132" y2="392"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-5-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,147.0 478.0,147.0" marker-end="url(#arr-FPW-5-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,245.0 478.0,245.0" marker-end="url(#arr-FPW-5-dep)"/>
+<polyline class="edge flow" points="666.0,147.0 758.0,147.0" marker-end="url(#arr-FPW-5-dep)"/>
+<polyline class="edge flow" points="666.0,245.0 746.0,245.0 746.0,147.0 758.0,147.0" marker-end="url(#arr-FPW-5-dep)"/>
+<polyline class="edge flow" points="946.0,147.0 1038.0,147.0" marker-end="url(#arr-FPW-5-dep)"/>
+<polyline class="edge flow" points="1226.0,147.0 1306.0,147.0 1306.0,343.0 1318.0,343.0" marker-end="url(#arr-FPW-5-dep)"/>
+<polyline class="edge end" points="1506.0,343.0 1520.0,343.0" marker-end="url(#arr-FPW-5-dep)"/>
+<circle class="join" cx="746.0" cy="147.0" r="3"/>
+<a href="#FPW.5-A01"><g class="node" data-roles="R-SM R-SM R-TST R-QA R-FO R-INT"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="61.5">독립성 수준·검증 계획 확정</text>
+</g></a>
+<a href="#FPW.5-A02"><g class="node" data-roles="R-TST R-TST R-ARC R-SM R-INT"><rect class="act" x="478" y="114" width="188" height="66" rx="8"/><text class="aid" x="486" y="128">A02</text>
+<text class="aname" x="486" y="159.5">시나리오·허용 조합 정의</text>
+</g></a>
+<a href="#FPW.5-A04"><g class="node" data-roles="R-TST R-TST R-INT R-SM R-QA R-FO"><rect class="act" x="758" y="114" width="188" height="66" rx="8"/><text class="aid" x="766" y="128">A04</text>
+<text class="aname" x="766" y="152.0">비활성화·결함 주입 시험</text>
+<text class="aname" x="766" y="167.0">수행</text>
+</g></a>
+<a href="#FPW.5-A05"><g class="node" data-roles="R-TST R-TST R-INT R-QA R-SM"><rect class="act" x="1038" y="114" width="188" height="66" rx="8"/><text class="aid" x="1046" y="128">A05</text>
+<text class="aname" x="1046" y="152.0">시험 Evidence 연결·TMS</text>
+<text class="aname" x="1046" y="167.0">제출</text>
+</g></a>
+<a href="#FPW.5-A03"><g class="node" data-roles="R-INT R-INT R-ARC R-TST R-QA"><rect class="act" x="478" y="212" width="188" height="66" rx="8"/><text class="aid" x="486" y="226">A03</text>
+<text class="aname" x="486" y="257.5">통합 시험·SEooC 가정 확인</text>
+</g></a>
+<a href="#FPW.5-A06"><g class="node" data-roles="R-QA R-TST R-SM R-FO R-REL R-ARC"><rect class="act gate" x="1318" y="310" width="188" height="66" rx="8"/><text class="aid" x="1326" y="324">A06 · G5 판정</text>
+<text class="aname" x="1326" y="355.5">G5 V&amp;V 판정</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="end" cx="1529.0" cy="343.0" r="9.0"/><circle class="endin" cx="1529.0" cy="343.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.6 서명 배포 — 부서 레인</summary><div class="flowwrap"><p class="meta">← 흐름도가 넓다. 가로로 스크롤한다 →</p><svg class="flow" viewBox="-2 -2 1650 518" width="1646" height="514" role="img" aria-label="FPW.6 업무 흐름">
+<defs><marker id="arr-FPW-6-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="53.0">상품기획팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="151.0">PLM·기준정보팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="196"/>
+<rect class="lane0" x="0" y="196" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="249.0">법규인증팀</text>
+<line class="lanesep" x1="132" y1="196" x2="132" y2="294"/>
+<rect class="lane1" x="0" y="294" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="347.0">SW통합·릴리스팀</text>
+<line class="lanesep" x1="132" y1="294" x2="132" y2="392"/>
+<rect class="lane0" x="0" y="392" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="445.0">품질팀</text>
+<line class="lanesep" x1="132" y1="392" x2="132" y2="490"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-6-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,147.0 478.0,147.0" marker-end="url(#arr-FPW-6-dep)"/>
+<polyline class="edge flow" points="666.0,147.0 746.0,147.0 746.0,245.0 758.0,245.0" marker-end="url(#arr-FPW-6-dep)"/>
+<polyline class="edge flow" points="666.0,147.0 746.0,147.0 746.0,343.0 758.0,343.0" marker-end="url(#arr-FPW-6-dep)"/>
+<polyline class="edge flow" points="946.0,245.0 1026.0,245.0 1026.0,441.0 1038.0,441.0" marker-end="url(#arr-FPW-6-dep)"/>
+<polyline class="edge flow" points="946.0,343.0 1026.0,343.0 1026.0,441.0 1038.0,441.0" marker-end="url(#arr-FPW-6-dep)"/>
+<polyline class="edge flow" points="1226.0,441.0 1306.0,441.0 1306.0,343.0 1318.0,343.0" marker-end="url(#arr-FPW-6-dep)"/>
+<polyline class="edge end" points="1506.0,343.0 1520.0,343.0" marker-end="url(#arr-FPW-6-dep)"/>
+<circle class="join" cx="1026.0" cy="343.0" r="3"/>
+<a href="#FPW.6-A01"><g class="node" data-roles="R-FO R-FO R-REL R-ARC R-PLM"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="61.5">출시 Baseline 확정 요청</text>
+</g></a>
+<a href="#FPW.6-A02"><g class="node" data-roles="R-PLM R-PLM R-REL R-FO R-REG"><rect class="act" x="478" y="114" width="188" height="66" rx="8"/><text class="aid" x="486" y="128">A02</text>
+<text class="aname" x="486" y="159.5">출시 Baseline 확정 승인</text>
+</g></a>
+<a href="#FPW.6-A03"><g class="node" data-roles="R-REG R-REG R-REL R-FO R-OPS"><rect class="act" x="758" y="212" width="188" height="66" rx="8"/><text class="aid" x="766" y="226">A03</text>
+<text class="aname" x="766" y="257.5">SUMS 기록·형식승인 확인</text>
+</g></a>
+<a href="#FPW.6-A04"><g class="node" data-roles="R-INT R-REL R-PKI R-CSM R-QA"><rect class="act" x="758" y="310" width="188" height="66" rx="8"/><text class="aid" x="766" y="324">A04</text>
+<text class="aname" x="766" y="355.5">서명 패키지 작성·SBOM 결합</text>
+</g></a>
+<a href="#FPW.6-A06"><g class="node" data-roles="R-REL R-REL R-OPS R-FO R-SM R-QA"><rect class="act gate" x="1318" y="310" width="188" height="66" rx="8"/><text class="aid" x="1326" y="324">A06 · G6 판정</text>
+<text class="aname" x="1326" y="355.5">G6 서명 배포 실행</text>
+</g></a>
+<a href="#FPW.6-A05"><g class="node" data-roles="R-QA R-REL R-REG R-CSM R-OPS"><rect class="act" x="1038" y="408" width="188" height="66" rx="8"/><text class="aid" x="1046" y="422">A05</text>
+<text class="aname" x="1046" y="453.5">OTA Gate 판정 등록</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="end" cx="1529.0" cy="343.0" r="9.0"/><circle class="endin" cx="1529.0" cy="343.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.7 출시·활성화·단계적 확대 — 부서 레인</summary><div class="flowwrap"><p class="meta">← 흐름도가 넓다. 가로로 스크롤한다 →</p><svg class="flow" viewBox="-2 -2 1930 706" width="1926" height="702" role="img" aria-label="FPW.7 업무 흐름">
+<defs><marker id="arr-FPW-7-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1926" height="98"/>
+<text class="lanelabel" x="10" y="53.0">OTA·서비스운영팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="1926" height="188"/>
+<text class="lanelabel" x="10" y="196.0">상품기획팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="286"/>
+<rect class="lane0" x="0" y="286" width="1926" height="98"/>
+<text class="lanelabel" x="10" y="339.0">기능안전팀</text>
+<line class="lanesep" x1="132" y1="286" x2="132" y2="384"/>
+<rect class="lane1" x="0" y="384" width="1926" height="98"/>
+<text class="lanelabel" x="10" y="437.0">품질팀</text>
+<line class="lanesep" x1="132" y1="384" x2="132" y2="482"/>
+<rect class="lane0" x="0" y="482" width="1926" height="98"/>
+<text class="lanelabel" x="10" y="535.0">법규인증팀</text>
+<line class="lanesep" x1="132" y1="482" x2="132" y2="580"/>
+<rect class="lane1" x="0" y="580" width="1926" height="98"/>
+<text class="lanelabel" x="10" y="633.0">SW통합·릴리스팀</text>
+<line class="lanesep" x1="132" y1="580" x2="132" y2="678"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge trigger" points="444.0,147.0 478.0,147.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge trigger" points="164.0,335.0 198.0,335.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge trigger" points="164.0,237.0 198.0,237.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge trigger" points="444.0,531.0 478.0,531.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 746.0,49.0 746.0,335.0 758.0,335.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="666.0,147.0 746.0,147.0 746.0,335.0 758.0,335.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="386.0,335.0 466.0,335.0 466.0,433.0 478.0,433.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="666.0,433.0 746.0,433.0 746.0,335.0 758.0,335.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="386.0,237.0 478.0,237.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="666.0,237.0 746.0,237.0 746.0,335.0 758.0,335.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="666.0,531.0 746.0,531.0 746.0,335.0 758.0,335.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="946.0,335.0 1026.0,335.0 1026.0,147.0 1038.0,147.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="1226.0,147.0 1306.0,147.0 1306.0,629.0 1318.0,629.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="1506.0,629.0 1586.0,629.0 1586.0,147.0 1598.0,147.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge flow" points="1506.0,629.0 1586.0,629.0 1586.0,49.0 1598.0,49.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge end" points="1786.0,147.0 1800.0,147.0" marker-end="url(#arr-FPW-7-dep)"/>
+<polyline class="edge end" points="1786.0,49.0 1800.0,49.0" marker-end="url(#arr-FPW-7-dep)"/>
+<circle class="join" cx="746.0" cy="147.0" r="3"/>
+<circle class="join" cx="746.0" cy="237.0" r="3"/>
+<circle class="join" cx="746.0" cy="335.0" r="3"/>
+<circle class="join" cx="746.0" cy="433.0" r="3"/>
+<a href="#FPW.7-A01"><g class="node" data-roles="R-OPS R-OPS R-SM R-TST R-FO R-REL"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="54.0">Canary·Shadow 판정 기준</text>
+<text class="aname" x="206" y="69.0">정의</text>
+</g></a>
+<a href="#FPW.7-A11"><g class="node" data-roles="R-OPS R-OPS R-SM R-REL R-FO R-QA"><rect class="act" x="1598" y="16" width="188" height="66" rx="8"/><text class="aid" x="1606" y="30">A11</text>
+<text class="aname" x="1606" y="61.5">Canary 활성화·단계적 확대</text>
+</g></a>
+<a href="#FPW.7-A02"><g class="node" data-roles="R-FO R-FO R-SM R-OPS R-REL"><rect class="act" x="478" y="114" width="188" height="66" rx="8"/><text class="aid" x="486" y="128">A02</text>
+<text class="aname" x="486" y="153.5">효과 실험 계획 등록</text>
+<text class="trig" x="486" y="174">⚡ 출시 효과를 실험으로 비교해…</text>
+</g></a>
+<a href="#FPW.7-A05"><g class="node" data-roles="R-PDA R-PDA R-FO R-PO"><rect class="act" x="198" y="204" width="188" height="66" rx="8"/><text class="aid" x="206" y="218">A05</text>
+<text class="aname" x="206" y="243.5">상품 구성 작성</text>
+<text class="trig" x="206" y="264">⚡ G6 배포 완료</text>
+</g></a>
+<a href="#FPW.7-A06"><g class="node" data-roles="R-PO R-PO R-FO R-PDA"><rect class="act" x="478" y="204" width="188" height="66" rx="8"/><text class="aid" x="486" y="218">A06</text>
+<text class="aname" x="486" y="249.5">상품 구성 승인</text>
+</g></a>
+<a href="#FPW.7-A12"><g class="node" data-roles="R-FO R-FO R-SM R-REL R-PO"><rect class="act" x="1038" y="114" width="188" height="66" rx="8"/><text class="aid" x="1046" y="128">A12</text>
+<text class="aname" x="1046" y="152.0">Release Sign-off(출시</text>
+<text class="aname" x="1046" y="167.0">책임 확인)</text>
+</g></a>
+<a href="#FPW.7-A10"><g class="node" data-roles="R-PO R-PO R-FO R-PDA R-OPS"><rect class="act" x="1598" y="114" width="188" height="66" rx="8"/><text class="aid" x="1606" y="128">A10</text>
+<text class="aname" x="1606" y="159.5">상품 고객 출시 승인</text>
+</g></a>
+<a href="#FPW.7-A03"><g class="node" data-roles="R-SM R-SM R-FO R-TST R-QA"><rect class="act" x="198" y="302" width="188" height="66" rx="8"/><text class="aid" x="206" y="316">A03</text>
+<text class="aname" x="206" y="334.0">Safety Case·SOTIF 근거</text>
+<text class="aname" x="206" y="349.0">정리</text>
+<text class="trig" x="206" y="362">⚡ G6 배포 완료</text>
+</g></a>
+<a href="#FPW.7-A08"><g class="node" data-roles="R-SM R-FO R-OPS R-REG R-REL R-QA"><rect class="act gate" x="758" y="302" width="188" height="66" rx="8"/><text class="aid" x="766" y="316">A08 · G7 판정</text>
+<text class="aname" x="766" y="347.5">G7 출시·활성화 판정</text>
+</g></a>
+<a href="#FPW.7-A04"><g class="node" data-roles="R-QA R-SM R-TST R-FO R-REG"><rect class="act" x="478" y="400" width="188" height="66" rx="8"/><text class="aid" x="486" y="414">A04</text>
+<text class="aname" x="486" y="445.5">Safety Case 독립 검토</text>
+</g></a>
+<a href="#FPW.7-A07"><g class="node" data-roles="R-REG R-REG R-LEG R-FO R-OPS"><rect class="act" x="478" y="498" width="188" height="66" rx="8"/><text class="aid" x="486" y="512">A07</text>
+<text class="aname" x="486" y="537.5">형식승인·사용자 고지 확인</text>
+<text class="trig" x="486" y="558">⚡ G6 배포 완료</text>
+</g></a>
+<a href="#FPW.7-A09"><g class="node" data-roles="R-REL R-REL R-FO R-OPS R-PO"><rect class="act" x="1318" y="596" width="188" height="66" rx="8"/><text class="aid" x="1326" y="610">A09</text>
+<text class="aname" x="1326" y="641.5">출시 전이</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="start" cx="435.0" cy="147.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="335.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="237.0" r="9.0"/>
+<circle class="start" cx="435.0" cy="531.0" r="9.0"/>
+<circle class="end" cx="1809.0" cy="147.0" r="9.0"/><circle class="endin" cx="1809.0" cy="147.0" r="5.0"/>
+<circle class="end" cx="1809.0" cy="49.0" r="9.0"/><circle class="endin" cx="1809.0" cy="49.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.8 운영·긴급 차단·복원 — 부서 레인</summary><div class="flowwrap"><p class="meta">← 흐름도가 넓다. 가로로 스크롤한다 →</p><svg class="flow" viewBox="-2 -2 2770 412" width="2766" height="408" role="img" aria-label="FPW.8 업무 흐름">
+<defs><marker id="arr-FPW-8-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="2766" height="188"/>
+<text class="lanelabel" x="10" y="98.0">OTA·서비스운영팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="188"/>
+<rect class="lane1" x="0" y="188" width="2766" height="98"/>
+<text class="lanelabel" x="10" y="241.0">기능안전팀</text>
+<line class="lanesep" x1="132" y1="188" x2="132" y2="286"/>
+<rect class="lane0" x="0" y="286" width="2766" height="98"/>
+<text class="lanelabel" x="10" y="339.0">법규인증팀</text>
+<line class="lanesep" x1="132" y1="286" x2="132" y2="384"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge trigger" points="164.0,139.0 198.0,139.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,237.0 478.0,237.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge flow" points="666.0,237.0 746.0,237.0 746.0,335.0 758.0,335.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge flow" points="946.0,335.0 1026.0,335.0 1026.0,49.0 1038.0,49.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge flow" points="1226.0,49.0 1306.0,49.0 1306.0,237.0 1318.0,237.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge flow" points="1506.0,237.0 1586.0,237.0 1586.0,49.0 1598.0,49.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge flow" points="1506.0,237.0 1586.0,237.0 1586.0,335.0 1598.0,335.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge flow" points="1786.0,49.0 1878.0,49.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge flow" points="2066.0,49.0 2146.0,49.0 2146.0,237.0 2158.0,237.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge flow" points="2346.0,237.0 2426.0,237.0 2426.0,49.0 2438.0,49.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge end" points="1786.0,335.0 1800.0,335.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge end" points="2626.0,49.0 2640.0,49.0" marker-end="url(#arr-FPW-8-dep)"/>
+<polyline class="edge end" points="386.0,139.0 400.0,139.0" marker-end="url(#arr-FPW-8-dep)"/>
+<a href="#FPW.8-A01"><g class="node" data-roles="R-OPS R-OPS R-SM R-QA R-FO"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="55.5">이상 징후 확인</text>
+<text class="trig" x="206" y="76">⚡ 운행 감시 경보, 장애·VO…</text>
+</g></a>
+<a href="#FPW.8-A04"><g class="node" data-roles="R-OPS R-OPS R-SM R-CSM R-REG"><rect class="act" x="1038" y="16" width="188" height="66" rx="8"/><text class="aid" x="1046" y="30">A04</text>
+<text class="aname" x="1046" y="61.5">긴급 차단 요청</text>
+</g></a>
+<a href="#FPW.8-A06"><g class="node" data-roles="R-OPS R-SM R-CSM R-QA R-FO"><rect class="act" x="1598" y="16" width="188" height="66" rx="8"/><text class="aid" x="1606" y="30">A06</text>
+<text class="aname" x="1606" y="61.5">차단 전달·적용 추적</text>
+</g></a>
+<a href="#FPW.8-A08"><g class="node" data-roles="R-OPS R-SM R-FO R-TST R-REG"><rect class="act" x="1878" y="16" width="188" height="66" rx="8"/><text class="aid" x="1886" y="30">A08</text>
+<text class="aname" x="1886" y="55.5">원인 조치·복원 요청</text>
+<text class="trig" x="1886" y="76">⚡ 원인 수정과 재검증 Evidenc…</text>
+</g></a>
+<a href="#FPW.8-A10"><g class="node" data-roles="R-OPS R-OPS R-SM R-REL R-FO R-QA"><rect class="act" x="2438" y="16" width="188" height="66" rx="8"/><text class="aid" x="2446" y="30">A10</text>
+<text class="aname" x="2446" y="61.5">단계적 복원·관측</text>
+</g></a>
+<a href="#FPW.8-A11"><g class="node" data-roles="R-OPS R-OPS R-SM R-QA R-FO R-REG"><rect class="act gate" x="198" y="106" width="188" height="66" rx="8"/><text class="aid" x="206" y="120">A11 · G8 판정</text>
+<text class="aname" x="206" y="145.5">분기 드릴·G8 운영 판정</text>
+<text class="trig" x="206" y="166">⚡ 분기 정기 일정</text>
+</g></a>
+<a href="#FPW.8-A02"><g class="node" data-roles="R-SM R-SM R-CSM R-REG R-OPS R-FO"><rect class="act" x="478" y="204" width="188" height="66" rx="8"/><text class="aid" x="486" y="218">A02</text>
+<text class="aname" x="486" y="249.5">차단 필요성·범위 판단</text>
+</g></a>
+<a href="#FPW.8-A05"><g class="node" data-roles="R-SM R-CSM R-SM R-REG R-OPS R-QA"><rect class="act" x="1318" y="204" width="188" height="66" rx="8"/><text class="aid" x="1326" y="218">A05</text>
+<text class="aname" x="1326" y="249.5">긴급 차단 2인 승인</text>
+</g></a>
+<a href="#FPW.8-A09"><g class="node" data-roles="R-SM R-QA R-SM R-CSM R-OPS R-FO"><rect class="act" x="2158" y="204" width="188" height="66" rx="8"/><text class="aid" x="2166" y="218">A09</text>
+<text class="aname" x="2166" y="249.5">복원 2인 승인</text>
+</g></a>
+<a href="#FPW.8-A03"><g class="node" data-roles="R-REG R-REG R-SM R-LEG R-OPS"><rect class="act" x="758" y="302" width="188" height="66" rx="8"/><text class="aid" x="766" y="316">A03</text>
+<text class="aname" x="766" y="347.5">리콜·봉쇄 근거 연계</text>
+</g></a>
+<a href="#FPW.8-A07"><g class="node" data-roles="R-REG R-QA R-CSM R-SM R-OPS"><rect class="act" x="1598" y="302" width="188" height="66" rx="8"/><text class="aid" x="1606" y="316">A07</text>
+<text class="aname" x="1606" y="347.5">긴급 권한 사후 검토</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="139.0" r="9.0"/>
+<circle class="end" cx="1809.0" cy="335.0" r="9.0"/><circle class="endin" cx="1809.0" cy="335.0" r="5.0"/>
+<circle class="end" cx="2649.0" cy="49.0" r="9.0"/><circle class="endin" cx="2649.0" cy="49.0" r="5.0"/>
+<circle class="end" cx="409.0" cy="139.0" r="9.0"/><circle class="endin" cx="409.0" cy="139.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.9 사후 검토·Flag Retirement — 부서 레인</summary><div class="flowwrap"><p class="meta">← 흐름도가 넓다. 가로로 스크롤한다 →</p><svg class="flow" viewBox="-2 -2 1370 420" width="1366" height="416" role="img" aria-label="FPW.9 업무 흐름">
+<defs><marker id="arr-FPW-9-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="53.0">품질팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="151.0">상품기획팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="196"/>
+<rect class="lane0" x="0" y="196" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="249.0">시스템엔지니어링팀</text>
+<line class="lanesep" x1="132" y1="196" x2="132" y2="294"/>
+<rect class="lane1" x="0" y="294" width="1366" height="98"/>
+<text class="lanelabel" x="10" y="347.0">SW통합·릴리스팀</text>
+<line class="lanesep" x1="132" y1="294" x2="132" y2="392"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-9-dep)"/>
+<polyline class="edge trigger" points="164.0,147.0 198.0,147.0" marker-end="url(#arr-FPW-9-dep)"/>
+<polyline class="edge flow" points="386.0,147.0 466.0,147.0 466.0,245.0 478.0,245.0" marker-end="url(#arr-FPW-9-dep)"/>
+<polyline class="edge flow" points="666.0,245.0 746.0,245.0 746.0,147.0 758.0,147.0" marker-end="url(#arr-FPW-9-dep)"/>
+<polyline class="edge flow" points="946.0,147.0 1026.0,147.0 1026.0,343.0 1038.0,343.0" marker-end="url(#arr-FPW-9-dep)"/>
+<polyline class="edge end" points="386.0,49.0 400.0,49.0" marker-end="url(#arr-FPW-9-dep)"/>
+<polyline class="edge end" points="1226.0,343.0 1240.0,343.0" marker-end="url(#arr-FPW-9-dep)"/>
+<a href="#FPW.9-A01"><g class="node" data-roles="R-QA R-QA R-SM R-TST R-FO R-OPS"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="61.5">운영 결과 품질 피드백 수용</text>
+</g></a>
+<a href="#FPW.9-A02"><g class="node" data-roles="R-FO R-FO R-REL R-INT R-SM R-REQ"><rect class="act" x="198" y="114" width="188" height="66" rx="8"/><text class="aid" x="206" y="128">A02</text>
+<text class="aname" x="206" y="153.5">Flag Retirement 요청</text>
+<text class="trig" x="206" y="174">⚡ Flag 만료 30일 전 알림, 기…</text>
+</g></a>
+<a href="#FPW.9-A04"><g class="node" data-roles="R-FO R-FO R-INT R-TST R-REL"><rect class="act" x="758" y="114" width="188" height="66" rx="8"/><text class="aid" x="766" y="128">A04</text>
+<text class="aname" x="766" y="159.5">코드·설정·시험 삭제 기록</text>
+</g></a>
+<a href="#FPW.9-A03"><g class="node" data-roles="R-REQ R-SM R-FO R-REL R-INT R-OPS"><rect class="act" x="478" y="212" width="188" height="66" rx="8"/><text class="aid" x="486" y="226">A03</text>
+<text class="aname" x="486" y="257.5">Flag Retirement 승인</text>
+</g></a>
+<a href="#FPW.9-A05"><g class="node" data-roles="R-REL R-REL R-FO R-PO R-OPS"><rect class="act" x="1038" y="310" width="188" height="66" rx="8"/><text class="aid" x="1046" y="324">A05</text>
+<text class="aname" x="1046" y="355.5">Lifecycle 종료 전이</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="147.0" r="9.0"/>
+<circle class="end" cx="409.0" cy="49.0" r="9.0"/><circle class="endin" cx="409.0" cy="49.0" r="5.0"/>
+<circle class="end" cx="1249.0" cy="343.0" r="9.0"/><circle class="endin" cx="1249.0" cy="343.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.10 협력사 관리 — 부서 레인 (2차 초안)</summary><div class="flowwrap"><p class="meta">← 흐름도가 넓다. 가로로 스크롤한다 →</p><svg class="flow" viewBox="-2 -2 1650 510" width="1646" height="506" role="img" aria-label="FPW.10 업무 흐름">
+<defs><marker id="arr-FPW-10-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1646" height="188"/>
+<text class="lanelabel" x="10" y="98.0">품질팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="188"/>
+<rect class="lane1" x="0" y="188" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="241.0">구매팀</text>
+<line class="lanesep" x1="132" y1="188" x2="132" y2="286"/>
+<rect class="lane0" x="0" y="286" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="339.0">기능안전팀</text>
+<line class="lanesep" x1="132" y1="286" x2="132" y2="384"/>
+<rect class="lane1" x="0" y="384" width="1646" height="98"/>
+<text class="lanelabel" x="10" y="437.0">SW통합·릴리스팀</text>
+<line class="lanesep" x1="132" y1="384" x2="132" y2="482"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-10-dep)"/>
+<polyline class="edge trigger" points="164.0,139.0 198.0,139.0" marker-end="url(#arr-FPW-10-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,237.0 478.0,237.0" marker-end="url(#arr-FPW-10-dep)"/>
+<polyline class="edge flow" points="666.0,237.0 746.0,237.0 746.0,335.0 758.0,335.0" marker-end="url(#arr-FPW-10-dep)"/>
+<polyline class="edge flow" points="666.0,237.0 758.0,237.0" marker-end="url(#arr-FPW-10-dep)"/>
+<polyline class="edge flow" points="946.0,335.0 1026.0,335.0 1026.0,49.0 1038.0,49.0" marker-end="url(#arr-FPW-10-dep)"/>
+<polyline class="edge flow" points="946.0,237.0 1026.0,237.0 1026.0,49.0 1038.0,49.0" marker-end="url(#arr-FPW-10-dep)"/>
+<polyline class="edge flow" points="1226.0,49.0 1306.0,49.0 1306.0,433.0 1318.0,433.0" marker-end="url(#arr-FPW-10-dep)"/>
+<polyline class="edge end" points="386.0,139.0 400.0,139.0" marker-end="url(#arr-FPW-10-dep)"/>
+<polyline class="edge end" points="1506.0,433.0 1520.0,433.0" marker-end="url(#arr-FPW-10-dep)"/>
+<circle class="join" cx="1026.0" cy="237.0" r="3"/>
+<a href="#FPW.10-A01"><g class="node" data-roles="R-QA R-PUR R-CSM R-SM R-INT"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="61.5">계약 전 협력사 역량 확인</text>
+</g></a>
+<a href="#FPW.10-A05"><g class="node" data-roles="R-QA R-QA R-ARC R-INT R-SM"><rect class="act" x="198" y="106" width="188" height="66" rx="8"/><text class="aid" x="206" y="120">A05</text>
+<text class="aname" x="206" y="145.5">기존 구현 진단</text>
+<text class="trig" x="206" y="166">⚡ 기존 Feature Flag 구현…</text>
+</g></a>
+<a href="#FPW.10-A06"><g class="node" data-roles="R-QA R-TST R-QA R-INT R-SM R-PUR"><rect class="act" x="1038" y="16" width="188" height="66" rx="8"/><text class="aid" x="1046" y="30">A06</text>
+<text class="aname" x="1046" y="61.5">Gate별 납품물 입고 검사</text>
+</g></a>
+<a href="#FPW.10-A02"><g class="node" data-roles="R-PUR R-REG R-PUR R-LEG R-SM R-CSM R-QA R-INT"><rect class="act" x="478" y="204" width="188" height="66" rx="8"/><text class="aid" x="486" y="218">A02</text>
+<text class="aname" x="486" y="249.5">DIA·CIA 체결</text>
+</g></a>
+<a href="#FPW.10-A04"><g class="node" data-roles="R-PUR R-PUR R-CSM R-REG R-INT"><rect class="act" x="758" y="204" width="188" height="66" rx="8"/><text class="aid" x="766" y="218">A04</text>
+<text class="aname" x="766" y="249.5">공급망 원산지 속성 관리</text>
+</g></a>
+<a href="#FPW.10-A03"><g class="node" data-roles="R-SM R-SM R-QA R-PUR"><rect class="act" x="758" y="302" width="188" height="66" rx="8"/><text class="aid" x="766" y="316">A03</text>
+<text class="aname" x="766" y="347.5">확인 조치 독립성 지정</text>
+</g></a>
+<a href="#FPW.10-A07"><g class="node" data-roles="R-INT R-INT R-TST R-PLM R-QA"><rect class="act" x="1318" y="400" width="188" height="66" rx="8"/><text class="aid" x="1326" y="414">A07</text>
+<text class="aname" x="1326" y="445.5">EOL 프로비저닝 검증</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="139.0" r="9.0"/>
+<circle class="end" cx="409.0" cy="139.0" r="9.0"/><circle class="endin" cx="409.0" cy="139.0" r="5.0"/>
+<circle class="end" cx="1529.0" cy="433.0" r="9.0"/><circle class="endin" cx="1529.0" cy="433.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.11 보안·키·취약점 관리 — 부서 레인 (2차 초안)</summary><div class="flowwrap"><svg class="flow" viewBox="-2 -2 810 412" width="806" height="408" role="img" aria-label="FPW.11 업무 흐름">
+<defs><marker id="arr-FPW-11-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="806" height="98"/>
+<text class="lanelabel" x="10" y="53.0">IT인프라·보안운영팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="806" height="188"/>
+<text class="lanelabel" x="10" y="196.0">차량사이버보안팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="286"/>
+<rect class="lane0" x="0" y="286" width="806" height="98"/>
+<text class="lanelabel" x="10" y="339.0">법무팀</text>
+<line class="lanesep" x1="132" y1="286" x2="132" y2="384"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-11-dep)"/>
+<polyline class="edge trigger" points="164.0,147.0 198.0,147.0" marker-end="url(#arr-FPW-11-dep)"/>
+<polyline class="edge trigger" points="164.0,237.0 198.0,237.0" marker-end="url(#arr-FPW-11-dep)"/>
+<polyline class="edge trigger" points="164.0,335.0 198.0,335.0" marker-end="url(#arr-FPW-11-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,147.0 478.0,147.0" marker-end="url(#arr-FPW-11-dep)"/>
+<polyline class="edge flow" points="386.0,147.0 466.0,147.0 466.0,237.0 478.0,237.0" marker-end="url(#arr-FPW-11-dep)"/>
+<polyline class="edge flow" points="386.0,237.0 478.0,237.0" marker-end="url(#arr-FPW-11-dep)"/>
+<polyline class="edge end" points="666.0,147.0 680.0,147.0" marker-end="url(#arr-FPW-11-dep)"/>
+<polyline class="edge end" points="666.0,237.0 680.0,237.0" marker-end="url(#arr-FPW-11-dep)"/>
+<polyline class="edge end" points="386.0,335.0 400.0,335.0" marker-end="url(#arr-FPW-11-dep)"/>
+<circle class="join" cx="466.0" cy="237.0" r="3"/>
+<a href="#FPW.11-A01"><g class="node" data-roles="R-PKI R-CSM R-SM R-REL R-OPS"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="61.5">서명 키 계층·HSM 운영</text>
+</g></a>
+<a href="#FPW.11-A02"><g class="node" data-roles="R-CSM R-CSM R-PKI R-SM R-OPS"><rect class="act" x="478" y="114" width="188" height="66" rx="8"/><text class="aid" x="486" y="128">A02</text>
+<text class="aname" x="486" y="159.5">키 교체 플랫폼 기록</text>
+</g></a>
+<a href="#FPW.11-A03"><g class="node" data-roles="R-CSM R-CSM R-PKI R-SM R-OPS R-REG"><rect class="act" x="198" y="114" width="188" height="66" rx="8"/><text class="aid" x="206" y="128">A03</text>
+<text class="aname" x="206" y="153.5">키 유출 대응·epoch 상향</text>
+<text class="trig" x="206" y="174">⚡ 키 유출·오사용 징후</text>
+</g></a>
+<a href="#FPW.11-A04"><g class="node" data-roles="R-CSM R-CSM R-OPS R-SM R-INT R-REL"><rect class="act" x="198" y="204" width="188" height="66" rx="8"/><text class="aid" x="206" y="218">A04</text>
+<text class="aname" x="206" y="243.5">취약점 영향 특정·대응 결정</text>
+<text class="trig" x="206" y="264">⚡ 새 취약점 공지</text>
+</g></a>
+<a href="#FPW.11-A05"><g class="node" data-roles="R-CSM R-CSM R-REG R-QA"><rect class="act" x="478" y="204" width="188" height="66" rx="8"/><text class="aid" x="486" y="218">A05</text>
+<text class="aname" x="486" y="249.5">CSMS Evidence·R155 보고</text>
+</g></a>
+<a href="#FPW.11-A06"><g class="node" data-roles="R-LEG R-LEG R-CSM R-PUR R-INT"><rect class="act" x="198" y="302" width="188" height="66" rx="8"/><text class="aid" x="206" y="316">A06</text>
+<text class="aname" x="206" y="334.0">OSS 라이선스·보안 프로그램</text>
+<text class="aname" x="206" y="349.0">운영</text>
+<text class="trig" x="206" y="362">⚡ OSS 구성요소 추가·변경</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="147.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="237.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="335.0" r="9.0"/>
+<circle class="end" cx="689.0" cy="147.0" r="9.0"/><circle class="endin" cx="689.0" cy="147.0" r="5.0"/>
+<circle class="end" cx="689.0" cy="237.0" r="9.0"/><circle class="endin" cx="689.0" cy="237.0" r="5.0"/>
+<circle class="end" cx="409.0" cy="335.0" r="9.0"/><circle class="endin" cx="409.0" cy="335.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.12 운영 데이터·데이터 보호 — 부서 레인 (2차 초안)</summary><div class="flowwrap"><svg class="flow" viewBox="-2 -2 530 510" width="526" height="506" role="img" aria-label="FPW.12 업무 흐름">
+<defs><marker id="arr-FPW-12-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="526" height="98"/>
+<text class="lanelabel" x="10" y="53.0">기능안전팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="526" height="98"/>
+<text class="lanelabel" x="10" y="151.0">개인정보보호팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="196"/>
+<rect class="lane0" x="0" y="196" width="526" height="98"/>
+<text class="lanelabel" x="10" y="249.0">법무팀</text>
+<line class="lanesep" x1="132" y1="196" x2="132" y2="294"/>
+<rect class="lane1" x="0" y="294" width="526" height="188"/>
+<text class="lanelabel" x="10" y="392.0">법규인증팀</text>
+<line class="lanesep" x1="132" y1="294" x2="132" y2="482"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-12-dep)"/>
+<polyline class="edge trigger" points="164.0,147.0 198.0,147.0" marker-end="url(#arr-FPW-12-dep)"/>
+<polyline class="edge trigger" points="164.0,245.0 198.0,245.0" marker-end="url(#arr-FPW-12-dep)"/>
+<polyline class="edge trigger" points="164.0,343.0 198.0,343.0" marker-end="url(#arr-FPW-12-dep)"/>
+<polyline class="edge trigger" points="164.0,433.0 198.0,433.0" marker-end="url(#arr-FPW-12-dep)"/>
+<polyline class="edge end" points="386.0,49.0 400.0,49.0" marker-end="url(#arr-FPW-12-dep)"/>
+<polyline class="edge end" points="386.0,147.0 400.0,147.0" marker-end="url(#arr-FPW-12-dep)"/>
+<polyline class="edge end" points="386.0,245.0 400.0,245.0" marker-end="url(#arr-FPW-12-dep)"/>
+<polyline class="edge end" points="386.0,343.0 400.0,343.0" marker-end="url(#arr-FPW-12-dep)"/>
+<polyline class="edge end" points="386.0,433.0 400.0,433.0" marker-end="url(#arr-FPW-12-dep)"/>
+<a href="#FPW.12-A01"><g class="node" data-roles="R-SM R-SM R-OPS R-DPO R-QA"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="54.0">운행 감시 지표·경보 기준</text>
+<text class="aname" x="206" y="69.0">기록</text>
+</g></a>
+<a href="#FPW.12-A02"><g class="node" data-roles="R-DPO R-DPO R-ARC R-LEG R-INT"><rect class="act" x="198" y="114" width="188" height="66" rx="8"/><text class="aid" x="206" y="128">A02</text>
+<text class="aname" x="206" y="153.5">평가 컨텍스트 개인정보 검토</text>
+<text class="trig" x="206" y="174">⚡ 정책 작성·변경으로 평…</text>
+</g></a>
+<a href="#FPW.12-A03"><g class="node" data-roles="R-LEG R-LEG R-DPO R-REG R-OPS"><rect class="act" x="198" y="212" width="188" height="66" rx="8"/><text class="aid" x="206" y="226">A03</text>
+<text class="aname" x="206" y="244.0">중국 데이터 현지 처리·이전</text>
+<text class="aname" x="206" y="259.0">심사</text>
+<text class="trig" x="206" y="272">⚡ 중국 시장 출시 또는 국외 조…</text>
+</g></a>
+<a href="#FPW.12-A04"><g class="node" data-roles="R-REG R-REG R-LEG R-DPO R-OPS"><rect class="act" x="198" y="310" width="188" height="66" rx="8"/><text class="aid" x="206" y="324">A04</text>
+<text class="aname" x="206" y="349.5">EU 데이터 접근 요청 처리</text>
+<text class="trig" x="206" y="370">⚡ EU 차량 사용자·제3자 데이…</text>
+</g></a>
+<a href="#FPW.12-A05"><g class="node" data-roles="R-REG R-REG R-DPO R-OPS R-QA"><rect class="act" x="198" y="400" width="188" height="66" rx="8"/><text class="aid" x="206" y="414">A05</text>
+<text class="aname" x="206" y="439.5">보존 기간 경과 데이터 삭제</text>
+<text class="trig" x="206" y="460">⚡ 정기 보존 기간 점검</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="147.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="245.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="343.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="433.0" r="9.0"/>
+<circle class="end" cx="409.0" cy="49.0" r="9.0"/><circle class="endin" cx="409.0" cy="49.0" r="5.0"/>
+<circle class="end" cx="409.0" cy="147.0" r="9.0"/><circle class="endin" cx="409.0" cy="147.0" r="5.0"/>
+<circle class="end" cx="409.0" cy="245.0" r="9.0"/><circle class="endin" cx="409.0" cy="245.0" r="5.0"/>
+<circle class="end" cx="409.0" cy="343.0" r="9.0"/><circle class="endin" cx="409.0" cy="343.0" r="5.0"/>
+<circle class="end" cx="409.0" cy="433.0" r="9.0"/><circle class="endin" cx="409.0" cy="433.0" r="5.0"/>
+</svg></div></details><details class="more"><summary>FPW.13 규정·Compliance Profile 관리 — 부서 레인 (2차 초안)</summary><div class="flowwrap"><svg class="flow" viewBox="-2 -2 1090 224" width="1086" height="220" role="img" aria-label="FPW.13 업무 흐름">
+<defs><marker id="arr-FPW-13-dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect class="lane0" x="0" y="0" width="1086" height="98"/>
+<text class="lanelabel" x="10" y="53.0">기능안전팀</text>
+<line class="lanesep" x1="132" y1="0" x2="132" y2="98"/>
+<rect class="lane1" x="0" y="98" width="1086" height="98"/>
+<text class="lanelabel" x="10" y="151.0">법규인증팀</text>
+<line class="lanesep" x1="132" y1="98" x2="132" y2="196"/>
+<polyline class="edge start" points="164.0,49.0 198.0,49.0" marker-end="url(#arr-FPW-13-dep)"/>
+<polyline class="edge trigger" points="164.0,147.0 198.0,147.0" marker-end="url(#arr-FPW-13-dep)"/>
+<polyline class="edge flow" points="386.0,49.0 466.0,49.0 466.0,147.0 478.0,147.0" marker-end="url(#arr-FPW-13-dep)"/>
+<polyline class="edge flow" points="666.0,147.0 758.0,147.0" marker-end="url(#arr-FPW-13-dep)"/>
+<polyline class="edge end" points="386.0,147.0 400.0,147.0" marker-end="url(#arr-FPW-13-dep)"/>
+<polyline class="edge end" points="946.0,147.0 960.0,147.0" marker-end="url(#arr-FPW-13-dep)"/>
+<a href="#FPW.13-A01"><g class="node" data-roles="R-SM R-SM R-CSM R-REG R-QA"><rect class="act" x="198" y="16" width="188" height="66" rx="8"/><text class="aid" x="206" y="30">A01</text>
+<text class="aname" x="206" y="61.5">표준 판 고정</text>
+</g></a>
+<a href="#FPW.13-A02"><g class="node" data-roles="R-REG R-REG R-SM R-CSM R-LEG R-FO R-OPS"><rect class="act" x="478" y="114" width="188" height="66" rx="8"/><text class="aid" x="486" y="128">A02</text>
+<text class="aname" x="486" y="159.5">Compliance Profile 정의</text>
+</g></a>
+<a href="#FPW.13-A03"><g class="node" data-roles="R-REG R-SM R-CSM R-REG R-LEG R-FO R-OPS R-QA"><rect class="act" x="198" y="114" width="188" height="66" rx="8"/><text class="aid" x="206" y="128">A03</text>
+<text class="aname" x="206" y="146.0">분기 법규 감시·Profile</text>
+<text class="aname" x="206" y="161.0">갱신</text>
+<text class="trig" x="206" y="174">⚡ 분기 정기 점검</text>
+</g></a>
+<a href="#FPW.13-A04"><g class="node" data-roles="R-REG R-OPS R-REG R-SM R-CSM R-QA"><rect class="act" x="758" y="114" width="188" height="66" rx="8"/><text class="aid" x="766" y="128">A04</text>
+<text class="aname" x="766" y="159.5">원격 종료 시스템 설명 작성</text>
+</g></a>
+<circle class="start" cx="155.0" cy="49.0" r="9.0"/>
+<circle class="start" cx="155.0" cy="147.0" r="9.0"/>
+<circle class="end" cx="409.0" cy="147.0" r="9.0"/><circle class="endin" cx="409.0" cy="147.0" r="5.0"/>
+<circle class="end" cx="969.0" cy="147.0" r="9.0"/><circle class="endin" cx="969.0" cy="147.0" r="5.0"/>
+</svg></div></details>
+<h3>부서 카드</h3><article class="card" id="dep-DEP-PDP">
+<h3>상품기획팀 <small>DEP-PDP · Product Planning · 기획 스튜디오</small></h3><p>Feature를 소유하고 대상·분류·출시를 판단한다. 상품 구성과 체험 제안을 만들고 고객 출시를 승인한다.</p>
+<p class="meta">조직 역할: Feature Owner, 상품 기획, 상품 Owner · 데모 계정: author, commerce, approver · 인계 상대: PLM·기준정보팀, SW통합·릴리스팀, 기능안전팀, 시스템엔지니어링팀</p>
+<h4>수행·책임 업무 (13)</h4><ol><li><a href="#FPW.1-A01">FPW.1-A01 Feature 등록·초안 작성</a> <small>Feature 등록·분류</small></li><li><a href="#FPW.1-A02">FPW.1-A02 대상 차량 사양·의존 등록</a> <small>Feature 등록·분류</small></li><li><a href="#FPW.2-A03">FPW.2-A03 SOTIF 분석 갱신</a> <small>HARA·변경 영향 판단</small></li><li><a href="#FPW.6-A01">FPW.6-A01 출시 Baseline 확정 요청</a> <small>서명 배포</small></li><li><a href="#FPW.7-A02">FPW.7-A02 효과 실험 계획 등록</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.7-A05">FPW.7-A05 상품 구성 작성</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.7-A06">FPW.7-A06 상품 구성 승인</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.7-A08">FPW.7-A08 G7 출시·활성화 판정</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.7-A12">FPW.7-A12 Release Sign-off(출시 책임 확인)</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.7-A10">FPW.7-A10 상품 고객 출시 승인</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.9-A02">FPW.9-A02 Flag Retirement 요청</a> <small>사후 검토·Flag Retirement</small></li><li><a href="#FPW.9-A03">FPW.9-A03 Flag Retirement 승인</a> <small>사후 검토·Flag Retirement</small></li><li><a href="#FPW.9-A04">FPW.9-A04 코드·설정·시험 삭제 기록</a> <small>사후 검토·Flag Retirement</small></li></ol>
+<p class="meta">주 업무 화면: <code>/master/define</code>, <code>/feature/propose</code>, <code>/features</code>, <code>/variant-conditions</code>, <code>/arch/topology</code>, <code>/baselines</code>, <code>/experiments</code>, <code>/products/new</code>, <code>/entitlements</code>, <code>/products/:id/:ver</code>, <code>/activation/decide</code>, <code>/admin/approval</code>, <code>/features/:id/:ver</code>, <code>/flag-retirements</code><br>
+참조 화면: <code>/analysis/impact</code>, <code>/trace/design</code>, <code>/change/cr</code>, <code>/policies/new</code>, <code>/policies</code>, <code>/validations/virtual</code>, <code>/verify/evidence</code>, <code>/deployments</code>, <code>/integration/connectors</code>, <code>/verify/compliance</code>, <code>/fleet/live</code>, <code>/ops/anomalies</code>, <code>/ops/safety-kpi</code>, <code>/ops/incidents</code>, <code>/ops/kill</code>, <code>/audit</code>, <code>/quality/feedback</code></p></article><article class="card" id="dep-DEP-SE">
+<h3>시스템엔지니어링팀 <small>DEP-SE · Systems Engineering · 엔지니어링 콘솔</small></h3><p>안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임진다.</p>
+<p class="meta">조직 역할: 요구 Owner, 아키텍트 · 데모 계정: approver, integrator · 인계 상대: 상품기획팀, 품질팀</p>
+<h4>수행·책임 업무 (9)</h4><ol><li><a href="#FPW.3-A01">FPW.3-A01 안전요구 도출·명세</a> <small>안전요구 확정</small></li><li><a href="#FPW.3-A02">FPW.3-A02 양방향 추적성 점검</a> <small>안전요구 확정</small></li><li><a href="#FPW.3-A03">FPW.3-A03 요구 검토 판정 등록</a> <small>안전요구 확정</small></li><li><a href="#FPW.3-A04">FPW.3-A04 G3 판정·Feature 정의 승인</a> <small>안전요구 확정</small></li><li><a href="#FPW.4-A01">FPW.4-A01 차량 내 감시·안전기제 설계</a> <small>안전 설계·정책 설계</small></li><li><a href="#FPW.4-A03">FPW.4-A03 Flag 정책 작성·검증</a> <small>안전 설계·정책 설계</small></li><li><a href="#FPW.4-A04">FPW.4-A04 정책 승인</a> <small>안전 설계·정책 설계</small></li><li><a href="#FPW.4-A05">FPW.4-A05 G4 설계 독립 검토·판정</a> <small>안전 설계·정책 설계</small></li><li><a href="#FPW.9-A03">FPW.9-A03 Flag Retirement 승인</a> <small>사후 검토·Flag Retirement</small></li></ol>
+<p class="meta">주 업무 화면: <code>/trace/design</code>, <code>/change/cr</code>, <code>/features/:id/:ver</code>, <code>/admin/approval</code>, <code>/master/control-points</code>, <code>/policies/new</code>, <code>/policies</code>, <code>/policies/:id</code>, <code>/flag-retirements</code><br>
+참조 화면: <code>/master/define</code>, <code>/feature/propose</code>, <code>/features</code>, <code>/variant-conditions</code>, <code>/arch/topology</code>, <code>/analysis/impact</code>, <code>/arch/components</code>, <code>/validations</code>, <code>/master/artifacts</code>, <code>/verify/evidence</code>, <code>/baselines</code>, <code>/integration/openfeature</code></p></article><article class="card" id="dep-DEP-INT">
+<h3>SW통합·릴리스팀 <small>DEP-INT · SW Integration &amp; Release · 엔지니어링 콘솔</small></h3><p>통합 빌드와 Baseline·출시 묶음을 관리하고 출시 전이를 실행한다.</p>
+<p class="meta">조직 역할: 통합 조직, Release Manager · 데모 계정: coordinator, integrator · 인계 상대: OTA·서비스운영팀, PLM·기준정보팀, 기능안전팀, 상품기획팀, 시험·검증팀, 품질팀</p>
+<h4>수행·책임 업무 (7)</h4><ol><li><a href="#FPW.5-A03">FPW.5-A03 통합 시험·SEooC 가정 확인</a> <small>검증·V&amp;V</small></li><li><a href="#FPW.6-A04">FPW.6-A04 서명 패키지 작성·SBOM 결합</a> <small>서명 배포</small></li><li><a href="#FPW.6-A05">FPW.6-A05 OTA Gate 판정 등록</a> <small>서명 배포</small></li><li><a href="#FPW.6-A06">FPW.6-A06 G6 서명 배포 실행</a> <small>서명 배포</small></li><li><a href="#FPW.7-A09">FPW.7-A09 출시 전이</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.9-A05">FPW.9-A05 Lifecycle 종료 전이</a> <small>사후 검토·Flag Retirement</small></li><li><a href="#FPW.10-A07">FPW.10-A07 EOL 프로비저닝 검증</a> <small>협력사 관리</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: <code>/master/artifacts</code>, <code>/deployments</code>, <code>/features/:id/:ver</code>, <code>/integration/connectors</code><br>
+참조 화면: <code>/master/control-points</code>, <code>/trace/design</code>, <code>/policies/:id</code>, <code>/arch/topology</code>, <code>/validations</code>, <code>/validations/virtual</code>, <code>/verify/evidence</code>, <code>/admin/approval</code>, <code>/baselines</code>, <code>/activation/decide</code>, <code>/experiments</code>, <code>/fleet/live</code>, <code>/flag-retirements</code>, <code>/supplier/portal</code>, <code>/admin/security</code>, <code>/integration/openfeature</code></p></article><article class="card" id="dep-DEP-PLM">
+<h3>PLM·기준정보팀 <small>DEP-PLM · PLM &amp; Master Data · 엔지니어링 콘솔</small></h3><p>차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.</p>
+<p class="meta">조직 역할: 기준정보 담당 · 데모 계정: steward · 인계 상대: SW통합·릴리스팀, 기능안전팀, 법규인증팀, 상품기획팀</p>
+<h4>수행·책임 업무 (2)</h4><ol><li><a href="#FPW.1-A02">FPW.1-A02 대상 차량 사양·의존 등록</a> <small>Feature 등록·분류</small></li><li><a href="#FPW.6-A02">FPW.6-A02 출시 Baseline 확정 승인</a> <small>서명 배포</small></li></ol>
+<p class="meta">주 업무 화면: <code>/variant-conditions</code>, <code>/arch/topology</code>, <code>/baselines</code><br>
+참조 화면: <code>/features/:id/:ver</code>, <code>/admin/approval</code>, <code>/policies/new</code>, <code>/policies</code></p></article><article class="card" id="dep-DEP-FS">
+<h3>기능안전팀 <small>DEP-FS · Functional Safety · 심사 결재함</small></h3><p>안전 분류·HARA·Safety Case를 책임지고 Gate 판정과 긴급 차단·복원 승인을 한다.</p>
+<p class="meta">조직 역할: Safety Manager · 데모 계정: quality, integrator · 인계 상대: OTA·서비스운영팀, PLM·기준정보팀, SW통합·릴리스팀, 구매팀, 법규인증팀, 상품기획팀, 시험·검증팀, 품질팀</p>
+<h4>수행·책임 업무 (21)</h4><ol><li><a href="#FPW.1-A03">FPW.1-A03 안전 분류(네 축) 확정</a> <small>Feature 등록·분류</small></li><li><a href="#FPW.1-A05">FPW.1-A05 G1 등록·분류 판정</a> <small>Feature 등록·분류</small></li><li><a href="#FPW.2-A01">FPW.2-A01 재-HARA 조건 검출·영향 범위 산정</a> <small>HARA·변경 영향 판단</small></li><li><a href="#FPW.2-A02">FPW.2-A02 HARA·TARA 공동 수행</a> <small>HARA·변경 영향 판단</small></li><li><a href="#FPW.2-A03">FPW.2-A03 SOTIF 분석 갱신</a> <small>HARA·변경 영향 판단</small></li><li><a href="#FPW.2-A05">FPW.2-A05 G2 HARA 영향 판정</a> <small>HARA·변경 영향 판단</small></li><li><a href="#FPW.4-A02">FPW.4-A02 플랫폼 도구 신뢰도 분류</a> <small>안전 설계·정책 설계</small></li><li><a href="#FPW.5-A01">FPW.5-A01 독립성 수준·검증 계획 확정</a> <small>검증·V&amp;V</small></li><li><a href="#FPW.7-A03">FPW.7-A03 Safety Case·SOTIF 근거 정리</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.7-A04">FPW.7-A04 Safety Case 독립 검토</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.7-A08">FPW.7-A08 G7 출시·활성화 판정</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.8-A02">FPW.8-A02 차단 필요성·범위 판단</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A05">FPW.8-A05 긴급 차단 2인 승인</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A06">FPW.8-A06 차단 전달·적용 추적</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A08">FPW.8-A08 원인 조치·복원 요청</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A09">FPW.8-A09 복원 2인 승인</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.9-A03">FPW.9-A03 Flag Retirement 승인</a> <small>사후 검토·Flag Retirement</small></li><li><a href="#FPW.10-A03">FPW.10-A03 확인 조치 독립성 지정</a> <small>협력사 관리</small> <i>2차 초안</i></li><li><a href="#FPW.12-A01">FPW.12-A01 운행 감시 지표·경보 기준 기록</a> <small>운영 데이터·데이터 보호</small> <i>2차 초안</i></li><li><a href="#FPW.13-A01">FPW.13-A01 표준 판 고정</a> <small>규정·Compliance Profile 관리</small> <i>2차 초안</i></li><li><a href="#FPW.13-A03">FPW.13-A03 분기 법규 감시·Profile 갱신</a> <small>규정·Compliance Profile 관리</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: <code>/features/:id/:ver</code>, <code>/admin/approval</code>, <code>/analysis/impact</code>, <code>/arch/topology</code>, <code>/arch/components</code>, <code>/verify/evidence</code>, <code>/verify/compliance</code>, <code>/activation/decide</code>, <code>/ops/kill</code>, <code>/fleet/live</code>, <code>/deployments</code>, <code>/flag-retirements</code>, <code>/ops/safety-kpi</code><br>
+참조 화면: <code>/master/define</code>, <code>/feature/propose</code>, <code>/features</code>, <code>/variant-conditions</code>, <code>/trace/design</code>, <code>/change/cr</code>, <code>/master/control-points</code>, <code>/policies/:id</code>, <code>/validations</code>, <code>/validations/virtual</code>, <code>/integration/connectors</code>, <code>/experiments</code>, <code>/ops/anomalies</code>, <code>/ops/incidents</code>, <code>/audit/oversight</code>, <code>/audit</code>, <code>/quality/feedback</code>, <code>/supplier/portal</code>, <code>/admin/security</code></p></article><article class="card" id="dep-DEP-CS">
+<h3>차량사이버보안팀 <small>DEP-CS · Vehicle Cybersecurity · 심사 결재함</small></h3><p>TARA·보안 검토를 하고 긴급 차단 2인 승인과 키 교체 기록을 맡는다.</p>
+<p class="meta">조직 역할: CSM · 데모 계정: integrator · 인계 상대: IT인프라·보안운영팀</p>
+<h4>수행·책임 업무 (8)</h4><ol><li><a href="#FPW.2-A02">FPW.2-A02 HARA·TARA 공동 수행</a> <small>HARA·변경 영향 판단</small></li><li><a href="#FPW.8-A05">FPW.8-A05 긴급 차단 2인 승인</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.11-A01">FPW.11-A01 서명 키 계층·HSM 운영</a> <small>보안·키·취약점 관리</small> <i>2차 초안</i></li><li><a href="#FPW.11-A02">FPW.11-A02 키 교체 플랫폼 기록</a> <small>보안·키·취약점 관리</small> <i>2차 초안</i></li><li><a href="#FPW.11-A03">FPW.11-A03 키 유출 대응·epoch 상향</a> <small>보안·키·취약점 관리</small> <i>2차 초안</i></li><li><a href="#FPW.11-A04">FPW.11-A04 취약점 영향 특정·대응 결정</a> <small>보안·키·취약점 관리</small> <i>2차 초안</i></li><li><a href="#FPW.11-A05">FPW.11-A05 CSMS Evidence·R155 보고</a> <small>보안·키·취약점 관리</small> <i>2차 초안</i></li><li><a href="#FPW.13-A03">FPW.13-A03 분기 법규 감시·Profile 갱신</a> <small>규정·Compliance Profile 관리</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: <code>/ops/kill</code>, <code>/admin/security</code>, <code>/verify/compliance</code><br>
+참조 화면: <code>/features/:id/:ver</code>, <code>/admin/approval</code>, <code>/arch/components</code>, <code>/deployments</code>, <code>/master/artifacts</code>, <code>/fleet/live</code>, <code>/audit/oversight</code></p></article><article class="card" id="dep-DEP-HOM">
+<h3>법규인증팀 <small>DEP-HOM · Homologation &amp; Regulatory · 심사 결재함</small></h3><p>시장별 법규·형식승인·사용자 고지를 확인하고 Compliance Profile과 긴급 권한 사후 검토를 맡는다.</p>
+<p class="meta">조직 역할: 법규 담당 · 데모 계정: steward · 인계 상대: OTA·서비스운영팀, PLM·기준정보팀, 기능안전팀, 품질팀</p>
+<h4>수행·책임 업무 (12)</h4><ol><li><a href="#FPW.1-A04">FPW.1-A04 법규 의무 기능 판정</a> <small>Feature 등록·분류</small></li><li><a href="#FPW.2-A04">FPW.2-A04 형식승인 영향 1차 판단</a> <small>HARA·변경 영향 판단</small></li><li><a href="#FPW.6-A03">FPW.6-A03 SUMS 기록·형식승인 확인</a> <small>서명 배포</small></li><li><a href="#FPW.7-A07">FPW.7-A07 형식승인·사용자 고지 확인</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.8-A03">FPW.8-A03 리콜·봉쇄 근거 연계</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A07">FPW.8-A07 긴급 권한 사후 검토</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.10-A02">FPW.10-A02 DIA·CIA 체결</a> <small>협력사 관리</small> <i>2차 초안</i></li><li><a href="#FPW.12-A04">FPW.12-A04 EU 데이터 접근 요청 처리</a> <small>운영 데이터·데이터 보호</small> <i>2차 초안</i></li><li><a href="#FPW.12-A05">FPW.12-A05 보존 기간 경과 데이터 삭제</a> <small>운영 데이터·데이터 보호</small> <i>2차 초안</i></li><li><a href="#FPW.13-A02">FPW.13-A02 Compliance Profile 정의</a> <small>규정·Compliance Profile 관리</small> <i>2차 초안</i></li><li><a href="#FPW.13-A03">FPW.13-A03 분기 법규 감시·Profile 갱신</a> <small>규정·Compliance Profile 관리</small> <i>2차 초안</i></li><li><a href="#FPW.13-A04">FPW.13-A04 원격 종료 시스템 설명 작성</a> <small>규정·Compliance Profile 관리</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: <code>/audit/oversight</code>, <code>/admin/data</code>, <code>/verify/compliance</code><br>
+참조 화면: <code>/features/:id/:ver</code>, <code>/admin/approval</code>, <code>/baselines</code>, <code>/activation/decide</code>, <code>/ops/kill</code>, <code>/audit</code>, <code>/admin/security</code></p></article><article class="card" id="dep-DEP-VAL">
+<h3>시험·검증팀 <small>DEP-VAL · Test &amp; Validation · 심사 결재함</small></h3><p>독립 V&amp;V를 계획·실행하고 검증 Gate를 판정한다.</p>
+<p class="meta">조직 역할: 시험 조직 · 데모 계정: quality · 인계 상대: SW통합·릴리스팀, 기능안전팀, 품질팀</p>
+<h4>수행·책임 업무 (5)</h4><ol><li><a href="#FPW.5-A02">FPW.5-A02 시나리오·허용 조합 정의</a> <small>검증·V&amp;V</small></li><li><a href="#FPW.5-A04">FPW.5-A04 비활성화·결함 주입 시험 수행</a> <small>검증·V&amp;V</small></li><li><a href="#FPW.5-A05">FPW.5-A05 시험 Evidence 연결·TMS 제출</a> <small>검증·V&amp;V</small></li><li><a href="#FPW.5-A06">FPW.5-A06 G5 V&amp;V 판정</a> <small>검증·V&amp;V</small></li><li><a href="#FPW.10-A06">FPW.10-A06 Gate별 납품물 입고 검사</a> <small>협력사 관리</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: <code>/arch/topology</code>, <code>/validations</code>, <code>/validations/virtual</code>, <code>/verify/evidence</code>, <code>/admin/approval</code>, <code>/supplier/portal</code><br>
+참조 화면: <code>/analysis/impact</code>, <code>/trace/design</code>, <code>/change/cr</code>, <code>/features/:id/:ver</code>, <code>/master/control-points</code>, <code>/master/artifacts</code>, <code>/activation/decide</code>, <code>/verify/compliance</code>, <code>/ops/kill</code>, <code>/quality/feedback</code>, <code>/flag-retirements</code></p></article><article class="card" id="dep-DEP-QA">
+<h3>품질팀 <small>DEP-QA · Quality · 심사 결재함</small></h3><p>독립 검토자로서 설계·Safety Case를 검토하고 Evidence와 감사 이력을 확인한다.</p>
+<p class="meta">조직 역할: 품질 조직 · 데모 계정: quality, viewer · 인계 상대: SW통합·릴리스팀, 구매팀, 기능안전팀, 법규인증팀, 시스템엔지니어링팀, 시험·검증팀</p>
+<h4>수행·책임 업무 (11)</h4><ol><li><a href="#FPW.3-A03">FPW.3-A03 요구 검토 판정 등록</a> <small>안전요구 확정</small></li><li><a href="#FPW.4-A05">FPW.4-A05 G4 설계 독립 검토·판정</a> <small>안전 설계·정책 설계</small></li><li><a href="#FPW.5-A06">FPW.5-A06 G5 V&amp;V 판정</a> <small>검증·V&amp;V</small></li><li><a href="#FPW.6-A05">FPW.6-A05 OTA Gate 판정 등록</a> <small>서명 배포</small></li><li><a href="#FPW.7-A04">FPW.7-A04 Safety Case 독립 검토</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.8-A07">FPW.8-A07 긴급 권한 사후 검토</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A09">FPW.8-A09 복원 2인 승인</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.9-A01">FPW.9-A01 운영 결과 품질 피드백 수용</a> <small>사후 검토·Flag Retirement</small></li><li><a href="#FPW.10-A01">FPW.10-A01 계약 전 협력사 역량 확인</a> <small>협력사 관리</small> <i>2차 초안</i></li><li><a href="#FPW.10-A05">FPW.10-A05 기존 구현 진단</a> <small>협력사 관리</small> <i>2차 초안</i></li><li><a href="#FPW.10-A06">FPW.10-A06 Gate별 납품물 입고 검사</a> <small>협력사 관리</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: <code>/features/:id/:ver</code>, <code>/admin/approval</code>, <code>/verify/evidence</code>, <code>/audit/oversight</code>, <code>/ops/kill</code>, <code>/quality/feedback</code>, <code>/supplier/portal</code><br>
+참조 화면: <code>/arch/components</code>, <code>/master/artifacts</code>, <code>/validations/virtual</code>, <code>/deployments</code>, <code>/integration/connectors</code>, <code>/verify/compliance</code>, <code>/activation/decide</code>, <code>/fleet/live</code>, <code>/ops/anomalies</code>, <code>/ops/safety-kpi</code>, <code>/ops/incidents</code>, <code>/audit</code>, <code>/admin/data</code></p></article><article class="card" id="dep-DEP-OPS">
+<h3>OTA·서비스운영팀 <small>DEP-OPS · OTA &amp; Service Operations · 관제실</small></h3><p>차량 운행을 관제하고 이상 징후에 대응하며 긴급 차단·복원을 요청하고 단계적 확대를 실행한다.</p>
+<p class="meta">조직 역할: 운영 조직 · 데모 계정: operator · 인계 상대: SW통합·릴리스팀, 기능안전팀, 법규인증팀</p>
+<h4>수행·책임 업무 (9)</h4><ol><li><a href="#FPW.7-A01">FPW.7-A01 Canary·Shadow 판정 기준 정의</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.7-A11">FPW.7-A11 Canary 활성화·단계적 확대</a> <small>출시·활성화·단계적 확대</small></li><li><a href="#FPW.8-A01">FPW.8-A01 이상 징후 확인</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A04">FPW.8-A04 긴급 차단 요청</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A06">FPW.8-A06 차단 전달·적용 추적</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A08">FPW.8-A08 원인 조치·복원 요청</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A10">FPW.8-A10 단계적 복원·관측</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.8-A11">FPW.8-A11 분기 드릴·G8 운영 판정</a> <small>운영·긴급 차단·복원</small></li><li><a href="#FPW.13-A04">FPW.13-A04 원격 종료 시스템 설명 작성</a> <small>규정·Compliance Profile 관리</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: <code>/activation/decide</code>, <code>/fleet/live</code>, <code>/ops/anomalies</code>, <code>/ops/safety-kpi</code>, <code>/ops/incidents</code>, <code>/ops/kill</code>, <code>/deployments</code>, <code>/audit</code><br>
+참조 화면: <code>/features/:id/:ver</code>, <code>/integration/connectors</code>, <code>/experiments</code>, <code>/admin/approval</code>, <code>/products/:id/:ver</code>, <code>/audit/oversight</code>, <code>/quality/feedback</code>, <code>/flag-retirements</code>, <code>/admin/security</code>, <code>/admin/data</code>, <code>/verify/compliance</code></p></article><article class="card" id="dep-DEP-ITSEC">
+<h3>IT인프라·보안운영팀 <small>DEP-ITSEC · IT Infrastructure &amp; SecOps · 관제실</small></h3><p>HSM·KMS에서 서명 키를 생성·순환·폐기한다(플랫폼 밖 업무 — 플랫폼에서는 조회).</p>
+<p class="meta">조직 역할: PKI 운영 · 데모 계정: viewer · 인계 상대: 차량사이버보안팀</p>
+<h4>수행·책임 업무 (1)</h4><ol><li><a href="#FPW.11-A01">FPW.11-A01 서명 키 계층·HSM 운영</a> <small>보안·키·취약점 관리</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: <code>/admin/security</code><br>
+참조 화면: <code>/deployments</code>, <code>/master/artifacts</code></p></article><article class="card" id="dep-DEP-PUR">
+<h3>구매팀 <small>DEP-PUR · Procurement · 검토 포털</small></h3><p>협력사 계약·납품 조건을 관리하고 협력사 관련 검토에 의견을 준다.</p>
+<p class="meta">조직 역할: 구매 · 데모 계정: viewer · 인계 상대: 기능안전팀, 품질팀</p>
+<h4>수행·책임 업무 (3)</h4><ol><li><a href="#FPW.10-A01">FPW.10-A01 계약 전 협력사 역량 확인</a> <small>협력사 관리</small> <i>2차 초안</i></li><li><a href="#FPW.10-A02">FPW.10-A02 DIA·CIA 체결</a> <small>협력사 관리</small> <i>2차 초안</i></li><li><a href="#FPW.10-A04">FPW.10-A04 공급망 원산지 속성 관리</a> <small>협력사 관리</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: 없음<br>
+참조 화면: <code>/supplier/portal</code></p></article><article class="card" id="dep-DEP-LEG">
+<h3>법무팀 <small>DEP-LEG · Legal · 검토 포털</small></h3><p>데이터 이용·고객 고지·계약 근거를 검토하고 의견을 준다.</p>
+<p class="meta">조직 역할: 법무 · 데모 계정: viewer · 인계 상대: –</p>
+<h4>수행·책임 업무 (2)</h4><ol><li><a href="#FPW.11-A06">FPW.11-A06 OSS 라이선스·보안 프로그램 운영</a> <small>보안·키·취약점 관리</small> <i>2차 초안</i></li><li><a href="#FPW.12-A03">FPW.12-A03 중국 데이터 현지 처리·이전 심사</a> <small>운영 데이터·데이터 보호</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: 없음<br>
+참조 화면: <code>/integration/openfeature</code>, <code>/admin/data</code>, <code>/verify/compliance</code></p></article><article class="card" id="dep-DEP-DPO">
+<h3>개인정보보호팀 <small>DEP-DPO · Data Protection · 검토 포털</small></h3><p>운영 데이터의 개인정보 처리 근거·보존·삭제를 검토한다.</p>
+<p class="meta">조직 역할: 데이터 보호 담당 · 데모 계정: viewer · 인계 상대: –</p>
+<h4>수행·책임 업무 (1)</h4><ol><li><a href="#FPW.12-A02">FPW.12-A02 평가 컨텍스트 개인정보 검토</a> <small>운영 데이터·데이터 보호</small> <i>2차 초안</i></li></ol>
+<p class="meta">주 업무 화면: <code>/integration/openfeature</code><br>
+참조 화면: <code>/ops/safety-kpi</code>, <code>/admin/data</code></p></article></section><section id="coverage"><h2>21. 규칙 커버리지</h2>
 <p class="lead">보고서 규칙 181개 중 역할이 지정된 62개를 그 역할이 수행·책임지는 활동이 이행해야 한다.
 현재 <b>62/62</b>.</p>
 <table><thead><tr><th>규칙</th><th>제목</th><th>지정 역할</th><th>이행 활동</th></tr></thead><tbody><tr class="ok"><td>FFG-GEN-001</td><td>Compliance Profile은 버전 관리 데이터</td><td>법규 담당</td><td><a href="#FPW.13-A02">FPW.13-A02 Compliance Profile 정의</a></td></tr><tr class="ok"><td>FFG-GEN-002</td><td>표준 판은 프로젝트 단위로 고정</td><td>Safety Manager</td><td><a href="#FPW.13-A01">FPW.13-A01 표준 판 고정</a></td></tr><tr class="ok"><td>FFG-GEN-004</td><td>법규 감시와 갱신 주기</td><td>Safety Manager, CSM, 법규 담당</td><td><a href="#FPW.13-A03">FPW.13-A03 분기 법규 감시·Profile 갱신</a></td></tr><tr class="ok"><td>FFG-GEN-006</td><td>형식승인 영향 판단은 법규 담당이 서명</td><td>법규 담당</td><td><a href="#FPW.2-A04">FPW.2-A04 형식승인 영향 1차 판단</a><br><a href="#FPW.6-A03">FPW.6-A03 SUMS 기록·형식승인 확인</a><br><a href="#FPW.7-A07">FPW.7-A07 형식승인·사용자 고지 확인</a></td></tr><tr class="ok"><td>FFG-ADS-001</td><td>ADS 규정의 법적 지위와 최종 법문 확인</td><td>법규 담당</td><td><a href="#FPW.13-A02">FPW.13-A02 Compliance Profile 정의</a></td></tr><tr class="ok"><td>FFG-ADS-002</td><td>ADS Feature는 원격 종료가 가능해야 한다</td><td>Safety Manager</td><td><a href="#FPW.2-A02">FPW.2-A02 HARA·TARA 공동 수행</a></td></tr><tr class="ok"><td>FFG-ADS-006</td><td>원격 종료의 권한과 절차를 시스템 설명에 기술</td><td>법규 담당, 운영 조직</td><td><a href="#FPW.13-A04">FPW.13-A04 원격 종료 시스템 설명 작성</a></td></tr><tr class="ok"><td>FFG-ADS-008</td><td>Safety Case의 주장·논거·증거 식별</td><td>Safety Manager</td><td><a href="#FPW.7-A03">FPW.7-A03 Safety Case·SOTIF 근거 정리</a></td></tr><tr class="ok"><td>FFG-ADS-009</td><td>시험 재현 정보 기록</td><td>시험 조직</td><td><a href="#FPW.5-A05">FPW.5-A05 시험 Evidence 연결·TMS 제출</a></td></tr><tr class="ok"><td>FFG-ADS-011</td><td>대량 원격 종료 계획</td><td>Safety Manager, 운영 조직</td><td><a href="#FPW.8-A02">FPW.8-A02 차단 필요성·범위 판단</a></td></tr><tr class="ok"><td>FFG-ADS-012</td><td>Safety Case 독립 검토와 기록</td><td>Safety Manager, 품질 조직</td><td><a href="#FPW.7-A04">FPW.7-A04 Safety Case 독립 검토</a></td></tr><tr class="ok"><td>FFG-CLS-001</td><td>모든 Feature Version은 네 축으로 분류</td><td>Safety Manager</td><td><a href="#FPW.1-A03">FPW.1-A03 안전 분류(네 축) 확정</a><br><a href="#FPW.1-A05">FPW.1-A05 G1 등록·분류 판정</a></td></tr><tr class="ok"><td>FFG-CLS-003</td><td>F 등급 하향은 재분석 없이는 금지</td><td>Safety Manager</td><td><a href="#FPW.1-A03">FPW.1-A03 안전 분류(네 축) 확정</a></td></tr><tr class="ok"><td>FFG-CLS-005</td><td>법규 의무 기능은 DC4·R2</td><td>법규 담당</td><td><a href="#FPW.1-A04">FPW.1-A04 법규 의무 기능 판정</a></td></tr><tr class="ok"><td>FFG-CLS-006</td><td>안전 거동의 A/B 실험 금지</td><td>Feature Owner</td><td><a href="#FPW.7-A02">FPW.7-A02 효과 실험 계획 등록</a></td></tr><tr class="ok"><td>FFG-CLS-008</td><td>Flag 만료와 은퇴 계획</td><td>Feature Owner</td><td><a href="#FPW.1-A01">FPW.1-A01 Feature 등록·초안 작성</a><br><a href="#FPW.9-A02">FPW.9-A02 Flag Retirement 요청</a></td></tr><tr class="ok"><td>FFG-LCY-003</td><td>재-HARA 조건 자동 검출</td><td>Safety Manager</td><td><a href="#FPW.2-A01">FPW.2-A01 재-HARA 조건 검출·영향 범위 산정</a></td></tr><tr class="ok"><td>FFG-LCY-004</td><td>F2 이상 안전요구의 추적성 100%</td><td>요구 Owner</td><td><a href="#FPW.3-A02">FPW.3-A02 양방향 추적성 점검</a></td></tr><tr class="ok"><td>FFG-LCY-005</td><td>비활성화 요구를 안전요구에 포함</td><td>요구 Owner</td><td><a href="#FPW.3-A01">FPW.3-A01 안전요구 도출·명세</a></td></tr><tr class="ok"><td>FFG-LCY-006</td><td>F2 이상에는 차량 내 고장 감지</td><td>아키텍트</td><td><a href="#FPW.4-A01">FPW.4-A01 차량 내 감시·안전기제 설계</a></td></tr><tr class="ok"><td>FFG-LCY-007</td><td>V&amp;V 독립성은 참조 ASIL로 결정</td><td>Safety Manager</td><td><a href="#FPW.5-A01">FPW.5-A01 독립성 수준·검증 계획 확정</a></td></tr><tr class="ok"><td>FFG-LCY-008</td><td>활성화·비활성화는 SUMS 기록 대상</td><td>법규 담당</td><td><a href="#FPW.6-A03">FPW.6-A03 SUMS 기록·형식승인 확인</a></td></tr><tr class="ok"><td>FFG-LCY-011</td><td>Flag 은퇴와 코드 삭제</td><td>Feature Owner</td><td><a href="#FPW.9-A04">FPW.9-A04 코드·설정·시험 삭제 기록</a></td></tr><tr class="ok"><td>FFG-DEAC-001</td><td>원격 Kill은 요청이며 안전기제가 아님</td><td>Safety Manager, 아키텍트</td><td><a href="#FPW.4-A01">FPW.4-A01 차량 내 감시·안전기제 설계</a></td></tr><tr class="ok"><td>FFG-DEAC-010</td><td>안전 Kill과 리콜·봉쇄 절차 연계</td><td>법규 담당</td><td><a href="#FPW.8-A03">FPW.8-A03 리콜·봉쇄 근거 연계</a></td></tr><tr class="ok"><td>FFG-DEAC-012</td><td>Kill·복원 드릴</td><td>운영 조직</td><td><a href="#FPW.8-A11">FPW.8-A11 분기 드릴·G8 운영 판정</a></td></tr><tr class="ok"><td>FFG-DEAC-013</td><td>대기 상한과 상위 대응</td><td>Safety Manager</td><td><a href="#FPW.8-A06">FPW.8-A06 차단 전달·적용 추적</a></td></tr><tr class="ok"><td>FFG-PLT-013</td><td>컴포넌트 TCL 분류와 신뢰도 확보</td><td>Safety Manager</td><td><a href="#FPW.4-A02">FPW.4-A02 플랫폼 도구 신뢰도 분류</a></td></tr><tr class="ok"><td>FFG-VEH-012</td><td>SEooC 사용 가정의 문서화와 통합 검증</td><td>통합 조직</td><td><a href="#FPW.5-A03">FPW.5-A03 통합 시험·SEooC 가정 확인</a></td></tr><tr class="ok"><td>FFG-VEH-016</td><td>EOL 프로비저닝</td><td>통합 조직</td><td><a href="#FPW.10-A07">FPW.10-A07 EOL 프로비저닝 검증</a></td></tr><tr class="ok"><td>FFG-OFT-003</td><td>Evaluation Context에 개인정보·위치·주행 상태를 넣지 않는다</td><td>데이터 보호 담당</td><td><a href="#FPW.12-A02">FPW.12-A02 평가 컨텍스트 개인정보 검토</a></td></tr><tr class="ok"><td>FFG-TST-001</td><td>비활성화 등급별 시나리오 시험</td><td>시험 조직</td><td><a href="#FPW.5-A04">FPW.5-A04 비활성화·결함 주입 시험 수행</a></td></tr><tr class="ok"><td>FFG-TST-003</td><td>허용 조합 정의와 covering array</td><td>시험 조직</td><td><a href="#FPW.5-A02">FPW.5-A02 시나리오·허용 조합 정의</a></td></tr><tr class="ok"><td>FFG-TST-004</td><td>결함 주입</td><td>시험 조직</td><td><a href="#FPW.5-A04">FPW.5-A04 비활성화·결함 주입 시험 수행</a></td></tr><tr class="ok"><td>FFG-TST-005</td><td>LPC 장악 가정 시험</td><td>시험 조직</td><td><a href="#FPW.5-A04">FPW.5-A04 비활성화·결함 주입 시험 수행</a></td></tr><tr class="ok"><td>FFG-TST-006</td><td>시뮬레이션 도구 체계의 신뢰성</td><td>시험 조직</td><td><a href="#FPW.5-A02">FPW.5-A02 시나리오·허용 조합 정의</a></td></tr><tr class="ok"><td>FFG-TST-007</td><td>시나리오 정의와 Version 관리</td><td>시험 조직</td><td><a href="#FPW.5-A02">FPW.5-A02 시나리오·허용 조합 정의</a></td></tr><tr class="ok"><td>FFG-TST-009</td><td>시험 Evidence의 연계와 재현 정보</td><td>시험 조직</td><td><a href="#FPW.5-A05">FPW.5-A05 시험 Evidence 연결·TMS 제출</a></td></tr><tr class="ok"><td>FFG-TST-010</td><td>운영 단계 Canary와 Shadow 판정 기준</td><td>운영 조직</td><td><a href="#FPW.7-A01">FPW.7-A01 Canary·Shadow 판정 기준 정의</a><br><a href="#FPW.7-A11">FPW.7-A11 Canary 활성화·단계적 확대</a></td></tr><tr class="ok"><td>FFG-TST-011</td><td>ADS 원격 종료 시나리오 시험</td><td>시험 조직</td><td><a href="#FPW.5-A04">FPW.5-A04 비활성화·결함 주입 시험 수행</a></td></tr><tr class="ok"><td>FFG-TEL-005</td><td>중국 데이터의 현지 처리와 이전 심사</td><td>법무</td><td><a href="#FPW.12-A03">FPW.12-A03 중국 데이터 현지 처리·이전 심사</a></td></tr><tr class="ok"><td>FFG-TEL-007</td><td>텔레메트리는 안전 판정에 쓰지 않음</td><td>아키텍트</td><td><a href="#FPW.4-A01">FPW.4-A01 차량 내 감시·안전기제 설계</a></td></tr><tr class="ok"><td>FFG-TEL-009</td><td>운행 중 감시 지표와 부속서 1 집계</td><td>운영 조직</td><td><a href="#FPW.8-A01">FPW.8-A01 이상 징후 확인</a></td></tr><tr class="ok"><td>FFG-SEC-001</td><td>공동 HARA·TARA</td><td>Safety Manager, CSM</td><td><a href="#FPW.2-A02">FPW.2-A02 HARA·TARA 공동 수행</a></td></tr><tr class="ok"><td>FFG-SEC-002</td><td>서명·키 관리</td><td>PKI 운영</td><td><a href="#FPW.11-A01">FPW.11-A01 서명 키 계층·HSM 운영</a></td></tr><tr class="ok"><td>FFG-SEC-004</td><td>Kill 전달 추적</td><td>운영 조직</td><td><a href="#FPW.8-A06">FPW.8-A06 차단 전달·적용 추적</a></td></tr><tr class="ok"><td>FFG-SEC-005</td><td>사이버보안 Evidence와 R155 보고</td><td>CSM</td><td><a href="#FPW.11-A05">FPW.11-A05 CSMS Evidence·R155 보고</a></td></tr><tr class="ok"><td>FFG-SEC-006</td><td>공급망 원산지 관리</td><td>구매</td><td><a href="#FPW.10-A04">FPW.10-A04 공급망 원산지 속성 관리</a></td></tr><tr class="ok"><td>FFG-SOT-001</td><td>Feature Version별 SOTIF 갱신</td><td>Feature Owner, Safety Manager</td><td><a href="#FPW.2-A03">FPW.2-A03 SOTIF 분석 갱신</a></td></tr><tr class="ok"><td>FFG-SOT-004</td><td>SOTIF 출시 기준을 G7에 연결</td><td>Safety Manager</td><td><a href="#FPW.7-A03">FPW.7-A03 Safety Case·SOTIF 근거 정리</a><br><a href="#FPW.7-A08">FPW.7-A08 G7 출시·활성화 판정</a></td></tr><tr class="ok"><td>FFG-SOT-005</td><td>AI 기반 Feature</td><td>Feature Owner</td><td><a href="#FPW.7-A08">FPW.7-A08 G7 출시·활성화 판정</a></td></tr><tr class="ok"><td>FFG-SBOM-005</td><td>취약점 대응 연결</td><td>CSM, 운영 조직</td><td><a href="#FPW.11-A04">FPW.11-A04 취약점 영향 특정·대응 결정</a></td></tr><tr class="ok"><td>FFG-SBOM-006</td><td>OSS 라이선스와 보안 프로그램</td><td>법무</td><td><a href="#FPW.11-A06">FPW.11-A06 OSS 라이선스·보안 프로그램 운영</a></td></tr><tr class="ok"><td>FFG-SBOM-007</td><td>원산지 속성</td><td>구매</td><td><a href="#FPW.10-A04">FPW.10-A04 공급망 원산지 속성 관리</a></td></tr><tr class="ok"><td>FFG-SUP-003</td><td>Feature Flag 특화 평가 포인트</td><td>품질 조직</td><td><a href="#FPW.10-A01">FPW.10-A01 계약 전 협력사 역량 확인</a></td></tr><tr class="ok"><td>FFG-SUP-004</td><td>DIA·CIA에 이 보고서 인용</td><td>구매</td><td><a href="#FPW.10-A02">FPW.10-A02 DIA·CIA 체결</a></td></tr><tr class="ok"><td>FFG-SUP-005</td><td>계약 전 역량 확인</td><td>품질 조직, 구매</td><td><a href="#FPW.10-A01">FPW.10-A01 계약 전 협력사 역량 확인</a></td></tr><tr class="ok"><td>FFG-SUP-008</td><td>Gate별 납품물과 합격 기준</td><td>품질 조직</td><td><a href="#FPW.10-A06">FPW.10-A06 Gate별 납품물 입고 검사</a></td></tr><tr class="ok"><td>FFG-SUP-009</td><td>OEM의 독립 입고 검사</td><td>시험 조직, 품질 조직</td><td><a href="#FPW.10-A06">FPW.10-A06 Gate별 납품물 입고 검사</a></td></tr><tr class="ok"><td>FFG-SUP-014</td><td>확인 조치의 독립성 보장</td><td>Safety Manager</td><td><a href="#FPW.10-A03">FPW.10-A03 확인 조치 독립성 지정</a></td></tr><tr class="ok"><td>FFG-SUP-016</td><td>기존 구현 진단</td><td>품질 조직</td><td><a href="#FPW.10-A05">FPW.10-A05 기존 구현 진단</a></td></tr><tr class="ok"><td>FFG-SUP-017</td><td>법적 의무를 위한 안전 정보 제공</td><td>법규 담당</td><td><a href="#FPW.10-A02">FPW.10-A02 DIA·CIA 체결</a></td></tr></tbody></table>

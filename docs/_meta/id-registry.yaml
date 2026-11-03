@@ -209,6 +209,22 @@ workflows:
     WF-ROLE-PLM: "기준정보 담당 업무 절차서"
     WF-ROLE-PDA: "상품 기획 업무 절차서"
     WF-ROLE-PO: "상품 Owner 업무 절차서"
+  departments:
+    WF-DEP-INDEX: "부서별 R&R — 부서×프로세스 RACI·부서 간 흐름"
+    WF-DEP-PDP: "상품기획팀 R&R 문서"
+    WF-DEP-SE: "시스템엔지니어링팀 R&R 문서"
+    WF-DEP-INT: "SW통합·릴리스팀 R&R 문서"
+    WF-DEP-PLM: "PLM·기준정보팀 R&R 문서"
+    WF-DEP-FS: "기능안전팀 R&R 문서"
+    WF-DEP-CS: "차량사이버보안팀 R&R 문서"
+    WF-DEP-HOM: "법규인증팀 R&R 문서"
+    WF-DEP-VAL: "시험·검증팀 R&R 문서"
+    WF-DEP-QA: "품질팀 R&R 문서"
+    WF-DEP-OPS: "OTA·서비스운영팀 R&R 문서"
+    WF-DEP-ITSEC: "IT인프라·보안운영팀 R&R 문서"
+    WF-DEP-PUR: "구매팀 R&R 문서"
+    WF-DEP-LEG: "법무팀 R&R 문서"
+    WF-DEP-DPO: "개인정보보호팀 R&R 문서"
 
 # ── 다이어그램 타입 ───────────────────────────────────────
 diagram_types: [ERD, CLS, STA, SEQ, FLW, C4, JNY]

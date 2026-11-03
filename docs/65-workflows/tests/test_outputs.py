@@ -38,8 +38,9 @@ def test_markdown_front_matter_follows_docs_schema():
     types = schema["required_fields"]["type"]["values"]
     owners = schema["required_fields"]["owner"]["values"]
     m = wm.load_model()
-    files = build_md.build(partial=True)
-    assert len(files) == len(m["processes"]) + len(m["roles"])
+    files = [f for f in build_md.build(partial=True) if f.suffix == ".md"]
+    # 프로세스·역할 문서 + 부서 문서와 부서 색인(README)
+    assert len(files) == len(m["processes"]) + len(m["roles"]) + len(m["departments"]) + 1
     for f in files:
         text = f.read_text(encoding="utf-8")
         fm = yaml.safe_load(text.split("---")[1])
@@ -67,6 +68,29 @@ def test_workflows_json_is_deterministic_and_complete(model):
         nodes = {n["id"] for n in p["layout"]["nodes"]}
         assert {a["id"] for a in p["activities"]} <= nodes
         assert all(e["from"] in nodes and e["to"] in nodes and len(e["points"]) >= 2 for e in p["layout"]["edges"])
+
+
+def test_department_outputs_cover_every_department(tmp_path, model):
+    import csv
+    import io
+    import json
+    import build_json
+    html = build_html.build(partial=True, out=tmp_path / "index.html").read_text(encoding="utf-8")
+    assert 'id="by-department"' in html and 'class="dept-raci"' in html
+    doc = json.loads(build_json.render(model))
+    assert [d["id"] for d in doc["departments"]] == [d["id"] for d in model["departments"]]
+    for d in model["departments"]:
+        assert f'id="dep-{d["id"]}"' in html
+    for p in doc["processes"]:
+        lay = p["departmentLayout"]
+        assert {ln["department"] for ln in lay["lanes"]} <= set(model["dept_by_id"])
+        assert {a["id"] for a in p["activities"]} <= {n["id"] for n in lay["nodes"]}
+    build_md.build(partial=True)
+    rows = list(csv.reader(io.StringIO((build_md.OUT / "departments" / "raci.csv").read_text(encoding="utf-8-sig"))))
+    assert rows[0][3:] == [d["name"] for d in model["departments"]]
+    assert len(rows) - 1 == len(model["acts_by_id"])
+    for row in rows[1:]:                                     # 모든 활동은 R을 맡는 부서가 있다
+        assert any("R" in v.split("/") for v in row[3:]), row[:3]
 
 
 def test_workflows_json_personas_follow_iam_accounts(model):

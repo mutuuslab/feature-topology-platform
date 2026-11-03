@@ -1,7 +1,7 @@
 """모델 → out/index.html (단일 파일). 손으로 고치지 않는다.
 
 구성: 읽는 법·프로세스 고르기 → 담당자 → Gate 대응 → 정합성 점검 → 직무 분리 → 프로세스(스윔레인·활동·산출물)
-      → 담당자별 업무 절차서 → 규칙 커버리지
+      → 담당자별 업무 절차서 → 부서별 R&R(부서×프로세스 RACI·부서 레인 흐름) → 규칙 커버리지
 사용: python -I scripts/build_html.py [--partial]
 """
 from __future__ import annotations
@@ -85,10 +85,10 @@ def junctions(lay) -> list:
     return out
 
 
-def svg_workflow(m, proc) -> str:
-    lay = wm.layout(m, proc)
+def svg_workflow(m, proc, by: str = "role") -> str:
+    lay = wm.layout(m, proc, by)
     h = lay.height + 24
-    mid = f"arr-{proc['id'].replace('.', '-')}"
+    mid = f"arr-{proc['id'].replace('.', '-')}" + ("-dep" if by == "department" else "")
     out = [f'<svg class="flow" viewBox="-2 -2 {lay.width + 4} {h + 4}" width="{lay.width}" height="{h}" '
            f'role="img" aria-label="{E(proc["id"])} 업무 흐름">',
            f'<defs><marker id="{mid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" '
@@ -396,6 +396,63 @@ def section_role_procedures(m, num) -> str:
 <p class="lead">RACI에서 자동으로 모은 역할별 절차서다. 수행(R)·책임(A) 활동을 생애주기 순서로 나열한다.</p>{''.join(parts)}</section>"""
 
 
+WORKSPACE_KO = {"studio": "기획 스튜디오", "review": "심사 결재함", "console": "엔지니어링 콘솔",
+                "control": "관제실", "portal": "검토 포털"}
+
+
+def section_departments(m, num) -> str:
+    """부서별 R&R — 부서×프로세스 RACI, 부서 겸직 직무 분리, 부서 레인 흐름도, 부서 카드."""
+    if not m["departments"]:
+        return ""
+    scope = m["common"].get("department_scope", {})
+    first = set(scope.get("first", []))
+    plans = [pl for pl in m["plan"] if pl["id"] in m["proc_by_id"]]
+    head = "".join(f'<th>{E(pl["id"])}{"" if pl["id"] in first else "*"}</th>' for pl in plans)
+    rows = []
+    for d in m["departments"]:
+        cells = []
+        for pl in plans:
+            c = {k: 0 for k in wm.RACI_ORDER}
+            for a in m["proc_by_id"][pl["id"]]["activities"]:
+                for part in wm.dept_parts(m, d["id"], a):
+                    c[part] += 1
+            txt = " ".join(f"{k}{c[k]}" for k in wm.RACI_ORDER if c[k]) or "–"
+            cls = "ra" if c["R"] or c["A"] else "ci" if c["C"] or c["I"] else ""
+            cells.append(f'<td class="{cls}">{E(txt)}</td>')
+        rows.append(f'<tr><th><a href="#dep-{E(d["id"])}">{E(d["name"])}</a></th>{"".join(cells)}</tr>')
+    sod = "".join(f'<li><b>{E(m["dept_by_id"][x["department"]]["name"])}</b> {E(x["sod"])}: {act_link(m, x["first"])} ↔ '
+                  f'{act_link(m, x["second"])} — {E(x["note"])}</li>' for x in wm.dept_sod_overlaps(m)) or "<li>없음</li>"
+    flows = "".join(f'<details class="more"><summary>{E(p["id"])} {E(p["name_ko"])} — 부서 레인'
+                    f'{"" if p["id"] in first else " (2차 초안)"}</summary><div class="flowwrap">{svg_workflow(m, p, "department")}</div></details>'
+                    for p in (m["proc_by_id"][pl["id"]] for pl in plans))
+    cards = []
+    for d in m["departments"]:
+        acts = wm.dept_activities(m, d["id"])
+        do = [(p, a) for p, a, _ in acts if {"R", "A"} & set(wm.dept_parts(m, d["id"], a))]
+        hand = wm.dept_handoffs(m, d["id"])
+        scr = wm.dept_screens(m, d["id"])
+        roles = ", ".join(E(m["roles_by_id"][r]["name"]) for r in d["roles"])
+        items = "".join(f'<li>{act_link(m, a["id"])} <small>{E(p["name_ko"])}</small>'
+                        f'{"" if p["id"] in first else " <i>2차 초안</i>"}</li>' for p, a in do) or "<li>없음(협의·통보만)</li>"
+        partners = sorted({m["dept_by_id"][o]["name"] for k in ("in", "out") for _, _, o in hand[k]})
+        cards.append(f"""<article class="card" id="dep-{E(d['id'])}">
+<h3>{E(d['name'])} <small>{E(d['id'])} · {E(d['en'])} · {E(WORKSPACE_KO[d['workspace']])}</small></h3><p>{E(' '.join(d['desc'].split()))}</p>
+<p class="meta">조직 역할: {roles} · 데모 계정: {E(', '.join(d['personas']))} · 인계 상대: {E(', '.join(partners) or '–')}</p>
+<h4>수행·책임 업무 ({len(do)})</h4><ol>{items}</ol>
+<p class="meta">주 업무 화면: {', '.join(f'<code>{E(s)}</code>' for s in scr['primary']) or '없음'}<br>
+참조 화면: {', '.join(f'<code>{E(s)}</code>' for s in scr['reference']) or '없음'}</p></article>""")
+    notes = "".join(f"<li>{E(x)}</li>" for x in scope.get("demo_notes", []))
+    return f"""<section id="by-department"><h2>{num}. 부서별 R&R</h2>
+<p class="lead">조직 역할 {len(m['roles'])}개를 OEM 부서 가정안 {len(m['departments'])}개에 나눴다. {E(scope.get('note', ''))}
+요청자·승인자 분리는 부서가 아니라 사람 단위다(같은 부서도 다른 사람이면 된다).</p>
+<ul class="meta">{notes}</ul>
+<h3>부서×프로세스 RACI</h3><p class="meta">칸 = 활동 수. R 수행 · A 책임 · C 협의 · I 통보. * = 2차 초안. 원본 표: out/departments/raci.csv</p>
+<div class="flowwrap"><table class="dept-raci"><thead><tr><th>부서</th>{head}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>
+<h3>부서 겸직 직무 분리</h3><ul>{sod}</ul>
+<h3>부서 간 흐름</h3>{flows}
+<h3>부서 카드</h3>{''.join(cards)}</section>"""
+
+
 def section_coverage(m, rep, num) -> str:
     rows = []
     for rule in m["guide"]["rules"]:
@@ -442,7 +499,7 @@ def toolbar(m) -> str:
     opts = "".join(f'<option value="{E(r["id"])}">{E(r["name"])}</option>' for r in m["roles"])
     return f'''<div class="toolbar"><b>{E(m["common"]["meta"]["title"])}</b> v{E(m["common"]["meta"]["version"])}
 <label>내 역할 보기 <select id="rolepick"><option value="">전체</option>{opts}</select></label>
-<a href="#overview">고르기</a><a href="#roles">담당자</a><a href="#gates">Gate</a><a href="#alignment">정합성</a><a href="#by-role">담당자별 절차서</a><a href="#coverage">커버리지</a></div>'''
+<a href="#overview">고르기</a><a href="#roles">담당자</a><a href="#gates">Gate</a><a href="#alignment">정합성</a><a href="#by-role">담당자별 절차서</a><a href="#by-department">부서별 R&R</a><a href="#coverage">커버리지</a></div>'''
 
 
 CSS = """
@@ -464,6 +521,7 @@ th{background:#eef2f7}tr.todo td{color:var(--mute)}tr.miss td:last-child{color:#
 .trigger{color:var(--gate);margin:2px 0}.plat{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .plat span{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:1px 6px;font-size:12.5px}.plat.off{color:var(--mute);font-size:12.5px}
 .plat .screen{background:#f0fdf4;border-color:#bbf7d0}.plat .pg{background:#fff7ed;border-color:#fed7aa}
+.dept-raci td.ra{background:#dbeafe;font-weight:600}.dept-raci td.ci{background:#f1f5f9}.dept-raci td,.dept-raci th{white-space:nowrap}
 ul.checks li::marker{content:"✓ "}a.wp{color:#0f766e}.flowwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;padding:6px;background:#fff}
 svg.flow .lane0{fill:#f8fafc;stroke:#cbd5e1}svg.flow .lane1{fill:#fff;stroke:#cbd5e1}svg.flow .lanesep{stroke:#cbd5e1}
 svg.flow .lanelabel{font-size:12.5px;font-weight:600;fill:#334155}svg.flow .act{fill:#fff;stroke:#1d4ed8;stroke-width:1.4}
@@ -499,7 +557,8 @@ def build(partial: bool = False, out: Path = OUT) -> Path:
         body.append(section_process(m, p, num))
         num += 1
     body.append(section_role_procedures(m, num))
-    body.append(section_coverage(m, rep, num + 1))
+    body.append(section_departments(m, num + 1))
+    body.append(section_coverage(m, rep, num + 2))
     meta = m["common"]["meta"]
     html = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{E(meta['title'])}</title><meta name="generator" content="docs/65-workflows/scripts/build_html.py"><style>{CSS}</style></head>

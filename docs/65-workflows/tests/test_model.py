@@ -1,4 +1,6 @@
 """모델·사실 소스·검증기 테스트. 결함 주입으로 검증기가 실제로 잡는지 확인한다."""
+import pytest
+
 import wf_model as wm
 
 
@@ -131,9 +133,10 @@ def test_copied_rule_text_is_error(model):
     assert any("그대로 옮겼다" in e for e in errors(model))
 
 
-def test_layout_has_no_overlap_or_crossing(model):
+@pytest.mark.parametrize("by", ["role", "department"])
+def test_layout_has_no_overlap_or_crossing(model, by):
     for p in model["processes"]:
-        lay = wm.layout(model, p)
+        lay = wm.layout(model, p, by)
         acts = [n for n in lay.nodes.values() if n.kind == "action"]
         blockers = list(lay.nodes.values())          # 활동 상자와 시작·종료 원 모두 — 선이 지나가면 안 된다
         for i, a in enumerate(acts):
@@ -179,3 +182,46 @@ def test_resolved_in_platform_must_not_be_detected_anymore(model):
     aln = next(a for a in model["common"]["alignment"] if a["id"] == "ALN-05")   # G4 아키텍트 — 여전히 검출됨
     aln["status"] = "resolved-in-platform"
     assert any("ALN-05: 플랫폼에서 해소했다고 적었지만" in e for e in errors(model))
+
+
+# ── 부서 ──────────────────────────────────────────────────────
+def test_every_role_belongs_to_exactly_one_department(model):
+    owners = [r for d in model["departments"] for r in d["roles"]]
+    assert sorted(owners) == sorted(r["id"] for r in model["roles"])
+    assert {d["workspace"] for d in model["departments"]} == set(wm.WORKSPACES)
+
+
+def test_detects_role_without_department(model):
+    model["common"]["departments"][0]["roles"].remove("R-FO")
+    m = {**model, "departments": model["common"]["departments"]}
+    assert any("R-FO" in e and "정확히 한 부서" in e for e in errors(m))
+
+
+def test_detects_role_in_two_departments(model):
+    model["departments"][1]["roles"].append("R-FO")
+    assert any("R-FO" in e and "정확히 한 부서" in e for e in errors(model))
+
+
+def test_detects_persona_outside_department(model):
+    model["dept_by_id"]["DEP-OPS"]["personas"] = ["author"]      # Feature 작성 계정은 운영 역할을 맡지 않는다
+    assert any("DEP-OPS" in e and "author" in e for e in errors(model))
+
+
+def test_detects_unknown_workspace(model):
+    model["dept_by_id"]["DEP-LEG"]["workspace"] = "lounge"
+    assert any("DEP-LEG" in e and "workspace" in e for e in errors(model))
+
+
+def test_kill_request_and_approval_are_in_different_departments(model):
+    # 2026-11-04 결정: 차단 요청 = OTA·서비스운영, 2인 승인 = 기능안전 + 차량사이버보안
+    _, req = model["acts_by_id"]["FPW.8-A04"]
+    _, appr = model["acts_by_id"]["FPW.8-A05"]
+    assert wm.lane_dept(model, req) == "DEP-OPS"
+    assert {model["dept_of_role"][r] for r in appr["raci"]["R"]} == {"DEP-FS", "DEP-CS"}
+
+
+def test_department_screens_split_primary_and_reference(model):
+    s = wm.dept_screens(model, "DEP-OPS")
+    assert s["primary"] and not set(s["primary"]) & set(s["reference"])
+    assert all(wm.dept_screens(model, d["id"])["primary"] or wm.dept_screens(model, d["id"])["reference"]
+               for d in model["departments"])

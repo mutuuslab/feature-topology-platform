@@ -3,7 +3,7 @@ id: WF-ROLE-INT
 type: workflow
 title: "통합 조직 업무 절차서 / Integration Organization Procedure"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
@@ -15,7 +15,7 @@ traces:
     - WF-FPW-5
     - WF-FPW-6
     - WF-FPW-9
-last_updated: 2026-10-17
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 

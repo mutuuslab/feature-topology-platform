@@ -3,7 +3,7 @@ id: WF-ROLE-REQ
 type: workflow
 title: "요구 Owner 업무 절차서 / Requirement Owner Procedure"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
@@ -13,7 +13,7 @@ traces:
     - WF-FPW-3
     - WF-FPW-4
     - WF-FPW-9
-last_updated: 2026-10-17
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 

@@ -3,7 +3,7 @@ id: WF-ROLE-TST
 type: workflow
 title: "시험 조직 업무 절차서 / Test Organization Procedure"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
@@ -16,7 +16,7 @@ traces:
     - WF-FPW-7
     - WF-FPW-8
     - WF-FPW-9
-last_updated: 2026-10-17
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 

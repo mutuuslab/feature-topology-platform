@@ -285,6 +285,15 @@
     - 화면 `/ops/rollback`: 배포 → 복구 가능 버전·이력 → 미리보기·요청 → 승인·실행 → 이력.
 
 ## 다음 세션 시작점
+- **부서별 R&R + 부서 작업공간(2026-11-04, 브랜치 `feat/department-workspaces`, worktree `../2026-06-04_Feature_Platform-dept`, feat/prod-readiness 5d2a316 기준)** — 계획 `~/.claude/plans/dapper-cuddling-peach.md`, 절차 모델 쪽 상태는 `docs/65-workflows/PROGRESS.md`.
+  - 사용자 요청: 부서별 R&R 업무 흐름 + 부서를 고르면 그 업무의 메뉴·화면, 부서마다 UI/UX가 확 다르게, 로그인 뒤 부서 전환·전체 보기. **데모 전제** — 화면 차단 없음, 운영 빌드(OIDC)는 부서 보기를 싣지 않는다.
+  - 모델: `common.yaml departments`(OEM 가정안 14부서 → 작업공간 5유형 studio·review·console·control·portal), `workflow:sync`가 `contracts/src/generated/departments.ts`(셸용 11 KB)를 더 만든다. 계약 `WORKSPACES`·`departmentsOf`·`departmentOfPersona`, `workflowProblems`가 부서(역할마다 한 부서·데모 계정이 부서 역할을 맡음)도 검사.
+  - 화면: 상태 `department`(`fp.state.v2`, 기본 `ALL` — 기존 시험·e2e는 전체 보기로 그대로), 상단 바 `DepartmentSwitcher`(부서 + 부서 안 역할), 데모 로그인 '담당 부서', 셸은 부서 모드에서 레일·패널 대신 `DepartmentNav`(가로: studio·portal / 세로: review·console·control), `html[data-workspace]` 토큰(강조색·`--row-h`·면, `:root`에만 — 셸 div의 같은 속성이 다크 토큰을 덮던 결함), 관제실은 `html[data-zone=ops]`. 홈(/)은 `screens/workspaces/*`(지연 로딩), `/procedures/roles?view=dept&dept=` 부서별 R&R 탭(부서 레인 흐름도 = 모델 `departmentLayout`).
+  - 결정: 긴급 차단 2인 승인 = 기능안전 + 차량사이버보안 유지(운영 리더는 플랫폼 허용·데모 계정 없음, 9계정·겸직 0건 유지).
+  - 시험: contracts `workflows.test` 부서 6건, frontend `departments.test.tsx` 17건, e2e `departments.spec.ts` 23건(5유형 × 1366·1920, light·dark wcag22aa, 강조색 구분, 전환·전체 메뉴 보기, 로그인). 기존 frontend 837건 통과. verify(2026-11-04): e2e 804 통과·6 실패 → 실패 5건은 다른 Playwright 실행과 겹친 trace ENOENT·Firefox 시작 지연(단독 재실행 37건 통과), 1건은 결함 — 데모 로그인 '담당 부서' 칸이 큰 화면(1764×957)에서 폼 높이를 넘겼다 → 한 줄 칸으로 고침(login.spec 통과).
+  - 화면 검토(서브에이전트 3회)·코드 리뷰 반영: 가이드 패널 격자, 부서 밖 역할 → 전체 보기, '더 보기' 닫힘(화면 이동·Esc), 콘솔 메뉴 강조색, 운영 빌드에서 작업공간 묶음 제외(prod-bundle 표식 ff-dept-view-v1).
+  - 남은 일(다음 세션): 1280 폭에서 가로 메뉴 끝 버튼 줄바꿈·드롭다운 오른쪽 끝, 시연 모드 본문 글자, 부서 R&R 문서 개선(한 표·몫 열, 공동 R 인계) — 모델 결정 대기: TARA 책임(CSM), Retirement·복원 요청자=승인 책임 충돌, SOTIF 수행 부서, 사후 검토 부서, 복원 승인에 사이버보안.
+  - 주의: 프로젝트에 prettier가 없다 — `npx prettier`를 돌리면 파일 전체가 다시 포맷된다(한 번 되돌림).
 - **UI/UX 하네스 2판 수정 1~4단계(2026-10-23, 브랜치 `fix/ui-harness-v2`)**: 롤백 기준점 태그 `ui-baseline-2026-10-23`(main 5abc0e9)·브랜치 `backup/pre-ui-fix-2026-10-23`(GitHub push). 검토 보고서·하네스는 FF_IMP `docs/qa/feature-platform-ui-review-2026-10-23-harness-v2.md`·`out/_uxaudit/ux-audit2.mjs`.
   - ① 표 칸 글자 중간 줄바꿈: `.sh-main td`의 `overflow-wrap:anywhere`가 칸 최소 폭을 글자 1개로 줄였다 → `break-word`, 표 안 `.mono`·`.ds-id/.ds-tag/.ds-badge` nowrap. 하네스 @1280 글자 중간 끊김 2,587 → 10(모두 sha256 해시).
   - ② 패널 잘림: `.ds-split > * { min-width:0 }`, `/runtime` 오른쪽 열 `minmax(0,1fr)`.

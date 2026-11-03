@@ -1,0 +1,164 @@
+// 부서 보기(데모, 2026-11-04) — 부서 메뉴가 실제 화면으로 이어지고, 부서를 고르면 셸·홈이 화면 유형별로 바뀌며,
+// 전체 보기는 지금의 MENU 2.0(8그룹) 그대로다. 부서는 업무 절차 모델(docs/65-workflows)의 OEM 조직 가정안이다.
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { WORKSPACES } from '@ff/contracts';
+import { ALL_DEPARTMENTS, DEPARTMENTS, departmentById } from '../data/departments';
+import { departmentMenu, menuRouteOf } from '../shell/departmentMenu';
+import { GROUPS, ROUTES } from '../routes';
+import { Shell } from '../shell/Shell';
+import { HomeScreen } from '../screens/home/Inbox';
+import { AppProvider, initial, reducer } from '../store';
+import { MotionProvider } from '../state/motion';
+
+beforeEach(() => {
+  localStorage.clear();
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ items: [] }), { status: 200, headers: { 'Content-Type': 'application/json' } })));
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  localStorage.clear();
+  document.documentElement.removeAttribute('data-workspace');
+  document.documentElement.removeAttribute('data-zone');
+});
+
+const mount = (state: object, path = '/', body: JSX.Element = <h1>본문</h1>) => {
+  localStorage.setItem('fp.state.v2', JSON.stringify(state));
+  return render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MemoryRouter initialEntries={[path]}>
+        <MotionProvider>
+          <AppProvider>
+            <Shell>
+              <Routes>
+                <Route path="*" element={body} />
+              </Routes>
+            </Shell>
+          </AppProvider>
+        </MotionProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+};
+
+describe('부서 메뉴', () => {
+  it('14개 부서 모두 메뉴가 있고, 모든 항목은 메뉴가 있는 실제 화면이다', () => {
+    const menuPaths = new Set(ROUTES.filter((r) => r.menu).map((r) => r.menu));
+    expect(DEPARTMENTS.departments).toHaveLength(14);
+    for (const d of DEPARTMENTS.departments) {
+      const m = departmentMenu(d);
+      expect(m.primary.length + m.reference.length, d.id).toBeGreaterThan(0);
+      for (const it of [...m.primary, ...m.reference]) expect(menuPaths.has(it.to), `${d.id} ${it.to}`).toBe(true);
+      // 주 업무와 참조가 겹치지 않고, 홈·업무 절차는 작업공간 내비가 따로 그린다
+      const p = new Set(m.primary.map((x) => x.to));
+      expect(m.reference.some((x) => p.has(x.to))).toBe(false);
+      expect([...m.primary, ...m.reference].some((x) => x.to === '/' || x.to === '/procedures')).toBe(false);
+    }
+  });
+
+  it('활동 화면 패턴은 메뉴가 있는 가장 가까운 상위 화면으로 올라간다', () => {
+    expect(menuRouteOf('/features/:id/:ver')?.menu).toBe('/features');
+    expect(menuRouteOf('/fleet/live')?.menu).toBe('/fleet/live');
+  });
+
+  it('부서마다 메뉴가 다르다 — 운영관제는 차량 운영, 상품기획은 Feature 제안', () => {
+    const tos = (id: string) => [...departmentMenu(departmentById(id)!).primary].map((x) => x.to);
+    expect(tos('DEP-OPS')).toContain('/fleet/live');
+    expect(tos('DEP-OPS')).not.toContain('/feature/propose');
+    expect(tos('DEP-PDP')).toContain('/feature/propose');
+  });
+
+  it('부서는 5개 화면 유형을 모두 쓴다', () => {
+    expect(new Set(DEPARTMENTS.departments.map((d) => d.workspace))).toEqual(new Set(WORKSPACES));
+  });
+});
+
+describe('부서 상태', () => {
+  it('부서를 고르면 그 부서의 기본 데모 계정으로, 부서 안 계정이면 그대로 둔다', () => {
+    const s1 = reducer(initial, { t: 'DEPT', department: 'DEP-OPS' });
+    expect(s1).toMatchObject({ department: 'DEP-OPS', role: 'operator' });
+    const s2 = reducer({ ...initial, role: 'commerce' }, { t: 'DEPT', department: 'DEP-PDP' });
+    expect(s2.role).toBe('commerce');
+    const s3 = reducer(initial, { t: 'DEPT', department: 'DEP-PDP', role: 'approver' });
+    expect(s3.role).toBe('approver');
+  });
+
+  it('부서 보기에서 그 부서 밖 역할로 바뀌면(따라하기 단계 등) 전체 보기로 — 부서 안 역할은 부서를 지킨다', () => {
+    const ops = reducer(initial, { t: 'DEPT', department: 'DEP-OPS' });
+    expect(reducer(ops, { t: 'ROLE', role: 'author' })).toMatchObject({ role: 'author', department: ALL_DEPARTMENTS });
+    const pdp = reducer(initial, { t: 'DEPT', department: 'DEP-PDP' });
+    expect(reducer(pdp, { t: 'ROLE', role: 'commerce' })).toMatchObject({ role: 'commerce', department: 'DEP-PDP' });
+  });
+
+  it('모르는 부서·전체 보기는 ALL, 역할은 그대로', () => {
+    expect(reducer({ ...initial, role: 'quality', department: 'DEP-FS' }, { t: 'DEPT', department: 'DEP-NOPE' })).toMatchObject({ department: ALL_DEPARTMENTS, role: 'quality' });
+    expect(reducer({ ...initial, department: 'DEP-FS' }, { t: 'DEPT', department: ALL_DEPARTMENTS }).department).toBe(ALL_DEPARTMENTS);
+  });
+
+  it('저장된 부서가 모델에 없으면 전체 보기로 읽는다(옛 브라우저 상태)', () => {
+    mount({ role: 'author', department: 'DEP-GONE' });
+    expect(document.querySelector('.sh-rail')).not.toBeNull();
+    expect(document.documentElement.hasAttribute('data-workspace')).toBe(false);
+  });
+});
+
+describe('셸 — 부서 보기와 전체 보기', () => {
+  it('전체 보기(기본)는 8그룹 레일 그대로다', () => {
+    mount({ role: 'author' });
+    expect(document.querySelectorAll('.sh-rail__btn:not(.sh-rail__toggle)')).toHaveLength(GROUPS.length);
+    expect(document.querySelector('[data-dept-nav]')).toBeNull();
+  });
+
+  it('부서를 고르면 레일 대신 부서 메뉴, html에 화면 유형 — 관제실은 어두운 관제 톤', () => {
+    mount({ role: 'operator', department: 'DEP-OPS' });
+    expect(document.querySelector('.sh-rail')).toBeNull();
+    const nav = screen.getByRole('navigation', { name: 'OTA·서비스운영팀 메뉴' });
+    expect(within(nav).getByRole('link', { name: 'Fleet 실시간 적용 현황' })).toBeTruthy();
+    expect(document.documentElement.getAttribute('data-workspace')).toBe('control');
+    expect(document.documentElement.getAttribute('data-zone')).toBe('ops');
+  });
+
+  it('부서마다 화면 유형이 다르다 — 기획 스튜디오는 관제 톤이 아니다', () => {
+    mount({ role: 'author', department: 'DEP-PDP' });
+    expect(document.documentElement.getAttribute('data-workspace')).toBe('studio');
+    expect(document.documentElement.hasAttribute('data-zone')).toBe(false);
+    expect(document.querySelector('.sh')?.getAttribute('data-workspace')).toBe('studio');
+  });
+
+  it('상단 바에서 부서를 바꾸고, 전체 메뉴 보기로 8그룹에 돌아온다', () => {
+    mount({ role: 'author' });
+    fireEvent.change(screen.getByRole('combobox', { name: '담당 부서' }), { target: { value: 'DEP-FS' } });
+    expect(document.documentElement.getAttribute('data-workspace')).toBe('review');
+    expect(screen.getByRole('navigation', { name: '기능안전팀 메뉴' })).toBeTruthy();
+    // 부서 안 역할 — 기능안전팀은 데모 계정이 둘(품질 검토 FSM, 부 FSM)
+    expect(screen.getByRole('combobox', { name: '부서 안 역할' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '전체 메뉴 보기' }));
+    expect(document.querySelector('.sh-rail')).not.toBeNull();
+    expect(document.documentElement.hasAttribute('data-workspace')).toBe(false);
+  });
+});
+
+describe('작업공간 홈', () => {
+  for (const [dept, ws] of [
+    ['DEP-PDP', 'studio'],
+    ['DEP-QA', 'review'],
+    ['DEP-PLM', 'console'],
+    ['DEP-OPS', 'control'],
+    ['DEP-LEG', 'portal'],
+  ] as const) {
+    it(`${dept} → ${ws} 홈`, async () => {
+      mount({ role: departmentById(dept)!.personas[0], department: dept }, '/', <HomeScreen />);
+      expect(await screen.findByRole('heading', { level: 1 })).toBeTruthy();
+      expect(document.querySelector(`[data-workspace-home="${ws}"]`)).not.toBeNull();
+    });
+  }
+
+  it('전체 보기 홈은 지금의 대시보드다', async () => {
+    mount({ role: 'author' }, '/', <HomeScreen />);
+    await screen.findAllByRole('heading');
+    expect(document.querySelector('[data-workspace-home]')).toBeNull();
+  });
+});

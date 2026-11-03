@@ -1,0 +1,510 @@
+/* 부서 작업공간 첫 화면 — 색·간격·반경은 토큰만(강조색·밀도는 design/tokens.css [data-workspace]). */
+.ws {
+  display: grid;
+  gap: var(--sp-4);
+}
+.ws-actions,
+.ws-kill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.ws-pill {
+  margin-left: var(--sp-1);
+  padding: 0 var(--sp-1h);
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.ws-muted {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.ws-more {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.ws-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: start;
+}
+.ws-split--wide {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
+
+/* 내 업무 목록 */
+.ws-work {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+.ws-work li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'part name' 'part proc';
+  column-gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-2);
+  border-radius: var(--r);
+  background: var(--surface-2);
+}
+.ws-work--dense li {
+  padding: var(--sp-1) var(--sp-2);
+}
+.ws-work li[data-done] .ws-work__name {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+.ws-part {
+  grid-area: part;
+  min-width: 40px;
+  white-space: nowrap;
+  padding: 2px var(--sp-1h);
+  border-radius: var(--r);
+  text-align: center;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.ws-part[data-part='A'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.ws-work__name {
+  grid-area: name;
+  font-weight: 600;
+}
+/* 클릭 대상 24px 이상(wcag22aa target-size) */
+.ws-work__name,
+.ws-gates a,
+.ws-asks__name {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+.ws-work__proc {
+  grid-area: proc;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+
+/* 인계 */
+.ws-hand {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+.ws-hand__title {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--muted);
+}
+.ws-hand ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+}
+.ws-hand li {
+  display: grid;
+}
+.ws-hand__dept {
+  color: var(--accent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+
+/* ① 기획 스튜디오 — 칸반 보드 */
+.ws--studio {
+  gap: var(--sp-6);
+}
+.ws-board__cols {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+.ws-col {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-radius: var(--r-lg);
+  background: var(--ws-band);
+  border-top: 4px solid var(--lc-PROPOSED);
+}
+.ws-col[data-lifecycle='APPROVED'] {
+  border-top-color: var(--lc-APPROVED);
+}
+.ws-col[data-lifecycle='VERIFIED'] {
+  border-top-color: var(--lc-VERIFIED);
+}
+.ws-col[data-lifecycle='RELEASED'] {
+  border-top-color: var(--lc-RELEASED);
+}
+.ws-col__head {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--fs-md);
+}
+.ws-col__n {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  color: var(--ink);
+}
+.ws-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+.ws-card {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-3);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--e-1, 0 0 0 1px var(--line));
+}
+.ws-card__name {
+  font-weight: 700;
+  color: var(--ink);
+}
+.ws-card__meta {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+
+/* ② 심사 결재함 — 3분할 */
+.ws-3pane {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.5fr) minmax(240px, 0.9fr);
+  gap: var(--sp-3);
+  align-items: start;
+}
+.ws-queue,
+.ws-target,
+.ws-decide {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.ws-queue h2,
+.ws-target h2,
+.ws-decide h2 {
+  margin: 0;
+  font-size: var(--fs-md);
+}
+.ws-queue__head {
+  display: grid;
+  gap: var(--sp-2);
+}
+.ws-queue__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+  max-height: 60vh;
+  overflow: auto;
+}
+.ws-queue__list button {
+  inline-size: 100%;
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ws-queue__list button[data-mine] {
+  border-left: 4px solid var(--warn);
+}
+.ws-queue__list button[aria-pressed='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.ws-queue__item {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+}
+.ws-queue__detail,
+.ws-queue__since {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.ws-target__kv {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+}
+.ws-target__kv dt {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.ws-target__kv dd {
+  margin: 0;
+}
+.ws-gates {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+.ws-gates li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-2);
+  align-items: baseline;
+}
+.ws-gate {
+  padding: 0 var(--sp-1h);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.ws-decide__go {
+  justify-self: start;
+}
+.ws-decide__sub {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.ws-why {
+  margin: 0;
+  padding: var(--sp-2);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+}
+
+/* ③ 엔지니어링 콘솔 — 조밀한 2열 표 */
+.ws--console {
+  gap: var(--sp-3);
+}
+.ws-console {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+}
+.ws--console .ds-panel__body {
+  font-size: var(--fs-sm);
+}
+
+/* ④ 관제실 — 큰 숫자 띠, 이상 징후 흐름 */
+.ws--control {
+  gap: var(--sp-3);
+}
+.ws-tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.ws-tiles a {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  color: var(--ink);
+  text-decoration: none;
+}
+.ws-tiles li[data-tone='ok'] a {
+  border-top-color: var(--ok);
+}
+.ws-tiles li[data-tone='warn'] a {
+  border-top-color: var(--warn);
+}
+.ws-tiles li[data-tone='danger'] a {
+  border-top-color: var(--danger);
+}
+.ws-tiles li[data-tone='neutral'] a {
+  border-top-color: var(--line-strong);
+}
+.ws-tiles__v {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.ws-tiles__k {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.ws-link[data-link='OFFLINE'] {
+  color: var(--warn);
+  font-weight: 700;
+}
+.ws-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+}
+.ws-feed li {
+  display: grid;
+  grid-template-columns: 76px auto minmax(0, 1fr) auto;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r);
+  background: var(--surface-2);
+}
+.ws-feed__sev {
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  color: var(--muted);
+}
+.ws-feed li[data-severity='WARNING'] .ws-feed__sev {
+  color: var(--warn);
+}
+.ws-feed li[data-severity='CRITICAL'] .ws-feed__sev {
+  color: var(--danger);
+}
+
+/* ⑤ 검토 포털 — 문서함 */
+.ws--portal {
+  gap: var(--sp-5);
+}
+.ws-asks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+.ws-asks li {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+.ws-asks__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.ws-asks__name {
+  font-size: var(--fs-md);
+  font-weight: 700;
+}
+.ws-asks__asker {
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+.ws-asks__look,
+.ws-asks__proc {
+  margin: 0;
+  color: var(--ink-2);
+}
+.ws-asks__look span {
+  font-weight: 700;
+  color: var(--muted);
+  margin-right: var(--sp-1);
+}
+.ws-asks__proc {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+/* 검토 반영(2026-11-04) */
+.ws-card .ds-id,
+.ws-console .ds-id {
+  justify-self: start;
+}
+.ws-queue__name {
+  font-weight: 700;
+  font-size: var(--fs-sm);
+}
+.ws-target__name {
+  font-size: var(--fs-md);
+  font-weight: 700;
+}
+.ws-stack {
+  display: grid;
+  gap: var(--sp-4);
+  align-content: start;
+}
+.ws-kill {
+  flex-direction: column;
+  align-items: stretch;
+  max-inline-size: 300px;
+}
+.ws-kill__btn {
+  min-height: 44px;
+  padding-inline: var(--sp-5);
+  font-size: var(--fs-md);
+  font-weight: 800;
+}
+.ws-kill__btn {
+  justify-content: center;
+}
+.ws-kill__hint {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+.ws-card__id {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+@media (max-width: 1365px) {
+  .ws-3pane {
+    grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.4fr);
+  }
+  .ws-decide {
+    grid-column: 1 / -1;
+  }
+  .ws-board__cols,
+  .ws-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ws-console,
+  .ws-split,
+  .ws-split--wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

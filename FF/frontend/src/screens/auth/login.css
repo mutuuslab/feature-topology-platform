@@ -88,6 +88,8 @@
 .lg__card h2 { margin: 0 0 2px; font-size: var(--fs-lg); }
 .lg__field { display: grid; gap: 6px; font-size: var(--fs-sm); font-weight: 600; }
 .lg__field input { inline-size: 100%; }
+.lg__field .sh-dept__select { inline-size: 100%; max-width: none; min-height: 36px; }
+.lg__field--inline { grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 12px; }
 .lg__pw { position: relative; display: flex; }
 .lg__pw input { padding-inline-end: 64px; }
 .lg__show {

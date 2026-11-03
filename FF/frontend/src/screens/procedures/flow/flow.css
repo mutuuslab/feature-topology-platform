@@ -234,3 +234,152 @@
   .pf-toolbar, .pf-scrollhint { display: none; }
   .pf-card { break-inside: avoid; }
 }
+
+/* 부서별 R&R 탭 — 부서 카드·부서×프로세스 RACI·부서 레인 흐름도(좌표는 절차 모델 departmentLayout) */
+.pf-dep {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-4);
+}
+.pf-dep > * {
+  min-width: 0;
+}
+.pf-dep__pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.pf-dep__pick .ws-muted {
+  flex: 1 1 320px;
+}
+.pf-dep__parts,
+.pf-dep__hand {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+.pf-dep__hand {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.pf-dep__parts h3,
+.pf-dep__hand h3 {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-sm);
+}
+.pf-dep__parts ul,
+.pf-dep__hand ul,
+.pf-dep__sod {
+  margin: 0;
+  padding-left: var(--sp-4);
+  display: grid;
+  gap: 2px;
+  font-size: var(--fs-sm);
+}
+.pf-dep__parts small {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.pf-dep__rest > summary {
+  min-height: 24px;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.pf-dep__sod {
+  margin-top: var(--sp-3);
+  color: var(--ink-2);
+}
+.pf-dep__matrix {
+  overflow-x: auto;
+}
+.pf-dep__matrix table {
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.pf-dep__matrix th,
+.pf-dep__matrix td {
+  padding: var(--sp-1) var(--sp-2);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  text-align: left;
+}
+.pf-dep__matrix td[data-ra] {
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+.pf-dep__matrix tr[aria-current='true'] th,
+.pf-dep__matrix tr[aria-current='true'] td {
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+.pf-dep__row {
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+.pf-deplane {
+  overflow-x: auto;
+}
+.pf-deplane svg {
+  display: block;
+}
+.pf-deplane__lane0 {
+  fill: var(--surface);
+  stroke: var(--line);
+}
+.pf-deplane__lane1 {
+  fill: var(--surface-2);
+  stroke: var(--line);
+}
+[data-focus] > .pf-deplane__lane0,
+[data-focus] > .pf-deplane__lane1 {
+  fill: var(--accent-soft);
+}
+.pf-deplane__label {
+  fill: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.pf-deplane__edge {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.4;
+}
+.pf-deplane__head {
+  fill: var(--muted);
+}
+.pf-deplane__act {
+  fill: var(--surface);
+  stroke: var(--line-strong);
+}
+.pf-deplane__aid {
+  fill: var(--muted);
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+.pf-deplane__name {
+  fill: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.pf-deplane__start {
+  fill: var(--surface);
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+}
+.pf-deplane__end {
+  fill: var(--ink-2);
+}
+@media (max-width: 1365px) {
+  .pf-dep__parts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

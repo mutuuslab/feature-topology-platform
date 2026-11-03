@@ -83,6 +83,8 @@ const kpiScreens = () => import('./screens/ops/SafetyKpi');
 const accessScreens = () => import('./screens/admin/Access');
 const learnScreens = () => import('./screens/learn/Learn');
 const procedureScreens = () => import('./screens/procedures/Procedures');
+// Feature DB·SW 개발비 산정 — 메뉴만 연 준비 중 화면(설계 30-95·20-94)
+const plannedScreens = () => import('./screens/planned/PlannedScreens');
 
 export const ROUTES: AppRoute[] = [
   // 1 홈
@@ -146,6 +148,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/change/eo', element: named(opsScreens, 'EoScreen'), title: 'SW EO', group: 'master', menu: '/change/eo', v2: true },
   { path: '/master/control-points', element: named(masterScreens, 'ControlPointsScreen'), title: '제어점', group: 'master', menu: '/master/control-points', components: ['D01-02'], v2: true },
   { path: '/master/reference-values', element: named(() => import('./screens/master/ReferenceValues'), 'ReferenceValuesScreen'), title: '차종·판매국 기준 값', group: 'master', menu: '/master/reference-values', components: ['D02-01'], v2: true },
+  { path: '/master/feature-db', element: named(plannedScreens, 'FeatureDbScreen'), title: 'Feature DB', group: 'master', menu: '/master/feature-db', v2: true },
 
   { path: '/precheck', element: def(() => import('./screens/governance/Precheck')), title: '데이터 사전점검', group: 'master', menu: '/precheck', components: ['D01-02'], v2: true },
 
@@ -168,6 +171,7 @@ export const ROUTES: AppRoute[] = [
 
   // 6 상품·출시
   { path: '/products', element: named(products, 'ProductList'), title: 'Feature Catalog 상품', group: 'release', menu: '/products', components: ['D01-03'], v2: true },
+  { path: '/procurement/sw-cost', element: named(plannedScreens, 'SwCostScreen'), title: 'SW 개발비 산정', group: 'release', menu: '/procurement/sw-cost', v2: true },
   { path: '/products/new', element: named(products, 'ProductCompose'), title: '새 상품 구성', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/products/:id/:ver', element: named(products, 'ProductDetail'), title: '상품 Version 상세', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/commerce/offer', element: legacyTo('/products/new'), title: '상품 구성 (이전 주소)', group: 'release', parent: '/products' },

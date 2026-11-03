@@ -85,6 +85,44 @@ export interface WorkflowProcess {
   workProducts: WorkflowWorkProduct[];
   activities: WorkflowActivity[];
   layout: WorkflowLayout;
+  /** 같은 활동을 부서 레인으로 묶은 좌표(레인 = 첫 번째 R 역할의 부서) */
+  departmentLayout: WorkflowDepartmentLayout;
+}
+
+export interface WorkflowDepartmentLayout extends Omit<WorkflowLayout, 'lanes'> {
+  lanes: { department: string; label: string; x: number; y: number; w: number; h: number }[];
+}
+
+// ── 부서(OEM 조직 가정안) ───────────────────────────────────
+// 절차 모델 common.yaml departments가 원천이다. 모든 조직 역할은 정확히 한 부서에 속하고(부서 겸직 허용),
+// 요청자·승인자 분리는 부서가 아니라 사람 단위로 플랫폼이 강제한다.
+
+/** 부서가 쓰는 화면 유형 — frontend shell/workspaces */
+export const WORKSPACES = ['studio', 'review', 'console', 'control', 'portal'] as const;
+export type Workspace = (typeof WORKSPACES)[number];
+
+export interface DepartmentScreens {
+  /** 수행(R)·책임(A) 활동의 화면 — 활동 순서 */
+  primary: string[];
+  /** 협의(C)·통보(I) 활동에만 나오는 화면 */
+  reference: string[];
+}
+
+export interface WorkflowDepartment {
+  id: string;
+  name: string;
+  en: string;
+  desc: string;
+  workspace: Workspace;
+  /** 맡는 조직 역할(R-*) */
+  roles: string[];
+  /** 데모 계정 — 첫 번째가 기본 */
+  personas: string[];
+  /** 부서가 관여하는 활동과 가장 무거운 몫(R > A > C > I). firstScope = 1차 검토 범위(핵심 생애주기) */
+  activities: { id: string; process: string; part: RaciKey; parts: RaciKey[]; firstScope: boolean }[];
+  screens: DepartmentScreens;
+  /** 부서 경계를 넘는 흐름 — department = 상대 부서 */
+  handoffs: Record<'in' | 'out', { from: string; to: string; department: string }[]>;
 }
 
 export interface WorkflowDoc {
@@ -93,6 +131,11 @@ export interface WorkflowDoc {
   roles: WorkflowRole[];
   /** 데모 계정(페르소나) → 맡는 조직 역할 */
   personas: Record<string, string[]>;
+  departments: WorkflowDepartment[];
+  departmentScope: { first: string[]; note: string; demoNotes: string[] };
+  /** 직무 분리 쌍 중 양쪽이 같은 부서인 것 — 부서 겸직 허용, 사람 분리 */
+  departmentSod: { sod: string; department: string; first: string; second: string; note: string }[];
+  workspaces: string[];
   gateCrosswalk: { report: string; platform: string[]; approvalActions: string[] }[];
   processes: WorkflowProcess[];
 }
@@ -201,6 +244,43 @@ export function workflowMapOf(doc: WorkflowDoc): WorkflowMapDoc {
   };
 }
 
+// ── 셸용 부서 목록 ───────────────────────────────────────────
+// 셸(부서 전환·부서 메뉴)은 첫 화면에 실리므로 전체 문서 대신 부서 이름·화면 유형·데모 계정·화면 목록·몫 수만 담는다.
+export interface DepartmentSummary {
+  id: string;
+  name: string;
+  en: string;
+  desc: string;
+  workspace: Workspace;
+  roles: string[];
+  personas: string[];
+  screens: DepartmentScreens;
+  /** 활동 수 — 맡는 몫 전부 기준(수행·책임을 같이 맡은 활동은 R·A 양쪽에 센다) */
+  counts: Record<RaciKey, number>;
+}
+
+export interface DepartmentsDoc {
+  departments: DepartmentSummary[];
+  /** 1차 검토 범위 프로세스 */
+  firstScope: string[];
+}
+
+export function departmentsOf(doc: WorkflowDoc): DepartmentsDoc {
+  return {
+    departments: doc.departments.map((d) => {
+      const counts: Record<RaciKey, number> = { R: 0, A: 0, C: 0, I: 0 };
+      for (const a of d.activities) for (const k of a.parts) counts[k] += 1;
+      return { id: d.id, name: d.name, en: d.en, desc: d.desc, workspace: d.workspace, roles: d.roles, personas: d.personas, screens: d.screens, counts };
+    }),
+    firstScope: doc.departmentScope.first,
+  };
+}
+
+/** 데모 계정이 속한 첫 부서 — 전체 보기에서 역할을 고른 뒤 부서 모드로 들어갈 때의 기본값 */
+export function departmentOfPersona(doc: DepartmentsDoc, persona: string): DepartmentSummary | undefined {
+  return doc.departments.find((d) => d.personas[0] === persona) ?? doc.departments.find((d) => d.personas.includes(persona));
+}
+
 export type WorkflowPredecessors = Map<string, string[]>;
 
 /** 활동 ID → 앞 활동 ID 목록(같은 프로세스의 next 역방향) */
@@ -261,5 +341,18 @@ export function workflowProblems(doc: WorkflowDoc, f: WorkflowPlatformFacts): st
     const derived = doc.roles.filter((r) => r.platformRoles.some((pr) => prs.includes(pr))).map((r) => r.id);
     if (JSON.stringify(derived) !== JSON.stringify(doc.personas[acc] ?? [])) out.push(`데모 계정 ${acc}: 절차 ${(doc.personas[acc] ?? []).join(',')} ↔ 플랫폼 역할로 계산 ${derived.join(',')}`);
   }
+  // 부서: 역할은 정확히 한 부서, 데모 계정은 플랫폼에 있고 부서 역할을 맡는다(플랫폼 역할이 없는 부서는 조회 계정)
+  const owner = new Map<string, string[]>();
+  for (const d of doc.departments) {
+    if (!(WORKSPACES as readonly string[]).includes(d.workspace)) out.push(`${d.id}: 모르는 화면 유형 ${d.workspace}`);
+    if (!d.personas.length) out.push(`${d.id}: 데모 계정이 없다`);
+    for (const r of d.roles) owner.set(r, [...(owner.get(r) ?? []), d.id]);
+    const hasPlatform = d.roles.some((r) => (role.get(r)?.platformRoles.length ?? 0) > 0);
+    for (const acc of d.personas) {
+      if (!(acc in f.personas)) out.push(`${d.id}: 플랫폼에 없는 데모 계정 ${acc}`);
+      else if (hasPlatform && !(doc.personas[acc] ?? []).some((r) => d.roles.includes(r))) out.push(`${d.id}: 데모 계정 ${acc}은(는) 이 부서 역할을 맡지 않는다`);
+    }
+  }
+  for (const r of doc.roles) if ((owner.get(r.id) ?? []).length !== 1) out.push(`${r.id}: 정확히 한 부서에 속해야 한다 — ${(owner.get(r.id) ?? []).join(',') || '없음'}`);
   return out;
 }

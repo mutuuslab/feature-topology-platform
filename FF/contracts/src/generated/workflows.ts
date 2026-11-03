@@ -260,6 +260,4352 @@ export const WORKFLOWS: WorkflowDoc = {
    "approvalActions": []
   }
  ],
+ "departments": [
+  {
+   "id": "DEP-PDP",
+   "name": "상품기획팀",
+   "en": "Product Planning",
+   "desc": "Feature를 소유하고 대상·분류·출시를 판단한다. 상품 구성과 체험 제안을 만들고 고객 출시를 승인한다.",
+   "workspace": "studio",
+   "roles": [
+    "R-FO",
+    "R-PDA",
+    "R-PO"
+   ],
+   "personas": [
+    "author",
+    "commerce",
+    "approver"
+   ],
+   "activities": [
+    {
+     "id": "FPW.1-A01",
+     "process": "FPW.1",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A02",
+     "process": "FPW.1",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A03",
+     "process": "FPW.1",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A04",
+     "process": "FPW.1",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A05",
+     "process": "FPW.1",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A01",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A02",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A03",
+     "process": "FPW.2",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A04",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A05",
+     "process": "FPW.2",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A01",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A03",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A04",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A03",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A05",
+     "process": "FPW.4",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A01",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A04",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A06",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A01",
+     "process": "FPW.6",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A02",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A03",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A06",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A01",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A02",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A03",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A04",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A05",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A06",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A07",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A08",
+     "process": "FPW.7",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A12",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A09",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A10",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A11",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A01",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A02",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A06",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A08",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A09",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A10",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A11",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A01",
+     "process": "FPW.9",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A02",
+     "process": "FPW.9",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A03",
+     "process": "FPW.9",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A04",
+     "process": "FPW.9",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A05",
+     "process": "FPW.9",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.13-A02",
+     "process": "FPW.13",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A03",
+     "process": "FPW.13",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/master/define",
+     "/feature/propose",
+     "/features",
+     "/variant-conditions",
+     "/arch/topology",
+     "/baselines",
+     "/experiments",
+     "/products/new",
+     "/entitlements",
+     "/products/:id/:ver",
+     "/activation/decide",
+     "/admin/approval",
+     "/features/:id/:ver",
+     "/flag-retirements"
+    ],
+    "reference": [
+     "/analysis/impact",
+     "/trace/design",
+     "/change/cr",
+     "/policies/new",
+     "/policies",
+     "/validations/virtual",
+     "/verify/evidence",
+     "/deployments",
+     "/integration/connectors",
+     "/verify/compliance",
+     "/fleet/live",
+     "/ops/anomalies",
+     "/ops/safety-kpi",
+     "/ops/incidents",
+     "/ops/kill",
+     "/audit",
+     "/quality/feedback"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.1-A01",
+      "to": "FPW.1-A02",
+      "department": "DEP-PLM"
+     },
+     {
+      "from": "FPW.1-A01",
+      "to": "FPW.1-A03",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.2-A03",
+      "to": "FPW.2-A05",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.6-A01",
+      "to": "FPW.6-A02",
+      "department": "DEP-PLM"
+     },
+     {
+      "from": "FPW.7-A02",
+      "to": "FPW.7-A08",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.7-A06",
+      "to": "FPW.7-A08",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.7-A12",
+      "to": "FPW.7-A09",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.9-A02",
+      "to": "FPW.9-A03",
+      "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.9-A04",
+      "to": "FPW.9-A05",
+      "department": "DEP-INT"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A03",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.7-A08",
+      "to": "FPW.7-A12",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.7-A09",
+      "to": "FPW.7-A10",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.9-A03",
+      "to": "FPW.9-A04",
+      "department": "DEP-SE"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-SE",
+   "name": "시스템엔지니어링팀",
+   "en": "Systems Engineering",
+   "desc": "안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임진다.",
+   "workspace": "console",
+   "roles": [
+    "R-REQ",
+    "R-ARC"
+   ],
+   "personas": [
+    "approver",
+    "integrator"
+   ],
+   "activities": [
+    {
+     "id": "FPW.1-A01",
+     "process": "FPW.1",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A02",
+     "process": "FPW.1",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A03",
+     "process": "FPW.1",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A05",
+     "process": "FPW.1",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A01",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A02",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A03",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A05",
+     "process": "FPW.2",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A01",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A02",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A03",
+     "process": "FPW.3",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A04",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A01",
+     "process": "FPW.4",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A02",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A03",
+     "process": "FPW.4",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A04",
+     "process": "FPW.4",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A05",
+     "process": "FPW.4",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A02",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A03",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A06",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A01",
+     "process": "FPW.6",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A02",
+     "process": "FPW.9",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A03",
+     "process": "FPW.9",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.10-A05",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A02",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/trace/design",
+     "/change/cr",
+     "/features/:id/:ver",
+     "/admin/approval",
+     "/master/control-points",
+     "/policies/new",
+     "/policies",
+     "/policies/:id",
+     "/flag-retirements"
+    ],
+    "reference": [
+     "/master/define",
+     "/feature/propose",
+     "/features",
+     "/variant-conditions",
+     "/arch/topology",
+     "/analysis/impact",
+     "/arch/components",
+     "/validations",
+     "/master/artifacts",
+     "/verify/evidence",
+     "/baselines",
+     "/integration/openfeature"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A03",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.4-A04",
+      "to": "FPW.4-A05",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.9-A03",
+      "to": "FPW.9-A04",
+      "department": "DEP-PDP"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.3-A03",
+      "to": "FPW.3-A04",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.9-A02",
+      "to": "FPW.9-A03",
+      "department": "DEP-PDP"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-INT",
+   "name": "SW통합·릴리스팀",
+   "en": "SW Integration & Release",
+   "desc": "통합 빌드와 Baseline·출시 묶음을 관리하고 출시 전이를 실행한다.",
+   "workspace": "console",
+   "roles": [
+    "R-INT",
+    "R-REL"
+   ],
+   "personas": [
+    "coordinator",
+    "integrator"
+   ],
+   "activities": [
+    {
+     "id": "FPW.2-A04",
+     "process": "FPW.2",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A01",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A04",
+     "process": "FPW.4",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A01",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A02",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A03",
+     "process": "FPW.5",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A04",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A05",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A06",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A01",
+     "process": "FPW.6",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A02",
+     "process": "FPW.6",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A03",
+     "process": "FPW.6",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A04",
+     "process": "FPW.6",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A05",
+     "process": "FPW.6",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A06",
+     "process": "FPW.6",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A01",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A02",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A08",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A12",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A09",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A11",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A10",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A02",
+     "process": "FPW.9",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A03",
+     "process": "FPW.9",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A04",
+     "process": "FPW.9",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A05",
+     "process": "FPW.9",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.10-A01",
+     "process": "FPW.10",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A02",
+     "process": "FPW.10",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A04",
+     "process": "FPW.10",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A05",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A06",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A07",
+     "process": "FPW.10",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A01",
+     "process": "FPW.11",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A04",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A06",
+     "process": "FPW.11",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A02",
+     "process": "FPW.12",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/master/artifacts",
+     "/deployments",
+     "/features/:id/:ver",
+     "/integration/connectors"
+    ],
+    "reference": [
+     "/master/control-points",
+     "/trace/design",
+     "/policies/:id",
+     "/arch/topology",
+     "/validations",
+     "/validations/virtual",
+     "/verify/evidence",
+     "/admin/approval",
+     "/baselines",
+     "/activation/decide",
+     "/experiments",
+     "/fleet/live",
+     "/flag-retirements",
+     "/supplier/portal",
+     "/admin/security",
+     "/integration/openfeature"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.5-A03",
+      "to": "FPW.5-A04",
+      "department": "DEP-VAL"
+     },
+     {
+      "from": "FPW.6-A04",
+      "to": "FPW.6-A05",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.7-A09",
+      "to": "FPW.7-A10",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.7-A09",
+      "to": "FPW.7-A11",
+      "department": "DEP-OPS"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.5-A01",
+      "to": "FPW.5-A03",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.6-A02",
+      "to": "FPW.6-A04",
+      "department": "DEP-PLM"
+     },
+     {
+      "from": "FPW.6-A05",
+      "to": "FPW.6-A06",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.7-A12",
+      "to": "FPW.7-A09",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.9-A04",
+      "to": "FPW.9-A05",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.10-A06",
+      "to": "FPW.10-A07",
+      "department": "DEP-QA"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-PLM",
+   "name": "PLM·기준정보팀",
+   "en": "PLM & Master Data",
+   "desc": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.",
+   "workspace": "console",
+   "roles": [
+    "R-PLM"
+   ],
+   "personas": [
+    "steward"
+   ],
+   "activities": [
+    {
+     "id": "FPW.1-A02",
+     "process": "FPW.1",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A05",
+     "process": "FPW.1",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A04",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A03",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A01",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A02",
+     "process": "FPW.6",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.10-A07",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/variant-conditions",
+     "/arch/topology",
+     "/baselines"
+    ],
+    "reference": [
+     "/features/:id/:ver",
+     "/admin/approval",
+     "/policies/new",
+     "/policies"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.1-A02",
+      "to": "FPW.1-A05",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.6-A02",
+      "to": "FPW.6-A03",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.6-A02",
+      "to": "FPW.6-A04",
+      "department": "DEP-INT"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.1-A01",
+      "to": "FPW.1-A02",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.6-A01",
+      "to": "FPW.6-A02",
+      "department": "DEP-PDP"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-FS",
+   "name": "기능안전팀",
+   "en": "Functional Safety",
+   "desc": "안전 분류·HARA·Safety Case를 책임지고 Gate 판정과 긴급 차단·복원 승인을 한다.",
+   "workspace": "review",
+   "roles": [
+    "R-SM"
+   ],
+   "personas": [
+    "quality",
+    "integrator"
+   ],
+   "activities": [
+    {
+     "id": "FPW.1-A01",
+     "process": "FPW.1",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A02",
+     "process": "FPW.1",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A03",
+     "process": "FPW.1",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A04",
+     "process": "FPW.1",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A05",
+     "process": "FPW.1",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A01",
+     "process": "FPW.2",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A02",
+     "process": "FPW.2",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A03",
+     "process": "FPW.2",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A04",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A05",
+     "process": "FPW.2",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A01",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A02",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A03",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A04",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A01",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A02",
+     "process": "FPW.4",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A04",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A05",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A01",
+     "process": "FPW.5",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A02",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A04",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A05",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A06",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A06",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A01",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A02",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A03",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A04",
+     "process": "FPW.7",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A08",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A12",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A11",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A01",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A02",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A03",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A04",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A05",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A06",
+     "process": "FPW.8",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A07",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A08",
+     "process": "FPW.8",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A09",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A10",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A11",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A01",
+     "process": "FPW.9",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A02",
+     "process": "FPW.9",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A03",
+     "process": "FPW.9",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.10-A01",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A02",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A03",
+     "process": "FPW.10",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A05",
+     "process": "FPW.10",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A06",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A01",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A02",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A03",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A04",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A01",
+     "process": "FPW.12",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A01",
+     "process": "FPW.13",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A02",
+     "process": "FPW.13",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A03",
+     "process": "FPW.13",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A04",
+     "process": "FPW.13",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/features/:id/:ver",
+     "/admin/approval",
+     "/analysis/impact",
+     "/arch/topology",
+     "/arch/components",
+     "/verify/evidence",
+     "/verify/compliance",
+     "/activation/decide",
+     "/ops/kill",
+     "/fleet/live",
+     "/deployments",
+     "/flag-retirements",
+     "/ops/safety-kpi"
+    ],
+    "reference": [
+     "/master/define",
+     "/feature/propose",
+     "/features",
+     "/variant-conditions",
+     "/trace/design",
+     "/change/cr",
+     "/master/control-points",
+     "/policies/:id",
+     "/validations",
+     "/validations/virtual",
+     "/integration/connectors",
+     "/experiments",
+     "/ops/anomalies",
+     "/ops/incidents",
+     "/audit/oversight",
+     "/audit",
+     "/quality/feedback",
+     "/supplier/portal",
+     "/admin/security"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.1-A03",
+      "to": "FPW.1-A04",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A03",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A04",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.4-A02",
+      "to": "FPW.4-A05",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.5-A01",
+      "to": "FPW.5-A02",
+      "department": "DEP-VAL"
+     },
+     {
+      "from": "FPW.5-A01",
+      "to": "FPW.5-A03",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.7-A03",
+      "to": "FPW.7-A04",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.7-A08",
+      "to": "FPW.7-A12",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.8-A02",
+      "to": "FPW.8-A03",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A06",
+      "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A07",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.8-A09",
+      "to": "FPW.8-A10",
+      "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.10-A03",
+      "to": "FPW.10-A06",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.13-A01",
+      "to": "FPW.13-A02",
+      "department": "DEP-HOM"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.1-A01",
+      "to": "FPW.1-A03",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.1-A02",
+      "to": "FPW.1-A05",
+      "department": "DEP-PLM"
+     },
+     {
+      "from": "FPW.1-A04",
+      "to": "FPW.1-A05",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.2-A03",
+      "to": "FPW.2-A05",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.2-A04",
+      "to": "FPW.2-A05",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.7-A01",
+      "to": "FPW.7-A08",
+      "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.7-A02",
+      "to": "FPW.7-A08",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.7-A04",
+      "to": "FPW.7-A08",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.7-A06",
+      "to": "FPW.7-A08",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.7-A07",
+      "to": "FPW.7-A08",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.8-A01",
+      "to": "FPW.8-A02",
+      "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.8-A04",
+      "to": "FPW.8-A05",
+      "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.8-A08",
+      "to": "FPW.8-A09",
+      "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A03",
+      "department": "DEP-PUR"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-CS",
+   "name": "차량사이버보안팀",
+   "en": "Vehicle Cybersecurity",
+   "desc": "TARA·보안 검토를 하고 긴급 차단 2인 승인과 키 교체 기록을 맡는다.",
+   "workspace": "review",
+   "roles": [
+    "R-CSM"
+   ],
+   "personas": [
+    "integrator"
+   ],
+   "activities": [
+    {
+     "id": "FPW.2-A02",
+     "process": "FPW.2",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A05",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A02",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A05",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A04",
+     "process": "FPW.6",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A05",
+     "process": "FPW.6",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A02",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A04",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A05",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A06",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A07",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A09",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.10-A01",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A02",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A04",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A01",
+     "process": "FPW.11",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A02",
+     "process": "FPW.11",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A03",
+     "process": "FPW.11",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A04",
+     "process": "FPW.11",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A05",
+     "process": "FPW.11",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A06",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A01",
+     "process": "FPW.13",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A02",
+     "process": "FPW.13",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A03",
+     "process": "FPW.13",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A04",
+     "process": "FPW.13",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/ops/kill",
+     "/admin/security",
+     "/verify/compliance"
+    ],
+    "reference": [
+     "/features/:id/:ver",
+     "/admin/approval",
+     "/arch/components",
+     "/deployments",
+     "/master/artifacts",
+     "/fleet/live",
+     "/audit/oversight"
+    ]
+   },
+   "handoffs": {
+    "out": [],
+    "in": [
+     {
+      "from": "FPW.11-A01",
+      "to": "FPW.11-A02",
+      "department": "DEP-ITSEC"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-HOM",
+   "name": "법규인증팀",
+   "en": "Homologation & Regulatory",
+   "desc": "시장별 법규·형식승인·사용자 고지를 확인하고 Compliance Profile과 긴급 권한 사후 검토를 맡는다.",
+   "workspace": "review",
+   "roles": [
+    "R-REG"
+   ],
+   "personas": [
+    "steward"
+   ],
+   "activities": [
+    {
+     "id": "FPW.1-A04",
+     "process": "FPW.1",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A05",
+     "process": "FPW.1",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A02",
+     "process": "FPW.2",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A04",
+     "process": "FPW.2",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A05",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A02",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A03",
+     "process": "FPW.6",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A05",
+     "process": "FPW.6",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A04",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A07",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A08",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A02",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A03",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A04",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A05",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A07",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A08",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A11",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.10-A02",
+     "process": "FPW.10",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A04",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A03",
+     "process": "FPW.11",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A05",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A03",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A04",
+     "process": "FPW.12",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A05",
+     "process": "FPW.12",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A01",
+     "process": "FPW.13",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A02",
+     "process": "FPW.13",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A03",
+     "process": "FPW.13",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A04",
+     "process": "FPW.13",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/audit/oversight",
+     "/admin/data",
+     "/verify/compliance"
+    ],
+    "reference": [
+     "/features/:id/:ver",
+     "/admin/approval",
+     "/baselines",
+     "/activation/decide",
+     "/ops/kill",
+     "/audit",
+     "/admin/security"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.1-A04",
+      "to": "FPW.1-A05",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.2-A04",
+      "to": "FPW.2-A05",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.6-A03",
+      "to": "FPW.6-A05",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.7-A07",
+      "to": "FPW.7-A08",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A03",
+      "to": "FPW.8-A04",
+      "department": "DEP-OPS"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.1-A03",
+      "to": "FPW.1-A04",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A04",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.6-A02",
+      "to": "FPW.6-A03",
+      "department": "DEP-PLM"
+     },
+     {
+      "from": "FPW.8-A02",
+      "to": "FPW.8-A03",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A07",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.13-A01",
+      "to": "FPW.13-A02",
+      "department": "DEP-FS"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-VAL",
+   "name": "시험·검증팀",
+   "en": "Test & Validation",
+   "desc": "독립 V&V를 계획·실행하고 검증 Gate를 판정한다.",
+   "workspace": "review",
+   "roles": [
+    "R-TST"
+   ],
+   "personas": [
+    "quality"
+   ],
+   "activities": [
+    {
+     "id": "FPW.2-A01",
+     "process": "FPW.2",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A03",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A01",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A02",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A04",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A01",
+     "process": "FPW.4",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A05",
+     "process": "FPW.4",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A01",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A02",
+     "process": "FPW.5",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A03",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A04",
+     "process": "FPW.5",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A05",
+     "process": "FPW.5",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A06",
+     "process": "FPW.5",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A01",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A03",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A04",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A08",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A01",
+     "process": "FPW.9",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A04",
+     "process": "FPW.9",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.10-A06",
+     "process": "FPW.10",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A07",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/arch/topology",
+     "/validations",
+     "/validations/virtual",
+     "/verify/evidence",
+     "/admin/approval",
+     "/supplier/portal"
+    ],
+    "reference": [
+     "/analysis/impact",
+     "/trace/design",
+     "/change/cr",
+     "/features/:id/:ver",
+     "/master/control-points",
+     "/master/artifacts",
+     "/activation/decide",
+     "/verify/compliance",
+     "/ops/kill",
+     "/quality/feedback",
+     "/flag-retirements"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.5-A05",
+      "to": "FPW.5-A06",
+      "department": "DEP-QA"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.5-A01",
+      "to": "FPW.5-A02",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.5-A03",
+      "to": "FPW.5-A04",
+      "department": "DEP-INT"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-QA",
+   "name": "품질팀",
+   "en": "Quality",
+   "desc": "독립 검토자로서 설계·Safety Case를 검토하고 Evidence와 감사 이력을 확인한다.",
+   "workspace": "review",
+   "roles": [
+    "R-QA"
+   ],
+   "personas": [
+    "quality",
+    "viewer"
+   ],
+   "activities": [
+    {
+     "id": "FPW.1-A05",
+     "process": "FPW.1",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A05",
+     "process": "FPW.2",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A03",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A02",
+     "process": "FPW.4",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A05",
+     "process": "FPW.4",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A01",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A03",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A04",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A05",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A06",
+     "process": "FPW.5",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A04",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A05",
+     "process": "FPW.6",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A06",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A03",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A04",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A08",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A11",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A01",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A05",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A06",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A07",
+     "process": "FPW.8",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A09",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A10",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A11",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A01",
+     "process": "FPW.9",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.10-A01",
+     "process": "FPW.10",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A02",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A03",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A05",
+     "process": "FPW.10",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A06",
+     "process": "FPW.10",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A07",
+     "process": "FPW.10",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A05",
+     "process": "FPW.11",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A01",
+     "process": "FPW.12",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A05",
+     "process": "FPW.12",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A01",
+     "process": "FPW.13",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A03",
+     "process": "FPW.13",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A04",
+     "process": "FPW.13",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/features/:id/:ver",
+     "/admin/approval",
+     "/verify/evidence",
+     "/audit/oversight",
+     "/ops/kill",
+     "/quality/feedback",
+     "/supplier/portal"
+    ],
+    "reference": [
+     "/arch/components",
+     "/master/artifacts",
+     "/validations/virtual",
+     "/deployments",
+     "/integration/connectors",
+     "/verify/compliance",
+     "/activation/decide",
+     "/fleet/live",
+     "/ops/anomalies",
+     "/ops/safety-kpi",
+     "/ops/incidents",
+     "/audit",
+     "/admin/data"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.3-A03",
+      "to": "FPW.3-A04",
+      "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.6-A05",
+      "to": "FPW.6-A06",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.7-A04",
+      "to": "FPW.7-A08",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.10-A01",
+      "to": "FPW.10-A02",
+      "department": "DEP-PUR"
+     },
+     {
+      "from": "FPW.10-A06",
+      "to": "FPW.10-A07",
+      "department": "DEP-INT"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A03",
+      "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.4-A02",
+      "to": "FPW.4-A05",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.4-A04",
+      "to": "FPW.4-A05",
+      "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.5-A05",
+      "to": "FPW.5-A06",
+      "department": "DEP-VAL"
+     },
+     {
+      "from": "FPW.6-A03",
+      "to": "FPW.6-A05",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.6-A04",
+      "to": "FPW.6-A05",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.7-A03",
+      "to": "FPW.7-A04",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.10-A03",
+      "to": "FPW.10-A06",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.10-A04",
+      "to": "FPW.10-A06",
+      "department": "DEP-PUR"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-OPS",
+   "name": "OTA·서비스운영팀",
+   "en": "OTA & Service Operations",
+   "desc": "차량 운행을 관제하고 이상 징후에 대응하며 긴급 차단·복원을 요청하고 단계적 확대를 실행한다.",
+   "workspace": "control",
+   "roles": [
+    "R-OPS"
+   ],
+   "personas": [
+    "operator"
+   ],
+   "activities": [
+    {
+     "id": "FPW.6-A03",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A05",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A06",
+     "process": "FPW.6",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A01",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A02",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A07",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A08",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A09",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A10",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A11",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A01",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A02",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A03",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A04",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A05",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A06",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A07",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A08",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A09",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A10",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A11",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A01",
+     "process": "FPW.9",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A03",
+     "process": "FPW.9",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A05",
+     "process": "FPW.9",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.11-A01",
+     "process": "FPW.11",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A02",
+     "process": "FPW.11",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A03",
+     "process": "FPW.11",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A04",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A01",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A03",
+     "process": "FPW.12",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A04",
+     "process": "FPW.12",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A05",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A02",
+     "process": "FPW.13",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A03",
+     "process": "FPW.13",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A04",
+     "process": "FPW.13",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/activation/decide",
+     "/fleet/live",
+     "/ops/anomalies",
+     "/ops/safety-kpi",
+     "/ops/incidents",
+     "/ops/kill",
+     "/deployments",
+     "/audit"
+    ],
+    "reference": [
+     "/features/:id/:ver",
+     "/integration/connectors",
+     "/experiments",
+     "/admin/approval",
+     "/products/:id/:ver",
+     "/audit/oversight",
+     "/quality/feedback",
+     "/flag-retirements",
+     "/admin/security",
+     "/admin/data",
+     "/verify/compliance"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.7-A01",
+      "to": "FPW.7-A08",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A01",
+      "to": "FPW.8-A02",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A04",
+      "to": "FPW.8-A05",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A08",
+      "to": "FPW.8-A09",
+      "department": "DEP-FS"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.7-A09",
+      "to": "FPW.7-A11",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.8-A03",
+      "to": "FPW.8-A04",
+      "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A06",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A09",
+      "to": "FPW.8-A10",
+      "department": "DEP-FS"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-ITSEC",
+   "name": "IT인프라·보안운영팀",
+   "en": "IT Infrastructure & SecOps",
+   "desc": "HSM·KMS에서 서명 키를 생성·순환·폐기한다(플랫폼 밖 업무 — 플랫폼에서는 조회).",
+   "workspace": "control",
+   "roles": [
+    "R-PKI"
+   ],
+   "personas": [
+    "viewer"
+   ],
+   "activities": [
+    {
+     "id": "FPW.6-A04",
+     "process": "FPW.6",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.11-A01",
+     "process": "FPW.11",
+     "part": "R",
+     "parts": [
+      "R"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A02",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A03",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/admin/security"
+    ],
+    "reference": [
+     "/deployments",
+     "/master/artifacts"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.11-A01",
+      "to": "FPW.11-A02",
+      "department": "DEP-CS"
+     }
+    ],
+    "in": []
+   }
+  },
+  {
+   "id": "DEP-PUR",
+   "name": "구매팀",
+   "en": "Procurement",
+   "desc": "협력사 계약·납품 조건을 관리하고 협력사 관련 검토에 의견을 준다.",
+   "workspace": "portal",
+   "roles": [
+    "R-PUR"
+   ],
+   "personas": [
+    "viewer"
+   ],
+   "activities": [
+    {
+     "id": "FPW.10-A01",
+     "process": "FPW.10",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A02",
+     "process": "FPW.10",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A03",
+     "process": "FPW.10",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A04",
+     "process": "FPW.10",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.10-A06",
+     "process": "FPW.10",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A06",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [],
+    "reference": [
+     "/supplier/portal"
+    ]
+   },
+   "handoffs": {
+    "out": [
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A03",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.10-A04",
+      "to": "FPW.10-A06",
+      "department": "DEP-QA"
+     }
+    ],
+    "in": [
+     {
+      "from": "FPW.10-A01",
+      "to": "FPW.10-A02",
+      "department": "DEP-QA"
+     }
+    ]
+   }
+  },
+  {
+   "id": "DEP-LEG",
+   "name": "법무팀",
+   "en": "Legal",
+   "desc": "데이터 이용·고객 고지·계약 근거를 검토하고 의견을 준다.",
+   "workspace": "portal",
+   "roles": [
+    "R-LEG"
+   ],
+   "personas": [
+    "viewer"
+   ],
+   "activities": [
+    {
+     "id": "FPW.7-A07",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A03",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.10-A02",
+     "process": "FPW.10",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.11-A06",
+     "process": "FPW.11",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A02",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A03",
+     "process": "FPW.12",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A04",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A02",
+     "process": "FPW.13",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.13-A03",
+     "process": "FPW.13",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [],
+    "reference": [
+     "/integration/openfeature",
+     "/admin/data",
+     "/verify/compliance"
+    ]
+   },
+   "handoffs": {
+    "out": [],
+    "in": []
+   }
+  },
+  {
+   "id": "DEP-DPO",
+   "name": "개인정보보호팀",
+   "en": "Data Protection",
+   "desc": "운영 데이터의 개인정보 처리 근거·보존·삭제를 검토한다.",
+   "workspace": "portal",
+   "roles": [
+    "R-DPO"
+   ],
+   "personas": [
+    "viewer"
+   ],
+   "activities": [
+    {
+     "id": "FPW.12-A01",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A02",
+     "process": "FPW.12",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A03",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A04",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A05",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    }
+   ],
+   "screens": {
+    "primary": [
+     "/integration/openfeature"
+    ],
+    "reference": [
+     "/ops/safety-kpi",
+     "/admin/data"
+    ]
+   },
+   "handoffs": {
+    "out": [],
+    "in": []
+   }
+  }
+ ],
+ "departmentScope": {
+  "first": [
+   "FPW.1",
+   "FPW.2",
+   "FPW.3",
+   "FPW.4",
+   "FPW.5",
+   "FPW.6",
+   "FPW.7",
+   "FPW.8",
+   "FPW.9"
+  ],
+  "note": "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정(FPW.10~13)은 2차 초안이다.",
+  "demoNotes": [
+   "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용하지만 데모 계정에 운영 리더가 없다(9계정·겸직 0건, 2026-10-17)."
+  ]
+ },
+ "departmentSod": [
+  {
+   "sod": "SOD-03",
+   "department": "DEP-PDP",
+   "first": "FPW.7-A05",
+   "second": "FPW.7-A06",
+   "note": "상품 작성자는 자기 상품을 승인하지 않는다"
+  },
+  {
+   "sod": "SOD-04",
+   "department": "DEP-PDP",
+   "first": "FPW.7-A06",
+   "second": "FPW.7-A10",
+   "note": "구성 승인자와 고객 출시 승인자는 다른 사람이다"
+  },
+  {
+   "sod": "SOD-05",
+   "department": "DEP-SE",
+   "first": "FPW.4-A03",
+   "second": "FPW.4-A04",
+   "note": "정책 작성자는 자기 정책을 승인하지 않는다"
+  },
+  {
+   "sod": "SOD-09",
+   "department": "DEP-FS",
+   "first": "FPW.8-A05",
+   "second": "FPW.8-A09",
+   "note": "복원 승인자는 직전 차단 승인자와 다른 사람이다"
+  }
+ ],
+ "workspaces": [
+  "studio",
+  "review",
+  "console",
+  "control",
+  "portal"
+ ],
  "processes": [
   {
    "id": "FPW.1",
@@ -727,6 +5073,262 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "role": "R-REG",
       "label": "법규 담당",
+      "x": 0,
+      "y": 294,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.1-A01",
+      "kind": "action",
+      "label": "Feature 등록·초안 작성",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-A02",
+      "kind": "action",
+      "label": "대상 차량 사양·의존 등록",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-A03",
+      "kind": "action",
+      "label": "안전 분류(네 축) 확정",
+      "x": 478,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-A05",
+      "kind": "action",
+      "label": "G1 등록·분류 판정",
+      "x": 1038,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-A04",
+      "kind": "action",
+      "label": "법규 의무 기능 판정",
+      "x": 758,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.1-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.1-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.1-S1",
+      "to": "FPW.1-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A01",
+      "to": "FPW.1-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A01",
+      "to": "FPW.1-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        245
+       ],
+       [
+        478,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A02",
+      "to": "FPW.1-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A03",
+      "to": "FPW.1-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        746,
+        343
+       ],
+       [
+        758,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A04",
+      "to": "FPW.1-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        343
+       ],
+       [
+        1026,
+        343
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A05",
+      "to": "FPW.1-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        245
+       ],
+       [
+        1240,
+        245
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1026,
+      245
+     ]
+    ]
+   },
+   "departmentLayout": {
+    "width": 1366,
+    "height": 392,
+    "lanes": [
+     {
+      "department": "DEP-PDP",
+      "label": "상품기획팀",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-PLM",
+      "label": "PLM·기준정보팀",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-HOM",
+      "label": "법규인증팀",
       "x": 0,
       "y": 294,
       "w": 1366,
@@ -1615,6 +6217,265 @@ export const WORKFLOWS: WorkflowDoc = {
       147
      ]
     ]
+   },
+   "departmentLayout": {
+    "width": 1086,
+    "height": 294,
+    "lanes": [
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 0,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "department": "DEP-PDP",
+      "label": "상품기획팀",
+      "x": 0,
+      "y": 98,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "department": "DEP-HOM",
+      "label": "법규인증팀",
+      "x": 0,
+      "y": 196,
+      "w": 1086,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.2-A01",
+      "kind": "action",
+      "label": "재-HARA 조건 검출·영향 범위 산정",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-A02",
+      "kind": "action",
+      "label": "HARA·TARA 공동 수행",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-A05",
+      "kind": "action",
+      "label": "G2 HARA 영향 판정",
+      "x": 758,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-A03",
+      "kind": "action",
+      "label": "SOTIF 분석 갱신",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-A04",
+      "kind": "action",
+      "label": "형식승인 영향 1차 판단",
+      "x": 478,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.2-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.2-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 960,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.2-S1",
+      "to": "FPW.2-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A04",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        245
+       ],
+       [
+        478,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A02",
+      "to": "FPW.2-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A03",
+      "to": "FPW.2-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A04",
+      "to": "FPW.2-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A05",
+      "to": "FPW.2-E1",
+      "kind": "end",
+      "points": [
+       [
+        946,
+        49
+       ],
+       [
+        960,
+        49
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      746,
+      49
+     ],
+     [
+      746,
+      147
+     ]
+    ]
    }
   },
   {
@@ -1960,6 +6821,178 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "role": "R-QA",
       "label": "품질 조직",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.3-A01",
+      "kind": "action",
+      "label": "안전요구 도출·명세",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A02",
+      "kind": "action",
+      "label": "양방향 추적성 점검",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A04",
+      "kind": "action",
+      "label": "G3 판정·Feature 정의 승인",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A03",
+      "kind": "action",
+      "label": "요구 검토 판정 등록",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.3-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.3-S1",
+      "to": "FPW.3-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A01",
+      "to": "FPW.3-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A03",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A04",
+      "to": "FPW.3-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1240,
+        49
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   },
+   "departmentLayout": {
+    "width": 1366,
+    "height": 196,
+    "lanes": [
+     {
+      "department": "DEP-SE",
+      "label": "시스템엔지니어링팀",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
       "x": 0,
       "y": 98,
       "w": 1366,
@@ -2766,6 +7799,239 @@ export const WORKFLOWS: WorkflowDoc = {
       245
      ]
     ]
+   },
+   "departmentLayout": {
+    "width": 1366,
+    "height": 294,
+    "lanes": [
+     {
+      "department": "DEP-SE",
+      "label": "시스템엔지니어링팀",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.4-A01",
+      "kind": "action",
+      "label": "차량 내 감시·안전기제 설계",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A03",
+      "kind": "action",
+      "label": "Flag 정책 작성·검증",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A04",
+      "kind": "action",
+      "label": "정책 승인",
+      "x": 758,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A02",
+      "kind": "action",
+      "label": "플랫폼 도구 신뢰도 분류",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A05",
+      "kind": "action",
+      "label": "G4 설계 독립 검토·판정",
+      "x": 1038,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.4-S2",
+      "kind": "start",
+      "label": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
+      "x": 706,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.4-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.4-S1",
+      "to": "FPW.4-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-S2",
+      "to": "FPW.4-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        724,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A01",
+      "to": "FPW.4-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A02",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A03",
+      "to": "FPW.4-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A04",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        49
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A05",
+      "to": "FPW.4-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        245
+       ],
+       [
+        1240,
+        245
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1026,
+      147
+     ]
+    ]
    }
   },
   {
@@ -3298,6 +8564,278 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "role": "R-QA",
       "label": "품질 조직",
+      "x": 0,
+      "y": 294,
+      "w": 1646,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.5-A01",
+      "kind": "action",
+      "label": "독립성 수준·검증 계획 확정",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A02",
+      "kind": "action",
+      "label": "시나리오·허용 조합 정의",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A04",
+      "kind": "action",
+      "label": "비활성화·결함 주입 시험 수행",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A05",
+      "kind": "action",
+      "label": "시험 Evidence 연결·TMS 제출",
+      "x": 1038,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A03",
+      "kind": "action",
+      "label": "통합 시험·SEooC 가정 확인",
+      "x": 478,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-A06",
+      "kind": "action",
+      "label": "G5 V&V 판정",
+      "x": 1318,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.5-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.5-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.5-S1",
+      "to": "FPW.5-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A01",
+      "to": "FPW.5-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A01",
+      "to": "FPW.5-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        245
+       ],
+       [
+        478,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A02",
+      "to": "FPW.5-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A03",
+      "to": "FPW.5-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A04",
+      "to": "FPW.5-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1038,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A05",
+      "to": "FPW.5-A06",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        147
+       ],
+       [
+        1306,
+        147
+       ],
+       [
+        1306,
+        343
+       ],
+       [
+        1318,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A06",
+      "to": "FPW.5-E1",
+      "kind": "end",
+      "points": [
+       [
+        1506,
+        343
+       ],
+       [
+        1520,
+        343
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      746,
+      147
+     ]
+    ]
+   },
+   "departmentLayout": {
+    "width": 1646,
+    "height": 392,
+    "lanes": [
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 0,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-VAL",
+      "label": "시험·검증팀",
+      "x": 0,
+      "y": 98,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-INT",
+      "label": "SW통합·릴리스팀",
+      "x": 0,
+      "y": 196,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
       "x": 0,
       "y": 294,
       "w": 1646,
@@ -4290,6 +9828,302 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         1520,
         539
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1026,
+      343
+     ]
+    ]
+   },
+   "departmentLayout": {
+    "width": 1646,
+    "height": 490,
+    "lanes": [
+     {
+      "department": "DEP-PDP",
+      "label": "상품기획팀",
+      "x": 0,
+      "y": 0,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-PLM",
+      "label": "PLM·기준정보팀",
+      "x": 0,
+      "y": 98,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-HOM",
+      "label": "법규인증팀",
+      "x": 0,
+      "y": 196,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-INT",
+      "label": "SW통합·릴리스팀",
+      "x": 0,
+      "y": 294,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
+      "x": 0,
+      "y": 392,
+      "w": 1646,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.6-A01",
+      "kind": "action",
+      "label": "출시 Baseline 확정 요청",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A02",
+      "kind": "action",
+      "label": "출시 Baseline 확정 승인",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A03",
+      "kind": "action",
+      "label": "SUMS 기록·형식승인 확인",
+      "x": 758,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A04",
+      "kind": "action",
+      "label": "서명 패키지 작성·SBOM 결합",
+      "x": 758,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A06",
+      "kind": "action",
+      "label": "G6 서명 배포 실행",
+      "x": 1318,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-A05",
+      "kind": "action",
+      "label": "OTA Gate 판정 등록",
+      "x": 1038,
+      "y": 408,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.6-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.6-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.6-S1",
+      "to": "FPW.6-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A01",
+      "to": "FPW.6-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A02",
+      "to": "FPW.6-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A02",
+      "to": "FPW.6-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        343
+       ],
+       [
+        758,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A03",
+      "to": "FPW.6-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1026,
+        441
+       ],
+       [
+        1038,
+        441
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A04",
+      "to": "FPW.6-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        343
+       ],
+       [
+        1026,
+        343
+       ],
+       [
+        1026,
+        441
+       ],
+       [
+        1038,
+        441
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A05",
+      "to": "FPW.6-A06",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        441
+       ],
+       [
+        1306,
+        441
+       ],
+       [
+        1306,
+        343
+       ],
+       [
+        1318,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A06",
+      "to": "FPW.6-E1",
+      "kind": "end",
+      "points": [
+       [
+        1506,
+        343
+       ],
+       [
+        1520,
+        343
        ]
       ]
      }
@@ -5813,6 +11647,603 @@ export const WORKFLOWS: WorkflowDoc = {
       539
      ]
     ]
+   },
+   "departmentLayout": {
+    "width": 1926,
+    "height": 678,
+    "lanes": [
+     {
+      "department": "DEP-OPS",
+      "label": "OTA·서비스운영팀",
+      "x": 0,
+      "y": 0,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "department": "DEP-PDP",
+      "label": "상품기획팀",
+      "x": 0,
+      "y": 98,
+      "w": 1926,
+      "h": 188
+     },
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 286,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
+      "x": 0,
+      "y": 384,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "department": "DEP-HOM",
+      "label": "법규인증팀",
+      "x": 0,
+      "y": 482,
+      "w": 1926,
+      "h": 98
+     },
+     {
+      "department": "DEP-INT",
+      "label": "SW통합·릴리스팀",
+      "x": 0,
+      "y": 580,
+      "w": 1926,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.7-A01",
+      "kind": "action",
+      "label": "Canary·Shadow 판정 기준 정의",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A11",
+      "kind": "action",
+      "label": "Canary 활성화·단계적 확대",
+      "x": 1598,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A02",
+      "kind": "action",
+      "label": "효과 실험 계획 등록",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A05",
+      "kind": "action",
+      "label": "상품 구성 작성",
+      "x": 198,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A06",
+      "kind": "action",
+      "label": "상품 구성 승인",
+      "x": 478,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A12",
+      "kind": "action",
+      "label": "Release Sign-off(출시 책임 확인)",
+      "x": 1038,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A10",
+      "kind": "action",
+      "label": "상품 고객 출시 승인",
+      "x": 1598,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A03",
+      "kind": "action",
+      "label": "Safety Case·SOTIF 근거 정리",
+      "x": 198,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A08",
+      "kind": "action",
+      "label": "G7 출시·활성화 판정",
+      "x": 758,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A04",
+      "kind": "action",
+      "label": "Safety Case 독립 검토",
+      "x": 478,
+      "y": 400,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A07",
+      "kind": "action",
+      "label": "형식승인·사용자 고지 확인",
+      "x": 478,
+      "y": 498,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-A09",
+      "kind": "action",
+      "label": "출시 전이",
+      "x": 1318,
+      "y": 596,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.7-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-S2",
+      "kind": "start",
+      "label": "출시 효과를 실험으로 비교해야 할 때",
+      "x": 426,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-S3",
+      "kind": "start",
+      "label": "G6 배포 완료",
+      "x": 146,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-S4",
+      "kind": "start",
+      "label": "G6 배포 완료",
+      "x": 146,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-S5",
+      "kind": "start",
+      "label": "G6 배포 완료",
+      "x": 426,
+      "y": 522,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1800,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.7-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 1800,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.7-S1",
+      "to": "FPW.7-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-S2",
+      "to": "FPW.7-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        444,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-S3",
+      "to": "FPW.7-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        335
+       ],
+       [
+        198,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-S4",
+      "to": "FPW.7-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        237
+       ],
+       [
+        198,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-S5",
+      "to": "FPW.7-A07",
+      "kind": "trigger",
+      "points": [
+       [
+        444,
+        531
+       ],
+       [
+        478,
+        531
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A01",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        335
+       ],
+       [
+        758,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A02",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        335
+       ],
+       [
+        758,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A03",
+      "to": "FPW.7-A04",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        335
+       ],
+       [
+        466,
+        335
+       ],
+       [
+        466,
+        433
+       ],
+       [
+        478,
+        433
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A04",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        433
+       ],
+       [
+        746,
+        433
+       ],
+       [
+        746,
+        335
+       ],
+       [
+        758,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A05",
+      "to": "FPW.7-A06",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        237
+       ],
+       [
+        478,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A06",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        746,
+        237
+       ],
+       [
+        746,
+        335
+       ],
+       [
+        758,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A07",
+      "to": "FPW.7-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        531
+       ],
+       [
+        746,
+        531
+       ],
+       [
+        746,
+        335
+       ],
+       [
+        758,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A08",
+      "to": "FPW.7-A12",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        335
+       ],
+       [
+        1026,
+        335
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1038,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A12",
+      "to": "FPW.7-A09",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        147
+       ],
+       [
+        1306,
+        147
+       ],
+       [
+        1306,
+        629
+       ],
+       [
+        1318,
+        629
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A09",
+      "to": "FPW.7-A10",
+      "kind": "flow",
+      "points": [
+       [
+        1506,
+        629
+       ],
+       [
+        1586,
+        629
+       ],
+       [
+        1586,
+        147
+       ],
+       [
+        1598,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A09",
+      "to": "FPW.7-A11",
+      "kind": "flow",
+      "points": [
+       [
+        1506,
+        629
+       ],
+       [
+        1586,
+        629
+       ],
+       [
+        1586,
+        49
+       ],
+       [
+        1598,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A10",
+      "to": "FPW.7-E1",
+      "kind": "end",
+      "points": [
+       [
+        1786,
+        147
+       ],
+       [
+        1800,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A11",
+      "to": "FPW.7-E2",
+      "kind": "end",
+      "points": [
+       [
+        1786,
+        49
+       ],
+       [
+        1800,
+        49
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      746,
+      147
+     ],
+     [
+      746,
+      237
+     ],
+     [
+      746,
+      335
+     ],
+     [
+      746,
+      433
+     ]
+    ]
    }
   },
   {
@@ -7110,6 +13541,459 @@ export const WORKFLOWS: WorkflowDoc = {
      }
     ],
     "joins": []
+   },
+   "departmentLayout": {
+    "width": 2766,
+    "height": 384,
+    "lanes": [
+     {
+      "department": "DEP-OPS",
+      "label": "OTA·서비스운영팀",
+      "x": 0,
+      "y": 0,
+      "w": 2766,
+      "h": 188
+     },
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 188,
+      "w": 2766,
+      "h": 98
+     },
+     {
+      "department": "DEP-HOM",
+      "label": "법규인증팀",
+      "x": 0,
+      "y": 286,
+      "w": 2766,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.8-A01",
+      "kind": "action",
+      "label": "이상 징후 확인",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A04",
+      "kind": "action",
+      "label": "긴급 차단 요청",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A06",
+      "kind": "action",
+      "label": "차단 전달·적용 추적",
+      "x": 1598,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A08",
+      "kind": "action",
+      "label": "원인 조치·복원 요청",
+      "x": 1878,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A10",
+      "kind": "action",
+      "label": "단계적 복원·관측",
+      "x": 2438,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A11",
+      "kind": "action",
+      "label": "분기 드릴·G8 운영 판정",
+      "x": 198,
+      "y": 106,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A02",
+      "kind": "action",
+      "label": "차단 필요성·범위 판단",
+      "x": 478,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A05",
+      "kind": "action",
+      "label": "긴급 차단 2인 승인",
+      "x": 1318,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A09",
+      "kind": "action",
+      "label": "복원 2인 승인",
+      "x": 2158,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A03",
+      "kind": "action",
+      "label": "리콜·봉쇄 근거 연계",
+      "x": 758,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A07",
+      "kind": "action",
+      "label": "긴급 권한 사후 검토",
+      "x": 1598,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-S2",
+      "kind": "start",
+      "label": "분기 정기 일정",
+      "x": 146,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1800,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 2640,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.8-S1",
+      "to": "FPW.8-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-S2",
+      "to": "FPW.8-A11",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        139
+       ],
+       [
+        198,
+        139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A01",
+      "to": "FPW.8-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        237
+       ],
+       [
+        478,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A02",
+      "to": "FPW.8-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        746,
+        237
+       ],
+       [
+        746,
+        335
+       ],
+       [
+        758,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A03",
+      "to": "FPW.8-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        335
+       ],
+       [
+        1026,
+        335
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A04",
+      "to": "FPW.8-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1306,
+        49
+       ],
+       [
+        1306,
+        237
+       ],
+       [
+        1318,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A06",
+      "kind": "flow",
+      "points": [
+       [
+        1506,
+        237
+       ],
+       [
+        1586,
+        237
+       ],
+       [
+        1586,
+        49
+       ],
+       [
+        1598,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A07",
+      "kind": "flow",
+      "points": [
+       [
+        1506,
+        237
+       ],
+       [
+        1586,
+        237
+       ],
+       [
+        1586,
+        335
+       ],
+       [
+        1598,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A06",
+      "to": "FPW.8-A08",
+      "kind": "flow",
+      "points": [
+       [
+        1786,
+        49
+       ],
+       [
+        1878,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A08",
+      "to": "FPW.8-A09",
+      "kind": "flow",
+      "points": [
+       [
+        2066,
+        49
+       ],
+       [
+        2146,
+        49
+       ],
+       [
+        2146,
+        237
+       ],
+       [
+        2158,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A09",
+      "to": "FPW.8-A10",
+      "kind": "flow",
+      "points": [
+       [
+        2346,
+        237
+       ],
+       [
+        2426,
+        237
+       ],
+       [
+        2426,
+        49
+       ],
+       [
+        2438,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A07",
+      "to": "FPW.8-E1",
+      "kind": "end",
+      "points": [
+       [
+        1786,
+        335
+       ],
+       [
+        1800,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A10",
+      "to": "FPW.8-E2",
+      "kind": "end",
+      "points": [
+       [
+        2626,
+        49
+       ],
+       [
+        2640,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A11",
+      "to": "FPW.8-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        139
+       ],
+       [
+        400,
+        139
+       ]
+      ]
+     }
+    ],
+    "joins": []
    }
   },
   {
@@ -7525,6 +14409,259 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "role": "R-REL",
       "label": "Release Manager",
+      "x": 0,
+      "y": 294,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.9-A01",
+      "kind": "action",
+      "label": "운영 결과 품질 피드백 수용",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-A02",
+      "kind": "action",
+      "label": "Flag Retirement 요청",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-A04",
+      "kind": "action",
+      "label": "코드·설정·시험 삭제 기록",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-A03",
+      "kind": "action",
+      "label": "Flag Retirement 승인",
+      "x": 478,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-A05",
+      "kind": "action",
+      "label": "Lifecycle 종료 전이",
+      "x": 1038,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.9-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.9-S2",
+      "kind": "start",
+      "label": "Flag 만료 30일 전 알림, 기능 대체·폐기 결정",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.9-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.9-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.9-S1",
+      "to": "FPW.9-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-S2",
+      "to": "FPW.9-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A02",
+      "to": "FPW.9-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        466,
+        245
+       ],
+       [
+        478,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A03",
+      "to": "FPW.9-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A04",
+      "to": "FPW.9-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1026,
+        343
+       ],
+       [
+        1038,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A01",
+      "to": "FPW.9-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        400,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A05",
+      "to": "FPW.9-E2",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        343
+       ],
+       [
+        1240,
+        343
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   },
+   "departmentLayout": {
+    "width": 1366,
+    "height": 392,
+    "lanes": [
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-PDP",
+      "label": "상품기획팀",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-SE",
+      "label": "시스템엔지니어링팀",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-INT",
+      "label": "SW통합·릴리스팀",
       "x": 0,
       "y": 294,
       "w": 1366,
@@ -8623,6 +15760,343 @@ export const WORKFLOWS: WorkflowDoc = {
       237
      ]
     ]
+   },
+   "departmentLayout": {
+    "width": 1646,
+    "height": 482,
+    "lanes": [
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
+      "x": 0,
+      "y": 0,
+      "w": 1646,
+      "h": 188
+     },
+     {
+      "department": "DEP-PUR",
+      "label": "구매팀",
+      "x": 0,
+      "y": 188,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 286,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-INT",
+      "label": "SW통합·릴리스팀",
+      "x": 0,
+      "y": 384,
+      "w": 1646,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.10-A01",
+      "kind": "action",
+      "label": "계약 전 협력사 역량 확인",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A05",
+      "kind": "action",
+      "label": "기존 구현 진단",
+      "x": 198,
+      "y": 106,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A06",
+      "kind": "action",
+      "label": "Gate별 납품물 입고 검사",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A02",
+      "kind": "action",
+      "label": "DIA·CIA 체결",
+      "x": 478,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A04",
+      "kind": "action",
+      "label": "공급망 원산지 속성 관리",
+      "x": 758,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A03",
+      "kind": "action",
+      "label": "확인 조치 독립성 지정",
+      "x": 758,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-A07",
+      "kind": "action",
+      "label": "EOL 프로비저닝 검증",
+      "x": 1318,
+      "y": 400,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.10-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.10-S2",
+      "kind": "start",
+      "label": "기존 Feature Flag 구현의 재사용·인수 결정",
+      "x": 146,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.10-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.10-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520,
+      "y": 424,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.10-S1",
+      "to": "FPW.10-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-S2",
+      "to": "FPW.10-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        139
+       ],
+       [
+        198,
+        139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A01",
+      "to": "FPW.10-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        237
+       ],
+       [
+        478,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        746,
+        237
+       ],
+       [
+        746,
+        335
+       ],
+       [
+        758,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        758,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A03",
+      "to": "FPW.10-A06",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        335
+       ],
+       [
+        1026,
+        335
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A04",
+      "to": "FPW.10-A06",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        237
+       ],
+       [
+        1026,
+        237
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A06",
+      "to": "FPW.10-A07",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1306,
+        49
+       ],
+       [
+        1306,
+        433
+       ],
+       [
+        1318,
+        433
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A05",
+      "to": "FPW.10-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        139
+       ],
+       [
+        400,
+        139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.10-A07",
+      "to": "FPW.10-E2",
+      "kind": "end",
+      "points": [
+       [
+        1506,
+        433
+       ],
+       [
+        1520,
+        433
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1026,
+      237
+     ]
+    ]
    }
   },
   {
@@ -9089,6 +16563,329 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "role": "R-LEG",
       "label": "법무",
+      "x": 0,
+      "y": 286,
+      "w": 806,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.11-A01",
+      "kind": "action",
+      "label": "서명 키 계층·HSM 운영",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A02",
+      "kind": "action",
+      "label": "키 교체 플랫폼 기록",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A03",
+      "kind": "action",
+      "label": "키 유출 대응·epoch 상향",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A04",
+      "kind": "action",
+      "label": "취약점 영향 특정·대응 결정",
+      "x": 198,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A05",
+      "kind": "action",
+      "label": "CSMS Evidence·R155 보고",
+      "x": 478,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-A06",
+      "kind": "action",
+      "label": "OSS 라이선스·보안 프로그램 운영",
+      "x": 198,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.11-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-S2",
+      "kind": "start",
+      "label": "키 유출·오사용 징후",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-S3",
+      "kind": "start",
+      "label": "새 취약점 공지",
+      "x": 146,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-S4",
+      "kind": "start",
+      "label": "OSS 구성요소 추가·변경",
+      "x": 146,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 680,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 680,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.11-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.11-S1",
+      "to": "FPW.11-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-S2",
+      "to": "FPW.11-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-S3",
+      "to": "FPW.11-A04",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        237
+       ],
+       [
+        198,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-S4",
+      "to": "FPW.11-A06",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        335
+       ],
+       [
+        198,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A01",
+      "to": "FPW.11-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A03",
+      "to": "FPW.11-A05",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        466,
+        237
+       ],
+       [
+        478,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A04",
+      "to": "FPW.11-A05",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        237
+       ],
+       [
+        478,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A02",
+      "to": "FPW.11-E1",
+      "kind": "end",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        680,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A05",
+      "to": "FPW.11-E2",
+      "kind": "end",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        680,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A06",
+      "to": "FPW.11-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        335
+       ],
+       [
+        400,
+        335
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      466,
+      237
+     ]
+    ]
+   },
+   "departmentLayout": {
+    "width": 806,
+    "height": 384,
+    "lanes": [
+     {
+      "department": "DEP-ITSEC",
+      "label": "IT인프라·보안운영팀",
+      "x": 0,
+      "y": 0,
+      "w": 806,
+      "h": 98
+     },
+     {
+      "department": "DEP-CS",
+      "label": "차량사이버보안팀",
+      "x": 0,
+      "y": 98,
+      "w": 806,
+      "h": 188
+     },
+     {
+      "department": "DEP-LEG",
+      "label": "법무팀",
       "x": 0,
       "y": 286,
       "w": 806,
@@ -10094,6 +17891,334 @@ export const WORKFLOWS: WorkflowDoc = {
      }
     ],
     "joins": []
+   },
+   "departmentLayout": {
+    "width": 526,
+    "height": 482,
+    "lanes": [
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 0,
+      "w": 526,
+      "h": 98
+     },
+     {
+      "department": "DEP-DPO",
+      "label": "개인정보보호팀",
+      "x": 0,
+      "y": 98,
+      "w": 526,
+      "h": 98
+     },
+     {
+      "department": "DEP-LEG",
+      "label": "법무팀",
+      "x": 0,
+      "y": 196,
+      "w": 526,
+      "h": 98
+     },
+     {
+      "department": "DEP-HOM",
+      "label": "법규인증팀",
+      "x": 0,
+      "y": 294,
+      "w": 526,
+      "h": 188
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.12-A01",
+      "kind": "action",
+      "label": "운행 감시 지표·경보 기준 기록",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A02",
+      "kind": "action",
+      "label": "평가 컨텍스트 개인정보 검토",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A03",
+      "kind": "action",
+      "label": "중국 데이터 현지 처리·이전 심사",
+      "x": 198,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A04",
+      "kind": "action",
+      "label": "EU 데이터 접근 요청 처리",
+      "x": 198,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A05",
+      "kind": "action",
+      "label": "보존 기간 경과 데이터 삭제",
+      "x": 198,
+      "y": 400,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-S2",
+      "kind": "start",
+      "label": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-S3",
+      "kind": "start",
+      "label": "중국 시장 출시 또는 국외 조회 요청",
+      "x": 146,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-S4",
+      "kind": "start",
+      "label": "EU 차량 사용자·제3자 데이터 접근 요청",
+      "x": 146,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-S5",
+      "kind": "start",
+      "label": "정기 보존 기간 점검",
+      "x": 146,
+      "y": 424,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E4",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E5",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 424,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.12-S1",
+      "to": "FPW.12-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-S2",
+      "to": "FPW.12-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-S3",
+      "to": "FPW.12-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        245
+       ],
+       [
+        198,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-S4",
+      "to": "FPW.12-A04",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        343
+       ],
+       [
+        198,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-S5",
+      "to": "FPW.12-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        433
+       ],
+       [
+        198,
+        433
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A01",
+      "to": "FPW.12-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        400,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A02",
+      "to": "FPW.12-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        400,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A03",
+      "to": "FPW.12-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        245
+       ],
+       [
+        400,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A04",
+      "to": "FPW.12-E4",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        343
+       ],
+       [
+        400,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A05",
+      "to": "FPW.12-E5",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        433
+       ],
+       [
+        400,
+        433
+       ]
+      ]
+     }
+    ],
+    "joins": []
    }
   },
   {
@@ -10425,6 +18550,203 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "role": "R-REG",
       "label": "법규 담당",
+      "x": 0,
+      "y": 98,
+      "w": 1086,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.13-A01",
+      "kind": "action",
+      "label": "표준 판 고정",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.13-A02",
+      "kind": "action",
+      "label": "Compliance Profile 정의",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.13-A03",
+      "kind": "action",
+      "label": "분기 법규 감시·Profile 갱신",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.13-A04",
+      "kind": "action",
+      "label": "원격 종료 시스템 설명 작성",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.13-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.13-S2",
+      "kind": "start",
+      "label": "분기 정기 점검",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.13-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.13-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 960,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.13-S1",
+      "to": "FPW.13-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-S2",
+      "to": "FPW.13-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-A01",
+      "to": "FPW.13-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-A02",
+      "to": "FPW.13-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-A03",
+      "to": "FPW.13-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        400,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.13-A04",
+      "to": "FPW.13-E2",
+      "kind": "end",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        960,
+        147
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   },
+   "departmentLayout": {
+    "width": 1086,
+    "height": 196,
+    "lanes": [
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 0,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "department": "DEP-HOM",
+      "label": "법규인증팀",
       "x": 0,
       "y": 98,
       "w": 1086,

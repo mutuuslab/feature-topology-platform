@@ -13,6 +13,8 @@ const GENERATED = join(FF, 'contracts', 'src', 'generated', 'workflows.ts');
 const GENERATED_INDEX = join(FF, 'backend', 'src', 'generated', 'workflow-index.ts');
 /** 메인 화면 절차 지도는 프로세스 메타데이터(13개)만 첫 화면에 싣는다 — 같은 JSON에서 생성 */
 const GENERATED_MAP = join(FF, 'contracts', 'src', 'generated', 'workflow-map.ts');
+/** 셸(부서 전환·부서 메뉴)은 부서 이름·화면 유형·데모 계정·화면 목록만 첫 화면에 싣는다 — 같은 JSON에서 생성 */
+const GENERATED_DEPTS = join(FF, 'contracts', 'src', 'generated', 'departments.ts');
 const SCHEMA = 1;
 
 const posix = (p: string) => p.split(sep).join('/');
@@ -33,6 +35,18 @@ type JsonDoc = {
   personas: Record<string, string[]>;
   roles: { id: string; name: string; platformRoles: string[] }[];
   processes: { id: string; name: string; group: string; gates: string[]; activities: any[] }[];
+  departments: {
+    id: string;
+    name: string;
+    en: string;
+    desc: string;
+    workspace: string;
+    roles: string[];
+    personas: string[];
+    activities: { part: 'R' | 'A' | 'C' | 'I'; parts: ('R' | 'A' | 'C' | 'I')[] }[];
+    screens: { primary: string[]; reference: string[] };
+  }[];
+  departmentScope: { first: string[] };
 };
 
 /** 계약 타입(WorkflowIndexDoc)과 같은 모양 — 서버는 전체 문서를 번들에 넣지 않는다 */
@@ -81,6 +95,29 @@ export function renderMapModule(doc: JsonDoc): string {
   ].join('\n');
 }
 
+/** 계약 타입(DepartmentsDoc)·departmentsOf와 같은 모양 */
+export function departmentsDocOf(doc: JsonDoc) {
+  if (doc.schema !== SCHEMA) throw new Error(`workflows.json schema ${doc.schema} — 이 도구는 ${SCHEMA}만 읽는다`);
+  return {
+    departments: doc.departments.map((d) => {
+      const counts = { R: 0, A: 0, C: 0, I: 0 };
+      for (const a of d.activities) for (const k of a.parts) counts[k] += 1;
+      return { id: d.id, name: d.name, en: d.en, desc: d.desc, workspace: d.workspace, roles: d.roles, personas: d.personas, screens: d.screens, counts };
+    }),
+    firstScope: doc.departmentScope.first,
+  };
+}
+
+export function renderDepartmentsModule(doc: JsonDoc): string {
+  return [
+    '// 생성 파일 — tools/workflow-sync.ts가 docs/65-workflows/out/workflows.json에서 만든다. 손으로 고치지 않는다(workflow:check가 잡는다).',
+    "import type { DepartmentsDoc } from '../rules/workflows';",
+    '',
+    `export const DEPARTMENTS: DepartmentsDoc = ${JSON.stringify(departmentsDocOf(doc), null, 1)};`,
+    '',
+  ].join('\n');
+}
+
 export function renderIndexModule(doc: JsonDoc): string {
   const index = indexOf(doc);
   return [
@@ -103,8 +140,11 @@ function sync() {
   writeFileSync(GENERATED, renderWorkflowModule(doc));
   writeFileSync(GENERATED_INDEX, renderIndexModule(doc));
   writeFileSync(GENERATED_MAP, renderMapModule(doc));
+  writeFileSync(GENERATED_DEPTS, renderDepartmentsModule(doc));
   const acts = doc.processes.reduce((n: number, p: { activities: unknown[] }) => n + p.activities.length, 0);
-  console.log(`workflow:sync  프로세스 ${doc.processes.length}개 · 활동 ${acts}개 → ${posix(relative(FF, GENERATED))} · ${posix(relative(FF, GENERATED_INDEX))} · ${posix(relative(FF, GENERATED_MAP))}`);
+  console.log(
+    `workflow:sync  프로세스 ${doc.processes.length}개 · 활동 ${acts}개 · 부서 ${doc.departments.length}개 → ${posix(relative(FF, GENERATED))} · ${posix(relative(FF, GENERATED_INDEX))} · ${posix(relative(FF, GENERATED_MAP))} · ${posix(relative(FF, GENERATED_DEPTS))}`,
+  );
 }
 
 function check(): number {
@@ -117,11 +157,12 @@ function check(): number {
   if (!existsSync(GENERATED) || readFileSync(GENERATED, 'utf8').replace(/\r\n/g, '\n') !== renderWorkflowModule(doc)) bad.push(posix(relative(FF, GENERATED)));
   if (!existsSync(GENERATED_INDEX) || readFileSync(GENERATED_INDEX, 'utf8').replace(/\r\n/g, '\n') !== renderIndexModule(doc)) bad.push(posix(relative(FF, GENERATED_INDEX)));
   if (!existsSync(GENERATED_MAP) || readFileSync(GENERATED_MAP, 'utf8').replace(/\r\n/g, '\n') !== renderMapModule(doc)) bad.push(posix(relative(FF, GENERATED_MAP)));
+  if (!existsSync(GENERATED_DEPTS) || readFileSync(GENERATED_DEPTS, 'utf8').replace(/\r\n/g, '\n') !== renderDepartmentsModule(doc)) bad.push(posix(relative(FF, GENERATED_DEPTS)));
   if (bad.length) {
     console.error(`workflow:check  ✗ 생성 모듈이 업무 절차 JSON과 다름(npm run workflow:sync): ${bad.join(', ')}`);
     return 1;
   }
-  console.log(`workflow:check  ✓ ${posix(relative(FF, GENERATED))} · ${posix(relative(FF, GENERATED_INDEX))} · ${posix(relative(FF, GENERATED_MAP))} = ${posix(relative(FF, SOURCE))}`);
+  console.log(`workflow:check  ✓ ${posix(relative(FF, GENERATED))} · ${posix(relative(FF, GENERATED_INDEX))} · ${posix(relative(FF, GENERATED_MAP))} · ${posix(relative(FF, GENERATED_DEPTS))} = ${posix(relative(FF, SOURCE))}`);
   return 0;
 }
 

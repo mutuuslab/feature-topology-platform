@@ -31,7 +31,14 @@ const SAMPLE: Record<string, string> = {
   '/procedures/:id': '/procedures/FPW.7',
   '/twin/vehicle/:vin': '/twin/vehicle/VIN-DEMO-017',
   '/fleet/vehicles/:vin': '/fleet/vehicles/ego-01',
+  // Feature DB v1.3(엑셀 가져옴) 기준 행 — 오토 홀드
+  '/master/feature-db/:refId': '/master/feature-db/CH-BRK-009',
 };
+/**
+ * 시드에 표본이 없는 하위 화면 — 새 DB에는 Feature DB 변경 요청이 하나도 없다(v1.3 가져옴은 요청 없이 발행).
+ * 변경 요청 상세는 refdb.spec(작성 → 검토 → 승인 → 발행, axe)과 정적 데모 시험(목록에서 열기)이 따로 연다.
+ */
+const NO_SAMPLE = new Set(['/master/feature-db/changes/:id']);
 export const DRILLDOWNS: { path: string; title: string; url: string }[] = [...src.matchAll(/\{ path: '([^']+)', element: ([^\n]*?), title: '([^']+)'[^\n]*parent: '/g)]
-  .filter((m) => !/legacyTo\(|Redirect'/.test(m[2]))
+  .filter((m) => !/legacyTo\(|Redirect'/.test(m[2]) && !NO_SAMPLE.has(m[1]))
   .map((m) => ({ path: m[1], title: m[3], url: SAMPLE[m[1]] ?? m[1] }));

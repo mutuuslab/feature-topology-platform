@@ -5,6 +5,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { errorActions } from '../../frontend/src/copy/error-actions';
 import { errors } from '../../frontend/src/copy/errors';
+import { pickPrimaryRef, REF } from './refdb';
 
 const E = { ...errors, ...errorActions };
 
@@ -55,9 +56,14 @@ test('대시보드 — 가젯이 실제 데이터로 채워지고 오류·가로
   expect(pageErrors).toEqual([]);
 });
 
-test('Feature 등록 — 제안 폼으로 등록하면 새 Feature 상세(0.1.0)가 열린다', async ({ page, browserName }) => {
+test('Feature 등록 — 기준 기능을 고르고 제안 폼으로 등록하면 새 Feature 상세(0.1.0)가 열린다', async ({ page, browserName }) => {
   await asRole(page, 'author');
   await page.goto('/feature/propose');
+  // 엔진마다 다른 대표 기준 행(API 시험이 쓰는 행과도 다르게) — 세 엔진이 같은 백엔드에 등록해도 같은 범위 중복(409)이 나지 않게.
+  // 트림도 실행마다 달리 — 서버를 다시 쓰는 반복 실행에서도 같은 범위가 되지 않는다
+  const ref = browserName === 'firefox' ? REF.sotif : browserName === 'webkit' ? REF.dssad : REF.nightVision;
+  await pickPrimaryRef(page, ref, ref);
+  await page.locator('input[name="trim"]').fill(`엔진 ${Date.now() % 100000}`);
   const name = `엔진 스모크 ${browserName} ${Date.now()}`;
   await page.locator('input[name="name"]').fill(name);
   await page.locator('textarea[name="description"]').fill('브라우저 엔진 스모크에서 등록');
@@ -95,7 +101,7 @@ test('업무 절차 흐름도 — 스윔레인과 활동 상자가 보이고, �
   await page.goto('/procedures/FPW.1');
   const flow = page.getByRole('group', { name: 'Feature 등록·분류 흐름도' });
   await expect(flow).toBeVisible();
-  await expect(flow.locator('.pf-node--activity')).toHaveCount(5);
+  await expect(flow.locator('.pf-node--activity')).toHaveCount(6); // FPW.1 — Feature DB 추가 요청(A06)까지 6개
   await flow.getByRole('button', { name: /^안전 분류\(네 축\) 확정 / }).click();
   await expect(page).toHaveURL(/a=FPW\.1-A03/);
   await expect(page.getByRole('heading', { level: 2, name: /안전 분류\(네 축\) 확정/ })).toBeVisible();

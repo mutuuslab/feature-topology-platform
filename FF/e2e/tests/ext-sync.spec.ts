@@ -62,6 +62,8 @@ test('JIRA에서 Epic 만들기 → PROPOSED Feature 자동 등록, Registry에 
   const title = `야간 차선 유지 확장 ${Date.now() % 100000}`;
   await form.getByLabel('Epic 제목 (= Feature 이름)').fill(title);
   await form.getByLabel('담당 조직').fill('주행보조개발팀');
+  // 기준 기능(Feature DB) ID — 없으면 자동 등록하지 않는다(30-95 §7). 긴급 차량 인식 · QM
+  await form.locator('input[name="epicRefs"]').fill('AD-ADS-026');
   await form.getByRole('button', { name: 'Epic 만들기' }).click();
   await expect(page.getByTestId('epic-create-result')).toContainText(/FEAT-\d{5}@[\d.]+ 자동 등록/);
   await page.goto(`/features?q=${encodeURIComponent(title)}`);

@@ -11,7 +11,7 @@ async function asRole(page: Page, role: string) {
   }, role);
 }
 
-test('메인 화면 — 업무 절차 지도에 13개 절차·Gate·내 차례가 보이고 절차로 들어간다', async ({ page }) => {
+test('메인 화면 — 업무 절차 지도에 14개 절차·Gate·내 차례가 보이고 절차로 들어간다', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'author');
   // 최초 진입은 역할 기본 화면으로 간다 — 홈 메뉴로 내 대시보드에 들어간다(실제 사용자 경로)
@@ -20,8 +20,8 @@ test('메인 화면 — 업무 절차 지도에 13개 절차·Gate·내 차례�
   await page.getByRole('link', { name: '내 대시보드' }).click();
   await expect(page.getByRole('heading', { name: '업무 절차 지도' })).toBeVisible();
   const nodes = page.locator('.pm-node');
-  // 메인 지도는 HARA(FPW.2) 제외 — 12개
-  await expect(nodes).toHaveCount(12);
+  // 메인 지도는 HARA(FPW.2) 제외 — 13개(Feature DB 운영 FPW.14 포함)
+  await expect(nodes).toHaveCount(13);
   await expect(page.getByText(/HARA/)).toHaveCount(0);
   const first = page.locator('.pm-node').first();
   await expect(first).toHaveAccessibleName(/Feature 등록·분류/);

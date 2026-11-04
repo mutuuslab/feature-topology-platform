@@ -1,6 +1,7 @@
 // 거버넌스 끝단 흐름 — 실제 백엔드(메모리 DB·v0.81)와 v2 화면으로 상세설계서 업무 순서를 끝까지 밟는다.
 // 테스트마다 자기 Feature·상품을 새로 만들어 병렬 실행에서도 서로 간섭하지 않는다.
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { apiRefs } from './refdb';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -17,7 +18,7 @@ async function asRole(page: Page, role: string) {
 async function newFeature(request: APIRequestContext, name: string, extra: Record<string, unknown> = {}) {
   const r = await request.post(`${API}/api/features`, {
     headers: H('usr-author', 'FEATURE_AUTHOR'),
-    data: { name, description: `${name} e2e`, requirementIds: ['REQ-E2E-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'], ...extra },
+    data: { name, description: `${name} e2e`, requirementIds: ['REQ-E2E-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'], ...apiRefs(), ...extra },
   });
   expect(r.status(), await r.text()).toBe(201);
   return (await r.json()) as { featureId: string; version: string };

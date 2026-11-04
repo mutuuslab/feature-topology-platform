@@ -41,12 +41,12 @@ describe('업무 절차 허브', () => {
     expect(screen.getByRole('link', { name: 'Release Sign-off(출시 책임 확인)' })).toBeTruthy();
   });
 
-  it('13개 절차가 모두 카드로 보인다', async () => {
+  it('14개 절차가 모두 카드로 보인다', async () => {
     mount('/procedures?view=list', 'viewer');
     await screen.findByText('내가 맡은 활동', {}, { timeout: 5000 }).catch(() => undefined);
     const links = await screen.findAllByRole('link', { name: /Flag Retirement|출시|등록/ });
     expect(links.length).toBeGreaterThan(0);
-    expect(document.querySelectorAll('.ds-learn-card').length).toBe(13);
+    expect(document.querySelectorAll('.ds-learn-card').length).toBe(14);
   });
 
   it('내 업무에서 완료를 표시하면 진행률이 오르고 다음 할 일이 바뀐다', async () => {

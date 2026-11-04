@@ -1,4 +1,4 @@
-// 내 업무 흐름 — 13개 절차를 가로질러 내 역할의 활동(수행 R·책임 A)을 생애주기 순서로 잇고,
+// 내 업무 흐름 — 14개 절차를 가로질러 내 역할의 활동(수행 R·책임 A)을 생애주기 순서로 잇고,
 // 활동마다 누구에게서 받는지(입력 산출물을 만든 활동의 역할·앞 활동)와 누구에게 넘기는지(내 산출물을 쓰는 활동·다음 활동)를 붙인다.
 // 한 활동 = 한 줄(받는 곳 → 내 활동 → 넘기는 곳). 줄마다 같은 배치 알고리즘(layout.ts)을 쓰고, 열 폭을 맞춰 내 활동이 한 세로줄에 선다.
 import { myActivities, type WorkflowActivity, type WorkflowDoc, type WorkflowProcess } from '@ff/contracts';

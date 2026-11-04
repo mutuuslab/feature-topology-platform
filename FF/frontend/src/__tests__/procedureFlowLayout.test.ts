@@ -12,8 +12,8 @@ const procs = WORKFLOWS.processes;
 const graphOf = (p: (typeof procs)[number]) => buildProcessGraph(p, wpInfoOf(WORKFLOWS));
 const layoutOf = (p: (typeof procs)[number]) => layoutFlow(graphOf(p), PROCESS_LAYOUT);
 
-describe('흐름도 배치 — 13개 절차 전부', () => {
-  it('절차는 13개다', () => expect(procs.length).toBe(13));
+describe('흐름도 배치 — 14개 절차 전부', () => {
+  it('절차는 14개다', () => expect(procs.length).toBe(14));
 
   for (const p of procs) {
     describe(p.id, () => {
@@ -129,7 +129,13 @@ describe('흐름도 배치 — 13개 절차 전부', () => {
   it('간선 교차 수 합이 측정 상한을 넘지 않는다 — 품질 래칫', () => {
     const total = procs.reduce((s, p) => s + crossings(layoutOf(p)), 0);
     // 측정치 253(2026-10-25, 13개 절차 합 — 절차서 표기로 입력·산출물 문서와 객체 흐름이 더해졌다). 늘면 배치 알고리즘이 나빠진 것이다 — 줄이면 이 상한도 내린다
-    expect(total).toBeLessThanOrEqual(260);
+    // 2026-11-04 Feature DB 통합: 257 → 283(+26 = FPW.14 Feature DB 운영 새 절차 +2 · FPW.1 Feature DB 추가 요청 A06·기준 행 입력 +19 ·
+    //   FPW.2 기준 행 연결 입력 +5). FPW.14의 2건은 발행(A04) 뒤 정기 점검(A05, 사건 시작)이 발행본을 읽고 점검 기록을 내므로
+    //   A04 → 종료 선이 A05의 입력·산출물 세로선을 건너는 구조에서 나온다
+    // 2026-11-04 배치 정리(모델 YAML만, RACI 그대로): 283 → 257. FPW.2 기준 행 연결 입력을 HARA(A02) 대신 G2 판정(A05, 같은 R-SM)이
+    //   대조하게 옮김(16 → 11) · 입력 나열 순서(FPW.1-A01·FPW.3-A01·FPW.7-A01/A12·FPW.11-A04) · 독립 사건·병렬 활동의 나열 순서
+    //   (FPW.4-A02·FPW.8-A07·FPW.11-A06·FPW.12-A02). FPW.1은 22 → 20 — 사건 활동 A06(next 없음)의 A06 → 종료 선이 구조상 남는다
+    expect(total).toBeLessThanOrEqual(257);
   });
 });
 
@@ -193,9 +199,9 @@ describe('내 업무 흐름 배치 — 데모 역할 9개 전부', () => {
 
 describe('전체 지도 배치', () => {
   for (const w of [900, 1100, 1366, 1600]) {
-    it(`폭 ${w}: 13칸 겹침 0, 폭 안에 들어가고, 생애주기 화살표가 차례로 잇는다`, () => {
+    it(`폭 ${w}: 14칸 겹침 0, 폭 안에 들어가고, 생애주기 화살표가 차례로 잇는다`, () => {
       const l = layoutValueChain(WORKFLOWS.processes, w);
-      expect(l.boxes.length).toBe(13);
+      expect(l.boxes.length).toBe(14);
       for (let i = 0; i < l.boxes.length; i++)
         for (let j = i + 1; j < l.boxes.length; j++) {
           const a = l.boxes[i];

@@ -130,22 +130,31 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     expect(online?.querySelector('.jd-num')?.textContent).toBe('1');
   });
 
-  it('Feature 제안 — 필수 항목 전에는 막히고, 등록하면 새 Feature 상세로 간다', async () => {
-    handler = (url, init) => (url === '/api/features' && init?.method === 'POST' ? { status: 201, body: { featureId: 'FEAT-00500', version: '0.1.0' } } : undefined);
+  // 2단계 등록(30-95 §6.1) — 먼저 Feature DB 기준 행을 대표로 고르고, 미리 채운 양식에서 등록한다(자세한 흐름은 screensPropose.test)
+  it('Feature 제안 — 기준 행을 고른 뒤 필수 항목 전에는 막히고, 등록하면 새 Feature 상세로 간다', async () => {
+    const REF = { refId: 'BC-SEAT-010', status: 'ACTIVE', replacedBy: null, domain: 'Body & Comfort', component: 'Seat control', swStack: 'Application', lifecycle: 'Commodity', vehicleType: '공통', region: '글로벌', nameEn: 'Remote seat heating', nameKo: '좌석 열선 원격', aliases: [], asilRep: 'QM', tshirt: 'S', sourceDetail: '', adminMemo: '', definition: null };
+    handler = (url, init) =>
+      url === '/api/features' && init?.method === 'POST'
+        ? { status: 201, body: { featureId: 'FEAT-00500', version: '0.1.0' } }
+        : url.startsWith('/api/refdb/refs')
+          ? { body: { items: [REF], total: 1 } }
+          : undefined;
     mount('author', '/feature/propose', <ProposeScreen />, <Route path="/features/:id/:ver" element={<div>detail-page</div>} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'BC-SEAT-010 대표로' }));
+    fireEvent.click(screen.getByRole('button', { name: '다음: 등록 정보 확인' }));
     const submit = screen.getByRole('button', { name: '제안 등록' });
     expect(submit).toHaveProperty('disabled', true);
-    fireEvent.change(screen.getByLabelText('이름'), { target: { value: '좌석 열선 원격' } });
-    fireEvent.change(screen.getByLabelText('설명'), { target: { value: '원격으로 좌석 열선을 켠다' } });
-    fireEvent.change(screen.getByLabelText('담당'), { target: { value: 'Body Platform Team' } });
-    fireEvent.change(screen.getByLabelText('요구사항 ID (쉼표로 구분)'), { target: { value: 'REQ-1, REQ-2' } });
+    expect((screen.getByLabelText(/^이름/) as HTMLInputElement).value).toBe('좌석 열선 원격');
+    fireEvent.change(screen.getByLabelText(/^설명/), { target: { value: '원격으로 좌석 열선을 켠다' } });
+    fireEvent.change(screen.getByLabelText(/^담당/), { target: { value: 'Body Platform Team' } });
+    fireEvent.change(screen.getByLabelText(/^요구사항 ID/), { target: { value: 'REQ-1, REQ-2' } });
     fireEvent.click(screen.getByRole('button', { name: '제안 등록' }));
     expect(await screen.findByText('detail-page')).toBeTruthy();
     const post = calls.find((c) => c.method === 'POST')!;
-    expect(post.body).toMatchObject({ name: '좌석 열선 원격', requirementIds: ['REQ-1', 'REQ-2'], controlPoints: ['Flag'], asil: 'QM' });
+    expect(post.body).toMatchObject({ name: '좌석 열선 원격', requirementIds: ['REQ-1', 'REQ-2'], controlPoints: ['Flag'], asil: 'QM', featureRefs: [{ refId: 'BC-SEAT-010', role: 'PRIMARY' }] });
   });
 
-  it('메인 화면 업무 절차 지도 — 13개 절차 중 완료·내 차례·Gate를 한눈에', async () => {
+  it('메인 화면 업무 절차 지도 — 14개 절차 중 완료·내 차례·Gate를 한눈에', async () => {
     handler = (url) => {
       if (url === '/api/procedures/summary')
         return { body: { todo: 1, review: 1, overdue: 0, done: 1, total: 10, processes: [{ id: 'FPW.1', total: 5, done: 1, todo: 1, review: 1, overdue: 0 }] } };
@@ -154,11 +163,11 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     mount('author', '/', <HomeScreen />);
     expect(await screen.findByText('업무 절차 지도')).toBeTruthy();
     const node = await screen.findByRole('link', { name: /Feature 등록·분류/ });
-    expect(node.textContent).toContain('1/5');
+    expect(node.textContent).toContain('1/6');
     expect(node.textContent).toContain('내 차례 2');
     expect(within(node).getByText('G1')).toBeTruthy();
-    // 메인 지도는 HARA(FPW.2) 제외 — 12개(생애주기 8 + 지원 4)
-    expect(document.querySelectorAll('.pm-node').length).toBe(12);
+    // 메인 지도는 HARA(FPW.2) 제외 — 13개(생애주기 8 + 지원 5, FPW.14 Feature DB 운영 포함)
+    expect(document.querySelectorAll('.pm-node').length).toBe(13);
     expect(screen.queryByText(/HARA/)).toBeNull();
   });
 

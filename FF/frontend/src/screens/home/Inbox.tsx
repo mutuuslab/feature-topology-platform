@@ -2,20 +2,17 @@
 // 검토함은 승인할 일을 모아 "내 차례인가"를 보이고 실제 승인은 각 화면에서 한다. 차단·복원의 내 차례 판정은 서버와 같은 contracts approvalCheck
 // (요청자·이미 승인한 사람·FSM 칸·복원은 차단 승인자 제외 — FFG-PLT-005·DEAC-008).
 import { lazy, Suspense, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { approvalCheck, approvalPlan, reportRolesOf, type Role } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
-import { STATIC_MODE } from '../../api/client';
-import { fieldErrors } from '../../api/field-errors';
-import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { procedures as PR } from '../../copy/procedures';
 import { useProcedureSummary } from '../../data/procedureProgress';
-import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, useUnsavedGuard, VerdictBadge, type KeyMessageSpec } from '../../design';
+import { AsyncView, type AsyncState, DataTable, LifecycleBadge, PageHeader, Panel, Segmented, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
 import { OIDC_AUTH } from '../../auth-mode';
 import { departmentById } from '../../data/departments';
-import { usePermission } from '../shared';
 import { DashboardPage } from './dashboard/Dashboard';
 import { isSafetyKill } from './dashboard/catalog';
 
@@ -190,82 +187,13 @@ function AllHome() {
 
 // ───────── Feature 제안 · 등록 ─────────
 
-const list = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean);
-const PROPOSE_INITIAL = { name: '', description: '', requirementIds: '', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: '', asil: 'QM', tags: '', upgVc: '' };
-
+// Feature 제안 2단계(기준 기능 고르기 → 등록 정보 확인)는 propose/ — 홈 묶음을 키우지 않게 필요할 때 읽는다(경로 이름은 그대로)
+const ProposeLazy = lazy(() => import('./propose/ProposeScreen'));
 export function ProposeScreen() {
-  const P = ko.master.propose;
-  const nav = useNavigate();
-  const perm = usePermission(['FEATURE_AUTHOR']);
-  const create = useApiMutation<{ featureId: string; version: string }>('createFeature', ['listFeatures', 'events', 'audit']);
-  const [f, setF] = useState(PROPOSE_INITIAL);
-  const [cps, setCps] = useState<string[]>(['Flag']);
-  // 입력이 있으면 떠나기 전에 묻는다 — 등록이 끝나면(상세로 이동) 묻지 않는다(출시 준비 RD-UX-02)
-  useUnsavedGuard(!create.isSuccess && (Object.entries(f).some(([k, v]) => v !== PROPOSE_INITIAL[k as keyof typeof PROPOSE_INITIAL]) || cps.join() !== 'Flag'));
-  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
-  // 서버 입력 검사 오류는 해당 칸 옆에(RD-UX-01) — 칸 이름은 요청 본문 키와 같다
-  const fe = fieldErrors(create.error);
-  const text = (k: keyof typeof f, label: string, wide = false) => (
-    <Field label={label} error={fe[k]}>
-      <input className={`ds-input${wide ? '' : ' ds-input--mono'}`} name={k} value={f[k]} onChange={set(k)} />
-    </Field>
-  );
   return (
-    <div className="ds-screen">
-      <PageHeader codes="D01-01 · PROPOSED 0.1.0" title={P.title} lead={P.lead} message={{ tone: 'neutral', text: perm.ok ? P.key.can : P.key.cannot }} />
-      <Panel id="propose-form" tour="feature-form">
-        <div className="ds-split">
-          <div className="ds-stack">
-            <Field label={P.name} error={fe.name}>
-              <input className="ds-input" name="name" value={f.name} onChange={set('name')} />
-            </Field>
-            <Field label={P.description} error={fe.description}>
-              <textarea className="ds-input" name="description" value={f.description} onChange={set('description')} rows={3} />
-            </Field>
-            {text('requirementIds', P.requirements)}
-            {text('tags', P.tags)}
-          </div>
-          <div className="ds-stack">
-            {text('country', P.country)}
-            {text('vehicleModel', P.vehicleModel)}
-            {text('trim', P.trim)}
-            <Field label={P.owner} error={fe.ownerId}>
-              <input className="ds-input" name="ownerId" value={f.ownerId} onChange={set('ownerId')} />
-            </Field>
-            <Select label={P.asil} value={f.asil} onChange={set('asil')}>
-              {['QM', 'A', 'B', 'C', 'D'].map((a) => (
-                <option key={a} value={a}>{a}</option>
-              ))}
-            </Select>
-            {text('upgVc', P.upgVc)}
-            <fieldset className="ds-choices" aria-label={P.cps}>
-              <legend className="ds-field__label">{P.cps}</legend>
-              {['Flag', 'Parameter', 'Signal', 'DTC'].map((c) => (
-                <label key={c}>
-                  <input type="checkbox" checked={cps.includes(c)} onChange={() => setCps((xs) => (xs.includes(c) ? xs.filter((x) => x !== c) : [...xs, c]))} />
-                  {c}
-                </label>
-              ))}
-            </fieldset>
-          </div>
-        </div>
-        <ErrorNote error={create.error} />
-        <Button
-          variant="primary"
-          data-ui="createFeature"
-          disabled={!perm.ok || STATIC_MODE || !f.name.trim() || !f.description.trim() || !f.ownerId.trim() || create.isPending}
-          title={perm.hint}
-          onClick={() =>
-            create.mutate(
-              { body: { name: f.name.trim(), description: f.description.trim(), requirementIds: list(f.requirementIds), country: f.country.trim(), vehicleModel: f.vehicleModel.trim(), trim: f.trim.trim(), ownerId: f.ownerId.trim(), asil: f.asil, tags: list(f.tags), upgVc: list(f.upgVc), controlPoints: cps } },
-              { onSuccess: (r) => nav(`/features/${r.featureId}/${r.version}`) },
-            )
-          }
-        >
-          {P.submit}
-        </Button>
-      </Panel>
-    </div>
+    <Suspense fallback={null}>
+      <ProposeLazy />
+    </Suspense>
   );
 }
 

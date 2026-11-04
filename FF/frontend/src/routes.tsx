@@ -85,6 +85,9 @@ const learnScreens = () => import('./screens/learn/Learn');
 const procedureScreens = () => import('./screens/procedures/Procedures');
 // Feature DB·SW 개발비 산정 — 메뉴만 연 준비 중 화면(설계 30-95·20-94)
 const plannedScreens = () => import('./screens/planned/PlannedScreens');
+const refdbList = () => import('./screens/refdb/RefList');
+const refdbDetail = () => import('./screens/refdb/RefDetail');
+const refdbChanges = () => import('./screens/refdb/Changes');
 
 /** Windows 데스크톱(Tauri) 배포본 — `VITE_FF_DESKTOP=1`로 빌드한다(tools/desktop-prepare.mjs). */
 export const DESKTOP_BUILD = import.meta.env.VITE_FF_DESKTOP === '1';
@@ -154,7 +157,10 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/change/eo', element: named(opsScreens, 'EoScreen'), title: 'SW EO', group: 'master', menu: '/change/eo', v2: true },
   { path: '/master/control-points', element: named(masterScreens, 'ControlPointsScreen'), title: '제어점', group: 'master', menu: '/master/control-points', components: ['D01-02'], v2: true },
   { path: '/master/reference-values', element: named(() => import('./screens/master/ReferenceValues'), 'ReferenceValuesScreen'), title: '차종·판매국 기준 값', group: 'master', menu: '/master/reference-values', components: ['D02-01'], v2: true },
-  { path: '/master/feature-db', element: named(plannedScreens, 'FeatureDbScreen'), title: 'Feature DB', group: 'master', menu: '/master/feature-db', v2: true },
+  { path: '/master/feature-db', element: named(refdbList, 'FeatureDbScreen'), title: 'Feature DB', group: 'master', menu: '/master/feature-db', components: ['D01-01'], v2: true },
+  { path: '/master/feature-db/changes', element: named(refdbChanges, 'RefChangesScreen'), title: 'Feature DB 변경 요청', group: 'master', parent: '/master/feature-db', components: ['D01-01'], v2: true },
+  { path: '/master/feature-db/changes/:id', element: named(refdbChanges, 'RefChangeDetailScreen'), title: 'Feature DB 변경 요청 상세', group: 'master', parent: '/master/feature-db/changes', components: ['D01-01'], v2: true },
+  { path: '/master/feature-db/:refId', element: named(refdbDetail, 'RefDetailScreen'), title: 'Feature DB 기준 행', group: 'master', parent: '/master/feature-db', components: ['D01-01'], v2: true },
 
   { path: '/precheck', element: def(() => import('./screens/governance/Precheck')), title: '데이터 사전점검', group: 'master', menu: '/precheck', components: ['D01-02'], v2: true },
 

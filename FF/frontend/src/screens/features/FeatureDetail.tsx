@@ -31,6 +31,8 @@ import { scopeOf, usePermission, when } from '../shared';
 import { AuditLog } from '../governance/AuditLog';
 import { ReleaseSignoffBar } from './ReleaseSignoff';
 import { EpicChip, ExtLinksTab, RequirementChips } from './ExtLinksTab';
+import { FeatureRefsTab } from './FeatureRefsTab';
+import { featureRefsTab } from '../../copy/propose';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
 import { FeatureVersionActions } from './VersionEdit';
 import type { AuditEntry, ChecklistItem, FeatureDetail as Detail, GateView } from '../types';
@@ -108,6 +110,7 @@ export default function FeatureDetail() {
             <Tabs
               tabs={[
                 { key: 'overview', label: T.tabs.overview },
+                { key: 'refs', label: featureRefsTab.tab, count: d.feature.featureRefs?.length ?? 0 },
                 { key: 'safety', label: T.tabs.safety },
                 { key: 'gates', label: T.tabs.gates, count: Object.keys(d.gates).length },
                 { key: 'deps', label: T.tabs.deps, count: d.dependencies.outgoing.length + d.dependencies.incoming.length },
@@ -120,6 +123,8 @@ export default function FeatureDetail() {
               {(tab) =>
                 tab === 'overview' ? (
                   <Overview d={d} />
+                ) : tab === 'refs' ? (
+                  <FeatureRefsTab links={d.feature.featureRefs ?? []} missing={(d.feature._missing as Record<string, string> | undefined)?.featureRefs} />
                 ) : tab === 'safety' ? (
                   <SafetyTab id={id} ver={ver} />
                 ) : tab === 'gates' ? (

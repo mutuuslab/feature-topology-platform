@@ -1,6 +1,7 @@
 // readiness: RD-FN-02 — 정책 상세에서 배포 이력을 보고 예전 버전으로 되돌린다: 요청(차량 운영) → 지정 승인대상자 승인(품질 검토) → 실행(재검증·재배포)
 // → 지금 배포가 예전 버전으로 바뀐다. 테스트마다 자기 Feature를 새로 만들어 병렬 실행에서도 서로 간섭하지 않는다.
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { apiRefs, REF } from './refdb';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -23,7 +24,7 @@ async function post(request: APIRequestContext, path: string, role: [string, str
 async function developingFeature(request: APIRequestContext) {
   const author: [string, string] = ['usr-author', 'FEATURE_AUTHOR'];
   const judge: [string, string] = ['usr-quality', 'GATE_JUDGE'];
-  const f = await post(request, '/api/features', author, { name: `E2E 되돌리기 ${Date.now() % 100000}`, description: 'RD-FN-02 e2e', requirementIds: ['REQ-E2E-RB'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] });
+  const f = await post(request, '/api/features', author, { name: `E2E 되돌리기 ${Date.now() % 100000}`, description: 'RD-FN-02 e2e', requirementIds: ['REQ-E2E-RB'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'], ...apiRefs(REF.horizon) });
   const base = `/api/features/${f.featureId}/versions/0.1.0`;
   const p = await request.patch(`${API}${base}`, { headers: H(...author), data: { functions: [{ functionId: 'FUNC-000056', label: 'Extended Gap Control 기능' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] } });
   expect(p.status(), await p.text()).toBe(200);

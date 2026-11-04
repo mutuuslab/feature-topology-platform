@@ -178,10 +178,10 @@ describe('내 업무 흐름 (/procedures 허브 기본 탭)', () => {
 });
 
 describe('전체 지도 (/procedures?view=map)', () => {
-  it('13개 절차를 그리고 내 역할 참여를 표시하며, 누르면 그 절차 흐름도로 간다', async () => {
+  it('14개 절차를 그리고 내 역할 참여를 표시하며, 누르면 그 절차 흐름도로 간다', async () => {
     mount('/procedures?view=map', 'author');
     const svg = await screen.findByRole('group', { name: '전체 지도' });
-    expect(svg.querySelectorAll('.pf-proc').length).toBe(13);
+    expect(svg.querySelectorAll('.pf-proc').length).toBe(14);
     const mine = svg.querySelectorAll('.pf-proc[data-mine]').length;
     expect(mine).toBe(WORKFLOWS.processes.filter((p) => myWorkSteps(WORKFLOWS, WORKFLOWS.personas.author).some((s) => s.process.id === p.id)).length);
     expect(within(svg).getByRole('link', { name: /Feature 등록·분류 .*내 활동/ })).toBeTruthy();
@@ -199,7 +199,7 @@ describe('메인 화면 업무 절차 가젯 — 내 업무 흐름 작은 판', 
     expect(steps.length).toBeLessThanOrEqual(3);
     expect(svg.querySelector('.pf-node[data-now]')).toBeTruthy();
     expect(screen.getByRole('link', { name: '내 업무 흐름 전체 보기' }).getAttribute('href')).toBe('/procedures?view=flow');
-    expect(document.querySelectorAll('.pm-node').length).toBe(12);
+    expect(document.querySelectorAll('.pm-node').length).toBe(13);
   });
 });
 

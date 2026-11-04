@@ -251,6 +251,8 @@ function EpicCreateForm() {
   const [body, setBody] = useState('');
   const [user, setUser] = useState('kim.author');
   const [scope, setScope] = useState<Record<EpicScopeField, string>>({ country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', asil: 'QM', ownerId: '' });
+  // 기준 기능(Feature DB) ID — JIRA 라벨 ref-primary:·ref:로 실린다. 첫 값이 대표(30-95 §7)
+  const [refs, setRefs] = useState('');
   const create = useApiMutation<{ item: { key: string }; result: { outcome: string; summary: string } | null }>('mockExtCreate', INVALIDATE);
   return (
     <section aria-labelledby="sync-epic-new" style={{ display: 'grid', gap: 'var(--sp-2)', marginTop: 'var(--sp-4)' }}>
@@ -261,7 +263,9 @@ function EpicCreateForm() {
         onSubmit={(e) => {
           e.preventDefault();
           // 빈 값은 보내지 않는다 — 빠진 범위는 플랫폼이 Epic 댓글로 알려 준다
-          const filled = Object.fromEntries(Object.entries(scope).filter(([, v]) => v.trim()));
+          const filled: Record<string, unknown> = Object.fromEntries(Object.entries(scope).filter(([, v]) => v.trim()));
+          const refIds = refs.split(',').map((x) => x.trim().toUpperCase()).filter(Boolean);
+          if (refIds.length) filled.refIds = refIds;
           create.mutate({ params: { system: 'jira' }, body: { kind: 'EPIC', title: title.trim(), body: body.trim(), externalUser: user, scope: filled } });
         }}
       >
@@ -287,6 +291,9 @@ function EpicCreateForm() {
             </Field>
           ),
         )}
+        <Field label={X.epicRefs} hint={X.epicRefsHint}>
+          <input className="ds-input ds-input--mono" name="epicRefs" value={refs} onChange={(e) => setRefs(e.target.value)} />
+        </Field>
         <Field label={X.simUser}>
           <input className="ds-input ds-input--mono" value={user} onChange={(e) => setUser(e.target.value)} />
         </Field>

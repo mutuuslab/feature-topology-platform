@@ -1,5 +1,5 @@
 // 메인 화면 업무 절차 가젯 본문(지연 로딩) — 위: 내 업무 흐름(작은 판), 아래: 업무 절차 지도.
-// 지도는 13개 절차를 생애주기·지원 단계로 늘어놓고 완료·내 차례·Gate를 한눈에 — 이름·Gate·활동 수는 WORKFLOW_MAP, 진행률은 서버 요약만 쓴다.
+// 지도는 14개 절차 중 HARA(FPW.2)를 뺀 13개를 생애주기·지원 단계로 늘어놓고 완료·내 차례·Gate를 한눈에 — 이름·Gate·활동 수는 WORKFLOW_MAP, 진행률은 서버 요약만 쓴다.
 // 내 업무 흐름은 전체 절차 문서(211 KB)가 필요하다 — 이 모듈은 첫 화면 번들 밖이고(ProcedureMap.tsx가 지연 로딩), 문서도 따로 불러온다.
 import { Link } from 'react-router-dom';
 import { AsyncView } from '../../design';

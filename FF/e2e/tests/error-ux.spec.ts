@@ -3,6 +3,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { errorActions } from '../../frontend/src/copy/error-actions';
 import { errors } from '../../frontend/src/copy/errors';
+import { pickPrimaryRef, REF } from './refdb';
 
 const E = { ...errors, ...errorActions };
 
@@ -36,11 +37,13 @@ test('조회 401 — 세션 만료 제목과 다시 로그인(다시 시도 대�
 });
 
 test('조회 429 — Retry-After 초를 안내하고 다시 시도할 수 있다', async ({ page }) => {
-  let n = 0;
-  await page.route(LIST, (r) => (n++ === 0 ? json(r, 429, envelope('RATE_LIMITED', 'too many'), { 'Retry-After': '30' }) : r.continue()));
+  // 목록 조회는 화면 밖(메뉴 수·알림)에서도 같은 주소로 갈 수 있다 — 다시 시도를 누르기 전까지는 모두 429
+  let limited = true;
+  await page.route(LIST, (r) => (limited ? json(r, 429, envelope('RATE_LIMITED', 'too many'), { 'Retry-After': '30' }) : r.continue()));
   await page.goto('/features');
   const box = page.locator('[data-state="error"]').first();
   await expect(box).toContainText(E.rateLimit(30));
+  limited = false;
   await box.getByRole('button', { name: '다시 시도' }).click();
   await expect(page.locator('[data-state="error"]')).toHaveCount(0);
 });
@@ -67,6 +70,7 @@ test.describe('Feature 제안 폼 — 변경 실패', () => {
   test.beforeEach(async ({ page }) => {
     await asRole(page, 'author');
     await page.goto('/feature/propose');
+    await pickPrimaryRef(page, 'AVH', REF.avh);
     await page.locator('input[name="name"]').fill('오류 안내 시험 Feature');
     await page.locator('textarea[name="description"]').fill('서버 오류 안내 확인용');
     await page.locator('input[name="ownerId"]').fill('ADAS기획팀');

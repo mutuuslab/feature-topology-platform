@@ -20,7 +20,7 @@ for (const w of [1366, 1920]) {
     await page.goto('/procedures/FPW.1');
     const flow = page.getByRole('group', { name: 'Feature 등록·분류 흐름도' });
     await expect(flow).toBeVisible();
-    await expect(flow.locator('.pf-node--activity')).toHaveCount(5);
+    await expect(flow.locator('.pf-node--activity')).toHaveCount(6); // FPW.1 — Feature DB 추가 요청(A06)까지 6개
     await expect(flow.getByRole('button', { name: /G1 판정/ })).toBeVisible();
     await expect(flow.getByRole('img', { name: /시작 — 진입 조건/ })).toBeVisible();
     // 상태는 글자로도 — Feature Owner의 첫 활동은 내 차례이거나 이미 완료
@@ -131,7 +131,7 @@ test('내 업무 흐름 텍스트 보기 · 전체 지도에서 절차 흐름도
   await page.getByRole('tab', { name: '전체 지도' }).click();
   const map = page.getByRole('group', { name: '전체 지도' });
   await expect(map).toBeVisible();
-  await expect(map.locator('.pf-proc')).toHaveCount(13);
+  await expect(map.locator('.pf-proc')).toHaveCount(14); // FPW.1~14(Feature DB 운영 FPW.14 포함)
   await expect(map.locator('.pf-proc[data-mine]').first()).toBeVisible();
   expect(await noPageOverflow(page)).toBe(true);
   await map.getByRole('link', { name: /^검증·V\&V / }).click();

@@ -29,7 +29,7 @@ export const isMine = (a: WorkflowActivity, roleIds: readonly string[]) => {
   return k === 'R' || k === 'A';
 };
 
-/** 모든 활동의 상태 — doc 전체를 한 번에(내 업무 흐름이 13개 절차를 함께 본다) */
+/** 모든 활동의 상태 — doc 전체를 한 번에(내 업무 흐름이 14개 절차를 함께 본다) */
 export function activityStatuses(doc: WorkflowDoc, input: { done: ReadonlySet<string>; items: readonly ProcedureCompletion[]; roleIds: readonly string[]; now: number }): Map<string, ActivityStatus> {
   const { index, preds } = indexOf(doc);
   const ready = readyActivityIds(index, input.done, preds);

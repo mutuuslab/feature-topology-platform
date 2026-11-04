@@ -38,6 +38,7 @@ import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { ReleaseSignoffBody } from './schemas/release-signoff';
 import { ProcedureCompleteBody } from './schemas/procedure';
+import { FeatureRefRequestBody } from './schemas/refdb';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { VehicleDeliveryAck } from './rules/vehicle-auth';
@@ -273,6 +274,12 @@ export const ROUTES: RouteDef[] = [
   { name: 'createDataAccessRequest', method: 'POST', path: '/api/data-access-requests', summary: 'EU 차량 사용자·제3자 데이터 접근 요청 처리 — Feature 상태·이력 제공 또는 거부(처리 기록, Art.4·5)', component: 'D05-01', roles: ['OPERATOR', 'REGULATORY_OWNER'], body: DataAccessRequestBody },
   { name: 'recordDataActContractBasis', method: 'POST', path: '/api/data-act/contract-basis', summary: 'OEM 비개인 데이터 이용 계약 근거(문서 ID) 등록 — 법무', component: 'D05-01', roles: ['REGULATORY_OWNER'], body: ContractBasisBody },
   // 고객 기준 값(출시 준비 RD-OPS-03) — 판매국·지역·차종·트림은 설치마다 등록한다. 데모 데이터셋 값은 시드일 뿐이다
+  // Feature DB (30-95) — 차종과 무관한 기능 정의·규모·근거 기준 행. 금액 필드(벤치마크 €)는 응답에서 뺀다
+  { name: 'refdbRefs', method: 'GET', path: '/api/refdb/refs', summary: 'Feature DB 기준 행 검색 — 한·영 이름·별칭·ID, 도메인·컴포넌트·상태 필터, 페이지', component: 'D01-01', query: ['q', 'domain', 'component', 'status', 'limit', 'offset'] },
+  { name: 'refdbRef', method: 'GET', path: '/api/refdb/refs/:refId', summary: 'Feature DB 기준 행 상세 — 상세 정의·출처·세부기능 후보·연결된 Feature', component: 'D01-01' },
+  { name: 'refdbTaxonomy', method: 'GET', path: '/api/refdb/taxonomy', summary: 'Feature DB 분류 — 도메인 → 클러스터 → 컴포넌트(약어)', component: 'D01-01' },
+  { name: 'refdbOverview', method: 'GET', path: '/api/refdb/overview', summary: 'Feature DB 현황 — 발행 버전·품질 지표(상태별·출처 없음·근거 12개월 경과·규모 근거 D 비중)', component: 'D01-01' },
+  { name: 'refdbRequest', method: 'POST', path: '/api/refdb/requests', summary: 'Feature DB에 없는 기능 추가 요청 — 정식 ID를 즉시 부여해 요청 중(PENDING) 행으로 만든다', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: FeatureRefRequestBody },
   { name: 'referenceValues', method: 'GET', path: '/api/reference-values', summary: '고객 기준 값(판매국·지역·차종·트림) — 등록·사용 중지 상태, 시드(SEED)·고객(CUSTOMER) 구분', component: 'D02-01', query: ['kind'] },
   { name: 'createReferenceValue', method: 'POST', path: '/api/reference-values', summary: '기준 값 등록 — 차량 사양 담당자, 지역·트림은 부모(판매국·차종)가 먼저', component: 'D02-01', roles: ['VARIANT_OWNER'], body: ReferenceValueBody },
   { name: 'retireReferenceValue', method: 'POST', path: '/api/reference-values/:kind/:code/retire', summary: '기준 값 사용 중지 — 이미 쓰인 기록은 그대로, 새 차량 등록·선택지에서 빠진다', component: 'D02-01', roles: ['VARIANT_OWNER'], body: ReferenceRetireBody },

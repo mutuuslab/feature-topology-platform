@@ -1,14 +1,55 @@
 // 부팅 시 v0.81 데이터셋 픽스처를 한 트랜잭션으로 적재한다 (FF_SEED=v0.81 기본, none이면 생략).
 // 이미 적재된 DB(meta.seed 존재)는 건드리지 않는다 — 운영 중 변경을 덮어쓰지 않기 위해.
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { addDays, DATASET_FILES, DEMO_REFERENCE_SEED, EntitlementSchema, syntheticTrials, VehicleSchema, type Dataset, type Entitlement, type VehicleProfile } from '@ff/contracts';
+import { addDays, DATASET_FILES, DEMO_REFERENCE_SEED, FeatureRefRow, RefGlossaryRow, RefSourceRow, RefSubfunctionRow, TaxonomyNodeRow, EntitlementSchema, syntheticTrials, VehicleSchema, type Dataset, type Entitlement, type VehicleProfile } from '@ff/contracts';
 import { z } from 'zod';
 import type { Db } from './db';
 
 export const DEFAULT_FIXTURES = join(__dirname, '..', '..', '..', 'data', 'fixtures', 'v0.81');
 /** 데이터셋 밖의 데모 데이터 — Fleet·사용 권한 (Fleet 연계 IF-06/07·결제 시스템의 모의) */
 export const DEMO_FIXTURES = join(__dirname, '..', '..', '..', 'data', 'fixtures', 'demo');
+
+/** Feature DB 1회 이전본(30-95 §9) — 제품 기준 정보라 데모 시드(FF_SEED)와 무관하게 빈 DB에 넣는다 */
+export const FEATURE_DB_DIR = join(__dirname, '..', '..', '..', 'data', 'reference', 'feature-db', 'v1.3');
+
+/**
+ * Feature DB 시드 — 기준 행이 하나도 없을 때만, 한 번. 'v1.3 (엑셀 가져옴)' 발행 기록을 남긴다.
+ * 이미 운영 중인 DB(기준 행이 있거나 meta.seed-refdb가 있음)는 건드리지 않는다 — 원천은 FF다(D-REF-5).
+ */
+// 시험은 부팅마다 새 DB를 연다 — 1,052행 JSON을 프로세스당 한 번만 읽고 검증한다
+const FEATURE_DB_CACHE = new Map<string, unknown[]>();
+const FEATURE_DB_CACHE_SHA = new Map<string, string>();
+
+export function seedFeatureDb(db: Db, dir = process.env.FF_FEATURE_DB_DIR ?? FEATURE_DB_DIR, at = new Date().toISOString()): number {
+  if (db.get("SELECT value FROM meta WHERE key = 'seed-refdb'") || db.get('SELECT 1 FROM feature_ref LIMIT 1')) return 0;
+  const read = <T>(name: string, schema: z.ZodType<T>): T[] => {
+    const key = `${dir}|${name}`;
+    const hit = FEATURE_DB_CACHE.get(key);
+    if (hit) return hit as T[];
+    const rows = (JSON.parse(readFileSync(join(dir, `${name}.json`), 'utf8')) as unknown[]).map((r, i) => {
+      const p = schema.safeParse(r);
+      if (!p.success) throw new Error(`Feature DB ${name}[${i}] 스키마 위반: ${p.error.issues[0]?.path.join('.')} ${p.error.issues[0]?.message}`);
+      return p.data;
+    });
+    FEATURE_DB_CACHE.set(key, rows);
+    return rows;
+  };
+  const refs = read('refs', FeatureRefRow);
+  const content = FEATURE_DB_CACHE_SHA.get(dir) ?? createHash('sha256').update(readFileSync(join(dir, 'refs.json'))).digest('hex');
+  FEATURE_DB_CACHE_SHA.set(dir, content);
+  db.tx(() => {
+    for (const t of read('taxonomy', TaxonomyNodeRow)) db.run('INSERT INTO taxonomy_node (node_id, level, parent_id, name, abbr) VALUES (?, ?, ?, ?, ?)', t.nodeId, t.level, t.parentId, t.name, t.abbr);
+    for (const r of refs) db.run('INSERT INTO feature_ref (ref_id, status, domain, component, doc, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)', r.refId, r.status, r.domain, r.component, JSON.stringify(r), at, at);
+    for (const s of read('sources', RefSourceRow)) db.run('INSERT INTO ref_source (source_id, doc) VALUES (?, ?)', s.sourceId, JSON.stringify(s));
+    for (const g of read('glossary', RefGlossaryRow)) db.run('INSERT INTO ref_glossary (term, doc) VALUES (?, ?)', g.term, JSON.stringify(g));
+    for (const f of read('subfunctions', RefSubfunctionRow)) db.run('INSERT INTO ref_subfunction (candidate_id, component, doc) VALUES (?, ?, ?)', f.candidateId, f.component, JSON.stringify(f));
+    db.run("INSERT INTO ref_release (release, published_at, published_by, note, content_sha256) VALUES ('v1.3', ?, 'seed', '엑셀 산정 도구 v1.3에서 가져옴', ?)", at, content);
+    db.run("INSERT INTO meta (key, value) VALUES ('seed-refdb', ?)", `v1.3 ${refs.length}`);
+  });
+  return refs.length;
+}
 
 export function loadFixtures(dir = process.env.FF_FIXTURES ?? DEFAULT_FIXTURES): Dataset {
   const ds = {} as Record<string, unknown[]>;

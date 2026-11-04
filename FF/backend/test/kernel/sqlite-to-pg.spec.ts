@@ -1,5 +1,6 @@
 // 데이터 이전 SQLite → PostgreSQL(D-RD-3, 20-92 §5) — 옮긴 뒤 감사 해시 체인을 대상에서 다시 계산해 원본 끝과 맞춘다.
 // PG 부분은 npm run test:pg(FF_TEST_PG_URL)에서만 돈다. 체인 재계산 자체는 기본 verify에서도 본다.
+import { featureRefs } from '../feature-refs';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
@@ -22,7 +23,7 @@ const KEY = 'k'.repeat(40);
 const ENV_KEYS = ['FF_DB', 'FF_DB_URL', 'FF_SEED', 'FF_AUDIT_KEY', 'FF_AUDIT_ANCHOR_FILE', 'FF_INSTANCE_ID'] as const;
 const made: string[] = [];
 const AUTHOR = actor('usr-author', 'FEATURE_AUTHOR');
-const feature = (name: string) => ({ name, description: `${name} 설명`, country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'usr-author', asil: 'QM' });
+const feature = (name: string) => ({ ...featureRefs('QM'), name, description: `${name} 설명`, country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'usr-author', asil: 'QM' });
 
 function pgDb(name: string): { url: string; open: () => PgSyncDb } {
   const db = `ff_t_topg_${process.pid}_${name}`;

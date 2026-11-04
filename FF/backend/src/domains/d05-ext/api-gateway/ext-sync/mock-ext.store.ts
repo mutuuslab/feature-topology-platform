@@ -44,6 +44,7 @@ export const JIRA_EPIC_FIELDS: Record<EpicScopeField, () => string> = {
   trim: () => process.env.JIRA_FIELD_TRIM ?? 'ffTrim',
   asil: () => process.env.JIRA_FIELD_ASIL ?? 'ffAsil',
   ownerId: () => process.env.JIRA_FIELD_OWNER ?? 'ffOwner',
+  featureDb: () => process.env.JIRA_FIELD_FEATURE_DB ?? 'ffFeatureDb',
 };
 export const CODEBEAMER_TRACKER = () => Number(process.env.CODEBEAMER_REQ_TRACKER ?? 4711);
 

@@ -2,7 +2,8 @@
 // (상세설계서: Baseline은 Lifecycle 상태를 제외하고 불변, 해시도 Lifecycle 제외)
 import type { BomItemRow, FeatureVersionRow } from '../schemas/dataset';
 
-export const SNAPSHOT_EXCLUDE = ['lifecycle', '_missing', 'baselineId', 'catalogIds', 'gateRecordIds'] as const;
+// featureRefs(Feature DB 연결)는 BOM 구성 내용이 아니다 — 기준선 내용 해시·이전 대비 diff에서 뺀다(30-95)
+export const SNAPSHOT_EXCLUDE = ['lifecycle', '_missing', 'baselineId', 'catalogIds', 'gateRecordIds', 'featureRefs'] as const;
 
 export type SnapshotContent = Omit<FeatureVersionRow, (typeof SNAPSHOT_EXCLUDE)[number]>;
 

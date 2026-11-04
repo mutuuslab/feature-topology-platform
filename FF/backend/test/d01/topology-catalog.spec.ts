@@ -1,4 +1,5 @@
 // Feature Topology (D01-02) · Feature Catalog (D01-03) — 상세설계서 표 8·9·17·21·22 흐름을 API로 검증한다.
+import { featureRefs } from '../feature-refs';
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { actor, bootApp, confirmSafety } from '../helpers';
@@ -26,7 +27,7 @@ describe('Topology · Catalog', () => {
       await http()
         .post('/api/features')
         .set(AUTHOR)
-        .send({ name, description: `${name} 설명`, requirementIds: ['REQ-T-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] })
+        .send({...featureRefs('QM'),  name, description: `${name} 설명`, requirementIds: ['REQ-T-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] })
         .expect(201)
     ).body;
 

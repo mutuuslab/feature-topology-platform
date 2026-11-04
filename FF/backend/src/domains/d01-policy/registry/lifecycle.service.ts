@@ -24,6 +24,7 @@ import { GateDecisionService } from '../topology/gate-decision.service';
 import { ReharaRepo } from '../topology/rehara.repo';
 import { TopologyService } from '../topology/topology.service';
 import { ReleaseSignoffService } from './release-signoff.service';
+import { RefdbService } from '../refdb/refdb.service';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
 
@@ -51,6 +52,7 @@ export class LifecycleService {
     private readonly decisions: GateDecisionService,
     private readonly signoffs: ReleaseSignoffService,
     private readonly rehara: ReharaRepo,
+    private readonly refdb: RefdbService,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -74,6 +76,11 @@ export class LifecycleService {
       releaseSignoff: f.lifecycle === 'VERIFIED' ? this.signoffs.current(f.featureId, f.version) : null,
       // FFP-F007 — 열린 재-HARA 요청은 출시 전이를 막는다(Gate PASS 뒤에 열린 것도)
       openRehara: this.rehara.open(f.featureId, f.version).map((r) => ({ requestId: r.requestId, condition: r.condition, detail: r.detail })),
+      // Feature DB — 요청 중·폐기 기준 행이 남아 있으면 승인을 막는다(30-95 D-REF-7)
+      blockedRefs: (f.featureRefs ?? []).flatMap((l): NonNullable<TransitionContext['blockedRefs']> => {
+        const r = this.refdb.lookup(l.refId);
+        return !r ? [{ refId: l.refId, status: 'MISSING' as const }] : r.status === 'PENDING' || r.status === 'RETIRED' ? [{ refId: l.refId, status: r.status }] : [];
+      }),
       ...extra,
     };
   }

@@ -1,3 +1,5 @@
+import { featureRefs } from '../feature-refs';
+import type { Asil } from '@ff/contracts';
 // 안전 분류 Registry (보고서 v1.1 5장) — FFG-CLS-001·004·009, FFG-CODE-020, TC-FF-23
 import { afterEach, describe, expect, it } from 'vitest';
 import { DB, type Db } from '../../src/kernel/db';
@@ -19,7 +21,7 @@ async function newFeature(http: () => any, asil = 'B') {
   const r = await http()
     .post('/api/features')
     .set(AUTHOR)
-    .send({ name: `분류 시험 ${Math.random().toString(36).slice(2, 7)}`, description: '안전 분류 시험용', requirementIds: ['REQ-T-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'QA팀', tags: ['adas'], asil, upgVc: ['F111A114001'], controlPoints: ['Flag'] })
+    .send({ name: `분류 시험 ${Math.random().toString(36).slice(2, 7)}`, description: '안전 분류 시험용', requirementIds: ['REQ-T-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'QA팀', tags: ['adas'], asil, ...featureRefs(asil as Asil), upgVc: ['F111A114001'], controlPoints: ['Flag'] })
     .expect(201);
   return r.body.featureId as string;
 }

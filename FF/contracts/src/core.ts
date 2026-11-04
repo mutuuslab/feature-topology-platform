@@ -3,6 +3,8 @@ export * from './enums';
 export * from './components.manifest';
 export * from './schemas/dataset';
 export * from './schemas/api';
+export * from './schemas/refdb';
+export * from './rules/refdb';
 export * from './rules/precheck';
 export * from './rules/lifecycle';
 export * from './rules/rejudge';

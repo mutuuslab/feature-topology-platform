@@ -729,5 +729,30 @@ CREATE TABLE shared_reservation (slot TEXT PRIMARY KEY, value TEXT NOT NULL, hol
 CREATE TABLE shared_counter (key TEXT PRIMARY KEY, start_ms INTEGER NOT NULL, n INTEGER NOT NULL);
 CREATE TABLE instance_lease (name TEXT PRIMARY KEY, holder TEXT NOT NULL, acquired_at TEXT NOT NULL, renewed_at TEXT NOT NULL, expires_at INTEGER NOT NULL);
 `,
+  },  {
+    // Feature DB(설계 docs/30-data-model/30-95) — 차종과 무관한 기능 정의·규모·근거 기준 행. 엑셀 산정 도구 v1.3에서 1회 이전한
+    // data/reference/feature-db/v1.3을 빈 DB에 시드한다(데모 시드와 무관 — 고객 설치에도 들어간다). 이후 원천은 FF(D-REF-5).
+    //  · feature_ref: 키 열 + zod doc(FeatureRefRow). 한 번 쓴 ref_id는 폐기해도 다시 쓰지 않는다(행을 지우지 않는다)
+    //  · feature_ref_link: Feature 버전 → 기준 행 역참조 색인(feature_version.doc.featureRefs와 같은 tx로 갱신)
+    //  · ref_change: 기준 행 추가·변경 요청(D-REF-7·8). 요청 중 행(PENDING)은 요청과 함께 만든다
+    //  · ref_release: 발행 버전 — 'v1.3 (엑셀 가져옴)'부터. 추가만
+    name: '080_feature_ref',
+    sql: `
+CREATE TABLE taxonomy_node (node_id TEXT PRIMARY KEY, level TEXT NOT NULL CHECK (level IN ('DOMAIN','CLUSTER','COMPONENT')), parent_id TEXT, name TEXT NOT NULL, abbr TEXT);
+CREATE TABLE feature_ref (ref_id TEXT PRIMARY KEY, status TEXT NOT NULL CHECK (status IN ('ACTIVE','REVIEW','DEPRECATED','RETIRED','PENDING')), domain TEXT NOT NULL, component TEXT NOT NULL, doc TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE INDEX feature_ref_component ON feature_ref (domain, component);
+CREATE TRIGGER feature_ref_no_delete BEFORE DELETE ON feature_ref BEGIN SELECT RAISE(ABORT, 'feature_ref는 지우지 않는다 — 폐기 상태로 바꾼다'); END;
+CREATE TABLE ref_source (source_id TEXT PRIMARY KEY, doc TEXT NOT NULL);
+CREATE TABLE ref_glossary (term TEXT PRIMARY KEY, doc TEXT NOT NULL);
+CREATE TABLE ref_subfunction (candidate_id TEXT PRIMARY KEY, component TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX ref_subfunction_component ON ref_subfunction (component);
+CREATE TABLE ref_release (release TEXT PRIMARY KEY, published_at TEXT NOT NULL, published_by TEXT NOT NULL, note TEXT NOT NULL, content_sha256 TEXT NOT NULL);
+CREATE TRIGGER ref_release_no_update BEFORE UPDATE ON ref_release BEGIN SELECT RAISE(ABORT, 'ref_release는 추가만 가능'); END;
+CREATE TRIGGER ref_release_no_delete BEFORE DELETE ON ref_release BEGIN SELECT RAISE(ABORT, 'ref_release는 추가만 가능'); END;
+CREATE TABLE feature_ref_link (feature_id TEXT NOT NULL, version TEXT NOT NULL, ref_id TEXT NOT NULL, role TEXT NOT NULL CHECK (role IN ('PRIMARY','INCLUDED')), PRIMARY KEY (feature_id, version, ref_id));
+CREATE INDEX feature_ref_link_ref ON feature_ref_link (ref_id);
+CREATE TABLE ref_change (change_id TEXT PRIMARY KEY, kind TEXT NOT NULL CHECK (kind IN ('ADD','MODIFY','DEPRECATE','RETIRE')), ref_id TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('OPEN','REVIEWED','APPROVED','REJECTED','PUBLISHED')), requested_by TEXT NOT NULL, requested_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX ref_change_ref ON ref_change (ref_id);
+`,
   },
 ];

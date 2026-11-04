@@ -15,6 +15,7 @@ import {
   JIRA_CR_STATUS,
   JIRA_EPIC_STATUS,
   lifecycleOfEpicStatus,
+  epicFeatureRefs,
   missingEpicScope,
   parseRefs,
   SYNC_OWNERSHIP,
@@ -499,7 +500,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     const scope = (c.extra.scope ?? {}) as Record<string, string>;
     const missing = missingEpicScope(scope);
     if (missing.length) return refuse(`Epic에 ${missing.map((k) => EPIC_SCOPE_LABEL[k]).join('·')} 값이 없거나 형식이 틀립니다. 채우면 다시 등록을 시도합니다.`);
-    const body = CreateFeatureBody.safeParse({ name: c.title, description: String(c.extra.description ?? '').trim() || c.title, country: scope.country, vehicleModel: scope.vehicleModel, trim: scope.trim, asil: scope.asil, ownerId: scope.ownerId, tags: [`jira:${c.key}`] });
+    const body = CreateFeatureBody.safeParse({ name: c.title, description: String(c.extra.description ?? '').trim() || c.title, country: scope.country, vehicleModel: scope.vehicleModel, trim: scope.trim, asil: scope.asil, ownerId: scope.ownerId, tags: [`jira:${c.key}`], featureRefs: epicFeatureRefs(scope.featureDb) });
     if (!body.success) return refuse(`Epic 값이 Feature 등록 형식에 맞지 않습니다 — ${body.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
     // 중복 확인은 트랜잭션 밖에서 — 거부 감사는 트랜잭션 밖에 남겨야 한다(RegistryService.create와 같은 판정)
     const similar = this.features.similar(body.data.name, body.data.country, body.data.vehicleModel, body.data.trim);

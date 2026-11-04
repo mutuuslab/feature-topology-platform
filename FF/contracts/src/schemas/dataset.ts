@@ -1,6 +1,7 @@
 // Catalog BOM DATASET v0.81 정규화 스키마 — 적재기(tools/dataset)와 백엔드 시드가 공유한다.
 // 자리표시 문자열(미입력/미발급/해당 없음/의존 관계 없음.)은 null·[]로 바꾸고 _missing에 사유를 남긴다.
 import { z } from 'zod';
+import { FeatureRefLink } from './refdb';
 import { Asil, CatalogType, ControlPointType, DependencyVerdict, GateId, GateResult, GateStatus, Lifecycle, RelationType, SaleType, TargetVersionCheck } from '../enums';
 
 export const MissingReason = z.enum(['미입력', '미발급', '해당 없음', '의존 관계 없음']);
@@ -37,12 +38,15 @@ export const FeatureVersionRow = z.object({
   dependencyIds: z.array(z.string().regex(/^DEP-\d{5}$/)),
   catalogIds: z.array(z.string()),
   gateRecordIds: z.array(z.string()),
+  /** Feature DB 기준 행 연결 — 대표 1 + 포함 N(30-95 D-REF-2). 새 등록은 필수(CreateFeatureBody), v0.81 데이터셋 행은 비어 있다 */
+  featureRefs: z.array(FeatureRefLink).default([]),
   _missing: Missing,
 });
 export type FeatureVersionRow = z.infer<typeof FeatureVersionRow>;
 
 /** BOM_Item — 확정 Baseline 스냅샷 */
-export const BomItemRow = FeatureVersionRow.omit({ catalogIds: true, gateRecordIds: true, baselineId: true }).extend({
+// Feature DB 연결은 BOM 스냅샷에 넣지 않는다 — 확정 기준선 내용 해시(구성·SW·ECU)를 바꾸지 않기 위해
+export const BomItemRow = FeatureVersionRow.omit({ catalogIds: true, gateRecordIds: true, baselineId: true, featureRefs: true }).extend({
   baselineId: BaselineId,
 });
 export type BomItemRow = z.infer<typeof BomItemRow>;

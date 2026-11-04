@@ -1,6 +1,7 @@
 // API 요청 본문 스키마 — 백엔드 ZodPipe와 프론트 폼 검증이 공유한다.
 import { z } from 'zod';
 import { patchOf } from './patch';
+import { FeatureRefLinks } from './refdb';
 import { Asil, CatalogType, ControlPointType, GateId, GateResult, Lifecycle, RelationType, SaleType } from '../enums';
 
 const reason = z.string().trim().min(2, '사유를 2자 이상 입력하세요.').max(500);
@@ -18,11 +19,17 @@ export const CreateFeatureBody = z.object({
   tags: z.array(z.string().trim().min(1).max(80)).default([]),
   upgVc: z.array(z.string().trim().min(1)).default([]),
   controlPoints: z.array(ControlPointType).default([]),
+  /** Feature DB 기준 행 — 대표 정확히 1 + 포함 N, 등록 때 필수(30-95 D-REF-3) */
+  featureRefs: FeatureRefLinks,
+  /** ASIL이 대표 기준 행의 대표 ASIL과 다를 때 사유(30-95 §6.3) */
+  asilDeviationReason: z.string().trim().min(2).max(500).optional(),
+  /** 같은 국가·차종·트림에 같은 대표 기준 행이 있을 때 등록을 이어 가는 사유(D-REF-13) */
+  duplicateReason: z.string().trim().min(2).max(500).optional(),
 });
 export type CreateFeatureBody = z.infer<typeof CreateFeatureBody>;
 
 /** PROPOSED 초안 수정 — 국가·차종·트림은 바꿀 수 없다(새 Feature ID). */
-export const UpdateDraftBody = patchOf(CreateFeatureBody.omit({ country: true, vehicleModel: true, trim: true }))
+export const UpdateDraftBody = patchOf(CreateFeatureBody.omit({ country: true, vehicleModel: true, trim: true, duplicateReason: true }))
   .extend({
     functions: z.array(z.object({ functionId: z.string().regex(/^FUNC-\d{6}$/), label: z.string() })).optional(),
     swIds: z.array(z.string()).optional(),

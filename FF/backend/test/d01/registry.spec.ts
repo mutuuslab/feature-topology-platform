@@ -1,4 +1,5 @@
 // Feature Registry·Gate·Lifecycle·BOM Baseline — 상세설계서 v0.81 업무 흐름(표 4)을 API로 끝까지 검증한다.
+import { featureRefs } from '../feature-refs';
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { actor, bootApp, confirmSafety } from '../helpers';
@@ -61,7 +62,7 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
       const r = await http()
         .post('/api/features')
         .set(AUTHOR)
-        .send({ name: '야간 보행자 경고', description: '야간 보행자 접근 시 HUD 경고', requirementIds: ['REQ-CARE-9001'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'B', upgVc: ['F111A114001'], controlPoints: ['Flag'] })
+        .send({...featureRefs('B'),  name: '야간 보행자 경고', description: '야간 보행자 접근 시 HUD 경고', requirementIds: ['REQ-CARE-9001'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'B', upgVc: ['F111A114001'], controlPoints: ['Flag'] })
         .expect(201);
       id = r.body.featureId;
       expect(id).toMatch(/^FEAT-\d{5}$/);
@@ -74,7 +75,7 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
       const r = await http()
         .post('/api/features')
         .set(AUTHOR)
-        .send({ name: '전방 안전거리 3단계', description: 'x', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'x', asil: 'B' })
+        .send({...featureRefs('B'),  name: '전방 안전거리 3단계', description: 'x', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'x', asil: 'B' })
         .expect(409);
       expect(r.body.error.details.similar.map((s: any) => s.featureId)).toContain('FEAT-00022');
     });

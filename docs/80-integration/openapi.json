@@ -1471,6 +1471,43 @@
                       ]
                     },
                     "default": []
+                  },
+                  "featureRefs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z0-9]{2,5}-\\d{3}$"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "PRIMARY",
+                            "INCLUDED"
+                          ]
+                        },
+                        "refRelease": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "refId",
+                        "role"
+                      ]
+                    },
+                    "minItems": 1
+                  },
+                  "asilDeviationReason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "duplicateReason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
                   }
                 },
                 "required": [
@@ -1480,7 +1517,8 @@
                   "vehicleModel",
                   "trim",
                   "ownerId",
-                  "asil"
+                  "asil",
+                  "featureRefs"
                 ]
               }
             }
@@ -1641,6 +1679,38 @@
                             "DTC"
                           ]
                         }
+                      },
+                      "featureRefs": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "refId": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{2}-[A-Z0-9]{2,5}-\\d{3}$"
+                            },
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "PRIMARY",
+                                "INCLUDED"
+                              ]
+                            },
+                            "refRelease": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "refId",
+                            "role"
+                          ]
+                        },
+                        "minItems": 1
+                      },
+                      "asilDeviationReason": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 500
                       },
                       "functions": {
                         "type": "array",
@@ -1849,6 +1919,38 @@
                         "DTC"
                       ]
                     }
+                  },
+                  "featureRefs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z0-9]{2,5}-\\d{3}$"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "PRIMARY",
+                            "INCLUDED"
+                          ]
+                        },
+                        "refRelease": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "refId",
+                        "role"
+                      ]
+                    },
+                    "minItems": 1
+                  },
+                  "asilDeviationReason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
                   },
                   "functions": {
                     "type": "array",
@@ -10556,6 +10658,262 @@
         }
       }
     },
+    "/api/refdb/refs": {
+      "get": {
+        "summary": "Feature DB 기준 행 검색 — 한·영 이름·별칭·ID, 도메인·컴포넌트·상태 필터, 페이지",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refdbRefs",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/refs/{refId}": {
+      "get": {
+        "summary": "Feature DB 기준 행 상세 — 상세 정의·출처·세부기능 후보·연결된 Feature",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refdbRef",
+        "parameters": [
+          {
+            "name": "refId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/taxonomy": {
+      "get": {
+        "summary": "Feature DB 분류 — 도메인 → 클러스터 → 컴포넌트(약어)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refdbTaxonomy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/overview": {
+      "get": {
+        "summary": "Feature DB 현황 — 발행 버전·품질 지표(상태별·출처 없음·근거 12개월 경과·규모 근거 D 비중)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refdbOverview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/requests": {
+      "post": {
+        "summary": "Feature DB에 없는 기능 추가 요청 — 정식 ID를 즉시 부여해 요청 중(PENDING) 행으로 만든다",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refdbRequest",
+        "description": "허용 역할: Feature 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "cluster": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "component": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "nameEn": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "nameKo": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "tshirt": {
+                    "type": "string",
+                    "enum": [
+                      "XS",
+                      "S",
+                      "M",
+                      "L",
+                      "XL",
+                      "XXL",
+                      "XXXL"
+                    ]
+                  },
+                  "asilRep": {
+                    "type": "string",
+                    "enum": [
+                      "QM",
+                      "A",
+                      "B",
+                      "C",
+                      "D"
+                    ]
+                  },
+                  "swStack": {
+                    "type": "string",
+                    "enum": [
+                      "Application",
+                      "Platform",
+                      "Back-end"
+                    ],
+                    "default": "Application"
+                  },
+                  "evidence": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "domain",
+                  "cluster",
+                  "component",
+                  "nameEn",
+                  "nameKo",
+                  "tshirt",
+                  "asilRep",
+                  "evidence"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/reference-values": {
       "get": {
         "summary": "고객 기준 값(판매국·지역·차종·트림) — 등록·사용 중지 상태, 시드(SEED)·고객(CUSTOMER) 구분",
@@ -13732,6 +14090,10 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 100
+                      },
+                      "featureDb": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}-[A-Z0-9]{2,5}-\\d{3}(?:[;,\\s]+[A-Z]{2}-[A-Z0-9]{2,5}-\\d{3})*$"
                       }
                     },
                     "additionalProperties": false
@@ -13866,6 +14228,10 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 100
+                      },
+                      "featureDb": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}-[A-Z0-9]{2,5}-\\d{3}(?:[;,\\s]+[A-Z]{2}-[A-Z0-9]{2,5}-\\d{3})*$"
                       }
                     },
                     "additionalProperties": false

@@ -1,0 +1,35 @@
+{
+  "dataset": "Automotive_SW_개발비_산정도구_FeatureDB",
+  "release": "v1.3",
+  "importer": "1.0.0",
+  "source": {
+    "file": "data/source/feature_db_v1.3.xlsx",
+    "sha256": "7d22d08a1f5406f18eb44b9acc9a4605e0eb1d3cb232a821c8629f9e9fe0d244"
+  },
+  "files": {
+    "refs": {
+      "rows": 1052,
+      "sha256": "5da5895947edb545b21dcdc52314d2ef1d389785d809207bb9f6e87c3198f5b1"
+    },
+    "sources": {
+      "rows": 73,
+      "sha256": "5e6b3b0c60e0ed8a58e4698ee47cf5f2f243b05edd8036fb4dad97aefda52b9b"
+    },
+    "glossary": {
+      "rows": 3,
+      "sha256": "cee830743a752552327951fedb925ccf8da300e2eb7c804905c28a6b69c1b6bc"
+    },
+    "subfunctions": {
+      "rows": 840,
+      "sha256": "c8031735b517d9e5b67e0ad5a89be5bf411e08e4e1e3156d912f2ed06c7d422a"
+    },
+    "taxonomy": {
+      "rows": 145,
+      "sha256": "c0ee3ad859d6a866bb03e41878e65366c7fed7a10dd49dda8106c49b98a0117d"
+    }
+  },
+  "warnings": {
+    "count": 0,
+    "sha256": "2ba33ca0557f1bb5b7ba88d67f9d0093c7185a36ec51fe2b7bd9372d3e001d6d"
+  }
+}

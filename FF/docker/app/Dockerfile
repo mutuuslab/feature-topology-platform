@@ -70,6 +70,8 @@ COPY --from=build /app/FF/backend/dist ./backend/dist
 COPY --from=build /app/FF/frontend/dist-prod ./web
 # 안전 프로필·명령 원장 기본표·외부 연계 식별 픽스처를 백엔드가 이 경로에서 읽는다(데모 시드는 FF_SEED=none이라 넣지 않는다)
 COPY data/fixtures ./data/fixtures
+# Feature DB 이전본 — 고객 설치 첫 기동 때 시드(30-95 §9)
+COPY data/reference ./data/reference
 # 데이터·고정점·백업 폴더는 비루트 사용자 node(uid 1000)가 쓴다
 RUN mkdir -p /var/lib/ff /var/lib/ff-anchor /var/backups/ff \
  && chown -R node:node /var/lib/ff /var/lib/ff-anchor /var/backups/ff

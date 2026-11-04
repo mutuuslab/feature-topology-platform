@@ -10,6 +10,7 @@ import { GateDecisionService } from './topology/gate-decision.service';
 import { ReharaRepo } from './topology/rehara.repo';
 import { BaselineController, RegistryController } from './registry/registry.controller';
 import { RegistryService } from './registry/registry.service';
+import { RefdbController, RefdbService } from './refdb/refdb.service';
 import { SafetyProfileController, SafetyProfileService } from './registry/safety-profile.service';
 import { ReleaseSignoffController, ReleaseSignoffService } from './registry/release-signoff.service';
 import { RetirementController, RetirementService } from './registry/retirement.service';
@@ -31,8 +32,8 @@ import { TopologyService } from './topology/topology.service';
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController],
-  providers: [MasterDataService, RetirementService,
+  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, RefdbController],
+  providers: [MasterDataService, RetirementService, RefdbService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
     IfCallRepo,
@@ -47,6 +48,6 @@ import { TopologyService } from './topology/topology.service';
     SafetyProfileService,
     ReleaseSignoffService,
     AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
-  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
+  exports: [RefdbService, SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
 })
 export class D01PolicyModule {}

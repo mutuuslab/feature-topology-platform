@@ -8,7 +8,7 @@ import { MIGRATIONS } from './migrations';
 import { dialectContextOf } from './pg-dialect';
 import { pgAdmin, PgSyncDb } from './pg-sync-db';
 import { seedOf } from './runtime-config';
-import { loadFixtures, seedAnchor, seedDataset, seedDemo, seedReferenceValues } from './seed';
+import { loadFixtures, seedAnchor, seedDataset, seedDemo, seedFeatureDb, seedReferenceValues } from './seed';
 
 type Env = Record<string, string | undefined>;
 
@@ -24,6 +24,8 @@ export function dbKindOf(env: Env = process.env): 'postgres' | 'sqlite-file' | '
 
 /** 부팅 시드 — FF_SEED(기본 v0.81, 운영 none). 이미 적재된 DB는 건드리지 않는다 */
 export function applySeed(db: Db, env: Env = process.env) {
+  // Feature DB는 제품 기준 정보 — 고객 설치(FF_SEED=none)에도 들어간다(30-95 §9)
+  seedFeatureDb(db);
   const seed = seedOf(env);
   if (seed === 'none') return;
   seedDataset(db, loadFixtures(), seed);

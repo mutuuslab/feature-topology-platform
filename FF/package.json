@@ -30,6 +30,7 @@
     "dev:frontend": "npm run dev -w feature-topology-frontend",
     "data:import": "node tools/dataset/import.ts",
     "data:check": "node tools/dataset/check.ts",
+    "refdb:import": "node tools/refdb/import.ts",
     "openapi": "node tools/openapi.ts",
     "snapshot:api": "node tools/snapshot-api.ts",
     "ops5y:build": "npm run build -w @ff/contracts && npm run build -w feature-topology-backend && node tools/ops5y/replay.ts",

@@ -102,9 +102,9 @@ export function lifecycleOfEpicStatus(status: string): Lifecycle | null {
  * 국가·차종·트림은 Feature ID를 가르는 값이라 짐작해 채우지 않는다 — 빠지면 등록하지 않고 Epic 댓글로 알린다.
  * 실제 JIRA에서는 Epic의 사용자 정의 필드에서 읽는다(필드 ID는 환경 변수 JIRA_FIELD_COUNTRY 등).
  */
-export const EPIC_SCOPE_FIELDS = ['country', 'vehicleModel', 'trim', 'asil', 'ownerId'] as const;
+export const EPIC_SCOPE_FIELDS = ['country', 'vehicleModel', 'trim', 'asil', 'ownerId', 'featureDb'] as const;
 export type EpicScopeField = (typeof EPIC_SCOPE_FIELDS)[number];
-export const EPIC_SCOPE_LABEL: Record<EpicScopeField, string> = { country: '국가', vehicleModel: '차종', trim: '트림', asil: 'ASIL', ownerId: '담당 조직' };
+export const EPIC_SCOPE_LABEL: Record<EpicScopeField, string> = { country: '국가', vehicleModel: '차종', trim: '트림', asil: 'ASIL', ownerId: '담당 조직', featureDb: 'Feature DB 기준 ID' };
 export const EpicScope = z
   .object({
     country: z.string().trim().min(1).max(8),
@@ -112,10 +112,16 @@ export const EpicScope = z
     trim: z.string().trim().min(1).max(80),
     asil: Asil,
     ownerId: z.string().trim().min(1).max(100),
+    /** Feature DB 기준 ID — 첫째가 대표, 나머지는 포함(';'·','·공백 구분). JIRA 안의 FF 앱이 채운다(30-95 D-REF-16) */
+    featureDb: z.string().trim().regex(/^[A-Z]{2}-[A-Z0-9]{2,5}-\d{3}(?:[;,\s]+[A-Z]{2}-[A-Z0-9]{2,5}-\d{3})*$/),
   })
   .partial()
   .strict();
 export type EpicScope = z.infer<typeof EpicScope>;
+/** Epic의 Feature DB 값 → 연결(첫째 대표, 나머지 포함) */
+export const epicFeatureRefs = (v: string | undefined): { refId: string; role: 'PRIMARY' | 'INCLUDED' }[] =>
+  [...new Set((v ?? '').split(/[;,\s]+/).filter(Boolean))].map((refId, i) => ({ refId, role: i === 0 ? 'PRIMARY' : 'INCLUDED' }));
+
 /** 빠졌거나 형식이 틀린 범위 값 */
 export function missingEpicScope(scope: Record<string, unknown> | null | undefined): EpicScopeField[] {
   const s = scope ?? {};
@@ -197,6 +203,7 @@ export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
     { key: 'JIRA_FIELD_TRIM', what: 'Epic 사용자 정의 필드 ID — 트림', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_ASIL', what: 'Epic 사용자 정의 필드 ID — ASIL', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_OWNER', what: 'Epic 사용자 정의 필드 ID — 담당 조직', required: 'epic-autocreate' },
+    { key: 'JIRA_FIELD_FEATURE_DB', what: 'Epic 사용자 정의 필드 ID — Feature DB 기준 ID(대표 먼저)', required: 'epic-autocreate' },
     { key: 'JIRA_EPIC_STATUS', what: 'Epic 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
     { key: 'JIRA_CR_STATUS', what: 'CR 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
   ],

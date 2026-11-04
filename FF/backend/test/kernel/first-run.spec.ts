@@ -4,6 +4,7 @@
 // 한 설치 = 한 고객: 설치 식별(FF_INSTANCE_ID)이 상태 점검·감사 고정점에 나오고, 없으면 부팅하지 않는다.
 // 브라우저 화면(모든 메뉴의 빈 상태 안내)은 e2e/firstrun(verify e2e:firstrun)이 본다.
 // readiness: RD-OPS-02, RD-SEC-09
+import { featureRefs } from '../feature-refs';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -164,7 +165,7 @@ describe('운영 모드 첫 실행 — 빈 DB', () => {
       .set('Cookie', cookie)
       .set('Origin', PUBLIC)
       .set('Idempotency-Key', 'first-feature-1')
-      .send({ name: '첫 기능 — 원격 시동', description: '고객 설치 첫 등록', country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'first-author', asil: 'QM' })
+      .send({...featureRefs('QM'),  name: '첫 기능 — 원격 시동', description: '고객 설치 첫 등록', country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'first-author', asil: 'QM' })
       .expect(201);
     expect(created.body.featureId).toMatch(/^FEAT-\d+$/);
     expect(created.body.version).toBe('0.1.0');

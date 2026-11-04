@@ -32,7 +32,7 @@ export const FEATURE_TRANSITIONS: TransitionRule[] = [
 
 export const LIFECYCLE_RANK: Record<Lifecycle, number> = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
+export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'FEATURE_REF_BLOCKED' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
 
 export interface Blocker {
   code: BlockerCode;
@@ -63,6 +63,8 @@ export interface TransitionContext {
    * G8·G9 PASS·서명 뒤에 열린 요청도 출시를 막는다(Gate PASS 차단만으로는 이미 PASS한 판정을 되돌리지 못한다).
    */
   openRehara?: { requestId: string; condition: string; detail?: string }[];
+  /** Feature DB 연결 중 승인을 막는 기준 행 — 요청 중(PENDING)·폐기(RETIRED) (30-95 §5.2, D-REF-7) */
+  blockedRefs?: { refId: string; status: 'PENDING' | 'RETIRED' | 'MISSING' }[];
   reason?: string;
 }
 
@@ -97,6 +99,14 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
   if (rule.to === 'APPROVED')
     for (const d of ctx.dependencies)
       if (!d.targetVersion) blockers.push({ code: 'DEPENDENCY_UNRESOLVED', message: `${d.dependencyId} 대상 Version 미확정`, ref: d.dependencyId });
+
+  if (rule.to === 'APPROVED')
+    for (const r of ctx.blockedRefs ?? [])
+      blockers.push({
+        code: 'FEATURE_REF_BLOCKED',
+        message: r.status === 'PENDING' ? `Feature DB 기준 행 ${r.refId}이(가) 아직 요청 중입니다 — Feature DB 관리자 승인 뒤 승인합니다.` : r.status === 'RETIRED' ? `Feature DB 기준 행 ${r.refId}은(는) 폐기됐습니다 — 다른 기준 행으로 다시 연결하세요.` : `Feature DB에 ${r.refId} 기준 행이 없습니다.`,
+        ref: r.refId,
+      });
 
   if (rule.from === 'VERIFIED' && rule.to === 'RELEASED' && !ctx.releaseSignoff)
     blockers.push({ code: 'RELEASE_SIGNOFF_MISSING', message: 'Feature Owner의 Release Sign-off(출시 책임 확인 개인 서명)가 없습니다 — G8·G9 PASS 뒤 Feature Owner가 서명합니다.' });

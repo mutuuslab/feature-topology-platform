@@ -3,6 +3,7 @@
 // 감사 체인 검증(verifyChain)이 고정점까지 통과하고 데이터는 백업 시점과 같다(백업 뒤의 일은 없다).
 // readiness: RD-OPS-09
 Object.assign(process.env, { FF_SCHEDULER: 'manual', FF_SYNTHETIC: '0' });
+import { featureRefs } from '../feature-refs';
 import { INestApplication } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
@@ -29,7 +30,7 @@ mkdirSync(join(root, 'live'));
 mkdirSync(join(root, 'live-anchor'));
 const KEY = 'k'.repeat(40);
 const AUTHOR = actor('usr-author', 'FEATURE_AUTHOR');
-const feature = (name: string) => ({ name, description: `${name} 설명`, country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'usr-author', asil: 'QM' });
+const feature = (name: string) => ({ ...featureRefs('QM'), name, description: `${name} 설명`, country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'usr-author', asil: 'QM' });
 
 async function boot(paths: { db: string; anchor: string }, seed: string) {
   Object.assign(process.env, { FF_DB: paths.db, FF_SEED: seed, FF_AUDIT_KEY: KEY, FF_AUDIT_ANCHOR_FILE: paths.anchor, FF_INSTANCE_ID: 'oem-a' });

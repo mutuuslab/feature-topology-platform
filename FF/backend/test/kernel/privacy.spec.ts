@@ -6,6 +6,7 @@
 //  · 차량 삭제는 Data Lake에 가명 단위 삭제를 요청한다(설정이 없으면 NOT_CONNECTED로 기록)
 // readiness: RD-P2-05
 process.env.FF_SCHEDULER = 'manual';
+import { featureRefs } from '../feature-refs';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { INestApplication } from '@nestjs/common';
@@ -70,7 +71,7 @@ describe('개인정보 — 내보내기·삭제 요청·감사 체인', () => {
     await http()
       .post('/api/features')
       .set(AUTHOR)
-      .send({ name: '떠나는 사람의 Feature', description: '개인정보 시험', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: LEAVER, asil: 'QM' })
+      .send({...featureRefs('QM'),  name: '떠나는 사람의 Feature', description: '개인정보 시험', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: LEAVER, asil: 'QM' })
       .expect(201);
     await http().post('/api/notifications/read-all').set(AUTHOR).send({}).expect(201);
     seedNotification(db, 'NTF-T0001', LEAVER, AT, 900001);

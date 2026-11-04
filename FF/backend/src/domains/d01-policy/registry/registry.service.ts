@@ -5,6 +5,9 @@ import { SafetyProfileService } from './safety-profile.service';
 import {
   bumpVersion,
   changedKeys,
+  checkRefLinks,
+  primaryRefId,
+  type FeatureRefLink,
   compareVersion,
   gatesToRejudge,
   SCOPE_KEYS,
@@ -22,6 +25,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from '../repos';
 import { LifecycleService } from './lifecycle.service';
+import { RefdbService } from '../refdb/refdb.service';
 import { pageOf } from '../../../kernel/paging';
 
 export interface FeatureQuery {
@@ -51,6 +55,7 @@ export class RegistryService {
     private readonly events: EventService,
     private readonly clock: Clock,
     private readonly safety: SafetyProfileService,
+    private readonly refdb: RefdbService,
   ) {}
 
   /** gateStatus — 목록은 GateRepo.latestStatuses로 한 번에 읽어 넘긴다(버전마다 Gate 질의를 하면 N+1) */
@@ -133,6 +138,22 @@ export class RegistryService {
   }
 
   create(actor: Actor, body: CreateFeatureBody) {
+    const refs = this.checkRefs(actor, body.name, body.featureRefs, 'FEATURE_CREATE');
+    const primary = this.refdb.lookup(primaryRefId(refs)!)!;
+    // 대표 기준 행의 대표 ASIL과 다르면 사유가 있어야 한다(30-95 §6.3) — 기능안전 담당자가 G2에서 본다
+    if (body.asil !== primary.asilRep && !body.asilDeviationReason) {
+      this.audit.failed(actor, 'FEATURE_CREATE', body.name, `ASIL ${body.asil} ≠ 기준 ${primary.asilRep}, 사유 없음`, 'D01-01');
+      throw new DomainError('VALIDATION', `ASIL ${body.asil}이(가) Feature DB ${primary.refId}의 대표 ASIL ${primary.asilRep}과 다릅니다. 다른 이유를 적으세요.`, { field: 'asilDeviationReason', refAsil: primary.asilRep });
+    }
+    // 같은 국가·차종·트림에 같은 대표 기준 행 — 사유가 있으면 이어 간다(D-REF-13)
+    const sameRef = this.refdb.primaryUsersInScope(primary.refId, body, this.features.all());
+    if (sameRef.length && !body.duplicateReason) {
+      this.audit.failed(actor, 'FEATURE_CREATE', body.name, `같은 범위에 ${primary.refId} 대표 Feature 존재`, 'D01-01');
+      throw new DomainError('CONFLICT', `같은 국가·차종·트림에 Feature DB ${primary.refId}을(를) 대표로 쓰는 Feature가 이미 있습니다. 새 Version인지 확인하고, 따로 등록하려면 이유를 적으세요.`, {
+        field: 'duplicateReason',
+        sameRef: sameRef.map((d) => ({ featureId: d.featureId })),
+      });
+    }
     const dup = this.features.similar(body.name, body.country, body.vehicleModel, body.trim);
     if (dup.length) {
       this.audit.failed(actor, 'FEATURE_CREATE', body.name, '같은 적용 범위에 유사 Feature 존재', 'D01-01');
@@ -164,12 +185,14 @@ export class RegistryService {
         dependencyIds: [],
         catalogIds: [],
         gateRecordIds: [],
+        featureRefs: refs,
         _missing: { baselineId: '미발급', functions: '미입력', swIds: '미입력', swVersions: '미입력', ecuPnos: '미입력' },
       };
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
+      this.refdb.setLinks(f.featureId, f.version, refs);
       this.safety.ensure(f.featureId, f.version); // 안전 분류 초안 — 앞 Version 값을 잇거나 추정(보고서 5.7)
       const target = `${f.featureId}@${f.version}`;
-      this.audit.record(actor, 'FEATURE_CREATE', target, { after: f, componentId: 'D01-01' });
+      this.audit.record(actor, 'FEATURE_CREATE', target, { after: f, reason: [body.asilDeviationReason && `ASIL 기준과 다름: ${body.asilDeviationReason}`, body.duplicateReason && `같은 기준 행 중복: ${body.duplicateReason}`].filter(Boolean).join(' · ') || undefined, componentId: 'D01-01' });
       this.events.publish('feature.created', target, { featureId: f.featureId, version: f.version, name: f.name }, { componentId: 'D01-01', correlationId: actor.correlationId });
       return f;
     });
@@ -183,9 +206,11 @@ export class RegistryService {
       this.audit.failed(actor, 'FEATURE_UPDATE', target, `${f.lifecycle} 버전 수정 시도`, 'D01-01');
       throw new DomainError('IMMUTABLE', `${f.lifecycle} 버전은 수정할 수 없습니다. 새 Version을 만드세요.`, { hint: `POST /api/features/${featureId}/versions` });
     }
+    const refs = body.featureRefs ? this.checkRefs(actor, target, body.featureRefs, 'FEATURE_UPDATE') : undefined;
     return this.db.tx(() => {
-      const next = this.merge(f, body);
+      const next = this.merge(f, refs ? { ...body, featureRefs: refs } : body);
       this.features.update(next);
+      if (refs) this.refdb.setLinks(featureId, version, refs);
       this.audit.record(actor, 'FEATURE_UPDATE', target, { before: pick(f, changedKeys(f, body as any)), after: pick(next, changedKeys(f, body as any)), componentId: 'D01-01' });
       this.events.publish('feature.updated', target, { featureId, version, changed: changedKeys(f, body as any) }, { componentId: 'D01-01', correlationId: actor.correlationId });
       return next;
@@ -205,6 +230,7 @@ export class RegistryService {
       const merged = this.merge(base, body.changes);
       const f: FeatureVersionRow = { ...merged, version, lifecycle: 'PROPOSED', baselineId: null, catalogIds: [], gateRecordIds: [], _missing: { ...merged._missing, baselineId: '미발급' } };
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
+      this.refdb.setLinks(f.featureId, f.version, f.featureRefs ?? []);
       this.safety.ensure(f.featureId, f.version, base.version); // 안전 분류 초안 — 기준 Version 값을 잇는다(보고서 5.7, DRAFT)
       const target = `${featureId}@${version}`;
       const rejudge = gatesToRejudge(changed, base.lifecycle);
@@ -218,6 +244,19 @@ export class RegistryService {
       );
       return { feature: f, changed, rejudge };
     });
+  }
+
+  /** Feature DB 연결 점검(30-95 §6.2) — 없는 행·폐기 행은 막고, 연결에 지금 발행 버전을 남긴다 */
+  private checkRefs(actor: Actor, target: string, links: readonly FeatureRefLink[], action: string): FeatureRefLink[] {
+    const issues = checkRefLinks(links, (id) => this.refdb.lookup(id), 'create');
+    const blocking = issues.filter((i) => i.blocking);
+    if (blocking.length) {
+      const text = blocking.map((i) => (i.code === 'REF_RETIRED' ? `${i.refId} 폐기됨${i.replacedBy ? `(대체 ${i.replacedBy})` : ''}` : `${i.refId} 없음`)).join(', ');
+      this.audit.failed(actor, action, target, `Feature DB 연결 불가: ${text}`, 'D01-01');
+      throw new DomainError('VALIDATION', `Feature DB 기준 행을 연결할 수 없습니다: ${text}`, { field: 'featureRefs', issues: blocking });
+    }
+    const release = this.refdb.latestRelease() ?? undefined;
+    return links.map((l) => ({ refId: l.refId, role: l.role, ...(release ? { refRelease: release } : {}) }));
   }
 
   private merge(f: FeatureVersionRow, body: UpdateDraftBody): FeatureVersionRow {

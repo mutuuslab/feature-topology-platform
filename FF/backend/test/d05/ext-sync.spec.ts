@@ -2,6 +2,8 @@
 //   보내기: 플랫폼 Lifecycle·게이트·정책 → Epic 상태·CR 상태·요구 검증 결과·MR commit status
 //   받기: JIRA Epic·CR 변경 → 가드를 탄 요청(반영/거부·되돌림), codeBeamer 요구 개정 → G2 재검토, GitLab MR 병합·파이프라인 → 변경 기록
 //   안전장치: 서명 위조 401, 같은 webhook 두 번 → 한 번만, 매핑 없는 외부 계정 거부, 바깥이 몰래 바뀌면 충돌 → 사람이 고름
+import { featureRefs, refFor } from '../feature-refs';
+import type { Asil } from '@ff/contracts';
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { actor, bootApp, confirmSafety } from '../helpers';
@@ -129,7 +131,7 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     it('Feature 등록 → 요구 ID를 codeBeamer에서 찾아 연결, 없는 ID는 실패로 남는다(요구 존재 확인)', async () => {
       const known = (await trace('FEAT-00022', '1.0.0')).requirements[0];
       reqKey = known.key;
-      const f = await http().post('/api/features').set(AUTHOR).send({ name: '연계 시험 Feature', description: 'CR', requirementIds: [known.extra.reqId, 'REQ-EXT-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] }).expect(201);
+      const f = await http().post('/api/features').set(AUTHOR).send({...featureRefs('QM'),  name: '연계 시험 Feature', description: 'CR', requirementIds: [known.extra.reqId, 'REQ-EXT-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] }).expect(201);
       fid = f.body.featureId;
       await drain();
       const t = await trace(fid, '0.1.0');
@@ -223,7 +225,12 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
   // 사용자 결정(2026-10-23): Lifecycle은 플랫폼·JIRA 양쪽에서 관리하고, JIRA에서 Epic을 만들면 Feature를 자동으로 만든다.
   describe('JIRA Epic 생성 → PROPOSED Feature 자동 등록', () => {
     const SCOPE = { country: 'KR', vehicleModel: 'NE1', trim: 'Prestige', asil: 'B', ownerId: '주행보조개발팀' };
-    const createEpic = async (body: Record<string, unknown>) => (await http().post('/api/integrations/mock/jira/items').set(AUTHOR).send({ kind: 'EPIC', ...body }).expect(201)).body;
+    const createEpic = async (body: Record<string, unknown>) => (await http().post('/api/integrations/mock/jira/items').set(AUTHOR).send({ kind: 'EPIC', ...withRef(body) }).expect(201)).body;
+    // Feature DB 연결 필수(30-95 D-REF-3) — ASIL이 있는 범위면 그 ASIL의 기준 행을 Epic 필드에 넣는다(JIRA 안의 FF 앱이 채우는 값)
+    function withRef(body: Record<string, unknown>) {
+      const scope = body.scope as Record<string, string> | undefined;
+      return scope?.asil && !scope.featureDb ? { ...body, scope: { ...scope, featureDb: refFor(scope.asil as Asil) } } : body;
+    }
     const featuresNamed = async (name: string) => (await http().get(`/api/features?q=${encodeURIComponent(name)}`).expect(200)).body.items.filter((x: any) => x.name === name);
 
     it('작성 권한이 있는 사람이 범위(국가·차종·트림·ASIL·담당 조직)를 채워 Epic을 만들면 PROPOSED 0.1.0이 등록되고 Epic과 연결된다', async () => {
@@ -251,7 +258,7 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
       await drain();
       const it = await mockItem('jira', r.item.key);
       expect(it.comments.at(-1)).toMatchObject({ by: 'feature-platform', text: expect.stringMatching(/트림.*ASIL.*담당 조직/) });
-      const fixed = (await act('jira', { key: r.item.key, action: 'EDIT', externalUser: 'kim.author', scope: { trim: 'Exclusive', asil: 'QM', ownerId: '주차개발팀' } })).body;
+      const fixed = (await act('jira', { key: r.item.key, action: 'EDIT', externalUser: 'kim.author', scope: { trim: 'Exclusive', asil: 'QM', ownerId: '주차개발팀', featureDb: refFor('QM') } })).body;
       expect(fixed.result).toMatchObject({ outcome: 'APPLIED' });
       const [f] = await featuresNamed('주차 경로 기억 확장');
       expect(f).toMatchObject({ lifecycle: 'PROPOSED', trim: 'Exclusive', asil: 'QM' });

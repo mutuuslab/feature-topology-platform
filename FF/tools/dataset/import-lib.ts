@@ -12,6 +12,7 @@ const contracts = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof i
 const { DATASET_FILES } = contracts;
 
 export const IMPORTER_VERSION = '1.0.0';
+const FF_ONLY_FIELDS = ['featureRefs'];
 const HEADER_ROW = 3; // 0-based — 엑셀 4행
 
 const PLACEHOLDERS: Record<string, string> = {
@@ -91,7 +92,8 @@ export function importWorkbook(buf: Buffer): ImportResult {
       return i;
     });
     const schema = (DATASET_FILES as any)[spec.file];
-    const order: string[] = Object.keys(schema.shape);
+    // v0.81 엑셀에 없는 FF 고유 필드(Feature DB 연결 30-95)는 픽스처에 쓰지 않는다 — 스키마 기본값([])이 채운다
+    const order: string[] = Object.keys(schema.shape).filter((f) => !FF_ONLY_FIELDS.includes(f));
 
     for (let r = HEADER_ROW + 1; r < rows.length; r++) {
       const cells = rows[r] ?? [];

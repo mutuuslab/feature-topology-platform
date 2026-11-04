@@ -1,0 +1,5 @@
+[
+{"term":"AVH","meaning":"Auto Vehicle Hold, 오토 홀드","refIds":["CH-BRK-009"],"confirmed":false},
+{"term":"HAC","meaning":"Hill-start Assist Control, 경사로 밀림 방지","refIds":["CH-BRK-006"],"confirmed":false},
+{"term":"EPB","meaning":"Electronic Parking Brake, 전자식 주차 브레이크","refIds":["CH-BRK-008"],"confirmed":false}
+]

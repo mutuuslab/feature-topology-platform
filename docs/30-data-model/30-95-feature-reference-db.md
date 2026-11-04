@@ -40,6 +40,12 @@ FF Feature(국가·차종·트림 범위, 버전·수명주기)는 등록할 때
 | D-REF-9 | 도메인 10·클러스터·컴포넌트 69를 **FF 공식 분류**로, ECU.domain도 이 분류로 정리 | §4 |
 | D-REF-10 | JIRA Epic 자동 등록: 지정 필드에 기준 ID가 없으면 **보류**(현행 거부 방식) | §7 |
 | D-REF-11 | 기존 엑셀 산정 도구는 **FF가 대체**, 엑셀은 내보내기만 | `20-94` |
+| D-REF-12 | `03b` 상세 정의는 기준 행 `definition`으로 이전, `13` 세부기능 후보는 읽기 전용 참고 (R-2) | §5.1·§5.5 |
+| D-REF-13 | 같은 범위·같은 대표 행 중복은 409, 사유 입력 시 허용 (R-3) | §6.2 |
+| D-REF-14 | 런타임 xlsx는 **SheetJS를 백엔드 의존성으로** (R-4) | §10 |
+| D-REF-15 | FF Feature ID를 **도메인 포함 형식으로 변경** (R-5) — 형식·기존 ID 처리는 `80-50` §11 A-2 | §3 |
+| D-REF-16 | JIRA Epic의 기준 ID·범위는 **JIRA 안의 FF 앱**이 사용자 필드에 기록 (R-6) | §7, `80-50` §4.7 |
+| D-REF-17 | **R1·R2 구현 승인**(2026-11-04) | §13 |
 
 ## 3. 지금 FF와의 차이 (2026-11-04, `feat/prod-readiness` 5d2a316 기준)
 
@@ -52,7 +58,7 @@ FF Feature(국가·차종·트림 범위, 버전·수명주기)는 등록할 때
 | xlsx | 오프라인 `data:import`(DATASET v0.81 → fixture) | 같은 방식으로 `refdb:import` 1회 이전 |
 | ID | `FEAT-\d{5}` | 그대로. 기준 행은 엑셀 ID(`BC-BCM-001`) 유지 |
 
-`30-90`이 정한 `FEAT-{DOMAIN}-{NNN}`은 이번에 맞추지 않는다(별도 결정 필요 시 §12).
+Feature ID는 도메인 포함 형식으로 바꾼다(D-REF-15). 대표 기준 행의 도메인 약어를 쓴다 — 기본안 `FEAT-BC-0001`, 기존 `FEAT-00001`은 유지(두 형식 허용). 확정은 `80-50` §11 A-2.
 
 ## 4. 분류 체계 (D-REF-9)
 
@@ -191,8 +197,9 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 
 ## 7. JIRA Epic 자동 등록 (D-REF-10)
 
-- `EpicScope`(`contracts/src/rules/ext-sync.ts`)에 `refIds`(대표 1 + 포함 N)를 더한다. 읽는 곳: JIRA 라벨 `ref:CH-BRK-009`(대표는 `ref-primary:` 접두) 또는 사용자 필드 `FF Feature Ref`(설정 `FF_JIRA_REF_FIELD`).
-- 기준 ID가 없거나, 없는 ID이거나, `RETIRED`면 지금 거부 방식 그대로 **REJECTED + JIRA 댓글**("기준 기능 ID를 라벨 `ref:` 또는 필드에 넣어 주세요").
+- `EpicScope`(`contracts/src/rules/ext-sync.ts`)에 `refIds`(대표 1 + 포함 N)를 더한다. 값은 **JIRA 안의 FF 앱**(D-REF-16, `80-50` §4.7)이 Epic 사용자 필드 `FF Feature DB`에 기록한다. 앱 밖에서 직접 고친 값은 되돌린다.
+- 기준 ID가 없거나, 없는 ID이거나, `RETIRED`면 지금 거부 방식 그대로 **REJECTED + JIRA 댓글**("FF 패널에서 Feature DB와 범위를 고르세요").
+- JIRA 연계 전체(Epic = Feature, 필드 주인, 대사)는 `80-50`이 정본이다.
 - `PENDING` 행 요청은 JIRA에서 만들 수 없다(사람이 화면에서 요청).
 - `featureFromEpic`(`ext-sync.service.ts`) 시험에 연결 성공·보류·폐기 행 3경우를 더한다.
 
@@ -243,7 +250,7 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 ## 10. 내보내기
 
 - `GET /api/refdb/export?format=xlsx&release=v1.4` — `03_FeatureDB` 마스터 열 순서(A~AE, BJ~BL, BO~BV)와 같은 시트 + `09_출처`. 금액 열(O 벤치마크 €)은 산정 역할에만 포함.
-- 런타임 xlsx 쓰기: SheetJS는 지금 **루트 개발 의존성**이다. 백엔드에서 쓰려면 (a) 백엔드 의존성으로 옮기거나 (b) `tools/xlsx.ts`에 최소 쓰기(SpreadsheetML + 무압축 zip)를 더한다. **추천 (b)** — 새 런타임 의존성 없음. (§12 확인 항목)
+- 런타임 xlsx 쓰기: **SheetJS를 백엔드 의존성으로** 옮긴다(D-REF-14). 지금 루트 개발 의존성과 같은 판(0.20.3, CDN tarball)을 고정하고 CI 의존성 감사 목록에 더한다.
 
 ## 11. 하네스·시험
 
@@ -262,11 +269,11 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 | # | 질문 | 제 기본값 |
 |---|---|---|
 | R-1 | 화면 이름 — FF에서 "카탈로그"는 판매 상품(product)을 뜻한다 | **결정(2026-11-04 사용자): "Feature DB"** — 메뉴도 같은 이름(기준 정보 묶음) |
-| R-2 | `03b` 상세 정의와 `13` 세부기능 후보 840개 범위 | `03b`는 기준 행 `definition`으로 이전, `13`은 읽기 전용 참고 |
-| R-3 | 같은 범위 같은 대표 행 중복 | 409 + 사유 입력 시 허용 |
-| R-4 | 런타임 xlsx 내보내기 방식 | `tools/xlsx.ts` 최소 쓰기(새 의존성 없음) |
-| R-5 | `30-90`의 `FEAT-{DOMAIN}-{NNN}` 정리 | 이번엔 손대지 않음 |
-| R-6 | JIRA 기준 ID 전달 방법 | 라벨 `ref:` 우선, 사용자 필드는 설정 시 |
+| R-2 | `03b` 상세 정의와 `13` 세부기능 후보 840개 범위 | **결정: 추천대로** — D-REF-12 |
+| R-3 | 같은 범위 같은 대표 행 중복 | **결정: 409 + 사유 입력 시 허용** — D-REF-13 |
+| R-4 | 런타임 xlsx 내보내기 방식 | **결정: SheetJS 백엔드 의존성** — D-REF-14 |
+| R-5 | `30-90`의 `FEAT-{DOMAIN}-{NNN}` 정리 | **결정: 도메인 포함으로 변경** — D-REF-15, 형식은 `80-50` A-2 |
+| R-6 | JIRA 기준 ID 전달 방법 | **결정: JIRA 안의 FF 앱** — D-REF-16 |
 
 ## 13. 단계
 

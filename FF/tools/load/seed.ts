@@ -3,7 +3,7 @@
 // 감사는 해시 체인을 이어서 만든다(체인 검증이 깨지지 않게). 결과 DB는 .sim/load/ 아래에 내용 해시로 캐시한다.
 //   node tools/load/seed.ts --profile light|full [--force]
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { FF } from '../lib.ts';
@@ -14,10 +14,28 @@ const { DatabaseSync } = process.getBuiltinModule('node:sqlite') as typeof impor
 
 export const LOAD_DIR = join(FF, '.sim', 'load');
 
-/** 캐시 키 — 스키마(마이그레이션)·시드 픽스처·이 스크립트·데이터 크기가 같으면 같은 DB */
-function cacheKey(name: ProfileName): string {
+export const BACKEND_DIST = join(FF, 'backend', 'dist');
+
+/** 빌드된 백엔드 전체의 해시 — 시드는 빌드된 앱이 만든다(시드 로직·문서 형식·부팅 sweep이 바뀌면 다른 DB). perf 단계가 먼저 빌드한다 */
+export function distDigest(dir: string = BACKEND_DIST): string {
+  const h = createHash('sha256');
+  if (!existsSync(dir)) return 'no-dist';
+  const walk = (d: string, prefix: string) => {
+    for (const name of readdirSync(d).sort()) {
+      const p = join(d, name);
+      if (statSync(p).isDirectory()) walk(p, `${prefix}${name}/`);
+      else if (!name.endsWith('.map') && !name.endsWith('.tsbuildinfo')) h.update(`${prefix}${name}\0`).update(readFileSync(p));
+    }
+  };
+  walk(dir, '');
+  return h.digest('hex');
+}
+
+/** 캐시 키 — 스키마(마이그레이션)·빌드된 백엔드·시드 픽스처·이 스크립트·데이터 크기가 같으면 같은 DB */
+export function cacheKey(name: ProfileName, distDir: string = BACKEND_DIST): string {
   const h = createHash('sha256');
   for (const f of [join(FF, 'backend', 'src', 'kernel', 'migrations.ts'), join(FF, 'tools', 'load', 'seed.ts')]) h.update(readFileSync(f));
+  h.update(distDigest(distDir));
   // Feature DB 이전본·시드 연결도 첫 기동 때 DB에 들어간다(30-95 §9) — 바뀌면 캐시를 새로 만든다
   const refdb = join(FF, 'data', 'reference', 'feature-db');
   for (const dir of [join(FF, 'data', 'fixtures', 'v0.81'), join(FF, 'data', 'fixtures', 'demo'), join(refdb, 'v1.3')]) for (const f of readdirSync(dir).sort()) h.update(f).update(readFileSync(join(dir, f)));
@@ -109,6 +127,11 @@ function fill(dbFile: string, p: LoadProfile) {
   const insGate = db.prepare('INSERT INTO gate_record (gate_record_id, feature_id, feature_version, gate, status, judged_at, doc) VALUES (?, ?, ?, ?, ?, ?, ?)');
   const insSafety = db.prepare('INSERT INTO safety_profile (feature_id, version, status, doc) VALUES (?, ?, ?, ?)');
   const fvCols = new Set(all('PRAGMA table_info(feature_version)').map((c) => c.name));
+  // Feature DB 연결 색인(feature_ref_link) — 복제 Feature도 본과 같은 기준 행을 쓴다(행 상세의 '이 행을 쓰는 Feature'·영향 분석이 실제 크기로 돈다)
+  const linksBy = new Map<string, any[]>();
+  for (const l of all('SELECT * FROM feature_ref_link')) linksBy.set(`${l.feature_id}@${l.version}`, [...(linksBy.get(`${l.feature_id}@${l.version}`) ?? []), l]);
+  if (!linksBy.size) throw new Error('본 Feature DB 연결이 없습니다 — 시드 연결(seed-links.json)·본 Feature 등록 본문(featureRefs)을 확인');
+  const insLink = db.prepare('INSERT INTO feature_ref_link (feature_id, version, ref_id, role, ref_version) VALUES (?, ?, ?, ?, ?)');
   let gateSeq = 900_000;
   const featureIds: string[] = [...templates];
   for (let i = 0; featureIds.length < p.features; i++) {
@@ -124,6 +147,7 @@ function fill(dbFile: string, p: LoadProfile) {
       }
       const s = safety.get(`${t}@${r.version}`);
       if (s) insSafety.run(id, r.version, s.status, swap(s.doc));
+      for (const l of linksBy.get(`${t}@${r.version}`) ?? []) insLink.run(id, r.version, l.ref_id, l.role, l.ref_version);
     }
   }
 

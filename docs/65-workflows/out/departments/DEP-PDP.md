@@ -46,7 +46,7 @@ last_updated: 2026-11-04
 | FPW.1-A03 안전 분류(네 축) 확정 | FPW.1 Feature 등록·분류 | C (Feature Owner) | Feature 등록 기록 `WP-FEAT-REG`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → 안전 분류(네 축) `WP-SAFETY-PROFILE` | `/features/:id/:ver` | 1차 |
 | FPW.1-A04 법규 의무 기능 판정 | FPW.1 Feature 등록·분류 | I (Feature Owner) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 법규 등급 판정 기록 `WP-REG-CLASS` | 플랫폼 밖 | 1차 |
 | FPW.1-A05 G1 등록·분류 판정 | FPW.1 Feature 등록·분류 | C (Feature Owner) | Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 법규 등급 판정 기록 `WP-REG-CLASS` → G1 Decision Record `WP-G1-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
-| FPW.1-A06 Feature DB 추가 요청 | FPW.1 Feature 등록·분류 | R·A (Feature Owner) | Feature 제안·변경요청 `WP-FEAT-PROPOSAL`, Feature DB 발행본 `WP-REFDB-RELEASE` → Feature DB 추가 요청 `WP-REF-ADD-REQ` | `/feature/propose`, `/master/feature-db` | 1차 |
+| FPW.1-A06 Feature DB 추가 요청 | FPW.1 Feature 등록·분류 | R·A (Feature Owner) | Feature 제안·변경요청 `WP-FEAT-PROPOSAL`, Feature DB 발행본 `WP-REFDB-RELEASE` → Feature DB 추가 요청 `WP-REF-ADD-REQ` | `/feature/propose` | 1차 |
 | FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 | FPW.2 HARA·변경 영향 판단 | C (Feature Owner) | G1 Decision Record `WP-G1-DECISION`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 기존 구현 차이 보고 `WP-SUPPLIER-DIFF` → 변경 영향 분석서 `WP-IMPACT-ANALYSIS` | `/analysis/impact`, `/arch/topology` | 1차 |
 | FPW.2-A02 HARA 수행 | FPW.2 HARA·변경 영향 판단 | C (Feature Owner) | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` → HARA·TARA 결과 `WP-HARA-TARA` | 플랫폼 밖 | 1차 |
 | FPW.2-A03 SOTIF 분석 갱신 | FPW.2 HARA·변경 영향 판단 | C (Feature Owner) | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` → SOTIF 분석 `WP-SOTIF-ANALYSIS` | 플랫폼 밖 | 1차 |
@@ -90,10 +90,10 @@ last_updated: 2026-11-04
 | FPW.9-A05 Lifecycle 종료 전이 | FPW.9 사후 검토·Flag Retirement | C (Feature Owner) · I (상품 Owner) | Retirement 단계 기록 `WP-RETIRE-LOG` → Lifecycle 종료 기록 `WP-RETIRE-CLOSE` | `/features/:id/:ver` | 1차 |
 | FPW.13-A02 Compliance Profile 정의 | FPW.13 규정·Compliance Profile 관리 | I (Feature Owner) | 표준 판 고정 기록(Safety Plan) `WP-STANDARD-EDITIONS`, 법규·표준 원문 `WP-REG-SOURCES` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
 | FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | I (Feature Owner) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
-| FPW.14-A01 변경 요청 작성 | FPW.14 Feature DB 운영 | R·A (Feature Owner) | Feature DB 기준 행 연결 `WP-REF-LINK` → 기준 행 변경 요청 `WP-REF-CHANGE-REQ` | `/master/feature-db` | 2차 초안 |
-| FPW.14-A02 자동 점검·도메인 검토 | FPW.14 Feature DB 운영 | I (Feature Owner) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ` → 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` | `/master/feature-db` | 2차 초안 |
-| FPW.14-A03 변경 승인·반려 | FPW.14 Feature DB 운영 | I (Feature Owner) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ`, 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` → 변경 승인·반려 기록 `WP-REF-DECISION` | `/master/feature-db` | 2차 초안 |
-| FPW.14-A04 Feature DB 버전 발행 | FPW.14 Feature DB 운영 | I (Feature Owner) | 변경 승인·반려 기록 `WP-REF-DECISION` → Feature DB 발행본 `WP-REFDB-RELEASE` | `/master/feature-db` | 2차 초안 |
+| FPW.14-A01 변경 요청 작성 | FPW.14 Feature DB 운영 | R·A (Feature Owner) | Feature DB 기준 행 연결 `WP-REF-LINK` → 기준 행 변경 요청 `WP-REF-CHANGE-REQ` | `/master/feature-db/:refId` | 2차 초안 |
+| FPW.14-A02 자동 점검·도메인 검토 | FPW.14 Feature DB 운영 | I (Feature Owner) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ` → 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` | `/master/feature-db/changes/:id`, `/master/feature-db/changes` | 2차 초안 |
+| FPW.14-A03 변경 승인·반려 | FPW.14 Feature DB 운영 | I (Feature Owner) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ`, 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` → 변경 승인·반려 기록 `WP-REF-DECISION` | `/master/feature-db/changes/:id`, `/master/feature-db/changes` | 2차 초안 |
+| FPW.14-A04 Feature DB 버전 발행 | FPW.14 Feature DB 운영 | I (Feature Owner) | 변경 승인·반려 기록 `WP-REF-DECISION` → Feature DB 발행본 `WP-REFDB-RELEASE` | `/master/feature-db/changes` | 2차 초안 |
 | FPW.14-A05 출처 정기 점검 | FPW.14 Feature DB 운영 | I (Feature Owner) | Feature DB 발행본 `WP-REFDB-RELEASE` → 출처 정기 점검 기록 `WP-REF-SOURCE-REVIEW` | `/master/feature-db` | 2차 초안 |
 
 ## 2. 부서 간 인계
@@ -117,8 +117,8 @@ last_updated: 2026-11-04
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/baselines`, `/experiments`, `/products/new`, `/entitlements`, `/products/:id/:ver`, `/activation/decide`, `/admin/approval`, `/features/:id/:ver`, `/flag-retirements`
-- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/policies/new`, `/policies`, `/validations/virtual`, `/verify/evidence`, `/deployments`, `/integration/connectors`, `/verify/compliance`, `/fleet/live`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/kill`, `/audit`, `/quality/feedback`
+- 주 업무 화면: `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/baselines`, `/experiments`, `/products/new`, `/entitlements`, `/products/:id/:ver`, `/activation/decide`, `/admin/approval`, `/features/:id/:ver`, `/flag-retirements`, `/master/feature-db/:refId`
+- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/policies/new`, `/policies`, `/validations/virtual`, `/verify/evidence`, `/deployments`, `/integration/connectors`, `/verify/compliance`, `/fleet/live`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/kill`, `/audit`, `/quality/feedback`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
 
 ## 4. 부서 겸직 직무 분리
 

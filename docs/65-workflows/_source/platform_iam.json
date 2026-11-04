@@ -5,15 +5,15 @@
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-04T08:11:21.374Z",
+  "fetched_at": "2026-11-04T14:02:43.817Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-dept\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-04T08:10:50.331Z",
+  "contracts_dist_mtime": "2026-11-04T14:01:40.436Z",
   "ff_git": {
-   "head": "daf4675606fc3f9f3ce82bf7ec6c3af0769e666b",
-   "dirty_files": 20
+   "head": "52231142795b85d5f97619a2161714e128aa5819",
+   "dirty_files": 30
   },
-  "iam_sha256": "41ce8a7d7109d6a84abb578ba6a00d563f17704aabeb20037e2ed519ba134e63"
+  "iam_sha256": "f2197d8afbe9db7e414e25a6851c5a4bed88d394cf30ba8dd90255f3b2420158"
  },
  "roles": [
   {
@@ -294,6 +294,16 @@
    ]
   },
   {
+   "name": "recordSourceReview",
+   "method": "POST",
+   "path": "/api/refdb/sources/reviews",
+   "summary": "Feature DB 출처 정기 점검 기록 — 확인일·다음 점검일 갱신(기한 알림이 닫힌다)",
+   "component": "D01-01",
+   "roles": [
+    "REFDB_ADMIN"
+   ]
+  },
+  {
    "name": "requestRefAdd",
    "method": "POST",
    "path": "/api/refdb/requests",
@@ -312,10 +322,19 @@
    "component": "D01-01",
    "roles": [
     "FEATURE_AUTHOR",
-    "FEATURE_APPROVER",
-    "PRODUCT_AUTHOR",
-    "IMPLEMENTER",
+    "SAFETY_OFFICER",
     "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
     "REFDB_ADMIN",
     "DOMAIN_REVIEWER"
    ]
@@ -334,7 +353,7 @@
    "name": "decideRefChange",
    "method": "POST",
    "path": "/api/refdb/changes/:id/decision",
-   "summary": "Feature DB 변경 요청 승인·반려 — 요청자 ≠ 승인자, 필수 정보 누락이면 승인 불가",
+   "summary": "Feature DB 변경 요청 승인·반려 — 요청자·검토자 ≠ 승인자, 마지막 검토 의견이 보완·반대이거나 필수 정보 누락이면 승인 불가",
    "component": "D01-01",
    "roles": [
     "REFDB_ADMIN"
@@ -1524,6 +1543,12 @@
    "subject": "Feature DB 변경 검토",
    "rule": "기준 행 변경 요청자는 그 요청의 도메인 검토자가 될 수 없다",
    "component": "D01-01"
+  },
+  {
+   "id": "SOD-15",
+   "subject": "Feature DB 검토·승인 분리",
+   "rule": "기준 행 변경 요청에 도메인 검토 의견을 낸 사람은 그 요청을 승인·반려할 수 없다 (도메인 검토자 ≠ Feature DB 관리자)",
+   "component": "D01-01"
   }
  ],
  "duties": {
@@ -1868,6 +1893,21 @@
   {
    "path": "/master/feature-db",
    "title": "Feature DB",
+   "group": "master"
+  },
+  {
+   "path": "/master/feature-db/changes",
+   "title": "Feature DB 변경 요청",
+   "group": "master"
+  },
+  {
+   "path": "/master/feature-db/changes/:id",
+   "title": "Feature DB 변경 요청 상세",
+   "group": "master"
+  },
+  {
+   "path": "/master/feature-db/:refId",
+   "title": "Feature DB 기준 행",
    "group": "master"
   },
   {

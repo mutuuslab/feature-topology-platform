@@ -62,7 +62,7 @@ last_updated: 2026-11-04
 - 프로세스: FPW.1 Feature 등록·분류
 - 시작: 맞는 기준 행이 Feature DB에 없을 때
 - 입력: WP-FEAT-PROPOSAL, WP-REFDB-RELEASE → 출력: WP-REF-ADD-REQ
-- 플랫폼: `requestRefAdd`, `/feature/propose`, `/master/feature-db`
+- 플랫폼: `requestRefAdd`, `/feature/propose`
 1. 검색과 도메인·컴포넌트 단계 선택으로 맞는 기준 행이 없음을 확인하고, 비슷한 행을 포함 행으로 쓸 수 있는지 먼저 본다
 2. 등록 화면의 추가 요청에서 도메인·컴포넌트·영문/한글 기능명·T-shirt·대표 ASIL·출처 또는 근거 메모를 입력한다
 3. 새 컴포넌트가 필요하면 3글자 약어를 같은 요청에 제안한다
@@ -135,7 +135,7 @@ last_updated: 2026-11-04
 - 프로세스: FPW.14 Feature DB 운영
 - 시작: 앞 활동 완료
 - 입력: WP-REF-LINK → 출력: WP-REF-CHANGE-REQ
-- 플랫폼: `createRefChange`, `/master/feature-db`
+- 플랫폼: `createRefChange`, `/master/feature-db/:refId`
 1. Feature DB 상세에서 바꿀 기준 행을 열고 요청 종류(추가·수정·폐기 예정·폐기)를 고른다
 2. 바꿀 필드의 새 값과 사유, 근거가 되는 1차 출처 위치를 적는다
 3. 출처 정기 점검에서 넘어온 개정 대상 행이면 그 점검 기록을 사유에 인용한다

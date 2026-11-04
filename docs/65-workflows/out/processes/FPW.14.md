@@ -43,11 +43,11 @@ flowchart LR
 
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
-| FPW.14-A01 | 변경 요청 작성 | R Feature Owner · A Feature Owner · C 아키텍트 · I Feature DB 관리자, 도메인 검토자 | WP-REF-LINK | WP-REF-CHANGE-REQ | `createRefChange`, `/master/feature-db` | – |
-| FPW.14-A02 | 자동 점검·도메인 검토 | R 도메인 검토자 · A 도메인 검토자 · C Safety Manager · I Feature DB 관리자, Feature Owner | WP-REF-CHANGE-REQ, WP-REF-ADD-REQ | WP-REF-REVIEW | `reviewRefChange`, `/master/feature-db` | – |
-| FPW.14-A03 | 변경 승인·반려 | R Feature DB 관리자 · A Feature DB 관리자 · C 도메인 검토자 · I Feature Owner | WP-REF-CHANGE-REQ, WP-REF-ADD-REQ, WP-REF-REVIEW | WP-REF-DECISION | `decideRefChange`, `/master/feature-db` | – |
-| FPW.14-A04 | Feature DB 버전 발행 | R Feature DB 관리자 · A Feature DB 관리자 · I Feature Owner, 도메인 검토자, 기준정보 담당 | WP-REF-DECISION | WP-REFDB-RELEASE | `publishRefRelease`, `/master/feature-db` | – |
-| FPW.14-A05 | 출처 정기 점검 | R Feature DB 관리자 · A Feature DB 관리자 · C 법규 담당, 도메인 검토자 · I Feature Owner | WP-REFDB-RELEASE | WP-REF-SOURCE-REVIEW | `/master/feature-db` | – |
+| FPW.14-A01 | 변경 요청 작성 | R Feature Owner · A Feature Owner · C 아키텍트 · I Feature DB 관리자, 도메인 검토자 | WP-REF-LINK | WP-REF-CHANGE-REQ | `createRefChange`, `/master/feature-db/:refId` | – |
+| FPW.14-A02 | 자동 점검·도메인 검토 | R 도메인 검토자 · A 도메인 검토자 · C Safety Manager · I Feature DB 관리자, Feature Owner | WP-REF-CHANGE-REQ, WP-REF-ADD-REQ | WP-REF-REVIEW | `reviewRefChange`, `/master/feature-db/changes/:id`, `/master/feature-db/changes` | – |
+| FPW.14-A03 | 변경 승인·반려 | R Feature DB 관리자 · A Feature DB 관리자 · C 도메인 검토자 · I Feature Owner | WP-REF-CHANGE-REQ, WP-REF-ADD-REQ, WP-REF-REVIEW | WP-REF-DECISION | `decideRefChange`, `/master/feature-db/changes/:id`, `/master/feature-db/changes` | – |
+| FPW.14-A04 | Feature DB 버전 발행 | R Feature DB 관리자 · A Feature DB 관리자 · I Feature Owner, 도메인 검토자, 기준정보 담당 | WP-REF-DECISION | WP-REFDB-RELEASE | `publishRefRelease`, `/master/feature-db/changes` | – |
+| FPW.14-A05 | 출처 정기 점검 | R Feature DB 관리자 · A Feature DB 관리자 · C 법규 담당, 도메인 검토자 · I Feature Owner | WP-REFDB-RELEASE | WP-REF-SOURCE-REVIEW | `recordSourceReview`, `/master/feature-db` | – |
 
 ### 수행 절차와 완료 기준
 
@@ -74,23 +74,25 @@ flowchart LR
 
 #### FPW.14-A03 변경 승인·반려
 1. 변경 요청·자동 점검 결과·도메인 검토 의견을 함께 보고 승인 또는 반려를 정한다
-2. 반대 의견을 넘어 승인하면 그 판단 근거를 사유에 적는다
-3. 요청 중 행은 근거가 충분하면 활성, 부족하면 검토 필요로 확정하고, 반려하면 폐기와 사유를 남긴다
-4. 반려된 요청 중 행에 연결된 Feature의 Feature Owner에게 다른 행으로 다시 연결하도록 알린다
+2. 마지막 검토 의견이 반대·보완이면 승인하지 않고, 반려하거나 요청자에게 보완을 맡긴다
+3. 판정 사유를 남긴다 — 요청 중 행의 상태 확정(활성·검토 필요·폐기)과 연결 Feature 알림은 다음 발행 때 이루어진다
 
 완료 기준:
-- [ ] 승인자가 요청자와 다른 사람이고 판정 사유가 있다
+- [ ] 승인자가 요청자와도, 그 요청의 도메인 검토자와도 다른 사람이고 판정 사유가 있다
 - [ ] 승인된 변경은 발행 전까지 발행 대기로 표시되어 등록 화면에 반영되지 않았다
 
 #### FPW.14-A04 Feature DB 버전 발행
 1. 발행 대기인 승인 요청을 모아 다음 발행 번호로 묶는다
 2. 품질 지표(상태 미입력·출처 없는 행·12개월 경과 행)를 확인하고 발행 노트에 적는다
 3. 발행해 전체 정규화 해시를 기록하고 등록 화면이 새 버전을 쓰는지 확인한다
-4. 바뀐 기준 행을 쓰는 Feature에 '기준 행이 바뀜' 표시가 붙었는지 확인한다
+4. 승인된 추가 요청의 요청 중 행이 활성(근거 부족이면 검토 필요)이 되고, 반려된 추가 요청의 요청 중 행이 폐기와 사유로 확정되었는지 확인한다
+5. 폐기로 확정된 행에 연결된 Feature의 Feature Owner에게 다른 행으로 다시 연결하라는 알림이 갔는지 확인한다
+6. 바뀐 기준 행을 쓰는 Feature에 '기준 행이 바뀜' 표시가 붙었는지 확인한다
 
 완료 기준:
 - [ ] 발행 번호·묶인 요청 목록·정규화 해시가 발행 기록에 있다
 - [ ] 발행 대기 요청 수가 0이다
+- [ ] 반려된 추가 요청의 요청 중 행이 남아 있지 않다
 
 #### FPW.14-A05 출처 정기 점검
 - 트리거: 출처의 다음 점검일 도래(Feature DB 화면 알림)
@@ -108,8 +110,8 @@ flowchart LR
 |---|---|---|---|
 | WP-REF-CHANGE-REQ | 기준 행 변경 요청 | 산출 | 요청 종류(추가·수정·폐기 예정·폐기)와 대상 기준 행 ID; 필드별 변경 전후 값과 사유·1차 출처 위치; 이 행을 쓰는 FF Feature와 진행 중 산정 과제 목록(영향 표시) |
 | WP-REF-REVIEW | 자동 점검·도메인 검토 기록 | 산출 | 등록 기준 점검 결과(통과·보완 필요·필수 정보 누락) 항목별 표시; 도메인 검토자 의견(동의·보완·반대)과 근거; 검토자가 요청자와 다른 사람이라는 확인 |
-| WP-REF-DECISION | 변경 승인·반려 기록 | 산출 | 승인·반려 판정과 사유, 판정자와 시각; 승인된 필드 차이의 적용 결과(발행 대기 표시); 요청 중 행의 확정 상태(활성·검토 필요·폐기)와 연결 Feature 알림 대상 |
-| WP-REFDB-RELEASE | Feature DB 발행본 | 산출 | 발행 번호(v1.4 등)와 묶인 승인 요청 목록; 전체 기준 행 정규화 해시와 상태별 행 수; 품질 지표(출처 없는 행·근거 확인 12개월 경과 행·규모 근거 D 비중·발행 대기 요청 수); 분류 체계(도메인·클러스터·컴포넌트)와 출처 목록 |
+| WP-REF-DECISION | 변경 승인·반려 기록 | 산출 | 승인·반려 판정과 사유, 판정자와 시각; 승인된 필드 차이의 적용 결과(발행 대기 표시); 반려된 추가 요청의 요청 중 행(발행 때 폐기·알림 대상) |
+| WP-REFDB-RELEASE | Feature DB 발행본 | 산출 | 발행 번호(v1.4 등)와 묶인 승인 요청 목록; 요청 중 행의 확정 상태(활성·검토 필요, 반려된 추가 요청은 폐기와 사유)와 알림 받은 Feature Owner; 전체 기준 행 정규화 해시와 상태별 행 수; 품질 지표(출처 없는 행·근거 확인 12개월 경과 행·규모 근거 D 비중·발행 대기 요청 수); 분류 체계(도메인·클러스터·컴포넌트)와 출처 목록 |
 | WP-REF-SOURCE-REVIEW | 출처 정기 점검 기록 | 산출 | 다음 점검일이 지난 출처와 점검 결과(변경 없음·개정 있음); 개정이 있는 출처에서 나온 후속 변경 요청 대상 행; 출처별 새 다음 점검일 |
 
 ## 4. 진입·완료 기준
@@ -127,6 +129,6 @@ flowchart LR
 
 - O1 기준 행의 추가·수정·폐기 예정·폐기가 필드 단위 차이를 가진 변경 요청으로 남는다.
 - O2 변경 요청마다 등록 기준 자동 점검 결과와 담당 도메인 검토 의견이 남는다.
-- O3 요청자와 다른 사람이 변경을 승인·반려하고
-- O4 승인된 변경이 정규화 해시가 기록된 발행 버전으로 묶여 등록 화면에 반영된다.
+- O3 요청자·검토자와 다른 사람이 근거를 남기고 변경을 승인·반려한다.
+- O4 승인된 변경이 정규화 해시가 기록된 발행 버전으로 묶여 등록 화면에 반영되고
 - O5 출처마다 다음 점검일이 관리되고 기한이 지난 출처가 점검된다.

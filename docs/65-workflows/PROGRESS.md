@@ -3,18 +3,23 @@
 새 세션은 이 파일을 먼저 읽는다. 완료 기준: `python -I scripts/check.py --live` → `ALL GATES PASS`.
 
 ## 작업 위치
+- **2026-11-04 현재 작업은 worktree `C:\project\2026-06-04_Feature_Platform-dept`(브랜치 `feat/feature-db`)** — 아래 본 checkout 설명은 그 전 기준.
 - **2026-10-18부터 본 checkout** `C:\project\2026-06-04_Feature_Platform`(브랜치 `feat/v081-integration`)의 `docs/65-workflows`가 원천이다. `docs/workflows` 브랜치는 313b68f로 병합했다. worktree `-wf`는 더 쓰지 않는다(정리는 사용자 확인 후).
 - 같은 브랜치에서 다른 세션도 FF 코드를 고친다. 커밋은 경로를 지정해 담는다(`git add -A` 금지).
 - `extract_platform.mjs`는 `FF/contracts/dist`를 읽는다.
 - **모델을 고친 뒤 순서:** `python -I scripts/check.py` → `cd ../../FF && npm run workflow:sync` → FF `npm run verify`(workflow:check·정합성 시험).
 - 커밋은 사용자 요청 시에만 한다.
 
-## 현재 상태 — Feature DB 절차 반영 (2026-11-04, worktree `-dept` 브랜치 `feat/feature-db`, 커밋 전)
-- **근거:** `docs/30-data-model/30-95-feature-reference-db.md` §6·§8·§11. FF 쪽(역할·route·SOD)은 다른 에이전트가 동시에 추가한다.
-- **역할:** R-RDA Feature DB 관리자(REFDB_ADMIN, DEP-PLM), R-DRV 도메인 검토자(DOMAIN_REVIEWER, DEP-SE). id-registry WF-ROLE-RDA·DRV, WF-FPW-14.
-- **FPW.1:** A01(이름 유지 — FF 시험이 시작 활동 A01을 가정)에 기준 행 선택(대표 1 + 포함 N)·미리 채움·ASIL 변경 사유를 넣고 산출물 WP-REF-LINK. 트리거 A06 'Feature DB 추가 요청'(requestRefAdd → WP-REF-ADD-REQ, next 없음 — 선택 분기가 A01 완료를 막지 않게). A05 G1·FPW.3-A04 정의 승인에 요청 중(PENDING) 행 확인, FPW.2-A02 HARA에 ASIL 변경 사유 대조.
-- **FPW.14 Feature DB 운영(지원, 2차 초안):** A01 변경 요청 작성(R-FO, createRefChange) → A02 자동 점검·도메인 검토(R-DRV, reviewRefChange) → A03 변경 승인·반려(R-RDA, decideRefChange) → A04 버전 발행(R-RDA, publishRefRelease), 트리거 A05 정기 출처 점검(R-RDA). request_approval 2쌍, sod SOD-13(요청자≠승인자)·SOD-14(요청자≠검토자) — SOD-12는 이미 '서명 키 용도'라 13·14로 잡았다.
-- **남은 것:** IAM 스냅샷 재추출(`node scripts/extract_platform.mjs`) 전까지 check.py 오류 9건(역할 2·action 5·SOD 2)이 남는다 — 그 외는 임시 보강 스냅샷으로 ALL GATES PASS(pytest 51) 확인. FF 플랫폼의 SOD id가 13·14가 아니면 `common.yaml sod`를 맞춘다. FF 시험의 '13개 절차' 가정(`workflows.test.ts`, `procedureFlowLayout.test.ts`, `screensHome`/`screensProcedureFlow`)과 교차 상한 253은 workflow:sync 뒤 고쳐야 한다.
+## 현재 상태 — Feature DB 운영 절차 (2026-11-04 하네스 리뷰 반영, worktree `-dept` 브랜치 `feat/feature-db`, 커밋 전)
+- **근거:** `docs/30-data-model/30-95-feature-reference-db.md` §6.4·§8(구현 완료 R1~R3). 병합(`feat/feature-db-alm`) 뒤 리뷰 결과를 모델에 반영했다.
+- **역할:** R-RDA Feature DB 관리자(REFDB_ADMIN, DEP-PLM), R-DRV 도메인 검토자(DOMAIN_REVIEWER, DEP-SE). 데모 보유자는 각각 steward·approver 한 명(`department_scope.demo_notes`).
+- **FPW.1-A06** Feature DB 추가 요청(requestRefAdd) — 화면 `/feature/propose`(등록 화면의 추가 요청).
+- **FPW.14** A01 변경 요청 작성(createRefChange, `/master/feature-db/:refId`) → A02 자동 점검·도메인 검토(reviewRefChange, `/master/feature-db/changes/:id`·`/changes`) → A03 변경 승인·반려(decideRefChange, 같은 화면) → A04 버전 발행(publishRefRelease, `/master/feature-db/changes`), 트리거 A05 출처 정기 점검(recordSourceReview, `/master/feature-db`).
+  - 반려된 추가 요청의 요청 중 행은 **발행(A04) 때** 폐기·사유·연결 Feature Owner 알림으로 확정된다(서버 `publishRefRelease`와 같음). A03은 판정과 사유만.
+  - A03은 마지막 검토 의견이 반대·보완이면 승인하지 않는다(사용자 결정 2026-11-04).
+- **직무 분리:** SOD-13(요청자≠승인자)·SOD-14(요청자≠검토자)는 `level: person`(서버가 계정 단위로 거부), `first`에 FPW.14-A01과 FPW.1-A06. **SOD-15(검토자≠승인자, A02→A03)** 신설 — 플랫폼 `access.ts`에도 같은 ID로 추가(다른 묶음). `sod.first`는 이제 활동 하나 또는 목록(SCHEMA.md).
+- **신선도 검사:** `check.py` [2a]가 서버 없이 스냅샷 화면(= `routes.tsx` 정규식)·권한·직무 분리(= `FF/contracts/dist`)를 대조한다. 시험 `tests/test_freshness.py`.
+- **남은 것:** IAM 스냅샷이 낡았다(Feature DB 화면 3개·recordSourceReview·SOD-15·변경 요청 작성 역할 넓힘 없음). 플랫폼 수정을 합친 뒤 `cd FF/contracts && npx tsc -p tsconfig.json` → 백엔드 실행 → `node scripts/extract_platform.mjs --url http://localhost:<포트> --ff <이 저장소>/FF` → `python -I scripts/check.py` → `cd ../../FF && npm run workflow:sync`. 그 전까지 check.py는 신선도 [2a]와 모델 검증(화면 6·action 1·SOD 1)에서 실패한다 — 임시 보강 스냅샷으로는 오류 0.
 
 ## 현재 상태 — 부서 층·부서 작업공간 (2026-11-04, 진행 중)
 - **요청:** 부서별 R&R 업무 흐름 + 부서를 고르면 그 업무에 맞는 메뉴·화면(부서마다 UI/UX가 확 다르게), 로그인 뒤 부서 전환 + 전체 보기. 데모 전제.

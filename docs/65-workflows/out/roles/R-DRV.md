@@ -28,7 +28,7 @@ last_updated: 2026-11-04
 - 프로세스: FPW.14 Feature DB 운영
 - 시작: 앞 활동 완료
 - 입력: WP-REF-CHANGE-REQ, WP-REF-ADD-REQ → 출력: WP-REF-REVIEW
-- 플랫폼: `reviewRefChange`, `/master/feature-db`
+- 플랫폼: `reviewRefChange`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
 1. 자동 점검 결과에서 ID 형식·필수 정보·출처·규모 근거·중복·선행 관계 항목을 확인한다
 2. 필수 정보 누락은 요청자에게 보완을 요청하고, 그 밖의 실패 항목은 보완 필요로 표시한다
 3. 담당 도메인의 기준으로 변경 내용을 검토해 동의·보완·반대 의견과 근거를 남긴다

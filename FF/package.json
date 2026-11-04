@@ -45,6 +45,7 @@
     "guide:check": "node tools/guide-sync.ts --check",
     "workflow:sync": "node tools/workflow-sync.ts",
     "workflow:check": "node tools/workflow-sync.ts --check",
+    "docs:meta": "node tools/docs-meta.ts",
     "desktop:prepare": "node tools/desktop-prepare.mjs",
     "desktop:dev": "npm run desktop:prepare && tauri dev",
     "desktop:build": "tauri build",

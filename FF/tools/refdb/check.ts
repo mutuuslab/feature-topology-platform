@@ -22,7 +22,17 @@ export const REFDB_SOURCE_XLSX = join(FF, 'data', 'source', `feature_db_${RELEAS
 export const EXPECT_V13 = { rows: 1052, domains: 10, components: 69, status: { ACTIVE: 995, REVIEW: 53, DEPRECATED: 4, RETIRED: 0, PENDING: 0 } } as const;
 
 const REQUIRED = ['domain', 'cluster', 'component', 'nameEn', 'nameKo', 'tshirt', 'asilRep'] as const;
-const ID_RE = /^[A-Z]{2}-[A-Z0-9]{2,5}-\d{3}$/;
+/**
+ * 기준 행 ID 형식 — contracts REF_ID_PATTERN을 그대로 쓴다(자체 정규식 `[A-Z0-9]{2,5}`가 계약 `[A-Z][A-Z0-9]{1,3}`보다 넓어
+ * 계약이 거부할 ID를 이전 점검이 통과시켰다). contracts src는 확장자 없는 import라 Node가 직접 읽지 못해 정의 줄을 읽는다.
+ */
+export const CONTRACT_REFDB = join(FF, 'contracts', 'src', 'schemas', 'refdb.ts');
+export function contractRefIdPattern(src: string = readFileSync(CONTRACT_REFDB, 'utf8')): RegExp {
+  const m = /^export const REF_ID_PATTERN = \/(.+)\/([a-z]*);\s*$/m.exec(src);
+  if (!m) throw new Error(`contracts REF_ID_PATTERN 정의를 찾지 못함: ${CONTRACT_REFDB}`);
+  return new RegExp(m[1], m[2]);
+}
+const ID_RE = contractRefIdPattern();
 const lf = (s: string) => s.replace(/\r\n/g, '\n');
 
 export interface RefdbCheck {
@@ -99,6 +109,12 @@ export function checkRefdb(dir: string = REFDB_DIR, seedLinks: string | null = S
   }
   for (const n of taxonomy) for (const c of n.clusterIds ?? []) if (!taxonomy.some((x) => x.nodeId === c && x.level === 'CLUSTER')) errors.push(`Feature DB 분류 ${n.nodeId}: 클러스터 ${c} 없음`);
   for (const n of taxonomy) if (n.parentId != null && !nodeIds.has(n.parentId)) errors.push(`Feature DB 분류 ${n.nodeId}: 상위 ${n.parentId} 없음`);
+  // 약어 — 도메인·컴포넌트는 새 기준 행 ID(도메인약어-컴포넌트약어-일련번호)를 만드는 데 쓰인다. 비면 추가 요청이 ID를 못 만든다
+  const abbrOf = new Map(taxonomy.filter((n) => n.level === 'DOMAIN').map((n) => [n.nodeId, n.abbr]));
+  for (const n of taxonomy.filter((x) => x.level === 'DOMAIN' || x.level === 'COMPONENT')) {
+    if (typeof n.abbr !== 'string' || !n.abbr.trim()) { errors.push(`Feature DB 분류 ${n.nodeId}: ${n.level} 약어(abbr) 없음`); continue; }
+    if (n.level === 'COMPONENT' && !ID_RE.test(`${abbrOf.get(n.parentId) ?? 'XX'}-${n.abbr}-001`)) errors.push(`Feature DB 분류 ${n.nodeId}: 약어 '${n.abbr}'로 기준 행 ID 형식을 만들 수 없음`);
+  }
   // 03b 정의 — manifest에 적힌 Feature ID가 모두 정의를 가진 기준 행으로 있고, 상위·제외 참조가 실재
   const defIds: string[] = manifest.definitions?.refIds ?? [];
   const withDef = new Set(refs.filter((r) => r.definition).map((r) => r.refId));

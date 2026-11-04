@@ -63,3 +63,31 @@ test('본 Feature 등록 본문은 Feature DB 대표 연결을 갖추고, 그 �
   assert.equal(row?.status, 'ACTIVE');
   assert.equal(row?.asilRep, BASE_FEATURE.asil);
 });
+
+test('부하 DB 캐시 키는 빌드된 백엔드(backend/dist)가 바뀌면 달라진다 — 옛 시드 로직으로 만든 DB를 재사용하지 않게', async () => {
+  const { cacheKey, distDigest } = await import('./seed.ts');
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const dir = mkdtempSync(join(tmpdir(), 'ff-load-dist-'));
+  try {
+    mkdirSync(join(dir, 'kernel'));
+    writeFileSync(join(dir, 'kernel', 'seed.js'), 'a');
+    const a = cacheKey('light', dir);
+    assert.equal(cacheKey('light', dir), a, '같은 빌드면 같은 키');
+    writeFileSync(join(dir, 'kernel', 'seed.js'), 'b');
+    assert.notEqual(cacheKey('light', dir), a, '빌드 내용이 바뀌면 다른 키');
+    const b = cacheKey('light', dir);
+    writeFileSync(join(dir, 'kernel', 'seed.js.map'), 'map');
+    assert.equal(cacheKey('light', dir), b, '소스맵은 키에 넣지 않는다');
+    assert.equal(distDigest(join(dir, 'none')), 'no-dist');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('복제 Feature도 Feature DB 연결(feature_ref_link)을 받고, Feature DB 시나리오에 예산이 있다', () => {
+  const seed = readFileSync(join(FF, 'tools', 'load', 'seed.ts'), 'utf8');
+  assert.match(seed, /INSERT INTO feature_ref_link/);
+  const budgets = JSON.parse(readFileSync(join(FF, 'harness', 'perf-budgets.json'), 'utf8'));
+  for (const id of ['refdb.list', 'refdb.search', 'refdb.detail']) assert.equal(typeof budgets.p95Ms[id], 'number', id);
+});

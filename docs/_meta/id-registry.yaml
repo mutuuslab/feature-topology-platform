@@ -3,7 +3,7 @@
 # 검증기는 (1) orphan(미등록 참조) 0, (2) 양방향 무결성, (3) FR↔SCR↔TC 커버리지를 강제한다.
 
 registry_version: "1.0"
-last_updated: 2026-06-05
+last_updated: 2026-11-04
 
 prefixes:
   FR:   "기능 요구사항 / Functional Requirement"
@@ -75,6 +75,13 @@ requirements:
     NFR-5: "확장성 — 엔티티/엣지 규모 증가 대응"
     NFR-6: "국제화 — 한/영 라벨·KO-primary"
     NFR-7: "접근성 — WCAG 2.1 AA"
+
+# ── 아키텍처·데이터 설계 문서 ─────────────────────────────
+# 기존 ARC-* 문서 ID는 아직 다 등록하지 않았다 — 미등록 목록은 docs/_meta/docs-meta-baseline.json(래칫, FF/tools/docs-meta.ts).
+architecture:
+  ARC-TAXONOMY:        "30-70 Taxonomy L0~L5"
+  ARC-FEATURE-REFDB:   "30-95 Feature DB — Feature 등록 정보 원천"
+  ARC-COST-ESTIMATION: "20-94 SW 개발비 산정 (선택 모듈)"
 
 # ── 엔티티 (18, 4 그룹) ────────────────────────────────────
 entities:
@@ -170,6 +177,8 @@ integrations:
   INT-OTA:        "OTA 플랫폼 (ISO 24089 / R156)"
   INT-MQTT:       "Telemetry / Policy 배포 (MQTT 5.0)"
   INT-SUPPLIER-PKG: "Supplier API Release Package (OpenAPI 3.2)"
+  INT-ALM-SYNC:     "80-50 JIRA·codeBeamer 연계 — Feature 등록 동기화와 산출물 추적"
+  INT-CODEBEAMER-EVIDENCE: "80-51 codeBeamer REST v3 근거"
 
 # ── 업무 절차 (65-workflows) ─────────────────────────────
 # 생성 문서 ID. 모델(65-workflows/model)의 process_plan·roles와 일치해야 한다(wf_model.py가 검사).

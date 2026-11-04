@@ -5,7 +5,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { FF, readJson } from './lib.ts';
+import { exitSkipped, FF, readJson } from './lib.ts';
 
 export const SHARED_PORT = 2000;
 export const EXPECTED_SERVER = '0.9.16';
@@ -46,7 +46,7 @@ if (import.meta.main ?? process.argv[1]?.endsWith('carla-doctor.ts')) {
   if (process.argv.includes('--pytest')) {
     if (!existsSync(py)) {
       console.log(`sim:test · LearnCarla venv 없음 (${py}) — 건너뜀`);
-      process.exit(0);
+      exitSkipped();
     }
     const r = spawnSync(py, ['-m', 'pytest', 'sim/carla/tests', '-q', '--ignore=sim/carla/tests/test_live.py', '-p', 'no:cacheprovider'], { cwd: FF, stdio: 'inherit' });
     process.exit(r.status ?? 1);

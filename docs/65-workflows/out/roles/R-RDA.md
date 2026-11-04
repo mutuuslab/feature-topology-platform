@@ -28,31 +28,33 @@ last_updated: 2026-11-04
 - 프로세스: FPW.14 Feature DB 운영
 - 시작: 앞 활동 완료
 - 입력: WP-REF-CHANGE-REQ, WP-REF-ADD-REQ, WP-REF-REVIEW → 출력: WP-REF-DECISION
-- 플랫폼: `decideRefChange`, `/master/feature-db`
+- 플랫폼: `decideRefChange`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
 1. 변경 요청·자동 점검 결과·도메인 검토 의견을 함께 보고 승인 또는 반려를 정한다
-2. 반대 의견을 넘어 승인하면 그 판단 근거를 사유에 적는다
-3. 요청 중 행은 근거가 충분하면 활성, 부족하면 검토 필요로 확정하고, 반려하면 폐기와 사유를 남긴다
-4. 반려된 요청 중 행에 연결된 Feature의 Feature Owner에게 다른 행으로 다시 연결하도록 알린다
-- [ ] 승인자가 요청자와 다른 사람이고 판정 사유가 있다
+2. 마지막 검토 의견이 반대·보완이면 승인하지 않고, 반려하거나 요청자에게 보완을 맡긴다
+3. 판정 사유를 남긴다 — 요청 중 행의 상태 확정(활성·검토 필요·폐기)과 연결 Feature 알림은 다음 발행 때 이루어진다
+- [ ] 승인자가 요청자와도, 그 요청의 도메인 검토자와도 다른 사람이고 판정 사유가 있다
 - [ ] 승인된 변경은 발행 전까지 발행 대기로 표시되어 등록 화면에 반영되지 않았다
 
 ### FPW.14-A04 Feature DB 버전 발행 — 수행·책임
 - 프로세스: FPW.14 Feature DB 운영
 - 시작: 앞 활동 완료
 - 입력: WP-REF-DECISION → 출력: WP-REFDB-RELEASE
-- 플랫폼: `publishRefRelease`, `/master/feature-db`
+- 플랫폼: `publishRefRelease`, `/master/feature-db/changes`
 1. 발행 대기인 승인 요청을 모아 다음 발행 번호로 묶는다
 2. 품질 지표(상태 미입력·출처 없는 행·12개월 경과 행)를 확인하고 발행 노트에 적는다
 3. 발행해 전체 정규화 해시를 기록하고 등록 화면이 새 버전을 쓰는지 확인한다
-4. 바뀐 기준 행을 쓰는 Feature에 '기준 행이 바뀜' 표시가 붙었는지 확인한다
+4. 승인된 추가 요청의 요청 중 행이 활성(근거 부족이면 검토 필요)이 되고, 반려된 추가 요청의 요청 중 행이 폐기와 사유로 확정되었는지 확인한다
+5. 폐기로 확정된 행에 연결된 Feature의 Feature Owner에게 다른 행으로 다시 연결하라는 알림이 갔는지 확인한다
+6. 바뀐 기준 행을 쓰는 Feature에 '기준 행이 바뀜' 표시가 붙었는지 확인한다
 - [ ] 발행 번호·묶인 요청 목록·정규화 해시가 발행 기록에 있다
 - [ ] 발행 대기 요청 수가 0이다
+- [ ] 반려된 추가 요청의 요청 중 행이 남아 있지 않다
 
 ### FPW.14-A05 출처 정기 점검 — 수행·책임
 - 프로세스: FPW.14 Feature DB 운영
 - 시작: 출처의 다음 점검일 도래(Feature DB 화면 알림)
 - 입력: WP-REFDB-RELEASE → 출력: WP-REF-SOURCE-REVIEW
-- 플랫폼: `/master/feature-db`
+- 플랫폼: `recordSourceReview`, `/master/feature-db`
 1. 기한이 지난 출처(AUTOSAR·VSS·ISO·UN 규정·Euro NCAP 등) 목록을 Feature DB 화면 알림에서 연다
 2. 출처마다 새 판·개정 여부를 확인하고, 규정 출처는 법규 담당 의견을 받는다
 3. 개정이 기준 행에 영향을 주면 해당 행의 변경 요청이 나오도록 담당 도메인 검토자에게 넘긴다

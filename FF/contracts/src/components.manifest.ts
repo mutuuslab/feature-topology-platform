@@ -117,11 +117,24 @@ const E2E_P10 = 'e2e/tests/p10.spec.ts';
 const BE_MASTER = 'backend/test/d01/master.spec.ts';
 const FE_MASTER = 'frontend/src/__tests__/screensMaster.test.tsx';
 const FE_OPSADMIN = 'frontend/src/__tests__/screensOpsAdmin.test.tsx';
+/** Feature DB(30-95) — D01-01 확장: 기준 행 목록·상세·변경 요청, 등록 때 대표 연결 */
+const REFDB_SCREENS = ['/master/feature-db', '/master/feature-db/:refId', '/master/feature-db/changes', '/master/feature-db/changes/:id'];
+const REFDB_TESTS = [
+  ...['change', 'export', 'governance', 'harness', 'read', 'registration', 'release', 'seed'].map((x) => `backend/test/d01/refdb-${x}.spec.ts`),
+  ...['domain-alias', 'quality', 'registration-criteria', 'size', 'status-policy'].map((x) => `contracts/src/rules/refdb/${x}.test.ts`),
+  'backend/test/kernel/refdb-ready.spec.ts', // 준비 점검 checks.refdb
+  'backend/test/d05/epic-ref-ids.spec.ts', // JIRA Epic의 Feature DB ID
+  'contracts/src/rules/access-refdb.test.ts',
+  'contracts/src/schemas/refdb.test.ts',
+  'frontend/src/__tests__/screensRefdb.test.tsx',
+  'frontend/src/__tests__/screensPropose.test.tsx',
+  'e2e/tests/refdb.spec.ts',
+];
 const VALIDATOR: Impl = { screens: ['/policies/:id', '/validations'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL], via: ['validatePolicy'] };
 /** via — 자기 API 없이 다른 컴포넌트의 라우트 안에서 호출되는 컴포넌트(예: 병렬 검증기)가 그 라우트 이름을 적는다 */
 type Impl = Pick<ComponentEntry, 'screens' | 'tests'> & { via?: string[] };
 const IMPLEMENTED: Record<string, Impl> = {
-  'D01-01': { screens: ['/features', '/features/:id/:ver', '/baselines', '/change/cr', '/master/taxonomy'], tests: [...BE_D01, FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, 'backend/test/d01/release-signoff.spec.ts', 'frontend/src/__tests__/screensReleaseSignoff.test.tsx'] },
+  'D01-01': { screens: ['/features', '/features/:id/:ver', '/master/define', '/baselines', '/change/cr', '/master/taxonomy', '/flag-retirements', ...REFDB_SCREENS], tests: [...BE_D01, FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, 'backend/test/d01/release-signoff.spec.ts', 'frontend/src/__tests__/screensReleaseSignoff.test.tsx', ...REFDB_TESTS] },
   'D01-02': { screens: ['/features/:id/:ver', '/analysis/impact', '/precheck', '/master/upg', '/master/artifacts', '/master/structure', '/master/control-points', '/trace/design', '/change/eo'], tests: [...BE_D01, 'contracts/src/rules/topology.test.ts', 'contracts/src/rules/precheck.test.ts', FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, FE_OPSADMIN] },
   'D01-03': { screens: ['/products', '/products/new', '/products/:id/:ver'], tests: ['backend/test/d01/topology-catalog.spec.ts', 'contracts/src/rules/catalog.test.ts', E2E_GOV] },
   'D01-10': { screens: ['/audit'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },

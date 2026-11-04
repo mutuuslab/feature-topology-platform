@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FF, readJson } from './lib.ts';
 import { readZip } from './xlsx.ts';
+import { anchorProblems, anchorsOf, readLock } from './anchors.ts';
 import { CATALOG as ADS_CATALOG, VERDICTS, defectProblem, evidenceProblem, type Defect, fileSha, repoFile, text, type AdsCatalog, type ReadFile } from './ads-sync.ts';
 
 const SRC = process.env.ORCA_ZIP_PATH ?? 'C:/project/2026-06-04_Feature_Platform_sources/orca-r3/feature-platform-orca-r3.zip';
@@ -225,7 +226,11 @@ function main() {
     const c = readJson<OrcaCatalog>(CATALOG);
     const problems = catalogProblems(c);
     if (c.crossCheck.adsSourceSha256 !== ads.source.sha256) problems.push('ADS 카탈로그 원본 판이 바뀜 — npm run orca:sync');
-    if (existsSync(REVIEW)) problems.push(...orcaReviewProblems(c, readJson<OrcaReview>(REVIEW)));
+    if (existsSync(REVIEW)) {
+      const review = readJson<OrcaReview>(REVIEW);
+      problems.push(...orcaReviewProblems(c, review));
+      problems.push(...anchorProblems(anchorsOf(review), readLock())); // 근거 줄 내용 잠금(harness/anchors.lock.json)
+    }
     if (existsSync(SRC)) {
       const buf = readFileSync(SRC);
       if (fileSha(buf) !== c.source.sha256) problems.push(`인계 zip이 바뀜(${fileSha(buf).slice(0, 12)}) — npm run orca:sync 후 판정 재검토`);

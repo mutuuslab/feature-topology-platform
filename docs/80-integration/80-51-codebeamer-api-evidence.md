@@ -1,3 +1,16 @@
+---
+id: INT-CODEBEAMER-EVIDENCE
+type: reference
+title: "codeBeamer REST v3 근거 — 모의 서버·live 어댑터 충실도 기준 / codeBeamer API Evidence"
+status: draft
+version: 0.1.0
+owner: feature-architect
+cycle: 0
+traces:
+  related: [INT-ALM-SYNC, INT-CODEBEAMER]
+last_updated: 2026-11-04
+---
+
 # 80-51 codeBeamer REST v3 근거 — 모의 서버·live 어댑터 충실도 기준
 
 > 2026-11-04 REA 6.8 MCP와 로컬 자료로 확인한 사실. 원본은 `C:\project\2026-10-15_REA`(읽기만, 실행·네트워크 없음).

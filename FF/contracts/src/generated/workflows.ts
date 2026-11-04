@@ -821,7 +821,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/activation/decide",
      "/admin/approval",
      "/features/:id/:ver",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/master/feature-db/:refId"
     ],
     "reference": [
      "/analysis/impact",
@@ -840,7 +841,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/incidents",
      "/ops/kill",
      "/audit",
-     "/quality/feedback"
+     "/quality/feedback",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ]
    },
    "handoffs": {
@@ -1256,12 +1259,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "/policies",
      "/policies/:id",
      "/flag-retirements",
-     "/master/feature-db"
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ],
     "reference": [
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
      "/analysis/impact",
@@ -1270,7 +1275,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/master/artifacts",
      "/verify/evidence",
      "/baselines",
-     "/integration/openfeature"
+     "/integration/openfeature",
+     "/master/feature-db/:refId"
     ]
    },
    "handoffs": {
@@ -1913,6 +1919,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/variant-conditions",
      "/arch/topology",
      "/baselines",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes",
      "/master/feature-db"
     ],
     "reference": [
@@ -1922,7 +1930,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/features/:id/:ver",
      "/admin/approval",
      "/policies/new",
-     "/policies"
+     "/policies",
+     "/master/feature-db/:refId"
     ]
    },
    "handoffs": {
@@ -2586,7 +2595,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/audit",
      "/quality/feedback",
      "/supplier/portal",
-     "/admin/security"
+     "/admin/security",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ]
    },
    "handoffs": {
@@ -5027,7 +5038,8 @@ export const WORKFLOWS: WorkflowDoc = {
   ],
   "note": "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정·Feature DB 운영(FPW.10~14)은 2차 초안이다.",
   "demoNotes": [
-   "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용하지만 데모 계정에 운영 리더가 없다(9계정·겸직 0건, 2026-10-17)."
+   "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용하지만 데모 계정에 운영 리더가 없다(9계정·겸직 0건, 2026-10-17).",
+   "Feature DB 관리자(REFDB_ADMIN)는 데모 계정 steward 한 명, 도메인 검토자(DOMAIN_REVIEWER)는 approver 한 명뿐이다(2026-11-04). 요청자 ≠ 검토자 ≠ 승인자를 사람 단위로 강제하므로 데모에서 steward가 낸 변경·추가 요청은 승인할 사람이 없고, approver가 낸 요청은 검토할 사람이 없다 — 데모 흐름은 다른 계정(author 등)이 요청한다."
   ]
  },
  "departmentSod": [
@@ -5582,8 +5594,7 @@ export const WORKFLOWS: WorkflowDoc = {
        "requestRefAdd"
       ],
       "screens": [
-       "/feature/propose",
-       "/master/feature-db"
+       "/feature/propose"
       ],
       "gates": [],
       "anchor": null,
@@ -19843,11 +19854,11 @@ export const WORKFLOWS: WorkflowDoc = {
     },
     {
      "id": "O3",
-     "text": "요청자와 다른 사람이 변경을 승인·반려하고"
+     "text": "요청자·검토자와 다른 사람이 근거를 남기고 변경을 승인·반려한다."
     },
     {
      "id": "O4",
-     "text": "승인된 변경이 정규화 해시가 기록된 발행 버전으로 묶여 등록 화면에 반영된다."
+     "text": "승인된 변경이 정규화 해시가 기록된 발행 버전으로 묶여 등록 화면에 반영되고"
     },
     {
      "id": "O5",
@@ -19898,7 +19909,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "content": [
       "승인·반려 판정과 사유, 판정자와 시각",
       "승인된 필드 차이의 적용 결과(발행 대기 표시)",
-      "요청 중 행의 확정 상태(활성·검토 필요·폐기)와 연결 Feature 알림 대상"
+      "반려된 추가 요청의 요청 중 행(발행 때 폐기·알림 대상)"
      ]
     },
     {
@@ -19909,6 +19920,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "retained": false,
      "content": [
       "발행 번호(v1.4 등)와 묶인 승인 요청 목록",
+      "요청 중 행의 확정 상태(활성·검토 필요, 반려된 추가 요청은 폐기와 사유)와 알림 받은 Feature Owner",
       "전체 기준 행 정규화 해시와 상태별 행 수",
       "품질 지표(출처 없는 행·근거 확인 12개월 경과 행·규모 근거 D 비중·발행 대기 요청 수)",
       "분류 체계(도메인·클러스터·컴포넌트)와 출처 목록"
@@ -19973,7 +19985,7 @@ export const WORKFLOWS: WorkflowDoc = {
        "createRefChange"
       ],
       "screens": [
-       "/master/feature-db"
+       "/master/feature-db/:refId"
       ],
       "gates": [],
       "anchor": null,
@@ -20032,7 +20044,8 @@ export const WORKFLOWS: WorkflowDoc = {
        "reviewRefChange"
       ],
       "screens": [
-       "/master/feature-db"
+       "/master/feature-db/changes/:id",
+       "/master/feature-db/changes"
       ],
       "gates": [],
       "anchor": null,
@@ -20078,12 +20091,11 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "steps": [
       "변경 요청·자동 점검 결과·도메인 검토 의견을 함께 보고 승인 또는 반려를 정한다",
-      "반대 의견을 넘어 승인하면 그 판단 근거를 사유에 적는다",
-      "요청 중 행은 근거가 충분하면 활성, 부족하면 검토 필요로 확정하고, 반려하면 폐기와 사유를 남긴다",
-      "반려된 요청 중 행에 연결된 Feature의 Feature Owner에게 다른 행으로 다시 연결하도록 알린다"
+      "마지막 검토 의견이 반대·보완이면 승인하지 않고, 반려하거나 요청자에게 보완을 맡긴다",
+      "판정 사유를 남긴다 — 요청 중 행의 상태 확정(활성·검토 필요·폐기)과 연결 Feature 알림은 다음 발행 때 이루어진다"
      ],
      "checks": [
-      "승인자가 요청자와 다른 사람이고 판정 사유가 있다",
+      "승인자가 요청자와도, 그 요청의 도메인 검토자와도 다른 사람이고 판정 사유가 있다",
       "승인된 변경은 발행 전까지 발행 대기로 표시되어 등록 화면에 반영되지 않았다"
      ],
      "platform": {
@@ -20091,7 +20103,8 @@ export const WORKFLOWS: WorkflowDoc = {
        "decideRefChange"
       ],
       "screens": [
-       "/master/feature-db"
+       "/master/feature-db/changes/:id",
+       "/master/feature-db/changes"
       ],
       "gates": [],
       "anchor": null,
@@ -20137,18 +20150,21 @@ export const WORKFLOWS: WorkflowDoc = {
       "발행 대기인 승인 요청을 모아 다음 발행 번호로 묶는다",
       "품질 지표(상태 미입력·출처 없는 행·12개월 경과 행)를 확인하고 발행 노트에 적는다",
       "발행해 전체 정규화 해시를 기록하고 등록 화면이 새 버전을 쓰는지 확인한다",
+      "승인된 추가 요청의 요청 중 행이 활성(근거 부족이면 검토 필요)이 되고, 반려된 추가 요청의 요청 중 행이 폐기와 사유로 확정되었는지 확인한다",
+      "폐기로 확정된 행에 연결된 Feature의 Feature Owner에게 다른 행으로 다시 연결하라는 알림이 갔는지 확인한다",
       "바뀐 기준 행을 쓰는 Feature에 '기준 행이 바뀜' 표시가 붙었는지 확인한다"
      ],
      "checks": [
       "발행 번호·묶인 요청 목록·정규화 해시가 발행 기록에 있다",
-      "발행 대기 요청 수가 0이다"
+      "발행 대기 요청 수가 0이다",
+      "반려된 추가 요청의 요청 중 행이 남아 있지 않다"
      ],
      "platform": {
       "actions": [
        "publishRefRelease"
       ],
       "screens": [
-       "/master/feature-db"
+       "/master/feature-db/changes"
       ],
       "gates": [],
       "anchor": null,
@@ -20199,7 +20215,9 @@ export const WORKFLOWS: WorkflowDoc = {
       "기한이 지난 출처마다 점검 결과와 새 다음 점검일이 있다"
      ],
      "platform": {
-      "actions": [],
+      "actions": [
+       "recordSourceReview"
+      ],
       "screens": [
        "/master/feature-db"
       ],

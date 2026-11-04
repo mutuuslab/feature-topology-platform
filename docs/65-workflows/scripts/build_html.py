@@ -238,10 +238,11 @@ def section_alignment(m, rep) -> str:
 def section_sod(m) -> str:
     iam_sod = {s["id"]: s for s in m["iam"]["sod"]}
     rows = []
+    link = lambda aid: act_link(m, aid) if aid in m["acts_by_id"] else E(aid)  # noqa: E731
     for s in m["common"]["sod"]:
-        ok = s["first"] in m["acts_by_id"] and s["second"] in m["acts_by_id"]
-        rows.append(f'<tr><td>{E(s["id"])}</td><td>{E(iam_sod[s["id"]]["rule"])}</td><td>{"조직 역할 분리" if s["level"] == "role" else "사람 분리(플랫폼 강제)"}</td>'
-                    f'<td>{act_link(m, s["first"]) if ok else E(s["first"])}</td><td>{act_link(m, s["second"]) if ok else E(s["second"])}</td>'
+        rule = iam_sod.get(s["id"], {}).get("rule", "(IAM 스냅샷에 없음)")
+        rows.append(f'<tr><td>{E(s["id"])}</td><td>{E(rule)}</td><td>{"조직 역할 분리" if s["level"] == "role" else "사람 분리(플랫폼 강제)"}</td>'
+                    f'<td>{", ".join(link(x) for x in wm.sod_firsts(s))}</td><td>{link(s["second"])}</td>'
                     f'<td>{E(s["note"])}</td></tr>')
     return f"""<section id="sod"><h2>5. 직무 분리</h2>
 <p class="lead">IAM 직무 분리 규칙을 활동 쌍으로 묶었다. 조직 역할 분리는 두 활동의 담당 역할이 달라야 하고,

@@ -10,8 +10,8 @@ process:
   outcomes:
     - {id: O1, text_ko: 기준 행의 추가·수정·폐기 예정·폐기가 필드 단위 차이를 가진 변경 요청으로 남는다.}
     - {id: O2, text_ko: 변경 요청마다 등록 기준 자동 점검 결과와 담당 도메인 검토 의견이 남는다.}
-    - {id: O3, text_ko: 요청자와 다른 사람이 변경을 승인·반려하고, 요청 중 행의 상태가 확정된다.}
-    - {id: O4, text_ko: 승인된 변경이 정규화 해시가 기록된 발행 버전으로 묶여 등록 화면에 반영된다.}
+    - {id: O3, text_ko: 요청자·검토자와 다른 사람이 근거를 남기고 변경을 승인·반려한다.}
+    - {id: O4, text_ko: 승인된 변경이 정규화 해시가 기록된 발행 버전으로 묶여 등록 화면에 반영되고, 요청 중 행의 상태가 확정된다.}
     - {id: O5, text_ko: 출처마다 다음 점검일이 관리되고 기한이 지난 출처가 점검된다.}
   entry_criteria:
     - Feature DB 첫 발행본(엑셀 1회 이전 v1.3)이 설치되어 있다
@@ -44,13 +44,14 @@ process:
       content:
         - 승인·반려 판정과 사유, 판정자와 시각
         - 승인된 필드 차이의 적용 결과(발행 대기 표시)
-        - 요청 중 행의 확정 상태(활성·검토 필요·폐기)와 연결 Feature 알림 대상
+        - 반려된 추가 요청의 요청 중 행(발행 때 폐기·알림 대상)
     - key: WP-REFDB-RELEASE
       name: Feature DB 발행본
       en: Feature DB Release
       kind: output
       content:
         - 발행 번호(v1.4 등)와 묶인 승인 요청 목록
+        - 요청 중 행의 확정 상태(활성·검토 필요, 반려된 추가 요청은 폐기와 사유)와 알림 받은 Feature Owner
         - 전체 기준 행 정규화 해시와 상태별 행 수
         - 품질 지표(출처 없는 행·근거 확인 12개월 경과 행·규모 근거 D 비중·발행 대기 요청 수)
         - 분류 체계(도메인·클러스터·컴포넌트)와 출처 목록
@@ -82,7 +83,7 @@ process:
         - 폐기 예정·폐기 요청에 대체 행 또는 대체 없음 사유가 있다
       platform:
         actions: [createRefChange]
-        screens: [/master/feature-db]
+        screens: [/master/feature-db/:refId]
       next: [FPW.14-A02]
     - id: FPW.14-A02
       name: 자동 점검·도메인 검토
@@ -101,7 +102,7 @@ process:
         - 필수 정보 누락 항목이 남아 있지 않다
       platform:
         actions: [reviewRefChange]
-        screens: [/master/feature-db]
+        screens: [/master/feature-db/changes/:id, /master/feature-db/changes]
       sla_hours: 72
       next: [FPW.14-A03]
     - id: FPW.14-A03
@@ -113,15 +114,14 @@ process:
       outputs: [WP-REF-DECISION]
       steps:
         - 변경 요청·자동 점검 결과·도메인 검토 의견을 함께 보고 승인 또는 반려를 정한다
-        - 반대 의견을 넘어 승인하면 그 판단 근거를 사유에 적는다
-        - 요청 중 행은 근거가 충분하면 활성, 부족하면 검토 필요로 확정하고, 반려하면 폐기와 사유를 남긴다
-        - 반려된 요청 중 행에 연결된 Feature의 Feature Owner에게 다른 행으로 다시 연결하도록 알린다
+        - 마지막 검토 의견이 반대·보완이면 승인하지 않고, 반려하거나 요청자에게 보완을 맡긴다
+        - 판정 사유를 남긴다 — 요청 중 행의 상태 확정(활성·검토 필요·폐기)과 연결 Feature 알림은 다음 발행 때 이루어진다
       checks:
-        - 승인자가 요청자와 다른 사람이고 판정 사유가 있다
+        - 승인자가 요청자와도, 그 요청의 도메인 검토자와도 다른 사람이고 판정 사유가 있다
         - 승인된 변경은 발행 전까지 발행 대기로 표시되어 등록 화면에 반영되지 않았다
       platform:
         actions: [decideRefChange]
-        screens: [/master/feature-db]
+        screens: [/master/feature-db/changes/:id, /master/feature-db/changes]
       sla_hours: 72
       next: [FPW.14-A04]
     - id: FPW.14-A04
@@ -135,13 +135,16 @@ process:
         - 발행 대기인 승인 요청을 모아 다음 발행 번호로 묶는다
         - 품질 지표(상태 미입력·출처 없는 행·12개월 경과 행)를 확인하고 발행 노트에 적는다
         - 발행해 전체 정규화 해시를 기록하고 등록 화면이 새 버전을 쓰는지 확인한다
+        - 승인된 추가 요청의 요청 중 행이 활성(근거 부족이면 검토 필요)이 되고, 반려된 추가 요청의 요청 중 행이 폐기와 사유로 확정되었는지 확인한다
+        - 폐기로 확정된 행에 연결된 Feature의 Feature Owner에게 다른 행으로 다시 연결하라는 알림이 갔는지 확인한다
         - 바뀐 기준 행을 쓰는 Feature에 '기준 행이 바뀜' 표시가 붙었는지 확인한다
       checks:
         - 발행 번호·묶인 요청 목록·정규화 해시가 발행 기록에 있다
         - 발행 대기 요청 수가 0이다
+        - 반려된 추가 요청의 요청 중 행이 남아 있지 않다
       platform:
         actions: [publishRefRelease]
-        screens: [/master/feature-db]
+        screens: [/master/feature-db/changes]
     - id: FPW.14-A05
       name: 출처 정기 점검
       trigger: 출처의 다음 점검일 도래(Feature DB 화면 알림)
@@ -158,4 +161,5 @@ process:
       checks:
         - 기한이 지난 출처마다 점검 결과와 새 다음 점검일이 있다
       platform:
+        actions: [recordSourceReview]
         screens: [/master/feature-db]

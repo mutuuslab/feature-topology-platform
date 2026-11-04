@@ -1,3 +1,17 @@
+---
+id: INT-ALM-SYNC
+type: integration
+title: "JIRA·codeBeamer 연계 — Feature 등록 동기화와 산출물 추적 / ALM Sync"
+status: draft
+version: 0.1.0
+owner: feature-architect
+cycle: 0
+traces:
+  depends_on: [ARC-FEATURE-REFDB, INT-CODEBEAMER-EVIDENCE]
+  related: [INT-CODEBEAMER, ARC-COST-ESTIMATION]
+last_updated: 2026-11-04
+---
+
 # 80-50 JIRA·codeBeamer 연계 — Feature 등록 동기화와 산출물 추적
 
 > 짝 문서: Feature DB `30-data-model/30-95-feature-reference-db.md`, 개발비 산정 `20-architecture/20-94-cost-estimation.md`.
@@ -90,8 +104,10 @@ JIRA 프로젝트 (JIRA_EPIC_PROJECT)
 | 수명주기 | 작업 중 버전 상태 | Status(워크플로) | **양쪽**(판정은 FF 게이트) | 전이 요청 → 게이트·역할 통과 시 반영, 아니면 되돌림 + 사유(현행) |
 | 읽기 전용 | 작업 중 버전 · 출시 버전 · 게이트 G1~G9 · 산출물 작성률 · FF 링크 | 사용자 필드(읽기 전용 화면) + 앱 패널 | FF | 되돌림 |
 
-- 필드 대응은 데이터 표 `contracts/src/rules/alm/jira-fields.ts`(필드 키·주인·변환·불변 여부) — 엔진·화면·모의 서버가 같은 표를 읽는다. 실서버 사용자 필드 ID는 환경 변수 `JIRA_FIELDS`(JSON, 키 → `customfield_xxxxx`)로.
-- 기존 `JIRA_FIELD_COUNTRY/VEHICLE_MODEL/TRIM/ASIL/OWNER`는 `JIRA_FIELDS`로 흡수(옛 변수도 읽어 하위 호환).
+- 필드 대응은 데이터 표 `contracts/src/rules/alm/jira-fields.ts`(필드 키·주인·변환·불변 여부) — 엔진·화면·모의 서버가 같은 표를 읽는다. 실서버 사용자 필드 ID는 환경 변수 `JIRA_FIELDS`(JSON, 키 → `customfield_xxxxx`)로 모은다(A2 목표).
+- **지금 구현**은 필드마다 환경 변수 하나다: `JIRA_FIELD_COUNTRY/VEHICLE_MODEL/TRIM/ASIL/OWNER`와 Feature DB 필드 **`JIRA_FIELD_FEATURE_DB`**(기본값 모의 `ffFeatureDb`). A2에서 `JIRA_FIELDS`로 흡수하되 옛 변수도 읽어 하위 호환.
+- **`JIRA_FIELD_FEATURE_DB`(FF 앱이 기록, 첫 값이 대표)가 live의 유일한 원천**이다. 실제 연결(`IF_MODE_14=live`)에서 필드가 비면 거부(REJECTED)하고 댓글로 안내한다 — 라벨은 인정하지 않는다. 라벨 `ref-primary:`·`ref:` 폴백은 모의·데모(live가 아님)에서만 읽는다(FF 앱이 아직 없는 시험용, 2026-11-04 사용자 결정).
+- 같은 범위·같은 대표 기준 행 중복은 JIRA에서 사유를 받을 수 없어 거부한다 — 앱이나 플랫폼 화면에서 사유를 넣으면 허용(30-95 §6.2).
 
 ### 4.3 상태 1:1 (D-ALM-5)
 
@@ -113,7 +129,7 @@ JIRA에서 전이 → 웹훅 → 매핑된 계정의 FF 전이 요청 → 게이
 
 - **FF → JIRA**: Feature 생성(`feature.created`) → Epic 생성(필드 전부) + 기능이 있으면 Story. 지금의 EPIC_MIRROR를 Feature 단위로 바꾼다.
 - **JIRA → FF**: 앱으로 만든 Epic(범위·ASIL·Feature DB 필드가 채워짐) → 현행 `featureFromEpic` + **Feature DB 연결 필수**(30-95 D-REF-3). 앱을 쓰지 않아 필드가 비면 현행처럼 거부 + 댓글("FF 패널에서 Feature DB와 범위를 고르세요").
-- 중복: 같은 범위·같은 대표 기준 행이면 30-95 §6.2 규칙(사유 있으면 허용) — 앱 화면에서 사유 입력.
+- 중복: 같은 범위·같은 대표 기준 행이면 30-95 §6.2 규칙(사유 있으면 허용). JIRA 웹훅만으로는 사유를 받을 수 없어 거부하고, 앱 화면이나 플랫폼 화면에서 사유를 넣으면 허용한다.
 
 ### 4.5 동기화 방식 (D-ALM-7)
 
@@ -136,10 +152,10 @@ JIRA에서 전이 → 웹훅 → 매핑된 계정의 FF 전이 요청 → 게이
 
 | 화면 | 내용 |
 |---|---|
-| Epic 생성·편집 패널 "FF Feature" | Feature DB 검색(한·영 이름·별칭·ID, 도메인 → 컴포넌트) → 대표·포함 선택, 국가·차종·트림(FF `차종·판매국 기준 값` 목록), ASIL(대표 ASIL 기본값, 바꾸면 사유), 중복 경고. 저장 = Epic 사용자 필드 기록 → 웹훅으로 FF 등록 |
+| Epic 생성·편집 패널 "FF Feature" | Feature DB 검색(한·영 이름·별칭·ID, 도메인 → 컴포넌트) → 대표·포함 선택(저장 = `JIRA_FIELD_FEATURE_DB` 필드, 첫 값이 대표), 국가·차종·트림(FF `차종·판매국 기준 값` 목록), ASIL(대표 ASIL 기본값, 바꾸면 사유), 중복 경고. 저장 = Epic 사용자 필드 기록 → 웹훅으로 FF 등록 |
 | Epic 보기 패널 "FF 현황" | 작업 중·출시 버전, 수명주기, 게이트 G1~G9, 산출물 8종 작성률과 누락, FF 상세 링크(읽기 전용) |
 
-- 앱 → FF 호출: 앱 전용 자격(OAuth2 client credentials, OTA IF-05와 같은 방식) + 요청마다 JIRA 사용자 계정 → `ext-identities` 매핑으로 권한 판단. 새 FF API: `GET /api/alm/app/refdb/search`, `GET /api/alm/app/reference-values`, `GET /api/alm/app/features/:id/summary`.
+- 앱 → FF 호출: 앱 전용 자격(OAuth2 client credentials, OTA IF-05와 같은 방식) + 요청마다 JIRA 사용자 계정 → `ext-identities` 매핑으로 권한 판단. 새 FF API: `GET /api/alm/app/refdb/refs`(FF `listRefs` `GET /api/refdb/refs`와 같은 질의 q·domain·component·status·offset·limit), `GET /api/alm/app/reference-values`, `GET /api/alm/app/features/:id/summary`.
 - 실서버 형태: Jira Cloud면 **Forge 앱**(외부 호출 허용 목록에 FF 주소), Data Center면 **P2(플러그인) 또는 Connect**. 환경이 정해지기 전까지는 모의 JIRA 서버가 같은 API를 쓰는 간단한 HTML 패널(`/_mock/app/epic-form`)로 흐름을 시험한다. — §11 확인 A-3.
 
 ## 5. codeBeamer

@@ -56,7 +56,7 @@ flowchart LR
 | FPW.1-A03 | 안전 분류(네 축) 확정 | R Safety Manager · A Safety Manager · C Feature Owner, 아키텍트 · I 요구 Owner | WP-FEAT-REG, WP-FEAT-SCOPE | WP-SAFETY-PROFILE | `updateSafetyProfile`, `confirmSafetyProfile`, `/features/:id/:ver` | FFG-CLS-001, FFG-CLS-003, FFG-CLS-009 |
 | FPW.1-A04 | 법규 의무 기능 판정 | R 법규 담당 · A 법규 담당 · C Safety Manager · I Feature Owner | WP-SAFETY-PROFILE, WP-COMPLIANCE-PROFILE | WP-REG-CLASS | 플랫폼 밖 | FFG-CLS-005 |
 | FPW.1-A05 | G1 등록·분류 판정 | R Safety Manager · A Safety Manager · C Feature Owner, 법규 담당 · I 요구 Owner, 기준정보 담당, 품질 조직 | WP-FEAT-REG, WP-REF-LINK, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-REG-CLASS | WP-G1-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002, FFG-CLS-001 |
-| FPW.1-A06 | Feature DB 추가 요청 | R Feature Owner · A Feature Owner · C 도메인 검토자 · I Feature DB 관리자 | WP-FEAT-PROPOSAL, WP-REFDB-RELEASE | WP-REF-ADD-REQ | `requestRefAdd`, `/feature/propose`, `/master/feature-db` | – |
+| FPW.1-A06 | Feature DB 추가 요청 | R Feature Owner · A Feature Owner · C 도메인 검토자 · I Feature DB 관리자 | WP-FEAT-PROPOSAL, WP-REFDB-RELEASE | WP-REF-ADD-REQ | `requestRefAdd`, `/feature/propose` | – |
 
 ### 수행 절차와 완료 기준
 

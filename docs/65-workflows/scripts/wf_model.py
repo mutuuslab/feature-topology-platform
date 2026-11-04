@@ -214,17 +214,26 @@ def dept_screens(m: dict, did: str) -> Dict[str, List[str]]:
     return {"primary": primary, "reference": reference}
 
 
+def sod_firsts(s: dict) -> List[str]:
+    """직무 분리 쌍의 앞 활동 — 활동 하나 또는 목록(변경 요청·추가 요청 → 같은 승인)."""
+    f = s.get("first")
+    return list(f) if isinstance(f, list) else [f]
+
+
 def dept_sod_overlaps(m: dict) -> List[dict]:
-    """직무 분리 쌍 중 요청 쪽과 승인 쪽이 같은 부서에 있는 것 — 부서 겸직 허용, 사람 분리(오류가 아니라 표시용)."""
+    """직무 분리 쌍 중 요청 쪽과 승인 쪽이 같은 부서에 있는 것 — 부서 겸직 허용, 사람 분리(오류가 아니라 표시용).
+    앞 활동이 여럿이면 앞 활동마다 한 줄로 펼친다."""
     out = []
     for s in m["common"].get("sod", []):
-        a1, a2 = m["acts_by_id"].get(s["first"]), m["acts_by_id"].get(s["second"])
-        if not a1 or not a2:
-            continue
-        d1 = {m["dept_of_role"][r] for r in a1[1]["raci"]["R"]}
-        d2 = {m["dept_of_role"][r] for r in ra_roles(a2[1])}
-        for did in sorted(d1 & d2):
-            out.append({"sod": s["id"], "department": did, "first": s["first"], "second": s["second"], "note": s["note"]})
+        a2 = m["acts_by_id"].get(s["second"])
+        for first in sod_firsts(s):
+            a1 = m["acts_by_id"].get(first)
+            if not a1 or not a2:
+                continue
+            d1 = {m["dept_of_role"][r] for r in a1[1]["raci"]["R"]}
+            d2 = {m["dept_of_role"][r] for r in ra_roles(a2[1])}
+            for did in sorted(d1 & d2):
+                out.append({"sod": s["id"], "department": did, "first": first, "second": s["second"], "note": s["note"]})
     return out
 
 
@@ -581,17 +590,20 @@ def validate(m: dict, partial: bool = False) -> Report:
     for s in m["common"].get("sod", []):
         if s["id"] not in {x["id"] for x in m["iam"]["sod"]}:
             err(f"sod {s['id']}: IAM 직무 분리 규칙에 없다")
-        a1, a2 = m["acts_by_id"].get(s["first"]), m["acts_by_id"].get(s["second"])
-        if not a1 or not a2:
-            soft(f"sod {s['id']}: 활동 {s['first']} 또는 {s['second']}이(가) 아직 없다")
+        firsts = sod_firsts(s)
+        a2 = m["acts_by_id"].get(s["second"])
+        missing = [x for x in [*firsts, s["second"]] if x not in m["acts_by_id"]]
+        if missing:
+            soft(f"sod {s['id']}: 활동 {', '.join(map(str, missing))}이(가) 아직 없다")
             continue
         if s.get("level") == "person":
             if not (a2[1].get("platform") or {}).get("actions"):
                 err(f"sod {s['id']}: 사람 수준 분리는 플랫폼이 강제해야 한다 — {s['second']}에 platform.actions가 없다")
         elif s.get("level") == "role":
-            clash = set(a1[1]["raci"]["R"]) & ra_roles(a2[1])
-            if clash:
-                err(f"sod {s['id']}: {s['first']}의 R과 {s['second']}의 R/A가 겹친다 {sorted(clash)}")
+            for first in firsts:
+                clash = set(m["acts_by_id"][first][1]["raci"]["R"]) & ra_roles(a2[1])
+                if clash:
+                    err(f"sod {s['id']}: {first}의 R과 {s['second']}의 R/A가 겹친다 {sorted(clash)}")
         else:
             err(f"sod {s['id']}: level은 role|person")
 

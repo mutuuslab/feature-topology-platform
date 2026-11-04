@@ -4,9 +4,12 @@ import assert from 'node:assert/strict';
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { checkRefdb, REFDB_DIR, REFDB_SOURCE_XLSX, reimportRefdb } from './check.ts';
+import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { checkRefdb, contractRefIdPattern, REFDB_DIR, REFDB_SOURCE_XLSX, reimportRefdb } from './check.ts';
 import { FF } from '../lib.ts';
 import { cmpId, excelDate, serialize, sha256 } from './import-lib.ts';
+import { RUNTIME_DATA } from '../desktop-prepare.mjs';
 
 /** v1.3 폴더를 임시 폴더로 복사해 refs.json을 고치고, manifest 해시는 맞춰 둔다(해시가 아니라 내용 점검이 잡는지 보려고) */
 function mutated(edit: (refs: any[]) => void, fixHash = true): { dir: string; cleanup: () => void } {
@@ -106,7 +109,54 @@ test('원본 엑셀 사본을 다시 가져오면 커밋된 v1.3과 같고, 이�
 test('배포 묶음(Docker 이미지·데스크톱 런타임)에 Feature DB 이전본이 들어간다', () => {
   // 회귀: data/reference를 복사하지 않아 고객 설치 첫 기동의 Feature DB 시드가 NO_DATA로 건너뛰어졌다(2026-11-04 병합 점검)
   const docker = readFileSync(join(FF, 'docker', 'app', 'Dockerfile'), 'utf8');
-  assert.match(docker, /^COPY data\/reference \.\/data\/reference$/m);
-  const desktop = readFileSync(join(FF, 'tools', 'desktop-prepare.mjs'), 'utf8');
-  assert.match(desktop, /cpSync\(join\(root, 'data', 'reference'\), join\(runtime, 'data', 'reference'\)/);
+  assert.match(docker, /^COPY data\/reference \.\/data\/reference\r?$/m);
+  assert.ok(RUNTIME_DATA.includes('reference'), 'desktop-prepare RUNTIME_DATA에 reference 없음');
+});
+
+/** 분류 표를 고친 사본(manifest 해시는 맞춤) */
+function mutatedTaxonomy(edit: (tax: any[]) => void): { dir: string; cleanup: () => void } {
+  const dir = mkdtempSync(join(tmpdir(), 'refdb-check-'));
+  cpSync(REFDB_DIR, dir, { recursive: true });
+  const tax = JSON.parse(readFileSync(join(dir, 'taxonomy.json'), 'utf8'));
+  edit(tax);
+  const text = serialize(tax);
+  writeFileSync(join(dir, 'taxonomy.json'), text);
+  const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8'));
+  manifest.files.taxonomy = { rows: tax.length, sha256: sha256(text) };
+  writeFileSync(join(dir, 'manifest.json'), serialize(manifest));
+  return { dir, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
+}
+
+test('ID 형식은 contracts REF_ID_PATTERN — 옛 자체 정규식이 통과시키던 ID(숫자로 시작·5자 약어)를 잡는다', () => {
+  const re = contractRefIdPattern();
+  const dist = join(FF, 'contracts', 'dist', 'index.js');
+  if (existsSync(dist)) assert.equal(re.source, createRequire(import.meta.url)(dist).REF_ID_PATTERN.source, '정의 줄 읽기가 빌드된 계약과 다르다');
+  assert.ok(re.test('BC-BCM-001') && re.test('CO-V2X-003'));
+  for (const bad of ['BC-1BC-001', 'BC-ABCDE-001']) {
+    assert.equal(re.test(bad), false, bad);
+    assert.match(bad, /^[A-Z]{2}-[A-Z0-9]{2,5}-\d{3}$/, '옛 정규식은 통과시켰다');
+    const m = mutated((refs) => { refs[5].refId = bad; });
+    try {
+      assert.ok(checkRefdb(m.dir, null).errors.some((e) => e.includes(`${bad}: ID 형식`)), bad);
+    } finally { m.cleanup(); }
+  }
+  assert.throws(() => contractRefIdPattern('export const X = 1;'), /REF_ID_PATTERN/);
+});
+
+test('도메인·컴포넌트 약어(abbr)가 비거나 ID 형식에 맞지 않으면 실패한다', () => {
+  const tax = JSON.parse(readFileSync(join(REFDB_DIR, 'taxonomy.json'), 'utf8')) as { nodeId: string; level: string; abbr: string | null }[];
+  assert.deepEqual(tax.filter((n) => n.level !== 'CLUSTER' && !n.abbr).map((n) => n.nodeId), []);
+  const comp = tax.find((n) => n.level === 'COMPONENT')!;
+  const dom = tax.find((n) => n.level === 'DOMAIN')!;
+  const m = mutatedTaxonomy((t) => {
+    t.find((n) => n.nodeId === comp.nodeId).abbr = null;
+    t.find((n) => n.nodeId === dom.nodeId).abbr = '';
+    t.filter((n) => n.level === 'COMPONENT')[1].abbr = '9X';
+  });
+  try {
+    const { errors } = checkRefdb(m.dir, null);
+    assert.ok(errors.some((e) => e.includes(`${comp.nodeId}: COMPONENT 약어(abbr) 없음`)), errors.join('\n'));
+    assert.ok(errors.some((e) => e.includes(`${dom.nodeId}: DOMAIN 약어(abbr) 없음`)), errors.join('\n'));
+    assert.ok(errors.some((e) => e.includes(`약어 '9X'로 기준 행 ID 형식을 만들 수 없음`)), errors.join('\n'));
+  } finally { m.cleanup(); }
 });

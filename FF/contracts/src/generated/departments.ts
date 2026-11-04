@@ -35,7 +35,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/activation/decide",
      "/admin/approval",
      "/features/:id/:ver",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/master/feature-db/:refId"
     ],
     "reference": [
      "/analysis/impact",
@@ -54,7 +55,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/incidents",
      "/ops/kill",
      "/audit",
-     "/quality/feedback"
+     "/quality/feedback",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ]
    },
    "counts": {
@@ -90,12 +93,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/policies",
      "/policies/:id",
      "/flag-retirements",
-     "/master/feature-db"
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ],
     "reference": [
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
      "/analysis/impact",
@@ -104,7 +109,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/artifacts",
      "/verify/evidence",
      "/baselines",
-     "/integration/openfeature"
+     "/integration/openfeature",
+     "/master/feature-db/:refId"
     ]
    },
    "counts": {
@@ -179,6 +185,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/variant-conditions",
      "/arch/topology",
      "/baselines",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes",
      "/master/feature-db"
     ],
     "reference": [
@@ -188,7 +196,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/features/:id/:ver",
      "/admin/approval",
      "/policies/new",
-     "/policies"
+     "/policies",
+     "/master/feature-db/:refId"
     ]
    },
    "counts": {
@@ -248,7 +257,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/audit",
      "/quality/feedback",
      "/supplier/portal",
-     "/admin/security"
+     "/admin/security",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ]
    },
    "counts": {

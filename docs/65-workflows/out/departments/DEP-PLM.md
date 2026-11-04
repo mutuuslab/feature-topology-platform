@@ -38,16 +38,16 @@ last_updated: 2026-11-04
 | FPW.1-A01 Feature 등록·초안 작성 | FPW.1 Feature 등록·분류 | I (Feature DB 관리자) | Feature DB 발행본 `WP-REFDB-RELEASE`, Feature 제안·변경요청 `WP-FEAT-PROPOSAL` → Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK` | `/master/define`, `/feature/propose`, `/features` 외 1 | 1차 |
 | FPW.1-A02 대상 차량 사양·의존 등록 | FPW.1 Feature 등록·분류 | R (기준정보 담당) | Feature 등록 기록 `WP-FEAT-REG` → 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` | `/variant-conditions`, `/arch/topology` | 1차 |
 | FPW.1-A05 G1 등록·분류 판정 | FPW.1 Feature 등록·분류 | I (기준정보 담당) | Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 법규 등급 판정 기록 `WP-REG-CLASS` → G1 Decision Record `WP-G1-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
-| FPW.1-A06 Feature DB 추가 요청 | FPW.1 Feature 등록·분류 | I (Feature DB 관리자) | Feature 제안·변경요청 `WP-FEAT-PROPOSAL`, Feature DB 발행본 `WP-REFDB-RELEASE` → Feature DB 추가 요청 `WP-REF-ADD-REQ` | `/feature/propose`, `/master/feature-db` | 1차 |
+| FPW.1-A06 Feature DB 추가 요청 | FPW.1 Feature 등록·분류 | I (Feature DB 관리자) | Feature 제안·변경요청 `WP-FEAT-PROPOSAL`, Feature DB 발행본 `WP-REFDB-RELEASE` → Feature DB 추가 요청 `WP-REF-ADD-REQ` | `/feature/propose` | 1차 |
 | FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | I (기준정보 담당) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.4-A03 Flag 정책 작성·검증 | FPW.4 안전 설계·정책 설계 | C (기준정보 담당) | 안전 설계서 `WP-SAFETY-DESIGN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/new`, `/policies` | 1차 |
 | FPW.6-A01 출시 Baseline 확정 요청 | FPW.6 서명 배포 | I (기준정보 담당) | G5 Decision Record `WP-G5-DECISION`, Flag 정책(검증·승인본) `WP-POLICY` → Baseline 확정 요청 `WP-BASELINE-REQ` | `/baselines` | 1차 |
 | FPW.6-A02 출시 Baseline 확정 승인 | FPW.6 서명 배포 | R·A (기준정보 담당) | Baseline 확정 요청 `WP-BASELINE-REQ` → 출시 Baseline `WP-RELEASE-BASELINE` | `/baselines` | 1차 |
 | FPW.10-A07 EOL 프로비저닝 검증 | FPW.10 협력사 관리 | C (기준정보 담당) | 입고 검사 결과 `WP-INTAKE-RESULT` → EOL 프로비저닝 검증 기록 `WP-EOL-RECORD` | 플랫폼 밖 | 2차 초안 |
-| FPW.14-A01 변경 요청 작성 | FPW.14 Feature DB 운영 | I (Feature DB 관리자) | Feature DB 기준 행 연결 `WP-REF-LINK` → 기준 행 변경 요청 `WP-REF-CHANGE-REQ` | `/master/feature-db` | 2차 초안 |
-| FPW.14-A02 자동 점검·도메인 검토 | FPW.14 Feature DB 운영 | I (Feature DB 관리자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ` → 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` | `/master/feature-db` | 2차 초안 |
-| FPW.14-A03 변경 승인·반려 | FPW.14 Feature DB 운영 | R·A (Feature DB 관리자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ`, 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` → 변경 승인·반려 기록 `WP-REF-DECISION` | `/master/feature-db` | 2차 초안 |
-| FPW.14-A04 Feature DB 버전 발행 | FPW.14 Feature DB 운영 | R·A (Feature DB 관리자) · I (기준정보 담당) | 변경 승인·반려 기록 `WP-REF-DECISION` → Feature DB 발행본 `WP-REFDB-RELEASE` | `/master/feature-db` | 2차 초안 |
+| FPW.14-A01 변경 요청 작성 | FPW.14 Feature DB 운영 | I (Feature DB 관리자) | Feature DB 기준 행 연결 `WP-REF-LINK` → 기준 행 변경 요청 `WP-REF-CHANGE-REQ` | `/master/feature-db/:refId` | 2차 초안 |
+| FPW.14-A02 자동 점검·도메인 검토 | FPW.14 Feature DB 운영 | I (Feature DB 관리자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ` → 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` | `/master/feature-db/changes/:id`, `/master/feature-db/changes` | 2차 초안 |
+| FPW.14-A03 변경 승인·반려 | FPW.14 Feature DB 운영 | R·A (Feature DB 관리자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ`, 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` → 변경 승인·반려 기록 `WP-REF-DECISION` | `/master/feature-db/changes/:id`, `/master/feature-db/changes` | 2차 초안 |
+| FPW.14-A04 Feature DB 버전 발행 | FPW.14 Feature DB 운영 | R·A (Feature DB 관리자) · I (기준정보 담당) | 변경 승인·반려 기록 `WP-REF-DECISION` → Feature DB 발행본 `WP-REFDB-RELEASE` | `/master/feature-db/changes` | 2차 초안 |
 | FPW.14-A05 출처 정기 점검 | FPW.14 Feature DB 운영 | R·A (Feature DB 관리자) | Feature DB 발행본 `WP-REFDB-RELEASE` → 출처 정기 점검 기록 `WP-REF-SOURCE-REVIEW` | `/master/feature-db` | 2차 초안 |
 
 ## 2. 부서 간 인계
@@ -63,5 +63,5 @@ last_updated: 2026-11-04
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/variant-conditions`, `/arch/topology`, `/baselines`, `/master/feature-db`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/features/:id/:ver`, `/admin/approval`, `/policies/new`, `/policies`
+- 주 업무 화면: `/variant-conditions`, `/arch/topology`, `/baselines`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/master/feature-db`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/features/:id/:ver`, `/admin/approval`, `/policies/new`, `/policies`, `/master/feature-db/:refId`

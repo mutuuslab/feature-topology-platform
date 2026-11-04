@@ -45,3 +45,21 @@ test('판정: done 실패는 되돌아감, open 통과는 목록 뒤처짐, 열�
   const v2 = judge(c, { read, markers: new Map([[id(1), ['x.test.ts']]]) });
   assert.equal(v2.regressed.length, 0);
 });
+
+test('PG 호환 측정 신선도 — 측정 뒤 생긴 마이그레이션을 찾고, 기록 형식이 낡으면 비교할 수 없다고 알린다', async () => {
+  const { pgMeasureGap } = await import('./readiness-rules.ts');
+  const lock = { migrations: { '001_kernel': 'a', '080_feature_ref': 'b', '081_feature_ref_link': 'c' } };
+  assert.deepEqual(pgMeasureGap({ migrationsAtMeasure: ['001_kernel'] }, lock), { recordMissing: false, newer: ['080_feature_ref', '081_feature_ref_link'] });
+  assert.deepEqual(pgMeasureGap({ migrationsAtMeasure: Object.keys(lock.migrations) }, lock), { recordMissing: false, newer: [] });
+  assert.equal(pgMeasureGap({ measuredAt: '2026-10-25' }, lock).recordMissing, true);
+});
+
+test('지금 기록 — pg-compat.json은 잰 때의 마이그레이션을 담고, 잠금 목록 밖 이름이 없다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const { FF } = await import('./lib.ts');
+  const pg = JSON.parse(readFileSync(join(FF, 'harness', 'pg-compat.json'), 'utf8'));
+  const lock = JSON.parse(readFileSync(join(FF, 'harness', 'migrations.lock.json'), 'utf8'));
+  assert.ok(Array.isArray(pg.migrationsAtMeasure) && pg.migrationsAtMeasure.length > 0);
+  for (const m of pg.migrationsAtMeasure) assert.ok(m in lock.migrations, `잠금에 없는 마이그레이션 ${m}`);
+});

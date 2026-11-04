@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { FF, ratchet } from './lib.ts';
+import { FF, ratchet, readJson } from './lib.ts';
 
 const PORT = Number(process.env.FF_PG_TEST_PORT) || 9690;
 const NAME = 'ff-pg-test';
@@ -105,6 +105,8 @@ writeFileSync(
     {
       note: '백엔드 시험 묶음의 PostgreSQL 16 호환 — npm run test:pg가 쓴다(손으로 고치지 않는다). 정본 docs/20-architecture/20-92 §6.',
       measuredAt: new Date().toISOString().slice(0, 10),
+      // 잰 때의 마이그레이션 — 이후 새 마이그레이션이 생기면 readiness가 '다시 재라'고 경고한다(Feature DB 080·081이 PG에서 돈 적 없던 회귀)
+      migrationsAtMeasure: Object.keys(readJson<{ migrations: Record<string, string> }>(join(FF, 'harness', 'migrations.lock.json')).migrations),
       total,
       passed,
       failed: report.numFailedTests,

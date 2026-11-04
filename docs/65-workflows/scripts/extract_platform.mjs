@@ -5,7 +5,8 @@
 // Gate·수명주기 전이·보고서 승인 역할처럼 IAM API가 주지 않는 표는 contracts/dist에서 읽고,
 // dist의 permissions()와 실행 중 서버의 차이를 dist_diff로 남긴다.
 //
-// 사용: node scripts/extract_platform.mjs [--url http://localhost:9012] [--ff C:/project/2026-06-04_Feature_Platform/FF]
+// 사용: node scripts/extract_platform.mjs [--url http://localhost:9012] [--ff <FF 폴더, 기본: 이 저장소의 FF>]
+// 서버 없이 할 수 있는 신선도 검사(화면·권한·직무 분리)는 scripts/check.py [2a]가 한다.
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs';
@@ -20,7 +21,7 @@ const arg = (name, dflt) => {
   return i > 0 ? process.argv[i + 1] : dflt;
 };
 const url = arg('--url', 'http://localhost:9012');
-const ff = resolve(arg('--ff', 'C:/project/2026-06-04_Feature_Platform/FF'));
+const ff = resolve(arg('--ff', join(ROOT, '..', '..', 'FF')));
 
 async function get(path) {
   const res = await fetch(url + path);

@@ -205,4 +205,4 @@ process:
         - 관리자 승인 전에는 Feature 정의 승인(APPROVED) 전이가 막혀 있음을 Feature Owner가 안다
       platform:
         actions: [requestRefAdd]
-        screens: [/feature/propose, /master/feature-db]
+        screens: [/feature/propose]

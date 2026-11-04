@@ -1,3 +1,17 @@
+---
+id: ARC-COST-ESTIMATION
+type: architecture
+title: "구매본부 SW 개발비 산정 — 산정 과제·계산 엔진·기밀 / SW Cost Estimation (선택 모듈)"
+status: draft
+version: 0.1.0
+owner: feature-architect
+cycle: 0
+standards: [COCOMO-II, AACE-18R-97]
+traces:
+  depends_on: [ARC-FEATURE-REFDB]
+last_updated: 2026-11-04
+---
+
 # 20-94 구매본부 SW 개발비 산정 — 산정 과제·계산 엔진·기밀 (선택 모듈)
 
 > 원본: `Automotive_SW_개발비_산정도구_FeatureDB_v1.3.xlsx`의 `01_대시보드`·`02_프로젝트설정`·`03_FeatureDB`(자동 계산 열)·`04_산정내역`·
@@ -184,7 +198,7 @@ MBD 경로(`12_MBD복잡도`): 작업 단위마다 복잡도 5등급 개수 × �
 
 - **모듈 스위치**: 설정 `FF_MODULE_COST=on|off`(기본 off, 데모 빌드 on). off면 경로 404, 메뉴·가젯 숨김, 역할 부여 화면에서 3역할 숨김. 컴포넌트 manifest에 새 항목(예: D07-01 개발비 산정)을 두고 `IMPLEMENTED` 갱신.
 - **암호화**: `cost_basis`의 단가 부분과 `cost_result` 스냅샷을 기존 KEK 봉투 암호화(key-protection, `feat/key-protection` 병합분)로 저장. DRAFT 줄 입력(수량·변경 유형 등)은 단가가 없으므로 평문.
-- **벤치마크 €**: Kearney 공개값이지만 금액이므로 Feature DB 응답에서도 산정 역할에만 포함(`30-95` §5.1).
+- **벤치마크 €**: Kearney 공개값이지만 금액이므로 Feature DB 응답에서도 열람 역할에만 포함(`30-95` §5.1). **지금 구현**: 산정 역할이 아직 없어 Feature DB 관리자(`REFDB_ADMIN`)만 본다(`BENCHMARK_VIEWERS`, `backend/src/domains/d01-policy/refdb/read-view.ts`). 이 모듈 구현 때 `COST_*` 역할을 더한다 — TODO.
 - **데모 사이트**: 엑셀 예시 과제(BCM, 44개 Feature)만 시드. 실제 단가·과제는 넣지 않는다.
 - **개인정보·보존**: 기존 보존 정책(`066_privacy`)을 따른다. 과제 작성자 이름은 계정 ID로만 저장.
 

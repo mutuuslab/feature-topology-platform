@@ -265,7 +265,8 @@ def test_feature_db_operation_process_exists(model):
     p = next(p for p in model["processes"] if p["id"] == "FPW.14")
     actions = {n: a["raci"]["R"][0] for a in p["activities"] for n in (a.get("platform") or {}).get("actions", [])}
     assert actions == {"createRefChange": "R-FO", "reviewRefChange": "R-DRV",
-                       "decideRefChange": "R-RDA", "publishRefRelease": "R-RDA"}
+                       "decideRefChange": "R-RDA", "publishRefRelease": "R-RDA",
+                       "recordSourceReview": "R-RDA"}                   # 출처 정기 점검 기록(다음 점검일 갱신)
     assert model["acts_by_id"]["FPW.14-A05"][1].get("trigger")          # 정기 출처 점검은 사건(점검일)으로 시작
 
 

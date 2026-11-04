@@ -44,7 +44,7 @@ last_updated: 2026-11-04
 | FPW.1-A02 대상 차량 사양·의존 등록 | FPW.1 Feature 등록·분류 | C (아키텍트) | Feature 등록 기록 `WP-FEAT-REG` → 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` | `/variant-conditions`, `/arch/topology` | 1차 |
 | FPW.1-A03 안전 분류(네 축) 확정 | FPW.1 Feature 등록·분류 | C (아키텍트) · I (요구 Owner) | Feature 등록 기록 `WP-FEAT-REG`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → 안전 분류(네 축) `WP-SAFETY-PROFILE` | `/features/:id/:ver` | 1차 |
 | FPW.1-A05 G1 등록·분류 판정 | FPW.1 Feature 등록·분류 | I (요구 Owner) | Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 법규 등급 판정 기록 `WP-REG-CLASS` → G1 Decision Record `WP-G1-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
-| FPW.1-A06 Feature DB 추가 요청 | FPW.1 Feature 등록·분류 | C (도메인 검토자) | Feature 제안·변경요청 `WP-FEAT-PROPOSAL`, Feature DB 발행본 `WP-REFDB-RELEASE` → Feature DB 추가 요청 `WP-REF-ADD-REQ` | `/feature/propose`, `/master/feature-db` | 1차 |
+| FPW.1-A06 Feature DB 추가 요청 | FPW.1 Feature 등록·분류 | C (도메인 검토자) | Feature 제안·변경요청 `WP-FEAT-PROPOSAL`, Feature DB 발행본 `WP-REFDB-RELEASE` → Feature DB 추가 요청 `WP-REF-ADD-REQ` | `/feature/propose` | 1차 |
 | FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 | FPW.2 HARA·변경 영향 판단 | C (아키텍트) · I (요구 Owner) | G1 Decision Record `WP-G1-DECISION`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 기존 구현 차이 보고 `WP-SUPPLIER-DIFF` → 변경 영향 분석서 `WP-IMPACT-ANALYSIS` | `/analysis/impact`, `/arch/topology` | 1차 |
 | FPW.2-A02 HARA 수행 | FPW.2 HARA·변경 영향 판단 | C (아키텍트) · I (요구 Owner) | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` → HARA·TARA 결과 `WP-HARA-TARA` | 플랫폼 밖 | 1차 |
 | FPW.2-A06 TARA 수행 | FPW.2 HARA·변경 영향 판단 | C (아키텍트) · I (요구 Owner) | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` → TARA 결과 `WP-TARA` | 플랫폼 밖 | 1차 |
@@ -67,10 +67,10 @@ last_updated: 2026-11-04
 | FPW.9-A03 Flag Retirement 승인 | FPW.9 사후 검토·Flag Retirement | R·A (요구 Owner) | Flag Retirement 요청 `WP-RETIRE-REQ` → Retirement 승인 기록 `WP-RETIRE-APPROVAL` | `/flag-retirements` | 1차 |
 | FPW.10-A05 기존 구현 진단 | FPW.10 협력사 관리 | C (아키텍트) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → 기존 구현 차이 보고 `WP-SUPPLIER-DIFF` | 플랫폼 밖 | 2차 초안 |
 | FPW.12-A02 평가 컨텍스트 개인정보 검토 | FPW.12 운영 데이터·데이터 보호 | C (아키텍트) | Flag 정책(검증·승인본) `WP-POLICY` → 평가 컨텍스트 속성 검토 기록 `WP-CONTEXT-REVIEW` | `/integration/openfeature` | 2차 초안 |
-| FPW.14-A01 변경 요청 작성 | FPW.14 Feature DB 운영 | C (아키텍트) · I (도메인 검토자) | Feature DB 기준 행 연결 `WP-REF-LINK` → 기준 행 변경 요청 `WP-REF-CHANGE-REQ` | `/master/feature-db` | 2차 초안 |
-| FPW.14-A02 자동 점검·도메인 검토 | FPW.14 Feature DB 운영 | R·A (도메인 검토자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ` → 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` | `/master/feature-db` | 2차 초안 |
-| FPW.14-A03 변경 승인·반려 | FPW.14 Feature DB 운영 | C (도메인 검토자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ`, 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` → 변경 승인·반려 기록 `WP-REF-DECISION` | `/master/feature-db` | 2차 초안 |
-| FPW.14-A04 Feature DB 버전 발행 | FPW.14 Feature DB 운영 | I (도메인 검토자) | 변경 승인·반려 기록 `WP-REF-DECISION` → Feature DB 발행본 `WP-REFDB-RELEASE` | `/master/feature-db` | 2차 초안 |
+| FPW.14-A01 변경 요청 작성 | FPW.14 Feature DB 운영 | C (아키텍트) · I (도메인 검토자) | Feature DB 기준 행 연결 `WP-REF-LINK` → 기준 행 변경 요청 `WP-REF-CHANGE-REQ` | `/master/feature-db/:refId` | 2차 초안 |
+| FPW.14-A02 자동 점검·도메인 검토 | FPW.14 Feature DB 운영 | R·A (도메인 검토자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ` → 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` | `/master/feature-db/changes/:id`, `/master/feature-db/changes` | 2차 초안 |
+| FPW.14-A03 변경 승인·반려 | FPW.14 Feature DB 운영 | C (도메인 검토자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ`, 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` → 변경 승인·반려 기록 `WP-REF-DECISION` | `/master/feature-db/changes/:id`, `/master/feature-db/changes` | 2차 초안 |
+| FPW.14-A04 Feature DB 버전 발행 | FPW.14 Feature DB 운영 | I (도메인 검토자) | 변경 승인·반려 기록 `WP-REF-DECISION` → Feature DB 발행본 `WP-REFDB-RELEASE` | `/master/feature-db/changes` | 2차 초안 |
 | FPW.14-A05 출처 정기 점검 | FPW.14 Feature DB 운영 | C (도메인 검토자) | Feature DB 발행본 `WP-REFDB-RELEASE` → 출처 정기 점검 기록 `WP-REF-SOURCE-REVIEW` | `/master/feature-db` | 2차 초안 |
 
 ## 2. 부서 간 인계
@@ -89,8 +89,8 @@ last_updated: 2026-11-04
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/admin/approval`, `/master/control-points`, `/policies/new`, `/policies`, `/policies/:id`, `/flag-retirements`, `/master/feature-db`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/variant-conditions`, `/arch/topology`, `/analysis/impact`, `/arch/components`, `/validations`, `/master/artifacts`, `/verify/evidence`, `/baselines`, `/integration/openfeature`
+- 주 업무 화면: `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/admin/approval`, `/master/control-points`, `/policies/new`, `/policies`, `/policies/:id`, `/flag-retirements`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/analysis/impact`, `/arch/components`, `/validations`, `/master/artifacts`, `/verify/evidence`, `/baselines`, `/integration/openfeature`, `/master/feature-db/:refId`
 
 ## 4. 부서 겸직 직무 분리
 

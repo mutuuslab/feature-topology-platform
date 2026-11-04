@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.mutuuslab.featureplatform.desktop",
   "build": {
-    "beforeBuildCommand": "npm run desktop:prepare",
+    "beforeBuildCommand": "npm run desktop:prepare && npm run desktop:smoke",
     "frontendDist": "../frontend/dist"
   },
   "app": { "windows": [], "security": { "csp": null } },

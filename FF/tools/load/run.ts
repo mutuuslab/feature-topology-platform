@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { FF } from '../lib.ts';
 import { PROFILES, type ProfileName } from './profiles.ts';
-import { LOAD_DIR, SEED_ENV, seedFor } from './seed.ts';
+import { BASE_FEATURE, LOAD_DIR, SEED_ENV, seedFor } from './seed.ts';
 import { judge, summarize, type BudgetFile, type Summary } from './stats.ts';
 
 const arg = (name: string) => {
@@ -41,6 +41,8 @@ interface Ctx {
   auditCursor: string | null;
   vehicleCursor: string | null;
   example: unknown;
+  /** Feature DB 기준 행 ID — 첫째는 본 Feature(복제분 모두)가 대표로 쓰는 행(이 행을 쓰는 Feature가 가장 많다) */
+  refIds: string[];
 }
 interface Scenario {
   id: string;
@@ -60,6 +62,10 @@ export const SCENARIOS: Scenario[] = [
   { id: 'features.latest', title: 'Feature 최신 버전 전체(대시보드·홈)', req: () => ({ method: 'GET', path: '/api/features?latestOnly=true' }) },
   { id: 'features.search', title: 'Feature 검색 한 페이지(q·limit)', req: (i) => ({ method: 'GET', path: `/api/features?q=${encodeURIComponent(['care', 'FEAT-1', 'ADAS', '경고'][i % 4])}&limit=50` }) },
   { id: 'features.detail', title: 'Feature 버전 상세', req: (i, c) => { const f = pick(c.features, i); return { method: 'GET', path: `/api/features/${f.featureId}/versions/${f.version}` }; } },
+  // Feature DB(30-95) — 등록 화면의 기준 행 고르기·목록·행 상세(이 행을 쓰는 Feature = feature_ref_link 역참조)
+  { id: 'refdb.list', title: 'Feature DB 목록 한 페이지(limit 50·상태 필터)', req: (i) => ({ method: 'GET', path: `/api/refdb/refs?limit=50&offset=${(i * 50) % 1000}${i % 3 === 0 ? '&status=ACTIVE' : ''}` }) },
+  { id: 'refdb.search', title: 'Feature DB 검색(한글·영문 기능명·별칭·ID)', req: (i) => ({ method: 'GET', path: `/api/refdb/refs?q=${encodeURIComponent(['brake', '차선', 'AD-ADS', '경고', 'camera', 'door'][i % 6])}&limit=50` }) },
+  { id: 'refdb.detail', title: 'Feature DB 기준 행 상세(이 행을 쓰는 Feature 포함)', req: (i, c) => ({ method: 'GET', path: `/api/refdb/refs/${i % 2 === 0 ? c.refIds[0] : pick(c.refIds, i)}` }) },
   { id: 'dashboard.components', title: '대시보드 — 컴포넌트 현황', req: () => ({ method: 'GET', path: '/api/components' }) },
   { id: 'dashboard.activity', title: '대시보드 — 최근 활동(60분)', req: () => ({ method: 'GET', path: '/api/components/activity?minutes=60' }) },
   { id: 'dashboard.kills', title: '대시보드 — 진행 중 차단', req: () => ({ method: 'GET', path: '/api/kill-requests?status=ACTIVE' }) },
@@ -175,6 +181,7 @@ async function context(): Promise<Ctx> {
     auditCursor: first.nextCursor ?? null,
     vehicleCursor: JSON.parse((await send({ method: 'GET', path: '/api/vehicles?limit=100' })).text).nextCursor ?? null,
     example: JSON.parse(readFileSync(join(FF, 'harness', 'guide', 'schema', 'examples', 'kill_safety_dc2_eu.ok.json'), 'utf8')),
+    refIds: [BASE_FEATURE.featureRefs[0].refId, ...(JSON.parse((await send({ method: 'GET', path: '/api/refdb/refs?limit=100' })).text).items as { refId: string }[]).map((r) => r.refId)],
   };
 }
 

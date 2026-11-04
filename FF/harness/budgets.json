@@ -7,5 +7,9 @@
     "maplibre-gl": 300,
     "workflows": 45
   },
-  "firstScreenMs": 4000
+  "firstScreenMs": 4000,
+  "history": [
+    { "date": "2026-11-04", "key": "initialGzipKiB", "from": 290, "to": 295, "reason": "Feature DB(30-95) API 경로 15개와 그 스키마가 경로 표(contracts routes — API 클라이언트가 첫 화면에서 씀)에 들어가 290.9 KiB. 등록 기준·도메인 대응 규칙은 순수 표시로 첫 화면에서 뺀 뒤" },
+    { "date": "2026-11-04", "key": "allow.workflows", "from": 40, "to": 45, "reason": "업무 절차 묶음(workflows, /procedures에서만 지연 로드)이 FPW.14·부서 14개 레인 흐름도로 41.9 KiB — 전체 화면 묶음 예산 chunkGzipKiB 40은 그대로 두고 이 묶음만 허용 목록에" }
+  ]
 }

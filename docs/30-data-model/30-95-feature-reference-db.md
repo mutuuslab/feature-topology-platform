@@ -93,7 +93,7 @@ Feature ID는 도메인 포함 형식으로 바꾼다(D-REF-15). 대표 기준 �
 | 근거 | `sourceIds[]`(Y → `ref_source`), `sourceDetail`(Z), `remark`(AA), `basisType`(AB) | 1차 출처 없으면 상태 `REVIEW` |
 | 관계 | `duplicateOf`(BJ), `requires[]`(BL 선행, AND), `excludes[]`(UVL 교차 제약) | §5.4 |
 | 조달 | `procurement`(BS), `swPackage`(BT), `licenseItem`(BU), `billing`(BV) | 초기 분류, 수정 가능 |
-| 정의(03b) | `definition`{`level` ①, `parentRefId` ②, `summary` ③, `trigger` ④, `scopeIn[]` ⑤, `scopeOut[]` ⑥, `scopeOutRefs[]` ⑦, `io`{entry,exit,read,write} ⑧~⑪, `drivers`{states,dtcs,calibrations,variants} ⑫~⑮, `regulations` ⑯, `verification` ⑰, `typicalChanges` ⑱, `sharedFunctions` ⑳, `authoringStatus`} | 116행(파일럿)만 값 있음, 나머지 빈 값 |
+| 정의(03b) | `definition`{`level` ①, `parentRefId` ②, `summary` ③, `trigger` ④, `scopeIn[]` ⑤, `scopeOut[]` ⑥, `scopeOutRefs[]` ⑦, `io`{entry,exit,read,write} ⑧~⑪, `drivers`{states,dtcs,calibrations,variants} ⑫~⑮, `regulations` ⑯, `verification` ⑰, `typicalChanges` ⑱, `sharedFunctions` ⑳, `authoringStatus`} | 24행(파일럿 작성분)만 값 있음, 나머지 빈 값 |
 | 메모 | `adminMemo`(BR) | 변경 요청 번호 함께 |
 
 **옮기지 않는 열** — 과제 입력(AF~AQ: 선택 수량·변경 유형·적용 ASIL·변형 수·m/o/p 직접 입력·우선순위·기존 보유·실적 공수·검토 상태·담당 메모), 자동 계산(AR~BI, BM, BW), 견적 입력(BN)은 **산정 과제의 줄**(`20-94` §5)로 간다. 파생 값(M·T·U·BH·BW)은 저장하지 않고 규칙(`contracts/src/rules/cost/`)으로 계산한다. 엑셀의 예시 과제 입력은 산정 기준값 시험 고정 자료로만 쓴다.
@@ -244,7 +244,7 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 - 스크립트 `npm run refdb:import -- <xlsx>` (`tools/refdb/import.ts`, 기존 `tools/xlsx.ts` 읽기 재사용 또는 개발 의존성 SheetJS). 엑셀은 **계산값이 저장된 파일**이어야 한다(Excel에서 저장).
 - 출력: `data/reference/feature-db/v1.3/{refs,sources,glossary,subfunctions,taxonomy}.json` + `manifest.json`(원본 SHA-256·행 수·발행 버전 `v1.3`).
 - 고객사별 단독 설치(D-RD-1): 빈 DB 첫 기동 때 시드가 이 JSON을 `v1.3 (엑셀 가져옴)` 발행으로 넣는다. 그 뒤로는 변경 요청으로만 바뀐다. 스크립트는 다시 실행해도 이미 원천이 FF인 설치에는 쓰지 않는다(빈 DB에만).
-- **이전 점검**(`data:check`에 추가): 1,052행, ID 유일, 필수 정보 누락 0, 상태 수 995/53/4, 출처 ID가 모두 `ref_source`에 있음, 도메인 10·컴포넌트 69, `03b` 116행의 Feature ID가 모두 존재, 파생 값(T·U·BW)을 규칙으로 다시 계산해 엑셀 저장값과 일치.
+- **이전 점검**(`data:check`에 추가): 1,052행, ID 유일, 필수 정보 누락 0, 상태 수 995/53/4, 출처 ID가 모두 `ref_source`에 있음, 도메인 10·컴포넌트 69, `03b` 작성 24행의 Feature ID가 모두 존재, 파생 값(T·U·BW)을 규칙으로 다시 계산해 엑셀 저장값과 일치.
 - 데모·시드 Feature 68개(`data/fixtures/v0.81`)는 대응표 `data/reference/feature-db/seed-links.json`으로 기준 행에 연결한다. 대응이 없는 시드는 `_missing.featureRefs`로 표시(지금 `_missing` 관례) — 시드는 필수 연결 검사에서 예외가 아니라 대응표로 채우는 것이 목표이고, 남은 것은 목록으로 사용자 확인.
 
 ## 10. 내보내기

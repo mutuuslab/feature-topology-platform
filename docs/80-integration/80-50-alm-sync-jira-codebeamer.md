@@ -2,6 +2,7 @@
 
 > 짝 문서: Feature DB `30-data-model/30-95-feature-reference-db.md`, 개발비 산정 `20-architecture/20-94-cost-estimation.md`.
 > 기존 연계 구현: `FF/backend/src/domains/d05-ext/api-gateway/ext-sync/`, 규칙 `FF/contracts/src/rules/ext-sync.ts`, 마이그레이션 `043_ext_sync`.
+> codeBeamer REST 근거(역공학, 2026-11-04): `80-51-codebeamer-api-evidence.md` — 이 문서의 codeBeamer 호출·모의 동작은 그 문서를 따른다.
 > 작성 2026-11-04, 브랜치 `feat/feature-db-alm`. 상태: **설계 초안 — 사용자 승인 전 구현하지 않는다.**
 
 ## 1. 한 줄 요약
@@ -51,7 +52,7 @@ FF는 **추적 완결성과 승인 상태를 점검해 게이트에 연결**하�
 | JIRA 앱 | 없음 | Epic 화면 FF 패널(§4.7) |
 | 모의 | FF 프로세스 안의 `mock-ext.store.ts`(웹훅 모양만 실제) | 독립 REST 모의 서버 2개 + 기존 프로세스 내 모의는 단위 시험용으로 유지 |
 
-REA(`C:\project\2026-10-15_REA`) 조사 결과: JIRA는 웹 화면 복제(REST 없음), codeBeamer는 시험 중에만 뜨는 상태 없는 stub과 v3 클라이언트(`lemontree/reimpl/src/lemontree/alm/codebeamer.py`), 실서버 화면 캡처(`out/showcase/`)뿐이다. 모의 서버는 새로 만들되 codeBeamer 요청·응답 모양과 트래커 이름은 이 자료를 참고한다.
+REA(`C:\project\2026-10-15_REA`) 조사 결과: JIRA는 웹 화면 복제(REST 없음), codeBeamer는 시험 중에만 뜨는 상태 없는 stub과 v3 클라이언트, 실서버 화면 캡처뿐이다. 대신 REA 6.8 MCP로 codeBeamer 공급사 문서·LemonTree Connect 4.0.1 OpenAPI 클라이언트를 분석해 REST 모양을 확인했다(`80-51`). 핵심: **codeBeamer는 바깥으로 webhook을 보내지 않고**, **관계별 suspect 표시를 REST로 주지 않는다**(항목 단위 `hasSuspectedLink`만), 호출 제한 초당 3회·분당 120회, 낙관적 잠금 없음.
 
 ## 4. JIRA
 
@@ -206,8 +207,8 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 
 ### 5.6 변경 영향 (D-ALM-14)
 
-1. 승인된 항목의 revision이 오르면(웹훅 또는 대사) 그 항목을 "승인 뒤 변경"으로 표시.
-2. FF가 보관한 추적 그래프로 **아래 단계 관계를 suspect**로 표시(codeBeamer가 관계의 suspect 표시를 주면 그것을 우선, 없으면 FF 계산 — REA 분석상 실서버 API의 suspect 노출은 확인 필요, §11 A-5).
+1. 승인된 항목의 `version`이 오르면(주기 대사 — codeBeamer는 webhook이 없다) 그 항목을 "승인 뒤 변경"으로 표시하고 `/v3/items/{id}/history`로 바뀐 필드를 기록.
+2. FF가 보관한 추적 그래프로 **아래 단계 관계를 suspect**로 표시한다 — **FF가 계산**한다(codeBeamer REST는 관계별 suspect를 주지 않는다, `80-51` §4). 대사 때 cbQL `hasSuspectedLink = 'true'`로 codeBeamer 쪽 표시와 항목 단위로 대조하고, 어긋나면 연계 화면에 차이로 보인다. FF suspect는 아래 항목이 다시 승인되거나(새 `version` + Approved) 담당자가 FF에서 '영향 없음' 사유를 남기면 풀린다(codeBeamer의 suspect 해제는 사람이 codeBeamer 화면에서).
 3. 그 산출물을 증거로 쓴 게이트에 **재판정 요청**을 검토함에 올린다(게이트 담당 역할). 재판정 전까지 다음 전이는 막힌다. 이미 RELEASED인 버전이면 재판정 요청 + "출시 버전 산출물 변경" 경고(긴급 차단은 사람 판단).
 4. Feature 상세·Epic "FF 현황"에 "산출물 변경됨"과 영향 목록.
 
@@ -217,13 +218,18 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 
 ### 5.8 live 어댑터 (codeBeamer REST v3)
 
-| 용도 | 호출 |
+| 용도 | 호출 (`80-51` §2) |
 |---|---|
-| 트래커·필드 확인(기동 점검) | `GET /api/v3/projects/{id}/trackers`, `GET /api/v3/trackers/{id}/fields` |
-| Feature의 산출물 찾기 | `POST /api/v3/items/query` cbQL `tracker.id IN (…) AND 'FF Feature ID' = 'FEAT-…'` (500건 페이지) |
-| 항목·관계 | `GET /api/v3/items/{id}`, `GET /api/v3/items/{id}/relations`(위·아래 참조·연관) |
-| 대사 | `items/query`에 `modifiedAt > '{마지막}'` |
-| 댓글 | `POST /api/v3/items/{id}/comments`(현행) |
+| 트래커·필드 확인(기동 점검) | `GET /cb/api/v3/projects/{id}/trackers`, `GET /cb/api/v3/trackers/{id}/schema` — 공통 필드(`FF Feature ID` 등)의 필드 ID를 찾아 둔다 |
+| Feature의 산출물 찾기 | `POST /cb/api/v3/items/query` cbQL `tracker.id IN (…) AND '{trackerId}.customField[n]' = 'FEAT-…'`(트래커마다 필드 ID가 달라 트래커별로 묶는다, 페이지 500) |
+| 항목·관계 | `POST /cb/api/v3/items/relations`(묶음) — `downstreamReferences`·`upstreamReferences`(참조 필드 값)·`incoming/outgoingAssociations` |
+| 변경 대사(유일한 수신 경로) | `items/query`에 `modifiedAt >= '{마지막 - 겹침 2분}'`, `(id, version)`으로 중복 제거, 바뀐 항목은 `/history` |
+| suspect 대조 | `items/query` `tracker.id IN (…) AND hasSuspectedLink = 'true'` |
+| 댓글 | `POST /cb/api/v3/items/{id}/comments` **multipart/form-data**(`comment`, `commentFormat=PlainText`) — 지금 어댑터가 JSON으로 보내는 것을 고친다 |
+| 호출 제한 | 초당 3회·분당 120회 토큰 버킷, 429면 `Retry-After`(또는 본문 `retryAfterSecond`)만큼 쉰다 |
+
+- **수신 경로**: codeBeamer는 바깥 URL로 webhook을 보내지 않는다(`80-51` §5). 지금 `POST /api/webhooks/codebeamer`는 사내에 Java 리스너 플러그인을 둘 때만 쓰는 선택 경로로 남기고, 기본은 **5분 주기 대사**(`FF_ALM_CB_POLL_MS`)다. 게이트 판정 직전에는 해당 Feature 산출물을 즉시 다시 읽는다.
+- **충돌 감지**: codeBeamer는 낙관적 잠금이 없다. FF는 codeBeamer에 댓글만 쓰므로 쓰기 충돌은 없고, 관측 `version` 비교로 변경만 감지한다.
 
 ## 6. 모의 서버 (`FF/tools/ext-mocks`, D-ALM-16)
 
@@ -235,8 +241,9 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 | API | REST v3: issue CRUD·transitions·comment·`search/jql`·`field`·`issueLink`·`project/{key}/statuses`·`myself`, v2 별칭 일부 | REST v3: projects·trackers·fields(선택지·`TrackerItemReference`)·items CRUD·`items/query`(cbQL 부분)·relations·associations·comments·워크플로 전이 |
 | 워크플로 | 이슈 유형(Epic·Story·Task·Bug·Change Request)별, Epic은 §4.3 전이만 | §5.2, 승인 상태 이름 설정 가능 |
 | 사용자 필드 | 범위·ASIL·Feature DB·읽기 전용 FF 필드(§4.2) | 공통 필드(§5.1) |
-| 이벤트 | 변경마다 FF 웹훅으로 POST(`X-Hub-Signature` HMAC, `X-Atlassian-Webhook-Identifier`) | 변경마다 FF 웹훅으로 POST(`X-CB-Signature`, `X-CB-Delivery`) — 실서버 알림 방식은 확인 필요(§11 A-5) |
-| revision | `updated`(ms) | item `version` 증가, 관계 suspect 자동 표시(위 항목 수정 시) |
+| 이벤트 | 변경마다 FF 웹훅으로 POST(`X-Hub-Signature` HMAC, `X-Atlassian-Webhook-Identifier`) | **기본은 보내지 않는다**(실서버와 같음, `80-51` §5). `CB_MOCK_WEBHOOK=on`일 때만 Java 리스너 플러그인 흉내로 `X-CB-Signature`·`X-CB-Delivery` POST |
+| revision | `updated`(ms) | item `version` 증가·`modifiedAt` 갱신(시간대 표기 없음), 이력 `/history`. 관계별 suspect는 응답에 넣지 않고 cbQL `hasSuspectedLink`만 답한다(실서버와 같음) |
+| 호출 제한 | — | 초당 3회·분당 120회, 넘으면 429 + `Retry-After`(`CB_MOCK_THROTTLE=off`로 끔) |
 | 시험 조작 | `/_mock/act`(사람 편집 흉내), `/_mock/drop-next-webhook`(웹훅 유실), `/_mock/reset`, `/_mock/seed` | 같음 |
 | 앱 흉내 | `/_mock/app/epic-form` — FF 앱 API를 부르는 HTML 패널 | — |
 | 시드 | FF 데모 Feature에 맞춘 Epic·Story·CR | 데모 Feature마다 8종 일부를 일부러 미완결로(작성률 화면 확인용) |
@@ -289,5 +296,5 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 | A-2 | Feature ID 도메인 포함 형식과 기존 ID | `FEAT-BC-0001`(Feature DB 도메인 약어 2글자 + 도메인별 4자리), 기존 `FEAT-00001`은 유지·두 형식 허용 |
 | A-3 | 실제 JIRA 환경(Cloud·Data Center)과 앱 형태 | 모의는 Cloud v3, 앱은 환경 확정 뒤 |
 | A-4 | 사이버보안 요구가 필수인 Feature의 기준 | 안전 프로파일의 TARA 대상(차량 외부 통신·원격 제어·OTA 관련) |
-| A-5 | codeBeamer 실서버 버전과 알림(웹훅)·suspect API 제공 여부 | 모의는 웹훅·suspect 제공, 실서버에 없으면 대사·FF 계산으로 대체 |
+| A-5 | codeBeamer 실서버 버전, 사내 Java 리스너 플러그인 유무 | **역공학으로 확인(80-51)**: 바깥 webhook 없음·관계별 suspect REST 없음 → 주기 대사 + FF 계산이 기본. 실서버 판 번호와 플러그인 유무만 남음 |
 | A-6 | 실서버 트래커·필드 ID | 실서버 접근 뒤 `CODEBEAMER_TRACKERS`로 대응 |

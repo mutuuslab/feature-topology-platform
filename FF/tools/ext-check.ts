@@ -138,8 +138,9 @@ const FIELD_HINTS: Record<string, string[]> = {
   trim: ['trim', '트림', 'grade'],
   asil: ['asil'],
   ownerId: ['owner', '담당', 'organization', '조직', 'team'],
+  featureDb: ['feature db', 'featuredb', 'feature ref', '기준 id', '기준 행'],
 };
-const FIELD_ENV: Record<string, string> = { country: 'JIRA_FIELD_COUNTRY', vehicleModel: 'JIRA_FIELD_VEHICLE_MODEL', trim: 'JIRA_FIELD_TRIM', asil: 'JIRA_FIELD_ASIL', ownerId: 'JIRA_FIELD_OWNER' };
+const FIELD_ENV: Record<string, string> = { country: 'JIRA_FIELD_COUNTRY', vehicleModel: 'JIRA_FIELD_VEHICLE_MODEL', trim: 'JIRA_FIELD_TRIM', asil: 'JIRA_FIELD_ASIL', ownerId: 'JIRA_FIELD_OWNER', featureDb: 'JIRA_FIELD_FEATURE_DB' };
 export interface JiraField {
   id: string;
   name: string;

@@ -108,7 +108,7 @@
       "evidence": [
         "contracts/src/rules/topology.ts:55",
         "contracts/src/rules/catalog.ts:82",
-        "contracts/src/rules/lifecycle.ts:97"
+        "contracts/src/rules/lifecycle.ts:99"
       ],
       "tests": [
         "contracts/src/rules/topology.test.ts",
@@ -122,7 +122,7 @@
     "FFP-F007": {
       "verdict": "부분",
       "evidence": [
-        "contracts/src/rules/lifecycle.ts:106",
+        "contracts/src/rules/lifecycle.ts:116",
         "backend/src/domains/d01-policy/registry/lifecycle.service.ts:76",
         "backend/src/domains/d01-policy/registry/release-signoff.service.ts:84"
       ],
@@ -160,7 +160,7 @@
     "FFP-F009": {
       "verdict": "구현",
       "evidence": [
-        "contracts/src/rules/lifecycle.ts:113",
+        "contracts/src/rules/lifecycle.ts:123",
         "backend/src/domains/d01-policy/registry/lifecycle.service.ts:102",
         "backend/src/domains/d01-policy/policy-store/policy.service.ts:197"
       ],
@@ -181,7 +181,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/topology/gate.service.ts:89",
         "backend/src/domains/d01-policy/policy-store/policy.service.ts:221",
-        "contracts/src/rules/lifecycle.ts:101"
+        "contracts/src/rules/lifecycle.ts:111"
       ],
       "tests": [
         "backend/test/d01/gate-decision.spec.ts",

@@ -3,6 +3,11 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## Feature DB · SW 개발비 산정 · JIRA/codeBeamer 연계 (2026-11-04 사용자 요청, 브랜치 `feat/feature-db-alm`, worktree `-cost`)
+- **설계(정본)** `docs/30-data-model/30-95-feature-reference-db.md`(D-REF-1~17) · `docs/20-architecture/20-94-cost-estimation.md`(D-COST-1~13) · `docs/80-integration/80-50-alm-sync-jira-codebeamer.md`(D-ALM-1~16, 승인 전) · `80-51-codebeamer-api-evidence.md`(REA 역공학: 바깥 webhook 없음·관계별 suspect REST 없음).
+- **R1·R2 구현(승인됨)** — 엑셀 산정 도구 v1.3 → `data/reference/feature-db/v1.3`(`npm run refdb:import`, 1,052행·출처 73·세부기능 840·도메인 10/컴포넌트 69), `data:check`가 재가져오기·엑셀 지표(995/53/4) 대조. 마이그레이션 080, 시드는 FF_SEED=none에도. `/api/refdb/*`(검색·상세·분류·현황·추가 요청). Feature 등록 `featureRefs` 필수(대표 1+포함 N)·ASIL 사유·같은 범위 같은 대표 409(사유 시 허용)·요청 중/폐기 행은 APPROVED 막음(FEATURE_REF_BLOCKED). JIRA Epic `JIRA_FIELD_FEATURE_DB`. 화면 `/master/feature-db`, `/feature/propose` ① 기준 행 고르기(미리 채움·추가 요청). 시험 `backend/test/d01/refdb.spec.ts`·`frontend/src/__tests__/featureDb.test.tsx`·`screensHome`(제안).
+- **남은 것** R3(변경 요청 → 도메인 검토 → 관리자 승인 → 버전 발행, 역할 REFDB_ADMIN·DOMAIN_REVIEWER), Feature ID 도메인 포함 형식(80-50 A-2 확인 필요), C1~C4 개발비 산정, 80-50 승인 뒤 A1~A6. 모의 서버 `tools/ext-mocks` 미작성.
+
 ## 출시 준비(Production Readiness) + Jira식 대시보드 (2026-10-24 사용자 요청 "전체 하네스 엔지니어링으로 실제 고객이 사용할 수 있을 정도의 퀄리티" · "대시보드는 Jira 스타일, Layout은 Drag로 조정·추가")
 - **업무 이름 표시(2026-10-25 사용자 요청)** — 내부 절차·활동 코드는 사용자 화면에 쓰지 않는다. 홈 가젯·내 업무·담당자 표·절차 흐름도/텍스트·상세·산출물 참조·따라하기·완료 서랍·접근성 이름을 업무 이름으로 통일한다. 원천 모델·저장 식별자·주소는 보존한다. 문장 속 절차 참조도 이름으로 읽고 중복 괄호 참조는 제거한다. 화면·접근성의 코드 노출 회귀 18건 포함 프론트 837건 통과. 실제 브라우저 8경로에서 코드 노출·페이지 가로 넘침 0 확인. `verify:full`의 39단계 모두 통과(선행 32단계 + 시험 문구 수정 후 브라우저 이후 7단계 분할 재검증, 주 브라우저 787건 포함). 브라우저 시험 중 다음 시험 준비에서 응답하지 않던 작업자 하나는 이 실행기의 소유를 확인한 뒤 중지했고, 실행기가 새 작업자로 이어서 나머지 시험을 통과했다. 로컬 앱 프론트 반영·백엔드 재시작·health 200 확인.
 - **업무 절차 완료 서명 무결성(2026-10-25)** — CodeQL #28의 선택 서명 검증 경로를 점검하다 실제 변조 사례 3건 재현: 다른 사람의 유효한 서명 대입·서명 시각 변경·해시 변경도 유효로 표시됨. 완료 담당자의 키로 항상 검증하고 서명자·시각·해시를 대조한다. 서명 없는 완료는 기존대로 허용하고 서명·검증 결과 null 유지, 역할 검사는 서명 선택과 무관하게 적용. 수정 전 회귀 시험 3건 실패, 수정 후 업무 절차 시험 14건 모두 통과. 전체 `npm run verify` **35단계 통과**(계약 437·백엔드 814·프론트 819, e2e 787·정적 데모 74·SSO·첫 실행 포함, EXIT=0). --full 전용 4단계는 이번 백엔드 수정에서 재실행하지 않았다.

@@ -250,7 +250,7 @@ function EpicCreateForm() {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [user, setUser] = useState('kim.author');
-  const [scope, setScope] = useState<Record<EpicScopeField, string>>({ country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', asil: 'QM', ownerId: '' });
+  const [scope, setScope] = useState<Record<EpicScopeField, string>>({ country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', asil: 'QM', ownerId: '', featureDb: '' });
   const create = useApiMutation<{ item: { key: string }; result: { outcome: string; summary: string } | null }>('mockExtCreate', INVALIDATE);
   return (
     <section aria-labelledby="sync-epic-new" style={{ display: 'grid', gap: 'var(--sp-2)', marginTop: 'var(--sp-4)' }}>

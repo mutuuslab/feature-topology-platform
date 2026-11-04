@@ -40,7 +40,7 @@ describe('실제 연결 설정 — 상태 이름 덮어쓰기·필수 환경 변
     const env = (o: Record<string, string>) => (k: string) => o[k];
     expect(missingLiveEnv('GITLAB', env({ GITLAB_URL: 'https://g', GITLAB_TOKEN: 't' }))).toEqual(['GITLAB_PROJECT', 'GITLAB_WEBHOOK_TOKEN']);
     const jira = { JIRA_URL: 'https://j', JIRA_TOKEN: 't', JIRA_EPIC_PROJECT: 'A', JIRA_CR_PROJECT: 'A', JIRA_DEFECT_PROJECT: 'A', JIRA_WEBHOOK_SECRET: 's' };
-    expect(missingLiveEnv('JIRA', env(jira))).toEqual(['JIRA_FIELD_COUNTRY', 'JIRA_FIELD_VEHICLE_MODEL', 'JIRA_FIELD_TRIM', 'JIRA_FIELD_ASIL', 'JIRA_FIELD_OWNER']);
+    expect(missingLiveEnv('JIRA', env(jira))).toEqual(['JIRA_FIELD_COUNTRY', 'JIRA_FIELD_VEHICLE_MODEL', 'JIRA_FIELD_TRIM', 'JIRA_FIELD_ASIL', 'JIRA_FIELD_OWNER', 'JIRA_FIELD_FEATURE_DB']);
     expect(missingLiveEnv('JIRA', env({ ...jira, FF_EPIC_AUTOCREATE: 'off' }))).toEqual([]);
     for (const s of EXT_SYSTEMS) expect(EXT_LIVE_ENV[s].filter((e) => /TOKEN|SECRET/.test(e.key)).every((e) => e.secret)).toBe(true);
   });

@@ -1,8 +1,8 @@
-// Feature DB·SW 개발비 산정 메뉴(2026-11-04 "메뉴만") — 메뉴 위치와 준비 중 화면이 열리는지 지킨다.
+// Feature DB·SW 개발비 산정 메뉴(2026-11-04) — 메뉴 위치, Feature DB 화면 연결, 개발비 산정 준비 중 화면을 지킨다.
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { MENU, routeOf } from '../routes';
-import { FeatureDbScreen, SwCostScreen } from '../screens/planned/PlannedScreens';
+import { SwCostScreen } from '../screens/planned/PlannedScreens';
 import { featureDb, swCost } from '../copy/refdbCost';
 
 afterEach(cleanup);
@@ -20,13 +20,13 @@ describe('Feature DB·SW 개발비 산정 메뉴', () => {
     expect(routeOf('/cost')?.parent).toBe('/biz/trials');
   });
 
-  it('준비 중 화면은 메뉴 이름을 제목으로 보이고 설계 문서를 가리킨다', () => {
-    render(<FeatureDbScreen />);
-    expect(screen.getByRole('heading', { level: 1, name: featureDb.title })).toBeTruthy();
-    expect(screen.getByText(featureDb.doc)).toBeTruthy();
-    cleanup();
+  it('개발비 산정 준비 중 화면은 메뉴 이름을 제목으로 보이고 설계 문서를 가리킨다', () => {
     render(<SwCostScreen />);
     expect(screen.getByRole('heading', { level: 1, name: swCost.title })).toBeTruthy();
     expect(screen.getByText(swCost.doc)).toBeTruthy();
+  });
+
+  it('Feature DB 메뉴는 준비 중이 아니라 Feature DB 화면(D01-01)으로 열린다', () => {
+    expect(routeOf('/master/feature-db')?.components).toEqual(['D01-01']);
   });
 });

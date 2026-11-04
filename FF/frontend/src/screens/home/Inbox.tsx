@@ -1,6 +1,9 @@
 // v2 (P10-C4) — / 내 대시보드 · /admin/approval 검토함 · /feature/propose Feature 제안 · /master/define Feature 등록.
 // 검토함은 승인할 일을 모아 "내 차례인가"를 보이고 실제 승인은 각 화면에서 한다. 차단·복원의 내 차례 판정은 서버와 같은 contracts approvalCheck
 // (요청자·이미 승인한 사람·FSM 칸·복원은 차단 승인자 제외 — FFG-PLT-005·DEAC-008).
+import type { FeatureRefLink } from '@ff/contracts';
+import { refPicker } from '../../copy/refdbCost';
+import { RefPicker, type RefSummary } from '../refdb/RefPicker';
 import { lazy, Suspense, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { approvalCheck, approvalPlan, reportRolesOf, type Role } from '@ff/contracts';
@@ -195,13 +198,35 @@ const PROPOSE_INITIAL = { name: '', description: '', requirementIds: '', country
 
 export function ProposeScreen() {
   const P = ko.master.propose;
+  const R = refPicker;
   const nav = useNavigate();
   const perm = usePermission(['FEATURE_AUTHOR']);
   const create = useApiMutation<{ featureId: string; version: string }>('createFeature', ['listFeatures', 'events', 'audit']);
   const [f, setF] = useState(PROPOSE_INITIAL);
   const [cps, setCps] = useState<string[]>(['Flag']);
+  // ① Feature DB 기준 행(30-95 D-REF-3) — 대표를 고르면 이름·설명·ASIL·태그를 채운다. 사람이 고친 칸은 다시 덮지 않는다
+  const [refs, setRefs] = useState<FeatureRefLink[]>([]);
+  const [picked, setPicked] = useState<Record<string, RefSummary>>({});
+  const [pre, setPre] = useState<Partial<typeof PROPOSE_INITIAL>>({});
+  const [asilReason, setAsilReason] = useState('');
+  const [dupReason, setDupReason] = useState('');
+  const primary = picked[refs.find((l) => l.role === 'PRIMARY')?.refId ?? ''];
+  const onRefs = (links: FeatureRefLink[], next: Record<string, RefSummary>) => {
+    setRefs(links);
+    setPicked(next);
+    const p = next[links.find((l) => l.role === 'PRIMARY')?.refId ?? ''];
+    if (!p || p.refId === primary?.refId) return;
+    const fill = { name: p.nameKo, description: p.summary ?? p.nameEn, asil: p.asilRep, tags: [p.domain, p.component].join(', ') };
+    setF((x) => {
+      const out = { ...x };
+      for (const [k, v] of Object.entries(fill) as [keyof typeof fill, string][]) if (x[k] === PROPOSE_INITIAL[k] || x[k] === pre[k]) out[k] = v;
+      return out;
+    });
+    setPre(fill);
+  };
+  const origin = (k: keyof typeof PROPOSE_INITIAL) => (pre[k] === undefined ? undefined : f[k] === pre[k] ? R.prefilled : R.edited);
   // 입력이 있으면 떠나기 전에 묻는다 — 등록이 끝나면(상세로 이동) 묻지 않는다(출시 준비 RD-UX-02)
-  useUnsavedGuard(!create.isSuccess && (Object.entries(f).some(([k, v]) => v !== PROPOSE_INITIAL[k as keyof typeof PROPOSE_INITIAL]) || cps.join() !== 'Flag'));
+  useUnsavedGuard(!create.isSuccess && (Object.entries(f).some(([k, v]) => v !== PROPOSE_INITIAL[k as keyof typeof PROPOSE_INITIAL]) || cps.join() !== 'Flag' || refs.length > 0));
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
   // 서버 입력 검사 오류는 해당 칸 옆에(RD-UX-01) — 칸 이름은 요청 본문 키와 같다
   const fe = fieldErrors(create.error);
@@ -213,10 +238,11 @@ export function ProposeScreen() {
   return (
     <div className="ds-screen">
       <PageHeader codes="D01-01 · PROPOSED 0.1.0" title={P.title} lead={P.lead} message={{ tone: 'neutral', text: perm.ok ? P.key.can : P.key.cannot }} />
+      <RefPicker value={refs} picked={picked} onChange={onRefs} disabled={!perm.ok || STATIC_MODE} />
       <Panel id="propose-form" tour="feature-form">
         <div className="ds-split">
           <div className="ds-stack">
-            <Field label={P.name} error={fe.name}>
+            <Field label={P.name} hint={origin('name')} error={fe.name}>
               <input className="ds-input" name="name" value={f.name} onChange={set('name')} />
             </Field>
             <Field label={P.description} error={fe.description}>
@@ -237,6 +263,11 @@ export function ProposeScreen() {
                 <option key={a} value={a}>{a}</option>
               ))}
             </Select>
+            {primary && f.asil !== primary.asilRep && (
+              <Field label={R.asilReason} hint={R.asilDiff(primary.asilRep)} error={fe.asilDeviationReason}>
+                <input className="ds-input" name="asilDeviationReason" value={asilReason} onChange={(e) => setAsilReason(e.target.value)} />
+              </Field>
+            )}
             {text('upgVc', P.upgVc)}
             <fieldset className="ds-choices" aria-label={P.cps}>
               <legend className="ds-field__label">{P.cps}</legend>
@@ -249,15 +280,20 @@ export function ProposeScreen() {
             </fieldset>
           </div>
         </div>
+        {(fe.duplicateReason || dupReason) && (
+          <Field label={R.duplicateReason} error={fe.duplicateReason}>
+            <input className="ds-input" name="duplicateReason" value={dupReason} onChange={(e) => setDupReason(e.target.value)} />
+          </Field>
+        )}
         <ErrorNote error={create.error} />
         <Button
           variant="primary"
           data-ui="createFeature"
-          disabled={!perm.ok || STATIC_MODE || !f.name.trim() || !f.description.trim() || !f.ownerId.trim() || create.isPending}
+          disabled={!perm.ok || STATIC_MODE || !primary || !f.name.trim() || !f.description.trim() || !f.ownerId.trim() || create.isPending}
           title={perm.hint}
           onClick={() =>
             create.mutate(
-              { body: { name: f.name.trim(), description: f.description.trim(), requirementIds: list(f.requirementIds), country: f.country.trim(), vehicleModel: f.vehicleModel.trim(), trim: f.trim.trim(), ownerId: f.ownerId.trim(), asil: f.asil, tags: list(f.tags), upgVc: list(f.upgVc), controlPoints: cps } },
+              { body: { featureRefs: refs, ...(asilReason.trim() ? { asilDeviationReason: asilReason.trim() } : {}), ...(dupReason.trim() ? { duplicateReason: dupReason.trim() } : {}), name: f.name.trim(), description: f.description.trim(), requirementIds: list(f.requirementIds), country: f.country.trim(), vehicleModel: f.vehicleModel.trim(), trim: f.trim.trim(), ownerId: f.ownerId.trim(), asil: f.asil, tags: list(f.tags), upgVc: list(f.upgVc), controlPoints: cps } },
               { onSuccess: (r) => nav(`/features/${r.featureId}/${r.version}`) },
             )
           }

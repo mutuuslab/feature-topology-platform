@@ -130,19 +130,52 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     expect(online?.querySelector('.jd-num')?.textContent).toBe('1');
   });
 
-  it('Feature 제안 — 필수 항목 전에는 막히고, 등록하면 새 Feature 상세로 간다', async () => {
-    handler = (url, init) => (url === '/api/features' && init?.method === 'POST' ? { status: 201, body: { featureId: 'FEAT-00500', version: '0.1.0' } } : undefined);
+  const AUTO_HOLD = { refId: 'CH-BRK-009', status: 'ACTIVE', replacedBy: null, domain: 'Chassis & Vehicle Dynamics', cluster: 'Brake control', component: 'Brake control (ESC/ABS)', swStack: 'Application', nameEn: 'Auto hold', nameKo: '오토 홀드', aliases: ['AVH'], lifecycle: 'Commodity', asilRep: 'B', tshirt: 'S', summary: '정차 중 브레이크를 떼어도 제동압을 유지한다' };
+  const proposeApi: Handler = (url, init) => {
+    if (url.startsWith('/api/refdb/refs')) return { body: { items: [AUTO_HOLD], total: 1 } };
+    if (url === '/api/features' && init?.method === 'POST') return { status: 201, body: { featureId: 'FEAT-00500', version: '0.1.0' } };
+    return undefined;
+  };
+  const pickAutoHold = async () => {
+    fireEvent.change(screen.getByLabelText(/Feature DB 검색/), { target: { value: 'AVH' } });
+    fireEvent.click(await screen.findByRole('button', { name: '대표로' }));
+  };
+
+  it('Feature 제안 — Feature DB 대표 기준 행 없이는 막히고, 고르면 이름·설명·ASIL을 채워 연결과 함께 등록한다 (30-95 D-REF-3·4)', async () => {
+    handler = proposeApi;
     mount('author', '/feature/propose', <ProposeScreen />, <Route path="/features/:id/:ver" element={<div>detail-page</div>} />);
     const submit = screen.getByRole('button', { name: '제안 등록' });
-    expect(submit).toHaveProperty('disabled', true);
     fireEvent.change(screen.getByLabelText('이름'), { target: { value: '좌석 열선 원격' } });
     fireEvent.change(screen.getByLabelText('설명'), { target: { value: '원격으로 좌석 열선을 켠다' } });
     fireEvent.change(screen.getByLabelText('담당'), { target: { value: 'Body Platform Team' } });
+    // 대표 기준 행이 없으면 필수 칸을 채워도 막힌다
+    expect(submit).toHaveProperty('disabled', true);
+    fireEvent.change(screen.getByLabelText('이름'), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText('설명'), { target: { value: '' } });
+    await pickAutoHold();
+    // 비운 칸은 기준값으로 채운다
+    expect((screen.getByLabelText(/^이름/) as HTMLInputElement).value).toBe('오토 홀드');
+    expect((screen.getByLabelText('설명') as HTMLTextAreaElement).value).toBe('정차 중 브레이크를 떼어도 제동압을 유지한다');
+    expect((screen.getByLabelText('ASIL') as HTMLSelectElement).value).toBe('B');
     fireEvent.change(screen.getByLabelText('요구사항 ID (쉼표로 구분)'), { target: { value: 'REQ-1, REQ-2' } });
     fireEvent.click(screen.getByRole('button', { name: '제안 등록' }));
     expect(await screen.findByText('detail-page')).toBeTruthy();
     const post = calls.find((c) => c.method === 'POST')!;
-    expect(post.body).toMatchObject({ name: '좌석 열선 원격', requirementIds: ['REQ-1', 'REQ-2'], controlPoints: ['Flag'], asil: 'QM' });
+    expect(post.body).toMatchObject({ name: '오토 홀드', asil: 'B', requirementIds: ['REQ-1', 'REQ-2'], controlPoints: ['Flag'], featureRefs: [{ refId: 'CH-BRK-009', role: 'PRIMARY' }] });
+    expect(post.body).not.toHaveProperty('asilDeviationReason');
+  });
+
+  it('Feature 제안 — ASIL을 대표 기준 행과 다르게 고르면 이유 칸이 열리고 그 이유를 함께 보낸다', async () => {
+    handler = proposeApi;
+    mount('author', '/feature/propose', <ProposeScreen />, <Route path="/features/:id/:ver" element={<div>detail-page</div>} />);
+    await pickAutoHold();
+    expect(screen.queryByLabelText(/ASIL을 다르게 정한 이유/)).toBeNull();
+    fireEvent.change(screen.getByLabelText('ASIL'), { target: { value: 'C' } });
+    fireEvent.change(screen.getByLabelText(/ASIL을 다르게 정한 이유/), { target: { value: '경사로 정차까지 맡아 C로 올림' } });
+    fireEvent.change(screen.getByLabelText('담당'), { target: { value: '제동개발팀' } });
+    fireEvent.click(screen.getByRole('button', { name: '제안 등록' }));
+    expect(await screen.findByText('detail-page')).toBeTruthy();
+    expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ asil: 'C', asilDeviationReason: '경사로 정차까지 맡아 C로 올림' });
   });
 
   it('메인 화면 업무 절차 지도 — 13개 절차 중 완료·내 차례·Gate를 한눈에', async () => {

@@ -1,7 +1,7 @@
 ---
 id: ARC-FEATURE-REFDB
 type: entity
-title: "기능 기준 DB — Feature 등록 정보 원천 (엑셀 03_FeatureDB 이전)"
+title: "Feature DB — Feature 등록 정보 원천 (엑셀 03_FeatureDB 이전)"
 status: draft
 version: 0.1.0
 owner: feature-architect
@@ -12,7 +12,7 @@ traces:
 last_updated: 2026-11-04
 ---
 
-# 30-95 기능 기준 DB — Feature 등록 정보 원천
+# 30-95 Feature DB — Feature 등록 정보 원천
 
 > 원본: `Automotive_SW_개발비_산정도구_FeatureDB_v1.3.xlsx`의 `03_FeatureDB`(1,052행 × 75열)와 딸린 시트
 > `03b_Feature카탈로그`·`09_출처`·`13_세부기능후보`·`15_DB운영`·`10_UVL검증`.
@@ -21,7 +21,7 @@ last_updated: 2026-11-04
 
 ## 1. 한 줄 요약
 
-엑셀 Feature DB를 FF의 **기능 기준 DB**(차종과 무관한 기능 정의·특성·근거)로 한 번 옮기고, 이후로는 **FF가 원천**이 된다.
+엑셀 Feature DB를 FF의 **Feature DB**(차종과 무관한 기능 정의·특성·근거)로 한 번 옮기고, 이후로는 **FF가 원천**이 된다.
 FF Feature(국가·차종·트림 범위, 버전·수명주기)는 등록할 때 **기준 행을 반드시 하나 이상 참조**하고(대표 1 + 포함 N),
 기준 행에서 이름·설명·대표 ASIL·분류 태그·규제·별칭을 미리 채운다. 기준 행 수정은 **변경 요청 → 도메인 검토 → DB 관리자 승인 → 버전 발행**으로만 한다.
 
@@ -109,7 +109,7 @@ FF Feature(국가·차종·트림 범위, 버전·수명주기)는 등록할 때
 `FeatureVersionRow.doc`에 `featureRefs: { refId, role: 'PRIMARY' | 'INCLUDED', refVersion }[]`를 더한다.
 
 - 대표(`PRIMARY`)는 정확히 1개, 포함(`INCLUDED`)은 0개 이상, 같은 행 중복 금지 — zod refine.
-- `refVersion` = 연결 당시 기준 DB 발행 버전(예: `v1.3`). 기준 행이 바뀌면 Feature 상세에 "기준 행이 v1.4에서 바뀜" 표시(자동으로 Feature 값을 바꾸지 않는다).
+- `refVersion` = 연결 당시 Feature DB 발행 버전(예: `v1.3`). 기준 행이 바뀌면 Feature 상세에 "기준 행이 v1.4에서 바뀜" 표시(자동으로 Feature 값을 바꾸지 않는다).
 - 새 Feature 버전(`POST /:id/versions`)은 앞 버전 연결을 복사한다. 범위(국가·차종·트림)와 달리 연결은 PROPOSED 초안 수정(`UpdateDraftBody`)에서 바꿀 수 있다.
 - 조회용 색인 표 `feature_ref_link(feature_id, version, ref_id, role)` — 기준 행 → 사용 중인 Feature 역참조, 영향 분석(§8.3)에 쓴다. `feature_version` 저장과 같은 tx에서 갱신.
 
@@ -153,7 +153,7 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 │ ─────────────────────────────────────── │    │ 태그   Chassis·Brake·Application …   │
 │ ● CH-BRK-009 오토 홀드   B · S · 활성    │    │ 국가·차종·트림·담당 (직접 입력)       │
 │ ○ CH-BRK-006 경사로 밀림 방지 B · S      │    │ 기준 행: 대표 CH-BRK-009             │
-│ [+ 포함 행 추가]  [기준 DB에 없음 → 요청] │    │          포함 + 추가                 │
+│ [+ 포함 행 추가]  [Feature DB에 없음 → 요청] │    │          포함 + 추가                 │
 └──────────────────────────────────────────┘    └──────────────────────────────────────┘
 ```
 
@@ -181,9 +181,9 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 
 미리 채운 칸에는 "기준값"·"수정됨" 표시를 붙인다(문구는 `copy/ko.ts`).
 
-### 6.4 기준 DB에 없는 기능 (D-REF-7)
+### 6.4 Feature DB에 없는 기능 (D-REF-7)
 
-1. 등록 화면 "기준 DB에 없음 → 요청" → 최소 정보(도메인·컴포넌트·영/한 기능명·T-shirt·대표 ASIL·출처 또는 근거 메모) 입력.
+1. 등록 화면 "Feature DB에 없음 → 요청" → 최소 정보(도메인·컴포넌트·영/한 기능명·T-shirt·대표 ASIL·출처 또는 근거 메모) 입력.
 2. 서버가 **정식 형식 ID를 즉시 부여**(`도메인약어-컴포넌트약어-다음번호`)하고 상태 `PENDING`, 변경 요청 `ref_change(kind=ADD)`를 만든다. ID를 바꿔 쓰지 않으므로 연결 재작성이 없다.
 3. 요청자는 그 행을 대표로 Feature를 바로 등록한다.
 4. DB 관리자가 승인하면 `ACTIVE`(또는 근거 부족 시 `REVIEW`)로 발행, 거부하면 `RETIRED` + 사유 — 연결된 Feature는 승인 전이 막혀 다른 행으로 다시 연결해야 한다(알림).
@@ -196,13 +196,13 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 - `PENDING` 행 요청은 JIRA에서 만들 수 없다(사람이 화면에서 요청).
 - `featureFromEpic`(`ext-sync.service.ts`) 시험에 연결 성공·보류·폐기 행 3경우를 더한다.
 
-## 8. 기준 DB 운영 (D-REF-8)
+## 8. Feature DB 운영 (D-REF-8)
 
 ### 8.1 역할 (신설, `ROLES`·`ROLE_LABEL`·부서 RACI 반영)
 
 | 역할 | 하는 일 | 엑셀 `15_DB운영` |
 |---|---|---|
-| `REFDB_ADMIN` 기준 DB 관리자 | 변경 요청 최종 승인, 버전 발행, 분류·출처 관리, 정기 점검 일정 | DB 관리자 |
+| `REFDB_ADMIN` Feature DB 관리자 | 변경 요청 최종 승인, 버전 발행, 분류·출처 관리, 정기 점검 일정 | DB 관리자 |
 | `DOMAIN_REVIEWER` 도메인 검토자 | 담당 도메인 행의 변경 요청에 검토 의견(동의·보완·반대). 도메인 범위가 계정 속성 | 도메인 검토자 |
 | (모든 사용자) | 변경 요청 작성 | 사용자(구매·개발) |
 
@@ -218,13 +218,13 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 
 - **자동 점검**(규칙 표 `contracts/src/rules/refdb/registration-criteria.ts` — 엑셀 2절 그대로): ID 형식·재사용 금지, 필수 정보(도메인·클러스터·컴포넌트·영/한 기능명·T-shirt·대표 ASIL·출처 ID), 1차 출처 위치, 규모 근거 등급과 비교 행, 중복 점검 기준 ID, 선행 관계 대상 존재, 관리 정보. 실패 항목은 승인 버튼을 막지 않고 "보완 필요"로 표시하되, 필수 정보 누락은 막는다.
 - 요청은 필드 단위 차이(`before`·`after`)를 저장. 승인은 그 차이를 적용.
-- **버전 발행**: 승인된 요청들을 묶어 `ref_release` 한 건(번호 자동 증가 v1.4…), 전체 기준 DB 정규화 해시를 기록. 발행 전까지 승인된 변경은 "발행 대기"로 보이고 등록 화면에는 반영되지 않는다(엑셀의 버전 발행과 같은 의미).
+- **버전 발행**: 승인된 요청들을 묶어 `ref_release` 한 건(번호 자동 증가 v1.4…), 전체 Feature DB 정규화 해시를 기록. 발행 전까지 승인된 변경은 "발행 대기"로 보이고 등록 화면에는 반영되지 않는다(엑셀의 버전 발행과 같은 의미).
 
 ### 8.3 영향 표시
 
 변경 요청 상세에 `feature_ref_link`로 **이 행을 쓰는 FF Feature 목록**과 **진행 중 산정 과제**를 보여 준다. 대표 ASIL·T-shirt 변경은 산정 과제에 "기준 변경됨, 재계산 필요" 표시(`20-94` §6.4).
 
-### 8.4 품질 지표 (엑셀 4절 → 기준 DB 화면 머리)
+### 8.4 품질 지표 (엑셀 4절 → Feature DB 화면 머리)
 
 전체 행 수, 상태별 수, 상태 미입력 0, 출처 없는 행 0, 근거 확인 12개월 경과 행, 규모 근거 D 비중(현재 83.6%), 발행 대기 요청 수. 지표 계산은 `contracts/src/rules/refdb/quality.ts`.
 
@@ -252,7 +252,7 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 | contracts | `FeatureRefRow` 스키마, `featureRefs` refine(대표 1·중복 금지), 상태 정책 표, 등록 기준 점검, 품질 지표, 도메인 대응표 |
 | tools | `refdb:import` — 엑셀 → JSON 행 수·해시·파생 값 일치(§9) |
 | backend | 생성 시 연결 필수(400), `RETIRED` 거부, `PENDING`이면 APPROVED 막힘, 같은 범위 중복 409, 변경 요청 직무 분리, 발행 해시, JIRA 연결 3경우, 역할 없는 사용자의 벤치마크 € 미노출 |
-| frontend | 2단계 등록(검색·패싯·포함 행·요청), 기준값/수정됨 표시, ASIL 사유 필수, 기준 DB 목록·상세·변경 요청 |
+| frontend | 2단계 등록(검색·패싯·포함 행·요청), 기준값/수정됨 표시, ASIL 사유 필수, Feature DB 목록·상세·변경 요청 |
 | e2e | 검색 → 등록 → 요청 행 승인 → Feature 승인 전이 |
 | 절차 모델 | FPW.1 "Feature 등록·분류"에 기준 행 선택·추가 요청 활동, 새 역할 2개 — `workflow:check`·`workflows.test.ts` |
 | verify | `data:check`에 이전 점검, openapi·정적 스냅샷 갱신, 컴포넌트 manifest(D01-01 확장) `IMPLEMENTED` |
@@ -261,7 +261,7 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 
 | # | 질문 | 제 기본값 |
 |---|---|---|
-| R-1 | 화면 이름 — FF에서 "카탈로그"는 판매 상품(product)을 뜻한다 | **"기능 기준 DB"**, 메뉴는 MENU 2.0 "기준 정보" 묶음 |
+| R-1 | 화면 이름 — FF에서 "카탈로그"는 판매 상품(product)을 뜻한다 | **결정(2026-11-04 사용자): "Feature DB"** — 메뉴도 같은 이름(기준 정보 묶음) |
 | R-2 | `03b` 상세 정의와 `13` 세부기능 후보 840개 범위 | `03b`는 기준 행 `definition`으로 이전, `13`은 읽기 전용 참고 |
 | R-3 | 같은 범위 같은 대표 행 중복 | 409 + 사유 입력 시 허용 |
 | R-4 | 런타임 xlsx 내보내기 방식 | `tools/xlsx.ts` 최소 쓰기(새 의존성 없음) |
@@ -272,7 +272,7 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 
 | 단계 | 내용 | 완료 기준 |
 |---|---|---|
-| R1 | 분류·기준 행 표, 1회 이전 스크립트, 읽기 API·기준 DB 화면(목록·검색·상세·품질 지표) | `data:check` 이전 점검 통과 |
+| R1 | 분류·기준 행 표, 1회 이전 스크립트, 읽기 API·Feature DB 화면(목록·검색·상세·품질 지표) | `data:check` 이전 점검 통과 |
 | R2 | 등록 2단계·연결 필수·미리 채움·요청 행·APPROVED 막힘·JIRA·ECU 도메인 대응·시드 연결 | registry·ext-sync 시험, e2e |
 | R3 | 변경 요청·도메인 검토·발행·영향 표시·정기 점검 알림·xlsx 내보내기 | 직무 분리·발행 해시 시험 |
 

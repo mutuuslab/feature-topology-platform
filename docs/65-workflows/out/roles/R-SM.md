@@ -9,10 +9,6 @@ cycle: 0
 traces:
   depends_on:
     - WF-FPW-1
-    - WF-FPW-10
-    - WF-FPW-11
-    - WF-FPW-12
-    - WF-FPW-13
     - WF-FPW-2
     - WF-FPW-3
     - WF-FPW-4
@@ -21,6 +17,10 @@ traces:
     - WF-FPW-7
     - WF-FPW-8
     - WF-FPW-9
+    - WF-FPW-10
+    - WF-FPW-11
+    - WF-FPW-12
+    - WF-FPW-13
 last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
@@ -47,7 +47,7 @@ last_updated: 2026-11-04
 - [ ] 네 축 중 빈 값이 없고 분류 확정 서명이 남았다
 - [ ] F 등급 하향이면 재분석 Evidence가 연결되었다
 
-### FPW.1-A05 G1 등록·분류 판정 — 수행·책임 · G1 판정
+### FPW.1-A05 G1 등록·분류 판정 — 수행·책임
 - 프로세스: FPW.1 Feature 등록·분류
 - 시작: 앞 활동 완료
 - 입력: WP-FEAT-REG, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-REG-CLASS → 출력: WP-G1-DECISION
@@ -71,15 +71,15 @@ last_updated: 2026-11-04
 - [ ] 재-HARA 조건 해당 여부가 근거와 함께 기록되었다
 - [ ] 영향 받는 Feature와 회귀 시험 범위가 산정되었다
 
-### FPW.2-A02 HARA·TARA 공동 수행 — 수행·책임
+### FPW.2-A02 HARA 수행 — 수행·책임
 - 프로세스: FPW.2 HARA·변경 영향 판단
 - 시작: 앞 활동 완료
 - 입력: WP-IMPACT-ANALYSIS → 출력: WP-HARA-TARA
 - 플랫폼: 플랫폼 밖
-1. Safety Manager와 CSM이 같은 Item 정의를 기준으로 Kill·활성화 경로의 HARA와 TARA를 진행한다
-2. 각 분석의 결과(위험 사건·위협 시나리오)를 상대 분석에 넘겨 교차 검토하고 반영 내용을 기록한다
+1. Safety Manager가 Item 정의를 기준으로 Kill·활성화 경로의 위험 사건과 ASIL을 평가한다
+2. CSM의 TARA 결과(위협 시나리오)를 받아 위험 사건에 반영하고 교차 검토 내용을 기록한다
 3. ADS Feature는 원격 종료가 가능한 비활성화 등급과 요청 경로(봉투·명령 인증·Guard)를 갖췄는지 확인한다
-- [ ] 교차 검토 기록이 양쪽 분석에 남았다
+- [ ] TARA와의 교차 검토 기록이 HARA 결과에 남았다
 - [ ] ADS Feature가 원격 종료 불가 등급으로 분류되지 않았다
 
 ### FPW.2-A03 SOTIF 분석 갱신 — 책임(승인)
@@ -92,10 +92,10 @@ last_updated: 2026-11-04
 3. 평가 결과를 Safety Manager에게 넘겨 안전 판단에 쓰게 한다
 - [ ] SOTIF 분석의 대상 Version이 현재 Version과 같다
 
-### FPW.2-A05 G2 HARA 영향 판정 — 수행·책임 · G2 판정
+### FPW.2-A05 G2 HARA 영향 판정 — 수행·책임
 - 프로세스: FPW.2 HARA·변경 영향 판단
 - 시작: 앞 활동 완료
-- 입력: WP-HARA-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT → 출력: WP-G2-DECISION
+- 입력: WP-HARA-TARA, WP-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT → 출력: WP-G2-DECISION
 - 플랫폼: `judgeGate`, `/features/:id/:ver`, `/admin/approval`
 1. HARA·TARA·SOTIF·형식승인 판단이 모두 현재 Version 기준인지 확인하고, 빠진 것이 있으면 FAIL로 판정한다
 2. 판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다
@@ -142,7 +142,7 @@ last_updated: 2026-11-04
 3. 발견사항의 개선 조치와 담당을 기록해 Safety Manager에게 넘긴다
 - [ ] 검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다
 
-### FPW.7-A08 G7 출시·활성화 판정 — 수행 · G7 판정
+### FPW.7-A08 G7 출시·활성화 판정 — 수행
 - 프로세스: FPW.7 출시·활성화·단계적 확대
 - 시작: 앞 활동 완료
 - 입력: WP-CANARY-PLAN, WP-EXPERIMENT-PLAN, WP-SC-REVIEW, WP-PRODUCT-APPROVAL, WP-ACTIVATION-PRECHECK → 출력: WP-G7-DECISION
@@ -182,16 +182,6 @@ last_updated: 2026-11-04
 2. 기한 안에 적용되지 않은 차량은 이상 징후 건으로 넘긴다
 3. 대기 상한 초과 경보가 오면 Safety Manager가 상위 대응을 정한다
 - [ ] 기한 초과 미적용 차량마다 연결된 이상 징후 건이 있다
-
-### FPW.8-A08 원인 조치·복원 요청 — 책임(승인)
-- 프로세스: FPW.8 운영·긴급 차단·복원
-- 시작: 원인 수정과 재검증 Evidence 확보
-- 입력: WP-KILL-TRACE, WP-G5-EVIDENCE → 출력: WP-RESTORE-REQ
-- 플랫폼: `requestRestore`, `/ops/kill`
-1. 원인 분석과 수정(정책·SW·운행 조건 축소)을 마치고 재검증 Evidence가 G5 근거로 제출되었는지 확인한다
-2. 복원 범위와 시작 Canary Cohort를 정해 복원을 요청한다
-3. 직전 차단 승인자를 복원 승인 후보에서 뺀다
-- [ ] 복원 요청에 재검증 Evidence 참조와 Canary Cohort가 있다
 
 ### FPW.8-A09 복원 2인 승인 — 수행·책임
 - 프로세스: FPW.8 운영·긴급 차단·복원
@@ -258,6 +248,7 @@ last_updated: 2026-11-04
 - FPW.1-A01 Feature 등록·초안 작성 (통보)
 - FPW.1-A02 대상 차량 사양·의존 등록 (통보)
 - FPW.1-A04 법규 의무 기능 판정 (협의)
+- FPW.2-A06 TARA 수행 (협의)
 - FPW.2-A04 형식승인 영향 1차 판단 (협의)
 - FPW.3-A01 안전요구 도출·명세 (협의)
 - FPW.3-A02 양방향 추적성 점검 (통보)
@@ -267,6 +258,7 @@ last_updated: 2026-11-04
 - FPW.4-A04 정책 승인 (협의)
 - FPW.4-A05 G4 설계 독립 검토·판정 (협의)
 - FPW.5-A02 시나리오·허용 조합 정의 (협의)
+- FPW.5-A03 통합 시험·SEooC 가정 확인 (협의)
 - FPW.5-A04 비활성화·결함 주입 시험 수행 (협의)
 - FPW.5-A05 시험 Evidence 연결·TMS 제출 (통보)
 - FPW.5-A06 G5 V&V 판정 (협의)
@@ -279,6 +271,7 @@ last_updated: 2026-11-04
 - FPW.8-A03 리콜·봉쇄 근거 연계 (협의)
 - FPW.8-A04 긴급 차단 요청 (협의)
 - FPW.8-A07 긴급 권한 사후 검토 (통보)
+- FPW.8-A08 원인 조치·복원 요청 (협의)
 - FPW.8-A10 단계적 복원·관측 (협의)
 - FPW.8-A11 분기 드릴·G8 운영 판정 (협의)
 - FPW.9-A01 운영 결과 품질 피드백 수용 (협의)
@@ -309,7 +302,7 @@ last_updated: 2026-11-04
 - FFG-DEAC-001 원격 Kill은 요청이며 안전기제가 아님 — 작성 예정
 - FFG-DEAC-013 대기 상한과 상위 대응 — 이행 활동 있음
 - FFG-PLT-013 컴포넌트 TCL 분류와 신뢰도 확보 — 이행 활동 있음
-- FFG-SEC-001 공동 HARA·TARA — 이행 활동 있음
+- FFG-SEC-001 공동 HARA·TARA — 작성 예정
 - FFG-SOT-001 Feature Version별 SOTIF 갱신 — 이행 활동 있음
 - FFG-SOT-004 SOTIF 출시 기준을 G7에 연결 — 이행 활동 있음
 - FFG-SUP-014 확인 조치의 독립성 보장 — 이행 활동 있음

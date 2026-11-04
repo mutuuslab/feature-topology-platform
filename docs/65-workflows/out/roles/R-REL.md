@@ -8,7 +8,6 @@ owner: governance
 cycle: 0
 traces:
   depends_on:
-    - WF-FPW-11
     - WF-FPW-2
     - WF-FPW-4
     - WF-FPW-5
@@ -16,13 +15,14 @@ traces:
     - WF-FPW-7
     - WF-FPW-8
     - WF-FPW-9
+    - WF-FPW-11
 last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
 # WF-ROLE-REL · Release Manager 업무 절차서
 
-> 서명 배포·단계적 확대·Lifecycle 출시 전이를 수행한다.
+> 서명 배포·Lifecycle 출시 전이를 수행하고, 단계적 확대는 운영 조직과 협의한다.
 
 - IAM 역할: RELEASE_MANAGER(Feature 출시 담당자)
 - IAM 데모 계정: coordinator
@@ -50,7 +50,7 @@ last_updated: 2026-11-04
 3. FAIL이면 사유를 Release Manager에게 돌려보낸다
 - [ ] 판정 근거에 서명 검증·SUMS 기록 ID가 있다
 
-### FPW.6-A06 G6 서명 배포 실행 — 수행·책임 · G6 판정
+### FPW.6-A06 G6 서명 배포 실행 — 수행·책임
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
 - 입력: WP-OTA-GATE, WP-RELEASE-BASELINE → 출력: WP-G6-DECISION

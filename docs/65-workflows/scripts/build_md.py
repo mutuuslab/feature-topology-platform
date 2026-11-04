@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 from typing import List
@@ -46,6 +47,17 @@ last_updated: {meta['last_updated']}
 
 def cell(text: str) -> str:
     return str(text).replace("|", "\\|").replace("\n", " ")
+
+
+def natural_key(text: str):
+    """WF-FPW-2가 WF-FPW-13보다 앞에 오도록 숫자는 숫자로 비교한다."""
+    return [(0, int(t), "") if t.isdigit() else (1, 0, t) for t in re.split(r"(\d+)", text)]
+
+
+def act_name(a) -> str:
+    """활동 이름 + 판정 표기. 이름에 이미 Gx가 있으면 덧붙이지 않는다('G7 출시·활성화 판정 (G7 판정)' 중복 방지)."""
+    gd = a.get("gate_decision")
+    return a["name"] + (f" ({gd} 판정)" if gd and gd not in a["name"] else "")
 
 
 def mermaid(m, p) -> str:
@@ -99,8 +111,7 @@ def process_md(m, p) -> str:
     for a in p["activities"]:
         plat = a.get("platform") or {}
         pl = ", ".join(f"`{x}`" for x in plat.get("actions", []) + plat.get("screens", [])) or "플랫폼 밖"
-        name = a["name"] + (f" ({a['gate_decision']} 판정)" if a.get("gate_decision") else "")
-        lines.append(f"| {a['id']} | {cell(name)} | {cell(raci_txt(m, a))} | {', '.join(a.get('inputs', []))} | "
+        lines.append(f"| {a['id']} | {cell(act_name(a))} | {cell(raci_txt(m, a))} | {', '.join(a.get('inputs', []))} | "
                      f"{', '.join(a.get('outputs', []))} | {pl} | {', '.join(a.get('rules', [])) or '–'} |")
     lines += ["", "### 수행 절차와 완료 기준", ""]
     for a in p["activities"]:
@@ -122,7 +133,7 @@ def process_md(m, p) -> str:
 def role_md(m, r) -> str:
     acts = role_activities(m, r["id"])
     plat = ", ".join(f"{x}({m['iam_role_label'][x]})" for x in r["platform_roles"]) or "없음(플랫폼 밖 업무)"
-    related = sorted({doc_id(p["id"]) for p, _, _, _ in acts})
+    related = sorted({doc_id(p["id"]) for p, _, _, _ in acts}, key=natural_key)
     lines = [front_matter(m, role_doc_id(r["id"]), f"{r['name']} 업무 절차서 / {r['en']} Procedure", related),
              f"# {role_doc_id(r['id'])} · {r['name']} 업무 절차서", "",
              f"> {r['desc']}", "",
@@ -136,7 +147,7 @@ def role_md(m, r) -> str:
     for p, a, kind, is_a in do:
         role = "수행·책임" if kind == "R" and is_a else "수행" if kind == "R" else "책임(승인)"
         plat_a = a.get("platform") or {}
-        lines += [f"### {a['id']} {a['name']} — {role}" + (f" · {a['gate_decision']} 판정" if a.get("gate_decision") else ""),
+        lines += [f"### {a['id']} {a['name']} — {role}" + (f" · {a['gate_decision']} 판정" if a.get("gate_decision") and a["gate_decision"] not in a["name"] else ""),
                   f"- 프로세스: {p['id']} {p['name_ko']}",
                   f"- 시작: {a.get('trigger') or '앞 활동 완료'}",
                   f"- 입력: {', '.join(a.get('inputs', [])) or '–'} → 출력: {', '.join(a.get('outputs', [])) or '–'}",
@@ -178,50 +189,97 @@ def cell_txt(c: dict) -> str:
     return " ".join(f"{k}{c[k]}" for k in wm.RACI_ORDER if c.get(k)) or "–"
 
 
+PART_KO = {"R": "수행", "A": "책임", "C": "협의", "I": "통보"}
+
+
+def part_holders(m, did: str, a) -> str:
+    """부서가 맡는 몫과 그 몫을 쥔 부서 역할 — 'R·A (상품 기획) · C (Feature Owner)'."""
+    roles = m["dept_by_id"][did]["roles"]
+    r = a["raci"]
+    held = {"R": [x for x in r["R"] if x in roles], "A": [r["A"]] if r["A"] in roles else [],
+            "C": [x for x in r.get("C", []) if x in roles], "I": [x for x in r.get("I", []) if x in roles]}
+    groups: List[tuple] = []                     # [(역할 묶음, [몫…])] — 같은 역할 묶음이 쥔 몫은 합친다
+    for k in wm.RACI_ORDER:
+        if not held[k]:
+            continue
+        for g in groups:
+            if g[0] == tuple(held[k]):
+                g[1].append(k)
+                break
+        else:
+            groups.append((tuple(held[k]), [k]))
+    return " · ".join(f"{'·'.join(ks)} ({', '.join(m['roles_by_id'][x]['name'] for x in rs)})" for rs, ks in groups)
+
+
+def wp_names(m, keys: List[str]) -> str:
+    """산출물 이름 + `WP-ID`."""
+    return ", ".join(f"{m['wp_by_key'][k]['name']} `{k}`" for k in keys) or "–"
+
+
+def screens_txt(plat: dict, limit: int = 3) -> str:
+    scr = plat.get("screens", [])
+    if not scr:
+        return "플랫폼 밖"
+    return ", ".join(f"`{s}`" for s in scr[:limit]) + (f" 외 {len(scr) - limit}" if len(scr) > limit else "")
+
+
+def first_ra(m, did: str) -> int:
+    """1차 범위(핵심 생애주기)에서 부서가 수행·책임을 맡는 활동 수."""
+    first = set(m["common"].get("department_scope", {}).get("first", []))
+    return sum(1 for p, a, _ in wm.dept_activities(m, did)
+               if p["id"] in first and {"R", "A"} & set(wm.dept_parts(m, did, a)))
+
+
 def dept_md(m, d) -> str:
     did = d["id"]
     first = set(m["common"].get("department_scope", {}).get("first", []))
+    scope = lambda pid: "1차" if pid in first else "2차 초안"  # noqa: E731
     acts = wm.dept_activities(m, did)
     roles = ", ".join(m["roles_by_id"][r]["name"] for r in d["roles"])
-    related = sorted({doc_id(p["id"]) for p, _, _ in acts}) + [role_doc_id(r) for r in d["roles"]]
+    related = sorted({doc_id(p["id"]) for p, _, _ in acts}, key=natural_key) + [role_doc_id(r) for r in d["roles"]]
     lines = [front_matter(m, dept_doc_id(did), f"{d['name']} R&R / {d['en']} Roles & Responsibilities", related),
-             f"# {dept_doc_id(did)} · {d['name']} R&R", "",
-             f"> {' '.join(d['desc'].split())}", "",
-             f"- 맡는 조직 역할: {roles}",
-             f"- 화면 유형: {WORKSPACE_KO[d['workspace']]}",
-             f"- 데모 계정: {', '.join(d['personas'])} (첫 번째가 기본)",
-             "- 부서는 OEM 조직 가정안이다. 고객사 조직이 정해지면 model/common.yaml departments만 바꾼다.", ""]
-    for part, title in (("R", "1. 수행하는 업무 (R)"), ("A", "2. 책임지고 승인하는 업무 (A)"),
-                        ("C", "3. 협의하는 업무 (C)"), ("I", "4. 통보받는 업무 (I)")):
-        mine = [(p, a) for p, a, _ in acts if part in wm.dept_parts(m, did, a)]
-        lines += [f"## {title}", ""]
-        if not mine:
-            lines += ["- 없음", ""]
-            continue
-        lines += ["| 활동 | 프로세스 | 입력 → 출력 | 플랫폼 화면 | 범위 |", "|---|---|---|---|---|"]
-        for p, a in mine:
-            plat = a.get("platform") or {}
-            io = f"{', '.join(a.get('inputs', [])) or '–'} → {', '.join(a.get('outputs', [])) or '–'}"
-            scr = ", ".join(f"`{s}`" for s in plat.get("screens", [])) or "플랫폼 밖"
-            gd = f" ({a['gate_decision']} 판정)" if a.get("gate_decision") else ""
-            lines.append(f"| {a['id']} {cell(a['name'] + gd)} | {p['id']} {cell(p['name_ko'])} | {cell(io)} | {scr} | "
-                         f"{'1차' if p['id'] in first else '2차 초안'} |")
-        lines.append("")
+             f"# {dept_doc_id(did)} · {d['name']} R&R", ""]
+    if not first_ra(m, did):
+        lines += ["> 1차 범위(핵심 생애주기)에서 수행·책임 업무가 없다 — 2차 초안 업무만 있다.", ""]
+    lines += [f"> {' '.join(d['desc'].split())}", "",
+              f"- 맡는 조직 역할: {roles}",
+              f"- 화면 유형: {WORKSPACE_KO[d['workspace']]}",
+              f"- 데모 계정: {', '.join(d['personas'])} (첫 번째가 기본)",
+              "- 부서는 OEM 조직 가정안이다. 고객사 조직이 정해지면 model/common.yaml departments만 바꾼다.", ""]
+    count = {k: 0 for k in wm.RACI_ORDER}
+    for _, a, _ in acts:
+        for part in wm.dept_parts(m, did, a):
+            count[part] += 1
+    lines += ["## 1. 업무 (활동당 한 줄)", "",
+              " · ".join(f"{PART_KO[k]} {count[k]}" for k in wm.RACI_ORDER) + f" (활동 {len(acts)}개)", ""]
+    if acts:
+        lines += ["| 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |", "|---|---|---|---|---|---|"]
+        for p, a, _ in acts:
+            io = f"{wp_names(m, a.get('inputs', []))} → {wp_names(m, a.get('outputs', []))}"
+            lines.append(f"| {a['id']} {cell(act_name(a))} | {p['id']} {cell(p['name_ko'])} | {cell(part_holders(m, did, a))} | "
+                         f"{cell(io)} | {screens_txt(a.get('platform') or {})} | {scope(p['id'])} |")
+    else:
+        lines.append("- 없음")
+    lines.append("")
     hand = wm.dept_handoffs(m, did)
-    lines += ["## 5. 부서 간 인계", "", "| 방향 | 보내는 활동 | 받는 활동 | 상대 부서 |", "|---|---|---|---|"]
+    lines += ["## 2. 부서 간 인계", "", "| 방향 | 보내는 활동 | 받는 활동 | 상대 부서 | 넘기는 산출물 | 범위 |",
+              "|---|---|---|---|---|---|"]
     for k, lab in (("in", "받음"), ("out", "보냄")):
         for s, t, o in hand[k]:
-            lines.append(f"| {lab} | {s} {cell(m['acts_by_id'][s][1]['name'])} | "
-                         f"{t} {cell(m['acts_by_id'][t][1]['name'])} | {dept_name(m, o)} |")
+            (ps, sa), (_, ta) = m["acts_by_id"][s], m["acts_by_id"][t]
+            passed = [x for x in sa.get("outputs", []) if x in ta.get("inputs", [])]
+            lines.append(f"| {lab} | {s} {cell(sa['name'])} | {t} {cell(ta['name'])} | {dept_name(m, o)} | "
+                         f"{cell(wp_names(m, passed))} | {scope(ps['id'])} |")
     if not hand["in"] and not hand["out"]:
-        lines.append("| – | – | – | 인계 없음(협의·통보만) |")
+        empty = "인계 없음(부서 안에서 끝남)" if count["R"] or count["A"] else "인계 없음(협의·통보만)"
+        lines.append(f"| – | – | – | {empty} | – | – |")
     scr = wm.dept_screens(m, did)
-    lines += ["", "## 6. 쓰는 화면", "",
+    lines += ["", "## 3. 쓰는 화면", "",
               f"- 주 업무 화면: {', '.join(f'`{s}`' for s in scr['primary']) or '없음'}",
               f"- 참조 화면(협의·통보): {', '.join(f'`{s}`' for s in scr['reference']) or '없음'}", ""]
     sod = [x for x in wm.dept_sod_overlaps(m) if x["department"] == did]
     if sod:
-        lines += ["## 7. 부서 겸직 직무 분리", "",
+        lines += ["## 4. 부서 겸직 직무 분리", "",
                   "같은 부서 안에서도 아래 두 활동은 다른 사람이 해야 한다(플랫폼이 사람 단위로 막는다).", ""]
         lines += [f"- {x['sod']}: {x['first']} ↔ {x['second']} — {x['note']}" for x in sod] + [""]
     return "\n".join(lines)
@@ -235,13 +293,17 @@ def dept_index_md(m) -> str:
              "# WF-DEP-INDEX · 부서별 R&R", "",
              f"> {scope.get('note', '')}", ""]
     lines += [f"- 참고: {x}" for x in scope.get("demo_notes", [])] + [""]
-    lines += ["## 1. 부서", "", "| 부서 | 맡는 역할 | 화면 유형 | 데모 계정 |", "|---|---|---|---|"]
+    lines += ["## 1. 부서", "",
+              "1차 수행·책임 = 1차 범위(핵심 생애주기)에서 수행(R)·책임(A)을 맡는 활동 수. 0이면 2차 초안 업무만 있다.", "",
+              "| 부서 | 맡는 역할 | 화면 유형 | 데모 계정 | 1차 수행·책임 |", "|---|---|---|---|---|"]
     for d in m["departments"]:
+        n = first_ra(m, d["id"])
         lines.append(f"| [{d['name']}]({d['id']}.md) | {', '.join(m['roles_by_id'][r]['name'] for r in d['roles'])} | "
-                     f"{WORKSPACE_KO[d['workspace']]} | {', '.join(d['personas'])} |")
+                     f"{WORKSPACE_KO[d['workspace']]} | {', '.join(d['personas'])} | {n or '0 (2차 초안만)'} |")
     head = " | ".join(pl["id"] + ("" if pl["id"] in scope.get("first", []) else "*") for pl in plans)
     lines += ["", "## 2. 부서×프로세스 RACI", "",
-              "칸 = 그 부서가 맡는 활동 수(R 수행·A 책임·C 협의·I 통보). * = 2차 초안.", "",
+              "칸 = 그 부서가 맡는 활동 수(R 수행·A 책임·C 협의·I 통보). * = 2차 초안.",
+              "부서가 한 활동에서 몫을 여럿 맡으면(예: 수행과 책임) 그 활동은 몫마다 한 번씩 센다 — 칸의 합이 활동 수보다 클 수 있다.", "",
               f"| 부서 | {head} |", "|---|" + "---|" * len(plans)]
     for d in m["departments"]:
         cells = raci_cells(m, d["id"])

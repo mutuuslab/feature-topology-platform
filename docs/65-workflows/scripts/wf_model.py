@@ -174,19 +174,30 @@ def lane_dept(m: dict, act: dict) -> str:
     return m["dept_of_role"][act["raci"]["R"][0]]
 
 
+def r_depts(m: dict, act: dict) -> List[str]:
+    """활동의 수행(R) 역할 전부의 부서 — R 순서, 중복 없음."""
+    out: List[str] = []
+    for r in act["raci"]["R"]:
+        d = m["dept_of_role"][r]
+        if d not in out:
+            out.append(d)
+    return out
+
+
 def dept_handoffs(m: dict, did: str) -> Dict[str, List[Tuple[str, str, str]]]:
-    """부서 경계를 넘는 흐름. out: 이 부서 활동 → 다른 부서 활동, in: 다른 부서 → 이 부서. (보낸 활동, 받는 활동, 상대 부서)"""
+    """부서 경계를 넘는 흐름. out: 이 부서 활동 → 다른 부서 활동, in: 다른 부서 → 이 부서. (보낸 활동, 받는 활동, 상대 부서)
+
+    공동 수행(R 여럿)을 모두 본다: 흐름 a→b에서 이 부서가 a의 R 부서이고 b에 이 부서가 아닌 R 부서가 있으면
+    그 부서마다 out 한 줄, 이 부서가 b의 R 부서이고 a에 다른 R 부서가 있으면 그 부서마다 in 한 줄."""
     res: Dict[str, List[Tuple[str, str, str]]] = {"out": [], "in": []}
     for _, a in m["acts_by_id"].values():
-        src = lane_dept(m, a)
+        src = r_depts(m, a)
         for n in a.get("next", []):
-            dst = lane_dept(m, m["acts_by_id"][n][1])
-            if src == dst:
-                continue
-            if src == did:
-                res["out"].append((a["id"], n, dst))
-            elif dst == did:
-                res["in"].append((a["id"], n, src))
+            dst = r_depts(m, m["acts_by_id"][n][1])
+            if did in src:
+                res["out"] += [(a["id"], n, o) for o in dst if o != did]
+            if did in dst:
+                res["in"] += [(a["id"], n, o) for o in src if o != did]
     return res
 
 
@@ -583,6 +594,16 @@ def validate(m: dict, partial: bool = False) -> Report:
                 err(f"sod {s['id']}: {s['first']}의 R과 {s['second']}의 R/A가 겹친다 {sorted(clash)}")
         else:
             err(f"sod {s['id']}: level은 role|person")
+
+    # 요청과 승인 책임 분리 — 요청 활동의 A가 승인 활동의 R·A에 들어가면 안 된다(2026-11-04 사용자 결정)
+    for pair in m["common"].get("request_approval", []):
+        req, appr = m["acts_by_id"].get(pair["request"]), m["acts_by_id"].get(pair["approval"])
+        if not req or not appr:
+            soft(f"request_approval {pair['request']}→{pair['approval']}: 활동이 아직 없다")
+            continue
+        owner = req[1]["raci"]["A"]
+        if owner in ra_roles(appr[1]):
+            err(f"request_approval {pair['request']}→{pair['approval']}: 요청 책임 {owner}이(가) 승인 활동의 R/A에 있다 — {pair['note']}")
 
     # 정합성 결정
     statuses = ALIGNMENT_STATUSES

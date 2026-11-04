@@ -90,7 +90,7 @@ export function Handoffs({ d }: { d: DeptDoc | null | 'fail' }) {
               <p className="ws-hand__title">{k === 'in' ? D.home.handoffIn : D.home.handoffOut}</p>
               <ul>
                 {list(k).slice(0, 6).map((h) => (
-                  <li key={`${h.from}-${h.to}`}>
+                  <li key={`${h.from}-${h.to}-${h.department}`}>
                     <span className="ws-hand__dept">{k === 'in' ? D.home.from(dept(h.department)) : D.home.to(dept(h.department))}</span>
                     <span>{k === 'in' ? name(h.to) : name(h.from)}</span>
                   </li>

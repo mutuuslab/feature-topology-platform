@@ -17,7 +17,7 @@
   - 부서 레인 배치: 시작·트리거 원이 있는 활동은 같은 줄 앞 칸이 빈 줄에만 놓는다(FPW.7 교차 결함). 역할 레인 좌표는 이전과 같다.
   - 결정(2026-11-04): Feature Owner=상품기획, Release Manager=SW통합·릴리스, PKI=IT인프라·보안운영, **긴급 차단 2인 승인 = 기능안전 + 차량사이버보안 유지**(운영 리더는 플랫폼 허용·데모 계정 없음 — `department_scope.demo_notes`).
 - **2~4단계 완료(FF):** 계약·`departments.ts` 생성, 부서 전환·작업공간 5유형·부서별 R&R 탭, 시험(FF/PROGRESS.md 맨 위). 활동별 `parts`(맡는 몫 전부) 추가 — 건수는 parts로 센다.
-- **다음(검토 결과):** 부서 문서를 한 표(몫·역할 열)로, 인계를 공동 R 부서까지, '판정' 중복 표기, 1차 관여 없는 부서 표시. 모델 결정 대기 — TARA 책임 CSM, FPW.9-A02/A03·FPW.8-A08/A09 요청자=승인 책임, FPW.2-A03 SOTIF 수행 부서, FPW.8-A07 사후 검토 부서, 복원 승인에 CS, FPW.5-A03 SEooC에 SM 협의, R-REL 설명.
+- **검토 결과 반영(2026-11-04):** 부서 문서 한 표(몫·역할), 인계 공동 R, 판정 중복 표기, 1차 관여 없는 부서 표시. 모델 결정 반영 — FPW.2-A06 TARA(CSM), FPW.2-A02는 HARA, FPW.2-A03 SOTIF R=R-ARC, FPW.8-A07 R·A=R-QA(플랫폼 AUDITOR 허용), FPW.8-A08 A=R-OPS, FPW.9-A03 A=R-REQ, FPW.5-A03 C+R-SM, FPW.2-A01 C+R-PUR, R-REL 설명. `common.yaml request_approval`(요청 책임 ∉ 승인 R·A) 검사. 활동 82개. IAM 스냅샷은 dept worktree 백엔드(9131)에서 재추출.
 
 ## 이전 상태 — 플랫폼 반영 A·B단계 완료 (2026-10-18)
 - **계획:** `~/.claude/plans/feature-platform-crystalline-snowglobe.md` — A·B·C1·C2 완료, **C3·C4와 실행 UI 잔여 1차 완료(2026-10-19)**.

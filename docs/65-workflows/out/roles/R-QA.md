@@ -9,10 +9,6 @@ cycle: 0
 traces:
   depends_on:
     - WF-FPW-1
-    - WF-FPW-10
-    - WF-FPW-11
-    - WF-FPW-12
-    - WF-FPW-13
     - WF-FPW-2
     - WF-FPW-3
     - WF-FPW-4
@@ -21,6 +17,10 @@ traces:
     - WF-FPW-7
     - WF-FPW-8
     - WF-FPW-9
+    - WF-FPW-10
+    - WF-FPW-11
+    - WF-FPW-12
+    - WF-FPW-13
 last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
@@ -45,7 +45,7 @@ last_updated: 2026-11-04
 3. 결함이 있으면 요구 Owner에게 돌려보내고 재검토 일정을 잡는다
 - [ ] 검토자가 요구 작성자와 다른 조직이다
 
-### FPW.4-A05 G4 설계 독립 검토·판정 — 수행 · G4 판정
+### FPW.4-A05 G4 설계 독립 검토·판정 — 수행
 - 프로세스: FPW.4 안전 설계·정책 설계
 - 시작: 앞 활동 완료
 - 입력: WP-SAFETY-DESIGN, WP-TCL-RECORD, WP-POLICY → 출력: WP-G4-DECISION
@@ -56,7 +56,7 @@ last_updated: 2026-11-04
 - [ ] 검토자가 설계·정책 작성자와 다른 조직이다
 - [ ] Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
 
-### FPW.5-A06 G5 V&V 판정 — 수행 · G5 판정
+### FPW.5-A06 G5 V&V 판정 — 수행
 - 프로세스: FPW.5 검증·V&V
 - 시작: 앞 활동 완료
 - 입력: WP-G5-EVIDENCE, WP-VV-PLAN → 출력: WP-G5-DECISION
@@ -88,7 +88,7 @@ last_updated: 2026-11-04
 3. 발견사항의 개선 조치와 담당을 기록해 Safety Manager에게 넘긴다
 - [ ] 검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다
 
-### FPW.8-A07 긴급 권한 사후 검토 — 책임(승인)
+### FPW.8-A07 긴급 권한 사후 검토 — 수행·책임
 - 프로세스: FPW.8 운영·긴급 차단·복원
 - 시작: 앞 활동 완료
 - 입력: WP-KILL-REQ, WP-KILL-DECISION → 출력: WP-POST-REVIEW

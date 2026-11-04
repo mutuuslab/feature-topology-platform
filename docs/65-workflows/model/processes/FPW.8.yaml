@@ -212,7 +212,7 @@ process:
       name: 긴급 권한 사후 검토
       outcomes: [O4]
       rules: [FFG-PLT-016]
-      raci: {R: [R-REG], A: R-QA, C: [R-CSM], I: [R-SM, R-OPS]}
+      raci: {R: [R-QA], A: R-QA, C: [R-CSM, R-REG], I: [R-SM, R-OPS]}
       inputs: [WP-KILL-REQ, WP-KILL-DECISION]
       outputs: [WP-POST-REVIEW]
       steps:
@@ -227,7 +227,7 @@ process:
       trigger: 원인 수정과 재검증 Evidence 확보
       outcomes: [O5]
       rules: [FFG-DEAC-008]
-      raci: {R: [R-OPS], A: R-SM, C: [R-FO, R-TST], I: [R-REG]}
+      raci: {R: [R-OPS], A: R-OPS, C: [R-SM, R-FO, R-TST], I: [R-REG]}
       inputs: [WP-KILL-TRACE, WP-G5-EVIDENCE]
       outputs: [WP-RESTORE-REQ]
       steps:

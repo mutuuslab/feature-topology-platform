@@ -9,14 +9,14 @@ cycle: 0
 traces:
   depends_on:
     - WF-FPW-1
-    - WF-FPW-10
-    - WF-FPW-11
-    - WF-FPW-12
-    - WF-FPW-13
     - WF-FPW-2
     - WF-FPW-6
     - WF-FPW-7
     - WF-FPW-8
+    - WF-FPW-10
+    - WF-FPW-11
+    - WF-FPW-12
+    - WF-FPW-13
 last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
@@ -81,16 +81,6 @@ last_updated: 2026-11-04
 3. 근거 ID를 운영 조직에 넘겨 차단 요청에 붙이게 한다
 - [ ] 안전 차단 요청에 붙일 리콜·봉쇄 근거 ID가 있다(근거가 없으면 게이트가 차단한다)
 
-### FPW.8-A07 긴급 권한 사후 검토 — 수행
-- 프로세스: FPW.8 운영·긴급 차단·복원
-- 시작: 앞 활동 완료
-- 입력: WP-KILL-REQ, WP-KILL-DECISION → 출력: WP-POST-REVIEW
-- 플랫폼: `recordKillPostReview`, `/audit/oversight`
-1. 차단 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다
-2. 검토 결과와 개선 조치를 사후 검토 기록으로 한 번 남긴다
-3. 미흡 사항은 품질 조직이 개선 과제로 등록한다
-- [ ] 검토 기록이 24시간 안에 있고 검토자가 요청자·승인자와 다르다
-
 ### FPW.10-A02 DIA·CIA 체결 — 수행
 - 프로세스: FPW.10 협력사 관리
 - 시작: 앞 활동 완료
@@ -154,7 +144,7 @@ last_updated: 2026-11-04
 ## 2. 협의·통보 받는 활동
 
 - FPW.1-A05 G1 등록·분류 판정 (협의)
-- FPW.2-A02 HARA·TARA 공동 수행 (통보)
+- FPW.2-A02 HARA 수행 (통보)
 - FPW.2-A05 G2 HARA 영향 판정 (협의)
 - FPW.6-A02 출시 Baseline 확정 승인 (통보)
 - FPW.6-A05 OTA Gate 판정 등록 (협의)
@@ -163,6 +153,7 @@ last_updated: 2026-11-04
 - FPW.8-A02 차단 필요성·범위 판단 (협의)
 - FPW.8-A04 긴급 차단 요청 (통보)
 - FPW.8-A05 긴급 차단 2인 승인 (협의)
+- FPW.8-A07 긴급 권한 사후 검토 (협의)
 - FPW.8-A08 원인 조치·복원 요청 (통보)
 - FPW.8-A11 분기 드릴·G8 운영 판정 (통보)
 - FPW.10-A04 공급망 원산지 속성 관리 (협의)

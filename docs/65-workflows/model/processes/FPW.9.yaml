@@ -90,7 +90,7 @@ process:
       name: Flag Retirement 승인
       outcomes: [O2]
       rules: [FFG-ADS-010]
-      raci: {R: [R-REQ, R-SM], A: R-FO, C: [R-REL], I: [R-INT, R-OPS]}
+      raci: {R: [R-REQ, R-SM], A: R-REQ, C: [R-FO, R-REL], I: [R-INT, R-OPS]}
       inputs: [WP-RETIRE-REQ]
       outputs: [WP-RETIRE-APPROVAL]
       steps:

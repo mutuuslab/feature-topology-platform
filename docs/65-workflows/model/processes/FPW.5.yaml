@@ -103,7 +103,7 @@ process:
       name: 통합 시험·SEooC 가정 확인
       outcomes: [O2]
       rules: [FFG-VEH-012]
-      raci: {R: [R-INT], A: R-INT, C: [R-ARC, R-TST], I: [R-QA]}
+      raci: {R: [R-INT], A: R-INT, C: [R-ARC, R-TST, R-SM], I: [R-QA]}
       inputs: [WP-VV-PLAN, WP-INTAKE-RESULT]
       outputs: [WP-INTEGRATION-REC]
       steps:

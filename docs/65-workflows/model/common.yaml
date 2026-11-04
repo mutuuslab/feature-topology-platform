@@ -88,7 +88,7 @@ roles:
     name: Release Manager
     en: Release Manager
     source: report-gate
-    desc: 서명 배포·단계적 확대·Lifecycle 출시 전이를 수행한다.
+    desc: 서명 배포·Lifecycle 출시 전이를 수행하고, 단계적 확대는 운영 조직과 협의한다.
     platform_roles: [RELEASE_MANAGER]
     basis: "6.1절 G6 승인=Release Manager ↔ RELEASE_MANAGER(IAM 직무 RELEASE)"
   - id: R-PUR
@@ -253,6 +253,13 @@ department_scope:
   note: "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정(FPW.10~13)은 2차 초안이다."
   demo_notes:
     - "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용하지만 데모 계정에 운영 리더가 없다(9계정·겸직 0건, 2026-10-17)."
+
+# 요청 활동의 책임(A)은 그 요청을 승인하는 활동의 수행(R)·책임(A)에 들어가면 안 된다(2026-11-04 사용자 결정 — 요청과 승인 책임 분리).
+request_approval:
+  - {request: FPW.4-A03, approval: FPW.4-A04, note: 정책 작성 → 정책 승인}
+  - {request: FPW.8-A04, approval: FPW.8-A05, note: 긴급 차단 요청 → 2인 승인}
+  - {request: FPW.8-A08, approval: FPW.8-A09, note: 복원 요청 → 복원 2인 승인}
+  - {request: FPW.9-A02, approval: FPW.9-A03, note: Flag Retirement 요청 → 승인}
 
 # 6.1절 승인 칸의 이름 중 통제 어휘가 아닌 것 → 카탈로그 역할
 gate_approver_alias:

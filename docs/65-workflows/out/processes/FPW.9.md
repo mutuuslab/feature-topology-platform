@@ -47,7 +47,7 @@ flowchart LR
 |---|---|---|---|---|---|---|
 | FPW.9-A01 | 운영 결과 품질 피드백 수용 | R 품질 조직 · A 품질 조직 · C Safety Manager, 시험 조직 · I Feature Owner, 운영 조직 | WP-DRILL-REPORT, WP-RESTORE-ROLLOUT | WP-QUALITY-FEEDBACK | `acceptFeedback`, `/quality/feedback` | FFG-SOT-003 |
 | FPW.9-A02 | Flag Retirement 요청 | R Feature Owner · A Feature Owner · C Release Manager, 통합 조직 · I Safety Manager, 요구 Owner | WP-FEAT-REG | WP-RETIRE-REQ | `requestFlagRetirement`, `/flag-retirements` | FFG-CLS-008 |
-| FPW.9-A03 | Flag Retirement 승인 | R 요구 Owner, Safety Manager · A Feature Owner · C Release Manager · I 통합 조직, 운영 조직 | WP-RETIRE-REQ | WP-RETIRE-APPROVAL | `approveFlagRetirement`, `/flag-retirements` | FFG-ADS-010 |
+| FPW.9-A03 | Flag Retirement 승인 | R 요구 Owner, Safety Manager · A 요구 Owner · C Feature Owner, Release Manager · I 통합 조직, 운영 조직 | WP-RETIRE-REQ | WP-RETIRE-APPROVAL | `approveFlagRetirement`, `/flag-retirements` | FFG-ADS-010 |
 | FPW.9-A04 | 코드·설정·시험 삭제 기록 | R Feature Owner · A Feature Owner · C 통합 조직, 시험 조직 · I Release Manager | WP-RETIRE-APPROVAL | WP-RETIRE-LOG | `recordFlagRetirementStep`, `/flag-retirements` | FFG-LCY-011 |
 | FPW.9-A05 | Lifecycle 종료 전이 | R Release Manager · A Release Manager · C Feature Owner · I 상품 Owner, 운영 조직 | WP-RETIRE-LOG | WP-RETIRE-CLOSE | `transition`, `/features/:id/:ver` | – |
 

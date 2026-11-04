@@ -393,7 +393,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "A": "R-SM",
     "C": [
      "R-ARC",
-     "R-FO"
+     "R-FO",
+     "R-PUR"
     ],
     "I": [
      "R-REQ",
@@ -402,6 +403,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    },
    "next": [
     "FPW.2-A02",
+    "FPW.2-A06",
     "FPW.2-A03",
     "FPW.2-A04"
    ],
@@ -417,22 +419,50 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "id": "FPW.2-A02",
    "processId": "FPW.2",
    "processName": "HARA·변경 영향 판단",
-   "name": "HARA·TARA 공동 수행",
+   "name": "HARA 수행",
    "trigger": null,
    "gateDecision": null,
    "raci": {
     "R": [
-     "R-SM",
-     "R-CSM"
+     "R-SM"
     ],
     "A": "R-SM",
     "C": [
+     "R-CSM",
      "R-ARC",
      "R-FO"
     ],
     "I": [
      "R-REQ",
      "R-REG"
+    ]
+   },
+   "next": [
+    "FPW.2-A05"
+   ],
+   "screens": [],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.2-A06",
+   "processId": "FPW.2",
+   "processName": "HARA·변경 영향 판단",
+   "name": "TARA 수행",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CSM"
+    ],
+    "A": "R-CSM",
+    "C": [
+     "R-SM",
+     "R-ARC"
+    ],
+    "I": [
+     "R-REQ"
     ]
    },
    "next": [
@@ -452,11 +482,11 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "gateDecision": null,
    "raci": {
     "R": [
-     "R-FO"
+     "R-ARC"
     ],
     "A": "R-SM",
     "C": [
-     "R-ARC",
+     "R-FO",
      "R-TST"
     ],
     "I": [
@@ -894,7 +924,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "A": "R-INT",
     "C": [
      "R-ARC",
-     "R-TST"
+     "R-TST",
+     "R-SM"
     ],
     "I": [
      "R-QA"
@@ -1782,11 +1813,12 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "gateDecision": null,
    "raci": {
     "R": [
-     "R-REG"
+     "R-QA"
     ],
     "A": "R-QA",
     "C": [
-     "R-CSM"
+     "R-CSM",
+     "R-REG"
     ],
     "I": [
      "R-SM",
@@ -1814,8 +1846,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "R": [
      "R-OPS"
     ],
-    "A": "R-SM",
+    "A": "R-OPS",
     "C": [
+     "R-SM",
      "R-FO",
      "R-TST"
     ],
@@ -2006,8 +2039,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
      "R-REQ",
      "R-SM"
     ],
-    "A": "R-FO",
+    "A": "R-REQ",
     "C": [
+     "R-FO",
      "R-REL"
     ],
     "I": [

@@ -45,3 +45,22 @@ describe('긴급 권한 사후 검토 (FFG-PLT-016)', () => {
     expect(a.conflicts).toEqual([]);
   });
 });
+
+// 2026-11-04 사용자 결정 — 긴급 권한 사후 검토는 품질(내부감사, AUDITOR)이 수행한다(업무 절차 FPW.8-A07 R·A = 품질 조직)
+describe('긴급 권한 사후 검토 — 품질(내부감사)', () => {
+  let b: Awaited<ReturnType<typeof bootApp>>;
+  let killId: string;
+  beforeAll(async () => {
+    b = await bootApp({ at: '2026-10-15T01:00:00.000Z' });
+    killId = (await killV2(b.http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: '품질 사후 검토 시험', confirm: 'FEAT-00022' })).killId;
+  });
+  afterAll(async () => {
+    await b.app.close();
+    for (const k of ['FF_SCHEDULER', 'GLEO_MODE']) delete process.env[k];
+  });
+
+  it('차단에 관여하지 않은 품질(AUDITOR)이 사후 검토를 기록한다', async () => {
+    const ok = (await b.http().post(`/api/kill-requests/${killId}/post-review`).set(actor('usr-viewer', 'AUDITOR')).send({ summary: '발령 사유·범위·승인 적정 확인' }).expect(201)).body;
+    expect(ok).toMatchObject({ status: 'REVIEWED', review: { reviewer: 'usr-viewer', role: 'AUDITOR' } });
+  });
+});

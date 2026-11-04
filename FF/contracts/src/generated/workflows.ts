@@ -101,7 +101,7 @@ export const WORKFLOWS: WorkflowDoc = {
    "id": "R-REL",
    "name": "Release Manager",
    "en": "Release Manager",
-   "desc": "서명 배포·단계적 확대·Lifecycle 출시 전이를 수행한다.",
+   "desc": "서명 배포·Lifecycle 출시 전이를 수행하고, 단계적 확대는 운영 조직과 협의한다.",
    "platformRoles": [
     "RELEASE_MANAGER"
    ]
@@ -345,9 +345,9 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "FPW.2-A03",
      "process": "FPW.2",
-     "part": "R",
+     "part": "C",
      "parts": [
-      "R"
+      "C"
      ],
      "firstScope": true
     },
@@ -684,9 +684,9 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "FPW.9-A03",
      "process": "FPW.9",
-     "part": "A",
+     "part": "C",
      "parts": [
-      "A"
+      "C"
      ],
      "firstScope": true
     },
@@ -779,11 +779,6 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-FS"
      },
      {
-      "from": "FPW.2-A03",
-      "to": "FPW.2-A05",
-      "department": "DEP-FS"
-     },
-     {
       "from": "FPW.6-A01",
       "to": "FPW.6-A02",
       "department": "DEP-PLM"
@@ -809,17 +804,17 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-SE"
      },
      {
+      "from": "FPW.9-A02",
+      "to": "FPW.9-A03",
+      "department": "DEP-FS"
+     },
+     {
       "from": "FPW.9-A04",
       "to": "FPW.9-A05",
       "department": "DEP-INT"
      }
     ],
     "in": [
-     {
-      "from": "FPW.2-A01",
-      "to": "FPW.2-A03",
-      "department": "DEP-FS"
-     },
      {
       "from": "FPW.7-A08",
       "to": "FPW.7-A12",
@@ -834,6 +829,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.9-A03",
       "to": "FPW.9-A04",
       "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.9-A03",
+      "to": "FPW.9-A04",
+      "department": "DEP-FS"
      }
     ]
    }
@@ -911,11 +911,21 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
-     "id": "FPW.2-A03",
+     "id": "FPW.2-A06",
      "process": "FPW.2",
      "part": "C",
      "parts": [
       "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A03",
+     "process": "FPW.2",
+     "part": "R",
+     "parts": [
+      "R",
       "I"
      ],
      "firstScope": true
@@ -1072,7 +1082,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "process": "FPW.9",
      "part": "R",
      "parts": [
-      "R"
+      "R",
+      "A"
      ],
      "firstScope": true
     },
@@ -1125,6 +1136,11 @@ export const WORKFLOWS: WorkflowDoc = {
    "handoffs": {
     "out": [
      {
+      "from": "FPW.2-A03",
+      "to": "FPW.2-A05",
+      "department": "DEP-FS"
+     },
+     {
       "from": "FPW.3-A02",
       "to": "FPW.3-A03",
       "department": "DEP-QA"
@@ -1141,6 +1157,11 @@ export const WORKFLOWS: WorkflowDoc = {
      }
     ],
     "in": [
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A03",
+      "department": "DEP-FS"
+     },
      {
       "from": "FPW.3-A03",
       "to": "FPW.3-A04",
@@ -1582,6 +1603,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.10-A06",
       "to": "FPW.10-A07",
       "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.10-A06",
+      "to": "FPW.10-A07",
+      "department": "DEP-VAL"
      }
     ]
    }
@@ -1791,6 +1817,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.2-A06",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.2-A03",
      "process": "FPW.2",
      "part": "A",
@@ -1903,6 +1938,15 @@ export const WORKFLOWS: WorkflowDoc = {
     },
     {
      "id": "FPW.5-A02",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A03",
      "process": "FPW.5",
      "part": "C",
      "parts": [
@@ -2078,9 +2122,9 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "FPW.8-A08",
      "process": "FPW.8",
-     "part": "A",
+     "part": "C",
      "parts": [
-      "A"
+      "C"
      ],
      "firstScope": true
     },
@@ -2295,6 +2339,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/master/control-points",
      "/policies/:id",
      "/validations",
+     "/master/artifacts",
      "/validations/virtual",
      "/integration/connectors",
      "/experiments",
@@ -2316,8 +2361,13 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.2-A01",
+      "to": "FPW.2-A06",
+      "department": "DEP-CS"
+     },
+     {
+      "from": "FPW.2-A01",
       "to": "FPW.2-A03",
-      "department": "DEP-PDP"
+      "department": "DEP-SE"
      },
      {
       "from": "FPW.2-A01",
@@ -2362,7 +2412,7 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "from": "FPW.8-A05",
       "to": "FPW.8-A07",
-      "department": "DEP-HOM"
+      "department": "DEP-QA"
      },
      {
       "from": "FPW.8-A09",
@@ -2370,9 +2420,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-OPS"
      },
      {
+      "from": "FPW.9-A03",
+      "to": "FPW.9-A04",
+      "department": "DEP-PDP"
+     },
+     {
       "from": "FPW.10-A03",
       "to": "FPW.10-A06",
       "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.10-A03",
+      "to": "FPW.10-A06",
+      "department": "DEP-VAL"
      },
      {
       "from": "FPW.13-A01",
@@ -2397,9 +2457,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-HOM"
      },
      {
+      "from": "FPW.2-A06",
+      "to": "FPW.2-A05",
+      "department": "DEP-CS"
+     },
+     {
       "from": "FPW.2-A03",
       "to": "FPW.2-A05",
-      "department": "DEP-PDP"
+      "department": "DEP-SE"
      },
      {
       "from": "FPW.2-A04",
@@ -2447,9 +2512,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-OPS"
      },
      {
+      "from": "FPW.9-A02",
+      "to": "FPW.9-A03",
+      "department": "DEP-PDP"
+     },
+     {
       "from": "FPW.10-A02",
       "to": "FPW.10-A03",
       "department": "DEP-PUR"
+     },
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A03",
+      "department": "DEP-HOM"
      }
     ]
    }
@@ -2470,9 +2545,19 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "FPW.2-A02",
      "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.2-A06",
+     "process": "FPW.2",
      "part": "R",
      "parts": [
-      "R"
+      "R",
+      "A"
      ],
      "firstScope": true
     },
@@ -2714,8 +2799,34 @@ export const WORKFLOWS: WorkflowDoc = {
     ]
    },
    "handoffs": {
-    "out": [],
+    "out": [
+     {
+      "from": "FPW.2-A06",
+      "to": "FPW.2-A05",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A06",
+      "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A07",
+      "department": "DEP-QA"
+     }
+    ],
     "in": [
+     {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A06",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A04",
+      "to": "FPW.8-A05",
+      "department": "DEP-OPS"
+     },
      {
       "from": "FPW.11-A01",
       "to": "FPW.11-A02",
@@ -2880,9 +2991,9 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "FPW.8-A07",
      "process": "FPW.8",
-     "part": "R",
+     "part": "C",
      "parts": [
-      "R"
+      "C"
      ],
      "firstScope": true
     },
@@ -3011,7 +3122,6 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "screens": {
     "primary": [
-     "/audit/oversight",
      "/admin/data",
      "/verify/compliance"
     ],
@@ -3021,6 +3131,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/baselines",
      "/activation/decide",
      "/ops/kill",
+     "/audit/oversight",
      "/audit",
      "/admin/security"
     ]
@@ -3051,6 +3162,21 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.8-A03",
       "to": "FPW.8-A04",
       "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A03",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A04",
+      "department": "DEP-PUR"
+     },
+     {
+      "from": "FPW.13-A02",
+      "to": "FPW.13-A04",
+      "department": "DEP-OPS"
      }
     ],
     "in": [
@@ -3075,9 +3201,9 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-FS"
      },
      {
-      "from": "FPW.8-A05",
-      "to": "FPW.8-A07",
-      "department": "DEP-FS"
+      "from": "FPW.10-A01",
+      "to": "FPW.10-A02",
+      "department": "DEP-QA"
      },
      {
       "from": "FPW.13-A01",
@@ -3322,6 +3448,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.5-A05",
       "to": "FPW.5-A06",
       "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.10-A06",
+      "to": "FPW.10-A07",
+      "department": "DEP-INT"
      }
     ],
     "in": [
@@ -3334,6 +3465,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.5-A03",
       "to": "FPW.5-A04",
       "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.10-A03",
+      "to": "FPW.10-A06",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.10-A04",
+      "to": "FPW.10-A06",
+      "department": "DEP-PUR"
      }
     ]
    }
@@ -3535,8 +3676,9 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "FPW.8-A07",
      "process": "FPW.8",
-     "part": "A",
+     "part": "R",
      "parts": [
+      "R",
       "A"
      ],
      "firstScope": true
@@ -3733,9 +3875,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-FS"
      },
      {
+      "from": "FPW.8-A09",
+      "to": "FPW.8-A10",
+      "department": "DEP-OPS"
+     },
+     {
       "from": "FPW.10-A01",
       "to": "FPW.10-A02",
       "department": "DEP-PUR"
+     },
+     {
+      "from": "FPW.10-A01",
+      "to": "FPW.10-A02",
+      "department": "DEP-HOM"
      },
      {
       "from": "FPW.10-A06",
@@ -3778,6 +3930,21 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.7-A03",
       "to": "FPW.7-A04",
       "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A07",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A07",
+      "department": "DEP-CS"
+     },
+     {
+      "from": "FPW.8-A08",
+      "to": "FPW.8-A09",
+      "department": "DEP-OPS"
      },
      {
       "from": "FPW.10-A03",
@@ -3967,7 +4134,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "process": "FPW.8",
      "part": "R",
      "parts": [
-      "R"
+      "R",
+      "A"
      ],
      "firstScope": true
     },
@@ -4170,9 +4338,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-FS"
      },
      {
+      "from": "FPW.8-A04",
+      "to": "FPW.8-A05",
+      "department": "DEP-CS"
+     },
+     {
       "from": "FPW.8-A08",
       "to": "FPW.8-A09",
       "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A08",
+      "to": "FPW.8-A09",
+      "department": "DEP-QA"
      }
     ],
     "in": [
@@ -4192,9 +4370,24 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-FS"
      },
      {
+      "from": "FPW.8-A05",
+      "to": "FPW.8-A06",
+      "department": "DEP-CS"
+     },
+     {
       "from": "FPW.8-A09",
       "to": "FPW.8-A10",
       "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.8-A09",
+      "to": "FPW.8-A10",
+      "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.13-A02",
+      "to": "FPW.13-A04",
+      "department": "DEP-HOM"
      }
     ]
    }
@@ -4283,6 +4476,15 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "activities": [
     {
+     "id": "FPW.2-A01",
+     "process": "FPW.2",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.10-A01",
      "process": "FPW.10",
      "part": "A",
@@ -4342,6 +4544,8 @@ export const WORKFLOWS: WorkflowDoc = {
    "screens": {
     "primary": [],
     "reference": [
+     "/analysis/impact",
+     "/arch/topology",
      "/supplier/portal"
     ]
    },
@@ -4356,6 +4560,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.10-A04",
       "to": "FPW.10-A06",
       "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.10-A04",
+      "to": "FPW.10-A06",
+      "department": "DEP-VAL"
      }
     ],
     "in": [
@@ -4363,6 +4572,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.10-A01",
       "to": "FPW.10-A02",
       "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.10-A02",
+      "to": "FPW.10-A04",
+      "department": "DEP-HOM"
      }
     ]
    }
@@ -5622,9 +5836,20 @@ export const WORKFLOWS: WorkflowDoc = {
      "retained": false,
      "content": [
       "Item 정의와 위험 사건·ASIL·Safety Goal",
-      "위협 시나리오·위험 값·보안 목표",
-      "두 분석의 교차 검토 결과와 반영 내용",
+      "TARA 결과를 받아 반영한 교차 검토 내용",
       "ADS Feature면 원격 종료 경로와 비활성화 등급 확인 결과"
+     ]
+    },
+    {
+     "key": "WP-TARA",
+     "name": "TARA 결과",
+     "en": "TARA Results",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "위협 시나리오·공격 경로·위험 값",
+      "보안 목표와 사이버보안 요구 후보",
+      "Kill·활성화 명령 경로(봉투·명령 인증)의 위협 평가"
      ]
     },
     {
@@ -5683,7 +5908,8 @@ export const WORKFLOWS: WorkflowDoc = {
       "A": "R-SM",
       "C": [
        "R-ARC",
-       "R-FO"
+       "R-FO",
+       "R-PUR"
       ],
       "I": [
        "R-REQ",
@@ -5725,13 +5951,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "slaHours": null,
      "next": [
       "FPW.2-A02",
+      "FPW.2-A06",
       "FPW.2-A03",
       "FPW.2-A04"
      ]
     },
     {
      "id": "FPW.2-A02",
-     "name": "HARA·TARA 공동 수행",
+     "name": "HARA 수행",
      "trigger": null,
      "gateDecision": null,
      "independentOf": [],
@@ -5739,16 +5966,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "O2"
      ],
      "rules": [
-      "FFG-SEC-001",
       "FFG-ADS-002"
      ],
      "raci": {
       "R": [
-       "R-SM",
-       "R-CSM"
+       "R-SM"
       ],
       "A": "R-SM",
       "C": [
+       "R-CSM",
        "R-ARC",
        "R-FO"
       ],
@@ -5764,13 +5990,68 @@ export const WORKFLOWS: WorkflowDoc = {
       "WP-HARA-TARA"
      ],
      "steps": [
-      "Safety Manager와 CSM이 같은 Item 정의를 기준으로 Kill·활성화 경로의 HARA와 TARA를 진행한다",
-      "각 분석의 결과(위험 사건·위협 시나리오)를 상대 분석에 넘겨 교차 검토하고 반영 내용을 기록한다",
+      "Safety Manager가 Item 정의를 기준으로 Kill·활성화 경로의 위험 사건과 ASIL을 평가한다",
+      "CSM의 TARA 결과(위협 시나리오)를 받아 위험 사건에 반영하고 교차 검토 내용을 기록한다",
       "ADS Feature는 원격 종료가 가능한 비활성화 등급과 요청 경로(봉투·명령 인증·Guard)를 갖췄는지 확인한다"
      ],
      "checks": [
-      "교차 검토 기록이 양쪽 분석에 남았다",
+      "TARA와의 교차 검토 기록이 HARA 결과에 남았다",
       "ADS Feature가 원격 종료 불가 등급으로 분류되지 않았다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.2-A05"
+     ]
+    },
+    {
+     "id": "FPW.2-A06",
+     "name": "TARA 수행",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-SEC-001"
+     ],
+     "raci": {
+      "R": [
+       "R-CSM"
+      ],
+      "A": "R-CSM",
+      "C": [
+       "R-SM",
+       "R-ARC"
+      ],
+      "I": [
+       "R-REQ"
+      ]
+     },
+     "inputs": [
+      "WP-IMPACT-ANALYSIS"
+     ],
+     "outputs": [
+      "WP-TARA"
+     ],
+     "steps": [
+      "CSM이 같은 Item 정의로 Kill·활성화 명령 경로의 위협 시나리오와 공격 경로를 찾는다",
+      "위험 값을 매기고 보안 목표와 사이버보안 요구 후보를 정한다",
+      "결과를 Safety Manager에게 넘겨 HARA 교차 검토에 쓰게 한다"
+     ],
+     "checks": [
+      "위협 시나리오마다 위험 값과 보안 목표가 있다",
+      "Kill·활성화 명령 경로가 평가 범위에 들어 있다"
      ],
      "platform": {
       "actions": [],
@@ -5801,11 +6082,11 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "raci": {
       "R": [
-       "R-FO"
+       "R-ARC"
       ],
       "A": "R-SM",
       "C": [
-       "R-ARC",
+       "R-FO",
        "R-TST"
       ],
       "I": [
@@ -5924,6 +6205,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "inputs": [
       "WP-HARA-TARA",
+      "WP-TARA",
       "WP-SOTIF-ANALYSIS",
       "WP-HOMOLOGATION-IMPACT"
      ],
@@ -5961,7 +6243,7 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "layout": {
     "width": 1086,
-    "height": 294,
+    "height": 392,
     "lanes": [
      {
       "role": "R-SM",
@@ -5972,10 +6254,18 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 98
      },
      {
-      "role": "R-FO",
-      "label": "Feature Owner",
+      "role": "R-CSM",
+      "label": "CSM",
       "x": 0,
       "y": 98,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "role": "R-ARC",
+      "label": "아키텍트",
+      "x": 0,
+      "y": 196,
       "w": 1086,
       "h": 98
      },
@@ -5983,7 +6273,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "role": "R-REG",
       "label": "법규 담당",
       "x": 0,
-      "y": 196,
+      "y": 294,
       "w": 1086,
       "h": 98
      }
@@ -6001,7 +6291,7 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "id": "FPW.2-A02",
       "kind": "action",
-      "label": "HARA·TARA 공동 수행",
+      "label": "HARA 수행",
       "x": 478,
       "y": 16,
       "w": 188,
@@ -6017,11 +6307,20 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.2-A06",
+      "kind": "action",
+      "label": "TARA 수행",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.2-A03",
       "kind": "action",
       "label": "SOTIF 분석 갱신",
       "x": 478,
-      "y": 114,
+      "y": 212,
       "w": 188,
       "h": 66
      },
@@ -6030,7 +6329,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "형식승인 영향 1차 판단",
       "x": 478,
-      "y": 212,
+      "y": 310,
       "w": 188,
       "h": 66
      },
@@ -6086,7 +6385,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.2-A01",
-      "to": "FPW.2-A03",
+      "to": "FPW.2-A06",
       "kind": "flow",
       "points": [
        [
@@ -6109,7 +6408,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.2-A01",
-      "to": "FPW.2-A04",
+      "to": "FPW.2-A03",
       "kind": "flow",
       "points": [
        [
@@ -6131,6 +6430,29 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A04",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        343
+       ],
+       [
+        478,
+        343
+       ]
+      ]
+     },
+     {
       "from": "FPW.2-A02",
       "to": "FPW.2-A05",
       "kind": "flow",
@@ -6146,7 +6468,7 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.2-A03",
+      "from": "FPW.2-A06",
       "to": "FPW.2-A05",
       "kind": "flow",
       "points": [
@@ -6157,6 +6479,29 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         746,
         147
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A03",
+      "to": "FPW.2-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
        ],
        [
         746,
@@ -6175,11 +6520,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         666,
-        245
+        343
        ],
        [
         746,
-        245
+        343
        ],
        [
         746,
@@ -6215,12 +6560,16 @@ export const WORKFLOWS: WorkflowDoc = {
      [
       746,
       147
+     ],
+     [
+      746,
+      245
      ]
     ]
    },
    "departmentLayout": {
     "width": 1086,
-    "height": 294,
+    "height": 392,
     "lanes": [
      {
       "department": "DEP-FS",
@@ -6231,10 +6580,18 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 98
      },
      {
-      "department": "DEP-PDP",
-      "label": "상품기획팀",
+      "department": "DEP-CS",
+      "label": "차량사이버보안팀",
       "x": 0,
       "y": 98,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "department": "DEP-SE",
+      "label": "시스템엔지니어링팀",
+      "x": 0,
+      "y": 196,
       "w": 1086,
       "h": 98
      },
@@ -6242,7 +6599,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-HOM",
       "label": "법규인증팀",
       "x": 0,
-      "y": 196,
+      "y": 294,
       "w": 1086,
       "h": 98
      }
@@ -6260,7 +6617,7 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "id": "FPW.2-A02",
       "kind": "action",
-      "label": "HARA·TARA 공동 수행",
+      "label": "HARA 수행",
       "x": 478,
       "y": 16,
       "w": 188,
@@ -6276,11 +6633,20 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.2-A06",
+      "kind": "action",
+      "label": "TARA 수행",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.2-A03",
       "kind": "action",
       "label": "SOTIF 분석 갱신",
       "x": 478,
-      "y": 114,
+      "y": 212,
       "w": 188,
       "h": 66
      },
@@ -6289,7 +6655,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "형식승인 영향 1차 판단",
       "x": 478,
-      "y": 212,
+      "y": 310,
       "w": 188,
       "h": 66
      },
@@ -6345,7 +6711,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.2-A01",
-      "to": "FPW.2-A03",
+      "to": "FPW.2-A06",
       "kind": "flow",
       "points": [
        [
@@ -6368,7 +6734,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.2-A01",
-      "to": "FPW.2-A04",
+      "to": "FPW.2-A03",
       "kind": "flow",
       "points": [
        [
@@ -6390,6 +6756,29 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.2-A01",
+      "to": "FPW.2-A04",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        343
+       ],
+       [
+        478,
+        343
+       ]
+      ]
+     },
+     {
       "from": "FPW.2-A02",
       "to": "FPW.2-A05",
       "kind": "flow",
@@ -6405,7 +6794,7 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.2-A03",
+      "from": "FPW.2-A06",
       "to": "FPW.2-A05",
       "kind": "flow",
       "points": [
@@ -6416,6 +6805,29 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         746,
         147
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.2-A03",
+      "to": "FPW.2-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        245
+       ],
+       [
+        746,
+        245
        ],
        [
         746,
@@ -6434,11 +6846,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         666,
-        245
+        343
        ],
        [
         746,
-        245
+        343
        ],
        [
         746,
@@ -6474,6 +6886,10 @@ export const WORKFLOWS: WorkflowDoc = {
      [
       746,
       147
+     ],
+     [
+      746,
+      245
      ]
     ]
    }
@@ -8296,7 +8712,8 @@ export const WORKFLOWS: WorkflowDoc = {
       "A": "R-INT",
       "C": [
        "R-ARC",
-       "R-TST"
+       "R-TST",
+       "R-SM"
       ],
       "I": [
        "R-QA"
@@ -12808,11 +13225,12 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "raci": {
       "R": [
-       "R-REG"
+       "R-QA"
       ],
       "A": "R-QA",
       "C": [
-       "R-CSM"
+       "R-CSM",
+       "R-REG"
       ],
       "I": [
        "R-SM",
@@ -12867,8 +13285,9 @@ export const WORKFLOWS: WorkflowDoc = {
       "R": [
        "R-OPS"
       ],
-      "A": "R-SM",
+      "A": "R-OPS",
       "C": [
+       "R-SM",
        "R-FO",
        "R-TST"
       ],
@@ -13091,7 +13510,7 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "layout": {
     "width": 2766,
-    "height": 384,
+    "height": 482,
     "lanes": [
      {
       "role": "R-OPS",
@@ -13114,6 +13533,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "법규 담당",
       "x": 0,
       "y": 286,
+      "w": 2766,
+      "h": 98
+     },
+     {
+      "role": "R-QA",
+      "label": "품질 조직",
+      "x": 0,
+      "y": 384,
       "w": 2766,
       "h": 98
      }
@@ -13214,7 +13641,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "긴급 권한 사후 검토",
       "x": 1598,
-      "y": 302,
+      "y": 400,
       "w": 188,
       "h": 66
      },
@@ -13241,7 +13668,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "label": "종료",
       "x": 1800,
-      "y": 326,
+      "y": 424,
       "w": 18,
       "h": 18
      },
@@ -13425,11 +13852,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         1586,
-        335
+        433
        ],
        [
         1598,
-        335
+        433
        ]
       ]
      },
@@ -13501,11 +13928,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1786,
-        335
+        433
        ],
        [
         1800,
-        335
+        433
        ]
       ]
      },
@@ -13544,7 +13971,7 @@ export const WORKFLOWS: WorkflowDoc = {
    },
    "departmentLayout": {
     "width": 2766,
-    "height": 384,
+    "height": 482,
     "lanes": [
      {
       "department": "DEP-OPS",
@@ -13567,6 +13994,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "법규인증팀",
       "x": 0,
       "y": 286,
+      "w": 2766,
+      "h": 98
+     },
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
+      "x": 0,
+      "y": 384,
       "w": 2766,
       "h": 98
      }
@@ -13667,7 +14102,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "긴급 권한 사후 검토",
       "x": 1598,
-      "y": 302,
+      "y": 400,
       "w": 188,
       "h": 66
      },
@@ -13694,7 +14129,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "label": "종료",
       "x": 1800,
-      "y": 326,
+      "y": 424,
       "w": 18,
       "h": 18
      },
@@ -13878,11 +14313,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         1586,
-        335
+        433
        ],
        [
         1598,
-        335
+        433
        ]
       ]
      },
@@ -13954,11 +14389,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1786,
-        335
+        433
        ],
        [
         1800,
-        335
+        433
        ]
       ]
      },
@@ -14223,8 +14658,9 @@ export const WORKFLOWS: WorkflowDoc = {
        "R-REQ",
        "R-SM"
       ],
-      "A": "R-FO",
+      "A": "R-REQ",
       "C": [
+       "R-FO",
        "R-REL"
       ],
       "I": [

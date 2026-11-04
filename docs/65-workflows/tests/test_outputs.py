@@ -100,3 +100,54 @@ def test_workflows_json_personas_follow_iam_accounts(model):
     assert "R-FO" in per["author"]                              # FEATURE_AUTHOR = Feature Owner
     assert "R-CSM" in per["integrator"]                         # SECURITY_OFFICER = 보안 담당
     assert all(per.values()), [a for a, r in per.items() if not r]
+
+
+def _dept_docs(model):
+    build_md.build(partial=True)
+    return {d["id"]: (build_md.OUT / "departments" / f"{d['id']}.md").read_text(encoding="utf-8") for d in model["departments"]}
+
+
+def test_department_md_lists_each_activity_once(model):
+    # 2026-11-04: 몫(R/A/C/I)별 네 표 → 활동당 한 줄 표. 같은 활동이 몫마다 반복되던 것을 막는다.
+    for did, text in _dept_docs(model).items():
+        sec = text[text.index("## 1. 업무 (활동당 한 줄)"):text.index("## 2. 부서 간 인계")]
+        rows = [ln.split(" ")[1] for ln in sec.splitlines() if ln.startswith("| FPW.")]
+        want = [a["id"] for _, a, _ in wm.dept_activities(model, did)]
+        assert rows == want, did
+        if did == "DEP-OPS":
+            assert "| R·A (운영 조직) |" in sec               # 몫과 그 몫을 쥔 역할
+
+
+def test_department_md_has_no_duplicate_gate_label(model):
+    # 'G7 출시·활성화 판정 (G7 판정)'처럼 이름에 이미 있는 Gate를 다시 붙이던 회귀
+    _dept_docs(model)
+    for f in (build_md.OUT / "departments").glob("*.md"):
+        text = f.read_text(encoding="utf-8")
+        assert not re.search(r"(G\d+)[^|\n]*\(\1 판정\)", text), f.name
+    assert "G7 출시·활성화 판정 (G7 판정)" not in build_md.act_name(model["acts_by_id"]["FPW.7-A08"][1])
+
+
+def test_department_md_handoff_includes_joint_performers(model):
+    # 긴급 차단 2인 승인은 기능안전 + 차량사이버보안 공동 수행 — 첫 R 역할만 보면 CS가 받는 인계가 빠졌다
+    text = _dept_docs(model)["DEP-CS"]
+    sec = text[text.index("## 2. 부서 간 인계"):]
+    row = next(ln for ln in sec.splitlines() if "FPW.8-A04" in ln and "FPW.8-A05" in ln)
+    assert row.startswith("| 받음") and "OTA·서비스운영팀" in row and "`WP-KILL-REQ`" in row
+
+
+def test_department_md_depends_on_is_natural_order(model):
+    for did, text in _dept_docs(model).items():
+        deps = yaml.safe_load(text.split("---")[1])["traces"]["depends_on"] or []
+        procs = [int(x.rsplit("-", 1)[1]) for x in deps if x.startswith("WF-FPW-")]
+        assert procs == sorted(procs), (did, deps)
+
+
+def test_department_without_first_scope_work_is_flagged(model):
+    docs = _dept_docs(model)
+    readme = (build_md.OUT / "departments" / "README.md").read_text(encoding="utf-8")
+    banner = "1차 범위(핵심 생애주기)에서 수행·책임 업무가 없다"
+    for d in model["departments"]:
+        n = build_md.first_ra(model, d["id"])
+        assert (banner in docs[d["id"]]) == (n == 0), d["id"]
+        row = next(ln for ln in readme.splitlines() if f"]({d['id']}.md)" in ln)
+        assert row.rstrip(" |").endswith("0 (2차 초안만)" if n == 0 else str(n)), row

@@ -139,7 +139,7 @@ export function DepartmentRnR({ doc }: { doc: WorkflowDoc }) {
               <h3>{k === 'in' ? D.home.handoffIn : D.home.handoffOut}</h3>
               <ul>
                 {d.handoffs[k].map((h) => (
-                  <li key={`${h.from}-${h.to}`}>
+                  <li key={`${h.from}-${h.to}-${h.department}`}>
                     <b>{deptName(h.department)}</b> — {acts.get(k === 'in' ? h.from : h.to)?.a.name} → {acts.get(k === 'in' ? h.to : h.from)?.a.name}
                   </li>
                 ))}

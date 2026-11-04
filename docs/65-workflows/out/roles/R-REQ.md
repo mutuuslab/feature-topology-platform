@@ -58,7 +58,7 @@ last_updated: 2026-11-04
 3. 결함이 있으면 요구 Owner에게 돌려보내고 재검토 일정을 잡는다
 - [ ] 검토자가 요구 작성자와 다른 조직이다
 
-### FPW.3-A04 G3 판정·Feature 정의 승인 — 수행·책임 · G3 판정
+### FPW.3-A04 G3 판정·Feature 정의 승인 — 수행·책임
 - 프로세스: FPW.3 안전요구 확정
 - 시작: 앞 활동 완료
 - 입력: WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION → 출력: WP-G3-DECISION
@@ -79,7 +79,7 @@ last_updated: 2026-11-04
 3. 반려하면 사유를 남겨 아키텍트에게 돌려보낸다
 - [ ] 승인자가 정책 작성자와 다르고 승인 해시가 최신 개정본과 같다
 
-### FPW.9-A03 Flag Retirement 승인 — 수행
+### FPW.9-A03 Flag Retirement 승인 — 수행·책임
 - 프로세스: FPW.9 사후 검토·Flag Retirement
 - 시작: 앞 활동 완료
 - 입력: WP-RETIRE-REQ → 출력: WP-RETIRE-APPROVAL
@@ -95,7 +95,8 @@ last_updated: 2026-11-04
 - FPW.1-A03 안전 분류(네 축) 확정 (통보)
 - FPW.1-A05 G1 등록·분류 판정 (통보)
 - FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 (통보)
-- FPW.2-A02 HARA·TARA 공동 수행 (통보)
+- FPW.2-A02 HARA 수행 (통보)
+- FPW.2-A06 TARA 수행 (통보)
 - FPW.2-A03 SOTIF 분석 갱신 (통보)
 - FPW.2-A05 G2 HARA 영향 판정 (통보)
 - FPW.4-A01 차량 내 감시·안전기제 설계 (통보)

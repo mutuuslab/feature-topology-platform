@@ -8,13 +8,13 @@ owner: governance
 cycle: 0
 traces:
   depends_on:
-    - WF-FPW-10
-    - WF-FPW-11
-    - WF-FPW-12
     - WF-FPW-4
     - WF-FPW-5
     - WF-FPW-6
     - WF-FPW-9
+    - WF-FPW-10
+    - WF-FPW-11
+    - WF-FPW-12
 last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->

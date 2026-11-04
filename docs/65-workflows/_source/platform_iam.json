@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://localhost:9113/admin/iam",
+  "iam_url": "http://localhost:9131/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-10-18T00:08:29.101Z",
+  "fetched_at": "2026-11-04T07:19:50.166Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-10-17T23:56:09.071Z",
+  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-dept\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-04T07:19:14.688Z",
   "ff_git": {
-   "head": "23d1e1d5c273c3dc4243beb276b1f1eaae98df0d",
-   "dirty_files": 18
+   "head": "bfe148403ba0d62b74d4e92fd5571ef1f79c0895",
+   "dirty_files": 3
   },
-  "iam_sha256": "59a8b911dc63302af53eec6b88d264fbbc00378555baa25162fc4198d2179541"
+  "iam_sha256": "070d9c769d7a0bced4e9bd12a6d00e9b6b230254b9b608cad9639b7388c4aa44"
  },
  "roles": [
   {
@@ -152,30 +152,6 @@
    ]
   },
   {
-   "name": "saveNotificationPrefs",
-   "method": "POST",
-   "path": "/api/notifications/preferences",
-   "summary": "알림 메일 설정 저장(감사)",
-   "component": "D04-04",
-   "roles": [
-    "FEATURE_AUTHOR",
-    "SAFETY_OFFICER",
-    "VARIANT_OWNER",
-    "FEATURE_APPROVER",
-    "IMPLEMENTER",
-    "RELEASE_MANAGER",
-    "BOM_APPROVER",
-    "PRODUCT_AUTHOR",
-    "PRODUCT_APPROVER",
-    "GATE_JUDGE",
-    "OPERATOR",
-    "SECURITY_OFFICER",
-    "OPS_LEAD",
-    "REGULATORY_OWNER",
-    "AUDITOR"
-   ]
-  },
-  {
    "name": "updateSafetyProfile",
    "method": "PUT",
    "path": "/api/features/:id/versions/:ver/safety",
@@ -204,6 +180,54 @@
    "component": "D01-01",
    "roles": [
     "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "completeProcedureActivity",
+   "method": "POST",
+   "path": "/api/procedures/activities/:id/complete",
+   "summary": "활동 완료 — Evidence·개인 서명(선택), 감사·인계 알림",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "undoProcedureActivity",
+   "method": "DELETE",
+   "path": "/api/procedures/activities/:id/complete",
+   "summary": "활동 완료 취소 — 감사 기록, 다음 활동 인계를 되돌린다",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
    ]
   },
   {
@@ -378,6 +402,17 @@
    ]
   },
   {
+   "name": "requestPolicyRollback",
+   "method": "POST",
+   "path": "/api/policies/:id/rollback",
+   "summary": "이전 버전으로 되돌리기 요청 — 재검증·지정 승인·실행은 수동 롤백과 같다 (412 기준 배포 바뀜, 409 진행 중 요청)",
+   "component": "D03-04",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR"
+   ]
+  },
+  {
    "name": "validatePolicy",
    "method": "POST",
    "path": "/api/policies/:id/validate",
@@ -489,6 +524,16 @@
    ]
   },
   {
+   "name": "registerApproverKey",
+   "method": "POST",
+   "path": "/api/pki/approver-keys",
+   "summary": "외부 승인자 공개키 등록 (긴급 차단 승인 서명 검증용, D-RD-5)",
+   "component": "D06-10",
+   "roles": [
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
    "name": "requestFlagRetirement",
    "method": "POST",
    "path": "/api/flag-retirements",
@@ -555,6 +600,17 @@
    ]
   },
   {
+   "name": "registerVehicle",
+   "method": "POST",
+   "path": "/api/fleet/vehicles",
+   "summary": "운영 차량 등록(IF-06 Fleet 연계) — Fleet 구분 PRODUCTION, 판매국·차종·트림은 등록된 기준 값이어야 한다(RD-OPS-03)",
+   "component": "D02-03",
+   "roles": [
+    "SYSTEM",
+    "VARIANT_OWNER"
+   ]
+  },
+  {
    "name": "vehicleQueryAll",
    "method": "POST",
    "path": "/vehicle/v1/:vin/flags",
@@ -582,6 +638,39 @@
    "component": "D04-03",
    "roles": [
     "VEHICLE"
+   ]
+  },
+  {
+   "name": "vehicleDeliveryAck",
+   "method": "POST",
+   "path": "/vehicle/v1/:vin/inbox/:deliveryId/ack",
+   "summary": "IF-07 전달 확인 — 적용·거부를 회신(IF-06 readback)으로, 같은 확인 재시도는 같은 응답",
+   "component": "D02-03",
+   "roles": [
+    "VEHICLE"
+   ]
+  },
+  {
+   "name": "otaJobRetry",
+   "method": "POST",
+   "path": "/api/ota/jobs/:jobId/retry",
+   "summary": "IF-05 전달 실패한 OTA 작업 다시 제출(같은 멱등 키 — 두 번 전달되지 않는다)",
+   "component": "D04-01",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPS_LEAD",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "otaJobCancel",
+   "method": "POST",
+   "path": "/api/ota/jobs/:jobId/cancel",
+   "summary": "IF-05 OTA 작업 취소 — 아직 전달하지 않은 차량만(이미 적용한 차량은 새 게시본으로 되돌린다)",
+   "component": "D04-01",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPS_LEAD"
    ]
   },
   {
@@ -835,6 +924,66 @@
    ]
   },
   {
+   "name": "createReferenceValue",
+   "method": "POST",
+   "path": "/api/reference-values",
+   "summary": "기준 값 등록 — 차량 사양 담당자, 지역·트림은 부모(판매국·차종)가 먼저",
+   "component": "D02-01",
+   "roles": [
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "retireReferenceValue",
+   "method": "POST",
+   "path": "/api/reference-values/:kind/:code/retire",
+   "summary": "기준 값 사용 중지 — 이미 쓰인 기록은 그대로, 새 차량 등록·선택지에서 빠진다",
+   "component": "D02-01",
+   "roles": [
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "privacyExport",
+   "method": "POST",
+   "path": "/api/privacy/export",
+   "summary": "정보주체 내보내기(JSON) — 개인정보 목록의 모든 저장소에서 그 사용자·차량의 행(감사 기록, 식별자 대신 가명)",
+   "component": "KERNEL",
+   "roles": [
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "createPrivacyRequest",
+   "method": "POST",
+   "path": "/api/privacy/requests",
+   "summary": "삭제·가명 처리 요청 — 저장소별 대상 행 수를 미리 센다",
+   "component": "KERNEL",
+   "roles": [
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "executePrivacyRequest",
+   "method": "POST",
+   "path": "/api/privacy/requests/:id/execute",
+   "summary": "삭제·가명 처리 실행 — 요청자와 다른 보안 담당자, 감사 체인 검증 유지, 차량은 Data Lake 삭제 요청",
+   "component": "KERNEL",
+   "roles": [
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "rejectPrivacyRequest",
+   "method": "POST",
+   "path": "/api/privacy/requests/:id/reject",
+   "summary": "삭제·가명 처리 요청 거절 — 사유 필수, 대상 식별자를 지운다",
+   "component": "KERNEL",
+   "roles": [
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
    "name": "runVirtual",
    "method": "POST",
    "path": "/api/virtual-validations",
@@ -917,38 +1066,13 @@
    "name": "recordKillPostReview",
    "method": "POST",
    "path": "/api/kill-requests/:id/post-review",
-   "summary": "긴급 권한 사후 독립 검토 기록 — 요청자·승인자 제외, 한 번(FFG-PLT-016)",
+   "summary": "긴급 권한 사후 독립 검토 기록 — 요청자·승인자 제외, 한 번(FFG-PLT-016). 품질(내부감사)이 수행한다(2026-11-04)",
    "component": "D06-09",
    "roles": [
+    "AUDITOR",
     "SECURITY_OFFICER",
     "SAFETY_OFFICER",
     "REGULATORY_OWNER"
-   ]
-  },
-  {
-   "name": "startPoc",
-   "method": "POST",
-   "path": "/api/poc/runs",
-   "summary": "PoC 실행 시작 (이전 PoC 차단 복구 후)",
-   "component": "KERNEL",
-   "roles": [
-    "OPERATOR",
-    "RELEASE_MANAGER",
-    "FEATURE_APPROVER",
-    "SAFETY_OFFICER"
-   ]
-  },
-  {
-   "name": "advancePoc",
-   "method": "POST",
-   "path": "/api/poc/runs/:id/advance",
-   "summary": "PoC 다음 단계 실행 (진행 중 단계는 완료 확인)",
-   "component": "KERNEL",
-   "roles": [
-    "OPERATOR",
-    "RELEASE_MANAGER",
-    "FEATURE_APPROVER",
-    "SAFETY_OFFICER"
    ]
   },
   {
@@ -1046,6 +1170,184 @@
    "component": "D05-05",
    "roles": [
     "OPERATOR"
+   ]
+  },
+  {
+   "name": "resolveExtConflict",
+   "method": "POST",
+   "path": "/api/integrations/sync/conflicts/:id/resolve",
+   "summary": "충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용)",
+   "component": "D05-01",
+   "roles": [
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "FEATURE_APPROVER"
+   ]
+  },
+  {
+   "name": "drainExtSync",
+   "method": "POST",
+   "path": "/api/integrations/sync/drain",
+   "summary": "보낼 함 지금 보내기",
+   "component": "D05-01",
+   "roles": [
+    "SYSTEM",
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "linkPolicyChangeRequest",
+   "method": "POST",
+   "path": "/api/policies/:id/change-request",
+   "summary": "정책 ↔ 근거 JIRA CR 연결",
+   "component": "D05-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "mockExtAct",
+   "method": "POST",
+   "path": "/api/integrations/mock/:system/act",
+   "summary": "모의 외부 시스템에서 사람이 한 일 — 상태 변경·편집·병합·파이프라인(webhook으로 들어옴)",
+   "component": "D05-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "mockExtCreate",
+   "method": "POST",
+   "path": "/api/integrations/mock/:system/items",
+   "summary": "모의 외부 시스템에 항목 만들기(CR·MR·요구)",
+   "component": "D05-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "createDashboard",
+   "method": "POST",
+   "path": "/api/dashboards",
+   "summary": "대시보드 만들기(소유자 = 요청자)",
+   "component": "KERNEL",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "updateDashboard",
+   "method": "PUT",
+   "path": "/api/dashboards/:id",
+   "summary": "대시보드 바꾸기 — 이름·판·공유 역할, 소유자만, If-Match 버전이 다르면 412",
+   "component": "KERNEL",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "deleteDashboard",
+   "method": "DELETE",
+   "path": "/api/dashboards/:id",
+   "summary": "대시보드 지우기 — 소유자만, If-Match 버전",
+   "component": "KERNEL",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "favouriteDashboard",
+   "method": "PUT",
+   "path": "/api/dashboards/:id/favourite",
+   "summary": "대시보드 즐겨찾기(별) — 보는 사람별",
+   "component": "KERNEL",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "AUDITOR"
    ]
   }
  ],
@@ -1356,8 +1658,18 @@
    "group": "home"
   },
   {
-   "path": "/poc",
-   "title": "PoC 6단계 진행",
+   "path": "/procedures",
+   "title": "업무 절차",
+   "group": "home"
+  },
+  {
+   "path": "/procedures/roles",
+   "title": "담당자별 업무 흐름",
+   "group": "home"
+  },
+  {
+   "path": "/procedures/:id",
+   "title": "업무 절차 상세",
    "group": "home"
   },
   {
@@ -1446,6 +1758,16 @@
    "group": "master"
   },
   {
+   "path": "/master/reference-values",
+   "title": "차종·판매국 기준 값",
+   "group": "master"
+  },
+  {
+   "path": "/master/feature-db",
+   "title": "Feature DB",
+   "group": "master"
+  },
+  {
    "path": "/precheck",
    "title": "데이터 사전점검",
    "group": "master"
@@ -1488,6 +1810,11 @@
   {
    "path": "/products",
    "title": "Feature Catalog 상품",
+   "group": "release"
+  },
+  {
+   "path": "/procurement/sw-cost",
+   "title": "SW 개발비 산정",
    "group": "release"
   },
   {
@@ -1551,8 +1878,13 @@
    "group": "ops"
   },
   {
-   "path": "/fleet/vehicles/:vin",
+   "path": "/fleet/vehicles",
    "title": "차량별 적용 상태",
+   "group": "ops"
+  },
+  {
+   "path": "/fleet/vehicles/:vin",
+   "title": "차량 적용 상세",
    "group": "ops"
   },
   {

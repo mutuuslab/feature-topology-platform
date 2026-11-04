@@ -57,9 +57,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 10,
-    "A": 12,
-    "C": 15,
+    "R": 9,
+    "A": 11,
+    "C": 17,
     "I": 29
    }
   },
@@ -105,10 +105,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 7,
-    "A": 8,
+    "R": 8,
+    "A": 9,
     "C": 14,
-    "I": 12
+    "I": 13
    }
   },
   {
@@ -229,6 +229,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/control-points",
      "/policies/:id",
      "/validations",
+     "/master/artifacts",
      "/validations/virtual",
      "/integration/connectors",
      "/experiments",
@@ -243,8 +244,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
    },
    "counts": {
     "R": 17,
-    "A": 18,
-    "C": 30,
+    "A": 17,
+    "C": 33,
     "I": 8
    }
   },
@@ -278,8 +279,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
    },
    "counts": {
     "R": 7,
-    "A": 5,
-    "C": 16,
+    "A": 6,
+    "C": 17,
     "I": 1
    }
   },
@@ -297,7 +298,6 @@ export const DEPARTMENTS: DepartmentsDoc = {
    ],
    "screens": {
     "primary": [
-     "/audit/oversight",
      "/admin/data",
      "/verify/compliance"
     ],
@@ -307,14 +307,15 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/baselines",
      "/activation/decide",
      "/ops/kill",
+     "/audit/oversight",
      "/audit",
      "/admin/security"
     ]
    },
    "counts": {
-    "R": 12,
+    "R": 11,
     "A": 10,
-    "C": 10,
+    "C": 11,
     "I": 7
    }
   },
@@ -400,7 +401,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 10,
+    "R": 11,
     "A": 4,
     "C": 4,
     "I": 22
@@ -445,7 +446,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    },
    "counts": {
     "R": 9,
-    "A": 6,
+    "A": 7,
     "C": 7,
     "I": 19
    }
@@ -493,13 +494,15 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "screens": {
     "primary": [],
     "reference": [
+     "/analysis/impact",
+     "/arch/topology",
      "/supplier/portal"
     ]
    },
    "counts": {
     "R": 2,
     "A": 3,
-    "C": 1,
+    "C": 2,
     "I": 2
    }
   },

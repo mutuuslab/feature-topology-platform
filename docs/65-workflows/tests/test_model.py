@@ -225,3 +225,27 @@ def test_department_screens_split_primary_and_reference(model):
     assert s["primary"] and not set(s["primary"]) & set(s["reference"])
     assert all(wm.dept_screens(model, d["id"])["primary"] or wm.dept_screens(model, d["id"])["reference"]
                for d in model["departments"])
+
+
+def test_handoffs_consider_every_performing_department(model):
+    # FPW.8-A04(운영) → A05(기능안전 + 차량사이버보안 공동 수행): 두 부서 모두 받는 인계가 있어야 한다
+    out = wm.dept_handoffs(model, "DEP-OPS")["out"]
+    assert ("FPW.8-A04", "FPW.8-A05", "DEP-FS") in out and ("FPW.8-A04", "FPW.8-A05", "DEP-CS") in out
+    assert ("FPW.8-A04", "FPW.8-A05", "DEP-OPS") in wm.dept_handoffs(model, "DEP-CS")["in"]
+    for d in model["departments"]:                              # 자기 부서로의 인계는 없다
+        h = wm.dept_handoffs(model, d["id"])
+        assert all(o != d["id"] for k in ("in", "out") for _, _, o in h[k])
+
+
+def test_request_owner_cannot_own_approval(model):
+    # 2026-11-04 결정: Retirement 요청 책임(Feature Owner)이 승인 책임이던 결함을 되살리면 잡는다
+    _, appr = model["acts_by_id"]["FPW.9-A03"]
+    appr["raci"]["A"] = "R-FO"
+    assert any("FPW.9-A02→FPW.9-A03" in e for e in errors(model))
+
+
+def test_tara_is_owned_by_cybersecurity(model):
+    _, tara = model["acts_by_id"]["FPW.2-A06"]
+    assert tara["raci"]["R"] == ["R-CSM"] and tara["raci"]["A"] == "R-CSM"
+    _, hara = model["acts_by_id"]["FPW.2-A02"]
+    assert hara["raci"]["A"] == "R-SM" and "R-CSM" in hara["raci"]["C"]

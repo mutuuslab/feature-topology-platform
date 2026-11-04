@@ -11,6 +11,7 @@ import { useWorkflows } from '../../data/workflows';
 import { useProcedureInbox, useProgress } from '../../data/procedureProgress';
 import { roleLabel } from '../../data/refdata';
 import { PageHeader, Panel, Tabs } from '../../design';
+import { screenShipped } from '../../routes';
 import { useAppShell } from '../../store';
 import { ActivityBody, RaciBadge, roleName } from './ActivityView';
 import { lanesOf, useFlowStatuses } from './flow/FlowParts';
@@ -34,7 +35,7 @@ function useMe(doc: WorkflowDoc) {
 }
 
 /** 첫 화면으로 열 수 있는 경로(인자 없는 것) */
-const firstStatic = (screens: string[]) => screens.find((s) => !s.includes(':'));
+const firstStatic = (screens: string[]) => screens.find((s) => !s.includes(':') && screenShipped(s));
 
 function Hub({ doc }: { doc: WorkflowDoc }) {
   const { role, roleIds } = useMe(doc);

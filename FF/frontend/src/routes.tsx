@@ -86,7 +86,12 @@ const procedureScreens = () => import('./screens/procedures/Procedures');
 // Feature DB·SW 개발비 산정 — 메뉴만 연 준비 중 화면(설계 30-95·20-94)
 const plannedScreens = () => import('./screens/planned/PlannedScreens');
 
-export const ROUTES: AppRoute[] = [
+/** Windows 데스크톱(Tauri) 배포본 — `VITE_FF_DESKTOP=1`로 빌드한다(tools/desktop-prepare.mjs). */
+export const DESKTOP_BUILD = import.meta.env.VITE_FF_DESKTOP === '1';
+/** 데스크톱 배포본에서 뺀 화면 — 42 컴포넌트 아키텍처는 개발·검토용이라 배포본에 싣지 않는다. */
+export const DESKTOP_EXCLUDED = new Set(['/arch/components']);
+
+const ALL_ROUTES: AppRoute[] = [
   // 1 홈
   { path: '/', element: named(homeScreens, 'HomeScreen'), title: '내 대시보드', group: 'home', menu: '/', v2: true },
   { path: '/admin/approval', element: named(homeScreens, 'ApprovalInboxScreen'), title: '검토함', group: 'home', menu: '/admin/approval', v2: true },
@@ -100,7 +105,8 @@ export const ROUTES: AppRoute[] = [
   { path: '/procedures', element: named(procedureScreens, 'ProceduresHub'), title: '업무 절차', group: 'home', menu: '/procedures', v2: true },
   { path: '/procedures/roles', element: named(procedureScreens, 'ProcedureRolesScreen'), title: '담당자별 업무 흐름', group: 'home', menu: '/procedures/roles', v2: true },
   { path: '/procedures/:id', element: named(procedureScreens, 'ProcessDetail'), title: '업무 절차 상세', group: 'home', parent: '/procedures', v2: true },
-  { path: '/arch/components', element: named(() => import('./screens/home/Architecture'), 'ArchitectureScreen'), title: '42 컴포넌트 아키텍처', group: 'home', menu: '/arch/components', v2: true },
+  // 데스크톱 배포본에서는 빌드 단계에서 빠진다(화면 청크도 만들지 않는다)
+  ...(DESKTOP_BUILD ? [] : [{ path: '/arch/components', element: named(() => import('./screens/home/Architecture'), 'ArchitectureScreen'), title: '42 컴포넌트 아키텍처', group: 'home', menu: '/arch/components', v2: true } as AppRoute]),
   { path: '/notifications', element: named(() => import('./screens/home/Notifications'), 'NotificationsScreen'), title: '알림', group: 'home', menu: '/notifications', components: ['D04-04'], v2: true },
   { path: '/admin/notifications', element: legacyTo('/notifications'), title: '알림 (이전 주소)', group: 'home', parent: '/notifications' },
   { path: '/login', element: legacyTo('/'), title: '로그인 (이전 주소)', group: 'home', parent: '/' },
@@ -244,6 +250,11 @@ export const ROUTES: AppRoute[] = [
   // 디자인 시스템 갤러리 — 데모·개발 빌드만(결정 D-RD-8, 견본 ID를 보인다). 갤러리 자체는 그대로 둔다(시각 회귀·키트 규칙)
   ...(DEMO_EXTRAS ? [{ path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'admin', menu: '/_design', v2: true } as AppRoute] : []),
 ];
+
+export const routesFor = (desktop: boolean): AppRoute[] => (desktop ? ALL_ROUTES.filter((r) => !DESKTOP_EXCLUDED.has(r.path) && !(r.parent && DESKTOP_EXCLUDED.has(r.parent))) : ALL_ROUTES);
+export const ROUTES: AppRoute[] = routesFor(DESKTOP_BUILD);
+/** 이 빌드에 실린 화면인가 — 업무 절차의 화면 링크·부서 메뉴가 배포본에서 뺀 화면을 가리키지 않게 한다. */
+export const screenShipped = (pattern: string, desktop = DESKTOP_BUILD) => !(desktop && DESKTOP_EXCLUDED.has(pattern));
 
 // ── 파생 정보 ─────────────────────────────────────────────────────────
 

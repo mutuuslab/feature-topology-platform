@@ -8,7 +8,7 @@ import { ko } from '../../copy/ko';
 import { procedures as P } from '../../copy/procedures';
 import { useProgress } from '../../data/procedureProgress';
 import { Button, Drawer, ErrorNote, Field, KeyValue } from '../../design';
-import { ROUTES } from '../../routes';
+import { ROUTES, screenShipped } from '../../routes';
 import { useAppShell, useToast } from '../../store';
 import './procedures.css';
 
@@ -44,7 +44,8 @@ export function RaciBadge({ k }: { k: RaciKey | null }) {
 }
 
 /** 화면 경로 패턴 → 링크(인자가 없는 경로) 또는 화면 이름(인자가 있는 경로는 대상이 정해져야 열린다) */
-export function ScreenLinks({ patterns }: { patterns: string[] }) {
+export function ScreenLinks({ patterns: all }: { patterns: string[] }) {
+  const patterns = all.filter((p) => screenShipped(p));
   if (!patterns.length) return <span className="ds-field__hint">{P.mine.noScreen}</span>;
   return (
     <span className="pr-screens">

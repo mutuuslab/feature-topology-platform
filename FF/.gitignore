@@ -7,3 +7,8 @@ __pycache__/
 docker/unleash/.env
 # 외부 연계 실제 연결 값(토큰 포함 — npm run ext:check -- --env-file .env.ext)
 .env.ext
+
+# Windows 데스크톱(Tauri) 빌드 생성물 — 설치 파일·런타임 자산은 저장소에 두지 않는다
+src-tauri/target/
+src-tauri/resources/
+src-tauri/gen/

@@ -6,6 +6,7 @@ import { bodyLimitOf, emptyBodyAsObject, rateLimit, rateLimitOf, securityHeaders
 import { correlation, JsonLogger, logFormat, Metrics, requestLogOn, requestObserver } from './kernel/observability';
 import { assertRuntimeConfig, corsOrigins, isProduction } from './kernel/runtime-config';
 import { serveWeb } from './kernel/web-static';
+import { desktopGuard, isDesktop } from './kernel/desktop';
 
 /** main.ts와 테스트가 같은 방식으로 앱을 조립한다.
  *  어댑터를 명시 주입한다 — workspaces 호이스팅 위치와 무관하게 platform-express를 찾도록. */
@@ -25,6 +26,9 @@ export async function createApp(opts: { logger?: false } = {}): Promise<NestExpr
 /** 보안 헤더·CORS 허용 목록·요청 제한·본문 크기 — 시험(helpers.bootApp)도 같은 함수를 쓴다 */
 export function hardenHttp(app: NestExpressApplication, env: Record<string, string | undefined> = process.env) {
   app.disable('x-powered-by');
+  // 데스크톱 배포본(FF_DESKTOP=1)은 루프백 같은 출처만 — 화면 제공·요청 제한보다 먼저 거른다
+  const desktop = isDesktop(env);
+  if (desktop) app.use(desktopGuard());
   // TLS는 앞단 프록시가 끝낸다 — 운영 모드는 프록시가 준 출처 IP를 믿는다(요청 제한·감사)
   if (isProduction(env)) app.set('trust proxy', env.FF_TRUST_PROXY ?? 'loopback');
   app.use(securityHeaders(env));
@@ -39,6 +43,7 @@ export function hardenHttp(app: NestExpressApplication, env: Record<string, stri
   app.useBodyParser('urlencoded', { limit: bodyLimitOf(env), extended: true });
   app.use(emptyBodyAsObject);
   // 운영 모드는 FF_CORS_ORIGINS 허용 목록만(비었으면 다른 출처 불허), 그 밖에는 모두 허용
-  const origins = corsOrigins(env);
+  // 데스크톱은 화면과 API가 같은 출처라 CORS를 열지 않는다
+  const origins = desktop ? [] : corsOrigins(env);
   app.enableCors({ origin: origins === true ? true : origins.length ? origins : false });
 }

@@ -23,6 +23,7 @@ import { EventService } from '../../../kernel/event.service';
 import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from '../repos';
 import { LifecycleService } from './lifecycle.service';
 import { pageOf } from '../../../kernel/paging';
+import { FeatureRefLinker, regulationsOf, type RefLinkResult, type RefWarning } from './feature-refs';
 
 export interface FeatureQuery {
   q?: string;
@@ -51,6 +52,7 @@ export class RegistryService {
     private readonly events: EventService,
     private readonly clock: Clock,
     private readonly safety: SafetyProfileService,
+    private readonly refs: FeatureRefLinker,
   ) {}
 
   /** gateStatus — 목록은 GateRepo.latestStatuses로 한 번에 읽어 넘긴다(버전마다 Gate 질의를 하면 N+1) */
@@ -132,13 +134,41 @@ export class RegistryService {
     };
   }
 
-  create(actor: Actor, body: CreateFeatureBody) {
+  /**
+   * 기준 기능(Feature DB) 연결 판정만 — 저장하지 않는다(30-95 §6.2). 거부 감사는 남기지 않으므로 호출자가 남긴다.
+   * JIRA Epic 자동 등록이 트랜잭션 밖에서 먼저 확인할 때 쓴다(거부 감사는 트랜잭션 밖이어야 한다).
+   */
+  checkRefs(body: CreateFeatureBody): RefLinkResult {
+    return this.refs.resolve({
+      featureRefs: body.featureRefs,
+      asil: body.asil,
+      asilDeviation: body.asilDeviation,
+      scope: { country: body.country, vehicleModel: body.vehicleModel, trim: body.trim },
+      duplicate: 'reject',
+      confirmDuplicate: body.confirmDuplicate,
+      duplicateReason: body.duplicateReason,
+    });
+  }
+
+  /** 등록 — 기준 행 연결 필수(대표 1 + 포함 N). 요청 중·검토 필요·폐기 예정 행은 등록하되 응답 warnings와 감사에 남긴다 */
+  create(actor: Actor, body: CreateFeatureBody): FeatureVersionRow & { warnings: RefWarning[] } {
+    const fail = (reason: string) => {
+      // 거부 감사는 트랜잭션 밖에서만 남길 수 있다 — 바깥 트랜잭션(JIRA 자동 등록)은 호출자가 먼저 확인하고 남긴다
+      if (!this.db.inTransaction) this.audit.failed(actor, 'FEATURE_CREATE', body.name, reason, 'D01-01');
+    };
     const dup = this.features.similar(body.name, body.country, body.vehicleModel, body.trim);
     if (dup.length) {
-      this.audit.failed(actor, 'FEATURE_CREATE', body.name, '같은 적용 범위에 유사 Feature 존재', 'D01-01');
+      fail('같은 적용 범위에 유사 Feature 존재');
       throw new DomainError('CONFLICT', '같은 국가·차종·트림에 이름이 비슷한 Feature가 이미 있습니다. 기존 Feature의 새 Version인지 확인하세요.', {
         similar: dup.map((d) => ({ featureId: d.featureId, version: d.version, name: d.name, lifecycle: d.lifecycle })),
       });
+    }
+    let linked: RefLinkResult;
+    try {
+      linked = this.checkRefs(body);
+    } catch (e) {
+      if (e instanceof DomainError) fail(`기준 기능 연결: ${e.message}`);
+      throw e;
     }
     return this.db.tx(() => {
       const f: FeatureVersionRow = {
@@ -164,15 +194,48 @@ export class RegistryService {
         dependencyIds: [],
         catalogIds: [],
         gateRecordIds: [],
+        featureRefs: linked.featureRefs,
+        ...(linked.asilDeviation ? { asilDeviation: linked.asilDeviation } : {}),
+        // 규제·표준 조항은 요구사항 ID가 아니다 — 따로 보존하고, 주지 않으면 대표 행에서 미리 채운다(§6.3)
+        refRegulations: body.refRegulations ?? regulationsOf(linked.primary),
         _missing: { baselineId: '미발급', functions: '미입력', swIds: '미입력', swVersions: '미입력', ecuPnos: '미입력' },
       };
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
+      this.refs.saveLinks(f); // 기준 행 → Feature 역참조 색인(§5.3) — 같은 트랜잭션
       this.safety.ensure(f.featureId, f.version); // 안전 분류 초안 — 앞 Version 값을 잇거나 추정(보고서 5.7)
       const target = `${f.featureId}@${f.version}`;
-      this.audit.record(actor, 'FEATURE_CREATE', target, { after: f, componentId: 'D01-01' });
-      this.events.publish('feature.created', target, { featureId: f.featureId, version: f.version, name: f.name }, { componentId: 'D01-01', correlationId: actor.correlationId });
-      return f;
+      this.audit.record(actor, 'FEATURE_CREATE', target, { after: { ...f, ...refAuditDetail(linked, body.duplicateReason) }, componentId: 'D01-01' });
+      this.events.publish(
+        'feature.created',
+        target,
+        { featureId: f.featureId, version: f.version, name: f.name, primaryRef: linked.primary.refId, asilDeviation: !!linked.asilDeviation },
+        { componentId: 'D01-01', correlationId: actor.correlationId },
+      );
+      return { ...f, warnings: linked.warnings };
     });
+  }
+
+  /** 초안 수정·새 Version의 연결 다시 판정 — 연결·ASIL·사유 중 하나라도 바뀌면. 연결이 아직 없는 시드 Feature는 연결을 줄 때만 본다 */
+  private relink(f: FeatureVersionRow, body: UpdateDraftBody): RefLinkResult | null {
+    if (body.featureRefs === undefined && body.asil === undefined && body.asilDeviation === undefined) return null;
+    const featureRefs = body.featureRefs ?? f.featureRefs;
+    if (!featureRefs?.length) return null;
+    return this.refs.resolve({
+      featureRefs,
+      previous: f.featureRefs,
+      asil: body.asil ?? f.asil,
+      asilDeviation: body.asilDeviation ?? f.asilDeviation,
+      scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim },
+      featureId: f.featureId,
+      duplicate: 'warn', // 이미 등록된 Feature — 확인 칸이 없으므로 경고만
+    });
+  }
+
+  /** 연결 판정 결과를 행에 반영 — 대표 ASIL과 같아지면 사유를 지운다 */
+  private withLinks(next: FeatureVersionRow, linked: RefLinkResult | null): FeatureVersionRow {
+    if (!linked) return next;
+    const { asilDeviation: _drop, ...rest } = next;
+    return { ...rest, featureRefs: linked.featureRefs, ...(linked.asilDeviation ? { asilDeviation: linked.asilDeviation } : {}) };
   }
 
   /** PROPOSED 초안만 그 자리에서 수정한다. APPROVED 이후는 새 Version. */
@@ -183,12 +246,21 @@ export class RegistryService {
       this.audit.failed(actor, 'FEATURE_UPDATE', target, `${f.lifecycle} 버전 수정 시도`, 'D01-01');
       throw new DomainError('IMMUTABLE', `${f.lifecycle} 버전은 수정할 수 없습니다. 새 Version을 만드세요.`, { hint: `POST /api/features/${featureId}/versions` });
     }
+    let linked: RefLinkResult | null;
+    try {
+      linked = this.relink(f, body);
+    } catch (e) {
+      if (e instanceof DomainError) this.audit.failed(actor, 'FEATURE_UPDATE', target, `기준 기능 연결: ${e.message}`, 'D01-01');
+      throw e;
+    }
     return this.db.tx(() => {
-      const next = this.merge(f, body);
+      const next = this.withLinks(this.merge(f, body), linked);
       this.features.update(next);
-      this.audit.record(actor, 'FEATURE_UPDATE', target, { before: pick(f, changedKeys(f, body as any)), after: pick(next, changedKeys(f, body as any)), componentId: 'D01-01' });
-      this.events.publish('feature.updated', target, { featureId, version, changed: changedKeys(f, body as any) }, { componentId: 'D01-01', correlationId: actor.correlationId });
-      return next;
+      if (linked) this.refs.saveLinks(next);
+      const changed = changedKeys(f, body as any);
+      this.audit.record(actor, 'FEATURE_UPDATE', target, { before: pick(f, changed), after: { ...pick(next, changed), ...(linked ? refAuditDetail(linked) : {}) }, componentId: 'D01-01' });
+      this.events.publish('feature.updated', target, { featureId, version, changed }, { componentId: 'D01-01', correlationId: actor.correlationId });
+      return linked ? { ...next, warnings: linked.warnings } : next;
     });
   }
 
@@ -201,10 +273,13 @@ export class RegistryService {
     const latest = this.features.versions(featureId).at(-1)!.version;
     const version = bumpVersion(latest, body.bump);
     const changed = changedKeys(base, body.changes as any);
+    // 기준 행 연결은 앞 버전에서 복사한다(§5.3) — 바꾸면 다시 판정
+    const linked = this.relink(base, body.changes);
     return this.db.tx(() => {
-      const merged = this.merge(base, body.changes);
+      const merged = this.withLinks(this.merge(base, body.changes), linked);
       const f: FeatureVersionRow = { ...merged, version, lifecycle: 'PROPOSED', baselineId: null, catalogIds: [], gateRecordIds: [], _missing: { ...merged._missing, baselineId: '미발급' } };
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
+      this.refs.saveLinks(f); // 앞 버전 연결(또는 바뀐 연결)을 새 버전 색인으로
       this.safety.ensure(f.featureId, f.version, base.version); // 안전 분류 초안 — 기준 Version 값을 잇는다(보고서 5.7, DRAFT)
       const target = `${featureId}@${version}`;
       const rejudge = gatesToRejudge(changed, base.lifecycle);
@@ -216,7 +291,7 @@ export class RegistryService {
         { featureId, version, baseVersion: base.version, changed, rejudge, notifyBomApprover: !!base.baselineId },
         { componentId: 'D01-01', correlationId: actor.correlationId },
       );
-      return { feature: f, changed, rejudge };
+      return { feature: f, changed, rejudge, ...(linked ? { warnings: linked.warnings } : {}) };
     });
   }
 
@@ -230,4 +305,10 @@ export class RegistryService {
 
 const isEmpty = (v: unknown) => v == null || (Array.isArray(v) && v.length === 0) || v === '';
 const stripUndefined = (o: object) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined));
+/** 감사 기록에 남기는 연결 판정 — 경고·ASIL 사유(G2 검토)·같은 범위 중복 확인 사유 */
+const refAuditDetail = (linked: RefLinkResult, duplicateReason?: string) => ({
+  refWarnings: linked.warnings,
+  ...(linked.asilDeviation ? { asilDeviationReview: 'G2' } : {}),
+  ...(duplicateReason && linked.duplicates.length ? { duplicateConfirmed: { reason: duplicateReason, of: linked.duplicates } } : {}),
+});
 const pick = (o: object, keys: string[]) => Object.fromEntries(keys.map((k) => [k, (o as any)[k]]));

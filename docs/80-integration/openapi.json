@@ -415,7 +415,7 @@
           "D04-04"
         ],
         "operationId": "readNotification",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -466,7 +466,7 @@
           "D04-04"
         ],
         "operationId": "readAllNotifications",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -1166,7 +1166,7 @@
           "D04-04"
         ],
         "operationId": "completeProcedureActivity",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -1259,7 +1259,7 @@
           "D04-04"
         ],
         "operationId": "undoProcedureActivity",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -1471,6 +1471,83 @@
                       ]
                     },
                     "default": []
+                  },
+                  "featureRefs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "PRIMARY",
+                            "INCLUDED"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "refId",
+                        "role"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1
+                  },
+                  "asilDeviation": {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "to": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 500
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "to",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "refRegulations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
+                  "confirmDuplicate": {
+                    "type": "boolean"
+                  },
+                  "duplicateReason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
                   }
                 },
                 "required": [
@@ -1480,7 +1557,8 @@
                   "vehicleModel",
                   "trim",
                   "ownerId",
-                  "asil"
+                  "asil",
+                  "featureRefs"
                 ]
               }
             }
@@ -1640,6 +1718,75 @@
                             "Signal",
                             "DTC"
                           ]
+                        }
+                      },
+                      "featureRefs": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "refId": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                            },
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "PRIMARY",
+                                "INCLUDED"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "refId",
+                            "role"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1
+                      },
+                      "asilDeviation": {
+                        "type": "object",
+                        "properties": {
+                          "from": {
+                            "type": "string",
+                            "enum": [
+                              "QM",
+                              "A",
+                              "B",
+                              "C",
+                              "D"
+                            ]
+                          },
+                          "to": {
+                            "type": "string",
+                            "enum": [
+                              "QM",
+                              "A",
+                              "B",
+                              "C",
+                              "D"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 500
+                          }
+                        },
+                        "required": [
+                          "from",
+                          "to",
+                          "reason"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "refRegulations": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
                         }
                       },
                       "functions": {
@@ -1850,6 +1997,75 @@
                       ]
                     }
                   },
+                  "featureRefs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "PRIMARY",
+                            "INCLUDED"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "refId",
+                        "role"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1
+                  },
+                  "asilDeviation": {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "to": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 500
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "to",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "refRegulations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
                   "functions": {
                     "type": "array",
                     "items": {
@@ -2014,6 +2230,986 @@
             "name": "ver",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/refs": {
+      "get": {
+        "summary": "Feature DB 기준 행 검색 — 한글·영문 기능명·별칭·용어집·ID, 도메인·컴포넌트·상태 필터, offset·limit 페이지(금액 필드는 산정 역할만)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "listRefs",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/refs/{refId}": {
+      "get": {
+        "summary": "Feature DB 기준 행 상세 — 정의·근거·세부기능 후보·이 행을 쓰는 Feature",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refDetail",
+        "parameters": [
+          {
+            "name": "refId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/taxonomy": {
+      "get": {
+        "summary": "Feature DB 분류 — 도메인 10 → 클러스터 → 컴포넌트",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refTaxonomy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/sources": {
+      "get": {
+        "summary": "Feature DB 출처 — 자료·발행처·버전·확인일·다음 점검일",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refSources",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/quality": {
+      "get": {
+        "summary": "Feature DB 품질 지표 — 상태별 행 수·출처 없음·근거 확인 12개월 경과·규모 근거 D 비중·발행 대기",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refQuality",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/releases": {
+      "get": {
+        "summary": "Feature DB 발행 버전 이력 — 변경 요청 묶음·전체 해시",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refReleases",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "Feature DB 버전 발행 — 승인된 변경 요청을 묶어 다음 버전·전체 해시 기록(추가만)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "publishRefRelease",
+        "description": "허용 역할: Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "changeIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^CR-\\d{4}-\\d{3,}$"
+                    },
+                    "default": []
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "default": ""
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/subfunctions": {
+      "get": {
+        "summary": "Feature DB 세부기능 후보(읽기 전용 참고) — 컴포넌트별",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refSubfunctions",
+        "parameters": [
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/requests": {
+      "post": {
+        "summary": "Feature DB에 없는 기능 추가 요청 — 정식 ID를 바로 부여한 요청 중 행 + 추가 변경 요청(승인 전에는 Feature 정의 승인이 막힘)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "requestRefAdd",
+        "description": "허용 역할: Feature 작성자, Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "cluster": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "component": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "componentAbbr": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9]{1,3}$"
+                  },
+                  "nameEn": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "nameKo": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "tshirt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8
+                  },
+                  "asilRep": {
+                    "type": "string",
+                    "enum": [
+                      "QM",
+                      "A",
+                      "B",
+                      "C",
+                      "D"
+                    ]
+                  },
+                  "sourceIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^S\\d{2,}$"
+                    },
+                    "default": []
+                  },
+                  "basisNote": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "domain",
+                  "component",
+                  "nameEn",
+                  "nameKo",
+                  "tshirt",
+                  "asilRep"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/changes": {
+      "get": {
+        "summary": "Feature DB 변경 요청 목록 — 대상 행·상태·종류·도메인(도메인 검토자의 담당 도메인) 필터",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "listRefChanges",
+        "parameters": [
+          {
+            "name": "refId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "Feature DB 변경 요청 작성(추가·수정·폐기 예정·폐기) — 자동 점검 후 도메인 검토로",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "createRefChange",
+        "description": "허용 역할: Feature 작성자, Feature 승인자, 상품 작성자, 구현 담당자, 차량 사양·Variant 담당자, Feature DB 관리자, 도메인 검토자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "ADD",
+                      "MODIFY",
+                      "DEPRECATE",
+                      "RETIRE"
+                    ]
+                  },
+                  "refId": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                  },
+                  "after": {
+                    "type": "object",
+                    "properties": {
+                      "refId": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "ACTIVE",
+                          "REVIEW",
+                          "DEPRECATED",
+                          "RETIRED",
+                          "PENDING"
+                        ]
+                      },
+                      "replacedBy": {
+                        "type": "string",
+                        "nullable": true,
+                        "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                      },
+                      "registeredIn": {
+                        "type": "string"
+                      },
+                      "evidenceCheckedAt": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "domain": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "cluster": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "component": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "swStack": {
+                        "type": "string"
+                      },
+                      "lifecycle": {
+                        "type": "string"
+                      },
+                      "techStack": {
+                        "type": "string"
+                      },
+                      "vehicleType": {
+                        "type": "string"
+                      },
+                      "region": {
+                        "type": "string"
+                      },
+                      "nameEn": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "nameKo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "aliases": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "autoQuality": {
+                        "type": "string"
+                      },
+                      "techQuality": {
+                        "type": "string"
+                      },
+                      "asilRep": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "method": {
+                        "type": "string"
+                      },
+                      "tshirt": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "bundleId": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "bundleRep": {
+                        "type": "boolean",
+                        "nullable": true
+                      },
+                      "sizeEvidenceGrade": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          "A",
+                          "B",
+                          "C",
+                          "D",
+                          null
+                        ]
+                      },
+                      "benchmarkEur": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "kearneyNote": {
+                        "type": "string"
+                      },
+                      "makeBuyVolume": {
+                        "type": "string"
+                      },
+                      "makeBuyPremium": {
+                        "type": "string"
+                      },
+                      "relevance": {
+                        "type": "string"
+                      },
+                      "sourceIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "sourceDetail": {
+                        "type": "string"
+                      },
+                      "remark": {
+                        "type": "string"
+                      },
+                      "basisType": {
+                        "type": "string"
+                      },
+                      "duplicateOf": {
+                        "type": "string",
+                        "nullable": true,
+                        "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                      },
+                      "requires": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        }
+                      },
+                      "excludes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        }
+                      },
+                      "procurement": {
+                        "type": "string"
+                      },
+                      "swPackage": {
+                        "type": "string"
+                      },
+                      "licenseItem": {
+                        "type": "string"
+                      },
+                      "billing": {
+                        "type": "string"
+                      },
+                      "definition": {
+                        "type": "object",
+                        "nullable": true,
+                        "properties": {
+                          "level": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "parentRefId": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "summary": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "trigger": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "scopeIn": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "scopeOut": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "scopeOutRefs": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "io": {
+                            "type": "object",
+                            "properties": {
+                              "entry": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "exit": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "read": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "write": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "drivers": {
+                            "type": "object",
+                            "properties": {
+                              "states": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "dtcs": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "calibrations": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "variants": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "regulations": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "verification": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "typicalChanges": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "sharedFunctions": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "authoringStatus": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      },
+                      "adminMemo": {
+                        "type": "string"
+                      }
+                    },
+                    "default": {}
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "kind",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/changes/{id}": {
+      "get": {
+        "summary": "Feature DB 변경 요청 상세 — 필드 차이·자동 점검·검토 의견·영향(이 행을 쓰는 Feature)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refChangeDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/changes/{id}/reviews": {
+      "post": {
+        "summary": "Feature DB 변경 요청 도메인 검토 의견(동의·보완·반대) — 요청자는 검토할 수 없다",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "reviewRefChange",
+        "description": "허용 역할: 도메인 검토자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "opinion": {
+                    "type": "string",
+                    "enum": [
+                      "AGREE",
+                      "REVISE",
+                      "OPPOSE"
+                    ]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "opinion",
+                  "comment"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/changes/{id}/decision": {
+      "post": {
+        "summary": "Feature DB 변경 요청 승인·반려 — 요청자 ≠ 승인자, 필수 정보 누락이면 승인 불가",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "decideRefChange",
+        "description": "허용 역할: Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVE",
+                      "REJECT"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "decision",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/export": {
+      "get": {
+        "summary": "Feature DB 내보내기 — 엑셀 03_FeatureDB 열 순서 + 출처 시트(금액 열은 산정 역할만)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "exportRefdb",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "release",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -6070,7 +7266,7 @@
           "D02-03"
         ],
         "operationId": "fleetMap",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "source",
@@ -6133,7 +7329,7 @@
           "D02-03"
         ],
         "operationId": "fleetMapVehicle",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "vin",
@@ -8936,7 +10132,7 @@
           "D03-04"
         ],
         "operationId": "previewRollback",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -13658,7 +14854,7 @@
           "D05-01"
         ],
         "operationId": "mockExtCreate",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "system",
@@ -13732,6 +14928,15 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 100
+                      },
+                      "refIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        },
+                        "minItems": 1,
+                        "maxItems": 20
                       }
                     },
                     "additionalProperties": false
@@ -13776,7 +14981,7 @@
           "D05-01"
         ],
         "operationId": "mockExtAct",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "system",
@@ -13866,6 +15071,15 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 100
+                      },
+                      "refIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        },
+                        "minItems": 1,
+                        "maxItems": 20
                       }
                     },
                     "additionalProperties": false
@@ -14279,7 +15493,7 @@
           "KERNEL"
         ],
         "operationId": "createDashboard",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -14439,6 +15653,8 @@
                         "SECURITY_OFFICER",
                         "OPS_LEAD",
                         "REGULATORY_OWNER",
+                        "REFDB_ADMIN",
+                        "DOMAIN_REVIEWER",
                         "AUDITOR",
                         "SYSTEM",
                         "VEHICLE"
@@ -14514,7 +15730,7 @@
           "KERNEL"
         ],
         "operationId": "updateDashboard",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -14683,6 +15899,8 @@
                         "SECURITY_OFFICER",
                         "OPS_LEAD",
                         "REGULATORY_OWNER",
+                        "REFDB_ADMIN",
+                        "DOMAIN_REVIEWER",
                         "AUDITOR",
                         "SYSTEM",
                         "VEHICLE"
@@ -14728,7 +15946,7 @@
           "KERNEL"
         ],
         "operationId": "deleteDashboard",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -14785,7 +16003,7 @@
           "KERNEL"
         ],
         "operationId": "favouriteDashboard",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",

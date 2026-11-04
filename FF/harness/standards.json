@@ -858,6 +858,7 @@
         "backend/src/domains/d06-qsec/iam/post-review.service.ts"
       ],
       "tested": [
+        "contracts/src/rules/access-variant.test.ts",
         "contracts/src/rules/duty-separation.test.ts",
         "contracts/src/rules/notification.test.ts",
         "contracts/src/rules/tutorial.test.ts",

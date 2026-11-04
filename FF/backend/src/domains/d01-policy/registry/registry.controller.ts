@@ -3,7 +3,7 @@ import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nes
 import {
   BaselineDecisionBody,
   BaselineRequestBody,
-  CreateFeatureBody,
+  type CreateFeatureBody,
   CreateVersionBody,
   JudgeGateBody,
   TransitionBody,
@@ -12,6 +12,7 @@ import {
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { pageLimit } from '../../../kernel/paging';
+import { CreateFeaturePipe } from './feature-refs';
 import { GateService } from '../topology/gate.service';
 import { BaselineService } from './baseline.service';
 import { LifecycleService } from './lifecycle.service';
@@ -34,7 +35,8 @@ export class RegistryController {
   @Post()
   @Roles('FEATURE_AUTHOR')
   @AuditAction('FEATURE_CREATE')
-  create(@CurrentActor() actor: Actor, @Body(new ZodPipe(CreateFeatureBody)) body: CreateFeatureBody) {
+  // 기준 기능 연결(featureRefs) 필수 — 없거나 대표가 없으면 400 REFDB_LINK_REQUIRED(30-95 §6.2)
+  create(@CurrentActor() actor: Actor, @Body(new CreateFeaturePipe()) body: CreateFeatureBody) {
     return this.registry.create(actor, body);
   }
 

@@ -1,0 +1,195 @@
+// Feature DB 하네스 정합 검사(30-95) — 계약(routes·권한·직무 분리)과 실제 앱·시드 데이터가 서로 어긋나지 않는지 한곳에서 본다.
+//  (a) ROUTES의 /api/refdb 경로마다 Nest 처리기가 있고, 처리기가 읽는 질의 이름이 routes.ts query와 같다(전체 양방향은 routes.spec).
+//  (b) IAM 권한표(rolesView)에서 Feature DB 관리자·도메인 검토자의 Feature DB 쓰기 권한이 정확히 정해진 묶음이다.
+//  (c) 직무 분리 SOD-13·14가 규칙표에 있다 — 서버 강제(403·감사 DENIED)는 refdb-change.spec.ts가 본다.
+//  (d) 시드 데이터 — 기준 행 수 = manifest 행 수, 대응표 refId 실재, 연결된 시드 Feature의 ASIL = 대표 행 대표 ASIL 또는 asilDeviation 사유.
+//      (d)의 ASIL 불일치는 데이터를 고치지 않고 목록으로 고정해 보고한다 — 새 불일치가 생기면 실패한다.
+import { INestApplication, RequestMethod } from '@nestjs/common';
+import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
+import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum';
+import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
+import { FeatureVersionRow, rolesView, ROUTES, routeKey, SOD_RULES, type RouteDef } from '@ff/contracts';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { REFDB_SEED_DIR, REFDB_SEED_LINKS } from '../../src/domains/d01-policy/refdb/refdb-seed';
+import { RefdbRepository } from '../../src/domains/d01-policy/refdb/refdb.repository';
+import { DB, type Db } from '../../src/kernel/db';
+import { bootApp } from '../helpers';
+
+const REFDB_ROUTES = ROUTES.filter((r) => r.path.startsWith('/api/refdb'));
+const manifest = JSON.parse(readFileSync(join(REFDB_SEED_DIR, 'manifest.json'), 'utf8')) as { files: Record<string, { rows: number }> };
+const seedLinks = JSON.parse(readFileSync(REFDB_SEED_LINKS, 'utf8')) as { links: Record<string, { refId: string; role: string }[]> };
+
+/** 대응표 연결 Feature 중 ASIL이 대표 행 대표 ASIL과 다르고 asilDeviation 사유도 없는 버전 — 데이터 확인 대상(보고용, 고치지 않음) */
+// 2026-11-04 시드 v0.81 기준 31건(Feature 23개) — 시드 ASIL이 대표 행보다 높음(C ≠ B·A·QM) 또는 낮음(QM ≠ A, IN-CLU-012).
+// 시드 픽스처에 asilDeviation 사유를 채울지, 대응표 대표 행을 바꿀지는 데이터 담당 결정(PROGRESS 보고) — 고치면 이 목록에서 지운다.
+const KNOWN_ASIL_MISMATCH: string[] = [
+  'FEAT-00002@1.5.0 asil C ≠ AD-LON-016 B',
+  'FEAT-00002@1.6.0 asil C ≠ AD-LON-016 B',
+  'FEAT-00005@5.4.2 asil C ≠ AD-LON-002 B',
+  'FEAT-00005@5.5.0 asil C ≠ AD-LON-002 B',
+  'FEAT-00010@2.0.0 asil C ≠ AD-DMS-003 A',
+  'FEAT-00014@1.0.0 asil QM ≠ IN-CLU-012 A',
+  'FEAT-00015@1.2.0 asil C ≠ AD-LON-005 QM',
+  'FEAT-00060@2.0.0 asil C ≠ AD-DMS-003 A',
+  'FEAT-00061@2.0.0 asil C ≠ AD-DMS-003 A',
+  'FEAT-00062@2.0.0 asil C ≠ AD-DMS-003 A',
+  'FEAT-00065@1.2.0 asil C ≠ AD-LON-005 QM',
+  'FEAT-00066@1.2.0 asil C ≠ AD-LON-005 QM',
+  'FEAT-00067@1.2.0 asil C ≠ AD-LON-005 QM',
+  'FEAT-00084@5.4.2 asil C ≠ AD-LON-002 B',
+  'FEAT-00084@5.5.0 asil C ≠ AD-LON-002 B',
+  'FEAT-00098@1.0.0 asil QM ≠ IN-CLU-012 A',
+  'FEAT-00100@1.0.0 asil QM ≠ IN-CLU-012 A',
+  'FEAT-00145@5.4.2 asil C ≠ AD-LON-002 B',
+  'FEAT-00145@5.5.0 asil C ≠ AD-LON-002 B',
+  'FEAT-00150@5.4.2 asil C ≠ AD-LON-002 B',
+  'FEAT-00150@5.5.0 asil C ≠ AD-LON-002 B',
+  'FEAT-00163@3.7.0 asil C ≠ AD-LAT-002 B',
+  'FEAT-00163@3.8.0 asil C ≠ AD-LAT-002 B',
+  'FEAT-00175@1.0.0 asil QM ≠ IN-CLU-012 A',
+  'FEAT-00176@1.0.0 asil QM ≠ IN-CLU-012 A',
+  'FEAT-00177@1.0.0 asil QM ≠ IN-CLU-012 A',
+  'FEAT-00178@1.0.0 asil QM ≠ IN-CLU-012 A',
+  'FEAT-00183@5.4.2 asil C ≠ AD-LON-002 B',
+  'FEAT-00183@5.5.0 asil C ≠ AD-LON-002 B',
+  'FEAT-00185@5.4.2 asil C ≠ AD-LON-002 B',
+  'FEAT-00185@5.5.0 asil C ≠ AD-LON-002 B',
+];
+
+const METHOD: Record<number, RouteDef['method']> = { [RequestMethod.GET]: 'GET', [RequestMethod.POST]: 'POST', [RequestMethod.PUT]: 'PUT', [RequestMethod.PATCH]: 'PATCH', [RequestMethod.DELETE]: 'DELETE' };
+const join2 = (a: string, b: string) => ('/' + [a, b].map((s) => s.replace(/^\/|\/$/g, '')).filter(Boolean).join('/')).replace(/\/+/g, '/');
+
+/** 컨트롤러 메서드 → 'METHOD /api/경로'와 그 처리기가 읽는 @Query 이름 */
+function handlerQueries(app: INestApplication): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  const discovery = app.get(DiscoveryService);
+  const scanner = app.get(MetadataScanner);
+  const reflector = app.get(Reflector);
+  for (const w of discovery.getControllers()) {
+    if (!w.metatype || !w.instance) continue;
+    const base = String(reflector.get('path', w.metatype) ?? '');
+    const proto = Object.getPrototypeOf(w.instance);
+    for (const name of scanner.getAllMethodNames(proto)) {
+      const fn = proto[name];
+      const path = reflector.get<string | undefined>('path', fn);
+      const method = reflector.get<number | undefined>('method', fn);
+      if (path === undefined || method === undefined) continue;
+      const full = join2('/api', join2(base, path).replace(/^\/api/, ''));
+      const args = (Reflect.getMetadata(ROUTE_ARGS_METADATA, w.metatype, name) ?? {}) as Record<string, { data?: unknown }>;
+      const queries = Object.entries(args)
+        .filter(([k]) => Number(k.split(':')[0]) === RouteParamtypes.QUERY)
+        .map(([, v]) => v.data)
+        .filter((d): d is string => typeof d === 'string');
+      out.set(`${METHOD[method]} ${full}`, queries);
+    }
+  }
+  return out;
+}
+
+describe('Feature DB 하네스 정합', () => {
+  let app: INestApplication;
+  let db: Db;
+  let repo: RefdbRepository;
+  let http: () => any;
+  beforeAll(async () => {
+    const b = await bootApp();
+    ({ app, http } = b);
+    db = b.get<Db>(DB);
+    repo = b.get(RefdbRepository);
+  });
+  afterAll(() => app?.close());
+
+  describe('(a) 경로 ↔ 처리기', () => {
+    it('Feature DB 경로는 15개 — 모두 D01-01 컴포넌트', () => {
+      expect(REFDB_ROUTES.map((r) => r.name).sort()).toEqual(
+        ['createRefChange', 'decideRefChange', 'exportRefdb', 'listRefChanges', 'listRefs', 'publishRefRelease', 'refChangeDetail', 'refDetail', 'refQuality', 'refReleases', 'refSources', 'refSubfunctions', 'refTaxonomy', 'requestRefAdd', 'reviewRefChange'].sort(),
+      );
+      for (const r of REFDB_ROUTES) expect(r.component, r.name).toBe('D01-01');
+    });
+
+    it('경로마다 처리기가 있고, 처리기가 읽는 질의 이름 = routes.ts query(빠짐·남음 없음)', () => {
+      const handlers = handlerQueries(app);
+      const problems: string[] = [];
+      for (const r of REFDB_ROUTES) {
+        const key = routeKey(r);
+        const q = handlers.get(key);
+        if (!q) {
+          problems.push(`${r.name} ${key}: 처리기 없음`);
+          continue;
+        }
+        const declared = [...(r.query ?? [])].sort();
+        if (JSON.stringify([...q].sort()) !== JSON.stringify(declared)) problems.push(`${r.name}: 처리기 질의 ${[...q].sort().join(',') || '-'} ≠ routes.ts ${declared.join(',') || '-'}`);
+      }
+      expect(problems).toEqual([]);
+    });
+  });
+
+  describe('(b) IAM 권한표', () => {
+    const refdbWrites = (role: string) => {
+      const names = new Set(REFDB_ROUTES.filter((r) => r.method !== 'GET').map((r) => r.name));
+      return rolesView().find((v) => v.role === role)!.allowed.filter((n) => names.has(n)).sort();
+    };
+
+    it('Feature DB 관리자 — 추가 요청·변경 요청 작성·승인/반려·발행만, 도메인 검토는 없다', () => {
+      expect(refdbWrites('REFDB_ADMIN')).toEqual(['createRefChange', 'decideRefChange', 'publishRefRelease', 'requestRefAdd']);
+    });
+
+    it('도메인 검토자 — 변경 요청 작성·도메인 검토만(승인·발행·추가 요청 없음)', () => {
+      expect(refdbWrites('DOMAIN_REVIEWER')).toEqual(['createRefChange', 'reviewRefChange']);
+    });
+
+    it('두 역할의 Feature DB 밖 쓰기 권한은 모든 사람 역할 공통(알림 읽음·절차 활동·대시보드 …)뿐 — 권한표 API도 같은 값을 낸다', async () => {
+      const body = (await http().get('/api/iam/roles').expect(200)).body;
+      const rows = body.roles as { role: string; allowed: string[] }[];
+      const human = rolesView().filter((v) => v.human);
+      const common = human.map((v) => v.allowed).reduce((a, b) => a.filter((n) => b.includes(n)));
+      for (const role of ['REFDB_ADMIN', 'DOMAIN_REVIEWER']) {
+        const view = rolesView().find((v) => v.role === role)!;
+        expect(view.human, role).toBe(true);
+        expect(view.allowed.filter((n) => !REFDB_ROUTES.some((r) => r.name === n) && !common.includes(n)), `${role}의 Feature DB 밖 고유 권한`).toEqual([]);
+        expect(rows.find((r) => r.role === role)?.allowed.sort(), `${role} /api/iam/roles`).toEqual([...view.allowed].sort());
+      }
+    });
+  });
+
+  describe('(c) 직무 분리', () => {
+    it('SOD-13(변경 승인)·SOD-14(변경 검토)가 규칙표에 있다 — 서버 강제는 refdb-change.spec.ts(403·감사 DENIED)', () => {
+      const ids = SOD_RULES.filter((r) => r.component === 'D01-01').map((r) => r.id);
+      expect(ids).toEqual(expect.arrayContaining(['SOD-13', 'SOD-14']));
+    });
+  });
+
+  describe('(d) 시드 데이터', () => {
+    it('기준 행(feature_ref) 수 = manifest refs 행 수, 딸린 표도 manifest와 같다', () => {
+      const n = (t: string) => db.get<{ n: number }>(`SELECT count(*) AS n FROM ${t}`)!.n;
+      expect(n('feature_ref')).toBe(manifest.files.refs.rows);
+      expect(n('taxonomy_node')).toBe(manifest.files.taxonomy.rows);
+      expect(n('ref_source')).toBe(manifest.files.sources.rows);
+      expect(n('ref_subfunction')).toBe(manifest.files.subfunctions.rows);
+    });
+
+    it('대응표의 refId는 모두 Feature DB에 있고, 연결 색인의 refId도 모두 있다', () => {
+      const missing = Object.entries(seedLinks.links).flatMap(([fid, ls]) => ls.filter((l) => !repo.getRef(l.refId)).map((l) => `${fid}:${l.refId}`));
+      expect(missing).toEqual([]);
+      const dangling = db.all<{ ref_id: string }>('SELECT DISTINCT l.ref_id FROM feature_ref_link l LEFT JOIN feature_ref r ON r.ref_id = l.ref_id WHERE r.ref_id IS NULL');
+      expect(dangling).toEqual([]);
+    });
+
+    it('연결된 시드 Feature의 ASIL = 대표 행 대표 ASIL, 다르면 asilDeviation 사유 — 불일치는 목록으로 보고(데이터를 고치지 않음)', () => {
+      const mismatch: string[] = [];
+      for (const [featureId, ls] of Object.entries(seedLinks.links)) {
+        const primary = ls.find((l) => l.role === 'PRIMARY')!;
+        const ref = repo.getRef(primary.refId)!;
+        for (const v of repo.featureVersionDocs(featureId)) {
+          const doc = FeatureVersionRow.parse(JSON.parse(v.doc));
+          if (doc.asil === ref.asilRep || doc.asilDeviation?.reason) continue;
+          mismatch.push(`${featureId}@${v.version} asil ${doc.asil} ≠ ${primary.refId} ${ref.asilRep}`);
+        }
+      }
+      if (mismatch.length) console.info(`[refdb-harness] 시드 Feature ASIL ↔ 대표 행 대표 ASIL 불일치 ${mismatch.length}건:\n  ${mismatch.join('\n  ')}`);
+      expect(mismatch.sort()).toEqual([...KNOWN_ASIL_MISMATCH].sort());
+    });
+  });
+});

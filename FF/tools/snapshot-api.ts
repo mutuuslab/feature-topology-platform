@@ -43,6 +43,70 @@ async function get<T = any>(url: string, name?: string, headers?: Record<string,
   return r.json() as Promise<T>;
 }
 
+/** 쓰기 요청(보조 백엔드 전용) — 정적 데모에 보일 예시 데이터를 만든다 */
+async function post<T = any>(url: string, headers: Record<string, string>, body: unknown): Promise<T> {
+  const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `snapshot-${url}-${Date.now()}`, ...headers }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error(`POST ${url} → ${r.status} ${await r.text()}`);
+  return r.json() as Promise<T>;
+}
+
+type Save = (name: string, params?: Record<string, string>, query?: Record<string, any>, headers?: Record<string, string>) => Promise<any>;
+
+/**
+ * Feature DB 스냅샷 — 화면이 보내는 질의 모양 그대로(키 순서 포함):
+ *  · 목록(RefList refListQuery): { q, domain, component, status, offset, limit: 50 } — 쪽·상태·도메인·컴포넌트
+ *  · 등록 1단계(RefPicker): { q, domain, component, limit: 20 } · 세부기능 후보 { component }
+ *  · 상세(RefDetail): refDetail + listRefChanges { refId } — 모든 기준 행
+ *  · Feature 상세 '기준 행' 탭(FeatureRefsTab): refDetail + listRefChanges { refId, status: 'PUBLISHED' } — 시드 Feature가 쓰는 행
+ */
+async function refdbSnapshots(save: Save, features: { featureRefs?: { refId: string }[] }[]) {
+  // 예시 변경 요청 — 수정(대표 ASIL·T-shirt) + 도메인 검토 의견 하나(승인 전). 정적 데모는 읽기 전용이라 여기서만 만든다
+  const AUTHOR = { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' };
+  const REVIEWER = { 'X-Actor-Id': 'usr-approver', 'X-Actor-Role': 'DOMAIN_REVIEWER' };
+  const demo = await post<{ changeId: string }>('/api/refdb/changes', AUTHOR, { kind: 'MODIFY', refId: 'CH-BRK-009', after: { tshirt: 'M' }, reason: '사내 실적(EPB 연계 2건) 반영 — 규모 S → M' });
+  await post(`/api/refdb/changes/${demo.changeId}/reviews`, REVIEWER, { opinion: 'AGREE', comment: '사내 실적 근거 확인 — 동의' });
+
+  await save('refQuality');
+  const taxonomy = await save('refTaxonomy');
+  await save('refSources');
+  await save('refReleases');
+  const changes = await save('listRefChanges');
+  for (const c of changes.items as { changeId: string }[]) await save('refChangeDetail', { id: c.changeId });
+
+  const nodes = taxonomy.items as { nodeId: string; level: string; parentId: string | null; nameEn: string }[];
+  const domains = nodes.filter((n) => n.level === 'DOMAIN');
+  const componentsOf = (d: { nodeId: string }) => nodes.filter((n) => n.level === 'COMPONENT' && n.parentId === d.nodeId);
+  const PAGE = 50;
+  // 목록 첫 쪽 → 전체 수로 쪽 수를 정한다
+  const first = await save('listRefs', {}, { limit: PAGE });
+  for (let offset = PAGE; offset < first.total; offset += PAGE) await save('listRefs', {}, { offset, limit: PAGE });
+  for (const status of ['ACTIVE', 'REVIEW', 'DEPRECATED', 'RETIRED', 'PENDING']) await save('listRefs', {}, { status, limit: PAGE });
+  for (const d of domains) {
+    await save('listRefs', {}, { domain: d.nameEn, limit: PAGE });
+    await save('listRefs', {}, { domain: d.nameEn, limit: 20 });
+    for (const c of componentsOf(d)) {
+      await save('listRefs', {}, { domain: d.nameEn, component: c.nameEn, limit: PAGE });
+      await save('listRefs', {}, { domain: d.nameEn, component: c.nameEn, limit: 20 });
+    }
+  }
+  await save('listRefs', {}, { limit: 20 });
+  for (const component of new Set(nodes.filter((n) => n.level === 'COMPONENT').map((n) => n.nameEn))) await save('refSubfunctions', {}, { component });
+
+  // 상세 — 모든 기준 행(목록 행을 누르면 열린다)
+  const refIds: string[] = [];
+  for (let offset = 0; offset < first.total; offset += 200) {
+    const page = await get(routeUrl('listRefs', {}, { offset: offset || undefined, limit: 200 }), 'listRefs');
+    refIds.push(...(page.items as { refId: string }[]).map((r) => r.refId));
+  }
+  for (const refId of refIds) {
+    await save('refDetail', { refId });
+    await save('listRefChanges', {}, { refId });
+  }
+  // Feature 상세 '기준 행' 탭 — 연결 뒤 발행된 변경(발행됨만)
+  const linked = new Set(features.flatMap((f) => (f.featureRefs ?? []).map((l) => l.refId)));
+  for (const refId of linked) await save('listRefChanges', {}, { refId, status: 'PUBLISHED' });
+}
+
 async function main() {
   for (let i = 0; ; i++) {
     if (serverExit !== null) throw new Error(`스냅샷용 백엔드가 시작하지 못했습니다(종료 ${serverExit}, 포트 ${PORT})`);
@@ -102,6 +166,10 @@ async function main() {
   }
   // Feature 요약 서랍(FeaturePeek) — Version 없이 열면 최신 Version을 이 응답에서 고른다
   for (const id of new Set((all.items as { featureId: string }[]).map((f) => f.featureId))) await save('featureVersions', { id });
+
+  // Feature DB(기준 기능, 30-95) — 목록·상세·변경 요청·발행 이력, 등록 화면 1단계(기준 기능 고르기), Feature 상세 '기준 행' 탭.
+  // 정적 데모에도 변경 요청 상세가 열리게 이 보조 백엔드(메모리 DB, 찍고 버린다)에 예시 수정 요청 하나와 도메인 검토 의견을 넣는다.
+  await refdbSnapshots(save, all.items as { featureRefs?: { refId: string }[] }[]);
 
   // BOM·Catalog
   await save('baselineRequests');

@@ -10,6 +10,8 @@ import { GateDecisionService } from './topology/gate-decision.service';
 import { ReharaRepo } from './topology/rehara.repo';
 import { BaselineController, RegistryController } from './registry/registry.controller';
 import { RegistryService } from './registry/registry.service';
+import { FeatureRefLinker } from './registry/feature-refs';
+import { RefdbRepository } from './refdb/refdb.repository';
 import { SafetyProfileController, SafetyProfileService } from './registry/safety-profile.service';
 import { ReleaseSignoffController, ReleaseSignoffService } from './registry/release-signoff.service';
 import { RetirementController, RetirementService } from './registry/retirement.service';
@@ -46,6 +48,9 @@ import { TopologyService } from './topology/topology.service';
     StagedRolloutService,
     SafetyProfileService,
     ReleaseSignoffService,
+    // Feature DB 연결(30-95 §5.3) — 등록·수명주기가 기준 행 상태를 본다. 저장소는 상태 없는 DB 접근이라 여기서도 만든다(RefdbModule과 순환 import 없이)
+    RefdbRepository,
+    FeatureRefLinker,
     AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
   exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
 })

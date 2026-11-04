@@ -730,4 +730,67 @@ CREATE TABLE shared_counter (key TEXT PRIMARY KEY, start_ms INTEGER NOT NULL, n 
 CREATE TABLE instance_lease (name TEXT PRIMARY KEY, holder TEXT NOT NULL, acquired_at TEXT NOT NULL, renewed_at TEXT NOT NULL, expires_at INTEGER NOT NULL);
 `,
   },
+  {
+    // Feature DB(docs/30-data-model/30-95 §5) — 엑셀 03_FeatureDB를 옮긴 기준 기능 표. 키·조회 조건은 열, 본문은 contracts zod(doc).
+    // taxonomy_node: 도메인 10 → 클러스터 → 컴포넌트 69(약어는 기준 행 ID에 쓴다). feature_ref: 기준 행(FeatureRefRow) — 한 번 쓴 ref_id는 지우지 않고 RETIRED로만.
+    // ref_source: 09_출처(다음 점검일은 정기 점검 알림). ref_glossary: 사내 용어집(검색 별칭). ref_subfunction: 13_세부기능후보(읽기 전용).
+    // ref_release: 발행 버전(v1.3 엑셀 가져옴, v1.4 …)과 전체 정규화 해시 — 추가만(081 트리거).
+    name: '080_feature_ref',
+    sql: `
+CREATE TABLE taxonomy_node (
+  node_id TEXT PRIMARY KEY,
+  level TEXT NOT NULL CHECK (level IN ('DOMAIN','CLUSTER','COMPONENT')),
+  parent_id TEXT,
+  abbr TEXT,
+  status TEXT NOT NULL CHECK (status IN ('ACTIVE','RETIRED')),
+  doc TEXT NOT NULL
+);
+CREATE INDEX taxonomy_node_parent ON taxonomy_node (parent_id, level);
+CREATE TABLE feature_ref (
+  ref_id TEXT PRIMARY KEY,
+  status TEXT NOT NULL CHECK (status IN ('ACTIVE','REVIEW','DEPRECATED','RETIRED','PENDING')),
+  domain TEXT NOT NULL,
+  component TEXT NOT NULL,
+  name_ko TEXT NOT NULL,
+  doc TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX feature_ref_scope ON feature_ref (domain, component, status);
+CREATE TABLE ref_source (source_id TEXT PRIMARY KEY, next_review_at TEXT, doc TEXT NOT NULL);
+CREATE TABLE ref_glossary (term TEXT PRIMARY KEY, doc TEXT NOT NULL);
+CREATE TABLE ref_subfunction (id INTEGER PRIMARY KEY AUTOINCREMENT, component TEXT NOT NULL, name TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX ref_subfunction_component ON ref_subfunction (component);
+CREATE TABLE ref_release (release_id TEXT PRIMARY KEY, published_by TEXT NOT NULL, published_at TEXT NOT NULL, hash TEXT NOT NULL, doc TEXT NOT NULL);
+`,
+  },
+  {
+    // Feature DB 연결·변경 요청(30-95 §5.3·§8.2).
+    // feature_ref_link: FF Feature 버전 ↔ 기준 행 역참조 색인(대표 1 + 포함 N, 연결 당시 발행 버전) — feature_version 저장과 같은 트랜잭션에서 갱신, 영향 분석(§8.3)에 쓴다.
+    // ref_change: 변경 요청(작성 → 도메인 검토 → DB 관리자 승인 → 발행), 본문은 RefChange(doc). ref_release는 발행 이력이라 추가만 가능.
+    name: '081_feature_ref_link',
+    sql: `
+CREATE TABLE feature_ref_link (
+  feature_id TEXT NOT NULL,
+  version TEXT NOT NULL,
+  ref_id TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('PRIMARY','INCLUDED')),
+  ref_version TEXT NOT NULL,
+  PRIMARY KEY (feature_id, version, ref_id)
+);
+CREATE INDEX feature_ref_link_ref ON feature_ref_link (ref_id, role);
+CREATE TABLE ref_change (
+  change_id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL CHECK (kind IN ('ADD','MODIFY','DEPRECATE','RETIRE')),
+  ref_id TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('DRAFT','REVIEW','APPROVED','REJECTED','PUBLISHED')),
+  doc TEXT NOT NULL,
+  requested_by TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX ref_change_ref ON ref_change (ref_id, status);
+CREATE INDEX ref_change_status ON ref_change (status, created_at);
+CREATE TRIGGER ref_release_no_update BEFORE UPDATE ON ref_release BEGIN SELECT RAISE(ABORT, 'ref_release는 추가만 가능'); END;
+CREATE TRIGGER ref_release_no_delete BEFORE DELETE ON ref_release BEGIN SELECT RAISE(ABORT, 'ref_release는 추가만 가능'); END;
+`,
+  },
 ];

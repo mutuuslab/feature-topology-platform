@@ -159,13 +159,15 @@ describe('운영 모드 첫 실행 — 빈 DB', () => {
     expect((await http().get('/api/features').set('Cookie', cookie).expect(200)).body.items).toEqual([]);
     // 쿠키로 인증한 변경 요청은 공개 출처의 Origin이 있어야 한다(CSRF)
     await http().post('/api/features').set('Cookie', cookie).send({ name: 'x' }).expect(403);
-    const created = await http()
-      .post('/api/features')
-      .set('Cookie', cookie)
-      .set('Origin', PUBLIC)
-      .set('Idempotency-Key', 'first-feature-1')
-      .send({ name: '첫 기능 — 원격 시동', description: '고객 설치 첫 등록', country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'first-author', asil: 'QM' })
-      .expect(201);
+    // 기준 기능(Feature DB) 연결이 필수 — 빈 설치도 첫 기동에 Feature DB v1.3을 받으므로(30-95 §9) 실제 기준 행을 고른다.
+    // 맞는 행이 없을 때의 추가 요청(§6.4)은 test/d01/refdb-registration.spec.ts가 본다
+    const post = (path: string, body: object, key: string) => http().post(path).set('Cookie', cookie).set('Origin', PUBLIC).set('Idempotency-Key', key).send(body);
+    const noRef = { name: '첫 기능 — 원격 시동', description: '고객 설치 첫 등록', country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'first-author', asil: 'QM' };
+    expect((await post('/api/features', noRef, 'first-feature-0').expect(400)).body.error.code).toBe('REFDB_LINK_REQUIRED');
+    const ref = (await http().get('/api/refdb/refs/BC-HVAC-006').set('Cookie', cookie).expect(200)).body.ref;
+    expect(ref).toMatchObject({ status: 'ACTIVE', asilRep: 'QM' });
+    const created = await post('/api/features', { ...noRef, featureRefs: [{ refId: 'BC-HVAC-006', role: 'PRIMARY' }] }, 'first-feature-1').expect(201);
+    expect(created.body.warnings ?? []).toEqual([]);
     expect(created.body.featureId).toMatch(/^FEAT-\d+$/);
     expect(created.body.version).toBe('0.1.0');
     const list = (await http().get('/api/features').set('Cookie', cookie).expect(200)).body.items;

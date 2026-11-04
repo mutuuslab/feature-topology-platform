@@ -19,6 +19,7 @@ import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { PolicyRepo } from '../policy-repos';
+import { RefdbRepository } from '../refdb/refdb.repository';
 import { BaselineRepo, FeatureRepo, GateRepo, TopologyRepo } from '../repos';
 import { GateDecisionService } from '../topology/gate-decision.service';
 import { ReharaRepo } from '../topology/rehara.repo';
@@ -51,6 +52,7 @@ export class LifecycleService {
     private readonly decisions: GateDecisionService,
     private readonly signoffs: ReleaseSignoffService,
     private readonly rehara: ReharaRepo,
+    private readonly refdb: RefdbRepository,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -74,6 +76,8 @@ export class LifecycleService {
       releaseSignoff: f.lifecycle === 'VERIFIED' ? this.signoffs.current(f.featureId, f.version) : null,
       // FFP-F007 — 열린 재-HARA 요청은 출시 전이를 막는다(Gate PASS 뒤에 열린 것도)
       openRehara: this.rehara.open(f.featureId, f.version).map((r) => ({ requestId: r.requestId, condition: r.condition, detail: r.detail })),
+      // 30-95 §5.2 — 연결된 기준 행이 요청 중(PENDING)·폐기(RETIRED)·없음이면 정의 승인(PROPOSED→APPROVED)을 막는다(REFDB_LINK_BLOCKED)
+      refStatusOf: (refId) => this.refdb.statusOf(refId),
       ...extra,
     };
   }

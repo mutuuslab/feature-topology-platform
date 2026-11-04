@@ -5,7 +5,7 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { parseRefs, type ExtChange, type ExtSystem } from '@ff/contracts';
 import { DomainError } from '../../../../kernel/errors';
-import { extUrl, JIRA_EPIC_FIELDS, JIRA_PROJECTS, WEBHOOK_SECRET } from './mock-ext.store';
+import { extUrl, JIRA_EPIC_FIELDS, JIRA_PROJECTS, JIRA_REF_FIELD, WEBHOOK_SECRET } from './mock-ext.store';
 
 export const hmac = (system: ExtSystem, raw: string) => `sha256=${createHmac('sha256', WEBHOOK_SECRET[system]()).update(raw).digest('hex')}`;
 
@@ -122,13 +122,32 @@ export function normalize(system: ExtSystem, deliveryId: string, body: unknown):
   };
 }
 
-/** Epic 사용자 정의 필드 → 적용 범위(문자열 또는 선택 목록 { value }·{ name }) — 비어 있는 값은 뺀다 */
-function epicScope(f: Record<string, any>): Record<string, string> {
-  const out: Record<string, string> = {};
+/** Epic 사용자 정의 필드 → 적용 범위(문자열 또는 선택 목록 { value }·{ name }) — 비어 있는 값은 뺀다. 기준 기능 ID는 refIds(대표 먼저) */
+function epicScope(f: Record<string, any>): Record<string, string | string[]> {
+  const out: Record<string, string | string[]> = {};
   for (const [k, id] of Object.entries(JIRA_EPIC_FIELDS)) {
     const raw = f[id()];
     const v = typeof raw === 'string' ? raw : raw && typeof raw === 'object' ? (raw.value ?? raw.name) : undefined;
     if (typeof v === 'string' && v.trim()) out[k] = v.trim();
   }
+  const refIds = epicRefIds(f);
+  if (refIds.length) out.refIds = refIds;
   return out;
+}
+
+/**
+ * Epic의 기준 기능 ID(30-95 §7, R-6) — 라벨 `ref-primary:<ID>`(대표)·`ref:<ID>`(포함), 설정하면 사용자 필드 JIRA_REF_FIELD(FF_JIRA_REF_FIELD).
+ * 대표를 맨 앞에 둔다: ref-primary 라벨 → 필드 값(첫 값) → ref 라벨. 대표 라벨이 없으면 처음 나온 값이 대표. 같은 ID는 한 번만.
+ */
+export function epicRefIds(f: Record<string, any>): string[] {
+  const labels: string[] = Array.isArray(f.labels) ? f.labels.filter((l: unknown): l is string => typeof l === 'string') : [];
+  const fromLabels = (prefix: string) => labels.filter((l) => l.toLowerCase().startsWith(prefix)).map((l) => l.slice(prefix.length).trim());
+  const fieldId = JIRA_REF_FIELD();
+  const raw = fieldId ? f[fieldId] : undefined;
+  const items: unknown[] = Array.isArray(raw) ? raw : raw == null ? [] : [raw];
+  const fromField = items.flatMap((x) => {
+    const v = typeof x === 'string' ? x : x && typeof x === 'object' ? ((x as any).value ?? (x as any).name) : undefined;
+    return typeof v === 'string' ? v.split(/[\s,;]+/) : [];
+  });
+  return [...new Set([...fromLabels('ref-primary:'), ...fromField, ...fromLabels('ref:')].map((s) => s.trim().toUpperCase()).filter(Boolean))];
 }

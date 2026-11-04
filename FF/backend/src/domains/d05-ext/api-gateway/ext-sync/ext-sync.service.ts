@@ -76,6 +76,9 @@ const splitFid = (id: string) => {
 
 type Outcome = Pick<InboxRow, 'outcome' | 'summary'>;
 
+/** JIRA Epic에 기준 기능 ID가 없거나 쓸 수 없을 때 댓글 안내(30-95 §7) */
+export const EPIC_REF_HINT = '기준 기능 ID를 라벨 ref: 또는 필드에 넣어 주세요(대표는 ref-primary: 라벨, 예: ref-primary:CH-BRK-009).';
+
 @PlatformComponent('D05-01')
 @Injectable()
 export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
@@ -496,16 +499,38 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       actor = this.actorFor(who, ['FEATURE_AUTHOR'], correlationId);
       if (!actor) return refuse(`${who.name}은(는) Feature 등록 권한(Feature 작성)이 없습니다.`);
     }
-    const scope = (c.extra.scope ?? {}) as Record<string, string>;
+    const scope = (c.extra.scope ?? {}) as Record<string, string> & { refIds?: string[] };
     const missing = missingEpicScope(scope);
     if (missing.length) return refuse(`Epic에 ${missing.map((k) => EPIC_SCOPE_LABEL[k]).join('·')} 값이 없거나 형식이 틀립니다. 채우면 다시 등록을 시도합니다.`);
-    const body = CreateFeatureBody.safeParse({ name: c.title, description: String(c.extra.description ?? '').trim() || c.title, country: scope.country, vehicleModel: scope.vehicleModel, trim: scope.trim, asil: scope.asil, ownerId: scope.ownerId, tags: [`jira:${c.key}`] });
-    if (!body.success) return refuse(`Epic 값이 Feature 등록 형식에 맞지 않습니다 — ${body.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
+    // 기준 기능(Feature DB) 연결 필수(30-95 §7, D-REF-10) — 라벨 ref-primary:·ref: 또는 사용자 필드. 첫 값이 대표
+    const refIds = Array.isArray(scope.refIds) ? scope.refIds : [];
+    if (!refIds.length) return refuse(`기준 기능 ID가 없습니다. ${EPIC_REF_HINT}`);
+    const featureRefs = refIds.map((refId, i) => ({ refId, role: i === 0 ? ('PRIMARY' as const) : ('INCLUDED' as const) }));
+    const body = CreateFeatureBody.safeParse({ name: c.title, description: String(c.extra.description ?? '').trim() || c.title, country: scope.country, vehicleModel: scope.vehicleModel, trim: scope.trim, asil: scope.asil, ownerId: scope.ownerId, tags: [`jira:${c.key}`], featureRefs });
+    if (!body.success) {
+      const refIssue = body.error.issues.some((i) => i.path[0] === 'featureRefs');
+      return refuse(`Epic 값이 Feature 등록 형식에 맞지 않습니다 — ${body.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}${refIssue ? ` ${EPIC_REF_HINT}` : ''}`);
+    }
     // 중복 확인은 트랜잭션 밖에서 — 거부 감사는 트랜잭션 밖에 남겨야 한다(RegistryService.create와 같은 판정)
     const similar = this.features.similar(body.data.name, body.data.country, body.data.vehicleModel, body.data.trim);
     if (similar.length) {
       this.audit.failed(actor, 'FEATURE_CREATE', body.data.name, `JIRA ${c.key}: 같은 적용 범위에 유사 Feature 존재`, 'D05-01');
       return refuse(`같은 국가·차종·트림에 이름이 비슷한 Feature가 이미 있습니다. 기존 Feature: ${similar.map((s) => fid(s.featureId, s.version)).join(', ')} — 같은 기능이면 Epic 본문에 그 ID를 적어 연결하고, 새 Version이면 플랫폼에서 Version을 만드세요.`);
+    }
+    // 기준 행 판정도 트랜잭션 밖에서 먼저 — 없는·폐기 행, 대표 ASIL 차이, 같은 범위 같은 대표 행(JIRA에서는 확인·사유를 받을 수 없다)
+    try {
+      const linked = this.registry.checkRefs(body.data);
+      // 요청 중(PENDING) 행은 사람이 등록 화면에서 요청·연결한다 — JIRA에서 만들 수 없다
+      const pending = linked.warnings.filter((w) => w.code === 'REF_STATUS' && w.status === 'PENDING').map((w) => w.refId);
+      if (pending.length) {
+        this.audit.failed(actor, 'FEATURE_CREATE', body.data.name, `JIRA ${c.key}: 요청 중 기준 행 ${pending.join(', ')}`, 'D05-01');
+        return refuse(`기준 행 ${pending.join(', ')}은(는) Feature DB 승인 전(요청 중)이라 JIRA에서 연결할 수 없습니다 — 플랫폼 Feature 등록 화면에서 등록하거나, 승인된 기준 기능 ID를 넣어 주세요.`);
+      }
+    } catch (e) {
+      if (!(e instanceof DomainError)) throw e;
+      this.audit.failed(actor, 'FEATURE_CREATE', body.data.name, `JIRA ${c.key}: 기준 기능 연결 — ${e.message}`, 'D05-01');
+      const refProblem = e.code === 'REFDB_LINK_REQUIRED' || (e.details as { field?: string } | undefined)?.field === 'featureRefs';
+      return refuse(`${e.message}${refProblem ? ` ${EPIC_REF_HINT}` : ''}`);
     }
     try {
       const f = this.db.tx(() => {

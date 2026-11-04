@@ -3,14 +3,14 @@ id: ARC-FEATURE-REFDB
 type: entity
 title: "Feature DB — Feature 등록 정보 원천 (엑셀 03_FeatureDB 이전)"
 status: approved
-version: 0.3.0
+version: 0.4.0
 owner: feature-architect
 cycle: 0
 standards: [ISO-26262, COCOMO-II, COVESA-VSS, AUTOSAR]
 traces:
   satisfies: [FR-1, FR-2]
   related: [ARC-TAXONOMY, ARC-COST-ESTIMATION]
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 
 # 30-95 Feature DB — Feature 등록 정보 원천
@@ -99,6 +99,8 @@ Feature ID를 도메인 포함 형식으로 바꾸기로 했다(D-REF-15) — �
 | 조달 | `procurement`(BS), `swPackage`(BT), `licenseItem`(BU), `billing`(BV) | 초기 분류, 수정 가능 |
 | 정의(03b) | `definition`{`level` ①, `parentRefId` ②, `summary` ③, `trigger` ④, `scopeIn[]` ⑤, `scopeOut[]` ⑥, `scopeOutRefs[]` ⑦, `io`{entry,exit,read,write} ⑧~⑪, `drivers`{states,dtcs,calibrations,variants} ⑫~⑮, `regulations` ⑯, `verification` ⑰, `typicalChanges` ⑱, `sharedFunctions` ⑳, `authoringStatus`} | 24행(파일럿 작성분)만 값 있음, 나머지 빈 값 |
 | 메모 | `adminMemo`(BR) | 변경 요청 번호 함께 |
+
+- **별칭 검색(2026-11-05)**: 검색은 `aliases[]`에 더해 사내 용어 표(`contracts/src/rules/refdb/internal-glossary.ts`, 예: SCC·스마트 크루즈)와 그 행에 연결된 Registry Feature 이름도 본다.
 
 **옮기지 않는 열** — 과제 입력(AF~AQ: 선택 수량·변경 유형·적용 ASIL·변형 수·m/o/p 직접 입력·우선순위·기존 보유·실적 공수·검토 상태·담당 메모), 자동 계산(AR~BI, BM, BW), 견적 입력(BN)은 **산정 과제의 줄**(`20-94` §5)로 간다. 파생 값(M·T·U·BH·BW)은 저장하지 않고 규칙(`contracts/src/rules/cost/`)으로 계산한다. 엑셀의 예시 과제 입력은 산정 기준값 시험 고정 자료로만 쓴다.
 
@@ -209,6 +211,7 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 2. 서버가 **정식 형식 ID를 즉시 부여**(`도메인약어-컴포넌트약어-다음번호`)하고 상태 `PENDING`, 변경 요청 `ref_change(kind=ADD)`를 만든다. ID를 바꿔 쓰지 않으므로 연결 재작성이 없다.
    - 요청에 ID를 지정하면 같은 접두에서 지금까지 쓴 가장 큰 번호 + 1까지만 받는다(넘으면 400). 999를 다 쓴 접두는 409 — 새 컴포넌트 약어로 요청한다.
    - 추가 요청 응답의 기준 행·변경 내용도 벤치마크(금액) 필드를 열람 역할에만 보낸다(§5.1).
+   - 추가 요청은 분류 속성(SW 계층·수명주기·기술 영역)도 받는다. 비우면 승인 발행 때 그 행이 '검토 필요'로 들어가고 품질 지표의 속성 미입력에 잡힌다(2026-11-05).
 3. 요청자는 그 행을 대표로 Feature를 바로 등록한다.
 4. DB 관리자가 승인·반려를 **판정**(사유 필수)하고, 상태는 **다음 버전 발행 때 확정**된다 — 승인한 요청 중 행은 `ACTIVE`(근거 부족 시 `REVIEW`), 반려한 요청 중 행은 `RETIRED` + 사유(관리 메모)와 연결 Feature의 Feature Owner 알림. 연결된 Feature는 그동안 정의 승인이 막혀 있고, 폐기되면 다른 행으로 다시 연결해야 한다.
 5. 새 컴포넌트가 필요하면 같은 요청에 3글자 약어를 제안한다 — 추가 요청(`ref_change.newComponent`)에 남고, DB 관리자가 승인해 **발행할 때** 분류 표에 컴포넌트(`도메인약어/이름`)를, 없는 클러스터면 클러스터(`도메인약어:이름`)도 만든다. 반려되면 만들지 않는다.
@@ -251,8 +254,10 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 - **판정**: 마지막 도메인 검토 의견이 보완(`REVISE`)·반대(`OPPOSE`)면 승인할 수 없다(422, D-REF-19) — 보완 뒤 동의 의견을 다시 받는다. 반려는 막지 않는다. 판정 사유는 필수.
 - **반려 확정은 발행 때**: 반려된 추가 요청의 요청 중 행은 다음 발행에서 `RETIRED` + 사유(관리 메모)가 되고, 연결 Feature의 Feature Owner에게 알림이 간다(판정 시점에는 상태가 바뀌지 않는다).
 - **감사와 금액**: 감사 기록에는 벤치마크 값을 남기지 않는다(자리 표시만 — 감사 이력 조회는 역할 제한이 없다). 열람 역할이 아닌 사람의 금액 필드 수정 시도는 403 + 감사 DENIED.
+- **감사 추적(D01-10 `/audit`, 2026-11-05)**: 변경 요청·기준 행·버전을 앞부분만 넣어도 찾고 행위로 거른다. 감사 체인 검증 응답에 검증 시각(`checkedAt`)이 있다.
 - **지울 수 없음**: `feature_ref`는 지울 수 없고, `ref_change`는 지울 수 없으며 발행 뒤에는 바꿀 수 없다(마이그레이션 082 트리거).
 - **버전 발행**: 승인된 요청들을 묶어 `ref_release` 한 건(번호 자동 증가 v1.4…), 전체 Feature DB 정규화 해시를 기록. 발행 전까지 승인된 변경은 "발행 대기"로 보이고 등록 화면에는 반영되지 않는다(엑셀의 버전 발행과 같은 의미).
+- **발행 전 미리 보기(2026-11-05)**: `GET /api/refdb/releases/preview` — 이번 발행에 묶일 승인 요청, 반려로 폐기될 요청 중 행, 알림 받을 Feature Owner, 품질 지표 전후. 발행 메모는 필수이고 화면이 미리 채운다.
 
 ### 8.3 영향 표시
 
@@ -262,11 +267,15 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 
 전체 행 수, 상태별 수, 상태 미입력 0, 출처 없는 행 0, 근거 확인 12개월 경과 행, 규모 근거 D 비중(현재 83.6%), 발행 대기 요청 수. 지표 계산은 `contracts/src/rules/refdb/quality.ts`.
 
+- 머리 숫자(2026-11-05) = **발행본 행 수**(요청 중 제외, 폐기 포함) + '+요청 중 M'. 품질 지표에 **속성 미입력**(SW 계층·수명주기·기술 영역 빈 칸)을 센다.
+
 ### 8.5 정기 점검 (엑셀 5절)
 
 출처별 다음 점검일(AUTOSAR R26-11, VSS, ISO 17978, UN R155·R156, GB, Euro NCAP …)을 `ref_source.nextReviewAt`으로 두고, 기한 지난 출처를 DB 관리자 화면 알림(메일 없음, D-RD-7)으로 띄운다.
 
 DB 관리자가 점검을 기록하면(`POST /api/refdb/sources/reviews` — 출처·확인일·다음 점검일·메모, route `recordSourceReview`, `REFDB_ADMIN`) 다음 점검일이 바뀌어 기한 알림에서 빠지고, 출처마다 감사 `REFDB_SOURCE_REVIEW`가 남는다(업무 절차 FPW.14-A05).
+
+- (2026-11-05) 다음 점검일이 없는 출처는 화면이 경고한다(없으면 종료 기준이 빈 채로 통과하던 빈틈). 점검 결과(변경 없음·개정 있음)를 함께 기록하고, 개정 있음이면 그 출처를 쓰는 행 목록(`?source=`)에서 바로 변경 요청을 낸다.
 
 ## 9. 1회 이전 (D-REF-5)
 
@@ -284,6 +293,7 @@ DB 관리자가 점검을 기록하면(`POST /api/refdb/sources/reviews` — 출
 
 - `GET /api/refdb/export?format=xlsx&release=v1.4` — `03_FeatureDB` 마스터 열 순서(A~AE, BJ~BL, BO~BV)와 같은 시트 + `09_출처`. 금액 열(O 벤치마크 €)은 벤치마크 열람 역할(지금 `REFDB_ADMIN`만, §5.1)에만 포함.
 - 내보내기·검색·기준 행 상세·변경 요청 목록·상세는 역할에 따라 응답이 달라 계정 단위 조회(`personal`)다.
+- (2026-11-05) xlsx에 `14_개정이력`(발행 정보)·`04_분류` 시트를 더한다. 산정 역할이 아니면 U(명목 점수) 열은 벤치마크 제외 값으로 낸다. 파일 이름은 `FeatureDB_<버전>.xlsx`.
 - 런타임 xlsx 쓰기(D-REF-14): 새 런타임 의존성 없는 최소 쓰기 `backend/src/kernel/xlsx-write.ts` — SpreadsheetML + 무압축 zip, 같은 입력이면 같은 바이트, 머리글 굵게·틀 고정, 셀 32,767자 넘으면 거부. 시험은 `tools/xlsx.ts` 읽기로 왕복 확인한다. SheetJS는 지금처럼 가져오기(개발 의존성)에만 쓴다.
 - 개발비 산정 결과 내보내기(20-94 D-COST-13, 엑셀 도구 전체 양식 — 서식·여러 시트)가 최소 쓰기로 모자라면 그때 SheetJS 백엔드 의존성을 다시 검토한다.
 

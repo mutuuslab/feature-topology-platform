@@ -21,7 +21,17 @@ export interface RefQuality {
   openChanges: number;
   /** 최신 발행 버전(없으면 null) */
   latestRelease: string | null;
+  /** 발행본 행 수 — 요청 중(PENDING)을 뺀 행(폐기 포함, 발행 해시·내보내기와 같은 범위) */
+  published: number;
+  /** 요청 중 행 — 아직 발행되지 않은 추가 요청 */
+  pending: number;
+  /** 속성 미입력 — 발행본(폐기 제외)에서 SW 계층·수명주기·기술 영역 중 빈 칸이 있는 행 */
+  attrMissing: number;
 }
+
+/** 분류 속성(엑셀 E·H·I) — 추가 요청이 비워 두면 발행 때 '검토 필요'로 들어간다(P5-8) */
+export const REF_ATTR_FIELDS = ['swStack', 'lifecycle', 'techStack'] as const;
+export const refAttrMissing = (r: Pick<FeatureRefRow, (typeof REF_ATTR_FIELDS)[number]>) => REF_ATTR_FIELDS.some((k) => !String(r[k] ?? '').trim());
 
 const monthsBefore = (iso: string, months: number) => {
   const d = new Date(iso);
@@ -55,5 +65,8 @@ export function refQuality(rows: readonly FeatureRefRow[], releases: readonly Re
     awaitingPublish: changes.filter((c) => c.status === 'APPROVED').length,
     openChanges: changes.filter((c) => c.status === 'DRAFT' || c.status === 'REVIEW').length,
     latestRelease: [...releases].sort((a, b) => compareRelease(a.release, b.release)).at(-1)?.release ?? null,
+    published: rows.filter((r) => r.status !== 'PENDING').length,
+    pending: rows.filter((r) => r.status === 'PENDING').length,
+    attrMissing: rows.filter((r) => r.status !== 'PENDING' && r.status !== 'RETIRED' && refAttrMissing(r)).length,
   };
 }

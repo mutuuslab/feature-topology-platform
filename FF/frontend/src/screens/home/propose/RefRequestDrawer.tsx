@@ -5,13 +5,13 @@ import { SIZE_CLASSES } from '@ff/contracts';
 import { ASIL_VALUES, type TaxonomyNodeLite } from './taxonomy';
 import { fieldErrors } from '../../../api/field-errors';
 import { useApiMutation } from '../../../api/hooks';
-import { propose as P } from '../../../copy/propose';
+import { propose as P, proposeRefMore as PM } from '../../../copy/propose';
 import { Button, Drawer, ErrorNote, Field, whyDisabled } from '../../../design';
 import { usePermission } from '../../shared';
 import { list, type RefLite } from './prefill';
 
 const NEW = '__new__';
-const EMPTY = { domain: '', component: '', componentName: '', componentAbbr: '', nameEn: '', nameKo: '', tshirt: '', asilRep: '', sourceIds: '', basisNote: '' };
+const EMPTY = { domain: '', component: '', componentName: '', componentAbbr: '', nameEn: '', nameKo: '', tshirt: '', asilRep: '', sourceIds: '', basisNote: '', swStack: '', lifecycle: '', techStack: '' };
 
 export function RefRequestDrawer({ open, onClose, onCreated, nodes, initialDomain = '' }: { open: boolean; onClose: () => void; onCreated: (ref: RefLite) => void; nodes: TaxonomyNodeLite[]; initialDomain?: string }) {
   const R = P.request;
@@ -45,6 +45,10 @@ export function RefRequestDrawer({ open, onClose, onCreated, nodes, initialDomai
           asilRep: f.asilRep,
           sourceIds: list(f.sourceIds),
           basisNote: f.basisNote.trim(),
+          // 분류 속성 — 비우면 승인 뒤 '검토 필요'(P5-8)
+          swStack: f.swStack,
+          lifecycle: f.lifecycle,
+          techStack: f.techStack.trim(),
         },
       },
       {
@@ -108,6 +112,31 @@ export function RefRequestDrawer({ open, onClose, onCreated, nodes, initialDomai
             ))}
           </select>
         </Field>
+        <fieldset className="ds-fieldset" data-testid="ref-request-attr">
+          <legend>{PM.attr.legend}</legend>
+          <p className="ds-field__hint">{PM.attr.hint}</p>
+          <div className="ds-form-grid">
+            <Field label={PM.attr.swStack} error={fe.swStack}>
+              <select className="ds-select" name="swStack" value={f.swStack} onChange={set('swStack')}>
+                <option value="">{R.choose}</option>
+                {PM.attr.swStackOptions.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label={PM.attr.lifecycle} error={fe.lifecycle}>
+              <select className="ds-select" name="lifecycle" value={f.lifecycle} onChange={set('lifecycle')}>
+                <option value="">{R.choose}</option>
+                {PM.attr.lifecycleOptions.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label={PM.attr.techStack} error={fe.techStack}>
+              <input className="ds-input" name="techStack" value={f.techStack} onChange={set('techStack')} />
+            </Field>
+          </div>
+        </fieldset>
         <Field label={R.sourceIds} error={fe.sourceIds} hint={R.sourceIdsHint}>
           <input className="ds-input ds-input--mono" name="sourceIds" value={f.sourceIds} onChange={set('sourceIds')} />
         </Field>

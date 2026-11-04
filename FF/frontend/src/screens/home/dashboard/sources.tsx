@@ -7,6 +7,8 @@ import type { ApiError } from '../../../api/client';
 import { dashboard } from '../../../copy/dashboard';
 import { ko } from '../../../copy/ko';
 import { useInbox } from '../Inbox';
+import { QUEUE_LABEL } from '../../../copy/inbox';
+import { personName } from '../../../data/people';
 import { useAppShell } from '../../../store';
 
 const F = dashboard.board.fields;
@@ -208,7 +210,7 @@ function ApiSource({ source, children }: { source: Exclude<SourceId, 'myReviews'
 
 function InboxSource({ children }: { children: (r: SourceResult) => ReactNode }) {
   const inbox = useInbox();
-  const Q = ko.master.inbox.queues;
+  const Q = QUEUE_LABEL; // 검토함 대기열 전체(W2 — 정의 승인·Feature DB 검토·Sign-off 등 포함)
   const rows: Row[] = inbox.items.map((i) => ({
     key: i.item,
     to: i.to,
@@ -217,7 +219,7 @@ function InboxSource({ children }: { children: (r: SourceResult) => ReactNode })
     mine: i.mine,
     at: i.since,
     closedAt: null,
-    fields: { summary: i.detail, queue: Q[i.queue], status: i.mine ? dashboard.board.mineState.yes : dashboard.board.mineState.no, requestedBy: i.who ?? '', created: day(i.since) },
+    fields: { summary: i.detail, queue: Q[i.queue], status: i.mine ? dashboard.board.mineState.yes : dashboard.board.mineState.no, requestedBy: i.who ? personName(i.who) : '', created: day(i.since) },
   }));
   return <>{children({ rows, state: inbox.loading ? 'loading' : inbox.error ? 'error' : 'ready', error: (inbox.error as ApiError | null) ?? null, retry: inbox.retry })}</>;
 }

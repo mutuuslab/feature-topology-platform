@@ -17,7 +17,7 @@ traces:
     - WF-FPW-10
     - WF-FPW-12
     - WF-FPW-14
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -84,6 +84,7 @@ last_updated: 2026-11-04
 - FPW.2-A06 TARA 수행 (협의)
 - FPW.3-A01 안전요구 도출·명세 (협의)
 - FPW.3-A02 양방향 추적성 점검 (협의)
+- FPW.3-A05 구현 연결 입력 (협의)
 - FPW.3-A04 G3 판정·Feature 정의 승인 (통보)
 - FPW.4-A04 정책 승인 (통보)
 - FPW.4-A02 플랫폼 도구 신뢰도 분류 (협의)

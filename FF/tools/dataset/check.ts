@@ -6,6 +6,7 @@ import { importWorkbook, serialize, sha256 } from './import-lib.ts';
 import { buildProfiles, PROFILES, serializeProfiles } from './safety-infer.ts';
 import { unguardedRequiredQueries } from './static-queries.ts';
 import { checkRefdb, reimportRefdb } from '../refdb/check.ts';
+import { checkCost } from '../cost/check.ts';
 
 const OUT = join(FF, 'data', 'fixtures', 'v0.81');
 const SOURCE = join(FF, 'data', 'source', 'feature_dataset_v0.81.xlsx');
@@ -44,6 +45,8 @@ for (const u of unguarded) errors.push(`${u.file}:${u.line} — '${u.route}' 조
 const refdb = checkRefdb();
 const refdbAgain = reimportRefdb();
 errors.push(...refdb.errors, ...refdbAgain.errors);
+const cost = checkCost();
+errors.push(...cost.errors);
 
 console.log('data:check');
 if (errors.length) {
@@ -52,3 +55,4 @@ if (errors.length) {
 }
 console.log(`  ✓ 픽스처 ${Object.keys(manifest.files).length}종 · manifest·재적재 일치 (경고 ${manifest.warnings.count}건) · 안전 프로파일 재생성 일치 · 필수 질의 조회는 모두 enabled로 막힘`);
 console.log(`  ✓ ${refdb.summary} · ${refdbAgain.summary}`);
+console.log(`  ✓ ${cost.summary}`);

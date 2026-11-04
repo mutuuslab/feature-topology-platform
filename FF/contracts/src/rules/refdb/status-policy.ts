@@ -53,3 +53,6 @@ export function refLinksBlockApproval(
   }
   return out;
 }
+
+/** 요청 중 행의 추가 요청이 이미 승인됐을 때(발행 전) — '관리자 승인 전'이 아니다(P5-3) */
+export const REF_PENDING_APPROVED = { label: '승인됨 · 다음 발행 대기', hint: '추가 요청이 승인됐습니다 — 다음 버전이 발행되면 활성이 되고, 그때부터 Feature 정의 승인을 할 수 있습니다.' } as const;

@@ -19,7 +19,7 @@ traces:
     - WF-FPW-9
     - WF-FPW-13
     - WF-FPW-14
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -70,6 +70,17 @@ last_updated: 2026-11-04
 5. 관리자가 반려하면 알림을 받고 다른 기준 행으로 다시 연결한다
 - [ ] 요청 중 행에 정식 형식 ID와 필수 정보가 있고 추가 변경 요청이 접수되었다
 - [ ] 관리자 승인 전에는 Feature 정의 승인(APPROVED) 전이가 막혀 있음을 Feature Owner가 안다
+
+### FPW.3-A05 구현 연결 입력 — 수행
+- 프로세스: FPW.3 안전요구 확정
+- 시작: 앞 활동 완료
+- 입력: WP-SAFETY-REQ → 출력: WP-IMPL-LINK
+- 플랫폼: `updateDraft`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`
+1. 정의 승인 전에 Feature 설계 담당 또는 SW 통합 담당이 PROPOSED 초안에서 Function → SW·Version → 제어기 P/N을 SW·ECU 기준정보에서 골라 연결한다
+2. Feature 상세 → 초안 수정 → 구현 연결에서 입력한다. 서버는 기준정보에 없는 짝을 거부한다
+3. 승인된 Version에 구현 연결이 빠져 있으면 새 Version에서 넣고 정의 승인을 다시 받는다
+4. 외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다
+- [ ] VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다
 
 ### FPW.6-A01 출시 Baseline 확정 요청 — 수행·책임
 - 프로세스: FPW.6 서명 배포

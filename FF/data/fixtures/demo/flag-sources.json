@@ -1,0 +1,29 @@
+{
+  "format": "ff-flag-source/v1",
+  "provider": "GITHUB",
+  "repository": "https://github.com/mutuuslab/feature-topology-platform",
+  "commit": "1160d92de3af1a9cbaadc7241c2fa09baee39d4b",
+  "scannedAt": "2026-11-04T20:43:05.054Z",
+  "filesScanned": 2,
+  "unresolvedCalls": 0,
+  "usages": [
+    {
+      "flagKey": "care_00022_signal",
+      "path": "FF/examples/feature-flag-consumer/distance.ts",
+      "line": 8,
+      "symbol": "client.getBooleanValue",
+      "method": "getBooleanValue",
+      "safeDefault": "EXPLICIT_FALSE",
+      "contentHash": "sha256:b88db763fa7b9e5c8a4f9f2adcd3cf4f362c23f7b82f2df9fad8975dcc2cea4e"
+    },
+    {
+      "flagKey": "care_00022_param",
+      "path": "FF/examples/feature-flag-consumer/distance.ts",
+      "line": 10,
+      "symbol": "client.getBooleanValue",
+      "method": "getBooleanValue",
+      "safeDefault": "EXPLICIT_FALSE",
+      "contentHash": "sha256:b88db763fa7b9e5c8a4f9f2adcd3cf4f362c23f7b82f2df9fad8975dcc2cea4e"
+    }
+  ]
+}

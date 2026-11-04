@@ -317,8 +317,9 @@
   --row-h: 40px;
 }
 :root[data-workspace='review'] {
-  --accent: #334155;
-  --accent-hover: #1e293b;
+  /* 링크 색 = 강조색 — 본문 글자(--ink)와 3:1 이상(밑줄 없이도 구분, P3-11), 바탕·머리 띠와 4.5:1 이상 */
+  --accent: #4a6a95;
+  --accent-hover: #3a5680;
   --accent-soft: #e6e9ef;
   --accent-ink: #ffffff;
   --ws-band: #e9ecf1;
@@ -386,9 +387,9 @@
   --ws-band: #24170f;
 }
 :root[data-theme='dark'][data-workspace='review'] {
-  --accent: #cbd5e1;
-  --accent-hover: #e2e8f0;
-  --accent-soft: #232a35;
+  --accent: #6886b5;
+  --accent-hover: #7f9cc4;
+  --accent-soft: #141c2e;
   --accent-ink: #0d0f12;
   --ws-band: #171b22;
 }

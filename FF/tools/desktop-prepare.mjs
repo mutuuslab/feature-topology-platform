@@ -11,7 +11,8 @@ export const RESOURCES = join(root, 'src-tauri', 'resources');
 /** ui에 넣지 않는 frontend/dist 최상위 폴더 — api-snapshot은 정적 데모(공개 사이트) 전용 응답 사본(약 3,800개, 긴 이름이 NSIS 경로 길이 실패의 원인) */
 export const UI_EXCLUDE = ['api-snapshot'];
 /** 백엔드가 실행 중 읽는 data/ 폴더 — Dockerfile COPY와 같아야 한다(packaging.test.mjs) */
-export const RUNTIME_DATA = ['fixtures', 'reference'];
+// source — SW 개발비 산정 엑셀 내보내기 양식(원본 엑셀 v1.3, 20-94 D-COST-14)
+export const RUNTIME_DATA = ['fixtures', 'reference', 'source'];
 /** resources 기준 상대 경로 상한 — 설치 폴더(%LOCALAPPDATA%\Programs\Feature Platform\)를 더해도 Windows MAX_PATH 260 안 */
 export const MAX_RESOURCE_PATH = 150;
 

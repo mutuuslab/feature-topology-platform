@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/_design');
 });
 
-test('긴급 차단 v2: 요청 → FSM·운영 리더 승인 → 게이트·서명·긴급 전달 → 회신 CONFIRMED → Fleet → 복원 요청 → 다른 2인 승인 → 복구', async ({ page }) => {
+test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급 전달 → 회신 CONFIRMED → Fleet → 복원 요청 → 다른 2인 승인 → 복구', async ({ page }) => {
   await asRole(page, 'operator');
   await page.goto('/ops/kill');
   // 요청 폼은 머리의 행동 버튼으로 여는 Drawer(UX3-03)
@@ -42,8 +42,8 @@ test('긴급 차단 v2: 요청 → FSM·운영 리더 승인 → 게이트·서�
   // 요청자는 승인할 수 없다
   await expect(drawer.getByRole('button', { name: '승인 — 개인 서명' })).toBeDisabled();
 
-  // 승인 1 — 품질 검토(FSM), 승인 2 — PLM 기준정보(법규 담당)
-  for (const role of ['quality', 'steward']) {
+  // 승인 1 — 품질 검토(FSM), 승인 2 — 시스템 연계(사이버보안 CSM). F3 안전 차단은 FSM + CSM(2026-11-04 결정)
+  for (const role of ['quality', 'integrator']) {
     await asRole(page, role);
     await page.goto(`/ops/kill?id=${killId}`);
     drawer = page.getByRole('dialog');
@@ -54,7 +54,7 @@ test('긴급 차단 v2: 요청 → FSM·운영 리더 승인 → 게이트·서�
   await expect(drawer).toContainText('서명된 명령');
   await expect(drawer.getByRole('table', { name: '차량별 봉투' })).toContainText('lead-01');
   await expect(drawer.getByRole('meter').first()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });
-  await expect(drawer).toContainText('CONFIRMED');
+  await expect(drawer).toContainText('적용 확인');
 
   // Fleet 실시간 적용 현황 — lead-01은 차량 측에서 Safe(차단) 상태
   await page.goto('/fleet/live');
@@ -72,21 +72,22 @@ test('긴급 차단 v2: 요청 → FSM·운영 리더 승인 → 게이트·서�
   await page.getByRole('row', { name: /차단/ }).first().click();
   await expect(page.getByText('SIGNATURE_VALID')).toBeVisible();
 
-  // 복원 요청(운영자) → 차단 승인자(품질 검토)는 막힘 → 시스템 연계(부 FSM)·구성 승인(상품 책임) 승인
+  // 복원 요청(운영자, 재검증 Evidence·Cohort) → 차단 승인자(품질 검토)는 막힘 → 두 번째 Safety Manager·운영 리더 승인
   await asRole(page, 'operator');
   await page.goto(`/ops/kill?id=${killId}`);
   drawer = page.getByRole('dialog');
   await drawer.getByLabel('사유', { exact: true }).fill('원인 수정 확인');
+  await expect(drawer.getByTestId('restore-evidence')).toBeVisible();
   await drawer.getByRole('button', { name: '복원 요청' }).click();
   await asRole(page, 'quality');
   await page.goto(`/ops/kill?id=${killId}`);
   await expect(page.getByRole('dialog')).toContainText('직전 차단 승인자는 복원을 승인할 수 없습니다');
-  for (const role of ['integrator', 'approver']) {
+  for (const role of ['safety2', 'opslead']) {
     await asRole(page, role);
     await page.goto(`/ops/kill?id=${killId}`);
     drawer = page.getByRole('dialog');
     await drawer.locator('[data-tour="kill-restore"]').getByRole('button', { name: '승인 — 개인 서명' }).click();
-    if (role === 'integrator') await expect(drawer.locator('[data-tour="kill-restore"] .ds-approvals__slot[data-done]')).toHaveCount(1);
+    if (role === 'safety2') await expect(drawer.locator('[data-tour="kill-restore"] .ds-approvals__slot[data-done]')).toHaveCount(1);
   }
   await expect(drawer).toContainText('해제됨');
   await expect(drawer.getByRole('meter').last()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });

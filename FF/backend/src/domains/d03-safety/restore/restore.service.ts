@@ -1,9 +1,9 @@
 // 이전 상태 복구 (D03-04) — 보고서 v1.1 7.6: 복원은 다른 승인자, 다음 시동, 자체 시험(FFG-DEAC-008).
-// v2 차단: 복원 요청 → 2인 승인(직전 차단 승인자 제외, F2 이상 안전·보안은 FSM) → 정책 게이트(Canary 상한·BOM·SBOM, 폐기 Feature 거부)
+// v2 차단: 복원 요청(재검증 Evidence·이번 단계 Cohort) → 2인 승인(직전 차단 승인자 제외, F2 이상 안전·보안은 FSM) → 정책 게이트(Canary 상한·BOM·SBOM, 폐기 Feature 거부)
 // → 원장 +1 → kill_command v2(request=restore, 복원 용도 키) → 차량별 봉투 → 서명된 복구 게시본(RESTORE, 같은 Feature 순번 공간 — 오래된 차단 재전송 방지).
 // v1 레거시 차단(safeMode 있음)은 기존 단일 해제를 유지한다.
 import { Body, Controller, HttpCode, Inject, Injectable, Param, Post } from '@nestjs/common';
-import { approvalPlan, KillApproveBody, KillRejectBody, type KillRequest, type RestoreRequest } from '@ff/contracts';
+import { approvalPlan, KillApproveBody, KillRejectBody, RestoreRequestBody, type KillRequest, type RestoreRequest } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -60,19 +60,68 @@ export class RestoreService {
     return this.killService.detail(killId);
   }
 
-  /** 복원 요청 — 차단이 ACTIVE이고 진행 중인 복원 요청이 없어야 한다 */
-  request(actor: Actor, killId: string, reason: string) {
+  /** 아직 복원하지 않은 차단 차량 */
+  private remaining(k: KillRequest): string[] {
+    const done = new Set(k.restoredVins ?? []);
+    return k.vins.filter((v) => !done.has(v));
+  }
+
+  /**
+   * 복원 요청 — 차단이 ACTIVE이고 진행 중인 복원 요청이 없어야 한다.
+   * 재검증 Evidence(이 Feature의 판정 근거)와 이번 단계 Cohort(아직 복원하지 않은 차단 차량)가 있어야 한다(FPW.8-A08 종료 기준).
+   * Cohort를 넓혀 가며 다시 요청하면 단계적 복원(A10) — 단계마다 다른 2인 승인·게이트(Canary 상한)를 거친다.
+   */
+  request(actor: Actor, killId: string, body: RestoreRequestBody) {
     const k = this.load(killId);
     const open = k.restoreRequest?.status === 'REQUESTED';
     if (k.version !== 2 || k.status !== 'ACTIVE' || open) {
       this.audit.failed(actor, 'RESTORE_REQUEST', killId, `복원 요청 불가(${k.version === 2 ? k.status : 'v1 레거시'}${open ? ', 진행 중 요청 있음' : ''})`, 'D03-04');
       throw new DomainError('CONFLICT', k.version !== 2 ? 'v1 레거시 차단은 해제(release)로 처리합니다.' : open ? '이미 복원 승인 대기 중입니다.' : `차단 중인 요청이 아닙니다 (${k.status}).`);
     }
-    const rr: RestoreRequest = { requestedBy: actor.id, requestedAt: this.clock.iso(), reason, status: 'REQUESTED', approvals: [], gate: null, command: null, rejectedBy: null, rejectReason: null };
+    const left = new Set(this.remaining(k));
+    const cohort = [...new Set(body.cohort)];
+    const excluded = [...new Set([...(k.approvals ?? []).map((a) => a.approverId), ...(this.gate.ledger(k.featureId).last_kill_approvers ?? [])])];
+    const outside = cohort.filter((v) => !left.has(v));
+    if (outside.length) {
+      this.audit.failed(actor, 'RESTORE_REQUEST', killId, `Cohort에 복원 대상이 아닌 차량: ${outside.join(', ')}`, 'D03-04');
+      throw new DomainError('VALIDATION', `이번 단계 Cohort에 이 차단의 남은 차량이 아닌 차량이 있습니다: ${outside.join(', ')}`, { outside });
+    }
+    const evidenceRef = body.evidenceRef.trim();
+    const matchingEvidence = this.db.all<{ doc: string }>('SELECT doc FROM evidence WHERE evidence_ref = ?', evidenceRef);
+    // 외부 보고서 하나를 여러 Feature·Gate가 공유할 수 있다. 대상 Feature의 PASS 행을 찾는다(화면 필터를 API에서도 강제).
+    const passed = matchingEvidence.some((row) => {
+      const e = JSON.parse(row.doc) as { featureId?: string; inputResult?: string };
+      return k.featureIds.includes(e.featureId ?? '') && e.inputResult === 'PASS';
+    });
+    if (!passed) {
+      this.audit.failed(actor, 'RESTORE_REQUEST', killId, `재검증 Evidence ${evidenceRef} 없음 또는 대상 Feature의 PASS 판정 아님`, 'D03-04');
+      throw new DomainError('VALIDATION', `재검증 Evidence ${evidenceRef}을(를) ${k.featureId}의 PASS 판정 근거에서 찾을 수 없습니다 — 원인 수정 뒤 PASS로 판정한 Evidence를 고르세요.`, { field: 'evidenceRef' });
+    }
+    const rr: RestoreRequest = {
+      requestedBy: actor.id,
+      requestedAt: this.clock.iso(),
+      reason: body.reason,
+      status: 'REQUESTED',
+      approvals: [],
+      gate: null,
+      command: null,
+      rejectedBy: null,
+      rejectReason: null,
+      evidenceRef,
+      cohort: k.vins.filter((v) => cohort.includes(v)),
+    };
     return this.db.tx(() => {
-      this.kills.update({ ...k, restoreRequest: rr });
-      this.audit.record(actor, 'RESTORE_REQUEST', killId, { after: { status: 'REQUESTED' }, reason, componentId: 'D03-04' });
-      this.events.publish('kill.restore-requested', killId, { killId, featureId: k.featureId }, { componentId: 'D03-04', correlationId: actor.correlationId });
+      const next = { ...k, restoreRequest: rr };
+      this.kills.update(next);
+      this.audit.record(actor, 'RESTORE_REQUEST', killId, { after: { status: 'REQUESTED', evidenceRef, cohort: rr.cohort!.length, remaining: left.size }, reason: body.reason, componentId: 'D03-04' });
+      // 알림은 실제로 승인할 수 있는 사람에게 — 직전 차단 승인자를 뺀 승인 후보(P4-1). 끝낼 수 없으면 상위 대응 경보
+      const outlook = this.killService.warnRestoreBlocked(actor, next);
+      this.events.publish(
+        'kill.restore-requested',
+        killId,
+        { killId, featureId: k.featureId, cohort: rr.cohort!.length, evidenceRef, candidates: outlook.candidates.map((c) => c.id), complete: outlook.complete, excluded },
+        { componentId: 'D03-04', correlationId: actor.correlationId },
+      );
       return this.killService.detail(killId);
     });
   }
@@ -91,9 +140,12 @@ export class RestoreService {
     const plan = approvalPlan(k.fClass!, 'restore', k.reasonCategory!);
     // 직전 차단 승인자 — 이 차단의 승인자와 원장의 마지막 Kill 승인자
     const excluded = [...new Set([...(k.approvals ?? []).map((a) => a.approverId), ...(this.gate.ledger(k.featureId).last_kill_approvers ?? [])])];
+    // 이번 단계 Cohort(이전 행은 남은 차량 전체) — 서명 대상·명령 범위·복구 게시본이 모두 이 차량들
+    const cohort = rr.cohort?.length ? rr.cohort : this.remaining(k);
+    const stage: KillRequest = { ...k, vins: cohort };
     const a = this.killService.signApproval(
       actor,
-      { ...k, reasonCategory: k.reasonCategory! },
+      { ...stage, reasonCategory: k.reasonCategory! },
       'restore',
       { requestedBy: rr.requestedBy, approvals: rr.approvals, plan, excluded },
       'RESTORE_APPROVE',
@@ -108,32 +160,37 @@ export class RestoreService {
         return this.killService.detail(killId);
       });
     }
-    const draft = this.killService.buildCommand(k, 'restore', approvals);
+    const draft = this.killService.buildCommand(stage, 'restore', approvals);
     try {
       return this.db.tx(() => {
-        const issued = this.killService.issueCommand(actor, k, draft);
-        const pub = this.deploy.publishRestore(k, actor, this.killService.applyWithin(k, 'restore'));
+        const issued = this.killService.issueCommand(actor, stage, draft);
+        const pub = this.deploy.publishRestore(stage, actor, this.killService.applyWithin(k, 'restore'));
+        const at = this.clock.iso();
+        const restoredVins = [...(k.restoredVins ?? []), ...cohort];
+        // 모든 차단 차량이 복원되면 해제(RELEASED), 아니면 차단 유지 — 다음 Cohort로 넓힌다(FPW.8-A10)
+        const all = k.vins.every((v) => restoredVins.includes(v));
         const done: KillRequest = {
           ...k,
-          status: 'RELEASED',
-          releasedBy: actor.id,
-          releasedAt: this.clock.iso(),
-          releaseReason: rr.reason,
+          ...(all ? { status: 'RELEASED' as const, releasedBy: actor.id, releasedAt: at, releaseReason: rr.reason } : {}),
+          restoredVins,
+          restoreStages: [...(k.restoreStages ?? []), { cohort, evidenceRef: rr.evidenceRef ?? null, publicationId: pub.publicationId, approvedAt: at, approvers: approvals.map((x) => x.approverId) }],
           restorePublicationId: pub.publicationId,
-          restoreRequest: { ...rr, approvals, status: 'APPROVED', gate: { result: 'PASS', failed: [], at: this.clock.iso() }, command: this.killService.commandRef(issued) },
+          restoreRequest: { ...rr, cohort, approvals, status: 'APPROVED', gate: { result: 'PASS', failed: [], at }, command: this.killService.commandRef(issued) },
         };
         this.kills.update(done);
-        this.audit.record(actor, 'RESTORE_APPROVE', killId, { after: { approvals: 2, role: a.role, kid: a.kid }, componentId: 'D03-04' });
-        this.audit.record(actor, 'KILL_RELEASE', killId, {
-          before: { status: 'ACTIVE' },
-          after: { status: 'RELEASED', commandId: issued.command.command_id, commandSeq: issued.command.command_seq, envelopes: issued.envelopes, publicationId: pub.publicationId },
-          reason: rr.reason,
-          componentId: 'D03-04',
-        });
+        this.audit.record(actor, 'RESTORE_APPROVE', killId, { after: { approvals: 2, role: a.role, kid: a.kid, cohort: cohort.length }, componentId: 'D03-04' });
+        if (all)
+          this.audit.record(actor, 'KILL_RELEASE', killId, {
+            before: { status: 'ACTIVE' },
+            after: { status: 'RELEASED', commandId: issued.command.command_id, commandSeq: issued.command.command_seq, envelopes: issued.envelopes, publicationId: pub.publicationId },
+            reason: rr.reason,
+            componentId: 'D03-04',
+          });
+        // 부분 복원은 kill.restore-staged — 알림·관제 이벤트는 단계로 보인다. 다 끝나면 kill.released
         this.events.publish(
-          'kill.released',
+          all ? 'kill.released' : 'kill.restore-staged',
           killId,
-          { killId, featureId: k.featureId, publicationId: pub.publicationId, commandId: issued.command.command_id },
+          { killId, featureId: k.featureId, publicationId: pub.publicationId, commandId: issued.command.command_id, restored: restoredVins.length, total: k.vins.length },
           { componentId: 'D03-04', correlationId: actor.correlationId },
         );
         return this.killService.detail(killId);
@@ -189,8 +246,8 @@ export class RestoreController {
   @Post(':id/restore')
   @Roles(...KILL_ROLES)
   @AuditAction('RESTORE_REQUEST')
-  request(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(KillRejectBody)) body: KillRejectBody) {
-    return this.restore.request(actor, id, body.reason);
+  request(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(RestoreRequestBody)) body: RestoreRequestBody) {
+    return this.restore.request(actor, id, body);
   }
 
   @Post(':id/restore/approvals')

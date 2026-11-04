@@ -5,7 +5,8 @@ import { Clock } from '../../src/kernel/clock';
 import { DB, type Db } from '../../src/kernel/db';
 import { actor, bootApp, KILL_APPROVERS, KILL_REQUESTER, killV2 } from '../helpers';
 
-const CSM = actor('usr-csm', 'SECURITY_OFFICER');
+// 차단에 관여하지 않은 법규 담당 — 차단 승인은 FSM(usr-safety) + CSM(usr-csm)이라 CSM은 이 명령의 승인자다
+const REG = actor('usr-reg', 'REGULATORY_OWNER');
 
 describe('긴급 권한 사후 검토 (FFG-PLT-016)', () => {
   let b: Awaited<ReturnType<typeof bootApp>>;
@@ -22,20 +23,21 @@ describe('긴급 권한 사후 검토 (FFG-PLT-016)', () => {
 
   it('FFG-PLT-016 발행된 Kill은 24시간 사후 검토 대기 → 기한이 지나면 OVERDUE로 드러난다', async () => {
     const pending = (await b.http().get('/api/kill-post-reviews').expect(200)).body.items.find((x: any) => x.killId === killId);
-    expect(pending).toMatchObject({ status: 'PENDING', requestedBy: 'usr-ops', approvers: ['usr-safety', 'usr-opslead'] });
+    expect(pending).toMatchObject({ status: 'PENDING', requestedBy: 'usr-ops', approvers: ['usr-safety', 'usr-csm'] });
     expect(Date.parse(pending.due) - Date.parse(pending.issuedAt)).toBe(24 * 3_600_000);
     const clock = b.get(Clock);
     clock.set(new Date(clock.now().getTime() + 25 * 3_600_000));
     expect((await b.http().get('/api/iam/sod-audit').expect(200)).body.postReviews).toMatchObject({ issued: 1, reviewed: 0, overdue: 1 });
   });
 
-  it('FFG-PLT-016 요청자·승인자는 사후 검토 불가(감사 FAILED), 관여하지 않은 CSM이 한 번 기록 — 늦은 검토는 late로 남는다', async () => {
+  it('FFG-PLT-016 요청자·승인자는 사후 검토 불가(감사 FAILED), 관여하지 않은 법규 담당이 한 번 기록 — 늦은 검토는 late로 남는다', async () => {
     await review({ ...KILL_REQUESTER, 'X-Actor-Role': 'SAFETY_OFFICER' }).expect(403);
     const r = await review(KILL_APPROVERS[0]).expect(403);
     expect(r.body.error).toMatchObject({ code: 'SEPARATION_OF_DUTY', details: { rule: 'FFG-PLT-016' } });
-    const ok = (await review(CSM).expect(201)).body;
-    expect(ok).toMatchObject({ status: 'REVIEWED', review: { reviewer: 'usr-csm', role: 'SECURITY_OFFICER', late: true } });
-    await review(actor('usr-reg', 'REGULATORY_OWNER')).expect(409);
+    await review(KILL_APPROVERS[1]).expect(403); // CSM도 이 차단의 승인자
+    const ok = (await review(REG).expect(201)).body;
+    expect(ok).toMatchObject({ status: 'REVIEWED', review: { reviewer: 'usr-reg', role: 'REGULATORY_OWNER', late: true } });
+    await review(actor('usr-csm2', 'SECURITY_OFFICER')).expect(409);
     expect((await b.http().get('/api/iam/sod-audit').expect(200)).body.postReviews).toMatchObject({ issued: 1, reviewed: 1, overdue: 0 });
     expect(() => b.get<Db>(DB).run('DELETE FROM kill_post_review')).toThrow(/추가만/);
   });

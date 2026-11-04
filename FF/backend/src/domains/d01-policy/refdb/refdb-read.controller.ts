@@ -9,8 +9,8 @@ export class RefdbReadController {
   constructor(private readonly read: RefdbReadService) {}
 
   @Get('refs')
-  list(@CurrentActor() actor: Actor, @Query('q') q?: unknown, @Query('domain') domain?: unknown, @Query('component') component?: unknown, @Query('status') status?: unknown, @Query('offset') offset?: unknown, @Query('limit') limit?: unknown) {
-    return this.read.list({ q, domain, component, status, offset, limit }, actor.role);
+  list(@CurrentActor() actor: Actor, @Query('q') q?: unknown, @Query('domain') domain?: unknown, @Query('component') component?: unknown, @Query('status') status?: unknown, @Query('offset') offset?: unknown, @Query('limit') limit?: unknown, @Query('source') source?: unknown) {
+    return this.read.list({ q, domain, component, status, offset, limit, source }, actor.role);
   }
 
   @Get('refs/:refId')

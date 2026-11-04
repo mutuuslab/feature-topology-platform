@@ -1,4 +1,4 @@
-import { SPEC_ROLES } from './specNav';
+import { DEMO_ACCOUNTS as SPEC_ROLES } from './demoAccounts';
 
 // 추가 참조 시드 (전 화면 구현용). 프로토타입 데이터.
 
@@ -10,7 +10,7 @@ export const users = [
   { id:'u5', name:'나지현', role:'PLM 기준정보', org:'Platform', status:'active' },
 ];
 
-// 역할 = 기준 패키지의 9 역할 (FP-DETAILED-1.1). 키는 기준 역할 키를 그대로 쓴다.
+// 역할 = 기준 패키지의 9 역할 (FP-DETAILED-1.1) + 담당자 웨이브 3계정(demoAccounts.ts). 키는 기준 역할 키를 그대로 쓴다.
 export const roles = SPEC_ROLES.map(r => r.key);
 
 // 접속 사용자 프로필 (역할 → 계정·이름·소속). 역할 전환 시 함께 변경.
@@ -43,4 +43,7 @@ export const permMatrix: Record<string, string[]> = {
   integrator:   ['view', 'create', 'edit', 'approve', 'run-engine', 'deploy', 'kill', 'rollback', 'admin'],
   coordinator:  ['view', 'create', 'edit'],
   viewer:       ['view'],
+  opslead:      ['view', 'edit', 'kill', 'rollback'],
+  safety2:      ['view', 'edit', 'approve'],
+  productowner: ['view', 'edit', 'approve'],
 };

@@ -82,6 +82,7 @@ architecture:
   ARC-TAXONOMY:        "30-70 Taxonomy L0~L5"
   ARC-FEATURE-REFDB:   "30-95 Feature DB — Feature 등록 정보 원천"
   ARC-COST-ESTIMATION: "20-94 SW 개발비 산정 (선택 모듈)"
+  ARC-FLAG-SOURCE:     "20-96 Feature Flag Git 소스·정책·회신 연결"
 
 # ── 엔티티 (18, 4 그룹) ────────────────────────────────────
 entities:
@@ -221,6 +222,10 @@ workflows:
     WF-ROLE-PO: "상품 Owner 업무 절차서"
     WF-ROLE-RDA: "Feature DB 관리자 업무 절차서"
     WF-ROLE-DRV: "도메인 검토자 업무 절차서"
+    WF-ROLE-CE: "SW 개발비 산정 작성자 업무 절차서"
+    WF-ROLE-CA: "SW 개발비 산정 승인자 업무 절차서"
+    WF-ROLE-CV: "SW 개발비 산정 열람자 업무 절차서"
+    WF-ROLE-CBA: "원가 기준 관리자 업무 절차서"
   departments:
     WF-DEP-INDEX: "부서별 R&R — 부서×프로세스 RACI·부서 간 흐름"
     WF-DEP-PDP: "상품기획팀 R&R 문서"

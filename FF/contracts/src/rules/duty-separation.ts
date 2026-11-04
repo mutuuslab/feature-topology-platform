@@ -24,7 +24,7 @@ export const POST_REVIEW_MS = 24 * 3_600_000;
 export const DEMO_PERSONAS: Record<string, Role[]> = {
   author: ['FEATURE_AUTHOR'], // Feature 설계
   // 계정 수는 기능명세서(FP-DETAILED-1.1) 역할 9로 고정 — 겸직 0건이 되도록 9계정 안에서 직무를 나눈다(2026-10-17 결정)
-  approver: ['FEATURE_APPROVER', 'PRODUCT_APPROVER', 'DOMAIN_REVIEWER'], // 구성 승인 — 요구 승인만(출시는 협의 이관) · Feature DB 도메인 검토(의견만, 승인 아님)
+  approver: ['FEATURE_APPROVER', 'PRODUCT_APPROVER', 'DOMAIN_REVIEWER', 'COST_APPROVER', 'COST_BASIS_ADMIN'], // 구성 승인 — 요구 승인만(출시는 협의 이관) · Feature DB 도메인 검토(의견만, 승인 아님) · SW 개발비 산정 승인·원가 기준 관리
   quality: ['GATE_JUDGE', 'SAFETY_OFFICER'], // 품질 검토 (Gate 판정) · Safety Manager(FSM)
   operator: ['OPERATOR'], // 차량 운영 — Kill 실행
   steward: ['BOM_APPROVER', 'VARIANT_OWNER', 'REGULATORY_OWNER', 'REFDB_ADMIN'], // PLM 기준정보 (Baseline 승인권자) · 법규 담당 · Feature DB 관리자
@@ -32,7 +32,11 @@ export const DEMO_PERSONAS: Record<string, Role[]> = {
   // 시스템 연계 · 사이버보안(CSM) · 부 Safety Manager — 복원은 차단 승인자와 다른 FSM이 필요(FFG-DEAC-008). 둘 다 복원 승인 직무
   integrator: ['IMPLEMENTER', 'SECURITY_OFFICER', 'SAFETY_OFFICER'],
   coordinator: ['RELEASE_MANAGER'], // 협의와 개발 이관 · 출시(Release)
-  viewer: ['AUDITOR'], // 조회
+  viewer: ['AUDITOR', 'COST_ESTIMATOR', 'COST_VIEWER'], // 조회·산정 작성·열람(승인은 다른 사람)
+  // 담당자 웨이브(2026-11-05 사용자 결정) — 9계정에 3계정을 더해 12계정, 겸직 0건 유지
+  opslead: ['OPS_LEAD'], // 운영 리더 — 긴급 차단 승인·복원 승인의 운영 몫
+  safety2: ['SAFETY_OFFICER'], // 두 번째 Safety Manager — 차단을 승인하지 않은 FSM이 복원을 승인한다
+  productowner: ['PRODUCT_APPROVER'], // 상품 Owner — 구성 승인자와 다른 고객 출시 승인자
 };
 
 export const dutiesOf = (roles: readonly Role[]): Duty[] => (Object.keys(DUTY_ROLES) as Duty[]).filter((d) => DUTY_ROLES[d].some((r) => roles.includes(r)));
@@ -72,6 +76,10 @@ export function refChangeDutyBlocker(change: { requestedBy: string; reviews?: re
  * 긴급 권한 사후 검토 — 검토자는 그 명령의 요청자·승인자가 아니어야 한다.
  * @rule FFG-PLT-016 — 긴급 권한 사용 100%에 사후 독립 검토 기록
  */
+/** SW 개발비 산정 직무 분리(20-94 §4, SOD-16) — 과제 작성자는 자기 과제를 승인·반려할 수 없다. 막히면 사유, 아니면 null */
+export function costApprovalDutyBlocker(project: { createdBy: string }, actorId: string): string | null {
+  return actorId === project.createdBy ? '산정 과제 작성자는 자기 과제를 승인·반려할 수 없습니다' : null;
+}
 export function postReviewBlocker(cmd: { requestedBy: string; approvers: string[] }, reviewer: string): string | null {
   if (reviewer === cmd.requestedBy) return '요청자는 자기 명령을 사후 검토할 수 없습니다';
   if (cmd.approvers.includes(reviewer)) return '승인자는 자기가 승인한 명령을 사후 검토할 수 없습니다';

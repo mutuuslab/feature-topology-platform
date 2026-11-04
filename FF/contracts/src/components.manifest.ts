@@ -1,9 +1,8 @@
-// 42 컴포넌트 manifest — 하네스(conformance)의 단일 기준.
+// 42 컴포넌트 manifest(+ D07-01 SW 개발비 산정, 2026-11-04 사용자 결정) — 하네스(conformance)의 단일 기준.
 // 출처: Feature_Platform_42컴포넌트_PoC_워크플로우_아키텍처반영_v0.50.pptx (Module View, shape 266~307)
 // status가 'implemented'인 항목은 module·endpoints·screens·tests가 모두 실재해야 한다(tools/conformance.ts).
 import { ROUTES } from './routes';
-
-export type DomainId = 'D01' | 'D02' | 'D03' | 'D04' | 'D05' | 'D06';
+export type DomainId = 'D01' | 'D02' | 'D03' | 'D04' | 'D05' | 'D06' | 'D07';
 export type Tier = 'A' | 'B' | 'C';
 export type ComponentStatus = 'planned' | 'implemented';
 
@@ -33,6 +32,8 @@ export const DOMAINS: Record<DomainId, { ko: string; plane: string }> = {
   D04: { ko: '04. 배포·운영·데이터 도메인', plane: 'Governance(Monitoring) Plane' },
   D05: { ko: '05. 시스템 연계·확장 도메인', plane: 'Cross-cutting' },
   D06: { ko: '06. 품질·보안·운영 도메인', plane: 'Quality Plane' },
+  // PPT v0.50 42개 밖 — 구매본부 SW 개발비 산정(docs/20-architecture/20-94)
+  D07: { ko: '07. 구매·원가 도메인', plane: 'Business Plane' },
 };
 
 type Seed = [id: string, ko: string, tier: Tier, module: string, ifs: string[], pocSteps: number[]];
@@ -86,13 +87,14 @@ const SEEDS: Seed[] = [
   ['D06-10', '인증서·키 관리(PKI/KMS)', 'A', 'domains/d06-qsec/pki-kms', [], [4, 6]],
   ['D06-11', '보안 취약점 모니터링', 'C', 'domains/d06-qsec/vuln-monitor', [], []],
   ['D06-12', '이상 징후 대응', 'B', 'domains/d06-qsec/anomaly-response', [], [4]],
+  ['D07-01', 'SW 개발비 산정', 'A', 'domains/d07-cost/estimation', [], []],
 ];
 
 /**
  * 구현이 끝난 컴포넌트 — 화면(routes.tsx 경로)과 테스트 파일을 적는다. endpoints는 ROUTES에서 자동으로 모인다.
  * conformance가 모듈 디렉터리·테스트 파일·화면 라우트 실재를, backend/test/conformance.spec.ts가 등록·응답을 검사한다.
  */
-const BE_D01 = ['backend/test/d01/registry.spec.ts', 'backend/test/d01/topology-catalog.spec.ts'];
+const BE_D01 = ['backend/test/d01/registry.spec.ts', 'backend/test/d01/topology-catalog.spec.ts', 'backend/test/d01/homologation-queue.spec.ts'];
 const FE_V2 = 'frontend/src/__tests__/screensV2.test.tsx';
 const E2E_GOV = 'e2e/tests/governance.spec.ts';
 const BE_POL = 'backend/test/d01/policy.spec.ts';
@@ -129,13 +131,15 @@ const REFDB_TESTS = [
   'frontend/src/__tests__/screensRefdb.test.tsx',
   'frontend/src/__tests__/screensPropose.test.tsx',
   'e2e/tests/refdb.spec.ts',
+  'backend/test/d01/refdb-ops.spec.ts',
+  'contracts/src/rules/refdb/internal-glossary.test.ts',
 ];
 const VALIDATOR: Impl = { screens: ['/policies/:id', '/validations'], tests: [BE_POL, 'contracts/src/flags/evaluate.test.ts', FE_POL, E2E_POL], via: ['validatePolicy'] };
 /** via — 자기 API 없이 다른 컴포넌트의 라우트 안에서 호출되는 컴포넌트(예: 병렬 검증기)가 그 라우트 이름을 적는다 */
 type Impl = Pick<ComponentEntry, 'screens' | 'tests'> & { via?: string[] };
 const IMPLEMENTED: Record<string, Impl> = {
   'D01-01': { screens: ['/features', '/features/:id/:ver', '/master/define', '/baselines', '/change/cr', '/master/taxonomy', '/flag-retirements', ...REFDB_SCREENS], tests: [...BE_D01, FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, 'backend/test/d01/release-signoff.spec.ts', 'frontend/src/__tests__/screensReleaseSignoff.test.tsx', ...REFDB_TESTS] },
-  'D01-02': { screens: ['/features/:id/:ver', '/analysis/impact', '/precheck', '/master/upg', '/master/artifacts', '/master/structure', '/master/control-points', '/trace/design', '/change/eo'], tests: [...BE_D01, 'contracts/src/rules/topology.test.ts', 'contracts/src/rules/precheck.test.ts', FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, FE_OPSADMIN] },
+  'D01-02': { screens: ['/features/:id/:ver', '/analysis/impact', '/precheck', '/master/upg', '/master/artifacts', '/master/structure', '/master/control-points', '/trace/design', '/change/eo'], tests: [...BE_D01, 'contracts/src/rules/topology.test.ts', 'contracts/src/rules/precheck.test.ts', FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, FE_OPSADMIN, 'backend/test/d01/analysis-evidence.spec.ts', 'contracts/src/rules/gate-evidence.test.ts', 'contracts/src/rules/gate-evidence-projection.test.ts', 'frontend/src/__tests__/screensAnalysisGates.test.tsx', 'e2e/tests/persona-safety.spec.ts'] },
   'D01-03': { screens: ['/products', '/products/new', '/products/:id/:ver'], tests: ['backend/test/d01/topology-catalog.spec.ts', 'contracts/src/rules/catalog.test.ts', E2E_GOV] },
   'D01-10': { screens: ['/audit'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
   'D04-04': { screens: ['/events'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
@@ -151,7 +155,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D05-03': { screens: ['/integration/legacy'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
   'D05-05': { screens: ['/field'], tests: [BE_P10, FE_P10, E2E_P10] },
   'D05-07': { screens: ['/integration/legacy'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
-  'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'contracts/src/rules/unleash.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts'] },
+  'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'contracts/src/rules/unleash.test.ts', 'backend/test/d01/flag-source.spec.ts', 'contracts/src/schemas/flag-source.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', 'frontend/src/__tests__/featureFlags.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts', 'e2e/tests/persona-flags.spec.ts'] },
   'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
   'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
   'D05-01': { screens: ['/activation/decide', '/integration/openfeature', '/integration/connectors', '/supplier/portal'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ, 'backend/test/d05/openfeature.spec.ts', 'contracts/src/flags/openfeature.test.ts', FE_P10, FE_OPSADMIN, 'backend/test/d05/ext-sync.spec.ts', 'contracts/src/rules/ext-sync.test.ts'] },
@@ -181,6 +185,8 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D06-10': { screens: ['/deployments', '/admin/security'], tests: [BE_DLV, E2E_OPS, FE_OPSADMIN] },
   // 보고서 v1.1 WP8 — 게시본별 CycloneDX SBOM·서명 전 해시 결합·VEX 판정
   'D06-11': { screens: ['/admin/security'], tests: ['backend/test/d06/sbom.spec.ts', 'contracts/src/rules/sbom.test.ts', FE_OPSADMIN] },
+  // 구매본부 SW 개발비 산정(20-94) — 엑셀 v1.3과 1원 일치 엔진, 과제·승인 API, 화면 5탭·계수 표, 엑셀 양식 내보내기
+  'D07-01': { screens: ['/procurement/sw-cost', '/procurement/sw-cost/:estId', '/procurement/sw-cost/basis'], tests: ['backend/test/d07/cost.spec.ts', 'backend/test/kernel/xlsx-patch.spec.ts', 'contracts/src/rules/cost/engine.golden.test.ts', 'contracts/src/rules/cost/engine.test.ts', 'frontend/src/__tests__/screensCost.test.tsx'] },
 };
 
 export const COMPONENTS: ComponentEntry[] = SEEDS.map(([id, ko, tier, module, ifs, pocSteps]) => {

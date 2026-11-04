@@ -1,6 +1,6 @@
 // /ops/kill — 긴급 기능 차단(Kill Switch)·복구 (D03-03 · D03-04, PoC ⑥). 보고서 v1.1 7~9장: 긴급 상황에도 사전 2인 승인을 생략하지 않는다.
 // 요청(영향 범위·사유 분류·게이트 사전 점검·24시간 누적) → 서로 다른 2인 개인 서명 승인 → 게이트 최종 판정 → 서명·차량별 봉투 → 긴급 채널 → 차량 회신.
-// 복원도 요청 → 차단 승인자와 다른 2인 승인. 승인 가능 여부는 서버와 같은 contracts approvalCheck로 미리 보인다.
+// 복원도 요청(재검증 Evidence·Canary Cohort, 단계적) → 차단 승인자와 다른 2인 승인. 승인 가능 여부·서명 역할·복원 전망은 서버와 같은 contracts 규칙으로 미리 보인다.
 // @rule FFG-PLT-003 — 화면: 비활성화 방식을 운영자가 고르지 않는다(Registry 등급 표시만)
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -9,8 +9,12 @@ import {
   approvalPlan,
   deactStages,
   KILL_APPROVER_ROLES,
+  NOTIFICATION_ACCOUNTS,
   REASON_CATEGORIES,
   reportRolesOf,
+  requiredRoles,
+  restoreOutlook,
+  type ApprovalPlan,
   type ApproverRole,
   type DeactClass,
   type FClass,
@@ -25,7 +29,9 @@ import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { PostReviewForm } from '../admin/Oversight';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { APPROVER_ROLE, control as CT, DEPT_SIGN_ROLE } from '../../copy/control';
 import { useDefaultFeature } from '../../data/first-run';
+import { useAppShell } from '../../store';
 import {
   ApprovalSlots,
   AsyncView,
@@ -50,7 +56,7 @@ import {
   type RuleItem,
 } from '../../design';
 import { usePermission, when } from '../shared';
-import { Progress, PubStatus, type Delivery } from './shared';
+import { nodeReasonLabel, nodeStateLabel, personLabel, Progress, PubStatus, type Delivery } from './shared';
 
 const K = ko.kill;
 const KILL_ROLES = ['OPERATOR', 'SAFETY_OFFICER'] as const;
@@ -106,9 +112,35 @@ interface Kill {
     command: CommandRef | null;
     rejectedBy: string | null;
     rejectReason: string | null;
+    evidenceRef?: string | null;
+    cohort?: string[];
   } | null;
+  /** 단계적 복원 — 복원한 차량·단계 기록 */
+  restoredVins?: string[];
+  restoreStages?: { cohort: string[]; evidenceRef: string | null; publicationId: string; approvedAt: string; approvers: string[] }[];
+  /** 상세만 — 승인 대기면 다음 칸 후보, 차단 중이면 복원 전망(직전 차단 승인자 제외) */
+  approverCandidates?: { id: string; roles: ApproverRole[] }[];
+  restoreOutlook?: { candidates: { id: string; roles: ApproverRole[] }[]; byRole: { role: ApproverRole; ids: string[] }[]; missing: ApproverRole[]; complete: boolean };
   delivery: Delivery | null;
   restore: Delivery | null;
+}
+
+/** 승인 후보 계정(데모 IAM, 서버 알림 수신 계정과 같은 표) — 보고서 승인 역할로 */
+const ACCOUNTS = NOTIFICATION_ACCOUNTS.map((a) => ({ id: a.id, roles: reportRolesOf(a.roles) })).filter((a) => a.roles.length > 0);
+const roleNames = (rs: readonly ApproverRole[]) => rs.map((r) => APPROVER_ROLE[r]).join(' + ');
+/** 승인 안내 — 필수 역할 쌍(차단 FSM+CSM, 복원 FSM 포함) */
+const planNote = (plan: ApprovalPlan, request: 'deactivate' | 'restore') => {
+  const need = requiredRoles(plan);
+  if (!need.length) return K.approvalPending(false);
+  return request === 'deactivate' ? CT.approval.pair(roleNames(need)) : CT.approval.restorePair(roleNames(need));
+};
+/** 후보 목록 — 이름(맡을 역할) */
+function Candidates({ title, items }: { title: string; items: { id: string; roles: ApproverRole[] }[] }) {
+  return (
+    <p className="ds-field__hint" data-testid="approver-candidates">
+      <strong>{title}</strong> · {items.length ? items.map((c) => `${personLabel(c.id)} — ${roleNames(c.roles)}`).join(' / ') : CT.approval.candidatesNone}
+    </p>
+  );
 }
 interface Preview {
   feature: { featureId: string; version: string; name: string; lifecycle: string; asil: string };
@@ -123,10 +155,10 @@ interface Preview {
 }
 
 /** 게이트 판정 + 승인 칸(대기)을 한 목록으로 — 승인 칸은 실시간 판정에서 '대기' */
-function gateItems(checks: GateFinding[], fsm: boolean): RuleItem[] {
+function gateItems(checks: GateFinding[], plan: ApprovalPlan): RuleItem[] {
   return [
     ...checks.map((c) => ({ id: c.rule, status: c.ok ? ('pass' as const) : ('fail' as const), reason: c.message })),
-    { id: 'FFG-PLT-005', status: 'pending' as const, reason: K.approvalPending(fsm) },
+    { id: 'FFG-PLT-005', status: 'pending' as const, reason: planNote(plan, 'deactivate') },
   ];
 }
 
@@ -150,8 +182,8 @@ function NodeTable({ d, caption }: { d: Delivery; caption: string }) {
           key: 's',
           header: K.col.status,
           cell: (n) => (
-            <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
-              {n.state}
+            <span style={{ fontSize: 'var(--fs-xs)' }} title={n.state}>
+              {nodeStateLabel(n.state)}
             </span>
           ),
         },
@@ -159,8 +191,8 @@ function NodeTable({ d, caption }: { d: Delivery; caption: string }) {
           key: 'r',
           header: ko.audit.col.reason,
           cell: (n) => (
-            <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
-              {n.reason}
+            <span style={{ fontSize: 'var(--fs-xs)', overflowWrap: 'anywhere' }} title={n.reason}>
+              {nodeReasonLabel(n.reason)}
             </span>
           ),
         },
@@ -210,7 +242,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   const safetyF2 = category === 'SAFETY' && !!reg && ['F2', 'F3', 'F4'].includes(reg.f_class);
   const needContainment = safetyF2 && !recall.trim() && !containment.trim();
   const locked = !!reg && (reg.deact_class === 'DC4' || reg.gsr_mandatory);
-  const fsm = !!reg && approvalPlan(reg.f_class, 'deactivate', category).fsm;
+  const plan = reg ? approvalPlan(reg.f_class, 'deactivate', category) : approvalPlan('F0', 'deactivate', category);
   const missing = [
     !perm.ok && (perm.hint ?? ''),
     p?.activeKill && K.activeKill,
@@ -309,7 +341,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
         <Field label={ko.page.reason}>
           <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
         </Field>
-        {p && reg && <RuleChecklist live caption={K.checks} items={gateItems(p.checks, fsm)} />}
+        {p && reg && <RuleChecklist live caption={K.checks} items={gateItems(p.checks, plan)} />}
         <ErrorNote error={issue.error} />
         <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
           <Button variant="danger" icon="alert" disabled={!ready || issue.isPending} title={perm.hint} reason={p && missing.length ? K.needs(missing) : undefined} onClick={() => setConfirm(true)}>
@@ -356,55 +388,96 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   );
 }
 
-/** 승인 칸 + 승인·거절 — 이 사람이 지금 승인할 수 있는지는 서버와 같은 approvalCheck로 */
+/**
+ * 승인 칸 + 승인·거절 — 이 사람이 지금 승인할 수 있는지·어느 역할로 서명하는지는 서버와 같은 approvalCheck로.
+ * 여러 승인 역할을 가진 사람은 서명 역할을 고른다(기본은 부서 보기의 역할, P3-2). 차단 두 번째 승인 전에는 복원 전망을 본다(P4-1).
+ */
 function ApprovalBox({
   requestedBy,
   approvals,
-  fsm,
+  plan,
   since,
   excluded,
   approveRoute,
   rejectRoute,
   id,
+  candidates,
+  restorePlan,
 }: {
   requestedBy: string;
   approvals: Approval[];
-  fsm: boolean;
+  plan: ApprovalPlan;
   since: string;
   excluded?: string[];
   approveRoute: 'approveKill' | 'approveRestore';
   rejectRoute: 'rejectKill' | 'rejectRestore';
   id: string;
+  /** 서버가 계산한 다음 칸 후보(상세) — 없으면 같은 규칙으로 화면이 계산 */
+  candidates?: { id: string; roles: ApproverRole[] }[];
+  /** 차단 승인일 때 — 이 승인 뒤 복원을 끝낼 수 있는지 미리 본다 */
+  restorePlan?: ApprovalPlan;
 }) {
   const perm = usePermission(KILL_APPROVER_ROLES);
+  const { department } = useAppShell();
   const approve = useApiMutation<Kill>(approveRoute, INVALIDATE);
   const reject = useApiMutation<Kill>(rejectRoute, INVALIDATE);
   const [why, setWhy] = useState('');
+  const [picked, setPicked] = useState<ApproverRole | null>(null);
   const me = actorFor(perm.role, KILL_APPROVER_ROLES);
   const myReport = reportRolesOf((PLATFORM_ROLES[perm.role] ?? []) as Role[]);
-  const check = approvalCheck({ requestedBy, approvals, plan: { count: 2, fsm }, excluded }, { id: me.id, roles: myReport });
-  const hasFsm = approvals.some((a) => a.role === 'FSM');
-  // 빈 칸 역할: FSM이 필요하고 아직 없으면 첫 빈 칸이 FSM, 나머지는 그 밖의 승인 역할
+  const s = { requestedBy, approvals, plan, excluded };
+  // 고를 수 있는 서명 역할 — 그 역할로 서명이 허용되는 것만(남은 필수 역할을 막지 않는 것)
+  const options = myReport.filter((r) => {
+    const c = approvalCheck(s, { id: me.id, roles: myReport }, r);
+    return c.ok && c.role === r;
+  });
+  const deptRole = DEPT_SIGN_ROLE[department];
+  const preferred = picked && options.includes(picked) ? picked : deptRole && options.includes(deptRole) ? deptRole : undefined;
+  const check = approvalCheck(s, { id: me.id, roles: myReport }, preferred);
+  // 빈 칸 역할: 아직 빠진 필수 역할(차단 FSM·CSM, 복원 FSM)부터, 나머지는 그 밖의 승인 역할
+  const missing = requiredRoles(plan).filter((r) => !approvals.some((a) => a.role === r));
   const slots: ApprovalSlot[] = [0, 1].map((i) => {
     const a = approvals[i];
-    if (a) return { role: a.role, approver: { id: a.approverId, signedAt: a.signedAt } };
-    const fsmSlot = fsm && !hasFsm && i === approvals.length;
-    return { role: fsmSlot ? 'FSM' : K.anyApprover, approver: null, waitingSince: since };
+    if (a) return { role: APPROVER_ROLE[a.role] ?? a.role, approver: { id: a.approverId, name: personLabel(a.approverId), signedAt: a.signedAt } };
+    const need = missing[i - approvals.length];
+    return { role: need ? APPROVER_ROLE[need] : K.anyApprover, approver: null, waitingSince: since };
   });
   const blocked =
     'code' in check
       ? (
-          { SELF_APPROVAL: K.selfApproval, DUPLICATE: K.alreadyApproved, FSM_REQUIRED: K.fsmOnly, KILL_APPROVER: K.killApprover, NO_APPROVER_ROLE: K.approverRoleNeed, COMPLETE: '' } as Record<
+          { SELF_APPROVAL: K.selfApproval, DUPLICATE: K.alreadyApproved, FSM_REQUIRED: K.fsmOnly, CSM_REQUIRED: CT.approval.csmOnly, KILL_APPROVER: K.killApprover, NO_APPROVER_ROLE: K.approverRoleNeed, COMPLETE: '' } as Record<
             string,
             string
           >
         )[check.code]
       : null;
+  const next = candidates ?? ACCOUNTS.map((a) => ({ id: a.id, roles: a.roles.filter((r) => approvalCheck(s, { id: a.id, roles: [r] }).ok) })).filter((a) => a.roles.length);
+  // 차단의 마지막 칸 — 내가 승인하면 차단 승인자(나 포함)가 복원에서 빠진다. 복원할 FSM이 남는가(P4-1)
+  const deadEnd =
+    restorePlan && 'role' in check && approvals.length === plan.count - 1 ? restoreOutlook(ACCOUNTS, restorePlan, [...approvals.map((a) => a.approverId), me.id]) : null;
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-2)' }}>
-      <ApprovalSlots requester={{ id: requestedBy }} slots={slots} />
+      <ApprovalSlots requester={{ id: requestedBy, name: personLabel(requestedBy) }} slots={slots} />
+      <p className="ds-field__hint">{planNote(plan, restorePlan ? 'deactivate' : 'restore')}</p>
+      <Candidates title={CT.approval.candidates} items={next} />
       {blocked && <p className="ds-field__hint">{blocked}</p>}
+      {deadEnd && !deadEnd.complete && (
+        <div className="ds-stale" role="alert" data-testid="restore-dead-end">
+          <p style={{ margin: 0 }}>{CT.approval.deadEnd(roleNames(deadEnd.missing.length ? deadEnd.missing : requiredRoles(restorePlan!)))}</p>
+          <p style={{ margin: 0 }}>{CT.approval.escalate}</p>
+        </div>
+      )}
       <ErrorNote error={approve.error ?? reject.error} />
+      {options.length > 1 && (
+        <Select label={CT.approval.signAs} value={'role' in check ? check.role : ''} onChange={(e) => setPicked(e.target.value as ApproverRole)} data-testid="sign-as">
+          {options.map((r) => (
+            <option key={r} value={r}>
+              {APPROVER_ROLE[r]}
+            </option>
+          ))}
+        </Select>
+      )}
+      {options.length > 1 && <p className="ds-field__hint">{CT.approval.signAsHint}</p>}
       <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', alignItems: 'end' }}>
         <Button
           variant="primary"
@@ -462,7 +535,7 @@ function KillTimeline({ id }: { id: string }) {
     );
   const C = P.col;
   return (
-    <section style={{ display: 'grid', gap: 'var(--sp-2)' }} data-testid="kill-timeline">
+    <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }} data-testid="kill-timeline">
       <h3 className="ds-eyebrow ds-eyebrow--ko">{P.timeline}</h3>
       <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: P.timelineEmpty }} error={q.error} rows={2}>
         <DataTable
@@ -489,19 +562,125 @@ function PostReview({ id }: { id: string }) {
   const row = q.data?.items.find((r) => r.killId === id);
   if (!row) return null;
   return (
-    <section style={{ display: 'grid', gap: 'var(--sp-2)' }}>
+    <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }}>
       <h3 className="ds-eyebrow ds-eyebrow--ko">{ko.p11.kill.postReview}</h3>
       <PostReviewForm killId={id} row={row} />
     </section>
   );
 }
 
+/** 복원 전망 — 직전 차단 승인자를 빼고 복원을 승인할 수 있는 사람과, 없을 때 상위 대응(P4-1) */
+function RestoreOutlookNote({ k }: { k: Kill }) {
+  const o = k.restoreOutlook;
+  if (!o) return null;
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-1)', minWidth: 0 }} data-testid="restore-outlook">
+      {o.complete ? (
+        <Candidates title={CT.approval.restoreWho} items={o.candidates} />
+      ) : (
+        <div className="ds-stale" role="alert">
+          <p style={{ margin: 0 }}>{CT.approval.restoreBlocked(roleNames(o.missing.length ? o.missing : ['FSM']))}</p>
+          <p style={{ margin: 0 }}>{CT.approval.escalate}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** 단계적 복원 기록(FPW.8-A10) */
+function RestoreStages({ k }: { k: Kill }) {
+  const C = CT.restore.stageCol;
+  return (
+    <DataTable
+      caption={CT.restore.stages}
+      rows={(k.restoreStages ?? []).map((s, i) => ({ ...s, no: i + 1 }))}
+      rowKey={(s) => s.publicationId}
+      columns={[
+        { key: 'n', header: C.no, cell: (s) => <span className="ds-mono">{s.no}</span> },
+        { key: 'c', header: C.cohort, cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.cohort.map((vin, i) => <span key={vin}>{i > 0 ? ', ' : ''}<span className="ds-nowrap">{vin}</span></span>)}</span> },
+        { key: 'e', header: C.evidence, cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.evidenceRef ?? '—'}</span> },
+        { key: 'p', header: C.pub, cell: (s) => <Link className="ds-mono ds-nowrap" to={`/deployments/${s.publicationId}`}>{s.publicationId}</Link> },
+      ]}
+    />
+  );
+}
+
+/**
+ * 복원 요청 폼 — 사유 + 재검증 Evidence(이 Feature의 판정 근거) + 이번 단계 Canary Cohort(FPW.8-A08 종료 기준).
+ * 남은 차량 일부만 고르면 단계적 복원(A10) — 관측 뒤 다시 요청해 넓힌다. 빠진 것이 있으면 버튼이 이유와 함께 막힌다.
+ */
+function RestoreForm({ k }: { k: Kill }) {
+  const perm = usePermission([...KILL_ROLES]);
+  const requestRestore = useApiMutation('requestRestore', INVALIDATE);
+  const ev = useApi<{ items: { evidenceRef: string; gate: string; featureVersion: string; inputResult: string }[] }>('evidenceLedger', { query: { featureId: k.featureId } });
+  const done = new Set(k.restoredVins ?? []);
+  const left = k.vins.filter((v) => !done.has(v));
+  const [reason, setReason] = useState('');
+  const [evidence, setEvidence] = useState('');
+  const [cohort, setCohort] = useState<string[] | null>(null);
+  // Evidence — 이 Feature Version의 PASS 판정 근거, G5(검증)를 앞으로
+  const options = [...(ev.data?.items ?? [])]
+    .filter((e) => e.inputResult === 'PASS')
+    .sort((a, b) => Number(b.gate === 'G5') - Number(a.gate === 'G5') || Number(b.featureVersion === k.featureVersion) - Number(a.featureVersion === k.featureVersion));
+  const picked = evidence || options[0]?.evidenceRef || '';
+  // 기본 Cohort — Canary 표시 차량이 있으면 그 차량, 없으면 남은 첫 차량(한 대부터 넓힌다)
+  const chosen = cohort ?? left.slice(0, 1);
+  const toggle = (vin: string) => setCohort(chosen.includes(vin) ? chosen.filter((x) => x !== vin) : [...chosen, vin]);
+  const missing = [!perm.ok && (perm.hint ?? ''), reason.trim().length < 2 && CT.restore.needReason, !picked && CT.restore.needEvidence, !chosen.length && CT.restore.needCohort].filter(Boolean) as string[];
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }} data-testid="restore-form">
+      {!!done.size && <p className="ds-field__hint">{CT.restore.progress(done.size, k.vins.length)}</p>}
+      <Field label={ko.page.reason}>
+        <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
+      </Field>
+      {options.length ? (
+        <Select label={CT.restore.evidence} value={picked} onChange={(e) => setEvidence(e.target.value)} style={{ minWidth: 0, width: '100%', maxWidth: '100%' }} title={picked} data-testid="restore-evidence">
+          {options.map((e) => (
+            <option key={e.evidenceRef} value={e.evidenceRef}>
+              {`${e.gate} · ${e.featureVersion} · ${e.evidenceRef}`}
+            </option>
+          ))}
+        </Select>
+      ) : (
+        <p className="ds-stale" role="status">
+          {CT.restore.evidenceNone}
+        </p>
+      )}
+      <p className="ds-field__hint">{CT.restore.evidenceHint}</p>
+      <fieldset className="ds-choices" aria-label={CT.restore.cohort} data-testid="restore-cohort">
+        <legend className="ds-field__label">
+          {CT.restore.cohort} ({chosen.length}/{left.length})
+        </legend>
+        {left.map((vin) => (
+          <label key={vin}>
+            <input type="checkbox" checked={chosen.includes(vin)} onChange={() => toggle(vin)} />
+            {vin}
+          </label>
+        ))}
+      </fieldset>
+      <p className="ds-field__hint">{CT.restore.cohortHint}</p>
+      <ErrorNote error={requestRestore.error} />
+      <Button
+        variant="primary"
+        data-ui="requestRestore"
+        disabled={!!missing.length || requestRestore.isPending}
+        title={perm.hint}
+        reason={missing.length ? K.needs(missing) : undefined}
+        onClick={() =>
+          requestRestore.mutate({ params: { id: k.killId }, body: { reason, evidenceRef: picked, cohort: chosen } }, { onSuccess: () => (setReason(''), setCohort(null)) })
+        }
+      >
+        {K.restoreRequest}
+      </Button>
+    </div>
+  );
+}
+
 function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const q = useApi<Kill>('killDetail', { params: { id: id ?? '' } }, { enabled: !!id });
   const env = useApi<Envelopes>('killEnvelopes', { params: { id: id ?? '' } }, { enabled: !!id && !!q.data?.command });
-  const perm = usePermission([...KILL_ROLES]);
   const release = useApiMutation('releaseKill', INVALIDATE);
-  const requestRestore = useApiMutation('requestRestore', INVALIDATE);
+  const perm = usePermission([...KILL_ROLES]);
   const [reason, setReason] = useState('');
   const k = q.data;
   const v2 = k?.version === 2;
@@ -509,28 +688,42 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
   return (
     <Drawer open={!!id} title={id ?? ''} onClose={onClose}>
       {k && (
-        <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+        // 좁은 서랍(1366 폭) — 긴 ID·이름은 줄을 바꾸고, 표는 제 칸 안에서 가로로 넘긴다(P4-10)
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-3)', minWidth: 0, overflowWrap: 'anywhere' }} data-testid="kill-drawer">
           <KeyValue
             rows={[
               { k: K.col.feature, v: <span className="ds-mono">{k.featureIds.join(', ')}</span> },
               { k: K.deactMode, v: v2 ? <ClassBadges f={k.fClass} dc={k.deactClass} /> : <span className="ds-tag">{`${K.legacy} · ${K.appliedAs[k.safeMode ?? 'SAFE_DEFAULT']}`}</span> },
               {
                 k: K.col.status,
-                v: <span className="ds-mono">{K.status[k.status]}</span>,
-                note: k.releasedAt ? `${k.releasedBy} · ${when(k.releasedAt)}` : k.expiresAt && k.status === 'REQUESTED' ? `${K.expiresAt} ${when(k.expiresAt)}` : undefined,
+                v: <span title={k.status}>{k.status === 'ACTIVE' && k.restoredVins?.length ? CT.restore.activeWithRestore(k.restoredVins.length, k.vins.length) : K.status[k.status]}</span>,
+                note: k.releasedAt ? `${personLabel(k.releasedBy ?? '')} · ${when(k.releasedAt)}` : k.expiresAt && k.status === 'REQUESTED' ? `${K.expiresAt} ${when(k.expiresAt)}` : undefined,
               },
               { k: K.reasonCategory, v: v2 ? `${K.reasonCategories[k.reasonCategory ?? 'SAFETY']} · ${k.reasonCode}` : '—' },
               { k: ko.page.reason, v: k.reason },
-              ...(k.rejectReason ? [{ k: K.reject, v: k.rejectReason, note: k.rejectedBy ?? undefined }] : []),
+              ...(k.rejectReason ? [{ k: K.reject, v: k.rejectReason, note: k.rejectedBy ? personLabel(k.rejectedBy) : undefined }] : []),
             ]}
           />
           {v2 && (
             <>
               <h3 className="ds-eyebrow ds-eyebrow--ko">{K.approvals}</h3>
               {k.status === 'REQUESTED' ? (
-                <ApprovalBox requestedBy={k.requestedBy} approvals={k.approvals ?? []} fsm={!!k.fsmRequired} since={k.requestedAt} approveRoute="approveKill" rejectRoute="rejectKill" id={k.killId} />
+                <ApprovalBox
+                  requestedBy={k.requestedBy}
+                  approvals={k.approvals ?? []}
+                  plan={approvalPlan(k.fClass ?? 'F0', 'deactivate', k.reasonCategory ?? 'SAFETY')}
+                  restorePlan={approvalPlan(k.fClass ?? 'F0', 'restore', k.reasonCategory ?? 'SAFETY')}
+                  since={k.requestedAt}
+                  approveRoute="approveKill"
+                  rejectRoute="rejectKill"
+                  id={k.killId}
+                  candidates={k.approverCandidates}
+                />
               ) : (
-                <ApprovalSlots requester={{ id: k.requestedBy }} slots={(k.approvals ?? []).map((a) => ({ role: a.role, approver: { id: a.approverId, signedAt: a.signedAt } }))} />
+                <ApprovalSlots
+                  requester={{ id: k.requestedBy, name: personLabel(k.requestedBy) }}
+                  slots={(k.approvals ?? []).map((a) => ({ role: APPROVER_ROLE[a.role] ?? a.role, approver: { id: a.approverId, name: personLabel(a.approverId), signedAt: a.signedAt } }))}
+                />
               )}
             </>
           )}
@@ -580,27 +773,33 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               <Progress d={k.restore} />
             </>
           )}
+          {!!k.restoreStages?.length && <RestoreStages k={k} />}
           {k.command && <KillTimeline id={k.killId} />}
           {k.command && <PostReview id={k.killId} />}
           {k.status === 'ACTIVE' && v2 && (
-            <div style={{ display: 'grid', gap: 'var(--sp-2)' }} data-tour="kill-restore">
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }} data-tour="kill-restore">
               <h3 className="ds-eyebrow ds-eyebrow--ko">
                 {K.restoreTitle} <Explain rules={['FFG-DEAC-008', 'FFG-PLT-008', 'FFG-PLT-010']} />
               </h3>
               <p className="ds-field__hint">
                 <RuleText text={K.restoreBody} explain />
               </p>
+              <RestoreOutlookNote k={k} />
               {rr?.status === 'REQUESTED' ? (
-                <ApprovalBox
-                  requestedBy={rr.requestedBy}
-                  approvals={rr.approvals}
-                  fsm={!!k.fsmRequired}
-                  since={rr.requestedAt}
-                  excluded={(k.approvals ?? []).map((a) => a.approverId)}
-                  approveRoute="approveRestore"
-                  rejectRoute="rejectRestore"
-                  id={k.killId}
-                />
+                <>
+                  {rr.evidenceRef && <p className="ds-field__hint">{CT.restore.requested(rr.evidenceRef, rr.cohort?.length ?? k.vins.length)}</p>}
+                  <ApprovalBox
+                    requestedBy={rr.requestedBy}
+                    approvals={rr.approvals}
+                    plan={approvalPlan(k.fClass ?? 'F0', 'restore', k.reasonCategory ?? 'SAFETY')}
+                    since={rr.requestedAt}
+                    excluded={(k.approvals ?? []).map((a) => a.approverId)}
+                    approveRoute="approveRestore"
+                    rejectRoute="rejectRestore"
+                    id={k.killId}
+                    candidates={k.restoreOutlook?.candidates}
+                  />
+                </>
               ) : (
                 <>
                   {rr?.status === 'REJECTED' && (
@@ -608,19 +807,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
                       {K.restoreRejected}: {rr.rejectReason}
                     </p>
                   )}
-                  <Field label={ko.page.reason}>
-                    <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
-                  </Field>
-                  <ErrorNote error={requestRestore.error} />
-                  <Button
-                    variant="primary"
-                    data-ui="requestRestore"
-                    disabled={!perm.ok || reason.trim().length < 2 || requestRestore.isPending}
-                    title={perm.hint}
-                    onClick={() => requestRestore.mutate({ params: { id: k.killId }, body: { reason } }, { onSuccess: () => setReason('') })}
-                  >
-                    {K.restoreRequest}
-                  </Button>
+                  <RestoreForm k={k} />
                 </>
               )}
             </div>
@@ -717,7 +904,7 @@ export function KillConsole() {
                   ) : k.status === 'REQUESTED' ? (
                     <span className="ds-tag">{K.approvalsCount(k.approvals?.length ?? 0)}</span>
                   ) : (
-                    <span className="ds-mono">{K.status[k.status]}</span>
+                    <span title={k.status}>{K.status[k.status]}</span>
                   ),
               },
               { key: 'd', header: K.col.delivery, cell: (k) => <Progress d={k.status === 'RELEASED' ? k.restore : k.delivery} /> },

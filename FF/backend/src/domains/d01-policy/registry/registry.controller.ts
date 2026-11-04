@@ -3,6 +3,7 @@ import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nes
 import {
   BaselineDecisionBody,
   BaselineRequestBody,
+  BaselineRequestStatus,
   type CreateFeatureBody,
   CreateVersionBody,
   JudgeGateBody,
@@ -11,6 +12,7 @@ import {
 } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { ZodPipe } from '../../../kernel/zod.pipe';
+import { DomainError } from '../../../kernel/errors';
 import { pageLimit } from '../../../kernel/paging';
 import { CreateFeaturePipe } from './feature-refs';
 import { GateService } from '../topology/gate.service';
@@ -96,8 +98,11 @@ export class BaselineController {
 
   // 'requests' 경로를 ':id'보다 먼저 선언한다 (라우트 매칭 순서).
   @Get('requests')
-  requests(@Query('status') status?: 'PENDING' | 'APPROVED' | 'REJECTED') {
-    return { items: this.baselines.requests(status) };
+  requests(@Query('status') status?: string) {
+    // 모르는 상태 값은 빈 목록이 아니라 400 — 화면이 'REQUESTED'로 물어 대기 요청이 0건으로 보이던 결함(P2-1)
+    const s = status === undefined || status === '' ? undefined : BaselineRequestStatus.safeParse(status);
+    if (s && !s.success) throw new DomainError('VALIDATION', `알 수 없는 Baseline 요청 상태입니다: ${status} (${BaselineRequestStatus.options.join('·')})`, { field: 'status' });
+    return { items: this.baselines.requests(s?.data) };
   }
 
   @Post('requests')

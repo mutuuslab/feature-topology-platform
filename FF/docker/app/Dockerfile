@@ -72,6 +72,8 @@ COPY --from=build /app/FF/frontend/dist-prod ./web
 COPY data/fixtures ./data/fixtures
 # Feature DB 이전본 — 고객 설치 첫 기동 때 시드(30-95 §9)
 COPY data/reference ./data/reference
+# SW 개발비 산정 엑셀 내보내기 양식(20-94 D-COST-13) — 계수 표 v1.3의 원본 엑셀
+COPY data/source ./data/source
 # 데이터·고정점·백업 폴더는 비루트 사용자 node(uid 1000)가 쓴다
 RUN mkdir -p /var/lib/ff /var/lib/ff-anchor /var/backups/ff \
  && chown -R node:node /var/lib/ff /var/lib/ff-anchor /var/backups/ff

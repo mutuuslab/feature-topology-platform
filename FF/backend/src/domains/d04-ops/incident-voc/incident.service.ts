@@ -2,7 +2,7 @@
 // 기능 불충분(SOTIF) 트리거면 'incident.sotif.triggered' 이벤트로 이상 징후(D06-12)에 넘긴다 — 이상 건 판정·차단 권고는 그쪽 규칙,
 // 실제 차단은 사람의 요청과 2인 승인(Kill v2)이 한다. 장애 이력은 이상 건을 신호 ref(장애 ID)로 거꾸로 찾는다.
 import { Body, Controller, Get, HttpCode, Inject, Injectable, Post, Query } from '@nestjs/common';
-import { classifyVoc, CreateIncidentBody, sotifTrigger, type Incident } from '@ff/contracts';
+import { classifyVoc, CreateIncidentBody, incidentVehicleScope, sotifTrigger, type Incident } from '@ff/contracts';
 import { z } from 'zod';
 import { ExternalSystems } from '../../../adapters/if-mocks/external-systems';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
@@ -13,6 +13,7 @@ import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { ZodPipe } from '../../../kernel/zod.pipe';
+import { FleetRepo } from '../../d01-policy/policy-repos';
 import { FeatureRepo } from '../../d01-policy/repos';
 import { AnomalyService } from '../../d06-qsec/anomaly-response/anomaly.service';
 
@@ -23,6 +24,7 @@ export class IncidentService {
     @Inject(DB) private readonly db: Db,
     private readonly ext: ExternalSystems,
     private readonly features: FeatureRepo,
+    private readonly fleet: FleetRepo,
     private readonly anomalies: AnomalyService,
     private readonly audit: AuditService,
     private readonly events: EventService,
@@ -44,6 +46,16 @@ export class IncidentService {
   create(actor: Actor, body: CreateIncidentBody, externalRef: string | null = null): Incident {
     if (body.featureId && !this.features.versions(body.featureId).length) throw new DomainError('NOT_FOUND', `${body.featureId}을(를) 찾을 수 없습니다.`);
     const sotif = sotifTrigger(body);
+    // 차량이 이 Feature를 지원하는가(적용 범위) — 범위 밖이어도 접수는 받고 경고를 남긴다(현장 신고를 버리지 않는다, P4-8)
+    const vehicleScope =
+      body.vin && body.featureId
+        ? incidentVehicleScope(
+            body.vin,
+            body.featureId,
+            this.fleet.vehicle(body.vin),
+            this.features.versions(body.featureId).map((v) => ({ version: v.version, country: v.country, vehicleModel: v.vehicleModel, trim: v.trim })),
+          )
+        : null;
     const i: Incident = {
       incidentId: this.nextId(),
       source: body.source,
@@ -60,10 +72,11 @@ export class IncidentService {
       sotif,
       anomalyId: null,
       status: 'OPEN',
+      vehicleScope,
     };
     this.db.tx(() => {
       this.db.run('INSERT INTO incident (incident_id, feature_id, status, source, external_ref, doc) VALUES (?, ?, ?, ?, ?, ?)', i.incidentId, i.featureId, i.status, i.source, externalRef, JSON.stringify(i));
-      this.audit.record(actor, 'INCIDENT_RECEIVE', i.incidentId, { after: { source: i.source, featureId: i.featureId, category: i.category, severity: i.severity, sotif: sotif.trigger }, componentId: 'D04-05' });
+      this.audit.record(actor, 'INCIDENT_RECEIVE', i.incidentId, { after: { source: i.source, featureId: i.featureId, category: i.category, severity: i.severity, sotif: sotif.trigger, vehicleScope: vehicleScope?.fit ?? null }, componentId: 'D04-05' });
       this.events.publish('incident.received', i.incidentId, { source: i.source, vin: i.vin, featureId: i.featureId, category: i.category, severity: i.severity }, { componentId: 'D04-05', correlationId: actor.correlationId });
       if (sotif.trigger)
         this.events.publish('incident.sotif.triggered', i.incidentId, { incidentId: i.incidentId, featureId: i.featureId, vin: i.vin, category: i.category, severity: i.severity, reason: sotif.reason }, { componentId: 'D04-05', correlationId: actor.correlationId });

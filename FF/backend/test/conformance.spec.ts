@@ -56,6 +56,6 @@ describe('42 컴포넌트 런타임 준수', () => {
   });
 
   it('implemented 컴포넌트가 아직 없을 때도 스위트가 유효하다', () => {
-    expect(COMPONENTS).toHaveLength(42);
+    expect(COMPONENTS).toHaveLength(43); // 42 + D07-01
   });
 });

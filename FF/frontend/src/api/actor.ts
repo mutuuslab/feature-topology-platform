@@ -5,7 +5,7 @@
 import { DEMO_PERSONAS, type Role } from '@ff/contracts';
 import { OIDC_AUTH } from '../auth-mode';
 import { ssoUser } from '../auth-oidc';
-import { SPEC_ROLES } from '../data/specNav';
+import { DEMO_ACCOUNTS } from '../data/demoAccounts';
 
 /** 데모 계정 ↔ 플랫폼 역할 — 표는 contracts(DEMO_PERSONAS)에 있고 직무 분리 감사(FFG-PLT-016) 대상이다 */
 export const PLATFORM_ROLES: Record<string, Role[]> = DEMO_PERSONAS;
@@ -33,7 +33,7 @@ export function personasFor(granted: readonly Role[]): string[] {
 export function actorFor(legacyRole: string, allowed?: readonly Role[]): ActorHeaders {
   const mine = rolesFor(legacyRole);
   const role = allowed?.find((r) => mine.includes(r)) ?? mine[0] ?? 'AUDITOR';
-  const id = OIDC_AUTH ? (ssoUser()?.id ?? 'anonymous') : (SPEC_ROLES.find((r) => r.key === legacyRole)?.id ?? 'usr-guest');
+  const id = OIDC_AUTH ? (ssoUser()?.id ?? 'anonymous') : (DEMO_ACCOUNTS.find((r) => r.key === legacyRole)?.id ?? 'usr-guest');
   return { id, role };
 }
 

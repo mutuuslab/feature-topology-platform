@@ -36,12 +36,15 @@ export const departments = {
     handoffIn: '받는 인계',
     handoffOut: '보내는 인계',
     from: (dept: string) => `${dept}에서`,
-    to: (dept: string) => `${dept}로`,
+    to: (dept: string) => `${dept}${roParticle(dept)}`,
     secondScope: '2차 초안',
     alsoR: '수행 겸',
     partRA: '수행·책임',
     moreItems: (n: number) => `외 ${n}건 더 보기`,
     procedures: '업무 절차 전체',
+    // 인계가 없는 부서(법무·개인정보) — 빈 칸 대신 의견·통보로 함께 하는 활동을 보인다
+    consults: '의견·통보로 함께 하는 활동',
+    handoffNone: '다른 부서와 주고받는 인계 없이 이 부서 안에서 끝나는 업무입니다',
   },
   studio: {
     eyebrow: '상품기획 · Feature 소유',
@@ -77,6 +80,9 @@ export const departments = {
     goDecide: '판정 화면으로',
     notMine: (why: string) => `내 차례가 아님 — ${why}`,
     activities: '이 부서의 판정 활동',
+    // 판정(Gate) 활동이 없는 부서 — 맡는 수행·책임 활동을 대신 보인다
+    activitiesWork: '이 부서가 맡는 수행·책임 활동',
+    activitiesNone: '이 부서가 맡는 수행·책임 활동은 업무 절차 문서에서 봅니다',
   },
   console: {
     eyebrow: '엔지니어링 · 기준선',
@@ -151,3 +157,11 @@ export const departments = {
     rnrHint: '부서별 수행·책임·협의·통보 업무와 다른 부서와의 인계',
   },
 };
+
+/** 조사 '으로/로' — 받침 있으면 '으로'(ㄹ 받침은 '로'), 없거나 한글이 아니면 '로'. 예: 품질팀으로 · 법무로 · 관제실로 */
+export function roParticle(word: string): '으로' | '로' {
+  const c = word.trim().codePointAt(word.trim().length - 1) ?? 0;
+  if (c < 0xac00 || c > 0xd7a3) return '로';
+  const jong = (c - 0xac00) % 28;
+  return jong === 0 || jong === 8 ? '로' : '으로';
+}

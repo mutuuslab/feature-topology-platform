@@ -16,7 +16,7 @@ traces:
     - WF-FPW-8
     - WF-FPW-9
     - WF-FPW-10
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -93,6 +93,7 @@ last_updated: 2026-11-04
 - FPW.2-A03 SOTIF 분석 갱신 (협의)
 - FPW.3-A01 안전요구 도출·명세 (통보)
 - FPW.3-A02 양방향 추적성 점검 (협의)
+- FPW.3-A05 구현 연결 입력 (통보)
 - FPW.3-A04 G3 판정·Feature 정의 승인 (통보)
 - FPW.4-A01 차량 내 감시·안전기제 설계 (통보)
 - FPW.4-A05 G4 설계 독립 검토·판정 (통보)

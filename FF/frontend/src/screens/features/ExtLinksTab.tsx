@@ -77,6 +77,9 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
         ...(t.conflicts.length ? [X.conflicts(t.conflicts.length)] : []),
       ]
     : [];
+  // 문제가 없을 때 — 연결이 하나도 없으면 '맞음'(초록)이 아니라 안내, 일부만 있으면 빠진 쪽을 적는다
+  const missing = t ? [!t.requirements.length && X.requirements, !t.epic && !t.changeRequests.length && X.changeRequests, !t.mergeRequests.length && X.code].filter((x) => !!x) as string[] : [];
+  const linkedNone = !!t && missing.length === 3;
   const columns = [
     { key: 'k', header: X.col.key, cell: (r: ExtLink) => <ExtRefChip r={r} showStatus={false} /> },
     { key: 't', header: X.col.title, cell: (r: ExtLink) => clip(r.title) },
@@ -95,9 +98,9 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
                 </li>
               ))
             ) : (
-              <li data-state="PASS">
-                <Icon name="check" size={16} />
-                <span>{X.key.clean}</span>
+              <li data-state={missing.length ? 'INFO' : 'PASS'}>
+                <Icon name={missing.length ? 'link' : 'check'} size={16} />
+                <span>{linkedNone ? X.key.unlinked : missing.length ? X.key.partial(missing.join(' · ')) : X.key.clean}</span>
               </li>
             )}
           </ul>

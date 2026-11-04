@@ -9,7 +9,7 @@ cycle: 0
 traces:
   depends_on:
     - FLW-KILLSWITCH
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 

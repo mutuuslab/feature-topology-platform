@@ -153,3 +153,19 @@ export const featureRefsTab = {
   warnVersion: '새 Version을 만들었습니다 — 기준 행 안내를 확인하세요',
   retiredWarn: (ids: string) => `폐기 예정·폐기 기준 행이 연결되어 있습니다(${ids}) — 출시는 막지 않습니다. 다음 Version에서 대체 행으로 다시 연결하세요`,
 };
+
+/** 기준 행 고르기·추가 요청 보강(W5, P1-8·P5-8) */
+export const proposeRefMore = {
+  // 빈 결과는 한 문장(제목 + 다음 행동) — '표시할 항목이 없습니다'와 두 번 말하지 않는다
+  noResultTitle: '맞는 기준 행이 없습니다',
+  noResultBody: '검색어를 바꾸거나 Feature DB에 추가를 요청하세요',
+  attr: {
+    legend: '분류 속성 (비우면 승인 뒤 검토 필요로 들어갑니다)',
+    swStack: 'SW 계층',
+    lifecycle: '수명주기',
+    techStack: '기술 영역',
+    swStackOptions: ['Application', 'Platform', 'Back-end'],
+    lifecycleOptions: ['Commodity', 'Differentiating', 'Innovation'],
+    hint: '모르면 비워 두세요 — 관리자가 발행 전에 채웁니다',
+  },
+};

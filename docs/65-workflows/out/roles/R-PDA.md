@@ -9,7 +9,7 @@ cycle: 0
 traces:
   depends_on:
     - WF-FPW-7
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -29,8 +29,8 @@ last_updated: 2026-11-04
 - 입력: WP-G6-DECISION → 출력: WP-PRODUCT
 - 플랫폼: `createProduct`, `validateComposition`, `offerTrials`, `/products/new`, `/entitlements`
 1. 상품에 넣을 Feature와 판매 방식을 정해 상품을 등록한다
-2. 구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다
-3. 체험 제안 조건(대상·기간)을 정한다
+2. 구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다. PASS일 때 등록하고, FAIL은 결과를 확인한 뒤 초안으로만 등록한다
+3. 체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다
 - [ ] 구성 검증 결과에 충돌이 없다
 
 ## 2. 협의·통보 받는 활동

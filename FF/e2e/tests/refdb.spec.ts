@@ -8,6 +8,7 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 import { propose as P } from '../../frontend/src/copy/propose';
 import { refChangeDetail as D, refChanges as C, refDetail as RD } from '../../frontend/src/copy/refdb';
 import { pickPrimaryRef, REF } from './refdb';
+import { recordAnalysisApi } from './analysis';
 import { settle } from './settle';
 
 test.describe.configure({ mode: 'default' });
@@ -47,6 +48,7 @@ async function readyForApproval(request: APIRequestContext, featureId: string, v
   const p = await request.patch(`${API}${base}`, { headers: AUTHOR, data: { functions: [{ functionId: 'FUNC-000056', label: 'Extended Gap Control 기능' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] } });
   expect(p.status(), await p.text()).toBe(200);
   await api(request, 'post', `${base}/safety/confirm`, H('usr-safety', 'SAFETY_OFFICER'), { reason: 'HARA 검토 완료' });
+  await recordAnalysisApi(request, featureId, ver); // G2 PASS 근거 — HARA·TARA(P3-3)
   for (const gate of ['G1', 'G2', 'G3']) await api(request, 'post', `${base}/gates`, H('usr-quality', 'GATE_JUDGE'), { gate, inputResult: 'PASS', rationale: `${gate} 확인`, evidenceRef: `EV-${gate}` });
 }
 

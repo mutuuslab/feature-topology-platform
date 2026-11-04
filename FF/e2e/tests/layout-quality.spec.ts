@@ -5,9 +5,16 @@
 //  ③ 짧은 식별자 칩(.ds-id·.ds-tag·.ds-badge)이 하이픈 뒤에서 두 줄로 갈렸다.
 //  ④ 그 수정이 과해 설명이 붙은 Function 태그가 줄을 못 바꿔 카드 밖으로 나갔고, 상품 유효 기간 날짜가 '2027-12-|31'로 갈렸다(시각 회귀에서 발견).
 //  ⑤ 하네스 3판(결함 7): 간격 6px가 토큰 없이 5,797회, 4px 격자 밖 간격 2,556회, 반경 13종 — 스케일 밖 계산값 0건.
+//  ⑥ 하네스 W6(2026-11-05): 폭 1024~1920·시연 모드 화면 전체 — 문서 가로 넘침·글자 겹침·.ds-kv 기준선·행 정렬·숫자 열 머리글(아래 SWEEP).
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { DRILLDOWNS, MENU_ENTRIES } from './menu';
 import { settle } from './settle';
+import { sweepChecks } from './layout-measure';
+import { apiRefs, REF } from './refdb';
+
+const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 
 const SCREENS = [...MENU_ENTRIES.map((m) => ({ title: m.title, url: m.menu })), ...DRILLDOWNS.map((d) => ({ title: d.title, url: d.url }))];
 
@@ -139,3 +146,102 @@ for (const s of SCREENS) {
     }
   });
 }
+
+// ⑥ 하네스 W6(2026-11-05 화면 측정) — 폭 1024~1920·시연 모드에서 화면 전체를 한 번씩 본다(폭마다 페이지 하나를 다시 쓴다).
+//    · 문서 가로 넘침 0: 상단바 도구 줄(.sh-tools)이 1024에서 125px·시연 1366에서 61px 화면 밖으로 나가 로그아웃·알림이 잘렸다(L1)
+//    · 글자 겹침 0: 보이는 글자 상자(Range.getClientRects·SVG text 상자)끼리 2px 넘게 겹치지 않는다 — 같은 요소·조상/자손·같은 문단은 뺀다.
+//      Topology 노드 라벨(고정 13px 간격, 시연에서 6px 겹침)·/biz/trials 축 눈금(모서리 '0'과 첫 주)이 겹쳤다(L4)
+//    · .ds-kv 이름·값 기준선 3px 이내: 이름이 두 줄이면 값이 가운데로 내려가 10~20px 어긋났다(L2)
+//    · 한 줄 행 정렬 3px 이내: 부서 홈 내 업무 배지(.ws-part)가 제목보다 9~12px 아래(L3), 시뮬레이션 체크 상자가 입력 칸과 다른 높이(L5)
+//    · 숫자 열 머리글: 칸이 오른쪽 정렬 숫자면 머리글도 오른쪽(L6 — 절차 역할 표·대시보드 2차원 통계·범례)
+const DEPT_SRC = readFileSync(join(__dirname, '..', '..', 'contracts', 'src', 'generated', 'departments.ts'), 'utf8');
+const DEPTS: { id: string; name: string; personas: string[] }[] = JSON.parse(DEPT_SRC.slice(DEPT_SRC.indexOf('= {') + 2, DEPT_SRC.lastIndexOf('}') + 1)).departments;
+if (!DEPTS.length || !SCREENS.length) throw new Error('배치 하네스의 부서·화면 표본을 읽지 못했습니다');
+const SWEEP = [
+  ...[1024, 1280, 1366, 1536, 1920].map((width) => ({ width, present: false })),
+  ...[1366, 1920].map((width) => ({ width, present: true })),
+];
+
+for (const m of SWEEP) {
+  const tag = `${m.width}${m.present ? ' 시연' : ''}`;
+  test(`배치 전체 점검 @${tag} — 가로 넘침·글자 겹침·기준선·숫자 머리글 (메뉴 화면 + 14부서 홈)`, async ({ page }) => {
+    test.setTimeout(15 * 60_000);
+    await page.setViewportSize({ width: m.width, height: m.width >= 1920 ? 1080 : 800 });
+    await page.goto('/');
+    await page.evaluate((p) => localStorage.setItem('ff.present', p ? '1' : '0'), m.present);
+    const visits = [
+      ...SCREENS.map((s) => ({ name: s.url, url: s.url, dept: null as null | { id: string; role: string } })),
+      ...DEPTS.map((d) => ({ name: `부서 홈 ${d.name}`, url: '/', dept: { id: d.id, role: d.personas[0] } })),
+    ];
+    const bad: string[] = [];
+    for (const v of visits) {
+      await page.evaluate((d) => localStorage.setItem('fp.state.v2', JSON.stringify(d ? { role: d.role, department: d.id } : { role: 'author', department: 'ALL' })), v.dept);
+      await page.goto(v.url);
+      await expect(page.locator('#main')).toBeVisible();
+      if (v.dept) await expect(page.locator('#main [data-workspace-home]')).toBeVisible();
+      await expect(page.locator('html')).toHaveAttribute('data-present', m.present ? 'on' : 'off');
+      await expect(page.locator('#main .skel, #main .ds-skel')).toHaveCount(0, { timeout: 15_000 });
+      // 오류 상자는 화면별 배치 시험(위)이 본다 — 여기서는 배치만
+      await settle(page, { errors: null });
+      const r = await sweepChecks(page);
+      const key = `${v.name}@${m.width}${m.present ? 'p' : ''}`;
+      const report = (check: string, items: string[]) => {
+        if (items.length) bad.push(`${key} ${check}: ${items.slice(0, 3).join(' | ')}`);
+      };
+      if (r.overflow > 0) report('가로 넘침', [`+${r.overflow}px ${r.wide.join(', ')}`]);
+      report('글자 겹침', r.overlaps);
+      report('이름·값 기준선', r.kv);
+      report('행 정렬', r.rows);
+      report('숫자 머리글', r.numHead);
+    }
+    expect(bad, bad.slice(0, 20).join('\n')).toEqual([]);
+  });
+}
+
+// ⑦ 담당자 시험 P2-10(2026-11-05): 초안 수정 서랍의 좌우 분할(.ds-split)은 오른쪽 칸 최소 320px — 서랍(약 480px)에서 '담당' 입력이
+//    26px로 줄어 ASIL 이름과 겹쳤다. 판정 목록(.ds-check) 첫 칸은 아이콘용 22px라 '보완' 같은 판정 낱말이 세로로 갈렸다(변경 요청 검토 의견).
+test('초안 수정 서랍 — 담당·ASIL 칸이 제 폭을 갖고 겹치지 않는다 · 판정 낱말은 한 줄', async ({ page, request }) => {
+  const r = await request.post(`${API}/api/features`, {
+    headers: { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' },
+    data: { name: `배치 서랍 ${Math.random().toString(36).slice(2, 7)}`, description: '배치 시험', requirementIds: ['REQ-E2E-LAYOUT'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'], ...apiRefs(REF.trafficLight) },
+  });
+  expect(r.status(), await r.text()).toBe(201);
+  const f = (await r.json()) as { featureId: string };
+  for (const m of [{ width: 1366, present: false }, { width: 1920, present: true }]) {
+    await page.setViewportSize({ width: m.width, height: m.width >= 1920 ? 1080 : 800 });
+    await page.goto('/');
+    await page.evaluate((p) => localStorage.setItem('ff.present', p ? '1' : '0'), m.present);
+    await page.goto(`/features/${f.featureId}/0.1.0`);
+    await page.getByRole('button', { name: '초안 수정' }).click();
+    const dlg = page.getByRole('dialog');
+    const owner = dlg.getByLabel('담당', { exact: true });
+    const asil = dlg.getByLabel('ASIL', { exact: true });
+    await expect(owner).toBeVisible();
+    await expect.poll(() => dlg.evaluate((el) => el.getAnimations({ subtree: true }).filter((a) => a.playState === 'running').length)).toBe(0);
+    const box = await dlg.evaluate((el) => {
+      const rect = (e: Element | null) => { const x = e!.getBoundingClientRect(); return { l: x.left, r: x.right, t: x.top, b: x.bottom, w: x.width }; };
+      const field = (name: string) => [...el.querySelectorAll('label')].find((l) => (l.textContent ?? '').trim().startsWith(name) && l.querySelector('input, select'))!;
+      const o = field('담당');
+      const a = field('ASIL');
+      return { ownerInput: rect(o.querySelector('input')), asilInput: rect(a.querySelector('select')), asilLabel: rect(a.firstElementChild) };
+    });
+    const hit = (p: { l: number; r: number; t: number; b: number }, q: { l: number; r: number; t: number; b: number }) => Math.min(p.r, q.r) - Math.max(p.l, q.l) > 1 && Math.min(p.b, q.b) - Math.max(p.t, q.t) > 1;
+    expect(box.ownerInput.w, `@${m.width} '담당' 입력 폭`).toBeGreaterThanOrEqual(120);
+    expect(box.asilInput.w, `@${m.width} ASIL 선택 폭`).toBeGreaterThanOrEqual(48);
+    expect(hit(box.ownerInput, box.asilLabel) || hit(box.ownerInput, box.asilInput), `@${m.width} '담당' 입력이 ASIL 칸과 겹친다`).toBe(false);
+    await page.keyboard.press('Escape');
+  }
+  // 판정 낱말 — 시드에 검토 의견이 있는 변경 요청이 없어 같은 마크업(.ds-check li > 판정 낱말 + 내용)을 본문에 넣어 본다
+  const lines = await page.evaluate(() => {
+    const ul = document.createElement('ul');
+    ul.className = 'ds-check';
+    ul.innerHTML = '<li data-state="INFO"><span class="ds-mono">보완</span><span>규모 근거 등급 보완 필요</span></li>';
+    document.querySelector('#main')!.prepend(ul);
+    const rg = document.createRange();
+    rg.selectNodeContents(ul.querySelector('span')!.firstChild!);
+    const tops = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top)));
+    ul.remove();
+    return tops.size;
+  });
+  expect(lines, "판정 낱말 '보완'이 한 줄").toBe(1);
+});

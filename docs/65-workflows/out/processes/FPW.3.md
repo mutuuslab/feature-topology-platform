@@ -10,7 +10,7 @@ traces:
   depends_on:
     - GATE-G2
     - FLW-FEATURE-REGISTER
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -32,9 +32,14 @@ flowchart LR
   subgraph R_QA["품질 조직"]
     FPW_3_A03["A03 요구 검토 판정 등록"]
   end
+  subgraph R_INT["통합 조직"]
+    FPW_3_A05["A05 구현 연결 입력"]
+  end
   FPW_3_A01 --> FPW_3_A02
   FPW_3_A02 --> FPW_3_A03
+  FPW_3_A02 --> FPW_3_A05
   FPW_3_A03 --> FPW_3_A04
+  FPW_3_A05 --> FPW_3_A04
 ```
 
 ## 2. 활동
@@ -44,7 +49,8 @@ flowchart LR
 | FPW.3-A01 | 안전요구 도출·명세 | R 요구 Owner · A 요구 Owner · C Safety Manager, 아키텍트 · I 시험 조직, Feature Owner | WP-HARA-TARA, WP-SOTIF-ANALYSIS, WP-G2-DECISION | WP-SAFETY-REQ | `/trace/design`, `/change/cr` | FFG-LCY-005, FFG-LCY-012 |
 | FPW.3-A02 | 양방향 추적성 점검 | R 요구 Owner · A 요구 Owner · C 아키텍트, 시험 조직 · I Safety Manager | WP-SAFETY-REQ | WP-TRACE-REPORT | `/trace/design` | FFG-LCY-004 |
 | FPW.3-A03 | 요구 검토 판정 등록 | R 품질 조직 · A 요구 Owner · C Safety Manager · I Feature Owner | WP-SAFETY-REQ, WP-TRACE-REPORT | WP-REQ-REVIEW | `judgeGate`, `/features/:id/:ver` | FFG-LCY-001 |
-| FPW.3-A04 | G3 판정·Feature 정의 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager, Feature Owner · I 아키텍트, 기준정보 담당, 시험 조직 | WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION, WP-REF-LINK | WP-G3-DECISION | `transition`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002 |
+| FPW.3-A05 | 구현 연결 입력 | R 통합 조직, Feature Owner · A 통합 조직 · C 아키텍트, 기준정보 담당 · I 요구 Owner, 시험 조직 | WP-SAFETY-REQ | WP-IMPL-LINK | `updateDraft`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | – |
+| FPW.3-A04 | G3 판정·Feature 정의 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager, Feature Owner · I 아키텍트, 기준정보 담당, 시험 조직 | WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION, WP-REF-LINK, WP-IMPL-LINK | WP-G3-DECISION | `transition`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002 |
 
 ### 수행 절차와 완료 기준
 
@@ -73,11 +79,21 @@ flowchart LR
 완료 기준:
 - [ ] 검토자가 요구 작성자와 다른 조직이다
 
+#### FPW.3-A05 구현 연결 입력
+1. 정의 승인 전에 Feature 설계 담당 또는 SW 통합 담당이 PROPOSED 초안에서 Function → SW·Version → 제어기 P/N을 SW·ECU 기준정보에서 골라 연결한다
+2. Feature 상세 → 초안 수정 → 구현 연결에서 입력한다. 서버는 기준정보에 없는 짝을 거부한다
+3. 승인된 Version에 구현 연결이 빠져 있으면 새 Version에서 넣고 정의 승인을 다시 받는다
+4. 외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다
+
+완료 기준:
+- [ ] VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다
+
 #### FPW.3-A04 G3 판정·Feature 정의 승인
 1. G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다
 2. 판정 근거를 정리해 G3 판정을 남긴다
 3. Lifecycle을 PROPOSED에서 APPROVED로 전이한다. 작성자는 이 전이를 할 수 없다
-4. 아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다
+4. 승인 서랍이 구현 연결 미입력을 경고한다(막지는 않는다) — 빠졌으면 승인 대신 보완을 요청할 수 있다
+5. 아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다
 
 완료 기준:
 - [ ] Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다
@@ -91,6 +107,7 @@ flowchart LR
 | WP-TRACE-REPORT | 추적성 점검 결과 | 산출 | 요구↔설계↔시험↔Baseline 양방향 연결 현황; 끊긴 연결과 조치 담당 |
 | WP-REQ-REVIEW | 요구 검토 판정 기록 | 산출 | 요구 특성(검증 가능성·일관성·완전성) 검토 결과; Requirement Gate 판정과 판정자 서명 |
 | WP-G3-DECISION | G3 Decision Record·정의 승인 | 산출 | G3 판정과 근거 Evidence ID; PROPOSED→APPROVED 전이 기록과 승인자(작성자와 다른 사람) |
+| WP-IMPL-LINK | 구현 연결(Function·SW·제어기) | 산출 | Function → SW ID·Version → 제어기(ECU) P/N 짝 — SW·ECU 기준정보에서 고른 값; VERIFIED 전이의 필수 입력(functions·swIds·swVersions·ecuPnos) |
 
 ## 4. 진입·완료 기준
 

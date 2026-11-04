@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { COMPONENTS, DOMAINS, INTERFACES } from './components.manifest';
 import { routeUrl, SNAPSHOT_NAME_MAX, snapshotFile } from './routes';
 
-describe('42 컴포넌트 manifest (PPT v0.50)', () => {
-  it('정확히 42개이고 ID·이름이 중복되지 않는다', () => {
-    expect(COMPONENTS).toHaveLength(42);
-    expect(new Set(COMPONENTS.map((c) => c.id)).size).toBe(42);
-    expect(new Set(COMPONENTS.map((c) => c.ko)).size).toBe(42);
+describe('컴포넌트 manifest (PPT v0.50 42개 + D07-01 SW 개발비 산정)', () => {
+  it('정확히 43개(PPT 42 + D07-01)이고 ID·이름이 중복되지 않는다', () => {
+    expect(COMPONENTS).toHaveLength(43);
+    expect(COMPONENTS.filter((c) => c.domain !== 'D07')).toHaveLength(42);
+    expect(new Set(COMPONENTS.map((c) => c.id)).size).toBe(43);
+    expect(new Set(COMPONENTS.map((c) => c.ko)).size).toBe(43);
   });
 
   it('도메인별 개수가 Module View와 일치한다 (10·3·4·6·7·12)', () => {

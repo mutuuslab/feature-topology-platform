@@ -9,6 +9,7 @@ import { STATIC_MODE } from '../../../api/client';
 import { fieldErrors } from '../../../api/field-errors';
 import { useApi, useApiMutation } from '../../../api/hooks';
 import { propose as P } from '../../../copy/propose';
+import { planning as W } from '../../../copy/planning';
 import { Button, ErrorNote, Field, PageHeader, Panel, useUnsavedGuard, whyDisabled } from '../../../design';
 import { usePermission } from '../../shared';
 import { RefPicker, refWarning } from './RefPicker';
@@ -134,8 +135,9 @@ export default function ProposeScreen() {
         },
         onSuccess: (r) => {
           // 서버 안내(요청 중·검토 필요·폐기 예정 행 연결 등)가 있으면 이 화면에서 먼저 보여 준다
+          // 상세에서 '등록했습니다 — 다음 할 일'(정의 승인 필수 칸·구현 연결·G1~G3)을 보인다(P1-7)
           if (r.warnings?.length) setDone(r);
-          else nav(`/features/${r.featureId}/${r.version}`);
+          else nav(`/features/${r.featureId}/${r.version}`, { state: { registered: true } });
         },
       },
     );
@@ -187,7 +189,7 @@ export default function ProposeScreen() {
           <section aria-labelledby="propose-warnings-h" data-testid="propose-warnings">
             <h3 id="propose-warnings-h">{P.warningsTitle}</h3>
             <RefWarningItems warnings={done.warnings ?? []} />
-            <Button variant="primary" onClick={() => nav(`/features/${done.featureId}/${done.version}`)}>
+            <Button variant="primary" onClick={() => nav(`/features/${done.featureId}/${done.version}`, { state: { registered: true } })}>
               {P.openDetail}
             </Button>
           </section>
@@ -196,6 +198,7 @@ export default function ProposeScreen() {
         ) : (
           <>
             {/* 2단계 칸 묶음 — 미리 채운 칸은 처음 열 때 잠깐 강조한다(data-prefilled, 움직임 줄이기면 강조 없이) */}
+            <p className="ds-field__hint" style={{ margin: 0 }}>{W.required.legend}</p>
             <div className="ds-split ds-prefill" data-prefilled={base?.refId}>
               <div className="ds-stack">
                 <Field label={P.name} error={fe.name} hint={mark('name')}>
@@ -204,7 +207,10 @@ export default function ProposeScreen() {
                 <Field label={P.description} error={fe.description} hint={mark('description')}>
                   <textarea className="ds-input" name="description" value={f.description} onChange={set('description')} rows={4} />
                 </Field>
-                {text('requirementIds', P.requirements)}
+                {/* 정의 승인 필수(PROPOSED → APPROVED 필수 입력) — 등록은 되지만 비어 있으면 승인이 막힌다(P1-7) */}
+                <Field label={<>{P.requirements} <span className="ds-tag" data-required-for="approval">{W.required.tag}</span></>} error={fe.requirementIds} hint={W.required.reqHint}>
+                  <input className="ds-input ds-input--mono" name="requirementIds" value={f.requirementIds} onChange={set('requirementIds')} />
+                </Field>
                 {text('tags', P.tags, mark('tags'), false)}
                 <section aria-labelledby="propose-regs-h" data-testid="ref-regulations">
                   <h3 id="propose-regs-h">{P.refRegulations}</h3>

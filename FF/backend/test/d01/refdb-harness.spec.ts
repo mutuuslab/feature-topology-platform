@@ -71,9 +71,9 @@ describe('Feature DB 하네스 정합', () => {
   afterAll(() => app?.close());
 
   describe('(a) 경로 ↔ 처리기', () => {
-    it('Feature DB 경로는 16개 — 모두 D01-01 컴포넌트', () => {
+    it('Feature DB 경로는 18개 — 모두 D01-01 컴포넌트(발행 미리 보기·변경 요청 감사 이력 W5)', () => {
       expect(REFDB_ROUTES.map((r) => r.name).sort()).toEqual(
-        ['createRefChange', 'decideRefChange', 'exportRefdb', 'listRefChanges', 'listRefs', 'publishRefRelease', 'recordSourceReview', 'refChangeDetail', 'refDetail', 'refQuality', 'refReleases', 'refSources', 'refSubfunctions', 'refTaxonomy', 'requestRefAdd', 'reviewRefChange'].sort(),
+        ['createRefChange', 'decideRefChange', 'exportRefdb', 'listRefChanges', 'listRefs', 'publishRefRelease', 'recordSourceReview', 'refChangeDetail', 'refDetail', 'refQuality', 'refReleases', 'refSources', 'refSubfunctions', 'refTaxonomy', 'requestRefAdd', 'reviewRefChange', 'refReleasePreview', 'refChangeAudit'].sort(),
       );
       for (const r of REFDB_ROUTES) expect(r.component, r.name).toBe('D01-01');
     });

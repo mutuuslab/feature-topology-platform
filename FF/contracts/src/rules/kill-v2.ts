@@ -96,11 +96,18 @@ export interface ApprovalPlan {
   count: 2;
   /** F2 이상 안전·보안 사유의 비활성화·복원 — FSM(Safety Manager) 필수 */
   fsm: boolean;
+  /**
+   * 반드시 채울 승인 역할 — 없으면 fsm에서 정한다(fsm이면 FSM).
+   * 결정(2026-11-04 사용자, FPW.8-A05 R=기능안전·차량사이버보안): F2 이상 안전·보안 차단은 FSM + CSM. 복원은 직전 차단을 승인하지 않은 FSM + 다른 1인
+   */
+  required?: readonly ApproverRole[];
 }
-export const approvalPlan = (fClass: FClass, request: KillRequestType, reason: ReasonCategory): ApprovalPlan => ({
-  count: 2,
-  fsm: ['F2', 'F3', 'F4'].includes(fClass) && (request === 'deactivate' || request === 'restore') && (reason === 'SAFETY' || reason === 'SECURITY'),
-});
+export const approvalPlan = (fClass: FClass, request: KillRequestType, reason: ReasonCategory): ApprovalPlan => {
+  const fsm = ['F2', 'F3', 'F4'].includes(fClass) && (request === 'deactivate' || request === 'restore') && (reason === 'SAFETY' || reason === 'SECURITY');
+  return { count: 2, fsm, required: !fsm ? [] : request === 'deactivate' ? ['FSM', 'CSM'] : ['FSM'] };
+};
+/** 이 계획이 반드시 채울 역할 */
+export const requiredRoles = (plan: ApprovalPlan): readonly ApproverRole[] => plan.required ?? (plan.fsm ? ['FSM'] : []);
 
 export interface ApprovalSoFar {
   requestedBy: string;
@@ -109,28 +116,68 @@ export interface ApprovalSoFar {
   /** 복원 — 직전 Kill 승인자(원장)와 겹치면 안 된다 */
   excluded?: readonly string[];
 }
-export type ApprovalProblemCode = 'SELF_APPROVAL' | 'DUPLICATE' | 'NO_APPROVER_ROLE' | 'FSM_REQUIRED' | 'KILL_APPROVER' | 'COMPLETE';
+export type ApprovalProblemCode = 'SELF_APPROVAL' | 'DUPLICATE' | 'NO_APPROVER_ROLE' | 'FSM_REQUIRED' | 'CSM_REQUIRED' | 'KILL_APPROVER' | 'COMPLETE';
 
 /**
  * 이 사람이 지금 승인할 수 있는가, 할 수 있으면 어느 보고서 역할로 서명하는가.
+ * preferred — 승인 창에서 고른 서명 역할(부서 맥락). 남은 칸을 막지 않으면 그 역할로 서명한다(같은 사람이 FSM·CSM을 함께 가질 때 FSM+FSM 기록 방지).
  * @rule FFG-PLT-005, FFG-DEAC-008, FFG-SEC-008 — 승인 시점 차단(게이트가 같은 조건을 다시 판정)
  */
 export function approvalCheck(
   s: ApprovalSoFar,
   approver: { id: string; roles: readonly ApproverRole[] },
+  preferred?: ApproverRole,
 ): { ok: true; role: ApproverRole } | { ok: false; code: ApprovalProblemCode; message: string } {
   if (s.approvals.length >= s.plan.count) return { ok: false, code: 'COMPLETE', message: '승인이 이미 끝났습니다' };
   if (approver.id === s.requestedBy) return { ok: false, code: 'SELF_APPROVAL', message: '요청자는 같은 명령을 승인할 수 없습니다(직무 분리)' };
   if (s.approvals.some((a) => a.approverId === approver.id)) return { ok: false, code: 'DUPLICATE', message: '같은 사람이 두 번 승인할 수 없습니다(서로 다른 2인)' };
   if (s.excluded?.includes(approver.id)) return { ok: false, code: 'KILL_APPROVER', message: '직전 차단을 승인한 사람은 복원을 승인할 수 없습니다' };
-  if (!approver.roles.length) return { ok: false, code: 'NO_APPROVER_ROLE', message: '승인 역할(FSM·CSM·OPS_LEAD·PRODUCT_OWNER·QA·REGULATORY)이 없습니다' };
-  const hasFsm = s.approvals.some((a) => a.role === 'FSM');
-  const last = s.approvals.length === s.plan.count - 1;
-  if (s.plan.fsm && !hasFsm) {
-    if (approver.roles.includes('FSM')) return { ok: true, role: 'FSM' };
-    if (last) return { ok: false, code: 'FSM_REQUIRED', message: 'F2 이상 안전·보안 조치는 Safety Manager(FSM) 승인이 필요합니다 — 남은 한 칸은 FSM만' };
-  }
-  return { ok: true, role: approver.roles.find((r) => r !== 'FSM') ?? approver.roles[0] };
+  if (!approver.roles.length) return { ok: false, code: 'NO_APPROVER_ROLE', message: '승인 역할(기능안전·사이버보안·운영 리더·상품 Owner·품질·법규)이 없습니다' };
+  const need = requiredRoles(s.plan);
+  const missing = need.filter((r) => !s.approvals.some((a) => a.role === r));
+  const left = s.plan.count - s.approvals.length;
+  const problem = (r: ApproverRole) =>
+    r === 'FSM'
+      ? ({ ok: false, code: 'FSM_REQUIRED', message: 'F2 이상 안전·보안 조치는 Safety Manager(FSM) 승인이 필요합니다 — 남은 한 칸은 FSM만' } as const)
+      : ({ ok: false, code: 'CSM_REQUIRED', message: 'F2 이상 안전·보안 차단은 기능안전(FSM)과 사이버보안(CSM)이 함께 승인합니다 — 남은 한 칸은 CSM만' } as const);
+  // 남은 칸보다 빠진 필수 역할이 많으면(앞 칸을 다른 역할이 채움) 끝낼 수 없다
+  if (missing.length > left) return problem(missing.find((r) => !approver.roles.includes(r)) ?? missing[0]);
+  // 고른 역할 — 빠진 필수 역할이거나, 고르고도 남은 칸으로 필수 역할을 채울 수 있을 때
+  if (preferred && approver.roles.includes(preferred) && (missing.includes(preferred) || missing.length < left)) return { ok: true, role: preferred };
+  const fill = missing.filter((r) => approver.roles.includes(r));
+  if (fill.length) return { ok: true, role: fill[0] };
+  if (missing.length >= left) return problem(missing[0]);
+  return { ok: true, role: approver.roles.find((r) => !need.includes(r)) ?? approver.roles[0] };
+}
+
+/** 승인 후보 계정 — 보고서 승인 역할로 바꾼 계정 목록 */
+export interface ApproverAccount {
+  id: string;
+  roles: readonly ApproverRole[];
+}
+
+/** 지금 다음 칸을 채울 수 있는 계정과 그가 맡을 수 있는 역할(서버와 같은 approvalCheck) */
+export function nextApprovers(accounts: readonly ApproverAccount[], s: ApprovalSoFar): { id: string; roles: ApproverRole[] }[] {
+  return accounts.map((a) => ({ id: a.id, roles: a.roles.filter((r) => approvalCheck(s, { id: a.id, roles: [r] }).ok) })).filter((a) => a.roles.length > 0);
+}
+
+/**
+ * 복원 전망 — 직전 차단 승인자(excluded)를 빼고 복원 2인 승인을 끝낼 수 있는가(P4-1 영구 막힘 방지).
+ * 차단 두 번째 승인 전에 "이 승인 뒤 복원할 FSM이 남는가"를, 복원 칸에서는 승인할 수 있는 사람을 보인다.
+ */
+export function restoreOutlook(accounts: readonly ApproverAccount[], plan: ApprovalPlan, excluded: readonly string[], approvals: ApprovalSoFar['approvals'] = [], requestedBy = '') {
+  const s: ApprovalSoFar = { requestedBy, approvals, plan, excluded };
+  const candidates = nextApprovers(accounts, s);
+  const need = requiredRoles(plan).filter((r) => !approvals.some((a) => a.role === r));
+  // 남은 칸을 모두 채울 수 있는 조합이 있는가(첫 후보마다 그 뒤 칸 후보를 본다)
+  const completes = (st: ApprovalSoFar): boolean =>
+    st.approvals.length >= plan.count || nextApprovers(accounts, st).some((a) => a.roles.some((role) => completes({ ...st, approvals: [...st.approvals, { approverId: a.id, role }] })));
+  return {
+    candidates,
+    byRole: need.map((role) => ({ role, ids: candidates.filter((a) => a.roles.includes(role)).map((a) => a.id) })),
+    missing: need.filter((role) => !candidates.some((a) => a.roles.includes(role))),
+    complete: completes(s),
+  };
 }
 
 /**

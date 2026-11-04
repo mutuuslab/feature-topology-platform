@@ -20,7 +20,29 @@ export interface TransitionRule {
 }
 
 const PROPOSAL_INPUTS: (keyof FeatureVersionRow)[] = ['name', 'description', 'requirementIds', 'country', 'vehicleModel', 'trim', 'version', 'ownerId', 'asil'];
-const IMPL_INPUTS: (keyof FeatureVersionRow)[] = ['functions', 'swIds', 'swVersions', 'ecuPnos'];
+/** 구현 연결(Function → SW·Version → 제어기 P/N) — 검증 완료(VERIFIED) 필수. 정의 승인 뒤에는 그 Version을 고칠 수 없어 새 Version으로만 넣는다 */
+export const IMPL_INPUTS: (keyof FeatureVersionRow)[] = ['functions', 'swIds', 'swVersions', 'ecuPnos'];
+
+/** 필수 입력 칸의 화면 이름 — 막힌 사유에 영문 필드 키를 쓰지 않는다 */
+export const INPUT_LABEL: Partial<Record<keyof FeatureVersionRow, string>> = {
+  name: '이름',
+  description: '설명',
+  requirementIds: '요구사항 ID',
+  country: '국가',
+  vehicleModel: '차종',
+  trim: '트림',
+  version: 'Version',
+  ownerId: '담당',
+  asil: 'ASIL',
+  controlPoints: 'Control Point',
+  functions: '기능(Function)',
+  swIds: 'SW ID',
+  swVersions: 'SW Version',
+  ecuPnos: '제어기 P/N',
+};
+
+/** 이 Version에 비어 있는 구현 연결 칸 */
+export const missingImplInputs = (f: Pick<FeatureVersionRow, 'functions' | 'swIds' | 'swVersions' | 'ecuPnos'>) => IMPL_INPUTS.filter((k) => !((f as any)[k]?.length));
 
 export const FEATURE_TRANSITIONS: TransitionRule[] = [
   { from: 'PROPOSED', to: 'APPROVED', gates: ['G1', 'G2', 'G3'], inputs: PROPOSAL_INPUTS, roles: ['FEATURE_APPROVER'], auto: false, reasonRequired: true, ko: '정의 승인' },
@@ -104,7 +126,7 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
     else if (s !== 'PASS') blockers.push({ code: 'GATE_NOT_PASSED', message: `${g} ${GATE_META[g].name} ${s}`, ref: g });
     else if (ctx.unsignedGates?.[g]) blockers.push({ code: 'GATE_UNSIGNED', message: `${g} ${GATE_META[g].name} — ${ctx.unsignedGates[g]}`, ref: g });
   }
-  for (const k of rule.inputs) if (isEmpty(f[k])) blockers.push({ code: 'INPUT_MISSING', message: `필수 입력 누락: ${String(k)}`, ref: String(k) });
+  for (const k of rule.inputs) if (isEmpty(f[k])) blockers.push({ code: 'INPUT_MISSING', message: `필수 입력 누락: ${INPUT_LABEL[k] ?? String(k)}`, ref: String(k) });
 
   if (rule.to === 'APPROVED')
     for (const d of ctx.dependencies)

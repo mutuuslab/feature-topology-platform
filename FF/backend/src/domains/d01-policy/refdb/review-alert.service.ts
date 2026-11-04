@@ -67,8 +67,11 @@ export class RefdbReviewAlertService implements OnModuleInit, OnApplicationShutd
     return this.events.list({ type: REFDB_REVIEW_DUE_EVENT, aggregate: sourceId, limit: 1000 }).some((e) => (e.payload as { nextReviewAt?: string })?.nextReviewAt === nextReviewAt);
   }
 
-  /** 정기 점검 기록 — 고른 출처의 확인일(비우면 오늘)·다음 점검일을 바꾸고 출처마다 감사를 남긴다 */
-  record(actor: Actor, body: RecordSourceReviewBody): { items: RefSource[] } {
+  /**
+   * 정기 점검 기록 — 고른 출처의 확인일(비우면 오늘)·다음 점검일·결과(변경 없음·개정 있음)를 바꾸고 출처마다 감사를 남긴다.
+   * 개정 있음이면 그 출처를 쓰는 기준 행(폐기·요청 중 제외)을 affected로 돌려준다 — 화면이 '영향 행 변경 요청 만들기'로 잇는다(P5-5).
+   */
+  record(actor: Actor, body: RecordSourceReviewBody): { items: RefSource[]; affected: { sourceId: string; refIds: string[] }[] } {
     const today = this.clock.iso().slice(0, 10);
     const checkedAt = body.checkedAt ?? today;
     if (checkedAt > today) throw new DomainError('VALIDATION', `확인일(${checkedAt})은 오늘(${today}) 뒤일 수 없습니다.`, { field: 'checkedAt' });
@@ -76,16 +79,19 @@ export class RefdbReviewAlertService implements OnModuleInit, OnApplicationShutd
     const byId = new Map(this.repo.sources().map((s) => [s.sourceId, s]));
     const unknown = body.sourceIds.filter((id) => !byId.has(id));
     if (unknown.length) throw new DomainError('NOT_FOUND', `출처 ${unknown.join(', ')}이(가) Feature DB 출처 표에 없습니다.`, { sourceIds: unknown });
+    const result = body.result ?? 'NO_CHANGE';
+    const refs = result === 'REVISED' ? this.repo.listRefs().filter((r) => r.status !== 'RETIRED' && r.status !== 'PENDING') : [];
     return this.db.tx(() => {
       const items = body.sourceIds.map((id) => {
         const before = byId.get(id)!;
-        const next: RefSource = { ...before, checkedAt, nextReviewAt: body.nextReviewAt };
+        const next: RefSource = { ...before, checkedAt, nextReviewAt: body.nextReviewAt, lastResult: result };
         this.repo.updateSource(next);
-        this.audit.record(actor, 'REFDB_SOURCE_REVIEW', id, { before: { checkedAt: before.checkedAt, nextReviewAt: before.nextReviewAt }, after: { checkedAt, nextReviewAt: body.nextReviewAt }, reason: body.note, componentId: COMPONENT });
-        this.events.publish('refdb.source.reviewed', id, { sourceId: id, checkedAt, nextReviewAt: body.nextReviewAt, by: actor.id }, { componentId: COMPONENT, correlationId: actor.correlationId });
+        this.audit.record(actor, 'REFDB_SOURCE_REVIEW', id, { before: { checkedAt: before.checkedAt, nextReviewAt: before.nextReviewAt }, after: { checkedAt, nextReviewAt: body.nextReviewAt, result }, reason: body.note, componentId: COMPONENT });
+        this.events.publish('refdb.source.reviewed', id, { sourceId: id, checkedAt, nextReviewAt: body.nextReviewAt, result, by: actor.id }, { componentId: COMPONENT, correlationId: actor.correlationId });
         return next;
       });
-      return { items };
+      const affected = body.sourceIds.map((id) => ({ sourceId: id, refIds: refs.filter((r) => r.sourceIds.includes(id)).map((r) => r.refId) }));
+      return { items, affected };
     });
   }
 

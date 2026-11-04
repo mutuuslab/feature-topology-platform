@@ -2,6 +2,7 @@
 // 테스트마다 자기 Feature를 새로 만들어 병렬 실행에서도 서로 간섭하지 않는다.
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { apiRefs, REF } from './refdb';
+import { recordAnalysisApi, signG7Api } from './analysis';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -29,8 +30,10 @@ async function developingFeature(request: APIRequestContext) {
   expect(p.status(), await p.text()).toBe(200);
   // 안전 분류 확정(Safety Manager) 없이는 G2 이후 PASS가 막힌다 — FFG-CLS-001
   await post(`${base}/safety/confirm`, ['usr-safety', 'SAFETY_OFFICER'], { reason: 'HARA 검토 완료' });
+  await recordAnalysisApi(request, f.featureId, '0.1.0'); // G2 PASS 근거 — HARA·TARA(P3-3)
   for (const g of ['G1', 'G2', 'G3']) await post(`${base}/gates`, judge, { gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` });
   await post(`${base}/transitions`, ['usr-approver', 'FEATURE_APPROVER'], { to: 'APPROVED', reason: '승인' }, 200);
+  await signG7Api(request, f.featureId, '0.1.0'); // G7 — SM·CSM 두 사람 서명(P3-3)
   for (const g of ['G4', 'G5', 'G6', 'G7']) await post(`${base}/gates`, judge, { gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` });
   return f.featureId as string;
 }

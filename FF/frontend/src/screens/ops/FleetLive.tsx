@@ -5,10 +5,11 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { control as CT } from '../../copy/control';
 import { pickDefault } from '../../data/first-run';
 import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, PageHeader, Panel, Select, SummaryLine, VerdictBadge } from '../../design';
 import { when } from '../shared';
-import { Progress, type Delivery } from './shared';
+import { Progress, waitedMinutes, type Delivery } from './shared';
 import { VehicleRequestPanel } from './VehicleRequests';
 import { SupportPanel } from '../admin/Access';
 
@@ -111,7 +112,7 @@ export function FleetLive() {
                       </td>
                     ))}
                     <td className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
-                      {Object.entries(r.featureState).map(([fid, st]) => `${fid} ${st}`).join(' · ') || '—'}
+                      {Object.entries(r.featureState).map(([fid, st]) => `${fid} ${st}`).join(' · ') || (r.last ? '—' : CT.vehicle.noState)}
                     </td>
                   </tr>
                 ))}
@@ -135,7 +136,7 @@ export function FleetLive() {
             ]}
           />
         </Panel>
-        <div style={{ display: 'grid', gap: 'var(--sp-3)', alignContent: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-3)', alignContent: 'start' }}>
           <Panel title={F.gleo} id="gleo" actions={gleo.data && <VerdictBadge value={gleo.data.mode !== 'ws' ? '미판정' : gleo.data.connected ? 'PASS' : 'FAIL'} />}>
             {gleo.data && (
               <KeyValue
@@ -171,8 +172,12 @@ export function VehicleRuntimeScreen() {
   const vin = param ?? fallback?.vin ?? (vehicles.isError ? 'ego-01' : '');
   const none = !param && fallback === null;
   const q = useApi<RuntimeView>('vehicleRuntime', { params: { vin } }, { enabled: !!vin });
-  usePlatformEvents(STREAM, ['vehicleRuntime', 'vehicleStatusView']);
+  // 이 차량에 보냈는데 회신이 없는 게시본 — 가장 오래 기다린 시간(P4-3, '같습니다'라고 단정하지 않는다)
+  const pubs = useApi<{ items: (Delivery & { createdAt: string; payload: { targets: string[] } })[] }>('publications');
+  usePlatformEvents(STREAM, ['vehicleRuntime', 'vehicleStatusView', 'publications']);
   const d = q.data;
+  const pending = (pubs.data?.items ?? []).filter((p) => p.payload.targets.includes(vin) && p.nodes.find((n) => n.nodeId === vin)?.reason === 'NO_REPORT');
+  const missedMin = pending.length ? Math.max(...pending.map((p) => waitedMinutes(p.createdAt))) : null;
   return (
     <div className="ds-screen">
       <PageHeader
@@ -182,7 +187,12 @@ export function VehicleRuntimeScreen() {
         message={(() => {
           const n = d?.evaluations.filter((e) => e.drift).length ?? 0;
           if (none) return { tone: 'neutral', text: ko.state.noVehicleTitle };
-          return !d ? { tone: 'neutral', value: '—', text: V.key.clean(vin) } : n ? { tone: 'warn', value: n, text: V.key.drift(vin) } : { tone: 'ok', text: V.key.clean(vin) };
+          if (!d) return { tone: 'neutral', value: '—', text: V.key.clean(vin) };
+          if (n) return { tone: 'warn', value: n, text: V.key.drift(vin) };
+          // 회신이 하나도 없거나 보낸 게시본의 회신을 못 받았으면 같다고 말할 수 없다 — 판단 불가
+          if (missedMin !== null) return { tone: 'warn', text: CT.vehicle.unknownFor(vin, missedMin) };
+          if (!d.runtime.log.length) return { tone: 'warn', text: CT.vehicle.unknown(vin) };
+          return { tone: 'ok', text: V.key.clean(vin) };
         })()}
         actions={
           <Select label={V.pick} value={vin} onChange={(e) => nav(`/fleet/vehicles/${encodeURIComponent(e.target.value)}`)}>
@@ -205,7 +215,7 @@ export function VehicleRuntimeScreen() {
                     { k: 'SW', v: <span className="ds-mono">{d.vehicle.swVersion}</span> },
                     { k: 'Context', v: <span className="ds-mono">{`${F.link[d.vehicle.link as 'ONLINE']} · ${d.vehicle.quality}${d.vehicle.gleo ? ' · GLEO' : ''}`}</span> },
                     { k: V.boot, v: <span className="ds-mono">{d.runtime.bootId}</span> },
-                    { k: V.kills, v: <span className="ds-mono">{Object.entries(d.runtime.featureState).map(([f, s]) => `${f} ${s}`).join(' · ') || '—'}</span> },
+                    { k: V.kills, v: <span className="ds-mono">{Object.entries(d.runtime.featureState).map(([f, s]) => `${f} ${s}`).join(' · ') || (d.runtime.log.length ? '—' : CT.vehicle.noState)}</span>, note: missedMin !== null ? CT.pub.waitingShort(missedMin) : undefined },
                   ]}
                 />
               </Panel>

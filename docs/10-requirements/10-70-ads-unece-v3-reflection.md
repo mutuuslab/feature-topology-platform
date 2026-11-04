@@ -170,7 +170,7 @@ last_updated: 2026-10-18
 | 세션 | 겹침 | 통합 방법 |
 |---|---|---|
 | 전체 화면 3초 테스트 | 새 화면 6개, Kill·배포·Fleet 개편. 보류 항목 'Kill 차단 없으면 폼 접기·사전점검 불일치'가 ADS-UI02와 같은 화면 | 새 화면은 핵심 메시지 1·설명 70자·머리표 0 규칙. 문구는 그 세션 소유 ko.ts·master.ts가 아닌 새 copy/ads.ts. three-second.spec 대상에 추가 |
-| 담당자 업무 절차(RACI) | FPW.8(긴급 차단·복원)·FPW.13(규정) 변경. 사건별 차단·선택 해제·복원 뒤 재판정·사건 보고·ODD·형상·Safety Case 승인이 새 활동 | 항목마다 절차 모델 갱신을 완료 기준으로 둔다. 모델 수정 주체는 결정 D-ADS-4. 9계정 겸직 0 유지 |
+| 담당자 업무 절차(RACI) | FPW.8(긴급 차단·복원)·FPW.13(규정) 변경. 사건별 차단·선택 해제·복원 뒤 재판정·사건 보고·ODD·형상·Safety Case 승인이 새 활동 | 항목마다 절차 모델 갱신을 완료 기준으로 둔다. 모델 수정 주체는 결정 D-ADS-4. 데모 계정 겸직 0 유지(9계정 → 2026-11-05 12계정) |
 | FF_IMP(GLEO v2·Safety Guard) | status_report·kill_command 와이어 정본이 FF_IMP gleo/. siblings가 커밋을 고정 | FF는 2.0·2.1 동시 수락을 먼저 만든다. FF_IMP 변경은 승인 후(D-ADS-1). 영상 폴더는 손대지 않음 |
 | 텔레메트리·Closed loop(TL-*) | GTR §5.1.8.4 운행 차량 감시 = Closed loop. 확대 판정·신선도 HOLD·사건 집계가 겹침 | TL-UI02와 ADS-UI11은 한 패널, TL-B01·B02와 ADS-BE12는 한 엔진. 사건 보고 노출량은 Lake Gold(IF-15) |
 | GitLab·JIRA·codeBeamer 연계 | 보고서 API `POST /change-requests`는 JIRA CR + 정책 승인과 같다. FFP 요구는 사양이므로 codeBeamer 원장 대상. 이 작업으로 verify:full 일부 실패 | 변경 종류를 JIRA CR 필드에 매핑. FFP 요구의 codeBeamer 등록은 D-ADS-6. verify:full은 ADS-FIX01로 먼저 복구 |

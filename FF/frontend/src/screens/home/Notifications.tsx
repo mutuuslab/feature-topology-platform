@@ -9,6 +9,7 @@ import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, ErrorNote, PageHeader, Panel, Segmented, Select } from '../../design';
 import { NOTIFY_EVENTS, SeverityBadge, t16, type Inbox, type InboxItem } from '../../shell/NotificationBell';
+import { humanText } from '../../data/people';
 
 const N = ko.notify;
 
@@ -21,13 +22,13 @@ function Row({ n, onRead, busy }: { n: InboxItem; onRead: () => void; busy: bool
         <span className="ds-mono">{t16(n.createdAt)}</span>
         <span className="ntf-row__state">{n.readAt ? N.readAt(t16(n.readAt)) : N.unread}</span>
       </div>
-      <strong className="ntf-row__title">{n.title}</strong>
+      <strong className="ntf-row__title">{humanText(n.title)}</strong>
       {n.fields.length > 0 && (
         <dl className="ntf-row__fields">
           {n.fields.map((f) => (
             <div key={f.label}>
               <dt>{f.label}</dt>
-              <dd>{f.value}</dd>
+              <dd>{humanText(f.value)}</dd>
             </div>
           ))}
         </dl>

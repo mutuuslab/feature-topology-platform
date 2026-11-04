@@ -257,3 +257,80 @@ export const refChangeDetail = {
   },
   notFound: '변경 요청을 찾을 수 없습니다',
 };
+
+// ── 운영·감사 보강(W5, 담당자 개선 P5-3~P5-9·P5-11) ─────────────────────
+
+/** 품질 지표 한 줄 — Feature DB 목록 머리·콘솔 홈·기준 행 상세(P5-7·P5-8) */
+export const refQualityCopy = {
+  title: 'Feature DB 품질',
+  open: 'Feature DB 열기',
+  published: (n: number, pending: number) => (pending ? `발행본 ${n.toLocaleString('ko-KR')}행 (+요청 중 ${pending})` : `발행본 ${n.toLocaleString('ko-KR')}행`),
+  key: '발행본 기준 행',
+  keyPending: (n: number) => `발행본 기준 행 (+요청 중 ${n})`,
+  attrMissing: '속성 미입력',
+  row: {
+    title: '이 행의 품질',
+    sources: (n: number) => (n ? `출처 ${n}개` : '출처 없음'),
+    checked: (d: string | null, stale: boolean) => (d ? `근거 확인 ${d}${stale ? ' (12개월 지남)' : ''}` : '근거 확인일 없음'),
+    attr: (missing: boolean) => (missing ? '분류 속성 미입력 — SW 계층·수명주기·기술 영역' : '분류 속성 입력됨'),
+    grade: (g: string | null) => (g ? `규모 근거 ${g}` : '규모 근거 등급 없음'),
+  },
+};
+
+/** 승인됨 · 다음 발행 대기(P5-3) */
+export const refAwaiting = {
+  pill: '승인됨 · 다음 발행 대기',
+  change: (id: string) => `추가 요청 ${id}`,
+};
+
+/** 벤치마크 패널 — 값이 없을 때 이유(P5-9) */
+export const refBenchmark = {
+  none: '이 행에는 공개 벤치마크(Kearney 평균 업체 개발비)가 없습니다 — 공개 자료가 있는 행은 일부뿐입니다. 산정은 T-shirt 등급 포인트로 합니다.',
+};
+
+/** 발행 미리 보기(P5-4) */
+export const refPublish = {
+  title: '버전 발행',
+  next: (v: string) => `다음 버전 ${v}`,
+  approved: '반영할 승인 요청',
+  retiring: '반려로 폐기되는 요청 중 행',
+  notify: '알림 받을 Feature 담당',
+  notifyNone: '폐기 행을 연결한 Feature가 없습니다',
+  quality: '품질 지표 변화',
+  qk: { published: '발행본', pending: '요청 중', attrMissing: '속성 미입력', noSource: '출처 없음', awaitingPublish: '발행 대기' },
+  arrow: (a: number, b: number) => (a === b ? String(a) : `${a} → ${b}`),
+  becomes: (status: string) => `→ ${status}`,
+  memo: '발행 메모',
+  memoHint: '미리 채운 문장을 고쳐 써도 됩니다',
+  memoWhy: '발행 메모를 2자 이상 입력하세요',
+  button: (v: string, n: number) => `${v} 발행 (${n}건)`,
+  none: '발행할 승인된 변경 요청이 없습니다',
+};
+
+/** 발행 버전 표 열(P5-4 — 1366에서도 발행자·메모가 보인다) */
+export const refReleaseCols = { note: '메모' };
+
+/** 변경 요청 상세 감사 이력(P5-6) */
+export const refChangeAudit = {
+  title: '감사 이력',
+  none: '이 요청의 감사 기록이 없습니다',
+  stage: { REQUEST: '요청', REVIEW: '검토', DECIDE: '결정', PUBLISH: '발행' } as Record<string, string>,
+  decidedAt: '결정 시각',
+  publisher: '발행자',
+  publishedAt: '발행 시각',
+  releaseNote: '발행 메모',
+  toAudit: '감사 화면에서 보기',
+};
+
+/** 출처 점검 보강(P5-5) */
+export const refSourceReview = {
+  noNext: (n: number) => `다음 점검일이 없는 출처 ${n}개 — 기한 알림이 걸리지 않습니다. 점검을 기록해 다음 점검일을 정하세요`,
+  noNextTag: '점검일 없음',
+  result: '점검 결과',
+  results: { NO_CHANGE: '변경 없음', REVISED: '개정 있음' } as Record<'NO_CHANGE' | 'REVISED', string>,
+  used: (n: number) => `사용 행 ${n}`,
+  affected: (id: string, n: number) => `${id} 개정 — 이 출처를 쓰는 기준 행 ${n}개`,
+  makeChange: '영향 행 변경 요청 만들기',
+  sourceFilter: (id: string) => `출처 ${id}를 쓰는 행 — 행을 열어 변경 요청을 만드세요`,
+  clearSource: '출처 조건 지우기',
+};

@@ -3,15 +3,17 @@
 // Feature DB를 맡는 부서(기준정보 승인·발행, 시스템엔지니어링 검토)는 변경 요청 대기열(검토 대기·발행 대기)을 함께 본다 —
 // 핵심 메시지는 확정 대기 하나 그대로, 대기열은 보조 패널(3초 ①).
 import { Link } from 'react-router-dom';
-import type { DepartmentSummary, RefChangeStatus } from '@ff/contracts';
+import { BaselineRequestStatus, type DepartmentSummary, type RefChangeStatus } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { departments as D } from '../../copy/departments';
 import { KIND_LABEL } from '../../copy/refdb';
 import { AsyncView, DataTable, IdChip, LifecycleBadge, PageHeader, Panel } from '../../design';
 import { ChangeStatusBadge, changePath, RefChip, type RefChangeView } from '../refdb/common';
-import { when } from '../shared';
+import { homeWork as HW } from '../../copy/inbox';
+import { localTime } from '../../data/people';
+import { PersonName } from '../home/Inbox';
 import type { BaselineRecord, FeatureList, FeatureSummary } from '../types';
-import { MyWork, useDeptDoc } from './common';
+import { MyWork, RoleQueues, useDeptDoc, useRoleWork } from './common';
 
 interface Req {
   requestId: string;
@@ -72,7 +74,9 @@ function FeatureDbQueue() {
 export default function ConsoleHome({ dept }: { dept: DepartmentSummary }) {
   const C = D.console;
   const K = C.col;
-  const reqs = useApi<{ items: Req[] }>('baselineRequests', { query: { status: 'REQUESTED' } });
+  // 대기 상태는 계약 값(PENDING) — 'REQUESTED'로 물어 확정 요청이 콘솔에 안 뜨던 결함(P2-1)
+  const reqs = useApi<{ items: Req[] }>('baselineRequests', { query: { status: BaselineRequestStatus.enum.PENDING } });
+  const work = useRoleWork();
   const bls = useApi<{ items: (BaselineRecord & { products: string[] })[] }>('baselines');
   const feats = useApi<FeatureList>('listFeatures', { query: { latestOnly: true } });
   const d = useDeptDoc(dept);
@@ -84,14 +88,23 @@ export default function ConsoleHome({ dept }: { dept: DepartmentSummary }) {
         codes={C.eyebrow}
         title={C.title(dept.name)}
         lead={C.lead}
-        // 확정 대기가 없으면 '0'보다 지금 확정된 Baseline 수가 쓸모 있다
-        message={reqs.isPending || bls.isPending ? { tone: 'neutral', value: '—', text: C.key(0).text } : n ? { tone: 'warn', ...C.key(n) } : { tone: 'neutral', ...C.keyNone(blCount) }}
+        // 역할별 — 내 차례 대기열(출시 가능·배포 대기·정의 승인…)이 있으면 그것, 확정 대기 요청, 없으면 지금 확정된 Baseline 수(P2-5)
+        message={
+          reqs.isPending || bls.isPending || work.loading
+            ? { tone: 'neutral', value: '—', text: C.key(0).text }
+            : work.total && !work.focus.includes('baseline')
+              ? { tone: 'warn', value: work.total, text: HW.key(work.labels) }
+              : n
+                ? { tone: 'warn', ...C.key(n) }
+                : { tone: 'neutral', ...C.keyNone(blCount) }
+        }
         actions={
           <Link className="ds-btn" to="/analysis/impact">
             {C.impact}
           </Link>
         }
       />
+      <RoleQueues work={work} />
       <div className="ws-console">
         <Panel title={C.requests} actions={<Link to="/baselines">{D.home.open} →</Link>}>
           <AsyncView state={asyncState(reqs, !n)} onRetry={() => reqs.refetch()} empty={{ title: C.noRequests }} rows={3}>
@@ -103,8 +116,8 @@ export default function ConsoleHome({ dept }: { dept: DepartmentSummary }) {
               columns={[
                 { key: 'id', header: K.id, cell: (r) => <span className="ds-mono">{r.requestId}</span>, sort: (r) => r.requestId },
                 { key: 'f', header: K.feature, cell: (r) => <IdChip id={r.featureId} version={r.version} to={`/baselines?request=${r.requestId}`} copy={false} /> },
-                { key: 'by', header: K.by, cell: (r) => r.requestedBy },
-                { key: 'at', header: K.requested, cell: (r) => <span className="ds-date">{when(r.requestedAt)}</span>, sort: (r) => r.requestedAt },
+                { key: 'by', header: K.by, cell: (r) => <PersonName id={r.requestedBy} /> },
+                { key: 'at', header: K.requested, cell: (r) => <span className="ds-date">{localTime(r.requestedAt)}</span>, sort: (r) => r.requestedAt },
               ]}
             />
           </AsyncView>

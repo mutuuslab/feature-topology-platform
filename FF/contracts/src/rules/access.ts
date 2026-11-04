@@ -46,6 +46,8 @@ export const SOD_RULES: { id: string; subject: string; rule: string; component: 
   { id: 'SOD-13', subject: 'Feature DB 변경 승인', rule: '기준 행 변경 요청자는 자기 요청을 승인·반려할 수 없다 (Feature DB 관리자 ≠ 요청자)', component: 'D01-01' },
   { id: 'SOD-14', subject: 'Feature DB 변경 검토', rule: '기준 행 변경 요청자는 그 요청의 도메인 검토자가 될 수 없다', component: 'D01-01' },
   { id: 'SOD-15', subject: 'Feature DB 검토·승인 분리', rule: '기준 행 변경 요청에 도메인 검토 의견을 낸 사람은 그 요청을 승인·반려할 수 없다 (도메인 검토자 ≠ Feature DB 관리자)', component: 'D01-01' },
+  // SW 개발비 산정(20-94 §4) — 산정 과제는 작성(COST_ESTIMATOR) → 제출 → 승인(COST_APPROVER)
+  { id: 'SOD-16', subject: 'SW 개발비 산정 승인', rule: '산정 과제 작성자는 자기 과제를 승인·반려할 수 없다', component: 'D07-01' },
 ];
 
 /** 보고서 v1.1 승인 역할(kill_command v2 approvals[].role) ↔ 플랫폼 역할 */

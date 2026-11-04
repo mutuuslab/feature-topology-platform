@@ -57,6 +57,9 @@ describe('Lifecycle 전이 표', () => {
   it('필수 입력이 비면 INPUT_MISSING (APPROVED→DEVELOPING은 Control Point 1개 이상)', () => {
     expect(codes(evaluateTransition(at('APPROVED', { controlPoints: [] }), 'DEVELOPING', ctx()))).toEqual(['INPUT_MISSING']);
     expect(codes(evaluateTransition(at('DEVELOPING', { swIds: [] }), 'VERIFIED', ctx({ latestGates: pass('G4', 'G5', 'G6', 'G7') })))).toEqual(['INPUT_MISSING']);
+    // 막힌 사유는 영문 필드 키가 아니라 화면 이름으로(담당자 웨이브 P2-2)
+    expect(evaluateTransition(at('DEVELOPING', { swIds: [] }), 'VERIFIED', ctx({ latestGates: pass('G4', 'G5', 'G6', 'G7') })).blockers[0].message).toBe('필수 입력 누락: SW ID');
+    expect(evaluateTransition(at('PROPOSED', { requirementIds: [] }), 'APPROVED', ctx({ latestGates: pass('G1', 'G2', 'G3') })).blockers.map((b) => b.message)).toContain('필수 입력 누락: 요구사항 ID');
   });
 
   it('PROPOSED→APPROVED: 의존관계 대상 Version 미확정이면 막힌다', () => {

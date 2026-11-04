@@ -32,6 +32,8 @@ export interface CompositionIssue {
   severity: 'FAIL' | 'WARN';
   message: string;
   refs: string[];
+  /** 보완 후보 — REQUIRES_MISSING이면 상품 범위에서 고를 수 있는 대상 Feature의 확정 Baseline(화면의 '추가' 버튼) */
+  suggest?: string[];
 }
 
 export interface CompositionInput {
@@ -54,6 +56,7 @@ export function validateComposition(input: CompositionInput): CompositionResult 
   const issues: CompositionIssue[] = [];
   const fail = (code: CompositionCode, message: string, refs: string[] = []) => issues.push({ code, severity: 'FAIL', message, refs });
   const carried = new Set(input.carriedOver ?? []);
+  const all: BaselineRef[] = input.baselines instanceof Map ? [...input.baselines.values()] : Object.values(input.baselines);
 
   if (!p.baselineIds.length) fail('EMPTY', '구성 Baseline이 없습니다.');
   const features: BaselineRef[] = [];
@@ -81,7 +84,14 @@ export function validateComposition(input: CompositionInput): CompositionResult 
     if (!selected.has(`${d.sourceFeatureId}@${d.sourceVersion}`)) continue;
     if (d.type === 'REQUIRES') {
       const ok = d.targetVersion ? selected.has(`${d.targetFeatureId}@${d.targetVersion}`) : selectedIds.has(d.targetFeatureId);
-      if (!ok) fail('REQUIRES_MISSING', `${d.sourceFeatureId}가 필요로 하는 ${d.targetFeatureId}${d.targetVersion ? ' ' + d.targetVersion : ''}의 Baseline이 상품에 없습니다 (${d.dependencyId}).`, [d.dependencyId]);
+      if (!ok) {
+        // 빠진 대상의 확정 Baseline — 같은 범위·선택 가능한 상태만, 문장에도 넣어 무엇을 더할지 바로 보이게
+        const suggest = all
+          .filter((r) => r.featureId === d.targetFeatureId && (!d.targetVersion || r.version === d.targetVersion) && r.country === p.country && r.vehicleModel === p.vehicleModel && r.trim === p.trim && BASELINE_ELIGIBLE.includes(r.lifecycle))
+          .map((r) => r.baselineId);
+        const add = suggest.length ? ` — 추가할 Baseline: ${suggest.join(', ')}` : ' — 같은 범위에 확정된 Baseline이 없습니다(대상 Feature의 BOM 확정 필요)';
+        issues.push({ code: 'REQUIRES_MISSING', severity: 'FAIL', message: `${d.sourceFeatureId}가 필요로 하는 ${d.targetFeatureId}${d.targetVersion ? ' ' + d.targetVersion : ''}의 Baseline이 상품에 없습니다${add} (${d.dependencyId}).`, refs: [d.dependencyId], suggest });
+      }
     } else if (selectedIds.has(d.targetFeatureId)) {
       fail('EXCLUDES_CONFLICT', `${d.sourceFeatureId}와 ${d.targetFeatureId}는 함께 구성할 수 없습니다 (${d.dependencyId}).`, [d.dependencyId]);
     }

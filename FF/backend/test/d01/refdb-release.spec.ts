@@ -76,18 +76,23 @@ describe('Feature DB 버전 발행', () => {
     expect(() => db.run("UPDATE ref_release SET hash = 'x' WHERE release_id = 'v1.4'")).toThrow(/추가만/);
   });
 
-  it('등록 화면 추가 요청(요청 중 행)은 발행 때 활성 — 근거 메모만이면 검토 필요', async () => {
+  it('등록 화면 추가 요청(요청 중 행)은 발행 때 활성 — 근거 메모만이거나 분류 속성(SW 계층·수명주기·기술 영역)이 비면 검토 필요', async () => {
     const add = (body: Record<string, unknown>) =>
       http()
         .post('/api/refdb/requests')
         .set(AUTHOR)
         .send({ domain: 'Chassis & Vehicle Dynamics', component: 'Brake control (ESC/ABS)', nameEn: 'Brake test mode', nameKo: '제동 시험 모드', tshirt: 'S', asilRep: 'QM', ...body })
         .expect(201);
-    const withSource = (await add({ sourceIds: ['S01'] })).body;
-    const memoOnly = (await add({ nameEn: 'Brake drying', nameKo: '브레이크 건조', basisNote: '사내 실적 과제 2025-BRK' })).body;
+    const ATTR = { swStack: 'Application', lifecycle: 'Commodity', techStack: 'Automotive' };
+    const withSource = (await add({ sourceIds: ['S01'], ...ATTR })).body;
+    const memoOnly = (await add({ nameEn: 'Brake drying', nameKo: '브레이크 건조', basisNote: '사내 실적 과제 2025-BRK', ...ATTR })).body;
+    // 회귀(P5-8): 속성 없이 승인된 추가 요청이 빈칸 그대로 활성이 됐다
+    const noAttr = (await add({ nameEn: 'Brake squeal notice', nameKo: '브레이크 소음 안내', sourceIds: ['S01'] })).body;
+    expect(withSource.ref).toMatchObject(ATTR);
     expect(withSource.ref.status).toBe('PENDING');
     await reviewDecide(withSource.change.changeId, 'APPROVE', '근거 확인');
     await reviewDecide(memoOnly.change.changeId, 'APPROVE', '근거 메모로 우선 승인');
+    await reviewDecide(noAttr.change.changeId, 'APPROVE', '분류 속성은 나중에');
     // 발행 전 — 여전히 요청 중
     expect((await http().get(`/api/refdb/refs/${withSource.ref.refId}`).expect(200)).body.ref.status).toBe('PENDING');
     const r = (await publish().expect(201)).body;
@@ -97,6 +102,9 @@ describe('Feature DB 버전 발행', () => {
     expect(a).toMatchObject({ status: 'ACTIVE', registeredIn: 'v1.6' });
     expect(b).toMatchObject({ status: 'REVIEW', registeredIn: 'v1.6' });
     expect(a.adminMemo).toContain(withSource.change.changeId);
+    const c = (await http().get(`/api/refdb/refs/${noAttr.ref.refId}`).expect(200)).body.ref;
+    expect(c).toMatchObject({ status: 'REVIEW', swStack: '' });
+    expect(c.adminMemo).toContain('미입력');
   });
 
   it('반려된 추가 요청은 발행 때 폐기(RETIRED) + 사유, 연결한 Feature Owner에게 화면 알림', async () => {

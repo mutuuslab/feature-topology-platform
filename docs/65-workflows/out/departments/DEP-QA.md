@@ -22,7 +22,7 @@ traces:
     - WF-FPW-12
     - WF-FPW-13
     - WF-ROLE-QA
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 

@@ -1,11 +1,15 @@
 // /audit — 감사 이력(D01-10) · /events — Platform 이벤트(D04-04, SSE 실시간) (v2)
-import { useEffect, useState } from 'react';
+// 감사 화면 보강(W5 P5-6·P5-10): 대상 앞부분 검색(targetPrefix, ?prefix=)·행위 필터(action)·행위 한글 이름·전후 값,
+// 해시 체인 카드(상태·검증한 기록·마지막 검증 시각·DB 밖 고정점·다시 검증). 헤드라인은 체인 판정이 먼저, 실패 기록 수는 상태 표시로.
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiError, call, STATIC_MODE } from '../../api/client';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { AUDIT_ACTION_KO, auditPlus as AP } from '../../copy/audit';
 import { lists as L } from '../../copy/lists';
-import { AsyncView, Button, ChainStatus, DataTable, ErrorNote, EventStream, PageHeader, Panel, RuleText, Segmented, Toolbar, VerdictBadge, type StreamItem } from '../../design';
+import { AsyncView, Button, ChainStatus, DataTable, ErrorNote, EventStream, KeyValue, PageHeader, Panel, RuleText, Segmented, Select, Toolbar, VerdictBadge, type StreamItem } from '../../design';
 import { ComponentName, ProcedureText, when } from '../shared';
 import { AuditLog } from './AuditLog';
 import type { AuditEntry } from '../types';
@@ -13,17 +17,32 @@ import type { AuditEntry } from '../types';
 const RESULTS = ['ALLOWED', 'DENIED', 'FAILED'] as const;
 
 
+/** 행위 필터 선택지 — 한글 이름 순 */
+const ACTION_OPTIONS = Object.entries(AUDIT_ACTION_KO).sort((a, b) => a[1].localeCompare(b[1], 'ko'));
+
+interface ChainReportView {
+  ok: boolean;
+  verified: number;
+  head: string | null;
+  broken: { id: number; kind: string } | null;
+  anchors?: { configured: boolean; checked: number; lastAt: string | null };
+  checkedAt?: string;
+}
+
 export function AuditScreen() {
+  const [sp] = useSearchParams();
   const [result, setResult] = useState<'' | 'ALLOWED' | 'DENIED' | 'FAILED'>('');
-  const [target, setTarget] = useState('');
-  const [applied, setApplied] = useState('');
-  const query = { result: result || undefined, target: applied || undefined, limit: 500 };
+  // 앞부분 검색 — CR-2026이면 CR-2026-006 …이 모두 걸린다(정확한 대상만 찾던 것, P5-6). 변경 요청 감사 패널이 ?prefix=로 연다
+  const [target, setTarget] = useState(() => sp.get('prefix') ?? '');
+  const [applied, setApplied] = useState(() => sp.get('prefix') ?? '');
+  const [action, setAction] = useState('');
+  const query = { result: result || undefined, targetPrefix: applied || undefined, action: action || undefined, limit: 500 };
   const q = useApi<{ items: AuditEntry[]; nextCursor?: string | null }>('audit', { query });
   // 더 불러오기(커서, RD-UX-03) — 첫 쪽은 위 조회(정적 데모 스냅샷과 같은 주소), 다음 쪽부터 덧붙인다. 조건이 바뀌면 처음부터
   const [more, setMore] = useState<{ items: AuditEntry[]; cursor: string | null; key: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [moreError, setMoreError] = useState<ApiError | null>(null);
-  const qKey = `${result}|${applied}|${q.dataUpdatedAt}`;
+  const qKey = `${result}|${applied}|${action}|${q.dataUpdatedAt}`;
   const extra = more?.key === qKey ? more : null;
   const rows = [...(q.data?.items ?? []), ...(extra?.items ?? [])];
   const nextCursor = extra ? extra.cursor : (q.data?.nextCursor ?? null);
@@ -36,17 +55,19 @@ export function AuditScreen() {
       .catch((e: ApiError) => setMoreError(e))
       .finally(() => setLoading(false));
   };
-  const chain = useApi<{ ok: boolean; verified: number; head: string | null; broken: { id: number; kind: string } | null }>('auditChain');
+  const chain = useApi<ChainReportView>('auditChain');
   const c = chain.data;
-  // 체인이 정상이어도 표에 FAILED가 보이면 초록 한 줄만 두지 않는다(헤드라인·데이터 모순, 하네스 2판 결함 4)
+  // 체인이 정상이어도 표에 FAILED가 보이면 초록 한 줄만 두지 않는다(헤드라인·데이터 모순, 하네스 2판 결함 4) —
+  // 단 다른 업무의 실패 수가 체인 판정보다 앞서지 않게 큰 숫자는 검증한 기록 수, 실패는 상태 표시(P5-10)
   const failed = rows.filter((r) => r.result === 'FAILED').length;
+  const checkedAt = useMemo(() => c?.checkedAt ?? (chain.dataUpdatedAt ? new Date(chain.dataUpdatedAt).toISOString() : null), [c?.checkedAt, chain.dataUpdatedAt]);
   return (
     <div className="ds-screen">
       <PageHeader
         codes="D01-10 · AUDIT"
         title={ko.audit.title}
         lead={ko.audit.lead}
-        message={!c ? { tone: 'neutral', value: '—', text: ko.audit.key.checking } : !c.ok ? { tone: 'danger', text: ko.audit.key.broken } : failed ? { tone: 'warn', value: failed, text: ko.audit.key.okFailed(failed) } : { tone: 'ok', text: ko.audit.key.ok(c.verified) }}
+        message={!c ? { tone: 'neutral', value: '—', text: ko.audit.key.checking } : !c.ok ? { tone: 'danger', text: ko.audit.key.broken } : failed ? { tone: 'warn', text: AP.keyOk(c.verified), status: { label: AP.failedPill(failed), tone: 'warn' } } : { tone: 'ok', text: ko.audit.key.ok(c.verified) }}
         tour="audit-chain"
       />
       {c?.broken && (
@@ -54,12 +75,13 @@ export function AuditScreen() {
           {ko.audit.chainBroken(c.broken.id, c.broken.kind)}
         </p>
       )}
+      <ChainCard c={c} checkedAt={checkedAt} busy={chain.isFetching} onRecheck={() => chain.refetch()} />
       <Toolbar label={ko.audit.title}>
         <input
           className="ds-input ds-input--mono"
           type="search"
-          aria-label={ko.audit.col.target}
-          placeholder="FEAT-00022@1.0.0"
+          aria-label={AP.searchLabel}
+          placeholder={AP.searchPlaceholder}
           value={target}
           onChange={(e) => setTarget(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && setApplied(target.trim())}
@@ -71,8 +93,16 @@ export function AuditScreen() {
           onChange={(v) => setResult(v as typeof result)}
           options={[{ value: '', label: ko.page.all }, ...RESULTS.map((r) => ({ value: r, label: ko.audit.results[r] }))]}
         />
+        <Select label={AP.actionLabel} value={action} onChange={(e) => setAction(e.target.value)}>
+          <option value="">{AP.actionAll}</option>
+          {ACTION_OPTIONS.map(([k, v]) => (
+            <option key={k} value={k}>
+              {v}
+            </option>
+          ))}
+        </Select>
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} filtered={!!(applied || result)}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} filtered={!!(applied || result || action)}>
         <AuditLog rows={rows} />
         <ErrorNote error={moreError} />
         {nextCursor && (
@@ -85,6 +115,25 @@ export function AuditScreen() {
         )}
       </AsyncView>
     </div>
+  );
+}
+
+/** 해시 체인 카드 — 판정·검증한 기록·마지막 검증 시각·DB 밖 고정점(설정 여부), 다시 검증(P5-10) */
+function ChainCard({ c, checkedAt, busy, onRecheck }: { c: ChainReportView | undefined; checkedAt: string | null; busy: boolean; onRecheck: () => void }) {
+  const H = AP.chain;
+  if (!c) return null;
+  const a = c.anchors;
+  return (
+    <Panel title={H.title} id="audit-chain" actions={<Button onClick={onRecheck} disabled={busy}>{busy ? H.checking : H.recheck}</Button>}>
+      <KeyValue
+        rows={[
+          { k: H.state, v: <span data-chain-ok={c.ok ? 'true' : 'false'}>{c.ok ? H.ok : H.broken}</span> },
+          { k: H.verified, v: <span className="ds-mono">{c.verified.toLocaleString('ko-KR')}</span> },
+          { k: H.checkedAt, v: <span data-chain-checked>{when(checkedAt)}</span> },
+          { k: H.anchor, v: <span data-anchor={a?.configured ? 'on' : 'off'}>{a?.configured ? H.anchorOn(a.checked, when(a.lastAt)) : H.anchorOff}</span> },
+        ]}
+      />
+    </Panel>
   );
 }
 

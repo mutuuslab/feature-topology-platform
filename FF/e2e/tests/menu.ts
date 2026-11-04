@@ -24,6 +24,7 @@ export const V2_PATHS = [...src.matchAll(/\{ path: '([^']+)'[^\n]*v2: true/g)].m
 /** 메뉴 밖 하위 화면(부모가 있는 drill-down) — 이전 주소(legacyTo·*Redirect)는 빼고, 경로 인자는 시연 값으로 채운다 */
 const SAMPLE: Record<string, string> = {
   '/features/:id/:ver': '/features/FEAT-00022/1.0.0',
+  '/procurement/sw-cost/:estId': '/procurement/sw-cost/EST-0001',
   '/products/:id/:ver': '/products/CAT-00001/3.0.0',
   '/policies/:id': '/policies/POL-00001',
   '/deployments/:id': '/deployments/PUB-00001',
@@ -33,6 +34,7 @@ const SAMPLE: Record<string, string> = {
   '/fleet/vehicles/:vin': '/fleet/vehicles/ego-01',
   // Feature DB v1.3(엑셀 가져옴) 기준 행 — 오토 홀드
   '/master/feature-db/:refId': '/master/feature-db/CH-BRK-009',
+  '/consults/:id': `/consults/CON-${(process.env.FF_CLOCK_AT ?? new Date().toISOString()).slice(0, 4)}-001`,
 };
 /**
  * 시드에 표본이 없는 하위 화면 — 새 DB에는 Feature DB 변경 요청이 하나도 없다(v1.3 가져옴은 요청 없이 발행).

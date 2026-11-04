@@ -16,7 +16,7 @@ traces:
     - WF-FPW-14
     - WF-ROLE-PLM
     - WF-ROLE-RDA
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -31,7 +31,7 @@ last_updated: 2026-11-04
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 5 · 책임 4 · 협의 2 · 통보 8 (활동 14개)
+수행 5 · 책임 4 · 협의 3 · 통보 8 (활동 15개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -39,7 +39,8 @@ last_updated: 2026-11-04
 | FPW.1-A02 대상 차량 사양·의존 등록 | FPW.1 Feature 등록·분류 | R (기준정보 담당) | Feature 등록 기록 `WP-FEAT-REG` → 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` | `/variant-conditions`, `/arch/topology` | 1차 |
 | FPW.1-A05 G1 등록·분류 판정 | FPW.1 Feature 등록·분류 | I (기준정보 담당) | Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 법규 등급 판정 기록 `WP-REG-CLASS` → G1 Decision Record `WP-G1-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.1-A06 Feature DB 추가 요청 | FPW.1 Feature 등록·분류 | I (Feature DB 관리자) | Feature 제안·변경요청 `WP-FEAT-PROPOSAL`, Feature DB 발행본 `WP-REFDB-RELEASE` → Feature DB 추가 요청 `WP-REF-ADD-REQ` | `/feature/propose` | 1차 |
-| FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | I (기준정보 담당) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
+| FPW.3-A05 구현 연결 입력 | FPW.3 안전요구 확정 | C (기준정보 담당) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | 1차 |
+| FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | I (기준정보 담당) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK`, 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.4-A03 Flag 정책 작성·검증 | FPW.4 안전 설계·정책 설계 | C (기준정보 담당) | 안전 설계서 `WP-SAFETY-DESIGN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/new`, `/policies` | 1차 |
 | FPW.6-A01 출시 Baseline 확정 요청 | FPW.6 서명 배포 | I (기준정보 담당) | G5 Decision Record `WP-G5-DECISION`, Flag 정책(검증·승인본) `WP-POLICY` → Baseline 확정 요청 `WP-BASELINE-REQ` | `/baselines` | 1차 |
 | FPW.6-A02 출시 Baseline 확정 승인 | FPW.6 서명 배포 | R·A (기준정보 담당) | Baseline 확정 요청 `WP-BASELINE-REQ` → 출시 Baseline `WP-RELEASE-BASELINE` | `/baselines` | 1차 |
@@ -64,4 +65,4 @@ last_updated: 2026-11-04
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/variant-conditions`, `/arch/topology`, `/baselines`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/master/feature-db`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/features/:id/:ver`, `/admin/approval`, `/policies/new`, `/policies`, `/master/feature-db/:refId`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/features/:id/:ver`, `/admin/approval`, `/master/artifacts`, `/integration/connectors`, `/policies/new`, `/policies`, `/master/feature-db/:refId`

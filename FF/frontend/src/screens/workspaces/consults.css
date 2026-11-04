@@ -1,0 +1,72 @@
+/* 검토 포털 협의 요청(W5, P5-1) — 토큰만 */
+.cs-summary {
+  font-weight: 700;
+}
+.cs-due {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  white-space: nowrap;
+}
+.cs-opinion {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-sm);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  background: var(--surface-3);
+  color: var(--ink);
+}
+.cs-opinion[data-opinion='AGREE'] {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.cs-opinion[data-opinion='REVISE'] {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.cs-opinion[data-opinion='OPPOSE'] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.cs-look {
+  margin: 0 0 var(--sp-3);
+  padding-left: var(--sp-5);
+  display: grid;
+  gap: var(--sp-1h);
+  font-size: var(--fs-md);
+}
+.cs-sent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+.cs-sent li {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+.cs-sent__meta,
+.cs-sent__answer {
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+}
+.cs-sent__answer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.ws-extras {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-4);
+  max-width: 1600px;
+}

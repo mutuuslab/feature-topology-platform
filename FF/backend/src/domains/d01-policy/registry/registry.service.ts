@@ -72,6 +72,9 @@ export class RegistryService {
       asil: f.asil,
       tags: f.tags,
       controlPoints: f.controlPoints,
+
+      featureRefCount: (f.featureRefs ?? []).length,
+
       gates,
     };
   }
@@ -259,6 +262,7 @@ export class RegistryService {
       this.audit.failed(actor, 'FEATURE_UPDATE', target, `${f.lifecycle} 버전 수정 시도`, 'D01-01');
       throw new DomainError('IMMUTABLE', `${f.lifecycle} 버전은 수정할 수 없습니다. 새 Version을 만드세요.`, { hint: `POST /api/features/${featureId}/versions` });
     }
+    const impl = this.implLinks(actor, 'FEATURE_UPDATE', target, f, body);
     let linked: RefLinkResult | null;
     try {
       linked = this.relink(f, input, 'draft');
@@ -267,7 +271,7 @@ export class RegistryService {
       throw e;
     }
     return this.db.tx(() => {
-      const next = this.withLinks(this.merge(f, body), linked);
+      const next = this.withLinks(this.merge(f, { ...body, ...impl }), linked);
       this.features.update(next);
       if (linked) this.refs.saveLinks(next);
       const changed = changedKeys(f, body as any);
@@ -286,12 +290,13 @@ export class RegistryService {
     const latest = this.features.versions(featureId).at(-1)!.version;
     const version = bumpVersion(latest, body.bump);
     const changed = changedKeys(base, body.changes as any);
+    const impl = this.implLinks(actor, 'FEATURE_VERSION_CREATE', `${featureId}@${body.baseVersion}`, base, body.changes);
     // 기준 행 연결은 앞 버전에서 복사한다(§5.3) — 바꾸면 다시 판정
     const linked = this.relink(base, body.changes, 'version');
     // 이어받은 연결 중 폐기 예정·폐기 행은 경고만(막지 않음, 사용자 결정 2026-11-04 #9) — 다시 판정했으면 그 경고(폐기 예정)를 쓴다
     const warnings = linked ? linked.warnings : this.refs.statusWarnings(base.featureRefs, ['DEPRECATED', 'RETIRED'], '새 Version에서 대체 행으로 다시 연결하세요.');
     return this.db.tx(() => {
-      const merged = this.withLinks(this.merge(base, body.changes), linked);
+      const merged = this.withLinks(this.merge(base, { ...body.changes, ...impl }), linked);
       const f: FeatureVersionRow = { ...merged, version, lifecycle: 'PROPOSED', baselineId: null, catalogIds: [], gateRecordIds: [], _missing: { ...merged._missing, baselineId: '미발급' } };
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
       this.refs.saveLinks(f); // 앞 버전 연결(또는 바뀐 연결)을 새 버전 색인으로
@@ -308,6 +313,37 @@ export class RegistryService {
       );
       return { feature: f, changed, rejudge, ...(linked || warnings.length ? { warnings } : {}) };
     });
+  }
+
+  /**
+   * 구현 연결(담당자 웨이브 P2-2) — 새 기능은 이름만 받아 FUNC 번호를 매기고, SW·Version·제어기 P/N은 기준정보(SW·ECU 마스터)에 있는 짝만 받는다.
+   * 자유 입력으로 넣은 짝이 BOM 확정(IMPLEMENTATION)에서야 틀린 것으로 드러나던 것을 저장 때 막는다. 손대지 않으면 그대로 둔다.
+   */
+  private implLinks(actor: Actor, action: string, target: string, f: FeatureVersionRow, body: UpdateDraftBody): Partial<FeatureVersionRow> {
+    if (body.functions === undefined && body.swIds === undefined && body.swVersions === undefined && body.ecuPnos === undefined) return {};
+    const swIds = body.swIds ?? f.swIds;
+    const swVersions = body.swVersions ?? f.swVersions;
+    const ecuPnos = body.ecuPnos ?? f.ecuPnos;
+    const problems: string[] = [];
+    // 손댄 짝만 본다 — 기능 이름만 바꿀 때 시드의 옛 짝 때문에 막히지 않게
+    const swTouched = body.swIds !== undefined || body.swVersions !== undefined || body.ecuPnos !== undefined;
+    if (swTouched && (swIds.length !== swVersions.length || swIds.length !== ecuPnos.length)) problems.push('SW ID·SW Version·제어기 P/N은 같은 수로 짝을 맞춰야 합니다.');
+    else if (swTouched)
+      swIds.forEach((swId, i) => {
+        const ecu = this.topology.ecu(ecuPnos[i]);
+        if (!ecu) problems.push(`제어기 ${ecuPnos[i]}이(가) ECU 기준정보에 없습니다.`);
+        else if (ecu.lifecycle === 'RETIRED') problems.push(`제어기 ${ecuPnos[i]}은(는) 단종되어 연결할 수 없습니다.`);
+        if (!this.topology.sw(swId, swVersions[i]).some((s) => s.ecuPno === ecuPnos[i])) problems.push(`${swId} ${swVersions[i]}은(는) 제어기 ${ecuPnos[i]}의 SW 기준정보에 없습니다 — SW·Artifact 기준정보에서 고르세요.`);
+      });
+    if (problems.length) {
+      this.audit.failed(actor, action, target, `구현 연결: ${problems.join(' / ')}`, 'D01-01');
+      throw new DomainError('VALIDATION', `구현 연결을 저장할 수 없습니다 — 기준정보와 맞지 않는 항목 ${problems.length}건`, { fields: ['swIds'], blockers: problems });
+    }
+    if (!body.functions) return {};
+    // 새 기능 번호 — 기능 기준정보와 모든 Feature의 기능 중 가장 큰 번호 다음
+    const used = [...this.topology.allFunctions().map((x) => x.functionId), ...this.features.all().flatMap((x) => (x.functions ?? []).map((fn) => fn.functionId))];
+    let next = used.reduce((m, id) => Math.max(m, Number(id.slice(5)) || 0), 0);
+    return { functions: body.functions.map((fn) => ({ functionId: fn.functionId ?? `FUNC-${String(++next).padStart(6, '0')}`, label: fn.label })) };
   }
 
   private merge(f: FeatureVersionRow, body: UpdateDraftBody): FeatureVersionRow {

@@ -164,9 +164,9 @@ function TopologyGraph({ data, focus, selected }: { data: Graph; focus: string; 
       const d = dist.get(n.id) ?? 3;
       rings.set(d, [...(rings.get(d) ?? []), n.id]);
     }
-    // 바깥 원까지 라벨 두 줄(약 50)이 viewBox 안에 들어오게 원 간격을 맞춘다
+    // 바깥 원까지 라벨 두 줄(시연 모드 큰 글자로 약 58)이 viewBox 안에 들어오게 원 간격을 맞춘다
     const maxD = Math.max(1, ...rings.keys());
-    const ring = (d: number) => ((H / 2 - 56) * d) / maxD;
+    const ring = (d: number) => ((H / 2 - 60) * d) / maxD;
     const pos = new Map<string, { x: number; y: number; up: boolean }>();
     for (const [d, ids] of rings) {
       const r = d === 0 ? (ids.length > 1 ? 40 : 0) : ring(d);
@@ -235,8 +235,11 @@ function TopologyGraph({ data, focus, selected }: { data: Graph; focus: string; 
               onKeyDown={(ev) => ev.key === 'Enter' && n.version && nav(`/features/${n.featureId}/${n.version}`)}
             >
               <circle r={rad} />
-              <text y={p.up ? -rad - 20 : rad + 14} textAnchor="middle" className="ds-viz__label ds-topo-label">{n.featureId.slice(5)}</text>
-              <text y={p.up ? -rad - 7 : rad + 27} textAnchor="middle" className="ds-viz__muted ds-topo-label">{n.name.length > 12 ? `${n.name.slice(0, 12)}…` : n.name}</text>
+              {/* 두 줄 간격은 글자 크기(em)를 따른다 — 고정 13px 간격은 시연 모드(큰 글자)에서 6px 겹쳤다(2026-11-05) */}
+              <text textAnchor="middle">
+                <tspan x={0} y={p.up ? -rad - 7 : rad + 2} dy={p.up ? '-1.25em' : '1em'} className="ds-viz__label ds-topo-label">{n.featureId.slice(5)}</tspan>
+                <tspan x={0} y={p.up ? -rad - 7 : undefined} dy={p.up ? undefined : '1.3em'} className="ds-viz__muted ds-topo-label">{n.name.length > 12 ? `${n.name.slice(0, 12)}…` : n.name}</tspan>
+              </text>
             </g>
           );
         })}

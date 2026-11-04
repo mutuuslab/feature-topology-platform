@@ -83,11 +83,13 @@ describe('알림 화면', () => {
     const row = screen.getAllByTestId('notification-row')[0];
     expect(within(row).getByText('긴급')).toBeTruthy();
     expect(within(row).getByText('승인 요청')).toBeTruthy();
-    expect(within(row).getByText('usr-operator')).toBeTruthy();
+    // 계정 ID 대신 사람 이름(W2 P1-5) — usr-operator → 서준호
+    expect(within(row).getByText('서준호')).toBeTruthy();
+    expect(within(row).queryByText(/usr-/)).toBeNull();
     expect(within(row).getByRole('link', { name: '열기' }).getAttribute('href')).toBe('/ops/kill?id=KILL-1');
     fireEvent.click(screen.getByRole('radio', { name: /전체/ }));
     expect(await screen.findByText('이상 징후 ANM-1')).toBeTruthy();
-    expect(screen.getByText(/^읽음 2026-10-17 02:00/)).toBeTruthy();
+    expect(screen.getByText(/^읽음 2026-10-17 11:00/)).toBeTruthy(); // 한국 시각(02:00Z) — 다른 화면과 같은 표기(W2 P1-5)
   });
 
   it('읽음·모두 읽음은 쓰기 요청으로 보낸다', async () => {

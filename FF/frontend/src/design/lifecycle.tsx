@@ -13,7 +13,8 @@ export interface StepperTransition {
 
 const RANK = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export function LifecycleStepper({ current, transitions = [] }: { current: Lifecycle; transitions?: StepperTransition[] }) {
+/** labels — 단계 한글 이름 바꾸기(상품은 APPROVED를 '구성 승인'으로, Feature의 '정의 승인'과 나눈다) */
+export function LifecycleStepper({ current, transitions = [], labels }: { current: Lifecycle; transitions?: StepperTransition[]; labels?: Partial<Record<Lifecycle, string>> }) {
   return (
     <ol className="ds-stepper" aria-label="Lifecycle">
       {LIFECYCLE.map((lc) => {
@@ -22,7 +23,7 @@ export function LifecycleStepper({ current, transitions = [] }: { current: Lifec
         return (
           <li key={lc} className="ds-step" data-state={state} data-lifecycle={lc} aria-current={lc === current ? 'step' : undefined} style={{ '--lc': `var(--lc-${lc})` } as CSSProperties}>
             <div className="ds-step__name">{lc}</div>
-            <div className="ds-step__ko">{ko.lifecycle[lc]}</div>
+            <div className="ds-step__ko">{labels?.[lc] ?? ko.lifecycle[lc]}</div>
             {t && t.blockers.length > 0 && (
               <ul className="ds-step__blockers" aria-label={ko.stepper.blocked}>
                 {t.blockers.slice(0, 4).map((b) => (

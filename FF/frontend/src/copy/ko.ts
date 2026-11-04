@@ -7,7 +7,7 @@ import type { Lifecycle } from '@ff/contracts';
 
 export const ko = {
   app: {
-    name: 'Feature Platform',
+    name: 'Feature Flag Platform',
     tagline: 'Feature Flag 거버넌스 · 운영',
     skip: '본문으로 건너뛰기',
   },
@@ -454,8 +454,8 @@ export const ko = {
   },
   policy: {
     key: { pending: '승인 대기 정책(검증 완료)', none: '승인 대기 정책이 없습니다', deployWait: '배포 대기', deployed: '배포 중', can: '작성한 정책은 검증 8종 뒤 다른 사람이 승인합니다', cannot: 'Feature 작성자·구현 담당만 정책을 만들 수 있습니다' },
-    title: '정책·검증·승인',
-    lead: 'Control Point별 활성화 정책 — 검증 8종 뒤 다른 사람이 승인합니다.',
+    title: 'Feature Flag 정책·승인',
+    lead: 'Flag 키와 Git 소스에서 시작해 정책 검증·승인·배포로 이어집니다.',
     create: '새 정책',
     validate: '분야별 검증 실행',
     detailTitle: (feature: string, cp: string) => `${feature} — ${cp} 제어점`,
@@ -845,7 +845,7 @@ export const ko = {
     key: { open: '열린 이상 징후(확인됨 포함)', clean: '열린 이상 징후가 없습니다', none: '아직 감지된 이상 징후가 없습니다' },
     title: '이상 징후 대응',
     lead: '차량 고장·서명 거부·회신 이상을 Feature별로 묶어 권고합니다.',
-    kind: { FEATURE_FAULT: '기능 고장', SECURITY: '보안', DELIVERY: '배포 전달' },
+    kind: { FEATURE_FAULT: '기능 고장', SECURITY: '보안', DELIVERY: '배포 전달', FIELD_SOTIF: '현장 SOTIF' },
     status: { OPEN: '열림', ACKNOWLEDGED: '확인됨', MITIGATED: '조치됨', DISMISSED: '기각' },
     advice: { KILL: '긴급 차단 권고', INVESTIGATE: '조사', REDELIVER: '재전달', SECURITY_REVIEW: '보안 검토', MONITOR: '관찰' },
     col: { id: '이상 건', kind: '종류', feature: 'Feature', severity: '심각도', advice: '권고', vehicles: '차량', status: '상태', updated: '갱신' },

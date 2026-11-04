@@ -2,9 +2,11 @@
 // /field — 현장 지원 포털 (D05-05). VIN 하나로 Feature 상태 종합 조회, 현장 접수는 장애·VOC로.
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { incidentVehicleScope } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
+import { control as CT } from '../../copy/control';
 import { pickDefault } from '../../data/first-run';
 import { AsyncView, Button, DataTable, ErrorNote, Field, PageHeader, Panel, Select, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { usePermission } from '../shared';
@@ -28,6 +30,7 @@ export interface IncidentRow {
   sotif: { trigger: boolean; reason: string };
   anomalyId: string | null;
   anomaly: { severity: string; advice: string; status: string } | null;
+  vehicleScope?: { fit: 'IN_SCOPE' | 'OUT_OF_SCOPE' | 'UNKNOWN_VEHICLE'; message: string } | null;
 }
 
 export function IncidentsScreen() {
@@ -75,7 +78,20 @@ export function IncidentsScreen() {
           columns={[
             { key: 'id', header: C.id, cell: (r) => <span className="ds-mono ds-nowrap">{r.incidentId}</span> },
             { key: 'src', header: C.source, cell: (r) => <span className="ds-nowrap">{I.sources[r.source]}</span> },
-            { key: 'vin', header: C.vin, cell: (r) => <span className="ds-mono ds-nowrap">{r.vin ?? '—'}</span> },
+            {
+              key: 'vin',
+              header: C.vin,
+              cell: (r) => (
+                <span style={{ display: 'grid', gap: 2 }}>
+                  <span className="ds-mono ds-nowrap">{r.vin ?? '—'}</span>
+                  {r.vehicleScope && r.vehicleScope.fit !== 'IN_SCOPE' && (
+                    <span className="ds-nowrap" style={{ fontSize: 'var(--fs-xs)', color: 'var(--warn)' }} title={r.vehicleScope.message}>
+                      {CT.incident.scope[r.vehicleScope.fit]}
+                    </span>
+                  )}
+                </span>
+              ),
+            },
             { key: 'f', header: C.feature, cell: (r) => <span className="ds-mono ds-nowrap">{r.featureId ?? '—'}</span> },
             { key: 'cat', header: C.category, cell: (r) => <span className="ds-nowrap">{I.categories[r.category]}</span> },
             { key: 'sev', header: C.severity, cell: (r) => <VerdictBadge value={SEV_BADGE[r.severity]} /> },
@@ -95,6 +111,13 @@ function IncidentForm() {
   const create = useApiMutation<IncidentRow>('createIncident', ['incidents', 'anomalies', 'events', 'audit']);
   const [f, setF] = useState({ vin: '', featureId: '', category: 'UNEXPECTED_ACTIVATION', severity: 'WARNING', summary: '' });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
+  // 차량이 이 Feature를 지원하는가 — 서버 기록과 같은 contracts 판정으로 미리 경고(접수는 막지 않는다, P4-8)
+  const vin = f.vin.trim();
+  const featureId = f.featureId.trim();
+  const ready = /^FEAT-\d{5}$/.test(featureId) && vin.length >= 3;
+  const fv = useApi<{ versions: { version: string; country: string; vehicleModel: string; trim: string }[] }>('featureVersions', { params: { id: featureId } }, { enabled: ready, retry: false });
+  const veh = useApi<{ vehicle: { country: string; vehicleModel: string; trim: string } | null }>('vehicleRuntime', { params: { vin } }, { enabled: ready, retry: false });
+  const scope = ready && fv.data && (veh.data || veh.isError) ? incidentVehicleScope(vin, featureId, veh.data?.vehicle ?? null, fv.data.versions) : null;
   if (STATIC_MODE) return null;
   return (
     <Panel title={I.create} id="incident-create">
@@ -118,6 +141,11 @@ function IncidentForm() {
           ))}
         </Select>
       </div>
+      {scope && scope.fit !== 'IN_SCOPE' && (
+        <p className="ds-stale" role="status" data-testid="incident-scope-warning">
+          {scope.fit === 'OUT_OF_SCOPE' ? CT.incident.outOfScope(vin, featureId) : CT.incident.unknownVehicle(vin)}
+        </p>
+      )}
       <Field label={I.summary}>
         <input className="ds-input" value={f.summary} maxLength={500} onChange={set('summary')} />
       </Field>

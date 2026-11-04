@@ -80,7 +80,7 @@ export const TOOL_CLASSIFICATION: ToolClassification[] = [
   { componentId: 'D06-10', reportName: '인증서·키 관리(PKI/KMS)', kind: 'TOOL', signing: true, outputs: [{ error: '키 오사용', ti: 'TI2', td: 'TD3', detection: null }], qualification: { methods: ['1c', '1d'], evidence: ['backend/test/d06/hsm.spec.ts'], note: 'ISO/SAE 21434 cl.10 보안 요구·TARA 기반 CAL을 따로 정한다' }, rules: ['FFG-SEC-002', 'FFG-SEC-003'], source: 'REPORT_8_1' },
   { componentId: 'D06-12', reportName: '이상 징후 대응', kind: 'TOOL', outputs: [{ error: '조치 지연 (안전 영향 없음)', ti: 'TI1', td: null, detection: null }], qualification: null, rules: [], source: 'REPORT_8_1' },
   // 보고서 8.1 표에 없는 FF 컴포넌트 — Safety Manager 분류가 필요한 열린 항목
-  ...['D01-07', 'D04-05', 'D05-01', 'D05-02', 'D05-03', 'D05-04', 'D05-05', 'D05-06', 'D05-07', 'D06-11'].map(
+  ...['D01-07', 'D04-05', 'D05-01', 'D05-02', 'D05-03', 'D05-04', 'D05-05', 'D05-06', 'D05-07', 'D06-11', 'D07-01'].map(
     (componentId): ToolClassification => ({ componentId, reportName: null, kind: 'UNCLASSIFIED', outputs: [], qualification: null, rules: [], source: 'FF_DRAFT' }),
   ),
 ];

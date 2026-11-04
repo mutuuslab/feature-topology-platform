@@ -447,6 +447,42 @@
   width: 40px;
   height: 40px;
 }
+/* 상단바 가로 넘침(2026-11-05 측정: 1024 +125px·시연 1366 +61px, 로그아웃·알림이 화면 밖) — 검색 칸이 남는 폭만 쓰고 줄어든다.
+   도구 버튼은 숨기지 않고, 좁은 폭·시연 모드에서 단축키 표시·여백·선택기 폭을 줄인다 */
+.sh-search {
+  min-width: 0;
+}
+@media (max-width: 1279px) {
+  .sh-top {
+    gap: var(--sp-3);
+  }
+  .sh-brand {
+    padding-left: var(--sp-3);
+    padding-right: 0;
+  }
+  .sh-kbd {
+    display: none;
+  }
+  .sh-tools .sh-dept__select {
+    max-width: 140px;
+  }
+  .sh-tools .sh-user select {
+    max-width: 112px;
+  }
+  /* 시연 모드는 버튼이 40px — 브랜드는 로고만 */
+  [data-present='on'] .sh-brand__divider,
+  [data-present='on'] .sh-brand__name {
+    display: none;
+  }
+}
+@media (max-width: 1599px) {
+  [data-present='on'] .sh-top {
+    gap: var(--sp-3);
+  }
+  [data-present='on'] .sh-kbd {
+    display: none;
+  }
+}
 
 /* 좁은 화면 (1366 미만) — 패널을 덮개로 */
 @media (max-width: 1279px) {

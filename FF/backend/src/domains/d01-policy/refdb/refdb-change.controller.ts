@@ -23,6 +23,18 @@ export class RefdbChangeController {
     return this.changes.list(actor, { status: one(status, 'status'), kind: one(kind, 'kind'), refId: one(refId, 'refId'), domain: one(domain, 'domain') });
   }
 
+  /** 변경 요청 감사 이력(P5-6) — 요청·검토·결정·발행 기록 */
+  @Get('changes/:id/audit')
+  audit(@Param('id') id: string) {
+    return this.changes.auditTrail(id);
+  }
+
+  /** 발행 미리 보기(P5-4) — 묶일 요청·폐기될 요청 중 행·알림 대상·품질 지표 전후 */
+  @Get('releases/preview')
+  preview() {
+    return this.changes.preview();
+  }
+
   @Get('changes/:id')
   detail(@CurrentActor() actor: Actor, @Param('id') id: string) {
     return this.changes.detail(actor, id);

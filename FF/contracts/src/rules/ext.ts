@@ -127,6 +127,26 @@ export interface Incident {
   sotif: { trigger: boolean; reason: string };
   anomalyId: string | null;
   status: 'OPEN' | 'LINKED' | 'CLOSED';
+  /** 접수 차량이 그 Feature의 적용 범위(국가·차종·트림)인가 — 범위 밖이면 이 차량에 없는 기능의 장애일 수 있다(P4-8). 이전 행에는 없다 */
+  vehicleScope?: IncidentVehicleScope | null;
+}
+
+export interface IncidentVehicleScope {
+  fit: 'IN_SCOPE' | 'OUT_OF_SCOPE' | 'UNKNOWN_VEHICLE';
+  message: string;
+}
+
+/** 장애 접수 차량 ↔ Feature 적용 범위 판정 — 화면 접수 폼의 미리 경고와 서버 기록이 같은 함수를 쓴다 */
+export function incidentVehicleScope(
+  vin: string,
+  featureId: string,
+  vehicle: { country: string; vehicleModel: string; trim: string } | null | undefined,
+  scopes: readonly { version: string; country: string; vehicleModel: string; trim: string }[],
+): IncidentVehicleScope {
+  if (!vehicle) return { fit: 'UNKNOWN_VEHICLE', message: `${vin}은(는) 등록된 차량이 아닙니다 — VIN을 확인하세요` };
+  const hit = scopes.find((s) => s.country === vehicle.country && s.vehicleModel === vehicle.vehicleModel && s.trim === vehicle.trim);
+  if (hit) return { fit: 'IN_SCOPE', message: `${vin}은(는) ${featureId} ${hit.version}의 적용 범위입니다` };
+  return { fit: 'OUT_OF_SCOPE', message: `${vin}(${vehicle.country}·${vehicle.vehicleModel}·${vehicle.trim})은(는) ${featureId}의 적용 범위가 아닙니다 — 이 차량에 없는 기능일 수 있습니다. Feature나 VIN을 확인하세요` };
 }
 
 /** 기능 불충분(SOTIF)로 볼 범주 — 의도하지 않은 작동·필요할 때 미작동·성능 미달 */

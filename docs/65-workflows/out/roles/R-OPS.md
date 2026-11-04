@@ -15,7 +15,7 @@ traces:
     - WF-FPW-11
     - WF-FPW-12
     - WF-FPW-13
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -24,7 +24,7 @@ last_updated: 2026-11-04
 > 운행 감시·이상 징후 대응·긴급 차단 요청·드릴을 수행한다. 운영 리더는 차단·복원 승인에 참여한다.
 
 - IAM 역할: OPERATOR(운영자), OPS_LEAD(운영 리더)
-- IAM 데모 계정: operator
+- IAM 데모 계정: operator, opslead
 - 매핑 근거: REPORT_APPROVER_ROLES OPS_LEAD→OPS_LEAD, IAM 직무 KILL_EXECUTION = OPERATOR·OPS_LEAD
 
 ## 1. 내가 하는 일 (수행 R · 책임 A)

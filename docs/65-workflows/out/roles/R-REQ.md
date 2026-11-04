@@ -13,7 +13,7 @@ traces:
     - WF-FPW-3
     - WF-FPW-4
     - WF-FPW-9
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -61,12 +61,13 @@ last_updated: 2026-11-04
 ### FPW.3-A04 G3 판정·Feature 정의 승인 — 수행·책임
 - 프로세스: FPW.3 안전요구 확정
 - 시작: 앞 활동 완료
-- 입력: WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION, WP-REF-LINK → 출력: WP-G3-DECISION
+- 입력: WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION, WP-REF-LINK, WP-IMPL-LINK → 출력: WP-G3-DECISION
 - 플랫폼: `transition`, `/features/:id/:ver`, `/admin/approval`
 1. G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다
 2. 판정 근거를 정리해 G3 판정을 남긴다
 3. Lifecycle을 PROPOSED에서 APPROVED로 전이한다. 작성자는 이 전이를 할 수 없다
-4. 아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다
+4. 승인 서랍이 구현 연결 미입력을 경고한다(막지는 않는다) — 빠졌으면 승인 대신 보완을 요청할 수 있다
+5. 아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다
 - [ ] Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다
 - [ ] 연결된 기준 행에 요청 중(PENDING)·폐기 행이 없다. 요청 중 행은 Feature DB 관리자 승인 뒤에만 전이한다
 
@@ -100,6 +101,7 @@ last_updated: 2026-11-04
 - FPW.2-A06 TARA 수행 (통보)
 - FPW.2-A03 SOTIF 분석 갱신 (통보)
 - FPW.2-A05 G2 HARA 영향 판정 (통보)
+- FPW.3-A05 구현 연결 입력 (통보)
 - FPW.4-A01 차량 내 감시·안전기제 설계 (통보)
 - FPW.4-A03 Flag 정책 작성·검증 (통보)
 - FPW.9-A02 Flag Retirement 요청 (통보)

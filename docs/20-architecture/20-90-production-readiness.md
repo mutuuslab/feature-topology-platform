@@ -196,7 +196,7 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 |---|---|---|
 | 빌드 | `vite build` (`VITE_AUTH` 없음 = `demo`), 정적 데모(`VITE_DATA_MODE=static`)는 항상 demo | `VITE_AUTH=oidc vite build` |
 | 로그인 | 데모 계정 FF/platform(브라우저 안 표식) | "회사 계정(SSO)으로 로그인" 버튼 → `/api/auth/login` |
-| 역할 선택기 | 데모 9계정 전부 | 사용자 이름 + IdP가 부여한 역할과 겹치는 화면 역할만 |
+| 역할 선택기 | 데모 12계정 전부(2026-11-05 운영 리더·두 번째 Safety Manager·상품 Owner 추가) | 사용자 이름 + IdP가 부여한 역할과 겹치는 화면 역할만 |
 | API 머리글 | X-Actor-Id·X-Actor-Role | X-Actor-Role(부여 역할 중 하나)만, 신원은 쿠키. 401이면 지금 화면으로 돌아오는 SSO 로그인 |
 | 백엔드 | `FF_AUTH=demo` | `FF_AUTH=oidc` |
 

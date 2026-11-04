@@ -81,7 +81,7 @@ async function boot(dbFile: string) {
   // 긴급 차단 요청 → 2인 승인(발행) — 이벤트·알림·감사·게시본·전달함(당겨받기)의 본
   const k = await call('POST', '/api/kill-requests', H('usr-ops', 'OPERATOR'), { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01', 'lead-01'], reason: '부하 시험 본 차단', confirm: 'FEAT-00022', reasonCategory: 'SAFETY', reasonCode: 'FIELD_FAULT', containmentJustification: '원인 분석 전 봉쇄' });
   await call('POST', `/api/kill-requests/${k.killId}/approvals`, H('usr-safety', 'SAFETY_OFFICER'), {});
-  await call('POST', `/api/kill-requests/${k.killId}/approvals`, H('usr-opslead', 'OPS_LEAD'), {});
+  await call('POST', `/api/kill-requests/${k.killId}/approvals`, H('usr-csm', 'SECURITY_OFFICER'), {}); // FSM + CSM(2026-11-04 결정)
   await app.close();
 }
 

@@ -1,14 +1,17 @@
 // /master/feature-db/changes(/:id) — Feature DB 변경 요청(30-95 §8.2·§8.3·§10). 작성(누구나) → 자동 점검 → 도메인 검토(DOMAIN_REVIEWER)
 // → 승인·반려(REFDB_ADMIN) → 버전 발행(REFDB_ADMIN). 요청자는 자기 요청을 검토·승인할 수 없다(SOD-13·14, contracts refChangeDutyBlocker).
 // 못 누르는 버튼은 이유를 함께 보인다(Button reason · whyDisabled).
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { refChangeDutyBlocker, type RefChange, type RefChangeStatus, type RefFieldDiff, type RefQuality, type RefReviewOpinion, type RefRelease } from '@ff/contracts';
 import { canAct } from '../../api/actor';
 import { STATIC_MODE, type ApiError } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { CHANGE_STATUS_LABEL, featureDb as FD, KIND_LABEL, OPINION_LABEL, refChangeDetail as D, refChanges as T, refDetail as RD } from '../../copy/refdb';
-import { AsyncView, Button, DataTable, DiffView, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, Select, Tabs, whyDisabled } from '../../design';
+import { CHANGE_STATUS_LABEL, featureDb as FD, KIND_LABEL, OPINION_LABEL, refChangeAudit as AU, refChangeDetail as D, refChanges as T, refDetail as RD, refPublish as PB, refReleaseCols as RC } from '../../copy/refdb';
+import { auditActionKo } from '../../copy/audit';
+import { ko } from '../../copy/ko';
+import { personName } from '../../data/people';
+import { AsyncView, Button, DataTable, DiffView, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, Select, SummaryLine, Tabs, whyDisabled } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission, when } from '../shared';
 import { ChangeStatusBadge, changePath, downloadExport, myActorId, RefChip, TextLink, type RefChangeDetailResponse, type RefChangeView, type RefPublishResponse, type RefReleasesResponse } from './common';
@@ -123,9 +126,11 @@ function Releases() {
           columns={[
             { key: 'r', header: T.rcol.release, cell: (r) => <span className="ds-mono">{r.release}</span> },
             { key: 'a', header: T.rcol.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.publishedAt)}</span> },
-            { key: 'b', header: T.rcol.by, cell: (r) => <span className="ds-mono">{r.publishedBy}</span>, minor: true },
+            // 발행자·메모는 1366에서도 보인다(보조 열 아님, P5-4)
+            { key: 'b', header: T.rcol.by, cell: (r) => <span className="ds-nowrap" title={r.publishedBy}>{personName(r.publishedBy)}</span> },
             { key: 'c', header: T.rcol.changes, cell: (r) => r.changeIds.length, align: 'right' },
-            { key: 'h', header: T.rcol.hash, cell: (r) => <span className="ds-mono" title={r.hash} data-hash={r.hash}>{`${r.hash.slice(0, 12)}…`}</span> },
+            { key: 'n', header: RC.note, cell: (r) => <span className="ds-field__hint" data-release-note>{r.note || '—'}</span> },
+            { key: 'h', header: T.rcol.hash, cell: (r) => <span className="ds-mono" title={r.hash} data-hash={r.hash}>{`${r.hash.slice(0, 8)}…`}</span> },
           ]}
         />
       </AsyncView>
@@ -133,37 +138,110 @@ function Releases() {
   );
 }
 
+/** 발행 미리 보기 응답(refReleasePreview) */
+interface ReleasePreview {
+  release: string;
+  latest: string | null;
+  total: number;
+  approved: { changeId: string; kind: string; refId: string; nameKo: string | null; status: string; requestedBy: string; decidedBy: string | null; decidedAt: string | null }[];
+  retiring: { changeId: string; refId: string; nameKo: string | null; reason: string }[];
+  notify: { featureId: string; version: string; name: string | null; ownerId: string | null; refId: string }[];
+  quality: Record<'before' | 'after', { published: number; pending: number; noSource: number; attrMissing: number; awaitingPublish: number }>;
+  memo: string;
+}
+
+const STATUS_KO: Record<string, string> = { ACTIVE: '활성', REVIEW: '검토 필요', DEPRECATED: '폐기 예정', RETIRED: '폐기', PENDING: '요청 중' };
+
+/** 버전 발행 — 묶일 요청(승인 + 반려 → 폐기)·알림 받을 담당·품질 변화를 먼저 보이고, 메모(필수, 미리 채움)와 함께 발행한다(P5-4) */
 function Publish({ pending }: { pending: number | null }) {
   const { role } = useAppShell();
   const perm = usePermission(['REFDB_ADMIN']);
-  const quality = useApi<RefQuality>('refQuality');
-  const publish = useApiMutation<RefPublishResponse | RefRelease>('publishRefRelease', ['refReleases', 'listRefChanges', 'refQuality', 'listRefs', 'refDetail']);
+  const admin = canAct(role, ['REFDB_ADMIN']);
+  const preview = useApi<ReleasePreview>('refReleasePreview', {}, { enabled: admin });
+  const publish = useApiMutation<RefPublishResponse | RefRelease>('publishRefRelease', ['refReleases', 'listRefChanges', 'refQuality', 'listRefs', 'refDetail', 'refReleasePreview']);
   const [note, setNote] = useState('');
+  const [touched, setTouched] = useState(false);
   const [done, setDone] = useState<string | null>(null);
+  // 응답 모양이 미리 보기일 때만(이전 서버·모의 응답이면 예전처럼 승인 수만)
+  const p = preview.data && Array.isArray(preview.data.approved) ? preview.data : undefined;
+  // 미리 보기가 오면 메모를 미리 채운다(사람이 고치기 시작했으면 덮지 않는다)
+  useEffect(() => {
+    if (p?.memo && !touched) setNote(p.memo);
+  }, [p?.memo, touched]);
   // 관리자만 이 칸을 본다(정적 데모도 관리자면 보이되 읽기 전용 이유가 붙는다)
-  if (!canAct(role, ['REFDB_ADMIN'])) return null;
-  const n = pending ?? quality.data?.awaitingPublish ?? 0;
-  const why = whyDisabled([!perm.ok, perm.hint], [n === 0, T.publishNone]);
+  if (!admin) return null;
+  const n = p ? p.total : (pending ?? 0);
+  const why = whyDisabled([!perm.ok, perm.hint], [n === 0, PB.none], [note.trim().length < 2, PB.memoWhy]);
+  const QK = PB.qk;
+  const qKeys = ['published', 'pending', 'attrMissing', 'noSource', 'awaitingPublish'] as const;
   return (
-    <Panel title={T.publish} id="ref-publish">
+    <Panel title={PB.title} id="ref-publish" eyebrow={p ? PB.next(p.release) : undefined}>
       <p className="ds-field__hint">{T.publishHint}</p>
-      <Field label={T.publishNote}>
-        <input className="ds-input" value={note} onChange={(e) => setNote(e.target.value)} />
+      {p && p.total > 0 && (
+        <div className="ds-stack" data-testid="ref-publish-preview">
+          <section aria-label={PB.approved}>
+            <h3 className="ds-eyebrow">{`${PB.approved} ${p.approved.length}`}</h3>
+            <ul className="ds-linklist">
+              {p.approved.map((a) => (
+                <li key={a.changeId} data-publish-change={a.changeId}>
+                  <Link to={changePath(a.changeId)}>{a.changeId}</Link> {`${KIND_LABEL[a.kind as keyof typeof KIND_LABEL] ?? a.kind} · ${a.refId} ${a.nameKo ?? ''} ${PB.becomes(STATUS_KO[a.status] ?? a.status)}`}
+                </li>
+              ))}
+            </ul>
+          </section>
+          {p.retiring.length > 0 && (
+            <section aria-label={PB.retiring}>
+              <h3 className="ds-eyebrow">{`${PB.retiring} ${p.retiring.length}`}</h3>
+              <ul className="ds-linklist">
+                {p.retiring.map((x) => (
+                  <li key={x.changeId} data-publish-retire={x.refId}>
+                    <Link to={changePath(x.changeId)}>{x.changeId}</Link> {`${x.refId} ${x.nameKo ?? ''} ${PB.becomes(STATUS_KO.RETIRED)} · ${x.reason}`}
+                  </li>
+                ))}
+              </ul>
+              <p className="ds-field__hint">{PB.notify}</p>
+              {p.notify.length ? (
+                <ul className="ds-linklist">
+                  {p.notify.map((f) => (
+                    <li key={`${f.featureId}@${f.version}`} data-publish-notify={f.featureId}>
+                      {`${f.featureId} ${f.version} ${f.name ?? ''} · ${personName(f.ownerId)}`}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="ds-field__hint">{PB.notifyNone}</p>
+              )}
+            </section>
+          )}
+          <SummaryLine label={PB.quality} items={qKeys.map((k) => ({ k: QK[k], v: PB.arrow(p.quality.before[k], p.quality.after[k]) }))} />
+        </div>
+      )}
+      <Field label={PB.memo} hint={PB.memoHint}>
+        <input
+          className="ds-input"
+          name="releaseNote"
+          value={note}
+          onChange={(e) => {
+            setTouched(true);
+            setNote(e.target.value);
+          }}
+        />
       </Field>
-      <ErrorNote error={publish.error} />
+      <ErrorNote error={publish.error ?? preview.error} />
       {done && <p role="status">{T.published(done)}</p>}
       <Button
         variant="primary"
+        data-ui="publishRefRelease"
         disabled={!!why || publish.isPending}
         reason={why}
         onClick={() =>
           publish.mutate(
             { body: { changeIds: [], note: note.trim() } },
-            { onSuccess: (res) => (setDone(typeof res.release === 'string' ? res.release : (res.release?.release ?? '')), setNote('')) },
+            { onSuccess: (res) => (setDone(typeof res.release === 'string' ? res.release : (res.release?.release ?? '')), setNote(''), setTouched(false)) },
           )
         }
       >
-        {T.publishBtn(n)}
+        {p ? PB.button(p.release, n) : T.publishBtn(n)}
       </Button>
     </Panel>
   );
@@ -209,10 +287,10 @@ export function RefChangeDetailScreen() {
                   rows={[
                     { k: RD.f.refId, v: <RefChip id={c.refId} /> },
                     { k: D.reason, v: c.reason || '—' },
-                    { k: D.meta.by, v: <span className="ds-mono">{c.requestedBy}</span> },
+                    { k: D.meta.by, v: <span title={c.requestedBy}>{personName(c.requestedBy)}</span> },
                     { k: D.meta.at, v: when(c.requestedAt) },
                     ...(c.release ? [{ k: D.meta.release, v: <span className="ds-mono">{c.release}</span> }] : []),
-                    ...(c.decision ? [{ k: D.meta.decision, v: D.decisionText(D.decision[c.decision.decision] ?? c.decision.decision, c.decision.decidedBy, c.decision.reason) }] : []),
+                    ...(c.decision ? [{ k: D.meta.decision, v: D.decisionText(D.decision[c.decision.decision] ?? c.decision.decision, personName(c.decision.decidedBy), c.decision.reason) }, { k: AU.decidedAt, v: when(c.decision.at) }] : []),
                   ]}
                 />
                 <DiffView rows={diffRows(c)} />
@@ -224,6 +302,7 @@ export function RefChangeDetailScreen() {
                 {recalc && <p className="ds-field__hint" data-recalc>{D.recalc}</p>}
                 {usedBy.length ? <UsageTable rows={usedBy} caption={D.impact} /> : <p className="ds-field__hint">{D.impactNone}</p>}
               </Panel>
+              <AuditTrail changeId={c.changeId} />
             </div>
             <div className="ds-stack">
               <Reviews c={c} />
@@ -325,6 +404,50 @@ function DecideForm({ c }: { c: RefChange }) {
           {D.reject}
         </Button>
       </div>
+    </Panel>
+  );
+}
+
+/** 변경 요청 감사 이력 응답(refChangeAudit) */
+interface ChangeAudit {
+  items: { id: number; at: string; actorId: string; actorRole: string; action: string; stage: string | null; target: string; result: 'ALLOWED' | 'DENIED' | 'FAILED'; reason: string | null }[];
+  decision: { decision: string; decidedBy: string; at: string } | null;
+  release: { release: string; publishedBy: string; publishedAt: string; note: string | null } | null;
+}
+
+/** 감사 이력 — 요청·검토·결정·발행을 한 줄씩(감사 화면을 세 번 검색하지 않게, P5-6). 결정 시각·발행자 요약 */
+function AuditTrail({ changeId }: { changeId: string }) {
+  const q = useApi<ChangeAudit>('refChangeAudit', { params: { id: changeId } });
+  const d = q.data && Array.isArray(q.data.items) ? q.data : undefined;
+  return (
+    <Panel title={AU.title} id="cr-audit" eyebrow={d ? String(d.items.length) : undefined} actions={<Link to={`/audit?prefix=${encodeURIComponent(changeId)}`}>{AU.toAudit} →</Link>}>
+      <AsyncView state={asyncState(q, !d || !d.items.length)} error={q.error} onRetry={() => q.refetch()} empty={{ title: AU.none, body: '' }} rows={3}>
+        {d && (
+          <>
+            {d.release && (
+              <KeyValue
+                rows={[
+                  { k: AU.publisher, v: <span title={d.release.publishedBy}>{`${personName(d.release.publishedBy)} · ${d.release.release}`}</span> },
+                  { k: AU.publishedAt, v: when(d.release.publishedAt) },
+                  ...(d.release.note ? [{ k: AU.releaseNote, v: d.release.note }] : []),
+                ]}
+              />
+            )}
+            <ol className="ds-check" data-testid="cr-audit-trail">
+              {d.items.map((e) => (
+                <li key={e.id} style={{ gridTemplateColumns: 'auto minmax(0, 1fr)' }} data-stage={e.stage ?? ''} data-state={e.result === 'ALLOWED' ? 'PASS' : 'FAIL'} data-action={e.action}>
+                  <span className="ds-mono ds-nowrap">{when(e.at)}</span>
+                  <span>
+                    <strong>{e.stage ? AU.stage[e.stage] : (ko.audit.results[e.result] ?? e.result)}</strong> <span title={e.action}>{auditActionKo(e.action) ?? e.action}</span>
+                    {e.result !== 'ALLOWED' && <> · {ko.audit.results[e.result]}</>}
+                    <span className="ds-check__detail">{[personName(e.actorId), e.reason].filter(Boolean).join(' · ')}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
+      </AsyncView>
     </Panel>
   );
 }

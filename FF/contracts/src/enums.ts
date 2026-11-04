@@ -75,6 +75,10 @@ export const ROLES = [
   'REFDB_ADMIN', // Feature DB 관리자 — 기준 행 변경 요청 최종 승인·버전 발행·분류·출처 관리 (30-95 §8.1)
   'DOMAIN_REVIEWER', // 도메인 검토자 — 담당 도메인 기준 행 변경 요청에 검토 의견 (30-95 §8.1)
   'AUDITOR', // 운영/감사 조회자 (읽기 전용)
+  'COST_ESTIMATOR', // SW 개발비 산정 작성자 — 산정 과제·줄 입력·계산·제출 (20-94 §4). AUDITOR 뒤 — 같은 계정의 기존 역할이 앞서 선택된다(actorFor)
+  'COST_APPROVER', // SW 개발비 산정 승인자 — 제출된 과제 승인·반려
+  'COST_VIEWER', // SW 개발비 산정 열람자 — 승인된 과제·금액 열람·내보내기
+  'COST_BASIS_ADMIN', // 원가 기준 관리자 — 계수·단가·환율 표 버전 발행 (D-COST-8)
   'SYSTEM', // 시스템(Registry) 자동 전이
   'VEHICLE', // 차량 (차량 발신 요청 채널 — 사람 역할 아님)
 ] as const;
@@ -98,6 +102,10 @@ export const ROLE_LABEL: Record<Role, string> = {
   REGULATORY_OWNER: '법규 담당',
   REFDB_ADMIN: 'Feature DB 관리자',
   DOMAIN_REVIEWER: '도메인 검토자',
+  COST_ESTIMATOR: 'SW 개발비 산정 작성자',
+  COST_APPROVER: 'SW 개발비 산정 승인자',
+  COST_VIEWER: 'SW 개발비 산정 열람자',
+  COST_BASIS_ADMIN: '원가 기준 관리자',
   AUDITOR: '운영·감사 조회자',
   SYSTEM: '시스템',
   VEHICLE: '차량',

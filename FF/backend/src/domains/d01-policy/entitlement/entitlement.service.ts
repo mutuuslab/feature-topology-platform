@@ -113,6 +113,11 @@ export class EntitlementService {
           skipped.push({ vin, reason: '판매 전이거나 말소된 차량' });
           continue;
         }
+        // 시뮬레이터(영상 키트 BeamNG/UE) 차량은 고객 체험 대상이 아니다(담당자 웨이브 P1-3) — 시연용 체험권은 시드로만 둔다
+        if (registered?.gleo) {
+          skipped.push({ vin, reason: '시뮬레이터 차량은 고객 체험 대상이 아닙니다' });
+          continue;
+        }
         const unsupported = this.unsupported(vin, body.catalogId);
         if (unsupported) {
           skipped.push({ vin, reason: unsupported });

@@ -11,7 +11,7 @@ traces:
     - GATE-G7
     - FLW-CHANGE-REQUEST
     - FLW-CHANGESET-IMPACT
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 

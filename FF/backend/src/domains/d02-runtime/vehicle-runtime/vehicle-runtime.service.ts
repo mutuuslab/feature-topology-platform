@@ -3,7 +3,7 @@
 // 차량 측 평가는 서버와 같은 단일 평가기(evaluateFlag)를 캐시된 서명 정책으로 돌린다 — 서버 판단과 어긋나면 drift.
 // v2 차단·복원(보고서 v1.1 9장): 게시본과 함께 이 차량의 봉투를 받아 Guard 검증 순서(서명 → cmd_auth → epoch → 순번 창 → 시각 → 등급 → 승인자)를 거치고,
 // DC 단계 상태 기계(DC2: 경고 → 인계 → 램프 → DISABLED, 복원: RESTORE_PENDING → 다음 시동 → INACTIVE, 활성화는 따로 — FFP-F036)로 진행하며 단계마다 서명된 status_report v2를 보낸다.
-import { Controller, Get, Inject, Injectable, Param } from '@nestjs/common';
+import { Controller, Get, Inject, Injectable, Logger, Param } from '@nestjs/common';
 import {
   authBlock,
   COMMAND_KEY_PURPOSE,
@@ -84,7 +84,11 @@ export class VehicleRuntimeService {
         vins.forEach((vin, i) => this.scheduler.after(LATENCY + i * STAGGER, () => this.receive(vin, pub)));
         return { ackOnly: [] };
       },
+      // 회신 상태 — 시험용 수동 시계(FF_SCHEDULER=manual)면 시뮬레이터 차량은 시험이 시간을 흘려야 회신한다. 데모 서버가 그 설정이면
+      // 게시본이 '회신 대기'에 머문다(P4-3) — 화면이 이유를 보이도록 상태로 내놓는다
+      status: () => ({ replies: this.scheduler.manual ? 'PAUSED' : 'LIVE', latencyMs: LATENCY }),
     });
+    if (this.scheduler.manual && channels.active === 'sim') new Logger('VehicleSim').warn('수동 시계(FF_SCHEDULER=manual) — 시뮬레이터 차량 회신·회신 기한이 돌지 않습니다. 데모 서버는 이 설정 없이 띄우세요');
   }
 
   /**

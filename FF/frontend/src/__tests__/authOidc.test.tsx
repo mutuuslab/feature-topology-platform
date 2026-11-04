@@ -46,7 +46,7 @@ describe('운영 빌드(SSO) — 부여 역할 안에서만', { timeout: 30_000 
     const sso = await loadOidc();
     await sso.refreshSso();
     const actor = await import('../api/actor');
-    expect(actor.personasFor(USER.roles as never)).toEqual(['quality', 'integrator']);
+    expect(actor.personasFor(USER.roles as never)).toEqual(['quality', 'integrator', 'safety2']);
     expect(actor.actorFor('quality', ['GATE_JUDGE'])).toEqual({ id: 'u-quality-1', role: 'GATE_JUDGE' });
     // 화면 역할이 부여 범위 밖이면 부여 역할로만 — 운영자(OPERATOR) 권한은 생기지 않는다
     expect(actor.canAct('operator', ['OPERATOR'])).toBe(false);

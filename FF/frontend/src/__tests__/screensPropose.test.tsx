@@ -183,7 +183,7 @@ describe('Feature 제안 ① 기준 기능 고르기', () => {
 
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     const post = calls.find((c) => c.method === 'POST' && c.url === '/api/refdb/requests')!;
-    expect(post.body).toEqual({ domain: 'Chassis & Vehicle Dynamics', component: 'Brake control (ESC/ABS)', nameEn: 'Auto EPB release', nameKo: '자동 주차 브레이크 해제', tshirt: 'M', asilRep: 'C', sourceIds: [], basisNote: '사내 EPB 사양서 3.2절' });
+    expect(post.body).toEqual({ domain: 'Chassis & Vehicle Dynamics', component: 'Brake control (ESC/ABS)', nameEn: 'Auto EPB release', nameKo: '자동 주차 브레이크 해제', tshirt: 'M', asilRep: 'C', sourceIds: [], basisNote: '사내 EPB 사양서 3.2절', swStack: '', lifecycle: '', techStack: '' }); // 분류 속성(W5 P5-8) — 비우면 승인 뒤 검토 필요
     const chosen = document.querySelector('[data-ref-chosen="CH-BRK-031"]') as HTMLElement;
     expect(chosen.getAttribute('data-role')).toBe('PRIMARY');
     expect(within(chosen).getByText('요청 중')).toBeTruthy();

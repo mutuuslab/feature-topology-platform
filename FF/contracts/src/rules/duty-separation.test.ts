@@ -15,7 +15,17 @@ describe('IAM 직무 분리 (FFG-PLT-016)', () => {
     const holders = (d: Parameters<typeof dutiesOf>[0][number]) => Object.keys(DEMO_PERSONAS).filter((k) => DEMO_PERSONAS[k].includes(d));
     expect(holders('RELEASE_MANAGER')).toEqual(['coordinator']);
     expect(holders('OPERATOR')).toEqual(['operator']);
-    expect(holders('SAFETY_OFFICER')).toEqual(['quality', 'integrator']);
+    expect(holders('SAFETY_OFFICER')).toEqual(['quality', 'integrator', 'safety2']);
+  });
+
+  it('FFG-PLT-016 담당자 웨이브 데모 계정 — 운영 리더·두 번째 FSM·고객 출시 승인자가 따로 있고 각자 한 직무만', () => {
+    const holders = (d: Parameters<typeof dutiesOf>[0][number]) => Object.keys(DEMO_PERSONAS).filter((k) => DEMO_PERSONAS[k].includes(d));
+    expect(holders('OPS_LEAD')).toEqual(['opslead']);
+    expect(holders('PRODUCT_APPROVER')).toEqual(['approver', 'productowner']);
+    expect(dutiesOf(DEMO_PERSONAS.opslead)).toEqual(['KILL_EXECUTION']);
+    expect(dutiesOf(DEMO_PERSONAS.safety2)).toEqual(['RESTORE_APPROVAL']);
+    expect(dutiesOf(DEMO_PERSONAS.productowner)).toEqual(['REQUIREMENT_APPROVAL']);
+    expect(Object.keys(DEMO_PERSONAS)).toHaveLength(12);
   });
 
   it('FFG-PLT-016 긴급 권한 사후 검토자는 그 명령의 요청자·승인자가 아니다', () => {

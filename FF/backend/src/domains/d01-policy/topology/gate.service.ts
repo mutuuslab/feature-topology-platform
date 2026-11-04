@@ -1,12 +1,16 @@
 // Gate Record — Topology 소유(상세설계서 표 12). append-only: 재판정은 새 SIM-Gn-NNNNNN, 이전 레코드는 감사용으로 남는다.
 // 증거 없는 PASS 금지, Gate 단계 순서(G1~3 → G4~7 → G8~9) 준수, RELEASED 이후 버전은 판정 불가(새 Version으로).
+// 단계 가드·분석 근거 조건(G2 HARA·TARA·ASIL 사유 검토, G7 SM·CSM 서명)은 contracts gate-evidence — 화면이 판정 전에 같은 함수로 막는다(P3-3·P3-10).
+// Evidence Ref가 있는 판정은 Evidence 원장(evidence)에 행을 남긴다 — 원장·딥링크가 플랫폼 판정도 보인다(P3-4).
 import { Inject, Injectable } from '@nestjs/common';
 import { SafetyProfileService } from '../registry/safety-profile.service';
 import {
   GATE_META,
   GATES,
+  gateStageBlocker,
   gateStatusOf,
-  LIFECYCLE_RANK,
+  procedureGatesFor,
+  type EvidenceRow,
   type FeatureVersionRow,
   type GateId,
   type GateRecordRow,
@@ -25,13 +29,7 @@ import { GateDecisionService } from './gate-decision.service';
 import { ReharaRepo } from './rehara.repo';
 import { changeRecordFindings, REHARA_BLOCKED_GATES, REHARA_LABEL, type ChangeRecordBody } from '@ff/contracts';
 import { VirtualRunRepo } from '../../d06-qsec/scenario-validation/virtual-run.repo';
-
-const STAGES: GateId[][] = [
-  ['G1', 'G2', 'G3'],
-  ['G4', 'G5', 'G6', 'G7'],
-  ['G8', 'G9'],
-];
-const stageOf = (g: GateId) => STAGES.findIndex((s) => s.includes(g));
+import { AnalysisEvidenceService } from './analysis-evidence.service';
 
 @Injectable()
 @PlatformComponent('D01-02')
@@ -47,10 +45,11 @@ export class GateService {
     private readonly safety: SafetyProfileService,
     private readonly decisions: GateDecisionService,
     private readonly rehara: ReharaRepo,
+    private readonly analysis: AnalysisEvidenceService,
   ) {}
 
   view(featureId: string, version: string) {
-    this.lifecycle.require(featureId, version);
+    const f = this.lifecycle.require(featureId, version);
     const history = this.gates.history(featureId, version);
     const latest = this.gates.latest(featureId, version);
     return {
@@ -66,23 +65,40 @@ export class GateService {
         status: latest[g]?.status ?? '미판정',
         evidence: latest[g] ? this.gates.evidence(latest[g]!.gateRecordId) ?? null : null,
         history: history.filter((h) => h.gate === g).map((h) => ({ ...h, decision: this.decisions.verify(h).state })),
+        /** 이 플랫폼 Gate가 대응하는 절차 Gate(P3-9) */
+        procedureGates: procedureGatesFor(g).map((m) => m.procedureGate),
       })),
+      /** 판정 폼 단계 가드(P3-10) — 화면이 contracts gateStageBlocker로 미리 막는다 */
+      lifecycle: f.lifecycle,
       /** FFG-LCY-003 — 이 Version의 재-HARA 요청(열린 것이 있으면 G3 이후 PASS 막힘) */
       rehara: this.rehara.list({ featureId, featureVersion: version }),
     };
   }
 
-  /** 판정 가능 여부 — 막히면 사유 */
-  private check(actor: Actor, f: FeatureVersionRow, gate: GateId): string | null {
-    if (LIFECYCLE_RANK[f.lifecycle] >= LIFECYCLE_RANK.RELEASED) return `${f.lifecycle} 버전은 읽기 전용입니다. 새 Version을 만들어 판정하세요.`;
-    if (actor.role === 'SAFETY_OFFICER' && gate !== 'G7') return '기능안전·보안 담당자는 G7만 판정할 수 있습니다.';
-    const stage = stageOf(gate);
-    const need: Record<number, number> = { 0: LIFECYCLE_RANK.PROPOSED, 1: LIFECYCLE_RANK.DEVELOPING, 2: LIFECYCLE_RANK.VERIFIED };
-    if (LIFECYCLE_RANK[f.lifecycle] < need[stage]) return `${gate}은(는) ${GATE_META[gate].stage} 단계 Gate입니다 (현재 ${f.lifecycle}).`;
+  /** 판정 가능 여부 — 막히면 사유(contracts gateStageBlocker, 화면과 같은 판정) */
+  private check(actor: Actor, f: FeatureVersionRow, gate: GateId): { reason: string; readOnly: boolean } | null {
     const latest = this.gates.latest(f.featureId, f.version);
-    for (const prev of STAGES.slice(0, stage).flat())
-      if (latest[prev]?.status !== 'PASS') return `앞 단계 ${prev}이(가) PASS가 아닙니다 (${latest[prev]?.status ?? '미판정'}).`;
-    return null;
+    return gateStageBlocker({ lifecycle: f.lifecycle, gate, role: actor.role, latest: Object.fromEntries(Object.entries(latest).map(([g, r]) => [g, r?.status ?? null])) });
+  }
+
+  /** Evidence 원장 행 — Evidence Ref가 있는 플랫폼 판정(이관 기록과 같은 모양) */
+  private evidenceRow(f: FeatureVersionRow, record: GateRecordRow): EvidenceRow {
+    return {
+      evidenceRef: record.evidenceRef!,
+      gate: record.gate,
+      gateRecordId: record.gateRecordId,
+      featureId: f.featureId,
+      featureVersion: f.version,
+      featureName: f.name,
+      featureDescription: f.description,
+      scope: [f.country, f.vehicleModel, f.trim].filter(Boolean).join(' · '),
+      owner: f.ownerId,
+      lifecycle: f.lifecycle,
+      inputResult: record.inputResult,
+      resultReason: `${record.inputResult} — ${record.rationale}`,
+      additionalEvidence: null,
+      _missing: {},
+    };
   }
 
   /**
@@ -125,8 +141,8 @@ export class GateService {
     const target = `${featureId}@${version}#${body.gate}`;
     const blocked = this.check(actor, f, body.gate);
     if (blocked) {
-      this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, blocked, 'D01-02');
-      throw new DomainError(LIFECYCLE_RANK[f.lifecycle] >= LIFECYCLE_RANK.RELEASED ? 'IMMUTABLE' : 'GUARD_FAILED', blocked);
+      this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, blocked.reason, 'D01-02');
+      throw new DomainError(blocked.readOnly ? 'IMMUTABLE' : 'GUARD_FAILED', blocked.reason);
     }
     // 보고서 v1.1: G1은 안전 분류 네 축·조합(FFG-CLS-001·009), 그 다음 Gate는 Safety Manager 확정(보고서 6.1 G2) — PASS 판정에만
     const pre = body.inputResult === 'PASS' ? this.safety.gatePrerequisite(featureId, version, body.gate) : null;
@@ -146,11 +162,18 @@ export class GateService {
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, cr, 'D01-02');
       throw new DomainError('GUARD_FAILED', cr, { rule: 'FFG-CODE-030' });
     }
-    const vv = this.virtualEvidence(featureId, version, body);
+    const vv = this.virtualEvidence(featureId, version, body) ?? this.analysis.unknownRefs(featureId, version, body.evidenceRef);
     if (vv) {
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, vv, 'D01-02');
       throw new DomainError('GUARD_FAILED', vv);
     }
+    // 분석 근거(P3-3) — G2: 이 Version의 HARA(+보안 관련이면 TARA)·대표 ASIL 변경 사유 검토, G7: SM·CSM 두 사람 서명
+    const evidence = this.analysis.gateBlockers(f, body);
+    if (evidence.length) {
+      this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, evidence.join(' / '), 'D01-02');
+      throw new DomainError('GUARD_FAILED', `${body.gate}을(를) PASS로 판정할 근거가 부족합니다.`, { blockers: evidence.map((message) => ({ code: 'ANALYSIS_EVIDENCE', message, ref: body.gate })) });
+    }
+    const deviation = body.gate === 'G2' && body.inputResult === 'PASS' && body.asilReasonReviewed ? this.analysis.asilDeviation(f) : null;
     return this.db.tx(() => {
       const prev = this.gates.latest(featureId, version)[body.gate];
       const record: GateRecordRow = {
@@ -168,10 +191,11 @@ export class GateService {
         status: gateStatusOf(body.inputResult),
         gateStageLifecycle: GATE_META[body.gate].stage,
         currentLifecycle: f.lifecycle,
-        transitionNote: prev ? `재판정 — 이전 ${prev.gateRecordId}(${prev.status}) 대체` : '최초 판정',
+        transitionNote: `${prev ? `재판정 — 이전 ${prev.gateRecordId}(${prev.status}) 대체` : '최초 판정'}${deviation ? ` · ASIL 사유 검토함(대표 ${deviation.from} → ${deviation.to})` : ''}`,
         _missing: {},
       };
       this.gates.insert(record);
+      if (record.evidenceRef) this.gates.insertEvidence(this.evidenceRow(f, record));
       // 결정 기록 — 판정한 사람·그때의 역할로 서명(같은 트랜잭션)
       const decision = this.decisions.sign(record, { id: actor.id, role: actor.role }, 'PLATFORM');
       // G2 재판정 PASS가 열린 재-HARA 요청을 닫는다
@@ -180,7 +204,7 @@ export class GateService {
           this.audit.record(actor, 'REHARA_RESOLVE', `${featureId}@${version}`, { before: { requestId: x.requestId, status: 'OPEN' }, after: { status: 'RESOLVED', gateRecordId: record.gateRecordId }, componentId: 'D01-02' });
       this.audit.record(actor, `GATE_JUDGE ${body.gate}`, target, {
         before: prev ? { gateRecordId: prev.gateRecordId, status: prev.status } : null,
-        after: { gateRecordId: record.gateRecordId, status: record.status, evidenceRef: record.evidenceRef, decisionKid: decision.signature.kid },
+        after: { gateRecordId: record.gateRecordId, status: record.status, evidenceRef: record.evidenceRef, decisionKid: decision.signature.kid, ...(deviation ? { asilReasonReviewed: { from: deviation.from, to: deviation.to } } : {}) },
         reason: body.rationale,
         componentId: 'D01-02',
       });

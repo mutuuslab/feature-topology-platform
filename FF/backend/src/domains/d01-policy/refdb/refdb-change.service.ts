@@ -18,6 +18,8 @@ import {
   FeatureRefRow,
   nextRefId,
   REF_MONEY_FIELDS,
+  refAttrMissing,
+  refQuality,
   REFDB_REF_REJECTED_EVENT,
   RefRelease,
   refChangeDuty,
@@ -32,7 +34,7 @@ import {
   type TaxonomyNode,
 } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
-import { AuditService } from '../../../kernel/audit.service';
+import { AuditService, type AuditEntry } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
 import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
@@ -58,6 +60,20 @@ function hideBenchmark<T extends Record<string, unknown> | null>(diff: T, role: 
 type ComponentNode = TaxonomyNode & { abbrs?: string[]; clusterIds?: string[] };
 /** 검토 의견 이름(화면 문구) */
 const OPINION_KO = { AGREE: '동의', REVISE: '보완', OPPOSE: '반대' } as const;
+
+/** 추가 요청을 발행할 때의 상태 — 1차 출처가 없거나 분류 속성(SW 계층·수명주기·기술 영역)이 비면 검토 필요(P5-8), 아니면 활성 */
+export function addStatus(c: Pick<RefChange, 'checks'>, merged: Partial<FeatureRefRow>): 'ACTIVE' | 'REVIEW' {
+  return sourceMissing(c.checks ?? [], merged) || refAttrMissing(merged as FeatureRefRow) ? 'REVIEW' : 'ACTIVE';
+}
+
+/** 감사 이력 단계 — 변경 요청 상세 '감사 이력' 패널(P5-6) */
+const AUDIT_STAGE: Record<string, 'REQUEST' | 'REVIEW' | 'DECIDE' | 'PUBLISH'> = {
+  REFDB_ADD_REQUEST: 'REQUEST',
+  REFDB_CHANGE_CREATE: 'REQUEST',
+  REFDB_CHANGE_REVIEW: 'REVIEW',
+  REFDB_CHANGE_DECIDE: 'DECIDE',
+  REFDB_RELEASE_PUBLISH: 'PUBLISH',
+};
 
 /** 같은 접두(도메인약어-컴포넌트약어-)에서 지금까지 쓴 가장 큰 일련번호 */
 export function maxSerial(prefix: string, used: Iterable<string>): number {
@@ -354,8 +370,9 @@ export class RefdbChangeService {
         if (c.kind === 'ADD') {
           if (cur && cur.status !== 'PENDING') throw new DomainError('CONFLICT', `기준 행 ${c.refId}이(가) 이미 Feature DB에 있습니다 — ${c.changeId}을(를) 발행할 수 없습니다.`, { changeId: c.changeId });
           const merged = { ...(cur ?? {}), ...c.after, refId: c.refId } as DraftRow;
-          const status = sourceMissing(c.checks ?? [], merged) ? 'REVIEW' : 'ACTIVE';
-          const row = FeatureRefRow.parse({ ...merged, status, registeredIn: release, adminMemo: appendMemo(merged.adminMemo ?? '', `${c.changeId} 추가 승인·${release} 발행`) });
+          const status = addStatus(c, merged);
+          const attrNote = refAttrMissing(merged as FeatureRefRow) ? ' — SW 계층·수명주기·기술 영역 미입력으로 검토 필요' : '';
+          const row = FeatureRefRow.parse({ ...merged, status, registeredIn: release, adminMemo: appendMemo(merged.adminMemo ?? '', `${c.changeId} 추가 승인·${release} 발행${attrNote}`) });
           if (cur) this.repo.updateRef(row, at);
           else this.repo.insertRef(row, at);
           const taxonomy = this.addProposedComponent(c, row);
@@ -403,6 +420,80 @@ export class RefdbChangeService {
     this.repo.insertTaxonomy(node);
     made.push(node.nodeId);
     return made;
+  }
+
+  // ── 발행 미리 보기(P5-4) ───────────────────────────────────
+
+  /**
+   * 다음 발행에 묶일 것 — 승인 요청(발행 대기)과 반려된 추가 요청(요청 중 행 → 폐기), 폐기 행을 연결한 Feature Owner(알림 대상),
+   * 품질 지표 전후. 발행과 같은 규칙으로 계산하지만 아무것도 쓰지 않는다. 메모 기본값(발행 메모 필수 — 화면이 미리 채운다)도 준다.
+   */
+  preview() {
+    const candidates = [...this.publishable()].sort((a, b) => byChangeId(a.changeId, b.changeId));
+    const latest = this.repo.latestRelease()?.release;
+    const release = nextReleaseId(latest);
+    const refs = this.repo.listRefs();
+    const byId = new Map(refs.map((r) => [r.refId, { ...r }]));
+    const approved: { changeId: string; kind: string; refId: string; nameKo: string | null; status: string; requestedBy: string; decidedBy: string | null; decidedAt: string | null }[] = [];
+    const retiring: { changeId: string; refId: string; nameKo: string | null; reason: string }[] = [];
+    const notify: { featureId: string; version: string; name: string | null; ownerId: string | null; refId: string }[] = [];
+    for (const c of candidates) {
+      const cur = byId.get(c.refId);
+      if (c.status === 'REJECTED') {
+        if (cur) byId.set(c.refId, { ...cur, status: 'RETIRED' });
+        retiring.push({ changeId: c.changeId, refId: c.refId, nameKo: cur?.nameKo ?? null, reason: c.decision?.reason ?? '' });
+        for (const l of this.repo.usersOf(c.refId)) notify.push({ featureId: l.featureId, version: l.version, refId: c.refId, ...this.repo.featureOwner(l.featureId, l.version) });
+        continue;
+      }
+      let status: string;
+      if (c.kind === 'ADD') {
+        const merged = { ...(cur ?? {}), ...c.after, refId: c.refId } as FeatureRefRow;
+        status = addStatus(c, merged);
+        byId.set(c.refId, { ...merged, status } as FeatureRefRow);
+      } else if (cur) {
+        const row = applyDiff(c.kind, cur, c.after);
+        status = row.status;
+        byId.set(c.refId, row);
+      } else status = '—';
+      approved.push({ changeId: c.changeId, kind: c.kind, refId: c.refId, nameKo: byId.get(c.refId)?.nameKo ?? null, status, requestedBy: c.requestedBy, decidedBy: c.decision?.decidedBy ?? null, decidedAt: c.decision?.at ?? null });
+    }
+    const releases = this.repo.releases();
+    const changes = this.repo.changes();
+    const now = this.clock.iso();
+    const before = refQuality(refs, releases, changes, now);
+    const ids = new Set(candidates.map((c) => c.changeId));
+    const after = refQuality([...byId.values()], releases, changes.map((c) => (ids.has(c.changeId) ? { ...c, status: c.status === 'APPROVED' ? ('PUBLISHED' as const) : c.status, release } : c)), now);
+    const pick = (q: typeof before) => ({ published: q.published, pending: q.pending, byStatus: q.byStatus, noSource: q.noSource, attrMissing: q.attrMissing, awaitingPublish: q.awaitingPublish });
+    const memo = [`Feature DB ${release} 발행`, approved.length ? `승인 ${approved.length}건(${approved.map((a) => a.changeId).join(', ')})` : '', retiring.length ? `반려 정리 ${retiring.length}건(${retiring.map((r) => r.changeId).join(', ')})` : ''].filter(Boolean).join(' — ');
+    return { release, latest: latest ?? null, total: candidates.length, approved, retiring, notify, quality: { before: pick(before), after: pick(after) }, memo };
+  }
+
+  // ── 감사 이력(P5-6) ──────────────────────────────────────
+
+  /** 변경 요청 한 건의 감사 이력 — 요청 번호·대상 행(추가 요청)·발행 버전에 남은 기록을 시간 순으로. 금액 값은 감사에 남기지 않았다 */
+  auditTrail(changeId: string) {
+    const c = this.mustGet(changeId);
+    const mine = (e: AuditEntry) => {
+      if (e.target === changeId) return true;
+      const after = (e.after ?? {}) as { changeId?: string; changeIds?: string[] };
+      if (e.target === c.refId && e.action === 'REFDB_ADD_REQUEST') return after.changeId === changeId;
+      if (c.release && e.target === c.release && e.action === 'REFDB_RELEASE_PUBLISH') return !!after.changeIds?.includes(changeId);
+      return false;
+    };
+    const rows = [...this.audit.list({ target: changeId, limit: 1000 }), ...this.audit.list({ target: c.refId, limit: 1000 }), ...(c.release ? this.audit.list({ target: c.release, limit: 1000 }) : [])].filter(mine);
+    const seen = new Set<number>();
+    const items = rows
+      .filter((e) => (seen.has(e.id) ? false : (seen.add(e.id), true)))
+      .sort((a, b) => a.id - b.id)
+      .map((e) => ({ id: e.id, at: e.at, actorId: e.actorId, actorRole: e.actorRole, action: e.action, stage: AUDIT_STAGE[e.action] ?? null, target: e.target, result: e.result, reason: e.reason, before: maskMoney(e.before as Record<string, unknown> | null), after: maskMoney(e.after as Record<string, unknown> | null) }));
+    const release = c.release ? (this.repo.releases().find((r) => r.release === c.release) ?? null) : null;
+    return {
+      changeId,
+      refId: c.refId,
+      items,
+      decision: c.decision ? { decision: c.decision.decision, decidedBy: c.decision.decidedBy, at: c.decision.at } : null,
+      release: release ? { release: release.release, publishedBy: release.publishedBy, publishedAt: release.publishedAt, note: release.note ?? null } : null,
+    };
   }
 
   // ── 공통 ─────────────────────────────────────────────────

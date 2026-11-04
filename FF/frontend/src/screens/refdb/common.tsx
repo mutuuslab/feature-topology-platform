@@ -1,12 +1,13 @@
 // Feature DB 화면 공통 — 응답 모양, 상태 배지(정책 안내 툴팁), 내 행위자, 내보내기 파일 받기.
 // 상태 → 허용 규칙은 contracts REF_STATUS_POLICY 하나(등록 화면·승인 전이·산정 과제와 같은 표).
-import { REF_STATUS_POLICY, type FeatureRefRow, type RefChangeStatus, type RefChange, type RefCriterionResult, type RefGlossary, type RefRelease, type RefSource, type RefStatus, type RefStatusPolicy, type RefSubfunction, type TaxonomyNode } from '@ff/contracts';
+import { REF_STATUS_POLICY, type FeatureRefRow, type RefQuality, type RefChangeStatus, type RefChange, type RefCriterionResult, type RefGlossary, type RefRelease, type RefSource, type RefStatus, type RefStatusPolicy, type RefSubfunction, type TaxonomyNode } from '@ff/contracts';
 import { Link } from 'react-router-dom';
 import { actorFor } from '../../api/actor';
 import { pathOf, toApiError, VIEW_ROLES, type ApiError } from '../../api/client';
 import { OIDC_AUTH } from '../../auth-mode';
-import { CHANGE_STATUS_LABEL, refDetail as RD } from '../../copy/refdb';
-import { IdChip, Lozenge, VerdictBadge, type LozengeAppearance } from '../../design';
+import { useApi } from '../../api/hooks';
+import { CHANGE_STATUS_LABEL, featureDb as FD, refDetail as RD, refQualityCopy as QC } from '../../copy/refdb';
+import { IdChip, Lozenge, Panel, SummaryLine, VerdictBadge, type LozengeAppearance } from '../../design';
 import '../../design/lozenge.css';
 
 /** 목록·상세 응답의 기준 행 — 금액 필드(벤치마크 €)는 서버가 산정 역할에만 준다 */
@@ -51,6 +52,8 @@ export interface RefDetailResponse {
   subfunctions: RefSubfunction[];
   usedBy: RefUsage[];
   policy?: RefDetailPolicy;
+  /** 요청 중 행의 추가 요청이 승인됐지만 아직 발행 전(P5-3) — 없으면 null */
+  awaitingPublish?: { changeId: string; decidedAt: string | null; label: string; hint: string } | null;
 }
 
 /** 목록·상세의 변경 요청 — 서버가 발행 대기 여부와 도메인을 붙인다 */
@@ -197,9 +200,41 @@ export async function downloadExport(role: string, release: string | null): Prom
   const href = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = href;
-  link.download = `feature-db-${release ?? 'latest'}.${ext}`;
+  // 서버 파일 이름(FeatureDB_v1.4.xlsx)과 같게 — 받은 이름이 화면마다 달랐다(P5-11)
+  link.download = exportDownloadName(res.headers.get('content-disposition'), release, ext);
   document.body.appendChild(link);
   link.click();
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(href), 0);
+}
+
+/** 내보내기 받기 이름 — 서버 Content-Disposition의 이름, 없으면 같은 규칙(FeatureDB_<버전>.<확장자>) */
+export function exportDownloadName(disposition: string | null, release: string | null, ext: string): string {
+  const m = disposition ? /filename="?([^";]+)"?/i.exec(disposition) : null;
+  return m?.[1] ?? `FeatureDB_${release ?? 'current'}.${ext}`;
+}
+
+/** 품질 지표 한 줄 항목 — 발행본 N행(+요청 중 M)·출처 없음·속성 미입력·근거 12개월 경과·규모 근거 D·발행 대기·최신 발행(P5-7·P5-8) */
+export function refQualityItems(q: RefQuality): { k: string; v: string | number }[] {
+  return [
+    { k: QC.key, v: QC.published(q.published, q.pending) },
+    { k: FD.q.noSource, v: q.noSource },
+    { k: QC.attrMissing, v: q.attrMissing },
+    { k: FD.q.stale, v: q.evidenceStale },
+    { k: FD.q.gradeD, v: `${(q.sizeGradeDShare * 100).toFixed(1)}%` },
+    { k: FD.q.awaiting, v: q.awaitingPublish },
+    { k: FD.q.release, v: q.latestRelease ?? '—' },
+  ];
+}
+
+/** 콘솔 홈의 Feature DB 품질 한 줄(Feature DB 관리 부서) — 응답이 품질 지표 모양일 때만 그린다 */
+export function RefQualityPanel() {
+  const q = useApi<RefQuality>('refQuality');
+  const d = q.data;
+  if (!d || typeof d.published !== 'number') return null;
+  return (
+    <Panel title={QC.title} id="ws-refdb-quality" actions={<Link to="/master/feature-db">{QC.open} →</Link>}>
+      <SummaryLine label={QC.title} items={refQualityItems(d)} />
+    </Panel>
+  );
 }

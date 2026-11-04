@@ -10,7 +10,7 @@ traces:
   depends_on:
     - WF-FPW-7
     - WF-FPW-9
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -19,7 +19,7 @@ last_updated: 2026-11-04
 > 상품 구성과 고객 출시를 승인한다.
 
 - IAM 역할: PRODUCT_APPROVER(상품 승인자)
-- IAM 데모 계정: approver
+- IAM 데모 계정: approver, productowner
 - 매핑 근거: REPORT_APPROVER_ROLES PRODUCT_OWNER→PRODUCT_APPROVER
 
 ## 1. 내가 하는 일 (수행 R · 책임 A)
@@ -39,9 +39,10 @@ last_updated: 2026-11-04
 - 시작: 앞 활동 완료
 - 입력: WP-RELEASE-RECORD, WP-PRODUCT-APPROVAL → 출력: WP-PRODUCT-RELEASE
 - 플랫폼: `productTransition`, `/products/:id/:ver`
-1. 구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다
-2. 플랫폼이 구성 승인자와 같은 사람의 승인을 거부하면 다른 승인자로 다시 승인한다
-3. 출시 승인 결과를 상품 기획과 운영 조직에 알린다
+1. 구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다. 데모에서는 approver가 구성을, productowner가 고객 출시를 승인한다
+2. 구성 승인자에게는 화면이 출시 승인 버튼을 미리 막고 이유를 보인다. 서버도 같은 사람의 승인을 거부한다
+3. 출시한 상품은 상세에서 체험 제안으로 이어진다
+4. 출시 승인 결과를 상품 기획과 운영 조직에 알린다
 - [ ] 고객 출시 승인자가 구성 승인자와 다르다
 
 ## 2. 협의·통보 받는 활동

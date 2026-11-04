@@ -3,10 +3,10 @@
 // 벤치마크 €는 서버가 산정 역할에만 준다 — 응답에 있을 때만 그린다.
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { REF_ASIL_LIST, REF_ID_PATTERN, REF_STATUS_POLICY, REGISTRATION_CRITERIA, SIZE_CLASSES, sizePoints, type RefChange, type RefChangeKind, type RefCriterionResult, type RefGlossary, type RefSource } from '@ff/contracts';
+import { EVIDENCE_STALE_MONTHS, REF_ASIL_LIST, REF_ID_PATTERN, REF_STATUS_POLICY, refAttrMissing, REGISTRATION_CRITERIA, SIZE_CLASSES, sizePoints, type RefChange, type RefChangeKind, type RefCriterionResult, type RefGlossary, type RefSource } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { refChangeForm as F, refDetail as T, KIND_LABEL, CHANGE_STATUS_LABEL } from '../../copy/refdb';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, Icon, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Segmented, whyDisabled } from '../../design';
+import { refChangeForm as F, refDetail as T, KIND_LABEL, CHANGE_STATUS_LABEL, refAwaiting as AW, refBenchmark as BM, refQualityCopy as QC } from '../../copy/refdb';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, Icon, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Segmented, SummaryLine, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
 import { changePath, FeatureLink, RefChip, RefChips, RefStatusBadge, TextLink, type RefDetailPolicy, type RefDetailResponse, type RefRowView, type RefUsage } from './common';
 
@@ -25,6 +25,8 @@ export function RefDetailScreen() {
   const d = q.data;
   const r = d?.ref;
   const policy = r ? REF_STATUS_POLICY[r.status] : null;
+  // 요청 중이지만 추가 요청이 이미 승인됨(발행 전) — '관리자 승인 전'이 아니다(P5-3)
+  const awaiting = d?.awaitingPublish ?? null;
   return (
     <div className="ds-screen">
       <PageHeader
@@ -48,7 +50,7 @@ export function RefDetailScreen() {
         }
         message={
           r && policy
-            ? { tone: 'neutral', value: d!.usedBy.length, text: T.key, status: { label: policy.ko, tone: policy.blocksApproval ? 'danger' : policy.warn ? 'warn' : 'ok' } }
+            ? { tone: 'neutral', value: d!.usedBy.length, text: T.key, status: awaiting ? { label: AW.pill, tone: 'warn' } : { label: policy.ko, tone: policy.blocksApproval ? 'danger' : policy.warn ? 'warn' : 'ok' } }
             : { tone: 'neutral', text: T.title }
         }
         actions={
@@ -63,6 +65,7 @@ export function RefDetailScreen() {
       <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {r && d && (
           <>
+            <RowQuality r={r} />
             <div className="ds-split ds-split--wide-side">
               <div className="ds-stack">
                 <Identity r={r} glossary={d.glossary ?? []} />
@@ -74,7 +77,7 @@ export function RefDetailScreen() {
                 <Sources r={r} sources={(d.sources ?? []).flatMap((x) => (x.source ? [x.source] : []))} />
               </div>
               <div className="ds-stack">
-                <Policy r={r} replacedBy={d.policy?.replacedBy ?? null} />
+                <Policy r={r} replacedBy={d.policy?.replacedBy ?? null} awaiting={awaiting} />
                 <Relations r={r} />
                 <Subfunctions items={d.subfunctions} />
                 <Panel title={T.changes} eyebrow={changes.data ? String(changes.data.items.length) : undefined}>
@@ -180,15 +183,46 @@ function Sizes({ r }: { r: RefRowView }) {
 }
 
 function Benchmark({ r }: { r: RefRowView }) {
+  const none = r.benchmarkEur == null && !r.kearneyNote;
   return (
     <Panel title={T.benchmark} id="ref-benchmark">
+      {/* 값이 없으면 '—' 두 줄 대신 이유를 말한다 — 공개 벤치마크가 있는 행은 일부뿐(P5-9) */}
+      {none ? (
+        <p className="ds-field__hint" data-benchmark-none>
+          {BM.none}
+        </p>
+      ) : (
       <KeyValue
         rows={[
           { k: T.f.benchmarkEur, v: r.benchmarkEur != null ? <span className="ds-mono">{r.benchmarkEur.toLocaleString('ko-KR')}</span> : T.none },
           { k: T.f.kearneyNote, v: r.kearneyNote || T.none },
         ]}
       />
+      )}
     </Panel>
+  );
+}
+
+const monthsAgo = (months: number) => {
+  const d = new Date();
+  d.setUTCMonth(d.getUTCMonth() - months);
+  return d.toISOString().slice(0, 10);
+};
+
+/** 이 행의 품질 한 줄 — 출처·근거 확인일·분류 속성·규모 근거(P5-7) */
+function RowQuality({ r }: { r: RefRowView }) {
+  const R = QC.row;
+  const stale = !r.evidenceCheckedAt || r.evidenceCheckedAt < monthsAgo(EVIDENCE_STALE_MONTHS);
+  return (
+    <SummaryLine
+      label={R.title}
+      items={[
+        { k: R.title, v: R.sources(r.sourceIds.length) },
+        { k: '', v: R.checked(r.evidenceCheckedAt, stale) },
+        { k: '', v: R.attr(refAttrMissing(r)) },
+        { k: '', v: R.grade(r.sizeEvidenceGrade) },
+      ]}
+    />
   );
 }
 
@@ -231,12 +265,18 @@ function Sources({ r, sources }: { r: RefRowView; sources: RefSource[] }) {
   );
 }
 
-function Policy({ r, replacedBy }: { r: RefRowView; replacedBy: RefDetailPolicy['replacedBy'] }) {
+function Policy({ r, replacedBy, awaiting }: { r: RefRowView; replacedBy: RefDetailPolicy['replacedBy']; awaiting: RefDetailResponse['awaitingPublish'] }) {
   const p = REF_STATUS_POLICY[r.status];
   const P = T.pol;
   return (
     <Panel title={T.policy} id="ref-policy">
-      <p data-policy-hint>{p.hint}</p>
+      {awaiting ? (
+        <p data-policy-hint data-awaiting-publish={awaiting.changeId}>
+          <strong>{AW.pill}</strong> — {awaiting.hint} <Link to={changePath(awaiting.changeId)}>{AW.change(awaiting.changeId)}</Link>
+        </p>
+      ) : (
+        <p data-policy-hint>{p.hint}</p>
+      )}
       <KeyValue
         rows={[
           { k: P.selectable, v: p.selectable ? P.yes : P.no },

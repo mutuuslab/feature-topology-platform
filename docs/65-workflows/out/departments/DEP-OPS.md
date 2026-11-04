@@ -16,7 +16,7 @@ traces:
     - WF-FPW-12
     - WF-FPW-13
     - WF-ROLE-OPS
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -26,7 +26,7 @@ last_updated: 2026-11-04
 
 - 맡는 조직 역할: 운영 조직
 - 화면 유형: 관제실
-- 데모 계정: operator (첫 번째가 기본)
+- 데모 계정: operator, opslead (첫 번째가 기본)
 - 부서는 OEM 조직 가정안이다. 고객사 조직이 정해지면 model/common.yaml departments만 바꾼다.
 
 ## 1. 업무 (활동당 한 줄)

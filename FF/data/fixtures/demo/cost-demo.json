@@ -1,0 +1,600 @@
+{
+  "note": "데모 시드 — 엑셀 산정 도구 v1.3 예시 과제(BCM). tools/cost/demo-seed.ts가 만든다(손으로 고치지 않음). 데모 시드가 켜진 빈 DB에만 들어간다.",
+  "excelTotalCost": 1227670384.4977512,
+  "actors": {
+    "author": "usr-author",
+    "estimator": "usr-viewer",
+    "approver": "usr-approver"
+  },
+  "features": [
+    {
+      "key": "Body controller",
+      "name": "BCM 바디 제어 기본 기능",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Body controller 기준 행 10개",
+      "asil": "QM",
+      "refs": [
+        {
+          "refId": "BC-BCM-002",
+          "role": "PRIMARY"
+        },
+        {
+          "refId": "BC-BCM-004",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-BCM-005",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-BCM-006",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-BCM-007",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-BCM-008",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-BCM-009",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-BCM-012",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-BCM-014",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-BCX-005",
+          "role": "INCLUDED"
+        }
+      ]
+    },
+    {
+      "key": "Lighting control",
+      "name": "BCM 실내·외 조명 제어",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Lighting control 기준 행 12개",
+      "asil": "B",
+      "refs": [
+        {
+          "refId": "BC-LGT-001",
+          "role": "PRIMARY"
+        },
+        {
+          "refId": "BC-LGT-002",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-003",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-004",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-008",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-011",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-012",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-013",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-014",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-015",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-020",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-LGT-022",
+          "role": "INCLUDED"
+        }
+      ]
+    },
+    {
+      "key": "Access and locking",
+      "name": "BCM 출입·잠금 제어",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Access and locking 기준 행 6개",
+      "asil": "QM",
+      "refs": [
+        {
+          "refId": "BC-ACC-001",
+          "role": "PRIMARY"
+        },
+        {
+          "refId": "BC-ACC-002",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-ACC-003",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-ACC-004",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-ACC-008",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-ACC-012",
+          "role": "INCLUDED"
+        }
+      ]
+    },
+    {
+      "key": "Wiper and washer",
+      "name": "BCM 와이퍼·워셔 제어",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Wiper and washer 기준 행 3개",
+      "asil": "A",
+      "refs": [
+        {
+          "refId": "BC-WIP-001",
+          "role": "PRIMARY"
+        },
+        {
+          "refId": "BC-WIP-002",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "BC-WIP-006",
+          "role": "INCLUDED"
+        }
+      ]
+    },
+    {
+      "key": "Windows and roof",
+      "name": "BCM 윈도·루프 제어",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Windows and roof 기준 행 2개",
+      "asil": "QM",
+      "refs": [
+        {
+          "refId": "BC-WIN-001",
+          "role": "PRIMARY"
+        },
+        {
+          "refId": "BC-WIN-003",
+          "role": "INCLUDED"
+        }
+      ]
+    },
+    {
+      "key": "Mirrors",
+      "name": "BCM 아웃사이드 미러 제어",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Mirrors 기준 행 2개",
+      "asil": "QM",
+      "refs": [
+        {
+          "refId": "BC-MIR-001",
+          "role": "PRIMARY"
+        },
+        {
+          "refId": "BC-MIR-003",
+          "role": "INCLUDED"
+        }
+      ]
+    },
+    {
+      "key": "Low-voltage power management",
+      "name": "BCM 저전압 전원 관리",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Low-voltage power management 기준 행 2개",
+      "asil": "A",
+      "refs": [
+        {
+          "refId": "BC-PWR-001",
+          "role": "PRIMARY"
+        },
+        {
+          "refId": "BC-PWR-003",
+          "role": "INCLUDED"
+        }
+      ]
+    },
+    {
+      "key": "Diagnostic services (UDS)",
+      "name": "BCM 진단 서비스(UDS)",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Diagnostic services (UDS) 기준 행 6개",
+      "asil": "QM",
+      "refs": [
+        {
+          "refId": "PL-UDS-001",
+          "role": "PRIMARY"
+        },
+        {
+          "refId": "PL-UDS-003",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "PL-UDS-012",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "PL-UDS-017",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "PL-UDS-020",
+          "role": "INCLUDED"
+        },
+        {
+          "refId": "PL-UDS-022",
+          "role": "INCLUDED"
+        }
+      ]
+    },
+    {
+      "key": "Bootloader and software update",
+      "name": "BCM 부트로더·SW 업데이트",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Bootloader and software update 기준 행 2개",
+      "asil": "QM",
+      "refs": [
+        {
+          "refId": "PL-UPD-001",
+          "role": "PRIMARY"
+        },
+        {
+          "refId": "PL-UPD-002",
+          "role": "INCLUDED"
+        }
+      ]
+    },
+    {
+      "key": "Cybersecurity controls",
+      "name": "BCM 사이버보안 제어",
+      "description": "엑셀 산정 도구 예시 과제(BCM 신규 개발)의 Cybersecurity controls 기준 행 1개",
+      "asil": "QM",
+      "refs": [
+        {
+          "refId": "PL-SEC-001",
+          "role": "PRIMARY"
+        }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "BCM(바디 제어기) 신규 개발 — 예시",
+      "target": "BCM / 신규 차종 1종, 사양 변형 2종",
+      "features": [
+        "Body controller",
+        "Lighting control",
+        "Access and locking",
+        "Wiper and washer",
+        "Windows and roof",
+        "Mirrors",
+        "Low-voltage power management",
+        "Diagnostic services (UDS)",
+        "Bootloader and software update",
+        "Cybersecurity controls"
+      ],
+      "settings": {
+        "aace": "Class 4",
+        "confidence": "P80",
+        "preset": "직접 설정",
+        "drivers": {
+          "TIME": "H",
+          "STOR": "H",
+          "PVOL": "N",
+          "RUSE": "N",
+          "ACAP": "N",
+          "PCAP": "N",
+          "PCON": "N",
+          "APEX": "N",
+          "PLEX": "N",
+          "LTEX": "N",
+          "TOOL": "N",
+          "SITE": "L",
+          "SCED": "N"
+        },
+        "rateBasis": "KOSA SW기술자 평균임금",
+        "method": "사용자 정의",
+        "ohOverride": 0.15,
+        "feeOverride": 0.1,
+        "common": {
+          "pm": true,
+          "scm": true,
+          "pi": true,
+          "qa": 0,
+          "fs": 0,
+          "cs": 0,
+          "hil": 0
+        },
+        "directExpenses": []
+      },
+      "approve": null,
+      "checks": []
+    },
+    {
+      "name": "BCM 조명·와이퍼·미러 파생 — 1차 견적",
+      "target": "BCM / 기존 차종 파생 1종",
+      "features": [
+        "Lighting control",
+        "Wiper and washer",
+        "Mirrors"
+      ],
+      "settings": {
+        "aace": "Class 4",
+        "confidence": "P80",
+        "preset": "직접 설정",
+        "drivers": {
+          "TIME": "H",
+          "STOR": "H",
+          "PVOL": "N",
+          "RUSE": "N",
+          "ACAP": "N",
+          "PCAP": "N",
+          "PCON": "N",
+          "APEX": "N",
+          "PLEX": "N",
+          "LTEX": "N",
+          "TOOL": "N",
+          "SITE": "L",
+          "SCED": "N"
+        },
+        "rateBasis": "KOSA SW기술자 평균임금",
+        "method": "사용자 정의",
+        "ohOverride": 0.15,
+        "feeOverride": 0.1,
+        "common": {
+          "pm": true,
+          "scm": true,
+          "pi": true,
+          "qa": 0,
+          "fs": 0,
+          "cs": 0,
+          "hil": 0
+        },
+        "directExpenses": []
+      },
+      "approve": {
+        "submit": "구매 검토 요청",
+        "approve": "협력사 견적 비교 전 기준 금액으로 확정"
+      },
+      "checks": [
+        {
+          "no": 1,
+          "status": "확인",
+          "memo": "조명·와이퍼·미러 3개 Feature로 범위 확정"
+        },
+        {
+          "no": 9,
+          "status": "확인",
+          "memo": ""
+        },
+        {
+          "no": 10,
+          "status": "확인",
+          "memo": ""
+        },
+        {
+          "no": 18,
+          "status": "보완 필요",
+          "memo": "기능안전 관리 공수 미입력"
+        }
+      ]
+    }
+  ],
+  "lines": {
+    "BC-BCM-002": {
+      "qty": 1,
+      "changeType": "신규 개발"
+    },
+    "BC-BCM-004": {
+      "qty": 1,
+      "changeType": "구매·통합(Buy)"
+    },
+    "BC-BCM-005": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-BCM-006": {
+      "qty": 1,
+      "changeType": "수정(소규모)"
+    },
+    "BC-BCM-007": {
+      "qty": 1
+    },
+    "BC-BCM-008": {
+      "qty": 1
+    },
+    "BC-BCM-009": {
+      "qty": 1,
+      "changeType": "신규 개발"
+    },
+    "BC-BCM-012": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-BCM-014": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-BCX-005": {
+      "qty": 1,
+      "changeType": "신규 개발",
+      "variants": 2
+    },
+    "BC-LGT-001": {
+      "qty": 1,
+      "changeType": "수정(소규모)",
+      "variants": 2
+    },
+    "BC-LGT-002": {
+      "qty": 1,
+      "changeType": "수정(소규모)",
+      "variants": 2,
+      "asil": "A"
+    },
+    "BC-LGT-003": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)",
+      "asil": "A"
+    },
+    "BC-LGT-004": {
+      "qty": 1,
+      "changeType": "신규 개발",
+      "asil": "A"
+    },
+    "BC-LGT-008": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)",
+      "asil": "QM"
+    },
+    "BC-LGT-011": {
+      "qty": 1,
+      "changeType": "수정(소규모)",
+      "asil": "A"
+    },
+    "BC-LGT-012": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)",
+      "asil": "A"
+    },
+    "BC-LGT-013": {
+      "qty": 1,
+      "changeType": "신규 개발",
+      "asil": "A"
+    },
+    "BC-LGT-014": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-LGT-015": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)",
+      "asil": "QM"
+    },
+    "BC-LGT-020": {
+      "qty": 1,
+      "changeType": "신규 개발",
+      "asil": "A"
+    },
+    "BC-LGT-022": {
+      "qty": 1,
+      "changeType": "신규 개발",
+      "asil": "QM"
+    },
+    "BC-ACC-001": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-ACC-002": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-ACC-003": {
+      "qty": 1,
+      "changeType": "수정(소규모)",
+      "asil": "B"
+    },
+    "BC-ACC-004": {
+      "qty": 1,
+      "changeType": "신규 개발",
+      "asil": "A"
+    },
+    "BC-ACC-008": {
+      "qty": 1,
+      "changeType": "신규 개발"
+    },
+    "BC-ACC-012": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-WIP-001": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-WIP-002": {
+      "qty": 1,
+      "changeType": "수정(소규모)"
+    },
+    "BC-WIP-006": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)",
+      "asil": "QM"
+    },
+    "BC-WIN-001": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-WIN-003": {
+      "qty": 1,
+      "changeType": "수정(소규모)",
+      "asil": "A"
+    },
+    "BC-MIR-001": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-MIR-003": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "BC-PWR-001": {
+      "qty": 1,
+      "changeType": "신규 개발"
+    },
+    "BC-PWR-003": {
+      "qty": 1,
+      "changeType": "신규 개발",
+      "asil": "B"
+    },
+    "PL-UDS-001": {
+      "qty": 1,
+      "changeType": "재사용(무수정 통합)"
+    },
+    "PL-UDS-003": {
+      "qty": 1,
+      "changeType": "수정(소규모)"
+    },
+    "PL-UDS-012": {
+      "qty": 1,
+      "changeType": "신규 개발"
+    },
+    "PL-UDS-017": {
+      "qty": 1,
+      "changeType": "신규 개발"
+    },
+    "PL-UDS-020": {
+      "qty": 1,
+      "changeType": "수정(소규모)"
+    },
+    "PL-UDS-022": {
+      "qty": 1,
+      "changeType": "신규 개발"
+    },
+    "PL-UPD-001": {
+      "qty": 1,
+      "changeType": "구매·통합(Buy)"
+    },
+    "PL-UPD-002": {
+      "qty": 1,
+      "changeType": "구매·통합(Buy)"
+    },
+    "PL-SEC-001": {
+      "qty": 1,
+      "changeType": "신규 개발"
+    }
+  }
+}

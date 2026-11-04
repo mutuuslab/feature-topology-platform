@@ -17,7 +17,7 @@ traces:
     - WF-FPW-9
     - WF-FPW-10
     - WF-ROLE-TST
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -32,7 +32,7 @@ last_updated: 2026-11-04
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 4 · 책임 4 · 협의 11 · 통보 5 (활동 21개)
+수행 4 · 책임 4 · 협의 11 · 통보 6 (활동 22개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -40,7 +40,8 @@ last_updated: 2026-11-04
 | FPW.2-A03 SOTIF 분석 갱신 | FPW.2 HARA·변경 영향 판단 | C (시험 조직) | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` → SOTIF 분석 `WP-SOTIF-ANALYSIS` | 플랫폼 밖 | 1차 |
 | FPW.3-A01 안전요구 도출·명세 | FPW.3 안전요구 확정 | I (시험 조직) | HARA·TARA 결과 `WP-HARA-TARA`, SOTIF 분석 `WP-SOTIF-ANALYSIS`, G2 Decision Record `WP-G2-DECISION` → 안전요구·추적 연결 `WP-SAFETY-REQ` | `/trace/design`, `/change/cr` | 1차 |
 | FPW.3-A02 양방향 추적성 점검 | FPW.3 안전요구 확정 | C (시험 조직) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 추적성 점검 결과 `WP-TRACE-REPORT` | `/trace/design` | 1차 |
-| FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | I (시험 조직) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
+| FPW.3-A05 구현 연결 입력 | FPW.3 안전요구 확정 | I (시험 조직) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | 1차 |
+| FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | I (시험 조직) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK`, 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.4-A01 차량 내 감시·안전기제 설계 | FPW.4 안전 설계·정책 설계 | I (시험 조직) | G3 Decision Record·정의 승인 `WP-G3-DECISION`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 안전 설계서 `WP-SAFETY-DESIGN` | `/master/control-points`, `/trace/design` | 1차 |
 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4 안전 설계·정책 설계 | I (시험 조직) | 안전 설계서 `WP-SAFETY-DESIGN`, 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD`, Flag 정책(검증·승인본) `WP-POLICY` → G4 Decision Record `WP-G4-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.5-A01 독립성 수준·검증 계획 확정 | FPW.5 검증·V&V | C (시험 조직) | G4 Decision Record `WP-G4-DECISION`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 검증 계획(독립성 수준) `WP-VV-PLAN` | 플랫폼 밖 | 1차 |
@@ -72,4 +73,4 @@ last_updated: 2026-11-04
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/admin/approval`, `/supplier/portal`
-- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/master/control-points`, `/master/artifacts`, `/activation/decide`, `/verify/compliance`, `/ops/kill`, `/quality/feedback`, `/flag-retirements`
+- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/master/control-points`, `/activation/decide`, `/verify/compliance`, `/ops/kill`, `/quality/feedback`, `/flag-retirements`

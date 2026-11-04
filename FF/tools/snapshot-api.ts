@@ -93,7 +93,14 @@ async function refdbSnapshots(save: Save, versions: { featureRefs?: { refId: str
   await save('refSources');
   await save('refReleases');
   const changes = await save('listRefChanges');
-  for (const c of changes.items as { changeId: string }[]) await save('refChangeDetail', { id: c.changeId });
+  await save('listRefChanges', {}, { status: 'REVIEW' });
+  for (const c of changes.items as { changeId: string }[]) {
+    await save('refChangeDetail', { id: c.changeId });
+    // 변경 요청 상세 '감사 이력' 패널(W5 P5-6)
+    await save('refChangeAudit', { id: c.changeId });
+  }
+  // 발행 칸 미리 보기(W5 P5-4) — 관리자 화면
+  await save('refReleasePreview');
 
   const nodes = taxonomy.items as { nodeId: string; level: string; parentId: string | null; nameEn: string }[];
   const domains = nodes.filter((n) => n.level === 'DOMAIN');
@@ -128,6 +135,28 @@ async function refdbSnapshots(save: Save, versions: { featureRefs?: { refId: str
   const linked = new Set(versions.flatMap((f) => (f.featureRefs ?? []).map((l) => l.refId)));
   if (!linked.size) throw new Error('Feature Version 상세에 기준 행 연결(featureRefs)이 하나도 없습니다 — 기준 행 탭 스냅샷을 만들 수 없습니다');
   for (const refId of linked) await save('listRefChanges', {}, { refId, status: 'PUBLISHED' });
+  // 출처 점검 '개정 있음' → 영향 행 목록은 정적 데모에서 화면 검색(refSearch source)으로 찾는다
+}
+
+/** 검토 포털 협의 요청(W5 P5-1) — 포털 홈(받은 건)·부서 홈(보낸 건)·한 건 화면. 부서 ID는 시드가 쓰는 모든 부서 */
+async function consultSnapshots(save: Save) {
+  const all = await save('listConsultations');
+  const items = all.items as { consultId: string; toDept: string; fromDept: string }[];
+  for (const to of new Set(items.map((c) => c.toDept))) await save('listConsultations', {}, { to });
+  // 보낸 건은 모든 부서 홈이 묻는다(보낸 건이 없으면 패널을 그리지 않는다)
+  const { DEPARTMENT_IDS } = require(join(FF, 'contracts', 'dist', 'index.js')) as { DEPARTMENT_IDS: string[] };
+  for (const from of DEPARTMENT_IDS) await save('listConsultations', {}, { from });
+  for (const c of items) await save('consultationDetail', { id: c.consultId });
+}
+/**
+ * SW 개발비 산정 스냅샷(20-94 §9) — 데모 시드(BCM 예시 과제 EST-0001·0002)와 계수 표. 조회 경로의 첫 역할(COST_ESTIMATOR)로 받아
+ * 정적 데모는 금액이 보이는 구매 담당 화면이다(예시 과제·공개 단가만 있다). 엑셀 내보내기(파일)는 정적 데모에서 쓰지 않는다.
+ */
+async function costSnapshots(save: Save) {
+  const projects = await save('costProjects');
+  for (const p of projects.items as { estId: string }[]) await save('costProject', { estId: p.estId });
+  const basis = await save('costBasisList');
+  for (const b of basis.items as { version: string }[]) await save('costBasis', { version: b.version });
 }
 
 async function main() {
@@ -162,7 +191,11 @@ async function main() {
   // 외부 연결 상태 — 모의 연계 표시(RD-UX-04). 정적 데모는 모든 연결이 모의다
   await save('systemConnections');
   await save('precheck');
+  await save('workQueues');
   await save('events', {}, { limit: 500 });
+  await save('events', {}, { limit: 500, recent: '1' });
+  await save('featureFlags');
+  await save('listFlagSources');
   await save('audit', {}, { limit: 500 });
 
   // 업무 절차 — 개인 조회(내 차례·요약)라 데모 기본 역할(Feature 설계)로 찍는다. 정적 데모는 읽기 전용.
@@ -184,7 +217,9 @@ async function main() {
   for (const f of all.items as { featureId: string; version: string }[]) {
     const p = { id: f.featureId, ver: f.version };
     versions.push((await save('featureDetail', p)).feature);
+    await save('featureFlags', {}, { featureId: f.featureId, version: f.version });
     await save('gates', p);
+    await save('analysisEvidence', p);
     // Feature 상세 '연계' 탭 — codeBeamer 요구·JIRA Epic/CR·GitLab MR 추적
     await save('extFeatureTrace', p);
     await save('baselineChecklist', p);
@@ -197,7 +232,8 @@ async function main() {
   // Feature DB(기준 기능, 30-95) — 목록·상세·변경 요청·발행 이력, 등록 화면 1단계(기준 기능 고르기), Feature 상세 '기준 행' 탭.
   // 정적 데모에도 변경 요청 상세가 열리게 이 보조 백엔드(메모리 DB, 찍고 버린다)에 예시 수정 요청 하나와 도메인 검토 의견을 넣는다.
   await refdbSnapshots(save, versions);
-
+  await consultSnapshots(save);
+  await costSnapshots(save);
   // BOM·Catalog
   await save('baselineRequests');
   await save('baselines');
@@ -211,6 +247,7 @@ async function main() {
   // 정책·검증·사용 권한·활성화 판단 (PoC ②③) — ActivationScreen은 차량 × 배포 flagKey 조합을 모두 묻는다
   const policies = await save('listPolicies');
   await save('listPolicies', {}, { status: 'DEPLOYED' });
+  await save('listPolicies', {}, { status: 'APPROVED' });
   for (const p of policies.items) {
     await save('policyDetail', { id: p.policyId });
     await save('policyExtLinks', { id: p.policyId });
@@ -285,7 +322,7 @@ async function main() {
   // P10·P11·보고서 v1.1 화면 — e2e:static(정적 데모 하네스)이 메뉴·하위 화면·탭을 열어 찾은 요청 모양 그대로
   for (const reasonCategory of ['SAFETY', 'SECURITY', 'REGULATORY', 'COMMERCIAL', 'OPERATIONAL']) await save('killPreview', {}, { featureId: 'FEAT-00022', featureVersion: '1.0.0', reasonCategory });
   await save('listPolicies', {}, { status: 'VALIDATED' });
-  await save('baselineRequests', {}, { status: 'REQUESTED' });
+  await save('baselineRequests', {}, { status: 'PENDING' }); // 검토함·콘솔 — 계약의 대기 상태(BaselineRequestStatus, P2-1)
   await save('auditChain');
   await save('versionChanges');
   await save('dependencies');

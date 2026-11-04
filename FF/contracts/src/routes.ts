@@ -20,7 +20,8 @@ import {
 import { RestorePolicyRevisionBody } from './rules/policy-version';
 import { CreateRollbackPlanBody, CreateRollbackRequestBody, PolicyRollbackBody, ROLLBACK_APPROVER_ROLES, ROLLBACK_REQUEST_ROLES, RollbackDecisionBody, RollbackPreviewBody } from './rules/rollback';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
-import { ApproverKeyRegisterBody, EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody } from './schemas/ops';
+import { FlagSourceManifest } from './schemas/flag-source';
+import { ApproverKeyRegisterBody, EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody, RestoreRequestBody } from './schemas/ops';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
 import { NotificationReadAllBody } from './rules/notification';
 import { RunVirtualBody } from './rules/virtual';
@@ -38,6 +39,7 @@ import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { ReleaseSignoffBody } from './schemas/release-signoff';
 import { ProcedureCompleteBody } from './schemas/procedure';
+import { AddCostFeatureBody, COST_READ_ROLES, CostBasisDraftBody, CostTransitionBody, CreateCostProjectBody, PutCostCheckBody, PutCostMbdBody, UpdateCostLineBody, UpdateCostProjectBody } from './schemas/cost';
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { VehicleDeliveryAck } from './rules/vehicle-auth';
@@ -49,6 +51,8 @@ import { VexStatement } from './rules/sbom';
 import { LinkChangeRequestBody, MockExtActionBody, MockExtCreateBody, ResolveConflictBody } from './rules/ext-sync';
 import { DashboardCreateBody, DashboardDeleteBody, DashboardFavouriteBody, DashboardUpdateBody } from './schemas/dashboard';
 import { CreateRefChangeBody, DecideRefChangeBody, PublishRefReleaseBody, RecordSourceReviewBody, RequestRefAddBody, ReviewRefChangeBody } from './schemas/refdb';
+import { AnswerConsultationBody, CreateConsultationBody } from './schemas/consult';
+import { G7SignoffBody, HaraBody, HomologationBody, SotifBody, TaraBody } from './rules/gate-evidence';
 
 const EmptyBody = z.object({}).strict();
 /** Feature DB 변경 요청 작성 — 사람 역할(HUMAN_ROLES) 모두에서 감사 조회자만 뺀다(30-95 §8.1). 백엔드 컨트롤러 @Roles도 이것을 쓴다.
@@ -99,7 +103,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'authMe', method: 'GET', path: '/api/auth/me', summary: '로그인한 사용자 — 이름·이메일·부여 역할(IdP 그룹에서)', component: 'KERNEL', public: true },
   { name: 'systemConnections', method: 'GET', path: '/api/system/connections', summary: '외부 연결 상태(과금·OTA·Data Lake) — 모의·연결 안 됨을 화면에 표시하는 근거', component: 'KERNEL' },
   { name: 'components', method: 'GET', path: '/api/components', summary: '42 컴포넌트 현황', component: 'KERNEL' },
-  { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력 — after(순번) 커서 페이지 나눔, 응답 nextCursor', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit'] },
+  { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력 — after(순번) 커서 페이지 나눔·nextCursor, recent=1 최근 창(순번 오름차순)', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit', 'recent'] },
   { name: 'notifications', method: 'GET', path: '/api/notifications', summary: '내 알림 — 개인·역할·Owner 팀 수신자, 안 읽음 수·범주별 집계', component: 'D04-04', query: ['unread', 'category', 'limit'], personal: true },
   { name: 'readNotification', method: 'POST', path: '/api/notifications/:id/read', summary: '알림 읽음 표시(계정별)', component: 'D04-04', roles: HUMAN_ROLES, body: EmptyBody },
   { name: 'readAllNotifications', method: 'POST', path: '/api/notifications/read-all', summary: '알림 모두 읽음(범주 선택)', component: 'D04-04', roles: HUMAN_ROLES, body: NotificationReadAllBody },
@@ -110,7 +114,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'confirmSafetyProfile', method: 'POST', path: '/api/features/:id/versions/:ver/safety/confirm', summary: '안전 분류 확정 — Safety Manager 개인 서명', component: 'D01-01', roles: ['SAFETY_OFFICER'], body: SafetyConfirmBody },
   { name: 'releaseSignoff', method: 'GET', path: '/api/features/:id/versions/:ver/release-signoff', summary: 'Release Sign-off(출시 책임 확인) 조회 — 현재 G8·G9 판정에 묶인 서명인지', component: 'D01-01' },
   { name: 'signRelease', method: 'POST', path: '/api/features/:id/versions/:ver/release-signoff', summary: 'Release Sign-off — Feature Owner가 G8·G9 PASS 뒤 출시 책임을 개인 서명으로 확인(보고서 6.1 G7)', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: ReleaseSignoffBody },
-  { name: 'audit', method: 'GET', path: '/api/audit', summary: '감사 이력 — 최신순, cursor 페이지 나눔(응답 nextCursor)', component: 'D01-10', query: ['target', 'actorId', 'result', 'limit', 'cursor'] },
+  { name: 'audit', method: 'GET', path: '/api/audit', summary: '감사 이력 — 최신순, cursor 페이지 나눔(응답 nextCursor)', component: 'D01-10', query: ['target', 'actorId', 'result', 'limit', 'cursor', 'targetPrefix', 'action'] },
   { name: 'auditChain', method: 'GET', path: '/api/audit/chain', summary: '감사 해시 체인 무결성 (FFG-PLT-015)', component: 'D01-10' },
 
   // 업무 절차 실행 (docs/65-workflows) — 완료는 서버 저장·감사·이벤트, 검토함은 내 역할 기준
@@ -125,13 +129,13 @@ export const ROUTES: RouteDef[] = [
   { name: 'createFeature', method: 'POST', path: '/api/features', summary: 'Feature 등록 (PROPOSED 0.1.0)', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: CreateFeatureBody },
   { name: 'featureVersions', method: 'GET', path: '/api/features/:id', summary: 'Feature의 버전들', component: 'D01-01' },
   { name: 'createVersion', method: 'POST', path: '/api/features/:id/versions', summary: '새 Version 생성', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: CreateVersionBody },
-  { name: 'featureDetail', method: 'GET', path: '/api/features/:id/versions/:ver', summary: 'Feature 버전 상세', component: 'D01-01' },
+  { name: 'featureDetail', method: 'GET', path: '/api/features/:id/versions/:ver', summary: 'Feature 버전 상세 — 전이 미리 보기(transitions)는 묻는 사람의 역할로 판정한다(행위자 헤더)', component: 'D01-01', personal: true },
   { name: 'updateDraft', method: 'PATCH', path: '/api/features/:id/versions/:ver', summary: 'PROPOSED 초안 수정', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'SAFETY_OFFICER', 'VARIANT_OWNER', 'IMPLEMENTER'], body: UpdateDraftBody },
   { name: 'transition', method: 'POST', path: '/api/features/:id/versions/:ver/transitions', summary: 'Lifecycle 전이', component: 'D01-01', roles: ['FEATURE_APPROVER', 'RELEASE_MANAGER', 'GATE_JUDGE'], body: TransitionBody },
   { name: 'baselineChecklist', method: 'GET', path: '/api/features/:id/versions/:ver/baseline-checklist', summary: 'BOM 확정 체크리스트', component: 'D01-01' },
 
   // Feature DB (D01-01 확장, docs/30-data-model/30-95) — 차종과 무관한 기준 기능 정의. Feature 등록은 기준 행을 대표 1 + 포함 N으로 참조한다
-  { name: 'listRefs', method: 'GET', path: '/api/refdb/refs', summary: 'Feature DB 기준 행 검색 — 한글·영문 기능명·별칭·용어집·ID, 도메인·컴포넌트·상태 필터, offset·limit 페이지(금액 필드는 산정 역할만)', component: 'D01-01', query: ['q', 'domain', 'component', 'status', 'offset', 'limit'], personal: true },
+  { name: 'listRefs', method: 'GET', path: '/api/refdb/refs', summary: 'Feature DB 기준 행 검색 — 한글·영문 기능명·별칭·용어집·ID, 도메인·컴포넌트·상태 필터, offset·limit 페이지(금액 필드는 산정 역할만)', component: 'D01-01', query: ['q', 'domain', 'component', 'status', 'offset', 'limit', 'source'], personal: true },
   { name: 'refDetail', method: 'GET', path: '/api/refdb/refs/:refId', summary: 'Feature DB 기준 행 상세 — 정의·근거·세부기능 후보·이 행을 쓰는 Feature(금액 필드는 산정 역할만)', component: 'D01-01', personal: true },
   { name: 'refTaxonomy', method: 'GET', path: '/api/refdb/taxonomy', summary: 'Feature DB 분류 — 도메인 10 → 클러스터 → 컴포넌트', component: 'D01-01' },
   { name: 'refSources', method: 'GET', path: '/api/refdb/sources', summary: 'Feature DB 출처 — 자료·발행처·버전·확인일·다음 점검일', component: 'D01-01' },
@@ -179,6 +183,9 @@ export const ROUTES: RouteDef[] = [
 
   // 정책 저장·버전 관리 (D01-06) · 검증 이력 (D06-04) · 단계 배포 (D01-08)
   { name: 'listPolicies', method: 'GET', path: '/api/policies', summary: '정책 목록', component: 'D01-06', query: ['featureId', 'status', 'flagKey'] },
+  { name: 'featureFlags', method: 'GET', path: '/api/feature-flags', summary: 'Feature Flag와 코드 사용처·배포 확인', component: 'D01-06', query: ['featureId', 'version'] },
+  { name: 'listFlagSources', method: 'GET', path: '/api/flag-sources', summary: '소스 스냅샷 가져오기 이력', component: 'D01-06' },
+  { name: 'importFlagSources', method: 'POST', path: '/api/flag-sources', summary: '개발자·CI 소스 스냅샷 가져오기', component: 'D01-06', roles: ['IMPLEMENTER'], body: FlagSourceManifest },
   { name: 'createPolicy', method: 'POST', path: '/api/policies', summary: '정책 작성 (DRAFT)', component: 'D01-06', roles: ['FEATURE_AUTHOR', 'IMPLEMENTER'], body: CreatePolicyBody },
   { name: 'validations', method: 'GET', path: '/api/policies/validations', summary: '검증 이력 (8종 결과·근거)', component: 'D06-04', query: ['policyId'] },
   { name: 'policyDetail', method: 'GET', path: '/api/policies/:id', summary: '정책 상세·마지막 검증·승인 적격성', component: 'D01-06' },
@@ -261,7 +268,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'rejectKill', method: 'POST', path: '/api/kill-requests/:id/reject', summary: '긴급 차단 요청 거절', component: 'D03-03', roles: KILL_APPROVER_ROLES, body: KillRejectBody },
   { name: 'killTimeline', method: 'GET', path: '/api/kill-requests/:id/timeline', summary: '종료·복원 시간 기록 — 차량별 다섯 시각·명령 ID·Kill/고장 구분·신뢰 시간(FFG-ADS-007·TEL-004·TEL-010)', component: 'D03-03' },
   { name: 'killEnvelopes', method: 'GET', path: '/api/kill-requests/:id/envelopes', summary: '발행된 kill_command v2와 차량별 봉투(vehicle_auth·cmd_auth)', component: 'D03-03' },
-  { name: 'requestRestore', method: 'POST', path: '/api/kill-requests/:id/restore', summary: '복원 요청 — 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillRejectBody },
+  { name: 'requestRestore', method: 'POST', path: '/api/kill-requests/:id/restore', summary: '복원 요청 — 재검증 Evidence·이번 단계 Cohort, 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: RestoreRequestBody },
   { name: 'approveRestore', method: 'POST', path: '/api/kill-requests/:id/restore/approvals', summary: '복원 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 복구 게시', component: 'D03-04', roles: KILL_APPROVER_ROLES, body: KillApproveBody },
   { name: 'rejectRestore', method: 'POST', path: '/api/kill-requests/:id/restore/reject', summary: '복원 요청 거절', component: 'D03-04', roles: KILL_APPROVER_ROLES, body: KillRejectBody },
   { name: 'rollbackDeployments', method: 'GET', path: '/api/rollbacks/deployments', summary: '롤백 대상 배포 — flag별 지금 배포와 복구 가능한 정책 버전', component: 'D03-04' },
@@ -295,6 +302,22 @@ export const ROUTES: RouteDef[] = [
   { name: 'createDataAccessRequest', method: 'POST', path: '/api/data-access-requests', summary: 'EU 차량 사용자·제3자 데이터 접근 요청 처리 — Feature 상태·이력 제공 또는 거부(처리 기록, Art.4·5)', component: 'D05-01', roles: ['OPERATOR', 'REGULATORY_OWNER'], body: DataAccessRequestBody },
   { name: 'recordDataActContractBasis', method: 'POST', path: '/api/data-act/contract-basis', summary: 'OEM 비개인 데이터 이용 계약 근거(문서 ID) 등록 — 법무', component: 'D05-01', roles: ['REGULATORY_OWNER'], body: ContractBasisBody },
   // 고객 기준 값(출시 준비 RD-OPS-03) — 판매국·지역·차종·트림은 설치마다 등록한다. 데모 데이터셋 값은 시드일 뿐이다
+  // SW 개발비 산정 (D07-01, 20-94 §7) — 금액은 산정 역할만, 그 밖의 역할은 공수(M/M)만(서버 투영). 금액을 돌려준 조회는 감사 COST_VIEW
+  { name: 'costProjects', method: 'GET', path: '/api/cost/projects', summary: '산정 과제 목록(금액은 산정 역할만)', component: 'D07-01', personal: true, roles: COST_READ_ROLES },
+  { name: 'costProjectCreate', method: 'POST', path: '/api/cost/projects', summary: '산정 과제 만들기', component: 'D07-01', roles: ['COST_ESTIMATOR'], body: CreateCostProjectBody },
+  { name: 'costProject', method: 'GET', path: '/api/cost/projects/:estId', summary: '산정 과제 상세·계산 결과(금액은 산정 역할만)', component: 'D07-01', personal: true, roles: COST_READ_ROLES, sample: { estId: 'EST-0001' } },
+  { name: 'costProjectUpdate', method: 'PATCH', path: '/api/cost/projects/:estId', summary: '산정 과제 설정 수정', component: 'D07-01', roles: ['COST_ESTIMATOR'], body: UpdateCostProjectBody },
+  { name: 'costFeatureAdd', method: 'POST', path: '/api/cost/projects/:estId/features', summary: 'Feature 담기', component: 'D07-01', roles: ['COST_ESTIMATOR'], body: AddCostFeatureBody },
+  { name: 'costFeatureRemove', method: 'DELETE', path: '/api/cost/projects/:estId/features/:featureId/:version', summary: 'Feature 빼기', component: 'D07-01', roles: ['COST_ESTIMATOR'], body: EmptyBody },
+  { name: 'costLineUpdate', method: 'PATCH', path: '/api/cost/projects/:estId/lines/:lineNo', summary: '줄 입력', component: 'D07-01', roles: ['COST_ESTIMATOR'], body: UpdateCostLineBody },
+  { name: 'costMbdPut', method: 'PUT', path: '/api/cost/projects/:estId/mbd/:refId', summary: 'MBD 작업 행 바꾸기', component: 'D07-01', roles: ['COST_ESTIMATOR'], body: PutCostMbdBody },
+  { name: 'costTransition', method: 'POST', path: '/api/cost/projects/:estId/transitions', summary: '제출·승인·반려·개정 — 작성자와 승인자는 서로 다른 사람', component: 'D07-01', roles: ['COST_ESTIMATOR', 'COST_APPROVER'], body: CostTransitionBody },
+  { name: 'costCheckPut', method: 'PUT', path: '/api/cost/projects/:estId/checks/:no', summary: '검토 체크리스트 항목', component: 'D07-01', roles: ['COST_ESTIMATOR', 'COST_APPROVER'], body: PutCostCheckBody },
+  { name: 'costExport', method: 'GET', path: '/api/cost/projects/:estId/export', summary: '엑셀 내보내기(감사 COST_EXPORT)', component: 'D07-01', personal: true, roles: ['COST_ESTIMATOR', 'COST_APPROVER', 'COST_VIEWER', 'COST_BASIS_ADMIN'] },
+  { name: 'costBasisList', method: 'GET', path: '/api/cost/basis', summary: '계수·단가 표 버전 목록', component: 'D07-01' },
+  { name: 'costBasis', method: 'GET', path: '/api/cost/basis/:version', summary: '계수·단가 표 한 버전(산정 역할만)', component: 'D07-01', personal: true, sample: { version: 'v1.3' }, roles: ['COST_ESTIMATOR', 'COST_APPROVER', 'COST_VIEWER', 'COST_BASIS_ADMIN'] },
+  { name: 'costBasisDraft', method: 'POST', path: '/api/cost/basis', summary: '계수·단가 표 초안', component: 'D07-01', roles: ['COST_BASIS_ADMIN'], body: CostBasisDraftBody },
+  { name: 'costBasisPublish', method: 'POST', path: '/api/cost/basis/:version/publish', summary: '계수·단가 표 발행', component: 'D07-01', roles: ['COST_BASIS_ADMIN'], body: ReasonBody },
   { name: 'referenceValues', method: 'GET', path: '/api/reference-values', summary: '고객 기준 값(판매국·지역·차종·트림) — 등록·사용 중지 상태, 시드(SEED)·고객(CUSTOMER) 구분', component: 'D02-01', query: ['kind'] },
   { name: 'createReferenceValue', method: 'POST', path: '/api/reference-values', summary: '기준 값 등록 — 차량 사양 담당자, 지역·트림은 부모(판매국·차종)가 먼저', component: 'D02-01', roles: ['VARIANT_OWNER'], body: ReferenceValueBody },
   { name: 'retireReferenceValue', method: 'POST', path: '/api/reference-values/:kind/:code/retire', summary: '기준 값 사용 중지 — 이미 쓰인 기록은 그대로, 새 차량 등록·선택지에서 빠진다', component: 'D02-01', roles: ['VARIANT_OWNER'], body: ReferenceRetireBody },
@@ -397,7 +420,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'masterControlPoints', method: 'GET', path: '/api/master/control-points', summary: '제어점 — Control Point와 정책 flag 묶음(BD-06)', component: 'D01-02' },
   { name: 'masterTaxonomy', method: 'GET', path: '/api/master/taxonomy', summary: 'Taxonomy — 태그·범위별 Feature', component: 'D01-02' },
   { name: 'designTrace', method: 'GET', path: '/api/trace/:id/:ver', summary: '요구·안전 추적 — 요구 → Function → SW → ECU, Gate·Evidence, 안전 분류', component: 'D01-02', sample: { id: 'FEAT-00022', ver: '1.0.0' } },
-  { name: 'evidenceLedger', method: 'GET', path: '/api/evidence', summary: 'Evidence 원장 (Gate 판정 Evidence)', component: 'D04-02', query: ['featureId', 'gate', 'result'] },
+  { name: 'evidenceLedger', method: 'GET', path: '/api/evidence', summary: 'Evidence 원장 (Gate 판정 Evidence) — 이관 기록 + 플랫폼 판정, ref는 Evidence Ref 일부', component: 'D04-02', query: ['featureId', 'gate', 'result', 'ref'] },
   { name: 'versionChanges', method: 'GET', path: '/api/changes', summary: '변경 이력 — Version 변경 사유(변경요청)', component: 'D01-01', query: ['featureId'] },
   // 대시보드(Jira식 가젯 판) — 내가 만든 것과 내 역할에 공유된 것. 소유자만 바꾸고 지운다, 버전 충돌은 412(If-Match)
   { name: 'listDashboards', method: 'GET', path: '/api/dashboards', summary: '내 대시보드 목록 — 내가 만든 것·내 역할에 공유된 것(즐겨찾기는 보는 사람 기준)', component: 'KERNEL', personal: true },
@@ -406,6 +429,25 @@ export const ROUTES: RouteDef[] = [
   { name: 'updateDashboard', method: 'PUT', path: '/api/dashboards/:id', summary: '대시보드 바꾸기 — 이름·판·공유 역할, 소유자만, If-Match 버전이 다르면 412', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardUpdateBody },
   { name: 'deleteDashboard', method: 'DELETE', path: '/api/dashboards/:id', summary: '대시보드 지우기 — 소유자만, If-Match 버전', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardDeleteBody },
   { name: 'favouriteDashboard', method: 'PUT', path: '/api/dashboards/:id/favourite', summary: '대시보드 즐겨찾기(별) — 보는 사람별', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardFavouriteBody },
+  // 검토함 대기열(W2) — 정의 승인(PROPOSED·G1~G3 PASS)·Release Sign-off 대기·출시 가능·Gate 판정 대기·안전 분류 확정, 요청 시각 포함
+  { name: 'workQueues', method: 'GET', path: '/api/work-queues', summary: '검토함 대기열 — 정의 승인·Release Sign-off·출시 가능·Gate 판정·안전 분류 확정 대기(요청 시각·작성자)', component: 'D01-01' },
+  // 검토 포털 협의 요청(W5, P5-1) — 요청 부서가 구매·법무·개인정보보호에 의견을 구하고, 포털 부서가 동의·보완·반대 의견을 남긴다(감사 CONSULT_*)
+  { name: 'listConsultations', method: 'GET', path: '/api/consultations', summary: '협의 요청 목록 — 받는 부서(to)·요청 부서(from)·상태 필터, 의견 대기·기한 순', component: 'D04-04', query: ['to', 'from', 'status'] },
+  { name: 'consultationDetail', method: 'GET', path: '/api/consultations/:id', summary: '협의 요청 한 건 — 대상·살펴볼 것·기한·의견 이력', component: 'D04-04' },
+  { name: 'createConsultation', method: 'POST', path: '/api/consultations', summary: '협의 요청 만들기 — 업무 절차에서 받는 부서가 협의(C)·통보(I)인 활동 근거, 대상·기한·살펴볼 것', component: 'D04-04', roles: [...REFDB_CHANGE_REQUESTERS, 'AUDITOR'], body: CreateConsultationBody },
+  // 포털 부서(구매·법무·개인정보보호)는 플랫폼 역할이 없어 조회 계정(AUDITOR)으로 들어온다 — 요청·의견은 운영 상태를 바꾸지 않는 협의 기록이다
+  { name: 'answerConsultation', method: 'POST', path: '/api/consultations/:id/opinions', summary: '협의 의견 — 받은 포털 부서가 동의·보완·반대 + 메모(요청자 본인은 불가)', component: 'D04-04', roles: [...REFDB_CHANGE_REQUESTERS, 'AUDITOR'], body: AnswerConsultationBody },
+  // Feature DB 운영 보강(W5) — 발행 미리 보기(P5-4)·변경 요청 감사 이력(P5-6)
+  { name: 'refReleasePreview', method: 'GET', path: '/api/refdb/releases/preview', summary: 'Feature DB 발행 미리 보기 — 다음 버전에 묶일 승인 요청·반려로 폐기될 요청 중 행·알림 받을 Feature Owner·품질 지표 변화', component: 'D01-01' },
+  { name: 'refChangeAudit', method: 'GET', path: '/api/refdb/changes/:id/audit', summary: 'Feature DB 변경 요청 감사 이력 — 요청·추가 요청·검토·결정·발행 기록을 시간 순으로(금액 값은 남기지 않음)', component: 'D01-01' },
+  // 분석 근거(W3, P3-3) — HARA·TARA·SOTIF·형식승인 영향을 담당 역할이 개인 서명으로 남기고, G2·G7이 본다. G7은 SM·CSM 두 사람 서명
+  { name: 'analysisEvidence', method: 'GET', path: '/api/features/:id/versions/:ver/analysis', summary: '분석 근거 — 종류별 지금 기록·이력, 보안 관련 여부, 대표 ASIL 변경 사유, G7 서명', component: 'D01-02' },
+  { name: 'recordHara', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/hara', summary: 'HARA 기록 — 안전 목표·ASIL, Safety Manager 개인 서명(추가만)', component: 'D01-02', roles: ['SAFETY_OFFICER'], body: HaraBody },
+  { name: 'recordTara', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/tara', summary: 'TARA 기록 — 위협 시나리오·CAL, CSM 개인 서명(추가만)', component: 'D01-02', roles: ['SECURITY_OFFICER'], body: TaraBody },
+  { name: 'recordSotif', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/sotif', summary: 'SOTIF 기록 — 유발 조건, 아키텍트 개인 서명(추가만)', component: 'D01-02', roles: ['IMPLEMENTER'], body: SotifBody },
+  { name: 'recordHomologation', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/homologation', summary: '형식승인 영향 판단 — 영향 규정·판단, 법규 담당 개인 서명(추가만)', component: 'D01-02', roles: ['REGULATORY_OWNER'], body: HomologationBody },
+  { name: 'signG7Safety', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/g7-safety', summary: 'G7 기능안전 서명 — Safety Manager, 지금 HARA에 묶임', component: 'D01-02', roles: ['SAFETY_OFFICER'], body: G7SignoffBody },
+  { name: 'signG7Security', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/g7-security', summary: 'G7 사이버보안 서명 — CSM, 지금 TARA에 묶임(기능안전 서명과 다른 사람)', component: 'D01-02', roles: ['SECURITY_OFFICER'], body: G7SignoffBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

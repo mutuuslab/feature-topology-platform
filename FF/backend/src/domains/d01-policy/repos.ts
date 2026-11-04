@@ -214,6 +214,10 @@ export class GateRepo {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM evidence WHERE gate_record_id = ?', gateRecordId);
     return r ? JSON.parse(r.doc) : undefined;
   }
+  /** 플랫폼 판정의 Evidence 행(P3-4) — 판정 기록과 같은 트랜잭션에서, Gate 기록마다 하나 */
+  insertEvidence(e: EvidenceRow) {
+    this.db.run('INSERT INTO evidence (evidence_ref, gate_record_id, doc) VALUES (?, ?, ?)', e.evidenceRef, e.gateRecordId, JSON.stringify(e));
+  }
 }
 
 @Injectable()

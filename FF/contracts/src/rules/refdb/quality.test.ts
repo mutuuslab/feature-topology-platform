@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import type { RefChange } from '../../schemas/refdb';
 import { refRow } from '../../testing/refdb';
-import { compareRelease, refQuality } from './quality';
+import { compareRelease, refAttrMissing, refQuality } from './quality';
 
 const change = (status: RefChange['status'], n: number): RefChange => ({
   changeId: `CR-2026-0${10 + n}`,
@@ -48,7 +48,23 @@ describe('Feature DB 품질 지표', () => {
       awaitingPublish: 2,
       openChanges: 2,
       latestRelease: 'v1.10',
+      published: 4, // 요청 중 1행만 뺀다(폐기는 발행본에 남는다)
+      pending: 1,
+      attrMissing: 0,
     });
+  });
+
+  it('발행본 행 수는 요청 중을 빼고, 속성 미입력은 발행본(폐기 제외)의 SW 계층·수명주기·기술 영역 빈 칸을 센다(P5-7·P5-8)', () => {
+    const rows = [
+      refRow({ refId: 'BC-ACC-023', swStack: '', lifecycle: '', techStack: '' }), // 추가 요청이 속성 없이 발행된 행
+      refRow({ refId: 'BC-ACC-024', status: 'RETIRED', swStack: '' }), // 폐기 행은 세지 않는다
+      refRow({ refId: 'BC-ACC-025', status: 'PENDING', techStack: '' }), // 요청 중은 발행본이 아니다
+      refRow({ refId: 'BC-ACC-001' }),
+    ];
+    const q = refQuality(rows, [], [], '2026-11-05T00:00:00Z');
+    expect(q).toMatchObject({ total: 4, published: 3, pending: 1, attrMissing: 1 });
+    expect(refAttrMissing(rows[0])).toBe(true);
+    expect(refAttrMissing(rows[3])).toBe(false);
   });
 
   it('빈 Feature DB — 비중 0, 최신 발행 없음', () => {

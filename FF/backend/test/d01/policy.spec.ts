@@ -2,7 +2,7 @@
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Clock } from '../../src/kernel/clock';
-import { actor, bootApp, confirmSafety, withRef } from '../helpers';
+import { actor, bootApp, confirmSafety, signG7, withRef } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
@@ -91,6 +91,7 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
       await confirmSafety(http, fid, '0.1.0');
       for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await http().post(`/api/features/${fid}/versions/0.1.0/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);
+      await signG7(http, fid, '0.1.0'); // G7 — SM·CSM 두 사람 서명(P3-3)
       for (const g of ['G4', 'G5', 'G6', 'G7']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       const d = await http().get(`/api/features/${fid}/versions/0.1.0`).expect(200);
       expect(d.body.feature.lifecycle).toBe('DEVELOPING');

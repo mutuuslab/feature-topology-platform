@@ -6,7 +6,7 @@ import { REF_STATUS_POLICY, type FeatureRefRole } from '@ff/contracts';
 import { STATIC_MODE } from '../../../api/client';
 import { asyncState, useApi } from '../../../api/hooks';
 import { useRefSearch } from '../../refdb/refSearch';
-import { propose as P } from '../../../copy/propose';
+import { propose as P, proposeRefMore as PM } from '../../../copy/propose';
 import { AsyncView, Button, DataTable, Field } from '../../../design';
 import { usePermission } from '../../shared';
 import { RefStatusBadge } from '../../refdb/common';
@@ -186,7 +186,8 @@ export function RefPicker({
         <h3 id="ref-results-h">
           {P.results} <span className="ds-field__hint">{search.data ? P.resultCount(rows.length, total) : ''}</span>
         </h3>
-        <AsyncView state={asyncState(search, rows.length === 0)} error={search.error} onRetry={() => search.refetch()} empty={{ body: P.noResult }}>
+        {/* 빈 결과는 한 문장(제목 + 다음 행동) — 기본 제목과 겹쳐 두 번 말하던 것(P1-8) */}
+        <AsyncView state={asyncState(search, rows.length === 0)} error={search.error} onRetry={() => search.refetch()} empty={{ title: PM.noResultTitle, body: PM.noResultBody }}>
           <DataTable
             caption={P.results}
             rows={rows}
@@ -259,10 +260,15 @@ export function RefPicker({
                 const warn = refWarning(p.ref);
                 return (
                   <li key={p.ref.refId} data-state={warn ? 'REVIEW' : 'PASS'} data-ref-chosen={p.ref.refId} data-role={p.role}>
-                    <span style={{ display: 'grid', gap: 'var(--sp-1)' }}>
+                    {/* 아이콘 칸(22px)이 아니라 줄 전체에 — 내용이 22px 칸에 들어가 ID가 37px로 세 줄이 됐다(P1-9) */}
+                    <span style={{ display: 'grid', gap: 'var(--sp-1)', gridColumn: '1 / -1' }}>
                       <span style={{ display: 'inline-flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
                         <span className="ds-tag">{P.role[p.role]}</span>
-                        <span className="ds-mono">{p.ref.refId}</span> {p.ref.nameKo}
+                        {/* ID는 한 줄 — 좁은 칸에서 CH-BRK-009가 세 줄로 깨지던 것(P1-9) */}
+                        <span className="ds-mono ds-nowrap" style={{ minWidth: '10ch', flexShrink: 0 }} data-chosen-id={p.ref.refId}>
+                          {p.ref.refId}
+                        </span>{' '}
+                        {p.ref.nameKo}
                         <RefStatusBadge status={p.ref.status} />
                       </span>
                       {warn && <span className="ds-check__detail">{warn}</span>}

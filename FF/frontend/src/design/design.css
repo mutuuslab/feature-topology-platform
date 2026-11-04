@@ -116,6 +116,17 @@ h3 {
   color: var(--muted);
   pointer-events: none;
 }
+/* Lifecycle 작업은 입력칸과 끝을 맞추는 폼이 아니다. 이유 높이도 패널에 포함해 다음 카드와 겹치지 않게 한다. */
+.feature-lifecycle-actions .ds-btn-why {
+  display: inline-grid;
+  justify-items: start;
+  gap: 2px;
+  max-width: 32ch;
+}
+.feature-lifecycle-actions .ds-btn-why__text {
+  position: static;
+  width: auto;
+}
 .ds-btn--primary {
   background: var(--accent);
   border-color: var(--accent);
@@ -656,6 +667,7 @@ button.ds-gate:hover {
   color: var(--faint);
 }
 .ds-panel {
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
@@ -730,7 +742,7 @@ details.ds-panel[open] {
 }
 .ds-stream li {
   display: grid;
-  grid-template-columns: 76px 1fr;
+  grid-template-columns: 76px minmax(0, 1fr);
   gap: var(--sp-3);
   padding: 6px 0;
   border-bottom: 1px solid var(--line);
@@ -743,6 +755,7 @@ details.ds-panel[open] {
   padding-top: 2px;
 }
 .ds-stream__type {
+  overflow-wrap: anywhere;
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: var(--fs-xs);
@@ -887,6 +900,16 @@ details.ds-panel[open] {
   gap: var(--sp-2);
   flex-wrap: wrap;
 }
+/* 머리 행동은 오른쪽 끝에 붙는다 — 비활성 이유를 버튼 오른쪽 끝에 맞춰 화면 밖으로 넘치지 않게(layout-quality, 2026-11-05) */
+.ds-page__actions .ds-btn-why__text {
+  left: auto;
+  right: 0;
+}
+/* 머리 행동은 오른쪽 끝에 붙는다 — 비활성 이유를 버튼 오른쪽 끝에 맞춰 화면 밖으로 넘치지 않게(layout-quality, 2026-11-05) */
+.ds-page__actions .ds-btn-why__text {
+  left: auto;
+  right: 0;
+}
 .ds-toolbar {
   display: flex;
   align-items: center;
@@ -1000,8 +1023,10 @@ textarea.ds-input {
   margin: 4px 0 0;
   padding-left: 16px;
 }
+/* 문의용 오류 코드 — 문장 뒤에 붙이지 않고 다음 줄에 */
 .ds-error__code {
-  margin-left: var(--sp-2);
+  display: block;
+  margin-top: 2px;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--muted);
@@ -1027,6 +1052,8 @@ textarea.ds-input {
   padding: 6px 0;
   border-bottom: 1px solid var(--line);
   min-width: 0;
+  /* 이름(dt)과 값(dd) 첫 줄을 같은 기준선에 — 가운데 맞춤이면 이름이 두 줄일 때 값이 10~20px 내려갔다(2026-11-05) */
+  align-items: baseline;
 }
 .ds-kv dt {
   font-size: var(--fs-xs);
@@ -1042,7 +1069,11 @@ textarea.ds-input {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 6px;
-  align-items: center;
+  align-items: baseline;
+}
+/* 상태 칩(넘침 숨김 인라인 블록)은 기준선이 아래 끝 — 글자 아래선에 맞춰 칩 글자가 이름과 같은 줄에 놓이게 */
+.ds-kv dd .ds-lozenge {
+  vertical-align: text-bottom;
 }
 .ds-kv__note {
   font-size: var(--fs-xs);
@@ -1076,6 +1107,11 @@ textarea.ds-input {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/* 서랍 안 좌우 분할 — 서랍(약 480px)에서 오른쪽 최소 320px이 왼쪽 칸을 26px로 줄여 '담당' 입력이 ASIL 이름과 겹쳤다(2026-11-05).
+   서랍에서는 같은 폭 두 칸, 좁으면 한 칸 */
+.ds-drawer .ds-split {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+}
 .ds-check {
   list-style: none;
   margin: 0;
@@ -1085,7 +1121,8 @@ textarea.ds-input {
 }
 .ds-check li {
   display: grid;
-  grid-template-columns: 22px 1fr;
+  /* 첫 칸은 아이콘(22px) 또는 짧은 판정 낱말 — 글자가 오면 제 폭만큼 넓힌다('보완'이 22px 칸에서 세로로 갈렸다, 2026-11-05) */
+  grid-template-columns: minmax(22px, max-content) minmax(0, 1fr);
   gap: var(--sp-2);
   padding: 8px var(--sp-2);
   border-radius: var(--r);
@@ -2557,4 +2594,23 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   border-left: 4px solid var(--accent);
   border-radius: var(--r-lg);
   background: var(--ws-band);
+}
+/* 처리 기한 배지(검토함·결재함, W2) — 남은 시간·기한 지남. 색만으로 구분하지 않게 글자에 '남은'·'기한 지남' */
+.ds-due {
+  display: inline-block;
+  padding: 0 var(--sp-1);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink-2);
+  background: var(--surface-2);
+}
+.ds-due[data-due='soon'] {
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+.ds-due[data-due='over'] {
+  color: var(--danger);
+  background: var(--danger-soft);
 }

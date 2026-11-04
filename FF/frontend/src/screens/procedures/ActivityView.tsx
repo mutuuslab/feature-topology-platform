@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ProcedureCompleteBody, RaciKey, WorkflowActivity, WorkflowDoc, WorkflowProcess, WorkflowWorkProduct } from '@ff/contracts';
+import { procedureGateText } from '@ff/contracts';
 import { STATIC_MODE, type ApiError } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { procedures as P } from '../../copy/procedures';
@@ -155,7 +156,7 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
           ...(a.raci.C.length ? [{ k: P.raci.C, v: names(a.raci.C) }] : []),
           ...(a.raci.I.length ? [{ k: P.raci.I, v: names(a.raci.I) }] : []),
           ...(a.trigger ? [{ k: P.detail.trigger, v: a.trigger }] : []),
-          ...(a.gateDecision ? [{ k: P.detail.gate, v: a.gateDecision }] : []),
+          ...(a.gateDecision ? [{ k: P.detail.gate, v: <span data-testid="procedure-gate-map">{procedureGateText(a.gateDecision)}</span> }] : []),
           ...(a.slaHours ? [{ k: P.detail.sla, v: P.detail.slaValue(a.slaHours) }] : []),
         ]}
       />

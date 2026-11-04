@@ -7,6 +7,7 @@ import {
   evaluateProductGuards,
   PRODUCT_TRANSITIONS,
   productRuleFor,
+  ROLE_LABEL,
   validateComposition,
   type BaselineRef,
   type CompositionResult,
@@ -169,7 +170,7 @@ export class CatalogService {
       throw new DomainError(code, msg, details);
     };
     if (!rule) fail('GUARD_FAILED', `${p.lifecycle} → ${to} 전이는 정의되어 있지 않습니다.`);
-    if (!rule!.roles.includes(actor.role)) fail('FORBIDDEN', `이 전이는 ${rule!.roles.join(', ')} 역할만 할 수 있습니다.`);
+    if (!rule!.roles.includes(actor.role)) fail('FORBIDDEN', `이 전이는 ${rule!.roles.map((r) => ROLE_LABEL[r]).join(' · ')} 역할만 할 수 있습니다.`);
     if (!reason.trim()) fail('VALIDATION', '전이 사유를 입력하세요.');
     if (rule!.approval && meta.createdBy === actor.id) fail('SEPARATION_OF_DUTY', '상품 작성자는 자기 상품을 승인할 수 없습니다.');
     if (rule!.approval === 'RELEASE' && meta.configApprovedBy === actor.id) fail('SEPARATION_OF_DUTY', '구성 승인자와 고객 출시 승인자는 달라야 합니다.');

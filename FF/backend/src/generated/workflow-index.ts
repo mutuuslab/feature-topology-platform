@@ -7,7 +7,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
   "approver": [
    "R-REQ",
    "R-PO",
-   "R-DRV"
+   "R-DRV",
+   "R-CA",
+   "R-CBA"
   ],
   "author": [
    "R-FO"
@@ -27,10 +29,19 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
   "operator": [
    "R-OPS"
   ],
+  "opslead": [
+   "R-OPS"
+  ],
+  "productowner": [
+   "R-PO"
+  ],
   "quality": [
    "R-SM",
    "R-TST",
    "R-QA"
+  ],
+  "safety2": [
+   "R-SM"
   ],
   "steward": [
    "R-REG",
@@ -38,7 +49,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "R-RDA"
   ],
   "viewer": [
-   "R-QA"
+   "R-QA",
+   "R-CE",
+   "R-CV"
   ]
  },
  "roles": [
@@ -175,6 +188,34 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "name": "도메인 검토자",
    "platformRoles": [
     "DOMAIN_REVIEWER"
+   ]
+  },
+  {
+   "id": "R-CE",
+   "name": "SW 개발비 산정 작성자",
+   "platformRoles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "id": "R-CA",
+   "name": "SW 개발비 산정 승인자",
+   "platformRoles": [
+    "COST_APPROVER"
+   ]
+  },
+  {
+   "id": "R-CV",
+   "name": "SW 개발비 산정 열람자",
+   "platformRoles": [
+    "COST_VIEWER"
+   ]
+  },
+  {
+   "id": "R-CBA",
+   "name": "원가 기준 관리자",
+   "platformRoles": [
+    "COST_BASIS_ADMIN"
    ]
   }
  ],
@@ -666,7 +707,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     ]
    },
    "next": [
-    "FPW.3-A03"
+    "FPW.3-A03",
+    "FPW.3-A05"
    ],
    "screens": [
     "/trace/design"
@@ -702,6 +744,42 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "actions": [
     "judgeGate"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.3-A05",
+   "processId": "FPW.3",
+   "processName": "안전요구 확정",
+   "name": "구현 연결 입력",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-INT",
+     "R-FO"
+    ],
+    "A": "R-INT",
+    "C": [
+     "R-ARC",
+     "R-PLM"
+    ],
+    "I": [
+     "R-REQ",
+     "R-TST"
+    ]
+   },
+   "next": [
+    "FPW.3-A04"
+   ],
+   "screens": [
+    "/features/:id/:ver",
+    "/master/artifacts",
+    "/integration/connectors"
+   ],
+   "actions": [
+    "updateDraft"
    ],
    "anchor": null,
    "slaHours": null

@@ -22,7 +22,7 @@ traces:
     - WF-FPW-12
     - WF-FPW-13
     - WF-FPW-14
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -31,7 +31,7 @@ last_updated: 2026-11-04
 > 안전 분류·HARA·Safety Case를 책임지고 F2 이상 Kill·복원을 승인한다.
 
 - IAM 역할: SAFETY_OFFICER(기능안전 담당자(FSM))
-- IAM 데모 계정: quality, integrator
+- IAM 데모 계정: quality, integrator, safety2
 - 매핑 근거: REPORT_APPROVER_ROLES FSM→SAFETY_OFFICER
 
 ## 1. 내가 하는 일 (수행 R · 책임 A)

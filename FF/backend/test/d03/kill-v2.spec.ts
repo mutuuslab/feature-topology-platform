@@ -7,7 +7,7 @@ import { Clock } from '../../src/kernel/clock';
 import { DB, type Db } from '../../src/kernel/db';
 import { HsmService } from '../../src/domains/d06-qsec/pki-kms/hsm.service';
 import { targetHashOf } from '../../src/domains/d03-safety/kill-switch/kill.service';
-import { actor, bootApp, KILL_APPROVERS, KILL_REQUESTER, killV2, RESTORE_APPROVERS } from '../helpers';
+import { actor, bootApp, KILL_APPROVERS, KILL_REQUESTER, killV2, RESTORE_APPROVERS, restoreBody } from '../helpers';
 
 let close: (() => Promise<void>) | null = null;
 afterEach(async () => {
@@ -40,15 +40,40 @@ describe('승인 (FFG-PLT-005 · FFG-SEC-008 · SOD-08) — 원격 종료 오남
     expect(r.body.error.details.code).toBe('SELF_APPROVAL');
     expect(lastAudit(db, 'KILL_APPROVE')).toMatchObject({ result: 'FAILED', reason: expect.stringContaining('SELF_APPROVAL') });
   });
-  it('F3 안전 차단은 FSM 필수 — FSM 없이 두 칸을 채울 수 없다, 같은 사람 두 번도 거부', async () => {
+  it('F3 안전 차단은 FSM + CSM(2026-11-04 결정) — 운영 리더·두 번째 FSM은 칸을 못 채운다, 같은 사람 두 번도 거부', async () => {
     const { http } = await boot();
     const k = (await http().post('/api/kill-requests').set(KILL_REQUESTER).send(BODY).expect(201)).body;
-    await http().post(`/api/kill-requests/${k.killId}/approvals`).set(KILL_APPROVERS[1]).send({}).expect(201); // OPS_LEAD
-    await http().post(`/api/kill-requests/${k.killId}/approvals`).set(KILL_APPROVERS[1]).send({}).expect(409); // 같은 사람
-    const r = await http().post(`/api/kill-requests/${k.killId}/approvals`).set(actor('usr-csm', 'SECURITY_OFFICER')).send({}).expect(409);
-    expect(r.body.error.details.code).toBe('FSM_REQUIRED');
-    const done = (await http().post(`/api/kill-requests/${k.killId}/approvals`).set(KILL_APPROVERS[0]).send({}).expect(201)).body;
-    expect(done).toMatchObject({ status: 'ACTIVE', approvals: [{ role: 'OPS_LEAD' }, { role: 'FSM' }] });
+    const lead = await http().post(`/api/kill-requests/${k.killId}/approvals`).set(actor('usr-opslead', 'OPS_LEAD')).send({}).expect(409);
+    expect(lead.body.error.details.code).toBe('FSM_REQUIRED');
+    await http().post(`/api/kill-requests/${k.killId}/approvals`).set(KILL_APPROVERS[0]).send({}).expect(201); // FSM
+    await http().post(`/api/kill-requests/${k.killId}/approvals`).set(KILL_APPROVERS[0]).send({}).expect(409); // 같은 사람
+    const fsm2 = await http().post(`/api/kill-requests/${k.killId}/approvals`).set(actor('usr-safety2', 'SAFETY_OFFICER')).send({}).expect(409);
+    expect(fsm2.body.error.details.code).toBe('CSM_REQUIRED');
+    const done = (await http().post(`/api/kill-requests/${k.killId}/approvals`).set(KILL_APPROVERS[1]).send({}).expect(201)).body;
+    expect(done).toMatchObject({ status: 'ACTIVE', approvals: [{ role: 'FSM' }, { role: 'CSM' }] });
+  });
+  it('P3-2 FSM·CSM을 함께 가진 사람은 고른 서명 역할로 기록 — 사이버보안 역할로 승인하면 CSM, FSM 뒤 FSM으로 다시 서명하려 하면 거부', async () => {
+    const { http } = await boot();
+    const k = (await http().post('/api/kill-requests').set(KILL_REQUESTER).send(BODY).expect(201)).body;
+    // 승인 대기 상세 — 다음 칸 후보는 필수 역할(FSM·CSM)을 가진 사람만, 요청자 제외
+    const d = (await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body;
+    expect(d.approverCandidates.map((c: { id: string }) => c.id)).toEqual(expect.arrayContaining(['usr-quality', 'usr-integrator', 'usr-safety2']));
+    expect(d.approverCandidates.map((c: { id: string }) => c.id)).not.toContain('usr-opslead');
+    await http().post(`/api/kill-requests/${k.killId}/approvals`).set(actor('usr-quality', 'SAFETY_OFFICER')).send({}).expect(201);
+    const twice = await http().post(`/api/kill-requests/${k.killId}/approvals`).set(actor('usr-integrator', 'SAFETY_OFFICER')).send({}).expect(409);
+    expect(twice.body.error.details.code).toBe('CSM_REQUIRED');
+    const done = (await http().post(`/api/kill-requests/${k.killId}/approvals`).set(actor('usr-integrator', 'SECURITY_OFFICER')).send({}).expect(201)).body;
+    expect(done.approvals.map((a: { approverId: string; role: string; platformRole: string }) => [a.approverId, a.role, a.platformRole])).toEqual([
+      ['usr-quality', 'FSM', 'SAFETY_OFFICER'],
+      ['usr-integrator', 'CSM', 'SECURITY_OFFICER'],
+    ]);
+    // 복원 전망 — 차단 승인자 둘을 빼고도 복원할 FSM(두 번째 Safety Manager)과 운영 리더가 남는다(P4-1)
+    const active = (await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body;
+    expect(active.restoreOutlook).toMatchObject({ complete: true, missing: [] });
+    const ids = active.restoreOutlook.candidates.map((c: { id: string }) => c.id);
+    expect(ids).toEqual(expect.arrayContaining(['usr-safety2', 'usr-opslead']));
+    expect(ids).not.toContain('usr-quality');
+    expect(ids).not.toContain('usr-integrator');
   });
   it('승인 역할이 없으면 403, 거절하면 REJECTED — 이후 승인은 409', async () => {
     const { http } = await boot();
@@ -90,7 +115,7 @@ describe('발행 — 서명·차량별 봉투 (FFG-VEH-002 · FFG-VEH-013 · TC-
     expect(e.commands).toHaveLength(1);
     const cmd = e.commands[0];
     expect(wireErrors(KillCommandV2, cmd)).toEqual([]);
-    expect(cmd).toMatchObject({ request: 'deactivate', command_seq: 11, feature: { f_class: 'F3', deact_class: 'DC2' }, approvals: [{ role: 'FSM' }, { role: 'OPS_LEAD' }] });
+    expect(cmd).toMatchObject({ request: 'deactivate', command_seq: 11, feature: { f_class: 'F3', deact_class: 'DC2' }, approvals: [{ role: 'FSM' }, { role: 'CSM' }] });
     const { signature, ...body } = cmd;
     expect(hsm.verifyDetached('kill', jcs(body), signature).valid).toBe(true);
     expect(hsm.verifyDetached('policy', jcs(body), signature)).toMatchObject({ valid: false }); // 다른 용도로는 무효
@@ -124,10 +149,68 @@ describe('발행 — 서명·차량별 봉투 (FFG-VEH-002 · FFG-VEH-013 · TC-
 });
 
 describe('복원 (FFG-DEAC-008 · TC-FF-16)', () => {
+  it('FAIL·CONDITIONAL 판정 근거를 본문으로 보내도 복원 요청은 거부한다', async () => {
+    const { http, db } = await boot();
+    const k = await killV2(http, BODY);
+    const rb = await restoreBody(http, k.killId);
+    const source = (await http().get('/api/evidence?featureId=FEAT-00022').expect(200)).body.items[0];
+    for (const [n, inputResult] of ['FAIL', 'CONDITIONAL'].entries()) {
+      const evidenceRef = `EV-RESTORE-${inputResult}`;
+      const recordId = `SIM-G5-99999${n}`;
+      // 실패·조건부 판정도 원장에 보존된다. 화면 선택지 밖의 근거를 API로 직접 보낸다.
+      db.run('INSERT INTO evidence (evidence_ref, gate_record_id, doc) VALUES (?, ?, ?)', evidenceRef, recordId, JSON.stringify({ ...source, evidenceRef, gateRecordId: recordId, inputResult }));
+      const r = await http().post(`/api/kill-requests/${k.killId}/restore`).set(KILL_REQUESTER).send({ ...rb, evidenceRef }).expect(400);
+      expect(r.body.error.details.field).toBe('evidenceRef');
+      expect(lastAudit(db, 'RESTORE_REQUEST')).toMatchObject({ result: 'FAILED' });
+    }
+    expect((await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body.restoreRequest).toBeNull();
+  });
+
+  it('여러 Feature가 공유하는 근거 번호는 대상 Feature의 PASS 판정을 찾아 복원한다', async () => {
+    const { http, db } = await boot();
+    const k = await killV2(http, BODY);
+    const rb = await restoreBody(http, k.killId);
+    const source = (await http().get('/api/evidence?featureId=FEAT-00022').expect(200)).body.items[0];
+    const evidenceRef = 'EV-SHARED-RESTORE-REPORT';
+    // 같은 외부 시험 보고서가 여러 판정에서 쓰인다. 다른 Feature 행을 먼저 넣는다.
+    for (const [n, featureId] of ['FEAT-00001', 'FEAT-00022'].entries()) {
+      const recordId = `SIM-G5-99998${n}`;
+      db.run('INSERT INTO evidence (evidence_ref, gate_record_id, doc) VALUES (?, ?, ?)', evidenceRef, recordId, JSON.stringify({ ...source, evidenceRef, gateRecordId: recordId, featureId, inputResult: 'PASS' }));
+    }
+    const restored = (await http().post(`/api/kill-requests/${k.killId}/restore`).set(KILL_REQUESTER).send({ ...rb, evidenceRef }).expect(201)).body;
+    expect(restored.restoreRequest).toMatchObject({ evidenceRef, status: 'REQUESTED' });
+  });
+
+  it('P4-7 복원 요청은 재검증 Evidence·Cohort가 있어야 한다 — 없거나 다른 Feature 근거·남은 차량 밖이면 거부, Cohort부터 단계적으로 복원(A10)', async () => {
+    const { http } = await boot();
+    const k = await killV2(http, BODY);
+    const rb = await restoreBody(http, k.killId, '원인 수정·재검증');
+    const restore = (b: object) => http().post(`/api/kill-requests/${k.killId}/restore`).set(KILL_REQUESTER).send(b);
+    await restore({ reason: '원인 수정' }).expect(400); // Evidence·Cohort 없음
+    const other = (await http().get('/api/evidence?featureId=FEAT-00001').expect(200)).body.items[0].evidenceRef;
+    expect((await restore({ ...rb, evidenceRef: other }).expect(400)).body.error.details.field).toBe('evidenceRef');
+    await restore({ ...rb, cohort: ['KMH-NX4-0001'] }).expect(400); // 차단 차량이 아님
+    // 1단계: Canary Cohort(ego-01)만
+    const s1 = (await restore({ ...rb, cohort: ['ego-01'] }).expect(201)).body;
+    expect(s1.restoreRequest).toMatchObject({ status: 'REQUESTED', evidenceRef: rb.evidenceRef, cohort: ['ego-01'] });
+    await http().post(`/api/kill-requests/${k.killId}/restore/approvals`).set(RESTORE_APPROVERS[0]).send({}).expect(201);
+    const one = (await http().post(`/api/kill-requests/${k.killId}/restore/approvals`).set(RESTORE_APPROVERS[1]).send({}).expect(201)).body;
+    expect(one).toMatchObject({ status: 'ACTIVE', restoredVins: ['ego-01'], restoreRequest: { status: 'APPROVED', command: { envelopes: 1 } } });
+    expect(one.restoreStages).toHaveLength(1);
+    expect(one.restore).toMatchObject({ denominator: 1 });
+    await restore({ ...rb, cohort: ['ego-01'] }).expect(400); // 이미 복원한 차량
+    // 2단계: 남은 차량 — 다 복원되면 해제(RELEASED)
+    await restore({ ...rb, cohort: ['lead-01'] }).expect(201);
+    await http().post(`/api/kill-requests/${k.killId}/restore/approvals`).set(RESTORE_APPROVERS[0]).send({}).expect(201);
+    const two = (await http().post(`/api/kill-requests/${k.killId}/restore/approvals`).set(RESTORE_APPROVERS[1]).send({}).expect(201)).body;
+    expect(two).toMatchObject({ status: 'RELEASED', restoredVins: ['ego-01', 'lead-01'] });
+    expect(two.restoreStages.map((s: { cohort: string[] }) => s.cohort)).toEqual([['ego-01'], ['lead-01']]);
+  });
   it('차단 승인자는 복원을 승인할 수 없다 — 다른 2인만, 복원 명령은 restore 용도 키·순번 +1', async () => {
     const { http, hsm } = await boot();
     const k = await killV2(http, BODY);
-    await http().post(`/api/kill-requests/${k.killId}/restore`).set(KILL_REQUESTER).send({ reason: '원인 수정' }).expect(201);
+    const rb = await restoreBody(http, k.killId, '원인 수정');
+    await http().post(`/api/kill-requests/${k.killId}/restore`).set(KILL_REQUESTER).send(rb).expect(201);
     for (const a of KILL_APPROVERS) {
       const r = await http().post(`/api/kill-requests/${k.killId}/restore/approvals`).set(a).send({}).expect(409);
       expect(r.body.error.details.code).toBe('KILL_APPROVER');
@@ -164,7 +247,8 @@ describe('대량 차단 (FFG-SEC-003 · SOD-10 · TC-FF-48)', () => {
         .expect(201)
     ).body;
     await http().post(`/api/kill-requests/${a.killId}/approvals`).set(KILL_APPROVERS[0]).send({}).expect(201);
-    const rejected = (await http().post(`/api/kill-requests/${a.killId}/approvals`).set(KILL_APPROVERS[1]).send({}).expect(201)).body;
+    // 운영 사유(필수 역할 없음) — 운영 리더도 두 번째 칸을 채우지만, 상한 초과는 게이트가 FSM+CSM을 요구한다
+    const rejected = (await http().post(`/api/kill-requests/${a.killId}/approvals`).set(actor('usr-opslead', 'OPS_LEAD')).send({}).expect(201)).body;
     expect(rejected).toMatchObject({ status: 'REJECTED', rejectedBy: 'policy-gate', gate: { result: 'FAIL', failed: ['FFG-SEC-003'] } });
     expect(lastAudit(db, 'KILL_ISSUE')).toMatchObject({ result: 'FAILED', reason: expect.stringContaining('FFG-SEC-003') });
     const b = (

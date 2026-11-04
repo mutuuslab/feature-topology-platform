@@ -72,7 +72,7 @@ describe('감사 체인 묶음 검증 — HTTP 창구가 이벤트 루프를 막
     const { http, db, audit } = await boot();
     for (let i = 0; i < 4; i++) await http().post('/api/pki/rotate').set(actor('u-safety', 'SAFETY_OFFICER')).send({ reason: `교체 ${i}` }).expect(201);
     expect(await audit.verifyChainAsync(2)).toEqual(audit.verifyChain());
-    expect((await http().get('/api/audit/chain').expect(200)).body).toEqual(audit.verifyChain());
+    expect((await http().get('/api/audit/chain').expect(200)).body).toEqual({ ...audit.verifyChain(), checkedAt: '2026-10-13T00:00:00.000Z' });
     // 감사 100만 행에서 한 번에 검증하면 요청 하나가 이벤트 루프를 약 30 s 막았다 — 묶음 사이에 앞서 예약된 일이 돈다
     let ran = false;
     setImmediate(() => (ran = true));

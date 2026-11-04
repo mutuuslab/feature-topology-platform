@@ -37,7 +37,8 @@ export type CreateFeatureBody = z.infer<typeof CreateFeatureBody>;
  */
 export const UpdateDraftBody = patchOf(CreateFeatureBody.omit({ country: true, vehicleModel: true, trim: true }))
   .extend({
-    functions: z.array(z.object({ functionId: z.string().regex(/^FUNC-\d{6}$/), label: z.string() })).optional(),
+    // 구현 연결 — 새 기능은 이름만 보내면 서버가 FUNC 번호를 매긴다. SW·Version·제어기 P/N은 기준정보(SW·ECU 마스터)에 있는 짝만 받는다
+    functions: z.array(z.object({ functionId: z.string().regex(/^FUNC-\d{6}$/).optional(), label: z.string().trim().min(1).max(200) })).optional(),
     swIds: z.array(z.string()).optional(),
     swVersions: z.array(z.string()).optional(),
     ecuPnos: z.array(z.string()).optional(),
@@ -66,6 +67,8 @@ export const JudgeGateBody = z
     inputResult: GateResult,
     rationale: z.string().trim().min(2).max(512),
     evidenceRef: z.string().trim().max(512).nullable().default(null),
+    /** G2 — 대표 ASIL 변경 사유를 판정자가 검토했다는 확인(P3-1). ASIL을 바꾼 Version의 G2 PASS에 필요 */
+    asilReasonReviewed: z.boolean().optional(),
   })
   .refine((b) => b.inputResult !== 'PASS' || !!b.evidenceRef, { message: '증거(Evidence Ref) 없는 PASS는 등록할 수 없습니다.', path: ['evidenceRef'] });
 export type JudgeGateBody = z.infer<typeof JudgeGateBody>;
@@ -76,6 +79,10 @@ export const BaselineRequestBody = z.object({
   reason,
 });
 export type BaselineRequestBody = z.infer<typeof BaselineRequestBody>;
+
+/** Baseline 확정 요청 상태 — 대기(PENDING) → 확정(APPROVED)·반려(REJECTED). 목록 조회 status 질의도 이 값만(화면이 'REQUESTED'로 묻던 결함, P2-1) */
+export const BaselineRequestStatus = z.enum(['PENDING', 'APPROVED', 'REJECTED']);
+export type BaselineRequestStatus = z.infer<typeof BaselineRequestStatus>;
 
 export const BaselineDecisionBody = z.object({ decision: z.enum(['APPROVE', 'REJECT']), reason });
 export type BaselineDecisionBody = z.infer<typeof BaselineDecisionBody>;

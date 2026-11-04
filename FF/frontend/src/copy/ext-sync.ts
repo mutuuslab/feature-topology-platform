@@ -21,6 +21,9 @@ export const extSync = {
     key: {
       clean: '요구·변경요청·코드가 모두 연결되어 있고 외부와 상태가 맞습니다',
       issues: '외부 연계에서 확인할 것이 있습니다',
+      // 연결이 하나도 없으면 '맞음'이라 하지 않는다(P1-12) · 일부만 연결되면 빠진 쪽을 말한다
+      unlinked: '아직 외부 시스템과 연결된 요구·변경요청·코드가 없습니다 — 연결되면 상태를 비교합니다',
+      partial: (missing: string) => `연결된 항목은 외부와 상태가 맞습니다 · 아직 연결 안 됨: ${missing}`,
     },
     chain: '추적 — 요구 → Feature → MR·파이프라인 → 정책·변경요청',
     requirements: '요구사항 (codeBeamer)',

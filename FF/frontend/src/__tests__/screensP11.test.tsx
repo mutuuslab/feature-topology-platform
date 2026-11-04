@@ -6,7 +6,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { RetirementsScreen } from '../screens/policy/Retirements';
 import { DataGovernanceScreen } from '../screens/admin/DataGovernance';
-import { OversightScreen } from '../screens/admin/Oversight';
+import { OversightScreen, PostReviewForm } from '../screens/admin/Oversight';
 import { FeatureVersionActions, PolicyEdit, ProductVersionActions } from '../screens/features/VersionEdit';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
@@ -175,6 +175,19 @@ describe('감독 기록', () => {
   });
 });
 
+it('사후 검토 완료 기록은 사람 이름·한글 역할·한국 시각으로 보인다', () => {
+  handler = () => undefined;
+  const { container } = mount('viewer', '/audit/oversight', <PostReviewForm killId="KILL-00001" row={{
+    killId: 'KILL-00001', featureId: 'FEAT-00022', issuedAt: '2026-11-04T00:00:00Z', due: '2026-11-05T00:00:00Z',
+    requestedBy: 'usr-operator', approvers: ['usr-quality', 'usr-integrator'], status: 'REVIEWED',
+    review: { reviewer: 'usr-viewer', role: 'AUDITOR', at: '2026-11-05T00:00:00Z', summary: '독립 검토 완료', late: false },
+  }} />);
+  expect(container.textContent).toContain('최지훈');
+  expect(container.textContent).toContain('감사');
+  expect(container.textContent).toContain('2026-11-05 09:00');
+  expect(container.textContent).not.toMatch(/usr-viewer|AUDITOR/);
+});
+
 describe('새 Version·초안 수정', () => {
   const F = { featureId: 'FEAT-00022', version: '1.0.0', lifecycle: 'RELEASED', name: '전방 안전거리', description: 'd', ownerId: 'ADAS팀', asil: 'B', tags: ['adas'], requirementIds: ['REQ-1'] };
 
@@ -208,7 +221,7 @@ describe('새 Version·초안 수정', () => {
     expect(screen.queryByRole('button', { name: '새 Version' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: '초안 수정' }));
     const dlg = await screen.findByRole('dialog');
-    fireEvent.change(within(dlg).getByLabelText('요구사항 ID (쉼표로 구분)'), { target: { value: 'REQ-1, REQ-9' } });
+    fireEvent.change(within(dlg).getByLabelText(/^요구사항 ID \(쉼표로 구분\)/), { target: { value: 'REQ-1, REQ-9' } });
     fireEvent.click(within(dlg).getByRole('button', { name: '저장' }));
     await vi.waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
     const patch = calls.find((c) => c.method === 'PATCH')!;

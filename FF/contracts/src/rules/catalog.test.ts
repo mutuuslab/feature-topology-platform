@@ -27,6 +27,13 @@ describe('상품 구성 검증 (§2.7, §4)', () => {
     expect(check({ baselineIds: ['BL-00028', 'BL-00029', 'BL-00030'] }).issues).toContainEqual(expect.objectContaining({ code: 'REQUIRES_MISSING', refs: ['DEP-00013'] }));
   });
 
+  // 담당자 웨이브 P1-10 — 실패 문구가 무엇을 더할지(빠진 Baseline)를 말한다
+  it('REQUIRES 대상이 빠지면 문구와 suggest에 추가할 Baseline(BL-00163)이 들어 있다', () => {
+    const miss = check({ baselineIds: ['BL-00028', 'BL-00029', 'BL-00030'] }).issues.find((i) => i.code === 'REQUIRES_MISSING')!;
+    expect(miss.suggest).toEqual(['BL-00163']);
+    expect(miss.message).toContain('추가할 Baseline: BL-00163');
+  });
+
   it('EXCLUDES 관계 Feature를 함께 넣으면 FAIL', () => {
     const exc = ds.dependencies.find((d) => d.type === 'EXCLUDES')!;
     const blOf = (fid: string) => Object.values(baselines).find((b) => b.featureId === fid)!;

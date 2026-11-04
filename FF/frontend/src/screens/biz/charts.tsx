@@ -125,8 +125,9 @@ export function SegmentChart({ rows, label, suppressedText, rateLabels }: { rows
   const [tip, setTip] = useState<Tip | null>(null);
   const labelW = 150;
   const valueW = 64;
-  const bar = 12;
-  const gap = 2;
+  // 두 막대 값 글자는 18px 간격 — 14px(12+2)이면 시연 모드 글자(15px)에서 비슷한 값끼리 위아래로 겹쳤다(2026-11-05)
+  const bar = 14;
+  const gap = 4;
   const row = bar * 2 + gap + 14;
   const top = 18;
   const span = Math.max(60, width - labelW - valueW);
@@ -252,9 +253,10 @@ export function TrendChart({ weeks, series, label, weekLabel }: { weeks: string[
             </text>
           </g>
         ))}
+        {/* 첫·마지막 주 눈금은 축 안쪽으로 — 가운데 맞춤이면 첫 주가 왼쪽 아래 모서리의 세로축 '0'과 겹쳤다(시연 모드, 2026-11-05) */}
         {weeks.map((w, i) =>
           i % step === 0 || (i === weeks.length - 1 && i % step >= step - 1) ? (
-            <text key={w} x={x(i)} y={h - 6} className="ds-viz__tick" textAnchor="middle">
+            <text key={w} x={x(i)} y={h - 6} className="ds-viz__tick" textAnchor={i === 0 && weeks.length > 1 ? 'start' : i === weeks.length - 1 && weeks.length > 1 ? 'end' : 'middle'}>
               {long ? w.slice(0, 7) : w.slice(5)}
             </text>
           ) : null,

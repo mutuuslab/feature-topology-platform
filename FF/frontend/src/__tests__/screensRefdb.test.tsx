@@ -372,9 +372,12 @@ describe('Feature DB 변경 요청', () => {
     // pill은 낱말(수는 탭이 말한다)
     expect(document.querySelector('[data-key-message] .ds-key__status')!.textContent).toBe(L.awaiting);
     const publish = (await screen.findByRole('button', { name: C.publishBtn(1) })) as HTMLButtonElement;
-    expect(publish.disabled).toBe(false);
+    // 발행 메모는 필수(W5 P5-4) — 미리 보기가 없으면 비어 있다
+    expect(publish.disabled).toBe(true);
+    fireEvent.change(screen.getByRole('textbox', { name: /발행 메모/ }), { target: { value: 'v1.4 발행 — 승인 1건' } });
+    await waitFor(() => expect((screen.getByRole('button', { name: C.publishBtn(1) }) as HTMLButtonElement).disabled).toBe(false));
     expect(document.querySelector('[data-hash]')!.getAttribute('data-hash')).toBe('a'.repeat(64));
-    fireEvent.click(publish);
+    fireEvent.click(screen.getByRole('button', { name: C.publishBtn(1) }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.url === '/api/refdb/releases')).toBe(true));
     expect(await screen.findByText(C.published('v1.4'))).toBeTruthy();
     cleanup();
@@ -449,7 +452,7 @@ describe('하네스 리뷰 후속(2026-11-04) — 직무 분리 문장·검토 �
     fireEvent.change(screen.getByLabelText(S.note), { target: { value: '4.2 그대로 확인' } });
     await waitFor(() => expect(send().disabled).toBe(false));
     fireEvent.click(send());
-    await waitFor(() => expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ sourceIds: ['S10'], nextReviewAt: '2027-11-04', note: '4.2 그대로 확인' }));
+    await waitFor(() => expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ sourceIds: ['S10'], nextReviewAt: '2027-11-04', note: '4.2 그대로 확인', result: 'NO_CHANGE' }));
     expect(await screen.findByText(S.recorded(1))).toBeTruthy();
   });
 

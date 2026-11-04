@@ -67,7 +67,9 @@ describe('Release Sign-off (보고서 6.1 G7 — Feature Owner)', () => {
     const post = calls.find((c) => c.method === 'POST')!;
     expect(post.url).toBe('/api/features/FEAT-00001/versions/2.1.0/release-signoff');
     expect(post.body).toEqual({ reason: 'SOTIF 출시 근거·Canary 기준 확인' });
-    expect(await screen.findByText(/Release Sign-off 완료 — usr-author/)).toBeTruthy();
+    // 서명자는 이름·소속, 시각은 한국 시각 — 감사 탭과 같은 표기(W2 P1-5: UTC·usr-author로 보이던 결함)
+    expect(await screen.findByText(/Release Sign-off 완료 — 김민영 \(.+\) · 2026-10-18 10:00/)).toBeTruthy();
+    expect(screen.queryByText(/usr-author/)).toBeNull();
   });
 
   it('Feature Owner가 아닌 계정(품질 검토)은 서명할 수 없다', async () => {

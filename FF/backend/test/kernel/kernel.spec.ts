@@ -69,10 +69,9 @@ describe('커널', () => {
     expect(res.body.seed).toBe('v0.81');
     expect(res.body.counts).toMatchObject({ features: 80, baselines: 67, products: 18, dependencies: 29, gateRecords: 477 });
   });
-
-  it('42 컴포넌트 현황을 돌려주고 manifest에 없는 ID 등록은 없다', async () => {
+  it('43 컴포넌트(42 + D07-01) 현황을 돌려주고 manifest에 없는 ID 등록은 없다', async () => {
     const res = await http().get('/api/components').expect(200);
-    expect(res.body.total).toBe(42);
+    expect(res.body.total).toBe(43);
     expect(res.body.unknownIds).toEqual([]);
   });
 
@@ -138,5 +137,30 @@ describe('커널', () => {
     const list = await got;
     expect(list.map((e) => e.aggregate)).toEqual(['s1', 's2']);
     expect(list[1].seq).toBeGreaterThan(list[0].seq);
+  });
+
+  it('최근 이력은 오래된 500건 뒤의 최신 창을 순번 순서로 반환하고, 기존 커서 조회는 유지한다', async () => {
+    db.tx(() => {
+      for (let i = 0; i < 505; i++) events.publish('history.probe', 'history-window', { i });
+    });
+    const first = (await http().get('/api/events?type=history.probe&limit=2').expect(200)).body;
+    expect(first.items.map((e: any) => e.payload.i)).toEqual([0, 1]);
+    expect(first.nextCursor).toBe(String(first.items[1].seq));
+    const next = (await http().get(`/api/events?type=history.probe&after=${first.nextCursor}&limit=2`).expect(200)).body;
+    expect(next.items.map((e: any) => e.payload.i)).toEqual([2, 3]);
+    const recent = (await http().get('/api/events?type=history.probe&recent=1&limit=2').expect(200)).body;
+    expect(recent.items.map((e: any) => e.payload.i)).toEqual([503, 504]);
+    expect(recent.items[1].seq).toBeGreaterThan(recent.items[0].seq);
+    expect(recent.nextCursor).toBeNull();
+  });
+
+  it('최근 창은 대상 필터를 먼저 적용해 다른 대상의 새 이벤트를 섞지 않는다', async () => {
+    db.tx(() => {
+      events.publish('history.filtered', 'history-one', { i: 1 });
+      events.publish('history.filtered', 'history-one', { i: 2 });
+      events.publish('history.filtered', 'history-other', { i: 99 });
+    });
+    const recent = (await http().get('/api/events?type=history.filtered&aggregate=history-one&recent=true&limit=1').expect(200)).body;
+    expect(recent.items).toEqual([expect.objectContaining({ aggregate: 'history-one', payload: { i: 2 } })]);
   });
 });

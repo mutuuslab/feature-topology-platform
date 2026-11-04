@@ -151,8 +151,14 @@ export const RefSource = z.object({
   url: text,
   checkedAt: z.string().nullable(),
   nextReviewAt: z.string().nullable(),
+  /** 마지막 정기 점검 결과(점검 기록이 남긴다) — 변경 없음·개정 있음 */
+  lastResult: z.enum(['NO_CHANGE', 'REVISED']).nullable().optional(),
 });
 export type RefSource = z.infer<typeof RefSource>;
+
+/** 정기 점검 결과 — 개정 있음이면 그 출처를 쓰는 행의 변경 요청을 만든다(P5-5) */
+export const SOURCE_REVIEW_RESULTS = ['NO_CHANGE', 'REVISED'] as const;
+export type SourceReviewResult = (typeof SOURCE_REVIEW_RESULTS)[number];
 
 /** 사내 용어집(03b C절) — 검색 별칭 */
 export const RefGlossary = z.object({
@@ -306,6 +312,10 @@ export const RequestRefAddBody = z
     sourceIds: z.array(RefSourceId).default([]),
     /** 출처 ID가 없을 때 근거 메모 */
     basisNote: text.max(1000).default(''),
+    /** 분류 속성(엑셀 E·H·I) — 비우면 발행 때 '검토 필요'로 들어간다(P5-8) */
+    swStack: text.max(80).default(''),
+    lifecycle: text.max(80).default(''),
+    techStack: text.max(120).default(''),
   })
   .strict()
   .refine((b) => b.sourceIds.length > 0 || b.basisNote.length >= 2, { message: '출처 ID 또는 근거 메모를 입력하세요.', path: ['basisNote'] });
@@ -341,6 +351,8 @@ export const RecordSourceReviewBody = z
     checkedAt: isoDate.optional(),
     nextReviewAt: isoDate,
     note: reason,
+    /** 점검 결과 — 비우면 변경 없음 */
+    result: z.enum(SOURCE_REVIEW_RESULTS).default('NO_CHANGE'),
   })
   .strict()
   .refine((b) => new Set(b.sourceIds).size === b.sourceIds.length, { message: '같은 출처를 두 번 고를 수 없습니다.', path: ['sourceIds'] })

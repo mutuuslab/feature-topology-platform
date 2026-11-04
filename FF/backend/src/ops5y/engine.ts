@@ -330,17 +330,21 @@ export async function replay(api: Api, hd: ReplayHandles, o: ReplayOptions): Pro
       });
       if (k.status >= 400) return;
       const killId = k.body.killId as string;
+      // F2 이상 안전 차단은 기능안전(FSM) + 사이버보안(CSM) 2인(2026-11-04 결정)
       await call('긴급 차단 승인', 'POST', `/api/kill-requests/${killId}/approvals`, OPS_PEOPLE.safety[0], {});
-      const ok = await call('긴급 차단 승인', 'POST', `/api/kill-requests/${killId}/approvals`, OPS_PEOPLE.leads[0], {});
+      const ok = await call('긴급 차단 승인', 'POST', `/api/kill-requests/${killId}/approvals`, OPS_PEOPLE.security, {});
       const entry = { killId, featureId: inc.featureId, at: day, restoredAt: null as string | null };
       report.kills.push(entry);
       if (ok.status >= 400) return;
       const back = plus(day, 3 + Math.floor(r() * 4));
       at(back, async () => {
         await triage();
-        await call('복원 요청', 'POST', `/api/kill-requests/${killId}/restore`, OPS_PEOPLE.operators[1], { reason: '원인 조치·재검증 완료' });
+        // 복원 요청 — 재검증 Evidence(그 Feature의 판정 근거)와 남은 차단 차량 전체 Cohort(FPW.8-A08). 승인은 차단을 승인하지 않은 FSM + 운영 리더
+        const kr0 = (await call('차단 조회', 'GET', `/api/kill-requests/${killId}`, OPS_PEOPLE.operators[0])).body;
+        const ev = ((await call('Evidence 조회', 'GET', `/api/evidence?featureId=${inc.featureId}`, OPS_PEOPLE.operators[0])).body?.items ?? [])[0];
+        await call('복원 요청', 'POST', `/api/kill-requests/${killId}/restore`, OPS_PEOPLE.operators[1], { reason: '원인 조치·재검증 완료', evidenceRef: ev?.evidenceRef ?? 'NONE', cohort: kr0?.vins ?? [] });
         await call('복원 승인', 'POST', `/api/kill-requests/${killId}/restore/approvals`, OPS_PEOPLE.safety[1], {});
-        await call('복원 승인', 'POST', `/api/kill-requests/${killId}/restore/approvals`, OPS_PEOPLE.security, {});
+        await call('복원 승인', 'POST', `/api/kill-requests/${killId}/restore/approvals`, OPS_PEOPLE.leads[0], {});
         const k2 = (await call('차단 조회', 'GET', `/api/kill-requests/${killId}`, OPS_PEOPLE.operators[0])).body;
         const kr = k2?.kill ?? k2;
         if (kr?.status === 'RELEASED' || kr?.restorePublicationId) entry.restoredAt = today;

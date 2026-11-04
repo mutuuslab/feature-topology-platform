@@ -1,13 +1,14 @@
 // /entitlements — 사용 권한·체험권 (D01-05 · 구매 전환 D05-04). 체험권은 차량마다 따로: 제안(14일) → 수락(30일 ON) → 만료·거절·구매 전환.
 // 체험권 차량 목록은 상태·성향 필터와 쪽 나눔, 합성 모집단(통계용 가상 데이터)은 표시해서 구분한다.
 import { useState, type CSSProperties } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ADAS_USAGE, AGE_BANDS, DRIVING_STYLES, referenceCodes, TRIAL_PAGE_SIZE, TRIAL_STATES, trialListQuery, type ReferenceValue, type SegmentDimension, type TrialSource } from '@ff/contracts';
 import { STATIC_MODE } from '../../api/client';
 import { useConnectionLabel } from '../../api/connections';
 import { connections as CN } from '../../copy/connections';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { planning as W } from '../../copy/planning';
 import { AsyncView, Button, ConnectionBadge, DataTable, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Select, StatusGlyph, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
 
@@ -76,8 +77,45 @@ const SEGMENTS: { dim: SegmentDimension; options: (seg: Partial<Record<SegmentDi
   { dim: 'adasUsage', options: () => ADAS_USAGE },
 ];
 
+/** 체험 상품 — 주소 ?catalog= (상품 상세의 '이 상품으로 체험 제안'), 없으면 대표 체험 상품(시연 시드) */
+const DEFAULT_CATALOG = 'CAT-00019';
+interface ProductLite {
+  catalogId: string;
+  version: string;
+  name: string;
+  lifecycle: string;
+  country: string;
+  vehicleModel: string;
+  trim: string;
+}
+interface VehicleLite {
+  vin: string;
+  label: string;
+  country?: string;
+  vehicleModel?: string;
+  trim?: string;
+  gleo?: boolean;
+  fleet?: string;
+}
+
+/**
+ * 고객 체험을 제안할 수 있는 차량(P1-3) — 시뮬레이터(영상 키트)·통계 표본 차량은 빼고, 상품 범위(국가·차종·트림)와 같은 차량(inScope)과
+ * 범위 밖 차량(outOfScope, 펼쳐야 보인다 — 켤 수 있는지는 서버가 차량별로 다시 본다)으로 나눈다
+ */
+export function offerableVehicles(vehicles: VehicleLite[], p: Pick<ProductLite, 'country' | 'vehicleModel' | 'trim'> | undefined) {
+  const customer = vehicles.filter((v) => !v.gleo && v.fleet !== 'SAMPLE');
+  const fits = (v: VehicleLite) => !p || (v.country === p.country && v.vehicleModel === p.vehicleModel && v.trim === p.trim);
+  return { inScope: customer.filter(fits), outOfScope: customer.filter((v) => !fits(v)) };
+}
+
 export function EntitlementsScreen() {
-  const all = useApi<TrialPage>('trials', { query: trialListQuery({ catalogId: 'CAT-00019', source: 'ALL', state: '', segment: {}, q: '', page: 1 }) });
+  const [sp, setSp] = useSearchParams();
+  const catalogId = sp.get('catalog') || DEFAULT_CATALOG;
+  const products = useApi<{ items: ProductLite[] }>('listProducts');
+  // 고객 출시(RELEASED) 상품의 가장 최신 Version만 — 고른 상품은 출시 전이어도 남긴다(주소로 들어온 경우)
+  const choices = latestProducts(products.data?.items ?? []).filter((p) => p.lifecycle === 'RELEASED' || p.catalogId === catalogId);
+  const product = choices.find((p) => p.catalogId === catalogId);
+  const all = useApi<TrialPage>('trials', { query: trialListQuery({ catalogId, source: 'ALL', state: '', segment: {}, q: '', page: 1 }) });
   const active = all.data?.byState.ACTIVE;
   return (
     <div className="ds-screen">
@@ -86,20 +124,41 @@ export function EntitlementsScreen() {
         title={E.title}
         lead={E.lead}
         message={{ tone: 'neutral', value: active == null ? '—' : active.toLocaleString('ko-KR'), text: E.key }}
-        actions={<Link to="/biz/trials">{T.toAnalytics}</Link>}
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <Select label={W.trial.product} value={catalogId} onChange={(e) => setSp((x) => (x.set('catalog', e.target.value), x), { replace: true })}>
+              {!product && <option value={catalogId}>{catalogId}</option>}
+              {choices.map((p) => (
+                <option key={p.catalogId} value={p.catalogId}>
+                  {p.lifecycle === 'RELEASED' ? `${p.catalogId} · ${p.name}` : W.trial.other(`${p.catalogId} · ${p.name}`)}
+                </option>
+              ))}
+            </Select>
+            <Link to="/biz/trials">{T.toAnalytics}</Link>
+          </div>
+        }
       />
-      <Tabs tabs={[{ key: 'trials', label: E.tabs.trials }, { key: 'grants', label: E.tabs.grants }]}>{(tab) => (tab === 'grants' ? <GrantsTable /> : <TrialVehicles />)}</Tabs>
+      <Tabs tabs={[{ key: 'trials', label: E.tabs.trials }, { key: 'grants', label: E.tabs.grants }]}>{(tab) => (tab === 'grants' ? <GrantsTable /> : <TrialVehicles key={catalogId} catalogId={catalogId} product={product} />)}</Tabs>
     </div>
   );
 }
 
-function TrialVehicles() {
+/** 상품별 가장 최신 Version */
+function latestProducts(items: ProductLite[]): ProductLite[] {
+  const by = new Map<string, ProductLite>();
+  for (const p of items) {
+    const cur = by.get(p.catalogId);
+    if (!cur || cur.version.localeCompare(p.version, undefined, { numeric: true }) < 0) by.set(p.catalogId, p);
+  }
+  return [...by.values()].sort((a, b) => a.catalogId.localeCompare(b.catalogId));
+}
+
+function TrialVehicles({ catalogId, product }: { catalogId: string; product?: ProductLite }) {
   const [source, setSource] = useState<TrialSource>('ALL');
   const [state, setState] = useState('');
   const [segment, setSegment] = useState<Partial<Record<SegmentDimension, string>>>({});
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
-  const catalogId = 'CAT-00019';
   const query = trialListQuery({ catalogId, source, state, segment, q, page });
   const list = useApi<TrialPage>('trials', { query }, { placeholderData: (prev) => prev });
   const refs = useApi<{ items: ReferenceValue[] }>('referenceValues');
@@ -231,13 +290,17 @@ function TrialVehicles() {
           </div>
         )}
       </AsyncView>
-      <OfferPanel catalogId={catalogId} />
+      <OfferPanel catalogId={catalogId} product={product} />
     </>
   );
 }
 
-function OfferPanel({ catalogId }: { catalogId: string }) {
-  const vehicles = useApi<{ items: { vin: string; label: string }[] }>('vehicles');
+function OfferPanel({ catalogId, product }: { catalogId: string; product?: ProductLite }) {
+  const vehicles = useApi<{ items: VehicleLite[] }>('vehicles');
+  const { inScope, outOfScope } = offerableVehicles(vehicles.data?.items ?? [], product);
+  const [wide, setWide] = useState(false);
+  const shown = wide ? [...inScope, ...outOfScope] : inScope;
+  const scope = product ? `${product.country}/${product.vehicleModel}/${product.trim}` : null;
   const perm = usePermission(['PRODUCT_AUTHOR', 'OPERATOR', 'SYSTEM']);
   const offer = useApiMutation<{ offered: GrantRow[]; skipped: { vin: string; reason: string }[] }>('offerTrials', ['trials', 'entitlements', 'trialAnalytics', 'events', 'audit']);
   const [vins, setVins] = useState<string[]>([]);
@@ -245,16 +308,24 @@ function OfferPanel({ catalogId }: { catalogId: string }) {
   const O = T.offer;
   if (STATIC_MODE) return null;
   return (
-    <Panel title={O.title} eyebrow={catalogId} id="trial-offer">
+    <Panel title={O.title} eyebrow={product ? `${catalogId} · ${product.name}` : catalogId} id="trial-offer">
       <p className="ds-field__hint">{O.lead}</p>
+      {scope && vehicles.data && <p className="ds-field__hint" data-testid="offer-scope">{inScope.length ? W.trial.scope(scope, inScope.length) : W.trial.none(scope)}</p>}
+      {outOfScope.length > 0 && (
+        <label className="ds-choices">
+          <input type="checkbox" checked={wide} onChange={(e) => (setWide(e.target.checked), e.target.checked || setVins((xs) => xs.filter((x) => inScope.some((v) => v.vin === x))))} />
+          {W.trial.wide(outOfScope.length)}
+        </label>
+      )}
       <fieldset className="ds-choices" aria-label={O.vehicles}>
         <legend className="ds-field__label">
           {O.vehicles} ({vins.length})
         </legend>
-        {(vehicles.data?.items ?? []).map((v) => (
-          <label key={v.vin} title={v.label}>
+        {shown.map((v) => (
+          <label key={v.vin}>
             <input type="checkbox" checked={vins.includes(v.vin)} onChange={() => setVins((xs) => (xs.includes(v.vin) ? xs.filter((x) => x !== v.vin) : [...xs, v.vin]))} />
-            {v.vin}
+            {W.trial.vehicleLabel(v.vin, v.label)}
+            {outOfScope.includes(v) && <span className="ds-tag" style={{ marginLeft: 'var(--sp-1)' }}>{W.trial.outTag}</span>}
           </label>
         ))}
       </fieldset>

@@ -356,7 +356,9 @@
       ],
       "section": "06_lifecycle.md · 6.6 규칙",
       "implemented": [
-        "contracts/src/rules/gate-decision.ts"
+        "contracts/src/rules/gate-decision.ts",
+        "contracts/src/rules/gate-evidence.ts",
+        "backend/src/domains/d01-policy/topology/analysis-evidence.service.ts"
       ],
       "tested": [
         "contracts/src/rules/gate-decision.test.ts",
@@ -862,7 +864,6 @@
         "contracts/src/rules/duty-separation.test.ts",
         "contracts/src/rules/notification.test.ts",
         "contracts/src/rules/tutorial.test.ts",
-        "backend/test/d04/notifications.spec.ts",
         "backend/test/d06/post-review.spec.ts",
         "frontend/src/__tests__/designSafety.test.tsx",
         "frontend/src/__tests__/screensTrust.test.tsx",

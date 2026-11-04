@@ -5,7 +5,7 @@
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { RefdbRepository } from '../../src/domains/d01-policy/refdb/refdb.repository';
-import { actor, bootApp, confirmSafety, nextRefId, withRef } from '../helpers';
+import { actor, bootApp, confirmSafety, nextRefId, signG7, withRef } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const JUDGE = actor('choi.judge', 'GATE_JUDGE');
@@ -147,6 +147,7 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
       await confirmSafety(http, fid, '0.1.0');
       for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await http().post(`/api/features/${fid}/versions/0.1.0/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);
+      await signG7(http, fid, '0.1.0'); // G7 — SM·CSM 두 사람 서명(P3-3)
       for (const g of ['G4', 'G5', 'G6', 'G7']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await drain();
       expect((await epicOf(fid, '0.1.0')).status).toBe('In Progress');

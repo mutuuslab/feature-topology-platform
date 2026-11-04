@@ -13,6 +13,7 @@
   },
   "scripts": {
     "verify": "node tools/verify.ts",
+    "flags:scan": "node tools/flag-sources.ts",
     "verify:full": "node tools/verify.ts --full",
     "lint:tokens": "node tools/lint-tokens.ts",
     "lint:spacing": "node tools/lint-spacing.ts",
@@ -30,6 +31,8 @@
     "dev:frontend": "npm run dev -w feature-topology-frontend",
     "data:import": "node tools/dataset/import.ts",
     "data:check": "node tools/dataset/check.ts",
+    "cost:basis": "node tools/cost/import-basis.ts",
+    "cost:demo-seed": "node tools/cost/demo-seed.ts",
     "refdb:import": "node tools/refdb/import.ts",
     "refdb:check": "node tools/refdb/check.ts",
     "openapi": "node tools/openapi.ts",

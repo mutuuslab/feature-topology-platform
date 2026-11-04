@@ -10,6 +10,13 @@
 - **모델을 고친 뒤 순서:** `python -I scripts/check.py` → `cd ../../FF && npm run workflow:sync` → FF `npm run verify`(workflow:check·정합성 시험).
 - 커밋은 사용자 요청 시에만 한다.
 
+## 현재 상태 — 담당자 E2E 개선 웨이브 (2026-11-05, worktree `-dept` 브랜치 `feat/feature-db`, 커밋 전)
+- **데모 계정 12(겸직 0건):** 새 계정 `opslead`(R-OPS, DEP-OPS) · `safety2`(R-SM, DEP-FS) · `productowner`(R-PO, DEP-PDP)를 부서 personas 뒤에 붙였다(첫 번째 기본 계정은 그대로). `department_scope.demo_notes`를 고쳐 운영 리더 계정이 생겼고, 복원 2인 승인(SOD-09)·고객 출시 승인(SOD-04)을 데모에서 다른 사람이 할 수 있음을 적었다.
+- **IAM 스냅샷:** W6 포트 9153 백엔드에서 재추출(accounts=12). 다른 묶음이 경로를 더하면 마지막에 한 번 더 뽑는다.
+- **다른 묶음 반영:** FPW.3-A05 구현 연결 입력(R-INT·R-FO), 정의 승인 전 구현 미입력 경고, FPW.7 구성 승인과 고객 출시 승인 직무 분리·체험 제안, 부서별 급한 대기열과 다음 담당자 알림, 협의(C)·통보(I)의 검토 포털 실행을 모델·UI.md에 반영했다. 절차 Gate와 플랫폼 Gate 대응은 공용 계약을 화면이 참조한다.
+- **SSO 협의 기록의 제한:** 데모의 부서 선택은 체험용이며 인증된 부서 신원이 아니다. 회사 계정의 부서 신원 연계 전까지 SSO 협의 요청·의견 쓰기는 403과 거부 감사로 차단한다(조회는 유지).
+- **검증:** 모델 오류·경고 0, IAM 오프라인 차이 0, 생성 산출물 50개 Markdown·index·workflows.json, pytest64개 통과(2026-11-05). 안전 분석·복원 근거 제한과 법규인증팀의 실제 영향 판단 대기열을 UI.md에 덧붙였다. 전체 통합 뒤 IAM 스냅샷은 다시 추출한다.
+
 ## 현재 상태 — Feature DB 운영 절차 (2026-11-04 하네스 리뷰 반영, worktree `-dept` 브랜치 `feat/feature-db`, 커밋 전)
 - **근거:** `docs/30-data-model/30-95-feature-reference-db.md` §6.4·§8(구현 완료 R1~R3). 병합(`feat/feature-db-alm`) 뒤 리뷰 결과를 모델에 반영했다.
 - **역할:** R-RDA Feature DB 관리자(REFDB_ADMIN, DEP-PLM), R-DRV 도메인 검토자(DOMAIN_REVIEWER, DEP-SE). 데모 보유자는 각각 steward·approver 한 명(`department_scope.demo_notes`).

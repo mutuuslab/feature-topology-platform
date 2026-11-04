@@ -1,0 +1,4 @@
+/* 각 작업의 비활성 이유도 머리 띠 높이에 포함한다. 긴 역할 안내끼리 겹치지 않는다. */
+.cost-detail-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--sp-3); min-width: 0; max-width: 100%; }
+.cost-detail-actions .ds-btn-why { display: grid; justify-items: start; gap: 2px; min-width: 0; max-width: 28ch; }
+.cost-detail-actions .ds-btn-why__text { position: static; width: auto; max-width: 100%; }

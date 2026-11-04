@@ -177,8 +177,8 @@ process:
       outputs: [WP-PRODUCT]
       steps:
         - 상품에 넣을 Feature와 판매 방식을 정해 상품을 등록한다
-        - 구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다
-        - 체험 제안 조건(대상·기간)을 정한다
+        - 구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다. PASS일 때 등록하고, FAIL은 결과를 확인한 뒤 초안으로만 등록한다
+        - 체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다
       checks:
         - 구성 검증 결과에 충돌이 없다
       platform: {actions: [createProduct, validateComposition, offerTrials], screens: [/products/new, /entitlements]}
@@ -272,8 +272,9 @@ process:
       inputs: [WP-RELEASE-RECORD, WP-PRODUCT-APPROVAL]
       outputs: [WP-PRODUCT-RELEASE]
       steps:
-        - 구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다
-        - 플랫폼이 구성 승인자와 같은 사람의 승인을 거부하면 다른 승인자로 다시 승인한다
+        - 구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다. 데모에서는 approver가 구성을, productowner가 고객 출시를 승인한다
+        - 구성 승인자에게는 화면이 출시 승인 버튼을 미리 막고 이유를 보인다. 서버도 같은 사람의 승인을 거부한다
+        - 출시한 상품은 상세에서 체험 제안으로 이어진다
         - 출시 승인 결과를 상품 기획과 운영 조직에 알린다
       checks:
         - 고객 출시 승인자가 구성 승인자와 다르다

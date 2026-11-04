@@ -1,9 +1,13 @@
-# Feature Platform (FF/)
+# Feature Flag Platform (FF/)
 
 통합 상세설계서 v0.81 · Topology 정의서 v0.62 · 42 컴포넌트 아키텍처 · Catalog BOM DATASET v0.81 · 국제표준 대응방안 보고서 v1.1을
-**동작하는 플랫폼**으로 구현한 저장소. 품질은 사람이 아니라 `npm run verify` 하네스가 보증한다. 진행 상태는 [`PROGRESS.md`](PROGRESS.md).
+**동작하는 플랫폼**으로 구현한 저장소. `npm run verify` 하네스로 계약·권한·무결성·화면 동작을 검증한다. 진행 상태는 [`PROGRESS.md`](PROGRESS.md).
 
 공개 데모(읽기 전용 정적 모드): https://feature-topology.pages.dev
+
+## Feature Flag 연결
+
+정책 메뉴에서 Flag 키와 Git 소스 연결을 확인하고, Feature 상세의 **Feature Flag** 탭에서 코드 커밋 → 정책 검토 → Unleash 평가 → 서명 배포·차량 회신을 따라간다. Git 스캔은 구현 담당자가 가져오며, 예제 커밋과 실제 가져온 기록을 구분한다. [설계·사용법](../docs/20-architecture/20-96-feature-flag-source.md), [실행 소비 예제](examples/feature-flag-consumer/README.md).
 
 ## 데모 로그인
 

@@ -311,7 +311,8 @@ describe('Feature 등록 — Feature DB 기준 기능 연결', () => {
   });
 
   describe('정의 승인 — 연결 없음 막힘·대표 ASIL 다시 확인·경고 기록', () => {
-    const judgeAt = (id: string, ver: string, gate: string) => http().post(`/api/features/${id}/versions/${ver}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${gate}` }).expect(201);
+    // G2 — 대표 ASIL을 바꾼 Version은 판정자의 'ASIL 사유 검토함' 확인이 PASS 조건(P3-1)
+    const judgeAt = (id: string, ver: string, gate: string) => http().post(`/api/features/${id}/versions/${ver}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${gate}`, ...(gate === 'G2' ? { asilReasonReviewed: true } : {}) }).expect(201);
     const ready = async (id: string, ver = '0.1.0') => {
       await judgeAt(id, ver, 'G1');
       await confirmSafety(http, id, ver);

@@ -3,10 +3,13 @@
 //    그래서 tools/refdb 가져오기(열 문자 대응)가 이 파일을 다시 읽을 수 있다. 둘째 시트 09_출처.
 //  · json(기본): 같은 발행 시점의 기준 행·출처.
 //  · release: 지난 발행이면 그 시점 기준 행으로 되돌려 내보낸다(release-hash rowsAtRelease). 요청 중(PENDING) 행은 발행 내용이 아니라 넣지 않는다.
-//  · 벤치마크 열(O 금액·P Kearney 메모·V·W Make/Buy)과 금액에서 나오는 U 명목 포인트는 산정 역할(read-view canSeeBenchmark)만 — 그 밖에는 머리글까지 비운다.
+//  · 벤치마크 열(O 금액·P Kearney 메모·V·W Make/Buy)은 산정 역할(read-view canSeeBenchmark)만 — 그 밖에는 머리글까지 비운다.
+//    U 명목 포인트는 금액 열이 아니다 — 산정 역할이 아니면 벤치마크를 빼고 T-shirt로만 계산한 값을 싣는다(머리글 표시, P5-11).
+//  · 셋째·넷째 시트: 14_개정이력(발행 버전·시각·발행자·변경 요청·해시·메모, 내보낸 버전 표시)·04_분류(도메인 → 클러스터 → 컴포넌트).
+//  · 파일 이름 FeatureDB_<버전>.xlsx — 화면 받기 이름도 같다(P5-11).
 // 한계: 출처 표는 발행 이력이 없어 늘 지금 값이다. M(Overall)은 FF 규칙이 아직 없어 비운다(TODO 20-94). AE는 v1.3 가져오기가 옮긴 필드가 없어 비운다.
 import { Injectable, StreamableFile } from '@nestjs/common';
-import { compareRelease, nominalPoints, REF_MONEY_FIELDS, sizePoints, type FeatureRefRow, type RefMoneyField, type RefSource, type Role } from '@ff/contracts';
+import { compareRelease, nominalPoints, REF_MONEY_FIELDS, sizePoints, type FeatureRefRow, type RefMoneyField, type RefRelease, type RefSource, type Role, type TaxonomyNode } from '@ff/contracts';
 import { DomainError } from '../../../kernel/errors';
 import { writeWorkbook, type XlsxCell } from '../../../kernel/xlsx-write';
 import { canSeeBenchmark, refView } from './read-view';
@@ -20,8 +23,10 @@ interface Column {
   col: string;
   header: string;
   value: (r: FeatureRefRow) => XlsxCell;
-  /** 이 열이 보여 주거나(O·P·V·W) 계산에 쓰는(U) 벤치마크 필드 — 있으면 산정 역할만(목록은 contracts REF_MONEY_FIELDS) */
+  /** 이 열이 보여 주는(O·P·V·W) 벤치마크 필드 — 있으면 산정 역할만(목록은 contracts REF_MONEY_FIELDS) */
   money?: RefMoneyField;
+  /** 산정 역할이 아닐 때 쓰는 머리글·값(U — 벤치마크를 뺀 계산) */
+  plain?: { header: string; value: (r: FeatureRefRow) => XlsxCell };
 }
 
 const list = (v: readonly string[]) => v.join('; ');
@@ -49,7 +54,12 @@ export const FEATURE_DB_COLUMNS: readonly Column[] = [
   { col: 'R', header: '번들 대표', value: (r) => (r.bundleRep === true ? 'Y' : r.bundleRep === false ? 'N' : null) },
   { col: 'S', header: 'T-shirt 등급', value: (r) => r.tshirt },
   { col: 'T', header: '등급 포인트', value: (r) => sizePoints(r.tshirt) },
-  { col: 'U', header: '명목 포인트', value: (r) => nominalPoints({ tshirt: r.tshirt, asilRep: r.asilRep, benchmarkEur: r.benchmarkEur ?? null }), money: 'benchmarkEur' },
+  {
+    col: 'U',
+    header: '명목 포인트',
+    value: (r) => nominalPoints({ tshirt: r.tshirt, asilRep: r.asilRep, benchmarkEur: r.benchmarkEur ?? null }),
+    plain: { header: '명목 포인트 (벤치마크 제외)', value: (r) => nominalPoints({ tshirt: r.tshirt, asilRep: r.asilRep, benchmarkEur: null }) },
+  },
   { col: 'V', header: 'MoB volume player', value: (r) => r.makeBuyVolume, money: 'makeBuyVolume' },
   { col: 'W', header: 'MoB premium player', value: (r) => r.makeBuyPremium, money: 'makeBuyPremium' },
   { col: 'X', header: 'Relevance', value: (r) => r.relevance },
@@ -76,14 +86,18 @@ export const FEATURE_DB_COLUMNS: readonly Column[] = [
 // 벤치마크 필드마다 그 값을 그대로 싣는 열이 있어야 한다 — 목록(REF_MONEY_FIELDS)에 필드가 늘면 열 정의도 함께
 for (const f of REF_MONEY_FIELDS) if (!FEATURE_DB_COLUMNS.some((c) => c.money === f)) throw new Error(`Feature DB 내보내기: 벤치마크 필드 ${f}의 열이 없습니다`);
 
+/** 내보내기 파일 이름 — 서버 Content-Disposition과 화면 받기가 같은 이름(P5-11) */
+export const exportFileName = (release: string | null) => `FeatureDB_${release ?? 'current'}.xlsx`;
+
 const colIndex = (letters: string) => [...letters].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0) - 1;
 const WIDTH = colIndex('BV') + 1;
 
 export const SOURCE_HEADERS = ['ID', '자료', '발행처·저자', '연도·버전', 'URL·식별자', '도구 내 사용처', '최종 확인일', '다음 점검일'] as const;
 
-/** 기준 행 → 03_FeatureDB 시트 행(원래 열 위치). 벤치마크를 볼 수 없으면 그 열은 머리글까지 비운다 */
+/** 기준 행 → 03_FeatureDB 시트 행(원래 열 위치). 벤치마크를 볼 수 없으면 금액 열은 머리글까지 비우고, U는 벤치마크를 뺀 값 */
 export function featureDbSheetRows(rows: readonly FeatureRefRow[], role: Role): XlsxCell[][] {
-  const cols = FEATURE_DB_COLUMNS.filter((c) => !c.money || canSeeBenchmark(role));
+  const money = canSeeBenchmark(role);
+  const cols = FEATURE_DB_COLUMNS.filter((c) => !c.money || money).map((c) => (!money && c.plain ? { ...c, header: c.plain.header, value: c.plain.value } : c));
   const line = (f: (c: Column) => XlsxCell) => {
     const out: XlsxCell[] = new Array(WIDTH).fill(null);
     for (const c of cols) out[colIndex(c.col)] = f(c);
@@ -99,8 +113,27 @@ export function sourceSheetRows(sources: readonly RefSource[]): XlsxCell[][] {
   ];
 }
 
-/** 시트 이름 — 엑셀과 같게(가져오기가 이름으로 찾는다) */
-export const EXPORT_SHEETS = { featureDb: '03_FeatureDB', sources: '09_출처' } as const;
+export const RELEASE_HEADERS = ['버전', '발행 시각', '발행자', '변경 요청', '전체 해시', '메모'] as const;
+export const TAXONOMY_HEADERS = ['노드 ID', '단계', '상위', '이름 (영문)', '이름 (한글)', '약어', '상태'] as const;
+const LEVEL_KO: Record<TaxonomyNode['level'], string> = { DOMAIN: '도메인', CLUSTER: '클러스터', COMPONENT: '컴포넌트' };
+
+/** 14_개정이력 — 첫 줄은 이 파일이 담은 발행 버전·해시, 그 아래 발행 이력(오래된 것부터) */
+export function releaseSheetRows(releases: readonly RefRelease[], exported: { release: string | null; hash: string }): XlsxCell[][] {
+  return [
+    ['내보낸 버전', exported.release ?? '(발행 전)', '전체 해시', exported.hash],
+    [],
+    [...RELEASE_HEADERS],
+    ...releases.map((r) => [r.release, r.publishedAt, r.publishedBy, r.changeIds.join('; '), r.hash, r.note ?? '']),
+  ];
+}
+
+/** 04_분류 — 도메인 → 클러스터 → 컴포넌트 */
+export function taxonomySheetRows(nodes: readonly TaxonomyNode[]): XlsxCell[][] {
+  return [[...TAXONOMY_HEADERS], ...nodes.map((n) => [n.nodeId, LEVEL_KO[n.level] ?? n.level, n.parentId, n.nameEn, n.nameKo, n.abbr, n.status === 'ACTIVE' ? '활성' : '폐기'])];
+}
+
+/** 시트 이름 — 엑셀과 같게(가져오기가 이름으로 찾는다). 개정이력·분류는 FF가 더한 시트 */
+export const EXPORT_SHEETS = { featureDb: '03_FeatureDB', sources: '09_출처', releases: '14_개정이력', taxonomy: '04_분류' } as const;
 
 @Injectable()
 export class RefdbExportService {
@@ -124,18 +157,22 @@ export class RefdbExportService {
     const snap = this.snapshot(release);
     const sources = this.repo.sources();
     if (fmt === 'json') return { release: snap.release, format: 'json', hash: snap.hash, refs: snap.rows.map((r) => refView(r, role)), sources };
-    const buf = this.xlsx(snap.rows, sources, role);
+    const buf = this.xlsx(snap.rows, sources, role, { release: snap.release, hash: snap.hash });
     return new StreamableFile(buf, {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      disposition: `attachment; filename="FeatureDB_${snap.release ?? 'current'}.xlsx"`,
+      disposition: `attachment; filename="${exportFileName(snap.release)}"`,
       length: buf.length,
     });
   }
 
-  xlsx(rows: readonly FeatureRefRow[], sources: readonly RefSource[], role: Role): Buffer {
+  xlsx(rows: readonly FeatureRefRow[], sources: readonly RefSource[], role: Role, exported: { release: string | null; hash: string } = { release: null, hash: '' }): Buffer {
+    // 지난 버전을 내보내면 개정이력은 그 버전까지만
+    const releases = this.repo.releases().filter((r) => !exported.release || compareRelease(r.release, exported.release) <= 0);
     return writeWorkbook([
       { name: EXPORT_SHEETS.featureDb, rows: featureDbSheetRows(rows, role) },
       { name: EXPORT_SHEETS.sources, rows: sourceSheetRows(sources) },
+      { name: EXPORT_SHEETS.releases, rows: releaseSheetRows(releases, exported) },
+      { name: EXPORT_SHEETS.taxonomy, rows: taxonomySheetRows(this.repo.taxonomy()) },
     ]);
   }
 }

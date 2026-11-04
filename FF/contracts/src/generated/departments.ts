@@ -17,7 +17,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "personas": [
     "author",
     "commerce",
-    "approver"
+    "approver",
+    "productowner"
    ],
    "screens": {
     "primary": [
@@ -27,6 +28,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
+     "/features/:id/:ver",
+     "/master/artifacts",
+     "/integration/connectors",
      "/baselines",
      "/experiments",
      "/products/new",
@@ -34,7 +38,6 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/products/:id/:ver",
      "/activation/decide",
      "/admin/approval",
-     "/features/:id/:ver",
      "/flag-retirements",
      "/master/feature-db/:refId"
     ],
@@ -47,7 +50,6 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/validations/virtual",
      "/verify/evidence",
      "/deployments",
-     "/integration/connectors",
      "/verify/compliance",
      "/fleet/live",
      "/ops/anomalies",
@@ -61,7 +63,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 11,
+    "R": 12,
     "A": 13,
     "C": 17,
     "I": 33
@@ -104,9 +106,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/variant-conditions",
      "/arch/topology",
      "/analysis/impact",
+     "/master/artifacts",
+     "/integration/connectors",
      "/arch/components",
      "/validations",
-     "/master/artifacts",
      "/verify/evidence",
      "/baselines",
      "/integration/openfeature",
@@ -116,8 +119,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 9,
     "A": 10,
-    "C": 18,
-    "I": 15
+    "C": 19,
+    "I": 16
    }
   },
   {
@@ -136,10 +139,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
    ],
    "screens": {
     "primary": [
-     "/master/artifacts",
-     "/deployments",
      "/features/:id/:ver",
-     "/integration/connectors"
+     "/master/artifacts",
+     "/integration/connectors",
+     "/deployments"
     ],
     "reference": [
      "/master/control-points",
@@ -161,8 +164,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 6,
-    "A": 7,
+    "R": 7,
+    "A": 8,
     "C": 14,
     "I": 18
    }
@@ -195,6 +198,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/features",
      "/features/:id/:ver",
      "/admin/approval",
+     "/master/artifacts",
+     "/integration/connectors",
      "/policies/new",
      "/policies",
      "/master/feature-db/:refId"
@@ -203,7 +208,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 5,
     "A": 4,
-    "C": 2,
+    "C": 3,
     "I": 8
    }
   },
@@ -218,6 +223,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    ],
    "personas": [
     "quality",
+    "safety2",
     "integrator"
    ],
    "screens": {
@@ -366,8 +372,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/trace/design",
      "/change/cr",
      "/features/:id/:ver",
-     "/master/control-points",
      "/master/artifacts",
+     "/integration/connectors",
+     "/master/control-points",
      "/activation/decide",
      "/verify/compliance",
      "/ops/kill",
@@ -379,7 +386,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "R": 4,
     "A": 4,
     "C": 11,
-    "I": 5
+    "I": 6
    }
   },
   {
@@ -438,7 +445,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "R-OPS"
    ],
    "personas": [
-    "operator"
+    "operator",
+    "opslead"
    ],
    "screens": {
     "primary": [
@@ -504,13 +512,18 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "id": "DEP-PUR",
    "name": "구매팀",
    "en": "Procurement",
-   "desc": "협력사 계약·납품 조건을 관리하고 협력사 관련 검토에 의견을 준다.",
+   "desc": "협력사 계약·납품 조건을 관리하고 Feature별 SW 개발비를 산정·승인하며 단가·계수 표를 관리한다.",
    "workspace": "portal",
    "roles": [
-    "R-PUR"
+    "R-PUR",
+    "R-CE",
+    "R-CA",
+    "R-CV",
+    "R-CBA"
    ],
    "personas": [
-    "viewer"
+    "viewer",
+    "approver"
    ],
    "screens": {
     "primary": [],

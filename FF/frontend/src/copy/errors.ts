@@ -17,4 +17,6 @@ export const errors = {
   unknownApi: (name: string) => `알 수 없는 요청: ${name}`,
   readOnlyDemo: '읽기 전용 데모입니다.',
   notInSnapshot: '데모에 없는 데이터입니다.',
+  // 오류 상자의 문의용 코드 앞 — 화면 읽기용(문장과 코드를 나눈다)
+  codeLabel: '오류 코드',
 };

@@ -43,6 +43,7 @@ const mount = (role: string, path: string, el: JSX.Element, extra?: JSX.Element)
 
 const inboxApi: Handler = (url) => {
   if (url.startsWith('/api/baselines/requests')) return { body: { items: [{ requestId: 'BR-1', featureId: 'FEAT-00022', version: '1.1.0', requestedBy: 'usr-author', requestedAt: '2026-10-12T01:00:00.000Z' }] } };
+  if (url.startsWith('/api/policies?status=APPROVED')) return { body: { items: [] } }; // 배포 대기(W2)는 따로 묻는다
   if (url.startsWith('/api/policies')) return { body: { items: [{ policyId: 'POL-9', flagKey: 'care_00022_param', featureId: 'FEAT-00022', featureVersion: '1.0.0', status: 'VALIDATED', createdBy: 'usr-author', createdAt: '2026-10-12T02:00:00.000Z' }] } };
   if (url.startsWith('/api/kill-requests'))
     return {
@@ -56,14 +57,15 @@ const inboxApi: Handler = (url) => {
 };
 
 describe('검토함 v2', () => {
-  it('BOM 승인자·Safety Manager(steward) — Baseline·차단은 내 차례, 정책 승인과 내가 차단한 건의 복원은 아니다', async () => {
+  it('BOM 승인자(steward) — Baseline은 내 차례, 정책 승인·F2 안전 차단(FSM·CSM 몫)·내가 차단한 건의 복원은 아니다', async () => {
     handler = inboxApi;
     mount('steward', '/admin/approval', <ApprovalInboxScreen />);
     expect(await screen.findByText('FEAT-00022 1.1.0')).toBeTruthy();
-    expect(await screen.findByText('KILL-1')).toBeTruthy();
     expect(screen.queryByText(/POL-9/)).toBeNull();
+    expect(screen.queryByText('KILL-1')).toBeNull();
     expect(screen.queryByText('KILL-2')).toBeNull();
     fireEvent.click(screen.getByRole('radio', { name: /전체/ }));
+    expect(await screen.findByText('KILL-1')).toBeTruthy();
     expect(await screen.findByText(/POL-9/)).toBeTruthy();
     const restore = screen.getByText('KILL-2').closest('tr')!;
     expect(within(restore).getByText('직전 차단을 승인한 사람은 복원을 승인할 수 없습니다')).toBeTruthy();

@@ -182,4 +182,23 @@ export class RefdbRepository {
       .all<{ feature_id: string; version: string; ref_id: string; role: FeatureRefLink['role']; ref_version: string }>('SELECT feature_id, version, ref_id, role, ref_version FROM feature_ref_link WHERE ref_id = ? ORDER BY feature_id, version', refId)
       .map((r) => ({ featureId: r.feature_id, version: r.version, refId: r.ref_id, role: r.role, refVersion: r.ref_version }));
   }
+
+  /** 기준 행 → 이 행을 연결한 Registry Feature 이름(중복 없이) — 검색이 Feature 이름으로도 찾는다(P1-8) */
+  linkedFeatureNames(): Map<string, string[]> {
+    const out = new Map<string, Set<string>>();
+    for (const r of this.db.all<{ ref_id: string; doc: string | null }>('SELECT l.ref_id, f.doc FROM feature_ref_link l JOIN feature_version f ON f.feature_id = l.feature_id AND f.version = l.version')) {
+      const name = r.doc ? (JSON.parse(r.doc) as { name?: string }).name : undefined;
+      if (!name) continue;
+      if (!out.has(r.ref_id)) out.set(r.ref_id, new Set());
+      out.get(r.ref_id)!.add(name);
+    }
+    return new Map([...out].map(([k, v]) => [k, [...v]]));
+  }
+
+  /** Feature 버전의 Owner·이름(발행 미리 보기 — 알림 받을 사람) */
+  featureOwner(featureId: string, version: string): { name: string | null; ownerId: string | null } {
+    const r = this.db.get<{ doc: string }>('SELECT doc FROM feature_version WHERE feature_id = ? AND version = ?', featureId, version);
+    const d = r ? (JSON.parse(r.doc) as { name?: string; ownerId?: string }) : {};
+    return { name: d.name ?? null, ownerId: d.ownerId ?? null };
+  }
 }

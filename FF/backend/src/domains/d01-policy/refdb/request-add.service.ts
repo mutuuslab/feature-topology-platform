@@ -61,9 +61,10 @@ export class RefdbRequestAddService {
         domain,
         cluster,
         component,
-        swStack: '',
-        lifecycle: '',
-        techStack: '',
+        // 분류 속성 — 요청자가 비우면 발행 때 '검토 필요'로 들어간다(P5-8, addStatus)
+        swStack: body.swStack ?? '',
+        lifecycle: body.lifecycle ?? '',
+        techStack: body.techStack ?? '',
         vehicleType: '',
         region: '',
         nameEn: body.nameEn,

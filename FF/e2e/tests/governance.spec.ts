@@ -2,6 +2,7 @@
 // 테스트마다 자기 Feature·상품을 새로 만들어 병렬 실행에서도 서로 간섭하지 않는다.
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { apiRefs } from './refdb';
+import { recordAnalysisApi } from './analysis';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -28,6 +29,7 @@ async function judgeApi(request: APIRequestContext, id: string, ver: string, gat
   // 안전 분류 확정(Safety Manager) 없이는 G2 이후 PASS가 막힌다 — FFG-CLS-001
   const c = await request.post(`${API}/api/features/${id}/versions/${ver}/safety/confirm`, { headers: H('usr-safety', 'SAFETY_OFFICER'), data: { reason: 'HARA 검토 완료' } });
   expect(c.status(), await c.text()).toBe(201);
+  await recordAnalysisApi(request, id, ver); // G2 PASS 근거 — HARA·TARA(P3-3)
   for (const gate of gates) {
     const r = await request.post(`${API}/api/features/${id}/versions/${ver}/gates`, { headers: H('usr-quality', 'GATE_JUDGE'), data: { gate, inputResult: 'PASS', rationale: `${gate} 확인`, evidenceRef: `EV-${gate}` } });
     expect(r.status(), await r.text()).toBe(201);
@@ -52,6 +54,7 @@ test('Registry: 안전 분류 확정(FSM) → Gate 판정(품질) → 정의 승
   await sign.getByRole('button', { name: '확정 — 개인 서명' }).click();
   await expect(page.getByText('확정된 분류입니다 — 바꾸려면 새 Version을 만드세요 (FFG-CLS-004)')).toBeVisible();
 
+  await recordAnalysisApi(request, f.featureId, '0.1.0'); // G2 PASS 근거 — HARA·TARA(P3-3)
   await page.goto(`/features/${f.featureId}/0.1.0?tab=gates`);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('E2E 레지스트리');
   for (const g of ['G1', 'G2', 'G3']) {

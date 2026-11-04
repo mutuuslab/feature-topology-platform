@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ControlPointType } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { planning as W } from '../../copy/planning';
 import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge, Icon } from '../../design';
 import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
@@ -13,6 +14,7 @@ import { VirtualPanel } from './Virtual';
 import { UnleashPanel } from './Unleash';
 import { PolicyVersions } from './PolicyVersions';
 import { PolicyHistory } from './PolicyHistory';
+import { FlagSourceSummary, FeatureFlagHighlight } from '../features/FeatureFlags';
 
 const T = ko.policy;
 const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort'];
@@ -79,6 +81,7 @@ export function PolicyList() {
           </Button>
         }
       />
+      <FlagSourceSummary />
       <SummaryLine items={[{ k: T.key.deployWait, v: rows.filter((r) => r.status === 'APPROVED').length }, { k: T.key.deployed, v: rows.filter((r) => r.status === 'DEPLOYED').length }]} />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
@@ -142,6 +145,8 @@ export function PolicyDetail() {
   // 다시 검증할 수 있는 상태(서버 EDITABLE)에서 검증이 없거나 낡았으면 검증이 다음 행동
   const editable = !!p && ['DRAFT', 'VALIDATED', 'REJECTED'].includes(p.status);
   const needsValidation = editable && (!d?.lastRun || !d.hashMatchesValidation);
+  // 승인·반려는 지금 내용으로 검증해 GO를 받은 뒤에만(담당자 웨이브 P2-6) — 누르고 422를 받기 전에 이유를 보인다
+  const decideWhy = !d?.lastRun ? W.policy.notValidated : !d.hashMatchesValidation ? W.policy.stale : d.lastRun.decision !== 'GO' ? W.policy.notGo : undefined;
   const keyValidate = needsValidation && author.ok;
   const validateButton = (variant: 'primary' | 'default') => (
     <Button variant={variant} icon="check" disabled={!author.ok || validate.isPending} title={author.hint} onClick={() => validate.mutate({ params: { id }, body: {} })}>
@@ -177,7 +182,7 @@ export function PolicyDetail() {
                   <PolicyEdit key={`${p.policyId}@${p.revision}`} p={p} />
                   {editable && !keyValidate && validateButton(needsValidation ? 'primary' : 'default')}
                   {['DRAFT', 'VALIDATED'].includes(p.status) && (
-                    <Button disabled={!approver.ok} title={approver.hint} onClick={() => setDrawer('decide')}>
+                    <Button disabled={!approver.ok || !!decideWhy} title={approver.hint} reason={approver.ok ? decideWhy : undefined} onClick={() => setDrawer('decide')}>
                       {T.approve} / {T.reject}
                     </Button>
                   )}
@@ -194,6 +199,7 @@ export function PolicyDetail() {
                 </div>
               }
             />
+            <FeatureFlagHighlight id={p.featureId} ver={p.featureVersion} />
             <ErrorNote error={validate.error} />
 
             <PolicyCrPanel policyId={p.policyId} />
@@ -281,7 +287,7 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
         <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
           {kind === 'decide' ? (
             <>
-              <Button variant="primary" disabled={reason.trim().length < 2 || decide.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => decide.mutate({ params: { id: policy.policyId }, body: { decision: 'APPROVE', reason } }, done)}>
+              <Button variant="primary" disabled={!approval.eligible || reason.trim().length < 2 || decide.isPending} reason={whyDisabled([!approval.eligible, approval.reasons[0]], [reason.trim().length < 2, ko.why.reason])} onClick={() => decide.mutate({ params: { id: policy.policyId }, body: { decision: 'APPROVE', reason } }, done)}>
                 {T.approve}
               </Button>
               <Button disabled={reason.trim().length < 2 || decide.isPending} onClick={() => decide.mutate({ params: { id: policy.policyId }, body: { decision: 'REJECT', reason } }, done)}>

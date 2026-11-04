@@ -75,6 +75,8 @@ describe('차량 당겨받기 채널(pull) — 서명된 전달함과 서명한 
     expect(r.body.active).toBe('pull');
     expect(r.body.adapters.map((a: any) => a.id).sort()).toEqual(['pull', 'sim']);
     expect(r.body.adapters.find((a: any) => a.id === 'pull')).toMatchObject({ active: true, status: { pending: expect.any(Number) } });
+    // P4-3 시뮬레이터 회신 상태 — 수동 시계(시험)면 PAUSED. 데모 서버가 이 설정이면 화면이 '회신 대기' 이유로 보인다
+    expect(r.body.adapters.find((a: any) => a.id === 'sim')).toMatchObject({ active: false, status: { replies: 'PAUSED' } });
   });
 
   let pubId: string;

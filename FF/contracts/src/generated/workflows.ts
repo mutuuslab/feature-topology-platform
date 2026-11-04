@@ -179,13 +179,51 @@ export const WORKFLOWS: WorkflowDoc = {
    "platformRoles": [
     "DOMAIN_REVIEWER"
    ]
+  },
+  {
+   "id": "R-CE",
+   "name": "SW 개발비 산정 작성자",
+   "en": "Cost Estimator",
+   "desc": "Feature를 담아 SW 개발비 산정 과제를 만들고 줄 입력·과제 설정을 채워 승인을 요청한다.",
+   "platformRoles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "id": "R-CA",
+   "name": "SW 개발비 산정 승인자",
+   "en": "Cost Approver",
+   "desc": "제출된 산정 과제를 검토해 승인하거나 반려한다. 자기가 만든 과제는 승인하지 않는다(SOD-16).",
+   "platformRoles": [
+    "COST_APPROVER"
+   ]
+  },
+  {
+   "id": "R-CV",
+   "name": "SW 개발비 산정 열람자",
+   "en": "Cost Viewer",
+   "desc": "산정 과제의 금액·단가를 포함한 결과를 열람한다.",
+   "platformRoles": [
+    "COST_VIEWER"
+   ]
+  },
+  {
+   "id": "R-CBA",
+   "name": "원가 기준 관리자",
+   "en": "Cost Basis Administrator",
+   "desc": "단가·계수 표의 새 버전을 만들고 발행한다. 발행해도 이미 승인된 산정 결과는 바뀌지 않는다.",
+   "platformRoles": [
+    "COST_BASIS_ADMIN"
+   ]
   }
  ],
  "personas": {
   "approver": [
    "R-REQ",
    "R-PO",
-   "R-DRV"
+   "R-DRV",
+   "R-CA",
+   "R-CBA"
   ],
   "author": [
    "R-FO"
@@ -205,10 +243,19 @@ export const WORKFLOWS: WorkflowDoc = {
   "operator": [
    "R-OPS"
   ],
+  "opslead": [
+   "R-OPS"
+  ],
+  "productowner": [
+   "R-PO"
+  ],
   "quality": [
    "R-SM",
    "R-TST",
    "R-QA"
+  ],
+  "safety2": [
+   "R-SM"
   ],
   "steward": [
    "R-REG",
@@ -216,7 +263,9 @@ export const WORKFLOWS: WorkflowDoc = {
    "R-RDA"
   ],
   "viewer": [
-   "R-QA"
+   "R-QA",
+   "R-CE",
+   "R-CV"
   ]
  },
  "gateCrosswalk": [
@@ -295,7 +344,8 @@ export const WORKFLOWS: WorkflowDoc = {
    "personas": [
     "author",
     "commerce",
-    "approver"
+    "approver",
+    "productowner"
    ],
    "activities": [
     {
@@ -414,6 +464,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R"
      ],
      "firstScope": true
     },
@@ -813,6 +872,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
+     "/features/:id/:ver",
+     "/master/artifacts",
+     "/integration/connectors",
      "/baselines",
      "/experiments",
      "/products/new",
@@ -820,7 +882,6 @@ export const WORKFLOWS: WorkflowDoc = {
      "/products/:id/:ver",
      "/activation/decide",
      "/admin/approval",
-     "/features/:id/:ver",
      "/flag-retirements",
      "/master/feature-db/:refId"
     ],
@@ -833,7 +894,6 @@ export const WORKFLOWS: WorkflowDoc = {
      "/validations/virtual",
      "/verify/evidence",
      "/deployments",
-     "/integration/connectors",
      "/verify/compliance",
      "/fleet/live",
      "/ops/anomalies",
@@ -857,6 +917,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.1-A01",
       "to": "FPW.1-A03",
       "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "department": "DEP-SE"
      },
      {
       "from": "FPW.6-A01",
@@ -900,6 +965,11 @@ export const WORKFLOWS: WorkflowDoc = {
      }
     ],
     "in": [
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "department": "DEP-SE"
+     },
      {
       "from": "FPW.7-A08",
       "to": "FPW.7-A12",
@@ -1062,6 +1132,16 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "A",
      "parts": [
       "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
      ],
      "firstScope": true
     },
@@ -1270,9 +1350,10 @@ export const WORKFLOWS: WorkflowDoc = {
      "/variant-conditions",
      "/arch/topology",
      "/analysis/impact",
+     "/master/artifacts",
+     "/integration/connectors",
      "/arch/components",
      "/validations",
-     "/master/artifacts",
      "/verify/evidence",
      "/baselines",
      "/integration/openfeature",
@@ -1290,6 +1371,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.3-A02",
       "to": "FPW.3-A03",
       "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "department": "DEP-PDP"
      },
      {
       "from": "FPW.4-A04",
@@ -1317,6 +1408,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.3-A03",
       "to": "FPW.3-A04",
       "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "department": "DEP-PDP"
      },
      {
       "from": "FPW.9-A02",
@@ -1352,6 +1453,16 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
      ],
      "firstScope": true
     },
@@ -1682,10 +1793,10 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "screens": {
     "primary": [
-     "/master/artifacts",
-     "/deployments",
      "/features/:id/:ver",
-     "/integration/connectors"
+     "/master/artifacts",
+     "/integration/connectors",
+     "/deployments"
     ],
     "reference": [
      "/master/control-points",
@@ -1709,6 +1820,11 @@ export const WORKFLOWS: WorkflowDoc = {
    "handoffs": {
     "out": [
      {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "department": "DEP-SE"
+     },
+     {
       "from": "FPW.5-A03",
       "to": "FPW.5-A04",
       "department": "DEP-VAL"
@@ -1730,6 +1846,11 @@ export const WORKFLOWS: WorkflowDoc = {
      }
     ],
     "in": [
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "department": "DEP-SE"
+     },
      {
       "from": "FPW.5-A01",
       "to": "FPW.5-A03",
@@ -1815,6 +1936,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
      ],
      "firstScope": true
     },
@@ -1929,6 +2059,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/features",
      "/features/:id/:ver",
      "/admin/approval",
+     "/master/artifacts",
+     "/integration/connectors",
      "/policies/new",
      "/policies",
      "/master/feature-db/:refId"
@@ -1982,6 +2114,7 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "personas": [
     "quality",
+    "safety2",
     "integrator"
    ],
    "activities": [
@@ -3521,6 +3654,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.3-A04",
      "process": "FPW.3",
      "part": "I",
@@ -3691,8 +3833,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/trace/design",
      "/change/cr",
      "/features/:id/:ver",
-     "/master/control-points",
      "/master/artifacts",
+     "/integration/connectors",
+     "/master/control-points",
      "/activation/decide",
      "/verify/compliance",
      "/ops/kill",
@@ -4227,7 +4370,8 @@ export const WORKFLOWS: WorkflowDoc = {
     "R-OPS"
    ],
    "personas": [
-    "operator"
+    "operator",
+    "opslead"
    ],
    "activities": [
     {
@@ -4724,13 +4868,18 @@ export const WORKFLOWS: WorkflowDoc = {
    "id": "DEP-PUR",
    "name": "구매팀",
    "en": "Procurement",
-   "desc": "협력사 계약·납품 조건을 관리하고 협력사 관련 검토에 의견을 준다.",
+   "desc": "협력사 계약·납품 조건을 관리하고 Feature별 SW 개발비를 산정·승인하며 단가·계수 표를 관리한다.",
    "workspace": "portal",
    "roles": [
-    "R-PUR"
+    "R-PUR",
+    "R-CE",
+    "R-CA",
+    "R-CV",
+    "R-CBA"
    ],
    "personas": [
-    "viewer"
+    "viewer",
+    "approver"
    ],
    "activities": [
     {
@@ -5038,7 +5187,9 @@ export const WORKFLOWS: WorkflowDoc = {
   ],
   "note": "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정·Feature DB 운영(FPW.10~14)은 2차 초안이다.",
   "demoNotes": [
-   "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용하지만 데모 계정에 운영 리더가 없다(9계정·겸직 0건, 2026-10-17).",
+   "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용한다 — 데모 계정 opslead(관제실)가 운영 리더 몫을 맡는다(12계정·겸직 0건, 2026-11-05).",
+   "복원 2인 승인은 직전 차단 승인자와 다른 사람이어야 한다(SOD-09). 데모에서 차단을 quality(FSM)+integrator(CSM)가 승인하면 복원은 safety2(두 번째 FSM, 심사 결재함)+opslead 또는 다른 CSM이 맡는다(2026-11-05).",
+   "고객 출시 승인(FPW.7-A10)은 구성 승인자와 다른 사람이다(SOD-04). 데모 계정 productowner(기획 스튜디오, PRODUCT_APPROVER)가 출시를 승인하고 approver는 구성 승인만 한다(2026-11-05).",
    "Feature DB 관리자(REFDB_ADMIN)는 데모 계정 steward 한 명, 도메인 검토자(DOMAIN_REVIEWER)는 approver 한 명뿐이다(2026-11-04). 요청자 ≠ 검토자 ≠ 승인자를 사람 단위로 강제하므로 데모에서 steward가 낸 변경·추가 요청은 승인할 사람이 없고, approver가 낸 요청은 검토할 사람이 없다 — 데모 흐름은 다른 계정(author 등)이 요청한다."
   ]
  },
@@ -7442,6 +7593,17 @@ export const WORKFLOWS: WorkflowDoc = {
       "G3 판정과 근거 Evidence ID",
       "PROPOSED→APPROVED 전이 기록과 승인자(작성자와 다른 사람)"
      ]
+    },
+    {
+     "key": "WP-IMPL-LINK",
+     "name": "구현 연결(Function·SW·제어기)",
+     "en": "Implementation Link",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Function → SW ID·Version → 제어기(ECU) P/N 짝 — SW·ECU 기준정보에서 고른 값",
+      "VERIFIED 전이의 필수 입력(functions·swIds·swVersions·ecuPnos)"
+     ]
     }
    ],
    "activities": [
@@ -7560,7 +7722,8 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "slaHours": null,
      "next": [
-      "FPW.3-A03"
+      "FPW.3-A03",
+      "FPW.3-A05"
      ]
     },
     {
@@ -7626,6 +7789,67 @@ export const WORKFLOWS: WorkflowDoc = {
      ]
     },
     {
+     "id": "FPW.3-A05",
+     "name": "구현 연결 입력",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-INT",
+       "R-FO"
+      ],
+      "A": "R-INT",
+      "C": [
+       "R-ARC",
+       "R-PLM"
+      ],
+      "I": [
+       "R-REQ",
+       "R-TST"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-REQ"
+     ],
+     "outputs": [
+      "WP-IMPL-LINK"
+     ],
+     "steps": [
+      "정의 승인 전에 Feature 설계 담당 또는 SW 통합 담당이 PROPOSED 초안에서 Function → SW·Version → 제어기 P/N을 SW·ECU 기준정보에서 골라 연결한다",
+      "Feature 상세 → 초안 수정 → 구현 연결에서 입력한다. 서버는 기준정보에 없는 짝을 거부한다",
+      "승인된 Version에 구현 연결이 빠져 있으면 새 Version에서 넣고 정의 승인을 다시 받는다",
+      "외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다"
+     ],
+     "checks": [
+      "VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다"
+     ],
+     "platform": {
+      "actions": [
+       "updateDraft"
+      ],
+      "screens": [
+       "/features/:id/:ver",
+       "/master/artifacts",
+       "/integration/connectors"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.3-A04"
+     ]
+    },
+    {
      "id": "FPW.3-A04",
      "name": "G3 판정·Feature 정의 승인",
      "trigger": null,
@@ -7657,7 +7881,8 @@ export const WORKFLOWS: WorkflowDoc = {
       "WP-REQ-REVIEW",
       "WP-G1-DECISION",
       "WP-G2-DECISION",
-      "WP-REF-LINK"
+      "WP-REF-LINK",
+      "WP-IMPL-LINK"
      ],
      "outputs": [
       "WP-G3-DECISION"
@@ -7666,6 +7891,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다",
       "판정 근거를 정리해 G3 판정을 남긴다",
       "Lifecycle을 PROPOSED에서 APPROVED로 전이한다. 작성자는 이 전이를 할 수 없다",
+      "승인 서랍이 구현 연결 미입력을 경고한다(막지는 않는다) — 빠졌으면 승인 대신 보완을 요청할 수 있다",
       "아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다"
      ],
      "checks": [
@@ -7693,7 +7919,7 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "layout": {
     "width": 1366,
-    "height": 196,
+    "height": 294,
     "lanes": [
      {
       "role": "R-REQ",
@@ -7710,6 +7936,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "y": 98,
       "w": 1366,
       "h": 98
+     },
+     {
+      "role": "R-INT",
+      "label": "통합 조직",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
      }
     ],
     "nodes": [
@@ -7746,6 +7980,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "요구 검토 판정 등록",
       "x": 758,
       "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A05",
+      "kind": "action",
+      "label": "구현 연결 입력",
+      "x": 758,
+      "y": 212,
       "w": 188,
       "h": 66
      },
@@ -7823,6 +8066,29 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
       "from": "FPW.3-A03",
       "to": "FPW.3-A04",
       "kind": "flow",
@@ -7834,6 +8100,29 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         1026,
         147
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1026,
+        245
        ],
        [
         1026,
@@ -7861,11 +8150,16 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      }
     ],
-    "joins": []
+    "joins": [
+     [
+      1026,
+      147
+     ]
+    ]
    },
    "departmentLayout": {
     "width": 1366,
-    "height": 196,
+    "height": 294,
     "lanes": [
      {
       "department": "DEP-SE",
@@ -7882,6 +8176,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "y": 98,
       "w": 1366,
       "h": 98
+     },
+     {
+      "department": "DEP-INT",
+      "label": "SW통합·릴리스팀",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
      }
     ],
     "nodes": [
@@ -7918,6 +8220,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "요구 검토 판정 등록",
       "x": 758,
       "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A05",
+      "kind": "action",
+      "label": "구현 연결 입력",
+      "x": 758,
+      "y": 212,
       "w": 188,
       "h": 66
      },
@@ -7995,6 +8306,29 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
       "from": "FPW.3-A03",
       "to": "FPW.3-A04",
       "kind": "flow",
@@ -8006,6 +8340,29 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         1026,
         147
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1026,
+        245
        ],
        [
         1026,
@@ -8033,7 +8390,12 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      }
     ],
-    "joins": []
+    "joins": [
+     [
+      1026,
+      147
+     ]
+    ]
    }
   },
   {
@@ -11468,8 +11830,8 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "steps": [
       "상품에 넣을 Feature와 판매 방식을 정해 상품을 등록한다",
-      "구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다",
-      "체험 제안 조건(대상·기간)을 정한다"
+      "구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다. PASS일 때 등록하고, FAIL은 결과를 확인한 뒤 초안으로만 등록한다",
+      "체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다"
      ],
      "checks": [
       "구성 검증 결과에 충돌이 없다"
@@ -11828,8 +12190,9 @@ export const WORKFLOWS: WorkflowDoc = {
       "WP-PRODUCT-RELEASE"
      ],
      "steps": [
-      "구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다",
-      "플랫폼이 구성 승인자와 같은 사람의 승인을 거부하면 다른 승인자로 다시 승인한다",
+      "구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다. 데모에서는 approver가 구성을, productowner가 고객 출시를 승인한다",
+      "구성 승인자에게는 화면이 출시 승인 버튼을 미리 막고 이유를 보인다. 서버도 같은 사람의 승인을 거부한다",
+      "출시한 상품은 상세에서 체험 제안으로 이어진다",
       "출시 승인 결과를 상품 기획과 운영 조직에 알린다"
      ],
      "checks": [

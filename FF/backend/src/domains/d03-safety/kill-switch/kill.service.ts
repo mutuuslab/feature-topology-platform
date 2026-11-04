@@ -21,6 +21,10 @@ import {
   wireErrors,
   KillCommandV2,
   type GateFinding,
+  nextApprovers,
+  NOTIFICATION_ACCOUNTS,
+  restoreOutlook,
+  type ApproverAccount,
   type KillApprovalRecord,
   type KillRequest,
   type KillRequestType,
@@ -147,9 +151,14 @@ export class KillService {
   /** 요청 시점 사전 점검 — 승인 칸(PLT-005)을 제외한 게이트 규칙을 자리표시 승인으로 미리 판정한다(원장 변경 없음) */
   dryRun(featureId: string, featureVersion: string, vins: string[], reasonCategory: ReasonCategory, opts: { recallCampaignId?: string; containmentJustification?: string } = {}): GateFinding[] {
     const draft = this.draft(featureId, featureVersion, vins, reasonCategory, 'FIELD_FAULT', opts);
+    // 자리표시 승인 — 실제로 채워질 역할 쌍(F2 이상 안전·보안은 FSM + CSM, 그 밖은 FSM + 운영 리더). 누적 상한(SEC-003) 사전 판정이 실제와 같게
+    const reg = this.gate.registryEntry(featureId, featureVersion);
+    const csm = !!reg && approvalPlan(reg.f_class, 'deactivate', reasonCategory).required?.includes('CSM');
     const placeholder: KillApprovalRecord[] = [
       { approverId: '(승인 1)', platformRole: 'SAFETY_OFFICER', role: 'FSM', signedAt: this.clock.iso(), kid: '-', sig: UNSIGNED, comment: null },
-      { approverId: '(승인 2)', platformRole: 'OPS_LEAD', role: 'OPS_LEAD', signedAt: this.clock.iso(), kid: '-', sig: UNSIGNED, comment: null },
+      csm
+        ? { approverId: '(승인 2)', platformRole: 'SECURITY_OFFICER', role: 'CSM', signedAt: this.clock.iso(), kid: '-', sig: UNSIGNED, comment: null }
+        : { approverId: '(승인 2)', platformRole: 'OPS_LEAD', role: 'OPS_LEAD', signedAt: this.clock.iso(), kid: '-', sig: UNSIGNED, comment: null },
     ];
     const cmd = this.buildCommand(draft, 'deactivate', placeholder);
     return this.gate.preview(cmd).findings.filter((x) => x.rule !== 'FFG-PLT-005');
@@ -248,7 +257,8 @@ export class KillService {
       this.events.publish(
         'kill.requested',
         k.killId,
-        { killId: k.killId, featureId: k.featureId, vins: k.vins.length, reasonCategory: k.reasonCategory, fsmRequired: plan.fsm, anomalyId: k.anomalyId },
+        // candidates — 실제로 승인할 수 있는 사람(필수 역할 FSM·CSM 등, 요청자 제외). 알림 수신자가 된다(P4-1)
+        { killId: k.killId, featureId: k.featureId, vins: k.vins.length, reasonCategory: k.reasonCategory, fsmRequired: plan.fsm, anomalyId: k.anomalyId, candidates: this.approverCandidates(k).map((c) => c.id) },
         { componentId: 'D03-03', correlationId: actor.correlationId },
       );
       return this.withProgress(k);
@@ -351,6 +361,7 @@ export class KillService {
           },
           { componentId: 'D03-03', correlationId: actor.correlationId },
         );
+        this.warnRestoreBlocked(actor, done);
         return this.withProgress(done);
       });
     } catch (e) {
@@ -560,7 +571,46 @@ export class KillService {
   }
 
   detail(id: string) {
-    return this.withProgress(this.effective(this.load(id)));
+    const k = this.effective(this.load(id));
+    return { ...this.withProgress(k), ...this.outlook(k) };
+  }
+
+  /** 승인 후보 계정 — 알림 수신 계정 표(데모 IAM)를 보고서 승인 역할로 */
+  private approverAccounts(): ApproverAccount[] {
+    return NOTIFICATION_ACCOUNTS.map((a) => ({ id: a.id, roles: reportRolesOf(a.roles) })).filter((a) => a.roles.length > 0);
+  }
+
+  /** 승인 대기 차단의 다음 칸 후보(서버 approvalCheck와 같은 판정) */
+  approverCandidates(k: KillRequest) {
+    if (k.version !== 2 || !k.fClass || !k.reasonCategory) return [];
+    return nextApprovers(this.approverAccounts(), { requestedBy: k.requestedBy, approvals: k.approvals ?? [], plan: approvalPlan(k.fClass, 'deactivate', k.reasonCategory) });
+  }
+
+  /**
+   * 복원 승인 전망 — 직전 차단 승인자·원장의 마지막 차단 승인자를 뺀 계정에서 복원 2인 승인을 끝낼 수 있는가(P4-1 영구 막힘).
+   * 복원 요청이 승인 대기면 그 요청의 승인·요청자까지 반영한 다음 칸 후보.
+   */
+  restoreOutlookOf(k: KillRequest) {
+    const excluded = [...new Set([...(k.approvals ?? []).map((a) => a.approverId), ...(this.gate.ledger(k.featureId).last_kill_approvers ?? [])])];
+    const rr = k.restoreRequest?.status === 'REQUESTED' ? k.restoreRequest : null;
+    return restoreOutlook(this.approverAccounts(), approvalPlan(k.fClass ?? 'F0', 'restore', k.reasonCategory ?? 'SAFETY'), excluded, rr?.approvals ?? [], rr?.requestedBy ?? '');
+  }
+
+  /** 복원 막힘 경보 — 차단 승인자를 빼면 복원을 끝낼 승인자가 없을 때 운영 리더·Safety Manager에게(호출자 트랜잭션 안) */
+  warnRestoreBlocked(actor: Actor, k: KillRequest) {
+    const o = this.restoreOutlookOf(k);
+    if (o.complete) return o;
+    const excluded = [...new Set([...(k.approvals ?? []).map((a) => a.approverId), ...(this.gate.ledger(k.featureId).last_kill_approvers ?? [])])];
+    this.events.publish('kill.restore-blocked', k.killId, { killId: k.killId, featureId: k.featureId, missing: o.missing, excluded }, { componentId: 'D03-04', correlationId: actor.correlationId });
+    return o;
+  }
+
+  /** 상세에만 붙이는 승인 후보 — 승인 대기면 다음 칸 후보, 차단 중이면 복원 전망 */
+  private outlook(k: KillRequest) {
+    if (k.version !== 2) return {};
+    if (k.status === 'REQUESTED') return { approverCandidates: this.approverCandidates(k) };
+    if (k.status === 'ACTIVE') return { restoreOutlook: this.restoreOutlookOf(k) };
+    return {};
   }
 
   /** 차단·복구 게시본의 회신 집계를 함께 붙인다 */

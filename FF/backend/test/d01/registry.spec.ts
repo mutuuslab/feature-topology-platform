@@ -1,7 +1,7 @@
 // Feature Registry·Gate·Lifecycle·BOM Baseline — 상세설계서 v0.81 업무 흐름(표 4)을 API로 끝까지 검증한다.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp, confirmSafety, withRef } from '../helpers';
+import { actor, bootApp, confirmSafety, signG7, withRef } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const AUTHOR2 = actor('park.author', 'FEATURE_AUTHOR');
@@ -142,6 +142,7 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
     });
 
     it('G4~G7 PASS여도 Control Point 정책·구현 입력이 없으면 VERIFIED로 자동 전이하지 않는다', async () => {
+      await signG7(http, id, '0.1.0'); // G7 — SM·CSM 두 사람 서명(P3-3)
       for (const g of ['G4', 'G5', 'G6', 'G7']) await judge(id, '0.1.0', g).expect(201);
       const d = await http().get(`/api/features/${id}/versions/0.1.0`).expect(200);
       expect(d.body.feature.lifecycle).toBe('DEVELOPING');

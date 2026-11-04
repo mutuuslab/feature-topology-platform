@@ -88,11 +88,25 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
             <details className="sh-dnav__more" ref={more}>
               <summary>{D.nav.more}</summary>
               <div className="sh-dnav__drop">
-                {menu.primary.length > FLAT_MAX && <ul className="sh-dnav__list">{menu.primary.slice(FLAT_MAX).map(link)}</ul>}
+                {/* 두 묶음 모두 머리말을 단다 — 펼친 주 업무의 나머지(내 업무)와 협의·참조 */}
+                {menu.primary.length > FLAT_MAX && (
+                  <>
+                    <p className="sh-dnav__section" id={`dnav-mp-${dept.id}`}>
+                      {D.nav.primary}
+                    </p>
+                    <ul className="sh-dnav__list" aria-labelledby={`dnav-mp-${dept.id}`}>
+                      {menu.primary.slice(FLAT_MAX).map(link)}
+                    </ul>
+                  </>
+                )}
                 {menu.reference.length > 0 && (
                   <>
-                    <p className="sh-dnav__section">{D.nav.reference}</p>
-                    <ul className="sh-dnav__list">{menu.reference.map(link)}</ul>
+                    <p className="sh-dnav__section" id={`dnav-mr-${dept.id}`}>
+                      {D.nav.reference}
+                    </p>
+                    <ul className="sh-dnav__list" aria-labelledby={`dnav-mr-${dept.id}`}>
+                      {menu.reference.map(link)}
+                    </ul>
                   </>
                 )}
               </div>

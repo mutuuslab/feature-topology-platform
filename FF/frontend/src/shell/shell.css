@@ -1087,10 +1087,13 @@
   position: absolute;
   z-index: 20;
   top: calc(100% + 4px);
-  left: 0;
+  /* '더 보기'는 가로 메뉴 오른쪽 끝(부서 R&R 앞)에 있다 — 오른쪽 맞춤으로 펼쳐 화면 오른쪽 가장자리에 잘리지 않게 */
+  right: 0;
+  left: auto;
   display: grid;
   gap: var(--sp-1);
   min-width: 240px;
+  max-inline-size: calc(100vw - 32px);
   max-height: 70vh;
   overflow: auto;
   padding: var(--sp-2);
@@ -1108,6 +1111,11 @@
   padding-top: var(--sp-2);
   border-top: 1px solid var(--line);
 }
+.sh-dnav__drop > .sh-dnav__section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
 .sh[data-workspace='studio'] .sh-dnav__drop .sh-dnav__list a,
 .sh[data-workspace='portal'] .sh-dnav__drop .sh-dnav__list a {
   border: 0;
@@ -1119,6 +1127,36 @@
   border: 0;
   padding: 0;
   display: flex;
+}
+.sh[data-workspace='studio'] .sh-dnav a,
+.sh[data-workspace='portal'] .sh-dnav a,
+.sh[data-workspace='studio'] .sh-dnav__all,
+.sh[data-workspace='portal'] .sh-dnav__all,
+.sh[data-workspace='studio'] .sh-dnav__more > summary,
+.sh[data-workspace='portal'] .sh-dnav__more > summary {
+  white-space: nowrap;
+}
+/* 1280~1439 — 가로 메뉴가 한 줄을 넘지 않게(1280에서 부서 R&R·전체 메뉴 보기가 둘째 줄로 내려갔다) 알약·여백을 줄인다 */
+@media (max-width: 1439px) {
+  .sh[data-workspace='studio'] .sh-dnav,
+  .sh[data-workspace='portal'] .sh-dnav {
+    column-gap: var(--sp-1h);
+    padding-inline: var(--sp-4);
+  }
+  .sh[data-workspace='studio'] .sh-dnav__head,
+  .sh[data-workspace='portal'] .sh-dnav__head {
+    margin-right: var(--sp-1);
+  }
+  .sh[data-workspace='studio'] .sh-dnav__list a,
+  .sh[data-workspace='portal'] .sh-dnav__list a,
+  .sh[data-workspace='studio'] .sh-dnav__more > summary,
+  .sh[data-workspace='portal'] .sh-dnav__more > summary {
+    padding-inline: var(--sp-2);
+  }
+  .sh[data-workspace='studio'] .sh-dnav__drop .sh-dnav__list a,
+  .sh[data-workspace='portal'] .sh-dnav__drop .sh-dnav__list a {
+    padding-inline: var(--sp-2);
+  }
 }
 .sh[data-workspace='studio'] .sh-main {
   padding-inline: max(var(--sp-6), calc((100% - 1440px) / 2));
@@ -1135,7 +1173,7 @@
 .sh[data-workspace='review'] .sh-dnav__list a.active {
   background: var(--surface);
 }
-/* 엔지니어링 콘솔 — 조밀한 사이드바(작은 글자·촘촘한 행), 고정폭 글꼴 머리 */
+/* 엔지니어링 콘솔 — 조밀한 사이드바(작은 글자·촘촘한 행) */
 .sh[data-workspace='console'] .sh-dnav {
   gap: 0;
   padding-inline: var(--sp-1);
@@ -1157,7 +1195,8 @@
   color: var(--ink);
 }
 .sh[data-workspace='console'] .sh-dnav__name {
-  font-family: var(--font-mono);
+  /* 부서 이름은 한글 — 고정폭 글꼴이면 글자 사이가 들쭉날쭉하다 */
+  font-family: var(--font-sans);
   font-size: var(--fs-sm);
 }
 .sh[data-workspace='console'] .sh-main {
@@ -1204,4 +1243,34 @@ html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
   html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
     grid-template-columns: minmax(0, 1fr) min(330px, 28vw);
   }
+}
+
+/* 시연 모드 + 부서 작업공간 — 부서별 본문 여백·조밀한 메뉴 규칙이 시연 모드의 큰 글자·넓은 본문을 덮지 않게 */
+[data-present='on'] .sh[data-workspace='review'] {
+  --ws-nav-w: 312px;
+}
+[data-present='on'] .sh[data-workspace='console'] {
+  --ws-nav-w: 272px;
+}
+[data-present='on'] .sh[data-workspace='control'] {
+  --ws-nav-w: 288px;
+}
+/* 아래 여백은 건드리지 않는다 — 따라하기 띠(.sh[data-guide='open'] .sh-main)의 아래 여백을 지우면 안 된다 */
+[data-present='on'] .sh[data-workspace] .sh-main {
+  padding-top: var(--sp-6);
+  padding-inline: max(var(--sp-10), calc((100% - 1560px) / 2));
+}
+[data-present='on'] .sh[data-workspace='console'] .sh-dnav__list a {
+  min-height: var(--row-h);
+  font-size: var(--fs-sm);
+}
+[data-present='on'] .sh[data-workspace] .sh-dnav__section,
+[data-present='on'] .sh[data-workspace] .sh-dnav__more > summary {
+  font-size: var(--fs-sm);
+}
+[data-present='on'] .sh-panel__count {
+  min-inline-size: 26px;
+  padding: 0 var(--sp-1h);
+  font-size: var(--fs-xs);
+  line-height: 24px;
 }

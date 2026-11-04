@@ -364,6 +364,18 @@
   --fs-2xl: calc(var(--fs-base) * 2);
   font-size: var(--fs-base);
 }
+/* 시연 모드가 이긴다 — 위 포털 본문 글자(15px)와 부서별 행 높이가 [data-present='on']의 큰 글자·넓은 행을 덮지 않게 같은 값을 다시 선언한다 */
+:root[data-present='on'][data-workspace] {
+  --row-h: 46px;
+}
+:root[data-present='on'][data-workspace='console'] {
+  --row-h: 40px;
+}
+:root[data-present='on'][data-workspace='portal'] #main {
+  --fs-base: 18px;
+  --fs-xs: 15px;
+  --fs-sm: 17px;
+}
 :root[data-theme='dark'][data-workspace='studio'] {
   --accent: #f59e6b;
   --accent-hover: #f8b991;

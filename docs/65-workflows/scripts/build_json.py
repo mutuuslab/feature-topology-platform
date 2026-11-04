@@ -27,12 +27,14 @@ def _box(b: wm.Box) -> dict:
     return {"id": b.id, "kind": b.kind, "label": b.label, "x": _r(b.x), "y": _r(b.y), "w": _r(b.w), "h": _r(b.h)}
 
 
-def layout_json(m: dict, proc: dict) -> dict:
-    lay = wm.layout(m, proc)
+def layout_json(m: dict, proc: dict, by: str = "role") -> dict:
+    """by=role: 레인 키 role(역할 ID), by=department: 레인 키 department(부서 ID)."""
+    lay = wm.layout(m, proc, by)
+    key = "department" if by == "department" else "role"
     return {
         "width": _r(lay.width),
         "height": _r(lay.height),
-        "lanes": [{"role": ln.id, "label": ln.label, "x": _r(ln.x), "y": _r(ln.y), "w": _r(ln.w), "h": _r(ln.h)} for ln in lay.lanes],
+        "lanes": [{key: ln.id, "label": ln.label, "x": _r(ln.x), "y": _r(ln.y), "w": _r(ln.w), "h": _r(ln.h)} for ln in lay.lanes],
         "nodes": [_box(n) for n in lay.nodes.values()],
         "edges": [{"from": s, "to": d, "kind": k, "points": [[_r(x), _r(y)] for x, y in wm.route(lay, s, d)]} for s, d, k in lay.edges],
         "joins": [[_r(x), _r(y)] for x, y in build_html.junctions(lay)],
@@ -84,6 +86,7 @@ def process_json(m: dict, p: dict, plan: dict) -> dict:
                           "retained": bool(w.get("retained")), "content": w.get("content", [])} for w in p.get("work_products", [])],
         "activities": [activity_json(a) for a in p["activities"]],
         "layout": layout_json(m, p),
+        "departmentLayout": layout_json(m, p, "department"),
     }
 
 
@@ -92,6 +95,26 @@ def personas(m: dict) -> dict:
     out = {}
     for acc, roles in sorted(m["iam"]["accounts"].items()):
         out[acc] = [r["id"] for r in m["roles"] if set(r["platform_roles"]) & set(roles)]
+    return out
+
+
+def departments(m: dict) -> list:
+    """부서 R&R: 부서별 활동 몫(R/A/C/I), 쓰는 화면, 부서 경계를 넘는 인계."""
+    first = set(m["common"].get("department_scope", {}).get("first", []))
+    out = []
+    for d in m["departments"]:
+        acts = wm.dept_activities(m, d["id"])
+        screens = wm.dept_screens(m, d["id"])
+        hand = wm.dept_handoffs(m, d["id"])
+        out.append({
+            "id": d["id"], "name": d["name"], "en": d["en"], "desc": " ".join(d["desc"].split()),
+            "workspace": d["workspace"], "roles": d["roles"], "personas": d["personas"],
+            # part = 가장 무거운 몫(R > A > C > I), parts = 맡는 몫 전부(수행·책임을 같이 맡으면 둘 다) — 건수는 parts로 센다
+            "activities": [{"id": a["id"], "process": p["id"], "part": part, "parts": wm.dept_parts(m, d["id"], a),
+                            "firstScope": p["id"] in first} for p, a, part in acts],
+            "screens": screens,
+            "handoffs": {k: [{"from": s, "to": t, "department": o} for s, t, o in v] for k, v in hand.items()},
+        })
     return out
 
 
@@ -105,6 +128,13 @@ def document(m: dict) -> dict:
         "personas": personas(m),
         "gateCrosswalk": [{"report": g["report"], "platform": g.get("platform", []), "approvalActions": g.get("approval_actions", [])}
                           for g in m["common"]["gate_crosswalk"]],
+        "departments": departments(m),
+        "departmentScope": {"first": m["common"].get("department_scope", {}).get("first", []),
+                            "note": m["common"].get("department_scope", {}).get("note", ""),
+                            "demoNotes": m["common"].get("department_scope", {}).get("demo_notes", [])},
+        "departmentSod": [{"sod": x["sod"], "department": x["department"], "first": x["first"], "second": x["second"],
+                           "note": x["note"]} for x in wm.dept_sod_overlaps(m)],
+        "workspaces": list(wm.WORKSPACES),
         "processes": [process_json(m, p, plan[p["id"]]) for p in m["processes"]],
     }
 

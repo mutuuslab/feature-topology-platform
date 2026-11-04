@@ -6,6 +6,7 @@ import { COMPLIANCE_PROFILES, OPENFEATURE_PINS, profileFinding, reportRule, RULE
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { useVehiclePick } from '../../data/first-run';
+import { DESKTOP_BUILD } from '../../routes';
 import { AsyncView, Button, DataTable, ErrorNote, Explain, ExplainCodes, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, RuleText, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec, useReportCatalog } from '../../design';
 import { ComponentName, Done, usePermission } from '../shared';
 import { EpochBump, SbomDrawer, SecurityEventsPanel } from './Security';
@@ -546,7 +547,7 @@ export function ComplianceScreen() {
   const [sp] = useSearchParams();
   return (
     <div className="ds-screen">
-      <PageHeader codes="D03-01 · Report v1.1 FFG" title={C.title} lead={C.lead} message={complianceMessage(sp.get('tab') === 'profiles')} actions={<Link to="/arch/components">{ko.arch.title}</Link>} />
+      <PageHeader codes="D03-01 · Report v1.1 FFG" title={C.title} lead={C.lead} message={complianceMessage(sp.get('tab') === 'profiles')} actions={DESKTOP_BUILD ? undefined : <Link to="/arch/components">{ko.arch.title}</Link>} />
       <Tabs tabs={[{ key: 'rules', label: C.tabs.rules }, { key: 'profiles', label: C.tabs.profiles }]}>{(t) => (t === 'profiles' ? <ProfilesTab /> : <RulesTab />)}</Tabs>
     </div>
   );

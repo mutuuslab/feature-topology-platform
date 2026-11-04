@@ -855,3 +855,422 @@
     padding: var(--sp-3) var(--sp-3) var(--sp-8);
   }
 }
+
+/* ── 부서 작업공간(데모 부서 보기) — 8그룹 레일·패널 대신 부서 메뉴(DepartmentNav). 화면 유형마다 배치가 다르다.
+   기획 스튜디오·검토 포털: 상단 바 아래 가로 메뉴 / 심사 결재함·엔지니어링 콘솔·관제실: 왼쪽 세로 메뉴(폭·밀도가 다르다). ── */
+.sh[data-workspace] {
+  grid-template-columns: var(--ws-nav-w, 248px) minmax(0, 1fr);
+  grid-template-rows: var(--topbar-h) minmax(0, 1fr);
+  grid-template-areas: 'top top' 'nav main';
+}
+.sh[data-workspace='studio'],
+.sh[data-workspace='portal'] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--topbar-h) auto minmax(0, 1fr);
+  grid-template-areas: 'top' 'nav' 'main';
+}
+.sh[data-workspace='review'] {
+  --ws-nav-w: 272px;
+}
+.sh[data-workspace='console'] {
+  --ws-nav-w: 216px;
+}
+.sh[data-workspace='control'] {
+  --ws-nav-w: 232px;
+}
+.sh[data-workspace] .sh-brand {
+  min-width: 0;
+}
+.sh-dept {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.sh-dept__select {
+  min-height: 32px;
+  max-width: 190px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+.sh[data-workspace] .sh-dept__select {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.sh-user__role {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.sh-dnav {
+  grid-area: nav;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+  overflow: hidden auto;
+  padding: var(--sp-3) var(--sp-2) var(--sp-4);
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+}
+.sh-dnav__head {
+  padding: 0 var(--sp-2) var(--sp-2);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--sp-1);
+}
+.sh-dnav__head p {
+  margin: 0;
+}
+.sh-dnav__eyebrow {
+  color: var(--accent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.sh-dnav__name {
+  font-size: var(--fs-md);
+  font-weight: 800;
+  color: var(--ink);
+}
+.sh-dnav__counts {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.sh-dnav__section,
+.sh-dnav__more > summary {
+  margin: var(--sp-2) 0 0;
+  padding: 0 var(--sp-2);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.sh-dnav__more > summary {
+  cursor: pointer;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+}
+.sh-dnav__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sh-dnav__list a {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--row-h);
+  padding: 0 var(--sp-2);
+  border-radius: var(--r);
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+.sh-dnav__list a:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.sh-dnav__list a.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.sh-dnav__list .sh-panel__count {
+  margin-left: auto;
+}
+.sh-dnav__foot {
+  margin-top: auto;
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-2) 0;
+  border-top: 1px solid var(--line);
+}
+.sh-dnav__rnr,
+.sh-dnav__all {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.sh-dnav__all {
+  border: 1px dashed var(--line-strong);
+  background: none;
+  cursor: pointer;
+  justify-content: center;
+}
+.sh-dnav__all:hover,
+.sh-dnav__rnr:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* 가로 메뉴(기획 스튜디오·검토 포털) */
+.sh[data-workspace='studio'] .sh-dnav,
+.sh[data-workspace='portal'] .sh-dnav {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-2) var(--sp-6);
+  border-right: 0;
+  border-bottom: 1px solid var(--line);
+  overflow: visible;
+  background: var(--ws-band);
+}
+.sh[data-workspace='studio'] .sh-dnav__head,
+.sh[data-workspace='portal'] .sh-dnav__head {
+  border: 0;
+  margin: 0 var(--sp-3) 0 0;
+  padding: 0;
+}
+.sh[data-workspace='studio'] .sh-dnav__list,
+.sh[data-workspace='portal'] .sh-dnav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.sh[data-workspace='studio'] .sh-dnav__list a,
+.sh[data-workspace='portal'] .sh-dnav__list a {
+  border-radius: var(--r-pill);
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+/* 가로 메뉴의 배지 — 띠 색(accent-soft와 비슷)에 묻히지 않게 강조색 바탕 */
+.sh[data-workspace='studio'] .sh-dnav .sh-panel__count,
+.sh[data-workspace='portal'] .sh-dnav .sh-panel__count {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.sh[data-workspace='studio'] .sh-dnav__list a.active,
+.sh[data-workspace='portal'] .sh-dnav__list a.active {
+  box-shadow: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.sh[data-workspace='studio'] .sh-dnav__more,
+.sh[data-workspace='portal'] .sh-dnav__more {
+  position: relative;
+}
+.sh[data-workspace='studio'] .sh-dnav__more > summary,
+.sh[data-workspace='portal'] .sh-dnav__more > summary {
+  margin: 0;
+  min-height: var(--row-h);
+  border-radius: var(--r-pill);
+  padding: 0 var(--sp-3);
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+}
+.sh[data-workspace='studio'] .sh-dnav__more > summary,
+.sh[data-workspace='portal'] .sh-dnav__more > summary {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.sh-dnav__drop {
+  display: contents;
+}
+.sh[data-workspace='studio'] .sh-dnav__more[open] > .sh-dnav__drop,
+.sh[data-workspace='portal'] .sh-dnav__more[open] > .sh-dnav__drop {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  /* '더 보기'는 가로 메뉴 오른쪽 끝(부서 R&R 앞)에 있다 — 오른쪽 맞춤으로 펼쳐 화면 오른쪽 가장자리에 잘리지 않게 */
+  right: 0;
+  left: auto;
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 240px;
+  max-inline-size: calc(100vw - 32px);
+  max-height: 70vh;
+  overflow: auto;
+  padding: var(--sp-2);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-2);
+}
+.sh[data-workspace='studio'] .sh-dnav__drop .sh-dnav__list,
+.sh[data-workspace='portal'] .sh-dnav__drop .sh-dnav__list {
+  display: grid;
+}
+.sh-dnav__drop .sh-dnav__section {
+  margin-top: var(--sp-1);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
+}
+.sh-dnav__drop > .sh-dnav__section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.sh[data-workspace='studio'] .sh-dnav__drop .sh-dnav__list a,
+.sh[data-workspace='portal'] .sh-dnav__drop .sh-dnav__list a {
+  border: 0;
+  border-radius: var(--r);
+}
+.sh[data-workspace='studio'] .sh-dnav__foot,
+.sh[data-workspace='portal'] .sh-dnav__foot {
+  margin: 0 0 0 auto;
+  border: 0;
+  padding: 0;
+  display: flex;
+}
+.sh[data-workspace='studio'] .sh-dnav a,
+.sh[data-workspace='portal'] .sh-dnav a,
+.sh[data-workspace='studio'] .sh-dnav__all,
+.sh[data-workspace='portal'] .sh-dnav__all,
+.sh[data-workspace='studio'] .sh-dnav__more > summary,
+.sh[data-workspace='portal'] .sh-dnav__more > summary {
+  white-space: nowrap;
+}
+/* 1280~1439 — 가로 메뉴가 한 줄을 넘지 않게(1280에서 부서 R&R·전체 메뉴 보기가 둘째 줄로 내려갔다) 알약·여백을 줄인다 */
+@media (max-width: 1439px) {
+  .sh[data-workspace='studio'] .sh-dnav,
+  .sh[data-workspace='portal'] .sh-dnav {
+    column-gap: var(--sp-1h);
+    padding-inline: var(--sp-4);
+  }
+  .sh[data-workspace='studio'] .sh-dnav__head,
+  .sh[data-workspace='portal'] .sh-dnav__head {
+    margin-right: var(--sp-1);
+  }
+  .sh[data-workspace='studio'] .sh-dnav__list a,
+  .sh[data-workspace='portal'] .sh-dnav__list a,
+  .sh[data-workspace='studio'] .sh-dnav__more > summary,
+  .sh[data-workspace='portal'] .sh-dnav__more > summary {
+    padding-inline: var(--sp-2);
+  }
+  .sh[data-workspace='studio'] .sh-dnav__drop .sh-dnav__list a,
+  .sh[data-workspace='portal'] .sh-dnav__drop .sh-dnav__list a {
+    padding-inline: var(--sp-2);
+  }
+}
+.sh[data-workspace='studio'] .sh-main {
+  padding-inline: max(var(--sp-6), calc((100% - 1440px) / 2));
+}
+.sh[data-workspace='portal'] .sh-main {
+  padding-inline: max(var(--sp-6), calc((100% - 1120px) / 2));
+}
+
+/* 심사 결재함 — 중립 면, 판정색만 강조. 메뉴 항목은 결재 서류철처럼 칸으로 */
+.sh[data-workspace='review'] .sh-dnav {
+  background: var(--surface-2);
+  gap: var(--sp-2);
+}
+.sh[data-workspace='review'] .sh-dnav__list a.active {
+  background: var(--surface);
+}
+/* 엔지니어링 콘솔 — 조밀한 사이드바(작은 글자·촘촘한 행) */
+.sh[data-workspace='console'] .sh-dnav {
+  gap: 0;
+  padding-inline: var(--sp-1);
+}
+.sh[data-workspace='console'] .sh-dnav__more > summary {
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+  padding-block: var(--sp-1);
+}
+.sh[data-workspace='console'] .sh-dnav__list a {
+  min-height: 26px;
+  font-size: var(--fs-xs);
+  border-radius: 0;
+  border-bottom: 1px solid var(--line);
+}
+/* 콘솔 메뉴는 개발 도구처럼 어두운 면(DepartmentNav data-zone=ops — 관제 토큰을 메뉴에만) */
+.sh[data-workspace='console'] .sh-dnav {
+  background: var(--surface);
+  color: var(--ink);
+}
+.sh[data-workspace='console'] .sh-dnav__name {
+  /* 부서 이름은 한글 — 고정폭 글꼴이면 글자 사이가 들쭉날쭉하다 */
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+}
+.sh[data-workspace='console'] .sh-main {
+  padding: var(--sp-3) var(--sp-4) var(--sp-8);
+}
+/* 관제실 — 셸 전체가 어두운 관제 톤(html data-zone=ops), 메뉴는 청록 띠 */
+.sh[data-workspace='control'] .sh-dnav {
+  background: var(--surface-2);
+  box-shadow: inset -3px 0 0 var(--accent);
+  border-right-color: transparent;
+}
+.sh[data-workspace='control'] .sh-top {
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+.sh[data-workspace='control'] .sh-main {
+  padding: var(--sp-3) var(--sp-4) var(--sp-8);
+}
+
+@media (max-width: 1279px) {
+  .sh[data-workspace='review'],
+  .sh[data-workspace='control'] {
+    --ws-nav-w: 200px;
+  }
+  .sh[data-workspace='console'] {
+    --ws-nav-w: 184px;
+  }
+}
+
+/* 따라하기 가이드 + 부서 작업공간 — 위 부서 격자 규칙이 가이드 열(guide)을 지우지 않게(시연 모드는 아래 띠라 열이 없다) */
+html:not([data-present='on']) .sh[data-workspace][data-guide='open'] {
+  grid-template-columns: var(--ws-nav-w, 248px) minmax(0, 1fr) var(--guide-w, 360px);
+  grid-template-areas: 'top top top' 'nav main guide';
+}
+html:not([data-present='on']) .sh[data-workspace='studio'][data-guide='open'],
+html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
+  grid-template-columns: minmax(0, 1fr) var(--guide-w, 360px);
+  grid-template-areas: 'top top' 'nav nav' 'main guide';
+}
+@media (max-width: 1439px) {
+  html:not([data-present='on']) .sh[data-workspace][data-guide='open'] {
+    grid-template-columns: var(--ws-nav-w, 248px) minmax(0, 1fr) min(330px, 28vw);
+  }
+  html:not([data-present='on']) .sh[data-workspace='studio'][data-guide='open'],
+  html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
+    grid-template-columns: minmax(0, 1fr) min(330px, 28vw);
+  }
+}
+
+/* 시연 모드 + 부서 작업공간 — 부서별 본문 여백·조밀한 메뉴 규칙이 시연 모드의 큰 글자·넓은 본문을 덮지 않게 */
+[data-present='on'] .sh[data-workspace='review'] {
+  --ws-nav-w: 312px;
+}
+[data-present='on'] .sh[data-workspace='console'] {
+  --ws-nav-w: 272px;
+}
+[data-present='on'] .sh[data-workspace='control'] {
+  --ws-nav-w: 288px;
+}
+/* 아래 여백은 건드리지 않는다 — 따라하기 띠(.sh[data-guide='open'] .sh-main)의 아래 여백을 지우면 안 된다 */
+[data-present='on'] .sh[data-workspace] .sh-main {
+  padding-top: var(--sp-6);
+  padding-inline: max(var(--sp-10), calc((100% - 1560px) / 2));
+}
+[data-present='on'] .sh[data-workspace='console'] .sh-dnav__list a {
+  min-height: var(--row-h);
+  font-size: var(--fs-sm);
+}
+[data-present='on'] .sh[data-workspace] .sh-dnav__section,
+[data-present='on'] .sh[data-workspace] .sh-dnav__more > summary {
+  font-size: var(--fs-sm);
+}
+[data-present='on'] .sh-panel__count {
+  min-inline-size: 26px;
+  padding: 0 var(--sp-1h);
+  font-size: var(--fs-xs);
+  line-height: 24px;
+}

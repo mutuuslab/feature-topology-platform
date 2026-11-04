@@ -3,14 +3,15 @@ id: WF-ROLE-PUR
 type: workflow
 title: "구매 업무 절차서 / Purchasing Procedure"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
+    - WF-FPW-2
     - WF-FPW-10
     - WF-FPW-11
-last_updated: 2026-10-17
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -56,6 +57,7 @@ last_updated: 2026-10-17
 
 ## 2. 협의·통보 받는 활동
 
+- FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 (협의)
 - FPW.10-A03 확인 조치 독립성 지정 (통보)
 - FPW.10-A06 Gate별 납품물 입고 검사 (통보)
 - FPW.11-A06 OSS 라이선스·보안 프로그램 운영 (협의)

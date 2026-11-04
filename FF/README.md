@@ -54,6 +54,12 @@ npm run dev:frontend     # http://127.0.0.1:9012       (/api → 9101 프록시)
 3. 묶음의 `!` 제안 값(상태 `JIRA_EPIC_STATUS`·`JIRA_CR_STATUS` JSON, `JIRA_FIELD_*`)을 확인해 `.env.ext`에 붙여 넣고, webhook 비밀값(`JIRA_WEBHOOK_SECRET`·`GITLAB_WEBHOOK_TOKEN`·`CODEBEAMER_WEBHOOK_SECRET`)을 각 도구의 webhook 설정과 같게 정한다. ✕가 없어질 때까지 2를 다시 돈다.
 4. `IF_MODE_14=live`(GitLab `IF_MODE_13`, codeBeamer `IF_MODE_01`)를 켜고 그 환경으로 백엔드를 띄운다. live인데 필수 값이 빠졌으면 백엔드가 빠진 변수 이름을 말하고 시작하지 않는다(필수 표 `contracts EXT_LIVE_ENV`).
 
+### Windows 데스크톱 앱 (`src-tauri`)
+
+Tauri 앱은 화면과 Node 24 런타임, 로컬 백엔드를 함께 묶는다. 백엔드는 `FF_DESKTOP=1`·`PORT=0`으로 루프백 임의 포트에 뜨고(`backend/src/kernel/desktop.ts` — 루프백 Host·같은 출처만, CORS 없음), 화면은 `FF_WEB_DIR`로 같은 출처에서 낸다. 최초 실행 시 v0.81 데모 데이터를 준비하고, 변경 사항은 사용자별 앱 데이터 폴더(`com.mutuuslab.featureplatform.desktop`)의 `feature-platform.sqlite`에 보존한다. 앱을 닫으면 백엔드도 끝나고, 다시 실행하면 기존 창으로 간다.
+
+Windows WebView2, Rust/MSVC 빌드 도구, Node 24 이상이 필요하다. `FF`에서 `npm install` 뒤 `npm run desktop:build` → `src-tauri/target/release/bundle/nsis/`에 설치 프로그램. 소스 실행은 `npm run desktop:dev`, 패키지 백엔드 검증은 `npm run desktop:smoke`. 데스크톱 배포본(`VITE_FF_DESKTOP=1`)은 42 컴포넌트 아키텍처 화면을 뺀다(`routes.tsx DESKTOP_EXCLUDED`). 데모 로그인·데모 데이터·외부 연계 모의 모드·GLEO 꺼짐으로 시작하며 운영 환경으로 간주하지 않는다. `src-tauri/target`·`resources`·`gen`은 생성물이다(git 무시).
+
 ## 화면 — MENU 2.0 (업무 기준 8그룹, `frontend/src/routes.tsx`)
 
 - **홈**: 내 대시보드 · 검토함 · 표준 따라하기 · 42 컴포넌트 아키텍처

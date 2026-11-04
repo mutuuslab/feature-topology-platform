@@ -1,6 +1,8 @@
 // 앱 셸 — 상단바(검색·⌘K·역할·내 역할 필터·시연 모드·테마·모션·알림) + 아이콘 레일(8그룹) + 그룹 패널 + 본문.
 // 운영·안전 그룹 화면은 청록 표식(data-area="ops")으로 운영 모드임을 알린다. 본문만 어둡게 바꾸면 상단바·레일과
 // 톤이 반쯤 갈려 의도가 읽히지 않았다(하네스 2판 결함 5) — 테마는 사용자 설정(라이트·다크)을 그대로 따른다.
+// 부서 보기(데모, 2026-11-04): 부서를 고르면 레일·패널 대신 그 부서 메뉴(DepartmentNav)를 그리고, html[data-workspace]가
+// 화면 유형(기획 스튜디오·심사 결재함·엔지니어링 콘솔·관제실·검토 포털)별 배치·강조색·밀도를 바꾼다. 전체 보기는 지금 그대로다.
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
@@ -12,7 +14,9 @@ import { useMotion } from '../state/motion';
 import { roleHome, useAppApi, useAppShell } from '../store';
 import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '../routes';
 import { logout } from '../auth';
-import { DemoRoleSwitcher } from './DemoRoleSwitcher';
+import { DepartmentSwitcher } from './DepartmentSwitcher';
+import { DepartmentNav } from './DepartmentNav';
+import { ALL_DEPARTMENTS, departmentById } from '../data/departments';
 import { SsoRoleSwitcher } from './SsoRoleSwitcher';
 import { login as L } from '../copy/login';
 import { GuideDockHost, RuleDrawerHost } from './docks';
@@ -77,7 +81,10 @@ function ShellFrame({ children }: { children: ReactNode }) {
   const sessionExpired = useSessionExpired();
   const page = usePageTitle();
   const loc = useLocation();
-  const { role, theme, lang } = useAppShell();
+  const { role, department, theme, lang } = useAppShell();
+  // 부서 보기는 데모 빌드에서만 — 운영 빌드(OIDC)는 부여받은 역할의 전체 보기
+  const dept = OIDC_AUTH ? undefined : departmentById(department);
+  const workspace = dept?.workspace;
   const { dispatch } = useAppApi();
   const motion = useMotion();
   const current = routeOf(loc.pathname);
@@ -114,6 +121,19 @@ function ShellFrame({ children }: { children: ReactNode }) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [narrow, panelOpen, setPanelOpen]);
+
+  // 부서 작업공간 — 토큰(design/tokens.css [data-workspace])이 html에서 내려온다. 관제실은 셸 전체를 어두운 관제 톤으로
+  useEffect(() => {
+    const html = document.documentElement;
+    if (workspace) html.setAttribute('data-workspace', workspace);
+    else html.removeAttribute('data-workspace');
+    if (workspace === 'control') html.setAttribute('data-zone', 'ops');
+    else if (html.getAttribute('data-zone') === 'ops') html.removeAttribute('data-zone');
+    return () => {
+      html.removeAttribute('data-workspace');
+      if (html.getAttribute('data-zone') === 'ops') html.removeAttribute('data-zone');
+    };
+  }, [workspace]);
 
   // 시연 모드 — <html data-present="on">, 단축키 P (입력 중에는 무시)
   useEffect(() => {
@@ -154,9 +174,17 @@ function ShellFrame({ children }: { children: ReactNode }) {
     },
     [dispatch, nav],
   );
+  // 부서를 바꾸면 그 부서의 데모 계정·작업공간(홈)으로 — 전체 보기로 돌아가면 역할은 그대로 두고 홈으로
+  const changeDepartment = useCallback(
+    (d: string) => {
+      dispatch({ t: 'DEPT', department: d });
+      nav('/');
+    },
+    [dispatch, nav],
+  );
 
   return (
-    <div className="sh" data-panel={panelOpen && !present ? 'open' : 'closed'} data-guide={learning && !learning.collapsed ? 'open' : undefined}>
+    <div className="sh" data-panel={panelOpen && !present ? 'open' : 'closed'} data-guide={learning && !learning.collapsed ? 'open' : undefined} data-workspace={workspace}>
       <a className="sh-skip" href="#main">{ko.app.skip}</a>
 
       <header className="sh-top">
@@ -177,7 +205,11 @@ function ShellFrame({ children }: { children: ReactNode }) {
         </form>
 
         <div className="sh-tools">
-          {OIDC_AUTH ? <SsoRoleSwitcher role={role} onChange={changeRole} /> : <DemoRoleSwitcher role={role} onChange={changeRole} />}
+          {OIDC_AUTH ? (
+            <SsoRoleSwitcher role={role} onChange={changeRole} />
+          ) : (
+            <DepartmentSwitcher department={department} role={role} onDepartment={changeDepartment} onRole={(r) => (dept ? dispatch({ t: 'ROLE', role: r }) : changeRole(r))} />
+          )}
           <Button variant="ghost" icon="layers" aria-label={procedures.panel.button} title={procedures.panel.button} onClick={() => setProcOpen(true)} />
           <Button variant="ghost" icon="book" aria-pressed={explain} aria-label={ko.learn.explain.label} title={ko.learn.explain.hint} onClick={() => learnStore.setExplain(!explain)} />
           <Button variant="ghost" icon="present" aria-pressed={present} aria-label={present ? ko.shell.presentOn : ko.shell.presentOff} title={present ? ko.shell.presentOn : ko.shell.presentOff} onClick={() => setPresent(!present)} />
@@ -200,6 +232,10 @@ function ShellFrame({ children }: { children: ReactNode }) {
         </div>
       </header>
 
+      {dept ? (
+        <DepartmentNav dept={dept} procCount={procCount} onAll={() => changeDepartment(ALL_DEPARTMENTS)} />
+      ) : (
+        <>
       <nav className="sh-rail" aria-label={ko.app.name}>
         {GROUPS.map((g) => (
           <button
@@ -264,8 +300,10 @@ function ShellFrame({ children }: { children: ReactNode }) {
 
       {/* 좁은 화면 드로어가 열려 있으면 본문을 가리는 대신 스크림을 둔다 — 바깥을 누르면 닫힌다 */}
       {narrow && panelOpen && !present && <div className="sh-scrim" onClick={() => setPanelOpen(false)} aria-hidden />}
+        </>
+      )}
 
-      <main className="sh-main" id="main" data-area={zone}>
+      <main className="sh-main" id="main" data-area={dept ? undefined : zone}>
         {STATIC_MODE && (
           <div className="ds-stale" role="status" data-static-demo>
             <Icon name="alert" size={16} />

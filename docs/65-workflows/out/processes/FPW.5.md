@@ -3,7 +3,7 @@ id: WF-FPW-5
 type: workflow
 title: "검증·V&V / Verification & Validation"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
@@ -11,7 +11,7 @@ traces:
     - GATE-G5
     - GATE-G6
     - FLW-RELEASE-READINESS
-last_updated: 2026-10-17
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -53,10 +53,10 @@ flowchart LR
 |---|---|---|---|---|---|---|
 | FPW.5-A01 | 독립성 수준·검증 계획 확정 | R Safety Manager · A Safety Manager · C 시험 조직, 품질 조직 · I Feature Owner, 통합 조직 | WP-G4-DECISION, WP-SAFETY-PROFILE, WP-SAFETY-REQ | WP-VV-PLAN | 플랫폼 밖 | FFG-LCY-007 |
 | FPW.5-A02 | 시나리오·허용 조합 정의 | R 시험 조직 · A 시험 조직 · C 아키텍트, Safety Manager · I 통합 조직 | WP-VV-PLAN, WP-FEAT-SCOPE | WP-TEST-SPEC | `/arch/topology`, `/validations` | FFG-TST-003, FFG-TST-006, FFG-TST-007 |
-| FPW.5-A03 | 통합 시험·SEooC 가정 확인 | R 통합 조직 · A 통합 조직 · C 아키텍트, 시험 조직 · I 품질 조직 | WP-VV-PLAN, WP-INTAKE-RESULT | WP-INTEGRATION-REC | `registerChangeRecord`, `/master/artifacts` | FFG-VEH-012 |
+| FPW.5-A03 | 통합 시험·SEooC 가정 확인 | R 통합 조직 · A 통합 조직 · C 아키텍트, 시험 조직, Safety Manager · I 품질 조직 | WP-VV-PLAN, WP-INTAKE-RESULT | WP-INTEGRATION-REC | `registerChangeRecord`, `/master/artifacts` | FFG-VEH-012 |
 | FPW.5-A04 | 비활성화·결함 주입 시험 수행 | R 시험 조직 · A 시험 조직 · C 통합 조직, Safety Manager · I 품질 조직, Feature Owner | WP-TEST-SPEC, WP-INTEGRATION-REC, WP-POLICY | WP-TEST-RESULT | `runVirtual`, `/validations/virtual` | FFG-TST-001, FFG-TST-004, FFG-TST-005, FFG-TST-011 |
 | FPW.5-A05 | 시험 Evidence 연결·TMS 제출 | R 시험 조직 · A 시험 조직 · C 통합 조직 · I 품질 조직, Safety Manager | WP-TEST-RESULT, WP-TEST-SPEC | WP-G5-EVIDENCE | `submitTms`, `/verify/evidence` | FFG-TST-009, FFG-ADS-009 |
-| FPW.5-A06 | G5 V&V 판정 (G5 판정) | R 품질 조직 · A 시험 조직 · C Safety Manager · I Feature Owner, Release Manager, 아키텍트 | WP-G5-EVIDENCE, WP-VV-PLAN | WP-G5-DECISION | `judgeGate`, `/verify/evidence`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002 |
+| FPW.5-A06 | G5 V&V 판정 | R 품질 조직 · A 시험 조직 · C Safety Manager · I Feature Owner, Release Manager, 아키텍트 | WP-G5-EVIDENCE, WP-VV-PLAN | WP-G5-DECISION | `judgeGate`, `/verify/evidence`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002 |
 
 ### 수행 절차와 완료 기준
 

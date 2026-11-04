@@ -4,11 +4,14 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { myActivities, raciOf, readyActivityIds, workflowIndexOf, type WorkflowDoc, type WorkflowActivity, type WorkflowProcess } from '@ff/contracts';
 import { procedureFlow as F } from '../../copy/procedureFlow';
+import { departments as DEPT } from '../../copy/departments';
+import { DepartmentRnR } from './flow/DepartmentRnR';
 import { procedures as P } from '../../copy/procedures';
 import { useWorkflows } from '../../data/workflows';
 import { useProcedureInbox, useProgress } from '../../data/procedureProgress';
 import { roleLabel } from '../../data/refdata';
 import { PageHeader, Panel, Tabs } from '../../design';
+import { screenShipped } from '../../routes';
 import { useAppShell } from '../../store';
 import { ActivityBody, RaciBadge, roleName } from './ActivityView';
 import { lanesOf, useFlowStatuses } from './flow/FlowParts';
@@ -32,7 +35,7 @@ function useMe(doc: WorkflowDoc) {
 }
 
 /** 첫 화면으로 열 수 있는 경로(인자 없는 것) */
-const firstStatic = (screens: string[]) => screens.find((s) => !s.includes(':'));
+const firstStatic = (screens: string[]) => screens.find((s) => !s.includes(':') && screenShipped(s));
 
 function Hub({ doc }: { doc: WorkflowDoc }) {
   const { role, roleIds } = useMe(doc);
@@ -300,10 +303,17 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
 /** /procedures/roles — 담당자별 업무 흐름(메뉴). 허브의 같은 이름 탭과 같은 부품 */
 function RolesScreen({ doc }: { doc: WorkflowDoc }) {
   const { role } = useMe(doc);
+  const [sp] = useSearchParams();
+  const byDept = sp.get('view') === 'dept';
   const { status, error } = useProgress(role);
   return (
     <div className="ds-screen">
-      <PageHeader title={F.roles.title} lead={F.roles.lead} message={{ tone: 'neutral', value: personasOf(doc).length, text: F.roles.key }} />
+      {/* 머리는 지금 탭을 말한다 — 부서별 R&R 탭에서 '담당자 9'를 보이지 않는다 */}
+      {byDept ? (
+        <PageHeader title={DEPT.rnr.title} lead={DEPT.rnr.lead} message={{ tone: 'neutral', ...DEPT.rnr.key(doc.departments.length) }} />
+      ) : (
+        <PageHeader title={F.roles.title} lead={F.roles.lead} message={{ tone: 'neutral', value: personasOf(doc).length, text: F.roles.key }} />
+      )}
       {status === 'loading' && (
         <p className="ds-field__hint" data-state="loading" role="status">
           {P.loading}
@@ -314,7 +324,16 @@ function RolesScreen({ doc }: { doc: WorkflowDoc }) {
           {error}
         </p>
       )}
-      <RoleFlows doc={doc} />
+      {/* 부서별 R&R — 부서(OEM 조직 가정안) 층. 부서 메뉴의 '부서 R&R'은 ?tab=dept&dept=부서로 바로 연다 */}
+      <Tabs
+        param="view"
+        tabs={[
+          { key: 'roles', label: F.roles.title },
+          { key: 'dept', label: DEPT.rnr.tab, count: doc.departments.length },
+        ]}
+      >
+        {(active) => (active === 'dept' ? <DepartmentRnR doc={doc} /> : <RoleFlows doc={doc} />)}
+      </Tabs>
     </div>
   );
 }

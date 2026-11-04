@@ -3,12 +3,11 @@ id: WF-ROLE-TST
 type: workflow
 title: "시험 조직 업무 절차서 / Test Organization Procedure"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
-    - WF-FPW-10
     - WF-FPW-2
     - WF-FPW-3
     - WF-FPW-4
@@ -16,7 +15,8 @@ traces:
     - WF-FPW-7
     - WF-FPW-8
     - WF-FPW-9
-last_updated: 2026-10-17
+    - WF-FPW-10
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -63,7 +63,7 @@ last_updated: 2026-10-17
 3. TMS 연계(IF-09)로 플랫폼 검증 이력에 제출하고 연결되지 않은 시험이 없는지 확인한다
 - [ ] 제출한 모든 시험이 Feature Version에 연결되고 재현 정보가 비어 있지 않다
 
-### FPW.5-A06 G5 V&V 판정 — 책임(승인) · G5 판정
+### FPW.5-A06 G5 V&V 판정 — 책임(승인)
 - 프로세스: FPW.5 검증·V&V
 - 시작: 앞 활동 완료
 - 입력: WP-G5-EVIDENCE, WP-VV-PLAN → 출력: WP-G5-DECISION

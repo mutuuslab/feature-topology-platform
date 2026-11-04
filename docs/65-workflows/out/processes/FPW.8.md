@@ -3,13 +3,13 @@ id: WF-FPW-8
 type: workflow
 title: "운영·긴급 차단·복원 / Operation, Kill & Restore"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
     - FLW-KILLSWITCH
-last_updated: 2026-10-17
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -38,6 +38,8 @@ flowchart LR
   end
   subgraph R_REG["법규 담당"]
     FPW_8_A03["A03 리콜·봉쇄 근거 연계"]
+  end
+  subgraph R_QA["품질 조직"]
     FPW_8_A07["A07 긴급 권한 사후 검토"]
   end
   T_FPW_8_A01(("운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견")) -.-> FPW_8_A01
@@ -64,11 +66,11 @@ flowchart LR
 | FPW.8-A04 | 긴급 차단 요청 | R 운영 조직 · A 운영 조직 · C Safety Manager · I CSM, 법규 담당 | WP-KILL-PLAN, WP-RECALL-BASIS | WP-KILL-REQ | `issueKill`, `/ops/kill` | FFG-PLT-005 |
 | FPW.8-A05 | 긴급 차단 2인 승인 | R Safety Manager, CSM · A Safety Manager · C 법규 담당 · I 운영 조직, 품질 조직 | WP-KILL-REQ, WP-KILL-PLAN | WP-KILL-DECISION | `approveKill`, `rejectKill`, `/ops/kill` | FFG-PLT-005, FFG-SEC-003 |
 | FPW.8-A06 | 차단 전달·적용 추적 | R 운영 조직 · A Safety Manager · C CSM · I 품질 조직, Feature Owner | WP-KILL-DECISION | WP-KILL-TRACE | `acknowledgeAnomaly`, `/fleet/live`, `/deployments` | FFG-SEC-004, FFG-DEAC-013 |
-| FPW.8-A07 | 긴급 권한 사후 검토 | R 법규 담당 · A 품질 조직 · C CSM · I Safety Manager, 운영 조직 | WP-KILL-REQ, WP-KILL-DECISION | WP-POST-REVIEW | `recordKillPostReview`, `/audit/oversight` | FFG-PLT-016 |
-| FPW.8-A08 | 원인 조치·복원 요청 | R 운영 조직 · A Safety Manager · C Feature Owner, 시험 조직 · I 법규 담당 | WP-KILL-TRACE, WP-G5-EVIDENCE | WP-RESTORE-REQ | `requestRestore`, `/ops/kill` | FFG-DEAC-008 |
+| FPW.8-A07 | 긴급 권한 사후 검토 | R 품질 조직 · A 품질 조직 · C CSM, 법규 담당 · I Safety Manager, 운영 조직 | WP-KILL-REQ, WP-KILL-DECISION | WP-POST-REVIEW | `recordKillPostReview`, `/audit/oversight` | FFG-PLT-016 |
+| FPW.8-A08 | 원인 조치·복원 요청 | R 운영 조직 · A 운영 조직 · C Safety Manager, Feature Owner, 시험 조직 · I 법규 담당 | WP-KILL-TRACE, WP-G5-EVIDENCE | WP-RESTORE-REQ | `requestRestore`, `/ops/kill` | FFG-DEAC-008 |
 | FPW.8-A09 | 복원 2인 승인 | R Safety Manager, 품질 조직 · A Safety Manager · C CSM · I 운영 조직, Feature Owner | WP-RESTORE-REQ, WP-KILL-DECISION | WP-RESTORE-DECISION | `approveRestore`, `rejectRestore`, `/ops/kill` | FFG-DEAC-008, FFG-PLT-005 |
 | FPW.8-A10 | 단계적 복원·관측 | R 운영 조직 · A 운영 조직 · C Safety Manager, Release Manager · I Feature Owner, 품질 조직 | WP-RESTORE-DECISION | WP-RESTORE-ROLLOUT | `stageRollout`, `/fleet/live` | FFG-LCY-009 |
-| FPW.8-A11 | 분기 드릴·G8 운영 판정 (G8 판정) | R 운영 조직 · A 운영 조직 · C Safety Manager, 품질 조직 · I Feature Owner, 법규 담당 | WP-KILL-TRACE, WP-POST-REVIEW | WP-DRILL-REPORT | `/ops/kill`, `/audit` | FFG-DEAC-012 |
+| FPW.8-A11 | 분기 드릴·G8 운영 판정 | R 운영 조직 · A 운영 조직 · C Safety Manager, 품질 조직 · I Feature Owner, 법규 담당 | WP-KILL-TRACE, WP-POST-REVIEW | WP-DRILL-REPORT | `/ops/kill`, `/audit` | FFG-DEAC-012 |
 
 ### 수행 절차와 완료 기준
 

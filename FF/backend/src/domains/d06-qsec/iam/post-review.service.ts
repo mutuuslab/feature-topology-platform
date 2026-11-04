@@ -98,7 +98,8 @@ export class PostReviewController {
 
   @Post('kill-requests/:id/post-review')
   @HttpCode(201)
-  @Roles('SAFETY_OFFICER', 'SECURITY_OFFICER', 'REGULATORY_OWNER')
+  // 품질(내부감사, AUDITOR)이 수행 — 차단 요청·승인에 관여하지 않은 독립 검토자(2026-11-04 사용자 결정)
+  @Roles('AUDITOR', 'SAFETY_OFFICER', 'SECURITY_OFFICER', 'REGULATORY_OWNER')
   @AuditAction('KILL_POST_REVIEW')
   review(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(PostReviewBody)) body: PostReviewBody) {
     return this.svc.review(actor, id, body);

@@ -5,9 +5,9 @@
 meta:
   title: Feature Platform 담당자 업무 절차
   title_en: Feature Platform Role Workflows
-  version: 0.1.0
+  version: 0.2.0
   owner: governance
-  last_updated: 2026-10-17
+  last_updated: 2026-11-04
 
 # ── 역할 카탈로그 ──────────────────────────────────────────────
 # source: report = 표준 보고서 1.5절 통제 어휘, report-gate = 6.1절 Gate 표 승인 칸, iam = /admin/iam 역할(보고서 어휘에 없음)
@@ -88,7 +88,7 @@ roles:
     name: Release Manager
     en: Release Manager
     source: report-gate
-    desc: 서명 배포·단계적 확대·Lifecycle 출시 전이를 수행한다.
+    desc: 서명 배포·Lifecycle 출시 전이를 수행하고, 단계적 확대는 운영 조직과 협의한다.
     platform_roles: [RELEASE_MANAGER]
     basis: "6.1절 G6 승인=Release Manager ↔ RELEASE_MANAGER(IAM 직무 RELEASE)"
   - id: R-PUR
@@ -140,6 +140,126 @@ roles:
     desc: 상품 구성과 고객 출시를 승인한다.
     platform_roles: [PRODUCT_APPROVER]
     basis: "REPORT_APPROVER_ROLES PRODUCT_OWNER→PRODUCT_APPROVER"
+
+# ── 부서(OEM 조직 가정안, 2026-11-04 사용자 결정) ──────────────────
+# 역할 카탈로그 위에 얹는 층이다. 모든 역할은 정확히 한 부서에 속한다(부서 겸직 허용 — 요청자·승인자 분리는 사람 단위로 플랫폼이 강제).
+# workspace: 그 부서가 쓰는 화면 유형. studio(기획 스튜디오)·review(심사 결재함)·console(엔지니어링 콘솔)·control(관제실)·portal(검토 포털)
+# personas: 데모 화면에서 이 부서가 쓰는 IAM 데모 계정. 첫 번째가 기본이다. 계정의 조직 역할이 부서 역할과 겹쳐야 하며,
+#           플랫폼 역할이 없는 부서는 조회 계정(viewer)을 쓴다.
+# 실제 조직이 아니라 가정안이다 — 고객사 조직이 정해지면 이 표만 바꾼다.
+departments:
+  - id: DEP-PDP
+    name: 상품기획팀
+    en: Product Planning
+    workspace: studio
+    roles: [R-FO, R-PDA, R-PO]
+    personas: [author, commerce, approver]
+    desc: Feature를 소유하고 대상·분류·출시를 판단한다. 상품 구성과 체험 제안을 만들고 고객 출시를 승인한다.
+  - id: DEP-SE
+    name: 시스템엔지니어링팀
+    en: Systems Engineering
+    workspace: console
+    roles: [R-REQ, R-ARC]
+    personas: [approver, integrator]
+    desc: 안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임진다.
+  - id: DEP-INT
+    name: SW통합·릴리스팀
+    en: SW Integration & Release
+    workspace: console
+    roles: [R-INT, R-REL]
+    personas: [coordinator, integrator]
+    desc: 통합 빌드와 Baseline·출시 묶음을 관리하고 출시 전이를 실행한다.
+  - id: DEP-PLM
+    name: PLM·기준정보팀
+    en: PLM & Master Data
+    workspace: console
+    roles: [R-PLM]
+    personas: [steward]
+    desc: 차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.
+  - id: DEP-FS
+    name: 기능안전팀
+    en: Functional Safety
+    workspace: review
+    roles: [R-SM]
+    personas: [quality, integrator]
+    desc: 안전 분류·HARA·Safety Case를 책임지고 Gate 판정과 긴급 차단·복원 승인을 한다.
+  - id: DEP-CS
+    name: 차량사이버보안팀
+    en: Vehicle Cybersecurity
+    workspace: review
+    roles: [R-CSM]
+    personas: [integrator]
+    desc: TARA·보안 검토를 하고 긴급 차단 2인 승인과 키 교체 기록을 맡는다.
+  - id: DEP-HOM
+    name: 법규인증팀
+    en: Homologation & Regulatory
+    workspace: review
+    roles: [R-REG]
+    personas: [steward]
+    desc: 시장별 법규·형식승인·사용자 고지를 확인하고 Compliance Profile과 긴급 권한 사후 검토를 맡는다.
+  - id: DEP-VAL
+    name: 시험·검증팀
+    en: Test & Validation
+    workspace: review
+    roles: [R-TST]
+    personas: [quality]
+    desc: 독립 V&V를 계획·실행하고 검증 Gate를 판정한다.
+  - id: DEP-QA
+    name: 품질팀
+    en: Quality
+    workspace: review
+    roles: [R-QA]
+    personas: [quality, viewer]
+    desc: 독립 검토자로서 설계·Safety Case를 검토하고 Evidence와 감사 이력을 확인한다.
+  - id: DEP-OPS
+    name: OTA·서비스운영팀
+    en: OTA & Service Operations
+    workspace: control
+    roles: [R-OPS]
+    personas: [operator]
+    desc: 차량 운행을 관제하고 이상 징후에 대응하며 긴급 차단·복원을 요청하고 단계적 확대를 실행한다.
+  - id: DEP-ITSEC
+    name: IT인프라·보안운영팀
+    en: IT Infrastructure & SecOps
+    workspace: control
+    roles: [R-PKI]
+    personas: [viewer]
+    desc: HSM·KMS에서 서명 키를 생성·순환·폐기한다(플랫폼 밖 업무 — 플랫폼에서는 조회).
+  - id: DEP-PUR
+    name: 구매팀
+    en: Procurement
+    workspace: portal
+    roles: [R-PUR]
+    personas: [viewer]
+    desc: 협력사 계약·납품 조건을 관리하고 협력사 관련 검토에 의견을 준다.
+  - id: DEP-LEG
+    name: 법무팀
+    en: Legal
+    workspace: portal
+    roles: [R-LEG]
+    personas: [viewer]
+    desc: 데이터 이용·고객 고지·계약 근거를 검토하고 의견을 준다.
+  - id: DEP-DPO
+    name: 개인정보보호팀
+    en: Data Protection
+    workspace: portal
+    roles: [R-DPO]
+    personas: [viewer]
+    desc: 운영 데이터의 개인정보 처리 근거·보존·삭제를 검토한다.
+
+# 부서 검토 범위 — 1차는 핵심 생애주기, 나머지는 기존 모델로 만든 2차 초안으로 표시한다.
+department_scope:
+  first: [FPW.1, FPW.2, FPW.3, FPW.4, FPW.5, FPW.6, FPW.7, FPW.8, FPW.9]
+  note: "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정(FPW.10~13)은 2차 초안이다."
+  demo_notes:
+    - "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용하지만 데모 계정에 운영 리더가 없다(9계정·겸직 0건, 2026-10-17)."
+
+# 요청 활동의 책임(A)은 그 요청을 승인하는 활동의 수행(R)·책임(A)에 들어가면 안 된다(2026-11-04 사용자 결정 — 요청과 승인 책임 분리).
+request_approval:
+  - {request: FPW.4-A03, approval: FPW.4-A04, note: 정책 작성 → 정책 승인}
+  - {request: FPW.8-A04, approval: FPW.8-A05, note: 긴급 차단 요청 → 2인 승인}
+  - {request: FPW.8-A08, approval: FPW.8-A09, note: 복원 요청 → 복원 2인 승인}
+  - {request: FPW.9-A02, approval: FPW.9-A03, note: Flag Retirement 요청 → 승인}
 
 # 6.1절 승인 칸의 이름 중 통제 어휘가 아닌 것 → 카탈로그 역할
 gate_approver_alias:

@@ -3,7 +3,7 @@ id: WF-FPW-2
 type: workflow
 title: "HARA·변경 영향 판단 / HARA & Change Impact"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
@@ -11,7 +11,7 @@ traces:
     - GATE-G7
     - FLW-CHANGE-REQUEST
     - FLW-CHANGESET-IMPACT
-last_updated: 2026-10-17
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -27,19 +27,24 @@ last_updated: 2026-10-17
 flowchart LR
   subgraph R_SM["Safety Manager"]
     FPW_2_A01["A01 재-HARA 조건 검출·영향 범위 산정"]
-    FPW_2_A02["A02 HARA·TARA 공동 수행"]
+    FPW_2_A02["A02 HARA 수행"]
     FPW_2_A05{{"A05 G2 HARA 영향 판정"}}
   end
-  subgraph R_FO["Feature Owner"]
+  subgraph R_CSM["CSM"]
+    FPW_2_A06["A06 TARA 수행"]
+  end
+  subgraph R_ARC["아키텍트"]
     FPW_2_A03["A03 SOTIF 분석 갱신"]
   end
   subgraph R_REG["법규 담당"]
     FPW_2_A04["A04 형식승인 영향 1차 판단"]
   end
   FPW_2_A01 --> FPW_2_A02
+  FPW_2_A01 --> FPW_2_A06
   FPW_2_A01 --> FPW_2_A03
   FPW_2_A01 --> FPW_2_A04
   FPW_2_A02 --> FPW_2_A05
+  FPW_2_A06 --> FPW_2_A05
   FPW_2_A03 --> FPW_2_A05
   FPW_2_A04 --> FPW_2_A05
 ```
@@ -48,11 +53,12 @@ flowchart LR
 
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
-| FPW.2-A01 | 재-HARA 조건 검출·영향 범위 산정 | R Safety Manager · A Safety Manager · C 아키텍트, Feature Owner · I 요구 Owner, 시험 조직 | WP-G1-DECISION, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-SUPPLIER-DIFF | WP-IMPACT-ANALYSIS | `/analysis/impact`, `/arch/topology` | FFG-LCY-003, FFG-CLS-004 |
-| FPW.2-A02 | HARA·TARA 공동 수행 | R Safety Manager, CSM · A Safety Manager · C 아키텍트, Feature Owner · I 요구 Owner, 법규 담당 | WP-IMPACT-ANALYSIS | WP-HARA-TARA | 플랫폼 밖 | FFG-SEC-001, FFG-ADS-002 |
-| FPW.2-A03 | SOTIF 분석 갱신 | R Feature Owner · A Safety Manager · C 아키텍트, 시험 조직 · I 요구 Owner | WP-IMPACT-ANALYSIS | WP-SOTIF-ANALYSIS | 플랫폼 밖 | FFG-SOT-001 |
+| FPW.2-A01 | 재-HARA 조건 검출·영향 범위 산정 | R Safety Manager · A Safety Manager · C 아키텍트, Feature Owner, 구매 · I 요구 Owner, 시험 조직 | WP-G1-DECISION, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-SUPPLIER-DIFF | WP-IMPACT-ANALYSIS | `/analysis/impact`, `/arch/topology` | FFG-LCY-003, FFG-CLS-004 |
+| FPW.2-A02 | HARA 수행 | R Safety Manager · A Safety Manager · C CSM, 아키텍트, Feature Owner · I 요구 Owner, 법규 담당 | WP-IMPACT-ANALYSIS | WP-HARA-TARA | 플랫폼 밖 | FFG-ADS-002 |
+| FPW.2-A06 | TARA 수행 | R CSM · A CSM · C Safety Manager, 아키텍트 · I 요구 Owner | WP-IMPACT-ANALYSIS | WP-TARA | 플랫폼 밖 | FFG-SEC-001 |
+| FPW.2-A03 | SOTIF 분석 갱신 | R 아키텍트 · A Safety Manager · C Feature Owner, 시험 조직 · I 요구 Owner | WP-IMPACT-ANALYSIS | WP-SOTIF-ANALYSIS | 플랫폼 밖 | FFG-SOT-001 |
 | FPW.2-A04 | 형식승인 영향 1차 판단 | R 법규 담당 · A 법규 담당 · C Safety Manager, Feature Owner · I Release Manager | WP-IMPACT-ANALYSIS | WP-HOMOLOGATION-IMPACT | 플랫폼 밖 | FFG-GEN-006 |
-| FPW.2-A05 | G2 HARA 영향 판정 (G2 판정) | R Safety Manager · A Safety Manager · C CSM, 법규 담당 · I Feature Owner, 요구 Owner, 품질 조직 | WP-HARA-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT | WP-G2-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001 |
+| FPW.2-A05 | G2 HARA 영향 판정 | R Safety Manager · A Safety Manager · C CSM, 법규 담당 · I Feature Owner, 요구 Owner, 품질 조직 | WP-HARA-TARA, WP-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT | WP-G2-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001 |
 
 ### 수행 절차와 완료 기준
 
@@ -66,14 +72,23 @@ flowchart LR
 - [ ] 재-HARA 조건 해당 여부가 근거와 함께 기록되었다
 - [ ] 영향 받는 Feature와 회귀 시험 범위가 산정되었다
 
-#### FPW.2-A02 HARA·TARA 공동 수행
-1. Safety Manager와 CSM이 같은 Item 정의를 기준으로 Kill·활성화 경로의 HARA와 TARA를 진행한다
-2. 각 분석의 결과(위험 사건·위협 시나리오)를 상대 분석에 넘겨 교차 검토하고 반영 내용을 기록한다
+#### FPW.2-A02 HARA 수행
+1. Safety Manager가 Item 정의를 기준으로 Kill·활성화 경로의 위험 사건과 ASIL을 평가한다
+2. CSM의 TARA 결과(위협 시나리오)를 받아 위험 사건에 반영하고 교차 검토 내용을 기록한다
 3. ADS Feature는 원격 종료가 가능한 비활성화 등급과 요청 경로(봉투·명령 인증·Guard)를 갖췄는지 확인한다
 
 완료 기준:
-- [ ] 교차 검토 기록이 양쪽 분석에 남았다
+- [ ] TARA와의 교차 검토 기록이 HARA 결과에 남았다
 - [ ] ADS Feature가 원격 종료 불가 등급으로 분류되지 않았다
+
+#### FPW.2-A06 TARA 수행
+1. CSM이 같은 Item 정의로 Kill·활성화 명령 경로의 위협 시나리오와 공격 경로를 찾는다
+2. 위험 값을 매기고 보안 목표와 사이버보안 요구 후보를 정한다
+3. 결과를 Safety Manager에게 넘겨 HARA 교차 검토에 쓰게 한다
+
+완료 기준:
+- [ ] 위협 시나리오마다 위험 값과 보안 목표가 있다
+- [ ] Kill·활성화 명령 경로가 평가 범위에 들어 있다
 
 #### FPW.2-A03 SOTIF 분석 갱신
 1. 거동을 바꾸는 Version이면 기능 사양과 성능 한계를 이 Version 기준으로 다시 쓴다
@@ -104,7 +119,8 @@ flowchart LR
 | 키 | 이름 | 종류 | 주요 내용 |
 |---|---|---|---|
 | WP-IMPACT-ANALYSIS | 변경 영향 분석서 | 산출 | 이전 Version과 바뀐 Registry 속성·Topology 관계; 재-HARA 조건 해당 여부와 근거; 영향 받는 Feature·차량 사양·회귀 시험 범위 |
-| WP-HARA-TARA | HARA·TARA 결과 | 산출 | Item 정의와 위험 사건·ASIL·Safety Goal; 위협 시나리오·위험 값·보안 목표; 두 분석의 교차 검토 결과와 반영 내용; ADS Feature면 원격 종료 경로와 비활성화 등급 확인 결과 |
+| WP-HARA-TARA | HARA·TARA 결과 | 산출 | Item 정의와 위험 사건·ASIL·Safety Goal; TARA 결과를 받아 반영한 교차 검토 내용; ADS Feature면 원격 종료 경로와 비활성화 등급 확인 결과 |
+| WP-TARA | TARA 결과 | 산출 | 위협 시나리오·공격 경로·위험 값; 보안 목표와 사이버보안 요구 후보; Kill·활성화 명령 경로(봉투·명령 인증)의 위협 평가 |
 | WP-SOTIF-ANALYSIS | SOTIF 분석 | 산출 | 기능 사양과 성능 한계; 트리거 조건과 위험 시나리오 평가 |
 | WP-HOMOLOGATION-IMPACT | 형식승인 영향 판단서 | 산출 | 영향 여부와 근거 조항, 대상 RXSWIN; 승인 기관 결정(개정·확장)이 필요한 경우 그 목록; 법규 담당 서명과 판단 시각 |
 | WP-G2-DECISION | G2 Decision Record | 산출 | 판정과 근거 Evidence ID(HARA·TARA·SOTIF·영향 분석); Safety Manager 서명·시각, 조건부 통과 시 기한과 책임자 |

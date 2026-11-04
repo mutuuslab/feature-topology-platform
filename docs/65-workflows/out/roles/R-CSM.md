@@ -3,19 +3,19 @@ id: WF-ROLE-CSM
 type: workflow
 title: "CSM 업무 절차서 / Cybersecurity Manager Procedure"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
-    - WF-FPW-10
-    - WF-FPW-11
-    - WF-FPW-13
     - WF-FPW-2
     - WF-FPW-4
     - WF-FPW-6
     - WF-FPW-8
-last_updated: 2026-10-17
+    - WF-FPW-10
+    - WF-FPW-11
+    - WF-FPW-13
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -29,16 +29,16 @@ last_updated: 2026-10-17
 
 ## 1. 내가 하는 일 (수행 R · 책임 A)
 
-### FPW.2-A02 HARA·TARA 공동 수행 — 수행
+### FPW.2-A06 TARA 수행 — 수행·책임
 - 프로세스: FPW.2 HARA·변경 영향 판단
 - 시작: 앞 활동 완료
-- 입력: WP-IMPACT-ANALYSIS → 출력: WP-HARA-TARA
+- 입력: WP-IMPACT-ANALYSIS → 출력: WP-TARA
 - 플랫폼: 플랫폼 밖
-1. Safety Manager와 CSM이 같은 Item 정의를 기준으로 Kill·활성화 경로의 HARA와 TARA를 진행한다
-2. 각 분석의 결과(위험 사건·위협 시나리오)를 상대 분석에 넘겨 교차 검토하고 반영 내용을 기록한다
-3. ADS Feature는 원격 종료가 가능한 비활성화 등급과 요청 경로(봉투·명령 인증·Guard)를 갖췄는지 확인한다
-- [ ] 교차 검토 기록이 양쪽 분석에 남았다
-- [ ] ADS Feature가 원격 종료 불가 등급으로 분류되지 않았다
+1. CSM이 같은 Item 정의로 Kill·활성화 명령 경로의 위협 시나리오와 공격 경로를 찾는다
+2. 위험 값을 매기고 보안 목표와 사이버보안 요구 후보를 정한다
+3. 결과를 Safety Manager에게 넘겨 HARA 교차 검토에 쓰게 한다
+- [ ] 위협 시나리오마다 위험 값과 보안 목표가 있다
+- [ ] Kill·활성화 명령 경로가 평가 범위에 들어 있다
 
 ### FPW.8-A05 긴급 차단 2인 승인 — 수행
 - 프로세스: FPW.8 운영·긴급 차단·복원
@@ -112,6 +112,7 @@ last_updated: 2026-10-17
 
 ## 2. 협의·통보 받는 활동
 
+- FPW.2-A02 HARA 수행 (협의)
 - FPW.2-A05 G2 HARA 영향 판정 (협의)
 - FPW.4-A02 플랫폼 도구 신뢰도 분류 (협의)
 - FPW.4-A05 G4 설계 독립 검토·판정 (협의)

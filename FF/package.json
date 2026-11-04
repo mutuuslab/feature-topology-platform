@@ -43,6 +43,10 @@
     "guide:check": "node tools/guide-sync.ts --check",
     "workflow:sync": "node tools/workflow-sync.ts",
     "workflow:check": "node tools/workflow-sync.ts --check",
+    "desktop:prepare": "node tools/desktop-prepare.mjs",
+    "desktop:dev": "npm run desktop:prepare && tauri dev",
+    "desktop:build": "tauri build",
+    "desktop:smoke": "node --test tools/desktop-smoke.test.mjs",
     "standards": "node tools/standards.ts",
     "req": "node tools/requirements.ts",
     "req:sync": "node tools/requirements.ts --sync",
@@ -69,6 +73,7 @@
   },
   "devDependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",
+    "@tauri-apps/cli": "^2.12.4",
     "jsdom": "^25.0.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },

@@ -19,6 +19,8 @@ const ROLES_MARKER = 'ff-demo-roles-v1';
 // 데모·개발 전용 화면(결정 D-RD-8) — 디자인 시스템 갤러리·표준 따라하기 화면의 표식
 const GALLERY_MARKER = 'ff-design-gallery-v1';
 const LEARN_MARKER = 'ff-learn-v1';
+const DEPT_MARKER = 'ff-dept-view-v1';
+const WORKSPACE_MARKER = 'data-workspace-home';
 /** 라우트 표의 경로 문자열 '/_design'(따옴표로 감싼 값) */
 const DESIGN_ROUTE = /["'`]\/_design["'`]/;
 /** 데모 비밀번호 문자열 — SSE 이벤트 이름 addEventListener("platform")은 같은 글자라 빼고 센다 */
@@ -61,6 +63,8 @@ test('운영 빌드에 데모 역할 선택기(데모 계정 전체 목록)가 �
 test('운영 빌드에 디자인 시스템 갤러리(/_design)·표준 따라하기(/learn) 화면이 없다(D-RD-8)', () => {
   assert.equal(prod.includes(GALLERY_MARKER), false, '디자인 갤러리 화면 묶음이 운영 빌드에 실렸다');
   assert.equal(prod.includes(LEARN_MARKER), false, '표준 따라하기 화면 묶음이 운영 빌드에 실렸다');
+  assert.equal(prod.includes(DEPT_MARKER), false, '데모 부서 보기(부서 메뉴)가 운영 빌드에 실렸다');
+  assert.equal(prod.includes(WORKSPACE_MARKER), false, '데모 부서 작업공간 홈 묶음이 운영 빌드에 실렸다');
   assert.equal(DESIGN_ROUTE.test(prod), false, '/_design 라우트가 운영 빌드에 있다');
 });
 

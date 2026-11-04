@@ -33,6 +33,10 @@ SLA_MAX_HOURS = 24 * 30
 COPY_RUN = 15          # 보고서 규칙 문장과 연속 일치를 허용하지 않는 어절 수
 NAME_MAX = 24
 TEXT_LISTS = ("steps", "checks", "content", "entry_criteria", "exit_criteria")
+DEPT_ID = re.compile(r"^DEP-[A-Z]{2,6}$")
+# 부서 화면 유형 — FF frontend shell/workspaces와 같은 이름이다
+WORKSPACES = ("studio", "review", "console", "control", "portal")
+VIEWER = "viewer"      # 플랫폼 역할이 없는 부서가 쓰는 조회 계정
 
 
 def _proc_key(path: Path) -> int:
@@ -68,6 +72,9 @@ def load_model(model_dir: Path = MODEL_DIR, source_dir: Path = SOURCE_DIR) -> di
         for wp in p.get("work_products", []):
             wps.setdefault(wp["key"], {**wp, "owner": p["id"]})
     m["wp_by_key"] = wps
+    m["departments"] = common.get("departments", [])
+    m["dept_by_id"] = {d["id"]: d for d in m["departments"]}
+    m["dept_of_role"] = {rid: d["id"] for d in m["departments"] for rid in d.get("roles", [])}
     return m
 
 
@@ -114,6 +121,111 @@ def ra_roles(act: dict) -> set:
 def raci_roles(act: dict) -> List[str]:
     r = act["raci"]
     return [*r.get("R", []), r["A"], *r.get("C", []), *r.get("I", [])]
+
+
+# ── 부서 ──────────────────────────────────────────────────────
+RACI_ORDER = ("R", "A", "C", "I")
+
+
+def persona_roles(m: dict, acc: str) -> List[str]:
+    """IAM 데모 계정 → 그 계정이 맡는 조직 역할(build_json personas와 같은 규칙)."""
+    mine = set(m["iam"]["accounts"].get(acc, []))
+    return [r["id"] for r in m["roles"] if mine & set(r["platform_roles"])]
+
+
+def dept_part(m: dict, did: str, act: dict) -> Optional[str]:
+    """부서가 활동에서 맡는 가장 강한 몫 R > A > C > I. 관여하지 않으면 None."""
+    roles = set(m["dept_by_id"][did]["roles"])
+    r = act["raci"]
+    if roles & set(r["R"]):
+        return "R"
+    if r["A"] in roles:
+        return "A"
+    if roles & set(r.get("C", [])):
+        return "C"
+    if roles & set(r.get("I", [])):
+        return "I"
+    return None
+
+
+def dept_parts(m: dict, did: str, act: dict) -> List[str]:
+    """부서가 활동에서 맡는 모든 몫(R·A를 같이 맡으면 둘 다), RACI 순서."""
+    roles = set(m["dept_by_id"][did]["roles"])
+    r = act["raci"]
+    got = {"R": bool(roles & set(r["R"])), "A": r["A"] in roles,
+           "C": bool(roles & set(r.get("C", []))), "I": bool(roles & set(r.get("I", [])))}
+    return [k for k in RACI_ORDER if got[k]]
+
+
+def dept_activities(m: dict, did: str) -> List[Tuple[dict, dict, str]]:
+    """부서가 관여하는 활동 (프로세스, 활동, 몫)을 프로세스 계획 순서로."""
+    out = []
+    for pl in m["plan"]:
+        p = m["proc_by_id"].get(pl["id"])
+        for a in (p or {}).get("activities", []):
+            part = dept_part(m, did, a)
+            if part:
+                out.append((p, a, part))
+    return out
+
+
+def lane_dept(m: dict, act: dict) -> str:
+    """스윔레인 기준 부서 = 첫 번째 R 역할의 부서."""
+    return m["dept_of_role"][act["raci"]["R"][0]]
+
+
+def r_depts(m: dict, act: dict) -> List[str]:
+    """활동의 수행(R) 역할 전부의 부서 — R 순서, 중복 없음."""
+    out: List[str] = []
+    for r in act["raci"]["R"]:
+        d = m["dept_of_role"][r]
+        if d not in out:
+            out.append(d)
+    return out
+
+
+def dept_handoffs(m: dict, did: str) -> Dict[str, List[Tuple[str, str, str]]]:
+    """부서 경계를 넘는 흐름. out: 이 부서 활동 → 다른 부서 활동, in: 다른 부서 → 이 부서. (보낸 활동, 받는 활동, 상대 부서)
+
+    공동 수행(R 여럿)을 모두 본다: 흐름 a→b에서 이 부서가 a의 R 부서이고 b에 이 부서가 아닌 R 부서가 있으면
+    그 부서마다 out 한 줄, 이 부서가 b의 R 부서이고 a에 다른 R 부서가 있으면 그 부서마다 in 한 줄."""
+    res: Dict[str, List[Tuple[str, str, str]]] = {"out": [], "in": []}
+    for _, a in m["acts_by_id"].values():
+        src = r_depts(m, a)
+        for n in a.get("next", []):
+            dst = r_depts(m, m["acts_by_id"][n][1])
+            if did in src:
+                res["out"] += [(a["id"], n, o) for o in dst if o != did]
+            if did in dst:
+                res["in"] += [(a["id"], n, o) for o in src if o != did]
+    return res
+
+
+def dept_screens(m: dict, did: str) -> Dict[str, List[str]]:
+    """부서가 쓰는 화면. primary = R·A 활동의 화면(활동 순서), reference = C·I 활동에만 나오는 화면."""
+    primary: List[str] = []
+    reference: List[str] = []
+    for _, a, part in dept_activities(m, did):
+        for s in (a.get("platform") or {}).get("screens", []):
+            bucket = primary if part in ("R", "A") else reference
+            if s not in primary and s not in bucket:
+                bucket.append(s)
+    reference = [s for s in reference if s not in primary]
+    return {"primary": primary, "reference": reference}
+
+
+def dept_sod_overlaps(m: dict) -> List[dict]:
+    """직무 분리 쌍 중 요청 쪽과 승인 쪽이 같은 부서에 있는 것 — 부서 겸직 허용, 사람 분리(오류가 아니라 표시용)."""
+    out = []
+    for s in m["common"].get("sod", []):
+        a1, a2 = m["acts_by_id"].get(s["first"]), m["acts_by_id"].get(s["second"])
+        if not a1 or not a2:
+            continue
+        d1 = {m["dept_of_role"][r] for r in a1[1]["raci"]["R"]}
+        d2 = {m["dept_of_role"][r] for r in ra_roles(a2[1])}
+        for did in sorted(d1 & d2):
+            out.append({"sod": s["id"], "department": did, "first": s["first"], "second": s["second"], "note": s["note"]})
+    return out
 
 
 # ── 정합성: 보고서 ↔ IAM 자동 검출 ─────────────────────────────
@@ -201,6 +313,45 @@ def validate(m: dict, partial: bool = False) -> Report:
         if name not in m["role_by_name"]:
             err(f"보고서 역할 어휘 '{name}'이(가) 카탈로그에 없다")
 
+    # 부서: 모든 역할은 정확히 한 부서에 속하고, 데모 계정은 그 부서 역할을 맡아야 한다
+    seen_dept: Dict[str, str] = {}
+    for d in m["departments"]:
+        did = d.get("id", "?")
+        if not DEPT_ID.match(did):
+            err(f"부서 ID 형식 {did} (DEP-대문자 2~6자)")
+        if did in seen_dept:
+            err(f"부서 {did}가 두 번 정의되었다")
+        seen_dept[did] = did
+        for key in ("name", "en", "workspace", "roles", "personas", "desc"):
+            if not d.get(key):
+                err(f"{did}: 필수 키 {key} 없음")
+        if d.get("workspace") not in WORKSPACES:
+            err(f"{did}: workspace {d.get('workspace')}은(는) {'|'.join(WORKSPACES)} 중 하나")
+        for rid in d.get("roles", []):
+            if rid not in roles:
+                err(f"{did}: 역할 {rid}이(가) 카탈로그에 없다")
+        dept_roles = set(d.get("roles", []))
+        has_platform = any(roles[r]["platform_roles"] for r in dept_roles if r in roles)
+        for acc in d.get("personas", []):
+            if acc not in m["iam"]["accounts"]:
+                err(f"{did}: 데모 계정 {acc}이(가) IAM 계정에 없다")
+            elif has_platform and not dept_roles & set(persona_roles(m, acc)):
+                err(f"{did}: 데모 계정 {acc}은(는) 이 부서 역할을 맡지 않는다")
+            elif not has_platform and acc != VIEWER:
+                err(f"{did}: 플랫폼 역할이 없는 부서는 조회 계정({VIEWER})만 쓴다")
+    owners: Dict[str, List[str]] = {}
+    for d in m["departments"]:
+        for rid in d.get("roles", []):
+            owners.setdefault(rid, []).append(d["id"])
+    for r in m["roles"]:
+        got = owners.get(r["id"], [])
+        if len(got) != 1:
+            err(f"{r['id']}({r['name']}): 정확히 한 부서에 속해야 한다 — 지금 {got or '없음'}")
+    scope = m["common"].get("department_scope", {})
+    for pid in scope.get("first", []):
+        if pid not in {pl["id"] for pl in m["plan"]}:
+            err(f"department_scope.first {pid}이(가) process_plan에 없다")
+
     # docs ID 레지스트리: 생성 문서 ID(WF-*)가 등록되어 있어야 한다
     if not m["registry_ids"]:
         warn(f"ID 레지스트리를 읽지 못했다: {ID_REGISTRY}")
@@ -211,6 +362,9 @@ def validate(m: dict, partial: bool = False) -> Report:
         for r in m["roles"]:
             if "WF-ROLE-" + r["id"].split("-", 1)[1] not in m["registry_ids"]:
                 err(f"{r['id']}: 문서 ID WF-ROLE-{r['id'].split('-', 1)[1]}이(가) id-registry에 없다")
+        for d in m["departments"]:
+            if "WF-" + d["id"] not in m["registry_ids"]:
+                err(f"{d['id']}: 문서 ID WF-{d['id']}이(가) id-registry에 없다")
 
     # Gate 대응표
     cw_report = {c["report"] for c in m["common"]["gate_crosswalk"]}
@@ -441,6 +595,16 @@ def validate(m: dict, partial: bool = False) -> Report:
         else:
             err(f"sod {s['id']}: level은 role|person")
 
+    # 요청과 승인 책임 분리 — 요청 활동의 A가 승인 활동의 R·A에 들어가면 안 된다(2026-11-04 사용자 결정)
+    for pair in m["common"].get("request_approval", []):
+        req, appr = m["acts_by_id"].get(pair["request"]), m["acts_by_id"].get(pair["approval"])
+        if not req or not appr:
+            soft(f"request_approval {pair['request']}→{pair['approval']}: 활동이 아직 없다")
+            continue
+        owner = req[1]["raci"]["A"]
+        if owner in ra_roles(appr[1]):
+            err(f"request_approval {pair['request']}→{pair['approval']}: 요청 책임 {owner}이(가) 승인 활동의 R/A에 있다 — {pair['note']}")
+
     # 정합성 결정
     statuses = ALIGNMENT_STATUSES
     for cw in m["common"]["gate_crosswalk"]:
@@ -530,34 +694,49 @@ def _levels(acts: List[dict]) -> Dict[str, int]:
     return level
 
 
-def layout(m: dict, proc: dict) -> Layout:
+def layout(m: dict, proc: dict, by: str = "role") -> Layout:
+    """by=role: 레인 = 첫 번째 R 역할, by=department: 레인 = 그 역할의 부서."""
     acts = proc["activities"]
     level = _levels(acts)
     first_x = ORIGIN_X + LANE_LABEL_W + NODE + 48
     ncols = 1 + max(level.values())
+    if by == "department":
+        lane_of = lambda a: lane_dept(m, a)  # noqa: E731
+        lane_name = lambda k: m["dept_by_id"][k]["name"]  # noqa: E731
+    else:
+        lane_of = lambda a: a["raci"]["R"][0]  # noqa: E731
+        lane_name = lambda k: m["roles_by_id"][k]["name"]  # noqa: E731
     lane_order: List[str] = []
     for a in acts:
-        if a["raci"]["R"][0] not in lane_order:
-            lane_order.append(a["raci"]["R"][0])
+        if lane_of(a) not in lane_order:
+            lane_order.append(lane_of(a))
     width = first_x + ncols * COL_W + NODE + 30
     lanes: List[Box] = []
     nodes: Dict[str, Box] = {}
+    # 시작·트리거 원은 활동 상자 바로 왼쪽 틈에 그린다. 같은 줄 앞 칸에 다른 활동이 있으면 그 활동에서 나가는
+    # 선이 원을 지나가므로(부서 레인처럼 여러 역할이 한 레인에 모일 때) 그런 줄에는 놓지 않는다.
+    starts = {acts[0]["id"]} | {a["id"] for a in acts if _is_trigger(acts, a["id"])}
     y = ORIGIN_Y
     for rid in lane_order:
         cells: Dict[Tuple[int, int], bool] = {}
+        start_cells: set = set()
         rows = 0
-        mine = [a for a in acts if a["raci"]["R"][0] == rid]
+        mine = [a for a in acts if lane_of(a) == rid]
         for a in mine:
+            lvl, starting = level[a["id"]], a["id"] in starts
             row = 0
-            while (level[a["id"]], row) in cells:
+            while ((lvl, row) in cells or (starting and (lvl - 1, row) in cells)
+                   or (lvl + 1, row) in start_cells):
                 row += 1
-            cells[(level[a["id"]], row)] = True
+            cells[(lvl, row)] = True
+            if starting:
+                start_cells.add((lvl, row))
             rows = max(rows, row + 1)
             nodes[a["id"]] = Box(a["id"], "action", a["name"], first_x + level[a["id"]] * COL_W,
                                  y + LANE_PAD + row * ROW_H, ACT_W, ACT_H,
                                  {"gate": a.get("gate_decision"), "trigger": a.get("trigger")})
         h = LANE_PAD * 2 + (rows - 1) * ROW_H + ACT_H
-        lanes.append(Box(rid, "lane", m["roles_by_id"][rid]["name"], ORIGIN_X, y, width, h))
+        lanes.append(Box(rid, "lane", lane_name(rid), ORIGIN_X, y, width, h))
         y += h
     edges: List[Tuple[str, str, str]] = []
     entry = [acts[0]["id"]] + [a["id"] for a in acts if _is_trigger(acts, a["id"])]

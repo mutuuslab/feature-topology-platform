@@ -3,7 +3,7 @@ id: WF-FPW-6
 type: workflow
 title: "서명 배포 / Signed Deployment"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
@@ -11,7 +11,7 @@ traces:
     - GATE-G8
     - FLW-RELEASE-READINESS
     - INT-OTA
-last_updated: 2026-10-17
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -60,7 +60,7 @@ flowchart LR
 | FPW.6-A03 | SUMS 기록·형식승인 확인 | R 법규 담당 · A 법규 담당 · C Release Manager · I Feature Owner, 운영 조직 | WP-RELEASE-BASELINE, WP-HOMOLOGATION-IMPACT | WP-SUMS-RECORD | 플랫폼 밖 | FFG-LCY-008, FFG-GEN-006 |
 | FPW.6-A04 | 서명 패키지 작성·SBOM 결합 | R 통합 조직 · A Release Manager · C PKI 운영, CSM · I 품질 조직 | WP-RELEASE-BASELINE | WP-SIGNED-PACKAGE | `registerChangeRecord`, `/deployments`, `/master/artifacts` | – |
 | FPW.6-A05 | OTA Gate 판정 등록 | R 품질 조직 · A Release Manager · C 법규 담당, CSM · I 운영 조직 | WP-SIGNED-PACKAGE, WP-SUMS-RECORD | WP-OTA-GATE | `judgeGate`, `/features/:id/:ver` | FFG-LCY-001 |
-| FPW.6-A06 | G6 서명 배포 실행 (G6 판정) | R Release Manager · A Release Manager · C 운영 조직 · I Feature Owner, Safety Manager, 품질 조직 | WP-OTA-GATE, WP-RELEASE-BASELINE | WP-G6-DECISION | `deployPolicy`, `syncUnleash`, `/deployments`, `/integration/connectors` | FFG-LCY-009 |
+| FPW.6-A06 | G6 서명 배포 실행 | R Release Manager · A Release Manager · C 운영 조직 · I Feature Owner, Safety Manager, 품질 조직 | WP-OTA-GATE, WP-RELEASE-BASELINE | WP-G6-DECISION | `deployPolicy`, `syncUnleash`, `/deployments`, `/integration/connectors` | FFG-LCY-009 |
 
 ### 수행 절차와 완료 기준
 

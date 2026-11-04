@@ -304,6 +304,107 @@
   color-scheme: dark;
 }
 
+/* 부서 작업공간(데모 부서 보기) — 화면 유형마다 강조색·정보 밀도·면을 다르게 한다(셸 html[data-workspace]).
+   부품(버튼·표·폼)·글자 하한·판정색은 그대로다. html(:root)에만 건다 — 셸 div의 같은 속성(배치용)이 다크 토큰을 덮으면 안 된다. 강조색은 본문 글자와 흰 글자 모두 4.5:1 이상.
+   studio 기획 스튜디오(따뜻한 주황·넓은 여백) · review 심사 결재함(중립 슬레이트) · console 엔지니어링 콘솔(청색·조밀)
+   control 관제실(다크·청록, 셸 전체에 data-zone=ops 톤) · portal 검토 포털(보라·큰 글자) */
+:root[data-workspace='studio'] {
+  --accent: #b4410b;
+  --accent-hover: #8f3307;
+  --accent-soft: #fbeadf;
+  --accent-ink: #ffffff;
+  --ws-band: #f7e3d4;
+  --row-h: 40px;
+}
+:root[data-workspace='review'] {
+  --accent: #334155;
+  --accent-hover: #1e293b;
+  --accent-soft: #e6e9ef;
+  --accent-ink: #ffffff;
+  --ws-band: #e9ecf1;
+}
+:root[data-workspace='console'] {
+  --accent: #0f5e7a;
+  --accent-hover: #0a4558;
+  --accent-soft: #dfedf2;
+  --accent-ink: #ffffff;
+  --ws-band: #e3eef2;
+  --row-h: 30px;
+}
+:root[data-workspace='control'] {
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --accent-soft: #0f2e2c;
+  --accent-ink: #062320;
+  --ws-band: #10181c;
+}
+:root[data-workspace='portal'] {
+  --accent: #5b3fa8;
+  --accent-hover: #452f82;
+  --accent-soft: #efe9fb;
+  --accent-ink: #ffffff;
+  --ws-band: #f1ecfa;
+  --row-h: 42px;
+}
+/* 엔지니어링 콘솔의 어두운 메뉴(DepartmentNav data-zone=ops) — 관제 토큰의 코발트 대신 콘솔 강조색 */
+:root[data-workspace='console'] .sh-dnav[data-zone='ops'] {
+  --accent: #5ec4e6;
+  --accent-hover: #8ad6ee;
+  --accent-soft: #11303b;
+  --accent-ink: #061a21;
+}
+/* 검토 포털의 큰 글자는 본문에만 — 글자 크기 토큰은 --fs-base에서 계산되므로 본문에서 같은 식을 다시 선언한다 */
+:root[data-workspace='portal'] #main {
+  --fs-base: 15px;
+  --fs-xs: max(11px, calc(var(--fs-base) * 0.786));
+  --fs-sm: max(12px, calc(var(--fs-base) * 0.857));
+  --fs-md: calc(var(--fs-base) * 1.071);
+  --fs-lg: calc(var(--fs-base) * 1.286);
+  --fs-xl: calc(var(--fs-base) * 1.571);
+  --fs-2xl: calc(var(--fs-base) * 2);
+  font-size: var(--fs-base);
+}
+/* 시연 모드가 이긴다 — 위 포털 본문 글자(15px)와 부서별 행 높이가 [data-present='on']의 큰 글자·넓은 행을 덮지 않게 같은 값을 다시 선언한다 */
+:root[data-present='on'][data-workspace] {
+  --row-h: 46px;
+}
+:root[data-present='on'][data-workspace='console'] {
+  --row-h: 40px;
+}
+:root[data-present='on'][data-workspace='portal'] #main {
+  --fs-base: 18px;
+  --fs-xs: 15px;
+  --fs-sm: 17px;
+}
+:root[data-theme='dark'][data-workspace='studio'] {
+  --accent: #f59e6b;
+  --accent-hover: #f8b991;
+  --accent-soft: #3a2418;
+  --accent-ink: #1a0e07;
+  --ws-band: #24170f;
+}
+:root[data-theme='dark'][data-workspace='review'] {
+  --accent: #cbd5e1;
+  --accent-hover: #e2e8f0;
+  --accent-soft: #232a35;
+  --accent-ink: #0d0f12;
+  --ws-band: #171b22;
+}
+:root[data-theme='dark'][data-workspace='console'] {
+  --accent: #5ec4e6;
+  --accent-hover: #8ad6ee;
+  --accent-soft: #11303b;
+  --accent-ink: #061a21;
+  --ws-band: #0f1e24;
+}
+:root[data-theme='dark'][data-workspace='portal'] {
+  --accent: #b9a3f5;
+  --accent-hover: #cfc0f8;
+  --accent-soft: #2a2244;
+  --accent-ink: #120c24;
+  --ws-band: #1c172c;
+}
+
 /* 시연·발표 모드 — 큰 글자, 넓은 행, 굵은 초점 */
 [data-present='on'] {
   --fs-base: 18px;

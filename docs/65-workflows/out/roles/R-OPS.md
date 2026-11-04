@@ -3,19 +3,19 @@ id: WF-ROLE-OPS
 type: workflow
 title: "운영 조직 업무 절차서 / Operations Organization Procedure"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
-    - WF-FPW-11
-    - WF-FPW-12
-    - WF-FPW-13
     - WF-FPW-6
     - WF-FPW-7
     - WF-FPW-8
     - WF-FPW-9
-last_updated: 2026-10-17
+    - WF-FPW-11
+    - WF-FPW-12
+    - WF-FPW-13
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -80,7 +80,7 @@ last_updated: 2026-10-17
 3. 대기 상한 초과 경보가 오면 Safety Manager가 상위 대응을 정한다
 - [ ] 기한 초과 미적용 차량마다 연결된 이상 징후 건이 있다
 
-### FPW.8-A08 원인 조치·복원 요청 — 수행
+### FPW.8-A08 원인 조치·복원 요청 — 수행·책임
 - 프로세스: FPW.8 운영·긴급 차단·복원
 - 시작: 원인 수정과 재검증 Evidence 확보
 - 입력: WP-KILL-TRACE, WP-G5-EVIDENCE → 출력: WP-RESTORE-REQ
@@ -100,7 +100,7 @@ last_updated: 2026-10-17
 3. 이상이 보이면 확대를 멈추고 다시 차단 판단(A02)으로 넘긴다
 - [ ] 단계마다 관측 결과와 확대·중단 결정이 기록되었다
 
-### FPW.8-A11 분기 드릴·G8 운영 판정 — 수행·책임 · G8 판정
+### FPW.8-A11 분기 드릴·G8 운영 판정 — 수행·책임
 - 프로세스: FPW.8 운영·긴급 차단·복원
 - 시작: 분기 정기 일정
 - 입력: WP-KILL-TRACE, WP-POST-REVIEW → 출력: WP-DRILL-REPORT

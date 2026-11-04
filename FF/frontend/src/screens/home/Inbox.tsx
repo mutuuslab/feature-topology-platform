@@ -1,7 +1,7 @@
 // v2 (P10-C4) — / 내 대시보드 · /admin/approval 검토함 · /feature/propose Feature 제안 · /master/define Feature 등록.
 // 검토함은 승인할 일을 모아 "내 차례인가"를 보이고 실제 승인은 각 화면에서 한다. 차단·복원의 내 차례 판정은 서버와 같은 contracts approvalCheck
 // (요청자·이미 승인한 사람·FSM 칸·복원은 차단 승인자 제외 — FFG-PLT-005·DEAC-008).
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { approvalCheck, approvalPlan, reportRolesOf, type Role } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
@@ -13,6 +13,8 @@ import { procedures as PR } from '../../copy/procedures';
 import { useProcedureSummary } from '../../data/procedureProgress';
 import { AsyncView, type AsyncState, Button, DataTable, ErrorNote, Field, LifecycleBadge, PageHeader, Panel, Segmented, Select, useUnsavedGuard, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
+import { OIDC_AUTH } from '../../auth-mode';
+import { departmentById } from '../../data/departments';
 import { usePermission } from '../shared';
 import { DashboardPage } from './dashboard/Dashboard';
 import { isSafetyKill } from './dashboard/catalog';
@@ -157,7 +159,24 @@ function homeMessage(activeKills: number, mine: number, procMine: number, loaded
   return { tone: 'ok', text: H.key.clear };
 }
 
+// 부서 보기(데모)의 작업공간 홈 — 부서를 고른 사람만 불러온다(첫 화면 번들 밖)
+// 운영 빌드(OIDC)는 부서 보기가 없다 — 지연 import 자체를 없애 묶음이 빠지게
+const WorkspaceHome = OIDC_AUTH ? null : lazy(() => import('../workspaces/WorkspaceHome'));
+
 export function HomeScreen() {
+  const { department } = useAppShell();
+  const dept = OIDC_AUTH ? undefined : departmentById(department);
+  if (dept && WorkspaceHome)
+    return (
+      <Suspense fallback={<div className="ds-skel" data-state="loading"><span /><span /><span /></div>}>
+        <WorkspaceHome key={dept.id} dept={dept} />
+      </Suspense>
+    );
+  return <AllHome />;
+}
+
+/** 전체 보기 홈 — Jira식 대시보드(역할별 가젯) */
+function AllHome() {
   const { role } = useAppShell();
   const proc = useProcedureSummary(role);
   const inbox = useInbox();

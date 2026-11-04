@@ -3,13 +3,12 @@ id: WF-ROLE-FO
 type: workflow
 title: "Feature Owner 업무 절차서 / Feature Owner Procedure"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
     - WF-FPW-1
-    - WF-FPW-13
     - WF-FPW-2
     - WF-FPW-3
     - WF-FPW-4
@@ -18,7 +17,8 @@ traces:
     - WF-FPW-7
     - WF-FPW-8
     - WF-FPW-9
-last_updated: 2026-10-17
+    - WF-FPW-13
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -54,16 +54,6 @@ last_updated: 2026-10-17
 3. Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다
 - [ ] 모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다
 
-### FPW.2-A03 SOTIF 분석 갱신 — 수행
-- 프로세스: FPW.2 HARA·변경 영향 판단
-- 시작: 앞 활동 완료
-- 입력: WP-IMPACT-ANALYSIS → 출력: WP-SOTIF-ANALYSIS
-- 플랫폼: 플랫폼 밖
-1. 거동을 바꾸는 Version이면 기능 사양과 성능 한계를 이 Version 기준으로 다시 쓴다
-2. 알려진 트리거 조건과 운영에서 들어온 새 트리거 조건을 반영해 위험 시나리오를 평가한다
-3. 평가 결과를 Safety Manager에게 넘겨 안전 판단에 쓰게 한다
-- [ ] SOTIF 분석의 대상 Version이 현재 Version과 같다
-
 ### FPW.6-A01 출시 Baseline 확정 요청 — 수행·책임
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
@@ -84,7 +74,7 @@ last_updated: 2026-10-17
 3. 실험을 등록하고 Release Manager에게 시작 시점을 알린다
 - [ ] F2 이상 Feature에 Experiment Flag 실험이 등록되지 않았다
 
-### FPW.7-A08 G7 출시·활성화 판정 — 책임(승인) · G7 판정
+### FPW.7-A08 G7 출시·활성화 판정 — 책임(승인)
 - 프로세스: FPW.7 출시·활성화·단계적 확대
 - 시작: 앞 활동 완료
 - 입력: WP-CANARY-PLAN, WP-EXPERIMENT-PLAN, WP-SC-REVIEW, WP-PRODUCT-APPROVAL, WP-ACTIVATION-PRECHECK → 출력: WP-G7-DECISION
@@ -114,16 +104,6 @@ last_updated: 2026-10-17
 3. 구 Version이 남은 차량이 있는지 Fleet 적용 현황으로 확인해 요청에 붙인다
 - [ ] Retirement 요청에 사유와 영향 범위가 있다
 
-### FPW.9-A03 Flag Retirement 승인 — 책임(승인)
-- 프로세스: FPW.9 사후 검토·Flag Retirement
-- 시작: 앞 활동 완료
-- 입력: WP-RETIRE-REQ → 출력: WP-RETIRE-APPROVAL
-- 플랫폼: `approveFlagRetirement`, `/flag-retirements`
-1. 요청자가 아닌 요구 Owner가 Retirement를 승인하고, F2 이상이면 Safety Manager도 승인한다
-2. ADS Feature를 폐기하는 경우 영구 비활성화·명령 키 폐기·Catalog 퇴역을 승인 조건으로 단다
-3. 승인 후 삭제 기한을 정해 Feature Owner와 통합 조직에 알린다
-- [ ] 승인자가 요청자와 다르고 F2 이상에 Safety Manager 승인이 있다
-
 ### FPW.9-A04 코드·설정·시험 삭제 기록 — 수행·책임
 - 프로세스: FPW.9 사후 검토·Flag Retirement
 - 시작: 앞 활동 완료
@@ -140,7 +120,8 @@ last_updated: 2026-10-17
 - FPW.1-A04 법규 의무 기능 판정 (통보)
 - FPW.1-A05 G1 등록·분류 판정 (협의)
 - FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 (협의)
-- FPW.2-A02 HARA·TARA 공동 수행 (협의)
+- FPW.2-A02 HARA 수행 (협의)
+- FPW.2-A03 SOTIF 분석 갱신 (협의)
 - FPW.2-A04 형식승인 영향 1차 판단 (협의)
 - FPW.2-A05 G2 HARA 영향 판정 (통보)
 - FPW.3-A01 안전요구 도출·명세 (통보)
@@ -171,6 +152,7 @@ last_updated: 2026-10-17
 - FPW.8-A10 단계적 복원·관측 (통보)
 - FPW.8-A11 분기 드릴·G8 운영 판정 (통보)
 - FPW.9-A01 운영 결과 품질 피드백 수용 (통보)
+- FPW.9-A03 Flag Retirement 승인 (협의)
 - FPW.9-A05 Lifecycle 종료 전이 (협의)
 - FPW.13-A02 Compliance Profile 정의 (통보)
 - FPW.13-A03 분기 법규 감시·Profile 갱신 (통보)
@@ -180,5 +162,5 @@ last_updated: 2026-10-17
 - FFG-CLS-006 안전 거동의 A/B 실험 금지 — 이행 활동 있음
 - FFG-CLS-008 Flag 만료와 은퇴 계획 — 이행 활동 있음
 - FFG-LCY-011 Flag 은퇴와 코드 삭제 — 이행 활동 있음
-- FFG-SOT-001 Feature Version별 SOTIF 갱신 — 이행 활동 있음
+- FFG-SOT-001 Feature Version별 SOTIF 갱신 — 작성 예정
 - FFG-SOT-005 AI 기반 Feature — 이행 활동 있음

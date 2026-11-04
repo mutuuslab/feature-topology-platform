@@ -10,11 +10,12 @@ describe('IAM (D06-09)', () => {
     expect(HUMAN_ROLES).not.toContain('SYSTEM');
     expect(HUMAN_ROLES).toContain('OPERATOR');
   });
-  it('권한은 ROUTES의 roles에서 나온다 — 긴급 차단은 운영자·안전 담당만, 감사 조회자는 변경 권한 없음', () => {
+  it('권한은 ROUTES의 roles에서 나온다 — 긴급 차단은 운영자·안전 담당만, 감사 조회자는 사후 독립 검토 기록만', () => {
     const issue = permissions().find((p) => p.name === 'issueKill')!;
     expect(issue.roles.sort()).toEqual(['OPERATOR', 'SAFETY_OFFICER']);
     const view = rolesView();
-    expect(view.find((r) => r.role === 'AUDITOR')!.allowed).toEqual([]);
+    // 감사(품질 내부감사)는 운영 상태를 바꾸지 않는 긴급 권한 사후 독립 검토 기록 하나만 쓴다(2026-11-04 사용자 결정, FFG-PLT-016)
+    expect(view.find((r) => r.role === 'AUDITOR')!.allowed).toEqual(['recordKillPostReview']);
     expect(view.find((r) => r.role === 'OPERATOR')!.allowed).toContain('issueKill');
     expect(permissions().every((p) => p.method !== 'GET')).toBe(true);
   });

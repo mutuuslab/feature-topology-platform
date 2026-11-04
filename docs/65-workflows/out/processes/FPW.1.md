@@ -3,7 +3,7 @@ id: WF-FPW-1
 type: workflow
 title: "Feature 등록·분류 / Feature Registration & Classification"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
@@ -11,7 +11,7 @@ traces:
     - GATE-G1
     - GATE-G3
     - FLW-FEATURE-REGISTER
-last_updated: 2026-10-17
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -53,7 +53,7 @@ flowchart LR
 | FPW.1-A02 | 대상 차량 사양·의존 등록 | R 기준정보 담당 · A Feature Owner · C 아키텍트 · I Safety Manager | WP-FEAT-REG | WP-FEAT-SCOPE | `createDependency`, `/variant-conditions`, `/arch/topology` | – |
 | FPW.1-A03 | 안전 분류(네 축) 확정 | R Safety Manager · A Safety Manager · C Feature Owner, 아키텍트 · I 요구 Owner | WP-FEAT-REG, WP-FEAT-SCOPE | WP-SAFETY-PROFILE | `updateSafetyProfile`, `confirmSafetyProfile`, `/features/:id/:ver` | FFG-CLS-001, FFG-CLS-003, FFG-CLS-009 |
 | FPW.1-A04 | 법규 의무 기능 판정 | R 법규 담당 · A 법규 담당 · C Safety Manager · I Feature Owner | WP-SAFETY-PROFILE, WP-COMPLIANCE-PROFILE | WP-REG-CLASS | 플랫폼 밖 | FFG-CLS-005 |
-| FPW.1-A05 | G1 등록·분류 판정 (G1 판정) | R Safety Manager · A Safety Manager · C Feature Owner, 법규 담당 · I 요구 Owner, 기준정보 담당, 품질 조직 | WP-FEAT-REG, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-REG-CLASS | WP-G1-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002, FFG-CLS-001 |
+| FPW.1-A05 | G1 등록·분류 판정 | R Safety Manager · A Safety Manager · C Feature Owner, 법규 담당 · I 요구 Owner, 기준정보 담당, 품질 조직 | WP-FEAT-REG, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-REG-CLASS | WP-G1-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002, FFG-CLS-001 |
 
 ### 수행 절차와 완료 기준
 

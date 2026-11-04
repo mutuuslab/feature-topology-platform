@@ -3,20 +3,20 @@ id: WF-ROLE-ARC
 type: workflow
 title: "아키텍트 업무 절차서 / Architect Procedure"
 status: draft
-version: 0.1.0
+version: 0.2.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
     - WF-FPW-1
-    - WF-FPW-10
-    - WF-FPW-12
     - WF-FPW-2
     - WF-FPW-3
     - WF-FPW-4
     - WF-FPW-5
     - WF-FPW-6
-last_updated: 2026-10-17
+    - WF-FPW-10
+    - WF-FPW-12
+last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -29,6 +29,16 @@ last_updated: 2026-10-17
 - 매핑 근거: 정책 작성·검증(createPolicy·validatePolicy)과 Control Point 설계를 IMPLEMENTER가 수행
 
 ## 1. 내가 하는 일 (수행 R · 책임 A)
+
+### FPW.2-A03 SOTIF 분석 갱신 — 수행
+- 프로세스: FPW.2 HARA·변경 영향 판단
+- 시작: 앞 활동 완료
+- 입력: WP-IMPACT-ANALYSIS → 출력: WP-SOTIF-ANALYSIS
+- 플랫폼: 플랫폼 밖
+1. 거동을 바꾸는 Version이면 기능 사양과 성능 한계를 이 Version 기준으로 다시 쓴다
+2. 알려진 트리거 조건과 운영에서 들어온 새 트리거 조건을 반영해 위험 시나리오를 평가한다
+3. 평가 결과를 Safety Manager에게 넘겨 안전 판단에 쓰게 한다
+- [ ] SOTIF 분석의 대상 Version이 현재 Version과 같다
 
 ### FPW.4-A01 차량 내 감시·안전기제 설계 — 수행·책임
 - 프로세스: FPW.4 안전 설계·정책 설계
@@ -52,7 +62,7 @@ last_updated: 2026-10-17
 3. 수정하면 새 개정본이 되므로 다시 검증한다
 - [ ] 최신 개정본의 분야별 검증이 모두 통과했다
 
-### FPW.4-A05 G4 설계 독립 검토·판정 — 책임(승인) · G4 판정
+### FPW.4-A05 G4 설계 독립 검토·판정 — 책임(승인)
 - 프로세스: FPW.4 안전 설계·정책 설계
 - 시작: 앞 활동 완료
 - 입력: WP-SAFETY-DESIGN, WP-TCL-RECORD, WP-POLICY → 출력: WP-G4-DECISION
@@ -69,8 +79,8 @@ last_updated: 2026-10-17
 - FPW.1-A02 대상 차량 사양·의존 등록 (협의)
 - FPW.1-A03 안전 분류(네 축) 확정 (협의)
 - FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 (협의)
-- FPW.2-A02 HARA·TARA 공동 수행 (협의)
-- FPW.2-A03 SOTIF 분석 갱신 (협의)
+- FPW.2-A02 HARA 수행 (협의)
+- FPW.2-A06 TARA 수행 (협의)
 - FPW.3-A01 안전요구 도출·명세 (협의)
 - FPW.3-A02 양방향 추적성 점검 (협의)
 - FPW.3-A04 G3 판정·Feature 정의 승인 (통보)

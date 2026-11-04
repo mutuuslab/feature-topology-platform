@@ -1,0 +1,74 @@
+{
+  "release": "v1.3",
+  "source": {
+    "file": "Automotive_SW_개발비_산정도구_FeatureDB_v1.3.xlsx",
+    "sha256": "7d22d08a1f5406f18eb44b9acc9a4605e0eb1d3cb232a821c8629f9e9fe0d244"
+  },
+  "generatedBy": {
+    "tool": "tools/refdb/import.ts",
+    "version": "1.0.0"
+  },
+  "files": {
+    "refs": {
+      "rows": 1052,
+      "sha256": "a94b438f184e151e929b7176136941dfb3e63fd11e60bc5b151094a31673e4b0"
+    },
+    "taxonomy": {
+      "rows": 145,
+      "sha256": "65fb99fc29583348ce25aa72ea97c1547c5dad43281348f0767228a5ab62c03b"
+    },
+    "sources": {
+      "rows": 73,
+      "sha256": "bc996685840bbbd8cc3b8609014b4c2ac9bb64a172aa74ac3d2e927d86878c72"
+    },
+    "glossary": {
+      "rows": 3,
+      "sha256": "443f8ac9c1c36d69c2405daa537720757c253f6c4805924c4482949108468331"
+    },
+    "subfunctions": {
+      "rows": 840,
+      "sha256": "85e1fc9eddc4f14f727d3c95af1c44c5f455298c93831e449d6b92bc84ccd77a"
+    },
+    "_excel-derived": {
+      "rows": 1052,
+      "sha256": "e2cefcc4dc2a1258cd250a5451ddbda06c18cef20d329cc2a3df329b635bef3c"
+    }
+  },
+  "statusCounts": {
+    "ACTIVE": 995,
+    "REVIEW": 53,
+    "DEPRECATED": 4,
+    "RETIRED": 0,
+    "PENDING": 0
+  },
+  "definitions": {
+    "rows": 24,
+    "refIds": [
+      "BC-SEAT-001",
+      "BC-SEAT-002",
+      "BC-SEAT-003",
+      "BC-SEAT-004",
+      "BC-SEAT-005",
+      "BC-SEAT-006",
+      "BC-SEAT-007",
+      "BC-SEAT-008",
+      "BC-SEAT-009",
+      "BC-SEAT-010",
+      "BC-SEAT-011",
+      "BC-SEAT-012",
+      "BC-SEAT-013",
+      "BC-SEAT-014",
+      "BC-SEAT-015",
+      "BC-SEAT-016",
+      "BC-SEAT-017",
+      "BC-WIN-002",
+      "BC-WIN-003",
+      "BC-WIN-011",
+      "CH-BRK-006",
+      "CH-BRK-008",
+      "CH-BRK-009",
+      "CH-BRK-017"
+    ]
+  },
+  "warnings": []
+}

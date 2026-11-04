@@ -2,6 +2,8 @@
 // 평가는 순수 함수: 백엔드(전이 실행)·프론트(스테퍼의 막힌 사유 표시)가 같은 결과를 본다.
 import { GATE_META, GATES, LIFECYCLE, ROLE_LABEL, type GateId, type GateStatus, type Lifecycle, type Role } from '../enums';
 import type { DependencyRow, FeatureVersionRow } from '../schemas/dataset';
+import type { RefStatus } from '../schemas/refdb';
+import { refLinksBlockApproval } from './refdb/status-policy';
 
 export interface TransitionRule {
   from: Lifecycle;
@@ -32,7 +34,7 @@ export const FEATURE_TRANSITIONS: TransitionRule[] = [
 
 export const LIFECYCLE_RANK: Record<Lifecycle, number> = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
+export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED' | 'REFDB_LINK_BLOCKED';
 
 export interface Blocker {
   code: BlockerCode;
@@ -63,6 +65,11 @@ export interface TransitionContext {
    * G8·G9 PASS·서명 뒤에 열린 요청도 출시를 막는다(Gate PASS 차단만으로는 이미 PASS한 판정을 되돌리지 못한다).
    */
   openRehara?: { requestId: string; condition: string; detail?: string }[];
+  /**
+   * 연결된 기준 행(f.featureRefs)의 지금 Feature DB 상태(30-95 §5.2) — 주면 PROPOSED→APPROVED에서 요청 중(PENDING)·폐기(RETIRED)·없는 행을 막는다.
+   * 빠지면(Feature DB 연결 전 호출자) 이 조건을 보지 않는다.
+   */
+  refStatusOf?: (refId: string) => RefStatus | null | undefined;
   reason?: string;
 }
 
@@ -97,6 +104,10 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
   if (rule.to === 'APPROVED')
     for (const d of ctx.dependencies)
       if (!d.targetVersion) blockers.push({ code: 'DEPENDENCY_UNRESOLVED', message: `${d.dependencyId} 대상 Version 미확정`, ref: d.dependencyId });
+
+  // Feature DB 연결(D-REF-7) — 요청 중 행은 DB 관리자 승인 전, 폐기 행은 다른 행으로 다시 연결해야 정의 승인을 할 수 있다
+  if (rule.from === 'PROPOSED' && rule.to === 'APPROVED' && ctx.refStatusOf)
+    for (const b of refLinksBlockApproval(f.featureRefs ?? [], ctx.refStatusOf)) blockers.push({ code: 'REFDB_LINK_BLOCKED', message: b.message, ref: b.refId });
 
   if (rule.from === 'VERIFIED' && rule.to === 'RELEASED' && !ctx.releaseSignoff)
     blockers.push({ code: 'RELEASE_SIGNOFF_MISSING', message: 'Feature Owner의 Release Sign-off(출시 책임 확인 개인 서명)가 없습니다 — G8·G9 PASS 뒤 Feature Owner가 서명합니다.' });

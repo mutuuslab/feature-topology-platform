@@ -101,8 +101,10 @@ export function importWorkbook(buf: Buffer): ImportResult {
       const draft: Record<string, unknown> = { ...(spec.extra ?? {}) };
       spec.cols.forEach((col, k) => (draft[col.field] = convert(col, cells[idx[k]], missing)));
       draft._missing = Object.fromEntries(Object.entries(missing).sort(([a], [b]) => a.localeCompare(b)));
-      // 스키마 필드 순서로 키 고정 → 결정적 직렬화
-      const row = Object.fromEntries(order.map((f) => [f, draft[f] === undefined ? null : draft[f]]));
+      // 스키마 필드 순서로 키 고정 → 결정적 직렬화. 데이터셋 열이 아닌 선택 필드(플랫폼이 나중에 채우는 Feature DB 연결 등)는 빼고 둔다
+      const row = Object.fromEntries(
+        order.filter((f) => draft[f] !== undefined || !schema.shape[f].isOptional()).map((f) => [f, draft[f] === undefined ? null : draft[f]]),
+      );
       const key = spec.key(row);
       const parsed = schema.safeParse(row);
       if (!parsed.success) {

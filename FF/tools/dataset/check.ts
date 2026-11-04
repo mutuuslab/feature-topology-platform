@@ -5,6 +5,7 @@ import { FF, readJson } from '../lib.ts';
 import { importWorkbook, serialize, sha256 } from './import-lib.ts';
 import { buildProfiles, PROFILES, serializeProfiles } from './safety-infer.ts';
 import { unguardedRequiredQueries } from './static-queries.ts';
+import { checkRefdb } from '../refdb/check.ts';
 
 const OUT = join(FF, 'data', 'fixtures', 'v0.81');
 const SOURCE = join(FF, 'data', 'source', 'feature_dataset_v0.81.xlsx');
@@ -39,9 +40,14 @@ else if (lf(readFileSync(PROFILES, 'utf8')) !== serializeProfiles(buildProfiles(
 const unguarded = unguardedRequiredQueries();
 for (const u of unguarded) errors.push(`${u.file}:${u.line} — '${u.route}' 조회에 enabled가 없다(필수 질의가 비어 있을 때 요청이 나간다 — contracts requiredQuery)`);
 
+// Feature DB 이전 점검(30-95 §9) — 1,052행·상태 수·출처·분류·03b·파생 값 T·U·BW·manifest·시드 대응표
+const refdb = checkRefdb();
+errors.push(...refdb.errors);
+
 console.log('data:check');
 if (errors.length) {
   for (const e of errors) console.error('  ✕ ' + e);
   process.exit(1);
 }
 console.log(`  ✓ 픽스처 ${Object.keys(manifest.files).length}종 · manifest·재적재 일치 (경고 ${manifest.warnings.count}건) · 안전 프로파일 재생성 일치 · 필수 질의 조회는 모두 enabled로 막힘`);
+console.log(`  ✓ ${refdb.summary}`);

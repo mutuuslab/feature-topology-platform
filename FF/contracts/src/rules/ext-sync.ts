@@ -6,6 +6,7 @@
 //   Feature Lifecycle·정책·서명·긴급 차단·감사 = 플랫폼 원장
 import { z } from 'zod';
 import { Asil, LIFECYCLE, type Lifecycle } from '../enums';
+import { RefId } from '../schemas/refdb';
 
 export const EXT_SYSTEMS = ['CODEBEAMER', 'JIRA', 'GITLAB'] as const;
 export type ExtSystem = (typeof EXT_SYSTEMS)[number];
@@ -112,6 +113,12 @@ export const EpicScope = z
     trim: z.string().trim().min(1).max(80),
     asil: Asil,
     ownerId: z.string().trim().min(1).max(100),
+    /**
+     * 기준 기능(Feature DB) ID — 첫 값이 대표(PRIMARY), 나머지는 포함(INCLUDED)(30-95 §7, D-REF-10).
+     * JIRA 라벨 `ref-primary:CH-BRK-009`(대표)·`ref:CH-BRK-006`(포함) 또는 사용자 필드(FF_JIRA_REF_FIELD)에서 읽는다.
+     * 빠졌거나 없는·폐기 ID면 등록하지 않고(REJECTED) Epic 댓글로 알린다. 요청 중(PENDING) 행은 JIRA에서 쓸 수 없다.
+     */
+    refIds: z.array(RefId).min(1).max(20),
   })
   .partial()
   .strict();

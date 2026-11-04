@@ -1,0 +1,851 @@
+{
+  "_method": "시드 Feature(data/fixtures/v0.81/features.json, featureId별 1건)의 기능명·설명·태그·ASIL을 Feature DB v1.3 기준 행의 한/영 기능명·별칭·컴포넌트와 사람이 대조해 정한 표(tools/refdb/seed-links.ts SEED_MAP). 같은 기능명은 같은 대응. confidence high = 기능 범위가 같음, medium = 가장 가까운 행(범위 차이는 note). 불확실·없음은 _missing(후보 포함) — 사용자 확인 대상. ASIL이 기준 행과 다르면 등록 때 asilDeviation 사유가 필요하다(30-95 §6.3).",
+  "refVersion": "v1.3",
+  "counts": {
+    "features": 68,
+    "linked": 60,
+    "missing": 8
+  },
+  "links": {
+    "FEAT-00001": [
+      {
+        "refId": "AD-PRK-007",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00002": [
+      {
+        "refId": "AD-LON-016",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-PRK-001",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00003": [
+      {
+        "refId": "AD-PRK-004",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00004": [
+      {
+        "refId": "AD-LAT-011",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-LAT-005",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00005": [
+      {
+        "refId": "AD-LON-002",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00008": [
+      {
+        "refId": "PE-CHG-007",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00010": [
+      {
+        "refId": "AD-DMS-003",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-001",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-002",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-005",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00011": [
+      {
+        "refId": "CO-DKY-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "CO-DKY-004",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "CO-DKY-001",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00012": [
+      {
+        "refId": "CH-VMC-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00013": [
+      {
+        "refId": "BC-HVX-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00014": [
+      {
+        "refId": "IN-CLU-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00015": [
+      {
+        "refId": "AD-LON-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-LON-006",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00017": [
+      {
+        "refId": "IN-HMI-016",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00018": [
+      {
+        "refId": "BC-HVAC-006",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00019": [
+      {
+        "refId": "CH-VMC-008",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "CH-BRK-003",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00020": [
+      {
+        "refId": "PE-BMS-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00024": [
+      {
+        "refId": "IN-NAV-009",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00027": [
+      {
+        "refId": "IN-NAV-009",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "IN-NAV-004",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00030": [
+      {
+        "refId": "IN-NAV-009",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "IN-NAV-004",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00033": [
+      {
+        "refId": "IN-NAV-009",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "IN-NAV-004",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00060": [
+      {
+        "refId": "AD-DMS-003",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-001",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-002",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-005",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00061": [
+      {
+        "refId": "AD-DMS-003",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-001",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-002",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-005",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00062": [
+      {
+        "refId": "AD-DMS-003",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-001",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-002",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-DMS-005",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00064": [
+      {
+        "refId": "CO-DKY-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "CO-DKY-004",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "CO-DKY-001",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00065": [
+      {
+        "refId": "AD-LON-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-LON-006",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00066": [
+      {
+        "refId": "AD-LON-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-LON-006",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00067": [
+      {
+        "refId": "AD-LON-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "AD-LON-006",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00081": [
+      {
+        "refId": "IN-HMI-016",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00082": [
+      {
+        "refId": "BC-HVAC-006",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00083": [
+      {
+        "refId": "PE-BMS-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00084": [
+      {
+        "refId": "AD-LON-002",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00085": [
+      {
+        "refId": "PE-BMS-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00086": [
+      {
+        "refId": "BC-HVX-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00087": [
+      {
+        "refId": "PE-BMS-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00097": [
+      {
+        "refId": "CH-VMC-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00098": [
+      {
+        "refId": "IN-CLU-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00099": [
+      {
+        "refId": "CO-DKY-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "CO-DKY-004",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "CO-DKY-001",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00100": [
+      {
+        "refId": "IN-CLU-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00122": [
+      {
+        "refId": "CH-VMC-008",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "CH-BRK-003",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00123": [
+      {
+        "refId": "PE-BMS-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00124": [
+      {
+        "refId": "CH-VMC-008",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      },
+      {
+        "refId": "CH-BRK-003",
+        "role": "INCLUDED",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00125": [
+      {
+        "refId": "PE-BMS-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00136": [
+      {
+        "refId": "IN-HMI-016",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00137": [
+      {
+        "refId": "IN-HMI-016",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00144": [
+      {
+        "refId": "AD-PRK-004",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00145": [
+      {
+        "refId": "AD-LON-002",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00150": [
+      {
+        "refId": "AD-LON-002",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00163": [
+      {
+        "refId": "AD-LAT-002",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00174": [
+      {
+        "refId": "PE-BMS-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00175": [
+      {
+        "refId": "IN-CLU-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00176": [
+      {
+        "refId": "IN-CLU-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00177": [
+      {
+        "refId": "IN-CLU-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00178": [
+      {
+        "refId": "IN-CLU-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00180": [
+      {
+        "refId": "PE-BMS-012",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00181": [
+      {
+        "refId": "CH-VMC-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00182": [
+      {
+        "refId": "CH-VMC-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00183": [
+      {
+        "refId": "AD-LON-002",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00184": [
+      {
+        "refId": "CH-VMC-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00185": [
+      {
+        "refId": "AD-LON-002",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ],
+    "FEAT-00186": [
+      {
+        "refId": "CH-VMC-005",
+        "role": "PRIMARY",
+        "refVersion": "v1.3"
+      }
+    ]
+  },
+  "confidence": {
+    "FEAT-00001": "high",
+    "FEAT-00002": "medium",
+    "FEAT-00003": "high",
+    "FEAT-00004": "high",
+    "FEAT-00005": "high",
+    "FEAT-00008": "high",
+    "FEAT-00010": "high",
+    "FEAT-00011": "high",
+    "FEAT-00012": "high",
+    "FEAT-00013": "medium",
+    "FEAT-00014": "high",
+    "FEAT-00015": "high",
+    "FEAT-00017": "high",
+    "FEAT-00018": "medium",
+    "FEAT-00019": "medium",
+    "FEAT-00020": "high",
+    "FEAT-00024": "medium",
+    "FEAT-00027": "medium",
+    "FEAT-00030": "medium",
+    "FEAT-00033": "medium",
+    "FEAT-00060": "high",
+    "FEAT-00061": "high",
+    "FEAT-00062": "high",
+    "FEAT-00064": "high",
+    "FEAT-00065": "high",
+    "FEAT-00066": "high",
+    "FEAT-00067": "high",
+    "FEAT-00081": "high",
+    "FEAT-00082": "medium",
+    "FEAT-00083": "high",
+    "FEAT-00084": "high",
+    "FEAT-00085": "high",
+    "FEAT-00086": "medium",
+    "FEAT-00087": "high",
+    "FEAT-00097": "high",
+    "FEAT-00098": "high",
+    "FEAT-00099": "high",
+    "FEAT-00100": "high",
+    "FEAT-00122": "medium",
+    "FEAT-00123": "high",
+    "FEAT-00124": "medium",
+    "FEAT-00125": "high",
+    "FEAT-00136": "high",
+    "FEAT-00137": "high",
+    "FEAT-00144": "high",
+    "FEAT-00145": "high",
+    "FEAT-00150": "high",
+    "FEAT-00163": "high",
+    "FEAT-00174": "high",
+    "FEAT-00175": "high",
+    "FEAT-00176": "high",
+    "FEAT-00177": "high",
+    "FEAT-00178": "high",
+    "FEAT-00180": "high",
+    "FEAT-00181": "high",
+    "FEAT-00182": "high",
+    "FEAT-00183": "high",
+    "FEAT-00184": "high",
+    "FEAT-00185": "high",
+    "FEAT-00186": "high"
+  },
+  "basis": {
+    "IC·JC 경로 사전안내": {
+      "primary": "IN-NAV-009",
+      "confidence": "medium",
+      "note": "차로 단위 안내 — IC·JC 진입·진출 방향과 필요 차로 안내"
+    },
+    "고속도로 IC·JC 상세 안내": {
+      "primary": "IN-NAV-009",
+      "included": [
+        "IN-NAV-004"
+      ],
+      "confidence": "medium",
+      "note": "차로 단위 안내 + 확대·3D 지도 보기"
+    },
+    "고속도로 주행 보조 2": {
+      "primary": "AD-LAT-011",
+      "included": [
+        "AD-LAT-005"
+      ],
+      "confidence": "high",
+      "note": "고속도로 주행 보조(L2 통합) + 자동 차로 변경(차선변경 보조)"
+    },
+    "급가속 억제": {
+      "candidates": [
+        "PE-VCU-008",
+        "PE-VCU-001"
+      ],
+      "note": "페달 급조작 가속 완화 — 기준 행 PE-VCU-008은 중국(GB) 전용 페달 오조작 억제라 권역이 다름"
+    },
+    "레거시 원격 시동 Gen1": {
+      "primary": "BC-HVAC-006",
+      "confidence": "medium",
+      "note": "원격 공조 제어·시동(Remote control/start) — 3G 텔레매틱스 경로는 CO-TCU 쪽이라 포함 행 검토 필요"
+    },
+    "배터리 급속충전 예열": {
+      "primary": "PE-BMS-012",
+      "confidence": "high",
+      "note": "급속 충전 전 배터리 예열"
+    },
+    "서라운드 뷰 모니터": {
+      "primary": "AD-PRK-004",
+      "confidence": "high",
+      "note": "서라운드 뷰 모니터(360°)"
+    },
+    "스노우 주행 모드": {
+      "primary": "CH-VMC-008",
+      "included": [
+        "CH-BRK-003"
+      ],
+      "confidence": "medium",
+      "note": "험로 주행 모드(Terrain modes) + 구동력 제어(TCS). 회생제동 연계는 기준 행에 없음"
+    },
+    "스마트 크루즈 컨트롤": {
+      "primary": "AD-LON-002",
+      "confidence": "high",
+      "note": "적응형 순항 제어(ACC). 시드 ASIL C ≠ 기준 B"
+    },
+    "스마트폰 디지털 키": {
+      "primary": "CO-DKY-005",
+      "included": [
+        "CO-DKY-004",
+        "CO-DKY-001"
+      ],
+      "confidence": "high",
+      "note": "UWB 보안 거리측정 출입 + BLE 근접 인식 + 소유자 페어링"
+    },
+    "실외 V2L 전원 공급": {
+      "primary": "PE-CHG-007",
+      "confidence": "high",
+      "note": "V2L 외부 전력 공급"
+    },
+    "예측 공조": {
+      "primary": "BC-HVX-012",
+      "confidence": "medium",
+      "note": "예약 공조(프리컨디셔닝)에 가장 가깝다 — 일정·날씨 기반 \"제안\"은 기준 행 범위 밖일 수 있음"
+    },
+    "운전자 모니터링 시스템": {
+      "primary": "AD-DMS-003",
+      "included": [
+        "AD-DMS-001",
+        "AD-DMS-002",
+        "AD-DMS-005"
+      ],
+      "confidence": "high",
+      "note": "DMS 카메라 + 졸음·주의분산 경고 + 시선 추정. 시드 ASIL C ≠ 기준 A"
+    },
+    "원격 스마트 주차 보조": {
+      "primary": "AD-PRK-007",
+      "confidence": "high",
+      "note": "원격 주차(RCP) — 차량 밖에서 전·후진 주차 제어, ASIL B 같음"
+    },
+    "전방 안전거리 3단계": {
+      "candidates": [
+        "AD-LON-009",
+        "AD-LON-002"
+      ],
+      "note": "거리 3단계 판정·안내 기능 — 전방 충돌 경고(FCW)·ACC와 범위가 다르다(데모 vECU 기능). 기준 행 추가 요청 또는 후보 확정 필요"
+    },
+    "전방 안전거리 확대": {
+      "candidates": [
+        "AD-LON-002",
+        "AD-LON-009"
+      ],
+      "note": "목표 차간거리 확대 유지 — ACC 설정 거리 변경인지 별도 기능인지 확인 필요"
+    },
+    "전자식 차동 제한 제어": {
+      "primary": "CH-VMC-005",
+      "confidence": "high",
+      "note": "전자식 차동 제한(eLSD), ASIL B 같음"
+    },
+    "주차 충돌방지 보조": {
+      "primary": "AD-LON-016",
+      "included": [
+        "AD-PRK-001"
+      ],
+      "confidence": "medium",
+      "note": "주차 중 장애물 제동 지원 → 후진 자동 긴급 제동 + 초음파 거리 경고. 시드 ASIL C ≠ 기준 B(사유 필요)"
+    },
+    "증강현실 HUD 내비게이션": {
+      "primary": "IN-CLU-012",
+      "confidence": "high",
+      "note": "증강현실 HUD(AR-HUD). 시드 QM ≠ 기준 A"
+    },
+    "지능형 속도 제한 보조": {
+      "primary": "AD-LON-005",
+      "included": [
+        "AD-LON-006"
+      ],
+      "confidence": "high",
+      "note": "지능형 속도 보조(ISA) + 교통 표지 인식. 시드 ASIL C ≠ 기준 QM"
+    },
+    "차로 유지 보조": {
+      "primary": "AD-LAT-002",
+      "confidence": "high",
+      "note": "차로 유지 보조(LKA). 시드 ASIL C ≠ 기준 B"
+    },
+    "후석 엔터테인먼트 Gen1": {
+      "primary": "IN-HMI-016",
+      "confidence": "high",
+      "note": "뒷좌석 엔터테인먼트"
+    }
+  },
+  "_missing": {
+    "FEAT-00022": {
+      "name": "전방 안전거리 3단계",
+      "featureRefs": "거리 3단계 판정·안내 기능 — 전방 충돌 경고(FCW)·ACC와 범위가 다르다(데모 vECU 기능). 기준 행 추가 요청 또는 후보 확정 필요",
+      "candidates": [
+        "AD-LON-009",
+        "AD-LON-002"
+      ]
+    },
+    "FEAT-00023": {
+      "name": "급가속 억제",
+      "featureRefs": "페달 급조작 가속 완화 — 기준 행 PE-VCU-008은 중국(GB) 전용 페달 오조작 억제라 권역이 다름",
+      "candidates": [
+        "PE-VCU-008",
+        "PE-VCU-001"
+      ]
+    },
+    "FEAT-00025": {
+      "name": "전방 안전거리 확대",
+      "featureRefs": "목표 차간거리 확대 유지 — ACC 설정 거리 변경인지 별도 기능인지 확인 필요",
+      "candidates": [
+        "AD-LON-002",
+        "AD-LON-009"
+      ]
+    },
+    "FEAT-00026": {
+      "name": "급가속 억제",
+      "featureRefs": "페달 급조작 가속 완화 — 기준 행 PE-VCU-008은 중국(GB) 전용 페달 오조작 억제라 권역이 다름",
+      "candidates": [
+        "PE-VCU-008",
+        "PE-VCU-001"
+      ]
+    },
+    "FEAT-00028": {
+      "name": "전방 안전거리 확대",
+      "featureRefs": "목표 차간거리 확대 유지 — ACC 설정 거리 변경인지 별도 기능인지 확인 필요",
+      "candidates": [
+        "AD-LON-002",
+        "AD-LON-009"
+      ]
+    },
+    "FEAT-00029": {
+      "name": "급가속 억제",
+      "featureRefs": "페달 급조작 가속 완화 — 기준 행 PE-VCU-008은 중국(GB) 전용 페달 오조작 억제라 권역이 다름",
+      "candidates": [
+        "PE-VCU-008",
+        "PE-VCU-001"
+      ]
+    },
+    "FEAT-00031": {
+      "name": "전방 안전거리 확대",
+      "featureRefs": "목표 차간거리 확대 유지 — ACC 설정 거리 변경인지 별도 기능인지 확인 필요",
+      "candidates": [
+        "AD-LON-002",
+        "AD-LON-009"
+      ]
+    },
+    "FEAT-00032": {
+      "name": "급가속 억제",
+      "featureRefs": "페달 급조작 가속 완화 — 기준 행 PE-VCU-008은 중국(GB) 전용 페달 오조작 억제라 권역이 다름",
+      "candidates": [
+        "PE-VCU-008",
+        "PE-VCU-001"
+      ]
+    }
+  }
+}

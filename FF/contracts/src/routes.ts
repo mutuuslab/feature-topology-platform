@@ -48,8 +48,11 @@ import { z } from 'zod';
 import { VexStatement } from './rules/sbom';
 import { LinkChangeRequestBody, MockExtActionBody, MockExtCreateBody, ResolveConflictBody } from './rules/ext-sync';
 import { DashboardCreateBody, DashboardDeleteBody, DashboardFavouriteBody, DashboardUpdateBody } from './schemas/dashboard';
+import { CreateRefChangeBody, DecideRefChangeBody, PublishRefReleaseBody, RequestRefAddBody, ReviewRefChangeBody } from './schemas/refdb';
 
 const EmptyBody = z.object({}).strict();
+/** Feature DB 변경 요청 작성 — 사람 누구나(감사 조회자 제외, 30-95 §8.1) */
+const REFDB_CHANGE_REQUESTERS: Role[] = ['FEATURE_AUTHOR', 'FEATURE_APPROVER', 'PRODUCT_AUTHOR', 'IMPLEMENTER', 'VARIANT_OWNER', 'REFDB_ADMIN', 'DOMAIN_REVIEWER'];
 const ReasonBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
 
 export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
@@ -125,6 +128,23 @@ export const ROUTES: RouteDef[] = [
   { name: 'updateDraft', method: 'PATCH', path: '/api/features/:id/versions/:ver', summary: 'PROPOSED 초안 수정', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'SAFETY_OFFICER', 'VARIANT_OWNER', 'IMPLEMENTER'], body: UpdateDraftBody },
   { name: 'transition', method: 'POST', path: '/api/features/:id/versions/:ver/transitions', summary: 'Lifecycle 전이', component: 'D01-01', roles: ['FEATURE_APPROVER', 'RELEASE_MANAGER', 'GATE_JUDGE'], body: TransitionBody },
   { name: 'baselineChecklist', method: 'GET', path: '/api/features/:id/versions/:ver/baseline-checklist', summary: 'BOM 확정 체크리스트', component: 'D01-01' },
+
+  // Feature DB (D01-01 확장, docs/30-data-model/30-95) — 차종과 무관한 기준 기능 정의. Feature 등록은 기준 행을 대표 1 + 포함 N으로 참조한다
+  { name: 'listRefs', method: 'GET', path: '/api/refdb/refs', summary: 'Feature DB 기준 행 검색 — 한글·영문 기능명·별칭·용어집·ID, 도메인·컴포넌트·상태 필터, offset·limit 페이지(금액 필드는 산정 역할만)', component: 'D01-01', query: ['q', 'domain', 'component', 'status', 'offset', 'limit'] },
+  { name: 'refDetail', method: 'GET', path: '/api/refdb/refs/:refId', summary: 'Feature DB 기준 행 상세 — 정의·근거·세부기능 후보·이 행을 쓰는 Feature', component: 'D01-01' },
+  { name: 'refTaxonomy', method: 'GET', path: '/api/refdb/taxonomy', summary: 'Feature DB 분류 — 도메인 10 → 클러스터 → 컴포넌트', component: 'D01-01' },
+  { name: 'refSources', method: 'GET', path: '/api/refdb/sources', summary: 'Feature DB 출처 — 자료·발행처·버전·확인일·다음 점검일', component: 'D01-01' },
+  { name: 'refQuality', method: 'GET', path: '/api/refdb/quality', summary: 'Feature DB 품질 지표 — 상태별 행 수·출처 없음·근거 확인 12개월 경과·규모 근거 D 비중·발행 대기', component: 'D01-01' },
+  { name: 'refReleases', method: 'GET', path: '/api/refdb/releases', summary: 'Feature DB 발행 버전 이력 — 변경 요청 묶음·전체 해시', component: 'D01-01' },
+  { name: 'refSubfunctions', method: 'GET', path: '/api/refdb/subfunctions', summary: 'Feature DB 세부기능 후보(읽기 전용 참고) — 컴포넌트별', component: 'D01-01', query: ['component'] },
+  { name: 'requestRefAdd', method: 'POST', path: '/api/refdb/requests', summary: 'Feature DB에 없는 기능 추가 요청 — 정식 ID를 바로 부여한 요청 중 행 + 추가 변경 요청(승인 전에는 Feature 정의 승인이 막힘)', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'REFDB_ADMIN'], body: RequestRefAddBody },
+  { name: 'listRefChanges', method: 'GET', path: '/api/refdb/changes', summary: 'Feature DB 변경 요청 목록 — 대상 행·상태·종류·도메인(도메인 검토자의 담당 도메인) 필터', component: 'D01-01', query: ['refId', 'status', 'kind', 'domain'] },
+  { name: 'refChangeDetail', method: 'GET', path: '/api/refdb/changes/:id', summary: 'Feature DB 변경 요청 상세 — 필드 차이·자동 점검·검토 의견·영향(이 행을 쓰는 Feature)', component: 'D01-01' },
+  { name: 'createRefChange', method: 'POST', path: '/api/refdb/changes', summary: 'Feature DB 변경 요청 작성(추가·수정·폐기 예정·폐기) — 자동 점검 후 도메인 검토로', component: 'D01-01', roles: REFDB_CHANGE_REQUESTERS, body: CreateRefChangeBody },
+  { name: 'reviewRefChange', method: 'POST', path: '/api/refdb/changes/:id/reviews', summary: 'Feature DB 변경 요청 도메인 검토 의견(동의·보완·반대) — 요청자는 검토할 수 없다', component: 'D01-01', roles: ['DOMAIN_REVIEWER'], body: ReviewRefChangeBody },
+  { name: 'decideRefChange', method: 'POST', path: '/api/refdb/changes/:id/decision', summary: 'Feature DB 변경 요청 승인·반려 — 요청자 ≠ 승인자, 필수 정보 누락이면 승인 불가', component: 'D01-01', roles: ['REFDB_ADMIN'], body: DecideRefChangeBody },
+  { name: 'publishRefRelease', method: 'POST', path: '/api/refdb/releases', summary: 'Feature DB 버전 발행 — 승인된 변경 요청을 묶어 다음 버전·전체 해시 기록(추가만)', component: 'D01-01', roles: ['REFDB_ADMIN'], body: PublishRefReleaseBody },
+  { name: 'exportRefdb', method: 'GET', path: '/api/refdb/export', summary: 'Feature DB 내보내기 — 엑셀 03_FeatureDB 열 순서 + 출처 시트(금액 열은 산정 역할만)', component: 'D01-01', query: ['format', 'release'] },
 
   // Gate Record (Topology 소유, D01-02)
   { name: 'gates', method: 'GET', path: '/api/features/:id/versions/:ver/gates', summary: 'Gate G1~G9 판정·이력', component: 'D01-02' },

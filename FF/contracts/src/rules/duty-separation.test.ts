@@ -1,6 +1,7 @@
 // IAM 직무 분리 — FFG-PLT-016 합격: 겸직 계정 0건, 긴급 권한 사용 100%에 사후 검토 기록
 import { describe, expect, it } from 'vitest';
-import { DEMO_PERSONAS, dutiesOf, dutyConflicts, postReviewBlocker } from './duty-separation';
+import { SOD_RULES } from './access';
+import { DEMO_PERSONAS, dutiesOf, dutyConflicts, postReviewBlocker, refChangeDutyBlocker } from './duty-separation';
 
 describe('IAM 직무 분리 (FFG-PLT-016)', () => {
   it('FFG-PLT-016 두 직무 이상을 가진 계정을 찾는다 — 한 직무만이면 겸직 아님', () => {
@@ -22,5 +23,17 @@ describe('IAM 직무 분리 (FFG-PLT-016)', () => {
     expect(postReviewBlocker(cmd, 'usr-ops')).toMatch(/요청자/);
     expect(postReviewBlocker(cmd, 'usr-safety')).toMatch(/승인자/);
     expect(postReviewBlocker(cmd, 'usr-csm')).toBeNull();
+  });
+
+  it('Feature DB 변경 요청 — 요청자는 자기 요청의 검토자·승인자가 될 수 없다(SOD-13·14), 역할은 PLM 기준정보·구성 승인 계정이 맡는다', () => {
+    const cr = { requestedBy: 'usr-author' };
+    expect(refChangeDutyBlocker(cr, 'usr-author', 'REVIEW')).toMatch(/SOD-14/);
+    expect(refChangeDutyBlocker(cr, 'usr-author', 'DECIDE')).toMatch(/SOD-13/);
+    expect(refChangeDutyBlocker(cr, 'usr-steward', 'DECIDE')).toBeNull();
+    expect(refChangeDutyBlocker(cr, 'usr-approver', 'REVIEW')).toBeNull();
+    expect(SOD_RULES.filter((r) => r.id === 'SOD-13' || r.id === 'SOD-14').map((r) => r.subject)).toEqual(['Feature DB 변경 승인', 'Feature DB 변경 검토']);
+    const holders = (r: Parameters<typeof dutiesOf>[0][number]) => Object.keys(DEMO_PERSONAS).filter((k) => DEMO_PERSONAS[k].includes(r));
+    expect(holders('REFDB_ADMIN')).toEqual(['steward']);
+    expect(holders('DOMAIN_REVIEWER')).toEqual(['approver']);
   });
 });

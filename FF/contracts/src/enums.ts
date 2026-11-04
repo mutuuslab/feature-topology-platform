@@ -72,6 +72,8 @@ export const ROLES = [
   'SECURITY_OFFICER', // 사이버보안 담당자 — 보고서의 CSM (대량 Kill·키 사고)
   'OPS_LEAD', // 운영 리더 — 보고서의 OPS_LEAD (긴급 차단 2번째 승인)
   'REGULATORY_OWNER', // 법규 담당 — 보고서의 REGULATORY (형식승인 영향 서명·Profile)
+  'REFDB_ADMIN', // Feature DB 관리자 — 기준 행 변경 요청 최종 승인·버전 발행·분류·출처 관리 (30-95 §8.1)
+  'DOMAIN_REVIEWER', // 도메인 검토자 — 담당 도메인 기준 행 변경 요청에 검토 의견 (30-95 §8.1)
   'AUDITOR', // 운영/감사 조회자 (읽기 전용)
   'SYSTEM', // 시스템(Registry) 자동 전이
   'VEHICLE', // 차량 (차량 발신 요청 채널 — 사람 역할 아님)
@@ -94,6 +96,8 @@ export const ROLE_LABEL: Record<Role, string> = {
   SECURITY_OFFICER: '사이버보안 담당자(CSM)',
   OPS_LEAD: '운영 리더',
   REGULATORY_OWNER: '법규 담당',
+  REFDB_ADMIN: 'Feature DB 관리자',
+  DOMAIN_REVIEWER: '도메인 검토자',
   AUDITOR: '운영·감사 조회자',
   SYSTEM: '시스템',
   VEHICLE: '차량',

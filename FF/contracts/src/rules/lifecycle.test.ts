@@ -64,6 +64,28 @@ describe('Lifecycle 전이 표', () => {
     expect(codes(r)).toContain('DEPENDENCY_UNRESOLVED');
   });
 
+  it('PROPOSED→APPROVED: 연결된 기준 행이 요청 중(PENDING)·폐기(RETIRED)·없음이면 막힌다(30-95 §5.2, D-REF-7)', () => {
+    const refs = [
+      { refId: 'CH-BRK-009', role: 'PRIMARY' as const, refVersion: 'v1.3' },
+      { refId: 'CH-BRK-006', role: 'INCLUDED' as const, refVersion: 'v1.3' },
+    ];
+    const status = (m: Record<string, 'ACTIVE' | 'REVIEW' | 'DEPRECATED' | 'RETIRED' | 'PENDING'>) => (id: string) => m[id];
+    const ok = { latestGates: pass('G1', 'G2', 'G3'), actor: { id: 'usr-approver', role: 'FEATURE_APPROVER' as const }, reason: '근거 확인' };
+    // 활성·검토 필요·폐기 예정은 통과(경고는 등록 때 남긴다)
+    expect(evaluateTransition(at('PROPOSED', { featureRefs: refs }), 'APPROVED', ctx({ ...ok, refStatusOf: status({ 'CH-BRK-009': 'REVIEW', 'CH-BRK-006': 'DEPRECATED' }) })).blockers).toEqual([]);
+    const blocked = evaluateTransition(at('PROPOSED', { featureRefs: refs }), 'APPROVED', ctx({ ...ok, refStatusOf: status({ 'CH-BRK-009': 'PENDING' }) }));
+    expect(blocked.blockers.map((b) => [b.code, b.ref])).toEqual([
+      ['REFDB_LINK_BLOCKED', 'CH-BRK-009'],
+      ['REFDB_LINK_BLOCKED', 'CH-BRK-006'],
+    ]);
+    expect(blocked.blockers[0].message).toMatch(/요청 중/);
+    expect(codes(evaluateTransition(at('PROPOSED', { featureRefs: refs }), 'APPROVED', ctx({ ...ok, refStatusOf: status({ 'CH-BRK-009': 'ACTIVE', 'CH-BRK-006': 'RETIRED' }) })))).toEqual(['REFDB_LINK_BLOCKED']);
+    // 상태 조회를 주지 않는 호출자(Feature DB 연결 전)는 그대로
+    expect(evaluateTransition(at('PROPOSED', { featureRefs: refs }), 'APPROVED', ctx(ok)).blockers).toEqual([]);
+    // 다른 전이에는 걸지 않는다
+    expect(codes(evaluateTransition(at('APPROVED', { featureRefs: refs }), 'DEVELOPING', ctx({ refStatusOf: () => 'PENDING' })))).not.toContain('REFDB_LINK_BLOCKED');
+  });
+
   it('DEVELOPING→VERIFIED: Control Point별 정책이 모두 등록되어야 한다', () => {
     const r = evaluateTransition(at('DEVELOPING'), 'VERIFIED', ctx({ latestGates: pass('G4', 'G5', 'G6', 'G7'), policyCoverage: 1 }));
     expect(codes(r)).toEqual(['POLICY_MISSING']);

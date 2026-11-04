@@ -41,6 +41,9 @@ export const SOD_RULES: { id: string; subject: string; rule: string; component: 
   { id: 'SOD-10', subject: '대량 차단', rule: '24시간 누적 상한을 넘는 차단은 FSM과 CSM이 함께 승인한다 (FFG-SEC-003)', component: 'D03-03' },
   { id: 'SOD-11', subject: '원격 종료 권한', rule: '원격 종료(Kill) 실행 권한은 별도 역할로 두고, 긴급 사용은 24시간 안에 사후 독립 검토 (FFG-SEC-008·FFG-PLT-016)', component: 'D06-09' },
   { id: 'SOD-12', subject: '서명 키 용도', rule: '활성화·차단·복원·정책 서명 키는 용도별로 분리 — 다른 용도의 키로 서명한 명령은 무효 (FFG-SEC-002)', component: 'D06-10' },
+  // Feature DB 운영(30-95 §8.1) — 기준 행 변경 요청은 작성(누구나) → 도메인 검토(DOMAIN_REVIEWER) → 승인(REFDB_ADMIN)
+  { id: 'SOD-13', subject: 'Feature DB 변경 승인', rule: '기준 행 변경 요청자는 자기 요청을 승인·반려할 수 없다 (Feature DB 관리자 ≠ 요청자)', component: 'D01-01' },
+  { id: 'SOD-14', subject: 'Feature DB 변경 검토', rule: '기준 행 변경 요청자는 그 요청의 도메인 검토자가 될 수 없다', component: 'D01-01' },
 ];
 
 /** 보고서 v1.1 승인 역할(kill_command v2 approvals[].role) ↔ 플랫폼 역할 */

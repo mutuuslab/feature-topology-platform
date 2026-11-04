@@ -90,6 +90,10 @@ const roleNames = (rs: unknown): Recipient[] =>
     .filter((r): r is Role => typeof r === 'string' && (HUMAN_ROLES as readonly string[]).includes(r))
     .map((role) => ({ kind: 'role', role }));
 
+/** Feature DB 알림 이벤트 — 출처 정기 점검 기한 지남 · 추가 요청 반려(요청 중 행 폐기) */
+export const REFDB_REVIEW_DUE_EVENT = 'refdb.source.review-due';
+export const REFDB_REF_REJECTED_EVENT = 'refdb.ref.rejected';
+
 /**
  * 이벤트 종류 → 알림 규칙. 없는 이벤트는 알림을 만들지 않는다(이벤트 이력에만 남는다).
  * @req FR-REG-005-014, FR-CRC-002-009, FR-DSV-001-011, FR-KSW-003-003, FR-KSW-004-005, FR-EVT-003-003, FR-DSYN-001-004, FR-RBK-001-007, FR-RBK-004-005, FR-RBK-005-003, FR-RBK-005-004
@@ -324,6 +328,53 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
         link: `/procedures/${p.processId}?a=${p.activityId}`,
         recipients,
         exclude: [],
+        requirementIds: [],
+      };
+    },
+  },
+  // Feature DB(30-95 §8.5) — 출처 다음 점검일이 지남 → Feature DB 관리자 역할
+  [REFDB_REVIEW_DUE_EVENT]: {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      return {
+        category: 'PROCEDURE',
+        severity: 'WARNING',
+        title: `출처 정기 점검 기한 지남 — ${p.sourceId} ${p.title ?? ''}`.trim(),
+        fields: [
+          { label: '출처', value: `${p.sourceId} ${p.title ?? ''}`.trim() },
+          { label: '발행처', value: String(p.publisher || '-') },
+          { label: '다음 점검일', value: String(p.nextReviewAt) },
+          { label: '최종 확인일', value: String(p.checkedAt ?? '-') },
+        ],
+        link: `/master/feature-db?tab=sources&source=${p.sourceId}`,
+        recipients: roles(['REFDB_ADMIN']),
+        exclude: [],
+        requirementIds: [],
+      };
+    },
+  },
+  // Feature DB(30-95 §6.4) — 추가 요청 반려로 요청 중 행이 폐기됨 → 그 행을 연결한 Feature의 Owner 팀(다른 행으로 다시 연결해야 승인 가능)
+  [REFDB_REF_REJECTED_EVENT]: {
+    needs: ['feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const f = ctx.feature;
+      if (!f?.ownerId) return null;
+      return {
+        category: 'APPROVAL',
+        severity: 'WARNING',
+        title: `기준 기능 추가 요청 반려 — ${p.refId} (다른 기준 행으로 다시 연결)`,
+        fields: [
+          { label: 'Feature', value: `${f.featureId} ${f.name} ${f.version}` },
+          { label: '기준 행', value: `${p.refId} ${p.nameKo ?? ''}`.trim() },
+          { label: '변경 요청', value: String(p.changeId) },
+          { label: '반려 사유', value: String(p.reason ?? '-') },
+          { label: '발행', value: String(p.release ?? '-') },
+        ],
+        link: `/features/${f.featureId}/${f.version}`,
+        recipients: owner(ctx),
+        exclude: [String(p.by ?? '')].filter(Boolean),
         requirementIds: [],
       };
     },

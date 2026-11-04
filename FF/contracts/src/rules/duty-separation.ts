@@ -24,10 +24,10 @@ export const POST_REVIEW_MS = 24 * 3_600_000;
 export const DEMO_PERSONAS: Record<string, Role[]> = {
   author: ['FEATURE_AUTHOR'], // Feature 설계
   // 계정 수는 기능명세서(FP-DETAILED-1.1) 역할 9로 고정 — 겸직 0건이 되도록 9계정 안에서 직무를 나눈다(2026-10-17 결정)
-  approver: ['FEATURE_APPROVER', 'PRODUCT_APPROVER'], // 구성 승인 — 요구 승인만(출시는 협의 이관)
+  approver: ['FEATURE_APPROVER', 'PRODUCT_APPROVER', 'DOMAIN_REVIEWER'], // 구성 승인 — 요구 승인만(출시는 협의 이관) · Feature DB 도메인 검토(의견만, 승인 아님)
   quality: ['GATE_JUDGE', 'SAFETY_OFFICER'], // 품질 검토 (Gate 판정) · Safety Manager(FSM)
   operator: ['OPERATOR'], // 차량 운영 — Kill 실행
-  steward: ['BOM_APPROVER', 'VARIANT_OWNER', 'REGULATORY_OWNER'], // PLM 기준정보 (Baseline 승인권자) · 법규 담당
+  steward: ['BOM_APPROVER', 'VARIANT_OWNER', 'REGULATORY_OWNER', 'REFDB_ADMIN'], // PLM 기준정보 (Baseline 승인권자) · 법규 담당 · Feature DB 관리자
   commerce: ['PRODUCT_AUTHOR'], // 상품 권리
   // 시스템 연계 · 사이버보안(CSM) · 부 Safety Manager — 복원은 차단 승인자와 다른 FSM이 필요(FFG-DEAC-008). 둘 다 복원 승인 직무
   integrator: ['IMPLEMENTER', 'SECURITY_OFFICER', 'SAFETY_OFFICER'],
@@ -51,6 +51,15 @@ export function dutyConflicts(accounts: Record<string, readonly Role[]>): { acco
  * 긴급 권한 사후 검토 — 검토자는 그 명령의 요청자·승인자가 아니어야 한다.
  * @rule FFG-PLT-016 — 긴급 권한 사용 100%에 사후 독립 검토 기록
  */
+/**
+ * Feature DB 변경 요청 직무 분리(30-95 §8.1, SOD-13·14) — 요청자는 자기 요청의 검토자·승인자가 될 수 없다.
+ * stage: REVIEW = 도메인 검토 의견, DECIDE = DB 관리자 승인·반려. 막히면 사유 문구, 아니면 null.
+ */
+export function refChangeDutyBlocker(change: { requestedBy: string }, actorId: string, stage: 'REVIEW' | 'DECIDE'): string | null {
+  if (actorId === change.requestedBy) return stage === 'REVIEW' ? '변경 요청자는 자기 요청을 검토할 수 없습니다 (SOD-14)' : '변경 요청자는 자기 요청을 승인·반려할 수 없습니다 (SOD-13)';
+  return null;
+}
+
 export function postReviewBlocker(cmd: { requestedBy: string; approvers: string[] }, reviewer: string): string | null {
   if (reviewer === cmd.requestedBy) return '요청자는 자기 명령을 사후 검토할 수 없습니다';
   if (cmd.approvers.includes(reviewer)) return '승인자는 자기가 승인한 명령을 사후 검토할 수 없습니다';

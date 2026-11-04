@@ -2,6 +2,7 @@
 // 자리표시 문자열(미입력/미발급/해당 없음/의존 관계 없음.)은 null·[]로 바꾸고 _missing에 사유를 남긴다.
 import { z } from 'zod';
 import { Asil, CatalogType, ControlPointType, DependencyVerdict, GateId, GateResult, GateStatus, Lifecycle, RelationType, SaleType, TargetVersionCheck } from '../enums';
+import { AsilDeviation, FeatureRefLinks } from './refdb';
 
 export const MissingReason = z.enum(['미입력', '미발급', '해당 없음', '의존 관계 없음']);
 export type MissingReason = z.infer<typeof MissingReason>;
@@ -37,6 +38,12 @@ export const FeatureVersionRow = z.object({
   dependencyIds: z.array(z.string().regex(/^DEP-\d{5}$/)),
   catalogIds: z.array(z.string()),
   gateRecordIds: z.array(z.string()),
+  /** 기준 기능(Feature DB) 연결 — 대표 1 + 포함 N, 연결 당시 발행 버전(30-95 §5.3). 연결 도입 전 행(DATASET v0.81 시드)은 없을 수 있다 */
+  featureRefs: FeatureRefLinks.optional(),
+  /** 대표 기준 행의 대표 ASIL과 다른 ASIL의 사유(§6.3) — G2 검토 대상 */
+  asilDeviation: AsilDeviation.optional(),
+  /** 기준 행에서 가져온 규제·표준 조항(요구사항 ID가 아님) */
+  refRegulations: z.array(z.string()).optional(),
   _missing: Missing,
 });
 export type FeatureVersionRow = z.infer<typeof FeatureVersionRow>;

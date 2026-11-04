@@ -77,6 +77,23 @@ describe('알림 규칙 — 내용 항목과 수신자', () => {
     expect(labels(d)).toEqual(['실패 유형', '발생 시점', '대상 외부 시스템']);
     expect(who(d)).toEqual(['usr-integrator']);
   });
+
+  it('Feature DB 출처 점검 기한 지남 → Feature DB 관리자 역할(규칙표에 있다 — 실행 중에 더하지 않는다)', () => {
+    expect(Object.keys(NOTIFICATION_RULES)).toEqual(expect.arrayContaining([N.REFDB_REVIEW_DUE_EVENT, N.REFDB_REF_REJECTED_EVENT]));
+    const d = build(N.REFDB_REVIEW_DUE_EVENT, { aggregate: 'S07', payload: { sourceId: 'S07', title: 'ISO 26262', publisher: 'ISO', nextReviewAt: '2026-10-01', checkedAt: '2026-04-01' } });
+    expect(d).toMatchObject({ category: 'PROCEDURE', severity: 'WARNING', link: '/master/feature-db?tab=sources&source=S07' });
+    expect(labels(d)).toEqual(['출처', '발행처', '다음 점검일', '최종 확인일']);
+    expect(d!.recipients).toEqual([{ kind: 'role', role: 'REFDB_ADMIN' }]);
+  });
+
+  it('Feature DB 추가 요청 반려 → 그 행을 연결한 Feature의 Owner 팀, 반려한 본인 제외 · Feature가 없으면 알림 없음', () => {
+    const payload = { refId: 'CO-RVC-001', nameKo: '원격 시동', changeId: 'RC-00001', reason: '중복', release: 'v1.4', by: 'usr-refadmin' };
+    expect(build(N.REFDB_REF_REJECTED_EVENT, { payload })).toBeNull();
+    const d = build(N.REFDB_REF_REJECTED_EVENT, { feature, payload });
+    expect(d).toMatchObject({ category: 'APPROVAL', link: '/features/FEAT-00022/1.0.0', exclude: ['usr-refadmin'] });
+    expect(d!.recipients).toEqual([{ kind: 'team', team: 'ADAS기획팀' }]);
+    expect(labels(d)).toEqual(['Feature', '기준 행', '변경 요청', '반려 사유', '발행']);
+  });
 });
 
 describe('수신 계정·채널', () => {

@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { patchOf } from './patch';
 import { Asil, CatalogType, ControlPointType, GateId, GateResult, Lifecycle, RelationType, SaleType } from '../enums';
+import { AsilDeviation, FeatureRefLinkInputs } from './refdb';
 
 const reason = z.string().trim().min(2, '사유를 2자 이상 입력하세요.').max(500);
 
@@ -18,11 +19,20 @@ export const CreateFeatureBody = z.object({
   tags: z.array(z.string().trim().min(1).max(80)).default([]),
   upgVc: z.array(z.string().trim().min(1)).default([]),
   controlPoints: z.array(ControlPointType).default([]),
+  /** 기준 기능(Feature DB) 연결 — 필수, 대표 정확히 1 + 포함 N, 같은 행 중복 금지(30-95 §5.3·§6.2, D-REF-3) */
+  featureRefs: FeatureRefLinkInputs,
+  /** 대표 기준 행의 대표 ASIL과 다른 ASIL — 다르면 사유 필수(서버가 대표 행과 비교, §6.3) */
+  asilDeviation: AsilDeviation.optional(),
+  /** 기준 행의 규제·표준 조항 — 요구사항 ID가 아니므로 따로 보존(사람이 요구사항 연결을 확정) */
+  refRegulations: z.array(z.string().trim().min(1).max(500)).optional(),
+  /** 같은 국가·차종·트림에 같은 대표 기준 행이 이미 있을 때(409 REFDB_DUPLICATE_IN_SCOPE) 사유와 함께 확인 */
+  confirmDuplicate: z.boolean().optional(),
+  duplicateReason: z.string().trim().min(2).max(500).optional(),
 });
 export type CreateFeatureBody = z.infer<typeof CreateFeatureBody>;
 
-/** PROPOSED 초안 수정 — 국가·차종·트림은 바꿀 수 없다(새 Feature ID). */
-export const UpdateDraftBody = patchOf(CreateFeatureBody.omit({ country: true, vehicleModel: true, trim: true }))
+/** PROPOSED 초안 수정 — 국가·차종·트림은 바꿀 수 없다(새 Feature ID). 기준 행 연결(featureRefs)은 바꿀 수 있다(§5.3). */
+export const UpdateDraftBody = patchOf(CreateFeatureBody.omit({ country: true, vehicleModel: true, trim: true, confirmDuplicate: true, duplicateReason: true }))
   .extend({
     functions: z.array(z.object({ functionId: z.string().regex(/^FUNC-\d{6}$/), label: z.string() })).optional(),
     swIds: z.array(z.string()).optional(),

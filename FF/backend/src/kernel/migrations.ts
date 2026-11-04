@@ -793,4 +793,14 @@ CREATE TRIGGER ref_release_no_update BEFORE UPDATE ON ref_release BEGIN SELECT R
 CREATE TRIGGER ref_release_no_delete BEFORE DELETE ON ref_release BEGIN SELECT RAISE(ABORT, 'ref_release는 추가만 가능'); END;
 `,
   },
+  {
+    // Feature DB 이력 보호(30-95 §5.6·§8.2) — 기준 행은 지우지 않고(폐기는 RETIRED, ID 재사용 금지), 발행된 변경 요청은 바꾸지도 지우지도 않는다.
+    // 발행 전 변경 요청은 검토·승인·발행으로 상태가 바뀌므로 UPDATE는 발행(PUBLISHED) 뒤만 막는다. 반려된 추가 요청은 발행 버전만 붙고 상태는 그대로다.
+    name: '082_refdb_append_only',
+    sql: `
+CREATE TRIGGER ref_change_no_delete BEFORE DELETE ON ref_change BEGIN SELECT RAISE(ABORT, 'ref_change는 지울 수 없음(변경 이력 보존)'); END;
+CREATE TRIGGER ref_change_published_no_update BEFORE UPDATE ON ref_change WHEN OLD.status = 'PUBLISHED' BEGIN SELECT RAISE(ABORT, 'ref_change는 발행 뒤 바꿀 수 없음'); END;
+CREATE TRIGGER feature_ref_no_delete BEFORE DELETE ON feature_ref BEGIN SELECT RAISE(ABORT, 'feature_ref는 지울 수 없음(폐기는 RETIRED, ID 재사용 금지)'); END;
+`,
+  },
 ];

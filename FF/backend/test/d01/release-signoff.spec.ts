@@ -3,6 +3,7 @@
 // 서명은 그 시점의 G8·G9 판정 기록에 묶인다 — 다시 판정되면 이전 서명은 효력이 없다.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { RefdbRepository } from '../../src/domains/d01-policy/refdb/refdb.repository';
 import { actor, bootApp, confirmSafety } from '../helpers';
 
 const AUTHOR = actor('usr-author', 'FEATURE_AUTHOR');
@@ -63,5 +64,51 @@ describe('Release Sign-off (보고서 6.1 G7 — Feature Owner 승인)', () => {
     expect(r.body.error.details.blockers).toContainEqual(expect.objectContaining({ code: 'RELEASE_SIGNOFF_MISSING' }));
     await sign('2.2.0').expect(201);
     await release('2.2.0').expect(200);
+  });
+});
+
+// 사용자 결정(2026-11-04, 하네스 리뷰 ② #9) — 승인 뒤 기준 행이 폐기 예정·폐기여도 출시·서명은 막지 않고 경고(대체 행)와 감사 기록
+describe('Release Sign-off·출시 — 연결된 기준 행이 폐기 예정·폐기면 경고만', () => {
+  let app: INestApplication;
+  let http: () => any;
+  let repo: RefdbRepository;
+  const base = (ver: string) => `/api/features/FEAT-00001/versions/${ver}`;
+  const judge = (ver: string, gate: string) =>
+    http().post(`${base(ver)}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '출시 조건 확인', evidenceRef: `EV-${gate}` }).expect(201);
+  const sign = (ver: string) => http().post(`${base(ver)}/release-signoff`).set(AUTHOR).send({ reason: '출시 책임 확인 — 기준 행 상태 확인' });
+  const release = (ver: string) => http().post(`${base(ver)}/transitions`).set(RELEASE).send({ to: 'RELEASED', reason: '출시' });
+  const auditOf = async (target: string, action: string) => (await http().get(`/api/audit?target=${encodeURIComponent(target)}`).expect(200)).body.items.find((a: any) => a.action === action);
+  const AT = '2026-10-18T01:00:00.000Z';
+
+  beforeAll(async () => {
+    const b = await bootApp({ at: AT });
+    ({ app, http } = b);
+    repo = b.get(RefdbRepository);
+    for (const v of ['2.1.0', '2.2.0']) await confirmSafety(http, 'FEAT-00001', v);
+  });
+  afterAll(async () => app?.close());
+
+  it('폐기 예정(DEPRECATED) 행 — 서명·출시 응답 warnings에 대체 행, 감사 after.refWarnings', async () => {
+    // FEAT-00001은 시드 대응표로 AD-PRK-007(대표)에 연결돼 있다
+    expect((await http().get(base('2.1.0')).expect(200)).body.feature.featureRefs[0].refId).toBe('AD-PRK-007');
+    repo.updateRef({ ...repo.getRef('AD-PRK-007')!, status: 'DEPRECATED', replacedBy: 'AD-PRK-001' }, AT);
+    await judge('2.1.0', 'G8');
+    await judge('2.1.0', 'G9');
+    const s = (await sign('2.1.0').expect(201)).body;
+    expect(s).toMatchObject({ valid: true, warnings: [expect.objectContaining({ code: 'REF_STATUS', refId: 'AD-PRK-007', status: 'DEPRECATED', replacedBy: 'AD-PRK-001' })] });
+    expect((await auditOf('FEAT-00001@2.1.0#release-signoff', 'RELEASE_SIGNOFF')).after.refWarnings).toEqual([expect.objectContaining({ refId: 'AD-PRK-007', replacedBy: 'AD-PRK-001' })]);
+    const r = (await release('2.1.0').expect(200)).body;
+    expect(r.lifecycle).toBe('RELEASED');
+    expect(r.warnings).toEqual([expect.objectContaining({ refId: 'AD-PRK-007', status: 'DEPRECATED', replacedBy: 'AD-PRK-001', message: expect.stringContaining('AD-PRK-001') })]);
+    expect((await auditOf('FEAT-00001@2.1.0', 'FEATURE_TRANSITION VERIFIED→RELEASED')).after.refWarnings).toEqual([expect.objectContaining({ refId: 'AD-PRK-007' })]);
+  });
+
+  it('폐기(RETIRED) 행도 출시를 막지 않는다 — 경고만', async () => {
+    repo.updateRef({ ...repo.getRef('AD-PRK-007')!, status: 'RETIRED' }, AT);
+    await judge('2.2.0', 'G8');
+    await judge('2.2.0', 'G9');
+    expect((await sign('2.2.0').expect(201)).body.warnings).toEqual([expect.objectContaining({ refId: 'AD-PRK-007', status: 'RETIRED' })]);
+    const r = (await release('2.2.0').expect(200)).body;
+    expect(r).toMatchObject({ lifecycle: 'RELEASED', warnings: [expect.objectContaining({ refId: 'AD-PRK-007', status: 'RETIRED' })] });
   });
 });

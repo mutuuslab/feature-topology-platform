@@ -1,14 +1,14 @@
 // Feature DB에 없는 기능 — 등록 화면의 추가 요청(30-95 §6.4, D-REF-7).
 // 서버가 정식 형식 ID(도메인약어-컴포넌트약어-다음번호)를 바로 부여하고, 요청 중(PENDING) 행과 추가 변경 요청(ref_change kind=ADD, 도메인 검토 REVIEW)을 만든다.
 // ID는 한 번 쓰면 바꾸지 않는다(폐기·반려돼도 다시 쓰지 않음) — 요청자는 이 행을 대표로 Feature를 바로 등록하고, 승인 전에는 Feature 정의 승인이 막힌다.
-// 새 컴포넌트가 필요하면 같은 요청에 약어를 제안한다 — 분류 표 추가도 DB 관리자 승인(변경 요청 사유에 남긴다).
+// 새 컴포넌트가 필요하면 같은 요청에 약어를 제안한다 — 분류 표 추가도 DB 관리자 승인(변경 요청 newComponent, 승인 발행 때 분류 표에 만든다).
+// 응답·감사의 벤치마크 필드: 응답은 조회와 같은 역할별 숨김(refView), 감사에는 값을 남기지 않는다(maskMoney).
 import { Inject, Injectable } from '@nestjs/common';
 import {
   checkRegistration,
   domainAbbrOf,
   domainOfAbbr,
   FeatureRefRow,
-  nextRefId,
   type RefChange,
   type RequestRefAddBody,
   type TaxonomyNode,
@@ -19,6 +19,8 @@ import { Clock } from '../../../kernel/clock';
 import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
+import { maskMoney, refView, type RefView } from './read-view';
+import { nextRefIdOr409 } from './refdb-change.service';
 import { RefdbRepository } from './refdb.repository';
 
 /** 분류 표의 컴포넌트 — 시드 JSON은 abbrs(여러 약어)·clusterIds를 더 싣는다 */
@@ -36,7 +38,7 @@ export class RefdbRequestAddService {
     private readonly clock: Clock,
   ) {}
 
-  requestAdd(actor: Actor, body: RequestRefAddBody): { ref: FeatureRefRow; change: RefChange } {
+  requestAdd(actor: Actor, body: RequestRefAddBody): { ref: RefView; change: Omit<RefChange, 'after'> & { after: RefView } } {
     // 도메인 — 공식 이름(Body & Comfort) 또는 약어(BC)
     const domainAbbr = domainAbbrOf(body.domain) ?? (domainOfAbbr(body.domain.toUpperCase()) ? body.domain.toUpperCase() : undefined);
     if (!domainAbbr) throw new DomainError('VALIDATION', `도메인 '${body.domain}'은(는) Feature DB 공식 도메인이 아닙니다.`, { field: 'domain' });
@@ -46,7 +48,7 @@ export class RefdbRequestAddService {
     return this.db.tx(() => {
       const used = this.repo.usedRefIds();
       // 같은 접두의 가장 큰 번호 다음 — 폐기·반려된 번호도 used에 있으므로 다시 쓰지 않는다
-      const refId = nextRefId(domainAbbr, componentAbbr, used);
+      const refId = nextRefIdOr409(domainAbbr, componentAbbr, used);
       const at = this.clock.iso();
       const changeId = this.repo.nextChangeId(this.clock.now().getUTCFullYear());
       const basis = body.basisNote.trim();
@@ -110,12 +112,15 @@ export class RefdbRequestAddService {
         release: null,
         checks: checkRegistration(ref, { kind: 'ADD', usedIds: used, sourceIds: this.repo.sources().map((s) => s.sourceId) }),
         fromRegistration: true,
+        ...(newComponent ? { newComponent: { component, abbr: componentAbbr, cluster } } : {}),
       };
       this.repo.insertRef(ref, at);
       this.repo.insertChange(change);
-      this.audit.record(actor, 'REFDB_ADD_REQUEST', refId, { after: { ref, changeId, newComponent: newComponent ? { component, abbr: componentAbbr } : null }, componentId: 'D01-01' });
+      this.audit.record(actor, 'REFDB_ADD_REQUEST', refId, { after: { ref: maskMoney(ref), changeId, newComponent: newComponent ? { component, abbr: componentAbbr } : null }, componentId: 'D01-01' });
       this.events.publish('refdb.ref.requested', refId, { refId, changeId, domain, component, nameKo: ref.nameKo, by: actor.id }, { componentId: 'D01-01', correlationId: actor.correlationId });
-      return { ref, change };
+      // 조회 화면과 같은 역할별 숨김 — 산정 역할이 아니면 벤치마크 키 자체를 뺀다
+      const view = refView(ref, actor.role);
+      return { ref: view, change: { ...change, after: view } };
     });
   }
 

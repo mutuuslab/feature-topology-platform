@@ -85,11 +85,14 @@ describe('Feature DB 변경 요청', () => {
     expect(items.some((a) => a.action === 'REFDB_CHANGE_DECIDE' && a.result === 'DENIED')).toBe(true);
   });
 
-  it('검토 의견 없이는 승인할 수 없다 — 검토 후 승인하면 발행 대기, 기준 행은 아직 그대로', async () => {
+  it('검토 의견 없이는 승인할 수 없다 — 마지막 의견이 보완이면 막고, 동의로 바뀐 뒤 승인하면 발행 대기, 기준 행은 아직 그대로', async () => {
     const c = (await modify('CH-BRK-006', { nameKo: '경사로 밀림 방지(HSA)' }).expect(201)).body;
     const blocked = await decide(c.changeId, 'APPROVE').expect(422);
     expect(blocked.body.error.details.code).toBe('REVIEW_REQUIRED');
     await review(c.changeId, REVIEWER, 'REVISE').expect(201);
+    const revise = await decide(c.changeId, 'APPROVE').expect(422); // 보완 의견이 마지막이면 승인하지 않는다(2026-11-04 결정)
+    expect(revise.body.error.details).toMatchObject({ code: 'REVIEW_NOT_AGREED', opinion: 'REVISE' });
+    await review(c.changeId, REVIEWER, 'AGREE').expect(201); // 같은 검토자가 의견을 바꾼다
     const approved = (await decide(c.changeId, 'APPROVE').expect(201)).body;
     expect(approved.status).toBe('APPROVED');
     expect(approved.awaitingPublish).toBe(true);

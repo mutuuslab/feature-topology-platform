@@ -19,3 +19,14 @@ export function refView(r: FeatureRefRow, role: Role): RefView {
   for (const k of REF_MONEY_FIELDS) delete out[k];
   return out as RefView;
 }
+
+/** 감사 기록에 남기는 벤치마크 필드 자리 — 감사 이력(GET /api/audit)은 역할 제한이 없으므로 값 대신 '바뀜'만 남긴다 */
+export const MONEY_AUDIT_MASK = '(벤치마크 값 — 감사에는 남기지 않음)';
+
+/** 감사용 사본 — 벤치마크 필드에 값이 있으면 값만 자리 표시로 바꾼다(필드가 바뀌었다는 사실은 남는다). 빈 값(null·'')은 숨길 것이 없어 그대로 */
+export function maskMoney<T extends Record<string, unknown> | null | undefined>(row: T): T {
+  if (!row) return row;
+  const out: Record<string, unknown> = { ...row };
+  for (const k of REF_MONEY_FIELDS) if (out[k] !== undefined && out[k] !== null && out[k] !== '') out[k] = MONEY_AUDIT_MASK;
+  return out as T;
+}

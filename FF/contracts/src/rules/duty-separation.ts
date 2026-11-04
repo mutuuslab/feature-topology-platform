@@ -47,19 +47,31 @@ export function dutyConflicts(accounts: Record<string, readonly Role[]>): { acco
     .filter((x) => x.duties.length > 1);
 }
 
+/** Feature DB 변경 요청 직무 분리 규칙 ID(rules/access.ts SOD_RULES) — 화면 문구에는 쓰지 않는다 */
+export type RefChangeDutyRule = 'SOD-13' | 'SOD-14' | 'SOD-15';
+
+/**
+ * Feature DB 변경 요청 직무 분리(30-95 §8.1) — 막히면 규칙 ID와 사유 문구, 아니면 null.
+ *  · SOD-14: 요청자는 자기 요청을 검토할 수 없다(stage REVIEW)
+ *  · SOD-13: 요청자는 자기 요청을 승인·반려할 수 없다(stage DECIDE)
+ *  · SOD-15: 그 요청에 도메인 검토 의견을 낸 사람은 승인·반려할 수 없다(stage DECIDE, 2026-11-04 사용자 결정)
+ * 사유 문구는 화면 버튼 이유로 그대로 보이므로 규칙 ID를 넣지 않는다.
+ */
+export function refChangeDuty(change: { requestedBy: string; reviews?: readonly { reviewerId: string }[] }, actorId: string, stage: 'REVIEW' | 'DECIDE'): { rule: RefChangeDutyRule; message: string } | null {
+  if (actorId === change.requestedBy) return stage === 'REVIEW' ? { rule: 'SOD-14', message: '변경 요청자는 자기 요청을 검토할 수 없습니다' } : { rule: 'SOD-13', message: '변경 요청자는 자기 요청을 승인·반려할 수 없습니다' };
+  if (stage === 'DECIDE' && change.reviews?.some((r) => r.reviewerId === actorId)) return { rule: 'SOD-15', message: '이 요청에 검토 의견을 낸 사람은 승인·반려할 수 없습니다' };
+  return null;
+}
+
+/** refChangeDuty의 사유 문구만 — 화면이 버튼을 막을 때 쓴다 */
+export function refChangeDutyBlocker(change: { requestedBy: string; reviews?: readonly { reviewerId: string }[] }, actorId: string, stage: 'REVIEW' | 'DECIDE'): string | null {
+  return refChangeDuty(change, actorId, stage)?.message ?? null;
+}
+
 /**
  * 긴급 권한 사후 검토 — 검토자는 그 명령의 요청자·승인자가 아니어야 한다.
  * @rule FFG-PLT-016 — 긴급 권한 사용 100%에 사후 독립 검토 기록
  */
-/**
- * Feature DB 변경 요청 직무 분리(30-95 §8.1, SOD-13·14) — 요청자는 자기 요청의 검토자·승인자가 될 수 없다.
- * stage: REVIEW = 도메인 검토 의견, DECIDE = DB 관리자 승인·반려. 막히면 사유 문구, 아니면 null.
- */
-export function refChangeDutyBlocker(change: { requestedBy: string }, actorId: string, stage: 'REVIEW' | 'DECIDE'): string | null {
-  if (actorId === change.requestedBy) return stage === 'REVIEW' ? '변경 요청자는 자기 요청을 검토할 수 없습니다 (SOD-14)' : '변경 요청자는 자기 요청을 승인·반려할 수 없습니다 (SOD-13)';
-  return null;
-}
-
 export function postReviewBlocker(cmd: { requestedBy: string; approvers: string[] }, reviewer: string): string | null {
   if (reviewer === cmd.requestedBy) return '요청자는 자기 명령을 사후 검토할 수 없습니다';
   if (cmd.approvers.includes(reviewer)) return '승인자는 자기가 승인한 명령을 사후 검토할 수 없습니다';

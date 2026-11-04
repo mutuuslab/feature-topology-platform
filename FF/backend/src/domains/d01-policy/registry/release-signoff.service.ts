@@ -15,6 +15,7 @@ import { ZodPipe } from '../../../kernel/zod.pipe';
 import { HsmService } from '../../d06-qsec/pki-kms/hsm.service';
 import { FeatureRepo, GateRepo } from '../repos';
 import { ReharaRepo } from '../topology/rehara.repo';
+import { FeatureRefLinker, type RefWarning } from './feature-refs';
 
 const ACTION = 'RELEASE_SIGNOFF';
 
@@ -30,6 +31,7 @@ export class ReleaseSignoffService {
     private readonly gates: GateRepo,
     private readonly hsm: HsmService,
     private readonly rehara: ReharaRepo,
+    private readonly refs: FeatureRefLinker,
   ) {}
 
   /** 현재 G8·G9 최신 판정 기록 ID — 둘 다 PASS일 때만 */
@@ -69,7 +71,8 @@ export class ReleaseSignoffService {
     return v.valid && v.signoff ? { signedBy: v.signoff.signedBy, signedAt: v.signoff.signedAt } : null;
   }
 
-  sign(actor: Actor, featureId: string, version: string, reason: string): ReleaseSignoffView {
+  /** 서명 — 연결된 기준 행이 폐기 예정·폐기면 막지 않고 응답 warnings와 감사에 남긴다(대체 행 안내, 사용자 결정 2026-11-04 #9) */
+  sign(actor: Actor, featureId: string, version: string, reason: string): ReleaseSignoffView & { warnings?: RefWarning[] } {
     const target = `${featureId}@${version}#release-signoff`;
     const fail = (msg: string, code: 'NOT_FOUND' | 'GUARD_FAILED' | 'CONFLICT'): never => {
       this.audit.failed(actor, ACTION, target, msg, 'D01-01');
@@ -100,6 +103,7 @@ export class ReleaseSignoffService {
     // kid는 서명 뒤에 알 수 있으므로, 서명 대상 본문은 kid=''·sig=null로 고정하고 검증도 같은 본문으로 한다
     const signed = ReleaseSignoff.parse({ ...unsigned, sig: approval.value });
     const stored = { ...signed, kid: approval.kid };
+    const warnings = this.refs.statusWarnings(f.featureRefs, ['DEPRECATED', 'RETIRED'], '서명은 막지 않습니다 — 다음 Version에서 대체 행으로 다시 연결하세요.');
     return this.db.tx(() => {
       this.db.run(
         'INSERT INTO release_signoff (feature_id, feature_version, g8_record, g9_record, signed_by, signed_at, doc) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -111,9 +115,9 @@ export class ReleaseSignoffService {
         signed.signedAt,
         JSON.stringify(stored),
       );
-      this.audit.record(actor, ACTION, target, { after: { ownerId: f.ownerId, gateRecords: gates, kid: approval.kid }, reason, componentId: 'D01-01' });
+      this.audit.record(actor, ACTION, target, { after: { ownerId: f.ownerId, gateRecords: gates, kid: approval.kid, ...(warnings.length ? { refWarnings: warnings } : {}) }, reason, componentId: 'D01-01' });
       this.events.publish('release.signed', target, { featureId, version, ownerId: f.ownerId, signedBy: actor.id }, { componentId: 'D01-01', correlationId: actor.correlationId });
-      return { signoff: stored, valid: true, stale: false };
+      return { signoff: stored, valid: true, stale: false, ...(warnings.length ? { warnings } : {}) };
     });
   }
 }

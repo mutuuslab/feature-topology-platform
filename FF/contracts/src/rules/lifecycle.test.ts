@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { GATES, type GateId, type GateStatus, type Lifecycle } from '../enums';
 import type { FeatureVersionRow } from '../schemas/dataset';
 import { loadDataset } from '../testing/fixtures';
-import { canonicalJson, snapshotContent, snapshotDiff } from './canonical';
+import { canonicalJson, SNAPSHOT_EXCLUDE, snapshotContent, snapshotDiff } from './canonical';
 import { autoTransition, bumpVersion, compareVersion, evaluateTransition, FEATURE_TRANSITIONS, type TransitionContext } from './lifecycle';
 import { changedKeys, gatesToRejudge } from './rejudge';
 
@@ -86,6 +86,38 @@ describe('Lifecycle 전이 표', () => {
     expect(codes(evaluateTransition(at('APPROVED', { featureRefs: refs }), 'DEVELOPING', ctx({ refStatusOf: () => 'PENDING' })))).not.toContain('REFDB_LINK_BLOCKED');
   });
 
+  it('PROPOSED→APPROVED: 대표 기준 행 연결이 없으면 막힌다(사용자 결정 2026-11-04) — 다른 전이·상태 조회 없는 호출자는 그대로', () => {
+    const ok = { latestGates: pass('G1', 'G2', 'G3'), actor: { id: 'usr-approver', role: 'FEATURE_APPROVER' as const }, reason: '근거 확인', refStatusOf: () => 'ACTIVE' as const };
+    for (const featureRefs of [undefined, [], [{ refId: 'CH-BRK-006', role: 'INCLUDED' as const, refVersion: 'v1.3' }]]) {
+      const r = evaluateTransition(at('PROPOSED', { featureRefs }), 'APPROVED', ctx(ok));
+      expect(r.blockers.map((b) => [b.code, b.ref])).toEqual([['REFDB_LINK_BLOCKED', 'featureRefs']]);
+      expect(r.blockers[0].message).toContain('기준 행을 연결하세요');
+    }
+    expect(evaluateTransition(at('PROPOSED', { featureRefs: undefined }), 'APPROVED', ctx({ ...ok, refStatusOf: undefined })).blockers).toEqual([]);
+    // 이미 승인된 버전의 뒤 단계(출시 등)는 연결을 보지 않는다
+    expect(codes(evaluateTransition(at('RELEASED', { featureRefs: undefined }), 'DEPRECATED', ctx({ refStatusOf: () => 'ACTIVE' })))).not.toContain('REFDB_LINK_BLOCKED');
+  });
+
+  it('PROPOSED→APPROVED: 대표 행의 대표 ASIL이 등록 뒤 바뀌면 지금 값 기준 사유가 있어야 한다(30-95 §6.3)', () => {
+    const refs = [{ refId: 'CH-BRK-009', role: 'PRIMARY' as const, refVersion: 'v1.3' }];
+    const ok = { latestGates: pass('G1', 'G2', 'G3'), actor: { id: 'usr-approver', role: 'FEATURE_APPROVER' as const }, reason: '근거 확인', refStatusOf: () => 'ACTIVE' as const };
+    const asOf = (rep: 'QM' | 'A' | 'B' | 'C' | 'D') => () => rep;
+    // 같으면 통과
+    expect(evaluateTransition(at('PROPOSED', { asil: 'B', featureRefs: refs }), 'APPROVED', ctx({ ...ok, refAsilRepOf: asOf('B') })).blockers).toEqual([]);
+    // 대표 ASIL이 C로 바뀜 — 사유 없음
+    const none = evaluateTransition(at('PROPOSED', { asil: 'B', featureRefs: refs }), 'APPROVED', ctx({ ...ok, refAsilRepOf: asOf('C') }));
+    expect(none.blockers.map((b) => [b.code, b.ref])).toEqual([['REFDB_LINK_BLOCKED', 'CH-BRK-009']]);
+    expect(none.blockers[0].message).toMatch(/C → B/);
+    // 이전 대표 ASIL 기준 사유(from A)는 효력이 없다
+    const stale = evaluateTransition(at('PROPOSED', { asil: 'B', featureRefs: refs, asilDeviation: { from: 'A', to: 'B', reason: '이전 판단' } }), 'APPROVED', ctx({ ...ok, refAsilRepOf: asOf('C') }));
+    expect(stale.blockers.map((b) => b.code)).toEqual(['REFDB_LINK_BLOCKED']);
+    expect(stale.blockers[0].message).toMatch(/이전 대표 ASIL A/);
+    // 지금 값 기준 사유면 통과
+    expect(evaluateTransition(at('PROPOSED', { asil: 'B', featureRefs: refs, asilDeviation: { from: 'C', to: 'B', reason: '하향 근거 HARA' } }), 'APPROVED', ctx({ ...ok, refAsilRepOf: asOf('C') })).blockers).toEqual([]);
+    // 대표 ASIL 조회를 주지 않으면 보지 않는다
+    expect(evaluateTransition(at('PROPOSED', { asil: 'B', featureRefs: refs }), 'APPROVED', ctx(ok)).blockers).toEqual([]);
+  });
+
   it('DEVELOPING→VERIFIED: Control Point별 정책이 모두 등록되어야 한다', () => {
     const r = evaluateTransition(at('DEVELOPING'), 'VERIFIED', ctx({ latestGates: pass('G4', 'G5', 'G6', 'G7'), policyCoverage: 1 }));
     expect(codes(r)).toEqual(['POLICY_MISSING']);
@@ -146,6 +178,16 @@ describe('Baseline 스냅샷 해시 입력', () => {
     expect(canonicalJson(snapshotContent(base))).toBe(canonicalJson(snapshotContent(bl)));
     expect(Object.keys(snapshotContent(bl))).toHaveLength(18);
     expect(Object.keys(snapshotContent(bl))).not.toContain('lifecycle');
+  });
+  it('기준 기능 연결(featureRefs, refVersion 포함)은 해시 입력이다 — SNAPSHOT_EXCLUDE에 넣지 않는다(30-95 §5.3, 하네스 리뷰 M5)', () => {
+    expect(SNAPSHOT_EXCLUDE as readonly string[]).not.toContain('featureRefs');
+    const linked = { ...bl, featureRefs: [{ refId: 'AD-LON-009', role: 'PRIMARY' as const, refVersion: 'v1.3' }] };
+    expect(snapshotContent(linked).featureRefs).toEqual(linked.featureRefs);
+    // 연결 당시 발행 버전이 다르면 다른 내용
+    const bumped = { ...linked, featureRefs: [{ ...linked.featureRefs[0], refVersion: 'v1.4' }] };
+    expect(canonicalJson(snapshotContent(bumped))).not.toBe(canonicalJson(snapshotContent(linked)));
+    // 연결이 없는 기존 스냅샷(BL-00028)의 정규화 결과는 그대로
+    expect(Object.keys(snapshotContent(bl))).not.toContain('featureRefs');
   });
   it('키 순서와 무관하다', () => expect(canonicalJson({ b: 1, a: [2, { d: 1, c: 2 }] })).toBe('{"a":[2,{"c":2,"d":1}],"b":1}'));
   it('diff는 바뀐 필드만', () => {

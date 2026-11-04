@@ -1,7 +1,7 @@
 // Feature DB 하네스 정합 검사(30-95) — 계약(routes·권한·직무 분리)과 실제 앱·시드 데이터가 서로 어긋나지 않는지 한곳에서 본다.
 //  (a) ROUTES의 /api/refdb 경로마다 Nest 처리기가 있고, 처리기가 읽는 질의 이름이 routes.ts query와 같다(전체 양방향은 routes.spec).
 //  (b) IAM 권한표(rolesView)에서 Feature DB 관리자·도메인 검토자의 Feature DB 쓰기 권한이 정확히 정해진 묶음이다.
-//  (c) 직무 분리 SOD-13·14가 규칙표에 있다 — 서버 강제(403·감사 DENIED)는 refdb-change.spec.ts가 본다.
+//  (c) 직무 분리 SOD-13·14·15가 규칙표에 있다 — 서버 강제(403·감사 DENIED)는 refdb-change.spec.ts·refdb-governance.spec.ts가 본다.
 //  (d) 시드 데이터 — 기준 행 수 = manifest 행 수, 대응표 refId 실재, 연결된 시드 Feature의 ASIL = 대표 행 대표 ASIL 또는 asilDeviation 사유.
 //      (d)의 ASIL 불일치는 0건이어야 한다 — 사유는 from·to가 대표 행 대표 ASIL·버전 ASIL과 맞아야 인정한다.
 import { INestApplication, RequestMethod } from '@nestjs/common';
@@ -71,9 +71,9 @@ describe('Feature DB 하네스 정합', () => {
   afterAll(() => app?.close());
 
   describe('(a) 경로 ↔ 처리기', () => {
-    it('Feature DB 경로는 15개 — 모두 D01-01 컴포넌트', () => {
+    it('Feature DB 경로는 16개 — 모두 D01-01 컴포넌트', () => {
       expect(REFDB_ROUTES.map((r) => r.name).sort()).toEqual(
-        ['createRefChange', 'decideRefChange', 'exportRefdb', 'listRefChanges', 'listRefs', 'publishRefRelease', 'refChangeDetail', 'refDetail', 'refQuality', 'refReleases', 'refSources', 'refSubfunctions', 'refTaxonomy', 'requestRefAdd', 'reviewRefChange'].sort(),
+        ['createRefChange', 'decideRefChange', 'exportRefdb', 'listRefChanges', 'listRefs', 'publishRefRelease', 'recordSourceReview', 'refChangeDetail', 'refDetail', 'refQuality', 'refReleases', 'refSources', 'refSubfunctions', 'refTaxonomy', 'requestRefAdd', 'reviewRefChange'].sort(),
       );
       for (const r of REFDB_ROUTES) expect(r.component, r.name).toBe('D01-01');
     });
@@ -101,8 +101,8 @@ describe('Feature DB 하네스 정합', () => {
       return rolesView().find((v) => v.role === role)!.allowed.filter((n) => names.has(n)).sort();
     };
 
-    it('Feature DB 관리자 — 추가 요청·변경 요청 작성·승인/반려·발행만, 도메인 검토는 없다', () => {
-      expect(refdbWrites('REFDB_ADMIN')).toEqual(['createRefChange', 'decideRefChange', 'publishRefRelease', 'requestRefAdd']);
+    it('Feature DB 관리자 — 추가 요청·변경 요청 작성·승인/반려·발행·출처 점검 기록만, 도메인 검토는 없다', () => {
+      expect(refdbWrites('REFDB_ADMIN')).toEqual(['createRefChange', 'decideRefChange', 'publishRefRelease', 'recordSourceReview', 'requestRefAdd']);
     });
 
     it('도메인 검토자 — 변경 요청 작성·도메인 검토만(승인·발행·추가 요청 없음)', () => {
@@ -124,9 +124,9 @@ describe('Feature DB 하네스 정합', () => {
   });
 
   describe('(c) 직무 분리', () => {
-    it('SOD-13(변경 승인)·SOD-14(변경 검토)가 규칙표에 있다 — 서버 강제는 refdb-change.spec.ts(403·감사 DENIED)', () => {
+    it('SOD-13(변경 승인)·SOD-14(변경 검토)·SOD-15(검토자 ≠ 승인자)가 규칙표에 있다 — 서버 강제는 refdb-change.spec.ts·refdb-governance.spec.ts(403·감사 DENIED)', () => {
       const ids = SOD_RULES.filter((r) => r.component === 'D01-01').map((r) => r.id);
-      expect(ids).toEqual(expect.arrayContaining(['SOD-13', 'SOD-14']));
+      expect(ids).toEqual(expect.arrayContaining(['SOD-13', 'SOD-14', 'SOD-15']));
     });
   });
 

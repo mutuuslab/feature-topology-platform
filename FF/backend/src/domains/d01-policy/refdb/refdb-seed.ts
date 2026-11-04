@@ -6,15 +6,19 @@
 // 시드 Feature 68개의 연결은 seed-links.json 대응표로 채운다 — 대응이 없는 8개(_missing)는 연결을 지어내지 않고
 // doc._missing.featureRefs='미입력' + 가져오기 기록(meta)에 사유·후보를 남겨 화면이 '확인 필요'로 보여 준다(품질 지표 needsLink).
 // 시드 ASIL이 대표 행 대표 ASIL과 다른 Feature는 대응표의 asilDeviation(from·to·사유)을 그 ASIL 버전 doc.asilDeviation으로 넣는다(30-95 §6.3).
+// 확정 버전 doc까지 바꾸므로 가져오기 한 번을 감사 REFDB_SEED 한 건(행 수·바꾼 Feature 버전 목록)으로 남긴다.
+// 가져오기 자료가 없으면(NO_DATA) 빈 Feature DB로 뜬다 — 운영 모드에서는 오류 로그(패키지에 data/reference가 빠진 것), 준비 점검(health/ready refdb)이 503.
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { AsilDeviation, FeatureRefLinks, FeatureRefRow, RefGlossary, RefRelease, RefSource, RefSubfunction, TaxonomyNode, type FeatureRefLink } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
+import type { Actor } from '../../../kernel/actor';
+import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
 import { DB, type Db } from '../../../kernel/db';
-import { seedOf } from '../../../kernel/runtime-config';
+import { isProduction, seedOf } from '../../../kernel/runtime-config';
 import { RefdbRepository } from './refdb.repository';
 
 /** 커밋된 가져오기 결과(tools/refdb/import.ts) — repo 루트 기준 */
@@ -24,6 +28,8 @@ export const REFDB_SEED_LINKS = join(FEATURE_DB_ROOT, 'seed-links.json');
 export const SEED_RELEASE = 'v1.3';
 /** 발행 기록의 발행자 — 사람이 아닌 첫 기동 가져오기 */
 export const SEED_PUBLISHER = 'system:refdb-seed';
+/** 가져오기 감사의 행위자 */
+const SEED_ACTOR: Actor = { id: SEED_PUBLISHER, role: 'SYSTEM', correlationId: '' };
 
 /** 가져오기 manifest(tools/refdb/import-lib renderFiles) — 쓰는 값만 */
 const Manifest = z.object({
@@ -102,7 +108,7 @@ const linked = (doc: Doc) => Array.isArray(doc.featureRefs) && doc.featureRefs.l
  * 빈 Feature DB에 v1.3을 넣고 시드 Feature에 연결을 붙인다 — 한 트랜잭션.
  * linksPath가 null이면 연결은 붙이지 않는다(기본 픽스처가 아닌 설치).
  */
-export function seedRefdb(db: Db, repo: RefdbRepository, opts: { at: string; dir?: string; linksPath?: string | null }): RefdbSeedResult {
+export function seedRefdb(db: Db, repo: RefdbRepository, opts: { at: string; dir?: string; linksPath?: string | null; audit?: AuditService }): RefdbSeedResult {
   if (repo.countRefs() > 0 || repo.countReleases() > 0 || repo.seedRecord()) return { seeded: false, skipped: 'NOT_EMPTY' };
   const dir = opts.dir ?? REFDB_SEED_DIR;
   if (!existsSync(join(dir, 'manifest.json'))) return { seeded: false, skipped: 'NO_DATA' };
@@ -111,6 +117,8 @@ export function seedRefdb(db: Db, repo: RefdbRepository, opts: { at: string; dir
   const known = new Map(f.refs.map((r) => [r.refId, r]));
   let linkedVersions = 0;
   const missing: SeedMissingLink[] = [];
+  /** 이 가져오기가 doc을 바꾼 Feature 버전(featureId@version) — 감사에 남긴다 */
+  const touched: { linked: string[]; missing: string[] } = { linked: [], missing: [] };
   db.tx(() => {
     for (const n of f.taxonomy) repo.insertTaxonomy(n); // 노드 ID는 수준마다 다른 구분자라 겹치지 않는다(refdb:check가 지킨다)
     for (const r of f.refs) repo.insertRef(r, opts.at);
@@ -136,6 +144,7 @@ export function seedRefdb(db: Db, repo: RefdbRepository, opts: { at: string; dir
           repo.setFeatureVersionDoc(featureId, v.version, { ...doc, featureRefs: stored, ...deviation });
           repo.replaceLinks(featureId, v.version, stored);
           linkedVersions++;
+          touched.linked.push(`${featureId}@${v.version}`);
         }
       }
       for (const [featureId, m] of Object.entries(links._missing)) {
@@ -147,11 +156,23 @@ export function seedRefdb(db: Db, repo: RefdbRepository, opts: { at: string; dir
           const doc = JSON.parse(v.doc) as Doc;
           if (linked(doc)) continue;
           repo.setFeatureVersionDoc(featureId, v.version, { ...doc, _missing: { ...((doc._missing as Doc | undefined) ?? {}), featureRefs: '미입력' } });
+          touched.missing.push(`${featureId}@${v.version}`);
         }
       }
     }
     const record: SeedRecord = { release: SEED_RELEASE, hash: f.hash, at: opts.at, refs: f.refs.length, linkedVersions, missing };
     repo.putSeedRecord(JSON.stringify(record));
+    opts.audit?.record(SEED_ACTOR, 'REFDB_SEED', SEED_RELEASE, {
+      after: {
+        release: SEED_RELEASE,
+        hash: f.hash,
+        counts: { refs: f.refs.length, taxonomy: f.taxonomy.length, sources: f.sources.length, glossary: f.glossary.length, subfunctions: f.subfunctions.length },
+        linkedVersions: touched.linked,
+        missingVersions: touched.missing,
+      },
+      reason: `Feature DB ${SEED_RELEASE} 첫 기동 가져오기 — ${f.manifest.source.file}`,
+      componentId: 'D01-01',
+    });
   });
   return {
     seeded: true,
@@ -178,6 +199,7 @@ export class RefdbSeed implements OnModuleInit {
     @Inject(DB) private readonly db: Db,
     private readonly repo: RefdbRepository,
     private readonly clock: Clock,
+    private readonly audit: AuditService,
   ) {}
 
   /** 빈 Feature DB면 어떤 시드에서도 v1.3을 넣는다. 대응표는 데모 Feature(기본 픽스처 v0.81)가 있을 때만 — 다른 픽스처의 같은 Feature ID에 엉뚱한 연결을 붙이지 않게 */
@@ -185,7 +207,18 @@ export class RefdbSeed implements OnModuleInit {
     if (!refdbSeedEnabled(process.env)) return;
     // TODO(통합): kernel/db-open.ts applySeed에서 부르면 시험 PG 틀 데이터베이스에 함께 담겨 복제 부팅마다 다시 넣지 않는다
     const demoFeatures = seedOf(process.env) !== 'none' && !process.env.FF_FIXTURES;
-    const r = seedRefdb(this.db, this.repo, { at: this.clock.iso(), linksPath: demoFeatures ? REFDB_SEED_LINKS : null });
+    const r = this.run({ linksPath: demoFeatures ? REFDB_SEED_LINKS : null });
     if (r.seeded && r.counts?.missing) this.log.warn(`Feature DB ${SEED_RELEASE} 가져옴 — 대응표에 없는 시드 Feature ${r.counts.missing}개는 기준 행 연결 '확인 필요'`);
+  }
+
+  /** 가져오기 + 감사. NO_DATA(가져오기 자료 없음)는 운영 모드에서 오류 로그 — 빈 Feature DB로는 Feature를 등록할 수 없다 */
+  run(opts: { dir?: string; linksPath?: string | null } = {}): RefdbSeedResult {
+    const r = seedRefdb(this.db, this.repo, { at: this.clock.iso(), audit: this.audit, ...opts });
+    if (r.skipped === 'NO_DATA') {
+      const msg = `Feature DB 가져오기 자료가 없습니다(${join(opts.dir ?? REFDB_SEED_DIR, 'manifest.json')}) — 빈 Feature DB로 시작합니다. 패키지에 data/reference/feature-db가 들어 있는지 확인하세요(끄려면 FF_REFDB_SEED=off).`;
+      if (isProduction(process.env)) this.log.error(msg);
+      else this.log.warn(msg);
+    }
+    return r;
   }
 }

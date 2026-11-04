@@ -1,7 +1,7 @@
 // IAM 직무 분리 — FFG-PLT-016 합격: 겸직 계정 0건, 긴급 권한 사용 100%에 사후 검토 기록
 import { describe, expect, it } from 'vitest';
 import { SOD_RULES } from './access';
-import { DEMO_PERSONAS, dutiesOf, dutyConflicts, postReviewBlocker, refChangeDutyBlocker } from './duty-separation';
+import { DEMO_PERSONAS, dutiesOf, dutyConflicts, postReviewBlocker, refChangeDuty, refChangeDutyBlocker } from './duty-separation';
 
 describe('IAM 직무 분리 (FFG-PLT-016)', () => {
   it('FFG-PLT-016 두 직무 이상을 가진 계정을 찾는다 — 한 직무만이면 겸직 아님', () => {
@@ -27,13 +27,30 @@ describe('IAM 직무 분리 (FFG-PLT-016)', () => {
 
   it('Feature DB 변경 요청 — 요청자는 자기 요청의 검토자·승인자가 될 수 없다(SOD-13·14), 역할은 PLM 기준정보·구성 승인 계정이 맡는다', () => {
     const cr = { requestedBy: 'usr-author' };
-    expect(refChangeDutyBlocker(cr, 'usr-author', 'REVIEW')).toMatch(/SOD-14/);
-    expect(refChangeDutyBlocker(cr, 'usr-author', 'DECIDE')).toMatch(/SOD-13/);
+    expect(refChangeDuty(cr, 'usr-author', 'REVIEW')).toEqual({ rule: 'SOD-14', message: '변경 요청자는 자기 요청을 검토할 수 없습니다' });
+    expect(refChangeDuty(cr, 'usr-author', 'DECIDE')).toEqual({ rule: 'SOD-13', message: '변경 요청자는 자기 요청을 승인·반려할 수 없습니다' });
     expect(refChangeDutyBlocker(cr, 'usr-steward', 'DECIDE')).toBeNull();
     expect(refChangeDutyBlocker(cr, 'usr-approver', 'REVIEW')).toBeNull();
-    expect(SOD_RULES.filter((r) => r.id === 'SOD-13' || r.id === 'SOD-14').map((r) => r.subject)).toEqual(['Feature DB 변경 승인', 'Feature DB 변경 검토']);
+    expect(SOD_RULES.filter((r) => ['SOD-13', 'SOD-14', 'SOD-15'].includes(r.id)).map((r) => r.subject)).toEqual(['Feature DB 변경 승인', 'Feature DB 변경 검토', 'Feature DB 검토·승인 분리']);
     const holders = (r: Parameters<typeof dutiesOf>[0][number]) => Object.keys(DEMO_PERSONAS).filter((k) => DEMO_PERSONAS[k].includes(r));
     expect(holders('REFDB_ADMIN')).toEqual(['steward']);
     expect(holders('DOMAIN_REVIEWER')).toEqual(['approver']);
+  });
+
+  it('Feature DB 변경 요청 — 그 요청에 검토 의견을 낸 사람은 승인·반려할 수 없다(SOD-15, 계정 기준), 검토는 다시 낼 수 있다', () => {
+    const cr = { requestedBy: 'usr-author', reviews: [{ reviewerId: 'usr-both' }] };
+    expect(refChangeDuty(cr, 'usr-both', 'DECIDE')).toEqual({ rule: 'SOD-15', message: '이 요청에 검토 의견을 낸 사람은 승인·반려할 수 없습니다' });
+    expect(refChangeDuty(cr, 'usr-both', 'REVIEW')).toBeNull();
+    expect(refChangeDuty(cr, 'usr-steward', 'DECIDE')).toBeNull();
+    expect(refChangeDuty({ ...cr, reviews: [] }, 'usr-both', 'DECIDE')).toBeNull();
+  });
+
+  it('직무 분리 사유 문구에는 규칙 ID가 없다 — 화면 버튼 이유로 그대로 보인다', () => {
+    const cr = { requestedBy: 'usr-author', reviews: [{ reviewerId: 'usr-rev' }] };
+    const messages = [refChangeDutyBlocker(cr, 'usr-author', 'REVIEW'), refChangeDutyBlocker(cr, 'usr-author', 'DECIDE'), refChangeDutyBlocker(cr, 'usr-rev', 'DECIDE')];
+    for (const m of messages) {
+      expect(m).toBeTruthy();
+      expect(m).not.toMatch(/SOD-|FFG-|REFDB_|[()]/);
+    }
   });
 });

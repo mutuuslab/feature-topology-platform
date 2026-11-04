@@ -23,7 +23,7 @@ describe('Gate Decision Record (FFG-LCY-001)', () => {
 
   beforeAll(async () => {
     ({ app, http } = await bootApp({ at: '2026-10-12T01:00:00.000Z' }));
-    const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: 'Decision Record 시험', changes: { description: '서명 시험' } }).expect(201);
+    const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: 'Decision Record 시험', changes: { description: '서명 시험', featureRefs: [{ refId: 'AD-LON-009', role: 'PRIMARY' }] } }).expect(201); // FEAT-00022는 연결 없는 시드 — 정의 승인에 대표 기준 행 필요(사용자 결정 2026-11-04)
     ver = v.body.feature.version;
     await confirmSafety(http, 'FEAT-00022', ver);
   });

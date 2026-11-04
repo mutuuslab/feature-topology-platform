@@ -242,6 +242,11 @@ function toBomItem(f: FeatureVersionRow, baselineId: string): BomItemRow {
     ecuPnos: f.ecuPnos,
     controlPoints: f.controlPoints,
     dependencyIds: f.dependencyIds,
+    // 기준 기능 연결(refVersion 포함)·ASIL 사유·규제 조항도 확정 내용이다 — 해시 입력(SNAPSHOT_EXCLUDE에 넣지 않음, 30-95 §5.3).
+    // 연결이 없는 Feature는 키를 만들지 않는다(연결 도입 전 기준선 해시가 그대로)
+    ...(f.featureRefs ? { featureRefs: f.featureRefs } : {}),
+    ...(f.asilDeviation ? { asilDeviation: f.asilDeviation } : {}),
+    ...(f.refRegulations ? { refRegulations: f.refRegulations } : {}),
     _missing: missing,
   };
 }

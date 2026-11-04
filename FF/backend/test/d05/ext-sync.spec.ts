@@ -237,7 +237,7 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
       expect(r.result).toMatchObject({ outcome: 'APPLIED', summary: expect.stringMatching(/FEAT-\d{5}@0\.1\.0 자동 등록/) });
       const [f] = await featuresNamed('차선 변경 보조 고속도로 확장');
       expect(f).toMatchObject({ version: '0.1.0', lifecycle: 'PROPOSED', country: 'KR', vehicleModel: 'NE1', trim: 'Prestige', asil: 'B', ownerId: '주행보조개발팀' });
-      // 라벨 ref-primary:(대표)·ref:(포함)로 기준 기능이 연결된다
+      // 모의 Epic 본문의 기준 기능 필드(첫 값이 대표)로 연결된다 — 라벨 폴백은 모의·데모에서만(실제 연결은 필드만, 80-50 §4)
       const detail = (await http().get(`/api/features/${f.featureId}/versions/0.1.0`).expect(200)).body.feature;
       expect(detail.featureRefs).toEqual([
         { refId: primary, role: 'PRIMARY', refVersion: 'v1.3' },
@@ -287,13 +287,13 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     });
 
     // 30-95 §7 — 기준 기능 ID 없음·없는 ID·폐기 행은 거부(REJECTED + 댓글), 요청 중 행은 JIRA에서 만들 수 없다
-    const HINT = '기준 기능 ID를 라벨 ref: 또는 필드에 넣어 주세요';
+    const HINT = 'Feature DB 기준 기능을 골라 주세요';
     const lastComment = async (key: string) => {
       await drain();
       return (await mockItem('jira', key)).comments.at(-1);
     };
 
-    it('기준 기능 ID(라벨 ref:·필드)가 없으면 등록하지 않고 넣어 달라는 댓글 — 넣으면 그때 등록한다', async () => {
+    it('기준 기능 ID(FF 앱 필드, 모의는 라벨도)가 없으면 등록하지 않고 FF 패널에서 고르라는 댓글 — 넣으면 그때 등록한다', async () => {
       const r = await createEpic({ title: '후측방 경고 확장', externalUser: 'kim.author', scope: BASE });
       expect(r.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining(HINT) });
       expect(await featuresNamed('후측방 경고 확장')).toHaveLength(0);

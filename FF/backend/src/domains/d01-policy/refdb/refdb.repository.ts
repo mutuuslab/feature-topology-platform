@@ -71,6 +71,10 @@ export class RefdbRepository {
   insertSource(s: RefSource) {
     this.db.run('INSERT INTO ref_source (source_id, next_review_at, doc) VALUES (?, ?, ?)', s.sourceId, s.nextReviewAt, JSON.stringify(s));
   }
+  /** 출처 정기 점검 기록 — 다음 점검일 열과 doc을 함께 바꾼다 */
+  updateSource(s: RefSource) {
+    this.db.run('UPDATE ref_source SET next_review_at = ?, doc = ? WHERE source_id = ?', s.nextReviewAt, JSON.stringify(s), s.sourceId);
+  }
   glossary(): RefGlossary[] {
     return parse<RefGlossary>(this.db.all('SELECT doc FROM ref_glossary ORDER BY term'));
   }

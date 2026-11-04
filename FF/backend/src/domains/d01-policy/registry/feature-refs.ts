@@ -2,6 +2,7 @@
 //  · 막음: 연결 없음·대표 없음(400 REFDB_LINK_REQUIRED), 없는 기준 행·폐기(RETIRED) 행(400), 대표 ASIL과 다른데 사유 없음(400),
 //          같은 국가·차종·트림에 같은 대표 기준 행(409 REFDB_DUPLICATE_IN_SCOPE — 확인·사유가 있으면 허용)
 //  · 경고(막지 않음): 요청 중·검토 필요·폐기 예정 행, 선행 기준 행(requires)이 같은 범위 어떤 Feature에도 없음
+//  · 승인 뒤 단계(출시·Release Sign-off·새 Version)는 폐기 예정·폐기 행을 경고만 한다(statusWarnings)
 // refVersion은 연결 당시 Feature DB 발행 버전 — 이미 있던 연결은 그 버전을 그대로 둔다(기준 행이 바뀌어도 Feature 값을 자동으로 바꾸지 않는다).
 import { Injectable, type PipeTransform } from '@nestjs/common';
 import {
@@ -30,6 +31,8 @@ export interface RefWarning {
   message: string;
   /** REF_STATUS — 경고를 낸 기준 행 상태 */
   status?: RefStatus;
+  /** REF_STATUS(폐기 예정·폐기) — 대체 기준 행(있으면) */
+  replacedBy?: string | null;
 }
 
 export interface FeatureScope {
@@ -47,7 +50,7 @@ export interface RefLinkRequest {
   scope: FeatureScope;
   /** 자기 Feature(초안 수정·새 Version)는 중복·선행 판정에서 뺀다 */
   featureId?: string;
-  /** reject — 409(등록), warn — 경고만(초안 수정·새 Version: 확인 칸이 없고 이미 등록된 Feature) */
+  /** reject — 409(등록·대표를 바꾸는 초안 수정, 확인·사유면 허용), warn — 경고만(새 Version·대표를 그대로 둔 초안 수정) */
   duplicate: 'reject' | 'warn';
   confirmDuplicate?: boolean;
   duplicateReason?: string;
@@ -138,12 +141,13 @@ export class FeatureRefLinker {
       warnings.push({ code: 'REF_STATUS', refId: l.refId, status: row.status, message: `기준 행 ${l.refId}은(는) ${policy.ko} 상태입니다 — ${policy.hint}${extra}` });
     }
 
-    // 같은 범위의 다른 Feature — 폐기된 Feature는 뺀다
-    const inScope = this.features
+    // 같은 범위의 다른 Feature(모든 버전) — 중복은 Feature마다 최신 버전만, 선행 판정은 폐기되지 않은 버전 전부
+    const scopeAll = this.features
       .all()
-      .filter((f) => f.featureId !== req.featureId && f.lifecycle !== 'RETIRED' && f.country === req.scope.country && f.vehicleModel === req.scope.vehicleModel && f.trim === req.scope.trim);
+      .filter((f) => f.featureId !== req.featureId && f.country === req.scope.country && f.vehicleModel === req.scope.vehicleModel && f.trim === req.scope.trim);
+    const inScope = scopeAll.filter((f) => f.lifecycle !== 'RETIRED');
 
-    const duplicates = this.duplicatesOf(primary.refId, inScope);
+    const duplicates = this.duplicatesOf(primary.refId, scopeAll);
     if (duplicates.length) {
       const list = duplicates.map((d) => `${d.featureId}@${d.version} ${d.name}`).join(', ');
       if (req.duplicate === 'reject' && !(req.confirmDuplicate && req.duplicateReason?.trim()))
@@ -197,19 +201,43 @@ export class FeatureRefLinker {
     return p ? this.refdb.getRef(p.refId) : undefined;
   }
 
+  /** 버전의 대표 기준 행 ID — 저장 문서, 없으면 연결 색인 */
+  primaryRefIdOf(f: Pick<FeatureVersionRow, 'featureId' | 'version' | 'featureRefs'>): string | undefined {
+    return (f.featureRefs?.length ? f.featureRefs : this.refdb.linksOf(f.featureId, f.version)).find((l) => l.role === 'PRIMARY')?.refId;
+  }
+
+  /**
+   * 연결된 기준 행 중 지금 상태가 statuses인 것 — 경고(막지 않음). 정의 승인(검토 필요·폐기 예정)·출시·Release Sign-off·새 Version(폐기 예정·폐기)이
+   * 응답 warnings와 감사 after.refWarnings에 남긴다(30-95 §5.2, 사용자 결정 2026-11-04 #9).
+   */
+  statusWarnings(links: readonly Pick<FeatureRefLink, 'refId'>[] | undefined, statuses: readonly RefStatus[], next: string): RefWarning[] {
+    const out: RefWarning[] = [];
+    for (const l of links ?? []) {
+      const row = this.refdb.getRef(l.refId);
+      if (!row || !statuses.includes(row.status)) continue;
+      const policy = REF_STATUS_POLICY[row.status];
+      const replaced = row.replacedBy ? ` 대체 행: ${row.replacedBy}.` : '';
+      const memo = row.status === 'REVIEW' && row.adminMemo ? ` (관리 메모: ${row.adminMemo})` : '';
+      out.push({ code: 'REF_STATUS', refId: l.refId, status: row.status, replacedBy: row.replacedBy ?? null, message: `기준 행 ${l.refId}은(는) ${policy.ko} 상태입니다 — ${policy.hint}${memo}${replaced} ${next}` });
+    }
+    return out;
+  }
+
   /** 연결 색인 갱신 — feature_version 저장과 같은 트랜잭션에서 */
   saveLinks(f: Pick<FeatureVersionRow, 'featureId' | 'version' | 'featureRefs'>) {
     this.refdb.replaceLinks(f.featureId, f.version, f.featureRefs ?? []);
   }
 
-  /** 같은 범위에서 이 기준 행을 대표로 쓰는 Feature(Feature ID마다 최신 버전 하나) — 저장 문서와 연결 색인을 함께 본다 */
-  private duplicatesOf(refId: string, inScope: readonly FeatureVersionRow[]) {
+  /**
+   * 같은 범위에서 이 기준 행을 대표로 쓰는 Feature — Feature ID마다 최신 버전만 본다(앞 버전이 쓰던 대표는 중복이 아니다).
+   * 최신 버전이 폐기(RETIRED)면 뺀다. 저장 문서와 연결 색인을 함께 본다.
+   */
+  private duplicatesOf(refId: string, scopeAll: readonly FeatureVersionRow[]) {
     const indexed = new Set(this.refdb.usersOf(refId).filter((u) => u.role === 'PRIMARY').map((u) => `${u.featureId}@${u.version}`));
-    const byId = new Map<string, FeatureVersionRow>();
-    for (const f of inScope) {
-      const primary = f.featureRefs?.some((l) => l.role === 'PRIMARY' && l.refId === refId) || indexed.has(`${f.featureId}@${f.version}`);
-      if (primary) byId.set(f.featureId, f); // all()은 버전 오름차순 — 마지막이 최신
-    }
-    return [...byId.values()].map((f) => ({ featureId: f.featureId, version: f.version, name: f.name }));
+    const latest = new Map<string, FeatureVersionRow>();
+    for (const f of scopeAll) latest.set(f.featureId, f); // all()은 버전 오름차순 — 마지막이 최신
+    return [...latest.values()]
+      .filter((f) => f.lifecycle !== 'RETIRED' && (f.featureRefs?.some((l) => l.role === 'PRIMARY' && l.refId === refId) || indexed.has(`${f.featureId}@${f.version}`)))
+      .map((f) => ({ featureId: f.featureId, version: f.version, name: f.name }));
   }
 }

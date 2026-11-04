@@ -115,8 +115,8 @@ export const EpicScope = z
     ownerId: z.string().trim().min(1).max(100),
     /**
      * 기준 기능(Feature DB) ID — 첫 값이 대표(PRIMARY), 나머지는 포함(INCLUDED)(30-95 §7, D-REF-10).
-     * JIRA 안의 FF 앱이 쓰는 사용자 필드(JIRA_FIELD_FEATURE_DB, D-REF-16)가 기준이고, 필드가 비었을 때만
-     * 라벨 `ref-primary:CH-BRK-009`(대표)·`ref:CH-BRK-006`(포함)을 읽는다.
+     * JIRA 안의 FF 앱이 쓰는 사용자 필드(JIRA_FIELD_FEATURE_DB, D-REF-16)가 기준이다. 실제 연결(IF_MODE_14=live)은 필드만 읽고(비면 거부·댓글, 80-50 §4),
+     * 모의·데모만 필드가 비었을 때 라벨 `ref-primary:CH-BRK-009`(대표)·`ref:CH-BRK-006`(포함)을 읽는다.
      * 빠졌거나 없는·폐기 ID면 등록하지 않고(REJECTED) Epic 댓글로 알린다. 요청 중(PENDING) 행은 JIRA에서 쓸 수 없다.
      */
     refIds: z.array(RefId).min(1).max(20),

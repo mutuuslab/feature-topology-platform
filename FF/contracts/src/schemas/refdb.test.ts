@@ -1,10 +1,10 @@
 // Feature DB 계약(30-95 §5) — 기준 행 스키마, Feature ↔ 기준 행 연결 refine(대표 정확히 1·중복 금지), 등록 본문
 import { describe, expect, it } from 'vitest';
 import { refRow } from '../testing/refdb';
-import { CreateFeatureBody, UpdateDraftBody } from './api';
+import { CreateFeatureBody, CreateVersionBody, UpdateDraftBody } from './api';
 import { FeatureVersionRow } from './dataset';
 import { loadDataset } from '../testing/fixtures';
-import { CreateRefChangeBody, FeatureRefLinks, FeatureRefRow, featureRefsProblems, featureRefsValid, REF_ID_PATTERN, REF_MONEY_FIELDS, RequestRefAddBody } from './refdb';
+import { CreateRefChangeBody, FeatureRefLinks, FeatureRefRow, featureRefsProblems, featureRefsValid, REF_ID_PATTERN, RecordSourceReviewBody, REF_MONEY_FIELDS, RefChange, RequestRefAddBody } from './refdb';
 
 const body = (featureRefs: unknown) => ({ name: '오토 홀드', description: '정차 유지', country: 'KR', vehicleModel: 'NX4', trim: 'PE', ownerId: 'usr-author', asil: 'B', featureRefs });
 
@@ -47,10 +47,12 @@ describe('Feature DB 계약', () => {
     expect(dev.success).toBe(false);
   });
 
-  it('초안 수정 — 연결은 바꿀 수 있고(refine 적용), 중복 확인 필드는 받지 않는다', () => {
+  it('초안 수정 — 연결은 바꿀 수 있고(refine 적용), 대표를 바꿀 때 중복 확인·사유를 받는다(D-REF-13). 새 Version은 받지 않는다', () => {
     expect(UpdateDraftBody.safeParse({ featureRefs: [{ refId: 'CH-BRK-006', role: 'PRIMARY' }] }).success).toBe(true);
     expect(UpdateDraftBody.safeParse({ featureRefs: [{ refId: 'CH-BRK-006', role: 'INCLUDED' }] }).success).toBe(false);
-    expect(UpdateDraftBody.safeParse({ confirmDuplicate: true }).success).toBe(false);
+    expect(UpdateDraftBody.safeParse({ featureRefs: [{ refId: 'CH-BRK-006', role: 'PRIMARY' }], confirmDuplicate: true, duplicateReason: '하드웨어 변형' }).success).toBe(true);
+    expect(UpdateDraftBody.safeParse({ confirmDuplicate: true, duplicateReason: 'x' }).success).toBe(false); // 사유 2자 이상
+    expect(CreateVersionBody.safeParse({ baseVersion: '1.0.0', reason: '변경', changes: { confirmDuplicate: true } }).success).toBe(false);
     expect(UpdateDraftBody.parse({ name: '새 이름' })).toEqual({ name: '새 이름' }); // 보내지 않은 연결을 기본값으로 덮지 않는다
   });
 
@@ -69,5 +71,23 @@ describe('Feature DB 계약', () => {
     expect(CreateRefChangeBody.safeParse({ kind: 'MODIFY', refId: 'CH-BRK-009', after: { tshirt: 'M' }, reason: '실적 반영' }).success).toBe(true);
     expect(CreateRefChangeBody.safeParse({ kind: 'DEPRECATE', refId: 'CH-BRK-009', reason: '표준 삭제 예고' }).success).toBe(false);
     expect(CreateRefChangeBody.safeParse({ kind: 'DEPRECATE', refId: 'CH-BRK-009', after: { replacedBy: 'CH-BRK-010' }, reason: '표준 삭제 예고' }).success).toBe(true);
+  });
+
+  it('출처 정기 점검 기록 — 출처 하나 이상(중복 없음), 다음 점검일은 확인일 뒤, 메모 필수', () => {
+    const ok = { sourceIds: ['S10', 'S11'], checkedAt: '2026-12-02', nextReviewAt: '2027-06-01', note: '표준 개정 확인' };
+    expect(RecordSourceReviewBody.safeParse(ok).success).toBe(true);
+    expect(RecordSourceReviewBody.safeParse({ ...ok, checkedAt: undefined }).success).toBe(true); // 확인일 비우면 서버가 오늘
+    expect(RecordSourceReviewBody.safeParse({ ...ok, sourceIds: [] }).success).toBe(false);
+    expect(RecordSourceReviewBody.safeParse({ ...ok, sourceIds: ['S10', 'S10'] }).success).toBe(false);
+    expect(RecordSourceReviewBody.safeParse({ ...ok, nextReviewAt: '2026-12-02' }).success).toBe(false);
+    expect(RecordSourceReviewBody.safeParse({ ...ok, nextReviewAt: '2027/06/01' }).success).toBe(false);
+    expect(RecordSourceReviewBody.safeParse({ ...ok, note: '' }).success).toBe(false);
+  });
+
+  it('추가 요청의 새 컴포넌트 제안은 변경 요청에 남는다 — 약어 형식은 등록 화면 제안과 같다', () => {
+    const base = { changeId: 'CR-2026-001', kind: 'ADD', refId: 'CH-NEW-001', before: null, after: {}, reason: 'x', requestedBy: 'usr-author', requestedAt: '2026-11-04', status: 'REVIEW', reviews: [], decision: null, release: null };
+    expect(RefChange.safeParse(base).success).toBe(true);
+    expect(RefChange.safeParse({ ...base, newComponent: { component: 'Brake by wire', abbr: 'NEW', cluster: 'Brake control' } }).success).toBe(true);
+    expect(RefChange.safeParse({ ...base, newComponent: { component: 'Brake by wire', abbr: 'new', cluster: 'Brake control' } }).success).toBe(false);
   });
 });

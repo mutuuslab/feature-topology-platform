@@ -24,7 +24,7 @@ describe('ODD 축소 정책 (FFG-SOT-002)', () => {
   /** 새 Version → (등급 수정) → 안전 분류 확정 → G1~G3 → APPROVED → G4 */
   const prepare = async (patch?: Record<string, unknown>) => {
     const http = b.http;
-    const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: 'ODD 축소(안개 조건 제한)', changes: { description: '안개 조건 제한' } }).expect(201);
+    const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: 'ODD 축소(안개 조건 제한)', changes: { description: '안개 조건 제한', featureRefs: [{ refId: 'AD-LON-009', role: 'PRIMARY' }] } }).expect(201);
     const ver: string = v.body.feature.version;
     if (patch) await http().put(`/api/features/FEAT-00022/versions/${ver}/safety`).set(AUTHOR).send(patch).expect(200);
     await confirmSafety(http, 'FEAT-00022', ver);

@@ -156,7 +156,12 @@ export class RegistryService {
       // 거부 감사는 트랜잭션 밖에서만 남길 수 있다 — 바깥 트랜잭션(JIRA 자동 등록)은 호출자가 먼저 확인하고 남긴다
       if (!this.db.inTransaction) this.audit.failed(actor, 'FEATURE_CREATE', body.name, reason, 'D01-01');
     };
-    const dup = this.features.similar(body.name, body.country, body.vehicleModel, body.trim);
+    // 이름 유사 거부 — 같은 대표 기준 행을 쓰는 Feature는 같은 범위 중복 확인(confirmDuplicate+사유)으로 대신한다(이름을 대표 행 이름으로 미리 채우므로)
+    const primaryRef = body.featureRefs?.find((l) => l.role === 'PRIMARY')?.refId;
+    const confirmed = !!(body.confirmDuplicate && body.duplicateReason?.trim());
+    const dup = this.features
+      .similar(body.name, body.country, body.vehicleModel, body.trim)
+      .filter((d) => !(confirmed && primaryRef && this.refs.primaryRefIdOf(this.features.versions(d.featureId).at(-1) ?? d) === primaryRef));
     if (dup.length) {
       fail('같은 적용 범위에 유사 Feature 존재');
       throw new DomainError('CONFLICT', '같은 국가·차종·트림에 이름이 비슷한 Feature가 이미 있습니다. 기존 Feature의 새 Version인지 확인하세요.', {
@@ -215,11 +220,15 @@ export class RegistryService {
     });
   }
 
-  /** 초안 수정·새 Version의 연결 다시 판정 — 연결·ASIL·사유 중 하나라도 바뀌면. 연결이 아직 없는 시드 Feature는 연결을 줄 때만 본다 */
-  private relink(f: FeatureVersionRow, body: UpdateDraftBody): RefLinkResult | null {
+  /**
+   * 초안 수정·새 Version의 연결 다시 판정 — 연결·ASIL·사유 중 하나라도 바뀌면. 연결이 아직 없는 시드 Feature는 연결을 줄 때만 본다.
+   * 같은 범위 같은 대표 행: 초안 수정에서 대표를 바꾸면 등록처럼 409(확인·사유면 허용, D-REF-13), 대표를 그대로 두거나 새 Version이면 경고만.
+   */
+  private relink(f: FeatureVersionRow, body: UpdateDraftBody, mode: 'draft' | 'version'): RefLinkResult | null {
     if (body.featureRefs === undefined && body.asil === undefined && body.asilDeviation === undefined) return null;
     const featureRefs = body.featureRefs ?? f.featureRefs;
     if (!featureRefs?.length) return null;
+    const primaryChanged = mode === 'draft' && body.featureRefs !== undefined && body.featureRefs.find((l) => l.role === 'PRIMARY')?.refId !== this.refs.primaryRefIdOf(f);
     return this.refs.resolve({
       featureRefs,
       previous: f.featureRefs,
@@ -227,7 +236,9 @@ export class RegistryService {
       asilDeviation: body.asilDeviation ?? f.asilDeviation,
       scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim },
       featureId: f.featureId,
-      duplicate: 'warn', // 이미 등록된 Feature — 확인 칸이 없으므로 경고만
+      duplicate: primaryChanged ? 'reject' : 'warn',
+      confirmDuplicate: body.confirmDuplicate,
+      duplicateReason: body.duplicateReason,
     });
   }
 
@@ -239,8 +250,10 @@ export class RegistryService {
   }
 
   /** PROPOSED 초안만 그 자리에서 수정한다. APPROVED 이후는 새 Version. */
-  updateDraft(actor: Actor, featureId: string, version: string, body: UpdateDraftBody) {
+  updateDraft(actor: Actor, featureId: string, version: string, input: UpdateDraftBody) {
     const f = this.lifecycle.require(featureId, version);
+    // 중복 확인·사유는 판정 입력일 뿐 — Feature 문서에 저장하지 않는다
+    const { confirmDuplicate: _confirm, duplicateReason, ...body } = input;
     const target = `${featureId}@${version}`;
     if (f.lifecycle !== 'PROPOSED') {
       this.audit.failed(actor, 'FEATURE_UPDATE', target, `${f.lifecycle} 버전 수정 시도`, 'D01-01');
@@ -248,7 +261,7 @@ export class RegistryService {
     }
     let linked: RefLinkResult | null;
     try {
-      linked = this.relink(f, body);
+      linked = this.relink(f, input, 'draft');
     } catch (e) {
       if (e instanceof DomainError) this.audit.failed(actor, 'FEATURE_UPDATE', target, `기준 기능 연결: ${e.message}`, 'D01-01');
       throw e;
@@ -258,7 +271,7 @@ export class RegistryService {
       this.features.update(next);
       if (linked) this.refs.saveLinks(next);
       const changed = changedKeys(f, body as any);
-      this.audit.record(actor, 'FEATURE_UPDATE', target, { before: pick(f, changed), after: { ...pick(next, changed), ...(linked ? refAuditDetail(linked) : {}) }, componentId: 'D01-01' });
+      this.audit.record(actor, 'FEATURE_UPDATE', target, { before: pick(f, changed), after: { ...pick(next, changed), ...(linked ? refAuditDetail(linked, duplicateReason) : {}) }, componentId: 'D01-01' });
       this.events.publish('feature.updated', target, { featureId, version, changed }, { componentId: 'D01-01', correlationId: actor.correlationId });
       return linked ? { ...next, warnings: linked.warnings } : next;
     });
@@ -274,7 +287,9 @@ export class RegistryService {
     const version = bumpVersion(latest, body.bump);
     const changed = changedKeys(base, body.changes as any);
     // 기준 행 연결은 앞 버전에서 복사한다(§5.3) — 바꾸면 다시 판정
-    const linked = this.relink(base, body.changes);
+    const linked = this.relink(base, body.changes, 'version');
+    // 이어받은 연결 중 폐기 예정·폐기 행은 경고만(막지 않음, 사용자 결정 2026-11-04 #9) — 다시 판정했으면 그 경고(폐기 예정)를 쓴다
+    const warnings = linked ? linked.warnings : this.refs.statusWarnings(base.featureRefs, ['DEPRECATED', 'RETIRED'], '새 Version에서 대체 행으로 다시 연결하세요.');
     return this.db.tx(() => {
       const merged = this.withLinks(this.merge(base, body.changes), linked);
       const f: FeatureVersionRow = { ...merged, version, lifecycle: 'PROPOSED', baselineId: null, catalogIds: [], gateRecordIds: [], _missing: { ...merged._missing, baselineId: '미발급' } };
@@ -283,7 +298,7 @@ export class RegistryService {
       this.safety.ensure(f.featureId, f.version, base.version); // 안전 분류 초안 — 기준 Version 값을 잇는다(보고서 5.7, DRAFT)
       const target = `${featureId}@${version}`;
       const rejudge = gatesToRejudge(changed, base.lifecycle);
-      this.audit.record(actor, 'FEATURE_VERSION_CREATE', target, { before: { baseVersion: base.version }, after: { version, changed, rejudge }, reason: body.reason, componentId: 'D01-01' });
+      this.audit.record(actor, 'FEATURE_VERSION_CREATE', target, { before: { baseVersion: base.version }, after: { version, changed, rejudge, ...(warnings.length ? { refWarnings: warnings } : {}) }, reason: body.reason, componentId: 'D01-01' });
       this.events.publish(
         'feature.version.created',
         target,
@@ -291,7 +306,7 @@ export class RegistryService {
         { featureId, version, baseVersion: base.version, changed, rejudge, notifyBomApprover: !!base.baselineId },
         { componentId: 'D01-01', correlationId: actor.correlationId },
       );
-      return { feature: f, changed, rejudge, ...(linked ? { warnings: linked.warnings } : {}) };
+      return { feature: f, changed, rejudge, ...(linked || warnings.length ? { warnings } : {}) };
     });
   }
 

@@ -76,8 +76,11 @@ const splitFid = (id: string) => {
 
 type Outcome = Pick<InboxRow, 'outcome' | 'summary'>;
 
-/** JIRA Epic에 기준 기능 ID가 없거나 쓸 수 없을 때 댓글 안내(30-95 §7) */
-export const EPIC_REF_HINT = '기준 기능 ID를 라벨 ref: 또는 필드에 넣어 주세요(대표는 ref-primary: 라벨, 예: ref-primary:CH-BRK-009).';
+/**
+ * JIRA Epic에 기준 기능 ID가 없거나 쓸 수 없을 때 댓글 안내(30-95 §7, 80-50 §4) — Epic 화면의 FF 패널에서 Feature DB 기준 행을 고르게 한다.
+ * 라벨(ref-primary:·ref:)은 모의·데모 연결에서만 읽으므로 안내하지 않는다.
+ */
+export const EPIC_REF_HINT = 'Epic 화면의 Feature Platform 패널에서 Feature DB 기준 기능을 골라 주세요(첫 번째가 대표 기준 행). 맞는 기준 행이 없으면 플랫폼 Feature 등록 화면에서 추가를 요청하세요.';
 
 @PlatformComponent('D05-01')
 @Injectable()
@@ -502,7 +505,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     const scope = (c.extra.scope ?? {}) as Record<string, string> & { refIds?: string[] };
     const missing = missingEpicScope(scope);
     if (missing.length) return refuse(`Epic에 ${missing.map((k) => EPIC_SCOPE_LABEL[k]).join('·')} 값이 없거나 형식이 틀립니다. 채우면 다시 등록을 시도합니다.`);
-    // 기준 기능(Feature DB) 연결 필수(30-95 §7, D-REF-10) — 라벨 ref-primary:·ref: 또는 사용자 필드. 첫 값이 대표
+    // 기준 기능(Feature DB) 연결 필수(30-95 §7, D-REF-10) — FF 앱이 쓰는 사용자 필드(모의·데모만 라벨 ref-primary:·ref: 폴백). 첫 값이 대표
     const refIds = Array.isArray(scope.refIds) ? scope.refIds : [];
     if (!refIds.length) return refuse(`기준 기능 ID가 없습니다. ${EPIC_REF_HINT}`);
     const featureRefs = refIds.map((refId, i) => ({ refId, role: i === 0 ? ('PRIMARY' as const) : ('INCLUDED' as const) }));

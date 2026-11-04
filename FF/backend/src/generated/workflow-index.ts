@@ -422,8 +422,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    },
    "next": [],
    "screens": [
-    "/feature/propose",
-    "/master/feature-db"
+    "/feature/propose"
    ],
    "actions": [
     "requestRefAdd"
@@ -2839,7 +2838,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "FPW.14-A02"
    ],
    "screens": [
-    "/master/feature-db"
+    "/master/feature-db/:refId"
    ],
    "actions": [
     "createRefChange"
@@ -2871,7 +2870,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "FPW.14-A03"
    ],
    "screens": [
-    "/master/feature-db"
+    "/master/feature-db/changes/:id",
+    "/master/feature-db/changes"
    ],
    "actions": [
     "reviewRefChange"
@@ -2902,7 +2902,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "FPW.14-A04"
    ],
    "screens": [
-    "/master/feature-db"
+    "/master/feature-db/changes/:id",
+    "/master/feature-db/changes"
    ],
    "actions": [
     "decideRefChange"
@@ -2931,7 +2932,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    },
    "next": [],
    "screens": [
-    "/master/feature-db"
+    "/master/feature-db/changes"
    ],
    "actions": [
     "publishRefRelease"
@@ -2963,7 +2964,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "screens": [
     "/master/feature-db"
    ],
-   "actions": [],
+   "actions": [
+    "recordSourceReview"
+   ],
    "anchor": null,
    "slaHours": null
   }

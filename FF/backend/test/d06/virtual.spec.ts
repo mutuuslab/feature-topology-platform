@@ -185,7 +185,7 @@ describe('가상검증(CARLA) → 검증 Gate', () => {
     let fail: string;
 
     it('준비: FEAT-00022 새 Version → G1~G3 → 승인(DEVELOPING) → 그 Version 정책의 가상검증', async () => {
-      const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '감속 파라미터 개선', changes: { description: '위험 단계 감속 요청 파라미터 개선' } }).expect(201);
+      const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '감속 파라미터 개선', changes: { description: '위험 단계 감속 요청 파라미터 개선', featureRefs: [{ refId: 'AD-LON-009', role: 'PRIMARY' }] } }).expect(201);
       ver = v.body.feature.version;
       await confirmSafety(http, 'FEAT-00022', ver);
       for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/FEAT-00022/versions/${ver}/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);

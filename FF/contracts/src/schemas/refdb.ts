@@ -240,6 +240,8 @@ export const RefChange = z.object({
   checks: z.array(RefCriterionResult).optional(),
   /** 등록 화면 추가 요청에서 만든 ADD — 요청 중(PENDING) 행과 같이 생겼다 */
   fromRegistration: z.boolean().optional(),
+  /** ADD가 제안한 새 컴포넌트(분류 표에 없던 것) — 발행 때 분류 표에 컴포넌트(필요하면 클러스터)를 만든다 */
+  newComponent: z.object({ component: required, abbr: z.string().regex(/^[A-Z][A-Z0-9]{1,3}$/), cluster: required }).optional(),
 });
 export type RefChange = z.infer<typeof RefChange>;
 
@@ -309,7 +311,7 @@ export const RequestRefAddBody = z
   .refine((b) => b.sourceIds.length > 0 || b.basisNote.length >= 2, { message: '출처 ID 또는 근거 메모를 입력하세요.', path: ['basisNote'] });
 export type RequestRefAddBody = z.infer<typeof RequestRefAddBody>;
 
-/** 변경 요청 작성(누구나) — MODIFY·DEPRECATE·RETIRE는 대상 refId, ADD는 after에 새 행 */
+/** 변경 요청 작성(감사 조회자 외 사람 역할, routes REFDB_CHANGE_REQUESTERS) — MODIFY·DEPRECATE·RETIRE는 대상 refId, ADD는 after에 새 행 */
 export const CreateRefChangeBody = z
   .object({
     kind: RefChangeKind,
@@ -329,6 +331,21 @@ export type ReviewRefChangeBody = z.infer<typeof ReviewRefChangeBody>;
 /** DB 관리자 승인·반려 */
 export const DecideRefChangeBody = z.object({ decision: z.enum(['APPROVE', 'REJECT']), reason }).strict();
 export type DecideRefChangeBody = z.infer<typeof DecideRefChangeBody>;
+
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, '날짜는 YYYY-MM-DD 형식입니다.');
+
+/** 출처 정기 점검 기록(§8.5, DB 관리자) — 확인한 출처의 확인일·다음 점검일을 바꾼다. 확인일을 비우면 오늘 */
+export const RecordSourceReviewBody = z
+  .object({
+    sourceIds: z.array(RefSourceId).min(1, '점검한 출처를 하나 이상 고르세요.').max(200),
+    checkedAt: isoDate.optional(),
+    nextReviewAt: isoDate,
+    note: reason,
+  })
+  .strict()
+  .refine((b) => new Set(b.sourceIds).size === b.sourceIds.length, { message: '같은 출처를 두 번 고를 수 없습니다.', path: ['sourceIds'] })
+  .refine((b) => !b.checkedAt || b.nextReviewAt > b.checkedAt, { message: '다음 점검일은 확인일보다 뒤여야 합니다.', path: ['nextReviewAt'] });
+export type RecordSourceReviewBody = z.infer<typeof RecordSourceReviewBody>;
 
 /** 버전 발행 — 승인된 요청을 묶는다(비우면 승인된 요청 전부) */
 export const PublishRefReleaseBody = z.object({ changeIds: z.array(RefChangeId).default([]), note: text.max(1000).default('') }).strict();

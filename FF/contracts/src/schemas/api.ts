@@ -31,8 +31,11 @@ export const CreateFeatureBody = z.object({
 });
 export type CreateFeatureBody = z.infer<typeof CreateFeatureBody>;
 
-/** PROPOSED 초안 수정 — 국가·차종·트림은 바꿀 수 없다(새 Feature ID). 기준 행 연결(featureRefs)은 바꿀 수 있다(§5.3). */
-export const UpdateDraftBody = patchOf(CreateFeatureBody.omit({ country: true, vehicleModel: true, trim: true, confirmDuplicate: true, duplicateReason: true }))
+/**
+ * PROPOSED 초안 수정 — 국가·차종·트림은 바꿀 수 없다(새 Feature ID). 기준 행 연결(featureRefs)은 바꿀 수 있다(§5.3).
+ * 대표 기준 행을 같은 범위 다른 Feature가 쓰는 행으로 바꾸면 등록과 같이 409 — confirmDuplicate와 사유를 함께 보낸다(D-REF-13).
+ */
+export const UpdateDraftBody = patchOf(CreateFeatureBody.omit({ country: true, vehicleModel: true, trim: true }))
   .extend({
     functions: z.array(z.object({ functionId: z.string().regex(/^FUNC-\d{6}$/), label: z.string() })).optional(),
     swIds: z.array(z.string()).optional(),
@@ -48,7 +51,8 @@ export const CreateVersionBody = z.object({
   bump: z.enum(['major', 'minor', 'patch']).default('minor'),
   reason,
   // 국가·차종·트림은 받아서 서비스가 '새 Feature ID 필요'로 명확히 거부한다
-  changes: UpdateDraftBody.extend({ country: z.string().optional(), vehicleModel: z.string().optional(), trim: z.string().optional() }).strict().default({}),
+  // 같은 Feature ID의 새 Version은 중복 확인 칸이 없다(같은 범위 중복은 경고만)
+  changes: UpdateDraftBody.omit({ confirmDuplicate: true, duplicateReason: true }).extend({ country: z.string().optional(), vehicleModel: z.string().optional(), trim: z.string().optional() }).strict().default({}),
 });
 export type CreateVersionBody = z.infer<typeof CreateVersionBody>;
 

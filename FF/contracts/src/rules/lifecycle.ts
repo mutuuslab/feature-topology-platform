@@ -1,6 +1,6 @@
 // Feature Lifecycle 전이 표 — 통합 상세설계서 v0.81 §2.5 (표 10) 그대로를 데이터로 둔다.
 // 평가는 순수 함수: 백엔드(전이 실행)·프론트(스테퍼의 막힌 사유 표시)가 같은 결과를 본다.
-import { GATE_META, GATES, LIFECYCLE, ROLE_LABEL, type GateId, type GateStatus, type Lifecycle, type Role } from '../enums';
+import { GATE_META, GATES, LIFECYCLE, ROLE_LABEL, type Asil, type GateId, type GateStatus, type Lifecycle, type Role } from '../enums';
 import type { DependencyRow, FeatureVersionRow } from '../schemas/dataset';
 import type { RefStatus } from '../schemas/refdb';
 import { refLinksBlockApproval } from './refdb/status-policy';
@@ -70,6 +70,11 @@ export interface TransitionContext {
    * 빠지면(Feature DB 연결 전 호출자) 이 조건을 보지 않는다.
    */
   refStatusOf?: (refId: string) => RefStatus | null | undefined;
+  /**
+   * 대표 기준 행의 지금 대표 ASIL(30-95 §6.3) — 주면 PROPOSED→APPROVED에서 Feature ASIL과 다를 때
+   * 지금 대표 ASIL 기준 사유(asilDeviation from=대표 ASIL, to=Feature ASIL)가 없으면 막는다(등록 뒤 대표 ASIL이 바뀐 경우).
+   */
+  refAsilRepOf?: (refId: string) => Asil | null | undefined;
   reason?: string;
 }
 
@@ -106,8 +111,24 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
       if (!d.targetVersion) blockers.push({ code: 'DEPENDENCY_UNRESOLVED', message: `${d.dependencyId} 대상 Version 미확정`, ref: d.dependencyId });
 
   // Feature DB 연결(D-REF-7) — 요청 중 행은 DB 관리자 승인 전, 폐기 행은 다른 행으로 다시 연결해야 정의 승인을 할 수 있다
-  if (rule.from === 'PROPOSED' && rule.to === 'APPROVED' && ctx.refStatusOf)
-    for (const b of refLinksBlockApproval(f.featureRefs ?? [], ctx.refStatusOf)) blockers.push({ code: 'REFDB_LINK_BLOCKED', message: b.message, ref: b.refId });
+  if (rule.from === 'PROPOSED' && rule.to === 'APPROVED' && ctx.refStatusOf) {
+    const links = f.featureRefs ?? [];
+    // 연결이 없는 Feature(연결 도입 전 시드·그 새 Version)는 정의 승인 전에 대표 기준 행을 연결해야 한다(사용자 결정 2026-11-04) — 이미 승인된 버전은 그대로
+    if (!links.some((l) => l.role === 'PRIMARY'))
+      blockers.push({ code: 'REFDB_LINK_BLOCKED', message: '기준 기능(Feature DB) 연결이 없습니다 — 초안에서 대표 기준 행을 연결하세요.', ref: 'featureRefs' });
+    for (const b of refLinksBlockApproval(links, ctx.refStatusOf)) blockers.push({ code: 'REFDB_LINK_BLOCKED', message: b.message, ref: b.refId });
+  }
+
+  // 대표 ASIL 다시 확인(§6.3) — 등록 뒤 대표 행의 대표 ASIL이 바뀌었으면 지금 값 기준 사유가 있어야 한다
+  const primaryLink = rule.from === 'PROPOSED' && rule.to === 'APPROVED' ? f.featureRefs?.find((l) => l.role === 'PRIMARY') : undefined;
+  const rep = primaryLink ? ctx.refAsilRepOf?.(primaryLink.refId) : undefined;
+  if (primaryLink && rep && rep !== f.asil) {
+    const dev = f.asilDeviation;
+    if (!dev || dev.to !== f.asil)
+      blockers.push({ code: 'REFDB_LINK_BLOCKED', message: `ASIL ${f.asil}이(가) 대표 기준 행 ${primaryLink.refId}의 대표 ASIL ${rep}과(와) 다른데 사유가 없습니다 — 초안에서 ASIL 차이 사유(${rep} → ${f.asil})를 입력하거나 ASIL을 맞추세요.`, ref: primaryLink.refId });
+    else if (dev.from !== rep)
+      blockers.push({ code: 'REFDB_LINK_BLOCKED', message: `ASIL 차이 사유가 이전 대표 ASIL ${dev.from} 기준입니다 — 대표 기준 행 ${primaryLink.refId}의 대표 ASIL이 ${rep}(으)로 바뀌었으니 사유(${rep} → ${f.asil})를 다시 입력하세요.`, ref: primaryLink.refId });
+  }
 
   if (rule.from === 'VERIFIED' && rule.to === 'RELEASED' && !ctx.releaseSignoff)
     blockers.push({ code: 'RELEASE_SIGNOFF_MISSING', message: 'Feature Owner의 Release Sign-off(출시 책임 확인 개인 서명)가 없습니다 — G8·G9 PASS 뒤 Feature Owner가 서명합니다.' });

@@ -89,3 +89,4 @@ export * from './rules/cost/basis';
 export * from './rules/cost/engine';
 export * from './schemas/cost';
 export * from './schemas/flag-source';
+export * from './rules/unleash-snapshot';

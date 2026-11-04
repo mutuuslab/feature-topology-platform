@@ -28,7 +28,8 @@ export const procedureFlow = {
     selected: (who: string) => `${who}의 업무 흐름`,
     clear: '선택 해제',
     flowLabel: (who: string) => `${who} 업무 흐름`,
-    hint: (who: string) => `${who} 기준 — 이 담당자가 13개 절차에서 맡은 활동(수행 R·책임 A)과 받는 곳·넘기는 곳입니다. 내 역할은 바뀌지 않습니다.`,
+    // 절차 수는 업무 절차 모델(doc.processes)에서 — 손으로 쓴 수는 절차가 늘면 틀린다(하네스 리뷰 C8)
+    hint: (who: string, procs: number) => `${who} 기준 — 이 담당자가 ${procs}개 절차에서 맡은 활동(수행 R·책임 A)과 받는 곳·넘기는 곳입니다. 내 역할은 바뀌지 않습니다.`,
     textCaption: (who: string) => `${who} 업무 흐름 — 흐름도와 같은 내용`,
     selfRole: (role: string) => `${role}(이 담당)`,
     now: '지금 이 담당 차례',
@@ -149,7 +150,7 @@ export const procedureFlow = {
   },
   mine: {
     title: '내 업무 흐름',
-    hint: (role: string) => `${role} 기준 — 13개 절차에서 내가 맡은 활동을 생애주기 순서로 잇고, 받는 곳과 넘기는 곳을 보여 줍니다.`,
+    hint: (role: string, procs: number) => `${role} 기준 — ${procs}개 절차에서 내가 맡은 활동을 생애주기 순서로 잇고, 받는 곳과 넘기는 곳을 보여 줍니다.`,
     filter: '보이는 활동',
     open: '남은 일',
     now: '지금 내 차례',
@@ -175,7 +176,7 @@ export const procedureFlow = {
   },
   chain: {
     title: '전체 지도',
-    hint: '13개 절차의 가치 사슬 — 생애주기 절차는 차례로 이어지고, 지원 절차가 아래에서 받칩니다. 칸을 누르면 그 절차의 흐름도가 열립니다.',
+    hint: (procs: number) => `${procs}개 절차의 가치 사슬 — 생애주기 절차는 차례로 이어지고, 지원 절차가 아래에서 받칩니다. 칸을 누르면 그 절차의 흐름도가 열립니다.`,
     life: '생애주기',
     support: '지원 절차',
     mine: (n: number) => `내 활동 ${n}`,

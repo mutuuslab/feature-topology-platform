@@ -7,8 +7,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
 import ProposeScreen from '../screens/home/propose/ProposeScreen';
+import { SIZE_CLASSES } from '@ff/contracts';
 import { prefillOf, regulationsOf, tagsOf, type RefLite } from '../screens/home/propose/prefill';
 import { FeatureRefsTab, releaseCmp } from '../screens/features/FeatureRefsTab';
+import { featureRefsTab as T, propose as PC } from '../copy/propose';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -356,9 +358,153 @@ describe("Feature 상세 '기준 행' 탭", () => {
     expect(releaseCmp('v1.10', 'v1.9')).toBeGreaterThan(0);
   });
 
-  it('연결이 없으면 빈 상태, 시드 대응표에 없으면 그 안내', () => {
+  it('연결이 없으면 — 초안은 정의 승인 막힘 안내, 확정된 Version은 새 Version에서 연결하라고(내부 용어·"초안을 고치세요" 없음)', () => {
     handler = () => undefined;
-    mount(<FeatureRefsTab links={[]} missing="seed-links에 대응 없음" />);
-    expect(screen.getByText(/시드 대응표에 기준 행이 없습니다/)).toBeTruthy();
+    mount(<FeatureRefsTab links={[]} lifecycle="PROPOSED" />);
+    expect(screen.getByTestId('ref-blocks-approval').textContent).toBe(T.noneDraft);
+    cleanup();
+    mount(<FeatureRefsTab links={[]} lifecycle="RELEASED" />);
+    expect(screen.getByText(T.noneFixed)).toBeTruthy();
+    expect(screen.queryByTestId('ref-blocks-approval')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/시드|초안을 고치세요/);
+  });
+
+  it('기준 행 ID는 상세로 가는 링크, 출시된 Version에 폐기 예정 행이 있으면 대체 행과 함께 경고(막지 않음)', async () => {
+    handler = (url) => {
+      if (url === '/api/refdb/refs/CH-BRK-002') return { body: detailOf({ ...OLD }) };
+      if (url.startsWith('/api/refdb/changes')) return { body: { items: [], total: 0 } };
+      return undefined;
+    };
+    mount(<FeatureRefsTab links={[{ refId: 'CH-BRK-002', role: 'PRIMARY', refVersion: 'v1.3' }]} lifecycle="RELEASED" />);
+    expect(screen.getByRole('link', { name: 'CH-BRK-002' }).getAttribute('href')).toBe('/master/feature-db/CH-BRK-002');
+    const warn = await screen.findByTestId('ref-retired-warning');
+    expect(warn.textContent).toContain('CH-BRK-002 → CH-BRK-009');
+    expect(screen.queryByTestId('ref-blocks-approval')).toBeNull();
+  });
+
+  it('기준 행 조회가 실패하면 막힘 여부를 모른다고 말한다(조용히 숨기지 않는다)', async () => {
+    handler = (url) => {
+      if (url.startsWith('/api/refdb/refs/')) return { status: 500, body: { error: { code: 'INTERNAL', message: '서버 오류' } } };
+      if (url.startsWith('/api/refdb/changes')) return { body: { items: [], total: 0 } };
+      return undefined;
+    };
+    mount(<FeatureRefsTab links={[{ refId: 'CH-BRK-009', role: 'PRIMARY', refVersion: 'v1.3' }]} lifecycle="PROPOSED" />);
+    expect((await screen.findByTestId('ref-status-unknown')).textContent).toBe(T.unknownBlock);
+    expect(await screen.findAllByText(T.unknown)).toHaveLength(2);
+  });
+});
+
+describe('하네스 리뷰 후속(2026-11-04) — 권한·초점·알림·배지·연결 바꾸기', () => {
+  it('추가 요청은 Feature 작성자·DB 관리자만 — 조회 역할은 이유와 함께 막히고, 핵심 메시지는 "작성자만"', async () => {
+    handler = () => undefined;
+    mount(<ProposeScreen />, 'viewer');
+    const btn = await screen.findByRole('button', { name: PC.requestNew });
+    expect(btn).toHaveProperty('disabled', true);
+    expect(within(btn.closest('.ds-btn-why') as HTMLElement).getByText(/역할이 할 수 있습니다/)).toBeTruthy();
+    expect(document.querySelector('[data-key-message] .ds-key__text')!.textContent).toBe(PC.key.cannot);
+    cleanup();
+    mount(<ProposeScreen />, 'steward');
+    expect(await screen.findByRole('button', { name: PC.requestNew })).toHaveProperty('disabled', false);
+  });
+
+  it('대표로·빼기·대표로 바꾸기 뒤 초점이 사라진 버튼 대신 다음 자리로 가고, 바뀐 내용을 알린다(2.4.3·4.1.3)', async () => {
+    handler = () => undefined;
+    mount(<ProposeScreen />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CH-BRK-009 대표로' }));
+    await waitFor(() => expect(document.activeElement?.getAttribute('data-picked-tag')).toBe('CH-BRK-009'));
+    expect(screen.getByTestId('ref-pick-live').textContent).toBe(PC.announce.chosen('CH-BRK-009', '대표'));
+    fireEvent.click(screen.getByRole('button', { name: 'CH-BRK-006 포함 추가' }));
+    fireEvent.click(within(document.querySelector('[data-ref-chosen="CH-BRK-006"]') as HTMLElement).getByRole('button', { name: '대표로 바꾸기' }));
+    await waitFor(() => expect((document.activeElement as HTMLElement).closest('[data-ref-chosen]')?.getAttribute('data-ref-chosen')).toBe('CH-BRK-006'));
+    expect(screen.getByTestId('ref-pick-live').textContent).toBe(PC.announce.madePrimary('CH-BRK-006'));
+    // 빼면 다음(없으면 앞) 고른 행의 버튼으로, 다 빼면 '고른 기준 행' 제목으로
+    fireEvent.click(screen.getByRole('button', { name: 'CH-BRK-006 빼기' }));
+    await waitFor(() => expect((document.activeElement as HTMLElement).closest('[data-ref-chosen]')?.getAttribute('data-ref-chosen')).toBe('CH-BRK-009'));
+    fireEvent.click(screen.getByRole('button', { name: 'CH-BRK-009 빼기' }));
+    await waitFor(() => expect(document.activeElement?.id).toBe('ref-chosen-h'));
+    expect(screen.getByTestId('ref-pick-live').textContent).toBe(PC.announce.removed('CH-BRK-009'));
+  });
+
+  it('폐기 예정 안내·같은 범위 중복(409) 상자가 뜨면 그 제목으로 초점이 간다', async () => {
+    handler = (url, init) => (url === '/api/features' && init?.method === 'POST' ? { status: 409, body: { error: { code: 'REFDB_DUPLICATE_IN_SCOPE', message: 'KR · NX4 PE · Premium에 대표 기준 행 CH-BRK-009를 쓰는 FEAT-00022가 이미 있습니다.' } } } : undefined);
+    mount(<ProposeScreen />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CH-BRK-002 대표로' }));
+    await waitFor(() => expect(document.activeElement?.id).toBe('ref-deprecated-h'));
+    fireEvent.click(within(screen.getByTestId('ref-deprecated')).getByRole('button', { name: PC.cancel }));
+    fireEvent.click(screen.getByRole('button', { name: 'CH-BRK-009 대표로' }));
+    fireEvent.click(screen.getByRole('button', { name: '다음: 등록 정보 확인' }));
+    fireEvent.change(screen.getByLabelText(/^담당/), { target: { value: 'Chassis Control Team' } });
+    fireEvent.click(screen.getByRole('button', { name: '제안 등록' }));
+    await screen.findByTestId('propose-duplicate');
+    await waitFor(() => expect(document.activeElement?.id).toBe('propose-dup-h'));
+    expect(within(screen.getByTestId('propose-duplicate')).getByRole('alert').textContent).toContain('FEAT-00022');
+  });
+
+  it('상태 배지는 한 벌(Lozenge) — 등록 화면과 Feature DB 화면이 같은 색 무리, 추가 요청 T-shirt는 contracts SIZE_CLASSES', async () => {
+    handler = () => undefined;
+    mount(<ProposeScreen />);
+    await screen.findByRole('button', { name: 'CH-BRK-009 대표로' });
+    expect(document.querySelector('[data-ref-status="DEPRECATED"] .ds-lozenge')!.getAttribute('data-appearance')).toBe('moved');
+    expect(document.querySelector('[data-ref-status="RETIRED"] .ds-lozenge')!.getAttribute('data-appearance')).toBe('removed');
+    fireEvent.click(screen.getByRole('button', { name: PC.requestNew }));
+    const dlg = await screen.findByRole('dialog');
+    const opts = [...(within(dlg).getByLabelText(/^T-shirt/) as HTMLSelectElement).options].map((o) => o.value).filter(Boolean);
+    expect(opts).toEqual([...SIZE_CLASSES]);
+  });
+
+  it('ASIL을 바꾸면 사유 칸이 경고 안내 칸(warn)으로, 수정됨 표시는 강조 표식', async () => {
+    handler = () => undefined;
+    mount(<ProposeScreen />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CH-BRK-009 대표로' }));
+    fireEvent.click(screen.getByRole('button', { name: '다음: 등록 정보 확인' }));
+    expect(document.querySelector('.ds-prefill[data-prefilled="CH-BRK-009"]')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(/^ASIL(?! 변경)/), { target: { value: 'D' } });
+    const box = screen.getByTestId('asil-deviation');
+    expect(box.getAttribute('data-tone')).toBe('warn');
+    expect(within(box).getByLabelText(/^ASIL 변경 사유/)).toBeTruthy();
+    expect(document.querySelector('.ds-ref-mark[data-ref-mark="edited"]')).toBeTruthy();
+  });
+
+  it("초안의 '기준 행' 탭 — 연결 바꾸기: 대표를 바꾸면 PATCH featureRefs, 대표 ASIL이 다르면 사유, 같은 범위 중복 409는 사유와 함께 다시", async () => {
+    let n = 0;
+    handler = (url, init) => {
+      // 지금 대표(경사로 밀림 방지)는 대표 ASIL QM — Feature ASIL과 같다
+      if (url === '/api/refdb/refs/CH-BRK-006') return { body: detailOf({ ...HSA, asilRep: 'QM' }) };
+      if (url.startsWith('/api/refdb/changes')) return { body: { items: [], total: 0 } };
+      if (url === '/api/features/FEAT-00600/versions/0.1.0' && init?.method === 'PATCH') {
+        n++;
+        return n === 1 ? { status: 409, body: { error: { code: 'REFDB_DUPLICATE_IN_SCOPE', message: '같은 범위에 대표 기준 행 CH-BRK-009를 쓰는 FEAT-00022가 이미 있습니다.' } } } : { status: 200, body: {} };
+      }
+      return undefined;
+    };
+    const f = { featureId: 'FEAT-00600', version: '0.1.0', asil: 'QM', asilDeviation: null };
+    mount(<FeatureRefsTab links={[{ refId: 'CH-BRK-006', role: 'PRIMARY', refVersion: 'v1.3' }]} lifecycle="PROPOSED" feature={f} />);
+    fireEvent.click(await screen.findByRole('button', { name: T.edit.open }));
+    const ed = await screen.findByTestId('ref-link-editor');
+    await waitFor(() => expect(ed.querySelector('[data-ref-chosen="CH-BRK-006"]')).toBeTruthy());
+    const save = () => within(screen.getByTestId('ref-link-editor')).getByRole('button', { name: T.edit.save }) as HTMLButtonElement;
+    expect(save().disabled).toBe(true);
+    expect(within(ed).getByText(T.edit.noChange)).toBeTruthy();
+    // 대표를 오토 홀드(대표 ASIL B)로 — Feature ASIL QM과 달라 사유가 필요하다
+    fireEvent.click(await within(ed).findByRole('button', { name: 'CH-BRK-009 대표로' }));
+    expect(save().disabled).toBe(true);
+    fireEvent.change(within(screen.getByTestId('ref-edit-asil')).getByLabelText(/^ASIL 변경 사유/), { target: { value: '정차 유지 기능 없는 변형' } });
+    expect(save().disabled).toBe(false);
+    fireEvent.click(save());
+    const dup = await screen.findByTestId('ref-edit-duplicate');
+    fireEvent.change(within(dup).getByLabelText(/^같은 기준 행으로 다시 등록하는 사유/), { target: { value: '하드웨어 변형' } });
+    fireEvent.click(within(dup).getByRole('button', { name: PC.duplicate.confirm }));
+    await waitFor(() => expect(calls.filter((c) => c.method === 'PATCH').length).toBe(2));
+    const [first, second] = calls.filter((c) => c.method === 'PATCH');
+    // 새 대표를 고르면 앞 대표는 빠진다(등록 화면과 같은 규칙 — 포함으로 두려면 '포함 추가')
+    expect(first.body).toEqual({ featureRefs: [{ refId: 'CH-BRK-009', role: 'PRIMARY' }], asilDeviation: { from: 'B', to: 'QM', reason: '정차 유지 기능 없는 변형' } });
+    expect(second.body).toMatchObject({ confirmDuplicate: true, duplicateReason: '하드웨어 변형' });
+    await waitFor(() => expect(screen.queryByTestId('ref-link-editor')).toBeNull());
+  });
+
+  it("확정된 Version의 '기준 행' 탭에는 연결 바꾸기가 없다", () => {
+    handler = () => undefined;
+    mount(<FeatureRefsTab links={[]} lifecycle="RELEASED" feature={{ featureId: 'FEAT-00022', version: '1.0.0', asil: 'B' }} />);
+    expect(screen.queryByRole('button', { name: T.edit.openNone })).toBeNull();
   });
 });

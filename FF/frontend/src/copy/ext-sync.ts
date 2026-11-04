@@ -96,7 +96,7 @@ export const extSync = {
     epicNewHint: 'JIRA에서 Epic을 만든 것처럼 보냅니다. 작성 권한이 있는 계정이고 범위(국가·차종·트림·ASIL·담당 조직)와 기준 기능 ID가 모두 있으면 플랫폼에 PROPOSED Feature가 등록되고 Epic과 연결됩니다. 빠진 값이 있으면 등록하지 않고 Epic에 이유를 댓글로 남깁니다.',
     epicTitle: 'Epic 제목 (= Feature 이름)',
     epicRefs: '기준 기능 ID (쉼표로 구분)',
-    epicRefsHint: '첫 값이 대표, 나머지는 포함 — JIRA 라벨 ref-primary:·ref:로 싣습니다. 없으면 등록하지 않습니다',
+    epicRefsHint: '첫 값이 대표, 나머지는 포함 — JIRA 안의 FF 앱이 Epic 필드에 기록합니다(모의 연결은 라벨도 읽음). 없으면 등록하지 않습니다',
     epicBody: '설명',
     epicCreate: 'Epic 만들기',
   },

@@ -43,8 +43,8 @@ describe('업무 절차 허브', () => {
 
   it('14개 절차가 모두 카드로 보인다', async () => {
     mount('/procedures?view=list', 'viewer');
-    await screen.findByText('내가 맡은 활동', {}, { timeout: 5000 }).catch(() => undefined);
-    const links = await screen.findAllByRole('link', { name: /Flag Retirement|출시|등록/ });
+    // 업무 절차 문서는 늦게 읽힌다 — 카드 링크가 나올 때까지(시간 초과는 실패)
+    const links = await screen.findAllByRole('link', { name: /Flag Retirement|출시|등록/ }, { timeout: 5000 });
     expect(links.length).toBeGreaterThan(0);
     expect(document.querySelectorAll('.ds-learn-card').length).toBe(14);
   });
@@ -91,9 +91,12 @@ describe('절차 상세', () => {
 
   it('RACI 표에 책임(A)이 활동마다 정확히 한 칸이다', async () => {
     mount('/procedures/FPW.8', 'operator');
-    const table = await screen.findByRole('table', { name: '역할별 RACI' }, { timeout: 5000 }).catch(() => null);
-    // details가 닫혀 있어도 DOM에는 있다
-    const t = table ?? document.querySelector('table[aria-label="역할별 RACI"]')!;
+    // details가 닫혀 있으면 접근성 트리에 없다 — DOM에서 표가 나올 때까지 기다린다(시간 초과는 실패)
+    const t = await waitFor(() => {
+      const el = document.querySelector('table[aria-label="역할별 RACI"]');
+      expect(el).toBeTruthy();
+      return el!;
+    }, { timeout: 5000 });
     const rows = within(t as HTMLElement).getAllByRole('row').slice(1);
     for (const r of rows) expect(within(r).getAllByRole('cell').filter((c) => (c.textContent ?? '').split('·').includes('A')).length).toBe(1);
   });

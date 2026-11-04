@@ -322,6 +322,8 @@
   --accent-soft: #e6e9ef;
   --accent-ink: #ffffff;
   --ws-band: #e9ecf1;
+  /* 결재함 — 판정 근거를 읽는 화면이라 콘솔(30px)보다 넉넉하고 포털(42px)보다 조밀하게. 링크 밑줄·머리 띠는 design.css */
+  --row-h: 36px;
 }
 :root[data-workspace='console'] {
   --accent: #0f5e7a;

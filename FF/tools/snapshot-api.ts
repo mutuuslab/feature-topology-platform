@@ -5,7 +5,8 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { FF } from './lib.ts';
 
 const require = createRequire(import.meta.url);
@@ -23,17 +24,36 @@ async function freePort(): Promise<number> {
   });
 }
 
-const PORT = process.env.SNAPSHOT_PORT ? Number(process.env.SNAPSHOT_PORT) : await freePort(); // 8000 금지
-const BASE = `http://127.0.0.1:${PORT}`;
+let PORT = 0;
+let BASE = '';
 const OUT = join(FF, 'frontend', 'public');
+/** 정적 데모 검색용 전체 목록 한 쪽 — frontend screens/refdb/refSearch.ts STATIC_SEARCH_PAGE(= 서버 REF_PAGE_MAX)와 같다 */
+const STATIC_SEARCH_PAGE = 200;
 
-const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', join(FF, 'backend', 'dist', 'main.js')], {
-  env: { ...process.env, PORT: String(PORT), FF_DB: ':memory:', FF_SEED: 'v0.81' },
-  stdio: 'ignore',
-});
+/**
+ * 파일 이름 → 요청 URL 장부 — snapshotFile은 URL의 영숫자 밖 글자를 '_'로 바꾸고 긴 이름을 줄이므로 다른 URL이 같은 파일이 될 수 있다(하네스 리뷰 H10).
+ * 같은 URL을 두 번 찍는 것은 괜찮고, 다른 URL이 같은 파일을 덮으면 화면이 엉뚱한 응답을 읽으므로 멈춘다.
+ */
+export function claimSnapshotFile(written: Map<string, string>, file: string, url: string): void {
+  const prev = written.get(file);
+  if (prev !== undefined && prev !== url) throw new Error(`스냅샷 파일 이름 충돌 — ${file}: ${prev} ↔ ${url}`);
+  written.set(file, url);
+}
+
 // 우리 백엔드가 먼저 끝나면(포트 충돌 등) 다른 서버에 묻지 않고 바로 멈춘다
 let serverExit: number | null = null;
-server.once('exit', (code) => (serverExit = code ?? -1));
+
+/** 보조 백엔드 시작 — 직접 실행할 때만(시험은 claimSnapshotFile만 읽는다) */
+async function start() {
+  PORT = process.env.SNAPSHOT_PORT ? Number(process.env.SNAPSHOT_PORT) : await freePort(); // 8000 금지
+  BASE = `http://127.0.0.1:${PORT}`;
+  const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', join(FF, 'backend', 'dist', 'main.js')], {
+    env: { ...process.env, PORT: String(PORT), FF_DB: ':memory:', FF_SEED: 'v0.81' },
+    stdio: 'ignore',
+  });
+  server.once('exit', (code) => (serverExit = code ?? -1));
+  return server;
+}
 
 // 역할이 걸린 조회(보안 이벤트·Data Act·차량 상태 등)는 그 경로가 허용하는 첫 역할로 받는다 — 정적 데모는 읽기 전용 공개본이다
 async function get<T = any>(url: string, name?: string, headers?: Record<string, string>): Promise<T> {
@@ -57,9 +77,11 @@ type Save = (name: string, params?: Record<string, string>, query?: Record<strin
  *  · 목록(RefList refListQuery): { q, domain, component, status, offset, limit: 50 } — 쪽·상태·도메인·컴포넌트
  *  · 등록 1단계(RefPicker): { q, domain, component, limit: 20 } · 세부기능 후보 { component }
  *  · 상세(RefDetail): refDetail + listRefChanges { refId } — 모든 기준 행
- *  · Feature 상세 '기준 행' 탭(FeatureRefsTab): refDetail + listRefChanges { refId, status: 'PUBLISHED' } — 시드 Feature가 쓰는 행
+ *  · Feature 상세 '기준 행' 탭(FeatureRefsTab): refDetail + listRefChanges { refId, status: 'PUBLISHED' } — 시드 Feature가 쓰는 행.
+ *    연결(featureRefs)은 목록 응답에 없다 — Version 상세(featureDetail)에서 모은다(목록에서 모아 '바뀐 버전'이 늘 '—'이던 결함, 하네스 리뷰 F4)
+ *  · 정적 데모 검색(frontend screens/refdb/refSearch.ts): 검색어 스냅샷 대신 전체 목록 { offset, limit: 200 } 쪽을 받아 두고 화면이 찾는다(F5)
  */
-async function refdbSnapshots(save: Save, features: { featureRefs?: { refId: string }[] }[]) {
+async function refdbSnapshots(save: Save, versions: { featureRefs?: { refId: string }[] }[]) {
   // 예시 변경 요청 — 수정(대표 ASIL·T-shirt) + 도메인 검토 의견 하나(승인 전). 정적 데모는 읽기 전용이라 여기서만 만든다
   const AUTHOR = { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' };
   const REVIEWER = { 'X-Actor-Id': 'usr-approver', 'X-Actor-Role': 'DOMAIN_REVIEWER' };
@@ -92,18 +114,19 @@ async function refdbSnapshots(save: Save, features: { featureRefs?: { refId: str
   await save('listRefs', {}, { limit: 20 });
   for (const component of new Set(nodes.filter((n) => n.level === 'COMPONENT').map((n) => n.nameEn))) await save('refSubfunctions', {}, { component });
 
-  // 상세 — 모든 기준 행(목록 행을 누르면 열린다)
+  // 상세 — 모든 기준 행(목록 행을 누르면 열린다). 같은 쪽(200개)을 정적 데모 검색용 전체 목록으로도 남긴다(refSearch STATIC_SEARCH_PAGE)
   const refIds: string[] = [];
-  for (let offset = 0; offset < first.total; offset += 200) {
-    const page = await get(routeUrl('listRefs', {}, { offset: offset || undefined, limit: 200 }), 'listRefs');
+  for (let offset = 0; offset < first.total; offset += STATIC_SEARCH_PAGE) {
+    const page = await save('listRefs', {}, { offset: offset || undefined, limit: STATIC_SEARCH_PAGE });
     refIds.push(...(page.items as { refId: string }[]).map((r) => r.refId));
   }
   for (const refId of refIds) {
     await save('refDetail', { refId });
     await save('listRefChanges', {}, { refId });
   }
-  // Feature 상세 '기준 행' 탭 — 연결 뒤 발행된 변경(발행됨만)
-  const linked = new Set(features.flatMap((f) => (f.featureRefs ?? []).map((l) => l.refId)));
+  // Feature 상세 '기준 행' 탭 — 연결 뒤 발행된 변경(발행됨만). 연결이 하나도 없으면 탭이 표본 없이 찍힌 것이다
+  const linked = new Set(versions.flatMap((f) => (f.featureRefs ?? []).map((l) => l.refId)));
+  if (!linked.size) throw new Error('Feature Version 상세에 기준 행 연결(featureRefs)이 하나도 없습니다 — 기준 행 탭 스냅샷을 만들 수 없습니다');
   for (const refId of linked) await save('listRefChanges', {}, { refId, status: 'PUBLISHED' });
 }
 
@@ -120,10 +143,13 @@ async function main() {
   }
   rmSync(join(OUT, 'api-snapshot'), { recursive: true, force: true });
   let n = 0;
+  const written = new Map<string, string>();
   const save = async (name: string, params: Record<string, string> = {}, query: Record<string, any> = {}, headers?: Record<string, string>) => {
     const url = routeUrl(name, params, query);
+    const rel = snapshotFile(url);
+    claimSnapshotFile(written, rel, url);
     const body = await get(url, name, headers);
-    const file = join(OUT, snapshotFile(url));
+    const file = join(OUT, rel);
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, JSON.stringify(body));
     n++;
@@ -153,10 +179,11 @@ async function main() {
     for (const country of Object.keys(all.facets.country)) await save('listFeatures', {}, { country, latestOnly });
   }
 
-  // Feature Version 상세·Gate·체크리스트·감사·영향
+  // Feature Version 상세·Gate·체크리스트·감사·영향 — 상세의 feature(기준 행 연결 featureRefs 포함)를 모아 Feature DB 스냅샷에 넘긴다
+  const versions: { featureRefs?: { refId: string }[] }[] = [];
   for (const f of all.items as { featureId: string; version: string }[]) {
     const p = { id: f.featureId, ver: f.version };
-    await save('featureDetail', p);
+    versions.push((await save('featureDetail', p)).feature);
     await save('gates', p);
     // Feature 상세 '연계' 탭 — codeBeamer 요구·JIRA Epic/CR·GitLab MR 추적
     await save('extFeatureTrace', p);
@@ -169,7 +196,7 @@ async function main() {
 
   // Feature DB(기준 기능, 30-95) — 목록·상세·변경 요청·발행 이력, 등록 화면 1단계(기준 기능 고르기), Feature 상세 '기준 행' 탭.
   // 정적 데모에도 변경 요청 상세가 열리게 이 보조 백엔드(메모리 DB, 찍고 버린다)에 예시 수정 요청 하나와 도메인 검토 의견을 넣는다.
-  await refdbSnapshots(save, all.items as { featureRefs?: { refId: string }[] }[]);
+  await refdbSnapshots(save, versions);
 
   // BOM·Catalog
   await save('baselineRequests');
@@ -310,9 +337,13 @@ async function main() {
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 
-main()
-  .catch((e) => {
-    console.error('snapshot:api 실패:', e.message);
-    process.exitCode = 1;
-  })
-  .finally(() => server.kill());
+// 직접 실행(npm run snapshot:api)일 때만 — Windows는 드라이브 글자 대소문자가 다를 수 있다
+if (process.argv[1] && resolve(process.argv[1]).toLowerCase() === fileURLToPath(import.meta.url).toLowerCase()) {
+  const server = await start();
+  await main()
+    .catch((e) => {
+      console.error('snapshot:api 실패:', e.message);
+      process.exitCode = 1;
+    })
+    .finally(() => server.kill());
+}

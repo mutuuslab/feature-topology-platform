@@ -90,3 +90,27 @@ describe('Release Sign-off (보고서 6.1 G7 — Feature Owner)', () => {
     expect(signBtn().disabled).toBe(false);
   });
 });
+
+describe('Release Sign-off — 폐기 예정·폐기 기준 행 경고(막지 않음, 사용자 결정 2026-11-04 #9)', () => {
+  it('서명 응답의 warnings를 서명 뒤 막대 아래에 대체 행 링크와 함께 보인다', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        const method = init?.method ?? 'GET';
+        calls.push({ url, method, body: init?.body ? JSON.parse(String(init.body)) : undefined });
+        if (method === 'POST') view = { signoff: SIGNED, valid: true, stale: false };
+        const warnings = [{ code: 'REF_STATUS', refId: 'PL-CP-023', status: 'DEPRECATED', replacedBy: 'PL-CP-030', message: '기준 행 PL-CP-023은(는) 폐기 예정 상태입니다. 서명은 막지 않습니다 — 다음 Version에서 대체 행으로 다시 연결하세요.' }];
+        return new Response(JSON.stringify(method === 'POST' ? { ...view, warnings } : view), { status: method === 'POST' ? 201 : 200, headers: { 'Content-Type': 'application/json' } });
+      }),
+    );
+    mount('author');
+    await screen.findByText(/아직 없습니다/);
+    fireEvent.click(signBtn());
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '출시 근거 확인' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Release Sign-off — 개인 서명' }).at(-1)!);
+    const box = await screen.findByTestId('ref-warnings');
+    expect(box.getAttribute('role')).toBe('status');
+    expect(box.textContent).toContain('PL-CP-023');
+    expect(box.querySelector('[data-replaced-by="PL-CP-030"] a')!.getAttribute('href')).toBe('/master/feature-db/PL-CP-030');
+  });
+});

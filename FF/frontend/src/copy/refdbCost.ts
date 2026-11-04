@@ -13,5 +13,6 @@ export const swCost = {
     '산정 승인, 검토 체크리스트, 엑셀 내보내기',
   ],
   docTitle: '설계 문서',
-  doc: 'docs/20-architecture/20-94-cost-estimation.md',
+  // 화면에는 저장소 경로 대신 문서 이름(하네스 리뷰 F13) — 경로는 docs/20-architecture/20-94-cost-estimation.md
+  doc: 'SW 개발비 산정 설계 (아키텍처 문서 20-94)',
 };

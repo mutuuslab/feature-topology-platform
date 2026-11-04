@@ -1,7 +1,7 @@
 // 부서 보기(데모, 2026-11-04) — 부서 메뉴가 실제 화면으로 이어지고, 부서를 고르면 셸·홈이 화면 유형별로 바뀌며,
 // 전체 보기는 지금의 MENU 2.0(8그룹) 그대로다. 부서는 업무 절차 모델(docs/65-workflows)의 OEM 조직 가정안이다.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { WORKSPACES } from '@ff/contracts';
@@ -12,6 +12,7 @@ import { Shell } from '../shell/Shell';
 import { HomeScreen } from '../screens/home/Inbox';
 import { AppProvider, initial, reducer } from '../store';
 import { MotionProvider } from '../state/motion';
+import { departments as D } from '../copy/departments';
 
 beforeEach(() => {
   localStorage.clear();
@@ -160,5 +161,36 @@ describe('작업공간 홈', () => {
     mount({ role: 'author' }, '/', <HomeScreen />);
     await screen.findAllByRole('heading');
     expect(document.querySelector('[data-workspace-home]')).toBeNull();
+  });
+});
+
+describe('Feature DB를 맡는 부서(하네스 리뷰 F9·D1, 2026-11-04)', () => {
+  it('PLM·기준정보(승인·발행)와 시스템엔지니어링(도메인 검토) 메뉴에 Feature DB가 있다', () => {
+    for (const id of ['DEP-PLM', 'DEP-SE']) {
+      const m = departmentMenu(departmentById(id)!);
+      expect([...m.primary, ...m.reference].map((x) => x.to), id).toContain('/master/feature-db');
+    }
+  });
+
+  it('PLM 콘솔 홈에 변경 요청 대기열(검토 대기·발행 대기) — 핵심 메시지는 하나 그대로, Feature DB를 맡지 않는 콘솔(SW통합)에는 없다', async () => {
+    const changes = [
+      { changeId: 'CR-2026-001', kind: 'MODIFY', refId: 'CH-BRK-009', status: 'REVIEW', reviews: [], requestedBy: 'usr-author', requestedAt: '2026-11-04T01:00:00.000Z' },
+      { changeId: 'CR-2026-002', kind: 'ADD', refId: 'BC-ACC-031', status: 'APPROVED', reviews: [], requestedBy: 'usr-author', requestedAt: '2026-11-04T02:00:00.000Z' },
+      { changeId: 'CR-2026-003', kind: 'MODIFY', refId: 'CH-BRK-006', status: 'PUBLISHED', reviews: [], requestedBy: 'usr-author', requestedAt: '2026-11-03T02:00:00.000Z' },
+    ];
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => new Response(JSON.stringify(url.startsWith('/api/refdb/changes') ? { items: changes } : { items: [] }), { status: 200, headers: { 'Content-Type': 'application/json' } })));
+    mount({ role: 'steward', department: 'DEP-PLM' }, '/', <HomeScreen />);
+    const panel = await screen.findByRole('region', { name: D.console.fdb.title });
+    await waitFor(() => expect(panel.querySelector('[data-tab="OPEN"] .ws-fdb__n')!.textContent).toBe('1'));
+    expect(panel.querySelector('[data-tab="APPROVED"] .ws-fdb__n')!.textContent).toBe('1');
+    expect(within(panel).getByRole('link', { name: /검토 대기/ }).getAttribute('href')).toBe('/master/feature-db/changes?tab=OPEN');
+    // 처리 중만 — 발행된 요청은 대기열에 없다
+    expect(within(panel).queryByText('CR-2026-003')).toBeNull();
+    expect(within(panel).getByText('CR-2026-002')).toBeTruthy();
+    expect(document.querySelectorAll('[data-key-message]').length).toBe(1);
+    cleanup();
+    mount({ role: 'coordinator', department: 'DEP-INT' }, '/', <HomeScreen />);
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.queryByRole('region', { name: D.console.fdb.title })).toBeNull();
   });
 });

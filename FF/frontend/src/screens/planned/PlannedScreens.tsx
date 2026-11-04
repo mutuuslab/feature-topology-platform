@@ -1,4 +1,4 @@
-// /procurement/sw-cost — 메뉴만 연 준비 중 화면(2026-11-04, Feature DB는 screens/refdb로 열었다). 열릴 기능과 설계 문서 경로만 보인다.
+// /procurement/sw-cost — 메뉴만 연 준비 중 화면(2026-11-04, Feature DB는 screens/refdb로 열었다). 열릴 기능과 설계 문서 이름만 보인다(저장소 경로는 보이지 않는다).
 // '준비 중'은 낱말 상태라 핵심 메시지의 상태 pill로 — 큰 숫자 칸에 넣으면 3초 규칙(three-second ④)에 걸린다.
 import { swCost } from '../../copy/refdbCost';
 import { PageHeader, Panel } from '../../design';
@@ -17,9 +17,7 @@ function PlannedScreen({ copy }: { copy: PlannedCopy }) {
         </ul>
       </Panel>
       <Panel title={copy.docTitle}>
-        <p>
-          <code>{copy.doc}</code>
-        </p>
+        <p>{copy.doc}</p>
       </Panel>
     </div>
   );

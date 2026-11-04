@@ -1,6 +1,6 @@
 // /features/:id/:ver — Feature Version 상세 (v2). Lifecycle 전이·Gate 판정·의존관계·구현 추적·Baseline·감사.
-import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { GATES, type GateId, type Lifecycle } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
@@ -33,6 +33,7 @@ import { ReleaseSignoffBar } from './ReleaseSignoff';
 import { EpicChip, ExtLinksTab, RequirementChips } from './ExtLinksTab';
 import { FeatureRefsTab } from './FeatureRefsTab';
 import { featureRefsTab } from '../../copy/propose';
+import { RefWarningList, type RefWarning } from '../refdb/common';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
 import { FeatureVersionActions } from './VersionEdit';
 import type { AuditEntry, ChecklistItem, FeatureDetail as Detail, GateView } from '../types';
@@ -48,6 +49,15 @@ export default function FeatureDetail() {
   const q = useApi<Detail>('featureDetail', { params: { id, ver } });
   const d = q.data;
   const [transitionTo, setTransitionTo] = useState<Lifecycle | null>(null);
+  // 막지 않은 기준 행 경고(전이·새 Version 응답 warnings) — 그 Version에서만 보인다. 새 Version은 이동할 때 state로 넘겨받는다
+  const loc = useLocation();
+  const [refWarn, setRefWarn] = useState<{ at: string; title: string; items: RefWarning[] } | null>(null);
+  useEffect(() => {
+    const s = loc.state as { refWarnings?: RefWarning[] } | null;
+    if (s?.refWarnings?.length) setRefWarn({ at: `${id}@${ver}`, title: featureRefsTab.warnVersion, items: s.refWarnings });
+    // 이동(새 Version)마다 한 번 — 같은 Version의 다시 그리기에는 다시 넣지 않는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loc.key]);
   // 없는 Version/ID는 재시도해도 없는 데이터다 — 일반 오류 카드 대신 404 화면으로 보낸다(정적 호스팅은 HTTP 200이지만 화면 의미는 404)
   const notFound = q.error?.status === 404;
 
@@ -104,6 +114,7 @@ export default function FeatureDetail() {
                   ))}
                 {d.transitions.some((t) => t.auto) && <span className="ds-field__hint">{T.autoNote}</span>}
               </div>
+              {refWarn?.at === `${id}@${ver}` && <RefWarningList warnings={refWarn.items} title={refWarn.title} />}
               {d.feature.lifecycle === 'VERIFIED' && <ReleaseSignoffBar id={id} ver={ver} gatesPassed={d.gates.G8?.status === 'PASS' && d.gates.G9?.status === 'PASS'} />}
             </Panel>
 
@@ -124,7 +135,7 @@ export default function FeatureDetail() {
                 tab === 'overview' ? (
                   <Overview d={d} />
                 ) : tab === 'refs' ? (
-                  <FeatureRefsTab links={d.feature.featureRefs ?? []} missing={(d.feature._missing as Record<string, string> | undefined)?.featureRefs} />
+                  <FeatureRefsTab links={d.feature.featureRefs ?? []} lifecycle={d.feature.lifecycle} feature={d.feature} />
                 ) : tab === 'safety' ? (
                   <SafetyTab id={id} ver={ver} />
                 ) : tab === 'gates' ? (
@@ -143,7 +154,7 @@ export default function FeatureDetail() {
               }
             </Tabs>
 
-            <TransitionDrawer d={d} to={transitionTo} onClose={() => setTransitionTo(null)} />
+            <TransitionDrawer d={d} to={transitionTo} onClose={() => setTransitionTo(null)} onWarnings={(items) => setRefWarn({ at: `${id}@${ver}`, title: featureRefsTab.warnTransition, items })} />
           </>
         )}
       </AsyncView>
@@ -398,11 +409,11 @@ function AuditTab({ target }: { target: string }) {
   );
 }
 
-function TransitionDrawer({ d, to, onClose }: { d: Detail; to: Lifecycle | null; onClose: () => void }) {
+function TransitionDrawer({ d, to, onClose, onWarnings }: { d: Detail; to: Lifecycle | null; onClose: () => void; onWarnings: (w: RefWarning[]) => void }) {
   const opt = d.transitions.find((t) => t.to === to);
   const allowed = to === 'APPROVED' ? (['FEATURE_APPROVER'] as const) : (['RELEASE_MANAGER', 'GATE_JUDGE'] as const);
   const perm = usePermission(allowed);
-  const m = useApiMutation('transition', INVALIDATE);
+  const m = useApiMutation<{ warnings?: RefWarning[] }>('transition', INVALIDATE);
   const [reason, setReason] = useState('');
   // 역할·사유는 이 화면에서 채우는 조건이므로 그 외의 막힌 사유만 미리 보여 준다
   const hard = (opt?.blockers ?? []).filter((b) => !['ROLE', 'REASON_REQUIRED', 'SEPARATION_OF_DUTY'].includes(b.code));
@@ -413,13 +424,19 @@ function TransitionDrawer({ d, to, onClose }: { d: Detail; to: Lifecycle | null;
           style={{ display: 'grid', gap: 'var(--sp-3)' }}
           onSubmit={(e) => {
             e.preventDefault();
-            m.mutate({ params: { id: d.feature.featureId, ver: d.feature.version }, body: { to, reason } }, { onSuccess: () => (setReason(''), onClose()) });
+            m.mutate({ params: { id: d.feature.featureId, ver: d.feature.version }, body: { to, reason } }, { onSuccess: (r) => (setReason(''), r?.warnings?.length && onWarnings(r.warnings), onClose()) });
           }}
         >
           <p style={{ margin: 0 }}>
             <LifecycleBadge value={d.feature.lifecycle} /> → <LifecycleBadge value={opt.to} /> · {opt.ko}
           </p>
           {hard.length > 0 && <ErrorNote error={{ message: ko.stepper.blocked, details: { blockers: hard } }} />}
+          {/* 기준 행 막힘(연결 없음·요청 중·폐기 행·ASIL 다시 확인)은 '기준 행' 탭에서 연결과 ASIL 사유를 고친다 */}
+          {hard.some((b) => b.code === 'REFDB_LINK_BLOCKED') && (
+            <Link to={`/features/${encodeURIComponent(d.feature.featureId)}/${encodeURIComponent(d.feature.version)}?tab=refs`} onClick={onClose} data-ui="toFeatureRefs">
+              {featureRefsTab.toRefsTab}
+            </Link>
+          )}
           {opt.to === 'RELEASED' && (
             <GateRail statuses={Object.fromEntries(GATES.map((g) => [g, d.gates[g]?.status ?? null]))} />
           )}

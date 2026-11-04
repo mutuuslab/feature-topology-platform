@@ -192,7 +192,7 @@ export function MyWorkFlow({ doc, sample, persona }: { doc: WorkflowDoc; sample?
   const layout = layoutMyFlow(steps, doc, MY_FLOW_FULL, F.node.more);
   return (
     <div className="pf-view" data-mode={mode} data-role={role}>
-      <p className="ds-field__hint pf-hint">{own ? F.mine.hint(roleLabel(role)) : F.roles.hint(roleLabel(role))}</p>
+      <p className="ds-field__hint pf-hint">{own ? F.mine.hint(roleLabel(role), doc.processes.length) : F.roles.hint(roleLabel(role), doc.processes.length)}</p>
       <div className="pf-toolbar">
         <Segmented<Filter>
           label={F.mine.filter}

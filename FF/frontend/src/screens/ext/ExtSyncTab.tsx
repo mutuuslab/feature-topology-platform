@@ -251,7 +251,7 @@ function EpicCreateForm() {
   const [body, setBody] = useState('');
   const [user, setUser] = useState('kim.author');
   const [scope, setScope] = useState<Record<EpicScopeField, string>>({ country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', asil: 'QM', ownerId: '' });
-  // 기준 기능(Feature DB) ID — JIRA 라벨 ref-primary:·ref:로 실린다. 첫 값이 대표(30-95 §7)
+  // 기준 기능(Feature DB) ID — JIRA 안의 FF 앱이 Epic 필드에 기록한다(모의 연결은 라벨 ref-primary:·ref:도 읽음). 첫 값이 대표(30-95 §7)
   const [refs, setRefs] = useState('');
   const create = useApiMutation<{ item: { key: string }; result: { outcome: string; summary: string } | null }>('mockExtCreate', INVALIDATE);
   return (

@@ -2462,3 +2462,99 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   font-size: var(--fs-sm);
   color: var(--muted);
 }
+
+/* ── Feature DB(기준 기능) 화면 (하네스 리뷰 D2·D3, 2026-11-04) — 토큰·작업공간 변수만 ── */
+/* 기준 행 상세 머리 칩 — 대표 ASIL·T-shirt. 이름은 보조 글자, 값은 고정폭 굵게(고를 때 먼저 보는 두 값) */
+.ds-meta-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+}
+.ds-meta-chip .ds-mono {
+  color: var(--ink);
+  font-weight: 700;
+}
+/* 등록 2단계 '기준값'·'수정됨' 표시 — 고친 칸은 강조색 옅은 바탕(기준값은 회색 그대로) */
+.ds-ref-mark[data-ref-mark='edited'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+/* 미리 채운 칸 — 2단계를 처음 열 때 기준 행에서 온 칸을 잠깐 강조한다. 길이는 모션 토큰(--t-base)의 배수라
+   움직임 줄이기(prefers-reduced-motion)면 0ms로 강조 없이 끝난다(tokens.css 전역 규칙) */
+.ds-prefill .ds-field:has([data-ref-mark='base']) :is(.ds-input, .ds-select) {
+  animation: ds-prefill-flash calc(var(--t-base) * 6) var(--ease) 1;
+}
+@keyframes ds-prefill-flash {
+  from {
+    background-color: var(--accent-soft);
+    border-color: var(--accent);
+  }
+}
+/* 안내 칸 — 막지 않는 경고(ASIL 사유·폐기 예정 행·서버 안내·출처 점검). 판정 색은 바탕·테두리에만, 글자는 본문색 */
+.ds-callout {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.ds-callout[data-tone='warn'] {
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+  border-left-color: var(--warn);
+  background: var(--warn-soft);
+}
+.ds-callout__title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+.ds-callout .ds-field {
+  margin: 0;
+}
+/* 점검 기한 지남 — 작은 경고 낱말 */
+.ds-tag--warn {
+  background: var(--warn-soft);
+  color: color-mix(in srgb, var(--warn) 72%, var(--ink));
+  font-weight: 600;
+}
+/* 표 안 고르기 칸 — 누를 곳 24px 이상(WCAG 2.5.8) */
+.ds-pick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  cursor: pointer;
+}
+/* 알림에서 연 출처 — 그 행 ID에 강조 */
+[data-source-row][data-focus] {
+  padding: 0 var(--sp-1);
+  border-radius: var(--r-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ── 부서 작업공간 성격(D4) — 심사 결재함(review)은 강조색이 본문과 비슷한 슬레이트라 링크·머리가 묻혔다 ── */
+/* 본문 링크는 밑줄로 구별한다(색만으로 구별하지 않는다, WCAG 1.4.1) — 버튼·탭·칩 링크는 제외 */
+:root[data-workspace='review'] #main a:not(.ds-btn):not([role='tab']):not(.ds-id a) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+/* 화면 머리 띠 — 결재함 바탕(--ws-band) 위에 제목·핵심 메시지, 왼쪽 강조 선으로 '심사 중인 화면'을 표시 */
+:root[data-workspace='review'] #main .ds-page {
+  padding: var(--sp-4) var(--sp-5);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r-lg);
+  background: var(--ws-band);
+}

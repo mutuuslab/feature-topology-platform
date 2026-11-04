@@ -11,6 +11,7 @@
 //      톤은 ok·warn·danger·neutral, 문장 글자는 본문색(색은 숫자·pill·표식에만), 값이 0이면 neutral
 //   ⑨ 본문(#main)의 보이는 글자에 규칙·컴포넌트 코드 없음(UX3-01) — 코드는 설명 모드(.ds-explain·.ds-page__codes)나 title 툴팁에서만.
 //      원시 데이터(pre — JSON 덤프)와 접힌 내용은 제외. 아직 못 고친 화면은 BODY_CODE_ALLOW(경로 → 사유) 래칫 — 고치면 목록에서 빼야 통과한다.
+//      2026-11-04(F3) 직무 분리(SOD-)·업무 절차(FPW.)·설계 결정(D-REF-)·Feature DB 오류 코드(REFDB_)와 못 누르는 버튼의 이유 글자도 본다 — key-message-rules.ts bodyCodes
 //      2026-10-24 /arch/components(이름 중심 카드)·/admin/iam(요약문은 표시 층에서 코드 분리)을 고쳐 목록은 0 — 래칫은 0을 지킨다
 //   ⑩ 비었다는 말을 두 번 하지 않는다(D-UX3-2, 2026-10-24 결정) — 의미 비교(NLP) 없이 좁은 결정적 규칙만:
 //      핵심 메시지에 숫자 값이 없고(.ds-key__value 없음·숫자 없음) 톤이 neutral이고 문장이 '없습니다'·'없음'으로 끝나면,
@@ -19,15 +20,13 @@
 //   ⑪ 요약 줄 항목 이름을 핵심 메시지에서 되풀이하지 않는다 · ⑫ 본문에 어두운 관제실 구역(data-zone="ops") 없음 — key-message-rules.ts(UX3-15)
 // BDC 데모(/twin/*)는 별도 레거시 화면 묶음이라, 디자인 갤러리(/_design)는 부품 견본이라 대상에서 뺀다.
 import { expect, test, type Page } from '@playwright/test';
-import { summaryAndZone } from './key-message-rules';
+import { bodyCodes, CODE, summaryAndZone } from './key-message-rules';
 import { DRILLDOWNS, MENU_ENTRIES } from './menu';
+import { settle } from './settle';
 
 const SKIP = (u: string) => u.startsWith('/twin') || u.startsWith('/_design');
-const CODE = /FFG-[A-Z]+-\d|\bIF-\d|\bD0\d-\d|보고서 \d|§\d/;
 /** 헤드라인 값 — 숫자·비율·분수·시간, 아직 모름(—) */
 const KEY_VALUE = /^(?:[—…]|[+−-]?\d[\d,.]*\s*(?:%|s|ms|분|건|개|대|일)?(?:\s*\/\s*\d[\d,.]*)?)$/;
-/** ⑨ 본문 코드 — CODE + 따라하기 시나리오 코드(CS-01·CLASSIFY-GATE·KILL-DC2) */
-const BODY_CODE = new RegExp(String.raw`${CODE.source}|\bCS-\d|\bCLASSIFY-GATE\b|\bKILL-DC\d`);
 /** ⑨ 래칫 — 본문에 코드가 아직 보이는 화면(URL → 사유). 줄이기만 한다 */
 const BODY_CODE_ALLOW: Record<string, string> = {};
 /** ⑩ 래칫 — 핵심 메시지가 '없습니다'라고 말하는데 빈 상자가 아직 보이는 화면(URL → 사유). 줄이기만 한다 */
@@ -40,7 +39,7 @@ async function threeSeconds(page: Page, url: string) {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto(url);
   await expect(page.locator('#main h1').first()).toBeVisible();
-  await page.waitForFunction(() => !document.querySelector('#main [data-state="loading"], #main [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
+  await settle(page);
 
   const key = page.locator('#main [data-key-message]');
   await expect(key, '핵심 메시지는 화면마다 정확히 1개').toHaveCount(1);
@@ -114,22 +113,7 @@ async function threeSeconds(page: Page, url: string) {
   expect(head.textColor, '헤드라인 문장 글자는 본문색 — 판정 색은 숫자·pill·표식에만').toBe(head.ink);
 
   // ⑨ 본문 코드(UX3-01) — 설명 모드를 끈 기본 화면에서 보이는 글자만 본다
-  const codes = await page.evaluate((src) => {
-    const re = new RegExp(src);
-    const out: string[] = [];
-    const main = document.querySelector('#main')!;
-    const walk = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
-    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
-      const t = n.textContent!.trim();
-      const el = n.parentElement;
-      if (!t || !el || !re.test(t) || el.closest('.ds-explain, .ds-explain-block, .ds-page__codes, [aria-hidden="true"], svg, canvas, script, style, option, pre, details:not([open]) > :not(summary)')) continue;
-      const range = document.createRange();
-      range.selectNodeContents(n);
-      if (![...range.getClientRects()].some((r) => r.width && r.height) || getComputedStyle(el).visibility === 'hidden') continue;
-      out.push(`${el.tagName}.${el.className} "${t.slice(0, 50)}"`);
-    }
-    return out;
-  }, BODY_CODE.source);
+  const codes = await bodyCodes(page);
   if (BODY_CODE_ALLOW[url]) expect(codes.length, `⑨ 허용 목록(${BODY_CODE_ALLOW[url]})에 있는데 본문 코드가 없다 — BODY_CODE_ALLOW에서 빼라`).toBeGreaterThan(0);
   else expect(codes, '⑨ 본문에 규칙·컴포넌트 코드 없음 — 설명 모드(Explain·codes)나 title 툴팁으로').toEqual([]);
 

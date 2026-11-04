@@ -1,20 +1,23 @@
 // 'Feature DB에 없음 → 요청'(30-95 §6.4, D-REF-7) — 최소 정보로 추가 요청. 서버가 정식 ID를 바로 주고 요청 중(PENDING) 행을 만든다.
 // 성공하면 그 행을 돌려준다 — 화면이 대표 행으로 쓴다(승인 전에는 Feature 승인이 막힌다).
 import { useState } from 'react';
+import { SIZE_CLASSES } from '@ff/contracts';
 import { ASIL_VALUES, type TaxonomyNodeLite } from './taxonomy';
 import { fieldErrors } from '../../../api/field-errors';
 import { useApiMutation } from '../../../api/hooks';
 import { propose as P } from '../../../copy/propose';
 import { Button, Drawer, ErrorNote, Field, whyDisabled } from '../../../design';
+import { usePermission } from '../../shared';
 import { list, type RefLite } from './prefill';
 
-const TSHIRTS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 const NEW = '__new__';
 const EMPTY = { domain: '', component: '', componentName: '', componentAbbr: '', nameEn: '', nameKo: '', tshirt: '', asilRep: '', sourceIds: '', basisNote: '' };
 
 export function RefRequestDrawer({ open, onClose, onCreated, nodes, initialDomain = '' }: { open: boolean; onClose: () => void; onCreated: (ref: RefLite) => void; nodes: TaxonomyNodeLite[]; initialDomain?: string }) {
   const R = P.request;
   const [f, setF] = useState({ ...EMPTY, domain: initialDomain });
+  // 서버 requestRefAdd와 같은 역할 — 열기 버튼도 막지만, 역할이 바뀌어도 보내기 전에 한 번 더 본다. 공개 데모는 읽기 전용
+  const perm = usePermission(['FEATURE_AUTHOR', 'REFDB_ADMIN']);
   const req = useApiMutation<RefLite | { ref: RefLite }>('requestRefAdd', ['listRefs', 'refQuality', 'listRefChanges']);
   const fe = fieldErrors(req.error);
   const domains = nodes.filter((n) => n.level === 'DOMAIN');
@@ -25,6 +28,7 @@ export function RefRequestDrawer({ open, onClose, onCreated, nodes, initialDomai
   const component = isNew ? f.componentName.trim() : f.component;
   const dirty = Object.entries(f).some(([k, v]) => v !== (k === 'domain' ? initialDomain : ''));
   const why = whyDisabled(
+    [!perm.ok, perm.hint],
     [!f.domain || !component || !f.nameEn.trim() || !f.nameKo.trim() || !f.tshirt || !f.asilRep, R.requiredWhy],
     [!list(f.sourceIds).length && f.basisNote.trim().length < 2, R.sourceOrBasis],
   );
@@ -91,7 +95,7 @@ export function RefRequestDrawer({ open, onClose, onCreated, nodes, initialDomai
         <Field label={R.tshirt} error={fe.tshirt}>
           <select className="ds-select" name="tshirt" value={f.tshirt} onChange={set('tshirt')}>
             <option value="">{R.choose}</option>
-            {TSHIRTS.map((t) => (
+            {SIZE_CLASSES.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
           </select>

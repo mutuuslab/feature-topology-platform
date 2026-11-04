@@ -25,7 +25,7 @@ export function ValueChainMap({ doc, sample }: { doc: WorkflowDoc; sample?: read
   const marker = `pf-chain-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   return (
     <div className="pf-view" data-mode={mode}>
-      <p className="ds-field__hint pf-hint">{F.chain.hint}</p>
+      <p className="ds-field__hint pf-hint">{F.chain.hint(doc.processes.length)}</p>
       <div className="pf-toolbar">
         <Segmented<'diagram' | 'text'> label={F.views.label} value={mode} onChange={setMode} options={[{ value: 'diagram', label: F.views.diagram }, { value: 'text', label: F.views.text }]} />
       </div>

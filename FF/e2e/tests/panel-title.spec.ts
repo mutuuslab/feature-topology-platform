@@ -5,6 +5,7 @@
 // three-second.spec과 같은 대상·제외 규칙(BDC 데모 /twin/*, 디자인 갤러리 /_design 제외).
 import { expect, test, type Page } from '@playwright/test';
 import { DRILLDOWNS, MENU_ENTRIES } from './menu';
+import { settle } from './settle';
 
 const SKIP = (u: string) => u.startsWith('/twin') || u.startsWith('/_design');
 
@@ -12,7 +13,7 @@ async function oncePerScreen(page: Page, url: string) {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto(url);
   await expect(page.locator('#main h1').first()).toBeVisible();
-  await page.waitForFunction(() => !document.querySelector('#main [data-state="loading"], #main [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
+  await settle(page);
 
   const check = async (where: string) => {
     const found = await page.evaluate(() => {
@@ -40,7 +41,7 @@ async function oncePerScreen(page: Page, url: string) {
   for (let i = 1; i < n; i++) {
     const label = (await tabs.nth(i).innerText()).trim();
     await tabs.nth(i).click();
-    await page.waitForFunction(() => !document.querySelector('#main [data-state="loading"], #main [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
+    await settle(page);
     await check(`${url} 탭 "${label}"`);
   }
 }

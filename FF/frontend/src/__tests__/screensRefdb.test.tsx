@@ -8,7 +8,7 @@ import { AppProvider } from '../store';
 import { FeatureDbScreen } from '../screens/refdb/RefList';
 import { RefDetailScreen } from '../screens/refdb/RefDetail';
 import { RefChangeDetailScreen, RefChangesScreen } from '../screens/refdb/Changes';
-import { featureDb as L, refChangeDetail as D, refChanges as C, refDetail as RD } from '../copy/refdb';
+import { featureDb as L, refChangeDetail as D, refChanges as C, refDetail as RD, refSources as S } from '../copy/refdb';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -155,7 +155,10 @@ const api: Handler = (url) => {
   if (url.startsWith('/api/refdb/refs')) {
     const q = new URL(url, 'http://x').searchParams.get('q');
     const items = (q ? [ROW].filter((r) => r.aliases.includes(q) || r.nameKo.includes(q)) : [ROW, ROW2]).map((r) => ({ ...r, subfunctionCount: 1 }));
-    return { body: { items, total: q ? 1 : 1052, offset: 0, limit: 50, facets: { domain: [], component: [], status: [] }, release: 'v1.3' } };
+    // 실제 패싯 모양(read-search.ts) — 상태 축은 상태 필터를 빼고 지금 조건으로 센 수
+    const status = { ACTIVE: 0, REVIEW: 0, DEPRECATED: 0, RETIRED: 0, PENDING: 0 } as Record<string, number>;
+    for (const r of items) status[r.status]++;
+    return { body: { items, total: q ? 1 : 1052, offset: 0, limit: 50, facets: { domain: {}, component: {}, status }, release: 'v1.3' } };
   }
   if (url.startsWith('/api/refdb/changes/CR-2026-001')) return { body: CHANGE_DETAIL };
   if (url.startsWith('/api/refdb/changes')) {
@@ -173,7 +176,9 @@ describe('Feature DB 목록', () => {
     expect(screen.getByText('CH-BRK-006')).toBeTruthy();
     const key = document.querySelector('[data-key-message]')!;
     expect(key.querySelector('.ds-key__value')!.textContent).toBe('1,052');
-    expect(key.querySelector('.ds-key__status')!.textContent).toBe(L.awaiting(2));
+    // pill은 낱말 — 수(2)는 요약 줄이 말한다(⑪, pill이 '발행 대기 2'로 요약 줄을 되풀이하던 결함)
+    expect(key.querySelector('.ds-key__status')!.textContent).toBe(L.awaiting);
+    expect(key.querySelector('.ds-key__status')!.textContent).not.toMatch(/d/);
     const summary = screen.getByRole('group', { name: L.quality });
     expect(summary.textContent).toContain(`${L.q.stale} 12`);
     expect(summary.textContent).toContain('83.6%');
@@ -186,6 +191,11 @@ describe('Feature DB 목록', () => {
     const opts = [...(screen.getByLabelText(L.component) as HTMLSelectElement).options].map((o) => o.value);
     expect(opts).toEqual(['', 'Brake control (ESC/ABS)']);
     await waitFor(() => expect(calls.some((c) => c.url.includes('/api/refdb/refs?') && c.url.includes('domain=Chassis'))).toBe(true));
+    // 상태 탭 수는 지금 조건의 패싯(행 2개) — 전체 품질 지표(1052·995)가 아니다
+    const tab = (name: string) => screen.getByRole('radio', { name: new RegExp(`^${name}`) }).querySelector('.ds-seg__count')?.textContent;
+    expect(tab(L.allStatus)).toBe('2');
+    expect(tab(REF_STATUS_POLICY.ACTIVE.ko)).toBe('1');
+    expect(tab(REF_STATUS_POLICY.REVIEW.ko)).toBe('1');
     // 상태 배지 툴팁은 정책 안내
     expect(document.querySelector('[data-ref-status="REVIEW"]')!.getAttribute('title')).toBe(REF_STATUS_POLICY.REVIEW.hint);
   });
@@ -198,6 +208,8 @@ describe('Feature DB 목록', () => {
     await waitFor(() => expect(calls.some((c) => c.url.includes('q=AVH'))).toBe(true));
     await waitFor(() => expect(screen.queryByText('경사로 밀림 방지')).toBeNull());
     expect(screen.getByText('오토 홀드')).toBeTruthy();
+    // 검색하면 상태 탭 수도 검색 결과 기준(활성 1·검토 필요 0)
+    await waitFor(() => expect(screen.getByRole('radio', { name: new RegExp(`^${REF_STATUS_POLICY.REVIEW.ko}`) }).querySelector('.ds-seg__count')?.textContent).toBe('0'));
   });
 });
 
@@ -252,6 +264,39 @@ describe('Feature DB 상세', () => {
     await waitFor(() => expect(btn.disabled).toBe(true));
     expect(screen.getByText(/역할이 할 수 있습니다/)).toBeTruthy();
   });
+
+  it('A → B → A로 오가도 변경 요청 서랍은 지금 행의 값으로 시작한다(서랍 입력이 앞 행 값으로 남던 결함)', async () => {
+    // B는 A를 선행으로 둔다 — 관계 칸의 링크로 A ↔ B를 오간다. 돌아온 A는 캐시가 있어 로딩 없이 바로 그린다
+    const B = { ...ROW, refId: 'CH-BRK-001', nameKo: '기본 제동 보조', nameEn: 'Basic brake assist', asilRep: 'D', tshirt: 'L', requires: ['CH-BRK-009'] };
+    handler = (url, init) => {
+      if (init?.method === 'POST') return { status: 201, body: { ...CHANGE, awaitingPublish: false, domain: ROW.domain } };
+      if (url.startsWith('/api/refdb/refs/CH-BRK-001')) return { body: { ...DETAIL, ref: B, usedBy: [] } };
+      return api(url);
+    };
+    mount('author', '/master/feature-db/CH-BRK-009', '/master/feature-db/:refId', <RefDetailScreen />);
+    await screen.findByRole('heading', { level: 1, name: '오토 홀드' });
+    fireEvent.click(screen.getByRole('link', { name: 'CH-BRK-001' }));
+    await screen.findByRole('heading', { level: 1, name: '기본 제동 보조' });
+    fireEvent.click(screen.getByRole('link', { name: 'CH-BRK-009' }));
+    await screen.findByRole('heading', { level: 1, name: '오토 홀드' });
+    fireEvent.click(screen.getByRole('button', { name: RD.change }));
+    const dlg = await screen.findByRole('dialog');
+    expect((within(dlg).getByLabelText(RD.f.nameKo) as HTMLInputElement).value).toBe('오토 홀드');
+    expect((within(dlg).getByLabelText(RD.f.asilRep) as HTMLSelectElement).value).toBe('B');
+    expect(within(dlg).getByText('바꾼 값이 없습니다')).toBeTruthy();
+    fireEvent.change(within(dlg).getByLabelText(RD.f.tshirt), { target: { value: 'M' } });
+    fireEvent.change(within(dlg).getByLabelText('요청 사유'), { target: { value: '사내 실적 반영' } });
+    fireEvent.click(within(dlg).getByRole('button', { name: /변경 요청 보내기/ }));
+    await waitFor(() => expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ kind: 'MODIFY', refId: 'CH-BRK-009', after: { tshirt: 'M' }, reason: '사내 실적 반영' }));
+  });
+
+  it('머리에 대표 ASIL·T-shirt 칩', async () => {
+    handler = api;
+    mount('viewer', '/master/feature-db/CH-BRK-009', '/master/feature-db/:refId', <RefDetailScreen />);
+    await screen.findByRole('heading', { level: 1, name: '오토 홀드' });
+    expect(document.querySelector('.ds-page [data-meta="asil"]')!.textContent).toBe(`${RD.f.asilRep} B`);
+    expect(document.querySelector('.ds-page [data-meta="tshirt"] .ds-mono')!.textContent).toBe('S');
+  });
 });
 
 describe('Feature DB 변경 요청', () => {
@@ -284,7 +329,10 @@ describe('Feature DB 변경 요청', () => {
     handler = (url) => (url.startsWith('/api/refdb/changes/CR-2026-001') ? { body: { ...CHANGE_DETAIL, change: { ...CHANGE_DETAIL.change, requestedBy: 'usr-approver' } } } : api(url));
     mount('approver', '/master/feature-db/changes/CR-2026-001', '/master/feature-db/changes/:id', <RefChangeDetailScreen />);
     await screen.findByRole('button', { name: D.submitReview });
-    expect(screen.getByText(/SOD-14/)).toBeTruthy();
+    // 버튼 이유는 사람이 읽는 문장만 — 내부 규칙 코드(SOD-14)는 보이지 않는다(3초 ⑨)
+    const why = screen.getByText(/변경 요청자는 자기 요청을 검토할 수 없습니다/, { selector: '.ds-btn-why__text' });
+    expect(why.textContent).not.toMatch(/\bSOD-\d/);
+    expect(document.body.textContent).not.toMatch(/\bSOD-\d/);
   });
 
   it('Feature DB 관리자 — 검토 의견이 없으면 승인은 이유와 함께 막히고 반려는 사유만 있으면 된다', async () => {
@@ -321,6 +369,8 @@ describe('Feature DB 변경 요청', () => {
     mount('steward', '/master/feature-db/changes', '/master/feature-db/changes', <RefChangesScreen />);
     expect(await screen.findByText('CR-2026-001')).toBeTruthy();
     expect(screen.getByRole('tab', { name: new RegExp(C.tabs.APPROVED) }).textContent).toContain('1');
+    // pill은 낱말(수는 탭이 말한다)
+    expect(document.querySelector('[data-key-message] .ds-key__status')!.textContent).toBe(L.awaiting);
     const publish = (await screen.findByRole('button', { name: C.publishBtn(1) })) as HTMLButtonElement;
     expect(publish.disabled).toBe(false);
     expect(document.querySelector('[data-hash]')!.getAttribute('data-hash')).toBe('a'.repeat(64));
@@ -333,5 +383,102 @@ describe('Feature DB 변경 요청', () => {
     await screen.findByText('CR-2026-001');
     expect(screen.queryByRole('button', { name: /버전 발행/ })).toBeNull();
     expect((await screen.findByRole('button', { name: C.export }) as HTMLButtonElement).disabled).toBe(false);
+  });
+});
+
+describe('하네스 리뷰 후속(2026-11-04) — 직무 분리 문장·검토 의견·출처 점검', () => {
+  const decider = (change: object) => (url: string, init?: RequestInit) => (url.startsWith('/api/refdb/changes/CR-2026-001') && init?.method !== 'POST' ? { body: { ...CHANGE_DETAIL, change: { ...CHANGE_DETAIL.change, ...change } } } : api(url));
+
+  it('관리자 — 요청자 본인이면 승인·반려 모두 문장 이유로 막힌다(코드 없음)', async () => {
+    handler = decider({ requestedBy: 'usr-steward' });
+    mount('steward', '/master/feature-db/changes/CR-2026-001', '/master/feature-db/changes/:id', <RefChangeDetailScreen />);
+    await screen.findByRole('button', { name: D.approve });
+    fireEvent.change(screen.getByLabelText(D.decideReason), { target: { value: '근거 확인' } });
+    expect((screen.getByRole('button', { name: D.reject }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getAllByText('변경 요청자는 자기 요청을 승인·반려할 수 없습니다', { selector: '.ds-btn-why__text' }).length).toBe(2);
+    expect(document.body.textContent).not.toMatch(/\bSOD-\d/);
+  });
+
+  it('관리자 — 이 요청에 검토 의견을 낸 사람이면 승인·반려할 수 없다', async () => {
+    handler = decider({ reviews: [{ reviewerId: 'usr-steward', opinion: 'AGREE', comment: '동의', at: '2026-11-04T01:30:00.000Z' }] });
+    mount('steward', '/master/feature-db/changes/CR-2026-001', '/master/feature-db/changes/:id', <RefChangeDetailScreen />);
+    await screen.findByRole('button', { name: D.approve });
+    expect(screen.getAllByText('이 요청에 검토 의견을 낸 사람은 승인·반려할 수 없습니다', { selector: '.ds-btn-why__text' }).length).toBe(2);
+  });
+
+  it("마지막 검토 의견이 '보완'이면 승인은 이유와 함께 막히고, 반려는 된다", async () => {
+    handler = decider({
+      reviews: [
+        { reviewerId: 'usr-a', opinion: 'AGREE', comment: '동의', at: '2026-11-04T01:00:00.000Z' },
+        { reviewerId: 'usr-approver', opinion: 'REVISE', comment: '출처 보완', at: '2026-11-04T02:00:00.000Z' },
+      ],
+    });
+    mount('steward', '/master/feature-db/changes/CR-2026-001', '/master/feature-db/changes/:id', <RefChangeDetailScreen />);
+    await screen.findByRole('button', { name: D.approve });
+    fireEvent.change(screen.getByLabelText(D.decideReason), { target: { value: '근거 확인' } });
+    await waitFor(() => expect((screen.getByRole('button', { name: D.reject }) as HTMLButtonElement).disabled).toBe(false));
+    expect((screen.getByRole('button', { name: D.approve }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText(D.why.lastOpinion('보완'), { selector: '.ds-btn-why__text' })).toBeTruthy();
+  });
+
+  const SOURCES = [
+    { sourceId: 'S10', title: 'COVESA VSS', publisher: 'COVESA', version: '4.2', url: '', checkedAt: '2025-01-10', nextReviewAt: '2026-01-10' },
+    { sourceId: 'S01', title: 'ISO 26262', publisher: 'ISO', version: '2018', url: '', checkedAt: '2026-06-01', nextReviewAt: '2099-06-01' },
+  ];
+  const sourcesApi = (url: string, init?: RequestInit) => {
+    if (url.startsWith('/api/refdb/sources/reviews') && init?.method === 'POST') return { status: 201, body: { items: [SOURCES[0]] } };
+    if (url.startsWith('/api/refdb/sources')) return { body: { items: SOURCES } };
+    return api(url);
+  };
+
+  it("목록의 '출처' 탭 — 점검 기한 지난 출처를 앞에, 관리자는 알림이 연 출처를 미리 골라 점검 기록을 남긴다", async () => {
+    handler = sourcesApi;
+    mount('steward', '/master/feature-db?tab=sources&source=S10', '/master/feature-db', <FeatureDbScreen />);
+    const panel = await screen.findByTestId('ref-sources');
+    await within(panel).findByText('COVESA VSS');
+    expect(document.querySelector('[data-review-due="S10"]')).toBeTruthy();
+    expect(document.querySelector('[data-review-due="S01"]')).toBeNull();
+    expect(panel.querySelector('[data-due]')!.textContent).toBe(S.dueSome(1));
+    const ids = [...panel.querySelectorAll('[data-source-row]')].map((e) => e.getAttribute('data-source-row'));
+    expect(ids).toEqual(['S10', 'S01']);
+    expect((screen.getByLabelText(S.pickLabel('S10')) as HTMLInputElement).checked).toBe(true);
+    const send = () => screen.getByRole('button', { name: S.submit }) as HTMLButtonElement;
+    expect(send().disabled).toBe(true);
+    expect(screen.getByText(S.why.note, { selector: '.ds-btn-why__text' })).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(S.nextReviewAt), { target: { value: '2027-11-04' } });
+    fireEvent.change(screen.getByLabelText(S.note), { target: { value: '4.2 그대로 확인' } });
+    await waitFor(() => expect(send().disabled).toBe(false));
+    fireEvent.click(send());
+    await waitFor(() => expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ sourceIds: ['S10'], nextReviewAt: '2027-11-04', note: '4.2 그대로 확인' }));
+    expect(await screen.findByText(S.recorded(1))).toBeTruthy();
+  });
+
+  it("'출처' 탭 — 관리자가 아니면 고르기·점검 기록 칸이 없다", async () => {
+    handler = sourcesApi;
+    mount('author', '/master/feature-db?tab=sources', '/master/feature-db', <FeatureDbScreen />);
+    await screen.findByText('COVESA VSS');
+    expect(screen.queryByTestId('ref-source-review')).toBeNull();
+    expect(screen.queryByLabelText(S.pickLabel('S10'))).toBeNull();
+  });
+});
+
+describe('금액 칸을 보는 역할로 묻는다(하네스 리뷰 F1)', () => {
+  it('PLM 기준정보(DB 관리자 겸직)는 기준 행 조회를 DB 관리자 역할로 보내 벤치마크를 받고, 역할이 바뀌면 다시 읽는다', async () => {
+    const roles: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      const h = (init?.headers ?? {}) as Record<string, string>;
+      if (url.startsWith('/api/refdb/refs/CH-BRK-009')) roles.push(h['X-Actor-Role'] ?? '');
+      const admin = h['X-Actor-Role'] === 'REFDB_ADMIN';
+      const body = url.startsWith('/api/refdb/refs/CH-BRK-009') ? { ...DETAIL, ref: admin ? { ...ROW, benchmarkEur: 120000, kearneyNote: 'Kearney 2022' } : ROW } : (api(url)?.body ?? { items: [] });
+      return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }));
+    mount('steward', '/master/feature-db/CH-BRK-009', '/master/feature-db/:refId', <RefDetailScreen />);
+    expect(await screen.findByText(RD.benchmark)).toBeTruthy();
+    expect(roles).toEqual(['REFDB_ADMIN']);
+    cleanup();
+    mount('author', '/master/feature-db/CH-BRK-009', '/master/feature-db/:refId', <RefDetailScreen />);
+    await screen.findByRole('heading', { level: 1, name: '오토 홀드' });
+    expect(screen.queryByText(RD.benchmark)).toBeNull();
+    expect(roles.at(-1)).toBe('FEATURE_AUTHOR');
   });
 });

@@ -7,11 +7,11 @@ import { refChangeDutyBlocker, type RefChange, type RefChangeStatus, type RefFie
 import { canAct } from '../../api/actor';
 import { STATIC_MODE, type ApiError } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { CHANGE_STATUS_LABEL, KIND_LABEL, OPINION_LABEL, refChangeDetail as D, refChanges as T, refDetail as RD } from '../../copy/refdb';
-import { AsyncView, Button, DataTable, DiffView, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, Select, Tabs, VerdictBadge, whyDisabled } from '../../design';
+import { CHANGE_STATUS_LABEL, featureDb as FD, KIND_LABEL, OPINION_LABEL, refChangeDetail as D, refChanges as T, refDetail as RD } from '../../copy/refdb';
+import { AsyncView, Button, DataTable, DiffView, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, Select, Tabs, whyDisabled } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission, when } from '../shared';
-import { changePath, downloadExport, myActorId, RefChip, TextLink, type RefChangeDetailResponse, type RefChangeView, type RefPublishResponse, type RefReleasesResponse } from './common';
+import { ChangeStatusBadge, changePath, downloadExport, myActorId, RefChip, TextLink, type RefChangeDetailResponse, type RefChangeView, type RefPublishResponse, type RefReleasesResponse } from './common';
 import { Checks, UsageTable } from './RefDetail';
 
 /** 처리 중 — 작성·검토 중(검토 의견·승인 결정을 받을 수 있다) */
@@ -23,11 +23,7 @@ const TAB_FILTER: Record<string, (c: RefChange) => boolean> = {
   PUBLISHED: (c) => c.status === 'PUBLISHED',
   REJECTED: (c) => c.status === 'REJECTED',
 };
-const STATUS_VERDICT: Record<RefChangeStatus, string> = { DRAFT: 'UNJUDGED', REVIEW: 'CONDITIONAL', APPROVED: 'CONDITIONAL', REJECTED: 'FAIL', PUBLISHED: 'PASS' };
-
-export function ChangeStatusBadge({ status }: { status: RefChangeStatus }) {
-  return <VerdictBadge value={STATUS_VERDICT[status] ?? 'UNJUDGED'} label={CHANGE_STATUS_LABEL[status] ?? status} />;
-}
+export { ChangeStatusBadge };
 
 export function RefChangesScreen() {
   const nav = useNavigate();
@@ -41,7 +37,7 @@ export function RefChangesScreen() {
         codes="D01-01 · FEATURE DB · CR"
         title={T.title}
         lead={T.lead}
-        message={{ tone: open ? 'warn' : 'neutral', value: q.data ? open : '—', text: T.key, status: q.data ? { label: `${T.tabs.APPROVED} ${approved}`, tone: approved ? 'warn' : 'neutral' } : undefined }}
+        message={{ tone: open ? 'warn' : 'neutral', value: q.data ? open : '—', text: T.key, status: q.data ? { label: approved ? FD.awaiting : FD.noneAwaiting, tone: approved ? 'warn' : 'neutral' } : undefined }}
         actions={<TextLink to="/master/feature-db">{T.back}</TextLink>}
       />
       <Panel>
@@ -304,12 +300,15 @@ function DecideForm({ c }: { c: RefChange }) {
   const me = myActorId(role);
   const duty = refChangeDutyBlocker(c, me, 'DECIDE');
   const blocking = (c.checks ?? []).some((x) => !x.ok && x.blocking);
+  // 마지막 도메인 검토 의견이 보완·반대면 승인하지 못한다(사용자 결정 2026-11-04) — 보완 뒤 다시 검토를 받는다. 반려는 된다
+  const last = c.reviews.at(-1);
+  const notAgreed = !!last && last.opinion !== 'AGREE';
   const common: [unknown, string | undefined][] = [
     [!perm.ok, perm.hint],
     [!OPEN.includes(c.status), D.why.closed],
     [duty, duty ?? undefined],
   ];
-  const whyApprove = whyDisabled(...common, [blocking, D.why.blocking], [c.reviews.length === 0, D.why.noReview], [reason.trim().length < 2, D.why.reason]);
+  const whyApprove = whyDisabled(...common, [blocking, D.why.blocking], [c.reviews.length === 0, D.why.noReview], [notAgreed, D.why.lastOpinion(OPINION_LABEL[last?.opinion ?? 'AGREE'])], [reason.trim().length < 2, D.why.reason]);
   const whyReject = whyDisabled(...common, [reason.trim().length < 2, D.why.reason]);
   const send = (decision: 'APPROVE' | 'REJECT') => decide.mutate({ params: { id: c.changeId }, body: { decision, reason: reason.trim() } }, { onSuccess: () => setReason('') });
   return (

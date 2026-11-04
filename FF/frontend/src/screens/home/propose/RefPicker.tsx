@@ -1,11 +1,15 @@
 // ① 기준 기능 고르기(30-95 §6.1·§5.2) — 검색(한글·영문·별칭·ID) + 도메인 → 컴포넌트 패싯, 결과에 대표 ASIL·T-shirt·상태.
 // 상태 처리(D-REF-6): 폐기=고를 수 없음 · 폐기 예정=대체 행 안내 후 선택 · 검토 필요=선택 + 관리 메모 사유 경고 · 요청 중=요청자가 바로 연결.
-import { useEffect, useState } from 'react';
+// 고르기·빼기·대표로 바꾸기는 누른 버튼이 사라지므로 초점을 옮기고(WCAG 2.4.3) 바뀐 내용을 알린다(aria-live).
+import { useEffect, useRef, useState } from 'react';
 import { REF_STATUS_POLICY, type FeatureRefRole } from '@ff/contracts';
+import { STATIC_MODE } from '../../../api/client';
 import { asyncState, useApi } from '../../../api/hooks';
+import { useRefSearch } from '../../refdb/refSearch';
 import { propose as P } from '../../../copy/propose';
 import { AsyncView, Button, DataTable, Field } from '../../../design';
-import { RefStatusBadge } from './RefStatusBadge';
+import { usePermission } from '../../shared';
+import { RefStatusBadge } from '../../refdb/common';
 import type { TaxonomyNodeLite } from './taxonomy';
 import { primaryOf, type PickedRef, type RefLite } from './prefill';
 
@@ -45,8 +49,10 @@ export function RefPicker({
   onChoose: (ref: RefLite, role: FeatureRefRole) => void;
   onRemove: (refId: string) => void;
   onMakePrimary: (refId: string) => void;
-  onRequest: () => void;
-  onNext: () => void;
+  /** 없으면 'Feature DB에 없음 → 요청' 버튼을 그리지 않는다(Feature 상세 연결 바꾸기) */
+  onRequest?: () => void;
+  /** 없으면 '다음' 버튼을 그리지 않는다 — 부르는 화면이 저장 버튼을 따로 둔다 */
+  onNext?: () => void;
   nodes: TaxonomyNodeLite[];
   domain: string;
   setDomain: (d: string) => void;
@@ -54,11 +60,28 @@ export function RefPicker({
   const [q, setQ] = useState('');
   const [component, setComponent] = useState('');
   const [confirm, setConfirm] = useState<{ ref: RefLite; role: FeatureRefRole } | null>(null);
+  // 추가 요청은 Feature 작성자·DB 관리자만(서버 requestRefAdd와 같은 역할), 공개 데모는 읽기 전용
+  const requestPerm = usePermission(['FEATURE_AUTHOR', 'REFDB_ADMIN']);
+  const root = useRef<HTMLDivElement>(null);
+  const confirmHead = useRef<HTMLHeadingElement>(null);
+  const [announce, setAnnounce] = useState('');
+  // 다음에 그린 뒤 초점을 줄 요소(선택자) — 누른 버튼이 사라지는 동작 뒤에 쓴다
+  const [focusNext, setFocusNext] = useState<string | null>(null);
+  useEffect(() => {
+    if (!focusNext) return;
+    root.current?.querySelector<HTMLElement>(focusNext)?.focus();
+    setFocusNext(null);
+  }, [focusNext, picked]);
+  // 폐기 예정 안내가 뜨면 그 제목으로 — 화면 읽기 사용자가 왜 고르지 못했는지 듣는다
+  useEffect(() => {
+    if (confirm) confirmHead.current?.focus();
+  }, [confirm]);
   const dq = useDebounced(q.trim());
   const domains = nodes.filter((n) => n.level === 'DOMAIN');
   const domainNode = domains.find((d) => d.nameEn === domain);
   const comps = nodes.filter((n) => n.level === 'COMPONENT' && n.parentId === domainNode?.nodeId);
-  const search = useApi<{ items: RefLite[]; total?: number }>('listRefs', { query: { q: dq || undefined, domain: domain || undefined, component: component || undefined, limit: LIMIT } });
+  // 정적 데모는 검색어 스냅샷이 없다 — 받아 둔 전체 목록에서 찾는다(useRefSearch)
+  const search = useRefSearch<RefLite>({ q: dq || undefined, domain: domain || undefined, component: component || undefined, limit: LIMIT });
   const rows = search.data?.items ?? [];
   const total = search.data?.total ?? rows.length;
   const primary = primaryOf(picked);
@@ -69,13 +92,35 @@ export function RefPicker({
   const choose = (ref: RefLite, role: FeatureRefRole) => {
     // 폐기 예정은 대체 행을 먼저 안내하고, 사용자가 '그래도 선택'을 누를 때만 고른다
     if (ref.status === 'DEPRECATED') return setConfirm({ ref, role });
+    pick(ref, role);
+  };
+  const pick = (ref: RefLite, role: FeatureRefRole) => {
     onChoose(ref, role);
+    setAnnounce(P.announce.chosen(ref.refId, P.role[role]));
+    // 고른 행의 표 칸(연결 표시)으로 — 표 안 자리에서 다음 행을 이어 고른다
+    setFocusNext(`[data-picked-tag="${ref.refId}"]`);
+  };
+  const remove = (refId: string) => {
+    const ids = picked.map((p) => p.ref.refId);
+    const i = ids.indexOf(refId);
+    const next = ids[i + 1] ?? ids[i - 1];
+    onRemove(refId);
+    setAnnounce(P.announce.removed(refId));
+    setFocusNext(next ? `[data-ref-chosen="${next}"] button` : '#ref-chosen-h');
+  };
+  const makePrimary = (refId: string) => {
+    onMakePrimary(refId);
+    setAnnounce(P.announce.madePrimary(refId));
+    setFocusNext(`[data-ref-chosen="${refId}"] button`);
   };
 
   return (
-    <div className="ds-stack">
+    <div className="ds-stack" ref={root}>
+      <p className="ds-sr" aria-live="polite" data-testid="ref-pick-live">
+        {announce}
+      </p>
       <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <Field label={P.search} hint={P.searchHint}>
+        <Field label={P.search} hint={STATIC_MODE ? P.searchHintStatic : P.searchHint}>
           <input className="ds-input" type="search" name="refSearch" value={q} onChange={(e) => setQ(e.target.value)} />
         </Field>
         <Field label={P.domain}>
@@ -106,7 +151,9 @@ export function RefPicker({
 
       {confirm && (
         <section className="ds-panel" aria-labelledby="ref-deprecated-h" data-testid="ref-deprecated" style={{ padding: 'var(--sp-3)' }}>
-          <h3 id="ref-deprecated-h">{P.deprecatedTitle(confirm.ref.refId)}</h3>
+          <h3 id="ref-deprecated-h" ref={confirmHead} tabIndex={-1}>
+            {P.deprecatedTitle(confirm.ref.refId)}
+          </h3>
           <p>{P.deprecatedBody(confirm.ref.replacedBy ?? null)}</p>
           <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
             {confirm.ref.replacedBy && (
@@ -122,7 +169,7 @@ export function RefPicker({
             <Button
               variant="primary"
               onClick={() => {
-                onChoose(confirm.ref, confirm.role);
+                pick(confirm.ref, confirm.role);
                 setConfirm(null);
               }}
             >
@@ -166,7 +213,12 @@ export function RefPicker({
                 header: P.col.choose,
                 cell: (r) => {
                   const role = chosen.get(r.refId);
-                  if (role) return <span className="ds-tag">{P.role[role]}</span>;
+                  if (role)
+                    return (
+                      <span className="ds-tag" tabIndex={-1} data-picked-tag={r.refId}>
+                        {P.role[role]}
+                      </span>
+                    );
                   const retired = !REF_STATUS_POLICY[r.status]?.selectable;
                   return (
                     <span style={{ display: 'inline-flex', gap: 'var(--sp-1)', flexWrap: 'wrap' }}>
@@ -185,16 +237,20 @@ export function RefPicker({
             ]}
           />
         </AsyncView>
-        <div style={{ marginTop: 'var(--sp-2)' }}>
-          <Button variant="ghost" data-ui="requestRefAdd-open" onClick={onRequest}>
-            {P.requestNew}
-          </Button>
-        </div>
+        {onRequest && (
+          <div style={{ marginTop: 'var(--sp-2)' }}>
+            <Button variant="ghost" data-ui="requestRefAdd-open" disabled={!requestPerm.ok} reason={requestPerm.hint} onClick={onRequest}>
+              {P.requestNew}
+            </Button>
+          </div>
+        )}
       </section>
 
       <div className="ds-split">
         <section aria-labelledby="ref-chosen-h" data-testid="ref-chosen">
-          <h3 id="ref-chosen-h">{P.chosen}</h3>
+          <h3 id="ref-chosen-h" tabIndex={-1}>
+            {P.chosen}
+          </h3>
           {picked.length === 0 ? (
             <p className="ds-field__hint">{P.chosenNone}</p>
           ) : (
@@ -212,11 +268,11 @@ export function RefPicker({
                       {warn && <span className="ds-check__detail">{warn}</span>}
                       <span style={{ display: 'inline-flex', gap: 'var(--sp-1)', flexWrap: 'wrap' }}>
                         {p.role === 'INCLUDED' && (
-                          <Button variant="ghost" onClick={() => onMakePrimary(p.ref.refId)}>
+                          <Button variant="ghost" onClick={() => makePrimary(p.ref.refId)}>
                             {P.makePrimary}
                           </Button>
                         )}
-                        <Button variant="ghost" aria-label={P.removeLabel(p.ref.refId)} onClick={() => onRemove(p.ref.refId)}>
+                        <Button variant="ghost" aria-label={P.removeLabel(p.ref.refId)} onClick={() => remove(p.ref.refId)}>
                           {P.remove}
                         </Button>
                       </span>
@@ -250,11 +306,13 @@ export function RefPicker({
         </section>
       </div>
 
-      <div>
-        <Button variant="primary" data-ui="refPickNext" disabled={!primary} reason={!primary ? P.nextWhy : undefined} onClick={onNext}>
-          {P.next}
-        </Button>
-      </div>
+      {onNext && (
+        <div>
+          <Button variant="primary" data-ui="refPickNext" disabled={!primary} reason={!primary ? P.nextWhy : undefined} onClick={onNext}>
+            {P.next}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,11 +6,10 @@
 //   ⑤ 본문(#main)의 보이는 글자에 규칙·컴포넌트 코드 없음  ⑥ 머리표·KPI 타일 줄 없음, 머리 설명 한 줄
 //   ⑦ 요약 줄 '내 차례 0'이 핵심 메시지와 같은 말 · 어두운 히어로가 가장 진한 요소(UX3-15) — key-message-rules.ts ⑪⑫
 import { expect, test, type Page } from '@playwright/test';
-import { summaryAndZone } from './key-message-rules';
+import { bodyCodes, CODE, summaryAndZone } from './key-message-rules';
+import { settle } from './settle';
 
 const ROLES = ['author', 'approver', 'quality', 'operator', 'steward', 'commerce', 'integrator', 'coordinator', 'viewer'];
-const CODE = /FFG-[A-Z]+-\d|\bIF-\d|\bD0\d-\d|보고서 \d|§\d/;
-const BODY_CODE = new RegExp(String.raw`${CODE.source}|\bCS-\d|\bCLASSIFY-GATE\b|\bKILL-DC\d`);
 const KEY_VALUE = /^(?:[—…]|[+−-]?\d[\d,.]*\s*(?:%|s|ms|분|건|개|대|일)?(?:\s*\/\s*\d[\d,.]*)?)$/;
 const ZERO = /^0+(?:\.0+)?\s*(?:%|건|개|대)?(?:\s*\/\s*\d+)?$/;
 
@@ -23,7 +22,7 @@ async function home(page: Page, role: string, width: number) {
   expect(new URL(page.url()).pathname).toBe('/');
   // 핵심 메시지는 데이터가 오기 전에 '—'(판정 보류) — 판정이 난 뒤를 본다
   await page.waitForFunction(() => document.querySelector('#main [data-key-message] .ds-key__value')?.textContent?.trim() !== '—', null, { timeout: 15_000 });
-  await page.waitForFunction(() => !document.querySelector('#main [data-state="loading"], #main [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
+  await settle(page);
 
   const key = page.locator('#main [data-key-message]');
   await expect(key, '핵심 메시지는 화면마다 정확히 1개').toHaveCount(1);
@@ -86,21 +85,7 @@ async function home(page: Page, role: string, width: number) {
   }
   expect(head.textColor, '헤드라인 문장 글자는 본문색').toBe(head.ink);
 
-  const codes = await page.evaluate((src) => {
-    const re = new RegExp(src);
-    const out: string[] = [];
-    const walk = document.createTreeWalker(document.querySelector('#main')!, NodeFilter.SHOW_TEXT);
-    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
-      const t = n.textContent!.trim();
-      const el = n.parentElement;
-      if (!t || !el || !re.test(t) || el.closest('.ds-explain, .ds-explain-block, .ds-page__codes, [aria-hidden="true"], svg, canvas, script, style, option, pre, details:not([open]) > :not(summary)')) continue;
-      const range = document.createRange();
-      range.selectNodeContents(n);
-      if (![...range.getClientRects()].some((r) => r.width && r.height) || getComputedStyle(el).visibility === 'hidden') continue;
-      out.push(`${el.tagName}.${el.className} "${t.slice(0, 50)}"`);
-    }
-    return out;
-  }, BODY_CODE.source);
+  const codes = await bodyCodes(page);
   expect(codes, '본문에 규칙·컴포넌트 코드 없음 — 설명 모드나 title 툴팁으로').toEqual([]);
   await summaryAndZone(page);
   // UX3-15 시각 검토: 히어로가 210px·제목 16px 두 줄로 핵심 메시지와 같은 무게였다 — 낮고 작은 보조 요소로

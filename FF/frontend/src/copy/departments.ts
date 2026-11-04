@@ -90,6 +90,15 @@ export const departments = {
     requests: 'Baseline 확정 요청',
     versions: 'Feature Version',
     impact: '변경 영향 분석',
+    // Feature DB 변경 요청 대기(검토·발행) — 기준정보·시스템엔지니어링 콘솔
+    fdb: {
+      title: 'Feature DB 변경 요청',
+      review: '검토 대기',
+      publish: '발행 대기',
+      caption: '처리 중인 Feature DB 변경 요청',
+      none: '처리할 변경 요청이 없습니다',
+      col: { id: '번호', kind: '종류', ref: '대상 행', status: '상태' },
+    },
     col: { id: 'ID', feature: 'Feature', version: 'Version', name: '이름', productsHint: '이 Baseline을 쓰는 상품 수', lifecycle: 'Lifecycle', created: '확정 시각', requested: '요청 시각', by: '요청자', products: '상품' },
   },
   control: {
@@ -139,6 +148,6 @@ export const departments = {
     mine: '우리 부서가 직접 하는 일',
     docs: '참고 문서',
     rnrDoc: '부서 R&R 문서',
-    rnrHint: 'docs/65-workflows/out/departments — 부서별 책임·승인·협의·통보 업무',
+    rnrHint: '부서별 수행·책임·협의·통보 업무와 다른 부서와의 인계',
   },
 };

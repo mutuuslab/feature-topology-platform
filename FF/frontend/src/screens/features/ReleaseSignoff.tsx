@@ -7,6 +7,8 @@ import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { Button, Drawer, ErrorNote, Field, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
+import { featureRefsTab } from '../../copy/propose';
+import { RefWarningList, type RefWarning } from '../refdb/common';
 
 const S = ko.p11.signoff;
 const INVALIDATE = ['releaseSignoff', 'featureDetail', 'audit'];
@@ -14,8 +16,10 @@ const INVALIDATE = ['releaseSignoff', 'featureDetail', 'audit'];
 export function ReleaseSignoffBar({ id, ver, gatesPassed }: { id: string; ver: string; gatesPassed: boolean }) {
   const q = useApi<ReleaseSignoffView>('releaseSignoff', { params: { id, ver } });
   const perm = usePermission(['FEATURE_AUTHOR']);
-  const sign = useApiMutation('signRelease', INVALIDATE);
+  const sign = useApiMutation<{ warnings?: RefWarning[] }>('signRelease', INVALIDATE);
   const [open, setOpen] = useState(false);
+  // 폐기 예정·폐기 기준 행이 연결돼 있어도 서명은 된다 — 서버 안내(warnings)를 남겨 다음 Version에서 고치게 한다(사용자 결정 2026-11-04 #9)
+  const [warnings, setWarnings] = useState<RefWarning[]>([]);
   const [reason, setReason] = useState('');
   const v = q.data;
   const status = !v ? null : v.valid && v.signoff ? S.signed(v.signoff.signedBy, v.signoff.signedAt.slice(0, 16).replace('T', ' ')) : v.stale ? S.stale : S.none;
@@ -31,6 +35,7 @@ export function ReleaseSignoffBar({ id, ver, gatesPassed }: { id: string; ver: s
           {S.sign}
         </Button>
       )}
+      <RefWarningList warnings={warnings} title={featureRefsTab.warnSignoff} />
       <Drawer open={open} title={S.drawerTitle} onClose={() => setOpen(false)}>
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
           <p style={{ margin: 0 }}>{S.body}</p>
@@ -43,7 +48,7 @@ export function ReleaseSignoffBar({ id, ver, gatesPassed }: { id: string; ver: s
             icon="pen"
             disabled={STATIC_MODE || !perm.ok || reason.trim().length < 2 || sign.isPending}
             reason={whyDisabled([!perm.ok, perm.hint], [reason.trim().length < 2, ko.why.reason])}
-            onClick={() => sign.mutate({ params: { id, ver }, body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}
+            onClick={() => sign.mutate({ params: { id, ver }, body: { reason } }, { onSuccess: (r) => (setOpen(false), setReason(''), setWarnings(r?.warnings ?? [])) })}
           >
             {S.sign}
           </Button>

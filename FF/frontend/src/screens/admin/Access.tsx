@@ -94,8 +94,17 @@ export function IamScreen() {
             rows={d?.sod ?? []}
             rowKey={(r) => r.id}
             columns={[
-              { key: 'id', header: 'ID', cell: (r) => <span className="ds-mono">{r.id}</span> },
-              { key: 's', header: I.col.subject, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.subject}</span> },
+              // 규칙 ID(SOD-01)는 본문에서 빼고 툴팁·설명 모드로(3초 ⑨, 2026-11-04 — 직무 분리 코드도 본문 코드로 센다)
+              {
+                key: 's',
+                header: I.col.subject,
+                cell: (r) => (
+                  <span style={{ fontSize: 'var(--fs-xs)' }} title={r.id} data-sod={r.id}>
+                    {r.subject}
+                    <span className="ds-explain ds-mono">{r.id}</span>
+                  </span>
+                ),
+              },
               { key: 'r', header: I.col.rule, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}><CodeFreeText text={r.rule} /></span> },
               { key: 'c', header: I.col.component, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}><ComponentName id={r.component} /></span> },
             ]}

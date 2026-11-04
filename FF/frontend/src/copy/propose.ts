@@ -4,10 +4,12 @@ export const propose = {
   title: 'Feature 제안',
   lead: 'Feature DB에서 기준 기능을 고르고, 미리 채운 등록 정보를 확인해 PROPOSED 0.1.0으로 제안합니다.',
   key: {
-    pick: '대표 기준 기능을 하나 고르세요',
+    // 용어는 '대표 기준 행' 하나로(하네스 리뷰 F13) — 다음 버튼 이유(nextWhy)와 같은 문장이면 3초 ⑦(되풀이)에 걸린다
+    pick: '대표 기준 행을 고르세요',
     picked: (refId: string, included: number) => (included ? `대표 ${refId} · 포함 ${included}개` : `대표 ${refId}`),
     can: '등록하면 PROPOSED 0.1.0으로 시작합니다',
     cannot: 'Feature 작성자만 제안할 수 있습니다',
+    readOnly: '공개 데모 — 기준 기능을 고르고 등록 정보까지 볼 수 있고, 등록은 되지 않습니다',
     done: '등록했습니다 — 확인할 안내가 있습니다',
   },
   steps: { label: '등록 단계', pick: '기준 기능 고르기', confirm: '등록 정보 확인', no: (n: number) => `${n}단계` },
@@ -15,6 +17,7 @@ export const propose = {
   // ① 기준 기능 고르기
   search: '기능 검색',
   searchHint: '한글·영문 기능명, 별칭, 사내 용어, 기준 행 ID',
+  searchHintStatic: '한글·영문 기능명, 별칭, 기준 행 ID (공개 데모는 사내 용어 검색 없음)',
   domain: '도메인',
   component: '컴포넌트',
   all: '전체',
@@ -34,6 +37,11 @@ export const propose = {
   includeLabel: (refId: string) => `${refId} 포함 추가`,
   retiredWhy: '폐기된 행은 고를 수 없습니다',
   alreadyChosen: '이미 고른 행입니다',
+  announce: {
+    chosen: (refId: string, role: string) => `${refId}을(를) ${role} 기준 행으로 골랐습니다`,
+    removed: (refId: string) => `${refId}을(를) 뺐습니다`,
+    madePrimary: (refId: string) => `${refId}을(를) 대표 기준 행으로 바꿨습니다`,
+  },
   reviewWarn: (memo: string) => (memo ? `검토 필요 — 사유: ${memo}` : '검토 필요 — 관리 메모에 사유가 없습니다. Feature DB 관리자에게 확인하세요'),
   deprecatedTitle: (refId: string) => `${refId}은(는) 폐기 예정입니다`,
   deprecatedBody: (replacedBy: string | null) => (replacedBy ? `대체 행 ${replacedBy}을(를) 쓰는 것이 좋습니다. 그래도 이 행을 쓰려면 선택을 누르세요.` : '대체 행이 지정되지 않았습니다. 이 행을 쓰려면 선택을 누르세요.'),
@@ -117,9 +125,31 @@ export const featureRefsTab = {
   tab: '기준 행',
   caption: '연결된 기준 행',
   col: { role: '연결', refId: '기준 행 ID', name: '기능명', status: '상태', refVersion: '연결 버전', change: '바뀐 버전' },
-  none: '연결된 기준 행이 없습니다',
-  missing: '시드 대응표에 기준 행이 없습니다 — Feature DB에서 기준 행을 골라 초안을 고치세요',
+  // 연결이 없을 때 — 초안은 정의 승인이 막힌다(사용자 결정 2026-11-04), 확정된 Version은 고칠 수 없으니 새 Version에서
+  noneDraft: '대표 기준 행이 없어 Feature 정의 승인이 막힙니다 — 초안에서 Feature DB 기준 행을 연결하세요',
+  noneFixed: '이 Version은 기준 행 연결 없이 확정되었습니다 — 새 Version을 만들 때 대표 기준 행을 연결하세요',
   changedIn: (release: string) => `${release}에서 바뀜`,
   unchanged: '변경 없음',
-  blocked: 'Feature 승인을 막는 기준 행이 있습니다',
+  blocked: 'Feature 정의 승인을 막는 기준 행이 있습니다',
+  unknown: '확인 못 함',
+  unknownBlock: '기준 행 상태를 읽지 못해 정의 승인이 막히는지 알 수 없습니다 — 다시 열어 보세요',
+  unknownStatus: '기준 행 상태를 읽지 못했습니다 — 다시 열어 보세요',
+  toRefsTab: "'기준 행' 탭에서 연결과 ASIL 사유 고치기",
+  // 초안의 연결 바꾸기(Feature 상세 '기준 행' 탭)
+  edit: {
+    open: '기준 행 연결 바꾸기',
+    openNone: '기준 행 연결하기',
+    title: '기준 행 연결 바꾸기',
+    lead: '대표 1개와 포함 행을 골라 저장하면 이 초안의 연결이 바뀝니다(연결 버전은 지금 발행 버전).',
+    save: '연결 저장',
+    cancel: '닫기',
+    loading: '지금 연결을 읽는 중입니다',
+    noChange: '바꾼 연결이 없습니다',
+    lost: (ids: string) => `읽지 못한 기준 행(${ids})은 목록에 없습니다 — 저장하면 그 연결이 빠집니다`,
+  },
+  // 전이·Release Sign-off·새 Version 응답의 기준 행 경고(막지 않음)
+  warnTransition: '전이했습니다 — 기준 행 안내를 확인하세요',
+  warnSignoff: '서명했습니다 — 기준 행 안내를 확인하세요',
+  warnVersion: '새 Version을 만들었습니다 — 기준 행 안내를 확인하세요',
+  retiredWarn: (ids: string) => `폐기 예정·폐기 기준 행이 연결되어 있습니다(${ids}) — 출시는 막지 않습니다. 다음 Version에서 대체 행으로 다시 연결하세요`,
 };

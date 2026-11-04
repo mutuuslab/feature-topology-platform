@@ -30,7 +30,22 @@ export function RefDetailScreen() {
       <PageHeader
         codes="D01-01 · FEATURE DB"
         title={r?.nameKo ?? refId}
-        meta={<IdChip id={refId} />}
+        meta={
+          <>
+            <IdChip id={refId} />
+            {/* 고를 때 가장 먼저 보는 두 값 — 대표 ASIL·T-shirt를 머리 칩으로(본문 특성·규모 칸과 같은 값) */}
+            {r && (
+              <>
+                <span className="ds-tag ds-meta-chip" data-meta="asil">
+                  <span>{T.f.asilRep}</span> <span className="ds-mono">{r.asilRep}</span>
+                </span>
+                <span className="ds-tag ds-meta-chip" data-meta="tshirt">
+                  <span>{T.f.tshirt}</span> <span className="ds-mono">{r.tshirt}</span>
+                </span>
+              </>
+            )}
+          </>
+        }
         message={
           r && policy
             ? { tone: 'neutral', value: d!.usedBy.length, text: T.key, status: { label: policy.ko, tone: policy.blocksApproval ? 'danger' : policy.warn ? 'warn' : 'ok' } }
@@ -77,7 +92,8 @@ export function RefDetailScreen() {
                 </Panel>
               </div>
             </div>
-            <ChangeDrawer open={open} onClose={() => setOpen(false)} r={r} />
+            {/* 기준 행마다 새로 — 같은 화면에서 A → B → A로 오가면(캐시된 A는 바로 그린다) 앞 행의 입력값이 남아 MODIFY 차이가 틀렸다 */}
+            <ChangeDrawer key={r.refId} open={open} onClose={() => setOpen(false)} r={r} />
           </>
         )}
       </AsyncView>

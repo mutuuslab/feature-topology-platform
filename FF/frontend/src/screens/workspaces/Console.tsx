@@ -1,10 +1,14 @@
 // ③ 엔지니어링 콘솔(시스템엔지니어링·SW통합·릴리스·PLM·기준정보) — 조밀한 표 세 개(확정 요청·확정 Baseline·Feature Version)와
 // 영향 분석으로 가는 길. 고정폭 ID, 촘촘한 행(토큰 --row-h).
+// Feature DB를 맡는 부서(기준정보 승인·발행, 시스템엔지니어링 검토)는 변경 요청 대기열(검토 대기·발행 대기)을 함께 본다 —
+// 핵심 메시지는 확정 대기 하나 그대로, 대기열은 보조 패널(3초 ①).
 import { Link } from 'react-router-dom';
-import type { DepartmentSummary } from '@ff/contracts';
+import type { DepartmentSummary, RefChangeStatus } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { departments as D } from '../../copy/departments';
+import { KIND_LABEL } from '../../copy/refdb';
 import { AsyncView, DataTable, IdChip, LifecycleBadge, PageHeader, Panel } from '../../design';
+import { ChangeStatusBadge, changePath, RefChip, type RefChangeView } from '../refdb/common';
 import { when } from '../shared';
 import type { BaselineRecord, FeatureList, FeatureSummary } from '../types';
 import { MyWork, useDeptDoc } from './common';
@@ -15,6 +19,54 @@ interface Req {
   version: string;
   requestedBy: string;
   requestedAt: string;
+}
+
+/** 이 부서가 Feature DB 화면을 맡는가 — 부서 화면 목록(업무 절차 모델)에 /master/feature-db가 있다 */
+const handlesFeatureDb = (d: DepartmentSummary) => [...d.screens.primary, ...d.screens.reference].some((s) => s.startsWith('/master/feature-db'));
+
+const OPEN: readonly RefChangeStatus[] = ['DRAFT', 'REVIEW'];
+
+/** Feature DB 변경 요청 대기열 — 검토 대기(작성·검토 중)·발행 대기(승인됨) 수와 처리 중인 요청 몇 건 */
+function FeatureDbQueue() {
+  const F = D.console.fdb;
+  const q = useApi<{ items: RefChangeView[] }>('listRefChanges');
+  const items = q.data?.items ?? [];
+  const review = items.filter((c) => OPEN.includes(c.status));
+  const publish = items.filter((c) => c.status === 'APPROVED');
+  const rows = [...publish, ...review];
+  return (
+    <Panel title={F.title} id="ws-fdb" actions={<Link to="/master/feature-db/changes">{D.home.open} →</Link>}>
+      <ul className="ws-fdb" aria-label={F.title}>
+        {(
+          [
+            ['OPEN', F.review, review.length],
+            ['APPROVED', F.publish, publish.length],
+          ] as const
+        ).map(([tab, label, n]) => (
+          <li key={tab} data-tab={tab} data-busy={q.data && n ? '' : undefined}>
+            <Link to={`/master/feature-db/changes?tab=${tab}`}>
+              <span className="ws-fdb__n">{q.data ? n : '—'}</span>
+              <span className="ws-fdb__label">{label}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <AsyncView state={asyncState(q, !rows.length)} onRetry={() => q.refetch()} empty={{ title: F.none }} rows={3}>
+        <DataTable<RefChangeView>
+          caption={F.caption}
+          rows={rows}
+          rowKey={(c) => c.changeId}
+          pageSize={5}
+          columns={[
+            { key: 'id', header: F.col.id, cell: (c) => <IdChip id={c.changeId} to={changePath(c.changeId)} copy={false} /> },
+            { key: 'k', header: F.col.kind, cell: (c) => KIND_LABEL[c.kind] ?? c.kind },
+            { key: 'r', header: F.col.ref, cell: (c) => <RefChip id={c.refId} /> },
+            { key: 's', header: F.col.status, cell: (c) => <ChangeStatusBadge status={c.status} /> },
+          ]}
+        />
+      </AsyncView>
+    </Panel>
+  );
 }
 
 export default function ConsoleHome({ dept }: { dept: DepartmentSummary }) {
@@ -57,6 +109,7 @@ export default function ConsoleHome({ dept }: { dept: DepartmentSummary }) {
             />
           </AsyncView>
         </Panel>
+        {handlesFeatureDb(dept) && <FeatureDbQueue />}
         <Panel title={D.home.myWork}>
           <MyWork d={d} limit={6} dense />
         </Panel>

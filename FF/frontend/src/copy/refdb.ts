@@ -6,7 +6,8 @@ export const featureDb = {
   title: 'Feature DB',
   lead: '기능 정의·규모·근거의 기준 행입니다. Feature 등록 때 골라 이름·ASIL·분류를 채웁니다.',
   key: '기준 행',
-  awaiting: (n: number) => `발행 대기 ${n}`,
+  // 핵심 메시지 상태 pill은 낱말 — 수는 요약 줄('발행 대기 N')이 말한다(3초 ⑪)
+  awaiting: '발행 대기 있음',
   noneAwaiting: '발행 대기 없음',
   toChanges: '변경 요청',
   quality: '품질 지표',
@@ -20,6 +21,7 @@ export const featureDb = {
   },
   search: '검색',
   searchPlaceholder: '기능명·별칭·ID (예: 오토 홀드, AVH, CH-BRK-009)',
+  staticSearch: '공개 데모는 받아 둔 목록에서 기능명·별칭·ID로 찾습니다 — 사내 용어 검색은 실제 서버에서 됩니다',
   filters: '검색 조건',
   domain: '도메인',
   component: '컴포넌트',
@@ -32,6 +34,31 @@ export const featureDb = {
   pager: 'Feature DB 쪽',
   col: { refId: 'ID', name: '기능명', component: '컴포넌트', asil: '대표 ASIL', tshirt: 'T-shirt', status: '상태' },
   empty: '조건에 맞는 기준 행이 없습니다',
+  tabs: { refs: '기준 행', sources: '출처' },
+};
+
+/** 출처와 정기 점검(§8.5) — Feature DB 목록의 '출처' 탭 */
+export const refSources = {
+  caption: 'Feature DB 출처',
+  empty: '등록된 출처가 없습니다',
+  dueSome: (n: number) => `정기 점검 기한이 지난 출처 ${n}개 — 확인한 뒤 점검 기록을 남기세요`,
+  dueNone: '정기 점검 기한이 지난 출처가 없습니다',
+  due: '점검 기한 지남',
+  col: { pick: '고르기', id: 'ID', title: '자료', checked: '최종 확인일', next: '다음 점검일' },
+  pickLabel: (id: string) => `${id} 점검 기록에 넣기`,
+  record: '점검 기록',
+  recordHint: (n: number) => (n ? `고른 출처 ${n}개의 확인일과 다음 점검일을 기록합니다` : '점검한 출처를 표에서 고르세요'),
+  checkedAt: '확인일',
+  checkedAtHint: '비우면 오늘',
+  nextReviewAt: '다음 점검일',
+  note: '점검 메모',
+  submit: '점검 기록 남기기',
+  recorded: (n: number) => `출처 ${n}개의 점검을 기록했습니다.`,
+  why: {
+    pick: '점검한 출처를 하나 이상 고르세요',
+    next: '다음 점검일은 확인일보다 뒤여야 합니다',
+    note: '점검 메모를 2자 이상 입력하세요',
+  },
 };
 
 export const refDetail = {
@@ -223,6 +250,8 @@ export const refChangeDetail = {
     comment: '검토 내용을 2자 이상 입력하세요',
     reason: '결정 사유를 2자 이상 입력하세요',
     noReview: '도메인 검토 의견이 아직 없습니다',
+    // 서버 422 REVIEW_NOT_AGREED와 같은 문장 — 반려는 막지 않는다
+    lastOpinion: (opinion: string) => `마지막 도메인 검토 의견이 '${opinion}'입니다 — 동의 의견을 받은 뒤 승인하세요.`,
     blocking: '필수 정보가 빠져 승인할 수 없습니다 — 자동 점검을 확인하세요',
     reviewed: '이미 검토 의견을 남겼습니다',
   },

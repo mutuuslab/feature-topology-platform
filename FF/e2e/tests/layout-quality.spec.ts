@@ -7,6 +7,7 @@
 //  ⑤ 하네스 3판(결함 7): 간격 6px가 토큰 없이 5,797회, 4px 격자 밖 간격 2,556회, 반경 13종 — 스케일 밖 계산값 0건.
 import { expect, test, type Page } from '@playwright/test';
 import { DRILLDOWNS, MENU_ENTRIES } from './menu';
+import { settle } from './settle';
 
 const SCREENS = [...MENU_ENTRIES.map((m) => ({ title: m.title, url: m.menu })), ...DRILLDOWNS.map((d) => ({ title: d.title, url: d.url }))];
 
@@ -125,9 +126,9 @@ for (const s of SCREENS) {
       await page.setViewportSize({ width, height: 800 });
       await page.goto(s.url);
       await expect(page.locator('#main')).toBeVisible();
-      // 차량 상세처럼 실시간 수신을 계속하는 화면은 networkidle에 닿지 않는다 — 첫 데이터까지만 기다린다
-      await page.waitForLoadState('networkidle', { timeout: 8_000 }).catch(() => {});
-      await page.waitForFunction(() => !document.querySelector('.skel, .ds-skel, [data-state="loading"]'), null, { timeout: 8_000 }).catch(() => {});
+      // 차량 상세처럼 실시간 수신을 계속하는 화면은 networkidle에 닿지 않는다 — 로딩 표식(골격 포함)이 사라질 때까지만, 시간 초과는 실패
+      await expect(page.locator('#main .skel, #main .ds-skel'), '골격(로딩)이 끝나지 않았다').toHaveCount(0, { timeout: 15_000 });
+      await settle(page);
       const m = await measure(page);
       expect(m.midBreaks, `@${width} 표 칸에서 글자 중간 줄바꿈: ${m.midBreaks.slice(0, 5).join(', ')}`).toEqual([]);
       expect(m.chipBreaks, `@${width} ID·태그·배지 칩이 두 줄로 갈림: ${m.chipBreaks.slice(0, 5).join(', ')}`).toEqual([]);

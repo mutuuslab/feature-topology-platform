@@ -64,3 +64,13 @@ export function prefillOf(r: RefLite): Prefill {
 }
 
 export const primaryOf = (picked: PickedRef[]) => picked.find((p) => p.role === 'PRIMARY')?.ref ?? null;
+
+/** 고르기 — 대표는 늘 하나(새 대표를 고르면 앞 대표는 빠진다), 대표가 맨 앞. 등록 화면과 Feature 상세 연결 바꾸기가 같이 쓴다 */
+export const choosePicked = (xs: PickedRef[], ref: RefLite, role: FeatureRefRole): PickedRef[] => {
+  const rest = xs.filter((p) => p.ref.refId !== ref.refId && !(role === 'PRIMARY' && p.role === 'PRIMARY'));
+  return role === 'PRIMARY' ? [{ ref, role }, ...rest] : [...rest, { ref, role }];
+};
+/** 포함 행을 대표로 — 앞 대표는 포함이 된다 */
+export const makePrimaryPicked = (xs: PickedRef[], refId: string): PickedRef[] =>
+  xs.map((p): PickedRef => ({ ...p, role: p.ref.refId === refId ? 'PRIMARY' : 'INCLUDED' })).sort((a, b) => (a.role === 'PRIMARY' ? -1 : b.role === 'PRIMARY' ? 1 : 0));
+export const removePicked = (xs: PickedRef[], refId: string): PickedRef[] => xs.filter((p) => p.ref.refId !== refId);

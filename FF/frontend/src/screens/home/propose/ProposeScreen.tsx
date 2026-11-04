@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FeatureRefRole } from '@ff/contracts';
+import { canAct } from '../../../api/actor';
 import { STATIC_MODE } from '../../../api/client';
 import { fieldErrors } from '../../../api/field-errors';
 import { useApi, useApiMutation } from '../../../api/hooks';
@@ -12,22 +13,17 @@ import { Button, ErrorNote, Field, PageHeader, Panel, useUnsavedGuard, whyDisabl
 import { usePermission } from '../../shared';
 import { RefPicker, refWarning } from './RefPicker';
 import { RefRequestDrawer } from './RefRequestDrawer';
-import { RefStatusBadge } from './RefStatusBadge';
+import { RefStatusBadge, RefWarningItems, type RefWarning } from '../../refdb/common';
 import { ASIL_VALUES, type TaxonomyNodeLite } from './taxonomy';
-import { list, prefillOf, primaryOf, regulationsOf, sameList, type PickedRef, type Prefill, type RefLite } from './prefill';
+import { choosePicked, list, makePrimaryPicked, prefillOf, primaryOf, regulationsOf, removePicked, sameList, type PickedRef, type Prefill, type RefLite } from './prefill';
 
 const INITIAL = { name: '', description: '', requirementIds: '', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: '', asil: 'QM', tags: '', upgVc: '' };
 type Form = typeof INITIAL;
 const DUPLICATE = 'REFDB_DUPLICATE_IN_SCOPE';
 const LINK_REQUIRED = 'REFDB_LINK_REQUIRED';
 
-/** 등록 응답의 서버 안내 — 요청 중·검토 필요·폐기 예정 행(REF_STATUS), 같은 범위 중복 확인(REF_DUPLICATE_CONFIRMED), 선행 행 없음(REF_PREREQUISITE) */
-export interface RefWarning {
-  code: string;
-  refId: string;
-  message: string;
-  status?: string;
-}
+/** 등록 응답의 서버 안내 — 요청 중·검토 필요·폐기 예정 행(REF_STATUS), 같은 범위 중복 확인(REF_DUPLICATE_CONFIRMED), 선행 행 없음(REF_PREREQUISITE) — refdb/common RefWarning */
+export type { RefWarning };
 
 interface Created {
   featureId: string;
@@ -54,6 +50,7 @@ export default function ProposeScreen() {
   // 미리 채운 값과 그 값을 준 대표 행 — 대표를 바꾸면 사용자가 고치지 않은 칸만 새 기준값으로 바꾼다
   const [base, setBase] = useState<(Prefill & { refId: string }) | null>(null);
   const stepHead = useRef<HTMLHeadingElement>(null);
+  const dupHead = useRef<HTMLHeadingElement>(null);
 
   const primary = primaryOf(picked);
   const dirty = !done && !create.isSuccess && (picked.length > 0 || Object.entries(f).some(([k, v]) => v !== INITIAL[k as keyof Form]) || cps.join() !== 'Flag');
@@ -70,13 +67,9 @@ export default function ProposeScreen() {
     stepHead.current?.focus();
   }, [step]);
 
-  const choose = (ref: RefLite, role: FeatureRefRole) =>
-    setPicked((xs) => {
-      const rest = xs.filter((p) => p.ref.refId !== ref.refId && !(role === 'PRIMARY' && p.role === 'PRIMARY'));
-      return role === 'PRIMARY' ? [{ ref, role }, ...rest] : [...rest, { ref, role }];
-    });
-  const makePrimary = (refId: string) => setPicked((xs) => xs.map((p): PickedRef => ({ ...p, role: p.ref.refId === refId ? 'PRIMARY' : 'INCLUDED' })).sort((a, b) => (a.role === 'PRIMARY' ? -1 : b.role === 'PRIMARY' ? 1 : 0)));
-  const remove = (refId: string) => setPicked((xs) => xs.filter((p) => p.ref.refId !== refId));
+  const choose = (ref: RefLite, role: FeatureRefRole) => setPicked((xs) => choosePicked(xs, ref, role));
+  const makePrimary = (refId: string) => setPicked((xs) => makePrimaryPicked(xs, refId));
+  const remove = (refId: string) => setPicked((xs) => removePicked(xs, refId));
 
   const toStep2 = () => {
     if (!primary) return;
@@ -93,6 +86,10 @@ export default function ProposeScreen() {
   const set = (k: keyof Form) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
   const fe = fieldErrors(create.error);
   const duplicate = create.error?.code === DUPLICATE;
+  // 같은 범위 중복(409) 안내가 뜨면 그 제목으로 초점 — 누른 '제안 등록' 아래에 새 칸이 생긴 것을 듣는다(WCAG 4.1.3)
+  useEffect(() => {
+    if (duplicate) dupHead.current?.focus();
+  }, [duplicate]);
   const asilChanged = !!base && f.asil !== base.asil;
   const regulations = primary ? regulationsOf(primary) : [];
 
@@ -100,7 +97,7 @@ export default function ProposeScreen() {
     if (!base) return undefined;
     const same = k === 'tags' ? sameList(f.tags, base.tags) : f[k].trim() === base[k].trim();
     return (
-      <span className="ds-tag" data-ref-mark={same ? 'base' : 'edited'}>
+      <span className="ds-tag ds-ref-mark" data-ref-mark={same ? 'base' : 'edited'}>
         {same ? P.markBase : P.markEdited}
       </span>
     );
@@ -150,7 +147,10 @@ export default function ProposeScreen() {
     [asilChanged && asilReason.trim().length < 2, P.asilReasonWhy],
   );
 
-  const message = !perm.ok
+  // 공개 데모(읽기 전용)는 역할과 상관없이 등록하지 못한다 — '작성자만' 안내는 실제로 역할이 다를 때만
+  const message = STATIC_MODE
+    ? { tone: 'neutral' as const, text: P.key.readOnly }
+    : !canAct(perm.role, ['FEATURE_AUTHOR'])
     ? { tone: 'neutral' as const, text: P.key.cannot }
     : done
       ? { tone: 'warn' as const, text: P.key.done }
@@ -186,13 +186,7 @@ export default function ProposeScreen() {
         {done ? (
           <section aria-labelledby="propose-warnings-h" data-testid="propose-warnings">
             <h3 id="propose-warnings-h">{P.warningsTitle}</h3>
-            <ul className="ds-check">
-              {(done.warnings ?? []).map((w, i) => (
-                <li key={`${w.code}-${w.refId}-${i}`} data-state="REVIEW" data-warning={w.code}>
-                  <span>{w.message}</span>
-                </li>
-              ))}
-            </ul>
+            <RefWarningItems warnings={done.warnings ?? []} />
             <Button variant="primary" onClick={() => nav(`/features/${done.featureId}/${done.version}`)}>
               {P.openDetail}
             </Button>
@@ -201,7 +195,8 @@ export default function ProposeScreen() {
           <RefPicker picked={picked} onChoose={choose} onRemove={remove} onMakePrimary={makePrimary} onRequest={() => setRequesting(true)} onNext={toStep2} nodes={nodes} domain={domain} setDomain={setDomain} />
         ) : (
           <>
-            <div className="ds-split">
+            {/* 2단계 칸 묶음 — 미리 채운 칸은 처음 열 때 잠깐 강조한다(data-prefilled, 움직임 줄이기면 강조 없이) */}
+            <div className="ds-split ds-prefill" data-prefilled={base?.refId}>
               <div className="ds-stack">
                 <Field label={P.name} error={fe.name} hint={mark('name')}>
                   <input className="ds-input" name="name" value={f.name} onChange={set('name')} />
@@ -237,7 +232,7 @@ export default function ProposeScreen() {
                   error={fe.asil}
                   hint={
                     base ? (
-                      <span className="ds-tag" data-ref-mark={asilChanged ? 'edited' : 'base'}>
+                      <span className="ds-tag ds-ref-mark" data-ref-mark={asilChanged ? 'edited' : 'base'}>
                         {asilChanged ? `${P.markEdited} · ${P.asilBase(base.asil)}` : `${P.markBase} · ${P.asilBase(base.asil)}`}
                       </span>
                     ) : undefined
@@ -250,9 +245,12 @@ export default function ProposeScreen() {
                   </select>
                 </Field>
                 {asilChanged && base && (
-                  <Field label={P.asilReason} error={fe.asilDeviation} hint={P.asilReasonHint(base.asil, f.asil)}>
-                    <textarea className="ds-input" name="asilDeviation" value={asilReason} onChange={(e) => setAsilReason(e.target.value)} rows={2} />
-                  </Field>
+                  // 대표 ASIL과 다르게 한 사유 — 기능안전 G2 검토 대상이라 경고 바탕 안내 칸으로 둔다
+                  <div className="ds-callout" data-tone="warn" data-testid="asil-deviation">
+                    <Field label={P.asilReason} error={fe.asilDeviation} hint={P.asilReasonHint(base.asil, f.asil)}>
+                      <textarea className="ds-input" name="asilDeviation" value={asilReason} onChange={(e) => setAsilReason(e.target.value)} rows={2} />
+                    </Field>
+                  </div>
                 )}
                 {text('upgVc', P.upgVc)}
                 <fieldset className="ds-choices" aria-label={P.cps}>
@@ -287,8 +285,10 @@ export default function ProposeScreen() {
 
             {duplicate ? (
               <section className="ds-panel" aria-labelledby="propose-dup-h" data-testid="propose-duplicate" style={{ padding: 'var(--sp-3)' }}>
-                <h3 id="propose-dup-h">{P.duplicate.title}</h3>
-                <p>{create.error?.message}</p>
+                <h3 id="propose-dup-h" ref={dupHead} tabIndex={-1}>
+                  {P.duplicate.title}
+                </h3>
+                <p role="alert">{create.error?.message}</p>
                 <Field label={P.duplicate.reason} hint={P.duplicate.hint} error={fe.duplicateReason}>
                   <textarea className="ds-input" name="duplicateReason" value={dupReason} onChange={(e) => setDupReason(e.target.value)} rows={2} />
                 </Field>

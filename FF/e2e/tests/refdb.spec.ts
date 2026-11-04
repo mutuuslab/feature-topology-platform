@@ -6,8 +6,9 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { propose as P } from '../../frontend/src/copy/propose';
-import { refChangeDetail as D, refChanges as C } from '../../frontend/src/copy/refdb';
+import { refChangeDetail as D, refChanges as C, refDetail as RD } from '../../frontend/src/copy/refdb';
 import { pickPrimaryRef, REF } from './refdb';
+import { settle } from './settle';
 
 test.describe.configure({ mode: 'default' });
 
@@ -52,8 +53,10 @@ async function readyForApproval(request: APIRequestContext, featureId: string, v
 const featureUrl = /\/features\/(FEAT-\d+)\/(0\.1\.0)/;
 
 async function axeClean(page: Page, label: string) {
-  await page.waitForFunction(() => !document.querySelector('[data-state="loading"], [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
+  // 서랍까지(axe는 페이지 전체를 본다) 로딩이 끝나야 하고, 시간 초과는 실패다 — 오류 상자는 본문에서 0
+  await settle(page, { scope: 'body', errors: '#main' });
   // 열리는 서랍·전환 애니메이션(유한)이 끝난 화면을 본다 — 무한 반복(로딩 점 등)은 기다리지 않는다
+  // hygiene-ok: 취소된 애니메이션의 finished는 거부로 끝난다 — 시간 초과를 삼키는 대기가 아니라 '끝남'을 같은 값으로 받는 것
   await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished.catch(() => undefined))));
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
   const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
@@ -316,4 +319,58 @@ test('(e) axe WCAG 2.2 AA — Feature DB 목록·상세·변경 요청·제안 1
   await page.locator('[data-ui="refPickNext"]').click();
   await expect(page.locator('input[name="name"]')).toBeVisible();
   await axeClean(page, '제안 2단계');
+});
+
+test('(f) 벤치마크 €는 DB 관리자(PLM 기준정보)에게만 — 화면은 역할마다 따로 읽는다', async ({ page, request }) => {
+  // API — 같은 GET이 역할마다 다르다(personal): 관리자는 금액 키가 있고, 작성자는 키 자체가 없다
+  const admin = await api<{ ref: Record<string, unknown> }>(request, 'get', `/api/refdb/refs/${REF.avh}`, STEWARD);
+  const author = await api<{ ref: Record<string, unknown> }>(request, 'get', `/api/refdb/refs/${REF.avh}`, AUTHOR);
+  expect('benchmarkEur' in admin.ref).toBe(true);
+  expect('benchmarkEur' in author.ref).toBe(false);
+  await asRole(page, 'steward');
+  await page.goto(`/master/feature-db/${REF.avh}`);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('오토 홀드');
+  await expect(page.getByRole('region', { name: RD.benchmark })).toBeVisible();
+  // 같은 탭에서 작성자로 — 캐시에 관리자 응답이 남아 금액이 보이면 안 된다
+  await asRole(page, 'author');
+  await page.goto(`/master/feature-db/${REF.avh}`);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('오토 홀드');
+  await settle(page);
+  await expect(page.getByRole('region', { name: RD.benchmark })).toHaveCount(0);
+});
+
+/** 진행 중인 변경 요청이 없는 기준 행 — 한 행에는 처리 중인 요청이 하나만 있을 수 있다(같은 백엔드로 다시 돌려도 되게) */
+async function freeRef(request: APIRequestContext, ids: readonly string[]) {
+  for (const refId of ids) {
+    const { items } = await api<{ items: { status: string }[] }>(request, 'get', `/api/refdb/changes?refId=${refId}`, AUTHOR);
+    if (!items.some((c) => ['DRAFT', 'REVIEW', 'APPROVED'].includes(c.status))) return refId;
+  }
+  throw new Error(`진행 중인 변경 요청이 없는 기준 행이 없습니다: ${ids.join(', ')}`);
+}
+
+test('(g) 수정 요청 서랍(MODIFY) → 자동 점검 → 변경 요청 상세, 요청자 본인은 검토가 이유와 함께 막힌다', async ({ page, request }) => {
+  const target = await freeRef(request, ['AD-ADS-013', 'AD-ADS-014', 'AD-ADS-015', 'AD-ADS-016', 'AD-ADS-017', 'AD-ADS-018']);
+  await page.goto(`/master/feature-db/${target}`);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: '변경 요청' }).click();
+  const dlg = page.getByRole('dialog');
+  await expect(dlg.getByText('바꾼 값이 없습니다')).toBeVisible();
+  await dlg.getByLabel('비고').fill(`e2e 수정 요청 ${uniq()}`);
+  await dlg.getByLabel('요청 사유').fill('비고 보완 — e2e');
+  await dlg.getByRole('button', { name: '변경 요청 보내기' }).click();
+  await expect(dlg.getByRole('status')).toContainText('을(를) 만들었습니다');
+  await dlg.getByRole('link', { name: '변경 요청 열기' }).click();
+  await expect(page).toHaveURL(/\/master\/feature-db\/changes\/CR-/);
+  await expect(page.locator('.ds-diff')).toContainText('비고');
+  await settle(page);
+
+  // 도메인 검토자가 직접 낸 요청 — 같은 계정은 자기 요청을 검토할 수 없다(서버 직무 분리와 같은 문장, 코드 없음)
+  const mine = await freeRef(request, ['AD-ADS-023', 'AD-ADS-022', 'AD-ADS-012', 'AD-ADS-011', 'AD-ADS-010', 'AD-ADS-009']);
+  const own = await api<{ changeId: string }>(request, 'post', '/api/refdb/changes', REVIEWER, { kind: 'MODIFY', refId: mine, after: { remark: `e2e 검토자 본인 요청 ${uniq()}` }, reason: 'e2e — 본인 검토 막힘' });
+  await asRole(page, 'approver');
+  await page.goto(`/master/feature-db/changes/${own.changeId}`);
+  const send = page.getByRole('button', { name: D.submitReview });
+  await expect(send).toBeDisabled();
+  await expect(page.locator('#main .ds-btn-why__text').filter({ hasText: '변경 요청자는 자기 요청을 검토할 수 없습니다' })).toBeVisible();
+  await expect(page.locator('#main')).not.toContainText(/\bSOD-\d/);
 });

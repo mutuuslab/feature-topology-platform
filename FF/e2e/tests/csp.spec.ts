@@ -35,6 +35,7 @@ for (const url of ['/login', ...MENU_ENTRIES.map((m) => m.menu), ...DRILLDOWNS.m
     await p.setViewportSize({ width: 1366, height: 768 });
     await p.goto(url);
     await expect(p.locator(url === '/login' ? 'form, main' : '#main').first()).toBeVisible();
+    // hygiene-ok: 화면 점검이 아니라 CSP 위반을 모으는 관찰 시간 — SSE(/events)를 여는 화면은 networkidle에 닿지 않아 8초를 채우고 넘어간다
     await p.waitForLoadState('networkidle', { timeout: 8_000 }).catch(() => {});
     const v = await p.evaluate(() => (window as unknown as { __csp: string[] }).__csp);
     expect(v, `CSP 위반: ${v.join(' · ')}`).toEqual([]);

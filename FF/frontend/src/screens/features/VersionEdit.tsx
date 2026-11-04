@@ -5,6 +5,7 @@ import { useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { Button, Drawer, ErrorNote, Field, Select, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
+import type { RefWarning } from '../refdb/common';
 import { CompositionView } from '../products/Products';
 
 const E = ko.p11.edit;
@@ -64,7 +65,7 @@ export function FeatureVersionActions({ f, latest }: { f: FeatureLike; latest: b
   const nav = useNavigate();
   const author = usePermission(['FEATURE_AUTHOR']);
   const editor = usePermission(['FEATURE_AUTHOR', 'SAFETY_OFFICER', 'VARIANT_OWNER', 'IMPLEMENTER']);
-  const create = useApiMutation<{ feature: { version: string }; rejudge: string[] }>('createVersion', ['featureDetail', 'listFeatures', 'audit']);
+  const create = useApiMutation<{ feature: { version: string }; rejudge: string[]; warnings?: RefWarning[] }>('createVersion', ['featureDetail', 'listFeatures', 'audit']);
   const save = useApiMutation('updateDraft', ['featureDetail', 'listFeatures', 'audit', 'gates']);
   const [open, setOpen] = useState<null | 'version' | 'draft'>(null);
   const initial = { name: f.name, description: f.description, ownerId: f.ownerId, asil: f.asil, tags: f.tags.join(', '), requirementIds: f.requirementIds.join(', ') };
@@ -90,7 +91,7 @@ export function FeatureVersionActions({ f, latest }: { f: FeatureLike; latest: b
           pending={create.isPending}
           error={create.error}
           onSubmit={(bump, reason) =>
-            create.mutate({ params: { id: f.featureId }, body: { baseVersion: f.version, bump, reason } }, { onSuccess: (r) => (setOpen(null), nav(`/features/${f.featureId}/${r.feature.version}`)) })
+            create.mutate({ params: { id: f.featureId }, body: { baseVersion: f.version, bump, reason } }, { onSuccess: (r) => (setOpen(null), nav(`/features/${f.featureId}/${r.feature.version}`, r.warnings?.length ? { state: { refWarnings: r.warnings } } : undefined)) })
           }
         />
       </Drawer>

@@ -6,7 +6,7 @@ import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { lists as L } from '../../copy/lists';
 import { AsyncView, Button, ChainStatus, DataTable, ErrorNote, EventStream, PageHeader, Panel, RuleText, Segmented, Toolbar, VerdictBadge, type StreamItem } from '../../design';
-import { ComponentName, when } from '../shared';
+import { ComponentName, ProcedureText, when } from '../shared';
 import { AuditLog } from './AuditLog';
 import type { AuditEntry } from '../types';
 
@@ -105,6 +105,8 @@ const summarize = (p: unknown) => {
   if (o.status) return String(o.status);
   if (o.verdict) return String(o.verdict);
   if (o.baselineId) return String(o.baselineId);
+  // 업무 절차 활동 기록은 이름을 보인다(식별자는 ProcedureText가 툴팁으로)
+  if (typeof o.activityName === 'string') return o.activityName;
   // 알려진 필드가 없어도 빈 칸으로 두지 않는다 — 앞의 두 값을 보인다
   const kv = Object.entries(o).filter(([, v]) => v != null && typeof v !== 'object').slice(0, 2);
   return kv.length ? kv.map(([k, v]) => `${k}: ${String(v)}`).join(' · ') : '—';
@@ -145,9 +147,9 @@ export function EventsScreen() {
               { key: 'seq', header: '#', cell: (r) => <span className="ds-mono">{r.seq}</span>, sort: (r) => r.seq, align: 'right' },
               { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
               { key: 'type', header: 'Type', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--accent)' }}>{r.type}</span>, sort: (r) => r.type },
-              { key: 'agg', header: ko.audit.col.target, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{r.aggregate}</span> },
+              { key: 'agg', header: ko.audit.col.target, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}><ProcedureText text={r.aggregate} /></span> },
               { key: 'c', header: 'Component', cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.componentId ? <ComponentName id={r.componentId} /> : '—'}</span> },
-              { key: 'p', header: ko.events.content, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{summarize(r.payload)}</span> },
+              { key: 'p', header: ko.events.content, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}><ProcedureText text={summarize(r.payload)} /></span> },
             ]}
           />
         </AsyncView>

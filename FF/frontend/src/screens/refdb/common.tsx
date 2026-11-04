@@ -1,11 +1,13 @@
 // Feature DB 화면 공통 — 응답 모양, 상태 배지(정책 안내 툴팁), 내 행위자, 내보내기 파일 받기.
 // 상태 → 허용 규칙은 contracts REF_STATUS_POLICY 하나(등록 화면·승인 전이·산정 과제와 같은 표).
-import { REF_STATUS_POLICY, type FeatureRefRow, type RefChange, type RefCriterionResult, type RefGlossary, type RefRelease, type RefSource, type RefStatus, type RefStatusPolicy, type RefSubfunction, type TaxonomyNode } from '@ff/contracts';
+import { REF_STATUS_POLICY, type FeatureRefRow, type RefChangeStatus, type RefChange, type RefCriterionResult, type RefGlossary, type RefRelease, type RefSource, type RefStatus, type RefStatusPolicy, type RefSubfunction, type TaxonomyNode } from '@ff/contracts';
 import { Link } from 'react-router-dom';
 import { actorFor } from '../../api/actor';
-import { pathOf, toApiError, type ApiError } from '../../api/client';
+import { pathOf, toApiError, VIEW_ROLES, type ApiError } from '../../api/client';
 import { OIDC_AUTH } from '../../auth-mode';
-import { IdChip, VerdictBadge } from '../../design';
+import { CHANGE_STATUS_LABEL, refDetail as RD } from '../../copy/refdb';
+import { IdChip, Lozenge, VerdictBadge, type LozengeAppearance } from '../../design';
+import '../../design/lozenge.css';
 
 /** 목록·상세 응답의 기준 행 — 금액 필드(벤치마크 €)는 서버가 산정 역할에만 준다 */
 export type RefRowView = Omit<FeatureRefRow, 'benchmarkEur' | 'kearneyNote'> & Partial<Pick<FeatureRefRow, 'benchmarkEur' | 'kearneyNote'>>;
@@ -70,17 +72,68 @@ export interface RefPublishResponse {
   retired?: unknown[];
 }
 
-/** 상태 → 판정 색(활성 PASS · 경고 CONDITIONAL · 막힘 FAIL) */
-const VERDICT: Record<RefStatus, string> = { ACTIVE: 'PASS', REVIEW: 'CONDITIONAL', DEPRECATED: 'CONDITIONAL', PENDING: 'CONDITIONAL', RETIRED: 'FAIL' };
+/** 상태 → 배지 무리 — 활성 완료 · 검토 필요 진행 · 폐기 예정 이동 · 폐기 제거 · 요청 중 새것(색은 Lozenge 토큰만) */
+const LOOK: Record<RefStatus, LozengeAppearance> = { ACTIVE: 'success', REVIEW: 'inprogress', DEPRECATED: 'moved', RETIRED: 'removed', PENDING: 'new' };
 
-/** 상태 배지 — 이름은 엑셀 BQ 값, 툴팁은 정책 안내 */
+/**
+ * 기준 행 상태 배지 — Feature DB 화면·등록 화면·Feature 상세 '기준 행' 탭이 함께 쓴다(예전에는 색이 다른 두 벌이었다).
+ * 이름은 엑셀 BQ 값(contracts REF_STATUS_POLICY), 툴팁은 정책 안내
+ */
 export function RefStatusBadge({ status }: { status: RefStatus }) {
   const p = REF_STATUS_POLICY[status];
-  if (!p) return <span className="ds-mono">{status}</span>;
+  if (!p) return <Lozenge>{status}</Lozenge>;
   return (
     <span title={p.hint} data-ref-status={status}>
-      <VerdictBadge value={VERDICT[status]} label={p.ko} />
+      <Lozenge appearance={LOOK[status]}>{p.ko}</Lozenge>
     </span>
+  );
+}
+
+const CHANGE_VERDICT: Record<RefChangeStatus, string> = { DRAFT: 'UNJUDGED', REVIEW: 'CONDITIONAL', APPROVED: 'CONDITIONAL', REJECTED: 'FAIL', PUBLISHED: 'PASS' };
+
+/** 변경 요청 상태 배지 — 변경 요청 화면과 콘솔 홈 대기열이 함께 쓴다 */
+export function ChangeStatusBadge({ status }: { status: RefChangeStatus }) {
+  return <VerdictBadge value={CHANGE_VERDICT[status] ?? 'UNJUDGED'} label={CHANGE_STATUS_LABEL[status] ?? status} />;
+}
+
+/** 서버 안내(막지 않은 기준 행 경고) — 등록·전이·Release Sign-off·새 Version 응답의 warnings[](backend feature-refs RefWarning) */
+export interface RefWarning {
+  code: string;
+  refId: string;
+  message: string;
+  status?: string;
+  /** 폐기 예정·폐기 행의 대체 기준 행(있으면) */
+  replacedBy?: string | null;
+}
+
+/** 경고 줄 — 서버 문장 + 대체 행 링크 */
+export function RefWarningItems({ warnings }: { warnings: readonly RefWarning[] }) {
+  return (
+    <ul className="ds-check">
+      {warnings.map((w, i) => (
+        <li key={`${w.code}-${w.refId}-${i}`} data-state="REVIEW" data-warning={w.code}>
+          <span>
+            {w.message}
+            {w.replacedBy && (
+              <span className="ds-check__detail" data-replaced-by={w.replacedBy}>
+                {RD.f.replacedBy} <RefChip id={w.replacedBy} />
+              </span>
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** 기준 행 경고 목록 — 일은 끝났고, 사람이 확인할 것만 남긴다(role=status로 읽힌다) */
+export function RefWarningList({ warnings, title }: { warnings: readonly RefWarning[] | undefined | null; title: string }) {
+  if (!warnings?.length) return null;
+  return (
+    <section className="ds-callout" data-tone="warn" role="status" aria-label={title} data-testid="ref-warnings">
+      <p className="ds-callout__title">{title}</p>
+      <RefWarningItems warnings={warnings} />
+    </section>
   );
 }
 
@@ -116,7 +169,7 @@ export function TextLink({ to, children }: { to: string; children: string }) {
   );
 }
 
-/** 화면 역할의 행위자 ID — 직무 분리(SOD-13·14) 판단에 쓴다 */
+/** 화면 역할의 행위자 ID — 직무 분리(요청자·검토자 ≠ 승인자, contracts refChangeDuty) 판단에 쓴다 */
 export const myActorId = (role: string) => actorFor(role).id;
 
 /**
@@ -125,7 +178,7 @@ export const myActorId = (role: string) => actorFor(role).id;
  */
 export async function downloadExport(role: string, release: string | null): Promise<void> {
   const url = pathOf('exportRefdb', {}, { format: 'xlsx', release });
-  const a = actorFor(role);
+  const a = actorFor(role, VIEW_ROLES.exportRefdb);
   const headers: Record<string, string> = { 'X-Actor-Role': a.role };
   if (!OIDC_AUTH) headers['X-Actor-Id'] = a.id;
   const res = await fetch(url, { headers });

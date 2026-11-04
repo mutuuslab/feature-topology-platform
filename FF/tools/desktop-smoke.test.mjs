@@ -58,7 +58,8 @@ test('패키지 서버: UI·API·출처 제한·재시작 후 데이터', { time
       req.end();
     });
     assert.equal(wrongHost, 403);
-    const created = await get('/api/features', { method: 'POST', headers: { 'content-type': 'application/json', 'x-actor-id': 'kim.author', 'x-actor-role': 'FEATURE_AUTHOR', 'idempotency-key': 'desktop-smoke-create' }, body: JSON.stringify({ name: 'Desktop smoke test', description: 'test', country: 'KR', vehicleModel: 'test', trim: 'test', ownerId: 'test', asil: 'QM' }) });
+    // 등록은 Feature DB 대표 연결이 필수 — 패키지 런타임에 이전본(data/reference)이 없으면 기준 행을 못 찾아 여기서 실패한다(2026-11-04 회귀)
+    const created = await get('/api/features', { method: 'POST', headers: { 'content-type': 'application/json', 'x-actor-id': 'kim.author', 'x-actor-role': 'FEATURE_AUTHOR', 'idempotency-key': 'desktop-smoke-create' }, body: JSON.stringify({ name: 'Desktop smoke test', description: 'test', country: 'KR', vehicleModel: 'test', trim: 'test', ownerId: 'test', asil: 'QM', featureRefs: [{ refId: 'AD-ADS-004', role: 'PRIMARY' }] }) });
     assert.equal(created.status, 201, await created.clone().text());
     const { featureId } = await created.json();
     await stop(server.child);

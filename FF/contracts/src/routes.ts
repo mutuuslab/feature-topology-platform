@@ -427,7 +427,29 @@ export function routeUrl(name: string, params: Record<string, string> = {}, quer
   return qs ? `${path}?${qs}` : path;
 }
 
-/** 정적 데모 스냅샷 파일 이름 — 파일 시스템·정적 호스팅에서 안전한 문자만 남긴다 */
+/** 스냅샷 파일 이름 길이 상한 — 설치 경로(데스크톱 NSIS·Windows 260자)까지 더해도 넘지 않게 */
+export const SNAPSHOT_NAME_MAX = 120;
+
+/** URL 전체의 짧은 해시(cyrb53, 16진) — 브라우저·Node 어디서나 같은 값(동기, 의존성 없음) */
+function urlHash(s: string): string {
+  let h1 = 0xdeadbeef ^ 0;
+  let h2 = 0x41c6ce57 ^ 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, '0');
+}
+
+/**
+ * 정적 데모 스냅샷 파일 이름 — 파일 시스템·정적 호스팅에서 안전한 문자만 남긴다.
+ * 긴 질의(Feature DB 도메인·컴포넌트 이름 등)는 앞부분 + URL 전체 해시로 줄인다 — 같은 앞부분의 다른 URL도 갈린다.
+ */
 export function snapshotFile(url: string): string {
-  return 'api-snapshot/' + url.replace(/^\/api\//, '').replace(/[^A-Za-z0-9._-]/g, '_') + '.json';
+  const safe = url.replace(/^\/api\//, '').replace(/[^A-Za-z0-9._-]/g, '_');
+  const name = safe.length <= SNAPSHOT_NAME_MAX ? safe : `${safe.slice(0, SNAPSHOT_NAME_MAX - 15)}~${urlHash(url)}`;
+  return 'api-snapshot/' + name + '.json';
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { COMPONENTS, DOMAINS, INTERFACES } from './components.manifest';
-import { routeUrl, snapshotFile } from './routes';
+import { routeUrl, SNAPSHOT_NAME_MAX, snapshotFile } from './routes';
 
 describe('42 컴포넌트 manifest (PPT v0.50)', () => {
   it('정확히 42개이고 ID·이름이 중복되지 않는다', () => {
@@ -43,5 +43,17 @@ describe('요청 URL·정적 스냅샷 파일 이름 (프론트·snapshot:api �
     const f = snapshotFile(routeUrl('audit', {}, { target: 'FEAT-00022@1.0.0', limit: 100 }));
     expect(f).toBe('api-snapshot/audit_target_FEAT-00022_401.0.0_limit_100.json');
     expect(snapshotFile(routeUrl('productCandidates', {}, { country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium' }))).toMatch(/^api-snapshot\/[A-Za-z0-9._-]+\.json$/);
+  });
+  it('긴 질의는 앞부분 + URL 해시로 줄인다 — 앞부분이 같아도 다른 URL은 다른 파일', () => {
+    // 회귀: Feature DB 목록 조회(도메인·컴포넌트 이름 질의)의 파일 이름이 181자라 데스크톱 설치 파일(NSIS)이 경로 길이로 실패했다(2026-11-04)
+    const long = (component: string) => routeUrl('listRefs', {}, { domain: 'Vehicle Platform & Base SW', component, cluster: 'AUTOSAR Classic Platform (R24-11) ECU basic software stack' });
+    const a = snapshotFile(long('AUTOSAR Classic Platform (R24-11) ECU basic software stack — communication services'));
+    const b = snapshotFile(long('AUTOSAR Classic Platform (R24-11) ECU basic software stack — diagnostic services'));
+    for (const f of [a, b]) expect(f).toMatch(/^api-snapshot\/[A-Za-z0-9._~-]+\.json$/);
+    expect(a.length - 'api-snapshot/'.length - '.json'.length).toBeLessThanOrEqual(SNAPSHOT_NAME_MAX);
+    expect(a).not.toBe(b);
+    expect(snapshotFile(long('x'))).toBe(snapshotFile(long('x')));
+    // 짧은 이름은 그대로(기존 스냅샷 이름 유지)
+    expect(snapshotFile('/api/features')).toBe('api-snapshot/features.json');
   });
 });

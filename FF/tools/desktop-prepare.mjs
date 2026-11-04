@@ -34,6 +34,7 @@ for (const workspace of ['backend', 'frontend', 'contracts', 'e2e']) {
 cpSync(join(root, 'backend', 'dist'), join(runtime, 'backend', 'dist'), { recursive: true });
 cpSync(join(root, 'contracts', 'dist'), join(runtime, 'contracts', 'dist'), { recursive: true });
 cpSync(join(root, 'data', 'fixtures'), join(runtime, 'data', 'fixtures'), { recursive: true });
+cpSync(join(root, 'data', 'reference'), join(runtime, 'data', 'reference'), { recursive: true });
 run(npm, ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], runtime);
 
 // 워크스페이스 junction은 설치 위치를 가리킬 수 있으므로 계약 패키지만 실제 파일로 포함한다.

@@ -53,7 +53,8 @@ const featureUrl = /\/features\/(FEAT-\d+)\/(0\.1\.0)/;
 
 async function axeClean(page: Page, label: string) {
   await page.waitForFunction(() => !document.querySelector('[data-state="loading"], [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
-  await page.waitForTimeout(300);
+  // 열리는 서랍·전환 애니메이션(유한)이 끝난 화면을 본다 — 무한 반복(로딩 점 등)은 기다리지 않는다
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished.catch(() => undefined))));
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
   const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
   const detail = bad.map((v) => `${v.id} ×${v.nodes.length}: ${v.help}\n    ${v.nodes.slice(0, 4).map((n) => n.target.join(' ')).join('\n    ')}`).join('\n');

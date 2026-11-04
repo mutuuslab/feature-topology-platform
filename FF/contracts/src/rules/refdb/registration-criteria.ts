@@ -21,7 +21,8 @@ export const REGISTRATION_CRITERIA: { id: RegistrationCriterionId; item: string;
   { id: 'ADMIN_INFO', item: '관리 정보', rule: '등록 버전·최종 근거 확인일·관리 상태를 채운다', blocking: false },
 ];
 
-const CRITERION = Object.fromEntries(REGISTRATION_CRITERIA.map((c) => [c.id, c])) as Record<RegistrationCriterionId, (typeof REGISTRATION_CRITERIA)[number]>;
+// 순수 표시 — 쓰지 않는 화면 묶음(첫 화면)에서 빠지게(harness/budgets.json)
+const CRITERION = /* @__PURE__ */ Object.fromEntries(/* @__PURE__ */ REGISTRATION_CRITERIA.map((c) => [c.id, c])) as Record<RegistrationCriterionId, (typeof REGISTRATION_CRITERIA)[number]>;
 
 export interface RegistrationContext {
   kind: RefChangeKind;

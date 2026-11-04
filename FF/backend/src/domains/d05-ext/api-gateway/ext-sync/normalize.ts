@@ -136,8 +136,8 @@ function epicScope(f: Record<string, any>): Record<string, string | string[]> {
 }
 
 /**
- * Epic의 기준 기능 ID(30-95 §7, R-6) — 라벨 `ref-primary:<ID>`(대표)·`ref:<ID>`(포함), 설정하면 사용자 필드 JIRA_REF_FIELD(FF_JIRA_REF_FIELD).
- * 대표를 맨 앞에 둔다: ref-primary 라벨 → 필드 값(첫 값) → ref 라벨. 대표 라벨이 없으면 처음 나온 값이 대표. 같은 ID는 한 번만.
+ * Epic의 기준 기능 ID(30-95 §7, D-REF-16) — JIRA 안의 FF 앱이 쓰는 사용자 필드(JIRA_FIELD_FEATURE_DB)가 기준이다:
+ * 필드에 값이 있으면 필드 값만 쓴다(첫 값이 대표). 필드가 비었을 때만 라벨 `ref-primary:<ID>`(대표) → `ref:<ID>`(포함). 같은 ID는 한 번만.
  */
 export function epicRefIds(f: Record<string, any>): string[] {
   const labels: string[] = Array.isArray(f.labels) ? f.labels.filter((l: unknown): l is string => typeof l === 'string') : [];
@@ -149,5 +149,7 @@ export function epicRefIds(f: Record<string, any>): string[] {
     const v = typeof x === 'string' ? x : x && typeof x === 'object' ? ((x as any).value ?? (x as any).name) : undefined;
     return typeof v === 'string' ? v.split(/[\s,;]+/) : [];
   });
-  return [...new Set([...fromLabels('ref-primary:'), ...fromField, ...fromLabels('ref:')].map((s) => s.trim().toUpperCase()).filter(Boolean))];
+  const norm = (xs: string[]) => [...new Set(xs.map((s) => s.trim().toUpperCase()).filter(Boolean))];
+  const field = norm(fromField);
+  return field.length ? field : norm([...fromLabels('ref-primary:'), ...fromLabels('ref:')]);
 }

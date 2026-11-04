@@ -1,10 +1,11 @@
 {
-  "_method": "시드 Feature(data/fixtures/v0.81/features.json, featureId별 1건)의 기능명·설명·태그·ASIL을 Feature DB v1.3 기준 행의 한/영 기능명·별칭·컴포넌트와 사람이 대조해 정한 표(tools/refdb/seed-links.ts SEED_MAP). 같은 기능명은 같은 대응. confidence high = 기능 범위가 같음, medium = 가장 가까운 행(범위 차이는 note). 불확실·없음은 _missing(후보 포함) — 사용자 확인 대상. ASIL이 기준 행과 다르면 등록 때 asilDeviation 사유가 필요하다(30-95 §6.3).",
+  "_method": "시드 Feature(data/fixtures/v0.81/features.json, featureId별 1건)의 기능명·설명·태그·ASIL을 Feature DB v1.3 기준 행의 한/영 기능명·별칭·컴포넌트와 사람이 대조해 정한 표(tools/refdb/seed-links.ts SEED_MAP). 같은 기능명은 같은 대응. confidence high = 기능 범위가 같음, medium = 가장 가까운 행(범위 차이는 note). 불확실·없음은 _missing(후보 포함) — 사용자 확인 대상. ASIL이 대표 행 대표 ASIL과 다르면 asilDeviation(from 대표 ASIL·to 시드 ASIL·reason)에 사유를 둔다 — 같은 ASIL의 같은 기능 행이 없어 대표를 그대로 둔 경우뿐이고, 시드가 그 버전 doc.asilDeviation으로 넣는다(30-95 §6.3, 2026-11-04 사용자 결정).",
   "refVersion": "v1.3",
   "counts": {
     "features": 68,
     "linked": 60,
-    "missing": 8
+    "missing": 8,
+    "asilDeviation": 23
   },
   "links": {
     "FEAT-00001": [
@@ -640,6 +641,123 @@
     "FEAT-00185": "high",
     "FEAT-00186": "high"
   },
+  "asilDeviation": {
+    "FEAT-00002": {
+      "from": "B",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 후진 자동 긴급 제동(AD-LON-016) 대표 ASIL B보다 높음. ASIL C 행은 주행 중 AEB(AD-LON-010~015·017)뿐이라 주차 중 장애물 제동 지원과 범위가 다름"
+    },
+    "FEAT-00005": {
+      "from": "B",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ACC(AD-LON-002) 대표 ASIL B보다 높음. 순항 제어 행(CC·ACC·정차·재출발 ACC·CACC)이 모두 B라 같은 ASIL의 같은 기능 행 없음"
+    },
+    "FEAT-00010": {
+      "from": "A",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 DMS 카메라(AD-DMS-003) 대표 ASIL A보다 높음. 운전자 모니터링 행 중 가장 높은 운전자 이상 감지(AD-DMS-004)도 B라 같은 ASIL 행 없음"
+    },
+    "FEAT-00014": {
+      "from": "A",
+      "to": "QM",
+      "reason": "v0.81 데이터셋 HARA 결과(QM) 유지 — 기준 행 AR-HUD(IN-CLU-012) 대표 ASIL A보다 낮음(시드는 전방 영상·지도 정합 안내 표시만). HUD 행(IN-CLU-011)도 A, 내비게이션 QM 행은 HUD 표시가 아니라 같은 기능 행 없음 — G2 검토"
+    },
+    "FEAT-00015": {
+      "from": "QM",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ISA(AD-LON-005) 대표 QM보다 높음(시드는 경고에 더해 속도 제어 포함). 속도 제한 장치(AD-LON-004)도 B라 같은 ASIL 행 없음"
+    },
+    "FEAT-00060": {
+      "from": "A",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 DMS 카메라(AD-DMS-003) 대표 ASIL A보다 높음. 운전자 모니터링 행 중 가장 높은 운전자 이상 감지(AD-DMS-004)도 B라 같은 ASIL 행 없음"
+    },
+    "FEAT-00061": {
+      "from": "A",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 DMS 카메라(AD-DMS-003) 대표 ASIL A보다 높음. 운전자 모니터링 행 중 가장 높은 운전자 이상 감지(AD-DMS-004)도 B라 같은 ASIL 행 없음"
+    },
+    "FEAT-00062": {
+      "from": "A",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 DMS 카메라(AD-DMS-003) 대표 ASIL A보다 높음. 운전자 모니터링 행 중 가장 높은 운전자 이상 감지(AD-DMS-004)도 B라 같은 ASIL 행 없음"
+    },
+    "FEAT-00065": {
+      "from": "QM",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ISA(AD-LON-005) 대표 QM보다 높음(시드는 경고에 더해 속도 제어 포함). 속도 제한 장치(AD-LON-004)도 B라 같은 ASIL 행 없음"
+    },
+    "FEAT-00066": {
+      "from": "QM",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ISA(AD-LON-005) 대표 QM보다 높음(시드는 경고에 더해 속도 제어 포함). 속도 제한 장치(AD-LON-004)도 B라 같은 ASIL 행 없음"
+    },
+    "FEAT-00067": {
+      "from": "QM",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ISA(AD-LON-005) 대표 QM보다 높음(시드는 경고에 더해 속도 제어 포함). 속도 제한 장치(AD-LON-004)도 B라 같은 ASIL 행 없음"
+    },
+    "FEAT-00084": {
+      "from": "B",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ACC(AD-LON-002) 대표 ASIL B보다 높음. 순항 제어 행(CC·ACC·정차·재출발 ACC·CACC)이 모두 B라 같은 ASIL의 같은 기능 행 없음"
+    },
+    "FEAT-00098": {
+      "from": "A",
+      "to": "QM",
+      "reason": "v0.81 데이터셋 HARA 결과(QM) 유지 — 기준 행 AR-HUD(IN-CLU-012) 대표 ASIL A보다 낮음(시드는 전방 영상·지도 정합 안내 표시만). HUD 행(IN-CLU-011)도 A, 내비게이션 QM 행은 HUD 표시가 아니라 같은 기능 행 없음 — G2 검토"
+    },
+    "FEAT-00100": {
+      "from": "A",
+      "to": "QM",
+      "reason": "v0.81 데이터셋 HARA 결과(QM) 유지 — 기준 행 AR-HUD(IN-CLU-012) 대표 ASIL A보다 낮음(시드는 전방 영상·지도 정합 안내 표시만). HUD 행(IN-CLU-011)도 A, 내비게이션 QM 행은 HUD 표시가 아니라 같은 기능 행 없음 — G2 검토"
+    },
+    "FEAT-00145": {
+      "from": "B",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ACC(AD-LON-002) 대표 ASIL B보다 높음. 순항 제어 행(CC·ACC·정차·재출발 ACC·CACC)이 모두 B라 같은 ASIL의 같은 기능 행 없음"
+    },
+    "FEAT-00150": {
+      "from": "B",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ACC(AD-LON-002) 대표 ASIL B보다 높음. 순항 제어 행(CC·ACC·정차·재출발 ACC·CACC)이 모두 B라 같은 ASIL의 같은 기능 행 없음"
+    },
+    "FEAT-00163": {
+      "from": "B",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 LKA(AD-LAT-002) 대표 ASIL B보다 높음. ASIL C인 차로 중앙 유지(AD-LAT-004)는 상시 중앙 유지라 시드 설명(차선 이탈 감지 후 조향 보조)과 다름"
+    },
+    "FEAT-00175": {
+      "from": "A",
+      "to": "QM",
+      "reason": "v0.81 데이터셋 HARA 결과(QM) 유지 — 기준 행 AR-HUD(IN-CLU-012) 대표 ASIL A보다 낮음(시드는 전방 영상·지도 정합 안내 표시만). HUD 행(IN-CLU-011)도 A, 내비게이션 QM 행은 HUD 표시가 아니라 같은 기능 행 없음 — G2 검토"
+    },
+    "FEAT-00176": {
+      "from": "A",
+      "to": "QM",
+      "reason": "v0.81 데이터셋 HARA 결과(QM) 유지 — 기준 행 AR-HUD(IN-CLU-012) 대표 ASIL A보다 낮음(시드는 전방 영상·지도 정합 안내 표시만). HUD 행(IN-CLU-011)도 A, 내비게이션 QM 행은 HUD 표시가 아니라 같은 기능 행 없음 — G2 검토"
+    },
+    "FEAT-00177": {
+      "from": "A",
+      "to": "QM",
+      "reason": "v0.81 데이터셋 HARA 결과(QM) 유지 — 기준 행 AR-HUD(IN-CLU-012) 대표 ASIL A보다 낮음(시드는 전방 영상·지도 정합 안내 표시만). HUD 행(IN-CLU-011)도 A, 내비게이션 QM 행은 HUD 표시가 아니라 같은 기능 행 없음 — G2 검토"
+    },
+    "FEAT-00178": {
+      "from": "A",
+      "to": "QM",
+      "reason": "v0.81 데이터셋 HARA 결과(QM) 유지 — 기준 행 AR-HUD(IN-CLU-012) 대표 ASIL A보다 낮음(시드는 전방 영상·지도 정합 안내 표시만). HUD 행(IN-CLU-011)도 A, 내비게이션 QM 행은 HUD 표시가 아니라 같은 기능 행 없음 — G2 검토"
+    },
+    "FEAT-00183": {
+      "from": "B",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ACC(AD-LON-002) 대표 ASIL B보다 높음. 순항 제어 행(CC·ACC·정차·재출발 ACC·CACC)이 모두 B라 같은 ASIL의 같은 기능 행 없음"
+    },
+    "FEAT-00185": {
+      "from": "B",
+      "to": "C",
+      "reason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ACC(AD-LON-002) 대표 ASIL B보다 높음. 순항 제어 행(CC·ACC·정차·재출발 ACC·CACC)이 모두 B라 같은 ASIL의 같은 기능 행 없음"
+    }
+  },
   "basis": {
     "IC·JC 경로 사전안내": {
       "primary": "IN-NAV-009",
@@ -695,7 +813,8 @@
     "스마트 크루즈 컨트롤": {
       "primary": "AD-LON-002",
       "confidence": "high",
-      "note": "적응형 순항 제어(ACC). 시드 ASIL C ≠ 기준 B"
+      "note": "적응형 순항 제어(ACC). 시드 ASIL C ≠ 기준 B(사유 기록)",
+      "asilDeviationReason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ACC(AD-LON-002) 대표 ASIL B보다 높음. 순항 제어 행(CC·ACC·정차·재출발 ACC·CACC)이 모두 B라 같은 ASIL의 같은 기능 행 없음"
     },
     "스마트폰 디지털 키": {
       "primary": "CO-DKY-005",
@@ -724,7 +843,8 @@
         "AD-DMS-005"
       ],
       "confidence": "high",
-      "note": "DMS 카메라 + 졸음·주의분산 경고 + 시선 추정. 시드 ASIL C ≠ 기준 A"
+      "note": "DMS 카메라 + 졸음·주의분산 경고 + 시선 추정. 시드 ASIL C ≠ 기준 A(사유 기록)",
+      "asilDeviationReason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 DMS 카메라(AD-DMS-003) 대표 ASIL A보다 높음. 운전자 모니터링 행 중 가장 높은 운전자 이상 감지(AD-DMS-004)도 B라 같은 ASIL 행 없음"
     },
     "원격 스마트 주차 보조": {
       "primary": "AD-PRK-007",
@@ -756,12 +876,14 @@
         "AD-PRK-001"
       ],
       "confidence": "medium",
-      "note": "주차 중 장애물 제동 지원 → 후진 자동 긴급 제동 + 초음파 거리 경고. 시드 ASIL C ≠ 기준 B(사유 필요)"
+      "note": "주차 중 장애물 제동 지원 → 후진 자동 긴급 제동 + 초음파 거리 경고. 시드 ASIL C ≠ 기준 B(사유 기록)",
+      "asilDeviationReason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 후진 자동 긴급 제동(AD-LON-016) 대표 ASIL B보다 높음. ASIL C 행은 주행 중 AEB(AD-LON-010~015·017)뿐이라 주차 중 장애물 제동 지원과 범위가 다름"
     },
     "증강현실 HUD 내비게이션": {
       "primary": "IN-CLU-012",
       "confidence": "high",
-      "note": "증강현실 HUD(AR-HUD). 시드 QM ≠ 기준 A"
+      "note": "증강현실 HUD(AR-HUD). 시드 QM ≠ 기준 A(사유 기록)",
+      "asilDeviationReason": "v0.81 데이터셋 HARA 결과(QM) 유지 — 기준 행 AR-HUD(IN-CLU-012) 대표 ASIL A보다 낮음(시드는 전방 영상·지도 정합 안내 표시만). HUD 행(IN-CLU-011)도 A, 내비게이션 QM 행은 HUD 표시가 아니라 같은 기능 행 없음 — G2 검토"
     },
     "지능형 속도 제한 보조": {
       "primary": "AD-LON-005",
@@ -769,12 +891,14 @@
         "AD-LON-006"
       ],
       "confidence": "high",
-      "note": "지능형 속도 보조(ISA) + 교통 표지 인식. 시드 ASIL C ≠ 기준 QM"
+      "note": "지능형 속도 보조(ISA) + 교통 표지 인식. 시드 ASIL C ≠ 기준 QM(사유 기록)",
+      "asilDeviationReason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 ISA(AD-LON-005) 대표 QM보다 높음(시드는 경고에 더해 속도 제어 포함). 속도 제한 장치(AD-LON-004)도 B라 같은 ASIL 행 없음"
     },
     "차로 유지 보조": {
       "primary": "AD-LAT-002",
       "confidence": "high",
-      "note": "차로 유지 보조(LKA). 시드 ASIL C ≠ 기준 B"
+      "note": "차로 유지 보조(LKA). 시드 ASIL C ≠ 기준 B(사유 기록)",
+      "asilDeviationReason": "v0.81 데이터셋 HARA 결과(ASIL C) 유지 — 기준 행 LKA(AD-LAT-002) 대표 ASIL B보다 높음. ASIL C인 차로 중앙 유지(AD-LAT-004)는 상시 중앙 유지라 시드 설명(차선 이탈 감지 후 조향 보조)과 다름"
     },
     "후석 엔터테인먼트 Gen1": {
       "primary": "IN-HMI-016",

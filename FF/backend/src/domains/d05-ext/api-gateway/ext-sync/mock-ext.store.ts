@@ -45,8 +45,8 @@ export const JIRA_EPIC_FIELDS: Record<EpicScopeField, () => string> = {
   asil: () => process.env.JIRA_FIELD_ASIL ?? 'ffAsil',
   ownerId: () => process.env.JIRA_FIELD_OWNER ?? 'ffOwner',
 };
-/** Epic의 기준 기능 ID 사용자 필드(30-95 §7) — 설정하지 않으면 라벨(ref:·ref-primary:)만 읽는다 */
-export const JIRA_REF_FIELD = () => process.env.FF_JIRA_REF_FIELD ?? '';
+/** Epic의 기준 기능 ID 사용자 필드(30-95 §7, D-REF-16) — JIRA 안의 FF 앱이 쓴다. 필드가 비면 라벨(ref:·ref-primary:)을 읽는다 */
+export const JIRA_REF_FIELD = () => process.env.JIRA_FIELD_FEATURE_DB ?? 'ffFeatureDb';
 export const CODEBEAMER_TRACKER = () => Number(process.env.CODEBEAMER_REQ_TRACKER ?? 4711);
 
 export function extUrl(system: ExtSystem, kind: string, key: string): string {

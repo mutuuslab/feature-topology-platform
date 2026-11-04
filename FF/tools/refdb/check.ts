@@ -3,18 +3,20 @@
 //   출처 ID가 모두 sources.json에 있음 · 도메인 10·컴포넌트 69 · 03b 정의 Feature ID 존재(상위·제외 참조 포함) ·
 //   파생 값 T·U(규칙 contracts/src/rules/refdb/size.ts)와 BW(엑셀 과제 설정값으로)가 엑셀 저장값과 일치 · manifest 해시·행 수 일치 ·
 //   분류 노드 ID 유일·상위/클러스터 참조 실재 · seed-links.json의 기준 ID 존재.
-// 원본 엑셀은 저장소 밖에 있으므로 다시 가져오기 비교는 하지 않는다(가져오기 재현은 refdb:import가 다른 내용을 거부하는 것으로 지킨다).
+// 원본 엑셀 사본(data/source/feature_db_v1.3.xlsx)이 있으면 reimportRefdb가 다시 가져와 커밋된 파일과 바이트 단위로 대조한다.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { FF } from '../lib.ts';
 import { asilFactor, nominalPoints, sizePoints } from '../../contracts/src/rules/refdb/size.ts';
-import { DATA_FILES, DERIVED_FILE, RELEASE, sha256 } from './import-lib.ts';
+import { DATA_FILES, DERIVED_FILE, importWorkbook, RELEASE, renderFiles, sha256 } from './import-lib.ts';
 
 export const REFDB_ROOT = join(FF, 'data', 'reference', 'feature-db');
 export const REFDB_DIR = join(REFDB_ROOT, RELEASE);
 export const SEED_LINKS = join(REFDB_ROOT, 'seed-links.json');
 const SEED_FEATURES = join(FF, 'data', 'fixtures', 'v0.81', 'features.json');
+/** 원본 엑셀 사본 — manifest.source.sha256과 같은 파일 */
+export const REFDB_SOURCE_XLSX = join(FF, 'data', 'source', `feature_db_${RELEASE}.xlsx`);
 
 /** 엑셀 v1.3 이전 기대값(30-95 §4·§5.2·§9) */
 export const EXPECT_V13 = { rows: 1052, domains: 10, components: 69, status: { ACTIVE: 995, REVIEW: 53, DEPRECATED: 4, RETIRED: 0, PENDING: 0 } } as const;
@@ -149,8 +151,27 @@ export function checkRefdb(dir: string = REFDB_DIR, seedLinks: string | null = S
   return { errors, summary };
 }
 
+/**
+ * 원본 엑셀을 다시 가져와 커밋된 발행 폴더와 대조 — 가져오기 도구나 이전본을 한쪽만 고치면 잡는다.
+ * 엑셀이 manifest의 원본(sha256)과 다르면 비교하지 않고 그 사실을 오류로 낸다.
+ */
+export function reimportRefdb(xlsx: string = REFDB_SOURCE_XLSX, dir: string = REFDB_DIR): RefdbCheck {
+  if (!existsSync(xlsx)) return { errors: [`Feature DB 원본 엑셀 사본 없음: ${xlsx}`], summary: '' };
+  const manifest = JSON.parse(lf(readFileSync(join(dir, 'manifest.json'), 'utf8')));
+  const buf = readFileSync(xlsx);
+  if (sha256(buf) !== manifest.source?.sha256) return { errors: [`Feature DB 원본 엑셀 사본의 해시가 manifest.source와 다름 — 다른 판의 엑셀`], summary: '' };
+  const texts = renderFiles(importWorkbook(buf), manifest.source.file);
+  const errors = Object.entries(texts)
+    .filter(([name, text]) => !existsSync(join(dir, name)) || lf(readFileSync(join(dir, name), 'utf8')) !== text)
+    .map(([name]) => `Feature DB ${name}: 원본 엑셀을 다시 가져온 결과와 다름(npm run refdb:import -- ${xlsx} --force로 다시 이전하거나 가져오기 도구를 확인)`);
+  return { errors, summary: `다시 가져오기 ${Object.keys(texts).length}개 파일 일치` };
+}
+
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  const { errors, summary } = checkRefdb();
+  const checked = checkRefdb();
+  const again = reimportRefdb();
+  const errors = [...checked.errors, ...again.errors];
+  const summary = `${checked.summary} · ${again.summary}`;
   console.log('refdb:check');
   if (errors.length) {
     for (const e of errors.slice(0, 50)) console.error('  ✕ ' + e);

@@ -18,7 +18,10 @@ import { DB, type Db } from '../../src/kernel/db';
 import { bootApp } from '../helpers';
 
 const MISSING = ['FEAT-00022', 'FEAT-00023', 'FEAT-00025', 'FEAT-00026', 'FEAT-00028', 'FEAT-00029', 'FEAT-00031', 'FEAT-00032'];
-const seedLinks = JSON.parse(readFileSync(REFDB_SEED_LINKS, 'utf8')) as { links: Record<string, { refId: string; role: string }[]> };
+const seedLinks = JSON.parse(readFileSync(REFDB_SEED_LINKS, 'utf8')) as {
+  links: Record<string, { refId: string; role: string }[]>;
+  asilDeviation: Record<string, { from: string; to: string; reason: string }>;
+};
 
 /** FF_SEED·FF_DB를 직접 고른 부팅(bootApp은 v0.81 메모리 DB 고정) */
 async function boot(env: { FF_SEED: string; FF_DB: string; FF_REFDB_SEED?: string }) {
@@ -85,6 +88,28 @@ describe('Feature DB 시드 — 데모(FF_SEED v0.81)', () => {
     expect(Object.keys(seedLinks.links)).toHaveLength(60);
     expect(versions).toBe(72);
     expect(db.get<{ n: number }>('SELECT count(DISTINCT feature_id) AS n FROM feature_ref_link')!.n).toBe(60);
+  });
+
+  it('대표 행과 ASIL이 다른 시드 Feature 23개(31개 버전)는 대응표의 ASIL 사유를 doc.asilDeviation으로 받는다 — 같은 버전은 사유 없음', () => {
+    let deviated = 0;
+    for (const [featureId, links] of Object.entries(seedLinks.links)) {
+      const rep = repo.getRef(links.find((l) => l.role === 'PRIMARY')!.refId)!.asilRep;
+      const dev = seedLinks.asilDeviation[featureId];
+      for (const v of repo.featureVersionDocs(featureId)) {
+        const doc = FeatureVersionRow.parse(JSON.parse(v.doc));
+        if (doc.asil === rep) expect(doc.asilDeviation, `${featureId}@${v.version}`).toBeUndefined();
+        else {
+          expect(doc.asilDeviation, `${featureId}@${v.version}`).toEqual({ from: rep, to: doc.asil, reason: dev.reason });
+          deviated++;
+        }
+      }
+    }
+    expect(Object.keys(seedLinks.asilDeviation)).toHaveLength(23);
+    expect(deviated).toBe(31);
+    // 예: 스마트 크루즈 컨트롤 — 시드 C, ACC 대표 B, 같은 ASIL의 같은 기능 행이 없어 사유 기록
+    const scc = FeatureVersionRow.parse(JSON.parse(repo.featureVersionDocs('FEAT-00005')[0].doc));
+    expect(scc.asilDeviation).toMatchObject({ from: 'B', to: 'C' });
+    expect(scc.asilDeviation!.reason).toContain('HARA');
   });
 
   it("대응표에 없는 8개는 연결을 지어내지 않고 '확인 필요'(사유·후보)로 남긴다", async () => {

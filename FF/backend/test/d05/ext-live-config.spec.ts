@@ -24,6 +24,7 @@ const JIRA_OK = {
   JIRA_FIELD_TRIM: 'customfield_10103',
   JIRA_FIELD_ASIL: 'customfield_10104',
   JIRA_FIELD_OWNER: 'customfield_10105',
+  JIRA_FIELD_FEATURE_DB: 'customfield_10106',
 };
 
 describe('외부 연계 실제 연결 — 시작 검사', () => {

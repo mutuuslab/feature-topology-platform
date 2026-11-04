@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { checkRefdb, REFDB_DIR } from './check.ts';
+import { checkRefdb, REFDB_DIR, REFDB_SOURCE_XLSX, reimportRefdb } from './check.ts';
+import { FF } from '../lib.ts';
 import { cmpId, excelDate, serialize, sha256 } from './import-lib.ts';
 
 /** v1.3 폴더를 임시 폴더로 복사해 refs.json을 고치고, manifest 해시는 맞춰 둔다(해시가 아니라 내용 점검이 잡는지 보려고) */
@@ -90,4 +91,22 @@ test('가져오기 보조 — 숫자를 수로 비교하는 ID 정렬·엑셀 �
   assert.equal(excelDate('46285'), '2026-09-20');
   assert.equal(excelDate('2026-09-29'), '2026-09-29');
   assert.equal(excelDate(''), null);
+});
+
+test('원본 엑셀 사본을 다시 가져오면 커밋된 v1.3과 같고, 이전본을 한쪽만 고치면 잡는다', () => {
+  assert.deepEqual(reimportRefdb().errors, []);
+  const { dir, cleanup } = mutated((refs) => { refs[0].nameKo += ' (손 수정)'; });
+  try {
+    assert.deepEqual(reimportRefdb(REFDB_SOURCE_XLSX, dir).errors.map((e) => e.split(':')[0]), ['Feature DB refs.json', 'Feature DB manifest.json']);
+  } finally {
+    cleanup();
+  }
+});
+
+test('배포 묶음(Docker 이미지·데스크톱 런타임)에 Feature DB 이전본이 들어간다', () => {
+  // 회귀: data/reference를 복사하지 않아 고객 설치 첫 기동의 Feature DB 시드가 NO_DATA로 건너뛰어졌다(2026-11-04 병합 점검)
+  const docker = readFileSync(join(FF, 'docker', 'app', 'Dockerfile'), 'utf8');
+  assert.match(docker, /^COPY data\/reference \.\/data\/reference$/m);
+  const desktop = readFileSync(join(FF, 'tools', 'desktop-prepare.mjs'), 'utf8');
+  assert.match(desktop, /cpSync\(join\(root, 'data', 'reference'\), join\(runtime, 'data', 'reference'\)/);
 });

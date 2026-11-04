@@ -18,7 +18,10 @@ export const LOAD_DIR = join(FF, '.sim', 'load');
 function cacheKey(name: ProfileName): string {
   const h = createHash('sha256');
   for (const f of [join(FF, 'backend', 'src', 'kernel', 'migrations.ts'), join(FF, 'tools', 'load', 'seed.ts')]) h.update(readFileSync(f));
-  for (const dir of [join(FF, 'data', 'fixtures', 'v0.81'), join(FF, 'data', 'fixtures', 'demo')]) for (const f of readdirSync(dir).sort()) h.update(f).update(readFileSync(join(dir, f)));
+  // Feature DB 이전본·시드 연결도 첫 기동 때 DB에 들어간다(30-95 §9) — 바뀌면 캐시를 새로 만든다
+  const refdb = join(FF, 'data', 'reference', 'feature-db');
+  for (const dir of [join(FF, 'data', 'fixtures', 'v0.81'), join(FF, 'data', 'fixtures', 'demo'), join(refdb, 'v1.3')]) for (const f of readdirSync(dir).sort()) h.update(f).update(readFileSync(join(dir, f)));
+  h.update(readFileSync(join(refdb, 'seed-links.json')));
   // 데이터 크기만(요청 수·동시성·예산 배수는 DB와 무관)
   const { features, vehicles, audit, events, notifications, deliveries, statusReports } = PROFILES[name];
   h.update(JSON.stringify({ features, vehicles, audit, events, notifications, deliveries, statusReports }));
@@ -37,6 +40,9 @@ export const SEED_ENV = {
   CARLA_RUNNER: join(FF, 'backend', 'test', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'),
 };
 
+/** 본이 될 Feature 등록 본문 — 등록은 Feature DB 대표 기준 행 연결이 필수(30-95 D-REF-3). 대표 행은 같은 ASIL(QM)·ACTIVE라 차이 사유가 없다 */
+export const BASE_FEATURE = { name: '부하 시험 본 Feature', description: '복제 본', requirementIds: ['REQ-LOAD-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'], featureRefs: [{ refId: 'AD-ADS-004', role: 'PRIMARY' }] };
+
 const H = (id: string, role: string) => ({ 'x-actor-id': id, 'x-actor-role': role, 'content-type': 'application/json' });
 
 /** 1단계 — 실제 앱으로 시드와 본이 될 기록을 만든다 */
@@ -53,7 +59,7 @@ async function boot(dbFile: string) {
     return r.json() as Promise<any>;
   };
   const author = H('usr-author', 'FEATURE_AUTHOR');
-  await call('POST', '/api/features', author, { name: '부하 시험 본 Feature', description: '복제 본', requirementIds: ['REQ-LOAD-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] });
+  await call('POST', '/api/features', author, BASE_FEATURE);
   // 긴급 차단 요청 → 2인 승인(발행) — 이벤트·알림·감사·게시본·전달함(당겨받기)의 본
   const k = await call('POST', '/api/kill-requests', H('usr-ops', 'OPERATOR'), { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01', 'lead-01'], reason: '부하 시험 본 차단', confirm: 'FEAT-00022', reasonCategory: 'SAFETY', reasonCode: 'FIELD_FAULT', containmentJustification: '원인 분석 전 봉쇄' });
   await call('POST', `/api/kill-requests/${k.killId}/approvals`, H('usr-safety', 'SAFETY_OFFICER'), {});

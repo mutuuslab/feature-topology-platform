@@ -2,8 +2,8 @@
 id: ARC-FEATURE-REFDB
 type: entity
 title: "Feature DB — Feature 등록 정보 원천 (엑셀 03_FeatureDB 이전)"
-status: draft
-version: 0.1.0
+status: implemented
+version: 0.2.0
 owner: feature-architect
 standards: [ISO-26262, COCOMO-II, COVESA-VSS, AUTOSAR]
 traces:
@@ -40,6 +40,12 @@ FF Feature(국가·차종·트림 범위, 버전·수명주기)는 등록할 때
 | D-REF-9 | 도메인 10·클러스터·컴포넌트 69를 **FF 공식 분류**로, ECU.domain도 이 분류로 정리 | §4 |
 | D-REF-10 | JIRA Epic 자동 등록: 지정 필드에 기준 ID가 없으면 **보류**(현행 거부 방식) | §7 |
 | D-REF-11 | 기존 엑셀 산정 도구는 **FF가 대체**, 엑셀은 내보내기만 | `20-94` |
+| D-REF-12 | `03b` 상세 정의는 기준 행 `definition`으로 이전, `13` 세부기능 후보는 읽기 전용 참고 (R-2) | §5.1·§5.5 |
+| D-REF-13 | 같은 범위·같은 대표 행 중복은 409, 사유 입력 시 허용 (R-3) | §6.2 |
+| D-REF-14 | 런타임 xlsx는 **새 의존성 없는 최소 쓰기**(`backend/src/kernel/xlsx-write.ts`) (R-4) — 처음엔 SheetJS 백엔드 의존성으로 정했다가 구현 뒤 다시 결정(2026-11-04 사용자) | §10 |
+| D-REF-15 | FF Feature ID를 **도메인 포함 형식으로 변경** (R-5) — 형식·기존 ID 처리는 `80-50` §11 A-2 | §3 |
+| D-REF-16 | JIRA Epic의 기준 ID·범위는 **JIRA 안의 FF 앱**이 사용자 필드에 기록 (R-6) | §7, `80-50` §4.7 |
+| D-REF-17 | **R1·R2 구현 승인**(2026-11-04) | §13 |
 
 ## 3. 지금 FF와의 차이 (2026-11-04, `feat/prod-readiness` 5d2a316 기준)
 
@@ -52,7 +58,7 @@ FF Feature(국가·차종·트림 범위, 버전·수명주기)는 등록할 때
 | xlsx | 오프라인 `data:import`(DATASET v0.81 → fixture) | 같은 방식으로 `refdb:import` 1회 이전 |
 | ID | `FEAT-\d{5}` | 그대로. 기준 행은 엑셀 ID(`BC-BCM-001`) 유지 |
 
-`30-90`이 정한 `FEAT-{DOMAIN}-{NNN}`은 이번에 맞추지 않는다(별도 결정 필요 시 §12).
+Feature ID는 도메인 포함 형식으로 바꾼다(D-REF-15). 대표 기준 행의 도메인 약어를 쓴다 — 기본안 `FEAT-BC-0001`, 기존 `FEAT-00001`은 유지(두 형식 허용). 확정은 `80-50` §11 A-2.
 
 ## 4. 분류 체계 (D-REF-9)
 
@@ -87,7 +93,7 @@ FF Feature(국가·차종·트림 범위, 버전·수명주기)는 등록할 때
 | 근거 | `sourceIds[]`(Y → `ref_source`), `sourceDetail`(Z), `remark`(AA), `basisType`(AB) | 1차 출처 없으면 상태 `REVIEW` |
 | 관계 | `duplicateOf`(BJ), `requires[]`(BL 선행, AND), `excludes[]`(UVL 교차 제약) | §5.4 |
 | 조달 | `procurement`(BS), `swPackage`(BT), `licenseItem`(BU), `billing`(BV) | 초기 분류, 수정 가능 |
-| 정의(03b) | `definition`{`level` ①, `parentRefId` ②, `summary` ③, `trigger` ④, `scopeIn[]` ⑤, `scopeOut[]` ⑥, `scopeOutRefs[]` ⑦, `io`{entry,exit,read,write} ⑧~⑪, `drivers`{states,dtcs,calibrations,variants} ⑫~⑮, `regulations` ⑯, `verification` ⑰, `typicalChanges` ⑱, `sharedFunctions` ⑳, `authoringStatus`} | 116행(파일럿)만 값 있음, 나머지 빈 값 |
+| 정의(03b) | `definition`{`level` ①, `parentRefId` ②, `summary` ③, `trigger` ④, `scopeIn[]` ⑤, `scopeOut[]` ⑥, `scopeOutRefs[]` ⑦, `io`{entry,exit,read,write} ⑧~⑪, `drivers`{states,dtcs,calibrations,variants} ⑫~⑮, `regulations` ⑯, `verification` ⑰, `typicalChanges` ⑱, `sharedFunctions` ⑳, `authoringStatus`} | 24행(파일럿 작성분)만 값 있음, 나머지 빈 값 |
 | 메모 | `adminMemo`(BR) | 변경 요청 번호 함께 |
 
 **옮기지 않는 열** — 과제 입력(AF~AQ: 선택 수량·변경 유형·적용 ASIL·변형 수·m/o/p 직접 입력·우선순위·기존 보유·실적 공수·검토 상태·담당 메모), 자동 계산(AR~BI, BM, BW), 견적 입력(BN)은 **산정 과제의 줄**(`20-94` §5)로 간다. 파생 값(M·T·U·BH·BW)은 저장하지 않고 규칙(`contracts/src/rules/cost/`)으로 계산한다. 엑셀의 예시 과제 입력은 산정 기준값 시험 고정 자료로만 쓴다.
@@ -191,8 +197,10 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 
 ## 7. JIRA Epic 자동 등록 (D-REF-10)
 
-- `EpicScope`(`contracts/src/rules/ext-sync.ts`)에 `refIds`(대표 1 + 포함 N)를 더한다. 읽는 곳: JIRA 라벨 `ref:CH-BRK-009`(대표는 `ref-primary:` 접두) 또는 사용자 필드 `FF Feature Ref`(설정 `FF_JIRA_REF_FIELD`).
-- 기준 ID가 없거나, 없는 ID이거나, `RETIRED`면 지금 거부 방식 그대로 **REJECTED + JIRA 댓글**("기준 기능 ID를 라벨 `ref:` 또는 필드에 넣어 주세요").
+- `EpicScope`(`contracts/src/rules/ext-sync.ts`)에 `refIds`(대표 1 + 포함 N)를 더한다. 값은 **JIRA 안의 FF 앱**(D-REF-16, `80-50` §4.7)이 Epic 사용자 필드 `FF Feature DB`에 기록한다. 앱 밖에서 직접 고친 값은 되돌린다.
+- 구현: 필드 ID는 `JIRA_FIELD_FEATURE_DB`(다른 `JIRA_FIELD_*`와 같은 규칙, Epic 자동 등록이 켜져 있으면 live 필수 — `ext:check`가 후보를 제안). 필드에 값이 있으면 필드만 쓰고(첫 값이 대표), 비었을 때만 라벨 `ref-primary:`·`ref:`을 읽는다(앱이 아직 없는 모의·시험용).
+- 기준 ID가 없거나, 없는 ID이거나, `RETIRED`면 지금 거부 방식 그대로 **REJECTED + JIRA 댓글**("FF 패널에서 Feature DB와 범위를 고르세요").
+- JIRA 연계 전체(Epic = Feature, 필드 주인, 대사)는 `80-50`이 정본이다.
 - `PENDING` 행 요청은 JIRA에서 만들 수 없다(사람이 화면에서 요청).
 - `featureFromEpic`(`ext-sync.service.ts`) 시험에 연결 성공·보류·폐기 행 3경우를 더한다.
 
@@ -236,14 +244,16 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 
 - 스크립트 `npm run refdb:import -- <xlsx>` (`tools/refdb/import.ts`, 기존 `tools/xlsx.ts` 읽기 재사용 또는 개발 의존성 SheetJS). 엑셀은 **계산값이 저장된 파일**이어야 한다(Excel에서 저장).
 - 출력: `data/reference/feature-db/v1.3/{refs,sources,glossary,subfunctions,taxonomy}.json` + `manifest.json`(원본 SHA-256·행 수·발행 버전 `v1.3`).
-- 고객사별 단독 설치(D-RD-1): 빈 DB 첫 기동 때 시드가 이 JSON을 `v1.3 (엑셀 가져옴)` 발행으로 넣는다. 그 뒤로는 변경 요청으로만 바뀐다. 스크립트는 다시 실행해도 이미 원천이 FF인 설치에는 쓰지 않는다(빈 DB에만).
-- **이전 점검**(`data:check`에 추가): 1,052행, ID 유일, 필수 정보 누락 0, 상태 수 995/53/4, 출처 ID가 모두 `ref_source`에 있음, 도메인 10·컴포넌트 69, `03b` 116행의 Feature ID가 모두 존재, 파생 값(T·U·BW)을 규칙으로 다시 계산해 엑셀 저장값과 일치.
+- 고객사별 단독 설치(D-RD-1): 빈 DB 첫 기동 때 시드가 이 JSON을 `v1.3 (엑셀 가져옴)` 발행으로 넣는다(데모 시드 `FF_SEED=none`이어도 넣는다, `FF_REFDB_SEED=off`면 빈 Feature DB로 시작). Docker 이미지와 데스크톱 런타임이 `data/reference`를 함께 싣는다. 그 뒤로는 변경 요청으로만 바뀐다. 스크립트는 다시 실행해도 이미 원천이 FF인 설치에는 쓰지 않는다(빈 DB에만).
+- 원본 엑셀 사본은 `data/source/feature_db_v1.3.xlsx`(SHA-256이 `manifest.source`와 같음). `data:check`·`refdb:check`가 이 사본을 다시 가져와 7개 파일이 바이트 단위로 같은지 대조한다.
+- **이전 점검**(`data:check`에 추가): 1,052행, ID 유일, 필수 정보 누락 0, 상태 수 995/53/4, 출처 ID가 모두 `ref_source`에 있음, 도메인 10·컴포넌트 69, `03b` 작성 24행의 Feature ID가 모두 존재, 파생 값(T·U·BW)을 규칙으로 다시 계산해 엑셀 저장값과 일치.
 - 데모·시드 Feature 68개(`data/fixtures/v0.81`)는 대응표 `data/reference/feature-db/seed-links.json`으로 기준 행에 연결한다. 대응이 없는 시드는 `_missing.featureRefs`로 표시(지금 `_missing` 관례) — 시드는 필수 연결 검사에서 예외가 아니라 대응표로 채우는 것이 목표이고, 남은 것은 목록으로 사용자 확인.
 
 ## 10. 내보내기
 
 - `GET /api/refdb/export?format=xlsx&release=v1.4` — `03_FeatureDB` 마스터 열 순서(A~AE, BJ~BL, BO~BV)와 같은 시트 + `09_출처`. 금액 열(O 벤치마크 €)은 산정 역할에만 포함.
-- 런타임 xlsx 쓰기: SheetJS는 지금 **루트 개발 의존성**이다. 백엔드에서 쓰려면 (a) 백엔드 의존성으로 옮기거나 (b) `tools/xlsx.ts`에 최소 쓰기(SpreadsheetML + 무압축 zip)를 더한다. **추천 (b)** — 새 런타임 의존성 없음. (§12 확인 항목)
+- 런타임 xlsx 쓰기(D-REF-14): 새 런타임 의존성 없는 최소 쓰기 `backend/src/kernel/xlsx-write.ts` — SpreadsheetML + 무압축 zip, 같은 입력이면 같은 바이트, 머리글 굵게·틀 고정, 셀 32,767자 넘으면 거부. 시험은 `tools/xlsx.ts` 읽기로 왕복 확인한다. SheetJS는 지금처럼 가져오기(개발 의존성)에만 쓴다.
+- 개발비 산정 결과 내보내기(20-94 D-COST-13, 엑셀 도구 전체 양식 — 서식·여러 시트)가 최소 쓰기로 모자라면 그때 SheetJS 백엔드 의존성을 다시 검토한다.
 
 ## 11. 하네스·시험
 
@@ -262,11 +272,11 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 | # | 질문 | 제 기본값 |
 |---|---|---|
 | R-1 | 화면 이름 — FF에서 "카탈로그"는 판매 상품(product)을 뜻한다 | **결정(2026-11-04 사용자): "Feature DB"** — 메뉴도 같은 이름(기준 정보 묶음) |
-| R-2 | `03b` 상세 정의와 `13` 세부기능 후보 840개 범위 | `03b`는 기준 행 `definition`으로 이전, `13`은 읽기 전용 참고 |
-| R-3 | 같은 범위 같은 대표 행 중복 | 409 + 사유 입력 시 허용 |
-| R-4 | 런타임 xlsx 내보내기 방식 | `tools/xlsx.ts` 최소 쓰기(새 의존성 없음) |
-| R-5 | `30-90`의 `FEAT-{DOMAIN}-{NNN}` 정리 | 이번엔 손대지 않음 |
-| R-6 | JIRA 기준 ID 전달 방법 | 라벨 `ref:` 우선, 사용자 필드는 설정 시 |
+| R-2 | `03b` 상세 정의와 `13` 세부기능 후보 840개 범위 | **결정: 추천대로** — D-REF-12 |
+| R-3 | 같은 범위 같은 대표 행 중복 | **결정: 409 + 사유 입력 시 허용** — D-REF-13 |
+| R-4 | 런타임 xlsx 내보내기 방식 | **결정: 새 의존성 없는 최소 쓰기**(구현 뒤 2026-11-04 다시 결정) — D-REF-14 |
+| R-5 | `30-90`의 `FEAT-{DOMAIN}-{NNN}` 정리 | **결정: 도메인 포함으로 변경** — D-REF-15, 형식은 `80-50` A-2 |
+| R-6 | JIRA 기준 ID 전달 방법 | **결정: JIRA 안의 FF 앱** — D-REF-16 |
 
 ## 13. 단계
 
@@ -275,5 +285,13 @@ SQLite 전용 구문을 새로 쓰면 PG 방언 번역 규칙과 `pg-dialect.spe
 | R1 | 분류·기준 행 표, 1회 이전 스크립트, 읽기 API·Feature DB 화면(목록·검색·상세·품질 지표) | `data:check` 이전 점검 통과 |
 | R2 | 등록 2단계·연결 필수·미리 채움·요청 행·APPROVED 막힘·JIRA·ECU 도메인 대응·시드 연결 | registry·ext-sync 시험, e2e |
 | R3 | 변경 요청·도메인 검토·발행·영향 표시·정기 점검 알림·xlsx 내보내기 | 직무 분리·발행 해시 시험 |
+
+### 13.1 구현 기록 (2026-11-04, `feat/feature-db`)
+
+- R1~R3 구현 완료. 두 세션 구현(`feat/feature-db-alm` R1·R2 백엔드)을 병합해 하나로 정리했다 — 겹치는 구현은 `feat/feature-db` 기준, 결정(D-REF-12~17)·JIRA 필드·배포 묶음·원본 엑셀 대조는 옮겨 담았다.
+- 업무 절차: FPW.1-A06(추가 요청)·FPW.14(Feature DB 운영), 역할 R-RDA(`REFDB_ADMIN`)·R-DRV(`DOMAIN_REVIEWER`), 직무 분리 SOD-13(요청자≠승인자)·SOD-14(요청자≠검토자).
+- 하네스: `backend/test/d01/refdb-harness.spec.ts`(시드·연결·상태·감사·문서 수치 정합), `tools/refdb/check.test.ts`(이전 점검·다시 가져오기·배포 묶음), e2e `refdb.spec.ts`.
+- 남은 것: D-REF-15(Feature ID 도메인 포함 형식 — `80-50` A-2 확정 뒤).
+- 시드 ASIL 차이(2026-11-04 사용자 결정 "대표 기준 행 다시 고르기"): 6개 기능명(23개 Feature·31개 Version) 모두 같은 ASIL의 맞는 기준 행이 없어 대표 행을 유지하고 사유를 `seed-links.json` `asilDeviation`(from 대표 ASIL·to 시드 ASIL·사유)으로 기록했다. 하네스 고정 목록 0건 — 새 불일치는 실패. 더 나은 해결은 ASIL C 기준 행 변형을 추가 요청(D-REF-7)하는 것. 확인 권장: 차로 유지 보조를 LFA(AD-LAT-004, C)로 볼지, AR HUD는 A→QM 하향이라 기능안전 확인.
 
 각 단계는 `npm run verify` 통과, UI 변경은 `verify:full`(시각 기준)까지.

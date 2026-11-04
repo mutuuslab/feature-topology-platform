@@ -115,7 +115,8 @@ export const EpicScope = z
     ownerId: z.string().trim().min(1).max(100),
     /**
      * 기준 기능(Feature DB) ID — 첫 값이 대표(PRIMARY), 나머지는 포함(INCLUDED)(30-95 §7, D-REF-10).
-     * JIRA 라벨 `ref-primary:CH-BRK-009`(대표)·`ref:CH-BRK-006`(포함) 또는 사용자 필드(FF_JIRA_REF_FIELD)에서 읽는다.
+     * JIRA 안의 FF 앱이 쓰는 사용자 필드(JIRA_FIELD_FEATURE_DB, D-REF-16)가 기준이고, 필드가 비었을 때만
+     * 라벨 `ref-primary:CH-BRK-009`(대표)·`ref:CH-BRK-006`(포함)을 읽는다.
      * 빠졌거나 없는·폐기 ID면 등록하지 않고(REJECTED) Epic 댓글로 알린다. 요청 중(PENDING) 행은 JIRA에서 쓸 수 없다.
      */
     refIds: z.array(RefId).min(1).max(20),
@@ -204,6 +205,7 @@ export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
     { key: 'JIRA_FIELD_TRIM', what: 'Epic 사용자 정의 필드 ID — 트림', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_ASIL', what: 'Epic 사용자 정의 필드 ID — ASIL', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_OWNER', what: 'Epic 사용자 정의 필드 ID — 담당 조직', required: 'epic-autocreate' },
+    { key: 'JIRA_FIELD_FEATURE_DB', what: 'Epic 사용자 정의 필드 ID — Feature DB 기준 ID(대표 먼저, JIRA 안의 FF 앱이 기록)', required: 'epic-autocreate' },
     { key: 'JIRA_EPIC_STATUS', what: 'Epic 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
     { key: 'JIRA_CR_STATUS', what: 'CR 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
   ],

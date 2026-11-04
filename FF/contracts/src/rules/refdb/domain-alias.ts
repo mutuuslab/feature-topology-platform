@@ -16,7 +16,8 @@ export const OFFICIAL_DOMAINS = [
   { abbr: 'BE', name: 'Back-end & Cloud' },
 ] as const;
 export type OfficialDomain = (typeof OFFICIAL_DOMAINS)[number]['name'];
-export const OFFICIAL_DOMAIN_NAMES: readonly OfficialDomain[] = OFFICIAL_DOMAINS.map((d) => d.name);
+// 첫 화면 묶음 밖에 두려고 순수 표시(Feature DB 화면만 쓴다, harness/budgets.json)
+export const OFFICIAL_DOMAIN_NAMES: readonly OfficialDomain[] = /* @__PURE__ */ OFFICIAL_DOMAINS.map((d) => d.name);
 
 export const domainAbbrOf = (name: string): string | undefined => OFFICIAL_DOMAINS.find((d) => d.name === name)?.abbr;
 export const domainOfAbbr = (abbr: string): OfficialDomain | undefined => OFFICIAL_DOMAINS.find((d) => d.abbr === abbr)?.name;

@@ -3,7 +3,7 @@
 //  (b) IAM 권한표(rolesView)에서 Feature DB 관리자·도메인 검토자의 Feature DB 쓰기 권한이 정확히 정해진 묶음이다.
 //  (c) 직무 분리 SOD-13·14가 규칙표에 있다 — 서버 강제(403·감사 DENIED)는 refdb-change.spec.ts가 본다.
 //  (d) 시드 데이터 — 기준 행 수 = manifest 행 수, 대응표 refId 실재, 연결된 시드 Feature의 ASIL = 대표 행 대표 ASIL 또는 asilDeviation 사유.
-//      (d)의 ASIL 불일치는 데이터를 고치지 않고 목록으로 고정해 보고한다 — 새 불일치가 생기면 실패한다.
+//      (d)의 ASIL 불일치는 0건이어야 한다 — 사유는 from·to가 대표 행 대표 ASIL·버전 ASIL과 맞아야 인정한다.
 import { INestApplication, RequestMethod } from '@nestjs/common';
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum';
@@ -21,42 +21,11 @@ const REFDB_ROUTES = ROUTES.filter((r) => r.path.startsWith('/api/refdb'));
 const manifest = JSON.parse(readFileSync(join(REFDB_SEED_DIR, 'manifest.json'), 'utf8')) as { files: Record<string, { rows: number }> };
 const seedLinks = JSON.parse(readFileSync(REFDB_SEED_LINKS, 'utf8')) as { links: Record<string, { refId: string; role: string }[]> };
 
-/** 대응표 연결 Feature 중 ASIL이 대표 행 대표 ASIL과 다르고 asilDeviation 사유도 없는 버전 — 데이터 확인 대상(보고용, 고치지 않음) */
-// 2026-11-04 시드 v0.81 기준 31건(Feature 23개) — 시드 ASIL이 대표 행보다 높음(C ≠ B·A·QM) 또는 낮음(QM ≠ A, IN-CLU-012).
-// 시드 픽스처에 asilDeviation 사유를 채울지, 대응표 대표 행을 바꿀지는 데이터 담당 결정(PROGRESS 보고) — 고치면 이 목록에서 지운다.
-const KNOWN_ASIL_MISMATCH: string[] = [
-  'FEAT-00002@1.5.0 asil C ≠ AD-LON-016 B',
-  'FEAT-00002@1.6.0 asil C ≠ AD-LON-016 B',
-  'FEAT-00005@5.4.2 asil C ≠ AD-LON-002 B',
-  'FEAT-00005@5.5.0 asil C ≠ AD-LON-002 B',
-  'FEAT-00010@2.0.0 asil C ≠ AD-DMS-003 A',
-  'FEAT-00014@1.0.0 asil QM ≠ IN-CLU-012 A',
-  'FEAT-00015@1.2.0 asil C ≠ AD-LON-005 QM',
-  'FEAT-00060@2.0.0 asil C ≠ AD-DMS-003 A',
-  'FEAT-00061@2.0.0 asil C ≠ AD-DMS-003 A',
-  'FEAT-00062@2.0.0 asil C ≠ AD-DMS-003 A',
-  'FEAT-00065@1.2.0 asil C ≠ AD-LON-005 QM',
-  'FEAT-00066@1.2.0 asil C ≠ AD-LON-005 QM',
-  'FEAT-00067@1.2.0 asil C ≠ AD-LON-005 QM',
-  'FEAT-00084@5.4.2 asil C ≠ AD-LON-002 B',
-  'FEAT-00084@5.5.0 asil C ≠ AD-LON-002 B',
-  'FEAT-00098@1.0.0 asil QM ≠ IN-CLU-012 A',
-  'FEAT-00100@1.0.0 asil QM ≠ IN-CLU-012 A',
-  'FEAT-00145@5.4.2 asil C ≠ AD-LON-002 B',
-  'FEAT-00145@5.5.0 asil C ≠ AD-LON-002 B',
-  'FEAT-00150@5.4.2 asil C ≠ AD-LON-002 B',
-  'FEAT-00150@5.5.0 asil C ≠ AD-LON-002 B',
-  'FEAT-00163@3.7.0 asil C ≠ AD-LAT-002 B',
-  'FEAT-00163@3.8.0 asil C ≠ AD-LAT-002 B',
-  'FEAT-00175@1.0.0 asil QM ≠ IN-CLU-012 A',
-  'FEAT-00176@1.0.0 asil QM ≠ IN-CLU-012 A',
-  'FEAT-00177@1.0.0 asil QM ≠ IN-CLU-012 A',
-  'FEAT-00178@1.0.0 asil QM ≠ IN-CLU-012 A',
-  'FEAT-00183@5.4.2 asil C ≠ AD-LON-002 B',
-  'FEAT-00183@5.5.0 asil C ≠ AD-LON-002 B',
-  'FEAT-00185@5.4.2 asil C ≠ AD-LON-002 B',
-  'FEAT-00185@5.5.0 asil C ≠ AD-LON-002 B',
-];
+/** 대응표 연결 Feature 중 ASIL이 대표 행 대표 ASIL과 다르고 asilDeviation 사유도 없는 버전 — 비어 있어야 한다 */
+// 2026-11-04 시드 v0.81 기준 31건(Feature 23개)이 있었으나 같은 날 사용자 결정("대표 기준 행 다시 고르기")으로 모두 정리했다 —
+// 같은 ASIL의 같은 기능 행이 있으면 대표를 바꾸고, 없으면 대표를 그대로 두고 사유를 기록(tools/refdb/seed-links.ts asilDeviationReason → 시드 doc.asilDeviation).
+// 새 불일치(대응표·픽스처·기준 행 대표 ASIL 변경)는 이 목록에 넣지 말고 같은 방식으로 정리한다 — 생기면 실패한다.
+const KNOWN_ASIL_MISMATCH: string[] = [];
 
 const METHOD: Record<number, RouteDef['method']> = { [RequestMethod.GET]: 'GET', [RequestMethod.POST]: 'POST', [RequestMethod.PUT]: 'PUT', [RequestMethod.PATCH]: 'PATCH', [RequestMethod.DELETE]: 'DELETE' };
 const join2 = (a: string, b: string) => ('/' + [a, b].map((s) => s.replace(/^\/|\/$/g, '')).filter(Boolean).join('/')).replace(/\/+/g, '/');
@@ -177,14 +146,15 @@ describe('Feature DB 하네스 정합', () => {
       expect(dangling).toEqual([]);
     });
 
-    it('연결된 시드 Feature의 ASIL = 대표 행 대표 ASIL, 다르면 asilDeviation 사유 — 불일치는 목록으로 보고(데이터를 고치지 않음)', () => {
+    it('연결된 시드 Feature의 ASIL = 대표 행 대표 ASIL, 다르면 asilDeviation 사유(from·to 일치) — 불일치 0건', () => {
       const mismatch: string[] = [];
       for (const [featureId, ls] of Object.entries(seedLinks.links)) {
         const primary = ls.find((l) => l.role === 'PRIMARY')!;
         const ref = repo.getRef(primary.refId)!;
         for (const v of repo.featureVersionDocs(featureId)) {
           const doc = FeatureVersionRow.parse(JSON.parse(v.doc));
-          if (doc.asil === ref.asilRep || doc.asilDeviation?.reason) continue;
+          const dev = doc.asilDeviation;
+          if (doc.asil === ref.asilRep || (dev?.reason && dev.from === ref.asilRep && dev.to === doc.asil)) continue;
           mismatch.push(`${featureId}@${v.version} asil ${doc.asil} ≠ ${primary.refId} ${ref.asilRep}`);
         }
       }

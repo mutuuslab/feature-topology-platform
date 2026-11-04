@@ -5,8 +5,9 @@
 // 시드 Feature 연결(seed-links.json)은 데모 Feature가 들어갈 때(FF_SEED≠none, 기본 픽스처)만 붙인다.
 // 시드 Feature 68개의 연결은 seed-links.json 대응표로 채운다 — 대응이 없는 8개(_missing)는 연결을 지어내지 않고
 // doc._missing.featureRefs='미입력' + 가져오기 기록(meta)에 사유·후보를 남겨 화면이 '확인 필요'로 보여 준다(품질 지표 needsLink).
+// 시드 ASIL이 대표 행 대표 ASIL과 다른 Feature는 대응표의 asilDeviation(from·to·사유)을 그 ASIL 버전 doc.asilDeviation으로 넣는다(30-95 §6.3).
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { FeatureRefLinks, FeatureRefRow, RefGlossary, RefRelease, RefSource, RefSubfunction, TaxonomyNode, type FeatureRefLink } from '@ff/contracts';
+import { AsilDeviation, FeatureRefLinks, FeatureRefRow, RefGlossary, RefRelease, RefSource, RefSubfunction, TaxonomyNode, type FeatureRefLink } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -36,6 +37,8 @@ const MissingLink = z.object({ name: z.string(), featureRefs: z.string(), candid
 const SeedLinks = z.object({
   refVersion: z.string(),
   links: z.record(z.string(), FeatureRefLinks),
+  /** 같은 ASIL의 같은 기능 행이 없어 대표를 그대로 둔 Feature의 ASIL 사유 — featureId별 */
+  asilDeviation: z.record(z.string(), AsilDeviation).default({}),
   _missing: z.record(z.string(), MissingLink).default({}),
 });
 
@@ -105,7 +108,7 @@ export function seedRefdb(db: Db, repo: RefdbRepository, opts: { at: string; dir
   if (!existsSync(join(dir, 'manifest.json'))) return { seeded: false, skipped: 'NO_DATA' };
   const f = filesOf(dir);
   const links = opts.linksPath && existsSync(opts.linksPath) ? SeedLinks.parse(readJson(opts.linksPath)) : null;
-  const known = new Set(f.refs.map((r) => r.refId));
+  const known = new Map(f.refs.map((r) => [r.refId, r]));
   let linkedVersions = 0;
   const missing: SeedMissingLink[] = [];
   db.tx(() => {
@@ -122,10 +125,15 @@ export function seedRefdb(db: Db, repo: RefdbRepository, opts: { at: string; dir
         const stored: FeatureRefLink[] = ls.map((l) => ({ refId: l.refId, role: l.role, refVersion: l.refVersion }));
         const unknown = stored.filter((l) => !known.has(l.refId));
         if (unknown.length) throw new Error(`seed-links.json ${featureId}: Feature DB에 없는 기준 행 ${unknown.map((l) => l.refId).join(', ')}`);
+        const dev = links.asilDeviation[featureId];
+        const primary = known.get(stored.find((l) => l.role === 'PRIMARY')?.refId ?? '');
+        if (dev && dev.from !== primary?.asilRep) throw new Error(`seed-links.json ${featureId}: ASIL 사유 from ${dev.from} ≠ 대표 행 ${primary?.refId} 대표 ASIL ${primary?.asilRep}`);
         for (const v of repo.featureVersionDocs(featureId)) {
           const doc = JSON.parse(v.doc) as Doc;
           if (linked(doc)) continue; // 이미 연결된 버전은 그대로
-          repo.setFeatureVersionDoc(featureId, v.version, { ...doc, featureRefs: stored });
+          // 사유는 그 ASIL 버전에만 — 대표 ASIL과 같은 버전에 남기면 G2에 거짓 검토 표시가 뜬다
+          const deviation = dev && doc.asil === dev.to && !doc.asilDeviation ? { asilDeviation: dev } : {};
+          repo.setFeatureVersionDoc(featureId, v.version, { ...doc, featureRefs: stored, ...deviation });
           repo.replaceLinks(featureId, v.version, stored);
           linkedVersions++;
         }

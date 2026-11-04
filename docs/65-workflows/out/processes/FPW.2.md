@@ -58,7 +58,7 @@ flowchart LR
 | FPW.2-A06 | TARA 수행 | R CSM · A CSM · C Safety Manager, 아키텍트 · I 요구 Owner | WP-IMPACT-ANALYSIS | WP-TARA | 플랫폼 밖 | FFG-SEC-001 |
 | FPW.2-A03 | SOTIF 분석 갱신 | R 아키텍트 · A Safety Manager · C Feature Owner, 시험 조직 · I 요구 Owner | WP-IMPACT-ANALYSIS | WP-SOTIF-ANALYSIS | 플랫폼 밖 | FFG-SOT-001 |
 | FPW.2-A04 | 형식승인 영향 1차 판단 | R 법규 담당 · A 법규 담당 · C Safety Manager, Feature Owner · I Release Manager | WP-IMPACT-ANALYSIS | WP-HOMOLOGATION-IMPACT | 플랫폼 밖 | FFG-GEN-006 |
-| FPW.2-A05 | G2 HARA 영향 판정 | R Safety Manager · A Safety Manager · C CSM, 법규 담당 · I Feature Owner, 요구 Owner, 품질 조직 | WP-HARA-TARA, WP-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT | WP-G2-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001 |
+| FPW.2-A05 | G2 HARA 영향 판정 | R Safety Manager · A Safety Manager · C CSM, 법규 담당 · I Feature Owner, 요구 Owner, 품질 조직 | WP-HARA-TARA, WP-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT, WP-REF-LINK | WP-G2-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001 |
 
 ### 수행 절차와 완료 기준
 
@@ -108,8 +108,9 @@ flowchart LR
 
 #### FPW.2-A05 G2 HARA 영향 판정
 1. HARA·TARA·SOTIF·형식승인 판단이 모두 현재 Version 기준인지 확인하고, 빠진 것이 있으면 FAIL로 판정한다
-2. 판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다
-3. 판정 결과를 요구 Owner에게 넘겨 안전요구 작성을 시작하게 한다
+2. 등록 때 Feature DB 대표 ASIL을 바꿨다면 그 사유를 HARA에서 평가한 ASIL과 대조해 판정 근거에 남긴다
+3. 판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다
+4. 판정 결과를 요구 Owner에게 넘겨 안전요구 작성을 시작하게 한다
 
 완료 기준:
 - [ ] Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다

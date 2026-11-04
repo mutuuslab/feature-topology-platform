@@ -29,20 +29,20 @@ flowchart LR
     FPW_4_A01["A01 차량 내 감시·안전기제 설계"]
     FPW_4_A03["A03 Flag 정책 작성·검증"]
   end
-  subgraph R_SM["Safety Manager"]
-    FPW_4_A02["A02 플랫폼 도구 신뢰도 분류"]
-  end
   subgraph R_REQ["요구 Owner"]
     FPW_4_A04["A04 정책 승인"]
+  end
+  subgraph R_SM["Safety Manager"]
+    FPW_4_A02["A02 플랫폼 도구 신뢰도 분류"]
   end
   subgraph R_QA["품질 조직"]
     FPW_4_A05{{"A05 G4 설계 독립 검토·판정"}}
   end
   FPW_4_A01 --> FPW_4_A03
-  T_FPW_4_A02(("설계 착수 또는 사용 플랫폼 컴포넌트 변경")) -.-> FPW_4_A02
-  FPW_4_A02 --> FPW_4_A05
   FPW_4_A03 --> FPW_4_A04
   FPW_4_A04 --> FPW_4_A05
+  T_FPW_4_A02(("설계 착수 또는 사용 플랫폼 컴포넌트 변경")) -.-> FPW_4_A02
+  FPW_4_A02 --> FPW_4_A05
 ```
 
 ## 2. 활동
@@ -50,9 +50,9 @@ flowchart LR
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
 | FPW.4-A01 | 차량 내 감시·안전기제 설계 | R 아키텍트 · A 아키텍트 · C Safety Manager, 통합 조직 · I 시험 조직, 요구 Owner | WP-G3-DECISION, WP-SAFETY-REQ | WP-SAFETY-DESIGN | `/master/control-points`, `/trace/design` | FFG-LCY-006, FFG-DEAC-001, FFG-TEL-007, FFG-CLS-002 |
-| FPW.4-A02 | 플랫폼 도구 신뢰도 분류 | R Safety Manager · A Safety Manager · C 아키텍트, CSM · I 품질 조직 | WP-SAFETY-REQ | WP-TCL-RECORD | `/arch/components` | FFG-PLT-013 |
 | FPW.4-A03 | Flag 정책 작성·검증 | R 아키텍트 · A 아키텍트 · C 기준정보 담당, Feature Owner · I 요구 Owner | WP-SAFETY-DESIGN, WP-FEAT-SCOPE | WP-POLICY | `createPolicy`, `updatePolicy`, `validatePolicy`, `/policies/new`, `/policies` | FFG-CLS-002 |
 | FPW.4-A04 | 정책 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager · I 아키텍트, Release Manager | WP-POLICY | WP-POLICY | `decidePolicy`, `/policies/:id` | – |
+| FPW.4-A02 | 플랫폼 도구 신뢰도 분류 | R Safety Manager · A Safety Manager · C 아키텍트, CSM · I 품질 조직 | WP-SAFETY-REQ | WP-TCL-RECORD | `/arch/components` | FFG-PLT-013 |
 | FPW.4-A05 | G4 설계 독립 검토·판정 | R 품질 조직 · A 아키텍트 · C Safety Manager, CSM · I 시험 조직, Feature Owner | WP-SAFETY-DESIGN, WP-TCL-RECORD, WP-POLICY | WP-G4-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001 |
 
 ### 수행 절차와 완료 기준
@@ -66,15 +66,6 @@ flowchart LR
 완료 기준:
 - [ ] 안전요구마다 설계 요소가 연결되었다
 - [ ] 원격 Kill이 안전기제로 쓰인 곳이 없다
-
-#### FPW.4-A02 플랫폼 도구 신뢰도 분류
-- 트리거: 설계 착수 또는 사용 플랫폼 컴포넌트 변경
-1. 이 Feature가 쓰는 플랫폼 컴포넌트마다 오류 출력 유형과 TI·TD를 정해 TCL을 기록한다
-2. TD1은 출력 유형별 검출 수단을 지정할 수 있을 때만 주장하고, 서명 서비스에는 쓰지 않는다
-3. TCL2 이상 컴포넌트의 신뢰도 확보 방법을 Safety Plan에 넣는다
-
-완료 기준:
-- [ ] 사용 컴포넌트 모두에 TCL과 확보 방법이 있다
 
 #### FPW.4-A03 Flag 정책 작성·검증
 1. 대상 규칙·Variant 조건·기본값을 정책으로 작성한다
@@ -91,6 +82,15 @@ flowchart LR
 
 완료 기준:
 - [ ] 승인자가 정책 작성자와 다르고 승인 해시가 최신 개정본과 같다
+
+#### FPW.4-A02 플랫폼 도구 신뢰도 분류
+- 트리거: 설계 착수 또는 사용 플랫폼 컴포넌트 변경
+1. 이 Feature가 쓰는 플랫폼 컴포넌트마다 오류 출력 유형과 TI·TD를 정해 TCL을 기록한다
+2. TD1은 출력 유형별 검출 수단을 지정할 수 있을 때만 주장하고, 서명 서비스에는 쓰지 않는다
+3. TCL2 이상 컴포넌트의 신뢰도 확보 방법을 Safety Plan에 넣는다
+
+완료 기준:
+- [ ] 사용 컴포넌트 모두에 TCL과 확보 방법이 있다
 
 #### FPW.4-A05 G4 설계 독립 검토·판정
 1. 설계·정책·인터페이스가 안전요구를 충족하는지 설계 작성자와 다른 검토자가 확인한다

@@ -13,6 +13,7 @@ traces:
     - WF-FPW-4
     - WF-FPW-6
     - WF-FPW-10
+    - WF-FPW-14
 last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
@@ -54,6 +55,7 @@ last_updated: 2026-11-04
 - FPW.4-A03 Flag 정책 작성·검증 (협의)
 - FPW.6-A01 출시 Baseline 확정 요청 (통보)
 - FPW.10-A07 EOL 프로비저닝 검증 (협의)
+- FPW.14-A04 Feature DB 버전 발행 (통보)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

@@ -150,10 +150,11 @@ process:
       outcomes: [O4]
       rules: [FFG-LCY-001]
       raci: {R: [R-SM], A: R-SM, C: [R-CSM, R-REG], I: [R-FO, R-REQ, R-QA]}
-      inputs: [WP-HARA-TARA, WP-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT]
+      inputs: [WP-HARA-TARA, WP-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT, WP-REF-LINK]
       outputs: [WP-G2-DECISION]
       steps:
         - HARA·TARA·SOTIF·형식승인 판단이 모두 현재 Version 기준인지 확인하고, 빠진 것이 있으면 FAIL로 판정한다
+        - 등록 때 Feature DB 대표 ASIL을 바꿨다면 그 사유를 HARA에서 평가한 ASIL과 대조해 판정 근거에 남긴다
         - 판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다
         - 판정 결과를 요구 Owner에게 넘겨 안전요구 작성을 시작하게 한다
       checks:

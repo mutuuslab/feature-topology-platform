@@ -17,6 +17,7 @@ traces:
     - WF-FPW-11
     - WF-FPW-12
     - WF-FPW-13
+    - WF-FPW-14
     - WF-ROLE-REG
 last_updated: 2026-11-04
 ---
@@ -33,15 +34,15 @@ last_updated: 2026-11-04
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 11 · 책임 10 · 협의 11 · 통보 7 (활동 29개)
+수행 11 · 책임 10 · 협의 12 · 통보 7 (활동 30개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
 | FPW.1-A04 법규 의무 기능 판정 | FPW.1 Feature 등록·분류 | R·A (법규 담당) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 법규 등급 판정 기록 `WP-REG-CLASS` | 플랫폼 밖 | 1차 |
-| FPW.1-A05 G1 등록·분류 판정 | FPW.1 Feature 등록·분류 | C (법규 담당) | Feature 등록 기록 `WP-FEAT-REG`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 법규 등급 판정 기록 `WP-REG-CLASS` → G1 Decision Record `WP-G1-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
+| FPW.1-A05 G1 등록·분류 판정 | FPW.1 Feature 등록·분류 | C (법규 담당) | Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 법규 등급 판정 기록 `WP-REG-CLASS` → G1 Decision Record `WP-G1-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.2-A02 HARA 수행 | FPW.2 HARA·변경 영향 판단 | I (법규 담당) | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` → HARA·TARA 결과 `WP-HARA-TARA` | 플랫폼 밖 | 1차 |
 | FPW.2-A04 형식승인 영향 1차 판단 | FPW.2 HARA·변경 영향 판단 | R·A (법규 담당) | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` → 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT` | 플랫폼 밖 | 1차 |
-| FPW.2-A05 G2 HARA 영향 판정 | FPW.2 HARA·변경 영향 판단 | C (법규 담당) | HARA·TARA 결과 `WP-HARA-TARA`, TARA 결과 `WP-TARA`, SOTIF 분석 `WP-SOTIF-ANALYSIS`, 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT` → G2 Decision Record `WP-G2-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
+| FPW.2-A05 G2 HARA 영향 판정 | FPW.2 HARA·변경 영향 판단 | C (법규 담당) | HARA·TARA 결과 `WP-HARA-TARA`, TARA 결과 `WP-TARA`, SOTIF 분석 `WP-SOTIF-ANALYSIS`, 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT`, Feature DB 기준 행 연결 `WP-REF-LINK` → G2 Decision Record `WP-G2-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.6-A02 출시 Baseline 확정 승인 | FPW.6 서명 배포 | I (법규 담당) | Baseline 확정 요청 `WP-BASELINE-REQ` → 출시 Baseline `WP-RELEASE-BASELINE` | `/baselines` | 1차 |
 | FPW.6-A03 SUMS 기록·형식승인 확인 | FPW.6 서명 배포 | R·A (법규 담당) | 출시 Baseline `WP-RELEASE-BASELINE`, 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT` → SUMS 업데이트 기록 `WP-SUMS-RECORD` | 플랫폼 밖 | 1차 |
 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6 서명 배포 | C (법규 담당) | 서명 배포 패키지 `WP-SIGNED-PACKAGE`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → OTA Gate 판정 기록 `WP-OTA-GATE` | `/features/:id/:ver` | 1차 |
@@ -66,6 +67,7 @@ last_updated: 2026-11-04
 | FPW.13-A02 Compliance Profile 정의 | FPW.13 규정·Compliance Profile 관리 | R·A (법규 담당) | 표준 판 고정 기록(Safety Plan) `WP-STANDARD-EDITIONS`, 법규·표준 원문 `WP-REG-SOURCES` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
 | FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | R·A (법규 담당) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
 | FPW.13-A04 원격 종료 시스템 설명 작성 | FPW.13 규정·Compliance Profile 관리 | R·A (법규 담당) | 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE`, 드릴 결과·G8 판정 `WP-DRILL-REPORT` → 원격 종료 시스템 설명 `WP-SYSTEM-DESCRIPTION` | 플랫폼 밖 | 2차 초안 |
+| FPW.14-A05 출처 정기 점검 | FPW.14 Feature DB 운영 | C (법규 담당) | Feature DB 발행본 `WP-REFDB-RELEASE` → 출처 정기 점검 기록 `WP-REF-SOURCE-REVIEW` | `/master/feature-db` | 2차 초안 |
 
 ## 2. 부서 간 인계
 
@@ -89,4 +91,4 @@ last_updated: 2026-11-04
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/admin/data`, `/verify/compliance`
-- 참조 화면(협의·통보): `/features/:id/:ver`, `/admin/approval`, `/baselines`, `/activation/decide`, `/ops/kill`, `/audit/oversight`, `/audit`, `/admin/security`
+- 참조 화면(협의·통보): `/features/:id/:ver`, `/admin/approval`, `/baselines`, `/activation/decide`, `/ops/kill`, `/audit/oversight`, `/audit`, `/admin/security`, `/master/feature-db`

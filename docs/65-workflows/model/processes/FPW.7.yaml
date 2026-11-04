@@ -110,7 +110,7 @@ process:
       outcomes: [O1]
       rules: [FFG-TST-010, FFG-LCY-009]
       raci: {R: [R-OPS], A: R-OPS, C: [R-SM, R-TST], I: [R-FO, R-REL]}
-      inputs: [WP-G6-DECISION, WP-SAFETY-PROFILE]
+      inputs: [WP-SAFETY-PROFILE, WP-G6-DECISION]
       outputs: [WP-CANARY-PLAN]
       steps:
         - F2 이상 Feature는 Canary Cohort에서 시작하도록 단계별 차량 수와 관측 기간을 정한다
@@ -234,7 +234,7 @@ process:
       outcomes: [O4]
       rules: [FFG-LCY-001]
       raci: {R: [R-FO], A: R-FO, C: [R-SM], I: [R-REL, R-PO]}
-      inputs: [WP-G7-DECISION, WP-SC-REVIEW, WP-CANARY-PLAN]
+      inputs: [WP-G7-DECISION, WP-CANARY-PLAN, WP-SC-REVIEW]
       outputs: [WP-RELEASE-SIGNOFF]
       steps:
         - G8·G9 판정과 Safety Case 검토·Canary 기준을 확인한다

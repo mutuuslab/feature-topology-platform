@@ -41,10 +41,10 @@ flowchart LR
 
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
-| FPW.3-A01 | 안전요구 도출·명세 | R 요구 Owner · A 요구 Owner · C Safety Manager, 아키텍트 · I 시험 조직, Feature Owner | WP-G2-DECISION, WP-HARA-TARA, WP-SOTIF-ANALYSIS | WP-SAFETY-REQ | `/trace/design`, `/change/cr` | FFG-LCY-005, FFG-LCY-012 |
+| FPW.3-A01 | 안전요구 도출·명세 | R 요구 Owner · A 요구 Owner · C Safety Manager, 아키텍트 · I 시험 조직, Feature Owner | WP-HARA-TARA, WP-SOTIF-ANALYSIS, WP-G2-DECISION | WP-SAFETY-REQ | `/trace/design`, `/change/cr` | FFG-LCY-005, FFG-LCY-012 |
 | FPW.3-A02 | 양방향 추적성 점검 | R 요구 Owner · A 요구 Owner · C 아키텍트, 시험 조직 · I Safety Manager | WP-SAFETY-REQ | WP-TRACE-REPORT | `/trace/design` | FFG-LCY-004 |
 | FPW.3-A03 | 요구 검토 판정 등록 | R 품질 조직 · A 요구 Owner · C Safety Manager · I Feature Owner | WP-SAFETY-REQ, WP-TRACE-REPORT | WP-REQ-REVIEW | `judgeGate`, `/features/:id/:ver` | FFG-LCY-001 |
-| FPW.3-A04 | G3 판정·Feature 정의 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager, Feature Owner · I 아키텍트, 기준정보 담당, 시험 조직 | WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION | WP-G3-DECISION | `transition`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002 |
+| FPW.3-A04 | G3 판정·Feature 정의 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager, Feature Owner · I 아키텍트, 기준정보 담당, 시험 조직 | WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION, WP-REF-LINK | WP-G3-DECISION | `transition`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002 |
 
 ### 수행 절차와 완료 기준
 
@@ -81,6 +81,7 @@ flowchart LR
 
 완료 기준:
 - [ ] Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다
+- [ ] 연결된 기준 행에 요청 중(PENDING)·폐기 행이 없다. 요청 중 행은 Feature DB 관리자 승인 뒤에만 전이한다
 
 ## 3. 산출물
 

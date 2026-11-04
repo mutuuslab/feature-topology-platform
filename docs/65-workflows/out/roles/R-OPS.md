@@ -32,7 +32,7 @@ last_updated: 2026-11-04
 ### FPW.7-A01 Canary·Shadow 판정 기준 정의 — 수행·책임
 - 프로세스: FPW.7 출시·활성화·단계적 확대
 - 시작: 앞 활동 완료
-- 입력: WP-G6-DECISION, WP-SAFETY-PROFILE → 출력: WP-CANARY-PLAN
+- 입력: WP-SAFETY-PROFILE, WP-G6-DECISION → 출력: WP-CANARY-PLAN
 - 플랫폼: `/activation/decide`
 1. F2 이상 Feature는 Canary Cohort에서 시작하도록 단계별 차량 수와 관측 기간을 정한다
 2. 단계마다 허용 차이와 중단 기준을 사전에 적고 Safety Manager와 합의한다

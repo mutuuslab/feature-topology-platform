@@ -54,7 +54,7 @@ process:
       outcomes: [O1]
       rules: [FFG-LCY-005, FFG-LCY-012]
       raci: {R: [R-REQ], A: R-REQ, C: [R-SM, R-ARC], I: [R-TST, R-FO]}
-      inputs: [WP-G2-DECISION, WP-HARA-TARA, WP-SOTIF-ANALYSIS]
+      inputs: [WP-HARA-TARA, WP-SOTIF-ANALYSIS, WP-G2-DECISION]
       outputs: [WP-SAFETY-REQ]
       steps:
         - Safety Goal별로 기능·기술 안전요구를 도출하고 SW에 할당된 요구를 SW 안전요구로 나눈다
@@ -102,7 +102,7 @@ process:
       outcomes: [O3]
       rules: [FFG-LCY-001, FFG-LCY-002]
       raci: {R: [R-REQ], A: R-REQ, C: [R-SM, R-FO], I: [R-ARC, R-PLM, R-TST]}
-      inputs: [WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION]
+      inputs: [WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION, WP-REF-LINK]
       outputs: [WP-G3-DECISION]
       steps:
         - G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다
@@ -111,4 +111,5 @@ process:
         - 아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다
       checks:
         - Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다
+        - 연결된 기준 행에 요청 중(PENDING)·폐기 행이 없다. 요청 중 행은 Feature DB 관리자 승인 뒤에만 전이한다
       platform: {actions: [transition], screens: [/features/:id/:ver, /admin/approval]}

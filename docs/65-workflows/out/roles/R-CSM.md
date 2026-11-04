@@ -83,7 +83,7 @@ last_updated: 2026-11-04
 ### FPW.11-A04 취약점 영향 특정·대응 결정 — 수행·책임
 - 프로세스: FPW.11 보안·키·취약점 관리
 - 시작: 새 취약점 공지
-- 입력: WP-RELEASE-BASELINE, WP-ORIGIN-RECORD → 출력: WP-VEX-DECISION
+- 입력: WP-ORIGIN-RECORD, WP-RELEASE-BASELINE → 출력: WP-VEX-DECISION
 - 플랫폼: `recordVex`, `/admin/security`
 1. 배포 단위별 SBOM과 대조해 영향 Feature와 차량을 특정하고 VEX 판정을 기록한다
 2. 위험도에 따라 보안 사유 차단 또는 업데이트를 정하고 CSMS에 대응 기한을 둔다
@@ -120,8 +120,8 @@ last_updated: 2026-11-04
 - FPW.6-A05 OTA Gate 판정 등록 (협의)
 - FPW.8-A02 차단 필요성·범위 판단 (협의)
 - FPW.8-A04 긴급 차단 요청 (통보)
-- FPW.8-A06 차단 전달·적용 추적 (협의)
 - FPW.8-A07 긴급 권한 사후 검토 (협의)
+- FPW.8-A06 차단 전달·적용 추적 (협의)
 - FPW.8-A09 복원 2인 승인 (협의)
 - FPW.10-A01 계약 전 협력사 역량 확인 (협의)
 - FPW.10-A02 DIA·CIA 체결 (협의)

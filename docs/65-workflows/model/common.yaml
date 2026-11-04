@@ -140,6 +140,20 @@ roles:
     desc: 상품 구성과 고객 출시를 승인한다.
     platform_roles: [PRODUCT_APPROVER]
     basis: "REPORT_APPROVER_ROLES PRODUCT_OWNER→PRODUCT_APPROVER"
+  - id: R-RDA
+    name: Feature DB 관리자
+    en: Feature DB Administrator
+    source: iam
+    desc: Feature DB 기준 행 변경 요청을 최종 승인하고 버전을 발행하며, 분류·출처와 정기 점검 일정을 관리한다.
+    platform_roles: [REFDB_ADMIN]
+    basis: "보고서 어휘 밖. Feature DB 설계(30-95) 8.1절 IAM REFDB_ADMIN, 데모 계정 steward"
+  - id: R-DRV
+    name: 도메인 검토자
+    en: Domain Reviewer
+    source: iam
+    desc: 담당 도메인 기준 행의 변경 요청에 동의·보완·반대 의견을 준다.
+    platform_roles: [DOMAIN_REVIEWER]
+    basis: "보고서 어휘 밖. Feature DB 설계(30-95) 8.1절 IAM DOMAIN_REVIEWER(도메인 범위는 계정 속성), 데모 계정 approver"
 
 # ── 부서(OEM 조직 가정안, 2026-11-04 사용자 결정) ──────────────────
 # 역할 카탈로그 위에 얹는 층이다. 모든 역할은 정확히 한 부서에 속한다(부서 겸직 허용 — 요청자·승인자 분리는 사람 단위로 플랫폼이 강제).
@@ -159,9 +173,9 @@ departments:
     name: 시스템엔지니어링팀
     en: Systems Engineering
     workspace: console
-    roles: [R-REQ, R-ARC]
+    roles: [R-REQ, R-ARC, R-DRV]
     personas: [approver, integrator]
-    desc: 안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임진다.
+    desc: 안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임지고, 담당 도메인의 Feature DB 변경 요청을 검토한다.
   - id: DEP-INT
     name: SW통합·릴리스팀
     en: SW Integration & Release
@@ -173,9 +187,9 @@ departments:
     name: PLM·기준정보팀
     en: PLM & Master Data
     workspace: console
-    roles: [R-PLM]
+    roles: [R-PLM, R-RDA]
     personas: [steward]
-    desc: 차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.
+    desc: 차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다. Feature DB 기준 행 변경을 승인하고 버전을 발행한다.
   - id: DEP-FS
     name: 기능안전팀
     en: Functional Safety
@@ -250,7 +264,7 @@ departments:
 # 부서 검토 범위 — 1차는 핵심 생애주기, 나머지는 기존 모델로 만든 2차 초안으로 표시한다.
 department_scope:
   first: [FPW.1, FPW.2, FPW.3, FPW.4, FPW.5, FPW.6, FPW.7, FPW.8, FPW.9]
-  note: "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정(FPW.10~13)은 2차 초안이다."
+  note: "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정·Feature DB 운영(FPW.10~14)은 2차 초안이다."
   demo_notes:
     - "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용하지만 데모 계정에 운영 리더가 없다(9계정·겸직 0건, 2026-10-17)."
 
@@ -260,6 +274,8 @@ request_approval:
   - {request: FPW.8-A04, approval: FPW.8-A05, note: 긴급 차단 요청 → 2인 승인}
   - {request: FPW.8-A08, approval: FPW.8-A09, note: 복원 요청 → 복원 2인 승인}
   - {request: FPW.9-A02, approval: FPW.9-A03, note: Flag Retirement 요청 → 승인}
+  - {request: FPW.14-A01, approval: FPW.14-A03, note: Feature DB 변경 요청 → 변경 승인}
+  - {request: FPW.1-A06, approval: FPW.14-A03, note: Feature DB 추가 요청 → 변경 승인}
 
 # 6.1절 승인 칸의 이름 중 통제 어휘가 아닌 것 → 카탈로그 역할
 gate_approver_alias:
@@ -292,6 +308,8 @@ sod:
   - {id: SOD-08, level: role, rules: [FFG-PLT-005], first: FPW.8-A04, second: FPW.8-A05, note: 차단 요청자는 승인자가 될 수 없다}
   - {id: SOD-09, level: person, rules: [FFG-DEAC-008], first: FPW.8-A05, second: FPW.8-A09, note: 복원 승인자는 직전 차단 승인자와 다른 사람이다}
   - {id: SOD-11, level: role, rules: [FFG-PLT-016], first: FPW.8-A05, second: FPW.8-A07, note: 긴급 권한 사용은 요청·승인자 밖의 역할이 24시간 안에 검토한다}
+  - {id: SOD-13, level: role, rules: [], first: FPW.14-A01, second: FPW.14-A03, note: Feature DB 변경 요청자는 그 요청을 승인하지 않는다}
+  - {id: SOD-14, level: role, rules: [], first: FPW.14-A01, second: FPW.14-A02, note: Feature DB 변경 요청자는 그 요청의 도메인 검토자가 될 수 없다}
 
 # ── 정합성 결정 (보고서 ↔ 플랫폼 IAM) ───────────────────────────
 # 검증기가 자동 검출한 불일치(key)와 수작업으로 확인한 불일치는 모두 여기 결정을 둔다. 결정 없는 불일치는 게이트 실패.
@@ -366,3 +384,4 @@ process_plan:
   - {id: FPW.11, name_ko: 보안·키·취약점 관리, group: 지원, gates: []}
   - {id: FPW.12, name_ko: 운영 데이터·데이터 보호, group: 지원, gates: []}
   - {id: FPW.13, name_ko: 규정·Compliance Profile 관리, group: 지원, gates: []}
+  - {id: FPW.14, name_ko: Feature DB 운영, group: 지원, gates: []}

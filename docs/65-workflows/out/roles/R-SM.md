@@ -21,6 +21,7 @@ traces:
     - WF-FPW-11
     - WF-FPW-12
     - WF-FPW-13
+    - WF-FPW-14
 last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
@@ -50,14 +51,15 @@ last_updated: 2026-11-04
 ### FPW.1-A05 G1 등록·분류 판정 — 수행·책임
 - 프로세스: FPW.1 Feature 등록·분류
 - 시작: 앞 활동 완료
-- 입력: WP-FEAT-REG, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-REG-CLASS → 출력: WP-G1-DECISION
+- 입력: WP-FEAT-REG, WP-REF-LINK, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-REG-CLASS → 출력: WP-G1-DECISION
 - 플랫폼: `judgeGate`, `/features/:id/:ver`, `/admin/approval`
-1. 등록 기록·대상 사양·분류·법규 판정이 모두 있는지 확인하고, 하나라도 없으면 FAIL로 판정한다
+1. 등록 기록·기준 행 연결·대상 사양·분류·법규 판정이 모두 있는지 확인하고, 하나라도 없으면 FAIL로 판정한다
 2. Feature Owner의 의견을 받아 판정(PASS·CONDITIONAL PASS·FAIL)과 근거 Evidence ID를 입력한다
 3. Gate G1(Feature)·G3(Variant)을 개인 서명으로 판정 등록한다
 4. 조건부 통과면 기한과 책임자를 등록하고 요구 Owner에게 G2·G3 착수를 알린다
 - [ ] Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
 - [ ] Feature 작성자와 판정자가 다른 사람이다
+- [ ] 요청 중(PENDING) 기준 행이 연결되어 있으면 조건부 통과 조건에 관리자 승인이 적혀 있다
 
 ### FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 — 수행·책임
 - 프로세스: FPW.2 HARA·변경 영향 판단
@@ -95,11 +97,12 @@ last_updated: 2026-11-04
 ### FPW.2-A05 G2 HARA 영향 판정 — 수행·책임
 - 프로세스: FPW.2 HARA·변경 영향 판단
 - 시작: 앞 활동 완료
-- 입력: WP-HARA-TARA, WP-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT → 출력: WP-G2-DECISION
+- 입력: WP-HARA-TARA, WP-TARA, WP-SOTIF-ANALYSIS, WP-HOMOLOGATION-IMPACT, WP-REF-LINK → 출력: WP-G2-DECISION
 - 플랫폼: `judgeGate`, `/features/:id/:ver`, `/admin/approval`
 1. HARA·TARA·SOTIF·형식승인 판단이 모두 현재 Version 기준인지 확인하고, 빠진 것이 있으면 FAIL로 판정한다
-2. 판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다
-3. 판정 결과를 요구 Owner에게 넘겨 안전요구 작성을 시작하게 한다
+2. 등록 때 Feature DB 대표 ASIL을 바꿨다면 그 사유를 HARA에서 평가한 ASIL과 대조해 판정 근거에 남긴다
+3. 판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다
+4. 판정 결과를 요구 Owner에게 넘겨 안전요구 작성을 시작하게 한다
 - [ ] Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
 
 ### FPW.4-A02 플랫폼 도구 신뢰도 분류 — 수행·책임
@@ -286,6 +289,7 @@ last_updated: 2026-11-04
 - FPW.11-A04 취약점 영향 특정·대응 결정 (협의)
 - FPW.13-A02 Compliance Profile 정의 (협의)
 - FPW.13-A04 원격 종료 시스템 설명 작성 (협의)
+- FPW.14-A02 자동 점검·도메인 검토 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

@@ -9,6 +9,13 @@
 - **모델을 고친 뒤 순서:** `python -I scripts/check.py` → `cd ../../FF && npm run workflow:sync` → FF `npm run verify`(workflow:check·정합성 시험).
 - 커밋은 사용자 요청 시에만 한다.
 
+## 현재 상태 — Feature DB 절차 반영 (2026-11-04, worktree `-dept` 브랜치 `feat/feature-db`, 커밋 전)
+- **근거:** `docs/30-data-model/30-95-feature-reference-db.md` §6·§8·§11. FF 쪽(역할·route·SOD)은 다른 에이전트가 동시에 추가한다.
+- **역할:** R-RDA Feature DB 관리자(REFDB_ADMIN, DEP-PLM), R-DRV 도메인 검토자(DOMAIN_REVIEWER, DEP-SE). id-registry WF-ROLE-RDA·DRV, WF-FPW-14.
+- **FPW.1:** A01(이름 유지 — FF 시험이 시작 활동 A01을 가정)에 기준 행 선택(대표 1 + 포함 N)·미리 채움·ASIL 변경 사유를 넣고 산출물 WP-REF-LINK. 트리거 A06 'Feature DB 추가 요청'(requestRefAdd → WP-REF-ADD-REQ, next 없음 — 선택 분기가 A01 완료를 막지 않게). A05 G1·FPW.3-A04 정의 승인에 요청 중(PENDING) 행 확인, FPW.2-A02 HARA에 ASIL 변경 사유 대조.
+- **FPW.14 Feature DB 운영(지원, 2차 초안):** A01 변경 요청 작성(R-FO, createRefChange) → A02 자동 점검·도메인 검토(R-DRV, reviewRefChange) → A03 변경 승인·반려(R-RDA, decideRefChange) → A04 버전 발행(R-RDA, publishRefRelease), 트리거 A05 정기 출처 점검(R-RDA). request_approval 2쌍, sod SOD-13(요청자≠승인자)·SOD-14(요청자≠검토자) — SOD-12는 이미 '서명 키 용도'라 13·14로 잡았다.
+- **남은 것:** IAM 스냅샷 재추출(`node scripts/extract_platform.mjs`) 전까지 check.py 오류 9건(역할 2·action 5·SOD 2)이 남는다 — 그 외는 임시 보강 스냅샷으로 ALL GATES PASS(pytest 51) 확인. FF 플랫폼의 SOD id가 13·14가 아니면 `common.yaml sod`를 맞춘다. FF 시험의 '13개 절차' 가정(`workflows.test.ts`, `procedureFlowLayout.test.ts`, `screensHome`/`screensProcedureFlow`)과 교차 상한 253은 workflow:sync 뒤 고쳐야 한다.
+
 ## 현재 상태 — 부서 층·부서 작업공간 (2026-11-04, 진행 중)
 - **요청:** 부서별 R&R 업무 흐름 + 부서를 고르면 그 업무에 맞는 메뉴·화면(부서마다 UI/UX가 확 다르게), 로그인 뒤 부서 전환 + 전체 보기. 데모 전제.
 - **계획:** `~/.claude/plans/dapper-cuddling-peach.md`. 브랜치 `feat/department-workspaces`(feat/prod-readiness 5d2a316), worktree `C:\project\2026-06-04_Feature_Platform-dept`.

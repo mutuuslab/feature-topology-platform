@@ -54,10 +54,10 @@ last_updated: 2026-11-04
 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6 서명 배포 | R (통합 조직) · A (Release Manager) | 출시 Baseline `WP-RELEASE-BASELINE` → 서명 배포 패키지 `WP-SIGNED-PACKAGE` | `/deployments`, `/master/artifacts` | 1차 |
 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6 서명 배포 | A (Release Manager) | 서명 배포 패키지 `WP-SIGNED-PACKAGE`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → OTA Gate 판정 기록 `WP-OTA-GATE` | `/features/:id/:ver` | 1차 |
 | FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | R·A (Release Manager) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/integration/connectors` | 1차 |
-| FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | G6 배포 기록 `WP-G6-DECISION`, 안전 분류(네 축) `WP-SAFETY-PROFILE` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide` | 1차 |
+| FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide` | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, 실험 계획 `WP-EXPERIMENT-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW`, 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL`, 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` → G7 Decision Record `WP-G7-DECISION` | `/activation/decide`, `/admin/approval` | 1차 |
-| FPW.7-A12 Release Sign-off(출시 책임 확인) | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Safety Case 독립 검토 기록 `WP-SC-REVIEW`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → Release Sign-off 기록 `WP-RELEASE-SIGNOFF` | `/features/:id/:ver` | 1차 |
+| FPW.7-A12 Release Sign-off(출시 책임 확인) | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW` → Release Sign-off 기록 `WP-RELEASE-SIGNOFF` | `/features/:id/:ver` | 1차 |
 | FPW.7-A09 출시 전이 | FPW.7 출시·활성화·단계적 확대 | R·A (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Release Sign-off 기록 `WP-RELEASE-SIGNOFF` → 출시 전이 기록 `WP-RELEASE-RECORD` | `/features/:id/:ver` | 1차 |
 | FPW.7-A11 Canary 활성화·단계적 확대 | FPW.7 출시·활성화·단계적 확대 | C (Release Manager) | 출시 전이 기록 `WP-RELEASE-RECORD`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 단계적 확대 기록 `WP-ROLLOUT-RECORD` | `/activation/decide`, `/fleet/live` | 1차 |
 | FPW.8-A10 단계적 복원·관측 | FPW.8 운영·긴급 차단·복원 | C (Release Manager) | 복원 승인 기록 `WP-RESTORE-DECISION` → 단계적 복원 관측 기록 `WP-RESTORE-ROLLOUT` | `/fleet/live` | 1차 |
@@ -72,7 +72,7 @@ last_updated: 2026-11-04
 | FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | C (통합 조직) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
 | FPW.10-A07 EOL 프로비저닝 검증 | FPW.10 협력사 관리 | R·A (통합 조직) | 입고 검사 결과 `WP-INTAKE-RESULT` → EOL 프로비저닝 검증 기록 `WP-EOL-RECORD` | 플랫폼 밖 | 2차 초안 |
 | FPW.11-A01 서명 키 계층·HSM 운영 | FPW.11 보안·키·취약점 관리 | I (Release Manager) | HARA·TARA 결과 `WP-HARA-TARA` → 서명 키 대장 `WP-KEY-REGISTER` | `/admin/security` | 2차 초안 |
-| FPW.11-A04 취약점 영향 특정·대응 결정 | FPW.11 보안·키·취약점 관리 | C (통합 조직) · I (Release Manager) | 출시 Baseline `WP-RELEASE-BASELINE`, 공급망 원산지 기록 `WP-ORIGIN-RECORD` → VEX 판정·대응 결정 `WP-VEX-DECISION` | `/admin/security` | 2차 초안 |
+| FPW.11-A04 취약점 영향 특정·대응 결정 | FPW.11 보안·키·취약점 관리 | C (통합 조직) · I (Release Manager) | 공급망 원산지 기록 `WP-ORIGIN-RECORD`, 출시 Baseline `WP-RELEASE-BASELINE` → VEX 판정·대응 결정 `WP-VEX-DECISION` | `/admin/security` | 2차 초안 |
 | FPW.11-A06 OSS 라이선스·보안 프로그램 운영 | FPW.11 보안·키·취약점 관리 | I (통합 조직) | 공급망 원산지 기록 `WP-ORIGIN-RECORD` → OSS 관리 프로그램 기록 `WP-OSS-PROGRAM` | 플랫폼 밖 | 2차 초안 |
 | FPW.12-A02 평가 컨텍스트 개인정보 검토 | FPW.12 운영 데이터·데이터 보호 | I (통합 조직) | Flag 정책(검증·승인본) `WP-POLICY` → 평가 컨텍스트 속성 검토 기록 `WP-CONTEXT-REVIEW` | `/integration/openfeature` | 2차 초안 |
 

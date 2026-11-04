@@ -40,9 +40,9 @@ last_updated: 2026-11-04
 | FPW.8-A03 리콜·봉쇄 근거 연계 | FPW.8 운영·긴급 차단·복원 | C (법무) | 차단 판단서 `WP-KILL-PLAN` → 리콜·봉쇄 근거 `WP-RECALL-BASIS` | 플랫폼 밖 | 1차 |
 | FPW.10-A02 DIA·CIA 체결 | FPW.10 협력사 관리 | C (법무) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → DIA·CIA 계약 부속서 `WP-DIA` | 플랫폼 밖 | 2차 초안 |
 | FPW.11-A06 OSS 라이선스·보안 프로그램 운영 | FPW.11 보안·키·취약점 관리 | R·A (법무) | 공급망 원산지 기록 `WP-ORIGIN-RECORD` → OSS 관리 프로그램 기록 `WP-OSS-PROGRAM` | 플랫폼 밖 | 2차 초안 |
-| FPW.12-A02 평가 컨텍스트 개인정보 검토 | FPW.12 운영 데이터·데이터 보호 | C (법무) | Flag 정책(검증·승인본) `WP-POLICY` → 평가 컨텍스트 속성 검토 기록 `WP-CONTEXT-REVIEW` | `/integration/openfeature` | 2차 초안 |
 | FPW.12-A03 중국 데이터 현지 처리·이전 심사 | FPW.12 운영 데이터·데이터 보호 | R·A (법무) | 운행 감시 지표·경보 기준 `WP-KPI-PLAN` → 데이터 국외 이전 심사 기록 `WP-DATA-TRANSFER` | 플랫폼 밖 | 2차 초안 |
 | FPW.12-A04 EU 데이터 접근 요청 처리 | FPW.12 운영 데이터·데이터 보호 | C (법무) | 운행 감시 지표·경보 기준 `WP-KPI-PLAN` → 데이터 접근 요청·계약 근거 기록 `WP-DATA-ACCESS` | `/admin/data` | 2차 초안 |
+| FPW.12-A02 평가 컨텍스트 개인정보 검토 | FPW.12 운영 데이터·데이터 보호 | C (법무) | Flag 정책(검증·승인본) `WP-POLICY` → 평가 컨텍스트 속성 검토 기록 `WP-CONTEXT-REVIEW` | `/integration/openfeature` | 2차 초안 |
 | FPW.13-A02 Compliance Profile 정의 | FPW.13 규정·Compliance Profile 관리 | C (법무) | 표준 판 고정 기록(Safety Plan) `WP-STANDARD-EDITIONS`, 법규·표준 원문 `WP-REG-SOURCES` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
 | FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | C (법무) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
 
@@ -55,4 +55,4 @@ last_updated: 2026-11-04
 ## 3. 쓰는 화면
 
 - 주 업무 화면: 없음
-- 참조 화면(협의·통보): `/integration/openfeature`, `/admin/data`, `/verify/compliance`
+- 참조 화면(협의·통보): `/admin/data`, `/integration/openfeature`, `/verify/compliance`

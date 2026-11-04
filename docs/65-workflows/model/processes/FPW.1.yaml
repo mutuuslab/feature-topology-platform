@@ -4,12 +4,12 @@ process:
   name_ko: Feature 등록·분류
   related: [FLW-FEATURE-REGISTER]
   gates: [G1]
-  ref: 표준 보고서 5장(분류), 6.1절 G1, 6.4절 시나리오
+  ref: 표준 보고서 5장(분류), 6.1절 G1, 6.4절 시나리오, Feature DB 설계(30-95) 6장
   purpose_ko: >-
-    통제할 Feature Version의 대상·소유자·적용 차량을 Registry에 등록하고, 네 축 안전 분류와 법규 등급을
-    확정해 이후 모든 Gate가 같은 분류를 기준으로 판단하게 한다.
+    통제할 Feature Version을 Feature DB 기준 행에 연결해 대상·소유자·적용 차량과 함께 Registry에 등록하고,
+    네 축 안전 분류와 법규 등급을 확정해 이후 모든 Gate가 같은 분류를 기준으로 판단하게 한다.
   outcomes:
-    - {id: O1, text_ko: Feature Version이 소유자·대상 차량 사양·의존 관계와 함께 Registry에 등록된다.}
+    - {id: O1, text_ko: Feature Version이 Feature DB 기준 행·소유자·대상 차량 사양·의존 관계와 함께 Registry에 등록된다.}
     - {id: O2, text_ko: F 등급·비활성화 등급·법규 등급·Flag 유형이 근거와 함께 확정된다.}
     - {id: O3, text_ko: G1 판정이 서명된 Decision Record로 남고 다음 단계(G2)로 넘어간다.}
   rules: [FFG-CLS-001, FFG-CLS-003, FFG-CLS-005, FFG-CLS-008, FFG-CLS-009, FFG-LCY-001, FFG-LCY-002]
@@ -18,6 +18,7 @@ process:
     - 대상 시장의 Compliance Profile 판이 고정되어 있다
   exit_criteria:
     - Feature Version이 PROPOSED 상태로 등록되고 네 축 분류가 Safety Manager 서명으로 확정되었다
+    - Feature Version이 Feature DB 대표 기준 행 1개(와 필요한 포함 행)에 연결되었다
     - 법규 의무 기능 여부가 판정되어 분류에 반영되었다
     - G1 Decision Record(판정·근거 Evidence·승인자 역할)가 남았다
   work_products:
@@ -38,6 +39,23 @@ process:
         - Feature ID·Version(PROPOSED 0.1.0)·소유자·설명
         - Flag 유형과 Release·Experiment Flag의 만료일·Retirement 계획
         - 관련 요구 ID와 판매 방식
+    - key: WP-REF-LINK
+      name: Feature DB 기준 행 연결
+      en: Feature DB Reference Link
+      kind: output
+      content:
+        - 대표(PRIMARY) 기준 행 1개와 포함(INCLUDED) 행 ID, 연결 당시 Feature DB 발행 버전
+        - 기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그·규제와 '수정됨' 표시
+        - 대표 ASIL과 다른 ASIL을 고른 경우 변경 전후 값과 사유
+        - 연결 행 상태 경고(검토 필요·폐기 예정·요청 중)와 대체 행 안내
+    - key: WP-REF-ADD-REQ
+      name: Feature DB 추가 요청
+      en: Feature DB Addition Request
+      kind: output
+      content:
+        - 도메인·컴포넌트·영문/한글 기능명·T-shirt·대표 ASIL
+        - 출처 ID 또는 근거 메모, 새 컴포넌트가 필요하면 3글자 약어 제안
+        - 즉시 부여된 정식 형식 ID와 요청 중(PENDING) 상태, 추가 변경 요청 번호
     - key: WP-FEAT-SCOPE
       name: 대상 차량 사양·의존 관계
       en: Variant Scope & Dependencies
@@ -73,20 +91,23 @@ process:
       name: Feature 등록·초안 작성
       outcomes: [O1]
       rules: [FFG-CLS-008]
-      raci: {R: [R-FO], A: R-FO, C: [R-ARC, R-REQ], I: [R-SM]}
-      inputs: [WP-FEAT-PROPOSAL]
-      outputs: [WP-FEAT-REG]
+      raci: {R: [R-FO], A: R-FO, C: [R-ARC, R-REQ], I: [R-SM, R-RDA]}
+      inputs: [WP-REFDB-RELEASE, WP-FEAT-PROPOSAL]
+      outputs: [WP-FEAT-REG, WP-REF-LINK]
       steps:
         - 제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다
-        - 'Feature 등록 화면에서 이름·설명·관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다'
+        - 등록 1단계에서 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다
+        - 2단계에서 기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그를 확인하고, ASIL을 바꾸면 사유를 적는다
+        - 관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다
         - Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다
         - 아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다
       checks:
         - Registry에 PROPOSED Version이 생기고 소유자가 지정되었다
+        - 대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다
         - 만료일이 필요한 Flag 유형에 만료일과 Retirement 계획이 비어 있지 않다
       platform:
         actions: [createFeature, createVersion, updateDraft]
-        screens: [/master/define, /feature/propose, /features]
+        screens: [/master/define, /feature/propose, /features, /master/feature-db]
         anchor: feature-form
         ui: {fields: [name, description, ownerId], buttons: [createFeature]}
       sla_hours: 48
@@ -153,14 +174,35 @@ process:
       outcomes: [O3]
       rules: [FFG-LCY-001, FFG-LCY-002, FFG-CLS-001]
       raci: {R: [R-SM], A: R-SM, C: [R-FO, R-REG], I: [R-REQ, R-PLM, R-QA]}
-      inputs: [WP-FEAT-REG, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-REG-CLASS]
+      inputs: [WP-FEAT-REG, WP-REF-LINK, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-REG-CLASS]
       outputs: [WP-G1-DECISION]
       steps:
-        - 등록 기록·대상 사양·분류·법규 판정이 모두 있는지 확인하고, 하나라도 없으면 FAIL로 판정한다
+        - 등록 기록·기준 행 연결·대상 사양·분류·법규 판정이 모두 있는지 확인하고, 하나라도 없으면 FAIL로 판정한다
         - Feature Owner의 의견을 받아 판정(PASS·CONDITIONAL PASS·FAIL)과 근거 Evidence ID를 입력한다
         - 'Gate G1(Feature)·G3(Variant)을 개인 서명으로 판정 등록한다'
         - 조건부 통과면 기한과 책임자를 등록하고 요구 Owner에게 G2·G3 착수를 알린다
       checks:
         - Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
         - Feature 작성자와 판정자가 다른 사람이다
+        - 요청 중(PENDING) 기준 행이 연결되어 있으면 조건부 통과 조건에 관리자 승인이 적혀 있다
       platform: {actions: [judgeGate], screens: [/features/:id/:ver, /admin/approval], gates: [G1, G3]}
+    - id: FPW.1-A06
+      name: Feature DB 추가 요청
+      trigger: 맞는 기준 행이 Feature DB에 없을 때
+      outcomes: [O1]
+      rules: []
+      raci: {R: [R-FO], A: R-FO, C: [R-DRV], I: [R-RDA]}
+      inputs: [WP-FEAT-PROPOSAL, WP-REFDB-RELEASE]
+      outputs: [WP-REF-ADD-REQ]
+      steps:
+        - 검색과 도메인·컴포넌트 단계 선택으로 맞는 기준 행이 없음을 확인하고, 비슷한 행을 포함 행으로 쓸 수 있는지 먼저 본다
+        - 등록 화면의 추가 요청에서 도메인·컴포넌트·영문/한글 기능명·T-shirt·대표 ASIL·출처 또는 근거 메모를 입력한다
+        - 새 컴포넌트가 필요하면 3글자 약어를 같은 요청에 제안한다
+        - 즉시 부여된 정식 ID의 요청 중 행을 대표로 연결해 Feature 등록을 이어 간다
+        - 관리자가 반려하면 알림을 받고 다른 기준 행으로 다시 연결한다
+      checks:
+        - 요청 중 행에 정식 형식 ID와 필수 정보가 있고 추가 변경 요청이 접수되었다
+        - 관리자 승인 전에는 Feature 정의 승인(APPROVED) 전이가 막혀 있음을 Feature Owner가 안다
+      platform:
+        actions: [requestRefAdd]
+        screens: [/feature/propose, /master/feature-db]

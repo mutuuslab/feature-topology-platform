@@ -70,22 +70,6 @@ process:
         - 원격 Kill이 안전기제로 쓰인 곳이 없다
       platform: {screens: [/master/control-points, /trace/design]}
       next: [FPW.4-A03]
-    - id: FPW.4-A02
-      name: 플랫폼 도구 신뢰도 분류
-      trigger: 설계 착수 또는 사용 플랫폼 컴포넌트 변경
-      outcomes: [O2]
-      rules: [FFG-PLT-013]
-      raci: {R: [R-SM], A: R-SM, C: [R-ARC, R-CSM], I: [R-QA]}
-      inputs: [WP-SAFETY-REQ]
-      outputs: [WP-TCL-RECORD]
-      steps:
-        - 이 Feature가 쓰는 플랫폼 컴포넌트마다 오류 출력 유형과 TI·TD를 정해 TCL을 기록한다
-        - TD1은 출력 유형별 검출 수단을 지정할 수 있을 때만 주장하고, 서명 서비스에는 쓰지 않는다
-        - TCL2 이상 컴포넌트의 신뢰도 확보 방법을 Safety Plan에 넣는다
-      checks:
-        - 사용 컴포넌트 모두에 TCL과 확보 방법이 있다
-      platform: {screens: [/arch/components]}
-      next: [FPW.4-A05]
     - id: FPW.4-A03
       name: Flag 정책 작성·검증
       outcomes: [O3]
@@ -115,6 +99,22 @@ process:
       checks:
         - 승인자가 정책 작성자와 다르고 승인 해시가 최신 개정본과 같다
       platform: {actions: [decidePolicy], screens: [/policies/:id]}
+      next: [FPW.4-A05]
+    - id: FPW.4-A02
+      name: 플랫폼 도구 신뢰도 분류
+      trigger: 설계 착수 또는 사용 플랫폼 컴포넌트 변경
+      outcomes: [O2]
+      rules: [FFG-PLT-013]
+      raci: {R: [R-SM], A: R-SM, C: [R-ARC, R-CSM], I: [R-QA]}
+      inputs: [WP-SAFETY-REQ]
+      outputs: [WP-TCL-RECORD]
+      steps:
+        - 이 Feature가 쓰는 플랫폼 컴포넌트마다 오류 출력 유형과 TI·TD를 정해 TCL을 기록한다
+        - TD1은 출력 유형별 검출 수단을 지정할 수 있을 때만 주장하고, 서명 서비스에는 쓰지 않는다
+        - TCL2 이상 컴포넌트의 신뢰도 확보 방법을 Safety Plan에 넣는다
+      checks:
+        - 사용 컴포넌트 모두에 TCL과 확보 방법이 있다
+      platform: {screens: [/arch/components]}
       next: [FPW.4-A05]
     - id: FPW.4-A05
       name: G4 설계 독립 검토·판정

@@ -74,7 +74,7 @@ flowchart LR
 
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
-| FPW.7-A01 | Canary·Shadow 판정 기준 정의 | R 운영 조직 · A 운영 조직 · C Safety Manager, 시험 조직 · I Feature Owner, Release Manager | WP-G6-DECISION, WP-SAFETY-PROFILE | WP-CANARY-PLAN | `/activation/decide` | FFG-TST-010, FFG-LCY-009 |
+| FPW.7-A01 | Canary·Shadow 판정 기준 정의 | R 운영 조직 · A 운영 조직 · C Safety Manager, 시험 조직 · I Feature Owner, Release Manager | WP-SAFETY-PROFILE, WP-G6-DECISION | WP-CANARY-PLAN | `/activation/decide` | FFG-TST-010, FFG-LCY-009 |
 | FPW.7-A02 | 효과 실험 계획 등록 | R Feature Owner · A Feature Owner · C Safety Manager, 운영 조직 · I Release Manager | WP-SAFETY-PROFILE | WP-EXPERIMENT-PLAN | `createExperiment`, `/experiments` | FFG-CLS-006 |
 | FPW.7-A03 | Safety Case·SOTIF 근거 정리 | R Safety Manager · A Safety Manager · C Feature Owner, 시험 조직 · I 품질 조직 | WP-SOTIF-ANALYSIS, WP-G5-EVIDENCE, WP-HARA-TARA | WP-SAFETY-CASE | `/verify/evidence`, `/verify/compliance` | FFG-SOT-004, FFG-ADS-008 |
 | FPW.7-A04 | Safety Case 독립 검토 | R 품질 조직 · A Safety Manager · C 시험 조직 · I Feature Owner, 법규 담당 | WP-SAFETY-CASE | WP-SC-REVIEW | 플랫폼 밖 | FFG-ADS-012 |
@@ -82,7 +82,7 @@ flowchart LR
 | FPW.7-A06 | 상품 구성 승인 | R 상품 Owner · A 상품 Owner · C Feature Owner · I 상품 기획 | WP-PRODUCT | WP-PRODUCT-APPROVAL | `productTransition`, `/products/:id/:ver` | – |
 | FPW.7-A07 | 형식승인·사용자 고지 확인 | R 법규 담당 · A 법규 담당 · C 법무, Feature Owner · I 운영 조직 | WP-HOMOLOGATION-IMPACT, WP-SUMS-RECORD | WP-ACTIVATION-PRECHECK | 플랫폼 밖 | FFG-GEN-006, FFG-LCY-010 |
 | FPW.7-A08 | G7 출시·활성화 판정 | R Safety Manager · A Feature Owner · C 운영 조직, 법규 담당 · I Release Manager, 품질 조직 | WP-CANARY-PLAN, WP-EXPERIMENT-PLAN, WP-SC-REVIEW, WP-PRODUCT-APPROVAL, WP-ACTIVATION-PRECHECK | WP-G7-DECISION | `judgeGate`, `/activation/decide`, `/admin/approval` | FFG-SOT-005, FFG-SOT-004, FFG-LCY-001 |
-| FPW.7-A12 | Release Sign-off(출시 책임 확인) | R Feature Owner · A Feature Owner · C Safety Manager · I Release Manager, 상품 Owner | WP-G7-DECISION, WP-SC-REVIEW, WP-CANARY-PLAN | WP-RELEASE-SIGNOFF | `signRelease`, `/features/:id/:ver` | FFG-LCY-001 |
+| FPW.7-A12 | Release Sign-off(출시 책임 확인) | R Feature Owner · A Feature Owner · C Safety Manager · I Release Manager, 상품 Owner | WP-G7-DECISION, WP-CANARY-PLAN, WP-SC-REVIEW | WP-RELEASE-SIGNOFF | `signRelease`, `/features/:id/:ver` | FFG-LCY-001 |
 | FPW.7-A09 | 출시 전이 | R Release Manager · A Release Manager · C Feature Owner · I 운영 조직, 상품 Owner | WP-G7-DECISION, WP-RELEASE-SIGNOFF | WP-RELEASE-RECORD | `transition`, `/features/:id/:ver` | – |
 | FPW.7-A10 | 상품 고객 출시 승인 | R 상품 Owner · A 상품 Owner · C Feature Owner · I 상품 기획, 운영 조직 | WP-RELEASE-RECORD, WP-PRODUCT-APPROVAL | WP-PRODUCT-RELEASE | `productTransition`, `/products/:id/:ver` | – |
 | FPW.7-A11 | Canary 활성화·단계적 확대 | R 운영 조직 · A 운영 조직 · C Safety Manager, Release Manager · I Feature Owner, 품질 조직 | WP-RELEASE-RECORD, WP-CANARY-PLAN | WP-ROLLOUT-RECORD | `stageRollout`, `/activation/decide`, `/fleet/live` | FFG-LCY-009, FFG-TST-010 |

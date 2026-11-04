@@ -24,6 +24,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
      "/baselines",
@@ -57,21 +58,22 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 9,
-    "A": 11,
+    "R": 11,
+    "A": 13,
     "C": 17,
-    "I": 29
+    "I": 33
    }
   },
   {
    "id": "DEP-SE",
    "name": "시스템엔지니어링팀",
    "en": "Systems Engineering",
-   "desc": "안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임진다.",
+   "desc": "안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임지고, 담당 도메인의 Feature DB 변경 요청을 검토한다.",
    "workspace": "console",
    "roles": [
     "R-REQ",
-    "R-ARC"
+    "R-ARC",
+    "R-DRV"
    ],
    "personas": [
     "approver",
@@ -87,7 +89,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/policies/new",
      "/policies",
      "/policies/:id",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/master/feature-db"
     ],
     "reference": [
      "/master/define",
@@ -105,10 +108,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 8,
-    "A": 9,
-    "C": 14,
-    "I": 13
+    "R": 9,
+    "A": 10,
+    "C": 18,
+    "I": 15
    }
   },
   {
@@ -162,10 +165,11 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "id": "DEP-PLM",
    "name": "PLM·기준정보팀",
    "en": "PLM & Master Data",
-   "desc": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.",
+   "desc": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다. Feature DB 기준 행 변경을 승인하고 버전을 발행한다.",
    "workspace": "console",
    "roles": [
-    "R-PLM"
+    "R-PLM",
+    "R-RDA"
    ],
    "personas": [
     "steward"
@@ -174,9 +178,13 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "primary": [
      "/variant-conditions",
      "/arch/topology",
-     "/baselines"
+     "/baselines",
+     "/master/feature-db"
     ],
     "reference": [
+     "/master/define",
+     "/feature/propose",
+     "/features",
      "/features/:id/:ver",
      "/admin/approval",
      "/policies/new",
@@ -184,10 +192,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 2,
-    "A": 1,
+    "R": 5,
+    "A": 4,
     "C": 2,
-    "I": 3
+    "I": 8
    }
   },
   {
@@ -223,6 +231,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/trace/design",
      "/change/cr",
@@ -245,7 +254,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 17,
     "A": 17,
-    "C": 33,
+    "C": 34,
     "I": 8
    }
   },
@@ -273,8 +282,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/arch/components",
      "/deployments",
      "/master/artifacts",
-     "/fleet/live",
-     "/audit/oversight"
+     "/audit/oversight",
+     "/fleet/live"
     ]
    },
    "counts": {
@@ -309,13 +318,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/kill",
      "/audit/oversight",
      "/audit",
-     "/admin/security"
+     "/admin/security",
+     "/master/feature-db"
     ]
    },
    "counts": {
     "R": 11,
     "A": 10,
-    "C": 11,
+    "C": 12,
     "I": 7
    }
   },
@@ -521,8 +531,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "screens": {
     "primary": [],
     "reference": [
-     "/integration/openfeature",
      "/admin/data",
+     "/integration/openfeature",
      "/verify/compliance"
     ]
    },

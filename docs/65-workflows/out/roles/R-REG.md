@@ -17,6 +17,7 @@ traces:
     - WF-FPW-11
     - WF-FPW-12
     - WF-FPW-13
+    - WF-FPW-14
 last_updated: 2026-11-04
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
@@ -161,6 +162,7 @@ last_updated: 2026-11-04
 - FPW.11-A05 CSMS Evidence·R155 보고 (협의)
 - FPW.12-A03 중국 데이터 현지 처리·이전 심사 (협의)
 - FPW.13-A01 표준 판 고정 (협의)
+- FPW.14-A05 출처 정기 점검 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

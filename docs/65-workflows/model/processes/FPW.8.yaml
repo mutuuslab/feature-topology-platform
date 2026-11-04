@@ -189,6 +189,20 @@ process:
         anchor: kill-approve
       sla_hours: 2
       next: [FPW.8-A06, FPW.8-A07]
+    - id: FPW.8-A07
+      name: 긴급 권한 사후 검토
+      outcomes: [O4]
+      rules: [FFG-PLT-016]
+      raci: {R: [R-QA], A: R-QA, C: [R-CSM, R-REG], I: [R-SM, R-OPS]}
+      inputs: [WP-KILL-REQ, WP-KILL-DECISION]
+      outputs: [WP-POST-REVIEW]
+      steps:
+        - 차단 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다
+        - 검토 결과와 개선 조치를 사후 검토 기록으로 한 번 남긴다
+        - 미흡 사항은 품질 조직이 개선 과제로 등록한다
+      checks:
+        - 검토 기록이 24시간 안에 있고 검토자가 요청자·승인자와 다르다
+      platform: {actions: [recordKillPostReview], screens: [/audit/oversight]}
     - id: FPW.8-A06
       name: 차단 전달·적용 추적
       outcomes: [O3]
@@ -208,20 +222,6 @@ process:
         anchor: vehicle-status-v2
       sla_hours: 4
       next: [FPW.8-A08]
-    - id: FPW.8-A07
-      name: 긴급 권한 사후 검토
-      outcomes: [O4]
-      rules: [FFG-PLT-016]
-      raci: {R: [R-QA], A: R-QA, C: [R-CSM, R-REG], I: [R-SM, R-OPS]}
-      inputs: [WP-KILL-REQ, WP-KILL-DECISION]
-      outputs: [WP-POST-REVIEW]
-      steps:
-        - 차단 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다
-        - 검토 결과와 개선 조치를 사후 검토 기록으로 한 번 남긴다
-        - 미흡 사항은 품질 조직이 개선 과제로 등록한다
-      checks:
-        - 검토 기록이 24시간 안에 있고 검토자가 요청자·승인자와 다르다
-      platform: {actions: [recordKillPostReview], screens: [/audit/oversight]}
     - id: FPW.8-A08
       name: 원인 조치·복원 요청
       trigger: 원인 수정과 재검증 Evidence 확보

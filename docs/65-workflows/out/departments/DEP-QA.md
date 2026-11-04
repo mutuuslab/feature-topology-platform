@@ -41,8 +41,8 @@ last_updated: 2026-11-04
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
-| FPW.1-A05 G1 등록·분류 판정 | FPW.1 Feature 등록·분류 | I (품질 조직) | Feature 등록 기록 `WP-FEAT-REG`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 법규 등급 판정 기록 `WP-REG-CLASS` → G1 Decision Record `WP-G1-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
-| FPW.2-A05 G2 HARA 영향 판정 | FPW.2 HARA·변경 영향 판단 | I (품질 조직) | HARA·TARA 결과 `WP-HARA-TARA`, TARA 결과 `WP-TARA`, SOTIF 분석 `WP-SOTIF-ANALYSIS`, 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT` → G2 Decision Record `WP-G2-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
+| FPW.1-A05 G1 등록·분류 판정 | FPW.1 Feature 등록·분류 | I (품질 조직) | Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 법규 등급 판정 기록 `WP-REG-CLASS` → G1 Decision Record `WP-G1-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
+| FPW.2-A05 G2 HARA 영향 판정 | FPW.2 HARA·변경 영향 판단 | I (품질 조직) | HARA·TARA 결과 `WP-HARA-TARA`, TARA 결과 `WP-TARA`, SOTIF 분석 `WP-SOTIF-ANALYSIS`, 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT`, Feature DB 기준 행 연결 `WP-REF-LINK` → G2 Decision Record `WP-G2-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.3-A03 요구 검토 판정 등록 | FPW.3 안전요구 확정 | R (품질 조직) | 안전요구·추적 연결 `WP-SAFETY-REQ`, 추적성 점검 결과 `WP-TRACE-REPORT` → 요구 검토 판정 기록 `WP-REQ-REVIEW` | `/features/:id/:ver` | 1차 |
 | FPW.4-A02 플랫폼 도구 신뢰도 분류 | FPW.4 안전 설계·정책 설계 | I (품질 조직) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD` | `/arch/components` | 1차 |
 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4 안전 설계·정책 설계 | R (품질 조직) | 안전 설계서 `WP-SAFETY-DESIGN`, 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD`, Flag 정책(검증·승인본) `WP-POLICY` → G4 Decision Record `WP-G4-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
@@ -60,8 +60,8 @@ last_updated: 2026-11-04
 | FPW.7-A11 Canary 활성화·단계적 확대 | FPW.7 출시·활성화·단계적 확대 | I (품질 조직) | 출시 전이 기록 `WP-RELEASE-RECORD`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 단계적 확대 기록 `WP-ROLLOUT-RECORD` | `/activation/decide`, `/fleet/live` | 1차 |
 | FPW.8-A01 이상 징후 확인 | FPW.8 운영·긴급 차단·복원 | I (품질 조직) | G7 Decision Record `WP-G7-DECISION`, 단계적 확대 기록 `WP-ROLLOUT-RECORD`, 운행 감시 지표·경보 기준 `WP-KPI-PLAN`, G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` → 이상 징후 건 `WP-ANOMALY-CASE` | `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents` | 1차 |
 | FPW.8-A05 긴급 차단 2인 승인 | FPW.8 운영·긴급 차단·복원 | I (품질 조직) | 긴급 차단 요청 `WP-KILL-REQ`, 차단 판단서 `WP-KILL-PLAN` → 차단 승인 기록 `WP-KILL-DECISION` | `/ops/kill` | 1차 |
-| FPW.8-A06 차단 전달·적용 추적 | FPW.8 운영·긴급 차단·복원 | I (품질 조직) | 차단 승인 기록 `WP-KILL-DECISION` → 차단 적용 추적표 `WP-KILL-TRACE` | `/fleet/live`, `/deployments` | 1차 |
 | FPW.8-A07 긴급 권한 사후 검토 | FPW.8 운영·긴급 차단·복원 | R·A (품질 조직) | 긴급 차단 요청 `WP-KILL-REQ`, 차단 승인 기록 `WP-KILL-DECISION` → 긴급 권한 사후 검토 기록 `WP-POST-REVIEW` | `/audit/oversight` | 1차 |
+| FPW.8-A06 차단 전달·적용 추적 | FPW.8 운영·긴급 차단·복원 | I (품질 조직) | 차단 승인 기록 `WP-KILL-DECISION` → 차단 적용 추적표 `WP-KILL-TRACE` | `/fleet/live`, `/deployments` | 1차 |
 | FPW.8-A09 복원 2인 승인 | FPW.8 운영·긴급 차단·복원 | R (품질 조직) | 복원 요청 `WP-RESTORE-REQ`, 차단 승인 기록 `WP-KILL-DECISION` → 복원 승인 기록 `WP-RESTORE-DECISION` | `/ops/kill` | 1차 |
 | FPW.8-A10 단계적 복원·관측 | FPW.8 운영·긴급 차단·복원 | I (품질 조직) | 복원 승인 기록 `WP-RESTORE-DECISION` → 단계적 복원 관측 기록 `WP-RESTORE-ROLLOUT` | `/fleet/live` | 1차 |
 | FPW.8-A11 분기 드릴·G8 운영 판정 | FPW.8 운영·긴급 차단·복원 | C (품질 조직) | 차단 적용 추적표 `WP-KILL-TRACE`, 긴급 권한 사후 검토 기록 `WP-POST-REVIEW` → 드릴 결과·G8 판정 `WP-DRILL-REPORT` | `/ops/kill`, `/audit` | 1차 |
@@ -84,8 +84,8 @@ last_updated: 2026-11-04
 | 방향 | 보내는 활동 | 받는 활동 | 상대 부서 | 넘기는 산출물 | 범위 |
 |---|---|---|---|---|---|
 | 받음 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A03 요구 검토 판정 등록 | 시스템엔지니어링팀 | 추적성 점검 결과 `WP-TRACE-REPORT` | 1차 |
-| 받음 | FPW.4-A02 플랫폼 도구 신뢰도 분류 | FPW.4-A05 G4 설계 독립 검토·판정 | 기능안전팀 | 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD` | 1차 |
 | 받음 | FPW.4-A04 정책 승인 | FPW.4-A05 G4 설계 독립 검토·판정 | 시스템엔지니어링팀 | Flag 정책(검증·승인본) `WP-POLICY` | 1차 |
+| 받음 | FPW.4-A02 플랫폼 도구 신뢰도 분류 | FPW.4-A05 G4 설계 독립 검토·판정 | 기능안전팀 | 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD` | 1차 |
 | 받음 | FPW.5-A05 시험 Evidence 연결·TMS 제출 | FPW.5-A06 G5 V&V 판정 | 시험·검증팀 | G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` | 1차 |
 | 받음 | FPW.6-A03 SUMS 기록·형식승인 확인 | FPW.6-A05 OTA Gate 판정 등록 | 법규인증팀 | SUMS 업데이트 기록 `WP-SUMS-RECORD` | 1차 |
 | 받음 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6-A05 OTA Gate 판정 등록 | SW통합·릴리스팀 | 서명 배포 패키지 `WP-SIGNED-PACKAGE` | 1차 |

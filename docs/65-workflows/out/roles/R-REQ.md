@@ -30,7 +30,7 @@ last_updated: 2026-11-04
 ### FPW.3-A01 안전요구 도출·명세 — 수행·책임
 - 프로세스: FPW.3 안전요구 확정
 - 시작: 앞 활동 완료
-- 입력: WP-G2-DECISION, WP-HARA-TARA, WP-SOTIF-ANALYSIS → 출력: WP-SAFETY-REQ
+- 입력: WP-HARA-TARA, WP-SOTIF-ANALYSIS, WP-G2-DECISION → 출력: WP-SAFETY-REQ
 - 플랫폼: `/trace/design`, `/change/cr`
 1. Safety Goal별로 기능·기술 안전요구를 도출하고 SW에 할당된 요구를 SW 안전요구로 나눈다
 2. F2 이상 Feature는 비활성화 등급·경고·인계·감소 시간·Safe State·끝 상태·운전자 정보를 요구로 쓴다
@@ -61,13 +61,14 @@ last_updated: 2026-11-04
 ### FPW.3-A04 G3 판정·Feature 정의 승인 — 수행·책임
 - 프로세스: FPW.3 안전요구 확정
 - 시작: 앞 활동 완료
-- 입력: WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION → 출력: WP-G3-DECISION
+- 입력: WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION, WP-REF-LINK → 출력: WP-G3-DECISION
 - 플랫폼: `transition`, `/features/:id/:ver`, `/admin/approval`
 1. G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다
 2. 판정 근거를 정리해 G3 판정을 남긴다
 3. Lifecycle을 PROPOSED에서 APPROVED로 전이한다. 작성자는 이 전이를 할 수 없다
 4. 아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다
 - [ ] Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다
+- [ ] 연결된 기준 행에 요청 중(PENDING)·폐기 행이 없다. 요청 중 행은 Feature DB 관리자 승인 뒤에만 전이한다
 
 ### FPW.4-A04 정책 승인 — 수행·책임
 - 프로세스: FPW.4 안전 설계·정책 설계

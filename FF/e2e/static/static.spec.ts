@@ -61,6 +61,7 @@ test('정적 데모: Feature DB 변경 요청 상세 (목록에서 열기)', asy
   await expect(link).toBeVisible();
   await link.click();
   await expect(page).toHaveURL(/\/master\/feature-db\/changes\/CR-\d{4}-\d+$/);
+  await expect(page.locator('#cr-diff')).toBeVisible();
   await openAllTabs(page);
   await expect(page.locator('[data-state="error"]')).toHaveCount(0);
   expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
@@ -81,6 +82,7 @@ test('정적 데모: Feature DB 쪽·필터·상세와 등록 1단계 패싯', a
   await page.locator('#main a[href^="/master/feature-db/CH-"]').first().click();
   // 상세로 옮겨 간 뒤에 탭을 센다 — 목록의 탭(기준 행·출처)을 세면 사라진 탭을 누른다
   await expect(page).toHaveURL(/\/master\/feature-db\/CH-/);
+  await expect(page.locator('#ref-identity')).toBeVisible();
   await openAllTabs(page);
   await page.goto('/feature/propose');
   await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();

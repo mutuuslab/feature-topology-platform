@@ -27,6 +27,8 @@ FROM deps AS build
 COPY contracts/ contracts/
 COPY backend/ backend/
 COPY frontend/ frontend/
+# Vite 설정이 사용하는 빌드 전용 경로 변환기(runtime에는 복사하지 않는다).
+COPY tools/browser-routes.ts tools/
 RUN npm run build -w @ff/contracts \
  && npm run build -w feature-topology-backend \
  && cd frontend && VITE_AUTH=oidc npx vite build --outDir dist-prod --emptyOutDir --logLevel warn

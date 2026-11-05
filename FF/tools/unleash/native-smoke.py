@@ -42,6 +42,22 @@ def close_window():
         return True
     ctypes.windll.user32.EnumWindows(callback_type(visit), 0)
 
+
+def has_owned_window():
+    found = []
+    callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+    def visit(hwnd, unused):
+        pid = ctypes.c_ulong()
+        ctypes.windll.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+        if pid.value == root.pid:
+            title = ctypes.create_unicode_buffer(256)
+            ctypes.windll.user32.GetWindowTextW(hwnd, title, len(title))
+            if title.value == 'Feature Platform':
+                found.append(hwnd)
+        return True
+    ctypes.windll.user32.EnumWindows(callback_type(visit), 0)
+    return bool(found)
+
 passed = False
 try:
     deadline = time.monotonic() + args.timeout
@@ -80,8 +96,9 @@ try:
                         for child in process.children(recursive=True): remember(child)
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     pass
-        if passed:
+        if passed and has_owned_window():
             break
+        passed = False
         time.sleep(.25)
     assert passed, 'Desktop did not expose healthy FF + real Unleash before timeout'
     if args.retention_phase:

@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, matchesGlob, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { copyUi, longPaths, MAX_RESOURCE_PATH, RESOURCES, RUNTIME_DATA, UI_EXCLUDE } from './desktop-prepare.mjs';
 
@@ -118,4 +118,42 @@ test('이미지 CI는 준비 점검에서 Feature DB 시드(checks.refdb.ok)를 
 test('데스크톱 빌드는 자산 준비 뒤 패키지 스모크(desktop:smoke)를 돈다', () => {
   const conf = JSON.parse(readFileSync(join(FF, 'src-tauri', 'tauri.conf.json'), 'utf8'));
   assert.match(conf.build.beforeBuildCommand, /desktop:prepare\s*&&\s*npm run desktop:smoke/);
+});
+
+test('Docker Vite 설정의 로컬 빌드 도구는 문맥·build COPY에 있고 runtime에는 없다', () => {
+  const dockerfile = readFileSync(join(FF, 'docker', 'app', 'Dockerfile'), 'utf8');
+  const ignore = readFileSync(join(FF, '.dockerignore'), 'utf8').split(/\r?\n/).map(s => s.trim()).filter(s => s && !s.startsWith('#'));
+  const inContext = file => {
+    const parts = file.split('/'), ancestors = parts.map((_, i) => parts.slice(0, i + 1).join('/'));
+    let included = true;
+    for (const rule of ignore) {
+      const keep = rule.startsWith('!'), pattern = (keep ? rule.slice(1) : rule).replace(/^\/|\/$/g, '');
+      if (ancestors.some(path => matchesGlob(path, pattern))) included = keep;
+    }
+    return included;
+  };
+  const required = new Set(), seen = new Set();
+  const scan = file => {
+    if (seen.has(file)) return;
+    seen.add(file);
+    for (const m of readFileSync(file, 'utf8').matchAll(/(?:\bfrom\s+|\bimport\s*(?:\(\s*)?|\brequire\(\s*)['"](\.[^'"]+)['"]/g)) {
+      const base = resolve(dirname(file), m[1]);
+      const dependency = [base, `${base}.ts`, `${base}.mjs`, `${base}.js`, join(base, 'index.ts')].find(p => existsSync(p) && statSync(p).isFile());
+      assert.ok(dependency, `Vite 로컬 의존 파일 없음: ${m[1]}`);
+      const path = relative(FF, dependency).replace(/\\/g, '/');
+      if (!path.startsWith('tools/')) continue;
+      required.add(path); scan(dependency);
+    }
+  };
+  scan(join(FF, 'frontend', 'vite.config.ts'));
+  assert.ok(required.has('tools/browser-routes.ts'));
+  const build = /^FROM deps AS build\s*$([\s\S]*?)(?=^FROM\s)/m.exec(dockerfile)?.[1] ?? '';
+  for (const file of required) {
+    assert.ok(inContext(file), `.dockerignore excludes Vite build input: ${file}`);
+    const copies = [...build.matchAll(/^COPY\s+(\S+)\s+(\S+)\s*$/gm)];
+    assert.ok(copies.some(([, source, target]) => source === file && [file, './' + file, dirname(file).replace(/\\/g, '/') + '/', './' + dirname(file).replace(/\\/g, '/') + '/'].includes(target)), `build COPY missing Vite input: ${file}`);
+  }
+  for (const file of ['tools/verify.ts', 'tools/browser-routes.test.ts', 'tools/unleash/server-package.json']) assert.equal(inContext(file), false, `${file} must stay outside the build context`);
+  const runtime = /^FROM .* AS runtime\s*$([\s\S]*)/m.exec(dockerfile)?.[1] ?? '';
+  assert.doesNotMatch(runtime, /^COPY\b[^\r\n]*\btools(?:\/|\s|$)/m, 'runtime must not copy build tools');
 });

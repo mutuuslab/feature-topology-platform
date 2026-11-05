@@ -16,6 +16,7 @@ e2e/shots
 frontend/public/api-snapshot
 harness
 sim
-tools
+tools/*
+!tools/browser-routes.ts
 **/__pycache__
 *.log

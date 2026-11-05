@@ -40,6 +40,8 @@ Native supervisor `FF/tools/unleash/runtime.mjs`는 기본으로 PostgreSQL 5543
 
 Tauri는 Node supervisor를 실행하고 `FF_DESKTOP_READY:<port>`를 받은 뒤 루프백 UI를 연다. 공식 server 파일의 긴 경로를 NSIS에 직접 넣지 않고 SHA256으로 검사하는 `sidecars.tar.gz`로 포함한다. 설치 후 private data 폴더로 원본 그대로 추출한다. 앱 종료 시 supervisor에 stop을 보내 정리 완료를 기다린다. Node·Unleash·Edge·PostgreSQL이 설치 자산에 포함되어 Docker가 필요하지 않다.
 
+`FF/tools/unleash/archive.mjs`는 같은 압축 파일을 한 번만 gzip 해제하고, 서로 겹치지 않는 패키지 경로를 네 작업자로 추출한다. 공식 배포 파일·라이선스·소스맵을 생략하거나 수정하지 않는다. 전체 작업이 성공해야 완료 표식을 쓰고, 생성한 임시 tar 파일만 정리한다. 이번 통합 자산의 26,378개 파일을 원본과 SHA256으로 대조해 누락·추가·내용 변경이 없음을 확인했다. sidecar/FF가 시작 중이고 readiness 전이어도 stop을 처리하며 실제 정리 완료를 기다린다. 이 경로는 별도 native 시험으로 확인했다. Edge의 토큰 재검증 주기는 1초이며 upstream 검증을 그대로 수행한다.
+
 기존 Tauri `feature-platform.sqlite`가 있고 대상 PG DB가 비어 있으면 읽기 전용 SQLite backup을 별도 working copy로 만든 뒤 최신 schema를 적용하고 기존 `copySqliteToPg`로 이전한다. 테이블 행 수와 감사 체인 검증이 끝나야 부팅한다. 원본 SQLite는 바꾸거나 지우지 않는다. 이전 실패는 marker로 남겨 조용히 새 데모 DB를 열지 않는다. 사용자 데이터와 KEK는 함께 백업해야 한다.
 
 데스크톱과 Docker에는 `data/fixtures`, `data/reference`, `data/source`가 포함된다. 따라서 통합된 개발비 basis와 C4 Excel 템플릿도 같은 앱의 자산으로 배포된다. 실제 통합 브랜치의 최신 backend/contracts/frontend를 빌드하며 별도 과거 앱을 복사하지 않는다.
@@ -53,3 +55,9 @@ Tauri는 Node supervisor를 실행하고 `FF_DESKTOP_READY:<port>`를 받은 뒤
 ## 검증 경계
 
 `backend/test/d01/unleash-vehicle.spec.ts`는 외부 전송을 대체한 인증·서명 경계 단위 시험이다. `unleash-vehicle-live.spec.ts`는 opt-in 실제 고정 server/Edge 통합 시험이며 모의 성공으로 대체하지 않는다. `tools/unleash/smoke.mjs`는 실제 실행 중인 FF HTTP와 PG DB, CMAC, Edge 결과, 독립 공개키 서명·TTL을 검사한다. `tools/unleash/runtime.test.mjs`는 포트 충돌·비밀 로그·고정 lock을 검사한다. 전체 verify와 최종 통합 자산 검증은 이 변경을 합친 브랜치에서 다시 수행한다.
+
+2026-11-05 통합 설치 자산 검증은 `FF_SHOWCASE=1`, 전시 차량 480대, `FF_SYNTHETIC=1200` 표본으로 통과했다. 첫 readiness 156.58초, 전체 시험 239.37초이며 기존 180초 기동·420초 전체 제한을 유지했다. 실제 Native PostgreSQL·Unleash·Edge, 차량 CMAC/Ed25519·TTL, 사본 일치, UI·출처 제한, 184 Feature Version·24 산정 과제·59 의존관계와 재시작 후 데이터 보존을 확인했다. 추가로 강화한 합성 24,000개 프로필의 첫 실행은 180초 제한을 넘겼으므로 설치본의 통과 범위에 포함하지 않는다. 별도 웹 데모의 480대·24,000개 실행 결과와 구분한다.
+
+최종 UI를 포함한 Rust release와 NSIS 생성도 통과했다. 설치 파일은 `FF/src-tauri/target/release/bundle/nsis/Feature Platform_0.1.0_x64-setup.exe`이며 155,690,435바이트, SHA256 `ea68fb56de8b9264b9db79d466c096e3d77b12e631757826f7d480df118b5a54`다. 최종 실행 파일을 기존 격리 데이터로 열어 실제 창의 소유 PID, live health, 이전 Feature의 ID·Version·이름 보존, WM_CLOSE 후 모든 전용 서비스 정리를 확인했다. 이 native 서버의 readiness는 100.05초였다. 화면 픽셀의 시각 검수는 관찰하지 못했으며 창·프로세스·HTTP·데이터 검증과 구분한다.
+
+재현 원천은 `FF/tools/desktop-smoke.test.mjs`, `FF/tools/unleash/runtime.test.mjs`, `FF/tools/desktop-native-smoke.ps1` 및 `FF/tools/unleash/native-smoke.py`다. 로컬 실행 근거는 `C:/tmp/ff-unleash/root-desktop-newest-smoke-v5.log`, `root-desktop-cold-proof.json`, `root-desktop-newest-nsis.log`, `root-desktop-artifacts.json`, `root-native-final-retention.log`, `root-native-retention.json`에 있다. 성공한 임시 시험 프로필은 시험이 정리하므로 cold proof의 단계 시간은 실행 중 도구로 관찰한 값임을 명시했다. 원본 사용자 데이터와 이전 격리 프로필은 삭제하지 않았다.

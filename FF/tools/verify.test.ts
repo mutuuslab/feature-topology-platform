@@ -15,6 +15,19 @@ test('conformance는 --strict(42/42)로 돈다', () => assert.match(step('confor
 test('통합 검사(고아 모듈·형제 저장소·CARLA 실행기·정적 데모)가 verify에 있다', () => {
   for (const id of ['deadcode', 'siblings', 'sim:test', 'e2e:static', 'budget', 'ext:check', 'ota:conformance', 'test:hygiene', 'packaging']) assert.ok(step(id), id);
 });
+test('packaging은 실제 백엔드 빌드·스냅샷 생성 뒤 같은 검사를 돈다 — 클린 체크아웃의 잔존 파일 의존 금지', () => {
+  const packaging = STEPS.find((s) => s.id === 'packaging')!;
+  const commands = packaging.cmd.replace(/\bnpm\.cmd\b/g, 'npm').split(/\s*&&\s*/);
+  const build = commands.indexOf('npm run build -w feature-topology-backend');
+  const snapshot = commands.indexOf('node tools/snapshot-api.ts');
+  const check = commands.indexOf('node --test tools/packaging.test.mjs tools/demo-publish.test.ts');
+  assert.ok(build >= 0, '빌드된 백엔드를 로컬 잔존물로 가정하지 않는다');
+  assert.ok(snapshot > build, '실제 스냅샷 생성은 백엔드 빌드 성공 뒤에 돈다');
+  assert.ok(check > snapshot, 'packaging 검사는 실제 스냅샷 생성 성공 뒤에 돈다');
+  assert.equal(packaging.full, undefined, '기본 CI verify에서도 실행한다');
+  assert.equal(packaging.when, undefined, '스냅샷 부재를 skip하지 않는다');
+  assert.ok(STEPS.findIndex((s) => s.id === 'contracts:build') < STEPS.indexOf(packaging), '전체 verify는 contracts를 먼저 빌드한다');
+});
 test('운영 빌드 검사(build:prod)와 SSO e2e(e2e:oidc)가 verify에 있다 — 데모 로그인이 운영 번들에 다시 실리지 않게', () => {
   assert.match(step('build:prod'), /prod-bundle\.test\.ts/);
   assert.match(step('e2e:oidc'), /playwright\.oidc\.config\.ts/);

@@ -2,14 +2,14 @@
 id: INT-ALM-SYNC
 type: integration
 title: "JIRA·codeBeamer 연계 — Feature 등록 동기화와 산출물 추적 / ALM Sync"
-status: draft
-version: 0.1.0
+status: approved
+version: 0.2.0
 owner: feature-architect
 cycle: 0
 traces:
   depends_on: [ARC-FEATURE-REFDB, INT-CODEBEAMER-EVIDENCE]
   related: [INT-CODEBEAMER, ARC-COST-ESTIMATION]
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 
 # 80-50 JIRA·codeBeamer 연계 — Feature 등록 동기화와 산출물 추적
@@ -17,7 +17,7 @@ last_updated: 2026-11-04
 > 짝 문서: Feature DB `30-data-model/30-95-feature-reference-db.md`, 개발비 산정 `20-architecture/20-94-cost-estimation.md`.
 > 기존 연계 구현: `FF/backend/src/domains/d05-ext/api-gateway/ext-sync/`, 규칙 `FF/contracts/src/rules/ext-sync.ts`, 마이그레이션 `043_ext_sync`.
 > codeBeamer REST 근거(역공학, 2026-11-04): `80-51-codebeamer-api-evidence.md` — 이 문서의 codeBeamer 호출·모의 동작은 그 문서를 따른다.
-> 작성 2026-11-04, 브랜치 `feat/feature-db-alm`. 상태: **설계 초안 — 사용자 승인 전 구현하지 않는다.**
+> 작성 2026-11-04. **2026-11-05 사용자 승인** — 구현 브랜치 `feat/alm-sync`(worktree `-alm`, `feat/feature-db`에서 분기). **실서버는 연결하지 않는다**(사용자 결정) — 모의 서버가 실서버 자리를 끝까지 대신한다.
 
 ## 1. 한 줄 요약
 
@@ -47,6 +47,8 @@ FF는 **추적 완결성과 승인 상태를 점검해 게이트에 연결**하�
 | D-ALM-14 | 승인 뒤 바뀐 산출물: **영향 표시 + 아래 단계 의심(suspect) + 게이트 재판정 요청** |
 | D-ALM-15 | 트래커: **산출물별 트래커, FF가 표준 구조 정의**, 이름·필드는 실서버(hub.slexn.com 프로젝트 52 "901.Agile-Waterfall Hybrid")의 ASPICE 트래커 명명을 따름 |
 | D-ALM-16 | 모의 서버: **독립 모의 서버 새로 작성**, 위치 **`FF/tools/ext-mocks`** |
+| D-ALM-17 | (2026-11-05) **실서버는 연결하지 않는다.** 데모 설치는 **모의 연계를 실제 연결처럼 표시**(seamless) — 외부 도구 창의 시연 배지·안내 줄·시연 계정 문구, FF의 '모의(연결 전)'·'모의' 방식 표시·경고색·어댑터 이름·외부 변경 흉내 패널, 모의 항목 본문의 시연 출처 문구를 그리지 않는다. 운영 설치는 그대로 '연결 안 됨'(RD-UX-04). `FF_DEMO_LABELS=on`이면 데모도 표시한다(e2e 기본). 판정은 서버 `GET /api/system/connections`의 `presentation` |
+| D-ALM-18 | (2026-11-05) §11 A-1·A-3·A-4는 기본값 그대로, A-2는 **새 Feature만 `FEAT-BC-0001` 형식**(기존 `FEAT-00001` 유지, 두 형식 허용). A-5·A-6은 실서버를 쓰지 않으므로 해당 없음(모의 서버 설정이 기준) |
 
 같은 날 Feature DB 쪽 결정(30-95·20-94 반영 대상): 런타임 xlsx는 **SheetJS를 백엔드 의존성으로**(같은 날 구현 뒤 다시 결정: 새 의존성 없는 최소 쓰기 유지 — 30-95 D-REF-14), 산정 결과 내보내기는 **엑셀 도구 전체 양식**, Feature ID는 **도메인 포함 형식으로 변경**(형식은 §11 확인), R1+R2 구현 승인.
 
@@ -300,7 +302,8 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 | A3 | JIRA: Story ↔ FUNC, Task = 산출물 작성 일, Bug ↔ 현장 문제 | 계약 시험 |
 | A4 | codeBeamer: 트래커 8종·항목·관계 수집, 완결성 규칙, Feature 상세 산출물 표 | 규칙 단위 시험 + 계약 시험 |
 | A5 | 게이트·전이 연결, 변경 영향(suspect·재판정 요청) | 백엔드·e2e |
-| A6 | JIRA 앱(실서버 형태 확정 뒤) | 실서버 또는 공식 개발 환경 |
+| A6 | JIRA 앱(실서버 형태 확정 뒤) | 실서버 또는 공식 개발 환경 — **실서버를 쓰지 않으므로 모의 서버의 앱 흉내 패널(`/_mock/app/epic-form`)까지만**(D-ALM-17) |
+| S1 | 데모 seamless 표시(D-ALM-17) | **완료(2026-11-05)** — `connectionPresentation`·`useSeamless`·`shownMode`, 외부 창·연계 화면·Unleash·체험 구매, 시드 본문. 시험: 백엔드 연결·시드, 프론트 연결·외부 창, e2e `demo-seamless.spec.ts` |
 
 선행: Feature DB R1·R2(30-95). A1은 R1·R2와 병행 가능. 각 단계 `npm run verify`, UI 변경은 `verify:full`.
 
@@ -308,9 +311,9 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 
 | # | 질문 | 제 기본값 |
 |---|---|---|
-| A-1 | 한 Feature에 버전이 여럿일 때 Epic 상태 | 작업 중 버전 상태, 출시 버전은 필드 |
-| A-2 | Feature ID 도메인 포함 형식과 기존 ID | `FEAT-BC-0001`(Feature DB 도메인 약어 2글자 + 도메인별 4자리), 기존 `FEAT-00001`은 유지·두 형식 허용 |
-| A-3 | 실제 JIRA 환경(Cloud·Data Center)과 앱 형태 | 모의는 Cloud v3, 앱은 환경 확정 뒤 |
-| A-4 | 사이버보안 요구가 필수인 Feature의 기준 | 안전 프로파일의 TARA 대상(차량 외부 통신·원격 제어·OTA 관련) |
+| A-1 | 한 Feature에 버전이 여럿일 때 Epic 상태 | **결정(D-ALM-18): 기본값** — 작업 중 버전 상태, 출시 버전은 필드 |
+| A-2 | Feature ID 도메인 포함 형식과 기존 ID | **결정: 새 Feature만** `FEAT-BC-0001`(Feature DB 도메인 약어 2글자 + 도메인별 4자리), 기존 `FEAT-00001`은 유지·두 형식 허용 |
+| A-3 | 실제 JIRA 환경(Cloud·Data Center)과 앱 형태 | **결정: 기본값** — 모의는 Cloud v3, 앱은 모의 패널까지 |
+| A-4 | 사이버보안 요구가 필수인 Feature의 기준 | **결정: 기본값** — 안전 프로파일의 TARA 대상(차량 외부 통신·원격 제어·OTA 관련) |
 | A-5 | codeBeamer 실서버 버전, 사내 Java 리스너 플러그인 유무 | **역공학으로 확인(80-51)**: 바깥 webhook 없음·관계별 suspect REST 없음 → 주기 대사 + FF 계산이 기본. 실서버 판 번호와 플러그인 유무만 남음 |
 | A-6 | 실서버 트래커·필드 ID | 실서버 접근 뒤 `CODEBEAMER_TRACKERS`로 대응 |

@@ -118,6 +118,7 @@ export const p10 = {
   },
   integrations: {
     key: (mock: number, live: number) => `외부 연계 — 모의 ${mock} · 실연동·내장 ${live}`,
+    keyAll: (n: number) => `외부 연계 ${n}개 연결`,
     title: '외부 연계 현황',
     lead: '외부 연계의 연결 방식과 호출 기록.',
     col: { if: 'IF', name: '연계', mode: '방식', adapter: '어댑터', components: '컴포넌트', calls: '호출', last: '최근' },

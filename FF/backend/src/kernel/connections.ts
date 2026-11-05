@@ -3,6 +3,12 @@
 import type { ConnectionKey, ConnectionMode, ConnectionStatus } from '@ff/contracts';
 import { otaConfigured } from './ota-config';
 
+/** 표시 방식(80-50 D-ALM-17) — 운영은 항상 labeled. 데모는 기본 seamless, FF_DEMO_LABELS=on이면 labeled */
+export function connectionPresentation(production: boolean, env: Record<string, string | undefined> = process.env): 'seamless' | 'labeled' {
+  if (production) return 'labeled';
+  return env.FF_DEMO_LABELS === 'on' ? 'labeled' : 'seamless';
+}
+
 export const CONNECTION_KEYS: readonly ConnectionKey[] = ['billing', 'ota', 'datalake'];
 
 /** 연결 정의 — 기본 모드와 실제 어댑터 유무. OTA(IF-05)만 실제 어댑터가 있다(adapters/ota, 80-45). 알림은 화면 알림만 — 메일 연결 없음(D-RD-7) */

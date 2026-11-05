@@ -5,7 +5,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import type { ConnectionsResponse } from '@ff/contracts';
-import { connectionLabel, useConnectionLabel } from '../api/connections';
+import { connectionLabel, shownMode, useConnectionLabel } from '../api/connections';
 import { ConnectionBadge } from '../design';
 import { connections as CN } from '../copy/connections';
 import { ko } from '../copy/ko';
@@ -17,8 +17,9 @@ afterEach(() => {
 });
 
 const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
-const status = (mode: 'production' | 'demo', billing: 'live' | 'mock' | 'off' = 'mock'): ConnectionsResponse => ({
+const status = (mode: 'production' | 'demo', billing: 'live' | 'mock' | 'off' = 'mock', presentation: ConnectionsResponse['presentation'] = 'labeled'): ConnectionsResponse => ({
   mode,
+  presentation,
   items: [
     { key: 'billing', mode: billing, ifId: null, liveAdapter: billing === 'live' },
     { key: 'ota', mode: 'mock', ifId: 'IF-05', liveAdapter: false },
@@ -73,6 +74,23 @@ describe('모의 연계 표시 (RD-UX-04)', () => {
     expect(connectionLabel({ mode: 'mock' }, 'production')).toBe('disconnected');
     expect(connectionLabel({ mode: 'off' }, 'demo')).toBe('disconnected');
     expect(connectionLabel(null, null)).toBe('mock');
+  });
+
+  it('데모 seamless(80-50 D-ALM-17) — 모의도 표시 없음, 운영 설치는 seamless 값이 와도 연결 안 됨', () => {
+    expect(connectionLabel({ mode: 'mock' }, 'demo', 'seamless')).toBe('none');
+    expect(connectionLabel({ mode: 'off' }, 'demo', 'seamless')).toBe('none');
+    expect(connectionLabel({ mode: 'mock' }, 'production', 'seamless')).toBe('disconnected');
+    expect(connectionLabel({ mode: 'mock' }, 'demo', 'labeled')).toBe('mock');
+    expect(shownMode('mock', true)).toBe('live');
+    expect(shownMode('mock', false)).toBe('mock');
+    expect(shownMode('internal', true)).toBe('internal');
+  });
+
+  it('데모 seamless — 화면에 모의 표시가 없다', async () => {
+    stub(status('demo', 'mock', 'seamless'));
+    renderProbe();
+    await waitFor(() => expect(screen.getByTestId('probe').textContent).toBe(CN.panel.live));
+    expect(document.querySelector('[data-testid="probe"] [data-connection]')).toBeNull();
   });
 
   it('ConnectionBadge — 모의·연결 안 됨은 글자와 설명, 실제 연결이면 그리지 않는다', () => {

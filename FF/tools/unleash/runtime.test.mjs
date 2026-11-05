@@ -8,7 +8,7 @@ import { portsOf, assertFree, redactor, runRuntime } from './runtime.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
-import { extractionGroups, extractSidecarArchive } from './archive.mjs';
+import { extractionGroups, extractSidecarArchive, windowsTar } from './archive.mjs';
 
 test('runtime rejects collisions and invalid configuration without stopping the existing listener', async () => {
   assert.throws(() => portsOf({ FF_PG_PORT: '4242' }), /distinct/);
@@ -64,7 +64,7 @@ test('parallel extraction preserves every original byte and removes its temporar
   ]);
   try {
     for (const [name, bytes] of files) { const file = join(source, name); mkdirSync(join(file, '..'), { recursive: true }); writeFileSync(file, bytes); }
-    assert.equal(spawnSync('tar.exe', ['-czf', archive, '-C', source, '.'], { windowsHide: true }).status, 0);
+    assert.equal(spawnSync(windowsTar(), ['-czf', archive, '-C', source, '.'], { windowsHide: true }).status, 0);
     const archiveBytes = readFileSync(archive);
     await extractSidecarArchive(archive, destination);
     for (const [name, bytes] of files) assert.deepEqual(readFileSync(join(destination, name)), bytes, name);
@@ -106,4 +106,9 @@ test('native startup can be cancelled before FF readiness and stops its private 
   } finally {
     if (child.exitCode === null) { child.stdin.write('stop\n'); await Promise.race([exited, new Promise((r) => { const timer = setTimeout(r, 30000); timer.unref(); })]); if (child.exitCode === null) child.kill(); }
   }
+});
+
+test('Windows tar is the System32 bsdtar, not whatever tar.exe comes first on PATH (Git Bash GNU tar breaks drive-letter paths)', { skip: process.platform !== 'win32' }, () => {
+  assert.equal(windowsTar({ SystemRoot: 'C:\\Windows' }, 'win32'), 'C:\\Windows\\System32\\tar.exe');
+  assert.equal(windowsTar({}, 'linux'), 'tar');
 });

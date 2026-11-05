@@ -16,12 +16,14 @@ describe('모의 외부 도구의 요구·Epic·CR 상세 자료', () => {
     const t = s.featureTrace(f.featureId, f.version);
     const req = s.mockItems('CODEBEAMER').find((x) => x.key === t.requirements[0].key)!;
     expect(req.body).toContain(f.description!);
-    for (const section of ['기능 정의', '동작 요구', '입력·출력', '수용 기준', '변경 시 재검토', 'FeatureFlag 시연용 요구 정의']) expect(req.body).toContain(section);
+    for (const section of ['기능 정의', '동작 요구', '입력·출력', '수용 기준', '변경 시 재검토', 'FeatureFlag 요구 정의']) expect(req.body).toContain(section);
     for (const value of [f.country, f.vehicleModel, f.trim, f.version, ...f.controlPoints, ...f.swIds]) expect(req.body).toContain(value);
     for (const fn of f.functions) { expect(req.body).toContain(fn.functionId); expect(req.body).toContain(fn.label); }
     expect(req.body).not.toContain('[object Object]');
     expect(req.body).toContain('TTL 만료 시 safe-off');
-    expect(req.body).toContain('실제 검증·승인 Evidence가 아닙니다');
+    // 데모 기본(seamless, 80-50 D-ALM-17) — 시연 표시 문구 없이 실제 도구 항목처럼
+    expect(req.body).not.toMatch(/시연|가상/);
+    expect(req.fields.tracker).not.toContain('시연');
     expect(req.fields).toMatchObject({ submittedBy: 'jung.req', assignedTo: 'jung.req', risk: '미정 — 별도 위험 평가 필요', asil: f.asil, requirementStatus: 'Approved', source: 'DEMO' });
     expect(req.fields.tracker).toContain('요구사항');
     expect(req.fields.release).toContain(f.version);
@@ -38,6 +40,19 @@ describe('모의 외부 도구의 요구·Epic·CR 상세 자료', () => {
     expect(cr.body).toContain('care_00022_signal');
     expect(cr.body).toContain('Signal');
     expect(cr.body).toContain(epic.key);
+  });
+
+  it('표시 있는 데모(FF_DEMO_LABELS=on)·운영은 시연 출처 문구를 그대로 넣는다', () => {
+    const f = b.get(FeatureRepo).get('FEAT-00022', '1.0.0')!;
+    process.env.FF_DEMO_LABELS = 'on';
+    try {
+      const req = demoRequirementContent(f, 'DEMO-REQ-LABELED');
+      expect(req.body).toContain('실제 검증·승인 Evidence가 아닙니다');
+      expect(req.body).toContain('FeatureFlag 시연용 요구 정의');
+      expect(req.fields.tracker).toContain('(시연)');
+    } finally {
+      delete process.env.FF_DEMO_LABELS;
+    }
   });
 
   it('부족한 명세에는 임계값·위험도·검증 성공·원래 변경 사유를 만들어 넣지 않는다', () => {

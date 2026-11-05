@@ -1,6 +1,7 @@
 // 정책 상세의 Policy Tool 연계 패널 (D01-06 · IF-04 Unleash OSS) — 내보낼 정의·막힌 이유·서버 drift·동기화 단계·차량별 대조.
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { shownMode, useSeamless } from '../../api/connections';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, KeyValue, Panel, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
@@ -36,6 +37,7 @@ const onOff = (v: boolean | null) => (v === null ? '—' : v ? 'ON' : 'OFF');
 
 export function UnleashPanel({ policyId, deployed }: { policyId: string; deployed: boolean }) {
   const q = useApi<View>('policyUnleash', { params: { id: policyId } });
+  const seamless = useSeamless();
   const perm = usePermission(['RELEASE_MANAGER', 'OPERATOR']);
   const sync = useApiMutation<SyncResult>('syncUnleash', ['policyUnleash', 'unleashEvaluation', 'audit', 'integrationCalls']);
   const [check, setCheck] = useState(false);
@@ -46,7 +48,7 @@ export function UnleashPanel({ policyId, deployed }: { policyId: string; deploye
     <Panel
       title={U.title}
       codes="D01-06 · IF-04"
-      eyebrow={d ? `${U.mode[d.status.mode]}${d.status.version ? ` · ${d.status.version}` : ''}` : undefined}
+      eyebrow={d ? `${U.mode[shownMode(d.status.mode, seamless) as 'mock' | 'live' | 'off']}${d.status.version ? ` · ${d.status.version}` : ''}` : undefined}
       id="unleash"
       actions={
         <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>

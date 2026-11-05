@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { copyPostgres } from './postgres-assets.mjs';
+import { windowsTar } from './archive.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const pins = JSON.parse(readFileSync(join(here, 'pins.json'), 'utf8'));
@@ -56,7 +57,7 @@ export async function prepareAssets(destination = join(root, '.unleash-runtime/a
 
 /** NSIS paths remain short while every official server file remains unchanged in the archive. */
 export function archiveAssets(source, destination) {
-  const result = spawnSync('tar.exe', ['-czf', destination, '-C', source, '.'], { windowsHide: true, stdio: 'inherit' });
+  const result = spawnSync(windowsTar(), ['-czf', destination, '-C', source, '.'], { windowsHide: true, stdio: 'inherit' });
   if (result.status !== 0) throw new Error('Sidecar archive failed');
   writeFileSync(`${destination}.sha256`, createHash('sha256').update(readFileSync(destination)).digest('hex'));
 }

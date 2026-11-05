@@ -3,7 +3,7 @@
 import { INestApplication } from '@nestjs/common';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { BillingService } from '../../src/domains/d05-ext/billing/billing.controller';
-import { CONNECTION_KEYS, connectionStatuses } from '../../src/kernel/connections';
+import { CONNECTION_KEYS, connectionPresentation, connectionStatuses } from '../../src/kernel/connections';
 import { KernelController } from '../../src/kernel/kernel.controller';
 import { actor, bootApp } from '../helpers';
 
@@ -20,6 +20,12 @@ describe('외부 연결 상태 — 설정 규칙 (RD-UX-04)', () => {
 
   it('실제 어댑터가 없으면 FF_CONN_*=live여도 live가 아니다 — 모의를 실제처럼 보이지 않게', () => {
     expect(byKey({ FF_CONN_BILLING: 'live', FF_CONN_OTA: 'live', FF_CONN_DATALAKE: 'live' })).toEqual({ billing: 'mock', ota: 'mock', datalake: 'off' });
+  });
+
+  it('표시 방식(80-50 D-ALM-17) — 데모는 기본 seamless, FF_DEMO_LABELS=on이면 labeled, 운영은 항상 labeled', () => {
+    expect(connectionPresentation(false, {})).toBe('seamless');
+    expect(connectionPresentation(false, { FF_DEMO_LABELS: 'on' })).toBe('labeled');
+    expect(connectionPresentation(true, {})).toBe('labeled');
   });
 
   it('끄기 — FF_CONN_*=off, OTA는 IF_MODE_05=off도 따른다', () => {
@@ -42,6 +48,7 @@ describe('외부 연결 상태 (RD-UX-04)', () => {
   it('데모 설치 — 과금·OTA는 모의, Data Lake는 연결 없음', async () => {
     const r = await http().get('/api/system/connections').expect(200);
     expect(r.body.mode).toBe('demo');
+    expect(r.body.presentation).toBe(process.env.FF_DEMO_LABELS === 'on' ? 'labeled' : 'seamless');
     expect(Object.fromEntries(r.body.items.map((i: any) => [i.key, i.mode]))).toEqual({ billing: 'mock', ota: 'mock', datalake: 'off' });
     // 실제 어댑터는 OTA(IF-05 OTA 서버 어댑터)만 — 설정(FF_OTA_URL)이 없으니 모의
     expect(Object.fromEntries(r.body.items.map((i: any) => [i.key, i.liveAdapter]))).toEqual({ billing: false, ota: true, datalake: false });

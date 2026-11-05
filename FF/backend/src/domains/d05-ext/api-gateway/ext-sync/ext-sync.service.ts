@@ -241,6 +241,8 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
               this.observe(it, 'SYNCED');
               this.repo.link('JIRA', it.key, 'FEATURE', fid(f.featureId, f.version), PLATFORM_USER);
             });
+            // 만들었지만 원하는 상태까지 못 갔으면(live 워크플로 거부) 연결한 뒤 거울 쓰기로 이어 간다 — 실패는 재시도, 다시 만들지 않음
+            if (it.status.toLowerCase() !== desired.toLowerCase()) return await this.mirrorStatus(j, it.key, desired, op.comment);
             return this.done(j);
           }
           // await — 그냥 돌려주면 거부가 아래 catch를 빠져나가 drain이 거부되고 프로세스가 죽는다(2026-11-05 회귀)

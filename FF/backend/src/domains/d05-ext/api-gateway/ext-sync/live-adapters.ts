@@ -3,7 +3,7 @@
 //   GitLab REST v4: MR GET /projects/:id/merge_requests/:iid, 댓글 /notes, commit status POST /projects/:id/statuses/:sha. 개정 = updated_at(ms)
 //   codeBeamer REST v3: GET /api/v3/items/:id, 댓글 POST /api/v3/items/:id/comments. 개정 = item.version
 // 인증·주소는 환경 변수(아래 cfg). 토큰은 로그·감사·Evidence에 남기지 않는다. 시간 제한 10초, 실패는 보낼 함이 재시도한다.
-import type { ExtKind, ExtSystem } from '@ff/contracts';
+import { FEATURE_TRANSITIONS, JIRA_EPIC_STATUS, lifecycleOfEpicStatus, type ExtKind, type ExtSystem, type Lifecycle } from '@ff/contracts';
 import type { AdapterMode, ExtAdapter, RemoteItem, WritePatch, WriteResult } from './adapters';
 
 interface Cfg {
@@ -14,6 +14,27 @@ interface Cfg {
 
 const env = (k: string) => (process.env[k] ?? '').trim();
 const basic = (user: string, token: string) => `Basic ${Buffer.from(`${user}:${token}`).toString('base64')}`;
+
+/**
+ * Epic 상태 경로 — JIRA Epic 워크플로는 FF 수명주기와 같은 전이만 갖는다(80-50 §4.3). Epic이 몇 단계 뒤에 있으면
+ * (예: 새 Epic은 Proposed, Feature는 DEVELOPING) FF 전이 순서대로 한 단계씩 간다. 둘 중 하나라도 Epic 상태가 아니면 null.
+ */
+export function epicStatusPath(from: string, to: string): string[] | null {
+  const a = lifecycleOfEpicStatus(from);
+  const b = lifecycleOfEpicStatus(to);
+  if (!a || !b) return null;
+  const prev = new Map<Lifecycle, Lifecycle | null>([[a, null]]);
+  const queue: Lifecycle[] = [a];
+  while (queue.length) {
+    const cur = queue.shift()!;
+    if (cur === b) break;
+    for (const t of FEATURE_TRANSITIONS) if (t.from === cur && !prev.has(t.to)) (prev.set(t.to, cur), queue.push(t.to));
+  }
+  if (!prev.has(b)) return null;
+  const path: Lifecycle[] = [];
+  for (let at: Lifecycle | null = b; at && at !== a; at = prev.get(at) ?? null) path.unshift(at);
+  return path.map((l) => JIRA_EPIC_STATUS[l]);
+}
 
 export function liveConfig(system: ExtSystem): Cfg | { missing: string[] } {
   const need = (keys: string[]) => keys.filter((k) => !env(k));
@@ -109,15 +130,31 @@ export class LiveAdapter implements ExtAdapter {
     // 새 이슈는 워크플로 첫 상태로 생긴다 — 이미 그 상태면 전이하지 않는다(자기 자신으로 가는 전이는 보통 없다)
     const made = (await this.read(r.data.key))!;
     if (!f.status || made.status.toLowerCase() === f.status.toLowerCase()) return made;
-    await this.transition(r.data.key, f.status);
+    // 만든 뒤 전이가 실패해도 만든 이슈를 돌려준다 — 던지면 플랫폼이 연결하지 못해 다음 재시도에서 같은 Epic을 또 만든다.
+    // 상태 차이는 플랫폼이 연결한 뒤 거울 쓰기로 다시 맞춘다(2026-11-05 모의 서버 기동 점검에서 찾음)
+    try {
+      await this.transition(r.data.key, f.status);
+    } catch {
+      return made;
+    }
     return (await this.read(r.data.key))!;
   }
 
   private async transition(key: string, status: string) {
-    const t = await this.req<{ transitions: { id: string; to: { name: string } }[] }>('GET', `/rest/api/2/issue/${encodeURIComponent(key)}/transitions`);
-    const hit = (t.data.transitions ?? []).find((x) => x.to?.name?.toLowerCase() === status.toLowerCase());
-    if (!hit) throw new Error(`JIRA ${key}: '${status}'(으)로 가는 워크플로 전이가 없습니다 — JIRA 워크플로와 상태 매핑(JIRA_EPIC_STATUS·JIRA_CR_STATUS)을 맞추세요.`);
-    await this.req('POST', `/rest/api/2/issue/${encodeURIComponent(key)}/transitions`, { transition: { id: hit.id } });
+    const base = `/rest/api/2/issue/${encodeURIComponent(key)}/transitions`;
+    const step = async (to: string) => {
+      const t = await this.req<{ transitions: { id: string; to: { name: string } }[] }>('GET', base);
+      const hit = (t.data.transitions ?? []).find((x) => x.to?.name?.toLowerCase() === to.toLowerCase());
+      if (hit) await this.req('POST', base, { transition: { id: hit.id } });
+      return !!hit;
+    };
+    if (await step(status)) return;
+    // 바로 가는 전이가 없으면 Epic 수명주기 경로를 따라간다
+    const now = await this.read(key);
+    const path = now ? epicStatusPath(now.status, status) : null;
+    const fail = (to: string) => new Error(`JIRA ${key}: '${to}'(으)로 가는 워크플로 전이가 없습니다 — JIRA 워크플로와 상태 매핑(JIRA_EPIC_STATUS·JIRA_CR_STATUS)을 맞추세요.`);
+    if (!path || path.length < 2) throw fail(status);
+    for (const to of path) if (!(await step(to))) throw fail(to);
   }
 
   // ── 쓰기(기대 개정이 다르면 충돌) ──

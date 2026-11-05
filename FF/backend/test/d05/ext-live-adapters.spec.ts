@@ -1,7 +1,7 @@
 // 실제 연결 어댑터(JIRA REST v2 · GitLab REST v4 · codeBeamer REST v3) — 실서버 대신 요청을 기록하고 정해진 응답을 돌려주는 가짜 fetch로
 // 경로·인증 헤더·본문 모양, 기대 개정 충돌, 워크플로 전이 찾기, 설정 누락 안내를 확인한다.
 import { afterEach, describe, expect, it } from 'vitest';
-import { LiveAdapter } from '../../src/domains/d05-ext/api-gateway/ext-sync/live-adapters';
+import { epicStatusPath, LiveAdapter } from '../../src/domains/d05-ext/api-gateway/ext-sync/live-adapters';
 
 type Route = (method: string, url: string, body: any) => { status: number; body: unknown } | undefined;
 const fake = (route: Route) => {
@@ -77,6 +77,37 @@ describe('실제 연결 어댑터', () => {
     // 다른 상태를 원하면 전이한다
     status = 'Proposed';
     expect(await a.create('EPIC', { title: 'FEAT-00030@1.0.0', body: '', status: 'Approved' })).toMatchObject({ status: 'Approved' });
+  });
+
+  // 회귀(2026-11-05, 80-50 A1 모의 JIRA): Epic 워크플로는 FF 수명주기 전이만 있어 새 Epic(Proposed)을 In Progress로 한 번에 옮길 수 없다.
+  // 전이를 한 번만 찾던 어댑터는 실패했고, 만든 뒤 실패하면 연결 전에 던져 다음 재시도가 Epic을 또 만들었다.
+  it('JIRA Epic — 바로 가는 전이가 없으면 FF 수명주기 경로대로 한 단계씩, 끝내 못 가면 만든 Epic은 그대로 돌려준다', async () => {
+    expect(epicStatusPath('Proposed', 'In Progress')).toEqual(['Approved', 'In Progress']);
+    expect(epicStatusPath('In Verification', 'In Progress')).toEqual(['In Progress']);
+    expect(epicStatusPath('Proposed', 'Rolled Back')).toBeNull();
+    Object.assign(process.env, { JIRA_URL: 'https://jira.corp.example', JIRA_TOKEN: 'pat', JIRA_EPIC_PROJECT: 'FFE' });
+    const flow: Record<string, string[]> = { Proposed: ['Approved'], Approved: ['In Progress'], 'In Progress': ['In Verification'] };
+    let status = 'Proposed';
+    let made = 0;
+    const f = fake((m, url, body) => {
+      if (m === 'POST' && url.endsWith('/rest/api/2/issue')) return (made++, { status: 201, body: { key: 'FFE-11' } });
+      if (m === 'GET' && url.includes('/rest/api/2/issue/FFE-11?')) return { status: 200, body: { key: 'FFE-11', fields: { summary: 'x', status: { name: status }, issuetype: { name: 'Epic' }, updated: '2026-11-05T01:00:00.000+0000' } } };
+      if (m === 'GET' && url.endsWith('/transitions')) return { status: 200, body: { transitions: (flow[status] ?? []).map((to, i) => ({ id: String(21 + i), to: { name: to } })) } };
+      if (m === 'POST' && url.endsWith('/transitions')) {
+        status = flow[status][Number(body.transition.id) - 21];
+        return { status: 204, body: {} };
+      }
+      return undefined;
+    });
+    const a = new LiveAdapter('JIRA', () => 'live', f.fn);
+    expect(await a.create('EPIC', { title: 'x', body: '', status: 'In Progress' })).toMatchObject({ key: 'FFE-11', status: 'In Progress' });
+    expect(f.calls.filter((c) => c.method === 'POST' && c.url.endsWith('/transitions')).map((c) => c.body.transition.id)).toEqual(['21', '21']);
+    // 갈 수 없는 상태(워크플로가 다름) — 만들기는 던지지 않고 만든 이슈를 돌려준다(한 번만 만듦)
+    status = 'Proposed';
+    flow.Proposed = [];
+    expect(await a.create('EPIC', { title: 'x', body: '', status: 'In Progress' })).toMatchObject({ key: 'FFE-11', status: 'Proposed' });
+    expect(made).toBe(2);
+    await expect(a.write('FFE-11', { status: 'In Progress' }, null)).rejects.toThrow(/'Approved'\(으\)로 가는 워크플로 전이가 없습니다/);
   });
 
   it('GitLab — PRIVATE-TOKEN, MR 읽기, commit status는 병합 커밋 SHA에', async () => {

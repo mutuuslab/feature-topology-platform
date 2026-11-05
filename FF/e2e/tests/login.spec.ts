@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
-test('로그인 — 틀린 비밀번호는 막고, FF/platform이면 내 대시보드로 들어간다', async ({ page }) => {
+test('로그인 — 틀린 비밀번호는 막고, FF/FF는 대소문자 구분 없이 들어간다', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await page.goto('/login');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('차를 판매한 뒤에도');
@@ -13,7 +13,8 @@ test('로그인 — 틀린 비밀번호는 막고, FF/platform이면 내 대시�
   await page.getByRole('button', { name: '플랫폼 들어가기' }).click();
   await expect(page.getByRole('alert')).toContainText('ID 또는 비밀번호가 맞지 않습니다');
 
-  await page.getByLabel('Password').fill('platform');
+  await page.getByLabel('ID').fill('ff');
+  await page.getByLabel('Password').fill('fF');
   await page.getByRole('button', { name: '플랫폼 들어가기' }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { name: '업무 절차 지도' })).toBeVisible();

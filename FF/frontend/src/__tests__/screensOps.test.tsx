@@ -104,13 +104,17 @@ describe('차량별 적용 상태', () => {
             evaluations: [{ flagKey: 'care_00022_param', local: { value: true, decision: 'ALLOW', reason: 'POLICY_MATCH' }, server: { value: false, decision: 'SAFE_DEFAULT', reason: 'KILL_SWITCH' }, drift: true }],
           },
         };
-      if (url.startsWith('/api/vehicles')) return { body: { items: [{ vin: 'ego-01', label: '시연' }] } };
+      if (url.startsWith('/api/vehicles/ego-01/requests')) return { body: { cursor: null, limit: { requests: 30, windowMs: 10_000 }, items: [] } };
+      if (url.startsWith('/api/vehicles/ego-01/status')) return { body: { features: [], recent: [] } };
+      if (new URL(url, 'http://test').pathname === '/api/vehicles') return { body: { items: [{ vin: 'ego-01', label: '시연' }] } };
     };
     mount('/fleet/vehicles/ego-01', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
     expect(await screen.findByText('BOOT-ego-01-1')).toBeTruthy();
     expect(screen.getByText('ON · POLICY_MATCH')).toBeTruthy();
     expect(screen.getByText('OFF · KILL_SWITCH')).toBeTruthy();
     expect(screen.getByText('REPLAY')).toBeTruthy();
+    expect(await screen.findByText(/빈도 한도 30회 \/ 10초/)).toBeTruthy();
+    expect(screen.getByText('아직 이 차량이 보낸 요청이 없습니다')).toBeTruthy();
   });
 
   it('상태 보고 v2 — 받아들인 상태(DC2 인계 경고)·report_seq(시동·순번)와 위반 보고를 구분(FFG-TEL-003), 보고가 없으면 UNKNOWN 안내', async () => {

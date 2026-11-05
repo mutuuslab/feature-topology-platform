@@ -1,4 +1,7 @@
 // 로그인 화면 문구 — 데모 빌드는 아이디·비밀번호(데모 고정값, auth-demo.ts), 운영 빌드(VITE_AUTH=oidc)는 회사 계정 SSO 버튼(sso).
+// 별도 export여야 운영 SSO에서 쓰는 공용 문구 객체와 함께 번들에 남지 않는다.
+export const demoLoginHint = '데모 계정: ID FF · Password FF (대소문자 구분 없음)';
+
 export const login = {
   eyebrow: 'Feature Platform · FF',
   title: '차를 판매한 뒤에도,\n기능에 대한 약속은 계속된다',

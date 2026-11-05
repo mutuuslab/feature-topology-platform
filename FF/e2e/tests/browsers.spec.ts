@@ -33,7 +33,7 @@ test.describe('로그인', () => {
     await page.getByLabel('Password').fill('nope');
     await page.getByRole('button', { name: '플랫폼 들어가기' }).click();
     await expect(page.getByRole('alert')).toContainText('ID 또는 비밀번호가 맞지 않습니다');
-    await page.getByLabel('Password').fill('platform');
+    await page.getByLabel('Password').fill('FF');
     await page.getByRole('button', { name: '플랫폼 들어가기' }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.locator('#main .jd')).toBeVisible();

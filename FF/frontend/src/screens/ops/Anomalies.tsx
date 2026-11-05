@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { virtualCopy } from '../../copy/virtual';
 import { control as CT } from '../../copy/control';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Segmented, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
@@ -233,7 +234,7 @@ export function FeedbackScreen() {
               {open.actions.map((x) => (
                 <li key={x.ref} data-state={open.status === 'RESOLVED' ? 'PASS' : 'INFO'}>
                   <span>{x.label}</span>
-                  {x.kind === 'VIRTUAL_REGRESSION' && <Link to="/validations/virtual">{ko.virtual.title} →</Link>}
+                  {x.kind === 'VIRTUAL_REGRESSION' && <Link to="/validations/virtual">{virtualCopy.title} →</Link>}
                 </li>
               ))}
             </ul>

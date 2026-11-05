@@ -33,6 +33,9 @@ import { series, simClockLabel, useTickHistory } from './liveMonitor';
 
 type Tone = 'pass' | 'pending' | 'fail' | 'info' | 'muted' | 'brand';
 
+/** 엔진의 0..1 비율을 표시할 때만 백분율로 변환한다. */
+const percent = (ratio: number) => `${Number((ratio * 100).toFixed(1))}%`;
+
 function Section({
   title,
   right,
@@ -67,7 +70,7 @@ function KV({ k, v, mono }: { k: string; v: React.ReactNode; mono?: boolean }) {
 function Bar({ pct, tone, mark }: { pct: number; tone?: Tone; mark?: number }) {
   const cls = tone === 'pending' ? 'tbar is-pending' : tone === 'fail' ? 'tbar is-fail' : 'tbar';
   return (
-    <div className={cls} role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
+    <div className={cls} role="progressbar" aria-valuenow={Math.round(Math.max(0, Math.min(100, pct)))} aria-valuemin={0} aria-valuemax={100}>
       <i style={{ width: `${Math.max(0, Math.min(100, pct))}%` }} />
       {mark != null && <span className="tbar-mark" style={{ left: `${Math.max(0, Math.min(100, mark))}%` }} />}
     </div>
@@ -266,18 +269,18 @@ export function TwinLeftPanel({
       <Section
         title="Fleet 수렴"
         tone={convergence.convergenceRate < convergence.threshold ? 'warn' : undefined}
-        right={`임계 ${convergence.threshold}%`}
+        right={`임계 ${percent(convergence.threshold)}`}
       >
         <div className="trow" style={{ alignItems: 'center', gap: 8 }}>
           <div style={{ flex: '0 0 auto' }}>
-            <Donut segments={segments} size={104} center={`${Math.round(convergence.convergenceRate)}%`} />
+            <Donut segments={segments} size={104} center={percent(convergence.convergenceRate)} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="small mono" style={{ marginBottom: 4 }}>
-              {convergence.convergenceRate}% / {convergence.threshold}%
+              {percent(convergence.convergenceRate)} / {percent(convergence.threshold)}
             </div>
             <Bar
-              pct={(convergence.convergenceRate / Math.max(1, convergence.threshold)) * 100}
+              pct={(convergence.convergenceRate / (convergence.threshold > 0 ? convergence.threshold : 1)) * 100}
               tone={convergence.convergenceRate >= convergence.threshold ? 'pass' : convergence.paused ? 'fail' : 'pending'}
             />
             <div className="tkv">
@@ -659,8 +662,8 @@ export function TwinBottomBar({ lang }: { lang: T.Lang }) {
     { label: 'Fleet 총계', value: `${stats.total}대`, detail: `Policy-only ${stats.policyOnly}`, tone: 'brand' as Tone },
     {
       label: '수렴률',
-      value: `${convergence.convergenceRate}%`,
-      detail: `임계 ${convergence.threshold}%`,
+      value: percent(convergence.convergenceRate),
+      detail: `임계 ${percent(convergence.threshold)}`,
       tone: convergence.convergenceRate >= convergence.threshold ? 'pass' : 'pending',
     },
     { label: 'Pending', value: stats.reconciliationCounts.PENDING ?? 0, detail: '정책 미도달', tone: 'pending' },
@@ -679,9 +682,9 @@ export function TwinBottomBar({ lang }: { lang: T.Lang }) {
       `GATE ${impact.gate.impactReviewed ? 'Impact 검토 완료' : 'Impact 검토 전'} · Quality ${impact.gate.qualityGatePassed ? 'PASS' : 'FAIL'}`,
       `IMPACT 대상 ${impact.totalMatched}대 · 즉시 ${impact.counts.ELIGIBLE_POLICY_ONLY ?? 0} · OTA ${impact.counts.REQUIRES_BINARY_OTA ?? 0}`,
       `TARGET ${targetRule.vehicleModel.join(',')} · ${targetRule.region.join(',')} · MY${(targetRule.modelYear ?? []).join(',')}`,
-      `CONVERGENCE ${convergence.convergenceRate}% / ${convergence.threshold}%`,
+      `CONVERGENCE ${percent(convergence.convergenceRate)} / ${percent(convergence.threshold)}`,
       `SIM ${simClockLabel(clock).text} · rate ×${clock.rate}`,
-      ...convergence.waves.map((w) => `WAVE ${w.wave} ${w.converged}/${w.total} (${w.rate}%)`),
+      ...convergence.waves.map((w) => `WAVE ${w.wave} ${w.converged}/${w.total} (${percent(w.rate)})`),
     ];
     return parts.join('   ◆   ');
   }, [scope, impact, targetRule, convergence, clock]);

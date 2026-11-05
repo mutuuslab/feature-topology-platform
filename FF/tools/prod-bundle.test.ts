@@ -12,7 +12,6 @@ import { FF } from './lib.ts';
 const FRONT = join(FF, 'frontend');
 const OUT = join(FRONT, 'dist-prod');
 const DEMO = join(FRONT, 'dist');
-const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
 const LOGIN_MARKER = 'ff-demo-login-v1';
 const ROLES_MARKER = 'ff-demo-roles-v1';
@@ -24,8 +23,8 @@ const WORKSPACE_MARKER = 'data-workspace-home';
 const EXTERNAL_MARKER = 'ff-external-demo-v1';
 /** 라우트 표의 경로 문자열 '/_design'(따옴표로 감싼 값) */
 const DESIGN_ROUTE = /["'`]\/_design["'`]/;
-/** 데모 비밀번호 문자열 — SSE 이벤트 이름 addEventListener("platform")은 같은 글자라 빼고 센다 */
-const passwordLiteral = (text: string) => /(["'`])platform\1/.test(text.replace(/addEventListener\((["'`])platform\1/g, ''));
+/** FF는 제품 약어이기도 하다. 문자열 대신 실제로 번들에 남은 데모 인증 모듈을 검사한다. */
+const demoAuthModule = (id: string) => /\/src\/(?:auth-demo\.ts|screens\/auth\/DemoLoginForm\.tsx)(?:$|\?)/.test(id.replaceAll('\\', '/'));
 
 function bundleText(dir: string): string {
   const out: string[] = [];
@@ -41,18 +40,36 @@ function bundleText(dir: string): string {
 }
 
 let prod = '';
+let prodModules: string[] = [];
 before(() => {
   rmSync(OUT, { recursive: true, force: true });
-  const r = spawnSync(`${npx} vite build --outDir dist-prod --emptyOutDir --logLevel error`, { cwd: FRONT, shell: true, encoding: 'utf8', env: { ...process.env, VITE_AUTH: 'oidc', VITE_DATA_MODE: '' } });
+  // 기존 운영 빌드 한 번에서 Rollup의 renderedLength도 받는다. 공개 계정 FF/FF가
+  // 제품 표기와 겹쳐도 실제 인증 구현의 포함 여부를 놓치거나 오탐하지 않는다.
+  const code = [
+    "import { build } from 'vite';",
+    "import { writeFileSync } from 'node:fs';",
+    "const result = await build({ build: { outDir: 'dist-prod', emptyOutDir: true }, logLevel: 'error' });",
+    "const outputs = (Array.isArray(result) ? result : [result]).flatMap(x => x.output);",
+    "const ids = [...new Set(outputs.filter(x => x.type === 'chunk').flatMap(x => Object.entries(x.modules).filter(([, m]) => m.renderedLength > 0).map(([id]) => id)))];",
+    "writeFileSync('dist-prod/auth-build-modules.json', JSON.stringify(ids));",
+  ].join('\n');
+  const r = spawnSync(process.execPath, ['--input-type=module', '--eval', code], { cwd: FRONT, encoding: 'utf8', env: { ...process.env, VITE_AUTH: 'oidc', VITE_DATA_MODE: '' } });
   assert.equal(r.status, 0, `운영 빌드 실패:\n${(r.stderr || r.stdout).slice(-2000)}`);
   prod = bundleText(OUT);
+  prodModules = JSON.parse(readFileSync(join(OUT, 'auth-build-modules.json'), 'utf8'));
 });
 after(() => rmSync(OUT, { recursive: true, force: true }));
 
-test('운영 빌드에 데모 로그인 표식·데모 비밀번호가 없다', () => {
+test('운영 빌드에 데모 로그인 표식·자격 검증 모듈이 없다', () => {
   assert.ok(prod.length > 100_000, '번들을 읽지 못했다');
   assert.equal(prod.includes(LOGIN_MARKER), false, '데모 로그인 모듈(auth-demo·DemoLoginForm)이 운영 빌드에 실렸다');
-  assert.equal(passwordLiteral(prod), false, '데모 비밀번호 문자열이 운영 빌드에 있다');
+  assert.ok(prodModules.length > 0, '운영 빌드의 실제 렌더링 모듈 목록을 읽지 못했다');
+  assert.deepEqual(prodModules.filter(demoAuthModule), [], '데모 자격 검증 구현이 운영 빌드에 실렸다');
+});
+
+test('데모 인증 모듈 판별은 Windows·Linux·가상 모듈 경로에서 동작한다', () => {
+  for (const path of ['C:\\repo\\frontend\\src\\auth-demo.ts', '/repo/frontend/src/screens/auth/DemoLoginForm.tsx', '/repo/frontend/src/auth-demo.ts?commonjs-proxy']) assert.ok(demoAuthModule(path), path);
+  for (const path of ['/repo/frontend/src/auth.ts', '/repo/frontend/src/screens/auth/Login.tsx', '/repo/frontend/src/auth-demo-other.ts']) assert.equal(demoAuthModule(path), false, path);
 });
 
 test('운영 빌드에 데모 역할 선택기(데모 계정 전체 목록)가 없고 SSO 로그인이 있다', () => {
@@ -75,7 +92,6 @@ test('데모 빌드(있으면)에는 같은 표식이 있다 — 검사가 실�
   const demo = bundleText(DEMO);
   assert.ok(demo.includes(LOGIN_MARKER), '데모 빌드에 데모 로그인 표식이 없다');
   assert.ok(demo.includes(ROLES_MARKER), '데모 빌드에 데모 역할 선택기 표식이 없다');
-  assert.ok(passwordLiteral(demo), '데모 빌드에 데모 비밀번호가 없다(검사 규칙이 낡았다)');
   assert.ok(demo.includes(GALLERY_MARKER), '데모 빌드에 디자인 갤러리 표식이 없다');
   assert.ok(demo.includes(LEARN_MARKER), '데모 빌드에 표준 따라하기 표식이 없다');
   assert.ok(demo.includes(EXTERNAL_MARKER), '데모 빌드에 가상 외부 시스템 표식이 없다');

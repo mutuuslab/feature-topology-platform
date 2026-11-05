@@ -1,9 +1,9 @@
 // /audit — 감사 이력(D01-10) · /events — Platform 이벤트(D04-04, SSE 실시간) (v2)
 // 감사 화면 보강(W5 P5-6·P5-10): 대상 앞부분 검색(targetPrefix, ?prefix=)·행위 필터(action)·행위 한글 이름·전후 값,
 // 해시 체인 카드(상태·검증한 기록·마지막 검증 시각·DB 밖 고정점·다시 검증). 헤드라인은 체인 판정이 먼저, 실패 기록 수는 상태 표시로.
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { usePlatformLiveEvents, type PlatformEvent } from '../../api/stream';
 import { ApiError, call, STATIC_MODE } from '../../api/client';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
@@ -137,16 +137,6 @@ function ChainCard({ c, checkedAt, busy, onRecheck }: { c: ChainReportView | und
   );
 }
 
-interface PlatformEvent {
-  seq: number;
-  id: string;
-  type: string;
-  at: string;
-  aggregate: string;
-  componentId: string | null;
-  payload: unknown;
-}
-
 const summarize = (p: unknown) => {
   if (!p || typeof p !== 'object') return '';
   const o = p as Record<string, unknown>;
@@ -162,22 +152,8 @@ const summarize = (p: unknown) => {
 };
 
 export function EventsScreen() {
-  const qc = useQueryClient();
-  const q = useApi<{ items: PlatformEvent[] }>('events', { query: { limit: 500 } });
-  const [live, setLive] = useState<PlatformEvent[]>([]);
-  const [sse, setSse] = useState<'static' | 'connecting' | 'open' | 'error'>(STATIC_MODE ? 'static' : 'connecting');
-  useEffect(() => {
-    if (STATIC_MODE || typeof EventSource === 'undefined') return setSse('static');
-    const es = new EventSource('/api/events/stream');
-    es.onopen = () => setSse('open');
-    es.onerror = () => setSse('error');
-    es.addEventListener('platform', (m) => {
-      const e = JSON.parse((m as MessageEvent).data) as PlatformEvent;
-      setLive((xs) => [...xs, e].slice(-200));
-      void qc.invalidateQueries({ queryKey: ['events'] });
-    });
-    return () => es.close();
-  }, [qc]);
+  const q = useApi<{ items: PlatformEvent[] }>('events', { query: { limit: 500, recent: '1' } });
+  const { items: live, status: sse } = usePlatformLiveEvents([''], ['events'], 200);
   const rows = q.data?.items ?? [];
   const stream: StreamItem[] = live.map((e) => ({ seq: e.seq, at: e.at, type: e.type, aggregate: e.aggregate, summary: summarize(e.payload) }));
   return (

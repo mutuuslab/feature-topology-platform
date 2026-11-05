@@ -2,7 +2,7 @@
 //   첫 화면: index.html이 처음 받는 스크립트·modulepreload·CSS 합계 ≤ initialGzipKiB
 //   화면 묶음: 그 밖의 JS 묶음 하나하나 ≤ chunkGzipKiB (3D 장면처럼 허용 목록에 있는 것은 그 값)
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, relative, isAbsolute } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { FF, readJson } from './lib.ts';
 
@@ -14,6 +14,27 @@ export interface Budget {
 export interface Chunk {
   file: string;
   gzip: number;
+}
+
+/** Include public entry scripts as well as hashed Vite assets; recovery code consumes the same budget. */
+export function collectBudgetAssets(dist: string): { chunks: Chunk[]; initial: Set<string> } {
+  const chunks = readdirSync(join(dist, 'assets')).filter(f => /\.(js|css)$/.test(f))
+    .map(file => ({ file, gzip: gzipSync(readFileSync(join(dist, 'assets', file))).length }));
+  const initial = new Set<string>();
+  const html = readFileSync(join(dist, 'index.html'), 'utf8');
+  for (const match of html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:[?#][^"']*)?)["']/g)) {
+    if (/^(?:[a-z]+:)?\/\//i.test(match[1])) continue;
+    let path = decodeURIComponent(match[1].split(/[?#]/)[0]).replace(/^\//, '');
+    // Pages builds prepend their deployment base; hashed assets still live in dist/assets.
+    if (path.includes('/assets/')) path = path.slice(path.indexOf('assets/'));
+    if (!existsSync(join(dist, path)) && !path.startsWith('assets/')) path = path.slice(path.lastIndexOf('/') + 1);
+    const absolute = resolve(dist, path), inside = relative(resolve(dist), absolute);
+    if (inside.startsWith('..') || isAbsolute(inside)) throw new Error(`Budget entry escapes build directory: ${path}`);
+    const file = path.startsWith('assets/') ? path.slice(7) : `public:${path}`;
+    if (!chunks.some(c => c.file === file)) chunks.push({ file, gzip: gzipSync(readFileSync(absolute)).length });
+    initial.add(file);
+  }
+  return { chunks, initial };
 }
 
 /** 판정만 — 순수 함수 */
@@ -38,11 +59,7 @@ if (process.argv[1]?.endsWith('bundle-budget.ts')) {
     process.exit(1);
   }
   const b = readJson<Budget & { firstScreenMs: number }>(join(FF, 'harness', 'budgets.json'));
-  const chunks = readdirSync(join(dist, 'assets'))
-    .filter((f) => /\.(js|css)$/.test(f))
-    .map((f) => ({ file: f, gzip: gzipSync(readFileSync(join(dist, 'assets', f))).length }));
-  const html = readFileSync(join(dist, 'index.html'), 'utf8');
-  const initial = new Set([...html.matchAll(/(?:src|href)="\/assets\/([^"]+\.(?:js|css))"/g)].map((m) => m[1]));
+  const { chunks, initial } = collectBudgetAssets(dist);
   const first = chunks.filter((c) => initial.has(c.file)).reduce((n, c) => n + c.gzip, 0);
   const bad = judge(chunks, initial, b);
   const max = chunks.filter((c) => !initial.has(c.file) && c.file.endsWith('.js') && !Object.keys(b.allow).some((a) => c.file.startsWith(a))).sort((x, y) => y.gzip - x.gzip)[0];

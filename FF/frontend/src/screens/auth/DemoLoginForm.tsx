@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEMO_LOGIN_MARKER, login as authLogin } from '../../auth-demo';
-import { login as L } from '../../copy/login';
+import { demoLoginHint, login as L } from '../../copy/login';
 import { Button } from '../../design';
 import { departments as D } from '../../copy/departments';
 import { ALL_DEPARTMENTS } from '../../data/departments';
@@ -33,7 +33,10 @@ export function DemoLoginForm({ from }: { from?: string }) {
 
   return (
     <form className="lg__card" onSubmit={submit} noValidate data-demo-login={DEMO_LOGIN_MARKER}>
-      <h2>{L.formTitle}</h2>
+      <header className="lg__card-head">
+        <h2>{L.formTitle}</h2>
+        <p className="lg__demo">{demoLoginHint}</p>
+      </header>
       <label className="lg__field">
         <span>{L.id}</span>
         <input

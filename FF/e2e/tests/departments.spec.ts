@@ -95,7 +95,7 @@ test.describe('로그인에서 부서 고르기', () => {
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/login');
     await page.getByLabel('ID').fill('FF');
-    await page.getByLabel('Password').fill('platform');
+    await page.getByLabel('Password').fill('FF');
     await page.getByRole('combobox', { name: '담당 부서' }).selectOption('DEP-PDP');
     await page.getByRole('button', { name: '플랫폼 들어가기' }).click();
     await expect(page).toHaveURL(/\/$/);

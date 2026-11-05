@@ -8,7 +8,7 @@ import { useSyncExternalStore } from 'react';
 /** 번들 검사 표식 — 데모 로그인 폼(data-demo-login)이 쓴다. 운영 빌드에 이 문자열이 있으면 데모 로그인이 실린 것이다 */
 export const DEMO_LOGIN_MARKER = 'ff-demo-login-v1';
 export const DEMO_ID = 'FF';
-export const DEMO_PW = 'platform';
+export const DEMO_PW = 'FF';
 const KEY = 'ff.auth';
 
 let version = 0;
@@ -26,9 +26,9 @@ const read = (): boolean => {
   }
 };
 
-/** ID는 앞뒤 공백을 지우고 비교한다(비밀번호는 그대로). */
+/** 공개 데모 ID·비밀번호는 대소문자를 구분하지 않는다. ID의 앞뒤 공백만 지운다. */
 export function login(id: string, password: string): boolean {
-  if (id.trim() !== DEMO_ID || password !== DEMO_PW) return false;
+  if (id.trim().toUpperCase() !== DEMO_ID || password.toUpperCase() !== DEMO_PW) return false;
   try {
     localStorage.setItem(KEY, '1');
   } catch {

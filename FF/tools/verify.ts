@@ -39,6 +39,7 @@ export const STEPS: Step[] = [
   { id: 'test:hygiene', title: '시험 결정성 (고정 포트·잠자기·실시간 기한·Date.now 비교·waitForTimeout·삼킨 대기 래칫, 건너뛴 시험 수 래칫, vitest 제한 시간·작업자 상한)', cmd: `node --test tools/test-hygiene.test.ts tools/flaky.test.ts tools/pg-test-config.test.ts tools/pg-test-lease.test.ts tools/pg-test-result.test.ts && node tools/test-hygiene.ts` },
   { id: 'openapi', title: 'OpenAPI 최신 여부', cmd: `node tools/openapi.ts --check` },
   { id: 'ext:check', title: '외부 연계 연결 점검 도구 (가짜 fetch — 네트워크 없음 · GET만 · 토큰 비출력 · 못 맞춘 상태는 실패)', cmd: `node --test tools/ext-check.test.ts` },
+  { id: 'ext:mocks', title: 'JIRA·codeBeamer 모의 서버 (실서버 모양 80-51 — 인증·오류 본문·워크플로·검색·webhook 서명·호출 제한·version·suspect·multipart 댓글, 80-50 §6)', cmd: `node --test tools/ext-mocks/mocks.test.ts` },
   { id: 'ota:conformance', title: 'OTA 서버 연동 규격 IF-05 (시험 OTA 서버가 적합성 검사 통과 · 규격 위반을 검사가 잡는다 · OpenAPI 정합, 80-45)', cmd: `node --test tools/ota-reference/conformance.test.ts` },
   { id: 'test:contracts', title: 'contracts 테스트', cmd: `${npm} test -w @ff/contracts` },
   { id: 'test:backend', title: '백엔드 테스트', cmd: `${npm} test -w feature-topology-backend` },

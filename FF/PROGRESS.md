@@ -3,6 +3,15 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+
+## JIRA·codeBeamer 연계 80-50 (2026-11-05 사용자 승인, 브랜치 `feat/alm-sync` ← feat/feature-db dd5586e, worktree `-alm`)
+- 결정 D-ALM-17: **실서버는 연결하지 않음**, 데모 설치는 모의 연계를 실제 연결처럼(seamless) — 운영 설치는 '연결 안 됨' 유지. D-ALM-18: A-1·A-3·A-4 기본값, A-2 새 Feature만 `FEAT-BC-0001`.
+- **S1 완료** — 표시 방식 `GET /api/system/connections` `presentation`(데모 기본 seamless, `FF_DEMO_LABELS=on`이면 표시), 화면 `useSeamless`·`shownMode`·`isSeamless`, 외부 도구 창 배지·안내·시연 계정 문구, 연계 화면 방식·어댑터 열·외부 변경 흉내 패널, Unleash 방식, 체험 구매 과금 안내, 모의 항목 본문 시연 문구(`demo-seed-content.ts`). e2e 서버는 `FF_DEMO_LABELS=on`(기존 시험 유지) + `e2e/tests/demo-seamless.spec.ts`. 남김: Feature 태그 '가상 전시'(전시 데이터 구분 키), CARLA '가상검증'(기능 이름), 합성 모집단 안내(통계 정직성).
+- **A1 진행** — 독립 모의 서버 `tools/ext-mocks`(`http.ts` 공용, `jira.ts` REST v3+v2·Epic=FF 수명주기 워크플로·결함 Open 시작·서명 webhook·`/_mock/*`, `codebeamer.ts` `/cb/api/v3`+`/api/v3`·트래커 8종·승인 워크플로·version·이력·suspect·cbQL 일부·multipart 댓글·호출 제한·기본 webhook 없음), `mocks.test.ts` 15개(verify `ext:mocks`), `FIDELITY.md`, `npm run mock:jira`(9131)·`mock:codebeamer`(9132). `ext:check`가 두 모의 서버에 통과(필드 후보 고르기만 남음).
+  - **모의 서버로 잡은 결함 2(2026-11-05)**: ① live 상태 거울 쓰기가 실패하면 `run()`의 `return this.mirrorStatus(...)`(await 없음)가 catch를 빠져나가 주기 drain이 거부 → **백엔드 프로세스 종료**. 고침 + 회귀 시험 `ext-sync.spec` '거울 쓰기가 외부 오류로 실패해도…'. ② live JIRA 어댑터는 전이를 한 번만 찾아 Epic이 여러 단계 뒤면(Proposed → In Progress) 실패, 만든 뒤 전이 실패면 연결 전이라 다시 만들 위험 — A2에서 경로 따라 전이·만들고 바로 연결.
+  - 남음: `ext:contract`(FF 백엔드 live ↔ 모의 서버 끝까지), Epic 앱 패널 `/_mock/app/epic-form`, 데모 시드(A4).
+- 다음: A2 JIRA Epic=Feature → A3 하위 이슈 → A4 codeBeamer 산출물 8종 → A5 게이트·변경 영향, A-2 Feature ID 형식.
+
 ## 담당자 E2E 개선 웨이브 (2026-11-05 사용자 결정 "16주제 전부 이번에·데모 계정 3개 추가", 브랜치 `feat/feature-db`, worktree `-dept`, 커밋 전)
 - **근거:** 담당자 5명 E2E 점검 결과(P1~P5, 59건)와 화면 측정(겹침 L1~L7·빈 화면 E1~E7). 여섯 묶음(W1~W6)이 나눠 구현, 마이그레이션 번호 W1=083 … W6=088(W6은 DDL이 필요 없어 쓰지 않음).
 - **W6 데모 계정·데이터·배치·문서**

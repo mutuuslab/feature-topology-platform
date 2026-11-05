@@ -243,10 +243,11 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
             });
             return this.done(j);
           }
-          return this.mirrorStatus(j, key, desired, op.comment);
+          // await — 그냥 돌려주면 거부가 아래 catch를 빠져나가 drain이 거부되고 프로세스가 죽는다(2026-11-05 회귀)
+          return await this.mirrorStatus(j, key, desired, op.comment);
         }
         case 'CR_STATUS':
-          return this.mirrorStatus(j, op.key, op.status, op.comment);
+          return await this.mirrorStatus(j, op.key, op.status, op.comment);
         case 'COMMENT': {
           const r = await a.write(op.key, { comment: op.text }, null);
           if (r.ok) this.observe(r.item, 'SYNCED');

@@ -3,7 +3,8 @@
 //   받기: JIRA Epic·CR 변경 → 가드를 탄 요청(반영/거부·되돌림), codeBeamer 요구 개정 → G2 재검토, GitLab MR 병합·파이프라인 → 변경 기록
 //   안전장치: 서명 위조 401, 같은 webhook 두 번 → 한 번만, 매핑 없는 외부 계정 거부, 바깥이 몰래 바뀌면 충돌 → 사람이 고름
 import { INestApplication } from '@nestjs/common';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { ExtAdapters } from '../../src/domains/d05-ext/api-gateway/ext-sync/adapters';
 import { RefdbRepository } from '../../src/domains/d01-policy/refdb/refdb.repository';
 import { actor, bootApp, confirmSafety, nextRefId, signG7, withRef } from '../helpers';
 
@@ -151,6 +152,26 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     expect((await epicOf('FEAT-00004', '4.1.0')).syncState).toBe('SYNCED');
   });
 
+
+  // 회귀(2026-11-05, 80-50 A1 모의 서버 기동 점검): 상태 거울 쓰기가 실패하면(워크플로 전이 없음 등) run()의 catch를 빠져나가
+  // 주기 drain이 거부되고 처리되지 않은 거부로 백엔드 프로세스가 죽었다(return this.mirrorStatus(...)에 await가 없었음).
+  it('거울 쓰기가 외부 오류로 실패해도 drain은 끝나고 작업은 재시도로 남는다(프로세스가 죽지 않음)', async () => {
+    const epics = (await http().get('/api/integrations/sync/epics').expect(200)).body.items;
+    const target = epics.find((e: any) => e.status === 'Released' && e.expected === 'Released' && !/^FEAT-0000[24]@/.test(e.feature));
+    expect(target).toBeTruthy();
+    const [id, ver] = target.feature.split('@');
+    const jira = app.get(ExtAdapters).of('JIRA');
+    const spy = vi.spyOn(jira, 'write').mockRejectedValueOnce(new Error("JIRA: 'Deprecated'(으)로 가는 워크플로 전이가 없습니다"));
+    try {
+      await http().post(`/api/features/${id}/versions/${ver}/transitions`).set(RELEASE).send({ to: 'DEPRECATED', reason: '후속 버전으로 대체' }).expect(200);
+      const r = (await drain()).body;
+      expect(r.failed).toBeGreaterThanOrEqual(1);
+      const jobs = (await http().get('/api/integrations/sync/outbox?system=jira').expect(200)).body.items;
+      expect(JSON.stringify(jobs)).toContain('워크플로 전이가 없습니다');
+    } finally {
+      spy.mockRestore();
+    }
+  });
 
   describe('새 Feature 한 건으로 — 요구 연결·CR ↔ 정책 승인·요구 개정·MR 병합', () => {
     let fid: string;

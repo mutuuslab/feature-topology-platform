@@ -156,7 +156,8 @@ export class PkiService implements OnModuleInit {
       if (prev) this.db.run("UPDATE pki_key SET status = 'RETIRED', retired_at = ? WHERE key_id = ?", this.clock.iso(), prev.key_id);
       const keyId = this.generate(purpose);
       this.audit.record(actor, 'PKI_ROTATE', keyId, { before: { active: prev?.key_id ?? null }, after: { active: keyId, purpose }, reason, componentId: 'D06-10' });
-      this.events.publish('pki.key.rotated', keyId, { keyId, purpose, retired: prev?.key_id ?? null }, { componentId: 'D06-10', correlationId: actor.correlationId });
+      // by·reason — 품질·운영 담당 알림(교체자 본인 제외, P4-6)
+      this.events.publish('pki.key.rotated', keyId, { keyId, purpose, retired: prev?.key_id ?? null, by: actor.id, reason }, { componentId: 'D06-10', correlationId: actor.correlationId });
       return this.keys().find((k) => k.keyId === keyId)!;
     });
   }

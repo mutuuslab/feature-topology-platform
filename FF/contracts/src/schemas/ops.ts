@@ -115,8 +115,26 @@ export const RestoreRequest = z.object({
   command: KillCommandRef.nullable().default(null),
   rejectedBy: z.string().nullable().default(null),
   rejectReason: z.string().nullable().default(null),
+  /** 재검증 Evidence 참조(FPW.8-A08) — 원인 수정 뒤 다시 판정한 근거. 이전 행에는 없다 */
+  evidenceRef: z.string().nullable().optional(),
+  /** 이번 단계에 복원할 차량(Canary Cohort, FPW.8-A10) — 차단 차량의 부분집합. 이전 행은 차단 차량 전체 */
+  cohort: z.array(z.string()).optional(),
 });
 export type RestoreRequest = z.infer<typeof RestoreRequest>;
+
+/** 복원 요청 — 사유 + 재검증 Evidence 참조 + 이번 단계 Cohort(FPW.8-A08 종료 기준). Cohort를 넓혀 가며 단계적으로 복원한다(A10) */
+export const RestoreRequestBody = z
+  .object({
+    reason: z.string().trim().min(2).max(500),
+    evidenceRef: z.string().trim().min(3).max(512),
+    cohort: z.array(z.string().min(1)).min(1).max(500),
+  })
+  .strict();
+export type RestoreRequestBody = z.infer<typeof RestoreRequestBody>;
+
+/** 단계적 복원 기록 — 단계마다 Cohort·Evidence·복구 게시본 */
+export const RestoreStage = z.object({ cohort: z.array(z.string()), evidenceRef: z.string().nullable(), publicationId: z.string(), approvedAt: z.string(), approvers: z.array(z.string()) });
+export type RestoreStage = z.infer<typeof RestoreStage>;
 
 export const KillRequestSchema = z.object({
   killId: z.string().regex(/^KILL-\d{5}$/),
@@ -151,6 +169,9 @@ export const KillRequestSchema = z.object({
   rejectedBy: z.string().nullable().optional(),
   rejectReason: z.string().nullable().optional(),
   restoreRequest: RestoreRequest.nullable().optional(),
+  /** 단계적 복원 — 복원을 마친 차량과 단계 기록. 모든 차량이 복원되면 RELEASED */
+  restoredVins: z.array(z.string()).optional(),
+  restoreStages: z.array(RestoreStage).optional(),
   requestedBy: z.string(),
   requestedAt: z.string(),
   publicationId: z.string().nullable(),

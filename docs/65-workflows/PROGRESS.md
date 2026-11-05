@@ -3,11 +3,30 @@
 새 세션은 이 파일을 먼저 읽는다. 완료 기준: `python -I scripts/check.py --live` → `ALL GATES PASS`.
 
 ## 작업 위치
+- **2026-11-04 현재 작업은 worktree `C:\project\2026-06-04_Feature_Platform-dept`(브랜치 `feat/feature-db`)** — 아래 본 checkout 설명은 그 전 기준.
 - **2026-10-18부터 본 checkout** `C:\project\2026-06-04_Feature_Platform`(브랜치 `feat/v081-integration`)의 `docs/65-workflows`가 원천이다. `docs/workflows` 브랜치는 313b68f로 병합했다. worktree `-wf`는 더 쓰지 않는다(정리는 사용자 확인 후).
 - 같은 브랜치에서 다른 세션도 FF 코드를 고친다. 커밋은 경로를 지정해 담는다(`git add -A` 금지).
 - `extract_platform.mjs`는 `FF/contracts/dist`를 읽는다.
 - **모델을 고친 뒤 순서:** `python -I scripts/check.py` → `cd ../../FF && npm run workflow:sync` → FF `npm run verify`(workflow:check·정합성 시험).
 - 커밋은 사용자 요청 시에만 한다.
+
+## 현재 상태 — 담당자 E2E 개선 웨이브 (2026-11-05, worktree `-dept` 브랜치 `feat/feature-db`, 커밋 전)
+- **데모 계정 12(겸직 0건):** 새 계정 `opslead`(R-OPS, DEP-OPS) · `safety2`(R-SM, DEP-FS) · `productowner`(R-PO, DEP-PDP)를 부서 personas 뒤에 붙였다(첫 번째 기본 계정은 그대로). `department_scope.demo_notes`를 고쳐 운영 리더 계정이 생겼고, 복원 2인 승인(SOD-09)·고객 출시 승인(SOD-04)을 데모에서 다른 사람이 할 수 있음을 적었다.
+- **IAM 스냅샷:** W6 포트 9153 백엔드에서 재추출(accounts=12). 다른 묶음이 경로를 더하면 마지막에 한 번 더 뽑는다.
+- **다른 묶음 반영:** FPW.3-A05 구현 연결 입력(R-INT·R-FO), 정의 승인 전 구현 미입력 경고, FPW.7 구성 승인과 고객 출시 승인 직무 분리·체험 제안, 부서별 급한 대기열과 다음 담당자 알림, 협의(C)·통보(I)의 검토 포털 실행을 모델·UI.md에 반영했다. 절차 Gate와 플랫폼 Gate 대응은 공용 계약을 화면이 참조한다.
+- **SSO 협의 기록의 제한:** 데모의 부서 선택은 체험용이며 인증된 부서 신원이 아니다. 회사 계정의 부서 신원 연계 전까지 SSO 협의 요청·의견 쓰기는 403과 거부 감사로 차단한다(조회는 유지).
+- **검증:** 모델 오류·경고 0, IAM 오프라인 차이 0, 생성 산출물 50개 Markdown·index·workflows.json, pytest64개 통과(2026-11-05). 안전 분석·복원 근거 제한과 법규인증팀의 실제 영향 판단 대기열을 UI.md에 덧붙였다. 전체 통합 뒤 IAM 스냅샷은 다시 추출한다.
+
+## 현재 상태 — Feature DB 운영 절차 (2026-11-04 하네스 리뷰 반영, worktree `-dept` 브랜치 `feat/feature-db`, 커밋 전)
+- **근거:** `docs/30-data-model/30-95-feature-reference-db.md` §6.4·§8(구현 완료 R1~R3). 병합(`feat/feature-db-alm`) 뒤 리뷰 결과를 모델에 반영했다.
+- **역할:** R-RDA Feature DB 관리자(REFDB_ADMIN, DEP-PLM), R-DRV 도메인 검토자(DOMAIN_REVIEWER, DEP-SE). 데모 보유자는 각각 steward·approver 한 명(`department_scope.demo_notes`).
+- **FPW.1-A06** Feature DB 추가 요청(requestRefAdd) — 화면 `/feature/propose`(등록 화면의 추가 요청).
+- **FPW.14** A01 변경 요청 작성(createRefChange, `/master/feature-db/:refId`) → A02 자동 점검·도메인 검토(reviewRefChange, `/master/feature-db/changes/:id`·`/changes`) → A03 변경 승인·반려(decideRefChange, 같은 화면) → A04 버전 발행(publishRefRelease, `/master/feature-db/changes`), 트리거 A05 출처 정기 점검(recordSourceReview, `/master/feature-db`).
+  - 반려된 추가 요청의 요청 중 행은 **발행(A04) 때** 폐기·사유·연결 Feature Owner 알림으로 확정된다(서버 `publishRefRelease`와 같음). A03은 판정과 사유만.
+  - A03은 마지막 검토 의견이 반대·보완이면 승인하지 않는다(사용자 결정 2026-11-04).
+- **직무 분리:** SOD-13(요청자≠승인자)·SOD-14(요청자≠검토자)는 `level: person`(서버가 계정 단위로 거부), `first`에 FPW.14-A01과 FPW.1-A06. **SOD-15(검토자≠승인자, A02→A03)** 신설 — 플랫폼 `access.ts`에도 같은 ID로 추가(다른 묶음). `sod.first`는 이제 활동 하나 또는 목록(SCHEMA.md).
+- **신선도 검사:** `check.py` [2a]가 서버 없이 스냅샷 화면(= `routes.tsx` 정규식)·권한·직무 분리(= `FF/contracts/dist`)를 대조한다. 시험 `tests/test_freshness.py`.
+- **남은 것:** IAM 스냅샷이 낡았다(Feature DB 화면 3개·recordSourceReview·SOD-15·변경 요청 작성 역할 넓힘 없음). 플랫폼 수정을 합친 뒤 `cd FF/contracts && npx tsc -p tsconfig.json` → 백엔드 실행 → `node scripts/extract_platform.mjs --url http://localhost:<포트> --ff <이 저장소>/FF` → `python -I scripts/check.py` → `cd ../../FF && npm run workflow:sync`. 그 전까지 check.py는 신선도 [2a]와 모델 검증(화면 6·action 1·SOD 1)에서 실패한다 — 임시 보강 스냅샷으로는 오류 0.
 
 ## 현재 상태 — 부서 층·부서 작업공간 (2026-11-04, 진행 중)
 - **요청:** 부서별 R&R 업무 흐름 + 부서를 고르면 그 업무에 맞는 메뉴·화면(부서마다 UI/UX가 확 다르게), 로그인 뒤 부서 전환 + 전체 보기. 데모 전제.

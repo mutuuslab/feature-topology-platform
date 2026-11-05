@@ -17,15 +17,20 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "personas": [
     "author",
     "commerce",
-    "approver"
+    "approver",
+    "productowner"
    ],
    "screens": {
     "primary": [
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
+     "/features/:id/:ver",
+     "/master/artifacts",
+     "/integration/connectors",
      "/baselines",
      "/experiments",
      "/products/new",
@@ -33,8 +38,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/products/:id/:ver",
      "/activation/decide",
      "/admin/approval",
-     "/features/:id/:ver",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/master/feature-db/:refId"
     ],
     "reference": [
      "/analysis/impact",
@@ -45,7 +50,6 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/validations/virtual",
      "/verify/evidence",
      "/deployments",
-     "/integration/connectors",
      "/verify/compliance",
      "/fleet/live",
      "/ops/anomalies",
@@ -53,25 +57,28 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/incidents",
      "/ops/kill",
      "/audit",
-     "/quality/feedback"
+     "/quality/feedback",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ]
    },
    "counts": {
-    "R": 9,
-    "A": 11,
+    "R": 12,
+    "A": 13,
     "C": 17,
-    "I": 29
+    "I": 33
    }
   },
   {
    "id": "DEP-SE",
    "name": "시스템엔지니어링팀",
    "en": "Systems Engineering",
-   "desc": "안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임진다.",
+   "desc": "안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임지고, 담당 도메인의 Feature DB 변경 요청을 검토한다.",
    "workspace": "console",
    "roles": [
     "R-REQ",
-    "R-ARC"
+    "R-ARC",
+    "R-DRV"
    ],
    "personas": [
     "approver",
@@ -87,28 +94,33 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/policies/new",
      "/policies",
      "/policies/:id",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ],
     "reference": [
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
      "/analysis/impact",
+     "/master/artifacts",
+     "/integration/connectors",
      "/arch/components",
      "/validations",
-     "/master/artifacts",
      "/verify/evidence",
      "/baselines",
-     "/integration/openfeature"
+     "/integration/openfeature",
+     "/master/feature-db/:refId"
     ]
    },
    "counts": {
-    "R": 8,
-    "A": 9,
-    "C": 14,
-    "I": 13
+    "R": 9,
+    "A": 10,
+    "C": 19,
+    "I": 16
    }
   },
   {
@@ -127,10 +139,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
    ],
    "screens": {
     "primary": [
-     "/master/artifacts",
-     "/deployments",
      "/features/:id/:ver",
-     "/integration/connectors"
+     "/master/artifacts",
+     "/integration/connectors",
+     "/deployments"
     ],
     "reference": [
      "/master/control-points",
@@ -152,8 +164,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 6,
-    "A": 7,
+    "R": 7,
+    "A": 8,
     "C": 14,
     "I": 18
    }
@@ -162,10 +174,11 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "id": "DEP-PLM",
    "name": "PLM·기준정보팀",
    "en": "PLM & Master Data",
-   "desc": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.",
+   "desc": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다. Feature DB 기준 행 변경을 승인하고 버전을 발행한다.",
    "workspace": "console",
    "roles": [
-    "R-PLM"
+    "R-PLM",
+    "R-RDA"
    ],
    "personas": [
     "steward"
@@ -174,20 +187,29 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "primary": [
      "/variant-conditions",
      "/arch/topology",
-     "/baselines"
+     "/baselines",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes",
+     "/master/feature-db"
     ],
     "reference": [
+     "/master/define",
+     "/feature/propose",
+     "/features",
      "/features/:id/:ver",
      "/admin/approval",
+     "/master/artifacts",
+     "/integration/connectors",
      "/policies/new",
-     "/policies"
+     "/policies",
+     "/master/feature-db/:refId"
     ]
    },
    "counts": {
-    "R": 2,
-    "A": 1,
-    "C": 2,
-    "I": 3
+    "R": 5,
+    "A": 4,
+    "C": 3,
+    "I": 8
    }
   },
   {
@@ -201,6 +223,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    ],
    "personas": [
     "quality",
+    "safety2",
     "integrator"
    ],
    "screens": {
@@ -223,6 +246,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/trace/design",
      "/change/cr",
@@ -239,13 +263,15 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/audit",
      "/quality/feedback",
      "/supplier/portal",
-     "/admin/security"
+     "/admin/security",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ]
    },
    "counts": {
     "R": 17,
     "A": 17,
-    "C": 33,
+    "C": 34,
     "I": 8
    }
   },
@@ -273,8 +299,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/arch/components",
      "/deployments",
      "/master/artifacts",
-     "/fleet/live",
-     "/audit/oversight"
+     "/audit/oversight",
+     "/fleet/live"
     ]
    },
    "counts": {
@@ -309,13 +335,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/kill",
      "/audit/oversight",
      "/audit",
-     "/admin/security"
+     "/admin/security",
+     "/master/feature-db"
     ]
    },
    "counts": {
     "R": 11,
     "A": 10,
-    "C": 11,
+    "C": 12,
     "I": 7
    }
   },
@@ -345,8 +372,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/trace/design",
      "/change/cr",
      "/features/:id/:ver",
-     "/master/control-points",
      "/master/artifacts",
+     "/integration/connectors",
+     "/master/control-points",
      "/activation/decide",
      "/verify/compliance",
      "/ops/kill",
@@ -358,7 +386,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "R": 4,
     "A": 4,
     "C": 11,
-    "I": 5
+    "I": 6
    }
   },
   {
@@ -417,7 +445,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "R-OPS"
    ],
    "personas": [
-    "operator"
+    "operator",
+    "opslead"
    ],
    "screens": {
     "primary": [
@@ -483,13 +512,18 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "id": "DEP-PUR",
    "name": "구매팀",
    "en": "Procurement",
-   "desc": "협력사 계약·납품 조건을 관리하고 협력사 관련 검토에 의견을 준다.",
+   "desc": "협력사 계약·납품 조건을 관리하고 Feature별 SW 개발비를 산정·승인하며 단가·계수 표를 관리한다.",
    "workspace": "portal",
    "roles": [
-    "R-PUR"
+    "R-PUR",
+    "R-CE",
+    "R-CA",
+    "R-CV",
+    "R-CBA"
    ],
    "personas": [
-    "viewer"
+    "viewer",
+    "approver"
    ],
    "screens": {
     "primary": [],
@@ -521,8 +555,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "screens": {
     "primary": [],
     "reference": [
-     "/integration/openfeature",
      "/admin/data",
+     "/integration/openfeature",
      "/verify/compliance"
     ]
    },

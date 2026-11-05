@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FF, ratchet, readJson, rel, walk } from './lib.ts';
-import { judge, scanMarkers, validateCatalog, type Catalog } from './readiness-rules.ts';
+import { judge, pgMeasureGap, scanMarkers, validateCatalog, type Catalog } from './readiness-rules.ts';
 
 const catalog = readJson<Catalog>(join(FF, 'harness', 'readiness.json'));
 
@@ -49,5 +49,13 @@ const done = catalog.items.filter((i) => i.status === 'done').length;
 console.log(`  · 완료 ${done}/${catalog.items.length} · 열림 P0 ${v.open.P0} · P1 ${v.open.P1} · P2 ${v.open.P2}`);
 ok = ratchet('readinessOpenP0', v.open.P0, 'max', '출시 준비 열린 P0 수(harness/readiness.json) — 0까지') && ok;
 ok = ratchet('readinessOpenP1', v.open.P1, 'max', '출시 준비 열린 P1 수 — 0까지') && ok;
+// PG 호환 측정 신선도(RD-OPS-14, D-RD-3) — test:pg는 Docker·약 15분이라 기본 verify에서 다시 재지 않는다. 측정 뒤 마이그레이션은 경고(기록 형식이 낡으면 실패)
+const pg = readJson<{ measuredAt?: string; migrationsAtMeasure?: string[] }>(join(FF, 'harness', 'pg-compat.json'));
+const gap = pgMeasureGap(pg, readJson(join(FF, 'harness', 'migrations.lock.json')));
+if (gap.recordMissing) {
+  ok = false;
+  console.error('  ✕ harness/pg-compat.json에 migrationsAtMeasure가 없다 — npm run test:pg로 다시 잰다');
+} else if (gap.newer.length) console.warn(`  ! PG 호환 측정(${pg.measuredAt}) 뒤 마이그레이션 ${gap.newer.length}개(${gap.newer.join(', ')})는 PostgreSQL에서 돈 적이 없다 — npm run test:pg (verify --full)`);
+else console.log(`  · PG 호환 측정(${pg.measuredAt})이 지금 마이그레이션 전부를 덮는다`);
 if (ok) console.log('  ✓ 출시 준비 게이트 통과');
 process.exit(ok ? 0 : 1);

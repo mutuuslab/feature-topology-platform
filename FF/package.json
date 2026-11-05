@@ -13,6 +13,7 @@
   },
   "scripts": {
     "verify": "node tools/verify.ts",
+    "flags:scan": "node tools/flag-sources.ts",
     "verify:full": "node tools/verify.ts --full",
     "lint:tokens": "node tools/lint-tokens.ts",
     "lint:spacing": "node tools/lint-spacing.ts",
@@ -30,6 +31,10 @@
     "dev:frontend": "npm run dev -w feature-topology-frontend",
     "data:import": "node tools/dataset/import.ts",
     "data:check": "node tools/dataset/check.ts",
+    "cost:basis": "node tools/cost/import-basis.ts",
+    "cost:demo-seed": "node tools/cost/demo-seed.ts",
+    "refdb:import": "node tools/refdb/import.ts",
+    "refdb:check": "node tools/refdb/check.ts",
     "openapi": "node tools/openapi.ts",
     "snapshot:api": "node tools/snapshot-api.ts",
     "ops5y:build": "npm run build -w @ff/contracts && npm run build -w feature-topology-backend && node tools/ops5y/replay.ts",
@@ -43,6 +48,7 @@
     "guide:check": "node tools/guide-sync.ts --check",
     "workflow:sync": "node tools/workflow-sync.ts",
     "workflow:check": "node tools/workflow-sync.ts --check",
+    "docs:meta": "node tools/docs-meta.ts",
     "desktop:prepare": "node tools/desktop-prepare.mjs",
     "desktop:dev": "npm run desktop:prepare && tauri dev",
     "desktop:build": "tauri build",
@@ -69,7 +75,12 @@
     "evidence:remap": "node tools/evidence-remap.ts",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",
     "unleash:down": "docker compose -f docker/unleash/docker-compose.yml down",
-    "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web"
+    "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web",
+    "unleash:native:prepare": "node tools/unleash/prepare.mjs",
+    "unleash:native:start": "node tools/unleash/runtime.mjs",
+    "unleash:native:stop": "node tools/unleash/runtime.mjs stop",
+    "unleash:native:status": "node tools/unleash/runtime.mjs status",
+    "unleash:test": "node --test tools/unleash/runtime.test.mjs"
   },
   "devDependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",

@@ -6,6 +6,9 @@ import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
 import { Explain, ExplainCodes, StatusGlyph, VerdictBadge, gateKind, splitCodes } from '../design';
 import { useAppShell } from '../store';
+import { useWorkflows } from '../data/workflows';
+import { workflowLabels } from '../data/workflowLabels';
+import { procedures as PROC } from '../copy/procedures';
 
 /** G1~G9 판정을 점 9개로 — 표 안에서 쓰는 축약형 */
 export function MiniGates({ gates }: { gates: Record<string, string | null | undefined> }) {
@@ -82,6 +85,16 @@ export function ComponentName({ id }: { id: string }) {
       <ExplainCodes codes={[id]} />
     </span>
   );
+}
+
+const PROCEDURE_ID = /\bFPW\.\d+(?:-A\d+)?\b/;
+/** 감사·이벤트 값 속 업무 절차 식별자(FPW.n·FPW.n-Ann) → 업무 이름 — 본문은 이름, 식별자는 툴팁(2026-10-25 결정, 3초 ⑨) */
+export function ProcedureText({ text }: { text: string }) {
+  const doc = useWorkflows();
+  if (!PROCEDURE_ID.test(text)) return <>{text}</>;
+  // 절차 문서(지연 묶음)를 읽는 동안에도 식별자를 본문에 내놓지 않는다
+  const shown = doc && doc !== 'fail' ? workflowLabels(doc).text(text) : text.replace(new RegExp(PROCEDURE_ID.source, 'g'), PROC.display.reference);
+  return <span title={text}>{shown}</span>;
 }
 
 /** 계약 문장을 코드 없이 그린다 — 뗀 코드는 설명 모드 칩과 툴팁으로(3초 테스트 ⑨) */

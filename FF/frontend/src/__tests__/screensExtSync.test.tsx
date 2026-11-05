@@ -56,7 +56,7 @@ describe('외부 항목 칩', () => {
   it('도구 이름은 글자로, 키는 새 탭 링크, 동기 문제·G2 재검토는 글자와 아이콘으로', () => {
     mount('viewer', <ExtRefChip r={REF({ system: 'CODEBEAMER', kind: 'REQUIREMENT', key: 'CB-10001', url: 'https://codebeamer.ff.example/cb/issue/10001', syncState: 'CONFLICT', stale: true }) as never} />);
     const a = screen.getByRole('link', { name: 'CB-10001' });
-    expect(a.getAttribute('href')).toBe('https://codebeamer.ff.example/cb/issue/10001');
+    expect(a.getAttribute('href')).toBe('/external.html?system=codebeamer&key=CB-10001');
     expect(a.getAttribute('target')).toBe('_blank');
     expect(a.getAttribute('rel')).toContain('noopener');
     expect(screen.getByText('codeBeamer')).toBeTruthy();
@@ -97,6 +97,19 @@ describe('Feature 연계 탭', () => {
     expect(within(issues).getByText(/충돌 1건/)).toBeTruthy();
     expect(within(tab).getByText('feature/feat-00022-1.0.0')).toBeTruthy();
     expect(within(tab).getByText('근거 변경요청 없음')).toBeTruthy();
+  });
+
+  it('연결된 것이 하나도 없으면 맞음(초록)이 아니라 연결 안내 — 근거 없는 초록 금지(P1-12)', async () => {
+    handler = (url) =>
+      url.startsWith('/api/integrations/sync/features/')
+        ? { body: { featureId: 'FEAT-00191', version: '0.1.0', lifecycle: 'PROPOSED', epicStatusExpected: 'To Do', requirements: [], missingRequirements: [], epic: null, changeRequests: [], defects: [], mergeRequests: [], pipelines: [], policies: [], conflicts: [], stale: [] } }
+        : undefined;
+    mount('viewer', <ExtLinksTab id="FEAT-00191" ver="0.1.0" />);
+    const tab = await screen.findByTestId('ext-links');
+    const chain = within(tab).getByRole('list', { name: /추적/ });
+    expect(chain.querySelector('li[data-state="PASS"]')).toBeNull();
+    expect(within(chain).getByText(/연결된 요구·변경요청·코드가 없습니다/)).toBeTruthy();
+    expect(within(chain).queryByText(/모두 연결되어/)).toBeNull();
   });
 });
 

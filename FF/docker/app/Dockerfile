@@ -27,6 +27,8 @@ FROM deps AS build
 COPY contracts/ contracts/
 COPY backend/ backend/
 COPY frontend/ frontend/
+# Vite 설정이 사용하는 빌드 전용 경로 변환기(runtime에는 복사하지 않는다).
+COPY tools/browser-routes.ts tools/
 RUN npm run build -w @ff/contracts \
  && npm run build -w feature-topology-backend \
  && cd frontend && VITE_AUTH=oidc npx vite build --outDir dist-prod --emptyOutDir --logLevel warn
@@ -70,6 +72,10 @@ COPY --from=build /app/FF/backend/dist ./backend/dist
 COPY --from=build /app/FF/frontend/dist-prod ./web
 # 안전 프로필·명령 원장 기본표·외부 연계 식별 픽스처를 백엔드가 이 경로에서 읽는다(데모 시드는 FF_SEED=none이라 넣지 않는다)
 COPY data/fixtures ./data/fixtures
+# Feature DB 이전본 — 고객 설치 첫 기동 때 시드(30-95 §9)
+COPY data/reference ./data/reference
+# SW 개발비 산정 엑셀 내보내기 양식(20-94 D-COST-13) — 계수 표 v1.3의 원본 엑셀
+COPY data/source ./data/source
 # 데이터·고정점·백업 폴더는 비루트 사용자 node(uid 1000)가 쓴다
 RUN mkdir -p /var/lib/ff /var/lib/ff-anchor /var/backups/ff \
  && chown -R node:node /var/lib/ff /var/lib/ff-anchor /var/backups/ff

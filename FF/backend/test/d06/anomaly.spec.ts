@@ -81,7 +81,7 @@ describe('운영 되먹임 — 이상 징후 대응 · 품질 피드백', () => 
     const id = (await http().get('/api/quality-feedback').expect(200)).body.items[0].feedbackId;
     await http().post(`/api/quality-feedback/${id}/accept`).set(OPERATOR).send({ reason: '수용' }).expect(403);
     await http().post(`/api/quality-feedback/${id}/accept`).set(AUTHOR).send({ reason: '1.1.0에서 거리 추정 보정' }).expect(200);
-    const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '현장 피드백 반영', changes: { description: '거리 추정 편향 보정' } }).expect(201);
+    const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '현장 피드백 반영', changes: { description: '거리 추정 편향 보정', featureRefs: [{ refId: 'AD-LON-009', role: 'PRIMARY' }] } }).expect(201);
     const ver = v.body.feature.version;
     const judge = (gate: string) => http().post(`/api/features/FEAT-00022/versions/${ver}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${gate}` }).expect(201);
     await confirmSafety(http, 'FEAT-00022', ver);

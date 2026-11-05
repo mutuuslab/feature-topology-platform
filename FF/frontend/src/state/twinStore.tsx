@@ -89,10 +89,59 @@ interface Persisted {
   simInputs?: T.SimulationInputs;
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+const isStrings = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+function persistedTargetRule(value: unknown): T.TargetRule | undefined {
+  if (!isRecord(value)) return;
+  const fallback = T.DEMO_TARGET_RULE;
+  return {
+    region: isStrings(value.region) ? value.region : fallback.region,
+    vehicleModel: isStrings(value.vehicleModel) ? value.vehicleModel : fallback.vehicleModel,
+    requiredCapability: isStrings(value.requiredCapability) ? value.requiredCapability : fallback.requiredCapability,
+    minimumBinaryVersion: typeof value.minimumBinaryVersion === 'string' ? value.minimumBinaryVersion : fallback.minimumBinaryVersion,
+    // 없는 선택 조건은 전체 대상이라는 기존 의미를 보존한다.
+    ...(value.entitlementId === undefined ? {} : {
+      entitlementId: typeof value.entitlementId === 'string' ? value.entitlementId : fallback.entitlementId,
+    }),
+    ...(value.modelYear === undefined ? {} : {
+      modelYear: Array.isArray(value.modelYear) && value.modelYear.every(Number.isSafeInteger) ? value.modelYear : fallback.modelYear,
+    }),
+  };
+}
+
+function persistedSimInputs(value: unknown): T.SimulationInputs | undefined {
+  if (!isRecord(value)) return;
+  const next = { ...E.DEFAULT_SIM_INPUTS };
+  for (const key of Object.keys(next) as Array<keyof T.SimulationInputs>) {
+    const candidate = value[key];
+    const fallback = next[key];
+    if (typeof candidate !== typeof fallback) continue;
+    if (typeof candidate === 'number' && !Number.isFinite(candidate)) continue;
+    if (key === 'network' && !['ONLINE', 'OFFLINE', 'INTERMITTENT'].includes(String(candidate))) continue;
+    if (key === 'entitlementStatus' && !['ACTIVE', 'INACTIVE', 'UNKNOWN'].includes(String(candidate))) continue;
+    if (key === 'policyVersionSeq' && (!Number.isSafeInteger(candidate) || (candidate as number) < 0)) continue;
+    // 엔진의 ISO 시각 변환이 가능한 경과 시간만 복구한다(유한한 초도 날짜 범위를 넘을 수 있다).
+    if (key === 'telemetryAgeSeconds' && ((candidate as number) < 0 || !Number.isFinite(new Date(TWIN_NOW_MS - (candidate as number) * 1000).getTime()))) continue;
+    Object.assign(next, { [key]: candidate });
+  }
+  return next;
+}
+
 function loadPersisted(): Persisted {
   try {
     const raw = localStorage.getItem(PERSIST_KEY);
-    if (raw) return JSON.parse(raw) as Persisted;
+    const value: unknown = raw ? JSON.parse(raw) : null;
+    if (!isRecord(value)) return {};
+    // 영속 UI 설정은 신뢰하지 않는다. 손상된 필드만 기본값으로 복구하며 다른 저장 키는 건드리지 않는다.
+    return {
+      rate: value.rate === 0 || value.rate === 1 || value.rate === 5 ? value.rate : undefined,
+      scope: value.scope === 'CANARY' || value.scope === 'WAVE' || value.scope === 'FLEET' ? value.scope : undefined,
+      targetRule: persistedTargetRule(value.targetRule),
+      simInputs: persistedSimInputs(value.simInputs),
+    };
   } catch {
     /* 손상된 캐시는 무시하고 기본값으로 시작한다 */
   }

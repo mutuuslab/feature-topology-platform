@@ -52,15 +52,15 @@ describe('알림 규칙 — 내용 항목과 수신자', () => {
       { label: '차단 대상 범위', value: '차량 2대 · flag care_00022_param' },
       { label: '차단 사유', value: 'SAFETY/FIELD_DEFECT — 현장 결함 확인' },
     ]);
-    expect(who(d)).toEqual(['usr-author', 'usr-operator']); // 운영 리더(OPS_LEAD)는 겸직을 없애려 데모 계정에 두지 않는다(FFG-PLT-016)
+    expect(who(d)).toEqual(['usr-author', 'usr-operator', 'usr-viewer', 'usr-opslead']); // 운영 리더는 따로 둔 계정(opslead, 겸직 0건 — FFG-PLT-016) · 감사는 사후 검토(W2)
   });
 
   it('복원 승인 요청 → 해제 범위·사유·요청자·일시, 승인 역할 중 요청자와 직전 차단 승인자는 빼고(SOD-09)', () => {
     const d = build('kill.restore-requested', { feature, kill });
     expect(labels(d)).toEqual(['Feature', '해제 대상 범위', '해제 사유', '요청자', '요청 일시']);
     expect(d!.exclude).toEqual(['usr-operator', 'usr-quality', 'usr-coordinator']);
-    // 남는 승인 대상: PLM 기준정보(부 FSM)·시스템 연계(CSM)·구성 승인(Product 승인)
-    expect(who(d)).toEqual(['usr-approver', 'usr-steward', 'usr-integrator']);
+    // 남는 승인 대상: PLM 기준정보(부 FSM)·시스템 연계(CSM)·구성 승인(Product 승인)·운영 리더·두 번째 FSM·상품 Owner
+    expect(who(d)).toEqual(['usr-approver', 'usr-steward', 'usr-integrator', 'usr-opslead', 'usr-safety2', 'usr-productowner']);
   });
 
   it('긴급 차단 요청 → 승인 역할 전원에게(요청자 제외), 이상 징후 CRITICAL은 FSM까지', () => {
@@ -76,6 +76,23 @@ describe('알림 규칙 — 내용 항목과 수신자', () => {
     const d = build('sync.completed', { payload: { status: 'FAILED', reason: 'timeout', targetId: 'SYNC-MDM', ifId: 'IF-03', market: 'KR' } });
     expect(labels(d)).toEqual(['실패 유형', '발생 시점', '대상 외부 시스템']);
     expect(who(d)).toEqual(['usr-integrator']);
+  });
+
+  it('Feature DB 출처 점검 기한 지남 → Feature DB 관리자 역할(규칙표에 있다 — 실행 중에 더하지 않는다)', () => {
+    expect(Object.keys(NOTIFICATION_RULES)).toEqual(expect.arrayContaining([N.REFDB_REVIEW_DUE_EVENT, N.REFDB_REF_REJECTED_EVENT]));
+    const d = build(N.REFDB_REVIEW_DUE_EVENT, { aggregate: 'S07', payload: { sourceId: 'S07', title: 'ISO 26262', publisher: 'ISO', nextReviewAt: '2026-10-01', checkedAt: '2026-04-01' } });
+    expect(d).toMatchObject({ category: 'PROCEDURE', severity: 'WARNING', link: '/master/feature-db?tab=sources&source=S07' });
+    expect(labels(d)).toEqual(['출처', '발행처', '다음 점검일', '최종 확인일']);
+    expect(d!.recipients).toEqual([{ kind: 'role', role: 'REFDB_ADMIN' }]);
+  });
+
+  it('Feature DB 추가 요청 반려 → 그 행을 연결한 Feature의 Owner 팀, 반려한 본인 제외 · Feature가 없으면 알림 없음', () => {
+    const payload = { refId: 'CO-RVC-001', nameKo: '원격 시동', changeId: 'RC-00001', reason: '중복', release: 'v1.4', by: 'usr-refadmin' };
+    expect(build(N.REFDB_REF_REJECTED_EVENT, { payload })).toBeNull();
+    const d = build(N.REFDB_REF_REJECTED_EVENT, { feature, payload });
+    expect(d).toMatchObject({ category: 'APPROVAL', link: '/features/FEAT-00022/1.0.0', exclude: ['usr-refadmin'] });
+    expect(d!.recipients).toEqual([{ kind: 'team', team: 'ADAS기획팀' }]);
+    expect(labels(d)).toEqual(['Feature', '기준 행', '변경 요청', '반려 사유', '발행']);
   });
 });
 

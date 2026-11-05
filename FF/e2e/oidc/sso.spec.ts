@@ -20,9 +20,9 @@ test('SSO 로그인 → 대시보드에 사용자 이름, 역할 선택기는 �
   await expect(page).toHaveURL(/localhost:\d+\/$/);
   await expect(page.locator('[data-sso-name]')).toHaveText('정품질');
   const options = page.getByRole('combobox', { name: '역할' }).locator('option');
-  // quality(GATE_JUDGE·SAFETY_OFFICER)와 integrator(SAFETY_OFFICER 포함)만 — 운영자·작성자 등 다른 화면 역할은 없다
-  await expect(options).toHaveCount(2);
-  expect(await options.evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value))).toEqual(['quality', 'integrator']);
+  // 부여받은 SAFETY_OFFICER와 겹치는 quality·integrator·safety2만 — 운영자·작성자는 없다
+  await expect(options).toHaveCount(3);
+  expect(await options.evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value))).toEqual(['quality', 'integrator', 'safety2']);
   // 신원은 세션 쿠키가 정한다(브라우저 저장소에 로그인 표식 없음)
   expect(await page.evaluate(() => localStorage.getItem('ff.auth'))).toBeNull();
   const me = await page.request.get('/api/auth/me');

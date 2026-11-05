@@ -67,7 +67,10 @@ export default function TwinStandalone() {
   const lang = state.lang;
   const { snapshot, rate, setRate, step, scope, setScope, activate, pause, resume, reset, impact } = useTwin();
 
-  const [viewId, setViewId] = useState<ViewId>('factory');
+  const [viewId, setViewId] = useState<ViewId>(() => {
+    const requested = new URLSearchParams(window.location.search).get('view');
+    return VIEWS.find(view => view.id === requested)?.id ?? 'factory';
+  });
   const [vin, setVin] = useState('');
   const [webgl] = useState(() => webglSupported());
 

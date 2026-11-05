@@ -6,6 +6,7 @@ import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { whyDisabled, AsyncView, Button, ClassBadges, Drawer, ErrorNote, Explain, Field, Icon, KeyValue, Panel, RuleChecklist, Select, StageStrip, StatusGlyph, WindowGauge, useUnsavedGuard } from '../../design';
 import { usePermission, when } from '../shared';
+import { AnalysisPanel } from './AnalysisPanel';
 
 const S = ko.safetyTab;
 const EDIT_ROLES = ['FEATURE_AUTHOR', 'SAFETY_OFFICER'] as const;
@@ -346,6 +347,9 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
               )}
             </div>
           </div>
+
+          {/* 분석 근거(P3-3) — HARA·TARA·SOTIF·형식승인 판단, 대표 ASIL 변경 사유(P3-1), G7 SM·CSM 서명 */}
+          <AnalysisPanel id={id} ver={ver} />
 
           <Panel title={S.preview} id="safety-preview">
             <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>

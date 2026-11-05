@@ -1,9 +1,11 @@
 // /audit/oversight — 감독 기록: 직무 분리 감사·긴급 권한 사후 검토(D06-09, FFG-PLT-016) · 변경 기록(D04-01, FFG-CODE-030) · 재-HARA 요청(D06-05, FFG-LCY-006)
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { REHARA_LABEL, ROLE_LABEL, type Role } from '@ff/contracts';
+import { postReviewBlocker, REHARA_LABEL, ROLE_LABEL, type Role } from '@ff/contracts';
+import { actorFor } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { personName } from '../../data/people';
 import { AsyncView, Button, DataTable, ErrorNote, Field, KeyValue, PageHeader, Panel, Tabs, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 
@@ -106,9 +108,9 @@ function PostReviews() {
             { key: 'f', header: C.feature, cell: (r) => mono(r.featureId) },
             { key: 'i', header: C.issued, cell: (r) => mono(when(r.issuedAt)) },
             { key: 'd', header: C.due, cell: (r) => <span className="ds-mono ds-nowrap" style={{ color: r.status === 'OVERDUE' ? 'var(--danger)' : undefined }}>{when(r.due)}</span> },
-            { key: 'w', header: C.who, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{[r.requestedBy, ...r.approvers].join(' · ')}</span> },
+            { key: 'w', header: C.who, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{[r.requestedBy, ...r.approvers].map(personName).join(' · ')}</span> },
             { key: 's', header: C.status, cell: (r) => (r.status === 'REVIEWED' ? <VerdictBadge value="PASS" /> : <span style={{ color: r.status === 'OVERDUE' ? 'var(--danger)' : 'var(--warn)' }}>{R.status[r.status]}</span>) },
-            { key: 'r', header: C.review, cell: (r) => (r.review ? <span title={r.review.summary}>{`${r.review.reviewer}${r.review.late ? ` · ${R.late}` : ''}`}</span> : '—') },
+            { key: 'r', header: C.review, cell: (r) => (r.review ? <span title={r.review.summary}>{`${personName(r.review.reviewer)}${r.review.late ? ` · ${R.late}` : ''}`}</span> : '—') },
           ]}
         />
       </AsyncView>
@@ -116,24 +118,38 @@ function PostReviews() {
   );
 }
 
-/** 사후 독립 검토 기록 — 긴급 차단 상세에서도 쓴다. 그 Kill의 요청자·승인자는 서버가 403으로 막는다 */
+/** 사후 검토를 기록할 수 있는 역할 — 서버 recordKillPostReview와 같다. 품질(내부감사, AUDITOR)이 수행한다(2026-11-04 결정, FPW.8-A07) */
+export const POST_REVIEW_ROLES: Role[] = ['AUDITOR', 'SECURITY_OFFICER', 'SAFETY_OFFICER', 'REGULATORY_OWNER'];
+
+/**
+ * 사후 독립 검토 기록 — 긴급 차단 상세에서도 쓴다. 그 Kill의 요청자·승인자는 서버와 같은 contracts postReviewBlocker로 미리 막고
+ * 사람이 읽을 이유를 보인다(P4-2·P3-5 — 전에는 승인자에게 버튼이 켜져 서버가 거부했다)
+ */
 export function PostReviewForm({ killId, row }: { killId: string; row?: Review | null }) {
   const R = T.review;
-  const perm = usePermission(['SAFETY_OFFICER', 'SECURITY_OFFICER', 'REGULATORY_OWNER']);
+  const perm = usePermission(POST_REVIEW_ROLES);
   const rec = useApiMutation('recordKillPostReview', ['killPostReviews', 'iamSodAudit', 'audit']);
   const [summary, setSummary] = useState('');
+  const me = actorFor(perm.role, POST_REVIEW_ROLES);
+  const blocked = row ? postReviewBlocker({ requestedBy: row.requestedBy, approvers: row.approvers }, me.id) : null;
+  const why = !perm.ok ? perm.hint : blocked ?? (summary.trim().length < 4 ? ko.kill.needs([R.summary]) : undefined);
   if (row?.review)
     return (
-      <KeyValue rows={[{ k: R.col.review, v: row.review.summary, note: `${row.review.reviewer} · ${row.review.role} · ${when(row.review.at)}${row.review.late ? ` · ${R.late}` : ''}` }]} />
+      <KeyValue rows={[{ k: R.col.review, v: row.review.summary, note: `${personName(row.review.reviewer)} · ${ROLE_LABEL[row.review.role as Role] ?? row.review.role} · ${when(row.review.at)}${row.review.late ? ` · ${R.late}` : ''}` }]} />
     );
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-2)' }} data-testid="post-review">
       {row && <p className="ds-field__hint">{`${R.col.due} ${when(row.due)} · ${R.status[row.status]} · ${R.excluded}`}</p>}
+      {blocked && (
+        <p className="ds-field__hint" role="status" data-testid="post-review-blocked">
+          {blocked}
+        </p>
+      )}
       <Field label={R.summary}>
-        <textarea className="ds-input" rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} />
+        <textarea className="ds-input" rows={2} value={summary} disabled={!!blocked} onChange={(e) => setSummary(e.target.value)} />
       </Field>
       <ErrorNote error={rec.error} />
-      <Button disabled={!perm.ok || summary.trim().length < 4 || rec.isPending} title={perm.hint} onClick={() => rec.mutate({ params: { id: killId }, body: { summary: summary.trim() } }, { onSuccess: () => setSummary('') })}>
+      <Button disabled={!!why || rec.isPending} title={perm.hint ?? blocked ?? undefined} reason={why} onClick={() => rec.mutate({ params: { id: killId }, body: { summary: summary.trim() } }, { onSuccess: () => setSummary('') })}>
         {R.submit}
       </Button>
     </div>

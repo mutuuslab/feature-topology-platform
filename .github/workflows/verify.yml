@@ -27,3 +27,11 @@ jobs:
       - name: Playwright 브라우저 (e2e가 있을 때)
         run: if [ -f e2e/playwright.config.ts ]; then npx playwright install --with-deps chromium firefox webkit; fi
       - run: npm run verify
+      - name: Git 커밋의 Feature Flag 사용처 스캔
+        run: node tools/flag-sources.ts --repo .. --url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" --ref "$GITHUB_SHA" --path FF/examples/feature-flag-consumer --out flag-sources.json
+      - name: Feature Flag 소스 연결 산출물
+        uses: actions/upload-artifact@v4
+        with:
+          name: flag-sources
+          path: FF/flag-sources.json
+          if-no-files-found: error

@@ -17,7 +17,7 @@ describe('AI 생성 코드 변경 기록 (FFG-CODE-030)', () => {
   beforeAll(async () => {
     b = await bootApp({ at: '2026-10-15T01:00:00.000Z' });
     const http = b.http;
-    const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '거리 추정 필터 수정', changes: { description: 'AI 보조 수정' } }).expect(201);
+    const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '거리 추정 필터 수정', changes: { description: 'AI 보조 수정', featureRefs: [{ refId: 'AD-LON-009', role: 'PRIMARY' }] } }).expect(201);
     ver = v.body.feature.version;
     await confirmSafety(http, 'FEAT-00022', ver);
     for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/FEAT-00022/versions/${ver}/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);

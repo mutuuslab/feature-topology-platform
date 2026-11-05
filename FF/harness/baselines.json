@@ -123,5 +123,35 @@
     "value": 3,
     "direction": "max",
     "note": "시험 결정성 — page.waitForTimeout — 화면 상태를 기다리는 단언(toBeVisible·toHaveURL·expect.poll)으로 (예외는 hygiene-ok: 이유)"
+  },
+  "testHygiene.swallowed-wait": {
+    "value": 0,
+    "direction": "max",
+    "note": "시험 결정성 — 대기·단언의 .catch(() => undefined) — 시간 초과를 삼키지 말고 기다린 뒤 로딩·오류가 없음을 단언한다(e2e/tests/settle.ts) (예외는 hygiene-ok: 이유)"
+  },
+  "testSkips.backend": {
+    "value": 6,
+    "direction": "max",
+    "note": "건너뛰는 시험 선언 수(backend) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에)"
+  },
+  "testSkips.contracts": {
+    "value": 2,
+    "direction": "max",
+    "note": "건너뛰는 시험 선언 수(contracts) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에)"
+  },
+  "testSkips.frontend": {
+    "value": 0,
+    "direction": "max",
+    "note": "건너뛰는 시험 선언 수(frontend) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에)"
+  },
+  "testSkips.e2e": {
+    "value": 7,
+    "direction": "max",
+    "note": "건너뛰는 시험 선언 수(e2e) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에)"
+  },
+  "testSkips.tools": {
+    "value": 0,
+    "direction": "max",
+    "note": "건너뛰는 시험 선언 수(tools) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에)"
   }
 }

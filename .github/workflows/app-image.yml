@@ -29,6 +29,8 @@ jobs:
           docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env up -d --no-build
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:9101/api/health/ready && break; sleep 2; done
           curl -fsS http://127.0.0.1:9101/api/health/ready | grep -q '"status":"ready"'
+          # Feature DB 이전본(data/reference)이 이미지에 실려 첫 기동 때 시드됐는지 — 빠지면 시드가 조용히 건너뛰고 등록이 모두 막힌다(2026-11-04)
+          curl -fsS http://127.0.0.1:9101/api/health/ready | jq -e '.checks.refdb.ok == true and .checks.refdb.rows > 0'
           curl -fsS -o /dev/null http://127.0.0.1:9101/
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:9101/api/features)" = 401
           docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env exec -T app node backend/dist/ops/backup-cli.js backup

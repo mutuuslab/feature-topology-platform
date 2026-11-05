@@ -1,0 +1,5 @@
+{
+  "server": { "version": "8.3.1", "source": "https://github.com/mutuuslab/unleash", "upstream": "https://github.com/Unleash/unleash", "commit": "51aaeb62a63a1753b7ce7d3b3b4e8a5aef89f4b4", "license": "AGPL-3.0-or-later", "integrity": "sha512-m/L6izV4DT4K1NYf/Q1EUgJboyaqzIYFzL4eRzgdWT1rDZwrR71u3WOYqNKyaEiguEPA60RqyI0oAyoPIt3YdQ==" },
+  "edge": { "version": "20.6.0", "source": "https://github.com/Unleash/unleash-edge/tree/unleash-edge-v20.6.0", "license": "MIT (OSS binary; enterprise code excluded)", "url": "https://github.com/Unleash/unleash-edge/releases/download/unleash-edge-v20.6.0/unleash-edge-x86_64-pc-windows-msvc.zip", "sha256": "b491741498c6b9560f8bba0008dba1fa032316bb9da3a6c2efd418e6745106c7" },
+  "postgres": { "version": "18.3", "source": "https://www.postgresql.org/ftp/source/v18.3/", "license": "PostgreSQL", "windowsSource": "https://www.enterprisedb.com/download-postgresql-binaries" }
+}

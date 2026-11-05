@@ -138,8 +138,12 @@ const FIELD_HINTS: Record<string, string[]> = {
   trim: ['trim', '트림', 'grade'],
   asil: ['asil'],
   ownerId: ['owner', '담당', 'organization', '조직', 'team'],
+  featureDb: ['feature db', 'featuredb', 'feature ref', '기준 id', '기준 행'],
 };
-const FIELD_ENV: Record<string, string> = { country: 'JIRA_FIELD_COUNTRY', vehicleModel: 'JIRA_FIELD_VEHICLE_MODEL', trim: 'JIRA_FIELD_TRIM', asil: 'JIRA_FIELD_ASIL', ownerId: 'JIRA_FIELD_OWNER' };
+const FIELD_ENV: Record<string, string> = { country: 'JIRA_FIELD_COUNTRY', vehicleModel: 'JIRA_FIELD_VEHICLE_MODEL', trim: 'JIRA_FIELD_TRIM', asil: 'JIRA_FIELD_ASIL', ownerId: 'JIRA_FIELD_OWNER', featureDb: 'JIRA_FIELD_FEATURE_DB' };
+/** Epic 자동 등록이 읽는 사용자 필드 — 적용 범위 5개 + Feature DB 기준 ID(D-REF-16) */
+const EPIC_FIELDS = [...C.EPIC_SCOPE_FIELDS, 'featureDb'] as const;
+const EPIC_FIELD_LABEL: Record<(typeof EPIC_FIELDS)[number], string> = { ...C.EPIC_SCOPE_LABEL, featureDb: 'Feature DB 기준 ID' };
 export interface JiraField {
   id: string;
   name: string;
@@ -258,9 +262,9 @@ async function checkJira(env: Env, f: typeof fetch, opts: { jiraProject?: string
     const fields = fl.data as JiraField[];
     r.lines.push({ level: 'INFO', text: `Epic 적용 범위 필드 (Feature 자동 등록${autocreate ? '' : ' — FF_EPIC_AUTOCREATE=off라 필수 아님'})` });
     const miss: Level = autocreate ? 'FAIL' : 'WARN';
-    for (const field of C.EPIC_SCOPE_FIELDS) {
+    for (const field of EPIC_FIELDS) {
       const envKey = FIELD_ENV[field];
-      const label = `  ${C.EPIC_SCOPE_LABEL[field]}(${field})`.padEnd(22);
+      const label = `  ${EPIC_FIELD_LABEL[field]}(${field})`.padEnd(22);
       const set = v(env, envKey);
       if (set) {
         const hit = fields.find((x) => x.id === set);

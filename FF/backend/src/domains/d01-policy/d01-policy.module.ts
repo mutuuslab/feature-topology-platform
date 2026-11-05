@@ -10,9 +10,12 @@ import { GateDecisionService } from './topology/gate-decision.service';
 import { ReharaRepo } from './topology/rehara.repo';
 import { BaselineController, RegistryController } from './registry/registry.controller';
 import { RegistryService } from './registry/registry.service';
+import { FeatureRefLinker } from './registry/feature-refs';
+import { RefdbRepository } from './refdb/refdb.repository';
 import { SafetyProfileController, SafetyProfileService } from './registry/safety-profile.service';
 import { ReleaseSignoffController, ReleaseSignoffService } from './registry/release-signoff.service';
 import { RetirementController, RetirementService } from './registry/retirement.service';
+import { WorkQueueController, WorkQueueService } from './registry/work-queue.service';
 import { TrialExpiryService } from './entitlement/trial-expiry.service';
 import { ActivationService } from './activation/activation.service';
 import { KILL_STATE } from './activation/kill-state';
@@ -28,10 +31,12 @@ import { TargetingService } from './targeting/targeting.service';
 import { GateService } from './topology/gate.service';
 import { TopologyController } from './topology/topology.controller';
 import { TopologyService } from './topology/topology.service';
+import { AnalysisEvidenceController, AnalysisEvidenceService } from './topology/analysis-evidence.service';
+import { FlagSourceController, FlagSourceService } from './policy-store/flag-source.service';
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController],
+  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
@@ -46,7 +51,14 @@ import { TopologyService } from './topology/topology.service';
     StagedRolloutService,
     SafetyProfileService,
     ReleaseSignoffService,
-    AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
+    WorkQueueService, // 검토함 대기열(W2)
+    // Feature DB 연결(30-95 §5.3) — 등록·수명주기가 기준 행 상태를 본다. 저장소는 상태 없는 DB 접근이라 여기서도 만든다(RefdbModule과 순환 import 없이)
+    RefdbRepository,
+    FeatureRefLinker,
+    AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService,
+    AnalysisEvidenceService, // 분석 근거(W3) — HARA·TARA·SOTIF·형식승인 영향, G7 서명
+    FlagSourceService,
+  ],
   exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
 })
 export class D01PolicyModule {}

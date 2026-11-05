@@ -1,4 +1,4 @@
-// 내 업무 흐름 — 현재 역할이 13개 절차에서 맡은 활동을 생애주기 사슬로 잇고, 줄마다 받는 곳 → 내 활동 → 넘기는 곳을 그린다.
+// 내 업무 흐름 — 현재 역할이 14개 절차에서 맡은 활동을 생애주기 사슬로 잇고, 줄마다 받는 곳 → 내 활동 → 넘기는 곳을 그린다.
 // 역할 전환기에서 역할을 바꾸면 그 역할의 흐름으로 바뀐다. 지금 내 차례인 활동은 강조한다.
 // MyWorkFlowCompact는 메인 화면 업무 절차 가젯용 작은 판(지금 내 차례부터 3건, 화면 폭에 맞춤).
 // 모양은 절차 흐름도와 같은 절차서 표기: 내 활동 = 파란 테두리 상자, 상대 역할 = 레인 머리 모양, 외부 입력·보존 기록 = 문서,
@@ -192,7 +192,7 @@ export function MyWorkFlow({ doc, sample, persona }: { doc: WorkflowDoc; sample?
   const layout = layoutMyFlow(steps, doc, MY_FLOW_FULL, F.node.more);
   return (
     <div className="pf-view" data-mode={mode} data-role={role}>
-      <p className="ds-field__hint pf-hint">{own ? F.mine.hint(roleLabel(role)) : F.roles.hint(roleLabel(role))}</p>
+      <p className="ds-field__hint pf-hint">{own ? F.mine.hint(roleLabel(role), doc.processes.length) : F.roles.hint(roleLabel(role), doc.processes.length)}</p>
       <div className="pf-toolbar">
         <Segmented<Filter>
           label={F.mine.filter}

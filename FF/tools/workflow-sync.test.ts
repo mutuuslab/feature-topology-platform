@@ -24,9 +24,9 @@ test('서버 색인은 contracts의 workflowIndexOf와 같은 모양이다(두 �
   assert.match(mod, /export const WORKFLOW_INDEX: WorkflowIndexDoc = /);
 });
 
-test('메인 화면 지도 메타데이터는 contracts의 workflowMapOf와 같다 — 13개 프로세스만 담는다', () => {
+test('메인 화면 지도 메타데이터는 contracts의 workflowMapOf와 같다 — 14개 프로세스(FPW.14 Feature DB 운영 포함)를 모두 담는다', () => {
   const doc = JSON.parse(readFileSync(SOURCE, 'utf8'));
   assert.deepEqual(mapOf(doc), workflowMapOf(doc));
-  assert.equal(mapOf(doc).processes.length, 13);
+  assert.equal(mapOf(doc).processes.length, 14);
   assert.match(renderMapModule(doc), /export const WORKFLOW_MAP: WorkflowMapDoc = /);
 });

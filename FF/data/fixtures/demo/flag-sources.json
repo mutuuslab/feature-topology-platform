@@ -1,0 +1,65 @@
+{
+  "format": "ff-flag-source/v1",
+  "provider": "GITHUB",
+  "repository": "https://github.com/mutuuslab/feature-topology-platform",
+  "commit": "624960e9b919c98ccf127f00f9c320b9383dd171",
+  "scannedAt": "2026-11-04T22:10:11.112Z",
+  "filesScanned": 6,
+  "unresolvedCalls": 0,
+  "usages": [
+    {
+      "flagKey": "care_00022_signal",
+      "path": "FF/examples/feature-flag-consumer/distance.ts",
+      "line": 8,
+      "symbol": "client.getBooleanValue",
+      "method": "getBooleanValue",
+      "safeDefault": "EXPLICIT_FALSE",
+      "contentHash": "sha256:b88db763fa7b9e5c8a4f9f2adcd3cf4f362c23f7b82f2df9fad8975dcc2cea4e"
+    },
+    {
+      "flagKey": "care_00022_param",
+      "path": "FF/examples/feature-flag-consumer/distance.ts",
+      "line": 10,
+      "symbol": "client.getBooleanValue",
+      "method": "getBooleanValue",
+      "safeDefault": "EXPLICIT_FALSE",
+      "contentHash": "sha256:b88db763fa7b9e5c8a4f9f2adcd3cf4f362c23f7b82f2df9fad8975dcc2cea4e"
+    },
+    {
+      "flagKey": "ivi_00027_detail",
+      "path": "FF/examples/feature-flag-consumer/infotainment.ts",
+      "line": 6,
+      "symbol": "client.getBooleanValue",
+      "method": "getBooleanValue",
+      "safeDefault": "EXPLICIT_FALSE",
+      "contentHash": "sha256:85d4c29e1f154288a13d5f3702a582b2efe0983eb7fc15b370d22f50d0150f85"
+    },
+    {
+      "flagKey": "ivi_00027_banner",
+      "path": "FF/examples/feature-flag-consumer/infotainment.ts",
+      "line": 7,
+      "symbol": "client.getBooleanValue",
+      "method": "getBooleanValue",
+      "safeDefault": "EXPLICIT_FALSE",
+      "contentHash": "sha256:85d4c29e1f154288a13d5f3702a582b2efe0983eb7fc15b370d22f50d0150f85"
+    },
+    {
+      "flagKey": "ivi_00027_voice",
+      "path": "FF/examples/feature-flag-consumer/infotainment.ts",
+      "line": 8,
+      "symbol": "client.getBooleanValue",
+      "method": "getBooleanValue",
+      "safeDefault": "EXPLICIT_FALSE",
+      "contentHash": "sha256:85d4c29e1f154288a13d5f3702a582b2efe0983eb7fc15b370d22f50d0150f85"
+    },
+    {
+      "flagKey": "ivi_00024_guide",
+      "path": "FF/examples/feature-flag-consumer/infotainment.ts",
+      "line": 9,
+      "symbol": "client.getBooleanValue",
+      "method": "getBooleanValue",
+      "safeDefault": "EXPLICIT_FALSE",
+      "contentHash": "sha256:85d4c29e1f154288a13d5f3702a582b2efe0983eb7fc15b370d22f50d0150f85"
+    }
+  ]
+}

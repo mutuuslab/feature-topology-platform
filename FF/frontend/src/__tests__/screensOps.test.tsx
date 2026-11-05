@@ -104,13 +104,17 @@ describe('차량별 적용 상태', () => {
             evaluations: [{ flagKey: 'care_00022_param', local: { value: true, decision: 'ALLOW', reason: 'POLICY_MATCH' }, server: { value: false, decision: 'SAFE_DEFAULT', reason: 'KILL_SWITCH' }, drift: true }],
           },
         };
-      if (url.startsWith('/api/vehicles')) return { body: { items: [{ vin: 'ego-01', label: '시연' }] } };
+      if (url.startsWith('/api/vehicles/ego-01/requests')) return { body: { cursor: null, limit: { requests: 30, windowMs: 10_000 }, items: [] } };
+      if (url.startsWith('/api/vehicles/ego-01/status')) return { body: { features: [], recent: [] } };
+      if (new URL(url, 'http://test').pathname === '/api/vehicles') return { body: { items: [{ vin: 'ego-01', label: '시연' }] } };
     };
     mount('/fleet/vehicles/ego-01', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
     expect(await screen.findByText('BOOT-ego-01-1')).toBeTruthy();
     expect(screen.getByText('ON · POLICY_MATCH')).toBeTruthy();
     expect(screen.getByText('OFF · KILL_SWITCH')).toBeTruthy();
     expect(screen.getByText('REPLAY')).toBeTruthy();
+    expect(await screen.findByText(/빈도 한도 30회 \/ 10초/)).toBeTruthy();
+    expect(screen.getByText('아직 이 차량이 보낸 요청이 없습니다')).toBeTruthy();
   });
 
   it('상태 보고 v2 — 받아들인 상태(DC2 인계 경고)·report_seq(시동·순번)와 위반 보고를 구분(FFG-TEL-003), 보고가 없으면 UNKNOWN 안내', async () => {
@@ -196,7 +200,8 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
     await waitFor(() => expect(calls.filter((c) => c.url.startsWith('/api/kill-requests/preview')).at(-1)?.url).toContain('vins=ego-01'));
     expect(screen.getByRole('checkbox', { name: /KMH-NX4-0003/ })).toBeTruthy();
     // 승인 칸은 실시간 판정에서 대기 — F3 안전은 FSM 필수
-    expect(document.querySelector('.ds-rules__item[data-status="pending"]')!.textContent).toContain('서로 다른 2인 승인 대기 — 한 칸은 Safety Manager(FSM)');
+    // F3 안전 차단은 기능안전(FSM) + 사이버보안(CSM) 2인(2026-11-04 결정)
+    expect(document.querySelector('.ds-rules__item[data-status="pending"]')!.textContent).toContain('기능안전(Safety Manager) + 사이버보안 2인이 승인합니다');
     expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('4'); // 누적 3 + 이번 1
     fireEvent.change(screen.getByLabelText('사유'), { target: { value: '전방 거리 오추정' } });
     const btn = screen.getByRole('button', { name: '차단 요청' }) as HTMLButtonElement;
@@ -292,11 +297,12 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
     await within(dlg).findByText('요청자는 같은 명령을 승인할 수 없습니다(직무 분리)');
     expect((within(dlg).getByRole('button', { name: '승인 — 개인 서명' }) as HTMLButtonElement).disabled).toBe(true);
     // 회귀: FSM이 필요한 칸은 하나 — 두 칸 모두 FSM으로 보이던 문제
-    expect([...dlg.querySelectorAll('.ds-approvals__slot .ds-approvals__role')].map((x) => x.textContent)).toEqual(['FSM', 'CSM·운영 리더 등']);
+    // 빈 칸은 필수 역할 쌍 — 기능안전·사이버보안(P3-2)
+    expect([...dlg.querySelectorAll('.ds-approvals__slot .ds-approvals__role')].map((x) => x.textContent)).toEqual(['기능안전(Safety Manager)', '사이버보안']);
     cleanup();
     handler = (url, init) =>
       url.startsWith('/api/kill-requests/KILL-') && init?.method !== 'POST'
-        ? { body: { ...REQUESTED, approvals: [{ approverId: 'usr-coordinator', role: 'OPS_LEAD', signedAt: '2026-10-12T01:05:00.000Z', kid: 'APR-usr-coordinator' }] } }
+        ? { body: { ...REQUESTED, approvals: [{ approverId: 'usr-csm', role: 'CSM', signedAt: '2026-10-12T01:05:00.000Z', kid: 'APR-usr-csm' }] } }
         : api(url, init);
     mount('/ops/kill?id=KILL-00001', '/ops/kill', <KillConsole />, 'steward'); // 법규 담당(REGULATORY) — 남은 칸은 FSM만
     await within(await screen.findByRole('dialog')).findByText('남은 칸은 Safety Manager(FSM)만');
@@ -349,7 +355,8 @@ describe('게시본 상세', () => {
     mount('/deployments/PUB-00001', '/deployments/:id', <DeploymentDetail />);
     expect(await screen.findByText('SIGNATURE_VALID')).toBeTruthy();
     expect(screen.getByText('KEY-0001 · Ed25519')).toBeTruthy();
-    expect(screen.getByText('NO_REPORT')).toBeTruthy();
+    expect(screen.getByText('회신 없음')).toBeTruthy(); // 사유는 한국어(원래 코드는 툴팁, P4-10)
+    expect(screen.getByTitle('NO_REPORT')).toBeTruthy();
     expect(screen.getByText('REJECTED · PAYLOAD_TAMPERED')).toBeTruthy();
   });
 });

@@ -7,7 +7,9 @@
 //   deadline-wait   — 제품 기한·제한 시간을 짧은 실시간 값으로 두고 지나가기를 기다리는 시험(*_TIMEOUT_MS·*_DEADLINE_MS 같은 설정에 1분 미만 값)
 //   date-now        — Date.now()·performance.now() 비교·경과 시간 단언(조건 대기 반복문의 안전 상한은 허용)
 //   wait-for-timeout — Playwright page.waitForTimeout(고정 시간 기다리기)
+//   swallowed-wait  — 대기·단언의 실패를 삼키는 .catch(() => undefined|{}|null) (waitFor*·findBy*·expect — 시간 초과가 '통과'가 된다)
 //   config          — vitest 설정의 testTimeout(≥ 20초)·maxWorkers(1~6) 누락
+// 건너뛴 시험 수(it.skip·skipIf·runIf·test.fixme·todo)는 작업 폴더별로 래칫(testSkips.<폴더>) — 조건부 건너뛰기가 조용히 늘지 않게.
 // 예외는 같은 줄이나 바로 윗줄에 `hygiene-ok: <이유>`를 단다(이유 없는 표식은 위반). 규칙별 건수는 harness/baselines.json에 잠그고 줄어드는 쪽으로만 간다.
 //   node tools/test-hygiene.ts            검사(래칫)
 //   node tools/test-hygiene.ts --list     위반 줄 목록
@@ -17,13 +19,14 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { FF, ratchet, rel, walk } from './lib.ts';
 
-export type Rule = 'fixed-port' | 'sleep' | 'deadline-wait' | 'date-now' | 'wait-for-timeout' | 'config';
+export type Rule = 'fixed-port' | 'sleep' | 'deadline-wait' | 'date-now' | 'wait-for-timeout' | 'swallowed-wait' | 'config';
 export const RULES: Record<Rule, string> = {
   'fixed-port': '고정 포트 — listen(0)·OS가 고른 포트를 쓰고 주소를 되읽는다',
   sleep: 'setTimeout 잠자기 — 조건 대기(until·expect.poll·waitFor)로 바꾼다',
   'deadline-wait': '짧은 실시간 기한 — 가짜 시계·FF_SCHEDULER=manual·기한을 시험이 직접 닫는다',
   'date-now': 'Date.now() 비교·경과 시간 단언 — 가짜 시계나 결과 상태로 단언한다',
   'wait-for-timeout': 'page.waitForTimeout — 화면 상태를 기다리는 단언(toBeVisible·toHaveURL·expect.poll)으로',
+  'swallowed-wait': '대기·단언의 .catch(() => undefined) — 시간 초과를 삼키지 말고 기다린 뒤 로딩·오류가 없음을 단언한다(e2e/tests/settle.ts)',
   config: 'vitest testTimeout ≥ 20초·maxWorkers 1~6 — 부하 기계에서 5초 기본값·코어 수 작업자로 흔들렸다',
 };
 
@@ -108,6 +111,11 @@ const PATTERNS: Pattern[] = [
   { rule: 'wait-for-timeout', re: /\.waitForTimeout\(/g },
 ];
 
+/** 실패를 버리는 .catch — 인자 없는(또는 무시한) 화살표가 undefined·{}·null·void 0을 돌려준다 */
+const SWALLOW = /\.catch\(\s*\(\s*\w*\s*\)\s*=>\s*(?:undefined|\{\s*\}|null|void 0)\s*\)/g;
+/** 조건 대기·단언 호출 */
+const WAIT_CALL = /\b(?:waitFor\w*|findBy\w+|findAllBy\w+|expect(?:\.poll)?)\s*\(/;
+
 export function scanSource(file: string, src: string): Finding[] {
   const starts = lineStarts(src);
   const lines = src.split('\n');
@@ -126,6 +134,17 @@ export function scanSource(file: string, src: string): Finding[] {
       if (p.pollOk && (/^\s*(?:while|for)\s*\(/.test(lines[line - 1]) || inPollLoop(src, m.index))) continue;
       out.push({ rule: p.rule, file, line, text: lines[line - 1].trim().slice(0, 160) });
     }
+  }
+  // 대기·단언의 실패를 삼킨다 — .catch(빈 처리) 앞의 같은 문장(; 또는 빈 줄까지)에 waitFor*·findBy*·expect가 있으면
+  SWALLOW.lastIndex = 0;
+  for (let m = SWALLOW.exec(src); m; m = SWALLOW.exec(src)) {
+    const head = src.slice(Math.max(0, m.index - 400), m.index).replace(/\r/g, '');
+    const stmt = head.slice(Math.max(head.lastIndexOf(';'), head.lastIndexOf('\n\n')) + 1);
+    if (!WAIT_CALL.test(stmt)) continue;
+    const line = lineOf(starts, m.index);
+    if (excused(lines, line) || seen.has(`swallowed-wait:${line}`)) continue;
+    seen.add(`swallowed-wait:${line}`);
+    out.push({ rule: 'swallowed-wait', file, line, text: lines[line - 1].trim().slice(0, 160) });
   }
   // 표식은 있는데 이유가 없다
   lines.forEach((l, i) => {
@@ -164,6 +183,28 @@ export function testFiles(): string[] {
 
 const VITEST_CONFIGS = ['backend/vitest.config.ts', 'contracts/vitest.config.mjs', 'frontend/vite.config.ts'];
 
+/** 건너뛰는 시험 선언 — vitest·node:test·Playwright(it/test/describe.skip·skipIf·runIf·fixme·todo) */
+const SKIP_DECL = /\b(?:it|test|describe|suite)(?:\.(?:concurrent|sequential|serial))?\.(?:skip|skipIf|runIf|fixme|todo)\b/g;
+export const SKIP_WORKSPACES = ['backend', 'contracts', 'frontend', 'e2e', 'tools'] as const;
+/** 파일 본문의 건너뛰기 선언 수 */
+export function countSkips(src: string): number {
+  return src.match(SKIP_DECL)?.length ?? 0;
+}
+/** 작업 폴더별 건너뛰기 선언 수 — 시험 파일(testFiles) + tools의 *.test.* */
+export function skipCounts(files: { file: string; src: string }[]): Record<(typeof SKIP_WORKSPACES)[number], number> {
+  const out = Object.fromEntries(SKIP_WORKSPACES.map((w) => [w, 0])) as Record<(typeof SKIP_WORKSPACES)[number], number>;
+  for (const { file, src } of files) {
+    const ws = file.split('/')[0] as (typeof SKIP_WORKSPACES)[number];
+    if (ws in out) out[ws] += countSkips(src);
+  }
+  return out;
+}
+function skipSources(): { file: string; src: string }[] {
+  const files = [...testFiles(), ...walk(join(FF, 'tools'), ['.test.ts', '.test.mjs'], ['node_modules'])];
+  // 이 검사 자신의 시험(정규식 예시)은 세지 않는다
+  return files.map((f) => ({ file: rel(f), src: readFileSync(f, 'utf8') })).filter((x) => x.file !== 'tools/test-hygiene.test.ts');
+}
+
 export function scanAll(): Finding[] {
   const out: Finding[] = [];
   for (const f of testFiles()) out.push(...scanSource(rel(f), readFileSync(f, 'utf8')));
@@ -186,6 +227,9 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     if (r === 'config') continue;
     ok = ratchet(`testHygiene.${r}`, by(r).length, 'max', `시험 결정성 — ${RULES[r]} (예외는 hygiene-ok: 이유)`) && ok;
   }
+  const skips = skipCounts(skipSources());
+  if (process.argv.includes('--list')) for (const [w, n] of Object.entries(skips)) console.log(`  skips ${w.padEnd(10)} ${n}`);
+  for (const [w, n] of Object.entries(skips)) ok = ratchet(`testSkips.${w}`, n, 'max', `건너뛰는 시험 선언 수(${w}) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에)`) && ok;
   if (!ok) console.error('  → node tools/test-hygiene.ts --list 로 위반 줄을 보고, 늘어난 곳을 고치세요(예외는 같은 줄·윗줄에 hygiene-ok: 이유)');
   process.exit(ok ? 0 : 1);
 }

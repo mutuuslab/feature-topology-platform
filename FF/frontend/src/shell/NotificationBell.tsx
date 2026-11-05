@@ -8,6 +8,7 @@ import { useApi, useApiMutation } from '../api/hooks';
 import { usePlatformEvents } from '../api/stream';
 import { ko } from '../copy/ko';
 import { Button, Icon } from '../design';
+import { humanText, localTime } from '../data/people';
 
 const N = ko.notify;
 export const NOTIFY_EVENTS = Object.keys(NOTIFICATION_RULES);
@@ -20,7 +21,8 @@ export interface Inbox {
   byCategory: Record<string, number>;
 }
 export const SEVERITY_VAR: Record<string, string> = { INFO: 'var(--info)', WARNING: 'var(--warn)', CRITICAL: 'var(--danger)' };
-export const t16 = (iso: string) => iso.slice(0, 16).replace('T', ' ');
+/** 알림 시각 — 한국 시각(다른 화면과 같은 표기, UTC로 보이던 결함 P1-5) */
+export const t16 = (iso: string) => localTime(iso);
 
 export function SeverityBadge({ value }: { value: string }) {
   return (
@@ -93,7 +95,7 @@ export function NotificationBell() {
                       <span className="ds-tag">{NOTIFICATION_CATEGORY_LABEL[n.category]}</span>
                       <span className="ds-mono">{t16(n.createdAt)}</span>
                     </span>
-                    <span className="sh-ntf__title">{n.title}</span>
+                    <span className="sh-ntf__title">{humanText(n.title)}</span>
                   </button>
                 </li>
               ))}

@@ -10,6 +10,12 @@ export function pickDefault<T>(items: readonly T[] | undefined, preferred: (t: T
   return items.find(preferred) ?? items[0] ?? null;
 }
 
+/** 명시한 대상은 목록 확인 전 평가하지 않고, 없는 대상도 다른 항목으로 몰래 바꾸지 않는다. */
+export function pickAvailableValue(items: readonly string[] | undefined, requested: string | null, preferred?: string) {
+  const value = requested ?? (preferred && items?.includes(preferred) ? preferred : items?.[0]) ?? '';
+  return { value, pending: items === undefined, unavailable: !!requested && !!items && !items.includes(requested), none: !requested && !!items && !items.length };
+}
+
 export interface FeatureRef {
   featureId: string;
   version: string;

@@ -7,11 +7,12 @@ import { PolicyController, RuntimeController } from './policy.controller';
 import { PolicyService } from './policy.service';
 import { UnleashGateway } from '../../../adapters/unleash/unleash.client';
 import { UnleashController, UnleashSyncService } from './unleash-sync.service';
+import { UnleashAutoSyncService } from './unleash-auto-sync.service';
 
 @Module({
   imports: [D01PolicyModule, D06QsecModule, DeliveryModule],
   controllers: [PolicyController, RuntimeController, UnleashController],
-  providers: [PolicyService, UnleashGateway, UnleashSyncService],
+  providers: [PolicyService, UnleashGateway, UnleashSyncService, UnleashAutoSyncService],
   exports: [PolicyService, UnleashSyncService],
 })
 export class PolicyModule {}

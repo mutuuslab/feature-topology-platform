@@ -1,0 +1,7374 @@
+{
+  "_note": "검증 전용 — 엑셀 v1.3이 저장한 파생 값(T 등급 포인트·U 명목 포인트·M 난이도·BH 대표 ASIL 계수·BW 신규 개발 기준 공수). 기준 행 원천이 아니며 FF는 규칙으로 계산한다",
+  "excelSettings": {
+    "anchorEur": 10000,
+    "eurPerHour": 97.9,
+    "hoursPerPm": 152
+  },
+  "rows": {
+    "AD-ADS-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "AD-ADS-002": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "AD-ADS-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-ADS-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "AD-ADS-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-ADS-006": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 118.15493790656419
+    },
+    "AD-ADS-007": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "AD-ADS-008": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 118.15493790656419
+    },
+    "AD-ADS-009": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-ADS-010": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-ADS-011": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-ADS-012": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "AD-ADS-013": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "AD-ADS-014": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 135.3411106929735
+    },
+    "AD-ADS-015": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 51.692785334121815
+    },
+    "AD-ADS-016": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 21.871001559055962
+    },
+    "AD-ADS-017": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-ADS-018": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "AD-ADS-019": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "AD-ADS-020": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-ADS-021": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "AD-ADS-022": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "AD-ADS-023": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-ADS-024": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-ADS-025": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-ADS-026": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-ADS-027": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "AD-ADS-028": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-ADS-029": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-ADS-030": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-ADS-031": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 118.15493790656419
+    },
+    "AD-ADS-032": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "AD-DMS-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-DMS-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "AD-DMS-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "AD-DMS-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-DMS-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-DMS-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-DMS-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-LAT-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "AD-LAT-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-LAT-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-LAT-004": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 51.692785334121815
+    },
+    "AD-LAT-005": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 51.692785334121815
+    },
+    "AD-LAT-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "AD-LAT-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "AD-LAT-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "AD-LAT-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "AD-LAT-010": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "AD-LAT-011": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 135.3411106929735
+    },
+    "AD-LAT-012": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 51.692785334121815
+    },
+    "AD-LAT-013": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 135.3411106929735
+    },
+    "AD-LAT-014": {
+      "points": 377,
+      "nominalPoints": 377,
+      "overall": 1.8,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 354.33054674479865
+    },
+    "AD-LAT-015": {
+      "points": 377,
+      "nominalPoints": 377,
+      "overall": 1.8,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 392.6365517982904
+    },
+    "AD-LAT-016": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.8,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 57.281194559432286
+    },
+    "AD-LAT-017": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 51.692785334121815
+    },
+    "AD-LAT-018": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-LAT-019": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-LAT-020": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-LAT-021": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "AD-LAT-022": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-LAT-023": {
+      "points": 377,
+      "nominalPoints": 377,
+      "overall": 1.8,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 354.33054674479865
+    },
+    "AD-LON-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "AD-LON-002": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "AD-LON-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-LON-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "AD-LON-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "AD-LON-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "AD-LON-007": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-LON-008": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "AD-LON-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-LON-010": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 51.692785334121815
+    },
+    "AD-LON-011": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "AD-LON-012": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "AD-LON-013": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "AD-LON-014": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "AD-LON-015": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "AD-LON-016": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "AD-LON-017": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 51.692785334121815
+    },
+    "AD-LON-018": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "AD-LON-019": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "AD-PRK-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-PRK-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "AD-PRK-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "AD-PRK-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "AD-PRK-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "AD-PRK-006": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "AD-PRK-007": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "AD-PRK-008": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "AD-PRK-009": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.8,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 135.3411106929735
+    },
+    "AD-PRK-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "AD-PRK-011": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "AD-PRK-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-PRK-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "AD-PRK-014": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-ACC-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-ACC-002": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ACC-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "BC-ACC-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-ACC-005": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ACC-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-ACC-007": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ACC-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-ACC-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-ACC-010": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ACC-011": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ACC-012": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ACC-013": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "BC-ACC-014": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-ACC-015": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "BC-ACC-016": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ACC-017": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-ACC-018": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-ACC-019": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-ACC-020": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ACC-021": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-ACC-022": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCM-001": {
+      "points": 8,
+      "nominalPoints": 10,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 6.72006881350465
+    },
+    "BC-BCM-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCM-003": {
+      "points": 1,
+      "nominalPoints": 1.5,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 1.0080103220256973
+    },
+    "BC-BCM-004": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-BCM-005": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-BCM-006": {
+      "points": 8,
+      "nominalPoints": 7.5,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.040051610128487
+    },
+    "BC-BCM-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCM-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCM-009": {
+      "points": 21,
+      "nominalPoints": 35,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 23.520240847266273
+    },
+    "BC-BCM-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCM-011": {
+      "points": 144,
+      "nominalPoints": 150,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 100.80103220256974
+    },
+    "BC-BCM-012": {
+      "points": 8,
+      "nominalPoints": 10,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 6.72006881350465
+    },
+    "BC-BCM-013": {
+      "points": 377,
+      "nominalPoints": 415,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 278.88285576044296
+    },
+    "BC-BCM-014": {
+      "points": 8,
+      "nominalPoints": 10,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 6.72006881350465
+    },
+    "BC-BCM-015": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCX-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCX-002": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-BCX-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-BCX-004": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-BCX-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-BCX-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCX-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-BCX-008": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-BCX-009": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-BCX-010": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-BCX-011": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-BCX-012": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-BCX-013": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCX-014": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCX-015": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-BCX-016": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-HVAC-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-HVAC-002": {
+      "points": 21,
+      "nominalPoints": 50,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 33.600344067523245
+    },
+    "BC-HVAC-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-HVAC-004": {
+      "points": 144,
+      "nominalPoints": 250,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 168.00172033761623
+    },
+    "BC-HVAC-005": {
+      "points": 3,
+      "nominalPoints": 5,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 3.360034406752325
+    },
+    "BC-HVAC-006": {
+      "points": 21,
+      "nominalPoints": 20,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 13.4401376270093
+    },
+    "BC-HVAC-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVAC-008": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-HVAC-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVAC-010": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-HVAC-011": {
+      "points": 144,
+      "nominalPoints": 150,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 100.80103220256974
+    },
+    "BC-HVAC-012": {
+      "points": 8,
+      "nominalPoints": 10,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 6.72006881350465
+    },
+    "BC-HVX-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVX-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVX-003": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-HVX-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVX-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-HVX-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVX-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVX-008": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-HVX-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVX-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVX-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVX-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-HVX-013": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-HVX-014": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ILT-001": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ILT-002": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ILT-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-ILT-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-ILT-005": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ILT-006": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-ILT-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-LGT-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "BC-LGT-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-LGT-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-LGT-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "BC-LGT-005": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "BC-LGT-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "BC-LGT-007": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-LGT-008": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-LGT-009": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-LGT-010": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-LGT-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-LGT-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-LGT-013": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-LGT-014": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "BC-LGT-015": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-LGT-016": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-LGT-017": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-LGT-018": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-LGT-019": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-LGT-020": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-LGT-021": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-LGT-022": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-LGT-023": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-MIR-001": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-MIR-002": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-MIR-003": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-MIR-004": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-MIR-005": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-MIR-006": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-MIR-007": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-MIR-008": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "BC-MIR-009": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BC-PWR-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "BC-PWR-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "BC-PWR-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "BC-PWR-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-PWR-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "BC-PWR-006": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-SEAT-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-SEAT-002": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-SEAT-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-SEAT-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-SEAT-005": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-SEAT-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-SEAT-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-SEAT-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-SEAT-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-SEAT-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-SEAT-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-SEAT-012": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-SEAT-013": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-SEAT-014": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-SEAT-015": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-SEAT-016": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "BC-SEAT-017": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "BC-SUS-001": {
+      "points": 55,
+      "nominalPoints": 204.7502047502047,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 168.00172033761623
+    },
+    "BC-SUS-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "BC-SUS-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "BC-SUS-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "BC-SUS-005": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 40.656416321703134
+    },
+    "BC-SUS-006": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 40.656416321703134
+    },
+    "BC-SUS-007": {
+      "points": 144,
+      "nominalPoints": 187.5511875511875,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 153.88957582925647
+    },
+    "BC-WIN-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-WIN-002": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIN-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "BC-WIN-004": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIN-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-WIN-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-WIN-007": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIN-008": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIN-009": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIN-010": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "BC-WIN-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-WIN-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BC-WIP-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "BC-WIP-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "BC-WIP-003": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIP-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BC-WIP-005": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIP-006": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIP-007": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIP-008": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIP-009": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIP-010": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIP-011": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "BC-WIP-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BE-CHB-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-CHB-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-CHB-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CHB-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CHB-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CHB-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-CSB-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BE-CSB-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-004": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "BE-CSB-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-CSB-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-CSB-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-008": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-CSB-009": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-CSB-010": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "BE-CSB-011": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-013": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-CSB-014": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-015": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-016": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-017": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BE-CSB-018": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-019": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-020": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-021": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-022": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-023": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-CSB-024": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BE-CSB-025": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BE-CSB-026": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-ENG-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-ENG-002": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "BE-ENG-003": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "BE-ENG-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-ENG-005": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "BE-ENG-006": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "BE-ENG-007": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-ENG-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-ENG-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-ENG-010": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-ENG-011": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "BE-ENG-012": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-OTA-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-OTA-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-OTA-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-OTA-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-OTA-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-OTA-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-OTA-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BE-OTA-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-OTA-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BE-SOC-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "BE-SOC-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-SOC-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-SOC-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-SOC-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-SOC-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "BE-VDP-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-VDP-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-VDP-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-VDP-004": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "BE-VDP-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-VDP-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-VDP-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-VDP-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-VDP-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-VDP-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-VDP-011": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "BE-VDP-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "BE-VDP-013": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "CH-BRK-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 57.281194559432286
+    },
+    "CH-BRK-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "CH-BRK-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "CH-BRK-004": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 149.97258211924088
+    },
+    "CH-BRK-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "CH-BRK-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-BRK-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-BRK-008": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "CH-BRK-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-BRK-010": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 0.7392075694855115
+    },
+    "CH-BRK-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-BRK-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "CH-BRK-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "CH-BRK-014": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.4,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 149.97258211924088
+    },
+    "CH-BRK-015": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "CH-BRK-016": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "CH-BRK-017": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "CH-BRK-018": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "CH-BRK-019": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-BRK-020": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "CH-BRK-021": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "CH-BRK-022": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "CH-BRK-023": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 21.871001559055962
+    },
+    "CH-CVC-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "CH-CVC-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "CH-CVC-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "CH-CVC-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "CH-CVC-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CH-CVC-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CH-CVC-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-STR-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 57.281194559432286
+    },
+    "CH-STR-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "CH-STR-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "CH-STR-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 21.871001559055962
+    },
+    "CH-STR-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 21.871001559055962
+    },
+    "CH-STR-006": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 57.281194559432286
+    },
+    "CH-STR-007": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.8,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 149.97258211924088
+    },
+    "CH-STR-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "CH-STR-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "CH-STR-010": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "CH-STR-011": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "CH-STR-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-STR-013": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-STR-014": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-STR-015": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "CH-VMC-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "CH-VMC-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "CH-VMC-003": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.4,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 149.97258211924088
+    },
+    "CH-VMC-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "CH-VMC-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "CH-VMC-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "CH-VMC-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "CH-VMC-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "CH-VMC-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "CH-VMC-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "CH-VMC-011": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "CH-VMC-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CH-WHS-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "CH-WHS-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "CH-WHS-003": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "CH-WHS-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CH-WHS-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CH-WHS-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "CH-WHS-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CH-WHS-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CH-WHS-009": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "CO-DKY-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-DKY-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-DKY-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-DKY-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-DKY-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "CO-DKY-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-DKY-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-POS-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-POS-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-POS-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "CO-POS-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "CO-TCU-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-006": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "CO-TCU-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-011": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "CO-TCU-012": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "CO-TCU-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-014": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-015": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-016": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-017": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-018": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "CO-TCU-019": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "CO-TCU-020": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-021": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "CO-TCU-022": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-023": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-024": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-025": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-026": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-027": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-028": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "CO-TCU-029": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-030": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-031": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-032": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "CO-TCU-033": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-TCU-034": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-035": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "CO-TCU-036": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-TCU-037": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-V2X-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "CO-V2X-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "CO-V2X-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-V2X-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-V2X-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "CO-V2X-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-V2X-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-V2X-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-V2X-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-013": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-014": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-015": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-016": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-017": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-018": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-V2X-019": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "CO-V2X-020": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "CO-V2X-021": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-022": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-023": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-024": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "CO-V2X-025": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-AIA-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-AIA-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-AUD-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-AUD-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-AUD-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-AUD-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-AUD-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-AUD-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-AUD-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-AUD-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-AUD-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-AUD-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-AUD-011": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "IN-AUD-012": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-AUD-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-AUD-014": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-AUD-015": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-AUD-016": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "IN-AUD-017": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-AUD-018": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "IN-CKP-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "IN-CKP-002": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 96.76899091446695
+    },
+    "IN-CKP-003": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "IN-CKP-004": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "IN-CKP-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-CKP-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-CKP-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-CKP-008": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-CKP-009": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-CKP-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "IN-CKP-011": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-CKP-012": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-CKP-013": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-CLU-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "IN-CLU-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-CLU-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "IN-CLU-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "IN-CLU-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-CLU-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "IN-CLU-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-CLU-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-CLU-009": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-CLU-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-CLU-011": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "IN-CLU-012": {
+      "points": 144,
+      "nominalPoints": 144,
+      "overall": 1.8,
+      "asilFactor": 1.1,
+      "baseEffortMm": 106.44589000591365
+    },
+    "IN-CLU-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "IN-CLU-014": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-CLU-015": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-CPA-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-HMI-001": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "IN-HMI-002": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "IN-HMI-003": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "IN-HMI-004": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "IN-HMI-005": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "IN-HMI-006": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "IN-HMI-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-HMI-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-009": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-HMI-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-HMI-011": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-HMI-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-HMI-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-HMI-014": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-HMI-015": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-HMI-016": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-HMI-017": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "IN-HMI-018": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-HMI-019": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-HMI-020": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "IN-HMI-021": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-022": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-023": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-HMI-024": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-HMI-025": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-026": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-027": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-028": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-029": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-030": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-031": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-032": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "IN-HMI-033": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-034": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-HMI-035": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-HMI-036": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "IN-NAV-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "IN-NAV-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-NAV-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-NAV-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-NAV-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-NAV-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "IN-NAV-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-NAV-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-NAV-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-NAV-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-NAV-011": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-NAV-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-PHN-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-PHN-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-PHN-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-PHN-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-PHN-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-PHN-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-PHN-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-PHN-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "IN-PHN-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "IN-PHN-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-EMS-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PC-EMS-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PC-EMS-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PC-EMS-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PC-EMS-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PC-EMS-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PC-EMS-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PC-EMS-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PC-EMS-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "PC-EMS-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PC-EMS-011": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PC-EMS-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PC-EMS-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PC-EMS-014": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PC-EMS-015": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PC-EMS-016": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PC-EMS-017": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PC-EMS-018": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "PC-EMS-019": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "PC-EMS-020": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-EMS-021": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PC-EMS-022": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "PC-EMS-023": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-EMS-024": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-EMS-025": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PC-EMS-026": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-EMS-027": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "PC-EMS-028": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "PC-EMS-029": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PC-EMS-030": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PC-EMS-031": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PC-EMS-032": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PC-EMS-033": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PC-EMS-034": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "PC-EMS-035": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-EMS-036": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-EMS-037": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "PC-EMS-038": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-EMS-039": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-EMS-040": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PC-EMS-041": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-OBD-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PC-OBD-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PC-OBD-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-OBD-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-OBD-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-OBD-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-OBD-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-014": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-015": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-016": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-017": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PC-OBD-018": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PC-OBD-019": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PC-OBD-020": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PC-TCU-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "PC-TCU-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "PC-TCU-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PC-TCU-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PC-TCU-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PC-TCU-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PC-TCU-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PC-TCU-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PC-TCU-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PC-TCU-010": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 0.7392075694855115
+    },
+    "PC-TCU-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PC-TCU-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "PC-TCU-013": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-BMS-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-BMS-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-BMS-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-BMS-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PE-BMS-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "PE-BMS-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-BMS-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PE-BMS-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-BMS-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "PE-BMS-010": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "PE-BMS-011": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-BMS-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PE-BMS-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PE-BMS-014": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PE-BMS-015": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "PE-BMS-016": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PE-BMS-017": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-BMS-018": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "PE-BMS-019": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "PE-BMS-020": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PE-BMS-021": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PE-BMS-022": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "PE-CHG-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-CHG-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-CHG-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-CHG-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PE-CHG-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-CHG-006": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "PE-CHG-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-CHG-008": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-CHG-009": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-CHG-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-CHG-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-CHG-012": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PE-CHG-013": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PE-CHG-014": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "PE-CHG-015": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PE-CHG-016": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PE-CHG-017": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PE-CHG-018": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "PE-CHG-019": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-CHG-020": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-CHG-021": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PE-CHG-022": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-CHG-023": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-DCD-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-DCD-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-DCD-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PE-EDU-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 51.692785334121815
+    },
+    "PE-EDU-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-EDU-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-EDU-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-EDU-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "PE-EDU-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PE-EDU-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-EDU-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-EDU-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PE-EDU-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-EDU-011": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PE-EDU-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PE-EDU-013": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "PE-EDU-014": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PE-ETM-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PE-ETM-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PE-ETM-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "PE-ETM-004": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 40.656416321703134
+    },
+    "PE-ETM-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PE-ETM-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-FCS-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "PE-FCS-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-FCS-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-FCS-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-FCS-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-FCS-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 2.8196064727702805
+    },
+    "PE-FCS-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PE-FCS-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-FCS-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PE-FCS-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-HEV-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "PE-HEV-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-HEV-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-HEV-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PE-HEV-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-HEV-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PE-HEV-007": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-VCU-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 21.871001559055962
+    },
+    "PE-VCU-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-VCU-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PE-VCU-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PE-VCU-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-VCU-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PE-VCU-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "PE-VCU-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-AP-001": {
+      "points": 377,
+      "nominalPoints": 409.5004095004094,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 336.00344067523247
+    },
+    "PL-AP-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-AP-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-AP-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-AP-005": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "PL-AP-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-AP-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-AP-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-AP-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-AP-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-012": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PL-AP-013": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PL-AP-014": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-015": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-AP-016": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-017": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-018": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-019": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-AP-020": {
+      "points": 144,
+      "nominalPoints": 81.90008190008189,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 67.2006881350465
+    },
+    "PL-AP-021": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-022": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-023": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-024": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-025": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-AP-026": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-027": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-AP-028": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-029": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-030": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-031": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-032": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-033": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-034": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-035": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-AP-036": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-AP-037": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-AP-038": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-039": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-040": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-041": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-042": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-043": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-044": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-045": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-046": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-047": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-048": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-049": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-AP-050": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-AP-051": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-052": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-053": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-AP-054": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-CP-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 21.871001559055962
+    },
+    "PL-CP-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-CP-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-CP-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 21.871001559055962
+    },
+    "PL-CP-006": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-CP-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-009": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "PL-CP-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-CP-011": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-013": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-CP-014": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-015": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-016": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-017": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-CP-018": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-019": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-020": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-CP-021": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-CP-022": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-CP-023": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "PL-CP-024": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-025": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-026": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-CP-027": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-028": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-029": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "PL-CP-030": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-031": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-032": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "PL-CP-033": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-034": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-035": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-036": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-CP-037": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-038": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-CP-039": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-CP-040": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "PL-CP-041": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-042": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-043": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-044": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-045": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-CP-046": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-047": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-CP-048": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-049": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-050": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-051": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-052": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-CP-053": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-CP-054": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-055": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-056": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-057": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-058": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-059": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-060": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "PL-CP-061": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-062": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-063": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-CP-064": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-CP-065": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-066": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-067": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-068": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-069": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-070": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-071": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-072": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-073": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-074": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-075": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-CP-076": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-CP-077": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-CP-078": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-CP-079": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-CP-080": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-CP-081": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-DGT-001": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-DGT-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-DGT-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-DGT-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-DGT-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-DGT-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-DGT-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-DGT-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-EAI-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PL-EAI-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-FFR-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-FFR-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-FFR-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-FFR-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-FFR-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-HPC-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "PL-HPC-002": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "PL-HPC-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PL-HPC-004": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "PL-HPC-005": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "PL-HPC-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-HPC-007": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.5999999999999999,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-HPC-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-HPC-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-HPC-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-HPC-011": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PL-HPC-012": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 45.12862211709049
+    },
+    "PL-NET-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-NET-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-NET-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-NET-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-NET-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-NET-006": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "PL-NET-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-NET-008": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PL-NET-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-NET-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-NET-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-NET-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-NET-013": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-NET-014": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-NET-015": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "PL-NET-016": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-NET-017": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-NET-018": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SAF-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-SAF-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-SAF-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-SAF-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-SAF-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-SAF-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-SAF-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-SAF-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-SAF-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "PL-SAF-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-SAF-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-SAF-012": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 1.0414762647169507
+    },
+    "PL-SAF-013": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 3.1244287941508513
+    },
+    "PL-SEC-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SEC-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SEC-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SEC-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SEC-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SEC-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SEC-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SEC-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SEC-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SEC-010": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-SEC-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SEC-012": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SEC-013": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SOVD-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SOVD-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SOVD-003": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-SOVD-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SOVD-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SOVD-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SOVD-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SOVD-008": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-SOVD-009": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-SOVD-010": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SOVD-011": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SOVD-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-SOVD-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SOVD-014": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PL-SOVD-015": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-SOVD-016": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-001": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-002": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-003": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-004": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-UDS-006": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-007": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-008": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-009": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-011": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-013": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-014": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-015": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-016": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-017": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-018": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-019": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-020": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-UDS-021": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-022": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UDS-023": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-024": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-025": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-026": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "PL-UDS-027": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UPD-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-UPD-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-UPD-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PL-UPD-004": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-UPD-005": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "PL-UPD-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "PL-UPD-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UPD-008": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 36.96037847427557
+    },
+    "PL-UPD-009": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "PL-UPD-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "PL-UPD-011": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 0.6720068813504649
+    },
+    "SF-ACU-001": {
+      "points": 55,
+      "nominalPoints": 55,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 57.281194559432286
+    },
+    "SF-ACU-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "SF-ACU-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "SF-ACU-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "SF-ACU-005": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "SF-ACU-006": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "SF-ACU-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "SF-ACU-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "SF-ACU-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "SF-ACU-010": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "SF-ACU-011": {
+      "points": 1,
+      "nominalPoints": 1,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 0.8205204021289179
+    },
+    "SF-ACU-012": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "SF-ACU-013": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "SF-ACU-014": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.5498,
+      "baseEffortMm": 8.331810117735605
+    },
+    "SF-ACU-015": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "SF-ACU-016": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "SF-AIS-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "SF-AIS-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "SF-AIS-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "SF-AIS-004": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 17.230928444707278
+    },
+    "SF-AIS-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "SF-AIS-006": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "SF-AIS-007": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 2.4615612063867536
+    },
+    "SF-AIS-008": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.8,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 19.737245309391966
+    },
+    "SF-CPD-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "SF-CPD-002": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "SF-CPD-003": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 14.112144508359764
+    },
+    "SF-CPD-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "SF-OMS-001": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "SF-OMS-002": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1.2210000000000003,
+      "baseEffortMm": 6.564163217031343
+    },
+    "SF-PCR-001": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "SF-PCR-002": {
+      "points": 21,
+      "nominalPoints": 21,
+      "overall": 1.4,
+      "asilFactor": 1.1,
+      "baseEffortMm": 15.523358959195741
+    },
+    "SF-PCR-003": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.3986,
+      "baseEffortMm": 7.518950594054083
+    },
+    "SF-PCR-004": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    },
+    "SF-PCR-005": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "SF-PCR-006": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1,
+      "baseEffortMm": 2.0160206440513946
+    },
+    "SF-PCR-007": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.4,
+      "asilFactor": 1,
+      "baseEffortMm": 5.3760550508037195
+    },
+    "SF-PCR-008": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.8,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "SF-PCR-009": {
+      "points": 8,
+      "nominalPoints": 8,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 5.913660555884092
+    },
+    "SF-PCR-010": {
+      "points": 3,
+      "nominalPoints": 3,
+      "overall": 1.2,
+      "asilFactor": 1.1,
+      "baseEffortMm": 2.2176227084565343
+    }
+  }
+}

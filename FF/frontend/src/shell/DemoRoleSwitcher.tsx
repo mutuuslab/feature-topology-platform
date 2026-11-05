@@ -1,4 +1,4 @@
-// 데모 역할 선택기 — 데모 빌드에서만 실린다(운영 빌드는 SsoRoleSwitcher: 부여받은 역할만). 데모 계정 9명 전부를 고를 수 있다.
+// 데모 역할 선택기 — 데모 빌드에서만 실린다(운영 빌드는 SsoRoleSwitcher: 부여받은 역할만). 데모 계정 12명 전부를 고를 수 있다.
 import { ko } from '../copy/ko';
 import { profileOf, roleLabel, roles } from '../data/refdata';
 

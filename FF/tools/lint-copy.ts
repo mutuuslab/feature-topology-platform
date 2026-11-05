@@ -8,6 +8,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { guideTermHits, loadGuideTerms } from './guide-terms.ts';
 import { leadHits } from './lead-copy.ts';
+import { particleHits } from './particle-copy.ts';
 import { platformTermHits } from './platform-terms.ts';
 import { TWIN, twinVisible } from './twin-terms.ts';
 import { FF, ratchet, rel, walk } from './lib.ts';
@@ -113,4 +114,12 @@ for (const f of walk(join(SRC, 'copy'), ['.ts']))
 const leadOk = ratchet('leadCopyHits', leads.length, 'max', '문구 카탈로그 lead 중 70자 초과·코드(FFG·IF·D0x·보고서 절) 포함 수 — 0까지(UX3-14)');
 if (!leadOk || process.argv.includes('--terms')) for (const h of leads) console.error('    ' + h);
 ok = leadOk && ok;
+// (8) 조사 규칙(tools/particle-copy.ts) — 부서·사람 이름 자리 뒤 고정 조사('${dept}로' → 팀로). 위반 0건이어야 한다(P1-12)
+const particles: string[] = [];
+for (const f of walk(join(SRC, 'copy'), ['.ts'])) for (const h of particleHits(readFileSync(f, 'utf8'))) particles.push(`${rel(f)}:${h.line}  ${h.text}`);
+if (particles.length) {
+  ok = false;
+  console.error(`  ✕ 이름 뒤 고정 조사 ${particles.length}건 — 받침에 따라 고르세요(copy/departments.ts roParticle)`);
+  for (const h of particles) console.error('    ' + h);
+} else console.log('  ✓ 이름 뒤 고정 조사 0건');
 process.exit(ok ? 0 : 1);

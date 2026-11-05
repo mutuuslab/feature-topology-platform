@@ -9,7 +9,7 @@ cycle: 0
 traces:
   depends_on:
     - INT-MQTT
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -26,9 +26,6 @@ flowchart LR
   subgraph R_SM["Safety Manager"]
     FPW_12_A01["A01 운행 감시 지표·경보 기준 기록"]
   end
-  subgraph R_DPO["데이터 보호 담당"]
-    FPW_12_A02["A02 평가 컨텍스트 개인정보 검토"]
-  end
   subgraph R_LEG["법무"]
     FPW_12_A03["A03 중국 데이터 현지 처리·이전 심사"]
   end
@@ -36,9 +33,12 @@ flowchart LR
     FPW_12_A04["A04 EU 데이터 접근 요청 처리"]
     FPW_12_A05["A05 보존 기간 경과 데이터 삭제"]
   end
-  T_FPW_12_A02(("정책 작성·변경으로 평가 컨텍스트가 바뀔 때")) -.-> FPW_12_A02
+  subgraph R_DPO["데이터 보호 담당"]
+    FPW_12_A02["A02 평가 컨텍스트 개인정보 검토"]
+  end
   T_FPW_12_A03(("중국 시장 출시 또는 국외 조회 요청")) -.-> FPW_12_A03
   T_FPW_12_A04(("EU 차량 사용자·제3자 데이터 접근 요청")) -.-> FPW_12_A04
+  T_FPW_12_A02(("정책 작성·변경으로 평가 컨텍스트가 바뀔 때")) -.-> FPW_12_A02
   T_FPW_12_A05(("정기 보존 기간 점검")) -.-> FPW_12_A05
 ```
 
@@ -47,9 +47,9 @@ flowchart LR
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
 | FPW.12-A01 | 운행 감시 지표·경보 기준 기록 | R Safety Manager · A Safety Manager · C 운영 조직, 데이터 보호 담당 · I 품질 조직 | WP-SAFETY-CASE | WP-KPI-PLAN | `recordSafetyKpiPlan`, `/ops/safety-kpi` | FFG-TEL-001 |
-| FPW.12-A02 | 평가 컨텍스트 개인정보 검토 | R 데이터 보호 담당 · A 데이터 보호 담당 · C 아키텍트, 법무 · I 통합 조직 | WP-POLICY | WP-CONTEXT-REVIEW | `/integration/openfeature` | FFG-OFT-003 |
 | FPW.12-A03 | 중국 데이터 현지 처리·이전 심사 | R 법무 · A 법무 · C 데이터 보호 담당, 법규 담당 · I 운영 조직 | WP-KPI-PLAN | WP-DATA-TRANSFER | 플랫폼 밖 | FFG-TEL-005 |
 | FPW.12-A04 | EU 데이터 접근 요청 처리 | R 법규 담당 · A 법규 담당 · C 법무, 데이터 보호 담당 · I 운영 조직 | WP-KPI-PLAN | WP-DATA-ACCESS | `createDataAccessRequest`, `recordDataActContractBasis`, `/admin/data` | FFG-TEL-006 |
+| FPW.12-A02 | 평가 컨텍스트 개인정보 검토 | R 데이터 보호 담당 · A 데이터 보호 담당 · C 아키텍트, 법무 · I 통합 조직 | WP-POLICY | WP-CONTEXT-REVIEW | `/integration/openfeature` | FFG-OFT-003 |
 | FPW.12-A05 | 보존 기간 경과 데이터 삭제 | R 법규 담당 · A 법규 담당 · C 데이터 보호 담당, 운영 조직 · I 품질 조직 | WP-KPI-PLAN | WP-RETENTION-LOG | `retentionSweep`, `/admin/data` | FFG-TEL-008 |
 
 ### 수행 절차와 완료 기준
@@ -61,15 +61,6 @@ flowchart LR
 
 완료 기준:
 - [ ] 지표마다 경보 기준과 데이터 범주가 있다
-
-#### FPW.12-A02 평가 컨텍스트 개인정보 검토
-- 트리거: 정책 작성·변경으로 평가 컨텍스트가 바뀔 때
-1. 정책의 targeting key가 가명 차량 ID인지 확인한다
-2. 위치·운전자 식별·연락처·차량 동적 상태가 평가 컨텍스트에 들어가지 않는지 검토한다
-3. 금지 속성이 들어오면 평가 전에 거부되는지 시험 결과를 확인한다
-
-완료 기준:
-- [ ] 금지 속성 거부 시험이 통과했다
 
 #### FPW.12-A03 중국 데이터 현지 처리·이전 심사
 - 트리거: 중국 시장 출시 또는 국외 조회 요청
@@ -88,6 +79,15 @@ flowchart LR
 
 완료 기준:
 - [ ] 요청마다 제공 내용과 계약 근거가 기록되었다
+
+#### FPW.12-A02 평가 컨텍스트 개인정보 검토
+- 트리거: 정책 작성·변경으로 평가 컨텍스트가 바뀔 때
+1. 정책의 targeting key가 가명 차량 ID인지 확인한다
+2. 위치·운전자 식별·연락처·차량 동적 상태가 평가 컨텍스트에 들어가지 않는지 검토한다
+3. 금지 속성이 들어오면 평가 전에 거부되는지 시험 결과를 확인한다
+
+완료 기준:
+- [ ] 금지 속성 거부 시험이 통과했다
 
 #### FPW.12-A05 보존 기간 경과 데이터 삭제
 - 트리거: 정기 보존 기간 점검

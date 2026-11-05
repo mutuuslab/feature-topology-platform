@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FF, readJson } from './lib.ts';
+import { anchorProblems, anchorsOf, readLock } from './anchors.ts';
 
 const SRC =
   process.env.ADS_REPORT_PATH ??
@@ -347,7 +348,12 @@ function main() {
   if (check) {
     const c = readJson<AdsCatalog>(CATALOG);
     const problems = catalogProblems(c);
-    if (existsSync(REVIEW)) problems.push(...reviewProblems(c, readJson<AdsReview>(REVIEW)));
+    if (existsSync(REVIEW)) {
+      const review = readJson<AdsReview>(REVIEW);
+      problems.push(...reviewProblems(c, review));
+      // 근거 줄 내용 — 같은 줄 번호에 다른 내용이 오면(코드가 바뀜) 잠금 해시가 다르다(harness/anchors.lock.json)
+      problems.push(...anchorProblems(anchorsOf(review), readLock()));
+    }
     if (existsSync(SRC)) {
       const buf = readFileSync(SRC);
       if (fileSha(buf) !== c.source.sha256) problems.push(`원본이 바뀜(${fileSha(buf).slice(0, 12)}) — npm run ads:sync 후 review를 다시 검토`);

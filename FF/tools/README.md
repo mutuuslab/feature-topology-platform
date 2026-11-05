@@ -2,6 +2,15 @@
 
 Node 24 타입 스트리핑으로 바로 실행한다(`node tools/x.ts`). 외부 의존성 없음. 품질 게이트 전체는 `npm run verify`(`tools/verify.ts`).
 
+## verify 약속 (2026-11-04)
+
+- `--only <id,...>` — 모르는 ID·빈 값은 종료 2(가까운 ID 제안). npm 스크립트 이름도 받는다(`build:contracts` → `contracts:build`, `refdb:check` → `data:check`).
+- 건너뛰기 — 스스로 건너뛰는 도구는 verify 안(`FF_VERIFY=1`)에서 종료 77(`exitSkipped()`, `tools/lib.ts`)로 끝내 요약에 SKIP으로 보인다. CI(`CI` 환경 변수)에서는 `ALLOWED_SKIP`(sim:test·siblings)만 건너뛸 수 있고 나머지 SKIP은 FAIL.
+- `tools/**/*.test.{ts,mjs}`는 어떤 단계 명령에 있거나 `tools/verify.test.ts`의 `NOT_IN_VERIFY`에 이유가 있어야 한다.
+- 판정 근거 줄 잠금 `harness/anchors.lock.json` — ADS·Orca 판정의 `경로:줄` 근거마다 줄 내용 해시. 줄이 밀리면 `npm run evidence:remap`, 내용이 바뀌면 판정을 다시 본 뒤 `npm run evidence:remap -- --lock`.
+- 예산·래칫 완화 — `harness/budgets.json`·`perf-budgets.json`은 최상위 `history`, `baselines.json`은 지표별 `history`에 `{ date, key, from, to, reason }`(`tools/budget-history.test.ts`, main과 비교).
+- 배포본 구성 `packaging` — 데스크톱 ui에 `api-snapshot` 없음·resources 상대 경로 ≤ 150자·스냅샷 이름 ≤ 125자, 백엔드가 읽는 `data/<폴더>` ⊆ Dockerfile COPY ∩ `desktop-prepare` `RUNTIME_DATA`.
+
 ## 시험 결정성 (2026-10-25)
 
 시험이 실제 시간·기계 속도·고정 포트에 기대면 부하가 큰 기계(GitHub CI, 여러 작업 폴더의 verify를 함께 돌리는 PC)에서 흔들린다.
@@ -20,7 +29,10 @@ Node 24 타입 스트리핑으로 바로 실행한다(`node tools/x.ts`). 외부
 | `deadline-wait` | `*_TIMEOUT_MS`·`*_DEADLINE_MS`에 1분 미만 값 | 가짜 시계·`FF_SCHEDULER=manual`·기한을 시험이 직접 닫는다 |
 | `date-now` | `Date.now()`·`performance.now()` 비교·경과 시간 단언 | 결과 상태로 단언. 반복문 머리·몸의 안전 상한은 허용 |
 | `wait-for-timeout` | Playwright `page.waitForTimeout` | `toBeVisible`·`toHaveURL`·`expect.poll` |
+| `swallowed-wait` | `waitFor*`·`findBy*`·`expect(…)` 뒤의 `.catch(() => undefined \| {} \| null)` | 기다린 뒤 로딩·오류 0을 단언(`e2e/tests/settle.ts`) |
 | `config` | vitest 설정의 `testTimeout`(≥ 20초)·`maxWorkers`(1~6) 누락 | 0 고정(래칫 아님) |
+
+건너뛰는 시험 선언(`it.skip`·`skipIf`·`runIf`·`test.fixme`·`todo`) 수는 작업 폴더별(`testSkips.backend`·`contracts`·`frontend`·`e2e`·`tools`)로 래칫한다.
 
 예외는 같은 줄이나 바로 윗줄에 `hygiene-ok: <이유>`(이유 4자 이상)를 단다. 위반 줄 목록: `node tools/test-hygiene.ts --list`.
 

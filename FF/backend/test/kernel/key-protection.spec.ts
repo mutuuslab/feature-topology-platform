@@ -120,7 +120,7 @@ describe('DB 파일 — 봉인본만 남는다', () => {
     expect(b.hsm.epoch()).toBe(1);
     b.pki.sign({ hello: 'world' }, 'kill');
     const all = rows(b.db);
-    expect(new Set(all.map((r) => r.c.table))).toEqual(new Set(['approver_key', 'hsm_secret', 'pki_key']));
+    expect(new Set(all.map((r) => r.c.table))).toEqual(new Set(['approver_key', 'cost_basis', 'hsm_secret', 'pki_key'])); // cost_basis — 부팅 때 넣는 SW 개발비 계수 표 v1.3(단가)
     expect(all.length).toBeGreaterThanOrEqual(4); // 정책·차단 서명 키 + 승인자 키 + 차량 루트
     const plain = all.map((r) => b.vault.open(r.v, aadOf(r.c, r.rid)));
     for (const r of all) expect(isSealed(r.v)).toBe(true);

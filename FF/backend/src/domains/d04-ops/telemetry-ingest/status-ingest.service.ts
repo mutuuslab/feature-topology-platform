@@ -172,7 +172,8 @@ export class StatusIngestService implements OnModuleInit {
   /** 받아들인 보고 → 해당 게시본 회신(P0 readback). 차량이 명령을 거부했으면 거부 사유로, 끝 상태에 닿았으면 그 상태로 */
   private bridge(vin: string, r: StatusReportV2, killId: string, request: string) {
     const k = this.kill(killId);
-    const pubId = request === 'restore' ? k?.restorePublicationId : k?.publicationId;
+    // 단계적 복원 — 이 차량이 든 단계의 복구 게시본(다음 단계가 시작돼도 앞 단계 차량 회신은 제 게시본으로)
+    const pubId = request === 'restore' ? (k?.restoreStages?.find((s) => s.cohort.includes(vin))?.publicationId ?? k?.restorePublicationId) : k?.publicationId;
     const pub = pubId ? this.publications.get(pubId) : undefined;
     if (!pub || !pub.payload.targets.includes(vin)) return;
     const base = {

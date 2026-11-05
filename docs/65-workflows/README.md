@@ -45,9 +45,10 @@ cd docs/65-workflows
 python -I scripts/extract_guide.py                 # 보고서가 바뀌었을 때
 node scripts/extract_platform.mjs                  # 플랫폼(9012) 실행 중, 권한이 바뀌었을 때
 python -I scripts/check.py --partial --live        # 작성 중 게이트(실행 중인 /admin/iam과 스냅샷 대조 포함)
-python -I scripts/check.py --live                  # 최종 게이트 — 13개 프로세스, 규칙 62/62
+python -I scripts/check.py --live                  # 최종 게이트 — 모든 프로세스(지금 14개), 규칙 62/62
 ```
 
+`check.py`는 서버 없이도 스냅샷 신선도를 본다([2a] — 화면 = `routes.tsx`, 권한·직무 분리 = `FF/contracts/dist`). 다르면 실패하고 다시 뽑을 명령을 알려 준다.
 `ALL GATES PASS`가 나와야 완료다. 작성 규칙은 [SCHEMA.md](SCHEMA.md), 진행 상태는 [PROGRESS.md](PROGRESS.md)에 있다.
 
 ## 프로세스
@@ -64,3 +65,4 @@ python -I scripts/check.py --live                  # 최종 게이트 — 13개 
 | FPW.8 | 운영·긴급 차단·복원 | G8 |
 | FPW.9 | 사후 검토·Flag Retirement | – |
 | FPW.10~13 | 협력사, 보안·키·취약점, 운영 데이터·데이터 보호, 규정·Compliance Profile (지원) | – |
+| FPW.14 | Feature DB 운영 — 변경 요청·도메인 검토·승인·버전 발행·출처 정기 점검 (지원) | – |

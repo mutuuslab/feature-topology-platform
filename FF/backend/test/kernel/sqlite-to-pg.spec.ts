@@ -14,7 +14,7 @@ import { MIGRATIONS } from '../../src/kernel/migrations';
 import { dialectContextOf } from '../../src/kernel/pg-dialect';
 import { pgAdmin, PgSyncDb } from '../../src/kernel/pg-sync-db';
 import { copySqliteToPg, recomputeChain } from '../../src/ops/sqlite-to-pg';
-import { actor } from '../helpers';
+import { actor, withRef } from '../helpers';
 
 const PG = process.env.FF_TEST_PG_URL?.trim();
 const root = mkdtempSync(join(tmpdir(), 'ff-to-pg-'));
@@ -22,7 +22,7 @@ const KEY = 'k'.repeat(40);
 const ENV_KEYS = ['FF_DB', 'FF_DB_URL', 'FF_SEED', 'FF_AUDIT_KEY', 'FF_AUDIT_ANCHOR_FILE', 'FF_INSTANCE_ID'] as const;
 const made: string[] = [];
 const AUTHOR = actor('usr-author', 'FEATURE_AUTHOR');
-const feature = (name: string) => ({ name, description: `${name} 설명`, country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'usr-author', asil: 'QM' });
+const feature = (name: string) => withRef({ name, description: `${name} 설명`, country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'usr-author', asil: 'QM' });
 
 function pgDb(name: string): { url: string; open: () => PgSyncDb } {
   const db = `ff_t_topg_${process.pid}_${name}`;

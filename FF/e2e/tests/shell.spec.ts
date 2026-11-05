@@ -121,3 +121,21 @@ for (const w of [1366, 1920]) {
     expect(clipped).toEqual([]);
   });
 }
+
+// 사용자 신고: 시연 모드에서 숨긴 패널만 바꾸어 레일 아이콘이 무반응이었다.
+for (const present of [false, true]) test(`레일 아이콘 실제 이동·로고 홈 복귀 (${present ? '시연' : '일반'})`, async ({ page }) => {
+  await page.goto('/_design');
+  if (present) await page.keyboard.press('p');
+  for (const [name, path] of [
+    ['Feature 정의', '/feature/propose'], ['구성·Topology', '/arch/topology'], ['기준정보', '/master/upg'],
+    ['검증·Gate', '/verify/evidence'], ['상품·출시', '/policies'], ['차량 운영·안전', '/fleet/live'],
+    ['연계·감사·관리', '/integration/connectors'], ['홈', '/'],
+  ]) {
+    await page.locator('.sh-rail').getByRole('button', { name, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${path.replaceAll('/', '\\/')}(?:\\?.*)?$`));
+    await expect(page.locator('#main h1').first()).toBeVisible();
+  }
+  await page.goto('/arch/topology');
+  await page.locator('.sh-brand').click();
+  await expect(page).toHaveURL(/\/$/);
+});

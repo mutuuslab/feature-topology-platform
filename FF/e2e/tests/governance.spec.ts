@@ -1,6 +1,8 @@
 // 거버넌스 끝단 흐름 — 실제 백엔드(메모리 DB·v0.81)와 v2 화면으로 상세설계서 업무 순서를 끝까지 밟는다.
 // 테스트마다 자기 Feature·상품을 새로 만들어 병렬 실행에서도 서로 간섭하지 않는다.
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { apiRefs } from './refdb';
+import { recordAnalysisApi } from './analysis';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -17,7 +19,7 @@ async function asRole(page: Page, role: string) {
 async function newFeature(request: APIRequestContext, name: string, extra: Record<string, unknown> = {}) {
   const r = await request.post(`${API}/api/features`, {
     headers: H('usr-author', 'FEATURE_AUTHOR'),
-    data: { name, description: `${name} e2e`, requirementIds: ['REQ-E2E-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'], ...extra },
+    data: { name, description: `${name} e2e`, requirementIds: ['REQ-E2E-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'], ...apiRefs(), ...extra },
   });
   expect(r.status(), await r.text()).toBe(201);
   return (await r.json()) as { featureId: string; version: string };
@@ -27,6 +29,7 @@ async function judgeApi(request: APIRequestContext, id: string, ver: string, gat
   // 안전 분류 확정(Safety Manager) 없이는 G2 이후 PASS가 막힌다 — FFG-CLS-001
   const c = await request.post(`${API}/api/features/${id}/versions/${ver}/safety/confirm`, { headers: H('usr-safety', 'SAFETY_OFFICER'), data: { reason: 'HARA 검토 완료' } });
   expect(c.status(), await c.text()).toBe(201);
+  await recordAnalysisApi(request, id, ver); // G2 PASS 근거 — HARA·TARA(P3-3)
   for (const gate of gates) {
     const r = await request.post(`${API}/api/features/${id}/versions/${ver}/gates`, { headers: H('usr-quality', 'GATE_JUDGE'), data: { gate, inputResult: 'PASS', rationale: `${gate} 확인`, evidenceRef: `EV-${gate}` } });
     expect(r.status(), await r.text()).toBe(201);
@@ -51,6 +54,7 @@ test('Registry: 안전 분류 확정(FSM) → Gate 판정(품질) → 정의 승
   await sign.getByRole('button', { name: '확정 — 개인 서명' }).click();
   await expect(page.getByText('확정된 분류입니다 — 바꾸려면 새 Version을 만드세요 (FFG-CLS-004)')).toBeVisible();
 
+  await recordAnalysisApi(request, f.featureId, '0.1.0'); // G2 PASS 근거 — HARA·TARA(P3-3)
   await page.goto(`/features/${f.featureId}/0.1.0?tab=gates`);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('E2E 레지스트리');
   for (const g of ['G1', 'G2', 'G3']) {
@@ -72,8 +76,20 @@ test('Registry: 안전 분류 확정(FSM) → Gate 판정(품질) → 정의 승
   await expect(page.locator('.ds-step[data-state="current"]')).toHaveAttribute('data-lifecycle', 'DEVELOPING');
 
   await page.goto(`/features/${f.featureId}/0.1.0?tab=audit`);
-  await expect(page.getByText('FEATURE_TRANSITION PROPOSED→APPROVED')).toBeVisible();
-  await expect(page.getByText('FEATURE_TRANSITION APPROVED→DEVELOPING')).toBeVisible();
+  // 감사 행위는 사용자 이름으로 보이고 원문은 data-action/title에 보존된다.
+  // UI 표기와 별개로 실제 서버 감사의 성공·정확한 전후 상태까지 확인한다.
+  const auditResponse = await request.get(`${API}/api/audit?target=${encodeURIComponent(`${f.featureId}@0.1.0`)}&limit=100`);
+  expect(auditResponse.status(), await auditResponse.text()).toBe(200);
+  const audits = (await auditResponse.json()).items;
+  for (const [from, to] of [['PROPOSED', 'APPROVED'], ['APPROVED', 'DEVELOPING']]) {
+    const action = `FEATURE_TRANSITION ${from}→${to}`;
+    const entry = audits.find((row: any) => row.action === action);
+    expect(entry).toMatchObject({ target: `${f.featureId}@0.1.0`, result: 'ALLOWED', before: { lifecycle: from }, after: { lifecycle: to } });
+    const shown = page.locator(`[data-action="${action}"]`);
+    await expect(shown).toBeVisible();
+    await expect(shown).toHaveAttribute('title', action);
+    await expect(shown).toHaveText(`Feature 단계 전이 ${from}→${to}`);
+  }
 });
 
 test('BOM: 작성자 확정 요청 → BOM 승인자가 체크리스트 확인 후 확정 → BL 발급·해시', async ({ page, request }) => {
@@ -115,9 +131,14 @@ test('Catalog: 후보 선택 중 실시간 구성 검증(REQUIRES 누락 FAIL �
   await page.goto('/products/new');
   await page.getByRole('checkbox', { name: 'BL-00028' }).check();
   const live = page.locator('section', { has: page.locator('#live-comp-h') });
-  await expect(live.getByText('REQUIRES_MISSING')).toBeVisible();
+  const missing = live.locator('[data-code="REQUIRES_MISSING"]');
+  await expect(missing).toBeVisible();
+  await expect(missing).toContainText('FEAT-00145');
+  await expect(missing).toContainText('BL-00163');
+  await expect(live.locator('[data-verdict="FAIL"]').first()).toBeVisible();
   await page.getByRole('checkbox', { name: 'BL-00163' }).check();
   await expect(live.locator('[data-verdict="PASS"]').first()).toBeVisible();
+  await expect(missing).toHaveCount(0);
 
   const name = `E2E 체험 ${uniq()}`;
   await page.getByLabel('상품명').fill(name);

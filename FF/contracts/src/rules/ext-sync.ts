@@ -6,6 +6,7 @@
 //   Feature Lifecycle·정책·서명·긴급 차단·감사 = 플랫폼 원장
 import { z } from 'zod';
 import { Asil, LIFECYCLE, type Lifecycle } from '../enums';
+import { RefId } from '../schemas/refdb';
 
 export const EXT_SYSTEMS = ['CODEBEAMER', 'JIRA', 'GITLAB'] as const;
 export type ExtSystem = (typeof EXT_SYSTEMS)[number];
@@ -112,6 +113,13 @@ export const EpicScope = z
     trim: z.string().trim().min(1).max(80),
     asil: Asil,
     ownerId: z.string().trim().min(1).max(100),
+    /**
+     * 기준 기능(Feature DB) ID — 첫 값이 대표(PRIMARY), 나머지는 포함(INCLUDED)(30-95 §7, D-REF-10).
+     * JIRA 안의 FF 앱이 쓰는 사용자 필드(JIRA_FIELD_FEATURE_DB, D-REF-16)가 기준이다. 실제 연결(IF_MODE_14=live)은 필드만 읽고(비면 거부·댓글, 80-50 §4),
+     * 모의·데모만 필드가 비었을 때 라벨 `ref-primary:CH-BRK-009`(대표)·`ref:CH-BRK-006`(포함)을 읽는다.
+     * 빠졌거나 없는·폐기 ID면 등록하지 않고(REJECTED) Epic 댓글로 알린다. 요청 중(PENDING) 행은 JIRA에서 쓸 수 없다.
+     */
+    refIds: z.array(RefId).min(1).max(20),
   })
   .partial()
   .strict();
@@ -197,6 +205,7 @@ export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
     { key: 'JIRA_FIELD_TRIM', what: 'Epic 사용자 정의 필드 ID — 트림', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_ASIL', what: 'Epic 사용자 정의 필드 ID — ASIL', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_OWNER', what: 'Epic 사용자 정의 필드 ID — 담당 조직', required: 'epic-autocreate' },
+    { key: 'JIRA_FIELD_FEATURE_DB', what: 'Epic 사용자 정의 필드 ID — Feature DB 기준 ID(대표 먼저, JIRA 안의 FF 앱이 기록)', required: 'epic-autocreate' },
     { key: 'JIRA_EPIC_STATUS', what: 'Epic 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
     { key: 'JIRA_CR_STATUS', what: 'CR 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
   ],
@@ -255,12 +264,14 @@ export function parseRefs(text: string, jiraProject = 'FFCR'): { featureId?: str
 export const MockExtActionBody = z
   .object({
     key: z.string().min(1),
-    action: z.enum(['TRANSITION', 'EDIT', 'MERGE', 'PIPELINE']),
+    action: z.enum(['TRANSITION', 'EDIT', 'MERGE', 'PIPELINE', 'COMMENT']),
     /** TRANSITION: 새 상태 · PIPELINE: success|failed */
     status: z.string().trim().min(1).max(60).optional(),
     /** EDIT: 새 제목·본문 */
     title: z.string().trim().min(2).max(200).optional(),
     body: z.string().trim().max(4000).optional(),
+    /** COMMENT: 외부 항목의 실제 댓글 기록에 추가한다. */
+    comment: z.string().trim().min(1).max(2000).optional(),
     /** 외부 계정 — 매핑 표(ext-identities)에 있어야 요청이 받아들여진다 */
     externalUser: z.string().trim().min(1).max(120),
     /** PIPELINE: 파이프라인이 보고한 커버리지(%) — 없으면 변경 기록에 커버리지 근거가 없다 */
@@ -270,7 +281,12 @@ export const MockExtActionBody = z
     /** EDIT(Epic): 적용 범위 필드를 채우거나 고친다 */
     scope: EpicScope.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.action === 'COMMENT' && !value.comment) ctx.addIssue({ code: 'custom', path: ['comment'], message: '댓글을 입력하세요.' });
+    if (value.action !== 'COMMENT' && value.comment !== undefined) ctx.addIssue({ code: 'custom', path: ['comment'], message: '댓글은 COMMENT 작업으로 추가하세요.' });
+    if (value.action === 'COMMENT' && [value.status, value.title, value.body, value.coverage, value.scope].some((v) => v !== undefined)) ctx.addIssue({ code: 'custom', path: ['action'], message: '댓글과 다른 변경은 각각 요청하세요.' });
+  });
 export type MockExtActionBody = z.infer<typeof MockExtActionBody>;
 
 /** 모의 외부 시스템에 새 항목 만들기(CR·MR·요구) */

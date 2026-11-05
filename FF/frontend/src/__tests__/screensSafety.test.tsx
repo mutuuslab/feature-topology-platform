@@ -68,6 +68,8 @@ beforeEach(() => {
       const body = init?.body ? JSON.parse(String(init.body)) : undefined;
       calls.push({ url, method, body });
       if (url.startsWith('/api/gate/')) return new Response(JSON.stringify(GATE), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      // 분석 근거 패널(P3-3) — 기록 없는 새 Version
+      if (url.includes('/analysis')) return new Response(JSON.stringify({ featureId: 'FEAT-00099', version: '0.1.0', lifecycle: 'PROPOSED', asil: 'B', security: { relevant: true, why: '형식승인 영향 등급 R1(UNECE R155 범위)' }, asilDeviation: null, current: {}, history: [], g7: [] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       if (method === 'PUT') profile = { ...profile, ...(body as Partial<SafetyProfile>) };
       if (method === 'POST') profile = { ...profile, status: 'CONFIRMED', confirmedBy: 'usr-safety', confirmedAt: '2026-10-13T00:00:00Z', confirmSig: 'A'.repeat(86) };
       return new Response(JSON.stringify({ profile, findings: checkProfile(profile), asil: asilInheritance({ asil: 'B', controlPoints: ['Parameter'] }, profile, { toolConfidence: true }) }), { status: method === 'POST' ? 201 : 200, headers: { 'Content-Type': 'application/json' } });

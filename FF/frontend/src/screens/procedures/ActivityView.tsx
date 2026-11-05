@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ProcedureCompleteBody, RaciKey, WorkflowActivity, WorkflowDoc, WorkflowProcess, WorkflowWorkProduct } from '@ff/contracts';
+import { procedureGateText } from '@ff/contracts';
 import { STATIC_MODE, type ApiError } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { procedures as P } from '../../copy/procedures';
@@ -11,6 +12,7 @@ import { Button, Drawer, ErrorNote, Field, KeyValue } from '../../design';
 import { ROUTES, screenShipped } from '../../routes';
 import { useAppShell, useToast } from '../../store';
 import './procedures.css';
+import { WorkProductButton } from './WorkProduct';
 
 export const roleName = (doc: WorkflowDoc, id: string) => doc.roles.find((r) => r.id === id)?.name ?? id;
 
@@ -61,7 +63,7 @@ export function ScreenLinks({ patterns: all }: { patterns: string[] }) {
   );
 }
 
-function WorkProducts({ keys, index }: { keys: string[]; index: Index }) {
+function WorkProducts({ keys, index, doc }: { keys: string[]; index: Index; doc: WorkflowDoc }) {
   if (!keys.length) return <p className="ds-field__hint">{P.detail.noWork}</p>;
   return (
     <ul className="pr-steps">
@@ -69,7 +71,7 @@ function WorkProducts({ keys, index }: { keys: string[]; index: Index }) {
         const w = index.wp.get(k);
         return (
           <li key={k}>
-            {w?.name ?? P.detail.products}
+            <WorkProductButton doc={doc} productKey={k} />
           </li>
         );
       })}
@@ -155,7 +157,7 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
           ...(a.raci.C.length ? [{ k: P.raci.C, v: names(a.raci.C) }] : []),
           ...(a.raci.I.length ? [{ k: P.raci.I, v: names(a.raci.I) }] : []),
           ...(a.trigger ? [{ k: P.detail.trigger, v: a.trigger }] : []),
-          ...(a.gateDecision ? [{ k: P.detail.gate, v: a.gateDecision }] : []),
+          ...(a.gateDecision ? [{ k: P.detail.gate, v: <span data-testid="procedure-gate-map">{procedureGateText(a.gateDecision)}</span> }] : []),
           ...(a.slaHours ? [{ k: P.detail.sla, v: P.detail.slaValue(a.slaHours) }] : []),
         ]}
       />
@@ -182,9 +184,9 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
         ))}
       </ul>
       <h3>{P.detail.inputs}</h3>
-      <WorkProducts keys={a.inputs} index={index} />
+      <WorkProducts keys={a.inputs} index={index} doc={doc} />
       <h3>{P.detail.outputs}</h3>
-      <WorkProducts keys={a.outputs} index={index} />
+      <WorkProducts keys={a.outputs} index={index} doc={doc} />
       {a.platform.actions.length > 0 && (
         <>
           <h3>{P.detail.actions}</h3>

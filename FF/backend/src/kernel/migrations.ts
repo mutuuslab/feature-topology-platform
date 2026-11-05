@@ -730,4 +730,193 @@ CREATE TABLE shared_counter (key TEXT PRIMARY KEY, start_ms INTEGER NOT NULL, n 
 CREATE TABLE instance_lease (name TEXT PRIMARY KEY, holder TEXT NOT NULL, acquired_at TEXT NOT NULL, renewed_at TEXT NOT NULL, expires_at INTEGER NOT NULL);
 `,
   },
+  {
+    // Feature DB(docs/30-data-model/30-95 §5) — 엑셀 03_FeatureDB를 옮긴 기준 기능 표. 키·조회 조건은 열, 본문은 contracts zod(doc).
+    // taxonomy_node: 도메인 10 → 클러스터 → 컴포넌트 69(약어는 기준 행 ID에 쓴다). feature_ref: 기준 행(FeatureRefRow) — 한 번 쓴 ref_id는 지우지 않고 RETIRED로만.
+    // ref_source: 09_출처(다음 점검일은 정기 점검 알림). ref_glossary: 사내 용어집(검색 별칭). ref_subfunction: 13_세부기능후보(읽기 전용).
+    // ref_release: 발행 버전(v1.3 엑셀 가져옴, v1.4 …)과 전체 정규화 해시 — 추가만(081 트리거).
+    name: '080_feature_ref',
+    sql: `
+CREATE TABLE taxonomy_node (
+  node_id TEXT PRIMARY KEY,
+  level TEXT NOT NULL CHECK (level IN ('DOMAIN','CLUSTER','COMPONENT')),
+  parent_id TEXT,
+  abbr TEXT,
+  status TEXT NOT NULL CHECK (status IN ('ACTIVE','RETIRED')),
+  doc TEXT NOT NULL
+);
+CREATE INDEX taxonomy_node_parent ON taxonomy_node (parent_id, level);
+CREATE TABLE feature_ref (
+  ref_id TEXT PRIMARY KEY,
+  status TEXT NOT NULL CHECK (status IN ('ACTIVE','REVIEW','DEPRECATED','RETIRED','PENDING')),
+  domain TEXT NOT NULL,
+  component TEXT NOT NULL,
+  name_ko TEXT NOT NULL,
+  doc TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX feature_ref_scope ON feature_ref (domain, component, status);
+CREATE TABLE ref_source (source_id TEXT PRIMARY KEY, next_review_at TEXT, doc TEXT NOT NULL);
+CREATE TABLE ref_glossary (term TEXT PRIMARY KEY, doc TEXT NOT NULL);
+CREATE TABLE ref_subfunction (id INTEGER PRIMARY KEY AUTOINCREMENT, component TEXT NOT NULL, name TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX ref_subfunction_component ON ref_subfunction (component);
+CREATE TABLE ref_release (release_id TEXT PRIMARY KEY, published_by TEXT NOT NULL, published_at TEXT NOT NULL, hash TEXT NOT NULL, doc TEXT NOT NULL);
+`,
+  },
+  {
+    // Feature DB 연결·변경 요청(30-95 §5.3·§8.2).
+    // feature_ref_link: FF Feature 버전 ↔ 기준 행 역참조 색인(대표 1 + 포함 N, 연결 당시 발행 버전) — feature_version 저장과 같은 트랜잭션에서 갱신, 영향 분석(§8.3)에 쓴다.
+    // ref_change: 변경 요청(작성 → 도메인 검토 → DB 관리자 승인 → 발행), 본문은 RefChange(doc). ref_release는 발행 이력이라 추가만 가능.
+    name: '081_feature_ref_link',
+    sql: `
+CREATE TABLE feature_ref_link (
+  feature_id TEXT NOT NULL,
+  version TEXT NOT NULL,
+  ref_id TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('PRIMARY','INCLUDED')),
+  ref_version TEXT NOT NULL,
+  PRIMARY KEY (feature_id, version, ref_id)
+);
+CREATE INDEX feature_ref_link_ref ON feature_ref_link (ref_id, role);
+CREATE TABLE ref_change (
+  change_id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL CHECK (kind IN ('ADD','MODIFY','DEPRECATE','RETIRE')),
+  ref_id TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('DRAFT','REVIEW','APPROVED','REJECTED','PUBLISHED')),
+  doc TEXT NOT NULL,
+  requested_by TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX ref_change_ref ON ref_change (ref_id, status);
+CREATE INDEX ref_change_status ON ref_change (status, created_at);
+CREATE TRIGGER ref_release_no_update BEFORE UPDATE ON ref_release BEGIN SELECT RAISE(ABORT, 'ref_release는 추가만 가능'); END;
+CREATE TRIGGER ref_release_no_delete BEFORE DELETE ON ref_release BEGIN SELECT RAISE(ABORT, 'ref_release는 추가만 가능'); END;
+`,
+  },
+  {
+    // Feature DB 이력 보호(30-95 §5.6·§8.2) — 기준 행은 지우지 않고(폐기는 RETIRED, ID 재사용 금지), 발행된 변경 요청은 바꾸지도 지우지도 않는다.
+    // 발행 전 변경 요청은 검토·승인·발행으로 상태가 바뀌므로 UPDATE는 발행(PUBLISHED) 뒤만 막는다. 반려된 추가 요청은 발행 버전만 붙고 상태는 그대로다.
+    name: '082_refdb_append_only',
+    sql: `
+CREATE TRIGGER ref_change_no_delete BEFORE DELETE ON ref_change BEGIN SELECT RAISE(ABORT, 'ref_change는 지울 수 없음(변경 이력 보존)'); END;
+CREATE TRIGGER ref_change_published_no_update BEFORE UPDATE ON ref_change WHEN OLD.status = 'PUBLISHED' BEGIN SELECT RAISE(ABORT, 'ref_change는 발행 뒤 바꿀 수 없음'); END;
+CREATE TRIGGER feature_ref_no_delete BEFORE DELETE ON feature_ref BEGIN SELECT RAISE(ABORT, 'feature_ref는 지울 수 없음(폐기는 RETIRED, ID 재사용 금지)'); END;
+`,
+  },
+  {
+    // SW 개발비 산정(D07-01, docs/20-architecture/20-94 §5) — 계수 표·산정 과제·줄·MBD·승인 결과.
+    //  · cost_basis: 계수·단가 표 버전(원가 기준 관리자 발행, D-COST-8). 표 전체를 봉인(doc_sealed, KEK 봉투) — 단가가 들어 있다.
+    //    부팅 때 sealSecrets가 다시 감싸므로(키 교체) 추가 전용 트리거를 두지 않는다. 발행본 불변은 서비스가 지킨다
+    //  · cost_project·cost_line·cost_mbd_item: 과제와 입력(금액 없음, 평문). 줄은 FF Feature 버전의 Feature DB 연결에서 펼친다(D-COST-9)
+    //  · cost_result: 승인 때 고정한 결과의 머리(추가만) — 금액은 cost_result_doc.doc_sealed에만(봉인, 키 교체 때 다시 감싼다)
+    name: '083_cost_estimate',
+    sql: `
+CREATE TABLE cost_basis (version TEXT PRIMARY KEY, status TEXT NOT NULL CHECK (status IN ('DRAFT','PUBLISHED')), note TEXT NOT NULL, created_by TEXT NOT NULL, created_at TEXT NOT NULL, published_by TEXT, published_at TEXT, content_sha256 TEXT NOT NULL, doc_sealed TEXT NOT NULL);
+CREATE TABLE cost_project (est_id TEXT PRIMARY KEY, status TEXT NOT NULL CHECK (status IN ('DRAFT','SUBMITTED','APPROVED')), created_by TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE cost_line (est_id TEXT NOT NULL, line_no INTEGER NOT NULL, feature_id TEXT NOT NULL, version TEXT NOT NULL, ref_id TEXT NOT NULL, role TEXT NOT NULL CHECK (role IN ('PRIMARY','INCLUDED')), doc TEXT NOT NULL, PRIMARY KEY (est_id, line_no));
+CREATE INDEX cost_line_feature ON cost_line (est_id, feature_id, version);
+CREATE TABLE cost_mbd_item (est_id TEXT NOT NULL, ref_id TEXT NOT NULL, seq INTEGER NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (est_id, ref_id, seq));
+CREATE TABLE cost_result (est_id TEXT NOT NULL, rev INTEGER NOT NULL, approved_by TEXT NOT NULL, approved_at TEXT NOT NULL, reason TEXT NOT NULL, basis_version TEXT NOT NULL, ref_release TEXT, input_sha256 TEXT NOT NULL, result_sha256 TEXT NOT NULL, PRIMARY KEY (est_id, rev));
+CREATE TRIGGER cost_result_no_update BEFORE UPDATE ON cost_result BEGIN SELECT RAISE(ABORT, 'cost_result는 추가만 가능'); END;
+CREATE TRIGGER cost_result_no_delete BEFORE DELETE ON cost_result BEGIN SELECT RAISE(ABORT, 'cost_result는 추가만 가능'); END;
+CREATE TABLE cost_result_doc (est_id TEXT NOT NULL, rev INTEGER NOT NULL, doc_sealed TEXT NOT NULL, PRIMARY KEY (est_id, rev));
+CREATE TRIGGER cost_result_doc_no_delete BEFORE DELETE ON cost_result_doc BEGIN SELECT RAISE(ABORT, 'cost_result_doc는 지울 수 없다'); END;
+`,
+  },
+  {
+    // SW 개발비 산정 검토 체크리스트(엑셀 07, C3) — 과제·항목 번호마다 상태·메모. 항목 목록은 계수 표(checklist)에 있다
+    name: '084_cost_check',
+    sql: `
+CREATE TABLE cost_check (est_id TEXT NOT NULL, no INTEGER NOT NULL, status TEXT NOT NULL CHECK (status IN ('미확인','확인','보완 필요','해당 없음')), memo TEXT NOT NULL DEFAULT '', updated_by TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (est_id, no));
+`,
+  },
+  {
+    // 분석 근거(담당자 웨이브 W3, P3-3) — Feature Version별 HARA·TARA·SOTIF·형식승인 영향 판단(담당 역할 개인 서명)과 G7 서명(SM·CSM).
+    // 둘 다 추가만 — 다시 쓰면 새 기록이 지금 근거가 되고 이전 기록은 감사용으로 남는다. evidence_ref 색인은 Evidence 원장 ?ref= 조회(P3-4).
+    name: '085_analysis_evidence',
+    sql: `
+CREATE TABLE analysis_record (
+  record_id TEXT PRIMARY KEY,
+  feature_id TEXT NOT NULL,
+  feature_version TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('HARA','TARA','SOTIF','HOMOLOGATION')),
+  signed_by TEXT NOT NULL,
+  signed_at TEXT NOT NULL,
+  doc TEXT NOT NULL
+);
+CREATE INDEX analysis_record_fv ON analysis_record (feature_id, feature_version, kind);
+CREATE TABLE gate_signoff (
+  signoff_id TEXT PRIMARY KEY,
+  feature_id TEXT NOT NULL,
+  feature_version TEXT NOT NULL,
+  gate TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('SAFETY_OFFICER','SECURITY_OFFICER')),
+  signed_by TEXT NOT NULL,
+  signed_at TEXT NOT NULL,
+  doc TEXT NOT NULL
+);
+CREATE INDEX gate_signoff_fv ON gate_signoff (feature_id, feature_version, gate, role);
+CREATE INDEX evidence_ref_lookup ON evidence (evidence_ref);
+CREATE TRIGGER analysis_record_no_update BEFORE UPDATE ON analysis_record BEGIN SELECT RAISE(ABORT, 'analysis_record는 추가만 가능'); END;
+CREATE TRIGGER analysis_record_no_delete BEFORE DELETE ON analysis_record BEGIN SELECT RAISE(ABORT, 'analysis_record는 추가만 가능'); END;
+CREATE TRIGGER gate_signoff_no_update BEFORE UPDATE ON gate_signoff BEGIN SELECT RAISE(ABORT, 'gate_signoff는 추가만 가능'); END;
+CREATE TRIGGER gate_signoff_no_delete BEFORE DELETE ON gate_signoff BEGIN SELECT RAISE(ABORT, 'gate_signoff는 추가만 가능'); END;
+`,
+  },
+  {
+    // 검토 포털 협의 요청(W5, 담당자 개선 P5-1) — 요청 부서가 구매·법무·개인정보보호 부서에 의견을 구하는 건(업무 절차의 협의 C).
+    // 키·조회 조건(받는 부서·요청 부서·상태·기한·대상)은 열, 본문(살펴볼 것·의견 이력)은 contracts Consultation(doc). 협의 기록은 지우지 않는다.
+    name: '087_consultation',
+    sql: `
+CREATE TABLE consultation (
+  consult_id TEXT PRIMARY KEY,
+  to_dept TEXT NOT NULL,
+  from_dept TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('OPEN','ANSWERED')),
+  due_at TEXT NOT NULL,
+  target_kind TEXT NOT NULL CHECK (target_kind IN ('FEATURE','SUPPLIER_PACKAGE','POLICY','REF')),
+  target_id TEXT NOT NULL,
+  requested_by TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  doc TEXT NOT NULL
+);
+CREATE INDEX consultation_to ON consultation (to_dept, status, due_at);
+CREATE INDEX consultation_from ON consultation (from_dept, status, due_at);
+CREATE INDEX consultation_target ON consultation (target_id);
+CREATE TRIGGER consultation_no_delete BEFORE DELETE ON consultation BEGIN SELECT RAISE(ABORT, 'consultation은 지울 수 없음(협의 이력 보존)'); END;
+`,
+  },
+  {
+    name: '088_vehicle_unleash_sequence',
+    sql: `CREATE TABLE vehicle_unleash_sequence (vin TEXT PRIMARY KEY, value BIGINT NOT NULL CHECK (value > 0 AND value <= 9007199254740991));`,
+  },
+  {
+    // Git SDK 소스 스냅샷 — 개발자/CI 가져오기 원문과 해시를 추가만 한다. 원격 저장소 확인 증명은 아니다.
+    name: '089_flag_source_manifest',
+    sql: `
+CREATE TABLE flag_source_manifest (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  manifest_id TEXT NOT NULL UNIQUE,
+  repository TEXT NOT NULL,
+  commit_id TEXT NOT NULL,
+  scanned_at TEXT NOT NULL,
+  content_hash TEXT NOT NULL,
+  imported_at TEXT NOT NULL,
+  imported_by TEXT NOT NULL,
+  provenance TEXT NOT NULL CHECK (provenance IN ('CI_IMPORT','DEMO')),
+  doc TEXT NOT NULL,
+  UNIQUE (repository, commit_id)
+);
+CREATE INDEX flag_source_manifest_repo_scan ON flag_source_manifest (repository, scanned_at, id);
+CREATE TRIGGER flag_source_manifest_no_update BEFORE UPDATE ON flag_source_manifest BEGIN SELECT RAISE(ABORT, 'flag_source_manifest는 추가만 가능'); END;
+CREATE TRIGGER flag_source_manifest_no_delete BEFORE DELETE ON flag_source_manifest BEGIN SELECT RAISE(ABORT, 'flag_source_manifest는 추가만 가능'); END;
+`,
+  },
+  {
+    // 승인 결과를 덮어쓰지 않는 기준 행별 실적(C4). 개정 시 줄 입력으로 이관한다.
+    name: '090_cost_actual',
+    sql: `
+CREATE TABLE cost_actual (est_id TEXT NOT NULL, ref_id TEXT NOT NULL, actual REAL NOT NULL CHECK (actual > 0), updated_by TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (est_id, ref_id));
+`,
+  },
 ];

@@ -6,6 +6,7 @@ import { ko } from '../../copy/ko';
 import { pickDefault } from '../../data/first-run';
 import type { ExtRef } from '@ff/contracts';
 import { extSync } from '../../copy/ext-sync';
+import { analysis } from '../../copy/analysis';
 import { AsyncView, DataTable, ExtRefChip, GateBadge, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Select, Tabs, Toolbar, type KeyMessageSpec } from '../../design';
 
 const M = ko.master;
@@ -119,13 +120,17 @@ export function DesignTraceScreen() {
 const GATES = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9'];
 
 export function EvidenceScreen() {
-  const [gate, setGate] = useState('');
+  // 딥링크(P3-4) — Gate 이력의 Evidence 칸이 ?ref=·?feature=로 연다
+  const [sp] = useSearchParams();
+  const [gate, setGate] = useState(sp.get('gate') ?? '');
   const [result, setResult] = useState('');
-  const [featureId, setF] = useState('');
-  const q = useApi<{ items: { evidenceRef: string; gate: string; featureId: string; featureVersion: string; featureName: string; owner: string; inputResult: string; resultReason: string; gateStatus: string | null }[] }>('evidenceLedger', {
-    query: { featureId: featureId.trim().toUpperCase() || undefined, gate: gate || undefined, result: result || undefined },
+  const [featureId, setF] = useState(sp.get('feature') ?? '');
+  const [ref, setRef] = useState(sp.get('ref') ?? '');
+  const q = useApi<{ items: { evidenceRef: string; gate: string; gateRecordId: string; featureId: string; featureVersion: string; featureName: string; owner: string; inputResult: string; resultReason: string; gateStatus: string | null; judgedAt?: string | null }[] }>('evidenceLedger', {
+    query: { featureId: featureId.trim().toUpperCase() || undefined, gate: gate || undefined, result: result || undefined, ref: ref.trim() || undefined },
   }, { placeholderData: (p) => p });
-  const rows = q.data?.items ?? [];
+  // 최근 판정 먼저 — 플랫폼에서 새로 판정한 Evidence가 이관 기록 뒤에 묻히지 않게
+  const rows = [...(q.data?.items ?? [])].sort((a, b) => (b.judgedAt ?? '').localeCompare(a.judgedAt ?? ''));
   const E = M.evidence;
   return (
     <div className="ds-screen">
@@ -144,6 +149,10 @@ export function EvidenceScreen() {
           <span className="ds-field__label">{M.common.feature}</span>
           <input className="ds-input ds-input--mono" value={featureId} placeholder="FEAT-00022" onChange={(e) => setF(e.target.value)} style={{ width: 130 }} />
         </label>
+        <label className="ds-field ds-field--inline">
+          <span className="ds-field__label">{analysis.ledger.ref}</span>
+          <input className="ds-input ds-input--mono" value={ref} placeholder={analysis.ledger.refPlaceholder} onChange={(e) => setRef(e.target.value)} style={{ width: 160 }} />
+        </label>
         <Select label={E.gate} value={gate} onChange={(e) => setGate(e.target.value)}>
           <option value="">{M.common.any}</option>
           {GATES.map((g) => (
@@ -161,7 +170,7 @@ export function EvidenceScreen() {
         <DataTable
           caption={E.title}
           rows={rows}
-          rowKey={(r) => r.evidenceRef}
+          rowKey={(r) => r.gateRecordId}
           maxHeight="64vh"
           columns={[
             { key: 'r', header: E.col.ref, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.evidenceRef}</span> },
@@ -169,6 +178,7 @@ export function EvidenceScreen() {
             { key: 'f', header: E.col.feature, cell: (r) => <span className="ds-nowrap"><IdChip id={r.featureId} version={r.featureVersion} to={`/features/${r.featureId}/${r.featureVersion}`} copy={false} /> {r.featureName}</span>, sort: (r) => r.featureId },
             { key: 'o', header: E.col.owner, cell: (r) => <span className="ds-nowrap">{r.owner}</span> },
             { key: 's', header: E.col.result, cell: (r) => <GateBadge status={r.gateStatus ?? r.inputResult} /> },
+            { key: 'at', header: analysis.ledger.judgedAt, cell: (r) => <span className="ds-mono ds-nowrap">{r.judgedAt ? r.judgedAt.slice(0, 16).replace('T', ' ') : '—'}</span>, sort: (r) => r.judgedAt ?? '' },
             { key: 'x', header: E.col.reason, cell: (r) => r.resultReason },
           ]}
         />

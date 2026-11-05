@@ -8,6 +8,7 @@
 !docker/app/.env.example
 .evidence
 .sim
+.unleash-runtime
 e2e/test-results
 e2e/report
 e2e/review
@@ -15,6 +16,7 @@ e2e/shots
 frontend/public/api-snapshot
 harness
 sim
-tools
+tools/*
+!tools/browser-routes.ts
 **/__pycache__
 *.log

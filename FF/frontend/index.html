@@ -6,9 +6,17 @@
     <meta name="robots" content="noindex, nofollow" />
     <title>Feature Platform</title>
     <link rel="icon" type="image/svg+xml" href="/brand/mutuus-symbol.svg" />
+    <style>#boot-recovery{max-width:40rem;margin:3rem auto;padding:1rem;font:16px/1.6 system-ui;color:#17202a;background:#fff}#boot-recovery .boot-title{font-size:1.5em}#boot-recovery[hidden],body:has(#root>*) #boot-recovery{display:none}</style>
   </head>
   <body>
     <div id="root"></div>
+    <aside id="boot-recovery" aria-label="화면 복구">
+      <p class="boot-title"><strong>Feature Platform</strong></p>
+      <p id="boot-state" role="status">화면을 불러오는 중입니다. 화면이 나타나지 않으면 복구 안내를 열어 주세요.</p>
+      <p id="boot-detail"></p>
+      <a href="%BASE_URL%recovery.html">화면 복구 안내</a>
+    </aside>
+    <script defer src="%BASE_URL%boot-check.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

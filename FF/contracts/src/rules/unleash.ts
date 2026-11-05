@@ -1,4 +1,4 @@
-// IF-04 Policy Tool (Unleash OSS 8.2.0) 연계 계획 — P0 개정 v1.0 기준. FP가 승인·서명·감사의 원천이고 Unleash는 작성·수집 원천(BD-02).
+// IF-04 Policy Tool (Unleash OSS 8.3.1) 연계 계획 — P0 개정 v1.0 기준. FP가 승인·서명·감사의 원천이고 Unleash는 읽기·평가용 사본(UL-LIVE).
 // 배포(DEPLOYED, 서명 게시된) 정책만 Unleash 정의로 내보낸다(UL-OSS: 미서명 정의 배포 금지). hfp-feature-lifecycle js/unleash.js plan()의 TS 이식:
 //   flag = 정책 flagKey(care_00022_param), 전략 = flexibleRollout(정책 strategies 하나당 하나, Unleash가 OR), 제약 = 적용 범위 + 사용 권한 + 대상 규칙,
 //   부분 롤아웃은 FP-COHORT-1 서명 코호트 목록(vehicleKey IN …)으로 표현하고 Unleash rollout은 0/100만 쓴다(BD-09).
@@ -135,14 +135,20 @@ export function unleashContext(v: { vin: string; country: string; vehicleModel: 
 }
 
 /** 서버(Unleash)에 있는 정의와 계획의 차이 — 다른 도구에서 손으로 바꾼 흔적(UL-OSS: FP가 원천) */
-export function unleashDrift(plan: UnleashPlan, server: { enabled: boolean | null; strategies: { constraints: UnleashConstraint[]; parameters: { rollout: string } }[]; tags: { type: string; value: string }[] } | null): string[] {
+export function unleashDrift(plan: UnleashPlan, server: { enabled: boolean | null; strategies: any[]; tags: { type: string; value: string }[]; dependencies?: any[]; variants?: any[] } | null): string[] {
   if (!server) return ['Unleash에 flag가 없습니다'];
   const out: string[] = [];
-  const key = (cs: UnleashConstraint[]) => cs.map((c) => `${c.contextName}|${c.operator}|${c.inverted}|${(c.values ?? [c.value]).join(',')}`).sort().join(';');
-  const want = plan.strategies.map((s) => `${s.parameters.rollout}#${key(s.constraints)}`).sort();
-  const have = server.strategies.map((s) => `${s.parameters.rollout}#${key(s.constraints)}`).sort();
-  if (JSON.stringify(want) !== JSON.stringify(have)) out.push(`전략·제약이 다릅니다 (계획 ${want.length}개 / 서버 ${have.length}개)`);
+  // Compare every evaluation-relevant field. Names, case sensitivity, disabled state, segments,
+  // dependencies and variants must not escape drift detection just because rollout remains 100.
+  const normalize = (v: any): any => Array.isArray(v) ? v.map(normalize) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, normalize(v[k])])) : v;
+  const key = (v: unknown) => JSON.stringify(normalize(v));
+  const strategy = (s: any) => key({ name: s.name, disabled: !!s.disabled, parameters: s.parameters ?? {}, constraints: (s.constraints ?? []).map((c: any) => ({ contextName: c.contextName, operator: c.operator, inverted: !!c.inverted, caseInsensitive: !!c.caseInsensitive, ...(c.values ? { values: [...c.values].sort() } : { value: c.value }) })).map(key).sort(), variants: s.variants ?? [], segments: [...(s.segments ?? [])].sort() });
+  const want = plan.strategies.map(strategy).sort();
+  const have = server.strategies.map(strategy).sort();
+  if (key(want) !== key(have)) out.push(`전략·제약이 다릅니다 (계획 ${want.length}개 / 서버 ${have.length}개)`);
   if (server.enabled !== plan.enabled) out.push(`환경 ${plan.environment} 활성 상태가 다릅니다 (계획 ${plan.enabled ? 'on' : 'off'} / 서버 ${server.enabled ? 'on' : 'off'})`);
+  if (server.dependencies !== undefined && key(server.dependencies.map((d) => ({ feature: d.feature, enabled: d.enabled ?? true, variants: d.variants ?? [] })).map(key).sort()) !== key(plan.dependencies.map((feature) => key({ feature, enabled: true, variants: [] })).sort())) out.push('의존 관계가 다릅니다');
+  if (server.variants?.length) out.push('계획에 없는 variant가 있습니다');
   for (const t of plan.tags) if (!server.tags.some((x) => x.type === t.type && x.value === t.value)) out.push(`태그 ${t.type}=${t.value} 없음`);
   return out;
 }

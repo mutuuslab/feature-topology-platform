@@ -379,9 +379,9 @@ export function FleetView({ lang, vin, onSelectVin, onOpenVehicle }: TwinViewPro
                   </td>
                   <td>
                     <div className="tbar">
-                      <i style={{ width: `${Math.min(100, w.rate)}%` }} />
+                      <i style={{ width: `${Math.max(0, Math.min(100, w.rate * 100))}%` }} />
                     </div>
-                    <span className="mono small">{w.rate}%</span>
+                    <span className="mono small">{Number((w.rate * 100).toFixed(1))}%</span>
                   </td>
                 </tr>
               ))}

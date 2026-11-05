@@ -52,9 +52,10 @@ import { ChangeRecordService } from '../../../d04-ops/pipeline-link/change-recor
 import { ExtAdapters, modeOf, PLATFORM_USER, type RemoteItem, type WriteResult } from './adapters';
 import { ExtSyncRepo, type ConflictRow, type InboxRow, type OutboxJob, type OutboxOp } from './ext-sync.repo';
 import { extUrl, MockExtStore } from './mock-ext.store';
-import { isProduction } from '../../../../kernel/runtime-config';
+import { isProduction, seedOf } from '../../../../kernel/runtime-config';
 import { applyExtLiveConfig } from './live-config';
 import { deliveryIdOf, hmac, normalize, verifyWebhook } from './normalize';
+import { demoChangeRequestContent, demoEpicContent, demoRequirementContent } from './demo-seed-content';
 
 /** 외부 drain 주기(실시간 모드) */
 const DRAIN_MS = 3_000;
@@ -75,6 +76,12 @@ const splitFid = (id: string) => {
 };
 
 type Outcome = Pick<InboxRow, 'outcome' | 'summary'>;
+
+/**
+ * JIRA Epic에 기준 기능 ID가 없거나 쓸 수 없을 때 댓글 안내(30-95 §7, 80-50 §4) — Epic 화면의 FF 패널에서 Feature DB 기준 행을 고르게 한다.
+ * 라벨(ref-primary:·ref:)은 모의·데모 연결에서만 읽으므로 안내하지 않는다.
+ */
+export const EPIC_REF_HINT = 'Epic 화면의 Feature Platform 패널에서 Feature DB 기준 기능을 골라 주세요(첫 번째가 대표 기준 행). 맞는 기준 행이 없으면 플랫폼 Feature 등록 화면에서 추가를 요청하세요.';
 
 @PlatformComponent('D05-01')
 @Injectable()
@@ -496,16 +503,38 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       actor = this.actorFor(who, ['FEATURE_AUTHOR'], correlationId);
       if (!actor) return refuse(`${who.name}은(는) Feature 등록 권한(Feature 작성)이 없습니다.`);
     }
-    const scope = (c.extra.scope ?? {}) as Record<string, string>;
+    const scope = (c.extra.scope ?? {}) as Record<string, string> & { refIds?: string[] };
     const missing = missingEpicScope(scope);
     if (missing.length) return refuse(`Epic에 ${missing.map((k) => EPIC_SCOPE_LABEL[k]).join('·')} 값이 없거나 형식이 틀립니다. 채우면 다시 등록을 시도합니다.`);
-    const body = CreateFeatureBody.safeParse({ name: c.title, description: String(c.extra.description ?? '').trim() || c.title, country: scope.country, vehicleModel: scope.vehicleModel, trim: scope.trim, asil: scope.asil, ownerId: scope.ownerId, tags: [`jira:${c.key}`] });
-    if (!body.success) return refuse(`Epic 값이 Feature 등록 형식에 맞지 않습니다 — ${body.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
+    // 기준 기능(Feature DB) 연결 필수(30-95 §7, D-REF-10) — FF 앱이 쓰는 사용자 필드(모의·데모만 라벨 ref-primary:·ref: 폴백). 첫 값이 대표
+    const refIds = Array.isArray(scope.refIds) ? scope.refIds : [];
+    if (!refIds.length) return refuse(`기준 기능 ID가 없습니다. ${EPIC_REF_HINT}`);
+    const featureRefs = refIds.map((refId, i) => ({ refId, role: i === 0 ? ('PRIMARY' as const) : ('INCLUDED' as const) }));
+    const body = CreateFeatureBody.safeParse({ name: c.title, description: String(c.extra.description ?? '').trim() || c.title, country: scope.country, vehicleModel: scope.vehicleModel, trim: scope.trim, asil: scope.asil, ownerId: scope.ownerId, tags: [`jira:${c.key}`], featureRefs });
+    if (!body.success) {
+      const refIssue = body.error.issues.some((i) => i.path[0] === 'featureRefs');
+      return refuse(`Epic 값이 Feature 등록 형식에 맞지 않습니다 — ${body.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}${refIssue ? ` ${EPIC_REF_HINT}` : ''}`);
+    }
     // 중복 확인은 트랜잭션 밖에서 — 거부 감사는 트랜잭션 밖에 남겨야 한다(RegistryService.create와 같은 판정)
     const similar = this.features.similar(body.data.name, body.data.country, body.data.vehicleModel, body.data.trim);
     if (similar.length) {
       this.audit.failed(actor, 'FEATURE_CREATE', body.data.name, `JIRA ${c.key}: 같은 적용 범위에 유사 Feature 존재`, 'D05-01');
       return refuse(`같은 국가·차종·트림에 이름이 비슷한 Feature가 이미 있습니다. 기존 Feature: ${similar.map((s) => fid(s.featureId, s.version)).join(', ')} — 같은 기능이면 Epic 본문에 그 ID를 적어 연결하고, 새 Version이면 플랫폼에서 Version을 만드세요.`);
+    }
+    // 기준 행 판정도 트랜잭션 밖에서 먼저 — 없는·폐기 행, 대표 ASIL 차이, 같은 범위 같은 대표 행(JIRA에서는 확인·사유를 받을 수 없다)
+    try {
+      const linked = this.registry.checkRefs(body.data);
+      // 요청 중(PENDING) 행은 사람이 등록 화면에서 요청·연결한다 — JIRA에서 만들 수 없다
+      const pending = linked.warnings.filter((w) => w.code === 'REF_STATUS' && w.status === 'PENDING').map((w) => w.refId);
+      if (pending.length) {
+        this.audit.failed(actor, 'FEATURE_CREATE', body.data.name, `JIRA ${c.key}: 요청 중 기준 행 ${pending.join(', ')}`, 'D05-01');
+        return refuse(`기준 행 ${pending.join(', ')}은(는) Feature DB 승인 전(요청 중)이라 JIRA에서 연결할 수 없습니다 — 플랫폼 Feature 등록 화면에서 등록하거나, 승인된 기준 기능 ID를 넣어 주세요.`);
+      }
+    } catch (e) {
+      if (!(e instanceof DomainError)) throw e;
+      this.audit.failed(actor, 'FEATURE_CREATE', body.data.name, `JIRA ${c.key}: 기준 기능 연결 — ${e.message}`, 'D05-01');
+      const refProblem = e.code === 'REFDB_LINK_REQUIRED' || (e.details as { field?: string } | undefined)?.field === 'featureRefs';
+      return refuse(`${e.message}${refProblem ? ` ${EPIC_REF_HINT}` : ''}`);
     }
     try {
       const f = this.db.tx(() => {
@@ -676,6 +705,9 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     if (body.action === 'TRANSITION') {
       if (!body.status) throw new DomainError('VALIDATION', '새 상태(status)가 필요합니다.');
       next = this.store.update(system, it.key, body.externalUser, { status: body.status });
+    } else if (body.action === 'COMMENT') {
+      if (!body.comment?.trim() || body.comment.trim().length > 2000) throw new DomainError('VALIDATION', '댓글은 1~2000자로 입력하세요.');
+      next = this.store.update(system, it.key, body.externalUser, { comment: body.comment.trim() });
     } else if (body.action === 'EDIT') {
       next = this.store.update(system, it.key, body.externalUser, { title: body.title, body: body.body, ...(body.scope ? { fields: { scope: { ...((it.fields.scope ?? {}) as Record<string, unknown>), ...body.scope } } } : {}) });
     } else if (body.action === 'MERGE') {
@@ -711,6 +743,33 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
   }
   mockItems(system: ExtSystem, kind?: ExtKind) {
     return this.store.all(system, kind);
+  }
+
+  /** 전시 Feature가 부팅 뒤 추가되는 순서도 지원한다. 실제 연계·일반 고객 요구에는 쓰지 않는다. */
+  async repairShowcaseRequirements() {
+    if (process.env.FF_SHOWCASE !== '1' || isProduction() || seedOf() === 'none' || EXT_SYSTEMS.some((s) => modeOf(s) !== 'mock')) return { created: 0, requeued: 0, disabled: true };
+    const targets = this.features.all().filter((f) => f.tags.includes('가상 전시'));
+    const featureKeys = new Set(targets.map((f) => fid(f.featureId, f.version)));
+    const known = new Set(this.store.all('CODEBEAMER', 'REQUIREMENT').map((r) => r.fields.reqId));
+    let created = 0, requeued = 0;
+    // 먼저 전부 만들고 서명 webhook을 받는다. 문서마다 drain하면 아직 안 만든 나머지를 다시 실패시킨다.
+    for (const f of targets) for (const reqId of f.requirementIds.filter((r) => /^DEMO-REQ-\d{3}$/.test(r))) {
+      if (known.has(reqId)) continue;
+      const content = demoRequirementContent(f, reqId);
+      const item = this.store.create('CODEBEAMER', 'REQUIREMENT', { title: `${reqId} ${f.name}`, ...content, fields: { ...content.fields, requirementStatus: 'Draft' }, status: 'Draft', by: 'jung.req' });
+      this.deliver('CODEBEAMER', item, { fromStatus: null, created: true });
+      known.add(reqId); created++;
+    }
+    this.db.tx(() => {
+      for (const job of this.repo.jobs({ system: 'CODEBEAMER', limit: 10000 })) {
+        if ((job.status === 'FAILED' || job.status === 'PENDING') && job.job.op === 'REQ_LINK' && featureKeys.has(fid(job.job.featureId, job.job.version))) {
+          this.repo.requeue(job.jobId); requeued++;
+        }
+      }
+      if (created || requeued) this.audit.record({ id: 'system:showcase-requirements', role: 'SYSTEM', correlationId: 'seed:showcase-requirements' }, 'EXT_REQUIREMENT_DEMO_REPAIR', 'CODEBEAMER', { after: { created, requeued }, reason: '가상 시연 요구 정의·서명 webhook 등록 후 누락 링크 재시도. 검토·승인 상태 변경 없음', componentId: 'D05-01' });
+    });
+    await this.drain();
+    return { created, requeued, disabled: false };
   }
 
   // ───────────────────────── 조회 ─────────────────────────
@@ -805,7 +864,8 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
    */
   seed() {
     if (EXT_SYSTEMS.some((s) => modeOf(s) !== 'mock')) return;
-    const at = (it: ReturnType<MockExtStore['create']>): ExtRef => ({ system: it.system, kind: it.kind, key: it.key, url: extUrl(it.system, it.kind, it.key), title: it.title, status: it.status, revision: it.system === 'CODEBEAMER' ? it.revision : Date.parse(it.updatedAt), syncState: 'SYNCED', syncedAt: this.clock.iso(), stale: false, extra: pickExtra(it.fields) });
+    // 첫 webhook과 같은 본문 투영을 저장한다. 빠뜨리면 첫 댓글만으로도 요구 개정·G2 재검토로 오인한다.
+    const at = (it: ReturnType<MockExtStore['create']>): ExtRef => ({ system: it.system, kind: it.kind, key: it.key, url: extUrl(it.system, it.kind, it.key), title: it.title, status: it.status, revision: it.system === 'CODEBEAMER' ? it.revision : Date.parse(it.updatedAt), syncState: 'SYNCED', syncedAt: this.clock.iso(), stale: false, extra: { ...pickExtra(it.fields), ...(it.system === 'CODEBEAMER' ? { description: it.body.slice(0, 2000) } : {}) } });
     this.db.tx(() => {
       const reqByReqId = new Map<string, string>();
       for (const f of this.features.all()) {
@@ -813,14 +873,15 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
         for (const reqId of f.requirementIds ?? []) {
           let key = reqByReqId.get(reqId);
           if (!key) {
-            const it = this.store.create('CODEBEAMER', 'REQUIREMENT', { title: `${reqId} ${f.name}`, body: f.description ?? '', status: 'Approved', by: 'jung.req', fields: { reqId } });
+            const content = demoRequirementContent(f, reqId);
+            const it = this.store.create('CODEBEAMER', 'REQUIREMENT', { title: `${reqId} ${f.name}`, ...content, status: 'Approved', by: 'jung.req' });
             this.repo.putItem(at(it));
             key = it.key;
             reqByReqId.set(reqId, key);
           }
           this.repo.link('CODEBEAMER', key, 'FEATURE', id, 'seed');
         }
-        const epic = this.store.create('JIRA', 'EPIC', { title: `${id} ${f.name}`, body: `${f.description ?? ''}\n\nFeature Platform: ${id}`, status: JIRA_EPIC_STATUS[f.lifecycle], by: 'kim.author', fields: { featureId: f.featureId, version: f.version } });
+        const epic = this.store.create('JIRA', 'EPIC', { title: `${id} ${f.name}`, ...demoEpicContent(f), status: JIRA_EPIC_STATUS[f.lifecycle], by: 'kim.author' });
         this.repo.putItem(at(epic));
         this.repo.link('JIRA', epic.key, 'FEATURE', id, 'seed');
         if (['DEVELOPING', 'VERIFIED', 'RELEASED', 'DEPRECATED', 'RETIRED'].includes(f.lifecycle)) {
@@ -839,7 +900,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       for (const p of this.policies.all()) {
         const id = fid(p.featureId, p.featureVersion);
         const epicKey = this.repo.linksOf('FEATURE', id, 'JIRA').find((l) => l.kind === 'EPIC')?.key ?? null;
-        const cr = this.store.create('JIRA', 'CHANGE_REQUEST', { title: `${p.flagKey} 정책 변경 — ${id}`, body: `정책 ${p.policyId} (${p.controlPoint})`, status: crOfPolicy(p.status) ?? JIRA_CR_STATUS.OPEN, by: 'kim.author', fields: { parentKey: epicKey, policyId: p.policyId } });
+        const cr = this.store.create('JIRA', 'CHANGE_REQUEST', { title: `${p.flagKey} 정책 변경 — ${id}`, ...demoChangeRequestContent(p, this.features.get(p.featureId, p.featureVersion), epicKey), status: crOfPolicy(p.status) ?? JIRA_CR_STATUS.OPEN, by: 'kim.author' });
         this.repo.putItem(at(cr));
         this.repo.link('JIRA', cr.key, 'POLICY', p.policyId, 'seed');
         this.repo.link('JIRA', cr.key, 'FEATURE', id, 'seed');

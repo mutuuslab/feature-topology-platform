@@ -15,6 +15,9 @@ export const SECRET_COLUMNS: SecretColumn[] = [
   { table: 'pki_key', column: 'private_pem', id: 'key_id' },
   { table: 'approver_key', column: 'private_pem', id: 'user_id' },
   { table: 'hsm_secret', column: 'secret', id: "name || ':' || epoch" },
+  // SW 개발비 산정(20-94 §8) — 계수·단가 표 전체, 승인 때 고정한 결과(금액)
+  { table: 'cost_basis', column: 'doc_sealed', id: 'version' },
+  { table: 'cost_result_doc', column: 'doc_sealed', id: "est_id || ':' || rev" },
 ];
 
 export const aadOf = (c: Pick<SecretColumn, 'table' | 'column'>, id: string) => `${c.table}.${c.column}|${id}`;

@@ -1,10 +1,12 @@
 // /analysis/impact — 변경 영향 분석 (v2). Feature → 의존 Feature → Baseline → 상품, 재판정 Gate·담당자.
+// 보강(W5 P5-2): 협력사로 시작하기(?supplier= — 그 협력사 SW를 쓰는 Feature를 골라 영향 보기), 바뀐 항목은 한글 이름(영문 키는 툴팁).
 import { Link, useSearchParams } from 'react-router-dom';
 import { REJUDGE_MAP } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { impactPlus as IP } from '../../copy/impactSupplier';
 import { useDefaultFeature } from '../../data/first-run';
-import { AsyncView, GateBadge, IdChip, LifecycleBadge, PageHeader, Panel, SummaryLine } from '../../design';
+import { AsyncView, Button, GateBadge, IdChip, LifecycleBadge, PageHeader, Panel, Select, SummaryLine } from '../../design';
 
 const T = ko.impact;
 const CHANGEABLE = Object.keys(REJUDGE_MAP);
@@ -33,6 +35,20 @@ export default function ImpactScreen() {
     setSp(n, { replace: true });
   };
   const q = useApi<Impact>('impact', { params: { id: feature, ver: version }, query: { changed: changed.join(',') || undefined } }, { enabled: !!feature && !!version });
+  // 협력사로 찾기 — 협력사 납품 SW(IF-08)와 SW 마스터의 '쓰는 Feature'(FEAT-xxxxx@ver)를 잇는다
+  const supplier = sp.get('supplier') ?? '';
+  const deliveries = useApi<{ items: { swId: string; version: string; supplier: string }[] }>('supplierDeliveries');
+  const sw = useApi<{ items: { swId: string; version: string; features: string[] }[] }>('masterSw', {}, { enabled: !!supplier });
+  const suppliers = [...new Set((deliveries.data?.items ?? []).map((r) => r.supplier))].sort();
+  const mine = (deliveries.data?.items ?? []).filter((r) => r.supplier === supplier);
+  const supplied = [...new Set(mine.flatMap((r) => sw.data?.items.find((s) => s.swId === r.swId && s.version === r.version)?.features ?? []))].sort();
+  const pickFeature = (key: string) => {
+    const [id, ver] = key.split('@');
+    const n = new URLSearchParams(sp);
+    n.set('feature', id);
+    n.set('version', ver);
+    setSp(n, { replace: true });
+  };
   const d = q.data;
   return (
     <div className="ds-screen">
@@ -51,13 +67,38 @@ export default function ImpactScreen() {
         }
       />
       <Panel title={T.target} id="target">
+        <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 'var(--sp-3)' }}>
+          <Select label={IP.supplier} value={supplier} onChange={(e) => set('supplier', e.target.value)} data-impact-supplier>
+            <option value="">{IP.supplierAny}</option>
+            {suppliers.map((x) => (
+              <option key={x} value={x}>
+                {x}
+              </option>
+            ))}
+          </Select>
+        </div>
+        {supplier && sw.data && (
+          <div className="ds-stack" data-supplier-features={supplier} style={{ marginBottom: 'var(--sp-3)' }}>
+            <p className="ds-field__hint">{supplied.length ? IP.supplierLead(supplied.length) : IP.supplierNone}</p>
+            <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
+              {supplied.map((k) => {
+                const [id, ver] = k.split('@');
+                return (
+                  <Button key={k} variant={id === feature && ver === version ? 'primary' : 'ghost'} aria-pressed={id === feature && ver === version} onClick={() => pickFeature(k)}>
+                    {IP.pick(id, ver)}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label className="ds-field">
-            <span className="ds-field__label">Feature ID</span>
+            <span className="ds-field__label">{IP.featureId}</span>
             <input key={feature} className="ds-input ds-input--mono" defaultValue={feature} onBlur={(e) => set('feature', e.target.value.trim().toUpperCase())} />
           </label>
           <label className="ds-field">
-            <span className="ds-field__label">Version</span>
+            <span className="ds-field__label">{IP.version}</span>
             <input key={version} className="ds-input ds-input--mono" defaultValue={version} onBlur={(e) => set('version', e.target.value.trim())} />
           </label>
           <fieldset style={{ border: 0, padding: 0, margin: 0, display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
@@ -65,7 +106,7 @@ export default function ImpactScreen() {
             {CHANGEABLE.map((k) => (
               <label key={k} className="ds-tag" style={{ display: 'inline-flex', gap: 4, alignItems: 'center', cursor: 'pointer' }}>
                 <input type="checkbox" checked={changed.includes(k)} onChange={(e) => set('changed', (e.target.checked ? [...changed, k] : changed.filter((x) => x !== k)).join(','))} />
-                <span className="ds-mono">{k}</span>
+                <span title={k}>{IP.field[k] ?? k}</span>
               </label>
             ))}
           </fieldset>

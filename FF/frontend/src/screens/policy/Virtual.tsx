@@ -6,10 +6,11 @@ import { Link } from 'react-router-dom';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { virtualCopy as T } from '../../copy/virtual';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Icon, IdChip, KeyValue, PageHeader, Panel, RuleText, Select, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { ComponentName, usePermission, when } from '../shared';
 
-const T = ko.virtual;
+
 /** CARLA 가상검증 키트의 Feature(영상 키트 차량 ego-01·lead-01이 구동하는 전방 안전거리) */
 const KIT_FEATURE = 'FEAT-00022';
 const RUN_ROLES = ['FEATURE_AUTHOR', 'IMPLEMENTER', 'GATE_JUDGE'] as const;

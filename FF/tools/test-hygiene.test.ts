@@ -53,3 +53,23 @@ test('vitest 설정 — testTimeout 20초 이상·maxWorkers 1~6이 없으면 �
   assert.equal(scanVitestConfig('c', `test: { maxWorkers: 6 }`).length, 1);
   assert.equal(scanVitestConfig('c', `test: { testTimeout: 5000 }`).length, 2);
 });
+
+test('대기·단언의 실패를 삼키는 .catch는 위반 — 끝나지 않는 로딩 위에서 나머지 점검이 통과했다(2026-11-04 refdb.spec)', () => {
+  assert.deepEqual(rules(`await page.getByRole('status').waitFor({ state: 'detached' }).catch(() => undefined);`), ['swallowed-wait']);
+  assert.deepEqual(rules(`await expect(page.locator('.x')).toBeVisible().catch(() => {});`), ['swallowed-wait']);
+  assert.deepEqual(rules(`await screen.findByText('활동', {}, { timeout: 5000 }).catch(() => null);`), ['swallowed-wait']);
+  // 여러 줄 사슬도 같은 문장이면 잡는다
+  assert.deepEqual(rules(`await page.waitForSelector('#main')\n  .catch(() => undefined);`), ['swallowed-wait']);
+  // 대기가 아닌 약속(애니메이션 끝·정리)이나 값으로 바꾸는 catch는 허용, 표식 예외도 허용
+  assert.deepEqual(rules(`await Promise.all(anims.map((a) => a.finished.catch(() => undefined)));`), []);
+  assert.deepEqual(rules(`const seen = await page.locator('.x').isVisible().catch(() => false);`), []);
+  assert.deepEqual(rules(`await expect(page.locator('.x')).toBeVisible();\nawait server.close().catch(() => undefined);`), []);
+  assert.deepEqual(rules(`// hygiene-ok: 선택적 안내 배너, 없으면 다음 단계\nawait page.locator('.banner').waitFor().catch(() => undefined);`), []);
+});
+
+test('건너뛰는 시험 선언을 작업 폴더별로 센다(skip·skipIf·runIf·fixme·todo)', async () => {
+  const { countSkips, skipCounts } = await import('./test-hygiene.ts');
+  assert.equal(countSkips(`it.skip('a', () => {}); describe.skipIf(!pg)('b', () => {}); test.fixme('c'); it.todo('d'); it.concurrent.skip('e'); test.describe.serial('f'); it.runIf(x)('g')`), 6);
+  assert.equal(countSkips(`it('a', () => {}); const skipped = 1; test.only('x')`), 0);
+  assert.deepEqual(skipCounts([{ file: 'backend/test/a.spec.ts', src: 'it.skip(1); it.skipIf(x)(2)' }, { file: 'e2e/tests/b.spec.ts', src: "test.skip(!process.env.X, 'why')" }]), { backend: 2, contracts: 0, frontend: 0, e2e: 1, tools: 0 });
+});

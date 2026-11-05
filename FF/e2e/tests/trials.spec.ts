@@ -22,6 +22,9 @@ test('체험 제안 → 수락하면 사용 권한 단계가 통과 → 구독 �
   await asRole(page, 'operator');
   await page.goto('/entitlements');
   const offer = page.getByRole('region', { name: '체험 제안' });
+  // KMH-NX4-0101은 Modern 트림 — 상품 범위(Premium) 밖이라 펼쳐야 보인다(담당자 웨이브 P1-3)
+  await expect(offer.getByRole('checkbox', { name: VIN })).toHaveCount(0);
+  await offer.getByRole('checkbox', { name: /범위 밖 차량도 보기/ }).check();
   await offer.getByRole('checkbox', { name: VIN }).check();
   await offer.getByRole('button', { name: '제안 보내기' }).click();
   await expect(offer.getByRole('status')).toContainText('1대에 제안');

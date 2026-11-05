@@ -31,6 +31,7 @@ const FIELDS = [
   { id: 'customfield_10104', name: 'ASIL', custom: true },
   { id: 'customfield_10105', name: 'Owner Team', custom: true },
   { id: 'customfield_10106', name: 'Owner Org', custom: true },
+  { id: 'customfield_10150', name: 'Feature DB', custom: true },
 ];
 function jira(opts: { authStatus?: number; epic?: string[]; cr?: string[] } = {}): Route {
   return (url) => {
@@ -62,6 +63,7 @@ test('성공 — 인증·프로젝트·상태 제안·필드 후보·붙여넣�
   assert.match(r.output, /JIRA_EPIC_PROJECT=FFP\nJIRA_CR_PROJECT=FFP\nJIRA_DEFECT_PROJECT=FFP/);
   assert.match(r.output, /JIRA_FIELD_COUNTRY=customfield_10101/);
   assert.match(r.output, /JIRA_FIELD_TRIM=customfield_10103/, '이름이 정확히 같은 후보 하나는 제안');
+  assert.match(r.output, /JIRA_FIELD_FEATURE_DB=customfield_10150/, 'Feature DB 기준 ID 필드(30-95 D-REF-16)도 제안');
   assert.match(r.output, /# JIRA_FIELD_OWNER=  ← 후보: customfield_10105 "Owner Team", customfield_10106 "Owner Org"/);
   assert.match(r.output, /# IF_MODE_14=live  ← 위 점검에 ✕가 없으면 켭니다/);
   // 담당 조직 후보가 둘이라 아직 준비 안 됨

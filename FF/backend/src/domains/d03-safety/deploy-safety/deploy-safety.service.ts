@@ -35,6 +35,14 @@ export class DeploySafetyService {
       SOURCE_DRIFT: '검증한 정책 개정본과 다릅니다 — 다시 검증하세요',
       APPROVAL_INCOMPLETE: `배포 안전성 판정이 GO가 아닙니다 (${run?.decision ?? '검증 안 함'})`,
     };
-    return { eligible: r.eligible, reasons: r.reasons.map((x) => KO[x] ?? x), codes: r.reasons };
+    // 사유는 사실 하나씩(담당자 웨이브 P2-6) — 검증한 적이 없으면 "검증하지 않았다" 한 문장(내용이 바뀌었다·개정본이 다르다는 틀린 말을 붙이지 않는다),
+    // 검증 뒤 내용·개정본이 바뀌었으면 "다시 검증" 한 문장(그때의 판정 결과는 더 이상 근거가 아니다)
+    const stale = r.reasons.some((x) => x === 'HASH_MISMATCH' || x === 'SOURCE_DRIFT');
+    const facts = [
+      ...(r.reasons.includes('SELF_APPROVAL') ? [KO.SELF_APPROVAL] : []),
+      ...(!run ? ['아직 배포 안전성 검증을 하지 않았습니다 — 먼저 분야별 검증을 실행하세요'] : stale ? [KO.HASH_MISMATCH] : r.reasons.includes('APPROVAL_INCOMPLETE') ? [KO.APPROVAL_INCOMPLETE] : []),
+      ...r.reasons.filter((x) => !KO[x]),
+    ];
+    return { eligible: r.eligible, reasons: facts, codes: r.reasons };
   }
 }

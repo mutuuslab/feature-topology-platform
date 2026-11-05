@@ -12,6 +12,7 @@ import { Metrics, metricsEndpoint } from './observability';
 import { isProduction } from './runtime-config';
 import type { ConnectionsResponse } from '@ff/contracts';
 import { connectionStatuses } from './connections';
+import { refdbReadyCheck } from './refdb-ready';
 
 /** 배포 판 — package.json 판 + 빌드 커밋(FF_BUILD_SHA, 이미지 빌드가 넣는다) */
 const VERSION = (() => {
@@ -39,12 +40,12 @@ export class KernelController {
     return { status: 'ok', ...build() };
   }
 
-  /** 준비(트래픽을 받아도 되는가) — 마이그레이션이 모두 적용됐고 DB에 쓸 수 있다. 아니면 503 */
+  /** 준비(트래픽을 받아도 되는가) — 마이그레이션이 모두 적용됐고 DB에 쓸 수 있고 Feature DB가 들어 있다(FF_REFDB_SEED=off 제외). 아니면 503 */
   @Get('health/ready')
   @PublicEndpoint()
   @HttpCode(200)
   ready(@Res({ passthrough: true }) res: Response) {
-    const checks: Record<string, { ok: boolean; detail?: string }> = {};
+    const checks: Record<string, { ok: boolean; detail?: string; [k: string]: unknown }> = {};
     try {
       const applied = new Set(this.db.all<{ name: string }>('SELECT name FROM schema_migrations').map((r) => r.name));
       const missing = MIGRATIONS.filter((m) => !applied.has(m.name)).map((m) => m.name);
@@ -58,6 +59,12 @@ export class KernelController {
       checks.dbWritable = { ok: true };
     } catch (e) {
       checks.dbWritable = { ok: false, detail: (e as Error).message };
+    }
+    try {
+      // Feature DB — 기준 행이 있고 가져오기·발행 이력과 행 수가 같다(패키지에 data/reference가 빠지면 빈 DB로 뜬다)
+      checks.refdb = { ...refdbReadyCheck(this.db, process.env) };
+    } catch (e) {
+      checks.refdb = { ok: false, detail: (e as Error).message };
     }
     const ok = Object.values(checks).every((c) => c.ok);
     if (!ok) res.status(503);

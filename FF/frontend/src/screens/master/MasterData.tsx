@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { planning as W } from '../../copy/planning';
 import { AsyncView, DataTable, IdChip, LifecycleBadge, PageHeader, Panel, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { Segments } from '../shared';
 
@@ -65,6 +66,10 @@ export function SwScreen() {
   return (
     <div className="ds-screen">
       <PageHeader codes="D01-02 · SW_Master · ECU_Master" title={M.sw.title} lead={M.sw.lead} message={{ tone: 'neutral', value: all.data ? all.data.items.length : '—', text: M.sw.key }} />
+      {/* 구현 연결을 어디서 넣는지(담당자 웨이브 P2-2) — 이 화면은 읽기 전용 기준정보 */}
+      <p className="ds-field__hint" data-testid="sw-link-hint" style={{ margin: 0 }}>
+        {W.master.linkHint} <Link to="/features?lifecycle=PROPOSED">{W.master.toProposed}</Link>
+      </p>
       <Tabs tabs={[{ key: 'sw', label: M.sw.tabs.sw }, { key: 'ecu', label: M.sw.tabs.ecu }]}>{(t) => (t === 'ecu' ? <EcuTab /> : <SwTab />)}</Tabs>
     </div>
   );

@@ -57,6 +57,14 @@ describe('§18 독립 Twin 콘솔 — 셸', () => {
   });
   afterEach(() => {
     localStorage.clear();
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('공유한 차량 전용 URL은 공장을 거치지 않고 차량 뷰를 연다', () => {
+    window.history.replaceState(null, '', '/twin.html?view=vehicle');
+    renderConsole();
+    expect(screen.getByTestId('tshell-view-vehicle')).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByTestId('tshell-view-factory')).toHaveAttribute('aria-selected', 'false');
   });
 
   it('플랫폼 크롬 없이 4구역(헤더/좌/중앙/우/하단)이 모두 존재한다', () => {

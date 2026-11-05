@@ -50,9 +50,10 @@
 .ws-work li {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas: 'part name' 'part proc';
+  /* 배지는 제목 줄에만 — 두 줄에 걸쳐 가운데 맞추면 제목보다 9~12px 아래에 놓였다(2026-11-05). 제목 첫 줄과 기준선을 맞춘다 */
+  grid-template-areas: 'part name' '. proc';
   column-gap: var(--sp-2);
-  align-items: center;
+  align-items: baseline;
   padding: var(--sp-2);
   border-radius: var(--r);
   background: var(--surface-2);
@@ -133,7 +134,7 @@
 }
 .ws-board__cols {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--ws-cols, 4), minmax(0, 1fr));
   gap: var(--sp-4);
 }
 .ws-col {
@@ -378,15 +379,21 @@
   font-size: var(--fs-sm);
 }
 .ws-feed li {
-  display: grid;
-  grid-template-columns: 76px auto minmax(0, 1fr) auto;
-  gap: var(--sp-2);
-  align-items: center;
+  /* 줄이 좁으면 시각이 다음 줄로 — 4칸 격자는 시연 모드(1366)에서 Feature 칸이 0px로 줄어 Feature ID가 시각 위에 겹쳤다(2026-11-05) */
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-2);
+  align-items: baseline;
   padding: var(--sp-1) var(--sp-2);
   border-radius: var(--r);
   background: var(--surface-2);
 }
+.ws-feed li > .ds-date {
+  margin-inline-start: auto;
+}
 .ws-feed__sev {
+  flex: none;
+  inline-size: 76px;
   font-size: var(--fs-xs);
   font-weight: 800;
   color: var(--muted);
@@ -535,4 +542,72 @@
   .ws-tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* ③ 콘솔 — Feature DB 변경 요청 대기열(검토 대기·발행 대기). 수는 핵심 메시지보다 작게(--fs-lg), 대기가 있으면 강조색 테두리 */
+.ws-fdb {
+  list-style: none;
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+.ws-fdb a {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  min-height: 24px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--ws-band);
+  color: var(--ink);
+  text-decoration: none;
+}
+.ws-fdb a:hover {
+  border-color: var(--accent);
+}
+.ws-fdb li[data-busy] a {
+  border-left: 4px solid var(--accent);
+}
+.ws-fdb__n {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.ws-fdb__label {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+/* W2 — 스튜디오 5열(정의 승인·개발 분리), 역할별 내 차례 대기열 칸, Sign-off 대기 가로 카드, 세 칸 나눔 */
+.ws-board__cols[data-cols='5'] {
+  --ws-cols: 5;
+}
+.ws-col[data-lifecycle='DEVELOPING'] {
+  border-top-color: var(--lc-DEVELOPING);
+}
+.ws-roleq {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.ws-roleq .ws-fdb__n[data-loading] {
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.ws-cards--row {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+@media (min-width: 1366px) {
+  .ws-split:has(> :nth-child(3)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.ws-work__doc {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.ws-hand a {
+  overflow-wrap: anywhere;
 }

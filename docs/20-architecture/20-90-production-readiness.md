@@ -115,7 +115,7 @@
 - **D-RD-1 = 고객사별 단독 설치.** 테넌트 열 개조는 하지 않는다. 한 설치 = 한 고객, 설치 정보에 고객 식별을 둔다(RD-SEC-09 완료 조건이 이것으로 바뀐다).
 - **D-RD-2 = OIDC 표준 SSO.** 백엔드는 JWT(서명·발급자·대상·만료)를 검증하고 역할은 IdP 그룹 클레임에서. 로컬 시험은 Keycloak.
 - **D-RD-3 = PostgreSQL로 이전.** 이전 전까지 SQLite 파일 + 단일 인스턴스로 운영 모드 검사를 먼저 세운다.
-- **D-RD-4 = 데모 사이트 유지, 데모 빌드 분리.** 데모 로그인(FF/platform)·역할 선택기는 데모 빌드에서만 보이고, 운영 빌드는 실제 로그인만.
+- **D-RD-4 = 데모 사이트 유지, 데모 빌드 분리.** 데모 로그인(FF/FF, ID·비밀번호 모두 대소문자 구분 없음)·역할 선택기는 데모 빌드에서만 보이고, 운영 빌드는 실제 로그인만.
 - **D-RD-5 = 승인자 키 등록 의무.** 긴급 차단(Kill) 명령의 모든 승인 서명은 그 승인자의 **등록된 ACTIVE 공개키**로 검증하고, 서명 대상은 명령에서 다시 만든다(`commandApprovalSubject` — 기능·요청·사유·차량 집합·승인자·역할·서명 시각). 플랫폼이 발행한 명령과 외부에서 낸 명령(`/api/gate/preview`·원장 기록)이 같은 길을 탄다. 키 미등록·검증 실패·대상 집합 불일치·발효 시각과 동떨어진 서명 시각(뒤이거나 24시간 넘게 앞섬)은 기존 규칙 **FFG-PLT-005** FAIL. 외부 장치 승인자는 공개키만 등록한다(`POST /api/pki/approver-keys`, 보안 책임자, 덮어쓰기 거부, Ed25519만). 운영 모드(FF_ENV=production)·SSO에서는 승인 중 키를 즉석으로 만들지 않고 403 `APPROVER_KEY_NOT_ENROLLED`로 거부한다(데모 모드만 즉석 생성). 시험 기준선이 바뀌었다 — 보고서 예시 `kill_safety_dc2_eu.ok.json`의 자리표시 서명은 이제 FAIL이고, PASS 기준선은 시험 승인자 키로 서명한 명령이다(`backend/test/approver-keys.ts`). 근거: 서명 길이·형식만 보면 외부 명령의 승인 위조를 막을 수 없다(ADS FFP-F059).
 - **D-RD-6 = 열린 재-HARA는 정책 배포를 막지 않는다.** 출시 전이(→ RELEASED)와 Release Sign-off만 막는다. 근거: 재-HARA 중에도 현장 위험을 줄이는 완화 정책(ODD 축소·파라미터 하향·기능 끄기)은 바로 차량에 나가야 한다 — 배포까지 막으면 영향 검토가 오히려 위험 완화를 늦춘다. 배포 자체는 여전히 승인·가상검증·Lifecycle(APPROVED~RELEASED)·ODD 축소 규칙을 지난다. 시험: `backend/test/ads/defects.spec.ts`('D-RD-6').
 - **D-RD-7 = 화면 알림만(메일 없음).** 사용자: "화면 알림만 쓰고 메일은 빼기". 메일 채널을 제품에서 지웠다 — 알림 메일 설정(범주별 켜기·끄기, 받는 주소, `GET/POST /api/notifications/preferences`)·모의 발송 기록(`GET /api/notifications/emails`)·메일 연결(`FF_CONN_MAIL`, 연결 상태 표의 메일 행)·데모 계정의 메일 주소. 남은 것: 화면 알림(상단바 종·`/notifications`), 계정별 읽음·안 읽음, 끄는 설정이 없어 승인 요청·긴급(CRITICAL)을 포함한 모든 알림이 받는 사람 목록에 항상 남는다(알림 화면 "받는 방법"에 안내). DB는 새 마이그레이션 `048_drop_notification_email`로 `notification_email`·`notification_pref` 표를 지웠다(038은 잠금이라 고치지 않는다) — 실제 메일은 한 번도 나간 적이 없고 모의 기록뿐이라 보존할 근거가 없으며, PostgreSQL 이전(D-RD-3) 때 죽은 표를 옮기지 않으려는 것이다. 지난 메일 설정 변경 감사(`NOTIFICATION_PREFS`)는 감사 해시 체인에 그대로 남는다. 기능명세서의 알림 요구 14건(FR-CRC-001-026·FR-CRC-002-009·FR-DSV-001-011·FR-DSV-003-005·FR-KSW-003-003·FR-KSW-004-005·FR-RBK-001-007·FR-RBK-004-005·FR-RBK-005-003·FR-RBK-005-004·FR-EVT-003-003·FR-LGCY-001-008·FR-DSYN-001-004·FR-BIL-001-004)은 모두 "Web 알림 또는 이메일 중 하나 이상"이라 화면 알림으로 충족된다 — 메일을 꼭 요구하는 요구가 없어 제외로 돌린 요구는 없다. 시험: `backend/test/d04/notifications.spec.ts`(알림을 만들어도 메일 기록·표·API가 없다), `contracts/src/rules/notification.test.ts`, `frontend/src/__tests__/screensNotifications.test.tsx`·`mockConnections.test.tsx`, e2e `mock-connections.spec.ts`.
@@ -195,8 +195,8 @@ Okta도 같은 방식이다(Authorization Server의 `groups` 클레임, 발급�
 | | 데모 빌드(기본, 공개 사이트) | 운영 빌드 |
 |---|---|---|
 | 빌드 | `vite build` (`VITE_AUTH` 없음 = `demo`), 정적 데모(`VITE_DATA_MODE=static`)는 항상 demo | `VITE_AUTH=oidc vite build` |
-| 로그인 | 데모 계정 FF/platform(브라우저 안 표식) | "회사 계정(SSO)으로 로그인" 버튼 → `/api/auth/login` |
-| 역할 선택기 | 데모 9계정 전부 | 사용자 이름 + IdP가 부여한 역할과 겹치는 화면 역할만 |
+| 로그인 | 데모 계정 FF/FF, 둘 다 대소문자 구분 없음(브라우저 안 표식) | "회사 계정(SSO)으로 로그인" 버튼 → `/api/auth/login` |
+| 역할 선택기 | 데모 12계정 전부(2026-11-05 운영 리더·두 번째 Safety Manager·상품 Owner 추가) | 사용자 이름 + IdP가 부여한 역할과 겹치는 화면 역할만 |
 | API 머리글 | X-Actor-Id·X-Actor-Role | X-Actor-Role(부여 역할 중 하나)만, 신원은 쿠키. 401이면 지금 화면으로 돌아오는 SSO 로그인 |
 | 백엔드 | `FF_AUTH=demo` | `FF_AUTH=oidc` |
 

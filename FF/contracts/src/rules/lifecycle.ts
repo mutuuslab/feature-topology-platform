@@ -1,7 +1,9 @@
 // Feature Lifecycle 전이 표 — 통합 상세설계서 v0.81 §2.5 (표 10) 그대로를 데이터로 둔다.
 // 평가는 순수 함수: 백엔드(전이 실행)·프론트(스테퍼의 막힌 사유 표시)가 같은 결과를 본다.
-import { GATE_META, GATES, LIFECYCLE, ROLE_LABEL, type GateId, type GateStatus, type Lifecycle, type Role } from '../enums';
+import { GATE_META, GATES, LIFECYCLE, ROLE_LABEL, type Asil, type GateId, type GateStatus, type Lifecycle, type Role } from '../enums';
 import type { DependencyRow, FeatureVersionRow } from '../schemas/dataset';
+import type { RefStatus } from '../schemas/refdb';
+import { refLinksBlockApproval } from './refdb/status-policy';
 
 export interface TransitionRule {
   from: Lifecycle;
@@ -18,7 +20,29 @@ export interface TransitionRule {
 }
 
 const PROPOSAL_INPUTS: (keyof FeatureVersionRow)[] = ['name', 'description', 'requirementIds', 'country', 'vehicleModel', 'trim', 'version', 'ownerId', 'asil'];
-const IMPL_INPUTS: (keyof FeatureVersionRow)[] = ['functions', 'swIds', 'swVersions', 'ecuPnos'];
+/** 구현 연결(Function → SW·Version → 제어기 P/N) — 검증 완료(VERIFIED) 필수. 정의 승인 뒤에는 그 Version을 고칠 수 없어 새 Version으로만 넣는다 */
+export const IMPL_INPUTS: (keyof FeatureVersionRow)[] = ['functions', 'swIds', 'swVersions', 'ecuPnos'];
+
+/** 필수 입력 칸의 화면 이름 — 막힌 사유에 영문 필드 키를 쓰지 않는다 */
+export const INPUT_LABEL: Partial<Record<keyof FeatureVersionRow, string>> = {
+  name: '이름',
+  description: '설명',
+  requirementIds: '요구사항 ID',
+  country: '국가',
+  vehicleModel: '차종',
+  trim: '트림',
+  version: 'Version',
+  ownerId: '담당',
+  asil: 'ASIL',
+  controlPoints: 'Control Point',
+  functions: '기능(Function)',
+  swIds: 'SW ID',
+  swVersions: 'SW Version',
+  ecuPnos: '제어기 P/N',
+};
+
+/** 이 Version에 비어 있는 구현 연결 칸 */
+export const missingImplInputs = (f: Pick<FeatureVersionRow, 'functions' | 'swIds' | 'swVersions' | 'ecuPnos'>) => IMPL_INPUTS.filter((k) => !((f as any)[k]?.length));
 
 export const FEATURE_TRANSITIONS: TransitionRule[] = [
   { from: 'PROPOSED', to: 'APPROVED', gates: ['G1', 'G2', 'G3'], inputs: PROPOSAL_INPUTS, roles: ['FEATURE_APPROVER'], auto: false, reasonRequired: true, ko: '정의 승인' },
@@ -32,7 +56,7 @@ export const FEATURE_TRANSITIONS: TransitionRule[] = [
 
 export const LIFECYCLE_RANK: Record<Lifecycle, number> = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED';
+export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED' | 'REFDB_LINK_BLOCKED';
 
 export interface Blocker {
   code: BlockerCode;
@@ -63,6 +87,16 @@ export interface TransitionContext {
    * G8·G9 PASS·서명 뒤에 열린 요청도 출시를 막는다(Gate PASS 차단만으로는 이미 PASS한 판정을 되돌리지 못한다).
    */
   openRehara?: { requestId: string; condition: string; detail?: string }[];
+  /**
+   * 연결된 기준 행(f.featureRefs)의 지금 Feature DB 상태(30-95 §5.2) — 주면 PROPOSED→APPROVED에서 요청 중(PENDING)·폐기(RETIRED)·없는 행을 막는다.
+   * 빠지면(Feature DB 연결 전 호출자) 이 조건을 보지 않는다.
+   */
+  refStatusOf?: (refId: string) => RefStatus | null | undefined;
+  /**
+   * 대표 기준 행의 지금 대표 ASIL(30-95 §6.3) — 주면 PROPOSED→APPROVED에서 Feature ASIL과 다를 때
+   * 지금 대표 ASIL 기준 사유(asilDeviation from=대표 ASIL, to=Feature ASIL)가 없으면 막는다(등록 뒤 대표 ASIL이 바뀐 경우).
+   */
+  refAsilRepOf?: (refId: string) => Asil | null | undefined;
   reason?: string;
 }
 
@@ -92,11 +126,31 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
     else if (s !== 'PASS') blockers.push({ code: 'GATE_NOT_PASSED', message: `${g} ${GATE_META[g].name} ${s}`, ref: g });
     else if (ctx.unsignedGates?.[g]) blockers.push({ code: 'GATE_UNSIGNED', message: `${g} ${GATE_META[g].name} — ${ctx.unsignedGates[g]}`, ref: g });
   }
-  for (const k of rule.inputs) if (isEmpty(f[k])) blockers.push({ code: 'INPUT_MISSING', message: `필수 입력 누락: ${String(k)}`, ref: String(k) });
+  for (const k of rule.inputs) if (isEmpty(f[k])) blockers.push({ code: 'INPUT_MISSING', message: `필수 입력 누락: ${INPUT_LABEL[k] ?? String(k)}`, ref: String(k) });
 
   if (rule.to === 'APPROVED')
     for (const d of ctx.dependencies)
       if (!d.targetVersion) blockers.push({ code: 'DEPENDENCY_UNRESOLVED', message: `${d.dependencyId} 대상 Version 미확정`, ref: d.dependencyId });
+
+  // Feature DB 연결(D-REF-7) — 요청 중 행은 DB 관리자 승인 전, 폐기 행은 다른 행으로 다시 연결해야 정의 승인을 할 수 있다
+  if (rule.from === 'PROPOSED' && rule.to === 'APPROVED' && ctx.refStatusOf) {
+    const links = f.featureRefs ?? [];
+    // 연결이 없는 Feature(연결 도입 전 시드·그 새 Version)는 정의 승인 전에 대표 기준 행을 연결해야 한다(사용자 결정 2026-11-04) — 이미 승인된 버전은 그대로
+    if (!links.some((l) => l.role === 'PRIMARY'))
+      blockers.push({ code: 'REFDB_LINK_BLOCKED', message: '기준 기능(Feature DB) 연결이 없습니다 — 초안에서 대표 기준 행을 연결하세요.', ref: 'featureRefs' });
+    for (const b of refLinksBlockApproval(links, ctx.refStatusOf)) blockers.push({ code: 'REFDB_LINK_BLOCKED', message: b.message, ref: b.refId });
+  }
+
+  // 대표 ASIL 다시 확인(§6.3) — 등록 뒤 대표 행의 대표 ASIL이 바뀌었으면 지금 값 기준 사유가 있어야 한다
+  const primaryLink = rule.from === 'PROPOSED' && rule.to === 'APPROVED' ? f.featureRefs?.find((l) => l.role === 'PRIMARY') : undefined;
+  const rep = primaryLink ? ctx.refAsilRepOf?.(primaryLink.refId) : undefined;
+  if (primaryLink && rep && rep !== f.asil) {
+    const dev = f.asilDeviation;
+    if (!dev || dev.to !== f.asil)
+      blockers.push({ code: 'REFDB_LINK_BLOCKED', message: `ASIL ${f.asil}이(가) 대표 기준 행 ${primaryLink.refId}의 대표 ASIL ${rep}과(와) 다른데 사유가 없습니다 — 초안에서 ASIL 차이 사유(${rep} → ${f.asil})를 입력하거나 ASIL을 맞추세요.`, ref: primaryLink.refId });
+    else if (dev.from !== rep)
+      blockers.push({ code: 'REFDB_LINK_BLOCKED', message: `ASIL 차이 사유가 이전 대표 ASIL ${dev.from} 기준입니다 — 대표 기준 행 ${primaryLink.refId}의 대표 ASIL이 ${rep}(으)로 바뀌었으니 사유(${rep} → ${f.asil})를 다시 입력하세요.`, ref: primaryLink.refId });
+  }
 
   if (rule.from === 'VERIFIED' && rule.to === 'RELEASED' && !ctx.releaseSignoff)
     blockers.push({ code: 'RELEASE_SIGNOFF_MISSING', message: 'Feature Owner의 Release Sign-off(출시 책임 확인 개인 서명)가 없습니다 — G8·G9 PASS 뒤 Feature Owner가 서명합니다.' });

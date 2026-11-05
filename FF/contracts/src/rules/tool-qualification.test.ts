@@ -14,8 +14,8 @@ describe('도구 신뢰성 분류 (ISO 26262-8 cl.11)', () => {
     expect(componentTcl({ outputs: [{ error: 'a', ti: 'TI2', td: 'TD1', detection: 'x' }, { error: 'b', ti: 'TI2', td: 'TD2', detection: 'y' }] })).toBe('TCL2'); // 출력 유형 중 가장 높은 것
   });
 
-  it('42 컴포넌트 모두 표에 있고, 보고서 8.1 컴포넌트는 규칙 위반 0건 — 8.1 밖은 열린 항목(UNCLASSIFIED)으로만', () => {
-    expect(ids).toHaveLength(42);
+  it('43 컴포넌트 모두 표에 있고, 보고서 8.1 컴포넌트는 규칙 위반 0건 — 8.1 밖은 열린 항목(UNCLASSIFIED)으로만', () => {
+    expect(ids).toHaveLength(43);
     const problems = checkToolClassification(ids);
     expect(problems.filter((p) => p.severity === 'FAIL')).toEqual([]);
     const open = problems.filter((p) => p.severity === 'OPEN').map((p) => p.componentId);

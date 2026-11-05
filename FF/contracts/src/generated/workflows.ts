@@ -161,12 +161,69 @@ export const WORKFLOWS: WorkflowDoc = {
    "platformRoles": [
     "PRODUCT_APPROVER"
    ]
+  },
+  {
+   "id": "R-RDA",
+   "name": "Feature DB 관리자",
+   "en": "Feature DB Administrator",
+   "desc": "Feature DB 기준 행 변경 요청을 최종 승인하고 버전을 발행하며, 분류·출처와 정기 점검 일정을 관리한다.",
+   "platformRoles": [
+    "REFDB_ADMIN"
+   ]
+  },
+  {
+   "id": "R-DRV",
+   "name": "도메인 검토자",
+   "en": "Domain Reviewer",
+   "desc": "담당 도메인 기준 행의 변경 요청에 동의·보완·반대 의견을 준다.",
+   "platformRoles": [
+    "DOMAIN_REVIEWER"
+   ]
+  },
+  {
+   "id": "R-CE",
+   "name": "SW 개발비 산정 작성자",
+   "en": "Cost Estimator",
+   "desc": "Feature를 담아 SW 개발비 산정 과제를 만들고 줄 입력·과제 설정을 채워 승인을 요청한다.",
+   "platformRoles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "id": "R-CA",
+   "name": "SW 개발비 산정 승인자",
+   "en": "Cost Approver",
+   "desc": "제출된 산정 과제를 검토해 승인하거나 반려한다. 자기가 만든 과제는 승인하지 않는다(SOD-16).",
+   "platformRoles": [
+    "COST_APPROVER"
+   ]
+  },
+  {
+   "id": "R-CV",
+   "name": "SW 개발비 산정 열람자",
+   "en": "Cost Viewer",
+   "desc": "산정 과제의 금액·단가를 포함한 결과를 열람한다.",
+   "platformRoles": [
+    "COST_VIEWER"
+   ]
+  },
+  {
+   "id": "R-CBA",
+   "name": "원가 기준 관리자",
+   "en": "Cost Basis Administrator",
+   "desc": "단가·계수 표의 새 버전을 만들고 발행한다. 발행해도 이미 승인된 산정 결과는 바뀌지 않는다.",
+   "platformRoles": [
+    "COST_BASIS_ADMIN"
+   ]
   }
  ],
  "personas": {
   "approver": [
    "R-REQ",
-   "R-PO"
+   "R-PO",
+   "R-DRV",
+   "R-CA",
+   "R-CBA"
   ],
   "author": [
    "R-FO"
@@ -186,17 +243,29 @@ export const WORKFLOWS: WorkflowDoc = {
   "operator": [
    "R-OPS"
   ],
+  "opslead": [
+   "R-OPS"
+  ],
+  "productowner": [
+   "R-PO"
+  ],
   "quality": [
    "R-SM",
    "R-TST",
    "R-QA"
   ],
+  "safety2": [
+   "R-SM"
+  ],
   "steward": [
    "R-REG",
-   "R-PLM"
+   "R-PLM",
+   "R-RDA"
   ],
   "viewer": [
-   "R-QA"
+   "R-QA",
+   "R-CE",
+   "R-CV"
   ]
  },
  "gateCrosswalk": [
@@ -275,7 +344,8 @@ export const WORKFLOWS: WorkflowDoc = {
    "personas": [
     "author",
     "commerce",
-    "approver"
+    "approver",
+    "productowner"
    ],
    "activities": [
     {
@@ -321,6 +391,16 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A06",
+     "process": "FPW.1",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
      ],
      "firstScope": true
     },
@@ -384,6 +464,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R"
      ],
      "firstScope": true
     },
@@ -727,6 +816,52 @@ export const WORKFLOWS: WorkflowDoc = {
       "I"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.14-A01",
+     "process": "FPW.14",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A02",
+     "process": "FPW.14",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A03",
+     "process": "FPW.14",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A04",
+     "process": "FPW.14",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A05",
+     "process": "FPW.14",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -734,8 +869,12 @@ export const WORKFLOWS: WorkflowDoc = {
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
+     "/features/:id/:ver",
+     "/master/artifacts",
+     "/integration/connectors",
      "/baselines",
      "/experiments",
      "/products/new",
@@ -743,8 +882,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/products/:id/:ver",
      "/activation/decide",
      "/admin/approval",
-     "/features/:id/:ver",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/master/feature-db/:refId"
     ],
     "reference": [
      "/analysis/impact",
@@ -755,7 +894,6 @@ export const WORKFLOWS: WorkflowDoc = {
      "/validations/virtual",
      "/verify/evidence",
      "/deployments",
-     "/integration/connectors",
      "/verify/compliance",
      "/fleet/live",
      "/ops/anomalies",
@@ -763,7 +901,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/incidents",
      "/ops/kill",
      "/audit",
-     "/quality/feedback"
+     "/quality/feedback",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ]
    },
    "handoffs": {
@@ -777,6 +917,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.1-A01",
       "to": "FPW.1-A03",
       "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "department": "DEP-SE"
      },
      {
       "from": "FPW.6-A01",
@@ -812,9 +957,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.9-A04",
       "to": "FPW.9-A05",
       "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.14-A01",
+      "to": "FPW.14-A02",
+      "department": "DEP-SE"
      }
     ],
     "in": [
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "department": "DEP-SE"
+     },
      {
       "from": "FPW.7-A08",
       "to": "FPW.7-A12",
@@ -842,11 +997,12 @@ export const WORKFLOWS: WorkflowDoc = {
    "id": "DEP-SE",
    "name": "시스템엔지니어링팀",
    "en": "Systems Engineering",
-   "desc": "안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임진다.",
+   "desc": "안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임지고, 담당 도메인의 Feature DB 변경 요청을 검토한다.",
    "workspace": "console",
    "roles": [
     "R-REQ",
-    "R-ARC"
+    "R-ARC",
+    "R-DRV"
    ],
    "personas": [
     "approver",
@@ -887,6 +1043,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A06",
+     "process": "FPW.1",
+     "part": "C",
+     "parts": [
+      "C"
      ],
      "firstScope": true
     },
@@ -971,6 +1136,16 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.3-A04",
      "process": "FPW.3",
      "part": "R",
@@ -993,15 +1168,6 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
-     "id": "FPW.4-A02",
-     "process": "FPW.4",
-     "part": "C",
-     "parts": [
-      "C"
-     ],
-     "firstScope": true
-    },
-    {
      "id": "FPW.4-A03",
      "process": "FPW.4",
      "part": "R",
@@ -1020,6 +1186,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "R",
       "A",
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A02",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
      ],
      "firstScope": true
     },
@@ -1104,6 +1279,53 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.14-A01",
+     "process": "FPW.14",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A02",
+     "process": "FPW.14",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A03",
+     "process": "FPW.14",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A04",
+     "process": "FPW.14",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A05",
+     "process": "FPW.14",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -1116,21 +1338,26 @@ export const WORKFLOWS: WorkflowDoc = {
      "/policies/new",
      "/policies",
      "/policies/:id",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ],
     "reference": [
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
      "/analysis/impact",
+     "/master/artifacts",
+     "/integration/connectors",
      "/arch/components",
      "/validations",
-     "/master/artifacts",
      "/verify/evidence",
      "/baselines",
-     "/integration/openfeature"
+     "/integration/openfeature",
+     "/master/feature-db/:refId"
     ]
    },
    "handoffs": {
@@ -1146,6 +1373,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-QA"
      },
      {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "department": "DEP-PDP"
+     },
+     {
       "from": "FPW.4-A04",
       "to": "FPW.4-A05",
       "department": "DEP-QA"
@@ -1154,6 +1391,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.9-A03",
       "to": "FPW.9-A04",
       "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.14-A02",
+      "to": "FPW.14-A03",
+      "department": "DEP-PLM"
      }
     ],
     "in": [
@@ -1168,8 +1410,23 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-QA"
      },
      {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "department": "DEP-PDP"
+     },
+     {
       "from": "FPW.9-A02",
       "to": "FPW.9-A03",
+      "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.14-A01",
+      "to": "FPW.14-A02",
       "department": "DEP-PDP"
      }
     ]
@@ -1196,6 +1453,16 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
      ],
      "firstScope": true
     },
@@ -1526,10 +1793,10 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "screens": {
     "primary": [
-     "/master/artifacts",
-     "/deployments",
      "/features/:id/:ver",
-     "/integration/connectors"
+     "/master/artifacts",
+     "/integration/connectors",
+     "/deployments"
     ],
     "reference": [
      "/master/control-points",
@@ -1553,6 +1820,11 @@ export const WORKFLOWS: WorkflowDoc = {
    "handoffs": {
     "out": [
      {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "department": "DEP-SE"
+     },
+     {
       "from": "FPW.5-A03",
       "to": "FPW.5-A04",
       "department": "DEP-VAL"
@@ -1574,6 +1846,11 @@ export const WORKFLOWS: WorkflowDoc = {
      }
     ],
     "in": [
+     {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "department": "DEP-SE"
+     },
      {
       "from": "FPW.5-A01",
       "to": "FPW.5-A03",
@@ -1616,15 +1893,25 @@ export const WORKFLOWS: WorkflowDoc = {
    "id": "DEP-PLM",
    "name": "PLM·기준정보팀",
    "en": "PLM & Master Data",
-   "desc": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.",
+   "desc": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다. Feature DB 기준 행 변경을 승인하고 버전을 발행한다.",
    "workspace": "console",
    "roles": [
-    "R-PLM"
+    "R-PLM",
+    "R-RDA"
    ],
    "personas": [
     "steward"
    ],
    "activities": [
+    {
+     "id": "FPW.1-A01",
+     "process": "FPW.1",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
     {
      "id": "FPW.1-A02",
      "process": "FPW.1",
@@ -1640,6 +1927,24 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.1-A06",
+     "process": "FPW.1",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
      ],
      "firstScope": true
     },
@@ -1688,19 +1993,77 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.14-A01",
+     "process": "FPW.14",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A02",
+     "process": "FPW.14",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A03",
+     "process": "FPW.14",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A04",
+     "process": "FPW.14",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.14-A05",
+     "process": "FPW.14",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
     "primary": [
      "/variant-conditions",
      "/arch/topology",
-     "/baselines"
+     "/baselines",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes",
+     "/master/feature-db"
     ],
     "reference": [
+     "/master/define",
+     "/feature/propose",
+     "/features",
      "/features/:id/:ver",
      "/admin/approval",
+     "/master/artifacts",
+     "/integration/connectors",
      "/policies/new",
-     "/policies"
+     "/policies",
+     "/master/feature-db/:refId"
     ]
    },
    "handoffs": {
@@ -1731,6 +2094,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.6-A01",
       "to": "FPW.6-A02",
       "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.14-A02",
+      "to": "FPW.14-A03",
+      "department": "DEP-SE"
      }
     ]
    }
@@ -1746,6 +2114,7 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "personas": [
     "quality",
+    "safety2",
     "integrator"
    ],
    "activities": [
@@ -1899,21 +2268,21 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.4-A04",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.4-A02",
      "process": "FPW.4",
      "part": "R",
      "parts": [
       "R",
       "A"
-     ],
-     "firstScope": true
-    },
-    {
-     "id": "FPW.4-A04",
-     "process": "FPW.4",
-     "part": "C",
-     "parts": [
-      "C"
      ],
      "firstScope": true
     },
@@ -2102,20 +2471,20 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
-     "id": "FPW.8-A06",
-     "process": "FPW.8",
-     "part": "A",
-     "parts": [
-      "A"
-     ],
-     "firstScope": true
-    },
-    {
      "id": "FPW.8-A07",
      "process": "FPW.8",
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A06",
+     "process": "FPW.8",
+     "part": "A",
+     "parts": [
+      "A"
      ],
      "firstScope": true
     },
@@ -2311,6 +2680,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.14-A02",
+     "process": "FPW.14",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -2333,6 +2711,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/master/define",
      "/feature/propose",
      "/features",
+     "/master/feature-db",
      "/variant-conditions",
      "/trace/design",
      "/change/cr",
@@ -2349,7 +2728,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/audit",
      "/quality/feedback",
      "/supplier/portal",
-     "/admin/security"
+     "/admin/security",
+     "/master/feature-db/changes/:id",
+     "/master/feature-db/changes"
     ]
    },
    "handoffs": {
@@ -2634,7 +3015,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
-     "id": "FPW.8-A06",
+     "id": "FPW.8-A07",
      "process": "FPW.8",
      "part": "C",
      "parts": [
@@ -2643,7 +3024,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
-     "id": "FPW.8-A07",
+     "id": "FPW.8-A06",
      "process": "FPW.8",
      "part": "C",
      "parts": [
@@ -2727,21 +3108,21 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
+     "id": "FPW.11-A06",
+     "process": "FPW.11",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.11-A05",
      "process": "FPW.11",
      "part": "R",
      "parts": [
       "R",
       "A"
-     ],
-     "firstScope": false
-    },
-    {
-     "id": "FPW.11-A06",
-     "process": "FPW.11",
-     "part": "C",
-     "parts": [
-      "C"
      ],
      "firstScope": false
     },
@@ -2794,8 +3175,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/arch/components",
      "/deployments",
      "/master/artifacts",
-     "/fleet/live",
-     "/audit/oversight"
+     "/audit/oversight",
+     "/fleet/live"
     ]
    },
    "handoffs": {
@@ -3118,6 +3499,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "A"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.14-A05",
+     "process": "FPW.14",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -3133,7 +3523,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/kill",
      "/audit/oversight",
      "/audit",
-     "/admin/security"
+     "/admin/security",
+     "/master/feature-db"
     ]
    },
    "handoffs": {
@@ -3259,6 +3650,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A05",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
      ],
      "firstScope": true
     },
@@ -3433,8 +3833,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/trace/design",
      "/change/cr",
      "/features/:id/:ver",
-     "/master/control-points",
      "/master/artifacts",
+     "/integration/connectors",
+     "/master/control-points",
      "/activation/decide",
      "/verify/compliance",
      "/ops/kill",
@@ -3665,21 +4066,21 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
-     "id": "FPW.8-A06",
-     "process": "FPW.8",
-     "part": "I",
-     "parts": [
-      "I"
-     ],
-     "firstScope": true
-    },
-    {
      "id": "FPW.8-A07",
      "process": "FPW.8",
      "part": "R",
      "parts": [
       "R",
       "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A06",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
      ],
      "firstScope": true
     },
@@ -3902,14 +4303,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-SE"
      },
      {
-      "from": "FPW.4-A02",
-      "to": "FPW.4-A05",
-      "department": "DEP-FS"
-     },
-     {
       "from": "FPW.4-A04",
       "to": "FPW.4-A05",
       "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.4-A02",
+      "to": "FPW.4-A05",
+      "department": "DEP-FS"
      },
      {
       "from": "FPW.5-A05",
@@ -3969,7 +4370,8 @@ export const WORKFLOWS: WorkflowDoc = {
     "R-OPS"
    ],
    "personas": [
-    "operator"
+    "operator",
+    "opslead"
    ],
    "activities": [
     {
@@ -4112,20 +4514,20 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
-     "id": "FPW.8-A06",
-     "process": "FPW.8",
-     "part": "R",
-     "parts": [
-      "R"
-     ],
-     "firstScope": true
-    },
-    {
      "id": "FPW.8-A07",
      "process": "FPW.8",
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A06",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R"
      ],
      "firstScope": true
     },
@@ -4466,13 +4868,18 @@ export const WORKFLOWS: WorkflowDoc = {
    "id": "DEP-PUR",
    "name": "구매팀",
    "en": "Procurement",
-   "desc": "협력사 계약·납품 조건을 관리하고 협력사 관련 검토에 의견을 준다.",
+   "desc": "협력사 계약·납품 조건을 관리하고 Feature별 SW 개발비를 산정·승인하며 단가·계수 표를 관리한다.",
    "workspace": "portal",
    "roles": [
-    "R-PUR"
+    "R-PUR",
+    "R-CE",
+    "R-CA",
+    "R-CV",
+    "R-CBA"
    ],
    "personas": [
-    "viewer"
+    "viewer",
+    "approver"
    ],
    "activities": [
     {
@@ -4632,15 +5039,6 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
-     "id": "FPW.12-A02",
-     "process": "FPW.12",
-     "part": "C",
-     "parts": [
-      "C"
-     ],
-     "firstScope": false
-    },
-    {
      "id": "FPW.12-A03",
      "process": "FPW.12",
      "part": "R",
@@ -4652,6 +5050,15 @@ export const WORKFLOWS: WorkflowDoc = {
     },
     {
      "id": "FPW.12-A04",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A02",
      "process": "FPW.12",
      "part": "C",
      "parts": [
@@ -4681,8 +5088,8 @@ export const WORKFLOWS: WorkflowDoc = {
    "screens": {
     "primary": [],
     "reference": [
-     "/integration/openfeature",
      "/admin/data",
+     "/integration/openfeature",
      "/verify/compliance"
     ]
    },
@@ -4714,16 +5121,6 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
-     "id": "FPW.12-A02",
-     "process": "FPW.12",
-     "part": "R",
-     "parts": [
-      "R",
-      "A"
-     ],
-     "firstScope": false
-    },
-    {
      "id": "FPW.12-A03",
      "process": "FPW.12",
      "part": "C",
@@ -4738,6 +5135,16 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A02",
+     "process": "FPW.12",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
      ],
      "firstScope": false
     },
@@ -4778,9 +5185,12 @@ export const WORKFLOWS: WorkflowDoc = {
    "FPW.8",
    "FPW.9"
   ],
-  "note": "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정(FPW.10~13)은 2차 초안이다.",
+  "note": "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정·Feature DB 운영(FPW.10~14)은 2차 초안이다.",
   "demoNotes": [
-   "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용하지만 데모 계정에 운영 리더가 없다(9계정·겸직 0건, 2026-10-17)."
+   "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용한다 — 데모 계정 opslead(관제실)가 운영 리더 몫을 맡는다(12계정·겸직 0건, 2026-11-05).",
+   "복원 2인 승인은 직전 차단 승인자와 다른 사람이어야 한다(SOD-09). 데모에서 차단을 quality(FSM)+integrator(CSM)가 승인하면 복원은 safety2(두 번째 FSM, 심사 결재함)+opslead 또는 다른 CSM이 맡는다(2026-11-05).",
+   "고객 출시 승인(FPW.7-A10)은 구성 승인자와 다른 사람이다(SOD-04). 데모 계정 productowner(기획팀, PRODUCT_APPROVER)가 출시를 승인하고 approver는 구성 승인만 한다(2026-11-05).",
+   "Feature DB 관리자(REFDB_ADMIN)는 데모 계정 steward 한 명, 도메인 검토자(DOMAIN_REVIEWER)는 approver 한 명뿐이다(2026-11-04). 요청자 ≠ 검토자 ≠ 승인자를 사람 단위로 강제하므로 데모에서 steward가 낸 변경·추가 요청은 승인할 사람이 없고, approver가 낸 요청은 검토할 사람이 없다 — 데모 흐름은 다른 계정(author 등)이 요청한다."
   ]
  },
  "departmentSod": [
@@ -4829,12 +5239,12 @@ export const WORKFLOWS: WorkflowDoc = {
    "gates": [
     "G1"
    ],
-   "ref": "표준 보고서 5장(분류), 6.1절 G1, 6.4절 시나리오",
-   "purpose": "통제할 Feature Version의 대상·소유자·적용 차량을 Registry에 등록하고, 네 축 안전 분류와 법규 등급을 확정해 이후 모든 Gate가 같은 분류를 기준으로 판단하게 한다.",
+   "ref": "표준 보고서 5장(분류), 6.1절 G1, 6.4절 시나리오, Feature DB 설계(30-95) 6장",
+   "purpose": "통제할 Feature Version을 Feature DB 기준 행에 연결해 대상·소유자·적용 차량과 함께 Registry에 등록하고, 네 축 안전 분류와 법규 등급을 확정해 이후 모든 Gate가 같은 분류를 기준으로 판단하게 한다.",
    "outcomes": [
     {
      "id": "O1",
-     "text": "Feature Version이 소유자·대상 차량 사양·의존 관계와 함께 Registry에 등록된다."
+     "text": "Feature Version이 Feature DB 기준 행·소유자·대상 차량 사양·의존 관계와 함께 Registry에 등록된다."
     },
     {
      "id": "O2",
@@ -4860,6 +5270,7 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "exit": [
     "Feature Version이 PROPOSED 상태로 등록되고 네 축 분류가 Safety Manager 서명으로 확정되었다",
+    "Feature Version이 Feature DB 대표 기준 행 1개(와 필요한 포함 행)에 연결되었다",
     "법규 의무 기능 여부가 판정되어 분류에 반영되었다",
     "G1 Decision Record(판정·근거 Evidence·승인자 역할)가 남았다"
    ],
@@ -4886,6 +5297,31 @@ export const WORKFLOWS: WorkflowDoc = {
       "Feature ID·Version(PROPOSED 0.1.0)·소유자·설명",
       "Flag 유형과 Release·Experiment Flag의 만료일·Retirement 계획",
       "관련 요구 ID와 판매 방식"
+     ]
+    },
+    {
+     "key": "WP-REF-LINK",
+     "name": "Feature DB 기준 행 연결",
+     "en": "Feature DB Reference Link",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "대표(PRIMARY) 기준 행 1개와 포함(INCLUDED) 행 ID, 연결 당시 Feature DB 발행 버전",
+      "기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그·규제와 '수정됨' 표시",
+      "대표 ASIL과 다른 ASIL을 고른 경우 변경 전후 값과 사유",
+      "연결 행 상태 경고(검토 필요·폐기 예정·요청 중)와 대체 행 안내"
+     ]
+    },
+    {
+     "key": "WP-REF-ADD-REQ",
+     "name": "Feature DB 추가 요청",
+     "en": "Feature DB Addition Request",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "도메인·컴포넌트·영문/한글 기능명·T-shirt·대표 ASIL",
+      "출처 ID 또는 근거 메모, 새 컴포넌트가 필요하면 3글자 약어 제안",
+      "즉시 부여된 정식 형식 ID와 요청 중(PENDING) 상태, 추가 변경 요청 번호"
      ]
     },
     {
@@ -4958,23 +5394,29 @@ export const WORKFLOWS: WorkflowDoc = {
        "R-REQ"
       ],
       "I": [
-       "R-SM"
+       "R-SM",
+       "R-RDA"
       ]
      },
      "inputs": [
+      "WP-REFDB-RELEASE",
       "WP-FEAT-PROPOSAL"
      ],
      "outputs": [
-      "WP-FEAT-REG"
+      "WP-FEAT-REG",
+      "WP-REF-LINK"
      ],
      "steps": [
       "제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다",
-      "Feature 등록 화면에서 이름·설명·관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다",
+      "등록 1단계에서 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다",
+      "2단계에서 기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그를 확인하고, ASIL을 바꾸면 사유를 적는다",
+      "관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다",
       "Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다",
       "아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다"
      ],
      "checks": [
       "Registry에 PROPOSED Version이 생기고 소유자가 지정되었다",
+      "대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다",
       "만료일이 필요한 Flag 유형에 만료일과 Retirement 계획이 비어 있지 않다"
      ],
      "platform": {
@@ -4986,7 +5428,8 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/master/define",
        "/feature/propose",
-       "/features"
+       "/features",
+       "/master/feature-db"
       ],
       "gates": [],
       "anchor": "feature-form",
@@ -5217,6 +5660,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "inputs": [
       "WP-FEAT-REG",
+      "WP-REF-LINK",
       "WP-FEAT-SCOPE",
       "WP-SAFETY-PROFILE",
       "WP-REG-CLASS"
@@ -5225,14 +5669,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "WP-G1-DECISION"
      ],
      "steps": [
-      "등록 기록·대상 사양·분류·법규 판정이 모두 있는지 확인하고, 하나라도 없으면 FAIL로 판정한다",
+      "등록 기록·기준 행 연결·대상 사양·분류·법규 판정이 모두 있는지 확인하고, 하나라도 없으면 FAIL로 판정한다",
       "Feature Owner의 의견을 받아 판정(PASS·CONDITIONAL PASS·FAIL)과 근거 Evidence ID를 입력한다",
       "Gate G1(Feature)·G3(Variant)을 개인 서명으로 판정 등록한다",
       "조건부 통과면 기한과 책임자를 등록하고 요구 Owner에게 G2·G3 착수를 알린다"
      ],
      "checks": [
       "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다",
-      "Feature 작성자와 판정자가 다른 사람이다"
+      "Feature 작성자와 판정자가 다른 사람이다",
+      "요청 중(PENDING) 기준 행이 연결되어 있으면 조건부 통과 조건에 관리자 승인이 적혀 있다"
      ],
      "platform": {
       "actions": [
@@ -5254,11 +5699,68 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "slaHours": null,
      "next": []
+    },
+    {
+     "id": "FPW.1-A06",
+     "name": "Feature DB 추가 요청",
+     "trigger": "맞는 기준 행이 Feature DB에 없을 때",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-DRV"
+      ],
+      "I": [
+       "R-RDA"
+      ]
+     },
+     "inputs": [
+      "WP-FEAT-PROPOSAL",
+      "WP-REFDB-RELEASE"
+     ],
+     "outputs": [
+      "WP-REF-ADD-REQ"
+     ],
+     "steps": [
+      "검색과 도메인·컴포넌트 단계 선택으로 맞는 기준 행이 없음을 확인하고, 비슷한 행을 포함 행으로 쓸 수 있는지 먼저 본다",
+      "등록 화면의 추가 요청에서 도메인·컴포넌트·영문/한글 기능명·T-shirt·대표 ASIL·출처 또는 근거 메모를 입력한다",
+      "새 컴포넌트가 필요하면 3글자 약어를 같은 요청에 제안한다",
+      "즉시 부여된 정식 ID의 요청 중 행을 대표로 연결해 Feature 등록을 이어 간다",
+      "관리자가 반려하면 알림을 받고 다른 기준 행으로 다시 연결한다"
+     ],
+     "checks": [
+      "요청 중 행에 정식 형식 ID와 필수 정보가 있고 추가 변경 요청이 접수되었다",
+      "관리자 승인 전에는 Feature 정의 승인(APPROVED) 전이가 막혀 있음을 Feature Owner가 안다"
+     ],
+     "platform": {
+      "actions": [
+       "requestRefAdd"
+      ],
+      "screens": [
+       "/feature/propose"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
     }
    ],
    "layout": {
     "width": 1366,
-    "height": 392,
+    "height": 482,
     "lanes": [
      {
       "role": "R-FO",
@@ -5266,13 +5768,13 @@ export const WORKFLOWS: WorkflowDoc = {
       "x": 0,
       "y": 0,
       "w": 1366,
-      "h": 98
+      "h": 188
      },
      {
       "role": "R-PLM",
       "label": "기준정보 담당",
       "x": 0,
-      "y": 98,
+      "y": 188,
       "w": 1366,
       "h": 98
      },
@@ -5280,7 +5782,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "role": "R-SM",
       "label": "Safety Manager",
       "x": 0,
-      "y": 196,
+      "y": 286,
       "w": 1366,
       "h": 98
      },
@@ -5288,7 +5790,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "role": "R-REG",
       "label": "법규 담당",
       "x": 0,
-      "y": 294,
+      "y": 384,
       "w": 1366,
       "h": 98
      }
@@ -5304,11 +5806,20 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.1-A06",
+      "kind": "action",
+      "label": "Feature DB 추가 요청",
+      "x": 198,
+      "y": 106,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.1-A02",
       "kind": "action",
       "label": "대상 차량 사양·의존 등록",
       "x": 478,
-      "y": 114,
+      "y": 204,
       "w": 188,
       "h": 66
      },
@@ -5317,7 +5828,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "안전 분류(네 축) 확정",
       "x": 478,
-      "y": 212,
+      "y": 302,
       "w": 188,
       "h": 66
      },
@@ -5326,7 +5837,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "G1 등록·분류 판정",
       "x": 1038,
-      "y": 212,
+      "y": 302,
       "w": 188,
       "h": 66
      },
@@ -5335,7 +5846,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "법규 의무 기능 판정",
       "x": 758,
-      "y": 310,
+      "y": 400,
       "w": 188,
       "h": 66
      },
@@ -5349,11 +5860,29 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.1-S2",
+      "kind": "start",
+      "label": "맞는 기준 행이 Feature DB에 없을 때",
+      "x": 146,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.1-E1",
       "kind": "end",
       "label": "종료",
       "x": 1240,
-      "y": 236,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.1-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 130,
       "w": 18,
       "h": 18
      }
@@ -5375,6 +5904,21 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.1-S2",
+      "to": "FPW.1-A06",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        139
+       ],
+       [
+        198,
+        139
+       ]
+      ]
+     },
+     {
       "from": "FPW.1-A01",
       "to": "FPW.1-A02",
       "kind": "flow",
@@ -5389,11 +5933,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         466,
-        147
+        237
        ],
        [
         478,
-        147
+        237
        ]
       ]
      },
@@ -5412,11 +5956,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         466,
-        245
+        335
        ],
        [
         478,
-        245
+        335
        ]
       ]
      },
@@ -5427,19 +5971,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         666,
-        147
+        237
        ],
        [
         1026,
-        147
+        237
        ],
        [
         1026,
-        245
+        335
        ],
        [
         1038,
-        245
+        335
        ]
       ]
      },
@@ -5450,19 +5994,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         666,
-        245
+        335
        ],
        [
         746,
-        245
+        335
        ],
        [
         746,
-        343
+        433
        ],
        [
         758,
-        343
+        433
        ]
       ]
      },
@@ -5473,19 +6017,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         946,
-        343
+        433
        ],
        [
         1026,
-        343
+        433
        ],
        [
         1026,
-        245
+        335
        ],
        [
         1038,
-        245
+        335
        ]
       ]
      },
@@ -5496,11 +6040,26 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1226,
-        245
+        335
        ],
        [
         1240,
-        245
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A06",
+      "to": "FPW.1-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        139
+       ],
+       [
+        400,
+        139
        ]
       ]
      }
@@ -5508,13 +6067,13 @@ export const WORKFLOWS: WorkflowDoc = {
     "joins": [
      [
       1026,
-      245
+      335
      ]
     ]
    },
    "departmentLayout": {
     "width": 1366,
-    "height": 392,
+    "height": 482,
     "lanes": [
      {
       "department": "DEP-PDP",
@@ -5522,13 +6081,13 @@ export const WORKFLOWS: WorkflowDoc = {
       "x": 0,
       "y": 0,
       "w": 1366,
-      "h": 98
+      "h": 188
      },
      {
       "department": "DEP-PLM",
       "label": "PLM·기준정보팀",
       "x": 0,
-      "y": 98,
+      "y": 188,
       "w": 1366,
       "h": 98
      },
@@ -5536,7 +6095,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-FS",
       "label": "기능안전팀",
       "x": 0,
-      "y": 196,
+      "y": 286,
       "w": 1366,
       "h": 98
      },
@@ -5544,7 +6103,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-HOM",
       "label": "법규인증팀",
       "x": 0,
-      "y": 294,
+      "y": 384,
       "w": 1366,
       "h": 98
      }
@@ -5560,11 +6119,20 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.1-A06",
+      "kind": "action",
+      "label": "Feature DB 추가 요청",
+      "x": 198,
+      "y": 106,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.1-A02",
       "kind": "action",
       "label": "대상 차량 사양·의존 등록",
       "x": 478,
-      "y": 114,
+      "y": 204,
       "w": 188,
       "h": 66
      },
@@ -5573,7 +6141,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "안전 분류(네 축) 확정",
       "x": 478,
-      "y": 212,
+      "y": 302,
       "w": 188,
       "h": 66
      },
@@ -5582,7 +6150,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "G1 등록·분류 판정",
       "x": 1038,
-      "y": 212,
+      "y": 302,
       "w": 188,
       "h": 66
      },
@@ -5591,7 +6159,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "법규 의무 기능 판정",
       "x": 758,
-      "y": 310,
+      "y": 400,
       "w": 188,
       "h": 66
      },
@@ -5605,11 +6173,29 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.1-S2",
+      "kind": "start",
+      "label": "맞는 기준 행이 Feature DB에 없을 때",
+      "x": 146,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.1-E1",
       "kind": "end",
       "label": "종료",
       "x": 1240,
-      "y": 236,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.1-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 130,
       "w": 18,
       "h": 18
      }
@@ -5631,6 +6217,21 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.1-S2",
+      "to": "FPW.1-A06",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        139
+       ],
+       [
+        198,
+        139
+       ]
+      ]
+     },
+     {
       "from": "FPW.1-A01",
       "to": "FPW.1-A02",
       "kind": "flow",
@@ -5645,11 +6246,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         466,
-        147
+        237
        ],
        [
         478,
-        147
+        237
        ]
       ]
      },
@@ -5668,11 +6269,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         466,
-        245
+        335
        ],
        [
         478,
-        245
+        335
        ]
       ]
      },
@@ -5683,19 +6284,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         666,
-        147
+        237
        ],
        [
         1026,
-        147
+        237
        ],
        [
         1026,
-        245
+        335
        ],
        [
         1038,
-        245
+        335
        ]
       ]
      },
@@ -5706,19 +6307,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         666,
-        245
+        335
        ],
        [
         746,
-        245
+        335
        ],
        [
         746,
-        343
+        433
        ],
        [
         758,
-        343
+        433
        ]
       ]
      },
@@ -5729,19 +6330,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         946,
-        343
+        433
        ],
        [
         1026,
-        343
+        433
        ],
        [
         1026,
-        245
+        335
        ],
        [
         1038,
-        245
+        335
        ]
       ]
      },
@@ -5752,11 +6353,26 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1226,
-        245
+        335
        ],
        [
         1240,
-        245
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.1-A06",
+      "to": "FPW.1-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        139
+       ],
+       [
+        400,
+        139
        ]
       ]
      }
@@ -5764,7 +6380,7 @@ export const WORKFLOWS: WorkflowDoc = {
     "joins": [
      [
       1026,
-      245
+      335
      ]
     ]
    }
@@ -6207,13 +6823,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "WP-HARA-TARA",
       "WP-TARA",
       "WP-SOTIF-ANALYSIS",
-      "WP-HOMOLOGATION-IMPACT"
+      "WP-HOMOLOGATION-IMPACT",
+      "WP-REF-LINK"
      ],
      "outputs": [
       "WP-G2-DECISION"
      ],
      "steps": [
       "HARA·TARA·SOTIF·형식승인 판단이 모두 현재 Version 기준인지 확인하고, 빠진 것이 있으면 FAIL로 판정한다",
+      "등록 때 Feature DB 대표 ASIL을 바꿨다면 그 사유를 HARA에서 평가한 ASIL과 대조해 판정 근거에 남긴다",
       "판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다",
       "판정 결과를 요구 Owner에게 넘겨 안전요구 작성을 시작하게 한다"
      ],
@@ -6975,6 +7593,17 @@ export const WORKFLOWS: WorkflowDoc = {
       "G3 판정과 근거 Evidence ID",
       "PROPOSED→APPROVED 전이 기록과 승인자(작성자와 다른 사람)"
      ]
+    },
+    {
+     "key": "WP-IMPL-LINK",
+     "name": "구현 연결(Function·SW·제어기)",
+     "en": "Implementation Link",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "Function → SW ID·Version → 제어기(ECU) P/N 짝 — SW·ECU 기준정보에서 고른 값",
+      "VERIFIED 전이의 필수 입력(functions·swIds·swVersions·ecuPnos)"
+     ]
     }
    ],
    "activities": [
@@ -7006,9 +7635,9 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      "inputs": [
-      "WP-G2-DECISION",
       "WP-HARA-TARA",
-      "WP-SOTIF-ANALYSIS"
+      "WP-SOTIF-ANALYSIS",
+      "WP-G2-DECISION"
      ],
      "outputs": [
       "WP-SAFETY-REQ"
@@ -7093,7 +7722,8 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "slaHours": null,
      "next": [
-      "FPW.3-A03"
+      "FPW.3-A03",
+      "FPW.3-A05"
      ]
     },
     {
@@ -7159,6 +7789,67 @@ export const WORKFLOWS: WorkflowDoc = {
      ]
     },
     {
+     "id": "FPW.3-A05",
+     "name": "구현 연결 입력",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-INT",
+       "R-FO"
+      ],
+      "A": "R-INT",
+      "C": [
+       "R-ARC",
+       "R-PLM"
+      ],
+      "I": [
+       "R-REQ",
+       "R-TST"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-REQ"
+     ],
+     "outputs": [
+      "WP-IMPL-LINK"
+     ],
+     "steps": [
+      "정의 승인 전에 Feature 설계 담당 또는 SW 통합 담당이 PROPOSED 초안에서 Function → SW·Version → 제어기 P/N을 SW·ECU 기준정보에서 골라 연결한다",
+      "Feature 상세 → 초안 수정 → 구현 연결에서 입력한다. 서버는 기준정보에 없는 짝을 거부한다",
+      "승인된 Version에 구현 연결이 빠져 있으면 새 Version에서 넣고 정의 승인을 다시 받는다",
+      "외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다"
+     ],
+     "checks": [
+      "VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다"
+     ],
+     "platform": {
+      "actions": [
+       "updateDraft"
+      ],
+      "screens": [
+       "/features/:id/:ver",
+       "/master/artifacts",
+       "/integration/connectors"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.3-A04"
+     ]
+    },
+    {
      "id": "FPW.3-A04",
      "name": "G3 판정·Feature 정의 승인",
      "trigger": null,
@@ -7189,7 +7880,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "inputs": [
       "WP-REQ-REVIEW",
       "WP-G1-DECISION",
-      "WP-G2-DECISION"
+      "WP-G2-DECISION",
+      "WP-REF-LINK",
+      "WP-IMPL-LINK"
      ],
      "outputs": [
       "WP-G3-DECISION"
@@ -7198,10 +7891,12 @@ export const WORKFLOWS: WorkflowDoc = {
       "G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다",
       "판정 근거를 정리해 G3 판정을 남긴다",
       "Lifecycle을 PROPOSED에서 APPROVED로 전이한다. 작성자는 이 전이를 할 수 없다",
+      "승인 서랍이 구현 연결 미입력을 경고한다(막지는 않는다) — 빠졌으면 승인 대신 보완을 요청할 수 있다",
       "아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다"
      ],
      "checks": [
-      "Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다"
+      "Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다",
+      "연결된 기준 행에 요청 중(PENDING)·폐기 행이 없다. 요청 중 행은 Feature DB 관리자 승인 뒤에만 전이한다"
      ],
      "platform": {
       "actions": [
@@ -7224,7 +7919,7 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "layout": {
     "width": 1366,
-    "height": 196,
+    "height": 294,
     "lanes": [
      {
       "role": "R-REQ",
@@ -7241,6 +7936,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "y": 98,
       "w": 1366,
       "h": 98
+     },
+     {
+      "role": "R-INT",
+      "label": "통합 조직",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
      }
     ],
     "nodes": [
@@ -7277,6 +7980,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "요구 검토 판정 등록",
       "x": 758,
       "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A05",
+      "kind": "action",
+      "label": "구현 연결 입력",
+      "x": 758,
+      "y": 212,
       "w": 188,
       "h": 66
      },
@@ -7354,6 +8066,29 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
       "from": "FPW.3-A03",
       "to": "FPW.3-A04",
       "kind": "flow",
@@ -7365,6 +8100,29 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         1026,
         147
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1026,
+        245
        ],
        [
         1026,
@@ -7392,11 +8150,16 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      }
     ],
-    "joins": []
+    "joins": [
+     [
+      1026,
+      147
+     ]
+    ]
    },
    "departmentLayout": {
     "width": 1366,
-    "height": 196,
+    "height": 294,
     "lanes": [
      {
       "department": "DEP-SE",
@@ -7413,6 +8176,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "y": 98,
       "w": 1366,
       "h": 98
+     },
+     {
+      "department": "DEP-INT",
+      "label": "SW통합·릴리스팀",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
      }
     ],
     "nodes": [
@@ -7449,6 +8220,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "요구 검토 판정 등록",
       "x": 758,
       "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.3-A05",
+      "kind": "action",
+      "label": "구현 연결 입력",
+      "x": 758,
+      "y": 212,
       "w": 188,
       "h": 66
      },
@@ -7526,6 +8306,29 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.3-A02",
+      "to": "FPW.3-A05",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
       "from": "FPW.3-A03",
       "to": "FPW.3-A04",
       "kind": "flow",
@@ -7537,6 +8340,29 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         1026,
         147
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1026,
+        245
        ],
        [
         1026,
@@ -7564,7 +8390,12 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      }
     ],
-    "joins": []
+    "joins": [
+     [
+      1026,
+      147
+     ]
+    ]
    }
   },
   {
@@ -7726,62 +8557,6 @@ export const WORKFLOWS: WorkflowDoc = {
      ]
     },
     {
-     "id": "FPW.4-A02",
-     "name": "플랫폼 도구 신뢰도 분류",
-     "trigger": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
-     "gateDecision": null,
-     "independentOf": [],
-     "outcomes": [
-      "O2"
-     ],
-     "rules": [
-      "FFG-PLT-013"
-     ],
-     "raci": {
-      "R": [
-       "R-SM"
-      ],
-      "A": "R-SM",
-      "C": [
-       "R-ARC",
-       "R-CSM"
-      ],
-      "I": [
-       "R-QA"
-      ]
-     },
-     "inputs": [
-      "WP-SAFETY-REQ"
-     ],
-     "outputs": [
-      "WP-TCL-RECORD"
-     ],
-     "steps": [
-      "이 Feature가 쓰는 플랫폼 컴포넌트마다 오류 출력 유형과 TI·TD를 정해 TCL을 기록한다",
-      "TD1은 출력 유형별 검출 수단을 지정할 수 있을 때만 주장하고, 서명 서비스에는 쓰지 않는다",
-      "TCL2 이상 컴포넌트의 신뢰도 확보 방법을 Safety Plan에 넣는다"
-     ],
-     "checks": [
-      "사용 컴포넌트 모두에 TCL과 확보 방법이 있다"
-     ],
-     "platform": {
-      "actions": [],
-      "screens": [
-       "/arch/components"
-      ],
-      "gates": [],
-      "anchor": null,
-      "ui": {
-       "fields": [],
-       "buttons": []
-      }
-     },
-     "slaHours": null,
-     "next": [
-      "FPW.4-A05"
-     ]
-    },
-    {
      "id": "FPW.4-A03",
      "name": "Flag 정책 작성·검증",
      "trigger": null,
@@ -7900,6 +8675,62 @@ export const WORKFLOWS: WorkflowDoc = {
      ]
     },
     {
+     "id": "FPW.4-A02",
+     "name": "플랫폼 도구 신뢰도 분류",
+     "trigger": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-PLT-013"
+     ],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-ARC",
+       "R-CSM"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-REQ"
+     ],
+     "outputs": [
+      "WP-TCL-RECORD"
+     ],
+     "steps": [
+      "이 Feature가 쓰는 플랫폼 컴포넌트마다 오류 출력 유형과 TI·TD를 정해 TCL을 기록한다",
+      "TD1은 출력 유형별 검출 수단을 지정할 수 있을 때만 주장하고, 서명 서비스에는 쓰지 않는다",
+      "TCL2 이상 컴포넌트의 신뢰도 확보 방법을 Safety Plan에 넣는다"
+     ],
+     "checks": [
+      "사용 컴포넌트 모두에 TCL과 확보 방법이 있다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/arch/components"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.4-A05"
+     ]
+    },
+    {
      "id": "FPW.4-A05",
      "name": "G4 설계 독립 검토·판정",
      "trigger": null,
@@ -7980,16 +8811,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 98
      },
      {
-      "role": "R-SM",
-      "label": "Safety Manager",
+      "role": "R-REQ",
+      "label": "요구 Owner",
       "x": 0,
       "y": 98,
       "w": 1366,
       "h": 98
      },
      {
-      "role": "R-REQ",
-      "label": "요구 Owner",
+      "role": "R-SM",
+      "label": "Safety Manager",
       "x": 0,
       "y": 196,
       "w": 1366,
@@ -8024,18 +8855,18 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
-      "id": "FPW.4-A02",
+      "id": "FPW.4-A04",
       "kind": "action",
-      "label": "플랫폼 도구 신뢰도 분류",
+      "label": "정책 승인",
       "x": 758,
       "y": 114,
       "w": 188,
       "h": 66
      },
      {
-      "id": "FPW.4-A04",
+      "id": "FPW.4-A02",
       "kind": "action",
-      "label": "정책 승인",
+      "label": "플랫폼 도구 신뢰도 분류",
       "x": 758,
       "y": 212,
       "w": 188,
@@ -8064,7 +8895,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "start",
       "label": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
       "x": 706,
-      "y": 138,
+      "y": 236,
       "w": 18,
       "h": 18
      },
@@ -8101,11 +8932,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         724,
-        147
+        245
        ],
        [
         758,
-        147
+        245
        ]
       ]
      },
@@ -8125,7 +8956,30 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.4-A02",
+      "from": "FPW.4-A03",
+      "to": "FPW.4-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A04",
       "to": "FPW.4-A05",
       "kind": "flow",
       "points": [
@@ -8148,30 +9002,7 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.4-A03",
-      "to": "FPW.4-A04",
-      "kind": "flow",
-      "points": [
-       [
-        666,
-        49
-       ],
-       [
-        746,
-        49
-       ],
-       [
-        746,
-        245
-       ],
-       [
-        758,
-        245
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A04",
+      "from": "FPW.4-A02",
       "to": "FPW.4-A05",
       "kind": "flow",
       "points": [
@@ -8366,29 +9197,6 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.4-A02",
-      "to": "FPW.4-A05",
-      "kind": "flow",
-      "points": [
-       [
-        946,
-        147
-       ],
-       [
-        1026,
-        147
-       ],
-       [
-        1026,
-        245
-       ],
-       [
-        1038,
-        245
-       ]
-      ]
-     },
-     {
       "from": "FPW.4-A03",
       "to": "FPW.4-A04",
       "kind": "flow",
@@ -8415,6 +9223,29 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         1026,
         49
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A02",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1026,
+        147
        ],
        [
         1026,
@@ -10764,8 +11595,8 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      "inputs": [
-      "WP-G6-DECISION",
-      "WP-SAFETY-PROFILE"
+      "WP-SAFETY-PROFILE",
+      "WP-G6-DECISION"
      ],
      "outputs": [
       "WP-CANARY-PLAN"
@@ -10999,8 +11830,8 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "steps": [
       "상품에 넣을 Feature와 판매 방식을 정해 상품을 등록한다",
-      "구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다",
-      "체험 제안 조건(대상·기간)을 정한다"
+      "구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다. PASS일 때 등록하고, FAIL은 결과를 확인한 뒤 초안으로만 등록한다",
+      "체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다"
      ],
      "checks": [
       "구성 검증 결과에 충돌이 없다"
@@ -11233,8 +12064,8 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "inputs": [
       "WP-G7-DECISION",
-      "WP-SC-REVIEW",
-      "WP-CANARY-PLAN"
+      "WP-CANARY-PLAN",
+      "WP-SC-REVIEW"
      ],
      "outputs": [
       "WP-RELEASE-SIGNOFF"
@@ -11359,8 +12190,9 @@ export const WORKFLOWS: WorkflowDoc = {
       "WP-PRODUCT-RELEASE"
      ],
      "steps": [
-      "구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다",
-      "플랫폼이 구성 승인자와 같은 사람의 승인을 거부하면 다른 승인자로 다시 승인한다",
+      "구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다. 데모에서는 approver가 구성을, productowner가 고객 출시를 승인한다",
+      "구성 승인자에게는 화면이 출시 승인 버튼을 미리 막고 이유를 보인다. 서버도 같은 사람의 승인을 거부한다",
+      "출시한 상품은 상세에서 체험 제안으로 이어진다",
       "출시 승인 결과를 상품 기획과 운영 조직에 알린다"
      ],
      "checks": [
@@ -13152,6 +13984,64 @@ export const WORKFLOWS: WorkflowDoc = {
      ]
     },
     {
+     "id": "FPW.8-A07",
+     "name": "긴급 권한 사후 검토",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [
+      "FFG-PLT-016"
+     ],
+     "raci": {
+      "R": [
+       "R-QA"
+      ],
+      "A": "R-QA",
+      "C": [
+       "R-CSM",
+       "R-REG"
+      ],
+      "I": [
+       "R-SM",
+       "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-KILL-REQ",
+      "WP-KILL-DECISION"
+     ],
+     "outputs": [
+      "WP-POST-REVIEW"
+     ],
+     "steps": [
+      "차단 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다",
+      "검토 결과와 개선 조치를 사후 검토 기록으로 한 번 남긴다",
+      "미흡 사항은 품질 조직이 개선 과제로 등록한다"
+     ],
+     "checks": [
+      "검토 기록이 24시간 안에 있고 검토자가 요청자·승인자와 다르다"
+     ],
+     "platform": {
+      "actions": [
+       "recordKillPostReview"
+      ],
+      "screens": [
+       "/audit/oversight"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    },
+    {
      "id": "FPW.8-A06",
      "name": "차단 전달·적용 추적",
      "trigger": null,
@@ -13210,64 +14100,6 @@ export const WORKFLOWS: WorkflowDoc = {
      "next": [
       "FPW.8-A08"
      ]
-    },
-    {
-     "id": "FPW.8-A07",
-     "name": "긴급 권한 사후 검토",
-     "trigger": null,
-     "gateDecision": null,
-     "independentOf": [],
-     "outcomes": [
-      "O4"
-     ],
-     "rules": [
-      "FFG-PLT-016"
-     ],
-     "raci": {
-      "R": [
-       "R-QA"
-      ],
-      "A": "R-QA",
-      "C": [
-       "R-CSM",
-       "R-REG"
-      ],
-      "I": [
-       "R-SM",
-       "R-OPS"
-      ]
-     },
-     "inputs": [
-      "WP-KILL-REQ",
-      "WP-KILL-DECISION"
-     ],
-     "outputs": [
-      "WP-POST-REVIEW"
-     ],
-     "steps": [
-      "차단 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다",
-      "검토 결과와 개선 조치를 사후 검토 기록으로 한 번 남긴다",
-      "미흡 사항은 품질 조직이 개선 과제로 등록한다"
-     ],
-     "checks": [
-      "검토 기록이 24시간 안에 있고 검토자가 요청자·승인자와 다르다"
-     ],
-     "platform": {
-      "actions": [
-       "recordKillPostReview"
-      ],
-      "screens": [
-       "/audit/oversight"
-      ],
-      "gates": [],
-      "anchor": null,
-      "ui": {
-       "fields": [],
-       "buttons": []
-      }
-     },
-     "slaHours": null,
-     "next": []
     },
     {
      "id": "FPW.8-A08",
@@ -16837,8 +17669,8 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      "inputs": [
-      "WP-RELEASE-BASELINE",
-      "WP-ORIGIN-RECORD"
+      "WP-ORIGIN-RECORD",
+      "WP-RELEASE-BASELINE"
      ],
      "outputs": [
       "WP-VEX-DECISION"
@@ -16869,6 +17701,58 @@ export const WORKFLOWS: WorkflowDoc = {
      "next": [
       "FPW.11-A05"
      ]
+    },
+    {
+     "id": "FPW.11-A06",
+     "name": "OSS 라이선스·보안 프로그램 운영",
+     "trigger": "OSS 구성요소 추가·변경",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [
+      "FFG-SBOM-006"
+     ],
+     "raci": {
+      "R": [
+       "R-LEG"
+      ],
+      "A": "R-LEG",
+      "C": [
+       "R-CSM",
+       "R-PUR"
+      ],
+      "I": [
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-ORIGIN-RECORD"
+     ],
+     "outputs": [
+      "WP-OSS-PROGRAM"
+     ],
+     "steps": [
+      "추가·변경된 OSS 구성요소의 라이선스 의무를 확인한다",
+      "라이선스·보안 관리 프로그램 기준에 따라 의무 이행 상태를 기록한다",
+      "이행할 수 없는 구성요소는 통합 조직에 교체를 요청한다"
+     ],
+     "checks": [
+      "모든 OSS 구성요소의 의무 이행 상태가 기록되었다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
     },
     {
      "id": "FPW.11-A05",
@@ -16909,58 +17793,6 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "checks": [
       "보고 내용의 각 항목이 Evidence ID로 연결되었다"
-     ],
-     "platform": {
-      "actions": [],
-      "screens": [],
-      "gates": [],
-      "anchor": null,
-      "ui": {
-       "fields": [],
-       "buttons": []
-      }
-     },
-     "slaHours": null,
-     "next": []
-    },
-    {
-     "id": "FPW.11-A06",
-     "name": "OSS 라이선스·보안 프로그램 운영",
-     "trigger": "OSS 구성요소 추가·변경",
-     "gateDecision": null,
-     "independentOf": [],
-     "outcomes": [
-      "O5"
-     ],
-     "rules": [
-      "FFG-SBOM-006"
-     ],
-     "raci": {
-      "R": [
-       "R-LEG"
-      ],
-      "A": "R-LEG",
-      "C": [
-       "R-CSM",
-       "R-PUR"
-      ],
-      "I": [
-       "R-INT"
-      ]
-     },
-     "inputs": [
-      "WP-ORIGIN-RECORD"
-     ],
-     "outputs": [
-      "WP-OSS-PROGRAM"
-     ],
-     "steps": [
-      "추가·변경된 OSS 구성요소의 라이선스 의무를 확인한다",
-      "라이선스·보안 관리 프로그램 기준에 따라 의무 이행 상태를 기록한다",
-      "이행할 수 없는 구성요소는 통합 조직에 교체를 요청한다"
-     ],
-     "checks": [
-      "모든 OSS 구성요소의 의무 이행 상태가 기록되었다"
      ],
      "platform": {
       "actions": [],
@@ -17109,8 +17941,8 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.11-E2",
       "kind": "end",
       "label": "종료",
-      "x": 680,
-      "y": 228,
+      "x": 400,
+      "y": 326,
       "w": 18,
       "h": 18
      },
@@ -17118,8 +17950,8 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.11-E3",
       "kind": "end",
       "label": "종료",
-      "x": 400,
-      "y": 326,
+      "x": 680,
+      "y": 228,
       "w": 18,
       "h": 18
      }
@@ -17262,23 +18094,8 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.11-A05",
-      "to": "FPW.11-E2",
-      "kind": "end",
-      "points": [
-       [
-        666,
-        237
-       ],
-       [
-        680,
-        237
-       ]
-      ]
-     },
-     {
       "from": "FPW.11-A06",
-      "to": "FPW.11-E3",
+      "to": "FPW.11-E2",
       "kind": "end",
       "points": [
        [
@@ -17288,6 +18105,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         400,
         335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A05",
+      "to": "FPW.11-E3",
+      "kind": "end",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        680,
+        237
        ]
       ]
      }
@@ -17432,8 +18264,8 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.11-E2",
       "kind": "end",
       "label": "종료",
-      "x": 680,
-      "y": 228,
+      "x": 400,
+      "y": 326,
       "w": 18,
       "h": 18
      },
@@ -17441,8 +18273,8 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.11-E3",
       "kind": "end",
       "label": "종료",
-      "x": 400,
-      "y": 326,
+      "x": 680,
+      "y": 228,
       "w": 18,
       "h": 18
      }
@@ -17585,23 +18417,8 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.11-A05",
-      "to": "FPW.11-E2",
-      "kind": "end",
-      "points": [
-       [
-        666,
-        237
-       ],
-       [
-        680,
-        237
-       ]
-      ]
-     },
-     {
       "from": "FPW.11-A06",
-      "to": "FPW.11-E3",
+      "to": "FPW.11-E2",
       "kind": "end",
       "points": [
        [
@@ -17611,6 +18428,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         400,
         335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.11-A05",
+      "to": "FPW.11-E3",
+      "kind": "end",
+      "points": [
+       [
+        666,
+        237
+       ],
+       [
+        680,
+        237
        ]
       ]
      }
@@ -17781,60 +18613,6 @@ export const WORKFLOWS: WorkflowDoc = {
      "next": []
     },
     {
-     "id": "FPW.12-A02",
-     "name": "평가 컨텍스트 개인정보 검토",
-     "trigger": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
-     "gateDecision": null,
-     "independentOf": [],
-     "outcomes": [
-      "O2"
-     ],
-     "rules": [
-      "FFG-OFT-003"
-     ],
-     "raci": {
-      "R": [
-       "R-DPO"
-      ],
-      "A": "R-DPO",
-      "C": [
-       "R-ARC",
-       "R-LEG"
-      ],
-      "I": [
-       "R-INT"
-      ]
-     },
-     "inputs": [
-      "WP-POLICY"
-     ],
-     "outputs": [
-      "WP-CONTEXT-REVIEW"
-     ],
-     "steps": [
-      "정책의 targeting key가 가명 차량 ID인지 확인한다",
-      "위치·운전자 식별·연락처·차량 동적 상태가 평가 컨텍스트에 들어가지 않는지 검토한다",
-      "금지 속성이 들어오면 평가 전에 거부되는지 시험 결과를 확인한다"
-     ],
-     "checks": [
-      "금지 속성 거부 시험이 통과했다"
-     ],
-     "platform": {
-      "actions": [],
-      "screens": [
-       "/integration/openfeature"
-      ],
-      "gates": [],
-      "anchor": null,
-      "ui": {
-       "fields": [],
-       "buttons": []
-      }
-     },
-     "slaHours": null,
-     "next": []
-    },
-    {
      "id": "FPW.12-A03",
      "name": "중국 데이터 현지 처리·이전 심사",
      "trigger": "중국 시장 출시 또는 국외 조회 요청",
@@ -17944,6 +18722,60 @@ export const WORKFLOWS: WorkflowDoc = {
      "next": []
     },
     {
+     "id": "FPW.12-A02",
+     "name": "평가 컨텍스트 개인정보 검토",
+     "trigger": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [
+      "FFG-OFT-003"
+     ],
+     "raci": {
+      "R": [
+       "R-DPO"
+      ],
+      "A": "R-DPO",
+      "C": [
+       "R-ARC",
+       "R-LEG"
+      ],
+      "I": [
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-POLICY"
+     ],
+     "outputs": [
+      "WP-CONTEXT-REVIEW"
+     ],
+     "steps": [
+      "정책의 targeting key가 가명 차량 ID인지 확인한다",
+      "위치·운전자 식별·연락처·차량 동적 상태가 평가 컨텍스트에 들어가지 않는지 검토한다",
+      "금지 속성이 들어오면 평가 전에 거부되는지 시험 결과를 확인한다"
+     ],
+     "checks": [
+      "금지 속성 거부 시험이 통과했다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/integration/openfeature"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    },
+    {
      "id": "FPW.12-A05",
      "name": "보존 기간 경과 데이터 삭제",
      "trigger": "정기 보존 기간 점검",
@@ -18013,18 +18845,10 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 98
      },
      {
-      "role": "R-DPO",
-      "label": "데이터 보호 담당",
-      "x": 0,
-      "y": 98,
-      "w": 526,
-      "h": 98
-     },
-     {
       "role": "R-LEG",
       "label": "법무",
       "x": 0,
-      "y": 196,
+      "y": 98,
       "w": 526,
       "h": 98
      },
@@ -18032,9 +18856,17 @@ export const WORKFLOWS: WorkflowDoc = {
       "role": "R-REG",
       "label": "법규 담당",
       "x": 0,
-      "y": 294,
+      "y": 196,
       "w": 526,
       "h": 188
+     },
+     {
+      "role": "R-DPO",
+      "label": "데이터 보호 담당",
+      "x": 0,
+      "y": 384,
+      "w": 526,
+      "h": 98
      }
     ],
     "nodes": [
@@ -18048,20 +18880,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
-      "id": "FPW.12-A02",
-      "kind": "action",
-      "label": "평가 컨텍스트 개인정보 검토",
-      "x": 198,
-      "y": 114,
-      "w": 188,
-      "h": 66
-     },
-     {
       "id": "FPW.12-A03",
       "kind": "action",
       "label": "중국 데이터 현지 처리·이전 심사",
       "x": 198,
-      "y": 212,
+      "y": 114,
       "w": 188,
       "h": 66
      },
@@ -18070,7 +18893,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "EU 데이터 접근 요청 처리",
       "x": 198,
-      "y": 310,
+      "y": 212,
       "w": 188,
       "h": 66
      },
@@ -18078,6 +18901,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.12-A05",
       "kind": "action",
       "label": "보존 기간 경과 데이터 삭제",
+      "x": 198,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A02",
+      "kind": "action",
+      "label": "평가 컨텍스트 개인정보 검토",
       "x": 198,
       "y": 400,
       "w": 188,
@@ -18095,7 +18927,7 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "id": "FPW.12-S2",
       "kind": "start",
-      "label": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
+      "label": "중국 시장 출시 또는 국외 조회 요청",
       "x": 146,
       "y": 138,
       "w": 18,
@@ -18104,7 +18936,7 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "id": "FPW.12-S3",
       "kind": "start",
-      "label": "중국 시장 출시 또는 국외 조회 요청",
+      "label": "EU 차량 사용자·제3자 데이터 접근 요청",
       "x": 146,
       "y": 236,
       "w": 18,
@@ -18113,9 +18945,9 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "id": "FPW.12-S4",
       "kind": "start",
-      "label": "EU 차량 사용자·제3자 데이터 접근 요청",
+      "label": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
       "x": 146,
-      "y": 334,
+      "y": 424,
       "w": 18,
       "h": 18
      },
@@ -18124,7 +18956,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "start",
       "label": "정기 보존 기간 점검",
       "x": 146,
-      "y": 424,
+      "y": 326,
       "w": 18,
       "h": 18
      },
@@ -18160,7 +18992,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "label": "종료",
       "x": 400,
-      "y": 334,
+      "y": 424,
       "w": 18,
       "h": 18
      },
@@ -18169,7 +19001,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "label": "종료",
       "x": 400,
-      "y": 424,
+      "y": 326,
       "w": 18,
       "h": 18
      }
@@ -18192,7 +19024,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.12-S2",
-      "to": "FPW.12-A02",
+      "to": "FPW.12-A03",
       "kind": "trigger",
       "points": [
        [
@@ -18207,7 +19039,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.12-S3",
-      "to": "FPW.12-A03",
+      "to": "FPW.12-A04",
       "kind": "trigger",
       "points": [
        [
@@ -18222,16 +19054,16 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.12-S4",
-      "to": "FPW.12-A04",
+      "to": "FPW.12-A02",
       "kind": "trigger",
       "points": [
        [
         164,
-        343
+        433
        ],
        [
         198,
-        343
+        433
        ]
       ]
      },
@@ -18242,11 +19074,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         164,
-        433
+        335
        ],
        [
         198,
-        433
+        335
        ]
       ]
      },
@@ -18266,7 +19098,7 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.12-A02",
+      "from": "FPW.12-A03",
       "to": "FPW.12-E2",
       "kind": "end",
       "points": [
@@ -18281,7 +19113,7 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.12-A03",
+      "from": "FPW.12-A04",
       "to": "FPW.12-E3",
       "kind": "end",
       "points": [
@@ -18296,17 +19128,17 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.12-A04",
+      "from": "FPW.12-A02",
       "to": "FPW.12-E4",
       "kind": "end",
       "points": [
        [
         386,
-        343
+        433
        ],
        [
         400,
-        343
+        433
        ]
       ]
      },
@@ -18317,11 +19149,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         386,
-        433
+        335
        ],
        [
         400,
-        433
+        335
        ]
       ]
      }
@@ -18341,18 +19173,10 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 98
      },
      {
-      "department": "DEP-DPO",
-      "label": "개인정보보호팀",
-      "x": 0,
-      "y": 98,
-      "w": 526,
-      "h": 98
-     },
-     {
       "department": "DEP-LEG",
       "label": "법무팀",
       "x": 0,
-      "y": 196,
+      "y": 98,
       "w": 526,
       "h": 98
      },
@@ -18360,9 +19184,17 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-HOM",
       "label": "법규인증팀",
       "x": 0,
-      "y": 294,
+      "y": 196,
       "w": 526,
       "h": 188
+     },
+     {
+      "department": "DEP-DPO",
+      "label": "개인정보보호팀",
+      "x": 0,
+      "y": 384,
+      "w": 526,
+      "h": 98
      }
     ],
     "nodes": [
@@ -18376,20 +19208,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
-      "id": "FPW.12-A02",
-      "kind": "action",
-      "label": "평가 컨텍스트 개인정보 검토",
-      "x": 198,
-      "y": 114,
-      "w": 188,
-      "h": 66
-     },
-     {
       "id": "FPW.12-A03",
       "kind": "action",
       "label": "중국 데이터 현지 처리·이전 심사",
       "x": 198,
-      "y": 212,
+      "y": 114,
       "w": 188,
       "h": 66
      },
@@ -18398,7 +19221,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "EU 데이터 접근 요청 처리",
       "x": 198,
-      "y": 310,
+      "y": 212,
       "w": 188,
       "h": 66
      },
@@ -18406,6 +19229,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.12-A05",
       "kind": "action",
       "label": "보존 기간 경과 데이터 삭제",
+      "x": 198,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A02",
+      "kind": "action",
+      "label": "평가 컨텍스트 개인정보 검토",
       "x": 198,
       "y": 400,
       "w": 188,
@@ -18423,7 +19255,7 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "id": "FPW.12-S2",
       "kind": "start",
-      "label": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
+      "label": "중국 시장 출시 또는 국외 조회 요청",
       "x": 146,
       "y": 138,
       "w": 18,
@@ -18432,7 +19264,7 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "id": "FPW.12-S3",
       "kind": "start",
-      "label": "중국 시장 출시 또는 국외 조회 요청",
+      "label": "EU 차량 사용자·제3자 데이터 접근 요청",
       "x": 146,
       "y": 236,
       "w": 18,
@@ -18441,9 +19273,9 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "id": "FPW.12-S4",
       "kind": "start",
-      "label": "EU 차량 사용자·제3자 데이터 접근 요청",
+      "label": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
       "x": 146,
-      "y": 334,
+      "y": 424,
       "w": 18,
       "h": 18
      },
@@ -18452,7 +19284,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "start",
       "label": "정기 보존 기간 점검",
       "x": 146,
-      "y": 424,
+      "y": 326,
       "w": 18,
       "h": 18
      },
@@ -18488,7 +19320,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "label": "종료",
       "x": 400,
-      "y": 334,
+      "y": 424,
       "w": 18,
       "h": 18
      },
@@ -18497,7 +19329,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "label": "종료",
       "x": 400,
-      "y": 424,
+      "y": 326,
       "w": 18,
       "h": 18
      }
@@ -18520,7 +19352,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.12-S2",
-      "to": "FPW.12-A02",
+      "to": "FPW.12-A03",
       "kind": "trigger",
       "points": [
        [
@@ -18535,7 +19367,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.12-S3",
-      "to": "FPW.12-A03",
+      "to": "FPW.12-A04",
       "kind": "trigger",
       "points": [
        [
@@ -18550,16 +19382,16 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.12-S4",
-      "to": "FPW.12-A04",
+      "to": "FPW.12-A02",
       "kind": "trigger",
       "points": [
        [
         164,
-        343
+        433
        ],
        [
         198,
-        343
+        433
        ]
       ]
      },
@@ -18570,11 +19402,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         164,
-        433
+        335
        ],
        [
         198,
-        433
+        335
        ]
       ]
      },
@@ -18594,7 +19426,7 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.12-A02",
+      "from": "FPW.12-A03",
       "to": "FPW.12-E2",
       "kind": "end",
       "points": [
@@ -18609,7 +19441,7 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.12-A03",
+      "from": "FPW.12-A04",
       "to": "FPW.12-E3",
       "kind": "end",
       "points": [
@@ -18624,17 +19456,17 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.12-A04",
+      "from": "FPW.12-A02",
       "to": "FPW.12-E4",
       "kind": "end",
       "points": [
        [
         386,
-        343
+        433
        ],
        [
         400,
-        343
+        433
        ]
       ]
      },
@@ -18645,11 +19477,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         386,
-        433
+        335
        ],
        [
         400,
-        433
+        335
        ]
       ]
      }
@@ -19359,6 +20191,878 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         960,
         147
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  },
+  {
+   "id": "FPW.14",
+   "name": "Feature DB 운영",
+   "en": "Feature DB Operation",
+   "group": "지원",
+   "gates": [],
+   "ref": "Feature DB 설계(30-95) 6.4절(추가 요청), 8장(운영 — 변경 요청·도메인 검토·승인·버전 발행·정기 점검)",
+   "purpose": "Feature 등록의 원천인 Feature DB 기준 행을 변경 요청으로만 바꾸고, 등록 기준 자동 점검과 담당 도메인 검토를 거쳐 Feature DB 관리자가 승인한 변경을 번호 붙은 버전으로 발행해 모든 등록 화면이 같은 기준을 쓰게 한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "기준 행의 추가·수정·폐기 예정·폐기가 필드 단위 차이를 가진 변경 요청으로 남는다."
+    },
+    {
+     "id": "O2",
+     "text": "변경 요청마다 등록 기준 자동 점검 결과와 담당 도메인 검토 의견이 남는다."
+    },
+    {
+     "id": "O3",
+     "text": "요청자·검토자와 다른 사람이 근거를 남기고 변경을 승인·반려한다."
+    },
+    {
+     "id": "O4",
+     "text": "승인된 변경이 정규화 해시가 기록된 발행 버전으로 묶여 등록 화면에 반영되고"
+    },
+    {
+     "id": "O5",
+     "text": "출처마다 다음 점검일이 관리되고 기한이 지난 출처가 점검된다."
+    }
+   ],
+   "rules": [],
+   "entry": [
+    "Feature DB 첫 발행본(엑셀 1회 이전 v1.3)이 설치되어 있다",
+    "Feature DB 관리자와 도메인별 검토자가 계정에 지정되어 있다"
+   ],
+   "exit": [
+    "승인된 변경이 새 발행 버전에 묶이고 전체 정규화 해시가 기록되었다",
+    "반려되어 폐기된 요청 중 행에 연결된 Feature의 Feature Owner가 알림을 받았다",
+    "다음 점검일이 지난 출처가 남아 있지 않다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-REF-CHANGE-REQ",
+     "name": "기준 행 변경 요청",
+     "en": "Reference Change Request",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "요청 종류(추가·수정·폐기 예정·폐기)와 대상 기준 행 ID",
+      "필드별 변경 전후 값과 사유·1차 출처 위치",
+      "이 행을 쓰는 FF Feature와 진행 중 산정 과제 목록(영향 표시)"
+     ]
+    },
+    {
+     "key": "WP-REF-REVIEW",
+     "name": "자동 점검·도메인 검토 기록",
+     "en": "Automated Check & Domain Review Record",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "등록 기준 점검 결과(통과·보완 필요·필수 정보 누락) 항목별 표시",
+      "도메인 검토자 의견(동의·보완·반대)과 근거",
+      "검토자가 요청자와 다른 사람이라는 확인"
+     ]
+    },
+    {
+     "key": "WP-REF-DECISION",
+     "name": "변경 승인·반려 기록",
+     "en": "Reference Change Decision",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "승인·반려 판정과 사유, 판정자와 시각",
+      "승인된 필드 차이의 적용 결과(발행 대기 표시)",
+      "반려된 추가 요청의 요청 중 행(발행 때 폐기·알림 대상)"
+     ]
+    },
+    {
+     "key": "WP-REFDB-RELEASE",
+     "name": "Feature DB 발행본",
+     "en": "Feature DB Release",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "발행 번호(v1.4 등)와 묶인 승인 요청 목록",
+      "요청 중 행의 확정 상태(활성·검토 필요, 반려된 추가 요청은 폐기와 사유)와 알림 받은 Feature Owner",
+      "전체 기준 행 정규화 해시와 상태별 행 수",
+      "품질 지표(출처 없는 행·근거 확인 12개월 경과 행·규모 근거 D 비중·발행 대기 요청 수)",
+      "분류 체계(도메인·클러스터·컴포넌트)와 출처 목록"
+     ]
+    },
+    {
+     "key": "WP-REF-SOURCE-REVIEW",
+     "name": "출처 정기 점검 기록",
+     "en": "Source Periodic Review Record",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "다음 점검일이 지난 출처와 점검 결과(변경 없음·개정 있음)",
+      "개정이 있는 출처에서 나온 후속 변경 요청 대상 행",
+      "출처별 새 다음 점검일"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.14-A01",
+     "name": "변경 요청 작성",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-ARC"
+      ],
+      "I": [
+       "R-RDA",
+       "R-DRV"
+      ]
+     },
+     "inputs": [
+      "WP-REF-LINK"
+     ],
+     "outputs": [
+      "WP-REF-CHANGE-REQ"
+     ],
+     "steps": [
+      "Feature DB 상세에서 바꿀 기준 행을 열고 요청 종류(추가·수정·폐기 예정·폐기)를 고른다",
+      "바꿀 필드의 새 값과 사유, 근거가 되는 1차 출처 위치를 적는다",
+      "출처 정기 점검에서 넘어온 개정 대상 행이면 그 점검 기록을 사유에 인용한다",
+      "영향 표시에서 이 행을 쓰는 Feature와 진행 중 산정 과제를 확인하고, 대표 ASIL·T-shirt 변경이면 재계산 필요를 알린다",
+      "폐기 예정·폐기 요청이면 대체 행을 함께 지정한다"
+     ],
+     "checks": [
+      "변경 요청에 필드별 변경 전후 값과 사유·출처가 있다",
+      "폐기 예정·폐기 요청에 대체 행 또는 대체 없음 사유가 있다"
+     ],
+     "platform": {
+      "actions": [
+       "createRefChange"
+      ],
+      "screens": [
+       "/master/feature-db/:refId"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.14-A02"
+     ]
+    },
+    {
+     "id": "FPW.14-A02",
+     "name": "자동 점검·도메인 검토",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-DRV"
+      ],
+      "A": "R-DRV",
+      "C": [
+       "R-SM"
+      ],
+      "I": [
+       "R-RDA",
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-REF-CHANGE-REQ",
+      "WP-REF-ADD-REQ"
+     ],
+     "outputs": [
+      "WP-REF-REVIEW"
+     ],
+     "steps": [
+      "자동 점검 결과에서 ID 형식·필수 정보·출처·규모 근거·중복·선행 관계 항목을 확인한다",
+      "필수 정보 누락은 요청자에게 보완을 요청하고, 그 밖의 실패 항목은 보완 필요로 표시한다",
+      "담당 도메인의 기준으로 변경 내용을 검토해 동의·보완·반대 의견과 근거를 남긴다",
+      "대표 ASIL을 바꾸는 요청이면 Safety Manager 의견을 받아 함께 적는다"
+     ],
+     "checks": [
+      "검토 의견이 비어 있지 않고 검토자가 요청자와 다른 사람이다",
+      "필수 정보 누락 항목이 남아 있지 않다"
+     ],
+     "platform": {
+      "actions": [
+       "reviewRefChange"
+      ],
+      "screens": [
+       "/master/feature-db/changes/:id",
+       "/master/feature-db/changes"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": 72,
+     "next": [
+      "FPW.14-A03"
+     ]
+    },
+    {
+     "id": "FPW.14-A03",
+     "name": "변경 승인·반려",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-RDA"
+      ],
+      "A": "R-RDA",
+      "C": [
+       "R-DRV"
+      ],
+      "I": [
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-REF-CHANGE-REQ",
+      "WP-REF-ADD-REQ",
+      "WP-REF-REVIEW"
+     ],
+     "outputs": [
+      "WP-REF-DECISION"
+     ],
+     "steps": [
+      "변경 요청·자동 점검 결과·도메인 검토 의견을 함께 보고 승인 또는 반려를 정한다",
+      "마지막 검토 의견이 반대·보완이면 승인하지 않고, 반려하거나 요청자에게 보완을 맡긴다",
+      "판정 사유를 남긴다 — 요청 중 행의 상태 확정(활성·검토 필요·폐기)과 연결 Feature 알림은 다음 발행 때 이루어진다"
+     ],
+     "checks": [
+      "승인자가 요청자와도, 그 요청의 도메인 검토자와도 다른 사람이고 판정 사유가 있다",
+      "승인된 변경은 발행 전까지 발행 대기로 표시되어 등록 화면에 반영되지 않았다"
+     ],
+     "platform": {
+      "actions": [
+       "decideRefChange"
+      ],
+      "screens": [
+       "/master/feature-db/changes/:id",
+       "/master/feature-db/changes"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": 72,
+     "next": [
+      "FPW.14-A04"
+     ]
+    },
+    {
+     "id": "FPW.14-A04",
+     "name": "Feature DB 버전 발행",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-RDA"
+      ],
+      "A": "R-RDA",
+      "C": [],
+      "I": [
+       "R-FO",
+       "R-DRV",
+       "R-PLM"
+      ]
+     },
+     "inputs": [
+      "WP-REF-DECISION"
+     ],
+     "outputs": [
+      "WP-REFDB-RELEASE"
+     ],
+     "steps": [
+      "발행 대기인 승인 요청을 모아 다음 발행 번호로 묶는다",
+      "품질 지표(상태 미입력·출처 없는 행·12개월 경과 행)를 확인하고 발행 노트에 적는다",
+      "발행해 전체 정규화 해시를 기록하고 등록 화면이 새 버전을 쓰는지 확인한다",
+      "승인된 추가 요청의 요청 중 행이 활성(근거 부족이면 검토 필요)이 되고, 반려된 추가 요청의 요청 중 행이 폐기와 사유로 확정되었는지 확인한다",
+      "폐기로 확정된 행에 연결된 Feature의 Feature Owner에게 다른 행으로 다시 연결하라는 알림이 갔는지 확인한다",
+      "바뀐 기준 행을 쓰는 Feature에 '기준 행이 바뀜' 표시가 붙었는지 확인한다"
+     ],
+     "checks": [
+      "발행 번호·묶인 요청 목록·정규화 해시가 발행 기록에 있다",
+      "발행 대기 요청 수가 0이다",
+      "반려된 추가 요청의 요청 중 행이 남아 있지 않다"
+     ],
+     "platform": {
+      "actions": [
+       "publishRefRelease"
+      ],
+      "screens": [
+       "/master/feature-db/changes"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    },
+    {
+     "id": "FPW.14-A05",
+     "name": "출처 정기 점검",
+     "trigger": "출처의 다음 점검일 도래(Feature DB 화면 알림)",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O5"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-RDA"
+      ],
+      "A": "R-RDA",
+      "C": [
+       "R-REG",
+       "R-DRV"
+      ],
+      "I": [
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-REFDB-RELEASE"
+     ],
+     "outputs": [
+      "WP-REF-SOURCE-REVIEW"
+     ],
+     "steps": [
+      "기한이 지난 출처(AUTOSAR·VSS·ISO·UN 규정·Euro NCAP 등) 목록을 Feature DB 화면 알림에서 연다",
+      "출처마다 새 판·개정 여부를 확인하고, 규정 출처는 법규 담당 의견을 받는다",
+      "개정이 기준 행에 영향을 주면 해당 행의 변경 요청이 나오도록 담당 도메인 검토자에게 넘긴다",
+      "점검 결과와 새 다음 점검일을 기록한다"
+     ],
+     "checks": [
+      "기한이 지난 출처마다 점검 결과와 새 다음 점검일이 있다"
+     ],
+     "platform": {
+      "actions": [
+       "recordSourceReview"
+      ],
+      "screens": [
+       "/master/feature-db"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1366,
+    "height": 294,
+    "lanes": [
+     {
+      "role": "R-FO",
+      "label": "Feature Owner",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-DRV",
+      "label": "도메인 검토자",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-RDA",
+      "label": "Feature DB 관리자",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.14-A01",
+      "kind": "action",
+      "label": "변경 요청 작성",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-A02",
+      "kind": "action",
+      "label": "자동 점검·도메인 검토",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-A03",
+      "kind": "action",
+      "label": "변경 승인·반려",
+      "x": 758,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-A04",
+      "kind": "action",
+      "label": "Feature DB 버전 발행",
+      "x": 1038,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-A05",
+      "kind": "action",
+      "label": "출처 정기 점검",
+      "x": 198,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.14-S2",
+      "kind": "start",
+      "label": "출처의 다음 점검일 도래(Feature DB 화면 알림)",
+      "x": 146,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.14-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.14-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.14-S1",
+      "to": "FPW.14-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-S2",
+      "to": "FPW.14-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        245
+       ],
+       [
+        198,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A01",
+      "to": "FPW.14-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A02",
+      "to": "FPW.14-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A03",
+      "to": "FPW.14-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A04",
+      "to": "FPW.14-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        245
+       ],
+       [
+        1240,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A05",
+      "to": "FPW.14-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        245
+       ],
+       [
+        400,
+        245
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   },
+   "departmentLayout": {
+    "width": 1366,
+    "height": 294,
+    "lanes": [
+     {
+      "department": "DEP-PDP",
+      "label": "상품기획팀",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-SE",
+      "label": "시스템엔지니어링팀",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-PLM",
+      "label": "PLM·기준정보팀",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.14-A01",
+      "kind": "action",
+      "label": "변경 요청 작성",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-A02",
+      "kind": "action",
+      "label": "자동 점검·도메인 검토",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-A03",
+      "kind": "action",
+      "label": "변경 승인·반려",
+      "x": 758,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-A04",
+      "kind": "action",
+      "label": "Feature DB 버전 발행",
+      "x": 1038,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-A05",
+      "kind": "action",
+      "label": "출처 정기 점검",
+      "x": 198,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.14-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.14-S2",
+      "kind": "start",
+      "label": "출처의 다음 점검일 도래(Feature DB 화면 알림)",
+      "x": 146,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.14-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.14-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.14-S1",
+      "to": "FPW.14-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-S2",
+      "to": "FPW.14-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        245
+       ],
+       [
+        198,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A01",
+      "to": "FPW.14-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A02",
+      "to": "FPW.14-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A03",
+      "to": "FPW.14-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A04",
+      "to": "FPW.14-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        245
+       ],
+       [
+        1240,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A05",
+      "to": "FPW.14-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        245
+       ],
+       [
+        400,
+        245
        ]
       ]
      }

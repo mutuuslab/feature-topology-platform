@@ -4,7 +4,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { FF, readJson } from './lib.ts';
+import { exitSkipped, FF, readJson } from './lib.ts';
 
 export interface SiblingFacts {
   present: boolean;
@@ -46,5 +46,6 @@ if (import.meta.main ?? process.argv[1]?.endsWith('siblings.ts')) {
   console.log('siblings');
   console.log(`  ${v.status === 'FAIL' ? '✕' : v.status === 'SKIP' ? '·' : '✓'} FF_IMP (${ffImpDir}) — ${v.note}`);
   console.log(`  ${carlaOk ? '✓' : '·'} LearnCarla CARLA (${carlaDir}) — ${carlaOk ? 'venv·서버 있음 (검증 서버가 떠 있으면 실제 실행기 시험이 돈다: npm run carla:up)' : '없음 — 실제 CARLA 시험은 건너뛴다'}`);
+  if (v.status === 'SKIP') exitSkipped(); // verify 요약에 SKIP으로(통과로 보이지 않게)
   process.exit(v.status === 'FAIL' ? 1 : 0);
 }

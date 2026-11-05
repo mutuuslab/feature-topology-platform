@@ -1,5 +1,6 @@
 // 화면 골격 부품 — 머리말·도구 줄·분절 필터·폼 필드·오류 안내·키-값 격자.
 import { cloneElement, createContext, isValidElement, useContext, useId, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type ReactNode, type SelectHTMLAttributes } from 'react';
+import { errors as E } from '../copy/errors';
 import { ErrorNextStep, showsCode, type ErrorLike } from './errors';
 import { Icon } from './icons';
 
@@ -204,7 +205,14 @@ export function ErrorNote({ error }: { error: ErrorLike | null | undefined }) {
       <Icon name="alert" size={16} />
       <div>
         <strong>{error.message}</strong>
-        {showsCode(error) && <span className="ds-error__code">{error.code}</span>}
+        {/* 오류 코드는 문장에 붙이지 않는다 — 문의용으로 따로 한 줄(글자·화면 읽기에서 "…합니다.SEPARATION_OF_DUTY"가 되던 결함, 담당자 웨이브) */}
+        {showsCode(error) && (
+          <span className="ds-error__code" data-error-code={error.code}>
+            {' '}
+            <span className="ds-sr">{E.codeLabel} </span>
+            <span>{error.code}</span>
+          </span>
+        )}
         {reasons.length > 0 && (
           <ul>
             {reasons.map((r) => (

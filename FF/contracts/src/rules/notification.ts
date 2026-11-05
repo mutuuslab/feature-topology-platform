@@ -70,11 +70,13 @@ export interface NotificationContext {
     approvals?: { approverId: string }[];
     restoreRequest?: { requestedBy: string; requestedAt: string; reason: string; approvals: { approverId: string }[] } | null;
   } | null;
+  /** Feature DB 변경 요청(이벤트 payload에 요청자가 없는 검토 의견 알림용) */
+  refChange?: { changeId: string; refId: string; kind: string; requestedBy: string; reason: string } | null;
 }
 
 export interface NotificationRule {
   /** 맥락에 필요한 기록 */
-  needs: ('feature' | 'policy' | 'kill')[];
+  needs: ('feature' | 'policy' | 'kill' | 'refChange')[];
   /** 알림을 만들지 않으면 null (예: 검증 GO가 아닌 NO-GO만 차단 알림) */
   build: (ctx: NotificationContext) => NotificationDraft | null;
 }
@@ -89,6 +91,10 @@ const roleNames = (rs: unknown): Recipient[] =>
   (Array.isArray(rs) ? rs : [])
     .filter((r): r is Role => typeof r === 'string' && (HUMAN_ROLES as readonly string[]).includes(r))
     .map((role) => ({ kind: 'role', role }));
+
+/** Feature DB 알림 이벤트 — 출처 정기 점검 기한 지남 · 추가 요청 반려(요청 중 행 폐기) */
+export const REFDB_REVIEW_DUE_EVENT = 'refdb.source.review-due';
+export const REFDB_REF_REJECTED_EVENT = 'refdb.ref.rejected';
 
 /**
  * 이벤트 종류 → 알림 규칙. 없는 이벤트는 알림을 만들지 않는다(이벤트 이력에만 남는다).
@@ -198,7 +204,8 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
           { label: '요청 일시', value: k.requestedAt },
         ],
         link: `/ops/kill?id=${k.killId}`,
-        recipients: roles(KILL_APPROVER_ROLES),
+        // F2 이상 안전·보안 차단은 FSM + CSM만 칸을 채운다(2026-11-04 결정) — 승인할 수 없는 역할에게 '내 차례'를 보내지 않는다(P4-1)
+        recipients: roles(ctx.event.payload.fsmRequired ? ['SAFETY_OFFICER', 'SECURITY_OFFICER'] : KILL_APPROVER_ROLES),
         exclude: [k.requestedBy],
         requirementIds: [],
       };
@@ -220,7 +227,8 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
           { label: '명령', value: String(ctx.event.payload.commandId ?? '-') },
         ],
         link: `/ops/kill?id=${k.killId}`,
-        recipients: [...owner(ctx), ...roles(['OPERATOR', 'OPS_LEAD'])],
+        // 감사(AUDITOR) — 긴급 권한 사용은 24시간 안에 사후 독립 검토(FFG-PLT-016, SOD-11)
+        recipients: [...owner(ctx), ...roles(['OPERATOR', 'OPS_LEAD', 'AUDITOR'])],
         exclude: [],
         requirementIds: ['FR-KSW-003-003'],
       };
@@ -242,11 +250,14 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
           { label: '해제 사유', value: rr.reason },
           { label: '요청자', value: rr.requestedBy },
           { label: '요청 일시', value: rr.requestedAt },
+          // 재검증 Evidence·이번 단계 Cohort(FPW.8-A08), 지금 승인할 수 있는 사람(P4-1) — 이전 이벤트에는 없다
+          ...(ctx.event.payload.evidenceRef ? [{ label: '재검증 Evidence', value: String(ctx.event.payload.evidenceRef) }] : []),
+          ...(Array.isArray(ctx.event.payload.candidates) ? [{ label: '승인 가능', value: (ctx.event.payload.candidates as string[]).join(', ') || '없음 — 상위 대응 필요' }] : []),
         ],
         link: `/ops/kill?id=${k.killId}`,
         recipients: roles(KILL_APPROVER_ROLES),
-        // 직전 차단 승인자는 복원을 승인할 수 없다(SOD-09) — 승인 대상자가 아니므로 받지 않는다
-        exclude: [rr.requestedBy, ...(k.approvals ?? []).map((a) => a.approverId)],
+        // 직전 차단 승인자(이 차단과 원장의 마지막 차단)는 복원을 승인할 수 없다(SOD-09) — 승인 대상자가 아니므로 받지 않는다
+        exclude: [rr.requestedBy, ...(k.approvals ?? []).map((a) => a.approverId), ...(Array.isArray(ctx.event.payload.excluded) ? (ctx.event.payload.excluded as string[]) : [])],
         requirementIds: ['FR-KSW-004-005'],
       };
     },
@@ -328,7 +339,203 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
       };
     },
   },
+  // Feature DB(30-95 §8.5) — 출처 다음 점검일이 지남 → Feature DB 관리자 역할
+  [REFDB_REVIEW_DUE_EVENT]: {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      return {
+        category: 'PROCEDURE',
+        severity: 'WARNING',
+        title: `출처 정기 점검 기한 지남 — ${p.sourceId} ${p.title ?? ''}`.trim(),
+        fields: [
+          { label: '출처', value: `${p.sourceId} ${p.title ?? ''}`.trim() },
+          { label: '발행처', value: String(p.publisher || '-') },
+          { label: '다음 점검일', value: String(p.nextReviewAt) },
+          { label: '최종 확인일', value: String(p.checkedAt ?? '-') },
+        ],
+        link: `/master/feature-db?tab=sources&source=${p.sourceId}`,
+        recipients: roles(['REFDB_ADMIN']),
+        exclude: [],
+        requirementIds: [],
+      };
+    },
+  },
+  // Feature DB(30-95 §6.4) — 추가 요청 반려로 요청 중 행이 폐기됨 → 그 행을 연결한 Feature의 Owner 팀(다른 행으로 다시 연결해야 승인 가능)
+  [REFDB_REF_REJECTED_EVENT]: {
+    needs: ['feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const f = ctx.feature;
+      if (!f?.ownerId) return null;
+      return {
+        category: 'APPROVAL',
+        severity: 'WARNING',
+        title: `기준 기능 추가 요청 반려 — ${p.refId} (다른 기준 행으로 다시 연결)`,
+        fields: [
+          { label: 'Feature', value: `${f.featureId} ${f.name} ${f.version}` },
+          { label: '기준 행', value: `${p.refId} ${p.nameKo ?? ''}`.trim() },
+          { label: '변경 요청', value: String(p.changeId) },
+          { label: '반려 사유', value: String(p.reason ?? '-') },
+          { label: '발행', value: String(p.release ?? '-') },
+        ],
+        link: `/features/${f.featureId}/${f.version}`,
+        recipients: owner(ctx),
+        exclude: [String(p.by ?? '')].filter(Boolean),
+        requirementIds: [],
+      };
+    },
+  },
+  // ── 담당자 웨이브 W2(P2-7·P1-4): 다음 담당자에게 차례를 알린다 ──
+  // Baseline 확정 요청 → BOM 승인자(요청자 본인 제외)
+  'baseline.requested': {
+    needs: ['feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      return {
+        category: 'APPROVAL',
+        severity: 'INFO',
+        title: `Baseline 확정 요청 — ${p.featureId} ${p.version}`,
+        fields: [
+          { label: 'Feature', value: `${featureLabel(ctx, String(p.featureId))} ${p.version}` },
+          { label: '요청', value: String(p.requestId) },
+          { label: '요청자', value: String(p.by ?? '-') },
+          { label: '요청 일시', value: ctx.event.at },
+        ],
+        link: `/baselines?request=${p.requestId}`,
+        recipients: roles(['BOM_APPROVER']),
+        exclude: [String(p.by ?? '')].filter(Boolean),
+        requirementIds: [],
+      };
+    },
+  },
+  // Feature DB 변경 요청 작성 → 도메인 검토자(의견)·Feature DB 관리자(승인), 요청자 본인 제외(SOD-13·14)
+  'refdb.change.created': {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      return {
+        category: 'APPROVAL',
+        severity: 'INFO',
+        title: `Feature DB 변경 요청 — ${p.changeId} ${REF_KIND_KO[String(p.kind)] ?? p.kind} ${p.refId}`,
+        fields: [
+          { label: '변경 요청', value: String(p.changeId) },
+          { label: '종류', value: REF_KIND_KO[String(p.kind)] ?? String(p.kind) },
+          { label: '기준 행', value: String(p.refId) },
+          { label: '요청자', value: String(p.by ?? '-') },
+        ],
+        link: `/master/feature-db/changes/${p.changeId}`,
+        recipients: roles(['DOMAIN_REVIEWER', 'REFDB_ADMIN']),
+        exclude: [String(p.by ?? '')].filter(Boolean),
+        requirementIds: [],
+      };
+    },
+  },
+  // 도메인 검토 의견 — 보완·반대는 요청자에게(고쳐서 다시), 동의는 Feature DB 관리자에게(승인 차례). 의견 낸 본인 제외(SOD-15)
+  'refdb.change.reviewed': {
+    needs: ['refChange'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const c = ctx.refChange;
+      const agree = p.opinion === 'AGREE';
+      if (!agree && !c?.requestedBy) return null;
+      return {
+        category: 'APPROVAL',
+        severity: agree ? 'INFO' : 'WARNING',
+        title: agree ? `Feature DB 변경 요청 동의 — ${p.changeId} 승인 차례` : `Feature DB 변경 요청 ${REF_OPINION_KO[String(p.opinion)] ?? p.opinion} 의견 — ${p.changeId} 보완 필요`,
+        fields: [
+          { label: '변경 요청', value: `${p.changeId}${c ? ` · ${REF_KIND_KO[c.kind] ?? c.kind}` : ''}` },
+          { label: '기준 행', value: String(p.refId) },
+          { label: '의견', value: REF_OPINION_KO[String(p.opinion)] ?? String(p.opinion) },
+          { label: '검토자', value: String(p.by ?? '-') },
+        ],
+        link: `/master/feature-db/changes/${p.changeId}`,
+        recipients: agree ? roles(['REFDB_ADMIN']) : [{ kind: 'user', id: c!.requestedBy }],
+        exclude: [String(p.by ?? ''), ...(agree && c?.requestedBy ? [c.requestedBy] : [])].filter(Boolean),
+        requirementIds: [],
+      };
+    },
+  },
+  // Release Sign-off → 출시 담당(출시 전이 차례)·Feature Owner 팀·상품 Owner(고객 출시 준비)·감사(서명 기록), 서명한 본인 제외
+  'release.signed': {
+    needs: ['feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const fid = String(p.featureId);
+      return {
+        category: 'APPROVAL',
+        severity: 'INFO',
+        title: `Release Sign-off 완료 — ${fid} ${p.version} 출시 차례`,
+        fields: [
+          { label: 'Feature', value: `${featureLabel(ctx, fid)} ${p.version}` },
+          { label: '서명자', value: String(p.signedBy ?? '-') },
+          { label: '서명 일시', value: ctx.event.at },
+          { label: '다음', value: '출시 담당이 출시(RELEASED) 전이' },
+        ],
+        link: `/features/${fid}/${p.version}`,
+        recipients: [...(p.ownerId || ctx.feature?.ownerId ? [{ kind: 'team', team: String(p.ownerId ?? ctx.feature?.ownerId) } as Recipient] : []), ...roles(['RELEASE_MANAGER', 'PRODUCT_APPROVER', 'AUDITOR'])],
+        exclude: [String(p.signedBy ?? '')].filter(Boolean),
+        requirementIds: [],
+      };
+    },
+  },
+  // ── 담당자 웨이브 W1(P4-1·P4-6): 관제 ──
+  // 복원 막힘 — 차단 승인자를 빼면 복원 2인 승인을 끝낼 수 없다(예: FSM 없음) → 운영 리더·Safety Manager에게 상위 대응 요청
+  'kill.restore-blocked': {
+    needs: ['feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const missing = (Array.isArray(p.missing) ? p.missing : []).map((r: string) => APPROVER_ROLE_KO[r] ?? r).join(', ') || '승인자 2인';
+      return {
+        category: 'SAFETY',
+        severity: 'WARNING',
+        title: `복원 승인자 부족 — ${p.killId} ${featureLabel(ctx, String(p.featureId))}`,
+        fields: [
+          { label: '차단', value: String(p.killId) },
+          { label: '없는 승인', value: missing },
+          { label: '복원 승인에서 빠지는 사람', value: (Array.isArray(p.excluded) ? p.excluded : []).join(', ') || '-' },
+          { label: '상위 대응', value: '기능안전 조직장이 이 차단을 승인하지 않은 Safety Manager를 지정(IAM 역할 부여)하고 복원 승인을 맡긴다' },
+        ],
+        link: `/ops/kill?id=${p.killId}`,
+        recipients: roles(['OPS_LEAD', 'SAFETY_OFFICER']),
+        exclude: [],
+        requirementIds: [],
+      };
+    },
+  },
+  // 서명 키 교체 → 품질(Gate·Safety Manager)·운영 담당 — 새 키로 서명되는 게시본과 검증 전용이 된 이전 키를 알린다. 교체한 본인 제외
+  'pki.key.rotated': {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const purpose = KEY_PURPOSE_KO[String(p.purpose)] ?? String(p.purpose);
+      return {
+        category: 'DEPLOY',
+        severity: 'INFO',
+        title: `서명 키 교체 — ${purpose} 키 ${p.keyId}`,
+        fields: [
+          { label: '용도', value: purpose },
+          { label: '새 키', value: String(p.keyId) },
+          { label: '이전 키', value: p.retired ? `${p.retired} (검증 전용 — 이미 배포한 게시본은 계속 검증)` : '-' },
+          { label: '교체자', value: String(p.by ?? '-') },
+          { label: '사유', value: String(p.reason ?? '-') },
+        ],
+        link: '/admin/security',
+        recipients: roles(['GATE_JUDGE', 'SAFETY_OFFICER', 'OPERATOR']),
+        exclude: [String(p.by ?? '')].filter(Boolean),
+        requirementIds: [],
+      };
+    },
+  },
 };
+
+/** 보고서 승인 역할 → 업무 이름(알림 문구) */
+const APPROVER_ROLE_KO: Record<string, string> = { FSM: '기능안전(Safety Manager)', CSM: '사이버보안', OPS_LEAD: '운영 리더', PRODUCT_OWNER: '상품 Owner', QA: '품질', REGULATORY: '법규' };
+/** 서명 키 용도 → 업무 이름 */
+export const KEY_PURPOSE_KO: Record<string, string> = { policy: '정책 배포', activate: '기능 활성화', kill: '긴급 차단', restore: '복원', sync: '상태 동기화', gate: '정책 게이트 판정' };
+
+const REF_KIND_KO: Record<string, string> = { ADD: '추가', MODIFY: '수정', DEPRECATE: '폐기 예정', RETIRE: '폐기' };
+const REF_OPINION_KO: Record<string, string> = { AGREE: '동의', REVISE: '보완', OPPOSE: '반대' };
 
 /** 롤백 승인 요청 — 이벤트가 알림에 필요한 값을 모두 싣는다(Plan·수동 요청 기록을 다시 읽지 않는다) */
 function rollbackApproval(ctx: NotificationContext, kind: 'plan' | 'manual'): NotificationDraft {

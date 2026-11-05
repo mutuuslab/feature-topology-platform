@@ -131,3 +131,13 @@ export function judge(c: Catalog, ctx: Ctx): Verdict {
   }
   return v;
 }
+
+/**
+ * PG 호환 측정(harness/pg-compat.json) 뒤에 생긴 마이그레이션 — 있으면 그 스키마는 PostgreSQL에서 돈 적이 없다(npm run test:pg로 다시 잰다).
+ * migrationsAtMeasure가 없으면 기록이 낡은 형식이라 비교할 수 없다(recordMissing).
+ */
+export function pgMeasureGap(pg: { measuredAt?: string; migrationsAtMeasure?: string[] }, lock: { migrations: Record<string, string> }): { recordMissing: boolean; newer: string[] } {
+  if (!Array.isArray(pg.migrationsAtMeasure)) return { recordMissing: true, newer: [] };
+  const measured = new Set(pg.migrationsAtMeasure);
+  return { recordMissing: false, newer: Object.keys(lock.migrations).filter((m) => !measured.has(m)) };
+}

@@ -147,13 +147,14 @@ export class MasterDataService {
     };
   }
 
-  /** Evidence 원장 — Gate 판정과 Evidence(데이터셋 + 플랫폼에서 판정한 것) */
-  evidence(q: { featureId?: string; gate?: string; result?: string }) {
+  /** Evidence 원장 — Gate 판정과 Evidence(데이터셋 + 플랫폼에서 판정한 것, P3-4). ref는 Evidence Ref 일부(대소문자 무시) — Gate 이력의 링크가 쓴다 */
+  evidence(q: { featureId?: string; gate?: string; result?: string; ref?: string }) {
     const gateBy = new Map(this.gates.all().map((g) => [g.gateRecordId, g]));
+    const ref = q.ref?.trim().toUpperCase();
     return this.gates
       .allEvidence()
-      .filter((e) => (!q.featureId || e.featureId === q.featureId) && (!q.gate || e.gate === q.gate) && (!q.result || e.inputResult === q.result))
-      .map((e) => ({ evidenceRef: e.evidenceRef, gate: e.gate, gateRecordId: e.gateRecordId, featureId: e.featureId, featureVersion: e.featureVersion, featureName: e.featureName, owner: e.owner, inputResult: e.inputResult, resultReason: e.resultReason, gateStatus: gateBy.get(e.gateRecordId)?.status ?? null }));
+      .filter((e) => (!q.featureId || e.featureId === q.featureId) && (!q.gate || e.gate === q.gate) && (!q.result || e.inputResult === q.result) && (!ref || e.evidenceRef.toUpperCase().includes(ref)))
+      .map((e) => ({ evidenceRef: e.evidenceRef, gate: e.gate, gateRecordId: e.gateRecordId, featureId: e.featureId, featureVersion: e.featureVersion, featureName: e.featureName, owner: e.owner, inputResult: e.inputResult, resultReason: e.resultReason, gateStatus: gateBy.get(e.gateRecordId)?.status ?? null, judgedAt: gateBy.get(e.gateRecordId)?.judgedAt ?? null }));
   }
 
   /** 변경 이력(변경요청) — Version 변경 사유(데이터셋 Version_Rationale) */
@@ -201,8 +202,8 @@ export class MasterDataController {
     return this.svc.trace(id, ver);
   }
   @Get('evidence')
-  evidence(@Query('featureId') featureId?: string, @Query('gate') gate?: string, @Query('result') result?: string) {
-    return { items: this.svc.evidence({ featureId, gate, result }) };
+  evidence(@Query('featureId') featureId?: string, @Query('gate') gate?: string, @Query('result') result?: string, @Query('ref') ref?: string) {
+    return { items: this.svc.evidence({ featureId, gate, result, ref }) };
   }
   @Get('changes')
   changes(@Query('featureId') featureId?: string) {

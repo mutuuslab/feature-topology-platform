@@ -45,6 +45,8 @@ export const JIRA_EPIC_FIELDS: Record<EpicScopeField, () => string> = {
   asil: () => process.env.JIRA_FIELD_ASIL ?? 'ffAsil',
   ownerId: () => process.env.JIRA_FIELD_OWNER ?? 'ffOwner',
 };
+/** Epic의 기준 기능 ID 사용자 필드(30-95 §7, D-REF-16) — JIRA 안의 FF 앱이 쓴다. 필드가 비면 라벨(ref:·ref-primary:)을 읽는다 */
+export const JIRA_REF_FIELD = () => process.env.JIRA_FIELD_FEATURE_DB ?? 'ffFeatureDb';
 export const CODEBEAMER_TRACKER = () => Number(process.env.CODEBEAMER_REQ_TRACKER ?? 4711);
 
 export function extUrl(system: ExtSystem, kind: string, key: string): string {
@@ -153,7 +155,13 @@ export class MockExtStore {
             updated: it.updatedAt,
             ...(it.fields.parentKey ? { parent: { key: it.fields.parentKey } } : {}),
             // Epic 적용 범위 — 실제 JIRA처럼 사용자 정의 필드(선택 목록은 { value })로 싣는다
-            ...Object.fromEntries(Object.entries((it.fields.scope ?? {}) as Record<string, unknown>).filter(([, v]) => v !== undefined).map(([k, v]) => [JIRA_EPIC_FIELDS[k as EpicScopeField](), { value: v }])),
+            ...Object.fromEntries(
+              Object.entries((it.fields.scope ?? {}) as Record<string, unknown>)
+                .filter(([k, v]) => v !== undefined && k in JIRA_EPIC_FIELDS)
+                .map(([k, v]) => [JIRA_EPIC_FIELDS[k as EpicScopeField](), { value: v }]),
+            ),
+            // 기준 기능 ID — 라벨(첫 값이 대표: ref-primary:, 나머지 ref:). 필드를 설정했으면 그 필드에도 싣는다(30-95 §7)
+            ...epicRefPayload((it.fields.scope as { refIds?: unknown } | undefined)?.refIds),
           },
         },
         ...(change.fromStatus !== null && change.fromStatus !== it.status ? { changelog: { items: [{ field: 'status', fromString: change.fromStatus, toString: it.status }] } } : {}),
@@ -207,4 +215,12 @@ export class MockExtStore {
     };
     return { system: 'CODEBEAMER', headers: { 'x-cb-delivery': deliveryId, 'x-cb-signature': '' }, body };
   }
+}
+
+/** 모의 JIRA Epic 본문의 기준 기능 ID — 라벨과(설정 시) 사용자 필드 */
+function epicRefPayload(refIds: unknown): Record<string, unknown> {
+  if (!Array.isArray(refIds) || !refIds.length) return {};
+  const ids = refIds.filter((x): x is string => typeof x === 'string');
+  const field = JIRA_REF_FIELD();
+  return { labels: ids.map((id, i) => `${i === 0 ? 'ref-primary' : 'ref'}:${id}`), ...(field ? { [field]: ids.join(', ') } : {}) };
 }

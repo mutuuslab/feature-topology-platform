@@ -8,6 +8,7 @@ owner: governance
 cycle: 0
 traces:
   depends_on:
+    - WF-FPW-3
     - WF-FPW-4
     - WF-FPW-5
     - WF-FPW-6
@@ -15,7 +16,7 @@ traces:
     - WF-FPW-10
     - WF-FPW-11
     - WF-FPW-12
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -28,6 +29,17 @@ last_updated: 2026-11-04
 - 매핑 근거: registerChangeRecord·submitTms(IMPLEMENTER), 데모 계정 integrator
 
 ## 1. 내가 하는 일 (수행 R · 책임 A)
+
+### FPW.3-A05 구현 연결 입력 — 수행·책임
+- 프로세스: FPW.3 안전요구 확정
+- 시작: 앞 활동 완료
+- 입력: WP-SAFETY-REQ → 출력: WP-IMPL-LINK
+- 플랫폼: `updateDraft`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`
+1. 정의 승인 전에 Feature 설계 담당 또는 SW 통합 담당이 PROPOSED 초안에서 Function → SW·Version → 제어기 P/N을 SW·ECU 기준정보에서 골라 연결한다
+2. Feature 상세 → 초안 수정 → 구현 연결에서 입력한다. 서버는 기준정보에 없는 짝을 거부한다
+3. 승인된 Version에 구현 연결이 빠져 있으면 새 Version에서 넣고 정의 승인을 다시 받는다
+4. 외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다
+- [ ] VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다
 
 ### FPW.5-A03 통합 시험·SEooC 가정 확인 — 수행·책임
 - 프로세스: FPW.5 검증·V&V

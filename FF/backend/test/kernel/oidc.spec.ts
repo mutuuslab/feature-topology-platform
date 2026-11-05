@@ -17,9 +17,12 @@ const USERS = {
   integrator: { sub: 'u-integ-1', name: '최연계', email: 'integ@oem.example', groups: ['ff-integrator'] },
   // 로그인한 적 없이 Bearer로만 오는 운영 리더(승인자 키 미등록)
   apilead: { sub: 'u-apilead-1', name: 'API 리더', email: 'apilead@oem.example', groups: ['ff-opslead'] },
+  // 사이버보안 담당(CSM) — F2 이상 안전 차단의 두 번째 칸(2026-11-04 결정: FSM + CSM). apicsm은 로그인한 적 없는 Bearer
+  csm: { sub: 'u-csm-1', name: '정보안', email: 'csm@oem.example', groups: ['ff-csm'] },
+  apicsm: { sub: 'u-apicsm-1', name: 'API 보안', email: 'apicsm@oem.example', groups: ['ff-csm'] },
   nobody: { sub: 'u-nobody-1', name: '역할없음', email: 'nobody@oem.example', groups: ['other-team'] },
 };
-const ROLE_MAP = 'ff-author=FEATURE_AUTHOR,ff-ops=OPERATOR,ff-opslead=OPS_LEAD,ff-integrator=SAFETY_OFFICER|SECURITY_OFFICER';
+const ROLE_MAP = 'ff-author=FEATURE_AUTHOR,ff-ops=OPERATOR,ff-opslead=OPS_LEAD,ff-integrator=SAFETY_OFFICER|SECURITY_OFFICER,ff-csm=SECURITY_OFFICER';
 
 let idp: FakeOidc;
 let app: NestExpressApplication;
@@ -309,18 +312,21 @@ describe('승인자 서명 키 — 로그인 때 등록, 승인 중 즉석 생�
   it('FSM·CSM을 함께 가진 사람이 역할을 바꿔 두 번째 칸을 채우려 하면 거부, 키 미등록 Bearer 승인자는 거부', async () => {
     const ops = (await login('ops')).agent;
     const integ = (await login('integrator')).agent;
-    const lead = (await login('opslead')).agent;
+    const csm = (await login('csm')).agent;
     const k = (await ops.post('/api/kill-requests').set('Origin', PUBLIC).set('X-Actor-Role', 'OPERATOR').send(KILL).expect(201)).body;
     await integ.post(`/api/kill-requests/${k.killId}/approvals`).set('Origin', PUBLIC).set('X-Actor-Role', 'SAFETY_OFFICER').send({}).expect(201);
     const twice = await integ.post(`/api/kill-requests/${k.killId}/approvals`).set('Origin', PUBLIC).set('X-Actor-Role', 'SECURITY_OFFICER').send({});
     expect(twice.status).toBe(409);
     expect(twice.body.error.details.code).toBe('DUPLICATE');
-    // 로그인한 적 없는 운영 리더(Bearer) — 승인 서명 키가 없으니 승인할 수 없다(즉석 생성 금지)
-    const api = await http().post(`/api/kill-requests/${k.killId}/approvals`).set('Authorization', `Bearer ${idp.accessToken('apilead')}`).send({});
+    // 로그인한 적 없는 사이버보안 담당(Bearer) — 승인 서명 키가 없으니 승인할 수 없다(즉석 생성 금지)
+    const api = await http().post(`/api/kill-requests/${k.killId}/approvals`).set('Authorization', `Bearer ${idp.accessToken('apicsm')}`).send({});
     expect(api.status).toBe(403);
     expect(api.body.error.details.code).toBe('APPROVER_KEY_NOT_ENROLLED');
-    // 로그인해 키가 등록된 운영 리더는 승인해 발행한다
-    const issued = (await lead.post(`/api/kill-requests/${k.killId}/approvals`).set('Origin', PUBLIC).send({}).expect(201)).body;
-    expect(issued.approvals.map((a: { approverId: string }) => a.approverId)).toEqual([USERS.integrator.sub, USERS.opslead.sub]);
+    // 로그인해 키가 등록된 사이버보안 담당은 승인해 발행한다
+    const issued = (await csm.post(`/api/kill-requests/${k.killId}/approvals`).set('Origin', PUBLIC).send({}).expect(201)).body;
+    expect(issued.approvals.map((a: { approverId: string; role: string }) => [a.approverId, a.role])).toEqual([
+      [USERS.integrator.sub, 'FSM'],
+      [USERS.csm.sub, 'CSM'],
+    ]);
   });
 });

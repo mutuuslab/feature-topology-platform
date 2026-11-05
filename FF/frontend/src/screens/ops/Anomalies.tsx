@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { virtualCopy } from '../../copy/virtual';
+import { control as CT } from '../../copy/control';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Segmented, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 
@@ -42,7 +44,10 @@ function AnomalyDrawer({ id, onClose }: { id: string | null; onClose: () => void
   const [reason, setReason] = useState('');
   const a = q.data;
   const open = a && (a.status === 'OPEN' || a.status === 'ACKNOWLEDGED');
-  const act = (m: typeof ack) => a && m.mutate({ params: { id: a.anomalyId }, body: { reason } }, { onSuccess: () => setReason('') });
+  // 처리 뒤 서랍의 상태를 바로 다시 읽는다(P4-8 — 확인 뒤에도 '열림'으로 남아 보였다)
+  const act = (m: typeof ack) => a && m.mutate({ params: { id: a.anomalyId }, body: { reason } }, { onSuccess: () => (setReason(''), void q.refetch()) });
+  // 치명 현장 SOTIF 이상도 긴급 차단으로 넘어갈 수 있다 — 차단 권고(FEATURE_FAULT)만 링크가 있었다
+  const toKill = a && (a.kind === 'FEATURE_FAULT' || (a.kind === 'FIELD_SOTIF' && a.severity === 'CRITICAL'));
   const busy = ack.isPending || mitigate.isPending || dismiss.isPending;
   const ok = perm.ok && reason.trim().length >= 2 && !busy;
   return (
@@ -83,11 +88,12 @@ function AnomalyDrawer({ id, onClose }: { id: string | null; onClose: () => void
           />
           {open && (
             <div style={{ display: 'grid', gap: 'var(--sp-2)' }}>
-              {a.kind === 'FEATURE_FAULT' && (
-                <Link className="ds-btn ds-btn--danger" to={`/ops/kill?featureId=${a.featureId}&anomaly=${a.anomalyId}`}>
-                  {A.toKill}
+              {toKill && (
+                <Link className="ds-btn ds-btn--danger" to={`/ops/kill?featureId=${a.featureId}&anomaly=${a.anomalyId}`} data-testid="anomaly-to-kill">
+                  {a.kind === 'FIELD_SOTIF' ? CT.anomaly.toKillSotif : A.toKill}
                 </Link>
               )}
+              {toKill && a.kind === 'FIELD_SOTIF' && <p className="ds-field__hint">{CT.anomaly.toKillSotifHint}</p>}
               <Field label={ko.page.reason}>
                 <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
               </Field>
@@ -228,7 +234,7 @@ export function FeedbackScreen() {
               {open.actions.map((x) => (
                 <li key={x.ref} data-state={open.status === 'RESOLVED' ? 'PASS' : 'INFO'}>
                   <span>{x.label}</span>
-                  {x.kind === 'VIRTUAL_REGRESSION' && <Link to="/validations/virtual">{ko.virtual.title} →</Link>}
+                  {x.kind === 'VIRTUAL_REGRESSION' && <Link to="/validations/virtual">{virtualCopy.title} →</Link>}
                 </li>
               ))}
             </ul>

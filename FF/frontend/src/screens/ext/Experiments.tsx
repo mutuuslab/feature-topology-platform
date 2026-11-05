@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
-import { ko } from '../../copy/ko';
+import { p10 } from '../../copy/p10';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
 
-const X = ko.p10.experiment;
+const X = p10.experiment;
 
 interface Results {
   days: number;

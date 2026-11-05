@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { DB, type Db } from '../../src/kernel/db';
 import { SafetyProfileService } from '../../src/domains/d01-policy/registry/safety-profile.service';
-import { actor, bootApp, confirmSafety } from '../helpers';
+import { actor, bootApp, confirmSafety, withRef } from '../helpers';
 
 let close: (() => Promise<void>) | null = null;
 afterEach(async () => close?.());
@@ -19,7 +19,7 @@ async function newFeature(http: () => any, asil = 'B') {
   const r = await http()
     .post('/api/features')
     .set(AUTHOR)
-    .send({ name: `분류 시험 ${Math.random().toString(36).slice(2, 7)}`, description: '안전 분류 시험용', requirementIds: ['REQ-T-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'QA팀', tags: ['adas'], asil, upgVc: ['F111A114001'], controlPoints: ['Flag'] })
+    .send(withRef({ name: `분류 시험 ${Math.random().toString(36).slice(2, 7)}`, description: '안전 분류 시험용', requirementIds: ['REQ-T-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'QA팀', tags: ['adas'], asil, upgVc: ['F111A114001'], controlPoints: ['Flag'] }))
     .expect(201);
   return r.body.featureId as string;
 }

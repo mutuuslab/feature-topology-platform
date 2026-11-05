@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://localhost:9131/admin/iam",
+  "iam_url": "http://localhost:9012/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-04T07:19:50.166Z",
+  "fetched_at": "2026-11-05T01:24:45.108Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-dept\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-04T07:19:14.688Z",
+  "contracts_dist_mtime": "2026-11-05T01:20:07.748Z",
   "ff_git": {
-   "head": "bfe148403ba0d62b74d4e92fd5571ef1f79c0895",
-   "dirty_files": 3
+   "head": "624960e9b919c98ccf127f00f9c320b9383dd171",
+   "dirty_files": 32
   },
-  "iam_sha256": "070d9c769d7a0bced4e9bd12a6d00e9b6b230254b9b608cad9639b7388c4aa44"
+  "iam_sha256": "02350b64db82312d83ad98cc1413aed79add3500e00e0ab652bc283b33346b45"
  },
  "roles": [
   {
@@ -87,8 +87,38 @@
    "human": true
   },
   {
+   "role": "REFDB_ADMIN",
+   "label": "Feature DB 관리자",
+   "human": true
+  },
+  {
+   "role": "DOMAIN_REVIEWER",
+   "label": "도메인 검토자",
+   "human": true
+  },
+  {
    "role": "AUDITOR",
    "label": "운영·감사 조회자",
+   "human": true
+  },
+  {
+   "role": "COST_ESTIMATOR",
+   "label": "SW 개발비 산정 작성자",
+   "human": true
+  },
+  {
+   "role": "COST_APPROVER",
+   "label": "SW 개발비 산정 승인자",
+   "human": true
+  },
+  {
+   "role": "COST_VIEWER",
+   "label": "SW 개발비 산정 열람자",
+   "human": true
+  },
+  {
+   "role": "COST_BASIS_ADMIN",
+   "label": "원가 기준 관리자",
    "human": true
   },
   {
@@ -124,7 +154,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -148,7 +184,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -203,7 +245,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -227,7 +275,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -273,6 +327,86 @@
     "FEATURE_APPROVER",
     "RELEASE_MANAGER",
     "GATE_JUDGE"
+   ]
+  },
+  {
+   "name": "recordSourceReview",
+   "method": "POST",
+   "path": "/api/refdb/sources/reviews",
+   "summary": "Feature DB 출처 정기 점검 기록 — 확인일·다음 점검일 갱신(기한 알림이 닫힌다)",
+   "component": "D01-01",
+   "roles": [
+    "REFDB_ADMIN"
+   ]
+  },
+  {
+   "name": "requestRefAdd",
+   "method": "POST",
+   "path": "/api/refdb/requests",
+   "summary": "Feature DB에 없는 기능 추가 요청 — 정식 ID를 바로 부여한 요청 중 행 + 추가 변경 요청(승인 전에는 Feature 정의 승인이 막힘)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "REFDB_ADMIN"
+   ]
+  },
+  {
+   "name": "createRefChange",
+   "method": "POST",
+   "path": "/api/refdb/changes",
+   "summary": "Feature DB 변경 요청 작성(추가·수정·폐기 예정·폐기) — 자동 점검 후 도메인 검토로",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
+   ]
+  },
+  {
+   "name": "reviewRefChange",
+   "method": "POST",
+   "path": "/api/refdb/changes/:id/reviews",
+   "summary": "Feature DB 변경 요청 도메인 검토 의견(동의·보완·반대) — 요청자는 검토할 수 없다",
+   "component": "D01-01",
+   "roles": [
+    "DOMAIN_REVIEWER"
+   ]
+  },
+  {
+   "name": "decideRefChange",
+   "method": "POST",
+   "path": "/api/refdb/changes/:id/decision",
+   "summary": "Feature DB 변경 요청 승인·반려 — 요청자·검토자 ≠ 승인자, 마지막 검토 의견이 보완·반대이거나 필수 정보 누락이면 승인 불가",
+   "component": "D01-01",
+   "roles": [
+    "REFDB_ADMIN"
+   ]
+  },
+  {
+   "name": "publishRefRelease",
+   "method": "POST",
+   "path": "/api/refdb/releases",
+   "summary": "Feature DB 버전 발행 — 승인된 변경 요청을 묶어 다음 버전·전체 해시 기록(추가만)",
+   "component": "D01-01",
+   "roles": [
+    "REFDB_ADMIN"
    ]
   },
   {
@@ -366,6 +500,16 @@
    "component": "D01-03",
    "roles": [
     "PRODUCT_APPROVER"
+   ]
+  },
+  {
+   "name": "importFlagSources",
+   "method": "POST",
+   "path": "/api/flag-sources",
+   "summary": "개발자·CI 소스 스냅샷 가져오기",
+   "component": "D01-06",
+   "roles": [
+    "IMPLEMENTER"
    ]
   },
   {
@@ -611,6 +755,16 @@
    ]
   },
   {
+   "name": "vehicleSignedUnleashFlags",
+   "method": "POST",
+   "path": "/vehicle/v1/:vin/signed-flags",
+   "summary": "Unleash Edge 평가·FF 경계 검사 후 VIN/TTL 귀속 서명본",
+   "component": "D02-03",
+   "roles": [
+    "VEHICLE"
+   ]
+  },
+  {
    "name": "vehicleQueryAll",
    "method": "POST",
    "path": "/vehicle/v1/:vin/flags",
@@ -741,7 +895,7 @@
    "name": "requestRestore",
    "method": "POST",
    "path": "/api/kill-requests/:id/restore",
-   "summary": "복원 요청 — 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명",
+   "summary": "복원 요청 — 재검증 Evidence·이번 단계 Cohort, 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명",
    "component": "D03-04",
    "roles": [
     "OPERATOR",
@@ -799,7 +953,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -921,6 +1081,118 @@
    "component": "D05-01",
    "roles": [
     "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "costProjectCreate",
+   "method": "POST",
+   "path": "/api/cost/projects",
+   "summary": "산정 과제 만들기",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costProjectUpdate",
+   "method": "PATCH",
+   "path": "/api/cost/projects/:estId",
+   "summary": "산정 과제 설정 수정",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costFeatureAdd",
+   "method": "POST",
+   "path": "/api/cost/projects/:estId/features",
+   "summary": "Feature 담기",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costFeatureRemove",
+   "method": "DELETE",
+   "path": "/api/cost/projects/:estId/features/:featureId/:version",
+   "summary": "Feature 빼기",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costLineUpdate",
+   "method": "PATCH",
+   "path": "/api/cost/projects/:estId/lines/:lineNo",
+   "summary": "줄 입력",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costMbdPut",
+   "method": "PUT",
+   "path": "/api/cost/projects/:estId/mbd/:refId",
+   "summary": "MBD 작업 행 바꾸기",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costTransition",
+   "method": "POST",
+   "path": "/api/cost/projects/:estId/transitions",
+   "summary": "제출·승인·반려·개정 — 작성자와 승인자는 서로 다른 사람",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR",
+    "COST_APPROVER"
+   ]
+  },
+  {
+   "name": "costCheckPut",
+   "method": "PUT",
+   "path": "/api/cost/projects/:estId/checks/:no",
+   "summary": "검토 체크리스트 항목",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR",
+    "COST_APPROVER"
+   ]
+  },
+  {
+   "name": "costActualPut",
+   "method": "PUT",
+   "path": "/api/cost/projects/:estId/actuals/:refId",
+   "summary": "승인 뒤 실적 공수",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costBasisDraft",
+   "method": "POST",
+   "path": "/api/cost/basis",
+   "summary": "계수·단가 표 초안",
+   "component": "D07-01",
+   "roles": [
+    "COST_BASIS_ADMIN"
+   ]
+  },
+  {
+   "name": "costBasisPublish",
+   "method": "POST",
+   "path": "/api/cost/basis/:version/publish",
+   "summary": "계수·단가 표 발행",
+   "component": "D07-01",
+   "roles": [
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -1227,7 +1499,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -1251,7 +1529,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -1275,7 +1559,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -1299,7 +1589,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -1323,7 +1619,13 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
-    "AUDITOR"
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -1347,7 +1649,133 @@
     "SECURITY_OFFICER",
     "OPS_LEAD",
     "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN"
+   ]
+  },
+  {
+   "name": "createConsultation",
+   "method": "POST",
+   "path": "/api/consultations",
+   "summary": "협의 요청 만들기 — 업무 절차에서 받는 부서가 협의(C)·통보(I)인 활동 근거, 대상·기한·살펴볼 것",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
     "AUDITOR"
+   ]
+  },
+  {
+   "name": "answerConsultation",
+   "method": "POST",
+   "path": "/api/consultations/:id/opinions",
+   "summary": "협의 의견 — 받은 포털 부서가 동의·보완·반대 + 메모(요청자 본인은 불가)",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "AUDITOR"
+   ]
+  },
+  {
+   "name": "recordHara",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/analysis/hara",
+   "summary": "HARA 기록 — 안전 목표·ASIL, Safety Manager 개인 서명(추가만)",
+   "component": "D01-02",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "recordTara",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/analysis/tara",
+   "summary": "TARA 기록 — 위협 시나리오·CAL, CSM 개인 서명(추가만)",
+   "component": "D01-02",
+   "roles": [
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "recordSotif",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/analysis/sotif",
+   "summary": "SOTIF 기록 — 유발 조건, 아키텍트 개인 서명(추가만)",
+   "component": "D01-02",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "recordHomologation",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/analysis/homologation",
+   "summary": "형식승인 영향 판단 — 영향 규정·판단, 법규 담당 개인 서명(추가만)",
+   "component": "D01-02",
+   "roles": [
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "signG7Safety",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/analysis/g7-safety",
+   "summary": "G7 기능안전 서명 — Safety Manager, 지금 HARA에 묶임",
+   "component": "D01-02",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "signG7Security",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/analysis/g7-security",
+   "summary": "G7 사이버보안 서명 — CSM, 지금 TARA에 묶임(기능안전 서명과 다른 사람)",
+   "component": "D01-02",
+   "roles": [
+    "SECURITY_OFFICER"
    ]
   }
  ],
@@ -1423,6 +1851,30 @@
    "subject": "서명 키 용도",
    "rule": "활성화·차단·복원·정책 서명 키는 용도별로 분리 — 다른 용도의 키로 서명한 명령은 무효 (FFG-SEC-002)",
    "component": "D06-10"
+  },
+  {
+   "id": "SOD-13",
+   "subject": "Feature DB 변경 승인",
+   "rule": "기준 행 변경 요청자는 자기 요청을 승인·반려할 수 없다 (Feature DB 관리자 ≠ 요청자)",
+   "component": "D01-01"
+  },
+  {
+   "id": "SOD-14",
+   "subject": "Feature DB 변경 검토",
+   "rule": "기준 행 변경 요청자는 그 요청의 도메인 검토자가 될 수 없다",
+   "component": "D01-01"
+  },
+  {
+   "id": "SOD-15",
+   "subject": "Feature DB 검토·승인 분리",
+   "rule": "기준 행 변경 요청에 도메인 검토 의견을 낸 사람은 그 요청을 승인·반려할 수 없다 (도메인 검토자 ≠ Feature DB 관리자)",
+   "component": "D01-01"
+  },
+  {
+   "id": "SOD-16",
+   "subject": "SW 개발비 산정 승인",
+   "rule": "산정 과제 작성자는 자기 과제를 승인·반려할 수 없다",
+   "component": "D07-01"
   }
  ],
  "duties": {
@@ -1449,7 +1901,10 @@
   ],
   "approver": [
    "FEATURE_APPROVER",
-   "PRODUCT_APPROVER"
+   "PRODUCT_APPROVER",
+   "DOMAIN_REVIEWER",
+   "COST_APPROVER",
+   "COST_BASIS_ADMIN"
   ],
   "quality": [
    "GATE_JUDGE",
@@ -1461,7 +1916,8 @@
   "steward": [
    "BOM_APPROVER",
    "VARIANT_OWNER",
-   "REGULATORY_OWNER"
+   "REGULATORY_OWNER",
+   "REFDB_ADMIN"
   ],
   "commerce": [
    "PRODUCT_AUTHOR"
@@ -1475,7 +1931,18 @@
    "RELEASE_MANAGER"
   ],
   "viewer": [
-   "AUDITOR"
+   "AUDITOR",
+   "COST_ESTIMATOR",
+   "COST_VIEWER"
+  ],
+  "opslead": [
+   "OPS_LEAD"
+  ],
+  "safety2": [
+   "SAFETY_OFFICER"
+  ],
+  "productowner": [
+   "PRODUCT_APPROVER"
   ]
  },
  "report_approver_roles": {
@@ -1768,6 +2235,21 @@
    "group": "master"
   },
   {
+   "path": "/master/feature-db/changes",
+   "title": "Feature DB 변경 요청",
+   "group": "master"
+  },
+  {
+   "path": "/master/feature-db/changes/:id",
+   "title": "Feature DB 변경 요청 상세",
+   "group": "master"
+  },
+  {
+   "path": "/master/feature-db/:refId",
+   "title": "Feature DB 기준 행",
+   "group": "master"
+  },
+  {
    "path": "/precheck",
    "title": "데이터 사전점검",
    "group": "master"
@@ -1818,6 +2300,16 @@
    "group": "release"
   },
   {
+   "path": "/procurement/sw-cost/basis",
+   "title": "계수·단가 표",
+   "group": "release"
+  },
+  {
+   "path": "/procurement/sw-cost/:estId",
+   "title": "SW 개발비 산정 과제",
+   "group": "release"
+  },
+  {
    "path": "/products/new",
    "title": "새 상품 구성",
    "group": "release"
@@ -1839,7 +2331,7 @@
   },
   {
    "path": "/policies",
-   "title": "정책·검증·승인",
+   "title": "Feature Flag 정책·승인",
    "group": "release"
   },
   {
@@ -1978,6 +2470,11 @@
    "group": "admin"
   },
   {
+   "path": "/data/workbench",
+   "title": "데이터 분석실",
+   "group": "admin"
+  },
+  {
    "path": "/biz/trials",
    "title": "체험 전환 분석",
    "group": "admin"
@@ -1986,6 +2483,11 @@
    "path": "/admin/settings",
    "title": "설정",
    "group": "admin"
+  },
+  {
+   "path": "/consults/:id",
+   "title": "협의 요청",
+   "group": "home"
   }
  ],
  "dist_diff": []

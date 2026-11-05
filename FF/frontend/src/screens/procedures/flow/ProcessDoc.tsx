@@ -4,6 +4,7 @@
 import { Fragment, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { RaciKey, WorkflowActivity, WorkflowDoc, WorkflowProcess } from '@ff/contracts';
+import { WorkProductButton } from '../WorkProduct';
 import { workflowLabels } from '../../../data/workflowLabels';
 import { procedureFlow as F } from '../../../copy/procedureFlow';
 import { roleNameOf, StateIcon, stateText, TriggerBolt } from './FlowParts';
@@ -144,7 +145,7 @@ function ActivityCard({ doc, process: p, a, st, selected, onSelect, onPick }: { 
             <ul>
               {a.inputs.map((k) => (
                 <li key={k}>
-                  {info(k)?.name ?? k} <span className="pf-io__ext">{from(k)}</span>
+                  <WorkProductButton doc={doc} productKey={k} /> <span className="pf-io__ext">{from(k)}</span>
                 </li>
               ))}
             </ul>
@@ -158,7 +159,7 @@ function ActivityCard({ doc, process: p, a, st, selected, onSelect, onPick }: { 
             <ul>
               {a.outputs.map((k) => (
                 <li key={k}>
-                  {info(k)?.name ?? k} <span className="pf-io__ext">{users(k).length ? <Refs ids={users(k).map((id) => pickBtn(doc, id, onPick))} /> : F.card.usedElsewhere}</span>
+                  <WorkProductButton doc={doc} productKey={k} /> <span className="pf-io__ext">{users(k).length ? <Refs ids={users(k).map((id) => pickBtn(doc, id, onPick))} /> : F.card.usedElsewhere}</span>
                 </li>
               ))}
             </ul>
@@ -218,7 +219,7 @@ export function WorkProductCards({ doc, process: p, onSelect }: { doc: WorkflowD
         return (
           <article key={w.key} className="pf-card pf-wp-card" data-wp-card={w.key}>
             <div className="pf-card__head">
-              <h3 className="pf-card__title">{w.name}</h3>
+              <h3 className="pf-card__title"><WorkProductButton doc={doc} productKey={w.key} /></h3>
               <span className="pf-card__en">{w.en}</span>
               <span className="pf-tag" data-kind="gold">{F.card.wpKind[w.kind] ?? w.kind}</span>
               {w.retained && <span className="pf-tag" data-kind="gold">{F.card.retained}</span>}

@@ -1,0 +1,1007 @@
+{
+  "version": "v1.3",
+  "source": {
+    "file": "Automotive_SW_개발비_산정도구_FeatureDB_v1.3.xlsx",
+    "sha256": "7d22d08a1f5406f18eb44b9acc9a4605e0eb1d3cb232a821c8629f9e9fe0d244"
+  },
+  "priceYear": 2026,
+  "currency": "KRW",
+  "sizePoints": {
+    "XS": 1,
+    "S": 3,
+    "M": 8,
+    "L": 21,
+    "XL": 55,
+    "XXL": 144,
+    "XXXL": 377
+  },
+  "asil": {
+    "QM": {
+      "rely": 1,
+      "docu": 1
+    },
+    "A": {
+      "rely": 1.1,
+      "docu": 1
+    },
+    "B": {
+      "rely": 1.1,
+      "docu": 1.11
+    },
+    "C": {
+      "rely": 1.26,
+      "docu": 1.11
+    },
+    "D": {
+      "rely": 1.26,
+      "docu": 1.23
+    }
+  },
+  "reuse": [
+    {
+      "changeType": "신규 개발",
+      "dm": 100,
+      "cm": 100,
+      "im": 100,
+      "aa": 0,
+      "su": 0,
+      "unfm": 0
+    },
+    {
+      "changeType": "수정(대규모)",
+      "dm": 50,
+      "cm": 50,
+      "im": 70,
+      "aa": 4,
+      "su": 30,
+      "unfm": 0.4
+    },
+    {
+      "changeType": "수정(중간)",
+      "dm": 25,
+      "cm": 30,
+      "im": 50,
+      "aa": 2,
+      "su": 30,
+      "unfm": 0.4
+    },
+    {
+      "changeType": "수정(소규모)",
+      "dm": 5,
+      "cm": 10,
+      "im": 30,
+      "aa": 2,
+      "su": 20,
+      "unfm": 0.2
+    },
+    {
+      "changeType": "재사용(무수정 통합)",
+      "dm": 0,
+      "cm": 0,
+      "im": 20,
+      "aa": 2,
+      "su": 10,
+      "unfm": 0.2
+    },
+    {
+      "changeType": "구매·통합(Buy)",
+      "dm": 0,
+      "cm": 0,
+      "im": 40,
+      "aa": 4,
+      "su": 30,
+      "unfm": 0.6
+    }
+  ],
+  "overall": {
+    "base": 1.2,
+    "lifecycle": {
+      "Commodity": 0,
+      "Differentiating": 0.2,
+      "Innovation": 0.4
+    },
+    "quality": {
+      "High": 0,
+      "Mid": 0.2,
+      "Low": 0.4
+    }
+  },
+  "pert": {
+    "optimistic": 0.85,
+    "pessimisticSlope": 2.5
+  },
+  "variantCoef": 0.1,
+  "confidence": {
+    "P50": 0,
+    "P80": 0.8416,
+    "P90": 1.2816
+  },
+  "cocomo": {
+    "TIME": {
+      "label": "실행 시간 제약(CPU 점유율)",
+      "VL": null,
+      "L": null,
+      "N": 1,
+      "H": 1.11,
+      "VH": 1.29,
+      "XH": 1.63
+    },
+    "STOR": {
+      "label": "메모리 제약(점유율)",
+      "VL": null,
+      "L": null,
+      "N": 1,
+      "H": 1.05,
+      "VH": 1.17,
+      "XH": 1.46
+    },
+    "PVOL": {
+      "label": "플랫폼 변동성(HW·OS 변경 빈도)",
+      "VL": null,
+      "L": 0.87,
+      "N": 1,
+      "H": 1.15,
+      "VH": 1.3,
+      "XH": null
+    },
+    "RUSE": {
+      "label": "재사용 목적 개발(플랫폼화)",
+      "VL": null,
+      "L": 0.95,
+      "N": 1,
+      "H": 1.07,
+      "VH": 1.15,
+      "XH": 1.24
+    },
+    "ACAP": {
+      "label": "분석가 역량",
+      "VL": 1.42,
+      "L": 1.19,
+      "N": 1,
+      "H": 0.85,
+      "VH": 0.71,
+      "XH": null
+    },
+    "PCAP": {
+      "label": "프로그래머 역량",
+      "VL": 1.34,
+      "L": 1.15,
+      "N": 1,
+      "H": 0.88,
+      "VH": 0.76,
+      "XH": null
+    },
+    "PCON": {
+      "label": "인력 연속성(이직률)",
+      "VL": 1.29,
+      "L": 1.12,
+      "N": 1,
+      "H": 0.9,
+      "VH": 0.81,
+      "XH": null
+    },
+    "APEX": {
+      "label": "응용 분야 경험",
+      "VL": 1.22,
+      "L": 1.1,
+      "N": 1,
+      "H": 0.88,
+      "VH": 0.81,
+      "XH": null
+    },
+    "PLEX": {
+      "label": "플랫폼 경험",
+      "VL": 1.19,
+      "L": 1.09,
+      "N": 1,
+      "H": 0.91,
+      "VH": 0.85,
+      "XH": null
+    },
+    "LTEX": {
+      "label": "언어·도구 경험",
+      "VL": 1.2,
+      "L": 1.09,
+      "N": 1,
+      "H": 0.91,
+      "VH": 0.84,
+      "XH": null
+    },
+    "TOOL": {
+      "label": "SW 도구 활용 수준",
+      "VL": 1.17,
+      "L": 1.09,
+      "N": 1,
+      "H": 0.9,
+      "VH": 0.78,
+      "XH": null
+    },
+    "SITE": {
+      "label": "다중 사이트 분산",
+      "VL": 1.22,
+      "L": 1.09,
+      "N": 1,
+      "H": 0.93,
+      "VH": 0.86,
+      "XH": 0.8
+    },
+    "SCED": {
+      "label": "일정 압축(명목 대비)",
+      "VL": 1.43,
+      "L": 1.14,
+      "N": 1,
+      "H": 1,
+      "VH": 1,
+      "XH": null
+    }
+  },
+  "presets": {
+    "신규 제어기·신규 플랫폼": {
+      "TIME": "H",
+      "STOR": "H",
+      "PVOL": "H",
+      "RUSE": "N",
+      "ACAP": "N",
+      "PCAP": "N",
+      "PCON": "N",
+      "APEX": "N",
+      "PLEX": "L",
+      "LTEX": "N",
+      "TOOL": "N",
+      "SITE": "N",
+      "SCED": "N"
+    },
+    "기존 플랫폼 파생 개발": {
+      "TIME": "H",
+      "STOR": "H",
+      "PVOL": "N",
+      "RUSE": "N",
+      "ACAP": "N",
+      "PCAP": "N",
+      "PCON": "N",
+      "APEX": "H",
+      "PLEX": "N",
+      "LTEX": "N",
+      "TOOL": "N",
+      "SITE": "N",
+      "SCED": "N"
+    },
+    "기존 SW 소규모 변경": {
+      "TIME": "H",
+      "STOR": "H",
+      "PVOL": "L",
+      "RUSE": "N",
+      "ACAP": "N",
+      "PCAP": "N",
+      "PCON": "N",
+      "APEX": "H",
+      "PLEX": "H",
+      "LTEX": "H",
+      "TOOL": "N",
+      "SITE": "N",
+      "SCED": "N"
+    }
+  },
+  "rates": {
+    "roles": [
+      {
+        "role": "PM",
+        "kosaJob": "IT PM",
+        "engineeringGrade": "특급기술자",
+        "inhouseMonthly": null
+      },
+      {
+        "role": "시스템 아키텍트",
+        "kosaJob": "IT 아키텍트",
+        "engineeringGrade": "특급기술자",
+        "inhouseMonthly": null
+      },
+      {
+        "role": "SW 아키텍트",
+        "kosaJob": "IT 아키텍트",
+        "engineeringGrade": "고급기술자",
+        "inhouseMonthly": null
+      },
+      {
+        "role": "임베디드 SW 개발자",
+        "kosaJob": "시스템SW개발자(임베디드 포함)",
+        "engineeringGrade": "고급기술자",
+        "inhouseMonthly": null
+      },
+      {
+        "role": "응용 SW 개발자",
+        "kosaJob": "응용SW개발자",
+        "engineeringGrade": "중급기술자",
+        "inhouseMonthly": null
+      },
+      {
+        "role": "시험 엔지니어",
+        "kosaJob": "IT 테스터",
+        "engineeringGrade": "중급기술자",
+        "inhouseMonthly": null
+      },
+      {
+        "role": "품질(QA) 엔지니어",
+        "kosaJob": "IT 품질관리자",
+        "engineeringGrade": "고급기술자",
+        "inhouseMonthly": null
+      },
+      {
+        "role": "기능안전 엔지니어",
+        "kosaJob": "IT 컨설턴트",
+        "engineeringGrade": "특급기술자",
+        "inhouseMonthly": null
+      },
+      {
+        "role": "사이버보안 엔지니어",
+        "kosaJob": "정보보안전문가",
+        "engineeringGrade": "특급기술자",
+        "inhouseMonthly": null
+      }
+    ],
+    "kosa": {
+      "IT PM": {
+        "daily": 492039,
+        "monthly": 10086804
+      },
+      "IT 아키텍트": {
+        "daily": 541621,
+        "monthly": 11103230
+      },
+      "응용SW개발자": {
+        "daily": 378250,
+        "monthly": 7754124
+      },
+      "시스템SW개발자(임베디드 포함)": {
+        "daily": 284888,
+        "monthly": 5840196
+      },
+      "IT 품질관리자": {
+        "daily": 538638,
+        "monthly": 11042071
+      },
+      "IT 테스터": {
+        "daily": 197714,
+        "monthly": 4053137
+      },
+      "IT 컨설턴트": {
+        "daily": 522340,
+        "monthly": 10707960
+      },
+      "정보보안전문가": {
+        "daily": 507887,
+        "monthly": 10411680
+      }
+    },
+    "engineeringDaily": {
+      "기술사": 455331,
+      "특급기술자": 343079,
+      "고급기술자": 315288,
+      "중급기술자": 283343,
+      "초급기술자": 249574
+    },
+    "daysPerMonth": 20.5
+  },
+  "phases": [
+    {
+      "phase": "분석",
+      "share": 0.19
+    },
+    {
+      "phase": "설계",
+      "share": 0.24
+    },
+    {
+      "phase": "구현",
+      "share": 0.32
+    },
+    {
+      "phase": "시험",
+      "share": 0.25
+    }
+  ],
+  "roleComposition": {
+    "PM": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "시스템 아키텍트": [
+      0.35,
+      0.1,
+      0,
+      0.05
+    ],
+    "SW 아키텍트": [
+      0.25,
+      0.35,
+      0.05,
+      0.05
+    ],
+    "임베디드 SW 개발자": [
+      0.2,
+      0.35,
+      0.75,
+      0.2
+    ],
+    "응용 SW 개발자": [
+      0,
+      0.05,
+      0.1,
+      0.05
+    ],
+    "시험 엔지니어": [
+      0.05,
+      0.05,
+      0.05,
+      0.55
+    ],
+    "품질(QA) 엔지니어": [
+      0.05,
+      0,
+      0,
+      0.05
+    ],
+    "기능안전 엔지니어": [
+      0.05,
+      0.05,
+      0.03,
+      0.03
+    ],
+    "사이버보안 엔지니어": [
+      0.05,
+      0.05,
+      0.02,
+      0.02
+    ]
+  },
+  "methods": {
+    "KOSA 투입공수 방식": {
+      "ohMin": 1.4,
+      "ohMax": 1.5,
+      "oh": 1.45,
+      "feeMin": 0.2,
+      "feeMax": 0.4,
+      "fee": 0.3
+    },
+    "엔지니어링사업대가 기준": {
+      "ohMin": 1.1,
+      "ohMax": 1.2,
+      "oh": 1.15,
+      "feeMin": 0.2,
+      "feeMax": 0.4,
+      "fee": 0.3
+    },
+    "사용자 정의": {
+      "ohMin": null,
+      "ohMax": null,
+      "oh": 1,
+      "feeMin": null,
+      "feeMax": null,
+      "fee": 0.2
+    }
+  },
+  "aace": {
+    "Class 5": [
+      -0.5,
+      -0.2,
+      0.3,
+      1
+    ],
+    "Class 4": [
+      -0.3,
+      -0.15,
+      0.2,
+      0.5
+    ],
+    "Class 3": [
+      -0.2,
+      -0.1,
+      0.1,
+      0.3
+    ],
+    "Class 2": [
+      -0.15,
+      -0.05,
+      0.05,
+      0.2
+    ],
+    "Class 1": [
+      -0.1,
+      -0.03,
+      0.03,
+      0.15
+    ]
+  },
+  "commonPct": {
+    "pm": 0.032,
+    "scm": 0.015,
+    "pi": 0.02
+  },
+  "benchmark": {
+    "anchorEur": 10000,
+    "euRate": 97.9,
+    "hoursPerPm": 152,
+    "fx": 1545.16
+  },
+  "currencies": {
+    "KRW": 1,
+    "EUR": 1545.16
+  },
+  "vat": 0.1,
+  "mbd": {
+    "multipliers": [
+      1,
+      1.8,
+      3.6,
+      4.8,
+      6.4
+    ],
+    "baseY": null,
+    "tasks": [
+      {
+        "phase": "Requirements",
+        "task": "Functionality requirements management",
+        "y": null
+      },
+      {
+        "phase": "Requirements",
+        "task": "Interface requirement specification",
+        "y": null
+      },
+      {
+        "phase": "Requirements",
+        "task": "Functionality requirements specification",
+        "y": null
+      },
+      {
+        "phase": "Requirements",
+        "task": "Requirements traceability",
+        "y": null
+      },
+      {
+        "phase": "Specification",
+        "task": "Requirement specification analysis",
+        "y": null
+      },
+      {
+        "phase": "Specification",
+        "task": "Functionality modelling (Simulink)",
+        "y": null
+      },
+      {
+        "phase": "Specification",
+        "task": "Model checking",
+        "y": null
+      },
+      {
+        "phase": "Specification",
+        "task": "MIL testing and report",
+        "y": null
+      },
+      {
+        "phase": "Specification",
+        "task": "SW functionality documentation",
+        "y": null
+      },
+      {
+        "phase": "Implementation",
+        "task": "AutoCoding",
+        "y": null
+      },
+      {
+        "phase": "Implementation",
+        "task": "Code review",
+        "y": null
+      },
+      {
+        "phase": "Implementation",
+        "task": "Code integration in ECU platform",
+        "y": null
+      },
+      {
+        "phase": "Implementation",
+        "task": "Unit testing",
+        "y": null
+      },
+      {
+        "phase": "Functional Testing",
+        "task": "Test environment setup",
+        "y": null
+      },
+      {
+        "phase": "Functional Testing",
+        "task": "Integration testing",
+        "y": null
+      },
+      {
+        "phase": "Functional Testing",
+        "task": "Performance testing",
+        "y": null
+      },
+      {
+        "phase": "Delivery",
+        "task": "Software configuration management",
+        "y": null
+      },
+      {
+        "phase": "Delivery",
+        "task": "Release / build updates",
+        "y": null
+      },
+      {
+        "phase": "Support",
+        "task": "Post-delivery support",
+        "y": null
+      }
+    ]
+  },
+  "calibration": {
+    "singles": [
+      "BC-BCM-001",
+      "BC-BCM-002",
+      "BC-BCM-003",
+      "BC-BCM-004",
+      "BC-BCM-006",
+      "BC-BCM-010",
+      "BC-BCM-011",
+      "BC-BCM-012",
+      "BC-BCM-013",
+      "BC-BCM-014",
+      "BC-HVAC-004",
+      "BC-HVAC-005",
+      "BC-HVAC-011",
+      "BC-HVAC-012",
+      "BC-SUS-007",
+      "PL-AP-001",
+      "PL-AP-020"
+    ],
+    "bundles": [
+      "KRN-B1",
+      "KRN-B2",
+      "KRN-B3",
+      "KRN-B4"
+    ]
+  },
+  "directExpenseItems": [
+    {
+      "item": "개발 도구 라이선스",
+      "unit": "Seat·월"
+    },
+    {
+      "item": "HIL 벤치 사용",
+      "unit": "일"
+    },
+    {
+      "item": "차량 시험",
+      "unit": "일"
+    },
+    {
+      "item": "출장·상주",
+      "unit": "회"
+    },
+    {
+      "item": "외부 심사 (ASPICE·FSA·CS)",
+      "unit": "건"
+    },
+    {
+      "item": "인증·형식승인 (UN R155/R156, EMC 등)",
+      "unit": "건"
+    },
+    {
+      "item": "시작품·시험용 HW",
+      "unit": "식"
+    },
+    {
+      "item": "외부 SW 라이선스 (구매 기능)",
+      "unit": "식"
+    }
+  ],
+  "checklist": [
+    {
+      "no": 1,
+      "category": "범위·요구사항",
+      "item": "과제 범위(대상 ECU, 기능, 사양 변형, 릴리스)를 Feature 목록으로 확정했는가",
+      "method": "03_FeatureDB 선택 목록과 과제 사양서를 대조",
+      "source": "Distillery(2023) 실수 4; Cortese(2017) p.4",
+      "purchaseKey": true
+    },
+    {
+      "no": 2,
+      "category": "범위·요구사항",
+      "item": "요구사항의 모호성과 불일치를 추정 전에 해소했는가",
+      "method": "미해소 항목은 가정으로 기록하고 AACE 등급을 한 단계 낮춤",
+      "source": "Cortese(2017) p.4",
+      "purchaseKey": false
+    },
+    {
+      "no": 3,
+      "category": "범위·요구사항",
+      "item": "시스템·SW·HW·시험 담당이 요구사항을 서로 교차 검토했는가",
+      "method": "교차 검토 기록 확인",
+      "source": "Distillery(2023) 실수 1",
+      "purchaseKey": false
+    },
+    {
+      "no": 4,
+      "category": "범위·요구사항",
+      "item": "처음 다루는 기능은 조사 시간(타임박스)을 따로 잡았는가",
+      "method": "신규·Innovation Feature에 조사 공수 반영",
+      "source": "Distillery(2023) 실수 2",
+      "purchaseKey": false
+    },
+    {
+      "no": 5,
+      "category": "범위·요구사항",
+      "item": "Feature 우선순위(필수·선택·후순위)를 정했는가",
+      "method": "AM열 우선순위 입력, Relevance 열과 대조",
+      "source": "Distillery(2023) 실수 3; Kearney(2022)",
+      "purchaseKey": false
+    },
+    {
+      "no": 6,
+      "category": "범위·요구사항",
+      "item": "SW 요구분석 활동(구조화, 분석, 운영환경 영향, 검증 기준, 추적성, 일관성, 전달)이 공수에 들어갔는가",
+      "method": "분석 공정 19% 안에 SWE.1 활동이 포함되는지 확인",
+      "source": "Kugler Maag(2020) SWE.1; ASPICE PAM 4.1 SWE.1 BP1~BP6",
+      "purchaseKey": false
+    },
+    {
+      "no": 7,
+      "category": "범위·요구사항",
+      "item": "HW와 SW에 걸친 기능에서 SW가 맡는 범위를 구분했는가",
+      "method": "시스템 요구와 SW 요구가 같지 않은지 확인",
+      "source": "Kugler Maag(2020) p.14",
+      "purchaseKey": true
+    },
+    {
+      "no": 8,
+      "category": "규모·공수",
+      "item": "모든 선택 Feature에 T-shirt 등급과 그 근거가 있는가",
+      "method": "유사 기능 또는 Kearney 기준 예와 비교",
+      "source": "McKinsey(2020) T-shirt sizing",
+      "purchaseKey": false
+    },
+    {
+      "no": 9,
+      "category": "규모·공수",
+      "item": "Feature마다 신규·수정·재사용·구매 여부를 지정했는가",
+      "method": "AG열 변경 유형 확인",
+      "source": "COCOMO II(2000) 재사용 모델; McKinsey(2020) 재사용으로 25% 절감 사례",
+      "purchaseKey": true
+    },
+    {
+      "no": 10,
+      "category": "규모·공수",
+      "item": "ASIL을 HARA 결과로 확정했는가 (대표값을 쓴 경우 표시했는가)",
+      "method": "AH열 적용 ASIL 입력 여부",
+      "source": "ISO 26262-3",
+      "purchaseKey": true
+    },
+    {
+      "no": 11,
+      "category": "규모·공수",
+      "item": "차종·사양·지역 변형 수를 반영했는가",
+      "method": "AI열 변형 수 확인",
+      "source": "McKinsey(2020) 복잡도 동인",
+      "purchaseKey": true
+    },
+    {
+      "no": 12,
+      "category": "규모·공수",
+      "item": "팀 역량, 일정 압축, 다중 사이트 계수를 근거와 함께 정했는가",
+      "method": "02 시트 4절 등급의 근거 기록",
+      "source": "COCOMO II(2000); McKinsey(2020)",
+      "purchaseKey": false
+    },
+    {
+      "no": 13,
+      "category": "규모·공수",
+      "item": "전문가 3점 추정은 최악, 최선, 최빈 순으로 받았는가",
+      "method": "공수 직접 입력(AJ~AL열) 사용 시 확인; 입력 점검 열에 o≤m≤p 위반이 표시됨",
+      "source": "Cortese(2017) p.5~6",
+      "purchaseKey": false
+    },
+    {
+      "no": 14,
+      "category": "단가·공통비",
+      "item": "단가 기준과 대가 산정 방식이 같은 기준을 따르는가",
+      "method": "02 시트 조합 점검 메시지",
+      "source": "KOSA 대가산정 가이드; 엔지니어링사업대가의 기준",
+      "purchaseKey": true
+    },
+    {
+      "no": 15,
+      "category": "단가·공통비",
+      "item": "단가와 요율마다 출처, 적용 연도, 갱신 주기를 기록했는가",
+      "method": "05 시트 근거 문구 확인",
+      "source": "Roy 외(2011) Table 2",
+      "purchaseKey": false
+    },
+    {
+      "no": 16,
+      "category": "단가·공통비",
+      "item": "제경비에 들어 있는 간접 인력(임원·서무·경리)을 공통 인력에 다시 넣지 않았는가",
+      "method": "공통 인력은 과제 전담 인력만 포함",
+      "source": "엔지니어링사업대가의 기준 제9조",
+      "purchaseKey": false
+    },
+    {
+      "no": 17,
+      "category": "단가·공통비",
+      "item": "PM·형상관리·프로세스 개선 비율을 조직 실적과 비교했는가",
+      "method": "Cortese 비율과 사내 실적 비교",
+      "source": "Cortese(2017) Table IV",
+      "purchaseKey": false
+    },
+    {
+      "no": 18,
+      "category": "단가·공통비",
+      "item": "품질보증, 기능안전 관리, 사이버보안 관리 공수를 입력했는가",
+      "method": "대시보드의 미입력 건수 0 확인",
+      "source": "ISO 26262-2; ISO/SAE 21434",
+      "purchaseKey": false
+    },
+    {
+      "no": 19,
+      "category": "단가·공통비",
+      "item": "도구 라이선스, HIL, 시험, 출장, 외부 심사, 인증 비용을 직접경비로 넣었는가",
+      "method": "02 시트 6절 확인",
+      "source": "Rios-Amaya 외(2006); Roy(2003)",
+      "purchaseKey": false
+    },
+    {
+      "no": 20,
+      "category": "단가·공통비",
+      "item": "환율과 물가 상승을 반영하고 기준일을 적었는가",
+      "method": "환율 기준일·단가 적용 연도 확인",
+      "source": "Rios-Amaya 외(2006)",
+      "purchaseKey": false
+    },
+    {
+      "no": 21,
+      "category": "불확실성",
+      "item": "추정 등급(AACE Class)과 목표 신뢰수준을 명시했는가",
+      "method": "02 시트 1절",
+      "source": "AACE 18R-97; Distillery(2023) 실수 6",
+      "purchaseKey": false
+    },
+    {
+      "no": 22,
+      "category": "불확실성",
+      "item": "추정치를 확정값이 아닌 범위로 보고하는가",
+      "method": "대시보드 신뢰수준·AACE 범위 함께 보고",
+      "source": "Distillery(2023) 실수 6; Erkoyuncu 외(2009)",
+      "purchaseKey": false
+    },
+    {
+      "no": 23,
+      "category": "불확실성",
+      "item": "불확실성(추정 오차)과 리스크(발생 사건)를 나눠 리스크 등록부를 따로 관리하는가",
+      "method": "예비비와 리스크 대응비를 구분",
+      "source": "Erkoyuncu 외(2009, 2011)",
+      "purchaseKey": false
+    },
+    {
+      "no": 24,
+      "category": "불확실성",
+      "item": "가정마다 근거, 리스크 등급, 버전을 남겼는가",
+      "method": "비고 열·가정 목록 확인",
+      "source": "Roy(2003) CERC 사례",
+      "purchaseKey": false
+    },
+    {
+      "no": 25,
+      "category": "협력사 견적 검토",
+      "item": "협력사 견적을 Feature와 역할 단위로 받아 DB와 매핑했는가",
+      "method": "견적 항목과 Feature ID 대응표",
+      "source": "McKinsey(2020) Exhibit 3",
+      "purchaseKey": true
+    },
+    {
+      "no": 26,
+      "category": "협력사 견적 검토",
+      "item": "견적과 should-cost의 차이를 10~30% 기준으로 판정했는가",
+      "method": "대시보드 교차 검증 결과",
+      "source": "McKinsey(2020)",
+      "purchaseKey": true
+    },
+    {
+      "no": 27,
+      "category": "협력사 견적 검토",
+      "item": "협력사 제출값을 증빙, 다른 출처, 벤치마크로 검증했는가",
+      "method": "검증 방법 기록",
+      "source": "Roy 외(2011) p.8",
+      "purchaseKey": true
+    },
+    {
+      "no": 28,
+      "category": "협력사 견적 검토",
+      "item": "공급 ECU에 기능을 추가할 때 붙는 추가 개발비 조건을 확인했는가",
+      "method": "계약 조건 확인",
+      "source": "Zhang 외(2017) p.8",
+      "purchaseKey": true
+    },
+    {
+      "no": 29,
+      "category": "협력사 견적 검토",
+      "item": "시험·QA 공수가 충분한가 (시험 공정 비중 25% 기준)",
+      "method": "대시보드 공정별 공수 확인",
+      "source": "Distillery(2023) 실수 7; KOSA 공정 비중",
+      "purchaseKey": false
+    },
+    {
+      "no": 30,
+      "category": "사후관리",
+      "item": "마일스톤마다 다시 추정하고 실적과 비교해 계수를 보정하는가",
+      "method": "재추정 이력 관리",
+      "source": "Cortese(2017) p.4, p.7",
+      "purchaseKey": false
+    },
+    {
+      "no": 31,
+      "category": "사후관리",
+      "item": "과제 종료 후 실적 공수를 Feature DB에 쌓는가",
+      "method": "AO열 실적 공수를 입력하면 MRE가 자동 계산됨, 대시보드 평균 MRE 확인",
+      "source": "Roy(2003) 권고",
+      "purchaseKey": false
+    },
+    {
+      "no": 32,
+      "category": "사후관리",
+      "item": "변경 요청은 승인 전에 비용·일정 영향을 공유하는가",
+      "method": "변경관리 절차",
+      "source": "Creole Studios Guide p.8",
+      "purchaseKey": true
+    },
+    {
+      "no": 33,
+      "category": "단가·공통비",
+      "item": "개발 NRE와 운영·반복 비용(클라우드, 대당 로열티, OTA 운영, VSOC, 유지보수)을 분리해 기록했는가",
+      "method": "02 시트 8절 반복 비용 블록, 총개발비에 미포함 확인",
+      "source": "첨부 Evidence Review 통제 C09·C11; Kearney(2022)",
+      "purchaseKey": false
+    },
+    {
+      "no": 34,
+      "category": "단가·공통비",
+      "item": "모든 단가·환율·경비가 같은 가격 기준 연도와 통화인가",
+      "method": "02 시트 가격 기준 연도·통화 확인",
+      "source": "첨부 DB Project_Budget 규칙; Rios-Amaya 외(2006)",
+      "purchaseKey": false
+    },
+    {
+      "no": 35,
+      "category": "규모·공수",
+      "item": "AI 기능은 데이터 수집·라벨링·평가·추론 자원·모델 운영 비용을 따로 잡았는가",
+      "method": "BE-ENG(엔지니어링 백엔드) 행과 직접경비 확인",
+      "source": "첨부 Evidence Review 통제 C14; ISO/PAS 8800",
+      "purchaseKey": false
+    },
+    {
+      "no": 36,
+      "category": "규모·공수",
+      "item": "ECU·HPC 개수와 배치를 Feature 행 수로 대신하지 않았는가",
+      "method": "패키지(PKG-CP/AP) 선택 수 = 실제 ECU·HPC 수인지 확인",
+      "source": "첨부 Evidence Review 통제 C10; Kearney(2022) Figure 2",
+      "purchaseKey": false
+    },
+    {
+      "no": 37,
+      "category": "규모·공수",
+      "item": "규모를 화면 수나 신호 수만으로 판단하지 않고 데이터 이동·상태·실시간 제약·변형을 함께 봤는가",
+      "method": "T-shirt 등급 근거 메모 확인, 세부기능 후보 수 참고",
+      "source": "첨부 Evidence Review 통제 C12; COSMIC v5.0",
+      "purchaseKey": false
+    },
+    {
+      "no": 38,
+      "category": "범위·요구사항",
+      "item": "상위 기능과 그 세부기능을 동시에 선택해 비용을 두 번 잡지 않았는가",
+      "method": "13_세부기능후보는 참고용. 03_FeatureDB 번들 포함 열과 입력 점검 열의 '중복 가능' 메시지 확인",
+      "source": "첨부 DB 'Parent/child alternative costing' 규칙",
+      "purchaseKey": true
+    }
+  ]
+}

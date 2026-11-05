@@ -15,6 +15,8 @@ export type ErrorCode =
   | 'PRECONDITION_FAILED'
   | 'IDEMPOTENCY_KEY_REUSED'
   | 'IDEMPOTENCY_IN_PROGRESS'
+  | 'REFDB_LINK_REQUIRED'
+  | 'REFDB_DUPLICATE_IN_SCOPE'
   | VehicleReject
   | 'INTERNAL';
 
@@ -31,6 +33,10 @@ const STATUS: Record<ErrorCode, number> = {
   PRECONDITION_FAILED: 412,
   IDEMPOTENCY_KEY_REUSED: 422,
   IDEMPOTENCY_IN_PROGRESS: 409,
+  /** Feature 등록에 기준 기능(Feature DB) 대표 연결이 없음(30-95 §6.2) */
+  REFDB_LINK_REQUIRED: 400,
+  /** 같은 국가·차종·트림에 같은 대표 기준 행 — 사유와 함께 확인하면 등록(§6.2, R-3) */
+  REFDB_DUPLICATE_IN_SCOPE: 409,
   ...VEHICLE_REJECT,
   INTERNAL: 500,
 };

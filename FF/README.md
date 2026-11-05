@@ -1,13 +1,17 @@
-# Feature Platform (FF/)
+# Feature Flag Platform (FF/)
 
 통합 상세설계서 v0.81 · Topology 정의서 v0.62 · 42 컴포넌트 아키텍처 · Catalog BOM DATASET v0.81 · 국제표준 대응방안 보고서 v1.1을
-**동작하는 플랫폼**으로 구현한 저장소. 품질은 사람이 아니라 `npm run verify` 하네스가 보증한다. 진행 상태는 [`PROGRESS.md`](PROGRESS.md).
+**동작하는 플랫폼**으로 구현한 저장소. `npm run verify` 하네스로 계약·권한·무결성·화면 동작을 검증한다. 진행 상태는 [`PROGRESS.md`](PROGRESS.md).
 
 공개 데모(읽기 전용 정적 모드): https://feature-topology.pages.dev
 
+## Feature Flag 연결
+
+정책 메뉴에서 Flag 키와 Git 소스 연결을 확인하고, Feature 상세의 **Feature Flag** 탭에서 코드 커밋 → 정책 검토 → Unleash 평가 → 서명 배포·차량 회신을 따라간다. Git 스캔은 구현 담당자가 가져오며, 예제 커밋과 실제 가져온 기록을 구분한다. [설계·사용법](../docs/20-architecture/20-96-feature-flag-source.md), [실행 소비 예제](examples/feature-flag-consumer/README.md).
+
 ## 데모 로그인
 
-- **ID `FF` · 비밀번호 `platform`** — `/login`에서 로그인하면 플랫폼으로 들어간다.
+- **ID `FF` · 비밀번호 `FF`** — 둘 다 대소문자를 구분하지 않는다. `/login`에서 로그인하면 플랫폼으로 들어간다.
 - 정적 데모(Cloudflare)에서도 같은 게이트가 동작한다(브라우저 `localStorage.ff.auth`). 실제 IAM·SSO가 아니라
   화면 게이트이며, 서버 인증은 여전히 데모 행위자 헤더(`X-Actor-Id`/`X-Actor-Role`)다. 운영 배치에서는 SSO/OIDC로 교체한다.
 - 상단바의 **로그아웃**으로 세션을 지우고 `/login`으로 돌아간다.

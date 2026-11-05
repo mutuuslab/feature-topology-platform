@@ -7,9 +7,10 @@ import { connections as CN } from '../../copy/connections';
 import { ota as O } from '../../copy/ota';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { control as CT } from '../../copy/control';
 import { whyDisabled, type KeyTone, type LozengeAppearance, AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, Lozenge, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
 import { InterfaceName, usePermission, when } from '../shared';
-import { Progress, PubStatus, type Delivery } from './shared';
+import { nodeReasonLabel, nodeStateLabel, personLabel, Progress, PubStatus, waitedMinutes, type Delivery } from './shared';
 
 const D = ko.deploy;
 const PUB_TONE: Record<string, KeyTone> = { CONFIRMED: 'ok', PARTIAL: 'warn', TIMEOUT: 'danger', DIVERGED: 'danger', DISPATCHED: 'neutral', SIGNED: 'neutral' };
@@ -32,48 +33,49 @@ interface KeyInfo {
   fingerprint: string;
 }
 
+/** 키 상태 — 서명 중(ACTIVE)·검증 전용(RETIRED, 이미 배포한 게시본 검증), 판정 배지가 아니다(P4-6) */
+export function KeyStatus({ status }: { status: string }) {
+  return <Lozenge appearance={status === 'ACTIVE' ? 'success' : 'default'}>{CT.keys.status[status] ?? status}</Lozenge>;
+}
+
+/** 서명 키 요약 — 용도·상태·만료. 교체는 보안·인증서 화면(/admin/security)에서(P4-6) */
 function Keys() {
-  const q = useApi<{ items: KeyInfo[] }>('pkiKeys');
-  const perm = usePermission(['SECURITY_OFFICER', 'SAFETY_OFFICER']);
-  const rotate = useApiMutation('rotateKey', ['pkiKeys']);
-  const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState('');
+  const q = useApi<{ items: (KeyInfo & { purpose?: string })[] }>('pkiKeys');
   return (
-    <Panel
-      title={D.keys}
-      codes="D06-10 · Ed25519"
-      id="keys"
-      actions={
-        <Button disabled={!perm.ok} title={perm.hint} onClick={() => setOpen(true)}>
-          {D.rotate}
-        </Button>
-      }
-    >
+    <Panel title={D.keys} codes="D06-10 · Ed25519" id="keys" actions={<Link to="/admin/security">{CT.pub.keysAt} →</Link>}>
       <DataTable
         caption={D.keys}
         rows={q.data?.items ?? []}
         rowKey={(k) => k.keyId}
         columns={[
-          { key: 'id', header: D.col.key, cell: (k) => <span className="ds-mono">{k.keyId}</span> },
-          { key: 's', header: D.col.status, cell: (k) => <VerdictBadge value={k.status === 'ACTIVE' ? 'PASS' : '미판정'} /> },
-          { key: 'f', header: 'Fingerprint', cell: (k) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{k.fingerprint}</span> },
-          { key: 'n', header: 'notAfter', cell: (k) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{k.notAfter.slice(0, 10)}</span> },
+          { key: 'id', header: D.col.key, cell: (k) => <span className="ds-mono ds-nowrap">{k.keyId}</span> },
+          { key: 'p', header: CT.keys.purpose, cell: (k) => <span className="ds-nowrap">{CT.keys.purposeName[k.purpose ?? ''] ?? k.purpose ?? '—'}</span> },
+          { key: 's', header: D.col.status, cell: (k) => <KeyStatus status={k.status} /> },
+          { key: 'n', header: CT.keys.notAfter, cell: (k) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }} title={k.fingerprint}>{k.notAfter.slice(0, 10)}</span> },
         ]}
       />
-      <Drawer open={open} title={D.rotate} onClose={() => setOpen(false)}>
-        <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
-          <p className="ds-field__hint">{D.rotateBody}</p>
-          <Field label={ko.page.reason}>
-            <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
-          </Field>
-          <ErrorNote error={rotate.error} />
-          <Button variant="primary" disabled={reason.trim().length < 2 || rotate.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => rotate.mutate({ body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}>
-            {D.rotate}
-          </Button>
-        </div>
-      </Drawer>
     </Panel>
   );
+}
+
+/** 시뮬레이터 회신이 멈췄는가(시험용 수동 시계로 띄운 데모 서버) — 회신 대기가 쌓이는 이유를 보인다(P4-3) */
+function useRepliesPaused() {
+  const perm = usePermission(['OPERATOR', 'OPS_LEAD', 'SAFETY_OFFICER', 'SECURITY_OFFICER', 'RELEASE_MANAGER', 'AUDITOR']);
+  const ch = useApi<{ active: string; adapters: { id: string; status?: { replies?: string } }[] }>('vehicleChannel', {}, { enabled: perm.ok, retry: false });
+  return !!ch.data && ch.data.active === 'sim' && ch.data.adapters.find((a) => a.id === 'sim')?.status?.replies === 'PAUSED';
+}
+
+/** 핵심 메시지 — 회신 미완(PARTIAL·TIMEOUT·DIVERGED) 먼저, 다음 회신 대기(DISPATCHED·SIGNED)와 가장 오래 기다린 시간(P4-4) */
+export function deploymentMessage(rows: { status: string; createdAt: string; closedAt?: string | null }[] | undefined, now = Date.now()) {
+  if (!rows) return { tone: 'neutral' as const, value: '—', text: D.key.bad };
+  const bad = rows.filter((r) => r.status === 'PARTIAL' || r.status === 'TIMEOUT' || r.status === 'DIVERGED').length;
+  if (bad) return { tone: 'warn' as const, value: bad, text: D.key.bad };
+  const waiting = rows.filter((r) => (r.status === 'DISPATCHED' || r.status === 'SIGNED') && !r.closedAt);
+  if (waiting.length) {
+    const longest = Math.max(...waiting.map((r) => waitedMinutes(r.createdAt, now)));
+    return { tone: 'warn' as const, value: waiting.length, text: CT.pub.waiting(waiting.length, longest) };
+  }
+  return { tone: 'ok' as const, text: D.key.clean };
 }
 
 export function DeploymentList() {
@@ -82,19 +84,19 @@ export function DeploymentList() {
   const q = useApi<{ items: Pub[] }>('publications', { query: kind === 'ALL' ? {} : { kind } });
   usePlatformEvents(['publication.', 'vehicle.readback'], ['publications']);
   const rows = q.data?.items ?? [];
+  const paused = useRepliesPaused();
+  const now = Date.now();
   return (
     <div className="ds-screen">
-      <PageHeader
-        codes="D06-08 · SECURE DEPLOY"
-        title={D.title}
-        lead={D.lead}
-        message={(() => {
-          const bad = rows.filter((r) => r.status === 'PARTIAL' || r.status === 'TIMEOUT' || r.status === 'DIVERGED').length;
-          return !q.data ? { tone: 'neutral', value: '—', text: D.key.bad } : bad ? { tone: 'warn', value: bad, text: D.key.bad } : { tone: 'ok', text: D.key.clean };
-        })()}
-      />
+      <PageHeader codes="D06-08 · SECURE DEPLOY" title={D.title} lead={D.lead} message={deploymentMessage(q.data?.items)} />
+      {paused && (
+        <p className="ds-stale" role="status" data-testid="replies-paused">
+          {CT.pub.paused}
+        </p>
+      )}
       <Segmented label={D.col.kind} options={(['ALL', 'POLICY', 'KILL', 'RESTORE'] as const).map((k) => ({ value: k, label: k === 'ALL' ? ko.page.all : D.kind[k] }))} value={kind} onChange={(v) => setKind(v as typeof kind)} />
-      <div className="ds-split">
+      {/* 게시본 표는 화면 폭 전체 — 1366에서 두 칸으로 나누면 시각·회신 열이 잘렸다(P4-4·P2-9). 키 요약은 아래 */}
+      <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
         <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
           <DataTable
             caption={D.title}
@@ -105,10 +107,23 @@ export function DeploymentList() {
               { key: 'id', header: D.col.id, cell: (p) => <IdChip id={p.publicationId} to={`/deployments/${p.publicationId}`} copy={false} />, sort: (p) => p.publicationId },
               { key: 'k', header: D.col.kind, cell: (p) => <span className="ds-tag">{D.kind[p.kind]}</span> },
               { key: 't', header: D.col.target, cell: (p) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{p.payload.flagKey ?? p.payload.featureId}</span> },
-              { key: 's', header: D.col.status, cell: (p) => <PubStatus status={p.status} /> },
+              {
+                key: 's',
+                header: D.col.status,
+                cell: (p) => (
+                  <span style={{ display: 'grid', gap: 2 }}>
+                    <PubStatus status={p.status} />
+                    {(p.status === 'DISPATCHED' || p.status === 'SIGNED') && !p.closedAt && (
+                      <span className="ds-nowrap" style={{ fontSize: 'var(--fs-xs)', color: 'var(--warn)' }}>
+                        {CT.pub.waitingShort(waitedMinutes(p.createdAt, now))}
+                      </span>
+                    )}
+                  </span>
+                ),
+              },
               { key: 'p', header: D.col.progress, cell: (p) => <Progress d={p} /> },
-              { key: 'c', header: D.col.channel, cell: (p) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{p.channel}</span> },
-              { key: 'at', header: D.col.at, cell: (p) => <span className="ds-mono ds-nowrap">{when(p.createdAt)}</span>, sort: (p) => p.createdAt },
+              { key: 'c', header: D.col.channel, cell: (p) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{p.channel}</span> },
+              { key: 'at', header: D.col.at, cell: (p) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{when(p.createdAt)}</span>, sort: (p) => p.createdAt },
             ]}
           />
         </AsyncView>
@@ -249,8 +264,8 @@ export function DeploymentDetail() {
                   rowKey={(n) => n.nodeId}
                   columns={[
                     { key: 'v', header: ko.fleet.vehicle, cell: (n) => <Link className="ds-mono" to={`/fleet/vehicles/${encodeURIComponent(n.nodeId)}`}>{n.nodeId}</Link> },
-                    { key: 's', header: D.col.status, cell: (n) => <VerdictBadge value={n.state === 'CONFIRMED' ? 'PASS' : n.state === 'DIVERGED' ? 'FAIL' : '미판정'} /> },
-                    { key: 'r', header: ko.audit.col.reason, cell: (n) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{n.reason}</span> },
+                    { key: 's', header: D.col.status, cell: (n) => <VerdictBadge value={n.state === 'CONFIRMED' ? 'PASS' : n.state === 'DIVERGED' ? 'FAIL' : '미판정'} label={nodeStateLabel(n.state)} /> },
+                    { key: 'r', header: ko.audit.col.reason, cell: (n) => <span style={{ fontSize: 'var(--fs-xs)' }} title={n.reason}>{nodeReasonLabel(n.reason)}</span> },
                   ]}
                 />
               </Panel>

@@ -1,4 +1,4 @@
-// 전체 지도 — 13개 절차를 가치 사슬 흐름으로. 생애주기는 화살표로 차례로 잇고, 지원 절차는 아래 띠에 둔다.
+// 전체 지도 — 14개 절차를 가치 사슬 흐름으로. 생애주기는 화살표로 차례로 잇고, 지원 절차는 아래 띠에 둔다.
 // 칸마다 내 역할 참여(내 활동 수·내 차례)와 완료를 표시하고, 칸을 누르면 그 절차의 흐름도로 간다.
 import { useId, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -25,7 +25,7 @@ export function ValueChainMap({ doc, sample }: { doc: WorkflowDoc; sample?: read
   const marker = `pf-chain-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   return (
     <div className="pf-view" data-mode={mode}>
-      <p className="ds-field__hint pf-hint">{F.chain.hint}</p>
+      <p className="ds-field__hint pf-hint">{F.chain.hint(doc.processes.length)}</p>
       <div className="pf-toolbar">
         <Segmented<'diagram' | 'text'> label={F.views.label} value={mode} onChange={setMode} options={[{ value: 'diagram', label: F.views.diagram }, { value: 'text', label: F.views.text }]} />
       </div>

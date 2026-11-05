@@ -74,6 +74,18 @@ const mount = (role: string, el: JSX.Element, path = '/notifications') => {
 };
 
 describe('알림 화면', () => {
+  it('활동 코드는 기본 문구에서 숨기되 원문 tooltip과 알림 데이터에 보존한다', async () => {
+    const original = ITEMS[0].fields;
+    ITEMS[0].fields = [{ label: '활동', value: 'FPW.7-A01 Canary·Shadow 판정 기준 정의' }];
+    try {
+      mount('approver', <NotificationsScreen />);
+      const label = await screen.findByText('Canary·Shadow 판정 기준 정의');
+      expect(label.getAttribute('title')).toBe('FPW.7-A01 Canary·Shadow 판정 기준 정의');
+      expect(label.firstChild?.textContent).toBe('Canary·Shadow 판정 기준 정의');
+      expect(label.querySelector('[data-explain-codes]')?.getAttribute('data-explain-codes')).toBe('FPW.7-A01');
+      expect(ITEMS[0].fields[0].value).toBe('FPW.7-A01 Canary·Shadow 판정 기준 정의');
+    } finally { ITEMS[0].fields = original; }
+  });
   it('내 알림은 행위자 헤더로 읽고, 안 읽음만 보이다가 전체로 바꾸면 읽은 알림도 보인다', async () => {
     mount('approver', <NotificationsScreen />);
     expect(await screen.findByText('FEAT-00022 긴급 차단 승인 요청')).toBeTruthy();
@@ -83,11 +95,13 @@ describe('알림 화면', () => {
     const row = screen.getAllByTestId('notification-row')[0];
     expect(within(row).getByText('긴급')).toBeTruthy();
     expect(within(row).getByText('승인 요청')).toBeTruthy();
-    expect(within(row).getByText('usr-operator')).toBeTruthy();
+    // 계정 ID 대신 사람 이름(W2 P1-5) — usr-operator → 서준호
+    expect(within(row).getByText('서준호')).toBeTruthy();
+    expect(within(row).queryByText(/usr-/)).toBeNull();
     expect(within(row).getByRole('link', { name: '열기' }).getAttribute('href')).toBe('/ops/kill?id=KILL-1');
     fireEvent.click(screen.getByRole('radio', { name: /전체/ }));
     expect(await screen.findByText('이상 징후 ANM-1')).toBeTruthy();
-    expect(screen.getByText(/^읽음 2026-10-17 02:00/)).toBeTruthy();
+    expect(screen.getByText(/^읽음 2026-10-17 11:00/)).toBeTruthy(); // 한국 시각(02:00Z) — 다른 화면과 같은 표기(W2 P1-5)
   });
 
   it('읽음·모두 읽음은 쓰기 요청으로 보낸다', async () => {

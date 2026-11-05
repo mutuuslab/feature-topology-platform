@@ -29,6 +29,25 @@
   같은 DB에 두 번째 인스턴스를 띄우면 **부팅을 거부한다**(단일 인스턴스 임대, RD-OPS-14 §6.2).
 - 이미지는 비루트 사용자(uid 1000 `node`)로 돌고, compose는 루트 파일시스템 읽기 전용·권한 모두 제거·새 권한 금지로 띄운다.
 
+### 2.1 설치형 앱과 별도의 웹 버전
+
+웹 버전은 Tauri 설치 없이 브라우저에서 같은 Feature Platform 화면과 API를 사용한다. 사용자 PC의 설치형 앱과 웹 서버는 배포·데이터 저장 위치가 별개다. 두 실행이 같은 서버를 사용하도록 구성하지 않았다면 데이터도 자동 공유되지 않는다.
+
+| 사용 방식 | 실행 위치·주소 | 데이터와 인증 |
+| --- | --- | --- |
+| 현재 로컬 웹 시연 | 브라우저 `http://localhost:9012/` | 별도 API9101·공식 Unleash4242·Edge3063, 가상 차량 및 ALM 시연 데이터 |
+| 고객 웹 서버 | 이 문서의 `docker/app` 이미지, 고객 TLS 주소 | OIDC 로그인, 고객별 저장 볼륨, `FF_SEED=none` |
+| 공식 Unleash 포함 웹 서버 | `docker/unleash/docker-compose.yml`의 `platform` 프로필, 로컬 진입 `http://127.0.0.1:9171/` | PostgreSQL의 독립 FF/Unleash DB, 고객 OIDC·차량 키·감사 설정 |
+| Windows 설치형 앱 | Tauri·NSIS 설치본 | 앱 소유 로컬 런타임과 사용자 데이터, 웹 서버와 별도 수명주기 |
+
+공식 Unleash를 포함한 서버 설치는 [80-98 연계 실행 안내](../80-integration/80-98-unleash-vehicle-live.md)의 비밀 생성 및 고객 환경 설정을 먼저 완료한 후 실행한다. 저장소 `FF` 폴더에서:
+
+```sh
+docker compose -f docker/unleash/docker-compose.yml --env-file docker/unleash/.env --profile platform up -d --build
+```
+
+이 구성은 웹용 운영 빌드와 API를 같은 출처로 제공한다. 데모 역할 선택기는 운영 빌드에 포함되지 않는다. 외부 공개 시 고객 DNS·TLS 프록시·OIDC 리디렉트 주소를 함께 설정한다. `localhost`는 접속하는 사람 자신의 PC를 뜻하므로 다른 참석자에게 공유할 주소로 사용하지 않는다. 플랫폼 정적 화면 파일만 배포하면 정책 쓰기·차량 수신·Unleash 연계는 동작하지 않으므로, 실제 동작 시연은 API와 서버 런타임까지 실행한다.
+
 ## 3. 사전 준비
 
 | 항목 | 내용 |

@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { addDays, DATASET_FILES, DEMO_REFERENCE_SEED, EntitlementSchema, syntheticTrials, VehicleSchema, type Dataset, type Entitlement, type VehicleProfile } from '@ff/contracts';
 import { z } from 'zod';
 import type { Db } from './db';
+import { expandShowcaseFleet, showcaseVehicleCount } from './showcase';
 
 export const DEFAULT_FIXTURES = join(__dirname, '..', '..', '..', 'data', 'fixtures', 'v0.81');
 /** 데이터셋 밖의 데모 데이터 — Fleet·사용 권한 (Fleet 연계 IF-06/07·결제 시스템의 모의) */
@@ -123,14 +124,15 @@ export function seedDemo(db: Db, dir = process.env.FF_DEMO_FIXTURES ?? DEMO_FIXT
       if (!v) throw new Error(`profiles.json: Fleet에 없는 차량 ${p.vin}`);
       return { ...p, vin: v.vin, country: v.country, vehicleModel: v.vehicleModel, trim: v.trim, source: 'DEMO' } as VehicleProfile;
     });
+  const expanded = expandShowcaseFleet({ fleet, profiles, grants: ents }, showcaseVehicleCount(process.env, fleet.length));
   const syn = syntheticSize() ? syntheticTrials(syntheticSize(), anchor) : { profiles: [], grants: [] };
   const insertGrant = (e: Entitlement) => db.run('INSERT INTO entitlement (grant_id, vin, catalog_id, status, source, doc) VALUES (?, ?, ?, ?, ?, ?)', e.grantId, e.vin, e.catalogId, e.status, e.source, JSON.stringify(e));
   db.tx(() => {
-    for (const v of fleet) db.run('INSERT INTO vehicle (vin, doc) VALUES (?, ?)', v.vin, JSON.stringify(v));
-    for (const e of ents) insertGrant(e);
-    for (const p of [...profiles, ...syn.profiles]) db.run('INSERT INTO vehicle_profile (vin, source, doc) VALUES (?, ?, ?)', p.vin, p.source, JSON.stringify(p));
+    for (const v of expanded.fleet) db.run('INSERT INTO vehicle (vin, doc) VALUES (?, ?)', v.vin, JSON.stringify(v));
+    for (const e of expanded.grants) insertGrant(e);
+    for (const p of [...expanded.profiles, ...syn.profiles]) db.run('INSERT INTO vehicle_profile (vin, source, doc) VALUES (?, ?, ?)', p.vin, p.source, JSON.stringify(p));
     for (const e of syn.grants) insertGrant(EntitlementSchema.parse(e));
-    db.run("INSERT INTO meta (key, value) VALUES ('seed-demo', ?)", `v2 ${anchor} synthetic=${syn.grants.length}`);
+    db.run("INSERT INTO meta (key, value) VALUES ('seed-demo', ?)", `v3 ${anchor} synthetic=${syn.grants.length} vehicles=${expanded.fleet.length}`);
   });
   return true;
 }

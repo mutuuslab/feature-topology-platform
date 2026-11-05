@@ -6,6 +6,7 @@ import { type CSSProperties, type KeyboardEvent, useId, useState } from 'react';
 import type { WorkflowDoc, WorkflowProcess } from '@ff/contracts';
 import { workflowLabels } from '../../../data/workflowLabels';
 import { procedureFlow as F } from '../../../copy/procedureFlow';
+import { WorkProductButton, WorkProductDrawer } from '../WorkProduct';
 import { Segmented } from '../../../design';
 import { ArrowDefs, DocShape, FlowLegend, laneTitle, roleNameOf, StateIcon, stateText, TriggerBolt, useWidth } from './FlowParts';
 import { IN_LANE, isObjectFlow, OUT_LANE, processFlow, readingOrder, type ProcessGraph, type ProcessLayout } from './model';
@@ -78,6 +79,7 @@ export const docTag = (doc: WorkflowDoc, n: ProcessGraph['nodes'][number]) =>
   n.ref ? F.doc.ref(workflowLabels(doc).activity(n.owner!)) : n.external ? (n.owner ? F.doc.from(workflowLabels(doc).process(n.owner)) : F.doc.outside) : n.retained ? F.doc.retained : F.doc.produced;
 
 export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSelect, fit, focusRoles = [] }: Props) {
+  const [product, setProduct] = useState<string | null>(null);
   const { layout } = processFlow(p, doc);
   const uid = `${p.id.replace('.', '-')}-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const act = new Map(p.activities.map((a) => [a.id, a]));
@@ -86,6 +88,7 @@ export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSele
   const order = readingOrder(layout);
   const onObject = new Set(layout.edges.filter((e) => isObjectFlow(e.kind)).flatMap((e) => e.points.map(([x, y]) => `${Math.round(x)},${Math.round(y)}`)));
   return (
+    <>
     <svg
       className="pf-svg"
       viewBox={`0 0 ${layout.width} ${layout.height}`}
@@ -131,7 +134,7 @@ export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSele
           const lines = wrapText(name, n.w - 16, NAME_FS, 2);
           const tag = docTag(doc, n);
           return (
-            <g key={id} className="pf-doc" data-external={n.external ? '' : undefined} data-ref={n.ref ? '' : undefined} data-retained={n.retained ? '' : undefined} data-wp={n.wp} role="img" aria-label={F.doc.label(name, tag, n.external)}>
+            <g key={id} className="pf-doc" data-external={n.external ? '' : undefined} data-ref={n.ref ? '' : undefined} data-retained={n.retained ? '' : undefined} data-wp={n.wp} role="button" tabIndex={0} onClick={() => setProduct(n.wp!)} onKeyDown={keyActivate(() => setProduct(n.wp!))} aria-label={F.doc.label(name, tag, n.external)}>
               <title>{`${name}\n${tag}`}</title>
               <DocShape x={n.x} y={n.y} w={n.w} h={n.h} />
               <text className="pf-doc__tag" x={n.x + 8} y={n.y + 14}>{ellipsize(tag, n.w - 26, 10)}</text>
@@ -201,6 +204,8 @@ export function ProcessFlowDiagram({ doc, process: p, statuses, selected, onSele
         );
       })}
     </svg>
+    {product && <WorkProductDrawer doc={doc} productKey={product} onClose={() => setProduct(null)} />}
+    </>
   );
 }
 
@@ -234,7 +239,7 @@ export function ProcessFlowText({ doc, process: p, statuses, onSelect }: Omit<Pr
     return workflowLabels(doc).activity(n.activityId!);
   };
   const wps = (e: ProcessGraph['edges'][number]) => ((e.kind === 'flow' || e.kind === 'data') && e.wps.length ? ` (${e.wps.map(wpName).join(', ')})` : '');
-  const line = (e: ProcessGraph['edges'][number], end: 'from' | 'to') => `${isObjectFlow(e.kind) ? F.process.object : ''}${who(e[end])}${wps(e)}`;
+  const line = (e: ProcessGraph['edges'][number], end: 'from' | 'to') => { const n = node.get(e[end]); return <>{isObjectFlow(e.kind) ? F.process.object : ''}{n?.kind === 'doc' && n.wp ? <WorkProductButton doc={doc} productKey={n.wp} /> : who(e[end])}{wps(e)}</>; };
   return (
     <div className="pf-text">
       <div className="pf-text__scroll">

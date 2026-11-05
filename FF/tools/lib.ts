@@ -6,6 +6,13 @@ import { fileURLToPath } from 'node:url';
 export const FF = fileURLToPath(new URL('..', import.meta.url));
 export const BASELINES = join(FF, 'harness', 'baselines.json');
 
+/** 건너뛰기 종료 코드 — verify가 이 코드를 SKIP으로 보인다(automake 관례 77) */
+export const SKIP_EXIT = 77;
+/** 스스로 건너뛰는 도구의 종료 — verify 안(FF_VERIFY=1)에서는 77, npm 스크립트로 직접 돌리면 0 */
+export function exitSkipped(): never {
+  process.exit(process.env.FF_VERIFY === '1' ? SKIP_EXIT : 0);
+}
+
 export function walk(dir: string, exts: string[], skip: string[] = ['node_modules', 'dist', '__tests__', 'test']): string[] {
   const out: string[] = [];
   if (!existsSync(dir)) return out;

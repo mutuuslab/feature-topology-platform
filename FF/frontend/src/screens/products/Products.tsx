@@ -1,19 +1,23 @@
 // /products · /products/:id/:ver · /products/new — Feature Catalog 상품 (v2, D01-03)
 // 상품 구성은 BOM 후보(확정 Baseline·범위 일치)에서 고르고, 저장 전에도 구성 검증 결과를 실시간으로 보여 준다.
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { LIFECYCLE, type Lifecycle } from '@ff/contracts';
+import { actorFor } from '../../api/actor';
 import { call } from '../../api/client';
 import { fieldErrors } from '../../api/field-errors';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, LifecycleBadge, LifecycleStepper, PageHeader, Panel, VerdictBadge, Icon } from '../../design';
+import { planning as W } from '../../copy/planning';
+import { catalogExperience as Cx } from '../../copy/catalog-experience';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, LifecycleBadge, LifecycleStepper, PageHeader, Panel, VerdictBadge, Icon, whyDisabled } from '../../design';
 import { ProductVersionActions } from '../features/VersionEdit';
 import { scopeOf, usePermission } from '../shared';
+import { CatalogApproval, CatalogAssembly, CatalogCard, CatalogIdentity } from './CatalogExperience';
 
 const T = ko.product;
 
-interface Product {
+export interface Product {
   catalogId: string;
   version: string;
   name: string;
@@ -31,9 +35,9 @@ interface Product {
   lifecycle: Lifecycle;
   featureCount?: number;
 }
-interface Composition {
+export interface Composition {
   result: 'PASS' | 'FAIL';
-  issues: { code: string; severity: 'FAIL' | 'WARN'; message: string; refs: string[] }[];
+  issues: { code: string; severity: 'FAIL' | 'WARN'; message: string; refs: string[]; suggest?: string[] }[];
   features: { baselineId: string; featureId: string; version: string; name: string; lifecycle: Lifecycle }[];
 }
 interface Candidate {
@@ -49,7 +53,14 @@ interface Candidate {
 export function ProductList() {
   const nav = useNavigate();
   const q = useApi<{ items: Product[] }>('listProducts');
-  const rows = q.data?.items ?? [];
+  const all = q.data?.items ?? [];
+  const [search, setSearch] = useState('');
+  const [country, setCountry] = useState('');
+  const [sale, setSale] = useState('');
+  const [lifecycle, setLifecycle] = useState('');
+  const [view, setView] = useState<'browse' | 'table'>('browse');
+  const needle = search.trim().toLocaleLowerCase();
+  const rows = all.filter((p) => (!country || p.country === country) && (!sale || p.saleType === sale) && (!lifecycle || p.lifecycle === lifecycle) && (!needle || `${p.catalogId} ${p.name} ${p.ownerId} ${p.tags.join(' ')}`.toLocaleLowerCase().includes(needle)));
   const perm = usePermission(['PRODUCT_AUTHOR']);
   const C = T.col;
   return (
@@ -65,7 +76,16 @@ export function ProductList() {
           </Button>
         }
       />
+      <p className="catalog-intro">{Cx.definition} {Cx.boundary}</p>
+      <div className="catalog-filter" role="group" aria-label={Cx.filters}>
+        <label>{Cx.search}<input className="ds-input" type="search" value={search} onChange={(e) => setSearch(e.target.value)} /></label>
+        <label>{Cx.country}<select className="ds-input" value={country} onChange={(e) => setCountry(e.target.value)}><option value="">{Cx.all}</option>{[...new Set(all.map((p) => p.country))].sort().map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label>{Cx.sale}<select className="ds-input" value={sale} onChange={(e) => setSale(e.target.value)}><option value="">{Cx.all}</option>{[...new Set(all.map((p) => p.saleType))].sort().map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label>{Cx.lifecycle}<select className="ds-input" value={lifecycle} onChange={(e) => setLifecycle(e.target.value)}><option value="">{Cx.all}</option>{[...new Set(all.map((p) => p.lifecycle))].map((value) => <option key={value} value={value}>{W.product.lifecycle[value] ?? value}</option>)}</select></label>
+      </div>
+      <div className="catalog-viewbar"><span>{Cx.count(rows.length, all.length)}</span><div role="group" aria-label={Cx.view}>{(['browse', 'table'] as const).map((value) => <button type="button" key={value} className="ds-btn" aria-pressed={view === value} onClick={() => setView(value)}>{value === 'browse' ? Cx.browse : Cx.table}</button>)}</div></div>
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
+        {view === 'browse' ? <div className="catalog-gallery">{rows.map((p) => <CatalogCard key={`${p.catalogId}@${p.version}`} product={p} />)}</div> :
         <DataTable
           caption={T.title}
           rows={rows}
@@ -79,16 +99,17 @@ export function ProductList() {
             { key: 'sale', header: C.sale, cell: (r) => <span className="ds-tag">{r.saleType}</span>, sort: (r) => r.saleType },
             { key: 'type', header: C.type, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.type}</span> },
             { key: 'lc', header: C.lifecycle, cell: (r) => <LifecycleBadge value={r.lifecycle} />, sort: (r) => LIFECYCLE.indexOf(r.lifecycle) },
-            { key: 'n', header: C.features, cell: (r) => <span className="ds-mono">{r.baselineIds.length}</span>, align: 'right', sort: (r) => r.baselineIds.length },
+            { key: 'n', header: C.features, cell: (r) => <span className="ds-mono">{r.featureCount ?? Cx.unknown}</span>, align: 'right', sort: (r) => r.featureCount ?? -1 },
             { key: 'valid', header: C.validity, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}><span className="ds-date">{r.validFrom ?? '—'}</span> ~ <span className="ds-date">{r.validTo ?? '—'}</span></span> },
           ]}
-        />
+        />}
       </AsyncView>
     </div>
   );
 }
 
-export function CompositionView({ c }: { c: Composition }) {
+/** 구성 검증 결과 — onAdd를 주면 빠진 REQUIRES 대상 Baseline을 바로 더하는 버튼(P1-10). 규칙 코드는 글자로 보이지 않는다(data-code) */
+export function CompositionView({ c, onAdd, picked = [] }: { c: Composition; onAdd?: (baselineId: string) => void; picked?: string[] }) {
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
       <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
@@ -98,11 +119,19 @@ export function CompositionView({ c }: { c: Composition }) {
       {c.issues.length > 0 && (
         <ul className="ds-check">
           {c.issues.map((i, n) => (
-            <li key={n} data-state={i.severity === 'FAIL' ? 'FAIL' : 'INFO'}>
+            <li key={n} data-state={i.severity === 'FAIL' ? 'FAIL' : 'INFO'} data-code={i.code}>
               <Icon name="alert" size={16} />
               <span>
                 {i.message}
-                <span className="ds-check__detail ds-mono">{i.code}</span>
+                {onAdd && !!i.suggest?.length && (
+                  <span className="ds-check__detail" style={{ display: 'flex', gap: 'var(--sp-1)', flexWrap: 'wrap' }}>
+                    {i.suggest.filter((id) => !picked.includes(id)).map((id) => (
+                      <Button key={id} onClick={() => onAdd(id)}>
+                        {W.product.add(id)}
+                      </Button>
+                    ))}
+                  </span>
+                )}
               </span>
             </li>
           ))}
@@ -123,10 +152,85 @@ export function CompositionView({ c }: { c: Composition }) {
   );
 }
 
+export interface CompositionBody {
+  country: string;
+  vehicleModel: string;
+  trim: string;
+  type: string;
+  baselineIds: string[];
+  validFrom: string | null;
+  validTo: string | null;
+}
+
+/** 저장하지 않고 구성 검증 — 본문이 바뀔 때마다(늦게 온 이전 응답은 버린다). 고른 Baseline이 없거나 권한이 없으면 묻지 않는다 */
+export function useLiveComposition(body: CompositionBody | null, role: string, enabled: boolean) {
+  const [comp, setComp] = useState<Composition | null>(null);
+  const [pending, setPending] = useState(false);
+  const key = JSON.stringify(body);
+  useEffect(() => {
+    if (!body || !body.baselineIds.length || !enabled) {
+      setComp(null);
+      setPending(false);
+      return;
+    }
+    let live = true;
+    const ctl = new AbortController();
+    setPending(true);
+    call<Composition>('validateComposition', { body, role, signal: ctl.signal }).then(
+      (c) => live && (setComp(c), setPending(false)),
+      () => live && setPending(false),
+    );
+    return () => ((live = false), ctl.abort());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, enabled, role]);
+  return { comp, pending };
+}
+
+/** BOM 후보 표 — 같은 범위의 확정 Baseline에서 고른다(쉼표 글자 입력 대신, P1-10) */
+export function BaselinePicker({ scope, picked, onToggle }: { scope: { country: string; vehicleModel: string; trim: string }; picked: string[]; onToggle: (id: string) => void }) {
+  const cands = useApi<{ items: Candidate[] }>('productCandidates', { query: scope });
+  const rows = cands.data?.items ?? [];
+  return (
+    <AsyncView state={asyncState(cands, rows.length === 0)} error={cands.error}>
+      <DataTable
+        caption={T.candidates}
+        rows={rows}
+        rowKey={(r) => r.baselineId}
+        onOpen={(r) => onToggle(r.baselineId)}
+        maxHeight="420px"
+        columns={[
+          { key: 'pick', header: '', srHeader: ko.action.select, width: '36px', cell: (r) => <input type="checkbox" aria-label={r.baselineId} checked={picked.includes(r.baselineId)} onChange={() => onToggle(r.baselineId)} onClick={(e) => e.stopPropagation()} /> },
+          { key: 'bl', header: 'Baseline', cell: (r) => <span className="ds-mono">{r.baselineId}</span> },
+          { key: 'f', header: 'Feature', cell: (r) => <IdChip id={r.featureId} version={r.version} copy={false} /> },
+          { key: 'n', header: ko.registry.col.name, cell: (r) => r.name },
+          { key: 'lc', header: 'Lifecycle', cell: (r) => <LifecycleBadge value={r.lifecycle} /> },
+          { key: 'req', header: 'REQUIRES', cell: (r) => (r.requires.length ? <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{T.requires(r.requires.join(', '))}</span> : '') },
+        ]}
+      />
+    </AsyncView>
+  );
+}
+
+export interface ProductMeta {
+  createdBy: string | null;
+  configApprovedBy: string | null;
+  releaseApprovedBy: string | null;
+}
+
+/** 직무 분리 미리 보기(P1-2) — 서버가 403으로 거절하기 전에 같은 사람이면 버튼을 막고 이유를 말한다 */
+export function productSodReason(approval: string | null | undefined, meta: ProductMeta | undefined, me: string): string | undefined {
+  if (!approval || !meta) return undefined;
+  if (meta.createdBy === me) return W.product.sodCreator;
+  if (approval === 'RELEASE' && meta.configApprovedBy === me) return W.product.sodRelease;
+  return undefined;
+}
+
 export function ProductDetail() {
   const { id = '', ver = '' } = useParams();
-  const q = useApi<{ product: Product; composition: Composition; eligibility: { eligible: boolean; reasons: string[] }; transitions: { to: Lifecycle; ko: string; approval: string | null; blockers: string[] }[]; versions: { version: string; lifecycle: Lifecycle }[] }>('productDetail', { params: { id, ver } });
+  const q = useApi<{ product: Product; meta?: ProductMeta; composition: Composition; eligibility: { eligible: boolean; reasons: string[] }; transitions: { to: Lifecycle; ko: string; approval: string | null; blockers: string[] }[]; versions: { version: string; lifecycle: Lifecycle }[] }>('productDetail', { params: { id, ver } });
   const [to, setTo] = useState<Lifecycle | null>(null);
+  const perm = usePermission(['PRODUCT_APPROVER']);
+  const me = actorFor(perm.role, ['PRODUCT_APPROVER']).id;
   const d = q.data;
   const p = d?.product;
   return (
@@ -151,16 +255,29 @@ export function ProductDetail() {
                 </>
               }
               lead={p.description}
-              actions={<ProductVersionActions key={`${p.catalogId}@${p.version}`} p={p} latest={d.versions[d.versions.length - 1]?.version === p.version} />}
+              actions={
+                <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <ProductVersionActions key={`${p.catalogId}@${p.version}`} p={p} latest={d.versions[d.versions.length - 1]?.version === p.version} />
+                  {/* 고객 출시된 상품 — 체험 제안으로 이어진다(P1-3) */}
+                  {p.lifecycle === 'RELEASED' && <Link to={`/entitlements?catalog=${encodeURIComponent(p.catalogId)}#trial-offer`}>{W.product.toTrials}</Link>}
+                </div>
+              }
             />
+            <CatalogIdentity product={p} composition={d.composition} />
+            <CatalogAssembly key={`${p.catalogId}@${p.version}`} product={p} composition={d.composition} />
+            <CatalogApproval product={p} meta={d.meta} transitions={d.transitions} eligibility={d.eligibility} />
             <Panel id="plc">
-              <LifecycleStepper current={p.lifecycle} transitions={d.transitions.map((t) => ({ to: t.to, blockers: t.blockers.map((m) => ({ message: m })) }))} />
-              <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)', flexWrap: 'wrap' }}>
-                {d.transitions.map((t) => (
-                  <Button key={t.to} variant="primary" onClick={() => setTo(t.to)}>
-                    {t.ko} → {t.to}
-                  </Button>
-                ))}
+              {/* 상품의 APPROVED는 '구성 승인', RELEASED는 '고객 출시' — Feature의 '정의 승인'과 낱말을 나눈다(P1-10) */}
+              <LifecycleStepper current={p.lifecycle} labels={W.product.lifecycle} transitions={d.transitions.map((t) => ({ to: t.to, blockers: t.blockers.map((m) => ({ message: m })) }))} />
+              <div className="catalog-lifecycle-actions">
+                {d.transitions.map((t) => {
+                  const sod = perm.ok ? productSodReason(t.approval, d.meta, me) : undefined;
+                  return (
+                    <Button key={t.to} variant="primary" disabled={!!sod} reason={sod} onClick={() => setTo(t.to)}>
+                      {t.ko} → {t.to}
+                    </Button>
+                  );
+                })}
               </div>
             </Panel>
             <div className="ds-split">
@@ -168,15 +285,17 @@ export function ProductDetail() {
                 <CompositionView c={d.composition} />
               </Panel>
               <Panel title={T.eligibility} id="elig">
+                <div className="catalog-eligibility">
                 <KeyValue
                   rows={[
                     { k: T.col.validity, v: <span className="ds-mono"><span className="ds-date">{p.validFrom ?? '—'}</span> ~ <span className="ds-date">{p.validTo ?? '—'}</span></span> },
                   ]}
                 />
+                </div>
                 {d.eligibility.reasons.length > 0 && <ErrorNote error={{ message: T.notEligible, details: { blockers: d.eligibility.reasons } }} />}
               </Panel>
             </div>
-            <ProductTransition p={p} to={to} onClose={() => setTo(null)} transitions={d.transitions} />
+            <ProductTransition p={p} to={to} onClose={() => setTo(null)} transitions={d.transitions} meta={d.meta} />
           </>
         )}
       </AsyncView>
@@ -184,11 +303,13 @@ export function ProductDetail() {
   );
 }
 
-function ProductTransition({ p, to, onClose, transitions }: { p: Product; to: Lifecycle | null; onClose: () => void; transitions: { to: Lifecycle; ko: string; blockers: string[] }[] }) {
+function ProductTransition({ p, to, onClose, transitions, meta }: { p: Product; to: Lifecycle | null; onClose: () => void; transitions: { to: Lifecycle; ko: string; approval?: string | null; blockers: string[] }[]; meta?: ProductMeta }) {
   const perm = usePermission(['PRODUCT_APPROVER']);
+  const me = actorFor(perm.role, ['PRODUCT_APPROVER']).id;
   const m = useApiMutation('productTransition', ['productDetail', 'listProducts', 'audit']);
   const [reason, setReason] = useState('');
   const t = transitions.find((x) => x.to === to);
+  const sod = t && perm.ok ? productSodReason(t.approval, meta, me) : undefined;
   return (
     <Drawer open={!!to} title={t ? `${t.ko} → ${t.to}` : ''} onClose={onClose}>
       {t && (
@@ -204,7 +325,7 @@ function ProductTransition({ p, to, onClose, transitions }: { p: Product; to: Li
             <textarea className="ds-input" required value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
           </Field>
           <ErrorNote error={m.error} />
-          <Button type="submit" variant="primary" disabled={!perm.ok || t.blockers.length > 0 || m.isPending} title={perm.hint}>
+          <Button type="submit" variant="primary" disabled={!perm.ok || t.blockers.length > 0 || !!sod || m.isPending} reason={sod} title={perm.hint}>
             {ko.page.submit}
           </Button>
           {perm.hint && <span className="ds-field__hint">{perm.hint}</span>}
@@ -221,8 +342,7 @@ export function ProductCompose() {
   const [scope, setScope] = useState({ country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium' });
   const [form, setForm] = useState({ name: '', description: '', saleType: '체험', type: 'PACKAGE', validFrom: '', validTo: '', ownerId: '' });
   const [picked, setPicked] = useState<string[]>([]);
-  const cands = useApi<{ items: Candidate[] }>('productCandidates', { query: scope });
-  const [comp, setComp] = useState<Composition | null>(null);
+  const [confirmFail, setConfirmFail] = useState(false);
   const create = useApiMutation<{ product: Product }>('createProduct', ['listProducts']);
   // 서버 입력 검사 오류는 해당 칸 옆에(RD-UX-01)
   const fe = fieldErrors(create.error);
@@ -232,15 +352,12 @@ export function ProductCompose() {
     [scope, form.type, form.validFrom, form.validTo, picked],
   );
   // 저장하지 않고 구성 검증 — 선택이 바뀔 때마다
-  useEffect(() => {
-    if (!picked.length || !perm.ok) return setComp(null);
-    const ctl = new AbortController();
-    call<Composition>('validateComposition', { body, role: perm.role, signal: ctl.signal }).then(setComp, () => undefined);
-    return () => ctl.abort();
-  }, [body, picked.length, perm.ok, perm.role]);
+  const { comp, pending } = useLiveComposition(body, perm.role, perm.ok);
+  // 등록은 구성 검증 PASS일 때만 — FAIL이면 경고를 읽고 'FAIL인 채로 초안 등록'을 확인해야 한다(P1-10)
+  const passed = comp?.result === 'PASS';
+  const why = whyDisabled([!perm.ok, perm.hint], [!picked.length, ko.why.baselines], [pending || (!comp && picked.length > 0), W.product.checking], [!passed && !confirmFail, W.product.failWhy]);
 
-  const toggle = (id: string) => setPicked((xs) => (xs.includes(id) ? xs.filter((x) => x !== id) : [...xs, id]));
-  const rows = cands.data?.items ?? [];
+  const toggle = (id: string) => (setPicked((xs) => (xs.includes(id) ? xs.filter((x) => x !== id) : [...xs, id])), setConfirmFail(false));
   return (
     <div className="ds-screen">
       <PageHeader codes="D01-03 · COMPOSE" title={T.create} message={{ tone: 'neutral', text: perm.ok ? T.key.can : T.key.cannot }} />
@@ -256,28 +373,12 @@ export function ProductCompose() {
             </div>
           </Panel>
           <Panel title={T.candidates} id="cands">
-            <AsyncView state={asyncState(cands, rows.length === 0)} error={cands.error}>
-              <DataTable
-                caption={T.candidates}
-                rows={rows}
-                rowKey={(r) => r.baselineId}
-                onOpen={(r) => toggle(r.baselineId)}
-                maxHeight="420px"
-                columns={[
-                  { key: 'pick', header: '', srHeader: ko.action.select, width: '36px', cell: (r) => <input type="checkbox" aria-label={r.baselineId} checked={picked.includes(r.baselineId)} onChange={() => toggle(r.baselineId)} onClick={(e) => e.stopPropagation()} /> },
-                  { key: 'bl', header: 'Baseline', cell: (r) => <span className="ds-mono">{r.baselineId}</span> },
-                  { key: 'f', header: 'Feature', cell: (r) => <IdChip id={r.featureId} version={r.version} copy={false} /> },
-                  { key: 'n', header: ko.registry.col.name, cell: (r) => r.name },
-                  { key: 'lc', header: 'Lifecycle', cell: (r) => <LifecycleBadge value={r.lifecycle} /> },
-                  { key: 'req', header: 'REQUIRES', cell: (r) => (r.requires.length ? <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{T.requires(r.requires.join(', '))}</span> : '') },
-                ]}
-              />
-            </AsyncView>
+            <BaselinePicker scope={scope} picked={picked} onToggle={toggle} />
           </Panel>
         </div>
         <div style={{ display: 'grid', gap: 'var(--sp-4)', position: 'sticky', top: 0 }}>
           <Panel title={T.composition} id="live-comp">
-            {comp ? <CompositionView c={comp} /> : <p className="ds-field__hint">{perm.hint ?? T.candidates}</p>}
+            {comp ? <CompositionView c={comp} picked={picked} onAdd={toggle} /> : <p className="ds-field__hint">{perm.hint ?? T.candidates}</p>}
           </Panel>
           <Panel title={T.create} id="form">
             <form
@@ -319,8 +420,14 @@ export function ProductCompose() {
               <Field label={ko.registry.col.owner} error={fe.ownerId}>
                 <input className="ds-input" required value={form.ownerId} onChange={(e) => setForm({ ...form, ownerId: e.target.value })} />
               </Field>
+              {comp && !passed && (
+                <label className="ds-choices ds-callout" data-tone="warn" data-testid="compose-fail-confirm">
+                  <input type="checkbox" checked={confirmFail} onChange={(e) => setConfirmFail(e.target.checked)} />
+                  {W.product.failConfirm}
+                </label>
+              )}
               <ErrorNote error={create.error} />
-              <Button type="submit" variant="primary" disabled={!perm.ok || !picked.length || create.isPending} title={perm.hint}>
+              <Button type="submit" variant="primary" disabled={!!why || create.isPending} reason={why} title={perm.hint}>
                 {T.create}
               </Button>
             </form>

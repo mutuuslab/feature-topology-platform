@@ -48,13 +48,20 @@ process:
       content:
         - G3 판정과 근거 Evidence ID
         - PROPOSED→APPROVED 전이 기록과 승인자(작성자와 다른 사람)
+    - key: WP-IMPL-LINK
+      name: 구현 연결(Function·SW·제어기)
+      en: Implementation Link
+      kind: output
+      content:
+        - Function → SW ID·Version → 제어기(ECU) P/N 짝 — SW·ECU 기준정보에서 고른 값
+        - VERIFIED 전이의 필수 입력(functions·swIds·swVersions·ecuPnos)
   activities:
     - id: FPW.3-A01
       name: 안전요구 도출·명세
       outcomes: [O1]
       rules: [FFG-LCY-005, FFG-LCY-012]
       raci: {R: [R-REQ], A: R-REQ, C: [R-SM, R-ARC], I: [R-TST, R-FO]}
-      inputs: [WP-G2-DECISION, WP-HARA-TARA, WP-SOTIF-ANALYSIS]
+      inputs: [WP-HARA-TARA, WP-SOTIF-ANALYSIS, WP-G2-DECISION]
       outputs: [WP-SAFETY-REQ]
       steps:
         - Safety Goal별로 기능·기술 안전요구를 도출하고 SW에 할당된 요구를 SW 안전요구로 나눈다
@@ -79,7 +86,7 @@ process:
       checks:
         - F2 이상 Feature의 끊긴 연결이 0건이다
       platform: {screens: [/trace/design]}
-      next: [FPW.3-A03]
+      next: [FPW.3-A03, FPW.3-A05]
     - id: FPW.3-A03
       name: 요구 검토 판정 등록
       outcomes: [O3]
@@ -96,19 +103,37 @@ process:
         - 검토자가 요구 작성자와 다른 조직이다
       platform: {actions: [judgeGate], screens: [/features/:id/:ver], gates: [G2]}
       next: [FPW.3-A04]
+    - id: FPW.3-A05
+      name: 구현 연결 입력
+      outcomes: [O3]
+      rules: []
+      raci: {R: [R-INT, R-FO], A: R-INT, C: [R-ARC, R-PLM], I: [R-REQ, R-TST]}
+      inputs: [WP-SAFETY-REQ]
+      outputs: [WP-IMPL-LINK]
+      steps:
+        - 정의 승인 전에 Feature 설계 담당 또는 SW 통합 담당이 PROPOSED 초안에서 Function → SW·Version → 제어기 P/N을 SW·ECU 기준정보에서 골라 연결한다
+        - Feature 상세 → 초안 수정 → 구현 연결에서 입력한다. 서버는 기준정보에 없는 짝을 거부한다
+        - 승인된 Version에 구현 연결이 빠져 있으면 새 Version에서 넣고 정의 승인을 다시 받는다
+        - 외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다
+      checks:
+        - VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다
+      platform: {actions: [updateDraft], screens: [/features/:id/:ver, /master/artifacts, /integration/connectors]}
+      next: [FPW.3-A04]
     - id: FPW.3-A04
       name: G3 판정·Feature 정의 승인
       gate_decision: G3
       outcomes: [O3]
       rules: [FFG-LCY-001, FFG-LCY-002]
       raci: {R: [R-REQ], A: R-REQ, C: [R-SM, R-FO], I: [R-ARC, R-PLM, R-TST]}
-      inputs: [WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION]
+      inputs: [WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION, WP-REF-LINK, WP-IMPL-LINK]
       outputs: [WP-G3-DECISION]
       steps:
         - G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다
         - 판정 근거를 정리해 G3 판정을 남긴다
         - Lifecycle을 PROPOSED에서 APPROVED로 전이한다. 작성자는 이 전이를 할 수 없다
+        - 승인 서랍이 구현 연결 미입력을 경고한다(막지는 않는다) — 빠졌으면 승인 대신 보완을 요청할 수 있다
         - 아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다
       checks:
         - Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다
+        - 연결된 기준 행에 요청 중(PENDING)·폐기 행이 없다. 요청 중 행은 Feature DB 관리자 승인 뒤에만 전이한다
       platform: {actions: [transition], screens: [/features/:id/:ver, /admin/approval]}

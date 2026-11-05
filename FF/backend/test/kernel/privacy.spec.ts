@@ -17,7 +17,7 @@ import { DB, type Db } from '../../src/kernel/db';
 import { vehiclePseudonym } from '../../src/kernel/crypto';
 import { HousekeepingService } from '../../src/kernel/housekeeping.service';
 import { PrivacyService } from '../../src/kernel/privacy.service';
-import { actor, bootApp } from '../helpers';
+import { actor, bootApp, withRef } from '../helpers';
 
 const LEAVER = 'usr-leaver';
 const AUTHOR = actor(LEAVER, 'FEATURE_AUTHOR');
@@ -70,7 +70,7 @@ describe('개인정보 — 내보내기·삭제 요청·감사 체인', () => {
     await http()
       .post('/api/features')
       .set(AUTHOR)
-      .send({ name: '떠나는 사람의 Feature', description: '개인정보 시험', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: LEAVER, asil: 'QM' })
+      .send(withRef({ name: '떠나는 사람의 Feature', description: '개인정보 시험', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: LEAVER, asil: 'QM' }))
       .expect(201);
     await http().post('/api/notifications/read-all').set(AUTHOR).send({}).expect(201);
     seedNotification(db, 'NTF-T0001', LEAVER, AT, 900001);

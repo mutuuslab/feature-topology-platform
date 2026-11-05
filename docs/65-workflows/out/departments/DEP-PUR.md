@@ -12,7 +12,11 @@ traces:
     - WF-FPW-10
     - WF-FPW-11
     - WF-ROLE-PUR
-last_updated: 2026-11-04
+    - WF-ROLE-CE
+    - WF-ROLE-CA
+    - WF-ROLE-CV
+    - WF-ROLE-CBA
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -20,11 +24,11 @@ last_updated: 2026-11-04
 
 > 1차 범위(핵심 생애주기)에서 수행·책임 업무가 없다 — 2차 초안 업무만 있다.
 
-> 협력사 계약·납품 조건을 관리하고 협력사 관련 검토에 의견을 준다.
+> 협력사 계약·납품 조건을 관리하고 Feature별 SW 개발비를 산정·승인하며 단가·계수 표를 관리한다.
 
-- 맡는 조직 역할: 구매
+- 맡는 조직 역할: 구매, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자
 - 화면 유형: 검토 포털
-- 데모 계정: viewer (첫 번째가 기본)
+- 데모 계정: viewer, approver (첫 번째가 기본)
 - 부서는 OEM 조직 가정안이다. 고객사 조직이 정해지면 model/common.yaml departments만 바꾼다.
 
 ## 1. 업무 (활동당 한 줄)

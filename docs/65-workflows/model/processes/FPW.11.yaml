@@ -110,7 +110,7 @@ process:
       outcomes: [O3]
       rules: [FFG-SBOM-005, FFG-SBOM-001]
       raci: {R: [R-CSM], A: R-CSM, C: [R-OPS, R-SM, R-INT], I: [R-REL]}
-      inputs: [WP-RELEASE-BASELINE, WP-ORIGIN-RECORD]
+      inputs: [WP-ORIGIN-RECORD, WP-RELEASE-BASELINE]
       outputs: [WP-VEX-DECISION]
       steps:
         - 배포 단위별 SBOM과 대조해 영향 Feature와 차량을 특정하고 VEX 판정을 기록한다
@@ -120,19 +120,6 @@ process:
         - 공지된 취약점마다 VEX 판정과 대응 기한이 있다
       platform: {actions: [recordVex], screens: [/admin/security]}
       next: [FPW.11-A05]
-    - id: FPW.11-A05
-      name: CSMS Evidence·R155 보고
-      outcomes: [O4]
-      rules: [FFG-SEC-005]
-      raci: {R: [R-CSM], A: R-CSM, C: [R-REG], I: [R-QA]}
-      inputs: [WP-HARA-TARA, WP-VEX-DECISION, WP-KEY-INCIDENT]
-      outputs: [WP-CSMS-EVIDENCE]
-      steps:
-        - 플랫폼·차량 런타임의 TARA·보안 요구·시험·모니터링 결과를 CSMS Evidence로 모은다
-        - 키 사고와 취약점 대응 결과를 Evidence에 연결한다
-        - 법규 담당과 승인 기관 보고 내용을 확정해 제출한다
-      checks:
-        - 보고 내용의 각 항목이 Evidence ID로 연결되었다
     - id: FPW.11-A06
       name: OSS 라이선스·보안 프로그램 운영
       trigger: OSS 구성요소 추가·변경
@@ -147,3 +134,16 @@ process:
         - 이행할 수 없는 구성요소는 통합 조직에 교체를 요청한다
       checks:
         - 모든 OSS 구성요소의 의무 이행 상태가 기록되었다
+    - id: FPW.11-A05
+      name: CSMS Evidence·R155 보고
+      outcomes: [O4]
+      rules: [FFG-SEC-005]
+      raci: {R: [R-CSM], A: R-CSM, C: [R-REG], I: [R-QA]}
+      inputs: [WP-HARA-TARA, WP-VEX-DECISION, WP-KEY-INCIDENT]
+      outputs: [WP-CSMS-EVIDENCE]
+      steps:
+        - 플랫폼·차량 런타임의 TARA·보안 요구·시험·모니터링 결과를 CSMS Evidence로 모은다
+        - 키 사고와 취약점 대응 결과를 Evidence에 연결한다
+        - 법규 담당과 승인 기관 보고 내용을 확정해 제출한다
+      checks:
+        - 보고 내용의 각 항목이 Evidence ID로 연결되었다

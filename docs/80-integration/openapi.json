@@ -80,7 +80,7 @@
     },
     "/api/health/ready": {
       "get": {
-        "summary": "준비 점검(마이그레이션·DB 쓰기, 아니면 503)",
+        "summary": "준비 점검(마이그레이션·DB 쓰기·Feature DB 행 수, 아니면 503)",
         "tags": [
           "KERNEL"
         ],
@@ -310,7 +310,7 @@
     },
     "/api/events": {
       "get": {
-        "summary": "이벤트 이력 — after(순번) 커서 페이지 나눔, 응답 nextCursor",
+        "summary": "이벤트 이력 — after(순번) 커서 페이지 나눔·nextCursor, recent=1 최근 창(순번 오름차순)",
         "tags": [
           "D04-04"
         ],
@@ -342,6 +342,14 @@
           },
           {
             "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recent",
             "in": "query",
             "required": false,
             "schema": {
@@ -415,7 +423,7 @@
           "D04-04"
         ],
         "operationId": "readNotification",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -466,7 +474,7 @@
           "D04-04"
         ],
         "operationId": "readAllNotifications",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -1060,6 +1068,22 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "targetPrefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1166,7 +1190,7 @@
           "D04-04"
         ],
         "operationId": "completeProcedureActivity",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -1259,7 +1283,7 @@
           "D04-04"
         ],
         "operationId": "undoProcedureActivity",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -1471,6 +1495,83 @@
                       ]
                     },
                     "default": []
+                  },
+                  "featureRefs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "PRIMARY",
+                            "INCLUDED"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "refId",
+                        "role"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1
+                  },
+                  "asilDeviation": {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "to": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 500
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "to",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "refRegulations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
+                  "confirmDuplicate": {
+                    "type": "boolean"
+                  },
+                  "duplicateReason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
                   }
                 },
                 "required": [
@@ -1480,7 +1581,8 @@
                   "vehicleModel",
                   "trim",
                   "ownerId",
-                  "asil"
+                  "asil",
+                  "featureRefs"
                 ]
               }
             }
@@ -1642,6 +1744,75 @@
                           ]
                         }
                       },
+                      "featureRefs": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "refId": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                            },
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "PRIMARY",
+                                "INCLUDED"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "refId",
+                            "role"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1
+                      },
+                      "asilDeviation": {
+                        "type": "object",
+                        "properties": {
+                          "from": {
+                            "type": "string",
+                            "enum": [
+                              "QM",
+                              "A",
+                              "B",
+                              "C",
+                              "D"
+                            ]
+                          },
+                          "to": {
+                            "type": "string",
+                            "enum": [
+                              "QM",
+                              "A",
+                              "B",
+                              "C",
+                              "D"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 500
+                          }
+                        },
+                        "required": [
+                          "from",
+                          "to",
+                          "reason"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "refRegulations": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
                       "functions": {
                         "type": "array",
                         "items": {
@@ -1652,11 +1823,12 @@
                               "pattern": "^FUNC-\\d{6}$"
                             },
                             "label": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 200
                             }
                           },
                           "required": [
-                            "functionId",
                             "label"
                           ]
                         }
@@ -1725,7 +1897,7 @@
     },
     "/api/features/{id}/versions/{ver}": {
       "get": {
-        "summary": "Feature 버전 상세",
+        "summary": "Feature 버전 상세 — 전이 미리 보기(transitions)는 묻는 사람의 역할로 판정한다(행위자 헤더)",
         "tags": [
           "D01-01"
         ],
@@ -1850,6 +2022,83 @@
                       ]
                     }
                   },
+                  "featureRefs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "PRIMARY",
+                            "INCLUDED"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "refId",
+                        "role"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1
+                  },
+                  "asilDeviation": {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "to": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 500
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "to",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "refRegulations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
+                  "confirmDuplicate": {
+                    "type": "boolean"
+                  },
+                  "duplicateReason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
                   "functions": {
                     "type": "array",
                     "items": {
@@ -1860,11 +2109,12 @@
                           "pattern": "^FUNC-\\d{6}$"
                         },
                         "label": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
                         }
                       },
                       "required": [
-                        "functionId",
                         "label"
                       ]
                     }
@@ -2032,6 +2282,1087 @@
         }
       }
     },
+    "/api/refdb/refs": {
+      "get": {
+        "summary": "Feature DB 기준 행 검색 — 한글·영문 기능명·별칭·용어집·ID, 도메인·컴포넌트·상태 필터, offset·limit 페이지(금액 필드는 산정 역할만)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "listRefs",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/refs/{refId}": {
+      "get": {
+        "summary": "Feature DB 기준 행 상세 — 정의·근거·세부기능 후보·이 행을 쓰는 Feature(금액 필드는 산정 역할만)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refDetail",
+        "parameters": [
+          {
+            "name": "refId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/taxonomy": {
+      "get": {
+        "summary": "Feature DB 분류 — 도메인 10 → 클러스터 → 컴포넌트",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refTaxonomy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/sources": {
+      "get": {
+        "summary": "Feature DB 출처 — 자료·발행처·버전·확인일·다음 점검일",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refSources",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/sources/reviews": {
+      "post": {
+        "summary": "Feature DB 출처 정기 점검 기록 — 확인일·다음 점검일 갱신(기한 알림이 닫힌다)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "recordSourceReview",
+        "description": "허용 역할: Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sourceIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^S\\d{2,}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 200
+                  },
+                  "checkedAt": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "nextReviewAt": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  },
+                  "result": {
+                    "type": "string",
+                    "enum": [
+                      "NO_CHANGE",
+                      "REVISED"
+                    ],
+                    "default": "NO_CHANGE"
+                  }
+                },
+                "required": [
+                  "sourceIds",
+                  "nextReviewAt",
+                  "note"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/quality": {
+      "get": {
+        "summary": "Feature DB 품질 지표 — 상태별 행 수·출처 없음·근거 확인 12개월 경과·규모 근거 D 비중·발행 대기",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refQuality",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/releases": {
+      "get": {
+        "summary": "Feature DB 발행 버전 이력 — 변경 요청 묶음·전체 해시",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refReleases",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "Feature DB 버전 발행 — 승인된 변경 요청을 묶어 다음 버전·전체 해시 기록(추가만)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "publishRefRelease",
+        "description": "허용 역할: Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "changeIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^CR-\\d{4}-\\d{3,}$"
+                    },
+                    "default": []
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "default": ""
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/subfunctions": {
+      "get": {
+        "summary": "Feature DB 세부기능 후보(읽기 전용 참고) — 컴포넌트별",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refSubfunctions",
+        "parameters": [
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/requests": {
+      "post": {
+        "summary": "Feature DB에 없는 기능 추가 요청 — 정식 ID를 바로 부여한 요청 중 행 + 추가 변경 요청(승인 전에는 Feature 정의 승인이 막힘)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "requestRefAdd",
+        "description": "허용 역할: Feature 작성자, Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "cluster": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "component": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "componentAbbr": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9]{1,3}$"
+                  },
+                  "nameEn": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "nameKo": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "tshirt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8
+                  },
+                  "asilRep": {
+                    "type": "string",
+                    "enum": [
+                      "QM",
+                      "A",
+                      "B",
+                      "C",
+                      "D"
+                    ]
+                  },
+                  "sourceIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^S\\d{2,}$"
+                    },
+                    "default": []
+                  },
+                  "basisNote": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "default": ""
+                  },
+                  "swStack": {
+                    "type": "string",
+                    "maxLength": 80,
+                    "default": ""
+                  },
+                  "lifecycle": {
+                    "type": "string",
+                    "maxLength": 80,
+                    "default": ""
+                  },
+                  "techStack": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "domain",
+                  "component",
+                  "nameEn",
+                  "nameKo",
+                  "tshirt",
+                  "asilRep"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/changes": {
+      "get": {
+        "summary": "Feature DB 변경 요청 목록 — 대상 행·상태·종류·도메인(도메인 검토자의 담당 도메인) 필터(금액 필드는 산정 역할만)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "listRefChanges",
+        "parameters": [
+          {
+            "name": "refId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "Feature DB 변경 요청 작성(추가·수정·폐기 예정·폐기) — 자동 점검 후 도메인 검토로",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "createRefChange",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "ADD",
+                      "MODIFY",
+                      "DEPRECATE",
+                      "RETIRE"
+                    ]
+                  },
+                  "refId": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                  },
+                  "after": {
+                    "type": "object",
+                    "properties": {
+                      "refId": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "ACTIVE",
+                          "REVIEW",
+                          "DEPRECATED",
+                          "RETIRED",
+                          "PENDING"
+                        ]
+                      },
+                      "replacedBy": {
+                        "type": "string",
+                        "nullable": true,
+                        "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                      },
+                      "registeredIn": {
+                        "type": "string"
+                      },
+                      "evidenceCheckedAt": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "domain": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "cluster": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "component": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "swStack": {
+                        "type": "string"
+                      },
+                      "lifecycle": {
+                        "type": "string"
+                      },
+                      "techStack": {
+                        "type": "string"
+                      },
+                      "vehicleType": {
+                        "type": "string"
+                      },
+                      "region": {
+                        "type": "string"
+                      },
+                      "nameEn": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "nameKo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "aliases": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "autoQuality": {
+                        "type": "string"
+                      },
+                      "techQuality": {
+                        "type": "string"
+                      },
+                      "asilRep": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "method": {
+                        "type": "string"
+                      },
+                      "tshirt": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "bundleId": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "bundleRep": {
+                        "type": "boolean",
+                        "nullable": true
+                      },
+                      "sizeEvidenceGrade": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          "A",
+                          "B",
+                          "C",
+                          "D",
+                          null
+                        ]
+                      },
+                      "benchmarkEur": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "kearneyNote": {
+                        "type": "string"
+                      },
+                      "makeBuyVolume": {
+                        "type": "string"
+                      },
+                      "makeBuyPremium": {
+                        "type": "string"
+                      },
+                      "relevance": {
+                        "type": "string"
+                      },
+                      "sourceIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "sourceDetail": {
+                        "type": "string"
+                      },
+                      "remark": {
+                        "type": "string"
+                      },
+                      "basisType": {
+                        "type": "string"
+                      },
+                      "duplicateOf": {
+                        "type": "string",
+                        "nullable": true,
+                        "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                      },
+                      "requires": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        }
+                      },
+                      "excludes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        }
+                      },
+                      "procurement": {
+                        "type": "string"
+                      },
+                      "swPackage": {
+                        "type": "string"
+                      },
+                      "licenseItem": {
+                        "type": "string"
+                      },
+                      "billing": {
+                        "type": "string"
+                      },
+                      "definition": {
+                        "type": "object",
+                        "nullable": true,
+                        "properties": {
+                          "level": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "parentRefId": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "summary": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "trigger": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "scopeIn": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "scopeOut": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "scopeOutRefs": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "io": {
+                            "type": "object",
+                            "properties": {
+                              "entry": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "exit": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "read": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "write": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "drivers": {
+                            "type": "object",
+                            "properties": {
+                              "states": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "dtcs": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "calibrations": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "variants": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "regulations": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "verification": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "typicalChanges": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "sharedFunctions": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "authoringStatus": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      },
+                      "adminMemo": {
+                        "type": "string"
+                      }
+                    },
+                    "default": {}
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "kind",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/changes/{id}": {
+      "get": {
+        "summary": "Feature DB 변경 요청 상세 — 필드 차이·자동 점검·검토 의견·영향(이 행을 쓰는 Feature, 금액 필드는 산정 역할만)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refChangeDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/changes/{id}/reviews": {
+      "post": {
+        "summary": "Feature DB 변경 요청 도메인 검토 의견(동의·보완·반대) — 요청자는 검토할 수 없다",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "reviewRefChange",
+        "description": "허용 역할: 도메인 검토자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "opinion": {
+                    "type": "string",
+                    "enum": [
+                      "AGREE",
+                      "REVISE",
+                      "OPPOSE"
+                    ]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "opinion",
+                  "comment"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/changes/{id}/decision": {
+      "post": {
+        "summary": "Feature DB 변경 요청 승인·반려 — 요청자·검토자 ≠ 승인자, 마지막 검토 의견이 보완·반대이거나 필수 정보 누락이면 승인 불가",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "decideRefChange",
+        "description": "허용 역할: Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVE",
+                      "REJECT"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "decision",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/export": {
+      "get": {
+        "summary": "Feature DB 내보내기 — 엑셀 03_FeatureDB 열 순서 + 출처 시트(금액 열은 산정 역할만)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "exportRefdb",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "release",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/features/{id}/versions/{ver}/gates": {
       "get": {
         "summary": "Gate G1~G9 판정·이력",
@@ -2132,6 +3463,9 @@
                     "nullable": true,
                     "maxLength": 512,
                     "default": null
+                  },
+                  "asilReasonReviewed": {
+                    "type": "boolean"
                   }
                 },
                 "required": [
@@ -3566,6 +4900,215 @@
                   "controlPoint",
                   "flagKey",
                   "description"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/feature-flags": {
+      "get": {
+        "summary": "Feature Flag와 코드 사용처·배포 확인",
+        "tags": [
+          "D01-06"
+        ],
+        "operationId": "featureFlags",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/flag-sources": {
+      "get": {
+        "summary": "소스 스냅샷 가져오기 이력",
+        "tags": [
+          "D01-06"
+        ],
+        "operationId": "listFlagSources",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "개발자·CI 소스 스냅샷 가져오기",
+        "tags": [
+          "D01-06"
+        ],
+        "operationId": "importFlagSources",
+        "description": "허용 역할: 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "ff-flag-source/v1"
+                    ]
+                  },
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "GITLAB",
+                      "GITHUB"
+                    ]
+                  },
+                  "repository": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048
+                  },
+                  "commit": {
+                    "type": "string",
+                    "pattern": "^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$"
+                  },
+                  "scannedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "filesScanned": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5000
+                  },
+                  "unresolvedCalls": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "usages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "flagKey": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "path": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1024
+                        },
+                        "line": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 10000000
+                        },
+                        "symbol": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "getBooleanValue",
+                            "getBooleanDetails",
+                            "getStringValue",
+                            "getNumberValue",
+                            "getObjectValue",
+                            "isEnabled",
+                            "getVariant"
+                          ]
+                        },
+                        "safeDefault": {
+                          "type": "string",
+                          "enum": [
+                            "EXPLICIT_FALSE",
+                            "SDK_DEFAULT",
+                            "UNCONFIRMED"
+                          ]
+                        },
+                        "contentHash": {
+                          "type": "string",
+                          "pattern": "^sha256:[0-9a-f]{64}$"
+                        }
+                      },
+                      "required": [
+                        "flagKey",
+                        "path",
+                        "line",
+                        "symbol",
+                        "method",
+                        "safeDefault",
+                        "contentHash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 100000
+                  }
+                },
+                "required": [
+                  "format",
+                  "provider",
+                  "repository",
+                  "commit",
+                  "scannedAt",
+                  "filesScanned",
+                  "unresolvedCalls",
+                  "usages"
                 ],
                 "additionalProperties": false
               }
@@ -6070,7 +7613,7 @@
           "D02-03"
         ],
         "operationId": "fleetMap",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "source",
@@ -6133,7 +7676,7 @@
           "D02-03"
         ],
         "operationId": "fleetMapVehicle",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "vin",
@@ -6534,6 +8077,73 @@
           },
           "404": {
             "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/vehicle/v1/{vin}/signed-flags": {
+      "post": {
+        "summary": "Unleash Edge 평가·FF 경계 검사 후 VIN/TTL 귀속 서명본",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "vehicleSignedUnleashFlags",
+        "description": "허용 역할: 차량 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "targetingKey": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "default": {},
+                    "additionalProperties": {
+                      "nullable": true
+                    }
+                  }
+                },
+                "additionalProperties": {
+                  "nullable": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
           }
         }
       }
@@ -8704,7 +10314,7 @@
     },
     "/api/kill-requests/{id}/restore": {
       "post": {
-        "summary": "복원 요청 — 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명",
+        "summary": "복원 요청 — 재검증 Evidence·이번 단계 Cohort, 2인 승인(직전 차단 승인자 제외) 뒤 게이트·서명",
         "tags": [
           "D03-04"
         ],
@@ -8730,10 +10340,26 @@
                     "type": "string",
                     "minLength": 2,
                     "maxLength": 500
+                  },
+                  "evidenceRef": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 512
+                  },
+                  "cohort": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 500
                   }
                 },
                 "required": [
-                  "reason"
+                  "reason",
+                  "evidenceRef",
+                  "cohort"
                 ],
                 "additionalProperties": false
               }
@@ -8936,7 +10562,7 @@
           "D03-04"
         ],
         "operationId": "previewRollback",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -10528,6 +12154,1289 @@
                 "required": [
                   "ref",
                   "note"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects": {
+      "get": {
+        "summary": "산정 과제 목록(금액은 산정 역할만)",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costProjects",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "산정 과제 만들기",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costProjectCreate",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "target": {
+                    "type": "string",
+                    "maxLength": 300,
+                    "default": ""
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3,
+                    "default": "KRW"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "aace": {
+                        "type": "string",
+                        "default": "Class 4"
+                      },
+                      "confidence": {
+                        "type": "string",
+                        "default": "P80"
+                      },
+                      "preset": {
+                        "type": "string",
+                        "default": "직접 설정"
+                      },
+                      "drivers": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "default": {}
+                      },
+                      "rateBasis": {
+                        "type": "string",
+                        "enum": [
+                          "KOSA SW기술자 평균임금",
+                          "엔지니어링 노임단가",
+                          "사내 단가"
+                        ],
+                        "default": "KOSA SW기술자 평균임금"
+                      },
+                      "method": {
+                        "type": "string",
+                        "default": "사용자 정의"
+                      },
+                      "ohOverride": {
+                        "type": "number",
+                        "nullable": true,
+                        "minimum": 0,
+                        "maximum": 10,
+                        "default": null
+                      },
+                      "feeOverride": {
+                        "type": "number",
+                        "nullable": true,
+                        "minimum": 0,
+                        "maximum": 10,
+                        "default": null
+                      },
+                      "common": {
+                        "type": "object",
+                        "properties": {
+                          "pm": {
+                            "type": "boolean"
+                          },
+                          "scm": {
+                            "type": "boolean"
+                          },
+                          "pi": {
+                            "type": "boolean"
+                          },
+                          "qa": {
+                            "type": "number",
+                            "nullable": true,
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          "fs": {
+                            "type": "number",
+                            "nullable": true,
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          "cs": {
+                            "type": "number",
+                            "nullable": true,
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          "hil": {
+                            "type": "number",
+                            "nullable": true,
+                            "minimum": 0,
+                            "maximum": 100000
+                          }
+                        },
+                        "default": {
+                          "pm": true,
+                          "scm": true,
+                          "pi": true,
+                          "qa": 0,
+                          "fs": 0,
+                          "cs": 0,
+                          "hil": 0
+                        },
+                        "required": [
+                          "pm",
+                          "scm",
+                          "pi",
+                          "qa",
+                          "fs",
+                          "cs",
+                          "hil"
+                        ]
+                      },
+                      "directExpenses": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "item": {
+                              "type": "string",
+                              "maxLength": 100
+                            },
+                            "qty": {
+                              "type": "number",
+                              "nullable": true,
+                              "minimum": 0
+                            },
+                            "unitPrice": {
+                              "type": "number",
+                              "nullable": true,
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "item",
+                            "qty",
+                            "unitPrice"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 8,
+                        "default": []
+                      }
+                    },
+                    "default": {
+                      "aace": "Class 4",
+                      "confidence": "P80",
+                      "preset": "직접 설정",
+                      "drivers": {},
+                      "rateBasis": "KOSA SW기술자 평균임금",
+                      "method": "사용자 정의",
+                      "ohOverride": null,
+                      "feeOverride": null,
+                      "common": {
+                        "pm": true,
+                        "scm": true,
+                        "pi": true,
+                        "qa": 0,
+                        "fs": 0,
+                        "cs": 0,
+                        "hil": 0
+                      },
+                      "directExpenses": []
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}": {
+      "get": {
+        "summary": "산정 과제 상세·계산 결과(금액은 산정 역할만)",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costProject",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "patch": {
+        "summary": "산정 과제 설정 수정",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costProjectUpdate",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "target": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "aace": {
+                        "type": "string",
+                        "default": "Class 4"
+                      },
+                      "confidence": {
+                        "type": "string",
+                        "default": "P80"
+                      },
+                      "preset": {
+                        "type": "string",
+                        "default": "직접 설정"
+                      },
+                      "drivers": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "default": {}
+                      },
+                      "rateBasis": {
+                        "type": "string",
+                        "enum": [
+                          "KOSA SW기술자 평균임금",
+                          "엔지니어링 노임단가",
+                          "사내 단가"
+                        ],
+                        "default": "KOSA SW기술자 평균임금"
+                      },
+                      "method": {
+                        "type": "string",
+                        "default": "사용자 정의"
+                      },
+                      "ohOverride": {
+                        "type": "number",
+                        "nullable": true,
+                        "minimum": 0,
+                        "maximum": 10,
+                        "default": null
+                      },
+                      "feeOverride": {
+                        "type": "number",
+                        "nullable": true,
+                        "minimum": 0,
+                        "maximum": 10,
+                        "default": null
+                      },
+                      "common": {
+                        "type": "object",
+                        "properties": {
+                          "pm": {
+                            "type": "boolean"
+                          },
+                          "scm": {
+                            "type": "boolean"
+                          },
+                          "pi": {
+                            "type": "boolean"
+                          },
+                          "qa": {
+                            "type": "number",
+                            "nullable": true,
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          "fs": {
+                            "type": "number",
+                            "nullable": true,
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          "cs": {
+                            "type": "number",
+                            "nullable": true,
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          "hil": {
+                            "type": "number",
+                            "nullable": true,
+                            "minimum": 0,
+                            "maximum": 100000
+                          }
+                        },
+                        "default": {
+                          "pm": true,
+                          "scm": true,
+                          "pi": true,
+                          "qa": 0,
+                          "fs": 0,
+                          "cs": 0,
+                          "hil": 0
+                        },
+                        "required": [
+                          "pm",
+                          "scm",
+                          "pi",
+                          "qa",
+                          "fs",
+                          "cs",
+                          "hil"
+                        ]
+                      },
+                      "directExpenses": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "item": {
+                              "type": "string",
+                              "maxLength": 100
+                            },
+                            "qty": {
+                              "type": "number",
+                              "nullable": true,
+                              "minimum": 0
+                            },
+                            "unitPrice": {
+                              "type": "number",
+                              "nullable": true,
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "item",
+                            "qty",
+                            "unitPrice"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 8,
+                        "default": []
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "useLatestBasis": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/features": {
+      "post": {
+        "summary": "Feature 담기",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costFeatureAdd",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "version": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  }
+                },
+                "required": [
+                  "featureId",
+                  "version"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/features/{featureId}/{version}": {
+      "delete": {
+        "summary": "Feature 빼기",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costFeatureRemove",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/lines/{lineNo}": {
+      "patch": {
+        "summary": "줄 입력",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costLineUpdate",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lineNo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "qty": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "changeType": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 40
+                  },
+                  "asil": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "QM",
+                      "A",
+                      "B",
+                      "C",
+                      "D",
+                      null
+                    ]
+                  },
+                  "variants": {
+                    "type": "integer",
+                    "nullable": true,
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "m": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0,
+                    "maximum": 100000
+                  },
+                  "o": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0,
+                    "maximum": 100000
+                  },
+                  "p": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0,
+                    "maximum": 100000
+                  },
+                  "priority": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "필수",
+                      "선택",
+                      "후순위",
+                      null
+                    ]
+                  },
+                  "owned": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "보유",
+                      "미보유",
+                      "불명",
+                      null
+                    ]
+                  },
+                  "actual": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0,
+                    "maximum": 100000
+                  },
+                  "reviewStatus": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "미검토",
+                      "검토중",
+                      "확정",
+                      null
+                    ]
+                  },
+                  "memo": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 500
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/mbd/{refId}": {
+      "put": {
+        "summary": "MBD 작업 행 바꾸기",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costMbdPut",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "counts": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "nullable": true,
+                            "minimum": 0,
+                            "maximum": 1000
+                          }
+                        }
+                      },
+                      "required": [
+                        "counts"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 50
+                  }
+                },
+                "required": [
+                  "items"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/transitions": {
+      "post": {
+        "summary": "제출·승인·반려·개정 — 작성자와 승인자는 서로 다른 사람",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costTransition",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "SUBMIT",
+                      "APPROVE",
+                      "REJECT",
+                      "REVISE"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "action",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/checks/{no}": {
+      "put": {
+        "summary": "검토 체크리스트 항목",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costCheckPut",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "미확인",
+                      "확인",
+                      "보완 필요",
+                      "해당 없음"
+                    ]
+                  },
+                  "memo": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/export": {
+      "get": {
+        "summary": "엑셀 내보내기(감사 COST_EXPORT)",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costExport",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/basis": {
+      "get": {
+        "summary": "계수·단가 표 버전 목록",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costBasisList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "계수·단가 표 초안",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costBasisDraft",
+        "description": "허용 역할: 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "basis": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "nullable": true
+                    }
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "basis",
+                  "note"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/actuals/{refId}": {
+      "put": {
+        "summary": "승인 뒤 실적 공수",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costActualPut",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "actual": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 100000
+                  }
+                },
+                "required": [
+                  "actual"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/calibration": {
+      "get": {
+        "summary": "교정 제안·실적 오차",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costCalibration",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/basis/{version}": {
+      "get": {
+        "summary": "계수·단가 표 한 버전(산정 역할만)",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costBasis",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/basis/{version}/publish": {
+      "post": {
+        "summary": "계수·단가 표 발행",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costBasisPublish",
+        "description": "허용 역할: 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
                 ],
                 "additionalProperties": false
               }
@@ -13658,7 +16567,7 @@
           "D05-01"
         ],
         "operationId": "mockExtCreate",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "system",
@@ -13732,6 +16641,15 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 100
+                      },
+                      "refIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        },
+                        "minItems": 1,
+                        "maxItems": 20
                       }
                     },
                     "additionalProperties": false
@@ -13776,7 +16694,7 @@
           "D05-01"
         ],
         "operationId": "mockExtAct",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "system",
@@ -13803,7 +16721,8 @@
                       "TRANSITION",
                       "EDIT",
                       "MERGE",
-                      "PIPELINE"
+                      "PIPELINE",
+                      "COMMENT"
                     ]
                   },
                   "status": {
@@ -13819,6 +16738,11 @@
                   "body": {
                     "type": "string",
                     "maxLength": 4000
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
                   },
                   "externalUser": {
                     "type": "string",
@@ -13866,6 +16790,15 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 100
+                      },
+                      "refIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        },
+                        "minItems": 1,
+                        "maxItems": 20
                       }
                     },
                     "additionalProperties": false
@@ -14179,7 +17112,7 @@
     },
     "/api/evidence": {
       "get": {
-        "summary": "Evidence 원장 (Gate 판정 Evidence)",
+        "summary": "Evidence 원장 (Gate 판정 Evidence) — 이관 기록 + 플랫폼 판정, ref는 Evidence Ref 일부",
         "tags": [
           "D04-02"
         ],
@@ -14203,6 +17136,14 @@
           },
           {
             "name": "result",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ref",
             "in": "query",
             "required": false,
             "schema": {
@@ -14279,7 +17220,7 @@
           "KERNEL"
         ],
         "operationId": "createDashboard",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -14439,7 +17380,13 @@
                         "SECURITY_OFFICER",
                         "OPS_LEAD",
                         "REGULATORY_OWNER",
+                        "REFDB_ADMIN",
+                        "DOMAIN_REVIEWER",
                         "AUDITOR",
+                        "COST_ESTIMATOR",
+                        "COST_APPROVER",
+                        "COST_VIEWER",
+                        "COST_BASIS_ADMIN",
                         "SYSTEM",
                         "VEHICLE"
                       ]
@@ -14514,7 +17461,7 @@
           "KERNEL"
         ],
         "operationId": "updateDashboard",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -14683,7 +17630,13 @@
                         "SECURITY_OFFICER",
                         "OPS_LEAD",
                         "REGULATORY_OWNER",
+                        "REFDB_ADMIN",
+                        "DOMAIN_REVIEWER",
                         "AUDITOR",
+                        "COST_ESTIMATOR",
+                        "COST_APPROVER",
+                        "COST_VIEWER",
+                        "COST_BASIS_ADMIN",
                         "SYSTEM",
                         "VEHICLE"
                       ]
@@ -14728,7 +17681,7 @@
           "KERNEL"
         ],
         "operationId": "deleteDashboard",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -14785,7 +17738,7 @@
           "KERNEL"
         ],
         "operationId": "favouriteDashboard",
-        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -14808,6 +17761,930 @@
                 },
                 "required": [
                   "favourite"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/work-queues": {
+      "get": {
+        "summary": "검토함 대기열 — 정의 승인·Release Sign-off·출시 가능·Gate 판정·안전 분류 확정 대기(요청 시각·작성자)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "workQueues",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/consultations": {
+      "get": {
+        "summary": "협의 요청 목록 — 받는 부서(to)·요청 부서(from)·상태 필터, 의견 대기·기한 순",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "listConsultations",
+        "parameters": [
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "협의 요청 만들기 — 업무 절차에서 받는 부서가 협의(C)·통보(I)인 활동 근거, 대상·기한·살펴볼 것",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "createConsultation",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "toDept": {
+                    "type": "string"
+                  },
+                  "fromDept": {
+                    "type": "string"
+                  },
+                  "activityId": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 40,
+                    "default": null
+                  },
+                  "targetKind": {
+                    "type": "string",
+                    "enum": [
+                      "FEATURE",
+                      "SUPPLIER_PACKAGE",
+                      "POLICY",
+                      "REF"
+                    ]
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "targetName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "summary": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 200
+                  },
+                  "checks": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 300
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                  },
+                  "link": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 300,
+                    "default": null
+                  },
+                  "dueAt": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "toDept",
+                  "fromDept",
+                  "targetKind",
+                  "targetId",
+                  "targetName",
+                  "summary",
+                  "checks",
+                  "dueAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/consultations/{id}": {
+      "get": {
+        "summary": "협의 요청 한 건 — 대상·살펴볼 것·기한·의견 이력",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "consultationDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/consultations/{id}/opinions": {
+      "post": {
+        "summary": "협의 의견 — 받은 포털 부서가 동의·보완·반대 + 메모(요청자 본인은 불가)",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "answerConsultation",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "department": {
+                    "type": "string"
+                  },
+                  "opinion": {
+                    "type": "string",
+                    "enum": [
+                      "AGREE",
+                      "REVISE",
+                      "OPPOSE"
+                    ]
+                  },
+                  "memo": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "department",
+                  "opinion",
+                  "memo"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/releases/preview": {
+      "get": {
+        "summary": "Feature DB 발행 미리 보기 — 다음 버전에 묶일 승인 요청·반려로 폐기될 요청 중 행·알림 받을 Feature Owner·품질 지표 변화",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refReleasePreview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/refdb/changes/{id}/audit": {
+      "get": {
+        "summary": "Feature DB 변경 요청 감사 이력 — 요청·추가 요청·검토·결정·발행 기록을 시간 순으로(금액 값은 남기지 않음)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "refChangeAudit",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/analysis": {
+      "get": {
+        "summary": "분석 근거 — 종류별 지금 기록·이력, 보안 관련 여부, 대표 ASIL 변경 사유, G7 서명",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "analysisEvidence",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/analysis/hara": {
+      "post": {
+        "summary": "HARA 기록 — 안전 목표·ASIL, Safety Manager 개인 서명(추가만)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "recordHara",
+        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "docId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 64
+                  },
+                  "asil": {
+                    "type": "string",
+                    "enum": [
+                      "QM",
+                      "A",
+                      "B",
+                      "C",
+                      "D"
+                    ]
+                  },
+                  "safetyGoals": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 32
+                        },
+                        "text": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 300
+                        },
+                        "asil": {
+                          "type": "string",
+                          "enum": [
+                            "QM",
+                            "A",
+                            "B",
+                            "C",
+                            "D"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "text",
+                        "asil"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "docId",
+                  "asil",
+                  "safetyGoals",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/analysis/tara": {
+      "post": {
+        "summary": "TARA 기록 — 위협 시나리오·CAL, CSM 개인 서명(추가만)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "recordTara",
+        "description": "허용 역할: 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "docId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 64
+                  },
+                  "threats": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 32
+                        },
+                        "text": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 300
+                        },
+                        "cal": {
+                          "type": "string",
+                          "enum": [
+                            "CAL1",
+                            "CAL2",
+                            "CAL3",
+                            "CAL4"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "text",
+                        "cal"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "docId",
+                  "threats",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/analysis/sotif": {
+      "post": {
+        "summary": "SOTIF 기록 — 유발 조건, 아키텍트 개인 서명(추가만)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "recordSotif",
+        "description": "허용 역할: 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "docId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 64
+                  },
+                  "triggeringConditions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 300
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "docId",
+                  "triggeringConditions",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/analysis/homologation": {
+      "post": {
+        "summary": "형식승인 영향 판단 — 영향 규정·판단, 법규 담당 개인 서명(추가만)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "recordHomologation",
+        "description": "허용 역할: 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "regulations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "R155",
+                        "R156",
+                        "R157",
+                        "R79",
+                        "R13H",
+                        "R152",
+                        "GSR"
+                      ]
+                    },
+                    "maxItems": 7
+                  },
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "NO_IMPACT",
+                      "NOTIFY",
+                      "EXTENSION",
+                      "NEW_APPROVAL"
+                    ]
+                  },
+                  "rxswin": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 64
+                    },
+                    "maxItems": 10,
+                    "default": []
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "regulations",
+                  "decision",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/analysis/g7-safety": {
+      "post": {
+        "summary": "G7 기능안전 서명 — Safety Manager, 지금 HARA에 묶임",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "signG7Safety",
+        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/analysis/g7-security": {
+      "post": {
+        "summary": "G7 사이버보안 서명 — CSM, 지금 TARA에 묶임(기능안전 서명과 다른 사람)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "signG7Security",
+        "description": "허용 역할: 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
                 ],
                 "additionalProperties": false
               }

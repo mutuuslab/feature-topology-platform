@@ -1,5 +1,8 @@
 import { Component, type ReactNode } from 'react';
 import { ErrorState } from './patterns';
+import { routeRecovery } from '../copy/route-recovery';
+
+export const isChunkLoadError = (error: Error) => /failed to fetch dynamically imported module|error loading dynamically imported module|loading chunk .+ failed|importing a module script failed/i.test(error.message);
 
 interface Props { children: ReactNode }
 interface State { error: Error | null }
@@ -16,6 +19,7 @@ export default class RouteBoundary extends Component<Props, State> {
     const { error } = this.state;
     if (!error) return this.props.children;
     // data-route-error — e2e 메뉴 크롤이 화면 렌더 실패를 잡는 표식
-    return <div data-route-error><ErrorState msg={`화면을 표시할 수 없습니다: ${error.message}`} onRetry={() => this.setState({ error: null })} /></div>;
+    const updated = isChunkLoadError(error);
+    return <div data-route-error><ErrorState msg={updated ? routeRecovery.updated : routeRecovery.failed(error.message)} onRetry={() => updated ? window.location.reload() : this.setState({ error: null })} /></div>;
   }
 }

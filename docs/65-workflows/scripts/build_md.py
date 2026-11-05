@@ -163,7 +163,7 @@ def role_md(m, r) -> str:
     return "\n".join(lines) + "\n"
 
 
-WORKSPACE_KO = {"studio": "기획 스튜디오", "review": "심사 결재함", "console": "엔지니어링 콘솔",
+WORKSPACE_KO = {"studio": "기획팀", "review": "심사 결재함", "console": "엔지니어링 콘솔",
                 "control": "관제실", "portal": "검토 포털"}
 
 

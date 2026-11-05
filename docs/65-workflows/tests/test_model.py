@@ -249,3 +249,42 @@ def test_tara_is_owned_by_cybersecurity(model):
     assert tara["raci"]["R"] == ["R-CSM"] and tara["raci"]["A"] == "R-CSM"
     _, hara = model["acts_by_id"]["FPW.2-A02"]
     assert hara["raci"]["A"] == "R-SM" and "R-CSM" in hara["raci"]["C"]
+
+
+# ── Feature DB (30-95, 2026-11-04) ─────────────────────────────
+def test_feature_db_roles_belong_to_expected_departments(model):
+    assert model["roles_by_id"]["R-RDA"]["platform_roles"] == ["REFDB_ADMIN"]
+    assert model["roles_by_id"]["R-DRV"]["platform_roles"] == ["DOMAIN_REVIEWER"]
+    assert model["dept_of_role"]["R-RDA"] == "DEP-PLM"
+    assert model["dept_of_role"]["R-DRV"] == "DEP-SE"
+
+
+def test_feature_db_operation_process_exists(model):
+    plan = next(pl for pl in model["plan"] if pl["id"] == "FPW.14")
+    assert plan["group"] == "지원" and plan["name_ko"] == "Feature DB 운영"
+    p = next(p for p in model["processes"] if p["id"] == "FPW.14")
+    actions = {n: a["raci"]["R"][0] for a in p["activities"] for n in (a.get("platform") or {}).get("actions", [])}
+    assert actions == {"createRefChange": "R-FO", "reviewRefChange": "R-DRV",
+                       "decideRefChange": "R-RDA", "publishRefRelease": "R-RDA",
+                       "recordSourceReview": "R-RDA"}                   # 출처 정기 점검 기록(다음 점검일 갱신)
+    assert model["acts_by_id"]["FPW.14-A05"][1].get("trigger")          # 정기 출처 점검은 사건(점검일)으로 시작
+
+
+def test_feature_registration_links_reference_and_blocks_pending(model):
+    _, reg = model["acts_by_id"]["FPW.1-A01"]
+    assert "WP-REF-LINK" in reg["outputs"] and "WP-REFDB-RELEASE" in reg["inputs"]
+    _, add = model["acts_by_id"]["FPW.1-A06"]
+    assert add.get("trigger") and add["platform"]["actions"] == ["requestRefAdd"] and not add.get("next")
+    _, approve = model["acts_by_id"]["FPW.3-A04"]                           # 정의 승인 — 요청 중 행 확인
+    assert "WP-REF-LINK" in approve["inputs"] and any("PENDING" in c for c in approve["checks"])
+
+
+def test_feature_db_change_request_is_separated_from_approval(model):
+    pairs = {(x["request"], x["approval"]) for x in model["common"]["request_approval"]}
+    assert {("FPW.14-A01", "FPW.14-A03"), ("FPW.1-A06", "FPW.14-A03")} <= pairs
+    _, appr = model["acts_by_id"]["FPW.14-A03"]
+    appr["raci"]["A"] = "R-FO"                                               # 요청자(Feature Owner)가 승인 책임이 되면 잡는다
+    appr["raci"]["I"] = []
+    errs = errors(model)
+    assert any("FPW.14-A01→FPW.14-A03" in e for e in errs)
+    assert any("FPW.1-A06→FPW.14-A03" in e for e in errs)

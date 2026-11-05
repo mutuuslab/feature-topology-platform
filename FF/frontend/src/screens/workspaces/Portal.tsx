@@ -1,63 +1,44 @@
-// ⑤ 검토 포털(구매·법무·개인정보보호) — 다른 부서가 의견을 구하는 업무(협의 C)를 문서함처럼. 기술 코드 대신 업무 이름과
-// 한 줄 설명, 요청 부서를 보인다. 큰 글자(토큰 --fs-base 15px), 단순한 상단 메뉴.
-import { Link } from 'react-router-dom';
+// ⑤ 검토 포털(구매·법무·개인정보보호) — 다른 부서가 의견을 구한 실제 협의 건(대상·요청 부서·기한·상태)을 문서함처럼(W5 P5-1·P5-12).
+// 건을 누르면 흐름도 대신 '검토할 것 한 장'(/consults/:id)이 열리고, 거기서 동의·보완·반대 의견을 남긴다.
+// 업무 절차 코드·Gate·SLA·레인·RACI 글자를 보이지 않는다. 큰 글자(토큰 --fs-base 15px), 단순한 상단 메뉴.
 import type { DepartmentSummary } from '@ff/contracts';
-import { departments as D } from '../../copy/departments';
+import { asyncState, useApi } from '../../api/hooks';
+import { consult as C } from '../../copy/consult';
 import { AsyncView, PageHeader, Panel } from '../../design';
-import { departmentById } from '../../data/departments';
-import { activityHref, MyWork, useDeptDoc, type DeptActivity } from './common';
-
-/** 이 활동을 수행하는 부서(첫 번째 R 역할의 부서) */
-function askerOf(a: DeptActivity, deptOfRole: (r: string) => string | undefined): string {
-  const id = deptOfRole(a.activity.raci.R[0]);
-  return (id && departmentById(id)?.name) || '—';
-}
+import { ConsultInbox, SentConsults, type ConsultList } from './Consults';
 
 export default function PortalHome({ dept }: { dept: DepartmentSummary }) {
-  const P = D.portal;
-  const d = useDeptDoc(dept);
-  const ready = d && d !== 'fail' ? d : null;
-  const asks = ready ? ready.acts.filter((a) => a.part === 'C') : [];
-  const deptOfRole = (r: string) => ready?.doc.departments.find((x) => x.roles.includes(r))?.id;
+  const P = C.portal;
+  const q = useApi<ConsultList>('listConsultations', { query: { to: dept.id } });
+  const items = q.data?.items ?? [];
+  const open = items.filter((c) => c.status === 'OPEN');
+  const done = items.filter((c) => c.status === 'ANSWERED');
+  const overdue = q.data?.overdue ?? 0;
   return (
     <div className="ds-screen ws ws--portal" data-workspace-home="portal">
-      <PageHeader codes={P.eyebrow} title={P.title(dept.name)} lead={P.lead} message={ready ? { tone: 'neutral', ...P.key(asks.length) } : { tone: 'neutral', value: '—', text: P.key(0).text }} />
-      <Panel title={P.ask}>
-        <AsyncView state={d === null ? 'loading' : d === 'fail' ? 'error' : asks.length ? 'ready' : 'empty'} empty={{ title: P.askEmpty }} rows={5}>
-          <ol className="ws-asks">
-            {asks.map((a) => (
-              <li key={a.activity.id}>
-                <div className="ws-asks__head">
-                  <Link to={activityHref(a)} className="ws-asks__name">
-                    {a.activity.name}
-                  </Link>
-                  <span className="ws-asks__asker">
-                    {P.asker}: {askerOf(a, deptOfRole)}
-                  </span>
-                </div>
-                <p className="ws-asks__look">
-                  <span>{P.look}</span> {a.activity.steps[0] ?? a.process.purpose}
-                </p>
-                <p className="ws-asks__proc">
-                  {P.process}: {a.process.name}
-                  {!a.firstScope && <em> · {D.home.secondScope}</em>}
-                </p>
-              </li>
-            ))}
-          </ol>
+      <PageHeader
+        codes={P.eyebrow}
+        title={P.title(dept.name)}
+        lead={P.lead}
+        message={
+          !q.data
+            ? { tone: 'neutral', value: '—', text: P.key(0).text }
+            : open.length
+              ? { tone: overdue ? 'warn' : 'neutral', ...P.key(open.length), status: overdue ? { label: P.overdue(overdue), tone: 'warn' } : undefined }
+              : { tone: 'neutral', text: P.keyNone }
+        }
+      />
+      <Panel title={P.inbox} id="ws-consult-inbox">
+        <AsyncView state={asyncState(q, open.length === 0)} error={q.error} onRetry={() => q.refetch()} emptyHidden rows={5}>
+          <ConsultInbox items={open} caption={P.inboxCaption} />
         </AsyncView>
       </Panel>
-      <div className="ws-split">
-        <Panel title={P.mine}>
-          <MyWork d={d} limit={6} />
+      {done.length > 0 && (
+        <Panel title={P.done} id="ws-consult-done" eyebrow={String(done.length)}>
+          <ConsultInbox items={done} caption={P.done} />
         </Panel>
-        <Panel title={P.docs}>
-          <p>
-            <Link to={`/procedures/roles?view=dept&dept=${dept.id}`}>{P.rnrDoc}</Link>
-          </p>
-          <p className="ws-muted">{P.rnrHint}</p>
-        </Panel>
-      </div>
+      )}
+      <SentConsults deptId={dept.id} />
     </div>
   );
 }

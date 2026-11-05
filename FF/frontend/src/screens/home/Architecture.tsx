@@ -11,7 +11,7 @@ import { AsyncView, Drawer, ExplainCodes, KeyValue, PageHeader, RuleChecklist, S
 import { when } from '../shared';
 
 const A = ko.arch;
-const DOMAINS = ['D01', 'D02', 'D03', 'D04', 'D05', 'D06'] as const;
+const DOMAINS = ['D01', 'D02', 'D03', 'D04', 'D05', 'D06', 'D07'] as const;
 const WPS: WorkPackage[] = ['WP0', 'WP1', 'WP2', 'WP3', 'WP4', 'WP5', 'WP6', 'WP7', 'WP8', 'WP9', 'WP10'];
 const RULE_IDS = Object.keys(STANDARDS_MAP);
 const done = (id: string) => !!RULE_STATUS[id]?.tested;

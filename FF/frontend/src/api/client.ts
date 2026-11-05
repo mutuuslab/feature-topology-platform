@@ -54,6 +54,19 @@ export const pathOf = (name: string, params: Record<string, string> = {}, query:
 /** 계정마다 결과가 다른 조회인가 — 캐시 키에 역할을 넣는다 */
 export const isPersonal = (name: string) => !!BY_NAME.get(name)?.personal;
 
+/**
+ * 역할마다 응답이 다른 조회(personal) 중 경로에 역할 제한이 없는 것 — 이 사람이 맡은 역할 중 더 많이 보는 역할로 묻는다.
+ * Feature DB 금액 칸(벤치마크 €)은 서버가 DB 관리자 역할에만 준다(backend refdb read-view BENCHMARK_VIEWERS).
+ * PLM 기준정보 계정의 첫 역할은 BOM 승인이라, 그대로 보내면 관리자에게도 금액이 안 보였다(하네스 리뷰 F1)
+ */
+export const VIEW_ROLES: Partial<Record<string, readonly Role[]>> = {
+  listRefs: ['REFDB_ADMIN'],
+  refDetail: ['REFDB_ADMIN'],
+  listRefChanges: ['REFDB_ADMIN'],
+  refChangeDetail: ['REFDB_ADMIN'],
+  exportRefdb: ['REFDB_ADMIN'],
+};
+
 /** 응답 본문 — JSON이 아니면(앞단 프록시의 HTML 오류 쪽 등) null. 깨진 JSON으로 화면이 멈추지 않게 */
 function parseBody(text: string): any {
   if (!text) return null;
@@ -101,7 +114,7 @@ export async function call<T = any>(name: RouteName | string, opts: CallOptions 
   const headers: Record<string, string> = { Accept: 'application/json' };
   // 쓰기와 계정별 조회(내 알림)는 행위자 헤더를 붙인다
   if (write || (route.personal && opts.role)) {
-    const a = actorFor(opts.role ?? 'viewer', opts.actorRole && route.roles?.includes(opts.actorRole) ? [opts.actorRole, ...route.roles] : route.roles);
+    const a = actorFor(opts.role ?? 'viewer', opts.actorRole && route.roles?.includes(opts.actorRole) ? [opts.actorRole, ...route.roles] : (route.roles ?? (write ? undefined : VIEW_ROLES[name])));
     // SSO — 신원은 세션 쿠키가 정한다. ID 머리글은 보내지 않고, 역할은 부여받은 것 중 하나만 고른다(서버가 다시 확인)
     if (!OIDC_AUTH) headers['X-Actor-Id'] = a.id;
     headers['X-Actor-Role'] = a.role;

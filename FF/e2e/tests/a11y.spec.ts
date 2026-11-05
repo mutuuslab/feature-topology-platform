@@ -4,12 +4,14 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { DRILLDOWNS, MENU_ENTRIES } from './menu';
+import { settle } from './settle';
 
 async function axe(page: Page, url: string) {
   await page.goto(url);
   await expect(page.locator('#main')).toBeVisible();
   // networkidle은 SSE(/events)처럼 열린 연결이 있으면 끝나지 않는다 — 로딩 표식이 사라질 때까지만 기다린다
-  await page.waitForFunction(() => !document.querySelector('[data-state="loading"], [aria-busy="true"]'), null, { timeout: 15_000 }).catch(() => undefined);
+  // 셸까지(axe는 페이지 전체를 본다) 로딩이 끝나야 하고, 시간 초과는 실패다 — 오류 상자는 본문에서 0
+  await settle(page, { scope: 'body', errors: '#main' });
   await page.waitForTimeout(300);
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
   const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');

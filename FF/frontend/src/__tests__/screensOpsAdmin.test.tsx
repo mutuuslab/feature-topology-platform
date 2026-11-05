@@ -76,7 +76,7 @@ describe('운영·관리 v2', () => {
     handler = (url) => (url.startsWith('/api/sbom/') ? { body: CDX } : url.startsWith('/api/security-events') ? { body: SEC } : url.startsWith('/api/sbom') ? { body: SBOM } : url.startsWith('/api/vex') ? { body: VEX } : url.startsWith('/api/pki/keys') ? { body: { items: [{ keyId: 'KEY-0001', alg: 'Ed25519', purpose: 'policy', epoch: 1, status: 'ACTIVE', createdAt: 'x', notAfter: 'y', fingerprint: 'sha256:f0' }] } } : { body: { epoch: 1, approverKeys: 3 } });
     mount('/admin/security', <SecurityScreen />);
     expect(await screen.findByText('KEY-0001')).toBeTruthy();
-    expect(await screen.findByText('approverKeys')).toBeTruthy();
+    expect(await screen.findByText('등록된 승인자 공개키')).toBeTruthy(); // HSM 항목은 업무 이름(P4-6)
     // 보안 이벤트(IdsM) 정의·기록, 차량 키 epoch 상향은 CSM·FSM만 (운영자 불가)
     expect(await screen.findByText('STATE_AUTH_MISMATCH')).toBeTruthy();
     expect(screen.getByText('10분에 3회 (차량별)')).toBeTruthy();

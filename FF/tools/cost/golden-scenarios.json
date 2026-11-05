@@ -1,0 +1,49 @@
+{
+  "note": "개발비 산정 엔진 기준값 시나리오(20-94 §10). tools/cost/excel-golden.ps1이 엑셀 산정 도구 v1.3 복사본에 넣고 다시 계산해 data/golden/cost/<name>.json으로 뽑는다. 원본 엑셀은 열기만 한다.",
+  "scenarios": [
+    {
+      "name": "s0-bcm-example",
+      "what": "엑셀 예시 과제 그대로 — BCM 46줄(번들 KRN-B1 포함), T-shirt 경로, 직접 설정, 사용자 정의 15%/10%, KOSA 단가, P80, Class 4",
+      "cells": []
+    },
+    {
+      "name": "s1-paths",
+      "what": "계산 경로 — 직접 입력(m·o·p / m만, 수량 2), MBD 복잡도(기준 y·작업별 y, 같은 Feature 두 행), 번들(대표 선택 시 구성원 0, 대표 없는 구성원은 계산), 변경 유형·ASIL 덮어쓰기·변형 수·보유+신규 점검·실적 공수(MRE)",
+      "cells": [
+        ["03_FeatureDB", "BC-SEAT-001", "AF", 1], ["03_FeatureDB", "BC-SEAT-001", "AJ", 3], ["03_FeatureDB", "BC-SEAT-001", "AK", 2.5], ["03_FeatureDB", "BC-SEAT-001", "AL", 5],
+        ["03_FeatureDB", "BC-SEAT-002", "AF", 2], ["03_FeatureDB", "BC-SEAT-002", "AJ", 1.5],
+        ["03_FeatureDB", "BC-HVAC-002", "AF", 1], ["03_FeatureDB", "BC-HVAC-008", "AF", 1], ["03_FeatureDB", "BC-HVAC-009", "AF", 1],
+        ["03_FeatureDB", "BC-HVAC-007", "AF", 1],
+        ["03_FeatureDB", "BC-WIN-001", "AF", 1], ["03_FeatureDB", "BC-WIN-002", "AF", 1], ["03_FeatureDB", "BC-WIN-002", "AH", "D"], ["03_FeatureDB", "BC-WIN-002", "AI", 3],
+        ["03_FeatureDB", "BC-BCM-002", "AG", "수정(중간)"], ["03_FeatureDB", "BC-BCM-002", "AO", 2],
+        ["03_FeatureDB", "BC-BCM-004", "AG", "수정(대규모)"],
+        ["03_FeatureDB", "BC-BCM-005", "AI", 4],
+        ["03_FeatureDB", "BC-BCM-006", "AH", "B"], ["03_FeatureDB", "BC-BCM-006", "AO", 0.5],
+        ["03_FeatureDB", "BC-BCM-009", "AN", "보유"],
+        ["12_MBD복잡도", "Q13", null, 8], ["12_MBD복잡도", "S17", null, 12], ["12_MBD복잡도", "S18", null, 6],
+        ["12_MBD복잡도", "B7", null, "BC-WIN-001"], ["12_MBD복잡도", "D7", null, 2], ["12_MBD복잡도", "E7", null, 3], ["12_MBD복잡도", "F7", null, 1],
+        ["12_MBD복잡도", "B8", null, "BC-WIN-001"], ["12_MBD복잡도", "E8", null, 1], ["12_MBD복잡도", "G8", null, 1],
+        ["12_MBD복잡도", "B9", null, "BC-WIN-002"], ["12_MBD복잡도", "D9", null, 1], ["12_MBD복잡도", "H9", null, 1]
+      ]
+    },
+    {
+      "name": "s2-settings",
+      "what": "과제 설정 — 프리셋 '신규 제어기·신규 플랫폼', KOSA 투입공수 방식 기본 제경비·기술료(덮어쓰기 없음), 엔지니어링 노임단가, P90, Class 3, 설비·도구 제외, 공통 인력 M/M 입력, 직접경비",
+      "cells": [
+        ["02_프로젝트설정", "C12", null, "신규 제어기·신규 플랫폼"], ["02_프로젝트설정", "C15", null, "KOSA 투입공수 방식"], ["02_프로젝트설정", "D17", null, null], ["02_프로젝트설정", "D18", null, null],
+        ["02_프로젝트설정", "C14", null, "엔지니어링 노임단가"], ["02_프로젝트설정", "C11", null, "P90"], ["02_프로젝트설정", "C10", null, "Class 3"],
+        ["02_프로젝트설정", "C51", null, "N"], ["02_프로젝트설정", "C53", null, 2], ["02_프로젝트설정", "C54", null, 1.5], ["02_프로젝트설정", "C55", null, 1], ["02_프로젝트설정", "C56", null, 3],
+        ["02_프로젝트설정", "C62", null, 10], ["02_프로젝트설정", "E62", null, 500000], ["02_프로젝트설정", "C66", null, 1], ["02_프로젝트설정", "E66", null, 30000000]
+      ]
+    },
+    {
+      "name": "s3-inhouse",
+      "what": "사내 단가(일부 역할만 입력 — 나머지는 KOSA), 엔지니어링사업대가 기준(기술료만 덮어쓰기), P50, Class 2, 프리셋 '기존 플랫폼 파생 개발', PM 제외",
+      "cells": [
+        ["02_프로젝트설정", "C14", null, "사내 단가"], ["05_기준값", "H73", null, 12000000], ["05_기준값", "H76", null, 6500000], ["05_기준값", "H77", null, 8000000],
+        ["02_프로젝트설정", "C15", null, "엔지니어링사업대가 기준"], ["02_프로젝트설정", "D17", null, null], ["02_프로젝트설정", "D18", null, 0.25],
+        ["02_프로젝트설정", "C11", null, "P50"], ["02_프로젝트설정", "C10", null, "Class 2"], ["02_프로젝트설정", "C12", null, "기존 플랫폼 파생 개발"], ["02_프로젝트설정", "C50", null, "N"]
+      ]
+    }
+  ]
+}

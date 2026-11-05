@@ -8,7 +8,7 @@ owner: governance
 cycle: 0
 traces:
   depends_on: []
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -49,9 +49,9 @@ flowchart LR
 | FPW.11-A01 | 서명 키 계층·HSM 운영 | R PKI 운영 · A CSM · C Safety Manager · I Release Manager, 운영 조직 | WP-HARA-TARA | WP-KEY-REGISTER | `/admin/security` | FFG-SEC-002 |
 | FPW.11-A02 | 키 교체 플랫폼 기록 | R CSM · A CSM · C PKI 운영, Safety Manager · I 운영 조직 | WP-KEY-REGISTER | WP-KEY-REGISTER | `rotateKey`, `/admin/security` | FFG-SEC-002 |
 | FPW.11-A03 | 키 유출 대응·epoch 상향 | R CSM · A CSM · C PKI 운영, Safety Manager · I 운영 조직, 법규 담당 | WP-KEY-REGISTER | WP-KEY-INCIDENT | `bumpEpoch`, `/admin/security` | FFG-SEC-002 |
-| FPW.11-A04 | 취약점 영향 특정·대응 결정 | R CSM · A CSM · C 운영 조직, Safety Manager, 통합 조직 · I Release Manager | WP-RELEASE-BASELINE, WP-ORIGIN-RECORD | WP-VEX-DECISION | `recordVex`, `/admin/security` | FFG-SBOM-005, FFG-SBOM-001 |
-| FPW.11-A05 | CSMS Evidence·R155 보고 | R CSM · A CSM · C 법규 담당 · I 품질 조직 | WP-HARA-TARA, WP-VEX-DECISION, WP-KEY-INCIDENT | WP-CSMS-EVIDENCE | 플랫폼 밖 | FFG-SEC-005 |
+| FPW.11-A04 | 취약점 영향 특정·대응 결정 | R CSM · A CSM · C 운영 조직, Safety Manager, 통합 조직 · I Release Manager | WP-ORIGIN-RECORD, WP-RELEASE-BASELINE | WP-VEX-DECISION | `recordVex`, `/admin/security` | FFG-SBOM-005, FFG-SBOM-001 |
 | FPW.11-A06 | OSS 라이선스·보안 프로그램 운영 | R 법무 · A 법무 · C CSM, 구매 · I 통합 조직 | WP-ORIGIN-RECORD | WP-OSS-PROGRAM | 플랫폼 밖 | FFG-SBOM-006 |
+| FPW.11-A05 | CSMS Evidence·R155 보고 | R CSM · A CSM · C 법규 담당 · I 품질 조직 | WP-HARA-TARA, WP-VEX-DECISION, WP-KEY-INCIDENT | WP-CSMS-EVIDENCE | 플랫폼 밖 | FFG-SEC-005 |
 
 ### 수행 절차와 완료 기준
 
@@ -89,14 +89,6 @@ flowchart LR
 완료 기준:
 - [ ] 공지된 취약점마다 VEX 판정과 대응 기한이 있다
 
-#### FPW.11-A05 CSMS Evidence·R155 보고
-1. 플랫폼·차량 런타임의 TARA·보안 요구·시험·모니터링 결과를 CSMS Evidence로 모은다
-2. 키 사고와 취약점 대응 결과를 Evidence에 연결한다
-3. 법규 담당과 승인 기관 보고 내용을 확정해 제출한다
-
-완료 기준:
-- [ ] 보고 내용의 각 항목이 Evidence ID로 연결되었다
-
 #### FPW.11-A06 OSS 라이선스·보안 프로그램 운영
 - 트리거: OSS 구성요소 추가·변경
 1. 추가·변경된 OSS 구성요소의 라이선스 의무를 확인한다
@@ -105,6 +97,14 @@ flowchart LR
 
 완료 기준:
 - [ ] 모든 OSS 구성요소의 의무 이행 상태가 기록되었다
+
+#### FPW.11-A05 CSMS Evidence·R155 보고
+1. 플랫폼·차량 런타임의 TARA·보안 요구·시험·모니터링 결과를 CSMS Evidence로 모은다
+2. 키 사고와 취약점 대응 결과를 Evidence에 연결한다
+3. 법규 담당과 승인 기관 보고 내용을 확정해 제출한다
+
+완료 기준:
+- [ ] 보고 내용의 각 항목이 Evidence ID로 연결되었다
 
 ## 3. 산출물
 

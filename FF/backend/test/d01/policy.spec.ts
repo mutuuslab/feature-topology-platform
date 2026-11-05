@@ -2,7 +2,7 @@
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Clock } from '../../src/kernel/clock';
-import { actor, bootApp, confirmSafety } from '../helpers';
+import { actor, bootApp, confirmSafety, signG7, withRef } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
@@ -85,12 +85,13 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
     const spec = () => ({ featureId: fid, featureVersion: '0.1.0', controlPoint: 'Flag', flagKey: `care_${fid.slice(5)}_flag`, description: '시험 Flag', safeDefault: false, enabled: true });
 
     it('Feature 준비: 등록 → 구현 연결 → G1~G3 → 승인(자동 DEVELOPING) → G4~G7 PASS여도 정책이 없어 DEVELOPING', async () => {
-      const f = await http().post('/api/features').set(AUTHOR).send({ name: '정책 시험 Feature', description: 'P7', requirementIds: ['REQ-P7-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] }).expect(201);
+      const f = await http().post('/api/features').set(AUTHOR).send(withRef({ name: '정책 시험 Feature', description: 'P7', requirementIds: ['REQ-P7-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] })).expect(201);
       fid = f.body.featureId;
       await http().patch(`/api/features/${fid}/versions/0.1.0`).set(AUTHOR).send({ functions: [{ functionId: 'FUNC-000056', label: 'Extended Gap Control 기능' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] }).expect(200);
       await confirmSafety(http, fid, '0.1.0');
       for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await http().post(`/api/features/${fid}/versions/0.1.0/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);
+      await signG7(http, fid, '0.1.0'); // G7 — SM·CSM 두 사람 서명(P3-3)
       for (const g of ['G4', 'G5', 'G6', 'G7']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       const d = await http().get(`/api/features/${fid}/versions/0.1.0`).expect(200);
       expect(d.body.feature.lifecycle).toBe('DEVELOPING');

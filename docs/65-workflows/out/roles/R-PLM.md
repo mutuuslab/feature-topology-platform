@@ -13,7 +13,8 @@ traces:
     - WF-FPW-4
     - WF-FPW-6
     - WF-FPW-10
-last_updated: 2026-11-04
+    - WF-FPW-14
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -50,10 +51,12 @@ last_updated: 2026-11-04
 ## 2. 협의·통보 받는 활동
 
 - FPW.1-A05 G1 등록·분류 판정 (통보)
+- FPW.3-A05 구현 연결 입력 (협의)
 - FPW.3-A04 G3 판정·Feature 정의 승인 (통보)
 - FPW.4-A03 Flag 정책 작성·검증 (협의)
 - FPW.6-A01 출시 Baseline 확정 요청 (통보)
 - FPW.10-A07 EOL 프로비저닝 검증 (협의)
+- FPW.14-A04 Feature DB 버전 발행 (통보)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

@@ -5,6 +5,8 @@ import type { ExtLink } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { extSync } from '../../copy/ext-sync';
 import { AsyncView, DataTable, ExtRefChip, Icon, Panel } from '../../design';
+import { ExternalToolLaunchers } from '../../external/launchers';
+import { useExternalChanges } from '../../external/useExternalChanges';
 
 const X = extSync.feature;
 
@@ -67,6 +69,7 @@ const clip = (text: string, ch = 48) => (
 const DEFECT_LIMIT = 10;
 
 export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
+  useExternalChanges();
   const q = useFeatureTrace(id, ver);
   const t = q.data;
   const issues: string[] = t
@@ -77,6 +80,9 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
         ...(t.conflicts.length ? [X.conflicts(t.conflicts.length)] : []),
       ]
     : [];
+  // 문제가 없을 때 — 연결이 하나도 없으면 '맞음'(초록)이 아니라 안내, 일부만 있으면 빠진 쪽을 적는다
+  const missing = t ? [!t.requirements.length && X.requirements, !t.epic && !t.changeRequests.length && X.changeRequests, !t.mergeRequests.length && X.code].filter((x) => !!x) as string[] : [];
+  const linkedNone = !!t && missing.length === 3;
   const columns = [
     { key: 'k', header: X.col.key, cell: (r: ExtLink) => <ExtRefChip r={r} showStatus={false} /> },
     { key: 't', header: X.col.title, cell: (r: ExtLink) => clip(r.title) },
@@ -86,6 +92,7 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
     <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       {t && (
         <div style={{ display: 'grid', gap: 'var(--sp-4)' }} data-testid="ext-links">
+          <ExternalToolLaunchers requirement={t.requirements[0]} jira={t.epic ?? t.changeRequests[0]} featureId={id} version={ver} />
           <ul className="ds-check" aria-label={X.chain}>
             {issues.length ? (
               issues.map((m) => (
@@ -95,9 +102,9 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
                 </li>
               ))
             ) : (
-              <li data-state="PASS">
-                <Icon name="check" size={16} />
-                <span>{X.key.clean}</span>
+              <li data-state={missing.length ? 'INFO' : 'PASS'}>
+                <Icon name={missing.length ? 'link' : 'check'} size={16} />
+                <span>{linkedNone ? X.key.unlinked : missing.length ? X.key.partial(missing.join(' · ')) : X.key.clean}</span>
               </li>
             )}
           </ul>

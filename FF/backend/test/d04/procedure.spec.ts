@@ -38,9 +38,10 @@ describe('업무 절차 활동 완료 (서버 저장·검토함)', () => {
     expect(r.roleIds).toEqual(['R-FO']);
     expect(r.items).toContainEqual(expect.objectContaining({ activityId: A01, kind: 'TODO', processId: 'FPW.1' }));
     expect(r.summary).toMatchObject({ todo: expect.any(Number), review: expect.any(Number), done: 0 });
-    // 메인 화면 절차 지도 — 13개 프로세스의 완료/내 차례 수
-    expect(r.summary.processes).toHaveLength(13);
-    expect(r.summary.processes.find((p: any) => p.id === 'FPW.1')).toMatchObject({ total: 5, done: 0, todo: 1 });
+    // 메인 화면 절차 지도 — 14개 프로세스(FPW.14 Feature DB 운영 포함)의 완료/내 차례 수
+    expect(r.summary.processes).toHaveLength(14);
+    expect(r.summary.processes.map((p: any) => p.id)).toContain('FPW.14');
+    expect(r.summary.processes.find((p: any) => p.id === 'FPW.1')).toMatchObject({ total: 6, done: 0, todo: 2 }) // A01 등록 + A06 Feature DB 추가 요청(앞 활동 없음);
   });
 
   it('앞 활동이 끝나기 전에는 다음 활동을 완료할 수 없다 (422 GUARD_FAILED)', async () => {
@@ -92,7 +93,7 @@ describe('업무 절차 활동 완료 (서버 저장·검토함)', () => {
     const author = (await inbox(AUTHOR).expect(200)).body;
     expect(author.items).toContainEqual(expect.objectContaining({ activityId: A02, kind: 'REVIEW', roleId: 'R-FO' }));
     expect(author.summary).toMatchObject({ done: 1 });
-    expect(author.summary.processes.find((p: any) => p.id === 'FPW.1')).toMatchObject({ total: 5, done: 1, review: 1 });
+    expect(author.summary.processes.find((p: any) => p.id === 'FPW.1')).toMatchObject({ total: 6, done: 1, review: 1 });
   });
 
   it('SLA 기한이 지나면 한 번만 알리고 기한 초과로 표시한다', async () => {

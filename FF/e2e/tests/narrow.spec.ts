@@ -79,7 +79,7 @@ for (const s of SCREENS) {
 test('메뉴 — 좁은 폭에서도 메뉴를 열어 다른 화면으로 갈 수 있다', async ({ page }) => {
   await asRole(page, 'author');
   await page.goto('/');
-  const rail = page.getByRole('navigation', { name: /Feature Platform|플랫폼/ }).first();
+  const rail = page.getByRole('navigation', { name: /Feature (?:Flag )?Platform|플랫폼/ }).first();
   await expect(rail).toBeVisible();
   // 레일의 첫 그룹을 눌러 메뉴 패널을 열고, 그 안의 첫 링크로 이동한다
   const groupBtn = rail.locator('.sh-rail__btn').first();

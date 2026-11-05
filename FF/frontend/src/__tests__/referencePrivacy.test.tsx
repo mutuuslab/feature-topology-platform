@@ -97,6 +97,7 @@ describe('차종·판매국 기준 값 (RD-OPS-03)', () => {
 
   it('체험권 목록의 판매국 선택지는 등록된 기준 값 — 데모 목록(US·EU)이 아니다, 출처는 등록 차량(FLEET)', async () => {
     handler = (url) => {
+      if (url === '/api/products') return { body: { items: [{ catalogId: 'CAT-00073', version: '1.0.0', name: '고객 설치 체험 상품', lifecycle: 'RELEASED', saleType: '체험', country: 'JP', vehicleModel: 'NE1', trim: 'Base' }] } };
       if (url.startsWith('/api/reference-values')) return { body: { items: VALUES } };
       if (url.startsWith('/api/trials')) return { body: { today: '2026-10-25', total: 0, page: 1, pageSize: 50, byState: {}, items: [] } };
     };
@@ -106,6 +107,7 @@ describe('차종·판매국 기준 값 (RD-OPS-03)', () => {
     expect(screen.getByRole('radio', { name: '등록 차량' })).toBeTruthy();
     fireEvent.click(screen.getByRole('radio', { name: '등록 차량' }));
     await waitFor(() => expect(calls.some((c) => c.url.includes('source=FLEET'))).toBe(true));
+    expect(calls.filter((c) => c.url.startsWith('/api/trials')).every((c) => c.url.includes('catalogId=CAT-00073'))).toBe(true);
   });
 });
 

@@ -9,7 +9,7 @@ cycle: 0
 traces:
   depends_on:
     - FLW-KILLSWITCH
-last_updated: 2026-11-04
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -65,8 +65,8 @@ flowchart LR
 | FPW.8-A03 | 리콜·봉쇄 근거 연계 | R 법규 담당 · A 법규 담당 · C Safety Manager, 법무 · I 운영 조직 | WP-KILL-PLAN | WP-RECALL-BASIS | 플랫폼 밖 | FFG-DEAC-010 |
 | FPW.8-A04 | 긴급 차단 요청 | R 운영 조직 · A 운영 조직 · C Safety Manager · I CSM, 법규 담당 | WP-KILL-PLAN, WP-RECALL-BASIS | WP-KILL-REQ | `issueKill`, `/ops/kill` | FFG-PLT-005 |
 | FPW.8-A05 | 긴급 차단 2인 승인 | R Safety Manager, CSM · A Safety Manager · C 법규 담당 · I 운영 조직, 품질 조직 | WP-KILL-REQ, WP-KILL-PLAN | WP-KILL-DECISION | `approveKill`, `rejectKill`, `/ops/kill` | FFG-PLT-005, FFG-SEC-003 |
-| FPW.8-A06 | 차단 전달·적용 추적 | R 운영 조직 · A Safety Manager · C CSM · I 품질 조직, Feature Owner | WP-KILL-DECISION | WP-KILL-TRACE | `acknowledgeAnomaly`, `/fleet/live`, `/deployments` | FFG-SEC-004, FFG-DEAC-013 |
 | FPW.8-A07 | 긴급 권한 사후 검토 | R 품질 조직 · A 품질 조직 · C CSM, 법규 담당 · I Safety Manager, 운영 조직 | WP-KILL-REQ, WP-KILL-DECISION | WP-POST-REVIEW | `recordKillPostReview`, `/audit/oversight` | FFG-PLT-016 |
+| FPW.8-A06 | 차단 전달·적용 추적 | R 운영 조직 · A Safety Manager · C CSM · I 품질 조직, Feature Owner | WP-KILL-DECISION | WP-KILL-TRACE | `acknowledgeAnomaly`, `/fleet/live`, `/deployments` | FFG-SEC-004, FFG-DEAC-013 |
 | FPW.8-A08 | 원인 조치·복원 요청 | R 운영 조직 · A 운영 조직 · C Safety Manager, Feature Owner, 시험 조직 · I 법규 담당 | WP-KILL-TRACE, WP-G5-EVIDENCE | WP-RESTORE-REQ | `requestRestore`, `/ops/kill` | FFG-DEAC-008 |
 | FPW.8-A09 | 복원 2인 승인 | R Safety Manager, 품질 조직 · A Safety Manager · C CSM · I 운영 조직, Feature Owner | WP-RESTORE-REQ, WP-KILL-DECISION | WP-RESTORE-DECISION | `approveRestore`, `rejectRestore`, `/ops/kill` | FFG-DEAC-008, FFG-PLT-005 |
 | FPW.8-A10 | 단계적 복원·관측 | R 운영 조직 · A 운영 조직 · C Safety Manager, Release Manager · I Feature Owner, 품질 조직 | WP-RESTORE-DECISION | WP-RESTORE-ROLLOUT | `stageRollout`, `/fleet/live` | FFG-LCY-009 |
@@ -117,14 +117,6 @@ flowchart LR
 완료 기준:
 - [ ] 서로 다른 2명의 승인 서명이 있고 요청자는 승인자에 없다
 
-#### FPW.8-A06 차단 전달·적용 추적
-1. 차량별 전달·적용 상태를 유효한 상태 보고와 영속 저장 확인으로만 '적용'으로 본다
-2. 기한 안에 적용되지 않은 차량은 이상 징후 건으로 넘긴다
-3. 대기 상한 초과 경보가 오면 Safety Manager가 상위 대응을 정한다
-
-완료 기준:
-- [ ] 기한 초과 미적용 차량마다 연결된 이상 징후 건이 있다
-
 #### FPW.8-A07 긴급 권한 사후 검토
 1. 차단 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다
 2. 검토 결과와 개선 조치를 사후 검토 기록으로 한 번 남긴다
@@ -132,6 +124,14 @@ flowchart LR
 
 완료 기준:
 - [ ] 검토 기록이 24시간 안에 있고 검토자가 요청자·승인자와 다르다
+
+#### FPW.8-A06 차단 전달·적용 추적
+1. 차량별 전달·적용 상태를 유효한 상태 보고와 영속 저장 확인으로만 '적용'으로 본다
+2. 기한 안에 적용되지 않은 차량은 이상 징후 건으로 넘긴다
+3. 대기 상한 초과 경보가 오면 Safety Manager가 상위 대응을 정한다
+
+완료 기준:
+- [ ] 기한 초과 미적용 차량마다 연결된 이상 징후 건이 있다
 
 #### FPW.8-A08 원인 조치·복원 요청
 - 트리거: 원인 수정과 재검증 Evidence 확보

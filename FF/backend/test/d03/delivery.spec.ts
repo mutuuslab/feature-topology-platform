@@ -214,7 +214,7 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
     it('혼자 해제는 409 — 복원 요청 → 차단 승인자와 다른 2인 승인 → 서버 판단 복구, 복구 게시본 회신 INACTIVE(차단 해제 — 활성화는 따로) → CONFIRMED', async () => {
       await http().post(`/api/kill-requests/${killId}/release`).set(SAFETY).send({ reason: '원인 수정 확인' }).expect(409);
       const r = { body: await restoreV2(http, killId, '원인 수정 확인') };
-      expect(r.body).toMatchObject({ status: 'RELEASED', releasedBy: 'usr-csm', restoreRequest: { status: 'APPROVED', command: { commandSeq: 12, envelopes: 2 } } });
+      expect(r.body).toMatchObject({ status: 'RELEASED', releasedBy: 'usr-opslead', restoreRequest: { status: 'APPROVED', command: { commandSeq: 12, envelopes: 2 } } });
       expect((await decide('ego-01')).value).toBe(true);
       advance(1_000);
       // 복원은 다음 시동에서(RESTORE_PENDING → 자체 시험 → 차단 해제 INACTIVE). FFP-F036: 해제는 활성화가 아니다 — ACTIVE는 활성화 절차로만
@@ -223,7 +223,7 @@ describe('배포·차단 전달 (PoC ④⑤⑥)', () => {
       const k = (await http().get(`/api/kill-requests/${killId}`).expect(200)).body;
       expect(k.restore).toMatchObject({ status: 'CONFIRMED', confirmed: 2 });
       expect((await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.featureState['FEAT-00022']).toBe('INACTIVE');
-      await http().post(`/api/kill-requests/${killId}/restore`).set(SAFETY).send({ reason: '다시' }).expect(409);
+      await http().post(`/api/kill-requests/${killId}/restore`).set(SAFETY).send({ reason: '다시', evidenceRef: 'SAMPLE-EV-000186-FEATURE-DEFINE', cohort: ['ego-01'] }).expect(409);
     });
 
     it('복구 후 예전 차단 명령이 다시 와도 차량은 거부한다 (같은 Feature 순번 공간)', async () => {

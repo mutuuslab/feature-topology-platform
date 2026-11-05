@@ -72,7 +72,7 @@ describe('감사 체인 묶음 검증 — HTTP 창구가 이벤트 루프를 막
     const { http, db, audit } = await boot();
     for (let i = 0; i < 4; i++) await http().post('/api/pki/rotate').set(actor('u-safety', 'SAFETY_OFFICER')).send({ reason: `교체 ${i}` }).expect(201);
     expect(await audit.verifyChainAsync(2)).toEqual(audit.verifyChain());
-    expect((await http().get('/api/audit/chain').expect(200)).body).toEqual(audit.verifyChain());
+    expect((await http().get('/api/audit/chain').expect(200)).body).toEqual({ ...audit.verifyChain(), checkedAt: '2026-10-13T00:00:00.000Z' });
     // 감사 100만 행에서 한 번에 검증하면 요청 하나가 이벤트 루프를 약 30 s 막았다 — 묶음 사이에 앞서 예약된 일이 돈다
     let ran = false;
     setImmediate(() => (ran = true));
@@ -111,6 +111,7 @@ describe('감사 체인 고정점 — DB 밖 서명(FF_AUDIT_KEY · FF_AUDIT_ANC
     delete process.env.FF_AUDIT_KEY;
     delete process.env.FF_AUDIT_ANCHOR_FILE;
     delete process.env.FF_ENV;
+    delete process.env.FF_REFDB_SEED;
   });
   const withAnchors = async (name: string) => {
     const file = join(dir, `${name}.jsonl`);
@@ -124,13 +125,21 @@ describe('감사 체인 고정점 — DB 밖 서명(FF_AUDIT_KEY · FF_AUDIT_ANC
   const forget = (audit: AuditService) => ((audit as unknown as { head: unknown }).head = null);
 
   it('끝을 서명해 남기고(빈 체인은 고정하지 않는다), 그대로면 검증이 통과한다', async () => {
+    // 빈 체인으로 부팅하려고 Feature DB 첫 기동 가져오기(감사 REFDB_SEED 1건)를 끈다 — 데모 시드는 감사를 남기지 않는다
+    process.env.FF_REFDB_SEED = 'off';
     const { audit, file } = await withAnchors('ok');
     const lines = readFileSync(file, 'utf8').trim().split('\n');
-    // 부팅 때는 감사 행이 없어(시드는 감사를 남기지 않는다) 고정점도 없다 — 빈 체인은 고정하지 않는다. 호출 1건
+    // 부팅 때 감사 행이 없어 고정점도 없다 — 빈 체인은 고정하지 않는다. 호출 1건
     expect(lines).toHaveLength(1);
     expect(audit.verifyChain()).toMatchObject({ ok: true, anchors: { configured: true, checked: lines.length } });
     // 비밀값·서명 키는 고정점에 없다
     expect(readFileSync(file, 'utf8')).not.toContain('k'.repeat(40));
+  });
+
+  it('Feature DB 첫 기동 가져오기의 감사 1건(REFDB_SEED)은 부팅 때 고정된다 — 고정점 2건(부팅 + 호출)', async () => {
+    const { audit, file } = await withAnchors('seeded');
+    expect(readFileSync(file, 'utf8').trim().split('\n')).toHaveLength(2);
+    expect(audit.verifyChain()).toMatchObject({ ok: true, anchors: { configured: true, checked: 2 } });
   });
 
   it('재시작 뒤 DB 권한자가 끝 행을 지우고 체인을 다시 계산해도 고정점이 잡는다', async () => {

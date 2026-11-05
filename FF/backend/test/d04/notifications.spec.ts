@@ -5,7 +5,7 @@ Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal' });
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { NOTIFICATION_ACCOUNTS, receives } from '@ff/contracts';
 import { DB, type Db } from '../../src/kernel/db';
-import { actor, bootApp, KILL_APPROVERS, KILL_REQUESTER, RESTORE_APPROVERS } from '../helpers';
+import { actor, bootApp, KILL_APPROVERS, KILL_REQUESTER, RESTORE_APPROVERS, restoreBody } from '../helpers';
 
 const OWNER = actor('usr-author', 'FEATURE_AUTHOR'); // 데모: Feature 설계 계정이 Owner 팀 알림을 받는다
 const VIEWER = actor('usr-viewer', 'AUDITOR');
@@ -68,9 +68,9 @@ describe('수신자 지정 알림 (D04-04)', () => {
     ]);
     expect(find(await inbox(KILL_REQUESTER), 'kill.requested')).toHaveLength(0);
     for (const a of KILL_APPROVERS) expect(find(await inbox(a), 'kill.requested'), a['X-Actor-Id']).toHaveLength(1);
-    // 승인 역할을 가진 데모 계정은 모두 화면 알림으로 받는다 — 협의 이관(출시 담당)은 승인 역할 없음(FFG-PLT-016)
+    // F2 이상 안전 차단은 FSM + CSM만 칸을 채운다(2026-11-04 결정) — 그 역할을 가진 데모 계정만 받는다. 운영 리더·상품 승인·법규는 이 차단의 승인자가 아니다(P4-1)
     const receivers = NOTIFICATION_ACCOUNTS.filter((x) => receives(n, x));
-    expect(receivers.map((x) => x.id).sort()).toEqual(['usr-approver', 'usr-integrator', 'usr-quality', 'usr-steward']);
+    expect(receivers.map((x) => x.id).sort()).toEqual(['usr-integrator', 'usr-quality', 'usr-safety2']);
     for (const x of receivers) expect(find(await inbox(actor(x.id, x.roles[0])), 'kill.requested'), x.id).toHaveLength(1);
   });
 
@@ -83,9 +83,12 @@ describe('수신자 지정 알림 (D04-04)', () => {
   });
 
   it('FR-KSW-004-005 복원 요청 → 승인 대상자에게 범위·사유·요청자·일시, 직전 차단 승인자는 받지 않는다(SOD-09)', async () => {
-    await http().post(`/api/kill-requests/${killId}/restore`).set(KILL_REQUESTER).send({ reason: '원인 조치 완료' }).expect(201);
+    const rb = await restoreBody(http, killId, '원인 조치 완료');
+    await http().post(`/api/kill-requests/${killId}/restore`).set(KILL_REQUESTER).send(rb).expect(201);
     const n = find(await inbox(RESTORE_APPROVERS[1]), 'kill.restore-requested')[0];
-    expect(n.fields.map((f: any) => f.label)).toEqual(['Feature', '해제 대상 범위', '해제 사유', '요청자', '요청 일시']);
+    // 재검증 Evidence·지금 승인할 수 있는 사람도 함께(FPW.8-A08, P4-1)
+    expect(n.fields.map((f: any) => f.label)).toEqual(['Feature', '해제 대상 범위', '해제 사유', '요청자', '요청 일시', '재검증 Evidence', '승인 가능']);
+    expect(n.fields[5].value).toBe(rb.evidenceRef);
     expect(n.fields[2].value).toBe('원인 조치 완료');
     for (const prior of KILL_APPROVERS) expect(find(await inbox(prior), 'kill.restore-requested')).toHaveLength(0);
     expect(find(await inbox(RESTORE_APPROVERS[0]), 'kill.restore-requested')).toHaveLength(1);

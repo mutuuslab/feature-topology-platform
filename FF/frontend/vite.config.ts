@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { browserRouteSource } from '../tools/browser-routes';
 
 // 포트 9001 (8000 금지). GitHub Pages 배포 시 base 경로 적용(GITHUB_PAGES=1).
 const pages = process.env.GITHUB_PAGES === '1';
@@ -25,7 +26,14 @@ function deployHeaders(): Record<string, string> {
 }
 export default defineConfig({
   base: pages ? '/feature-topology-platform/' : '/',
-  plugins: [react()],
+  plugins: [{
+    name: 'browser-route-metadata',
+    enforce: 'pre',
+    transform(code, id) {
+      if (!id.replace(/\\/g, '/').endsWith('/contracts/src/routes.ts')) return;
+      return { code: browserRouteSource(code), map: null };
+    },
+  }, react()],
   resolve: {
     // 공용 계약은 소스(TS)를 직접 번들한다 — CJS dist를 거치지 않아 dev·test·build가 같은 코드를 본다.
     alias: { '@ff/contracts': fileURLToPath(new URL('../contracts/src/web.ts', import.meta.url)) },
@@ -39,10 +47,18 @@ export default defineConfig({
   preview: { proxy: BACKEND_PROXY, headers: deployHeaders() },
   build: {
     rollupOptions: {
+      // 스키마·산정 순수 함수·서명 캐시 선언은 초기화 부수효과가 없다. 필요한 폼이 로드될 때만 묶고, 카탈로그 설치 등 다른 모듈의 실행은 유지한다.
+      treeshake: {
+        moduleSideEffects: (id) => {
+          const path = id.replace(/\\/g, '/');
+          return path.includes('/contracts/src/schemas/') || path.includes('/contracts/src/rules/cost/') || path.endsWith('/contracts/src/rules/gate-evidence.ts') || path.endsWith('/contracts/src/rules/unleash-snapshot.ts') || path.endsWith('/contracts/src/rules/unleash.ts') || path.endsWith('/contracts/src/rules/ext-sync.ts') ? false : null;
+        },
+      },
       // 두 개의 독립 엔트리: 플랫폼(index.html)과 Twin 콘솔(twin.html).
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         twin: fileURLToPath(new URL('./twin.html', import.meta.url)),
+        external: fileURLToPath(new URL('./external.html', import.meta.url)),
       },
       output: {
         manualChunks: {

@@ -19,7 +19,7 @@ import { HOUSEKEEPING, HousekeepingService, retentionDays } from '../../src/kern
 import { MIGRATIONS } from '../../src/kernel/migrations';
 import { backup, listBackups, pruneBackups, restore, verifyBackup } from '../../src/ops/backup';
 import { runCli } from '../../src/ops/backup-cli';
-import { actor } from '../helpers';
+import { actor, withRef } from '../helpers';
 
 const root = mkdtempSync(join(tmpdir(), 'ff-backup-'));
 const LIVE = { db: join(root, 'live', 'ff.db'), anchor: join(root, 'live-anchor', 'audit-anchor.jsonl') };
@@ -29,7 +29,7 @@ mkdirSync(join(root, 'live'));
 mkdirSync(join(root, 'live-anchor'));
 const KEY = 'k'.repeat(40);
 const AUTHOR = actor('usr-author', 'FEATURE_AUTHOR');
-const feature = (name: string) => ({ name, description: `${name} 설명`, country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'usr-author', asil: 'QM' });
+const feature = (name: string) => withRef({ name, description: `${name} 설명`, country: 'KR', vehicleModel: 'NE1', trim: 'Base', ownerId: 'usr-author', asil: 'QM' });
 
 async function boot(paths: { db: string; anchor: string }, seed: string) {
   Object.assign(process.env, { FF_DB: paths.db, FF_SEED: seed, FF_AUDIT_KEY: KEY, FF_AUDIT_ANCHOR_FILE: paths.anchor, FF_INSTANCE_ID: 'oem-a' });

@@ -10,7 +10,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G1"
    ],
-   "activities": 5
+   "activities": 6
   },
   {
    "id": "FPW.2",
@@ -28,7 +28,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G3"
    ],
-   "activities": 4
+   "activities": 5
   },
   {
    "id": "FPW.4",
@@ -109,6 +109,13 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "group": "지원",
    "gates": [],
    "activities": 4
+  },
+  {
+   "id": "FPW.14",
+   "name": "Feature DB 운영",
+   "group": "지원",
+   "gates": [],
+   "activities": 5
   }
  ]
 };

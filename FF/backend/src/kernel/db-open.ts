@@ -51,7 +51,7 @@ let seq = 0;
 function openTestPg(url: string, env: Env): Db {
   const seed = seedOf(env);
   const key = createHash('sha256')
-    .update(JSON.stringify([MIGRATIONS.map((m) => [m.name, m.sql, m.pg ?? null]), seed, seed === 'none' ? null : seedAnchor(), env.FF_FIXTURES ?? null, env.FF_DEMO_FIXTURES ?? null, env.FF_SYNTHETIC ?? null]))
+    .update(JSON.stringify([MIGRATIONS.map((m) => [m.name, m.sql, m.pg ?? null]), seed, seed === 'none' ? null : seedAnchor(), env.FF_FIXTURES ?? null, env.FF_DEMO_FIXTURES ?? null, env.FF_SYNTHETIC ?? null, env.FF_SHOWCASE ?? null, env.FF_SHOWCASE_VEHICLES ?? null]))
     .digest('hex')
     .slice(0, 16);
   const tpl = `ff_tpl_${key}`;

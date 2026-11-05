@@ -9,7 +9,7 @@ export const departments = {
   persona: '부서 안 역할',
   login: { label: '담당 부서', hint: '로그인 뒤 상단 바에서 언제든 바꿀 수 있습니다' },
   workspace: {
-    studio: '기획 스튜디오',
+    studio: '기획팀',
     review: '심사 결재함',
     console: '엔지니어링 콘솔',
     control: '관제실',
@@ -36,16 +36,19 @@ export const departments = {
     handoffIn: '받는 인계',
     handoffOut: '보내는 인계',
     from: (dept: string) => `${dept}에서`,
-    to: (dept: string) => `${dept}로`,
+    to: (dept: string) => `${dept}${roParticle(dept)}`,
     secondScope: '2차 초안',
     alsoR: '수행 겸',
     partRA: '수행·책임',
     moreItems: (n: number) => `외 ${n}건 더 보기`,
     procedures: '업무 절차 전체',
+    // 인계가 없는 부서(법무·개인정보) — 빈 칸 대신 의견·통보로 함께 하는 활동을 보인다
+    consults: '의견·통보로 함께 하는 활동',
+    handoffNone: '다른 부서와 주고받는 인계 없이 이 부서 안에서 끝나는 업무입니다',
   },
   studio: {
     eyebrow: '상품기획 · Feature 소유',
-    title: (dept: string) => `${dept} 기획 스튜디오`,
+    title: '기획팀',
     lead: 'Feature를 제안하고, 단계별로 어디에 있는지 보고, 출시 책임을 확인합니다.',
     key: (n: number) => ({ value: n, text: '출시 전 Feature' }),
     propose: '새 Feature 제안',
@@ -77,6 +80,9 @@ export const departments = {
     goDecide: '판정 화면으로',
     notMine: (why: string) => `내 차례가 아님 — ${why}`,
     activities: '이 부서의 판정 활동',
+    // 판정(Gate) 활동이 없는 부서 — 맡는 수행·책임 활동을 대신 보인다
+    activitiesWork: '이 부서가 맡는 수행·책임 활동',
+    activitiesNone: '이 부서가 맡는 수행·책임 활동은 업무 절차 문서에서 봅니다',
   },
   console: {
     eyebrow: '엔지니어링 · 기준선',
@@ -90,6 +96,15 @@ export const departments = {
     requests: 'Baseline 확정 요청',
     versions: 'Feature Version',
     impact: '변경 영향 분석',
+    // Feature DB 변경 요청 대기(검토·발행) — 기준정보·시스템엔지니어링 콘솔
+    fdb: {
+      title: 'Feature DB 변경 요청',
+      review: '검토 대기',
+      publish: '발행 대기',
+      caption: '처리 중인 Feature DB 변경 요청',
+      none: '처리할 변경 요청이 없습니다',
+      col: { id: '번호', kind: '종류', ref: '대상 행', status: '상태' },
+    },
     col: { id: 'ID', feature: 'Feature', version: 'Version', name: '이름', productsHint: '이 Baseline을 쓰는 상품 수', lifecycle: 'Lifecycle', created: '확정 시각', requested: '요청 시각', by: '요청자', products: '상품' },
   },
   control: {
@@ -139,6 +154,14 @@ export const departments = {
     mine: '우리 부서가 직접 하는 일',
     docs: '참고 문서',
     rnrDoc: '부서 R&R 문서',
-    rnrHint: 'docs/65-workflows/out/departments — 부서별 책임·승인·협의·통보 업무',
+    rnrHint: '부서별 수행·책임·협의·통보 업무와 다른 부서와의 인계',
   },
 };
+
+/** 조사 '으로/로' — 받침 있으면 '으로'(ㄹ 받침은 '로'), 없거나 한글이 아니면 '로'. 예: 품질팀으로 · 법무로 · 관제실로 */
+export function roParticle(word: string): '으로' | '로' {
+  const c = word.trim().codePointAt(word.trim().length - 1) ?? 0;
+  if (c < 0xac00 || c > 0xd7a3) return '로';
+  const jong = (c - 0xac00) % 28;
+  return jong === 0 || jong === 8 ? '로' : '으로';
+}

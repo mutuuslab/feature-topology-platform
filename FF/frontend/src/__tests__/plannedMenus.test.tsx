@@ -1,11 +1,9 @@
-// Feature DB·SW 개발비 산정 메뉴(2026-11-04 "메뉴만") — 메뉴 위치와 준비 중 화면이 열리는지 지킨다.
-import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+// Feature DB·SW 개발비 산정 메뉴(2026-11-04 "메뉴만") — 메뉴 위치와 화면이 열리는지 지킨다.
+// 둘 다 실제 화면으로 열었다 — Feature DB는 screens/refdb, SW 개발비 산정은 screens/cost(C3).
+import { describe, expect, it } from 'vitest';
 import { MENU, routeOf } from '../routes';
-import { FeatureDbScreen, SwCostScreen } from '../screens/planned/PlannedScreens';
-import { featureDb, swCost } from '../copy/refdbCost';
-
-afterEach(cleanup);
+import { swCost } from '../copy/cost';
+import { featureDb } from '../copy/refdb';
 
 describe('Feature DB·SW 개발비 산정 메뉴', () => {
   it('Feature DB는 기준정보, SW 개발비 산정은 상품·출시 메뉴에 있다', () => {
@@ -20,13 +18,11 @@ describe('Feature DB·SW 개발비 산정 메뉴', () => {
     expect(routeOf('/cost')?.parent).toBe('/biz/trials');
   });
 
-  it('준비 중 화면은 메뉴 이름을 제목으로 보이고 설계 문서를 가리킨다', () => {
-    render(<FeatureDbScreen />);
-    expect(screen.getByRole('heading', { level: 1, name: featureDb.title })).toBeTruthy();
-    expect(screen.getByText(featureDb.doc)).toBeTruthy();
-    cleanup();
-    render(<SwCostScreen />);
-    expect(screen.getByRole('heading', { level: 1, name: swCost.title })).toBeTruthy();
-    expect(screen.getByText(swCost.doc)).toBeTruthy();
+  it('Feature DB·SW 개발비 산정은 준비 중 화면이 아니라 목록·상세 화면을 연다', () => {
+    expect(routeOf('/master/feature-db/CH-BRK-009')?.parent).toBe('/master/feature-db');
+    expect(routeOf('/master/feature-db/changes')?.parent).toBe('/master/feature-db');
+    expect(routeOf('/master/feature-db/changes/CR-2026-001')?.parent).toBe('/master/feature-db/changes');
+    expect(routeOf('/procurement/sw-cost/EST-0001')?.parent).toBe('/procurement/sw-cost');
+    expect(routeOf('/procurement/sw-cost/basis')?.title).toBe('계수·단가 표');
   });
 });

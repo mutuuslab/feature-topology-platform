@@ -1,7 +1,7 @@
 // /features/:id/:ver — Feature Version 상세 (v2). Lifecycle 전이·Gate 판정·의존관계·구현 추적·Baseline·감사.
-import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { GATES, type GateId, type Lifecycle } from '@ff/contracts';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { GATES, type Lifecycle } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
@@ -14,7 +14,6 @@ import {
   Drawer,
   ErrorNote,
   Field,
-  GateBadge,
   GateRail,
   IdChip,
   KeyValue,
@@ -31,9 +30,21 @@ import { scopeOf, usePermission, when } from '../shared';
 import { AuditLog } from '../governance/AuditLog';
 import { ReleaseSignoffBar } from './ReleaseSignoff';
 import { EpicChip, ExtLinksTab, RequirementChips } from './ExtLinksTab';
+import { FeatureRefsTab } from './FeatureRefsTab';
+import { FeatureFlagHighlight, FeatureFlagsTab } from './FeatureFlags';
+import { flags as flagCopy } from '../../copy/flags';
+import { featureRefsTab } from '../../copy/propose';
+import { RefWarningList, type RefWarning } from '../refdb/common';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
+import { GatesTab } from './GatesTab';
 import { FeatureVersionActions } from './VersionEdit';
-import type { AuditEntry, ChecklistItem, FeatureDetail as Detail, GateView } from '../types';
+import { NextTurn, roleBlocker } from './NextTurn';
+import { nextTurn as NT } from '../../copy/inbox';
+import { ImplDeadEnd, ImplMissingNotice, RegisteredGuide } from './ImplLinks';
+import type { AuditEntry, ChecklistItem, FeatureDetail as Detail } from '../types';
+import { ExternalToolLaunchers } from '../../external/launchers';
+import { useFeatureTrace } from './ExtLinksTab';
+import { useExternalChanges } from '../../external/useExternalChanges';
 
 const T = ko.detail;
 // Lifecycle은 핵심 메시지 상태 pill과 스테퍼가 보인다 — 속성 표에서 한 번 더 보이지 않는다(3초 규칙 6, UX3-08)
@@ -41,11 +52,22 @@ const ATTR_ORDER = ['featureId', 'name', 'description', 'requirementIds', 'count
 const INVALIDATE = ['featureDetail', 'listFeatures', 'gates', 'audit', 'baselineRequests', 'baselineChecklist', 'baselines'];
 
 export default function FeatureDetail() {
+  useExternalChanges();
   const { id = '', ver = '' } = useParams();
   const nav = useNavigate();
   const q = useApi<Detail>('featureDetail', { params: { id, ver } });
   const d = q.data;
+  const external = useFeatureTrace(id, ver);
   const [transitionTo, setTransitionTo] = useState<Lifecycle | null>(null);
+  // 막지 않은 기준 행 경고(전이·새 Version 응답 warnings) — 그 Version에서만 보인다. 새 Version은 이동할 때 state로 넘겨받는다
+  const loc = useLocation();
+  const [refWarn, setRefWarn] = useState<{ at: string; title: string; items: RefWarning[] } | null>(null);
+  useEffect(() => {
+    const s = loc.state as { refWarnings?: RefWarning[] } | null;
+    if (s?.refWarnings?.length) setRefWarn({ at: `${id}@${ver}`, title: featureRefsTab.warnVersion, items: s.refWarnings });
+    // 이동(새 Version)마다 한 번 — 같은 Version의 다시 그리기에는 다시 넣지 않는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loc.key]);
   // 없는 Version/ID는 재시도해도 없는 데이터다 — 일반 오류 카드 대신 404 화면으로 보낸다(정적 호스팅은 HTTP 200이지만 화면 의미는 404)
   const notFound = q.error?.status === 404;
 
@@ -90,24 +112,44 @@ export default function FeatureDetail() {
               }
             />
 
+            <ExternalToolLaunchers compact requirement={external.data?.requirements?.[0]} jira={external.data?.epic ?? external.data?.changeRequests?.[0]} featureId={id} version={ver} />
+            <FeatureFlagHighlight id={id} ver={ver} />
+
             <Panel id="lc">
               <LifecycleStepper current={d.feature.lifecycle} transitions={d.transitions} />
-              <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="feature-lifecycle-actions" style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'center' }}>
                 {d.transitions
                   .filter((t) => !t.auto)
                   .map((t) => (
-                    <Button key={t.to} variant={t.to === 'DEPRECATED' || t.to === 'RETIRED' ? 'default' : 'primary'} disabled={STATIC_MODE} title={STATIC_MODE ? ko.page.readOnly : undefined} onClick={() => setTransitionTo(t.to)}>
+                    // 권한(역할·직무 분리)이 없으면 미리 막고 이유를 보인다 — 열어 본 뒤 422가 아니라(P1-6)
+                    <Button
+                      key={t.to}
+                      variant={t.to === 'DEPRECATED' || t.to === 'RETIRED' ? 'default' : 'primary'}
+                      disabled={STATIC_MODE || !!roleBlocker(t)}
+                      title={STATIC_MODE ? ko.page.readOnly : undefined}
+                      reason={roleBlocker(t)?.code === 'ROLE' ? NT.roleBlocked(t.roles.join('·')) : roleBlocker(t)?.message}
+                      onClick={() => setTransitionTo(t.to)}
+                    >
                       {T.transition(t.to)}
                     </Button>
                   ))}
                 {d.transitions.some((t) => t.auto) && <span className="ds-field__hint">{T.autoNote}</span>}
               </div>
+              {refWarn?.at === `${id}@${ver}` && <RefWarningList warnings={refWarn.items} title={refWarn.title} />}
+              {/* 등록 직후 다음 할 일 · 승인 뒤 구현이 비어 검증 완료로 못 가면 새 Version 길(담당자 웨이브 P1-7·P3-8) */}
+              {(loc.state as { registered?: boolean } | null)?.registered && d.feature.lifecycle === 'PROPOSED' && <RegisteredGuide f={d.feature} gatesPassed={(['G1', 'G2', 'G3'] as const).every((g) => d.gates[g]?.status === 'PASS')} />}
+              <ImplDeadEnd f={d.feature} lifecycle={d.feature.lifecycle} latest={d.versions[d.versions.length - 1]?.version === ver} />
               {d.feature.lifecycle === 'VERIFIED' && <ReleaseSignoffBar id={id} ver={ver} gatesPassed={d.gates.G8?.status === 'PASS' && d.gates.G9?.status === 'PASS'} />}
             </Panel>
+
+            {/* 다음 차례 — 내가 할 일·다음 담당 부서·역할·막힌 조건 전부(기준 행 연결 포함), P1-6 */}
+            <NextTurn transitions={d.transitions} />
 
             <Tabs
               tabs={[
                 { key: 'overview', label: T.tabs.overview },
+                { key: 'flags', label: flagCopy.tab },
+                { key: 'refs', label: featureRefsTab.tab, count: d.feature.featureRefs?.length ?? 0 },
                 { key: 'safety', label: T.tabs.safety },
                 { key: 'gates', label: T.tabs.gates, count: Object.keys(d.gates).length },
                 { key: 'deps', label: T.tabs.deps, count: d.dependencies.outgoing.length + d.dependencies.incoming.length },
@@ -120,10 +162,14 @@ export default function FeatureDetail() {
               {(tab) =>
                 tab === 'overview' ? (
                   <Overview d={d} />
+                ) : tab === 'flags' ? (
+                  <FeatureFlagsTab id={id} ver={ver} />
+                ) : tab === 'refs' ? (
+                  <FeatureRefsTab links={d.feature.featureRefs ?? []} lifecycle={d.feature.lifecycle} feature={d.feature} />
                 ) : tab === 'safety' ? (
                   <SafetyTab id={id} ver={ver} />
                 ) : tab === 'gates' ? (
-                  <Gates id={id} ver={ver} />
+                  <GatesTab id={id} ver={ver} />
                 ) : tab === 'deps' ? (
                   <Deps d={d} />
                 ) : tab === 'trace' ? (
@@ -138,7 +184,7 @@ export default function FeatureDetail() {
               }
             </Tabs>
 
-            <TransitionDrawer d={d} to={transitionTo} onClose={() => setTransitionTo(null)} />
+            <TransitionDrawer d={d} to={transitionTo} onClose={() => setTransitionTo(null)} onWarnings={(items) => setRefWarn({ at: `${id}@${ver}`, title: featureRefsTab.warnTransition, items })} />
           </>
         )}
       </AsyncView>
@@ -162,105 +208,6 @@ function Overview({ d }: { d: Detail }) {
     <Panel id="attrs">
       <KeyValue rows={ATTR_ORDER.map((k) => ({ k: T.attrs[k], v: show(k) ?? <span style={{ color: 'var(--faint)' }}>—</span>, note: missing[k] }))} />
     </Panel>
-  );
-}
-
-function Gates({ id, ver }: { id: string; ver: string }) {
-  const q = useApi<GateView>('gates', { params: { id, ver } });
-  const [selected, setSelected] = useState<GateId>('G1');
-  const perm = usePermission(['GATE_JUDGE', 'SAFETY_OFFICER']);
-  const judge = useApiMutation('judgeGate', INVALIDATE);
-  const [form, setForm] = useState({ inputResult: 'PASS', rationale: '', evidenceRef: '' });
-  const g = q.data?.gates.find((x) => x.gate === selected);
-  const statuses = Object.fromEntries((q.data?.gates ?? []).map((x) => [x.gate, x.status === '미판정' ? null : x.status]));
-  return (
-    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
-      <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
-        {!!q.data?.rehara?.length && (
-          <section aria-label={T.rehara} data-testid="rehara">
-            {q.data.rehara.some((x) => x.status === 'OPEN') && <p className="ds-field__hint" style={{ color: 'var(--danger)' }}>{T.reharaOpen(q.data.rehara.filter((x) => x.status === 'OPEN').length)}</p>}
-            <ul className="ds-check">
-              {q.data.rehara.map((x) => (
-                <li key={x.requestId} data-state={x.status === 'OPEN' ? 'FAIL' : 'PASS'}>
-                  <Icon name={x.status === 'OPEN' ? 'alert' : 'check'} size={16} />
-                  <span>
-                    <span className="ds-mono">{x.requestId}</span> {T.reharaCondition[x.condition] ?? x.condition}
-                    <span className="ds-check__detail">{`${x.detail}${x.resolvedBy ? ` · ${T.reharaResolved(x.resolvedBy)}` : ''}`}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-        <GateRail statuses={statuses} onSelect={setSelected} tours={{ G5: 'gate-g5' }} />
-        {g && (
-          <div className="ds-split">
-            <Panel title={`${g.gate} ${g.name}`} eyebrow={`${g.stage} · ${g.judgeRole}`} id="gate-hist" actions={<GateBadge status={g.status === '미판정' ? null : g.status} />}>
-              {g.decision && (
-                <p className="ds-field__hint" data-testid="gate-decision" style={{ color: g.decision.state === 'MISSING' || g.decision.state === 'INVALID' ? 'var(--danger)' : undefined }}>
-                  {`${T.decision}: ${T.decisionState[g.decision.state]} · ${T.decisionNote(g.decision.kid, g.decision.approver ? (g.decision.approver.id ?? g.decision.approver.role) : null)}`}
-                  {g.decision.reason ? ` — ${g.decision.reason}` : ''}
-                </p>
-              )}
-              <h3 className="ds-eyebrow" style={{ margin: '0 0 var(--sp-2)' }}>{T.history}</h3>
-              <DataTable
-                caption={T.history}
-                rows={[...g.history].reverse()}
-                rowKey={(r) => r.gateRecordId}
-                columns={[
-                  { key: 'id', header: 'Gate Record', cell: (r) => <span className="ds-mono">{r.gateRecordId}</span> },
-                  { key: 'st', header: ko.audit.col.result, cell: (r) => <GateBadge status={r.status} /> },
-                  { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono">{r.judgedAt.slice(0, 16).replace('T', ' ')}</span> },
-                  { key: 'ev', header: T.evidence, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.evidenceRef ?? '—'}</span> },
-                  {
-                    key: 'sig',
-                    header: T.decision,
-                    cell: (r) => (
-                      <span data-testid={`decision-${r.gateRecordId}`} style={{ fontSize: 'var(--fs-xs)', color: r.decision === 'MISSING' || r.decision === 'INVALID' ? 'var(--danger)' : undefined }}>
-                        {r.decision ? T.decisionState[r.decision] : '—'}
-                      </span>
-                    ),
-                  },
-                  { key: 'why', header: ko.page.reason, cell: (r) => r.rationale },
-                ]}
-              />
-            </Panel>
-            <Panel title={T.judge} id="judge">
-              <form
-                style={{ display: 'grid', gap: 'var(--sp-3)' }}
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  judge.mutate(
-                    { params: { id, ver }, body: { gate: selected, inputResult: form.inputResult, rationale: form.rationale, evidenceRef: form.evidenceRef || null } },
-                    { onSuccess: () => setForm({ inputResult: 'PASS', rationale: '', evidenceRef: '' }) },
-                  );
-                }}
-              >
-                <Field label={T.judgeResult}>
-                  <select className="ds-select" value={form.inputResult} onChange={(e) => setForm({ ...form, inputResult: e.target.value })}>
-                    <option value="PASS">PASS</option>
-                    <option value="CONDITIONAL">CONDITIONAL</option>
-                    <option value="FAIL">FAIL</option>
-                  </select>
-                </Field>
-                <Field label={T.evidence} hint={T.evidenceHint}>
-                  <input className="ds-input ds-input--mono" value={form.evidenceRef} onChange={(e) => setForm({ ...form, evidenceRef: e.target.value })} />
-                </Field>
-                <Field label={ko.page.reason}>
-                  <textarea className="ds-input" placeholder={ko.page.reasonPlaceholder} value={form.rationale} onChange={(e) => setForm({ ...form, rationale: e.target.value })} />
-                </Field>
-                <ErrorNote error={judge.error} />
-                {judge.isSuccess && <div className="ds-ok" role="status">{ko.page.saved}</div>}
-                <Button type="submit" variant="primary" disabled={!perm.ok || judge.isPending} title={perm.hint}>
-                  {selected} · {T.judge}
-                </Button>
-                {perm.hint && <span className="ds-field__hint">{perm.hint}</span>}
-              </form>
-            </Panel>
-          </div>
-        )}
-      </div>
-    </AsyncView>
   );
 }
 
@@ -393,11 +340,11 @@ function AuditTab({ target }: { target: string }) {
   );
 }
 
-function TransitionDrawer({ d, to, onClose }: { d: Detail; to: Lifecycle | null; onClose: () => void }) {
+function TransitionDrawer({ d, to, onClose, onWarnings }: { d: Detail; to: Lifecycle | null; onClose: () => void; onWarnings: (w: RefWarning[]) => void }) {
   const opt = d.transitions.find((t) => t.to === to);
   const allowed = to === 'APPROVED' ? (['FEATURE_APPROVER'] as const) : (['RELEASE_MANAGER', 'GATE_JUDGE'] as const);
   const perm = usePermission(allowed);
-  const m = useApiMutation('transition', INVALIDATE);
+  const m = useApiMutation<{ warnings?: RefWarning[] }>('transition', INVALIDATE);
   const [reason, setReason] = useState('');
   // 역할·사유는 이 화면에서 채우는 조건이므로 그 외의 막힌 사유만 미리 보여 준다
   const hard = (opt?.blockers ?? []).filter((b) => !['ROLE', 'REASON_REQUIRED', 'SEPARATION_OF_DUTY'].includes(b.code));
@@ -408,13 +355,21 @@ function TransitionDrawer({ d, to, onClose }: { d: Detail; to: Lifecycle | null;
           style={{ display: 'grid', gap: 'var(--sp-3)' }}
           onSubmit={(e) => {
             e.preventDefault();
-            m.mutate({ params: { id: d.feature.featureId, ver: d.feature.version }, body: { to, reason } }, { onSuccess: () => (setReason(''), onClose()) });
+            m.mutate({ params: { id: d.feature.featureId, ver: d.feature.version }, body: { to, reason } }, { onSuccess: (r) => (setReason(''), r?.warnings?.length && onWarnings(r.warnings), onClose()) });
           }}
         >
           <p style={{ margin: 0 }}>
             <LifecycleBadge value={d.feature.lifecycle} /> → <LifecycleBadge value={opt.to} /> · {opt.ko}
           </p>
           {hard.length > 0 && <ErrorNote error={{ message: ko.stepper.blocked, details: { blockers: hard } }} />}
+          {/* 정의 승인 전 구현 미입력 — 막지 않고 알린다(승인 뒤에는 새 Version으로만 넣는다) */}
+          {opt.to === 'APPROVED' && <ImplMissingNotice f={d.feature} onEdit={onClose} />}
+          {/* 기준 행 막힘(연결 없음·요청 중·폐기 행·ASIL 다시 확인)은 '기준 행' 탭에서 연결과 ASIL 사유를 고친다 */}
+          {hard.some((b) => b.code === 'REFDB_LINK_BLOCKED') && (
+            <Link to={`/features/${encodeURIComponent(d.feature.featureId)}/${encodeURIComponent(d.feature.version)}?tab=refs`} onClick={onClose} data-ui="toFeatureRefs">
+              {featureRefsTab.toRefsTab}
+            </Link>
+          )}
           {opt.to === 'RELEASED' && (
             <GateRail statuses={Object.fromEntries(GATES.map((g) => [g, d.gates[g]?.status ?? null]))} />
           )}

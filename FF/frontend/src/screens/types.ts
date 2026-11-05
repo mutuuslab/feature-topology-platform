@@ -111,4 +111,7 @@ export interface AuditEntry {
   target: string;
   result: 'ALLOWED' | 'DENIED' | 'FAILED';
   reason: string | null;
+  /** 전후 값(감사 화면 '전후 값' 칸, W5) — 금액 필드는 서버가 자리 표시로 남긴다 */
+  before?: unknown;
+  after?: unknown;
 }

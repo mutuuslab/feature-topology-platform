@@ -70,13 +70,15 @@ export class EventService {
     return full;
   }
 
-  list(q: { after?: number; type?: string; aggregate?: string; limit?: number } = {}): PlatformEvent[] {
+  list(q: { after?: number; type?: string; aggregate?: string; limit?: number; recent?: boolean } = {}): PlatformEvent[] {
     const where = ['seq > ?'];
     const params: (string | number)[] = [q.after ?? 0];
     if (q.type) (where.push('type = ?'), params.push(q.type));
     if (q.aggregate) (where.push('aggregate = ?'), params.push(q.aggregate));
-    return this.db
-      .all<any>(`SELECT * FROM events WHERE ${where.join(' AND ')} ORDER BY seq ASC LIMIT ${Math.min(q.limit ?? 200, 1000)}`, ...params)
+    const rows = this.db.all<any>(`SELECT * FROM events WHERE ${where.join(' AND ')} ORDER BY seq ${q.recent ? 'DESC' : 'ASC'} LIMIT ${Math.min(q.limit ?? 200, 1000)}`, ...params);
+    // 최근 창도 SSE와 같은 순번 오름차순으로 보낸다. 기본 after 커서 조회는 앞에서부터 유지한다.
+    if (q.recent) rows.reverse();
+    return rows
       .map((r) => ({
         seq: r.seq,
         id: r.id,

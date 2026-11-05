@@ -1,6 +1,6 @@
 // Kill v2 — 요청 프레임(보고서 9.2절 ICD 예제)과 승인 규칙. FFG-VEH-002 · FFG-PLT-005 · FFG-DEAC-008 · TC-FF-16
 import { describe, expect, it } from 'vitest';
-import { approvalCheck, approvalPlan, approverRef, authBlock, crc32, DC_CODES, REASON_CODES, REQUEST_CODES, requestFrame } from './kill-v2';
+import { approvalCheck, approvalPlan, approverRef, authBlock, crc32, DC_CODES, nextApprovers, REASON_CODES, REQUEST_CODES, requestFrame, restoreOutlook } from './kill-v2';
 
 const hex = (b: Uint8Array) => Buffer.from(b).toString('hex');
 
@@ -60,7 +60,8 @@ describe('승인 규칙 (FFG-PLT-005 · SOD-08·09)', () => {
     expect(approvalCheck(base, { id: 'usr-ops', roles: ['FSM'] })).toMatchObject({ ok: false, code: 'SELF_APPROVAL' });
   });
   it('FSM 칸이 남으면 FSM이 아닌 두 번째 승인은 거부, FSM은 FSM 역할로 서명', () => {
-    const one = { ...base, approvals: [{ approverId: 'usr-lead', role: 'OPS_LEAD' as const }] };
+    // 복원 계획(필수 FSM 하나) — 차단은 FSM+CSM 쌍이라 운영 리더가 첫 칸을 채울 수 없다(아래 쌍 시험)
+    const one = { ...base, plan: approvalPlan('F3', 'restore', 'SAFETY'), approvals: [{ approverId: 'usr-lead', role: 'OPS_LEAD' as const }] };
     expect(approvalCheck(one, { id: 'usr-csm', roles: ['CSM'] })).toMatchObject({ ok: false, code: 'FSM_REQUIRED' });
     expect(approvalCheck(one, { id: 'usr-safety', roles: ['FSM', 'QA'] })).toEqual({ ok: true, role: 'FSM' });
     expect(approvalCheck(one, { id: 'usr-lead', roles: ['OPS_LEAD'] })).toMatchObject({ ok: false, code: 'DUPLICATE' });
@@ -77,5 +78,54 @@ describe('승인 규칙 (FFG-PLT-005 · SOD-08·09)', () => {
       ],
     };
     expect(approvalCheck(full, { id: 'c', roles: ['CSM'] })).toMatchObject({ ok: false, code: 'COMPLETE' });
+  });
+});
+
+describe('긴급 차단 서명 역할 쌍 (2026-11-04 결정 · P3-2·P4-1)', () => {
+  const kill = approvalPlan('F3', 'deactivate', 'SAFETY');
+  const restore = approvalPlan('F3', 'restore', 'SAFETY');
+  const base = { requestedBy: 'usr-operator', approvals: [] as { approverId: string; role: 'FSM' | 'CSM' | 'OPS_LEAD' | 'QA' }[], plan: kill };
+  it('F2 이상 안전 차단은 FSM + CSM — FSM 뒤 두 번째 FSM은 거부(FSM+FSM 기록 방지), 운영 리더도 거부', () => {
+    expect(kill.required).toEqual(['FSM', 'CSM']);
+    const one = { ...base, approvals: [{ approverId: 'usr-quality', role: 'FSM' as const }] };
+    expect(approvalCheck(one, { id: 'usr-safety2', roles: ['FSM'] })).toMatchObject({ ok: false, code: 'CSM_REQUIRED' });
+    expect(approvalCheck(one, { id: 'usr-opslead', roles: ['OPS_LEAD'] })).toMatchObject({ ok: false, code: 'CSM_REQUIRED' });
+    expect(approvalCheck(one, { id: 'usr-integrator', roles: ['CSM'] })).toEqual({ ok: true, role: 'CSM' });
+    // 첫 칸도 필수 역할만 — 운영 리더가 먼저 승인하면 남은 한 칸으로 FSM·CSM을 다 채울 수 없다
+    expect(approvalCheck(base, { id: 'usr-opslead', roles: ['OPS_LEAD'] })).toMatchObject({ ok: false, code: 'FSM_REQUIRED' });
+    // 상업 사유·F1은 그대로 아무 승인 역할 2인
+    expect(approvalPlan('F3', 'deactivate', 'COMMERCIAL').required).toEqual([]);
+  });
+  it('FSM·CSM을 함께 가진 사람은 고른 서명 역할(부서 맥락)로 — 사이버보안 부서에서 승인하면 CSM으로 기록', () => {
+    const both = { id: 'usr-integrator', roles: ['FSM', 'CSM'] as const };
+    expect(approvalCheck(base, both)).toEqual({ ok: true, role: 'FSM' });
+    expect(approvalCheck(base, both, 'CSM')).toEqual({ ok: true, role: 'CSM' });
+    const one = { ...base, approvals: [{ approverId: 'usr-quality', role: 'FSM' as const }] };
+    // FSM이 이미 있으면 FSM을 골라도 CSM으로 서명
+    expect(approvalCheck(one, both, 'FSM')).toEqual({ ok: true, role: 'CSM' });
+  });
+  it('복원은 직전 차단을 승인하지 않은 FSM + 다른 1인 — 운영 리더가 먼저 승인해도 남은 칸은 FSM', () => {
+    expect(restore.required).toEqual(['FSM']);
+    const s = { requestedBy: 'usr-operator', approvals: [] as { approverId: string; role: 'FSM' | 'OPS_LEAD' }[], plan: restore, excluded: ['usr-quality', 'usr-integrator'] };
+    expect(approvalCheck(s, { id: 'usr-opslead', roles: ['OPS_LEAD'] })).toEqual({ ok: true, role: 'OPS_LEAD' });
+    const one = { ...s, approvals: [{ approverId: 'usr-opslead', role: 'OPS_LEAD' as const }] };
+    expect(approvalCheck(one, { id: 'usr-approver', roles: ['PRODUCT_OWNER'] })).toMatchObject({ ok: false, code: 'FSM_REQUIRED' });
+    expect(approvalCheck(one, { id: 'usr-safety2', roles: ['FSM'] })).toEqual({ ok: true, role: 'FSM' });
+  });
+  it('복원 전망 — 차단 승인자를 빼고 FSM이 남지 않으면 끝낼 수 없다(영구 막힘), 두 번째 FSM 계정이 있으면 끝난다', () => {
+    const accounts = [
+      { id: 'usr-quality', roles: ['FSM', 'QA'] as const },
+      { id: 'usr-integrator', roles: ['CSM', 'FSM'] as const },
+      { id: 'usr-opslead', roles: ['OPS_LEAD'] as const },
+      { id: 'usr-operator', roles: [] as const },
+    ];
+    const dead = restoreOutlook(accounts, restore, ['usr-quality', 'usr-integrator']);
+    expect(dead).toMatchObject({ complete: false, missing: ['FSM'] });
+    expect(dead.candidates.map((a) => a.id)).toEqual(['usr-opslead']);
+    const ok = restoreOutlook([...accounts, { id: 'usr-safety2', roles: ['FSM'] }], restore, ['usr-quality', 'usr-integrator']);
+    expect(ok).toMatchObject({ complete: true, missing: [] });
+    expect(ok.byRole).toEqual([{ role: 'FSM', ids: ['usr-safety2'] }]);
+    // 다음 칸 후보 — 요청자·이미 승인한 사람·제외 대상은 빠진다
+    expect(nextApprovers(accounts, { requestedBy: 'usr-opslead', approvals: [], plan: kill }).map((a) => a.id)).toEqual(['usr-quality', 'usr-integrator']);
   });
 });

@@ -11,7 +11,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/registry/safety-profile.service.ts:195",
         "contracts/src/rules/classification.ts:49",
-        "contracts/src/rules/lifecycle.ts:20"
+        "contracts/src/rules/lifecycle.ts:22"
       ],
       "tests": [
         "backend/test/d01/safety-profile.spec.ts",
@@ -71,8 +71,8 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d01-policy/policy-store/policy.service.ts:116",
-        "contracts/src/rules/lifecycle.ts:29",
-        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:136"
+        "contracts/src/rules/lifecycle.ts:53",
+        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:157"
       ],
       "tests": [
         "backend/test/d01/registry.spec.ts",
@@ -91,7 +91,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/variant.ts:44",
-        "contracts/src/rules/catalog.ts:51"
+        "contracts/src/rules/catalog.ts:53"
       ],
       "tests": [
         "backend/test/d06/iam-variant.spec.ts"
@@ -107,8 +107,8 @@
       "verdict": "구현",
       "evidence": [
         "contracts/src/rules/topology.ts:55",
-        "contracts/src/rules/catalog.ts:82",
-        "contracts/src/rules/lifecycle.ts:97"
+        "contracts/src/rules/catalog.ts:85",
+        "contracts/src/rules/lifecycle.ts:131"
       ],
       "tests": [
         "contracts/src/rules/topology.test.ts",
@@ -122,9 +122,9 @@
     "FFP-F007": {
       "verdict": "부분",
       "evidence": [
-        "contracts/src/rules/lifecycle.ts:106",
-        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:76",
-        "backend/src/domains/d01-policy/registry/release-signoff.service.ts:84"
+        "contracts/src/rules/lifecycle.ts:160",
+        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:80",
+        "backend/src/domains/d01-policy/registry/release-signoff.service.ts:87"
       ],
       "tests": [
         "backend/test/ads/defects.spec.ts",
@@ -160,8 +160,8 @@
     "FFP-F009": {
       "verdict": "구현",
       "evidence": [
-        "contracts/src/rules/lifecycle.ts:113",
-        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:102",
+        "contracts/src/rules/lifecycle.ts:167",
+        "backend/src/domains/d01-policy/registry/lifecycle.service.ts:120",
         "backend/src/domains/d01-policy/policy-store/policy.service.ts:197"
       ],
       "tests": [
@@ -179,9 +179,9 @@
     "FFP-F010": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d01-policy/topology/gate.service.ts:89",
+        "backend/src/domains/d01-policy/topology/gate.service.ts:105",
         "backend/src/domains/d01-policy/policy-store/policy.service.ts:221",
-        "contracts/src/rules/lifecycle.ts:101"
+        "contracts/src/rules/lifecycle.ts:155"
       ],
       "tests": [
         "backend/test/d01/gate-decision.spec.ts",
@@ -202,7 +202,7 @@
     "FFP-F011": {
       "verdict": "구현",
       "evidence": [
-        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:183",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:192",
         "contracts/src/rules/policy-gate.ts:119",
         "backend/src/domains/d06-qsec/iam/post-review.service.ts:31"
       ],
@@ -261,7 +261,7 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:123",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:133"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:137"
       ],
       "tests": [
         "backend/test/d03/delivery.spec.ts",
@@ -278,7 +278,7 @@
     "FFP-F015": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:138",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:142",
         "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:57",
         "contracts/src/rules/policy-gate.ts:160"
       ],
@@ -320,7 +320,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151",
-        "contracts/src/routes.ts:173"
+        "contracts/src/routes.ts:203"
       ],
       "tests": [
         "backend/test/d03/delivery.spec.ts"
@@ -356,7 +356,7 @@
     "FFP-F019": {
       "verdict": "구현",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:218",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:222",
         "contracts/src/rules/status-v2.ts:96",
         "contracts/src/rules/deactivation.ts:133"
       ],
@@ -396,7 +396,7 @@
       "verdict": "부분",
       "evidence": [
         "frontend/src/data/twin/engine.ts:623",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:254"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:258"
       ],
       "tests": [
         "frontend/src/__tests__/twinEngine.test.ts"
@@ -414,7 +414,7 @@
       "evidence": [
         "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
         "contracts/src/rules/deactivation.ts:8",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:290"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:294"
       ],
       "tests": [
         "backend/test/d03/trial-expiry-kill.spec.ts",
@@ -455,7 +455,7 @@
     "FFP-F024": {
       "verdict": "미구현",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:254",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:258",
         "frontend/src/data/twin/engine.ts:623"
       ],
       "tests": [],
@@ -589,7 +589,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/deactivation.ts:139",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:200"
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:201"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts",
@@ -608,7 +608,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/status-v2.ts:64",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:240",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:244",
         "contracts/src/schemas/wire.ts:165"
       ],
       "tests": [
@@ -629,7 +629,7 @@
     "FFP-F034": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:299",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:303",
         "contracts/src/rules/kill-timeline.ts:33",
         "contracts/src/schemas/wire.ts:142"
       ],
@@ -652,8 +652,8 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/schemas/wire.ts:68",
-        "backend/src/domains/d03-safety/restore/restore.service.ts:64",
-        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:189"
+        "backend/src/domains/d03-safety/restore/restore.service.ts:74",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:198"
       ],
       "tests": [
         "backend/test/d03/kill-v2.spec.ts",
@@ -673,7 +673,7 @@
     "FFP-F036": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:271",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:275",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:107",
         "contracts/src/rules/kill-timeline.ts:62"
       ],
@@ -780,7 +780,7 @@
       "evidence": [
         "contracts/src/schemas/wire.ts:160",
         "frontend/src/data/twin/engine.ts:80",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:207"
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:208"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts"
@@ -815,7 +815,7 @@
     "FFP-F044": {
       "verdict": "부분",
       "evidence": [
-        "frontend/src/screens/ops/FleetLive.tsx:294",
+        "frontend/src/screens/ops/FleetLive.tsx:304",
         "frontend/src/components/liveMonitor.ts:80",
         "contracts/src/flags/p0.ts:224"
       ],
@@ -834,7 +834,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/status-v2.ts:92",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:240",
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:244",
         "frontend/src/data/twin/engine.ts:728"
       ],
       "tests": [
@@ -886,8 +886,8 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:142",
-        "frontend/src/screens/ops/Deployments.tsx:241",
-        "frontend/src/screens/ops/FleetLive.tsx:60"
+        "frontend/src/screens/ops/Deployments.tsx:256",
+        "frontend/src/screens/ops/FleetLive.tsx:61"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts",
@@ -910,7 +910,7 @@
       "evidence": [
         "contracts/src/rules/kill-timeline.ts:49",
         "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:130",
-        "backend/src/domains/d04-ops/incident-voc/incident.service.ts:47"
+        "backend/src/domains/d04-ops/incident-voc/incident.service.ts:59"
       ],
       "tests": [
         "contracts/src/rules/kill-timeline.test.ts",
@@ -1000,7 +1000,7 @@
       "verdict": "부분",
       "evidence": [
         "contracts/src/rules/virtual.ts:38",
-        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:207",
+        "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:208",
         "tools/requirements.ts:13"
       ],
       "tests": [
@@ -1046,7 +1046,7 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d06-qsec/iam/post-review.service.ts:58",
-        "contracts/src/rules/duty-separation.ts:54",
+        "contracts/src/rules/duty-separation.ts:83",
         "backend/src/domains/d01-policy/registry/release-signoff.service.ts:3"
       ],
       "tests": [
@@ -1085,7 +1085,7 @@
     "FFP-F058": {
       "verdict": "부분",
       "evidence": [
-        "frontend/src/screens/ops/Deployments.tsx:245",
+        "frontend/src/screens/ops/Deployments.tsx:260",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:198"
       ],
       "tests": [],
@@ -1100,8 +1100,8 @@
       "evidence": [
         "backend/src/domains/d03-safety/deploy-safety/policy-gate.service.ts:159",
         "backend/src/domains/d03-safety/deploy-safety/policy-gate.service.ts:155",
-        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:285",
-        "contracts/src/rules/kill-v2.ts:167",
+        "backend/src/domains/d03-safety/kill-switch/kill.service.ts:295",
+        "contracts/src/rules/kill-v2.ts:214",
         "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts:146",
         "backend/src/domains/d06-qsec/pki-kms/hsm.service.ts:103"
       ],
@@ -1123,9 +1123,9 @@
     "FFP-F060": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/kernel/audit.service.ts:406",
-        "backend/src/kernel/audit.service.ts:378",
-        "backend/src/kernel/audit.service.ts:214"
+        "backend/src/kernel/audit.service.ts:412",
+        "backend/src/kernel/audit.service.ts:384",
+        "backend/src/kernel/audit.service.ts:218"
       ],
       "tests": [
         "backend/test/kernel/audit-chain.spec.ts"
@@ -1163,7 +1163,7 @@
       "evidence": [
         "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
         "contracts/src/flags/evaluate.ts:107",
-        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:290"
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:294"
       ],
       "tests": [
         "backend/test/d03/trial-expiry-kill.spec.ts",

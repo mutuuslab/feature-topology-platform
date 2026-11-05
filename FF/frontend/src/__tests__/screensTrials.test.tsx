@@ -16,7 +16,7 @@ beforeEach(() => {
   calls.length = 0;
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, init });
-    const r = handler(url, init) ?? { status: 404, body: { error: { code: 'NOT_FOUND', message: url } } };
+    const r = handler(url, init) ?? (url === '/api/entitlements' ? { body: { items: [] } } : { status: 404, body: { error: { code: 'NOT_FOUND', message: url } } });
     return new Response(JSON.stringify(r.body), { status: r.status ?? 200, headers: { 'Content-Type': 'application/json' } });
   }));
 });
@@ -56,10 +56,70 @@ const PAGE = {
     G({ grantId: 'ENT-00007', vin: 'TMA-NX4-0001', state: 'EXPIRED', acceptedAt: '2026-08-13' }),
   ],
 };
+const PRODUCTS = { items: [{ catalogId: 'CAT-00019', version: '1.0.0', name: '체험 상품', lifecycle: 'APPROVED', saleType: '체험', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium' }] };
 
 describe('사용 권한·체험권 — 체험권 차량', () => {
+  it('빈 설치에는 상품 식별자를 만들어 보이지 않고 상품 없는 체험 조회·제안을 하지 않는다', async () => {
+    handler = (url) => url === '/api/products' ? { body: { items: [] } } : url.startsWith('/api/trials') ? { body: { ...PAGE, items: [], total: 0, byState: {} } } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : undefined;
+    const view = mount('/entitlements', '/entitlements', <EntitlementsScreen />);
+    await waitFor(() => expect(calls.some((c) => c.url === '/api/products')).toBe(true));
+    await waitFor(() => expect(view.container.textContent).not.toContain('CAT-00019'));
+    expect(calls.some((c) => c.url.startsWith('/api/trials'))).toBe(false);
+    expect(screen.queryByRole('region', { name: '체험 제안' })).toBeNull();
+  });
+
+  it('기본 체험 상품은 이 설치의 실제 목록에서 고르고 존재하지 않는 시연 번호로 조회하지 않는다', async () => {
+    handler = (url) => url === '/api/products' ? { body: { items: [{ ...PRODUCTS.items[0], catalogId: 'CAT-00064', name: '고객 설치 체험' }] } } : url.startsWith('/api/trials') ? { body: PAGE } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : undefined;
+    mount('/entitlements', '/entitlements', <EntitlementsScreen />);
+    await waitFor(() => expect(calls.some((c) => c.url.startsWith('/api/trials?catalogId=CAT-00064'))).toBe(true));
+    expect(calls.some((c) => c.url.includes('CAT-00019'))).toBe(false);
+    expect(screen.getByLabelText('체험 상품')).toHaveValue('CAT-00064');
+  });
+
+  it('출시 전 초안보다 실제 체험 이력이 있는 구성 승인 상품을 기본으로 고른다', async () => {
+    const approved = { ...PRODUCTS.items[0], catalogId: 'CAT-00083' };
+    handler = (url) => url === '/api/products' ? { body: { items: [{ ...approved, catalogId: 'CAT-00061', lifecycle: 'DEVELOPING' }, { ...approved, catalogId: 'CAT-00082' }, approved] } } : url === '/api/entitlements' ? { body: { items: [G({ catalogId: approved.catalogId, kind: '체험' })] } } : url.startsWith('/api/trials') ? { body: { ...PAGE, items: PAGE.items.map((g) => ({ ...g, catalogId: approved.catalogId })) } } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : undefined;
+    mount('/entitlements', '/entitlements', <EntitlementsScreen />);
+    await screen.findByRole('table', { name: '체험권 차량' });
+    expect(screen.getByLabelText('체험 상품')).toHaveValue('CAT-00083');
+    expect(calls.filter((c) => c.url.startsWith('/api/trials')).every((c) => c.url.includes('catalogId=CAT-00083'))).toBe(true);
+  });
+
+  it('성공한 빈 체험 조회는 진행 중 0으로 보인다', async () => {
+    handler = (url) => url === '/api/products' ? { body: PRODUCTS } : url === '/api/entitlements' ? { body: { items: [] } } : url.startsWith('/api/trials') ? { body: { ...PAGE, items: [], total: 0, byState: {} } } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : undefined;
+    const view = mount('/entitlements', '/entitlements', <EntitlementsScreen />);
+    await screen.findByText('조건에 맞는 체험권이 없습니다');
+    expect(view.container.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('0');
+  });
+
+  it('초안 체험만 있는 설치는 기본 체험 조회·제안을 시작하지 않는다', async () => {
+    handler = (url) => url === '/api/products' ? { body: { items: [{ ...PRODUCTS.items[0], lifecycle: 'DEVELOPING' }] } } : undefined;
+    const view = mount('/entitlements', '/entitlements', <EntitlementsScreen />);
+    await waitFor(() => expect(view.container.querySelector('.ds-state__title')?.textContent).toBe('체험 상품을 고르세요'));
+    expect(calls.some((c) => c.url.startsWith('/api/trials'))).toBe(false);
+    expect(view.container.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('—');
+    expect(screen.queryByRole('region', { name: '체험 제안' })).toBeNull();
+  });
+
+  it('체험 조회 오류를 진행 중 0으로 표시하지 않는다', async () => {
+    handler = (url) => url === '/api/products' ? { body: PRODUCTS } : url.startsWith('/api/trials') ? { status: 503, body: { error: { code: 'UPSTREAM_DOWN', message: '체험 조회 실패' } } } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : undefined;
+    const view = mount('/entitlements', '/entitlements', <EntitlementsScreen />);
+    await screen.findByRole('alert');
+    expect(view.container.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('—');
+  });
+
+  it('명시한 출시 전 상품 주소는 다른 상품으로 바꾸지 않는다', async () => {
+    handler = (url) => url === '/api/products' ? { body: { items: [{ ...PRODUCTS.items[0], catalogId: 'CAT-00089', lifecycle: 'DEVELOPING' }, ...PRODUCTS.items] } } : url.startsWith('/api/trials') ? { body: { ...PAGE, items: [], byState: {}, total: 0 } } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : undefined;
+    mount('/entitlements?catalog=CAT-00089', '/entitlements', <EntitlementsScreen />);
+    await screen.findByText('조건에 맞는 체험권이 없습니다');
+    expect(screen.getByLabelText('체험 상품')).toHaveValue('CAT-00089');
+    expect(calls.filter((c) => c.url.startsWith('/api/trials')).every((c) => c.url.includes('catalogId=CAT-00089'))).toBe(true);
+    expect(calls.some((c) => c.url === '/api/entitlements')).toBe(false);
+  });
+
   it('상태·남은 일수·성향이 보이고, 제안 중이면 수락·거절, 체험한 차량은 구독 전환, 합성 차량은 처리 버튼이 없다', async () => {
     handler = (url, init) => {
+      if (url === '/api/products') return { body: PRODUCTS };
       if (init?.method === 'POST') return { body: PAGE.items[0] };
       if (url.startsWith('/api/trials')) return { body: PAGE };
       if (url.startsWith('/api/vehicles')) return { body: { items: [{ vin: 'ego-01', label: 'x' }] } };
@@ -82,7 +142,7 @@ describe('사용 권한·체험권 — 체험권 차량', () => {
   it('필터를 바꾸면 같은 질의 순서로 다시 묻는다 (정적 스냅샷과 같은 키)', async () => {
     // 국가·지역 선택지는 설치에 등록된 고객 기준 값(RD-OPS-03)
     const REF = { items: [{ kind: 'COUNTRY', code: 'US', label: '미국', parent: null, origin: 'SEED', status: 'ACTIVE', createdAt: '2026-10-01T00:00:00Z', createdBy: 'seed' }, { kind: 'REGION', code: 'West', label: 'West', parent: 'US', origin: 'SEED', status: 'ACTIVE', createdAt: '2026-10-01T00:00:00Z', createdBy: 'seed' }] };
-    handler = (url) => (url.startsWith('/api/trials') ? { body: PAGE } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : url.startsWith('/api/reference-values') ? { body: REF } : undefined);
+    handler = (url) => (url === '/api/products' ? { body: PRODUCTS } : url.startsWith('/api/trials') ? { body: PAGE } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : url.startsWith('/api/reference-values') ? { body: REF } : undefined);
     mount('/entitlements', '/entitlements', <EntitlementsScreen />);
     await screen.findByRole('table', { name: '체험권 차량' });
     expect(calls.some((c) => c.url === '/api/trials?catalogId=CAT-00019&source=ALL&pageSize=50')).toBe(true);
@@ -93,7 +153,7 @@ describe('사용 권한·체험권 — 체험권 차량', () => {
   });
 
   it('작성자는 체험 수락을 처리할 수 없다(운영자·시스템만)', async () => {
-    handler = (url) => (url.startsWith('/api/trials') ? { body: PAGE } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : undefined);
+    handler = (url) => (url === '/api/products' ? { body: PRODUCTS } : url.startsWith('/api/trials') ? { body: PAGE } : url.startsWith('/api/vehicles') ? { body: { items: [] } } : undefined);
     mount('/entitlements', '/entitlements', <EntitlementsScreen />, 'author');
     const table = await screen.findByRole('table', { name: '체험권 차량' });
     expect((within(table).getByRole('button', { name: '수락' }) as HTMLButtonElement).disabled).toBe(true);

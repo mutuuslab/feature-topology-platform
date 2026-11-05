@@ -5,7 +5,8 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { parseRefs, type ExtChange, type ExtSystem } from '@ff/contracts';
 import { DomainError } from '../../../../kernel/errors';
-import { extUrl, JIRA_EPIC_FIELDS, JIRA_PROJECTS, WEBHOOK_SECRET } from './mock-ext.store';
+import { modeOf } from './adapters';
+import { extUrl, JIRA_EPIC_FIELDS, JIRA_PROJECTS, JIRA_REF_FIELD, WEBHOOK_SECRET } from './mock-ext.store';
 
 export const hmac = (system: ExtSystem, raw: string) => `sha256=${createHmac('sha256', WEBHOOK_SECRET[system]()).update(raw).digest('hex')}`;
 
@@ -122,13 +123,36 @@ export function normalize(system: ExtSystem, deliveryId: string, body: unknown):
   };
 }
 
-/** Epic 사용자 정의 필드 → 적용 범위(문자열 또는 선택 목록 { value }·{ name }) — 비어 있는 값은 뺀다 */
-function epicScope(f: Record<string, any>): Record<string, string> {
-  const out: Record<string, string> = {};
+/** Epic 사용자 정의 필드 → 적용 범위(문자열 또는 선택 목록 { value }·{ name }) — 비어 있는 값은 뺀다. 기준 기능 ID는 refIds(대표 먼저) */
+function epicScope(f: Record<string, any>): Record<string, string | string[]> {
+  const out: Record<string, string | string[]> = {};
   for (const [k, id] of Object.entries(JIRA_EPIC_FIELDS)) {
     const raw = f[id()];
     const v = typeof raw === 'string' ? raw : raw && typeof raw === 'object' ? (raw.value ?? raw.name) : undefined;
     if (typeof v === 'string' && v.trim()) out[k] = v.trim();
   }
+  const refIds = epicRefIds(f);
+  if (refIds.length) out.refIds = refIds;
   return out;
+}
+
+/**
+ * Epic의 기준 기능 ID(30-95 §7, D-REF-16, 80-50 §4) — JIRA 안의 FF 앱이 쓰는 사용자 필드(JIRA_FIELD_FEATURE_DB)가 기준이다:
+ * 필드에 값이 있으면 필드 값만 쓴다(첫 값이 대표). 같은 ID는 한 번만.
+ * 실제 연결(IF_MODE_14=live)은 필드만 읽는다 — 비면 등록하지 않고 댓글로 알린다(라벨은 인정하지 않음).
+ * 모의·데모(live가 아님)만 필드가 비었을 때 라벨 `ref-primary:<ID>`(대표) → `ref:<ID>`(포함)을 읽는다.
+ */
+export function epicRefIds(f: Record<string, any>, labelFallback = modeOf('JIRA') !== 'live'): string[] {
+  const labels: string[] = Array.isArray(f.labels) ? f.labels.filter((l: unknown): l is string => typeof l === 'string') : [];
+  const fromLabels = (prefix: string) => labels.filter((l) => l.toLowerCase().startsWith(prefix)).map((l) => l.slice(prefix.length).trim());
+  const fieldId = JIRA_REF_FIELD();
+  const raw = fieldId ? f[fieldId] : undefined;
+  const items: unknown[] = Array.isArray(raw) ? raw : raw == null ? [] : [raw];
+  const fromField = items.flatMap((x) => {
+    const v = typeof x === 'string' ? x : x && typeof x === 'object' ? ((x as any).value ?? (x as any).name) : undefined;
+    return typeof v === 'string' ? v.split(/[\s,;]+/) : [];
+  });
+  const norm = (xs: string[]) => [...new Set(xs.map((s) => s.trim().toUpperCase()).filter(Boolean))];
+  const field = norm(fromField);
+  return field.length || !labelFallback ? field : norm([...fromLabels('ref-primary:'), ...fromLabels('ref:')]);
 }

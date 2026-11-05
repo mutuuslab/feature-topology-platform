@@ -634,6 +634,11 @@
 .jd-legend .jd-num {
   text-align: end;
 }
+/* 숫자 열 머리글은 칸과 같이 오른쪽 — 범례의 건수·비율 열, 2차원 통계의 머리글(.jd-num)이 .jd-table th의 start에 졌다(2026-11-05) */
+.jd-legend thead th:not(:first-child),
+.jd-table th.jd-num {
+  text-align: end;
+}
 .jd-legend tfoot th,
 .jd-legend tfoot td {
   font-weight: 700;

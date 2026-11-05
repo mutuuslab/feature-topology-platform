@@ -7,6 +7,8 @@ import { extSync } from '../../copy/ext-sync';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, ExplainCodes, Field, Panel, Select, whyDisabled } from '../../design';
 import { usePermission, when } from '../shared';
+import { ExternalToolLaunchers } from '../../external/launchers';
+import { useExternalChanges } from '../../external/useExternalChanges';
 
 const X = extSync.sync;
 const INVALIDATE = ['extSync', 'extConflicts', 'extInbox', 'extOutbox', 'extChangeRequests', 'extFeatureTrace', 'extFeatureEpics', 'featureDetail', 'policyDetail', 'mockExtItems', 'listFeatures'];
@@ -40,12 +42,14 @@ interface Job {
 
 /** quiet: 화면 핵심 메시지가 '아직 주고받은 변경이 없습니다'일 때 — 수신함 빈 상자로 되풀이하지 않는다(3초 ⑩) */
 export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
+  useExternalChanges();
   const s = useApi<{ items: ExtSystemSummary[]; ownership: OwnershipRule[] }>('extSync', {}, { refetchInterval: 10_000 });
   const conflicts = useApi<{ items: Conflict[] }>('extConflicts', { query: { status: 'OPEN' } });
   const inbox = useApi<{ items: InboxRow[] }>('extInbox');
   const failed = useApi<{ items: Job[] }>('extOutbox', { query: { status: 'FAILED' } });
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
+      <ExternalToolLaunchers />
       <Panel title={X.summary} id="sync-systems">
         <AsyncView state={asyncState(s)} error={s.error} onRetry={() => s.refetch()}>
           <DataTable
@@ -251,6 +255,8 @@ function EpicCreateForm() {
   const [body, setBody] = useState('');
   const [user, setUser] = useState('kim.author');
   const [scope, setScope] = useState<Record<EpicScopeField, string>>({ country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', asil: 'QM', ownerId: '' });
+  // 기준 기능(Feature DB) ID — JIRA 안의 FF 앱이 Epic 필드에 기록한다(모의 연결은 라벨 ref-primary:·ref:도 읽음). 첫 값이 대표(30-95 §7)
+  const [refs, setRefs] = useState('');
   const create = useApiMutation<{ item: { key: string }; result: { outcome: string; summary: string } | null }>('mockExtCreate', INVALIDATE);
   return (
     <section aria-labelledby="sync-epic-new" style={{ display: 'grid', gap: 'var(--sp-2)', marginTop: 'var(--sp-4)' }}>
@@ -261,7 +267,9 @@ function EpicCreateForm() {
         onSubmit={(e) => {
           e.preventDefault();
           // 빈 값은 보내지 않는다 — 빠진 범위는 플랫폼이 Epic 댓글로 알려 준다
-          const filled = Object.fromEntries(Object.entries(scope).filter(([, v]) => v.trim()));
+          const filled: Record<string, unknown> = Object.fromEntries(Object.entries(scope).filter(([, v]) => v.trim()));
+          const refIds = refs.split(',').map((x) => x.trim().toUpperCase()).filter(Boolean);
+          if (refIds.length) filled.refIds = refIds;
           create.mutate({ params: { system: 'jira' }, body: { kind: 'EPIC', title: title.trim(), body: body.trim(), externalUser: user, scope: filled } });
         }}
       >
@@ -287,6 +295,9 @@ function EpicCreateForm() {
             </Field>
           ),
         )}
+        <Field label={X.epicRefs} hint={X.epicRefsHint}>
+          <input className="ds-input ds-input--mono" name="epicRefs" value={refs} onChange={(e) => setRefs(e.target.value)} />
+        </Field>
         <Field label={X.simUser}>
           <input className="ds-input ds-input--mono" value={user} onChange={(e) => setUser(e.target.value)} />
         </Field>

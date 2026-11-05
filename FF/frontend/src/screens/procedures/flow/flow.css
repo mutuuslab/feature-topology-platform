@@ -13,6 +13,8 @@
 .pf-scroll[data-wide] { overflow-x: scroll; box-shadow: inset -16px 0 12px -12px var(--line-strong); }
 /* 가로 스크롤 때 왼쪽에 고정되는 레인 머리(흐름도 안 레인 머리 위에 겹친다) */
 .pf-lanes { position: sticky; inset-inline-start: 0; z-index: 1; display: block; margin-inline-end: calc(var(--pf-lane-w) * -1); box-shadow: 4px 0 6px -4px var(--line-strong); }
+/* 고정 머리가 있으면 흐름도 안 머리 글자는 그리지 않는다 — 같은 글자를 두 번 그려 번졌다(2026-11-05). 투명도라 보조기술은 그대로 읽는다 */
+.pf-scroll[data-wide] > .pf-svg .pf-lanehead__text { opacity: 0; }
 .pf-join { fill: var(--pd-navy); }
 .pf-join--of { fill: var(--pd-gold); }
 .pf-bar { stroke: var(--pd-navy); stroke-width: 5; stroke-linecap: round; }
@@ -141,7 +143,7 @@
 .pf-state-cell { white-space: nowrap; }
 .pf-state-cell svg { vertical-align: -2px; margin-inline-end: var(--sp-1); }
 .pf-cell-list { margin: 0; padding-inline-start: var(--sp-4); display: grid; gap: var(--sp-0h); }
-.pf-linkbtn { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; text-align: start; cursor: pointer; text-decoration: underline; }
+.pf-linkbtn { background: none; border: 0; padding: 0; min-width: var(--sp-6); min-height: var(--sp-6); color: var(--accent); font: inherit; text-align: start; cursor: pointer; text-decoration: underline; }
 .pf-linkbtn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .pf-gate-tag { margin-inline-start: var(--sp-2); }
 .pf-block { display: block; }
@@ -169,6 +171,8 @@
 .pf-chip[data-kind='overdue'] { background: var(--danger-soft); color: var(--danger); }
 .pf-matrix th[scope='col'] { white-space: normal; min-inline-size: 9ch; max-inline-size: 16ch; word-break: keep-all; background: var(--pd-head); color: var(--pd-navy); }
 .pf-matrix td { text-align: end; font-variant-numeric: tabular-nums; }
+/* 숫자 열 머리글도 칸과 같이 오른쪽(모서리 칸은 역할 이름 열이라 왼쪽) */
+.pf-matrix th[scope='col']:not(:first-child) { text-align: end; }
 .pf-matrix td[data-n='0'] { color: var(--muted); }
 .pf-matrix tr[data-selected] th[scope='row'] { box-shadow: inset 3px 0 0 var(--accent); }
 .pf-matrix tr[data-selected] td { background: var(--accent-soft); }
@@ -230,6 +234,7 @@
 
 @media print {
   .pf-lanes { display: none; }
+  .pf-scroll[data-wide] > .pf-svg .pf-lanehead__text { opacity: 1; }
   .pf-scroll { overflow: visible; box-shadow: none; }
   .pf-toolbar, .pf-scrollhint { display: none; }
   .pf-card { break-inside: avoid; }

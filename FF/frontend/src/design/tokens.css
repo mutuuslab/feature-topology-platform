@@ -21,6 +21,12 @@
 }
 
 :root {
+  /* REA 보존 화면에 근거한 외부 도구 전용 팔레트. 플랫폼 업무 상태 색과 분리한다. */
+  --ext-cb-accent: #009fbd;
+  --ext-cb-link: #007b92;
+  --ext-cb-header: #454545;
+  --ext-cb-selected: #f4ffff;
+  --ext-jira-brand: #1868db;
   /* 글꼴 */
   --font-sans: 'SUIT Variable', 'SUIT', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', 'D2Coding', ui-monospace, Consolas, monospace;
@@ -317,11 +323,14 @@
   --row-h: 40px;
 }
 :root[data-workspace='review'] {
-  --accent: #334155;
-  --accent-hover: #1e293b;
+  /* 링크 색 = 강조색 — 본문 글자(--ink)와 3:1 이상(밑줄 없이도 구분, P3-11), 바탕·머리 띠와 4.5:1 이상 */
+  --accent: #4a6a95;
+  --accent-hover: #3a5680;
   --accent-soft: #e6e9ef;
   --accent-ink: #ffffff;
   --ws-band: #e9ecf1;
+  /* 결재함 — 판정 근거를 읽는 화면이라 콘솔(30px)보다 넉넉하고 포털(42px)보다 조밀하게. 링크 밑줄·머리 띠는 design.css */
+  --row-h: 36px;
 }
 :root[data-workspace='console'] {
   --accent: #0f5e7a;
@@ -384,9 +393,9 @@
   --ws-band: #24170f;
 }
 :root[data-theme='dark'][data-workspace='review'] {
-  --accent: #cbd5e1;
-  --accent-hover: #e2e8f0;
-  --accent-soft: #232a35;
+  --accent: #6886b5;
+  --accent-hover: #7f9cc4;
+  --accent-soft: #141c2e;
   --accent-ink: #0d0f12;
   --ws-band: #171b22;
 }

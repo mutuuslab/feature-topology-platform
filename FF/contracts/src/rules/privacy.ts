@@ -67,6 +67,8 @@ export const PERSONAL_DATA_INVENTORY: PersonalDataStore[] = [
   { store: 'safety_metric_plan', subject: 'USER', category: 'SIGNED_RECORD', idColumns: ['recorded_by'], textColumns: [], treatment: 'RETAIN_LEGAL', retention: 'Safety Case 보존', basis: `안전 지표 계획 기록자. ${SIGNED}` },
   { store: 'rollback_request', subject: 'USER', category: 'SIGNED_RECORD', idColumns: [], textColumns: ['doc'], treatment: 'RETAIN_LEGAL', retention: 'Safety Case 보존', basis: `되돌리기 요청·승인. ${SIGNED}` },
   { store: 'flag_retirement', subject: 'USER', category: 'SIGNED_RECORD', idColumns: [], textColumns: ['doc'], treatment: 'RETAIN_LEGAL', retention: 'Safety Case 보존', basis: `Flag Retirement 승인. ${SIGNED}` },
+  { store: 'analysis_record', subject: 'USER', category: 'SIGNED_RECORD', idColumns: ['signed_by'], textColumns: ['doc'], treatment: 'RETAIN_LEGAL', retention: 'Safety Case 보존', basis: `HARA·TARA·SOTIF·형식승인 영향 판단 서명. ${SIGNED}` },
+  { store: 'gate_signoff', subject: 'USER', category: 'SIGNED_RECORD', idColumns: ['signed_by'], textColumns: ['doc'], treatment: 'RETAIN_LEGAL', retention: 'Safety Case 보존', basis: `G7 기능안전·사이버보안 서명. ${SIGNED}` },
   { store: 'data_act_contract_basis', subject: 'USER', category: 'SIGNED_RECORD', idColumns: ['recorded_by'], textColumns: [], treatment: 'RETAIN_LEGAL', retention: '계약 기간', basis: `계약 근거 등록자. ${SIGNED}` },
   { store: 'privacy_subject', subject: 'USER', category: 'ACCOUNT_SESSION', idColumns: ['subject_id'], textColumns: [], treatment: 'DELETE', retention: '삭제 처리까지', basis: '사람 ↔ 가명 대응표(가명처리 추가 정보, 따로 둔다) — 삭제 처리 때 지워 가명을 되돌릴 수 없게 한다' },
   { store: 'privacy_subject', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['subject_id'], textColumns: [], treatment: 'DELETE', retention: '삭제 처리까지', basis: '차량 ↔ 가명 대응표 — 삭제 처리 때 지운다' },
@@ -74,6 +76,7 @@ export const PERSONAL_DATA_INVENTORY: PersonalDataStore[] = [
   // 차량 소유자·운전자(VIN) — 개인과 연결될 수 있는 차량 기록
   { store: 'vehicle_request', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'DELETE', retention: '30일(보존 규칙 rules/retention.ts)', basis: '차량 발신 보고(문맥·고장·체험 수락) — 목적 달성 후 지체 없이 삭제(GDPR Art.5, PIPL)' },
   { store: 'vehicle_request_nonce', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'DELETE', retention: '허용 시각 창', basis: '차량 요청 재전송 방지 기록' },
+  { store: 'vehicle_unleash_sequence', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'RETAIN_LEGAL', retention: '차량 운행 기간(차량 신뢰 키·VIN 폐기와 함께 종료)', basis: 'FF 차량 서명본 발행 순번 — 재시작 뒤 이전 활성 서명본 재생·동일 시각 순서 역전을 막는 차량 안전 검증 상태' },
   { store: 'vehicle_profile', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'DELETE', retention: '삭제 요청까지', basis: '성향 구간값(연령대·주행 성향·ADAS 사용) — 분석 목적' },
   { store: 'vehicle', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'RETAIN_LEGAL', retention: '차량 운행 기간', basis: 'Fleet 기준 정보 — 리콜·안전 시정 대상 식별(자동차관리법 제31조, UN R156)' },
   { store: 'entitlement', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'RETAIN_LEGAL', retention: '거래 기록 5년', basis: '구독·구매·체험 권한 — 거래 기록 보존(전자상거래법 제6조)' },

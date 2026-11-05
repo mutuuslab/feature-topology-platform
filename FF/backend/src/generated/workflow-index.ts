@@ -6,7 +6,10 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
  "personas": {
   "approver": [
    "R-REQ",
-   "R-PO"
+   "R-PO",
+   "R-DRV",
+   "R-CA",
+   "R-CBA"
   ],
   "author": [
    "R-FO"
@@ -26,17 +29,29 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
   "operator": [
    "R-OPS"
   ],
+  "opslead": [
+   "R-OPS"
+  ],
+  "productowner": [
+   "R-PO"
+  ],
   "quality": [
    "R-SM",
    "R-TST",
    "R-QA"
   ],
+  "safety2": [
+   "R-SM"
+  ],
   "steward": [
    "R-REG",
-   "R-PLM"
+   "R-PLM",
+   "R-RDA"
   ],
   "viewer": [
-   "R-QA"
+   "R-QA",
+   "R-CE",
+   "R-CV"
   ]
  },
  "roles": [
@@ -160,6 +175,48 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "platformRoles": [
     "PRODUCT_APPROVER"
    ]
+  },
+  {
+   "id": "R-RDA",
+   "name": "Feature DB 관리자",
+   "platformRoles": [
+    "REFDB_ADMIN"
+   ]
+  },
+  {
+   "id": "R-DRV",
+   "name": "도메인 검토자",
+   "platformRoles": [
+    "DOMAIN_REVIEWER"
+   ]
+  },
+  {
+   "id": "R-CE",
+   "name": "SW 개발비 산정 작성자",
+   "platformRoles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "id": "R-CA",
+   "name": "SW 개발비 산정 승인자",
+   "platformRoles": [
+    "COST_APPROVER"
+   ]
+  },
+  {
+   "id": "R-CV",
+   "name": "SW 개발비 산정 열람자",
+   "platformRoles": [
+    "COST_VIEWER"
+   ]
+  },
+  {
+   "id": "R-CBA",
+   "name": "원가 기준 관리자",
+   "platformRoles": [
+    "COST_BASIS_ADMIN"
+   ]
   }
  ],
  "processes": [
@@ -214,6 +271,10 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
   {
    "id": "FPW.13",
    "name": "규정·Compliance Profile 관리"
+  },
+  {
+   "id": "FPW.14",
+   "name": "Feature DB 운영"
   }
  ],
  "activities": [
@@ -234,7 +295,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
      "R-REQ"
     ],
     "I": [
-     "R-SM"
+     "R-SM",
+     "R-RDA"
     ]
    },
    "next": [
@@ -244,7 +306,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "screens": [
     "/master/define",
     "/feature/propose",
-    "/features"
+    "/features",
+    "/master/feature-db"
    ],
    "actions": [
     "createFeature",
@@ -375,6 +438,35 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "actions": [
     "judgeGate"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.1-A06",
+   "processId": "FPW.1",
+   "processName": "Feature 등록·분류",
+   "name": "Feature DB 추가 요청",
+   "trigger": "맞는 기준 행이 Feature DB에 없을 때",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-FO"
+    ],
+    "A": "R-FO",
+    "C": [
+     "R-DRV"
+    ],
+    "I": [
+     "R-RDA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/feature/propose"
+   ],
+   "actions": [
+    "requestRefAdd"
    ],
    "anchor": null,
    "slaHours": null
@@ -615,7 +707,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     ]
    },
    "next": [
-    "FPW.3-A03"
+    "FPW.3-A03",
+    "FPW.3-A05"
    ],
    "screens": [
     "/trace/design"
@@ -651,6 +744,42 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "actions": [
     "judgeGate"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.3-A05",
+   "processId": "FPW.3",
+   "processName": "안전요구 확정",
+   "name": "구현 연결 입력",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-INT",
+     "R-FO"
+    ],
+    "A": "R-INT",
+    "C": [
+     "R-ARC",
+     "R-PLM"
+    ],
+    "I": [
+     "R-REQ",
+     "R-TST"
+    ]
+   },
+   "next": [
+    "FPW.3-A04"
+   ],
+   "screens": [
+    "/features/:id/:ver",
+    "/master/artifacts",
+    "/integration/connectors"
+   ],
+   "actions": [
+    "updateDraft"
    ],
    "anchor": null,
    "slaHours": null
@@ -721,36 +850,6 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "slaHours": null
   },
   {
-   "id": "FPW.4-A02",
-   "processId": "FPW.4",
-   "processName": "안전 설계·정책 설계",
-   "name": "플랫폼 도구 신뢰도 분류",
-   "trigger": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
-   "gateDecision": null,
-   "raci": {
-    "R": [
-     "R-SM"
-    ],
-    "A": "R-SM",
-    "C": [
-     "R-ARC",
-     "R-CSM"
-    ],
-    "I": [
-     "R-QA"
-    ]
-   },
-   "next": [
-    "FPW.4-A05"
-   ],
-   "screens": [
-    "/arch/components"
-   ],
-   "actions": [],
-   "anchor": null,
-   "slaHours": null
-  },
-  {
    "id": "FPW.4-A03",
    "processId": "FPW.4",
    "processName": "안전 설계·정책 설계",
@@ -814,6 +913,36 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "actions": [
     "decidePolicy"
    ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.4-A02",
+   "processId": "FPW.4",
+   "processName": "안전 설계·정책 설계",
+   "name": "플랫폼 도구 신뢰도 분류",
+   "trigger": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-ARC",
+     "R-CSM"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [
+    "FPW.4-A05"
+   ],
+   "screens": [
+    "/arch/components"
+   ],
+   "actions": [],
    "anchor": null,
    "slaHours": null
   },
@@ -1772,6 +1901,37 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "slaHours": 2
   },
   {
+   "id": "FPW.8-A07",
+   "processId": "FPW.8",
+   "processName": "운영·긴급 차단·복원",
+   "name": "긴급 권한 사후 검토",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-QA"
+    ],
+    "A": "R-QA",
+    "C": [
+     "R-CSM",
+     "R-REG"
+    ],
+    "I": [
+     "R-SM",
+     "R-OPS"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/audit/oversight"
+   ],
+   "actions": [
+    "recordKillPostReview"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
    "id": "FPW.8-A06",
    "processId": "FPW.8",
    "processName": "운영·긴급 차단·복원",
@@ -1803,37 +1963,6 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "anchor": "vehicle-status-v2",
    "slaHours": 4
-  },
-  {
-   "id": "FPW.8-A07",
-   "processId": "FPW.8",
-   "processName": "운영·긴급 차단·복원",
-   "name": "긴급 권한 사후 검토",
-   "trigger": null,
-   "gateDecision": null,
-   "raci": {
-    "R": [
-     "R-QA"
-    ],
-    "A": "R-QA",
-    "C": [
-     "R-CSM",
-     "R-REG"
-    ],
-    "I": [
-     "R-SM",
-     "R-OPS"
-    ]
-   },
-   "next": [],
-   "screens": [
-    "/audit/oversight"
-   ],
-   "actions": [
-    "recordKillPostReview"
-   ],
-   "anchor": null,
-   "slaHours": null
   },
   {
    "id": "FPW.8-A08",
@@ -2450,31 +2579,6 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "slaHours": null
   },
   {
-   "id": "FPW.11-A05",
-   "processId": "FPW.11",
-   "processName": "보안·키·취약점 관리",
-   "name": "CSMS Evidence·R155 보고",
-   "trigger": null,
-   "gateDecision": null,
-   "raci": {
-    "R": [
-     "R-CSM"
-    ],
-    "A": "R-CSM",
-    "C": [
-     "R-REG"
-    ],
-    "I": [
-     "R-QA"
-    ]
-   },
-   "next": [],
-   "screens": [],
-   "actions": [],
-   "anchor": null,
-   "slaHours": null
-  },
-  {
    "id": "FPW.11-A06",
    "processId": "FPW.11",
    "processName": "보안·키·취약점 관리",
@@ -2492,6 +2596,31 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     ],
     "I": [
      "R-INT"
+    ]
+   },
+   "next": [],
+   "screens": [],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.11-A05",
+   "processId": "FPW.11",
+   "processName": "보안·키·취약점 관리",
+   "name": "CSMS Evidence·R155 보고",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CSM"
+    ],
+    "A": "R-CSM",
+    "C": [
+     "R-REG"
+    ],
+    "I": [
+     "R-QA"
     ]
    },
    "next": [],
@@ -2527,34 +2656,6 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "actions": [
     "recordSafetyKpiPlan"
    ],
-   "anchor": null,
-   "slaHours": null
-  },
-  {
-   "id": "FPW.12-A02",
-   "processId": "FPW.12",
-   "processName": "운영 데이터·데이터 보호",
-   "name": "평가 컨텍스트 개인정보 검토",
-   "trigger": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
-   "gateDecision": null,
-   "raci": {
-    "R": [
-     "R-DPO"
-    ],
-    "A": "R-DPO",
-    "C": [
-     "R-ARC",
-     "R-LEG"
-    ],
-    "I": [
-     "R-INT"
-    ]
-   },
-   "next": [],
-   "screens": [
-    "/integration/openfeature"
-   ],
-   "actions": [],
    "anchor": null,
    "slaHours": null
   },
@@ -2612,6 +2713,34 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "createDataAccessRequest",
     "recordDataActContractBasis"
    ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.12-A02",
+   "processId": "FPW.12",
+   "processName": "운영 데이터·데이터 보호",
+   "name": "평가 컨텍스트 개인정보 검토",
+   "trigger": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-DPO"
+    ],
+    "A": "R-DPO",
+    "C": [
+     "R-ARC",
+     "R-LEG"
+    ],
+    "I": [
+     "R-INT"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/integration/openfeature"
+   ],
+   "actions": [],
    "anchor": null,
    "slaHours": null
   },
@@ -2760,6 +2889,162 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "next": [],
    "screens": [],
    "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.14-A01",
+   "processId": "FPW.14",
+   "processName": "Feature DB 운영",
+   "name": "변경 요청 작성",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-FO"
+    ],
+    "A": "R-FO",
+    "C": [
+     "R-ARC"
+    ],
+    "I": [
+     "R-RDA",
+     "R-DRV"
+    ]
+   },
+   "next": [
+    "FPW.14-A02"
+   ],
+   "screens": [
+    "/master/feature-db/:refId"
+   ],
+   "actions": [
+    "createRefChange"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.14-A02",
+   "processId": "FPW.14",
+   "processName": "Feature DB 운영",
+   "name": "자동 점검·도메인 검토",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-DRV"
+    ],
+    "A": "R-DRV",
+    "C": [
+     "R-SM"
+    ],
+    "I": [
+     "R-RDA",
+     "R-FO"
+    ]
+   },
+   "next": [
+    "FPW.14-A03"
+   ],
+   "screens": [
+    "/master/feature-db/changes/:id",
+    "/master/feature-db/changes"
+   ],
+   "actions": [
+    "reviewRefChange"
+   ],
+   "anchor": null,
+   "slaHours": 72
+  },
+  {
+   "id": "FPW.14-A03",
+   "processId": "FPW.14",
+   "processName": "Feature DB 운영",
+   "name": "변경 승인·반려",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-RDA"
+    ],
+    "A": "R-RDA",
+    "C": [
+     "R-DRV"
+    ],
+    "I": [
+     "R-FO"
+    ]
+   },
+   "next": [
+    "FPW.14-A04"
+   ],
+   "screens": [
+    "/master/feature-db/changes/:id",
+    "/master/feature-db/changes"
+   ],
+   "actions": [
+    "decideRefChange"
+   ],
+   "anchor": null,
+   "slaHours": 72
+  },
+  {
+   "id": "FPW.14-A04",
+   "processId": "FPW.14",
+   "processName": "Feature DB 운영",
+   "name": "Feature DB 버전 발행",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-RDA"
+    ],
+    "A": "R-RDA",
+    "C": [],
+    "I": [
+     "R-FO",
+     "R-DRV",
+     "R-PLM"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/master/feature-db/changes"
+   ],
+   "actions": [
+    "publishRefRelease"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.14-A05",
+   "processId": "FPW.14",
+   "processName": "Feature DB 운영",
+   "name": "출처 정기 점검",
+   "trigger": "출처의 다음 점검일 도래(Feature DB 화면 알림)",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-RDA"
+    ],
+    "A": "R-RDA",
+    "C": [
+     "R-REG",
+     "R-DRV"
+    ],
+    "I": [
+     "R-FO"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/master/feature-db"
+   ],
+   "actions": [
+    "recordSourceReview"
+   ],
    "anchor": null,
    "slaHours": null
   }

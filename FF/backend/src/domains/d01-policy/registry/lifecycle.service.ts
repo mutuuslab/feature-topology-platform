@@ -19,10 +19,12 @@ import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { PolicyRepo } from '../policy-repos';
+import { RefdbRepository } from '../refdb/refdb.repository';
 import { BaselineRepo, FeatureRepo, GateRepo, TopologyRepo } from '../repos';
 import { GateDecisionService } from '../topology/gate-decision.service';
 import { ReharaRepo } from '../topology/rehara.repo';
 import { TopologyService } from '../topology/topology.service';
+import { FeatureRefLinker, type RefWarning } from './feature-refs';
 import { ReleaseSignoffService } from './release-signoff.service';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
@@ -51,6 +53,8 @@ export class LifecycleService {
     private readonly decisions: GateDecisionService,
     private readonly signoffs: ReleaseSignoffService,
     private readonly rehara: ReharaRepo,
+    private readonly refdb: RefdbRepository,
+    private readonly refs: FeatureRefLinker,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -74,6 +78,10 @@ export class LifecycleService {
       releaseSignoff: f.lifecycle === 'VERIFIED' ? this.signoffs.current(f.featureId, f.version) : null,
       // FFP-F007 — 열린 재-HARA 요청은 출시 전이를 막는다(Gate PASS 뒤에 열린 것도)
       openRehara: this.rehara.open(f.featureId, f.version).map((r) => ({ requestId: r.requestId, condition: r.condition, detail: r.detail })),
+      // 30-95 §5.2 — 연결된 기준 행이 요청 중(PENDING)·폐기(RETIRED)·없음이면 정의 승인(PROPOSED→APPROVED)을 막는다(REFDB_LINK_BLOCKED)
+      refStatusOf: (refId) => this.refdb.statusOf(refId),
+      // §6.3 — 등록 뒤 대표 행의 대표 ASIL이 바뀌었으면 지금 값 기준 ASIL 사유가 있어야 정의 승인
+      refAsilRepOf: (refId) => this.refdb.getRef(refId)?.asilRep,
       ...extra,
     };
   }
@@ -89,8 +97,18 @@ export class LifecycleService {
     }));
   }
 
-  /** 사람이 실행하는 전이 */
-  transition(actor: Actor, featureId: string, version: string, to: Lifecycle, reason: string): FeatureVersionRow {
+  /**
+   * 전이 때 남기는 기준 행 경고(막지 않음) — 정의 승인: 검토 필요·폐기 예정 행(30-95 §5.2),
+   * 출시: 폐기 예정·폐기 행(대체 행 안내, 사용자 결정 2026-11-04 #9). 응답 warnings와 전이 감사 after.refWarnings
+   */
+  refWarnings(f: FeatureVersionRow, to: Lifecycle): RefWarning[] {
+    if (f.lifecycle === 'PROPOSED' && to === 'APPROVED') return this.refs.statusWarnings(f.featureRefs, ['REVIEW', 'DEPRECATED'], '승인은 막지 않습니다.');
+    if (to === 'RELEASED') return this.refs.statusWarnings(f.featureRefs, ['DEPRECATED', 'RETIRED'], '출시는 막지 않습니다 — 다음 Version에서 대체 행으로 다시 연결하세요.');
+    return [];
+  }
+
+  /** 사람이 실행하는 전이 — 기준 행 경고가 있으면 응답에 warnings를 붙인다 */
+  transition(actor: Actor, featureId: string, version: string, to: Lifecycle, reason: string): FeatureVersionRow & { warnings?: RefWarning[] } {
     const f = this.require(featureId, version);
     const { rule, blockers } = evaluateTransition(f, to, this.context(f, { actor, reason }));
     const action = `FEATURE_TRANSITION ${f.lifecycle}→${to}`;
@@ -105,9 +123,11 @@ export class LifecycleService {
       const code = blockers.some((b) => b.code === 'SEPARATION_OF_DUTY') ? 'SEPARATION_OF_DUTY' : blockers.some((b) => b.code === 'ROLE') ? 'FORBIDDEN' : 'GUARD_FAILED';
       throw new DomainError(code, `전이할 수 없습니다: ${reasonText}`, { blockers });
     }
+    const warnings = this.refWarnings(f, to);
     return this.db.tx(() => {
       const next = this.apply(actor, f, to, reason);
-      return this.autoAdvance(next, actor.correlationId);
+      const cur = this.autoAdvance(next, actor.correlationId);
+      return warnings.length ? { ...cur, warnings } : cur;
     });
   }
 
@@ -133,7 +153,8 @@ export class LifecycleService {
     // 원천 Lifecycle이 바뀌면 관계 판정이 달라질 수 있다 (예: 승인되면 미판정 → PASS)
     this.topologyService.rejudgeOutgoing(next, actor.correlationId);
     const target = `${f.featureId}@${f.version}`;
-    this.audit.record(actor, `FEATURE_TRANSITION ${f.lifecycle}→${to}`, target, { before: { lifecycle: f.lifecycle }, after: { lifecycle: to }, reason, componentId: 'D01-01' });
+    const refWarnings = this.refWarnings(f, to);
+    this.audit.record(actor, `FEATURE_TRANSITION ${f.lifecycle}→${to}`, target, { before: { lifecycle: f.lifecycle }, after: { lifecycle: to, ...(refWarnings.length ? { refWarnings } : {}) }, reason, componentId: 'D01-01' });
     this.events.publish(
       'feature.lifecycle.changed',
       target,

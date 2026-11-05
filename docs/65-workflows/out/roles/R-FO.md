@@ -18,7 +18,8 @@ traces:
     - WF-FPW-8
     - WF-FPW-9
     - WF-FPW-13
-last_updated: 2026-11-04
+    - WF-FPW-14
+last_updated: 2026-11-05
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -35,13 +36,16 @@ last_updated: 2026-11-04
 ### FPW.1-A01 Feature 등록·초안 작성 — 수행·책임
 - 프로세스: FPW.1 Feature 등록·분류
 - 시작: 앞 활동 완료
-- 입력: WP-FEAT-PROPOSAL → 출력: WP-FEAT-REG
-- 플랫폼: `createFeature`, `createVersion`, `updateDraft`, `/master/define`, `/feature/propose`, `/features`
+- 입력: WP-REFDB-RELEASE, WP-FEAT-PROPOSAL → 출력: WP-FEAT-REG, WP-REF-LINK
+- 플랫폼: `createFeature`, `createVersion`, `updateDraft`, `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`
 1. 제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다
-2. Feature 등록 화면에서 이름·설명·관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다
-3. Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다
-4. 아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다
+2. 등록 1단계에서 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다
+3. 2단계에서 기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그를 확인하고, ASIL을 바꾸면 사유를 적는다
+4. 관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다
+5. Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다
+6. 아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다
 - [ ] Registry에 PROPOSED Version이 생기고 소유자가 지정되었다
+- [ ] 대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다
 - [ ] 만료일이 필요한 Flag 유형에 만료일과 Retirement 계획이 비어 있지 않다
 
 ### FPW.1-A02 대상 차량 사양·의존 등록 — 책임(승인)
@@ -53,6 +57,30 @@ last_updated: 2026-11-04
 2. 다른 Feature와의 필요·배타 관계를 등록하고 의존 판정 결과를 확인한다
 3. Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다
 - [ ] 모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다
+
+### FPW.1-A06 Feature DB 추가 요청 — 수행·책임
+- 프로세스: FPW.1 Feature 등록·분류
+- 시작: 맞는 기준 행이 Feature DB에 없을 때
+- 입력: WP-FEAT-PROPOSAL, WP-REFDB-RELEASE → 출력: WP-REF-ADD-REQ
+- 플랫폼: `requestRefAdd`, `/feature/propose`
+1. 검색과 도메인·컴포넌트 단계 선택으로 맞는 기준 행이 없음을 확인하고, 비슷한 행을 포함 행으로 쓸 수 있는지 먼저 본다
+2. 등록 화면의 추가 요청에서 도메인·컴포넌트·영문/한글 기능명·T-shirt·대표 ASIL·출처 또는 근거 메모를 입력한다
+3. 새 컴포넌트가 필요하면 3글자 약어를 같은 요청에 제안한다
+4. 즉시 부여된 정식 ID의 요청 중 행을 대표로 연결해 Feature 등록을 이어 간다
+5. 관리자가 반려하면 알림을 받고 다른 기준 행으로 다시 연결한다
+- [ ] 요청 중 행에 정식 형식 ID와 필수 정보가 있고 추가 변경 요청이 접수되었다
+- [ ] 관리자 승인 전에는 Feature 정의 승인(APPROVED) 전이가 막혀 있음을 Feature Owner가 안다
+
+### FPW.3-A05 구현 연결 입력 — 수행
+- 프로세스: FPW.3 안전요구 확정
+- 시작: 앞 활동 완료
+- 입력: WP-SAFETY-REQ → 출력: WP-IMPL-LINK
+- 플랫폼: `updateDraft`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`
+1. 정의 승인 전에 Feature 설계 담당 또는 SW 통합 담당이 PROPOSED 초안에서 Function → SW·Version → 제어기 P/N을 SW·ECU 기준정보에서 골라 연결한다
+2. Feature 상세 → 초안 수정 → 구현 연결에서 입력한다. 서버는 기준정보에 없는 짝을 거부한다
+3. 승인된 Version에 구현 연결이 빠져 있으면 새 Version에서 넣고 정의 승인을 다시 받는다
+4. 외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다
+- [ ] VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다
 
 ### FPW.6-A01 출시 Baseline 확정 요청 — 수행·책임
 - 프로세스: FPW.6 서명 배포
@@ -87,7 +115,7 @@ last_updated: 2026-11-04
 ### FPW.7-A12 Release Sign-off(출시 책임 확인) — 수행·책임
 - 프로세스: FPW.7 출시·활성화·단계적 확대
 - 시작: 앞 활동 완료
-- 입력: WP-G7-DECISION, WP-SC-REVIEW, WP-CANARY-PLAN → 출력: WP-RELEASE-SIGNOFF
+- 입력: WP-G7-DECISION, WP-CANARY-PLAN, WP-SC-REVIEW → 출력: WP-RELEASE-SIGNOFF
 - 플랫폼: `signRelease`, `/features/:id/:ver`
 1. G8·G9 판정과 Safety Case 검토·Canary 기준을 확인한다
 2. Feature 상세에서 사유를 적고 개인 서명으로 출시 책임을 확인한다
@@ -113,6 +141,19 @@ last_updated: 2026-11-04
 2. 단계마다 완료 조건을 확인하고 Retirement 단계로 기록한다
 3. 구 Version이 남은 차량은 상태 보고로 잔존이 0이 된 것을 확인한 뒤 마지막 단계를 닫는다
 - [ ] Retirement 단계가 순서대로 모두 기록되고 잔존 차량이 0이다
+
+### FPW.14-A01 변경 요청 작성 — 수행·책임
+- 프로세스: FPW.14 Feature DB 운영
+- 시작: 앞 활동 완료
+- 입력: WP-REF-LINK → 출력: WP-REF-CHANGE-REQ
+- 플랫폼: `createRefChange`, `/master/feature-db/:refId`
+1. Feature DB 상세에서 바꿀 기준 행을 열고 요청 종류(추가·수정·폐기 예정·폐기)를 고른다
+2. 바꿀 필드의 새 값과 사유, 근거가 되는 1차 출처 위치를 적는다
+3. 출처 정기 점검에서 넘어온 개정 대상 행이면 그 점검 기록을 사유에 인용한다
+4. 영향 표시에서 이 행을 쓰는 Feature와 진행 중 산정 과제를 확인하고, 대표 ASIL·T-shirt 변경이면 재계산 필요를 알린다
+5. 폐기 예정·폐기 요청이면 대체 행을 함께 지정한다
+- [ ] 변경 요청에 필드별 변경 전후 값과 사유·출처가 있다
+- [ ] 폐기 예정·폐기 요청에 대체 행 또는 대체 없음 사유가 있다
 
 ## 2. 협의·통보 받는 활동
 
@@ -156,6 +197,10 @@ last_updated: 2026-11-04
 - FPW.9-A05 Lifecycle 종료 전이 (협의)
 - FPW.13-A02 Compliance Profile 정의 (통보)
 - FPW.13-A03 분기 법규 감시·Profile 갱신 (통보)
+- FPW.14-A02 자동 점검·도메인 검토 (통보)
+- FPW.14-A03 변경 승인·반려 (통보)
+- FPW.14-A04 Feature DB 버전 발행 (통보)
+- FPW.14-A05 출처 정기 점검 (통보)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

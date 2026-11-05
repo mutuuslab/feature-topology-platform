@@ -1,0 +1,1730 @@
+[
+  {
+    "nodeId": "AD",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "ADAS & AD",
+    "nameKo": "",
+    "abbr": "AD",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "Body & Comfort",
+    "nameKo": "",
+    "abbr": "BC",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "Back-end & Cloud",
+    "nameKo": "",
+    "abbr": "BE",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "Chassis & Vehicle Dynamics",
+    "nameKo": "",
+    "abbr": "CH",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CO",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "Connectivity & Telematics",
+    "nameKo": "",
+    "abbr": "CO",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "Infotainment & HMI",
+    "nameKo": "",
+    "abbr": "IN",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PC",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "Powertrain - Combustion",
+    "nameKo": "",
+    "abbr": "PC",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "Powertrain - Electrified",
+    "nameKo": "",
+    "abbr": "PE",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "Vehicle Platform & Base SW",
+    "nameKo": "",
+    "abbr": "PL",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF",
+    "level": "DOMAIN",
+    "parentId": null,
+    "nameEn": "Safety",
+    "nameKo": "",
+    "abbr": "SF",
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD:Driver monitoring",
+    "level": "CLUSTER",
+    "parentId": "AD",
+    "nameEn": "Driver monitoring",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD:Lateral assist",
+    "level": "CLUSTER",
+    "parentId": "AD",
+    "nameEn": "Lateral assist",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD:Longitudinal assist",
+    "level": "CLUSTER",
+    "parentId": "AD",
+    "nameEn": "Longitudinal assist",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD:Parking",
+    "level": "CLUSTER",
+    "parentId": "AD",
+    "nameEn": "Parking",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD:Perception & planning",
+    "level": "CLUSTER",
+    "parentId": "AD",
+    "nameEn": "Perception & planning",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Access & security",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Access & security",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Central body",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Central body",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Exterior lighting",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Exterior lighting",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Interior lighting",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Interior lighting",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Mirrors",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Mirrors",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Power & energy",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Power & energy",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Seating",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Seating",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Thermal comfort",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Thermal comfort",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Vertical dynamics",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Vertical dynamics",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Windows & roof",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Windows & roof",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC:Wiper & washer",
+    "level": "CLUSTER",
+    "parentId": "BC",
+    "nameEn": "Wiper & washer",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE:Charging services",
+    "level": "CLUSTER",
+    "parentId": "BE",
+    "nameEn": "Charging services",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE:Connected services",
+    "level": "CLUSTER",
+    "parentId": "BE",
+    "nameEn": "Connected services",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE:Engineering back-end",
+    "level": "CLUSTER",
+    "parentId": "BE",
+    "nameEn": "Engineering back-end",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE:Security operations",
+    "level": "CLUSTER",
+    "parentId": "BE",
+    "nameEn": "Security operations",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE:Software update",
+    "level": "CLUSTER",
+    "parentId": "BE",
+    "nameEn": "Software update",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE:Vehicle data",
+    "level": "CLUSTER",
+    "parentId": "BE",
+    "nameEn": "Vehicle data",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH:Brake control",
+    "level": "CLUSTER",
+    "parentId": "CH",
+    "nameEn": "Brake control",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH:Commercial vehicle",
+    "level": "CLUSTER",
+    "parentId": "CH",
+    "nameEn": "Commercial vehicle",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH:Motion control",
+    "level": "CLUSTER",
+    "parentId": "CH",
+    "nameEn": "Motion control",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH:Steering",
+    "level": "CLUSTER",
+    "parentId": "CH",
+    "nameEn": "Steering",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH:Wheel & sensors",
+    "level": "CLUSTER",
+    "parentId": "CH",
+    "nameEn": "Wheel & sensors",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CO:Digital key",
+    "level": "CLUSTER",
+    "parentId": "CO",
+    "nameEn": "Digital key",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CO:Positioning",
+    "level": "CLUSTER",
+    "parentId": "CO",
+    "nameEn": "Positioning",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CO:Telematics",
+    "level": "CLUSTER",
+    "parentId": "CO",
+    "nameEn": "Telematics",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CO:V2X",
+    "level": "CLUSTER",
+    "parentId": "CO",
+    "nameEn": "V2X",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN:Audio & media",
+    "level": "CLUSTER",
+    "parentId": "IN",
+    "nameEn": "Audio & media",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN:Cockpit platform",
+    "level": "CLUSTER",
+    "parentId": "IN",
+    "nameEn": "Cockpit platform",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN:HMI framework",
+    "level": "CLUSTER",
+    "parentId": "IN",
+    "nameEn": "HMI framework",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN:Instrument cluster",
+    "level": "CLUSTER",
+    "parentId": "IN",
+    "nameEn": "Instrument cluster",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN:Navigation",
+    "level": "CLUSTER",
+    "parentId": "IN",
+    "nameEn": "Navigation",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN:Phone & projection",
+    "level": "CLUSTER",
+    "parentId": "IN",
+    "nameEn": "Phone & projection",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PC:Emission diagnostics",
+    "level": "CLUSTER",
+    "parentId": "PC",
+    "nameEn": "Emission diagnostics",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PC:Engine control",
+    "level": "CLUSTER",
+    "parentId": "PC",
+    "nameEn": "Engine control",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PC:Transmission control",
+    "level": "CLUSTER",
+    "parentId": "PC",
+    "nameEn": "Transmission control",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE:Charging",
+    "level": "CLUSTER",
+    "parentId": "PE",
+    "nameEn": "Charging",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE:Electric drive",
+    "level": "CLUSTER",
+    "parentId": "PE",
+    "nameEn": "Electric drive",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE:Energy conversion",
+    "level": "CLUSTER",
+    "parentId": "PE",
+    "nameEn": "Energy conversion",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE:Energy storage",
+    "level": "CLUSTER",
+    "parentId": "PE",
+    "nameEn": "Energy storage",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE:Fuel cell",
+    "level": "CLUSTER",
+    "parentId": "PE",
+    "nameEn": "Fuel cell",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE:Hybrid",
+    "level": "CLUSTER",
+    "parentId": "PE",
+    "nameEn": "Hybrid",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE:Thermal",
+    "level": "CLUSTER",
+    "parentId": "PE",
+    "nameEn": "Thermal",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE:Vehicle control",
+    "level": "CLUSTER",
+    "parentId": "PE",
+    "nameEn": "Vehicle control",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:AUTOSAR AP - Functional clusters",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR AP - Functional clusters",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:AUTOSAR CP - Communication",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR CP - Communication",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:AUTOSAR CP - Crypto & security",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR CP - Crypto & security",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:AUTOSAR CP - Diagnostics",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR CP - Diagnostics",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:AUTOSAR CP - MCAL & IO",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR CP - MCAL & IO",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:AUTOSAR CP - Memory",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR CP - Memory",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:AUTOSAR CP - System services",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR CP - System services",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:Cybersecurity",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "Cybersecurity",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:Diagnostics",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "Diagnostics",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:Feature control",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "Feature control",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:HPC & vehicle OS",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "HPC & vehicle OS",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:Networking",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "Networking",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:Safety mechanisms",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "Safety mechanisms",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL:Software update",
+    "level": "CLUSTER",
+    "parentId": "PL",
+    "nameEn": "Software update",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF:AI safety",
+    "level": "CLUSTER",
+    "parentId": "SF",
+    "nameEn": "AI safety",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF:Occupant awareness",
+    "level": "CLUSTER",
+    "parentId": "SF",
+    "nameEn": "Occupant awareness",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF:Occupant protection",
+    "level": "CLUSTER",
+    "parentId": "SF",
+    "nameEn": "Occupant protection",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF:Post-crash",
+    "level": "CLUSTER",
+    "parentId": "SF",
+    "nameEn": "Post-crash",
+    "nameKo": "",
+    "abbr": null,
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD/ADAS domain software",
+    "level": "COMPONENT",
+    "parentId": "AD",
+    "nameEn": "ADAS domain software",
+    "nameKo": "",
+    "abbr": "ADS",
+    "abbrs": [
+      "ADS"
+    ],
+    "clusterIds": [
+      "AD:Perception & planning"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD/Driver and occupant monitoring",
+    "level": "COMPONENT",
+    "parentId": "AD",
+    "nameEn": "Driver and occupant monitoring",
+    "nameKo": "",
+    "abbr": "DMS",
+    "abbrs": [
+      "DMS"
+    ],
+    "clusterIds": [
+      "AD:Driver monitoring"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD/Lateral control",
+    "level": "COMPONENT",
+    "parentId": "AD",
+    "nameEn": "Lateral control",
+    "nameKo": "",
+    "abbr": "LAT",
+    "abbrs": [
+      "LAT"
+    ],
+    "clusterIds": [
+      "AD:Lateral assist"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD/Longitudinal control",
+    "level": "COMPONENT",
+    "parentId": "AD",
+    "nameEn": "Longitudinal control",
+    "nameKo": "",
+    "abbr": "LON",
+    "abbrs": [
+      "LON"
+    ],
+    "clusterIds": [
+      "AD:Longitudinal assist"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "AD/Parking assistance",
+    "level": "COMPONENT",
+    "parentId": "AD",
+    "nameEn": "Parking assistance",
+    "nameKo": "",
+    "abbr": "PRK",
+    "abbrs": [
+      "PRK"
+    ],
+    "clusterIds": [
+      "AD:Parking"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Access and locking",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Access and locking",
+    "nameKo": "",
+    "abbr": "ACC",
+    "abbrs": [
+      "ACC"
+    ],
+    "clusterIds": [
+      "BC:Access & security"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Air conditioning",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Air conditioning",
+    "nameKo": "",
+    "abbr": "HVAC",
+    "abbrs": [
+      "HVAC",
+      "HVX"
+    ],
+    "clusterIds": [
+      "BC:Thermal comfort"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Body controller",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Body controller",
+    "nameKo": "",
+    "abbr": "BCM",
+    "abbrs": [
+      "BCM",
+      "BCX"
+    ],
+    "clusterIds": [
+      "BC:Central body"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Chassis & suspension",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Chassis & suspension",
+    "nameKo": "",
+    "abbr": "SUS",
+    "abbrs": [
+      "SUS"
+    ],
+    "clusterIds": [
+      "BC:Vertical dynamics"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Interior lighting",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Interior lighting",
+    "nameKo": "",
+    "abbr": "ILT",
+    "abbrs": [
+      "ILT"
+    ],
+    "clusterIds": [
+      "BC:Interior lighting"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Lighting control",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Lighting control",
+    "nameKo": "",
+    "abbr": "LGT",
+    "abbrs": [
+      "LGT"
+    ],
+    "clusterIds": [
+      "BC:Exterior lighting"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Low-voltage power management",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Low-voltage power management",
+    "nameKo": "",
+    "abbr": "PWR",
+    "abbrs": [
+      "PWR"
+    ],
+    "clusterIds": [
+      "BC:Power & energy"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Mirrors",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Mirrors",
+    "nameKo": "",
+    "abbr": "MIR",
+    "abbrs": [
+      "MIR"
+    ],
+    "clusterIds": [
+      "BC:Mirrors"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Seat control",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Seat control",
+    "nameKo": "",
+    "abbr": "SEAT",
+    "abbrs": [
+      "SEAT"
+    ],
+    "clusterIds": [
+      "BC:Seating"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Windows and roof",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Windows and roof",
+    "nameKo": "",
+    "abbr": "WIN",
+    "abbrs": [
+      "WIN"
+    ],
+    "clusterIds": [
+      "BC:Windows & roof"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BC/Wiper and washer",
+    "level": "COMPONENT",
+    "parentId": "BC",
+    "nameEn": "Wiper and washer",
+    "nameKo": "",
+    "abbr": "WIP",
+    "abbrs": [
+      "WIP"
+    ],
+    "clusterIds": [
+      "BC:Wiper & washer"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE/AD data and engineering back-end",
+    "level": "COMPONENT",
+    "parentId": "BE",
+    "nameEn": "AD data and engineering back-end",
+    "nameKo": "",
+    "abbr": "ENG",
+    "abbrs": [
+      "ENG"
+    ],
+    "clusterIds": [
+      "BE:Engineering back-end"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE/Charging back-end",
+    "level": "COMPONENT",
+    "parentId": "BE",
+    "nameEn": "Charging back-end",
+    "nameKo": "",
+    "abbr": "CHB",
+    "abbrs": [
+      "CHB"
+    ],
+    "clusterIds": [
+      "BE:Charging services"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE/Connected services back-end",
+    "level": "COMPONENT",
+    "parentId": "BE",
+    "nameEn": "Connected services back-end",
+    "nameKo": "",
+    "abbr": "CSB",
+    "abbrs": [
+      "CSB"
+    ],
+    "clusterIds": [
+      "BE:Connected services"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE/OTA back-end (SUMS)",
+    "level": "COMPONENT",
+    "parentId": "BE",
+    "nameEn": "OTA back-end (SUMS)",
+    "nameKo": "",
+    "abbr": "OTA",
+    "abbrs": [
+      "OTA"
+    ],
+    "clusterIds": [
+      "BE:Software update"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE/Security back-end",
+    "level": "COMPONENT",
+    "parentId": "BE",
+    "nameEn": "Security back-end",
+    "nameKo": "",
+    "abbr": "SOC",
+    "abbrs": [
+      "SOC"
+    ],
+    "clusterIds": [
+      "BE:Security operations"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "BE/Vehicle data platform",
+    "level": "COMPONENT",
+    "parentId": "BE",
+    "nameEn": "Vehicle data platform",
+    "nameKo": "",
+    "abbr": "VDP",
+    "abbrs": [
+      "VDP"
+    ],
+    "clusterIds": [
+      "BE:Vehicle data"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH/Brake control (ESC/ABS)",
+    "level": "COMPONENT",
+    "parentId": "CH",
+    "nameEn": "Brake control (ESC/ABS)",
+    "nameKo": "",
+    "abbr": "BRK",
+    "abbrs": [
+      "BRK"
+    ],
+    "clusterIds": [
+      "CH:Brake control"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH/Commercial vehicle chassis",
+    "level": "COMPONENT",
+    "parentId": "CH",
+    "nameEn": "Commercial vehicle chassis",
+    "nameKo": "",
+    "abbr": "CVC",
+    "abbrs": [
+      "CVC"
+    ],
+    "clusterIds": [
+      "CH:Commercial vehicle"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH/Steering control (EPS)",
+    "level": "COMPONENT",
+    "parentId": "CH",
+    "nameEn": "Steering control (EPS)",
+    "nameKo": "",
+    "abbr": "STR",
+    "abbrs": [
+      "STR"
+    ],
+    "clusterIds": [
+      "CH:Steering"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH/Vehicle motion and suspension",
+    "level": "COMPONENT",
+    "parentId": "CH",
+    "nameEn": "Vehicle motion and suspension",
+    "nameKo": "",
+    "abbr": "VMC",
+    "abbrs": [
+      "VMC"
+    ],
+    "clusterIds": [
+      "CH:Motion control"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CH/Wheel and motion sensing",
+    "level": "COMPONENT",
+    "parentId": "CH",
+    "nameEn": "Wheel and motion sensing",
+    "nameKo": "",
+    "abbr": "WHS",
+    "abbrs": [
+      "WHS"
+    ],
+    "clusterIds": [
+      "CH:Wheel & sensors"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CO/Digital key (CCC)",
+    "level": "COMPONENT",
+    "parentId": "CO",
+    "nameEn": "Digital key (CCC)",
+    "nameKo": "",
+    "abbr": "DKY",
+    "abbrs": [
+      "DKY"
+    ],
+    "clusterIds": [
+      "CO:Digital key"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CO/GNSS and positioning",
+    "level": "COMPONENT",
+    "parentId": "CO",
+    "nameEn": "GNSS and positioning",
+    "nameKo": "",
+    "abbr": "POS",
+    "abbrs": [
+      "POS"
+    ],
+    "clusterIds": [
+      "CO:Positioning"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CO/Telematics control unit (TCU)",
+    "level": "COMPONENT",
+    "parentId": "CO",
+    "nameEn": "Telematics control unit (TCU)",
+    "nameKo": "",
+    "abbr": "TCU",
+    "abbrs": [
+      "TCU"
+    ],
+    "clusterIds": [
+      "CO:Telematics"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "CO/Vehicle-to-everything",
+    "level": "COMPONENT",
+    "parentId": "CO",
+    "nameEn": "Vehicle-to-everything",
+    "nameKo": "",
+    "abbr": "V2X",
+    "abbrs": [
+      "V2X"
+    ],
+    "clusterIds": [
+      "CO:V2X"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN/Audio and media",
+    "level": "COMPONENT",
+    "parentId": "IN",
+    "nameEn": "Audio and media",
+    "nameKo": "",
+    "abbr": "AUD",
+    "abbrs": [
+      "AUD"
+    ],
+    "clusterIds": [
+      "IN:Audio & media"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN/Cabin perception AI",
+    "level": "COMPONENT",
+    "parentId": "IN",
+    "nameEn": "Cabin perception AI",
+    "nameKo": "",
+    "abbr": "CPA",
+    "abbrs": [
+      "CPA"
+    ],
+    "clusterIds": [
+      "IN:Cockpit platform"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN/Cockpit domain platform",
+    "level": "COMPONENT",
+    "parentId": "IN",
+    "nameEn": "Cockpit domain platform",
+    "nameKo": "",
+    "abbr": "CKP",
+    "abbrs": [
+      "CKP"
+    ],
+    "clusterIds": [
+      "IN:Cockpit platform"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN/HMI and settings",
+    "level": "COMPONENT",
+    "parentId": "IN",
+    "nameEn": "HMI and settings",
+    "nameKo": "",
+    "abbr": "HMI",
+    "abbrs": [
+      "HMI"
+    ],
+    "clusterIds": [
+      "IN:HMI framework"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN/In-vehicle AI assistant",
+    "level": "COMPONENT",
+    "parentId": "IN",
+    "nameEn": "In-vehicle AI assistant",
+    "nameKo": "",
+    "abbr": "AIA",
+    "abbrs": [
+      "AIA"
+    ],
+    "clusterIds": [
+      "IN:HMI framework"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN/Instrument cluster",
+    "level": "COMPONENT",
+    "parentId": "IN",
+    "nameEn": "Instrument cluster",
+    "nameKo": "",
+    "abbr": "CLU",
+    "abbrs": [
+      "CLU"
+    ],
+    "clusterIds": [
+      "IN:Instrument cluster"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN/Navigation",
+    "level": "COMPONENT",
+    "parentId": "IN",
+    "nameEn": "Navigation",
+    "nameKo": "",
+    "abbr": "NAV",
+    "abbrs": [
+      "NAV"
+    ],
+    "clusterIds": [
+      "IN:Navigation"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "IN/Phone and smartphone integration",
+    "level": "COMPONENT",
+    "parentId": "IN",
+    "nameEn": "Phone and smartphone integration",
+    "nameKo": "",
+    "abbr": "PHN",
+    "abbrs": [
+      "PHN"
+    ],
+    "clusterIds": [
+      "IN:Phone & projection"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PC/Engine management (EMS)",
+    "level": "COMPONENT",
+    "parentId": "PC",
+    "nameEn": "Engine management (EMS)",
+    "nameKo": "",
+    "abbr": "EMS",
+    "abbrs": [
+      "EMS"
+    ],
+    "clusterIds": [
+      "PC:Engine control"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PC/OBD monitors",
+    "level": "COMPONENT",
+    "parentId": "PC",
+    "nameEn": "OBD monitors",
+    "nameKo": "",
+    "abbr": "OBD",
+    "abbrs": [
+      "OBD"
+    ],
+    "clusterIds": [
+      "PC:Emission diagnostics"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PC/Transmission (TCU)",
+    "level": "COMPONENT",
+    "parentId": "PC",
+    "nameEn": "Transmission (TCU)",
+    "nameKo": "",
+    "abbr": "TCU",
+    "abbrs": [
+      "TCU"
+    ],
+    "clusterIds": [
+      "PC:Transmission control"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE/Battery management (BMS)",
+    "level": "COMPONENT",
+    "parentId": "PE",
+    "nameEn": "Battery management (BMS)",
+    "nameKo": "",
+    "abbr": "BMS",
+    "abbrs": [
+      "BMS"
+    ],
+    "clusterIds": [
+      "PE:Energy storage"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE/Charging control (OBC/CCU)",
+    "level": "COMPONENT",
+    "parentId": "PE",
+    "nameEn": "Charging control (OBC/CCU)",
+    "nameKo": "",
+    "abbr": "CHG",
+    "abbrs": [
+      "CHG"
+    ],
+    "clusterIds": [
+      "PE:Charging"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE/DC/DC and LV supply",
+    "level": "COMPONENT",
+    "parentId": "PE",
+    "nameEn": "DC/DC and LV supply",
+    "nameKo": "",
+    "abbr": "DCD",
+    "abbrs": [
+      "DCD"
+    ],
+    "clusterIds": [
+      "PE:Energy conversion"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE/EV thermal management",
+    "level": "COMPONENT",
+    "parentId": "PE",
+    "nameEn": "EV thermal management",
+    "nameKo": "",
+    "abbr": "ETM",
+    "abbrs": [
+      "ETM"
+    ],
+    "clusterIds": [
+      "PE:Thermal"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE/Fuel cell system (FCEV)",
+    "level": "COMPONENT",
+    "parentId": "PE",
+    "nameEn": "Fuel cell system (FCEV)",
+    "nameKo": "",
+    "abbr": "FCS",
+    "abbrs": [
+      "FCS"
+    ],
+    "clusterIds": [
+      "PE:Fuel cell"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE/Hybrid / range extender strategy",
+    "level": "COMPONENT",
+    "parentId": "PE",
+    "nameEn": "Hybrid / range extender strategy",
+    "nameKo": "",
+    "abbr": "HEV",
+    "abbrs": [
+      "HEV"
+    ],
+    "clusterIds": [
+      "PE:Hybrid"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE/Inverter / e-motor control",
+    "level": "COMPONENT",
+    "parentId": "PE",
+    "nameEn": "Inverter / e-motor control",
+    "nameKo": "",
+    "abbr": "EDU",
+    "abbrs": [
+      "EDU"
+    ],
+    "clusterIds": [
+      "PE:Electric drive"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PE/Vehicle control unit (VCU)",
+    "level": "COMPONENT",
+    "parentId": "PE",
+    "nameEn": "Vehicle control unit (VCU)",
+    "nameKo": "",
+    "abbr": "VCU",
+    "abbrs": [
+      "VCU"
+    ],
+    "clusterIds": [
+      "PE:Vehicle control"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/AUTOSAR Adaptive Platform",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR Adaptive Platform",
+    "nameKo": "",
+    "abbr": "AP",
+    "abbrs": [
+      "AP"
+    ],
+    "clusterIds": [
+      "PL:AUTOSAR AP - Functional clusters"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/AUTOSAR Adaptive Platform (R24-11 이후 추가 FC)",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR Adaptive Platform (R24-11 이후 추가 FC)",
+    "nameKo": "",
+    "abbr": "AP",
+    "abbrs": [
+      "AP"
+    ],
+    "clusterIds": [
+      "PL:AUTOSAR AP - Functional clusters"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/AUTOSAR Classic Platform",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR Classic Platform",
+    "nameKo": "",
+    "abbr": "CP",
+    "abbrs": [
+      "CP"
+    ],
+    "clusterIds": [
+      "PL:AUTOSAR CP - Communication",
+      "PL:AUTOSAR CP - Crypto & security",
+      "PL:AUTOSAR CP - Diagnostics",
+      "PL:AUTOSAR CP - MCAL & IO",
+      "PL:AUTOSAR CP - Memory",
+      "PL:AUTOSAR CP - System services"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/AUTOSAR Classic Platform (R24-11 이후 추가 모듈)",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "AUTOSAR Classic Platform (R24-11 이후 추가 모듈)",
+    "nameKo": "",
+    "abbr": "CP",
+    "abbrs": [
+      "CP"
+    ],
+    "clusterIds": [
+      "PL:AUTOSAR CP - Communication",
+      "PL:AUTOSAR CP - MCAL & IO",
+      "PL:AUTOSAR CP - System services"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/Bootloader and software update",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "Bootloader and software update",
+    "nameKo": "",
+    "abbr": "UPD",
+    "abbrs": [
+      "UPD"
+    ],
+    "clusterIds": [
+      "PL:Software update"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/Cybersecurity controls",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "Cybersecurity controls",
+    "nameKo": "",
+    "abbr": "SEC",
+    "abbrs": [
+      "SEC"
+    ],
+    "clusterIds": [
+      "PL:Cybersecurity"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/Diagnostic services (SOVD)",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "Diagnostic services (SOVD)",
+    "nameKo": "",
+    "abbr": "SOVD",
+    "abbrs": [
+      "SOVD"
+    ],
+    "clusterIds": [
+      "PL:Diagnostics"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/Diagnostic services (UDS)",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "Diagnostic services (UDS)",
+    "nameKo": "",
+    "abbr": "UDS",
+    "abbrs": [
+      "UDS"
+    ],
+    "clusterIds": [
+      "PL:Diagnostics"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/Diagnostic transport and OBD",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "Diagnostic transport and OBD",
+    "nameKo": "",
+    "abbr": "DGT",
+    "abbrs": [
+      "DGT"
+    ],
+    "clusterIds": [
+      "PL:Diagnostics"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/Edge AI runtime",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "Edge AI runtime",
+    "nameKo": "",
+    "abbr": "EAI",
+    "abbrs": [
+      "EAI"
+    ],
+    "clusterIds": [
+      "PL:HPC & vehicle OS"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/Feature control runtime",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "Feature control runtime",
+    "nameKo": "",
+    "abbr": "FFR",
+    "abbrs": [
+      "FFR"
+    ],
+    "clusterIds": [
+      "PL:Feature control"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/In-vehicle network and gateway",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "In-vehicle network and gateway",
+    "nameKo": "",
+    "abbr": "NET",
+    "abbrs": [
+      "NET"
+    ],
+    "clusterIds": [
+      "PL:Networking"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/Platform safety mechanisms",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "Platform safety mechanisms",
+    "nameKo": "",
+    "abbr": "SAF",
+    "abbrs": [
+      "SAF"
+    ],
+    "clusterIds": [
+      "PL:Safety mechanisms"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "PL/Vehicle HPC platform",
+    "level": "COMPONENT",
+    "parentId": "PL",
+    "nameEn": "Vehicle HPC platform",
+    "nameKo": "",
+    "abbr": "HPC",
+    "abbrs": [
+      "HPC"
+    ],
+    "clusterIds": [
+      "PL:HPC & vehicle OS"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF/AI safety engineering (ISO/PAS 8800)",
+    "level": "COMPONENT",
+    "parentId": "SF",
+    "nameEn": "AI safety engineering (ISO/PAS 8800)",
+    "nameKo": "",
+    "abbr": "AIS",
+    "abbrs": [
+      "AIS"
+    ],
+    "clusterIds": [
+      "SF:AI safety"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF/Child and occupant presence",
+    "level": "COMPONENT",
+    "parentId": "SF",
+    "nameEn": "Child and occupant presence",
+    "nameKo": "",
+    "abbr": "CPD",
+    "abbrs": [
+      "CPD"
+    ],
+    "clusterIds": [
+      "SF:Occupant awareness"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF/Occupant monitoring system (OMS)",
+    "level": "COMPONENT",
+    "parentId": "SF",
+    "nameEn": "Occupant monitoring system (OMS)",
+    "nameKo": "",
+    "abbr": "OMS",
+    "abbrs": [
+      "OMS"
+    ],
+    "clusterIds": [
+      "SF:Occupant awareness"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF/Post-crash and emergency call",
+    "level": "COMPONENT",
+    "parentId": "SF",
+    "nameEn": "Post-crash and emergency call",
+    "nameKo": "",
+    "abbr": "PCR",
+    "abbrs": [
+      "PCR"
+    ],
+    "clusterIds": [
+      "SF:Post-crash"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "nodeId": "SF/Restraint control (ACU)",
+    "level": "COMPONENT",
+    "parentId": "SF",
+    "nameEn": "Restraint control (ACU)",
+    "nameKo": "",
+    "abbr": "ACU",
+    "abbrs": [
+      "ACU"
+    ],
+    "clusterIds": [
+      "SF:Occupant protection"
+    ],
+    "status": "ACTIVE"
+  }
+]

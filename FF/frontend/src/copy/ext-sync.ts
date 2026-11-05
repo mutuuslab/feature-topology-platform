@@ -7,7 +7,7 @@ export const extSync = {
   state: { SYNCED: '맞음', PENDING: '보내는 중', CONFLICT: '충돌', FAILED: '보내기 실패', REJECTED: '외부 변경 거부됨' } satisfies Record<SyncState, string>,
   stale: 'G2 재검토',
   staleTitle: 'codeBeamer에서 요구가 개정되었습니다 — G2를 다시 판정하면 표시가 내려갑니다',
-  open: (system: string) => `${system}에서 열기 (새 탭)`,
+  open: (system: string) => `${system}에서 열기 (새 창)`,
   mode: { mock: '모의', live: '실제 연결', off: '꺼짐' } as Record<string, string>,
   owner: { PLATFORM: 'Feature Platform', CODEBEAMER: 'codeBeamer', JIRA: 'JIRA', GITLAB: 'GitLab' } as Record<string, string>,
 
@@ -21,6 +21,9 @@ export const extSync = {
     key: {
       clean: '요구·변경요청·코드가 모두 연결되어 있고 외부와 상태가 맞습니다',
       issues: '외부 연계에서 확인할 것이 있습니다',
+      // 연결이 하나도 없으면 '맞음'이라 하지 않는다(P1-12) · 일부만 연결되면 빠진 쪽을 말한다
+      unlinked: '아직 외부 시스템과 연결된 요구·변경요청·코드가 없습니다 — 연결되면 상태를 비교합니다',
+      partial: (missing: string) => `연결된 항목은 외부와 상태가 맞습니다 · 아직 연결 안 됨: ${missing}`,
     },
     chain: '추적 — 요구 → Feature → MR·파이프라인 → 정책·변경요청',
     requirements: '요구사항 (codeBeamer)',
@@ -93,8 +96,10 @@ export const extSync = {
     simResult: (outcome: string, summary: string) => `${outcome} — ${summary}`,
     // JIRA에서 Epic 만들기 → PROPOSED Feature 자동 등록(사용자 결정 2026-10-23)
     epicNew: 'JIRA에서 Epic 만들기 → Feature 자동 등록',
-    epicNewHint: 'JIRA에서 Epic을 만든 것처럼 보냅니다. 작성 권한이 있는 계정이고 범위(국가·차종·트림·ASIL·담당 조직)가 모두 있으면 플랫폼에 PROPOSED Feature가 등록되고 Epic과 연결됩니다. 빠진 값이 있으면 등록하지 않고 Epic에 이유를 댓글로 남깁니다.',
+    epicNewHint: 'JIRA에서 Epic을 만든 것처럼 보냅니다. 작성 권한이 있는 계정이고 범위(국가·차종·트림·ASIL·담당 조직)와 기준 기능 ID가 모두 있으면 플랫폼에 PROPOSED Feature가 등록되고 Epic과 연결됩니다. 빠진 값이 있으면 등록하지 않고 Epic에 이유를 댓글로 남깁니다.',
     epicTitle: 'Epic 제목 (= Feature 이름)',
+    epicRefs: '기준 기능 ID (쉼표로 구분)',
+    epicRefsHint: '첫 값이 대표, 나머지는 포함 — JIRA 안의 FF 앱이 Epic 필드에 기록합니다(모의 연결은 라벨도 읽음). 없으면 등록하지 않습니다',
     epicBody: '설명',
     epicCreate: 'Epic 만들기',
   },

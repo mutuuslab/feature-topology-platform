@@ -63,7 +63,8 @@ export class NotificationService implements OnModuleInit {
     const p = (ev.payload ?? {}) as Record<string, any>;
     const ctx: NotificationContext = { event: { seq: ev.seq, type: ev.type, at: ev.at, aggregate: ev.aggregate, payload: p } };
     let featureId: string | undefined = p.featureId;
-    let version: string | undefined;
+    // Baseline 확정 요청·Release Sign-off는 payload에 Version이 있다(집계 키가 'FEAT@ver#…'라 나누면 틀린 Version)
+    let version: string | undefined = typeof p.version === 'string' && /^\d+\.\d+\.\d+$/.test(p.version) ? p.version : undefined;
     if (needs.includes('policy')) {
       const pol = this.policies.get(p.policyId ?? ev.aggregate);
       ctx.policy = pol ? { policyId: pol.policyId, flagKey: pol.flagKey, controlPoint: pol.controlPoint, featureId: pol.featureId, featureVersion: pol.featureVersion, createdBy: pol.createdBy, approvedBy: pol.approvedBy, deployedBy: pol.deployedBy ?? null } : null;
@@ -88,6 +89,12 @@ export class NotificationService implements OnModuleInit {
           }
         : null;
       if (k) [featureId, version] = [k.featureId, k.featureVersion];
+    }
+    if (needs.includes('refChange')) {
+      // Feature DB 변경 요청 — 검토 의견 이벤트에는 요청자가 없다(보완 의견을 요청자에게)
+      const r = this.db.get<{ doc: string }>('SELECT doc FROM ref_change WHERE change_id = ?', String(p.changeId ?? ev.aggregate));
+      const c = r ? (JSON.parse(r.doc) as { changeId: string; refId: string; kind: string; requestedBy: string; reason: string }) : null;
+      ctx.refChange = c ? { changeId: c.changeId, refId: c.refId, kind: c.kind, requestedBy: c.requestedBy, reason: c.reason } : null;
     }
     if (needs.includes('feature')) {
       if (!featureId && ev.aggregate.includes('@')) [featureId, version] = ev.aggregate.split('@');

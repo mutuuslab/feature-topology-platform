@@ -265,6 +265,7 @@
       ],
       "tested": [
         "contracts/src/rules/kill-v2.test.ts",
+        "backend/test/d03/control-room.spec.ts",
         "backend/test/d03/kill-v2.spec.ts"
       ]
     },
@@ -356,7 +357,9 @@
       ],
       "section": "06_lifecycle.md · 6.6 규칙",
       "implemented": [
-        "contracts/src/rules/gate-decision.ts"
+        "contracts/src/rules/gate-decision.ts",
+        "contracts/src/rules/gate-evidence.ts",
+        "backend/src/domains/d01-policy/topology/analysis-evidence.service.ts"
       ],
       "tested": [
         "contracts/src/rules/gate-decision.test.ts",
@@ -668,6 +671,7 @@
         "contracts/src/rules/policy-gate.test.ts",
         "contracts/src/rules/security-events.test.ts",
         "backend/test/ads/defects.spec.ts",
+        "backend/test/d03/control-room.spec.ts",
         "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d03/policy-gate.spec.ts",
         "backend/test/d06/hsm.spec.ts",
@@ -858,10 +862,10 @@
         "backend/src/domains/d06-qsec/iam/post-review.service.ts"
       ],
       "tested": [
+        "contracts/src/rules/access-variant.test.ts",
         "contracts/src/rules/duty-separation.test.ts",
         "contracts/src/rules/notification.test.ts",
         "contracts/src/rules/tutorial.test.ts",
-        "backend/test/d04/notifications.spec.ts",
         "backend/test/d06/post-review.spec.ts",
         "frontend/src/__tests__/designSafety.test.tsx",
         "frontend/src/__tests__/screensTrust.test.tsx",
@@ -950,6 +954,7 @@
       ],
       "tested": [
         "contracts/src/rules/workflows.test.ts",
+        "backend/test/d03/control-room.spec.ts",
         "backend/test/d03/delivery.spec.ts",
         "backend/test/d04/status-v2.spec.ts",
         "backend/test/d06/hsm.spec.ts"
@@ -1070,6 +1075,7 @@
       ],
       "tested": [
         "contracts/src/rules/ext.test.ts",
+        "backend/test/d03/control-room.spec.ts",
         "backend/test/ext/p10.spec.ts"
       ]
     },

@@ -2,7 +2,7 @@
 // hfp-feature-lifecycle js/unleash.js deploy()의 TS 이식: flag 생성(없으면 생성, 보관됐으면 복구) → 태그 → REQUIRES 의존 → 전략 교체 → 환경 on/off,
 // 첫 실패 단계에서 멈춘다. 결과는 외부 연계 호출 기록(IF-04)·감사·이벤트에 남는다. FP가 원천이고 Unleash는 사본이다(UL-OSS).
 import { Controller, Get, HttpCode, Inject, Injectable, Param, Post } from '@nestjs/common';
-import { cohortBucket, effectiveBasisPoints, planUnleash, unleashContext, unleashDrift, UNLEASH_ENVIRONMENT, UNLEASH_PROJECT, type Policy, type UnleashPlan } from '@ff/contracts';
+import { canonicalJson, cohortBucket, effectiveBasisPoints, planUnleash, unleashContext, unleashDrift, UNLEASH_ENVIRONMENT, UNLEASH_PROJECT, type Policy, type UnleashPlan } from '@ff/contracts';
 import { IfCallRepo } from '../../../adapters/if-call/if-call.repo';
 import { UnleashGateway, type UnleashResult } from '../../../adapters/unleash/unleash.client';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
@@ -16,6 +16,8 @@ import { ActivationService } from '../activation/activation.service';
 import { EntitlementService } from '../entitlement/entitlement.service';
 import { FleetRepo, PolicyRepo } from '../policy-repos';
 import { FeatureRepo, TopologyRepo } from '../repos';
+import { PkiService } from '../../d06-qsec/pki-kms/pki.service';
+import { PublicationRepo } from '../../d06-qsec/secure-deploy/publication.repo';
 
 export interface SyncStep {
   name: string;
@@ -44,6 +46,8 @@ export class UnleashSyncService {
     private readonly ifCalls: IfCallRepo,
     private readonly audit: AuditService,
     private readonly events: EventService,
+    private readonly pki: PkiService,
+    private readonly publications: PublicationRepo,
   ) {}
 
   private get u() {
@@ -75,7 +79,10 @@ export class UnleashSyncService {
       cohortMembers = [];
       for (const v of this.fleet.vehicles()) if ((await cohortBucket('1', p.flagKey, p.rollout.salt, v.vin)) < bp) cohortMembers.push(v.vin);
     }
-    return planUnleash({ policy: p, scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim }, requires, excludes, cohortMembers });
+    const plan = planUnleash({ policy: p, scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim }, requires, excludes, cohortMembers });
+    const signed = this.publications.list({ kind: 'POLICY' }).some((pub) => canonicalJson(pub.payload.policy) === canonicalJson(p) && this.pki.verify(pub.payload, pub.signature, undefined, 'policy').valid);
+    if (!signed) { plan.blockers.push('현재 정책과 일치하는 유효한 FF 서명 게시본이 없습니다 (UL-LIVE: FF Gate가 원천)'); plan.ready = false; }
+    return plan;
   }
 
   /** 서버에 있는 정의 (없으면 null) */
@@ -84,7 +91,7 @@ export class UnleashSyncService {
     if (r.state !== 'OK' || !r.data) return { result: r, server: null };
     const env = (r.data.environments ?? []).find((e: any) => e.name === ENV);
     const tags = await this.u.admin<any>('GET', `features/${plan.flagName}/tags`);
-    return { result: r, server: { enabled: env ? !!env.enabled : null, strategies: env?.strategies ?? [], tags: tags.data?.tags ?? [] } };
+    return { result: r, server: { enabled: env ? !!env.enabled : null, strategies: env?.strategies ?? [], tags: tags.state === 'OK' ? tags.data?.tags ?? [] : [], dependencies: r.data.dependencies ?? [], variants: r.data.variants ?? [] } };
   }
 
   async view(id: string) {
@@ -115,7 +122,15 @@ export class UnleashSyncService {
     else if (this.u.mode === 'off') {
       outcome = 'FAILED';
       steps.push({ name: 'health', state: 'UNKNOWN', code: 0, why: 'UNLEASH_MODE=off' });
-    } else outcome = (await this.deploy(plan, record)) ? 'SYNCED' : 'FAILED';
+    } else {
+      outcome = (await this.deploy(plan, record)) ? 'SYNCED' : 'FAILED';
+      if (outcome === 'SYNCED') {
+        const readback = await this.server(plan);
+        const drift = readback.result.state === 'OK' ? unleashDrift(plan, readback.server) : ['서버 정의를 다시 확인할 수 없습니다'];
+        if (drift.length) { outcome = 'FAILED'; steps.push({ name: 'verifySource', state: 'FAILED', code: readback.result.code, why: drift.join(' / ') }); }
+        else steps.push({ name: 'verifySource', state: 'OK', code: 200, why: null });
+      }
+    }
 
     // 외부 연계 호출 기록 — 실행마다 새 키(동기화는 재실행 가능한 upsert)
     const key = `${p.policyId}@r${p.revision}#${this.ifCalls.next('IF-04')}`;

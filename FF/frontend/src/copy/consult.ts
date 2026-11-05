@@ -1,0 +1,61 @@
+// 검토 포털·협의 요청 문구(W5, 담당자 개선 P5-1·P5-12) — 포털 부서(구매·법무·개인정보보호) 사람이 읽는다.
+// 쓰지 않는 낱말(3초 규칙·P5-12): Gate·SLA·OTA·Inputs·Outputs·레인·R/A/C/I 글자·절차 활동 코드. 업무 이름과 한 줄 설명으로 말한다.
+import type { ConsultOpinion, ConsultTargetKind } from '@ff/contracts';
+
+export const consult = {
+  portal: {
+    eyebrow: '검토 의견',
+    title: (dept: string) => `${dept} 검토 포털`,
+    lead: '다른 부서가 의견을 구한 건입니다. 건을 열면 살펴볼 것이 한 장에 있고, 동의·보완·반대 중 하나와 메모를 남기면 됩니다.',
+    key: (n: number) => ({ value: n, text: '의견을 기다리는 건' }),
+    keyNone: '지금 의견을 기다리는 건이 없습니다 — 지난 건은 아래에 있습니다',
+    overdue: (n: number) => `기한 지남 ${n}`,
+    inbox: '의견 요청함',
+    inboxCaption: '의견 요청함',
+    done: '의견을 남긴 건',
+    sent: '우리 부서가 보낸 협의',
+    sentNone: '우리 부서가 다른 부서에 물은 건은 아직 없습니다 — 받은 건에 의견을 남기면 요청한 부서 화면에 바로 보입니다',
+  },
+  col: { summary: '무엇을 묻나', from: '요청 부서', due: '기한', status: '상태', to: '받는 부서', opinion: '의견' },
+  due: (days: number) => (days < 0 ? `${-days}일 지남` : days === 0 ? '오늘까지' : `${days}일 남음`),
+  status: { OPEN: '의견 대기', ANSWERED: '의견 받음' } as const,
+  opinion: { AGREE: '동의', REVISE: '보완', OPPOSE: '반대' } satisfies Record<ConsultOpinion, string>,
+  target: { FEATURE: 'Feature', SUPPLIER_PACKAGE: '협력사 납품 SW', POLICY: '기능 켜기 정책', REF: 'Feature DB 기준 행' } satisfies Record<ConsultTargetKind, string>,
+  sheet: {
+    title: '검토할 것 한 장',
+    back: '요청함으로',
+    target: '대상',
+    from: '요청 부서',
+    by: '요청한 사람',
+    byDept: (dept: string) => `${dept} 담당`,
+    asked: '요청한 날',
+    due: '기한',
+    work: '관련 업무',
+    look: '살펴볼 것',
+    open: '대상 화면 열기',
+    history: '남긴 의견',
+    historyNone: '아직 남긴 의견이 없습니다',
+    notFound: '협의 요청을 찾을 수 없습니다',
+  },
+  form: {
+    title: '의견 남기기',
+    choice: '의견',
+    memo: '메모',
+    memoHint: '보완·반대면 무엇을 바꾸면 되는지 적어 주세요',
+    submit: '의견 보내기',
+    sent: '의견을 보냈습니다 — 요청한 부서 화면과 감사 기록에 남았습니다.',
+    again: '의견을 다시 남기면 이력에 덧붙습니다',
+    why: {
+      memo: '메모를 2자 이상 입력하세요',
+      dept: '이 건을 받은 부서에서만 의견을 남길 수 있습니다 — 상단 바에서 부서를 고르세요',
+      self: '협의를 요청한 사람은 자기 요청에 의견을 낼 수 없습니다',
+    },
+  },
+  sentPanel: {
+    title: '보낸 협의 요청',
+    lead: '구매·법무·개인정보보호 부서에 의견을 구한 건과 받은 의견입니다.',
+    caption: '보낸 협의 요청',
+    waiting: '의견 대기',
+    more: (n: number) => `외 ${n}건`,
+  },
+};

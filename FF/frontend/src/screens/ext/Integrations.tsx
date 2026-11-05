@@ -8,15 +8,16 @@ import { connectionLabel, useConnections } from '../../api/connections';
 import type { ConnectionStatus } from '@ff/contracts';
 import { connections as CN } from '../../copy/connections';
 import { ko } from '../../copy/ko';
+import { p10 } from '../../copy/p10';
 import { useDefaultFeature } from '../../data/first-run';
 import { AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, ExplainCodes, PageHeader, Panel, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { ComponentList, usePermission } from '../shared';
 import { extSync } from '../../copy/ext-sync';
 import { ExtSyncTab } from './ExtSyncTab';
 
-const G = ko.p10.integrations;
-const S = ko.p10.sync;
-const L = ko.p10.legacy;
+const G = p10.integrations;
+const S = p10.sync;
+const L = p10.legacy;
 
 interface SystemRow {
   ifId: string;

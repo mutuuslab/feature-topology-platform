@@ -1,15 +1,21 @@
 // 운영·관리 v2 화면 (P10-C4) — /ops/telemetry 운영 데이터·이벤트, /supplier/portal 협력사 이관, /admin/security 보안·인증서,
 // /admin/settings 설정, /verify/compliance 컴플라이언스(보고서 v1.1 규칙 추적), /change/eo SW EO. 모두 기존 API·계약 데이터를 읽는다.
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
+import { observability as OB } from '../../copy/observability';
+const TelemetryObservability = lazy(() => import('../ops/TelemetryObservability'));
 import { Link, useSearchParams } from 'react-router-dom';
-import { COMPLIANCE_PROFILES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
+import { COMPLIANCE_PROFILES, KEY_PURPOSES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { p10 } from '../../copy/p10';
+import { control as CT } from '../../copy/control';
 import { useVehiclePick } from '../../data/first-run';
 import { DESKTOP_BUILD } from '../../routes';
 import { AsyncView, Button, DataTable, ErrorNote, Explain, ExplainCodes, Field, IdChip, KeyValue, Kpi, PageHeader, Panel, RuleText, Segmented, Select, StatusGlyph, SummaryLine, Tabs, Toolbar, VerdictBadge, type KeyMessageSpec, useReportCatalog } from '../../design';
 import { ComponentName, Done, usePermission } from '../shared';
 import { EpochBump, SbomDrawer, SecurityEventsPanel } from './Security';
+import { KeyStatus } from '../ops/Deployments';
+import { personLabel } from '../ops/shared';
 
 const M = ko.master;
 const fref = (s: string) => {
@@ -36,8 +42,8 @@ export function TelemetryScreen() {
         })()}
         actions={<Link to="/events">{T.events}</Link>}
       />
-      <Tabs tabs={[{ key: 'readbacks', label: T.tabs.readbacks }, { key: 'status', label: T.tabs.status }, { key: 'requests', label: T.tabs.requests }]}>
-        {(t) => (t === 'status' ? <StatusTab /> : t === 'requests' ? <RequestsTab /> : <ReadbacksTab />)}
+      <Tabs tabs={[{ key: 'readbacks', label: T.tabs.readbacks }, { key: 'status', label: T.tabs.status }, { key: 'requests', label: T.tabs.requests }, { key: 'observability', label: OB.title }]}>
+        {(t) => (t === 'observability' ? <Suspense fallback={<p role="status">{ko.state.loading}</p>}><TelemetryObservability /></Suspense> : t === 'status' ? <StatusTab /> : t === 'requests' ? <RequestsTab /> : <ReadbacksTab />)}
       </Tabs>
     </div>
   );
@@ -138,7 +144,9 @@ function RequestsTab() {
 export function SupplierScreen() {
   const q = useApi<{ items: { swId: string; version: string; supplier: string; artifactId: string; checksum: string; ecuPno: string; lifecycle: string }[] }>('supplierDeliveries');
   const sw = useApi<{ items: { swId: string; version: string; features: string[] }[] }>('masterSw');
-  const [supplier, setSupplier] = useState('');
+  // ?supplier= — 구매 요청함·변경 영향 분석에서 그 협력사를 골라 연다(W5 P5-2)
+  const [sp] = useSearchParams();
+  const [supplier, setSupplier] = useState(() => sp.get('supplier') ?? '');
   const rows = q.data?.items ?? [];
   const suppliers = [...new Set(rows.map((r) => r.supplier))].sort();
   const pick = supplier || suppliers[0] || '';
@@ -178,6 +186,71 @@ export function SupplierScreen() {
 
 // ───────── 보안·인증서 ─────────
 
+/**
+ * 서명 키 교체 — 용도(정책·차단·복원·활성화·동기화·게이트)를 골라 새 키로. 이전 키는 검증 전용(이미 배포한 게시본 계속 검증).
+ * 교체하면 품질·운영 담당에게 알림이 간다(P4-6). 키 교체는 보안·인증서 화면이 맡는다(이전에는 배포 화면에만 있었다)
+ */
+function KeyRotate() {
+  const perm = usePermission(['SECURITY_OFFICER', 'SAFETY_OFFICER']);
+  const rotate = useApiMutation<{ keyId: string }>('rotateKey', ['pkiKeys', 'audit']);
+  const [purpose, setPurpose] = useState<string>('policy');
+  const [reason, setReason] = useState('');
+  const why = !perm.ok ? perm.hint : reason.trim().length < 2 ? ko.why.reason : undefined;
+  return (
+    <div style={{ display: 'grid', gap: 'var(--sp-2)' }} data-testid="key-rotate">
+      <p className="ds-field__hint">{CT.keys.rotateBody}</p>
+      <div className="ds-toolbar">
+        <Select label={CT.keys.purpose} value={purpose} onChange={(e) => setPurpose(e.target.value)}>
+          {KEY_PURPOSES.map((p) => (
+            <option key={p} value={p}>
+              {CT.keys.purposeName[p] ?? p}
+            </option>
+          ))}
+        </Select>
+        <Field label={ko.page.reason}>
+          <input className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
+        </Field>
+        <Button variant="primary" disabled={!!why || rotate.isPending} title={perm.hint} aria-describedby={why ? 'key-rotate-reason' : undefined} onClick={() => rotate.mutate({ body: { reason: reason.trim(), purpose } }, { onSuccess: () => setReason('') })}>
+          {CT.keys.rotate}
+        </Button>
+      </div>
+      {why && <p className="ds-field__hint" id="key-rotate-reason">{why}</p>}
+      {rotate.data && (
+        <p className="ds-ok" role="status">
+          {CT.keys.rotated(rotate.data.keyId)}
+        </p>
+      )}
+      <ErrorNote error={rotate.error} />
+    </div>
+  );
+}
+
+/** 승인자 서명 키 — 개인 서명 승인의 공개키(지문·보관 위치). X.509 인증서가 아님을 밝힌다 */
+function ApproverKeys() {
+  const q = useApi<{ items: { userId: string; kid: string; status: string; createdAt: string; fingerprint: string; source: string }[] }>('approverKeys');
+  const C = CT.keys.approverCol;
+  const rows = q.data?.items ?? [];
+  return (
+    <Panel title={CT.keys.approverKeys} codes="D06-10 · D-RD-5" id="sec-approver-keys">
+      <p className="ds-field__hint">{CT.keys.noX509}</p>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} rows={3}>
+        <DataTable
+          caption={CT.keys.approverKeys}
+          rows={rows}
+          rowKey={(r) => r.kid}
+          columns={[
+            { key: 'u', header: C.user, cell: (r) => <span title={r.userId}>{personLabel(r.userId)}</span> },
+            { key: 'f', header: C.fp, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.fingerprint.slice(0, 16)}</span> },
+            { key: 's', header: C.source, cell: (r) => CT.keys.approverSource[r.source] ?? r.source },
+            { key: 'st', header: C.status, cell: (r) => <KeyStatus status={r.status === 'ACTIVE' ? 'ACTIVE' : 'RETIRED'} /> },
+            { key: 'a', header: C.at, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{t19(r.createdAt)}</span> },
+          ]}
+        />
+      </AsyncView>
+    </Panel>
+  );
+}
+
 export function SecurityScreen() {
   const keys = useApi<{ items: { keyId: string; alg: string; purpose: string; epoch: number; status: string; createdAt: string; notAfter: string; fingerprint: string }[] }>('pkiKeys');
   const hsm = useApi<Record<string, unknown>>('hsmStatus');
@@ -196,6 +269,7 @@ export function SecurityScreen() {
         })()}
       />
       <Panel title={S.keys} id="sec-keys">
+        <KeyRotate />
         <AsyncView state={asyncState(keys, rows.length === 0)} error={keys.error} onRetry={() => keys.refetch()}>
           <DataTable
             caption={S.keys}
@@ -203,9 +277,9 @@ export function SecurityScreen() {
             rowKey={(r) => r.keyId}
             columns={[
               { key: 'k', header: C.kid, cell: (r) => <span className="ds-mono">{r.keyId}</span> },
-              { key: 'p', header: C.purpose, cell: (r) => <span className="ds-tag">{r.purpose}</span> },
+              { key: 'p', header: C.purpose, cell: (r) => <span className="ds-tag" title={r.purpose}>{CT.keys.purposeName[r.purpose] ?? r.purpose}</span> },
               { key: 'a', header: C.alg, cell: (r) => <span className="ds-mono">{r.alg}</span> },
-              { key: 's', header: C.status, cell: (r) => <VerdictBadge value={r.status === 'ACTIVE' ? 'PASS' : 'UNJUDGED'} /> },
+              { key: 's', header: C.status, cell: (r) => <KeyStatus status={r.status} /> },
               { key: 'f', header: C.from, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{t19(r.createdAt)}</span> },
               { key: 'u', header: C.until, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{t19(r.notAfter)}</span> },
               { key: 'fp', header: C.fp, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.fingerprint}</span> },
@@ -216,7 +290,7 @@ export function SecurityScreen() {
       <div className="ds-split">
         <Panel title={S.hsm} id="sec-hsm" actions={<EpochBump />}>
           <AsyncView state={asyncState(hsm)} error={hsm.error} onRetry={() => hsm.refetch()}>
-            <KeyValue rows={Object.entries(hsm.data ?? {}).map(([k, v]) => ({ k: <span className="ds-mono">{k}</span>, v: <span className="ds-mono">{String(v)}</span> }))} />
+            <KeyValue rows={Object.entries(hsm.data ?? {}).map(([k, v]) => ({ k: <span title={k}>{CT.keys.hsm[k] ?? k}</span>, v: <span className="ds-mono">{String(v)}</span> }))} />
           </AsyncView>
         </Panel>
         <Panel title={S.vuln} codes="D06-11" id="sec-vuln">
@@ -225,6 +299,7 @@ export function SecurityScreen() {
           </p>
         </Panel>
       </div>
+      <ApproverKeys />
       <SecurityEventsPanel />
       <SbomPanel />
       <VexPanel />
@@ -376,7 +451,7 @@ export function SettingsScreen() {
           </ul>
         </Panel>
       </div>
-      <Panel title={S.integrations} id="set-if" actions={<Link to="/integration/connectors">{ko.p10.integrations.title}</Link>}>
+      <Panel title={S.integrations} id="set-if" actions={<Link to="/integration/connectors">{p10.integrations.title}</Link>}>
         <AsyncView state={asyncState(sys)} error={sys.error} onRetry={() => sys.refetch()}>
           <DataTable
             caption={S.integrations}
@@ -386,7 +461,7 @@ export function SettingsScreen() {
               // IF 번호는 툴팁·설명 모드로(UX3-01) — 본문은 연계 이름
               {
                 key: 'n',
-                header: ko.p10.integrations.col.name,
+                header: p10.integrations.col.name,
                 cell: (r) => (
                   <>
                     <span title={r.ifId}>{r.name}</span>
@@ -395,7 +470,7 @@ export function SettingsScreen() {
                 ),
                 sort: (r) => r.ifId,
               },
-              { key: 'm', header: ko.p10.integrations.col.mode, cell: (r) => ko.p10.integrations.modes[r.mode] ?? r.mode },
+              { key: 'm', header: p10.integrations.col.mode, cell: (r) => p10.integrations.modes[r.mode] ?? r.mode },
             ]}
           />
         </AsyncView>

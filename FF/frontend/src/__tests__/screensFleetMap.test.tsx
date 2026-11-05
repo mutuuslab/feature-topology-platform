@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { summarize, type FleetMapVehicle } from '@ff/contracts';
 import { AppProvider } from '../store';
 import { FleetMapScreen } from '../screens/ops/FleetMap';
@@ -67,13 +67,72 @@ const mount = (role: string, path = '/fleet/map') => {
           <Routes>
             <Route path="/fleet/map" element={<FleetMapScreen />} />
           </Routes>
+          <NavigationProbe />
         </AppProvider>
       </MemoryRouter>
     </QueryClientProvider>,
   );
 };
 
+function NavigationProbe() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return <><output data-testid="map-address">{location.search}</output><button onClick={() => navigate(-1)}>시험 주소 뒤로</button><button onClick={() => navigate(1)}>시험 주소 앞으로</button></>;
+}
+
 describe('전세계 차량 지도 화면', () => {
+  it('직접 연 Flag 주소의 렌즈·키·상품·원천을 첫 API 조회에 적용하고 고른 차량을 보존한다', async () => {
+    mount('operator', '/fleet/map?lens=activation&flagKey=care_00022_param&catalogId=CAT-00019&source=ALL&vin=KMH-NX4-0001');
+    expect(await screen.findByRole('radio', { name: '기능 활성' })).toBeChecked();
+    await waitFor(() => expect(screen.getByRole('combobox', { name: '플래그' })).toHaveValue('care_00022_param'));
+    expect(screen.getByRole('radio', { name: '시연 + 대상 차량(가중 표본)' })).toBeChecked();
+    await waitFor(() => {
+      const requests = calls.filter(c => c.url.startsWith('/api/fleet/map?')).map(c => new URL(c.url, 'https://example.test'));
+      expect(requests.some(u => u.searchParams.get('source') === 'FLEET' && u.searchParams.get('flagKey') === 'care_00022_param' && u.searchParams.get('catalogId') === 'CAT-00019')).toBe(true);
+      expect(requests.some(u => u.searchParams.get('source') === 'SYNTHETIC' && u.searchParams.get('catalogId') === 'CAT-00019')).toBe(true);
+    });
+    expect(await screen.findByTestId('fleet-map-detail')).toBeVisible();
+    expect(screen.getByTestId('map-address')).toHaveTextContent('vin=KMH-NX4-0001');
+  });
+
+  it('필터를 주소에 기록하고 뒤로·앞으로 가면 필터와 차량 선택이 함께 복원된다', async () => {
+    mount('operator', '/fleet/map?lens=activation&flagKey=care_00022_param&source=ALL&vin=KMH-NX4-0001');
+    await screen.findByTestId('fleet-map-detail');
+    fireEvent.click(screen.getByRole('radio', { name: '등록 차량', exact: true }));
+    fireEvent.change(screen.getByRole('combobox', { name: '플래그' }), { target: { value: '' } });
+    expect(screen.getByTestId('map-address').textContent).not.toContain('flagKey=');
+    fireEvent.click(screen.getByRole('button', { name: '시험 주소 뒤로' }));
+    expect(screen.getByRole('combobox', { name: '플래그' })).toHaveValue('care_00022_param');
+    fireEvent.click(screen.getByRole('button', { name: '시험 주소 뒤로' }));
+    expect(screen.getByRole('radio', { name: '시연 + 대상 차량(가중 표본)' })).toBeChecked();
+    expect(screen.getByTestId('map-address')).toHaveTextContent('vin=KMH-NX4-0001');
+    fireEvent.click(screen.getByRole('button', { name: '시험 주소 앞으로' }));
+    expect(screen.getByRole('radio', { name: '등록 차량', exact: true })).toBeChecked();
+    expect(screen.getByRole('combobox', { name: '플래그' })).toHaveValue('care_00022_param');
+  });
+
+  it('상품 필터 변경과 차량 닫기는 서로의 주소 값을 지우지 않는다', async () => {
+    mount('operator', '/fleet/map?catalogId=CAT-00019&vin=KMH-NX4-0001');
+    await screen.findByTestId('fleet-map-detail');
+    await waitFor(() => expect(screen.getByRole('combobox', { name: '상품' })).toHaveValue('CAT-00019'));
+    fireEvent.change(screen.getByRole('combobox', { name: '상품' }), { target: { value: '' } });
+    expect(screen.getByTestId('map-address').textContent).not.toContain('catalogId=');
+    expect(screen.getByTestId('map-address')).toHaveTextContent('vin=KMH-NX4-0001');
+    fireEvent.change(screen.getByRole('combobox', { name: '상품' }), { target: { value: 'CAT-00019' } });
+    fireEvent.click(screen.getByRole('button', { name: '닫기', exact: true }));
+    expect(screen.getByTestId('map-address')).toHaveTextContent('catalogId=CAT-00019');
+    expect(screen.getByTestId('map-address').textContent).not.toContain('vin=');
+  });
+
+  it('아직 차량에 배포되지 않아 선택 목록에 없는 Flag도 주소의 선택을 전체로 바꾸지 않는다', async () => {
+    mount('operator', '/fleet/map?lens=activation&flagKey=ivi_00027_voice');
+    await screen.findByRole('table', { name: '차량 목록' });
+    expect(screen.getByRole('combobox', { name: '플래그' })).toHaveValue('ivi_00027_voice');
+    expect(screen.getByRole('option', { name: /ivi_00027_voice · 조회 대상/ })).toBeInTheDocument();
+    expect(await screen.findByTestId('map-requested-flag')).toHaveTextContent('현재 차량 수신 키 목록에 없는 조회 대상');
+    expect(calls.some(c => c.url.includes('flagKey=ivi_00027_voice'))).toBe(true);
+  });
+
   it('지도를 그릴 수 없는 환경이면 안내하고, 표·범례·국가별 현황·개인정보 안내가 보인다', async () => {
     mount('operator');
     expect(await screen.findByText(/WebGL 없음/)).toBeTruthy();

@@ -1,7 +1,7 @@
 // Feature Registry·Gate·Lifecycle·BOM Baseline — 상세설계서 v0.81 업무 흐름(표 4)을 API로 끝까지 검증한다.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp, confirmSafety } from '../helpers';
+import { actor, bootApp, confirmSafety, signG7, withRef } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const AUTHOR2 = actor('park.author', 'FEATURE_AUTHOR');
@@ -52,6 +52,20 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
       expect(r.body.verified).toBe(true);
       expect(r.body.baseline.contentHash).toBe(GOLDEN_BL_00028);
     });
+
+    it('Feature DB 시드가 시드 Feature에 연결을 붙여도 기존 Baseline은 모두 verified — 확정 스냅샷은 그대로(하네스 리뷰 M5)', async () => {
+      const all = (await http().get('/api/baselines').expect(200)).body.items as { baselineId: string; featureId: string; version: string }[];
+      expect(all.length).toBeGreaterThan(30);
+      for (const b of all) {
+        const r = (await http().get(`/api/baselines/${b.baselineId}`).expect(200)).body;
+        expect(r.verified, b.baselineId).toBe(true);
+      }
+      // 연결된 시드 Feature(FEAT-00001)의 문서에는 연결이 붙었지만 그 버전의 확정 스냅샷에는 없다(확정 뒤 바꾸지 않음)
+      const linked = all.find((b) => b.featureId === 'FEAT-00001')!;
+      const doc = (await http().get(`/api/features/FEAT-00001/versions/${linked.version}`).expect(200)).body.feature;
+      expect(doc.featureRefs?.length).toBeGreaterThan(0);
+      expect((await http().get(`/api/baselines/${linked.baselineId}`).expect(200)).body.baseline.snapshot.featureRefs).toBeUndefined();
+    });
   });
 
   describe('신규 Feature: 등록 → G1~G3 → 정의 승인 → 자동 DEVELOPING', () => {
@@ -61,7 +75,7 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
       const r = await http()
         .post('/api/features')
         .set(AUTHOR)
-        .send({ name: '야간 보행자 경고', description: '야간 보행자 접근 시 HUD 경고', requirementIds: ['REQ-CARE-9001'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'B', upgVc: ['F111A114001'], controlPoints: ['Flag'] })
+        .send(withRef({ name: '야간 보행자 경고', description: '야간 보행자 접근 시 HUD 경고', requirementIds: ['REQ-CARE-9001'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'B', upgVc: ['F111A114001'], controlPoints: ['Flag'] }))
         .expect(201);
       id = r.body.featureId;
       expect(id).toMatch(/^FEAT-\d{5}$/);
@@ -74,7 +88,7 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
       const r = await http()
         .post('/api/features')
         .set(AUTHOR)
-        .send({ name: '전방 안전거리 3단계', description: 'x', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'x', asil: 'B' })
+        .send(withRef({ name: '전방 안전거리 3단계', description: 'x', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'x', asil: 'B' }))
         .expect(409);
       expect(r.body.error.details.similar.map((s: any) => s.featureId)).toContain('FEAT-00022');
     });
@@ -128,6 +142,7 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
     });
 
     it('G4~G7 PASS여도 Control Point 정책·구현 입력이 없으면 VERIFIED로 자동 전이하지 않는다', async () => {
+      await signG7(http, id, '0.1.0'); // G7 — SM·CSM 두 사람 서명(P3-3)
       for (const g of ['G4', 'G5', 'G6', 'G7']) await judge(id, '0.1.0', g).expect(201);
       const d = await http().get(`/api/features/${id}/versions/0.1.0`).expect(200);
       expect(d.body.feature.lifecycle).toBe('DEVELOPING');
@@ -153,10 +168,11 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
     });
 
     it('설명 변경 → 1.1.0 PROPOSED, 재판정 대상 G1, BOM 승인자 알림 이벤트', async () => {
+      // FEAT-00022는 시드 대응표에 없는 Feature(연결 없음) — 정의 승인에 대표 기준 행이 필요하므로(사용자 결정 2026-11-04) 새 Version에서 연결한다
       const r = await http()
         .post('/api/features/FEAT-00022/versions')
         .set(AUTHOR)
-        .send({ baseVersion: '1.0.0', bump: 'minor', reason: '위험 단계 안내 문구 명확화', changes: { description: '전방 차량과의 거리를 정상·주의·위험 3단계로 판정하고, 위험 단계에서 감속을 요청' } })
+        .send({ baseVersion: '1.0.0', bump: 'minor', reason: '위험 단계 안내 문구 명확화', changes: { description: '전방 차량과의 거리를 정상·주의·위험 3단계로 판정하고, 위험 단계에서 감속을 요청', featureRefs: [{ refId: 'AD-LON-009', role: 'PRIMARY' }] } })
         .expect(201);
       ver = r.body.feature.version;
       expect(ver).toBe('1.1.0');
@@ -189,7 +205,7 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
       const byId = Object.fromEntries(r.body.checklist.map((c: any) => [c.id, c]));
       expect(Object.keys(byId)).toEqual(['STATE', 'ATTRS', 'SCOPE', 'DEPENDENCY', 'IMPLEMENTATION', 'GATES', 'DIFF', 'PRODUCTS']);
       expect(r.body.checklist.filter((c: any) => c.state === 'FAIL')).toEqual([]);
-      expect(byId.DIFF.data.map((d: any) => d.field)).toEqual(['description', 'version']);
+      expect(byId.DIFF.data.map((d: any) => d.field)).toEqual(['description', 'featureRefs', 'version']);
       expect(byId.PRODUCTS.data).toEqual(['CAT-00013@1.1.0', 'CAT-00019@1.0.0']);
     });
 
@@ -209,6 +225,9 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
       expect(f.body.feature.baselineId).toBe(bl.baselineId);
       const got = await http().get(`/api/baselines/${bl.baselineId}`).expect(200);
       expect(got.body).toMatchObject({ verified: true, previous: { baselineId: 'BL-00028' } });
+      // 확정 스냅샷은 기준 기능 연결(연결 당시 발행 버전 refVersion 포함)을 담고 해시 입력이다(SNAPSHOT_EXCLUDE에 넣지 않음, 하네스 리뷰 M5)
+      expect(got.body.baseline.snapshot.featureRefs).toEqual([{ refId: 'AD-LON-009', role: 'PRIMARY', refVersion: 'v1.3' }]);
+      expect(got.body.diff.map((d: any) => d.field)).toContain('featureRefs');
       const ev = await http().get('/api/events?type=baseline.confirmed').expect(200);
       expect(ev.body.items.at(-1).payload.baselineId).toBe(bl.baselineId);
       await http().post('/api/baselines/requests').set(AUTHOR).send({ featureId: 'FEAT-00022', version: ver, reason: '재발급' }).expect(409);

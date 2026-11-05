@@ -4,7 +4,8 @@
 //   안전장치: 서명 위조 401, 같은 webhook 두 번 → 한 번만, 매핑 없는 외부 계정 거부, 바깥이 몰래 바뀌면 충돌 → 사람이 고름
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp, confirmSafety } from '../helpers';
+import { RefdbRepository } from '../../src/domains/d01-policy/refdb/refdb.repository';
+import { actor, bootApp, confirmSafety, nextRefId, signG7, withRef } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const JUDGE = actor('choi.judge', 'GATE_JUDGE');
@@ -15,8 +16,9 @@ const INTEGRATOR = actor('usr-integrator', 'IMPLEMENTER');
 describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
   let app: INestApplication;
   let http: () => any;
+  let get: <T>(t: any) => T;
   beforeAll(async () => {
-    ({ app, http } = await bootApp({ at: '2026-10-12T01:00:00.000Z' }));
+    ({ app, http, get } = await bootApp({ at: '2026-10-12T01:00:00.000Z' }));
   });
   afterAll(() => app.close());
 
@@ -53,6 +55,35 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     expect(audit.some((a: any) => a.action === 'FEATURE_TRANSITION RELEASED→DEPRECATED' && a.actorId === 'usr-coordinator')).toBe(true);
     // 메아리: 플랫폼 거울 쓰기는 상태가 같아 댓글만
     expect((await mockItem('jira', epic.key)).status).toBe('Deprecated');
+  });
+
+  it.each(['jira', 'codebeamer'])('%s 의견은 공유 원장에 저장되고 webhook·수신함을 거치며 상태·G2를 바꾸지 않는다', async (system) => {
+    const beforeTrace = await trace('FEAT-00001', '2.1.0');
+    const linked = system === 'jira' ? beforeTrace.epic : beforeTrace.requirements[0];
+    const before = await mockItem(system, linked.key);
+    const externalUser = system === 'jira' ? 'choi.quality' : 'seo.safety';
+    const comment = `${system} 요구 추적 검토 완료`;
+    const response = (await act(system, { key: linked.key, action: 'COMMENT', comment: `  ${comment}  `, externalUser })).body;
+    expect(response.item.comments.at(-1)).toMatchObject({ by: externalUser, text: comment });
+    expect(response.item).toMatchObject({ status: before.status, title: before.title, body: before.body, revision: before.revision + 1 });
+    expect(response.result).toMatchObject({ key: linked.key, externalUser, outcome: 'IGNORED', duplicate: false });
+    const persisted = await mockItem(system, linked.key);
+    expect(persisted.comments).toEqual(response.item.comments);
+    const afterTrace = await trace('FEAT-00001', '2.1.0');
+    expect(afterTrace.lifecycle).toBe(beforeTrace.lifecycle);
+    expect(afterTrace.stale).toEqual(beforeTrace.stale);
+    expect(system === 'jira' ? afterTrace.epic.revision : afterTrace.requirements.find((r: any) => r.key === linked.key).revision).toBe(system === 'jira' ? Date.parse(persisted.updatedAt) : persisted.revision);
+    const inbox = (await http().get('/api/integrations/sync/inbox').expect(200)).body.items;
+    expect(inbox.some((r: any) => r.deliveryId === response.result.deliveryId && r.key === linked.key)).toBe(true);
+  });
+
+  it('비어 있거나 초과·혼합·알 수 없는 의견 요청은 원장과 개정 번호를 바꾸기 전에 거부한다', async () => {
+    const key = (await epicOf('FEAT-00001', '2.1.0')).key;
+    const before = await mockItem('jira', key);
+    for (const body of [{}, { comment: '' }, { comment: '   ' }, { comment: 'x'.repeat(2001) }, { comment: '의견', status: 'Approved' }, { comment: '의견', unknown: true }]) {
+      await http().post('/api/integrations/mock/jira/act').set(AUTHOR).send({ key, action: 'COMMENT', externalUser: 'kim.author', ...body }).expect(400);
+      expect(await mockItem('jira', key)).toEqual(before);
+    }
   });
 
   it('JIRA → 플랫폼 거부: 권한 없는 사람·게이트 미충족이면 Epic을 되돌리고 사유를 댓글로', async () => {
@@ -129,7 +160,7 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     it('Feature 등록 → 요구 ID를 codeBeamer에서 찾아 연결, 없는 ID는 실패로 남는다(요구 존재 확인)', async () => {
       const known = (await trace('FEAT-00022', '1.0.0')).requirements[0];
       reqKey = known.key;
-      const f = await http().post('/api/features').set(AUTHOR).send({ name: '연계 시험 Feature', description: 'CR', requirementIds: [known.extra.reqId, 'REQ-EXT-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] }).expect(201);
+      const f = await http().post('/api/features').set(AUTHOR).send(withRef({ name: '연계 시험 Feature', description: 'CR', requirementIds: [known.extra.reqId, 'REQ-EXT-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] })).expect(201);
       fid = f.body.featureId;
       await drain();
       const t = await trace(fid, '0.1.0');
@@ -145,6 +176,7 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
       await confirmSafety(http, fid, '0.1.0');
       for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await http().post(`/api/features/${fid}/versions/0.1.0/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);
+      await signG7(http, fid, '0.1.0'); // G7 — SM·CSM 두 사람 서명(P3-3)
       for (const g of ['G4', 'G5', 'G6', 'G7']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await drain();
       expect((await epicOf(fid, '0.1.0')).status).toBe('In Progress');
@@ -222,15 +254,25 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
 
   // 사용자 결정(2026-10-23): Lifecycle은 플랫폼·JIRA 양쪽에서 관리하고, JIRA에서 Epic을 만들면 Feature를 자동으로 만든다.
   describe('JIRA Epic 생성 → PROPOSED Feature 자동 등록', () => {
-    const SCOPE = { country: 'KR', vehicleModel: 'NE1', trim: 'Prestige', asil: 'B', ownerId: '주행보조개발팀' };
+    // 범위 + 기준 기능 ID(30-95 §7) — 만들 때마다 다른 대표 기준 행(같은 범위 같은 대표 행은 JIRA에서 확인할 수 없어 거부된다)
+    const BASE = { country: 'KR', vehicleModel: 'NE1', trim: 'Prestige', asil: 'B', ownerId: '주행보조개발팀' };
+    const scope = (refIds: string[] = [nextRefId('B')]) => ({ ...BASE, refIds });
     const createEpic = async (body: Record<string, unknown>) => (await http().post('/api/integrations/mock/jira/items').set(AUTHOR).send({ kind: 'EPIC', ...body }).expect(201)).body;
     const featuresNamed = async (name: string) => (await http().get(`/api/features?q=${encodeURIComponent(name)}`).expect(200)).body.items.filter((x: any) => x.name === name);
 
     it('작성 권한이 있는 사람이 범위(국가·차종·트림·ASIL·담당 조직)를 채워 Epic을 만들면 PROPOSED 0.1.0이 등록되고 Epic과 연결된다', async () => {
-      const r = await createEpic({ title: '차선 변경 보조 고속도로 확장', body: '고속도로 진출입로까지 차선 변경 보조 확장', externalUser: 'kim.author', scope: SCOPE });
+      const primary = nextRefId('B');
+      const included = nextRefId('B');
+      const r = await createEpic({ title: '차선 변경 보조 고속도로 확장', body: '고속도로 진출입로까지 차선 변경 보조 확장', externalUser: 'kim.author', scope: scope([primary, included]) });
       expect(r.result).toMatchObject({ outcome: 'APPLIED', summary: expect.stringMatching(/FEAT-\d{5}@0\.1\.0 자동 등록/) });
       const [f] = await featuresNamed('차선 변경 보조 고속도로 확장');
       expect(f).toMatchObject({ version: '0.1.0', lifecycle: 'PROPOSED', country: 'KR', vehicleModel: 'NE1', trim: 'Prestige', asil: 'B', ownerId: '주행보조개발팀' });
+      // 모의 Epic 본문의 기준 기능 필드(첫 값이 대표)로 연결된다 — 라벨 폴백은 모의·데모에서만(실제 연결은 필드만, 80-50 §4)
+      const detail = (await http().get(`/api/features/${f.featureId}/versions/0.1.0`).expect(200)).body.feature;
+      expect(detail.featureRefs).toEqual([
+        { refId: primary, role: 'PRIMARY', refVersion: 'v1.3' },
+        { refId: included, role: 'INCLUDED', refVersion: 'v1.3' },
+      ]);
       await drain();
       const t = await trace(f.featureId, '0.1.0');
       expect(t.epic).toMatchObject({ key: r.item.key, status: 'Proposed', syncState: 'SYNCED' });
@@ -251,31 +293,73 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
       await drain();
       const it = await mockItem('jira', r.item.key);
       expect(it.comments.at(-1)).toMatchObject({ by: 'feature-platform', text: expect.stringMatching(/트림.*ASIL.*담당 조직/) });
-      const fixed = (await act('jira', { key: r.item.key, action: 'EDIT', externalUser: 'kim.author', scope: { trim: 'Exclusive', asil: 'QM', ownerId: '주차개발팀' } })).body;
+      const fixed = (await act('jira', { key: r.item.key, action: 'EDIT', externalUser: 'kim.author', scope: { trim: 'Exclusive', asil: 'QM', ownerId: '주차개발팀', refIds: [nextRefId('QM')] } })).body;
       expect(fixed.result).toMatchObject({ outcome: 'APPLIED' });
       const [f] = await featuresNamed('주차 경로 기억 확장');
       expect(f).toMatchObject({ lifecycle: 'PROPOSED', trim: 'Exclusive', asil: 'QM' });
     });
 
     it('작성 권한이 없거나 매핑되지 않은 계정의 Epic으로는 Feature를 만들지 않는다', async () => {
-      const byApprover = await createEpic({ title: '승인자가 만든 Epic', externalUser: 'lee.approver', scope: SCOPE });
+      const byApprover = await createEpic({ title: '승인자가 만든 Epic', externalUser: 'lee.approver', scope: scope() });
       expect(byApprover.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('권한') });
-      const byStranger = await createEpic({ title: '외부인이 만든 Epic', externalUser: 'stranger', scope: SCOPE });
+      const byStranger = await createEpic({ title: '외부인이 만든 Epic', externalUser: 'stranger', scope: scope() });
       expect(byStranger.result.outcome).toBe('UNMAPPED');
       expect(await featuresNamed('승인자가 만든 Epic')).toHaveLength(0);
       expect(await featuresNamed('외부인이 만든 Epic')).toHaveLength(0);
     });
 
     it('같은 범위에 이름이 비슷한 Feature가 있으면 새로 만들지 않고 기존 Feature를 댓글로 알려 준다', async () => {
-      const first = await createEpic({ title: '야간 보행자 경고', externalUser: 'kim.author', scope: SCOPE });
+      const first = await createEpic({ title: '야간 보행자 경고', externalUser: 'kim.author', scope: scope() });
       expect(first.result.outcome).toBe('APPLIED');
-      const r = await createEpic({ title: '야간 보행자 경고', externalUser: 'kim.author', scope: SCOPE });
+      const r = await createEpic({ title: '야간 보행자 경고', externalUser: 'kim.author', scope: scope() });
       expect(r.result, JSON.stringify(r.result)).toMatchObject({ outcome: 'REJECTED', summary: expect.stringMatching(/FEAT-\d{5}/) });
       expect(await featuresNamed('야간 보행자 경고')).toHaveLength(1);
     });
 
+    // 30-95 §7 — 기준 기능 ID 없음·없는 ID·폐기 행은 거부(REJECTED + 댓글), 요청 중 행은 JIRA에서 만들 수 없다
+    const HINT = 'Feature DB 기준 기능을 골라 주세요';
+    const lastComment = async (key: string) => {
+      await drain();
+      return (await mockItem('jira', key)).comments.at(-1);
+    };
+
+    it('기준 기능 ID(FF 앱 필드, 모의는 라벨도)가 없으면 등록하지 않고 FF 패널에서 고르라는 댓글 — 넣으면 그때 등록한다', async () => {
+      const r = await createEpic({ title: '후측방 경고 확장', externalUser: 'kim.author', scope: BASE });
+      expect(r.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining(HINT) });
+      expect(await featuresNamed('후측방 경고 확장')).toHaveLength(0);
+      expect(await lastComment(r.item.key)).toMatchObject({ by: 'feature-platform', text: expect.stringContaining(HINT) });
+      const fixed = (await act('jira', { key: r.item.key, action: 'EDIT', externalUser: 'kim.author', scope: { refIds: [nextRefId('B')] } })).body;
+      expect(fixed.result).toMatchObject({ outcome: 'APPLIED' });
+      expect(await featuresNamed('후측방 경고 확장')).toHaveLength(1);
+    });
+
+    it('Feature DB에 없는 기준 기능 ID·폐기(RETIRED) 행이면 등록하지 않고 댓글로 알린다', async () => {
+      const unknown = await createEpic({ title: '없는 기준 행 Epic', externalUser: 'kim.author', scope: scope(['CH-BRK-999']) });
+      expect(unknown.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringMatching(/CH-BRK-999.*Feature DB에 없|Feature DB에 없.*CH-BRK-999/) });
+      expect(await lastComment(unknown.item.key)).toMatchObject({ text: expect.stringContaining(HINT) });
+      const repo = get<RefdbRepository>(RefdbRepository);
+      const retiredId = nextRefId('B');
+      repo.updateRef({ ...repo.getRef(retiredId)!, status: 'RETIRED' }, '2026-10-12T01:00:00.000Z');
+      const retired = await createEpic({ title: '폐기 행 Epic', externalUser: 'kim.author', scope: scope([retiredId]) });
+      expect(retired.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('폐기') });
+      expect(await lastComment(retired.item.key)).toMatchObject({ text: expect.stringContaining(HINT) });
+      expect(await featuresNamed('없는 기준 행 Epic')).toHaveLength(0);
+      expect(await featuresNamed('폐기 행 Epic')).toHaveLength(0);
+    });
+
+    it('요청 중(PENDING) 기준 행은 JIRA에서 연결해 등록할 수 없다 — 사람이 등록 화면에서', async () => {
+      const req = await http()
+        .post('/api/refdb/requests')
+        .set(AUTHOR)
+        .send({ domain: 'Chassis & Vehicle Dynamics', component: 'BRK', nameEn: 'Hill descent assist plus', nameKo: '경사로 저속 주행 보조 확장', tshirt: 'S', asilRep: 'B', basisNote: '사내 기획서' })
+        .expect(201);
+      const r = await createEpic({ title: '요청 중 행 Epic', externalUser: 'kim.author', scope: scope([req.body.ref.refId]) });
+      expect(r.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('요청 중') });
+      expect(await featuresNamed('요청 중 행 Epic')).toHaveLength(0);
+    });
+
     it('본문에 FEAT-xxxxx@버전이 있으면 새로 만들지 않고 그 Feature에 연결한다', async () => {
-      const r = await createEpic({ title: '기존 Feature 추적용 Epic', body: '대상 FEAT-00013@0.3.0', externalUser: 'kim.author', scope: SCOPE });
+      const r = await createEpic({ title: '기존 Feature 추적용 Epic', body: '대상 FEAT-00013@0.3.0', externalUser: 'kim.author', scope: scope() });
       expect(r.result.outcome).not.toBe('REJECTED');
       expect(await featuresNamed('기존 Feature 추적용 Epic')).toHaveLength(0);
       const t = await trace('FEAT-00013', '0.3.0');

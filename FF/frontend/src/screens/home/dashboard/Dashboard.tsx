@@ -30,6 +30,7 @@ const BODIES: Record<BodyModule, LazyExoticComponent<ComponentType<GadgetBodyPro
 const GadgetConfigForm = lazy(() => import('./GadgetConfig'));
 const Directory = lazy(() => import('./Directory'));
 const DashboardDialog = lazy(() => import('./DashboardDialogs'));
+const OperationOverview = lazy(() => import('./ReadOnlyOperationOverview'));
 
 export interface GadgetBodyProps {
   gadget: Gadget;
@@ -204,7 +205,7 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
   };
 
   const refreshAll = () => {
-    void refreshApis(Object.values(board.gadgets).flatMap((g) => typeDef(g.type)?.apis(g.config) ?? []));
+    void refreshApis([...Object.values(board.gadgets).flatMap((g) => typeDef(g.type)?.apis(g.config) ?? []), 'fleetRuntime', 'vehicles', 'listPolicies', 'listFeatures', 'publications', 'readbacks', 'integrationCalls']);
     setRefreshedAt(Date.now());
   };
 
@@ -336,6 +337,7 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
         meta={<DashboardMeta api={api} />}
         actions={!editing ? <HeaderActions api={api} minutes={minutes} onRefresh={refreshAll} onEdit={() => void startEdit()} onDialog={setDialog} editBtn={editBtn} /> : undefined}
       />
+      {!editing && !maxedGadget && <Suspense fallback={<div className="ds-skel" data-state="loading" aria-busy="true"><span /></div>}><OperationOverview role={role} /></Suspense>}
       {editing && (
         <div className="jd-editbar" role="region" aria-labelledby="jd-editbar-h">
           <h2 id="jd-editbar-h" ref={editHead} tabIndex={-1}>

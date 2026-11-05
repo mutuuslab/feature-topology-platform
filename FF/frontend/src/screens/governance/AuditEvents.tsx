@@ -1,29 +1,48 @@
 // /audit — 감사 이력(D01-10) · /events — Platform 이벤트(D04-04, SSE 실시간) (v2)
-import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+// 감사 화면 보강(W5 P5-6·P5-10): 대상 앞부분 검색(targetPrefix, ?prefix=)·행위 필터(action)·행위 한글 이름·전후 값,
+// 해시 체인 카드(상태·검증한 기록·마지막 검증 시각·DB 밖 고정점·다시 검증). 헤드라인은 체인 판정이 먼저, 실패 기록 수는 상태 표시로.
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { usePlatformLiveEvents, type PlatformEvent } from '../../api/stream';
 import { ApiError, call, STATIC_MODE } from '../../api/client';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { AUDIT_ACTION_KO, auditPlus as AP } from '../../copy/audit';
 import { lists as L } from '../../copy/lists';
-import { AsyncView, Button, ChainStatus, DataTable, ErrorNote, EventStream, PageHeader, Panel, RuleText, Segmented, Toolbar, VerdictBadge, type StreamItem } from '../../design';
-import { ComponentName, when } from '../shared';
+import { AsyncView, Button, ChainStatus, DataTable, ErrorNote, EventStream, KeyValue, PageHeader, Panel, RuleText, Segmented, Select, Toolbar, VerdictBadge, type StreamItem } from '../../design';
+import { ComponentName, ProcedureText, when } from '../shared';
 import { AuditLog } from './AuditLog';
 import type { AuditEntry } from '../types';
 
 const RESULTS = ['ALLOWED', 'DENIED', 'FAILED'] as const;
 
 
+/** 행위 필터 선택지 — 한글 이름 순 */
+const ACTION_OPTIONS = Object.entries(AUDIT_ACTION_KO).sort((a, b) => a[1].localeCompare(b[1], 'ko'));
+
+interface ChainReportView {
+  ok: boolean;
+  verified: number;
+  head: string | null;
+  broken: { id: number; kind: string } | null;
+  anchors?: { configured: boolean; checked: number; lastAt: string | null };
+  checkedAt?: string;
+}
+
 export function AuditScreen() {
+  const [sp] = useSearchParams();
   const [result, setResult] = useState<'' | 'ALLOWED' | 'DENIED' | 'FAILED'>('');
-  const [target, setTarget] = useState('');
-  const [applied, setApplied] = useState('');
-  const query = { result: result || undefined, target: applied || undefined, limit: 500 };
+  // 앞부분 검색 — CR-2026이면 CR-2026-006 …이 모두 걸린다(정확한 대상만 찾던 것, P5-6). 변경 요청 감사 패널이 ?prefix=로 연다
+  const [target, setTarget] = useState(() => sp.get('prefix') ?? '');
+  const [applied, setApplied] = useState(() => sp.get('prefix') ?? '');
+  const [action, setAction] = useState('');
+  const query = { result: result || undefined, targetPrefix: applied || undefined, action: action || undefined, limit: 500 };
   const q = useApi<{ items: AuditEntry[]; nextCursor?: string | null }>('audit', { query });
   // 더 불러오기(커서, RD-UX-03) — 첫 쪽은 위 조회(정적 데모 스냅샷과 같은 주소), 다음 쪽부터 덧붙인다. 조건이 바뀌면 처음부터
   const [more, setMore] = useState<{ items: AuditEntry[]; cursor: string | null; key: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [moreError, setMoreError] = useState<ApiError | null>(null);
-  const qKey = `${result}|${applied}|${q.dataUpdatedAt}`;
+  const qKey = `${result}|${applied}|${action}|${q.dataUpdatedAt}`;
   const extra = more?.key === qKey ? more : null;
   const rows = [...(q.data?.items ?? []), ...(extra?.items ?? [])];
   const nextCursor = extra ? extra.cursor : (q.data?.nextCursor ?? null);
@@ -36,17 +55,19 @@ export function AuditScreen() {
       .catch((e: ApiError) => setMoreError(e))
       .finally(() => setLoading(false));
   };
-  const chain = useApi<{ ok: boolean; verified: number; head: string | null; broken: { id: number; kind: string } | null }>('auditChain');
+  const chain = useApi<ChainReportView>('auditChain');
   const c = chain.data;
-  // 체인이 정상이어도 표에 FAILED가 보이면 초록 한 줄만 두지 않는다(헤드라인·데이터 모순, 하네스 2판 결함 4)
+  // 체인이 정상이어도 표에 FAILED가 보이면 초록 한 줄만 두지 않는다(헤드라인·데이터 모순, 하네스 2판 결함 4) —
+  // 단 다른 업무의 실패 수가 체인 판정보다 앞서지 않게 큰 숫자는 검증한 기록 수, 실패는 상태 표시(P5-10)
   const failed = rows.filter((r) => r.result === 'FAILED').length;
+  const checkedAt = useMemo(() => c?.checkedAt ?? (chain.dataUpdatedAt ? new Date(chain.dataUpdatedAt).toISOString() : null), [c?.checkedAt, chain.dataUpdatedAt]);
   return (
     <div className="ds-screen">
       <PageHeader
         codes="D01-10 · AUDIT"
         title={ko.audit.title}
         lead={ko.audit.lead}
-        message={!c ? { tone: 'neutral', value: '—', text: ko.audit.key.checking } : !c.ok ? { tone: 'danger', text: ko.audit.key.broken } : failed ? { tone: 'warn', value: failed, text: ko.audit.key.okFailed(failed) } : { tone: 'ok', text: ko.audit.key.ok(c.verified) }}
+        message={!c ? { tone: 'neutral', value: '—', text: ko.audit.key.checking } : !c.ok ? { tone: 'danger', text: ko.audit.key.broken } : failed ? { tone: 'warn', text: AP.keyOk(c.verified), status: { label: AP.failedPill(failed), tone: 'warn' } } : { tone: 'ok', text: ko.audit.key.ok(c.verified) }}
         tour="audit-chain"
       />
       {c?.broken && (
@@ -54,12 +75,13 @@ export function AuditScreen() {
           {ko.audit.chainBroken(c.broken.id, c.broken.kind)}
         </p>
       )}
+      <ChainCard c={c} checkedAt={checkedAt} busy={chain.isFetching} onRecheck={() => chain.refetch()} />
       <Toolbar label={ko.audit.title}>
         <input
           className="ds-input ds-input--mono"
           type="search"
-          aria-label={ko.audit.col.target}
-          placeholder="FEAT-00022@1.0.0"
+          aria-label={AP.searchLabel}
+          placeholder={AP.searchPlaceholder}
           value={target}
           onChange={(e) => setTarget(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && setApplied(target.trim())}
@@ -71,8 +93,16 @@ export function AuditScreen() {
           onChange={(v) => setResult(v as typeof result)}
           options={[{ value: '', label: ko.page.all }, ...RESULTS.map((r) => ({ value: r, label: ko.audit.results[r] }))]}
         />
+        <Select label={AP.actionLabel} value={action} onChange={(e) => setAction(e.target.value)}>
+          <option value="">{AP.actionAll}</option>
+          {ACTION_OPTIONS.map(([k, v]) => (
+            <option key={k} value={k}>
+              {v}
+            </option>
+          ))}
+        </Select>
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} filtered={!!(applied || result)}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} filtered={!!(applied || result || action)}>
         <AuditLog rows={rows} />
         <ErrorNote error={moreError} />
         {nextCursor && (
@@ -88,14 +118,23 @@ export function AuditScreen() {
   );
 }
 
-interface PlatformEvent {
-  seq: number;
-  id: string;
-  type: string;
-  at: string;
-  aggregate: string;
-  componentId: string | null;
-  payload: unknown;
+/** 해시 체인 카드 — 판정·검증한 기록·마지막 검증 시각·DB 밖 고정점(설정 여부), 다시 검증(P5-10) */
+function ChainCard({ c, checkedAt, busy, onRecheck }: { c: ChainReportView | undefined; checkedAt: string | null; busy: boolean; onRecheck: () => void }) {
+  const H = AP.chain;
+  if (!c) return null;
+  const a = c.anchors;
+  return (
+    <Panel title={H.title} id="audit-chain" actions={<Button onClick={onRecheck} disabled={busy}>{busy ? H.checking : H.recheck}</Button>}>
+      <KeyValue
+        rows={[
+          { k: H.state, v: <span data-chain-ok={c.ok ? 'true' : 'false'}>{c.ok ? H.ok : H.broken}</span> },
+          { k: H.verified, v: <span className="ds-mono">{c.verified.toLocaleString('ko-KR')}</span> },
+          { k: H.checkedAt, v: <span data-chain-checked>{when(checkedAt)}</span> },
+          { k: H.anchor, v: <span data-anchor={a?.configured ? 'on' : 'off'}>{a?.configured ? H.anchorOn(a.checked, when(a.lastAt)) : H.anchorOff}</span> },
+        ]}
+      />
+    </Panel>
+  );
 }
 
 const summarize = (p: unknown) => {
@@ -105,28 +144,16 @@ const summarize = (p: unknown) => {
   if (o.status) return String(o.status);
   if (o.verdict) return String(o.verdict);
   if (o.baselineId) return String(o.baselineId);
+  // 업무 절차 활동 기록은 이름을 보인다(식별자는 ProcedureText가 툴팁으로)
+  if (typeof o.activityName === 'string') return o.activityName;
   // 알려진 필드가 없어도 빈 칸으로 두지 않는다 — 앞의 두 값을 보인다
   const kv = Object.entries(o).filter(([, v]) => v != null && typeof v !== 'object').slice(0, 2);
   return kv.length ? kv.map(([k, v]) => `${k}: ${String(v)}`).join(' · ') : '—';
 };
 
 export function EventsScreen() {
-  const qc = useQueryClient();
-  const q = useApi<{ items: PlatformEvent[] }>('events', { query: { limit: 500 } });
-  const [live, setLive] = useState<PlatformEvent[]>([]);
-  const [sse, setSse] = useState<'static' | 'connecting' | 'open' | 'error'>(STATIC_MODE ? 'static' : 'connecting');
-  useEffect(() => {
-    if (STATIC_MODE || typeof EventSource === 'undefined') return setSse('static');
-    const es = new EventSource('/api/events/stream');
-    es.onopen = () => setSse('open');
-    es.onerror = () => setSse('error');
-    es.addEventListener('platform', (m) => {
-      const e = JSON.parse((m as MessageEvent).data) as PlatformEvent;
-      setLive((xs) => [...xs, e].slice(-200));
-      void qc.invalidateQueries({ queryKey: ['events'] });
-    });
-    return () => es.close();
-  }, [qc]);
+  const q = useApi<{ items: PlatformEvent[] }>('events', { query: { limit: 500, recent: '1' } });
+  const { items: live, status: sse } = usePlatformLiveEvents([''], ['events'], 200);
   const rows = q.data?.items ?? [];
   const stream: StreamItem[] = live.map((e) => ({ seq: e.seq, at: e.at, type: e.type, aggregate: e.aggregate, summary: summarize(e.payload) }));
   return (
@@ -145,9 +172,9 @@ export function EventsScreen() {
               { key: 'seq', header: '#', cell: (r) => <span className="ds-mono">{r.seq}</span>, sort: (r) => r.seq, align: 'right' },
               { key: 'at', header: ko.audit.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
               { key: 'type', header: 'Type', cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--accent)' }}>{r.type}</span>, sort: (r) => r.type },
-              { key: 'agg', header: ko.audit.col.target, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{r.aggregate}</span> },
+              { key: 'agg', header: ko.audit.col.target, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}><ProcedureText text={r.aggregate} /></span> },
               { key: 'c', header: 'Component', cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.componentId ? <ComponentName id={r.componentId} /> : '—'}</span> },
-              { key: 'p', header: ko.events.content, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{summarize(r.payload)}</span> },
+              { key: 'p', header: ko.events.content, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}><ProcedureText text={summarize(r.payload)} /></span> },
             ]}
           />
         </AsyncView>

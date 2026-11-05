@@ -213,7 +213,8 @@ function OpinionForm({ c }: { c: ConsultView }) {
         data-ui="answerConsultation"
         disabled={!!why || answer.isPending}
         reason={why}
-        onClick={() => answer.mutate({ params: { id: c.consultId }, body: { department, opinion, memo: memo.trim() } }, { onSuccess: () => (setSent(true), setMemo('')) })}
+        // 공유 포털 조회 계정은 검토 역할로 기록한다. 구매 겸직을 추가해도 협의 의견이 산정 역할로 남지 않게 한다.
+        onClick={() => answer.mutate({ params: { id: c.consultId }, actorRole: role === 'viewer' ? 'AUDITOR' : undefined, body: { department, opinion, memo: memo.trim() } }, { onSuccess: () => (setSent(true), setMemo('')) })}
       >
         {F.submit}
       </Button>

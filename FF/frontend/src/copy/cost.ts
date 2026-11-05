@@ -202,3 +202,22 @@ export const costBasis = {
   diff: (a: string, b: string) => `${b} → ${a} 바뀐 값`,
   noDiff: '앞 버전과 같은 값입니다',
 };
+
+export const costCalib = {
+  title: (v: string) => `포인트당 € 교정 제안 · ${v}`,
+  applied: '지금 적용(€/포인트)', suggestion: '제안값(€/포인트)', samples: '교정 표본',
+  hint: '벤치마크 금액을 포인트와 ASIL 계수로 나눈 값의 기하평균입니다. 제안 채택은 새 계수 표 초안을 만든 뒤 발행할 때만 적용됩니다.',
+  draft: '제안값으로 초안', mreTitle: '승인 과제 실적 오차(MRE)', mreAvg: '평균 MRE', mreRows: '실적 있는 기준 행', mreProjects: '실적 있는 과제',
+  mreNone: '승인된 과제에 실적 공수가 아직 없습니다.', byComponent: '컴포넌트별 오차', rowsTitle: '기준 행별 실적', samplesTitle: '교정 표본',
+  mreMissing: '실적 없는 기준 행', approvedProjects: '전체 승인 과제', missingHint: '0이거나 없는 실적은 오차 평균에서 제외합니다.',
+  kind: { single: '단일', bundle: '번들' } as Record<string, string>,
+  cols: { component: '컴포넌트', n: '건수', mre: 'MRE', project: '과제', ref: '기준 행', e: '기대 공수(M/M)', actual: '실적(M/M)', kind: '종류', sample: '표본', eur: '벤치마크', pts: '포인트×ASIL', perPt: '€/포인트' },
+};
+
+export const costActual = {
+  enter: '실적 입력',
+  col: '기준 행 실적(M/M)', title: (refId: string) => `${refId} 실적 공수`, field: '실적 공수(M/M)',
+  hint: '같은 기준 행을 참조하는 줄들의 실적 합계입니다. 승인 결과는 그대로 두고 기록하며, 개정하면 첫 줄 입력으로 옮깁니다. 후속 기록을 지우면 승인 당시 실적을 다시 표시합니다.',
+  save: '저장', clear: '승인 후 기록 지우기', mre: '실적 대비 오차(MRE)', mreAvg: '평균 MRE', mreRows: '실적 있는 기준 행',
+  expected: '기대 공수(M/M)', ref: '기준 행',
+};

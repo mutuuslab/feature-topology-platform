@@ -780,6 +780,10 @@ details.ds-panel[open] {
   gap: var(--sp-4);
   flex-wrap: wrap;
 }
+.ds-page__main {
+  min-width: 0;
+  max-width: 100%;
+}
 .ds-page__title {
   margin: 2px 0 0;
   font-size: var(--fs-lg); /* 핵심 메시지(ds-key)가 화면에서 가장 크다 */
@@ -2158,6 +2162,11 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
+/* 저작권 표시는 지도 오른쪽 아래에 있다. 긴 대체 지도 안내는 지도 밑에 놓아 서로 가리지 않게 한다. */
+.fm-map__note--fallback {
+  position: static;
+  margin-top: var(--sp-2);
+}
 .fm-empty,
 .fm-note {
   margin: 0;
@@ -2337,6 +2346,10 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   padding: 1px 6px;
 }
 .ds-ext__key {
+  display: inline-flex;
+  align-items: center;
+  min-width: 24px;
+  min-height: 24px;
   font-family: var(--font-mono);
   font-weight: 600;
 }

@@ -3,6 +3,7 @@
 import type { ExtRef } from '@ff/contracts';
 import { extSync } from '../copy/ext-sync';
 import { Icon } from './icons';
+import { externalReferenceUrl, openExternalWindow } from '../external/links';
 
 const X = extSync;
 
@@ -12,7 +13,7 @@ export function ExtRefChip({ r, showStatus = true, title }: { r: Pick<ExtRef, 's
   return (
     <span className="ds-ext" data-system={r.system} data-sync={r.syncState} data-key={r.key}>
       <span className="ds-ext__sys">{sys}</span>
-      <a className="ds-ext__key" href={r.url} target="_blank" rel="noopener noreferrer" title={X.open(sys)}>
+      <a className="ds-ext__key" href={externalReferenceUrl(r)} target="_blank" rel="noopener noreferrer" title={X.open(sys)} onClick={openExternalWindow}>
         {r.key}
       </a>
       {title && r.title && <span className="ds-ext__title">{r.title}</span>}

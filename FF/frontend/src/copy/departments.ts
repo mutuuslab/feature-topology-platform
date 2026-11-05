@@ -9,7 +9,7 @@ export const departments = {
   persona: '부서 안 역할',
   login: { label: '담당 부서', hint: '로그인 뒤 상단 바에서 언제든 바꿀 수 있습니다' },
   workspace: {
-    studio: '기획 스튜디오',
+    studio: '기획팀',
     review: '심사 결재함',
     console: '엔지니어링 콘솔',
     control: '관제실',
@@ -48,7 +48,7 @@ export const departments = {
   },
   studio: {
     eyebrow: '상품기획 · Feature 소유',
-    title: (dept: string) => `${dept} 기획 스튜디오`,
+    title: '기획팀',
     lead: 'Feature를 제안하고, 단계별로 어디에 있는지 보고, 출시 책임을 확인합니다.',
     key: (n: number) => ({ value: n, text: '출시 전 Feature' }),
     propose: '새 Feature 제안',

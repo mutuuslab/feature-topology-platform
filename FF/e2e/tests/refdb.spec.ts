@@ -185,11 +185,17 @@ test('(b) 추가 요청 → 요청 중 행을 대표로 등록 → 정의 승인
   await asRole(page, 'steward');
   await page.goto(`/master/feature-db/changes/${changeId}`);
   await page.getByLabel(D.decideReason).fill('근거 메모 확인');
+  const approval = page.waitForResponse((response) => response.url().endsWith(`/api/refdb/changes/${changeId}/decision`) && response.request().method() === 'POST');
   await page.getByRole('button', { name: D.approve }).click();
+  expect((await approval).status()).toBe(201);
   await expect(page.locator('#main')).toContainText('발행 대기');
   const release = await nextRelease(request);
   await page.goto('/master/feature-db/changes');
-  await page.getByRole('button', { name: /버전 발행 \(\d+건\)/ }).click();
+  await expect(page.locator(`[data-publish-change="${changeId}"]`)).toBeVisible();
+  const publish = page.locator('[data-ui="publishRefRelease"]');
+  await expect(publish).toBeEnabled();
+  await expect(publish).toContainText(release);
+  await publish.click();
   await expect(page.getByRole('status').filter({ hasText: C.published(release) })).toBeVisible();
   const change = await api<{ change: { status: string; release: string } }>(request, 'get', `/api/refdb/changes/${changeId}`, AUTHOR);
   expect(change.change).toMatchObject({ status: 'PUBLISHED', release });

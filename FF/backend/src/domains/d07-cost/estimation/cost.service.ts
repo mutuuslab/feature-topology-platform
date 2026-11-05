@@ -14,6 +14,11 @@ import {
   costEstimateView,
   costSettingsView,
   estimate,
+  anchorSamples,
+  anchorSuggestion,
+  costMre,
+  PutCostActualBody,
+  type CostActualRow,
   refStatusPolicy,
   type AddCostFeatureBody,
   type CostBasisDraftBody,
@@ -164,6 +169,7 @@ export class CostService implements OnModuleInit {
     const parsed = CostBasis.safeParse(body.basis);
     if (!parsed.success) throw new DomainError('VALIDATION', `계수 표 형식이 맞지 않습니다: ${parsed.error.issues[0]?.path.join('.')} ${parsed.error.issues[0]?.message}`, { field: 'basis' });
     const basis = parsed.data;
+    if (!(basis.benchmark.anchorEur > 0)) throw new DomainError('VALIDATION', '포인트당 벤치마크는 양수여야 합니다.', { field: 'basis' });
     if (this.db.get('SELECT 1 FROM cost_basis WHERE version = ?', basis.version)) throw new DomainError('CONFLICT', `계수 표 ${basis.version}이(가) 이미 있습니다 — 새 버전 이름을 쓰세요.`, { field: 'basis' });
     const text = JSON.stringify(basis);
     const at = this.clock.iso();
@@ -314,6 +320,7 @@ export class CostService implements OnModuleInit {
     const row = this.row(estId);
     const doc = JSON.parse(row.doc) as CostProjectDoc;
     const lines = this.lines(estId);
+    const actuals = this.actualRows(estId, row.status, lines);
     let result: ReturnType<typeof costEstimateView> | null = null;
     let error: string | null = null;
     try {
@@ -354,6 +361,8 @@ export class CostService implements OnModuleInit {
       ...(canSeeCost(actor.role) ? { fx: basis.currencies[doc.currency] ?? null } : {}),
       mbd: this.mbd(estId),
       checks: this.checks(doc.basisVersion, estId),
+      actuals,
+      mre: result ? costMre(result.lines, new Map(actuals.map((r) => [r.refId, r.actual]))) : null,
       result,
       error,
       approvals: results.map((r) => ({ rev: r.rev, approvedBy: r.approved_by, approvedAt: r.approved_at, reason: r.reason, basisVersion: r.basis_version, resultSha256: r.result_sha256 })),
@@ -516,6 +525,7 @@ export class CostService implements OnModuleInit {
     const at = this.clock.iso();
     return this.db.tx(() => {
       let next: CostProjectDoc = { ...doc, lastReason: body.reason };
+      if (body.action === 'REVISE') this.foldActuals(estId);
       if (body.action === 'APPROVE') {
         const rev = doc.rev + 1;
         const text = JSON.stringify(result);
@@ -618,5 +628,89 @@ export class CostService implements OnModuleInit {
     const buf = patchWorkbook(t.buf, cells, { clearCachedResults: true });
     this.db.tx(() => this.audit.record(actor, 'COST_EXPORT', estId, { after: { status: row.status, rev: doc.rev, basisVersion: doc.basisVersion, warnings: warnings.length, bytes: buf.length }, componentId: 'D07-01' }));
     return { buf, warnings, filename: `SW_cost_${estId}.xlsx` };
+  }
+  /** 승인 전 줄 입력의 합, 승인 후에는 기준 행별 후속 기록이 우선한다. MRE에서 빠진 행도 입력·삭제할 수 있게 따로 반환한다. */
+  private actualRows(estId: string, status: CostProjectStatus, lines: ({ lineNo: number } & LineDoc)[] = this.lines(estId)): CostActualRow[] {
+    const rows = new Map<string, CostActualRow>();
+    for (const line of lines) if ((line.inputs.actual ?? 0) > 0) {
+      rows.set(line.refId, { refId: line.refId, actual: (rows.get(line.refId)?.actual ?? 0) + line.inputs.actual!, override: false });
+    }
+    if (status === 'APPROVED') for (const row of this.db.all<{ ref_id: string; actual: number }>('SELECT ref_id, actual FROM cost_actual WHERE est_id = ? ORDER BY ref_id', estId)) {
+      rows.set(row.ref_id, { refId: row.ref_id, actual: row.actual, override: true });
+    }
+    return [...rows.values()].sort((a, b) => a.refId < b.refId ? -1 : a.refId > b.refId ? 1 : 0);
+  }
+
+  /** 승인 후 실적은 개정할 때 한 번만 첫 줄로 옮긴다. 승인 원문·해시는 변경하지 않는다. */
+  private foldActuals(estId: string) {
+    const lines = this.lines(estId);
+    for (const row of this.db.all<{ ref_id: string; actual: number }>('SELECT ref_id, actual FROM cost_actual WHERE est_id = ?', estId)) {
+      lines.filter((line) => line.refId === row.ref_id).forEach(({ lineNo, ...line }, index) => {
+        this.db.run('UPDATE cost_line SET doc = ? WHERE est_id = ? AND line_no = ?', JSON.stringify({ ...line, inputs: { ...line.inputs, actual: index === 0 ? row.actual : null } }), estId, lineNo);
+      });
+    }
+    this.db.run('DELETE FROM cost_actual WHERE est_id = ?', estId);
+  }
+
+  putActual(actor: Actor, estId: string, refId: string, input: PutCostActualBody) {
+    if (actor.role !== 'COST_ESTIMATOR') throw new DomainError('FORBIDDEN', '실적 공수는 산정 작성 역할만 기록할 수 있습니다.');
+    const parsed = PutCostActualBody.safeParse(input);
+    if (!parsed.success) throw new DomainError('VALIDATION', '실적 공수는 양수 또는 지우기 값이어야 합니다.');
+    const body = parsed.data;
+    return this.db.tx(() => {
+      if (this.row(estId).status !== 'APPROVED') throw new DomainError('CONFLICT', '승인된 과제에만 후속 실적을 기록합니다. 작성 중에는 줄 입력을 사용하세요.');
+      if (!this.db.get('SELECT 1 FROM cost_line WHERE est_id = ? AND ref_id = ?', estId, refId)) throw new DomainError('NOT_FOUND', '이 과제에 해당 기준 행이 없습니다.');
+      const before = this.db.get<{ actual: number }>('SELECT actual FROM cost_actual WHERE est_id = ? AND ref_id = ?', estId, refId)?.actual ?? null;
+      if (body.actual === null) this.db.run('DELETE FROM cost_actual WHERE est_id = ? AND ref_id = ?', estId, refId);
+      else this.db.run('INSERT INTO cost_actual (est_id, ref_id, actual, updated_by, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (est_id, ref_id) DO UPDATE SET actual = excluded.actual, updated_by = excluded.updated_by, updated_at = excluded.updated_at', estId, refId, body.actual, actor.id, this.clock.iso());
+      this.audit.record(actor, 'COST_ACTUAL_PUT', `${estId}:${refId}`, { before: { actual: before }, after: { actual: body.actual }, componentId: 'D07-01' });
+      return this.detail(actor, estId);
+    });
+  }
+
+  /** 승인된 과제 전체의 기준 행 실적을 합친다. 공개 벤치마크가 있으므로 서버에서도 금액 역할을 검사한다. */
+  calibration(actor: Actor) {
+    if (!canSeeCost(actor.role)) throw new DomainError('FORBIDDEN', '교정 제안은 구매 산정 역할만 볼 수 있습니다.');
+    const basisVersion = this.latestBasisVersion();
+    const basis = this.openBasis(basisVersion);
+    const facts = this.refFacts();
+    const info = new Map(this.refs.listRefs({}).map((ref) => [ref.refId, { nameKo: ref.nameKo, component: ref.component }]));
+    const samples = anchorSamples(basis, facts.values()).map((sample) => ({ ...sample, nameKo: sample.kind === 'single' ? info.get(sample.id)?.nameKo ?? null : null }));
+    const suggestion = anchorSuggestion(basis, facts.values());
+    const rows: { estId: string; name: string; refId: string; nameKo: string | null; component: string | null; e: number; actual: number; mre: number }[] = [];
+    let projects = 0;
+    let approvedProjects = 0;
+    let missing = 0;
+    const missingByComponent = new Map<string, number>();
+    const actuals = new Map<string, Map<string, number>>();
+    for (const row of this.db.all<{ est_id: string; ref_id: string; actual: number }>('SELECT est_id, ref_id, actual FROM cost_actual')) {
+      const map = actuals.get(row.est_id) ?? new Map<string, number>(); map.set(row.ref_id, row.actual); actuals.set(row.est_id, map);
+    }
+    const baselineActuals = new Map<string, Map<string, number>>();
+    for (const row of this.db.all<{ est_id: string; ref_id: string; doc: string }>("SELECT l.est_id, l.ref_id, l.doc FROM cost_line l JOIN cost_project p ON p.est_id = l.est_id WHERE p.status = 'APPROVED' ORDER BY l.est_id, l.line_no")) {
+      const line = JSON.parse(row.doc) as LineDoc;
+      if (!((line.inputs.actual ?? 0) > 0)) continue;
+      const map = baselineActuals.get(row.est_id) ?? new Map<string, number>(); map.set(row.ref_id, (map.get(row.ref_id) ?? 0) + line.inputs.actual!); baselineActuals.set(row.est_id, map);
+    }
+    for (const project of this.db.all<ProjectRow>("SELECT * FROM cost_project WHERE status = 'APPROVED' ORDER BY est_id")) {
+      approvedProjects++;
+      const doc = JSON.parse(project.doc) as CostProjectDoc;
+      const effective = new Map([...(baselineActuals.get(project.est_id) ?? []), ...(actuals.get(project.est_id) ?? [])]);
+      const resultLines = this.approvedResult(project.est_id, doc.rev).lines;
+      const mre = costMre(resultLines, effective);
+      missing += mre.missing;
+      const measured = new Set(mre.rows.map((row) => row.refId));
+      for (const refId of new Set(resultLines.filter((line) => line.effQty > 0).map((line) => line.refId))) if (!measured.has(refId)) {
+        const component = info.get(refId)?.component ?? '—'; missingByComponent.set(component, (missingByComponent.get(component) ?? 0) + 1);
+      }
+      if (mre.n) projects++;
+      for (const row of mre.rows) rows.push({ ...row, estId: project.est_id, name: doc.name, nameKo: info.get(row.refId)?.nameKo ?? null, component: info.get(row.refId)?.component ?? null });
+    }
+    const groups = new Map<string, { n: number; sum: number }>();
+    for (const row of rows) { const component = row.component ?? '—'; const group = groups.get(component) ?? { n: 0, sum: 0 }; group.n++; group.sum += row.mre; groups.set(component, group); }
+    this.db.tx(() => this.audit.record(actor, 'COST_VIEW', 'calibration', { after: { basisVersion, samples: samples.length, mreRows: rows.length }, componentId: 'D07-01' }));
+    const components = new Set([...groups.keys(), ...missingByComponent.keys()]);
+    const byComponent = [...components].map((component) => ({ component, n: groups.get(component)?.n ?? 0, missing: missingByComponent.get(component) ?? 0, avg: groups.has(component) ? groups.get(component)!.sum / groups.get(component)!.n : null })).sort((a, b) => b.n - a.n || (a.component < b.component ? -1 : 1));
+    return { basisVersion, anchorEur: basis.benchmark.anchorEur, suggestion, ratio: suggestion / basis.benchmark.anchorEur - 1, samples, mre: { projects, approvedProjects, n: rows.length, missing, avg: rows.length ? rows.reduce((sum, row) => sum + row.mre, 0) / rows.length : null, byComponent, rows } };
   }
 }

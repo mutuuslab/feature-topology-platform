@@ -75,7 +75,12 @@
     "evidence:remap": "node tools/evidence-remap.ts",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",
     "unleash:down": "docker compose -f docker/unleash/docker-compose.yml down",
-    "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web"
+    "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web",
+    "unleash:native:prepare": "node tools/unleash/prepare.mjs",
+    "unleash:native:start": "node tools/unleash/runtime.mjs",
+    "unleash:native:stop": "node tools/unleash/runtime.mjs stop",
+    "unleash:native:status": "node tools/unleash/runtime.mjs status",
+    "unleash:test": "node --test tools/unleash/runtime.test.mjs"
   },
   "devDependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",

@@ -76,6 +76,7 @@ export const PERSONAL_DATA_INVENTORY: PersonalDataStore[] = [
   // 차량 소유자·운전자(VIN) — 개인과 연결될 수 있는 차량 기록
   { store: 'vehicle_request', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'DELETE', retention: '30일(보존 규칙 rules/retention.ts)', basis: '차량 발신 보고(문맥·고장·체험 수락) — 목적 달성 후 지체 없이 삭제(GDPR Art.5, PIPL)' },
   { store: 'vehicle_request_nonce', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'DELETE', retention: '허용 시각 창', basis: '차량 요청 재전송 방지 기록' },
+  { store: 'vehicle_unleash_sequence', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'RETAIN_LEGAL', retention: '차량 운행 기간(차량 신뢰 키·VIN 폐기와 함께 종료)', basis: 'FF 차량 서명본 발행 순번 — 재시작 뒤 이전 활성 서명본 재생·동일 시각 순서 역전을 막는 차량 안전 검증 상태' },
   { store: 'vehicle_profile', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'DELETE', retention: '삭제 요청까지', basis: '성향 구간값(연령대·주행 성향·ADAS 사용) — 분석 목적' },
   { store: 'vehicle', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'RETAIN_LEGAL', retention: '차량 운행 기간', basis: 'Fleet 기준 정보 — 리콜·안전 시정 대상 식별(자동차관리법 제31조, UN R156)' },
   { store: 'entitlement', subject: 'VEHICLE', category: 'VEHICLE_LINKED', idColumns: ['vin'], textColumns: [], treatment: 'RETAIN_LEGAL', retention: '거래 기록 5년', basis: '구독·구매·체험 권한 — 거래 기록 보존(전자상거래법 제6조)' },

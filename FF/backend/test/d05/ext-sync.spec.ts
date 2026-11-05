@@ -57,6 +57,35 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     expect((await mockItem('jira', epic.key)).status).toBe('Deprecated');
   });
 
+  it.each(['jira', 'codebeamer'])('%s 의견은 공유 원장에 저장되고 webhook·수신함을 거치며 상태·G2를 바꾸지 않는다', async (system) => {
+    const beforeTrace = await trace('FEAT-00001', '2.1.0');
+    const linked = system === 'jira' ? beforeTrace.epic : beforeTrace.requirements[0];
+    const before = await mockItem(system, linked.key);
+    const externalUser = system === 'jira' ? 'choi.quality' : 'seo.safety';
+    const comment = `${system} 요구 추적 검토 완료`;
+    const response = (await act(system, { key: linked.key, action: 'COMMENT', comment: `  ${comment}  `, externalUser })).body;
+    expect(response.item.comments.at(-1)).toMatchObject({ by: externalUser, text: comment });
+    expect(response.item).toMatchObject({ status: before.status, title: before.title, body: before.body, revision: before.revision + 1 });
+    expect(response.result).toMatchObject({ key: linked.key, externalUser, outcome: 'IGNORED', duplicate: false });
+    const persisted = await mockItem(system, linked.key);
+    expect(persisted.comments).toEqual(response.item.comments);
+    const afterTrace = await trace('FEAT-00001', '2.1.0');
+    expect(afterTrace.lifecycle).toBe(beforeTrace.lifecycle);
+    expect(afterTrace.stale).toEqual(beforeTrace.stale);
+    expect(system === 'jira' ? afterTrace.epic.revision : afterTrace.requirements.find((r: any) => r.key === linked.key).revision).toBe(system === 'jira' ? Date.parse(persisted.updatedAt) : persisted.revision);
+    const inbox = (await http().get('/api/integrations/sync/inbox').expect(200)).body.items;
+    expect(inbox.some((r: any) => r.deliveryId === response.result.deliveryId && r.key === linked.key)).toBe(true);
+  });
+
+  it('비어 있거나 초과·혼합·알 수 없는 의견 요청은 원장과 개정 번호를 바꾸기 전에 거부한다', async () => {
+    const key = (await epicOf('FEAT-00001', '2.1.0')).key;
+    const before = await mockItem('jira', key);
+    for (const body of [{}, { comment: '' }, { comment: '   ' }, { comment: 'x'.repeat(2001) }, { comment: '의견', status: 'Approved' }, { comment: '의견', unknown: true }]) {
+      await http().post('/api/integrations/mock/jira/act').set(AUTHOR).send({ key, action: 'COMMENT', externalUser: 'kim.author', ...body }).expect(400);
+      expect(await mockItem('jira', key)).toEqual(before);
+    }
+  });
+
   it('JIRA → 플랫폼 거부: 권한 없는 사람·게이트 미충족이면 Epic을 되돌리고 사유를 댓글로', async () => {
     const epic = await epicOf('FEAT-00013', '0.3.0');
     const byAuthor = (await act('jira', { key: epic.key, action: 'TRANSITION', status: 'Approved', externalUser: 'kim.author' })).body;

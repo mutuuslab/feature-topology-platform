@@ -7,11 +7,17 @@ import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, ErrorNote, PageHeader, Panel, Segmented, Select } from '../../design';
+import { AsyncView, Button, ErrorNote, ExplainCodes, PageHeader, Panel, Segmented, Select } from '../../design';
 import { NOTIFY_EVENTS, SeverityBadge, t16, type Inbox, type InboxItem } from '../../shell/NotificationBell';
 import { humanText } from '../../data/people';
 
 const N = ko.notify;
+
+/** 활동 이름은 기본 화면에, 원문과 절차 코드는 tooltip/설명 모드에 보존한다. 알림 원장은 바꾸지 않는다. */
+function NotificationValue({ value }: { value: string }) {
+  const activity = /^(FPW\.\d+-A\d+)\s+(.+)$/.exec(value);
+  return activity ? <span title={value}>{humanText(activity[2])}<ExplainCodes codes={[activity[1]]} /></span> : <>{humanText(value)}</>;
+}
 
 function Row({ n, onRead, busy }: { n: InboxItem; onRead: () => void; busy: boolean }) {
   return (
@@ -28,7 +34,7 @@ function Row({ n, onRead, busy }: { n: InboxItem; onRead: () => void; busy: bool
           {n.fields.map((f) => (
             <div key={f.label}>
               <dt>{f.label}</dt>
-              <dd>{humanText(f.value)}</dd>
+              <dd><NotificationValue value={f.value} /></dd>
             </div>
           ))}
         </dl>

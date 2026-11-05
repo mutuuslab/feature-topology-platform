@@ -5,8 +5,8 @@ import { useQueries } from '@tanstack/react-query';
 import { STATIC_MODE, call } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { pickDefault } from '../../data/first-run';
-import { AsyncView, Button, DataTable, ErrorNote, IdChip, PageHeader, Panel, Select, VerdictBadge } from '../../design';
+import { pickAvailableValue } from '../../data/first-run';
+import { AsyncView, Button, DataTable, ErrorNote, IdChip, PageHeader, Pager, Panel, Select, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
 import { OpenFeaturePanel } from './OpenFeaturePanel';
 
@@ -24,35 +24,44 @@ export function ActivationScreen() {
   const [sp, setSp] = useSearchParams();
   const vehicles = useApi<{ items: { vin: string; label: string; quality: string }[] }>('vehicles');
   const policies = useApi<{ items: { flagKey: string; status: string }[] }>('listPolicies', { query: { status: 'DEPLOYED' } });
-  const flags = [...new Set((policies.data?.items ?? []).map((p) => p.flagKey))].sort();
+  const flags = policies.data ? [...new Set(policies.data.items.filter((p) => p.status === 'DEPLOYED').map((p) => p.flagKey))].sort() : undefined;
   // 기본 대상 — 예시 차량이 있으면 그것, 없으면 첫 차량. 차량·배포 정책이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
-  const vin = sp.get('vin') ?? pickDefault(vehicles.data?.items, (v) => v.vin === 'ego-01')?.vin ?? '';
-  const flagKey = sp.get('flagKey') ?? flags[0] ?? '';
-  const noVehicle = !sp.get('vin') && !!vehicles.data && !vehicles.data.items.length;
-  const noPolicy = !sp.get('flagKey') && !!policies.data && !flags.length;
-  const none = noVehicle || noPolicy;
+  const vehiclePick = pickAvailableValue(vehicles.data?.items.map((v) => v.vin), sp.get('vin'), 'ego-01');
+  const flagPick = pickAvailableValue(flags, sp.get('flagKey'));
+  const vin = vehiclePick.value, flagKey = flagPick.value;
+  const noVehicle = vehiclePick.none, noPolicy = flagPick.none;
+  const unavailable = vehiclePick.unavailable || flagPick.unavailable;
+  const none = noVehicle || noPolicy || unavailable;
   // 기본 대상을 고를 목록을 못 받으면 그 목록의 오류(권한 없음 포함)를 보인다 — 판단 조회는 하지 않는다
-  const listErr = !sp.get('vin') && vehicles.isError ? vehicles : !sp.get('flagKey') && policies.isError ? policies : null;
+  const listErr = vehicles.isError ? vehicles : policies.isError ? policies : null;
+  const eligible = !!vin && !!flagKey && !vehiclePick.pending && !flagPick.pending && !none && !listErr;
   const set = (k: string, v: string) => {
     const n = new URLSearchParams(sp);
     n.set(k, v);
     setSp(n, { replace: true });
   };
-  const q = useApi<Decision>('activationDecide', { query: { vin, flagKey } }, { enabled: !!vin && !!flagKey });
+  const q = useApi<Decision>('activationDecide', { query: { vin, flagKey } }, { enabled: eligible });
   const [ofrep, setOfrep] = useState<unknown>(null);
   useEffect(() => {
     setOfrep(null);
-    if (STATIC_MODE || !vin || !flagKey) return;
-    fetch(`/ofrep/v1/evaluate/flags/${encodeURIComponent(flagKey)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: { targetingKey: vin } }) })
+    if (STATIC_MODE || !eligible) return;
+    const controller = new AbortController();
+    fetch(`/ofrep/v1/evaluate/flags/${encodeURIComponent(flagKey)}`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: { targetingKey: vin } }) })
       .then((r) => r.json())
-      .then(setOfrep, () => setOfrep(null));
-  }, [vin, flagKey, q.dataUpdatedAt]);
+      .then((value) => { if (!controller.signal.aborted) setOfrep(value); }, () => { if (!controller.signal.aborted) setOfrep(null); });
+    return () => controller.abort();
+  }, [vin, flagKey, eligible, q.dataUpdatedAt]);
+  const [fleetPage, setFleetPage] = useState(0);
+  const [fleetSearch, setFleetSearch] = useState('');
+  const filtered = (vehicles.data?.items ?? []).filter((v) => `${v.vin} ${v.label}`.toLowerCase().includes(fleetSearch.trim().toLowerCase()));
+  const currentPage = Math.min(fleetPage, Math.max(0, Math.ceil(filtered.length / 25) - 1));
+  const visibleVehicles = filtered.slice(currentPage * 25, (currentPage + 1) * 25);
   // Fleet 전체 판단 — 차량마다 같은 평가기. flagKey가 정해지기 전(정책 목록이 차량 목록보다 늦게 올 때)에는 묻지 않는다
   const fleet = useQueries({
-    queries: (vehicles.data?.items ?? []).map((v) => ({
+    queries: visibleVehicles.map((v) => ({
       queryKey: ['activationDecide', {}, { vin: v.vin, flagKey }],
-      queryFn: () => call<Decision>('activationDecide', { query: { vin: v.vin, flagKey } }),
-      enabled: !!flagKey,
+      queryFn: ({ signal }) => call<Decision>('activationDecide', { query: { vin: v.vin, flagKey }, signal }),
+      enabled: eligible,
     })),
   });
   const d = q.data;
@@ -62,10 +71,11 @@ export function ActivationScreen() {
         codes="D01-09 · ACTIVATION"
         title={A.title}
         lead={A.lead}
-        message={none ? { tone: 'neutral', status: { label: '—' }, text: noVehicle ? ko.state.noVehicleTitle : ko.state.noPolicyTitle } : d ? { tone: d.result.value ? 'ok' : 'neutral', status: { label: d.result.value ? 'ON' : 'OFF', tone: d.result.value ? 'ok' : 'neutral' }, text: A.key(vin, flagKey, d.result.decision, d.result.reason) } : { tone: 'neutral', status: { label: '—' }, text: A.key(vin, flagKey, '…', '…') }}
+        message={none ? { tone: 'neutral', status: { label: '—' }, text: flagPick.unavailable ? `${flagKey} · ${A.unpublishedShort}` : vehiclePick.unavailable ? A.vehicleUnavailable : noVehicle ? ko.state.noVehicleTitle : ko.state.noPolicyTitle } : d ? { tone: d.result.value ? 'ok' : 'neutral', status: { label: d.result.value ? 'ON' : 'OFF', tone: d.result.value ? 'ok' : 'neutral' }, text: A.key(vin, flagKey, d.result.decision, d.result.reason) } : { tone: 'neutral', status: { label: '—' }, text: A.key(vin, flagKey, '…', '…') }}
         actions={
           <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
             <Select label={A.vehicle} value={vin} onChange={(e) => set('vin', e.target.value)}>
+              {(vehiclePick.pending || vehiclePick.unavailable || !vin) && <option value={vin}>{vin || '—'}{vehiclePick.unavailable ? ` · ${A.vehicleUnavailable}` : ''}</option>}
               {(vehicles.data?.items ?? []).map((v) => (
                 <option key={v.vin} value={v.vin}>
                   {v.vin} · {v.label}
@@ -73,14 +83,15 @@ export function ActivationScreen() {
               ))}
             </Select>
             <Select label={A.flag} value={flagKey} onChange={(e) => set('flagKey', e.target.value)}>
-              {flags.map((k) => (
+              {(flagPick.pending || flagPick.unavailable || !flagKey) && <option value={flagKey}>{flagKey || '—'}{flagPick.unavailable ? ` · ${A.unpublishedShort}` : ''}</option>}
+              {(flags ?? []).map((k) => (
                 <option key={k}>{k}</option>
               ))}
             </Select>
           </div>
         }
       />
-      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(listErr ?? q)} error={(listErr ?? q).error} onRetry={() => (listErr ?? q).refetch()} empty={noVehicle ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : { title: ko.state.noPolicyTitle, body: ko.state.noPolicyBody }}>
+      <AsyncView emptyHidden={none && !unavailable} state={none ? 'empty' : asyncState(listErr ?? q)} error={(listErr ?? q).error} onRetry={() => (listErr ?? q).refetch()} empty={flagPick.unavailable ? { title: A.unpublished, body: A.unpublishedBody } : vehiclePick.unavailable ? { title: A.vehicleUnavailable, body: ko.state.noVehicleBody } : noVehicle ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : { title: ko.state.noPolicyTitle, body: ko.state.noPolicyBody }}>
         {d && (
           <>
             <Panel title={A.trace} eyebrow={`${d.result.policyId} r${d.result.revision}`} id="result">
@@ -96,9 +107,11 @@ export function ActivationScreen() {
             </Panel>
             <div className="ds-split">
               <Panel title={A.fleet} id="fleet">
+                <label className="ds-field"><span className="ds-field__label">{A.fleetSearch}</span><input className="ds-input" value={fleetSearch} onChange={(e) => { setFleetSearch(e.target.value); setFleetPage(0); }} /></label>
                 <DataTable
                   caption={A.fleet}
-                  rows={(vehicles.data?.items ?? []).map((v, i) => ({ v, r: fleet[i]?.data as Decision | undefined }))}
+                  rows={visibleVehicles.map((v, i) => ({ v, r: fleet[i]?.data as Decision | undefined }))}
+                  pageSize={0}
                   rowKey={(x) => x.v.vin}
                   onOpen={(x) => set('vin', x.v.vin)}
                   columns={[
@@ -109,6 +122,7 @@ export function ActivationScreen() {
                     { key: 'why', header: ko.audit.col.reason, cell: (x) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{x.r?.result.reason ?? ''}</span> },
                   ]}
                 />
+                <Pager page={currentPage} pageSize={25} total={filtered.length} onPage={setFleetPage} label={A.fleet} />
               </Panel>
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-3)', alignContent: 'start' }}>
                 <OpenFeaturePanel vin={vin} flagKey={flagKey} serverValue={d.result.value} />

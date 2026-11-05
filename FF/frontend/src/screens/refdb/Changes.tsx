@@ -372,7 +372,7 @@ function ReviewForm({ c }: { c: RefChange }) {
 function DecideForm({ c }: { c: RefChange }) {
   const { role } = useAppShell();
   const perm = usePermission(['REFDB_ADMIN']);
-  const decide = useApiMutation('decideRefChange', ['refChangeDetail', 'listRefChanges', 'refQuality']);
+  const decide = useApiMutation('decideRefChange', ['refChangeDetail', 'listRefChanges', 'refQuality', 'refReleasePreview']);
   const [reason, setReason] = useState('');
   // Feature DB 관리자만 이 칸을 본다
   if (!canAct(role, ['REFDB_ADMIN'])) return null;

@@ -887,6 +887,10 @@ CREATE TRIGGER consultation_no_delete BEFORE DELETE ON consultation BEGIN SELECT
 `,
   },
   {
+    name: '088_vehicle_unleash_sequence',
+    sql: `CREATE TABLE vehicle_unleash_sequence (vin TEXT PRIMARY KEY, value BIGINT NOT NULL CHECK (value > 0 AND value <= 9007199254740991));`,
+  },
+  {
     // Git SDK 소스 스냅샷 — 개발자/CI 가져오기 원문과 해시를 추가만 한다. 원격 저장소 확인 증명은 아니다.
     name: '089_flag_source_manifest',
     sql: `
@@ -906,6 +910,13 @@ CREATE TABLE flag_source_manifest (
 CREATE INDEX flag_source_manifest_repo_scan ON flag_source_manifest (repository, scanned_at, id);
 CREATE TRIGGER flag_source_manifest_no_update BEFORE UPDATE ON flag_source_manifest BEGIN SELECT RAISE(ABORT, 'flag_source_manifest는 추가만 가능'); END;
 CREATE TRIGGER flag_source_manifest_no_delete BEFORE DELETE ON flag_source_manifest BEGIN SELECT RAISE(ABORT, 'flag_source_manifest는 추가만 가능'); END;
+`,
+  },
+  {
+    // 승인 결과를 덮어쓰지 않는 기준 행별 실적(C4). 개정 시 줄 입력으로 이관한다.
+    name: '090_cost_actual',
+    sql: `
+CREATE TABLE cost_actual (est_id TEXT NOT NULL, ref_id TEXT NOT NULL, actual REAL NOT NULL CHECK (actual > 0), updated_by TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (est_id, ref_id));
 `,
   },
 ];

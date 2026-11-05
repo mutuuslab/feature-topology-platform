@@ -186,8 +186,11 @@ export class RefdbRepository {
   /** 기준 행 → 이 행을 연결한 Registry Feature 이름(중복 없이) — 검색이 Feature 이름으로도 찾는다(P1-8) */
   linkedFeatureNames(): Map<string, string[]> {
     const out = new Map<string, Set<string>>();
-    for (const r of this.db.all<{ ref_id: string; doc: string | null }>('SELECT l.ref_id, f.doc FROM feature_ref_link l JOIN feature_version f ON f.feature_id = l.feature_id AND f.version = l.version')) {
-      const name = r.doc ? (JSON.parse(r.doc) as { name?: string }).name : undefined;
+    // 검색에는 이름만 필요하다. 전체 Feature doc을 연결 수만큼 전달·JSON.parse하면
+    // 큰 Registry에서 요청마다 수 MB를 다시 만든다. 기존 PG 방언도 이 JSON 경로를 번역한다.
+    // 캐시하지 않으므로 이름·연결 변경과 트랜잭션의 현재 값은 다음 조회에 바로 반영된다.
+    for (const r of this.db.all<{ ref_id: string; name: string | null }>("SELECT l.ref_id, json_extract(f.doc, '$.name') AS name FROM feature_ref_link l JOIN feature_version f ON f.feature_id = l.feature_id AND f.version = l.version")) {
+      const name = r.name;
       if (!name) continue;
       if (!out.has(r.ref_id)) out.set(r.ref_id, new Set());
       out.get(r.ref_id)!.add(name);

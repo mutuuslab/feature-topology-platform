@@ -1,6 +1,5 @@
 // 화면 문구 카탈로그 — 재디자인 화면(design/·shell/·screens/)은 문구를 여기서만 가져온다(lint:copy).
 // 표기 원칙: 한글 라벨 + 영문 기술용어·ID(Feature, Baseline, Gate, Kill, Safe Default …), 문장은 '…합니다/하세요'.
-import { p10 } from './p10';
 import { p11 } from './p11';
 import { master } from './master';
 import type { Lifecycle } from '@ff/contracts';
@@ -81,6 +80,8 @@ export const ko = {
     allCatalogs: '전체 상품',
     flag: '플래그',
     allFlags: '전체 플래그',
+    requestedFlag: (key: string) => `${key} · 조회 대상(수신 키 목록에 없음)`,
+    requestedFlagNote: '현재 차량 수신 키 목록에 없는 조회 대상입니다. 적용 여부는 차량별 회신으로 확인하세요.',
     kpi: { located: '지도에 표시', paid: '구독·구매', trial: '체험 중', killed: '긴급 차단', unknown: '미확인' },
     map: '지도',
     legend: '범례',
@@ -601,6 +602,11 @@ export const ko = {
     result: '판단 결과',
     trace: '평가 근거',
     fleet: 'Fleet 전체 판단',
+    fleetSearch: 'Fleet 차량 검색',
+    unpublished: '선택한 Flag에는 배포된 정책이 없습니다',
+    unpublishedShort: '배포 정책 없음',
+    unpublishedBody: '이 Flag는 아직 차량 활성화 판단 대상이 아닙니다. 배포된 Flag를 선택하거나 정책 승인·배포를 마친 뒤 다시 확인하세요.',
+    vehicleUnavailable: '선택한 차량이 등록 목록에 없습니다',
     ofrep: 'OFREP 응답',
     ofrepStatic: '읽기 전용 데모에서는 OFREP를 호출하지 않습니다 — 위 판단 결과가 같은 평가기의 값입니다',
     steps: { DEPLOYED: '배포', KILL: '긴급 차단', APPLICABILITY: '적용 범위', SUPPORT: '지원 조건', ENTITLEMENT: '사용 권한', TARGETING: '대상 규칙', COHORT: '코호트', DECIDE: '결정' },
@@ -1189,7 +1195,6 @@ export const ko = {
     clause: '근거 조항',
     clauseOpen: (id: string) => `${id} 원문 요약 보기`,
   },
-  p10,
   p11,
   master,
 } as const;

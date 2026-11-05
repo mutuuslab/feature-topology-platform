@@ -4,6 +4,7 @@
 //   ③ 변경요청 화면: JIRA CR과 플랫폼 정책 상태가 나란히, 핵심 메시지는 하나
 //   ④ JIRA에서 Epic을 만들면 PROPOSED Feature 자동 등록 → Registry 목록에 Lifecycle과 JIRA Epic이 나란히(사용자 결정 2026-10-23)
 import { expect, test, type Page } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 
@@ -22,9 +23,9 @@ test('Feature 상세 연계 탭 — 요구·Epic·MR이 외부 도구 링크로'
   const tab = page.getByTestId('ext-links');
   await expect(tab).toBeVisible();
   const req = tab.locator('.ds-ext[data-system="CODEBEAMER"] a').first();
-  await expect(req).toHaveAttribute('href', /\/cb\/issue\/\d+$/);
+  await expect(req).toHaveAttribute('href', /\/external\.html\?system=codebeamer&key=CB-\d+$/);
   await expect(req).toHaveAttribute('target', '_blank');
-  await expect(tab.locator('.ds-ext[data-system="JIRA"] a').first()).toHaveAttribute('href', /\/browse\/FFE-\d+$/);
+  await expect(tab.locator('.ds-ext[data-system="JIRA"] a').first()).toHaveAttribute('href', /\/external\.html\?system=jira&key=FFE-\d+$/);
   await expect(tab.locator('.ds-ext[data-system="GITLAB"] a').first()).toHaveAttribute('href', /\/-\/merge_requests\/\d+$/);
   // 머리 메타에도 Epic
   await expect(page.locator('.ds-page-header .ds-ext[data-system="JIRA"], header .ds-ext[data-system="JIRA"]').first()).toBeVisible();
@@ -51,7 +52,7 @@ test('변경요청 화면 — JIRA CR과 정책 상태, 핵심 메시지 하나'
   await expect(page.locator('[data-key-message]')).toHaveCount(1);
   const table = page.getByRole('table', { name: 'JIRA 변경요청' });
   await expect(table.locator('a[href^="/policies/POL-"]').first()).toBeVisible();
-  await expect(table.locator('.ds-ext[data-system="JIRA"] a').first()).toHaveAttribute('href', /\/browse\/FFCR-\d+$/);
+  await expect(table.locator('.ds-ext[data-system="JIRA"] a').first()).toHaveAttribute('href', /\/external\.html\?system=jira&key=FFCR-\d+$/);
 });
 
 test('JIRA에서 Epic 만들기 → PROPOSED Feature 자동 등록, Registry에 Lifecycle과 Epic이 나란히', async ({ page }) => {
@@ -59,9 +60,12 @@ test('JIRA에서 Epic 만들기 → PROPOSED Feature 자동 등록, Registry에 
   await page.goto('/integration/connectors?tab=sync');
   await page.locator('#sync-simulate > summary').click();
   const form = page.locator('section[aria-labelledby="sync-epic-new"]');
-  const title = `야간 차선 유지 확장 ${Date.now() % 100000}`;
+  const namespace = randomUUID().slice(0, 8);
+  const title = `야간 차선 유지 확장 ${namespace}`;
   await form.getByLabel('Epic 제목 (= Feature 이름)').fill(title);
   await form.getByLabel('담당 조직').fill('주행보조개발팀');
+  // 같은 QA 서버에서 다시 돌려도 앞선 Feature의 대표 기준 행 중복과 충돌하지 않는다.
+  await form.getByLabel('차종', { exact: true }).fill(`E2E-${namespace}`);
   // 기준 기능(Feature DB) ID — 없으면 자동 등록하지 않는다(30-95 §7). 긴급 차량 인식 · QM
   await form.locator('input[name="epicRefs"]').fill('AD-ADS-026');
   await form.getByRole('button', { name: 'Epic 만들기' }).click();
@@ -70,6 +74,6 @@ test('JIRA에서 Epic 만들기 → PROPOSED Feature 자동 등록, Registry에 
   const row = page.locator('tbody tr', { hasText: title });
   await expect(row).toHaveCount(1);
   await expect(row.locator('.ds-badge[data-lifecycle="PROPOSED"]')).toBeVisible();
-  await expect(row.locator('.ds-ext[data-system="JIRA"] a')).toHaveAttribute('href', /\/browse\/FFE-\d+$/);
+  await expect(row.locator('.ds-ext[data-system="JIRA"] a')).toHaveAttribute('href', /\/external\.html\?system=jira&key=FFE-\d+$/);
   await expect(row.locator('.ds-ext__status')).toHaveText('Proposed');
 });

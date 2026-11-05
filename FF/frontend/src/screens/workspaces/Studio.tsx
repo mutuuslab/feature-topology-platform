@@ -38,7 +38,7 @@ export default function StudioHome({ dept }: { dept: DepartmentSummary }) {
     <div className="ds-screen ws ws--studio" data-workspace-home="studio">
       <PageHeader
         codes={S.eyebrow}
-        title={S.title(dept.name)}
+        title={S.title}
         lead={S.lead}
         message={message}
         actions={

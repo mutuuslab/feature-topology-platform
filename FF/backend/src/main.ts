@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await createApp();
   // 종료 신호(SIGTERM·SIGINT)에 예약 작업을 정리하고 DB를 닫는다(출시 준비 RD-OPS-07)
   app.enableShutdownHooks();
-  await app.listen(PORT, desktop ? '127.0.0.1' : undefined);
+  await app.listen(PORT, desktop ? '127.0.0.1' : process.env.FF_HTTP_HOST || undefined);
   if (desktop) {
     // 데스크톱 앱(src-tauri main.rs)이 이 줄로 포트를 알고 창을 연다
     const address = app.getHttpServer().address();

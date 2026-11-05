@@ -1,0 +1,9 @@
+.ob-workbench { display: grid; gap: var(--sp-4); min-width: 0; }
+.ob-histogram { display: flex; align-items: end; gap: var(--sp-2); height: 180px; padding-top: var(--sp-6); overflow-x: auto; }
+.ob-histogram__column { height: 100%; min-width: 28px; flex: 1 0 28px; display: flex; flex-direction: column; justify-content: end; align-items: stretch; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.ob-histogram__column[aria-pressed='true'] { outline: 2px solid var(--accent); outline-offset: var(--sp-1); }
+.ob-histogram__column:disabled { cursor: default; }
+.ob-histogram__bar { display: block; background: var(--info); min-height: 1px; border-radius: var(--r-sm) var(--r-sm) 0 0; }
+.ob-histogram__count { font-size: var(--fs-xs); text-align: center; color: var(--ink-2); }
+.ob-id { font-family: var(--font-mono); overflow-wrap: anywhere; }
+.ob-record { white-space: pre-wrap; overflow-wrap: anywhere; padding: var(--sp-4); background: var(--surface-3); border: 1px solid var(--line); border-radius: var(--r); font-size: var(--fs-sm); }

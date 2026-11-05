@@ -265,6 +265,7 @@
       ],
       "tested": [
         "contracts/src/rules/kill-v2.test.ts",
+        "backend/test/d03/control-room.spec.ts",
         "backend/test/d03/kill-v2.spec.ts"
       ]
     },
@@ -670,6 +671,7 @@
         "contracts/src/rules/policy-gate.test.ts",
         "contracts/src/rules/security-events.test.ts",
         "backend/test/ads/defects.spec.ts",
+        "backend/test/d03/control-room.spec.ts",
         "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d03/policy-gate.spec.ts",
         "backend/test/d06/hsm.spec.ts",
@@ -952,6 +954,7 @@
       ],
       "tested": [
         "contracts/src/rules/workflows.test.ts",
+        "backend/test/d03/control-room.spec.ts",
         "backend/test/d03/delivery.spec.ts",
         "backend/test/d04/status-v2.spec.ts",
         "backend/test/d06/hsm.spec.ts"
@@ -1072,6 +1075,7 @@
       ],
       "tested": [
         "contracts/src/rules/ext.test.ts",
+        "backend/test/d03/control-room.spec.ts",
         "backend/test/ext/p10.spec.ts"
       ]
     },

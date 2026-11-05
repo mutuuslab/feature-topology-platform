@@ -15,6 +15,8 @@ export interface RefSearchQuery {
   domain?: string;
   component?: string;
   status?: string;
+  statuses?: string;
+  asils?: string;
   offset?: number;
   limit?: number;
   /** 이 출처를 쓰는 행만 */
@@ -25,6 +27,7 @@ export interface RefSearchRow {
   refId: string;
   nameKo: string;
   nameEn: string;
+  asilRep?: string;
   aliases?: string[];
   domain: string;
   component: string;
@@ -57,14 +60,16 @@ function rank(r: RefSearchRow, key: string, internal: ReadonlySet<string>): numb
 export function searchLocally<T extends RefSearchRow>(rows: readonly T[], q: RefSearchQuery): RefSearchResponse<T> {
   const key = norm(q.q ?? '');
   const internal = internalGlossaryHits(key);
+  const asils = new Set((q.asils ?? '').split(',').filter(Boolean));
+  const statuses = new Set((q.statuses ?? '').split(',').filter(Boolean));
   const hits = rows.flatMap((r) => {
     const k = rank(r, key, internal);
-    return k === null || (q.domain && r.domain !== q.domain) || (q.component && r.component !== q.component) || (q.source && !r.sourceIds?.includes(q.source)) ? [] : [{ r, k }];
+    return k === null || (q.domain && r.domain !== q.domain) || (q.component && r.component !== q.component) || (q.source && !r.sourceIds?.includes(q.source)) || (asils.size > 0 && !asils.has(r.asilRep ?? '')) ? [] : [{ r, k }];
   });
   const status = Object.fromEntries(REF_STATUSES.map((s) => [s, 0])) as Record<RefStatus, number>;
   for (const h of hits) status[h.r.status] = (status[h.r.status] ?? 0) + 1;
   const out = hits
-    .filter((h) => !q.status || h.r.status === q.status)
+    .filter((h) => statuses.size > 0 ? statuses.has(h.r.status) : !q.status || h.r.status === q.status)
     .sort((a, b) => a.k - b.k || (a.r.refId < b.r.refId ? -1 : a.r.refId > b.r.refId ? 1 : 0))
     .map((h) => h.r);
   const offset = q.offset ?? 0;
@@ -82,9 +87,9 @@ async function loadAll<T>(signal: AbortSignal): Promise<T[]> {
 
 /** listRefs 조회 — 정적 데모에서 검색어가 있으면 받아 둔 전체 목록에서 찾는다(서버 검색 스냅샷이 없다) */
 export function useRefSearch<T extends RefSearchRow>(query: RefSearchQuery, opts: { keepPrevious?: boolean } = {}) {
-  const local = STATIC_MODE && (!!query.q || !!query.source);
+  const local = (STATIC_MODE && (!!query.q || !!query.source)) || !!query.statuses || !!query.asils;
   const server = useApi<RefSearchResponse<T>>('listRefs', { query: { ...query } }, { ...(opts.keepPrevious ? { placeholderData: keepPreviousData } : {}), enabled: !local });
-  const all = useQuery<T[]>({ queryKey: ['listRefs', 'static-all'], queryFn: ({ signal }) => loadAll<T>(signal), enabled: local, staleTime: Infinity });
+  const all = useQuery<T[]>({ queryKey: ['listRefs', 'explorer-all'], queryFn: ({ signal }) => loadAll<T>(signal), enabled: local, staleTime: Infinity });
   if (!local) return server;
   return { data: all.data ? searchLocally(all.data, query) : undefined, isPending: all.isPending, isError: all.isError, error: all.error as typeof server.error, refetch: all.refetch };
 }

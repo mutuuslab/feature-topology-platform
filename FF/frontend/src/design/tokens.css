@@ -21,6 +21,12 @@
 }
 
 :root {
+  /* REA 보존 화면에 근거한 외부 도구 전용 팔레트. 플랫폼 업무 상태 색과 분리한다. */
+  --ext-cb-accent: #009fbd;
+  --ext-cb-link: #007b92;
+  --ext-cb-header: #454545;
+  --ext-cb-selected: #f4ffff;
+  --ext-jira-brand: #1868db;
   /* 글꼴 */
   --font-sans: 'SUIT Variable', 'SUIT', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', 'D2Coding', ui-monospace, Consolas, monospace;

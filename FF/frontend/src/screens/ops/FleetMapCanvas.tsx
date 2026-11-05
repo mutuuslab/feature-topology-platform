@@ -480,7 +480,7 @@ export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, vie
     <div className="fm-map" data-phase={phase} aria-busy={phase === 'loading' || undefined}>
       <div ref={host} className="fm-map__canvas" data-testid="fleet-map-canvas" role="region" aria-label={F.map} />
       {phase === 'loading' && <p className="fm-map__note">{F.loading}</p>}
-      {phase === 'ready' && fallback && <p className="fm-map__note">{F.fallback}</p>}
+      {phase === 'ready' && fallback && <p className="fm-map__note fm-map__note--fallback">{F.fallback}</p>}
     </div>
   );
 }

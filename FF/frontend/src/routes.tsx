@@ -252,6 +252,7 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/admin/org', element: legacyTo('/admin/iam'), title: '조직·도메인 (이전 주소)', group: 'admin', parent: '/admin/iam' },
   { path: '/admin/security', element: named(opsScreens, 'SecurityScreen'), title: '보안·인증서', group: 'admin', menu: '/admin/security', components: ['D06-10', 'D06-11'], v2: true },
   { path: '/admin/data', element: named(() => import('./screens/admin/DataGovernance'), 'DataGovernanceScreen'), title: '데이터·규제 기록', group: 'admin', menu: '/admin/data', components: ['D06-08', 'D05-01', 'D04-03'], v2: true },
+  { path: '/data/workbench', element: def(() => import('./screens/data/Workbench')), title: '데이터 분석실', group: 'admin', menu: '/data/workbench', components: ['D05-02'], v2: true },
   { path: '/biz/trials', element: named(bizScreens, 'TrialAnalyticsScreen'), title: '체험 전환 분석', group: 'admin', menu: '/biz/trials', components: ['D05-06'], v2: true },
   { path: '/insights/business', element: legacyTo('/biz/trials'), title: '사업 지표 (이전 주소)', group: 'admin', parent: '/biz/trials' },
   { path: '/insights/reports', element: legacyTo('/biz/trials'), title: '보고서 (이전 주소)', group: 'admin', parent: '/biz/trials' },

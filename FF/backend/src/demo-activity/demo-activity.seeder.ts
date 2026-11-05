@@ -106,6 +106,8 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
   lastRun: Record<string, StepResult> | null = null;
   /** 차량 확인을 기다려 잇는 단계(둘째 판·되돌리기 요청) — 시험이 기다린다 */
   continuation: Promise<string> | null = null;
+  /** 함께 기동하는 전시 확장은 기본 활동의 Version 생성을 기다린다. 차량 회신 continuation과 별개다. */
+  bootstrapCompletion: Promise<Record<string, StepResult> | null> | null = null;
   private waiting: Subscription | null = null;
 
   constructor(
@@ -138,7 +140,8 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
   async onApplicationBootstrap() {
     if (!demoActivityEnabled()) return;
     try {
-      await this.run();
+      this.bootstrapCompletion ??= this.run();
+      await this.bootstrapCompletion;
     } catch (err) {
       this.log.warn(`데모 활동 시드를 건너뜁니다: ${(err as Error).message}`);
     }

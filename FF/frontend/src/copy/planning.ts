@@ -63,6 +63,7 @@ export const planning = {
   },
   trial: {
     product: '체험 상품',
+    chooseProduct: '체험 상품을 고르세요',
     other: (id: string) => `${id} (출시 전)`,
     vehicleLabel: (vin: string, label: string) => `${vin} · ${label}`,
     scope: (scope: string, n: number) => `상품 범위 ${scope}의 차량 ${n}대 — 시뮬레이터·통계 표본 차량은 고객 체험에서 뺍니다`,

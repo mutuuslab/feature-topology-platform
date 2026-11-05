@@ -31,7 +31,7 @@ last_updated: 2026-11-05
 > Feature를 소유하고 대상·분류·출시를 판단한다. 상품 구성과 체험 제안을 만들고 고객 출시를 승인한다.
 
 - 맡는 조직 역할: Feature Owner, 상품 기획, 상품 Owner
-- 화면 유형: 기획 스튜디오
+- 화면 유형: 기획팀
 - 데모 계정: author, commerce, approver, productowner (첫 번째가 기본)
 - 부서는 OEM 조직 가정안이다. 고객사 조직이 정해지면 model/common.yaml departments만 바꾼다.
 

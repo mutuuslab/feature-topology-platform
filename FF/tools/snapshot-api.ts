@@ -153,6 +153,7 @@ async function consultSnapshots(save: Save) {
  * 정적 데모는 금액이 보이는 구매 담당 화면이다(예시 과제·공개 단가만 있다). 엑셀 내보내기(파일)는 정적 데모에서 쓰지 않는다.
  */
 async function costSnapshots(save: Save) {
+  await save('costCalibration');
   const projects = await save('costProjects');
   for (const p of projects.items as { estId: string }[]) await save('costProject', { estId: p.estId });
   const basis = await save('costBasisList');
@@ -206,6 +207,7 @@ async function main() {
 
   // Feature Registry 목록 — FeatureList의 질의 모양: { q, lifecycle, country, latestOnly }
   const all = await save('listFeatures', {}, { latestOnly: false });
+  await save('listFeatures'); // Home operation overview uses the unfiltered contract.
   await save('listFeatures', {}, { latestOnly: true });
   for (const latestOnly of [true, false]) {
     for (const lifecycle of LIFECYCLE) await save('listFeatures', {}, { lifecycle, latestOnly });
@@ -290,6 +292,7 @@ async function main() {
   for (const v of fm.items) await save('fleetMapVehicle', { vin: v.vin });
   await save('gleoStatus');
   await save('pkiKeys');
+  await save('approverKeys');
   for (const v of vehicles.items) await save('vehicleRuntime', { vin: v.vin });
   const pubs = await save('publications');
   for (const kind of ['POLICY', 'KILL', 'RESTORE']) await save('publications', {}, { kind });
@@ -347,10 +350,12 @@ async function main() {
   await save('experiments');
   await save('incidents');
   for (const m of ['syncTargets', 'legacyMappings', 'legacyOrders', 'legacyVehicles', 'integrationSystems', 'supplierDeliveries', 'openfeatureScope', 'openfeatureManifest', 'openfeatureFlagd', 'integrationCalls']) await save(m);
+  await save('integrationCalls', {}, { ifId: 'IF-04' }); // Home integration status.
   for (const f of all.items as { featureId: string; version: string }[]) await save('almRequirements', {}, { featureId: f.featureId, version: f.version });
   await save('otelSpans', {}, { limit: 100 });
   // GitLab·JIRA·codeBeamer 양방향 연계 — 외부 연계 현황 '양방향 연계' 탭·검토함 충돌·변경요청 목록
   await save('extSync');
+  for (const system of ['jira', 'codebeamer', 'gitlab']) await save('mockExtItems', { system });
   await save('extFeatureEpics');
   await save('extConflicts', {}, { status: 'OPEN' });
   await save('extInbox');

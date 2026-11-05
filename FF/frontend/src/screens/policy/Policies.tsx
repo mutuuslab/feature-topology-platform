@@ -14,7 +14,7 @@ import { VirtualPanel } from './Virtual';
 import { UnleashPanel } from './Unleash';
 import { PolicyVersions } from './PolicyVersions';
 import { PolicyHistory } from './PolicyHistory';
-import { FlagSourceSummary, FeatureFlagHighlight } from '../features/FeatureFlags';
+import { FlagSourceSummary, FeatureFlagHighlight, FlagMapLink } from '../features/FeatureFlags';
 
 const T = ko.policy;
 const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort'];
@@ -179,6 +179,7 @@ export function PolicyDetail() {
               lead={p.description}
               actions={
                 <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
+                  <FlagMapLink flagKey={p.flagKey} />
                   <PolicyEdit key={`${p.policyId}@${p.revision}`} p={p} />
                   {editable && !keyValidate && validateButton(needsValidation ? 'primary' : 'default')}
                   {['DRAFT', 'VALIDATED'].includes(p.status) && (

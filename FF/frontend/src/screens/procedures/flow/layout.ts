@@ -261,12 +261,13 @@ export function layoutFlow<N extends LNode, E extends LEdge>(input: { nodes: N[]
     const free = input.nodes.filter((n) => n.free).map((n) => ({ n, ...wantOf(n.id) }));
     free.sort((a, b) => a.want - b.want || order.get(a.n.id)! - order.get(b.n.id)!);
     for (const f of free) {
-      // 바로 아래(위) 칸 → 한두 칸 옆(산출물은 오른쪽, 입력은 왼쪽 먼저) → 모두 차면 같은 칸에 한 줄 더(멀리 보내지 않는다)
+      // 바로 아래(위) 칸 → 옆 칸(산출물은 오른쪽, 입력은 왼쪽 먼저) → 모두 차면 같은 칸에 한 줄 더(멀리 보내지 않는다)
       let r = f.want;
-      // 입력 문서(뒤 상자로 감)는 입력 레인 빈 칸 어디든 가까운 순, 산출물은 오른쪽 한두 칸·왼쪽 한 칸 안 — 그보다 멀면 같은 칸에 쌓는다(만든 활동 밑을 떠나지 않게)
+      // 입력 문서는 빈 칸을 가까운 순으로 찾는다. 산출물은 이웃 열까지만 쓴다 — 두 열 떨어진 빈 칸으로 우회하면
+      // 다른 단계의 제어·객체 흐름을 더 가로지른다. 양옆도 차면 만든 활동 아래에 쌓는다.
       const steps = [0];
       if (f.dir < 0) for (let d = 1; d <= nRanks; d++) steps.push(-d, d);
-      else steps.push(1, -1, 2);
+      else steps.push(1, -1);
       for (const step of steps) {
         const c = f.want + step;
         if (c < 0 || c >= nRanks || used.has(`${f.n.lane}|${c}`)) continue;

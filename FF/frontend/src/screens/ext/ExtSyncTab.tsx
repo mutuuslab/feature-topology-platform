@@ -7,6 +7,8 @@ import { extSync } from '../../copy/ext-sync';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, ExplainCodes, Field, Panel, Select, whyDisabled } from '../../design';
 import { usePermission, when } from '../shared';
+import { ExternalToolLaunchers } from '../../external/launchers';
+import { useExternalChanges } from '../../external/useExternalChanges';
 
 const X = extSync.sync;
 const INVALIDATE = ['extSync', 'extConflicts', 'extInbox', 'extOutbox', 'extChangeRequests', 'extFeatureTrace', 'extFeatureEpics', 'featureDetail', 'policyDetail', 'mockExtItems', 'listFeatures'];
@@ -40,12 +42,14 @@ interface Job {
 
 /** quiet: 화면 핵심 메시지가 '아직 주고받은 변경이 없습니다'일 때 — 수신함 빈 상자로 되풀이하지 않는다(3초 ⑩) */
 export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
+  useExternalChanges();
   const s = useApi<{ items: ExtSystemSummary[]; ownership: OwnershipRule[] }>('extSync', {}, { refetchInterval: 10_000 });
   const conflicts = useApi<{ items: Conflict[] }>('extConflicts', { query: { status: 'OPEN' } });
   const inbox = useApi<{ items: InboxRow[] }>('extInbox');
   const failed = useApi<{ items: Job[] }>('extOutbox', { query: { status: 'FAILED' } });
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
+      <ExternalToolLaunchers />
       <Panel title={X.summary} id="sync-systems">
         <AsyncView state={asyncState(s)} error={s.error} onRetry={() => s.refetch()}>
           <DataTable

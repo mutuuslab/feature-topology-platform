@@ -397,7 +397,7 @@ def section_role_procedures(m, num) -> str:
 <p class="lead">RACI에서 자동으로 모은 역할별 절차서다. 수행(R)·책임(A) 활동을 생애주기 순서로 나열한다.</p>{''.join(parts)}</section>"""
 
 
-WORKSPACE_KO = {"studio": "기획 스튜디오", "review": "심사 결재함", "console": "엔지니어링 콘솔",
+WORKSPACE_KO = {"studio": "기획팀", "review": "심사 결재함", "console": "엔지니어링 콘솔",
                 "control": "관제실", "portal": "검토 포털"}
 
 

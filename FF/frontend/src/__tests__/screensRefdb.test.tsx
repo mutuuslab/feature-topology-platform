@@ -300,6 +300,41 @@ describe('Feature DB 상세', () => {
 });
 
 describe('Feature DB 변경 요청', () => {
+  it('목록에서 승인 뒤 돌아오면 캐시된 발행 미리 보기도 새 승인 요청을 반영한다', async () => {
+    let approved = false;
+    const reviewed = { ...CHANGE, reviews: [{ reviewerId: 'usr-approver', opinion: 'AGREE' as const, comment: '근거 확인', at: '2026-11-04T01:30:00.000Z' }] };
+    const quality = { published: 1052, pending: 0, noSource: 0, attrMissing: 0, awaitingPublish: 0 };
+    handler = (url, init) => {
+      if (url === '/api/refdb/releases/preview') return { body: {
+        release: 'v1.4', latest: 'v1.3', total: approved ? 1 : 0,
+        approved: approved ? [{ changeId: CHANGE.changeId, kind: CHANGE.kind, refId: CHANGE.refId, nameKo: ROW.nameKo, status: 'ACTIVE', requestedBy: CHANGE.requestedBy, decidedBy: 'usr-steward', decidedAt: '2026-11-04T02:00:00.000Z' }] : [],
+        retiring: [], notify: [], quality: { before: quality, after: quality }, memo: approved ? 'v1.4 발행 — 승인 1건' : '',
+      } };
+      if (url.endsWith('/decision') && init?.method === 'POST') { approved = true; return { body: { ...reviewed, status: 'APPROVED' } }; }
+      if (url.startsWith('/api/refdb/changes/CR-2026-001')) return { body: { ...CHANGE_DETAIL, change: { ...reviewed, status: approved ? 'APPROVED' : 'REVIEW' } } };
+      if (url === '/api/refdb/changes') return { body: { items: [{ ...reviewed, status: approved ? 'APPROVED' : 'REVIEW' }] } };
+      return api(url, init);
+    };
+    localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'steward' }));
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+    render(<QueryClientProvider client={qc}><MemoryRouter initialEntries={['/master/feature-db/changes']}><AppProvider><Routes>
+      <Route path="/master/feature-db/changes" element={<RefChangesScreen />} />
+      <Route path="/master/feature-db/changes/:id" element={<RefChangeDetailScreen />} />
+    </Routes></AppProvider></MemoryRouter></QueryClientProvider>);
+    await screen.findByText(CHANGE.changeId);
+    await waitFor(() => expect(calls.some((c) => c.url === '/api/refdb/releases/preview')).toBe(true));
+    expect((document.querySelector('[data-ui="publishRefRelease"]') as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('link', { name: CHANGE.changeId }));
+    fireEvent.change(await screen.findByLabelText(D.decideReason), { target: { value: '근거 검토 완료' } });
+    fireEvent.click(screen.getByRole('button', { name: D.approve }));
+    await waitFor(() => expect(approved).toBe(true));
+    fireEvent.click(screen.getByRole('link', { name: D.back }));
+    await waitFor(() => expect(document.querySelector(`[data-publish-change="${CHANGE.changeId}"]`)).not.toBeNull());
+    const publish = document.querySelector('[data-ui="publishRefRelease"]') as HTMLButtonElement;
+    expect(publish.textContent).toBe('v1.4 발행 (1건)');
+    expect(publish.disabled).toBe(false);
+  });
+
   it('상세 — 필드 차이·영향 Feature·재계산 안내를 보인다', async () => {
     handler = api;
     mount('viewer', '/master/feature-db/changes/CR-2026-001', '/master/feature-db/changes/:id', <RefChangeDetailScreen />);

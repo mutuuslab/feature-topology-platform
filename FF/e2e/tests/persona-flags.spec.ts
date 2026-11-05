@@ -1,5 +1,5 @@
 // 구현 담당자가 실제 Git 스캔을 가져오고, Feature Flag → 코드 → 정책 → Unleash 근거를 따라간다.
-// 1160 예제 커밋은 이미 DEMO 시드에 있으므로 재가져오기는 같은 기록을 보존해야 한다.
+// 예제 커밋은 이미 DEMO 시드에 있으므로 재가져오기는 같은 기록을 보존해야 한다.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import AxeBuilder from '@axe-core/playwright';
@@ -11,7 +11,9 @@ const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const FEATURE = '/features/FEAT-00022/1.0.0';
 const fixture = JSON.parse(readFileSync(join(__dirname, '..', '..', 'data', 'fixtures', 'demo', 'flag-sources.json'), 'utf8'));
 const usage = fixture.usages.find((u: { flagKey: string }) => u.flagKey === 'care_00022_signal');
-const sourceUrl = `${fixture.repository}/blob/${fixture.commit}/${usage.path}#L${usage.line}`;
+const sourceUrlOf = (u: { path: string; line: number }) => `${fixture.repository}/blob/${fixture.commit}/${u.path.split('/').map(encodeURIComponent).join('/')}#L${u.line}`;
+const sourceUrl = sourceUrlOf(usage);
+const distanceUsages = fixture.usages.filter((u: { flagKey: string }) => u.flagKey.startsWith('care_00022_'));
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
 
 async function as(page: Page, role: string, present = false) {
@@ -48,7 +50,7 @@ test('구현 담당자 — 실제 Git 스캔 재가져오기 → 소스 파일·
   const before = await request.get(`${API}/api/flag-sources`);
   expect(before.status(), await before.text()).toBe(200);
   const prior = (await before.json()).find((r: any) => r.manifest.repository === fixture.repository && r.manifest.commit === fixture.commit);
-  expect(prior, '1160 예제 커밋의 실제 시드 기록').toBeTruthy();
+  expect(prior, '예제 커밋의 실제 시드 기록').toBeTruthy();
 
   await open(page, FEATURE);
   const highlight = page.locator('.ff-highlight[aria-label="Feature Flag"]');
@@ -58,6 +60,10 @@ test('구현 담당자 — 실제 Git 스캔 재가져오기 → 소스 파일·
   await expect(page.getByRole('tab', { name: 'Feature Flag', exact: true })).toHaveAttribute('aria-selected', 'true');
   const card = page.locator('.ff-card').filter({ has: page.getByRole('heading', { name: 'care_00022_signal', exact: true }) });
   await expect(card).toBeVisible();
+  await expect(card.locator('.ff-flow > li')).toHaveCount(5);
+  await expect(card.locator('[data-flag-stage="evaluation"]')).toContainText('3 · Unleash 평가');
+  await expect(card.locator('[data-flag-stage="delivery"]')).toContainText('4 · 차량 배포');
+  await expect(card.locator('[data-flag-stage="receipt"]')).toContainText('5 · 차량으로부터 수신');
   await expect(card.getByRole('link', { name: `${usage.path}:${usage.line} ↗`, exact: true })).toHaveAttribute('href', sourceUrl);
   await expect(card.locator(`a[href="${sourceUrl}"]`)).toHaveAttribute('rel', /noopener/);
 
@@ -86,6 +92,8 @@ test('구현 담당자 — 실제 Git 스캔 재가져오기 → 소스 파일·
   expect(policies.status(), await policies.text()).toBe(200);
   const row = (await policies.json()).find((r: any) => r.flagKey === 'care_00022_signal');
   expect(row?.policy?.policyId).toMatch(/^POL-\d{5}$/);
+  if (row.publication) await expect(card.locator('[data-flag-stage="delivery"] a')).toHaveAttribute('href', `/deployments/${row.publication.publicationId}`);
+  else await expect(card.locator('[data-flag-stage="delivery"]')).toContainText('서명 배포 기록 없음');
   const policyUrl = `/policies/${row.policy.policyId}`;
   await card.locator(`a[href="${policyUrl}"]`).click();
   await expect(page).toHaveURL(new RegExp(`${policyUrl}$`));
@@ -110,12 +118,37 @@ test('감사 담당자 — 소스·정책 조회는 가능하고 가져오기는
   const description = await blocked.getAttribute('aria-describedby');
   expect(description).toBeTruthy();
   await expect(page.locator(`[id="${description}"]`)).toContainText('구현 담당');
-  await expect(page.locator('.ff-source a').first()).toHaveAttribute('href', /\/blob\/1160d92/);
+  await expect(page.locator('.ff-source a').first()).toHaveAttribute('href', new RegExp(`/blob/${fixture.commit}/`));
   const denied = await request.post(`${API}/api/flag-sources`, { headers: H('usr-viewer', 'AUDITOR'), data: fixture });
   expect(denied.status(), await denied.text()).toBe(403);
   expect((await denied.json()).error.code).toBe('FORBIDDEN');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await noViolations(page);
+});
+
+test('가상 차량 앱 — 스캔한 여섯 Flag 모두 해당 Feature에서 실제 커밋·파일·줄로 연결된다', async ({ page, request }) => {
+  expect(fixture.usages).toHaveLength(6);
+  const response = await request.get(`${API}/api/feature-flags`);
+  expect(response.status(), await response.text()).toBe(200);
+  const rows = await response.json();
+  const groups = new Map<string, { flagKey: string; path: string; line: number }[]>();
+  for (const source of fixture.usages) {
+    const row = rows.find((r: any) => r.flagKey === source.flagKey && r.featureId && r.version && r.policy);
+    expect(row, `${source.flagKey}의 실제 정책·Feature 연결`).toBeTruthy();
+    expect(row.sources).toEqual(expect.arrayContaining([expect.objectContaining({ commit: fixture.commit, url: sourceUrlOf(source), contentHash: source.contentHash })]));
+    const route = `/features/${row.featureId}/${row.version}?tab=flags`;
+    groups.set(route, [...(groups.get(route) ?? []), source]);
+  }
+  await as(page, 'integrator');
+  for (const [route, sources] of groups) {
+    await open(page, route);
+    for (const source of sources) {
+      const card = page.locator('.ff-card').filter({ has: page.getByRole('heading', { name: source.flagKey, exact: true }) });
+      await expect(card).toBeVisible();
+      await expect(card.locator(`a[href="${sourceUrlOf(source)}"]`)).toBeVisible();
+      await expect(card).toContainText('가상 차량 앱');
+    }
+  }
 });
 
 for (const size of [
@@ -130,7 +163,7 @@ for (const size of [
   await noLayoutDefects(page, 'Feature 첫 화면');
 
   await page.getByRole('tab', { name: 'Feature Flag', exact: true }).click();
-  for (const flag of fixture.usages) await expect(page.locator('.ff-card').getByRole('heading', { name: flag.flagKey, exact: true })).toBeVisible();
+  for (const flag of distanceUsages) await expect(page.locator('.ff-card').getByRole('heading', { name: flag.flagKey, exact: true })).toBeVisible();
   await page.locator('.ff-source summary').first().click();
   await noLayoutDefects(page, 'Feature Flag 상세·파일 해시');
   await page.getByRole('button', { name: 'Git 스캔 가져오기', exact: true }).click();

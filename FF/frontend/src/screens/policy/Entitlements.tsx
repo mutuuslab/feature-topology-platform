@@ -77,8 +77,7 @@ const SEGMENTS: { dim: SegmentDimension; options: (seg: Partial<Record<SegmentDi
   { dim: 'adasUsage', options: () => ADAS_USAGE },
 ];
 
-/** 체험 상품 — 주소 ?catalog= (상품 상세의 '이 상품으로 체험 제안'), 없으면 대표 체험 상품(시연 시드) */
-const DEFAULT_CATALOG = 'CAT-00019';
+/** 체험 상품 — 주소 ?catalog= 또는 이 설치에 실제로 등록된 체험 상품. 빈 설치에는 임의 ID를 만들지 않는다. */
 interface ProductLite {
   catalogId: string;
   version: string;
@@ -87,6 +86,7 @@ interface ProductLite {
   country: string;
   vehicleModel: string;
   trim: string;
+  saleType?: string;
 }
 interface VehicleLite {
   vin: string;
@@ -110,13 +110,22 @@ export function offerableVehicles(vehicles: VehicleLite[], p: Pick<ProductLite, 
 
 export function EntitlementsScreen() {
   const [sp, setSp] = useSearchParams();
-  const catalogId = sp.get('catalog') || DEFAULT_CATALOG;
   const products = useApi<{ items: ProductLite[] }>('listProducts');
-  // 고객 출시(RELEASED) 상품의 가장 최신 Version만 — 고른 상품은 출시 전이어도 남긴다(주소로 들어온 경우)
-  const choices = latestProducts(products.data?.items ?? []).filter((p) => p.lifecycle === 'RELEASED' || p.catalogId === catalogId);
-  const product = choices.find((p) => p.catalogId === catalogId);
-  const all = useApi<TrialPage>('trials', { query: trialListQuery({ catalogId, source: 'ALL', state: '', segment: {}, q: '', page: 1 }) });
-  const active = all.data?.byState.ACTIVE;
+  const latest = latestProducts(products.data?.items ?? []);
+  const requested = sp.get('catalog');
+  // 등록 차량의 실제 체험 이력을 우선한다. 구성 승인 체험은 운영 중일 수
+  // 있으며, 새 초안이 ID 정렬의 앞에 왔다고 그 상품으로 조회하면 안 된다.
+  const registered = useApi<{ items: GrantRow[] }>('entitlements', {}, { enabled: !requested && latest.length > 0 });
+  const trialCatalogs = new Set((registered.data?.items ?? []).filter((g) => g.kind === '체험').map((g) => g.catalogId));
+  const available = latest.filter((p) => p.lifecycle === 'APPROVED' || p.lifecycle === 'RELEASED');
+  const fallback = available.find((p) => p.saleType === '체험' && trialCatalogs.has(p.catalogId)) ?? available.find((p) => p.saleType === '체험' && p.lifecycle === 'RELEASED') ?? available.find((p) => p.saleType === '체험') ?? available.find((p) => p.lifecycle === 'RELEASED');
+  const product = requested ? latest.find((p) => p.catalogId === requested) : registered.isSuccess ? fallback : undefined;
+  const catalogId = product?.catalogId ?? '';
+  // 고객 출시 상품과 구성 승인 체험 상품. 명시한 출시 전 상품도 주소 그대로 남긴다.
+  const choices = latest.filter((p) => p.lifecycle === 'RELEASED' || (p.saleType === '체험' && p.lifecycle === 'APPROVED') || p.catalogId === catalogId);
+  const selection = products.isPending || products.isError || !latest.length || requested ? products : registered;
+  const all = useApi<TrialPage>('trials', { query: trialListQuery({ catalogId, source: 'ALL', state: '', segment: {}, q: '', page: 1 }) }, { enabled: !!catalogId });
+  const active = all.isSuccess ? all.data.byState.ACTIVE ?? 0 : undefined;
   return (
     <div className="ds-screen">
       <PageHeader
@@ -126,8 +135,8 @@ export function EntitlementsScreen() {
         message={{ tone: 'neutral', value: active == null ? '—' : active.toLocaleString('ko-KR'), text: E.key }}
         actions={
           <div style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            <Select label={W.trial.product} value={catalogId} onChange={(e) => setSp((x) => (x.set('catalog', e.target.value), x), { replace: true })}>
-              {!product && <option value={catalogId}>{catalogId}</option>}
+            <Select label={W.trial.product} value={catalogId} disabled={products.isPending || !choices.length} onChange={(e) => setSp((x) => (x.set('catalog', e.target.value), x), { replace: true })}>
+              {!product && <option value="">{W.trial.chooseProduct}</option>}
               {choices.map((p) => (
                 <option key={p.catalogId} value={p.catalogId}>
                   {p.lifecycle === 'RELEASED' ? `${p.catalogId} · ${p.name}` : W.trial.other(`${p.catalogId} · ${p.name}`)}
@@ -138,7 +147,7 @@ export function EntitlementsScreen() {
           </div>
         }
       />
-      <Tabs tabs={[{ key: 'trials', label: E.tabs.trials }, { key: 'grants', label: E.tabs.grants }]}>{(tab) => (tab === 'grants' ? <GrantsTable /> : <TrialVehicles key={catalogId} catalogId={catalogId} product={product} />)}</Tabs>
+      <Tabs tabs={[{ key: 'trials', label: E.tabs.trials }, { key: 'grants', label: E.tabs.grants }]}>{(tab) => (tab === 'grants' ? <GrantsTable /> : <AsyncView state={asyncState(selection, !catalogId)} empty={{ title: W.trial.chooseProduct }} error={selection.error} onRetry={() => selection.refetch()}>{catalogId && <TrialVehicles key={catalogId} catalogId={catalogId} product={product} />}</AsyncView>)}</Tabs>
     </div>
   );
 }

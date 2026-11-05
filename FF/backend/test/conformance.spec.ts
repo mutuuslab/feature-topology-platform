@@ -6,7 +6,7 @@ import { get as httpGet } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ComponentRegistry } from '../src/kernel/components';
-import { bootApp } from './helpers';
+import { actor, bootApp } from './helpers';
 
 describe('42 컴포넌트 런타임 준수', () => {
   let app: INestApplication;
@@ -51,7 +51,10 @@ describe('42 컴포넌트 런타임 준수', () => {
       expect(res.type).toContain('text/event-stream');
       return;
     }
-    const res = await http().get(url);
+    const req = http().get(url);
+    // 역할 제한 조회는 계약이 허용한 신원으로 호출한다. 무인증·다른 역할 거부는 각 도메인 권한 회귀에서 확인한다.
+    if (r.roles?.length) req.set(actor('usr-conformance', r.roles[0]));
+    const res = await req;
     expect(res.status, JSON.stringify(res.body).slice(0, 200)).toBeLessThan(300);
   });
 

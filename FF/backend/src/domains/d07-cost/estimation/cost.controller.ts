@@ -7,6 +7,7 @@ import {
   CostTransitionBody,
   CreateCostProjectBody,
   PutCostCheckBody,
+  PutCostActualBody,
   PutCostMbdBody,
   UpdateCostLineBody,
   UpdateCostProjectBody,
@@ -25,6 +26,19 @@ export class CostController {
   @Get('projects')
   list(@CurrentActor() actor: Actor) {
     return this.s.list(actor);
+  }
+
+  @Put('projects/:estId/actuals/:refId')
+  @Roles('COST_ESTIMATOR')
+  @AuditAction('COST_ACTUAL_PUT')
+  putActual(@CurrentActor() actor: Actor, @Param('estId') estId: string, @Param('refId') refId: string, @Body(new ZodPipe(PutCostActualBody)) body: PutCostActualBody) {
+    return this.s.putActual(actor, estId, refId, body);
+  }
+
+  @Get('calibration')
+  @Roles('COST_ESTIMATOR', 'COST_APPROVER', 'COST_VIEWER', 'COST_BASIS_ADMIN')
+  calibration(@CurrentActor() actor: Actor) {
+    return this.s.calibration(actor);
   }
 
   @Post('projects')

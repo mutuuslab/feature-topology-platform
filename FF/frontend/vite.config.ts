@@ -47,17 +47,18 @@ export default defineConfig({
   preview: { proxy: BACKEND_PROXY, headers: deployHeaders() },
   build: {
     rollupOptions: {
-      // 스키마 선언은 초기화 부수효과가 없다. 필요한 폼이 로드될 때만 묶고, 카탈로그 설치 등 다른 모듈의 실행은 유지한다.
+      // 스키마·산정 순수 함수·서명 캐시 선언은 초기화 부수효과가 없다. 필요한 폼이 로드될 때만 묶고, 카탈로그 설치 등 다른 모듈의 실행은 유지한다.
       treeshake: {
         moduleSideEffects: (id) => {
           const path = id.replace(/\\/g, '/');
-          return path.includes('/contracts/src/schemas/') || path.endsWith('/contracts/src/rules/gate-evidence.ts') ? false : null;
+          return path.includes('/contracts/src/schemas/') || path.includes('/contracts/src/rules/cost/') || path.endsWith('/contracts/src/rules/gate-evidence.ts') || path.endsWith('/contracts/src/rules/unleash-snapshot.ts') || path.endsWith('/contracts/src/rules/unleash.ts') || path.endsWith('/contracts/src/rules/ext-sync.ts') ? false : null;
         },
       },
       // 두 개의 독립 엔트리: 플랫폼(index.html)과 Twin 콘솔(twin.html).
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         twin: fileURLToPath(new URL('./twin.html', import.meta.url)),
+        external: fileURLToPath(new URL('./external.html', import.meta.url)),
       },
       output: {
         manualChunks: {

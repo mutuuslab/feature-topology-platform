@@ -1,39 +1,99 @@
-# IF-04 Policy Tool 실연동용 Unleash OSS (P0 개정 BD-04: 공식 이미지 무수정, Edge 미사용).
-# hfp-feature-lifecycle docker/unleash 구성을 FF용으로 옮겼다 — 토큰은 파일에 적지 않고 .env(커밋 안 함)로 받는다.
-#   cp .env.example .env  # 토큰 값을 채운다
-#   docker compose up -d   # http://127.0.0.1:4242 (로컬에만 노출)
-# 플랫폼 백엔드: UNLEASH_MODE=live UNLEASH_URL=http://127.0.0.1:4242 UNLEASH_ADMIN_TOKEN=<관리 토큰>
+# Official unmodified sidecars. Generate private .env with node tools/unleash/create-env.mjs.
 name: ff-unleash
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:18.3-alpine@sha256:54451ecb8ab38c24c3ec123f2fd501303a3a1856a5c66e98cecf2460d5e1e9d7
     environment:
-      POSTGRES_DB: unleash
-      POSTGRES_USER: unleash
-      POSTGRES_PASSWORD: ${UNLEASH_DB_PASSWORD:?.env에 UNLEASH_DB_PASSWORD를 넣으세요}
+      POSTGRES_USER: ff_owner
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${PG_ADMIN_PASSWORD:?generate docker/unleash/.env}
+      POSTGRES_INITDB_ARGS: '--locale=C --encoding=UTF8'
+      FF_DB_PASSWORD: ${FF_DB_PASSWORD:?generate docker/unleash/.env}
+      UNLEASH_DB_PASSWORD: ${UNLEASH_DB_PASSWORD:?generate docker/unleash/.env}
+    ports: ['127.0.0.1:5543:5432']
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'unleash']
+      test: ['CMD-SHELL', 'pg_isready -U ff_owner -d postgres']
       interval: 5s
-      timeout: 5s
-      retries: 10
+      timeout: 3s
+      retries: 20
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql
+      - ./init-databases.sh:/docker-entrypoint-initdb.d/10-ff-databases.sh:ro
+    restart: unless-stopped
   web:
-    image: unleashorg/unleash-server:8.2.0
-    ports:
-      - '127.0.0.1:4242:4242'
+    image: unleashorg/unleash-server:8.3.1@sha256:025cd8b003a70cceb88427ca393c377ca6503a210d95fdee54d21610d51f7ed0
+    ports: ['127.0.0.1:4242:4242']
     environment:
-      DATABASE_URL: postgres://unleash:${UNLEASH_DB_PASSWORD}@db:5432/unleash
+      HTTP_HOST: '0.0.0.0'
+      DATABASE_HOST: db
+      DATABASE_PORT: '5432'
+      DATABASE_NAME: unleash
+      DATABASE_USERNAME: unleash_app
+      DATABASE_PASSWORD: ${UNLEASH_DB_PASSWORD:?generate docker/unleash/.env}
       DATABASE_SSL: 'false'
       LOG_LEVEL: warn
-      INIT_ADMIN_API_TOKENS: ${UNLEASH_ADMIN_TOKEN:?.env에 UNLEASH_ADMIN_TOKEN을 넣으세요}
+      CHECK_VERSION: 'false'
+      INIT_ADMIN_API_TOKENS: ${UNLEASH_ADMIN_TOKEN:?generate docker/unleash/.env}
+      INIT_BACKEND_API_TOKENS: ${UNLEASH_EDGE_BACKEND_TOKEN:?generate docker/unleash/.env}
+      INIT_FRONTEND_API_TOKENS: ${UNLEASH_EDGE_FRONTEND_TOKEN:?generate docker/unleash/.env}
+      UNLEASH_DEFAULT_ADMIN_PASSWORD: ${UNLEASH_ADMIN_PASSWORD:?generate docker/unleash/.env}
     depends_on:
-      db:
-        condition: service_healthy
+      db: { condition: service_healthy }
     healthcheck:
-      test: ['CMD', 'wget', '-q', '-O-', 'http://localhost:4242/health']
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:4242/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  edge:
+    image: unleashorg/unleash-edge:v20.6.0@sha256:212aee110c06b746e64452b59113632ad4414c56cbd9a56c6d07954c2ef5d19e
+    command: ['edge']
+    ports: ['127.0.0.1:3063:3063']
+    environment:
+      INTERFACE: '0.0.0.0'
+      UPSTREAM_URL: http://web:4242
+      TOKENS: ${UNLEASH_EDGE_BACKEND_TOKEN:?generate docker/unleash/.env}
+      FEATURES_REFRESH_INTERVAL_SECONDS: '1'
+      TOKEN_REVALIDATION_INTERVAL_SECONDS: '60'
+    depends_on:
+      web: { condition: service_healthy }
+    healthcheck:
+      test: ['CMD', '/app/unleash-edge', 'ready']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  platform:
+    profiles: ['platform']
+    build: { context: ../.., dockerfile: docker/app/Dockerfile }
+    env_file:
+      - path: ../app/.env
+        required: false
+    environment:
+      FF_ENV: production
+      FF_SEED: none
+      PORT: '9101'
+      FF_WEB_DIR: /app/FF/web
+      FF_DB_URL: postgresql://ff_app:${FF_DB_PASSWORD}@db:5432/feature_platform
+      FF_VEHICLE_AUTH: required
+      UNLEASH_MODE: live
+      UNLEASH_URL: http://web:4242
+      UNLEASH_ADMIN_TOKEN: ${UNLEASH_ADMIN_TOKEN}
+      UNLEASH_EDGE_URL: http://edge:3063
+      UNLEASH_EDGE_BACKEND_TOKEN: ${UNLEASH_EDGE_BACKEND_TOKEN}
+      UNLEASH_EDGE_FRONTEND_TOKEN: ${UNLEASH_EDGE_FRONTEND_TOKEN}
+    ports: ['127.0.0.1:9171:9101']
+    volumes:
+      - ff-data:/var/lib/ff
+      - ff-anchor:/var/lib/ff-anchor
+      - ff-backups:/var/backups/ff
+    depends_on:
+      db: { condition: service_healthy }
+      web: { condition: service_healthy }
+      edge: { condition: service_healthy }
+    restart: unless-stopped
 volumes:
   db-data:
+  ff-data:
+  ff-anchor:
+  ff-backups:

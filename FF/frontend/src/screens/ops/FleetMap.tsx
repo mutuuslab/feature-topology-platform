@@ -297,10 +297,18 @@ function Detail({ vin }: { vin: string }) {
 
 export function FleetMapScreen() {
   const [sp, setSp] = useSearchParams();
-  const [lens, setLens] = useState<MapLens>('subscription');
-  const [withSynthetic, setWithSynthetic] = useState(false);
-  const [catalogId, setCatalogId] = useState('');
-  const [flagKey, setFlagKey] = useState('');
+  // 주소를 필터의 정본으로 쓴다. 직접 연 Flag 지도·새로고침·SPA 뒤로/앞으로가 같은 조회를 만든다.
+  const lens: MapLens = sp.get('lens') === 'activation' ? 'activation' : 'subscription';
+  const withSynthetic = ['ALL', 'SYNTHETIC', 'all'].includes(sp.get('source') ?? '');
+  const catalogId = sp.get('catalogId') ?? sp.get('catalog') ?? '';
+  const flagKey = sp.get('flagKey') ?? '';
+  const filter = (key: 'lens' | 'source' | 'catalogId' | 'flagKey', value: string) => setSp((p) => {
+    const n = new URLSearchParams(p);
+    if (key === 'catalogId') n.delete('catalog');
+    if (value) n.set(key, value);
+    else n.delete(key);
+    return n;
+  });
   const [view, setView] = useState<MapView>('world');
   // 핵심 메시지 행동을 누를 때마다 늘린다 — 같은 차량을 다시 눌러도(지도를 옮긴 뒤) 지도가 그 차량으로 돌아간다
   const [focus, setFocus] = useState(0);
@@ -358,13 +366,14 @@ export function FleetMapScreen() {
   const count = (pred: (v: FleetMapVehicle) => boolean) => items.filter(pred).length.toLocaleString('ko-KR');
   const demoItems = demo.data?.items ?? [];
   const forbidden = demo.error?.status === 403;
+  const requestedFlagMissing = lens === 'activation' && !!flagKey && demo.isSuccess && !(demo.data?.flagKeys ?? []).includes(flagKey);
 
   const controls = (
     <div className="fm-controls">
       <Segmented<MapLens>
         label={F.lens}
         value={lens}
-        onChange={setLens}
+        onChange={(v) => filter('lens', v)}
         options={[
           { value: 'subscription', label: F.lensSubscription },
           { value: 'activation', label: F.lensActivation },
@@ -373,15 +382,16 @@ export function FleetMapScreen() {
       <Segmented<'demo' | 'all'>
         label={F.source}
         value={withSynthetic ? 'all' : 'demo'}
-        onChange={(v) => setWithSynthetic(v === 'all')}
+        onChange={(v) => filter('source', v === 'all' ? 'ALL' : 'FLEET')}
         options={[
           { value: 'demo', label: F.sourceDemo },
           { value: 'all', label: O.sourceAll },
         ]}
       />
       {lens === 'subscription' ? (
-        <Select label={F.catalog} value={catalogId} onChange={(e) => setCatalogId(e.target.value)}>
+        <Select label={F.catalog} value={catalogId} onChange={(e) => filter('catalogId', e.target.value)}>
           <option value="">{F.allCatalogs}</option>
+          {catalogId && !(demo.data?.catalogs ?? []).some((c) => c.catalogId === catalogId) && <option value={catalogId}>{catalogId}</option>}
           {(demo.data?.catalogs ?? []).map((c) => (
             <option key={c.catalogId} value={c.catalogId}>
               {c.catalogId} · {c.name}
@@ -389,8 +399,9 @@ export function FleetMapScreen() {
           ))}
         </Select>
       ) : (
-        <Select label={F.flag} value={flagKey} onChange={(e) => setFlagKey(e.target.value)}>
+        <Select label={F.flag} value={flagKey} onChange={(e) => filter('flagKey', e.target.value)}>
           <option value="">{F.allFlags}</option>
+          {flagKey && !(demo.data?.flagKeys ?? []).includes(flagKey) && <option value={flagKey}>{F.requestedFlag(flagKey)}</option>}
           {(demo.data?.flagKeys ?? []).map((k) => (
             <option key={k} value={k}>
               {k}
@@ -496,6 +507,7 @@ export function FleetMapScreen() {
               eyebrow={`${synData ? O.represented(represented) : `${F.kpi.located} ${count((v) => !!v.position)}/${items.length.toLocaleString('ko-KR')}`}${demo.data ? ` · ${F.updated(when(demo.data.generatedAt))}` : ''}`}
             >
               {controls}
+              {requestedFlagMissing && <p className="fm-note" data-testid="map-requested-flag"><code>{flagKey}</code> · {F.requestedFlagNote}</p>}
               <AsyncView state={asyncState(demo, false)} error={demo.error} onRetry={() => demo.refetch()}>
                 <FleetMapCanvas items={items} lens={lens} selected={selected} focus={focus} onSelect={select} view={view} clusters={clusters} onViewChange={onViewChange} />
                 <Legend lens={lens} items={items} summary={summary} clustered={clusters.length > 0} />

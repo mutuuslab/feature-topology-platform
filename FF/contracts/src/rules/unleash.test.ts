@@ -83,4 +83,18 @@ describe('Unleash 계획 (IF-04)', () => {
     const d = unleashDrift(p, { enabled: false, strategies: [{ ...p.strategies[0], parameters: { rollout: '50' } }], tags: [] });
     expect(d).toHaveLength(2 + p.tags.length);
   });
+  it.each(['name', 'disabled', 'caseInsensitive', 'stickiness', 'groupId', 'segments', 'variants', 'dependencies'])('evaluation-semantic drift cannot hide in %s', (field) => {
+    const p = planUnleash(base), server: any = { enabled: p.enabled, strategies: structuredClone(p.strategies), tags: p.tags, dependencies: [] };
+    const strategy = server.strategies[0];
+    if (field === 'name') strategy.name = 'default';
+    if (field === 'disabled') strategy.disabled = true;
+    if (field === 'caseInsensitive') strategy.constraints[0].caseInsensitive = true;
+    if (field === 'stickiness') strategy.parameters.stickiness = 'userId';
+    if (field === 'groupId') strategy.parameters.groupId = 'foreign-group';
+    if (field === 'segments') strategy.segments = [100];
+    if (field === 'variants') strategy.variants = [{ name: 'foreign', weight: 1000 }];
+    if (field === 'dependencies') server.dependencies = [{ feature: 'foreign-flag', enabled: false }];
+    expect(unleashDrift(p, server).length).toBeGreaterThan(0);
+  });
+
 });

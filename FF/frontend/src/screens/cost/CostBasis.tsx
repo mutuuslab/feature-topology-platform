@@ -8,6 +8,7 @@ import { costBasis as T } from '../../copy/cost';
 import { AsyncView, Button, DataTable, DiffView, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, whyDisabled } from '../../design';
 import { usePermission, when } from '../shared';
 import { BackLink, COST_MONEY, money, pct } from './common';
+import { CostCalibration } from './CostCalibration';
 
 interface BasisMeta {
   version: string;
@@ -43,7 +44,7 @@ export function CostBasisScreen() {
   const [picked, setPicked] = useState<string | null>(null);
   const version = picked ?? list.data?.latest ?? null;
   const prev = version ? items[items.findIndex((i) => i.version === version) + 1]?.version ?? null : null;
-  const [drafting, setDrafting] = useState(false);
+  const [drafting, setDrafting] = useState<Record<string, string> | null>(null);
   const [publishing, setPublishing] = useState<string | null>(null);
   return (
     <div className="ds-screen">
@@ -55,7 +56,7 @@ export function CostBasisScreen() {
         actions={
           <>
             <BackLink to="/procurement/sw-cost">{T.back}</BackLink>
-            <Button variant="primary" disabled={!admin.ok || !list.data?.latest} reason={whyDisabled([!admin.ok, admin.hint])} onClick={() => setDrafting(true)}>
+            <Button variant="primary" disabled={!admin.ok || !list.data?.latest} reason={whyDisabled([!admin.ok, admin.hint])} onClick={() => setDrafting({})}>
               {T.draft}
             </Button>
           </>
@@ -87,8 +88,9 @@ export function CostBasisScreen() {
           ]}
         />
         {version && (money$.ok ? <BasisContent version={version} prev={prev} /> : <p className="ds-field__hint">{T.moneyOnly}</p>)}
+        {money$.ok && <CostCalibration canDraft={admin.ok && !!list.data?.latest} why={whyDisabled([!admin.ok, admin.hint])} onDraft={(anchor) => setDrafting({ anchorEur: String(anchor) })} />}
       </AsyncView>
-      {drafting && list.data?.latest && <DraftDrawer from={list.data.latest} onClose={() => setDrafting(false)} />}
+      {drafting && list.data?.latest && <DraftDrawer from={list.data.latest} preset={drafting} onClose={() => setDrafting(null)} />}
       {publishing && <PublishDrawer version={publishing} onClose={() => setPublishing(null)} />}
     </div>
   );
@@ -162,12 +164,12 @@ function BasisContent({ version, prev }: { version: string; prev: string | null 
   );
 }
 
-function DraftDrawer({ from, onClose }: { from: string; onClose: () => void }) {
+function DraftDrawer({ from, preset, onClose }: { from: string; preset: Record<string, string>; onClose: () => void }) {
   const q = useApi<BasisDetail>('costBasis', { params: { version: from } });
   const draft = useApiMutation('costBasisDraft', ['costBasisList']);
   const [version, setVersion] = useState('');
   const [note, setNote] = useState('');
-  const [edit, setEdit] = useState<Record<string, string>>({});
+  const [edit, setEdit] = useState<Record<string, string>>(preset);
   const b = q.data?.basis;
   const val = (k: string, now: number | null) => edit[k] ?? (now == null ? '' : String(now));
   const num = (k: string, now: number | null) => {
@@ -180,6 +182,7 @@ function DraftDrawer({ from, onClose }: { from: string; onClose: () => void }) {
         ['daysPerMonth', T.miscRows.daysPerMonth, b.rates.daysPerMonth],
         ['vat', T.miscRows.vat, b.vat],
         ['fx', T.miscRows.fx, b.benchmark.fx],
+        ['anchorEur', T.miscRows.anchor, b.benchmark.anchorEur],
         ['pm', T.miscRows.pm, b.commonPct.pm],
         ['scm', T.miscRows.scm, b.commonPct.scm],
         ['pi', T.miscRows.pi, b.commonPct.pi],
@@ -199,7 +202,7 @@ function DraftDrawer({ from, onClose }: { from: string; onClose: () => void }) {
                 ...b,
                 version: version.trim(),
                 vat: num('vat', b.vat)!,
-                benchmark: { ...b.benchmark, fx },
+                benchmark: { ...b.benchmark, fx, anchorEur: num('anchorEur', b.benchmark.anchorEur)! },
                 currencies: { ...b.currencies, EUR: fx },
                 commonPct: { pm: num('pm', b.commonPct.pm)!, scm: num('scm', b.commonPct.scm)!, pi: num('pi', b.commonPct.pi)! },
                 rates: { ...b.rates, daysPerMonth: num('daysPerMonth', b.rates.daysPerMonth)!, roles: b.rates.roles.map((r) => ({ ...r, inhouseMonthly: num(`inhouse:${r.role}`, r.inhouseMonthly) })) },
@@ -234,7 +237,7 @@ function DraftDrawer({ from, onClose }: { from: string; onClose: () => void }) {
 
 function PublishDrawer({ version, onClose }: { version: string; onClose: () => void }) {
   const [reason, setReason] = useState('');
-  const m = useApiMutation('costBasisPublish', ['costBasisList', 'costProjects', 'costProject']);
+  const m = useApiMutation('costBasisPublish', ['costBasisList', 'costProjects', 'costProject', 'costCalibration']);
   const why = whyDisabled([reason.trim().length < 2, T.publishReason]);
   return (
     <Drawer open title={T.publishTitle(version)} onClose={onClose} dirty={!!reason}>

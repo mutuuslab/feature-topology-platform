@@ -56,7 +56,7 @@ describe('외부 항목 칩', () => {
   it('도구 이름은 글자로, 키는 새 탭 링크, 동기 문제·G2 재검토는 글자와 아이콘으로', () => {
     mount('viewer', <ExtRefChip r={REF({ system: 'CODEBEAMER', kind: 'REQUIREMENT', key: 'CB-10001', url: 'https://codebeamer.ff.example/cb/issue/10001', syncState: 'CONFLICT', stale: true }) as never} />);
     const a = screen.getByRole('link', { name: 'CB-10001' });
-    expect(a.getAttribute('href')).toBe('https://codebeamer.ff.example/cb/issue/10001');
+    expect(a.getAttribute('href')).toBe('/external.html?system=codebeamer&key=CB-10001');
     expect(a.getAttribute('target')).toBe('_blank');
     expect(a.getAttribute('rel')).toContain('noopener');
     expect(screen.getByText('codeBeamer')).toBeTruthy();

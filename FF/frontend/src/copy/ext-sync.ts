@@ -7,7 +7,7 @@ export const extSync = {
   state: { SYNCED: '맞음', PENDING: '보내는 중', CONFLICT: '충돌', FAILED: '보내기 실패', REJECTED: '외부 변경 거부됨' } satisfies Record<SyncState, string>,
   stale: 'G2 재검토',
   staleTitle: 'codeBeamer에서 요구가 개정되었습니다 — G2를 다시 판정하면 표시가 내려갑니다',
-  open: (system: string) => `${system}에서 열기 (새 탭)`,
+  open: (system: string) => `${system}에서 열기 (새 창)`,
   mode: { mock: '모의', live: '실제 연결', off: '꺼짐' } as Record<string, string>,
   owner: { PLATFORM: 'Feature Platform', CODEBEAMER: 'codeBeamer', JIRA: 'JIRA', GITLAB: 'GitLab' } as Record<string, string>,
 

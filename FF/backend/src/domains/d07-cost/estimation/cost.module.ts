@@ -5,11 +5,12 @@ import { RefdbModule } from '../../d01-policy/refdb/refdb.module';
 import { CostController } from './cost.controller';
 import { CostDemoSeed } from './cost-demo-seed';
 import { CostService } from './cost.service';
+import { CostShowcaseSeed } from './cost-showcase-seed';
 
 @Module({
   imports: [D01PolicyModule, RefdbModule],
   controllers: [CostController],
   // 데모 시드는 계수 표 시드 뒤 — CostDemoSeed가 ensureBasis를 먼저 부른다
-  providers: [CostService, CostDemoSeed],
+  providers: [CostService, CostDemoSeed, CostShowcaseSeed],
 })
 export class CostModule {}

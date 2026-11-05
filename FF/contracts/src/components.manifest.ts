@@ -122,13 +122,14 @@ const FE_OPSADMIN = 'frontend/src/__tests__/screensOpsAdmin.test.tsx';
 /** Feature DB(30-95) — D01-01 확장: 기준 행 목록·상세·변경 요청, 등록 때 대표 연결 */
 const REFDB_SCREENS = ['/master/feature-db', '/master/feature-db/:refId', '/master/feature-db/changes', '/master/feature-db/changes/:id'];
 const REFDB_TESTS = [
+  'backend/test/d01/refdb-search-projection.spec.ts',
   ...['change', 'export', 'governance', 'harness', 'read', 'registration', 'release', 'seed'].map((x) => `backend/test/d01/refdb-${x}.spec.ts`),
   ...['domain-alias', 'quality', 'registration-criteria', 'size', 'status-policy'].map((x) => `contracts/src/rules/refdb/${x}.test.ts`),
   'backend/test/kernel/refdb-ready.spec.ts', // 준비 점검 checks.refdb
   'backend/test/d05/epic-ref-ids.spec.ts', // JIRA Epic의 Feature DB ID
   'contracts/src/rules/access-refdb.test.ts',
   'contracts/src/schemas/refdb.test.ts',
-  'frontend/src/__tests__/screensRefdb.test.tsx',
+  'frontend/src/__tests__/screensRefdb.test.tsx', 'frontend/src/__tests__/refExplorer.test.ts',
   'frontend/src/__tests__/screensPropose.test.tsx',
   'e2e/tests/refdb.spec.ts',
   'backend/test/d01/refdb-ops.spec.ts',
@@ -141,8 +142,8 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D01-01': { screens: ['/features', '/features/:id/:ver', '/master/define', '/baselines', '/change/cr', '/master/taxonomy', '/flag-retirements', ...REFDB_SCREENS], tests: [...BE_D01, FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, 'backend/test/d01/release-signoff.spec.ts', 'frontend/src/__tests__/screensReleaseSignoff.test.tsx', ...REFDB_TESTS] },
   'D01-02': { screens: ['/features/:id/:ver', '/analysis/impact', '/precheck', '/master/upg', '/master/artifacts', '/master/structure', '/master/control-points', '/trace/design', '/change/eo'], tests: [...BE_D01, 'contracts/src/rules/topology.test.ts', 'contracts/src/rules/precheck.test.ts', FE_V2, E2E_GOV, BE_MASTER, FE_MASTER, FE_OPSADMIN, 'backend/test/d01/analysis-evidence.spec.ts', 'contracts/src/rules/gate-evidence.test.ts', 'contracts/src/rules/gate-evidence-projection.test.ts', 'frontend/src/__tests__/screensAnalysisGates.test.tsx', 'e2e/tests/persona-safety.spec.ts'] },
   'D01-03': { screens: ['/products', '/products/new', '/products/:id/:ver'], tests: ['backend/test/d01/topology-catalog.spec.ts', 'contracts/src/rules/catalog.test.ts', E2E_GOV] },
-  'D01-10': { screens: ['/audit'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
-  'D04-04': { screens: ['/events'], tests: ['backend/test/kernel/kernel.spec.ts', E2E_GOV] },
+  'D01-10': { screens: ['/audit'], tests: ['backend/test/kernel/kernel.spec.ts', 'frontend/src/__tests__/workProduct.test.tsx', E2E_GOV] },
+  'D04-04': { screens: ['/events'], tests: ['backend/test/kernel/kernel.spec.ts', 'frontend/src/__tests__/workProduct.test.tsx', E2E_GOV] },
   'D01-04': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
   'D01-05': { screens: ['/entitlements'], tests: [BE_POL, BE_TRIAL, CT_TRIAL, 'contracts/src/flags/evaluate.test.ts', FE_TRIAL, E2E_TRIAL] },
   // 기간형 체험권 → 구매 전환·체험 전환 분석 (2026-10-13)
@@ -151,14 +152,14 @@ const IMPLEMENTED: Record<string, Impl> = {
   // P10 — 실험·효과·장애·VOC·데이터 동기화·Legacy·현장 지원·Legacy-SDV (IF-01·02·03·08·11·12 모의 어댑터)
   'D01-07': { screens: ['/experiments'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
   'D04-05': { screens: ['/ops/incidents'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
-  'D05-02': { screens: ['/integration/sync'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
+  'D05-02': { screens: ['/integration/sync', '/data/workbench'], tests: ['frontend/src/__tests__/workbench.test.tsx', 'e2e/tests/data-workbench.spec.ts', BE_P10, CT_EXT, FE_P10, E2E_P10] },
   'D05-03': { screens: ['/integration/legacy'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
   'D05-05': { screens: ['/field'], tests: [BE_P10, FE_P10, E2E_P10] },
   'D05-07': { screens: ['/integration/legacy'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
-  'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'contracts/src/rules/unleash.test.ts', 'backend/test/d01/flag-source.spec.ts', 'contracts/src/schemas/flag-source.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', 'frontend/src/__tests__/featureFlags.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts', 'e2e/tests/persona-flags.spec.ts'] },
+  'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'backend/test/d01/unleash-vehicle.spec.ts', 'backend/test/d01/unleash-auto-sync.spec.ts', 'backend/live-tests/unleash-vehicle-live.spec.ts', 'contracts/src/rules/unleash-snapshot.test.ts', 'contracts/src/rules/unleash.test.ts', 'backend/test/d01/flag-source.spec.ts', 'contracts/src/schemas/flag-source.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', 'frontend/src/__tests__/featureFlags.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts', 'e2e/tests/persona-flags.spec.ts'] },
   'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
   'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
-  'D05-01': { screens: ['/activation/decide', '/integration/openfeature', '/integration/connectors', '/supplier/portal'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ, 'backend/test/d05/openfeature.spec.ts', 'contracts/src/flags/openfeature.test.ts', FE_P10, FE_OPSADMIN, 'backend/test/d05/ext-sync.spec.ts', 'contracts/src/rules/ext-sync.test.ts'] },
+  'D05-01': { screens: ['/activation/decide', '/integration/openfeature', '/integration/connectors', '/supplier/portal'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ, 'backend/test/d05/openfeature.spec.ts', 'contracts/src/flags/openfeature.test.ts', FE_P10, FE_OPSADMIN, 'backend/test/d05/ext-sync.spec.ts', 'contracts/src/rules/ext-sync.test.ts', 'frontend/src/__tests__/externalDemo.test.tsx', 'e2e/tests/external-windows.spec.ts'] },
   'D06-01': VALIDATOR,
   'D06-02': VALIDATOR,
   'D06-03': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_POL, FE_OPS, E2E_POL, E2E_OPS], via: ['validatePolicy'] },
@@ -176,17 +177,17 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D02-01': { screens: ['/variant-conditions', '/master/reference-values'], tests: ['backend/test/d06/iam-variant.spec.ts', 'contracts/src/rules/access-variant.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx', 'backend/test/kernel/production-values.spec.ts', 'frontend/src/__tests__/referencePrivacy.test.tsx'] },
   'D02-02': { screens: ['/variant-conditions', '/fleet/vehicles/:vin'], tests: ['backend/test/d06/iam-variant.spec.ts', 'contracts/src/rules/access-variant.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx'] },
   // PoC ④⑤⑥ 배포·차단 전달 (P8a)
-  'D02-03': { screens: ['/fleet/live', '/fleet/vehicles/:vin', '/fleet/map'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', 'contracts/src/gleo.test.ts', FE_OPS, E2E_OPS, BE_VREQ, CT_VREQ, 'backend/test/d02/fleet-map.spec.ts', 'contracts/src/rules/fleet-map.test.ts', 'frontend/src/__tests__/screensFleetMap.test.tsx', 'frontend/src/__tests__/carIcon.test.ts', 'e2e/tests/fleet-map.spec.ts'] },
+  'D02-03': { screens: ['/fleet/live', '/fleet/vehicles/:vin', '/fleet/map'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', 'contracts/src/gleo.test.ts', FE_OPS, E2E_OPS, BE_VREQ, CT_VREQ, 'backend/test/d02/fleet-map.spec.ts', 'backend/test/kernel/showcase.spec.ts', 'contracts/src/rules/fleet-map.test.ts', 'frontend/src/__tests__/screensFleetMap.test.tsx', 'frontend/src/__tests__/carIcon.test.ts', 'e2e/tests/fleet-map.spec.ts'] },
   'D03-03': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', FE_OPS, E2E_OPS] },
   'D03-04': { screens: ['/ops/kill', '/ops/rollback', '/policies/:id'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', E2E_OPS, 'backend/test/d03/rollback.spec.ts', 'contracts/src/rules/rollback.test.ts', 'frontend/src/__tests__/screensRollback.test.tsx', 'backend/test/d03/policy-history.spec.ts', 'frontend/src/__tests__/policyHistory.test.tsx', 'e2e/tests/policy-rollback.spec.ts'] },
   'D04-01': { screens: ['/deployments', '/deployments/:id'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
-  'D04-03': { screens: ['/fleet/live', '/deployments/:id', '/ops/telemetry', '/ops/safety-kpi'], tests: [BE_DLV, FE_OPS, E2E_OPS, FE_OPSADMIN] },
+  'D04-03': { screens: ['/fleet/live', '/deployments/:id', '/ops/telemetry', '/ops/safety-kpi'], tests: ['frontend/src/__tests__/observabilityData.test.ts', 'frontend/src/__tests__/telemetryIdentity.test.ts', 'frontend/src/__tests__/telemetryObservability.test.tsx', BE_DLV, FE_OPS, E2E_OPS, FE_OPSADMIN] },
   'D06-08': { screens: ['/deployments', '/deployments/:id', '/fleet/live'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
   'D06-10': { screens: ['/deployments', '/admin/security'], tests: [BE_DLV, E2E_OPS, FE_OPSADMIN] },
   // 보고서 v1.1 WP8 — 게시본별 CycloneDX SBOM·서명 전 해시 결합·VEX 판정
   'D06-11': { screens: ['/admin/security'], tests: ['backend/test/d06/sbom.spec.ts', 'contracts/src/rules/sbom.test.ts', FE_OPSADMIN] },
   // 구매본부 SW 개발비 산정(20-94) — 엑셀 v1.3과 1원 일치 엔진, 과제·승인 API, 화면 5탭·계수 표, 엑셀 양식 내보내기
-  'D07-01': { screens: ['/procurement/sw-cost', '/procurement/sw-cost/:estId', '/procurement/sw-cost/basis'], tests: ['backend/test/d07/cost.spec.ts', 'backend/test/kernel/xlsx-patch.spec.ts', 'contracts/src/rules/cost/engine.golden.test.ts', 'contracts/src/rules/cost/engine.test.ts', 'frontend/src/__tests__/screensCost.test.tsx'] },
+  'D07-01': { screens: ['/procurement/sw-cost', '/procurement/sw-cost/:estId', '/procurement/sw-cost/basis'], tests: ['backend/test/d07/cost.spec.ts', 'backend/test/d07/cost-calibration.spec.ts', 'backend/test/kernel/xlsx-patch.spec.ts', 'contracts/src/rules/cost/engine.golden.test.ts', 'contracts/src/rules/cost/engine.test.ts', 'contracts/src/rules/cost/calibration.test.ts', 'frontend/src/__tests__/screensCost.test.tsx', 'e2e/tests/persona-cost.spec.ts'] },
 };
 
 export const COMPONENTS: ComponentEntry[] = SEEDS.map(([id, ko, tier, module, ifs, pocSteps]) => {

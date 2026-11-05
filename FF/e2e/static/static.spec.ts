@@ -26,6 +26,9 @@ async function noErrorBox(page: Page, where: string) {
 
 /** 화면이 뜬 뒤 탭을 모두 차례로 연다 — 탭마다 따로 조회하고, 탭마다 오류 상자가 없는지 본다 */
 async function openAllTabs(page: Page) {
+  // URL 전환 뒤 지연 모듈이 실제로 읽힐 때까지 기다린다. 이전 화면의 탭을 세면 사라진 탭을 누른다.
+  await page.waitForLoadState('networkidle');
+  await expect(page.locator('#main h1').first()).toBeVisible();
   await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
   await page.waitForLoadState('networkidle');
   await noErrorBox(page, page.url());

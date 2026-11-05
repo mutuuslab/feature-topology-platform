@@ -21,6 +21,7 @@ const GALLERY_MARKER = 'ff-design-gallery-v1';
 const LEARN_MARKER = 'ff-learn-v1';
 const DEPT_MARKER = 'ff-dept-view-v1';
 const WORKSPACE_MARKER = 'data-workspace-home';
+const EXTERNAL_MARKER = 'ff-external-demo-v1';
 /** 라우트 표의 경로 문자열 '/_design'(따옴표로 감싼 값) */
 const DESIGN_ROUTE = /["'`]\/_design["'`]/;
 /** 데모 비밀번호 문자열 — SSE 이벤트 이름 addEventListener("platform")은 같은 글자라 빼고 센다 */
@@ -65,6 +66,7 @@ test('운영 빌드에 디자인 시스템 갤러리(/_design)·표준 따라하
   assert.equal(prod.includes(LEARN_MARKER), false, '표준 따라하기 화면 묶음이 운영 빌드에 실렸다');
   assert.equal(prod.includes(DEPT_MARKER), false, '데모 부서 보기(부서 메뉴)가 운영 빌드에 실렸다');
   assert.equal(prod.includes(WORKSPACE_MARKER), false, '데모 부서 작업공간 홈 묶음이 운영 빌드에 실렸다');
+  assert.equal(prod.includes(EXTERNAL_MARKER), false, '가상 외부 시스템 화면이 운영 빌드에 실렸다');
   assert.equal(DESIGN_ROUTE.test(prod), false, '/_design 라우트가 운영 빌드에 있다');
 });
 
@@ -76,5 +78,6 @@ test('데모 빌드(있으면)에는 같은 표식이 있다 — 검사가 실�
   assert.ok(passwordLiteral(demo), '데모 빌드에 데모 비밀번호가 없다(검사 규칙이 낡았다)');
   assert.ok(demo.includes(GALLERY_MARKER), '데모 빌드에 디자인 갤러리 표식이 없다');
   assert.ok(demo.includes(LEARN_MARKER), '데모 빌드에 표준 따라하기 표식이 없다');
+  assert.ok(demo.includes(EXTERNAL_MARKER), '데모 빌드에 가상 외부 시스템 표식이 없다');
   assert.ok(DESIGN_ROUTE.test(demo), '데모 빌드에 /_design 라우트가 없다');
 });

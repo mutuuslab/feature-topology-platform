@@ -1,4 +1,4 @@
-// IF-04 Policy Tool — Unleash OSS 8.2.0 Admin API 클라이언트 (hfp-feature-lifecycle tools/unleash-bridge.js·test UNI_STUB의 TS 이식).
+// IF-04 Policy Tool — Unleash OSS 8.3.1 Admin API 클라이언트 (hfp-feature-lifecycle tools/unleash-bridge.js·test UNI_STUB의 TS 이식).
 //   UNLEASH_MODE=mock(기본: 메모리 안의 Unleash — 같은 경로·응답 모양) | live(UNLEASH_URL, 기본 http://127.0.0.1:4242) | off
 //   live는 Admin API 허용 목록 경로만 부르고, 토큰은 Authorization 헤더에 원문으로 보낸다(UNLEASH_ADMIN_TOKEN). 결과 상태: OK·NOT_FOUND·DENIED·FAILED·INVALID.
 import { Injectable } from '@nestjs/common';
@@ -72,9 +72,10 @@ class LiveUnleash implements UnleashClient {
       const text = await res.text();
       const data = text ? (JSON.parse(text) as T) : null;
       const state = stateOf(res.status);
-      return { state, code: res.status, data, why: state === 'OK' ? null : ((data as any)?.message ?? (data as any)?.error ?? res.statusText) };
+      const message = String((data as any)?.message ?? (data as any)?.error ?? res.statusText);
+      return { state, code: res.status, data, why: state === 'OK' ? null : (this.token ? message.replaceAll(this.token, '[REDACTED]') : message).slice(0, 500) };
     } catch (e) {
-      return { state: 'FAILED', code: 0, data: null, why: `Unleash 연결 실패: ${(e as Error).message}` };
+      return { state: 'FAILED', code: 0, data: null, why: `Unleash 연결 실패: ${(e as Error).name === 'TimeoutError' ? '요청 기한 초과' : '네트워크 또는 응답 오류'}` };
     }
   }
 
@@ -158,7 +159,7 @@ export class MockUnleash implements UnleashClient {
   }
 
   async health() {
-    return { state: 'OK' as const, code: 200, why: null, data: { version: '8.2.0 (mock)', instanceId: 'mock-unleash' } };
+    return { state: 'OK' as const, code: 200, why: null, data: { version: '8.3.1 (mock)', instanceId: 'mock-unleash' } };
   }
 
   /** 실제 HTTP처럼 응답은 항상 사본 — 내부 상태와 참조를 공유하지 않는다 */
@@ -198,7 +199,7 @@ export class MockUnleash implements UnleashClient {
       return r(this.ok(body, 201));
     }
     if (p[0] === 'playground' && p[1] === 'advanced') return r(this.playground(body));
-    if (p[0] === 'instance-admin') return r(this.ok({ versionOSS: '8.2.0 (mock)', instanceId: 'mock-unleash', featureToggles: this.features.size }));
+    if (p[0] === 'instance-admin') return r(this.ok({ versionOSS: '8.3.1 (mock)', instanceId: 'mock-unleash', featureToggles: this.features.size }));
     if (p[0] !== 'projects') return r(this.err(404, `모의 Unleash가 다루지 않는 경로: ${path}`));
     // projects/{p}/features[/{f}[/…]]
     const name = p[3];

@@ -11,6 +11,8 @@ import { AsyncView, DataTable, PageHeader, Pager, Panel, Segmented, Select, Summ
 import { RefChip, RefStatusBadge, TextLink, type RefRowView } from './common';
 import { useRefSearch } from './refSearch';
 import { SourcesPanel } from './Sources';
+import { refExplorer as E } from '../../copy/ref-explorer';
+import './ref-explorer.css';
 
 export const REF_PAGE_SIZE = 50;
 
@@ -29,6 +31,8 @@ export function FeatureDbScreen() {
   const component = sp.get('component') ?? '';
   const status = sp.get('status') ?? '';
   const source = sp.get('source') ?? '';
+  const asils = (sp.get('asils') ?? '').split(',').filter(Boolean);
+  const statuses = (sp.get('statuses') ?? '').split(',').filter(Boolean);
   const page = Math.max(0, Number(sp.get('page')) || 0);
 
   // 검색 칸은 바로 따라 쓰고, 조회 질의는 잠깐 멈춘 뒤 URL에 반영한다(글자마다 서버를 부르지 않게)
@@ -49,7 +53,7 @@ export function FeatureDbScreen() {
 
   const quality = useApi<RefQuality>('refQuality');
   const taxonomy = useApi<{ items: TaxonomyNode[] }>('refTaxonomy');
-  const list = useRefSearch<RefRowView>(refListQuery({ q, domain, component, status, page, source }), { keepPrevious: true });
+  const list = useRefSearch<RefRowView>({ ...refListQuery({ q, domain, component, status, page, source }), asils: asils.join(',') || undefined, statuses: statuses.join(',') || undefined }, { keepPrevious: true });
 
   const nodes = taxonomy.data?.items ?? [];
   const domains = nodes.filter((n) => n.level === 'DOMAIN');
@@ -59,7 +63,7 @@ export function FeatureDbScreen() {
   const total = list.data?.total ?? 0;
   const qd = quality.data;
   const awaiting = qd?.awaitingPublish ?? 0;
-  const filtered = !!(q || domain || component || status || source);
+  const filtered = !!(q || domain || component || status || source || asils.length || statuses.length);
   // 상태 탭 수는 지금 검색·도메인·컴포넌트 조건의 패싯(상태 축만 빼고 센 수) — 전체 품질 지표 수가 아니다
   const byStatus = list.data?.facets?.status as Partial<Record<RefStatus, number>> | undefined;
   const facetTotal = byStatus ? REF_STATUSES.reduce((n, s) => n + (byStatus[s] ?? 0), 0) : undefined;
@@ -132,10 +136,19 @@ export function FeatureDbScreen() {
                 )}
                 <Segmented<string>
                   label={T.status}
-                  value={status}
-                  onChange={(v) => set({ status: v })}
+                  value={statuses.length ? '__multi__' : status}
+                  onChange={(v) => set({ status: v, statuses: '' })}
                   options={[{ value: '', label: T.allStatus, count: facetTotal }, ...REF_STATUSES.map((s: RefStatus) => ({ value: s, label: REF_STATUS_POLICY[s].ko, count: byStatus?.[s] }))]}
                 />
+                <div className="ref-explorer" role="region" aria-label={E.title}>
+                  <div className="ref-explorer__filters">
+                    <details><summary>{E.asil} · {asils.length || E.all}</summary><fieldset><legend>{E.asil}</legend>{['QM', 'A', 'B', 'C', 'D'].map(value => <label key={value}><input type="checkbox" checked={asils.includes(value)} onChange={() => set({ asils: (asils.includes(value) ? asils.filter(x => x !== value) : [...asils, value]).join(',') })} />{value}</label>)}</fieldset></details>
+                    <details><summary>{E.status} · {statuses.length || E.all}</summary><fieldset><legend>{E.status}</legend>{REF_STATUSES.map(value => <label key={value}><input type="checkbox" checked={statuses.includes(value)} onChange={() => set({ statuses: (statuses.includes(value) ? statuses.filter(x => x !== value) : [...statuses, value]).join(','), status: '' })} />{REF_STATUS_POLICY[value].ko}</label>)}</fieldset></details>
+                    {(asils.length > 0 || statuses.length > 0) && <button type="button" className="ds-btn ds-btn--ghost" onClick={() => set({ asils: '', statuses: '' })}>{E.clear}</button>}
+                    <span className="ds-field__hint">{E.count(total)}{list.isPending ? ` · ${E.loading}` : ''}</span>
+                  </div>
+                  <p className="ds-field__hint">{E.hint}</p>
+                </div>
                 <AsyncView state={asyncState(list, rows.length === 0)} filtered={filtered} empty={{ title: T.empty }} error={list.error} onRetry={() => list.refetch()}>
                   <DataTable<RefRowView>
                     caption={T.caption}

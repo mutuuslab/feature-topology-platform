@@ -42,6 +42,9 @@ import { NextTurn, roleBlocker } from './NextTurn';
 import { nextTurn as NT } from '../../copy/inbox';
 import { ImplDeadEnd, ImplMissingNotice, RegisteredGuide } from './ImplLinks';
 import type { AuditEntry, ChecklistItem, FeatureDetail as Detail } from '../types';
+import { ExternalToolLaunchers } from '../../external/launchers';
+import { useFeatureTrace } from './ExtLinksTab';
+import { useExternalChanges } from '../../external/useExternalChanges';
 
 const T = ko.detail;
 // Lifecycle은 핵심 메시지 상태 pill과 스테퍼가 보인다 — 속성 표에서 한 번 더 보이지 않는다(3초 규칙 6, UX3-08)
@@ -49,10 +52,12 @@ const ATTR_ORDER = ['featureId', 'name', 'description', 'requirementIds', 'count
 const INVALIDATE = ['featureDetail', 'listFeatures', 'gates', 'audit', 'baselineRequests', 'baselineChecklist', 'baselines'];
 
 export default function FeatureDetail() {
+  useExternalChanges();
   const { id = '', ver = '' } = useParams();
   const nav = useNavigate();
   const q = useApi<Detail>('featureDetail', { params: { id, ver } });
   const d = q.data;
+  const external = useFeatureTrace(id, ver);
   const [transitionTo, setTransitionTo] = useState<Lifecycle | null>(null);
   // 막지 않은 기준 행 경고(전이·새 Version 응답 warnings) — 그 Version에서만 보인다. 새 Version은 이동할 때 state로 넘겨받는다
   const loc = useLocation();
@@ -107,6 +112,7 @@ export default function FeatureDetail() {
               }
             />
 
+            <ExternalToolLaunchers compact requirement={external.data?.requirements?.[0]} jira={external.data?.epic ?? external.data?.changeRequests?.[0]} featureId={id} version={ver} />
             <FeatureFlagHighlight id={id} ver={ver} />
 
             <Panel id="lc">

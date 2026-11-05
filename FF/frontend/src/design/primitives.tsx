@@ -180,9 +180,10 @@ export function AsyncView({ state, stale, onRetry, empty, emptyHidden, error, ch
 /** URL(?tab=)과 동기화되는 탭 — 딥링크·새로고침에도 같은 탭 */
 export function Tabs({ tabs, param = 'tab', children }: { tabs: { key: string; label: ReactNode; count?: number }[]; param?: string; children: (active: string) => ReactNode }) {
   const [sp, setSp] = useSearchParams();
+  const idPrefix = param === 'tab' ? '' : `${param}-`;
   const active = tabs.some((t) => t.key === sp.get(param)) ? sp.get(param)! : tabs[0]?.key;
   const activeLabel = plainText(tabs.find((t) => t.key === active)?.label);
-  const activeTab = useMemo(() => (activeLabel ? { title: activeLabel, id: `tab-${active}` } : null), [activeLabel, active]);
+  const activeTab = useMemo(() => (activeLabel ? { title: activeLabel, id: `tab-${idPrefix}${active}` } : null), [activeLabel, active, idPrefix]);
   const select = (key: string) => {
     const next = new URLSearchParams(sp);
     next.set(param, key);
@@ -197,16 +198,16 @@ export function Tabs({ tabs, param = 'tab', children }: { tabs: { key: string; l
             type="button"
             role="tab"
             className="ds-tab"
-            id={`tab-${t.key}`}
+            id={`tab-${idPrefix}${t.key}`}
             aria-selected={t.key === active}
-            aria-controls={`panel-${t.key}`}
+            aria-controls={`panel-${idPrefix}${t.key}`}
             tabIndex={t.key === active ? 0 : -1}
             onClick={() => select(t.key)}
             onKeyDown={(e) => {
               if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
               const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
               select(next.key);
-              document.getElementById(`tab-${next.key}`)?.focus();
+              document.getElementById(`tab-${idPrefix}${next.key}`)?.focus();
             }}
           >
             {t.label}
@@ -214,7 +215,7 @@ export function Tabs({ tabs, param = 'tab', children }: { tabs: { key: string; l
           </button>
         ))}
       </div>
-      <div role="tabpanel" id={`panel-${active}`} aria-labelledby={`tab-${active}`}>
+      <div role="tabpanel" id={`panel-${idPrefix}${active}`} aria-labelledby={`tab-${idPrefix}${active}`}>
         <ActiveTabContext.Provider value={activeTab}>{active && children(active)}</ActiveTabContext.Provider>
       </div>
     </>

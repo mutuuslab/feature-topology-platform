@@ -5,6 +5,8 @@ import type { ExtLink } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { extSync } from '../../copy/ext-sync';
 import { AsyncView, DataTable, ExtRefChip, Icon, Panel } from '../../design';
+import { ExternalToolLaunchers } from '../../external/launchers';
+import { useExternalChanges } from '../../external/useExternalChanges';
 
 const X = extSync.feature;
 
@@ -67,6 +69,7 @@ const clip = (text: string, ch = 48) => (
 const DEFECT_LIMIT = 10;
 
 export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
+  useExternalChanges();
   const q = useFeatureTrace(id, ver);
   const t = q.data;
   const issues: string[] = t
@@ -89,6 +92,7 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
     <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       {t && (
         <div style={{ display: 'grid', gap: 'var(--sp-4)' }} data-testid="ext-links">
+          <ExternalToolLaunchers requirement={t.requirements[0]} jira={t.epic ?? t.changeRequests[0]} featureId={id} version={ver} />
           <ul className="ds-check" aria-label={X.chain}>
             {issues.length ? (
               issues.map((m) => (

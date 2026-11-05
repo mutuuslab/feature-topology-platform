@@ -2,6 +2,8 @@
 import type { INestApplication } from '@nestjs/common';
 import { canonicalJson, FeatureFlagRow, FlagSourceManifest, type Policy, type Publication } from '@ff/contracts';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { FlagSourceService } from '../../src/domains/d01-policy/policy-store/flag-source.service';
 import { PolicyRepo } from '../../src/domains/d01-policy/policy-repos';
@@ -167,7 +169,9 @@ describe('Git Flag 소스 가져오기 (D01-06)', () => {
   it('실제 데모 스냅샷은 DEMO로 표시되고 부팅 재호출은 중복을 만들지 않는다', () => {
     const first = sources.list().filter((r) => r.provenance === 'DEMO');
     expect(first.length).toBeGreaterThan(0);
-    expect(first[0].manifest.commit).toBe('1160d92de3af1a9cbaadc7241c2fa09baee39d4b');
+    const fixture = FlagSourceManifest.parse(JSON.parse(readFileSync(join(__dirname, '../../../data/fixtures/demo/flag-sources.json'), 'utf8')));
+    expect(first[0].manifest).toEqual(fixture);
+    expect(first[0].manifest.usages.length).toBeGreaterThan(0);
     sources.onApplicationBootstrap();
     expect(sources.list().filter((r) => r.provenance === 'DEMO')).toEqual(first);
     const append = vi.spyOn(sources as any, 'append');

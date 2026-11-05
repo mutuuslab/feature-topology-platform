@@ -39,7 +39,8 @@ import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { ReleaseSignoffBody } from './schemas/release-signoff';
 import { ProcedureCompleteBody } from './schemas/procedure';
-import { AddCostFeatureBody, COST_READ_ROLES, CostBasisDraftBody, CostTransitionBody, CreateCostProjectBody, PutCostCheckBody, PutCostMbdBody, UpdateCostLineBody, UpdateCostProjectBody } from './schemas/cost';
+import { AddCostFeatureBody, COST_MONEY_ROLES, COST_READ_ROLES, CostBasisDraftBody, CostTransitionBody, CreateCostProjectBody, PutCostActualBody, PutCostCheckBody, PutCostMbdBody, UpdateCostLineBody, UpdateCostProjectBody } from './schemas/cost';
+
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { VehicleDeliveryAck } from './rules/vehicle-auth';
@@ -232,7 +233,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'changeRecords', method: 'GET', path: '/api/change-records', summary: '변경 기록 감사 — AI 생성 표시·도구·범위, 검토·정적 분석·시험·커버리지 근거 누락(FFG-CODE-030)', component: 'D04-01', query: ['swId'] },
   { name: 'registerChangeRecord', method: 'POST', path: '/api/change-records', summary: 'CI/CD(IF-13) 변경 기록 등록 — 추가만', component: 'D04-01', roles: ['IMPLEMENTER', 'SYSTEM'], body: ChangeRecordBody },
   { name: 'integrationCalls', method: 'GET', path: '/api/integrations/calls', summary: '외부 연계 호출 기록 (IF-05·IF-13, 멱등 키)', component: 'D04-01', query: ['ifId', 'key'] },
-  { name: 'readbacks', method: 'GET', path: '/api/telemetry/readbacks', summary: '차량 회신 (readback) 기록', component: 'D04-03', query: ['publicationId', 'vin'], dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
+  { name: 'readbacks', method: 'GET', path: '/api/telemetry/readbacks', summary: '차량 회신 (readback) 기록', component: 'D04-03', query: ['publicationId', 'vin'], personal: true, dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   { name: 'ingestReadback', method: 'POST', path: '/api/telemetry/readback', summary: 'IF-06 차량 회신 수집', component: 'D04-03', roles: ['SYSTEM'], body: ReadbackBody },
   { name: 'fleetRuntime', method: 'GET', path: '/api/fleet/runtime', summary: 'Fleet 실시간 적용 현황 — 차량별 적용 게시본·상태·서버 판단 비교', component: 'D02-03' },
   { name: 'fleetMap', method: 'GET', path: '/api/fleet/map', summary: '전세계 차량 지도 — 차량별 위치(약 1 km)·구독 상태·기능 활성, 국가별 집계. 위치는 데모 모의값, 열람 감사', component: 'D02-03', query: ['source', 'catalogId', 'flagKey', 'zoom', 'bbox'], personal: true, roles: [...LOCATION_VIEW_ROLES] },
@@ -243,10 +244,11 @@ export const ROUTES: RouteDef[] = [
   { name: 'vehicleRuntime', method: 'GET', path: '/api/vehicles/:vin/runtime', summary: '차량 런타임 — 적용 게시본·차량 측 평가·서버 판단 비교', component: 'D02-03' },
   { name: 'vehicleRequests', method: 'GET', path: '/api/vehicles/:vin/requests', summary: '차량 발신 요청 기록 — 조회·보고·거부 사유, 보고 위치(bootId·sequence)', component: 'D02-03', dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   // 차량 발신 요청 — 사람 역할이 아니라 차량 신원으로 받는다(RD-SEC-08: 요청 CMAC 또는 mTLS 주체, 데모만 X-Vehicle-Id 단독). 자기 VIN만.
+  { name: 'vehicleSignedUnleashFlags', method: 'POST', path: '/vehicle/v1/:vin/signed-flags', summary: 'Unleash Edge 평가·FF 경계 검사 후 VIN/TTL 귀속 서명본', component: 'D02-03', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleQueryAll', method: 'POST', path: '/vehicle/v1/:vin/flags', summary: 'IF-10 차량 발신 전체 flag 조회 (OFREP 형식, ETag)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleQuery', method: 'POST', path: '/vehicle/v1/:vin/flags/:key', summary: 'IF-10 차량 발신 단일 flag 조회 (OFREP 형식)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleStatus', method: 'POST', path: '/vehicle/v1/:vin/status', summary: 'IF-06 차량 상태 보고 v2 — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 위반은 이상 징후로', component: 'D04-03', roles: ['VEHICLE'], body: StatusReportV2 },
-  { name: 'vehicleStatusView', method: 'GET', path: '/api/vehicles/:vin/status', summary: '차량 상태 보고 v2 — 받아들인 최신 상태·최근 수신(위반 포함)', component: 'D04-03', dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
+  { name: 'vehicleStatusView', method: 'GET', path: '/api/vehicles/:vin/status', summary: '차량 상태 보고 v2 — 받아들인 최신 상태·최근 수신(위반 포함)', component: 'D04-03', personal: true, dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   // 차량 당겨받기 채널(RD-OPS-04) — 서명한 요청(RD-SEC-08 CMAC 또는 mTLS)으로 전달함을 받아 가고 확인한다. docs/80-integration/80-40-vehicle-channel.md
   { name: 'vehicleInbox', method: 'GET', path: '/vehicle/v1/:vin/inbox', summary: 'IF-07 차량 전달함 — 확인하지 않은 서명 게시본(차단·복원은 kill_command v2 봉투 포함), 당겨받기 채널', component: 'D02-03', roles: ['VEHICLE'] },
   { name: 'vehicleDeliveryAck', method: 'POST', path: '/vehicle/v1/:vin/inbox/:deliveryId/ack', summary: 'IF-07 전달 확인 — 적용·거부를 회신(IF-06 readback)으로, 같은 확인 재시도는 같은 응답', component: 'D02-03', roles: ['VEHICLE'], body: VehicleDeliveryAck },
@@ -315,6 +317,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'costCheckPut', method: 'PUT', path: '/api/cost/projects/:estId/checks/:no', summary: '검토 체크리스트 항목', component: 'D07-01', roles: ['COST_ESTIMATOR', 'COST_APPROVER'], body: PutCostCheckBody },
   { name: 'costExport', method: 'GET', path: '/api/cost/projects/:estId/export', summary: '엑셀 내보내기(감사 COST_EXPORT)', component: 'D07-01', personal: true, roles: ['COST_ESTIMATOR', 'COST_APPROVER', 'COST_VIEWER', 'COST_BASIS_ADMIN'] },
   { name: 'costBasisList', method: 'GET', path: '/api/cost/basis', summary: '계수·단가 표 버전 목록', component: 'D07-01' },
+  { name: 'costActualPut', method: 'PUT', path: '/api/cost/projects/:estId/actuals/:refId', summary: '승인 뒤 실적 공수', component: 'D07-01', roles: ['COST_ESTIMATOR'], body: PutCostActualBody },
+  { name: 'costCalibration', method: 'GET', path: '/api/cost/calibration', summary: '교정 제안·실적 오차', component: 'D07-01', personal: true, roles: [...COST_MONEY_ROLES] },
   { name: 'costBasis', method: 'GET', path: '/api/cost/basis/:version', summary: '계수·단가 표 한 버전(산정 역할만)', component: 'D07-01', personal: true, sample: { version: 'v1.3' }, roles: ['COST_ESTIMATOR', 'COST_APPROVER', 'COST_VIEWER', 'COST_BASIS_ADMIN'] },
   { name: 'costBasisDraft', method: 'POST', path: '/api/cost/basis', summary: '계수·단가 표 초안', component: 'D07-01', roles: ['COST_BASIS_ADMIN'], body: CostBasisDraftBody },
   { name: 'costBasisPublish', method: 'POST', path: '/api/cost/basis/:version/publish', summary: '계수·단가 표 발행', component: 'D07-01', roles: ['COST_BASIS_ADMIN'], body: ReasonBody },

@@ -12,6 +12,7 @@ import { Button, Drawer, ErrorNote, Field, KeyValue } from '../../design';
 import { ROUTES, screenShipped } from '../../routes';
 import { useAppShell, useToast } from '../../store';
 import './procedures.css';
+import { WorkProductButton } from './WorkProduct';
 
 export const roleName = (doc: WorkflowDoc, id: string) => doc.roles.find((r) => r.id === id)?.name ?? id;
 
@@ -62,7 +63,7 @@ export function ScreenLinks({ patterns: all }: { patterns: string[] }) {
   );
 }
 
-function WorkProducts({ keys, index }: { keys: string[]; index: Index }) {
+function WorkProducts({ keys, index, doc }: { keys: string[]; index: Index; doc: WorkflowDoc }) {
   if (!keys.length) return <p className="ds-field__hint">{P.detail.noWork}</p>;
   return (
     <ul className="pr-steps">
@@ -70,7 +71,7 @@ function WorkProducts({ keys, index }: { keys: string[]; index: Index }) {
         const w = index.wp.get(k);
         return (
           <li key={k}>
-            {w?.name ?? P.detail.products}
+            <WorkProductButton doc={doc} productKey={k} />
           </li>
         );
       })}
@@ -183,9 +184,9 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
         ))}
       </ul>
       <h3>{P.detail.inputs}</h3>
-      <WorkProducts keys={a.inputs} index={index} />
+      <WorkProducts keys={a.inputs} index={index} doc={doc} />
       <h3>{P.detail.outputs}</h3>
-      <WorkProducts keys={a.outputs} index={index} />
+      <WorkProducts keys={a.outputs} index={index} doc={doc} />
       {a.platform.actions.length > 0 && (
         <>
           <h3>{P.detail.actions}</h3>

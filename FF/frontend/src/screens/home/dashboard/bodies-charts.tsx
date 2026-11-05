@@ -9,6 +9,7 @@ import { Lozenge } from '../../../design';
 import type { GadgetBodyProps } from './Dashboard';
 import { GadgetState, JiraTable, KeyLink, SERIES, Status } from './parts';
 import { countBy, fieldValue, SourceData, sourceOf, type FieldKey, type Row, type SourceId } from './sources';
+import './operation-overview.css';
 
 const B = dashboard.board;
 const Bd = B.body;
@@ -83,6 +84,9 @@ function Pie({ gadget }: GadgetBodyProps) {
                     return <path key={x.value} d={arc(100, 100, 92, a0, a)} fill={SERIES[i % SERIES.length]} className="jd-pie__slice" onClick={() => x.value !== '\u0000other' && setDrill(x.value)} />;
                   })
                 )}
+                <circle cx="100" cy="100" r="56" className="jd-pie__center" />
+                <text x="100" y="99" className="jd-pie__total">{s.total}</text>
+                <text x="100" y="120" className="jd-pie__total-label">{Bd.total}</text>
               </svg>
               <table className="jd-legend">
                 <caption className="ds-sr">{`${B.types.pie.title}: ${F[field]}`}</caption>
@@ -239,6 +243,7 @@ function CreatedResolved({ gadget }: GadgetBodyProps) {
         const resolved = bs.map((b) => rows.filter((r) => t(r.closedAt) > b.from && t(r.closedAt) <= b.to).length);
         const sumC = created.reduce((a, b) => a + b, 0);
         const sumR = resolved.reduce((a, b) => a + b, 0);
+        if (!sumC && !sumR) return <GadgetState state={state} error={error} retry={retry}><p className="jd-chart__summary">{Bd.noTrend}</p></GadgetState>;
         const max = Math.max(1, ...created, ...resolved);
         const W = Math.max(200, width);
         const H = 160;

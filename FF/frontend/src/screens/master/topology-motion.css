@@ -1,0 +1,38 @@
+#topo-graph .ds-field { min-width: 0; max-width: 100%; }
+#topo-graph .ds-field select { min-width: 0; max-width: 100%; }
+.topo-motion { --relation-color: var(--warn); display: grid; gap: var(--sp-4); padding: var(--sp-5); border: 1px solid var(--line-strong); border-left: var(--sp-1) solid var(--relation-color); background: var(--surface); border-radius: var(--r); }
+.topo-motion[data-verdict='PASS'] { --relation-color: var(--ok); }
+.topo-motion[data-verdict='FAIL'] { --relation-color: var(--danger); }
+.topo-motion__header, .topo-motion__controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-3); }
+.topo-motion__header h3 { margin: 0; font-size: var(--fs-lg); }
+.topo-motion__header > div { display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap; }
+.topo-motion__identities { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-6); }
+.topo-motion__endpoint { min-width: 0; display: grid; gap: var(--sp-2); align-content: start; }
+.topo-motion__endpoint:last-child { text-align: right; }
+.topo-motion__endpoint strong { font-size: var(--fs-xl); font-weight: 650; line-height: var(--lh); overflow-wrap: anywhere; }
+.topo-motion__endpoint code { overflow-wrap: anywhere; font-size: var(--fs-sm); }
+.topo-motion__endpoint > span { color: var(--muted); font-size: var(--fs-sm); }
+.topo-motion__diagram { display: block; width: 100%; height: auto; max-height: 230px; color: var(--relation-color); overflow: visible; }
+.topo-motion__track { fill: none; stroke: currentColor; stroke-width: 3; }
+.topo-motion[data-type='EXCLUDES'] .topo-motion__track { stroke-dasharray: 9 8; }
+.topo-motion__node { fill: var(--surface); stroke: var(--ink-2); stroke-width: 3; }
+.topo-motion__arrow, .topo-motion__dot { fill: currentColor; }
+.topo-motion__dot { offset-path: path('M 110 170 C 330 170 570 70 790 70'); animation: topo-direction var(--topo-duration, 6s) linear infinite; animation-play-state: paused; }
+.topo-motion[data-running='true'] .topo-motion__dot { animation-play-state: running; }
+.topo-motion__exclusion { stroke: currentColor; stroke-width: 4; fill: var(--surface); }
+.topo-motion__controls { justify-content: flex-start; }
+.topo-motion__controls label { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); }
+.topo-motion__state { font-size: var(--fs-sm); color: var(--muted); }
+.topo-motion__notice { margin: 0; padding-top: var(--sp-3); border-top: 1px solid var(--line); color: var(--muted); font-size: var(--fs-sm); max-width: 80ch; }
+.topo-motion__evidence { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--sp-5); }
+.topo-motion__evidence h4 { margin: 0 0 var(--sp-2); font-size: var(--fs-sm); }
+.topo-motion__evidence p { margin: 0; max-width: 80ch; overflow-wrap: anywhere; }
+.topo-motion__evidence a { display: inline-block; margin-top: var(--sp-3); }
+.topo-overview { margin-top: var(--sp-5); }
+.topo-overview summary { cursor: pointer; font-weight: 600; padding-block: var(--sp-3); }
+.topo-edge-control { cursor: pointer; outline: none; }
+.topo-edge-control:focus-visible .ds-topo-edge { stroke: var(--accent); stroke-width: 5; }
+.topo-edge-hit { stroke: transparent; stroke-width: 20; }
+@keyframes topo-direction { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@media (prefers-reduced-motion: reduce) { .topo-motion__dot { animation: none; display: none; } }
+@media (max-width: 700px) { .topo-motion { padding: var(--sp-4); } .topo-motion__evidence { grid-template-columns: 1fr; } .topo-motion__identities { gap: var(--sp-3); } .topo-motion__endpoint strong { font-size: var(--fs-lg); } }

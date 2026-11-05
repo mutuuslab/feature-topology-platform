@@ -9,13 +9,15 @@ import { fieldErrors } from '../../api/field-errors';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { planning as W } from '../../copy/planning';
+import { catalogExperience as Cx } from '../../copy/catalog-experience';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, LifecycleBadge, LifecycleStepper, PageHeader, Panel, VerdictBadge, Icon, whyDisabled } from '../../design';
 import { ProductVersionActions } from '../features/VersionEdit';
 import { scopeOf, usePermission } from '../shared';
+import { CatalogApproval, CatalogAssembly, CatalogCard, CatalogIdentity } from './CatalogExperience';
 
 const T = ko.product;
 
-interface Product {
+export interface Product {
   catalogId: string;
   version: string;
   name: string;
@@ -33,7 +35,7 @@ interface Product {
   lifecycle: Lifecycle;
   featureCount?: number;
 }
-interface Composition {
+export interface Composition {
   result: 'PASS' | 'FAIL';
   issues: { code: string; severity: 'FAIL' | 'WARN'; message: string; refs: string[]; suggest?: string[] }[];
   features: { baselineId: string; featureId: string; version: string; name: string; lifecycle: Lifecycle }[];
@@ -51,7 +53,14 @@ interface Candidate {
 export function ProductList() {
   const nav = useNavigate();
   const q = useApi<{ items: Product[] }>('listProducts');
-  const rows = q.data?.items ?? [];
+  const all = q.data?.items ?? [];
+  const [search, setSearch] = useState('');
+  const [country, setCountry] = useState('');
+  const [sale, setSale] = useState('');
+  const [lifecycle, setLifecycle] = useState('');
+  const [view, setView] = useState<'browse' | 'table'>('browse');
+  const needle = search.trim().toLocaleLowerCase();
+  const rows = all.filter((p) => (!country || p.country === country) && (!sale || p.saleType === sale) && (!lifecycle || p.lifecycle === lifecycle) && (!needle || `${p.catalogId} ${p.name} ${p.ownerId} ${p.tags.join(' ')}`.toLocaleLowerCase().includes(needle)));
   const perm = usePermission(['PRODUCT_AUTHOR']);
   const C = T.col;
   return (
@@ -67,7 +76,16 @@ export function ProductList() {
           </Button>
         }
       />
+      <p className="catalog-intro">{Cx.definition} {Cx.boundary}</p>
+      <div className="catalog-filter" role="group" aria-label={Cx.filters}>
+        <label>{Cx.search}<input className="ds-input" type="search" value={search} onChange={(e) => setSearch(e.target.value)} /></label>
+        <label>{Cx.country}<select className="ds-input" value={country} onChange={(e) => setCountry(e.target.value)}><option value="">{Cx.all}</option>{[...new Set(all.map((p) => p.country))].sort().map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label>{Cx.sale}<select className="ds-input" value={sale} onChange={(e) => setSale(e.target.value)}><option value="">{Cx.all}</option>{[...new Set(all.map((p) => p.saleType))].sort().map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label>{Cx.lifecycle}<select className="ds-input" value={lifecycle} onChange={(e) => setLifecycle(e.target.value)}><option value="">{Cx.all}</option>{[...new Set(all.map((p) => p.lifecycle))].map((value) => <option key={value} value={value}>{W.product.lifecycle[value] ?? value}</option>)}</select></label>
+      </div>
+      <div className="catalog-viewbar"><span>{Cx.count(rows.length, all.length)}</span><div role="group" aria-label={Cx.view}>{(['browse', 'table'] as const).map((value) => <button type="button" key={value} className="ds-btn" aria-pressed={view === value} onClick={() => setView(value)}>{value === 'browse' ? Cx.browse : Cx.table}</button>)}</div></div>
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
+        {view === 'browse' ? <div className="catalog-gallery">{rows.map((p) => <CatalogCard key={`${p.catalogId}@${p.version}`} product={p} />)}</div> :
         <DataTable
           caption={T.title}
           rows={rows}
@@ -81,10 +99,10 @@ export function ProductList() {
             { key: 'sale', header: C.sale, cell: (r) => <span className="ds-tag">{r.saleType}</span>, sort: (r) => r.saleType },
             { key: 'type', header: C.type, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.type}</span> },
             { key: 'lc', header: C.lifecycle, cell: (r) => <LifecycleBadge value={r.lifecycle} />, sort: (r) => LIFECYCLE.indexOf(r.lifecycle) },
-            { key: 'n', header: C.features, cell: (r) => <span className="ds-mono">{r.baselineIds.length}</span>, align: 'right', sort: (r) => r.baselineIds.length },
+            { key: 'n', header: C.features, cell: (r) => <span className="ds-mono">{r.featureCount ?? Cx.unknown}</span>, align: 'right', sort: (r) => r.featureCount ?? -1 },
             { key: 'valid', header: C.validity, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}><span className="ds-date">{r.validFrom ?? '—'}</span> ~ <span className="ds-date">{r.validTo ?? '—'}</span></span> },
           ]}
-        />
+        />}
       </AsyncView>
     </div>
   );
@@ -193,7 +211,7 @@ export function BaselinePicker({ scope, picked, onToggle }: { scope: { country: 
   );
 }
 
-interface ProductMeta {
+export interface ProductMeta {
   createdBy: string | null;
   configApprovedBy: string | null;
   releaseApprovedBy: string | null;
@@ -245,10 +263,13 @@ export function ProductDetail() {
                 </div>
               }
             />
+            <CatalogIdentity product={p} composition={d.composition} />
+            <CatalogAssembly key={`${p.catalogId}@${p.version}`} product={p} composition={d.composition} />
+            <CatalogApproval product={p} meta={d.meta} transitions={d.transitions} eligibility={d.eligibility} />
             <Panel id="plc">
               {/* 상품의 APPROVED는 '구성 승인', RELEASED는 '고객 출시' — Feature의 '정의 승인'과 낱말을 나눈다(P1-10) */}
               <LifecycleStepper current={p.lifecycle} labels={W.product.lifecycle} transitions={d.transitions.map((t) => ({ to: t.to, blockers: t.blockers.map((m) => ({ message: m })) }))} />
-              <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)', flexWrap: 'wrap' }}>
+              <div className="catalog-lifecycle-actions">
                 {d.transitions.map((t) => {
                   const sod = perm.ok ? productSodReason(t.approval, d.meta, me) : undefined;
                   return (
@@ -264,11 +285,13 @@ export function ProductDetail() {
                 <CompositionView c={d.composition} />
               </Panel>
               <Panel title={T.eligibility} id="elig">
+                <div className="catalog-eligibility">
                 <KeyValue
                   rows={[
                     { k: T.col.validity, v: <span className="ds-mono"><span className="ds-date">{p.validFrom ?? '—'}</span> ~ <span className="ds-date">{p.validTo ?? '—'}</span></span> },
                   ]}
                 />
+                </div>
                 {d.eligibility.reasons.length > 0 && <ErrorNote error={{ message: T.notEligible, details: { blockers: d.eligibility.reasons } }} />}
               </Panel>
             </div>

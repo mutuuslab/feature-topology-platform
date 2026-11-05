@@ -74,6 +74,18 @@ const mount = (role: string, el: JSX.Element, path = '/notifications') => {
 };
 
 describe('알림 화면', () => {
+  it('활동 코드는 기본 문구에서 숨기되 원문 tooltip과 알림 데이터에 보존한다', async () => {
+    const original = ITEMS[0].fields;
+    ITEMS[0].fields = [{ label: '활동', value: 'FPW.7-A01 Canary·Shadow 판정 기준 정의' }];
+    try {
+      mount('approver', <NotificationsScreen />);
+      const label = await screen.findByText('Canary·Shadow 판정 기준 정의');
+      expect(label.getAttribute('title')).toBe('FPW.7-A01 Canary·Shadow 판정 기준 정의');
+      expect(label.firstChild?.textContent).toBe('Canary·Shadow 판정 기준 정의');
+      expect(label.querySelector('[data-explain-codes]')?.getAttribute('data-explain-codes')).toBe('FPW.7-A01');
+      expect(ITEMS[0].fields[0].value).toBe('FPW.7-A01 Canary·Shadow 판정 기준 정의');
+    } finally { ITEMS[0].fields = original; }
+  });
   it('내 알림은 행위자 헤더로 읽고, 안 읽음만 보이다가 전체로 바꾸면 읽은 알림도 보인다', async () => {
     mount('approver', <NotificationsScreen />);
     expect(await screen.findByText('FEAT-00022 긴급 차단 승인 요청')).toBeTruthy();

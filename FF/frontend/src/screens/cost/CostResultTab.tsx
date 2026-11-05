@@ -1,7 +1,8 @@
 // 산정 결과 탭 — 엑셀 01_대시보드: 원가 구성, 신뢰수준별 금액, AACE 추정 범위, 벤치마크 대비, 입력 품질, 산정 경로.
 // 금액 칸은 서버가 산정 역할에만 준다 — 없으면 공수만 보인다. 금액은 과제 통화로 환산 표시(D-COST-10).
-import { costResult as T } from '../../copy/cost';
+import { costActual as A, costResult as T } from '../../copy/cost';
 import { DataTable, KeyValue, Panel } from '../../design';
+import { RefChip } from '../refdb/common';
 import { mm, money, pct, type CostDetailResponse } from './common';
 
 export function CostResultTab({ d }: { d: CostDetailResponse }) {
@@ -47,7 +48,7 @@ export function CostResultTab({ d }: { d: CostDetailResponse }) {
               { k: T.qualityRows.commonMissing, v: c.commonMissing },
               { k: T.qualityRows.notOwned, v: c.notOwned },
               { k: T.qualityRows.evidence, v: pct(r.sizeEvidenceShare.A + r.sizeEvidenceShare.B) },
-              { k: T.qualityRows.mre, v: c.actuals ? pct(c.mreAvg) : '—' },
+              { k: T.qualityRows.mre, v: d.mre ? pct(d.mre.avg) : c.actuals ? pct(c.mreAvg) : '—' },
             ]}
           />
           <KeyValue
@@ -59,6 +60,17 @@ export function CostResultTab({ d }: { d: CostDetailResponse }) {
           />
         </Panel>
       </div>
+      {d.mre && d.mre.n > 0 && (
+        <Panel title={A.mre}>
+          <KeyValue rows={[{ k: A.mreAvg, v: pct(d.mre.avg) }, { k: A.mreRows, v: d.mre.n }]} />
+          <DataTable rows={d.mre.rows} rowKey={(row) => row.refId} caption={A.mre} columns={[
+            { key: 'ref', header: A.ref, cell: (row) => <RefChip id={row.refId} /> },
+            { key: 'e', header: A.expected, cell: (row) => mm(row.e), align: 'right' },
+            { key: 'actual', header: A.col, cell: (row) => mm(row.actual), align: 'right' },
+            { key: 'mre', header: A.mre, cell: (row) => pct(row.mre), align: 'right' },
+          ]} />
+        </Panel>
+      )}
       {full && r.confidenceTable && r.aaceRange && r.benchmark && (
         <div className="ds-split">
           <Panel title={T.confidence}>

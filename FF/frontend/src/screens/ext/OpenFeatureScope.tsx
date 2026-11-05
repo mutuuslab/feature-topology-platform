@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { p10 } from '../../copy/p10';
 import { useVehiclePick } from '../../data/first-run';
 import { AsyncView, DataTable, Explain, PageHeader, Panel, RuleText, Select, SummaryLine, Tabs, VerdictBadge } from '../../design';
 
-const O = ko.p10.openfeature;
+const O = p10.openfeature;
 
 interface ScopeItem {
   id: string;

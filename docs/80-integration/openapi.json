@@ -8081,6 +8081,73 @@
         }
       }
     },
+    "/vehicle/v1/{vin}/signed-flags": {
+      "post": {
+        "summary": "Unleash Edge 평가·FF 경계 검사 후 VIN/TTL 귀속 서명본",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "vehicleSignedUnleashFlags",
+        "description": "허용 역할: 차량 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "targetingKey": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "default": {},
+                    "additionalProperties": {
+                      "nullable": true
+                    }
+                  }
+                },
+                "additionalProperties": {
+                  "nullable": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/vehicle/v1/{vin}/flags": {
       "post": {
         "summary": "IF-10 차량 발신 전체 flag 조회 (OFREP 형식, ETag)",
@@ -13215,6 +13282,98 @@
         }
       }
     },
+    "/api/cost/projects/{estId}/actuals/{refId}": {
+      "put": {
+        "summary": "승인 뒤 실적 공수",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costActualPut",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "actual": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 100000
+                  }
+                },
+                "required": [
+                  "actual"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/calibration": {
+      "get": {
+        "summary": "교정 제안·실적 오차",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costCalibration",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/cost/basis/{version}": {
       "get": {
         "summary": "계수·단가 표 한 버전(산정 역할만)",
@@ -16562,7 +16721,8 @@
                       "TRANSITION",
                       "EDIT",
                       "MERGE",
-                      "PIPELINE"
+                      "PIPELINE",
+                      "COMMENT"
                     ]
                   },
                   "status": {
@@ -16578,6 +16738,11 @@
                   "body": {
                     "type": "string",
                     "maxLength": 4000
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
                   },
                   "externalUser": {
                     "type": "string",

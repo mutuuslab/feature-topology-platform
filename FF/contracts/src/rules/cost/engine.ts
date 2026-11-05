@@ -374,20 +374,34 @@ export function estimate(input: CostEstimateInput) {
 export type CostEstimate = ReturnType<typeof estimate>;
 
 /** 06_교정 — 포인트당 € 제안값 = exp(평균 ln(€ ÷ Σ(등급 포인트 × 대표 ASIL 계수))), 단일 표본 + 번들 */
-export function anchorSuggestion(basis: CostBasis, refs: Iterable<CostRefFacts>): number {
+export interface CostAnchorSample { kind: 'single' | 'bundle'; id: string; eur: number; ptsAsil: number; eurPerPt: number }
+
+/** 06_교정 표본. 잘못된 표본으로 NaN 제안을 만들지 않는다. */
+export function anchorSamples(basis: CostBasis, refs: Iterable<CostRefFacts>): CostAnchorSample[] {
   const all = [...refs];
   const ptsAsil = (r: CostRefFacts) => costPoints(basis, r.tshirt) * costAsilFactor(basis, r.asilRep);
-  const logs: number[] = [];
+  const samples: CostAnchorSample[] = [];
+  const add = (kind: CostAnchorSample['kind'], id: string, eur: number, pts: number) => {
+    const eurPerPt = eur / pts;
+    if (!(eur > 0) || !(pts > 0) || !(eurPerPt > 0) || !Number.isFinite(eur) || !Number.isFinite(pts) || !Number.isFinite(eurPerPt)) throw new Error(`교정 표본 ${id}의 금액·포인트는 양수여야 합니다`);
+    samples.push({ kind, id, eur, ptsAsil: pts, eurPerPt });
+  };
   for (const id of basis.calibration.singles) {
     const r = all.find((x) => x.refId === id);
     if (!r || !N(r.benchmarkEur)) throw new Error(`교정 표본 ${id}에 벤치마크 €가 없습니다`);
-    logs.push(Math.log(r.benchmarkEur! / ptsAsil(r)));
+    add('single', id, r.benchmarkEur!, ptsAsil(r));
   }
   for (const b of basis.calibration.bundles) {
     const members = all.filter((x) => x.bundleId === b);
     const eur = members.filter((x) => x.bundleRep).reduce((s, x) => s + N(x.benchmarkEur), 0);
     const pts = members.reduce((s, x) => s + ptsAsil(x), 0);
-    logs.push(Math.log(eur / pts));
+    add('bundle', b, eur, pts);
   }
+  if (!samples.length) throw new Error('교정 표본이 없습니다');
+  return samples;
+}
+
+export function anchorSuggestion(basis: CostBasis, refs: Iterable<CostRefFacts>): number {
+  const logs = anchorSamples(basis, refs).map((sample) => Math.log(sample.eurPerPt));
   return Math.exp(logs.reduce((s, x) => s + x, 0) / logs.length);
 }

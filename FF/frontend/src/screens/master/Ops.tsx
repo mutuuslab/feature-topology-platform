@@ -1,10 +1,13 @@
 // 운영·관리 v2 화면 (P10-C4) — /ops/telemetry 운영 데이터·이벤트, /supplier/portal 협력사 이관, /admin/security 보안·인증서,
 // /admin/settings 설정, /verify/compliance 컴플라이언스(보고서 v1.1 규칙 추적), /change/eo SW EO. 모두 기존 API·계약 데이터를 읽는다.
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
+import { observability as OB } from '../../copy/observability';
+const TelemetryObservability = lazy(() => import('../ops/TelemetryObservability'));
 import { Link, useSearchParams } from 'react-router-dom';
 import { COMPLIANCE_PROFILES, KEY_PURPOSES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { p10 } from '../../copy/p10';
 import { control as CT } from '../../copy/control';
 import { useVehiclePick } from '../../data/first-run';
 import { DESKTOP_BUILD } from '../../routes';
@@ -39,8 +42,8 @@ export function TelemetryScreen() {
         })()}
         actions={<Link to="/events">{T.events}</Link>}
       />
-      <Tabs tabs={[{ key: 'readbacks', label: T.tabs.readbacks }, { key: 'status', label: T.tabs.status }, { key: 'requests', label: T.tabs.requests }]}>
-        {(t) => (t === 'status' ? <StatusTab /> : t === 'requests' ? <RequestsTab /> : <ReadbacksTab />)}
+      <Tabs tabs={[{ key: 'readbacks', label: T.tabs.readbacks }, { key: 'status', label: T.tabs.status }, { key: 'requests', label: T.tabs.requests }, { key: 'observability', label: OB.title }]}>
+        {(t) => (t === 'observability' ? <Suspense fallback={<p role="status">{ko.state.loading}</p>}><TelemetryObservability /></Suspense> : t === 'status' ? <StatusTab /> : t === 'requests' ? <RequestsTab /> : <ReadbacksTab />)}
       </Tabs>
     </div>
   );
@@ -448,7 +451,7 @@ export function SettingsScreen() {
           </ul>
         </Panel>
       </div>
-      <Panel title={S.integrations} id="set-if" actions={<Link to="/integration/connectors">{ko.p10.integrations.title}</Link>}>
+      <Panel title={S.integrations} id="set-if" actions={<Link to="/integration/connectors">{p10.integrations.title}</Link>}>
         <AsyncView state={asyncState(sys)} error={sys.error} onRetry={() => sys.refetch()}>
           <DataTable
             caption={S.integrations}
@@ -458,7 +461,7 @@ export function SettingsScreen() {
               // IF 번호는 툴팁·설명 모드로(UX3-01) — 본문은 연계 이름
               {
                 key: 'n',
-                header: ko.p10.integrations.col.name,
+                header: p10.integrations.col.name,
                 cell: (r) => (
                   <>
                     <span title={r.ifId}>{r.name}</span>
@@ -467,7 +470,7 @@ export function SettingsScreen() {
                 ),
                 sort: (r) => r.ifId,
               },
-              { key: 'm', header: ko.p10.integrations.col.mode, cell: (r) => ko.p10.integrations.modes[r.mode] ?? r.mode },
+              { key: 'm', header: p10.integrations.col.mode, cell: (r) => p10.integrations.modes[r.mode] ?? r.mode },
             ]}
           />
         </AsyncView>

@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://127.0.0.1:9153/admin/iam",
+  "iam_url": "http://localhost:9012/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-04T21:01:39.758Z",
+  "fetched_at": "2026-11-05T01:24:45.108Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-dept\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-04T20:58:39.410Z",
+  "contracts_dist_mtime": "2026-11-05T01:20:07.748Z",
   "ff_git": {
-   "head": "1160d92de3af1a9cbaadc7241c2fa09baee39d4b",
-   "dirty_files": 88
+   "head": "624960e9b919c98ccf127f00f9c320b9383dd171",
+   "dirty_files": 32
   },
-  "iam_sha256": "955d880dffe66dac4326527b02426f6d2affbe89e8c800758896a7f4394a6a62"
+  "iam_sha256": "02350b64db82312d83ad98cc1413aed79add3500e00e0ab652bc283b33346b45"
  },
  "roles": [
   {
@@ -755,6 +755,16 @@
    ]
   },
   {
+   "name": "vehicleSignedUnleashFlags",
+   "method": "POST",
+   "path": "/vehicle/v1/:vin/signed-flags",
+   "summary": "Unleash Edge 평가·FF 경계 검사 후 VIN/TTL 귀속 서명본",
+   "component": "D02-03",
+   "roles": [
+    "VEHICLE"
+   ]
+  },
+  {
    "name": "vehicleQueryAll",
    "method": "POST",
    "path": "/vehicle/v1/:vin/flags",
@@ -1153,6 +1163,16 @@
    "roles": [
     "COST_ESTIMATOR",
     "COST_APPROVER"
+   ]
+  },
+  {
+   "name": "costActualPut",
+   "method": "PUT",
+   "path": "/api/cost/projects/:estId/actuals/:refId",
+   "summary": "승인 뒤 실적 공수",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
    ]
   },
   {
@@ -2447,6 +2467,11 @@
   {
    "path": "/admin/data",
    "title": "데이터·규제 기록",
+   "group": "admin"
+  },
+  {
+   "path": "/data/workbench",
+   "title": "데이터 분석실",
    "group": "admin"
   },
   {

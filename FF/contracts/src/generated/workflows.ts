@@ -5189,7 +5189,7 @@ export const WORKFLOWS: WorkflowDoc = {
   "demoNotes": [
    "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용한다 — 데모 계정 opslead(관제실)가 운영 리더 몫을 맡는다(12계정·겸직 0건, 2026-11-05).",
    "복원 2인 승인은 직전 차단 승인자와 다른 사람이어야 한다(SOD-09). 데모에서 차단을 quality(FSM)+integrator(CSM)가 승인하면 복원은 safety2(두 번째 FSM, 심사 결재함)+opslead 또는 다른 CSM이 맡는다(2026-11-05).",
-   "고객 출시 승인(FPW.7-A10)은 구성 승인자와 다른 사람이다(SOD-04). 데모 계정 productowner(기획 스튜디오, PRODUCT_APPROVER)가 출시를 승인하고 approver는 구성 승인만 한다(2026-11-05).",
+   "고객 출시 승인(FPW.7-A10)은 구성 승인자와 다른 사람이다(SOD-04). 데모 계정 productowner(기획팀, PRODUCT_APPROVER)가 출시를 승인하고 approver는 구성 승인만 한다(2026-11-05).",
    "Feature DB 관리자(REFDB_ADMIN)는 데모 계정 steward 한 명, 도메인 검토자(DOMAIN_REVIEWER)는 approver 한 명뿐이다(2026-11-04). 요청자 ≠ 검토자 ≠ 승인자를 사람 단위로 강제하므로 데모에서 steward가 낸 변경·추가 요청은 승인할 사람이 없고, approver가 낸 요청은 검토할 사람이 없다 — 데모 흐름은 다른 계정(author 등)이 요청한다."
   ]
  },

@@ -17,6 +17,14 @@ const subscribe = (l: () => void) => (listeners.add(l), () => void listeners.del
 /** 지금 저장하지 않은 변경이 있는가 */
 export const hasUnsaved = () => dirty.size > 0;
 
+/** 아이콘 메뉴처럼 링크가 아닌 사용자 이동도 같은 변경 보호를 거친다. */
+export function requestUserNavigation(to: string, navigate: (to: string) => void, current: string): boolean {
+  if (to === current) return true;
+  if (hasUnsaved()) { pending = to; emit(); return false; }
+  navigate(to);
+  return true;
+}
+
 /** 이 화면·창에 저장하지 않은 변경이 있으면 true를 넘긴다 */
 export function useUnsavedGuard(isDirty: boolean) {
   const id = useId();

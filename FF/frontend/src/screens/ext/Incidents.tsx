@@ -6,13 +6,14 @@ import { incidentVehicleScope } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
+import { p10 } from '../../copy/p10';
 import { control as CT } from '../../copy/control';
 import { pickDefault } from '../../data/first-run';
 import { AsyncView, Button, DataTable, ErrorNote, Field, PageHeader, Panel, Select, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { usePermission } from '../shared';
 
-const I = ko.p10.incident;
-const F = ko.p10.field;
+const I = p10.incident;
+const F = p10.field;
 const SEV_BADGE: Record<string, string> = { INFO: 'UNJUDGED', WARNING: 'CONDITIONAL', CRITICAL: 'FAIL' };
 const CATEGORIES = ['UNEXPECTED_ACTIVATION', 'NO_ACTIVATION', 'PERFORMANCE', 'HMI', 'OTHER'];
 const SEVERITIES = ['INFO', 'WARNING', 'CRITICAL'];

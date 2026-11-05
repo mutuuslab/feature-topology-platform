@@ -130,6 +130,25 @@ export function costCheckRate(statuses: readonly CostCheckStatus[]): number | nu
 
 // ── 역할별 열람(MM_ONLY) ───────────────────────────────────────
 
+/** 승인 후 기준 행별 실적. null은 승인 후 기록만 지우고 승인 당시 줄 입력으로 돌아간다. */
+export const PutCostActualBody = z.object({ actual: z.number().positive().max(100_000).nullable() }).strict();
+export type PutCostActualBody = z.infer<typeof PutCostActualBody>;
+export interface CostMreRow { refId: string; e: number; actual: number; mre: number }
+export interface CostActualRow { refId: string; actual: number; override: boolean }
+
+/** 같은 기준 행의 기대 공수는 합산한다. 선택하지 않은 행·실적 없는 행은 MRE 표본에서 제외한다. */
+export function costMre(lines: readonly { refId: string; e: number; effQty: number }[], actuals: ReadonlyMap<string, number>) {
+  const expected = new Map<string, number>();
+  for (const line of lines) if (line.effQty > 0) expected.set(line.refId, (expected.get(line.refId) ?? 0) + line.e);
+  const rows: CostMreRow[] = [];
+  for (const [refId, actual] of actuals) {
+    const e = expected.get(refId);
+    if (e != null && Number.isFinite(e) && Number.isFinite(actual) && actual > 0) rows.push({ refId, e, actual, mre: Math.abs(e - actual) / actual });
+  }
+  rows.sort((a, b) => a.refId < b.refId ? -1 : a.refId > b.refId ? 1 : 0);
+  return { rows, n: rows.length, missing: expected.size - rows.length, avg: rows.length ? rows.reduce((sum, row) => sum + row.mre, 0) / rows.length : null };
+}
+
 /** 계산 결과를 역할에 맞춘다 — 금액을 볼 수 없는 역할에는 원화·단가·벤치마크 값을 아예 빼고 보낸다(빈 값으로도 두지 않는다) */
 export function costEstimateView(r: CostEstimate, role: Role) {
   if (canSeeCost(role)) return { ...r, view: 'FULL' as const };

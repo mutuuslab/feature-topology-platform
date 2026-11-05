@@ -3,19 +3,22 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { Link, MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Drawer, useUnsavedGuard } from '../design';
-import { UnsavedPrompt } from '../design/unsaved';
+import { requestUserNavigation, UnsavedPrompt } from '../design/unsaved';
 
 afterEach(cleanup);
 
 function Editor() {
   const [v, setV] = useState('');
+  const nav = useNavigate();
+  const loc = useLocation();
   useUnsavedGuard(v !== '');
   return (
     <div>
       <input aria-label="이름" value={v} onChange={(e) => setV(e.target.value)} />
       <Link to="/other">다른 화면</Link>
+      <button onClick={() => requestUserNavigation('/other', nav, loc.pathname)}>아이콘 이동</button>
     </div>
   );
 }
@@ -54,6 +57,19 @@ describe('저장하지 않은 변경 보호', () => {
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('alertdialog')).toBeNull();
     fireEvent.click(screen.getByText('다른 화면'));
+    fireEvent.click(screen.getByRole('button', { name: '버리고 이동' }));
+    expect(screen.getByTestId('where').textContent).toBe('/other');
+  });
+
+  it('아이콘 메뉴 이동도 입력을 보호하고 취소·버리고 이동을 선택할 수 있다', () => {
+    mount();
+    fireEvent.change(screen.getByLabelText('이름'), { target: { value: '중요한 초안' } });
+    fireEvent.click(screen.getByText('아이콘 이동'));
+    expect(screen.getByRole('alertdialog')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '계속 편집' }));
+    expect(screen.getByTestId('where').textContent).toBe('/edit');
+    expect((screen.getByLabelText('이름') as HTMLInputElement).value).toBe('중요한 초안');
+    fireEvent.click(screen.getByText('아이콘 이동'));
     fireEvent.click(screen.getByRole('button', { name: '버리고 이동' }));
     expect(screen.getByTestId('where').textContent).toBe('/other');
   });

@@ -1,6 +1,6 @@
 // SW 개발비 산정 화면 공통 — 응답 모양, 금액 표시(과제 통화, D-COST-10), 상태 배지, 엑셀 내보내기 받기.
 // 금액은 서버가 산정 역할에만 준다(view FULL) — 응답에 금액 필드가 없으면 그리지 않는다.
-import type { CostCheckStatus, CostEstimate, CostLineInputs, CostProjectStatus, CostSettingsInput, RefStatus } from '@ff/contracts';
+import type { CostActualRow, CostCheckStatus, CostEstimate, CostLineInputs, CostMreRow, CostProjectStatus, CostSettingsInput, RefStatus } from '@ff/contracts';
 import { Link } from 'react-router-dom';
 import { actorFor } from '../../api/actor';
 import { pathOf, toApiError, type ApiError } from '../../api/client';
@@ -84,6 +84,8 @@ export interface CostDetailResponse {
   features: { featureId: string; version: string; name: string | null; asil: string; lifecycle: string | null }[];
   mbd: { refId: string; seq: number; counts: (number | null)[] }[];
   checks: { items: CostCheckItem[]; rate: number | null; open: number; unchecked: number };
+  actuals?: CostActualRow[];
+  mre?: { rows: CostMreRow[]; n: number; missing: number; avg: number | null } | null;
   result: CostResult | null;
   error: string | null;
   approvals: { rev: number; approvedBy: string; approvedAt: string; reason: string; basisVersion: string; resultSha256: string }[];

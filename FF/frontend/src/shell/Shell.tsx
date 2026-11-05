@@ -20,7 +20,7 @@ import { ALL_DEPARTMENTS, departmentById } from '../data/departments';
 import { SsoRoleSwitcher } from './SsoRoleSwitcher';
 import { login as L } from '../copy/login';
 import { GuideDockHost, RuleDrawerHost } from './docks';
-import { UnsavedPrompt } from '../design/unsaved';
+import { requestUserNavigation, UnsavedPrompt } from '../design/unsaved';
 import { useSessionExpired } from '../api/session';
 // 세션 만료 안내 띠 — 401 뒤에만 그리므로 첫 화면 묶음에서 뺀다(RD-UX-01)
 const SessionBanner = lazy(() => import('./SessionBanner').then((m) => ({ default: m.SessionBanner })));
@@ -188,7 +188,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
       <a className="sh-skip" href="#main">{ko.app.skip}</a>
 
       <header className="sh-top">
-        <Link to="/" className="sh-brand" aria-label={`Mutuus Lab ${ko.app.name}`}>
+        <Link to="/" className="sh-brand" aria-label={`Mutuus Lab ${ko.app.name}`} title={ko.app.name}>
           {/* 회사 로고(심볼 + Mutuus Lab) — 로그인 화면과 같은 파일 */}
           <img className="sh-brand__logo" src="/brand/mutuuslab_logo.png" alt="" width="788" height="101" />
           <span className="sh-brand__divider" aria-hidden />
@@ -248,6 +248,11 @@ function ShellFrame({ children }: { children: ReactNode }) {
             title={g.ko}
             aria-label={g.ko}
             onClick={() => {
+              // 시연 모드는 그룹 패널을 숨긴다. 아이콘 자체가 해당 그룹의 화면을 열어야 한다.
+              const available = MENU.find((m) => m.key === g.key)?.items.filter((r) => !myRole || rolesOf(r) === 'all' || rolesOf(r).includes(role)) ?? [];
+              const preferred = g.key === 'config' ? '/arch/topology' : g.key === 'admin' ? '/integration/connectors' : g.key === 'release' ? '/policies' : undefined;
+              const target = available.find((r) => r.menu === preferred)?.menu ?? available[0]?.menu;
+              if (target && !requestUserNavigation(target, nav, loc.pathname + loc.search + loc.hash)) return;
               setGroup(g.key);
               if (!panelOpen) setPanelOpen(true);
             }}

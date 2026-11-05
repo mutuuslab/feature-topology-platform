@@ -76,8 +76,20 @@ test('Registry: 안전 분류 확정(FSM) → Gate 판정(품질) → 정의 승
   await expect(page.locator('.ds-step[data-state="current"]')).toHaveAttribute('data-lifecycle', 'DEVELOPING');
 
   await page.goto(`/features/${f.featureId}/0.1.0?tab=audit`);
-  await expect(page.getByText('FEATURE_TRANSITION PROPOSED→APPROVED')).toBeVisible();
-  await expect(page.getByText('FEATURE_TRANSITION APPROVED→DEVELOPING')).toBeVisible();
+  // 감사 행위는 사용자 이름으로 보이고 원문은 data-action/title에 보존된다.
+  // UI 표기와 별개로 실제 서버 감사의 성공·정확한 전후 상태까지 확인한다.
+  const auditResponse = await request.get(`${API}/api/audit?target=${encodeURIComponent(`${f.featureId}@0.1.0`)}&limit=100`);
+  expect(auditResponse.status(), await auditResponse.text()).toBe(200);
+  const audits = (await auditResponse.json()).items;
+  for (const [from, to] of [['PROPOSED', 'APPROVED'], ['APPROVED', 'DEVELOPING']]) {
+    const action = `FEATURE_TRANSITION ${from}→${to}`;
+    const entry = audits.find((row: any) => row.action === action);
+    expect(entry).toMatchObject({ target: `${f.featureId}@0.1.0`, result: 'ALLOWED', before: { lifecycle: from }, after: { lifecycle: to } });
+    const shown = page.locator(`[data-action="${action}"]`);
+    await expect(shown).toBeVisible();
+    await expect(shown).toHaveAttribute('title', action);
+    await expect(shown).toHaveText(`Feature 단계 전이 ${from}→${to}`);
+  }
 });
 
 test('BOM: 작성자 확정 요청 → BOM 승인자가 체크리스트 확인 후 확정 → BL 발급·해시', async ({ page, request }) => {
@@ -119,9 +131,14 @@ test('Catalog: 후보 선택 중 실시간 구성 검증(REQUIRES 누락 FAIL �
   await page.goto('/products/new');
   await page.getByRole('checkbox', { name: 'BL-00028' }).check();
   const live = page.locator('section', { has: page.locator('#live-comp-h') });
-  await expect(live.getByText('REQUIRES_MISSING')).toBeVisible();
+  const missing = live.locator('[data-code="REQUIRES_MISSING"]');
+  await expect(missing).toBeVisible();
+  await expect(missing).toContainText('FEAT-00145');
+  await expect(missing).toContainText('BL-00163');
+  await expect(live.locator('[data-verdict="FAIL"]').first()).toBeVisible();
   await page.getByRole('checkbox', { name: 'BL-00163' }).check();
   await expect(live.locator('[data-verdict="PASS"]').first()).toBeVisible();
+  await expect(missing).toHaveCount(0);
 
   const name = `E2E 체험 ${uniq()}`;
   await page.getByLabel('상품명').fill(name);

@@ -7,7 +7,7 @@ const ok = { toDept: 'DEP-PUR', fromDept: 'DEP-FS', activityId: 'FPW.2-A01', tar
 describe('협의 요청', () => {
   it('포털 부서는 업무 절차 모델의 검토 포털 부서(구매·법무·개인정보보호)', () => {
     expect([...CONSULT_DEPARTMENTS].sort()).toEqual(['DEP-DPO', 'DEP-LEG', 'DEP-PUR']);
-    expect(departmentRoles('DEP-PUR')).toEqual(['R-PUR']);
+    expect(departmentRoles('DEP-PUR')).toEqual(['R-PUR', 'R-CE', 'R-CA', 'R-CV', 'R-CBA']);
   });
   it('받는 부서는 포털 부서, 요청 부서는 모델의 부서, 자기 부서에는 요청하지 않는다', () => {
     expect(CreateConsultationBody.safeParse(ok).success).toBe(true);

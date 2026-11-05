@@ -8,7 +8,7 @@ import { AppProvider } from '../store';
 import { SwCostScreen } from '../screens/cost/CostList';
 import { CostDetailScreen } from '../screens/cost/CostDetail';
 import { CostBasisScreen } from '../screens/cost/CostBasis';
-import { costBasis as B, costDetail as D, costLines as LN, swCost as L } from '../copy/cost';
+import { costActual as A, costBasis as B, costCalib as C, costDetail as D, costLines as LN, swCost as L } from '../copy/cost';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -22,7 +22,7 @@ beforeEach(() => {
     vi.fn(async (url: string, init?: RequestInit) => {
       const headers = (init?.headers ?? {}) as Record<string, string>;
       calls.push({ url, method: init?.method ?? 'GET', body: init?.body ? JSON.parse(String(init.body)) : undefined, role: headers['X-Actor-Role'] });
-      const r = handler(url, init) ?? { body: { items: [] } };
+      const r = handler(url, init) ?? (url === '/api/cost/calibration' ? { body: CALIBRATION } : { body: { items: [] } });
       return new Response(JSON.stringify(r.body), { status: r.status ?? 200, headers: { 'Content-Type': 'application/json' } });
     }),
   );
@@ -48,6 +48,7 @@ const mount = (role: string, path: string, pattern: string, el: JSX.Element) => 
   );
 };
 const keyValue = () => document.querySelector('[data-key-message] .ds-key__value')?.textContent;
+const CALIBRATION = { basisVersion: 'v1.3', anchorEur: 10000, suggestion: 12345.678, ratio: 0.2345678, samples: [{ kind: 'single', id: 'BC-BCM-002', nameKo: '실내등', eur: 10000, ptsAsil: 1, eurPerPt: 10000 }], mre: { projects: 0, approvedProjects: 0, n: 0, missing: 0, avg: null, byComponent: [], rows: [] } };
 
 const LIST_FULL = {
   view: 'FULL',
@@ -173,6 +174,7 @@ describe('계수·단가 표', () => {
     handler = (url) => (url === '/api/cost/basis' ? { body: list } : url === '/api/cost/basis/v1.3' ? { body: basis } : undefined);
     mount('viewer', '/procurement/sw-cost/basis', '/procurement/sw-cost/basis', <CostBasisScreen />);
     expect(await screen.findByText('10,086,804원')).toBeTruthy();
+    expect((await screen.findByText(C.applied)).nextElementSibling?.textContent).toBe('€ 10,000.0');
     expect(keyValue()).toBe('1');
     expect((screen.getByRole('button', { name: B.draft }) as HTMLButtonElement).disabled).toBe(true);
     expect(calls.find((c) => c.url === '/api/cost/basis/v1.3')!.role).toBe('COST_ESTIMATOR');
@@ -183,5 +185,39 @@ describe('계수·단가 표', () => {
     mount('author', '/procurement/sw-cost/basis', '/procurement/sw-cost/basis', <CostBasisScreen />);
     expect(await screen.findByText(B.moneyOnly)).toBeTruthy();
     expect(calls.some((c) => c.url === '/api/cost/basis/v1.3')).toBe(false);
+    expect(calls.some((c) => c.url === '/api/cost/calibration')).toBe(false);
+  });
+
+  it('교정 제안은 새 초안에만 채우고 발행값을 즉시 바꾸지 않는다', async () => {
+    handler = (url, init) => init?.method === 'POST' ? { status: 201, body: { version: 'v1.4', status: 'DRAFT' } } : url === '/api/cost/basis' ? { body: list } : url === '/api/cost/basis/v1.3' ? { body: basis } : undefined;
+    mount('approver', '/procurement/sw-cost/basis', '/procurement/sw-cost/basis', <CostBasisScreen />);
+    fireEvent.click(await screen.findByRole('button', { name: C.draft }));
+    const field = await screen.findByLabelText(B.miscRows.anchor) as HTMLInputElement;
+    expect(field.value).toBe('12345.7');
+    expect(calls.filter((call) => call.method !== 'GET')).toHaveLength(0);
+    fireEvent.change(screen.getByLabelText(B.draftVersion), { target: { value: 'v1.4' } });
+    fireEvent.change(screen.getByLabelText(B.draftNote), { target: { value: '제안값 검토' } });
+    fireEvent.click(screen.getByRole('button', { name: B.draftSave }));
+    await waitFor(() => expect(calls.find((call) => call.method === 'POST')?.body).toMatchObject({ basis: { version: 'v1.4', benchmark: { anchorEur: 12345.7 } } }));
+    expect(calls.some((call) => call.url.endsWith('/publish'))).toBe(false);
+  });
+});
+
+describe('승인 후 기준 행 실적', () => {
+  it('MRE 제외 행도 수정·삭제하고 0은 저장하지 않는다', async () => {
+    const project = { ...detail({ status: 'APPROVED' }), actuals: [{ refId: 'BC-BCM-002', actual: 9, override: true }], mre: { rows: [], n: 0, missing: 0, avg: null } };
+    handler = (url, init) => init?.method === 'PUT' ? { body: project } : url === '/api/cost/projects/EST-0001' ? { body: project } : undefined;
+    mount('viewer', '/procurement/sw-cost/EST-0001?tab=lines', '/procurement/sw-cost/:estId', <CostDetailScreen />);
+    fireEvent.click(await screen.findByText('실내등 제어'));
+    const input = await screen.findByLabelText(new RegExp(`^${A.field.replace(/[()]/g, '\\$&')}`));
+    fireEvent.change(input, { target: { value: '0' } });
+    expect((screen.getByRole('button', { name: A.save, exact: true }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(input, { target: { value: '6' } });
+    fireEvent.click(screen.getByRole('button', { name: A.save, exact: true }));
+    await waitFor(() => expect(calls.find((call) => call.method === 'PUT')).toMatchObject({ url: '/api/cost/projects/EST-0001/actuals/BC-BCM-002', body: { actual: 6 } }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    fireEvent.click(screen.getByText('실내등 제어'));
+    fireEvent.click(await screen.findByRole('button', { name: A.clear }));
+    await waitFor(() => expect(calls.filter((call) => call.method === 'PUT').at(-1)?.body).toEqual({ actual: null }));
   });
 });

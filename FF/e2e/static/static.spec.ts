@@ -50,6 +50,47 @@ for (const t of targets) {
   });
 }
 
+test('정적 데모: 관측 Events 직접 진입은 이벤트 JSON 스냅샷과 표를 읽는다', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  const snapshot = await page.request.get('/api-snapshot/events_limit_500_recent_1.json');
+  expect(snapshot.status()).toBe(200);
+  expect(snapshot.headers()['content-type']).toContain('json');
+  const data = await snapshot.json();
+  expect(Array.isArray(data.items)).toBe(true);
+  expect(data.items.length).toBeGreaterThan(0);
+  await page.goto('/ops/telemetry?tab=observability&observe=logs');
+  await expect(page.getByRole('tab', { name: '지표·추적·이벤트', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('tab', { name: 'Events', exact: true })).toHaveAttribute('aria-selected', 'true');
+  const table = page.getByRole('table', { name: '이벤트 기록', exact: true });
+  await expect(table).toBeVisible();
+  await expect(table.locator('tbody tr').first()).toContainText(data.items[data.items.length - 1].type);
+  await page.waitForLoadState('networkidle');
+  await noErrorBox(page, '관측 Events 직접 진입');
+  expect([...missing], '이벤트 조회가 생성된 스냅샷 파일을 요청해야 한다').toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test('정적 데모: 관측 Traces 직접 진입은 300건 조회 JSON 스냅샷과 표를 읽는다', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  const snapshot = await page.request.get('/api-snapshot/integrations_otel_spans_limit_300.json');
+  expect(snapshot.status()).toBe(200);
+  expect(snapshot.headers()['content-type']).toContain('json');
+  const data = await snapshot.json();
+  expect(Array.isArray(data.items)).toBe(true);
+  expect(data.items.length).toBeGreaterThan(0);
+  expect(data.items[0].traceId).toEqual(expect.any(String));
+  await page.goto('/ops/telemetry?tab=observability&observe=traces');
+  await expect(page.getByRole('tab', { name: '지표·추적·이벤트', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('tab', { name: 'Traces', exact: true })).toHaveAttribute('aria-selected', 'true');
+  const table = page.getByRole('table', { name: '평가 요청 추적', exact: true });
+  await expect(table).toBeVisible();
+  await expect(table.locator('tbody tr').first()).toContainText(data.items[0].traceId);
+  await page.waitForLoadState('networkidle');
+  await noErrorBox(page, '관측 Traces 직접 진입');
+  expect([...missing], '추적 조회가 생성된 300건 스냅샷 파일을 요청해야 한다').toEqual([]);
+  expect(errors).toEqual([]);
+});
+
 // 변경 요청 상세는 시드에 고정 번호가 없다 — 정적 데모용 예시 요청(snapshot-api.ts)을 목록에서 연다
 test('정적 데모: Feature DB 변경 요청 상세 (목록에서 열기)', async ({ page }) => {
   const { missing, errors } = watch(page);

@@ -353,6 +353,7 @@ async function main() {
   await save('integrationCalls', {}, { ifId: 'IF-04' }); // Home integration status.
   for (const f of all.items as { featureId: string; version: string }[]) await save('almRequirements', {}, { featureId: f.featureId, version: f.version });
   await save('otelSpans', {}, { limit: 100 });
+  await save('otelSpans', {}, { limit: 300 });
   // GitLab·JIRA·codeBeamer 양방향 연계 — 외부 연계 현황 '양방향 연계' 탭·검토함 충돌·변경요청 목록
   await save('extSync');
   for (const system of ['jira', 'codebeamer', 'gitlab']) await save('mockExtItems', { system });

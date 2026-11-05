@@ -7,7 +7,8 @@ type Route = (method: string, url: string, body: any) => { status: number; body:
 const fake = (route: Route) => {
   const calls: { method: string; url: string; headers: Record<string, string>; body: any }[] = [];
   const fn = (async (url: string, init: RequestInit = {}) => {
-    const body = init.body ? JSON.parse(String(init.body)) : undefined;
+    // FormData(codeBeamer 댓글 multipart)는 필드 객체로 기록한다
+    const body = init.body instanceof FormData ? { form: Object.fromEntries(init.body.entries()) } : init.body ? JSON.parse(String(init.body)) : undefined;
     calls.push({ method: init.method ?? 'GET', url, headers: init.headers as Record<string, string>, body });
     const r = route(init.method ?? 'GET', url, body) ?? { status: 404, body: {} };
     return new Response(r.status === 204 ? null : JSON.stringify(r.body), { status: r.status });
@@ -140,6 +141,9 @@ describe('실제 연결 어댑터', () => {
     expect(await a.findRequirement('REQ-CARE-0001')).toMatchObject({ key: 'CB-10001' });
     expect(f.calls.find((c) => c.url.endsWith('/items/query'))!.body.queryString).toBe("'Requirement ID' = 'REQ-CARE-0001'");
     await a.write('CB-10001', { append: { field: 'verifications', value: { gate: 'G2', status: 'PASS', featureId: 'FEAT-00022', version: '1.0.0', evidenceRef: 'GR-1' } } }, null);
-    expect(f.calls.find((c) => c.method === 'POST' && c.url.endsWith('/comments'))!.body).toEqual({ comment: '[Feature Platform] G2 PASS — FEAT-00022@1.0.0 · Evidence GR-1', commentFormat: 'PlainText' });
+    // 실서버는 댓글을 multipart/form-data로만 받는다(80-51 §2) — JSON content-type을 붙이지 않는다
+    const posted = f.calls.find((c) => c.method === 'POST' && c.url.endsWith('/comments'))!;
+    expect(posted.body).toEqual({ form: { comment: '[Feature Platform] G2 PASS — FEAT-00022@1.0.0 · Evidence GR-1', commentFormat: 'PlainText' } });
+    expect(posted.headers['content-type']).toBeUndefined();
   });
 });

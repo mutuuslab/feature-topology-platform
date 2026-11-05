@@ -54,6 +54,7 @@ import { ExtSyncRepo, type ConflictRow, type InboxRow, type OutboxJob, type Outb
 import { extUrl, MockExtStore } from './mock-ext.store';
 import { isProduction, seedOf } from '../../../../kernel/runtime-config';
 import { applyExtLiveConfig } from './live-config';
+import { isServiceAccount } from './live-adapters';
 import { deliveryIdOf, hmac, normalize, verifyWebhook } from './normalize';
 import { demoChangeRequestContent, demoEpicContent, demoRequirementContent } from './demo-seed-content';
 
@@ -372,7 +373,9 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     const deliveryId = deliveryIdOf(system, headers, raw);
     const dup = this.repo.seen(system, deliveryId);
     if (dup) return { ...dup, duplicate: true };
-    const change = normalize(system, deliveryId, body);
+    const normalized = normalize(system, deliveryId, body);
+    // live — 플랫폼 서비스 계정이 한 변경의 메아리는 외부 사람 이름이 아니라 그 계정의 외부 ID로 온다(JIRA Cloud accountId)
+    const change = normalized && modeOf(system) === 'live' && isServiceAccount(system, normalized.externalUser) ? { ...normalized, externalUser: PLATFORM_USER } : normalized;
     const now = this.clock.iso();
     if (!change) {
       const row: InboxRow = { system, deliveryId, receivedAt: now, key: '-', outcome: 'IGNORED', summary: '이 연계와 무관한 이벤트', externalUser: '' };

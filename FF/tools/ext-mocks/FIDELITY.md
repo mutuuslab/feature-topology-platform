@@ -15,6 +15,7 @@
 | 상태 파일 | `FF_MOCK_DATA_DIR`(기본 임시 폴더 `ff-ext-mocks`)의 `jira.json`, `FF_MOCK_FRESH=1`이면 새로 | `codebeamer.json` |
 | 시험 조작 | `/_mock/reset` · `/_mock/state` · `/_mock/seed` · `/_mock/act` · `/_mock/drop-next-webhook` (인증 없음, 호출 제한 밖) | `/_mock/reset` · `/_mock/state` · `/_mock/seed` · `/_mock/act`(필드·상태 변경, `clearSuspect`) |
 | 시험 | `tools/ext-mocks/mocks.test.ts` (verify 단계 `ext:mocks`) | 같음 |
+| 계약 시험 | `backend/test/d05/ext-contract.spec.ts` (verify `ext:contract`) — 플랫폼을 live로 두 모의 서버에 붙여 끝까지 | 같음 |
 
 FF를 모의 서버에 붙이기: `IF_MODE_14=live JIRA_URL=http://127.0.0.1:9131 JIRA_USER=ff-sync@example.com JIRA_TOKEN=jira-mock-token JIRA_WEBHOOK_SECRET=…`,
 `IF_MODE_01=live CODEBEAMER_URL=http://127.0.0.1:9132 CODEBEAMER_USER=ff-sync CODEBEAMER_TOKEN=cb-mock-token`. JIRA 모의는 `JIRA_WEBHOOK_SECRET`이 같아야 webhook을 보낸다(`FF_WEBHOOK_URL`, 기본 `http://127.0.0.1:9101/api/webhooks/jira`).
@@ -59,7 +60,7 @@ FF를 모의 서버에 붙이기: `IF_MODE_14=live JIRA_URL=http://127.0.0.1:913
 | 관계 | 연관(association)과 참조 필드(reference) 둘 다. `relations` 응답은 `upstreamReferences`·`downstreamReferences`·`incoming/outgoingAssociations`, 각 `itemRevision{id,version}` | 같음 |
 | 연관 유형 | 1 depends · 2 parent · 3 child · 4 related · 5 derived · 6 allocated · 7 refines · 8 verifies | 1~3 같음, 4~8은 가정(`CODEBEAMER_RELATIONS` 기본값에 맞춤) |
 | suspect | 위 항목이 바뀌면(version +1) `propagatingSuspects` 관계가 의심 상태. 관계 응답에는 넣지 않고 cbQL `hasSuspectedLink = 'true'`만 답함(양 끝 항목). 해제는 `/_mock/act` `clearSuspect`(사람이 화면에서 하는 일) | 응답에 없는 것은 같음(80-51 §4), 양 끝 표시는 가정 |
-| 댓글 | `POST items/{id}/comments`는 multipart/form-data(`comment`, `commentFormat`)만, JSON은 415 | multipart는 같음, 415는 가정. 지금 FF 어댑터는 JSON으로 보내 A4에서 고친다 |
+| 댓글 | `POST items/{id}/comments`는 multipart/form-data(`comment`, `commentFormat`)만, JSON은 415 | multipart는 같음, 415는 가정. FF 어댑터도 multipart로 보낸다(2026-11-05 고침) |
 | webhook | 기본은 보내지 않음. `CB_MOCK_WEBHOOK=on`일 때만 사내 리스너 플러그인 흉내로 `X-CB-Signature`·`X-CB-Delivery`, 본문 `{event: ITEM_CREATED|ITEM_UPDATED, item}` | 보내지 않음은 같음(80-51 §5), 켰을 때 모양은 가정 |
 | 잠금 | 없음(ETag·409 없음) | 같음(명시 잠금 `items/{id}/lock`은 없음) |
 

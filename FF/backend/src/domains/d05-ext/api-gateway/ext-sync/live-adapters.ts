@@ -36,6 +36,19 @@ export function epicStatusPath(from: string, to: string): string[] | null {
   return path.map((l) => JIRA_EPIC_STATUS[l]);
 }
 
+/**
+ * 외부 시스템에서 플랫폼 서비스 계정이 보이는 이름들 — 플랫폼이 쓴 변경이 webhook으로 되돌아오면(메아리) 이 이름으로 온다.
+ * 설정한 이름(JIRA_USER·JIRA_SERVICE_ACCOUNT·CODEBEAMER_USER·GITLAB_SERVICE_ACCOUNT) + 처음 호출 때 묻는 자기 계정
+ * (JIRA /myself의 accountId·name, GitLab /user의 username). JIRA Cloud webhook은 이메일이 아니라 accountId를 준다 —
+ * 이걸 몰라 플랫폼 자신의 전이를 '매핑 없는 계정'으로 거부하던 결함(2026-11-05 모의 JIRA 계약 시험).
+ */
+const learned: Record<ExtSystem, Set<string>> = { JIRA: new Set(), GITLAB: new Set(), CODEBEAMER: new Set() };
+export function isServiceAccount(system: ExtSystem, user: string): boolean {
+  if (!user) return false;
+  const configured = system === 'JIRA' ? [env('JIRA_USER'), env('JIRA_SERVICE_ACCOUNT')] : system === 'GITLAB' ? [env('GITLAB_SERVICE_ACCOUNT')] : [env('CODEBEAMER_USER')];
+  return learned[system].has(user) || configured.some((x) => x && x === user);
+}
+
 export function liveConfig(system: ExtSystem): Cfg | { missing: string[] } {
   const need = (keys: string[]) => keys.filter((k) => !env(k));
   if (system === 'JIRA') {
@@ -69,12 +82,28 @@ export class LiveAdapter implements ExtAdapter {
     if ('missing' in c) throw new Error(`${this.system} 실제 연결 설정이 없습니다 — ${c.missing.join('·')}를 설정하세요(모의로 돌리려면 IF_MODE를 mock으로).`);
     return c;
   }
-  private async req<T>(method: string, path: string, body?: unknown): Promise<{ status: number; data: T }> {
+  private whoAmI: Promise<void> | null = null;
+  /** 서비스 계정의 외부 이름을 한 번 묻는다(실패하면 다음 호출 때 다시) — isServiceAccount */
+  private learn(): Promise<void> {
+    const me = this.system === 'JIRA' ? '/rest/api/2/myself' : this.system === 'GITLAB' ? '/api/v4/user' : null;
+    if (!me) return Promise.resolve();
+    this.whoAmI ??= this.req<Record<string, unknown>>('GET', me, undefined, false)
+      .then((r) => {
+        if (r.status !== 200 || !r.data) throw new Error('who am i');
+        for (const k of ['accountId', 'name', 'key', 'emailAddress', 'username']) if (typeof r.data[k] === 'string' && r.data[k]) learned[this.system].add(r.data[k] as string);
+      })
+      .catch(() => void (this.whoAmI = null));
+    return this.whoAmI;
+  }
+  private async req<T>(method: string, path: string, body?: unknown, learn = true): Promise<{ status: number; data: T }> {
     const c = this.cfg();
-    const headers: Record<string, string> = { accept: 'application/json', ...(body !== undefined ? { 'content-type': 'application/json' } : {}) };
+    if (learn) await this.learn();
+    // 본문: FormData면 multipart 그대로(codeBeamer 댓글), 아니면 JSON
+    const form = typeof FormData !== 'undefined' && body instanceof FormData;
+    const headers: Record<string, string> = { accept: 'application/json', ...(body !== undefined && !form ? { 'content-type': 'application/json' } : {}) };
     if (this.system === 'GITLAB') headers['private-token'] = c.auth;
     else headers.authorization = c.auth;
-    const res = await this.fetchFn(`${c.url}${path}`, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(10_000) });
+    const res = await this.fetchFn(`${c.url}${path}`, { method, headers, body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body), signal: AbortSignal.timeout(10_000) });
     const text = await res.text();
     const data = (text ? JSON.parse(text) : null) as T;
     if (res.status >= 400 && res.status !== 404) throw new Error(`${this.system} ${method} ${path.split('?')[0]} → ${res.status}`);
@@ -178,7 +207,13 @@ export class LiveAdapter implements ExtAdapter {
     } else {
       const id = key.replace(/^CB-/, '');
       const text = patch.append?.field === 'verifications' ? verificationText(patch.append.value) : patch.comment;
-      if (text) await this.req('POST', `/api/v3/items/${id}/comments`, { comment: text, commentFormat: 'PlainText' });
+      // codeBeamer 댓글은 multipart/form-data만 받는다(80-51 §2 — JSON이면 415)
+      if (text) {
+        const form = new FormData();
+        form.set('comment', text);
+        form.set('commentFormat', 'PlainText');
+        await this.req('POST', `/api/v3/items/${id}/comments`, form);
+      }
     }
     return { ok: true, item: (await this.read(key))! };
   }

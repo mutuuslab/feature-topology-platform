@@ -19,3 +19,18 @@ export const observability = {
   event: '이벤트', target: '대상', component: '처리 영역',
   tabs: { metrics: 'Metrics', traces: 'Traces', logs: 'Events', readbacks: '차량 회신' },
 };
+
+export const readbackFlow = {
+  title: '차량으로부터 수신', controls: '수신 흐름 제어',
+  replayHint: '조회된 최근 24개 회신을 순환 재생합니다. 수신 시각과 결과는 원본 기록 그대로입니다.',
+  liveHint: '5초마다 서버를 확인합니다. 새 회신이 확인될 때 수신 경로가 움직입니다.',
+  staticHint: '저장된 스냅샷의 마지막 회신입니다. 새 차량 회신은 수집하지 않습니다.',
+  hashReceived: '정책 해시 회신', motionPaused: '화면 모션 정지', snapshot: '저장된 마지막 회신',
+  replay: '기록 재생', live: '최신 회신 조회', pause: '일시정지', play: '재생', speed: '재생 속도',
+  replaying: '기록 순환 재생 중', paused: '기록 재생 일시정지', checking: '서버 확인 중', waiting: '새 회신 대기', unchecked: '조회 시각 미확인',
+  position: (n: number, total: number) => `${n} / ${total}`, checked: (at: string) => `마지막 조회 ${at}`,
+  vehicle: '차량', path: '차량 회신 → 수신 원장', receivedAt: '원본 수신 시각', result: '수신 결과', publication: '게시본', sequence: '회신 순번', unavailable: '미기록', detail: '회신 상세',
+  timeline: '회신 재생 타임라인', select: (n: number, vin: string, at: string, state: string) => `${n}번 회신 · ${vin} · ${at} · ${state}`, timelineHint: '구간을 누르면 해당 회신에서 멈춥니다.',
+  legendOn: '녹색 · ON', legendOff: '청색 · OFF / 기타', legendRejected: '적색 · 거부',
+  recent: '수신 기록 흐름', shown: (n: number) => `${n}건 표시`, source: '서버에서 조회한 회신만 표시합니다. 상세에서 게시본과 원본 기록을 확인하세요.',
+};

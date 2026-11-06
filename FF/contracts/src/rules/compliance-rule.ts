@@ -228,3 +228,6 @@ export function appliedRuleKeys(rows: Pick<ApplicableRule, 'ruleId' | 'version' 
     .map((r) => `${r.ruleId}@${r.version}`)
     .sort();
 }
+
+/** 적용 대상 Feature 후보 조회 질의 — 화면과 정적 스냅샷이 같은 모양(키 순서)으로 만든다 */
+export const complianceCandidateQuery = (s: Pick<ComplianceScope, 'markets' | 'asil' | 'featureIds'>) => ({ markets: s.markets.join(','), asil: s.asil.join(','), featureIds: s.featureIds.join(',') });

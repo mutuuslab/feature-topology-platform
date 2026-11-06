@@ -2,11 +2,14 @@
 // /admin/settings 설정, /verify/compliance 컴플라이언스(보고서 v1.1 규칙 추적), /change/eo SW EO. 모두 기존 API·계약 데이터를 읽는다.
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { observability as OB } from '../../copy/observability';
+import { complianceRules as CR } from '../../copy/compliance-rules';
 import { grafanaLinks } from '../../external/grafana';
 import { openExternalWindow } from '../../external/links';
 const TelemetryObservability = lazy(() => import('../ops/TelemetryObservability'));
 // Data Lake 출처 지표(TL-UI14) — 제어 채널 탭과 나눠 보인다
 const LakeSources = lazy(() => import('../ops/LakeSources').then((m) => ({ default: m.LakeSources })));
+// 컴플라이언스 룰 레지스트리(FR-CRC-001·002) — 탭을 열 때만 읽는다
+const ComplianceRegistryTab = lazy(() => import('./ComplianceRules').then((m) => ({ default: m.ComplianceRegistryTab })));
 import { Link, useSearchParams } from 'react-router-dom';
 import { COMPLIANCE_PROFILES, KEY_PURPOSES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -637,13 +640,35 @@ function ProfilesTab() {
   );
 }
 
+/** 룰 레지스트리 탭의 핵심 메시지 — 승인을 기다리는 룰 수(탭을 열었을 때만 조회) */
+function useRegistryMessage(on: boolean): KeyMessageSpec | undefined {
+  const q = useApi<{ items: { status: string }[] }>('complianceRules', {}, { enabled: on });
+  if (!on || !q.data) return undefined;
+  const waiting = q.data.items.filter((r) => r.status === 'PROPOSED').length;
+  return waiting ? { tone: 'warn', value: waiting, text: CR.key.waiting } : { tone: 'ok', text: CR.key.ok };
+}
+
 export function ComplianceScreen() {
   const C = M.compliance;
   const [sp] = useSearchParams();
+  const tab = sp.get('tab');
+  const registry = useRegistryMessage(tab === 'registry');
   return (
     <div className="ds-screen">
-      <PageHeader codes="D03-01 · Report v1.1 FFG" title={C.title} lead={C.lead} message={complianceMessage(sp.get('tab') === 'profiles')} actions={DESKTOP_BUILD ? undefined : <Link to="/arch/components">{ko.arch.title}</Link>} />
-      <Tabs tabs={[{ key: 'rules', label: C.tabs.rules }, { key: 'profiles', label: C.tabs.profiles }]}>{(t) => (t === 'profiles' ? <ProfilesTab /> : <RulesTab />)}</Tabs>
+      <PageHeader codes="D03-01 · Report v1.1 FFG" title={C.title} lead={C.lead} message={registry ?? complianceMessage(tab === 'profiles')} actions={DESKTOP_BUILD ? undefined : <Link to="/arch/components">{ko.arch.title}</Link>} />
+      <Tabs tabs={[{ key: 'rules', label: C.tabs.rules }, { key: 'profiles', label: C.tabs.profiles }, { key: 'registry', label: CR.tab }]}>
+        {(t) =>
+          t === 'registry' ? (
+            <Suspense fallback={null}>
+              <ComplianceRegistryTab />
+            </Suspense>
+          ) : t === 'profiles' ? (
+            <ProfilesTab />
+          ) : (
+            <RulesTab />
+          )
+        }
+      </Tabs>
     </div>
   );
 }

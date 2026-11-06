@@ -253,6 +253,9 @@ export class PolicyService implements OnModuleInit {
       this.audit.failed(actor, 'POLICY_DEPLOY', id, odd.map((x) => x.message).join(' · '), 'D01-06');
       throw new DomainError('GUARD_FAILED', odd.map((x) => x.message).join(' · '), { rule: 'FFG-SOT-002', findings: odd });
     }
+    // 배포 시점 컴플라이언스 룰 재판정(D03-01, FR-CRC-002-003) — 만료 룰은 빼고, 승인 뒤 새로 적용되는 룰도 본다
+    const compliance = this.safety.complianceAtDeploy(actor, p);
+    if (compliance) throw compliance;
     // 20-97 §3.4 — 같은 Flag의 코드 연결이 출시를 막으면 게시하지 않는다(승인된 해제는 통과, 연결 저장소가 없으면 보지 않는다)
     const flagCode = this.flagCode.deployBlockers(p);
     if (flagCode.length) {

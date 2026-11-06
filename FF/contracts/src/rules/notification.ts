@@ -9,6 +9,7 @@ import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './access';
 import { DEMO_PERSONAS } from './duty-separation';
 import type { Role } from '../enums';
 import { isAppPath, isRecipient, NOTIFICATION_SENT_EVENT, NotificationCategory, type NotificationSeverity } from './notification-keys';
+import { COMPLIANCE_RULE_TYPE_LABEL } from './compliance-rule';
 
 // 범주·심각도는 notification-keys.ts — 상단바 종(첫 화면)이 이 규칙표 없이 읽는다
 
@@ -652,6 +653,56 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
         recipients,
         exclude: [String(p.sentBy ?? '')].filter(Boolean),
         requirementIds: [],
+      };
+    },
+  },
+  // 컴플라이언스 룰 레지스트리(D03-01) — 만료(Retired 자동 전환) → 관련 Feature Owner 팀·작성자·승인 대상자(FR-CRC-001-026)
+  'compliance.rule.expired': {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const users = (xs: unknown): Recipient[] => (Array.isArray(xs) ? xs : []).filter((x): x is string => typeof x === 'string' && !!x).map((id) => ({ kind: 'user', id }));
+      const teams: Recipient[] = (Array.isArray(p.ownerTeams) ? p.ownerTeams : []).filter((t: unknown): t is string => typeof t === 'string' && !!t).map((team: string) => ({ kind: 'team', team }));
+      const recipients = [...teams, ...users([p.authorId]), ...users(p.approverIds)].filter((r, i, a) => a.findIndex((x) => recipientKey(x) === recipientKey(r)) === i);
+      return {
+        category: 'GATE',
+        severity: 'WARNING',
+        title: `컴플라이언스 룰 만료 — ${p.ruleId} ${p.name ?? ''}`.trim(),
+        fields: [
+          { label: '룰 ID', value: `${p.ruleId} v${p.version ?? '-'}` },
+          { label: '룰 명칭', value: String(p.name ?? '-') },
+          { label: '룰 유형', value: COMPLIANCE_RULE_TYPE_LABEL[p.type as keyof typeof COMPLIANCE_RULE_TYPE_LABEL] ?? String(p.type ?? '-') },
+          { label: '적용 지역', value: Array.isArray(p.markets) ? p.markets.join(', ') : '-' },
+          { label: '유효 종료일', value: String(p.validTo ?? '-') },
+          { label: '만료 일시', value: String(p.expiredAt ?? ctx.event.at) },
+        ],
+        link: `/verify/compliance?tab=registry&rule=${encodeURIComponent(String(p.ruleId))}`,
+        recipients,
+        exclude: [],
+        requirementIds: ['FR-CRC-001-026'],
+      };
+    },
+  },
+  // 룰 승인 요청 → 룰에 지정된 승인 대상자(요청자 본인 제외, FR-CRC-001-014)
+  'compliance.rule.approval-requested': {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const recipients: Recipient[] = (Array.isArray(p.approverIds) ? p.approverIds : []).filter((x: unknown): x is string => typeof x === 'string' && !!x).map((id: string) => ({ kind: 'user', id }));
+      if (!recipients.length) return null;
+      return {
+        category: 'APPROVAL',
+        severity: 'INFO',
+        title: `컴플라이언스 룰 승인 요청 — ${p.ruleId} v${p.version ?? '-'}`,
+        fields: [
+          { label: '룰', value: `${p.ruleId} ${p.name ?? ''}`.trim() },
+          { label: '버전', value: String(p.version ?? '-') },
+          { label: '요청자', value: String(p.requestedBy ?? '-') },
+        ],
+        link: `/verify/compliance?tab=registry&rule=${encodeURIComponent(String(p.ruleId))}`,
+        recipients,
+        exclude: [String(p.requestedBy ?? '')].filter(Boolean),
+        requirementIds: ['FR-CRC-001-014'],
       };
     },
   },

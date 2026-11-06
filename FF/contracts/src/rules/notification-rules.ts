@@ -70,6 +70,8 @@ export const NOTIFICATION_RULE_SPECS: NotificationRuleSpec[] = [
   { event: 'release.signed', name: 'Release Sign-off 완료', category: 'APPROVAL', recipients: ['OWNER_TEAM', 'RELEASE_MANAGER', 'PRODUCT_APPROVER', 'AUDITOR'], excludes: '서명자 본인', requirementIds: [] },
   { event: 'pki.key.rotated', name: '서명 키 교체', category: 'DEPLOY', recipients: ['GATE_JUDGE', 'SAFETY_OFFICER', 'OPERATOR'], excludes: '교체한 본인', requirementIds: [] },
   { event: NOTIFICATION_SENT_EVENT, name: '직접 보낸 알림', category: 'DIRECT', recipients: ['CHOSEN'], excludes: '보낸 사람 본인', requirementIds: [], fixed: true },
+  { event: 'compliance.rule.expired', name: '컴플라이언스 룰 만료', category: 'GATE', recipients: ['OWNER_TEAM', 'AUTHOR', 'NAMED_APPROVERS'], requirementIds: ['FR-CRC-001-026'] },
+  { event: 'compliance.rule.approval-requested', name: '컴플라이언스 룰 승인 요청', category: 'APPROVAL', recipients: ['NAMED_APPROVERS'], excludes: '요청자 본인', requirementIds: ['FR-CRC-001-014'] },
 ];
 
 /** 수신자 표시 이름 — 규칙 토큰·역할 */

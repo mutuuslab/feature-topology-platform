@@ -1194,4 +1194,22 @@ CREATE TABLE ads_market_baseline (feature_id TEXT NOT NULL, version TEXT NOT NUL
 CREATE TABLE ads_expansion_input (feature_id TEXT NOT NULL, version TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, version));
 `,
   },
+  {
+    // 컴플라이언스 룰 레지스트리(D03-01, FR-CRC-001·002) — 현재 룰(룰 ID 유일), 버전별 내용 보존, 변경 이력·배포 시점 검증 기록은 추가만, 승인 요청
+    name: '151_compliance_rule',
+    sql: `
+CREATE TABLE compliance_rule (rule_id TEXT PRIMARY KEY, version TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('PROPOSED','APPROVED','REJECTED','RETIRED')), owner_id TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE compliance_rule_version (rule_id TEXT NOT NULL, version TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('PROPOSED','APPROVED','REJECTED','RETIRED')), doc TEXT NOT NULL, PRIMARY KEY (rule_id, version));
+CREATE TABLE compliance_rule_change (id INTEGER PRIMARY KEY AUTOINCREMENT, rule_id TEXT NOT NULL, version TEXT NOT NULL, action TEXT NOT NULL CHECK (action IN ('CREATE','UPDATE','REQUEST','APPROVE','REJECT','RETIRE')), field TEXT NOT NULL, before_value TEXT, after_value TEXT, by_actor TEXT NOT NULL, at TEXT NOT NULL, reason TEXT);
+CREATE INDEX compliance_rule_change_rule ON compliance_rule_change (rule_id, id);
+CREATE TRIGGER compliance_rule_change_no_update BEFORE UPDATE ON compliance_rule_change BEGIN SELECT RAISE(ABORT, 'compliance_rule_change는 추가만 가능'); END;
+CREATE TRIGGER compliance_rule_change_no_delete BEFORE DELETE ON compliance_rule_change BEGIN SELECT RAISE(ABORT, 'compliance_rule_change는 추가만 가능'); END;
+CREATE TABLE compliance_approval_request (request_id TEXT PRIMARY KEY, rule_id TEXT NOT NULL, version TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('OPEN','APPROVED','REJECTED','WITHDRAWN')), doc TEXT NOT NULL);
+CREATE INDEX compliance_approval_request_rule ON compliance_approval_request (rule_id, status);
+CREATE TABLE compliance_check (id INTEGER PRIMARY KEY AUTOINCREMENT, policy_id TEXT NOT NULL, stage TEXT NOT NULL CHECK (stage IN ('DEPLOY')), result TEXT NOT NULL CHECK (result IN ('PASS','FAIL')), at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX compliance_check_policy ON compliance_check (policy_id, id);
+CREATE TRIGGER compliance_check_no_update BEFORE UPDATE ON compliance_check BEGIN SELECT RAISE(ABORT, 'compliance_check는 추가만 가능'); END;
+CREATE TRIGGER compliance_check_no_delete BEFORE DELETE ON compliance_check BEGIN SELECT RAISE(ABORT, 'compliance_check는 추가만 가능'); END;
+`,
+  },
 ];

@@ -76,4 +76,6 @@ export const NOTIFICATION_EVENT_TYPES: readonly string[] = [
   'billing.call.failed',
   'signing.failed',
   NOTIFICATION_SENT_EVENT,
+  'compliance.rule.expired',
+  'compliance.rule.approval-requested',
 ];

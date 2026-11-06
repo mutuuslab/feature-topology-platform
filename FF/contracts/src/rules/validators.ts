@@ -8,6 +8,7 @@ import { decimalCompare, semverCompare, time, type Constraint } from '../flags/p
 import { LIFECYCLE_RANK } from './lifecycle';
 import type { VirtualEvidence, VirtualScenario } from './virtual';
 import { variantRow } from './variant';
+import { evaluateComplianceRules, type ApplicableRule, type ComplianceRegistryInput } from './compliance-rule';
 
 export type ValidatorResultState = 'PASS' | 'CONDITIONAL' | 'FAIL';
 
@@ -18,7 +19,10 @@ export interface ValidatorResult {
   summary: string;
   /** INFO는 알림(대체 사실·통지 대상) — 기록·표시하되 판정에는 넣지 않는다 */
   /** code CONFLICT — 정책 규칙 충돌(모순 조건·flagKey 중복). 충돌 탐지 알림(FR-CON-001-003)이 고른다 */
-  findings: { result: Exclude<ValidatorResultState, 'PASS'> | 'INFO'; message: string; code?: 'CONFLICT' }[];
+  /** ruleId·item — 컴플라이언스 미충족 룰 ID·항목(FR-CRC-002-004). 플랫폼 기본 규칙은 항목만 */
+  findings: { result: Exclude<ValidatorResultState, 'PASS'> | 'INFO'; message: string; code?: 'CONFLICT'; ruleId?: string; item?: string }[];
+  /** D03-01 — 이 검증에 적용한(또는 범위에 들었지만 적용하지 않은) 컴플라이언스 룰. 배포 시점 대조에 쓴다 */
+  rules?: ApplicableRule[];
 }
 
 export interface ValidationInput {
@@ -37,6 +41,8 @@ export interface ValidationInput {
   entitlementProductOk: boolean | null;
   /** 가상검증(CARLA) — 이 Feature 시나리오별, 이 정책 내용으로 돌린 최신 실행(없으면 null). 시나리오가 없는 Feature는 빈 목록 */
   virtual?: VirtualEvidence[];
+  /** 컴플라이언스 룰 레지스트리(D03-01) — 룰 목록·대상 지역·CAL·검증 시각. 없으면 플랫폼 기본 규칙만 */
+  compliance?: ComplianceRegistryInput;
 }
 
 /** 문맥으로 쓸 수 있는 이름 — 평가기 vehicleContext와 같다 */
@@ -84,17 +90,21 @@ export function validatePolicy(i: ValidationInput): ValidatorResult {
   return done('D06-01', '정책 검증', f, '형식·제어점·충돌 이상 없음');
 }
 
-/** D03-01 컴플라이언스 룰 — 안전 등급별 Safe Default·단계 배포, 사용 권한 상품 구성 */
+/** D03-01 컴플라이언스 룰 — 플랫폼 기본 규칙(안전 등급별 Safe Default·단계 배포, 사용 권한 상품 구성) + 등록 룰(레지스트리) */
 export function validateCompliance(i: ValidationInput): ValidatorResult {
   const f: ValidatorResult['findings'] = [];
   const asil = i.feature.asil;
-  if (asil !== 'QM' && i.policy.safeDefault) f.push({ result: 'FAIL', message: `ASIL ${asil} Feature의 Safe Default는 OFF(false)여야 합니다` });
-  if ((asil === 'C' || asil === 'D') && i.policy.rollout.mode === 'ALL') f.push({ result: 'CONDITIONAL', message: `ASIL ${asil}는 코호트 단계 배포를 먼저 거쳐야 합니다` });
+  if (asil !== 'QM' && i.policy.safeDefault) f.push({ result: 'FAIL', item: 'SAFE_DEFAULT_OFF', message: `ASIL ${asil} Feature의 Safe Default는 OFF(false)여야 합니다` });
+  if ((asil === 'C' || asil === 'D') && i.policy.rollout.mode === 'ALL') f.push({ result: 'CONDITIONAL', item: 'STAGED_ROLLOUT', message: `ASIL ${asil}는 코호트 단계 배포를 먼저 거쳐야 합니다` });
   if (i.policy.entitlementCatalogId) {
-    if (i.entitlementProductOk === null) f.push({ result: 'FAIL', message: `사용 권한 상품 ${i.policy.entitlementCatalogId}이(가) 없습니다` });
-    else if (!i.entitlementProductOk) f.push({ result: 'FAIL', message: `${i.policy.entitlementCatalogId} 구성에 ${i.feature.featureId}가 없습니다` });
+    if (i.entitlementProductOk === null) f.push({ result: 'FAIL', item: 'ENTITLEMENT_REQUIRED', message: `사용 권한 상품 ${i.policy.entitlementCatalogId}이(가) 없습니다` });
+    else if (!i.entitlementProductOk) f.push({ result: 'FAIL', item: 'ENTITLEMENT_REQUIRED', message: `${i.policy.entitlementCatalogId} 구성에 ${i.feature.featureId}가 없습니다` });
   }
-  return done('D03-01', '컴플라이언스 룰 체커', f, `ASIL ${asil} 규칙 충족`);
+  if (!i.compliance) return done('D03-01', '컴플라이언스 룰 체커', f, `ASIL ${asil} 규칙 충족`);
+  const reg = evaluateComplianceRules(i, i.compliance);
+  f.push(...reg.findings);
+  const applied = reg.rules.filter((r) => r.applied).length;
+  return { ...done('D03-01', '컴플라이언스 룰 체커', f, `ASIL ${asil} 규칙 충족 · 적용 룰 ${applied}건 충족`), rules: reg.rules };
 }
 
 /** D06-03 차량 시나리오 — 데모 Fleet에 정책을 배포했다고 가정하고 평가 */

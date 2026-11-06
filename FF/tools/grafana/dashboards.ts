@@ -260,10 +260,11 @@ function killSwitch(): Dashboard {
 function canary(): Dashboard {
   const L = new Layout();
   const F = 'feature=~"$feature"';
-  const per = (metric: string, cohort: string) => `sum(rate(${metric}{${F},cohort="${cohort}"}[1h])) / sum(avg_over_time(ff_feature_active_vehicles{${F},cohort="${cohort}"}[1h]))`;
+  // 적용군은 작다(5% 단계) — 24시간 창으로 표본을 모은다
+  const per = (metric: string, cohort: string) => `sum(rate(${metric}{${F},cohort="${cohort}"}[24h])) / sum(avg_over_time(ff_feature_active_vehicles{${F},cohort="${cohort}"}[24h]))`;
   L.row('단계');
   L.add({ type: 'stat', w: 6, h: 5, title: '적용군 비율', description: '새 Version을 쓰는 차량 비율(적용군 활성 / 전체 활성). 14일 주기로 5%→25%→50%→100%.', unit: 'percentunit', decimals: 0, targets: [q(`sum(ff_feature_active_vehicles{${F},cohort="treatment"}) / sum(ff_feature_active_vehicles{${F},cohort=~"treatment|control"})`, '적용군')] });
-  L.add({ type: 'stat', w: 6, h: 5, title: 'DTC 상대위험(적용군/대조군)', description: '활성 차량당 DTC 발생률의 비. 1.5 이상이면 주의, 2 이상이면 확대 중단 검토 — FF 정책 상세의 단계 확대 화면에서 HOLD.', unit: 'none', decimals: 2, steps: [[null, 'green'], [1.5, 'orange'], [2, 'red']], noValue: '대조군 0대', targets: [q(`(${per('ff_feature_dtc_total', 'treatment')}) / (${per('ff_feature_dtc_total', 'control')})`, 'DTC RR')] });
+  L.add({ type: 'stat', w: 6, h: 5, title: 'DTC 상대위험(적용군/대조군)', description: '활성 차량당 DTC 발생률의 비(24시간 창). 1.5 이상이면 주의, 2 이상이면 확대 중단 검토 — FF 정책 상세의 단계 확대 화면에서 HOLD.', unit: 'none', decimals: 2, steps: [[null, 'green'], [1.5, 'orange'], [2, 'red']], noValue: '대조군 0대', targets: [q(`(${per('ff_feature_dtc_total', 'treatment')}) / (${per('ff_feature_dtc_total', 'control')})`, 'DTC RR')] });
   L.add({ type: 'stat', w: 6, h: 5, title: '오류 상대위험', description: '활성 차량당 Feature 동작 오류의 비.', unit: 'none', decimals: 2, steps: [[null, 'green'], [1.5, 'orange'], [2, 'red']], noValue: '대조군 0대', targets: [q(`(${per('ff_feature_errors_total', 'treatment')}) / (${per('ff_feature_errors_total', 'control')})`, '오류 RR')] });
   L.add({ type: 'stat', w: 6, h: 5, title: '폴백 상대위험', description: '활성 차량당 Safe Default 폴백의 비.', unit: 'none', decimals: 2, steps: [[null, 'green'], [1.5, 'orange'], [2, 'red']], noValue: '대조군 0대', targets: [q(`(${per('ff_feature_fallbacks_total', 'treatment')}) / (${per('ff_feature_fallbacks_total', 'control')})`, '폴백 RR')] });
   L.row('적용군 대 대조군');
@@ -273,7 +274,7 @@ function canary(): Dashboard {
     ['ff_feature_fallbacks_total', '폴백(활성 1천 대·시간당)', 'Safe Default로 떨어진 횟수. 사유는 Feature 운영 건강도에서.'],
     ['ff_feature_manual_off_total', '수동 끄기(활성 1천 대·시간당)', '운전자가 새 Version을 끄는지 — 사용성 회귀 신호.'],
   ] as const)
-    L.add({ w: 12, title, description: desc, targets: ['treatment', 'control'].map((c) => q(`sum by (feature, feature_version) (rate(${metric}{${F},cohort="${c}"}[30m])) * 3600 * 1000 / sum by (feature, feature_version) (ff_feature_active_vehicles{${F},cohort="${c}"})`, `${c === 'treatment' ? '적용군' : '대조군'} {{feature}} {{feature_version}}`)), fieldLinks: [FEATURE_LINK] });
+    L.add({ w: 12, title, description: desc, targets: ['treatment', 'control'].map((c) => q(`sum by (feature, feature_version) (rate(${metric}{${F},cohort="${c}"}[3h])) * 3600 * 1000 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{${F},cohort="${c}"}[3h]))`, `${c === 'treatment' ? '적용군' : '대조군'} {{feature}} {{feature_version}}`)), fieldLinks: [FEATURE_LINK] });
   L.add({ w: 12, title: '활성 차량(적용군·대조군)', description: '두 군의 활성 차량. 단계 확대 때 적용군이 계단처럼 오른다(시간축 주석: 단계 확대).', targets: [q(`sum by (cohort, feature_version) (ff_feature_active_vehicles{${F},cohort=~"treatment|control"})`, '{{cohort}} {{feature_version}}')] });
   L.add({ w: 12, title: 'Flag 단계 비율·분할 평가', description: '배포된 정책의 단계 비율(ff_rollout_stage_ratio)과 실험 Flag의 분할(SPLIT) 평가 변형.', unit: 'percentunit', targets: [q('ff_rollout_stage_ratio', '{{flag}} 단계'), q('sum by (flag, variant) (rate(ff_flag_evaluations_total{reason="SPLIT"}[15m])) / ignoring(variant) group_left sum by (flag) (rate(ff_flag_evaluations_total{reason="SPLIT"}[15m]))', '{{flag}} {{variant}}')] });
   return dashboard('ff-canary', 'Canary 단계 배포', '적용군(새 Version)과 대조군 비교 — DTC·오류·폴백·수동 끄기 상대위험과 단계 확대', ['canary'], L, [variable('feature', 'Feature', 'label_values(ff_feature_active_vehicles{cohort="treatment"}, feature)', { includeAll: false, multi: false, current: {} })], '/policies');

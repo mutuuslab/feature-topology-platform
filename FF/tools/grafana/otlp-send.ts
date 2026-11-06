@@ -3,6 +3,8 @@
 import { gzipSync } from 'node:zlib';
 import { decodePartialSuccess, encodeLogs, encodeMetrics, encodeTraces, type OtlpAttrs, type OtlpLogRecord, type OtlpMetric, type OtlpSpan } from '../../backend/src/kernel/otlp/otlp-proto.ts';
 
+const SOFT_REJECT = /duplicate|out.of.order|too old|too far in the past|sample.timestamp/i;
+
 export const OTLP_SECRETS = ['GRAFANA_OTLP_URL', 'GRAFANA_OTLP_INSTANCE_ID', 'GRAFANA_OTLP_TOKEN'] as const;
 
 export interface OtlpTarget {
@@ -32,6 +34,8 @@ export interface SendResult {
   requests: number;
   bytes: number;
   rejected: number;
+  /** 표본 단위로 일부 거부된 요청 수(거부 수 모름) */
+  soft: number;
   messages: string[];
 }
 
@@ -41,6 +45,9 @@ async function post(target: OtlpTarget, path: string, body: Uint8Array, fetchImp
     const r = await fetchImpl(target.base + path, { method: 'POST', headers: { 'Content-Type': 'application/x-protobuf', 'Content-Encoding': 'gzip', Authorization: target.auth }, body: gz, signal: AbortSignal.timeout(30_000) });
     if (r.ok) return decodePartialSuccess(new Uint8Array(await r.arrayBuffer()));
     const text = (await r.text()).slice(0, 400);
+    // 표본 단위 거부(같은 시각 다른 값·순서 어긋남·너무 오래됨) — Mimir는 나머지 표본은 넣고 400을 돌려준다(soft error).
+    // 생성기를 바꾼 직후 겹친 창에서 생긴다 — 실패가 아니라 거부로 센다(수를 모르면 -1)
+    if (r.status === 400 && SOFT_REJECT.test(text)) return { rejected: -1, message: text };
     if ((r.status === 429 || r.status >= 500) && attempt < 2) {
       await new Promise((ok) => setTimeout(ok, 2000 * (attempt + 1)));
       continue;
@@ -51,7 +58,7 @@ async function post(target: OtlpTarget, path: string, body: Uint8Array, fetchImp
 
 /** 지표를 요청 하나에 점 maxPoints개 안으로 나눠 보낸다 */
 export async function sendMetrics(target: OtlpTarget, resource: OtlpAttrs, metrics: OtlpMetric[], fetchImpl: typeof fetch = fetch, maxPoints = 4000): Promise<SendResult> {
-  const out: SendResult = { signal: 'metrics', requests: 0, bytes: 0, rejected: 0, messages: [] };
+  const out: SendResult = { signal: 'metrics', requests: 0, bytes: 0, rejected: 0, soft: 0, messages: [] };
   let batch: OtlpMetric[] = [];
   let n = 0;
   const flush = async () => {
@@ -60,7 +67,8 @@ export async function sendMetrics(target: OtlpTarget, resource: OtlpAttrs, metri
     const r = await post(target, '/v1/metrics', body, fetchImpl);
     out.requests++;
     out.bytes += body.length;
-    out.rejected += r.rejected;
+    out.rejected += Math.max(0, r.rejected);
+    if (r.rejected < 0) out.soft++;
     if (r.message) out.messages.push(r.message);
     batch = [];
     n = 0;
@@ -79,26 +87,28 @@ export async function sendMetrics(target: OtlpTarget, resource: OtlpAttrs, metri
 }
 
 export async function sendLogs(target: OtlpTarget, resource: OtlpAttrs, logs: OtlpLogRecord[], fetchImpl: typeof fetch = fetch): Promise<SendResult> {
-  const out: SendResult = { signal: 'logs', requests: 0, bytes: 0, rejected: 0, messages: [] };
+  const out: SendResult = { signal: 'logs', requests: 0, bytes: 0, rejected: 0, soft: 0, messages: [] };
   for (let i = 0; i < logs.length; i += 1000) {
     const body = encodeLogs(resource, { name: 'ff-grafana-demo', version: '1' }, logs.slice(i, i + 1000));
     const r = await post(target, '/v1/logs', body, fetchImpl);
     out.requests++;
     out.bytes += body.length;
-    out.rejected += r.rejected;
+    out.rejected += Math.max(0, r.rejected);
+    if (r.rejected < 0) out.soft++;
     if (r.message) out.messages.push(r.message);
   }
   return out;
 }
 
 export async function sendTraces(target: OtlpTarget, resource: OtlpAttrs, spans: OtlpSpan[], fetchImpl: typeof fetch = fetch): Promise<SendResult> {
-  const out: SendResult = { signal: 'traces', requests: 0, bytes: 0, rejected: 0, messages: [] };
+  const out: SendResult = { signal: 'traces', requests: 0, bytes: 0, rejected: 0, soft: 0, messages: [] };
   for (let i = 0; i < spans.length; i += 1000) {
     const body = encodeTraces(resource, { name: 'ff-grafana-demo', version: '1' }, spans.slice(i, i + 1000));
     const r = await post(target, '/v1/traces', body, fetchImpl);
     out.requests++;
     out.bytes += body.length;
-    out.rejected += r.rejected;
+    out.rejected += Math.max(0, r.rejected);
+    if (r.rejected < 0) out.soft++;
     if (r.message) out.messages.push(r.message);
   }
   return out;

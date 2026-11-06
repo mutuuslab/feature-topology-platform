@@ -124,6 +124,24 @@ test('push-demo: 가짜 OTLP 수신기가 받은 gzip protobuf — 인증·자�
   assert.doesNotMatch(logs, /HMA-|KMH-|ego-01|pseudonym/);
 });
 
+test('push-demo: 표본 단위 거부(400 duplicate)는 경고로 세고 실패하지 않는다, 인증 오류(401)는 실패', async () => {
+  let status = 400;
+  const srv = await fakeServer(() => ({ status, json: { message: 'err-mimir-sample-duplicate-timestamp: the sample has been rejected because another sample with the same timestamp, but a different value, has already been ingested' } }));
+  const env = { GRAFANA_OTLP_URL: `${srv.base}/otlp`, GRAFANA_OTLP_INSTANCE_ID: '1', GRAFANA_OTLP_TOKEN: 't' };
+  const out: string[] = [];
+  const log = console.log;
+  console.log = (m: string) => out.push(String(m));
+  try {
+    assert.equal(await pushMain(['node', 'x', '--now', '2026-11-06T09:30:00Z', '--window', '2', '--events', '0'], env), 0);
+    assert.match(out.join(' '), /일부 거부 요청 [1-9]/);
+    status = 401;
+    await assert.rejects(pushMain(['node', 'x', '--now', '2026-11-06T09:30:00Z', '--window', '2', '--events', '0'], env), /HTTP 401 \(Instance ID·토큰·쓰기 권한 확인\)/);
+  } finally {
+    console.log = log;
+    await srv.close();
+  }
+});
+
 test('push-demo·provision: 비밀이 없으면 "비밀 없음"으로 실패(종료 2) — 건너뛰기 성공이 아니다', async () => {
   const errors: string[] = [];
   const err = console.error;

@@ -1,7 +1,7 @@
 // 결정적 시연 시계열(80-80) — FF 시연 데이터(demo-catalog.json)와 같은 Feature·Flag·정책·국가·차종·SW로,
 // '지금' 기준 시각의 지표·로그·추적을 만든다. 같은 시각이면 언제 다시 만들어도 같은 값이다(15분마다 다시 보내도 겹친 점이 같다).
 // 패턴: 국가별 현지 시각의 주행(출퇴근 정점·주말 늦은 정점), 통신 지연 분포(로그정규), 칸별 간헐 장애, 14일 주기 Canary 단계 확대,
-// 하루 1~2회 긴급 차단 사건(등급별 반영 지연·기한 초과·재전송·복원), Edge 장애·Unleash drift 창, Feature별 개선 신호.
+// 하루 1~2회 긴급 차단 사건(등급별 반영 지연·기한 초과·재전송·4~10시간 뒤 복원), FF 시연에 걸린 차단(KILL-00001), Edge 장애·Unleash drift 창, Feature별 개선 신호.
 // 누적 지표는 UTC 자정에 0부터 다시 센다(OTLP start_time = 자정).
 import { APPLY_LATENCY_BUCKETS, HEALTH_INDICATORS, HTTP_BUCKETS, metricDef, SIGNATURE_REJECT_REASONS } from '../../contracts/src/rules/telemetry-metrics.ts';
 import type { OtlpAttrs, OtlpHistogramPoint, OtlpLogRecord, OtlpMetric, OtlpNumberPoint, OtlpSpan } from '../../backend/src/kernel/otlp/otlp-proto.ts';
@@ -127,7 +127,8 @@ export function canaryStage(ms: number): number {
   const d = ((dayIndex(ms) % 14) + 14) % 14;
   return d < 3 ? 0.05 : d < 6 ? 0.25 : d < 9 ? 0.5 : 1;
 }
-const CANARY_FEATURE = 'FEAT-00005';
+// KR NX4 PE(등록 280대) 스마트 크루즈 5.5.0 — 차량이 많은 칸이라 5% 단계에서도 적용군이 보인다
+const CANARY_FEATURE = 'FEAT-00145';
 
 /** Feature별 개선 신호(시연 시나리오) — 대시보드·경보가 '개선 후보'로 잡는 것 */
 const SIGNALS: Record<string, Partial<{ adoption: number; offRate: number; quickRate: number; errorX: number; fallbackModel: string }>> = {
@@ -168,7 +169,7 @@ export class DemoModel {
           quickRate: sigV.quickRate ?? 0.012 + 0.015 * rand('quick', f.featureId),
           fallbackRate: (ms, model) => (sigV.fallbackModel === model && ((dayIndex(ms) % 14) + 14) % 14 >= 3 ? 0.085 : 0.004 + 0.004 * rand('fb', f.featureId)),
           errorRate: 0.0006 * (sigV.errorX ?? 1) * (0.8 + 0.4 * rand('err', f.featureId)),
-          dtcRate: (ms) => 0.00025 * (canary && latest && ((dayIndex(ms) % 14) + 14) % 14 >= 6 ? 1.9 : 1),
+          dtcRate: (ms) => 0.002 * (canary && latest && ((dayIndex(ms) % 14) + 14) % 14 >= 6 ? 1.9 : 1),
         };
       };
       this.versions.push(make(f.version, true));
@@ -202,7 +203,7 @@ export class DemoModel {
       // 현지 업무 시간(09~18시)에 발령
       const localHour = 9 + rand('inc-h', day, i) * 9;
       const issued = day * DAY + (localHour - (UTC_OFFSET[f.country] ?? 0)) * 3_600_000;
-      out.push({ id: `INC-${day}-${i}`, featureId: f.featureId, country: f.country, model: f.vehicleModel, dc: pick.dc, issued, released: issued + (2 + 3 * rand('inc-len', day, i)) * 3_600_000, targets: Math.max(1, Math.round(fleet * (0.2 + 0.8 * rand('inc-share', day, i)))) });
+      out.push({ id: `INC-${day}-${i}`, featureId: f.featureId, country: f.country, model: f.vehicleModel, dc: pick.dc, issued, released: issued + (4 + 6 * rand('inc-len', day, i)) * 3_600_000, targets: Math.max(1, Math.round(fleet * (0.2 + 0.8 * rand('inc-share', day, i)))) });
     }
     return out;
   }
@@ -517,6 +518,11 @@ function gauges(model: DemoModel, t: number): { name: string; labels: Labels; va
     g('ff_vehicles_silent', { country: e.country, vehicle_model: e.model, window: '1h' }, Math.round(e.n * (offline + (1 - offline) * Math.exp(-e.lambda1h))));
     g('ff_vehicles_silent', { country: e.country, vehicle_model: e.model, window: '24h' }, Math.round(e.n * offline));
   }
+  // FF 시연 데이터에 걸려 있는 차단(KILL-00001 등) — 대상 차량은 이미 끝 상태(FF 화면과 같다)
+  for (const k of model.catalog.kills) {
+    g('ff_kill_target_vehicles', { feature: k.featureId, deact_class: k.deactClass }, k.vehicles);
+    g('ff_kill_pending_vehicles', { feature: k.featureId, deact_class: k.deactClass }, 0);
+  }
   for (const inc of [...model.incidents(day - 1), ...model.incidents(day)]) {
     if (t < inc.issued || t >= inc.released) continue;
     const pending = Array.from({ length: inc.targets }, (_, v) => model.applySeconds(inc, v)).filter((s) => inc.issued + s * 1000 > t).length;
@@ -538,13 +544,14 @@ function gauges(model: DemoModel, t: number): { name: string; labels: Labels; va
   for (const fv of model.versions) {
     const L = { feature: fv.featureId, feature_version: fv.version, country: fv.country, vehicle_model: fv.model, cohort: fv.cohort };
     const active = fv.eligible * fv.share(t) * activity(fv.country, t) * fv.adoption;
-    g('ff_feature_active_vehicles', L, Math.round(active));
+    // Lake Gold 1시간 평균 — 소수 한 자리(작은 적용군도 0으로 뭉개지지 않게)
+    g('ff_feature_active_vehicles', L, Number(active.toFixed(1)));
     const key = `${fv.featureId}@${fv.version}`;
     const ind: Record<string, number> = {
       delivery_success_rate: 0.985 + 0.013 * rand('dsr', key, day),
       status_rejected_rate: 0.002 + 0.002 * rand('srr', key, day),
       disabled_share: killed.has(fv.featureId) ? 0.6 + 0.3 * rand('ds', key, day) : 0,
-      dtc_vehicle_rate: fv.dtcRate(t) * 40,
+      dtc_vehicle_rate: fv.dtcRate(t) * 15,
       fault_rate_per_1k: fv.errorRate * 1000 * 6,
       safety_event_rate_per_1k: 0.2 + 0.3 * rand('ser', key, day),
       incident_count: Math.floor(2 * rand('ic', key, day)),
@@ -562,7 +569,15 @@ function gauges(model: DemoModel, t: number): { name: string; labels: Labels; va
   g('ff_lake_freshness_seconds', { dataset: 'gold_1h' }, fresh(1500, '1h'));
   g('ff_lake_freshness_seconds', { dataset: 'gold_1d' }, fresh(9000, '1d'));
   g('ff_lake_freshness_seconds', { dataset: 'relay' }, fresh(40, 'relay'));
-  return out;
+  // 같은 이름·라벨은 하나로 합친다(걸린 차단과 그날 사건이 같은 Feature·등급이면) — 같은 시각 점이 둘이면 수집기가 거부한다
+  const merged = new Map<string, { name: string; labels: Labels; value: number }>();
+  for (const x of out) {
+    const k = x.name + JSON.stringify(x.labels);
+    const prev = merged.get(k);
+    if (prev) prev.value += x.value;
+    else merged.set(k, { ...x });
+  }
+  return [...merged.values()];
 }
 
 export interface DemoBatch {

@@ -256,7 +256,7 @@
       "id": 3,
       "type": "stat",
       "title": "DTC 상대위험(적용군/대조군)",
-      "description": "활성 차량당 DTC 발생률의 비. 1.5 이상이면 주의, 2 이상이면 확대 중단 검토 — FF 정책 상세의 단계 확대 화면에서 HOLD.",
+      "description": "활성 차량당 DTC 발생률의 비(24시간 창). 1.5 이상이면 주의, 2 이상이면 확대 중단 검토 — FF 정책 상세의 단계 확대 화면에서 HOLD.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -274,7 +274,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "(sum(rate(ff_feature_dtc_total{feature=~\"$feature\",cohort=\"treatment\"}[1h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[1h]))) / (sum(rate(ff_feature_dtc_total{feature=~\"$feature\",cohort=\"control\"}[1h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[1h])))",
+          "expr": "(sum(rate(ff_feature_dtc_total{feature=~\"$feature\",cohort=\"treatment\"}[24h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[24h]))) / (sum(rate(ff_feature_dtc_total{feature=~\"$feature\",cohort=\"control\"}[24h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[24h])))",
           "legendFormat": "DTC RR",
           "range": true
         }
@@ -343,7 +343,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "(sum(rate(ff_feature_errors_total{feature=~\"$feature\",cohort=\"treatment\"}[1h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[1h]))) / (sum(rate(ff_feature_errors_total{feature=~\"$feature\",cohort=\"control\"}[1h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[1h])))",
+          "expr": "(sum(rate(ff_feature_errors_total{feature=~\"$feature\",cohort=\"treatment\"}[24h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[24h]))) / (sum(rate(ff_feature_errors_total{feature=~\"$feature\",cohort=\"control\"}[24h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[24h])))",
           "legendFormat": "오류 RR",
           "range": true
         }
@@ -412,7 +412,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "(sum(rate(ff_feature_fallbacks_total{feature=~\"$feature\",cohort=\"treatment\"}[1h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[1h]))) / (sum(rate(ff_feature_fallbacks_total{feature=~\"$feature\",cohort=\"control\"}[1h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[1h])))",
+          "expr": "(sum(rate(ff_feature_fallbacks_total{feature=~\"$feature\",cohort=\"treatment\"}[24h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[24h]))) / (sum(rate(ff_feature_fallbacks_total{feature=~\"$feature\",cohort=\"control\"}[24h])) / sum(avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[24h])))",
           "legendFormat": "폴백 RR",
           "range": true
         }
@@ -494,7 +494,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (feature, feature_version) (rate(ff_feature_dtc_total{feature=~\"$feature\",cohort=\"treatment\"}[30m])) * 3600 * 1000 / sum by (feature, feature_version) (ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"})",
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_dtc_total{feature=~\"$feature\",cohort=\"treatment\"}[3h])) * 3600 * 1000 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[3h]))",
           "legendFormat": "적용군 {{feature}} {{feature_version}}",
           "range": true
         },
@@ -504,7 +504,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (feature, feature_version) (rate(ff_feature_dtc_total{feature=~\"$feature\",cohort=\"control\"}[30m])) * 3600 * 1000 / sum by (feature, feature_version) (ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"})",
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_dtc_total{feature=~\"$feature\",cohort=\"control\"}[3h])) * 3600 * 1000 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[3h]))",
           "legendFormat": "대조군 {{feature}} {{feature_version}}",
           "range": true
         }
@@ -577,7 +577,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (feature, feature_version) (rate(ff_feature_errors_total{feature=~\"$feature\",cohort=\"treatment\"}[30m])) * 3600 * 1000 / sum by (feature, feature_version) (ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"})",
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_errors_total{feature=~\"$feature\",cohort=\"treatment\"}[3h])) * 3600 * 1000 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[3h]))",
           "legendFormat": "적용군 {{feature}} {{feature_version}}",
           "range": true
         },
@@ -587,7 +587,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (feature, feature_version) (rate(ff_feature_errors_total{feature=~\"$feature\",cohort=\"control\"}[30m])) * 3600 * 1000 / sum by (feature, feature_version) (ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"})",
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_errors_total{feature=~\"$feature\",cohort=\"control\"}[3h])) * 3600 * 1000 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[3h]))",
           "legendFormat": "대조군 {{feature}} {{feature_version}}",
           "range": true
         }
@@ -660,7 +660,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (feature, feature_version) (rate(ff_feature_fallbacks_total{feature=~\"$feature\",cohort=\"treatment\"}[30m])) * 3600 * 1000 / sum by (feature, feature_version) (ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"})",
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_fallbacks_total{feature=~\"$feature\",cohort=\"treatment\"}[3h])) * 3600 * 1000 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[3h]))",
           "legendFormat": "적용군 {{feature}} {{feature_version}}",
           "range": true
         },
@@ -670,7 +670,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (feature, feature_version) (rate(ff_feature_fallbacks_total{feature=~\"$feature\",cohort=\"control\"}[30m])) * 3600 * 1000 / sum by (feature, feature_version) (ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"})",
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_fallbacks_total{feature=~\"$feature\",cohort=\"control\"}[3h])) * 3600 * 1000 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[3h]))",
           "legendFormat": "대조군 {{feature}} {{feature_version}}",
           "range": true
         }
@@ -743,7 +743,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (feature, feature_version) (rate(ff_feature_manual_off_total{feature=~\"$feature\",cohort=\"treatment\"}[30m])) * 3600 * 1000 / sum by (feature, feature_version) (ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"})",
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_manual_off_total{feature=~\"$feature\",cohort=\"treatment\"}[3h])) * 3600 * 1000 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"treatment\"}[3h]))",
           "legendFormat": "적용군 {{feature}} {{feature_version}}",
           "range": true
         },
@@ -753,7 +753,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (feature, feature_version) (rate(ff_feature_manual_off_total{feature=~\"$feature\",cohort=\"control\"}[30m])) * 3600 * 1000 / sum by (feature, feature_version) (ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"})",
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_manual_off_total{feature=~\"$feature\",cohort=\"control\"}[3h])) * 3600 * 1000 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",cohort=\"control\"}[3h]))",
           "legendFormat": "대조군 {{feature}} {{feature_version}}",
           "range": true
         }

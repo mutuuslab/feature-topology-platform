@@ -53,7 +53,7 @@ export async function main(argv = process.argv, env = process.env, fetchImpl: ty
     await sendLogs(target!, DEMO_RESOURCES.platform, batch.events.logs, fetchImpl),
     await sendTraces(target!, DEMO_RESOURCES.platform, batch.events.spans, fetchImpl),
   ];
-  for (const r of results) summary.push(`${r.signal}: 요청 ${r.requests} · ${(r.bytes / 1024).toFixed(0)} KiB · 거부 ${r.rejected}${r.messages.length ? ` · ${r.messages.join(' / ').slice(0, 300)}` : ''}`);
+  for (const r of results) summary.push(`${r.signal}: 요청 ${r.requests} · ${(r.bytes / 1024).toFixed(0)} KiB · 거부 ${r.rejected}${r.soft ? ` · 일부 거부 요청 ${r.soft}(겹친 창의 같은 시각 다른 값 등)` : ''}${r.messages.length ? ` · ${r.messages.join(' / ').slice(0, 300)}` : ''}`);
   console.log(summary.join('\n'));
   if (env.GITHUB_STEP_SUMMARY) {
     const { appendFileSync } = await import('node:fs');

@@ -656,7 +656,8 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
       };
     },
   },
-  // 컴플라이언스 룰 레지스트리(D03-01) — 만료(Retired 자동 전환) → 관련 Feature Owner 팀·작성자·승인 대상자(FR-CRC-001-026)
+  // 컴플라이언스 룰 레지스트리(D03-01) — 만료(Retired 자동 전환) → 관련 Feature Owner 팀·작성자·승인 대상자
+  /** @req FR-CRC-001-026 */
   'compliance.rule.expired': {
     needs: [],
     build: (ctx) => {

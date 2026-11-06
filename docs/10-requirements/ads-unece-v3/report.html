@@ -89,7 +89,7 @@ li,.card p,.card h3{overflow-wrap:anywhere}
 <tr data-cat="형상·영향 분석" data-pri="P1" data-owner="CP" data-verdict="부분" id="FFP-F008">
 <td class="mono nw">FFP-F008</td><td><b>릴리스 비교</b><div class="sub">변경 전후 타기팅·의존성·ODD·fallback 계약의 차이를 표시해야 한다.</div><div class="sub"><b>합격 조건</b> 리뷰어가 확장된 ODD와 변경된 종료 동작을 비교 화면에서 식별한다.</div><div class="sub">근거 GTR §4.3.3; Waymo에서 착안 · 시험 <a href="#TC02">TC02</a></div></td>
 <td class="cat">형상·영향 분석</td><td class="nw">P1</td><td class="nw">CP</td><td class="nw"><span class="badge v-part"><span aria-hidden="true">◐</span> 부분</span></td>
-<td>정책 개정본 사이 필드 차이 표만 있다. 릴리스 전후 의존성·ODD 확장·fallback/종료 동작 계약 비교가 없다.<details><summary>근거 3</summary><code>contracts/src/rules/policy-version.ts:59</code><br><code>frontend/src/screens/policy/PolicyVersions.tsx:35</code><br><code>backend/src/domains/d01-policy/policy-store/policy.service.ts:341</code></details></td>
+<td>정책 개정본 사이 필드 차이 표만 있다. 릴리스 전후 의존성·ODD 확장·fallback/종료 동작 계약 비교가 없다.<details><summary>근거 3</summary><code>contracts/src/rules/policy-version.ts:59</code><br><code>frontend/src/screens/policy/PolicyVersions.tsx:35</code><br><code>backend/src/domains/d01-policy/policy-store/policy.service.ts:344</code></details></td>
 <td class="nw mono"><a href="#ADS-UI09">ADS-UI09</a></td></tr>
 <tr data-cat="승인·변경 통제" data-pri="P0" data-owner="CP" data-verdict="구현" id="FFP-F009">
 <td class="mono nw">FFP-F009</td><td><b>직무 분리</b><div class="sub">안전 관련 변경의 작성자와 승인자를 분리해야 한다.</div><div class="sub"><b>합격 조건</b> 동일 사용자의 자기 승인을 거부하고 시도를 기록한다.</div><div class="sub">근거 SMS 기반 프로젝트 통제 제안 · 시험 <a href="#TC20">TC20</a></div></td>
@@ -134,7 +134,7 @@ li,.card p,.card h3{overflow-wrap:anywhere}
 <tr data-cat="CCS 전달·수렴" data-pri="P0" data-owner="CCS" data-verdict="부분" id="FFP-F017">
 <td class="mono nw">FFP-F017</td><td><b>CCS 전송 분리</b><div class="sub">Feature 정책 발행과 CCS/OTA의 전달 결과를 별도 식별자로 추적해야 한다.</div><div class="sub"><b>합격 조건</b> 정책 릴리스 ID와 전송 campaign ID가 양방향으로 조회된다.</div><div class="sub">근거 플랫폼 책임 분리 제안 · 시험 <a href="#TC15">TC15</a></div></td>
 <td class="cat">CCS 전달·수렴</td><td class="nw">P0</td><td class="nw">CCS</td><td class="nw"><span class="badge v-part"><span aria-hidden="true">◐</span> 부분</span></td>
-<td>게시본에 campaignId(CMP-)가 저장되어 게시본→캠페인은 조회되지만 campaignId→게시본·정책 릴리스 역방향 조회가 없다.<details><summary>근거 3</summary><code>backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23</code><br><code>backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151</code><br><code>contracts/src/routes.ts:229</code><div class="sub">관련 규칙 FFG-PLT-012</div></details></td>
+<td>게시본에 campaignId(CMP-)가 저장되어 게시본→캠페인은 조회되지만 campaignId→게시본·정책 릴리스 역방향 조회가 없다.<details><summary>근거 3</summary><code>backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23</code><br><code>backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151</code><br><code>contracts/src/routes.ts:230</code><div class="sub">관련 규칙 FFG-PLT-012</div></details></td>
 <td class="nw mono"><a href="#ADS-BE17">ADS-BE17</a></td></tr>
 <tr data-cat="CCS 전달·수렴" data-pri="P0" data-owner="공동" data-verdict="부분" id="FFP-F018">
 <td class="mono nw">FFP-F018</td><td><b>수신·적용 ACK 분리</b><div class="sub">전송 수신·정책 수락·적용 보류·실행 상태 확인을 별도 ACK로 제공해야 한다.</div><div class="sub"><b>합격 조건</b> 수신 ACK만 온 차량을 적용 완료로 집계하지 않는다.</div><div class="sub">근거 안전 운영 상태 모델 제안 · 시험 <a href="#TC15">TC15</a></div></td>
@@ -314,7 +314,7 @@ li,.card p,.card h3{overflow-wrap:anywhere}
 <tr data-cat="검증·증거" data-pri="P0" data-owner="공동" data-verdict="부분" id="FFP-F053">
 <td class="mono nw">FFP-F053</td><td><b>실행 형상 추적</b><div class="sub">시험 결과를 정책·ODD·HW/SW·도구·시나리오 버전에 결합해야 한다.</div><div class="sub"><b>합격 조건</b> 다른 형상의 통과 결과를 현재 릴리스 증거로 자동 재사용하지 않는다.</div><div class="sub">근거 GTR §5.3.3.9.3 · 시험 <a href="#TC21">TC21</a></div></td>
 <td class="cat">검증·증거</td><td class="nw">P0</td><td class="nw">공동</td><td class="nw"><span class="badge v-part"><span aria-hidden="true">◐</span> 부분</span></td>
-<td>가상검증 근거는 정책 contentHash·도구 Version·시나리오·시드에 묶이지만 차량 HW/SW·ODD 형상은 결합 키에 없다.<details><summary>근거 3</summary><code>backend/src/domains/d06-qsec/scenario-validation/virtual-run.repo.ts:43</code><br><code>contracts/src/rules/virtual.ts:86</code><br><code>contracts/src/rules/validators.ts:106</code><div class="sub">관련 규칙 FFG-ADS-009, FFG-TST-009, FFG-LCY-001</div></details></td>
+<td>가상검증 근거는 정책 contentHash·도구 Version·시나리오·시드에 묶이지만 차량 HW/SW·ODD 형상은 결합 키에 없다.<details><summary>근거 3</summary><code>backend/src/domains/d06-qsec/scenario-validation/virtual-run.repo.ts:43</code><br><code>contracts/src/rules/virtual.ts:86</code><br><code>contracts/src/rules/validators.ts:116</code><div class="sub">관련 규칙 FFG-ADS-009, FFG-TST-009, FFG-LCY-001</div></details></td>
 <td class="nw mono"><a href="#ADS-UI08">ADS-UI08</a><br><a href="#ADS-BE14">ADS-BE14</a></td></tr>
 <tr data-cat="검증·증거" data-pri="P0" data-owner="공동" data-verdict="부분" id="FFP-F054">
 <td class="mono nw">FFP-F054</td><td><b>고장 경로 검증</b><div class="sub">종료·입력 노후·통신 단절·부분 복구를 포함한 시험을 수행해야 한다.</div><div class="sub"><b>합격 조건</b> 요구별 정상/실패 시나리오의 결과와 미해결 결함이 조회된다.</div><div class="sub">근거 GTR §5.2~3에서 도출 · 시험 <a href="#TC22">TC22</a></div></td>
@@ -324,7 +324,7 @@ li,.card p,.card h3{overflow-wrap:anywhere}
 <tr data-cat="검증·증거" data-pri="P1" data-owner="공동" data-verdict="부분" id="FFP-F055">
 <td class="mono nw">FFP-F055</td><td><b>시뮬레이션 신뢰성</b><div class="sub">시뮬레이션 증거의 유효 범위와 실차/시험장 상관성을 관리해야 한다.</div><div class="sub"><b>합격 조건</b> 도구 검증 범위 밖의 결과는 한계 표시 없이 승인 증거로 사용되지 않는다.</div><div class="sub">근거 GTR §5.2.1.8.1; §5.2.1.14.2 · 시험 <a href="#TC21">TC21</a></div></td>
 <td class="cat">검증·증거</td><td class="nw">P1</td><td class="nw">공동</td><td class="nw"><span class="badge v-part"><span aria-hidden="true">◐</span> 부분</span></td>
-<td>vECU 기록은 Evidence로 인정하지 않고 CARLA 한계는 문구로만 남는다. 도구 유효 범위(ODD·시나리오)와 실차 상관성을 관리하지 않고 범위 밖 결과에 한계를 자동 표시하지 않는다.<details><summary>근거 3</summary><code>contracts/src/rules/validators.ts:106</code><br><code>contracts/src/rules/tool-qualification.ts:73</code><br><code>contracts/src/rules/virtual.ts:106</code><div class="sub">관련 규칙 FFG-TST-006, FFG-PLT-013</div></details></td>
+<td>vECU 기록은 Evidence로 인정하지 않고 CARLA 한계는 문구로만 남는다. 도구 유효 범위(ODD·시나리오)와 실차 상관성을 관리하지 않고 범위 밖 결과에 한계를 자동 표시하지 않는다.<details><summary>근거 3</summary><code>contracts/src/rules/validators.ts:116</code><br><code>contracts/src/rules/tool-qualification.ts:73</code><br><code>contracts/src/rules/virtual.ts:106</code><div class="sub">관련 규칙 FFG-TST-006, FFG-PLT-013</div></details></td>
 <td class="nw mono"><a href="#ADS-UI08">ADS-UI08</a><br><a href="#ADS-BE14">ADS-BE14</a></td></tr>
 <tr data-cat="검증·증거" data-pri="P1" data-owner="CP" data-verdict="부분" id="FFP-F056">
 <td class="mono nw">FFP-F056</td><td><b>독립 검토 추적</b><div class="sub">안전 근거 검토의 담당·독립성·발견사항·종결을 기록해야 한다.</div><div class="sub"><b>합격 조건</b> 열린 중대 발견사항이 있는 변경의 승격을 차단한다.</div><div class="sub">근거 GTR §5.3.4; SMS 감사와 별도 · 시험 <a href="#TC20">TC20</a></div></td>

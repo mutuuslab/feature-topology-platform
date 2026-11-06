@@ -230,7 +230,10 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
   }
 
   // ── 조회 ──
-  /** 룰 ID·유형·적용 지역·Feature·상태 필터(FR-CRC-001-019). Feature는 지정 Feature이거나 그 Feature의 판매국이 적용 지역인 룰 */
+  /**
+   * 룰 ID·유형·적용 지역·Feature·상태 필터. Feature는 지정 Feature이거나 그 Feature의 판매국이 적용 지역인 룰
+   * @req FR-CRC-001-019
+   */
   list(q: unknown): ComplianceRule[] {
     const f = parse(ListQuery, q ?? {});
     const feature = f.featureId ? this.features.versions(f.featureId) : [];
@@ -260,7 +263,10 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
     return { rule, versions, changes, requests: this.requests(ruleId) };
   }
 
-  /** 적용 대상 Feature 후보 — 적용 지역(판매국)·ASIL·지정 Feature(FR-CRC-001-004) */
+  /**
+   * 적용 대상 Feature 후보 — 적용 지역(판매국)·ASIL·지정 Feature
+   * @req FR-CRC-001-004
+   */
   candidates(q: { markets?: unknown; asil?: unknown; featureIds?: unknown }) {
     const scope = parse(ComplianceScope, { markets: csv(q.markets), asil: csv(q.asil), featureIds: csv(q.featureIds) });
     const items = ruleFeatureCandidates(this.features.all(), scope).map((f) => ({ featureId: f.featureId, version: f.version, name: f.name, country: f.country, asil: f.asil, lifecycle: f.lifecycle, ownerId: f.ownerId }));
@@ -268,7 +274,10 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
   }
 
   // ── 등록·수정·승인 ──
-  /** 등록 — 승인 대기 1.0, 룰 ID 중복은 409(FR-CRC-001-001·005~012) */
+  /**
+   * 등록 — 승인 대기 1.0, 필수 항목·Feature 실재 확인, 룰 ID 중복은 409
+   * @req FR-CRC-001-001, FR-CRC-001-010, FR-CRC-001-011, FR-CRC-001-012, FR-CRC-001-013, FR-CRC-001-022
+   */
   create(actor: Actor, body: CreateComplianceRuleBody): ComplianceRule {
     if (this.find(body.ruleId)) {
       this.audit.failed(actor, 'COMPLIANCE_RULE_CREATE', body.ruleId, '룰 ID 중복', COMPONENT);
@@ -292,6 +301,7 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
   /**
    * 수정 — 소유자 본인만(FR-CRC-001-020, D-GAP-1 기본안). 바뀐 항목에 따라 Major/Minor 증가, 이전 버전 행은 그대로(FR-CRC-001-023·024),
    * 승인된 룰은 승인 대기로(FR-CRC-001-021), 항목별 전후 값을 이력에(FR-CRC-001-022). 열린 승인 요청은 철회된다(대상 버전이 바뀐다).
+   * @req FR-CRC-001-020, FR-CRC-001-021, FR-CRC-001-022, FR-CRC-001-023, FR-CRC-001-024
    */
   update(actor: Actor, ruleId: string, body: UpdateComplianceRuleBody): ComplianceRule {
     const cur = this.require(ruleId);
@@ -324,7 +334,10 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
     });
   }
 
-  /** 승인 요청 — 요청자·대상 룰 버전·승인 대상자·요청 일시(FR-CRC-001-014). 승인 대기 룰만, 열린 요청은 하나 */
+  /**
+   * 승인 요청 — 요청자·대상 룰 버전·승인 대상자·요청 일시. 승인 대기 룰만, 열린 요청은 하나
+   * @req FR-CRC-001-014
+   */
   requestApproval(actor: Actor, ruleId: string, body: ComplianceApprovalRequestBody): ComplianceApprovalRequest {
     const r = this.require(ruleId);
     if (r.status !== 'PROPOSED') throw new DomainError('CONFLICT', `${r.status} 룰은 승인 요청 대상이 아닙니다 — 수정하면 다시 승인 대기가 됩니다.`);
@@ -339,7 +352,10 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
     });
   }
 
-  /** 승인·반려 — 열린 요청의 지정 승인 대상자 본인만, 작성자·요청자 제외. 상태·승인자·일시·룰 버전 저장(FR-CRC-001-015) */
+  /**
+   * 승인·반려 — 열린 요청의 지정 승인 대상자 본인만, 작성자·요청자 제외. 상태·승인자·일시·룰 버전 저장
+   * @req FR-CRC-001-015, FR-CRC-001-022
+   */
   decide(actor: Actor, ruleId: string, body: ComplianceDecisionBody): ComplianceRule {
     const r = this.require(ruleId);
     const q = this.openRequest(ruleId);
@@ -374,7 +390,10 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
     return [...new Set(fs.map((f) => f.ownerId).filter(Boolean))].sort();
   }
 
-  /** 종료일이 기준일보다 이전인 룰을 Retired로 — 이력·감사·만료 알림(FR-CRC-001-025·026). 바꾼 수 */
+  /**
+   * 종료일이 기준일보다 이전인 룰을 Retired로 — 이력·감사·만료 알림. 바꾼 수
+   * @req FR-CRC-001-025, FR-CRC-001-026, FR-CRC-001-022
+   */
   sweep(): number {
     const today = this.clock.iso().slice(0, 10);
     let n = 0;
@@ -415,7 +434,10 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
     return { rules: this.all(), market: complianceMarketOf(feature.country), cal: this.calOf(feature.featureId, feature.version), at };
   }
 
-  /** 정책 하나에 적용할 룰 — Feature·대상 지역·배포 유형·Safety/Security 등급·배포 시점(FR-CRC-002-001~003) */
+  /**
+   * 정책 하나에 적용할 룰 — Feature·대상 지역·배포 유형·Safety/Security 등급·배포 시점
+   * @req FR-CRC-002-001, FR-CRC-002-002, FR-CRC-002-003
+   */
   applicable(policyId: unknown, at?: unknown) {
     if (typeof policyId !== 'string' || !policyId) throw new DomainError('VALIDATION', 'policyId가 필요합니다.');
     const p = this.policies.get(policyId);
@@ -429,7 +451,10 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
     return { policyId, featureId: f.featureId, featureVersion: f.version, ...ctx, at: when, rules: applicableRules(reg.rules, ctx, when) };
   }
 
-  /** 배포 시점 재판정 기록(추가만) — 차단이면 미충족 룰 ID·항목·사유를 남긴다(FR-CRC-002-007) */
+  /**
+   * 배포 시점 재판정 기록(추가만) — 차단이면 미충족 룰 ID·항목·사유를 남긴다
+   * @req FR-CRC-002-007
+   */
   recordDeployCheck(actor: Actor, policy: { policyId: string; revision: number; featureId: string; featureVersion: string }, market: string, result: ValidatorResult): ComplianceCheckView {
     const at = this.clock.iso();
     const view: ComplianceCheckView = {
@@ -451,7 +476,10 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
     return { ...view, checkId: `CHK-${r.lastInsertRowid}` };
   }
 
-  /** 검증 결과 조회 — 배포(정책) ID·Feature ID·대상 지역(FR-CRC-002-008). 정책 검증 이력의 D03-01 결과 + 배포 시점 재판정, 늦은 것 먼저 */
+  /**
+   * 검증 결과 조회 — 배포(정책) ID·Feature ID·대상 지역. 정책 검증 이력의 D03-01 결과 + 배포 시점 재판정, 늦은 것 먼저
+   * @req FR-CRC-002-008
+   */
   validations(q: unknown): { items: ComplianceCheckView[] } {
     const f = parse(ValidationQuery, q ?? {});
     const runs = this.policies.runs(f.policyId);

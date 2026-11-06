@@ -93,7 +93,10 @@ const datesOk = (v: { validFrom?: string; validTo?: string | null }, ctx: z.Refi
   if (v.validFrom && v.validTo && v.validTo < v.validFrom) ctx.addIssue({ code: 'custom', message: '유효 종료일은 유효 시작일보다 빠를 수 없습니다.', path: ['validTo'] });
 };
 
-/** 등록 — 룰 ID는 등록한 뒤 바꾸지 않는다 */
+/**
+ * 등록 — 룰 ID는 등록한 뒤 바꾸지 않는다. 필수 정보·근거(URL·문서명·조항·메모)·유효 기간(종료일 없음 = 무기한, 종료일 ≥ 시작일)
+ * @req FR-CRC-001-001, FR-CRC-001-005, FR-CRC-001-006, FR-CRC-001-007, FR-CRC-001-008, FR-CRC-001-009
+ */
 export const CreateComplianceRuleBody = z
   .object({ ruleId: ComplianceRuleId, ...fields, reason: z.string().trim().min(2).max(500).optional() })
   .strict()

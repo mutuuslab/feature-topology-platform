@@ -26,7 +26,10 @@ export const criterionLabel = (c: Pick<ComplianceCriterion, 'check' | 'gate'>) =
 /** 미충족 항목 코드 — Gate 기준은 Gate까지 */
 export const criterionItem = (c: Pick<ComplianceCriterion, 'check' | 'gate'>) => (c.check === 'GATE_PASS' ? `GATE_PASS:${c.gate}` : c.check);
 
-/** 상태 전이 — 승인·반려는 승인 대기에서만, 수정하면 승인 대기로(같은 상태 유지 포함), 만료(RETIRED)는 끝 */
+/**
+ * 상태 전이 — 승인·반려는 승인 대기에서만, 수정하면 승인 대기로(같은 상태 유지 포함), 만료(RETIRED)는 끝
+ * @req FR-CRC-001-013, FR-CRC-001-021
+ */
 export const COMPLIANCE_RULE_TRANSITIONS: Record<ComplianceRuleStatus, ComplianceRuleStatus[]> = {
   PROPOSED: ['PROPOSED', 'APPROVED', 'REJECTED', 'RETIRED'],
   APPROVED: ['PROPOSED', 'RETIRED'],
@@ -75,7 +78,10 @@ export function ruleDiff(before: ComplianceRuleContent, after: ComplianceRuleCon
     .map(([field, v]) => ({ field, before: v ?? null, after: a.get(field) ?? null, level: MAJOR_PREFIX.some((p) => field === p || (p.endsWith('.') && field.startsWith(p))) ? 'MAJOR' : 'MINOR' }));
 }
 
-/** 다음 버전 — Major 항목이 하나라도 바뀌면 (M+1).0, 아니면 M.(m+1), 바뀐 것이 없으면 그대로 */
+/**
+ * 다음 버전 — Major 항목이 하나라도 바뀌면 (M+1).0, 아니면 M.(m+1), 바뀐 것이 없으면 그대로
+ * @req FR-CRC-001-024
+ */
 export function bumpRuleVersion(version: string, changes: Pick<RuleFieldChange, 'level'>[]): string {
   const [M, m] = version.split('.').map((x) => Number(x) || 0);
   if (!changes.length) return `${M}.${m}`;
@@ -144,7 +150,10 @@ export function applicableRules(rules: ComplianceRule[], ctx: ComplianceContext,
     });
 }
 
-/** 룰 적용 대상 Feature 후보 — 판매국 시장·ASIL·지정 Feature(FR-CRC-001-004). Variant Rule 경유 조회는 결정 대기(D8) */
+/**
+ * 룰 적용 대상 Feature 후보 — 판매국 시장·ASIL·지정 Feature. Variant Rule 경유 조회는 결정 대기(D8)
+ * @req FR-CRC-001-004
+ */
 export function ruleFeatureCandidates<T extends Pick<FeatureVersionRow, 'featureId' | 'country' | 'asil'>>(features: T[], scope: ComplianceScope): T[] {
   return features.filter(
     (f) => (scope.markets as string[]).includes(complianceMarketOf(f.country)) && (!scope.featureIds.length || scope.featureIds.includes(f.featureId)) && (!scope.asil.length || scope.asil.includes(f.asil)),

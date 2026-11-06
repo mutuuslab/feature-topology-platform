@@ -4,9 +4,9 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 225,
-      "부분": 246,
-      "미구현": 152,
+      "구현": 253,
+      "부분": 240,
+      "미구현": 130,
       "범위 밖": 5
     },
     "sheets": [
@@ -29,9 +29,9 @@
       {
         "sheet": "03_안전·검증",
         "leaves": 109,
-        "구현": 53,
-        "부분": 29,
-        "미구현": 27,
+        "구현": 81,
+        "부분": 23,
+        "미구현": 5,
         "범위 밖": 0
       },
       {
@@ -59,8 +59,8 @@
         "범위 밖": 0
       }
     ],
-    "traced": 71,
-    "untracedImplemented": 155,
+    "traced": 101,
+    "untracedImplemented": 154,
     "defects": 0,
     "decisionsPending": 9,
     "specIssues": 3
@@ -211,6 +211,208 @@
       "tested": [
         "backend/test/requirements/defects.spec.ts"
       ]
+    },
+    "FR-CRC-001-001": {
+      "implemented": [
+        "contracts/src/schemas/compliance-rule.ts",
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/compliance-rule.test.ts"
+      ]
+    },
+    "FR-CRC-001-004": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts",
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/compliance-rule.test.ts"
+      ]
+    },
+    "FR-CRC-001-005": {
+      "implemented": [
+        "contracts/src/schemas/compliance-rule.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-006": {
+      "implemented": [
+        "contracts/src/schemas/compliance-rule.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-007": {
+      "implemented": [
+        "contracts/src/schemas/compliance-rule.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-008": {
+      "implemented": [
+        "contracts/src/schemas/compliance-rule.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-009": {
+      "implemented": [
+        "contracts/src/schemas/compliance-rule.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-010": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-011": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-012": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-013": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts",
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/compliance-rule.test.ts"
+      ]
+    },
+    "FR-CRC-001-014": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-015": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-016": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-018": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts",
+        "backend/src/domains/d03-safety/deploy-safety/deploy-safety.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-019": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-020": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-021": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts",
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-022": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-023": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-024": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts",
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-025": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-026": {
+      "implemented": [
+        "contracts/src/rules/notification.ts",
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/compliance-rule.test.ts"
+      ]
+    },
+    "FR-CRC-002-001": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts",
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/compliance-rule.test.ts"
+      ]
+    },
+    "FR-CRC-002-002": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts",
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-002-003": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts",
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts",
+        "backend/src/domains/d03-safety/deploy-safety/deploy-safety.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-002-004": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-002-005": {
+      "implemented": [
+        "backend/src/domains/d03-safety/deploy-safety/deploy-safety.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-002-007": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts",
+        "backend/src/domains/d03-safety/deploy-safety/deploy-safety.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-002-008": {
+      "implemented": [
+        "backend/src/domains/d03-safety/compliance-checker/compliance-rule.service.ts"
+      ],
+      "tested": []
     },
     "FR-CRC-002-009": {
       "implemented": [

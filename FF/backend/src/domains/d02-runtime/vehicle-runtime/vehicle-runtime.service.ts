@@ -131,10 +131,11 @@ export class VehicleRuntimeService {
     const check = this.pki.verify(p, pub.signature, undefined, PUBLICATION_KEY_PURPOSE[pub.kind]);
     if (!check.valid) return reject(check.reason);
     // @req FR-RTE-001-004
-    // 정책 게시본도 대상(payload.targets)에 자기 VIN이 있어야 적용한다(차단 봉투는 target_hash로 이미 확인).
+    // 게시본은 종류와 무관하게 대상(payload.targets)에 자기 VIN이 있어야 적용한다(FFP-F014 · ADS-BE05).
+    // 차단·복구 게시본도 — 봉투(target_hash)가 없는 대상 밖 차량이 레거시 경로로 차단을 적용하던 결함.
     // 대상 밖 게시본은 적용·저장하지 않고 차량 쪽에 거부를 남긴다. 플랫폼은 이 차량에 보낸 적이 없으니 회신(IF-06)은 하지 않는다 —
     // 수집기(D04-03)가 대상 밖 회신을 거부하는 것은 플랫폼 쪽 2차 방어다.
-    if (p.kind === 'POLICY' && !p.targets.includes(vin)) {
+    if (!p.targets.includes(vin)) {
       s.log.push({ at: this.clock.iso(), publicationId: pub.publicationId, kind: pub.kind, result: 'REJECTED', detail: 'TARGET_MISMATCH' });
       this.runtime.save(s);
       return;

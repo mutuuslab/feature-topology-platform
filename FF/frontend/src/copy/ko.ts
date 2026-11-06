@@ -433,7 +433,15 @@ export const ko = {
     title: '감사 이력',
     lead: '모든 등록·변경·승인·거부·실패 기록 — 추가만 되고 위변조를 검출합니다.',
     result: '결과',
-    chainBroken: (id: number, kind: string) => `${id}번 행에서 체인이 끊겼습니다 — ${kind === 'hash' ? '내용이 바뀌었습니다' : '앞 행이 사라지거나 순서가 바뀌었습니다'}`,
+    // 끊긴 종류마다 다른 문장 — 끝·고정점 불일치는 의심 구간·마지막으로 맞은 고정점(ADS-BE19), 읽을 수 없는 고정점 줄은 행 번호 없이
+    chainBroken: (b: { id: number; kind: string; range?: { from: number; to: number } }, lastMatchedId?: number | null) => {
+      const span = `${b.range ? ` — 의심 구간 ${b.range.from}~${b.range.to}번 행` : ''}${b.range && lastMatchedId ? ` · 마지막으로 맞은 고정점 ${lastMatchedId}번 행` : ''}`;
+      if (b.kind === 'anchor' && b.id <= 0) return '고정점 파일에 읽을 수 없거나 서명이 틀린 줄이 있습니다 — 쓰는 중 끊긴 줄인지 고친 흔적인지 파일을 확인하세요';
+      if (b.kind === 'anchor') return `서명한 고정점과 맞지 않습니다${span}`;
+      if (b.kind === 'head') return `마지막으로 기록한 ${b.id}번 행이 사라졌거나 바뀌었습니다${span}`;
+      if (b.kind === 'redaction') return `${b.id}번 행의 개인정보 처리 기록이 맞지 않습니다`;
+      return `${b.id}번 행에서 체인이 끊겼습니다 — ${b.kind === 'hash' ? '내용이 바뀌었습니다' : '앞 행이 사라지거나 순서가 바뀌었습니다'}`;
+    },
     col: { at: '시각', actor: '행위자', role: '역할', action: '행위', target: '대상', result: '결과', reason: '사유' },
     // 필터와 결과 열이 같은 낱말을 쓴다(UX3-02) — 원문(ALLOWED…)은 툴팁
     results: { ALLOWED: '허용', DENIED: '거부', FAILED: '실패' } as Record<'ALLOWED' | 'DENIED' | 'FAILED', string>,

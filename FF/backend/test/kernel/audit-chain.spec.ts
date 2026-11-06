@@ -112,10 +112,13 @@ describe('감사 체인 고정점 — DB 밖 서명(FF_AUDIT_KEY · FF_AUDIT_ANC
     delete process.env.FF_AUDIT_ANCHOR_FILE;
     delete process.env.FF_ENV;
     delete process.env.FF_REFDB_SEED;
+    delete process.env.FF_AUDIT_ANCHOR_ROWS;
+    delete process.env.FF_AUDIT_KEY_ID;
   });
-  const withAnchors = async (name: string) => {
+  /** rows — 고정 간격(행). 기본 시험은 쓰기마다가 아니라 부팅·주기·호출 고정만 본다(간격을 크게) */
+  const withAnchors = async (name: string, rows = '1000000') => {
     const file = join(dir, `${name}.jsonl`);
-    Object.assign(process.env, { FF_AUDIT_KEY: 'k'.repeat(40), FF_AUDIT_ANCHOR_FILE: file });
+    Object.assign(process.env, { FF_AUDIT_KEY: 'k'.repeat(40), FF_AUDIT_ANCHOR_FILE: file, FF_AUDIT_ANCHOR_ROWS: rows });
     const b = await boot();
     for (let i = 0; i < 3; i++) await b.http().post('/api/pki/rotate').set(actor('u-safety', 'SAFETY_OFFICER')).send({ reason: `교체 ${i}` }).expect(201);
     expect(b.audit.anchor()).toMatchObject({ id: expect.any(Number), hash: expect.stringMatching(/^[0-9a-f]{64}$/) });
@@ -161,6 +164,26 @@ describe('감사 체인 고정점 — DB 밖 서명(FF_AUDIT_KEY · FF_AUDIT_ANC
     forget(audit);
     expect(audit.verifyChain()).toMatchObject({ ok: false, broken: { kind: 'anchor' } });
     expect(await audit.verifyChainAsync(2)).toEqual(audit.verifyChain()); // 묶음 검증도 같은 판정(RD-P2-01)
+  });
+
+  it('ADS-BE19 감사 쓰기마다 고정(기본) — 마지막 고정 직후 쓴 끝 행을 재시작 뒤 지워도 잡고, 마지막 일치 고정점과 불일치 구간을 돌려준다', async () => {
+    const file = join(dir, 'per-write.jsonl');
+    Object.assign(process.env, { FF_AUDIT_KEY: 'k'.repeat(40), FF_AUDIT_ANCHOR_FILE: file, FF_AUDIT_KEY_ID: 'audit-hmac-1' });
+    const { http, db, audit } = await boot();
+    for (let i = 0; i < 3; i++) await http().post('/api/pki/rotate').set(actor('u-safety', 'SAFETY_OFFICER')).send({ reason: `교체 ${i}` }).expect(201);
+    // 호출 없이도 쓰기마다 끝이 고정된다 — 고정점마다 체인 키 식별자(kid)
+    const anchors = readFileSync(file, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+    const tail = db.get<{ id: number }>('SELECT id FROM audit ORDER BY id DESC LIMIT 1')!.id;
+    expect(anchors.at(-1)).toMatchObject({ id: tail, kid: 'audit-hmac-1' });
+    expect(audit.verifyChain()).toMatchObject({ ok: true, anchors: { lastMatched: { id: tail } } });
+    // 재시작(프로세스 기억 없음) 뒤 DB 권한자가 끝 행을 지운다
+    forget(audit);
+    db.run('DROP TRIGGER audit_no_delete');
+    db.run('DELETE FROM audit WHERE id = ?', tail);
+    const prevAnchor = anchors.filter((a) => a.id < tail).at(-1);
+    const r = audit.verifyChain();
+    expect(r).toMatchObject({ ok: false, broken: { id: tail, kind: 'anchor', range: { from: prevAnchor.id + 1, to: tail } }, anchors: { lastMatched: { id: prevAnchor.id } } });
+    expect(await audit.verifyChainAsync(2)).toEqual(r);
   });
 
   it('고정점 파일의 서명을 바꾸면(키 없이 위조) 잡는다', async () => {

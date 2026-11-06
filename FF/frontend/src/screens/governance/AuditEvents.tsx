@@ -24,8 +24,8 @@ interface ChainReportView {
   ok: boolean;
   verified: number;
   head: string | null;
-  broken: { id: number; kind: string } | null;
-  anchors?: { configured: boolean; checked: number; lastAt: string | null };
+  broken: { id: number; kind: string; range?: { from: number; to: number } } | null;
+  anchors?: { configured: boolean; checked: number; lastAt: string | null; lastMatched?: { id: number } | null; failing?: { at: string } };
   checkedAt?: string;
 }
 
@@ -72,7 +72,7 @@ export function AuditScreen() {
       />
       {c?.broken && (
         <p className="ds-stale" role="alert">
-          {ko.audit.chainBroken(c.broken.id, c.broken.kind)}
+          {ko.audit.chainBroken(c.broken, c.anchors?.lastMatched?.id)}
         </p>
       )}
       <ChainCard c={c} checkedAt={checkedAt} busy={chain.isFetching} onRecheck={() => chain.refetch()} />
@@ -130,7 +130,7 @@ function ChainCard({ c, checkedAt, busy, onRecheck }: { c: ChainReportView | und
           { k: H.state, v: <span data-chain-ok={c.ok ? 'true' : 'false'}>{c.ok ? H.ok : H.broken}</span> },
           { k: H.verified, v: <span className="ds-mono">{c.verified.toLocaleString('ko-KR')}</span> },
           { k: H.checkedAt, v: <span data-chain-checked>{when(checkedAt)}</span> },
-          { k: H.anchor, v: <span data-anchor={a?.configured ? 'on' : 'off'}>{a?.configured ? H.anchorOn(a.checked, when(a.lastAt)) : H.anchorOff}</span> },
+          { k: H.anchor, v: a?.failing ? <span data-anchor="failing" className="ds-tag ds-tag--warn">{H.anchorFailing(when(a.failing.at))}</span> : <span data-anchor={a?.configured ? 'on' : 'off'}>{a?.configured ? H.anchorOn(a.checked, when(a.lastAt)) : H.anchorOff}</span> },
         ]}
       />
     </Panel>

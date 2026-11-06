@@ -42,8 +42,12 @@ export interface Workflows {
   processes: { id: string; activities: Activity[] }[];
 }
 
-/** 설계 항목 해시 — 키 순서와 무관한 정규 JSON의 sha256 앞 12자 */
+/** 설계 항목 해시 — 키 순서와 무관한 정규 JSON의 sha256 앞 12자. 진행 상태(status)는 설계 내용이 아니라 뺀다 */
 export function itemSha(i: unknown): string {
+  if (i && typeof i === 'object' && !Array.isArray(i) && 'status' in i) {
+    const { status: _s, ...rest } = i as Record<string, unknown>;
+    i = rest;
+  }
   const canon = (v: unknown): unknown => (Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canon((v as Record<string, unknown>)[k])])) : v);
   return createHash('sha256').update(JSON.stringify(canon(i))).digest('hex').slice(0, 12);
 }

@@ -115,9 +115,16 @@ export class StatusIngestService implements OnModuleInit {
     }
     const lastReportSeq = this.db.get<{ s: number | null }>('SELECT max(report_seq) AS s FROM status_report WHERE vin = ? AND accepted = 1', vin)?.s ?? 0;
     const last = featureId ? this.envelopes.last(vin, featureId) : null;
+    // TL-M03 — 지난 번호면 그 번호로 받아들인 보고의 증명을 찾아 둔다(같으면 중계 재전송 = 중복)
+    const seqIn = typeof r?.report_seq === 'number' ? r.report_seq : null;
+    const acceptedAuthAtSeq =
+      seqIn !== null && seqIn <= lastReportSeq
+        ? (this.db.get<{ a: string | null }>("SELECT json_extract(doc, '$.state_auth') AS a FROM status_report WHERE vin = ? AND report_seq = ? AND accepted = 1 ORDER BY id DESC LIMIT 1", vin, seqIn)?.a ?? null)
+        : null;
     let result = checkStatusReport(report, {
       authOk,
       lastReportSeq,
+      acceptedAuthAtSeq,
       expectedVersion: featureId ? this.expectedVersion(vin, featureId) : null,
       lastCommand: last ? { request: last.request, vehicleSeq: last.vehicleSeq, acknowledged: this.acknowledged(vin, featureId!, last.vehicleSeq) } : null,
     });
@@ -125,7 +132,13 @@ export class StatusIngestService implements OnModuleInit {
     if (result.accepted && r.vehicle_pseudonym !== vehiclePseudonym(vin))
       result = { accepted: false, violation: { step: 'TARGET', code: 'PSEUDONYM_MISMATCH', message: '보고의 차량 가명이 채널의 차량과 다릅니다' }, action: result.action };
     const now = this.clock.iso();
-    const reportSeq = typeof r?.report_seq === 'number' ? r.report_seq : null;
+    const reportSeq = seqIn;
+    // 위반 보고도 증명(state_auth)이 맞으면 같은 보고의 재수신은 중복 — 앞 수신에서 기록·이상 징후·보안 이벤트를 이미 남겼다.
+    // 중계가 다시 보낼 때마다 보안 이벤트가 늘어 임계값(채널 제한)에 닿던 결함(하네스 리뷰 2026-11-06). 위조(증명 불일치)는 매번 센다
+    if (!result.accepted && authOk && seqIn !== null && this.db.get("SELECT 1 FROM status_report WHERE vin = ? AND report_seq = ? AND accepted = 0 AND json_extract(doc, '$.state_auth') = ? LIMIT 1", vin, seqIn, r.state_auth))
+      result = { ...result, duplicate: true };
+    // 중복은 이미 기록·처리한 보고 — 다시 기록하거나 상태·회신·이상 징후·보안 이벤트를 만들지 않고 앞 결과로 답한다
+    if (result.duplicate) return { ...result, vin, featureId, reportSeq };
     this.db.tx(() => {
       this.db.run(
         'INSERT INTO status_report (vin, feature_id, report_seq, state, accepted, violation, via, doc, received_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -267,7 +280,7 @@ export class VehicleStatusController {
       throw new DomainError('RATE_LIMITED', `보안 이벤트로 이 차량의 보고 채널이 ${limit.until}까지 제한됩니다.`, { code: 'CHANNEL_LIMITED', until: limit.until });
     }
     const r = this.status.ingest(vin, body, 'IF-06');
-    return { accepted: r.accepted, violation: r.violation, action: r.action.kind };
+    return { accepted: r.accepted, violation: r.violation, action: r.action.kind, ...(r.duplicate ? { duplicate: true } : {}) };
   }
 }
 

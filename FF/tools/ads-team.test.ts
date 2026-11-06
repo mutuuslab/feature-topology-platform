@@ -10,6 +10,8 @@ test('설계 항목 해시 — 키 순서와 무관, 내용이 바뀌면 달라�
   const a = item('X');
   assert.equal(itemSha(a), itemSha({ be: [], fe: [], ui: a.ui, req: a.req, id: 'X' }));
   assert.notEqual(itemSha(a), itemSha({ ...a, be: ['새 줄'] }));
+  // 진행 상태(status)는 설계 내용이 아니다 — 완료 표시로 검토가 옛 판이 되지 않는다
+  assert.equal(itemSha(a), itemSha({ ...a, status: '완료(커밋 전)' }));
 });
 
 test('화면 문구 — 코드·단정 표현·금지 용어를 잡는다', () => {

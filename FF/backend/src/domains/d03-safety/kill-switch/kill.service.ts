@@ -51,6 +51,7 @@ import { SafetyProfileService } from '../../d01-policy/registry/safety-profile.s
 import { HsmService } from '../../d06-qsec/pki-kms/hsm.service';
 import { PublicationRepo } from '../../d06-qsec/secure-deploy/publication.repo';
 import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.service';
+import { SbomService } from '../../d06-qsec/vuln-monitor/sbom.service';
 import { GateRejected, PolicyGateService } from '../deploy-safety/policy-gate.service';
 import { KillRepo } from './kill.repo';
 
@@ -88,6 +89,7 @@ export class KillService {
     private readonly gate: PolicyGateService,
     private readonly hsm: HsmService,
     private readonly profiles: SafetyProfileService,
+    private readonly sbom: SbomService,
   ) {}
 
   /** 대상 차량의 시장(국가) — 차량마다 전체 차량 목록을 읽어 찾던 것(차량 10만 대에서 요청 하나 0.4 s, 출시 준비 RD-P2-01)을 한 번의 VIN 조회로 */
@@ -427,6 +429,9 @@ export class KillService {
     const reg = this.gate.registryEntry(k.featureId, k.featureVersion);
     if (!f || !reg) throw new DomainError('NOT_FOUND', `${k.featureId} ${k.featureVersion}을(를) 찾을 수 없습니다.`);
     const p = this.profiles.ensure(k.featureId, k.featureVersion);
+    // 넓히는 조치(복원·활성화)는 SBOM 참조가 필요하다(FFG-PLT-010). 확정 프로파일의 sbomRef가 없으면 이 Feature Version의
+    // 마지막 정책 배포 게시본 SBOM(D06-11)을 BOM-Link로 — 차단 전에 배포돼 있던 기능. 없으면 참조 없이 두어 게이트가 막는다(5년 재생 결정 ①)
+    const sbomRef = p.sbomRef ?? (request === 'restore' || request === 'activate' ? this.sbom.deployedRef(k.featureId, k.featureVersion) : null);
     const now = this.clock.now();
     // F2 이상은 FSM이 첫 승인자(approver_ref 순서와 같게)
     const ordered = [...approvals].sort((a, b) => Number(b.role === 'FSM') - Number(a.role === 'FSM'));
@@ -459,7 +464,7 @@ export class KillService {
       user_notice: k.userNoticeRef
         ? { required: true, text_ref: k.userNoticeRef, ...(marketOf(f.country) === 'CN' ? { user_confirmation_required: true } : {}) }
         : { required: true, text_ref: `HMI-TXT-${k.featureId.replace('-', '')}-${request === 'restore' ? 'RESTORE' : 'DEACT'}` },
-      evidence: { evidence_manifest_id: `EVM-${k.featureId}-${k.featureVersion}`, ...(f.baselineId ? { bom_baseline_id: f.baselineId } : {}), ...(p.sbomRef ? { sbom_ref: p.sbomRef } : {}) },
+      evidence: { evidence_manifest_id: `EVM-${k.featureId}-${k.featureVersion}`, ...(f.baselineId ? { bom_baseline_id: f.baselineId } : {}), ...(sbomRef ? { sbom_ref: sbomRef } : {}) },
       issued_by: 'ff-platform',
       issued_at: now.toISOString(),
       signature: { alg: 'EdDSA', kid: 'unsigned', value: UNSIGNED },
@@ -621,7 +626,24 @@ export class KillService {
         ? { publicationId: p.publicationId, status: p.status, confirmed: p.confirmed, denominator: p.denominator, deadlineAt: p.deadlineAt, closedAt: p.closedAt, nodes: p.nodes, ackOnly: p.ackOnly }
         : null;
     };
-    return { ...k, delivery: summary(k.publicationId), restore: summary(k.restorePublicationId) };
+    const restore = summary(k.restorePublicationId);
+    return { ...k, delivery: summary(k.publicationId), restore: restore ? { ...restore, activeWithoutRedecision: this.activeWithoutRedecision(k.killId) } : null };
+  }
+
+  /**
+   * FFP-F036(ADS-BE03) — 복원은 활성화가 아니다. 이 차단의 복원 명령이 마지막 명령인데 ACTIVE를 보고한 차량 수 —
+   * 활성화 명령(재판정) 없이 온 ACTIVE라 복원 확인(INACTIVE)에 넣지 않고 "재판정 근거 없음"으로 따로 센다.
+   */
+  private activeWithoutRedecision(killId: string): number {
+    return Number(
+      this.db.get<{ n: number }>(
+        `SELECT COUNT(DISTINCT s.vin) AS n FROM vehicle_feature_status s
+         JOIN vehicle_envelope e ON e.vin = s.vin AND e.feature_id = s.feature_id AND e.kill_id = ? AND e.request = 'restore'
+         WHERE s.state = 'ACTIVE' AND NOT EXISTS (
+           SELECT 1 FROM vehicle_envelope x WHERE x.vin = s.vin AND x.feature_id = s.feature_id AND (x.key_epoch > e.key_epoch OR (x.key_epoch = e.key_epoch AND x.vehicle_seq > e.vehicle_seq)))`,
+        killId,
+      )?.n ?? 0
+    );
   }
 }
 

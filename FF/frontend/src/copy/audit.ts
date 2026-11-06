@@ -150,6 +150,7 @@ export const auditPlus = {
     anchor: 'DB 밖 고정점',
     anchorOn: (n: number, at: string) => `설정됨 · 확인 ${n}개 · 마지막 고정 ${at}`,
     anchorOff: '설정되지 않음 — 체인은 DB 안에서만 검증합니다',
+    anchorFailing: (since: string) => `고정점을 쓰지 못하는 중 — ${since}부터 · 그 뒤 기록은 DB 밖에 고정되지 않았습니다`,
     recheck: '다시 검증',
     checking: '검증 중',
   },

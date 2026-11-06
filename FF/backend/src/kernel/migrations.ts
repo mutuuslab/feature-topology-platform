@@ -919,4 +919,11 @@ CREATE TRIGGER flag_source_manifest_no_delete BEFORE DELETE ON flag_source_manif
 CREATE TABLE cost_actual (est_id TEXT NOT NULL, ref_id TEXT NOT NULL, actual REAL NOT NULL CHECK (actual > 0), updated_by TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (est_id, ref_id));
 `,
   },
+  {
+    // 차단(kill_id)별 봉투 — 차단 상세·목록의 복원 집계(재판정 근거 없음, ADS-BE03)·시간선이 봉투 전체를 훑던 것(하네스 리뷰 2026-11-06)
+    name: '097_vehicle_envelope_kill',
+    sql: `
+CREATE INDEX vehicle_envelope_kill ON vehicle_envelope (kill_id, request);
+`,
+  },
 ];

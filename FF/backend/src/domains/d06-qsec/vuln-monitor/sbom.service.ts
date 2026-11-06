@@ -99,6 +99,21 @@ export class SbomService {
     return bom;
   }
 
+  /**
+   * 이 Feature Version의 마지막 정책 배포 게시본 SBOM — CycloneDX BOM-Link(urn:cdx:<serialNumber uuid>/<version>).
+   * 복원은 차단 전에 배포돼 있던 기능을 되살리므로 차단·복원 게시본 자체의 SBOM은 쓰지 않는다. 배포 게시본 SBOM이 없으면 null(호출자가 막는다)
+   */
+  deployedRef(featureId: string, featureVersion: string): string | null {
+    const r = this.db.get<{ serial: string; doc: string }>(
+      "SELECT s.serial, s.doc FROM sbom s JOIN publication p ON p.publication_id = s.publication_id WHERE s.feature_id = ? AND s.feature_version = ? AND p.kind = 'POLICY' ORDER BY p.created_at DESC, p.sequence DESC, s.created_at DESC LIMIT 1",
+      featureId,
+      featureVersion,
+    );
+    if (!r) return null;
+    const version = (JSON.parse(r.doc) as CdxBom).version ?? 1;
+    return `urn:cdx:${r.serial.replace(/^urn:uuid:/, '')}/${version}`;
+  }
+
   private rows(featureId?: string) {
     return this.db
       .all<{ serial: string; publication_id: string | null; feature_id: string; feature_version: string; package_hash: string; created_at: string; doc: string }>(

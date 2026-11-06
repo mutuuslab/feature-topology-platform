@@ -828,7 +828,8 @@
       "cases": [
         "HT03",
         "R01"
-      ]
+      ],
+      "status": "완료(커밋 전)"
     },
     {
       "id": "ADS-BE04",
@@ -852,7 +853,8 @@
         "수정 후 backend/test/ads/defects.spec.ts FFP-F019 it.fails → it 전환(회귀 시험), review.json defect 삭제·판정 갱신"
       ],
       "deps": [],
-      "coord": "status-v2.ts:96 · deactivation.ts:133"
+      "coord": "status-v2.ts:96 · deactivation.ts:133",
+      "status": "완료(커밋 전)"
     },
     {
       "id": "ADS-BE05",
@@ -877,7 +879,8 @@
         "수정 후 requirements/defects.spec.ts FR-RTE-001-004·ads/defects.spec.ts FFP-F059 it.fails → it 전환(회귀 시험), review.json defect 삭제·판정 갱신 — 타 VIN 게시본 거부·기록(TC14), 서명 대상 digest 불일치 거부"
       ],
       "deps": [],
-      "coord": "기능명세서 결함 추적(review.json defects)과 연결"
+      "coord": "기능명세서 결함 추적(review.json defects)과 연결",
+      "status": "완료(커밋 전)"
     },
     {
       "id": "ADS-BE06",
@@ -904,7 +907,8 @@
       "coord": "",
       "cases": [
         "HT02"
-      ]
+      ],
+      "status": "완료(커밋 전)"
     },
     {
       "id": "ADS-BE07",
@@ -1359,7 +1363,8 @@
       "coord": "보고서 재검증(2026-10-18)에서 F060 '구현' 반려, Orca HT06",
       "cases": [
         "HT06"
-      ]
+      ],
+      "status": "완료(커밋 전)"
     },
     {
       "id": "ADS-BE20",

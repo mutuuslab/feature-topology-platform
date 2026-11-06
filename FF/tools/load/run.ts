@@ -102,10 +102,15 @@ function ipc(msg: string): Promise<any> {
   });
 }
 
+/** 감사 고정점 파일 — 실행마다 새로(시드 DB 사본과 짝) */
+const ANCHOR_FILE = join(LOAD_DIR, 'audit-anchor.jsonl');
+
 async function startServer(dbFile: string): Promise<number> {
+  rmSync(ANCHOR_FILE, { force: true });
   server = fork(join(FF, 'backend', 'dist', 'main.js'), [], {
     cwd: join(FF, 'backend'),
-    env: { ...process.env, ...SEED_ENV, FF_DB: dbFile, PORT: String(PORT), FF_EVIDENCE_DIR: join(LOAD_DIR, 'evidence'), FF_REQUEST_LOG: '0' },
+    // 운영과 같게 감사 고정점을 켠다(ADS-BE19 쓰기마다 고정) — 쓰기 시나리오(kill.issue) 예산이 고정점 쓰기까지 잰다
+    env: { ...process.env, ...SEED_ENV, FF_DB: dbFile, PORT: String(PORT), FF_EVIDENCE_DIR: join(LOAD_DIR, 'evidence'), FF_REQUEST_LOG: '0', FF_AUDIT_KEY: 'load-audit-key-'.padEnd(40, 'k'), FF_AUDIT_ANCHOR_FILE: ANCHOR_FILE },
     execArgv: ['--disable-warning=ExperimentalWarning', '--import', pathToFileURL(join(FF, 'tools', 'load', 'probe.ts')).href],
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
   });

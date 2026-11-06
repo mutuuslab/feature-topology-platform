@@ -1,0 +1,251 @@
+/* Topology 관계 그래프 — 제도판 같은 캔버스 위 도메인 레인, 카드 노드, 직교 간선.
+   색은 토큰만: 레인 띠·칩은 --dom-*, 간선 판정은 Gate 색(PASS 회색 · 조건부 주황 · FAIL 빨강 · 미판정 파랑), 선택은 강조색.
+   유형은 선 모양으로(REQUIRES 실선+화살표, EXCLUDES 점선+양끝 막대), 판정은 색 + 중간 기호로 — 색만으로 읽지 않는다. */
+
+[data-domain='AD'] { --dom: var(--dom-AD); }
+[data-domain='SF'] { --dom: var(--dom-SF); }
+[data-domain='CH'] { --dom: var(--dom-CH); }
+[data-domain='PE'] { --dom: var(--dom-PE); }
+[data-domain='PC'] { --dom: var(--dom-PC); }
+[data-domain='BC'] { --dom: var(--dom-BC); }
+[data-domain='IN'] { --dom: var(--dom-IN); }
+[data-domain='CO'] { --dom: var(--dom-CO); }
+[data-domain='PL'] { --dom: var(--dom-PL); }
+[data-domain='BE'] { --dom: var(--dom-BE); }
+[data-domain='ETC'] { --dom: var(--dom-ETC); }
+[data-tone='PASS'] { --edge: var(--chart-line); }
+[data-tone='CONDITIONAL'] { --edge: var(--warn); }
+[data-tone='FAIL'] { --edge: var(--danger); }
+[data-tone='PENDING'] { --edge: var(--info); }
+
+/* ── 작업대 틀 ─────────────────────────────────────────────── */
+.topo-wb { display: grid; gap: var(--sp-3); min-width: 0; }
+.topo-wb__bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-3) var(--sp-4); }
+.topo-wb__search .ds-input { width: 240px; max-width: 100%; }
+.topo-wb__modes { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-2); margin-left: auto; }
+.topo-wb__modes .ds-btn[aria-pressed='true'] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.topo-wb__filters { border-top: 1px solid var(--line); padding-top: var(--sp-2); }
+.topo-wb__filters > summary { cursor: pointer; font-size: var(--fs-sm); font-weight: 600; color: var(--ink-2); padding-block: var(--sp-1); width: max-content; }
+.topo-wb__filter-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-2) var(--sp-4); padding-top: var(--sp-2); }
+.topo-wb__status { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); margin: 0; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--muted); }
+.topo-wb__mode { color: var(--accent); font-family: var(--font-sans); font-weight: 600; }
+.topo-wb__body { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--sp-4); align-items: start; }
+@media (max-width: 1599px) { .topo-wb__body { grid-template-columns: minmax(0, 1fr) 296px; gap: var(--sp-3); } }
+.topo-wb__canvas { display: grid; gap: var(--sp-2); min-width: 0; }
+.topo-wb__keys { margin: 0; font-size: var(--fs-xs); color: var(--muted); }
+.topo-wb__table { min-width: 0; }
+
+.topo-chips { display: flex; flex-wrap: wrap; gap: var(--sp-1h); }
+.topo-chip {
+  display: inline-flex; align-items: center; gap: var(--sp-1h); min-height: 28px; padding: 0 var(--sp-2);
+  border: 1px solid var(--line-strong); border-radius: var(--r-pill); background: var(--surface); color: var(--ink-2);
+  font: 600 var(--fs-xs) / 1 var(--font-mono); cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.topo-chip:hover { border-color: var(--ink-2); }
+.topo-chip[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.topo-chip[aria-pressed='true'] .topo-chip__n { color: var(--surface); }
+.topo-chip--static { cursor: default; min-height: 22px; }
+.topo-chip__sw { width: 10px; height: 10px; border-radius: var(--r-sm); background: var(--dom, var(--faint)); flex: none; }
+.topo-chip__n { color: var(--muted); font-weight: 500; }
+.topo-check { display: inline-flex; align-items: center; gap: var(--sp-1h); font-size: var(--fs-sm); min-height: 28px; }
+
+/* ── 캔버스 ─────────────────────────────────────────────── */
+.topo-stage {
+  position: relative; height: clamp(440px, 66vh, 900px); overflow: hidden; touch-action: none; user-select: none; cursor: grab;
+  border: 1px solid var(--line-strong); border-radius: var(--r-lg);
+  background-color: var(--surface);
+}
+/* 그래프 층·레인 머리 층 — 끄는 동안만 합성층(will-change)으로 올린다 */
+.topo-world, .topo-heads { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.topo-heads { pointer-events: none; }
+.topo-heads .topo-lanehead__toggle, .topo-heads .topo-lanehead__bg { pointer-events: auto; }
+.topo-stage[data-moving] .topo-world, .topo-stage[data-moving] .topo-heads { will-change: transform; }
+.topo-world svg, .topo-heads svg { display: block; overflow: visible; }
+.topo-dot { fill: var(--line-strong); }
+.topo-stage:active { cursor: grabbing; }
+.topo-lane { fill: transparent; }
+.topo-lane[data-alt] { fill: var(--surface-2); opacity: 0.7; }
+.topo-lane__rule { stroke: var(--line); stroke-width: calc(1px * var(--sw, 1)); }
+
+/* 레인 머리 — 가로로 끌어도 왼쪽에 붙어 있다 */
+.topo-lanehead__bg { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.topo-lanehead__band { fill: var(--dom); }
+.topo-lanehead__abbr { font: 700 22px var(--font-mono); fill: var(--ink); letter-spacing: 0.02em; }
+.topo-lanehead__name { font: 500 11px var(--font-sans); fill: var(--ink-2); }
+.topo-lanehead__count { font: 500 11px var(--font-mono); fill: var(--muted); }
+.topo-lanehead__toggle { cursor: pointer; outline: none; }
+.topo-lanehead__toggle rect { fill: var(--surface-2); stroke: var(--line-strong); }
+.topo-lanehead__toggle path { fill: none; stroke: var(--ink-2); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.topo-lanehead__toggle:hover rect { stroke: var(--ink-2); }
+.topo-lanehead__toggle:focus-visible rect { stroke: var(--focus); stroke-width: 2.5; }
+
+/* 카드 노드 */
+.ds-topo-node { cursor: pointer; outline: none; transition: transform 380ms var(--ease), opacity var(--t-base) var(--ease); }
+.topo-card { fill: var(--surface); stroke: var(--line-strong); stroke-width: calc(1px * var(--sw, 1)); transition: stroke var(--t-fast) var(--ease); }
+.topo-card--stack { fill: var(--surface-3); }
+.topo-card__band { fill: var(--dom); }
+.ds-topo-node:hover .topo-card { stroke: var(--ink-2); }
+.ds-topo-node[data-state='hl1'] .topo-card { stroke: var(--ink-2); stroke-width: 1.5; }
+.ds-topo-node[data-state='sel'] .topo-card:not(.topo-card--stack) { stroke: var(--accent); stroke-width: 2.5; }
+.ds-topo-node[data-state='sel'] { filter: drop-shadow(0 6px 14px var(--accent-soft)); }
+.ds-topo-node:focus-visible .topo-card:not(.topo-card--stack) { stroke: var(--focus); stroke-width: 3; }
+.ds-topo-node[data-dim] { opacity: 0.34; }
+.ds-topo-node[data-dim]:hover, .ds-topo-node[data-dim]:focus-visible { opacity: 0.85; }
+.topo-card__id { font: 600 11px var(--font-mono); fill: var(--ink-2); }
+.topo-card__ver { font-weight: 400; fill: var(--muted); }
+.topo-card__name { font: 650 14px var(--font-sans); fill: var(--ink); letter-spacing: var(--tracking-tight); }
+.topo-card__meta-text { font: 500 11px var(--font-sans); fill: var(--muted); }
+.topo-lc { --lc: var(--faint); }
+.topo-lc[data-lifecycle='PROPOSED'] { --lc: var(--lc-PROPOSED); }
+.topo-lc[data-lifecycle='APPROVED'] { --lc: var(--lc-APPROVED); }
+.topo-lc[data-lifecycle='DEVELOPING'] { --lc: var(--lc-DEVELOPING); }
+.topo-lc[data-lifecycle='VERIFIED'] { --lc: var(--lc-VERIFIED); }
+.topo-lc[data-lifecycle='RELEASED'] { --lc: var(--lc-RELEASED); }
+.topo-lc[data-lifecycle='DEPRECATED'] { --lc: var(--lc-DEPRECATED); }
+.topo-lc[data-lifecycle='RETIRED'] { --lc: var(--lc-RETIRED); }
+.topo-lc text { font: 600 10px var(--font-mono); fill: var(--lc); letter-spacing: 0.02em; }
+.topo-lc circle { fill: var(--lc); }
+.topo-asil rect { fill: none; stroke: var(--line-strong); }
+.topo-asil text, .topo-flag text { font: 600 10px var(--font-mono); fill: var(--ink-2); }
+.topo-asil[data-asil='B'] rect { stroke: var(--ink-2); }
+.topo-asil[data-asil='C'] rect, .topo-asil[data-asil='D'] rect { fill: var(--ink-2); stroke: var(--ink-2); }
+.topo-asil[data-asil='C'] text, .topo-asil[data-asil='D'] text { fill: var(--surface); }
+.topo-flag path { fill: none; stroke: var(--ink-2); stroke-width: 1.4; stroke-linejoin: round; }
+.topo-gates rect { fill: var(--line-strong); }
+.topo-gates rect[data-tone='PASS'] { fill: var(--gate-PASS); }
+.topo-gates rect[data-tone='REVIEW'] { fill: var(--gate-REVIEW); }
+.topo-gates rect[data-tone='FAIL'] { fill: var(--gate-FAIL); }
+.topo-port { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.4; }
+.ds-topo-node[data-state='sel'] .topo-port { stroke: var(--accent); fill: var(--accent-soft); }
+.topo-card__far { display: none; font: 700 30px var(--font-mono); fill: var(--ink); letter-spacing: 0.02em; }
+.topo-card__badge circle { fill: var(--accent); }
+.topo-card__badge text { font: 700 11px var(--font-mono); fill: var(--accent-ink); }
+/* 멀리 보기 — 카드 안 글자 대신 번호만 크게, 중간 — 상태 줄을 숨긴다 */
+.topo-stage[data-lod='far'] .topo-card__near { display: none; }
+.topo-stage[data-lod='far'] .topo-card__far { display: inline; }
+.topo-stage[data-lod='far'] .topo-edge__note, .topo-stage[data-lod='far'] .topo-edge__note-text,
+.topo-stage[data-lod='far'] .topo-lanehead__name, .topo-stage[data-lod='far'] .topo-lanehead__count { display: none; }
+/* 간선 기호는 멀리 볼 때 덜 작아지게(확대율의 역수, 최대 2배) */
+.topo-edge__scale { transform: scale(var(--inv-k, 1)); }
+.topo-stage[data-lod='mid'] .topo-card__meta, .topo-stage[data-lod='mid'] .topo-card__ver { display: none; }
+
+/* 간선 */
+.topo-edge { cursor: pointer; transition: opacity var(--t-base) var(--ease); }
+.topo-edge[data-dim] { opacity: 0.26; }
+/* 선 굵기는 멀리 볼수록 --sw(확대율의 역수, 1~2.6)만큼 굵게 — 손을 뗀 뒤 한 번만 바뀐다 */
+.topo-edge__hit { fill: none; stroke: transparent; stroke-width: calc(14px * var(--sw, 1)); pointer-events: stroke; }
+.ds-topo-edge { fill: none; stroke: var(--edge, var(--chart-line)); stroke-width: calc(1.6px * var(--sw, 1)); stroke-linejoin: round; transition: stroke-width var(--t-fast) var(--ease); }
+.ds-topo-edge[data-type='EXCLUDES'] { stroke-dasharray: 6 5; }
+.ds-topo-edge[data-tone='FAIL'] { stroke-width: calc(2.2px * var(--sw, 1)); }
+.ds-topo-edge[data-cycle] { stroke-width: calc(2.6px * var(--sw, 1)); }
+.topo-edge[data-on] .ds-topo-edge { stroke-width: calc(2.2px * var(--sw, 1)); }
+.topo-edge:hover .ds-topo-edge { stroke-width: calc(3px * var(--sw, 1)); }
+.ds-topo-edge[data-selected] { stroke-width: calc(3.2px * var(--sw, 1)); }
+.topo-edge__halo { fill: none; stroke: var(--accent-soft); stroke-width: calc(12px * var(--sw, 1)); stroke-linecap: round; stroke-linejoin: round; }
+.topo-marker { fill: var(--edge, var(--chart-line)); }
+.topo-marker-tee { stroke: var(--edge, var(--chart-line)); stroke-width: 2; }
+.topo-edge__glyph-bg { fill: var(--surface); stroke: var(--edge); stroke-width: 1.4; }
+.topo-edge__glyph { fill: var(--edge); stroke: var(--edge); stroke-width: 1.6; stroke-linecap: round; }
+.topo-edge__glyph--ring { fill: none; stroke-dasharray: 2 1.6; }
+.topo-edge__note { fill: var(--surface); stroke: var(--line-strong); }
+.topo-edge__note-text { font: 600 10px var(--font-mono); fill: var(--ink-2); }
+/* 흐름 — 강조된 REQUIRES 위를 원천→대상으로 지나가는 옅은 점. 움직임 줄이기·숨은 화면·꺼짐이면 멈춘다 */
+.topo-flow { fill: none; stroke: var(--surface); stroke-width: calc(1.4px * var(--sw, 1)); stroke-linecap: round; stroke-dasharray: 1 9; opacity: 0; pointer-events: none; }
+.topo-stage[data-flow='on'] .topo-flow { opacity: 0.95; animation: topo-flow 900ms linear infinite; }
+@keyframes topo-flow { to { stroke-dashoffset: -10; } }
+
+/* 확대 도구·전체 지도·풍선 도움말 */
+.topo-zoom { position: absolute; top: var(--sp-3); right: var(--sp-3); display: grid; gap: var(--sp-1); }
+.topo-zoom .ds-btn { width: 32px; height: 32px; padding: 0; display: grid; place-items: center; font: 600 var(--fs-md) / 1 var(--font-mono); background: var(--surface); box-shadow: var(--e-1); }
+.topo-mini { opacity: 0.94; position: absolute; right: var(--sp-3); bottom: var(--sp-3); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r); box-shadow: var(--e-2); cursor: crosshair; touch-action: none; }
+.topo-mini__node { fill: var(--dom); opacity: 0.55; }
+.topo-mini__node[data-state] { opacity: 1; }
+.topo-mini__node[data-dim] { opacity: 0.15; }
+.topo-mini__view { fill: var(--accent-soft); fill-opacity: 0.35; stroke: var(--accent); stroke-width: 1.5; }
+.topo-tip {
+  position: absolute; z-index: 2; width: 320px; max-width: calc(100% - 16px); padding: var(--sp-3); display: grid; gap: var(--sp-1h);
+  background: var(--surface); border: 1px solid var(--line-strong); border-left: var(--sp-1) solid var(--edge); border-radius: var(--r);
+  box-shadow: var(--e-2); pointer-events: none; font-size: var(--fs-sm); color: var(--ink);
+}
+.topo-tip p { margin: 0; overflow-wrap: anywhere; }
+.topo-tip__head { display: flex; gap: var(--sp-2); align-items: baseline; flex-wrap: wrap; }
+.topo-tip__head b { color: var(--edge); font-family: var(--font-mono); }
+.topo-tip__head b[data-tone='PASS'] { color: var(--ok); }
+.topo-tip__pair { display: flex; gap: var(--sp-2); font-weight: 600; flex-wrap: wrap; }
+.topo-tip__ver, .topo-tip__why { color: var(--muted); font-size: var(--fs-xs); }
+.topo-tip__warn { color: var(--warn); font-weight: 600; }
+.topo-tip__finding b { font-weight: 600; }
+
+/* 선택 정보 */
+.topo-insp { display: grid; gap: var(--sp-3); align-content: start; max-height: clamp(440px, 66vh, 900px); overflow: auto; min-width: 0; }
+.topo-insp__card { display: grid; gap: var(--sp-2); padding: var(--sp-4); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-lg); min-width: 0; }
+.topo-insp__card.topo-motion { border-left: var(--sp-1) solid var(--edge); }
+.topo-insp__card h3 { margin: 0; font-size: var(--fs-lg); line-height: var(--lh); overflow-wrap: anywhere; flex: 1 1 auto; }
+.topo-insp__card h4 { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--ink-2); }
+.topo-insp__card p { margin: 0; overflow-wrap: anywhere; }
+.topo-insp__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
+.topo-insp__pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: var(--sp-2); align-items: start; }
+.topo-insp__arrow { font: 600 var(--fs-lg) / 1 var(--font-mono); color: var(--edge); padding-top: var(--sp-5); }
+.topo-insp__k { display: block; font-size: var(--fs-xs); color: var(--muted); }
+.topo-insp__end { display: grid; gap: var(--sp-1); justify-items: start; min-width: 0; }
+.topo-insp__end strong { overflow-wrap: anywhere; }
+.topo-insp__end code { font-size: var(--fs-xs); overflow-wrap: anywhere; }
+.topo-insp__state, .topo-insp__hint, .topo-insp__notice { font-size: var(--fs-sm); color: var(--muted); }
+.topo-insp__notice { padding-top: var(--sp-2); border-top: 1px solid var(--line); }
+.topo-insp__warn { font-size: var(--fs-sm); color: var(--ink-2); }
+.topo-insp__warn[data-on] { color: var(--warn); font-weight: 600; }
+.topo-insp__findings { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1h); font-size: var(--fs-sm); }
+.topo-insp__findings li { display: flex; gap: var(--sp-2); align-items: baseline; }
+.topo-insp__facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--sp-1) var(--sp-3); margin: 0; font-size: var(--fs-sm); }
+.topo-insp__facts dt { color: var(--muted); }
+.topo-insp__facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.topo-insp__rels ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1); }
+.topo-rel {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--sp-2); align-items: center; width: 100%; min-height: 32px;
+  padding: var(--sp-1) var(--sp-2); text-align: left; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r); color: var(--ink); cursor: pointer;
+}
+.topo-rel:hover:not(:disabled) { border-color: var(--ink-2); }
+.topo-rel:disabled { cursor: not-allowed; opacity: 0.6; }
+.topo-rel code { font-size: var(--fs-xs); }
+.topo-rel span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-sm); }
+.topo-insp__actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); padding-top: var(--sp-2); }
+
+/* 범례 */
+.topo-legend { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-5); list-style: none; margin: 0; padding: var(--sp-2) 0 0; border-top: 1px solid var(--line); font-size: var(--fs-xs); color: var(--ink-2); }
+.topo-legend li { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.topo-legend__svg .ds-topo-edge { stroke-width: 2; }
+.topo-legend__tee { stroke: var(--chart-line); stroke-width: 2; }
+.topo-legend__sw { width: 18px; height: 4px; border-radius: var(--r-pill); background: var(--edge); }
+.topo-legend__note { display: inline-grid; place-items: center; min-width: 20px; height: 16px; padding: 0 var(--sp-1); border: 1px solid var(--line-strong); border-radius: var(--r-pill); font: 600 10px var(--font-mono); }
+.topo-legend__port { width: 8px; height: 8px; border: 1.4px solid var(--ink-2); border-radius: var(--r-sm); background: var(--surface); }
+.topo-legend__gates { display: inline-flex; gap: var(--sp-0h); align-items: flex-end; }
+.topo-legend__gates i { width: 5px; height: 9px; border-radius: var(--r-sm); background: var(--gate-PASS); }
+.topo-legend__gates i[data-tone='REVIEW'] { background: var(--gate-REVIEW); }
+.topo-legend__gates i[data-tone='UNJUDGED'] { height: 5px; background: var(--line-strong); }
+.topo-legend__gates i[data-tone='FAIL'] { background: var(--gate-FAIL); }
+
+/* 진입 — 카드는 열 순서로 살짝 떠오르고, 간선은 뒤따라 나타난다 */
+@media (prefers-reduced-motion: no-preference) {
+  .ds-topo-node { animation: topo-in 520ms var(--ease) backwards; animation-delay: calc(var(--i, 0) * 12ms); }
+  .topo-edges { animation: topo-fade 640ms var(--ease) 220ms backwards; }
+}
+@keyframes topo-in { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+@keyframes topo-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .ds-topo-node, .topo-edge { transition: none; }
+  .topo-flow { animation: none; opacity: 0; }
+}
+
+@media (max-width: 1279px) {
+  .topo-wb__body { grid-template-columns: minmax(0, 1fr); }
+  .topo-insp { max-height: none; overflow: visible; }
+}
+@media (max-width: 719px) {
+  .topo-stage { height: clamp(360px, 62vh, 560px); }
+  .topo-mini { display: none; }
+  .topo-wb__modes { margin-left: 0; }
+  .topo-wb__search, .topo-wb__search .ds-field, .topo-wb__search .ds-input { width: 100%; }
+  .topo-insp__pair { grid-template-columns: minmax(0, 1fr); }
+  .topo-insp__arrow { padding-top: 0; transform: rotate(90deg); justify-self: start; }
+}

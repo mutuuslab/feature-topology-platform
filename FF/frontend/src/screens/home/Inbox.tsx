@@ -12,6 +12,7 @@ import { ko } from '../../copy/ko';
 import { inbox as IX, QUEUE_LABEL, QUEUE_ROLE, SLOT_LABEL } from '../../copy/inbox';
 import { KIND_LABEL } from '../../copy/refdb';
 import { procedures as PR } from '../../copy/procedures';
+import { registrations as REG } from '../../copy/ple';
 import { useProcedureSummary } from '../../data/procedureProgress';
 import { localTime, personLabel, personName, remaining } from '../../data/people';
 import { AsyncView, type AsyncState, DataTable, LifecycleBadge, PageHeader, Panel, Segmented, VerdictBadge, type KeyMessageSpec } from '../../design';
@@ -275,6 +276,8 @@ function AllHome() {
 
 // Feature 제안 2단계(기준 기능 고르기 → 등록 정보 확인)는 propose/ — 홈 묶음을 키우지 않게 필요할 때 읽는다(경로 이름은 그대로)
 const ProposeLazy = lazy(() => import('./propose/ProposeScreen'));
+// 진행 중인 등록(20-60 §6) — 등록 현황 화면에서만 읽는다(홈 묶음 밖)
+const RegistrationsLazy = lazy(() => import('../ple/Registrations').then((m) => ({ default: m.RegistrationsView })));
 export function ProposeScreen() {
   return (
     <Suspense fallback={null}>
@@ -295,8 +298,18 @@ export function DefineScreen() {
         title={D.title}
         lead={D.lead}
         message={q.data ? (rows.length ? { tone: 'neutral', value: rows.length, text: D.key.open } : { tone: 'neutral', text: D.key.none }) : { tone: 'neutral', value: '—', text: D.key.open }}
-        actions={<Link to="/feature/propose">{D.newProposal}</Link>}
+        actions={
+          <Link className="ds-btn ds-btn--primary" to="/feature/propose" data-ui="registerFeature">
+            {D.newProposal}
+          </Link>
+        }
       />
+      <Panel title={REG.title} eyebrow={REG.hint} id="registrations">
+        <Suspense fallback={null}>
+          <RegistrationsLazy />
+        </Suspense>
+      </Panel>
+      <Panel title={REG.allOpen} id="define-open">
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={D.title}
@@ -312,6 +325,7 @@ export function DefineScreen() {
           ]}
         />
       </AsyncView>
+      </Panel>
     </div>
   );
 }

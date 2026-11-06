@@ -39,24 +39,26 @@ last_updated: 2026-11-05
 - 입력: WP-REFDB-RELEASE, WP-FEAT-PROPOSAL → 출력: WP-FEAT-REG, WP-REF-LINK
 - 플랫폼: `createFeature`, `createVersion`, `updateDraft`, `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`
 1. 제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다
-2. 등록 1단계에서 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다
-3. 2단계에서 기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그를 확인하고, ASIL을 바꾸면 사유를 적는다
+2. 등록 1단계에서 만들 기능을 한 줄로 적어 추천 기준 행을 보거나, 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다
+3. 2단계에서 대표 행으로 자동 채운 칸(이름·설명·대표 ASIL·도메인·컴포넌트·SW 계층·T-shirt·규제·제어점·적용 범위·담당·Feature 프로필)을 출처와 함께 확인하고 필요한 칸만 고친다. ASIL을 바꾸면 사유를 적고, 중복·유사 경고와 관련 Feature 후보를 확인한다
 4. 관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다
 5. Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다
 6. 아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다
 - [ ] Registry에 PROPOSED Version이 생기고 소유자가 지정되었다
-- [ ] 대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다
+- [ ] 대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다. 자동 채움 칸마다 출처와 결정이 이력에 남았다
 - [ ] 만료일이 필요한 Flag 유형에 만료일과 Retirement 계획이 비어 있지 않다
 
 ### FPW.1-A02 대상 차량 사양·의존 등록 — 책임(승인)
 - 프로세스: FPW.1 Feature 등록·분류
 - 시작: 앞 활동 완료
 - 입력: WP-FEAT-REG → 출력: WP-FEAT-SCOPE
-- 플랫폼: `createDependency`, `/variant-conditions`, `/arch/topology`
+- 플랫폼: `createDependency`, `/variant-conditions`, `/arch/topology`, `/features/catalogue`
 1. 적용 차종·Trim·시장을 PLM 기준정보와 대조해 지원 조건을 등록한다
 2. 다른 Feature와의 필요·배타 관계를 등록하고 의존 판정 결과를 확인한다
 3. Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다
+4. Feature 카탈로그에서 주요·하위 feature 자리와 기준 행 선행·배타 제약을 보고, 관련 Feature 후보를 필요·배타 관계로 확정한다
 - [ ] 모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다
+- [ ] 하위 feature는 상위 feature 기준 행이 있고, 변이점이 공유 자산과 맞다
 
 ### FPW.1-A06 Feature DB 추가 요청 — 수행·책임
 - 프로세스: FPW.1 Feature 등록·분류

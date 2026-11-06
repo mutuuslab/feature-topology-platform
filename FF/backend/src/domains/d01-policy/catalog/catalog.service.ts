@@ -51,6 +51,11 @@ export class CatalogService {
     return m;
   }
 
+  /** 확정 Baseline 요약 — 26580 bill-of-features(PleService)가 같은 입력을 쓴다 */
+  baselineRefs(): Map<string, BaselineRef> {
+    return this.refs();
+  }
+
   validate(body: ValidateCompositionBody): CompositionResult {
     return validateComposition({ product: body, baselines: this.refs(), dependencies: this.topology.all(), carriedOver: body.carriedOver });
   }

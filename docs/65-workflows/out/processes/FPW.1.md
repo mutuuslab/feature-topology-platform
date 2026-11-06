@@ -52,7 +52,7 @@ flowchart LR
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
 | FPW.1-A01 | Feature 등록·초안 작성 | R Feature Owner · A Feature Owner · C 아키텍트, 요구 Owner · I Safety Manager, Feature DB 관리자 | WP-REFDB-RELEASE, WP-FEAT-PROPOSAL | WP-FEAT-REG, WP-REF-LINK | `createFeature`, `createVersion`, `updateDraft`, `/master/define`, `/feature/propose`, `/features`, `/master/feature-db` | FFG-CLS-008 |
-| FPW.1-A02 | 대상 차량 사양·의존 등록 | R 기준정보 담당 · A Feature Owner · C 아키텍트 · I Safety Manager | WP-FEAT-REG | WP-FEAT-SCOPE | `createDependency`, `/variant-conditions`, `/arch/topology` | – |
+| FPW.1-A02 | 대상 차량 사양·의존 등록 | R 기준정보 담당 · A Feature Owner · C 아키텍트 · I Safety Manager | WP-FEAT-REG | WP-FEAT-SCOPE | `createDependency`, `/variant-conditions`, `/arch/topology`, `/features/catalogue` | – |
 | FPW.1-A03 | 안전 분류(네 축) 확정 | R Safety Manager · A Safety Manager · C Feature Owner, 아키텍트 · I 요구 Owner | WP-FEAT-REG, WP-FEAT-SCOPE | WP-SAFETY-PROFILE | `updateSafetyProfile`, `confirmSafetyProfile`, `/features/:id/:ver` | FFG-CLS-001, FFG-CLS-003, FFG-CLS-009 |
 | FPW.1-A04 | 법규 의무 기능 판정 | R 법규 담당 · A 법규 담당 · C Safety Manager · I Feature Owner | WP-SAFETY-PROFILE, WP-COMPLIANCE-PROFILE | WP-REG-CLASS | 플랫폼 밖 | FFG-CLS-005 |
 | FPW.1-A05 | G1 등록·분류 판정 | R Safety Manager · A Safety Manager · C Feature Owner, 법규 담당 · I 요구 Owner, 기준정보 담당, 품질 조직 | WP-FEAT-REG, WP-REF-LINK, WP-FEAT-SCOPE, WP-SAFETY-PROFILE, WP-REG-CLASS | WP-G1-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002, FFG-CLS-001 |
@@ -62,24 +62,26 @@ flowchart LR
 
 #### FPW.1-A01 Feature 등록·초안 작성
 1. 제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다
-2. 등록 1단계에서 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다
-3. 2단계에서 기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그를 확인하고, ASIL을 바꾸면 사유를 적는다
+2. 등록 1단계에서 만들 기능을 한 줄로 적어 추천 기준 행을 보거나, 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다
+3. 2단계에서 대표 행으로 자동 채운 칸(이름·설명·대표 ASIL·도메인·컴포넌트·SW 계층·T-shirt·규제·제어점·적용 범위·담당·Feature 프로필)을 출처와 함께 확인하고 필요한 칸만 고친다. ASIL을 바꾸면 사유를 적고, 중복·유사 경고와 관련 Feature 후보를 확인한다
 4. 관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다
 5. Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다
 6. 아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다
 
 완료 기준:
 - [ ] Registry에 PROPOSED Version이 생기고 소유자가 지정되었다
-- [ ] 대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다
+- [ ] 대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다. 자동 채움 칸마다 출처와 결정이 이력에 남았다
 - [ ] 만료일이 필요한 Flag 유형에 만료일과 Retirement 계획이 비어 있지 않다
 
 #### FPW.1-A02 대상 차량 사양·의존 등록
 1. 적용 차종·Trim·시장을 PLM 기준정보와 대조해 지원 조건을 등록한다
 2. 다른 Feature와의 필요·배타 관계를 등록하고 의존 판정 결과를 확인한다
 3. Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다
+4. Feature 카탈로그에서 주요·하위 feature 자리와 기준 행 선행·배타 제약을 보고, 관련 Feature 후보를 필요·배타 관계로 확정한다
 
 완료 기준:
 - [ ] 모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다
+- [ ] 하위 feature는 상위 feature 기준 행이 있고, 변이점이 공유 자산과 맞다
 
 #### FPW.1-A03 안전 분류(네 축) 확정
 1. F 등급·비활성화 등급·법규 등급·Flag 유형 네 축을 모두 채운다
@@ -128,7 +130,7 @@ flowchart LR
 |---|---|---|---|
 | WP-FEAT-PROPOSAL | Feature 제안·변경요청 | 입력 (상품·도메인 기획, 변경요청(CR) 접수) | 기능 목적과 사용자 가치, 대상 시장·차종; 관련 요구 ID(ALM)와 기존 Feature와의 관계; 희망 출시 시점과 판매 방식(구독·구매·체험) |
 | WP-FEAT-REG | Feature 등록 기록 | 산출 | Feature ID·Version(PROPOSED 0.1.0)·소유자·설명; Flag 유형과 Release·Experiment Flag의 만료일·Retirement 계획; 관련 요구 ID와 판매 방식 |
-| WP-REF-LINK | Feature DB 기준 행 연결 | 산출 | 대표(PRIMARY) 기준 행 1개와 포함(INCLUDED) 행 ID, 연결 당시 Feature DB 발행 버전; 기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그·규제와 '수정됨' 표시; 대표 ASIL과 다른 ASIL을 고른 경우 변경 전후 값과 사유; 연결 행 상태 경고(검토 필요·폐기 예정·요청 중)와 대체 행 안내 |
+| WP-REF-LINK | Feature DB 기준 행 연결 | 산출 | 대표(PRIMARY) 기준 행 1개와 포함(INCLUDED) 행 ID, 연결 당시 Feature DB 발행 버전; 기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그·규제와 '수정됨' 표시; 자동 채움 출처(기준 행 열·카탈로그·규칙)와 칸별 결정(그대로·고침·사람이 채움), 누가·언제; Feature 프로필(ISO/IEC 26580) — 카탈로그 위치·상위 feature, 선택 유형·변이성·결합 시점, 변이점; 대표 ASIL과 다른 ASIL을 고른 경우 변경 전후 값과 사유; 연결 행 상태 경고(검토 필요·폐기 예정·요청 중)와 대체 행 안내 |
 | WP-REF-ADD-REQ | Feature DB 추가 요청 | 산출 | 도메인·컴포넌트·영문/한글 기능명·T-shirt·대표 ASIL; 출처 ID 또는 근거 메모, 새 컴포넌트가 필요하면 3글자 약어 제안; 즉시 부여된 정식 형식 ID와 요청 중(PENDING) 상태, 추가 변경 요청 번호 |
 | WP-FEAT-SCOPE | 대상 차량 사양·의존 관계 | 산출 | 적용 차종·Trim·시장과 지원 조건; 필요(REQUIRES)·배타(EXCLUDES) 의존 관계와 판정; Topology에서 위험 전파 관계가 있는 Feature 목록 |
 | WP-SAFETY-PROFILE | 안전 분류(네 축) | 산출 | F 등급과 판정 근거(위험 전파 관계 포함); 비활성화 등급·Safe State·인계·감소 시간 프로파일; Safety Manager 개인 서명과 확정 시각 |

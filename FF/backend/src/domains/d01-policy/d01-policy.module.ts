@@ -33,10 +33,14 @@ import { TopologyController } from './topology/topology.controller';
 import { TopologyService } from './topology/topology.service';
 import { AnalysisEvidenceController, AnalysisEvidenceService } from './topology/analysis-evidence.service';
 import { FlagSourceController, FlagSourceService } from './policy-store/flag-source.service';
+import { PleController, PleFeatureController } from './ple/ple.controller';
+import { PleRepo } from './ple/ple.repo';
+import { PleSeed } from './ple/ple-seed';
+import { PleService } from './ple/ple.service';
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController],
+  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, PleController, PleFeatureController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
@@ -58,6 +62,10 @@ import { FlagSourceController, FlagSourceService } from './policy-store/flag-sou
     AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService,
     AnalysisEvidenceService, // 분석 근거(W3) — HARA·TARA·SOTIF·형식승인 영향, G7 서명
     FlagSourceService,
+    // ISO/IEC 26580 정합(20-60) — 등록 자동 채움·변이 프로필·카탈로그·bill-of-features·구성기·공유 자산
+    PleRepo,
+    PleService,
+    PleSeed,
   ],
   exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
 })

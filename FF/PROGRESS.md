@@ -3,6 +3,12 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## ISO/IEC 26580 정합 + Feature 등록 자동 채움 (2026-11-06 사용자 요청 "Feature 등록을 잘 보이게·선택 메뉴 자동화" · "26580 참고해 revision", 브랜치 `feat/feature-26580`, worktree `-26580`, 커밋 전)
+- **설계·차이 표:** `docs/20-architecture/20-60-iso-26580-alignment.md`(ARC-ISO-26580) — 공개 미리보기(1~5절·3절 용어)와 BigLever 공개 해설만 근거. 26580 본문 6~9절 세부·역할 이름은 미리보기에 없어 FF 대응은 가정안.
+- **구현:** 규칙 `contracts/src/rules/ple/*`(자동 채움·추천·후보·중복·변이 프로필·카탈로그 트리·bill-of-features·구성기·공유 자산), API 10개(`/api/ple/*`, `…/variability`), 마이그레이션 `131_feature_variability`·`132_feature_autofill`(추가만), 화면 등록 마법사 5단계·등록 현황·스튜디오 '등록 진행 중'·홈/Registry '새 Feature 등록'·26580 화면 4개(`/features/catalogue`·`/features/shared-assets`·`/products/bill-of-features`·`/products/configurator`), 데모 시드 `seed-ple`(FF_SEED=none이면 없음), 정적 스냅샷 파일 끝 블록, 업무 절차 FPW.1-A01·A02(카탈로그 확인 추가 — 새 활동은 흐름도 간선 교차 래칫 때문에 합침)·FPW.7-A05·A06. 첫 화면 295 KiB 예산 그대로(여유 6 B).
+- **결정 대기(사용자):** D-26580-1 feature profile 뜻(변이 프로필 + bill-of-features로 나눔), D-26580-2 BoF 카탈로그 위반을 상품 승인 막힘으로 할지(지금 경고), D-26580-3 member product = Catalog 상품(지금) vs 차량 사양, D-26580-4 메뉴 이름 바꿈('Feature 등록'·'Feature 등록 현황'), D-26580-5 26580 8절 활동 ↔ FF 역할 대응.
+- **보류:** 관련 Feature 후보로 dependency 자동 생성(대상 Version 확정 필요 — Topology에서 사람이), UVL 내보내기, 상품 승인 판정에 카탈로그 제약 반영(D-26580-2).
+
 ## 담당자 E2E 개선 웨이브 (2026-11-05 사용자 결정 "16주제 전부 이번에·데모 계정 3개 추가", 브랜치 `feat/feature-db`, worktree `-dept`, 커밋 전)
 - **근거:** 담당자 5명 E2E 점검 결과(P1~P5, 59건)와 화면 측정(겹침 L1~L7·빈 화면 E1~E7). 여섯 묶음(W1~W6)이 나눠 구현, 마이그레이션 번호 W1=083 … W6=088(W6은 DDL이 필요 없어 쓰지 않음).
 - **W6 데모 계정·데이터·배치·문서**

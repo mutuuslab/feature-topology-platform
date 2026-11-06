@@ -341,7 +341,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "screens": [
     "/variant-conditions",
-    "/arch/topology"
+    "/arch/topology",
+    "/features/catalogue"
    ],
    "actions": [
     "createDependency"
@@ -1506,11 +1507,14 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "screens": [
     "/products/new",
-    "/entitlements"
+    "/entitlements",
+    "/products/bill-of-features",
+    "/products/configurator"
    ],
    "actions": [
     "createProduct",
     "validateComposition",
+    "checkBillOfFeatures",
     "offerTrials"
    ],
    "anchor": null,

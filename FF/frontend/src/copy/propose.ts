@@ -1,8 +1,8 @@
 // Feature 제안 2단계 등록(기준 기능 고르기 → 등록 정보 확인)과 Feature 상세 '기준 행' 탭 문구 — 설계 docs/30-data-model/30-95 §6.1·§6.3·§6.4·§5.2.
 // 상태 이름·안내(활성·검토 필요·폐기 예정·폐기·요청 중)는 contracts REF_STATUS_POLICY가 원천이다(등록 화면·승인 전이가 같은 표).
 export const propose = {
-  title: 'Feature 제안',
-  lead: 'Feature DB에서 기준 기능을 고르고, 미리 채운 등록 정보를 확인해 PROPOSED 0.1.0으로 제안합니다.',
+  title: 'Feature 등록',
+  lead: '기준 기능을 고르면 나머지 칸을 채웁니다 — 출처를 보고 고칠 칸만 고치세요.',
   key: {
     // 용어는 '대표 기준 행' 하나로(하네스 리뷰 F13) — 다음 버튼 이유(nextWhy)와 같은 문장이면 3초 ⑦(되풀이)에 걸린다
     pick: '대표 기준 행을 고르세요',

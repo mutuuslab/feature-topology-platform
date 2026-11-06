@@ -13,6 +13,8 @@ import { AsyncView, LifecycleBadge, PageHeader, Panel } from '../../design';
 import { useAppShell } from '../../store';
 import type { FeatureList } from '../types';
 import { Handoffs, MyWork, RoleQueues, useDeptDoc, useRoleWork } from './common';
+import { homeEntry as HE } from '../../copy/ple';
+import { RegistrationsView } from '../ple/Registrations';
 
 const COLUMNS = ['PROPOSED', 'APPROVED', 'DEVELOPING', 'VERIFIED', 'RELEASED'] as const;
 const PER_COLUMN = 5;
@@ -43,7 +45,7 @@ export default function StudioHome({ dept }: { dept: DepartmentSummary }) {
         message={message}
         actions={
           <div className="ws-actions">
-            <Link className="ds-btn ds-btn--primary" to="/feature/propose">
+            <Link className="ds-btn ds-btn--primary" to="/feature/propose" data-ui="registerFeature">
               {S.propose}
             </Link>
             <Link className="ds-btn" to="/products">
@@ -54,6 +56,10 @@ export default function StudioHome({ dept }: { dept: DepartmentSummary }) {
         }
       />
       <RoleQueues work={work} />
+      {/* 등록 진행 중(20-60 §6) — 등록 단계가 한눈에, 전체는 등록 현황 */}
+      <Panel title={HE.registrationsTitle} eyebrow={HE.registrationsHint} id="ws-registrations">
+        <RegistrationsView compact />
+      </Panel>
       {signoffs.length > 0 && (
         <Panel title={HW.signoffs} eyebrow={HW.signoffsHint} id="ws-signoffs">
           <ul className="ws-cards ws-cards--row" data-signoff-queue>

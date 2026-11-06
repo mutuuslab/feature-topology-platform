@@ -377,6 +377,16 @@ async function main() {
   await save('securityEvents');
   // P11 — Flag Retirement·감독 기록·데이터·규제 기록
   for (const m of ['flagRetirements', 'iamSodAudit', 'killPostReviews', 'changeRecords', 'reharaRequests', 'sumsRecords', 'dataAccessRequests', 'retention']) await save(m);
+  // ISO/IEC 26580 정합(docs/20-architecture/20-60) — 카탈로그·Bill-of-Features(상품마다)·제품 구성기·공유 자산·등록 현황·Feature 프로필
+  await save('featureCatalogue');
+  const bof = await save('billOfFeaturesPortfolio');
+  for (const p of bof.items as { catalogId: string; version: string }[]) {
+    await save('billOfFeatures', { id: p.catalogId, ver: p.version });
+    await save('productConfiguration', { id: p.catalogId, ver: p.version });
+  }
+  await save('sharedAssets');
+  await save('featureRegistrations');
+  for (const f of all.items as { featureId: string; version: string }[]) await save('featureVariability', { id: f.featureId, ver: f.version });
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

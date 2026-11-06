@@ -23,6 +23,8 @@ export const dashboard = {
     more: '대시보드 더 보기',
     actions: { create: '새 대시보드 만들기', copy: '사본 만들기', rename: '이름 바꾸기', share: '공유', remove: '대시보드 삭제', reset: '기본 레이아웃으로 되돌리기' },
     refresh: '새로 고침',
+    /** 주요 행동 — Feature 등록 마법사(20-60 §6) */
+    register: '새 Feature 등록',
     refreshed: (min: number) => (min < 1 ? '방금 새로 고침' : `${min}분 전 새로 고침`),
     owner: { me: '내 대시보드', system: '모든 역할의 기본 대시보드', of: (id: string) => `소유자 ${id}` },
     shareState: { none: '공유 안 함', to: (roles: string) => `공유: ${roles}` },

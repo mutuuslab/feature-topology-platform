@@ -51,7 +51,7 @@ export const departments = {
     title: '기획팀',
     lead: 'Feature를 제안하고, 단계별로 어디에 있는지 보고, 출시 책임을 확인합니다.',
     key: (n: number) => ({ value: n, text: '출시 전 Feature' }),
-    propose: '새 Feature 제안',
+    propose: '새 Feature 등록',
     products: '상품 구성',
     board: 'Feature 보드',
     boardLead: 'Lifecycle 단계별 최신 Version',

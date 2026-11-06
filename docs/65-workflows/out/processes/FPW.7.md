@@ -78,7 +78,7 @@ flowchart LR
 | FPW.7-A02 | 효과 실험 계획 등록 | R Feature Owner · A Feature Owner · C Safety Manager, 운영 조직 · I Release Manager | WP-SAFETY-PROFILE | WP-EXPERIMENT-PLAN | `createExperiment`, `/experiments` | FFG-CLS-006 |
 | FPW.7-A03 | Safety Case·SOTIF 근거 정리 | R Safety Manager · A Safety Manager · C Feature Owner, 시험 조직 · I 품질 조직 | WP-SOTIF-ANALYSIS, WP-G5-EVIDENCE, WP-HARA-TARA | WP-SAFETY-CASE | `/verify/evidence`, `/verify/compliance` | FFG-SOT-004, FFG-ADS-008 |
 | FPW.7-A04 | Safety Case 독립 검토 | R 품질 조직 · A Safety Manager · C 시험 조직 · I Feature Owner, 법규 담당 | WP-SAFETY-CASE | WP-SC-REVIEW | 플랫폼 밖 | FFG-ADS-012 |
-| FPW.7-A05 | 상품 구성 작성 | R 상품 기획 · A 상품 기획 · C Feature Owner · I 상품 Owner | WP-G6-DECISION | WP-PRODUCT | `createProduct`, `validateComposition`, `offerTrials`, `/products/new`, `/entitlements` | – |
+| FPW.7-A05 | 상품 구성 작성 | R 상품 기획 · A 상품 기획 · C Feature Owner · I 상품 Owner | WP-G6-DECISION | WP-PRODUCT | `createProduct`, `validateComposition`, `checkBillOfFeatures`, `offerTrials`, `/products/new`, `/entitlements`, `/products/bill-of-features`, `/products/configurator` | – |
 | FPW.7-A06 | 상품 구성 승인 | R 상품 Owner · A 상품 Owner · C Feature Owner · I 상품 기획 | WP-PRODUCT | WP-PRODUCT-APPROVAL | `productTransition`, `/products/:id/:ver` | – |
 | FPW.7-A07 | 형식승인·사용자 고지 확인 | R 법규 담당 · A 법규 담당 · C 법무, Feature Owner · I 운영 조직 | WP-HOMOLOGATION-IMPACT, WP-SUMS-RECORD | WP-ACTIVATION-PRECHECK | 플랫폼 밖 | FFG-GEN-006, FFG-LCY-010 |
 | FPW.7-A08 | G7 출시·활성화 판정 | R Safety Manager · A Feature Owner · C 운영 조직, 법규 담당 · I Release Manager, 품질 조직 | WP-CANARY-PLAN, WP-EXPERIMENT-PLAN, WP-SC-REVIEW, WP-PRODUCT-APPROVAL, WP-ACTIVATION-PRECHECK | WP-G7-DECISION | `judgeGate`, `/activation/decide`, `/admin/approval` | FFG-SOT-005, FFG-SOT-004, FFG-LCY-001 |
@@ -127,15 +127,17 @@ flowchart LR
 - 트리거: G6 배포 완료
 1. 상품에 넣을 Feature와 판매 방식을 정해 상품을 등록한다
 2. 구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다. PASS일 때 등록하고, FAIL은 결과를 확인한 뒤 초안으로만 등록한다
-3. 체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다
+3. Bill-of-Features 점검으로 카탈로그 제약(기준 행 선행·배타, 하위 feature의 상위, 대안 중복)을 보고, 제품 구성기로 켜질 Flag·SW를 미리 본다
+4. 체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다
 
 완료 기준:
 - [ ] 구성 검증 결과에 충돌이 없다
 
 #### FPW.7-A06 상품 구성 승인
 1. 상품 작성자가 아닌 상품 Owner가 구성과 판매 조건을 검토한다
-2. 승인하면 구성 승인 전이를 하고, 반려하면 사유를 남긴다
-3. 고객 출시 승인은 구성 승인자와 다른 사람이 하도록 승인 후보를 지정한다
+2. 상품 화면의 Bill-of-Features에서 카탈로그 제약 위반(경고)을 확인하고, 남기면 사유를 적는다
+3. 승인하면 구성 승인 전이를 하고, 반려하면 사유를 남긴다
+4. 고객 출시 승인은 구성 승인자와 다른 사람이 하도록 승인 후보를 지정한다
 
 완료 기준:
 - [ ] 구성 승인자가 상품 작성자와 다르다

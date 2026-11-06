@@ -919,4 +919,41 @@ CREATE TRIGGER flag_source_manifest_no_delete BEFORE DELETE ON flag_source_manif
 CREATE TABLE cost_actual (est_id TEXT NOT NULL, ref_id TEXT NOT NULL, actual REAL NOT NULL CHECK (actual > 0), updated_by TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (est_id, ref_id));
 `,
   },
+  {
+    // ISO/IEC 26580 변이 프로필(20-60 §5.2) — Feature Version마다 하나. source: AUTO(기준 행 제안)·EDITED(사람이 고침)·SEED(데모 시드)
+    name: '131_feature_variability',
+    sql: `
+CREATE TABLE feature_variability (
+  feature_id TEXT NOT NULL,
+  version TEXT NOT NULL,
+  doc TEXT NOT NULL,
+  source TEXT NOT NULL CHECK (source IN ('AUTO','EDITED','SEED')),
+  updated_by TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (feature_id, version)
+);
+`,
+  },
+  {
+    // 등록 자동 채움 출처·칸별 결정 이력(20-60 §5.1) — 추가만. 등록·초안 수정마다 칸 한 줄
+    name: '132_feature_autofill',
+    sql: `
+CREATE TABLE feature_autofill (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  feature_id TEXT NOT NULL,
+  version TEXT NOT NULL,
+  field TEXT NOT NULL,
+  source_kind TEXT CHECK (source_kind IS NULL OR source_kind IN ('REF','GLOSSARY','CATALOGUE','RULE')),
+  source_ref TEXT,
+  suggested TEXT,
+  final TEXT,
+  decision TEXT NOT NULL CHECK (decision IN ('ACCEPTED','EDITED','ADDED')),
+  actor_id TEXT NOT NULL,
+  at TEXT NOT NULL
+);
+CREATE INDEX feature_autofill_fv ON feature_autofill (feature_id, version, id);
+CREATE TRIGGER feature_autofill_no_update BEFORE UPDATE ON feature_autofill BEGIN SELECT RAISE(ABORT, 'feature_autofill은 추가만 가능'); END;
+CREATE TRIGGER feature_autofill_no_delete BEFORE DELETE ON feature_autofill BEGIN SELECT RAISE(ABORT, 'feature_autofill은 추가만 가능'); END;
+`,
+  },
 ];

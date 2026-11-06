@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://localhost:9012/admin/iam",
+  "iam_url": "http://localhost:9239/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-05T01:24:45.108Z",
+  "fetched_at": "2026-11-06T09:44:04.314Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-dept\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-05T01:20:07.748Z",
+  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-26580\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-06T07:33:20.964Z",
   "ff_git": {
-   "head": "624960e9b919c98ccf127f00f9c320b9383dd171",
-   "dirty_files": 32
+   "head": "08cd4cc3e15dbe005836c41fbe42bbc78f0df998",
+   "dirty_files": 11
   },
-  "iam_sha256": "02350b64db82312d83ad98cc1413aed79add3500e00e0ab652bc283b33346b45"
+  "iam_sha256": "f582915d8b3aea143c8b2004aa8173c895aefb9bba2423c69364c6fd464922ee"
  },
  "roles": [
   {
@@ -407,6 +407,17 @@
    "component": "D01-01",
    "roles": [
     "REFDB_ADMIN"
+   ]
+  },
+  {
+   "name": "checkBillOfFeatures",
+   "method": "POST",
+   "path": "/api/ple/bill-of-features/check",
+   "summary": "BoF 점검",
+   "component": "D01-03",
+   "roles": [
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER"
    ]
   },
   {
@@ -2151,7 +2162,7 @@
   },
   {
    "path": "/feature/propose",
-   "title": "Feature 제안",
+   "title": "Feature 등록",
    "group": "feature"
   },
   {
@@ -2165,8 +2176,18 @@
    "group": "feature"
   },
   {
+   "path": "/features/catalogue",
+   "title": "Feature 카탈로그",
+   "group": "feature"
+  },
+  {
+   "path": "/features/shared-assets",
+   "title": "공유 자산 추적",
+   "group": "feature"
+  },
+  {
    "path": "/master/define",
-   "title": "Feature 등록",
+   "title": "Feature 등록 현황",
    "group": "feature"
   },
   {
@@ -2307,6 +2328,16 @@
   {
    "path": "/procurement/sw-cost/:estId",
    "title": "SW 개발비 산정 과제",
+   "group": "release"
+  },
+  {
+   "path": "/products/bill-of-features",
+   "title": "Bill-of-Features",
+   "group": "release"
+  },
+  {
+   "path": "/products/configurator",
+   "title": "제품 구성기",
    "group": "release"
   },
   {

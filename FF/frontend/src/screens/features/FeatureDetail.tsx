@@ -31,6 +31,7 @@ import { AuditLog } from '../governance/AuditLog';
 import { ReleaseSignoffBar } from './ReleaseSignoff';
 import { EpicChip, ExtLinksTab, RequirementChips } from './ExtLinksTab';
 import { FeatureRefsTab } from './FeatureRefsTab';
+import { FeatureProfilePanel } from '../ple/FeatureProfilePanel';
 import { FeatureFlagHighlight, FeatureFlagsTab } from './FeatureFlags';
 import { flags as flagCopy } from '../../copy/flags';
 import { featureRefsTab } from '../../copy/propose';
@@ -165,7 +166,10 @@ export default function FeatureDetail() {
                 ) : tab === 'flags' ? (
                   <FeatureFlagsTab id={id} ver={ver} />
                 ) : tab === 'refs' ? (
-                  <FeatureRefsTab links={d.feature.featureRefs ?? []} lifecycle={d.feature.lifecycle} feature={d.feature} />
+                  <>
+                    <FeatureRefsTab links={d.feature.featureRefs ?? []} lifecycle={d.feature.lifecycle} feature={d.feature} />
+                    <FeatureProfilePanel featureId={d.feature.featureId} version={d.feature.version} />
+                  </>
                 ) : tab === 'safety' ? (
                   <SafetyTab id={id} ver={ver} />
                 ) : tab === 'gates' ? (

@@ -11,6 +11,7 @@ import { ko } from '../../copy/ko';
 import { planning as W } from '../../copy/planning';
 import { catalogExperience as Cx } from '../../copy/catalog-experience';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, LifecycleBadge, LifecycleStepper, PageHeader, Panel, VerdictBadge, Icon, whyDisabled } from '../../design';
+import { PleNav } from '../ple/PleNav';
 import { ProductVersionActions } from '../features/VersionEdit';
 import { scopeOf, usePermission } from '../shared';
 import { CatalogApproval, CatalogAssembly, CatalogCard, CatalogIdentity } from './CatalogExperience';
@@ -76,6 +77,7 @@ export function ProductList() {
           </Button>
         }
       />
+      <PleNav />
       <p className="catalog-intro">{Cx.definition} {Cx.boundary}</p>
       <div className="catalog-filter" role="group" aria-label={Cx.filters}>
         <label>{Cx.search}<input className="ds-input" type="search" value={search} onChange={(e) => setSearch(e.target.value)} /></label>

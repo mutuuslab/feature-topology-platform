@@ -153,6 +153,18 @@ export const ROUTES: RouteDef[] = [
   { name: 'publishRefRelease', method: 'POST', path: '/api/refdb/releases', summary: 'Feature DB 버전 발행 — 승인된 변경 요청을 묶어 다음 버전·전체 해시 기록(추가만)', component: 'D01-01', roles: ['REFDB_ADMIN'], body: PublishRefReleaseBody },
   { name: 'exportRefdb', method: 'GET', path: '/api/refdb/export', summary: 'Feature DB 내보내기 — 엑셀 03_FeatureDB 열 순서 + 출처 시트(금액 열은 산정 역할만)', component: 'D01-01', query: ['format', 'release'], personal: true },
 
+  // ISO/IEC 26580 feature 기반 PLE (docs/20-architecture/20-60) — 조회·점검만, 저장은 등록·초안 수정이 한다(첫 화면 묶음이라 요약은 짧게)
+  { name: 'refSuggestions', method: 'GET', path: '/api/ple/ref-suggestions', summary: '추천', component: 'D01-01', query: ['q'] },
+  { name: 'featureAutofill', method: 'GET', path: '/api/ple/autofill/:refId', summary: '자동 채움', component: 'D01-01', query: ['name', 'country', 'vehicleModel', 'trim'] },
+  { name: 'featureRegistrations', method: 'GET', path: '/api/ple/registrations', summary: '등록 현황', component: 'D01-01', personal: true },
+  { name: 'featureCatalogue', method: 'GET', path: '/api/ple/catalogue', summary: '카탈로그', component: 'D01-01' },
+  { name: 'billOfFeaturesPortfolio', method: 'GET', path: '/api/ple/bill-of-features', summary: 'BoF 목록', component: 'D01-03' },
+  { name: 'billOfFeatures', method: 'GET', path: '/api/ple/bill-of-features/:id/:ver', summary: 'BoF', component: 'D01-03' },
+  { name: 'checkBillOfFeatures', method: 'POST', path: '/api/ple/bill-of-features/check', summary: 'BoF 점검', component: 'D01-03', roles: ['PRODUCT_AUTHOR', 'PRODUCT_APPROVER'], body: ValidateCompositionBody },
+  { name: 'productConfiguration', method: 'GET', path: '/api/ple/configure/:id/:ver', summary: '구성기', component: 'D01-03' },
+  { name: 'sharedAssets', method: 'GET', path: '/api/ple/assets', summary: '자산', component: 'D01-02' },
+  { name: 'featureVariability', method: 'GET', path: '/api/features/:id/versions/:ver/variability', summary: '프로필', component: 'D01-01' },
+
   // Gate Record (Topology 소유, D01-02)
   { name: 'gates', method: 'GET', path: '/api/features/:id/versions/:ver/gates', summary: 'Gate G1~G9 판정·이력', component: 'D01-02' },
   { name: 'judgeGate', method: 'POST', path: '/api/features/:id/versions/:ver/gates', summary: 'Gate 판정 등록', component: 'D01-02', roles: ['GATE_JUDGE', 'SAFETY_OFFICER'], body: JudgeGateBody },

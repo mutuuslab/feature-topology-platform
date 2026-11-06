@@ -32,11 +32,13 @@ last_updated: 2026-11-05
 - 프로세스: FPW.1 Feature 등록·분류
 - 시작: 앞 활동 완료
 - 입력: WP-FEAT-REG → 출력: WP-FEAT-SCOPE
-- 플랫폼: `createDependency`, `/variant-conditions`, `/arch/topology`
+- 플랫폼: `createDependency`, `/variant-conditions`, `/arch/topology`, `/features/catalogue`
 1. 적용 차종·Trim·시장을 PLM 기준정보와 대조해 지원 조건을 등록한다
 2. 다른 Feature와의 필요·배타 관계를 등록하고 의존 판정 결과를 확인한다
 3. Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다
+4. Feature 카탈로그에서 주요·하위 feature 자리와 기준 행 선행·배타 제약을 보고, 관련 Feature 후보를 필요·배타 관계로 확정한다
 - [ ] 모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다
+- [ ] 하위 feature는 상위 feature 기준 행이 있고, 변이점이 공유 자산과 맞다
 
 ### FPW.6-A02 출시 Baseline 확정 승인 — 수행·책임
 - 프로세스: FPW.6 서명 배포

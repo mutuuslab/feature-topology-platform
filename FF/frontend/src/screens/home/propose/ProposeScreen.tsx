@@ -1,4 +1,4 @@
-// /feature/propose — Feature 제안 2단계(30-95 §6.1): ① 기준 기능 고르기 → ② 등록 정보 확인.
+// /feature/propose — Feature 등록 마법사(30-95 §6.1, 20-60 §6): ① 기준 기능 고르기(이름·설명 추천 포함) → ② 자동 채움 확인 → 제출·검토·정의 승인.
 // 대표 기준 행에서 이름·설명·대표 ASIL·분류 태그·규제를 미리 채우고(§6.3), 바뀐 칸은 '수정됨'으로 보인다.
 // ASIL을 대표 ASIL과 다르게 하면 사유(asilDeviation)가 필수 — 기능안전 담당자 G2 검토 대상. 같은 범위 같은 대표 행은 409 → 사유와 함께 확인(§6.2).
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -17,6 +17,10 @@ import { RefRequestDrawer } from './RefRequestDrawer';
 import { RefStatusBadge, RefWarningItems, type RefWarning } from '../../refdb/common';
 import { ASIL_VALUES, type TaxonomyNodeLite } from './taxonomy';
 import { choosePicked, list, makePrimaryPicked, prefillOf, primaryOf, regulationsOf, removePicked, sameList, type PickedRef, type Prefill, type RefLite } from './prefill';
+import { autofill as AF, profile as PR } from '../../../copy/ple';
+import { RegistrationSteps } from '../../ple/RegistrationSteps';
+import { IntentSuggest } from './IntentSuggest';
+import { AutofillPanel, scopeKey, useAutofill, variationPointsFor, type ProfileDraft } from './AutofillPanel';
 
 const INITIAL = { name: '', description: '', requirementIds: '', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: '', asil: 'QM', tags: '', upgVc: '' };
 type Form = typeof INITIAL;
@@ -50,10 +54,33 @@ export default function ProposeScreen() {
   const [done, setDone] = useState<Created | null>(null);
   // 미리 채운 값과 그 값을 준 대표 행 — 대표를 바꾸면 사용자가 고치지 않은 칸만 새 기준값으로 바꾼다
   const [base, setBase] = useState<(Prefill & { refId: string }) | null>(null);
+  // 자동 채움(20-60 §5.3) — 사람이 손대지 않은 제어점·범위·프로필만 대표 행이 바뀔 때 채운다
+  const [cpsTouched, setCpsTouched] = useState(false);
+  const [scopeTouched, setScopeTouched] = useState(false);
+  const [profile, setProfile] = useState<ProfileDraft | null>(null);
+  const [appliedRef, setAppliedRef] = useState<string | null>(null);
   const stepHead = useRef<HTMLHeadingElement>(null);
   const dupHead = useRef<HTMLHeadingElement>(null);
 
   const primary = primaryOf(picked);
+  const scope = { country: f.country.trim(), vehicleModel: f.vehicleModel.trim(), trim: f.trim.trim() };
+  const af = useAutofill(primary, picked.map((p) => p.ref), f.name, scope);
+  useEffect(() => {
+    const r = af.data;
+    if (!r || r.refId === appliedRef) return;
+    setAppliedRef(r.refId);
+    const plan = r.fields.find((x) => x.key === 'controlPoints')?.value;
+    if (!cpsTouched && Array.isArray(plan) && plan.length) setCps(plan);
+    // 지금 범위가 후보 밖이고 사람이 고치지 않았으면 첫 후보로
+    const first = r.scopeCandidates[0];
+    if (!scopeTouched && first && !r.scopeCandidates.some((s) => scopeKey(s) === scopeKey(scope))) setF((x) => ({ ...x, country: first.country, vehicleModel: first.vehicleModel, trim: first.trim }));
+    // 담당 — 비어 있으면 같은 컴포넌트·도메인 Feature의 담당으로
+    const owner = r.fields.find((x) => x.key === 'owner')?.value;
+    if (typeof owner === 'string') setF((x) => (x.ownerId.trim() ? x : { ...x, ownerId: owner }));
+    const { variationPoints: _vps, ...draft } = r.variability;
+    setProfile(draft);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [af.data]);
   const dirty = !done && !create.isSuccess && (picked.length > 0 || Object.entries(f).some(([k, v]) => v !== INITIAL[k as keyof Form]) || cps.join() !== 'Flag');
   // 입력이 있으면 떠나기 전에 묻는다 — 등록이 끝나면(상세로 이동) 묻지 않는다(출시 준비 RD-UX-02)
   useUnsavedGuard(dirty);
@@ -84,7 +111,10 @@ export default function ProposeScreen() {
     setStep(2);
   };
 
-  const set = (k: keyof Form) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
+  const set = (k: keyof Form) => (e: { target: { value: string } }) => {
+    if (k === 'country' || k === 'vehicleModel' || k === 'trim') setScopeTouched(true);
+    setF((x) => ({ ...x, [k]: e.target.value }));
+  };
   const fe = fieldErrors(create.error);
   const duplicate = create.error?.code === DUPLICATE;
   // 같은 범위 중복(409) 안내가 뜨면 그 제목으로 초점 — 누른 '제안 등록' 아래에 새 칸이 생긴 것을 듣는다(WCAG 4.1.3)
@@ -122,6 +152,8 @@ export default function ProposeScreen() {
           featureRefs: picked.map((p) => ({ refId: p.ref.refId, role: p.role })),
           ...(asilChanged && base ? { asilDeviation: { from: base.asil, to: f.asil, reason: asilReason.trim() } } : {}),
           ...(regulations.length ? { refRegulations: regulations } : {}),
+          // 26580 Feature 프로필 — 변이점은 고른 제어점의 것만(서버가 대표 행으로 다시 계산해 그대로·고침을 기록)
+          ...(profile && af.data ? { variability: { ...profile, variationPoints: variationPointsFor(af.data.variability.variationPoints, cps) } } : {}),
           ...(confirmDuplicate ? { confirmDuplicate: true, duplicateReason: dupReason.trim() } : {}),
         },
       },
@@ -147,6 +179,7 @@ export default function ProposeScreen() {
     [!primary, P.nextWhy],
     [!f.name.trim() || !f.description.trim() || !f.ownerId.trim(), P.requiredWhy],
     [asilChanged && asilReason.trim().length < 2, P.asilReasonWhy],
+    [profile?.catalogueRole === 'SUB' && !profile.parentRefId, PR.parentWhy],
   );
 
   // 공개 데모(읽기 전용)는 역할과 상관없이 등록하지 못한다 — '작성자만' 안내는 실제로 역할이 다를 때만
@@ -169,13 +202,8 @@ export default function ProposeScreen() {
   return (
     <div className="ds-screen">
       <PageHeader codes="D01-01 · PROPOSED 0.1.0 · 30-95 §6" title={P.title} lead={P.lead} message={message} />
-      <ol aria-label={P.steps.label} className="ds-chips" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {[P.steps.pick, P.steps.confirm].map((s, i) => (
-          <li key={s} className="ds-tag" aria-current={step === i + 1 ? 'step' : undefined} style={step === i + 1 ? { fontWeight: 600 } : undefined}>
-            {`${P.steps.no(i + 1)} · ${s}`}
-          </li>
-        ))}
-      </ol>
+      {/* 등록 진행 단계 — 마법사 두 단계 뒤로 제출·검토·정의 승인이 이어진다(20-60 §6) */}
+      <RegistrationSteps current={done || create.isSuccess ? 2 : step - 1} />
       <Panel id="propose-form" tour="feature-form">
         <h2 ref={stepHead} tabIndex={-1} style={{ marginTop: 0 }}>
           {step === 1 ? P.steps.pick : P.steps.confirm}
@@ -194,10 +222,29 @@ export default function ProposeScreen() {
             </Button>
           </section>
         ) : step === 1 ? (
-          <RefPicker picked={picked} onChoose={choose} onRemove={remove} onMakePrimary={makePrimary} onRequest={() => setRequesting(true)} onNext={toStep2} nodes={nodes} domain={domain} setDomain={setDomain} />
+          <>
+            <IntentSuggest pickedIds={new Set(picked.map((p) => p.ref.refId))} onPick={(ref) => choose(ref, 'PRIMARY')} />
+            <RefPicker picked={picked} onChoose={choose} onRemove={remove} onMakePrimary={makePrimary} onRequest={() => setRequesting(true)} onNext={toStep2} nodes={nodes} domain={domain} setDomain={setDomain} />
+          </>
         ) : (
           <>
             {/* 2단계 칸 묶음 — 미리 채운 칸은 처음 열 때 잠깐 강조한다(data-prefilled, 움직임 줄이기면 강조 없이) */}
+            {af.data && profile ? (
+              <AutofillPanel
+                result={af.data}
+                form={{ name: f.name, description: f.description, asil: f.asil, tags: f.tags, owner: f.ownerId }}
+                cps={cps}
+                scope={scope}
+                onScope={(s) => {
+                  setScopeTouched(true);
+                  setF((x) => ({ ...x, ...s }));
+                }}
+                profile={profile}
+                onProfile={setProfile}
+              />
+            ) : (
+              af.pending && <p className="ds-field__hint" role="status">{AF.loading}</p>
+            )}
             <p className="ds-field__hint" style={{ margin: 0 }}>{W.required.legend}</p>
             <div className="ds-split ds-prefill" data-prefilled={base?.refId}>
               <div className="ds-stack">
@@ -263,7 +310,7 @@ export default function ProposeScreen() {
                   <legend className="ds-field__label">{P.cps}</legend>
                   {['Flag', 'Parameter', 'Signal', 'DTC'].map((c) => (
                     <label key={c}>
-                      <input type="checkbox" checked={cps.includes(c)} onChange={() => setCps((xs) => (xs.includes(c) ? xs.filter((x) => x !== c) : [...xs, c]))} />
+                      <input type="checkbox" checked={cps.includes(c)} onChange={() => { setCpsTouched(true); setCps((xs) => (xs.includes(c) ? xs.filter((x) => x !== c) : [...xs, c])); }} />
                       {c}
                     </label>
                   ))}

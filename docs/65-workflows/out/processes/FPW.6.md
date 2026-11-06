@@ -42,6 +42,7 @@ flowchart LR
   end
   subgraph R_REL["Release Manager"]
     FPW_6_A06{{"A06 G6 서명 배포 실행"}}
+    FPW_6_A07["A07 코드 저장소 연결 관리"]
   end
   FPW_6_A01 --> FPW_6_A02
   FPW_6_A02 --> FPW_6_A03
@@ -49,6 +50,7 @@ flowchart LR
   FPW_6_A03 --> FPW_6_A05
   FPW_6_A04 --> FPW_6_A05
   FPW_6_A05 --> FPW_6_A06
+  FPW_6_A06 --> FPW_6_A07
 ```
 
 ## 2. 활동
@@ -61,6 +63,7 @@ flowchart LR
 | FPW.6-A04 | 서명 패키지 작성·SBOM 결합 | R 통합 조직 · A Release Manager · C PKI 운영, CSM · I 품질 조직 | WP-RELEASE-BASELINE | WP-SIGNED-PACKAGE | `registerChangeRecord`, `/deployments`, `/master/artifacts` | – |
 | FPW.6-A05 | OTA Gate 판정 등록 | R 품질 조직 · A Release Manager · C 법규 담당, CSM · I 운영 조직 | WP-SIGNED-PACKAGE, WP-SUMS-RECORD | WP-OTA-GATE | `judgeGate`, `/features/:id/:ver` | FFG-LCY-001 |
 | FPW.6-A06 | G6 서명 배포 실행 | R Release Manager · A Release Manager · C 운영 조직 · I Feature Owner, Safety Manager, 품질 조직 | WP-OTA-GATE, WP-RELEASE-BASELINE | WP-G6-DECISION | `deployPolicy`, `syncUnleash`, `/deployments`, `/integration/connectors` | FFG-LCY-009 |
+| FPW.6-A07 | 코드 저장소 연결 관리 | R Release Manager · A Release Manager · C 통합 조직 · I 아키텍트 |  |  | `createFlagRepository`, `updateFlagRepository`, `/integration/code-repositories`, `/integration/code-scans` | – |
 
 ### 수행 절차와 완료 기준
 
@@ -111,6 +114,14 @@ flowchart LR
 
 완료 기준:
 - [ ] 게시본 ID와 Unleash 동기화 결과가 G6 배포 기록에 있다
+
+#### FPW.6-A07 코드 저장소 연결 관리
+1. 차량 SW 저장소를 패키지·기본 브랜치·스캔 주기와 함께 연결한다
+2. webhook 실패와 스캔 거부를 확인하고 원인을 통합 조직과 해소한다
+3. 설정 변경은 사유를 남기고 구현 담당이 자기 검사를 약화하지 못하게 한다
+
+완료 기준:
+- [ ] 연결 저장소의 webhook이 정상이고 최근 스캔이 서명 확인됐다
 
 ## 3. 산출물
 

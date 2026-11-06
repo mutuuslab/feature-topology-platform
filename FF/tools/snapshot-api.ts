@@ -152,6 +152,41 @@ async function consultSnapshots(save: Save) {
  * SW 개발비 산정 스냅샷(20-94 §9) — 데모 시드(BCM 예시 과제 EST-0001·0002)와 계수 표. 조회 경로의 첫 역할(COST_ESTIMATOR)로 받아
  * 정적 데모는 금액이 보이는 구매 담당 화면이다(예시 과제·공개 단가만 있다). 엑셀 내보내기(파일)는 정적 데모에서 쓰지 않는다.
  */
+/**
+ * Flag 코드 연결(20-97 §7.2) — 화면이 보내는 질의 모양 그대로(키 순서 포함):
+ *  · 현황(/flag-code): flagCoverage {} · 대사판(/flag-code/reconcile): { status: FLAG_RECONCILE_QUERY } · 수명 관리: { status: 'STALE,REMOVAL_DUE' }
+ *  · Feature 상세 Flag 탭: flagCoverage { featureId, version } + flagReleaseGate — 모든 Version
+ *  · Flag 코드 상세: flagCoverageDetail + flagEvaluationSeries { window: '24h' } — 대사 행 전부(평가 모니터링 7일 창은 { window: '7d' }도)
+ *  · 저장소·스캔(저장소별 { repoId } 포함, 스캔 상세 전부)·PR({ kind: 'REMOVAL' } 포함)·해제·평가 { window } 1h·24h·7d
+ */
+export const FLAG_RECONCILE_QUERY = 'NO_CODE,CALL_DELETED,UNREGISTERED_KEY,DYNAMIC_KEY,UNLEASH_MISMATCH,REMOVAL_DUE,STALE,PR_OPEN';
+async function flagCodeSnapshots(save: Save, versions: { featureId: string; version: string }[]) {
+  const all = await save('flagCoverage');
+  await save('flagCoverage', {}, { status: FLAG_RECONCILE_QUERY });
+  await save('flagCoverage', {}, { status: 'STALE,REMOVAL_DUE' });
+  for (const f of versions) {
+    await save('flagCoverage', {}, { featureId: f.featureId, version: f.version });
+    await save('flagReleaseGate', { id: f.featureId, ver: f.version });
+  }
+  for (const r of all.rows as { flagKey: string }[]) {
+    await save('flagCoverageDetail', { flagKey: r.flagKey });
+    await save('flagEvaluationSeries', { flagKey: r.flagKey }, { window: '24h' });
+    // 평가 모니터링은 7일 창이 기본(하루 넘게 이어진 폴백 급증) — 선택 Flag 시계열도 같은 창
+    await save('flagEvaluationSeries', { flagKey: r.flagKey }, { window: '7d' });
+  }
+  const repos = await save('flagRepositories');
+  const scans = await save('flagScans');
+  for (const s of scans.items as { scanId: string }[]) await save('flagScanDetail', { id: s.scanId });
+  for (const r of repos.items as { repoId: string }[]) {
+    const own = await save('flagScans', {}, { repoId: r.repoId });
+    for (const s of own.items as { scanId: string }[]) await save('flagScanDetail', { id: s.scanId });
+  }
+  await save('flagPullRequests');
+  await save('flagPullRequests', {}, { kind: 'REMOVAL' });
+  await save('flagGateWaivers');
+  for (const window of ['1h', '24h', '7d']) await save('flagEvaluations', {}, { window });
+}
+
 async function costSnapshots(save: Save) {
   await save('costCalibration');
   const projects = await save('costProjects');
@@ -236,6 +271,7 @@ async function main() {
   await refdbSnapshots(save, versions);
   await consultSnapshots(save);
   await costSnapshots(save);
+  await flagCodeSnapshots(save, all.items as { featureId: string; version: string }[]);
   // BOM·Catalog
   await save('baselineRequests');
   await save('baselines');

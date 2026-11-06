@@ -14,6 +14,7 @@ traces:
     - WF-FPW-4
     - WF-FPW-5
     - WF-FPW-6
+    - WF-FPW-7
     - WF-FPW-9
     - WF-FPW-10
     - WF-FPW-12
@@ -36,7 +37,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 9 · 책임 10 · 협의 19 · 통보 16 (활동 33개)
+수행 10 · 책임 12 · 협의 19 · 통보 17 (활동 36개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -60,10 +61,13 @@ last_updated: 2026-11-05
 | FPW.4-A04 정책 승인 | FPW.4 안전 설계·정책 설계 | R·A (요구 Owner) · I (아키텍트) | Flag 정책(검증·승인본) `WP-POLICY` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/:id` | 1차 |
 | FPW.4-A02 플랫폼 도구 신뢰도 분류 | FPW.4 안전 설계·정책 설계 | C (아키텍트) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD` | `/arch/components` | 1차 |
 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4 안전 설계·정책 설계 | A (아키텍트) | 안전 설계서 `WP-SAFETY-DESIGN`, 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD`, Flag 정책(검증·승인본) `WP-POLICY` → G4 Decision Record `WP-G4-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
+| FPW.4-A06 Flag PR 검토·병합 | FPW.4 안전 설계·정책 설계 | A (아키텍트) | G4 Decision Record `WP-G4-DECISION` → – | `/flag-code`, `/flag-code/flags/:flagKey` | 1차 |
 | FPW.5-A02 시나리오·허용 조합 정의 | FPW.5 검증·V&V | C (아키텍트) | 검증 계획(독립성 수준) `WP-VV-PLAN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` | `/arch/topology`, `/validations` | 1차 |
 | FPW.5-A03 통합 시험·SEooC 가정 확인 | FPW.5 검증·V&V | C (아키텍트) | 검증 계획(독립성 수준) `WP-VV-PLAN`, 입고 검사 결과 `WP-INTAKE-RESULT` → 통합 검증 기록 `WP-INTEGRATION-REC` | `/master/artifacts` | 1차 |
 | FPW.5-A06 G5 V&V 판정 | FPW.5 검증·V&V | I (아키텍트) | G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, 검증 계획(독립성 수준) `WP-VV-PLAN` → G5 Decision Record `WP-G5-DECISION` | `/verify/evidence`, `/admin/approval` | 1차 |
 | FPW.6-A01 출시 Baseline 확정 요청 | FPW.6 서명 배포 | C (아키텍트) | G5 Decision Record `WP-G5-DECISION`, Flag 정책(검증·승인본) `WP-POLICY` → Baseline 확정 요청 `WP-BASELINE-REQ` | `/baselines` | 1차 |
+| FPW.6-A07 코드 저장소 연결 관리 | FPW.6 서명 배포 | I (아키텍트) | – → – | `/integration/code-repositories`, `/integration/code-scans` | 1차 |
+| FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | R·A (요구 Owner) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
 | FPW.9-A02 Flag Retirement 요청 | FPW.9 사후 검토·Flag Retirement | I (요구 Owner) | Feature 등록 기록 `WP-FEAT-REG` → Flag Retirement 요청 `WP-RETIRE-REQ` | `/flag-retirements` | 1차 |
 | FPW.9-A03 Flag Retirement 승인 | FPW.9 사후 검토·Flag Retirement | R·A (요구 Owner) | Flag Retirement 요청 `WP-RETIRE-REQ` → Retirement 승인 기록 `WP-RETIRE-APPROVAL` | `/flag-retirements` | 1차 |
 | FPW.10-A05 기존 구현 진단 | FPW.10 협력사 관리 | C (아키텍트) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → 기존 구현 차이 보고 `WP-SUPPLIER-DIFF` | 플랫폼 밖 | 2차 초안 |
@@ -82,6 +86,7 @@ last_updated: 2026-11-05
 | 받음 | FPW.3-A03 요구 검토 판정 등록 | FPW.3-A04 G3 판정·Feature 정의 승인 | 품질팀 | 요구 검토 판정 기록 `WP-REQ-REVIEW` | 1차 |
 | 받음 | FPW.3-A05 구현 연결 입력 | FPW.3-A04 G3 판정·Feature 정의 승인 | SW통합·릴리스팀 | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | 1차 |
 | 받음 | FPW.3-A05 구현 연결 입력 | FPW.3-A04 G3 판정·Feature 정의 승인 | 상품기획팀 | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | 1차 |
+| 받음 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7-A13 출시 차단 해제 결정 | 기능안전팀 | – | 1차 |
 | 받음 | FPW.9-A02 Flag Retirement 요청 | FPW.9-A03 Flag Retirement 승인 | 상품기획팀 | Flag Retirement 요청 `WP-RETIRE-REQ` | 1차 |
 | 받음 | FPW.14-A01 변경 요청 작성 | FPW.14-A02 자동 점검·도메인 검토 | 상품기획팀 | 기준 행 변경 요청 `WP-REF-CHANGE-REQ` | 2차 초안 |
 | 보냄 | FPW.2-A03 SOTIF 분석 갱신 | FPW.2-A05 G2 HARA 영향 판정 | 기능안전팀 | SOTIF 분석 `WP-SOTIF-ANALYSIS` | 1차 |
@@ -89,13 +94,14 @@ last_updated: 2026-11-05
 | 보냄 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A05 구현 연결 입력 | SW통합·릴리스팀 | – | 1차 |
 | 보냄 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A05 구현 연결 입력 | 상품기획팀 | – | 1차 |
 | 보냄 | FPW.4-A04 정책 승인 | FPW.4-A05 G4 설계 독립 검토·판정 | 품질팀 | Flag 정책(검증·승인본) `WP-POLICY` | 1차 |
+| 보냄 | FPW.7-A13 출시 차단 해제 결정 | FPW.7-A12 Release Sign-off(출시 책임 확인) | 상품기획팀 | – | 1차 |
 | 보냄 | FPW.9-A03 Flag Retirement 승인 | FPW.9-A04 코드·설정·시험 삭제 기록 | 상품기획팀 | Retirement 승인 기록 `WP-RETIRE-APPROVAL` | 1차 |
 | 보냄 | FPW.14-A02 자동 점검·도메인 검토 | FPW.14-A03 변경 승인·반려 | PLM·기준정보팀 | 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` | 2차 초안 |
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/admin/approval`, `/master/control-points`, `/policies/new`, `/policies`, `/policies/:id`, `/flag-retirements`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/analysis/impact`, `/master/artifacts`, `/integration/connectors`, `/arch/components`, `/validations`, `/verify/evidence`, `/baselines`, `/integration/openfeature`, `/master/feature-db/:refId`
+- 주 업무 화면: `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/admin/approval`, `/master/control-points`, `/policies/new`, `/policies`, `/policies/:id`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/flag-retirements`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/analysis/impact`, `/master/artifacts`, `/integration/connectors`, `/arch/components`, `/validations`, `/verify/evidence`, `/baselines`, `/integration/code-repositories`, `/integration/code-scans`, `/integration/openfeature`, `/master/feature-db/:refId`
 
 ## 4. 부서 겸직 직무 분리
 

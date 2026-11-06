@@ -133,3 +133,18 @@ process:
         - 검토자가 설계·정책 작성자와 다른 조직이다
         - Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
       platform: {actions: [judgeGate], screens: [/features/:id/:ver, /admin/approval], gates: [G4, G7]}
+      next: [FPW.4-A06]
+    - id: FPW.4-A06
+      name: Flag PR 검토·병합
+      outcomes: [O3]
+      rules: [FFG-LCY-011]
+      raci: {R: [R-INT], A: R-ARC, C: [R-FO], I: [R-REL, R-TST]}
+      inputs: [WP-G4-DECISION]
+      outputs: []
+      steps:
+        - Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다
+        - 기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다
+        - PR 생성이 실패했으면 Flag 코드 연결 화면에서 PR 다시 만들기를 요청한다
+      checks:
+        - 해당 Version의 Flag가 모두 코드 연결 정상 또는 검토 중이다
+      platform: {actions: [createFlagPr, demoMergeFlagPr], screens: [/flag-code, /flag-code/flags/:flagKey]}

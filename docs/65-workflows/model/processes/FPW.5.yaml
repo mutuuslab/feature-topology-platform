@@ -113,7 +113,7 @@ process:
       checks:
         - 모든 SEooC 가정이 충족 또는 조치 중으로 기록되었다
       platform: {actions: [registerChangeRecord], screens: [/master/artifacts]}
-      next: [FPW.5-A04]
+      next: [FPW.5-A07]
     - id: FPW.5-A04
       name: 비활성화·결함 주입 시험 수행
       outcomes: [O3]
@@ -136,6 +136,21 @@ process:
         ui: {buttons: [runVirtual]}
       sla_hours: 24
       next: [FPW.5-A05]
+    - id: FPW.5-A07
+      name: Flag 코드 연결 확인
+      outcomes: [O2]
+      rules: []
+      raci: {R: [R-INT], A: R-INT, C: [R-TST], I: [R-FO, R-REL]}
+      inputs: [WP-INTEGRATION-REC]
+      outputs: []
+      steps:
+        - 어긋남 대사판에서 이 Version의 Flag가 코드 없음·삭제된 호출·Unleash 불일치가 아닌지 확인한다
+        - 미등록 키·동적 키 파일을 담당 패키지에 돌려보내고 재스캔으로 해소를 확인한다
+        - 해소할 수 없으면 사유와 만료일로 출시 차단 해제를 요청한다
+      checks:
+        - 출시 관문의 Flag 코드 연결 판정이 통과 또는 승인된 해제다
+      platform: {actions: [rescanFlagRepository, requestFlagGateWaiver], screens: [/flag-code/reconcile, /integration/code-scans]}
+      next: [FPW.5-A04]
     - id: FPW.5-A05
       name: 시험 Evidence 연결·TMS 제출
       outcomes: [O4]

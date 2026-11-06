@@ -1,6 +1,7 @@
 // Git 호출 위치는 개발자/CI가 가져온 스냅샷이다. 원격 저장소 검증이나 차량 적용의 증명으로 취급하지 않는다.
+// v2(20-97) — 연결 저장소의 서명 스캔 사용처와 Flag 계획(정책 전 키)을 Feature Flag 탭에 함께 싣는다. 대사 원천은 v2만 쓴다.
 import { Body, Controller, Get, Inject, Injectable, OnApplicationBootstrap, Post, Query } from '@nestjs/common';
-import { canonicalJson, FeatureFlagsQuery, FlagSourceImport, FlagSourceManifest, flagSourceUrl, type FeatureFlagRow, type FlagSourceLocation, type Policy, type Publication } from '@ff/contracts';
+import { canonicalJson, compareVersion, FeatureFlagsQuery, FlagSourceImport, FlagSourceManifest, flagSourceUrl, type FeatureFlagRow, type FlagSourceLocation, type Policy, type Publication } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -15,6 +16,7 @@ import { isProduction } from '../../../kernel/runtime-config';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { PolicyRepo } from '../policy-repos';
 import { FeatureRepo } from '../repos';
+import { FlagCoverageService } from '../flag-code/flag-coverage.service';
 
 const COMPONENT = 'D01-06';
 const FIXTURE = join(__dirname, '..', '..', '..', '..', '..', 'data', 'fixtures', 'demo', 'flag-sources.json');
@@ -45,6 +47,7 @@ export class FlagSourceService implements OnApplicationBootstrap {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly clock: Clock,
+    private readonly flagCode: FlagCoverageService,
   ) {}
 
   onApplicationBootstrap() {
@@ -124,6 +127,16 @@ export class FlagSourceService implements OnApplicationBootstrap {
         usages.set(flagKey, current);
       }
     }
+    // v2 — 연결 저장소 기본 브랜치의 최신 서명 스캔 사용처(같은 위치는 한 번)
+    for (const [flagKey, list] of this.flagCode.codeSources()) {
+      const current = usages.get(flagKey) ?? [];
+      for (const source of list) {
+        const identity = canonicalJson({ flagKey, ...source });
+        if (!seenUsages.has(identity)) current.push(source);
+        seenUsages.add(identity);
+      }
+      usages.set(flagKey, current);
+    }
     // 같은 Flag·Feature Version의 정책을 새로 만들었으면 마지막 정책을 보여 준다.
     const selected = new Map<string, Policy>();
     for (const policy of this.policies.all()) selected.set(key(policy.featureId, policy.featureVersion, policy.flagKey), policy);
@@ -149,8 +162,18 @@ export class FlagSourceService implements OnApplicationBootstrap {
         publication: publication ? { publicationId: publication.publicationId, status: publication.status, confirmed: publication.confirmed, denominator: publication.denominator } : null,
       });
     }
+    // Flag 계획만 있고 정책이 아직 없는 키 — 키는 Feature 단위라 첫 Version 이후 Version에 모두 보인다
+    const q = parsedQuery.data;
+    const plans = this.flagCode.plans().filter((p) => !knownFlags.has(p.flagKey));
+    for (const plan of plans) {
+      if (q.featureId && plan.featureId !== q.featureId) continue;
+      const version = q.version ?? plan.version;
+      if (q.version && compareVersion(q.version, plan.version) < 0) continue;
+      rows.push({ flagKey: plan.flagKey, featureId: plan.featureId, version, featureName: features.get(`${plan.featureId}@${version}`)?.name ?? null, policy: null, sources: usages.get(plan.flagKey) ?? [], publication: null });
+    }
+    const planned = new Set(plans.map((p) => p.flagKey));
     if (!parsedQuery.data.featureId && !parsedQuery.data.version) for (const [flagKey, sources] of usages) {
-      if (!knownFlags.has(flagKey)) rows.push({ flagKey, featureId: null, version: null, featureName: null, policy: null, sources, publication: null });
+      if (!knownFlags.has(flagKey) && !planned.has(flagKey)) rows.push({ flagKey, featureId: null, version: null, featureName: null, policy: null, sources, publication: null });
     }
     return rows.sort((a, b) => {
       const left = `${a.flagKey}:${a.featureId ?? ''}:${a.version ?? ''}`;

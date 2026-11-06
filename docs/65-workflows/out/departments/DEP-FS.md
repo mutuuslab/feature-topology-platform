@@ -38,7 +38,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 17 · 책임 17 · 협의 34 · 통보 8 (활동 62개)
+수행 17 · 책임 17 · 협의 35 · 통보 8 (활동 63개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -69,6 +69,7 @@ last_updated: 2026-11-05
 | FPW.5-A06 G5 V&V 판정 | FPW.5 검증·V&V | C (Safety Manager) | G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, 검증 계획(독립성 수준) `WP-VV-PLAN` → G5 Decision Record `WP-G5-DECISION` | `/verify/evidence`, `/admin/approval` | 1차 |
 | FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | I (Safety Manager) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/integration/connectors` | 1차 |
 | FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | C (Safety Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide` | 1차 |
+| FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | C (Safety Manager) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | C (Safety Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A03 Safety Case·SOTIF 근거 정리 | FPW.7 출시·활성화·단계적 확대 | R·A (Safety Manager) | SOTIF 분석 `WP-SOTIF-ANALYSIS`, G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, HARA·TARA 결과 `WP-HARA-TARA` → Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` | `/verify/evidence`, `/verify/compliance` | 1차 |
 | FPW.7-A04 Safety Case 독립 검토 | FPW.7 출시·활성화·단계적 확대 | A (Safety Manager) | Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` → Safety Case 독립 검토 기록 `WP-SC-REVIEW` | 플랫폼 밖 | 1차 |
@@ -134,7 +135,7 @@ last_updated: 2026-11-05
 | 보냄 | FPW.5-A01 독립성 수준·검증 계획 확정 | FPW.5-A02 시나리오·허용 조합 정의 | 시험·검증팀 | 검증 계획(독립성 수준) `WP-VV-PLAN` | 1차 |
 | 보냄 | FPW.5-A01 독립성 수준·검증 계획 확정 | FPW.5-A03 통합 시험·SEooC 가정 확인 | SW통합·릴리스팀 | 검증 계획(독립성 수준) `WP-VV-PLAN` | 1차 |
 | 보냄 | FPW.7-A03 Safety Case·SOTIF 근거 정리 | FPW.7-A04 Safety Case 독립 검토 | 품질팀 | Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` | 1차 |
-| 보냄 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7-A12 Release Sign-off(출시 책임 확인) | 상품기획팀 | G7 Decision Record `WP-G7-DECISION` | 1차 |
+| 보냄 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7-A13 출시 차단 해제 결정 | 시스템엔지니어링팀 | – | 1차 |
 | 보냄 | FPW.8-A02 차단 필요성·범위 판단 | FPW.8-A03 리콜·봉쇄 근거 연계 | 법규인증팀 | 차단 판단서 `WP-KILL-PLAN` | 1차 |
 | 보냄 | FPW.8-A05 긴급 차단 2인 승인 | FPW.8-A06 차단 전달·적용 추적 | OTA·서비스운영팀 | 차단 승인 기록 `WP-KILL-DECISION` | 1차 |
 | 보냄 | FPW.8-A05 긴급 차단 2인 승인 | FPW.8-A07 긴급 권한 사후 검토 | 품질팀 | 차단 승인 기록 `WP-KILL-DECISION` | 1차 |
@@ -147,7 +148,7 @@ last_updated: 2026-11-05
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/features/:id/:ver`, `/admin/approval`, `/analysis/impact`, `/arch/topology`, `/arch/components`, `/verify/evidence`, `/verify/compliance`, `/activation/decide`, `/ops/kill`, `/fleet/live`, `/deployments`, `/flag-retirements`, `/ops/safety-kpi`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/trace/design`, `/change/cr`, `/master/control-points`, `/policies/:id`, `/validations`, `/master/artifacts`, `/validations/virtual`, `/integration/connectors`, `/experiments`, `/ops/anomalies`, `/ops/incidents`, `/audit/oversight`, `/audit`, `/quality/feedback`, `/supplier/portal`, `/admin/security`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/trace/design`, `/change/cr`, `/master/control-points`, `/policies/:id`, `/validations`, `/master/artifacts`, `/validations/virtual`, `/integration/connectors`, `/flag-code/reconcile`, `/experiments`, `/ops/anomalies`, `/ops/incidents`, `/audit/oversight`, `/audit`, `/quality/feedback`, `/supplier/portal`, `/admin/security`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
 
 ## 4. 부서 겸직 직무 분리
 

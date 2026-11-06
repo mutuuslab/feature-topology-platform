@@ -1,6 +1,7 @@
 // 브라우저 하네스 설정 — e2e 전용 백엔드(9111, 메모리 DB·v0.81 시드)와 프론트(9112)를 직접 띄운다. 포트 8000 금지.
 // 개발 서버(9101·9012)와 분리해 매 실행이 깨끗한 시드에서 시작하고, 개발 중인 데이터를 건드리지 않는다.
 import { defineConfig, devices } from '@playwright/test';
+import { generateKeyPairSync } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { E2E_VEHICLE_ROOT } from './tests/vehicle';
@@ -10,6 +11,10 @@ const CI = !!process.env.CI;
 const WEB = Number(process.env.E2E_WEB_PORT ?? 9112);
 process.env.E2E_API_PORT ??= '9111'; // 테스트 파일(API 직접 호출)도 같은 값을 읽는다
 const API = Number(process.env.E2E_API_PORT);
+// 모의 GitHub(Flag 코드 연결 PR 검사, 20-97 §8.2-4) — 시험 파일이 E2E_GH_PORT에서 띄우고, 백엔드는 이 주소·비밀로 App·webhook을 쓴다
+process.env.E2E_GH_PORT ??= String(API + 2);
+process.env.E2E_GH_WEBHOOK_SECRET ??= 'e2e-flag-webhook-secret';
+const GH_APP_KEY = generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
 // E2E_WEB=preview — verify가 방금 만든 빌드(dist)를 띄운다. 개발 서버의 첫 요청 컴파일 지연이 병렬 실행에서 시간 초과를 낸다.
 const PREVIEW = process.env.E2E_WEB === 'preview';
 
@@ -59,7 +64,7 @@ export default defineConfig({
       // 가상검증 실행기는 같은 계약의 시험 대역(fake-carla, 결정적) — 실제 CARLA 판정은 backend/test/d06/virtual.spec.ts가 검증 서버(2100)가 떠 있을 때 확인한다
       // FLEET_SIM_TIME_SCALE — 차량 시뮬레이터의 DC 단계 시간(인계·램프)을 줄여 e2e 대기를 짧게(Registry 값 × 0.5)
       // FF_VEHICLE_AUTH=required — 차량 요청은 서명해야 받는다(RD-SEC-08). 시험 차량은 시험 전용 루트(tests/vehicle.ts)에서 파생한 차량 키로 서명한다
-      env: { PORT: String(API), FF_DB: ':memory:', FF_SEED: 'v0.81', FF_VEHICLE_AUTH: 'required', FF_HSM_VEHICLE_ROOT: E2E_VEHICLE_ROOT, FLEET_SIM_TIME_SCALE: '0.5', CARLA_RUNNER: resolve(__dirname, '..', 'backend', 'test', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FF_EVIDENCE_DIR: join(tmpdir(), 'ff-e2e-evidence') },
+      env: { PORT: String(API), FF_DB: ':memory:', FF_SEED: 'v0.81', FF_VEHICLE_AUTH: 'required', FF_HSM_VEHICLE_ROOT: E2E_VEHICLE_ROOT, FLEET_SIM_TIME_SCALE: '0.5', CARLA_RUNNER: resolve(__dirname, '..', 'backend', 'test', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FF_EVIDENCE_DIR: join(tmpdir(), 'ff-e2e-evidence'), FF_GITHUB_API_URL: `http://localhost:${process.env.E2E_GH_PORT}`, FF_GITHUB_APP_ID: '424242', FF_GITHUB_APP_PRIVATE_KEY: GH_APP_KEY, FF_GITHUB_WEBHOOK_SECRET: process.env.E2E_GH_WEBHOOK_SECRET },
       reuseExistingServer: !CI,
       timeout: 120_000,
     },

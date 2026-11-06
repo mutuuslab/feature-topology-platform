@@ -21,6 +21,7 @@ import { RestorePolicyRevisionBody } from './rules/policy-version';
 import { CreateRollbackPlanBody, CreateRollbackRequestBody, PolicyRollbackBody, ROLLBACK_APPROVER_ROLES, ROLLBACK_REQUEST_ROLES, RollbackDecisionBody, RollbackPreviewBody } from './rules/rollback';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { FlagSourceManifest } from './schemas/flag-source';
+import { CreateFlagPrBody, CreateFlagRemovalPrBody, CreateFlagRepositoryBody, FlagGateWaiverBody, FlagGateWaiverDecisionBody, GithubWebhookBody, RescanFlagRepositoryBody, UpdateFlagRepositoryBody, UploadFlagScanBody } from './schemas/flag-code';
 import { ApproverKeyRegisterBody, EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody, RestoreRequestBody } from './schemas/ops';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
 import { NotificationReadAllBody } from './rules/notification';
@@ -452,6 +453,27 @@ export const ROUTES: RouteDef[] = [
   { name: 'recordHomologation', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/homologation', summary: '형식승인 영향 판단 — 영향 규정·판단, 법규 담당 개인 서명(추가만)', component: 'D01-02', roles: ['REGULATORY_OWNER'], body: HomologationBody },
   { name: 'signG7Safety', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/g7-safety', summary: 'G7 기능안전 서명 — Safety Manager, 지금 HARA에 묶임', component: 'D01-02', roles: ['SAFETY_OFFICER'], body: G7SignoffBody },
   { name: 'signG7Security', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/g7-security', summary: 'G7 사이버보안 서명 — CSM, 지금 TARA에 묶임(기능안전 서명과 다른 사람)', component: 'D01-02', roles: ['SECURITY_OFFICER'], body: G7SignoffBody },
+  // Flag 코드 연결·대사·통제(20-97) — 저장소 연결·스캔·Flag PR·대사·출시 관문·평가. 저장소 설정은 출시 담당(개발자가 자기 검사를 약화하지 못하게), PR·재스캔은 구현 담당
+  { name: 'flagCoverage', method: 'GET', path: '/api/flag-code/coverage', summary: 'Flag 코드 연결 대사 — 등록·코드·Unleash·배포·회신 5원천, 상태·심각도·출시 차단 여부, 파일 단위 동적 키', component: 'D01-06', query: ['featureId', 'version', 'status', 'package', 'repoId', 'q'] },
+  { name: 'flagCoverageDetail', method: 'GET', path: '/api/flag-code/coverage/:flagKey', summary: 'Flag 하나의 대사 상세 — 사용처(저장소·파일·줄·커밋)·이전 스캔 근거·PR·해제 이력', component: 'D01-06' },
+  { name: 'flagReleaseGate', method: 'GET', path: '/api/features/:id/versions/:ver/flag-code-gate', summary: 'Feature Version 출시 관문의 Flag 코드 연결 판정 — 막는 Flag·승인된 해제', component: 'D01-01' },
+  { name: 'flagRepositories', method: 'GET', path: '/api/flag-code/repositories', summary: '연결된 차량 SW 저장소 — 패키지·기본 브랜치·스캔 주기·webhook 상태·최근 스캔', component: 'D04-01' },
+  { name: 'createFlagRepository', method: 'POST', path: '/api/flag-code/repositories', summary: '차량 SW 저장소 연결 — GitHub App 설치 번호 또는 Actions OIDC, 자격 증명은 서버 설정에만', component: 'D04-01', roles: ['RELEASE_MANAGER'], body: CreateFlagRepositoryBody },
+  { name: 'updateFlagRepository', method: 'PATCH', path: '/api/flag-code/repositories/:id', summary: '저장소 연결 변경 — 브랜치·스캔 경로·주기·일시 중지(사유 필수, 감사)', component: 'D04-01', roles: ['RELEASE_MANAGER'], body: UpdateFlagRepositoryBody },
+  { name: 'rescanFlagRepository', method: 'POST', path: '/api/flag-code/repositories/:id/scans', summary: '저장소 재스캔 요청 — 지정 브랜치의 최신 커밋을 서버가 스캔·서명', component: 'D04-01', roles: ['IMPLEMENTER', 'RELEASE_MANAGER'], body: RescanFlagRepositoryBody },
+  { name: 'flagScans', method: 'GET', path: '/api/flag-code/scans', summary: '스캔 기록 — 계기(push·PR·주기·수동·CI)·커밋·결과·서명 출처·PR 검사, cursor 페이지', component: 'D04-01', query: ['repoId', 'status', 'trigger', 'limit', 'cursor'] },
+  { name: 'flagScanDetail', method: 'GET', path: '/api/flag-code/scans/:id', summary: '스캔 상세 — 사용처·동적 키 위치·서명 검증·PR 검사 결과', component: 'D04-01' },
+  { name: 'uploadFlagScan', method: 'POST', path: '/api/flag-code/scans/upload', summary: 'CI 스캔 결과 올리기 — GitHub Actions OIDC 토큰을 서버가 검증(저장 안 함)', component: 'D04-01', roles: ['IMPLEMENTER'], body: UploadFlagScanBody },
+  { name: 'githubFlagWebhook', method: 'POST', path: '/api/flag-code/webhooks/github', summary: 'GitHub App webhook(push·pull_request·installation) — X-Hub-Signature-256 원문 서명 검증, 배달 ID 재전송 무시', component: 'D04-01', body: GithubWebhookBody, public: true },
+  { name: 'flagPullRequests', method: 'GET', path: '/api/flag-code/pull-requests', summary: 'FF가 연 Flag PR — 뼈대·제거, 상태·검사 결과·병합 커밋', component: 'D01-06', query: ['repoId', 'featureId', 'kind', 'state'] },
+  { name: 'createFlagPr', method: 'POST', path: '/api/flag-code/pull-requests', summary: 'Flag 상수·호출 뼈대 PR 생성(승인 때 자동, 실패 시 다시 요청)', component: 'D01-06', roles: ['IMPLEMENTER'], body: CreateFlagPrBody },
+  { name: 'createFlagRemovalPr', method: 'POST', path: '/api/flag-code/removal-pull-requests', summary: 'Flag 제거 PR 생성 — Retirement 승인된 Flag만', component: 'D01-01', roles: ['IMPLEMENTER'], body: CreateFlagRemovalPrBody },
+  { name: 'demoMergeFlagPr', method: 'POST', path: '/api/flag-code/pull-requests/:id/demo-merge', summary: '시연 저장소에서 PR 병합(개발자 병합 재현 → push webhook) — 실제 연결 모드는 거부', component: 'D01-06', roles: ['IMPLEMENTER'], body: EmptyBody },
+  { name: 'flagGateWaivers', method: 'GET', path: '/api/flag-code/waivers', summary: 'Flag 출시 차단 해제 요청·결정 이력', component: 'D01-01', query: ['featureId', 'state'] },
+  { name: 'requestFlagGateWaiver', method: 'POST', path: '/api/flag-code/waivers', summary: '출시 차단 해제 요청 — 사유·만료(최대 30일), 요청 당시 대사 상태에만 적용', component: 'D01-01', roles: ['IMPLEMENTER', 'RELEASE_MANAGER'], body: FlagGateWaiverBody },
+  { name: 'decideFlagGateWaiver', method: 'POST', path: '/api/flag-code/waivers/:id/decision', summary: '출시 차단 해제 결정 — Feature 승인자, F2 이상은 Safety Manager(요청자 제외, 개인 서명)', component: 'D01-01', roles: ['FEATURE_APPROVER', 'SAFETY_OFFICER'], body: FlagGateWaiverDecisionBody },
+  { name: 'flagEvaluations', method: 'GET', path: '/api/flag-code/evaluations', summary: 'Flag 평가 모니터링 — Unleash/Edge 평가 수·켜짐 비율·변형 분포·기본값 폴백·오류·차량 회신', component: 'D04-03', query: ['window', 'featureId', 'flagKey', 'source'] },
+  { name: 'flagEvaluationSeries', method: 'GET', path: '/api/flag-code/evaluations/:flagKey', summary: 'Flag 평가 시계열 — 원천별 구간 집계와 폴백 이유', component: 'D04-03', query: ['window'] },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

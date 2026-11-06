@@ -38,11 +38,15 @@ flowchart LR
   subgraph R_QA["품질 조직"]
     FPW_4_A05{{"A05 G4 설계 독립 검토·판정"}}
   end
+  subgraph R_INT["통합 조직"]
+    FPW_4_A06["A06 Flag PR 검토·병합"]
+  end
   FPW_4_A01 --> FPW_4_A03
   FPW_4_A03 --> FPW_4_A04
   FPW_4_A04 --> FPW_4_A05
   T_FPW_4_A02(("설계 착수 또는 사용 플랫폼 컴포넌트 변경")) -.-> FPW_4_A02
   FPW_4_A02 --> FPW_4_A05
+  FPW_4_A05 --> FPW_4_A06
 ```
 
 ## 2. 활동
@@ -54,6 +58,7 @@ flowchart LR
 | FPW.4-A04 | 정책 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager · I 아키텍트, Release Manager | WP-POLICY | WP-POLICY | `decidePolicy`, `/policies/:id` | – |
 | FPW.4-A02 | 플랫폼 도구 신뢰도 분류 | R Safety Manager · A Safety Manager · C 아키텍트, CSM · I 품질 조직 | WP-SAFETY-REQ | WP-TCL-RECORD | `/arch/components` | FFG-PLT-013 |
 | FPW.4-A05 | G4 설계 독립 검토·판정 | R 품질 조직 · A 아키텍트 · C Safety Manager, CSM · I 시험 조직, Feature Owner | WP-SAFETY-DESIGN, WP-TCL-RECORD, WP-POLICY | WP-G4-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001 |
+| FPW.4-A06 | Flag PR 검토·병합 | R 통합 조직 · A 아키텍트 · C Feature Owner · I Release Manager, 시험 조직 | WP-G4-DECISION |  | `createFlagPr`, `demoMergeFlagPr`, `/flag-code`, `/flag-code/flags/:flagKey` | FFG-LCY-011 |
 
 ### 수행 절차와 완료 기준
 
@@ -100,6 +105,14 @@ flowchart LR
 완료 기준:
 - [ ] 검토자가 설계·정책 작성자와 다른 조직이다
 - [ ] Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
+
+#### FPW.4-A06 Flag PR 검토·병합
+1. Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다
+2. 기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다
+3. PR 생성이 실패했으면 Flag 코드 연결 화면에서 PR 다시 만들기를 요청한다
+
+완료 기준:
+- [ ] 해당 Version의 Flag가 모두 코드 연결 정상 또는 검토 중이다
 
 ## 3. 산출물
 

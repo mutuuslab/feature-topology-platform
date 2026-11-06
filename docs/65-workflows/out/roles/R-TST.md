@@ -97,14 +97,17 @@ last_updated: 2026-11-05
 - FPW.3-A04 G3 판정·Feature 정의 승인 (통보)
 - FPW.4-A01 차량 내 감시·안전기제 설계 (통보)
 - FPW.4-A05 G4 설계 독립 검토·판정 (통보)
+- FPW.4-A06 Flag PR 검토·병합 (통보)
 - FPW.5-A01 독립성 수준·검증 계획 확정 (협의)
 - FPW.5-A03 통합 시험·SEooC 가정 확인 (협의)
+- FPW.5-A07 Flag 코드 연결 확인 (협의)
 - FPW.7-A01 Canary·Shadow 판정 기준 정의 (협의)
 - FPW.7-A03 Safety Case·SOTIF 근거 정리 (협의)
 - FPW.7-A04 Safety Case 독립 검토 (협의)
 - FPW.8-A08 원인 조치·복원 요청 (협의)
 - FPW.9-A01 운영 결과 품질 피드백 수용 (협의)
 - FPW.9-A04 코드·설정·시험 삭제 기록 (협의)
+- FPW.9-A06 Flag 제거 PR 병합 (협의)
 - FPW.10-A07 EOL 프로비저닝 검증 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙

@@ -104,6 +104,22 @@ process:
         - 시험 Cohort의 전달 시간·적용률·보고 정확도
         - 분기 운영 점검 결과와 G8 판정 서명
   activities:
+    - id: FPW.8-A12
+      name: Flag 평가 이상 확인
+      trigger: 평가 모니터링에서 기본값 폴백·서명 오류가 늘어난다
+      outcomes: [O2]
+      rules: []
+      raci: {R: [R-OPS], A: R-OPS, C: [R-INT], I: [R-FO]}
+      inputs: []
+      outputs: []
+      steps:
+        - 평가 모니터링에서 기본값 폴백·서명 오류·오류 수가 늘어난 Flag를 찾는다
+        - 차량 회신과 게시본을 대조해 원인이 배포·서명·차량 중 어디인지 가른다
+        - 필요하면 긴급 차단 또는 재배포 절차로 넘긴다
+      checks:
+        - 폴백 급증 Flag마다 원인과 조치가 기록됐다
+      platform: {screens: [/ops/flag-evaluations]}
+      next: [FPW.8-A01]
     - id: FPW.8-A01
       name: 이상 징후 확인
       trigger: 운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견

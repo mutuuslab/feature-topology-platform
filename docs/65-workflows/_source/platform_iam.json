@@ -5,15 +5,15 @@
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-05T01:24:45.108Z",
+  "fetched_at": "2026-11-06T00:05:35.879Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-dept\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-05T01:20:07.748Z",
+  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-flaggit\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-06T00:04:53.321Z",
   "ff_git": {
-   "head": "624960e9b919c98ccf127f00f9c320b9383dd171",
-   "dirty_files": 32
+   "head": "08cd4cc3e15dbe005836c41fbe42bbc78f0df998",
+   "dirty_files": 15
   },
-  "iam_sha256": "02350b64db82312d83ad98cc1413aed79add3500e00e0ab652bc283b33346b45"
+  "iam_sha256": "f02a19e6b5f7a6770cad190ab82c350aaf53df38edfd85c083591de7958963cf"
  },
  "roles": [
   {
@@ -1777,6 +1777,99 @@
    "roles": [
     "SECURITY_OFFICER"
    ]
+  },
+  {
+   "name": "createFlagRepository",
+   "method": "POST",
+   "path": "/api/flag-code/repositories",
+   "summary": "차량 SW 저장소 연결 — GitHub App 설치 번호 또는 Actions OIDC, 자격 증명은 서버 설정에만",
+   "component": "D04-01",
+   "roles": [
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "updateFlagRepository",
+   "method": "PATCH",
+   "path": "/api/flag-code/repositories/:id",
+   "summary": "저장소 연결 변경 — 브랜치·스캔 경로·주기·일시 중지(사유 필수, 감사)",
+   "component": "D04-01",
+   "roles": [
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "rescanFlagRepository",
+   "method": "POST",
+   "path": "/api/flag-code/repositories/:id/scans",
+   "summary": "저장소 재스캔 요청 — 지정 브랜치의 최신 커밋을 서버가 스캔·서명",
+   "component": "D04-01",
+   "roles": [
+    "IMPLEMENTER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "uploadFlagScan",
+   "method": "POST",
+   "path": "/api/flag-code/scans/upload",
+   "summary": "CI 스캔 결과 올리기 — GitHub Actions OIDC 토큰을 서버가 검증(저장 안 함)",
+   "component": "D04-01",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "createFlagPr",
+   "method": "POST",
+   "path": "/api/flag-code/pull-requests",
+   "summary": "Flag 상수·호출 뼈대 PR 생성(승인 때 자동, 실패 시 다시 요청)",
+   "component": "D01-06",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "createFlagRemovalPr",
+   "method": "POST",
+   "path": "/api/flag-code/removal-pull-requests",
+   "summary": "Flag 제거 PR 생성 — Retirement 승인된 Flag만",
+   "component": "D01-01",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "demoMergeFlagPr",
+   "method": "POST",
+   "path": "/api/flag-code/pull-requests/:id/demo-merge",
+   "summary": "시연 저장소에서 PR 병합(개발자 병합 재현 → push webhook) — 실제 연결 모드는 거부",
+   "component": "D01-06",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "requestFlagGateWaiver",
+   "method": "POST",
+   "path": "/api/flag-code/waivers",
+   "summary": "출시 차단 해제 요청 — 사유·만료(최대 30일), 요청 당시 대사 상태에만 적용",
+   "component": "D01-01",
+   "roles": [
+    "IMPLEMENTER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "decideFlagGateWaiver",
+   "method": "POST",
+   "path": "/api/flag-code/waivers/:id/decision",
+   "summary": "출시 차단 해제 결정 — Feature 승인자, F2 이상은 Safety Manager(요청자 제외, 개인 서명)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_APPROVER",
+    "SAFETY_OFFICER"
+   ]
   }
  ],
  "sod": [
@@ -2345,6 +2438,26 @@
    "group": "release"
   },
   {
+   "path": "/flag-code",
+   "title": "Flag 코드 연결",
+   "group": "release"
+  },
+  {
+   "path": "/flag-code/flags/:flagKey",
+   "title": "Flag 코드 상세",
+   "group": "release"
+  },
+  {
+   "path": "/flag-code/reconcile",
+   "title": "어긋남 대사판",
+   "group": "release"
+  },
+  {
+   "path": "/flag-code/lifecycle",
+   "title": "Flag 수명 관리",
+   "group": "release"
+  },
+  {
    "path": "/flag-retirements",
    "title": "Flag Retirement",
    "group": "release"
@@ -2410,6 +2523,11 @@
    "group": "ops"
   },
   {
+   "path": "/ops/flag-evaluations",
+   "title": "Flag 평가 모니터링",
+   "group": "ops"
+  },
+  {
    "path": "/events",
    "title": "Platform 이벤트",
    "group": "ops"
@@ -2417,6 +2535,21 @@
   {
    "path": "/integration/connectors",
    "title": "외부 연계 현황",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/code-repositories",
+   "title": "코드 저장소 연결",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/code-repositories/:repoId",
+   "title": "저장소 상세",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/code-scans",
+   "title": "스캔 기록",
    "group": "admin"
   },
   {

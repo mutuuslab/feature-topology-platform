@@ -267,6 +267,7 @@ last_updated: 2026-11-05
 - FPW.5-A06 G5 V&V 판정 (협의)
 - FPW.6-A06 G6 서명 배포 실행 (통보)
 - FPW.7-A01 Canary·Shadow 판정 기준 정의 (협의)
+- FPW.7-A13 출시 차단 해제 결정 (협의)
 - FPW.7-A02 효과 실험 계획 등록 (협의)
 - FPW.7-A12 Release Sign-off(출시 책임 확인) (협의)
 - FPW.7-A11 Canary 활성화·단계적 확대 (협의)

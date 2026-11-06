@@ -12,6 +12,7 @@ import { usePermission, when } from '../shared';
 import { PolicyCrPanel } from './PolicyCr';
 import { VirtualPanel } from './Virtual';
 import { UnleashPanel } from './Unleash';
+import { FlagCodeSummary } from '../flag-code/badge';
 import { PolicyVersions } from './PolicyVersions';
 import { PolicyHistory } from './PolicyHistory';
 import { FlagSourceSummary, FeatureFlagHighlight, FlagMapLink } from '../features/FeatureFlags';
@@ -222,6 +223,7 @@ export function PolicyDetail() {
             <VirtualPanel policy={p} />
 
             <UnleashPanel policyId={p.policyId} deployed={p.status === 'DEPLOYED'} />
+            <FlagCodeSummary flagKey={p.flagKey} />
 
             <div className="ds-split">
               <Panel title={T.title} id="spec">

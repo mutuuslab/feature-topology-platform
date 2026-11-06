@@ -203,7 +203,11 @@ export function niceMax(v: number) {
 }
 
 /** 주별 추이 — 계열 3개 선, 축 하나, 십자선이 가장 가까운 주를 잡고 세 값을 한 툴팁에. ←/→ 키로 주 이동 */
-export function TrendChart({ weeks, series, label, weekLabel }: { weeks: string[]; series: { key: Stage; label: string; values: number[] }[]; label: string; weekLabel: string }) {
+/** 계열 색 — 체험 단계면 고정 색, 다른 화면(Flag 평가 등)은 color로 준다 */
+const seriesColor = (s: { key: string; color?: string }) => s.color ?? STAGE_COLOR[s.key as Stage];
+
+/** tick — x축 눈금 글자(기본: 주 'YYYY-MM-DD'의 월-일, 긴 기간은 월). 시간 구간 등 다른 축은 화면이 준다 */
+export function TrendChart({ weeks, series, label, weekLabel, tick }: { weeks: string[]; series: { key: string; label: string; values: number[]; color?: string }[]; label: string; weekLabel: string; tick?: (w: string) => string }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [idx, setIdx] = useState<number | null>(null);
   const left = 44;
@@ -233,7 +237,7 @@ export function TrendChart({ weeks, series, label, weekLabel }: { weeks: string[
   const tipX = idx === null ? 0 : Math.min(x(idx) + 12, width - 180);
   return (
     <div className="ds-viz" ref={ref}>
-      <Legend items={series.map((s) => ({ color: STAGE_COLOR[s.key], label: s.label, line: true }))} />
+      <Legend items={series.map((s) => ({ color: seriesColor(s), label: s.label, line: true }))} />
       <svg
         width={width}
         height={h}
@@ -257,18 +261,18 @@ export function TrendChart({ weeks, series, label, weekLabel }: { weeks: string[
         {weeks.map((w, i) =>
           i % step === 0 || (i === weeks.length - 1 && i % step >= step - 1) ? (
             <text key={w} x={x(i)} y={h - 6} className="ds-viz__tick" textAnchor={i === 0 && weeks.length > 1 ? 'start' : i === weeks.length - 1 && weeks.length > 1 ? 'end' : 'middle'}>
-              {long ? w.slice(0, 7) : w.slice(5)}
+              {tick ? tick(w) : long ? w.slice(0, 7) : w.slice(5)}
             </text>
           ) : null,
         )}
         {series.map((s) => (
-          <polyline key={s.key} points={s.values.map((v, i) => `${x(i)},${y(v)}`).join(' ')} fill="none" stroke={STAGE_COLOR[s.key]} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+          <polyline key={s.key} points={s.values.map((v, i) => `${x(i)},${y(v)}`).join(' ')} fill="none" stroke={seriesColor(s)} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
         ))}
         {series.map((s) => {
           const v = s.values.at(-1) ?? 0;
           return (
             <g key={s.key}>
-              <circle cx={x(weeks.length - 1)} cy={y(v)} r={4} fill={STAGE_COLOR[s.key]} className="ds-viz__dot" />
+              <circle cx={x(weeks.length - 1)} cy={y(v)} r={4} fill={seriesColor(s)} className="ds-viz__dot" />
               {labeled.has(s.key) && (
                 <text x={x(weeks.length - 1) + 10} y={y(v)} className="ds-viz__value ds-viz__value--sm" dominantBaseline="central">
                   {s.label} {formatCount(v)}
@@ -281,12 +285,12 @@ export function TrendChart({ weeks, series, label, weekLabel }: { weeks: string[
           <g>
             <line x1={x(idx)} x2={x(idx)} y1={top} y2={top + plotH} className="ds-viz__cross" />
             {series.map((s) => (
-              <circle key={s.key} cx={x(idx)} cy={y(s.values[idx])} r={4} fill={STAGE_COLOR[s.key]} className="ds-viz__dot" />
+              <circle key={s.key} cx={x(idx)} cy={y(s.values[idx])} r={4} fill={seriesColor(s)} className="ds-viz__dot" />
             ))}
           </g>
         )}
       </svg>
-      {idx !== null && <Tooltip tip={{ x: tipX, y: top + 30, title: `${weeks[idx]} ${weekLabel}`, rows: series.map((s) => ({ color: STAGE_COLOR[s.key], label: s.label, value: nf(s.values[idx]) })) }} />}
+      {idx !== null && <Tooltip tip={{ x: tipX, y: top + 30, title: `${weeks[idx]} ${weekLabel}`, rows: series.map((s) => ({ color: seriesColor(s), label: s.label, value: nf(s.values[idx]) })) }} />}
     </div>
   );
 }

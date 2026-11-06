@@ -24,6 +24,7 @@ import { BaselineRepo, FeatureRepo, GateRepo, TopologyRepo } from '../repos';
 import { GateDecisionService } from '../topology/gate-decision.service';
 import { ReharaRepo } from '../topology/rehara.repo';
 import { TopologyService } from '../topology/topology.service';
+import { FlagCoverageService } from '../flag-code/flag-coverage.service';
 import { FeatureRefLinker, type RefWarning } from './feature-refs';
 import { ReleaseSignoffService } from './release-signoff.service';
 
@@ -55,6 +56,7 @@ export class LifecycleService {
     private readonly rehara: ReharaRepo,
     private readonly refdb: RefdbRepository,
     private readonly refs: FeatureRefLinker,
+    private readonly flagCode: FlagCoverageService,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -82,6 +84,8 @@ export class LifecycleService {
       refStatusOf: (refId) => this.refdb.statusOf(refId),
       // §6.3 — 등록 뒤 대표 행의 대표 ASIL이 바뀌었으면 지금 값 기준 ASIL 사유가 있어야 정의 승인
       refAsilRepOf: (refId) => this.refdb.getRef(refId)?.asilRep,
+      // 20-97 §3.4 — 출시(VERIFIED→RELEASED) 전이만 Flag 코드 연결을 본다(연결 저장소가 없으면 통과)
+      flagCodeGate: f.lifecycle === 'VERIFIED' ? this.flagCode.gate(f.featureId, f.version) : null,
       ...extra,
     };
   }

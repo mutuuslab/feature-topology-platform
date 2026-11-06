@@ -3,6 +3,7 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { apiRefs, REF } from './refdb';
 import { recordAnalysisApi, signG7Api } from './analysis';
+import { waiveFlagCodeGate } from './flag-code-gate';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -77,6 +78,8 @@ test('정책: 작성 → 8종 검증 GO → 승인 → Feature VERIFIED → 서�
   const f = await (await request.get(`${API}/api/features/${fid}/versions/0.1.0`)).json();
   expect(f.feature.lifecycle).toBe('VERIFIED');
 
+  // 새 정책 키는 차량 SW 저장소에 호출이 없다 — 구현 담당 해제 요청·승인자 승인 뒤 배포(20-97 출시 관문)
+  await waiveFlagCodeGate(request, flagKey, fid, '0.1.0');
   // 서버 배포 — 출시 담당(협의 이관 계정, RELEASE_MANAGER). 승인자는 출시를 겸하지 않는다(FFG-PLT-016)
   await asRole(page, 'coordinator');
   await page.reload();

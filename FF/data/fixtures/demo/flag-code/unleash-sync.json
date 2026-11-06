@@ -1,0 +1,7 @@
+[
+  {"flagKey":"care_00022_signal","policyId":"POL-00001","revision":1,"outcome":"SYNCED","archived":false,"at":"2026-11-05T00:00:00.000Z"},
+  {"flagKey":"care_00022_param","policyId":"POL-00002","revision":1,"outcome":"SYNCED","archived":false,"at":"2026-11-05T00:00:00.000Z"},
+  {"flagKey":"ivi_00024_guide","policyId":"POL-00003","revision":1,"outcome":"SYNCED","archived":false,"at":"2026-11-05T00:00:00.000Z"},
+  {"flagKey":"ivi_00027_detail","policyId":"POL-00004","revision":2,"outcome":"SYNCED","archived":false,"at":"2026-11-05T00:00:00.000Z"},
+  {"flagKey":"ivi_00027_banner","policyId":"POL-00006","revision":1,"outcome":"SYNCED","archived":false,"at":"2026-11-05T00:00:00.000Z"}
+]

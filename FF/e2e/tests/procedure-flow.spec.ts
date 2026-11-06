@@ -64,7 +64,8 @@ test('절차서 표기 — 입력·산출물 레인의 문서, 제어 흐름과 
   await scroller.evaluate((el) => (el.scrollLeft = 600));
   await expect.poll(async () => (await sticky.boundingBox())?.x).toBe(before?.x);
   // 흐름도 아래 절차서 본문 — 요약 문장, 활동 카드(RACI·입력/출력·수행 절차·완료 기준), 산출물 카드
-  await expect(page.locator('.pf-lead')).toContainText('활동 11개');
+  // 2026-11-06 FPW.8에 Flag 평가 이상 확인(A12, 20-97 §6)이 더해져 활동 12개
+  await expect(page.locator('.pf-lead')).toContainText('활동 12개');
   const card = page.locator('[data-activity-card="FPW.8-A04"]');
   await expect(card.locator('.pf-raci-badge[data-k="R"]')).toBeVisible();
   await expect(card.getByText('수행 절차')).toBeVisible();
@@ -83,7 +84,7 @@ test('텍스트 보기 — 흐름도와 같은 활동을 표로 보이고, 다�
   await page.getByRole('radio', { name: '텍스트' }).click();
   const table = page.getByRole('table', { name: /운영·긴급 차단·복원 활동 순서/ });
   await expect(table).toBeVisible();
-  await expect(table.locator('tbody tr')).toHaveCount(11);
+  await expect(table.locator('tbody tr')).toHaveCount(12);
   await expect(page.getByRole('group', { name: '운영·긴급 차단·복원 흐름도' })).toHaveCount(0);
   await page.getByRole('radio', { name: '흐름도' }).click();
   await expect(page.getByRole('group', { name: '운영·긴급 차단·복원 흐름도' })).toBeVisible();

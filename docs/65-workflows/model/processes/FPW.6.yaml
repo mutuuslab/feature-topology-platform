@@ -160,3 +160,18 @@ process:
       checks:
         - 게시본 ID와 Unleash 동기화 결과가 G6 배포 기록에 있다
       platform: {actions: [deployPolicy, syncUnleash], screens: [/deployments, /integration/connectors]}
+      next: [FPW.6-A07]
+    - id: FPW.6-A07
+      name: 코드 저장소 연결 관리
+      outcomes: [O1]
+      rules: []
+      raci: {R: [R-REL], A: R-REL, C: [R-INT], I: [R-ARC]}
+      inputs: []
+      outputs: []
+      steps:
+        - 차량 SW 저장소를 패키지·기본 브랜치·스캔 주기와 함께 연결한다
+        - webhook 실패와 스캔 거부를 확인하고 원인을 통합 조직과 해소한다
+        - 설정 변경은 사유를 남기고 구현 담당이 자기 검사를 약화하지 못하게 한다
+      checks:
+        - 연결 저장소의 webhook이 정상이고 최근 스캔이 서명 확인됐다
+      platform: {actions: [createFlagRepository, updateFlagRepository], screens: [/integration/code-repositories, /integration/code-scans]}

@@ -115,6 +115,21 @@ process:
       checks:
         - Retirement 단계가 순서대로 모두 기록되고 잔존 차량이 0이다
       platform: {actions: [recordFlagRetirementStep], screens: [/flag-retirements]}
+      next: [FPW.9-A06]
+    - id: FPW.9-A06
+      name: Flag 제거 PR 병합
+      outcomes: [O3]
+      rules: [FFG-LCY-011]
+      raci: {R: [R-INT], A: R-FO, C: [R-TST], I: [R-REL]}
+      inputs: [WP-RETIRE-LOG]
+      outputs: []
+      steps:
+        - Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다
+        - 최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다
+        - 4단계 기록에 정적 분석 근거로 마지막 스캔을 남긴다
+      checks:
+        - 제거 PR 병합 뒤 스캔에서 해당 Flag 참조가 0건이다
+      platform: {actions: [createFlagRemovalPr, recordFlagRetirementStep], screens: [/flag-code/lifecycle, /flag-retirements]}
       next: [FPW.9-A05]
     - id: FPW.9-A05
       name: Lifecycle 종료 전이

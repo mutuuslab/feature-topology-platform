@@ -55,6 +55,12 @@
     "087_consultation": "0fb39f5bfb9cd3c9ca0d4d6e67b7c170f5799ea00b96c7ad503fbea0a2e520fc",
     "089_flag_source_manifest": "dec1e2502b0230bdc5a2ead5dbafb434e65dbe341017ad2dd3598d7f8a0621e4",
     "088_vehicle_unleash_sequence": "4aaaf55fdc29bf95fca466cd1c1ed53c73d02d18254029fdad1c46001760ef33",
-    "090_cost_actual": "aa6937139da7f1dab3a5dba445764411e0831b4e24b4cf2538ed3aa4b0eb54fa"
+    "090_cost_actual": "aa6937139da7f1dab3a5dba445764411e0831b4e24b4cf2538ed3aa4b0eb54fa",
+    "091_flag_code_repository": "d0aa0da8adc49e416a46cf9793fce0884f7c5631a1e05f8883b90a160ddbee82",
+    "092_flag_scan": "bc994a063c5bc256008b074683a34b596470f22765ce1bb7a9cd575e80b9a290",
+    "093_flag_plan": "4e71c0e8df7666363b20da41cbd6ff15a025cccc9f40d5d085d0d4d3cf85dc92",
+    "094_flag_pull_request": "48648fba5b0f8b07ecffe574555daf22184c99b482187588b19c3b363589906e",
+    "095_flag_gate_waiver": "d8057389e34c6aadc6f0dc5f1c45309f8da4cac6a3b8943131b851ebff5f8e6e",
+    "096_flag_evaluation_bucket": "a1ef6b650640ab0f0f4d22fc625b163bdb2ef1297f356645006d25969b3b04ae"
   }
 }

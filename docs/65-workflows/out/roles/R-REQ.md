@@ -12,6 +12,7 @@ traces:
     - WF-FPW-2
     - WF-FPW-3
     - WF-FPW-4
+    - WF-FPW-7
     - WF-FPW-9
 last_updated: 2026-11-05
 ---
@@ -80,6 +81,16 @@ last_updated: 2026-11-05
 2. 정책 작성자가 아닌 사람이 승인 또는 반려한다
 3. 반려하면 사유를 남겨 아키텍트에게 돌려보낸다
 - [ ] 승인자가 정책 작성자와 다르고 승인 해시가 최신 개정본과 같다
+
+### FPW.7-A13 출시 차단 해제 결정 — 수행·책임
+- 프로세스: FPW.7 출시·활성화·단계적 확대
+- 시작: 앞 활동 완료
+- 입력: WP-INTEGRATION-REC → 출력: WP-FLAG-WAIVER
+- 플랫폼: `decideFlagGateWaiver`, `/flag-code/reconcile`
+1. 해제 요청의 사유·만료·요청 당시 대사 상태를 확인한다
+2. F2 이상이면 Safety Manager의 의견을 받는다
+3. 개인 서명으로 승인 또는 반려하고 만료 뒤 다시 막히는 것을 확인한다
+- [ ] 요청자와 결정자가 다른 사람이다
 
 ### FPW.9-A03 Flag Retirement 승인 — 수행·책임
 - 프로세스: FPW.9 사후 검토·Flag Retirement

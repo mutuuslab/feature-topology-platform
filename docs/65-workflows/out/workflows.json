@@ -501,6 +501,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.5-A01",
      "process": "FPW.5",
      "part": "I",
@@ -511,6 +520,15 @@
     },
     {
      "id": "FPW.5-A04",
+     "process": "FPW.5",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A07",
      "process": "FPW.5",
      "part": "I",
      "parts": [
@@ -570,6 +588,15 @@
      "part": "I",
      "parts": [
       "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A13",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
      ],
      "firstScope": true
     },
@@ -686,6 +713,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.8-A12",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.8-A01",
      "process": "FPW.8",
      "part": "I",
@@ -787,6 +823,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.9-A06",
+     "process": "FPW.9",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.9-A05",
      "process": "FPW.9",
      "part": "C",
@@ -880,6 +925,7 @@
      "/activation/decide",
      "/admin/approval",
      "/flag-retirements",
+     "/flag-code/lifecycle",
      "/master/feature-db/:refId"
     ],
     "reference": [
@@ -888,11 +934,16 @@
      "/change/cr",
      "/policies/new",
      "/policies",
+     "/flag-code",
+     "/flag-code/flags/:flagKey",
      "/validations/virtual",
+     "/flag-code/reconcile",
+     "/integration/code-scans",
      "/verify/evidence",
      "/deployments",
      "/verify/compliance",
      "/fleet/live",
+     "/ops/flag-evaluations",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -952,7 +1003,7 @@
      },
      {
       "from": "FPW.9-A04",
-      "to": "FPW.9-A05",
+      "to": "FPW.9-A06",
       "department": "DEP-INT"
      },
      {
@@ -968,9 +1019,9 @@
       "department": "DEP-SE"
      },
      {
-      "from": "FPW.7-A08",
+      "from": "FPW.7-A13",
       "to": "FPW.7-A12",
-      "department": "DEP-FS"
+      "department": "DEP-SE"
      },
      {
       "from": "FPW.7-A09",
@@ -1205,6 +1256,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "A",
+     "parts": [
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.5-A02",
      "process": "FPW.5",
      "part": "C",
@@ -1237,6 +1297,25 @@
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.6-A07",
+     "process": "FPW.6",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A13",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
      ],
      "firstScope": true
     },
@@ -1335,6 +1414,9 @@
      "/policies/new",
      "/policies",
      "/policies/:id",
+     "/flag-code",
+     "/flag-code/flags/:flagKey",
+     "/flag-code/reconcile",
      "/flag-retirements",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes"
@@ -1353,6 +1435,8 @@
      "/validations",
      "/verify/evidence",
      "/baselines",
+     "/integration/code-repositories",
+     "/integration/code-scans",
      "/integration/openfeature",
      "/master/feature-db/:refId"
     ]
@@ -1385,6 +1469,11 @@
       "department": "DEP-QA"
      },
      {
+      "from": "FPW.7-A13",
+      "to": "FPW.7-A12",
+      "department": "DEP-PDP"
+     },
+     {
       "from": "FPW.9-A03",
       "to": "FPW.9-A04",
       "department": "DEP-PDP"
@@ -1415,6 +1504,11 @@
       "from": "FPW.3-A05",
       "to": "FPW.3-A04",
       "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.7-A08",
+      "to": "FPW.7-A13",
+      "department": "DEP-FS"
      },
      {
       "from": "FPW.9-A02",
@@ -1482,6 +1576,16 @@
      "firstScope": true
     },
     {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "R",
+     "parts": [
+      "R",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.5-A01",
      "process": "FPW.5",
      "part": "I",
@@ -1515,6 +1619,17 @@
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A07",
+     "process": "FPW.5",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "I"
      ],
      "firstScope": true
     },
@@ -1593,7 +1708,27 @@
      "firstScope": true
     },
     {
+     "id": "FPW.6-A07",
+     "process": "FPW.6",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.7-A01",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A13",
      "process": "FPW.7",
      "part": "I",
      "parts": [
@@ -1648,6 +1783,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.8-A12",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.8-A10",
      "process": "FPW.8",
      "part": "C",
@@ -1681,6 +1825,16 @@
      "part": "C",
      "parts": [
       "C",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.9-A06",
+     "process": "FPW.9",
+     "part": "R",
+     "parts": [
+      "R",
       "I"
      ],
      "firstScope": true
@@ -1793,7 +1947,14 @@
      "/features/:id/:ver",
      "/master/artifacts",
      "/integration/connectors",
-     "/deployments"
+     "/flag-code",
+     "/flag-code/flags/:flagKey",
+     "/flag-code/reconcile",
+     "/integration/code-scans",
+     "/deployments",
+     "/integration/code-repositories",
+     "/flag-code/lifecycle",
+     "/flag-retirements"
     ],
     "reference": [
      "/master/control-points",
@@ -1808,7 +1969,7 @@
      "/activation/decide",
      "/experiments",
      "/fleet/live",
-     "/flag-retirements",
+     "/ops/flag-evaluations",
      "/supplier/portal",
      "/admin/security",
      "/integration/openfeature"
@@ -1822,7 +1983,7 @@
       "department": "DEP-SE"
      },
      {
-      "from": "FPW.5-A03",
+      "from": "FPW.5-A07",
       "to": "FPW.5-A04",
       "department": "DEP-VAL"
      },
@@ -1849,6 +2010,11 @@
       "department": "DEP-SE"
      },
      {
+      "from": "FPW.4-A05",
+      "to": "FPW.4-A06",
+      "department": "DEP-QA"
+     },
+     {
       "from": "FPW.5-A01",
       "to": "FPW.5-A03",
       "department": "DEP-FS"
@@ -1870,7 +2036,7 @@
      },
      {
       "from": "FPW.9-A04",
-      "to": "FPW.9-A05",
+      "to": "FPW.9-A06",
       "department": "DEP-PDP"
      },
      {
@@ -2366,6 +2532,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.7-A13",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.7-A02",
      "process": "FPW.7",
      "part": "C",
@@ -2718,6 +2893,7 @@
      "/master/artifacts",
      "/validations/virtual",
      "/integration/connectors",
+     "/flag-code/reconcile",
      "/experiments",
      "/ops/anomalies",
      "/ops/incidents",
@@ -2774,8 +2950,8 @@
      },
      {
       "from": "FPW.7-A08",
-      "to": "FPW.7-A12",
-      "department": "DEP-PDP"
+      "to": "FPW.7-A13",
+      "department": "DEP-SE"
      },
      {
       "from": "FPW.8-A02",
@@ -3687,6 +3863,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.5-A01",
      "process": "FPW.5",
      "part": "C",
@@ -3721,6 +3906,15 @@
      "parts": [
       "R",
       "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.5-A07",
+     "process": "FPW.5",
+     "part": "C",
+     "parts": [
+      "C"
      ],
      "firstScope": true
     },
@@ -3798,6 +3992,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.9-A06",
+     "process": "FPW.9",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.10-A06",
      "process": "FPW.10",
      "part": "R",
@@ -3833,11 +4036,16 @@
      "/master/artifacts",
      "/integration/connectors",
      "/master/control-points",
+     "/flag-code",
+     "/flag-code/flags/:flagKey",
+     "/flag-code/reconcile",
+     "/integration/code-scans",
      "/activation/decide",
      "/verify/compliance",
      "/ops/kill",
      "/quality/feedback",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/flag-code/lifecycle"
     ]
    },
    "handoffs": {
@@ -3860,7 +4068,7 @@
       "department": "DEP-FS"
      },
      {
-      "from": "FPW.5-A03",
+      "from": "FPW.5-A07",
       "to": "FPW.5-A04",
       "department": "DEP-INT"
      },
@@ -4263,6 +4471,11 @@
       "department": "DEP-SE"
      },
      {
+      "from": "FPW.4-A05",
+      "to": "FPW.4-A06",
+      "department": "DEP-INT"
+     },
+     {
       "from": "FPW.6-A05",
       "to": "FPW.6-A06",
       "department": "DEP-INT"
@@ -4456,6 +4669,16 @@
     {
      "id": "FPW.7-A11",
      "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A12",
+     "process": "FPW.8",
      "part": "R",
      "parts": [
       "R",
@@ -4698,6 +4921,7 @@
     "primary": [
      "/activation/decide",
      "/fleet/live",
+     "/ops/flag-evaluations",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -8792,19 +9016,77 @@
       }
      },
      "slaHours": null,
+     "next": [
+      "FPW.4-A06"
+     ]
+    },
+    {
+     "id": "FPW.4-A06",
+     "name": "Flag PR 검토·병합",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-LCY-011"
+     ],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-ARC",
+      "C": [
+       "R-FO"
+      ],
+      "I": [
+       "R-REL",
+       "R-TST"
+      ]
+     },
+     "inputs": [
+      "WP-G4-DECISION"
+     ],
+     "outputs": [],
+     "steps": [
+      "Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다",
+      "기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다",
+      "PR 생성이 실패했으면 Flag 코드 연결 화면에서 PR 다시 만들기를 요청한다"
+     ],
+     "checks": [
+      "해당 Version의 Flag가 모두 코드 연결 정상 또는 검토 중이다"
+     ],
+     "platform": {
+      "actions": [
+       "createFlagPr",
+       "demoMergeFlagPr"
+      ],
+      "screens": [
+       "/flag-code",
+       "/flag-code/flags/:flagKey"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
      "next": []
     }
    ],
    "layout": {
-    "width": 1366.0,
-    "height": 392.0,
+    "width": 1646.0,
+    "height": 490.0,
     "lanes": [
      {
       "role": "R-ARC",
       "label": "아키텍트",
       "x": 0.0,
       "y": 0.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -8812,7 +9094,7 @@
       "label": "요구 Owner",
       "x": 0.0,
       "y": 98.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -8820,7 +9102,7 @@
       "label": "Safety Manager",
       "x": 0.0,
       "y": 196.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -8828,7 +9110,15 @@
       "label": "품질 조직",
       "x": 0.0,
       "y": 294.0,
-      "w": 1366.0,
+      "w": 1646.0,
+      "h": 98.0
+     },
+     {
+      "role": "R-INT",
+      "label": "통합 조직",
+      "x": 0.0,
+      "y": 392.0,
+      "w": 1646.0,
       "h": 98.0
      }
     ],
@@ -8879,6 +9169,15 @@
       "h": 66.0
      },
      {
+      "id": "FPW.4-A06",
+      "kind": "action",
+      "label": "Flag PR 검토·병합",
+      "x": 1318.0,
+      "y": 408.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.4-S1",
       "kind": "start",
       "label": "시작",
@@ -8900,8 +9199,8 @@
       "id": "FPW.4-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1240.0,
-      "y": 334.0,
+      "x": 1520.0,
+      "y": 432.0,
       "w": 18.0,
       "h": 18.0
      }
@@ -9023,16 +9322,39 @@
      },
      {
       "from": "FPW.4-A05",
-      "to": "FPW.4-E1",
-      "kind": "end",
+      "to": "FPW.4-A06",
+      "kind": "flow",
       "points": [
        [
         1226.0,
         343.0
        ],
        [
-        1240.0,
+        1306.0,
         343.0
+       ],
+       [
+        1306.0,
+        441.0
+       ],
+       [
+        1318.0,
+        441.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A06",
+      "to": "FPW.4-E1",
+      "kind": "end",
+      "points": [
+       [
+        1506.0,
+        441.0
+       ],
+       [
+        1520.0,
+        441.0
        ]
       ]
      }
@@ -9045,15 +9367,15 @@
     ]
    },
    "departmentLayout": {
-    "width": 1366.0,
-    "height": 294.0,
+    "width": 1646.0,
+    "height": 392.0,
     "lanes": [
      {
       "department": "DEP-SE",
       "label": "시스템엔지니어링팀",
       "x": 0.0,
       "y": 0.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -9061,7 +9383,7 @@
       "label": "기능안전팀",
       "x": 0.0,
       "y": 98.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -9069,7 +9391,15 @@
       "label": "품질팀",
       "x": 0.0,
       "y": 196.0,
-      "w": 1366.0,
+      "w": 1646.0,
+      "h": 98.0
+     },
+     {
+      "department": "DEP-INT",
+      "label": "SW통합·릴리스팀",
+      "x": 0.0,
+      "y": 294.0,
+      "w": 1646.0,
       "h": 98.0
      }
     ],
@@ -9120,6 +9450,15 @@
       "h": 66.0
      },
      {
+      "id": "FPW.4-A06",
+      "kind": "action",
+      "label": "Flag PR 검토·병합",
+      "x": 1318.0,
+      "y": 310.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.4-S1",
       "kind": "start",
       "label": "시작",
@@ -9141,8 +9480,8 @@
       "id": "FPW.4-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1240.0,
-      "y": 236.0,
+      "x": 1520.0,
+      "y": 334.0,
       "w": 18.0,
       "h": 18.0
      }
@@ -9256,16 +9595,39 @@
      },
      {
       "from": "FPW.4-A05",
-      "to": "FPW.4-E1",
-      "kind": "end",
+      "to": "FPW.4-A06",
+      "kind": "flow",
       "points": [
        [
         1226.0,
         245.0
        ],
        [
-        1240.0,
+        1306.0,
         245.0
+       ],
+       [
+        1306.0,
+        343.0
+       ],
+       [
+        1318.0,
+        343.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A06",
+      "to": "FPW.4-E1",
+      "kind": "end",
+      "points": [
+       [
+        1506.0,
+        343.0
+       ],
+       [
+        1520.0,
+        343.0
        ]
       ]
      }
@@ -9578,7 +9940,7 @@
      },
      "slaHours": null,
      "next": [
-      "FPW.5-A04"
+      "FPW.5-A07"
      ]
     },
     {
@@ -9647,6 +10009,62 @@
      "slaHours": 24,
      "next": [
       "FPW.5-A05"
+     ]
+    },
+    {
+     "id": "FPW.5-A07",
+     "name": "Flag 코드 연결 확인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-INT",
+      "C": [
+       "R-TST"
+      ],
+      "I": [
+       "R-FO",
+       "R-REL"
+      ]
+     },
+     "inputs": [
+      "WP-INTEGRATION-REC"
+     ],
+     "outputs": [],
+     "steps": [
+      "어긋남 대사판에서 이 Version의 Flag가 코드 없음·삭제된 호출·Unleash 불일치가 아닌지 확인한다",
+      "미등록 키·동적 키 파일을 담당 패키지에 돌려보내고 재스캔으로 해소를 확인한다",
+      "해소할 수 없으면 사유와 만료일로 출시 차단 해제를 요청한다"
+     ],
+     "checks": [
+      "출시 관문의 Flag 코드 연결 판정이 통과 또는 승인된 해제다"
+     ],
+     "platform": {
+      "actions": [
+       "rescanFlagRepository",
+       "requestFlagGateWaiver"
+      ],
+      "screens": [
+       "/flag-code/reconcile",
+       "/integration/code-scans"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.5-A04"
      ]
     },
     {
@@ -9779,7 +10197,7 @@
     }
    ],
    "layout": {
-    "width": 1646.0,
+    "width": 1926.0,
     "height": 392.0,
     "lanes": [
      {
@@ -9787,7 +10205,7 @@
       "label": "Safety Manager",
       "x": 0.0,
       "y": 0.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -9795,7 +10213,7 @@
       "label": "시험 조직",
       "x": 0.0,
       "y": 98.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -9803,7 +10221,7 @@
       "label": "통합 조직",
       "x": 0.0,
       "y": 196.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -9811,7 +10229,7 @@
       "label": "품질 조직",
       "x": 0.0,
       "y": 294.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      }
     ],
@@ -9838,7 +10256,7 @@
       "id": "FPW.5-A04",
       "kind": "action",
       "label": "비활성화·결함 주입 시험 수행",
-      "x": 758.0,
+      "x": 1038.0,
       "y": 114.0,
       "w": 188.0,
       "h": 66.0
@@ -9847,7 +10265,7 @@
       "id": "FPW.5-A05",
       "kind": "action",
       "label": "시험 Evidence 연결·TMS 제출",
-      "x": 1038.0,
+      "x": 1318.0,
       "y": 114.0,
       "w": 188.0,
       "h": 66.0
@@ -9862,10 +10280,19 @@
       "h": 66.0
      },
      {
+      "id": "FPW.5-A07",
+      "kind": "action",
+      "label": "Flag 코드 연결 확인",
+      "x": 758.0,
+      "y": 212.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.5-A06",
       "kind": "action",
       "label": "G5 V&V 판정",
-      "x": 1318.0,
+      "x": 1598.0,
       "y": 310.0,
       "w": 188.0,
       "h": 66.0
@@ -9883,7 +10310,7 @@
       "id": "FPW.5-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1520.0,
+      "x": 1800.0,
       "y": 334.0,
       "w": 18.0,
       "h": 18.0
@@ -9961,14 +10388,14 @@
         147.0
        ],
        [
-        758.0,
+        1038.0,
         147.0
        ]
       ]
      },
      {
       "from": "FPW.5-A03",
-      "to": "FPW.5-A04",
+      "to": "FPW.5-A07",
       "kind": "flow",
       "points": [
        [
@@ -9976,16 +10403,8 @@
         245.0
        ],
        [
-        746.0,
-        245.0
-       ],
-       [
-        746.0,
-        147.0
-       ],
-       [
         758.0,
-        147.0
+        245.0
        ]
       ]
      },
@@ -9995,7 +10414,30 @@
       "kind": "flow",
       "points": [
        [
+        1226.0,
+        147.0
+       ],
+       [
+        1318.0,
+        147.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A07",
+      "to": "FPW.5-A04",
+      "kind": "flow",
+      "points": [
+       [
         946.0,
+        245.0
+       ],
+       [
+        1026.0,
+        245.0
+       ],
+       [
+        1026.0,
         147.0
        ],
        [
@@ -10010,19 +10452,19 @@
       "kind": "flow",
       "points": [
        [
-        1226.0,
+        1506.0,
         147.0
        ],
        [
-        1306.0,
+        1586.0,
         147.0
        ],
        [
-        1306.0,
+        1586.0,
         343.0
        ],
        [
-        1318.0,
+        1598.0,
         343.0
        ]
       ]
@@ -10033,11 +10475,11 @@
       "kind": "end",
       "points": [
        [
-        1506.0,
+        1786.0,
         343.0
        ],
        [
-        1520.0,
+        1800.0,
         343.0
        ]
       ]
@@ -10045,13 +10487,13 @@
     ],
     "joins": [
      [
-      746.0,
+      1026.0,
       147.0
      ]
     ]
    },
    "departmentLayout": {
-    "width": 1646.0,
+    "width": 1926.0,
     "height": 392.0,
     "lanes": [
      {
@@ -10059,7 +10501,7 @@
       "label": "기능안전팀",
       "x": 0.0,
       "y": 0.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -10067,7 +10509,7 @@
       "label": "시험·검증팀",
       "x": 0.0,
       "y": 98.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -10075,7 +10517,7 @@
       "label": "SW통합·릴리스팀",
       "x": 0.0,
       "y": 196.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -10083,7 +10525,7 @@
       "label": "품질팀",
       "x": 0.0,
       "y": 294.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      }
     ],
@@ -10110,7 +10552,7 @@
       "id": "FPW.5-A04",
       "kind": "action",
       "label": "비활성화·결함 주입 시험 수행",
-      "x": 758.0,
+      "x": 1038.0,
       "y": 114.0,
       "w": 188.0,
       "h": 66.0
@@ -10119,7 +10561,7 @@
       "id": "FPW.5-A05",
       "kind": "action",
       "label": "시험 Evidence 연결·TMS 제출",
-      "x": 1038.0,
+      "x": 1318.0,
       "y": 114.0,
       "w": 188.0,
       "h": 66.0
@@ -10134,10 +10576,19 @@
       "h": 66.0
      },
      {
+      "id": "FPW.5-A07",
+      "kind": "action",
+      "label": "Flag 코드 연결 확인",
+      "x": 758.0,
+      "y": 212.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.5-A06",
       "kind": "action",
       "label": "G5 V&V 판정",
-      "x": 1318.0,
+      "x": 1598.0,
       "y": 310.0,
       "w": 188.0,
       "h": 66.0
@@ -10155,7 +10606,7 @@
       "id": "FPW.5-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1520.0,
+      "x": 1800.0,
       "y": 334.0,
       "w": 18.0,
       "h": 18.0
@@ -10233,14 +10684,14 @@
         147.0
        ],
        [
-        758.0,
+        1038.0,
         147.0
        ]
       ]
      },
      {
       "from": "FPW.5-A03",
-      "to": "FPW.5-A04",
+      "to": "FPW.5-A07",
       "kind": "flow",
       "points": [
        [
@@ -10248,16 +10699,8 @@
         245.0
        ],
        [
-        746.0,
-        245.0
-       ],
-       [
-        746.0,
-        147.0
-       ],
-       [
         758.0,
-        147.0
+        245.0
        ]
       ]
      },
@@ -10267,7 +10710,30 @@
       "kind": "flow",
       "points": [
        [
+        1226.0,
+        147.0
+       ],
+       [
+        1318.0,
+        147.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.5-A07",
+      "to": "FPW.5-A04",
+      "kind": "flow",
+      "points": [
+       [
         946.0,
+        245.0
+       ],
+       [
+        1026.0,
+        245.0
+       ],
+       [
+        1026.0,
         147.0
        ],
        [
@@ -10282,19 +10748,19 @@
       "kind": "flow",
       "points": [
        [
-        1226.0,
+        1506.0,
         147.0
        ],
        [
-        1306.0,
+        1586.0,
         147.0
        ],
        [
-        1306.0,
+        1586.0,
         343.0
        ],
        [
-        1318.0,
+        1598.0,
         343.0
        ]
       ]
@@ -10305,11 +10771,11 @@
       "kind": "end",
       "points": [
        [
-        1506.0,
+        1786.0,
         343.0
        ],
        [
-        1520.0,
+        1800.0,
         343.0
        ]
       ]
@@ -10317,7 +10783,7 @@
     ],
     "joins": [
      [
-      746.0,
+      1026.0,
       147.0
      ]
     ]
@@ -10777,11 +11243,64 @@
       }
      },
      "slaHours": null,
+     "next": [
+      "FPW.6-A07"
+     ]
+    },
+    {
+     "id": "FPW.6-A07",
+     "name": "코드 저장소 연결 관리",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-REL"
+      ],
+      "A": "R-REL",
+      "C": [
+       "R-INT"
+      ],
+      "I": [
+       "R-ARC"
+      ]
+     },
+     "inputs": [],
+     "outputs": [],
+     "steps": [
+      "차량 SW 저장소를 패키지·기본 브랜치·스캔 주기와 함께 연결한다",
+      "webhook 실패와 스캔 거부를 확인하고 원인을 통합 조직과 해소한다",
+      "설정 변경은 사유를 남기고 구현 담당이 자기 검사를 약화하지 못하게 한다"
+     ],
+     "checks": [
+      "연결 저장소의 webhook이 정상이고 최근 스캔이 서명 확인됐다"
+     ],
+     "platform": {
+      "actions": [
+       "createFlagRepository",
+       "updateFlagRepository"
+      ],
+      "screens": [
+       "/integration/code-repositories",
+       "/integration/code-scans"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
      "next": []
     }
    ],
    "layout": {
-    "width": 1646.0,
+    "width": 1926.0,
     "height": 588.0,
     "lanes": [
      {
@@ -10789,7 +11308,7 @@
       "label": "Feature Owner",
       "x": 0.0,
       "y": 0.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -10797,7 +11316,7 @@
       "label": "기준정보 담당",
       "x": 0.0,
       "y": 98.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -10805,7 +11324,7 @@
       "label": "법규 담당",
       "x": 0.0,
       "y": 196.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -10813,7 +11332,7 @@
       "label": "통합 조직",
       "x": 0.0,
       "y": 294.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -10821,7 +11340,7 @@
       "label": "품질 조직",
       "x": 0.0,
       "y": 392.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -10829,7 +11348,7 @@
       "label": "Release Manager",
       "x": 0.0,
       "y": 490.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      }
     ],
@@ -10889,6 +11408,15 @@
       "h": 66.0
      },
      {
+      "id": "FPW.6-A07",
+      "kind": "action",
+      "label": "코드 저장소 연결 관리",
+      "x": 1598.0,
+      "y": 506.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.6-S1",
       "kind": "start",
       "label": "시작",
@@ -10901,7 +11429,7 @@
       "id": "FPW.6-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1520.0,
+      "x": 1800.0,
       "y": 530.0,
       "w": 18.0,
       "h": 18.0
@@ -11063,15 +11591,30 @@
      },
      {
       "from": "FPW.6-A06",
-      "to": "FPW.6-E1",
-      "kind": "end",
+      "to": "FPW.6-A07",
+      "kind": "flow",
       "points": [
        [
         1506.0,
         539.0
        ],
        [
-        1520.0,
+        1598.0,
+        539.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A07",
+      "to": "FPW.6-E1",
+      "kind": "end",
+      "points": [
+       [
+        1786.0,
+        539.0
+       ],
+       [
+        1800.0,
         539.0
        ]
       ]
@@ -11085,7 +11628,7 @@
     ]
    },
    "departmentLayout": {
-    "width": 1646.0,
+    "width": 1926.0,
     "height": 490.0,
     "lanes": [
      {
@@ -11093,7 +11636,7 @@
       "label": "상품기획팀",
       "x": 0.0,
       "y": 0.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -11101,7 +11644,7 @@
       "label": "PLM·기준정보팀",
       "x": 0.0,
       "y": 98.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -11109,7 +11652,7 @@
       "label": "법규인증팀",
       "x": 0.0,
       "y": 196.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -11117,7 +11660,7 @@
       "label": "SW통합·릴리스팀",
       "x": 0.0,
       "y": 294.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      },
      {
@@ -11125,7 +11668,7 @@
       "label": "품질팀",
       "x": 0.0,
       "y": 392.0,
-      "w": 1646.0,
+      "w": 1926.0,
       "h": 98.0
      }
     ],
@@ -11176,6 +11719,15 @@
       "h": 66.0
      },
      {
+      "id": "FPW.6-A07",
+      "kind": "action",
+      "label": "코드 저장소 연결 관리",
+      "x": 1598.0,
+      "y": 310.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.6-A05",
       "kind": "action",
       "label": "OTA Gate 판정 등록",
@@ -11197,7 +11749,7 @@
       "id": "FPW.6-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1520.0,
+      "x": 1800.0,
       "y": 334.0,
       "w": 18.0,
       "h": 18.0
@@ -11359,15 +11911,30 @@
      },
      {
       "from": "FPW.6-A06",
-      "to": "FPW.6-E1",
-      "kind": "end",
+      "to": "FPW.6-A07",
+      "kind": "flow",
       "points": [
        [
         1506.0,
         343.0
        ],
        [
-        1520.0,
+        1598.0,
+        343.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.6-A07",
+      "to": "FPW.6-E1",
+      "kind": "end",
+      "points": [
+       [
+        1786.0,
+        343.0
+       ],
+       [
+        1800.0,
         343.0
        ]
       ]
@@ -11561,6 +12128,17 @@
       "Cohort 단계별 적용 시각·관측 결과",
       "확대·중단 결정과 근거"
      ]
+    },
+    {
+     "key": "WP-FLAG-WAIVER",
+     "name": "출시 차단 해제 결정 기록",
+     "en": "Flag Release Gate Waiver Decision",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "해제 대상 Flag·요청 당시 대사 상태·사유·만료",
+      "요청자와 다른 결정자의 개인 서명·시각(F2 이상은 Safety Manager 포함)"
+     ]
     }
    ],
    "activities": [
@@ -11621,6 +12199,65 @@
      "slaHours": null,
      "next": [
       "FPW.7-A08"
+     ]
+    },
+    {
+     "id": "FPW.7-A13",
+     "name": "출시 차단 해제 결정",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [
+      "FPW.5-A07"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-REQ"
+      ],
+      "A": "R-REQ",
+      "C": [
+       "R-SM",
+       "R-FO"
+      ],
+      "I": [
+       "R-REL",
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-INTEGRATION-REC"
+     ],
+     "outputs": [
+      "WP-FLAG-WAIVER"
+     ],
+     "steps": [
+      "해제 요청의 사유·만료·요청 당시 대사 상태를 확인한다",
+      "F2 이상이면 Safety Manager의 의견을 받는다",
+      "개인 서명으로 승인 또는 반려하고 만료 뒤 다시 막히는 것을 확인한다"
+     ],
+     "checks": [
+      "요청자와 결정자가 다른 사람이다"
+     ],
+     "platform": {
+      "actions": [
+       "decideFlagGateWaiver"
+      ],
+      "screens": [
+       "/flag-code/reconcile"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.7-A12"
      ]
     },
     {
@@ -12031,7 +12668,7 @@
      },
      "slaHours": null,
      "next": [
-      "FPW.7-A12"
+      "FPW.7-A13"
      ]
     },
     {
@@ -12274,71 +12911,79 @@
     }
    ],
    "layout": {
-    "width": 1926.0,
-    "height": 784.0,
+    "width": 2206.0,
+    "height": 882.0,
     "lanes": [
      {
       "role": "R-OPS",
       "label": "운영 조직",
       "x": 0.0,
       "y": 0.0,
-      "w": 1926.0,
+      "w": 2206.0,
+      "h": 98.0
+     },
+     {
+      "role": "R-REQ",
+      "label": "요구 Owner",
+      "x": 0.0,
+      "y": 98.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "role": "R-FO",
       "label": "Feature Owner",
       "x": 0.0,
-      "y": 98.0,
-      "w": 1926.0,
+      "y": 196.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "role": "R-SM",
       "label": "Safety Manager",
       "x": 0.0,
-      "y": 196.0,
-      "w": 1926.0,
+      "y": 294.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "role": "R-QA",
       "label": "품질 조직",
       "x": 0.0,
-      "y": 294.0,
-      "w": 1926.0,
+      "y": 392.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "role": "R-PDA",
       "label": "상품 기획",
       "x": 0.0,
-      "y": 392.0,
-      "w": 1926.0,
+      "y": 490.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "role": "R-PO",
       "label": "상품 Owner",
       "x": 0.0,
-      "y": 490.0,
-      "w": 1926.0,
+      "y": 588.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "role": "R-REG",
       "label": "법규 담당",
       "x": 0.0,
-      "y": 588.0,
-      "w": 1926.0,
+      "y": 686.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "role": "R-REL",
       "label": "Release Manager",
       "x": 0.0,
-      "y": 686.0,
-      "w": 1926.0,
+      "y": 784.0,
+      "w": 2206.0,
       "h": 98.0
      }
     ],
@@ -12356,8 +13001,17 @@
       "id": "FPW.7-A11",
       "kind": "action",
       "label": "Canary 활성화·단계적 확대",
-      "x": 1598.0,
+      "x": 1878.0,
       "y": 16.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
+      "id": "FPW.7-A13",
+      "kind": "action",
+      "label": "출시 차단 해제 결정",
+      "x": 1038.0,
+      "y": 114.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12366,7 +13020,7 @@
       "kind": "action",
       "label": "효과 실험 계획 등록",
       "x": 478.0,
-      "y": 114.0,
+      "y": 212.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12374,8 +13028,8 @@
       "id": "FPW.7-A12",
       "kind": "action",
       "label": "Release Sign-off(출시 책임 확인)",
-      "x": 1038.0,
-      "y": 114.0,
+      "x": 1318.0,
+      "y": 212.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12384,7 +13038,7 @@
       "kind": "action",
       "label": "Safety Case·SOTIF 근거 정리",
       "x": 198.0,
-      "y": 212.0,
+      "y": 310.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12393,7 +13047,7 @@
       "kind": "action",
       "label": "G7 출시·활성화 판정",
       "x": 758.0,
-      "y": 212.0,
+      "y": 310.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12402,7 +13056,7 @@
       "kind": "action",
       "label": "Safety Case 독립 검토",
       "x": 478.0,
-      "y": 310.0,
+      "y": 408.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12411,7 +13065,7 @@
       "kind": "action",
       "label": "상품 구성 작성",
       "x": 198.0,
-      "y": 408.0,
+      "y": 506.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12420,7 +13074,7 @@
       "kind": "action",
       "label": "상품 구성 승인",
       "x": 478.0,
-      "y": 506.0,
+      "y": 604.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12428,8 +13082,8 @@
       "id": "FPW.7-A10",
       "kind": "action",
       "label": "상품 고객 출시 승인",
-      "x": 1598.0,
-      "y": 506.0,
+      "x": 1878.0,
+      "y": 604.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12438,7 +13092,7 @@
       "kind": "action",
       "label": "형식승인·사용자 고지 확인",
       "x": 478.0,
-      "y": 604.0,
+      "y": 702.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12446,8 +13100,8 @@
       "id": "FPW.7-A09",
       "kind": "action",
       "label": "출시 전이",
-      "x": 1318.0,
-      "y": 702.0,
+      "x": 1598.0,
+      "y": 800.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12465,7 +13119,7 @@
       "kind": "start",
       "label": "출시 효과를 실험으로 비교해야 할 때",
       "x": 426.0,
-      "y": 138.0,
+      "y": 236.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -12474,7 +13128,7 @@
       "kind": "start",
       "label": "G6 배포 완료",
       "x": 146.0,
-      "y": 236.0,
+      "y": 334.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -12483,7 +13137,7 @@
       "kind": "start",
       "label": "G6 배포 완료",
       "x": 146.0,
-      "y": 432.0,
+      "y": 530.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -12492,7 +13146,7 @@
       "kind": "start",
       "label": "G6 배포 완료",
       "x": 426.0,
-      "y": 628.0,
+      "y": 726.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -12500,8 +13154,8 @@
       "id": "FPW.7-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1800.0,
-      "y": 530.0,
+      "x": 2080.0,
+      "y": 628.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -12509,7 +13163,7 @@
       "id": "FPW.7-E2",
       "kind": "end",
       "label": "종료",
-      "x": 1800.0,
+      "x": 2080.0,
       "y": 40.0,
       "w": 18.0,
       "h": 18.0
@@ -12538,11 +13192,11 @@
       "points": [
        [
         444.0,
-        147.0
+        245.0
        ],
        [
         478.0,
-        147.0
+        245.0
        ]
       ]
      },
@@ -12553,11 +13207,11 @@
       "points": [
        [
         164.0,
-        245.0
+        343.0
        ],
        [
         198.0,
-        245.0
+        343.0
        ]
       ]
      },
@@ -12568,11 +13222,11 @@
       "points": [
        [
         164.0,
-        441.0
+        539.0
        ],
        [
         198.0,
-        441.0
+        539.0
        ]
       ]
      },
@@ -12583,11 +13237,11 @@
       "points": [
        [
         444.0,
-        637.0
+        735.0
        ],
        [
         478.0,
-        637.0
+        735.0
        ]
       ]
      },
@@ -12606,10 +13260,33 @@
        ],
        [
         746.0,
-        245.0
+        343.0
        ],
        [
         758.0,
+        343.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A13",
+      "to": "FPW.7-A12",
+      "kind": "flow",
+      "points": [
+       [
+        1226.0,
+        147.0
+       ],
+       [
+        1306.0,
+        147.0
+       ],
+       [
+        1306.0,
+        245.0
+       ],
+       [
+        1318.0,
         245.0
        ]
       ]
@@ -12621,19 +13298,19 @@
       "points": [
        [
         666.0,
-        147.0
-       ],
-       [
-        746.0,
-        147.0
+        245.0
        ],
        [
         746.0,
         245.0
+       ],
+       [
+        746.0,
+        343.0
        ],
        [
         758.0,
-        245.0
+        343.0
        ]
       ]
      },
@@ -12644,19 +13321,19 @@
       "points": [
        [
         386.0,
-        245.0
-       ],
-       [
-        466.0,
-        245.0
+        343.0
        ],
        [
         466.0,
         343.0
+       ],
+       [
+        466.0,
+        441.0
        ],
        [
         478.0,
-        343.0
+        441.0
        ]
       ]
      },
@@ -12667,19 +13344,19 @@
       "points": [
        [
         666.0,
-        343.0
+        441.0
+       ],
+       [
+        746.0,
+        441.0
        ],
        [
         746.0,
         343.0
-       ],
-       [
-        746.0,
-        245.0
        ],
        [
         758.0,
-        245.0
+        343.0
        ]
       ]
      },
@@ -12690,19 +13367,19 @@
       "points": [
        [
         386.0,
-        441.0
-       ],
-       [
-        466.0,
-        441.0
+        539.0
        ],
        [
         466.0,
         539.0
+       ],
+       [
+        466.0,
+        637.0
        ],
        [
         478.0,
-        539.0
+        637.0
        ]
       ]
      },
@@ -12713,19 +13390,19 @@
       "points": [
        [
         666.0,
-        539.0
+        637.0
        ],
        [
         746.0,
-        539.0
+        637.0
        ],
        [
         746.0,
-        245.0
+        343.0
        ],
        [
         758.0,
-        245.0
+        343.0
        ]
       ]
      },
@@ -12736,34 +13413,34 @@
       "points": [
        [
         666.0,
-        637.0
+        735.0
        ],
        [
         746.0,
-        637.0
+        735.0
        ],
        [
         746.0,
-        245.0
+        343.0
        ],
        [
         758.0,
-        245.0
+        343.0
        ]
       ]
      },
      {
       "from": "FPW.7-A08",
-      "to": "FPW.7-A12",
+      "to": "FPW.7-A13",
       "kind": "flow",
       "points": [
        [
         946.0,
-        245.0
+        343.0
        ],
        [
         1026.0,
-        245.0
+        343.0
        ],
        [
         1026.0,
@@ -12781,20 +13458,20 @@
       "kind": "flow",
       "points": [
        [
-        1226.0,
-        147.0
+        1506.0,
+        245.0
        ],
        [
-        1306.0,
-        147.0
+        1586.0,
+        245.0
        ],
        [
-        1306.0,
-        735.0
+        1586.0,
+        833.0
        ],
        [
-        1318.0,
-        735.0
+        1598.0,
+        833.0
        ]
       ]
      },
@@ -12804,20 +13481,20 @@
       "kind": "flow",
       "points": [
        [
-        1506.0,
-        735.0
+        1786.0,
+        833.0
        ],
        [
-        1586.0,
-        735.0
+        1866.0,
+        833.0
        ],
        [
-        1586.0,
-        539.0
+        1866.0,
+        637.0
        ],
        [
-        1598.0,
-        539.0
+        1878.0,
+        637.0
        ]
       ]
      },
@@ -12827,19 +13504,19 @@
       "kind": "flow",
       "points": [
        [
-        1506.0,
-        735.0
+        1786.0,
+        833.0
        ],
        [
-        1586.0,
-        735.0
+        1866.0,
+        833.0
        ],
        [
-        1586.0,
+        1866.0,
         49.0
        ],
        [
-        1598.0,
+        1878.0,
         49.0
        ]
       ]
@@ -12850,12 +13527,12 @@
       "kind": "end",
       "points": [
        [
-        1786.0,
-        539.0
+        2066.0,
+        637.0
        ],
        [
-        1800.0,
-        539.0
+        2080.0,
+        637.0
        ]
       ]
      },
@@ -12865,21 +13542,17 @@
       "kind": "end",
       "points": [
        [
-        1786.0,
+        2066.0,
         49.0
        ],
        [
-        1800.0,
+        2080.0,
         49.0
        ]
       ]
      }
     ],
     "joins": [
-     [
-      746.0,
-      147.0
-     ],
      [
       746.0,
       245.0
@@ -12890,60 +13563,72 @@
      ],
      [
       746.0,
-      539.0
+      441.0
+     ],
+     [
+      746.0,
+      637.0
      ]
     ]
    },
    "departmentLayout": {
-    "width": 1926.0,
-    "height": 678.0,
+    "width": 2206.0,
+    "height": 776.0,
     "lanes": [
      {
       "department": "DEP-OPS",
       "label": "OTA·서비스운영팀",
       "x": 0.0,
       "y": 0.0,
-      "w": 1926.0,
+      "w": 2206.0,
+      "h": 98.0
+     },
+     {
+      "department": "DEP-SE",
+      "label": "시스템엔지니어링팀",
+      "x": 0.0,
+      "y": 98.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "department": "DEP-PDP",
       "label": "상품기획팀",
       "x": 0.0,
-      "y": 98.0,
-      "w": 1926.0,
+      "y": 196.0,
+      "w": 2206.0,
       "h": 188.0
      },
      {
       "department": "DEP-FS",
       "label": "기능안전팀",
       "x": 0.0,
-      "y": 286.0,
-      "w": 1926.0,
+      "y": 384.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "department": "DEP-QA",
       "label": "품질팀",
       "x": 0.0,
-      "y": 384.0,
-      "w": 1926.0,
+      "y": 482.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "department": "DEP-HOM",
       "label": "법규인증팀",
       "x": 0.0,
-      "y": 482.0,
-      "w": 1926.0,
+      "y": 580.0,
+      "w": 2206.0,
       "h": 98.0
      },
      {
       "department": "DEP-INT",
       "label": "SW통합·릴리스팀",
       "x": 0.0,
-      "y": 580.0,
-      "w": 1926.0,
+      "y": 678.0,
+      "w": 2206.0,
       "h": 98.0
      }
     ],
@@ -12961,8 +13646,17 @@
       "id": "FPW.7-A11",
       "kind": "action",
       "label": "Canary 활성화·단계적 확대",
-      "x": 1598.0,
+      "x": 1878.0,
       "y": 16.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
+      "id": "FPW.7-A13",
+      "kind": "action",
+      "label": "출시 차단 해제 결정",
+      "x": 1038.0,
+      "y": 114.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12971,7 +13665,7 @@
       "kind": "action",
       "label": "효과 실험 계획 등록",
       "x": 478.0,
-      "y": 114.0,
+      "y": 212.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12980,7 +13674,7 @@
       "kind": "action",
       "label": "상품 구성 작성",
       "x": 198.0,
-      "y": 204.0,
+      "y": 302.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12989,7 +13683,7 @@
       "kind": "action",
       "label": "상품 구성 승인",
       "x": 478.0,
-      "y": 204.0,
+      "y": 302.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -12997,8 +13691,8 @@
       "id": "FPW.7-A12",
       "kind": "action",
       "label": "Release Sign-off(출시 책임 확인)",
-      "x": 1038.0,
-      "y": 114.0,
+      "x": 1318.0,
+      "y": 212.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -13006,8 +13700,8 @@
       "id": "FPW.7-A10",
       "kind": "action",
       "label": "상품 고객 출시 승인",
-      "x": 1598.0,
-      "y": 114.0,
+      "x": 1878.0,
+      "y": 212.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -13016,7 +13710,7 @@
       "kind": "action",
       "label": "Safety Case·SOTIF 근거 정리",
       "x": 198.0,
-      "y": 302.0,
+      "y": 400.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -13025,7 +13719,7 @@
       "kind": "action",
       "label": "G7 출시·활성화 판정",
       "x": 758.0,
-      "y": 302.0,
+      "y": 400.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -13034,7 +13728,7 @@
       "kind": "action",
       "label": "Safety Case 독립 검토",
       "x": 478.0,
-      "y": 400.0,
+      "y": 498.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -13043,7 +13737,7 @@
       "kind": "action",
       "label": "형식승인·사용자 고지 확인",
       "x": 478.0,
-      "y": 498.0,
+      "y": 596.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -13051,8 +13745,8 @@
       "id": "FPW.7-A09",
       "kind": "action",
       "label": "출시 전이",
-      "x": 1318.0,
-      "y": 596.0,
+      "x": 1598.0,
+      "y": 694.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -13070,7 +13764,7 @@
       "kind": "start",
       "label": "출시 효과를 실험으로 비교해야 할 때",
       "x": 426.0,
-      "y": 138.0,
+      "y": 236.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -13079,7 +13773,7 @@
       "kind": "start",
       "label": "G6 배포 완료",
       "x": 146.0,
-      "y": 326.0,
+      "y": 424.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -13088,7 +13782,7 @@
       "kind": "start",
       "label": "G6 배포 완료",
       "x": 146.0,
-      "y": 228.0,
+      "y": 326.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -13097,7 +13791,7 @@
       "kind": "start",
       "label": "G6 배포 완료",
       "x": 426.0,
-      "y": 522.0,
+      "y": 620.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -13105,8 +13799,8 @@
       "id": "FPW.7-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1800.0,
-      "y": 138.0,
+      "x": 2080.0,
+      "y": 236.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -13114,7 +13808,7 @@
       "id": "FPW.7-E2",
       "kind": "end",
       "label": "종료",
-      "x": 1800.0,
+      "x": 2080.0,
       "y": 40.0,
       "w": 18.0,
       "h": 18.0
@@ -13143,11 +13837,11 @@
       "points": [
        [
         444.0,
-        147.0
+        245.0
        ],
        [
         478.0,
-        147.0
+        245.0
        ]
       ]
      },
@@ -13158,11 +13852,11 @@
       "points": [
        [
         164.0,
-        335.0
+        433.0
        ],
        [
         198.0,
-        335.0
+        433.0
        ]
       ]
      },
@@ -13173,11 +13867,11 @@
       "points": [
        [
         164.0,
-        237.0
+        335.0
        ],
        [
         198.0,
-        237.0
+        335.0
        ]
       ]
      },
@@ -13188,11 +13882,11 @@
       "points": [
        [
         444.0,
-        531.0
+        629.0
        ],
        [
         478.0,
-        531.0
+        629.0
        ]
       ]
      },
@@ -13211,11 +13905,34 @@
        ],
        [
         746.0,
-        335.0
+        433.0
        ],
        [
         758.0,
-        335.0
+        433.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.7-A13",
+      "to": "FPW.7-A12",
+      "kind": "flow",
+      "points": [
+       [
+        1226.0,
+        147.0
+       ],
+       [
+        1306.0,
+        147.0
+       ],
+       [
+        1306.0,
+        245.0
+       ],
+       [
+        1318.0,
+        245.0
        ]
       ]
      },
@@ -13226,19 +13943,19 @@
       "points": [
        [
         666.0,
-        147.0
+        245.0
        ],
        [
         746.0,
-        147.0
+        245.0
        ],
        [
         746.0,
-        335.0
+        433.0
        ],
        [
         758.0,
-        335.0
+        433.0
        ]
       ]
      },
@@ -13249,19 +13966,19 @@
       "points": [
        [
         386.0,
-        335.0
-       ],
-       [
-        466.0,
-        335.0
+        433.0
        ],
        [
         466.0,
         433.0
+       ],
+       [
+        466.0,
+        531.0
        ],
        [
         478.0,
-        433.0
+        531.0
        ]
       ]
      },
@@ -13272,19 +13989,19 @@
       "points": [
        [
         666.0,
-        433.0
+        531.0
+       ],
+       [
+        746.0,
+        531.0
        ],
        [
         746.0,
         433.0
-       ],
-       [
-        746.0,
-        335.0
        ],
        [
         758.0,
-        335.0
+        433.0
        ]
       ]
      },
@@ -13295,11 +14012,11 @@
       "points": [
        [
         386.0,
-        237.0
+        335.0
        ],
        [
         478.0,
-        237.0
+        335.0
        ]
       ]
      },
@@ -13310,19 +14027,19 @@
       "points": [
        [
         666.0,
-        237.0
-       ],
-       [
-        746.0,
-        237.0
+        335.0
        ],
        [
         746.0,
         335.0
+       ],
+       [
+        746.0,
+        433.0
        ],
        [
         758.0,
-        335.0
+        433.0
        ]
       ]
      },
@@ -13333,34 +14050,34 @@
       "points": [
        [
         666.0,
-        531.0
+        629.0
        ],
        [
         746.0,
-        531.0
+        629.0
        ],
        [
         746.0,
-        335.0
+        433.0
        ],
        [
         758.0,
-        335.0
+        433.0
        ]
       ]
      },
      {
       "from": "FPW.7-A08",
-      "to": "FPW.7-A12",
+      "to": "FPW.7-A13",
       "kind": "flow",
       "points": [
        [
         946.0,
-        335.0
+        433.0
        ],
        [
         1026.0,
-        335.0
+        433.0
        ],
        [
         1026.0,
@@ -13378,20 +14095,20 @@
       "kind": "flow",
       "points": [
        [
-        1226.0,
-        147.0
+        1506.0,
+        245.0
        ],
        [
-        1306.0,
-        147.0
+        1586.0,
+        245.0
        ],
        [
-        1306.0,
-        629.0
+        1586.0,
+        727.0
        ],
        [
-        1318.0,
-        629.0
+        1598.0,
+        727.0
        ]
       ]
      },
@@ -13401,20 +14118,20 @@
       "kind": "flow",
       "points": [
        [
-        1506.0,
-        629.0
+        1786.0,
+        727.0
        ],
        [
-        1586.0,
-        629.0
+        1866.0,
+        727.0
        ],
        [
-        1586.0,
-        147.0
+        1866.0,
+        245.0
        ],
        [
-        1598.0,
-        147.0
+        1878.0,
+        245.0
        ]
       ]
      },
@@ -13424,19 +14141,19 @@
       "kind": "flow",
       "points": [
        [
-        1506.0,
-        629.0
+        1786.0,
+        727.0
        ],
        [
-        1586.0,
-        629.0
+        1866.0,
+        727.0
        ],
        [
-        1586.0,
+        1866.0,
         49.0
        ],
        [
-        1598.0,
+        1878.0,
         49.0
        ]
       ]
@@ -13447,12 +14164,12 @@
       "kind": "end",
       "points": [
        [
-        1786.0,
-        147.0
+        2066.0,
+        245.0
        ],
        [
-        1800.0,
-        147.0
+        2080.0,
+        245.0
        ]
       ]
      },
@@ -13462,11 +14179,11 @@
       "kind": "end",
       "points": [
        [
-        1786.0,
+        2066.0,
         49.0
        ],
        [
-        1800.0,
+        2080.0,
         49.0
        ]
       ]
@@ -13475,11 +14192,7 @@
     "joins": [
      [
       746.0,
-      147.0
-     ],
-     [
-      746.0,
-      237.0
+      245.0
      ],
      [
       746.0,
@@ -13488,6 +14201,10 @@
      [
       746.0,
       433.0
+     ],
+     [
+      746.0,
+      531.0
      ]
     ]
    }
@@ -13675,6 +14392,55 @@
     }
    ],
    "activities": [
+    {
+     "id": "FPW.8-A12",
+     "name": "Flag 평가 이상 확인",
+     "trigger": "평가 모니터링에서 기본값 폴백·서명 오류가 늘어난다",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-INT"
+      ],
+      "I": [
+       "R-FO"
+      ]
+     },
+     "inputs": [],
+     "outputs": [],
+     "steps": [
+      "평가 모니터링에서 기본값 폴백·서명 오류·오류 수가 늘어난 Flag를 찾는다",
+      "차량 회신과 게시본을 대조해 원인이 배포·서명·차량 중 어디인지 가른다",
+      "필요하면 긴급 차단 또는 재배포 절차로 넘긴다"
+     ],
+     "checks": [
+      "폴백 급증 Flag마다 원인과 조치가 기록됐다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/ops/flag-evaluations"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.8-A01"
+     ]
+    },
     {
      "id": "FPW.8-A01",
      "name": "이상 징후 확인",
@@ -14338,49 +15104,58 @@
     }
    ],
    "layout": {
-    "width": 2766.0,
-    "height": 482.0,
+    "width": 3046.0,
+    "height": 572.0,
     "lanes": [
      {
       "role": "R-OPS",
       "label": "운영 조직",
       "x": 0.0,
       "y": 0.0,
-      "w": 2766.0,
-      "h": 188.0
+      "w": 3046.0,
+      "h": 278.0
      },
      {
       "role": "R-SM",
       "label": "Safety Manager",
       "x": 0.0,
-      "y": 188.0,
-      "w": 2766.0,
+      "y": 278.0,
+      "w": 3046.0,
       "h": 98.0
      },
      {
       "role": "R-REG",
       "label": "법규 담당",
       "x": 0.0,
-      "y": 286.0,
-      "w": 2766.0,
+      "y": 376.0,
+      "w": 3046.0,
       "h": 98.0
      },
      {
       "role": "R-QA",
       "label": "품질 조직",
       "x": 0.0,
-      "y": 384.0,
-      "w": 2766.0,
+      "y": 474.0,
+      "w": 3046.0,
       "h": 98.0
      }
     ],
     "nodes": [
      {
+      "id": "FPW.8-A12",
+      "kind": "action",
+      "label": "Flag 평가 이상 확인",
+      "x": 198.0,
+      "y": 16.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.8-A01",
       "kind": "action",
       "label": "이상 징후 확인",
-      "x": 198.0,
-      "y": 16.0,
+      "x": 478.0,
+      "y": 106.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14388,7 +15163,7 @@
       "id": "FPW.8-A04",
       "kind": "action",
       "label": "긴급 차단 요청",
-      "x": 1038.0,
+      "x": 1318.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -14397,7 +15172,7 @@
       "id": "FPW.8-A06",
       "kind": "action",
       "label": "차단 전달·적용 추적",
-      "x": 1598.0,
+      "x": 1878.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -14406,7 +15181,7 @@
       "id": "FPW.8-A08",
       "kind": "action",
       "label": "원인 조치·복원 요청",
-      "x": 1878.0,
+      "x": 2158.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -14415,7 +15190,7 @@
       "id": "FPW.8-A10",
       "kind": "action",
       "label": "단계적 복원·관측",
-      "x": 2438.0,
+      "x": 2718.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -14425,7 +15200,7 @@
       "kind": "action",
       "label": "분기 드릴·G8 운영 판정",
       "x": 198.0,
-      "y": 106.0,
+      "y": 196.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14433,8 +15208,8 @@
       "id": "FPW.8-A02",
       "kind": "action",
       "label": "차단 필요성·범위 판단",
-      "x": 478.0,
-      "y": 204.0,
+      "x": 758.0,
+      "y": 294.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14442,8 +15217,8 @@
       "id": "FPW.8-A05",
       "kind": "action",
       "label": "긴급 차단 2인 승인",
-      "x": 1318.0,
-      "y": 204.0,
+      "x": 1598.0,
+      "y": 294.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14451,8 +15226,8 @@
       "id": "FPW.8-A09",
       "kind": "action",
       "label": "복원 2인 승인",
-      "x": 2158.0,
-      "y": 204.0,
+      "x": 2438.0,
+      "y": 294.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14460,8 +15235,8 @@
       "id": "FPW.8-A03",
       "kind": "action",
       "label": "리콜·봉쇄 근거 연계",
-      "x": 758.0,
-      "y": 302.0,
+      "x": 1038.0,
+      "y": 392.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14469,8 +15244,8 @@
       "id": "FPW.8-A07",
       "kind": "action",
       "label": "긴급 권한 사후 검토",
-      "x": 1598.0,
-      "y": 400.0,
+      "x": 1878.0,
+      "y": 490.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14486,9 +15261,18 @@
      {
       "id": "FPW.8-S2",
       "kind": "start",
+      "label": "운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견",
+      "x": 426.0,
+      "y": 130.0,
+      "w": 18.0,
+      "h": 18.0
+     },
+     {
+      "id": "FPW.8-S3",
+      "kind": "start",
       "label": "분기 정기 일정",
       "x": 146.0,
-      "y": 130.0,
+      "y": 220.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -14496,8 +15280,8 @@
       "id": "FPW.8-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1800.0,
-      "y": 424.0,
+      "x": 2080.0,
+      "y": 514.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -14505,7 +15289,7 @@
       "id": "FPW.8-E2",
       "kind": "end",
       "label": "종료",
-      "x": 2640.0,
+      "x": 2920.0,
       "y": 40.0,
       "w": 18.0,
       "h": 18.0
@@ -14515,7 +15299,7 @@
       "kind": "end",
       "label": "종료",
       "x": 400.0,
-      "y": 130.0,
+      "y": 220.0,
       "w": 18.0,
       "h": 18.0
      }
@@ -14523,7 +15307,7 @@
     "edges": [
      {
       "from": "FPW.8-S1",
-      "to": "FPW.8-A01",
+      "to": "FPW.8-A12",
       "kind": "start",
       "points": [
        [
@@ -14538,22 +15322,37 @@
      },
      {
       "from": "FPW.8-S2",
-      "to": "FPW.8-A11",
+      "to": "FPW.8-A01",
       "kind": "trigger",
       "points": [
        [
-        164.0,
+        444.0,
         139.0
        ],
        [
-        198.0,
+        478.0,
         139.0
        ]
       ]
      },
      {
-      "from": "FPW.8-A01",
-      "to": "FPW.8-A02",
+      "from": "FPW.8-S3",
+      "to": "FPW.8-A11",
+      "kind": "trigger",
+      "points": [
+       [
+        164.0,
+        229.0
+       ],
+       [
+        198.0,
+        229.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A12",
+      "to": "FPW.8-A01",
       "kind": "flow",
       "points": [
        [
@@ -14566,11 +15365,34 @@
        ],
        [
         466.0,
-        237.0
+        139.0
        ],
        [
         478.0,
-        237.0
+        139.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A01",
+      "to": "FPW.8-A02",
+      "kind": "flow",
+      "points": [
+       [
+        666.0,
+        139.0
+       ],
+       [
+        746.0,
+        139.0
+       ],
+       [
+        746.0,
+        327.0
+       ],
+       [
+        758.0,
+        327.0
        ]
       ]
      },
@@ -14580,20 +15402,20 @@
       "kind": "flow",
       "points": [
        [
-        666.0,
-        237.0
+        946.0,
+        327.0
        ],
        [
-        746.0,
-        237.0
+        1026.0,
+        327.0
        ],
        [
-        746.0,
-        335.0
+        1026.0,
+        425.0
        ],
        [
-        758.0,
-        335.0
+        1038.0,
+        425.0
        ]
       ]
      },
@@ -14603,19 +15425,19 @@
       "kind": "flow",
       "points": [
        [
-        946.0,
-        335.0
+        1226.0,
+        425.0
        ],
        [
-        1026.0,
-        335.0
+        1306.0,
+        425.0
        ],
        [
-        1026.0,
+        1306.0,
         49.0
        ],
        [
-        1038.0,
+        1318.0,
         49.0
        ]
       ]
@@ -14626,20 +15448,20 @@
       "kind": "flow",
       "points": [
        [
-        1226.0,
+        1506.0,
         49.0
        ],
        [
-        1306.0,
+        1586.0,
         49.0
        ],
        [
-        1306.0,
-        237.0
+        1586.0,
+        327.0
        ],
        [
-        1318.0,
-        237.0
+        1598.0,
+        327.0
        ]
       ]
      },
@@ -14649,19 +15471,19 @@
       "kind": "flow",
       "points": [
        [
-        1506.0,
-        237.0
+        1786.0,
+        327.0
        ],
        [
-        1586.0,
-        237.0
+        1866.0,
+        327.0
        ],
        [
-        1586.0,
+        1866.0,
         49.0
        ],
        [
-        1598.0,
+        1878.0,
         49.0
        ]
       ]
@@ -14672,20 +15494,20 @@
       "kind": "flow",
       "points": [
        [
-        1506.0,
-        237.0
+        1786.0,
+        327.0
        ],
        [
-        1586.0,
-        237.0
+        1866.0,
+        327.0
        ],
        [
-        1586.0,
-        433.0
+        1866.0,
+        523.0
        ],
        [
-        1598.0,
-        433.0
+        1878.0,
+        523.0
        ]
       ]
      },
@@ -14695,11 +15517,11 @@
       "kind": "flow",
       "points": [
        [
-        1786.0,
+        2066.0,
         49.0
        ],
        [
-        1878.0,
+        2158.0,
         49.0
        ]
       ]
@@ -14710,20 +15532,20 @@
       "kind": "flow",
       "points": [
        [
-        2066.0,
+        2346.0,
         49.0
        ],
        [
-        2146.0,
+        2426.0,
         49.0
        ],
        [
-        2146.0,
-        237.0
+        2426.0,
+        327.0
        ],
        [
-        2158.0,
-        237.0
+        2438.0,
+        327.0
        ]
       ]
      },
@@ -14733,19 +15555,19 @@
       "kind": "flow",
       "points": [
        [
-        2346.0,
-        237.0
+        2626.0,
+        327.0
        ],
        [
-        2426.0,
-        237.0
+        2706.0,
+        327.0
        ],
        [
-        2426.0,
+        2706.0,
         49.0
        ],
        [
-        2438.0,
+        2718.0,
         49.0
        ]
       ]
@@ -14756,12 +15578,12 @@
       "kind": "end",
       "points": [
        [
-        1786.0,
-        433.0
+        2066.0,
+        523.0
        ],
        [
-        1800.0,
-        433.0
+        2080.0,
+        523.0
        ]
       ]
      },
@@ -14771,11 +15593,11 @@
       "kind": "end",
       "points": [
        [
-        2626.0,
+        2906.0,
         49.0
        ],
        [
-        2640.0,
+        2920.0,
         49.0
        ]
       ]
@@ -14787,61 +15609,75 @@
       "points": [
        [
         386.0,
-        139.0
+        229.0
        ],
        [
         400.0,
-        139.0
+        229.0
        ]
       ]
      }
     ],
-    "joins": []
+    "joins": [
+     [
+      466.0,
+      139.0
+     ]
+    ]
    },
    "departmentLayout": {
-    "width": 2766.0,
-    "height": 482.0,
+    "width": 3046.0,
+    "height": 572.0,
     "lanes": [
      {
       "department": "DEP-OPS",
       "label": "OTA·서비스운영팀",
       "x": 0.0,
       "y": 0.0,
-      "w": 2766.0,
-      "h": 188.0
+      "w": 3046.0,
+      "h": 278.0
      },
      {
       "department": "DEP-FS",
       "label": "기능안전팀",
       "x": 0.0,
-      "y": 188.0,
-      "w": 2766.0,
+      "y": 278.0,
+      "w": 3046.0,
       "h": 98.0
      },
      {
       "department": "DEP-HOM",
       "label": "법규인증팀",
       "x": 0.0,
-      "y": 286.0,
-      "w": 2766.0,
+      "y": 376.0,
+      "w": 3046.0,
       "h": 98.0
      },
      {
       "department": "DEP-QA",
       "label": "품질팀",
       "x": 0.0,
-      "y": 384.0,
-      "w": 2766.0,
+      "y": 474.0,
+      "w": 3046.0,
       "h": 98.0
      }
     ],
     "nodes": [
      {
+      "id": "FPW.8-A12",
+      "kind": "action",
+      "label": "Flag 평가 이상 확인",
+      "x": 198.0,
+      "y": 16.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.8-A01",
       "kind": "action",
       "label": "이상 징후 확인",
-      "x": 198.0,
-      "y": 16.0,
+      "x": 478.0,
+      "y": 106.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14849,7 +15685,7 @@
       "id": "FPW.8-A04",
       "kind": "action",
       "label": "긴급 차단 요청",
-      "x": 1038.0,
+      "x": 1318.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -14858,7 +15694,7 @@
       "id": "FPW.8-A06",
       "kind": "action",
       "label": "차단 전달·적용 추적",
-      "x": 1598.0,
+      "x": 1878.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -14867,7 +15703,7 @@
       "id": "FPW.8-A08",
       "kind": "action",
       "label": "원인 조치·복원 요청",
-      "x": 1878.0,
+      "x": 2158.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -14876,7 +15712,7 @@
       "id": "FPW.8-A10",
       "kind": "action",
       "label": "단계적 복원·관측",
-      "x": 2438.0,
+      "x": 2718.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -14886,7 +15722,7 @@
       "kind": "action",
       "label": "분기 드릴·G8 운영 판정",
       "x": 198.0,
-      "y": 106.0,
+      "y": 196.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14894,8 +15730,8 @@
       "id": "FPW.8-A02",
       "kind": "action",
       "label": "차단 필요성·범위 판단",
-      "x": 478.0,
-      "y": 204.0,
+      "x": 758.0,
+      "y": 294.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14903,8 +15739,8 @@
       "id": "FPW.8-A05",
       "kind": "action",
       "label": "긴급 차단 2인 승인",
-      "x": 1318.0,
-      "y": 204.0,
+      "x": 1598.0,
+      "y": 294.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14912,8 +15748,8 @@
       "id": "FPW.8-A09",
       "kind": "action",
       "label": "복원 2인 승인",
-      "x": 2158.0,
-      "y": 204.0,
+      "x": 2438.0,
+      "y": 294.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14921,8 +15757,8 @@
       "id": "FPW.8-A03",
       "kind": "action",
       "label": "리콜·봉쇄 근거 연계",
-      "x": 758.0,
-      "y": 302.0,
+      "x": 1038.0,
+      "y": 392.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14930,8 +15766,8 @@
       "id": "FPW.8-A07",
       "kind": "action",
       "label": "긴급 권한 사후 검토",
-      "x": 1598.0,
-      "y": 400.0,
+      "x": 1878.0,
+      "y": 490.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -14947,9 +15783,18 @@
      {
       "id": "FPW.8-S2",
       "kind": "start",
+      "label": "운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견",
+      "x": 426.0,
+      "y": 130.0,
+      "w": 18.0,
+      "h": 18.0
+     },
+     {
+      "id": "FPW.8-S3",
+      "kind": "start",
       "label": "분기 정기 일정",
       "x": 146.0,
-      "y": 130.0,
+      "y": 220.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -14957,8 +15802,8 @@
       "id": "FPW.8-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1800.0,
-      "y": 424.0,
+      "x": 2080.0,
+      "y": 514.0,
       "w": 18.0,
       "h": 18.0
      },
@@ -14966,7 +15811,7 @@
       "id": "FPW.8-E2",
       "kind": "end",
       "label": "종료",
-      "x": 2640.0,
+      "x": 2920.0,
       "y": 40.0,
       "w": 18.0,
       "h": 18.0
@@ -14976,7 +15821,7 @@
       "kind": "end",
       "label": "종료",
       "x": 400.0,
-      "y": 130.0,
+      "y": 220.0,
       "w": 18.0,
       "h": 18.0
      }
@@ -14984,7 +15829,7 @@
     "edges": [
      {
       "from": "FPW.8-S1",
-      "to": "FPW.8-A01",
+      "to": "FPW.8-A12",
       "kind": "start",
       "points": [
        [
@@ -14999,22 +15844,37 @@
      },
      {
       "from": "FPW.8-S2",
-      "to": "FPW.8-A11",
+      "to": "FPW.8-A01",
       "kind": "trigger",
       "points": [
        [
-        164.0,
+        444.0,
         139.0
        ],
        [
-        198.0,
+        478.0,
         139.0
        ]
       ]
      },
      {
-      "from": "FPW.8-A01",
-      "to": "FPW.8-A02",
+      "from": "FPW.8-S3",
+      "to": "FPW.8-A11",
+      "kind": "trigger",
+      "points": [
+       [
+        164.0,
+        229.0
+       ],
+       [
+        198.0,
+        229.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A12",
+      "to": "FPW.8-A01",
       "kind": "flow",
       "points": [
        [
@@ -15027,11 +15887,34 @@
        ],
        [
         466.0,
-        237.0
+        139.0
        ],
        [
         478.0,
-        237.0
+        139.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A01",
+      "to": "FPW.8-A02",
+      "kind": "flow",
+      "points": [
+       [
+        666.0,
+        139.0
+       ],
+       [
+        746.0,
+        139.0
+       ],
+       [
+        746.0,
+        327.0
+       ],
+       [
+        758.0,
+        327.0
        ]
       ]
      },
@@ -15041,20 +15924,20 @@
       "kind": "flow",
       "points": [
        [
-        666.0,
-        237.0
+        946.0,
+        327.0
        ],
        [
-        746.0,
-        237.0
+        1026.0,
+        327.0
        ],
        [
-        746.0,
-        335.0
+        1026.0,
+        425.0
        ],
        [
-        758.0,
-        335.0
+        1038.0,
+        425.0
        ]
       ]
      },
@@ -15064,19 +15947,19 @@
       "kind": "flow",
       "points": [
        [
-        946.0,
-        335.0
+        1226.0,
+        425.0
        ],
        [
-        1026.0,
-        335.0
+        1306.0,
+        425.0
        ],
        [
-        1026.0,
+        1306.0,
         49.0
        ],
        [
-        1038.0,
+        1318.0,
         49.0
        ]
       ]
@@ -15087,20 +15970,20 @@
       "kind": "flow",
       "points": [
        [
-        1226.0,
+        1506.0,
         49.0
        ],
        [
-        1306.0,
+        1586.0,
         49.0
        ],
        [
-        1306.0,
-        237.0
+        1586.0,
+        327.0
        ],
        [
-        1318.0,
-        237.0
+        1598.0,
+        327.0
        ]
       ]
      },
@@ -15110,19 +15993,19 @@
       "kind": "flow",
       "points": [
        [
-        1506.0,
-        237.0
+        1786.0,
+        327.0
        ],
        [
-        1586.0,
-        237.0
+        1866.0,
+        327.0
        ],
        [
-        1586.0,
+        1866.0,
         49.0
        ],
        [
-        1598.0,
+        1878.0,
         49.0
        ]
       ]
@@ -15133,20 +16016,20 @@
       "kind": "flow",
       "points": [
        [
-        1506.0,
-        237.0
+        1786.0,
+        327.0
        ],
        [
-        1586.0,
-        237.0
+        1866.0,
+        327.0
        ],
        [
-        1586.0,
-        433.0
+        1866.0,
+        523.0
        ],
        [
-        1598.0,
-        433.0
+        1878.0,
+        523.0
        ]
       ]
      },
@@ -15156,11 +16039,11 @@
       "kind": "flow",
       "points": [
        [
-        1786.0,
+        2066.0,
         49.0
        ],
        [
-        1878.0,
+        2158.0,
         49.0
        ]
       ]
@@ -15171,20 +16054,20 @@
       "kind": "flow",
       "points": [
        [
-        2066.0,
+        2346.0,
         49.0
        ],
        [
-        2146.0,
+        2426.0,
         49.0
        ],
        [
-        2146.0,
-        237.0
+        2426.0,
+        327.0
        ],
        [
-        2158.0,
-        237.0
+        2438.0,
+        327.0
        ]
       ]
      },
@@ -15194,19 +16077,19 @@
       "kind": "flow",
       "points": [
        [
-        2346.0,
-        237.0
+        2626.0,
+        327.0
        ],
        [
-        2426.0,
-        237.0
+        2706.0,
+        327.0
        ],
        [
-        2426.0,
+        2706.0,
         49.0
        ],
        [
-        2438.0,
+        2718.0,
         49.0
        ]
       ]
@@ -15217,12 +16100,12 @@
       "kind": "end",
       "points": [
        [
-        1786.0,
-        433.0
+        2066.0,
+        523.0
        ],
        [
-        1800.0,
-        433.0
+        2080.0,
+        523.0
        ]
       ]
      },
@@ -15232,11 +16115,11 @@
       "kind": "end",
       "points": [
        [
-        2626.0,
+        2906.0,
         49.0
        ],
        [
-        2640.0,
+        2920.0,
         49.0
        ]
       ]
@@ -15248,16 +16131,21 @@
       "points": [
        [
         386.0,
-        139.0
+        229.0
        ],
        [
         400.0,
-        139.0
+        229.0
        ]
       ]
      }
     ],
-    "joins": []
+    "joins": [
+     [
+      466.0,
+      139.0
+     ]
+    ]
    }
   },
   {
@@ -15585,6 +16473,63 @@
      },
      "slaHours": null,
      "next": [
+      "FPW.9-A06"
+     ]
+    },
+    {
+     "id": "FPW.9-A06",
+     "name": "Flag 제거 PR 병합",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [
+      "FFG-LCY-011"
+     ],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-TST"
+      ],
+      "I": [
+       "R-REL"
+      ]
+     },
+     "inputs": [
+      "WP-RETIRE-LOG"
+     ],
+     "outputs": [],
+     "steps": [
+      "Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다",
+      "최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다",
+      "4단계 기록에 정적 분석 근거로 마지막 스캔을 남긴다"
+     ],
+     "checks": [
+      "제거 PR 병합 뒤 스캔에서 해당 Flag 참조가 0건이다"
+     ],
+     "platform": {
+      "actions": [
+       "createFlagRemovalPr",
+       "recordFlagRetirementStep"
+      ],
+      "screens": [
+       "/flag-code/lifecycle",
+       "/flag-retirements"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
       "FPW.9-A05"
      ]
     },
@@ -15644,15 +16589,15 @@
     }
    ],
    "layout": {
-    "width": 1366.0,
-    "height": 392.0,
+    "width": 1646.0,
+    "height": 490.0,
     "lanes": [
      {
       "role": "R-QA",
       "label": "품질 조직",
       "x": 0.0,
       "y": 0.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -15660,7 +16605,7 @@
       "label": "Feature Owner",
       "x": 0.0,
       "y": 98.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -15668,15 +16613,23 @@
       "label": "요구 Owner",
       "x": 0.0,
       "y": 196.0,
-      "w": 1366.0,
+      "w": 1646.0,
+      "h": 98.0
+     },
+     {
+      "role": "R-INT",
+      "label": "통합 조직",
+      "x": 0.0,
+      "y": 294.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
       "role": "R-REL",
       "label": "Release Manager",
       "x": 0.0,
-      "y": 294.0,
-      "w": 1366.0,
+      "y": 392.0,
+      "w": 1646.0,
       "h": 98.0
      }
     ],
@@ -15718,11 +16671,20 @@
       "h": 66.0
      },
      {
+      "id": "FPW.9-A06",
+      "kind": "action",
+      "label": "Flag 제거 PR 병합",
+      "x": 1038.0,
+      "y": 310.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.9-A05",
       "kind": "action",
       "label": "Lifecycle 종료 전이",
-      "x": 1038.0,
-      "y": 310.0,
+      "x": 1318.0,
+      "y": 408.0,
       "w": 188.0,
       "h": 66.0
      },
@@ -15757,8 +16719,8 @@
       "id": "FPW.9-E2",
       "kind": "end",
       "label": "종료",
-      "x": 1240.0,
-      "y": 334.0,
+      "x": 1520.0,
+      "y": 432.0,
       "w": 18.0,
       "h": 18.0
      }
@@ -15842,7 +16804,7 @@
      },
      {
       "from": "FPW.9-A04",
-      "to": "FPW.9-A05",
+      "to": "FPW.9-A06",
       "kind": "flow",
       "points": [
        [
@@ -15860,6 +16822,29 @@
        [
         1038.0,
         343.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A06",
+      "to": "FPW.9-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226.0,
+        343.0
+       ],
+       [
+        1306.0,
+        343.0
+       ],
+       [
+        1306.0,
+        441.0
+       ],
+       [
+        1318.0,
+        441.0
        ]
       ]
      },
@@ -15884,12 +16869,12 @@
       "kind": "end",
       "points": [
        [
-        1226.0,
-        343.0
+        1506.0,
+        441.0
        ],
        [
-        1240.0,
-        343.0
+        1520.0,
+        441.0
        ]
       ]
      }
@@ -15897,7 +16882,7 @@
     "joins": []
    },
    "departmentLayout": {
-    "width": 1366.0,
+    "width": 1646.0,
     "height": 392.0,
     "lanes": [
      {
@@ -15905,7 +16890,7 @@
       "label": "품질팀",
       "x": 0.0,
       "y": 0.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -15913,7 +16898,7 @@
       "label": "상품기획팀",
       "x": 0.0,
       "y": 98.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -15921,7 +16906,7 @@
       "label": "시스템엔지니어링팀",
       "x": 0.0,
       "y": 196.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -15929,7 +16914,7 @@
       "label": "SW통합·릴리스팀",
       "x": 0.0,
       "y": 294.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      }
     ],
@@ -15971,10 +16956,19 @@
       "h": 66.0
      },
      {
+      "id": "FPW.9-A06",
+      "kind": "action",
+      "label": "Flag 제거 PR 병합",
+      "x": 1038.0,
+      "y": 310.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.9-A05",
       "kind": "action",
       "label": "Lifecycle 종료 전이",
-      "x": 1038.0,
+      "x": 1318.0,
       "y": 310.0,
       "w": 188.0,
       "h": 66.0
@@ -16010,7 +17004,7 @@
       "id": "FPW.9-E2",
       "kind": "end",
       "label": "종료",
-      "x": 1240.0,
+      "x": 1520.0,
       "y": 334.0,
       "w": 18.0,
       "h": 18.0
@@ -16095,7 +17089,7 @@
      },
      {
       "from": "FPW.9-A04",
-      "to": "FPW.9-A05",
+      "to": "FPW.9-A06",
       "kind": "flow",
       "points": [
        [
@@ -16112,6 +17106,21 @@
        ],
        [
         1038.0,
+        343.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.9-A06",
+      "to": "FPW.9-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226.0,
+        343.0
+       ],
+       [
+        1318.0,
         343.0
        ]
       ]
@@ -16137,11 +17146,11 @@
       "kind": "end",
       "points": [
        [
-        1226.0,
+        1506.0,
         343.0
        ],
        [
-        1240.0,
+        1520.0,
         343.0
        ]
       ]

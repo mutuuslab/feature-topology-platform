@@ -919,4 +919,163 @@ CREATE TRIGGER flag_source_manifest_no_delete BEFORE DELETE ON flag_source_manif
 CREATE TABLE cost_actual (est_id TEXT NOT NULL, ref_id TEXT NOT NULL, actual REAL NOT NULL CHECK (actual > 0), updated_by TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (est_id, ref_id));
 `,
   },
+  {
+    // Flag 코드 연결(20-97 §4.3) — 차량 SW 저장소 연결과 GitHub webhook 배달 기록(배달 ID로 재전송을 무시). 자격 증명은 넣지 않는다.
+    name: '091_flag_code_repository',
+    sql: `
+CREATE TABLE flag_code_repository (
+  repo_id TEXT PRIMARY KEY,
+  provider TEXT NOT NULL CHECK (provider IN ('GITHUB','GITLAB')),
+  repository TEXT NOT NULL UNIQUE,
+  mode TEXT NOT NULL CHECK (mode IN ('GITHUB_APP','ACTIONS_OIDC','DEMO_MIRROR')),
+  status TEXT NOT NULL CHECK (status IN ('ACTIVE','PAUSED')),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  doc TEXT NOT NULL
+);
+CREATE TABLE flag_webhook_delivery (
+  delivery_id TEXT PRIMARY KEY,
+  repo_id TEXT,
+  event TEXT NOT NULL,
+  received_at TEXT NOT NULL,
+  signature_ok INTEGER NOT NULL,
+  outcome TEXT NOT NULL,
+  scan_id TEXT
+);
+CREATE INDEX flag_webhook_delivery_repo ON flag_webhook_delivery (repo_id, received_at);
+`,
+  },
+  {
+    // 스캔 실행·결과 — 결과(서명된 manifest v2)는 추가만 한다. 사용처 색인은 이전 스캔 근거(삭제된 호출)를 찾는다.
+    name: '092_flag_scan',
+    sql: `
+CREATE TABLE flag_scan_run (
+  scan_id TEXT PRIMARY KEY,
+  repo_id TEXT NOT NULL,
+  scan_trigger TEXT NOT NULL,
+  ref TEXT NOT NULL,
+  commit_id TEXT,
+  base_commit TEXT,
+  pr_number INTEGER,
+  status TEXT NOT NULL,
+  queued_at TEXT NOT NULL,
+  finished_at TEXT,
+  result_id TEXT,
+  doc TEXT NOT NULL
+);
+CREATE INDEX flag_scan_run_repo ON flag_scan_run (repo_id, queued_at);
+CREATE TABLE flag_scan_result (
+  result_id TEXT PRIMARY KEY,
+  repo_id TEXT NOT NULL,
+  ref TEXT NOT NULL,
+  commit_id TEXT NOT NULL,
+  scanned_at TEXT NOT NULL,
+  content_hash TEXT NOT NULL,
+  provenance TEXT NOT NULL CHECK (provenance IN ('FF_SCAN','CI_ATTESTED','DEMO')),
+  attestation TEXT NOT NULL,
+  doc TEXT NOT NULL,
+  UNIQUE (repo_id, commit_id)
+);
+CREATE INDEX flag_scan_result_repo ON flag_scan_result (repo_id, ref, scanned_at);
+CREATE TABLE flag_usage_index (
+  result_id TEXT NOT NULL,
+  flag_key TEXT NOT NULL,
+  path TEXT NOT NULL,
+  line INTEGER NOT NULL,
+  PRIMARY KEY (result_id, flag_key, path, line)
+);
+CREATE INDEX flag_usage_index_key ON flag_usage_index (flag_key, result_id);
+CREATE TRIGGER flag_scan_result_no_update BEFORE UPDATE ON flag_scan_result BEGIN SELECT RAISE(ABORT, 'flag_scan_result는 추가만 가능'); END;
+CREATE TRIGGER flag_scan_result_no_delete BEFORE DELETE ON flag_scan_result BEGIN SELECT RAISE(ABORT, 'flag_scan_result는 추가만 가능'); END;
+`,
+  },
+  {
+    // Flag 계획 — Feature Version 승인 때 제어점마다 정한 키(정책 키 우선). 키는 Feature 단위, 첫 Version을 남긴다. flag_registry에도 묶는다.
+    name: '093_flag_plan',
+    sql: `
+CREATE TABLE flag_plan (
+  flag_key TEXT PRIMARY KEY,
+  feature_id TEXT NOT NULL,
+  first_version TEXT NOT NULL,
+  control_point TEXT NOT NULL,
+  ordinal INTEGER NOT NULL,
+  package TEXT NOT NULL,
+  source TEXT NOT NULL CHECK (source IN ('POLICY','PLANNED')),
+  planned_at TEXT NOT NULL,
+  doc TEXT NOT NULL
+);
+CREATE INDEX flag_plan_feature ON flag_plan (feature_id);
+`,
+  },
+  {
+    // FF가 여는 Flag PR — 뼈대(SCAFFOLD)·제거(REMOVAL). 저장소·브랜치마다 하나.
+    name: '094_flag_pull_request',
+    sql: `
+CREATE TABLE flag_pull_request (
+  pr_id TEXT PRIMARY KEY,
+  repo_id TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('SCAFFOLD','REMOVAL')),
+  feature_id TEXT NOT NULL,
+  version TEXT NOT NULL,
+  branch TEXT NOT NULL,
+  number INTEGER,
+  state TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  doc TEXT NOT NULL,
+  UNIQUE (repo_id, branch)
+);
+CREATE INDEX flag_pull_request_feature ON flag_pull_request (feature_id, version);
+`,
+  },
+  {
+    // 출시 차단 해제 — 요청 당시 대사 상태에만 적용, 최대 30일. 결정은 개인 서명(doc).
+    name: '095_flag_gate_waiver',
+    sql: `
+CREATE TABLE flag_gate_waiver (
+  waiver_id TEXT PRIMARY KEY,
+  flag_key TEXT NOT NULL,
+  feature_id TEXT NOT NULL,
+  version TEXT NOT NULL,
+  state TEXT NOT NULL CHECK (state IN ('REQUESTED','APPROVED','REJECTED','EXPIRED')),
+  requested_by TEXT NOT NULL,
+  requested_at TEXT NOT NULL,
+  decided_by TEXT,
+  decided_at TEXT,
+  expires_at TEXT NOT NULL,
+  doc TEXT NOT NULL
+);
+CREATE INDEX flag_gate_waiver_flag ON flag_gate_waiver (flag_key, state);
+`,
+  },
+  {
+    // 평가 지표 — 원천별 시간 구간 집계와 Flag별 마지막 평가 시각. Unleash 관측(시연 동기화 기록)은 실제 동기화 기록이 있으면 쓰지 않는다.
+    name: '096_flag_evaluation_bucket',
+    sql: `
+CREATE TABLE flag_evaluation_bucket (
+  flag_key TEXT NOT NULL,
+  bucket_start TEXT NOT NULL,
+  source TEXT NOT NULL CHECK (source IN ('UNLEASH_EDGE','FF_OFREP','VEHICLE_REPORT')),
+  evaluations INTEGER NOT NULL,
+  enabled INTEGER NOT NULL,
+  disabled INTEGER NOT NULL,
+  fallbacks INTEGER NOT NULL,
+  errors INTEGER NOT NULL,
+  vehicles INTEGER NOT NULL,
+  doc TEXT NOT NULL,
+  PRIMARY KEY (flag_key, bucket_start, source)
+);
+CREATE INDEX flag_evaluation_bucket_time ON flag_evaluation_bucket (bucket_start);
+CREATE TABLE flag_evaluation_last (flag_key TEXT PRIMARY KEY, last_evaluated_at TEXT NOT NULL);
+CREATE TABLE flag_unleash_observation (
+  flag_key TEXT NOT NULL,
+  policy_id TEXT NOT NULL,
+  revision INTEGER,
+  outcome TEXT NOT NULL CHECK (outcome IN ('SYNCED','FAILED')),
+  archived INTEGER NOT NULL,
+  observed_at TEXT NOT NULL,
+  PRIMARY KEY (flag_key, policy_id, observed_at)
+);
+`,
+  },
 ];

@@ -85,7 +85,8 @@ test('구현 담당자 — 실제 Git 스캔 재가져오기 → 소스 파일·
   expect(await imported.json()).toMatchObject({ manifestId: prior.manifestId, contentHash: prior.contentHash, importedBy: prior.importedBy, provenance: prior.provenance, manifest: fixture });
   await expect(dialog).toBeHidden();
   await expect(page.getByRole('status').filter({ hasText: 'Git 소스 연결을 저장했습니다.' })).toBeVisible();
-  await card.getByText('소스 파일 해시', { exact: true }).click();
+  // v2 스캔 사용처(차량 SW 저장소)도 같은 카드에 합쳐진다 — 가져온 스캔의 소스 줄을 고른다
+  await card.locator('.ff-source').filter({ hasText: usage.path }).getByText('소스 파일 해시', { exact: true }).click();
   await expect(card).toContainText(usage.contentHash);
 
   const policies = await request.get(`${API}/api/feature-flags?featureId=FEAT-00022&version=1.0.0`);

@@ -13,11 +13,11 @@ type Env = Record<string, string | undefined>;
 export const isProduction = (env: Env = process.env) => env.FF_ENV === 'production';
 
 /** 데모·시험에서만 쓰는 손잡이 — 운영 모드에서 켜져 있으면 거부 */
-const TEST_KNOBS = ['FF_CLOCK_AT', 'FF_SCHEDULER', 'FF_HSM_VEHICLE_ROOT', 'FF_DEMO_FIXTURES', 'FF_SYNTHETIC', 'FF_EXT_FIXTURES', 'FF_SEED_ANCHOR'] as const;
+const TEST_KNOBS = ['FF_CLOCK_AT', 'FF_SCHEDULER', 'FF_HSM_VEHICLE_ROOT', 'FF_DEMO_FIXTURES', 'FF_SYNTHETIC', 'FF_EXT_FIXTURES', 'FF_SEED_ANCHOR', 'FF_FLAG_CODE_FIXTURES'] as const;
 
 /** 공개 저장소에 적힌 모의 비밀 — 운영 모드에서 이 값이면 아무나 서명을 만들 수 있다 */
-export const MOCK_WEBHOOK_SECRETS = ['ff-mock-gitlab-token', 'ff-mock-jira-secret', 'ff-mock-codebeamer-secret'];
-const WEBHOOK_ENV = ['GITLAB_WEBHOOK_TOKEN', 'JIRA_WEBHOOK_SECRET', 'CODEBEAMER_WEBHOOK_SECRET'] as const;
+export const MOCK_WEBHOOK_SECRETS = ['ff-mock-gitlab-token', 'ff-mock-jira-secret', 'ff-mock-codebeamer-secret', 'ff-mock-github-secret'];
+const WEBHOOK_ENV = ['GITLAB_WEBHOOK_TOKEN', 'JIRA_WEBHOOK_SECRET', 'CODEBEAMER_WEBHOOK_SECRET', 'FF_GITHUB_WEBHOOK_SECRET'] as const;
 
 /** 시드 기본값 — 운영 모드는 빈 DB(none), 그 밖에는 데모 데이터(v0.81) */
 export const seedOf = (env: Env = process.env) => env.FF_SEED ?? (isProduction(env) ? 'none' : 'v0.81');

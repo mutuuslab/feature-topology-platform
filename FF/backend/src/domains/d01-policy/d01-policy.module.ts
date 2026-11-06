@@ -27,6 +27,7 @@ import { EntitlementService } from './entitlement/entitlement.service';
 import { FleetRepo, PolicyRepo } from './policy-repos';
 import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from './repos';
 import { StagedRolloutService } from './staged-rollout/staged-rollout.service';
+import { CanaryController, CanaryService } from './staged-rollout/canary.service';
 import { TargetingService } from './targeting/targeting.service';
 import { GateService } from './topology/gate.service';
 import { TopologyController } from './topology/topology.controller';
@@ -36,7 +37,7 @@ import { FlagSourceController, FlagSourceService } from './policy-store/flag-sou
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController],
+  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
@@ -49,6 +50,7 @@ import { FlagSourceController, FlagSourceService } from './policy-store/flag-sou
     TargetingService,
     ActivationService,
     StagedRolloutService,
+    CanaryService, // Canary 관측·중단 기준(TL-B01·B02) — Lake 집계(IF-15)로 단계 확대를 보류·중단
     SafetyProfileService,
     ReleaseSignoffService,
     WorkQueueService, // 검토함 대기열(W2)
@@ -59,6 +61,6 @@ import { FlagSourceController, FlagSourceService } from './policy-store/flag-sou
     AnalysisEvidenceService, // 분석 근거(W3) — HARA·TARA·SOTIF·형식승인 영향, G7 서명
     FlagSourceService,
   ],
-  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
+  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, CanaryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
 })
 export class D01PolicyModule {}

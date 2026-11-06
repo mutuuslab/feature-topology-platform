@@ -35,6 +35,8 @@ const SAMPLE: Record<string, string> = {
   // Feature DB v1.3(엑셀 가져옴) 기준 행 — 오토 홀드
   '/master/feature-db/:refId': '/master/feature-db/CH-BRK-009',
   '/consults/:id': `/consults/CON-${(process.env.FF_CLOCK_AT ?? new Date().toISOString()).slice(0, 4)}-001`,
+  // 운영 점검 결과 — 데모 시드(data/fixtures/lake/ff-demo.json)의 첫 건: 고속도로 주행 보조 2 4.1.0 문제 축(조치 중)
+  '/ops/feature-health/:findingId': '/ops/feature-health/FND-00001',
 };
 /**
  * 시드에 표본이 없는 하위 화면 — 새 DB에는 Feature DB 변경 요청이 하나도 없다(v1.3 가져옴은 요청 없이 발행).

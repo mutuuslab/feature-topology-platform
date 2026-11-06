@@ -4,6 +4,9 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useConnectionLabel } from '../../../api/connections';
 import { useApi } from '../../../api/hooks';
+import { lake as LK } from '../../../copy/lake';
+import { PLATFORM_ROLES } from '../../../api/actor';
+import type { CanaryOverviewResponse, FeatureHealthResponse, LakeStatusResponse } from '@ff/contracts';
 import { dashboard } from '../../../copy/dashboard';
 import { ko } from '../../../copy/ko';
 import { ops5y } from '../../../copy/ops5y';
@@ -39,6 +42,15 @@ function Summary({ role }: GadgetBodyProps) {
   // 5년 운영 데이터면 대상 차량은 모집단 모델(가정값)에서 — 시연·수신 차량 행 수가 아니다
   const pop = useApi<{ dataset: { kind: string }; funnel: { active: number } }>('fleetPopulation', {}, { staleTime: 300_000 });
   const ota = useConnectionLabel('ota');
+  // 역할별 운영 점검 카드(TL-UI15) — 안전 담당: 판정 대기 이상 징후 · 배포 담당: 보류된 확대 · 통합 담당: Data Lake 지연 · 운영: 조치 필요 점검 결과
+  const roles = PLATFORM_ROLES[role] ?? [];
+  const safety = roles.includes('SAFETY_OFFICER');
+  const deployer = roles.includes('RELEASE_MANAGER') || roles.includes('OPERATOR');
+  const integrator = roles.includes('IMPLEMENTER');
+  const opsRole = roles.includes('OPERATOR') || roles.includes('OPS_LEAD');
+  const canary = useApi<CanaryOverviewResponse>('canaryOverview', {}, { enabled: deployer, retry: false });
+  const lake = useApi<LakeStatusResponse>('lakeStatus', {}, { enabled: integrator, retry: false });
+  const health = useApi<FeatureHealthResponse>('featureHealth', {}, { enabled: opsRole, retry: false });
   const list = <T,>(d: { items?: T[] } | undefined) => (Array.isArray(d?.items) ? d!.items! : null);
   const f = list(feats.data);
   const activeKills = (list(kills.data) ?? []).filter(isSafetyKill).length;
@@ -53,6 +65,10 @@ function Summary({ role }: GadgetBodyProps) {
     { k: H.kpi.released, v: f ? f.filter((x) => x.lifecycle === 'RELEASED').length : null, to: '/features?lifecycle=RELEASED' },
     { k: H.kpi.policies, v: list(pols.data)?.length ?? null, to: '/policies' },
     { k: H.kpi.anomalies, v: list(anms.data) ? list(anms.data)!.filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED').length : null, to: '/ops/anomalies' },
+    ...(safety ? [{ k: LK.home.safety, v: list(anms.data) ? list(anms.data)!.filter((a) => a.status === 'OPEN').length : null, to: '/ops/anomalies' }] : []),
+    ...(deployer && canary.data?.connected ? [{ k: LK.home.deploy, v: canary.data.items.filter((c) => c.verdict === 'HOLD_STALE' || (c.verdict === 'ABORT' && c.criteria.registered)).length, to: '/admin/approval#inbox-canaryHold-h' }] : []),
+    ...(integrator && lake.data?.connected ? [{ k: LK.home.integration, v: lake.data.stale, to: '/integration/datalake' }] : []),
+    ...(opsRole && health.data?.connected ? [{ k: LK.home.findings, v: health.data.findings.filter((f) => f.status !== 'CLOSED' && f.severity === 'ACTION').length, to: '/ops/feature-health' }] : []),
     ...(target !== null ? [{ k: ops5y.home.target, v: target, title: formatExact(target) }] : []),
     // 수신 표본(SAMPLE)은 시연 Fleet이 아니다
     { k: H.kpi.online, v: vehicleCount, to: '/fleet/vehicles', badge: <ConnectionBadge state={ota} system="OTA" /> },

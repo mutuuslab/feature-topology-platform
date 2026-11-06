@@ -24,14 +24,19 @@ function deployHeaders(): Record<string, string> {
   }
   return out;
 }
+let dropSummary = false;
 export default defineConfig({
   base: pages ? '/feature-topology-platform/' : '/',
   plugins: [{
     name: 'browser-route-metadata',
     enforce: 'pre',
+    // 운영 빌드만 경로 설명(summary)을 뺀다 — 개발 서버·vitest는 그대로(첫 화면 예산, tools/browser-routes.ts)
+    configResolved(config) {
+      dropSummary = config.command === 'build';
+    },
     transform(code, id) {
       if (!id.replace(/\\/g, '/').endsWith('/contracts/src/routes.ts')) return;
-      return { code: browserRouteSource(code), map: null };
+      return { code: browserRouteSource(code, { dropSummary }), map: null };
     },
   }, react()],
   resolve: {

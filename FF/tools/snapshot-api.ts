@@ -377,6 +377,12 @@ async function main() {
   await save('securityEvents');
   // P11 — Flag Retirement·감독 기록·데이터·규제 기록
   for (const m of ['flagRetirements', 'iamSodAudit', 'killPostReviews', 'changeRecords', 'reharaRequests', 'sumsRecords', 'dataAccessRequests', 'retention']) await save(m);
+  // Data Lake 연계·Closed loop(80-70, TL-UI*) — 모의 Lake 조회·운영 점검(점검 결과마다)·Feature 운영 지표 탭·수집 정책·정책별 Canary
+  for (const m of ['lakeStatus', 'lakeContracts', 'lakeModels', 'lakeLabels', 'lakeAnomalyEvidence', 'lakeExperiments', 'lakeTrials', 'collectionPolicies', 'canaryOverview']) await save(m);
+  const health = await save('featureHealth');
+  for (const f of health.findings as { findingId: string }[]) await save('featureHealthFinding', { id: f.findingId });
+  for (const id of new Set((all.items as { featureId: string }[]).map((f) => f.featureId))) await save('featureOpsMetrics', { id });
+  for (const p of policies.items as { policyId: string }[]) await save('policyCanary', { id: p.policyId });
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

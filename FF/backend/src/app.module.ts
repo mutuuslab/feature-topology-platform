@@ -10,6 +10,7 @@ import { ExtSyncModule } from './domains/ext-sync.module';
 import { D06QsecModule } from './domains/d06-qsec/d06-qsec.module';
 import { DeliveryModule } from './domains/delivery.module';
 import { OpsLoopModule } from './domains/ops-loop.module';
+import { LakeLoopModule } from './domains/lake-loop.module';
 import { ProcedureModule } from './workflows/procedure.module';
 import { ConsultModule } from './workflows/consult.module';
 import { DashboardModule } from './dashboards/dashboard.module';
@@ -20,7 +21,7 @@ import { ShowcaseScenariosSeeder } from './demo-activity/showcase-scenarios.seed
 
 // 도메인 모듈(d01-policy … d06-qsec)은 단계별로 추가한다 — PROGRESS.md 참고.
 @Module({
-  imports: [KernelModule, D01PolicyModule, RefdbModule, CostModule, D06QsecModule, PolicyModule, DeliveryModule, OpsLoopModule, D04OpsModule, D05ExtModule, ExtModule, ExtSyncModule, ProcedureModule, DashboardModule, ConsultModule, UnleashLiveModule],
+  imports: [KernelModule, D01PolicyModule, RefdbModule, CostModule, D06QsecModule, PolicyModule, DeliveryModule, OpsLoopModule, LakeLoopModule, D04OpsModule, D05ExtModule, ExtModule, ExtSyncModule, ProcedureModule, DashboardModule, ConsultModule, UnleashLiveModule],
   // 데모 활동 시드 — 루트 공급자라 도메인 모듈의 부팅 훅 뒤에 돈다(demo-activity.seeder.ts)
   providers: [DemoActivitySeeder, ShowcaseScenariosSeeder],
 })

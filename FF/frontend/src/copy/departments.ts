@@ -116,6 +116,7 @@ export const departments = {
     online: '연결된 차량',
     offline: '연결 끊김',
     anomalies: '열린 이상 징후',
+    findings: '운영 점검 조치 필요',
     kills: '진행 중인 차단',
     killRequest: '긴급 차단 요청',
     killHint: '요청 1 · 승인 2(기능안전·사이버보안) 뒤 전달',

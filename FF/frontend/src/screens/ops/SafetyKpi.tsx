@@ -1,11 +1,16 @@
 // /ops/safety-kpi — 운행 중 감시 지표 (D04-03, 보고서 v1.1 13.4·13.5 · FFG-TEL-009). 출시 Feature Version마다 지표 6종·경보,
 // Safety Case 경보 기준 기록(FSM), ADS 기능의 부속서 1 정기 보고. 값은 서버(contracts computeMetrics)가 계산한다.
+import { FreshnessChip } from '../../design/freshness';
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, SummaryLine, VerdictBadge } from '../../design';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
+import { Link } from 'react-router-dom';
+import { findingOpen, type FeatureHealthResponse } from '@ff/contracts';
+import { lake as LK } from '../../copy/lake';
+import { HealthBadge } from './lake-ui';
 
 const K = ko.safetyKpi;
 type MetricId = keyof typeof K.metric;
@@ -238,7 +243,36 @@ export function SafetyKpiScreen() {
           ]}
         />
       </AsyncView>
+      <LakeActuals />
       <KpiDrawer item={selected} defs={defs} onClose={() => setOpen(null)} />
     </div>
+  );
+}
+
+/** Data Lake 실측(TL-UI06) — 출시 판의 안전 이벤트·DTC와 신선도. 문제 축이 임계를 넘으면 점검 결과로 잇는다 */
+function LakeActuals() {
+  const q = useApi<FeatureHealthResponse>('featureHealth');
+  const d = q.data;
+  if (!d?.connected || !d.rows.length) return null;
+  const val = (r: FeatureHealthResponse['rows'][number], n: string) => r.indicators.find((i) => i.name === n)?.current ?? null;
+  const finding = (r: FeatureHealthResponse['rows'][number]) => d.findings.find((f) => f.featureId === r.featureId && f.version === r.version && f.axis === 'PROBLEM' && findingOpen(f.status));
+  const C = LK.kpi.col;
+  return (
+    <Panel title={LK.kpi.title} id="lake-actuals" eyebrow={LK.kpi.note} actions={<FreshnessChip f={d.rows[0].freshness} />}>
+      <DataTable
+        caption={LK.kpi.title}
+        rows={d.rows}
+        rowKey={(r) => `${r.featureId}@${r.version}`}
+        initialSort={{ key: 'p', dir: 'asc' }}
+        columns={[
+          { key: 'f', header: C.feature, cell: (r) => <span className="ds-mono ds-nowrap">{r.featureId} {r.version}</span>, sort: (r) => r.featureId + r.version },
+          { key: 's', header: C.safety, cell: (r) => <span className="ds-mono">{LK.value('safety_event_rate_per_1k', val(r, 'safety_event_rate_per_1k'))}</span>, align: 'right', sort: (r) => val(r, 'safety_event_rate_per_1k') ?? 0 },
+          { key: 'd', header: C.dtc, cell: (r) => <span className="ds-mono">{LK.value('dtc_vehicle_rate', val(r, 'dtc_vehicle_rate'))}</span>, align: 'right', sort: (r) => val(r, 'dtc_vehicle_rate') ?? 0 },
+          { key: 'p', header: C.state, cell: (r) => <HealthBadge state={r.axes.PROBLEM.state} />, sort: (r) => ['ACTION', 'WATCH', 'UNKNOWN', 'OK'].indexOf(r.axes.PROBLEM.state) },
+          { key: 'fr', header: C.fresh, cell: (r) => <FreshnessChip f={r.freshness} compact /> },
+          { key: 'x', header: C.finding, cell: (r) => { const f = finding(r); return f ? <Link to={`/ops/feature-health/${f.findingId}`}>{f.findingId}</Link> : '—'; } },
+        ]}
+      />
+    </Panel>
   );
 }

@@ -1,5 +1,6 @@
 export const observability = {
   title: '지표·추적·이벤트',
+  lakeTab: 'Data Lake 출처 지표',
   lead: '차량 회신과 서버 처리 기록을 함께 확인합니다. 지표는 서버 시작 이후 누적이며 시간 분포는 조회된 기록의 범위입니다.',
   metrics: '처리 지표', traces: '평가 요청 추적', logs: '이벤트 기록', readbacks: '차량 회신',
   requests: 'HTTP 요청', errors: 'HTTP 오류', latency: '평균 처리 시간', route: '처리 경로',

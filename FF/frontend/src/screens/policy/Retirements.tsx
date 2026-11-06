@@ -6,6 +6,7 @@ import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';
+import { OpsEvidence } from '../ops/OpsEvidence';
 import { usePermission, when } from '../shared';
 
 const T = ko.p11.retire;
@@ -147,6 +148,7 @@ function RetirementDrawer({ r, onClose }: { r: Retirement | null; onClose: () =>
               { k: T.col.due, v: <span style={{ color: r.overdue ? 'var(--danger)' : undefined }}>{r.codeRemovalDue ? when(r.codeRemovalDue) : '—'}</span> },
             ]}
           />
+          <OpsEvidence featureId={r.featureId} version={r.featureVersion} />
           <ol className="ds-stack" aria-label={T.list} style={{ paddingLeft: 'var(--sp-4)' }}>
             {RETIREMENT_STEPS.map((s) => {
               const rec = s.key === 'APPROVED' ? (r.approvedAt ? { at: r.approvedAt, by: r.approvals.map((a) => a.by).join(', ') } : null) : r.steps[s.key];

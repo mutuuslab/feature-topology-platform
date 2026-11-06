@@ -40,42 +40,47 @@
 
 ### P1 — UI/UX (먼저)
 - 진행 순서: TL-UI01 → **TL-UI16 → TL-UI17**(Closed loop 중심 화면) → TL-UI02~15
+- **2026-11-06 구현(브랜치 `feat/telemetry-ui`)** — TL-UI01~18 전부. Lake 서버(TL-L*)·차량 전환(TL-M*)·실제 연결(TL-X01)은 결정 대기라 하지 않고, FF 백엔드에 IF-15 모의 Lake 어댑터를 둔다.
+  - 모의 Lake: `backend/src/adapters/lake/`(`LakeLink` → `MockLake`, 연결 방식 `IF_MODE_15`·`FF_CONN_DATALAKE`, 운영 설치 기본 off), 예시 `data/fixtures/lake/`(데이터 계약·모델·Feature/flag별 예시·FF 데모 기록). 데모는 seamless 표시(모의 표시 없음), 운영 설치는 '연결 안 됨'
+  - 새 화면: `/ops/feature-health`(허브)·`/ops/feature-health/:findingId`(점검 결과)·`/ops/collection`·`/integration/datalake`, 정책 상세 Canary 패널·중단 기준 등록, Feature 상세 '운영 지표' 탭, `FreshnessChip`
+  - FF 쪽: 마이그레이션 `111_lake_closed_loop`(점검 결과·수집 정책·모델 사용 승인·중단 기준), 시험 `backend/test/d04/lake-loop.spec.ts`·`frontend/src/__tests__/lakeLoop.test.tsx`·`contracts/src/rules/lake.test.ts`·`e2e/tests/lake-loop.spec.ts`
+  - 남은 것: TL-UI06의 '임계 초과 → 이상 징후 건'은 점검 결과로 잇는다(이상 징후 자동 생성 TL-B03 전). 조치 연결은 참조 번호 기록까지(실제 JIRA·codeBeamer 호출·정책 HOLD 실행은 TL-B09 다음 단계)
 | ID | 상태 | 화면·위치 | 내용(핵심 메시지) | 선행 |
 |---|---|---|---|---|
-| TL-UI01 | 대기 | design `FreshnessChip` + `_design` 갤러리 | 출처 데이터셋·기준 시각·지연. SLA 초과면 경고와 "판단 보류" 사유 | TL-C01 |
-| TL-UI02 | 대기 | 정책 상세 `/policies/:id` (`screens/policy/Policies.tsx`) — Canary 관측 패널 | 적용군과 대조군의 실패율·DTC·안전 이벤트 추이와 중단 기준선, 모델 위험 점수(권고·기여 요인). "이상 없음 — 확대 가능 / DTC 상대위험 1.8 — 확대 중단 / 지표 23분 지연 — 확대 보류" | TL-UI01 |
-| TL-UI03 | 대기 | 정책 상세 단계 확대 Drawer(`drawer === 'stage'`) | 중단 기준 사전 등록: 지표·임계·신뢰수준·관측 시간·신선도(FR-ROL-002-006). 기준이 없으면 확대 버튼이 사유를 안내 | TL-UI02 |
-| TL-UI04 | 대기 | Feature 상세 `/features/:id/:ver` 새 탭 '운영 지표' (`screens/features/FeatureDetail.tsx`) | 버전별 활성 차량(만 단위)·사용률·적용 실패율·DTC·배포 후 VOC·롤백 수 | TL-UI01 |
-| TL-UI05 | 대기 | 이상 징후 `/ops/anomalies` (`screens/ops/Anomalies.tsx`) | 출처(규칙 ①·모델 ②와 버전), Lake 증거 스냅샷 링크, 사람 판정(확인·오탐 → 재학습 라벨) | TL-UI01 |
-| TL-UI06 | 대기 | 운행 중 감시 지표 `/ops/safety-kpi` (`screens/ops/SafetyKpi.tsx`) | Lake 실측 + 신선도. 임계 초과면 이상 징후 건으로 연결 | TL-UI01 |
-| TL-UI07 | 대기 | 실험·효과 `/experiments` (`screens/ext/Experiments.tsx`) | 모의값을 실측 효과·신뢰구간·표본 수로 바꾼다. 표본이 부족하면 "아직 판단 불가" | TL-UI01 |
-| TL-UI08 | 대기 | 체험 전환 분석 `/biz/trials` (`screens/biz/TrialAnalytics.tsx`) | 실사용일과 구매 전환의 관계, 추천 대상(모델 ④, 공정성 점검 결과) | TL-UI01 |
-| TL-UI09 | 대기 | **신설** 수집 정책 `/ops/collection` | 신호·대상 차량군·트리거·데이터 범주·동의 근거·예상 데이터량(일 GB)·시장. 서명 배포·회신은 기존 배포 화면 흐름 재사용 | TL-C01 |
-| TL-UI10 | 대기 | **신설** Data Lake 연계 `/integration/datalake` | 데이터 계약(신선도·품질·최근 적재), 모델 목록(Lake 소유, 읽기)과 FF 사용 승인, 라벨 보내기 현황. 핵심 메시지: "데이터 계약 N건 지연" 또는 "모두 기준 안" | TL-C01 |
-| TL-UI11 | 대기 | 외부 연계 현황 `/integration/connectors` (`screens/ext/Integrations.tsx`) | IF-15 행(모의·실제, 지연, 실패 수), Data Lake 연계 화면으로 이동 | TL-UI10 |
-| TL-UI12 | 대기 | 데이터·규제 기록 `/admin/data` (`screens/admin/DataGovernance.tsx`) | 받는 데이터의 근거(동의·법령)·보존·가명 처리, 보내는 라벨 목록, CN 국외 이전 보류 | TL-C01 |
-| TL-UI13 | 대기 | 검토함 `/admin/approval` (`screens/home/Inbox.tsx`) | 새 대기열: 모델 사용 승인, 이상 징후 판정, 신선도 초과로 보류된 확대 | TL-UI02·05·10 |
-| TL-UI14 | 대기 | 운영 데이터·이벤트 `/ops/telemetry` (`screens/master/Ops.tsx` TelemetryScreen) | 제어 채널(FF가 직접 받는 상태 보고)과 Lake 출처 지표를 나눠 표시 | TL-UI01 |
-| TL-UI15 | 대기 | 홈 `/` 역할별 카드 | 안전 담당: 판정 대기 이상 징후 수. 배포 담당: 보류된 확대 수. 통합 담당: IF-15 지연 | TL-UI13 |
-| TL-UI16 | 대기 | **신설** Feature 운영 점검 `/ops/feature-health` (Closed loop 허브) | 운영 중인 Feature 버전 × 4축(동작·문제·개선·위험) 상태 표, 상태는 정상·주의·조치 필요·판단 불가. 핵심 메시지: "조치 필요 N건 — 기한 지남 M" 또는 "모두 정상". 축·상태·담당 필터 | TL-UI01 |
-| TL-UI17 | 대기 | 점검 결과 상세(Drawer 또는 `/ops/feature-health/:findingId`) | 근거 지표 스냅샷(신선도)·담당·기한·조치 연결(JIRA·codeBeamer·정책)·효과 기준·조치 전후 비교. 상태 흐름: 감지 → 분석 중 → 조치 중 → 효과 확인 중 → 닫힘/다시 열림 | TL-UI16 |
-| TL-UI18 | 대기 | Feature 상세 '운영 지표' 탭(TL-UI04)에 4축 이력과 열린 점검 결과, Release Sign-off·Flag Retirement 화면에 근거로 연결 | 판정 이력 추이, 반복 문제 표시 | TL-UI16 |
+| TL-UI01 | 완료 | design `FreshnessChip` + `_design` 갤러리 | 출처 데이터셋·기준 시각·지연. SLA 초과면 경고와 "판단 보류" 사유 | TL-C01 |
+| TL-UI02 | 완료 | 정책 상세 `/policies/:id` (`screens/policy/Policies.tsx`) — Canary 관측 패널 | 적용군과 대조군의 실패율·DTC·안전 이벤트 추이와 중단 기준선, 모델 위험 점수(권고·기여 요인). "이상 없음 — 확대 가능 / DTC 상대위험 1.8 — 확대 중단 / 지표 23분 지연 — 확대 보류" | TL-UI01 |
+| TL-UI03 | 완료 | 정책 상세 단계 확대 Drawer(`drawer === 'stage'`) | 중단 기준 사전 등록: 지표·임계·신뢰수준·관측 시간·신선도(FR-ROL-002-006). 기준이 없으면 확대 버튼이 사유를 안내 | TL-UI02 |
+| TL-UI04 | 완료 | Feature 상세 `/features/:id/:ver` 새 탭 '운영 지표' (`screens/features/FeatureDetail.tsx`) | 버전별 활성 차량(만 단위)·사용률·적용 실패율·DTC·배포 후 VOC·롤백 수 | TL-UI01 |
+| TL-UI05 | 완료 | 이상 징후 `/ops/anomalies` (`screens/ops/Anomalies.tsx`) | 출처(규칙 ①·모델 ②와 버전), Lake 증거 스냅샷 링크, 사람 판정(확인·오탐 → 재학습 라벨) | TL-UI01 |
+| TL-UI06 | 완료 | 운행 중 감시 지표 `/ops/safety-kpi` (`screens/ops/SafetyKpi.tsx`) | Lake 실측 + 신선도. 임계 초과면 이상 징후 건으로 연결 | TL-UI01 |
+| TL-UI07 | 완료 | 실험·효과 `/experiments` (`screens/ext/Experiments.tsx`) | 모의값을 실측 효과·신뢰구간·표본 수로 바꾼다. 표본이 부족하면 "아직 판단 불가" | TL-UI01 |
+| TL-UI08 | 완료 | 체험 전환 분석 `/biz/trials` (`screens/biz/TrialAnalytics.tsx`) | 실사용일과 구매 전환의 관계, 추천 대상(모델 ④, 공정성 점검 결과) | TL-UI01 |
+| TL-UI09 | 완료 | **신설** 수집 정책 `/ops/collection` | 신호·대상 차량군·트리거·데이터 범주·동의 근거·예상 데이터량(일 GB)·시장. 서명 배포·회신은 기존 배포 화면 흐름 재사용 | TL-C01 |
+| TL-UI10 | 완료 | **신설** Data Lake 연계 `/integration/datalake` | 데이터 계약(신선도·품질·최근 적재), 모델 목록(Lake 소유, 읽기)과 FF 사용 승인, 라벨 보내기 현황. 핵심 메시지: "데이터 계약 N건 지연" 또는 "모두 기준 안" | TL-C01 |
+| TL-UI11 | 완료 | 외부 연계 현황 `/integration/connectors` (`screens/ext/Integrations.tsx`) | IF-15 행(모의·실제, 지연, 실패 수), Data Lake 연계 화면으로 이동 | TL-UI10 |
+| TL-UI12 | 완료 | 데이터·규제 기록 `/admin/data` (`screens/admin/DataGovernance.tsx`) | 받는 데이터의 근거(동의·법령)·보존·가명 처리, 보내는 라벨 목록, CN 국외 이전 보류 | TL-C01 |
+| TL-UI13 | 완료 | 검토함 `/admin/approval` (`screens/home/Inbox.tsx`) | 새 대기열: 모델 사용 승인, 이상 징후 판정, 신선도 초과로 보류된 확대 | TL-UI02·05·10 |
+| TL-UI14 | 완료 | 운영 데이터·이벤트 `/ops/telemetry` (`screens/master/Ops.tsx` TelemetryScreen) | 제어 채널(FF가 직접 받는 상태 보고)과 Lake 출처 지표를 나눠 표시 | TL-UI01 |
+| TL-UI15 | 완료 | 홈 `/` 역할별 카드 | 안전 담당: 판정 대기 이상 징후 수. 배포 담당: 보류된 확대 수. 통합 담당: IF-15 지연 | TL-UI13 |
+| TL-UI16 | 완료 | **신설** Feature 운영 점검 `/ops/feature-health` (Closed loop 허브) | 운영 중인 Feature 버전 × 4축(동작·문제·개선·위험) 상태 표, 상태는 정상·주의·조치 필요·판단 불가. 핵심 메시지: "조치 필요 N건 — 기한 지남 M" 또는 "모두 정상". 축·상태·담당 필터 | TL-UI01 |
+| TL-UI17 | 완료 | 점검 결과 상세(Drawer 또는 `/ops/feature-health/:findingId`) | 근거 지표 스냅샷(신선도)·담당·기한·조치 연결(JIRA·codeBeamer·정책)·효과 기준·조치 전후 비교. 상태 흐름: 감지 → 분석 중 → 조치 중 → 효과 확인 중 → 닫힘/다시 열림 | TL-UI16 |
+| TL-UI18 | 완료 | Feature 상세 '운영 지표' 탭(TL-UI04)에 4축 이력과 열린 점검 결과, Release Sign-off·Flag Retirement 화면에 근거로 연결 | 판정 이력 추이, 반복 문제 표시 | TL-UI16 |
 
 ### P2 — 계약 · FF backend
 | ID | 상태 | 내용 | 완료 기준 | 선행 |
 |---|---|---|---|---|
-| TL-C01 | 대기 | contracts: IF-15 매니페스트(D05-01 소속, D04-03·D06-12·D01-07 사용), 응답 스키마(GoldMetric·SafetyEvent·ModelScore·ModelSummary·DataContractStatus·Freshness), 라벨 CDC 스키마, CollectionPolicy, AbortCriteria, routes. **v1 계약은 80-75**: FF 라벨 봉투·종류 6개, 차량 서명 메시지·중계 기록·텔레메트리(`docs/80-integration/datalake-if15/`)와 조회 응답(OpenAPI `datalake-if15.openapi.json`)을 zod로 옮기고, 기존 형식 시험(`datalake-if15.test.ts`)에 zod ↔ JSON Schema 대조를 더한다. `components.manifest.ts` IF 목록에 IF-15 추가 | contracts 시험, openapi 갱신. **P1 화면이 쓸 최소본을 먼저** 만든다 | — |
-| TL-C02 | 대기 | IF-15 어댑터: mock(fixture, 5년 재생 모집단과 맞춤)·live(HTTP pull, 이벤트 구독, 라벨 쓰기), `IF_MODE_15`. live는 80-75 8장 조회 API(5분 pull) — 중계 소비자는 TL-M04 — `connections.ts`의 `datalake.ifId`를 `'IF-15'`·`liveAdapter: true`로 | 어댑터 시험(fixture·live fetch 대역) | TL-C01 |
-| TL-B01 | 대기 | 신선도 HOLD: SLA 초과 지표로 단계 확대 불가 | 시험: 지연 지표 → 확대 거부 + 사유 | TL-C02 |
-| TL-B02 | 대기 | 중단 기준 판정(규칙 ①, Lake 집계 기준) → 자동 HOLD, 사전 등록·변경 감사 | 시험: 임계 초과 → HOLD, 모델 점수만으로는 HOLD 안 됨 | TL-B01 |
+| TL-C01 | 진행 | contracts: IF-15 매니페스트(D05-01 소속, D04-03·D06-12·D01-07 사용), 응답 스키마(GoldMetric·SafetyEvent·ModelScore·ModelSummary·DataContractStatus·Freshness), 라벨 CDC 스키마, CollectionPolicy, AbortCriteria, routes. **v1 계약은 80-75**: FF 라벨 봉투·종류 6개, 차량 서명 메시지·중계 기록·텔레메트리(`docs/80-integration/datalake-if15/`)와 조회 응답(OpenAPI `datalake-if15.openapi.json`)을 zod로 옮기고, 기존 형식 시험(`datalake-if15.test.ts`)에 zod ↔ JSON Schema 대조를 더한다. `components.manifest.ts` IF 목록에 IF-15 추가 | contracts 시험, openapi 갱신. **P1 화면이 쓸 최소본을 먼저** 만든다 | — |
+| TL-C02 | 진행 | IF-15 어댑터: mock(fixture, 5년 재생 모집단과 맞춤)·live(HTTP pull, 이벤트 구독, 라벨 쓰기), `IF_MODE_15`. live는 80-75 8장 조회 API(5분 pull) — 중계 소비자는 TL-M04 — `connections.ts`의 `datalake.ifId`를 `'IF-15'`·`liveAdapter: true`로 | 어댑터 시험(fixture·live fetch 대역) | TL-C01 |
+| TL-B01 | 완료 | 신선도 HOLD: SLA 초과 지표로 단계 확대 불가 | 시험: 지연 지표 → 확대 거부 + 사유 | TL-C02 |
+| TL-B02 | 완료 | 중단 기준 판정(규칙 ①, Lake 집계 기준) → 자동 HOLD, 사전 등록·변경 감사 | 시험: 임계 초과 → HOLD, 모델 점수만으로는 HOLD 안 됨 | TL-B01 |
 | TL-B03 | 대기 | 이상 징후 자동 생성(규칙·모델 출처) + 사람 판정 → 라벨 | 시험 | TL-C02 |
 | TL-B04 | 대기 | 라벨 CDC: 정책·게시본·단계·차단·롤백·실험 배정·차량별 적용 상태·사람 판정 → Lake. ext-sync 보낼 함 엔진 재사용(`backend/src/domains/d05-ext/api-gateway/ext-sync`). **80-75 5장으로 바꿈**: FF가 만든 자료만(변경 라벨·relay.verdict·이상 징후 등 — 차량별 적용 상태는 차량이 Lake로 직접 보냄). 보낼 함 행을 따로 만들지 않고 `events` 표 + 커서 하나(재시도·지연 규칙만 ext-sync와 같게), VIN → 가명·자유 글 제외, 커서 뒤 이벤트는 보존 삭제 금지 | 시험: 누락 0, 재시도·멱등, Lake 정지 중 FF 기능 회귀 0 | TL-C02 |
-| TL-B05 | 대기 | 수집 정책 엔티티·승인·서명 게시본 배포·차량 회신 | 시험: 서명·대상·거부 회신 | TL-C01 |
-| TL-B06 | 대기 | 모델 사용 승인(2인·직무 분리·감사), 드리프트 시 "참고 불가" | 시험: 자기 승인 거부 | TL-C02 |
+| TL-B05 | 진행 | 수집 정책 엔티티·승인·서명 게시본 배포·차량 회신 | 시험: 서명·대상·거부 회신 | TL-C01 |
+| TL-B06 | 완료 | 모델 사용 승인(2인·직무 분리·감사), 드리프트 시 "참고 불가" | 시험: 자기 승인 거부 | TL-C02 |
 | TL-B07 | 대기 | 5년 재생 연동 + INV-16~19(FF 쪽 검사) | 재생 PASS, 보고서 갱신 | TL-B01~B06 |
-| TL-B08 | 대기 | 4축 판정 엔진(1일·5분·실시간 주기, 규칙 + 모델 권고) → 점검 결과(Finding) 생성·갱신, 같은 원인은 다시 열기 | 시험: 축별 판정, 판단 불가 분리, 중복 방지 | TL-C02 |
-| TL-B09 | 대기 | Finding 상태 흐름·담당·기한·조치 연결(JIRA 결함·개선 IF-14, codeBeamer 재검토 IF-01, 정책 HOLD·롤백·차단) | 시험: 조치 없이 단계 이동 불가, 감사 기록 | TL-B08 |
-| TL-B10 | 대기 | 효과 확인: 조치 전후 비교(표본·신뢰구간)로 닫기/다시 열기, 예외 닫기는 사유·2인 승인. 판정·조치·효과를 라벨로 Lake에 보냄(TL-B04) | 시험: 효과 미달 → 다시 열림. INV-20·21 | TL-B09·B04 |
+| TL-B08 | 완료 | 4축 판정 엔진(1일·5분·실시간 주기, 규칙 + 모델 권고) → 점검 결과(Finding) 생성·갱신, 같은 원인은 다시 열기 | 시험: 축별 판정, 판단 불가 분리, 중복 방지 | TL-C02 |
+| TL-B09 | 진행 | Finding 상태 흐름·담당·기한·조치 연결(JIRA 결함·개선 IF-14, codeBeamer 재검토 IF-01, 정책 HOLD·롤백·차단) | 시험: 조치 없이 단계 이동 불가, 감사 기록 | TL-B08 |
+| TL-B10 | 진행 | 효과 확인: 조치 전후 비교(표본·신뢰구간)로 닫기/다시 열기, 예외 닫기는 사유·2인 승인. 판정·조치·효과를 라벨로 Lake에 보냄(TL-B04) | 시험: 효과 미달 → 다시 열림. INV-20·21 | TL-B09·B04 |
 
 ### P3 — Data Lake 서버 (별도 서버)
 | ID | 상태 | 내용 | 완료 기준 | 선행 |

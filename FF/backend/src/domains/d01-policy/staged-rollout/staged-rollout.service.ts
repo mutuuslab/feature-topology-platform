@@ -14,6 +14,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { FleetRepo, PolicyRepo } from '../policy-repos';
 import { BaselineRepo, FeatureRepo, ProductRepo } from '../repos';
+import { CanaryService } from './canary.service';
 
 
 @Injectable()
@@ -27,6 +28,7 @@ export class StagedRolloutService {
     private readonly clock: Clock,
     private readonly profiles: SafetyProfileService,
     private readonly kills: KillRepo,
+    private readonly canary: CanaryService,
   ) {}
 
   /** 배포된 정책의 단계 조정 — 승인 범위(rollout) 안에서만, 해시·승인은 그대로 */
@@ -47,7 +49,9 @@ export class StagedRolloutService {
       .map((r) => r.anomaly_id);
     const activeKills = this.kills.active().filter((k) => k.featureId === p.featureId).map((k) => k.killId);
     const since = p.stagedAt ?? p.deployedAt ?? p.approvedAt ?? p.createdAt;
-    const j = judgeStageChange({ fClass, current, to: body.basisPoints, since, now: this.clock.iso(), actorId: actor.id, deployedBy: p.deployedBy ?? null, openAnomalies, activeKills });
+    // 사전 등록 중단 기준·신선도(Lake 집계, TL-B01·B02) — 넓힐 때만 본다. 모델 점수는 넣지 않는다(INV-17)
+    const lake = body.basisPoints > current ? this.canary.stageInput(p) : null;
+    const j = judgeStageChange({ fClass, current, to: body.basisPoints, since, now: this.clock.iso(), actorId: actor.id, deployedBy: p.deployedBy ?? null, openAnomalies, activeKills, lake });
     if (!j.ok) {
       const msg = j.blockers.map((b) => b.message).join('; ');
       this.audit.failed(actor, 'ROLLOUT_STAGE', policyId, msg, 'D01-08');

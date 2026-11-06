@@ -9,6 +9,8 @@ import { virtualCopy } from '../../copy/virtual';
 import { control as CT } from '../../copy/control';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Segmented, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
+import type { LakeAnomalyEvidence } from '@ff/contracts';
+import { lake as LK } from '../../copy/lake';
 
 const A = ko.anomaly;
 const FB = ko.feedback;
@@ -34,10 +36,18 @@ interface Anomaly {
   killId: string | null;
 }
 
+/** Data Lake 출처·증거(TL-UI05) — 규칙 ①·모델 ②와 판, 증거 스냅샷, 사람 판정 → 재학습 라벨 */
+function useLakeEvidence() {
+  const q = useApi<{ connected: boolean; items: LakeAnomalyEvidence[] }>('lakeAnomalyEvidence');
+  return (id: string) => q.data?.items.find((x) => x.anomalyId === id) ?? null;
+}
+const sourceText = (e: LakeAnomalyEvidence | null) => (!e ? '—' : e.source === 'MODEL' && e.model ? LK.anomaly.model(e.model.version) : LK.anomaly.rule);
+
 function AnomalyDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const q = useApi<Anomaly>('anomalyDetail', { params: { id: id ?? '' } }, { enabled: !!id });
+  const ev = useLakeEvidence()(id ?? '');
   const perm = usePermission([...OPS_ROLES]);
-  const inv = ['anomalies', 'anomalyDetail', 'qualityFeedback', 'audit'];
+  const inv = ['anomalies', 'anomalyDetail', 'qualityFeedback', 'audit', 'lakeAnomalyEvidence'];
   const ack = useApiMutation('acknowledgeAnomaly', inv);
   const mitigate = useApiMutation('mitigateAnomaly', inv);
   const dismiss = useApiMutation('dismissAnomaly', inv);
@@ -63,6 +73,13 @@ function AnomalyDrawer({ id, onClose }: { id: string | null; onClose: () => void
               { k: A.col.status, v: <span className="ds-mono">{A.status[a.status]}</span>, note: a.closedAt ? `${a.closedBy} · ${when(a.closedAt)} · ${a.closeReason}` : a.acknowledgedBy ? `${a.acknowledgedBy}` : undefined },
               { k: A.col.vehicles, v: <span className="ds-mono">{a.vins.join(', ') || '—'}</span> },
               ...(a.killId ? [{ k: A.killLinked, v: <Link to={`/ops/kill?id=${a.killId}`}>{a.killId}</Link> }] : []),
+              ...(ev
+                ? [
+                    { k: LK.anomaly.source, v: sourceText(ev), note: ev.model ? `${LK.anomaly.score} ${ev.model.usable ? ev.model.score : LK.anomaly.notUsable}` : undefined },
+                    { k: LK.anomaly.snapshot, v: <span className="ds-mono">{ev.snapshot.ref}</span>, note: `${ev.snapshot.dataset} · ${when(ev.snapshot.asOf)}` },
+                    { k: LK.anomaly.labelHead, v: LK.anomaly.label[ev.label] },
+                  ]
+                : []),
             ]}
           />
           <div>
@@ -122,7 +139,8 @@ function AnomalyDrawer({ id, onClose }: { id: string | null; onClose: () => void
 export function AnomalyScreen() {
   const [status, setStatus] = useState<'OPEN' | 'ALL'>('OPEN');
   const q = useApi<{ items: Anomaly[] }>('anomalies');
-  usePlatformEvents(['anomaly.', 'vehicle.fault', 'kill.'], ['anomalies', 'anomalyDetail']);
+  const evidence = useLakeEvidence();
+  usePlatformEvents(['anomaly.', 'vehicle.fault', 'kill.'], ['anomalies', 'anomalyDetail', 'lakeAnomalyEvidence']);
   const [open, setOpen] = useState<string | null>(() => new URLSearchParams(location.search).get('id'));
   const all = q.data?.items ?? [];
   const rows = status === 'ALL' ? all : all.filter((a) => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED');
@@ -158,6 +176,7 @@ export function AnomalyScreen() {
             { key: 'f', header: A.col.feature, cell: (a) => <span className="ds-mono">{a.featureId}</span> },
             { key: 's', header: A.col.severity, cell: (a) => <VerdictBadge value={SEVERITY_VERDICT[a.severity]} />, sort: (a) => ['INFO', 'WARNING', 'CRITICAL'].indexOf(a.severity) },
             { key: 'a', header: A.col.advice, cell: (a) => <span style={{ fontWeight: a.advice === 'KILL' ? 600 : 400 }}>{A.advice[a.advice]}</span> },
+            { key: 'src', header: LK.anomaly.source, cell: (a) => <span className="ds-nowrap">{sourceText(evidence(a.anomalyId))}</span> },
             { key: 'v', header: A.col.vehicles, cell: (a) => <span className="ds-mono">{a.vins.length}</span>, align: 'right' },
             { key: 'st', header: A.col.status, cell: (a) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{A.status[a.status]}</span> },
             { key: 'u', header: A.col.updated, cell: (a) => <span className="ds-mono ds-nowrap">{when(a.updatedAt)}</span>, sort: (a) => a.updatedAt },

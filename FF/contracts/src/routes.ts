@@ -54,6 +54,7 @@ import { DashboardCreateBody, DashboardDeleteBody, DashboardFavouriteBody, Dashb
 import { CreateRefChangeBody, DecideRefChangeBody, PublishRefReleaseBody, RecordSourceReviewBody, RequestRefAddBody, ReviewRefChangeBody } from './schemas/refdb';
 import { AnswerConsultationBody, CreateConsultationBody } from './schemas/consult';
 import { G7SignoffBody, HaraBody, HomologationBody, SotifBody, TaraBody } from './rules/gate-evidence';
+import { AbortCriteriaBody, FindingTransitionBody, LakeModelDecisionBody } from './schemas/lake';
 
 const EmptyBody = z.object({}).strict();
 /** Feature DB 변경 요청 작성 — 사람 역할(HUMAN_ROLES) 모두에서 감사 조회자만 뺀다(30-95 §8.1). 백엔드 컨트롤러 @Roles도 이것을 쓴다.
@@ -452,6 +453,23 @@ export const ROUTES: RouteDef[] = [
   { name: 'recordHomologation', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/homologation', summary: '형식승인 영향 판단 — 영향 규정·판단, 법규 담당 개인 서명(추가만)', component: 'D01-02', roles: ['REGULATORY_OWNER'], body: HomologationBody },
   { name: 'signG7Safety', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/g7-safety', summary: 'G7 기능안전 서명 — Safety Manager, 지금 HARA에 묶임', component: 'D01-02', roles: ['SAFETY_OFFICER'], body: G7SignoffBody },
   { name: 'signG7Security', method: 'POST', path: '/api/features/:id/versions/:ver/analysis/g7-security', summary: 'G7 사이버보안 서명 — CSM, 지금 TARA에 묶임(기능안전 서명과 다른 사람)', component: 'D01-02', roles: ['SECURITY_OFFICER'], body: G7SignoffBody },
+  // Data Lake 연계(IF-15)·Closed loop(80-70, BACKLOG TL-*) — Lake가 주인인 사실은 읽기만, 판정·점검 결과·승인·중단 기준은 FF가 주인
+  { name: 'lakeStatus', method: 'GET', path: '/api/lake/status', summary: 'Data Lake 연계 상태·신선도', component: 'D05-01' },
+  { name: 'lakeContracts', method: 'GET', path: '/api/lake/contracts', summary: 'Data Lake 데이터 계약', component: 'D05-01' },
+  { name: 'lakeModels', method: 'GET', path: '/api/lake/models', summary: 'Data Lake 모델·FF 사용 승인', component: 'D05-01' },
+  { name: 'approveLakeModel', method: 'POST', path: '/api/lake/models/:id/approvals', summary: '모델 사용 승인(2인)', component: 'D05-01', roles: ['SAFETY_OFFICER', 'OPS_LEAD'], body: LakeModelDecisionBody },
+  { name: 'lakeLabels', method: 'GET', path: '/api/lake/labels', summary: '라벨 보내기 현황', component: 'D05-01' },
+  { name: 'lakeAnomalyEvidence', method: 'GET', path: '/api/lake/anomaly-evidence', summary: '이상 징후 출처·증거', component: 'D06-12' },
+  { name: 'lakeExperiments', method: 'GET', path: '/api/lake/experiments', summary: '실험 실측 효과', component: 'D01-07' },
+  { name: 'lakeTrials', method: 'GET', path: '/api/lake/trials', summary: '체험 전환 실측·추천', component: 'D05-06' },
+  { name: 'featureHealth', method: 'GET', path: '/api/feature-health', summary: '운영 점검 4축 판정', component: 'D04-03' },
+  { name: 'featureHealthFinding', method: 'GET', path: '/api/feature-health/findings/:id', summary: '점검 결과 상세', component: 'D04-03' },
+  { name: 'moveFinding', method: 'POST', path: '/api/feature-health/findings/:id/transition', summary: '점검 결과 상태 이동', component: 'D04-03', roles: ['OPERATOR', 'OPS_LEAD', 'SAFETY_OFFICER', 'FEATURE_AUTHOR', 'RELEASE_MANAGER', 'SECURITY_OFFICER'], body: FindingTransitionBody },
+  { name: 'featureOpsMetrics', method: 'GET', path: '/api/features/:id/ops-metrics', summary: 'Feature 운영 지표', component: 'D04-03' },
+  { name: 'canaryOverview', method: 'GET', path: '/api/canary', summary: 'Canary 관측 목록', component: 'D01-08' },
+  { name: 'policyCanary', method: 'GET', path: '/api/policies/:id/canary', summary: '정책 Canary 관측', component: 'D01-08' },
+  { name: 'registerAbortCriteria', method: 'PUT', path: '/api/policies/:id/abort-criteria', summary: '중단 기준 사전 등록', component: 'D01-08', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: AbortCriteriaBody },
+  { name: 'collectionPolicies', method: 'GET', path: '/api/collection-policies', summary: '수집 정책', component: 'D04-03' },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

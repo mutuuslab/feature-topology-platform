@@ -1,10 +1,11 @@
 // /integration/connectors — 외부 연계 현황 (D05-01): IF-01~13 연결 방식·호출, IF-01 ALM 요구사항, IF-08 협력사 납품, IF-11 OTel span, 호출 기록.
 // /integration/sync — 데이터 동기화 (D05-02): 대상별 시장·방향·이전 심사, 대사 실행·차이.
 // /integration/legacy — Legacy 연계 (D05-03) + Legacy-SDV (D05-07).
+import { spanText } from '../../design/freshness';
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
-import { connectionLabel, useConnections } from '../../api/connections';
+import { connectionLabel, shownMode, useConnections, useSeamless } from '../../api/connections';
 import type { ConnectionStatus } from '@ff/contracts';
 import { connections as CN } from '../../copy/connections';
 import { ko } from '../../copy/ko';
@@ -14,6 +15,8 @@ import { AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, Expla
 import { ComponentList, usePermission } from '../shared';
 import { extSync } from '../../copy/ext-sync';
 import { ExtSyncTab } from './ExtSyncTab';
+import { Link } from 'react-router-dom';
+import { lake as LK } from '../../copy/lake';
 
 const G = p10.integrations;
 const S = p10.sync;
@@ -27,20 +30,27 @@ interface SystemRow {
   components: string[];
   calls: number;
   lastAt: string | null;
+  /** 지연을 재는 연계(Data Lake)만 — 받는 자료의 가장 큰 지연(초)·최근 24시간 실패 수 */
+  lagSeconds?: number | null;
+  failures?: number;
 }
+
+/** Data Lake 연계 — 이름은 연계 화면으로 가는 링크 */
+const LAKE_IF = 'IF-15';
 
 export function IntegrationsScreen() {
   const sys = useApi<{ items: SystemRow[] }>('integrationSystems');
   const sync = useApi<{ items: { conflicts: number; failed: number; lastInboundAt: string | null; lastOutboundAt: string | null }[] }>('extSync');
   const items = sys.data?.items ?? [];
-  const mock = items.filter((s) => s.mode === 'mock').length;
+  const seamless = useSeamless();
+  const mock = seamless ? 0 : items.filter((s) => s.mode === 'mock').length;
   const attention = (sync.data?.items ?? []).reduce((t, x) => t + x.conflicts + x.failed, 0);
   // 한 번도 주고받지 않았으면 '맞습니다'(초록)는 근거가 없다 — neutral
   const exchanged = (sync.data?.items ?? []).some((x) => x.lastInboundAt || x.lastOutboundAt);
   return (
     <div className="ds-screen">
       <PageHeader codes="D05-01 · IF-01~14" title={G.title} lead={G.lead} message={!sync.data ? { tone: 'neutral', value: '—', text: extSync.sync.key.ok } : attention ? { tone: 'warn', value: attention, text: extSync.sync.key.attention } : !exchanged ? { tone: 'neutral', text: extSync.sync.key.idle } : { tone: 'ok', text: extSync.sync.key.ok }}
-        meta={sys.data ? G.key(mock, items.length - mock) : undefined} />
+        meta={sys.data ? (seamless ? G.keyAll(items.length) : G.key(mock, items.length - mock)) : undefined} />
       <Tabs tabs={[{ key: 'sync', label: extSync.sync.tab }, ...(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] }))]}>
         {(tab) => (tab === 'sync' ? <ExtSyncTab quiet={!!sync.data && !attention && !exchanged} /> : tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
       </Tabs>
@@ -52,6 +62,8 @@ function SystemsTab() {
   const q = useApi<{ items: SystemRow[] }>('integrationSystems');
   const rows = q.data?.items ?? [];
   const C = G.col;
+  const seamless = useSeamless();
+  const m = (r: SystemRow) => shownMode(r.mode, seamless);
   return (
     <>
     <ConnectionsPanel />
@@ -62,13 +74,15 @@ function SystemsTab() {
         rowKey={(r) => r.ifId}
         columns={[
           // IF 번호·컴포넌트 ID는 툴팁·설명 모드로(UX3-01) — 본문은 이름
-          { key: 'n', header: C.name, cell: (r) => <span title={r.ifId}>{r.name}<ExplainCodes codes={[r.ifId]} /></span>, sort: (r) => r.ifId },
-          { key: 'm', header: C.mode, cell: (r) => <VerdictBadge value={r.mode === 'off' ? 'FAIL' : r.mode === 'live' ? 'PASS' : 'CONDITIONAL'} />, sort: (r) => r.mode },
-          { key: 'm2', header: '', srHeader: C.mode, cell: (r) => <span className="ds-nowrap">{G.modes[r.mode] ?? r.mode}</span> },
-          { key: 'a', header: C.adapter, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.adapter}</span> },
+          { key: 'n', header: C.name, cell: (r) => <span title={r.ifId}>{r.ifId === LAKE_IF ? <Link to="/integration/datalake" aria-label={`${r.name} — ${LK.integration.toLake}`}>{r.name}</Link> : r.name}<ExplainCodes codes={[r.ifId]} /></span>, sort: (r) => r.ifId },
+          { key: 'm', header: C.mode, cell: (r) => <VerdictBadge value={m(r) === 'off' ? 'FAIL' : m(r) === 'live' ? 'PASS' : 'CONDITIONAL'} />, sort: (r) => m(r) },
+          { key: 'm2', header: '', srHeader: C.mode, cell: (r) => <span className="ds-nowrap">{G.modes[m(r)] ?? m(r)}</span> },
+          // 어댑터 이름은 구현 위치(모의 어댑터 포함) — seamless 표시에서는 보이지 않는다(80-50 D-ALM-17)
+          ...(seamless ? [] : [{ key: 'a', header: C.adapter, cell: (r: SystemRow) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.adapter}</span> }]),
           { key: 'c', header: C.components, cell: (r) => <ComponentList ids={r.components} /> },
           { key: 'n2', header: C.calls, cell: (r) => <span className="ds-mono">{r.calls}</span>, align: 'right', sort: (r) => r.calls },
           { key: 'l', header: C.last, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{r.lastAt?.slice(0, 19).replace('T', ' ') ?? '—'}</span> },
+          { key: 'lag', header: LK.integration.lag, cell: (r) => (r.lagSeconds != null ? <span className="ds-mono ds-nowrap">{LK.integration.lagValue(spanText(r.lagSeconds), r.failures ?? 0)}</span> : '—') },
         ]}
       />
     </AsyncView>
@@ -92,7 +106,7 @@ function ConnectionsPanel() {
           columns={[
             { key: 's', header: P.col.system, cell: (r) => CN.system[r.key] },
             { key: 'u', header: P.col.use, cell: (r) => CN.use[r.key] },
-            { key: 'st', header: P.col.state, cell: (r) => { const l = connectionLabel(r, q.data?.mode); return l === 'none' ? P.live : <ConnectionBadge state={l} system={CN.system[r.key]} />; } },
+            { key: 'st', header: P.col.state, cell: (r) => { const l = connectionLabel(r, q.data?.mode, q.data?.presentation); return l === 'none' ? P.live : <ConnectionBadge state={l} system={CN.system[r.key]} />; } },
           ]}
         />
       </AsyncView>

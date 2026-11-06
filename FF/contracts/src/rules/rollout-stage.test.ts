@@ -6,6 +6,17 @@ const base: StageChangeInput = { fClass: 'F3', current: 300, to: 5000, since: '2
 const codes = (i: Partial<StageChangeInput>) => judgeStageChange({ ...base, ...i }).blockers.map((b) => b.code);
 
 describe('단계 조정 판정 (FFG-LCY-009)', () => {
+  it('사전 등록 중단 기준(TL-B01·B02) — 지표 지연이면 보류, 경계 초과면 중단, 표본 부족·기준 없음은 막지 않는다, 줄이기는 언제나', () => {
+    expect(codes({ lake: { verdict: 'HOLD_STALE', lagMinutes: 23, breached: [] } })).toEqual(['STALE_DATA']);
+    expect(judgeStageChange({ ...base, lake: { verdict: 'HOLD_STALE', lagMinutes: 23, breached: [] } }).blockers[0].message).toContain('23분');
+    expect(codes({ lake: { verdict: 'ABORT', lagMinutes: 2, breached: ['dtc_per_1k'] } })).toEqual(['ABORT_CRITERIA']);
+    expect(codes({ lake: { verdict: 'INSUFFICIENT', lagMinutes: 2, breached: [] } })).toEqual([]);
+    expect(codes({ lake: null })).toEqual([]);
+    // Canary 시작(F0·F1 포함)도 보류 — 신선도 초과 지표로 넓힌 적 0(INV-16)
+    expect(codes({ fClass: 'F1', current: 0, to: CANARY_MAX_BP, lake: { verdict: 'HOLD_STALE', lagMinutes: null, breached: [] } })).toEqual(['STALE_DATA']);
+    expect(judgeStageChange({ ...base, current: 5000, to: 100, lake: { verdict: 'ABORT', lagMinutes: 1, breached: ['dtc_per_1k'] } })).toMatchObject({ kind: 'SHRINK', ok: true });
+  });
+
   it('F2 이상: Canary에서 관측 기간(24 h)이 지나고 중단 기준이 없으면 확대 — 판정 기록이 남는다', () => {
     const j = judgeStageChange(base);
     expect(j).toMatchObject({ kind: 'EXPAND', ok: true, criteria: { observedMs: 48 * 3600_000, openAnomalies: [], activeKills: [] } });

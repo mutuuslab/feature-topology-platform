@@ -337,7 +337,7 @@ export const ko = {
   },
   detail: {
     versions: 'Version',
-    tabs: { overview: '19 속성', safety: '안전 분류', gates: 'Gate 판정', deps: '의존관계', trace: '구현 추적', baseline: 'BOM Baseline', audit: '감사 이력' },
+    tabs: { overview: '19 속성', safety: '안전 분류', gates: 'Gate 판정', deps: '의존관계', trace: '구현 추적', baseline: 'BOM Baseline', audit: '감사 이력', ops: '운영 지표' },
     transition: (to: string) => `${to}로 전이`,
     transitionTitle: 'Lifecycle 전이',
     key: { gateLabel: 'Gate PASS' },

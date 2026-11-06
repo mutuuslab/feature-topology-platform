@@ -5,15 +5,15 @@
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-05T01:24:45.108Z",
+  "fetched_at": "2026-11-06T02:20:58.834Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-dept\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-05T01:20:07.748Z",
+  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-tele\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-06T02:17:51.707Z",
   "ff_git": {
-   "head": "624960e9b919c98ccf127f00f9c320b9383dd171",
-   "dirty_files": 32
+   "head": "08cd4cc3e15dbe005836c41fbe42bbc78f0df998",
+   "dirty_files": 27
   },
-  "iam_sha256": "02350b64db82312d83ad98cc1413aed79add3500e00e0ab652bc283b33346b45"
+  "iam_sha256": "0d9ac2225846fe5b50635e4b562c224bcd4d7b5bee3a197b83eb03773ae36044"
  },
  "roles": [
   {
@@ -1777,6 +1777,43 @@
    "roles": [
     "SECURITY_OFFICER"
    ]
+  },
+  {
+   "name": "approveLakeModel",
+   "method": "POST",
+   "path": "/api/lake/models/:id/approvals",
+   "summary": "Lake 모델 사용 승인·거부 — 2인·직무 분리, 감사 기록(TL-B06)",
+   "component": "D05-01",
+   "roles": [
+    "SAFETY_OFFICER",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "moveFinding",
+   "method": "POST",
+   "path": "/api/feature-health/findings/:id/transition",
+   "summary": "점검 결과 상태 이동 — 조치 연결, 효과 확인 없이 닫기 불가(TL-B09·B10)",
+   "component": "D04-03",
+   "roles": [
+    "OPERATOR",
+    "OPS_LEAD",
+    "SAFETY_OFFICER",
+    "FEATURE_AUTHOR",
+    "RELEASE_MANAGER",
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "registerAbortCriteria",
+   "method": "PUT",
+   "path": "/api/policies/:id/abort-criteria",
+   "summary": "중단 기준 사전 등록 — 지표·임계·신뢰수준·관측 시간·신선도(FR-ROL-002-006)",
+   "component": "D01-08",
+   "roles": [
+    "RELEASE_MANAGER",
+    "SAFETY_OFFICER"
+   ]
   }
  ],
  "sod": [
@@ -2410,6 +2447,21 @@
    "group": "ops"
   },
   {
+   "path": "/ops/feature-health",
+   "title": "운영 점검",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/feature-health/:findingId",
+   "title": "점검 결과",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/collection",
+   "title": "수집 정책",
+   "group": "ops"
+  },
+  {
    "path": "/events",
    "title": "Platform 이벤트",
    "group": "ops"
@@ -2417,6 +2469,11 @@
   {
    "path": "/integration/connectors",
    "title": "외부 연계 현황",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/datalake",
+   "title": "Data Lake 연계",
    "group": "admin"
   },
   {

@@ -33,7 +33,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.7 출시·활성화·단계적 확대
 - 시작: 앞 활동 완료
 - 입력: WP-SAFETY-PROFILE, WP-G6-DECISION → 출력: WP-CANARY-PLAN
-- 플랫폼: `/activation/decide`
+- 플랫폼: `/activation/decide`, `/policies/:id`
 1. F2 이상 Feature는 Canary Cohort에서 시작하도록 단계별 차량 수와 관측 기간을 정한다
 2. 단계마다 허용 차이와 중단 기준을 사전에 적고 Safety Manager와 합의한다
 3. Shadow를 쓰면 출력이 제어기로 가지 않는 구성인지 시험 조직과 확인한다
@@ -53,12 +53,15 @@ last_updated: 2026-11-05
 - 프로세스: FPW.8 운영·긴급 차단·복원
 - 시작: 운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견
 - 입력: WP-G7-DECISION, WP-ROLLOUT-RECORD, WP-KPI-PLAN, WP-G5-EVIDENCE → 출력: WP-ANOMALY-CASE
-- 플랫폼: `acknowledgeAnomaly`, `dismissAnomaly`, `createIncident`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`
+- 플랫폼: `acknowledgeAnomaly`, `dismissAnomaly`, `createIncident`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`
 1. 운행 중 감시 지표와 장애·VOC를 확인해 이상 징후 건을 연다
 2. 대상 Feature Version과 영향 차량 범위를 Fleet 적용 현황에서 확인한다
 3. 안전·보안 영향이 의심되면 즉시 Safety Manager(보안은 CSM)에게 넘긴다
 4. 확인 결과 이상이 아니면 사유를 남기고 이상 건을 기각한다
+5. 운영 점검(동작·문제·개선·위험 4축)의 조치 필요 점검 결과를 확인하고 조치 연결·효과 확인까지 이어 간다
+6. Data Lake 지표가 신선도 기준을 넘으면 그 지표로 판단하지 않고 데이터 계약·수집 정책을 확인한다
 - [ ] 이상 징후 건에 출처·대상 Version·영향 범위가 기록되었다
+- [ ] 기한이 지난 조치 필요 점검 결과가 담당자 검토함에 있다
 
 ### FPW.8-A04 긴급 차단 요청 — 수행·책임
 - 프로세스: FPW.8 운영·긴급 차단·복원

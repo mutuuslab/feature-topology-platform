@@ -5,11 +5,12 @@
 // 사람 이름·한국 시각으로 보인다. 대기열 조건은 contracts(rules/work-queue), 부서·순서는 ./queues.
 import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { approvalCheck, approvalPlan, BaselineRequestStatus, GATE_META, postReviewBlocker, refChangeDutyBlocker, reportRolesOf, type Role, type WorkQueues } from '@ff/contracts';
+import { approvalCheck, approvalPlan, BaselineRequestStatus, GATE_META, postReviewBlocker, refChangeDutyBlocker, reportRolesOf, type CanaryOverviewResponse, type FeatureHealthResponse, type LakeModelRow, type Role, type WorkQueues } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { inbox as IX, QUEUE_LABEL, QUEUE_ROLE, SLOT_LABEL } from '../../copy/inbox';
+import { inboxLake as IL } from '../../copy/inbox-lake';
 import { KIND_LABEL } from '../../copy/refdb';
 import { procedures as PR } from '../../copy/procedures';
 import { useProcedureSummary } from '../../data/procedureProgress';
@@ -94,6 +95,10 @@ export function useInbox() {
   // GitLab·JIRA·codeBeamer 동기화 충돌 — 사람이 플랫폼 값·외부 값 중 골라야 한다
   const sync = useApi<{ items: { conflictId: number; system: string; key: string; field: string; platformValue: string; externalValue: string; createdAt: string }[] }>('extConflicts', { query: { status: 'OPEN' } });
   const queries = [bl, pol, approved, prod, wq, kills, reviews, changes, sync];
+  // Data Lake·Closed loop 대기열(TL-UI13) — 보조 대기열이라 실패해도 검토함 전체를 오류로 만들지 않는다(queries에 넣지 않음)
+  const models = useApi<{ connected: boolean; items: LakeModelRow[] }>('lakeModels', {}, { retry: false });
+  const health = useApi<FeatureHealthResponse>('featureHealth', {}, { retry: false });
+  const canary = useApi<CanaryOverviewResponse>('canaryOverview', {}, { retry: false });
   const reportRoles = reportRolesOf(mine);
   const killCheck = (k: KillRow, request: 'deactivate' | 'restore') => {
     const rr = k.restoreRequest;
@@ -146,6 +151,18 @@ export function useInbox() {
         return base({ key: `post:${r.killId}`, queue: 'postReview', item: r.killId, detail: `${r.featureId} · ${IX.postReview(personName(r.requestedBy))}`, who: r.requestedBy, due: r.due, mine: POST_REVIEW_ROLES.some(has) && !block, why: block, to: '/audit/oversight#post-reviews-h', featureId: r.featureId });
       }),
     ...(sync.data?.items ?? []).map((c) => base({ key: `sync:${c.conflictId}`, queue: 'sync', item: `${c.system} ${c.key}`, detail: `${c.field}: ${c.platformValue} ↔ ${c.externalValue}`, since: c.createdAt, mine: has('IMPLEMENTER') || has('RELEASE_MANAGER') || has('FEATURE_APPROVER'), to: '/integration/connectors?tab=sync' })),
+    ...(models.data?.items ?? [])
+      .filter((m) => m.use === 'PENDING' && !m.drift)
+      .map((m) => {
+        const done = m.approvals.some((a) => a.by === me.id);
+        return base({ key: `model:${m.modelId}@${m.version}`, queue: 'modelUse', item: `${m.modelId} ${m.version}`, detail: IL.model(IL.modelTitle[m.purpose] ?? m.title, m.version, m.approvals.filter((a) => a.decision === 'APPROVE').length), since: m.approvals[0]?.at ?? m.trainedAt, who: m.approvals[0]?.by ?? null, mine: (has('SAFETY_OFFICER') || has('OPS_LEAD')) && !done, why: done ? IL.already : null, to: '/integration/datalake?tab=models' });
+      }),
+    ...(health.data?.findings ?? [])
+      .filter((f) => f.status !== 'CLOSED' && (f.severity === 'ACTION' || f.overdue))
+      .map((f) => base({ key: `finding:${f.findingId}`, queue: 'finding', item: f.findingId, detail: IL.finding(f.featureName, f.version, IL.axis[f.axis], f.overdue), since: f.detectedAt, due: f.dueAt, mine: has(f.ownerRole as Role), to: `/ops/feature-health/${f.findingId}`, featureId: f.featureId })),
+    ...(canary.data?.items ?? [])
+      .filter((c) => c.verdict === 'HOLD_STALE' || (c.verdict === 'ABORT' && c.criteria.registered))
+      .map((c) => base({ key: `canary:${c.policyId}`, queue: 'canaryHold', item: `${c.policyId} · ${c.flagKey}`, detail: IL.canary[c.verdict], mine: has('RELEASE_MANAGER') || has('OPERATOR'), to: `/policies/${c.policyId}#canary-h`, featureId: c.featureId })),
   ]);
   const failed = queries.find((q) => q.isError && !optional(q));
   // 여러 큐를 합친다 — 하나라도 실패하면 그 상태(권한 거부면 forbidden)를 그대로 보인다

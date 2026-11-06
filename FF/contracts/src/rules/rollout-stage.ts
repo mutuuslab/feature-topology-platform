@@ -23,12 +23,14 @@ export interface StageChangeInput {
   openAnomalies: string[];
   /** 이 Feature에 진행 중인 차단 */
   activeKills: string[];
+  /** 사전 등록된 중단 기준의 Lake 판정(규칙 ①·신선도, TL-B01·B02) — 등록이 없거나 Lake가 연결되지 않으면 null. 모델 점수는 넣지 않는다(INV-17) */
+  lake?: { verdict: 'OK' | 'ABORT' | 'HOLD_STALE' | 'INSUFFICIENT'; lagMinutes: number | null; breached: string[] } | null;
 }
 
 export interface StageJudgement {
   kind: 'SHRINK' | 'CANARY' | 'EXPAND';
   ok: boolean;
-  blockers: { code: 'SAME_AS_DEPLOYER' | 'CANARY_FIRST' | 'OBSERVATION' | 'STOP_CRITERIA'; message: string }[];
+  blockers: { code: 'SAME_AS_DEPLOYER' | 'CANARY_FIRST' | 'OBSERVATION' | 'STOP_CRITERIA' | 'STALE_DATA' | 'ABORT_CRITERIA'; message: string }[];
   /** 중단 기준 판정 기록 */
   criteria: { observedMs: number; requiredMs: number; openAnomalies: string[]; activeKills: string[] } | null;
 }
@@ -44,6 +46,9 @@ export function judgeStageChange(i: StageChangeInput): StageJudgement {
   const blockers: StageJudgement['blockers'] = [];
   if (i.deployedBy && i.actorId === i.deployedBy)
     blockers.push({ code: 'SAME_AS_DEPLOYER', message: '정책을 배포한 사람은 차량 내 효력을 넓힐 수 없습니다 — 배포(전달)와 효력 확대는 다른 사람이 승인합니다' });
+  // 사전 등록 중단 기준(Lake 집계) — 지표가 늦으면 보류(INV-16), 경계를 넘으면 중단. 판단 불가(표본 부족)는 막지 않고 화면이 알린다
+  if (i.lake?.verdict === 'HOLD_STALE') blockers.push({ code: 'STALE_DATA', message: `지표가 ${i.lake.lagMinutes == null ? '들어오지 않아' : `${i.lake.lagMinutes}분 지연되어`} 확대를 보류합니다 — 신선도 기준을 넘긴 지표로는 판단하지 않습니다` });
+  if (i.lake?.verdict === 'ABORT') blockers.push({ code: 'ABORT_CRITERIA', message: `사전 등록한 중단 기준을 넘었습니다 — ${i.lake.breached.join(', ')}` });
   if (!safetyRelated(i.fClass) || i.to <= CANARY_MAX_BP) return { kind: i.to <= CANARY_MAX_BP ? 'CANARY' : 'EXPAND', ok: !blockers.length, blockers, criteria: null };
   // F2 이상, Canary 범위를 넘어 넓히기 — Canary에서 관측 중이어야 하고 관측 기간·중단 기준을 만족해야 한다
   const observedMs = Math.max(0, new Date(i.now).getTime() - new Date(i.since).getTime());

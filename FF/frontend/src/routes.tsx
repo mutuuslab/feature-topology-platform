@@ -80,6 +80,8 @@ const killScreens = () => import('./screens/ops/KillConsole');
 const deployScreens = () => import('./screens/ops/Deployments');
 const anomalyScreens = () => import('./screens/ops/Anomalies');
 const kpiScreens = () => import('./screens/ops/SafetyKpi');
+// Data Lake·Closed loop(80-70, TL-UI16·17·09·10)
+const healthScreens = () => import('./screens/ops/FeatureHealth');
 const accessScreens = () => import('./screens/admin/Access');
 const learnScreens = () => import('./screens/learn/Learn');
 const procedureScreens = () => import('./screens/procedures/Procedures');
@@ -228,12 +230,17 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/ops/incident', element: legacyTo('/ops/incidents'), title: '장애·VOC (이전 주소)', group: 'ops', parent: '/ops/incidents' },
   { path: '/ops/incident/:id', element: legacyTo('/ops/incidents'), title: '장애 상세 (이전 주소)', group: 'ops', parent: '/ops/incidents' },
   { path: '/ops/telemetry', element: named(opsScreens, 'TelemetryScreen'), title: '운영 데이터·이벤트', group: 'ops', menu: '/ops/telemetry', components: ['D04-03', 'D04-04', 'D04-06'], v2: true },
+  // Closed loop — 운영 중 Feature 버전 4축 점검(허브)·점검 결과 상세, 수집 정책(Data Lake로 모을 신호)
+  { path: '/ops/feature-health', element: named(healthScreens, 'FeatureHealthScreen'), title: '운영 점검', group: 'ops', menu: '/ops/feature-health', components: ['D04-03'], v2: true },
+  { path: '/ops/feature-health/:findingId', element: named(healthScreens, 'FindingScreen'), title: '점검 결과', group: 'ops', parent: '/ops/feature-health', components: ['D04-03'], v2: true },
+  { path: '/ops/collection', element: named(() => import('./screens/ops/Collection'), 'CollectionScreen'), title: '수집 정책', group: 'ops', menu: '/ops/collection', components: ['D04-03'], v2: true },
 
   { path: '/events', element: named(auditEvents, 'EventsScreen'), title: 'Platform 이벤트', group: 'ops', menu: '/events', components: ['D04-04'], v2: true },
 
   // 8 연계·감사·관리
   { path: '/integration/connectors', element: named(extScreens, 'IntegrationsScreen'), title: '외부 연계 현황', group: 'admin', menu: '/integration/connectors', components: ['D05-01'], v2: true },
   { path: '/integration/connector/:id', element: legacyTo('/integration/connectors'), title: '연계 상세 (이전 주소)', group: 'admin', parent: '/integration/connectors' },
+  { path: '/integration/datalake', element: named(() => import('./screens/ext/DataLake'), 'DataLakeScreen'), title: 'Data Lake 연계', group: 'admin', menu: '/integration/datalake', components: ['D05-01'], v2: true },
   { path: '/integration/openfeature', element: named(() => import('./screens/ext/OpenFeatureScope'), 'OpenFeatureScopeScreen'), title: 'OpenFeature 범위', group: 'admin', menu: '/integration/openfeature', components: ['D05-01', 'D02-03'], v2: true },
   { path: '/integration/sync', element: named(extScreens, 'DataSyncScreen'), title: '데이터 동기화', group: 'admin', menu: '/integration/sync', components: ['D05-02'], v2: true },
   { path: '/integration/legacy', element: named(extScreens, 'LegacyScreen'), title: 'Legacy 연계', group: 'admin', menu: '/integration/legacy', components: ['D05-03', 'D05-07'], v2: true },

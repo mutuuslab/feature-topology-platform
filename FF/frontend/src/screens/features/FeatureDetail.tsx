@@ -1,5 +1,5 @@
 // /features/:id/:ver — Feature Version 상세 (v2). Lifecycle 전이·Gate 판정·의존관계·구현 추적·Baseline·감사.
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { GATES, type Lifecycle } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -47,6 +47,8 @@ import { useFeatureTrace } from './ExtLinksTab';
 import { useExternalChanges } from '../../external/useExternalChanges';
 
 const T = ko.detail;
+// 운영 지표 탭(TL-UI04·UI18) — Data Lake 지표는 탭을 열 때 따로 읽는다
+const OpsMetricsTab = lazy(() => import('./OpsMetricsTab').then((m) => ({ default: m.OpsMetricsTab })));
 // Lifecycle은 핵심 메시지 상태 pill과 스테퍼가 보인다 — 속성 표에서 한 번 더 보이지 않는다(3초 규칙 6, UX3-08)
 const ATTR_ORDER = ['featureId', 'name', 'description', 'requirementIds', 'country', 'vehicleModel', 'trim', 'version', 'baselineId', 'ownerId', 'tags', 'asil', 'upgVc', 'functions', 'swIds', 'swVersions', 'ecuPnos', 'controlPoints', 'dependencyIds'] as const;
 const INVALIDATE = ['featureDetail', 'listFeatures', 'gates', 'audit', 'baselineRequests', 'baselineChecklist', 'baselines'];
@@ -154,6 +156,7 @@ export default function FeatureDetail() {
                 { key: 'gates', label: T.tabs.gates, count: Object.keys(d.gates).length },
                 { key: 'deps', label: T.tabs.deps, count: d.dependencies.outgoing.length + d.dependencies.incoming.length },
                 { key: 'trace', label: T.tabs.trace, count: d.trace.length },
+                { key: 'ops', label: T.tabs.ops },
                 { key: 'ext', label: extSync.feature.tab },
                 { key: 'baseline', label: T.tabs.baseline },
                 { key: 'audit', label: T.tabs.audit },
@@ -174,6 +177,10 @@ export default function FeatureDetail() {
                   <Deps d={d} />
                 ) : tab === 'trace' ? (
                   <Trace d={d} />
+                ) : tab === 'ops' ? (
+                  <Suspense fallback={null}>
+                    <OpsMetricsTab id={id} />
+                  </Suspense>
                 ) : tab === 'ext' ? (
                   <ExtLinksTab id={id} ver={ver} />
                 ) : tab === 'baseline' ? (

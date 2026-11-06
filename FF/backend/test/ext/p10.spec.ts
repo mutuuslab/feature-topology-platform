@@ -152,15 +152,17 @@ describe('P10 확장 컴포넌트', () => {
   });
 
   describe('외부 연계 모의 어댑터', () => {
-    it('IF-01 ALM 요구사항, IF-08 협력사 납품, 연결 현황(14개·모의/내장 구분·호출 수)', async () => {
+    it('IF-01 ALM 요구사항, IF-08 협력사 납품, 연결 현황(15개·모의/내장 구분·호출 수)', async () => {
       const alm = (await http().get('/api/integrations/alm/requirements?featureId=FEAT-00022&version=1.0.0').expect(200)).body;
       expect(alm.items.length).toBeGreaterThan(0);
       expect(alm.items[0]).toMatchObject({ reqId: expect.any(String), tracedGate: 'G2' });
       const sup = (await http().get('/api/integrations/supplier/deliveries').expect(200)).body.items;
       expect(sup[0]).toMatchObject({ swId: expect.any(String), supplier: expect.any(String), checksum: expect.any(String) });
       const sys = (await http().get('/api/integrations/systems').expect(200)).body.items;
-      expect(sys.map((s: any) => s.ifId)).toHaveLength(14);
+      expect(sys.map((s: any) => s.ifId)).toHaveLength(15);
       expect(sys.find((s: any) => s.ifId === 'IF-14')).toMatchObject({ name: '작업·변경요청 연계 (JIRA)', mode: 'mock' });
+      // Data Lake(IF-15, 80-70) — 조회 어댑터는 모의, 지연·실패 수를 함께 낸다
+      expect(sys.find((s: any) => s.ifId === 'IF-15')).toMatchObject({ name: '차량 데이터 Data Lake', mode: 'mock', failures: 0 });
       expect(sys.find((s: any) => s.ifId === 'IF-01')).toMatchObject({ mode: 'mock', calls: 1 });
       expect(sys.find((s: any) => s.ifId === 'IF-10')).toMatchObject({ mode: 'internal' });
     });

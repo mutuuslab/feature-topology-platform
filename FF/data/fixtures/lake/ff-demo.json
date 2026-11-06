@@ -1,0 +1,29 @@
+{
+  "_comment": "FF가 주인인 데모 기록(수집 정책·점검 결과 진행·모델 사용 승인·중단 기준) — 데모 활동 시드(FF_DEMO_ACTIVITY)에서 한 번 넣는다. 시각은 부팅 시각 기준 days 전",
+  "collection": [
+    { "collectionId": "COL-0001", "title": "ADAS 개입 전후 스냅샷", "signals": ["AEB·ESC 개입", "운전자 개입(테이크오버)", "속도 대역", "도로 등급", "날씨·조도"], "target": "NX4 PE · GN7 — ADAS 탑재 차량", "trigger": "개입 발생 시 전후 10초(10 Hz)", "category": "SAFETY_OPS", "basis": "LAW", "basisNote": "자동차관리법 사후 감시·SOTIF 현장 감시", "gbPerDay": 412.6, "vehicles": 186400, "markets": ["KR", "EU", "US"], "status": "DEPLOYED", "replies": { "accepted": 183920, "rejected": 312, "pending": 2168 }, "approvedBy": "usr-quality", "days": 12, "holdReason": null },
+    { "collectionId": "COL-0002", "title": "기능 사용 1일 요약", "signals": ["사용 횟수·시간", "HMI 조작", "수동 끄기", "체험 중 실사용일"], "target": "커넥티드 서비스 동의 차량", "trigger": "1일 요약", "category": "COMMERCIAL_USE", "basis": "CONSENT", "basisNote": "기능 사용 데이터 동의(커넥티드 서비스 약관 7조) — 동의 없으면 수집 안 함", "gbPerDay": 18.4, "vehicles": 1204480, "markets": ["KR", "EU", "US"], "status": "DEPLOYED", "replies": { "accepted": 1198210, "rejected": 1840, "pending": 4430 }, "approvedBy": "usr-productowner", "days": 30, "holdReason": null },
+    { "collectionId": "COL-0003", "title": "DTC·ECU 리셋 상세(전방 레이더)", "signals": ["DTC(기능 관련 ECU)", "ECU 리셋", "SW·ECU 구성"], "target": "GN7 — 고속도로 주행 보조 2 4.1.0 적용 차량", "trigger": "발생 시 + 시동마다 구성", "category": "SAFETY_OPS", "basis": "LAW", "basisNote": "제작결함 조사(점검 결과 근거 보강)", "gbPerDay": 6.2, "vehicles": 48210, "markets": ["KR"], "status": "APPROVED", "replies": { "accepted": 0, "rejected": 0, "pending": 48210 }, "approvedBy": "usr-quality", "days": 1, "holdReason": null },
+    { "collectionId": "COL-0004", "title": "수집 상태(버퍼·전송 지연·결측)", "signals": ["버퍼 적재량", "전송 지연", "결측률"], "target": "전 차종 — 커넥티드 차량", "trigger": "1시간", "category": "SAFETY_OPS", "basis": "LAW", "basisNote": "수집 품질 감시(안전 운영)", "gbPerDay": 2.1, "vehicles": 961000, "markets": ["KR", "EU", "US", "AU"], "status": "DRAFT", "replies": { "accepted": 0, "rejected": 0, "pending": 0 }, "approvedBy": null, "days": 0, "holdReason": null },
+    { "collectionId": "COL-0005", "title": "주행 안전 이벤트(CN 현지)", "signals": ["급감속", "AEB·ESC 개입", "차로 이탈 경고"], "target": "CN 판매 차량", "trigger": "트리거 시 전후 10초", "category": "SAFETY_OPS", "basis": "LAW", "basisNote": "PIPL — 현지 수집·학습, 국외로는 k≥5 집계·점수만", "gbPerDay": 96.3, "vehicles": 152300, "markets": ["CN"], "status": "HELD", "replies": { "accepted": 0, "rejected": 0, "pending": 0 }, "approvedBy": null, "days": 3, "holdReason": "국외 이전 심사 전 — CN Lake 설치 뒤 배포" }
+  ],
+  "findings": [
+    { "key": "FEAT-00004@4.1.0:PROBLEM:dtc_vehicle_rate", "detectedDays": 2, "status": "ACTING", "steps": [["ANALYZING", 1.8, "usr-quality", "레이더 보정 DTC C1611 증가 — 적용군에 몰림"], ["ACTING", 1.2, "usr-quality", "결함 등록·요구 재검토 요청"]], "actions": [["JIRA", "FFP-2417", "DTC C1611 증가 — 전방 레이더 정렬 보정 결함", "usr-quality", 1.2], ["CODEBEAMER", "REQ-18842", "G2 재검토 — 레이더 정렬 허용 오차 요구", "usr-quality", 1.2]], "effect": { "target": 0.004 } },
+    { "key": "FEAT-00022@1.0.0:OPERATION:delivery_success_rate", "detectedDays": 9, "status": "VERIFYING", "severity": "WATCH", "before": [0.951, 0.988, 3480], "steps": [["ANALYZING", 8.5, "usr-operator", "EU 서버 지연 구간에서 적용 실패"], ["ACTING", 7.9, "usr-operator", "재전달·서버 증설 요청"], ["VERIFYING", 2.0, "usr-operator", "조치 뒤 7일 창 비교 시작"]], "actions": [["JIRA", "FFP-2391", "게시본 재전달 실패 — 배포 서버 응답 지연", "usr-operator", 7.9]], "effect": { "target": 0.97, "after": [0.982, 3610], "ci": [0.978, 0.986], "met": true } },
+    { "key": "FEAT-00163@3.8.0:IMPROVEMENT:manual_off_rate", "detectedDays": 5, "status": "ANALYZING", "steps": [["ANALYZING", 4.6, "usr-author", "수동 끄기 34% — 차선 중앙 유지 반응이 늦다는 VOC와 겹침"]], "actions": [], "effect": { "target": 0.12 } },
+    { "key": "FEAT-00002@1.6.0:PROBLEM:fault_rate_per_1k", "detectedDays": 20, "status": "REOPENED", "severity": "WATCH", "repeats": 1, "before": [2.4, 1.3, 52100], "steps": [["ANALYZING", 19, "usr-quality", "초음파 센서 고장 보고 증가"], ["ACTING", 17, "usr-quality", "파라미터 조정 정책 배포 요청"], ["VERIFYING", 9, "usr-quality", "조치 뒤 창 비교"], ["REOPENED", 1.5, "usr-quality", "효과 미달 — 고장률 2.6 / 1천 대, 기준 2.0"]], "actions": [["JIRA", "FFP-2288", "후방 초음파 감도 파라미터 조정", "usr-quality", 17], ["POLICY_HOLD", "FEAT-00002@1.6.0", "확대 보류 — 효과 확인 전", "usr-quality", 17]], "effect": { "target": 2.0, "after": [2.6, 53880], "ci": [2.31, 2.89], "met": false } },
+    { "key": "FEAT-00005@5.4.2:OPERATION:status_rejected_rate", "detectedDays": 41, "status": "CLOSED", "severity": "WATCH", "before": [0.018, 0.006, 88400], "steps": [["ANALYZING", 40, "usr-operator", "상태 보고 거부 1.8% — 서명 키 epoch 불일치"], ["ACTING", 38, "usr-operator", "키 epoch 재배포"], ["VERIFYING", 30, "usr-operator", "조치 뒤 창 비교"], ["CLOSED", 23, "usr-operator", "거부율 0.4% — 효과 확인"]], "actions": [["JIRA", "FFP-2104", "상태 보고 서명 키 epoch 재배포", "usr-operator", 38]], "effect": { "target": 0.01, "after": [0.004, 90120], "ci": [0.0036, 0.0044], "met": true } }
+  ],
+  "approvals": [
+    ["LAKE-M2-ANOMALY", "3.2.0", "usr-quality", "SAFETY_OFFICER", 18],
+    ["LAKE-M2-ANOMALY", "3.2.0", "usr-opslead", "OPS_LEAD", 17],
+    ["LAKE-M2-ANOMALY", "3.1.0", "usr-quality", "SAFETY_OFFICER", 92],
+    ["LAKE-M2-ANOMALY", "3.1.0", "usr-opslead", "OPS_LEAD", 91],
+    ["LAKE-M3-DEPLOY-RISK", "2.0.0", "usr-quality", "SAFETY_OFFICER", 60],
+    ["LAKE-M3-DEPLOY-RISK", "2.0.0", "usr-opslead", "OPS_LEAD", 59],
+    ["LAKE-M3-DEPLOY-RISK", "2.1.0", "usr-quality", "SAFETY_OFFICER", 1],
+    ["LAKE-M4-TRIAL", "1.4.0", "usr-quality", "SAFETY_OFFICER", 12],
+    ["LAKE-M4-TRIAL", "1.4.0", "usr-opslead", "OPS_LEAD", 11]
+  ],
+  "abortCriteria": ["care_00022_param"]
+}

@@ -3,6 +3,8 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { observability as OB } from '../../copy/observability';
 const TelemetryObservability = lazy(() => import('../ops/TelemetryObservability'));
+// Data Lake 출처 지표(TL-UI14) — 제어 채널 탭과 나눠 보인다
+const LakeSources = lazy(() => import('../ops/LakeSources').then((m) => ({ default: m.LakeSources })));
 import { Link, useSearchParams } from 'react-router-dom';
 import { COMPLIANCE_PROFILES, KEY_PURPOSES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -42,8 +44,8 @@ export function TelemetryScreen() {
         })()}
         actions={<Link to="/events">{T.events}</Link>}
       />
-      <Tabs tabs={[{ key: 'readbacks', label: T.tabs.readbacks }, { key: 'status', label: T.tabs.status }, { key: 'requests', label: T.tabs.requests }, { key: 'observability', label: OB.title }]}>
-        {(t) => (t === 'observability' ? <Suspense fallback={<p role="status">{ko.state.loading}</p>}><TelemetryObservability /></Suspense> : t === 'status' ? <StatusTab /> : t === 'requests' ? <RequestsTab /> : <ReadbacksTab />)}
+      <Tabs tabs={[{ key: 'readbacks', label: T.tabs.readbacks }, { key: 'status', label: T.tabs.status }, { key: 'requests', label: T.tabs.requests }, { key: 'lake', label: OB.lakeTab }, { key: 'observability', label: OB.title }]}>
+        {(t) => (t === 'observability' ? <Suspense fallback={<p role="status">{ko.state.loading}</p>}><TelemetryObservability /></Suspense> : t === 'lake' ? <Suspense fallback={<p role="status">{ko.state.loading}</p>}><LakeSources /></Suspense> : t === 'status' ? <StatusTab /> : t === 'requests' ? <RequestsTab /> : <ReadbacksTab />)}
       </Tabs>
     </div>
   );

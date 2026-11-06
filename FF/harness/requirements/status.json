@@ -105,6 +105,12 @@
       ],
       "tested": []
     },
+    "FR-ROL-002-006": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d04/lake-loop.spec.ts"
+      ]
+    },
     "FR-PVER-002-001": {
       "implemented": [
         "contracts/src/rules/policy-version.ts"

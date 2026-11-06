@@ -1,10 +1,13 @@
 // /experiments — 실험·효과 검증 관리 (D01-07). A/B·Shadow 실험 등록·시작·종료와 효과 추정. F2 이상은 Shadow만(FFG-CLS-006).
+import { FreshnessChip } from '../../design/freshness';
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { p10 } from '../../copy/p10';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
+import type { LakeExperimentEffect } from '@ff/contracts';
+import { lake as LK } from '../../copy/lake';
 
 const X = p10.experiment;
 
@@ -49,6 +52,9 @@ export function ExperimentsScreen() {
   const [creating, setCreating] = useState(false);
   const rows = list.data?.items ?? [];
   const C = X.col;
+  // Data Lake 실측 효과(TL-UI07) — 효과·신뢰구간·표본 수. 표본이 최소 표본에 못 미치거나 지표가 늦으면 '아직 판단 불가'
+  const lake = useApi<{ connected: boolean; items: LakeExperimentEffect[] }>('lakeExperiments');
+  const actual = (id: string) => lake.data?.items.find((x) => x.experimentId === id) ?? null;
   return (
     <div className="ds-screen">
       <PageHeader
@@ -80,6 +86,17 @@ export function ExperimentsScreen() {
             { key: 'm', header: C.metric, cell: (r) => X.metrics[r.metric] },
             { key: 's', header: C.status, cell: (r) => X.status[r.status] },
             { key: 'd', header: C.verdict, cell: (r) => (r.decision ? X.decisions[r.decision] : '—') },
+            {
+              key: 'lake',
+              header: LK.experiment.actual,
+              cell: (r) => {
+                const a = actual(r.experimentId);
+                if (!a) return '—';
+                return a.decidable && a.effect != null && a.ci ? <span className="ds-mono ds-nowrap">{LK.experiment.effect(a.effect, a.ci[0], a.ci[1])}</span> : <VerdictBadge value="미판정" label={LK.experiment.undecidable} />;
+              },
+            },
+            { key: 'n', header: LK.experiment.samples, cell: (r) => { const a = actual(r.experimentId); return a ? <span className="ds-mono ds-nowrap">{LK.experiment.pair(a.samples.treatment, a.samples.control)}</span> : '—'; }, align: 'right' },
+            { key: 'fr', header: LK.health.col.fresh, cell: (r) => <FreshnessChip f={actual(r.experimentId)?.freshness} compact /> },
           ]}
         />
       </AsyncView>

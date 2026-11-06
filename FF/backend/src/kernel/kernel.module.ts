@@ -21,6 +21,8 @@ import { SecretVault, vaultFromEnv } from './kms/key-protection';
 import { sealSecrets } from './kms/secret-columns';
 import { MIGRATIONS } from './migrations';
 import { Metrics } from './observability';
+import { OtlpExporter } from './otlp/otlp-exporter';
+import { TelemetryMetrics } from './telemetry-metrics';
 import { Scheduler } from './scheduler';
 import { DbSharedState, SHARED_STATE } from './shared-state';
 import { VehicleAuthService } from './vehicle-auth';
@@ -65,6 +67,8 @@ import { VehicleAuthService } from './vehicle-auth';
     { provide: SHARED_STATE, useFactory: (db: Db) => new DbSharedState(db), inject: [DB] },
     Clock,
     Metrics,
+    OtlpExporter,
+    TelemetryMetrics,
     Scheduler,
     InstanceLease,
     AuditService,
@@ -79,7 +83,7 @@ import { VehicleAuthService } from './vehicle-auth';
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: DomainErrorFilter },
   ],
-  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService],
+  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, OtlpExporter, TelemetryMetrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

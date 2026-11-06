@@ -85,6 +85,7 @@ architecture:
   ARC-FLAG-SOURCE:     "20-96 Feature Flag Git 소스·정책·회신 연결"
   ARC-UNLEASH-LIVE:    "20-98 Unleash 실제 런타임 통합"
   INT-UNLEASH-VEHICLE: "80-98 차량 Unleash 서명 조회와 설치"
+  INT-GRAFANA:         "80-80 Grafana Cloud 운영 관측·Closed loop"
 
 # ── 엔티티 (18, 4 그룹) ────────────────────────────────────
 entities:

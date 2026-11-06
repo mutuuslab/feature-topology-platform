@@ -2,6 +2,8 @@
 // /admin/settings 설정, /verify/compliance 컴플라이언스(보고서 v1.1 규칙 추적), /change/eo SW EO. 모두 기존 API·계약 데이터를 읽는다.
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { observability as OB } from '../../copy/observability';
+import { grafanaLinks } from '../../external/grafana';
+import { openExternalWindow } from '../../external/links';
 const TelemetryObservability = lazy(() => import('../ops/TelemetryObservability'));
 import { Link, useSearchParams } from 'react-router-dom';
 import { COMPLIANCE_PROFILES, KEY_PURPOSES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
@@ -29,6 +31,8 @@ const t19 = (iso: string | null | undefined) => (iso ? iso.slice(0, 19).replace(
 export function TelemetryScreen() {
   const rb = useApi<{ items: { observed: string; rejectReason?: string | null }[] }>('readbacks');
   const T = M.telemetry;
+  // Grafana 공개 대시보드(80-80) — 빌드 설정이 있을 때만 링크·임베드
+  const grafana = grafanaLinks();
   return (
     <div className="ds-screen">
       <PageHeader
@@ -40,8 +44,18 @@ export function TelemetryScreen() {
           const n = (rb.data?.items ?? []).filter((r) => !!r.rejectReason).length;
           return !rb.data ? { tone: 'neutral', value: '—', text: T.key.rejected } : n ? { tone: 'warn', value: n, text: T.key.rejected } : { tone: 'ok', text: T.key.clean };
         })()}
-        actions={<Link to="/events">{T.events}</Link>}
+        actions={
+          <>
+            <Link to="/events">{T.events}</Link>
+            {grafana.telemetry && (
+              <a href={grafana.telemetry} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow} title={OB.grafanaTitle} data-testid="grafana-telemetry-link">
+                {OB.grafana} ↗
+              </a>
+            )}
+          </>
+        }
       />
+      {grafana.embed && <iframe src={grafana.embed} style={{ width: '100%', height: '70vh', border: '1px solid var(--line)', borderRadius: 'var(--radius)', marginBottom: 'var(--sp-4)' }} title={OB.grafanaEmbed} loading="lazy" referrerPolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups" />}
       <Tabs tabs={[{ key: 'readbacks', label: T.tabs.readbacks }, { key: 'status', label: T.tabs.status }, { key: 'requests', label: T.tabs.requests }, { key: 'observability', label: OB.title }]}>
         {(t) => (t === 'observability' ? <Suspense fallback={<p role="status">{ko.state.loading}</p>}><TelemetryObservability /></Suspense> : t === 'status' ? <StatusTab /> : t === 'requests' ? <RequestsTab /> : <ReadbacksTab />)}
       </Tabs>

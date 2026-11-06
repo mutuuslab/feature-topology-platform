@@ -394,6 +394,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'integrationSystems', method: 'GET', path: '/api/integrations/systems', summary: 'IF-01~14 연결 현황 (모의·실연동·호출 수)', component: 'D05-01' },
   { name: 'almRequirements', method: 'GET', path: '/api/integrations/alm/requirements', summary: 'IF-01 ALM 요구사항 (Feature Version별)', component: 'D01-01', query: ['featureId', 'version'], sample: { featureId: 'FEAT-00022', version: '1.0.0' } },
   { name: 'supplierDeliveries', method: 'GET', path: '/api/integrations/supplier/deliveries', summary: 'IF-08 협력사 SW 납품', component: 'D05-01', query: ['supplier'] },
+  { name: 'grafanaAlertWebhook', method: 'POST', path: '/api/webhooks/grafana/alerts', summary: 'Grafana 경보 webhook 수신 — 토큰·HMAC 확인, 중복 버림, 운영 관찰(개선 후보) 기록·이상 징후 신호(80-80)', component: 'D04-03', body: z.record(z.string(), z.unknown()), public: true },
+  { name: 'opsObservations', method: 'GET', path: '/api/ops/observations', summary: 'Grafana 경보로 들어온 운영 관찰(개선 후보) — Feature·축·상태로 거르기', component: 'D04-03', query: ['featureId', 'axis', 'status', 'limit'] },
   { name: 'otelSpans', method: 'GET', path: '/api/integrations/otel/spans', summary: 'IF-11 OpenTelemetry 수집기 (모의) — 평가·이벤트 span', component: 'D04-03', query: ['name', 'limit'] },
   // GitLab · JIRA · codeBeamer 양방향 연계(IF-13·IF-14·IF-01) — 주인 규칙 contracts/rules/ext-sync
   { name: 'extSync', method: 'GET', path: '/api/integrations/sync', summary: '양방향 연계 현황 — 시스템별 연결·보내는 중·실패·충돌·거부, 주인 규칙', component: 'D05-01' },

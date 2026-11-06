@@ -18,6 +18,7 @@ export const observability = {
   pseudonym: '평가 대상은 가명 처리된 식별자로 기록됩니다.',
   event: '이벤트', target: '대상', component: '처리 영역',
   tabs: { metrics: 'Metrics', traces: 'Traces', logs: 'Events', readbacks: '차량 회신' },
+  grafana: 'Grafana에서 보기', grafanaTitle: 'Grafana 차량 텔레메트리 수신 대시보드(새 창)', grafanaEmbed: 'Grafana 차량 텔레메트리 수신',
 };
 
 export const readbackFlow = {

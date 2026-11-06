@@ -1,0 +1,62 @@
+// FF 설치 서버 → Grafana Cloud(OTLP 게이트웨이 하나로 지표·로그·추적) — 80-80
+// 지표: FF 백엔드 /api/health/metrics(Prometheus 텍스트)를 30초마다 긁는다(Bearer FF_METRICS_TOKEN).
+// 추적·로그: FF 백엔드가 OTEL_EXPORTER_OTLP_ENDPOINT(http://alloy:4318)로 보낸 OTLP를 받아 그대로 넘긴다.
+// 비밀은 환경 변수로만(compose .env) — GRAFANA_OTLP_URL · GRAFANA_OTLP_INSTANCE_ID · GRAFANA_OTLP_TOKEN · FF_METRICS_TOKEN
+
+prometheus.scrape "ff_platform" {
+  targets = [{
+    "__address__" = sys.env("FF_METRICS_TARGET"),
+    "job"         = "ff/ff-platform",
+    "instance"    = sys.env("FF_INSTANCE_ID"),
+  }]
+  metrics_path    = "/api/health/metrics"
+  scrape_interval = "30s"
+  scrape_timeout  = "10s"
+
+  authorization {
+    type        = "Bearer"
+    credentials = sys.env("FF_METRICS_TOKEN")
+  }
+
+  forward_to = [otelcol.receiver.prometheus.ff.receiver]
+}
+
+otelcol.receiver.prometheus "ff" {
+  output {
+    metrics = [otelcol.processor.batch.ff.input]
+  }
+}
+
+otelcol.receiver.otlp "ff" {
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    metrics = [otelcol.processor.batch.ff.input]
+    logs    = [otelcol.processor.batch.ff.input]
+    traces  = [otelcol.processor.batch.ff.input]
+  }
+}
+
+otelcol.processor.batch "ff" {
+  timeout = "10s"
+
+  output {
+    metrics = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    logs    = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    traces  = [otelcol.exporter.otlphttp.grafana_cloud.input]
+  }
+}
+
+otelcol.auth.basic "grafana_cloud" {
+  username = sys.env("GRAFANA_OTLP_INSTANCE_ID")
+  password = sys.env("GRAFANA_OTLP_TOKEN")
+}
+
+otelcol.exporter.otlphttp "grafana_cloud" {
+  client {
+    endpoint = sys.env("GRAFANA_OTLP_URL")
+    auth     = otelcol.auth.basic.grafana_cloud.handler
+  }
+}

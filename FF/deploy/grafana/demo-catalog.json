@@ -1,0 +1,311 @@
+{
+  "source": {
+    "seed": "v0.81",
+    "showcase": true,
+    "showcaseVehicles": 480
+  },
+  "fleet": [
+    {
+      "country": "EU",
+      "vehicleModel": "NX4 PE",
+      "swVersion": "1.2.0",
+      "vehicles": 40
+    },
+    {
+      "country": "EU",
+      "vehicleModel": "NX4 PE",
+      "swVersion": "1.2.1",
+      "vehicles": 40
+    },
+    {
+      "country": "KR",
+      "vehicleModel": "GN7",
+      "swVersion": "5.4.2",
+      "vehicles": 40
+    },
+    {
+      "country": "KR",
+      "vehicleModel": "NE PE",
+      "swVersion": "3.0.0",
+      "vehicles": 40
+    },
+    {
+      "country": "KR",
+      "vehicleModel": "NX4 PE",
+      "swVersion": "1.1.9",
+      "vehicles": 40
+    },
+    {
+      "country": "KR",
+      "vehicleModel": "NX4 PE",
+      "swVersion": "1.2.0",
+      "vehicles": 40
+    },
+    {
+      "country": "KR",
+      "vehicleModel": "NX4 PE",
+      "swVersion": "1.2.1",
+      "vehicles": 200
+    },
+    {
+      "country": "US",
+      "vehicleModel": "NX4 PE",
+      "swVersion": "1.2.1",
+      "vehicles": 40
+    }
+  ],
+  "policies": [
+    {
+      "policyId": "POL-00001",
+      "flagKey": "care_00022_signal",
+      "featureId": "FEAT-00022",
+      "featureVersion": "1.0.0",
+      "status": "DEPLOYED",
+      "fClass": "F3",
+      "stageRatio": 1
+    },
+    {
+      "policyId": "POL-00002",
+      "flagKey": "care_00022_param",
+      "featureId": "FEAT-00022",
+      "featureVersion": "1.0.0",
+      "status": "DEPLOYED",
+      "fClass": "F3",
+      "stageRatio": 1
+    },
+    {
+      "policyId": "POL-00003",
+      "flagKey": "ivi_00024_guide",
+      "featureId": "FEAT-00024",
+      "featureVersion": "1.0.0",
+      "status": "DEPLOYED",
+      "fClass": "F1",
+      "stageRatio": 1
+    },
+    {
+      "policyId": "POL-00004",
+      "flagKey": "ivi_00027_detail",
+      "featureId": "FEAT-00027",
+      "featureVersion": "1.0.0",
+      "status": "DEPLOYED",
+      "fClass": "F1",
+      "stageRatio": 1
+    },
+    {
+      "policyId": "POL-00005",
+      "flagKey": "ivi_00027_voice",
+      "featureId": "FEAT-00027",
+      "featureVersion": "1.0.0",
+      "status": "VALIDATED",
+      "fClass": "F1",
+      "stageRatio": 1
+    },
+    {
+      "policyId": "POL-00006",
+      "flagKey": "ivi_00027_banner",
+      "featureId": "FEAT-00027",
+      "featureVersion": "1.0.0",
+      "status": "DEPLOYED",
+      "fClass": "F1",
+      "stageRatio": 1
+    }
+  ],
+  "features": [
+    {
+      "featureId": "FEAT-00002",
+      "version": "1.6.0",
+      "name": "주차 충돌방지 보조",
+      "country": "KR",
+      "vehicleModel": "NX4 PE",
+      "previous": "1.5.0"
+    },
+    {
+      "featureId": "FEAT-00004",
+      "version": "4.1.0",
+      "name": "고속도로 주행 보조 2",
+      "country": "KR",
+      "vehicleModel": "GN7",
+      "previous": "4.0.1"
+    },
+    {
+      "featureId": "FEAT-00005",
+      "version": "5.5.0",
+      "name": "스마트 크루즈 컨트롤",
+      "country": "KR",
+      "vehicleModel": "GN7",
+      "previous": "5.4.2"
+    },
+    {
+      "featureId": "FEAT-00022",
+      "version": "1.0.0",
+      "name": "전방 안전거리 3단계",
+      "country": "KR",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00023",
+      "version": "1.0.0",
+      "name": "급가속 억제",
+      "country": "KR",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00024",
+      "version": "1.0.0",
+      "name": "IC·JC 경로 사전안내",
+      "country": "KR",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00025",
+      "version": "1.0.0",
+      "name": "전방 안전거리 확대",
+      "country": "EU",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00026",
+      "version": "1.0.0",
+      "name": "급가속 억제",
+      "country": "EU",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00027",
+      "version": "1.0.0",
+      "name": "고속도로 IC·JC 상세 안내",
+      "country": "EU",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00028",
+      "version": "1.0.0",
+      "name": "전방 안전거리 확대",
+      "country": "US",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00029",
+      "version": "1.0.0",
+      "name": "급가속 억제",
+      "country": "US",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00030",
+      "version": "1.0.0",
+      "name": "고속도로 IC·JC 상세 안내",
+      "country": "US",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00031",
+      "version": "1.0.0",
+      "name": "전방 안전거리 확대",
+      "country": "AU",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00032",
+      "version": "1.0.0",
+      "name": "급가속 억제",
+      "country": "AU",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00033",
+      "version": "1.0.0",
+      "name": "고속도로 IC·JC 상세 안내",
+      "country": "AU",
+      "vehicleModel": "NX4 PE",
+      "previous": null
+    },
+    {
+      "featureId": "FEAT-00084",
+      "version": "5.5.0",
+      "name": "스마트 크루즈 컨트롤",
+      "country": "KR",
+      "vehicleModel": "GN7",
+      "previous": "5.4.2"
+    },
+    {
+      "featureId": "FEAT-00145",
+      "version": "5.5.0",
+      "name": "스마트 크루즈 컨트롤",
+      "country": "KR",
+      "vehicleModel": "NX4 PE",
+      "previous": "5.4.2"
+    },
+    {
+      "featureId": "FEAT-00150",
+      "version": "5.5.0",
+      "name": "스마트 크루즈 컨트롤",
+      "country": "EU",
+      "vehicleModel": "NX4 PE",
+      "previous": "5.4.2"
+    },
+    {
+      "featureId": "FEAT-00163",
+      "version": "3.8.0",
+      "name": "차로 유지 보조",
+      "country": "KR",
+      "vehicleModel": "GN7",
+      "previous": "3.7.0"
+    },
+    {
+      "featureId": "FEAT-00183",
+      "version": "5.5.0",
+      "name": "스마트 크루즈 컨트롤",
+      "country": "US",
+      "vehicleModel": "NX4 PE",
+      "previous": "5.4.2"
+    },
+    {
+      "featureId": "FEAT-00185",
+      "version": "5.5.0",
+      "name": "스마트 크루즈 컨트롤",
+      "country": "AU",
+      "vehicleModel": "NX4 PE",
+      "previous": "5.4.2"
+    }
+  ],
+  "kills": [
+    {
+      "killId": "KILL-00001",
+      "featureId": "FEAT-00029",
+      "featureVersion": "1.0.0",
+      "deactClass": "DC2",
+      "reasonCategory": "SAFETY",
+      "vehicles": 1
+    }
+  ],
+  "experiments": [
+    {
+      "experimentId": "EXP-00001",
+      "flagKey": "ivi_00027_detail",
+      "featureId": "FEAT-00027",
+      "type": "AB",
+      "treatmentRatio": 0.1,
+      "status": "CONCLUDED"
+    },
+    {
+      "experimentId": "EXP-00002",
+      "flagKey": "ivi_00027_voice",
+      "featureId": "FEAT-00027",
+      "type": "SHADOW",
+      "treatmentRatio": 0.5,
+      "status": "RUNNING"
+    }
+  ]
+}

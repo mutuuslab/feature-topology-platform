@@ -1,0 +1,998 @@
+{
+  "groups": [
+    {
+      "name": "ff-vehicle",
+      "interval": 60,
+      "rules": [
+        {
+          "uid": "ff-reception-drop",
+          "orgID": 1,
+          "title": "수신율 저하",
+          "ruleGroup": "ff-vehicle",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum by (country, vehicle_model) (rate(ff_vehicle_status_reports_total{result=\"accepted\"}[15m])) / (sum by (country, vehicle_model) (rate(ff_vehicle_status_reports_total{result=\"accepted\"}[15m] offset 7d)) > 0)",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "lt",
+                      "params": [
+                        0.5
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "15m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "OPERATION",
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "{{ $labels.country }} {{ $labels.vehicle_model }} 수신이 지난주 같은 시간의 절반 아래",
+            "description": "지난주 같은 시간 대비 수락된 상태 보고가 50% 아래로 15분 지속. 지역 통신·OTA 서버·수신 게이트웨이 장애를 의심한다. 확인: 차량 텔레메트리 수신 → 통신 채널별. 조치: FF 외부 연계 현황(OTA 서버 IF-05)·운영 데이터(/ops/telemetry).",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-reception-drop",
+            "__dashboardUid__": "ff-vehicle-telemetry",
+            "__panelId__": "9"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-status-reject",
+          "orgID": 1,
+          "title": "상태 보고 거부율 상승",
+          "ruleGroup": "ff-vehicle",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum by (country, vehicle_model) (rate(ff_vehicle_status_reports_total{result=\"rejected\"}[15m])) / sum by (country, vehicle_model) (rate(ff_vehicle_status_reports_total[15m]))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0.005
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "10m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "OPERATION",
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "{{ $labels.country }} {{ $labels.vehicle_model }} 상태 보고 거부율 {{ humanizePercentage $values.A.Value }}",
+            "description": "수신 검사 거부가 0.5%를 넘었다(SLO 수락률 99.5%). 확인: 거부 코드 패널. REPLAY는 차량 순번 저장, SCHEMA는 차량 SW 규격, AUTH_FAILED는 서명.",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-status-reject",
+            "__dashboardUid__": "ff-vehicle-telemetry",
+            "__panelId__": "12"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-signature-surge",
+          "orgID": 1,
+          "title": "서명 검증 실패 급증",
+          "ruleGroup": "ff-vehicle",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum by (country, vehicle_model) (increase(ff_vehicle_status_auth_total{result=\"invalid\"}[10m])) + sum by (country, vehicle_model) (increase(ff_vehicle_signature_checks_total{result=\"invalid\"}[10m]))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        3
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "0m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "RISK",
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "{{ $labels.country }} {{ $labels.vehicle_model }} 서명 검증 실패 10분 {{ $values.A.Value }}건",
+            "description": "위조·재전송 시도나 키 Epoch 불일치. FF는 위반 보고를 이상 징후(보안)로 이미 올린다. 확인: FF 이상 징후(보안)·보안 이벤트(/admin/security). 조치: 채널 제한·키 Epoch 점검(CSM).",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-signature-surge",
+            "__dashboardUid__": "ff-vehicle-telemetry",
+            "__panelId__": "16"
+          },
+          "isPaused": false
+        }
+      ]
+    },
+    {
+      "name": "ff-kill",
+      "interval": 60,
+      "rules": [
+        {
+          "uid": "ff-kill-latency",
+          "orgID": 1,
+          "title": "긴급 차단 반영 지연",
+          "ruleGroup": "ff-kill",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum by (feature, deact_class) (increase(ff_kill_overdue_vehicles_total[15m]))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "0m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "OPERATION",
+            "severity": "critical",
+            "ff_anomaly_kind": "DELIVERY"
+          },
+          "annotations": {
+            "summary": "{{ $labels.feature }} 차단 기한 초과 차량 {{ $values.A.Value }}대",
+            "description": "등급별 기한 안에 끝 상태를 보고하지 않은 차량이 있다. 확인: 긴급 차단 반영 → 반영 곡선·지연 차량 Top. 조치: FF 긴급 차단 상세에서 차량별 봉투·재전송, 오프라인 차량은 OTA 서버 대기열 확인(운영 책임자).",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-kill-latency",
+            "__dashboardUid__": "ff-kill-switch",
+            "__panelId__": "9"
+          },
+          "isPaused": false
+        }
+      ]
+    },
+    {
+      "name": "ff-flag",
+      "interval": 60,
+      "rules": [
+        {
+          "uid": "ff-flag-errors",
+          "orgID": 1,
+          "title": "Flag 평가 오류율",
+          "ruleGroup": "ff-flag",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum by (flag) (rate(ff_flag_evaluations_total{reason=\"ERROR\"}[10m])) / sum by (flag) (rate(ff_flag_evaluations_total[10m]))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0.01
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "10m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "OPERATION",
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "{{ $labels.flag }} 평가 오류율 {{ humanizePercentage $values.A.Value }}",
+            "description": "OpenFeature 평가 오류가 1%를 넘었다 — SDK는 기본값(Safe Default)을 쓰므로 기능이 꺼진 채로 동작한다. 확인: Flag 평가 → 오류 종류·Edge. 조치: FF 정책 상세·Unleash 동기화.",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-flag-errors",
+            "__dashboardUid__": "ff-flag-eval",
+            "__panelId__": "11"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-edge-errors",
+          "orgID": 1,
+          "title": "Edge 오류율",
+          "ruleGroup": "ff-flag",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum(rate(ff_unleash_edge_request_duration_seconds_count{result=\"error\"}[5m])) / sum(rate(ff_unleash_edge_request_duration_seconds_count[5m]))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0.05
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "5m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "PLATFORM",
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "Unleash Edge 오류율 {{ humanizePercentage $values.A.Value }}",
+            "description": "Edge가 응답하지 않으면 차량 서명본 발급이 멈춘다(FF가 막는다). 조치: 설치 서버의 edge 컨테이너 상태, Unleash 서버 연결(20-98).",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-edge-errors",
+            "__dashboardUid__": "ff-flag-eval",
+            "__panelId__": "13"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-unleash-drift",
+          "orgID": 1,
+          "title": "Unleash drift",
+          "ruleGroup": "ff-flag",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "max by (flag) (ff_unleash_drift)",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "10m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "PLATFORM",
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "{{ $labels.flag }} Unleash 정의가 FF 원천과 다르다",
+            "description": "Unleash에서 직접 바꾼 정의가 있다 — FF가 원천이다. 조치: FF 정책 → Unleash 동기화로 되돌리고 변경자 확인(감사).",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-unleash-drift",
+            "__dashboardUid__": "ff-flag-eval",
+            "__panelId__": "14"
+          },
+          "isPaused": false
+        }
+      ]
+    },
+    {
+      "name": "ff-platform",
+      "interval": 60,
+      "rules": [
+        {
+          "uid": "ff-api-5xx",
+          "orgID": 1,
+          "title": "API 5xx 비율",
+          "ruleGroup": "ff-platform",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum(rate(ff_http_requests_total{status=~\"5..\"}[10m])) / sum(rate(ff_http_requests_total[10m]))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0.01
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "10m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "PLATFORM",
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "FF API 5xx {{ humanizePercentage $values.A.Value }}",
+            "description": "서버 오류가 1%를 넘었다. 확인: 플랫폼 서비스 → 경로별 오류, 설치 서버 로그.",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-api-5xx",
+            "__dashboardUid__": "ff-platform",
+            "__panelId__": "8"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-lake-stale",
+          "orgID": 1,
+          "title": "Data Lake 신선도 초과",
+          "ruleGroup": "ff-platform",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "max by (dataset) (ff_lake_freshness_seconds{dataset=~\"gold_5m|relay\"})",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        1800
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "15m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "RISK",
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "{{ $labels.dataset }} 지연 {{ $values.A.Value }}초",
+            "description": "30분 넘게 늦은 데이터로는 Feature 운영 판정을 하지 않는다(판단 불가). 단계 확대도 보류된다. 조치: Data Lake 운영(80-75).",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-lake-stale",
+            "__dashboardUid__": "ff-platform",
+            "__panelId__": "14"
+          },
+          "isPaused": false
+        }
+      ]
+    },
+    {
+      "name": "ff-feature-improvement",
+      "interval": 300,
+      "rules": [
+        {
+          "uid": "ff-imp-fallback-model",
+          "orgID": 1,
+          "title": "차종별 폴백 급증",
+          "ruleGroup": "ff-feature-improvement",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum by (feature, feature_version, vehicle_model) (rate(ff_feature_fallbacks_total{reason!=\"KILL_SWITCH\"}[1h])) / sum by (feature, feature_version, vehicle_model) (rate(ff_feature_activations_total[1h]))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0.03
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "30m",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "PROBLEM",
+            "severity": "warning",
+            "ff_anomaly_kind": "FEATURE_FAULT"
+          },
+          "annotations": {
+            "summary": "{{ $labels.feature }} {{ $labels.feature_version }} {{ $labels.vehicle_model }} 폴백 {{ humanizePercentage $values.A.Value }}",
+            "description": "이 차종에서 Safe Default 폴백(긴급 차단 제외)이 켜짐의 3%를 넘었다(평소 1% 아래). 다른 차종·전날과 Feature 운영 건강도의 차종별 폴백 패널에서 비교한다. 개선 후보: 지원 조건(신호·ECU 조합) 재검토. 담당: Feature Owner — FF Feature 상세에서 변경 요청 초안.",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-imp-fallback-model",
+            "__dashboardUid__": "ff-feature-health",
+            "__panelId__": "11"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-imp-error-regression",
+          "orgID": 1,
+          "title": "출시 후 오류 증가",
+          "ruleGroup": "ff-feature-improvement",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum by (feature, feature_version) (rate(ff_feature_errors_total[2h])) / sum by (feature, feature_version) (ff_feature_active_vehicles) / on (feature) group_left min by (feature) (sum by (feature, feature_version) (rate(ff_feature_errors_total[2h])) / sum by (feature, feature_version) (ff_feature_active_vehicles))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        1.5
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "1h",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "PROBLEM",
+            "severity": "warning",
+            "ff_anomaly_kind": "FEATURE_FAULT"
+          },
+          "annotations": {
+            "summary": "{{ $labels.feature }} {{ $labels.feature_version }} 오류율이 다른 Version의 {{ humanize $values.A.Value }}배",
+            "description": "같은 Feature의 가장 낮은 Version 대비 활성 차량당 오류가 1.5배 이상. 개선 후보: 결함 등록(JIRA)·롤백 판단. 담당: Feature Owner·Release Manager.",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-imp-error-regression",
+            "__dashboardUid__": "ff-feature-health",
+            "__panelId__": "13"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-imp-low-usage",
+          "orgID": 1,
+          "title": "사용률 저조",
+          "ruleGroup": "ff-feature-improvement",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "max by (feature, feature_version) (ff_feature_health_indicator{indicator=\"usage_rate\"})",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "lt",
+                      "params": [
+                        0.3
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "6h",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "IMPROVEMENT",
+            "severity": "info"
+          },
+          "annotations": {
+            "summary": "{{ $labels.feature }} {{ $labels.feature_version }} 사용률 {{ humanizePercentage $values.A.Value }}",
+            "description": "대상 차량 가운데 실제로 켜는 비율이 30% 아래. 개선 후보: 발견성(HMI 노출)·기본값·안내 문구. 담당: Feature Owner(상품 기획과 함께).",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-imp-low-usage",
+            "__dashboardUid__": "ff-feature-health",
+            "__panelId__": "5"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-imp-manual-off",
+          "orgID": 1,
+          "title": "운전자가 자주 끔",
+          "ruleGroup": "ff-feature-improvement",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum by (feature, feature_version, country) (rate(ff_feature_manual_off_total[2h])) / sum by (feature, feature_version, country) (rate(ff_feature_activations_total[2h]))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0.15
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "2h",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "IMPROVEMENT",
+            "severity": "info"
+          },
+          "annotations": {
+            "summary": "{{ $labels.feature }} {{ $labels.country }} 수동 끄기 {{ humanizePercentage $values.A.Value }}",
+            "description": "켜짐 대비 운전자가 끈 비율이 15% 이상. 개선 후보: 개입 강도·민감도 파라미터. 담당: Feature Owner — 변경 요청 → 새 Version → 이 대시보드에서 효과 확인.",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-imp-manual-off",
+            "__dashboardUid__": "ff-feature-health",
+            "__panelId__": "8"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-imp-quick-off",
+          "orgID": 1,
+          "title": "켜고 바로 끔(이탈)",
+          "ruleGroup": "ff-feature-improvement",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "sum by (feature, feature_version, country) (rate(ff_feature_quick_off_total[2h])) / sum by (feature, feature_version, country) (rate(ff_feature_activations_total[2h]))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0.1
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "2h",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "IMPROVEMENT",
+            "severity": "info"
+          },
+          "annotations": {
+            "summary": "{{ $labels.feature }} {{ $labels.country }} 이탈 {{ humanizePercentage $values.A.Value }}",
+            "description": "켠 뒤 60초 안에 끄는 비율이 10% 이상. 개선 후보: 첫 경험(첫 안내·화면 가림). 담당: Feature Owner·HMI.",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-imp-quick-off",
+            "__dashboardUid__": "ff-feature-health",
+            "__panelId__": "9"
+          },
+          "isPaused": false
+        },
+        {
+          "uid": "ff-imp-canary-dtc",
+          "orgID": 1,
+          "title": "Canary 적용군 DTC 증가",
+          "ruleGroup": "ff-feature-improvement",
+          "folderUID": "ff-ops",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "${DS_PROMETHEUS}",
+              "model": {
+                "refId": "A",
+                "expr": "(sum by (feature) (rate(ff_feature_dtc_total{cohort=\"treatment\"}[2h])) / sum by (feature) (ff_feature_active_vehicles{cohort=\"treatment\"})) / (sum by (feature) (rate(ff_feature_dtc_total{cohort=\"control\"}[2h])) / sum by (feature) (ff_feature_active_vehicles{cohort=\"control\"}))",
+                "instant": true,
+                "intervalMs": 60000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        1.5
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "1h",
+          "labels": {
+            "ff_source": "feature-platform",
+            "ff_axis": "RISK",
+            "severity": "warning",
+            "ff_anomaly_kind": "FEATURE_FAULT"
+          },
+          "annotations": {
+            "summary": "{{ $labels.feature }} 적용군 DTC 상대위험 {{ humanize $values.A.Value }}",
+            "description": "새 Version 적용군의 DTC가 대조군의 1.5배 이상. 조치: 단계 확대 보류(FF 정책 상세 → 단계 확대 HOLD). 담당: Release Manager·Safety Officer.",
+            "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-imp-canary-dtc",
+            "__dashboardUid__": "ff-canary",
+            "__panelId__": "3"
+          },
+          "isPaused": false
+        }
+      ]
+    }
+  ]
+}

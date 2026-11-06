@@ -2,7 +2,7 @@
 // 요청(영향 범위·사유 분류·게이트 사전 점검·24시간 누적) → 서로 다른 2인 개인 서명 승인 → 게이트 최종 판정 → 서명·차량별 봉투 → 긴급 채널 → 차량 회신.
 // 복원도 요청(재검증 Evidence·Canary Cohort, 단계적) → 차단 승인자와 다른 2인 승인. 승인 가능 여부·서명 역할·복원 전망은 서버와 같은 contracts 규칙으로 미리 보인다.
 // @rule FFG-PLT-003 — 화면: 비활성화 방식을 운영자가 고르지 않는다(Registry 등급 표시만)
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   approvalCheck,
@@ -115,6 +115,10 @@ interface Kill {
     evidenceRef?: string | null;
     cohort?: string[];
   } | null;
+  /** F2 이상 안전 Kill — 리콜·봉쇄 근거와 시장별 결함 보고 기한(FFG-DEAC-010) */
+  recallCampaignId?: string | null;
+  containmentJustification?: string | null;
+  recallReports?: { market: string; due: string | null; basis: string; note: string | null }[];
   /** 단계적 복원 — 복원한 차량·단계 기록 */
   restoredVins?: string[];
   restoreStages?: { cohort: string[]; evidenceRef: string | null; publicationId: string; approvedAt: string; approvers: string[] }[];
@@ -217,6 +221,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   const [code, setCode] = useState('FIELD_FAULT');
   const [recall, setRecall] = useState('');
   const [containment, setContainment] = useState('');
+  const [defectAt, setDefectAt] = useState('');
   const [reason, setReason] = useState('');
   const [confirm, setConfirm] = useState(false);
   const valid = /^FEAT-\d{5}$/.test(featureId) && /^\d+\.\d+\.\d+$/.test(featureVersion);
@@ -335,6 +340,9 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
               <Field label={K.containment} hint={needContainment ? <RuleText text={K.containmentNeed} explain /> : undefined}>
                 <input className="ds-input" value={containment} onChange={(e) => setContainment(e.target.value)} />
               </Field>
+              <Field label={K.defectAt} hint={K.defectAtHint}>
+                <input className="ds-input" type="datetime-local" value={defectAt} onChange={(e) => setDefectAt(e.target.value)} />
+              </Field>
             </>
           )}
         </div>
@@ -369,6 +377,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
                 confirm: featureId,
                 ...(recall.trim() && { recallCampaignId: recall.trim() }),
                 ...(containment.trim() && { containmentJustification: containment.trim() }),
+                ...(safetyF2 && defectAt && { defectDeterminedAt: new Date(defectAt).toISOString() }),
                 ...(anomalyId && { anomalyId }),
               },
             },
@@ -535,7 +544,7 @@ function KillTimeline({ id }: { id: string }) {
     );
   const C = P.col;
   return (
-    <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }} data-testid="kill-timeline">
+    <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }} data-testid="kill-timeline" data-tour="kill-timeline">
       <h3 className="ds-eyebrow ds-eyebrow--ko">{P.timeline}</h3>
       <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: P.timelineEmpty }} error={q.error} rows={2}>
         <DataTable
@@ -689,7 +698,14 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
     <Drawer open={!!id} title={id ?? ''} onClose={onClose}>
       {k && (
         // 좁은 서랍(1366 폭) — 긴 ID·이름은 줄을 바꾸고, 표는 제 칸 안에서 가로로 넘긴다(P4-10)
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-3)', minWidth: 0, overflowWrap: 'anywhere' }} data-testid="kill-drawer">
+        // 대상·상태 속성 — 따라하기 판정이 이 기록(Feature·차량·상태)에 묶인다(시드의 다른 차단 기록을 열어 통과하지 않게)
+        <div
+          style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-3)', minWidth: 0, overflowWrap: 'anywhere' }}
+          data-testid="kill-drawer"
+          data-feature={k.featureId}
+          data-vins={k.vins.join(' ')}
+          data-kill-status={k.status}
+        >
           <KeyValue
             rows={[
               { k: K.col.feature, v: <span className="ds-mono">{k.featureIds.join(', ')}</span> },
@@ -704,6 +720,17 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               ...(k.rejectReason ? [{ k: K.reject, v: k.rejectReason, note: k.rejectedBy ? personLabel(k.rejectedBy) : undefined }] : []),
             ]}
           />
+          {(k.recallCampaignId || k.containmentJustification || !!k.recallReports?.length) && (
+            <div data-tour="kill-recall">
+              <KeyValue
+                rows={[
+                  { k: K.recall, v: <span className="ds-mono">{k.recallCampaignId ?? '—'}</span> },
+                  ...(k.containmentJustification ? [{ k: K.containment, v: k.containmentJustification }] : []),
+                  ...(k.recallReports ?? []).map((r) => ({ k: K.recallDue(r.market), v: <span className="ds-mono" data-due={r.due ?? undefined}>{r.due ? when(r.due) : '—'}</span>, note: r.note ?? r.basis })),
+                ]}
+              />
+            </div>
+          )}
           {v2 && (
             <>
               <h3 className="ds-eyebrow ds-eyebrow--ko">{K.approvals}</h3>
@@ -744,6 +771,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
             />
           )}
           {env.data && env.data.envelopes.length > 0 && (
+            <div data-tour="kill-envelopes">
             <DataTable
               caption={K.envelopes}
               rows={env.data.envelopes}
@@ -755,6 +783,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
                 { key: 'a', header: K.envCol.auth, cell: (e) => <span className="ds-mono" title={e.vehicle_auth.cmd_auth}>{`${e.vehicle_auth.cmd_auth.slice(0, 8)}…`}</span> },
               ]}
             />
+            </div>
           )}
           {k.delivery && (
             <>
@@ -841,6 +870,11 @@ export function KillConsole() {
   // 상세는 라우터 검색 파라미터로 연다 — 검토함 등 앱 안 이동(/ops/kill?id=…)에서도 열린다
   const [sp] = useSearchParams();
   const [open, setOpen] = useState<string | null>(() => sp.get('id'));
+  // 이 화면에 머문 채 ?id=가 바뀌어도(따라하기 가이드·알림의 이동) 그 차단을 연다
+  const idParam = sp.get('id');
+  useEffect(() => {
+    if (idParam) setOpen(idParam);
+  }, [idParam]);
   // 요청 폼은 머리의 행동으로 여는 Drawer — 결과(이력)가 위, 입력은 Drawer(3초 규칙 9, UX3-03). 이상 건에서 넘어오면 바로 연다
   const [composing, setComposing] = useState(() => sp.has('featureId') || sp.has('anomaly'));
   const rows = q.data?.items ?? [];

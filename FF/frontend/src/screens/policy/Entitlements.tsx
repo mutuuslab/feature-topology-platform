@@ -225,7 +225,7 @@ function TrialVehicles({ catalogId, product }: { catalogId: string; product?: Pr
       )}
       <ErrorNote error={accept.error ?? decline.error ?? purchase.error} />
       <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: T.empty }} error={list.error} onRetry={() => list.refetch()}>
-        <div style={{ opacity: list.isPlaceholderData ? 0.6 : 1 }}>
+        <div style={{ opacity: list.isPlaceholderData ? 0.6 : 1 }} data-tour="trial-vehicles">
           <DataTable
             caption={E.tabs.trials}
             rows={rows}

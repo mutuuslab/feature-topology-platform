@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { FleetLive, VehicleRuntimeScreen } from '../screens/ops/FleetLive';
 import { KillConsole } from '../screens/ops/KillConsole';
@@ -230,6 +230,66 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
       containmentJustification: '원인 분석 전 봉쇄',
     });
     expect(new Headers(p.init!.headers).get('X-Actor-Role')).toBe('OPERATOR');
+  });
+
+  // 따라하기 CS-06 — 결함 판정 시각을 넣으면 ISO로 보내고, 차단 기록에 리콜 번호·시장별 결함 보고 기한(미국 5영업일)이 보인다
+  it('F2 이상 안전 차단: 결함 판정 시각을 보내고, 상세에 리콜 캠페인 ID와 결함 보고 기한(US)', async () => {
+    const RECALLED = { ...REQUESTED, recallCampaignId: '26V-0001', containmentJustification: null, recallReports: [{ market: 'US', due: '2026-11-13T01:00:00.000Z', basis: 'NHTSA 49 CFR Part 573 — 결함 판정 후 5영업일', note: null }] };
+    handler = (url, init) => (init?.method === 'POST' ? { status: 201, body: RECALLED } : url.startsWith('/api/kill-requests/KILL-') ? { body: RECALLED } : api(url, init));
+    mount('/ops/kill', '/ops/kill', <KillConsole />);
+    fireEvent.click(await screen.findByRole('button', { name: '긴급 차단 요청' }));
+    await screen.findByText('care_00022_param, care_00022_signal');
+    fireEvent.change(screen.getByLabelText('리콜 캠페인 ID'), { target: { value: '26V-0001' } });
+    fireEvent.change(screen.getByLabelText(/결함 판정 시각/), { target: { value: '2026-11-06T10:00' } });
+    fireEvent.change(screen.getByLabelText('사유'), { target: { value: '결함 판정 — 리콜 착수' } });
+    const enabled = () => screen.getByRole('button', { name: '차단 요청' }) as HTMLButtonElement;
+    await waitFor(() => expect(enabled().disabled).toBe(false));
+    fireEvent.click(enabled());
+    const dlg = await screen.findByRole('alertdialog');
+    fireEvent.change(within(dlg).getByRole('textbox'), { target: { value: 'FEAT-00022' } });
+    fireEvent.click(within(dlg).getByRole('button', { name: '차단 요청' }));
+    await waitFor(() => expect(posted('/api/kill-requests')).toBeTruthy());
+    const body = JSON.parse(String(posted('/api/kill-requests')!.init!.body));
+    expect(body).toMatchObject({ recallCampaignId: '26V-0001', defectDeterminedAt: new Date('2026-11-06T10:00').toISOString() });
+    const recall = await waitFor(() => {
+      const el = document.querySelector('[data-tour="kill-recall"]');
+      expect(el).toBeTruthy();
+      return el!;
+    });
+    expect(recall.textContent).toContain('26V-0001');
+    expect(recall.textContent).toContain('결함 보고 기한 · US');
+    expect(recall.querySelector('[data-due="2026-11-13T01:00:00.000Z"]')).toBeTruthy();
+  });
+
+  // 회귀: 차단 화면에 머문 채 ?id=가 바뀌면(따라하기 가이드·알림 이동) 그 차단 상세가 열려야 한다 — 처음 열 때만 읽던 문제
+  it('같은 화면에서 ?id=로 옮기면 그 차단 상세를 연다', async () => {
+    handler = api;
+    localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'operator' }));
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={qc}>
+        <MemoryRouter initialEntries={['/ops/kill']}>
+          <AppProvider>
+            <Routes>
+              <Route
+                path="/ops/kill"
+                element={
+                  <>
+                    <Link to="/ops/kill?id=KILL-00001">open-kill</Link>
+                    <KillConsole />
+                  </>
+                }
+              />
+            </Routes>
+          </AppProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByText('걸린 긴급 차단이 없습니다')).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    fireEvent.click(screen.getByRole('link', { name: 'open-kill' }));
+    const dlg = await screen.findByRole('dialog');
+    expect(within(dlg).getByRole('heading', { level: 2 }).textContent).toBe('KILL-00001');
   });
 
   // 회귀(UX3-03): 차단이 없을 때 요청 폼이 펼쳐져 있으면 사전 점검(위반·대기)이 초록 핵심 메시지와 모순된다 — 폼은 머리 행동으로 여는 Drawer에만

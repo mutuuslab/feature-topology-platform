@@ -214,7 +214,7 @@ function Rehara() {
   const rows = [...(q.data?.items ?? [])].reverse();
   const C = R.col;
   return (
-    <Panel title={T.tabs.rehara} codes="FFG-LCY-006" id="rehara">
+    <Panel title={T.tabs.rehara} codes="FFG-LCY-006" id="rehara" tour="rehara">
       <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: R.empty }} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.tabs.rehara}

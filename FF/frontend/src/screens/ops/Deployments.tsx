@@ -257,7 +257,7 @@ export function DeploymentDetail() {
                   ]}
                 />
               </Panel>
-              <Panel title={D.nodes} codes="P0 aggregate · BD-12" id="nodes">
+              <Panel title={D.nodes} codes="P0 aggregate · BD-12" id="nodes" tour="deploy-nodes">
                 <DataTable
                   caption={D.nodes}
                   rows={p.nodes}

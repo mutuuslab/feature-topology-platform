@@ -1,15 +1,13 @@
 // /learn — 표준 따라하기 허브와 시나리오 화면. 보고서 v1.1 18장 케이스 시나리오를 실제 화면에서 따라 한다(가이드 패널: shell/GuideDock).
 import { useMemo } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-
-/** 준비된 시나리오를 앞에 — 지금 따라 할 수 있는 것이 먼저 보이게 */
-const readyFirst = (a: Tutorial, b: Tutorial) => Number(b.status === 'ready') - Number(a.status === 'ready');
 import { clausesOfRules, tutorialById, TUTORIALS, type ReadingPath, type Tutorial } from '@ff/contracts';
+import { STATIC_MODE } from '../../api/client';
 import { useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { roleLabel } from '../../data/refdata';
-import { Button, Explain, ExplainCodes, KeyValue, PageHeader, Panel, RuleText, Segmented, SummaryLine, type KeyMessageSpec, useReportCatalog } from '../../design';
-import { learnStore, useLearn } from '../../shell/learn';
+import { Button, Explain, ExplainCodes, KeyValue, PageHeader, Panel, RuleText, Segmented, type KeyMessageSpec, useReportCatalog } from '../../design';
+import { learnStore, useLearn, type LearnMode } from '../../shell/learn';
 
 const L = ko.learn;
 /** 운영 빌드 검사 표식(tools/prod-bundle.test.ts) — 운영 설치는 이 화면을 싣지 않는다(결정 D-RD-8) */
@@ -34,13 +32,13 @@ function TrackLabel({ t }: { t: Tutorial }) {
   );
 }
 
-/** 준비된 시나리오 카드 — 시작은 보조 버튼(핵심 메시지보다 먼저 보이지 않게, UX3-07) */
+/** 시나리오 카드 — 시작은 보조 버튼(핵심 메시지보다 먼저 보이지 않게, UX3-07) */
 function Card({ t }: { t: Tutorial }) {
   const st = useLearn();
   const nav = useNavigate();
   const active = st?.scenarioId === t.id;
   return (
-    <li className="ds-learn-card" data-status={t.status}>
+    <li className="ds-learn-card">
       <div className="ds-learn-card__head">
         <TrackLabel t={t} />
       </div>
@@ -62,45 +60,25 @@ function Card({ t }: { t: Tutorial }) {
   );
 }
 
-/** 준비 중 시나리오 — 카드마다 '준비 중'을 되풀이하지 않고 한 묶음으로 접는다(UX3-07). 개수는 SummaryLine */
-function PlannedGroup({ list }: { list: Tutorial[] }) {
-  return (
-    <details className="ds-learn-planned">
-      <summary>{L.plannedGroup}</summary>
-      <ul className="ds-learn-planned__list">
-        {list.map((t) => (
-          <li key={t.id} data-status={t.status}>
-            <Link to={`/learn/${t.id}`}>{titleOf(t)}</Link>
-            <TrackLabel t={t} />
-          </li>
-        ))}
-      </ul>
-    </details>
-  );
-}
-
-/** 핵심 메시지 — 진행 중인 실습이 먼저, 없으면 준비된 실습 수와 첫 실습 */
-function hubMessage(running: Tutorial | undefined, ready: Tutorial[]): KeyMessageSpec {
+/** 핵심 메시지 — 진행 중인 실습이 먼저, 없으면 실습 수 */
+function hubMessage(running: Tutorial | undefined): KeyMessageSpec {
   if (running) return { tone: 'neutral', text: L.key.running(titleOf(running)), action: <Link to={`/learn/${running.id}`}>{L.key.resume}</Link> };
-  return { tone: 'neutral', value: ready.length, text: L.key.ready };
+  return { tone: 'neutral', value: TUTORIALS.length, text: L.key.ready };
 }
 
 export function LearnHub() {
   const [sp, setSp] = useSearchParams();
   const path = (sp.get('path') ?? 'ALL') as (typeof PATHS)[number];
-  const list = TUTORIALS.filter((t) => path === 'ALL' || t.readingPath === path).sort(readyFirst);
-  const open = list.filter((t) => t.status === 'ready');
-  const planned = list.filter((t) => t.status !== 'ready');
+  const list = TUTORIALS.filter((t) => path === 'ALL' || t.readingPath === path);
   const st = useLearn();
   const running = st ? tutorialById(st.scenarioId) : undefined;
-  const ready = TUTORIALS.filter((t) => t.status === 'ready');
   const counts = useMemo(() => Object.fromEntries(PATHS.map((p) => [p, TUTORIALS.filter((t) => p === 'ALL' || t.readingPath === p).length])), []);
   // 예시 데이터가 없는 설치(고객 운영 — 시드 없음)면 시나리오 ID가 이 설치에 없다고 먼저 알린다(출시 준비 RD-OPS-02)
   const health = useApi<{ seed: string | null }>('health');
   const noSample = !!health.data && !health.data.seed;
   return (
     <div className="ds-screen" data-learn={LEARN_MARKER}>
-      <PageHeader codes="FFP-FS-STR-001 v1.1 · 18장" title={L.title} lead={L.lead} message={hubMessage(running, ready)} />
+      <PageHeader codes="FFP-FS-STR-001 v1.1 · 18장" title={L.title} lead={L.lead} message={hubMessage(running)} />
       {noSample && (
         <div className="ds-stale" role="note" data-learn-sample-notice="">
           {L.sampleNotice}
@@ -112,15 +90,11 @@ export function LearnHub() {
         onChange={(v) => setSp(v === 'ALL' ? {} : { path: v }, { replace: true })}
         options={PATHS.map((p) => ({ value: p, label: L.path[p], count: counts[p] }))}
       />
-      {planned.length > 0 && <SummaryLine label={L.title} items={[{ k: L.status.planned, v: planned.length }]} />}
-      {open.length > 0 && (
-        <ul className="ds-learn-grid">
-          {open.map((t) => (
-            <Card key={t.id} t={t} />
-          ))}
-        </ul>
-      )}
-      {planned.length > 0 && <PlannedGroup list={planned} />}
+      <ul className="ds-learn-grid">
+        {list.map((t) => (
+          <Card key={t.id} t={t} />
+        ))}
+      </ul>
     </div>
   );
 }
@@ -134,24 +108,18 @@ export function LearnRun() {
   if (!t) return <p className="ds-stale">{id}</p>;
   const clauses = clausesOfRules([...t.rules, ...t.steps.flatMap((s) => s.rules)]);
   const running = st?.scenarioId === t.id;
-  const start = () => {
-    // 이미 진행 중이면 이어서(지금 단계 화면으로), 아니면 1단계부터
-    if (running) return nav(t.steps[Math.min(st!.step, t.steps.length - 1)].route);
-    learnStore.start(t.id, 'view');
-    if (t.steps[0] && t.steps[0].route !== `/learn/${t.id}`) nav(t.steps[0].route);
+  const start = (mode: LearnMode) => {
+    // 같은 방식으로 진행 중이면 이어서(지금 단계 화면으로), 아니면 1단계부터
+    if (running && st!.mode === mode) return nav(t.steps[Math.min(st!.step, t.steps.length - 1)].route);
+    learnStore.start(t.id, mode);
+    if (t.steps[0].route !== `/learn/${t.id}`) nav(t.steps[0].route);
   };
   return (
     <div className="ds-screen" data-learn={LEARN_MARKER}>
       <PageHeader
         codes={`${t.cs ?? t.id} · ${L.track[t.track]} · ${L.path[t.readingPath as ReadingPath]}`}
         title={titleOf(t)}
-        message={
-          !t.steps.length
-            ? { tone: 'neutral', text: L.plannedNote }
-            : running
-              ? { tone: 'neutral', value: `${st!.step + 1}/${t.steps.length}`, text: L.key.inProgress }
-              : { tone: 'neutral', value: t.steps.length, text: L.key.stepsMinutes(t.minutes) }
-        }
+        message={running ? { tone: 'neutral', value: `${st!.step + 1}/${t.steps.length}`, text: L.key.inProgress } : { tone: 'neutral', value: t.steps.length, text: L.key.stepsMinutes(t.minutes) }}
       />
       <div className="ds-split">
         <div style={{ display: 'grid', gap: 'var(--sp-4)', alignContent: 'start' }}>
@@ -168,8 +136,7 @@ export function LearnRun() {
             </Panel>
           )}
           <Panel title={L.stepList} id="learn-steps">
-            {t.steps.length ? (
-              <ol className="ds-learn-steps">
+            <ol className="ds-learn-steps">
                 {t.steps.map((s, k) => (
                   <li key={s.id} data-kind={s.kind} aria-current={st?.scenarioId === t.id && st.step === k ? 'step' : undefined}>
                     <span className="ds-learn-steps__no">{k + 1}</span>
@@ -184,18 +151,16 @@ export function LearnRun() {
                   </li>
                 ))}
               </ol>
-            ) : (
-              <p className="ds-field__hint">{L.plannedNote}</p>
-            )}
           </Panel>
         </div>
         <div style={{ display: 'grid', gap: 'var(--sp-4)', alignContent: 'start' }}>
           <Panel title={L.modes} id="learn-modes">
             <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
-              {(['view', 'auto', 'self'] as const).map((m) => (
+              {/* 직접 하기는 쓰기(요청·승인·저장)를 해야 판정이 열린다 — 쓰기를 받지 않는 정적 데모에서는 보기만 연다(단계에서 막히지 않게) */}
+              {(STATIC_MODE ? (['view'] as const) : (['view', 'self'] as const)).map((m) => (
                 <div key={m} style={{ display: 'grid', gap: 4 }}>
-                  <Button variant={m === 'view' && !running ? 'primary' : 'default'} icon={m === 'view' ? 'play' : undefined} disabled={m !== 'view' || !t.steps.length} onClick={start} data-tour={m === 'view' ? 'learn-start' : undefined}>
-                    {m === 'view' && running ? L.resumeRun(st!.step + 1, t.steps.length) : L.mode[m]}
+                  <Button variant={m === 'view' && !running ? 'primary' : 'default'} icon={m === 'view' ? 'play' : 'pen'} onClick={() => start(m)} data-tour={m === 'view' ? 'learn-start' : undefined} data-mode={m}>
+                    {running && st!.mode === m ? L.resumeRun(st!.step + 1, t.steps.length) : L.mode[m]}
                   </Button>
                   <span className="ds-field__hint">{L.modeHint[m]}</span>
                 </div>

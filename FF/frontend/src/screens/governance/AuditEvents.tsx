@@ -62,6 +62,8 @@ export function AuditScreen() {
   };
   const chain = useApi<ChainReportView>('auditChain');
   const c = chain.data;
+  // 사용자가 [다시 검증]으로 확인을 마쳤는가 — 화면을 열 때 자동으로 읽은 판정과 구분한다(따라하기 판정 data-rechecked)
+  const [rechecked, setRechecked] = useState(false);
   // 체인이 정상이어도 표에 FAILED가 보이면 초록 한 줄만 두지 않는다(헤드라인·데이터 모순, 하네스 2판 결함 4) —
   // 단 다른 업무의 실패 수가 체인 판정보다 앞서지 않게 큰 숫자는 검증한 기록 수, 실패는 상태 표시(P5-10)
   const failed = rows.filter((r) => r.result === 'FAILED').length;
@@ -80,7 +82,7 @@ export function AuditScreen() {
           {ko.audit.chainBroken(c.broken, c.anchors?.lastMatched?.id)}
         </p>
       )}
-      <ChainCard c={c} checkedAt={checkedAt} busy={chain.isFetching} onRecheck={() => chain.refetch()} />
+      <ChainCard c={c} checkedAt={checkedAt} busy={chain.isFetching} rechecked={rechecked} onRecheck={() => void chain.refetch().then((r) => setRechecked(!r.isError))} />
       <Tabs param="view" tabs={[{ key: 'log', label: auditGaps.views.log }, { key: 'policies', label: auditGaps.views.policies }]}>
         {(view) =>
           view === 'policies' ? (
@@ -137,7 +139,7 @@ export function AuditScreen() {
 }
 
 /** 해시 체인 카드 — 판정·검증한 기록·마지막 검증 시각·DB 밖 고정점(설정 여부), 다시 검증(P5-10) */
-function ChainCard({ c, checkedAt, busy, onRecheck }: { c: ChainReportView | undefined; checkedAt: string | null; busy: boolean; onRecheck: () => void }) {
+function ChainCard({ c, checkedAt, busy, rechecked, onRecheck }: { c: ChainReportView | undefined; checkedAt: string | null; busy: boolean; rechecked: boolean; onRecheck: () => void }) {
   const H = AP.chain;
   if (!c) return null;
   const a = c.anchors;
@@ -145,7 +147,7 @@ function ChainCard({ c, checkedAt, busy, onRecheck }: { c: ChainReportView | und
     <Panel title={H.title} id="audit-chain" actions={<Button onClick={onRecheck} disabled={busy}>{busy ? H.checking : H.recheck}</Button>}>
       <KeyValue
         rows={[
-          { k: H.state, v: <span data-chain-ok={c.ok ? 'true' : 'false'}>{c.ok ? H.ok : H.broken}</span> },
+          { k: H.state, v: <span data-chain-ok={c.ok ? 'true' : 'false'} data-rechecked={rechecked && !busy ? 'true' : undefined}>{c.ok ? H.ok : H.broken}</span> },
           { k: H.verified, v: <span className="ds-mono">{c.verified.toLocaleString('ko-KR')}</span> },
           { k: H.checkedAt, v: <span data-chain-checked>{when(checkedAt)}</span> },
           { k: H.anchor, v: a?.failing ? <span data-anchor="failing" className="ds-tag ds-tag--warn">{H.anchorFailing(when(a.failing.at))}</span> : <span data-anchor={a?.configured ? 'on' : 'off'}>{a?.configured ? H.anchorOn(a.checked, when(a.lastAt)) : H.anchorOff}</span> },

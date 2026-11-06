@@ -57,7 +57,7 @@ export function RetirementsScreen() {
       <Drawer open={requesting} title={T.request} onClose={() => setRequesting(false)}>
         <RequestForm onDone={() => setRequesting(false)} />
       </Drawer>
-      <Panel title={T.list} id="retirements">
+      <Panel title={T.list} id="retirements" tour="retirements">
         {/* 핵심 메시지가 'Retirement 기록이 없습니다'라고 하면 빈 상자를 또 그리지 않는다(3초 테스트 ⑩, D-UX3-2) */}
         <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: T.empty }} emptyHidden={!!q.data && rows.length === 0} error={q.error} onRetry={() => q.refetch()}>
           <DataTable

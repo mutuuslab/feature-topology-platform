@@ -195,7 +195,7 @@ export function PolicyDetail() {
                     </Button>
                   )}
                   {p.status === 'DEPLOYED' && (
-                    <Button disabled={!releaser.ok} title={releaser.hint} onClick={() => setDrawer('stage')}>
+                    <Button disabled={!releaser.ok} title={releaser.hint} onClick={() => setDrawer('stage')} data-tour="policy-stage">
                       {T.stage}
                     </Button>
                   )}
@@ -233,7 +233,7 @@ export function PolicyDetail() {
                     { k: T.field.enabled, v: <span className="ds-mono">{p.enabled ? T.on : T.off}</span> },
                     { k: T.field.safeDefault, v: <span className="ds-mono">{p.safeDefault ? T.on : T.off}</span> },
                     { k: T.field.entitlement, v: p.entitlementCatalogId ? <IdChip id={p.entitlementCatalogId} copy={false} /> : '—' },
-                    { k: T.field.rollout, v: <span className="ds-mono">{p.rollout.mode} · {rolloutText(p)}</span> },
+                    { k: T.field.rollout, v: <span className="ds-mono" data-stage-bp={p.stageBasisPoints ?? undefined}>{p.rollout.mode} · {rolloutText(p)}</span> },
                     { k: 'contentHash', v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{p.contentHash}</span> },
                     { k: ko.bom.requestedBy, v: <span className="ds-mono">{p.createdBy}</span>, note: when(p.createdAt) },
                     { k: ko.bom.decidedBy, v: <span className="ds-mono">{p.approvedBy ?? '—'}</span>, note: p.approvedAt ? when(p.approvedAt) : undefined },
@@ -322,7 +322,7 @@ export function PolicyCreate() {
   return (
     <div className="ds-screen">
       <PageHeader codes="D01-06 · NEW POLICY" title={T.create} message={{ tone: 'neutral', text: perm.ok ? T.key.can : T.key.cannot }} />
-      <Panel id="new-policy">
+      <Panel id="new-policy" tour="policy-create">
         <form
           style={{ display: 'grid', gap: 'var(--sp-3)', maxWidth: 720 }}
           onSubmit={(e) => {

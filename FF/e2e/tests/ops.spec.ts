@@ -1,6 +1,7 @@
 // PoC ④⑥ 배포·차단 전달 + CARLA 가상검증 끝단 흐름 — 실제 백엔드(전용 9111, 실제 타이머)와 v2 화면.
 // 긴급 차단은 lead-01만 대상으로 한다 — ego-01은 policy.spec의 체험권 흐름이 병렬로 쓴다.
 import { expect, test, type Page } from '@playwright/test';
+import { lockKill, releaseKillLocks } from './kill-lock';
 
 async function asRole(page: Page, role: string) {
   await page.evaluate((r) => {
@@ -10,12 +11,17 @@ async function asRole(page: Page, role: string) {
   }, role);
 }
 
+test.afterEach(releaseKillLocks);
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/_design');
 });
 
 test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급 전달 → 회신 CONFIRMED → Fleet → 복원 요청 → 다른 2인 승인 → 복구', async ({ page }) => {
+  test.setTimeout(300_000); // 아래 기다림(다른 시험의 차단이 끝날 때까지)을 포함
   await asRole(page, 'operator');
+  // 따라하기 e2e(learn.spec)도 FEAT-00022를 차단한다 — 차단은 Feature당 하나라 작업자 사이 잠금을 잡고 요청한다
+  await lockKill(page.request, 'FEAT-00022');
   await page.goto('/ops/kill');
   // 요청 폼은 머리의 행동 버튼으로 여는 Drawer(UX3-03)
   await page.getByRole('button', { name: '긴급 차단 요청' }).click();

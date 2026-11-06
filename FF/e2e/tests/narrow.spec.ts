@@ -118,3 +118,23 @@ test('업무 절차 흐름도 — 넘침은 기록만(다른 작업이 화면을
   const box = inner && inner.scroll > inner.client + 1 ? `흐름도는 ${inner.box} 안에서 가로 스크롤(${inner.scroll}/${inner.client}px)` : '흐름도 가로 스크롤 없음';
   info.annotations.push({ type: 'narrow-finding', description: `/procedures/FPW.1 @${page.viewportSize()!.width}px: ${page_}, ${box}` });
 });
+
+test('따라하기 가이드 — 좁은 폭에서도 할 일·이동 버튼이 화면 안에 있고 본문을 가로로 밀지 않는다', async ({ page }) => {
+  await asRole(page, 'operator');
+  await page.goto('/learn/KILL-DC2');
+  await page.getByRole('button', { name: '보기 모드로 시작' }).click();
+  const dock = page.getByRole('complementary', { name: '따라하기 가이드' });
+  await expect(dock.getByRole('heading', { level: 2 })).toHaveText('무엇을 확인하나');
+  await dock.getByRole('button', { name: '다음' }).click();
+  await expect(page).toHaveURL(/\/ops\/kill$/);
+  const vp = page.viewportSize()!;
+  const box = await dock.boundingBox();
+  // 읽을 수 있는 폭(화면 폭의 절반 이상 또는 280px) — 좁은 열에 글자가 한두 자씩 갇히지 않게
+  expect(box!.width, '가이드 폭').toBeGreaterThanOrEqual(Math.min(280, vp.width / 2));
+  for (const name of ['이전', '다음']) {
+    const b = await dock.getByRole('button', { name, exact: true }).boundingBox();
+    expect(b && b.y >= 0 && b.y + b.height <= vp.height && b.x >= 0 && b.x + b.width <= vp.width, `[${name}] 버튼이 화면 안`).toBe(true);
+  }
+  await expect(dock.getByText(/긴급 차단 요청|차량에서 일어나는 순서/).first()).toBeInViewport();
+  expect((await overflow(page)).over).toBe(0);
+});

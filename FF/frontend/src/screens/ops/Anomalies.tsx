@@ -53,7 +53,7 @@ function AnomalyDrawer({ id, onClose }: { id: string | null; onClose: () => void
   return (
     <Drawer open={!!id} title={id ?? ''} onClose={onClose}>
       {a && (
-        <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+        <div style={{ display: 'grid', gap: 'var(--sp-3)' }} data-tour="anomaly-detail">
           <KeyValue
             rows={[
               { k: A.col.kind, v: <span className="ds-tag">{A.kind[a.kind]}</span> },

@@ -1,9 +1,13 @@
 // 따라하기 가이드 패널 — 실제 화면 위에 붙어 "지금 할 일 · 어디서 · 누가 · 왜(규칙·근거 조항) · 확인"을 보여 준다.
 // 대상 요소(data-tour)를 스포트라이트로 강조하고, 단계 역할이 지금 역할과 다르면 화면 이동 없이 전환한다.
-// 보기 모드(U1)는 기능을 실행하지 않는다 — 자동·직접 하기 모드와 체크포인트 판정은 백엔드 러너(F1)가 맡는다.
+// 단계에 완료 판정(check)이 있으면 그 화면의 상태(요소·글자)로 판정한다 — 직접 하기 모드는 판정을 통과해야 다음 단계로 간다.
+// 판정은 화면만 보므로 실서버·정적 데모(브라우저 시뮬레이터)에서 같게 동작한다. 판정에 쓰기(check.write)가 있으면 그 쓰기가 이 단계에서
+// 성공해야 완료 — 다른 시나리오·이전 실행이 남긴 상태로 미리 통과하지 않는다(api/writes).
 import { useEffect, useId, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { clausesOf, reportRule, reportTest, standardFamily, stepPath, tutorialById, type TutorialStep } from '@ff/contracts';
+import { clausesOf, onCheckPath, reportRule, reportTest, standardFamily, stepCheckMet, stepPath, tutorialById, type TutorialStep } from '@ff/contracts';
+import { STATIC_MODE } from '../api/client';
+import { onWrite } from '../api/writes';
 import { ko } from '../copy/ko';
 import { roleLabel } from '../data/refdata';
 import { Button, ClauseChip, Drawer, Icon, KeyValue, RULE_EVENT, RuleText, StatusGlyph, openRule, useReportCatalog } from '../design';
@@ -53,6 +57,34 @@ function StepRules({ step }: { step: TutorialStep }) {
   );
 }
 
+/** 단계 완료 판정 — 판정 화면에 있을 때 화면이 바뀔 때마다(요소 추가·속성·글자) 다시 본다 */
+function useStepCheck(step: TutorialStep | undefined, active: boolean): boolean {
+  // 판정이 어느 단계의 것인지 함께 둔다 — 단계를 넘긴 직후 앞 단계의 판정이 새 단계로 옮겨 붙지 않게
+  const [metStep, setMetStep] = useState<TutorialStep | null>(null);
+  useEffect(() => {
+    const c = step?.check;
+    if (!step || !c || !active) {
+      setMetStep(null);
+      return;
+    }
+    let raf = 0;
+    const tick = () => {
+      raf = 0;
+      setMetStep(stepCheckMet(c, document) ? step : null);
+    };
+    tick();
+    const mo = new MutationObserver(() => {
+      if (!raf) raf = requestAnimationFrame(tick);
+    });
+    mo.observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
+    return () => {
+      mo.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [step, active]);
+  return !!step && metStep === step;
+}
+
 export function GuideDock() {
   const st = useLearn();
   const nav = useNavigate();
@@ -64,6 +96,25 @@ export function GuideDock() {
   const step = t && st ? t.steps[Math.min(st.step, t.steps.length - 1)] : undefined;
   const here = !!step && pathname === stepPath(step) && (!step.route.includes('?') || search.includes(step.route.split('?')[1]));
   const rect = useSpotlight(step && here && !st?.collapsed ? step.anchor : null, stepDescId);
+  const checking = !!step && onCheckPath(step, pathname);
+  const i0 = t && st ? Math.min(st.step, t.steps.length - 1) : 0;
+  // 이 단계에서 성공한 쓰기를 남긴다(단계 번호와 함께 — 단계를 옮기면 새로 센다). 화면을 옮기거나 새로고침해도 남는다
+  const need = step?.check?.write;
+  useEffect(() => {
+    if (!need?.length) return;
+    return onWrite((name) => {
+      const cur = learnStore.get();
+      if (!cur || !need.includes(name)) return;
+      const names = cur.wrote?.step === i0 ? cur.wrote.names : [];
+      if (!names.includes(name)) learnStore.patch({ wrote: { step: i0, names: [...names, name] } });
+    });
+  }, [need, i0]);
+  const wrote = !need?.length || (st?.wrote?.step === i0 && need.some((w) => st.wrote!.names.includes(w)));
+  const met = useStepCheck(step, checking) && wrote;
+  // 판정을 통과하면 기록한다 — 다른 화면으로 옮겨도 완료가 남는다
+  useEffect(() => {
+    if (met && step && st && !st.done?.includes(step.id)) learnStore.patch({ done: [...(st.done ?? []), step.id] });
+  }, [met, step, st]);
   const headRef = useRef<HTMLHeadingElement>(null);
   // 단계가 바뀌면 제목으로 초점 — 키보드·화면낭독 사용자가 새 단계를 바로 읽는다
   useEffect(() => headRef.current?.focus({ preventScroll: true }), [st?.step, st?.scenarioId]);
@@ -71,6 +122,10 @@ export function GuideDock() {
   if (!st || !t || !step) return null;
   const n = t.steps.length;
   const i = Math.min(st.step, n - 1);
+  const done = met || !!st.done?.includes(step.id);
+  // 직접 하기 — 판정이 있는 단계는 통과해야 다음으로. 정적 데모는 쓰기를 받지 않으므로 직접 하기를 열지 않고(Learn.tsx), 남은 진행 상태도 막지 않는다
+  const self = st.mode === 'self' && !STATIC_MODE;
+  const blocked = self && !!step.check && !done;
   const go = (to: number) => {
     const s = t.steps[to];
     learnStore.patch({ step: to });
@@ -107,6 +162,7 @@ export function GuideDock() {
           <div>
             <div className="ds-eyebrow">
               {t.id} · {D.progress(i + 1, n)} · {L.kind[step.kind]}
+              {self ? ` · ${L.mode.self}` : ''}
             </div>
             <h2 ref={headRef} tabIndex={-1} id={stepDescId}>
               {step.title}
@@ -177,9 +233,9 @@ export function GuideDock() {
           <section className="sh-guide__sec sh-guide__sec--expect">
             <h3 className="ds-eyebrow ds-eyebrow--ko">{D.expect}</h3>
             <p>{step.expectKo}</p>
-            {step.pendingKo && (
-              <p className="sh-guide__pending">
-                <StatusGlyph kind="REVIEW" /> {D.pending} — {step.pendingKo}
+            {step.check && (
+              <p className="sh-guide__check" role="status" data-check={done ? 'done' : 'wait'}>
+                <StatusGlyph kind={done ? 'PASS' : 'UNJUDGED'} /> {done ? `${D.checkDone} — ${step.check.doneKo}` : checking ? D.checkWait : D.checkOther}
               </p>
             )}
           </section>
@@ -190,11 +246,11 @@ export function GuideDock() {
             {D.prev}
           </Button>
           {i < n - 1 ? (
-            <Button variant="primary" onClick={() => go(i + 1)}>
+            <Button variant="primary" disabled={blocked} reason={blocked ? D.checkFirst : undefined} onClick={() => go(i + 1)}>
               {D.next}
             </Button>
           ) : (
-            <Button variant="primary" icon="check" onClick={finish} title={D.done}>
+            <Button variant="primary" icon="check" disabled={blocked} reason={blocked ? D.checkFirst : undefined} onClick={finish} title={D.done}>
               {D.finish}
             </Button>
           )}

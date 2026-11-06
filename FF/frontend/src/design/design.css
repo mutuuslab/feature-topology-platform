@@ -1934,12 +1934,6 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 /* ── 표준 따라하기 허브·시나리오 (screens/learn) ── */
 .ds-learn-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--sp-3); }
 .ds-learn-card { display: grid; gap: var(--sp-2); align-content: start; padding: var(--sp-4); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
-/* 준비 중 묶음(UX3-07) — 카드 대신 접힌 목록 한 줄씩 */
-.ds-learn-planned > summary { cursor: pointer; font-size: var(--fs-sm); color: var(--ink-2); }
-.ds-learn-planned__list { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: var(--sp-1); }
-.ds-learn-planned__list li { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: baseline; font-size: var(--fs-sm); }
-.ds-learn-card[data-status='planned'] { background: var(--surface-2); }
-.ds-learn-card[data-status='planned'] h3 { color: var(--ink-2); font-weight: 600; }
 .ds-learn-card__foot .ds-btn { margin-left: auto; }
 .ds-learn-card__head { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: center; }
 .ds-learn-card h2 { margin: 0; font-size: var(--fs-md); line-height: 1.35; }

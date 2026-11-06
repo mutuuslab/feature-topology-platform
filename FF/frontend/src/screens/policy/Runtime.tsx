@@ -94,7 +94,7 @@ export function ActivationScreen() {
       <AsyncView emptyHidden={none && !unavailable} state={none ? 'empty' : asyncState(listErr ?? q)} error={(listErr ?? q).error} onRetry={() => (listErr ?? q).refetch()} empty={flagPick.unavailable ? { title: A.unpublished, body: A.unpublishedBody } : vehiclePick.unavailable ? { title: A.vehicleUnavailable, body: ko.state.noVehicleBody } : noVehicle ? { title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody } : { title: ko.state.noPolicyTitle, body: ko.state.noPolicyBody }}>
         {d && (
           <>
-            <Panel title={A.trace} eyebrow={`${d.result.policyId} r${d.result.revision}`} id="result">
+            <Panel title={A.trace} eyebrow={`${d.result.policyId} r${d.result.revision}`} id="result" tour="activation-trace">
               <ol className="ds-trace">
                 {d.result.trace.map((t) => (
                   <li key={t.step} data-result={t.result} data-step={t.step}>

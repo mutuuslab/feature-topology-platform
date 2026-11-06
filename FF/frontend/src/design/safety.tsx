@@ -195,7 +195,7 @@ export function RuleChecklist({ items, caption = S.ruleList, live, onRule }: { i
         {items.map((it) => {
           const title = it.title ?? reportRule(it.id)?.title;
           return (
-          <li key={it.id} className="ds-rules__item" data-status={it.status} data-titled={title ? '' : undefined}>
+          <li key={it.id} className="ds-rules__item" data-status={it.status} data-rule={it.id} data-titled={title ? '' : undefined}>
             <span
               className="ds-rules__mark"
               style={

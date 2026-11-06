@@ -12,6 +12,7 @@ import { hasUnsaved } from '../design/unsaved';
 import { actorFor } from './actor';
 import { errorKind, retryAfterSeconds, userMessage, type ErrorKind } from './errors';
 import { markSessionExpired } from './session';
+import { notifyWrite } from './writes';
 
 export const STATIC_MODE = import.meta.env.VITE_DATA_MODE === 'static';
 
@@ -138,5 +139,6 @@ export async function call<T = any>(name: RouteName | string, opts: CallOptions 
   if (res.status === 401) onUnauthenticated();
   const data = parseBody(await res.text());
   if (!res.ok) throw toApiError(res, data);
+  if (write) notifyWrite(name);
   return data as T;
 }

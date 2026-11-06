@@ -49,7 +49,7 @@ export function OpenFeaturePanel({ vin, flagKey, serverValue, pollInterval = 300
 
   if (STATIC_MODE)
     return (
-      <Panel title={O.title} id="openfeature">
+      <Panel title={O.title} id="openfeature" tour="openfeature-client">
         <p className="ds-field__hint">{O.staticNote}</p>
       </Panel>
     );
@@ -57,7 +57,7 @@ export function OpenFeaturePanel({ vin, flagKey, serverValue, pollInterval = 300
   const guarded = (details?.reason === 'DISABLED' && details.flagMetadata?.decided_by === 'vehicle_safety_guard') || (details?.errorCode === 'FLAG_NOT_FOUND' && serverValue !== null);
   const agree = details && serverValue !== null && !guarded ? details.value === serverValue : null;
   return (
-    <Panel title={O.title} eyebrow={`OFREP · targetingKey=${vin}`} id="openfeature" actions={agree === null ? <OpenFeatureScopeLink /> : <VerdictBadge value={agree ? 'PASS' : 'FAIL'} />}>
+    <Panel title={O.title} eyebrow={`OFREP · targetingKey=${vin}`} id="openfeature" tour="openfeature-client" actions={agree === null ? <OpenFeatureScopeLink /> : <VerdictBadge value={agree ? 'PASS' : 'FAIL'} />}>
       <p className="ds-field__hint">{O.lead}</p>
       {guarded && (
         <p className="ds-stale" role="note" data-testid="of-guarded">

@@ -11,7 +11,7 @@ import { MIGRATIONS } from './migrations';
 import { Metrics, metricsEndpoint } from './observability';
 import { isProduction } from './runtime-config';
 import type { ConnectionsResponse } from '@ff/contracts';
-import { connectionStatuses } from './connections';
+import { connectionPresentation, connectionStatuses } from './connections';
 import { refdbReadyCheck } from './refdb-ready';
 
 /** 배포 판 — package.json 판 + 빌드 커밋(FF_BUILD_SHA, 이미지 빌드가 넣는다) */
@@ -80,7 +80,8 @@ export class KernelController {
   /** 외부 연결 상태(출시 준비 RD-UX-04) — 화면이 모의 연계(과금·OTA·Data Lake)를 '모의'·'연결 안 됨'으로 표시하는 근거 */
   @Get('system/connections')
   connections(): ConnectionsResponse {
-    return { mode: isProduction() ? 'production' : 'demo', items: connectionStatuses(process.env) };
+    const production = isProduction();
+    return { mode: production ? 'production' : 'demo', presentation: connectionPresentation(production, process.env), items: connectionStatuses(process.env) };
   }
 
   @Get('health')

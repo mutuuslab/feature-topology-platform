@@ -1119,4 +1119,20 @@ CREATE TABLE pipeline_run (run_id TEXT PRIMARY KEY, feature_id TEXT, status TEXT
 CREATE INDEX pipeline_run_feature ON pipeline_run (feature_id, received_at);
 `,
   },
+  {
+    // Data Lake 연계·Closed loop(80-70 9장, TL-B05·B06·B08·B09) — FF가 주인인 기록만. Lake의 원천·집계·모델은 두지 않는다(IF-15로 읽기만).
+    // 번호 111: 다른 브랜치 마이그레이션(091~110)과 겹치지 않게 비워 둔다
+    name: '111_lake_closed_loop',
+    sql: `
+CREATE TABLE feature_finding (finding_id TEXT PRIMARY KEY, finding_key TEXT NOT NULL, feature_id TEXT NOT NULL, version TEXT NOT NULL, axis TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX feature_finding_key ON feature_finding (finding_key);
+CREATE INDEX feature_finding_feature ON feature_finding (feature_id, version);
+CREATE TABLE collection_policy (collection_id TEXT PRIMARY KEY, status TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE lake_model_use (id INTEGER PRIMARY KEY AUTOINCREMENT, model_id TEXT NOT NULL, version TEXT NOT NULL, decided_by TEXT NOT NULL, role TEXT NOT NULL, decision TEXT NOT NULL CHECK (decision IN ('APPROVE','REJECT')), reason TEXT NOT NULL, at TEXT NOT NULL, UNIQUE (model_id, version, decided_by));
+CREATE TRIGGER lake_model_use_no_update BEFORE UPDATE ON lake_model_use BEGIN SELECT RAISE(ABORT, 'lake_model_use는 추가만 가능'); END;
+CREATE TRIGGER lake_model_use_no_delete BEFORE DELETE ON lake_model_use BEGIN SELECT RAISE(ABORT, 'lake_model_use는 추가만 가능'); END;
+CREATE TABLE policy_abort_criteria (id INTEGER PRIMARY KEY AUTOINCREMENT, policy_id TEXT NOT NULL, doc TEXT NOT NULL, registered_by TEXT NOT NULL, registered_at TEXT NOT NULL);
+CREATE INDEX policy_abort_criteria_policy ON policy_abort_criteria (policy_id, id);
+`,
+  },
 ];

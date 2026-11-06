@@ -51,6 +51,9 @@ export const QUEUE_DEPTS: Record<QueueKey, string[]> = {
   deploy: ['DEP-INT', 'DEP-OPS'],
   sync: ['DEP-INT', 'DEP-SE'],
   homologation: ['DEP-HOM'],
+  modelUse: ['DEP-FS', 'DEP-OPS'],
+  finding: ['DEP-OPS', 'DEP-FS', 'DEP-PDP'],
+  canaryHold: ['DEP-INT', 'DEP-OPS'],
 };
 
 export const inDept = (i: Pick<QueueItem, 'queue' | 'gate'>, dept: string | null | undefined) =>
@@ -73,6 +76,9 @@ export const QUEUE_RANK: Record<QueueKey, number> = {
   safety: 7,
   sync: 8,
   homologation: 4,
+  finding: 3,
+  canaryHold: 3,
+  modelUse: 6,
 };
 
 const t = (iso: string | null) => (iso ? Date.parse(iso) : Number.POSITIVE_INFINITY);
@@ -96,7 +102,7 @@ export const ROLE_FOCUS: Record<string, QueueKey[]> = {
   integrator: ['kill', 'restore', 'sync'],
   coordinator: ['release', 'deploy'],
   viewer: ['postReview'],
-  opslead: ['kill', 'restore'],
+  opslead: ['kill', 'restore', 'finding', 'modelUse'],
   safety2: ['restore', 'kill', 'gate'],
   productowner: ['product'],
 };

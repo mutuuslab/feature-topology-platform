@@ -1,5 +1,7 @@
 // /_design — 디자인 키트 갤러리. 모든 부품·상태 조합을 한 화면에 두고 시각 회귀(e2e @visual)의 기준으로 쓴다.
 // 샘플 값은 DATASET v0.81의 실제 행(FEAT-00022 등)을 쓴다.
+import { FreshnessChip } from '../design/freshness';
+import { freshness as FR } from '../copy/freshness';
 import { useState } from 'react';
 import { DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, GATES, LIFECYCLE, REG_CLASSES, stageIndexOf, type GateId } from '@ff/contracts';
 import { ko } from '../copy/ko';
@@ -296,6 +298,14 @@ export default function DesignGallery() {
 
       <Panel title={PF.design.title} eyebrow={PF.design.hint} id="procedure-flow">
         <FlowGallery />
+      </Panel>
+
+      <Panel title={FR.gallery.title} eyebrow={FR.gallery.hint} id="freshness-kit">
+        <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
+          <FreshnessChip f={{ dataset: 'gold.canary_5m_kr', asOf: '2026-10-20T02:57:00Z', lagSeconds: 180, slaSeconds: 600, stale: false }} />
+          <FreshnessChip f={{ dataset: 'gold.canary_5m_eu', asOf: '2026-10-20T02:37:00Z', lagSeconds: 1380, slaSeconds: 600, stale: true }} />
+          <FreshnessChip f={{ dataset: 'gold.feature_usage_1d', asOf: '2026-10-19T21:30:00Z', lagSeconds: 19800, slaSeconds: 86400, stale: false }} compact />
+        </div>
       </Panel>
 
       <Panel title={T.errorsKit} id="errors-kit">

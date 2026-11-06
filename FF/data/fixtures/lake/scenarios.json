@@ -1,0 +1,35 @@
+{
+  "_comment": "IF-15 모의 Data Lake의 결정적 예시 — 기존 Feature·flag ID에 붙는 지표 덮어쓰기. 값은 [이번 창, 앞 창]. 없는 지표는 정상 범위에서 해시로 만든다",
+  "health": {
+    "FEAT-00004@4.1.0": { "dtc_vehicle_rate": [0.0093, 0.0041], "safety_event_rate_per_1k": [1.12, 0.71] },
+    "FEAT-00022@1.0.0": { "delivery_success_rate": [0.982, 0.951] },
+    "FEAT-00163@3.8.0": { "manual_off_rate": [0.34, 0.21], "usage_rate": [0.29, 0.38] },
+    "FEAT-00005@5.5.0": { "security_alert_count": [2, 0] },
+    "FEAT-00025@1.0.0": { "data_missing_rate": [0.27, 0.04] },
+    "FEAT-00002@1.6.0": { "fault_rate_per_1k": [2.6, 1.4] },
+    "FEAT-00028@1.0.0": { "_suppressed": ["usage_rate", "manual_off_rate", "trial_conversion_rate"] },
+    "FEAT-00030@1.0.0": { "_sample": 140 }
+  },
+  "canary": {
+    "care_00022_signal": { "stage": "OK" },
+    "care_00022_param": { "stage": "ABORT", "dtc_per_1k": 1.8, "vehicles": 9200 },
+    "ivi_00024_guide": { "stage": "INSUFFICIENT", "vehicles": 180 }
+  },
+  "trials": {
+    "usage": [
+      { "band": "0일", "vehicles": 3120, "conversion": 0.012 },
+      { "band": "1~2일", "vehicles": 4480, "conversion": 0.041 },
+      { "band": "3~5일", "vehicles": 3960, "conversion": 0.118 },
+      { "band": "6일 이상", "vehicles": 2210, "conversion": 0.247 }
+    ],
+    "targets": [
+      { "segment": "고속도로 주행 많음 · ADAS 자주 사용", "vehicles": 1840, "propensity": 0.31 },
+      { "segment": "출퇴근 정체 구간 · 체험 3일 이상", "vehicles": 1210, "propensity": 0.24 },
+      { "segment": "주말 장거리 · 체험 1~2일", "vehicles": 960, "propensity": 0.17 }
+    ],
+    "fairness": [
+      { "group": "국가 KR · EU · US", "rate": 0.21, "gap": 0.03, "pass": true },
+      { "group": "연령대 20~60대", "rate": 0.19, "gap": 0.04, "pass": true }
+    ]
+  }
+}

@@ -5,15 +5,15 @@
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-06T09:01:44.683Z",
+  "fetched_at": "2026-11-06T09:30:16.644Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-integ\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-06T09:00:55.865Z",
+  "contracts_dist_mtime": "2026-11-06T09:29:48.398Z",
   "ff_git": {
-   "head": "66e68c7a70eb5d97ade9f4e7effeb5bf89ad33f0",
-   "dirty_files": 29
+   "head": "2dce0785f0be608fba901f0b13be98a53edc7324",
+   "dirty_files": 33
   },
-  "iam_sha256": "408f6ffb82d8a164ab40709cb3782149269f621a819acf01d11fd77cbf8383ce"
+  "iam_sha256": "a2fe1c49cca22f576bdc3806a81b50e3c63ed654816719c27235ba0795195bac"
  },
  "roles": [
   {
@@ -1915,6 +1915,43 @@
     "FEATURE_APPROVER",
     "SAFETY_OFFICER"
    ]
+  },
+  {
+   "name": "approveLakeModel",
+   "method": "POST",
+   "path": "/api/lake/models/:id/approvals",
+   "summary": "모델 사용 승인(2인)",
+   "component": "D05-01",
+   "roles": [
+    "SAFETY_OFFICER",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "moveFinding",
+   "method": "POST",
+   "path": "/api/feature-health/findings/:id/transition",
+   "summary": "점검 결과 상태 이동",
+   "component": "D04-03",
+   "roles": [
+    "OPERATOR",
+    "OPS_LEAD",
+    "SAFETY_OFFICER",
+    "FEATURE_AUTHOR",
+    "RELEASE_MANAGER",
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "registerAbortCriteria",
+   "method": "PUT",
+   "path": "/api/policies/:id/abort-criteria",
+   "summary": "중단 기준 사전 등록",
+   "component": "D01-08",
+   "roles": [
+    "RELEASE_MANAGER",
+    "SAFETY_OFFICER"
+   ]
   }
  ],
  "sod": [
@@ -2578,6 +2615,21 @@
    "group": "ops"
   },
   {
+   "path": "/ops/feature-health",
+   "title": "운영 점검",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/feature-health/:findingId",
+   "title": "점검 결과",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/collection",
+   "title": "수집 정책",
+   "group": "ops"
+  },
+  {
    "path": "/events",
    "title": "Platform 이벤트",
    "group": "ops"
@@ -2600,6 +2652,11 @@
   {
    "path": "/integration/code-scans",
    "title": "스캔 기록",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/datalake",
+   "title": "Data Lake 연계",
    "group": "admin"
   },
   {

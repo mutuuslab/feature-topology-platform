@@ -52,7 +52,7 @@ last_updated: 2026-11-05
 | FPW.5-A07 Flag 코드 연결 확인 | FPW.5 검증·V&V | C (시험 조직) | 통합 검증 기록 `WP-INTEGRATION-REC` → – | `/flag-code/reconcile`, `/integration/code-scans` | 1차 |
 | FPW.5-A05 시험 Evidence 연결·TMS 제출 | FPW.5 검증·V&V | R·A (시험 조직) | 시험 결과 `WP-TEST-RESULT`, 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` → G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` | `/verify/evidence` | 1차 |
 | FPW.5-A06 G5 V&V 판정 | FPW.5 검증·V&V | A (시험 조직) | G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, 검증 계획(독립성 수준) `WP-VV-PLAN` → G5 Decision Record `WP-G5-DECISION` | `/verify/evidence`, `/admin/approval` | 1차 |
-| FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | C (시험 조직) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide` | 1차 |
+| FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | C (시험 조직) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide`, `/policies/:id` | 1차 |
 | FPW.7-A03 Safety Case·SOTIF 근거 정리 | FPW.7 출시·활성화·단계적 확대 | C (시험 조직) | SOTIF 분석 `WP-SOTIF-ANALYSIS`, G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, HARA·TARA 결과 `WP-HARA-TARA` → Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` | `/verify/evidence`, `/verify/compliance` | 1차 |
 | FPW.7-A04 Safety Case 독립 검토 | FPW.7 출시·활성화·단계적 확대 | C (시험 조직) | Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` → Safety Case 독립 검토 기록 `WP-SC-REVIEW` | 플랫폼 밖 | 1차 |
 | FPW.8-A08 원인 조치·복원 요청 | FPW.8 운영·긴급 차단·복원 | C (시험 조직) | 차단 적용 추적표 `WP-KILL-TRACE`, G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` → 복원 요청 `WP-RESTORE-REQ` | `/ops/kill` | 1차 |
@@ -76,4 +76,4 @@ last_updated: 2026-11-05
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/admin/approval`, `/supplier/portal`
-- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/master/control-points`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/integration/code-scans`, `/activation/decide`, `/verify/compliance`, `/ops/kill`, `/quality/feedback`, `/flag-retirements`, `/flag-code/lifecycle`
+- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/master/control-points`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/integration/code-scans`, `/activation/decide`, `/policies/:id`, `/verify/compliance`, `/ops/kill`, `/quality/feedback`, `/flag-retirements`, `/flag-code/lifecycle`

@@ -19,5 +19,10 @@ export interface ConnectionStatus {
 export interface ConnectionsResponse {
   /** 설치 모드 — production이면 화면은 모의 연결을 '연결 안 됨'으로 보인다 */
   mode: 'production' | 'demo';
+  /**
+   * 표시 방식 — seamless: 데모 설치에서 모의 연계를 실제 연결처럼 표시(모의·가상 표시 없음, 80-50 D-ALM-17 사용자 결정 2026-11-05),
+   * labeled: '모의(연결 전)'·'연결 안 됨'을 붙인다. 운영 설치는 항상 labeled(RD-UX-04 — 운영자가 모의를 실제로 착각하지 않게)
+   */
+  presentation: 'seamless' | 'labeled';
   items: ConnectionStatus[];
 }

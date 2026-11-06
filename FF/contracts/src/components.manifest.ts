@@ -46,7 +46,7 @@ const SEEDS: Seed[] = [
   ['D01-04', '적용 대상 선정 규칙', 'A', 'domains/d01-policy/targeting', [], [3]],
   ['D01-05', '사용 권한 관리', 'A', 'domains/d01-policy/entitlement', [], [3, 5]],
   ['D01-06', '정책 저장·버전 관리', 'A', 'domains/d01-policy/policy-store', ['IF-04'], [2, 3]],
-  ['D01-07', '실험·효과 검증 관리', 'B', 'domains/d01-policy/experiment', [], []],
+  ['D01-07', '실험·효과 검증 관리', 'B', 'domains/d01-policy/experiment', ['IF-15'], []],
   ['D01-08', '단계적 기능 배포', 'B', 'domains/d01-policy/staged-rollout', [], []],
   ['D01-09', '정책 기반 활성화 제어', 'A', 'domains/d01-policy/activation', ['IF-10'], [3, 4]],
   ['D01-10', '감사 이력 관리', 'A', 'domains/d01-policy/audit-history', ['IF-03'], [1, 2, 4, 6]],
@@ -62,12 +62,12 @@ const SEEDS: Seed[] = [
   // 04. 배포·운영·데이터 (6)
   ['D04-01', '배포 파이프라인 연계', 'A', 'domains/d04-ops/pipeline-link', ['IF-05', 'IF-13'], [4, 6]],
   ['D04-02', '품질 기준 검증', 'B', 'domains/d04-ops/quality-gate', ['IF-09'], [2]],
-  ['D04-03', '운영 데이터 수집', 'A', 'domains/d04-ops/telemetry-ingest', ['IF-06', 'IF-11'], [4, 5, 6]],
+  ['D04-03', '운영 데이터 수집', 'A', 'domains/d04-ops/telemetry-ingest', ['IF-06', 'IF-11', 'IF-15'], [4, 5, 6]],
   ['D04-04', '이벤트 이력 추적', 'A', 'domains/d04-ops/event-history', ['IF-11'], [4, 5, 6]],
   ['D04-05', '장애·VOC 이력 연계', 'C', 'domains/d04-ops/incident-voc', [], []],
   ['D04-06', '품질 피드백 반영', 'A', 'domains/d04-ops/quality-feedback', [], [6]],
   // 05. 시스템 연계·확장 (7)
-  ['D05-01', 'API Gateway', 'C', 'domains/d05-ext/api-gateway', ['IF-01', 'IF-02', 'IF-03', 'IF-08', 'IF-09', 'IF-10', 'IF-13', 'IF-14'], []],
+  ['D05-01', 'API Gateway', 'C', 'domains/d05-ext/api-gateway', ['IF-01', 'IF-02', 'IF-03', 'IF-08', 'IF-09', 'IF-10', 'IF-13', 'IF-14', 'IF-15'], []],
   ['D05-02', '데이터 동기화', 'C', 'domains/d05-ext/data-sync', ['IF-02', 'IF-03', 'IF-12'], []],
   ['D05-03', 'Legacy 시스템 연계', 'C', 'domains/d05-ext/legacy', ['IF-12'], []],
   ['D05-04', '과금 시스템 연계', 'C', 'domains/d05-ext/billing', [], []],
@@ -86,7 +86,7 @@ const SEEDS: Seed[] = [
   ['D06-09', '플랫폼 인증·권한 관리(IAM)', 'A', 'domains/d06-qsec/iam', [], [6]],
   ['D06-10', '인증서·키 관리(PKI/KMS)', 'A', 'domains/d06-qsec/pki-kms', [], [4, 6]],
   ['D06-11', '보안 취약점 모니터링', 'C', 'domains/d06-qsec/vuln-monitor', [], []],
-  ['D06-12', '이상 징후 대응', 'B', 'domains/d06-qsec/anomaly-response', [], [4]],
+  ['D06-12', '이상 징후 대응', 'B', 'domains/d06-qsec/anomaly-response', ['IF-15'], [4]],
   ['D07-01', 'SW 개발비 산정', 'A', 'domains/d07-cost/estimation', [], []],
 ];
 
@@ -106,6 +106,8 @@ const BE_DLV = 'backend/test/d03/delivery.spec.ts';
 const BE_VV = 'backend/test/d06/virtual.spec.ts';
 const FE_OPS = 'frontend/src/__tests__/screensOps.test.tsx';
 const E2E_OPS = 'e2e/tests/ops.spec.ts';
+// Data Lake 연계·Closed loop(80-70, TL-*) — 규칙·모의 Lake·화면·시나리오
+const LAKE_TESTS = ['contracts/src/rules/lake.test.ts', 'backend/test/d04/lake-loop.spec.ts', 'frontend/src/__tests__/lakeLoop.test.tsx', 'e2e/tests/lake-loop.spec.ts'];
 const BE_VREQ = 'backend/test/d02/vehicle-requests.spec.ts';
 const CT_VREQ = 'contracts/src/rules/vehicle-requests.test.ts';
 const BE_TRIAL = 'backend/test/d05/trials.spec.ts';
@@ -157,9 +159,9 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D05-05': { screens: ['/field'], tests: [BE_P10, FE_P10, E2E_P10] },
   'D05-07': { screens: ['/integration/legacy'], tests: [BE_P10, CT_EXT, FE_P10, E2E_P10] },
   'D01-06': { screens: ['/policies', '/policies/new', '/policies/:id'], tests: [BE_POL, 'backend/test/d01/unleash.spec.ts', 'backend/test/d01/unleash-vehicle.spec.ts', 'backend/test/d01/unleash-auto-sync.spec.ts', 'backend/live-tests/unleash-vehicle-live.spec.ts', 'contracts/src/rules/unleash-snapshot.test.ts', 'contracts/src/rules/unleash.test.ts', 'backend/test/d01/flag-source.spec.ts', 'contracts/src/schemas/flag-source.test.ts', FE_POL, 'frontend/src/__tests__/screensP8b.test.tsx', 'frontend/src/__tests__/featureFlags.test.tsx', E2E_POL, 'e2e/tests/p8b.spec.ts', 'e2e/tests/persona-flags.spec.ts'] },
-  'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL] },
+  'D01-08': { screens: ['/policies/:id'], tests: [BE_POL, ...CT_FLAG, E2E_POL, ...LAKE_TESTS] },
   'D01-09': { screens: ['/activation/decide'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL] },
-  'D05-01': { screens: ['/activation/decide', '/integration/openfeature', '/integration/connectors', '/supplier/portal'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ, 'backend/test/d05/openfeature.spec.ts', 'contracts/src/flags/openfeature.test.ts', FE_P10, FE_OPSADMIN, 'backend/test/d05/ext-sync.spec.ts', 'contracts/src/rules/ext-sync.test.ts', 'frontend/src/__tests__/externalDemo.test.tsx', 'e2e/tests/external-windows.spec.ts'] },
+  'D05-01': { screens: ['/activation/decide', '/integration/openfeature', '/integration/connectors', '/supplier/portal', '/integration/datalake'], tests: [BE_POL, FE_POL, E2E_POL, BE_VREQ, 'backend/test/d05/openfeature.spec.ts', 'contracts/src/flags/openfeature.test.ts', FE_P10, FE_OPSADMIN, 'backend/test/d05/ext-sync.spec.ts', 'contracts/src/rules/ext-sync.test.ts', 'frontend/src/__tests__/externalDemo.test.tsx', 'e2e/tests/external-windows.spec.ts', ...LAKE_TESTS] },
   'D06-01': VALIDATOR,
   'D06-02': VALIDATOR,
   'D06-03': { screens: ['/policies/:id', '/validations', '/validations/virtual'], tests: [BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_POL, FE_OPS, E2E_POL, E2E_OPS], via: ['validatePolicy'] },
@@ -181,7 +183,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D03-03': { screens: ['/ops/kill'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', FE_OPS, E2E_OPS] },
   'D03-04': { screens: ['/ops/kill', '/ops/rollback', '/policies/:id'], tests: [BE_DLV, 'backend/test/d03/gleo.ws.spec.ts', E2E_OPS, 'backend/test/d03/rollback.spec.ts', 'contracts/src/rules/rollback.test.ts', 'frontend/src/__tests__/screensRollback.test.tsx', 'backend/test/d03/policy-history.spec.ts', 'frontend/src/__tests__/policyHistory.test.tsx', 'e2e/tests/policy-rollback.spec.ts'] },
   'D04-01': { screens: ['/deployments', '/deployments/:id'], tests: [BE_DLV, 'backend/test/d04/notify-recipients.spec.ts', FE_OPS, E2E_OPS] },
-  'D04-03': { screens: ['/fleet/live', '/deployments/:id', '/ops/telemetry', '/ops/safety-kpi'], tests: ['backend/test/d04/evaluation-stats.spec.ts', 'frontend/src/__tests__/observabilityData.test.ts', 'frontend/src/__tests__/telemetryIdentity.test.ts', 'frontend/src/__tests__/telemetryObservability.test.tsx', BE_DLV, FE_OPS, E2E_OPS, FE_OPSADMIN] },
+  'D04-03': { screens: ['/fleet/live', '/deployments/:id', '/ops/telemetry', '/ops/safety-kpi', '/ops/feature-health', '/ops/feature-health/:findingId', '/ops/collection'], tests: ['backend/test/d04/evaluation-stats.spec.ts', 'frontend/src/__tests__/observabilityData.test.ts', 'frontend/src/__tests__/telemetryIdentity.test.ts', 'frontend/src/__tests__/telemetryObservability.test.tsx', BE_DLV, FE_OPS, E2E_OPS, FE_OPSADMIN, ...LAKE_TESTS] },
   'D06-08': { screens: ['/deployments', '/deployments/:id', '/fleet/live'], tests: [BE_DLV, FE_OPS, E2E_OPS] },
   'D06-10': { screens: ['/deployments', '/admin/security'], tests: [BE_DLV, E2E_OPS, FE_OPSADMIN] },
   // 보고서 v1.1 WP8 — 게시본별 CycloneDX SBOM·서명 전 해시 결합·VEX 판정
@@ -234,4 +236,6 @@ export const INTERFACES: Record<string, string> = {
   'IF-13': 'CI/CD · 소스 저장소 연계 (GitLab)',
   // 사용자 결정 2026-10-18 — Feature 상태·Flag 변경요청(CR)은 JIRA에서 관리, 양방향 연계
   'IF-14': '작업·변경요청 연계 (JIRA)',
+  // 2026-10-18 설계 80-70 — 차량 데이터는 별도 서버 Data Lake가 주인, FF는 집계·신선도·모델 점수를 읽고 라벨을 보낸다(80-75)
+  'IF-15': '차량 데이터 Data Lake',
 };

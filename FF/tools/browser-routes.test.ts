@@ -25,6 +25,16 @@ test('본문 검증기 import만 제거하고, 표 밖의 값과 부수효과 im
   assert.match(output, /requiredQuery: \[['"]q['"]\]/);
 });
 
+test('운영 빌드는 설명(summary)도 뺀다 — 경로·권한·필수 질의는 그대로', () => {
+  const src = `export const ROUTES = [{ name: 'r', method: 'GET', path: '/x', summary: '설명', roles: ['A'], requiredQuery: ['q'] }];`;
+  assert.match(browserRouteSource(src), /summary: ['"]설명['"]/);
+  const out = browserRouteSource(src, { dropSummary: true });
+  assert.doesNotMatch(out, /summary/);
+  assert.match(out, /path: ['"]\/x['"]/);
+  assert.match(out, /roles: \[['"]A['"]\]/);
+  assert.match(out, /requiredQuery: \[['"]q['"]\]/);
+});
+
 test('지원하지 않는 표 모양을 조용히 건너뛰지 않는다', () => {
   assert.throws(() => browserRouteSource('export const ROUTES = makeRoutes();'), /배열/);
   assert.throws(() => browserRouteSource('export const ROUTES = [...OTHER];'), /객체/);

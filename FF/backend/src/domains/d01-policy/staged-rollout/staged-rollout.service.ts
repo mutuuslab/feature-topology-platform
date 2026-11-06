@@ -14,6 +14,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { FleetRepo, PolicyRepo } from '../policy-repos';
 import { BaselineRepo, FeatureRepo, ProductRepo } from '../repos';
+import { CanaryService } from './canary.service';
 
 
 @Injectable()
@@ -27,6 +28,7 @@ export class StagedRolloutService {
     private readonly clock: Clock,
     private readonly profiles: SafetyProfileService,
     private readonly kills: KillRepo,
+    private readonly canary: CanaryService,
   ) {}
 
   /** 배포된 정책의 단계 조정 — 승인 범위(rollout) 안에서만, 해시·승인은 그대로 */
@@ -47,12 +49,15 @@ export class StagedRolloutService {
       .map((r) => r.anomaly_id);
     const activeKills = this.kills.active().filter((k) => k.featureId === p.featureId).map((k) => k.killId);
     const since = p.stagedAt ?? p.deployedAt ?? p.approvedAt ?? p.createdAt;
-    const j = judgeStageChange({ fClass, current, to: body.basisPoints, since, now: this.clock.iso(), actorId: actor.id, deployedBy: p.deployedBy ?? null, openAnomalies, activeKills });
+    // 사전 등록 중단 기준·신선도(Lake 집계, TL-B01·B02) — 넓힐 때만 본다. 모델 점수는 넣지 않는다(INV-17)
+    const lake = body.basisPoints > current ? this.canary.stageInput(p) : null;
+    const j = judgeStageChange({ fClass, current, to: body.basisPoints, since, now: this.clock.iso(), actorId: actor.id, deployedBy: p.deployedBy ?? null, openAnomalies, activeKills, lake });
     if (!j.ok) {
       const msg = j.blockers.map((b) => b.message).join('; ');
       this.audit.failed(actor, 'ROLLOUT_STAGE', policyId, msg, 'D01-08');
-      // 중단 기준 충족(열린 이상 징후·진행 중 차단) = 배포 중단 필요 — 판정 이벤트로 Owner·배포 요청자에게 알린다(FR-DSV-003-005)
-      const stop = j.blockers.filter((b) => b.code === 'STOP_CRITERIA');
+      // 중단 기준 충족(열린 이상 징후·진행 중 차단, 사전 등록 중단 기준 초과) = 배포 중단 필요 — 판정 이벤트로 Owner·배포 요청자에게 알린다(FR-DSV-003-005).
+      // 지표 지연(STALE_DATA)은 판단 보류라 넓히기만 막고 중단 알림은 보내지 않는다
+      const stop = j.blockers.filter((b) => b.code === 'STOP_CRITERIA' || b.code === 'ABORT_CRITERIA');
       if (stop.length)
         this.db.tx(() => this.events.publish('rollout.halt-required', policyId, { policyId, flagKey: p.flagKey, featureId: p.featureId, current, to: body.basisPoints, reasons: stop.map((b) => b.message), openAnomalies, activeKills, requestedBy: actor.id }, { componentId: 'D01-08', correlationId: actor.correlationId }));
       throw new DomainError(j.blockers.some((b) => b.code === 'SAME_AS_DEPLOYER') ? 'SEPARATION_OF_DUTY' : 'GUARD_FAILED', `단계를 넓힐 수 없습니다: ${msg}`, { judgement: j });

@@ -12,6 +12,10 @@ export const QUEUE_LABEL = {
   gate: 'Gate 판정 대기',
   postReview: '긴급 차단 사후 검토',
   homologation: '형식승인 영향 판단 대기',
+  // Data Lake·Closed loop(TL-UI13) — 모델 사용 승인·운영 점검 조치·지표 지연·중단 기준으로 보류된 확대
+  modelUse: '모델 사용 승인 대기',
+  finding: '운영 점검 조치 필요',
+  canaryHold: '확대 보류(Canary 관측)',
 } as const;
 export type QueueKey = keyof typeof QUEUE_LABEL;
 
@@ -27,6 +31,9 @@ export const QUEUE_ROLE: Record<QueueKey, string> = {
   gate: 'Gate 판정자·Safety Manager',
   postReview: '독립 검토자(요청자·승인자 제외)',
   homologation: '법규 담당자',
+  modelUse: 'Safety Manager·운영 리더(서로 다른 2인)',
+  finding: '점검 결과 담당 역할',
+  canaryHold: '출시 담당·운영자',
 };
 
 /** 보고서 승인 역할 → 화면 이름(차단·복원 '내 차례'가 어느 칸인지) */

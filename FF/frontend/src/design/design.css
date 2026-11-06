@@ -186,6 +186,11 @@ h3 {
 [data-present='on'] .ds-badge {
   height: 28px;
 }
+/* 데이터 신선도 칩(TL-UI01) — 출처 데이터셋은 고정폭 작은 글자, 상태는 글자로 */
+.ds-fresh__src {
+  font-weight: 500;
+  color: var(--muted);
+}
 
 /* ── ID 칩 ─────────────────────────────────────────── */
 .ds-id {

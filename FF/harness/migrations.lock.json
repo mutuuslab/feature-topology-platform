@@ -66,6 +66,7 @@
     "093_flag_plan": "4e71c0e8df7666363b20da41cbd6ff15a025cccc9f40d5d085d0d4d3cf85dc92",
     "094_flag_pull_request": "48648fba5b0f8b07ecffe574555daf22184c99b482187588b19c3b363589906e",
     "095_flag_gate_waiver": "d8057389e34c6aadc6f0dc5f1c45309f8da4cac6a3b8943131b851ebff5f8e6e",
-    "096_flag_evaluation_bucket": "a1ef6b650640ab0f0f4d22fc625b163bdb2ef1297f356645006d25969b3b04ae"
+    "096_flag_evaluation_bucket": "a1ef6b650640ab0f0f4d22fc625b163bdb2ef1297f356645006d25969b3b04ae",
+    "111_lake_closed_loop": "938e825913102fb05ccc2cb9edba49d2f3586823d18b5fd79dfc1e59ec730571"
   }
 }

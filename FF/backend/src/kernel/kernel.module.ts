@@ -16,6 +16,7 @@ import { IdempotencyInterceptor } from './idempotency.interceptor';
 import { InstanceLease, leaseAtBoot, releaseBootLease } from './instance-lease';
 import { KernelController } from './kernel.controller';
 import { LakeErasureClient } from './lake-erasure';
+import { LakeLink } from '../adapters/lake/lake-reader';
 import { PrivacyController, PrivacyService } from './privacy.service';
 import { SecretVault, vaultFromEnv } from './kms/key-protection';
 import { sealSecrets } from './kms/secret-columns';
@@ -76,6 +77,7 @@ import { VehicleAuthService } from './vehicle-auth';
     EventService,
     HousekeepingService,
     LakeErasureClient,
+    LakeLink, // IF-15 Data Lake 조회(모의·꺼짐) — 여러 도메인이 같은 연결을 읽는다
     PrivacyService,
     ComponentRegistry,
     VehicleAuthService,
@@ -83,7 +85,7 @@ import { VehicleAuthService } from './vehicle-auth';
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: DomainErrorFilter },
   ],
-  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, OtlpExporter, TelemetryMetrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService],
+  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, OtlpExporter, TelemetryMetrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService, LakeLink],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

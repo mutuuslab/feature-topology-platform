@@ -15,6 +15,7 @@ import { OtelExporter } from './otel.exporter';
 import { modeOf } from '../../domains/d05-ext/api-gateway/ext-sync/adapters';
 import { seedOf } from '../../kernel/runtime-config';
 import { otaConfigured } from '../../kernel/ota-config';
+import { LakeLink } from '../lake/lake-reader';
 
 export const EXT_FIXTURES = join(__dirname, '..', '..', '..', '..', 'data', 'fixtures', 'ext');
 const fixture = <T>(name: string): T => JSON.parse(readFileSync(join(process.env.FF_EXT_FIXTURES ?? EXT_FIXTURES, `${name}.json`), 'utf8'));
@@ -47,6 +48,7 @@ const USERS: Record<string, string[]> = {
   'IF-12': ['D05-02', 'D05-03'],
   'IF-13': ['D04-01', 'D05-01'],
   'IF-14': ['D05-01'],
+  'IF-15': ['D05-01', 'D04-03', 'D06-12', 'D01-07'],
 };
 
 @Injectable()
@@ -59,6 +61,7 @@ export class ExternalSystems {
     private readonly topology: TopologyRepo,
     private readonly fleet: FleetRepo,
     private readonly otel: OtelExporter,
+    private readonly lake: LakeLink,
   ) {}
 
   mode(ifId: MockIf): 'mock' | 'off' {
@@ -174,6 +177,8 @@ export class ExternalSystems {
       'IF-10': { mode: 'internal', adapter: 'OFREP /ofrep/v1 · /vehicle/v1' },
       'IF-13': { mode: modeOf('GITLAB'), adapter: 'pipeline-link (CI/CD 산출물) · ext-sync (GitLab MR·파이프라인 양방향)' },
       'IF-14': { mode: modeOf('JIRA'), adapter: 'ext-sync (JIRA Epic·CR 양방향)' },
+      // Data Lake(80-75) — 조회 어댑터(모의 Lake·꺼짐). 실제 어댑터는 TL-X01
+      'IF-15': { mode: this.lake.mode(), adapter: 'adapters/lake (IF-15 조회 — 신선도·집계·모델·라벨 위치)' },
     };
     return Object.entries(INTERFACES).map(([ifId, name]) => {
       const mock = (MOCK_IFS as readonly string[]).includes(ifId);
@@ -186,8 +191,20 @@ export class ExternalSystems {
         components: USERS[ifId] ?? [],
         calls: c.n,
         lastAt: c.at,
+        ...(ifId === 'IF-15' ? this.lakeLag() : {}),
       };
     });
+  }
+
+  /** IF-15 — 받는 자료의 가장 큰 지연과 최근 실패 수(연결 안 됨이면 지연 없음) */
+  private lakeLag(): { lagSeconds: number | null; failures: number } {
+    const reader = this.lake.reader();
+    if (!reader) return { lagSeconds: null, failures: 0 };
+    // 기준을 넘은 자료의 가장 큰 지연, 없으면 안전 지표(기준 10분) 자료의 가장 큰 지연
+    const types = reader.freshness().types;
+    const pool = types.some((t) => t.stale) ? types.filter((t) => t.stale) : types.filter((t) => t.sla_seconds <= 600);
+    const lags = pool.map((t) => t.lag_seconds ?? 0);
+    return { lagSeconds: lags.length ? Math.max(...lags) : null, failures: reader.failures24h() };
   }
 
   now() {

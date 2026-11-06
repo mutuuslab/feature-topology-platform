@@ -1,7 +1,7 @@
 // ④ 관제실(OTA·서비스운영·IT인프라·보안운영) — 셸 전체가 어두운 관제 톤. 핵심 메시지 = 진행 중인 안전 차단 수(0이면 회색),
 // 그 옆에 크게 긴급 차단 요청. 숫자 띠(연결·끊김·이상 징후·차단) → 차량 상태 표 · 최근 이상 징후 · 내 업무.
 import { Link } from 'react-router-dom';
-import type { DepartmentSummary } from '@ff/contracts';
+import type { DepartmentSummary, FeatureHealthResponse } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { departments as D } from '../../copy/departments';
 import { AsyncView, DataTable, PageHeader, Panel } from '../../design';
@@ -31,6 +31,8 @@ export default function ControlRoomHome({ dept }: { dept: DepartmentSummary }) {
   const fleet = useApi<{ items: FleetRow[] }>('fleetRuntime');
   const anms = useApi<{ items: AnomalyRow[] }>('anomalies');
   const kills = useApi<{ items: { killId: string; reasonCategory?: string }[] }>('killRequests', { query: { status: 'ACTIVE' } });
+  // 운영 점검(Closed loop) — 조치 필요 점검 결과(Data Lake 4축 판정, TL-UI16)
+  const health = useApi<FeatureHealthResponse>('featureHealth', {}, { retry: false });
   const d = useDeptDoc(dept);
   const rows = fleet.data?.items ?? [];
   const online = rows.filter((r) => r.link === 'ONLINE').length;
@@ -40,6 +42,7 @@ export default function ControlRoomHome({ dept }: { dept: DepartmentSummary }) {
     { k: C.online, v: fleet.isPending ? '—' : online, tone: 'ok', to: '/fleet/live' },
     { k: C.offline, v: fleet.isPending ? '—' : rows.length - online, tone: 'warn', to: '/fleet/live' },
     { k: C.anomalies, v: anms.isPending ? '—' : open.length, tone: 'warn', to: '/ops/anomalies' },
+    ...(health.data?.connected ? [{ k: C.findings, v: health.data.findings.filter((f) => f.status !== 'CLOSED' && f.severity === 'ACTION').length, tone: 'danger' as const, to: '/ops/feature-health' }] : []),
   ];
   return (
     <div className="ds-screen ws ws--control" data-workspace-home="control">

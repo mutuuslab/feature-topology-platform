@@ -1,12 +1,13 @@
 // /policies · /policies/new · /policies/:id · /validations — 정책 저장·버전(D01-06), 분야별 검증 8종(D06-04), 배포 안전성(D03-02),
 // 단계적 기능 배포(D01-08). PoC ② 정책 준비·검증·승인.
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ControlPointType } from '@ff/contracts';
+import { ControlPointType, effectiveBasisPoints, type CanaryObservation } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { ExportButtons, PeriodFilter, type Period } from '../governance/AuditTools';
 import { planning as W } from '../../copy/planning';
+import { lake as LK } from '../../copy/lake';
 import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, Toolbar, VerdictBadge, Icon } from '../../design';
 import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
@@ -19,7 +20,9 @@ import { PolicyHistory } from './PolicyHistory';
 import { FlagSourceSummary, FeatureFlagHighlight, FlagMapLink } from '../features/FeatureFlags';
 
 const T = ko.policy;
-const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort'];
+// Canary 관측(TL-UI02) — Data Lake 집계 화면은 따로 읽는다(정책 상세 묶음을 늘리지 않게)
+const CanaryPanel = lazy(() => import('./CanaryPanel').then((m) => ({ default: m.CanaryPanel })));
+const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort', 'policyCanary', 'canaryOverview'];
 
 interface Policy {
   policyId: string;
@@ -223,6 +226,10 @@ export function PolicyDetail() {
 
             <VirtualPanel policy={p} />
 
+            <Suspense fallback={null}>
+              <CanaryPanel policyId={p.policyId} deployed={p.status === 'DEPLOYED'} />
+            </Suspense>
+
             <UnleashPanel policyId={p.policyId} deployed={p.status === 'DEPLOYED'} />
             <FlagCodeSummary flagKey={p.flagKey} />
 
@@ -274,6 +281,12 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
   const [reason, setReason] = useState('');
   const [bp, setBp] = useState(policy.stageBasisPoints ?? 10000);
   const m = kind === 'decide' ? decide : kind === 'deploy' ? deploy : stage;
+  // 단계 확대 전 Canary 관측(TL-UI03·B01) — 넓힐 때 지표 지연이면 보류, 등록한 중단 기준을 넘으면 중단(서버와 같은 판정), 기준이 없으면 안내
+  const canary = useApi<{ item: CanaryObservation | null }>('policyCanary', { params: { id: policy.policyId } }, { enabled: kind === 'stage' && policy.status === 'DEPLOYED' });
+  const obs = canary.data?.item ?? null;
+  const widen = bp > effectiveBasisPoints(policy);
+  const stageBlock = !widen || !obs ? undefined : obs.verdict === 'HOLD_STALE' ? LK.canary.stage.hold : obs.verdict === 'ABORT' && obs.criteria.registered ? LK.canary.stage.abort : undefined;
+  const stageNote = !widen || !obs ? null : stageBlock ?? (!obs.criteria.registered ? LK.canary.stage.noCriteria : obs.verdict === 'INSUFFICIENT' ? LK.canary.stage.insufficient : LK.canary.stage.ok);
   const done = { onSuccess: () => (setReason(''), onClose()) };
   return (
     <Drawer open={!!kind} title={kind === 'decide' ? `${T.approve} / ${T.reject}` : kind === 'deploy' ? T.deploy : T.stage} onClose={onClose}>
@@ -283,6 +296,11 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
           <Field label={T.field.basisPoints} hint={T.stageHint}>
             <input className="ds-input ds-input--mono" type="number" min={0} max={10000} step={100} value={bp} onChange={(e) => setBp(Number(e.target.value))} />
           </Field>
+        )}
+        {kind === 'stage' && stageNote && (
+          <p className="ds-field__hint" role="note" data-stage-guard={stageBlock ? 'blocked' : 'note'}>
+            {stageNote}
+          </p>
         )}
         <Field label={ko.page.reason}>
           <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
@@ -303,7 +321,7 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
               {T.deploy}
             </Button>
           ) : (
-            <Button variant="primary" disabled={reason.trim().length < 2 || stage.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => stage.mutate({ params: { id: policy.policyId }, body: { basisPoints: bp, reason } }, done)}>
+            <Button variant="primary" disabled={!!stageBlock || reason.trim().length < 2 || stage.isPending} reason={whyDisabled([stageBlock, stageBlock], [reason.trim().length < 2, ko.why.reason])} onClick={() => stage.mutate({ params: { id: policy.policyId }, body: { basisPoints: bp, reason } }, done)}>
               {T.stage}
             </Button>
           )}

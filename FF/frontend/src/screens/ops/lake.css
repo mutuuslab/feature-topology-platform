@@ -1,0 +1,120 @@
+/* Data Lake·Closed loop 화면 — 상태 흐름·조치 연결 묶음·작은 추이선·판정 이력 격자. 색·간격은 토큰만 */
+.lk-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: lk-step;
+}
+.lk-flow li {
+  counter-increment: lk-step;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.lk-flow li::before {
+  content: counter(lk-step);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--faint);
+}
+.lk-flow li[data-reached] {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+.lk-flow li[data-current] {
+  color: var(--ink);
+  font-weight: 700;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+.lk-action {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.lk-action legend {
+  padding: 0 var(--sp-1);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.lk-spark {
+  display: block;
+  width: 100%;
+  height: 64px;
+}
+.lk-spark__t {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.6;
+}
+.lk-spark__c {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 2;
+}
+.lk-spark__limit {
+  stroke: var(--danger);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.lk-trends {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-3);
+}
+.lk-trends figure {
+  margin: 0;
+}
+.lk-trends figcaption {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.lk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.lk-legend i {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  margin-right: var(--sp-1);
+  vertical-align: middle;
+  border-top: 2px solid var(--accent);
+}
+.lk-legend i[data-k='control'] {
+  border-top: 2px dashed var(--muted);
+}
+.lk-legend i[data-k='limit'] {
+  border-top: 2px dashed var(--danger);
+}
+.lk-bar {
+  display: block;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+.lk-grid td {
+  text-align: center;
+}
+.lk-dot {
+  display: inline-flex;
+}
+.lk-dot .ds-badge__glyph {
+  color: currentColor;
+}

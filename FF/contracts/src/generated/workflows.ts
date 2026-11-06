@@ -971,6 +971,10 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
+     "/ops/feature-health",
+     "/ops/feature-health/:findingId",
+     "/ops/collection",
+     "/integration/datalake",
      "/ops/kill",
      "/audit",
      "/quality/feedback",
@@ -2990,6 +2994,10 @@ export const WORKFLOWS: WorkflowDoc = {
      "/notifications",
      "/ops/anomalies",
      "/ops/incidents",
+     "/ops/feature-health",
+     "/ops/feature-health/:findingId",
+     "/ops/collection",
+     "/integration/datalake",
      "/audit/oversight",
      "/audit",
      "/quality/feedback",
@@ -4134,6 +4142,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/flag-code/reconcile",
      "/integration/code-scans",
      "/activation/decide",
+     "/policies/:id",
      "/verify/compliance",
      "/ops/kill",
      "/quality/feedback",
@@ -4553,6 +4562,10 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
+     "/ops/feature-health",
+     "/ops/feature-health/:findingId",
+     "/ops/collection",
+     "/integration/datalake",
      "/audit",
      "/admin/data"
     ]
@@ -5014,6 +5027,7 @@ export const WORKFLOWS: WorkflowDoc = {
    "screens": {
     "primary": [
      "/activation/decide",
+     "/policies/:id",
      "/fleet/live",
      "/features/:id/:ver",
      "/notifications",
@@ -5021,6 +5035,10 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
+     "/ops/feature-health",
+     "/ops/feature-health/:findingId",
+     "/ops/collection",
+     "/integration/datalake",
      "/ops/kill",
      "/deployments",
      "/audit"
@@ -12558,7 +12576,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [
-       "/activation/decide"
+       "/activation/decide",
+       "/policies/:id"
       ],
       "gates": [],
       "anchor": null,
@@ -14852,10 +14871,13 @@ export const WORKFLOWS: WorkflowDoc = {
       "운행 중 감시 지표와 장애·VOC를 확인해 이상 징후 건을 연다",
       "대상 Feature Version과 영향 차량 범위를 Fleet 적용 현황에서 확인한다",
       "안전·보안 영향이 의심되면 즉시 Safety Manager(보안은 CSM)에게 넘긴다",
-      "확인 결과 이상이 아니면 사유를 남기고 이상 건을 기각한다"
+      "확인 결과 이상이 아니면 사유를 남기고 이상 건을 기각한다",
+      "운영 점검(동작·문제·개선·위험 4축)의 조치 필요 점검 결과를 확인하고 조치 연결·효과 확인까지 이어 간다",
+      "Data Lake 지표가 신선도 기준을 넘으면 그 지표로 판단하지 않고 데이터 계약·수집 정책을 확인한다"
      ],
      "checks": [
-      "이상 징후 건에 출처·대상 Version·영향 범위가 기록되었다"
+      "이상 징후 건에 출처·대상 Version·영향 범위가 기록되었다",
+      "기한이 지난 조치 필요 점검 결과가 담당자 검토함에 있다"
      ],
      "platform": {
       "actions": [
@@ -14866,7 +14888,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/ops/anomalies",
        "/ops/safety-kpi",
-       "/ops/incidents"
+       "/ops/incidents",
+       "/ops/feature-health",
+       "/ops/feature-health/:findingId",
+       "/ops/collection",
+       "/integration/datalake"
       ],
       "gates": [],
       "anchor": null,

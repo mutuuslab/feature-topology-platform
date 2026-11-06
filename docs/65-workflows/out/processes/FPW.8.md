@@ -64,7 +64,7 @@ flowchart LR
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
 | FPW.8-A12 | Flag 평가 이상 확인 | R 운영 조직 · A 운영 조직 · C 통합 조직 · I Feature Owner |  |  | `/ops/flag-evaluations` | – |
-| FPW.8-A01 | 이상 징후 확인 | R 운영 조직 · A 운영 조직 · C Safety Manager · I 품질 조직, Feature Owner | WP-G7-DECISION, WP-ROLLOUT-RECORD, WP-KPI-PLAN, WP-G5-EVIDENCE | WP-ANOMALY-CASE | `acknowledgeAnomaly`, `dismissAnomaly`, `createIncident`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents` | FFG-TEL-009 |
+| FPW.8-A01 | 이상 징후 확인 | R 운영 조직 · A 운영 조직 · C Safety Manager · I 품질 조직, Feature Owner | WP-G7-DECISION, WP-ROLLOUT-RECORD, WP-KPI-PLAN, WP-G5-EVIDENCE | WP-ANOMALY-CASE | `acknowledgeAnomaly`, `dismissAnomaly`, `createIncident`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake` | FFG-TEL-009 |
 | FPW.8-A02 | 차단 필요성·범위 판단 | R Safety Manager · A Safety Manager · C CSM, 법규 담당, 운영 조직 · I Feature Owner | WP-ANOMALY-CASE, WP-SAFETY-PROFILE, WP-VEX-DECISION | WP-KILL-PLAN | `gatePreview`, `/ops/kill` | FFG-ADS-011, FFG-SEC-003 |
 | FPW.8-A03 | 리콜·봉쇄 근거 연계 | R 법규 담당 · A 법규 담당 · C Safety Manager, 법무 · I 운영 조직 | WP-KILL-PLAN | WP-RECALL-BASIS | 플랫폼 밖 | FFG-DEAC-010 |
 | FPW.8-A04 | 긴급 차단 요청 | R 운영 조직 · A 운영 조직 · C Safety Manager · I CSM, 법규 담당 | WP-KILL-PLAN, WP-RECALL-BASIS | WP-KILL-REQ | `issueKill`, `/ops/kill` | FFG-PLT-005 |
@@ -93,9 +93,12 @@ flowchart LR
 2. 대상 Feature Version과 영향 차량 범위를 Fleet 적용 현황에서 확인한다
 3. 안전·보안 영향이 의심되면 즉시 Safety Manager(보안은 CSM)에게 넘긴다
 4. 확인 결과 이상이 아니면 사유를 남기고 이상 건을 기각한다
+5. 운영 점검(동작·문제·개선·위험 4축)의 조치 필요 점검 결과를 확인하고 조치 연결·효과 확인까지 이어 간다
+6. Data Lake 지표가 신선도 기준을 넘으면 그 지표로 판단하지 않고 데이터 계약·수집 정책을 확인한다
 
 완료 기준:
 - [ ] 이상 징후 건에 출처·대상 Version·영향 범위가 기록되었다
+- [ ] 기한이 지난 조치 필요 점검 결과가 담당자 검토함에 있다
 
 #### FPW.8-A02 차단 필요성·범위 판단
 1. 사유를 분류하고 Feature의 설계 비활성화 등급에서 유효 등급을 정한다

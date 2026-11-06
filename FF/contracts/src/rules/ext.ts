@@ -310,6 +310,9 @@ export interface IfSystemStatus {
   components: string[];
   calls: number;
   lastAt: string | null;
+  /** 받는 자료의 가장 큰 지연(초)·최근 24시간 실패 수 — 지연을 재는 연계(IF-15 Data Lake)만 */
+  lagSeconds?: number | null;
+  failures?: number;
 }
 
 export interface OtelSpan {

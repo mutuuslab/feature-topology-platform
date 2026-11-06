@@ -3,6 +3,13 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## Data Lake·Closed loop 화면 — UI 우선 (2026-11-06, 브랜치 `feat/telemetry-ui`, worktree `-tele`, 커밋 전)
+- **범위**: BACKLOG 텔레메트리 절 TL-UI01~18 전부 + 화면에 필요한 TL-C01·C02(최소본)·B01·B02·B06·B08(완료)·B05·B09·B10(진행). Lake 서버·차량 전환·실제 연결(TL-L*·M*·X01)은 결정 대기라 하지 않았다.
+- **모의 Lake(IF-15)**: `backend/src/adapters/lake/lake-reader.ts`(`LakeLink`·IF-15 응답 형식·`lakeMode`) · `mock-lake.ts`(결정적, `data/fixtures/lake/*.json`). 데모 기본 mock·seamless 표시, 운영 설치 기본 off('연결 안 됨'), `IF_MODE_15=off`로 끔. 표시 방식 `presentation`은 80-50 `-alm`과 같은 코드(합칠 때 충돌 없게).
+- **FF 쪽**: 마이그레이션 111(점검 결과·수집 정책·모델 사용 승인·중단 기준), `lake-loop.module.ts`(4축 판정·점검 결과·수집 정책·연계 조회·데모 시드 `ff-demo.json`, `FF_DEMO_ACTIVITY` 때만), Canary·중단 기준은 `d01-policy/staged-rollout/canary.service.ts`(단계 확대가 지연·경계 초과면 거부).
+- **화면**: `/ops/feature-health`·`/ops/feature-health/:findingId`·`/ops/collection`·`/integration/datalake`, 정책 상세 Canary 패널, Feature 상세 '운영 지표' 탭, 이상 징후·운행 중 감시 지표·실험·체험 분석·외부 연계·데이터 규제·검토함·운영 데이터·홈·관제실·Sign-off·Retirement 보강. 업무 절차 FPW.8-A01·FPW.7-A01에 화면 연결(`check.py` ALL GATES PASS).
+- **다음**: 실제 Lake가 정해지면 `adapters/lake`에 live 어댑터(5분 pull 캐시) → `kernel/connections.ts` datalake `liveAdapter: true`. TL-B03(이상 징후 자동 생성)·B04(라벨 CDC 송신)·B09 실제 조치 호출.
+
 ## 담당자 E2E 개선 웨이브 (2026-11-05 사용자 결정 "16주제 전부 이번에·데모 계정 3개 추가", 브랜치 `feat/feature-db`, worktree `-dept`, 커밋 전)
 - **근거:** 담당자 5명 E2E 점검 결과(P1~P5, 59건)와 화면 측정(겹침 L1~L7·빈 화면 E1~E7). 여섯 묶음(W1~W6)이 나눠 구현, 마이그레이션 번호 W1=083 … W6=088(W6은 DDL이 필요 없어 쓰지 않음).
 - **W6 데모 계정·데이터·배치·문서**

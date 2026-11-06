@@ -57,6 +57,7 @@ import { DashboardCreateBody, DashboardDeleteBody, DashboardFavouriteBody, Dashb
 import { CreateRefChangeBody, DecideRefChangeBody, PublishRefReleaseBody, RecordSourceReviewBody, RequestRefAddBody, ReviewRefChangeBody } from './schemas/refdb';
 import { AnswerConsultationBody, CreateConsultationBody } from './schemas/consult';
 import { G7SignoffBody, HaraBody, HomologationBody, SotifBody, TaraBody } from './rules/gate-evidence';
+import { AbortCriteriaBody, FindingTransitionBody, LakeModelDecisionBody } from './schemas/lake';
 
 const EmptyBody = z.object({}).strict();
 /** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */
@@ -499,6 +500,23 @@ export const ROUTES: RouteDef[] = [
   { name: 'decideFlagGateWaiver', method: 'POST', path: '/api/flag-code/waivers/:id/decision', summary: '출시 차단 해제 결정 — Feature 승인자, F2 이상은 Safety Manager(요청자 제외, 개인 서명)', component: 'D01-01', roles: ['FEATURE_APPROVER', 'SAFETY_OFFICER'], body: FlagGateWaiverDecisionBody },
   { name: 'flagEvaluations', method: 'GET', path: '/api/flag-code/evaluations', summary: 'Flag 평가 모니터링 — Unleash/Edge 평가 수·켜짐 비율·변형 분포·기본값 폴백·오류·차량 회신', component: 'D04-03', query: ['window', 'featureId', 'flagKey', 'source'] },
   { name: 'flagEvaluationSeries', method: 'GET', path: '/api/flag-code/evaluations/:flagKey', summary: 'Flag 평가 시계열 — 원천별 구간 집계와 폴백 이유', component: 'D04-03', query: ['window'] },
+  // Data Lake 연계(IF-15)·Closed loop(80-70, BACKLOG TL-*) — Lake가 주인인 사실은 읽기만, 판정·점검 결과·승인·중단 기준은 FF가 주인
+  { name: 'lakeStatus', method: 'GET', path: '/api/lake/status', summary: 'Data Lake 연계 상태·신선도', component: 'D05-01' },
+  { name: 'lakeContracts', method: 'GET', path: '/api/lake/contracts', summary: 'Data Lake 데이터 계약', component: 'D05-01' },
+  { name: 'lakeModels', method: 'GET', path: '/api/lake/models', summary: 'Data Lake 모델·FF 사용 승인', component: 'D05-01' },
+  { name: 'approveLakeModel', method: 'POST', path: '/api/lake/models/:id/approvals', summary: '모델 사용 승인(2인)', component: 'D05-01', roles: ['SAFETY_OFFICER', 'OPS_LEAD'], body: LakeModelDecisionBody },
+  { name: 'lakeLabels', method: 'GET', path: '/api/lake/labels', summary: '라벨 보내기 현황', component: 'D05-01' },
+  { name: 'lakeAnomalyEvidence', method: 'GET', path: '/api/lake/anomaly-evidence', summary: '이상 징후 출처·증거', component: 'D06-12' },
+  { name: 'lakeExperiments', method: 'GET', path: '/api/lake/experiments', summary: '실험 실측 효과', component: 'D01-07' },
+  { name: 'lakeTrials', method: 'GET', path: '/api/lake/trials', summary: '체험 전환 실측·추천', component: 'D05-06' },
+  { name: 'featureHealth', method: 'GET', path: '/api/feature-health', summary: '운영 점검 4축 판정', component: 'D04-03' },
+  { name: 'featureHealthFinding', method: 'GET', path: '/api/feature-health/findings/:id', summary: '점검 결과 상세', component: 'D04-03' },
+  { name: 'moveFinding', method: 'POST', path: '/api/feature-health/findings/:id/transition', summary: '점검 결과 상태 이동', component: 'D04-03', roles: ['OPERATOR', 'OPS_LEAD', 'SAFETY_OFFICER', 'FEATURE_AUTHOR', 'RELEASE_MANAGER', 'SECURITY_OFFICER'], body: FindingTransitionBody },
+  { name: 'featureOpsMetrics', method: 'GET', path: '/api/features/:id/ops-metrics', summary: 'Feature 운영 지표', component: 'D04-03' },
+  { name: 'canaryOverview', method: 'GET', path: '/api/canary', summary: 'Canary 관측 목록', component: 'D01-08' },
+  { name: 'policyCanary', method: 'GET', path: '/api/policies/:id/canary', summary: '정책 Canary 관측', component: 'D01-08' },
+  { name: 'registerAbortCriteria', method: 'PUT', path: '/api/policies/:id/abort-criteria', summary: '중단 기준 사전 등록', component: 'D01-08', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: AbortCriteriaBody },
+  { name: 'collectionPolicies', method: 'GET', path: '/api/collection-policies', summary: '수집 정책', component: 'D04-03' },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

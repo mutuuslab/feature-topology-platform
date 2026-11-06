@@ -223,8 +223,8 @@
     "FFP-F012": {
       "verdict": "부분",
       "evidence": [
-        "contracts/src/rules/rollout-stage.ts:52",
-        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:43"
+        "contracts/src/rules/rollout-stage.ts:57",
+        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:45"
       ],
       "tests": [
         "backend/test/d01/rollout-stage.spec.ts",
@@ -299,7 +299,7 @@
     "FFP-F016": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:37",
+        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:39",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:77",
         "contracts/src/rules/odd-restriction.ts:38"
       ],
@@ -321,7 +321,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151",
-        "contracts/src/routes.ts:225"
+        "contracts/src/routes.ts:226"
       ],
       "tests": [
         "backend/test/d03/delivery.spec.ts"
@@ -378,8 +378,8 @@
     "FFP-F020": {
       "verdict": "부분",
       "evidence": [
-        "contracts/src/rules/rollout-stage.ts:42",
-        "contracts/src/rules/rollout-stage.ts:62"
+        "contracts/src/rules/rollout-stage.ts:44",
+        "contracts/src/rules/rollout-stage.ts:67"
       ],
       "tests": [
         "backend/test/d01/rollout-stage.spec.ts"
@@ -931,8 +931,8 @@
     "FFP-F051": {
       "verdict": "부분",
       "evidence": [
-        "contracts/src/rules/rollout-stage.ts:42",
-        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:45",
+        "contracts/src/rules/rollout-stage.ts:44",
+        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:47",
         "contracts/src/rules/ext.ts:63"
       ],
       "tests": [

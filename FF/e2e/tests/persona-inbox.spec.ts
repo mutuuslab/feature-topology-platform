@@ -7,6 +7,7 @@
 //   ⑥ 부서 전환: 역할이 바뀌면 알리고, 전체 보기로 돌아오면 원래 역할
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { apiRefs, REF } from './refdb';
+import { QUEUE_RANK } from '../../frontend/src/screens/home/queues';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -169,8 +170,8 @@ test('⑤ 결재함 부서 대기열 — 시험·검증팀은 G5만, 요청 시�
   const fs = page.locator('[data-queue-dept="DEP-FS"] li');
   await expect(fs.first()).toBeVisible();
   const order = await fs.evaluateAll((ls) => ls.map((l) => l.getAttribute('data-queue')));
-  const rank = ['kill', 'restore', 'postReview', 'gate', 'safety'];
-  const idx = order.map((q) => rank.indexOf(q ?? ''));
+  // 급한 순서 = 화면의 대기열 순위(QUEUE_RANK) — 운영 점검 조치·모델 사용 승인(Data Lake, TL-UI13)도 같은 표로
+  const idx = order.map((q) => QUEUE_RANK[q as keyof typeof QUEUE_RANK] ?? -1);
   expect(idx).toEqual([...idx].sort((a, b) => a - b));
 });
 

@@ -89,7 +89,7 @@ export function exposedSeriesNames(defs: readonly TelemetryMetricDef[] = TELEMET
 // 게시본 서명(pki verify)과 차단 봉투 Guard(REJECT_CODES 중 진위 관련) 둘 다
 export const SIGNATURE_REJECT_REASONS = ['BAD_SIGNATURE', 'SIGNATURE_INVALID', 'SIGNATURE_FORMAT', 'PAYLOAD_TAMPERED', 'UNKNOWN_KEY', 'KEY_EXPIRED', 'WRONG_KEY_PURPOSE', 'AUTH_FAILED', 'AUTH_MISSING', 'KEY_EPOCH_OLD'] as const;
 
-/** IF-15 Indicator.axis·name (datalake-if15.openapi.json) — Feature 운영 점검 4축 */
+/** IF-15 Indicator.axis·name (datalake-if15.openapi.json) — Feature 운영 점검 4축. 축의 정본 정의는 여기 하나(rules/lake가 다시 낸다, 통합 D-INT-3) */
 export const HEALTH_AXES = ['OPERATION', 'PROBLEM', 'IMPROVEMENT', 'RISK'] as const;
 export type HealthAxis = (typeof HEALTH_AXES)[number];
 export const HEALTH_INDICATORS: Record<string, HealthAxis> = {

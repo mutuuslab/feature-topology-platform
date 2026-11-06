@@ -1552,7 +1552,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "FPW.7-A08"
    ],
    "screens": [
-    "/activation/decide"
+    "/activation/decide",
+    "/policies/:id"
    ],
    "actions": [],
    "anchor": null,
@@ -1993,7 +1994,11 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "screens": [
     "/ops/anomalies",
     "/ops/safety-kpi",
-    "/ops/incidents"
+    "/ops/incidents",
+    "/ops/feature-health",
+    "/ops/feature-health/:findingId",
+    "/ops/collection",
+    "/integration/datalake"
    ],
    "actions": [
     "acknowledgeAnomaly",

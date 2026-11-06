@@ -1,5 +1,6 @@
 // /biz/trials — 체험 전환 분석 (D05-06 사업 지표). 제안 → 수락 → 구매 깔때기, 성향 차원별 수락률·구매 전환율, 주별 추이.
 // 조건(데이터 원천·나눠 보기)은 차트 위 한 줄, 모든 차트·표가 같은 조각을 본다. 다시 읽는 동안 이전 그림을 흐리게 유지한다.
+import { FreshnessChip } from '../../design/freshness';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { addDays, SEGMENT_DIMENSIONS, trialAnalyticsQuery, type SegmentDimension, type TrialSource } from '@ff/contracts';
@@ -7,7 +8,10 @@ import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { ops5y } from '../../copy/ops5y';
 import { formatCount, formatExact } from '../../design/format';
-import { AsyncView, DataTable, PageHeader, Panel, Segmented, Select, SummaryLine, Toolbar } from '../../design';
+import { AsyncView, DataTable, PageHeader, Panel, Segmented, Select, SummaryLine, Toolbar, VerdictBadge } from '../../design';
+import type { LakeTrialInsight } from '@ff/contracts';
+import { lake as LK } from '../../copy/lake';
+import '../ops/lake.css';
 import { FunnelChart, pct, SegmentChart, TrendChart } from './charts';
 
 const B = ko.bizTrial;
@@ -168,6 +172,59 @@ export function TrialAnalyticsScreen() {
           </div>
         )}
       </AsyncView>
+      <LakeTrialPanel />
     </div>
+  );
+}
+
+/** Data Lake 실측(TL-UI08) — 체험 중 실사용일과 구매 전환, 모델 ④ 추천 대상(권고)과 공정성 점검 */
+function LakeTrialPanel() {
+  const q = useApi<LakeTrialInsight>('lakeTrials');
+  const d = q.data;
+  const R = LK.trial;
+  if (!d?.connected || !d.usage.length) return null;
+  const max = Math.max(...d.usage.map((u) => u.conversion), 0.01);
+  return (
+    <Panel title={R.title} id="trial-lake" eyebrow={d.model ? R.model(LK.datalake.models.purpose[d.model.purpose], d.model.version) : undefined} actions={<FreshnessChip f={d.freshness} />}>
+      <div className="ds-split">
+        <DataTable
+          caption={R.usageCaption}
+          rows={d.usage}
+          rowKey={(u) => u.band}
+          columns={[
+            { key: 'b', header: R.col.band, cell: (u) => u.band },
+            { key: 'v', header: R.col.vehicles, cell: (u) => <span className="ds-mono">{u.vehicles.toLocaleString('ko-KR')}</span>, align: 'right' },
+            { key: 'c', header: R.col.conversion, cell: (u) => <span className="ds-nowrap" style={{ display: 'inline-flex', gap: 'var(--sp-2)', alignItems: 'center' }}><span className="ds-mono">{LK.pct(u.conversion)}</span><span aria-hidden style={{ display: 'inline-block', width: 80 }}><span className="lk-bar" style={{ width: `${(u.conversion / max) * 100}%` }} /></span></span> },
+          ]}
+        />
+        <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+          {d.targets.length ? (
+            <DataTable
+              caption={R.targets}
+              rows={d.targets}
+              rowKey={(t) => t.segment}
+              columns={[
+                { key: 's', header: R.targetCol.segment, cell: (t) => t.segment },
+                { key: 'v', header: R.targetCol.vehicles, cell: (t) => <span className="ds-mono">{t.vehicles.toLocaleString('ko-KR')}</span>, align: 'right' },
+                { key: 'p', header: R.targetCol.propensity, cell: (t) => <span className="ds-mono">{LK.pct(t.propensity, 0)}</span>, align: 'right' },
+              ]}
+            />
+          ) : (
+            <p className="ds-field__hint">{R.notUsable}</p>
+          )}
+          <DataTable
+            caption={R.fairness}
+            rows={d.fairness}
+            rowKey={(f) => f.group}
+            columns={[
+              { key: 'g', header: R.fairnessCol.group, cell: (f) => f.group },
+              { key: 'r', header: R.fairnessCol.rate, cell: (f) => <span className="ds-mono">{LK.pct(f.rate, 0)}</span>, align: 'right' },
+              { key: 'd', header: R.fairnessCol.gap, cell: (f) => <span className="ds-mono">{LK.pct(f.gap, 0)}</span>, align: 'right' },
+              { key: 'p', header: R.fairnessCol.pass, cell: (f) => <VerdictBadge value={f.pass ? 'PASS' : 'FAIL'} label={f.pass ? R.pass : R.fail} /> },
+            ]}
+          />
+        </div>
+      </div>
+    </Panel>
   );
 }

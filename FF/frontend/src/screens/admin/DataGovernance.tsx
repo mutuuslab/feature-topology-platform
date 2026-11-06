@@ -7,6 +7,8 @@ import { ko } from '../../copy/ko';
 import { privacy as PV } from '../../copy/privacy';
 import { AsyncView, Button, DangerConfirm, DataTable, ErrorNote, ExplainCodes, Field, KeyValue, PageHeader, Panel, Select, Tabs, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
+import { lake as LK } from '../../copy/lake';
+import { LakeData } from './LakeData';
 
 const T = ko.p11.data;
 const mono = (s: string | number | null | undefined) => <span className="ds-mono ds-nowrap">{s ?? '—'}</span>;
@@ -25,8 +27,8 @@ export function DataGovernanceScreen() {
         lead={T.lead}
         message={!ret.data || !sums.data ? { tone: 'neutral', value: '—', text: T.key.deletable } : del + miss ? { tone: 'warn', value: del + miss, text: T.key.attention(del, miss) } : { tone: 'ok', text: T.key.cleanAll }}
       />
-      <Tabs tabs={[{ key: 'sums', label: T.tabs.sums }, { key: 'data-act', label: T.tabs.dataAct }, { key: 'retention', label: T.tabs.retention }, { key: 'privacy', label: PV.tab }]}>
-        {(tab) => (tab === 'data-act' ? <DataAct /> : tab === 'retention' ? <Retention /> : tab === 'privacy' ? <Privacy /> : <Sums />)}
+      <Tabs tabs={[{ key: 'sums', label: T.tabs.sums }, { key: 'data-act', label: T.tabs.dataAct }, { key: 'retention', label: T.tabs.retention }, { key: 'privacy', label: PV.tab }, { key: 'lake', label: LK.governance.tab }]}>
+        {(tab) => (tab === 'data-act' ? <DataAct /> : tab === 'retention' ? <Retention /> : tab === 'privacy' ? <Privacy /> : tab === 'lake' ? <LakeData /> : <Sums />)}
       </Tabs>
     </div>
   );

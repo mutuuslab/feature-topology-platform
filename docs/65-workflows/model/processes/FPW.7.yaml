@@ -126,7 +126,7 @@ process:
         - Shadow를 쓰면 출력이 제어기로 가지 않는 구성인지 시험 조직과 확인한다
       checks:
         - 모든 단계에 관측 기간·허용 차이·중단 기준이 있다
-      platform: {screens: [/activation/decide]}
+      platform: {screens: [/activation/decide, /policies/:id]}
       next: [FPW.7-A08]
     - id: FPW.7-A13
       name: 출시 차단 해제 결정

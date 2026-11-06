@@ -61,7 +61,7 @@ last_updated: 2026-11-05
 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6 서명 배포 | A (Release Manager) | 서명 배포 패키지 `WP-SIGNED-PACKAGE`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → OTA Gate 판정 기록 `WP-OTA-GATE` | `/features/:id/:ver` | 1차 |
 | FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | R·A (Release Manager) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/integration/connectors` | 1차 |
 | FPW.6-A07 코드 저장소 연결 관리 | FPW.6 서명 배포 | R·A (Release Manager) · C (통합 조직) | – → – | `/integration/code-repositories`, `/integration/code-scans` | 1차 |
-| FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide` | 1차 |
+| FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide`, `/policies/:id` | 1차 |
 | FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager, 통합 조직) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, 실험 계획 `WP-EXPERIMENT-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW`, 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL`, 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` → G7 Decision Record `WP-G7-DECISION` | `/activation/decide`, `/admin/approval` | 1차 |

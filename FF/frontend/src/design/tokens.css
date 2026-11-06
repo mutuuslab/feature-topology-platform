@@ -87,6 +87,18 @@
   --lc-RELEASED: #1a7045;
   --lc-DEPRECATED: #8f5500;
   --lc-RETIRED: #6e6a62;
+  /* 공식 도메인 10 + 기타 — Topology 레인 띠·칩 색(글자에는 쓰지 않는다, 밝은 면 대비 ≥3:1). 빨강 계열은 FAIL 전용이라 쓰지 않는다 */
+  --dom-AD: #2a66c4;
+  --dom-SF: #7b4fc0;
+  --dom-CH: #0f7a80;
+  --dom-PE: #5a8a12;
+  --dom-PC: #8a6420;
+  --dom-BC: #b0477c;
+  --dom-IN: #c4621a;
+  --dom-CO: #1f8ab0;
+  --dom-PL: #5d6b7c;
+  --dom-BE: #7a6f5c;
+  --dom-ETC: #8a877d;
 
 
   /* 글자 크기 — 기본 14 (compact 13, 시연 18) */
@@ -269,6 +281,17 @@
   --lc-RELEASED: #43c486;
   --lc-DEPRECATED: #f0aa3c;
   --lc-RETIRED: #94918a;
+  --dom-AD: #6f9cf0;
+  --dom-SF: #a98ae6;
+  --dom-CH: #3fb8be;
+  --dom-PE: #8cc04a;
+  --dom-PC: #c9a060;
+  --dom-BC: #e07aa9;
+  --dom-IN: #f0954e;
+  --dom-CO: #5cc0e6;
+  --dom-PL: #9aa6b4;
+  --dom-BE: #b3a891;
+  --dom-ETC: #8f8c84;
   --e-1: 0 1px 0 rgba(0, 0, 0, 0.4);
   --e-2: 0 8px 28px rgba(0, 0, 0, 0.5);
   --e-3: 0 18px 48px rgba(0, 0, 0, 0.6);

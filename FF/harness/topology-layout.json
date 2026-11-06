@@ -1,0 +1,7 @@
+{
+  "note": "Topology 관계 그래프 교차 수 래칫(frontend/src/__tests__/topologyLayout.test.ts) — 좋아지는 방향(줄이는 쪽)으로만 고친다. 데이터: data/fixtures/v0.81(Feature 80 Version · 관계 29). ego = 관계가 있는 Feature마다 주변 2단계 부분 그래프(이전 화면의 기본 깊이)의 교차 합, full = 관계가 있는 Feature 전체 한 그래프. legacy = 2026-11-05까지의 동심원 배치(직선 간선) — full은 같은 방식으로 전체를 한 원에 놓았을 때. 2026-11-06 측정(도메인 레인·직교 간선 배치): ego 0(이전 0), full 12(동심원 109). 같은 날 FF_SHOWCASE=1 시드(Feature 184 Version · 관계 59)의 full은 17, 관계 없는 Feature까지 170개를 넣으면 4.",
+  "legacyEgoCrossings": 0,
+  "egoCrossings": 0,
+  "legacyFullCrossings": 109,
+  "fullCrossings": 12
+}

@@ -26,6 +26,12 @@ import { LifecycleService } from './lifecycle.service';
 import { pageOf } from '../../../kernel/paging';
 import { FeatureRefLinker, regulationsOf, type RefLinkResult, type RefWarning } from './feature-refs';
 
+/** 대표(PRIMARY, 없으면 첫) 기준 행의 도메인 약어 */
+export const domainOfRefs = (refs: readonly { refId: string; role?: string }[] | undefined): string | null => {
+  const ref = refs?.find((r) => r.role === 'PRIMARY') ?? refs?.[0];
+  return ref && /^[A-Z]{2}-/.test(ref.refId) ? ref.refId.slice(0, 2) : null;
+};
+
 export interface FeatureQuery {
   q?: string;
   lifecycle?: string;
@@ -75,6 +81,8 @@ export class RegistryService {
       controlPoints: f.controlPoints,
 
       featureRefCount: (f.featureRefs ?? []).length,
+      // 대표 기준 행 ID 앞 두 글자 = 공식 도메인 약어(BC-BCM-001 → BC) — Topology 도메인 레인. 연결 전이면 null
+      domain: domainOfRefs(f.featureRefs),
 
       gates,
     };

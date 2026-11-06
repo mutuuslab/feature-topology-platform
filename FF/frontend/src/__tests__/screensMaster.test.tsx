@@ -122,38 +122,43 @@ describe('추적·Evidence·변경', () => {
 });
 
 describe('Topology·의존관계 검증', () => {
-  it('KPI·관계 표·그래프(고른 Feature 가운데), 대상 Feature를 누르면 그래프 초점이 바뀐다', async () => {
+  // 그래프는 전체 Feature(모든 Version)·관계를 한 번에 받아 도메인 레인에 그린다 — 관계마다 /api/topology/graph를 부르지 않는다
+  const FEATS = [
+    { featureId: 'FEAT-00022', version: '1.0.0', isLatest: true, name: '전방 안전거리', lifecycle: 'RELEASED', asil: 'B', tags: ['adas'], domain: 'AD', gates: { G1: 'PASS', G2: 'PASS' } },
+    { featureId: 'FEAT-00145', version: '2.0.0', isLatest: true, name: '전제 기능', lifecycle: 'RELEASED', asil: 'QM', tags: [], domain: 'AD' },
+    { featureId: 'FEAT-00025', version: '1.0.0', isLatest: true, name: '배타 기능', lifecycle: 'DEVELOPING', asil: 'QM', tags: ['body'], domain: null },
+  ];
+  it('KPI·관계 표·그래프(고른 Feature 강조), 대상 Feature를 누르면 그래프 선택이 바뀐다', async () => {
     const DEPS = [
       { dependencyId: 'DEP-00001', type: 'REQUIRES', sourceFeatureId: 'FEAT-00022', sourceVersion: '1.0.0', targetFeatureId: 'FEAT-00145', targetVersion: null, verdict: 'PASS', rationale: '전제' },
       { dependencyId: 'DEP-00002', type: 'EXCLUDES', sourceFeatureId: 'FEAT-00022', sourceVersion: '1.0.0', targetFeatureId: 'FEAT-00025', targetVersion: null, verdict: '미판정', rationale: null },
     ];
     handler = (url) => {
       if (url.startsWith('/api/dependencies')) return { body: { items: DEPS } };
-      if (url.startsWith('/api/topology/graph'))
-        return {
-          body: {
-            nodes: [
-              { id: 'FEAT-00022@1.0.0', featureId: 'FEAT-00022', version: '1.0.0', name: '전방 안전거리', lifecycle: 'RELEASED' },
-              { id: 'FEAT-00145', featureId: 'FEAT-00145', version: null, name: '전제 기능', lifecycle: null },
-            ],
-            edges: [{ id: 'DEP-00001', source: 'FEAT-00022@1.0.0', target: 'FEAT-00145', type: 'REQUIRES', verdict: 'PASS' }],
-          },
-        };
-      if (url.startsWith('/api/features')) return { body: { items: [{ featureId: 'FEAT-00022', version: '1.0.0', name: '전방 안전거리' }] } };
+      if (url.startsWith('/api/features')) return { body: { items: FEATS } };
+      if (url.startsWith('/api/precheck')) return { body: { rules: [{ ruleId: 'R3', title: '대상 Version 확정', result: 'CONDITIONAL', findings: [{ key: 'DEP-00001', result: 'CONDITIONAL', message: '대상 Version 미기재' }] }] } };
+      if (url.startsWith('/api/feature-flags')) return { body: [{ featureId: 'FEAT-00022', flagKey: 'care_00022' }] };
     };
     mount('/arch/topology', '/arch/topology', <TopologyScreen />);
     expect(await screen.findByText('DEP-00001')).toBeTruthy();
     // 핵심 메시지 = 미판정·FAIL 관계 수, 요약 줄 = 관계·REQUIRES·EXCLUDES(3초 테스트)
     expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1');
     expect([...document.querySelectorAll('.ds-summary b')].map((k) => k.textContent)).toEqual(['2', '1', '1']);
-    const g = await screen.findByRole('group', { name: '관계 그래프 — FEAT-00022' });
-    expect(within(g).getByRole('link', { name: 'FEAT-00022@1.0.0 전방 안전거리' })).toBeTruthy();
+    const g = await screen.findByRole('region', { name: 'Feature 관계 그래프' });
+    const focus = within(g).getByRole('button', { name: /^FEAT-00022 전방 안전거리 @1\.0\.0 · RELEASED · ASIL B · Flag 1/ });
+    expect(focus.getAttribute('aria-pressed')).toBe('true');
+    // 도메인 — 대표 기준 행 약어(목록 domain), 없으면 태그(body → BC)
+    expect(document.querySelector('[data-node="FEAT-00025"]')?.getAttribute('data-domain')).toBe('BC');
+    // 대상 Version 미기재 → 간선 Version 불일치 표시
+    expect(document.querySelector('[data-edge="DEP-00001"] .ds-topo-edge')?.getAttribute('data-mismatch')).toBe('missing');
     fireEvent.click(screen.getByRole('button', { name: 'FEAT-00145' }));
-    await waitFor(() => expect(calls.some((c) => c.startsWith('/api/topology/graph?featureId=FEAT-00145'))).toBe(true));
+    await waitFor(() => expect(document.querySelector('[data-node="FEAT-00145"]')?.getAttribute('aria-pressed')).toBe('true'));
+    expect(calls.some((c) => c.startsWith('/api/topology/graph'))).toBe(false);
+    expect(calls.some((c) => c.startsWith('/api/features?latestOnly=false'))).toBe(true);
   });
 
   // UX3-04(3초 테스트 S4): 핵심 메시지는 "N 미판정·FAIL 관계"인데 그래프 기본 선택은 초록 관계(FEAT-00022)였고, 실패로 가는 링크가 없었다.
-  it('그래프 기본 초점 = 첫 FAIL(없으면 미판정) 관계, 핵심 메시지 행동으로 미판정·FAIL 목록을 연다', async () => {
+  it('그래프 기본 선택 = 첫 FAIL(없으면 미판정) 관계, 핵심 메시지 행동으로 미판정·FAIL 목록을 연다', async () => {
     const DEPS = [
       { dependencyId: 'DEP-00001', type: 'REQUIRES', sourceFeatureId: 'FEAT-00022', sourceVersion: '1.0.0', targetFeatureId: 'FEAT-00145', targetVersion: null, verdict: 'PASS', rationale: '전제' },
       { dependencyId: 'DEP-00002', type: 'REQUIRES', sourceFeatureId: 'FEAT-00013', sourceVersion: '0.3.0', targetFeatureId: 'FEAT-00174', targetVersion: null, verdict: '미판정', rationale: null },
@@ -161,16 +166,6 @@ describe('Topology·의존관계 검증', () => {
     ];
     handler = (url) => {
       if (url.startsWith('/api/dependencies')) return { body: { items: DEPS } };
-      if (url.startsWith('/api/topology/graph'))
-        return {
-          body: {
-            nodes: [
-              { id: 'FEAT-00030@1.0.0', featureId: 'FEAT-00030', version: '1.0.0', name: '가', lifecycle: 'RELEASED' },
-              { id: 'FEAT-00031', featureId: 'FEAT-00031', version: null, name: '나', lifecycle: null },
-            ],
-            edges: [{ id: 'DEP-00003', source: 'FEAT-00030@1.0.0', target: 'FEAT-00031', type: 'EXCLUDES', verdict: 'FAIL' }],
-          },
-        };
       if (url.startsWith('/api/features')) return { body: { items: [] } };
     };
     mount('/arch/topology', '/arch/topology', <TopologyScreen />);
@@ -178,14 +173,14 @@ describe('Topology·의존관계 검증', () => {
     const key = document.querySelector('[data-key-message]') as HTMLElement;
     expect(key.querySelector('.ds-key__value')?.textContent).toBe('2');
     expect(key.getAttribute('data-tone')).toBe('danger');
-    // 관계를 받기 전에 FEAT-00022 그래프를 먼저 부르지 않는다 — 첫 FAIL 관계의 원천이 초점
-    await screen.findByRole('group', { name: '관계 그래프 — FEAT-00030' });
-    expect(calls.filter((c) => c.startsWith('/api/topology/graph')).every((c) => c.includes('featureId=FEAT-00030'))).toBe(true);
+    // 목록에 없는 Feature도 관계가 가리키면 노드로 그린다 — 첫 FAIL 관계의 원천이 선택
+    await waitFor(() => expect(document.querySelector('[data-node="FEAT-00030"]')?.getAttribute('aria-pressed')).toBe('true'));
     expect(document.querySelector('.ds-topo-edge[data-selected]')?.getAttribute('data-verdict')).toBe('FAIL');
+    expect(screen.getByRole('region', { name: '선택 관계 설명' }).textContent).toContain('충돌');
     fireEvent.click(within(key).getByRole('link', { name: '관계 목록에서 보기 →' }));
     await waitFor(() => expect(screen.queryByText('DEP-00001')).toBeNull());
     expect(screen.getByText('DEP-00002')).toBeTruthy();
-    expect(screen.getByText('DEP-00003')).toBeTruthy();
+    expect(screen.getAllByText('DEP-00003').length).toBeGreaterThan(0);
     expect((screen.getByRole('combobox', { name: '판정' }) as HTMLSelectElement).value).toBe('open');
   });
 });

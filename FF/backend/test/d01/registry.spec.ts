@@ -33,6 +33,14 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
       expect(q.body.items.map((i: any) => i.featureId)).toContain('FEAT-00022');
     });
 
+    // Topology 도메인 레인 — 목록 행이 대표 기준 행 ID의 도메인 약어를 함께 준다(184개 버전마다 상세를 부르지 않게)
+    it('목록 행의 domain = 대표(PRIMARY) 기준 행 ID 앞 두 글자, 연결이 없으면 null', async () => {
+      const r = await http().get('/api/features?latestOnly=true').expect(200);
+      const byId = new Map(r.body.items.map((i: any) => [i.featureId, i]));
+      expect((byId.get('FEAT-00001') as any).domain).toBe('AD');
+      expect((byId.get('FEAT-00022') as any).domain).toBeNull();
+    });
+
     it('FEAT-00022 상세: 19 속성·Gate 9건·의존관계·구현 추적·Baseline·사용 상품·가능한 전이', async () => {
       const r = await http().get('/api/features/FEAT-00022/versions/1.0.0').expect(200);
       expect(r.body.feature).toMatchObject({ lifecycle: 'RELEASED', baselineId: 'BL-00028' });

@@ -49,14 +49,17 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/change/cr",
      "/policies/new",
      "/policies",
+     "/config/odd",
      "/flag-code",
      "/flag-code/flags/:flagKey",
      "/validations/virtual",
      "/flag-code/reconcile",
      "/integration/code-scans",
      "/verify/evidence",
+     "/config/compat",
      "/deployments",
      "/verify/compliance",
+     "/verify/safety-case",
      "/fleet/live",
      "/notifications",
      "/ops/flag-evaluations",
@@ -70,6 +73,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/kill",
      "/audit",
      "/quality/feedback",
+     "/trace/ads",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes"
     ]
@@ -105,6 +109,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/control-points",
      "/policies/new",
      "/policies",
+     "/config/odd",
      "/policies/:id",
      "/flag-code",
      "/flag-code/flags/:flagKey",
@@ -176,8 +181,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/validations",
      "/validations/virtual",
      "/verify/evidence",
+     "/verify/safety-case",
      "/admin/approval",
      "/baselines",
+     "/config/compat",
      "/activation/decide",
      "/experiments",
      "/fleet/live",
@@ -213,6 +220,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/variant-conditions",
      "/arch/topology",
      "/baselines",
+     "/config/compat",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes",
      "/master/feature-db"
@@ -227,6 +235,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/integration/connectors",
      "/policies/new",
      "/policies",
+     "/config/odd",
      "/master/feature-db/:refId"
     ]
    },
@@ -260,12 +269,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/arch/components",
      "/verify/evidence",
      "/verify/compliance",
+     "/verify/safety-case",
      "/activation/decide",
      "/ops/kill",
      "/fleet/live",
      "/deployments",
      "/flag-retirements",
-     "/ops/safety-kpi"
+     "/ops/safety-kpi",
+     "/trace/ads"
     ],
     "reference": [
      "/master/define",
@@ -290,6 +301,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/feature-health/:findingId",
      "/ops/collection",
      "/integration/datalake",
+     "/ops/incident-reports",
      "/audit/oversight",
      "/audit",
      "/quality/feedback",
@@ -322,7 +334,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "primary": [
      "/ops/kill",
      "/admin/security",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ],
     "reference": [
      "/features/:id/:ver",
@@ -355,13 +368,16 @@ export const DEPARTMENTS: DepartmentsDoc = {
    ],
    "screens": {
     "primary": [
+     "/ops/incident-reports",
      "/admin/data",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ],
     "reference": [
      "/features/:id/:ver",
      "/admin/approval",
      "/baselines",
+     "/config/compat",
      "/activation/decide",
      "/ops/kill",
      "/audit/oversight",
@@ -395,6 +411,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/validations",
      "/validations/virtual",
      "/verify/evidence",
+     "/verify/safety-case",
      "/admin/approval",
      "/supplier/portal"
     ],
@@ -453,6 +470,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/arch/components",
      "/master/artifacts",
      "/validations/virtual",
+     "/verify/safety-case",
      "/deployments",
      "/integration/connectors",
      "/verify/compliance",
@@ -467,7 +485,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/collection",
      "/integration/datalake",
      "/audit",
-     "/admin/data"
+     "/admin/data",
+     "/trace/ads"
     ]
    },
    "counts": {
@@ -514,12 +533,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/experiments",
      "/admin/approval",
      "/products/:id/:ver",
+     "/ops/incident-reports",
      "/audit/oversight",
      "/quality/feedback",
      "/flag-retirements",
      "/admin/security",
      "/admin/data",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ]
    },
    "counts": {
@@ -604,9 +625,11 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "screens": {
     "primary": [],
     "reference": [
+     "/ops/incident-reports",
      "/admin/data",
      "/integration/openfeature",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ]
    },
    "counts": {

@@ -129,7 +129,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.7 출시·활성화·단계적 확대
 - 시작: G6 배포 완료
 - 입력: WP-SOTIF-ANALYSIS, WP-G5-EVIDENCE, WP-HARA-TARA → 출력: WP-SAFETY-CASE
-- 플랫폼: `/verify/evidence`, `/verify/compliance`
+- 플랫폼: `/verify/evidence`, `/verify/compliance`, `/verify/safety-case`
 1. F2 이상 Feature의 ISO 21448 출시 기준 충족 근거와 잔여 위험을 정리한다
 2. Safety Case의 주장마다 논거를, 논거마다 증거를 두고 규칙 ID·시험 ID를 식별자로 붙인다
 3. 정리한 Safety Case를 독립 검토에 넘긴다
@@ -240,7 +240,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.13 규정·Compliance Profile 관리
 - 시작: 분기 정기 점검
 - 입력: WP-REG-SOURCES, WP-COMPLIANCE-PROFILE → 출력: WP-COMPLIANCE-PROFILE
-- 플랫폼: `/verify/compliance`
+- 플랫폼: `/verify/compliance`, `/trace/ads`
 1. 법규 담당·Safety Manager·CSM이 분기마다 표준·법규 개정을 각자 범위에서 점검한다
 2. 개정 사항을 Profile 새 버전에 반영하고 영향 받는 Feature를 Feature Owner에게 알린다
 3. 검증이 필요하다고 표시된 항목은 해당 시장 SOP 전까지 해소 기한과 담당을 정한다

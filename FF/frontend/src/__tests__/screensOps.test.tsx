@@ -64,7 +64,7 @@ describe('Fleet 실시간 적용 현황', () => {
       if (url.startsWith('/api/kill-requests')) return { body: { items: [{ killId: 'KILL-00001' }] } };
       if (url.startsWith('/api/gleo/status')) return { body: { mode: 'internal', connected: false, lastError: null, messages: [] } };
     };
-    mount('/fleet/live', '/fleet/live', <FleetLive />);
+    mount('/fleet/live?tab=match', '/fleet/live', <FleetLive />); // 차량×flag 행렬은 '정책 값 대조' 탭(기본 탭은 6축 분포, ADS-UI01)
     const table = await screen.findByRole('table', { name: /차량 × flag/ });
     const cells = table.querySelectorAll('.ds-fcell');
     expect([...cells].map((c) => [c.getAttribute('data-v'), c.getAttribute('data-drift')])).toEqual([['safe', 'false'], ['on', 'true'], [null, null]]);
@@ -84,7 +84,7 @@ describe('Fleet 실시간 적용 현황', () => {
       if (url.startsWith('/api/kill-requests')) return { body: { items: [] } };
       if (url.startsWith('/api/gleo/status')) return { body: { mode: 'internal', connected: false, lastError: null, messages: [] } };
     };
-    mount('/fleet/live', '/fleet/live', <FleetLive />);
+    mount('/fleet/live?tab=match', '/fleet/live', <FleetLive />); // 차량×flag 행렬은 '정책 값 대조' 탭(기본 탭은 6축 분포, ADS-UI01)
     await screen.findByRole('table', { name: /차량 × flag/ });
     const key = document.querySelector('[data-key-message]')!;
     expect(key.getAttribute('data-tone')).toBe('warn');
@@ -108,11 +108,14 @@ describe('차량별 적용 상태', () => {
       if (url.startsWith('/api/vehicles/ego-01/status')) return { body: { features: [], recent: [] } };
       if (new URL(url, 'http://test').pathname === '/api/vehicles') return { body: { items: [{ vin: 'ego-01', label: '시연' }] } };
     };
-    mount('/fleet/vehicles/ego-01', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
+    mount('/fleet/vehicles/ego-01?tab=records', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />); // '정책 게시본·수신 기록' 탭
     expect(await screen.findByText('BOOT-ego-01-1')).toBeTruthy();
     expect(screen.getByText('ON · POLICY_MATCH')).toBeTruthy();
     expect(screen.getByText('OFF · KILL_SWITCH')).toBeTruthy();
     expect(screen.getByText('REPLAY')).toBeTruthy();
+    // 차량 발신 요청은 별도 탭
+    cleanup();
+    mount('/fleet/vehicles/ego-01?tab=requests', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
     expect(await screen.findByText(/빈도 한도 30회 \/ 10초/)).toBeTruthy();
     expect(screen.getByText('아직 이 차량이 보낸 요청이 없습니다')).toBeTruthy();
   });
@@ -125,7 +128,7 @@ describe('차량별 적용 상태', () => {
     };
     let status: unknown = STATUS;
     handler = (url) => (url.startsWith('/api/vehicles/ego-01/runtime') ? { body: RT } : url.startsWith('/api/vehicles/ego-01/status') ? { body: status } : url.startsWith('/api/vehicles/ego-01/requests') ? { body: { cursor: null, limit: { requests: 30, windowMs: 10000 }, items: [] } } : url.startsWith('/api/vehicles') ? { body: { items: [{ vin: 'ego-01', label: '시연' }] } } : undefined);
-    mount('/fleet/vehicles/ego-01', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
+    mount('/fleet/vehicles/ego-01?tab=records', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />); // '정책 게시본·수신 기록' 탭
     const panel = (await screen.findByRole('heading', { name: /상태 보고 v2/ })).closest('section')!;
     await within(panel).findByText('DEACT_WARNING');
     expect(within(panel).getByText('인계 경고')).toBeTruthy();
@@ -133,7 +136,7 @@ describe('차량별 적용 상태', () => {
     expect(within(panel).getByText('AUTH · AUTH_FAILED')).toBeTruthy();
     cleanup();
     status = { features: [], recent: [] };
-    mount('/fleet/vehicles/ego-01', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
+    mount('/fleet/vehicles/ego-01?tab=records', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />); // '정책 게시본·수신 기록' 탭
     expect(await screen.findByText('받아들인 상태 보고가 없습니다 — 확인 전에는 비활성으로 보지 않습니다(UNKNOWN)')).toBeTruthy();
   });
 });

@@ -8,6 +8,7 @@ import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { p10 } from '../../copy/p10';
 import { control as CT } from '../../copy/control';
+import { incidentReports as adsIncidentReports } from '../../copy/ads-evidence';
 import { pickDefault } from '../../data/first-run';
 import { AsyncView, Button, DataTable, ErrorNote, Field, PageHeader, Panel, Select, Toolbar, VerdictBadge, type KeyMessageSpec } from '../../design';
 import { usePermission } from '../shared';
@@ -51,6 +52,7 @@ export function IncidentsScreen() {
           const n = rows.filter((r) => r.status === 'OPEN' && !r.anomalyId).length;
           return !list.data ? { tone: 'neutral', value: '—', text: I.key.open } : n ? { tone: 'warn', value: n, text: I.key.open } : { tone: 'ok', text: I.key.clean };
         })()}
+        meta={<Link to="/ops/incident-reports">{adsIncidentReports.parentLink}</Link>}
         actions={
           <Button variant="primary" disabled={!perm.ok || importVoc.isPending || STATIC_MODE} title={perm.hint} onClick={() => importVoc.mutate({ body: {} })}>
             {I.importVoc}

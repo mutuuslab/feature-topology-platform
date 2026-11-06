@@ -1,5 +1,6 @@
 // /deployments · /deployments/:id — 서명 배포·차량 회신 (D06-08 보안 배포 · D06-10 PKI · D04-01 IF-05/13 · D04-03 IF-06 회신 · IF-05 OTA 서버 전달)
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
+import type { ConvergenceView } from '@ff/contracts';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { useConnectionLabel } from '../../api/connections';
@@ -8,12 +9,15 @@ import { ota as O } from '../../copy/ota';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
 import { control as CT } from '../../copy/control';
-import { whyDisabled, type KeyTone, type LozengeAppearance, AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, Lozenge, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
+import { convergence as CV } from '../../copy/ads-state';
+import { convergenceMessage } from '../ads/state-messages';
+import { whyDisabled, type LozengeAppearance, AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, Lozenge, PageHeader, Panel, Segmented, VerdictBadge } from '../../design';
 import { InterfaceName, usePermission, when } from '../shared';
 import { nodeReasonLabel, nodeStateLabel, personLabel, Progress, PubStatus, waitedMinutes, type Delivery } from './shared';
 
 const D = ko.deploy;
-const PUB_TONE: Record<string, KeyTone> = { CONFIRMED: 'ok', PARTIAL: 'warn', TIMEOUT: 'danger', DIVERGED: 'danger', DISPATCHED: 'neutral', SIGNED: 'neutral' };
+// 차량별 적용 단계(ADS 수렴 7구간) — 부품은 따로 읽는다(화면 묶음 예산)
+const ConvergencePanel = lazy(() => import('../ads/StatePanels').then((m) => ({ default: m.ConvergencePanel })));
 
 interface Pub extends Delivery {
   kind: 'POLICY' | 'KILL' | 'RESTORE';
@@ -214,9 +218,12 @@ function OtaDelivery({ d }: { d: OtaDeliveryView }) {
 export function DeploymentDetail() {
   const { id = '' } = useParams();
   const q = useApi<{ publication: Pub; verification: { valid: boolean; reason: string }; readbacks: { vin: string; observed: string; via: string; at: string; rejectReason?: string }[]; calls: { ifId: string; at: string; request: unknown; response: unknown }[]; delivery?: OtaDeliveryView | null }>('publicationDetail', { params: { id } });
-  usePlatformEvents(['publication.', 'vehicle.readback', 'ota.job.'], ['publicationDetail']);
+  const conv = useApi<ConvergenceView>('adsConvergence', { params: { id } });
+  usePlatformEvents(['publication.', 'vehicle.readback', 'ota.job.'], ['publicationDetail', 'adsConvergence']);
   const d = q.data;
   const p = d?.publication;
+  // 수렴 응답 모양을 확인한다 — 없거나 다른 응답이면 '—'(지난 값을 현재처럼 보이지 않게)
+  const cv = conv.data && typeof conv.data === 'object' && 'bins' in conv.data ? conv.data : undefined;
   // OTA 배포 캠페인 요청(IF-05) — 모의면 캠페인 응답을 실제처럼 보이지 않게, OTA 서버 연동(live)이면 표시 없음(RD-UX-04)
   const ota = useConnectionLabel('ota');
   return (
@@ -226,13 +233,19 @@ export function DeploymentDetail() {
           <>
             <PageHeader
               title={
-                <>
-                  {D.kind[p.kind]} · <span className="ds-mono">{p.payload.flagKey ?? p.payload.featureId}</span>
-                </>
+                p.kind === 'KILL' ? (
+                  CV.killTitle(cv?.featureName ?? p.payload.featureId)
+                ) : (
+                  <>
+                    {D.kind[p.kind]} · <span className="ds-mono">{p.payload.flagKey ?? p.payload.featureId}</span>
+                  </>
+                )
               }
-              message={{ tone: p.denominator > 0 && p.confirmed === p.denominator ? 'ok' : 'neutral', value: `${p.confirmed}/${p.denominator}`, text: D.key.detailLabel, status: { label: p.status, tone: PUB_TONE[p.status] ?? 'neutral' } }}
+              lead={CV.lead}
+              message={convergenceMessage(cv)}
               meta={
                 <>
+                  <PubStatus status={p.status} />
                   <IdChip id={p.publicationId} version={`#${p.payload.sequence}`} />
                   <IdChip id={p.payload.featureId} version={p.payload.featureVersion} to={`/features/${p.payload.featureId}/${p.payload.featureVersion}`} copy={false} />
                   {p.payload.policy && <IdChip id={p.payload.policy.policyId} version={`r${p.payload.policy.revision}`} to={`/policies/${p.payload.policy.policyId}`} copy={false} />}
@@ -241,7 +254,15 @@ export function DeploymentDetail() {
                 </>
               }
             />
-            <Progress d={p} />
+            <Panel title={CV.panel} id="convergence">
+              <AsyncView state={asyncState(conv, !!conv.data && !cv)} error={conv.error} onRetry={() => conv.refetch()} empty={{ title: CV.empty }}>
+                {cv ? (
+                  <Suspense fallback={null}>
+                    <ConvergencePanel view={cv} />
+                  </Suspense>
+                ) : null}
+              </AsyncView>
+            </Panel>
             <div className="ds-split">
               <Panel title={D.signature} codes="D06-10" id="signature" actions={<VerdictBadge value={d.verification.valid ? 'PASS' : 'FAIL'} />}>
                 <KeyValue

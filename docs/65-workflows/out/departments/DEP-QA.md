@@ -49,12 +49,12 @@ last_updated: 2026-11-05
 | FPW.5-A01 독립성 수준·검증 계획 확정 | FPW.5 검증·V&V | C (품질 조직) | G4 Decision Record `WP-G4-DECISION`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 검증 계획(독립성 수준) `WP-VV-PLAN` | 플랫폼 밖 | 1차 |
 | FPW.5-A03 통합 시험·SEooC 가정 확인 | FPW.5 검증·V&V | I (품질 조직) | 검증 계획(독립성 수준) `WP-VV-PLAN`, 입고 검사 결과 `WP-INTAKE-RESULT` → 통합 검증 기록 `WP-INTEGRATION-REC` | `/master/artifacts` | 1차 |
 | FPW.5-A04 비활성화·결함 주입 시험 수행 | FPW.5 검증·V&V | I (품질 조직) | 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC`, 통합 검증 기록 `WP-INTEGRATION-REC`, Flag 정책(검증·승인본) `WP-POLICY` → 시험 결과 `WP-TEST-RESULT` | `/validations/virtual` | 1차 |
-| FPW.5-A05 시험 Evidence 연결·TMS 제출 | FPW.5 검증·V&V | I (품질 조직) | 시험 결과 `WP-TEST-RESULT`, 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` → G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` | `/verify/evidence` | 1차 |
+| FPW.5-A05 시험 Evidence 연결·TMS 제출 | FPW.5 검증·V&V | I (품질 조직) | 시험 결과 `WP-TEST-RESULT`, 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` → G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` | `/verify/evidence`, `/verify/safety-case` | 1차 |
 | FPW.5-A06 G5 V&V 판정 | FPW.5 검증·V&V | R (품질 조직) | G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, 검증 계획(독립성 수준) `WP-VV-PLAN` → G5 Decision Record `WP-G5-DECISION` | `/verify/evidence`, `/admin/approval` | 1차 |
 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6 서명 배포 | I (품질 조직) | 출시 Baseline `WP-RELEASE-BASELINE` → 서명 배포 패키지 `WP-SIGNED-PACKAGE` | `/deployments`, `/master/artifacts` | 1차 |
 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6 서명 배포 | R (품질 조직) | 서명 배포 패키지 `WP-SIGNED-PACKAGE`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → OTA Gate 판정 기록 `WP-OTA-GATE` | `/features/:id/:ver` | 1차 |
 | FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | I (품질 조직) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/integration/connectors` | 1차 |
-| FPW.7-A03 Safety Case·SOTIF 근거 정리 | FPW.7 출시·활성화·단계적 확대 | I (품질 조직) | SOTIF 분석 `WP-SOTIF-ANALYSIS`, G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, HARA·TARA 결과 `WP-HARA-TARA` → Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` | `/verify/evidence`, `/verify/compliance` | 1차 |
+| FPW.7-A03 Safety Case·SOTIF 근거 정리 | FPW.7 출시·활성화·단계적 확대 | I (품질 조직) | SOTIF 분석 `WP-SOTIF-ANALYSIS`, G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, HARA·TARA 결과 `WP-HARA-TARA` → Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` | `/verify/evidence`, `/verify/compliance`, `/verify/safety-case` | 1차 |
 | FPW.7-A04 Safety Case 독립 검토 | FPW.7 출시·활성화·단계적 확대 | R (품질 조직) | Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` → Safety Case 독립 검토 기록 `WP-SC-REVIEW` | 플랫폼 밖 | 1차 |
 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7 출시·활성화·단계적 확대 | I (품질 조직) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, 실험 계획 `WP-EXPERIMENT-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW`, 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL`, 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` → G7 Decision Record `WP-G7-DECISION` | `/activation/decide`, `/admin/approval` | 1차 |
 | FPW.7-A11 Canary 활성화·단계적 확대 | FPW.7 출시·활성화·단계적 확대 | I (품질 조직) | 출시 전이 기록 `WP-RELEASE-RECORD`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 단계적 확대 기록 `WP-ROLLOUT-RECORD` | `/activation/decide`, `/fleet/live`, `/features/:id/:ver` 외 1 | 1차 |
@@ -76,7 +76,7 @@ last_updated: 2026-11-05
 | FPW.12-A01 운행 감시 지표·경보 기준 기록 | FPW.12 운영 데이터·데이터 보호 | I (품질 조직) | Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` → 운행 감시 지표·경보 기준 `WP-KPI-PLAN` | `/ops/safety-kpi` | 2차 초안 |
 | FPW.12-A05 보존 기간 경과 데이터 삭제 | FPW.12 운영 데이터·데이터 보호 | I (품질 조직) | 운행 감시 지표·경보 기준 `WP-KPI-PLAN` → 보존·삭제 기록 `WP-RETENTION-LOG` | `/admin/data` | 2차 초안 |
 | FPW.13-A01 표준 판 고정 | FPW.13 규정·Compliance Profile 관리 | I (품질 조직) | 법규·표준 원문 `WP-REG-SOURCES` → 표준 판 고정 기록(Safety Plan) `WP-STANDARD-EDITIONS` | 플랫폼 밖 | 2차 초안 |
-| FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | I (품질 조직) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
+| FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | I (품질 조직) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance`, `/trace/ads` | 2차 초안 |
 | FPW.13-A04 원격 종료 시스템 설명 작성 | FPW.13 규정·Compliance Profile 관리 | I (품질 조직) | 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE`, 드릴 결과·G8 판정 `WP-DRILL-REPORT` → 원격 종료 시스템 설명 `WP-SYSTEM-DESCRIPTION` | 플랫폼 밖 | 2차 초안 |
 
 ## 2. 부서 간 인계
@@ -107,4 +107,4 @@ last_updated: 2026-11-05
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/features/:id/:ver`, `/admin/approval`, `/verify/evidence`, `/audit/oversight`, `/ops/kill`, `/quality/feedback`, `/supplier/portal`
-- 참조 화면(협의·통보): `/arch/components`, `/master/artifacts`, `/validations/virtual`, `/deployments`, `/integration/connectors`, `/verify/compliance`, `/activation/decide`, `/fleet/live`, `/notifications`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/audit`, `/admin/data`
+- 참조 화면(협의·통보): `/arch/components`, `/master/artifacts`, `/validations/virtual`, `/verify/safety-case`, `/deployments`, `/integration/connectors`, `/verify/compliance`, `/activation/decide`, `/fleet/live`, `/notifications`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/audit`, `/admin/data`, `/trace/ads`

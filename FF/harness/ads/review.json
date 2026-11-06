@@ -321,7 +321,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151",
-        "contracts/src/routes.ts:226"
+        "contracts/src/routes.ts:229"
       ],
       "tests": [
         "backend/test/d03/delivery.spec.ts"
@@ -816,7 +816,7 @@
     "FFP-F044": {
       "verdict": "부분",
       "evidence": [
-        "frontend/src/screens/ops/FleetLive.tsx:304",
+        "frontend/src/screens/ops/FleetLive.tsx:400",
         "frontend/src/components/liveMonitor.ts:80",
         "contracts/src/flags/p0.ts:224"
       ],
@@ -887,8 +887,8 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:155",
-        "frontend/src/screens/ops/Deployments.tsx:256",
-        "frontend/src/screens/ops/FleetLive.tsx:61"
+        "frontend/src/screens/ops/Deployments.tsx:277",
+        "frontend/src/screens/ops/FleetLive.tsx:75"
       ],
       "tests": [
         "backend/test/d04/status-v2.spec.ts",
@@ -1086,7 +1086,7 @@
     "FFP-F058": {
       "verdict": "부분",
       "evidence": [
-        "frontend/src/screens/ops/Deployments.tsx:260",
+        "frontend/src/screens/ops/Deployments.tsx:281",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:198"
       ],
       "tests": [],

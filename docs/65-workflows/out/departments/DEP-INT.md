@@ -52,10 +52,10 @@ last_updated: 2026-11-05
 | FPW.5-A03 통합 시험·SEooC 가정 확인 | FPW.5 검증·V&V | R·A (통합 조직) | 검증 계획(독립성 수준) `WP-VV-PLAN`, 입고 검사 결과 `WP-INTAKE-RESULT` → 통합 검증 기록 `WP-INTEGRATION-REC` | `/master/artifacts` | 1차 |
 | FPW.5-A04 비활성화·결함 주입 시험 수행 | FPW.5 검증·V&V | C (통합 조직) | 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC`, 통합 검증 기록 `WP-INTEGRATION-REC`, Flag 정책(검증·승인본) `WP-POLICY` → 시험 결과 `WP-TEST-RESULT` | `/validations/virtual` | 1차 |
 | FPW.5-A07 Flag 코드 연결 확인 | FPW.5 검증·V&V | R·A (통합 조직) · I (Release Manager) | 통합 검증 기록 `WP-INTEGRATION-REC` → – | `/flag-code/reconcile`, `/integration/code-scans` | 1차 |
-| FPW.5-A05 시험 Evidence 연결·TMS 제출 | FPW.5 검증·V&V | C (통합 조직) | 시험 결과 `WP-TEST-RESULT`, 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` → G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` | `/verify/evidence` | 1차 |
+| FPW.5-A05 시험 Evidence 연결·TMS 제출 | FPW.5 검증·V&V | C (통합 조직) | 시험 결과 `WP-TEST-RESULT`, 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` → G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` | `/verify/evidence`, `/verify/safety-case` | 1차 |
 | FPW.5-A06 G5 V&V 판정 | FPW.5 검증·V&V | I (Release Manager) | G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, 검증 계획(독립성 수준) `WP-VV-PLAN` → G5 Decision Record `WP-G5-DECISION` | `/verify/evidence`, `/admin/approval` | 1차 |
 | FPW.6-A01 출시 Baseline 확정 요청 | FPW.6 서명 배포 | C (Release Manager) | G5 Decision Record `WP-G5-DECISION`, Flag 정책(검증·승인본) `WP-POLICY` → Baseline 확정 요청 `WP-BASELINE-REQ` | `/baselines` | 1차 |
-| FPW.6-A02 출시 Baseline 확정 승인 | FPW.6 서명 배포 | C (Release Manager) | Baseline 확정 요청 `WP-BASELINE-REQ` → 출시 Baseline `WP-RELEASE-BASELINE` | `/baselines` | 1차 |
+| FPW.6-A02 출시 Baseline 확정 승인 | FPW.6 서명 배포 | C (Release Manager) | Baseline 확정 요청 `WP-BASELINE-REQ` → 출시 Baseline `WP-RELEASE-BASELINE` | `/baselines`, `/config/compat` | 1차 |
 | FPW.6-A03 SUMS 기록·형식승인 확인 | FPW.6 서명 배포 | C (Release Manager) | 출시 Baseline `WP-RELEASE-BASELINE`, 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT` → SUMS 업데이트 기록 `WP-SUMS-RECORD` | 플랫폼 밖 | 1차 |
 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6 서명 배포 | R (통합 조직) · A (Release Manager) | 출시 Baseline `WP-RELEASE-BASELINE` → 서명 배포 패키지 `WP-SIGNED-PACKAGE` | `/deployments`, `/master/artifacts` | 1차 |
 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6 서명 배포 | A (Release Manager) | 서명 배포 패키지 `WP-SIGNED-PACKAGE`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → OTA Gate 판정 기록 `WP-OTA-GATE` | `/features/:id/:ver` | 1차 |
@@ -109,4 +109,4 @@ last_updated: 2026-11-05
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/integration/code-scans`, `/deployments`, `/integration/code-repositories`, `/flag-code/lifecycle`, `/flag-retirements`
-- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/policies/:id`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/admin/approval`, `/baselines`, `/activation/decide`, `/experiments`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/supplier/portal`, `/admin/security`, `/integration/openfeature`
+- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/policies/:id`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/verify/safety-case`, `/admin/approval`, `/baselines`, `/config/compat`, `/activation/decide`, `/experiments`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/supplier/portal`, `/admin/security`, `/integration/openfeature`

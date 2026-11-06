@@ -1,17 +1,18 @@
 {
-  "note": "성능 예산(설계안 4e) — gzip 바이트. 넘으면 verify 실패. 올리려면 이유를 남기고 이 파일을 함께 고친다. 2026-10-16 측정: 첫 화면 255 KiB, 화면 묶음 최대 33 KiB(3D 장면 제외). 2026-10-17: 전세계 차량 지도의 MapLibre GL(278 KiB)은 /fleet/map에서만 지연 로드되는 지도 엔진이라 3D 장면처럼 허용 목록에 둔다(첫 화면 합계에는 들어가지 않는다). 2026-10-24: 첫 화면 290→305 KiB — 보안 취약점(high, 2026-10 공지 'Zod can exhaust memory while validating oversized input', zod <4.6.6) 때문에 zod 3→4로 올렸고, zod 4 classic은 같은 스키마에 gzip 약 15 KiB가 더 든다(285→300 KiB, 계약 스키마는 첫 화면의 API 클라이언트·폼 검증이 함께 쓴다). 여유는 전과 같은 5 KiB. 같은 날 305→310 KiB — react-router 6→7(열린 리다이렉트·XSS 공지, react-router <7.18) 공용 묶음이 gzip 약 5.5 KiB 늘었다(300→305.5). 같은 날 310→290 KiB — 보고서 규칙 카탈로그(gzip 약 33 KiB)를 첫 화면에서 빼(contracts/src/web.ts 입구, design/rule-catalog.ts가 필요할 때 읽음) 311→278 KiB가 되어 의존성 상향 전 예산으로 되돌린다 2026-11-04: 첫 화면 290→295 KiB — Feature DB(30-95) API 경로 15개와 그 스키마가 경로 표(contracts routes, API 클라이언트가 첫 화면에서 씀)에 들어가 290.9 KiB(등록 기준·도메인 대응 규칙은 순수 표시로 첫 화면에서 뺀 뒤). 같은 날 업무 절차 묶음(workflows, /procedures에서만 지연 로드)은 FPW.14·부서 14개 레인 흐름도로 41.9 KiB — 전체 화면 묶음 예산 40은 그대로 두고 허용 목록에 45로 둔다. 2026-11-06: 첫 화면 295→297 KiB·workflows 45→47 KiB — Flag 코드 연결(20-97) 경로·스키마·라우트·절차 활동(history 참고).",
+  "note": "성능 예산(설계안 4e) — gzip 바이트. 넘으면 verify 실패. 올리려면 이유를 남기고 이 파일을 함께 고친다. 2026-10-16 측정: 첫 화면 255 KiB, 화면 묶음 최대 33 KiB(3D 장면 제외). 2026-10-17: 전세계 차량 지도의 MapLibre GL(278 KiB)은 /fleet/map에서만 지연 로드되는 지도 엔진이라 3D 장면처럼 허용 목록에 둔다(첫 화면 합계에는 들어가지 않는다). 2026-10-24: 첫 화면 290→305 KiB — 보안 취약점(high, 2026-10 공지 'Zod can exhaust memory while validating oversized input', zod <4.6.6) 때문에 zod 3→4로 올렸고, zod 4 classic은 같은 스키마에 gzip 약 15 KiB가 더 든다(285→300 KiB, 계약 스키마는 첫 화면의 API 클라이언트·폼 검증이 함께 쓴다). 여유는 전과 같은 5 KiB. 같은 날 305→310 KiB — react-router 6→7(열린 리다이렉트·XSS 공지, react-router <7.18) 공용 묶음이 gzip 약 5.5 KiB 늘었다(300→305.5). 같은 날 310→290 KiB — 보고서 규칙 카탈로그(gzip 약 33 KiB)를 첫 화면에서 빼(contracts/src/web.ts 입구, design/rule-catalog.ts가 필요할 때 읽음) 311→278 KiB가 되어 의존성 상향 전 예산으로 되돌린다 2026-11-04: 첫 화면 290→295 KiB — Feature DB(30-95) API 경로 15개와 그 스키마가 경로 표(contracts routes, API 클라이언트가 첫 화면에서 씀)에 들어가 290.9 KiB(등록 기준·도메인 대응 규칙은 순수 표시로 첫 화면에서 뺀 뒤). 같은 날 업무 절차 묶음(workflows, /procedures에서만 지연 로드)은 FPW.14·부서 14개 레인 흐름도로 41.9 KiB — 전체 화면 묶음 예산 40은 그대로 두고 허용 목록에 45로 둔다. 2026-11-06: 첫 화면 295→297 KiB·workflows 45→47 KiB — Flag 코드 연결(20-97) 경로·스키마·라우트·절차 활동(history 참고). 같은 날 통합 10단계 workflows 47→49 KiB — ADS 화면을 절차 활동에 연결(history).",
   "initialGzipKiB": 297,
   "chunkGzipKiB": 40,
   "allow": {
     "VehicleTwinScene": 320,
     "maplibre-gl": 300,
-    "workflows": 47
+    "workflows": 49
   },
   "firstScreenMs": 4000,
   "history": [
     { "date": "2026-11-04", "key": "initialGzipKiB", "from": 290, "to": 295, "reason": "Feature DB(30-95) API 경로 15개와 그 스키마가 경로 표(contracts routes — API 클라이언트가 첫 화면에서 씀)에 들어가 290.9 KiB. 등록 기준·도메인 대응 규칙은 순수 표시로 첫 화면에서 뺀 뒤" },
     { "date": "2026-11-04", "key": "allow.workflows", "from": 40, "to": 45, "reason": "업무 절차 묶음(workflows, /procedures에서만 지연 로드)이 FPW.14·부서 14개 레인 흐름도로 41.9 KiB — 전체 화면 묶음 예산 chunkGzipKiB 40은 그대로 두고 이 묶음만 허용 목록에" },
     { "date": "2026-11-06", "key": "initialGzipKiB", "from": 295, "to": 297, "reason": "Flag 코드 연결(20-97) — API 경로 20개와 그 스키마(contracts routes, API 클라이언트가 첫 화면에서 씀)·라우트 표 8개·부서 메뉴 화면 목록이 첫 화면에 들어가 296.1 KiB(경로·스키마 약 0.6 · 라우트 0.4 · 부서·절차 지도 0.1). 새 화면 7개는 지연 묶음(flag-code)" },
-    { "date": "2026-11-06", "key": "allow.workflows", "from": 45, "to": 47, "reason": "업무 절차 묶음(workflows, /procedures에서만 지연 로드)에 Flag 코드 연결 활동 6개(20-97 §6)가 더해져 45.6 KiB — 전체 화면 묶음 예산 40은 그대로" }
+    { "date": "2026-11-06", "key": "allow.workflows", "from": 45, "to": 47, "reason": "업무 절차 묶음(workflows, /procedures에서만 지연 로드)에 Flag 코드 연결 활동 6개(20-97 §6)가 더해져 45.6 KiB — 전체 화면 묶음 예산 40은 그대로" },
+    { "date": "2026-11-06", "key": "allow.workflows", "from": 47, "to": 49, "reason": "통합 10단계(feat/ads-screens) — ADS 화면(/config/odd·/config/compat·/ops/incident-reports·/verify/safety-case·/trace/ads)을 FPW.4~7 활동의 화면 목록에 연결하고 다른 브랜치의 절차 변경과 합쳐 47.04 KiB(/procedures에서만 지연 로드). 전체 화면 묶음 예산 40은 그대로" }
   ]
 }

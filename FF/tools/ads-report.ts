@@ -22,6 +22,8 @@ interface Item {
   layer: string;
   title: string;
   defect?: boolean;
+  /** 진행 상태 — 없으면 대기. "완료"·"부분 — 남은 것"처럼 쓴다(BACKLOG 상태 열) */
+  status?: string;
   req: string[];
   ui: string[];
   fe: string[];

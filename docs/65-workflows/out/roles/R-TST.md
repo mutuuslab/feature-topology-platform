@@ -57,7 +57,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.5 검증·V&V
 - 시작: 앞 활동 완료
 - 입력: WP-TEST-RESULT, WP-TEST-SPEC → 출력: WP-G5-EVIDENCE
-- 플랫폼: `submitTms`, `/verify/evidence`
+- 플랫폼: `submitTms`, `/verify/evidence`, `/verify/safety-case`
 1. 시험 명세와 결과를 시험관리 도구에서 Feature ID·Version과 연결한다
 2. 결과마다 환경·도구 Version·입력·시나리오 Version 같은 재현 정보를 넣는다
 3. TMS 연계(IF-09)로 플랫폼 검증 이력에 제출하고 연결되지 않은 시험이 없는지 확인한다

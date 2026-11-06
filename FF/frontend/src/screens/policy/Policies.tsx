@@ -18,6 +18,9 @@ import { FlagCodeSummary } from '../flag-code/badge';
 import { PolicyVersions } from './PolicyVersions';
 import { PolicyHistory } from './PolicyHistory';
 import { FlagSourceSummary, FeatureFlagHighlight, FlagMapLink } from '../features/FeatureFlags';
+import { ChangeKindChip, reharaAfterRelease, SignAction, useFeatureChange } from '../ads/ChangeImpact';
+import { PolicyDeployPreview } from '../ads/BulkPreviews';
+import { ExpansionPanel } from '../ads/ExpansionPanel';
 
 const T = ko.policy;
 // Canary 관측(TL-UI02) — Data Lake 집계 화면은 따로 읽는다(정책 상세 묶음을 늘리지 않게)
@@ -147,6 +150,9 @@ export function PolicyDetail() {
   const [drawer, setDrawer] = useState<null | 'decide' | 'deploy' | 'stage'>(null);
   const d = q.data;
   const p = d?.policy;
+  // 출시 뒤 열린 재-HARA가 있으면 배포 서명 버튼 대신 사유(ADS-UI09) — 서버 거부는 결함 ADS-BE06이 맞춘다
+  const change = useFeatureChange(p?.featureId ?? '', p?.featureVersion ?? '');
+  const signBlocked = !!change && reharaAfterRelease(change) > 0;
   // 다시 검증할 수 있는 상태(서버 EDITABLE)에서 검증이 없거나 낡았으면 검증이 다음 행동
   const editable = !!p && ['DRAFT', 'VALIDATED', 'REJECTED'].includes(p.status);
   const needsValidation = editable && (!d?.lastRun || !d.hashMatchesValidation);
@@ -179,6 +185,7 @@ export function PolicyDetail() {
                   <IdChip id={p.policyId} version={`r${p.revision}`} />
                   <IdChip id={p.featureId} version={p.featureVersion} to={`/features/${p.featureId}/${p.featureVersion}`} copy={false} />
                   {d.feature && <span className="ds-tag">ASIL {d.feature.asil}</span>}
+                  <ChangeKindChip featureId={p.featureId} version={p.featureVersion} />
                 </>
               }
               lead={p.description}
@@ -192,11 +199,14 @@ export function PolicyDetail() {
                       {T.approve} / {T.reject}
                     </Button>
                   )}
-                  {p.status === 'APPROVED' && (
-                    <Button variant="primary" disabled={!releaser.ok} title={releaser.hint} onClick={() => setDrawer('deploy')}>
-                      {T.deploy}
-                    </Button>
-                  )}
+                  {p.status === 'APPROVED' &&
+                    (signBlocked && change ? (
+                      <SignAction v={change} />
+                    ) : (
+                      <Button variant="primary" disabled={!releaser.ok} title={releaser.hint} onClick={() => setDrawer('deploy')}>
+                        {T.deploy}
+                      </Button>
+                    ))}
                   {p.status === 'DEPLOYED' && (
                     <Button disabled={!releaser.ok} title={releaser.hint} onClick={() => setDrawer('stage')} data-tour="policy-stage">
                       {T.stage}
@@ -207,6 +217,8 @@ export function PolicyDetail() {
             />
             <FeatureFlagHighlight id={p.featureId} ver={p.featureVersion} />
             <ErrorNote error={validate.error} />
+            {/* 확대 판정(ADS-UI11) — 배포 중 정책에만, 판정 입력이 없으면 그리지 않는다 */}
+            {p.status === 'DEPLOYED' && <ExpansionPanel policyId={p.policyId} />}
 
             <PolicyCrPanel policyId={p.policyId} />
 
@@ -292,6 +304,8 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
     <Drawer open={!!kind} title={kind === 'decide' ? `${T.approve} / ${T.reject}` : kind === 'deploy' ? T.deploy : T.stage} onClose={onClose}>
       <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
         {kind === 'decide' && !approval.eligible && <ErrorNote error={{ message: T.safetyDecision.HOLD, details: { blockers: approval.reasons } }} />}
+        {/* 일괄 명령 미리보기(ADS-UI03) — 대상·제외·해제 범위·위험·서명 대상 digest */}
+        {kind === 'deploy' && <PolicyDeployPreview featureId={policy.featureId} featureVersion={policy.featureVersion} canSign />}
         {kind === 'stage' && (
           <Field label={T.field.basisPoints} hint={T.stageHint}>
             <input className="ds-input ds-input--mono" type="number" min={0} max={10000} step={100} value={bp} onChange={(e) => setBp(Number(e.target.value))} />

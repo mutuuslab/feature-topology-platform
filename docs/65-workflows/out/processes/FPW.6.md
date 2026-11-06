@@ -58,7 +58,7 @@ flowchart LR
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
 | FPW.6-A01 | 출시 Baseline 확정 요청 | R Feature Owner · A Feature Owner · C Release Manager, 아키텍트 · I 기준정보 담당 | WP-G5-DECISION, WP-POLICY | WP-BASELINE-REQ | `requestBaseline`, `/baselines` | – |
-| FPW.6-A02 | 출시 Baseline 확정 승인 | R 기준정보 담당 · A 기준정보 담당 · C Release Manager · I Feature Owner, 법규 담당 | WP-BASELINE-REQ | WP-RELEASE-BASELINE | `decideBaseline`, `/baselines` | – |
+| FPW.6-A02 | 출시 Baseline 확정 승인 | R 기준정보 담당 · A 기준정보 담당 · C Release Manager · I Feature Owner, 법규 담당 | WP-BASELINE-REQ | WP-RELEASE-BASELINE | `decideBaseline`, `/baselines`, `/config/compat` | – |
 | FPW.6-A03 | SUMS 기록·형식승인 확인 | R 법규 담당 · A 법규 담당 · C Release Manager · I Feature Owner, 운영 조직 | WP-RELEASE-BASELINE, WP-HOMOLOGATION-IMPACT | WP-SUMS-RECORD | 플랫폼 밖 | FFG-LCY-008, FFG-GEN-006 |
 | FPW.6-A04 | 서명 패키지 작성·SBOM 결합 | R 통합 조직 · A Release Manager · C PKI 운영, CSM · I 품질 조직 | WP-RELEASE-BASELINE | WP-SIGNED-PACKAGE | `registerChangeRecord`, `/deployments`, `/master/artifacts` | – |
 | FPW.6-A05 | OTA Gate 판정 등록 | R 품질 조직 · A Release Manager · C 법규 담당, CSM · I 운영 조직 | WP-SIGNED-PACKAGE, WP-SUMS-RECORD | WP-OTA-GATE | `judgeGate`, `/features/:id/:ver` | FFG-LCY-001 |

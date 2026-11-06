@@ -113,7 +113,7 @@ test('관제실 — 긴급 차단 FSM+CSM(역할 기록) → 차량 회신 → �
   expect(clip).toBeLessThanOrEqual(1);
   await expect(page.getByTestId('replies-paused')).toHaveCount(0);
   // 차량 상세 — 차단 상태가 채워지고 '판단 불가'가 아니다
-  await page.goto('/fleet/vehicles/ego-01');
+  await page.goto('/fleet/vehicles/ego-01?tab=records'); // 정책 게시본·수신 기록 탭(ADS-UI01 차량 화면 탭 분할)
   await expect(page.locator('[data-key-message]')).not.toContainText('판단 불가');
   await expect(page.getByText(/FEAT-00022 DISABLED/)).toBeVisible({ timeout: 20_000 });
 

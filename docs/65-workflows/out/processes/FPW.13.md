@@ -41,7 +41,7 @@ flowchart LR
 |---|---|---|---|---|---|---|
 | FPW.13-A01 | 표준 판 고정 | R Safety Manager · A Safety Manager · C CSM, 법규 담당 · I 품질 조직 | WP-REG-SOURCES | WP-STANDARD-EDITIONS | 플랫폼 밖 | FFG-GEN-002 |
 | FPW.13-A02 | Compliance Profile 정의 | R 법규 담당 · A 법규 담당 · C Safety Manager, CSM, 법무 · I Feature Owner, 운영 조직 | WP-STANDARD-EDITIONS, WP-REG-SOURCES | WP-COMPLIANCE-PROFILE | `/verify/compliance` | FFG-GEN-001, FFG-ADS-001 |
-| FPW.13-A03 | 분기 법규 감시·Profile 갱신 | R 법규 담당, Safety Manager, CSM · A 법규 담당 · C 법무 · I Feature Owner, 운영 조직, 품질 조직 | WP-REG-SOURCES, WP-COMPLIANCE-PROFILE | WP-COMPLIANCE-PROFILE | `/verify/compliance` | FFG-GEN-004 |
+| FPW.13-A03 | 분기 법규 감시·Profile 갱신 | R 법규 담당, Safety Manager, CSM · A 법규 담당 · C 법무 · I Feature Owner, 운영 조직, 품질 조직 | WP-REG-SOURCES, WP-COMPLIANCE-PROFILE | WP-COMPLIANCE-PROFILE | `/verify/compliance`, `/trace/ads` | FFG-GEN-004 |
 | FPW.13-A04 | 원격 종료 시스템 설명 작성 | R 법규 담당, 운영 조직 · A 법규 담당 · C Safety Manager, CSM · I 품질 조직 | WP-COMPLIANCE-PROFILE, WP-DRILL-REPORT | WP-SYSTEM-DESCRIPTION | 플랫폼 밖 | FFG-ADS-006 |
 
 ### 수행 절차와 완료 기준

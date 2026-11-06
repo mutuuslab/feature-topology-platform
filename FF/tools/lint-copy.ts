@@ -7,6 +7,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { guideTermHits, loadGuideTerms } from './guide-terms.ts';
+import { ADS_COPY_FILE, adsTermHits } from './ads-copy-terms.ts';
 import { leadHits } from './lead-copy.ts';
 import { particleHits } from './particle-copy.ts';
 import { platformTermHits } from './platform-terms.ts';
@@ -122,4 +123,12 @@ if (particles.length) {
   console.error(`  ✕ 이름 뒤 고정 조사 ${particles.length}건 — 받침에 따라 고르세요(copy/departments.ts roParticle)`);
   for (const h of particles) console.error('    ' + h);
 } else console.log('  ✓ 이름 뒤 고정 조사 0건');
+// (9) ADS·Orca 상태 용어 규칙(tools/ads-copy-terms.ts, ORC-BE03) — ADS 화면 문구 카탈로그(copy/ads*.ts)는 위반 0건
+const adsTerms: string[] = [];
+for (const f of walk(join(SRC, 'copy'), ['.ts'])) if (ADS_COPY_FILE.test(f)) for (const h of adsTermHits(readFileSync(f, 'utf8'))) adsTerms.push(`${rel(f)}:${h.line}  ${h.text} — ${h.why}`);
+if (adsTerms.length) {
+  ok = false;
+  console.error(`  ✕ ADS 상태 용어 위반 ${adsTerms.length}건`);
+  for (const h of adsTerms) console.error('    ' + h);
+} else console.log('  ✓ ADS 상태 용어(판단 불가·미확인·단독 차단·보류) 0건');
 process.exit(ok ? 0 : 1);

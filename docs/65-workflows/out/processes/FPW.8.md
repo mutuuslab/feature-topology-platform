@@ -66,7 +66,7 @@ flowchart LR
 | FPW.8-A12 | Flag 평가 이상 확인 | R 운영 조직 · A 운영 조직 · C 통합 조직 · I Feature Owner |  |  | `/ops/flag-evaluations` | – |
 | FPW.8-A01 | 이상 징후 확인 | R 운영 조직 · A 운영 조직 · C Safety Manager · I 품질 조직, Feature Owner | WP-G7-DECISION, WP-ROLLOUT-RECORD, WP-KPI-PLAN, WP-G5-EVIDENCE | WP-ANOMALY-CASE | `acknowledgeAnomaly`, `dismissAnomaly`, `createIncident`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake` | FFG-TEL-009 |
 | FPW.8-A02 | 차단 필요성·범위 판단 | R Safety Manager · A Safety Manager · C CSM, 법규 담당, 운영 조직 · I Feature Owner | WP-ANOMALY-CASE, WP-SAFETY-PROFILE, WP-VEX-DECISION | WP-KILL-PLAN | `gatePreview`, `/ops/kill` | FFG-ADS-011, FFG-SEC-003 |
-| FPW.8-A03 | 리콜·봉쇄 근거 연계 | R 법규 담당 · A 법규 담당 · C Safety Manager, 법무 · I 운영 조직 | WP-KILL-PLAN | WP-RECALL-BASIS | 플랫폼 밖 | FFG-DEAC-010 |
+| FPW.8-A03 | 리콜·봉쇄 근거 연계 | R 법규 담당 · A 법규 담당 · C Safety Manager, 법무 · I 운영 조직 | WP-KILL-PLAN | WP-RECALL-BASIS | `/ops/incident-reports` | FFG-DEAC-010 |
 | FPW.8-A04 | 긴급 차단 요청 | R 운영 조직 · A 운영 조직 · C Safety Manager · I CSM, 법규 담당 | WP-KILL-PLAN, WP-RECALL-BASIS | WP-KILL-REQ | `issueKill`, `/ops/kill` | FFG-PLT-005 |
 | FPW.8-A05 | 긴급 차단 2인 승인 | R Safety Manager, CSM · A Safety Manager · C 법규 담당 · I 운영 조직, 품질 조직 | WP-KILL-REQ, WP-KILL-PLAN | WP-KILL-DECISION | `approveKill`, `rejectKill`, `/ops/kill` | FFG-PLT-005, FFG-SEC-003 |
 | FPW.8-A07 | 긴급 권한 사후 검토 | R 품질 조직 · A 품질 조직 · C CSM, 법규 담당 · I Safety Manager, 운영 조직 | WP-KILL-REQ, WP-KILL-DECISION | WP-POST-REVIEW | `recordKillPostReview`, `/audit/oversight` | FFG-PLT-016 |

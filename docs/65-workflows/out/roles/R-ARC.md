@@ -57,7 +57,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.4 안전 설계·정책 설계
 - 시작: 앞 활동 완료
 - 입력: WP-SAFETY-DESIGN, WP-FEAT-SCOPE → 출력: WP-POLICY
-- 플랫폼: `createPolicy`, `updatePolicy`, `validatePolicy`, `/policies/new`, `/policies`
+- 플랫폼: `createPolicy`, `updatePolicy`, `validatePolicy`, `/policies/new`, `/policies`, `/config/odd`
 1. 대상 규칙·Variant 조건·기본값을 정책으로 작성한다
 2. 분야별 검증 8종을 실행해 배포 안전성 판정을 받는다
 3. 수정하면 새 개정본이 되므로 다시 검증한다

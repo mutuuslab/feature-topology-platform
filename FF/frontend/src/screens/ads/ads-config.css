@@ -1,0 +1,68 @@
+/* ADS 구성 화면(ODD 프로파일·승인 조합·VIN 지원 판정) — 색·간격은 tokens.css 토큰만 */
+.adsc-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-content: start;
+}
+.adsc-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.adsc-sub {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.adsc-cell {
+  display: grid;
+  gap: var(--sp-1);
+}
+.adsc-tag {
+  display: inline-block;
+  margin-right: var(--sp-1);
+  padding: 0 var(--sp-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.adsc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--sp-2);
+}
+.adsc-states {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.adsc-states li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.adsc-states li[data-current] {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-weight: 700;
+}
+.adsc-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-3);
+}

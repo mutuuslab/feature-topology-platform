@@ -81,7 +81,7 @@ flowchart LR
 | FPW.7-A01 | Canary·Shadow 판정 기준 정의 | R 운영 조직 · A 운영 조직 · C Safety Manager, 시험 조직 · I Feature Owner, Release Manager | WP-SAFETY-PROFILE, WP-G6-DECISION | WP-CANARY-PLAN | `/activation/decide`, `/policies/:id` | FFG-TST-010, FFG-LCY-009 |
 | FPW.7-A13 | 출시 차단 해제 결정 | R 요구 Owner · A 요구 Owner · C Safety Manager, Feature Owner · I Release Manager, 통합 조직 | WP-INTEGRATION-REC | WP-FLAG-WAIVER | `decideFlagGateWaiver`, `/flag-code/reconcile` | – |
 | FPW.7-A02 | 효과 실험 계획 등록 | R Feature Owner · A Feature Owner · C Safety Manager, 운영 조직 · I Release Manager | WP-SAFETY-PROFILE | WP-EXPERIMENT-PLAN | `createExperiment`, `/experiments` | FFG-CLS-006 |
-| FPW.7-A03 | Safety Case·SOTIF 근거 정리 | R Safety Manager · A Safety Manager · C Feature Owner, 시험 조직 · I 품질 조직 | WP-SOTIF-ANALYSIS, WP-G5-EVIDENCE, WP-HARA-TARA | WP-SAFETY-CASE | `/verify/evidence`, `/verify/compliance` | FFG-SOT-004, FFG-ADS-008 |
+| FPW.7-A03 | Safety Case·SOTIF 근거 정리 | R Safety Manager · A Safety Manager · C Feature Owner, 시험 조직 · I 품질 조직 | WP-SOTIF-ANALYSIS, WP-G5-EVIDENCE, WP-HARA-TARA | WP-SAFETY-CASE | `/verify/evidence`, `/verify/compliance`, `/verify/safety-case` | FFG-SOT-004, FFG-ADS-008 |
 | FPW.7-A04 | Safety Case 독립 검토 | R 품질 조직 · A Safety Manager · C 시험 조직 · I Feature Owner, 법규 담당 | WP-SAFETY-CASE | WP-SC-REVIEW | 플랫폼 밖 | FFG-ADS-012 |
 | FPW.7-A05 | 상품 구성 작성 | R 상품 기획 · A 상품 기획 · C Feature Owner · I 상품 Owner | WP-G6-DECISION | WP-PRODUCT | `createProduct`, `validateComposition`, `offerTrials`, `/products/new`, `/entitlements` | – |
 | FPW.7-A06 | 상품 구성 승인 | R 상품 Owner · A 상품 Owner · C Feature Owner · I 상품 기획 | WP-PRODUCT | WP-PRODUCT-APPROVAL | `productTransition`, `/products/:id/:ver` | – |

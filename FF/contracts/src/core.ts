@@ -101,3 +101,7 @@ export * from './rules/flag-scaffold';
 export * from './rules/unleash-snapshot';
 export * from './rules/telemetry-metrics';
 export * from './schemas/ops-observation';
+export * from './schemas/ads-config';
+export * from './schemas/ads-evidence';
+export * from './schemas/ads-state';
+export * from './schemas/ads-change';

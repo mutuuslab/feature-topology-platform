@@ -1,5 +1,6 @@
 // 활성화 판단 — 차량 목록이 정책 목록보다 먼저 오면 Fleet 조회가 flagKey 없이 나갔다(2026-10-25, 정적 데모 e2e:static이 응답 순서에 따라
 // /activation/decide 스냅샷 누락으로 흔들렸다). flagKey가 정해지기 전에는 Fleet 조회를 하지 않는다 — 응답 순서를 시험이 정한다.
+// 2026-11-06 ORC-UI02: 서버 정책 평가는 '정책 평가' 탭(?tab=policy)으로 옮겼다 — 첫 화면은 VIN 지원 판정이다.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -50,10 +51,10 @@ afterEach(() => {
 });
 
 describe('활성화 판단 — Fleet 조회는 flagKey가 정해진 뒤에만', () => {
-  const mount = (path = '/activation/decide') => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter initialEntries={[path]}><AppProvider><ActivationScreen /></AppProvider></MemoryRouter></QueryClientProvider>);
+  const mount = (path = '/activation/decide?tab=policy') => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter initialEntries={[path]}><AppProvider><ActivationScreen /></AppProvider></MemoryRouter></QueryClientProvider>);
 
   it('주소의 미배포 Flag는 선택 표기와 요청을 일치시키고 안내하며, 다른 배포 Flag로 바꾸기 전에는 평가하지 않는다', async () => {
-    mount('/activation/decide?vin=ego-01&flagKey=showcase_00280_review');
+    mount('/activation/decide?tab=policy&vin=ego-01&flagKey=showcase_00280_review');
     await waitFor(() => expect(calls.some((u) => u.startsWith('/api/vehicles'))).toBe(true));
     expect(calls.filter((u) => u.startsWith('/api/activation/decide'))).toEqual([]);
     releasePolicies();
@@ -85,7 +86,7 @@ describe('활성화 판단 — Fleet 조회는 flagKey가 정해진 뒤에만', 
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
       <QueryClientProvider client={qc}>
-        <MemoryRouter initialEntries={['/activation/decide']}>
+        <MemoryRouter initialEntries={['/activation/decide?tab=policy']}>
           <AppProvider>
             <ActivationScreen />
           </AppProvider>

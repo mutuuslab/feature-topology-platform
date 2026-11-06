@@ -5,15 +5,15 @@
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-06T09:30:16.644Z",
+  "fetched_at": "2026-11-06T13:06:02.200Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-integ\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-06T09:29:48.398Z",
+  "contracts_dist_mtime": "2026-11-06T13:05:25.917Z",
   "ff_git": {
-   "head": "2dce0785f0be608fba901f0b13be98a53edc7324",
-   "dirty_files": 33
+   "head": "e3e160c32265e600be8e4561cc27ebf7c5a038b1",
+   "dirty_files": 41
   },
-  "iam_sha256": "a2fe1c49cca22f576bdc3806a81b50e3c63ed654816719c27235ba0795195bac"
+  "iam_sha256": "9f55db5dc44718f3a16ce56d7001e662fc0f516d3d993ad4c328d308fbe29c5c"
  },
  "roles": [
   {
@@ -1424,6 +1424,58 @@
    ]
   },
   {
+   "name": "approveOddProfile",
+   "method": "POST",
+   "path": "/api/odd-profiles/:id/approve",
+   "summary": "ODD 프로파일 승인",
+   "component": "D02-01",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "createConfigSet",
+   "method": "POST",
+   "path": "/api/config-sets",
+   "summary": "승인 구성 조합 등록",
+   "component": "D02-01",
+   "roles": [
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "adsIncidentDetermination",
+   "method": "POST",
+   "path": "/api/incident-reports/:id/determination",
+   "summary": "보고 대상 확정",
+   "component": "D04-05",
+   "roles": [
+    "REGULATORY_OWNER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "adsReviewFindingCreate",
+   "method": "POST",
+   "path": "/api/review-findings",
+   "summary": "독립 검토 발견사항 등록",
+   "component": "D06-07",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "adsCloseImpactPath",
+   "method": "POST",
+   "path": "/api/change-impacts/:id/paths/:path/close",
+   "summary": "승인 경로 종결",
+   "component": "D06-05",
+   "roles": [
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
    "name": "createIncident",
    "method": "POST",
    "path": "/api/incidents",
@@ -2380,6 +2432,16 @@
    "group": "config"
   },
   {
+   "path": "/config/odd",
+   "title": "ODD 프로파일",
+   "group": "config"
+  },
+  {
+   "path": "/config/compat",
+   "title": "승인 구성 조합",
+   "group": "config"
+  },
+  {
    "path": "/master/upg",
    "title": "UPG·UPG-VC",
    "group": "master"
@@ -2440,6 +2502,11 @@
    "group": "verify"
   },
   {
+   "path": "/verify/safety-case",
+   "title": "Safety Case·Evidence manifest",
+   "group": "verify"
+  },
+  {
    "path": "/validations",
    "title": "분야별 검증 이력",
    "group": "verify"
@@ -2467,6 +2534,11 @@
   {
    "path": "/trace/design",
    "title": "요구·안전 추적",
+   "group": "verify"
+  },
+  {
+   "path": "/trace/ads",
+   "title": "ADS·UNECE 요구 추적",
    "group": "verify"
   },
   {
@@ -2602,6 +2674,16 @@
   {
    "path": "/ops/incidents",
    "title": "장애·VOC",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/incident-reports",
+   "title": "ADS 사건 보고",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/incident-reports/:id",
+   "title": "ADS 사건 상세",
    "group": "ops"
   },
   {

@@ -1,0 +1,184 @@
+{
+  "assumed": true,
+  "changeImpacts": [
+    {
+      "impactId": "CI-0001",
+      "featureId": "FEAT-00004",
+      "version": "4.1.0",
+      "baseVersion": "4.0.1",
+      "title": "운행 조건 속도 상한 확대 + Highway Assist App SW 4.1.0",
+      "declaredKind": "POLICY",
+      "facts": { "oddWidened": true, "oddChanged": true, "swChanged": true, "modelChanged": false, "configChanged": false },
+      "paths": {
+        "REHARA": { "status": "DONE", "note": "속도 상한 확대의 위험원 재평가 완료", "ref": "HARA-FEAT-00004", "closedBy": "usr-safety", "closedAgoHours": 200 },
+        "R156": { "status": "DONE", "note": "형식승인 영향 평가 — 영향 없음으로 판단", "ref": "R156-IA-0004", "closedBy": "usr-csm", "closedAgoHours": 190 },
+        "SUMS": { "status": "DONE", "note": "SW 4.1.0 RXSWIN 갱신 기록", "ref": "SUMS-0004", "closedBy": "usr-csm", "closedAgoHours": 188 },
+        "SAFETY_CASE": { "status": "DONE", "note": "기능안전 담당자 수동 확인 기록(Safety Case 재결합 전)", "ref": null, "closedBy": "usr-safety", "closedAgoHours": 186 }
+      },
+      "scopeStatus": "CONFIRMED",
+      "assignee": "ADAS기획팀",
+      "openedAgoHours": 240
+    },
+    {
+      "impactId": "CI-0002",
+      "featureId": "FEAT-00022",
+      "version": "1.0.0",
+      "baseVersion": null,
+      "title": "거리 추정 모델 교체 + 위험 단계 감속 파라미터 조정(출시 뒤 개정)",
+      "declaredKind": "CONFIG",
+      "facts": { "oddWidened": false, "oddChanged": false, "swChanged": true, "modelChanged": true, "configChanged": true },
+      "paths": {
+        "REHARA": { "status": "OPEN", "note": "거리 추정 모델 교체의 위험원 재평가 — 기능안전 담당자 종결 필요", "ref": null, "closedBy": null, "closedAgoHours": null },
+        "R156": { "status": "OPEN", "note": "R156 형식승인 영향 평가서 작성 전", "ref": null, "closedBy": null, "closedAgoHours": null },
+        "SUMS": { "status": "OPEN", "note": "SUMS 기록 — RXSWIN 갱신 여부 미기재", "ref": null, "closedBy": null, "closedAgoHours": null },
+        "SAFETY_CASE": { "status": "DONE", "note": "기능안전 담당자 수동 확인 기록(Safety Case 재결합 전)", "ref": null, "closedBy": "usr-safety", "closedAgoHours": 20 }
+      },
+      "scopeStatus": "REVIEW_REQUIRED",
+      "assignee": "ADAS상품기획팀",
+      "openedAgoHours": 30
+    },
+    {
+      "impactId": "CI-0003",
+      "featureId": "FEAT-00015",
+      "version": "1.2.0",
+      "baseVersion": null,
+      "title": "협력사 납품 묶음 반영 — 바뀐 ECU·모델 정보 없음",
+      "declaredKind": "POLICY",
+      "facts": {},
+      "paths": {},
+      "scopeStatus": "REVIEW_REQUIRED",
+      "assignee": "Regulation기획팀",
+      "openedAgoHours": 6
+    }
+  ],
+  "releases": [
+    {
+      "featureId": "FEAT-00004",
+      "version": "4.0.1",
+      "odd": {
+        "speedKmh": { "min": 0, "max": 130, "unit": "km/h" },
+        "roadType": ["고속도로", "자동차전용도로"],
+        "weather": ["맑음", "흐림", "약한 비"],
+        "laneChangeAssist": true
+      },
+      "termination": { "dc": "DC2", "fallback": "운전자 인계 — 경고 후 단계적 해제", "mrc": "운전자 미응답 — 경고 15초 뒤 차로 안에서 감속 정지" },
+      "extra": { "modelChanged": false, "configChanged": false }
+    },
+    {
+      "featureId": "FEAT-00004",
+      "version": "4.1.0",
+      "odd": {
+        "speedKmh": { "min": 0, "max": 150, "unit": "km/h" },
+        "roadType": ["고속도로"],
+        "weather": ["맑음", "흐림", "약한 비"],
+        "laneChangeAssist": true
+      },
+      "termination": { "dc": "DC2", "fallback": "운전자 인계 — 경고 후 단계적 해제", "mrc": "운전자 미응답 — 경고 10초 뒤 차로 안에서 감속 정지" },
+      "extra": { "modelChanged": false, "configChanged": false }
+    }
+  ],
+  "classifications": [
+    {
+      "featureId": "FEAT-00004", "version": "4.1.0", "adsFeature": false, "ddtImpact": "SUPPORT", "safetyRelated": true, "owner": "ADAS기획팀",
+      "source": "MANUAL", "status": "CONFIRMED", "confirmedBy": "usr-safety", "confirmedAgoHours": 230,
+      "lifecycleOwners": { "CREATE": "ADAS기획팀", "OPERATE": "차량운영센터", "SUSPEND": "ADAS기획팀", "DISPOSE": "ADAS기획팀" }
+    },
+    {
+      "featureId": "FEAT-00004", "version": "4.0.1", "adsFeature": false, "ddtImpact": "SUPPORT", "safetyRelated": true, "owner": "ADAS기획팀",
+      "source": "MANUAL", "status": "CONFIRMED", "confirmedBy": "usr-safety", "confirmedAgoHours": 900,
+      "lifecycleOwners": { "CREATE": "ADAS기획팀", "OPERATE": "차량운영센터", "SUSPEND": "ADAS기획팀", "DISPOSE": "ADAS기획팀" }
+    },
+    {
+      "featureId": "FEAT-00022", "version": "1.0.0", "adsFeature": false, "ddtImpact": "SUPPORT", "safetyRelated": true, "owner": "ADAS상품기획팀",
+      "source": "MANUAL", "status": "CONFIRMED", "confirmedBy": "usr-safety", "confirmedAgoHours": 700,
+      "lifecycleOwners": { "CREATE": "ADAS상품기획팀", "OPERATE": "차량운영센터", "SUSPEND": "ADAS상품기획팀", "DISPOSE": "ADAS상품기획팀" }
+    },
+    {
+      "featureId": "FEAT-00001", "version": "2.2.0", "adsFeature": false, "ddtImpact": "SUPPORT", "safetyRelated": true, "owner": "Parking기획팀",
+      "source": "MANUAL", "status": "CONFIRMED", "confirmedBy": "usr-safety", "confirmedAgoHours": 120,
+      "lifecycleOwners": { "CREATE": "Parking기획팀", "OPERATE": "차량운영센터", "SUSPEND": "Parking기획팀", "DISPOSE": "Parking기획팀" }
+    },
+    {
+      "featureId": "FEAT-00003", "version": "3.3.0", "adsFeature": false, "ddtImpact": "NONE", "safetyRelated": false, "owner": "UX기획팀",
+      "source": "MANUAL", "status": "CONFIRMED", "confirmedBy": "usr-safety", "confirmedAgoHours": 96,
+      "lifecycleOwners": { "CREATE": "UX기획팀", "OPERATE": "차량운영센터", "SUSPEND": "UX기획팀", "DISPOSE": "UX기획팀" }
+    },
+    {
+      "featureId": "FEAT-00144", "version": "3.3.0", "adsFeature": false, "ddtImpact": "NONE", "safetyRelated": false, "owner": "UX기획팀",
+      "source": "MANUAL", "status": "CONFIRMED", "confirmedBy": "usr-safety", "confirmedAgoHours": 96,
+      "lifecycleOwners": { "CREATE": "UX기획팀", "OPERATE": "차량운영센터", "SUSPEND": "UX기획팀", "DISPOSE": "UX기획팀" }
+    },
+    {
+      "featureId": "FEAT-00010", "version": "2.0.0", "adsFeature": false, "ddtImpact": "NONE", "safetyRelated": true, "owner": "Cabin안전기획팀",
+      "source": "INFERRED", "status": "DRAFT", "confirmedBy": null, "confirmedAgoHours": null,
+      "lifecycleOwners": { "CREATE": "Cabin안전기획팀", "OPERATE": "차량운영센터", "SUSPEND": "Cabin안전기획팀", "DISPOSE": "Cabin안전기획팀" }
+    },
+    {
+      "featureId": "FEAT-00015", "version": "1.2.0", "adsFeature": false, "ddtImpact": "SUPPORT", "safetyRelated": true, "owner": "Regulation기획팀",
+      "source": "INFERRED", "status": "DRAFT", "confirmedBy": null, "confirmedAgoHours": null,
+      "lifecycleOwners": { "CREATE": "Regulation기획팀", "OPERATE": "차량운영센터" }
+    },
+    {
+      "featureId": "FEAT-00012", "version": "1.1.0", "adsFeature": false, "ddtImpact": "NONE", "safetyRelated": true, "owner": "Driving성능팀",
+      "source": "INFERRED", "status": "DRAFT", "confirmedBy": null, "confirmedAgoHours": null,
+      "lifecycleOwners": { "CREATE": "Driving성능팀", "OPERATE": "차량운영센터", "SUSPEND": "Driving성능팀", "DISPOSE": "Driving성능팀" }
+    },
+    {
+      "featureId": "FEAT-00019", "version": "2.0.0", "adsFeature": false, "ddtImpact": null, "safetyRelated": true, "owner": "Vehicle Dynamics팀",
+      "source": "MANUAL", "status": "DRAFT", "confirmedBy": null, "confirmedAgoHours": null,
+      "lifecycleOwners": { "CREATE": "Vehicle Dynamics팀" }
+    }
+  ],
+  "marketBaselines": [
+    {
+      "market": "KR", "featureId": "FEAT-00004", "version": "4.1.0", "approvalType": "SELF_CERT",
+      "regulations": [{ "reg": "UN R79", "series": "04" }, { "reg": "UN R156", "series": "00" }],
+      "oddProfileRef": "ODD-FEAT-00004-v1", "approvalStatus": "APPROVED", "assumed": true,
+      "note": "국내 자기인증 — 레벨 2 운전자 보조, 규정 대응은 가정값"
+    },
+    {
+      "market": "EU", "featureId": "FEAT-00004", "version": "4.1.0", "approvalType": "TYPE_APPROVAL",
+      "regulations": [{ "reg": "UN R79", "series": "04" }, { "reg": "UN R171", "series": "00" }, { "reg": "UN R155", "series": "00" }, { "reg": "UN R156", "series": "00" }],
+      "oddProfileRef": "ODD-FEAT-00004-v1", "approvalStatus": "UNKNOWN", "assumed": true,
+      "note": "유럽 출시 계획 확인 전 — 레벨 2 운전자 보조(DCAS)로 가정"
+    },
+    {
+      "market": "KR", "featureId": "FEAT-00022", "version": "1.0.0", "approvalType": "SELF_CERT",
+      "regulations": [{ "reg": "UN R156", "series": "00" }],
+      "oddProfileRef": null, "approvalStatus": "APPROVED", "assumed": true,
+      "note": "국내 자기인증 — SCC 파라미터 보조, 규정 대응은 가정값"
+    },
+    {
+      "market": "KR", "featureId": "FEAT-00001", "version": "2.2.0", "approvalType": "SELF_CERT",
+      "regulations": [{ "reg": "UN R79", "series": "04" }, { "reg": "UN R156", "series": "00" }],
+      "oddProfileRef": null, "approvalStatus": "PENDING", "assumed": true,
+      "note": "원격 주차 조향(RCP) — 출시 전 확인"
+    },
+    {
+      "market": "KR", "featureId": "FEAT-00003", "version": "3.3.0", "approvalType": "SELF_CERT",
+      "regulations": [{ "reg": "UN R156", "series": "00" }],
+      "oddProfileRef": null, "approvalStatus": "PENDING", "assumed": true,
+      "note": null
+    },
+    {
+      "market": "KR", "featureId": "FEAT-00144", "version": "3.3.0", "approvalType": "SELF_CERT",
+      "regulations": [{ "reg": "UN R156", "series": "00" }],
+      "oddProfileRef": null, "approvalStatus": "PENDING", "assumed": true,
+      "note": null
+    }
+  ],
+  "expansions": [
+    {
+      "featureId": "FEAT-00022", "version": "1.0.0", "policyAllowed": 2400, "unconfirmed": 140,
+      "metrics": [
+        { "key": "takeoverRate", "observedAgoMinutes": 125, "staleAfterMinutes": 30, "value": 0.8, "threshold": 2, "breached": false },
+        { "key": "falseBrakeRate", "observedAgoMinutes": 12, "staleAfterMinutes": 30, "value": 0.05, "threshold": 0.2, "breached": false }
+      ],
+      "combos": [
+        { "comboId": "NX4 PE · Premium · KR", "vehicleActive": 1120, "usageConfirmed": 860, "errors": 3, "samples": 1120, "minSamples": 300, "windowHours": 72, "alert": false },
+        { "comboId": "NX4 PE · Modern · KR", "vehicleActive": 700, "usageConfirmed": 510, "errors": 1, "samples": 180, "minSamples": 300, "windowHours": 72, "alert": false }
+      ],
+      "frozen": null
+    }
+  ]
+}

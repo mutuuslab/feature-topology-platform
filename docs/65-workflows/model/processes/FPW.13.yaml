@@ -93,7 +93,7 @@ process:
         - 검증이 필요하다고 표시된 항목은 해당 시장 SOP 전까지 해소 기한과 담당을 정한다
       checks:
         - 분기 점검 기록과 Profile 새 버전(또는 무변경 확인)이 있다
-      platform: {screens: [/verify/compliance]}
+      platform: {screens: [/verify/compliance, /trace/ads]}
     - id: FPW.13-A04
       name: 원격 종료 시스템 설명 작성
       outcomes: [O4]

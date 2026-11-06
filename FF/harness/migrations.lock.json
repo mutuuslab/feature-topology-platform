@@ -67,6 +67,10 @@
     "102_flag_eval_hourly": "c5e4fc40bb4a6caab83f27254701ba90c0123e6ddb3c6609202d1a8f97c09040",
     "103_integration_error": "6a402b184efe5d85583a104a24058b1f93987932fed3af2201a13904f26adb0b",
     "104_pipeline_run": "e0b3773b55d0839a2db20af5b3e5736ae279ddb3cdd55b3e3c9251fe0ac49e63",
-    "111_lake_closed_loop": "938e825913102fb05ccc2cb9edba49d2f3586823d18b5fd79dfc1e59ec730571"
+    "111_lake_closed_loop": "938e825913102fb05ccc2cb9edba49d2f3586823d18b5fd79dfc1e59ec730571",
+    "121_ads_config": "99feef30b5d262c55b742097627e451dff086016df8cccd78bafebec476b1cc6",
+    "122_ads_evidence": "e52f612d347841d1a8c2366c6bfabc89ca6d56cd785e1d6d1e43eed088b3b31d",
+    "123_ads_state": "790c747f10608b6a3ebfb911a74a5261321800053c33e0e2e505e390dc8ae60f",
+    "124_ads_change": "3938f007501cafb5aaa4dbdb5f41a4c1e05f050cdb72bc92080b6af9c4748f72"
   }
 }

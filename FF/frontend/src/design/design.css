@@ -1050,7 +1050,8 @@ textarea.ds-input {
 }
 .ds-kv {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  /* 좁은 폭(390) — 칸 최소 320px이 본문보다 넓으면 본문 폭까지 줄인다(그보다 넓은 화면은 그대로) */
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 0 var(--sp-6);
   margin: 0;
 }

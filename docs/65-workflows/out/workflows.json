@@ -954,14 +954,17 @@
      "/change/cr",
      "/policies/new",
      "/policies",
+     "/config/odd",
      "/flag-code",
      "/flag-code/flags/:flagKey",
      "/validations/virtual",
      "/flag-code/reconcile",
      "/integration/code-scans",
      "/verify/evidence",
+     "/config/compat",
      "/deployments",
      "/verify/compliance",
+     "/verify/safety-case",
      "/fleet/live",
      "/notifications",
      "/ops/flag-evaluations",
@@ -975,6 +978,7 @@
      "/ops/kill",
      "/audit",
      "/quality/feedback",
+     "/trace/ads",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes"
     ]
@@ -1467,6 +1471,7 @@
      "/master/control-points",
      "/policies/new",
      "/policies",
+     "/config/odd",
      "/policies/:id",
      "/flag-code",
      "/flag-code/flags/:flagKey",
@@ -2042,8 +2047,10 @@
      "/validations",
      "/validations/virtual",
      "/verify/evidence",
+     "/verify/safety-case",
      "/admin/approval",
      "/baselines",
+     "/config/compat",
      "/activation/decide",
      "/experiments",
      "/fleet/live",
@@ -2296,6 +2303,7 @@
      "/variant-conditions",
      "/arch/topology",
      "/baselines",
+     "/config/compat",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes",
      "/master/feature-db"
@@ -2310,6 +2318,7 @@
      "/integration/connectors",
      "/policies/new",
      "/policies",
+     "/config/odd",
      "/master/feature-db/:refId"
     ]
    },
@@ -2965,12 +2974,14 @@
      "/arch/components",
      "/verify/evidence",
      "/verify/compliance",
+     "/verify/safety-case",
      "/activation/decide",
      "/ops/kill",
      "/fleet/live",
      "/deployments",
      "/flag-retirements",
-     "/ops/safety-kpi"
+     "/ops/safety-kpi",
+     "/trace/ads"
     ],
     "reference": [
      "/master/define",
@@ -2995,6 +3006,7 @@
      "/ops/feature-health/:findingId",
      "/ops/collection",
      "/integration/datalake",
+     "/ops/incident-reports",
      "/audit/oversight",
      "/audit",
      "/quality/feedback",
@@ -3438,7 +3450,8 @@
     "primary": [
      "/ops/kill",
      "/admin/security",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ],
     "reference": [
      "/features/:id/:ver",
@@ -3783,13 +3796,16 @@
    ],
    "screens": {
     "primary": [
+     "/ops/incident-reports",
      "/admin/data",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ],
     "reference": [
      "/features/:id/:ver",
      "/admin/approval",
      "/baselines",
+     "/config/compat",
      "/activation/decide",
      "/ops/kill",
      "/audit/oversight",
@@ -4123,6 +4139,7 @@
      "/validations",
      "/validations/virtual",
      "/verify/evidence",
+     "/verify/safety-case",
      "/admin/approval",
      "/supplier/portal"
     ],
@@ -4550,6 +4567,7 @@
      "/arch/components",
      "/master/artifacts",
      "/validations/virtual",
+     "/verify/safety-case",
      "/deployments",
      "/integration/connectors",
      "/verify/compliance",
@@ -4564,7 +4582,8 @@
      "/ops/collection",
      "/integration/datalake",
      "/audit",
-     "/admin/data"
+     "/admin/data",
+     "/trace/ads"
     ]
    },
    "handoffs": {
@@ -5045,12 +5064,14 @@
      "/experiments",
      "/admin/approval",
      "/products/:id/:ver",
+     "/ops/incident-reports",
      "/audit/oversight",
      "/quality/feedback",
      "/flag-retirements",
      "/admin/security",
      "/admin/data",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ]
    },
    "handoffs": {
@@ -5419,9 +5440,11 @@
    "screens": {
     "primary": [],
     "reference": [
+     "/ops/incident-reports",
      "/admin/data",
      "/integration/openfeature",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ]
    },
    "handoffs": {
@@ -9067,7 +9090,8 @@
       ],
       "screens": [
        "/policies/new",
-       "/policies"
+       "/policies",
+       "/config/odd"
       ],
       "gates": [],
       "anchor": null,
@@ -10499,7 +10523,8 @@
        "submitTms"
       ],
       "screens": [
-       "/verify/evidence"
+       "/verify/evidence",
+       "/verify/safety-case"
       ],
       "gates": [],
       "anchor": null,
@@ -11382,7 +11407,8 @@
        "decideBaseline"
       ],
       "screens": [
-       "/baselines"
+       "/baselines",
+       "/config/compat"
       ],
       "gates": [],
       "anchor": "baseline-approve",
@@ -12751,7 +12777,8 @@
       "actions": [],
       "screens": [
        "/verify/evidence",
-       "/verify/compliance"
+       "/verify/compliance",
+       "/verify/safety-case"
       ],
       "gates": [],
       "anchor": null,
@@ -15007,7 +15034,9 @@
      ],
      "platform": {
       "actions": [],
-      "screens": [],
+      "screens": [
+       "/ops/incident-reports"
+      ],
       "gates": [],
       "anchor": null,
       "ui": {
@@ -21138,7 +21167,8 @@
      "platform": {
       "actions": [],
       "screens": [
-       "/verify/compliance"
+       "/verify/compliance",
+       "/trace/ads"
       ],
       "gates": [],
       "anchor": null,

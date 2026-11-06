@@ -1,0 +1,106 @@
+/* ADS 변경 화면 — 승인 경로 표·릴리스 비교 강조 행·분류 패널(색·간격은 토큰만) */
+.adc-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+.adc-row {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+}
+/* 긴 릴리스 이름 선택 상자가 좁은 폭에서 본문 밖으로 나가지 않게 */
+.adc-row > .ds-field,
+.adc-row .ds-select {
+  min-width: 0;
+  max-width: 100%;
+}
+.adc-path {
+  display: grid;
+  gap: var(--sp-1);
+}
+.adc-path__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-weight: 600;
+}
+.adc-path[data-status='OPEN'] .adc-path__state {
+  color: var(--warn);
+}
+.adc-path[data-status='DONE'] .adc-path__state {
+  color: var(--ok);
+}
+.adc-path[data-status='NOT_REQUIRED'] .adc-path__state {
+  color: var(--faint);
+  font-weight: 400;
+}
+.adc-note {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.adc-gloss {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.adc-gloss dt {
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.adc-gloss dd {
+  margin: 0 0 var(--sp-1);
+}
+.adc-diff tr[data-direction='WIDEN'] th,
+.adc-diff tr[data-direction='WIDEN'] td {
+  background: var(--warn-soft);
+}
+.adc-diff tr[data-direction='CHANGED'][data-group='TERMINATION'] th,
+.adc-diff tr[data-direction='CHANGED'][data-group='TERMINATION'] td {
+  background: var(--warn-soft);
+}
+.adc-dir {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-weight: 600;
+}
+.adc-dir[data-direction='WIDEN'] {
+  color: var(--danger);
+}
+.adc-dir[data-direction='SAME'] {
+  color: var(--faint);
+  font-weight: 400;
+}
+.adc-term > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: var(--sp-2) 0;
+}
+.adc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-xs);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 0 var(--sp-1);
+  color: var(--muted);
+}
+.adc-tag[data-tone='warn'] {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+.adc-gaps {
+  display: flex;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+}
+.adc-combos > summary {
+  cursor: pointer;
+  font-weight: 600;
+}

@@ -1,15 +1,20 @@
 // /analysis/impact — 변경 영향 분석 (v2). Feature → 의존 Feature → Baseline → 상품, 재판정 Gate·담당자.
 // 보강(W5 P5-2): 협력사로 시작하기(?supplier= — 그 협력사 SW를 쓰는 Feature를 골라 영향 보기), 바뀐 항목은 한글 이름(영문 키는 툴팁).
+// ADS 변경(ADS-UI09): '승인 경로'(변경 종류별 재-HARA·R156 영향·SUMS)·'릴리스 비교' 탭을 더했다 — 위 내용은 '영향 범위' 탭(?feature=·?supplier=로 오면 이 탭).
+import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { REJUDGE_MAP } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { adsChange } from '../../copy/ads-change';
 import { impactPlus as IP } from '../../copy/impactSupplier';
 import { useDefaultFeature } from '../../data/first-run';
-import { AsyncView, Button, GateBadge, IdChip, LifecycleBadge, PageHeader, Panel, Select, SummaryLine } from '../../design';
+import { AsyncView, Button, GateBadge, IdChip, LifecycleBadge, PageHeader, Panel, Select, SummaryLine, Tabs } from '../../design';
+import { ApprovalPathsTab, pathsMessage, ReleaseDiffTab, releaseMessage, useChangeImpacts, useReleasePick } from '../ads/ChangeImpact';
 
 const T = ko.impact;
 const CHANGEABLE = Object.keys(REJUDGE_MAP);
+const TAB_KEYS = ['paths', 'release', 'scope'];
 
 interface Impact {
   feature: { featureId: string; version: string; name: string; lifecycle: string; baselineId: string | null; ownerId: string };
@@ -23,6 +28,61 @@ interface Impact {
 
 export default function ImpactScreen() {
   const [sp, setSp] = useSearchParams();
+  // 탭 — 기본은 승인 경로, Feature·협력사를 골라 온 주소(?feature=·?supplier=)는 영향 범위. 주소에 탭을 적어 Tabs와 맞춘다
+  const tabParam = sp.get('tab');
+  const active = tabParam && TAB_KEYS.includes(tabParam) ? tabParam : sp.get('feature') || sp.get('supplier') ? 'scope' : 'paths';
+  useEffect(() => {
+    if (tabParam === active) return;
+    const n = new URLSearchParams(sp);
+    n.set('tab', active);
+    setSp(n, { replace: true });
+  }, [tabParam, active, sp, setSp]);
+  const paths = useChangeImpacts(active === 'paths');
+  const release = useReleasePick(active === 'release');
+  // 기본 대상 — 예시 Feature가 있으면 그것, 없으면 첫 Feature, 하나도 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const fallback = useDefaultFeature({ featureId: 'FEAT-00145', version: '5.4.2' }, !sp.get('feature'));
+  const feature = sp.get('feature') ?? fallback?.featureId ?? '';
+  const version = sp.get('version') ?? (sp.get('feature') ? '5.4.2' : (fallback?.version ?? ''));
+  const none = !sp.get('feature') && fallback === null;
+  const changed = (sp.get('changed') ?? '').split(',').filter(Boolean);
+  // 머리 핵심 메시지용 — 영향 범위 탭의 같은 조회(캐시 공유)
+  const q = useApi<Impact>('impact', { params: { id: feature, ver: version }, query: { changed: changed.join(',') || undefined } }, { enabled: active === 'scope' && !!feature && !!version });
+  return (
+    <div className="ds-screen">
+      <PageHeader
+        codes="D01-02 · D06-05 · IMPACT"
+        title={T.title}
+        lead={active === 'paths' ? adsChange.lead.paths : active === 'release' ? adsChange.lead.release : T.lead}
+        message={
+          active === 'paths'
+            ? pathsMessage(paths.data)
+            : active === 'release'
+            ? releaseMessage(release.diff.data)
+            : none
+            ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }
+            : q.data
+            ? q.data.summary.rejudgeGates
+              ? { tone: 'warn', value: q.data.summary.rejudgeGates, text: T.key.rejudge(`${feature} ${version}`) }
+              : { tone: 'ok', text: T.key.none(`${feature} ${version}`) }
+            : { tone: 'neutral', value: '—', text: T.key.rejudge(`${feature} ${version}`) }
+        }
+      />
+      <Tabs
+        tabs={[
+          { key: 'paths', label: adsChange.tabs.paths, count: paths.data?.counts?.total },
+          { key: 'release', label: adsChange.tabs.release },
+          { key: 'scope', label: adsChange.tabs.scope },
+        ]}
+      >
+        {(tab) => (tab === 'paths' ? <ApprovalPathsTab /> : tab === 'release' ? <ReleaseDiffTab /> : <ScopeTab />)}
+      </Tabs>
+    </div>
+  );
+}
+
+/** 영향 범위 탭 — 기존 화면 내용(분석 대상·의존 Feature·Baseline·상품·재판정 Gate·담당자) */
+function ScopeTab() {
+  const [sp, setSp] = useSearchParams();
   // 기본 대상 — 예시 Feature가 있으면 그것, 없으면 첫 Feature, 하나도 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
   const fallback = useDefaultFeature({ featureId: 'FEAT-00145', version: '5.4.2' }, !sp.get('feature'));
   const feature = sp.get('feature') ?? fallback?.featureId ?? '';
@@ -35,7 +95,6 @@ export default function ImpactScreen() {
     setSp(n, { replace: true });
   };
   const q = useApi<Impact>('impact', { params: { id: feature, ver: version }, query: { changed: changed.join(',') || undefined } }, { enabled: !!feature && !!version });
-  // 협력사로 찾기 — 협력사 납품 SW(IF-08)와 SW 마스터의 '쓰는 Feature'(FEAT-xxxxx@ver)를 잇는다
   const supplier = sp.get('supplier') ?? '';
   const deliveries = useApi<{ items: { swId: string; version: string; supplier: string }[] }>('supplierDeliveries');
   const sw = useApi<{ items: { swId: string; version: string; features: string[] }[] }>('masterSw', {}, { enabled: !!supplier });
@@ -51,21 +110,7 @@ export default function ImpactScreen() {
   };
   const d = q.data;
   return (
-    <div className="ds-screen">
-      <PageHeader
-        codes="D01-02 · D06-05 · IMPACT"
-        title={T.title}
-        lead={T.lead}
-        message={
-          none
-            ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> }
-            : q.data
-            ? q.data.summary.rejudgeGates
-              ? { tone: 'warn', value: q.data.summary.rejudgeGates, text: T.key.rejudge(`${feature} ${version}`) }
-              : { tone: 'ok', text: T.key.none(`${feature} ${version}`) }
-            : { tone: 'neutral', value: '—', text: T.key.rejudge(`${feature} ${version}`) }
-        }
-      />
+    <>
       <Panel title={T.target} id="target">
         <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 'var(--sp-3)' }}>
           <Select label={IP.supplier} value={supplier} onChange={(e) => set('supplier', e.target.value)} data-impact-supplier>
@@ -194,6 +239,6 @@ export default function ImpactScreen() {
           </>
         )}
       </AsyncView>
-    </div>
+    </>
   );
 }

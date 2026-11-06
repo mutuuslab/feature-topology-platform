@@ -63,7 +63,7 @@ test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급
   await expect(drawer).toContainText('적용 확인');
 
   // Fleet 실시간 적용 현황 — lead-01은 차량 측에서 Safe(차단) 상태
-  await page.goto('/fleet/live');
+  await page.goto('/fleet/live?tab=match'); // 차량×flag 행렬은 '정책 값 대조' 탭(ADS-UI01)
   const row = page.getByRole('row', { name: /lead-01/ });
   await expect(row.locator('.ds-fcell').first()).toHaveAttribute('data-v', 'safe');
   await expect(

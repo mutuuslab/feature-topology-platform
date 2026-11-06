@@ -1,13 +1,17 @@
 // /fleet/live — Fleet 실시간 적용 현황 (D02-03 차량 런타임 · D04-03 회신 수집 · D06-08 서명 배포)
 // /fleet/vehicles/:vin — 차량별 적용 상태 (차량 측 판단 vs 서버 판단)
 // 모든 값은 백엔드 차량 런타임·게시본에서 온다. 화면은 다시 계산하지 않는다. SSE로 배포·차단 이벤트가 오면 새로 고친다.
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import type { CustomerStateView, FleetAxisView, VehicleFeatureStateView, VehicleVerdictsView } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
 import { control as CT } from '../../copy/control';
 import { pickDefault } from '../../data/first-run';
-import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, PageHeader, Panel, Select, SummaryLine, VerdictBadge } from '../../design';
+import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, PageHeader, Panel, Select, SummaryLine, Tabs, VerdictBadge } from '../../design';
+import { fleetAxes as FA, vehicleTabs as VTAB, axesTab, verdictsTab, customerTab } from '../../copy/ads-state';
+import { customerMessage, fleetAxesMessage, vehicleStateMessage, verdictsMessage } from '../ads/state-messages';
 import { when } from '../shared';
 import { Progress, waitedMinutes, type Delivery } from './shared';
 import { VehicleRequestPanel } from './VehicleRequests';
@@ -15,6 +19,12 @@ import { SupportPanel } from '../admin/Access';
 
 const F = ko.fleet;
 const V = ko.vehicle;
+// ADS 상태 부품 — 탭을 열 때만 읽는다(화면 묶음 예산)
+const statePanels = () => import('../ads/StatePanels');
+const VehicleAxesPanel = lazy(() => statePanels().then((m) => ({ default: m.VehicleAxesPanel })));
+const VerdictsPanel = lazy(() => statePanels().then((m) => ({ default: m.VerdictsPanel })));
+const CustomerPanel = lazy(() => statePanels().then((m) => ({ default: m.CustomerPanel })));
+const FleetAxesPanel = lazy(() => statePanels().then((m) => ({ default: m.FleetAxesPanel })));
 const STREAM = ['publication.', 'vehicle.', 'kill.', 'virtual.'];
 
 interface FleetRow {
@@ -48,6 +58,10 @@ function Cell({ f }: { f: FleetRow['flags'][number] | undefined }) {
 
 export function FleetLive() {
   const nav = useNavigate();
+  const [sp, setSp] = useSearchParams();
+  const tab = sp.get('tab') === 'match' ? 'match' : 'axes';
+  const picked = sp.get('feature') ?? '';
+  const ax = useApi<FleetAxisView>('adsAxisDistribution', { query: picked ? { featureId: picked } : {} }, { enabled: tab === 'axes' });
   const fleet = useApi<{ items: FleetRow[]; gleo: string }>('fleetRuntime');
   const pubs = useApi<{ items: Pub[] }>('publications');
   const kills = useApi<{ items: { killId: string }[] }>('killRequests', { query: { status: 'ACTIVE' } });
@@ -65,8 +79,19 @@ export function FleetLive() {
       <PageHeader
         codes="D02-03 · D04-03 · D06-08 · LIVE"
         title={F.title}
-        lead={F.lead}
-        message={!fleet.data ? { tone: 'neutral', value: '—', text: F.key.drift } : drift ? { tone: 'warn', value: drift, text: F.key.drift } : unsure ? { tone: 'warn', value: unsure, text: F.key.unsure } : { tone: 'ok', text: F.key.clean }}
+        lead={tab === 'axes' ? FA.lead : F.lead}
+        message={tab === 'axes' ? fleetAxesMessage(ax.data) : !fleet.data ? { tone: 'neutral', value: '—', text: F.key.drift } : drift ? { tone: 'warn', value: drift, text: F.key.drift } : unsure ? { tone: 'warn', value: unsure, text: F.key.unsure } : { tone: 'ok', text: F.key.clean }}
+        actions={
+          tab === 'axes' && ax.data?.features?.length ? (
+            <Select label={FA.pick} value={ax.data.selected?.featureId ?? ''} onChange={(e) => setSp((x) => (x.set('feature', e.target.value), x), { replace: true })}>
+              {ax.data.features.map((f) => (
+                <option key={f.featureId} value={f.featureId}>
+                  {`${f.featureId} · ${f.name}${f.featureClass === 'ADS' ? ` · ${FA.ads}` : ''}`}
+                </option>
+              ))}
+            </Select>
+          ) : undefined
+        }
       />
       <SummaryLine
         items={[
@@ -75,6 +100,18 @@ export function FleetLive() {
           { k: F.kpi.kills, v: kills.data?.items.length ?? 0 },
         ]}
       />
+      <Tabs tabs={[{ key: 'axes', label: FA.tabs.axes }, { key: 'match', label: FA.tabs.match }]}>
+        {(t) =>
+          t === 'axes' ? (
+            <AsyncView state={asyncState(ax, !ax.data?.selected?.axes)} error={ax.error} onRetry={() => ax.refetch()} empty={{ title: FA.keyNone }}>
+              {ax.data?.selected?.axes ? (
+                <Suspense fallback={null}>
+                  <FleetAxesPanel view={ax.data} />
+                </Suspense>
+              ) : null}
+            </AsyncView>
+          ) : (
+            <>
       <Panel title={F.matrix} id="matrix">
         <AsyncView state={asyncState(fleet, rows.length === 0)} error={fleet.error} onRetry={() => fleet.refetch()}>
           <div style={{ overflow: 'auto', maxHeight: 'calc(100vh - 420px)' }}>
@@ -153,6 +190,10 @@ export function FleetLive() {
           </Panel>
         </div>
       </div>
+            </>
+          )
+        }
+      </Tabs>
     </div>
   );
 }
@@ -163,9 +204,14 @@ interface RuntimeView {
   evaluations: { flagKey: string; local: { value: boolean; decision: string; reason: string }; server: { value: boolean; decision: string; reason: string } | null; drift: boolean }[];
 }
 
+const VEHICLE_TABS = ['state', 'verdicts', 'customer', 'records', 'requests'] as const;
+type VehicleTab = (typeof VEHICLE_TABS)[number];
+
 export function VehicleRuntimeScreen() {
   const nav = useNavigate();
   const { vin: param } = useParams();
+  const [sp] = useSearchParams();
+  const tab: VehicleTab = (VEHICLE_TABS as readonly string[]).includes(sp.get('tab') ?? '') ? (sp.get('tab') as VehicleTab) : 'state';
   const vehicles = useApi<{ items: { vin: string; label: string }[] }>('vehicles');
   // 차량을 고르지 않은 메뉴 주소 — 예시 차량이 있으면 그것, 없으면 첫 차량, 차량이 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
   const fallback = pickDefault(vehicles.data?.items, (v) => v.vin === 'ego-01');
@@ -175,6 +221,9 @@ export function VehicleRuntimeScreen() {
   // 이 차량에 보냈는데 회신이 없는 게시본 — 가장 오래 기다린 시간(P4-3, '같습니다'라고 단정하지 않는다)
   const pubs = useApi<{ items: (Delivery & { createdAt: string; payload: { targets: string[] } })[] }>('publications');
   usePlatformEvents(STREAM, ['vehicleRuntime', 'vehicleStatusView', 'publications']);
+  const fs = useApi<VehicleFeatureStateView>('adsVehicleFeatureState', { params: { vin } }, { enabled: !!vin && tab === 'state' });
+  const vd = useApi<VehicleVerdictsView>('adsVehicleVerdicts', { params: { vin } }, { enabled: !!vin && tab === 'verdicts' });
+  const cs = useApi<CustomerStateView>('adsCustomerState', { params: { vin } }, { enabled: !!vin && tab === 'customer' });
   const d = q.data;
   const pending = (pubs.data?.items ?? []).filter((p) => p.payload.targets.includes(vin) && p.nodes.find((n) => n.nodeId === vin)?.reason === 'NO_REPORT');
   const missedMin = pending.length ? Math.max(...pending.map((p) => waitedMinutes(p.createdAt))) : null;
@@ -183,10 +232,14 @@ export function VehicleRuntimeScreen() {
       <PageHeader
         codes="D02-03 · VEHICLE RUNTIME"
         title={param ? V.titleFor(param) : V.title}
-        lead={V.lead}
+        lead={tab === 'state' ? axesTab.lead : tab === 'verdicts' ? verdictsTab.lead : tab === 'customer' ? customerTab.lead : V.lead}
         message={(() => {
           const n = d?.evaluations.filter((e) => e.drift).length ?? 0;
           if (none) return { tone: 'neutral', text: ko.state.noVehicleTitle };
+          // 활성 탭이 핵심 메시지를 고른다(P-10)
+          if (tab === 'state') return vehicleStateMessage(fs.data);
+          if (tab === 'verdicts') return verdictsMessage(vd.data);
+          if (tab === 'customer') return customerMessage(cs.data);
           if (!d) return { tone: 'neutral', value: '—', text: V.key.clean(vin) };
           if (n) return { tone: 'warn', value: n, text: V.key.drift(vin) };
           // 회신이 하나도 없거나 보낸 게시본의 회신을 못 받았으면 같다고 말할 수 없다 — 판단 불가
@@ -195,7 +248,7 @@ export function VehicleRuntimeScreen() {
           return { tone: 'ok', text: V.key.clean(vin) };
         })()}
         actions={
-          <Select label={V.pick} value={vin} onChange={(e) => nav(`/fleet/vehicles/${encodeURIComponent(e.target.value)}`)}>
+          <Select label={V.pick} value={vin} onChange={(e) => nav(`/fleet/vehicles/${encodeURIComponent(e.target.value)}${sp.get('tab') ? `?tab=${sp.get('tab')}` : ''}`)}>
             {(vehicles.data?.items ?? []).map((v) => (
               <option key={v.vin} value={v.vin}>
                 {v.vin} · {v.label}
@@ -204,7 +257,47 @@ export function VehicleRuntimeScreen() {
           </Select>
         }
       />
-      <AsyncView emptyHidden={none} state={none ? 'empty' : asyncState(q)} error={q.error} onRetry={() => q.refetch()} empty={{ title: ko.state.noVehicleTitle, body: ko.state.noVehicleBody }}>
+      {none ? (
+        <AsyncView emptyHidden state="empty" />
+      ) : (
+        <Tabs
+          tabs={[
+            { key: 'state', label: VTAB.state },
+            { key: 'verdicts', label: VTAB.verdicts },
+            { key: 'customer', label: VTAB.customer },
+            { key: 'records', label: VTAB.records },
+            { key: 'requests', label: VTAB.requests },
+          ]}
+        >
+          {(t) =>
+            t === 'state' ? (
+              <AsyncView state={asyncState(fs, !fs.data?.features?.length)} error={fs.isError ? axesTab.error : null} onRetry={() => fs.refetch()} empty={axesTab.empty}>
+                {fs.data?.features ? (
+                  <Suspense fallback={null}>
+                    <VehicleAxesPanel view={fs.data} />
+                  </Suspense>
+                ) : null}
+              </AsyncView>
+            ) : t === 'verdicts' ? (
+              <AsyncView state={asyncState(vd, !vd.data?.items?.length && !vd.data?.unreported?.length)} error={vd.isError ? verdictsTab.error : null} onRetry={() => vd.refetch()} empty={verdictsTab.empty}>
+                {vd.data?.items ? (
+                  <Suspense fallback={null}>
+                    <VerdictsPanel view={vd.data} />
+                  </Suspense>
+                ) : null}
+              </AsyncView>
+            ) : t === 'customer' ? (
+              <AsyncView state={asyncState(cs, !cs.data?.features?.length)} error={cs.error} onRetry={() => cs.refetch()} empty={customerTab.empty}>
+                {cs.data?.features ? (
+                  <Suspense fallback={null}>
+                    <CustomerPanel view={cs.data} />
+                  </Suspense>
+                ) : null}
+              </AsyncView>
+            ) : t === 'requests' ? (
+              <VehicleRequestPanel vin={vin} />
+            ) : (
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <div className="ds-split">
@@ -263,10 +356,13 @@ export function VehicleRuntimeScreen() {
             </Panel>
             <StatusV2Panel vin={vin} />
             <SupportPanel vin={vin} />
-            <VehicleRequestPanel vin={vin} />
           </>
         )}
       </AsyncView>
+            )
+          }
+        </Tabs>
+      )}
     </div>
   );
 }

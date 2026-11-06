@@ -787,7 +787,7 @@
       "screens": [
         {
           "path": "/config/odd",
-          "kind": "new"
+          "kind": "modify"
         }
       ],
       "keyMessage": "승인 상한을 넘는 배포 설정 3건 — 판단 불가 1건 별도",
@@ -863,7 +863,7 @@
       "screens": [
         {
           "path": "/config/compat",
-          "kind": "new"
+          "kind": "modify"
         }
       ],
       "keyMessage": "승인 조합 밖 차량 7대 — 부분 복구 3대 포함",
@@ -1025,11 +1025,11 @@
       "screens": [
         {
           "path": "/ops/incident-reports",
-          "kind": "new"
+          "kind": "modify"
         },
         {
           "path": "/ops/incident-reports/:id",
-          "kind": "new"
+          "kind": "modify"
         }
       ],
       "keyMessage": "단기 보고 기한이 7일 안인 ADS 사건 2건 — 가장 가까운 기한 10월 24일",
@@ -1106,7 +1106,7 @@
       "screens": [
         {
           "path": "/verify/safety-case",
-          "kind": "new"
+          "kind": "modify"
         }
       ],
       "keyMessage": "다음 단계로 승격할 수 없음 — 열린 중대 발견 1건",

@@ -33,7 +33,7 @@ export class RelationGuardService {
     private readonly events: EventService,
   ) {}
 
-  /** excludes 관계의 동시 활성화 — 두 Feature 모두 켜질 수 있는 배포 정책이 있으면 같은 범위 차량마다 양쪽이 실제로 켜지는지 본다 */
+  /** excludes 관계의 동시 활성화 — 두 Feature 모두 켜질 수 있는 배포 정책이 있으면 같은 범위 차량마다 양쪽이 실제로 켜지는지 본다 @req FR-DEP-009-003 */
   async exclusionCheck(dependencyId: string) {
     const d = this.topology.get(dependencyId);
     if (!d) throw new DomainError('NOT_FOUND', `${dependencyId}을(를) 찾을 수 없습니다.`);
@@ -75,7 +75,7 @@ export class RelationGuardService {
     return { ...base, applicable: true, conflict: pol.conflict, level, policies: { source: pol.source.map(brief), target: pol.target.map(brief) }, vehicles };
   }
 
-  /** 변경 영향의 차량·정책·OTA 범위 — 바뀐 Feature와 그것을 REQUIRES 하는 Feature들(영향 분석 dependents) */
+  /** 변경 영향의 차량·정책·OTA 범위 — 바뀐 Feature와 그것을 REQUIRES 하는 Feature들(영향 분석 dependents) @req FR-DEP-003-001 */
   scope(featureId: string, dependents: string[]) {
     const affected = new Set([featureId, ...dependents]);
     const pols = this.policies.all().filter((p) => affected.has(p.featureId) && p.status !== 'RETIRED' && p.status !== 'REJECTED');

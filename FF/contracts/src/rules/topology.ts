@@ -44,7 +44,7 @@ export type NewDependencyIssue =
   | 'CONFLICTING_RELATION'
   | 'RELATION_CYCLE';
 
-/** 등록 전 구조 검증 — 존재·방향·자기참조·중복·범위·REQUIRES 순환·EXCLUDES 대칭, 관계 유형별(대칭·반대 짝·함께/배제 충돌·묶음 순환, rules/relation-types) */
+/** 등록 전 구조 검증 — 존재·방향·자기참조·중복·범위·REQUIRES 순환·EXCLUDES 대칭, 관계 유형별(대칭·반대 짝·함께/배제 충돌·묶음 순환, rules/relation-types) @req FR-DEP-001-001 FR-DEP-009-002 */
 export function validateNewDependency(
   existing: DependencyRow[],
   d: Pick<DependencyRow, 'type' | 'sourceFeatureId' | 'sourceVersion' | 'targetFeatureId' | 'targetVersion'>,

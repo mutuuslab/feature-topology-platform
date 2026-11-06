@@ -99,7 +99,7 @@ export class TopologyService {
     }
   }
 
-  /** 관계 그래프 (Cytoscape용) — featureId가 있으면 그 Feature 주변 depth 단계까지. types·lifecycle이 있으면 그 관계 유형·양 끝 Lifecycle만(FR-DEP-004-002) */
+  /** 관계 그래프 (Cytoscape용) — featureId가 있으면 그 Feature 주변 depth 단계까지. types·lifecycle이 있으면 그 관계 유형·양 끝 Lifecycle만 @req FR-DEP-004-002 */
   graph(featureId?: string, depth = 2, filter: { types?: string[]; lifecycle?: string[] } = {}) {
     const lifeOk = (id: string, ver: string | null) => {
       if (!filter.lifecycle?.length) return true;

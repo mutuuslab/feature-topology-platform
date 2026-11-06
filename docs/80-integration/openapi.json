@@ -4417,7 +4417,15 @@
                     "type": "string",
                     "enum": [
                       "REQUIRES",
-                      "EXCLUDES"
+                      "EXCLUDES",
+                      "PARENT_OF",
+                      "CHILD_OF",
+                      "COMPOSED_OF",
+                      "OVERRIDES",
+                      "FALLBACK_TO",
+                      "DEGRADES_TO",
+                      "REPLACES",
+                      "DUPLICATES"
                     ]
                   },
                   "sourceFeatureId": {
@@ -4474,7 +4482,7 @@
     },
     "/api/topology/graph": {
       "get": {
-        "summary": "관계 그래프",
+        "summary": "관계 그래프 — 관계 유형(쉼표)·Lifecycle로 표시 범위를 좁힌다",
         "tags": [
           "D01-02"
         ],
@@ -4490,6 +4498,22 @@
           },
           {
             "name": "depth",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "types",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lifecycle",
             "in": "query",
             "required": false,
             "schema": {
@@ -22813,6 +22837,463 @@
         ],
         "operationId": "collectionPolicies",
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/relation-types": {
+      "get": {
+        "summary": "Feature 관계 유형 값 목록(10종) — 대칭·반대 짝·순환 묶음·선행 단계",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "relationTypes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/dependencies/{id}/exclusion-check": {
+      "get": {
+        "summary": "excludes 관계 동시 활성화 검사 — 두 Feature의 켜진 배포 정책·함께 켜지는 차량",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "exclusionCheck",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trace-links": {
+      "get": {
+        "summary": "Feature 추적 연결 목록 — 종류·요소 유형·출처·상태(해제 이력 포함)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "traceLinks",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "elementType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sourceSystem",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "추적 연결 등록 — 요구·설계 요소(HW·SW)·인터페이스(API·Signal·DTC·Event)·Test Case(필수 여부)·OTA 패키지, 출처 존재 확인",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "createTraceLink",
+        "description": "허용 역할: Feature 작성자, 구현 담당자, Gate 판정자, Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "REQUIREMENT",
+                      "ARCHITECTURE",
+                      "INTERFACE",
+                      "TEST_CASE",
+                      "OTA"
+                    ]
+                  },
+                  "elementId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]*$"
+                  },
+                  "elementType": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 20
+                  },
+                  "elementName": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "default": null
+                  },
+                  "elementVersion": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 40,
+                    "default": null
+                  },
+                  "sourceSystem": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 20
+                  },
+                  "required": {
+                    "type": "boolean",
+                    "nullable": true,
+                    "default": null
+                  }
+                },
+                "required": [
+                  "featureId",
+                  "kind",
+                  "elementId",
+                  "elementType",
+                  "sourceSystem"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trace-links/{id}/unlink": {
+      "post": {
+        "summary": "추적 연결 해제 — 사유, 연결은 해제 이력으로 남는다",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "unlinkTraceLink",
+        "description": "허용 역할: Feature 작성자, 구현 담당자, Gate 판정자, Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trace-links/{id}/evidence": {
+      "post": {
+        "summary": "Test Evidence 등록 — 연결된 Test Case에 Evidence 식별자·실행 일시·결과·실행 환경(추가만)",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "createTestEvidence",
+        "description": "허용 역할: Gate 판정자, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "evidenceId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]*$"
+                  },
+                  "executedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "result": {
+                    "type": "string",
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      "BLOCKED"
+                    ]
+                  },
+                  "environment": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "evidenceId",
+                  "executedAt",
+                  "result",
+                  "environment"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trace-sources/lookup": {
+      "get": {
+        "summary": "출처 식별자 확인 — 등록 전 이름·버전·유형",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "traceSourceLookup",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "elementId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "elementVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/trace-links": {
+      "get": {
+        "summary": "Feature 추적 연결 요약 — 종류별 목록·유형·출처 묶음, Test Case별 Evidence 여부·최종 결과, 요구·Test 커버리지",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "featureTrace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/trace-coverage": {
+      "get": {
+        "summary": "Feature별 요구·Test 커버리지 — 요구 미연결·필수 Test Evidence 미등록 Feature 식별",
+        "tags": [
+          "D01-02"
+        ],
+        "operationId": "traceCoverage",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "성공"

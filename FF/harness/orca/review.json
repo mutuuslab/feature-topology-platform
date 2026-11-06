@@ -679,7 +679,7 @@
       "verdict": "부분",
       "current": "Feature 변경 영향(의존 Feature·Baseline·상품·재판정 Gate·담당자) 분석, JIRA CR 연결·승인 연동, 차량 보고 구성과 기대 구성을 비교하는 Attestation이 있다.",
       "evidence": [
-        "backend/src/domains/d01-policy/topology/topology.service.ts:157",
+        "backend/src/domains/d01-policy/topology/topology.service.ts:165",
         "contracts/src/rules/ext-sync.ts:185",
         "contracts/src/rules/attestation.ts:1"
       ],

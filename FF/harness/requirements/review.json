@@ -523,9 +523,9 @@
       "gap": "L0~L5 경로 조회"
     },
     "FR-DEP-001-001": {
-      "verdict": "부분",
-      "evidence": "`POST /api/dependencies` REQUIRES·EXCLUDES (`topology/topology.service.ts:47-90`)",
-      "gap": "관계 유형 2종뿐(FR-DEP-009-002 참조)"
+      "verdict": "구현",
+      "evidence": "`POST /api/dependencies` 관계 유형 10종(`C/enums.ts` RelationType, 뜻·검증 속성 `C/rules/relation-types.ts:25-36`)·유형별 등록 검증(`C/rules/topology.ts:48-91`); 시험 `T/d01/trace-links.spec.ts:30`, `C/rules/relation-types.test.ts`",
+      "gap": "—"
     },
     "FR-DEP-001-002": {
       "verdict": "구현",
@@ -563,9 +563,9 @@
       "gap": "—"
     },
     "FR-DEP-002-004": {
-      "verdict": "부분",
-      "evidence": "정책 배포 → 서명 게시본(D06-08)",
-      "gap": "SW OTA 패키지와 Feature의 명시 매핑"
+      "verdict": "구현",
+      "evidence": "OTA 패키지(SW 패키지 저장소) ↔ Feature 명시 연결 `POST /api/trace-links` kind OTA — 출처 존재 확인(`adapters/if-mocks/trace-sources.ts`), 출시 담당·구현 담당 역할(`B/d01-policy/registry/trace-link.service.ts:84-141`); 시험 `T/d01/trace-links.spec.ts:111`",
+      "gap": "실제 OTA 패키지 저장소 연결은 외부 자원(모의는 SW 마스터 패키지)"
     },
     "FR-DEP-002-005": {
       "verdict": "부분",
@@ -573,9 +573,9 @@
       "gap": "매핑 해제 기능"
     },
     "FR-DEP-003-001": {
-      "verdict": "부분",
-      "evidence": "`GET /api/impact/:id/:ver` 의존자(5단계)·Baseline·상품·재판정 Gate·담당자 (`topology.service.ts:157-205`, `topology-catalog.spec.ts` '변경 영향')",
-      "gap": "차량·정책·OTA 영향 미포함"
+      "verdict": "구현",
+      "evidence": "`GET /api/impact/:id/:ver`에 차량(켜진 정책 범위)·정책(직접·의존 경유)·OTA 패키지(연결) 추가(`B/d01-policy/topology/relation-guard.service.ts:79-97`, `topology/topology.controller.ts`); 패키지는 기존 상품·Baseline; 시험 `T/d01/trace-links.spec.ts:67`",
+      "gap": "—"
     },
     "FR-DEP-003-002": {
       "verdict": "구현",
@@ -588,14 +588,14 @@
       "gap": "—"
     },
     "FR-DEP-004-002": {
-      "verdict": "부분",
-      "evidence": "깊이 1~3, 관계 목록 유형·판정 필터 (`frontend/src/screens/master/Topology.tsx:31-36`)",
-      "gap": "그래프 자체의 관계 유형·Lifecycle 필터"
+      "verdict": "구현",
+      "evidence": "그래프 관계 유형·Lifecycle 필터 — API `GET /api/topology/graph?types=&lifecycle=`(`topology/topology.service.ts:102-115`), 화면 유형 칩·Lifecycle 선택(`frontend/src/screens/master/topology/model.ts:348`); 시험 `T/d01/trace-links.spec.ts:30`, `frontend/src/__tests__/traceLinks.test.tsx`, `e2e/tests/trace-links.spec.ts`",
+      "gap": "—"
     },
     "FR-DEP-005-001": {
-      "verdict": "부분",
-      "evidence": "Feature 속성 requirementIds",
-      "gap": "요구 유형·출처 시스템·등록자 필드"
+      "verdict": "구현",
+      "evidence": "요구 연결 등록 — Feature ID·요구 식별자·유형(시스템·SW)·출처 시스템(codeBeamer·ALM)·등록자(요청 계정) `POST /api/trace-links`(`B/d01-policy/registry/trace-link.service.ts:84-141`, `C/schemas/trace-link.ts`); 시험 `T/d01/trace-links.spec.ts:79`",
+      "gap": "—"
     },
     "FR-DEP-005-002": {
       "verdict": "미구현",
@@ -603,98 +603,98 @@
       "gap": "등록 시 ALM 조회 검증"
     },
     "FR-DEP-005-003": {
-      "verdict": "부분",
-      "evidence": "`/api/integrations/alm/requirements`, `/api/trace/:id/:ver`",
-      "gap": "유형·출처별 조회"
+      "verdict": "구현",
+      "evidence": "`GET /api/trace-links?featureId&kind=REQUIREMENT&elementType&sourceSystem`·`GET /api/features/:id/trace-links` 유형·출처별 묶음(`B/d01-policy/registry/trace-link.service.ts:65-74,196-212`, `C/rules/trace-link.ts:69`); 시험 `T/d01/trace-links.spec.ts:139`",
+      "gap": "—"
     },
     "FR-DEP-005-004": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "커버리지 비율"
+      "verdict": "구현",
+      "evidence": "요구 커버리지 = 연결 요구 ÷ ALM 전체 요구(Feature 요구 + SW 요구, IF-01 모의) `C/rules/trace-link.ts:48-66`, Feature 요약·`GET /api/trace-coverage`; 시험 `T/d01/trace-links.spec.ts:163`, `C/rules/trace-link.test.ts`",
+      "gap": "분모의 ALM 실제 조회는 ALM 연계(80-50) 몫 — 지금은 데이터셋 요구 목록"
     },
     "FR-DEP-005-005": {
-      "verdict": "부분",
-      "evidence": "Baseline 체크리스트·전이 막힘(INPUT_MISSING)으로 개별 확인",
-      "gap": "미연결 Feature 목록 조회"
+      "verdict": "구현",
+      "evidence": "`GET /api/trace-coverage?filter=noRequirement` 요구 미연결 Feature 목록(`B/d01-policy/registry/trace-link.service.ts:215-245`), 화면 `/trace/coverage`; 시험 `T/d01/trace-links.spec.ts:174`",
+      "gap": "—"
     },
     "FR-DEP-005-006": {
-      "verdict": "부분",
-      "evidence": "PROPOSED 초안 PATCH로만",
-      "gap": "해제 기능·이력"
+      "verdict": "구현",
+      "evidence": "`POST /api/trace-links/:id/unlink` 사유·해제자·시각을 남기고 상태만 UNLINKED(이력 조회 status=ALL)(`B/d01-policy/registry/trace-link.service.ts:144-160`); 시험 `T/d01/trace-links.spec.ts:125`",
+      "gap": "—"
     },
     "FR-DEP-006-001": {
-      "verdict": "부분",
-      "evidence": "functions·swIds·swVersions·ecuPnos 속성",
-      "gap": "유형(HW/SW)·출처·등록자 구조"
+      "verdict": "구현",
+      "evidence": "설계 요소 연결 — 식별자·유형(HW·SW)·명칭·버전·출처(PLM)·등록자 `POST /api/trace-links` kind ARCHITECTURE(`B/d01-policy/registry/trace-link.service.ts:84-141`); 시험 `T/d01/trace-links.spec.ts:85`",
+      "gap": "—"
     },
     "FR-DEP-006-002": {
-      "verdict": "부분",
-      "evidence": "검증기 D06-02가 SW·ECU 마스터 존재 확인(`validators.ts:146` trace swFound/ecuActive) — 정책 검증 때만",
-      "gap": "연결 등록 시점 검증"
+      "verdict": "구현",
+      "evidence": "등록 시점에 기준정보(IF-02 모의: SW·ECU 마스터)에서 식별자·버전 확인, 없으면 422·출처 버전 목록, 호출 기록(`adapters/if-mocks/trace-sources.ts`, `B/d01-policy/registry/trace-link.service.ts:96-111`); 시험 `T/d01/trace-links.spec.ts:85`",
+      "gap": "실제 PLM 연결은 외부 자원(모의는 플랫폼 SW·ECU 마스터)"
     },
     "FR-DEP-006-003": {
-      "verdict": "부분",
-      "evidence": "`/api/master/structure`, `/api/trace/:id/:ver`",
-      "gap": "유형·출처별"
+      "verdict": "구현",
+      "evidence": "`GET /api/trace-links?kind=ARCHITECTURE&elementType&sourceSystem`, Feature 요약 묶음(`B/d01-policy/registry/trace-link.service.ts:65-74,196-212`); 시험 `T/d01/trace-links.spec.ts:139`",
+      "gap": "—"
     },
     "FR-DEP-006-004": {
-      "verdict": "부분",
-      "evidence": "초안 수정으로만",
+      "verdict": "구현",
+      "evidence": "`POST /api/trace-links/:id/unlink`(`B/d01-policy/registry/trace-link.service.ts:144-160`); 시험 `T/d01/trace-links.spec.ts:125`",
       "gap": "—"
     },
     "FR-DEP-007-001": {
-      "verdict": "미구현",
-      "evidence": "(Signal·DTC는 Control Point 유형으로만 존재)",
-      "gap": "인터페이스 요소(API·Signal·DTC·Event) 모델"
-    },
-    "FR-DEP-007-002": {
-      "verdict": "미구현",
-      "evidence": "—",
+      "verdict": "구현",
+      "evidence": "인터페이스 요소 연결 — 식별자·유형(API·Signal·DTC·Event)·버전·출처(인터페이스 정의 도구)·등록자(`C/schemas/trace-link.ts`, `B/d01-policy/registry/trace-link.service.ts:84-141`); 시험 `T/d01/trace-links.spec.ts:95`",
       "gap": "—"
     },
+    "FR-DEP-007-002": {
+      "verdict": "구현",
+      "evidence": "등록 시점에 인터페이스 정의 도구(모의, SW 실행 단위·ECU에서 결정적 카탈로그)에서 존재·유형·버전 확인, 다르면 422(`adapters/if-mocks/trace-sources.ts`); 시험 `T/d01/trace-links.spec.ts:95`",
+      "gap": "실제 인터페이스 정의 도구 연결은 외부 자원"
+    },
     "FR-DEP-007-003": {
-      "verdict": "미구현",
-      "evidence": "—",
+      "verdict": "구현",
+      "evidence": "`GET /api/trace-links?kind=INTERFACE&elementType&sourceSystem`, Feature 요약 묶음; 시험 `T/d01/trace-links.spec.ts:139`",
       "gap": "—"
     },
     "FR-DEP-007-004": {
-      "verdict": "미구현",
-      "evidence": "—",
+      "verdict": "구현",
+      "evidence": "`POST /api/trace-links/:id/unlink`, 해제 뒤 재연결 가능(`B/d01-policy/registry/trace-link.service.ts:144-160`); 시험 `T/d01/trace-links.spec.ts:125`",
       "gap": "—"
     },
     "FR-DEP-008-001": {
-      "verdict": "부분",
-      "evidence": "가상검증 시나리오가 Feature에 고정 정의 (`C/rules/virtual.ts:38-68`)",
-      "gap": "Test Case 등록 API(필수 여부·출처)"
+      "verdict": "구현",
+      "evidence": "Test Case 연결 — 식별자·검증 유형·필수 여부·출처(TMS)·등록자, 필수 여부 없으면 400(`C/schemas/trace-link.ts`, `B/d01-policy/registry/trace-link.service.ts:84-141`); 시험 `T/d01/trace-links.spec.ts:102`",
+      "gap": "—"
     },
     "FR-DEP-008-002": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "TMS(IF-09) 조회 검증"
+      "verdict": "구현",
+      "evidence": "등록 시 TMS(IF-09 모의)에서 Test Case 존재·유형 확인, 호출 기록(`adapters/if-mocks/trace-sources.ts`); 시험 `T/d01/trace-links.spec.ts:102`",
+      "gap": "실제 TMS 조회는 외부 자원(모의는 Feature별 결정적 카탈로그)"
     },
     "FR-DEP-008-003": {
-      "verdict": "부분",
-      "evidence": "가상검증 실행 기록(VV-NNNNN, 결과·시각·실행기)·TMS 제출, Gate Evidence 원장 `/api/evidence`",
-      "gap": "일반 Test Evidence 등록"
+      "verdict": "구현",
+      "evidence": "`POST /api/trace-links/:id/evidence` Evidence 식별자·실행 일시·결과·실행 환경·등록자, 추가만(트리거)·미래 일시·중복·해제 연결 거부(`B/d01-policy/registry/trace-link.service.ts:162-194`, 마이그레이션 171); 시험 `T/d01/trace-links.spec.ts:152`",
+      "gap": "—"
     },
     "FR-DEP-008-004": {
-      "verdict": "부분",
-      "evidence": "`/api/evidence`, `/api/trace`",
-      "gap": "Test Case별 Evidence 여부·최종 결과"
+      "verdict": "구현",
+      "evidence": "`GET /api/features/:id/trace-links` Test Case별 Evidence 여부·건수·최종 실행 결과(`C/rules/trace-link.ts:35`, `B/d01-policy/registry/trace-link.service.ts:196-212`), 화면 '추적 연결' 탭; 시험 `T/d01/trace-links.spec.ts:163`",
+      "gap": "—"
     },
     "FR-DEP-008-005": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "필수 TC 대비 Evidence 비율"
+      "verdict": "구현",
+      "evidence": "Test 커버리지 = Evidence 있는 필수 TC ÷ 필수 TC(`C/rules/trace-link.ts:48-66`); 시험 `T/d01/trace-links.spec.ts:163`, `C/rules/trace-link.test.ts`",
+      "gap": "—"
     },
     "FR-DEP-008-006": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "목록 조회"
+      "verdict": "구현",
+      "evidence": "`GET /api/trace-coverage?filter=missingEvidence` 필수 Evidence 미등록 Feature 목록(`B/d01-policy/registry/trace-link.service.ts:215-245`), 화면 `/trace/coverage`; 시험 `T/d01/trace-links.spec.ts:174`",
+      "gap": "—"
     },
     "FR-DEP-008-007": {
-      "verdict": "미구현",
-      "evidence": "—",
+      "verdict": "구현",
+      "evidence": "`POST /api/trace-links/:id/unlink` — 해제된 TC는 커버리지에서 빠지고 Evidence를 받지 않는다(`B/d01-policy/registry/trace-link.service.ts:144-160`); 시험 `T/d01/trace-links.spec.ts:188`",
       "gap": "—"
     },
     "FR-DEP-009-001": {
@@ -703,14 +703,14 @@
       "gap": "—"
     },
     "FR-DEP-009-002": {
-      "verdict": "부분",
-      "evidence": "REQUIRES·EXCLUDES 2종",
-      "gap": "parent_of·child_of·composed_of·overrides·fallback_to·degrades_to·replaces·duplicates 8종 없음"
+      "verdict": "구현",
+      "evidence": "관계 유형 값 목록 10종(parent_of·child_of·composed_of·requires·excludes·overrides·fallback_to·degrades_to·replaces·duplicates) `C/rules/relation-types.ts`, `GET /api/relation-types`; 대칭·반대 짝·묶음 순환·함께/배제 충돌 검증; 시험 `T/d01/trace-links.spec.ts:25`, `C/rules/relation-types.test.ts`",
+      "gap": "—"
     },
     "FR-DEP-009-003": {
-      "verdict": "부분",
-      "evidence": "같은 상품 구성 시 EXCLUDES_CONFLICT FAIL (`C/rules/catalog.ts:85-86`)",
-      "gap": "등록 시 동시 활성화 대상 경고, 정책·차량 단위 검사"
+      "verdict": "구현",
+      "evidence": "excludes 등록 때 동시 활성화 경고 — 정책 단위(두 Feature 모두 배포·켜짐) `C/rules/relation-types.ts:88`, 차량 단위(같은 범위 차량마다 서버 기준 활성화 판단) `B/d01-policy/topology/relation-guard.service.ts:37-76`, 감사·이벤트, `GET /api/dependencies/:id/exclusion-check`; 시험 `T/d01/trace-links.spec.ts:40`",
+      "gap": "경고만(등록은 막지 않음) — 같은 상품 구성은 Catalog EXCLUDES_CONFLICT가 막는다"
     },
     "FR-DEP-009-004": {
       "verdict": "구현",

@@ -43,6 +43,7 @@ const ratio = (n: number, d: number) => (d ? Math.round((n / d) * 10000) / 10000
 /**
  * Feature 하나의 커버리지 — 해제한 연결은 세지 않는다.
  * 요구: 출처(ALM)의 전체 요구 중 연결된 것의 비율(FR-DEP-005-004). Test: 필수 Test Case 중 Evidence가 등록된 것의 비율(FR-DEP-008-005).
+ * @req FR-DEP-005-004 FR-DEP-008-005
  */
 export function featureTraceCoverage(links: TraceLinkRow[], evidence: TestEvidenceRow[], sourceRequirements: string[]) {
   const active = links.filter((l) => l.status === 'ACTIVE');

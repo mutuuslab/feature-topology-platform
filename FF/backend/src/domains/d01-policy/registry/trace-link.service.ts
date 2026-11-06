@@ -80,6 +80,7 @@ export class TraceLinkService implements OnApplicationBootstrap {
     return { kind: k, elementId, found: !!r.element, element: r.element, versions: r.versions, ifId: this.sources.ifOf(k) };
   }
 
+  /** 연결 등록 — 종류별 역할·Feature 존재·중복·출처 존재 확인(요구 제외)·감사·이벤트 @req FR-DEP-002-004 FR-DEP-005-001 FR-DEP-006-001 FR-DEP-006-002 FR-DEP-007-001 FR-DEP-007-002 FR-DEP-008-001 FR-DEP-008-002 */
   create(actor: Actor, body: CreateTraceLinkBody): TraceLinkRow {
     const label = `${body.featureId} ${body.kind} ${body.elementId}`;
     const reject = (code: 'NOT_FOUND' | 'IMMUTABLE' | 'GUARD_FAILED' | 'CONFLICT', msg: string, details?: unknown): never => {
@@ -139,6 +140,7 @@ export class TraceLinkService implements OnApplicationBootstrap {
     });
   }
 
+  /** 연결 해제 — 사유·해제자·시각을 남기고 상태만 바꾼다 @req FR-DEP-005-006 FR-DEP-006-004 FR-DEP-007-004 FR-DEP-008-007 */
   unlink(actor: Actor, linkId: string, body: UnlinkTraceLinkBody): TraceLinkRow {
     const link = this.repo.get(linkId);
     if (!link) throw new DomainError('NOT_FOUND', `${linkId}을(를) 찾을 수 없습니다.`);
@@ -156,6 +158,7 @@ export class TraceLinkService implements OnApplicationBootstrap {
     });
   }
 
+  /** Test Evidence 등록 — 연결된 Test Case에만, 미래 실행 일시·같은 Evidence 거부, 추가만 @req FR-DEP-008-003 */
   addEvidence(actor: Actor, linkId: string, body: CreateTestEvidenceBody): TestEvidenceRow {
     const link = this.repo.get(linkId);
     if (!link) throw new DomainError('NOT_FOUND', `${linkId}을(를) 찾을 수 없습니다.`);
@@ -189,7 +192,7 @@ export class TraceLinkService implements OnApplicationBootstrap {
     });
   }
 
-  /** Feature 하나의 추적 연결 요약 — 연결(해제 이력 포함)·묶음·Test Case별 Evidence 상태·요구 목록·커버리지 */
+  /** Feature 하나의 추적 연결 요약 — 연결(해제 이력 포함)·묶음·Test Case별 Evidence 상태·요구 목록·커버리지 @req FR-DEP-005-003 FR-DEP-006-003 FR-DEP-007-003 FR-DEP-008-004 */
   featureSummary(featureId: string) {
     const f = this.sources.latest(featureId);
     if (!f) throw new DomainError('NOT_FOUND', `${featureId}을(를) 찾을 수 없습니다.`);
@@ -208,7 +211,7 @@ export class TraceLinkService implements OnApplicationBootstrap {
     };
   }
 
-  /** Feature별 커버리지 — filter=noRequirement(요구 미연결, FR-DEP-005-005)·missingEvidence(필수 Test Evidence 미등록, FR-DEP-008-006) */
+  /** Feature별 커버리지 — filter=noRequirement(요구 미연결)·missingEvidence(필수 Test Evidence 미등록) @req FR-DEP-005-005 FR-DEP-008-006 */
   coverage(filter?: string) {
     if (filter && filter !== 'noRequirement' && filter !== 'missingEvidence') throw new DomainError('VALIDATION', 'filter는 noRequirement 또는 missingEvidence입니다.');
     const links = this.repo.list();

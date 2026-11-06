@@ -1,0 +1,20 @@
+{
+  "note": "모션 허용 목록(모션 체계 v1, tools/motion-rules.ts). 무한 반복은 여기 이름·사유가 있어야 한다. 반복은 html[data-motion=calm](움직임 줄이기·실시간 모션 끔·탭 숨김)에서 모두 멈춘다(styles.css 모션 계약). 레거시 화면(components·scene·pages·styles.css)의 반복은 래칫 motionLoopsLegacy로 줄여 나간다.",
+  "loops": {
+    "ds-shimmer": "로딩 골격 — 데이터가 오기 전에만 보인다",
+    "lg-blue-flow": "로그인 절차 모션(장식, aria-hidden) — 로그인 화면 전용",
+    "lg-blue-node": "로그인 절차 모션",
+    "lg-flow": "로그인 절차 모션",
+    "lg-node": "로그인 절차 모션",
+    "lg-spin": "로그인 절차 모션",
+    "lg-float": "로그인 절차 모션",
+    "lg-blink": "로그인 실시간 표식",
+    "dh-flag": "홈 히어로(장식, 핵심 메시지 아래 낮은 상자) — Feature Flag 흐름 점 하나",
+    "dh-flow": "홈 히어로 절차 흐름선",
+    "dh-node": "홈 히어로 Gate 노드",
+    "ds-live": "실시간 수신 표식 점 — 데이터가 실제로 들어오는 화면에서만"
+  },
+  "oneShots": {
+    "lg-rule": "로그인 첫 등장 선(0.9s) — 로그인 화면 전용 연출"
+  }
+}

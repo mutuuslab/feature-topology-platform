@@ -51,6 +51,10 @@ export class StagedRolloutService {
     if (!j.ok) {
       const msg = j.blockers.map((b) => b.message).join('; ');
       this.audit.failed(actor, 'ROLLOUT_STAGE', policyId, msg, 'D01-08');
+      // 중단 기준 충족(열린 이상 징후·진행 중 차단) = 배포 중단 필요 — 판정 이벤트로 Owner·배포 요청자에게 알린다(FR-DSV-003-005)
+      const stop = j.blockers.filter((b) => b.code === 'STOP_CRITERIA');
+      if (stop.length)
+        this.db.tx(() => this.events.publish('rollout.halt-required', policyId, { policyId, flagKey: p.flagKey, featureId: p.featureId, current, to: body.basisPoints, reasons: stop.map((b) => b.message), openAnomalies, activeKills, requestedBy: actor.id }, { componentId: 'D01-08', correlationId: actor.correlationId }));
       throw new DomainError(j.blockers.some((b) => b.code === 'SAME_AS_DEPLOYER') ? 'SEPARATION_OF_DUTY' : 'GUARD_FAILED', `단계를 넓힐 수 없습니다: ${msg}`, { judgement: j });
     }
     return this.db.tx(() => {

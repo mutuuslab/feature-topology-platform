@@ -110,14 +110,15 @@ describe('수신자 지정 알림 (D04-04)', () => {
   it('메일은 보내지 않는다(D-RD-7) — 알림을 만들어도 메일 기록·호출이 없고, 메일 설정·발송 기록 API와 표가 없다', async () => {
     const db = b.get<Db>(DB);
     const tables = () => db.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'notification%' ORDER BY name").map((r) => r.name);
-    expect(tables()).toEqual(['notification', 'notification_exclude', 'notification_read', 'notification_recipient']);
+    // notification_rule_recipient — 수신자 규칙의 추가 수신자(개인·역할·팀, 화면 알림 대상)일 뿐 메일 주소·발송 기록이 아니다
+    expect(tables()).toEqual(['notification', 'notification_exclude', 'notification_read', 'notification_recipient', 'notification_rule_recipient']);
     const before = (await inbox(OWNER)).items.length;
     // 새 알림 하나(배포 차단) — 화면 알림은 생기고, 메일 쪽 흔적(표·기록·주소)은 없다
     await http().post(`/api/policies/${policyId}/validate`).set(OWNER).send({}).expect(200);
     const after = await inbox(OWNER);
     expect(after.items.length).toBeGreaterThan(before);
     expect(JSON.stringify(after.items)).not.toMatch(/e-?mail|@ff-demo/i);
-    expect(tables()).toEqual(['notification', 'notification_exclude', 'notification_read', 'notification_recipient']);
+    expect(tables()).toEqual(['notification', 'notification_exclude', 'notification_read', 'notification_recipient', 'notification_rule_recipient']);
     await http().get('/api/notifications/emails').set(VIEWER).expect(404);
     await http().get('/api/notifications/preferences').set(OWNER).expect(404);
     await http().post('/api/notifications/preferences').set(OWNER).send({ email: { DEPLOY: true } }).expect(404);

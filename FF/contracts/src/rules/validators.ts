@@ -17,7 +17,8 @@ export interface ValidatorResult {
   result: ValidatorResultState;
   summary: string;
   /** INFO는 알림(대체 사실·통지 대상) — 기록·표시하되 판정에는 넣지 않는다 */
-  findings: { result: Exclude<ValidatorResultState, 'PASS'> | 'INFO'; message: string }[];
+  /** code CONFLICT — 정책 규칙 충돌(모순 조건·flagKey 중복). 충돌 탐지 알림(FR-CON-001-003)이 고른다 */
+  findings: { result: Exclude<ValidatorResultState, 'PASS'> | 'INFO'; message: string; code?: 'CONFLICT' }[];
 }
 
 export interface ValidationInput {
@@ -75,11 +76,11 @@ export function validatePolicy(i: ValidationInput): ValidatorResult {
     for (let a = 0; a < ins.length; a++)
       for (let b = a + 1; b < ins.length; b++)
         if (ins[a].contextName === ins[b].contextName && !ins[a].values.some((v) => ins[b].values.includes(v)))
-          f.push({ result: 'FAIL', message: `${s.name}: ${ins[a].contextName} 조건이 서로 모순 — 어떤 차량도 만족할 수 없습니다` });
+          f.push({ result: 'FAIL', code: 'CONFLICT', message: `${s.name}: ${ins[a].contextName} 조건이 서로 모순 — 어떤 차량도 만족할 수 없습니다` });
   }
   for (const o of i.activePolicies.filter((x) => x.controlPoint === p.controlPoint && x.policyId !== p.policyId))
     f.push({ result: 'INFO', message: `같은 제어점의 ${o.status} 정책 ${o.policyId} r${o.revision}을(를) 대체합니다` });
-  for (const o of i.flagKeyClash) f.push({ result: 'FAIL', message: `flagKey ${p.flagKey}를 ${o.featureId}의 ${o.policyId}가 이미 씁니다` });
+  for (const o of i.flagKeyClash) f.push({ result: 'FAIL', code: 'CONFLICT', message: `flagKey ${p.flagKey}를 ${o.featureId}의 ${o.policyId}가 이미 씁니다` });
   return done('D06-01', '정책 검증', f, '형식·제어점·충돌 이상 없음');
 }
 

@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { FF } from './lib.ts';
 
 const require = createRequire(import.meta.url);
-const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
+const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery, INTEGRATION_ERROR_SYSTEMS } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
 
 /** 비어 있는 포트 — OS가 고른다. 고정 포트(예전 9199)는 여러 작업 폴더의 e2e:static이 함께 돌면 다른 폴더의 백엔드(다른 커밋·다른 데이터)에서 스냅샷을 받았다 */
 async function freePort(): Promise<number> {
@@ -198,6 +198,11 @@ async function main() {
   await save('featureFlags');
   await save('listFlagSources');
   await save('audit', {}, { limit: 500 });
+  // 기능명세서 공백 보강(B1·B4·B6) — 수신자 규칙, 정책 운영 현황(감사 집계), 연계·과금·서명·파이프라인 오류 이력(시스템별)
+  await save('notificationRules');
+  await save('auditPolicyStats');
+  await save('integrationErrors');
+  for (const system of INTEGRATION_ERROR_SYSTEMS) await save('integrationErrors', {}, { system });
 
   // 업무 절차 — 개인 조회(내 차례·요약)라 데모 기본 역할(Feature 설계)로 찍는다. 정적 데모는 읽기 전용.
   const PROC = { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' };
@@ -228,6 +233,8 @@ async function main() {
     await save('audit', {}, { target: `${f.featureId}@${f.version}`, limit: 100 });
     await save('impact', p);
   }
+  // Feature 상세 '평가 운영' 탭(B5) — Feature마다 기본 기간(14일)
+  for (const id of new Set((all.items as { featureId: string }[]).map((f) => f.featureId))) await save('featureEvaluations', { id });
   // Feature 요약 서랍(FeaturePeek) — Version 없이 열면 최신 Version을 이 응답에서 고른다
   for (const id of new Set((all.items as { featureId: string }[]).map((f) => f.featureId))) await save('featureVersions', { id });
 

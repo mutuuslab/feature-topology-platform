@@ -37,14 +37,15 @@ export function AuditChange({ before, after }: { before: unknown; after: unknown
   );
 }
 
-/** 감사 표 — 역할은 한글 라벨(원문 enum은 툴팁), 결과는 예외만 배지 */
-export function AuditLog({ rows }: { rows: AuditEntry[] }) {
+/** 감사 표 — 역할은 한글 라벨(원문 enum은 툴팁), 결과는 예외만 배지. onOpen이 있으면 행을 열어 변경 전후 값을 본다(B4) */
+export function AuditLog({ rows, onOpen }: { rows: AuditEntry[]; onOpen?: (r: AuditEntry) => void }) {
   const C = ko.audit.col;
   return (
     <DataTable
       caption={ko.audit.title}
       rows={rows}
       rowKey={(r) => String(r.id)}
+      onOpen={onOpen}
       columns={[
         { key: 'at', header: C.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span>, sort: (r) => r.at },
         // 행위자는 이름(툴팁에 소속·역할) — 계정 ID(usr-*)를 그대로 보이지 않는다(P1-5·P2-10)

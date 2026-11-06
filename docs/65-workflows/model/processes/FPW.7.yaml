@@ -292,4 +292,4 @@ process:
         - 중단 기준에 걸리면 확대를 멈추고 이상 징후 대응(FPW.8)으로 넘긴다
       checks:
         - 단계마다 관측 결과와 확대·중단 결정이 기록되었다
-      platform: {actions: [stageRollout], screens: [/activation/decide, /fleet/live]}
+      platform: {actions: [stageRollout], screens: [/activation/decide, /fleet/live, /features/:id/:ver, /notifications]}

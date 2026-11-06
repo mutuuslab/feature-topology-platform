@@ -1728,7 +1728,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "next": [],
    "screens": [
     "/activation/decide",
-    "/fleet/live"
+    "/fleet/live",
+    "/features/:id/:ver",
+    "/notifications"
    ],
    "actions": [
     "stageRollout"

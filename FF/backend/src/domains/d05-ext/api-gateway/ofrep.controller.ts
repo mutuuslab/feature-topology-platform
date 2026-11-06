@@ -108,11 +108,11 @@ export class OfrepService {
     const snapshot = this.snapshotVersion();
     if (!openFeatureAllowed(fClass)) {
       const g = this.guarded(key, p.safeDefault, fClass, p.featureVersion, snapshot);
-      this.audit([{ flagKey: key, vin, fClass, variant: g.variant, reason: g.reason, errorType: null, snapshot }]);
+      this.audit([{ flagKey: key, vin, fClass, variant: g.variant, reason: g.reason, errorType: null, snapshot }], body.context);
       return g;
     }
     const r = ofrep((await this.activation.decide(vin, key)).result);
-    this.audit([{ flagKey: key, vin, fClass, variant: r.variant, reason: r.reason, errorType: null, snapshot }]);
+    this.audit([{ flagKey: key, vin, fClass, variant: r.variant, reason: r.reason, errorType: null, snapshot }], body.context);
     return { ...r, metadata: { ...r.metadata, f_class: fClass, feature_version: p.featureVersion, snapshot_version: snapshot, ...this.context(body, vin) } };
   }
 
@@ -130,15 +130,15 @@ export class OfrepService {
       const o = ofrep(r);
       flags.push({ ...o, metadata: { ...o.metadata, f_class: fClass, feature_version: p.featureVersion, snapshot_version: snapshot, ...ctx } });
     }
-    this.audit(flags.map((f) => ({ flagKey: f.key, vin, fClass: f.metadata.f_class, variant: f.variant, reason: f.reason, errorType: null, snapshot })));
+    this.audit(flags.map((f) => ({ flagKey: f.key, vin, fClass: f.metadata.f_class, variant: f.variant, reason: f.reason, errorType: null, snapshot })), body.context);
     return { flags };
   }
 
   /** 감사 Hook — 평가마다 span 하나(가명 subject, 원본 VIN 없음) → IF-11 (@rule FFG-OFT-004 기록 수 = 평가 수) */
-  private audit(rows: { flagKey: string; vin: string | null; fClass: FClass | null; variant: string | null; reason: string; errorType: string | null; snapshot?: string }[]) {
+  private audit(rows: { flagKey: string; vin: string | null; fClass: FClass | null; variant: string | null; reason: string; errorType: string | null; snapshot?: string }[], app?: Record<string, unknown>) {
     const at = this.clock.iso();
     const spans: OtelSpan[] = rows.map((r, i) =>
-      evaluationSpan({ flagKey: r.flagKey, provider: 'ffp-ofrep', subject: r.vin ? vehiclePseudonym(r.vin) : 'unknown', fClass: r.fClass, variant: r.variant, reason: r.reason, errorType: r.errorType, snapshotVersion: r.snapshot ?? null, at, traceSeed: `${at}:${r.flagKey}:${i}` }),
+      evaluationSpan({ flagKey: r.flagKey, provider: 'ffp-ofrep', subject: r.vin ? vehiclePseudonym(r.vin) : 'unknown', fClass: r.fClass, variant: r.variant, reason: r.reason, errorType: r.errorType, snapshotVersion: r.snapshot ?? null, at, traceSeed: `${at}:${r.flagKey}:${i}`, app: app ? { appName: app.appName, environment: app.environment } : undefined }),
     );
     this.otel.export(spans);
   }

@@ -8,7 +8,9 @@ import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/ac
 import { AuditService } from '../../../kernel/audit.service';
 import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
+import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
+import { IntegrationErrorService } from '../../d04-ops/event-history/integration-error.service';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { FeatureRepo } from '../../d01-policy/repos';
 
@@ -23,6 +25,7 @@ export class LegacyService {
     private readonly features: FeatureRepo,
     private readonly audit: AuditService,
     private readonly events: EventService,
+    private readonly errors: IntegrationErrorService,
   ) {}
 
   /** 매핑 + 대상 Feature 이름 (데이터셋에 없는 FEAT를 가리키면 표시) */
@@ -42,7 +45,16 @@ export class LegacyService {
   importOrders(actor: Actor, plant: string) {
     const mappings = this.ext.legacyMappings();
     const at = this.ext.now();
-    const out = this.ext.plantOrders(plant).map((o) => ({ ...resolveOrder(o, mappings), importedAt: at }));
+    let fetched: ReturnType<ExternalSystems['plantOrders']>;
+    try {
+      fetched = this.ext.plantOrders(plant);
+    } catch (err) {
+      // 연계 오류 — 유형·시점·대상 시스템·내용을 오류 이력에 남기고(롤백할 변경이 없다) 담당자에게 알린다
+      const off = err instanceof DomainError && /꺼져 있습니다/.test(err.message);
+      this.errors.record(actor, { system: 'LEGACY', errorType: off ? 'CONNECTION_OFF' : 'UNKNOWN', target: `IF-12 해외공장 ${plant}`, message: (err as Error).message });
+      throw err;
+    }
+    const out = fetched.map((o) => ({ ...resolveOrder(o, mappings), importedAt: at }));
     this.db.tx(() => {
       for (const r of out) this.db.run('INSERT INTO plant_order (order_id, plant, vin, doc) VALUES (?, ?, ?, ?) ON CONFLICT(order_id) DO UPDATE SET doc = excluded.doc', r.orderId, r.plant, r.vin, JSON.stringify(r));
       const unresolved = [...new Set(out.flatMap((r) => r.unresolved))];

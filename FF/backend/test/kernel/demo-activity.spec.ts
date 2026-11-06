@@ -65,6 +65,23 @@ describe('데모 활동 시드 — 켠 부팅', () => {
     expect(bootMs).toBeLessThan(15_000); // 부팅 비용 상한(여유) — 실측은 보고서에
   });
 
+  it('수신자 규칙·직접 알림·오류 이력·파이프라인·평가 운영 데이터가 빈 화면 없이 들어간다(B1·B5·B6)', async () => {
+    const rules = (await b.http().get('/api/notifications/rules').expect(200)).body.items as any[];
+    expect(rules.find((r) => r.event === 'billing.call.failed').added).toEqual([{ kind: 'role', role: 'OPS_LEAD' }]);
+    const op = (await b.http().get('/api/notifications?limit=500').set({ 'X-Actor-Id': 'usr-operator', 'X-Actor-Role': 'OPERATOR' }).expect(200)).body.items as any[];
+    expect(op.some((n) => n.eventType === 'notification.sent')).toBe(true);
+    const errs = (await b.http().get('/api/integrations/errors').expect(200)).body;
+    expect(errs.counts).toMatchObject({ LEGACY: 1, BILLING: 1, PIPELINE: 1 });
+    expect(await items('/api/pipeline/runs?featureId=FEAT-00022')).toHaveLength(2);
+    const ivi = (await b.http().get('/api/features/FEAT-00024/evaluations').expect(200)).body;
+    expect(ivi.totals.evaluations).toBeGreaterThan(10_000);
+    expect(ivi.byApp.map((a: any) => `${a.appName}/${a.environment}`)).toEqual(expect.arrayContaining(['ivi-nav/production', 'ivi-nav/staging', 'vehicle-sdk/fleet']));
+    expect(ivi.daily).toHaveLength(14);
+    const adas = (await b.http().get('/api/features/FEAT-00022/evaluations').expect(200)).body;
+    expect(adas.bySource.map((s: any) => s.source).sort()).toEqual(['UNLEASH_EDGE', 'VEHICLE_SDK']);
+    expect(adas.totals.safeDefault).toBeGreaterThan(0);
+  });
+
   it('실험 — 실행 중 1·종료 1', async () => {
     const e = await items('/api/experiments');
     expect(e.map((x) => x.status).sort()).toEqual(['CONCLUDED', 'RUNNING']);

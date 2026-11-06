@@ -3,6 +3,12 @@
 
 export const AUDIT_ACTION_KO: Record<string, string> = {
   ANALYSIS_HARA: 'HARA 판단 기록',
+  AUDIT_EXPORT: '감사 이력 내보내기',
+  NOTIFICATION_RULE_UPDATE: '알림 수신자 규칙 바꾸기',
+  NOTIFICATION_SEND: '알림 직접 보내기',
+  PIPELINE_RUN: '파이프라인 실행 결과 수신',
+  POLICY_VIEW: '정책 조회',
+  VALIDATION_EXPORT: '검증 이력 내보내기',
   ANALYSIS_HOMOLOGATION: '형식승인 판단 기록',
   ANALYSIS_SOTIF: 'SOTIF 판단 기록',
   ANALYSIS_TARA: 'TARA 판단 기록',

@@ -1,0 +1,19 @@
+/* Feature 평가 운영 탭 — Engineering Instrument 토큰만. 막대는 활성(accent)·비활성(viz-2) 두 색, 값은 글자로도 보인다. */
+.ev-kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-3); }
+.ev-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--sp-4); align-items: start; }
+.ev-days { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1); }
+.ev-day { display: grid; grid-template-columns: var(--sp-10) minmax(0, 1fr) var(--sp-10); align-items: center; gap: var(--sp-2); font-size: var(--fs-xs); }
+.ev-day__label, .ev-day__n { font-family: var(--font-mono); color: var(--ink-2); white-space: nowrap; }
+.ev-day__n { text-align: right; }
+.ev-bar { display: flex; height: var(--sp-3); background: var(--track-bg); border-radius: var(--r-sm); overflow: hidden; }
+.ev-bar__on { background: var(--accent); }
+.ev-bar__off { background: var(--viz-2); }
+.ev-legend { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); font-size: var(--fs-xs); color: var(--muted); margin: 0 0 var(--sp-2); }
+.ev-legend i { display: inline-block; width: var(--sp-2); height: var(--sp-2); border-radius: var(--r-sm); margin-inline-end: var(--sp-1); vertical-align: middle; }
+.ev-legend .on { background: var(--accent); }
+.ev-legend .off { background: var(--viz-2); }
+.ev-share { display: grid; grid-template-columns: minmax(0, 1fr) var(--sp-10); gap: var(--sp-2); align-items: center; }
+@media (max-width: 1023px) {
+  .ev-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ev-grid { grid-template-columns: minmax(0, 1fr); }
+}

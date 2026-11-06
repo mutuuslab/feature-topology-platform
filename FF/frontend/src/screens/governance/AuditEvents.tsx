@@ -9,9 +9,11 @@ import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AUDIT_ACTION_KO, auditPlus as AP } from '../../copy/audit';
 import { lists as L } from '../../copy/lists';
-import { AsyncView, Button, ChainStatus, DataTable, ErrorNote, EventStream, KeyValue, PageHeader, Panel, RuleText, Segmented, Select, Toolbar, VerdictBadge, type StreamItem } from '../../design';
+import { AsyncView, Button, ChainStatus, DataTable, ErrorNote, EventStream, KeyValue, PageHeader, Panel, RuleText, Segmented, Select, Tabs, Toolbar, VerdictBadge, type StreamItem } from '../../design';
 import { ComponentName, ProcedureText, when } from '../shared';
 import { AuditLog } from './AuditLog';
+import { AuditDiffDrawer, ExportButtons, PeriodFilter, PolicyStatsView, type Period } from './AuditTools';
+import { auditGaps } from '../../copy/records';
 import type { AuditEntry } from '../types';
 
 const RESULTS = ['ALLOWED', 'DENIED', 'FAILED'] as const;
@@ -36,13 +38,16 @@ export function AuditScreen() {
   const [target, setTarget] = useState(() => sp.get('prefix') ?? '');
   const [applied, setApplied] = useState(() => sp.get('prefix') ?? '');
   const [action, setAction] = useState('');
-  const query = { result: result || undefined, targetPrefix: applied || undefined, action: action || undefined, limit: 500 };
+  // 기간(B4) — 날짜 두 칸, 끝일은 그날 끝까지
+  const [period, setPeriod] = useState<Period>({ from: '', to: '' });
+  const [open, setOpen] = useState<AuditEntry | null>(null);
+  const query = { result: result || undefined, targetPrefix: applied || undefined, action: action || undefined, from: period.from || undefined, to: period.to || undefined, limit: 500 };
   const q = useApi<{ items: AuditEntry[]; nextCursor?: string | null }>('audit', { query });
   // 더 불러오기(커서, RD-UX-03) — 첫 쪽은 위 조회(정적 데모 스냅샷과 같은 주소), 다음 쪽부터 덧붙인다. 조건이 바뀌면 처음부터
   const [more, setMore] = useState<{ items: AuditEntry[]; cursor: string | null; key: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [moreError, setMoreError] = useState<ApiError | null>(null);
-  const qKey = `${result}|${applied}|${action}|${q.dataUpdatedAt}`;
+  const qKey = `${result}|${applied}|${action}|${period.from}|${period.to}|${q.dataUpdatedAt}`;
   const extra = more?.key === qKey ? more : null;
   const rows = [...(q.data?.items ?? []), ...(extra?.items ?? [])];
   const nextCursor = extra ? extra.cursor : (q.data?.nextCursor ?? null);
@@ -76,44 +81,57 @@ export function AuditScreen() {
         </p>
       )}
       <ChainCard c={c} checkedAt={checkedAt} busy={chain.isFetching} onRecheck={() => chain.refetch()} />
-      <Toolbar label={ko.audit.title}>
-        <input
-          className="ds-input ds-input--mono"
-          type="search"
-          aria-label={AP.searchLabel}
-          placeholder={AP.searchPlaceholder}
-          value={target}
-          onChange={(e) => setTarget(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && setApplied(target.trim())}
-          onBlur={() => setApplied(target.trim())}
-        />
-        <Segmented
-          label={ko.audit.result}
-          value={result}
-          onChange={(v) => setResult(v as typeof result)}
-          options={[{ value: '', label: ko.page.all }, ...RESULTS.map((r) => ({ value: r, label: ko.audit.results[r] }))]}
-        />
-        <Select label={AP.actionLabel} value={action} onChange={(e) => setAction(e.target.value)}>
-          <option value="">{AP.actionAll}</option>
-          {ACTION_OPTIONS.map(([k, v]) => (
-            <option key={k} value={k}>
-              {v}
-            </option>
-          ))}
-        </Select>
-      </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} filtered={!!(applied || result || action)}>
-        <AuditLog rows={rows} />
-        <ErrorNote error={moreError} />
-        {nextCursor && (
-          <div className="ds-pager">
-            <span>{L.loaded(rows.length)}</span>
-            <Button onClick={loadMore} disabled={loading || STATIC_MODE} reason={STATIC_MODE ? L.staticMore : undefined}>
-              {loading ? L.loadingMore : L.loadMore}
-            </Button>
-          </div>
-        )}
-      </AsyncView>
+      <Tabs param="view" tabs={[{ key: 'log', label: auditGaps.views.log }, { key: 'policies', label: auditGaps.views.policies }]}>
+        {(view) =>
+          view === 'policies' ? (
+            <PolicyStatsView />
+          ) : (
+            <>
+              <Toolbar label={ko.audit.title}>
+                <input
+                  className="ds-input ds-input--mono"
+                  type="search"
+                  aria-label={AP.searchLabel}
+                  placeholder={AP.searchPlaceholder}
+                  value={target}
+                  onChange={(e) => setTarget(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && setApplied(target.trim())}
+                  onBlur={() => setApplied(target.trim())}
+                />
+                <Segmented
+                  label={ko.audit.result}
+                  value={result}
+                  onChange={(v) => setResult(v as typeof result)}
+                  options={[{ value: '', label: ko.page.all }, ...RESULTS.map((r) => ({ value: r, label: ko.audit.results[r] }))]}
+                />
+                <Select label={AP.actionLabel} value={action} onChange={(e) => setAction(e.target.value)}>
+                  <option value="">{AP.actionAll}</option>
+                  {ACTION_OPTIONS.map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </Select>
+                <PeriodFilter value={period} onChange={setPeriod} />
+              </Toolbar>
+              <ExportButtons name="auditExport" query={{ from: period.from || undefined, to: period.to || undefined, action: action || undefined, targetPrefix: applied || undefined }} />
+              <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} filtered={!!(applied || result || action || period.from || period.to)}>
+                <AuditLog rows={rows} onOpen={setOpen} />
+                <ErrorNote error={moreError} />
+                {nextCursor && (
+                  <div className="ds-pager">
+                    <span>{L.loaded(rows.length)}</span>
+                    <Button onClick={loadMore} disabled={loading || STATIC_MODE} reason={STATIC_MODE ? L.staticMore : undefined}>
+                      {loading ? L.loadingMore : L.loadMore}
+                    </Button>
+                  </div>
+                )}
+              </AsyncView>
+            </>
+          )
+        }
+      </Tabs>
+      <AuditDiffDrawer entry={open} onClose={() => setOpen(null)} />
     </div>
   );
 }
@@ -152,7 +170,9 @@ const summarize = (p: unknown) => {
 };
 
 export function EventsScreen() {
-  const q = useApi<{ items: PlatformEvent[] }>('events', { query: { limit: 500, recent: '1' } });
+  // 발생 기간(B4 FR-EVT-002-004) — 비우면 최근 창
+  const [period, setPeriod] = useState<Period>({ from: '', to: '' });
+  const q = useApi<{ items: PlatformEvent[] }>('events', { query: { limit: 500, recent: '1', from: period.from || undefined, to: period.to || undefined } });
   const { items: live, status: sse } = usePlatformLiveEvents([''], ['events'], 200);
   const rows = q.data?.items ?? [];
   const stream: StreamItem[] = live.map((e) => ({ seq: e.seq, at: e.at, type: e.type, aggregate: e.aggregate, summary: summarize(e.payload) }));
@@ -160,8 +180,11 @@ export function EventsScreen() {
     <div className="ds-screen">
       <PageHeader codes="D04-04 · EVENT HISTORY" title={ko.events.title} lead={ko.events.lead} message={{ tone: 'neutral', value: q.data ? q.data.items.length : '—', text: ko.events.key }}
         meta={<span className="ds-badge" data-sse={sse}>SSE · {ko.events.status[sse]}</span>} />
+      <Toolbar label={ko.events.title}>
+        <PeriodFilter value={period} onChange={setPeriod} />
+      </Toolbar>
       <div className="ds-split">
-        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
+        <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} filtered={!!(period.from || period.to)}>
           <DataTable
             caption={ko.events.title}
             rows={rows}

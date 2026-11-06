@@ -355,6 +355,22 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -491,7 +507,8 @@
                       "GATE",
                       "OPS",
                       "INTEGRATION",
-                      "PROCEDURE"
+                      "PROCEDURE",
+                      "DIRECT"
                     ]
                   }
                 },
@@ -518,6 +535,403 @@
           },
           "422": {
             "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/notifications/rules": {
+      "get": {
+        "summary": "수신자 규칙 — 이벤트별 기본 수신자(규칙)와 추가 수신자(개인·역할·팀 설정)",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "notificationRules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/notifications/rules/{eventType}": {
+      "put": {
+        "summary": "이벤트 추가 수신자 바꾸기(개인·역할·팀, 사유 감사)",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "setNotificationRule",
+        "description": "허용 역할: 운영 리더, Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "eventType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recipients": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "user"
+                              ]
+                            },
+                            "id": {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 80
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "role"
+                              ]
+                            },
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "FEATURE_AUTHOR",
+                                "SAFETY_OFFICER",
+                                "VARIANT_OWNER",
+                                "FEATURE_APPROVER",
+                                "IMPLEMENTER",
+                                "RELEASE_MANAGER",
+                                "BOM_APPROVER",
+                                "PRODUCT_AUTHOR",
+                                "PRODUCT_APPROVER",
+                                "GATE_JUDGE",
+                                "OPERATOR",
+                                "SECURITY_OFFICER",
+                                "OPS_LEAD",
+                                "REGULATORY_OWNER",
+                                "REFDB_ADMIN",
+                                "DOMAIN_REVIEWER",
+                                "AUDITOR",
+                                "COST_ESTIMATOR",
+                                "COST_APPROVER",
+                                "COST_VIEWER",
+                                "COST_BASIS_ADMIN",
+                                "SYSTEM",
+                                "VEHICLE"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "role"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "team"
+                              ]
+                            },
+                            "team": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "team"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "maxItems": 20
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "recipients",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/notifications/send": {
+      "post": {
+        "summary": "알림 직접 보내기 — 사람·역할·팀 지정(본인 제외)",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "sendNotification",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "message": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "INFO",
+                      "WARNING",
+                      "CRITICAL"
+                    ],
+                    "default": "INFO"
+                  },
+                  "link": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "pattern": "^\\/[^\\s]*$"
+                  },
+                  "recipients": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "user"
+                              ]
+                            },
+                            "id": {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 80
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "role"
+                              ]
+                            },
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "FEATURE_AUTHOR",
+                                "SAFETY_OFFICER",
+                                "VARIANT_OWNER",
+                                "FEATURE_APPROVER",
+                                "IMPLEMENTER",
+                                "RELEASE_MANAGER",
+                                "BOM_APPROVER",
+                                "PRODUCT_AUTHOR",
+                                "PRODUCT_APPROVER",
+                                "GATE_JUDGE",
+                                "OPERATOR",
+                                "SECURITY_OFFICER",
+                                "OPS_LEAD",
+                                "REGULATORY_OWNER",
+                                "REFDB_ADMIN",
+                                "DOMAIN_REVIEWER",
+                                "AUDITOR",
+                                "COST_ESTIMATOR",
+                                "COST_APPROVER",
+                                "COST_VIEWER",
+                                "COST_BASIS_ADMIN",
+                                "SYSTEM",
+                                "VEHICLE"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "role"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "team"
+                              ]
+                            },
+                            "team": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "team"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": [
+                  "title",
+                  "message",
+                  "recipients"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/errors": {
+      "get": {
+        "summary": "연계·과금·서명·파이프라인 오류 이력 — 오류 유형·시점·대상 시스템·내용(추가만)",
+        "tags": [
+          "D04-04"
+        ],
+        "operationId": "integrationErrors",
+        "parameters": [
+          {
+            "name": "system",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
           }
         }
       }
@@ -1079,6 +1493,123 @@
           },
           {
             "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/audit/export": {
+      "get": {
+        "summary": "감사 이력 내보내기 — 기간 지정 CSV·JSON, 행마다 체인 해시·파일 SHA-256·내보내기 키 서명(민감 값 가림)",
+        "tags": [
+          "D01-10"
+        ],
+        "operationId": "auditExport",
+        "description": "허용 역할: 운영·감사 조회자, 운영 리더, 사이버보안 담당자(CSM), 법규 담당, 기능안전 담당자(FSM), Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "actorId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "targetPrefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/audit/policy-stats": {
+      "get": {
+        "summary": "정책 운영 현황 — 정책별 조회·수정·승인·배포 횟수와 최종 행위 일시(감사 이력 집계)",
+        "tags": [
+          "D01-10"
+        ],
+        "operationId": "auditPolicyStats",
+        "parameters": [
+          {
+            "name": "policyId",
             "in": "query",
             "required": false,
             "schema": {
@@ -1891,6 +2422,44 @@
           },
           "422": {
             "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/evaluations": {
+      "get": {
+        "summary": "Feature 평가 운영 데이터 — 일 단위 평가·활성·비활성·분기값 횟수, 평가 경로(앱·차량 SDK·Unleash Edge·플랫폼 판단)·앱·환경별",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "featureEvaluations",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
           }
         }
       }
@@ -5167,9 +5736,64 @@
         }
       }
     },
+    "/api/policies/validations/export": {
+      "get": {
+        "summary": "검증 이력 내보내기 — 기간 지정 CSV·JSON, 파일 SHA-256·내보내기 키 서명",
+        "tags": [
+          "D06-04"
+        ],
+        "operationId": "validationsExport",
+        "description": "허용 역할: 운영·감사 조회자, 운영 리더, 사이버보안 담당자(CSM), 법규 담당, 기능안전 담당자(FSM), Feature 출시 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "policyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/policies/{id}": {
       "get": {
-        "summary": "정책 상세·마지막 검증·승인 적격성",
+        "summary": "정책 상세·마지막 검증·승인 적격성 — 묻는 사람의 승인 적격성, 조회는 감사(조회자·정책·일시)",
         "tags": [
           "D01-06"
         ],
@@ -6684,7 +7308,8 @@
                       "kill",
                       "restore",
                       "sync",
-                      "gate"
+                      "gate",
+                      "export"
                     ],
                     "default": "policy"
                   }
@@ -7394,6 +8019,136 @@
                   "summary",
                   "aiGenerated",
                   "evidence"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/pipeline/runs": {
+      "get": {
+        "summary": "CI/CD 파이프라인 실행 결과(IF-13) — 실행 ID·환경·상태·실패 단계·사유",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "pipelineRuns",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "CI/CD 파이프라인 실행 결과 수신(IF-13) — 실패면 오류 이력·담당자 알림",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "recordPipelineRun",
+        "description": "허용 역할: 구현 담당자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "runId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "pipeline": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "environment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "STARTED",
+                      "SUCCEEDED",
+                      "FAILED"
+                    ]
+                  },
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "stage": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  },
+                  "startedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "finishedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "runId",
+                  "pipeline",
+                  "environment",
+                  "status"
                 ],
                 "additionalProperties": false
               }

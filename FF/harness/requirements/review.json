@@ -1143,9 +1143,9 @@
       "gap": "상반 결과·동일 조건 복수 정책 판정"
     },
     "FR-CON-001-003": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "Owner·관리자 알림"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `policy.conflict.detected` `contracts/src/rules/notification.ts` — 정책 검증(D06-01)의 충돌 발견(code CONFLICT: 모순 조건·flagKey 중복)마다 `policy.service.ts validate`가 같은 트랜잭션에 발행 → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7), 화면 `/notifications`·수신자 규칙 화면 `/notifications/rules`(기본 수신자 표 + 이벤트별 추가 수신자 사람·역할·팀, `PUT /api/notifications/rules/:eventType` 운영 리더·출시 담당, 감사) (시험 `backend/test/d04/notify-recipients.spec.ts`, `contracts/src/rules/notification-gaps.test.ts`) — 수신자 정책 Owner 팀·관리자(FEATURE_APPROVER)·작성자, 충돌 내용·탐지 시점",
+      "gap": ""
     },
     "FR-CON-001-004": {
       "verdict": "미구현",
@@ -1228,14 +1228,14 @@
       "gap": "ID 중복 정정(→ 002-004)"
     },
     "FR-AUD-001-001": {
-      "verdict": "미구현",
-      "evidence": "GET은 감사하지 않음",
-      "gap": "정책 조회 감사"
+      "verdict": "구현",
+      "evidence": "정책 조회 `GET /api/policies/:id`(행위자 머리글 personal 경로) → 감사 `POLICY_VIEW`(조회자·정책 ID·일시), 같은 사람 10분 안 재조회는 한 번 — `policy.service.ts recordView` (시험 `backend/test/d01/audit-export.spec.ts`)",
+      "gap": ""
     },
     "FR-AUD-001-002": {
-      "verdict": "부분",
-      "evidence": "POLICY_UPDATE 감사(수정자·대상·일시)",
-      "gap": "수정 항목 기록"
+      "verdict": "구현",
+      "evidence": "정책 수정 감사 `POLICY_UPDATE` after.changes — 수정 항목·변경 전/후 값(필드 점 경로, 민감 값 가림) `contracts/src/rules/audit-export.ts fieldChanges` + 이벤트 `policy.updated` (시험 `backend/test/d01/audit-export.spec.ts`, `contracts/src/rules/audit-export.test.ts`)",
+      "gap": ""
     },
     "FR-AUD-001-003": {
       "verdict": "구현",
@@ -1253,19 +1253,19 @@
       "gap": "API 측 수정 요청 시 메시지는 해당 API 부재로 대체"
     },
     "FR-AUD-002-001": {
-      "verdict": "미구현",
-      "evidence": "(`/api/components/activity`는 컴포넌트별 최근 활동)",
-      "gap": "정책별 조회·수정·승인·배포 횟수·최종 일시"
+      "verdict": "구현",
+      "evidence": "정책 운영 현황 `GET /api/audit/policy-stats` — 감사 이력 집계로 정책별 조회·수정·승인·배포 횟수와 최종 행위·일시(`history-export.service.ts policyStats`), 화면 `/audit?view=policies` (시험 `backend/test/d01/audit-export.spec.ts`)",
+      "gap": ""
     },
     "FR-AUD-002-002": {
-      "verdict": "부분",
-      "evidence": "target·actorId·result·limit",
-      "gap": "행위 유형·기간 필터"
+      "verdict": "구현",
+      "evidence": "`GET /api/audit` 행위 유형(action)·행위자(actorId)·기간(from·to, 날짜 또는 UTC 시각 `periodBounds`)·대상 앞부분 — 일치 없으면 빈 목록, 읽을 수 없는 기간 400 · 화면 `/audit` 기간 칸 (시험 `backend/test/d01/audit-export.spec.ts`)",
+      "gap": ""
     },
     "FR-AUD-002-003": {
-      "verdict": "미구현",
-      "evidence": "CSV·파일 내보내기 없음 (백엔드·`frontend/src/screens/governance/AuditEvents.tsx`)",
-      "gap": "기간 지정 내보내기(체인 해시 포함)"
+      "verdict": "구현",
+      "evidence": "감사 이력 내보내기 `GET /api/audit/export?from&to&format=csv|json` — 행마다 앞 해시·자기 해시(체인), 파일 SHA-256·내보내기 용도 키(KeyPurpose export) Ed25519 서명, 민감 값 가림, 내보낸 사실도 감사 `AUDIT_EXPORT` — 포맷은 CSV(# 머리 줄)·JSON 봉투로 정의 (시험 `backend/test/d01/audit-export.spec.ts`, 화면 `/audit` 내보내기 단추 `frontend/src/__tests__/requirementGaps.test.tsx`)",
+      "gap": ""
     },
     "FR-VAR-001-001": {
       "verdict": "부분",
@@ -1817,7 +1817,7 @@
     "FR-CRC-001-026": {
       "verdict": "미구현",
       "evidence": "수신자 알림 없음(공통 사실)",
-      "gap": "Owner·작성자·승인 대상자 알림"
+      "gap": "컴플라이언스 룰 레지스트리(FR-CRC-001-020~025: 수정·버전·만료 자동 변경)가 없어 '룰 만료' 사건이 생기지 않는다 — 레지스트리를 만들면 알림 규칙 한 줄(수신자 규칙 표·추가 수신자는 마련됨, 2026-11-06)"
     },
     "FR-CRC-002-001": {
       "verdict": "부분",
@@ -1960,9 +1960,9 @@
       "gap": "영향 차량 그룹 없음"
     },
     "FR-DSV-003-005": {
-      "verdict": "미구현",
-      "evidence": "거부는 감사 FAILED만(`staged-rollout.service.ts:53`)",
-      "gap": "중단 판정 이벤트·Owner·요청자 알림"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `rollout.halt-required` `contracts/src/rules/notification.ts` — 단계 확대 판정이 중단 기준(STOP_CRITERIA: 열린 이상 징후·진행 중 차단)에 걸리면 `staged-rollout.service.ts`가 판정 이벤트 발행 → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7) (시험 `backend/test/d04/notify-recipients.spec.ts`, `contracts/src/rules/notification-gaps.test.ts`) — 배포 ID(정책 ID·현재 단계)·Feature ID·중단 사유, Owner 팀·배포 요청자(deployedBy)·확대 요청자",
+      "gap": ""
     },
     "FR-DSV-004-001": {
       "verdict": "구현",
@@ -2255,29 +2255,29 @@
       "gap": "appName·environment·sessionId 미수집. **설계 상충**: remoteAddress·userId 원문 수집은 FFG-OFT-003/004(원본 식별자 금지)와 충돌 — 가명화 범위 확정 필요"
     },
     "FR-OPD-001-005": {
-      "verdict": "미구현",
-      "evidence": "전체 span 수만 `openfeature.controller.ts:27` (`/api/openfeature/scope` audit.spans)",
-      "gap": "Feature별 집계·집계 주기 없음"
+      "verdict": "구현",
+      "evidence": "Feature별 전체 평가 횟수 — 집계 주기 일(UTC), 기간 1~90일(기본 14) · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "gap": ""
     },
     "FR-OPD-001-006": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "Feature별 on 건수 집계"
+      "verdict": "구현",
+      "evidence": "Feature별 활성(ON) 평가 횟수 · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "gap": ""
     },
     "FR-OPD-001-007": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "Feature별 off 건수 집계"
+      "verdict": "구현",
+      "evidence": "Feature별 비활성(OFF)·Safe Default·오류 평가 횟수(따로) · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "gap": ""
     },
     "FR-OPD-001-008": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "variant 단위 집계 (다값 variant 금지 설계와 함께 결정)"
+      "verdict": "구현",
+      "evidence": "분기값 단위 집계(byVariant — 차량 flag는 boolean이라 on/off/safe_default, 다값 Variant가 허용되면 그 값 그대로 센다 — D6) · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "gap": ""
     },
     "FR-OPD-002-001": {
-      "verdict": "미구현",
-      "evidence": "Unleash 문맥의 고정 appName만 (`contracts/src/rules/unleash.ts:124`)",
-      "gap": "평가 송신 앱의 appName·environment 수집"
+      "verdict": "구현",
+      "evidence": "평가를 보낸 애플리케이션 식별 appName·environment — OFREP context(appName·environment)를 span 속성(ffp.app.name·deployment.environment.name)으로, 보내지 않으면 경로별 기본 이름 · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "gap": ""
     },
     "FR-OPD-002-002": {
       "verdict": "부분",
@@ -2285,9 +2285,9 @@
       "gap": "보고하는 SDK의 명칭·버전·instanceId 수집 경로 없음 (provider는 서버 측 이름)"
     },
     "FR-OPD-003-001": {
-      "verdict": "미구현",
-      "evidence": "`/api/integrations/otel/spans`는 name·limit 필터만 (`external-systems.ts:136-140`)",
-      "gap": "Feature ID 기준 평가·활성·비활성·분기값 횟수 조회 API·화면"
+      "verdict": "구현",
+      "evidence": "Feature ID 기준 조회 `GET /api/features/:id/evaluations?days` — 평가·활성·비활성·분기값 횟수, 경로·앱·환경·flag·일별 · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "gap": ""
     },
     "FR-QFL-001-001": {
       "verdict": "부분",
@@ -2320,9 +2320,9 @@
       "gap": "—"
     },
     "FR-EVT-001-004": {
-      "verdict": "부분",
-      "evidence": "POLICY_UPDATE 감사는 revision·contentHash만 (`policy.service.ts:157`); 정책 행은 덮어쓰기 (`policy-repos.ts:78-79`)",
-      "gap": "변경 항목·변경 전/후 값(필드 diff) 저장, 개정본 보관"
+      "verdict": "구현",
+      "evidence": "설정 변경 이벤트에 변경 항목·전/후 값 — 정책 수정 `policy.updated` payload.changes, Feature 수정 `feature.updated` payload.changes(`registry.service.ts`, `fieldChanges` 민감 값 가림), 이벤트 이력은 유형·수집 항목·시점(at)으로 저장(events 표) (시험 `backend/test/d01/audit-export.spec.ts`)",
+      "gap": ""
     },
     "FR-EVT-002-001": {
       "verdict": "부분",
@@ -2337,12 +2337,12 @@
     "FR-EVT-002-003": {
       "verdict": "미구현",
       "evidence": "이벤트 필터는 after·type·aggregate·limit뿐",
-      "gap": "환경·Variant 조건·차량 그룹 필터"
+      "gap": "이벤트에 환경·Variant 조건·차량 그룹 속성이 없다 — 플랫폼 이벤트는 정책·Feature·차단 단위이고 환경은 하나(Unleash 환경 고정), 차량 그룹·Variant 분류는 D6·D8(데이터 모델) 결정 뒤 이벤트 속성으로 넣는다. 기간 조건(FR-EVT-002-004)은 구현"
     },
     "FR-EVT-002-004": {
-      "verdict": "미구현",
-      "evidence": "`after`는 seq 커서 (`event.service.ts:57-58`), AuditQuery에 기간 없음 (`audit.service.ts:27-32`)",
-      "gap": "from/to 시각 필터"
+      "verdict": "구현",
+      "evidence": "`GET /api/events?from&to` — 발생 기간(from 이상·to 미만) 조건, 일치 없으면 빈 목록 `event.service.ts list` · 화면 `/events` 기간 칸 (시험 `backend/test/d01/audit-export.spec.ts`)",
+      "gap": ""
     },
     "FR-EVT-003-001": {
       "verdict": "부분",
@@ -2445,19 +2445,19 @@
       "gap": "배포 ID·Feature ID로 S/W 배포 이력과 활성화 이력을 한 번에 엮는 조회 없음"
     },
     "FR-CICD-001-001": {
-      "verdict": "부분",
-      "evidence": "IF-13 변경 기록 등록 `POST /api/change-records` (`change-record.service.ts:26-40`), 시험 `backend/test/d04/change-record.spec.ts:29`",
-      "gap": "파이프라인 실행(시작·완료) 이벤트 수신 엔드포인트 없음"
+      "verdict": "구현",
+      "evidence": "파이프라인 실행 이벤트 수신 `POST /api/pipeline/runs`(IF-13, IMPLEMENTER·SYSTEM) — 시작(STARTED)·완료(SUCCEEDED·FAILED), 실행 ID별 마지막 상태, 끝난 실행을 시작으로 되돌리면 409 (`d04-ops/pipeline-link/pipeline-run.service.ts`, migration 104; 시험 `backend/test/d04/notify-recipients.spec.ts`)",
+      "gap": ""
     },
     "FR-CICD-001-002": {
-      "verdict": "미구현",
-      "evidence": "ChangeRecordBody에 실행 ID·환경·상태 없음 (`contracts/src/rules/change-record.ts:6-25`)",
-      "gap": "실행 ID·대상·환경·일시·상태"
+      "verdict": "구현",
+      "evidence": "실행 정보 수집 — 실행 ID·파이프라인·대상 Feature·환경·시작/완료 일시·상태(`PipelineRunBody`), 조회 `GET /api/pipeline/runs?featureId&status` (시험 `backend/test/d04/notify-recipients.spec.ts`)",
+      "gap": ""
     },
     "FR-CICD-001-003": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "결과·실패 단계·실패 사유"
+      "verdict": "구현",
+      "evidence": "실행 결과 수집 — 결과 상태·실패 단계(stage)·실패 사유(reason) 필수(FAILED면 없으면 400), 실패는 오류 이력·담당자 알림 (시험 `backend/test/d04/notify-recipients.spec.ts`)",
+      "gap": ""
     },
     "FR-CICD-001-004": {
       "verdict": "부분",
@@ -2470,9 +2470,9 @@
       "gap": "정책 변경 ↔ 파이프라인 실행 이력·ChangeSet 연결"
     },
     "FR-CICD-001-006": {
-      "verdict": "미구현",
-      "evidence": "알림 채널 없음",
-      "gap": "실패 알림(실행 ID·단계·사유)"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `pipeline.run.failed` `contracts/src/rules/notification.ts` — CI 실행 결과 수신 `POST /api/pipeline/runs`(IF-13, `pipeline-run.service.ts`)가 FAILED면 오류 이력 + 알림 → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7) (시험 `backend/test/d04/notify-recipients.spec.ts`, `contracts/src/rules/notification-gaps.test.ts`) — 실행 ID·실패 단계·실패 사유, 구현·출시 담당·Owner 팀(+ 수신자 규칙 추가 수신자) — 명세 비고 '알림 대상' = 수신자 규칙 표",
+      "gap": ""
     },
     "FR-PDA-001-001": {
       "verdict": "부분",
@@ -2620,9 +2620,9 @@
       "gap": "Deployment Unit 품질 실패 상태를 쓰는 배포·활성화 차단"
     },
     "FR-QGV-003-005": {
-      "verdict": "미구현",
-      "evidence": "알림 채널 없음",
-      "gap": "담당자 알림"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `quality.gate.failed` `contracts/src/rules/notification.ts` — 정책 검증의 품질 기준 검증(D04-02, G5 TMS Evidence)이 PASS가 아니면 발행 → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7) (시험 `backend/test/d04/notify-recipients.spec.ts`, `contracts/src/rules/notification-gaps.test.ts`) — 산출물 ID(정책 ID·개정·내용 해시)·실패 항목·실패 사유, Owner 팀·Gate 판정·작성자",
+      "gap": ""
     },
     "FR-AGW-001-001": {
       "verdict": "구현",
@@ -2690,14 +2690,14 @@
       "gap": "변환 규칙 등록·수정 API 없음(픽스처 읽기 전용). 미해석 코드는 남기지만 담당자가 매핑을 추가할 경로가 없음"
     },
     "FR-LGCY-001-007": {
-      "verdict": "부분",
-      "evidence": "미해석 코드는 감사 `PLANT_ORDER_IMPORT`에 저장(legacy.service.ts:48-49). IF-12 꺼짐 등 연계 실패는 `GUARD_FAILED` 예외만(external-systems.ts:61) — 오류 유형·시점·대상·내용 기록 없음",
-      "gap": "가져오기 실패 시 `audit.failed`/오류 이력 테이블 기록 + 시험(IF_MODE_12=off)"
+      "verdict": "구현",
+      "evidence": "Legacy 가져오기 실패(IF-12 꺼짐 등) → 오류 유형·발생 시점·대상 시스템·오류 내용 기록 `legacy.service.ts importOrders` → 오류 이력 `integration_error`(migration 103, 추가만) `d04-ops/event-history/integration-error.service.ts` · `GET /api/integrations/errors` · 화면 `/integration/connectors?tab=errors` (시험 `backend/test/d04/notify-recipients.spec.ts` IF_MODE_12=off)",
+      "gap": ""
     },
     "FR-LGCY-001-008": {
-      "verdict": "미구현",
-      "evidence": "성공 이벤트 `legacy.orders.imported`만 발행(legacy.service.ts:50), 실패 이벤트·알림 없음. 플랫폼에 알림(Web/이메일) 서비스 자체가 없음",
-      "gap": "공통 알림 컴포넌트(수신자·채널) + 연계 오류 알림"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `legacy.import.failed` `contracts/src/rules/notification.ts` — IF-12 가져오기 실패를 오류 이력에 남기는 트랜잭션에서 발행(오류 이력 `integration_error`(migration 103, 추가만) `d04-ops/event-history/integration-error.service.ts` · `GET /api/integrations/errors` · 화면 `/integration/connectors?tab=errors`) → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7) (시험 `backend/test/d04/notify-recipients.spec.ts`, `contracts/src/rules/notification-gaps.test.ts`) — 오류 유형·발생 시점·대상 시스템·오류 내용, 연계 담당(IMPLEMENTER)·운영",
+      "gap": ""
     },
     "FR-DSYN-001-001": {
       "verdict": "부분",
@@ -2740,14 +2740,14 @@
       "gap": "사용량 항목·전송 주기 정의, 정산 IF 모의 어댑터, 전송 실패 기록"
     },
     "FR-BIL-001-003": {
-      "verdict": "미구현",
-      "evidence": "`ifCalls.call('BILLING', ...)`(billing.controller.ts:32)는 모의 응답이 실패하지 않고, IF 모드 검사·실패 기록 경로 없음",
-      "gap": "과금 IF 실패 모드 + 오류 유형·시점·내용 기록 + 시험"
+      "verdict": "구현",
+      "evidence": "과금 IF 실패 모드(IF_MODE_BILLING=off: 결제 요청 없이 롤백, 운영 모드 미연결) → 오류 유형·발생 시점·오류 내용 기록 `billing.controller.ts purchase` → 오류 이력 `integration_error`(migration 103, 추가만) `d04-ops/event-history/integration-error.service.ts` · `GET /api/integrations/errors` · 화면 `/integration/connectors?tab=errors` (시험 `backend/test/d04/notify-recipients.spec.ts`)",
+      "gap": ""
     },
     "FR-BIL-001-004": {
-      "verdict": "미구현",
-      "evidence": "알림 경로 없음",
-      "gap": "공통 알림 컴포넌트에 과금 오류 연결"
+      "verdict": "구현",
+      "evidence": "알림 규칙 `billing.call.failed` `contracts/src/rules/notification.ts` — 과금 연계 실패(IF_MODE_BILLING=off·운영 모드 미연결)를 오류 이력에 남기며 발행(오류 이력 `integration_error`(migration 103, 추가만) `d04-ops/event-history/integration-error.service.ts` · `GET /api/integrations/errors` · 화면 `/integration/connectors?tab=errors`) → D04-04 `notification.service.ts`(같은 트랜잭션 fan-out, Web 알림 — 메일 채널 없음 D-RD-7) (시험 `backend/test/d04/notify-recipients.spec.ts`, `contracts/src/rules/notification-gaps.test.ts`) — 오류 유형·발생 시점·오류 내용, 상품 권리 담당·운영",
+      "gap": ""
     },
     "FR-GLB-001-001": {
       "verdict": "부분",
@@ -3130,9 +3130,9 @@
       "gap": "검증 이력 ID로 정책 버전·입력 조건·시나리오 버전 일괄 반환 API, 없는 ID 404"
     },
     "FR-VHM-002-003": {
-      "verdict": "미구현",
-      "evidence": "파일 내보내기 없음",
-      "gap": "기간 지정 Export(포맷 정의 필요)"
+      "verdict": "구현",
+      "evidence": "검증 이력 내보내기 `GET /api/policies/validations/export?from&to&format&policyId` — 기간 지정 CSV·JSON, 파일 SHA-256·서명, `VALIDATION_EXPORT` 감사 (시험 `backend/test/d01/audit-export.spec.ts`), 화면 `/validations` 내보내기",
+      "gap": ""
     },
     "FR-SRT-001-001": {
       "verdict": "부분",
@@ -3185,9 +3185,9 @@
       "gap": "—"
     },
     "FR-SDM-001-001": {
-      "verdict": "부분",
-      "evidence": "배포 트랜잭션 내 Ed25519 용도별 키 서명 `SD:117`, `backend/src/domains/d06-qsec/pki-kms/pki.service.ts:100`; 시험 `T/d03/delivery.spec.ts:63`",
-      "gap": "서명 실패 시 롤백되나 실패 사유·일시 기록(audit.failed) 없음"
+      "verdict": "구현",
+      "evidence": "배포 트랜잭션 안 Ed25519 용도별 키 서명(`pki.service.ts sign`) — 실패(키 만료·서명 오류)면 롤백(배포 안 함)하고 실패 사유·일시를 감사 FAILED와 오류 이력 `integration_error`(migration 103, 추가만) `d04-ops/event-history/integration-error.service.ts` · `GET /api/integrations/errors` · 화면 `/integration/connectors?tab=errors`에 남긴다(`policy.service.ts deploy`), 보안 담당 알림 `signing.failed` (시험 `backend/test/d04/notify-recipients.spec.ts`, `T/d03/delivery.spec.ts`)",
+      "gap": ""
     },
     "FR-SDM-001-002": {
       "verdict": "미구현",
@@ -3372,7 +3372,7 @@
     {
       "id": "B1",
       "title": "수신자 지정 알림(Web — 메일은 사용자 결정 D-RD-7로 두지 않음)",
-      "current": "SSE 이벤트 방송과 역할 검토함만 있다 — Owner·요청자·승인대상자 알림 없음",
+      "current": "규칙표 알림(Owner·요청자·승인대상자·역할) + 수신자 규칙 화면(이벤트별 추가 수신자 사람·역할·팀)·직접 보내기 — 충돌·품질 Gate·배포 중단·파이프라인·Legacy·과금 오류 알림까지. 룰 만료 알림만 레지스트리 없음(FR-CRC-001-026)",
       "requirements": [
         "FR-REG-005-014",
         "FR-CPT-003-003",
@@ -3415,7 +3415,7 @@
     {
       "id": "B4",
       "title": "감사·이력 조회",
-      "current": "내보내기·기간/유형 필터·조회 감사가 없다, 변경 전후 값이 없다",
+      "current": "조회 감사·수정 항목 전후 값·정책 운영 현황·기간/유형/행위자 필터·감사·검증 이력 내보내기(CSV·JSON, 체인 해시·SHA-256·서명) — 환경·Variant·차량 그룹 이벤트 필터만 남음(D6·D8)",
       "requirements": [
         "FR-AUD-",
         "FR-VHM-002-",
@@ -3427,7 +3427,7 @@
     {
       "id": "B5",
       "title": "평가 운영 데이터",
-      "current": "모의 OTel 표에만 쌓인다 — Feature별 집계·앱/SDK/환경 식별 없음",
+      "current": "Feature별 일 단위 평가 집계(앱 OFREP·차량 SDK·Unleash Edge, appName·environment·결과·분기값) — Feature 상세 평가 운영 탭",
       "requirements": [
         "FR-OPD-"
       ]
@@ -3435,7 +3435,7 @@
     {
       "id": "B6",
       "title": "오류 이력",
-      "current": "연계·과금·서명 실패가 기록되지 않는다",
+      "current": "연계·과금·서명·파이프라인 실패를 오류 이력(추가만)에 남기고 담당자에게 알린다",
       "requirements": [
         "FR-LGCY-001-007",
         "FR-BIL-001-003",

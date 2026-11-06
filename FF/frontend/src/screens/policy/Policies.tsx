@@ -5,8 +5,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ControlPointType } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { ExportButtons, PeriodFilter, type Period } from '../governance/AuditTools';
 import { planning as W } from '../../copy/planning';
-import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, VerdictBadge, Icon } from '../../design';
+import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, Toolbar, VerdictBadge, Icon } from '../../design';
 import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
 import { PolicyCrPanel } from './PolicyCr';
@@ -405,6 +406,8 @@ export function PolicyCreate() {
 export function ValidationHistory() {
   const q = useApi<{ items: Run[] }>('validations');
   const [open, setOpen] = useState<Run | null>(null);
+  // 감사 대응 Export(B4 FR-VHM-002-003) — 기간을 골라 검증 이력을 CSV·JSON으로 받는다(파일 SHA-256·서명)
+  const [period, setPeriod] = useState<Period>({ from: '', to: '' });
   const rows = q.data?.items ?? [];
   return (
     <div className="ds-screen">
@@ -417,6 +420,10 @@ export function ValidationHistory() {
           return !q.data ? { tone: 'neutral', value: '—', text: ko.validations.key.held } : rows.length === 0 ? { tone: 'neutral', value: 0, text: ko.validations.key.none } : held ? { tone: 'warn', value: held, text: ko.validations.key.held } : { tone: 'ok', text: ko.validations.key.clean };
         })()}
       />
+      <Toolbar label={ko.validations.title}>
+        <PeriodFilter value={period} onChange={setPeriod} />
+        <ExportButtons name="validationsExport" query={{ from: period.from || undefined, to: period.to || undefined }} />
+      </Toolbar>
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={ko.validations.title}

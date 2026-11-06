@@ -106,9 +106,15 @@ export class PkiService implements OnModuleInit {
     if (!k) throw new DomainError('INTERNAL', '활성 서명 키가 없습니다.');
     // 만료된 키로는 서명하지 않는다 — 차량 검증(같은 규칙)이 KEY_EXPIRED로 거부할 게시본을 만들지 않는다(5년 운영 재생에서 발견: 1년 뒤 배포가 전부 TIMEOUT)
     if (Date.parse(k.not_after) < this.clock.now().getTime())
-      throw new DomainError('GUARD_FAILED', `${purpose} 서명 키 ${k.key_id}가 ${k.not_after.slice(0, 10)}에 만료되었습니다 — 키를 교체한 뒤 다시 시도하세요(POST /api/pki/rotate).`, { keyId: k.key_id, purpose, notAfter: k.not_after });
+      throw new DomainError('GUARD_FAILED', `${purpose} 서명 키 ${k.key_id}가 ${k.not_after.slice(0, 10)}에 만료되었습니다 — 키를 교체한 뒤 다시 시도하세요(POST /api/pki/rotate).`, { keyId: k.key_id, purpose, notAfter: k.not_after, signing: 'KEY_EXPIRED' });
     const hash = payloadHash(payload);
-    const signature = sign(null, Buffer.from(hash), this.privateKey(k.key_id, k.private_pem)).toString('base64');
+    let signature: string;
+    try {
+      signature = sign(null, Buffer.from(hash), this.privateKey(k.key_id, k.private_pem)).toString('base64');
+    } catch (err) {
+      // 서명 실패 — 배포 트랜잭션이 롤백되고, 호출자가 실패 사유·일시를 오류 이력에 남긴다(FR-SDM-001-001)
+      throw new DomainError('INTERNAL', `${purpose} 서명 키 ${k.key_id}로 서명하지 못했습니다: ${(err as Error).message}`, { keyId: k.key_id, purpose, signing: 'SIGN_FAILED' });
+    }
     return { keyId: k.key_id, alg: 'Ed25519', payloadHash: hash, signature };
   }
 

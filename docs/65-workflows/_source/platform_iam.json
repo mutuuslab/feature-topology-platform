@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://localhost:9012/admin/iam",
+  "iam_url": "http://localhost:9204/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-05T01:24:45.108Z",
+  "fetched_at": "2026-11-06T02:13:43.517Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-dept\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-05T01:20:07.748Z",
+  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-reqgaps\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-06T02:11:36.542Z",
   "ff_git": {
-   "head": "624960e9b919c98ccf127f00f9c320b9383dd171",
-   "dirty_files": 32
+   "head": "08cd4cc3e15dbe005836c41fbe42bbc78f0df998",
+   "dirty_files": 40
   },
-  "iam_sha256": "02350b64db82312d83ad98cc1413aed79add3500e00e0ab652bc283b33346b45"
+  "iam_sha256": "c350105f601f73eb28a3b9c7ad072c9d21361546a952cfe8b6f20d4eed7fccbf"
  },
  "roles": [
   {
@@ -191,6 +191,40 @@
     "COST_APPROVER",
     "COST_VIEWER",
     "COST_BASIS_ADMIN"
+   ]
+  },
+  {
+   "name": "setNotificationRule",
+   "method": "PUT",
+   "path": "/api/notifications/rules/:eventType",
+   "summary": "이벤트 추가 수신자 바꾸기(개인·역할·팀, 사유 감사)",
+   "component": "D04-04",
+   "roles": [
+    "OPS_LEAD",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "sendNotification",
+   "method": "POST",
+   "path": "/api/notifications/send",
+   "summary": "알림 직접 보내기 — 사람·역할·팀 지정(본인 제외)",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER"
    ]
   },
   {
@@ -717,6 +751,17 @@
    "method": "POST",
    "path": "/api/change-records",
    "summary": "CI/CD(IF-13) 변경 기록 등록 — 추가만",
+   "component": "D04-01",
+   "roles": [
+    "IMPLEMENTER",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "recordPipelineRun",
+   "method": "POST",
+   "path": "/api/pipeline/runs",
+   "summary": "CI/CD 파이프라인 실행 결과 수신(IF-13) — 실패면 오류 이력·담당자 알림",
    "component": "D04-01",
    "roles": [
     "IMPLEMENTER",
@@ -2147,6 +2192,11 @@
   {
    "path": "/notifications",
    "title": "알림",
+   "group": "home"
+  },
+  {
+   "path": "/notifications/rules",
+   "title": "알림 수신자 규칙",
    "group": "home"
   },
   {

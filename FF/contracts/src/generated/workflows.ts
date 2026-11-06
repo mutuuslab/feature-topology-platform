@@ -896,6 +896,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/deployments",
      "/verify/compliance",
      "/fleet/live",
+     "/notifications",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -1811,6 +1812,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/activation/decide",
      "/experiments",
      "/fleet/live",
+     "/notifications",
      "/flag-retirements",
      "/supplier/portal",
      "/admin/security",
@@ -2722,6 +2724,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/validations/virtual",
      "/integration/connectors",
      "/experiments",
+     "/notifications",
      "/ops/anomalies",
      "/ops/incidents",
      "/audit/oversight",
@@ -4251,6 +4254,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/verify/compliance",
      "/activation/decide",
      "/fleet/live",
+     "/notifications",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -4701,6 +4705,8 @@ export const WORKFLOWS: WorkflowDoc = {
     "primary": [
      "/activation/decide",
      "/fleet/live",
+     "/features/:id/:ver",
+     "/notifications",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -4709,7 +4715,6 @@ export const WORKFLOWS: WorkflowDoc = {
      "/audit"
     ],
     "reference": [
-     "/features/:id/:ver",
      "/integration/connectors",
      "/experiments",
      "/admin/approval",
@@ -12263,7 +12268,9 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "screens": [
        "/activation/decide",
-       "/fleet/live"
+       "/fleet/live",
+       "/features/:id/:ver",
+       "/notifications"
       ],
       "gates": [],
       "anchor": null,

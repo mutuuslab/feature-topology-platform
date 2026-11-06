@@ -8,25 +8,12 @@ import { z } from 'zod';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './access';
 import { DEMO_PERSONAS } from './duty-separation';
 import type { Role } from '../enums';
+import { isRecipient, NOTIFICATION_SENT_EVENT, NotificationCategory, type NotificationSeverity } from './notification-keys';
 
-export const NOTIFICATION_CATEGORIES = ['APPROVAL', 'SAFETY', 'DEPLOY', 'GATE', 'OPS', 'INTEGRATION', 'PROCEDURE'] as const;
-export const NotificationCategory = z.enum(NOTIFICATION_CATEGORIES);
-export type NotificationCategory = z.infer<typeof NotificationCategory>;
-
-export const NOTIFICATION_CATEGORY_LABEL: Record<NotificationCategory, string> = {
-  APPROVAL: '승인 요청',
-  SAFETY: '긴급 차단·복원',
-  DEPLOY: '정책 배포',
-  GATE: 'Gate 판정',
-  OPS: '이상 징후',
-  INTEGRATION: '외부 연계',
-  PROCEDURE: '업무 절차',
-};
-
-export const NotificationSeverity = z.enum(['INFO', 'WARNING', 'CRITICAL']);
-export type NotificationSeverity = z.infer<typeof NotificationSeverity>;
+// 범주·심각도는 notification-keys.ts — 상단바 종(첫 화면)이 이 규칙표 없이 읽는다
 
 export type Recipient = { kind: 'user'; id: string } | { kind: 'role'; role: Role } | { kind: 'team'; team: string };
+
 
 export interface NotificationDraft {
   category: NotificationCategory;
@@ -99,6 +86,7 @@ export const REFDB_REF_REJECTED_EVENT = 'refdb.ref.rejected';
 /**
  * 이벤트 종류 → 알림 규칙. 없는 이벤트는 알림을 만들지 않는다(이벤트 이력에만 남는다).
  * @req FR-REG-005-014, FR-CRC-002-009, FR-DSV-001-011, FR-KSW-003-003, FR-KSW-004-005, FR-EVT-003-003, FR-DSYN-001-004, FR-RBK-001-007, FR-RBK-004-005, FR-RBK-005-003, FR-RBK-005-004
+ * @req FR-CON-001-003, FR-QGV-003-005, FR-DSV-003-005, FR-CICD-001-006, FR-LGCY-001-008, FR-BIL-001-004
  */
 export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
   'gate.judged': {
@@ -527,12 +515,152 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
       };
     },
   },
+  // ─── 수신자 지정 알림 보강(기능명세서 B1) — 충돌·품질 Gate·배포 중단·파이프라인·연계·과금·서명 실패, 직접 보낸 알림 ───
+  // 정책 충돌 탐지 → 정책 Owner 팀·관리자(정책 승인 역할)·작성자. 충돌 내용은 검증기(D06-01)의 충돌 발견 그대로
+  'policy.conflict.detected': {
+    needs: ['policy', 'feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const pol = ctx.policy;
+      if (!pol) return null;
+      const items = (Array.isArray(p.conflicts) ? p.conflicts : []).map(String);
+      return {
+        category: 'DEPLOY',
+        severity: 'WARNING',
+        title: `정책 충돌 탐지 — ${pol.policyId} (${pol.flagKey})`,
+        fields: [
+          { label: '정책', value: `${pol.policyId} · ${pol.flagKey}` },
+          { label: 'Feature', value: `${featureLabel(ctx, pol.featureId)} ${pol.featureVersion}` },
+          { label: '충돌 내용', value: items.join(' / ') || '-' },
+          { label: '탐지 시점', value: ctx.event.at },
+          { label: '검증 실행', value: String(p.runId ?? '-') },
+        ],
+        link: `/policies/${pol.policyId}`,
+        recipients: [...owner(ctx), ...roles(['FEATURE_APPROVER']), { kind: 'user', id: pol.createdBy }],
+        exclude: [],
+        requirementIds: ['FR-CON-001-003'],
+      };
+    },
+  },
+  // 품질 Gate(D04-02) 실패 → 산출물(정책 개정본) 담당: Owner 팀·Gate 판정 역할·작성자
+  'quality.gate.failed': {
+    needs: ['policy', 'feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const pol = ctx.policy;
+      if (!pol) return null;
+      return {
+        category: 'GATE',
+        severity: 'WARNING',
+        title: `품질 Gate 실패 — ${pol.policyId} r${p.revision ?? '-'}`,
+        fields: [
+          { label: '산출물', value: `정책 ${pol.policyId} r${p.revision ?? '-'} · 내용 해시 ${String(p.contentHash ?? '').slice(0, 12) || '-'}` },
+          { label: 'Feature', value: `${featureLabel(ctx, pol.featureId)} ${pol.featureVersion}` },
+          { label: '실패 항목', value: `품질 기준 검증 ${p.result ?? 'FAIL'}` },
+          { label: '실패 사유', value: (Array.isArray(p.reasons) ? p.reasons : []).map(String).join(' / ') || '-' },
+        ],
+        link: `/policies/${pol.policyId}`,
+        recipients: [...owner(ctx), ...roles(['GATE_JUDGE']), { kind: 'user', id: pol.createdBy }],
+        exclude: [],
+        requirementIds: ['FR-QGV-003-005'],
+      };
+    },
+  },
+  // 단계 확대 판정이 중단 기준(열린 이상 징후·진행 중 차단·관측 기간)에 걸림 → Owner 팀·배포 요청자(배포자)·확대 요청자
+  'rollout.halt-required': {
+    needs: ['policy', 'feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const pol = ctx.policy;
+      if (!pol) return null;
+      const people = [pol.deployedBy, typeof p.requestedBy === 'string' ? p.requestedBy : null].filter((x): x is string => !!x);
+      return {
+        category: 'DEPLOY',
+        severity: 'CRITICAL',
+        title: `배포 중단 필요 — ${pol.policyId} (${pol.flagKey})`,
+        fields: [
+          { label: '배포', value: `${pol.policyId} · ${pol.flagKey} · 현재 ${Number(p.current ?? 0) / 100}%` },
+          { label: 'Feature', value: `${featureLabel(ctx, pol.featureId)} ${pol.featureVersion}` },
+          { label: '중단 사유', value: (Array.isArray(p.reasons) ? p.reasons : []).map(String).join(' / ') || '-' },
+          { label: '요청한 확대', value: `${Number(p.current ?? 0) / 100}% → ${Number(p.to ?? 0) / 100}%` },
+          { label: '판정 시점', value: ctx.event.at },
+        ],
+        link: `/policies/${pol.policyId}`,
+        recipients: [...owner(ctx), ...[...new Set(people)].map((id) => ({ kind: 'user', id }) as Recipient)],
+        exclude: [],
+        requirementIds: ['FR-DSV-003-005'],
+      };
+    },
+  },
+  // CI/CD 파이프라인 실행 실패(IF-13 실행 결과 수신) → 구현·출시 담당, Feature가 있으면 Owner 팀
+  'pipeline.run.failed': {
+    needs: ['feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      return {
+        category: 'INTEGRATION',
+        severity: 'WARNING',
+        title: `파이프라인 실패 — ${p.runId} (${p.stage})`,
+        fields: [
+          { label: '실행', value: `${p.runId} · ${p.pipeline ?? '-'}${p.environment ? ` · ${p.environment}` : ''}` },
+          { label: '실패 단계', value: String(p.stage ?? '-') },
+          { label: '실패 사유', value: String(p.reason ?? '-') },
+          ...(p.featureId ? [{ label: 'Feature', value: featureLabel(ctx, String(p.featureId)) }] : []),
+          { label: '발생 시점', value: String(p.finishedAt ?? ctx.event.at) },
+        ],
+        link: '/integration/connectors?tab=errors',
+        recipients: [...owner(ctx), ...roles(['IMPLEMENTER', 'RELEASE_MANAGER'])],
+        exclude: [],
+        requirementIds: ['FR-CICD-001-006'],
+      };
+    },
+  },
+  // Legacy 연계(IF-12 해외공장 ERP) 오류 → 연계 담당·운영
+  'legacy.import.failed': {
+    needs: [],
+    build: (ctx) => integrationError(ctx, 'Legacy 연계 오류', roles(['IMPLEMENTER', 'OPERATOR']), ['FR-LGCY-001-008']),
+  },
+  // 과금 시스템 연계 오류 → 상품 권리(상품 작성) 담당·운영
+  'billing.call.failed': {
+    needs: [],
+    build: (ctx) => integrationError(ctx, '과금 시스템 연계 오류', roles(['PRODUCT_AUTHOR', 'OPERATOR']), ['FR-BIL-001-004']),
+  },
+  // 정책 서명 실패(배포 거부) → 사이버보안 담당·배포 시도한 사람
+  'signing.failed': {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      return integrationError(ctx, '정책 서명 실패', [...roles(['SECURITY_OFFICER']), ...(p.actorId ? [{ kind: 'user', id: String(p.actorId) } as Recipient] : [])], []);
+    },
+  },
+  // 직접 보낸 알림 — 보낸 사람이 고른 사람·역할·팀(본인 제외)
+  [NOTIFICATION_SENT_EVENT]: {
+    needs: [],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const recipients = (Array.isArray(p.recipients) ? p.recipients : []).filter(isRecipient);
+      if (!recipients.length) return null;
+      return {
+        category: 'DIRECT',
+        severity: p.severity === 'CRITICAL' || p.severity === 'WARNING' ? p.severity : 'INFO',
+        title: String(p.title ?? '알림'),
+        fields: [
+          { label: '내용', value: String(p.message ?? '-') },
+          { label: '보낸 사람', value: String(p.sentBy ?? '-') },
+        ],
+        link: typeof p.link === 'string' && p.link.startsWith('/') ? p.link : '/notifications',
+        recipients,
+        exclude: [String(p.sentBy ?? '')].filter(Boolean),
+        requirementIds: [],
+      };
+    },
+  },
 };
 
 /** 보고서 승인 역할 → 업무 이름(알림 문구) */
 const APPROVER_ROLE_KO: Record<string, string> = { FSM: '기능안전(Safety Manager)', CSM: '사이버보안', OPS_LEAD: '운영 리더', PRODUCT_OWNER: '상품 Owner', QA: '품질', REGULATORY: '법규' };
 /** 서명 키 용도 → 업무 이름 */
-export const KEY_PURPOSE_KO: Record<string, string> = { policy: '정책 배포', activate: '기능 활성화', kill: '긴급 차단', restore: '복원', sync: '상태 동기화', gate: '정책 게이트 판정' };
+export const KEY_PURPOSE_KO: Record<string, string> = { policy: '정책 배포', activate: '기능 활성화', kill: '긴급 차단', restore: '복원', sync: '상태 동기화', gate: '정책 게이트 판정', export: '감사·이력 내보내기' };
 
 const REF_KIND_KO: Record<string, string> = { ADD: '추가', MODIFY: '수정', DEPRECATE: '폐기 예정', RETIRE: '폐기' };
 const REF_OPINION_KO: Record<string, string> = { AGREE: '동의', REVISE: '보완', OPPOSE: '반대' };
@@ -612,6 +740,26 @@ function anomaly(ctx: NotificationContext, what: string): NotificationDraft {
     recipients: [...owner(ctx), ...roles(critical ? ['OPERATOR', 'OPS_LEAD', 'SAFETY_OFFICER'] : ['OPERATOR', 'OPS_LEAD'])],
     exclude: [],
     requirementIds: ['FR-EVT-003-003'],
+  };
+}
+
+/** 연계·과금·서명 오류 알림 공통 — 오류 이력(D04-04 오류 이력) 한 건의 유형·시점·대상·내용 */
+function integrationError(ctx: NotificationContext, what: string, recipients: Recipient[], requirementIds: string[]): NotificationDraft {
+  const p = ctx.event.payload;
+  return {
+    category: 'INTEGRATION',
+    severity: 'WARNING',
+    title: `${what} — ${p.systemName ?? p.system} (${p.errorType})`,
+    fields: [
+      { label: '오류 유형', value: String(p.errorType ?? '-') },
+      { label: '발생 시점', value: String(p.at ?? ctx.event.at) },
+      { label: '대상 시스템', value: `${p.systemName ?? p.system}${p.target ? ` · ${p.target}` : ''}` },
+      { label: '오류 내용', value: String(p.message ?? '-') },
+    ],
+    link: `/integration/connectors?tab=errors`,
+    recipients,
+    exclude: [],
+    requirementIds,
   };
 }
 

@@ -35,6 +35,9 @@ import {
   UpdateDraftBody,
   RollbackDecisionBody,
   OfrepBody,
+  NotificationRuleBody,
+  NotificationSendBody,
+  PipelineRunBody,
   type Role,
 } from '@ff/contracts';
 import type { Actor } from '../kernel/actor';
@@ -76,6 +79,11 @@ import { RestoreService } from '../domains/d03-safety/restore/restore.service';
 import { GateRepo } from '../domains/d01-policy/repos';
 import { VehicleRequestService } from '../domains/d02-runtime/vehicle-requests/vehicle-request.service';
 import type { Response } from 'express';
+import { NotificationService } from '../domains/d04-ops/event-history/notification.service';
+import { IntegrationErrorService } from '../domains/d04-ops/event-history/integration-error.service';
+import { PipelineRunService } from '../domains/d04-ops/pipeline-link/pipeline-run.service';
+import { EvaluationStatsService, type EvaluationSample } from '../domains/d04-ops/telemetry-ingest/evaluation-stats.service';
+import { PolicyRepo } from '../domains/d01-policy/policy-repos';
 
 export const DEMO_ACTIVITY_META = 'seed-activity';
 /** 시연·e2e가 직접 다루는 Feature — 분류·Version·정책을 건드리지 않는다(Kill·Unleash·학습·외부 연계·Feature DB 시연) */
@@ -177,6 +185,7 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
       ['refdb', () => this.refdbReviews()],
       ['kill', () => this.safetyCase()],
       ['vehicleQueries', () => this.vehicleQueries()],
+      ['opsSignals', () => this.opsSignals()],
     ];
     for (const [name, fn] of steps) {
       try {
@@ -606,6 +615,57 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
       const c = changes.create(who('author', 'FEATURE_AUTHOR', 'refdb'), CreateRefChangeBody.parse({ kind: 'MODIFY', refId, after: { aliases: [...r.aliases, '데모 검토 별칭'] }, reason: '데모 — 사내 용어 검색 보강을 위한 도메인 검토 요청' }));
       return c.changeId;
     }).join(', ');
+  }
+
+  /**
+   * 수신자 규칙·직접 보낸 알림·오류 이력·평가 운영 데이터(기능명세서 B1·B5·B6) — 화면이 빈 표로 열리지 않게 담당자가 한 일을 서비스 경로로 재현한다.
+   * 평가 운영 데이터는 지난 14일의 일 단위 평가 횟수(앱 OFREP·차량 SDK·Unleash Edge)를 집계 서비스로 넣는다(원본 식별자 없음).
+   */
+  private opsSignals() {
+    const ntf = this.svc(NotificationService);
+    const opslead = who('opslead', 'OPS_LEAD', 'ntf');
+    ntf.setRule(opslead, 'billing.call.failed', NotificationRuleBody.parse({ recipients: [{ kind: 'role', role: 'OPS_LEAD' }], reason: '과금 연계 오류는 운영 리더도 함께 본다(정산 마감 대응)' }));
+    ntf.setRule(opslead, 'pipeline.run.failed', NotificationRuleBody.parse({ recipients: [{ kind: 'user', id: 'usr-coordinator' }, { kind: 'role', role: 'GATE_JUDGE' }], reason: '파이프라인 실패는 출시 조율·품질 판정 담당이 바로 받는다' }));
+    ntf.send(opslead, NotificationSendBody.parse({ title: '오늘 22시 Unleash Edge 점검', message: '점검 동안 차량 서명본 발급이 약 5분 멈춥니다. 긴급 차단은 평소대로 처리됩니다.', severity: 'WARNING', link: '/ops/kill', recipients: [{ kind: 'role', role: 'OPERATOR' }, { kind: 'role', role: 'RELEASE_MANAGER' }, { kind: 'user', id: 'usr-integrator' }] }));
+    // CI/CD 실행 결과 — 시작·실패(실패는 오류 이력 + 알림)
+    const runs = this.svc(PipelineRunService);
+    const ci = who('integrator', 'IMPLEMENTER', 'ci');
+    const day = (d: number, h = 9) => new Date(this.clock.now().getTime() - d * 86_400_000 + (h - 9) * 3600_000).toISOString();
+    runs.record(ci, PipelineRunBody.parse({ runId: 'GL-20431', pipeline: 'adas-distance/main', environment: 'staging', status: 'SUCCEEDED', featureId: 'FEAT-00022', startedAt: day(3, 8), finishedAt: day(3, 9) }));
+    runs.record(ci, PipelineRunBody.parse({ runId: 'GL-20517', pipeline: 'adas-distance/main', environment: 'staging', status: 'FAILED', featureId: 'FEAT-00022', stage: 'hil-test', reason: 'HIL 시험 42건 중 3건 실패 — 감속 요청 상한 경계값', startedAt: day(1, 10), finishedAt: day(1, 11) }));
+    // 연계·과금 오류 — 해외공장 ERP 응답 시간 초과, 과금 시스템 거부(오류 이력 서비스 경로)
+    const errors = this.svc(IntegrationErrorService);
+    errors.record(who('operator', 'OPERATOR', 'legacy'), { system: 'LEGACY', errorType: 'REJECTED', target: 'IF-12 해외공장 HMGC', message: 'ERP 주문 조회 응답 시간 초과(30초) — 다음 주기에 다시 가져옵니다', at: day(2, 14) });
+    errors.record(who('operator', 'OPERATOR', 'billing'), { system: 'BILLING', errorType: 'REJECTED', target: 'CAT-00019:구독', message: '과금 시스템이 결제 수단 확인을 거부했습니다(카드 승인 한도)', at: day(1, 16) });
+    // 평가 운영 데이터 — 배포 정책 flag마다 지난 14일
+    const stats = this.svc(EvaluationStatsService);
+    const flags = this.svc(PolicyRepo).all().filter((p) => p.status === 'DEPLOYED');
+    let n = 0;
+    for (let d = 13; d >= 0; d--) {
+      const at = day(d, 12);
+      const wave = 1 + ((13 - d) % 7) / 10; // 주간 흐름 — 주말 낮은 날 없이 완만하게
+      for (const p of flags) {
+        const fClass = this.svc(SafetyProfileService).ensure(p.featureId, p.featureVersion).fClass;
+        const qm = fClass === 'F0' || fClass === 'F1';
+        const seed = [...p.flagKey].reduce((a, c) => a + c.charCodeAt(0), 0) % 40;
+        const samples: EvaluationSample[] = qm
+          ? [
+              { at, flagKey: p.flagKey, source: 'OFREP', appName: 'ivi-nav', environment: 'production', result: 'ON', variant: 'on', count: Math.round((1180 + seed * 9) * wave) },
+              { at, flagKey: p.flagKey, source: 'OFREP', appName: 'ivi-nav', environment: 'production', result: 'OFF', variant: 'off', count: Math.round((210 + seed) * wave) },
+              { at, flagKey: p.flagKey, source: 'OFREP', appName: 'ivi-nav', environment: 'staging', result: 'ON', variant: 'on', count: 60 + seed },
+              { at, flagKey: p.flagKey, source: 'VEHICLE_SDK', appName: 'vehicle-sdk', environment: 'fleet', result: 'ON', variant: 'on', count: Math.round((340 + seed * 3) * wave) },
+              ...(d % 5 === 0 ? [{ at, flagKey: p.flagKey, source: 'OFREP' as const, appName: 'ivi-nav', environment: 'production', result: 'ERROR' as const, variant: '', count: 2 }] : []),
+            ]
+          : [
+              { at, flagKey: p.flagKey, source: 'VEHICLE_SDK', appName: 'vehicle-sdk', environment: 'fleet', result: 'SAFE_DEFAULT', variant: 'safe_default', count: Math.round((420 + seed * 4) * wave) },
+              { at, flagKey: p.flagKey, source: 'UNLEASH_EDGE', appName: 'vehicle-unleash', environment: 'development', result: 'ON', variant: 'on', count: Math.round((150 + seed * 2) * wave) },
+              { at, flagKey: p.flagKey, source: 'UNLEASH_EDGE', appName: 'vehicle-unleash', environment: 'development', result: 'OFF', variant: 'off', count: Math.round((40 + seed) * wave) },
+            ];
+        n += samples.reduce((s, x) => s + (x.count ?? 1), 0);
+        this.db.tx(() => stats.record(samples));
+      }
+    }
+    return `추가 수신자 2건 · 직접 알림 1건 · 파이프라인 2건 · 오류 이력 3건 · 평가 ${n.toLocaleString('ko-KR')}회(${flags.length} flag × 14일)`;
   }
 
   /** PoC 기능·영상 차량은 그대로 두고, 등록 차량의 별도 기능에서 차단→복원 승인 대기를 재현한다. */

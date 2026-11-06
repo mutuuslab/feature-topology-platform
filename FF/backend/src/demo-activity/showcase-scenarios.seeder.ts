@@ -33,6 +33,22 @@ const csm = who('integrator', 'SECURITY_OFFICER');
 const judge = who('quality', 'GATE_JUDGE');
 const STATES = ['초안 작성', '검토 보완', '정의 승인 대기', '정책·기준선 검토'] as const;
 
+/** 기준 행 도메인 약어(30-95 domain-alias) → 차량 SW 패키지 — Flag 코드 생성기(flag-coverage DOMAIN_PACKAGE)와 같은 표 */
+const FLAG_PACKAGE: Record<string, string> = { AD: 'adas', IN: 'ivi', BC: 'body', CH: 'chassis', PC: 'powertrain', PE: 'powertrain', SF: 'safety', CO: 'connectivity', PL: 'platform', BE: 'connectivity' };
+/** 전시 정책 Flag 키의 끝말 — 기준 행이 뜻하는 기능(영문 한 낱말). 없는 행은 하위 도메인 약어 */
+export const SHOWCASE_FLAG_WORD: Readonly<Record<string, string>> = {
+  'AD-ADS-020': 'dssad', 'AD-ADS-026': 'siren', 'AD-DMS-006': 'faceid', 'AD-LON-019': 'isla', 'AD-PRK-014': 'curb',
+  'BC-ACC-006': 'rke', 'BC-ACC-010': 'trunk', 'BC-ACC-016': 'fueldoor', 'BC-ACC-020': 'panic', 'BC-BCM-002': 'console', 'BC-BCM-006': 'drivemode',
+  'BC-BCM-010': 'nearpark', 'BC-BCM-015': 'trailer', 'BC-BCX-005': 'coding', 'BC-BCX-009': 'puddle', 'BC-BCX-016': 'tailgate', 'BC-HVAC-004': 'hvachmi',
+  'BC-HVAC-008': 'defog', 'BC-HVAC-012': 'bootloader', 'BC-HVX-004': 'recirc', 'BC-HVX-011': 'airquality', 'BC-ILT-002': 'readlamp', 'BC-ILT-006': 'dimming',
+};
+/** 전시 정책 Flag 키 — 다른 Flag와 같은 규칙 `<패키지>_<번호5>_<낱말>`(예: adas_00004_assist). 같은 키를 Grafana 시연 카탈로그·Flag 코드 생성기가 쓴다 */
+export function showcaseFlagKey(featureId: string, refId: string): string {
+  const [domain, sub = ''] = refId.split('-');
+  const word = SHOWCASE_FLAG_WORD[refId] ?? (sub.toLowerCase().replace(/[^a-z0-9]/g, '') || 'feature');
+  return `${FLAG_PACKAGE[domain] ?? 'platform'}_${featureId.slice(5)}_${word}`;
+}
+
 @Injectable()
 export class ShowcaseScenariosSeeder implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly log = new Logger('Showcase');
@@ -106,7 +122,7 @@ export class ShowcaseScenariosSeeder implements OnApplicationBootstrap, OnApplic
         const q = this.baselines.request(author, BaselineRequestBody.parse({ featureId: f.featureId, version: f.version, reason: '전시 — 사양 확정 요청, 출시·배포 승인과 별개' }));
         const rejected = Math.floor(i / STATES.length) % 2 === 1;
         if (rejected) this.baselines.decide(who('bom', 'BOM_APPROVER'), q.requestId, BaselineDecisionBody.parse({ decision: 'REJECT', reason: '전시 — 구매 검토 의견 반영 후 다시 요청' }));
-        const p = this.policies.create(who('integrator', 'IMPLEMENTER'), CreatePolicyBody.parse({ featureId: f.featureId, featureVersion: f.version, controlPoint: 'Flag', flagKey: `showcase_${f.featureId.slice(5)}_review`, description: '전시 — 배포 전 담당자 정책 검토', enabled: false, safeDefault: false, rollout: { mode: 'NONE', basisPoints: 0 } }));
+        const p = this.policies.create(who('integrator', 'IMPLEMENTER'), CreatePolicyBody.parse({ featureId: f.featureId, featureVersion: f.version, controlPoint: 'Flag', flagKey: showcaseFlagKey(f.featureId, ref.refId), description: `${ref.nameKo} — 배포 전 담당자 정책 검토(전시)`, enabled: false, safeDefault: false, rollout: { mode: 'NONE', basisPoints: 0 } }));
         if (rejected) this.policies.decide(approver, p.policyId, PolicyDecisionBody.parse({ decision: 'REJECT', reason: '전시 — 적용 범위 보완 후 재검증 요청' }));
       }
       const dependencies = this.dependencies(created);

@@ -75,6 +75,7 @@ import { KillService } from '../domains/d03-safety/kill-switch/kill.service';
 import { RestoreService } from '../domains/d03-safety/restore/restore.service';
 import { GateRepo } from '../domains/d01-policy/repos';
 import { VehicleRequestService } from '../domains/d02-runtime/vehicle-requests/vehicle-request.service';
+import { ShowcaseFillSeeder } from './showcase-fill.seeder';
 import type { Response } from 'express';
 
 export const DEMO_ACTIVITY_META = 'seed-activity';
@@ -156,6 +157,7 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
     const out: Record<string, StepResult> = {};
     this.lastRun = out;
     const steps: [string, () => Promise<string> | string][] = [
+      ['showcaseProfiles', () => this.svc(ShowcaseFillSeeder).beforeSafety()],
       ['safety', () => this.confirmReleasedSafety()],
       ['procedures', () => this.procedures()],
       ['dashboards', () => this.dashboards()],

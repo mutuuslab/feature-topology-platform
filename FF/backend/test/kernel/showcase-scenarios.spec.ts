@@ -51,6 +51,18 @@ describe('선택 전시: 두 배 규모와 담당자별 실제 검토 상황', (
       const policies = b.get(PolicyRepo).all().filter((p) => ids.has(p.featureId));
       expect(new Set(policies.map((p) => p.status))).toEqual(new Set(['DRAFT', 'REJECTED']));
       expect(policies.every((p) => !p.enabled && p.rollout.mode === 'NONE' && p.approvedBy === null)).toBe(true);
+      // 회귀(2026-11-06 사용자 결정): 정책 목록 위를 채우던 'showcase_00200_review' 같은 업무와 무관한 키 대신 다른 Flag와 같은 규칙
+      // <패키지>_<Feature 번호>_<기능 낱말>(Grafana 시연 카탈로그·Flag 코드 생성기가 같은 키를 쓴다)
+      expect(policies).toHaveLength(23);
+      for (const p of policies) {
+        expect(p.flagKey, p.featureId).toMatch(/^(adas|body|ivi|chassis|powertrain|safety|connectivity|platform)_\d{5}_[a-z0-9]+$/);
+        expect(p.flagKey.split('_')[1], p.flagKey).toBe(p.featureId.slice(5));
+        expect(p.flagKey).not.toMatch(/showcase|review/);
+        expect(p.description).not.toMatch(/^전시 —/);
+      }
+      expect(new Set(policies.map((p) => p.flagKey)).size).toBe(policies.length);
+      expect(policies.find((p) => p.featureId === 'FEAT-00200')?.flagKey).toBe('adas_00200_dssad');
+      expect(policies.find((p) => p.featureId === 'FEAT-00288')?.flagKey).toBe('body_00288_dimming');
       const requests = b.get(BaselineService).requests().filter((q) => ids.has(q.featureId));
       expect(new Set(requests.map((q) => q.status))).toEqual(new Set(['PENDING', 'REJECTED']));
       expect(requests.filter((q) => q.status === 'REJECTED').every((q) => q.requestedBy !== q.decidedBy)).toBe(true);
@@ -89,9 +101,12 @@ describe('선택 전시: 두 배 규모와 담당자별 실제 검토 상황', (
       expect(marker.before).toBe(92);
       expect(marker.created).toHaveLength(92);
       expect(marker.after).toBe(184);
-      expect(b.get(FeatureRepo).all()).toHaveLength(184);
+      // 전시 184 + 시연 주인공의 개선 Version 4.1.1(전시 빈 화면 채우기가 전시 시나리오 뒤에 실제 절차로 등록, 2026-11-06 사용자 결정)
+      expect(b.get(FeatureRepo).all()).toHaveLength(185);
+      expect(b.get(FeatureRepo).get('FEAT-00004', '4.1.1')).toBeTruthy();
       const allDependencies = b.get(TopologyService).list();
-      expect(allDependencies).toHaveLength(59);
+      // 59 + 전시 빈 화면 채우기의 1(FEAT-00188 → FEAT-00022, showcase-fill.seeder.ts)
+      expect(allDependencies).toHaveLength(60);
       const added = allDependencies.filter((d) => marker.dependencies.includes(d.dependencyId));
       expect(added).toHaveLength(30);
       expect(new Set(added.map((d) => d.type))).toEqual(new Set(['REQUIRES', 'EXCLUDES']));

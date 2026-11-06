@@ -89,24 +89,48 @@ export function exposedSeriesNames(defs: readonly TelemetryMetricDef[] = TELEMET
 // 게시본 서명(pki verify)과 차단 봉투 Guard(REJECT_CODES 중 진위 관련) 둘 다
 export const SIGNATURE_REJECT_REASONS = ['BAD_SIGNATURE', 'SIGNATURE_INVALID', 'SIGNATURE_FORMAT', 'PAYLOAD_TAMPERED', 'UNKNOWN_KEY', 'KEY_EXPIRED', 'WRONG_KEY_PURPOSE', 'AUTH_FAILED', 'AUTH_MISSING', 'KEY_EPOCH_OLD'] as const;
 
-/** IF-15 Indicator.axis·name (datalake-if15.openapi.json) — Feature 운영 점검 4축. 축의 정본 정의는 여기 하나(rules/lake가 다시 낸다, 통합 D-INT-3) */
+/** IF-15 Indicator.axis·name (datalake-if15.openapi.json) — Feature 운영 점검 4축. 축·지표·판정 기준의 정의는 여기 하나(rules/lake가 다시 낸다, 통합 D-INT-3) */
 export const HEALTH_AXES = ['OPERATION', 'PROBLEM', 'IMPROVEMENT', 'RISK'] as const;
 export type HealthAxis = (typeof HEALTH_AXES)[number];
-export const HEALTH_INDICATORS: Record<string, HealthAxis> = {
-  delivery_success_rate: 'OPERATION',
-  status_rejected_rate: 'OPERATION',
-  disabled_share: 'OPERATION',
-  dtc_vehicle_rate: 'PROBLEM',
-  fault_rate_per_1k: 'PROBLEM',
-  safety_event_rate_per_1k: 'PROBLEM',
-  incident_count: 'PROBLEM',
-  usage_rate: 'IMPROVEMENT',
-  manual_off_rate: 'IMPROVEMENT',
-  trial_conversion_rate: 'IMPROVEMENT',
-  anomaly_open_count: 'RISK',
-  security_alert_count: 'RISK',
-  data_missing_rate: 'RISK',
+/** IF-15 Indicator.name(80-75 8장) */
+export const LAKE_INDICATORS = [
+  'delivery_success_rate', 'status_rejected_rate', 'dtc_vehicle_rate', 'fault_rate_per_1k', 'safety_event_rate_per_1k',
+  'usage_rate', 'manual_off_rate', 'incident_count', 'anomaly_open_count', 'security_alert_count', 'disabled_share',
+  'trial_conversion_rate', 'data_missing_rate',
+] as const;
+export type LakeIndicatorName = (typeof LAKE_INDICATORS)[number];
+
+/**
+ * 지표 판정 기준 — 판정 정본(통합 D-INT-3). FF 4축 판정(rules/lake judgeIndicator)과 Grafana 칸 색·경보 임계값(tools/grafana)이 이 표 하나를 쓴다.
+ * worse: 커질수록 나쁜가(up)·작아질수록 나쁜가(down). watch·action은 절대값 경계, rise는 앞 창 대비 배수(주의)
+ */
+export interface IndicatorRule {
+  axis: HealthAxis;
+  worse: 'up' | 'down';
+  watch: number;
+  action: number;
+  rise?: number;
+}
+
+/** @rule 80-70 9.1 — 축별 근거 지표와 경계(사전 등록 값, Lake 집계 기준). 비율은 0~1 */
+export const INDICATOR_RULES: Record<LakeIndicatorName, IndicatorRule> = {
+  delivery_success_rate: { axis: 'OPERATION', worse: 'down', watch: 0.97, action: 0.92 },
+  status_rejected_rate: { axis: 'OPERATION', worse: 'up', watch: 0.01, action: 0.03 },
+  disabled_share: { axis: 'OPERATION', worse: 'up', watch: 0.05, action: 0.15 },
+  dtc_vehicle_rate: { axis: 'PROBLEM', worse: 'up', watch: 0.004, action: 0.008, rise: 1.5 },
+  fault_rate_per_1k: { axis: 'PROBLEM', worse: 'up', watch: 2, action: 5, rise: 1.5 },
+  safety_event_rate_per_1k: { axis: 'PROBLEM', worse: 'up', watch: 0.8, action: 1.5, rise: 1.5 },
+  incident_count: { axis: 'PROBLEM', worse: 'up', watch: 3, action: 8 },
+  anomaly_open_count: { axis: 'PROBLEM', worse: 'up', watch: 2, action: 5 },
+  usage_rate: { axis: 'IMPROVEMENT', worse: 'down', watch: 0.35, action: 0.15 },
+  manual_off_rate: { axis: 'IMPROVEMENT', worse: 'up', watch: 0.12, action: 0.3 },
+  trial_conversion_rate: { axis: 'IMPROVEMENT', worse: 'down', watch: 0.08, action: 0.03 },
+  security_alert_count: { axis: 'RISK', worse: 'up', watch: 1, action: 4 },
+  data_missing_rate: { axis: 'RISK', worse: 'up', watch: 0.05, action: 0.2 },
 };
+
+/** 지표 → 축 — 판정 규칙에서 나온다(Grafana 시연 생성기·대시보드 라벨) */
+export const HEALTH_INDICATORS: Record<string, HealthAxis> = Object.fromEntries(Object.entries(INDICATOR_RULES).map(([name, r]) => [name, r.axis]));
 
 /** 미수신 창 */
 export const SILENT_WINDOWS = { '1h': 3_600_000, '24h': 86_400_000 } as const;

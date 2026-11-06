@@ -28,6 +28,8 @@ export const OpsObservation = z.object({
   panelUrl: z.string().nullable(),
   /** 문제·운영·위험 축이 Feature를 가리키면 이상 징후(D06-12) 신호로도 넣는다 */
   anomalyKind: z.enum(['FEATURE_FAULT', 'DELIVERY', 'SECURITY']).nullable(),
+  /** 규칙 라벨 ff_indicator — FF 판정 지표(INDICATOR_RULES)로 단 경보면 Feature 운영 점검 결과의 감지 입력(통합 D-INT-3) */
+  indicator: z.string().nullable().default(null),
   receivedAt: z.string(),
 });
 export type OpsObservation = z.infer<typeof OpsObservation>;

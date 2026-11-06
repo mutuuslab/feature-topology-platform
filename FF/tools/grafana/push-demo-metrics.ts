@@ -7,9 +7,10 @@ import { generate, windowTimes } from './demo-generator.ts';
 import { otlpTarget, OTLP_SECRETS, sendLogs, sendMetrics, sendTraces } from './otlp-send.ts';
 import { encodeMetrics } from '../../backend/src/kernel/otlp/otlp-proto.ts';
 
-const arg = (name: string, def: string) => {
-  const i = process.argv.indexOf(name);
-  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : def;
+/** 인자 — main(argv)가 받은 목록에서 읽는다(시험이 --now로 시각을 고정한다. process.argv를 읽으면 실제 시각으로 돌아 시험이 날짜에 묶였다) */
+const argOf = (argv: string[], name: string, def: string) => {
+  const i = argv.indexOf(name);
+  return i >= 0 && argv[i + 1] ? argv[i + 1] : def;
 };
 
 /** 시연 자원 속성 — 서버 설치(Alloy)와 같은 job 이름(ff/ff-platform·ff/ff-datalake), instance는 시연 표시 */
@@ -20,9 +21,9 @@ export const DEMO_RESOURCES = {
 
 export async function main(argv = process.argv, env = process.env, fetchImpl: typeof fetch = fetch): Promise<number> {
   const dry = argv.includes('--dry-run');
-  const windowMin = Number(arg('--window', '30'));
-  const eventsMin = Number(arg('--events', '15'));
-  const now = Date.parse(arg('--now', new Date().toISOString()));
+  const windowMin = Number(argOf(argv, '--window', '30'));
+  const eventsMin = Number(argOf(argv, '--events', '15'));
+  const now = Date.parse(argOf(argv, '--now', new Date().toISOString()));
   if (!Number.isFinite(now) || !(windowMin >= 1 && windowMin <= 60) || !(eventsMin >= 0 && eventsMin <= windowMin)) {
     console.error('인자 오류 — --window 1~60(분), --events 0~window(분), --now ISO 시각');
     return 2;

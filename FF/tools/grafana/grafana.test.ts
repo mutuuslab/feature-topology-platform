@@ -14,7 +14,7 @@ import { gunzipSync } from 'node:zlib';
 import { parse as parseYaml } from 'yaml';
 import { FF } from '../lib.ts';
 import { decodeFields, fieldBytes, fieldString, fixedDouble } from '../../backend/src/kernel/otlp/otlp-proto.ts';
-import { exposedSeriesNames, HEALTH_INDICATORS, TELEMETRY_METRICS } from '../../contracts/src/rules/telemetry-metrics.ts';
+import { exposedSeriesNames, HEALTH_INDICATORS, INDICATOR_RULES, TELEMETRY_METRICS } from '../../contracts/src/rules/telemetry-metrics.ts';
 import { readCatalog } from './demo-catalog.ts';
 import { activity, canaryStage, generate, windowTimes } from './demo-generator.ts';
 import { alertRules, dashboards, metricNamesIn, publicVariant } from './dashboards.ts';
@@ -157,7 +157,7 @@ test('push-demo·provision: 비밀이 없으면 "비밀 없음"으로 실패(종
   assert.match(errors.join('\n'), /Instance ID/);
   assert.match(errors.at(-1)!, /^비밀 없음: GRAFANA_SA_TOKEN/);
   // dry-run은 비밀 없이 크기만 본다
-  assert.equal(await quiet(() => pushMain(['node', 'x', '--dry-run', '--now', '2026-11-06T09:30:00Z', '--window', '3'], {})), 0);
+  assert.equal(await quiet(() => pushMain(['node', 'x', '--dry-run', '--now', '2026-11-06T09:30:00Z', '--window', '3', '--events', '3'], {})), 0);
 });
 
 // ── 시연 생성기 ─────────────────────────────────────────
@@ -281,6 +281,35 @@ test('공개본: 템플릿·전역 변수 없음($__rate_interval 등), FF 주�
 
 test('저장본(deploy/grafana)이 원천(dashboards.ts)과 같다', () => {
   for (const [f, text] of builtFiles()) assert.equal(readFileSync(f, 'utf8').split('\r\n').join('\n'), text, f);
+});
+
+// 판정 정본은 FF 규칙(INDICATOR_RULES, 통합 D-INT-3) — Grafana는 같은 경계로 관찰·경보만 한다
+test('건강 판정 경계 — 4축 표 칸 색·패널 색 단계·경보 임계값이 FF 판정 규칙 하나에서 나온다', () => {
+  const steps = (name: keyof typeof INDICATOR_RULES) => {
+    const r = INDICATOR_RULES[name];
+    return r.worse === 'up' ? [[null, 'green'], [r.watch, 'orange'], [r.action, 'red']] : [[null, 'red'], [r.action, 'orange'], [r.watch, 'green']];
+  };
+  const fh = dashboards().find((d) => d.uid === 'ff-feature-health')!;
+  const table = fh.panels.find((p) => p.title === 'Feature Version 4축') as any;
+  const shown = (table.targets[0].expr as string).match(/indicator=~"([^"]+)"/)![1].split('|');
+  for (const name of shown) {
+    const o = table.fieldConfig.overrides.find((x: any) => x.matcher.options === name);
+    assert.ok(o, `${name} 칸 색`);
+    const t = o.properties.find((p: any) => p.id === 'thresholds').value.steps.map((s: any) => [s.value, s.color]);
+    assert.deepEqual(t, steps(name as keyof typeof INDICATOR_RULES), `${name} 칸 경계`);
+  }
+  const panel = (title: string) => (fh.panels.find((p) => p.title === title) as any).fieldConfig.defaults.thresholds.steps.map((s: any) => [s.value, s.color]);
+  assert.deepEqual(panel('사용률(활성/대상)'), steps('usage_rate'));
+  assert.deepEqual(panel('수동 끄기 비율'), steps('manual_off_rate'));
+  const tied = alertRules().filter((r) => r.labels.ff_indicator);
+  assert.deepEqual(tied.map((r) => [r.uid, r.labels.ff_indicator]).sort(), [['ff-imp-low-usage', 'usage_rate'], ['ff-imp-manual-off', 'manual_off_rate']]);
+  for (const r of tied) {
+    const rule = INDICATOR_RULES[r.labels.ff_indicator as keyof typeof INDICATOR_RULES];
+    assert.equal(r.threshold, rule.watch, `${r.uid} 임계값 = 주의 경계`);
+    assert.equal(r.op, rule.worse === 'up' ? 'gt' : 'lt', r.uid);
+    assert.equal(r.labels.ff_axis, rule.axis, r.uid);
+  }
+  for (const [name, axis] of Object.entries(HEALTH_INDICATORS)) assert.equal(axis, INDICATOR_RULES[name as keyof typeof INDICATOR_RULES].axis, `${name} 축`);
 });
 
 test('경보: 축·심각도 라벨과 FF 수신 규칙(운영 관찰·이상 징후 종류)이 맞고, 런북에 규칙별 절이 있다', () => {

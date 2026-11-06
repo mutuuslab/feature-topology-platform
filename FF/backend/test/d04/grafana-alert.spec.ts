@@ -31,16 +31,16 @@ afterEach(async () => {
   delete process.env.FF_GRAFANA_WEBHOOK_SECRET;
 });
 
-const alert = (o: { name: string; axis: string; feature?: string; kind?: string; status?: string; severity?: string }) => ({
+const alert = (o: { name: string; axis: string; feature?: string; kind?: string; status?: string; severity?: string; indicator?: string; startsAt?: string; value?: number }) => ({
   status: o.status ?? 'firing',
-  labels: { alertname: o.name, ff_axis: o.axis, ff_source: 'feature-platform', severity: o.severity ?? 'critical', ...(o.feature && { feature: o.feature, feature_version: '1.0.0', vehicle_model: 'NX4 PE' }), ...(o.kind && { ff_anomaly_kind: o.kind }) },
+  labels: { alertname: o.name, ff_axis: o.axis, ff_source: 'feature-platform', severity: o.severity ?? 'critical', ...(o.feature && { feature: o.feature, feature_version: '1.0.0', vehicle_model: 'NX4 PE' }), ...(o.kind && { ff_anomaly_kind: o.kind }), ...(o.indicator && { ff_indicator: o.indicator }) },
   annotations: { summary: `${o.name} 요약`, description: '근거와 조치' },
-  startsAt: '2026-11-06T00:55:00Z',
+  startsAt: o.startsAt ?? '2026-11-06T00:55:00Z',
   endsAt: '0001-01-01T00:00:00Z',
   fingerprint: `fp-${o.name}`,
   dashboardURL: 'https://example.grafana.net/d/ff-feature-health',
   panelURL: 'https://example.grafana.net/d/ff-feature-health?viewPanel=3',
-  values: { A: 0.31 },
+  values: { A: o.value ?? 0.31 },
 });
 
 describe('Grafana 경보 수신 — 앱 흐름', () => {
@@ -78,5 +78,36 @@ describe('Grafana 경보 수신 — 앱 흐름', () => {
     // 해결(resolved)은 새 관찰이지만 이상 징후 신호는 아니다
     const resolved = JSON.stringify({ alerts: [alert({ name: '출시 후 오류 증가', axis: 'PROBLEM', feature: 'FEAT-00022', kind: 'FEATURE_FAULT', status: 'resolved' })] });
     expect((await b.http().post('/api/webhooks/grafana/alerts').set('Content-Type', 'application/json').set('X-Grafana-Alerting-Signature', sign(resolved)).send(resolved).expect(202)).body.items[0].anomalyKind).toBeNull();
+  });
+
+  // Closed loop(통합 D-INT-3) — 판정 지표를 단 경보는 FF 점검 결과의 감지 입력(출처 Grafana). 같은 지문은 한 번만, 해결 경보는 점검 결과를 닫지 않는다
+  it('판정 지표를 단 Feature 경보 → 점검 결과 감지(출처 Grafana), 같은 지문은 한 건, 해결은 닫지 않는다', async () => {
+    process.env.FF_GRAFANA_WEBHOOK_SECRET = SECRET;
+    const b = await bootApp({ at: '2026-11-06T01:00:00.000Z' });
+    close = () => b.app.close();
+    const send = async (alerts: unknown[]) => {
+      const raw = JSON.stringify({ alerts });
+      return (await b.http().post('/api/webhooks/grafana/alerts').set('Content-Type', 'application/json').set('X-Grafana-Alerting-Signature', sign(raw)).send(raw).expect(202)).body;
+    };
+    const mine = async () => ((await b.http().get('/api/feature-health').expect(200)).body.findings as any[]).filter((f) => f.featureId === 'FEAT-00024' && f.cause === 'usage_rate');
+    const usage = (o: { status?: string; startsAt?: string; value?: number } = {}) => alert({ name: '사용률 저조', axis: 'IMPROVEMENT', feature: 'FEAT-00024', severity: 'info', indicator: 'usage_rate', ...o });
+    await send([usage({ value: 0.3 }), alert({ name: '출시 후 오류 증가', axis: 'PROBLEM', feature: 'FEAT-00024', kind: 'FEATURE_FAULT' })]);
+    const [f] = await mine();
+    expect(await mine()).toHaveLength(1);
+    expect(f).toMatchObject({ version: '1.0.0', axis: 'IMPROVEMENT', cause: 'usage_rate', status: 'DETECTED', severity: 'WATCH', source: 'GRAFANA', ownerRole: 'FEATURE_AUTHOR' });
+    expect(f.alerts).toEqual([expect.objectContaining({ fingerprint: 'fp-사용률 저조', rule: '사용률 저조', startsAt: '2026-11-06T00:55:00Z' })]);
+    expect(f.history[0]).toMatchObject({ from: null, to: 'DETECTED', by: 'GRAFANA' });
+    expect(f.evidence.indicators.find((i: any) => i.name === 'usage_rate')).toMatchObject({ current: 0.3 });
+    // 판정 지표가 없는 경보는 점검 결과를 만들지 않는다(운영 관찰·이상 징후로만)
+    expect(((await b.http().get('/api/feature-health').expect(200)).body.findings as any[]).filter((x) => x.source === 'GRAFANA')).toHaveLength(1);
+    // 같은 지문의 다음 발생(시작 시각이 다름)도 열린 점검 결과에 다시 쌓지 않는다
+    await send([usage({ startsAt: '2026-11-06T00:58:00Z', value: 0.1 })]);
+    expect(await mine()).toEqual([expect.objectContaining({ findingId: f.findingId, status: 'DETECTED', severity: 'WATCH', alerts: f.alerts, history: f.history })]);
+    // 해결 경보는 닫지 않는다 — 닫기는 효과 확인 뒤 사람만
+    const resolved = await send([usage({ status: 'resolved' })]);
+    expect(resolved.accepted).toBe(1);
+    expect(await mine()).toEqual([expect.objectContaining({ findingId: f.findingId, status: 'DETECTED' })]);
+    const ev = (await b.http().get(`/api/events?type=finding.detected&aggregate=${f.findingId}`).expect(200)).body;
+    expect(ev.items).toEqual([expect.objectContaining({ payload: expect.objectContaining({ source: 'GRAFANA', cause: 'usage_rate' }) })]);
   });
 });

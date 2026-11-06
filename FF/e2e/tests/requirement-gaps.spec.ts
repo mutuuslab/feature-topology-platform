@@ -50,7 +50,7 @@ test('수신자 규칙 → 파이프라인 실패 알림·오류 이력 → 감�
 
   // 3) 감사 — 수신자 규칙을 바꾼 기록을 열어 변경 전후 값, 기간 조건, CSV 내보내기
   await page.goto('/audit');
-  await page.getByLabel('행위').selectOption('NOTIFICATION_RULE_UPDATE');
+  await page.getByRole('combobox', { name: /^행위/ }).selectOption('NOTIFICATION_RULE_UPDATE'); // 표 정렬 버튼(행위·행위자)과 겹치지 않게 선택 상자만
   const audit = page.getByRole('table', { name: '감사 이력' });
   await audit.locator('tbody tr').first().click();
   const diff = page.getByTestId('audit-diff');

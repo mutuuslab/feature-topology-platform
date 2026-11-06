@@ -2,11 +2,12 @@
 // ① 관측: Lake Feature 버전 4축 지표(IF-15 GET /v1/metrics/feature-health) → ② 판정: contracts 규칙(INDICATOR_RULES·judgeAxis)
 // → ③ 점검 결과(Finding): 조치 필요·주의 축마다 한 건, 같은 Feature·축·원인은 다시 열기(반복 표시) → ④ 조치 연결(JIRA·codeBeamer·정책)
 // → ⑤ 효과 확인(조치 전후 비교, 표본·신뢰구간) → 닫힘 / 다시 열림. 효과 확인 없이 닫을 수 없다(INV-20). 상태 이동은 감사·이벤트(→ Lake 라벨)로 남는다.
-import { Body, Controller, Get, Inject, Injectable, Param, Post } from '@nestjs/common';
+// 감지 입력은 둘(통합 D-INT-3): Lake 4축 판정과, 같은 판정 규칙(INDICATOR_RULES)으로 단 Grafana 경보(ff_indicator, 출처 GRAFANA). 판정 정본은 FF 규칙이다.
+import { Body, Controller, Get, Inject, Injectable, Logger, OnModuleInit, Param, Post } from '@nestjs/common';
 import {
-  AXIS_OWNER, FINDING_DUE_DAYS, FindingTransitionBody, HEALTH_AXES, INDICATOR_RULES, findingOpen, findingTransitionProblem, judgeAxis, judgeIndicator,
+  AXIS_OWNER, FINDING_DUE_DAYS, FindingTransitionBody, FRESHNESS_SLA, HEALTH_AXES, INDICATOR_RULES, LAKE_INDICATORS, findingOpen, findingTransitionProblem, judgeAxis, judgeIndicator,
   type FeatureHealthResponse, type FeatureHealthRow, type FeatureOpsMetrics, type FindingStatus, type Freshness, type HealthAxis, type HealthFinding,
-  type HealthState, type IndicatorValue, type LakeIndicatorName,
+  type HealthState, type IndicatorValue, type LakeIndicatorName, type OpsObservation,
 } from '@ff/contracts';
 import { LakeLink } from '../../../adapters/lake/lake-reader';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
@@ -53,6 +54,23 @@ export class FindingRepo {
   }
 }
 
+/** Grafana 경보 값 → 수(쿼리 A 값). 값 묶음(JSON)·valueString("value=0.3") 어느 쪽이든, 못 읽으면 null */
+export function alertValue(raw: string | null): number | null {
+  if (!raw) return null;
+  try {
+    const v = JSON.parse(raw) as unknown;
+    if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+    if (v && typeof v === 'object') {
+      const a = (v as Record<string, unknown>).A ?? Object.values(v as Record<string, unknown>)[0];
+      return typeof a === 'number' && Number.isFinite(a) ? a : null;
+    }
+  } catch {
+    const m = raw.match(/value=(-?[\d.]+(?:e[-+]?\d+)?)/i);
+    if (m) return Number(m[1]);
+  }
+  return null;
+}
+
 /** 효과 판정 — 조치 뒤 값이 경계(주의) 안쪽인가. 비율은 신뢰구간 끝이 경계 안쪽이어야 한다 */
 export function effectOf(cause: LakeIndicatorName, before: number | null, after: number | null, samples: number | null): NonNullable<HealthFinding['effect']> {
   const rule = INDICATOR_RULES[cause];
@@ -68,7 +86,8 @@ export function effectOf(cause: LakeIndicatorName, before: number | null, after:
 
 @Injectable()
 @PlatformComponent('D04-03')
-export class FeatureHealthService {
+export class FeatureHealthService implements OnModuleInit {
+  private readonly log = new Logger(FeatureHealthService.name);
   private lastRefresh = 0;
 
   constructor(
@@ -80,6 +99,63 @@ export class FeatureHealthService {
     private readonly events: EventService,
     private readonly clock: Clock,
   ) {}
+
+  onModuleInit() {
+    // Grafana 경보(운영 관찰) → 점검 결과 감지 입력. 커밋된 관찰만 받는다
+    this.events.stream(['ops.observation.recorded']).subscribe((e) => {
+      try {
+        this.fromAlert(e.payload as OpsObservation);
+      } catch (err) {
+        this.log.error(`Grafana 경보 → 점검 결과 처리 실패: ${(err as Error).message}`);
+      }
+    });
+  }
+
+  /**
+   * Grafana 경보 → 점검 결과 감지(DETECTED, 출처 GRAFANA, 통합 D-INT-3). FF 판정 지표(ff_indicator)를 단 Feature 경보(firing)만 받는다.
+   * 같은 원인(Feature·Version·축·지표)이 열려 있으면 새로 만들지 않고 경보만 붙인다 — 같은 지문은 한 번만(멱등).
+   * 닫힌 뒤 같은 원인이 새로 울리면 다시 연다(반복 문제). 해결(resolved) 경보는 아무것도 바꾸지 않는다 — 닫기는 효과 확인 뒤 사람만(INV-20).
+   * 바꿨으면 true
+   */
+  fromAlert(o: OpsObservation): boolean {
+    if (o.status !== 'firing' || !o.featureId || !o.indicator || !(LAKE_INDICATORS as readonly string[]).includes(o.indicator)) return false;
+    const cause = o.indicator as LakeIndicatorName;
+    const rule = INDICATOR_RULES[cause];
+    const f = (o.featureVersion ? this.features.get(o.featureId, o.featureVersion) : undefined) ?? this.released().find((x) => x.featureId === o.featureId);
+    if (!f) return false;
+    const axis = rule.axis;
+    const key = findingKey({ featureId: f.featureId, version: f.version, axis, cause });
+    const prev = this.repo.latest(key);
+    const ref = { fingerprint: o.fingerprint, rule: o.rule, startsAt: o.startsAt, observationId: o.observationId };
+    const now = this.clock.iso();
+    if (prev && findingOpen(prev.status)) {
+      if (prev.alerts?.some((a) => a.fingerprint === o.fingerprint)) return false;
+      this.repo.save({ ...prev, alerts: [...(prev.alerts ?? []), ref], updatedAt: now });
+      return true;
+    }
+    if (prev?.alerts?.some((a) => a.fingerprint === o.fingerprint && a.startsAt === o.startsAt)) return false;
+    // 심각도 — 경보 값이 조치 경계를 넘으면 조치 필요, 아니면 주의(경보 임계값 = 주의 경계)
+    const value = alertValue(o.value);
+    const severity: 'ACTION' | 'WATCH' = value != null && (rule.worse === 'up' ? value >= rule.action : value <= rule.action) ? 'ACTION' : 'WATCH';
+    const m = this.measure(f.featureId, f.version, f.country ?? 'KR');
+    const base = m?.indicators.filter((i) => i.axis === axis) ?? [];
+    const seen: IndicatorValue = { ...(base.find((i) => i.name === cause) ?? { name: cause, axis, previous: null, sampleVehicles: null, suppressed: false }), current: value ?? base.find((i) => i.name === cause)?.current ?? null };
+    const evidence = { freshness: m?.freshness ?? { dataset: 'grafana', asOf: o.startsAt, lagSeconds: null, slaSeconds: FRESHNESS_SLA.BUSINESS, stale: false }, indicators: [...base.filter((i) => i.name !== cause), seen] };
+    const due = new Date(this.clock.now().getTime() + FINDING_DUE_DAYS[severity] * DAY).toISOString();
+    const note = `Grafana 경보 — ${o.rule}(${severity === 'ACTION' ? '조치 필요' : '주의'})`;
+    const next: HealthFinding = prev
+      ? { ...prev, status: 'REOPENED', severity, repeats: prev.repeats + 1, dueAt: due, updatedAt: now, evidence, effect: null, alerts: [...(prev.alerts ?? []), ref], history: [...prev.history, { at: now, from: prev.status, to: 'REOPENED', by: 'GRAFANA', note: `${note} — 같은 원인으로 다시 감지` }] }
+      : {
+          findingId: this.repo.nextId(), featureId: f.featureId, version: f.version, featureName: f.name, axis, cause, severity, status: 'DETECTED',
+          ownerRole: AXIS_OWNER[axis], dueAt: due, overdue: false, detectedAt: now, updatedAt: now, repeats: 0, evidence, actions: [], effect: null,
+          history: [{ at: now, from: null, to: 'DETECTED', by: 'GRAFANA', note }], source: 'GRAFANA', alerts: [ref],
+        };
+    this.db.tx(() => {
+      this.repo.save(next);
+      this.events.publish(prev ? 'finding.reopened' : 'finding.detected', next.findingId, { featureId: next.featureId, version: next.version, axis, cause, severity, source: 'GRAFANA', observationId: o.observationId }, { componentId: 'D04-03' });
+    });
+    return true;
+  }
 
   /** 운영 중인 Feature 버전 — 출시(RELEASED) 판 */
   private released() {

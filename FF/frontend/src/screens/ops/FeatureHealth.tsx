@@ -268,7 +268,7 @@ export function FindingScreen() {
                   { key: 'at', header: F.col.at, cell: (h) => <span className="ds-mono ds-nowrap">{when(h.at)}</span> },
                   { key: 'fr', header: F.col.from, cell: (h) => (h.from ? L.findingStatus[h.from] : '—') },
                   { key: 'to', header: F.col.to, cell: (h) => <FindingStatusBadge status={h.to} /> },
-                  { key: 'by', header: F.col.by, cell: (h) => <span className="ds-mono">{h.by === 'SYSTEM' ? F.system : h.by}</span> },
+                  { key: 'by', header: F.col.by, cell: (h) => <span className="ds-mono">{h.by === 'SYSTEM' ? F.system : h.by === 'GRAFANA' ? F.grafana : h.by}</span> },
                   { key: 'n', header: F.col.note, cell: (h) => h.note },
                 ]}
               />

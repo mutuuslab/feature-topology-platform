@@ -2,7 +2,8 @@
 // 확인: FF_GRAFANA_WEBHOOK_TOKEN(Authorization: Bearer) · FF_GRAFANA_WEBHOOK_SECRET(HMAC-SHA256 hex, 시각 머리글이 있으면 "시각:본문")
 // — 둘 다 없으면 창구가 꺼져 있다(404). 둘 다 있으면 둘 다 맞아야 한다. 같은 경보(지문·시작 시각·상태)는 한 번만 기록한다.
 // 기록: 이벤트 ops.observation.recorded(감사 포함). 문제·운영·위험 축이 Feature를 가리키고 규칙 라벨 ff_anomaly_kind가 있으면
-// 이상 징후(D06-12)가 이 이벤트를 신호로 받는다. 개선 축은 운영 관찰로만 남는다 — Feature 운영 점검(TL-B08)이 근거로 읽는다.
+// 이상 징후(D06-12)가 이 이벤트를 신호로 받는다. 규칙 라벨 ff_indicator(FF 판정 지표)가 있으면 Feature 운영 점검(TL-B08)이 점검 결과의
+// 감지 입력(출처 Grafana)으로 받는다(통합 D-INT-3) — 판정 정본은 FF 규칙이고, 경보가 점검 결과를 닫지는 않는다.
 import { Controller, Get, HttpCode, Inject, Injectable, Post, Query, Req } from '@nestjs/common';
 import { observationAxisOf, observationSeverityOf, type OpsObservation } from '@ff/contracts';
 import type { Request } from 'express';
@@ -114,6 +115,7 @@ export class GrafanaAlertService {
         dashboardUrl: str(a?.dashboardURL, 500),
         panelUrl: str(a?.panelURL, 500),
         anomalyKind: status === 'firing' && known && kind && ANOMALY_KINDS.has(kind) && axis !== 'IMPROVEMENT' ? (kind as OpsObservation['anomalyKind']) : null,
+        indicator: str(labels.ff_indicator, 40),
         receivedAt: this.clock.iso(),
       };
       this.db.tx(() => {

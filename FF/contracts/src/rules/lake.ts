@@ -3,48 +3,17 @@
 // 자동으로 바꾸는 것은 규칙(① 중단 기준·신선도 초과 HOLD)뿐이다 — 모델 점수는 권고(Evidence)로만 쓴다(INV-17).
 // 형식·표만 둔다(zod 없음) — 화면 첫 묶음에 실행 코드를 더하지 않게. 요청 본문 검증기는 schemas/lake.ts.
 
-import type { HealthAxis } from './telemetry-metrics';
+import { INDICATOR_RULES, type HealthAxis, type LakeIndicatorName } from './telemetry-metrics';
 
-/** 판정 4축(80-70 9.1) — Lake Indicator.axis와 같은 값. 정의는 telemetry-metrics 한 곳(Grafana 도구가 import 없이 경로로 읽는 파일)이고 여기서 다시 낸다 */
-export { HEALTH_AXES, type HealthAxis } from './telemetry-metrics';
+/**
+ * 판정 4축(80-70 9.1)·IF-15 지표 이름·지표 판정 기준(INDICATOR_RULES) — 정의는 telemetry-metrics 한 곳(Grafana 도구가 import 없이 경로로 읽는 파일)이고 여기서 다시 낸다.
+ * 판정 정본은 FF 규칙(통합 D-INT-3): Grafana 대시보드 칸 색·경보 임계값은 같은 표에서 만들고, 관찰·경보만 한다(확대를 막는 판정은 FF).
+ */
+export { HEALTH_AXES, INDICATOR_RULES, LAKE_INDICATORS, type HealthAxis, type IndicatorRule, type LakeIndicatorName } from './telemetry-metrics';
 
 /** 축 상태 — 판단 불가(UNKNOWN)는 정상으로 보지 않는다. 순서 = 심각도(앞이 더 급함) */
 export const HEALTH_STATES = ['ACTION', 'WATCH', 'UNKNOWN', 'OK'] as const;
 export type HealthState = (typeof HEALTH_STATES)[number];
-
-/** IF-15 Indicator.name(80-75 8장) */
-export const LAKE_INDICATORS = [
-  'delivery_success_rate', 'status_rejected_rate', 'dtc_vehicle_rate', 'fault_rate_per_1k', 'safety_event_rate_per_1k',
-  'usage_rate', 'manual_off_rate', 'incident_count', 'anomaly_open_count', 'security_alert_count', 'disabled_share',
-  'trial_conversion_rate', 'data_missing_rate',
-] as const;
-export type LakeIndicatorName = (typeof LAKE_INDICATORS)[number];
-
-/** 지표 판정 기준 — worse: 커질수록 나쁜가(up)·작아질수록 나쁜가(down). watch·action은 절대값 경계, rise는 앞 창 대비 배수(주의) */
-export interface IndicatorRule {
-  axis: HealthAxis;
-  worse: 'up' | 'down';
-  watch: number;
-  action: number;
-  rise?: number;
-}
-
-/** @rule 80-70 9.1 — 축별 근거 지표와 경계(사전 등록 값, Lake 집계 기준). 비율은 0~1 */
-export const INDICATOR_RULES: Record<LakeIndicatorName, IndicatorRule> = {
-  delivery_success_rate: { axis: 'OPERATION', worse: 'down', watch: 0.97, action: 0.92 },
-  status_rejected_rate: { axis: 'OPERATION', worse: 'up', watch: 0.01, action: 0.03 },
-  disabled_share: { axis: 'OPERATION', worse: 'up', watch: 0.05, action: 0.15 },
-  dtc_vehicle_rate: { axis: 'PROBLEM', worse: 'up', watch: 0.004, action: 0.008, rise: 1.5 },
-  fault_rate_per_1k: { axis: 'PROBLEM', worse: 'up', watch: 2, action: 5, rise: 1.5 },
-  safety_event_rate_per_1k: { axis: 'PROBLEM', worse: 'up', watch: 0.8, action: 1.5, rise: 1.5 },
-  incident_count: { axis: 'PROBLEM', worse: 'up', watch: 3, action: 8 },
-  anomaly_open_count: { axis: 'PROBLEM', worse: 'up', watch: 2, action: 5 },
-  usage_rate: { axis: 'IMPROVEMENT', worse: 'down', watch: 0.35, action: 0.15 },
-  manual_off_rate: { axis: 'IMPROVEMENT', worse: 'up', watch: 0.12, action: 0.3 },
-  trial_conversion_rate: { axis: 'IMPROVEMENT', worse: 'down', watch: 0.08, action: 0.03 },
-  security_alert_count: { axis: 'RISK', worse: 'up', watch: 1, action: 4 },
-  data_missing_rate: { axis: 'RISK', worse: 'up', watch: 0.05, action: 0.2 },
-};
 
 /** 판단에 필요한 최소 표본(차량 수) — 미만이면 판단 불가. k-익명 5대(80-75 8.2)와 별개의 판정 기준 */
 export const MIN_SAMPLE_VEHICLES = 200;
@@ -291,6 +260,10 @@ export interface HealthFinding {
   actions: HealthFindingAction[];
   effect: { indicator: LakeIndicatorName; target: number; before: number | null; after: number | null; samples: number | null; ci: [number, number] | null; met: boolean | null } | null;
   history: { at: string; from: FindingStatus | null; to: FindingStatus; by: string; note: string }[];
+  /** 감지 출처 — Lake 4축 판정(없으면 이것) 또는 Grafana 경보(같은 판정 규칙 표로 단 경보, 통합 D-INT-3) */
+  source?: 'LAKE' | 'GRAFANA';
+  /** 감지에 쓴 Grafana 경보 — 지문마다 한 번. 해결(resolved) 경보는 점검 결과를 움직이지 않는다 */
+  alerts?: { fingerprint: string; rule: string; startsAt: string; observationId: string }[];
 }
 
 export interface FeatureHealthRow {

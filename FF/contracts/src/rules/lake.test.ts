@@ -7,6 +7,7 @@ import {
   CANARY_METRICS, DEFAULT_ABORT, FINDING_FLOW, FINDING_STATUSES, HEALTH_AXES, INDICATOR_RULES, LAKE_INDICATORS, MIN_SAMPLE_VEHICLES,
   findingTransitionProblem, judgeAxis, judgeCanary, judgeIndicator, modelUsable, type CanaryArmStat, type IndicatorValue,
 } from './lake';
+import * as metrics from './telemetry-metrics';
 
 const api = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', '..', 'docs', '80-integration', 'datalake-if15.openapi.json'), 'utf8'));
 const iv = (name: IndicatorValue['name'], current: number | null, previous: number | null = null, sampleVehicles = 5000, suppressed = false): IndicatorValue => ({ name, axis: INDICATOR_RULES[name].axis, current, previous, sampleVehicles, suppressed });
@@ -17,6 +18,11 @@ describe('IF-15 계약 대조 (TL-C01)', () => {
     expect([...LAKE_INDICATORS].sort()).toEqual([...ind.name.enum].sort());
     expect([...HEALTH_AXES]).toEqual(ind.axis.enum);
     expect(Object.keys(INDICATOR_RULES).sort()).toEqual([...LAKE_INDICATORS].sort());
+  });
+  it('판정 규칙은 한 곳 — Grafana 도구가 경로로 읽는 지표 카탈로그와 같은 표이고, 지표 축 지도는 규칙 축에서 나온다(통합 D-INT-3)', () => {
+    expect(metrics.INDICATOR_RULES).toBe(INDICATOR_RULES);
+    for (const n of LAKE_INDICATORS) expect(metrics.HEALTH_INDICATORS[n], n).toBe(INDICATOR_RULES[n].axis);
+    expect(Object.keys(metrics.HEALTH_INDICATORS).sort()).toEqual([...LAKE_INDICATORS].sort());
   });
   it('신선도 SLA 기본값(안전 600초)과 k_min=5가 계약과 같다', () => {
     expect(api.components.schemas.Freshness.properties.sla_seconds.description).toContain('600');

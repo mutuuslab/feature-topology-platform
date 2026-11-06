@@ -289,7 +289,7 @@
       "id": 2,
       "type": "table",
       "title": "Feature Version 4축",
-      "description": "동작(적용 성공·거부)·문제(DTC·고장·안전 이벤트)·개선(사용률·수동 끄기)·위험(이상 징후·보안·결측). 칸 색이 주황·빨강이면 개선 후보 — Feature를 누르면 FF Feature 상세, 오른쪽 링크는 이 대시보드의 해당 Feature로 좁힌다. 판정(정상·주의·조치 필요·판단 불가)은 FF가 한다.",
+      "description": "동작(적용 성공·거부)·문제(DTC·고장·안전 이벤트·열린 이상 징후)·개선(사용률·수동 끄기)·위험(보안·결측). 칸 색은 FF 판정 규칙의 주의(주황)·조치 필요(빨강) 경계 — Feature를 누르면 FF Feature 상세, 오른쪽 링크는 이 대시보드의 해당 Feature로 좁힌다. 판정(정상·주의·조치 필요·판단 불가)은 FF가 한다.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -334,6 +334,158 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "delivery_success_rate"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "red"
+                    },
+                    {
+                      "value": 0.92,
+                      "color": "orange"
+                    },
+                    {
+                      "value": 0.97,
+                      "color": "green"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status_rejected_rate"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 0.01,
+                      "color": "orange"
+                    },
+                    {
+                      "value": 0.03,
+                      "color": "red"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dtc_vehicle_rate"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 0.004,
+                      "color": "orange"
+                    },
+                    {
+                      "value": 0.008,
+                      "color": "red"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fault_rate_per_1k"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 2,
+                      "color": "orange"
+                    },
+                    {
+                      "value": 5,
+                      "color": "red"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "usage_rate"
             },
             "properties": [
@@ -351,11 +503,11 @@
                       "color": "red"
                     },
                     {
-                      "value": 0.3,
+                      "value": 0.15,
                       "color": "orange"
                     },
                     {
-                      "value": 0.5,
+                      "value": 0.35,
                       "color": "green"
                     }
                   ]
@@ -389,11 +541,11 @@
                       "color": "green"
                     },
                     {
-                      "value": 0.1,
+                      "value": 0.12,
                       "color": "orange"
                     },
                     {
-                      "value": 0.15,
+                      "value": 0.3,
                       "color": "red"
                     }
                   ]
@@ -410,7 +562,41 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "delivery_success_rate"
+              "options": "anomaly_open_count"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 2,
+                      "color": "orange"
+                    },
+                    {
+                      "value": 5,
+                      "color": "red"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "data_missing_rate"
             },
             "properties": [
               {
@@ -424,52 +610,14 @@
                   "steps": [
                     {
                       "value": null,
-                      "color": "red"
-                    },
-                    {
-                      "value": 0.98,
-                      "color": "orange"
-                    },
-                    {
-                      "value": 0.99,
-                      "color": "green"
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fault_rate_per_1k"
-            },
-            "properties": [
-              {
-                "id": "decimals",
-                "value": 2
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "value": null,
                       "color": "green"
                     },
                     {
-                      "value": 5,
+                      "value": 0.05,
                       "color": "orange"
                     },
                     {
-                      "value": 8,
+                      "value": 0.2,
                       "color": "red"
                     }
                   ]
@@ -609,7 +757,7 @@
       "id": 5,
       "type": "timeseries",
       "title": "사용률(활성/대상)",
-      "description": "IF-15 usage_rate. 개선 후보: 30% 아래가 이어지면 \"사용률 저조\" 경보 — 기능 가치·안내 문구·기본 켜짐 여부를 Feature Owner가 검토한다.",
+      "description": "IF-15 usage_rate. 개선 후보: 35% 아래가 이어지면 \"사용률 저조\" 경보 — 기능 가치·안내 문구·기본 켜짐 여부를 Feature Owner가 검토한다.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -643,11 +791,11 @@
                 "color": "red"
               },
               {
-                "value": 0.3,
+                "value": 0.15,
                 "color": "orange"
               },
               {
-                "value": 0.5,
+                "value": 0.35,
                 "color": "green"
               }
             ]
@@ -839,7 +987,7 @@
       "id": 8,
       "type": "timeseries",
       "title": "수동 끄기 비율",
-      "description": "켜짐 대비 운전자가 직접 끈 비율. 개선 후보: 15% 이상이면 \"운전자가 자주 끔\" — 개입 강도·경고음·민감도 파라미터 검토(변경 요청 → 새 Version).",
+      "description": "켜짐 대비 운전자가 직접 끈 비율. 개선 후보: 12% 넘으면 \"운전자가 자주 끔\" — 개입 강도·경고음·민감도 파라미터 검토(변경 요청 → 새 Version).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -873,11 +1021,11 @@
                 "color": "green"
               },
               {
-                "value": 0.1,
+                "value": 0.12,
                 "color": "orange"
               },
               {
-                "value": 0.15,
+                "value": 0.3,
                 "color": "red"
               }
             ]

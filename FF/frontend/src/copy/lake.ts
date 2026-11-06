@@ -81,6 +81,7 @@ export const lake = {
     to: { ANALYZING: '분석 시작', ACTING: '조치 중으로', VERIFYING: '효과 확인 시작', CLOSED: '닫기', REOPENED: '다시 열기' } as Record<string, string>,
     why: { needAction: '조치를 먼저 연결해야 합니다', needEffect: '효과가 확인되어야 닫을 수 있습니다', note: '메모를 2자 이상 적어 주세요', done: '닫힌 점검 결과입니다' },
     system: '자동 판정',
+    grafana: 'Grafana 경보',
     toFeature: 'Feature 운영 지표',
     toHub: '운영 점검 전체',
     left: (days: number) => (days >= 1 ? `${Math.floor(days)}일` : `${Math.max(1, Math.round(days * 24))}시간`),

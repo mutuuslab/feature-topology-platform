@@ -228,14 +228,14 @@ cohort: Canary 중인 Version은 treatment(새 Version)·control(이전 Version)
 
 <a id="ff-imp-low-usage"></a>
 ### 사용률 저조 (`ff-imp-low-usage`, 개선·info)
-- 조건: IF-15 usage_rate 30% 아래 6시간.
+- 조건: IF-15 usage_rate가 FF 판정 주의 경계(`INDICATOR_RULES.usage_rate.watch`, 지금 35%) 아래 6시간. 경보는 FF 점검 결과의 감지 입력이다(§6).
 - 누가: Feature Owner(상품 기획과 함께).
 - 확인: 사용률·국가·차종별 활성 비율 차이.
 - FF 조치: 개선 후보로 Feature 운영 점검에 올리고 발견성(HMI)·기본값·안내 문구 개선을 변경 요청으로.
 
 <a id="ff-imp-manual-off"></a>
 ### 운전자가 자주 끔 (`ff-imp-manual-off`, 개선·info)
-- 조건: 켜짐 대비 수동 끄기 15% 이상 2시간(시장별).
+- 조건: 켜짐 대비 수동 끄기가 FF 판정 주의 경계(`INDICATOR_RULES.manual_off_rate.watch`, 지금 12%) 초과 2시간(시장별). 경보는 FF 점검 결과의 감지 입력이다(§6).
 - 누가: Feature Owner.
 - 확인: 수동 끄기 비율, 사용 빈도·시간.
 - FF 조치: 개입 강도·민감도 파라미터 변경 요청 → 새 Version → Canary로 효과 확인.
@@ -265,7 +265,9 @@ Grafana 운영 신호 → 경보(개선 후보) → FF webhook → 운영 관찰
 - 수신: `POST /api/webhooks/grafana/alerts`(D04-03). 확인은 `FF_GRAFANA_WEBHOOK_SECRET`(HMAC-SHA256 hex, `X-Grafana-Alerting-Signature`, 시각 머리글 `X-Grafana-Alerting-Timestamp`가 있으면 `시각:본문`, ±5분) 또는 `FF_GRAFANA_WEBHOOK_TOKEN`(Bearer). 둘 다 비우면 창구가 꺼진다(404). 같은 경보(지문·시작 시각·상태)는 한 번만 기록한다.
 - 기록: 이벤트 `ops.observation.recorded`(감사 `OPS_OBSERVATION`, 계약 `OpsObservation`) — Feature·Version·축·심각도·요약·값·대시보드/패널 URL. 조회 `GET /api/ops/observations?featureId=&axis=&status=`.
 - 이상 징후: 규칙 라벨 `ff_anomaly_kind`가 있고 축이 개선이 아니며 Feature가 실재하면 `AnomalyService`가 신호(`GRAFANA:<규칙>`, ref=관찰 ID)로 받는다 → `/ops/anomalies`.
-- 연결 지점(다른 브랜치 `feat/telemetry-ui`): Feature 운영 점검 판정 엔진(TL-B08 Finding)은 `ops.observation.recorded`를 근거로 읽고, Feature 상세 '운영 지표'(TL-UI04/18)·`/ops/feature-health`(TL-UI16)는 관찰 목록과 Grafana 링크(`var-feature`)를 함께 보인다. 지표 이름·축·Indicator 이름은 IF-15 계약(`datalake-if15.openapi.json` Indicator)과 같다.
+- 판정 정본(통합 D-INT-3): 4축 판정·Canary 확대 보류는 FF 규칙(`contracts/src/rules/telemetry-metrics.ts` `INDICATOR_RULES`, `rules/lake.ts`가 다시 냄)이 한다. Grafana는 관찰·경보만 한다 — 4축 표 칸 색, 사용률·수동 끄기 패널 색 단계, 판정 지표 경보(`ff_indicator` 라벨)의 임계값을 `tools/grafana/dashboards.ts`가 같은 표에서 만든다(경보 = 주의 경계).
+- 점검 결과 감지: `ff_indicator`를 단 Feature 경보(firing)는 `FeatureHealthService`가 점검 결과(Finding)의 감지(DETECTED, 출처 GRAFANA)로 받는다. 같은 Feature·Version·축·원인이 열려 있으면 새로 만들지 않고, 같은 지문은 한 번만 붙인다. 해결(resolved) 경보는 점검 결과를 움직이지 않는다 — 닫기는 효과 확인 뒤 사람만(INV-20).
+- 연결 지점: Feature 운영 점검 판정 엔진(TL-B08 Finding)은 `ops.observation.recorded`를 근거로 읽고, Feature 상세 '운영 지표'(TL-UI04/18)·`/ops/feature-health`(TL-UI16)는 관찰 목록과 Grafana 링크(`var-feature`)를 함께 보인다. 지표 이름·축·Indicator 이름은 IF-15 계약(`datalake-if15.openapi.json` Indicator)과 같다.
 - 양방향 링크: FF → Grafana(Feature 상세 외부 도구 카드, `/ops/telemetry` 머리), Grafana → FF(데이터 링크 `${ff_url}/features/:id/:ver`·정책·긴급 차단).
 - 공개 데모는 정적 사이트라 webhook을 받을 수 없다 — 경보는 Grafana 경보 목록에서만 보이고(묵음), FF 연결은 설치 서버에서 켠다.
 

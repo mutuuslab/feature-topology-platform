@@ -123,6 +123,15 @@ describe('점검 결과 상세 (TL-UI17)', () => {
     expect(JSON.parse(String(posted('/transition')!.init!.body))).toMatchObject({ to: 'ACTING', action: { kind: 'JIRA', ref: 'FFP-9001' } });
   });
 
+  it('Grafana 경보로 감지한 점검 결과 — 감지 출처와 이력 주체를 업무 말로 보인다', async () => {
+    const g = finding({ status: 'DETECTED', axis: 'IMPROVEMENT', cause: 'usage_rate', severity: 'WATCH', ownerRole: 'FEATURE_AUTHOR', source: 'GRAFANA', alerts: [{ fingerprint: 'fp-1', rule: '사용률 저조', startsAt: '2026-10-18T00:00:00Z', observationId: 'OBS-1' }], history: [{ at: '2026-10-18T00:00:00Z', from: null, to: 'DETECTED', by: 'GRAFANA', note: 'Grafana 경보 — 사용률 저조' }] });
+    handler = (url) => (url.startsWith('/api/feature-health/findings/') ? { body: g } : undefined);
+    mount('/ops/feature-health/FND-00001', '/ops/feature-health/:findingId', <FindingScreen />, 'quality');
+    const history = await screen.findByRole('table', { name: '상태 이력' });
+    expect(within(history).getByText('Grafana 경보')).toBeTruthy();
+    expect(within(history).queryByText('GRAFANA')).toBeNull();
+  });
+
   it('효과 미달이면 닫기는 사유와 함께 막히고 다시 열기만 된다(INV-20)', async () => {
     const f = finding({ status: 'VERIFYING', actions: [{ kind: 'JIRA', ref: 'FFP-1', title: '결함', at: '2026-10-19T00:00:00Z', by: 'usr-safety' }], effect: { indicator: 'dtc_vehicle_rate', target: 0.004, before: 0.0093, after: 0.0091, samples: 5000, ci: [0.0088, 0.0094], met: false } });
     handler = (url) => (url.startsWith('/api/feature-health/findings/') ? { body: f } : undefined);

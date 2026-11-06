@@ -774,7 +774,7 @@
                     "evaluator": {
                       "type": "lt",
                       "params": [
-                        0.3
+                        0.35
                       ]
                     }
                   }
@@ -787,12 +787,13 @@
           "for": "6h",
           "labels": {
             "ff_source": "feature-platform",
+            "severity": "info",
             "ff_axis": "IMPROVEMENT",
-            "severity": "info"
+            "ff_indicator": "usage_rate"
           },
           "annotations": {
             "summary": "{{ $labels.feature }} {{ $labels.feature_version }} 사용률 {{ humanizePercentage $values.A.Value }}",
-            "description": "대상 차량 가운데 실제로 켜는 비율이 30% 아래. 개선 후보: 발견성(HMI 노출)·기본값·안내 문구. 담당: Feature Owner(상품 기획과 함께).",
+            "description": "대상 차량 가운데 실제로 켜는 비율이 35% 아래(FF 판정 주의). 개선 후보: 발견성(HMI 노출)·기본값·안내 문구. 담당: Feature Owner(상품 기획과 함께).",
             "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-imp-low-usage",
             "__dashboardUid__": "ff-feature-health",
             "__panelId__": "5"
@@ -838,7 +839,7 @@
                     "evaluator": {
                       "type": "gt",
                       "params": [
-                        0.15
+                        0.12
                       ]
                     }
                   }
@@ -851,12 +852,13 @@
           "for": "2h",
           "labels": {
             "ff_source": "feature-platform",
+            "severity": "info",
             "ff_axis": "IMPROVEMENT",
-            "severity": "info"
+            "ff_indicator": "manual_off_rate"
           },
           "annotations": {
             "summary": "{{ $labels.feature }} {{ $labels.country }} 수동 끄기 {{ humanizePercentage $values.A.Value }}",
-            "description": "켜짐 대비 운전자가 끈 비율이 15% 이상. 개선 후보: 개입 강도·민감도 파라미터. 담당: Feature Owner — 변경 요청 → 새 Version → 이 대시보드에서 효과 확인.",
+            "description": "켜짐 대비 운전자가 끈 비율이 12% 넘음(FF 판정 주의). 개선 후보: 개입 강도·민감도 파라미터. 담당: Feature Owner — 변경 요청 → 새 Version → 이 대시보드에서 효과 확인.",
             "runbook_url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md#ff-imp-manual-off",
             "__dashboardUid__": "ff-feature-health",
             "__panelId__": "8"
